@@ -564,7 +564,9 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
         }//end  while vertex counter < num_verts
         
           //get next vertex group (PatchData object)
-        vert_bool=ms.get_next_patch(*vert_group,this, err); MSQ_CHKERR(err);
+        
+        if (get_patch_type() != PatchData::GLOBAL_PATCH)
+          vert_bool=ms.get_next_patch(*vert_group,this, err); MSQ_CHKERR(err);
           //Michael:: Since we are doing global right now:
           //Remove this when no longer doing global
         vert_bool=0;
