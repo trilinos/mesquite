@@ -63,9 +63,11 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
           norm>gradientLessThan ) && !inner_criterion) {
     
     ++nb_iterations;
-  
-    objFunc->compute_gradient(pd, gradient, err, num_vertices); MSQ_CHKERR(err);
-
+    double original_value = 0.0;
+      //get intial objective function value, original_value, and gradient
+    objFunc->compute_gradient(pd, gradient, original_value, 
+			      err, num_vertices); MSQ_CHKERR(err);
+    
     // Prints out free vertices coordinates. 
     MSQ_DEBUG_ACTION(3,{
       int num_free_vertices = pd.num_free_vertices(err); MSQ_CHKERR(err);
@@ -96,9 +98,7 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
         dk[i][j] = -gradient[i][j] / norm;
 
     // ******* Improve Quality *******
-    double original_value = 0.0;
-      //get intial objective function value, original_value
-    sd_bool=objFunc->evaluate(pd, original_value, err);
+    
     MSQ_CHKERR(err);
       //set an error if initial patch is invalid.
     if(!sd_bool){
