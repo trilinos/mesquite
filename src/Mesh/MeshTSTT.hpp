@@ -213,6 +213,7 @@ namespace Mesquite
     TagHandle fixedVertexTag;
     TagHandle boundaryVertexTag;
     TagHandle vertexByteTag;
+    unsigned char* mZeros;
     
     mutable ::SIDL::array<EntityHandle> oneEntity; //!< array has one entry only.
     mutable ::SIDL::array<TagHandle> oneTagValue; //!< array has one entry only.

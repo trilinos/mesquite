@@ -172,6 +172,16 @@ Mesquite::MeshTSTT::MeshTSTT(TSTT::LocalTSTTMesh& tstt_mesh,
                                    ::TSTT::ALL_TOPOLOGIES,
                                    vertices);
     tsttMesh.entityAddTag(vertices, vertexByteTag);
+    unsigned char nb_vertices = vertices.upper(0) + 1;
+    mZeros = new unsigned char[nb_vertices];
+    for (int i=0; i<nb_vertices; ++i)
+      mZeros[i] = 0;
+    ::SIDL::array<void*> vtx_byte_values = ::SIDL::array<void*>::create1d(nb_vertices);
+    for (int i=0; i<nb_vertices; ++i) {
+      vtx_byte_values.set(i, &mZeros[i]);
+    }
+    tsttMesh.entitySetTagData(vertices, vertexByteTag, vtx_byte_values,
+                              (int32_t)sizeof(unsigned char));
     
   }
   catch (TSTT::Error &tstt_err) {
@@ -453,7 +463,9 @@ void Mesquite::MeshTSTT::vertex_set_byte (
 {
   try {
     oneEntity.set(0, vertex);
-    oneTagValue.set(0, &byte);
+    unsigned char* byte_s = new unsigned char; // leaky . may catter to AOMD implementation only
+    *byte_s = byte;
+    oneTagValue.set(0, byte_s);
     tsttMesh.entitySetTagData(oneEntity, vertexByteTag,
                                      oneTagValue, sizeof(unsigned char));
   }
@@ -478,12 +490,13 @@ void Mesquite::MeshTSTT::vertices_set_byte (
     vert_array_b.borrow(vert_array, 1, &lower, &upper, &stride);
     
     // Creating borrowed SIDL array holding tag datas.
-    ::SIDL::array<void*> byte_array_b;
-    byte_array_b.borrow((void**)&byte_array, 1, &lower, &upper, &stride);
-
+    ::SIDL::array<void*> byte_array_s = ::SIDL::array<void*>::create1d(array_size);
+    for (size_t i=0; i<array_size; ++i)
+      byte_array_s.set(i, &(byte_array[i]));
+    
     // set tag data
     tsttMesh.entitySetTagData(vert_array_b, vertexByteTag,
-                                     byte_array_b, sizeof(unsigned char));
+                                     byte_array_s, sizeof(unsigned char));
   }
   catch(::TSTT::Error &tstt_err) {
     PRINT_TSTT_ERROR(tstt_err);
@@ -501,10 +514,10 @@ void Mesquite::MeshTSTT::vertex_get_byte(
 {
   try {
     oneEntity.set(0, vertex);
-    oneTagValue.set(0, &byte);
     int32_t tag_size = sizeof(unsigned char);
     tsttMesh.entityGetTagData(oneEntity, vertexByteTag,
                                      oneTagValue, tag_size);
+    *byte = *(unsigned char*)oneTagValue.get(0);
   }
   catch(::TSTT::Error &tstt_err) {
     PRINT_TSTT_ERROR(tstt_err);
@@ -526,14 +539,17 @@ void Mesquite::MeshTSTT::vertices_get_byte(
     ::SIDL::array<void*> vert_array_b;
     vert_array_b.borrow(vert_array, 1, &lower, &upper, &stride);
     
-    // Creating borrowed SIDL array holding tag datas.
-    ::SIDL::array<void*> byte_array_b;
-    byte_array_b.borrow((void**)&byte_array, 1, &lower, &upper, &stride);
+    // Creating SIDL array holding tag datas.
+    ::SIDL::array<void*> byte_array_s = ::SIDL::array<void*>::create1d(array_size);
 
     // retrieve tag data
     int32_t tag_size = sizeof(unsigned char);
     tsttMesh.entityGetTagData(vert_array_b, vertexByteTag,
-                                     byte_array_b, tag_size);
+                                     byte_array_s, tag_size);
+
+    for (size_t i=0; i<array_size; ++i)
+      byte_array[i] = *(unsigned char*)byte_array_s.get(i);
+      
   }
   catch(::TSTT::Error &tstt_err) {
     PRINT_TSTT_ERROR(tstt_err);
@@ -897,6 +913,15 @@ void Mesquite::MeshTSTT::release_entity_handles(
 // is using it.
 void Mesquite::MeshTSTT::release()
 {
+  // remove byte tag from all vertices. 
+  SIDL::array<EntityHandle> vertices = ::SIDL::array<EntityHandle>::create1d(0);
+  tsttMesh.entitysetGetEntities(ENTIRE_MESH,
+                                ::TSTT::VERTEX,
+                                ::TSTT::ALL_TOPOLOGIES,
+                                vertices);
+  tsttMesh.entityRemoveTag(vertices,vertexByteTag);
+//  tsttMesh.tagDelete(vertexByteTag,true); // should do the same as all of the above
+
   tsttMesh.deleteRef();
 //  delete this;
 }
