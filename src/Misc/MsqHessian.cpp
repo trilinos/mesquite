@@ -58,6 +58,7 @@ MsqHessian::~MsqHessian()
   Only the upper triangular part of the Hessian is stored. */
 void MsqHessian::initialize(PatchData &pd, MsqError &err)
 {
+  FUNCTION_TIMER_START(__FUNC__);
   delete[] mEntries;
   delete[] mRowStart;
   delete[] mColIndex;
@@ -299,7 +300,8 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
   for (i=0;i<nnz;++i) mEntries[i] = 0.; // so we initialize all entries manually. 
 
   origin_pd = &pd;
-  
+
+  FUNCTION_TIMER_END();
   return;
 }
 
@@ -317,43 +319,6 @@ void MsqHessian::get_diagonal_blocks(std::vector<Matrix3D> &diag, MsqError &err)
   for (int i=0; i<size(); ++i) {
     diag[i] = mEntries[mRowStart[i]];
   }
-}
-
-
-#undef __FUNC__
-#define __FUNC__ "MsqHessian::accumulate_entries"
-/*! \param pd: PatchData in that contains the element which Hessian
-  we are accumulating in the Hessian matrix. This must be the same
-  PatchData that was used in MsqHessian::initialize().
-  \param elem_index: index of the element in the PatchData.
-  \param mat3d_array: This is the upper triangular part of the element Hessian for all nodes, including fixed nodes, for which the entries must be null Matrix3Ds.
-  \param nb_mat3d. The size of the mat3d_array: (n+1)n/2, where n is
-  the number of nodes in the element.
-*/
-void MsqHessian::accumulate_entries(PatchData &pd, size_t elem_index,
-                                    Matrix3D mat3d_array[], MsqError &err)
-{
-  int i;
-  
-  if (&pd != origin_pd) {
-    err.set_msg("Cannot accumulate elements from a different patch. "
-                "Use MsqHessian::initialize first.");
-    return;
-  }
-
-  int nve = pd.get_element_array(err)[elem_index].vertex_count(); MSQ_CHKERR(err);
-  int nb_mat3d = (nve+1)*nve/2;
-
-  int e = mAccumElemStart[elem_index];
-  for (i=0; i<nb_mat3d; ++i) {
-    if (mAccumulation[e] >= 0)
-      mEntries[mAccumulation[e]] += mat3d_array[i];
-    else
-      mEntries[-mAccumulation[e]].plus_transpose_equal(mat3d_array[i]);
-    ++e;
-  }
-
-  assert( e == mAccumElemStart[elem_index+1] );
 }
 
 

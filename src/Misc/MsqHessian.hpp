@@ -46,9 +46,9 @@ namespace Mesquite
   protected:
     PatchData* origin_pd;
     
-    Matrix3D* mEntries;	   //!< CSR block entries.  size: number of nonzero blocks 
-    size_t* mRowStart;	   //!< start of each row in mEntries. size: number of vertices.
-    size_t* mColIndex;     //!< CSR block structure: column indexes of the row entries. 
+    Matrix3D* mEntries;	//!< CSR block entries. size: nb of nonzero blocks, i.e. mRowStart[mSize] . 
+    size_t* mRowStart;	//!< start of each row in mEntries. size: nb of vertices (mSize).
+    size_t* mColIndex;  //!< CSR block structure: column indexes of the row entries. 
 
     int* mAccumulation;	   //!< accumulation pattern instructions
     size_t* mAccumElemStart;  //!< Starting index in mAccumulation for element i, i=1,...
@@ -70,6 +70,7 @@ namespace Mesquite
     ~MsqHessian();
     
     void initialize(PatchData &pd, MsqError &err);
+    void zero_out();
     int size() {return mSize;}
     //! returns the diagonal blocks, memory must be allocated before call.
     void get_diagonal_blocks(std::vector<Matrix3D> &diag, MsqError &err);
@@ -84,10 +85,62 @@ namespace Mesquite
                      const MsqHessian &H, const Vector3D x[], int size_x,
                      const Vector3D y[], int size_y, MsqError &err);
     friend class ObjectiveFunction;
-     friend std::ostream& operator<<(std::ostream &s, const MsqHessian &h);
+    friend std::ostream& operator<<(std::ostream &s, const MsqHessian &h);
   };
 
+
+#undef __FUNC__
+#define __FUNC__ "MsqHessian::zero_out"
+  /*! Sets all Hessian entries to zero. This is usually used before 
+      starting to accumulate elements hessian in the objective function
+      hessian. */
+  inline void MsqHessian::zero_out()
+  {
+    int i;
+    for (i=0; i<mRowStart[mSize]; ++i) {
+      mEntries[i] = 0.;
+    }
+  }
+
   
+#undef __FUNC__
+#define __FUNC__ "MsqHessian::accumulate_entries"
+  /*! Accumulates entries of an element hessian into an objective function
+      hessian. Make sure to use zero_out() before starting the accumulation
+      process. 
+
+    \param pd: PatchData in that contains the element which Hessian
+    we are accumulating in the Hessian matrix. This must be the same
+    PatchData that was used in MsqHessian::initialize().
+    \param elem_index: index of the element in the PatchData.
+    \param mat3d_array: This is the upper triangular part of the element Hessian 
+    for all nodes, including fixed nodes, for which the entries must be null Matrix3Ds.
+    \param nb_mat3d. The size of the mat3d_array: (n+1)n/2, where n is
+    the number of nodes in the element.
+*/
+  inline void MsqHessian::accumulate_entries(PatchData &pd, size_t elem_index,
+                                    Matrix3D mat3d_array[], MsqError &err)
+  {
+    MSQ_DEBUG_ACTION(1,{if (&pd != origin_pd) {
+      err.set_msg("Cannot accumulate elements from a different patch. "
+                  "Use MsqHessian::initialize first."); return;}});
+
+    int nve = pd.get_element_array(err)[elem_index].vertex_count(); MSQ_CHKERR(err);
+    int nb_mat3d = (nve+1)*nve/2;
+    
+    int e = mAccumElemStart[elem_index];
+    int i;
+    for (i=0; i<nb_mat3d; ++i) {
+       if (mAccumulation[e] >= 0)
+          mEntries[mAccumulation[e]] += mat3d_array[i];
+       else
+          mEntries[-mAccumulation[e]].plus_transpose_equal(mat3d_array[i]);
+       ++e;
+    }
+    
+    assert( e == mAccumElemStart[elem_index+1] );
+  }
+   
 #undef __FUNC__
 #define __FUNC__ "axpy"
   /*!
