@@ -158,8 +158,6 @@ namespace Mesquite
      double a3Con;
      double b3Con;
      double c3Con;
-     
-     
    };
 } //namespace
 

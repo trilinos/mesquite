@@ -38,8 +38,6 @@
 #include "Vector3D.hpp"
 #include <list>
 
-#include "TSTT_Base.h"
-
 #include "MsqMeshEntity.hpp"
 #include "PatchData.hpp"
 using namespace Mesquite;
