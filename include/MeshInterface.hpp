@@ -12,7 +12,7 @@
 
 #include "Mesquite.hpp"
 #include "MesquiteError.hpp"
-#include "Vector3D.hpp"
+#include "MsqVertex.hpp"
 
 namespace Mesquite
 {
@@ -93,11 +93,13 @@ namespace Mesquite
       //! Note that this is a read-only
       //! property; this flag can't be modified by users of the
       //! Mesquite::Mesh interface.
-    virtual bool vertex_is_on_boundary(VertexHandle vertex, MsqError &err) = 0;
+    virtual void vertices_are_on_boundary(VertexHandle vert_array[], bool on_bnd[],
+                                  size_t num_vtx, MsqError &err) = 0;
     
       //! Get/set location of a vertex
-    virtual void vertex_get_coordinates(VertexHandle vertex,
-                                        Vector3D &coordinates,
+    virtual void vertices_get_coordinates(VertexHandle vert_array[],
+                                        Mesquite::MsqVertex* const &coordinates,
+                                        const size_t &num_vtx,
                                         MsqError &err) = 0;
     virtual void vertex_set_coordinates(VertexHandle vertex,
                                         const Vector3D &coordinates,

@@ -13,6 +13,8 @@
 #include "MeshTSTT.hpp"
 #include "TSTT.hh"
 
+#include "MsqTimer.hpp"
+
 using std::cout;
 using std::cerr;
 using std::endl;
@@ -398,13 +400,20 @@ bool Mesquite::MeshTSTT::vertex_is_fixed(Mesquite::Mesh::VertexHandle vertex, Ms
 // property; this flag can't be modified by users of the
 // Mesquite::Mesh interface.
 #undef __FUNC__
-#define __FUNC__ "MeshTSTT::vertex_is_on_boundary"
-bool Mesquite::MeshTSTT::vertex_is_on_boundary(
-  Mesquite::Mesh::VertexHandle vertex, MsqError &err)
+#define __FUNC__ "MeshTSTT::vertices_are_on_boundary"
+void Mesquite::MeshTSTT::vertices_are_on_boundary(
+  Mesquite::Mesh::VertexHandle vert_array[], bool on_bnd[],
+  size_t num_vtx, MsqError &err)
 {
-  try {    
+  try {
+    FUNCTION_TIMER_START(__FUNC__);
+
+    int32_t lower=0, upper=num_vtx-1, stride=1;
+    ::SIDL::array<void*> vert_array_b;
+    vert_array_b.borrow(vert_array, 1, &lower, &upper, &stride);
+    
+    ::SIDL::array<void*> tag_s = ::SIDL::array<void*>::create1d(num_vtx);
     int32_t tag_size = sizeof(int32_t);
-    oneEntity.set(0,vertex);
 
     //dbg
 //     EntityHandle toto = oneEntity.get(0);
@@ -415,31 +424,45 @@ bool Mesquite::MeshTSTT::vertex_is_on_boundary(
 //    tsttMesh.entitySetTagData(oneEntity, boundaryVertexTag,
 //                                     oneTagValue, tag_size);
     
-    tsttMesh.entityGetTagData(oneEntity, boundaryVertexTag,
-                                     oneTagValue, tag_size);
+    tsttMesh.entityGetTagData(vert_array_b, boundaryVertexTag,
+                              tag_s, tag_size);
+
+    for (size_t i=0; i<num_vtx; ++i)
+      on_bnd[i] = (bool)(*(int*)(tag_s[i]));
+
+    FUNCTION_TIMER_END();
   }
   catch(::TSTT::Error &tstt_err) {
     PRINT_TSTT_ERROR(tstt_err);
   }
-  return (bool)(*(int*)(oneTagValue.get(0)));
 }
 
 // Get/set location of a vertex
 #undef __FUNC__
-#define __FUNC__ "MeshTSTT::vertex_get_coordinates"
-void Mesquite::MeshTSTT::vertex_get_coordinates(
-  Mesquite::Mesh::VertexHandle vertex,
-  Vector3D &coordinates, MsqError &err)
+#define __FUNC__ "MeshTSTT::vertices_get_coordinates"
+void Mesquite::MeshTSTT::vertices_get_coordinates(
+  Mesquite::Mesh::VertexHandle vert_array[],
+  MsqVertex* const &coordinates, const size_t &num_vtx, MsqError &err)
 {
   try {
-    oneEntity.set(0, vertex);
+    FUNCTION_TIMER_START(__FUNC__);
+    int32_t lower=0, upper=num_vtx-1, stride=1;
+    ::SIDL::array<void*> vert_array_b;
+    vert_array_b.borrow(vert_array, 1, &lower, &upper, &stride);
+
+    ::SIDL::array<double> coords_s = ::SIDL::array<double>::create1d(num_vtx*3);
+    
     ::TSTT::StorageOrder order = ::TSTT::INTERLEAVED;
-    tsttMesh.entityGetVertexCoordinates(oneEntity,
-                               order, threeDoubles);
+    tsttMesh.entityGetVertexCoordinates(vert_array_b,
+                                        order, coords_s);
+    
     // Turns SIDL array into a Vector3D.
-    coordinates[0] = threeDoubles.get(0);
-    coordinates[1] = threeDoubles.get(1);
-    coordinates[2] = threeDoubles.get(2);
+    for (size_t i=0; i<num_vtx; ++i) {
+      coordinates[i][0] = coords_s.get(3*i);
+      coordinates[i][1] = coords_s.get(3*i+1);
+      coordinates[i][2] = coords_s.get(3*i+2);
+    }
+    FUNCTION_TIMER_END();
   }
   catch(::TSTT::Error &tstt_err) {
     PRINT_TSTT_ERROR(tstt_err);
@@ -756,6 +779,7 @@ void Mesquite::MeshTSTT::elements_get_attached_vertices(
     return;
 
   try {
+    FUNCTION_TIMER_START(__FUNC__);
     // Creating borrowed SIDL arrays with arrays passed as arguments.
     int32_t lower= 0;
     int32_t stride = 1;
@@ -789,6 +813,7 @@ void Mesquite::MeshTSTT::elements_get_attached_vertices(
 	// checking we're not writing beyond the index array 
 	if(d>sizeof_csr_data) {
 	  err.set_msg("insuficient size for csr_data array");
+     FUNCTION_TIMER_END();
 	  return;
 	}
 	
@@ -824,7 +849,7 @@ void Mesquite::MeshTSTT::elements_get_attached_vertices(
     }
     assert(v!=0);
     sizeof_vert_handles=v;
-
+    FUNCTION_TIMER_END();
   }
   catch(::TSTT::Error &tstt_err) {
     PRINT_TSTT_ERROR(tstt_err);
@@ -836,13 +861,14 @@ void Mesquite::MeshTSTT::elements_get_attached_vertices(
 // where that element can be found in the array returned by
 // Mesh::get_all_vertices.
 #undef __FUNC__
-#define __FUNC__ "MeshTSTT::elements_get_attached_vertex_indices"
+#define __FUNC__ "MeshTSTT::element_get_attached_vertex_indices"
 void Mesquite::MeshTSTT::element_get_attached_vertex_indices(
   Mesquite::Mesh::ElementHandle element,
   size_t *index_array,
   size_t array_size, MsqError &err)
 {
   try {
+    FUNCTION_TIMER_START(__FUNC__);
     int32_t lower= 0;
     int32_t stride = 1;
     int32_t upper = Mesquite::MSQ_MAX_NUM_VERT_PER_ENT -1;
@@ -865,7 +891,7 @@ void Mesquite::MeshTSTT::element_get_attached_vertex_indices(
        cout << "index_array: " << index_array[i] << endl;	  
     }*/
      
-     
+    FUNCTION_TIMER_END();
   }
   catch(::TSTT::Error &tstt_err) {
     PRINT_TSTT_ERROR(tstt_err);
@@ -901,6 +927,7 @@ void Mesquite::MeshTSTT::elements_get_topologies(
   size_t num_elements, MsqError &err)
 {
   try {
+    FUNCTION_TIMER_START(__FUNC__);
     ::SIDL::array<int32_t> topos_s;
     topos_s = ::SIDL::array<int32_t>::create1d(num_elements);
     int32_t stride = 1;
@@ -914,6 +941,7 @@ void Mesquite::MeshTSTT::elements_get_topologies(
       element_topologies[i]= mesquite_equivalent_topology(topo_tstt, err);
       MSQ_CHKERR(err);
     }
+    FUNCTION_TIMER_END();
   }
   catch(::TSTT::Error &tstt_err) {
     PRINT_TSTT_ERROR(tstt_err);

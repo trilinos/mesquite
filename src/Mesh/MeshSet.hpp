@@ -144,6 +144,7 @@ namespace Mesquite
     Mesh::VertexHandle *vertArray;
     Mesh::ElementHandle *elemArray;
     EntityTopology *elemTopologies;
+    bool *vertexOnBoundary;
     size_t csrOffsetsSize;
     size_t csrDataSize;
     size_t vertArraySize;

@@ -1,6 +1,8 @@
 #include "MeshImpl.hpp"
 #include "MsqMessage.hpp"
 
+#include "Vector3D.hpp"
+
 #ifdef USE_STD_INCLUDES
 #include <fstream>
 #include <string>
@@ -994,20 +996,29 @@ bool Mesquite::MeshImpl::vertex_is_fixed(Mesquite::Mesh::VertexHandle /*vertex*/
 // Note that this is a read-only
 // property; this flag can't be modified by users of the
 // Mesquite::Mesh interface.
-bool Mesquite::MeshImpl::vertex_is_on_boundary(
-  Mesquite::Mesh::VertexHandle vertex, MsqError &/*err*/)
+void Mesquite::MeshImpl::vertices_are_on_boundary(
+ Mesquite::Mesh::VertexHandle vert_array[], bool on_bnd[],
+ size_t num_vtx, MsqError &/*err*/)
 {
-  size_t index = reinterpret_cast<MeshImpl::Vertex*>(vertex) - vertexArray;
-  return (onBoundaryBits[index / 8] & ((unsigned char)(1) << index % 8)) != 0;
+  for (size_t i=0; i<num_vtx; ++i)
+  {
+    if ( (onBoundaryBits[i / 8] & ((unsigned char)(1) << i % 8)) != 0 )
+      on_bnd[i] = true;
+    else
+      on_bnd[i] = false;
+  }
 }
 
 // Get/set location of a vertex
-void Mesquite::MeshImpl::vertex_get_coordinates(
-  Mesquite::Mesh::VertexHandle vertex,
-  Vector3D &coordinates,
+void Mesquite::MeshImpl::vertices_get_coordinates(
+  Mesquite::Mesh::VertexHandle vert_array[],
+  Mesquite::MsqVertex* const &coordinates,
+  const size_t &num_vtx,
   MsqError &/*err*/)
 {
-  coordinates.set(reinterpret_cast<double*>(vertex));
+  for (size_t i=0; i<num_vtx; ++i) {
+    coordinates[i].set(reinterpret_cast<double*>(vert_array[i]));
+  }
 }
 
 void Mesquite::MeshImpl::vertex_set_coordinates(
@@ -1304,8 +1315,8 @@ Mesquite::EntityTopology Mesquite::MeshImpl::element_get_topology(
 // Returns the topologies of the given entities.  The "entity_topologies"
 // array must be at least "num_elements" in size.
 void Mesquite::MeshImpl::elements_get_topologies(
-  Mesquite::Mesh::ElementHandle *element_handle_array,
-  Mesquite::EntityTopology *element_topologies,
+  Mesquite::Mesh::ElementHandle element_handle_array[],
+  Mesquite::EntityTopology element_topologies[],
   size_t num_elements,
   MsqError &/*err*/)
 {
