@@ -105,11 +105,11 @@ void Mesquite::MsqMeshEntity::compute_weighted_jacobian(PatchData &pd,
       
     case HEXAHEDRON:
       
-      jacobian_vectors[0]=vertices[v_v[3]]-vertices[v_v[0]]+
+      jacobian_vectors[0]=vertices[v_v[1]]-vertices[v_v[0]]+
                            (sample_point[1]*(vertices[v_v[2]]+vertices[v_v[0]]-
                                              vertices[v_v[3]]-vertices[v_v[1]]))+
-                           (sample_point[2]*(vertices[v_v[7]]+vertices[v_v[0]]-
-                                             vertices[v_v[4]]-vertices[v_v[3]]))+
+                           (sample_point[2]*(vertices[v_v[5]]+vertices[v_v[0]]-
+                                             vertices[v_v[4]]-vertices[v_v[1]]))+
                            (sample_point[1]*sample_point[2]*(vertices[v_v[6]]+
                                                              vertices[v_v[4]]+
                                                              vertices[v_v[3]]+
@@ -118,7 +118,7 @@ void Mesquite::MsqMeshEntity::compute_weighted_jacobian(PatchData &pd,
                                                              vertices[v_v[5]]-
                                                              vertices[v_v[2]]-
                                                              vertices[v_v[0]])),
-      jacobian_vectors[1]=vertices[v_v[1]]-vertices[v_v[0]]+
+      jacobian_vectors[1]=vertices[v_v[3]]-vertices[v_v[0]]+
                            (sample_point[0]*(vertices[v_v[2]]+vertices[v_v[0]]-
                                              vertices[v_v[3]]-vertices[v_v[1]]))+
                            (sample_point[2]*(vertices[v_v[7]]+vertices[v_v[0]]-
@@ -133,10 +133,10 @@ void Mesquite::MsqMeshEntity::compute_weighted_jacobian(PatchData &pd,
                                                              vertices[v_v[0]]));
                            
       jacobian_vectors[2]=vertices[v_v[4]]-vertices[v_v[0]]+
-                           (sample_point[0]*(vertices[v_v[7]]+vertices[v_v[0]]-
-                                             vertices[v_v[4]]-vertices[v_v[3]]))+
-                           (sample_point[1]*(vertices[v_v[5]]+vertices[v_v[0]]-
+                           (sample_point[0]*(vertices[v_v[5]]+vertices[v_v[0]]-
                                              vertices[v_v[4]]-vertices[v_v[1]]))+
+                           (sample_point[1]*(vertices[v_v[7]]+vertices[v_v[0]]-
+                                             vertices[v_v[4]]-vertices[v_v[3]]))+
                            (sample_point[0]*sample_point[1]*(vertices[v_v[6]]+
                                                              vertices[v_v[4]]+
                                                              vertices[v_v[3]]+
@@ -145,12 +145,7 @@ void Mesquite::MsqMeshEntity::compute_weighted_jacobian(PatchData &pd,
                                                              vertices[v_v[5]]-
                                                              vertices[v_v[2]]-
                                                              vertices[v_v[0]]));
-      
-        //Michael :: TODO
-        //complete hack to circumvent numbering problem
-      jacobian_vectors[0]*=-1;
-      jacobian_vectors[1]*=-1;
-      jacobian_vectors[2]*=-1;
+
       num_jacobian_vectors=3;
       break;
       
