@@ -46,6 +46,7 @@ namespace Mesquite
     // Subscripts on non-consts both get and set coords
     double& operator[](size_t index); // 0-based
     Vector3D& operator=(const Vector3D &to_copy);
+    Vector3D& operator=(const double &to_copy);
     
     // Functions to modify existing coordinates
     Vector3D operator-() const;  //- unary negation.
@@ -177,6 +178,14 @@ namespace Mesquite
   inline Vector3D& Vector3D::operator=(const Vector3D &to_copy)  
   {
     memcpy(mCoords, to_copy.mCoords, 3*sizeof(double));
+    return *this;
+  }
+
+  inline Vector3D& Vector3D::operator=(const double &to_copy)  
+  {
+    mCoords[0] = to_copy;
+    mCoords[1] = to_copy;
+    mCoords[2] = to_copy;
     return *this;
   }
   
