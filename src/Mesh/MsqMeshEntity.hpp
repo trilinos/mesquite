@@ -73,7 +73,7 @@ namespace Mesquite
                                    MsqError &err );
     
       //Returns a list of sample points given an evaluationmode 
-    void get_sample_points(QualityMetric::EvaluationMode mode,
+    void get_sample_points(QualityMetric::ElementEvaluationMode mode,
                            std::vector<Vector3D> &coords,
                            MsqError &err);
     
@@ -146,7 +146,7 @@ namespace Mesquite
   { return vertex_count(mType); }
 
   inline void MsqMeshEntity::set_vertex_index(size_t vertex_in_element,
-                                            size_t vertex_patch_index)
+                                              size_t vertex_patch_index)
   {
       // Make sure we're in range
     assert(vertex_in_element < vertex_count());

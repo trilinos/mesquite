@@ -167,7 +167,7 @@ void Mesquite::MsqMeshEntity::compute_weighted_jacobian(PatchData &pd,
   \param std::vector<Vecotr3D> &coords A vector of Vector3D passed by
   reference which is used to store the sample points.
 */
-void Mesquite::MsqMeshEntity::get_sample_points(QualityMetric::EvaluationMode mode,
+void Mesquite::MsqMeshEntity::get_sample_points(QualityMetric::ElementEvaluationMode mode,
                                       std::vector<Vector3D> &coords,
                                       MsqError &err)
 {
