@@ -490,6 +490,7 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
       if(!obj_ptr->evaluate(pd, currentOFValue, err)){
         err.set_msg("Invalid patch passed to TerminationCriterion.");
       }
+        //std::cout<<"\nOF val "<<currentOFValue;
       MSQ_CHKERR(err);
     }
       //std::cout<<"\nOF current "<<currentOFValue;
@@ -714,10 +715,12 @@ void TerminationCriterion::cleanup(MeshSet &ms, MsqError &err)
 {
     //clean up the memento if used
   if(totalFlag & (VERTEX_MOVEMENT_ABSOLUTE | VERTEX_MOVEMENT_RELATIVE )){
-    previousVerticesMemento->~PatchDataVerticesMemento();
+    delete previousVerticesMemento;
+    previousVerticesMemento=NULL;
     if(terminationCriterionFlag & (VERTEX_MOVEMENT_RELATIVE))
     {
-      initialVerticesMemento->~PatchDataVerticesMemento();
+      delete initialVerticesMemento;
+      initialVerticesMemento=NULL;
     }
   }
   if(totalFlag & ((GRADIENT_L2_NORM_ABSOLUTE | GRADIENT_INF_NORM_ABSOLUTE)

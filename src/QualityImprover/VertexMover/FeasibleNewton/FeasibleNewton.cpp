@@ -264,7 +264,7 @@ void FeasibleNewton::terminate_mesh_iteration(PatchData &/*pd*/, MsqError &/*err
 #define __FUNC__ "FeasibleNewton::cleanup" 
 void FeasibleNewton::cleanup()
 {
-  coordsMem->~PatchDataVerticesMemento(); coordsMem = NULL;
+  delete coordsMem; coordsMem = NULL;
 }
   
 
