@@ -28,16 +28,19 @@ using std::endl;
 class MeshInterfaceTest : public CppUnit::TestFixture
 {
 private:
-   CPPUNIT_TEST_SUITE(MeshInterfaceTest);
-   CPPUNIT_TEST (test_get_geometric_dimension);
-   CPPUNIT_TEST (test_vertices);
-   CPPUNIT_TEST (test_vertex_is_on_boundary);
-   CPPUNIT_WORK_IN_PROGRESS (test_vertex_is_fixed);
-   CPPUNIT_TEST (test_vertex_byte);
-   CPPUNIT_TEST (test_vertex_get_attached_elements);
-   CPPUNIT_TEST (test_elements);
-   CPPUNIT_TEST (test_elements_get_attached_vertices);
-   CPPUNIT_TEST_SUITE_END();
+  CPPUNIT_TEST_SUITE(MeshInterfaceTest);
+  CPPUNIT_TEST (test_get_geometric_dimension);
+  CPPUNIT_TEST (test_vertices);
+  CPPUNIT_TEST (test_vertex_is_on_boundary);
+  CPPUNIT_WORK_IN_PROGRESS (test_vertex_is_fixed);
+  CPPUNIT_TEST (test_vertex_byte);
+  CPPUNIT_TEST (test_vertex_get_attached_elements);
+  CPPUNIT_TEST (test_elements);
+  CPPUNIT_TEST (test_elements_get_attached_vertices);
+  CPPUNIT_TEST (test_element_get_topology);
+  CPPUNIT_TEST (test_elements_get_topology);
+  CPPUNIT_TEST(test_element_get_attached_vertex_indices);
+  CPPUNIT_TEST_SUITE_END();
 
 private:
   Mesquite::MeshImpl *mMesh; 
@@ -264,11 +267,6 @@ public:
                                           csr_offsets,
                                           mErr); MSQ_CHKERR(mErr);
 
-    // Make sure a handles is returned for each vertex.
-    for (int i=0; i<9; ++i) {
-      CPPUNIT_ASSERT( vert_handles[i] != 0 );
-    }
-    
 //     cout << "nbElem " << nbElem << endl;
 //     for (size_t i=0; i<nbElem; ++i) {
 //       cout << "mElements["<<i<<"]: " << mElements[i] << endl;
@@ -285,6 +283,28 @@ public:
 //       cout << "csr_offsets["<<i<<"]: " << csr_offsets[i] << endl;
 //     }
 
+    // Make sure a handle is returned for each vertex.
+    for (int i=0; i<9; ++i) {
+      CPPUNIT_ASSERT( vert_handles[i] != 0 );
+    }
+    
+    // Make sure CSR data is valid
+    int vtx_repeated_occurence[9] = {0,0,0,0,0,0,0,0,0};
+    for (int i=0; i<15; ++i) {
+      CPPUNIT_ASSERT( csr_data[i] >=0 && csr_data[i] <= 8 );
+      ++vtx_repeated_occurence[csr_data[i]];
+    }
+    for (int i=0; i<9; ++i) {
+      CPPUNIT_ASSERT( vtx_repeated_occurence[i] <= 3 );
+    }
+
+    // Makes sure CSR offsets are valid
+    CPPUNIT_ASSERT( csr_offsets[0] == 0 );
+    CPPUNIT_ASSERT( csr_offsets[1] >=3 && csr_offsets[1]<=12 );
+    CPPUNIT_ASSERT( csr_offsets[2] >=3 && csr_offsets[2]<=12 );
+    CPPUNIT_ASSERT( csr_offsets[3] >=3 && csr_offsets[3]<=12 );
+    CPPUNIT_ASSERT( csr_offsets[4] == 15 );
+    
     // When sizeof_csr_data is insufficient, makes sure an error is set 
     sizeof_csr_data = 12;
     mMesh->elements_get_attached_vertices(mElements, nbElem,
@@ -294,10 +314,117 @@ public:
                                           mErr);
     CPPUNIT_ASSERT( mErr.errorOn == true );
     mErr.reset();
-
   }
 
   
+#undef __FUNC__
+#define __FUNC__ "MeshInterfaceTest::test_element_get_topology"
+  void test_element_get_topology()
+  {
+    int nb_quads=0;
+    int nb_tri=0;
+    Mesquite::EntityTopology topo;
+    for (size_t i=0; i<nbElem; ++i) {
+      topo = mMesh->element_get_topology(mElements[i], mErr);
+      MSQ_CHKERR(mErr);
+      switch (topo) {
+      case Mesquite::TRIANGLE:
+        ++nb_tri;
+        break;
+      case Mesquite::QUADRILATERAL:
+        ++nb_quads;
+        break;
+      default:
+        CPPUNIT_FAIL("Topology should be quad or Hex only.");
+      }
+    }
+    CPPUNIT_ASSERT_EQUAL(1,nb_tri);
+    CPPUNIT_ASSERT_EQUAL(3,nb_quads);
+  }
+
+#undef __FUNC__
+#define __FUNC__ "MeshInterfaceTest::test_elements_get_topology"
+  void test_elements_get_topology()
+  {
+    int nb_quads=0;
+    int nb_tri=0;
+    Mesquite::EntityTopology* topos = new Mesquite::EntityTopology[nbElem];
+    mMesh->elements_get_topologies(mElements, topos, nbElem, mErr);
+    MSQ_CHKERR(mErr);
+    for (size_t i=0; i<nbElem; ++i) {
+      switch (topos[i]) {
+      case Mesquite::TRIANGLE:
+        ++nb_tri;
+        break;
+      case Mesquite::QUADRILATERAL:
+        ++nb_quads;
+        break;
+      default:
+        CPPUNIT_FAIL("Topology should be quad or Hex only.");
+      }
+    }
+    CPPUNIT_ASSERT_EQUAL(1,nb_tri);
+    CPPUNIT_ASSERT_EQUAL(3,nb_quads);
+  }
+
+
+
+#undef __FUNC__
+#define __FUNC__ "MeshInterfaceTest::test_element_get_attached_vertex_indices"
+  void test_element_get_attached_vertex_indices()
+  {
+    // Find the index of the triangle
+    Mesquite::EntityTopology topo=Mesquite::MIXED;
+    int tri_index=-1;
+    while (topo != Mesquite::TRIANGLE) {
+      ++tri_index;
+      topo = mMesh->element_get_topology(mElements[tri_index], mErr);
+      MSQ_CHKERR(mErr);
+    }
+
+    size_t index_array[3];
+    mMesh->element_get_attached_vertex_indices(mElements[tri_index],
+                                        index_array, 3, mErr);
+
+    // creates list with correct vertices coordinates for the triangle
+    std::list<Mesquite::Vector3D> correct_coords;
+    correct_coords.push_back(Mesquite::Vector3D(1.,0.,0.));
+    correct_coords.push_back(Mesquite::Vector3D(0.,1.732050807,0.));
+    correct_coords.push_back(Mesquite::Vector3D(-1.,0.,0.));
+
+    // Creates same list from the mesh implementation
+    std::list<Mesquite::Vector3D> tri_coords;
+    Mesquite::Vector3D tmp_vec;
+    for (size_t i=0; i<3; ++i) {
+      mMesh->vertex_get_coordinates(mVertices[i], tmp_vec, mErr);
+      tri_coords.push_back(tmp_vec);
+    }
+
+    // Makes sure both list contain the same elements (not necessarily in the same order).
+    std::list<Mesquite::Vector3D>::iterator correct_iter;
+    correct_iter = correct_coords.begin();
+    std::list<Mesquite::Vector3D>::iterator tri_iter;
+    while (!correct_coords.empty()) {
+      //      cout << "correct_iter : " << *correct_iter;
+      tri_iter = tri_coords.begin();
+      while (tri_iter != tri_coords.end()) {
+        //  cout << "tri_iter : " << *tri_iter;
+        if (Mesquite::Vector3D::distance_between(*tri_iter, *correct_iter) < 10e-4) {
+          //cout << "Erasing received : "<< *tri_iter;
+          tri_coords.erase( tri_iter );
+          tri_iter = tri_coords.end(); // stops
+          //cout << "Erasing correct : "<< *correct_iter;
+          correct_coords.erase( correct_iter );
+        }
+        else
+          ++tri_iter;
+      }
+      correct_iter = correct_coords.begin();
+    }
+    CPPUNIT_ASSERT(tri_coords.empty());
+    CPPUNIT_ASSERT(correct_coords.empty());
+  }
+
 };
 
 
