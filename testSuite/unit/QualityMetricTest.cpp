@@ -56,8 +56,8 @@ correct metric return values.
 #include "ConditionNumberQualityMetric.hpp"
 #include "VertexConditionNumberQualityMetric.hpp"
 #include "GeneralizedConditionNumberQualityMetric.hpp"
-#include "MeanRatioQualityMetric.hpp"
-#include "InverseMeanRatioQualityMetric.hpp"
+#include "IdealWeightInverseMeanRatio.hpp"
+#include "IdealWeightMeanRatio.hpp"
 #include "AspectRatioGammaQualityMetric.hpp"
 #include "MultiplyQualityMetric.hpp"
 #include "EdgeLengthQualityMetric.hpp"
@@ -602,8 +602,8 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
      MsqVertex* verts = triPatch.get_vertex_array(err); CPPUNIT_ASSERT(!err);
      elems=triPatch.get_element_array(err); 
      CPPUNIT_ASSERT(!err);
-     ShapeQualityMetric *met = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
-     ShapeQualityMetric *imet = new InverseMeanRatioQualityMetric;
+     ShapeQualityMetric *met = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
+     ShapeQualityMetric *imet = new IdealWeightMeanRatio;
        //Check mean ratio of ideal tri
      met->evaluate_element(triPatch,&elems[0],val,err);CPPUNIT_ASSERT(!err);
      if(pF) cout << "\nMEAN TRI " << val;
@@ -688,7 +688,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
      MsqVertex* verts = triPatch.get_vertex_array(err);CPPUNIT_ASSERT(!err);
      elems=triPatch.get_element_array(err);
      CPPUNIT_ASSERT(!err);
-     ShapeQualityMetric *mmet = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
+     ShapeQualityMetric *mmet = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
      ShapeQualityMetric *cmet = new ConditionNumberQualityMetric;
      CompositeQualityMetric *met = new MultiplyQualityMetric(mmet,
                                                             cmet,
@@ -989,7 +989,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
      MsqMeshEntity* elems;
      elems=quadPatch.get_element_array(err);
      CPPUNIT_ASSERT(!err);
-     ShapeQualityMetric *met = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
+     ShapeQualityMetric *met = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
        //Check mean ratio of ideal quad
      met->evaluate_element(quadPatch,&elems[0],val,err);CPPUNIT_ASSERT(!err);
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
@@ -1060,7 +1060,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
     two_vtces[1] = &vertices[bad_elem_vertex_indices[2]];
     
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
+    ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
     mean_ratio->set_averaging_method(QualityMetric::SUM, err);
 
     mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
@@ -1328,7 +1328,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
 
     // 1 **** test with all vertices free
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
+    ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
     
 
 //    mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
@@ -1446,7 +1446,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
     {
       MsqPrintError err(cout); 
       test_mean_ratio_hessian(triPatch);
-      QualityMetric* mean_rat = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
+      QualityMetric* mean_rat = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
         //make sure the code handles this case correctly
       mean_rat->set_averaging_method(QualityMetric::SUM_SQUARED,
                                      err);
@@ -1463,7 +1463,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
   void test_mean_ratio_quad_hessian_linear()
     {
       MsqPrintError err(cout); 
-      QualityMetric* mean_rat = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
+      QualityMetric* mean_rat = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
       mean_rat->set_averaging_method(QualityMetric::LINEAR,
                                    err);
       test_metric_hessian(quadPatch, mean_rat);
@@ -1472,7 +1472,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
   void test_mean_ratio_quad_hessian_sum_squared()
     {
       MsqPrintError err(cout);
-      QualityMetric* mean_rat = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
+      QualityMetric* mean_rat = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
       mean_rat->set_averaging_method(QualityMetric::SUM_SQUARED,
                                      err);
       test_metric_hessian(quadPatch, mean_rat);
@@ -1481,7 +1481,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
    void test_mean_ratio_quad_hessian_rms()
     {
       MsqPrintError err(cout);
-      QualityMetric* mean_rat = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
+      QualityMetric* mean_rat = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
       mean_rat->set_averaging_method(QualityMetric::RMS,
                                      err);
       test_metric_hessian(quadPatch, mean_rat);
@@ -1490,7 +1490,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
   void test_mean_ratio_quad_hessian_harmonic()
     {
       MsqPrintError err(cout); 
-      QualityMetric* mean_rat = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
+      QualityMetric* mean_rat = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
       mean_rat->set_averaging_method(QualityMetric::HARMONIC,
                                      err);
       test_metric_hessian(quadPatch, mean_rat);
@@ -1499,7 +1499,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
   void test_mean_ratio_quad_hessian_hms()
     {
       MsqPrintError err(cout); 
-      QualityMetric* mean_rat = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
+      QualityMetric* mean_rat = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
       mean_rat->set_averaging_method(QualityMetric::HMS,
                                      err);
       test_metric_hessian(quadPatch, mean_rat);
@@ -1514,7 +1514,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
   {
     test_mean_ratio_hessian(hexPatch);
      MsqPrintError err(cout);
-    QualityMetric* mean_rat = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
+    QualityMetric* mean_rat = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
     mean_rat->set_averaging_method(QualityMetric::SUM_SQUARED,
                                    err);
     test_metric_hessian(hexPatch, mean_rat);
@@ -1523,7 +1523,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
  void test_mean_ratio_hex_hessian_linear()
     {
       MsqPrintError err(cout); 
-      QualityMetric* mean_rat = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
+      QualityMetric* mean_rat = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
       mean_rat->set_averaging_method(QualityMetric::LINEAR,
                                      err);
       test_metric_hessian(hexPatch, mean_rat);
@@ -1665,7 +1665,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
   void test_mean_ratio_hex_hessian_sum_squared()
     {
       MsqPrintError err(cout);
-      QualityMetric* mean_rat = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
+      QualityMetric* mean_rat = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
       mean_rat->set_averaging_method(QualityMetric::SUM_SQUARED,
                                      err);
       test_metric_hessian(hexPatch, mean_rat);
@@ -1675,7 +1675,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
   void test_mean_ratio_hex_hessian_rms()
     {
       MsqPrintError err(cout); 
-      QualityMetric* mean_rat = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
+      QualityMetric* mean_rat = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
       mean_rat->set_averaging_method(QualityMetric::RMS,
                                      err);
       test_metric_hessian(hexPatch, mean_rat);
@@ -1684,7 +1684,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
  void test_mean_ratio_hex_hessian_harmonic()
     {
       MsqPrintError err(cout);
-      QualityMetric* mean_rat = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
+      QualityMetric* mean_rat = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
       mean_rat->set_averaging_method(QualityMetric::HARMONIC,
                                      err);
       test_metric_hessian(hexPatch, mean_rat);
@@ -1693,7 +1693,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
   void test_mean_ratio_hex_hessian_hms()
     {
       MsqPrintError err(cout);
-      QualityMetric* mean_rat = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
+      QualityMetric* mean_rat = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
       mean_rat->set_averaging_method(QualityMetric::HMS,
                                      err);
       test_metric_hessian(hexPatch, mean_rat);
@@ -1705,7 +1705,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
   void test_mean_ratio_tri_grad_from_hessian()
   {
     MsqPrintError err(cout);
-    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);
+    ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);
     CPPUNIT_ASSERT(!err);
     mean_ratio->set_averaging_method(QualityMetric::SUM, err);
     CPPUNIT_ASSERT(!err);
@@ -1718,7 +1718,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
   void test_mean_ratio_quad_grad_from_hessian()
   {
     MsqPrintError err(cout);    
-    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);
+    ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);
     CPPUNIT_ASSERT(!err);
     mean_ratio->set_averaging_method(QualityMetric::SUM, err);
     CPPUNIT_ASSERT(!err);
@@ -1731,7 +1731,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
   void test_mean_ratio_tet_grad_from_hessian()
   {
     MsqPrintError err(cout);
-    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);
+    ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);
     CPPUNIT_ASSERT(!err);
     mean_ratio->set_averaging_method(QualityMetric::SUM, err);
     CPPUNIT_ASSERT(!err);
@@ -1745,7 +1745,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
   void test_mean_ratio_hex_grad_from_hessian()
   {
     MsqPrintError err(cout);
-    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);
+    ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);
     CPPUNIT_ASSERT(!err);
     mean_ratio->set_averaging_method(QualityMetric::SUM, err);
     CPPUNIT_ASSERT(!err);

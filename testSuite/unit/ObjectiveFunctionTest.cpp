@@ -57,8 +57,8 @@ Unit testing of various functions in the ObjectiveFunction class.
 #include "CompositeOFScalarMultiply.hpp"
 #include "CompositeOFScalarAdd.hpp"
 #include "GeneralizedConditionNumberQualityMetric.hpp"
-#include "MeanRatioQualityMetric.hpp"
-#include "InverseMeanRatioQualityMetric.hpp"
+#include "IdealWeightInverseMeanRatio.hpp"
+#include "IdealWeightMeanRatio.hpp"
 #include "EdgeLengthQualityMetric.hpp"
 #include "MsqHessian.hpp"
 
@@ -174,7 +174,7 @@ public:
     MsqPrintError err(cout);
       
     // instantiates a couple of QualityMetrics
-    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
+    ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
     ShapeQualityMetric* condition_nb = new GeneralizedConditionNumberQualityMetric;
 
     // and creates a composite objective function.
@@ -223,7 +223,7 @@ public:
        bool return_bool;
        double max_val=0.0;
        double l_inf_val = 1.0;
-       ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
+       ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
          //creates an edge length metric
        SmoothnessQualityMetric* smooth = new EdgeLengthQualityMetric;
        
@@ -328,7 +328,7 @@ public:
     MsqPrintError err(cout);
     
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
+    ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
     mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
     
     // ... and builds an objective function with it
@@ -343,7 +343,7 @@ public:
     MsqPrintError err(cout);
     
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* i_mean_ratio = new InverseMeanRatioQualityMetric;
+    ShapeQualityMetric* i_mean_ratio = new IdealWeightMeanRatio;
     i_mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
     
     // ... and builds an objective function with it
@@ -358,7 +358,7 @@ public:
     MsqPrintError err(cout);
     
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
+    ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
     mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
     
     // ... and builds an objective function with it
@@ -374,7 +374,7 @@ public:
     MsqPrintError err(cout);
     
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
+    ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
     mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
     
     // ... and builds an objective function with it
@@ -389,7 +389,7 @@ public:
      {
        MsqPrintError err(cout);
          // creates a mean ratio quality metric ...
-       ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
+       ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
        mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
        
          // ... and builds an objective function with it
@@ -419,7 +419,7 @@ public:
     MsqPrintError err(cout);
     
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
+    ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
     mean_ratio->set_averaging_method(QualityMetric::SUM, err);
     
     // ... and builds an objective function with it
@@ -465,7 +465,7 @@ public:
     MsqPrintError err(cout);
     
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
+    ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
     mean_ratio->set_averaging_method(QualityMetric::SUM, err);
     
     // ... and builds an objective function with it
@@ -536,7 +536,7 @@ public:
     MsqPrintError err(cout);
     
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
+    ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
     mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
     mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
     
@@ -611,7 +611,7 @@ public:
     MsqPrintError err(cout);
     
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
+    ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
     mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
     mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
     
@@ -636,7 +636,7 @@ public:
     MsqPrintError err(cout);
     
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* i_mean_ratio = new InverseMeanRatioQualityMetric;
+    ShapeQualityMetric* i_mean_ratio = new IdealWeightMeanRatio;
     i_mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
     i_mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
     
@@ -670,7 +670,7 @@ public:
 //     OF_hessian_ana.initialize(pd, err); CPPUNIT_ASSERT(!err);
     
 //     // creates a mean ratio quality metric ...
-//     ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
+//     ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
 // //    mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
 //     mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
 //     mean_ratio->set_averaging_method(QualityMetric::SUM, err); CPPUNIT_ASSERT(!err);
@@ -744,10 +744,10 @@ public:
     Hpos.initialize(tetPatch, err); CPPUNIT_ASSERT(!err);
     Hneg.initialize(tetPatch, err); CPPUNIT_ASSERT(!err);
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
+    ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
     mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
     mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
-    ShapeQualityMetric* mean_ratio_neg = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
+    ShapeQualityMetric* mean_ratio_neg = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
     mean_ratio_neg->set_averaging_method(QualityMetric::LINEAR, err);
     mean_ratio_neg->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
     mean_ratio_neg->set_negate_flag(-1);

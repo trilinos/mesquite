@@ -70,7 +70,6 @@ using std::endl;
 
 // algorythms
 #include "ConditionNumberQualityMetric.hpp"
-#include "MeanRatioQualityMetric.hpp"
 #include "LInfTemplate.hpp"
 #include "SteepestDescent.hpp"
 #include "LaplacianSmoother.hpp"

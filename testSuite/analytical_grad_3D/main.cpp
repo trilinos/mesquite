@@ -67,7 +67,7 @@ describe main.cpp here
 #include "QualityAssessor.hpp"
 
 // algorythms
-#include "MeanRatioQualityMetric.hpp"
+#include "IdealWeightInverseMeanRatio.hpp"
 #include "ConditionNumberQualityMetric.hpp"
 #include "LPtoPTemplate.hpp"
 #include "LInfTemplate.hpp"
@@ -94,7 +94,7 @@ int main()
   InstructionQueue queue1;
   
     // creates a mean ratio quality metric ...
-  ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);
+  ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);
   if (err) return 1;
   ShapeQualityMetric* cond_num = new ConditionNumberQualityMetric;
   mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);

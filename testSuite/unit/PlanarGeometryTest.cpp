@@ -58,9 +58,7 @@ SimplifiedGeometryEngine.
 //#include "StoppingCriterion.hpp"
 #include "QualityAssessor.hpp"
 
-#include "InverseMeanRatioQualityMetric.hpp"
 #include "GeneralizedConditionNumberQualityMetric.hpp"
-#include "MeanRatioQualityMetric.hpp"
 #include "ConditionNumberQualityMetric.hpp"
 #include "LPtoPTemplate.hpp"
 #include "ASMQualityMetric.hpp"

@@ -49,7 +49,7 @@ This is the second possibility for wrappers. It is based on the InctructionQueue
 #ifndef LaplacianIQ_hpp
 #define LaplacianIQ_hpp
 
-#include "MeanRatioQualityMetric.hpp" 
+#include "IdealWeightInverseMeanRatio.hpp" 
 #include "LaplacianSmoother.hpp"
 #include "QualityAssessor.hpp"
 #include "InstructionQueue.hpp"
@@ -59,7 +59,7 @@ namespace Mesquite {
 
    class LaplacianIQ : public InstructionQueue {
    private:
-      ShapeQualityMetric* meanRatio;
+      ShapeQualityMetric* inverseMeanRatio;
       LaplacianSmoother* lapl1;
       QualityAssessor* mQA;
       TerminationCriterion* mTerm;
@@ -70,11 +70,11 @@ namespace Mesquite {
       LaplacianIQ() {
          MsqError err;
          // creates a mean ratio quality metric ...
-         meanRatio = new MeanRatioQualityMetric(err);
+         inverseMeanRatio = new IdealWeightInverseMeanRatio(err);
      
          // creates the laplacian smoother  procedures
          lapl1 = new LaplacianSmoother(err);
-         mQA = new QualityAssessor(meanRatio,QualityAssessor::MAXIMUM, err);
+         mQA = new QualityAssessor(inverseMeanRatio,QualityAssessor::MAXIMUM, err);
      
          //**************Set stopping criterion****************
          mTerm = new TerminationCriterion();
@@ -94,7 +94,7 @@ namespace Mesquite {
       //! Destructor must delete the objects inserted in the queue.
       virtual ~LaplacianIQ()
       {
-         delete meanRatio;
+         delete inverseMeanRatio;
          delete lapl1;
          delete mQA;
          delete mTerm;

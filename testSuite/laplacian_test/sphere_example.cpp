@@ -73,7 +73,6 @@ using std::end;
 
 // algorythms
 #include "ConditionNumberQualityMetric.hpp"
-#include "MeanRatioQualityMetric.hpp"
 #include "LPTemplate.hpp"
 #include "LInfTemplate.hpp"
 #include "SteepestDescent.hpp"

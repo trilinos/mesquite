@@ -59,9 +59,8 @@ SimplifiedGeometryEngine.
 //#include "StoppingCriterion.hpp"
 #include "QualityAssessor.hpp"
 
-#include "InverseMeanRatioQualityMetric.hpp"
 #include "GeneralizedConditionNumberQualityMetric.hpp"
-#include "MeanRatioQualityMetric.hpp"
+#include "IdealWeightInverseMeanRatio.hpp"
 #include "ConditionNumberQualityMetric.hpp"
 #include "LPtoPTemplate.hpp"
 #include "ASMQualityMetric.hpp"
@@ -217,7 +216,7 @@ public:
        InstructionQueue queue1;
 
          // creates an edge length metric ...
-       ShapeQualityMetric* shape_metric= new MeanRatioQualityMetric(err);
+       ShapeQualityMetric* shape_metric= new IdealWeightInverseMeanRatio(err);
        LInfTemplate shape_func(shape_metric);
        
          //create the smart laplacian smoother

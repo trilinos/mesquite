@@ -53,7 +53,7 @@ describe main.cpp here
 #include "MeshSet.hpp"
 #include "ShapeImprovementWrapper.hpp"
 // algorythms
-#include "MeanRatioQualityMetric.hpp"
+#include "IdealWeightInverseMeanRatio.hpp"
 #include "EdgeLengthQualityMetric.hpp"
 #include "LPtoPTemplate.hpp"
 #include "FeasibleNewton.hpp"
@@ -99,7 +99,7 @@ int main()
   InstructionQueue queue1;
   
     // creates a mean ratio quality metric ...
-  ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);
+  ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);
   if (err) return 1;
     //   mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
     //   mean_ratio->set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);

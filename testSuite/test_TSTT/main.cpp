@@ -54,7 +54,7 @@ describe main.cpp here
 #include "PlanarDomain.hpp"
 
 // algorithms
-#include "MeanRatioQualityMetric.hpp"
+#include "IdealWeightInverseMeanRatio.hpp"
 #include "EdgeLengthQualityMetric.hpp"
 #include "LPtoPTemplate.hpp"
 #include "FeasibleNewton.hpp"
@@ -183,7 +183,7 @@ int run_global_smoother( MeshSet& mesh_set, MsqError& err )
   InstructionQueue queue1;
 
   // creates a mean ratio quality metric ...
-  ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);
+  ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);
   if (err) return 1;
   mean_ratio->set_averaging_method(QualityMetric::SUM, err); 
   if (err) return 1;
@@ -245,7 +245,7 @@ int run_local_smoother( MeshSet& mesh_set, MsqError& err )
   InstructionQueue queue1;
 
   // creates a mean ratio quality metric ...
-  ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);
+  ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);
   if (err) return 1;
   mean_ratio->set_averaging_method(QualityMetric::SUM, err); 
   if (err) return 1;

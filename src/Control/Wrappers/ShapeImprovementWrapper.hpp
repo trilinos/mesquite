@@ -48,7 +48,7 @@
 #ifndef ShapeImprovementWrapper_hpp
 #define ShapeImprovementWrapper_hpp
 
-#include "MeanRatioQualityMetric.hpp" 
+#include "IdealWeightInverseMeanRatio.hpp" 
 #include "FeasibleNewton.hpp"
 #include "LPtoPTemplate.hpp"
 #include "QualityAssessor.hpp"
@@ -61,7 +61,7 @@
 namespace Mesquite { 
   /*! \class ShapeImprovementWrapper
        \brief Wrapper which performs a Feasible Newton solve using
-       an \f$\ell_2^2 \f$ objective function template with mean
+       an \f$\ell_2^2 \f$ objective function template with inverse mean
        ratio.
        
      */
@@ -89,7 +89,7 @@ namespace Mesquite {
     TerminationCriterion* untangleGlobalOuter; 
     TerminationCriterion* untangleGlobalInner;
 
-    ShapeQualityMetric* meanRatio; 
+    ShapeQualityMetric* inverseMeanRatio; 
     LPtoPTemplate* objFunc;
     FeasibleNewton* feasNewt;
     QualityAssessor* mQA;

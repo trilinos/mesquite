@@ -40,7 +40,7 @@
 #include "LaplacianSmoother.hpp"
 #include "MsqDebug.hpp"
 #include "LInfTemplate.hpp"
-#include "MeanRatioQualityMetric.hpp"
+#include "IdealWeightInverseMeanRatio.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 #  include <vector.h>
@@ -61,7 +61,7 @@ SmartLaplacianSmoother::SmartLaplacianSmoother(ObjectiveFunction* obj_func,
   
   set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err,1,1);MSQ_ERRRTN(err);
   if(obj_func==NULL){
-    edgeQM = new MeanRatioQualityMetric(err);  MSQ_ERRRTN(err);
+    edgeQM = new IdealWeightInverseMeanRatio(err);  MSQ_ERRRTN(err);
     defaultObjFunc = new LInfTemplate(edgeQM);
     objFunc=defaultObjFunc;
   }

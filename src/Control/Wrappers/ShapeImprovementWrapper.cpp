@@ -56,7 +56,7 @@ ShapeImprovementWrapper::ShapeImprovementWrapper(MsqError& err,
    untangleGlobal(0),
    untangleGlobalOuter(0),
    untangleGlobalInner(0),
-   meanRatio(0),
+   inverseMeanRatio(0),
    objFunc(0),
    feasNewt(0),
    mQA(0),
@@ -91,20 +91,20 @@ ShapeImprovementWrapper::ShapeImprovementWrapper(MsqError& err,
   untangleGlobalInner->add_criterion_type_with_double(TerminationCriterion::SUCCESSIVE_IMPROVEMENTS_ABSOLUTE,successiveEps,err);  MSQ_ERRRTN(err);
   untangleGlobalOuter->add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);  MSQ_ERRRTN(err);
   
-  meanRatio = new MeanRatioQualityMetric(err); MSQ_ERRRTN(err);
-  meanRatio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
-  meanRatio->set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
-  meanRatio->set_averaging_method(QualityMetric::LINEAR,err);  MSQ_ERRRTN(err);
+  inverseMeanRatio = new IdealWeightInverseMeanRatio(err); MSQ_ERRRTN(err);
+  inverseMeanRatio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+  inverseMeanRatio->set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
+  inverseMeanRatio->set_averaging_method(QualityMetric::LINEAR,err);  MSQ_ERRRTN(err);
     // creates the l_2 squared objective function
-  objFunc = new LPtoPTemplate(meanRatio, 2, err);  MSQ_ERRRTN(err);
+  objFunc = new LPtoPTemplate(inverseMeanRatio, 2, err);  MSQ_ERRRTN(err);
   objFunc->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
     //creates a FeasibleNewtone improver
   feasNewt = new FeasibleNewton(objFunc);
   feasNewt->set_patch_type(PatchData::GLOBAL_PATCH, err,1 ,1);  MSQ_ERRRTN(err);
-  mQA = new QualityAssessor(meanRatio,QualityAssessor::MAXIMUM, err); MSQ_ERRRTN(err);
-  mQA->add_quality_assessment(meanRatio, QualityAssessor::MINIMUM,err);  MSQ_ERRRTN(err);
-  mQA->add_quality_assessment(meanRatio, QualityAssessor::AVERAGE,err);  MSQ_ERRRTN(err);
-  mQA->add_quality_assessment(meanRatio, QualityAssessor::RMS,err);  MSQ_ERRRTN(err);   
+  mQA = new QualityAssessor(inverseMeanRatio,QualityAssessor::MAXIMUM, err); MSQ_ERRRTN(err);
+  mQA->add_quality_assessment(inverseMeanRatio, QualityAssessor::MINIMUM,err);  MSQ_ERRRTN(err);
+  mQA->add_quality_assessment(inverseMeanRatio, QualityAssessor::AVERAGE,err);  MSQ_ERRRTN(err);
+  mQA->add_quality_assessment(inverseMeanRatio, QualityAssessor::RMS,err);  MSQ_ERRRTN(err);   
         //**************Set stopping criterion*e***************
   termInner = new TerminationCriterion();
   termOuter = new TerminationCriterion();
@@ -135,7 +135,7 @@ ShapeImprovementWrapper::~ShapeImprovementWrapper()
   delete untangleGlobalInner;
   delete untangleGlobalOuter;
       
-  delete meanRatio;
+  delete inverseMeanRatio;
   delete objFunc;
   delete feasNewt;
   delete mQA;
@@ -149,7 +149,7 @@ ShapeImprovementWrapper::~ShapeImprovementWrapper()
   The mesh is iteratively smoothed with a local and then global
   untangler until the mesh is untangled or until a certain time
   constraint has been exceeded.  If the mesh was successfully
-  untangled and there is still time remaining, a mean ratio
+  untangled and there is still time remaining, an inverse mean ratio
   shape improvement is then performed.*/
 void ShapeImprovementWrapper::run_instructions(MeshSet &ms, MsqError &err)
 {

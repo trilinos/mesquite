@@ -68,7 +68,7 @@ using std::endl;
 #include "QualityAssessor.hpp"
 
 // algorythms
-#include "MeanRatioQualityMetric.hpp"
+#include "IdealWeightInverseMeanRatio.hpp"
 #include "ConditionNumberQualityMetric.hpp"
 #include "LPtoPTemplate.hpp"
 #include "LInfTemplate.hpp"
@@ -92,7 +92,7 @@ int main()
   InstructionQueue queue1;
 
   // creates a mean ratio quality metric ...
-  ShapeQualityMetric* mean = new MeanRatioQualityMetric(err);
+  ShapeQualityMetric* mean = new IdealWeightInverseMeanRatio(err);
   if (err) return 1;
 //   mean->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
 //   mean->set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);

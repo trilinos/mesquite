@@ -53,7 +53,7 @@ Unit testing of various functions in the InstructionQueue class.
 #include "QualityAssessor.hpp"
 #include "QualityImprover.hpp"
 #include "ShapeQualityMetric.hpp"
-#include "MeanRatioQualityMetric.hpp"
+#include "IdealWeightInverseMeanRatio.hpp"
 #include "LPtoPTemplate.hpp"
 #include "SteepestDescent.hpp"
 #include "Vector3D.hpp"
@@ -95,7 +95,7 @@ public:
   {
      MsqPrintError err(cout);
      // creates a quality assessor and a qualilty improver
-     mQM = new MeanRatioQualityMetric(err);
+     mQM = new IdealWeightInverseMeanRatio(err);
      CPPUNIT_ASSERT(!err);
      mOF = new LPtoPTemplate(mQM, 2, err);
      CPPUNIT_ASSERT(!err);

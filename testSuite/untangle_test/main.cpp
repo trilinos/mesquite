@@ -56,7 +56,6 @@ describe main.cpp here
 
 // algorythms
 #include "Randomize.hpp"
-#include "MeanRatioQualityMetric.hpp"
 #include "ConditionNumberQualityMetric.hpp"
 #include "UntangleBetaQualityMetric.hpp"
 #include "LPtoPTemplate.hpp"
