@@ -19,10 +19,11 @@ using namespace Mesquite;
 
 GeneralizedConditionNumberQualityMetric::GeneralizedConditionNumberQualityMetric()
 {
+  MsqError err;
+  set_metric_type(ELEMENT_BASED);
+  set_element_evaluation_mode(ELEMENT_VERTICES, err); MSQ_CHKERR(err);
   avgMethod=QualityMetric::LINEAR;
   feasible=1;
-  evalMode=QualityMetric::ELEMENT_VERTICES;
-  set_metric_type(QualityMetric::ELEMENT_BASED);
   set_name("Generalized Condition Number");
 }
 /*
@@ -75,7 +76,8 @@ bool GeneralizedConditionNumberQualityMetric::evaluate_element(PatchData &pd,
   int num_sample_points;
   bool return_flag;
   std::vector<Vector3D> sample_points;
-  element->get_sample_points(evalMode,sample_points,err);
+  ElementEvaluationMode eval_mode = get_element_evaluation_mode();
+  element->get_sample_points(eval_mode,sample_points,err);
   std::vector<Vector3D>::iterator iter=sample_points.begin();
     // loop over sample points
   Vector3D jacobian_vectors[3];

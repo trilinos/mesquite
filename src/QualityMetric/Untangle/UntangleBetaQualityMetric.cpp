@@ -23,9 +23,10 @@ using namespace Mesquite;
 */
 UntangleBetaQualityMetric::UntangleBetaQualityMetric(double bet)
 {
+  MsqError err;
+  set_metric_type(ELEMENT_BASED);
+  set_element_evaluation_mode(ELEMENT_VERTICES, err); MSQ_CHKERR(err);
   avgMethod=QualityMetric::RMS;
-  evalMode=QualityMetric::ELEMENT_VERTICES;
-  set_metric_type(QualityMetric::ELEMENT_BASED);
   feasible=0;
   set_name("Untangle Beta");
   set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
@@ -45,7 +46,8 @@ bool UntangleBetaQualityMetric::evaluate_element(PatchData &pd,
   // get sample points
   if(element==NULL)
      err.set_msg("Function passed NULL MsqMeshEntity pointer");
-  element->get_sample_points(evalMode, sample_points, err);
+  ElementEvaluationMode eval_mode = get_element_evaluation_mode();
+  element->get_sample_points(eval_mode, sample_points, err);
   
     // loop over sample points
   Vector3D jacobian_vectors[3];

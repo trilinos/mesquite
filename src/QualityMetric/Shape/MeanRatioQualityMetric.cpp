@@ -19,10 +19,12 @@ using namespace Mesquite;
 
 MeanRatioQualityMetric::MeanRatioQualityMetric()
 {
+  MsqError err;
+  set_metric_type(ELEMENT_BASED);
+  set_element_evaluation_mode(ELEMENT_VERTICES, err); MSQ_CHKERR(err);
   set_negate_flag(1);
   avgMethod=QualityMetric::LINEAR;
   feasible=1;
-  evalMode=QualityMetric::ELEMENT_VERTICES;
   set_name("Mean Ratio");
 }
 

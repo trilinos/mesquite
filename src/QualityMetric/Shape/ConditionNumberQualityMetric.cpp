@@ -19,10 +19,11 @@ using namespace Mesquite;
 
 ConditionNumberQualityMetric::ConditionNumberQualityMetric()
 {
+  MsqError err;
+  set_metric_type(ELEMENT_BASED);
+  set_element_evaluation_mode(ELEMENT_VERTICES, err); MSQ_CHKERR(err);
   avgMethod=QualityMetric::LINEAR;
   feasible=1;
-  evalMode=QualityMetric::ELEMENT_VERTICES;
-  set_metric_type(QualityMetric::ELEMENT_BASED);
   set_name("Condition Number");
 }
 
