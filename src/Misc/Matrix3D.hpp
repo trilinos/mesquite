@@ -5,7 +5,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 18-Dec-02 at 11:08:22
-//  LAST-MOD: 19-Dec-02 at 10:01:43 by Thomas Leurent
+//  LAST-MOD: 13-Jan-03 at 14:54:01 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -180,7 +180,7 @@ namespace Mesquite
 
   /* ***********  I/O  **************/
 
-  std::ostream& operator<<(std::ostream &s, const Matrix3D &A)
+  inline std::ostream& operator<<(std::ostream &s, const Matrix3D &A)
   {
     for (size_t i=0; i<3; ++i)
       {
@@ -191,7 +191,7 @@ namespace Mesquite
     return s;
   }
 
-  std::istream& operator>>(std::istream &s, Matrix3D &A)
+  inline std::istream& operator>>(std::istream &s, Matrix3D &A)
   {
     for (size_t i=0; i<3; i++)
       for (size_t j=0; j<3; j++)
