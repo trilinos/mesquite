@@ -8,4 +8,4 @@ all_tests: $(LAPLWRAPEXEC)
 
 $(LAPLWRAPEXEC): $(LAPLWRAPSRC) $(locallibdir)/libmesquite.a
 	@echo "Linking Mesquite driver application ($@)..."
-	${LINKER} $(CXXFLAGS) ${LDFLAGS} -o $@ ${LAPLWRAPSRC} -L$(locallibdir) -lmesquite -Lexternal/AOMD/lib/ -lAOMD
+	${LINKER} $(CXXFLAGS) ${LDFLAGS} -o $@ ${LAPLWRAPSRC} -L$(locallibdir) -lmesquite -L$(AOMD_LIB_DIR) -lAOMD
