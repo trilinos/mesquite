@@ -1,16 +1,16 @@
 // -*- Mode : c++; tab-width: 2; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD:  7-May-03 at 12:33:49 by Thomas Leurent
+//  LAST-MOD:  7-May-03 at 15:30:48 by Thomas Leurent
 //
 /*! \file MsqMeshEntity.cpp
 
-\brief This files implements all the memory management issues related
-to the copy of the original TSTT (or other maybe) mesh entity handles
-into Mesquite.
-That copy is of course encapsulated in the MsqMeshEntity class.
+\brief All elements in Mesquite are of type MsqMeshEntity. Their associated
+functionality is implemented in this file. 
   
     \author Thomas Leurent
+    \author Michael Brewer
+    \author Darryl Melander
     \date 2002-05-16  
  */
 
@@ -57,9 +57,9 @@ void Mesquite::MsqMeshEntity::append_vertex_indices(std::vector<size_t> &vertex_
 
 #undef __FUNC__
 #define __FUNC__ "MsqMeshEntity::get_centroid"
-/*! The centroid of an element containing n vertices with equal masses is defined by
-  \f[ \b{x} = \frac{ \sum{i=1}{n} \b{x}_n }{ n }  \f]
-  where \f$ \b{x}_n \f$
+/*! The centroid of an element containing n vertices with equal masses is located at
+  \f[ \b{x} = \frac{ \sum_{i=1}^{n} \b{x}_i }{ n }  \f]
+  where \f$ \b{x}_i  ,\, i=1,...,n\f$ are the vertices coordinates.
 */
 void MsqMeshEntity::get_centroid(Vector3D &centroid, PatchData &pd, MsqError &err) const
 {
