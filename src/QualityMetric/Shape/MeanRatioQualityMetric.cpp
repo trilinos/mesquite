@@ -144,25 +144,103 @@ bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
 }
 
 /*****************************************************************************/
-/* This set of functions reference tetrahedral elements to a regular         */
-/* tetrahedron.  The input are the coordinates in the following order:       */
-/*      [x1 x2 x3 x4 y1 y2 y3 y4 z1 z2 z3 z4]                                */
-/* A zero return value indicates success, while a nonzero value indicates    */
-/* failure.                                                                  */
-/*****************************************************************************/
 /* Not all compilers substitute out constants (especially the square root).  */
 /* Therefore, they are substituted out manually.  The values below were      */
 /* calculated on a solaris machine using long doubles. I believe they are    */
 /* accurate.                                                                 */
 /*****************************************************************************/
 
-#define isqrt3   5.77350269189625797959429519858e-01        /*  1.0/sqrt(3.0) */
-#define tisqrt3  1.15470053837925159591885903972e+00        /*  2.0/sqrt(3.0) */
-#define isqrt6   4.08248290463863052509822647505e-01        /*  1.0/sqrt(6.0) */
-#define tisqrt6  1.22474487139158915752946794252e+00        /*  3.0/sqrt(6.0) */
-#define a        3.33333333333333333333333333333e-01        /*  1.0/3.0       */
-#define b       -6.66666666666666666666666666667e-01        /* -2.0/3.0       */
-#define bm1     -1.66666666666666666666666666667e-00        /* -5.0/3.0       */
+#define isqrt3   5.77350269189625797959429519858e-01        /*  1.0/sqrt(3.0)*/
+#define tisqrt3  1.15470053837925159591885903972e+00        /*  2.0/sqrt(3.0)*/
+#define isqrt6   4.08248290463863052509822647505e-01        /*  1.0/sqrt(6.0)*/
+#define tisqrt6  1.22474487139158915752946794252e+00        /*  3.0/sqrt(6.0)*/
+
+#define a2       5.00000000000000000000000000000e-01        /*  1.0/2.0      */
+#define b2      -1.00000000000000000000000000000e-00        /* -1.0/1.0      */
+#define b2m1    -2.00000000000000000000000000000e-00        /* -2.0/1.0      */
+
+#define a3       3.33333333333333333333333333333e-01        /*  1.0/3.0      */
+#define b3      -6.66666666666666666666666666667e-01        /* -2.0/3.0      */
+#define b3m1    -1.66666666666666666666666666667e-00        /* -5.0/3.0      */
+
+/*****************************************************************************/
+/* This set of functions reference triangular elements to an equilateral     */
+/* triangle.  The input are the coordinates in the following order:          */
+/*      [x1 x2 x3 y1 y2 y3]                                                  */
+/* A zero return value indicates success, while a nonzero value indicates    */
+/* failure.                                                                  */
+/*****************************************************************************/
+
+inline bool m_fcn_2e(double &obj, const Vector3D x[3], const Vector3D &n)
+{
+  double matr[6], f;
+  double g;
+
+  /* Calculate M = A*inv(W). */
+  matr[0] = x[1][0] - x[0][0];
+  matr[1] = (2.0*x[2][0] - x[1][0] - x[0][0])*isqrt3;
+
+  matr[2] = x[1][1] - x[0][1];
+  matr[3] = (2.0*x[2][1] - x[1][1] - x[0][1])*isqrt3;
+
+  matr[4] = x[1][2] - x[0][2];
+  matr[5] = (2.0*x[2][2] - x[1][2] - x[0][2])*isqrt3;
+
+  /* Calculate det([n M]). */
+  g = n[0]*(matr[2]*matr[5] - matr[3]*matr[4]) +
+      n[1]*(matr[1]*matr[4] - matr[0]*matr[5]) +
+      n[2]*(matr[0]*matr[3] - matr[1]*matr[2]);
+  if (g < MSQ_MIN) { obj = g; return false; }
+
+  /* Calculate norm(M). */
+  f = matr[0]*matr[0] + matr[1]*matr[1] +
+      matr[2]*matr[2] + matr[3]*matr[3] +
+      matr[4]*matr[4] + matr[5]*matr[5];
+
+  /* Calculate objective function. */
+  obj = a2 * f * pow(g, b2);
+  return true;
+}
+
+inline bool g_fcn_2e(double &obj, Vector3D g_obj[3], 
+                     const Vector3D x[3], const Vector3D &n)
+{
+  double matr[6], f;
+  double g;
+
+  /* Calculate M = A*inv(W). */
+  matr[0] = x[1][0] - x[0][0];
+  matr[1] = (2.0*x[2][0] - x[1][0] - x[0][0])*isqrt3;
+
+  matr[2] = x[1][1] - x[0][1];
+  matr[3] = (2.0*x[2][1] - x[1][1] - x[0][1])*isqrt3;
+
+  matr[4] = x[1][2] - x[0][2];
+  matr[5] = (2.0*x[2][2] - x[1][2] - x[0][2])*isqrt3;
+
+  /* Calculate det([n M]). */
+  g = n[0]*(matr[2]*matr[5] - matr[3]*matr[4]) +
+      n[1]*(matr[1]*matr[4] - matr[0]*matr[5]) +
+      n[2]*(matr[0]*matr[3] - matr[1]*matr[2]);
+  if (g < MSQ_MIN) { obj = g; return false; }
+
+  /* Calculate norm(M). */
+  f = matr[0]*matr[0] + matr[1]*matr[1] +
+      matr[2]*matr[2] + matr[3]*matr[3] +
+      matr[4]*matr[4] + matr[5]*matr[5];
+
+  /* Calculate objective function. */
+  obj = a2 * f * pow(g, b2);
+  return true;
+}
+
+/*****************************************************************************/
+/* This set of functions reference tetrahedral elements to a regular         */
+/* tetrahedron.  A zero return value indicates success, while a nonzero      */
+/* value indicates failure.                                                  */
+/*                                                                           */
+/* This function requires 61 flops.                                          */
+/*****************************************************************************/
 
 inline bool m_fcn_3e(double &obj, const Vector3D x[4])
 {
@@ -197,7 +275,7 @@ inline bool m_fcn_3e(double &obj, const Vector3D x[4])
       matr[6]*matr[6] + matr[7]*matr[7] + matr[8]*matr[8];
 
   /* Calculate objective function. */
-  obj = a * f * pow(g, b);
+  obj = a3 * f * pow(g, b3);
   return true;
 }
 
@@ -207,7 +285,7 @@ inline bool m_fcn_3e(double &obj, const Vector3D x[4])
 /* reduce the number of flops and intermediate variables, and improve the    */
 /* locality of reference.                                                    */
 /*                                                                           */
-/* This requires 130 flops.  The function only requires 61 flops.            */
+/* This function requires 130 flops.                                         */
 /*****************************************************************************/
 
 inline bool g_fcn_3e(double &obj, Vector3D g_obj[4], const Vector3D x[4])
@@ -245,12 +323,12 @@ inline bool g_fcn_3e(double &obj, Vector3D g_obj[4], const Vector3D x[4])
       matr[6]*matr[6] + matr[7]*matr[7] + matr[8]*matr[8];
 
   /* Calculate objective function. */
-  loc4 = a * pow(g, b);
+  loc4 = a3 * pow(g, b3);
   obj  = f * loc4;
 
   /* Calculate the derivative of the objective function. */
-  f = 2.0*loc4;
-  g = b*obj/g;
+  f = 2.0 * loc4;
+  g = b3 * obj / g;
 
   adj_m[0] = matr[0]*f + loc1*g;
   adj_m[1] = matr[1]*f + loc2*g;
@@ -301,8 +379,7 @@ inline bool g_fcn_3e(double &obj, Vector3D g_obj[4], const Vector3D x[4])
 /* The matrices on the diagonal (d1-d3) each contain 10 elements, while the  */
 /* off-diagonal elements (b1-b3) each contain 16 elements.                   */
 /*                                                                           */
-/* The code requires 598 flops.  The gradient evaluation needs 130 flops     */
-/* and the function requires 61 flops.                                       */
+/* This function requires 598 flops.                                         */
 /*****************************************************************************/
 /* The form of the function, gradient, and Hessian is the following:         */
 /*   o(x) = a * f(A(x)) * pow(g(A(x)), b)                                    */
@@ -366,7 +443,7 @@ inline bool g_fcn_3e(double &obj, Vector3D g_obj[4], const Vector3D x[4])
 /*   does not appear to be the case in more than two dimensions.             */
 /*****************************************************************************/
 
-inline bool h_fcn_3e(double &obj, Vector3D g_obj[4], double h_obj[78], 
+inline bool h_fcn_3e(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10], 
 		     const Vector3D x[4])
 {
   double matr[9], f;
@@ -405,12 +482,12 @@ inline bool h_fcn_3e(double &obj, Vector3D g_obj[4], double h_obj[78],
   loc4 = g;
 
   /* Calculate objective function. */
-  loc1 = a * pow(g, b);
+  loc1 = a3 * pow(g, b3);
   obj  = f * loc1;
 
   /* Calculate the derivative of the objective function. */
-  f = 2.0*loc1;
-  g = b*obj/g; 
+  f = 2.0 * loc1;
+  g = b3 * obj / g; 
 
   dg[3] = matr[2]*matr[7] - matr[1]*matr[8];
   dg[4] = matr[0]*matr[8] - matr[2]*matr[6];
@@ -455,8 +532,8 @@ inline bool h_fcn_3e(double &obj, Vector3D g_obj[4], double h_obj[78],
 
   loc0 = g;
   loc1 = f;
-  f = f*b/loc4;
-  g = g*bm1/loc4;
+  f = f*b3/loc4;
+  g = g*b3m1/loc4;
 
   /* First block of rows */
   loc2 = matr[0]*f;
@@ -527,23 +604,23 @@ inline bool h_fcn_3e(double &obj, Vector3D g_obj[4], double h_obj[78],
   loc3 = isqrt6*A[8];
   loc4 = loc2 + loc3;
 
-  h_obj[0] = -A[0] - loc4;
-  h_obj[1] =  A[0] - loc4;
-  h_obj[2] = 2.0*loc2 - loc3;
-  h_obj[3] = 3.0*loc3;
+  h_obj[0][0][0] = -A[0] - loc4;
+  h_obj[1][0][0] =  A[0] - loc4;
+  h_obj[2][0][0] = 2.0*loc2 - loc3;
+  h_obj[3][0][0] = 3.0*loc3;
 
   loc2 = isqrt3*A[5];
   loc3 = isqrt6*A[9];
 
-  h_obj[4] = A[1] - loc2 - loc3;
-  h_obj[5] = 2.0*loc2 - loc3;
-  h_obj[6] = 3.0*loc3;
+  h_obj[4][0][0] = A[1] - loc2 - loc3;
+  h_obj[5][0][0] = 2.0*loc2 - loc3;
+  h_obj[6][0][0] = 3.0*loc3;
 
   loc3 = isqrt6*A[10];
-  h_obj[7] = tisqrt3*A[6] - loc3;
-  h_obj[8] = 3.0*loc3;
+  h_obj[7][0][0] = tisqrt3*A[6] - loc3;
+  h_obj[8][0][0] = 3.0*loc3;
 
-  h_obj[9] = tisqrt6*A[11];
+  h_obj[9][0][0] = tisqrt6*A[11];
 
   /* First off-diagonal block */
   loc2 = matr[8]*loc0;
@@ -589,37 +666,37 @@ inline bool h_fcn_3e(double &obj, Vector3D g_obj[4], double h_obj[78],
   loc3 = isqrt6*A[8];
   loc4 = loc2 + loc3;
 
-  h_obj[10] = -A[0] - loc4;
-  h_obj[11] =  A[0] - loc4;
-  h_obj[12] = 2.0*loc2 - loc3;
-  h_obj[13] = 3.0*loc3;
+  h_obj[0][0][1] = -A[0] - loc4;
+  h_obj[1][0][1] =  A[0] - loc4;
+  h_obj[2][0][1] = 2.0*loc2 - loc3;
+  h_obj[3][0][1] = 3.0*loc3;
 
   loc2 = isqrt3*A[5];
   loc3 = isqrt6*A[9];
   loc4 = loc2 + loc3;
 
-  h_obj[14] = -A[1] - loc4;
-  h_obj[15] =  A[1] - loc4;
-  h_obj[16] = 2.0*loc2 - loc3;
-  h_obj[17] = 3.0*loc3;
+  h_obj[1][1][0] = -A[1] - loc4;
+  h_obj[4][0][1] =  A[1] - loc4;
+  h_obj[5][0][1] = 2.0*loc2 - loc3;
+  h_obj[6][0][1] = 3.0*loc3;
 
   loc2 = isqrt3*A[6];
   loc3 = isqrt6*A[10];
   loc4 = loc2 + loc3;
 
-  h_obj[18] = -A[2] - loc4;
-  h_obj[19] =  A[2] - loc4;
-  h_obj[20] = 2.0*loc2 - loc3;
-  h_obj[21] = 3.0*loc3;
+  h_obj[2][1][0] = -A[2] - loc4;
+  h_obj[5][1][0] =  A[2] - loc4;
+  h_obj[7][0][1] = 2.0*loc2 - loc3;
+  h_obj[8][0][1] = 3.0*loc3;
 
   loc2 = isqrt3*A[7];
   loc3 = isqrt6*A[11];
   loc4 = loc2 + loc3;
 
-  h_obj[22] = -A[3] - loc4;
-  h_obj[23] =  A[3] - loc4;
-  h_obj[24] = 2.0*loc2 - loc3;
-  h_obj[25] = 3.0*loc3;
+  h_obj[3][1][0] = -A[3] - loc4;
+  h_obj[6][1][0] =  A[3] - loc4;
+  h_obj[8][1][0] = 2.0*loc2 - loc3;
+  h_obj[9][0][1] = 3.0*loc3;
 
   /* Second off-diagonal block */
   loc2 = matr[5]*loc0;
@@ -665,37 +742,37 @@ inline bool h_fcn_3e(double &obj, Vector3D g_obj[4], double h_obj[78],
   loc3 = isqrt6*A[8];
   loc4 = loc2 + loc3;
 
-  h_obj[26] = -A[0] - loc4;
-  h_obj[27] =  A[0] - loc4;
-  h_obj[28] = 2.0*loc2 - loc3;
-  h_obj[29] = 3.0*loc3;
+  h_obj[0][0][2] = -A[0] - loc4;
+  h_obj[1][0][2] =  A[0] - loc4;
+  h_obj[2][0][2] = 2.0*loc2 - loc3;
+  h_obj[3][0][2] = 3.0*loc3;
 
   loc2 = isqrt3*A[5];
   loc3 = isqrt6*A[9];
   loc4 = loc2 + loc3;
 
-  h_obj[30] = -A[1] - loc4;
-  h_obj[31] =  A[1] - loc4;
-  h_obj[32] = 2.0*loc2 - loc3;
-  h_obj[33] = 3.0*loc3;
+  h_obj[1][2][0] = -A[1] - loc4;
+  h_obj[4][0][2] =  A[1] - loc4;
+  h_obj[5][0][2] = 2.0*loc2 - loc3;
+  h_obj[6][0][2] = 3.0*loc3;
 
   loc2 = isqrt3*A[6];
   loc3 = isqrt6*A[10];
   loc4 = loc2 + loc3;
 
-  h_obj[34] = -A[2] - loc4;
-  h_obj[35] =  A[2] - loc4;
-  h_obj[36] = 2.0*loc2 - loc3;
-  h_obj[37] = 3.0*loc3;
+  h_obj[2][2][0] = -A[2] - loc4;
+  h_obj[5][2][0] =  A[2] - loc4;
+  h_obj[7][0][2] = 2.0*loc2 - loc3;
+  h_obj[8][0][2] = 3.0*loc3;
 
   loc2 = isqrt3*A[7];
   loc3 = isqrt6*A[11];
   loc4 = loc2 + loc3;
 
-  h_obj[38] = -A[3] - loc4;
-  h_obj[39] =  A[3] - loc4;
-  h_obj[40] = 2.0*loc2 - loc3;
-  h_obj[41] = 3.0*loc3;
+  h_obj[3][2][0] = -A[3] - loc4;
+  h_obj[6][2][0] =  A[3] - loc4;
+  h_obj[8][2][0] = 2.0*loc2 - loc3;
+  h_obj[9][0][2] = 3.0*loc3;
 
   /* Second block of rows */
   loc2 = matr[3]*f;
@@ -757,23 +834,23 @@ inline bool h_fcn_3e(double &obj, Vector3D g_obj[4], double h_obj[78],
   loc3 = isqrt6*A[8];
   loc4 = loc2 + loc3;
 
-  h_obj[42] = -A[0] - loc4;
-  h_obj[43] =  A[0] - loc4;
-  h_obj[44] = 2.0*loc2 - loc3;
-  h_obj[45] = 3.0*loc3;
+  h_obj[0][1][1] = -A[0] - loc4;
+  h_obj[1][1][1] =  A[0] - loc4;
+  h_obj[2][1][1] = 2.0*loc2 - loc3;
+  h_obj[3][1][1] = 3.0*loc3;
 
   loc2 = isqrt3*A[5];
   loc3 = isqrt6*A[9];
 
-  h_obj[46] = A[1] - loc2 - loc3;
-  h_obj[47] = 2.0*loc2 - loc3;
-  h_obj[48] = 3.0*loc3;
+  h_obj[4][1][1] = A[1] - loc2 - loc3;
+  h_obj[5][1][1] = 2.0*loc2 - loc3;
+  h_obj[6][1][1] = 3.0*loc3;
 
   loc3 = isqrt6*A[10];
-  h_obj[49] = tisqrt3*A[6] - loc3;
-  h_obj[50] = 3.0*loc3;
+  h_obj[7][1][1] = tisqrt3*A[6] - loc3;
+  h_obj[8][1][1] = 3.0*loc3;
 
-  h_obj[51] = tisqrt6*A[11];
+  h_obj[9][1][1] = tisqrt6*A[11];
 
   /* Third off-diagonal block */
   loc2 = matr[2]*loc0;
@@ -819,37 +896,37 @@ inline bool h_fcn_3e(double &obj, Vector3D g_obj[4], double h_obj[78],
   loc3 = isqrt6*A[8];
   loc4 = loc2 + loc3;
 
-  h_obj[52] = -A[0] - loc4;
-  h_obj[53] =  A[0] - loc4;
-  h_obj[54] = 2.0*loc2 - loc3;
-  h_obj[55] = 3.0*loc3;
+  h_obj[0][1][2] = -A[0] - loc4;
+  h_obj[1][1][2] =  A[0] - loc4;
+  h_obj[2][1][2] = 2.0*loc2 - loc3;
+  h_obj[3][1][2] = 3.0*loc3;
 
   loc2 = isqrt3*A[5];
   loc3 = isqrt6*A[9];
   loc4 = loc2 + loc3;
 
-  h_obj[56] = -A[1] - loc4;
-  h_obj[57] =  A[1] - loc4;
-  h_obj[58] = 2.0*loc2 - loc3;
-  h_obj[59] = 3.0*loc3;
+  h_obj[1][2][1] = -A[1] - loc4;
+  h_obj[4][1][2] =  A[1] - loc4;
+  h_obj[5][1][2] = 2.0*loc2 - loc3;
+  h_obj[6][1][2] = 3.0*loc3;
 
   loc2 = isqrt3*A[6];
   loc3 = isqrt6*A[10];
   loc4 = loc2 + loc3;
 
-  h_obj[60] = -A[2] - loc4;
-  h_obj[61] =  A[2] - loc4;
-  h_obj[62] = 2.0*loc2 - loc3;
-  h_obj[63] = 3.0*loc3;
+  h_obj[2][2][1] = -A[2] - loc4;
+  h_obj[5][2][1] =  A[2] - loc4;
+  h_obj[7][1][2] = 2.0*loc2 - loc3;
+  h_obj[8][1][2] = 3.0*loc3;
 
   loc2 = isqrt3*A[7];
   loc3 = isqrt6*A[11];
   loc4 = loc2 + loc3;
 
-  h_obj[64] = -A[3] - loc4;
-  h_obj[65] =  A[3] - loc4;
-  h_obj[66] = 2.0*loc2 - loc3;
-  h_obj[67] = 3.0*loc3;
+  h_obj[3][2][1] = -A[3] - loc4;
+  h_obj[6][2][1] =  A[3] - loc4;
+  h_obj[8][2][1] = 2.0*loc2 - loc3;
+  h_obj[9][1][2] = 3.0*loc3;
 
   /* Third block of rows */
   loc2 = matr[6]*f;
@@ -901,37 +978,32 @@ inline bool h_fcn_3e(double &obj, Vector3D g_obj[4], double h_obj[78],
   loc3 = isqrt6*A[8];
   loc4 = loc2 + loc3;
 
-  h_obj[68] = -A[0] - loc4;
-  h_obj[69] =  A[0] - loc4;
-  h_obj[70] = 2.0*loc2 - loc3;
-  h_obj[71] = 3.0*loc3;
+  h_obj[0][2][2] = -A[0] - loc4;
+  h_obj[1][2][2] =  A[0] - loc4;
+  h_obj[2][2][2] = 2.0*loc2 - loc3;
+  h_obj[3][2][2] = 3.0*loc3;
 
   loc2 = isqrt3*A[5];
   loc3 = isqrt6*A[9];
 
-  h_obj[72] = A[1] - loc2 - loc3;
-  h_obj[73] = 2.0*loc2 - loc3;
-  h_obj[74] = 3.0*loc3;
+  h_obj[4][2][2] = A[1] - loc2 - loc3;
+  h_obj[5][2][2] = 2.0*loc2 - loc3;
+  h_obj[6][2][2] = 3.0*loc3;
 
   loc3 = isqrt6*A[10];
-  h_obj[75] = tisqrt3*A[6] - loc3;
-  h_obj[76] = 3.0*loc3;
+  h_obj[7][2][2] = tisqrt3*A[6] - loc3;
+  h_obj[8][2][2] = 3.0*loc3;
 
-  h_obj[77] = tisqrt6*A[11];
+  h_obj[9][2][2] = tisqrt6*A[11];
   return true;
 }
 
 /*****************************************************************************/
 /* This set of functions reference tetrahedral elements to a right           */
-/* tetrahedron.  The input are the coordinates in the following order:       */
-/*      [x1 x2 x3 x4 y1 y2 y3 y4 z1 z2 z3 z4]                                */
-/* A zero return value indicates success, while a nonzero value indicates    */
-/* failure.                                                                  */
-/*****************************************************************************/
-/* Not all compilers substitute out constants (especially the square root).  */
-/* Therefore, they are substituted out manually.  The values below were      */
-/* calculated on a solaris machine using long doubles. I believe they are    */
-/* accurate.                                                                 */
+/* tetrahedron.  A zero return value indicates success, while a nonzero      */
+/* value indicates failure.                                                  */
+/*                                                                           */
+/* This function requires 43 flops.                                          */
 /*****************************************************************************/
 
 inline bool m_fcn_3i(double &obj, const Vector3D x[4])
@@ -964,7 +1036,7 @@ inline bool m_fcn_3i(double &obj, const Vector3D x[4])
       matr[6]*matr[6] + matr[7]*matr[7] + matr[8]*matr[8];
 
   /* Calculate objective function. */
-  obj = a * f * pow(g, b);
+  obj = a3 * f * pow(g, b3);
   return 0;
 }
 
@@ -974,7 +1046,7 @@ inline bool m_fcn_3i(double &obj, const Vector3D x[4])
 /* reduce the number of flops and intermediate variables, and improve the    */
 /* locality of reference.                                                    */
 /*                                                                           */
-/* This requires 94 flops.  The function only requires 43 flops.             */
+/* This function requires 94 flops.                                          */
 /*****************************************************************************/
 
 inline bool g_fcn_3i(double &obj, Vector3D g_obj[4], const Vector3D x[12])
@@ -1009,12 +1081,12 @@ inline bool g_fcn_3i(double &obj, Vector3D g_obj[4], const Vector3D x[12])
       matr[6]*matr[6] + matr[7]*matr[7] + matr[8]*matr[8];
  
   /* Calculate objective function. */
-  loc4 = a * pow(g, b);
+  loc4 = a3 * pow(g, b3);
   obj  = f * loc4;
 
   /* Calculate the derivative of the objective function. */
   f = 2.0*loc4;
-  g = b*obj/g; 
+  g = b3*obj/g; 
 
   adj_m[0] = matr[0]*f + loc1*g;
   adj_m[1] = matr[1]*f + loc2*g;
@@ -1056,8 +1128,7 @@ inline bool g_fcn_3i(double &obj, Vector3D g_obj[4], const Vector3D x[12])
 /* The matrices on the diagonal (d1-d3) each contain 10 elements, while the  */
 /* off-diagonal elements (b1-b3) each contain 16 elements.                   */
 /*                                                                           */
-/* The code requires 364 flops.  The gradient evaluation needs 94 flops      */
-/* and the function requires 43 flops.                                       */
+/* The code requires 364 flops.                                              */
 /*****************************************************************************/
 
 inline bool h_fcn_3i(double &obj, Vector3D g_obj[4], double h_obj[78], 
@@ -1096,12 +1167,12 @@ inline bool h_fcn_3i(double &obj, Vector3D g_obj[4], double h_obj[78],
   loc4 = g;
 
   /* Calculate objective function. */
-  loc1 = a * pow(g, b);
+  loc1 = a3 * pow(g, b3);
   obj  = f * loc1;
 
   /* Calculate the derivative of the objective function. */
   f = 2.0*loc1;
-  g = b*obj/g; 
+  g = b3*obj/g; 
 
   dg[3] = matr[2]*matr[7] - matr[1]*matr[8];
   dg[4] = matr[0]*matr[8] - matr[2]*matr[6];
@@ -1137,8 +1208,8 @@ inline bool h_fcn_3i(double &obj, Vector3D g_obj[4], double h_obj[78],
 
   loc0 = g;
   loc1 = f;
-  f = f*b/loc4;
-  g = g*bm1/loc4;
+  f = f*b3/loc4;
+  g = g*b3m1/loc4;
 
   /* First block of rows */
   loc2 = matr[0]*f;
@@ -1626,5 +1697,242 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
   } // end switch over element type
   return true;
 }
+
+bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
+								MsqMeshEntity *e,
+								MsqVertex *v[], 
+								Vector3D g[],
+								Matrix3D h[],
+								int nv, 
+								double &m,
+								MsqError &err)
+{
+  EntityTopology topo = e->get_element_type();
+
+  if (((topo == QUADRILATERAL) || (topo == HEXAHEDRON)) && 
+      ((avgMethod == MINIMUM) || (avgMethod == MAXIMUM))) {
+    std::cout << "Minimum and maximum not continuously differentiable." << std::endl;
+    std::cout << "Element of subdifferential will be returned." << std::endl;
+    std::cout << "Who knows what the Hessian is?" << std::endl;
+  }
+
+  MsqVertex *vertices = pd.get_vertex_array(err);
+  std::vector<size_t> v_i;
+  e->get_vertex_indices(v_i);
+
+  Vector3D coords[4];		// Vertex coordinates for the (decomposed) elements
+  Vector3D gradients[32];	// Gradient of metric with respect to the coords
+  Matrix3D hessians[80];	// Hessian of matrix with respect to the coords
+
+  Vector3D grad[8];		// Accumulated gradients (composed merit function)
+  Matrix3D hess[36];		// Accumulated hessians (composed merit function)
+  double   metrics[8];		// Metric values for the (decomposed) elements
+  double   nm, t;
+
+  int locs_hex[8][4] = {{0, 1, 3, 4},	// Hex element descriptions
+		        {1, 2, 0, 5},
+		        {2, 3, 1, 6},
+		        {3, 0, 2, 7},
+		        {4, 7, 5, 0},
+		        {5, 4, 6, 1},
+		        {6, 5, 7, 2},
+		        {7, 6, 4, 3}};
+  int i, j;
+
+  m = 0.0;
+
+  switch(topo) {
+  case TRIANGLE:
+  case QUADRILATERAL:
+    std::cout << "Gradients in 2D not implemented yet.\n" << std::endl;
+    return false;
+    break;
+
+  case TETRAHEDRON:
+    coords[0] = vertices[v_i[0]];
+    coords[1] = vertices[v_i[1]];
+    coords[2] = vertices[v_i[2]];
+    coords[3] = vertices[v_i[3]];
+    if (!h_fcn_3e(m, gradients, hessians, coords)) return false;
+
+    // This is not very efficient, but is one way to select correct gradients
+    for (i = 0; i < 4; ++i) {
+      for (j = 0; j < nv; ++j) {
+	if (vertices + v_i[i] == v[j]) {
+	  g[j] = gradients[i];
+
+	  // Do something with the hessians
+	}
+      }
+    }
+    break;
+
+  case HEXAHEDRON:
+    // Hessians for hexes are not done yet.  Need to changes to fcn_3i, and
+    // do the accumulation and calculation correctly.
+
+    err.set_msq("Hessian for hexes not done yet!  Talk to Tom.\n");
+    for (i = 0; i < 8; ++i) {
+      grad[i] = 0.0;
+
+      coords[0] = vertices[v_i[locs_hex[i][0]]];
+      coords[1] = vertices[v_i[locs_hex[i][1]]];
+      coords[2] = vertices[v_i[locs_hex[i][2]]];
+      coords[3] = vertices[v_i[locs_hex[i][3]]];
+      if (!h_fcn_3e(metrics[i], gradients+4*i, hessians+10*i, coords)) return false;
+    }
+
+    switch(avgMethod) {
+    case MINIMUM:
+      m = metrics[0];
+      for (i = 1; i < 8; ++i) {
+	if (metrics[i] < m) m = metrics[i];
+      }
+
+      nm = 0;
+      for (i = 0; i < 8; ++i) {
+        if (metrics[i] <= m + MSQ_MIN) {
+	  grad[locs_hex[i][0]] += gradients[4*i+0];
+	  grad[locs_hex[i][1]] += gradients[4*i+1];
+	  grad[locs_hex[i][2]] += gradients[4*i+2];
+	  grad[locs_hex[i][3]] += gradients[4*i+3];
+	  ++nm;
+        }
+      }
+
+      for (i = 0; i < 8; ++i) {
+	grad[i] /= nm;
+      }
+      break;
+
+    case MAXIMUM:
+      m = metrics[0];
+      for (i = 1; i < 8; ++i) {
+	if (metrics[i] > m) m = metrics[i];
+      }
+
+      nm = 0;
+      for (i = 0; i < 8; ++i) {
+        if (metrics[i] >= m - MSQ_MIN) {
+	  grad[locs_hex[i][0]] += gradients[4*i+0];
+	  grad[locs_hex[i][1]] += gradients[4*i+1];
+	  grad[locs_hex[i][2]] += gradients[4*i+2];
+	  grad[locs_hex[i][3]] += gradients[4*i+3];
+	  ++nm;
+        }
+      }
+
+      for (i = 0; i < 8; ++i) {
+	grad[i] /= nm;
+      }
+      break;
+
+    case SUM:
+      m = 0;
+      for (i = 0; i < 8; ++i) {
+	m += metrics[i];
+      }
+
+      for (i = 0; i < 8; ++i) {
+        grad[locs_hex[i][0]] += gradients[4*i+0];
+	grad[locs_hex[i][1]] += gradients[4*i+1];
+	grad[locs_hex[i][2]] += gradients[4*i+2];
+	grad[locs_hex[i][3]] += gradients[4*i+3];
+      }
+      break;
+
+    case GEOMETRIC:
+      m = 0.0;
+      for (i = 0; i < 8; ++i) {
+	m += log(metrics[i]);
+	metrics[i] = 1.0 / metrics[i];
+      }
+      m = exp(m / 8.0);
+
+      for (i = 0; i < 8; ++i) {
+        grad[locs_hex[i][0]] += metrics[i]*gradients[4*i+0];
+	grad[locs_hex[i][1]] += metrics[i]*gradients[4*i+1];
+	grad[locs_hex[i][2]] += metrics[i]*gradients[4*i+2];
+	grad[locs_hex[i][3]] += metrics[i]*gradients[4*i+3];
+      }
+
+      nm = m / 8.0;
+      for (i = 0; i < 8; ++i) {
+	grad[i] *= nm;
+      }
+      break;
+
+    default:
+      switch(avgMethod) {
+      case LINEAR:
+	t = 1.0;
+	break;
+
+      case RMS:
+	t = 2.0;
+	break;
+
+      case HARMONIC:
+	t = -1.0;
+	break;
+
+      case HMS:
+	t = -2.0;
+	break;
+      }
+
+      m = 0;
+      for (i = 0; i < 8; ++i) {
+	nm = pow(metrics[i], t);
+	m += nm;
+
+	metrics[i] = t*nm/metrics[i];
+      }
+
+      if (avgMethod == SUM) {
+	nm = m;
+      }
+      else {
+	nm = m / 8.0;
+      }
+      m = pow(nm, 1.0 / t);
+
+      for (i = 0; i < 8; ++i) {
+        grad[locs_hex[i][0]] += metrics[i]*gradients[4*i+0];
+	grad[locs_hex[i][1]] += metrics[i]*gradients[4*i+1];
+	grad[locs_hex[i][2]] += metrics[i]*gradients[4*i+2];
+	grad[locs_hex[i][3]] += metrics[i]*gradients[4*i+3];
+      }
+
+      if (avgMethod == SUM) {
+	nm = m / (nm*t);
+      }
+      else {
+	nm = m / (8.0*nm*t);
+      }
+
+      for (i = 0; i < 8; ++i) {
+	grad[i] *= nm;
+      }
+      break;
+    }
+
+    // This is not very efficient, but is one way to select correct gradients
+    for (i = 0; i < 8; ++i) {
+      for (j = 0; j < nv; ++j) {
+	if (vertices + v_i[i] == v[j]) {
+	  g[j] = grad[i];
+	}
+      }
+    }
+    break;
+
+  default:
+    m = 0.0;
+    break;
+  } // end switch over element type
+  return true;
+}
+
 
 
