@@ -57,7 +57,7 @@ describe main.cpp here
 
 #include "Mesquite.hpp"
 #include "MeshImpl.hpp"
-#include "MeshMunson.hpp"
+//#include "MeshMunson.hpp"
 #include "MesquiteError.hpp"
 #include "InstructionQueue.hpp"
 #include "MeshSet.hpp"
@@ -123,14 +123,16 @@ int main(int argc, char* argv[])
   ref_mesh->read_vtk("../../meshFiles/2D/VTK/tfi_horse10x4-12.vtk", err);
   MeshSet ref_mesh_set;
   ref_mesh_set.add_mesh(ref_mesh, err); MSQ_CHKERR(err);
-  DesignOpt3TargetCalculator target(&ref_mesh_set);
+  //  DesignOpt3TargetCalculator target(&ref_mesh_set);
+  DeformingGeometryGuides843 target(&ref_mesh_set);
 
   Mesquite::MeshImpl *ref_mesh2 = new Mesquite::MeshImpl;
   ref_mesh2->read_vtk("../../meshFiles/2D/VTK/tfi_horse10x4-12.vtk", err);
   MeshSet ref_mesh2_set;
   ref_mesh2_set.add_mesh(ref_mesh2, err); MSQ_CHKERR(err);
-  DesignOpt3TargetCalculator assessor_target(&ref_mesh2_set);
-   
+  // DesignOpt3TargetCalculator assessor_target(&ref_mesh2_set);
+  DeformingGeometryGuides843 assessor_target(&ref_mesh2_set);
+
   // ... and builds an objective function with it
   LPtoPTemplate* obj_func = new LPtoPTemplate(&mean_ratio, 1, err);
   obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
