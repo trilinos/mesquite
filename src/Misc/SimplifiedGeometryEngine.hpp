@@ -1,14 +1,31 @@
 #ifndef SIMPLIFIED_GEOMETRY_ENGINE_HPP
 #define SIMPLIFIED_GEOMETRY_ENGINE_HPP
-
+/*!\file SimplifiedGeometryEngine.hpp
+  Limited geometry capabilities.
+  \author Michael Brewer          
+  \date   2003-01-27    
+*/
 #include <vector>
 #include "Vector3D.hpp"
 #include "MsqVertex.hpp"
 namespace Mesquite
 {
+  /*!\class SimplifiedGeometryEngine
+        
+    \brief  Contains some simple geometry capabilities.
+    
+    The SimplifiedGeometryEngine class contains limited geometry
+    functionality.  It designed to be able to perform two geometry
+    calls needed within Mesquite on a PLANE or a SPHERE.  These two
+    functions are snap_vertex_on_domain and get_surface_normal.
+  */
   class SimplifiedGeometryEngine
   {
+      
   public:
+      /*! Simplified Geometry has two geometrical entities implemented:
+        PLANE and SPHERE.  The third option, NONE, is the default value
+        in SimplifiedGeeometryEngine's constructor for geomType.*/
     enum MSQ_GEOM_TYPE{
       NONE,
       PLANE,

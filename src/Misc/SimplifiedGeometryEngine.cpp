@@ -11,9 +11,6 @@ using namespace Mesquite;
   surface normal and a point in the plane.  Spheres are defined by
   the radius vector and the ceter point.
  */
-  /*        
-  SimplifiedGeometryEngine::SimplifiedGeometryEngine();
-  */
 SimplifiedGeometryEngine::SimplifiedGeometryEngine()
     :geomType(NONE)
 {
