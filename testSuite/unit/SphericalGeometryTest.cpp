@@ -48,7 +48,6 @@ SimplifiedGeometryEngine.
 #include "AspectRatioGammaQualityMetric.hpp"
 #include "UntangleBetaQualityMetric.hpp"
 #include "MultiplyQualityMetric.hpp"
-#include "SimplifiedGeometryEngine.hpp"
 #include "SphericalDomain.hpp"
 
 #include "MeshImpl.hpp"
