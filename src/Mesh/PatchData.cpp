@@ -133,7 +133,9 @@ void PatchData::add_element(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
 {
   int num_verts = MsqMeshEntity::vertex_count(topo);
   if (!num_verts)
-    err.set_msg("Attempting to add unknown element type to PatchData");
+    err.set_msg("Attempting to add unknown element type to PatchData.");
+  else if (numElements >= elemArraySize)
+    err.set_msg("No space available. Use reserve_element_capacity().");
   else
   {
       // Set the element's type
