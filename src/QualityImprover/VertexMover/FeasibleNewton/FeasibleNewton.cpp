@@ -5,7 +5,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 15-Jan-03 at 08:05:56
-//  LAST-MOD:  9-Apr-03 at 17:59:47 by Thomas Leurent
+//  LAST-MOD: 29-Apr-03 at 17:43:34 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -39,6 +39,10 @@ FeasibleNewton::FeasibleNewton(ObjectiveFunction* of) :
   maxIteration=6;
   this->set_name("FeasibleNewton");
   set_patch_type(PatchData::GLOBAL_PATCH, err);
+  TerminationCriterion* default_crit=get_inner_termination_criterion();
+  default_crit->add_criterion_type_with_double(
+                    TerminationCriterion::GRADIENT_L2_NORM_ABSOLUTE, 1e-6, err);
+  MSQ_CHKERR(err);
 }  
   
 
