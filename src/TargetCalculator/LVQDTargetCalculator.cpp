@@ -58,9 +58,12 @@ void LVQDTargetCalculator::compute_target_matrices(PatchData &pd, MsqError &err)
   
   // Make sure topology of ref_pd and pd are equal
   size_t num_elements=pd.num_elements();
-  assert( num_elements == ref_pd.num_elements() );
   size_t num_vertices=pd.num_vertices();
-  assert( num_vertices == ref_pd.num_vertices() );
+  if (num_elements != pd.num_elements() || num_vertices != pd.num_vertices())
+  {
+    MSQ_SETERR(err)(MsqError::INVALID_STATE);
+    return;
+  }
     
   
   MsqMeshEntity* elems = pd.get_element_array(err); MSQ_ERRRTN(err);
@@ -82,7 +85,11 @@ void LVQDTargetCalculator::compute_target_matrices(PatchData &pd, MsqError &err)
   for (size_t i=0; i<num_elements; ++i) {
     MsqTag* tag = elems[i].get_tag();
     int nve = elems[i].vertex_count();
-    assert( nve = elems_ref[i].vertex_count() );
+    if (nve != elems_ref[i].vertex_count())
+    {
+      MSQ_SETERR(err)(MsqError::INVALID_STATE);
+      return;
+    }
 
     if (lambdaBase == REGULAR) {
       compute_guide_matrices(guideLambda, ref_pd, i, L_guides, nve, err);
