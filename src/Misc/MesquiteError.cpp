@@ -116,6 +116,9 @@ void MsqError::handler(int line, const char *func,
       cerr << "MESQUITE ERROR: " << msg << endl;
     }
     switch(errorCode){
+      case MSQ_NO_IMPL:
+        cerr << "MESQUITE ERROR:  Function not implemented. \n";
+        break;
       case MSQ_MEM_ERR:
         cerr << "MESQUITE ERROR:  Out of memory. \n";
         break;

@@ -38,6 +38,8 @@
 
 #include "MeshInterface.hpp"
 
+#include <map>
+
 namespace Mesquite
 {
   /*!  \class MeshImpl
@@ -220,6 +222,29 @@ namespace Mesquite
                                          EntityTopology *element_topologies,
                                          size_t num_elements,
                                          MsqError &err);
+
+    
+//*************** Tags  ***********
+
+    virtual void element_tag_create(const string tag_name,
+                                          int tag_size,
+                                          TagHandle& tag_handle,
+                                          MsqError &err);
+    
+    virtual void* tag_get_handle(const string tag_name, MsqError &err);
+    
+    virtual void elements_set_tag_data(const size_t num_elements, 
+                                       const TagHandle tag_handle,
+                                       TagDataPt const tag_data_array,
+                                       const int& tag_size,
+                                       MsqError &err);
+
+    virtual void elements_get_tag_data(const size_t num_elements,
+                                       const TagHandle tag_handle,
+                                       TagDataPt &tag_data_array,
+                                       int& tag_size,
+                                       MsqError &err);
+    
     
 //**************** Memory Management ****************
       // Tells the mesh that the client is finished with a given
@@ -252,6 +277,13 @@ namespace Mesquite
     size_t *v2E; //!< When created, size totalVertexUses
 
     unsigned char numCoords;
+
+    // tags
+    struct tag {
+      void* pt; // points to the beginning of the dense tag array
+      int size; // size is the increment to use to go from one tag to the next
+    };
+    std::map<std::string, MeshImpl::tag> denseTags; 
     
     class Vertex
     {
@@ -263,7 +295,7 @@ namespace Mesquite
     {
     public:
       Mesquite::EntityTopology mType;
-      size_t vertexIndices[8];
+      size_t vertexIndices[MSQ_MAX_NUM_VERT_PER_ENT];
     };
 
     void create_vertex_to_element_data(MsqError &err);

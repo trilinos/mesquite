@@ -29,7 +29,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD: 16-Mar-04 at 11:59:07 by Thomas Leurent
+//  LAST-MOD: 28-Apr-04 at 16:58:29 by Thomas Leurent
 //
 /*! \file MeshImpl.cpp
 
@@ -1384,6 +1384,82 @@ void Mesquite::MeshImpl::elements_get_topologies(
       reinterpret_cast<MeshImpl::Element*>(element_handle_array[i])->mType;
   }
 }
+
+
+//*************** Dense Tags (i.e. tags set on all entities) ***********
+
+#undef __FUNC__
+#define __FUNC__ "MeshImpl::element_tag_create"
+//! only dense tags are implemented in MeshImpl for now.
+void Mesquite::MeshImpl::element_tag_create(const string tag_name, int tag_size,
+                                        TagHandle& tag_handle,
+                                        MsqError &err)
+{
+  tag new_tag;
+  new_tag.pt = 0;
+  new_tag.size = tag_size;
+  denseTags[tag_name] = new_tag;
+  tag_handle = tag_get_handle(tag_name, err); MSQ_CHKERR(err);
+}
+    
+#undef __FUNC__
+#define __FUNC__ "MeshImpl::tag_get_handle"
+//! only dense tags are implemented in MeshImpl for now.
+void* Mesquite::MeshImpl::tag_get_handle(const string tag_name, MsqError &err)
+{
+  return (void*) &(denseTags[tag_name]);
+}
+    
+#undef __FUNC__
+#define __FUNC__ "MeshImpl::elements_set_tag_data"
+//! only dense tags are implemented in MeshImpl for now.
+void Mesquite::MeshImpl::elements_set_tag_data(
+                                   const size_t num_elements, 
+                                   const TagHandle tag_handle,
+                                   TagDataPt const tag_data_array,
+                                   const int& tag_size,
+                                   MsqError &err)
+{
+  if (num_elements != elementCount) {
+    err.set_msg("Incorrect num_elements. Must be equal to the total number of elements "
+                "since only dense tags are supported.");
+    return;
+  }
+  else if (((tag*)tag_handle)->size != tag_size) {
+    err.set_msg("tag_size does not correspong to actual tag size.");
+    return;
+  }
+  else
+   ((tag*)tag_handle)->pt = tag_data_array;
+}
+
+
+#undef __FUNC__
+#define __FUNC__ "MeshImpl::elements_get_tag_data"
+//! only dense tags are implemented in MeshImpl for now.
+void Mesquite::MeshImpl::elements_get_tag_data(
+                                       const size_t num_elements,
+                                       const TagHandle tag_handle,
+                                       TagDataPt &tag_data_array,
+                                       int& tag_size,
+                                       MsqError &err)
+{
+  if (num_elements != elementCount) {
+    err.set_msg("Incorrect num_elements. Must be equal to the total number of elements "
+                "since only dense tags are supported.");
+    return;
+  }
+  else if (((tag*)tag_handle)->size != tag_size) {
+    err.set_msg("tag_size does not correspong to actual tag size.");
+    return;
+  }
+  else
+   tag_data_array = ((tag*)tag_handle)->pt;
+  
+}
+    
+
+
 
 //**************** Memory Management ****************
 // Tells the mesh that the client is finished with a given

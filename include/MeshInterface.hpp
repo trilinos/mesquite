@@ -60,8 +60,10 @@ namespace Mesquite
   {
   public:
 //************ Type Definitions **************
-      //! Opaque EntityHandle type.
+      //! Opaque EntityHandle type and tag type.
     typedef void* EntityHandle;
+    typedef void* TagHandle;
+    typedef void* TagDataPt;
     
       // We typedef specific types of EntityHandles just
       // to make it clear what kind of entity is to be
@@ -248,6 +250,45 @@ namespace Mesquite
     virtual void elements_get_topologies(ElementHandle *element_handle_array,
                                          EntityTopology *element_topologies,
                                          size_t num_elements, MsqError &err) = 0;
+
+    
+//***************  Tags  ***********
+
+    virtual void element_tag_create(const string tag_name,
+                                          int tag_size,
+                                          TagHandle& tag_handle,
+                                          MsqError &err)
+    { err.set_error_code(MSQ_NO_IMPL); }
+    
+      //! Returns the tag handle corresponding to the string.
+      //! Sets an error if the string is not recognised.
+    virtual void* tag_get_handle(const string tag_name, MsqError &err)
+    { err.set_error_code(MSQ_NO_IMPL); return 0; }
+      
+    
+      //! Sets the Tag data pointers for an array of entities.
+      //! The memory pointed to is the reponsibility of the function caller, i.e. either the
+      //! memory was obtained from entities_get_tag_data or the function caller allocated the memory
+      //! and will keep it allocated as long as the tag pointer is set to that memory.
+    virtual void elements_set_tag_data(const size_t num_elements, 
+                                       const TagHandle tag_handle,
+                                       TagDataPt const tag_data_array,
+                                       const int& tag_size,
+                                       MsqError &err)
+    { err.set_error_code(MSQ_NO_IMPL); }
+      
+      //! Gets the Tag data for an array of entities.
+      //! The implementation handles the pointers to the tag data, not the memory pointed to.
+      //! This means that the implementation is not responsible for making sure the
+      //! memory pointed to is valid.
+    virtual void elements_get_tag_data(const size_t num_elements,
+                                       const TagHandle tag_handle,
+                                       TagDataPt &tag_data_array,
+                                       int& tag_size,
+                                       MsqError &err)
+    { err.set_error_code(MSQ_NO_IMPL); }
+
+    
     
 //**************** Memory Management ****************
       //! Tells the mesh that the client is finished with a given

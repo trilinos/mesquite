@@ -96,7 +96,8 @@ enum Error_Codes {
   MSQ_INVALID_MESH_ERR   = 61,   /* unable to free memory */
   MSQ_DIVIDE_BY_ZERO_ERR = 62,   /* division by zero */
   MSQ_DATA_ERR           = 63,    /* incorrect data */
-  MSQ_NO_PD_STORAGE_MODE = 100    /* no storage mode chosen within PatchData */
+  MSQ_NO_PD_STORAGE_MODE = 100,    /* no storage mode chosen within PatchData */
+  MSQ_NO_IMPL = 101    /* no implementation */
 };
 
 
