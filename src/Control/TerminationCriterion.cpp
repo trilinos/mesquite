@@ -22,6 +22,8 @@ using namespace Mesquite;
 #include <iostream.h>
 #endif
 
+#include "MesquiteInterrupt.hpp"
+
 #undef __FUNC__
 #define  __FUNC__ "TerminationCriterion::TerminationCriterion"
 /*!Constructor initializes all of the data members which are not
@@ -383,6 +385,12 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
 {
   bool return_flag=false;
   //  cout<<"\nInside terminate(pd,of,err):  flag = "<<terminationCriterionFlag << endl;
+
+    //First check for an interrupt signal
+  return_flag = MesquiteInterrupt::interrupt_was_signaled();
+  if(return_flag){
+    err.set_msg("Optimization terminated by user.");
+  }
   
     //if terminating on numbering of inner iterations
   if(terminationCriterionFlag & NUMBER_OF_ITERATES){
@@ -537,6 +545,7 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
       //if termination on successive improvements absolute
     if(terminationCriterionFlag & SUCCESSIVE_IMPROVEMENTS_ABSOLUTE){
         //if the last improvement was not significant enough
+        //PRINT_INFO("\ncur = %f, prev = %f, diff = %f, eps = %f",currentOFValue,previousOFValue, previousOFValue-currentOFValue,successiveImprovementsAbsoluteEps);
       if((previousOFValue-currentOFValue)<=successiveImprovementsAbsoluteEps){
         return_flag = true;
       }

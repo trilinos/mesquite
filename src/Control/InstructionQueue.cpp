@@ -12,6 +12,9 @@ Member functions of the Mesquite::InstructionQueue class
 
 #include "InstructionQueue.hpp"
 #include "MeshSet.hpp"
+#ifdef ENABLE_INTERRUPT
+#include "MesquiteInterrupt.hpp"
+#endif
 
 using namespace Mesquite;
 
@@ -212,11 +215,15 @@ void InstructionQueue::set_master_quality_improver(QualityImprover* instr,
 #undef __FUNC__
 #define __FUNC__ "InstructionQueue::run_instructions"
 void InstructionQueue::run_instructions(MeshSet &ms, MsqError &err)
-{   
+{ 
   if (nbPreConditionners != 0 && isMasterSet == false ) {
     err.set_msg("no pre-conditionners allowed if master QualityImprover is not set.");
     return;
   }
+  
+#ifdef ENABLE_INTERRUPT
+  MesquiteInterrupt::catch_interrupt(true);
+#endif
   
   std::list<PatchDataUser*>::const_iterator instr_iter;
   
@@ -251,6 +258,13 @@ void InstructionQueue::run_instructions(MeshSet &ms, MsqError &err)
  
   if (globalPatch != 0)
     delete globalPatch; // clean up once all instructions are executed.
+#ifdef ENABLE_INTERRUPT
+    //If an innterrupt was called, we respect that interrupt until
+    //the end of the instruction queue run.  
+  MesquiteInterrupt::clear_interrupt();
+  MesquiteInterrupt::catch_interrupt(false);
+#endif
+
 }
 
   
