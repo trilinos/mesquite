@@ -381,7 +381,186 @@ namespace Mesquite {
       pd.add_element(NULL, NULL, ind, HEXAHEDRON, err); MSQ_CHKERR(err);
    }
 
+   /* Patch used in several quality metric tests.
+      Our triangular patch is made of two tris.  tri_1 is a perfect
+      equilateral (the ideal for most metrics).  tri_2 is an arbitrary
+      triangle.
+   */
+   inline void create_qm_two_tri_patch(PatchData &triPatch, MsqError &err) 
+   {
+     size_t ind[20];
+     size_t elem_ind[8];
+     triPatch.reserve_vertex_capacity(4, err); MSQ_CHKERR(err);
+     ind[0]=triPatch.add_vertex(NULL, NULL, 0.0,0.0,0.0, true, err);
+     MSQ_CHKERR(err);
+     ind[1]=triPatch.add_vertex(NULL, NULL, 1.0,0.0,0.0, true, err);
+     MSQ_CHKERR(err);
+     ind[2]=triPatch.add_vertex(NULL, NULL, .5,sqrt(3.0)/2.0,0.0,
+                                true, err);
+     MSQ_CHKERR(err);
+     ind[3]=triPatch.add_vertex(NULL, NULL, 2.0,2.0,2.0, true, err);
+     MSQ_CHKERR(err);
+     triPatch.reserve_element_capacity(2, err); MSQ_CHKERR(err);
+     MSQ_CHKERR(err);
+       //add ideal equilateral
+     elem_ind[0] = ind[0];
+     elem_ind[1] = ind[1];
+     elem_ind[2] = ind[2];
+     triPatch.add_element(NULL, NULL, elem_ind, TRIANGLE, err);
+     MSQ_CHKERR(err);
+       //add "arbitrary" tri
+     elem_ind[0] = ind[0];
+     elem_ind[1] = ind[3];
+     elem_ind[2] = ind[1];
+     triPatch.add_element(NULL, NULL, elem_ind, TRIANGLE, err);
+     MSQ_CHKERR(err);
 
+   }
+     /* Patch used in several quality metric tests.
+       Our quad patch is made of two quads.  quad_1 is a perfect
+       square (the ideal for most metrics).  quad_2 is an arbitrary
+       quad.
+     */
+   inline void create_qm_two_quad_patch(PatchData &quadPatch, MsqError &err)
+   {
+     size_t ind[20];
+     size_t elem_ind[8];
+     quadPatch.reserve_vertex_capacity(6, err); MSQ_CHKERR(err);
+     ind[0]=quadPatch.add_vertex(NULL, NULL, 0.0,0.0,0.0, true, err);
+     MSQ_CHKERR(err);
+     ind[1]=quadPatch.add_vertex(NULL, NULL, 1.0,0.0,0.0, true, err);
+     MSQ_CHKERR(err);
+     ind[2]=quadPatch.add_vertex(NULL, NULL, 1.0,1.0,0.0,true, err);
+     MSQ_CHKERR(err);
+     ind[3]=quadPatch.add_vertex(NULL, NULL, 0.0,1.0,0.0, true, err);
+     MSQ_CHKERR(err);
+     ind[4]=quadPatch.add_vertex(NULL, NULL, 2.0,-1.0,.5, true, err);
+     MSQ_CHKERR(err);
+     ind[5]=quadPatch.add_vertex(NULL, NULL, 1.5,1.0,1.0, true, err);
+     MSQ_CHKERR(err);
+     quadPatch.reserve_element_capacity(2, err); MSQ_CHKERR(err);
+     MSQ_CHKERR(err);
+       //add ideal quad
+     elem_ind[0] = ind[0];
+     elem_ind[1] = ind[1];
+     elem_ind[2] = ind[2];
+     elem_ind[3] = ind[3];
+     
+     quadPatch.add_element(NULL, NULL, elem_ind, QUADRILATERAL, err);
+     MSQ_CHKERR(err);
+       //add "arbitrary" quad
+     elem_ind[0] = ind[1];
+     elem_ind[1] = ind[4];
+     elem_ind[2] = ind[5];
+     elem_ind[3] = ind[2];
+     
+     quadPatch.add_element(NULL, NULL, elem_ind, QUADRILATERAL, err);
+     MSQ_CHKERR(err);
+   }
+     /* Patch used in several quality metric tests.
+        Our tet patch is made of two tets.  tet_1 is a perfect
+        equilateral (the ideal for most metrics).  tet_2 is an arbitrary
+        tet.
+     */
+   inline void create_qm_two_tet_patch(PatchData &tetPatch, MsqError &err)
+   {
+     size_t ind[20];
+     size_t elem_ind[8];
+     tetPatch.reserve_vertex_capacity(5, err); MSQ_CHKERR(err);
+     ind[0]=tetPatch.add_vertex(NULL, NULL, 0.0,0.0,0.0, true, err);
+     MSQ_CHKERR(err);
+     ind[1]=tetPatch.add_vertex(NULL, NULL, 1.0,0.0,0.0, true, err);
+     MSQ_CHKERR(err);
+     ind[2]=tetPatch.add_vertex(NULL, NULL, 0.5,sqrt(3.0)/2.0,0.0,true, err);
+     MSQ_CHKERR(err);
+     ind[3]=tetPatch.add_vertex(NULL, NULL, .5, sqrt(3.0)/6.0,
+                                 sqrt(2.0)/sqrt(3.0), true, err);
+     MSQ_CHKERR(err);
+     ind[4]=tetPatch.add_vertex(NULL, NULL, 2.0,3.0,-.5, true, err);
+     MSQ_CHKERR(err);
+    
+     tetPatch.reserve_element_capacity(2, err); MSQ_CHKERR(err);
+     MSQ_CHKERR(err);
+       //add ideal tet
+     elem_ind[0] = ind[0];
+     elem_ind[1] = ind[1];
+     elem_ind[2] = ind[2];
+     elem_ind[3] = ind[3];
+     
+     tetPatch.add_element(NULL, NULL, elem_ind, TETRAHEDRON, err);
+     MSQ_CHKERR(err);
+       //add "arbitrary" tet
+     elem_ind[0] = ind[1];
+     elem_ind[1] = ind[4];
+     elem_ind[2] = ind[2];
+     elem_ind[3] = ind[3];
+     
+     tetPatch.add_element(NULL, NULL, elem_ind, TETRAHEDRON, err);
+     MSQ_CHKERR(err);
+   }
+   /* Patch used in seveal quality metric tests.
+      Our hex patch is made of two hexes.  hex_1 is a perfect
+      unit cube (the ideal for most metrics).  hex_2 is an arbitrary
+      hex.
+   */
+   inline void create_qm_two_hex_patch(PatchData &hexPatch, MsqError &err)
+   {
+     size_t ind[20];
+     size_t elem_ind[8];
+     hexPatch.reserve_vertex_capacity(12, err); MSQ_CHKERR(err);
+     ind[0]=hexPatch.add_vertex(NULL, NULL, 0.0,0.0,0.0, true, err);
+     MSQ_CHKERR(err);
+     ind[1]=hexPatch.add_vertex(NULL, NULL, 1.0,0.0,0.0, true, err);
+     MSQ_CHKERR(err);
+     ind[2]=hexPatch.add_vertex(NULL, NULL, 1.0, 1.0, 0.0, true, err);
+     MSQ_CHKERR(err);
+     ind[3]=hexPatch.add_vertex(NULL, NULL, 0.0, 1.0, 0.0, true, err);
+     MSQ_CHKERR(err);
+     ind[4]=hexPatch.add_vertex(NULL, NULL, 0.0,0.0,1.0, true, err);
+     MSQ_CHKERR(err);
+     ind[5]=hexPatch.add_vertex(NULL, NULL, 1.0,0.0,1.0, true, err);
+     MSQ_CHKERR(err);
+     ind[6]=hexPatch.add_vertex(NULL, NULL, 1.0, 1.0, 1.0, true, err);
+     MSQ_CHKERR(err);
+     ind[7]=hexPatch.add_vertex(NULL, NULL, 0.0, 1.0, 1.0, true, err);
+     MSQ_CHKERR(err);
+     ind[8]=hexPatch.add_vertex(NULL, NULL, 2.0,0.0,0.0, true, err);
+     MSQ_CHKERR(err);
+     ind[9]=hexPatch.add_vertex(NULL, NULL, 2.0,1.0,0.0, true, err);
+     MSQ_CHKERR(err);
+     ind[10]=hexPatch.add_vertex(NULL, NULL, 2.0, -1.0, 1.0, true, err);
+     MSQ_CHKERR(err);
+     ind[11]=hexPatch.add_vertex(NULL, NULL, 3.0, 2.0, 1.0, true, err);
+     MSQ_CHKERR(err);
+    
+     hexPatch.reserve_element_capacity(2, err); MSQ_CHKERR(err);
+     MSQ_CHKERR(err);
+       //add ideal hex
+     elem_ind[0] = ind[0];
+     elem_ind[1] = ind[1];
+     elem_ind[2] = ind[2];
+     elem_ind[3] = ind[3];
+     elem_ind[4] = ind[4];
+     elem_ind[5] = ind[5];
+     elem_ind[6] = ind[6];
+     elem_ind[7] = ind[7];
+     
+     hexPatch.add_element(NULL, NULL, elem_ind, HEXAHEDRON, err);
+     MSQ_CHKERR(err);
+       //add "arbitrary" hex
+     elem_ind[0] = ind[1];
+     elem_ind[1] = ind[8];
+     elem_ind[2] = ind[9];
+     elem_ind[3] = ind[2];
+     elem_ind[4] = ind[5];
+     elem_ind[5] = ind[10];
+     elem_ind[6] = ind[11];
+     elem_ind[7] = ind[6];
+     
+     hexPatch.add_element(NULL, NULL, elem_ind, HEXAHEDRON, err);
+     MSQ_CHKERR(err);
+   }
+   
 } // namespace
 
 #endif // PatchDataInstances_hpp

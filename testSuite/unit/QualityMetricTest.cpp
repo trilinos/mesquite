@@ -23,6 +23,7 @@ correct metric return values.
 
 #include "Mesquite.hpp"
 #include "PatchData.hpp"
+#include "PatchDataInstances.hpp"
 #include "QualityMetric.hpp"
 #include "ConditionNumberQualityMetric.hpp"
 #include "GeneralizedConditionNumberQualityMetric.hpp"
@@ -34,6 +35,8 @@ correct metric return values.
 #include "MsqMessage.hpp"
 #include "cppunit/extensions/HelperMacros.h"
 #include "cppunit/SignalException.h"
+#include "ASMQualityMetric.hpp"
+#include "SmoothnessQualityMetric.hpp"
 #include <math.h>
 
 using namespace Mesquite;
@@ -55,6 +58,9 @@ private:
     //Test averaging methods
   CPPUNIT_TEST (test_averaging_method);
   CPPUNIT_TEST (test_mean_ratio_gradient);
+    //Test ASM (area smoothness quality metric)
+  CPPUNIT_TEST (test_asm);  
+  
   CPPUNIT_TEST_SUITE_END();
   
 private:
@@ -71,169 +77,33 @@ public:
   {
       //pF=1;//PRINT_FLAG IS ON
     pF=0;//PRINT_FLAG IS OFF
-    qualTol = MSQ_MIN;
     MsqError err;
-    size_t ind[20];
     
+    qualTol = MSQ_MIN;
+    size_t ind[20];
     size_t elem_ind[8];
     
      /* Our triangular patch is made of two tris.  tri_1 is a perfect
         equilateral (the ideal for most metrics).  tri_2 is an arbitrary
         triangle.
      */
-     triPatch.reserve_vertex_capacity(4, err); MSQ_CHKERR(err);
-     ind[0]=triPatch.add_vertex(NULL, NULL, 0.0,0.0,0.0, true, err);
-     MSQ_CHKERR(err);
-     ind[1]=triPatch.add_vertex(NULL, NULL, 1.0,0.0,0.0, true, err);
-     MSQ_CHKERR(err);
-     ind[2]=triPatch.add_vertex(NULL, NULL, .5,sqrt(3.0)/2.0,0.0,
-                                true, err);
-     MSQ_CHKERR(err);
-     ind[3]=triPatch.add_vertex(NULL, NULL, 2.0,2.0,2.0, true, err);
-     MSQ_CHKERR(err);
-     triPatch.reserve_element_capacity(2, err); MSQ_CHKERR(err);
-     MSQ_CHKERR(err);
-       //add ideal equilateral
-     elem_ind[0] = ind[0];
-     elem_ind[1] = ind[1];
-     elem_ind[2] = ind[2];
-     triPatch.add_element(NULL, NULL, elem_ind, TRIANGLE, err);
-     MSQ_CHKERR(err);
-       //add "arbitrary" tri
-     elem_ind[0] = ind[0];
-     elem_ind[1] = ind[3];
-     elem_ind[2] = ind[1];
-     triPatch.add_element(NULL, NULL, elem_ind, TRIANGLE, err);
-     MSQ_CHKERR(err);
-
+    create_qm_two_tri_patch(triPatch, err);MSQ_CHKERR(err);
      /* Our quad patch is made of two quads.  quad_1 is a perfect
         square (the ideal for most metrics).  quad_2 is an arbitrary
         quad.
      */
-     quadPatch.reserve_vertex_capacity(6, err); MSQ_CHKERR(err);
-     ind[0]=quadPatch.add_vertex(NULL, NULL, 0.0,0.0,0.0, true, err);
-     MSQ_CHKERR(err);
-     ind[1]=quadPatch.add_vertex(NULL, NULL, 1.0,0.0,0.0, true, err);
-     MSQ_CHKERR(err);
-     ind[2]=quadPatch.add_vertex(NULL, NULL, 1.0,1.0,0.0,true, err);
-     MSQ_CHKERR(err);
-     ind[3]=quadPatch.add_vertex(NULL, NULL, 0.0,1.0,0.0, true, err);
-     MSQ_CHKERR(err);
-     ind[4]=quadPatch.add_vertex(NULL, NULL, 2.0,-1.0,.5, true, err);
-     MSQ_CHKERR(err);
-     ind[5]=quadPatch.add_vertex(NULL, NULL, 1.5,1.0,1.0, true, err);
-     MSQ_CHKERR(err);
-     quadPatch.reserve_element_capacity(2, err); MSQ_CHKERR(err);
-     MSQ_CHKERR(err);
-       //add ideal quad
-     elem_ind[0] = ind[0];
-     elem_ind[1] = ind[1];
-     elem_ind[2] = ind[2];
-     elem_ind[3] = ind[3];
-     
-     quadPatch.add_element(NULL, NULL, elem_ind, QUADRILATERAL, err);
-     MSQ_CHKERR(err);
-       //add "arbitrary" quad
-     elem_ind[0] = ind[1];
-     elem_ind[1] = ind[4];
-     elem_ind[2] = ind[5];
-     elem_ind[3] = ind[2];
-     
-     quadPatch.add_element(NULL, NULL, elem_ind, QUADRILATERAL, err);
-     MSQ_CHKERR(err);
-
+    create_qm_two_quad_patch(quadPatch,err);MSQ_CHKERR(err);
      /* Our tet patch is made of two tets.  tet_1 is a perfect
         equilateral (the ideal for most metrics).  tet_2 is an arbitrary
         tet.
      */
-     tetPatch.reserve_vertex_capacity(5, err); MSQ_CHKERR(err);
-     ind[0]=tetPatch.add_vertex(NULL, NULL, 0.0,0.0,0.0, true, err);
-     MSQ_CHKERR(err);
-     ind[1]=tetPatch.add_vertex(NULL, NULL, 1.0,0.0,0.0, true, err);
-     MSQ_CHKERR(err);
-     ind[2]=tetPatch.add_vertex(NULL, NULL, 0.5,sqrt(3.0)/2.0,0.0,true, err);
-     MSQ_CHKERR(err);
-     ind[3]=tetPatch.add_vertex(NULL, NULL, .5, sqrt(3.0)/6.0,
-                                 sqrt(2.0)/sqrt(3.0), true, err);
-     MSQ_CHKERR(err);
-     ind[4]=tetPatch.add_vertex(NULL, NULL, 2.0,3.0,-.5, true, err);
-     MSQ_CHKERR(err);
+    create_qm_two_tet_patch(tetPatch,err);MSQ_CHKERR(err);
     
-     tetPatch.reserve_element_capacity(2, err); MSQ_CHKERR(err);
-     MSQ_CHKERR(err);
-       //add ideal tet
-     elem_ind[0] = ind[0];
-     elem_ind[1] = ind[1];
-     elem_ind[2] = ind[2];
-     elem_ind[3] = ind[3];
-     
-     tetPatch.add_element(NULL, NULL, elem_ind, TETRAHEDRON, err);
-     MSQ_CHKERR(err);
-       //add "arbitrary" tet
-     elem_ind[0] = ind[1];
-     elem_ind[1] = ind[4];
-     elem_ind[2] = ind[2];
-     elem_ind[3] = ind[3];
-     
-     tetPatch.add_element(NULL, NULL, elem_ind, TETRAHEDRON, err);
-     MSQ_CHKERR(err);
-
      /* Our hex patch is made of two hexes.  hex_1 is a perfect
         unit cube (the ideal for most metrics).  hex_2 is an arbitrary
-        tet.
+        hex.
      */
-     hexPatch.reserve_vertex_capacity(12, err); MSQ_CHKERR(err);
-     ind[0]=hexPatch.add_vertex(NULL, NULL, 0.0,0.0,0.0, true, err);
-     MSQ_CHKERR(err);
-     ind[1]=hexPatch.add_vertex(NULL, NULL, 1.0,0.0,0.0, true, err);
-     MSQ_CHKERR(err);
-     ind[2]=hexPatch.add_vertex(NULL, NULL, 1.0, 1.0, 0.0, true, err);
-     MSQ_CHKERR(err);
-     ind[3]=hexPatch.add_vertex(NULL, NULL, 0.0, 1.0, 0.0, true, err);
-     MSQ_CHKERR(err);
-     ind[4]=hexPatch.add_vertex(NULL, NULL, 0.0,0.0,1.0, true, err);
-     MSQ_CHKERR(err);
-     ind[5]=hexPatch.add_vertex(NULL, NULL, 1.0,0.0,1.0, true, err);
-     MSQ_CHKERR(err);
-     ind[6]=hexPatch.add_vertex(NULL, NULL, 1.0, 1.0, 1.0, true, err);
-     MSQ_CHKERR(err);
-     ind[7]=hexPatch.add_vertex(NULL, NULL, 0.0, 1.0, 1.0, true, err);
-     MSQ_CHKERR(err);
-     ind[8]=hexPatch.add_vertex(NULL, NULL, 2.0,0.0,0.0, true, err);
-     MSQ_CHKERR(err);
-     ind[9]=hexPatch.add_vertex(NULL, NULL, 2.0,1.0,0.0, true, err);
-     MSQ_CHKERR(err);
-     ind[10]=hexPatch.add_vertex(NULL, NULL, 2.0, -1.0, 1.0, true, err);
-     MSQ_CHKERR(err);
-     ind[11]=hexPatch.add_vertex(NULL, NULL, 3.0, 2.0, 1.0, true, err);
-     MSQ_CHKERR(err);
-    
-     hexPatch.reserve_element_capacity(2, err); MSQ_CHKERR(err);
-     MSQ_CHKERR(err);
-       //add ideal hex
-     elem_ind[0] = ind[0];
-     elem_ind[1] = ind[1];
-     elem_ind[2] = ind[2];
-     elem_ind[3] = ind[3];
-     elem_ind[4] = ind[4];
-     elem_ind[5] = ind[5];
-     elem_ind[6] = ind[6];
-     elem_ind[7] = ind[7];
-     
-     hexPatch.add_element(NULL, NULL, elem_ind, HEXAHEDRON, err);
-     MSQ_CHKERR(err);
-       //add "arbitrary" hex
-     elem_ind[0] = ind[1];
-     elem_ind[1] = ind[8];
-     elem_ind[2] = ind[9];
-     elem_ind[3] = ind[2];
-     elem_ind[4] = ind[5];
-     elem_ind[5] = ind[10];
-     elem_ind[6] = ind[11];
-     elem_ind[7] = ind[6];
-     
-     hexPatch.add_element(NULL, NULL, elem_ind, HEXAHEDRON, err);
-     MSQ_CHKERR(err);
+     create_qm_two_hex_patch(hexPatch,err);MSQ_CHKERR(err);
   }
 
   void tearDown()
@@ -461,8 +331,8 @@ public:
        PRINT_INFO("\nMULT HEX %f", val);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
    }
-  
-void test_edge_length_metric()
+
+  void test_edge_length_metric()
    {
        //START WITH TRI's
      MsqError err;
@@ -487,14 +357,49 @@ void test_edge_length_metric()
      if(pF)
        PRINT_INFO("\nEdge Length Metric tets (should be 3) %f", val);
      CPPUNIT_ASSERT(fabs(val-3.0)<qualTol);
-
+     
    }
-
-
   
-void test_averaging_method()
-   {
-       //USE QUAD's
+  void test_asm()
+     {
+       QualityMetric *met = ASMQualityMetric::create_new();
+       MsqError err;
+         //Test the metric on a single elemnt patch
+       PatchData p1;
+       create_one_tri_patch(p1, err);
+       MsqMeshEntity* elem1=p1.get_element_array(err);
+       double first_val;
+       bool first_bool=met->evaluate_element(p1,&elem1[0],first_val,err);
+         //Any non-connected element should have asm of 0.0
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(first_val, 0.0, MSQ_MIN);
+       CPPUNIT_ASSERT(first_bool==true);
+         //Test on a patch with two ideal tris
+       PatchData p2;
+       create_two_tri_patch(p2, err);
+       MsqMeshEntity* elem2=p2.get_element_array(err);
+       double second_val;
+       bool second_bool=met->evaluate_element(p2,&elem2[0],second_val,err);
+         //Two neighboring tris with equal area should have asm of 0.0
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(second_val, 0.0, MSQ_MIN);
+       CPPUNIT_ASSERT(second_bool==true);
+
+        //Test on a patch with two tris one not ideal
+       PatchData p3;
+       create_qm_two_tri_patch(p3, err);
+       MsqMeshEntity* elem3=p3.get_element_array(err);
+       double third_val;
+       bool third_bool=met->evaluate_element(p3,&elem3[0],third_val,err);
+         //Two neighboring tris with equal area should have asm of 0.0
+       CPPUNIT_ASSERT(third_val>0.0);
+       CPPUNIT_ASSERT(third_val<1.0);
+       CPPUNIT_ASSERT(third_bool==true);
+
+       
+     }
+  
+  void test_averaging_method()
+     {
+         //USE QUAD's
      MsqError err;
      double val;
      MsqMeshEntity* elems;
@@ -578,6 +483,7 @@ void test_averaging_method()
     delete grad_num;
     delete grad_ana;
   }
+       
    
 };
 
