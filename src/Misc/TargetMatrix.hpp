@@ -56,13 +56,33 @@ namespace Mesquite
     virtual ~TargetMatrix()
        {};
 
+    TargetMatrix() : Matrix3D()
+    {
+      cK = 1.;
+    }
+
+    TargetMatrix(const Matrix3D &A) : Matrix3D(A)
+    {
+      cK = 1.;
+    }
+
     TargetMatrix& operator=(const Matrix3D &A)
     {
       if (&A != this)
         Matrix3D::operator=(A);
-      cK = 0;
+      cK = 1.;
       return *this;
     }
+
+    TargetMatrix& operator=(const TargetMatrix &A)
+    {
+      if (&A != this)
+        Matrix3D::operator=(A);
+      cK = A.cK;
+      return *this;
+    }
+
+    double get_cK() { return cK; }
     
   protected:
  

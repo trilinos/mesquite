@@ -63,16 +63,16 @@ namespace Mesquite
       //! For a given element, compute each corner matrix A, and given a target
       //! corner matrix W, returns \f$ T=AW^{-1} \f$ for each corner.    
     void compute_T_matrices(MsqMeshEntity &elem, PatchData& pd,
-                            Matrix3D T[], size_t num_T, MsqError &err);
+                           Matrix3D T[], size_t num_T, double c_k[], MsqError &err);
  
-    bool get_barrier_function(PatchData& pd, double tau, double &h, MsqError &err);
+    bool get_barrier_function(PatchData& pd, const double &tau, double &h, MsqError &err);
 
   private:
     
   };
 
   inline void DistanceFromTarget::compute_T_matrices(MsqMeshEntity &elem, PatchData& pd,
-                                 Matrix3D T[], size_t num_T, MsqError &err)
+                        Matrix3D T[], size_t num_T, double c_k[], MsqError &err)
   {    
       // Gets the element corner matrices.
     elem.compute_corner_matrices(pd, T, num_T, err);
@@ -87,11 +87,16 @@ namespace Mesquite
 //     for (size_t i=0; i<num_T; ++i)
 //       std::cout << "W["<<i<<"]:\n" << W[i] << std::endl;
 
-    for (size_t i=0; i<num_T; ++i)
+    for (size_t i=0; i<num_T; ++i) {
       timesInvA(T[i], W[i]);
+      c_k[i] = W[i].get_cK();
+    }
   }
 
-  inline bool DistanceFromTarget::get_barrier_function(PatchData& pd, double tau, double &h, MsqError &err)
+
+  /*! Returns the 
+   */
+  inline bool DistanceFromTarget::get_barrier_function(PatchData& pd, const double &tau, double &h, MsqError &err)
   { 
 
      double delta=pd.get_barrier_delta_3d(err); 

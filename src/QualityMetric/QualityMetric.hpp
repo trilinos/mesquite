@@ -300,11 +300,15 @@ namespace Mesquite
      //! quality metric. Errors will result if type is left to MT_UNDEFINED.
      void set_metric_type(MetricType t) { mType = t; }
      
-     /*! average_metrics takes an array of length num_values and averages the
-          contents using averaging method data member avgMethod .
-       */
-     double average_metrics(double* metric_values, int num_values,
+     //! average_metrics takes an array of length num_values and averages the
+     //! contents using averaging method data member avgMethod .
+     double average_metrics(const double metric_values[], const int& num_values,
                             MsqError &err);
+     //! takes an array of coefficients and an array of metrics (both of length num_value)
+     //! and averages the contents using averaging method 'method'.
+     double weighted_average_metrics(const double coef[],
+                                    const double metric_values[],
+                                    const int& num_values, MsqError &err);
      
        /*!Non-virtual function which numerically computes the gradient
          of a QualityMetric of a given free vertex. This is used by metric
@@ -523,8 +527,8 @@ namespace Mesquite
        average_metrics takes an array of length num_value and averages the
        contents using averaging method 'method'.
      */
-   inline double QualityMetric::average_metrics(double* metric_values,
-                                                int num_values, MsqError &err)
+   inline double QualityMetric::average_metrics(const double metric_values[],
+                                           const int& num_values, MsqError &err)
    {
        //MSQ_MAX needs to be made global?
      //double MSQ_MAX=1e10;
@@ -704,6 +708,40 @@ namespace Mesquite
      }
      return total_value;
    }
+   
+   
+
+#undef __FUNC__
+#define __FUNC__ "QualityMetric::weighted_average_metrics"
+  inline double QualityMetric::weighted_average_metrics(const double coef[],
+                                                        const double metric_values[],
+                                                        const int& num_values, MsqError &err)
+  {
+    //MSQ_MAX needs to be made global?
+    //double MSQ_MAX=1e10;
+    double total_value=0.0;
+    int i=0;
+    //if no values, return zero
+    if (num_values<=0){
+      return 0.0;
+    }
+     
+    switch(avgMethod){
+
+    case LINEAR:
+      for (i=0;i<num_values;++i){
+        total_value += coef[i]*metric_values[i];
+      }
+      total_value /= (double) num_values;
+      break;
+          
+    default:
+      //Return error saying Averaging Method mode not implemented
+      err.set_msg("Requested Averaging Method Not Implemented");
+      return 0;
+    }
+    return total_value;
+  }
    
    
 } //namespace

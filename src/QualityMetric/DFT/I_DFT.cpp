@@ -46,12 +46,13 @@ bool I_DFT::evaluate_element(PatchData& pd,
                               double& value, MsqError &err)
 {
   Matrix3D T[MSQ_MAX_NUM_VERT_PER_ENT];
+  double c_k[MSQ_MAX_NUM_VERT_PER_ENT];
   double dft[MSQ_MAX_NUM_VERT_PER_ENT];
   bool return_flag;
   double h, tau;
     
   size_t num_T = element->vertex_count();
-  compute_T_matrices(*element, pd, T, num_T, err); MSQ_CHKERR(err);
+  compute_T_matrices(*element, pd, T, num_T, c_k, err); MSQ_CHKERR(err);
 
   const double id[] = {1, 0, 0,  0, 1, 0,  0, 0, 1};
   const Matrix3D I(id);
@@ -63,7 +64,7 @@ bool I_DFT::evaluate_element(PatchData& pd,
     dft[i] /= pow(h, 2/3);
   }
     
-  value = average_metrics(dft, num_T, err); MSQ_CHKERR(err);
+  value = weighted_average_metrics(c_k, dft, num_T, err); MSQ_CHKERR(err);
     
   return return_flag;
 }
