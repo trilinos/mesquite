@@ -19,10 +19,13 @@
 #include <string.h>
 #endif
 
+
+// TODO   !!!  get rid of this !!!
+//using namespace std;
+
+
 #define MESQUITE_USES_TSTT
-#ifdef MESQUITE_USES_TSTT
 #include "TSTT_Base.h"
-#endif
 /*! \file Mesquite.hpp
   \namespace Mesquite
   
@@ -58,7 +61,7 @@ namespace Mesquite
     SEPTAHEDRON =15,
     MIXED
   };
-#ifdef MESQUITE_USES_TSTT
+
   inline TSTT::EntityTopology mesquite_to_tstt(EntityTopology type)
   {
     switch (type)
@@ -114,7 +117,7 @@ namespace Mesquite
         return Mesquite::MIXED;
     }
   }
-#endif
+
   //GLOBALS variables
   const int MSQ_HIST_SIZE=7;//number of division in histogram
   const double MSQ_MIN=1.e-12;
