@@ -94,7 +94,7 @@ namespace Mesquite
     
       //! \enum chooses the type of guide matrix used in the target calculator
     enum guide_type {
-      AI, //!<
+      Ad, //!<
       AK, //!<
       A0, //!<
       Ar, //!<

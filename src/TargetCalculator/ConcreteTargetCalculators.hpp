@@ -44,27 +44,50 @@ Header file for the Mesquite::ConcreteTargetCalculator class
 
 namespace Mesquite
 {
+
+  
+  /*! \class DesignOpt3TargetCalculator
+    \brief Target calculator that aims to preserve the angles of a reference mesh.
+  */
+  class DesignOpt3TargetCalculator : public LVQDTargetCalculator
+  {
+  public:
+    DesignOpt3TargetCalculator(MeshSet* ref_mesh)
+    {
+      refMesh = ref_mesh;
+      lambdaBase = REGULAR; 
+      guideLambda = Ar;
+      guideV = Ar;
+      guideQ = Ad;
+      guideDelta = Ar;
+    }
+    
+      //! virtual destructor ensures use of polymorphism during destruction
+    virtual ~DesignOpt3TargetCalculator()
+      {};
+  };
+
+
   
   /*! \class ReferenceMeshTargetCalculator
-    \brief 
+    \brief Target calculator that aims to preserve the properties of a reference mesh.
   */
-  class ReferenceMeshTargetCalculator : public TargetCalculator
+  class ReferenceMeshTargetCalculator : public WTargetCalculator
   {
   public:
     ReferenceMeshTargetCalculator(MeshSet* ref_mesh)
     {
       refMesh = ref_mesh;
-      mLambda = L00;
-      mD = D00;
-      mR = R00;
-      mW = W21;
+      guideMatrix = Ar;
     }      
-      //! virtual destructor ensures use of polymorphism during destruction
+
+    //! virtual destructor ensures use of polymorphism during destruction
     virtual ~ReferenceMeshTargetCalculator()
       {};
   };
   
 
+  
 } //namespace
 
 

@@ -182,7 +182,7 @@ void TargetCalculator::compute_reference_corner_matrices(PatchData &pd,
     size_t nve = elems[elem_ind].vertex_count();
 
     switch(type) {
-    case AI:
+    case Ad:
       {
         Matrix3D tmp_tri, tmp_quad, tmp_tet, tmp_hex;
         initialize_default_target_matrices(tmp_tri, tmp_quad, tmp_tet, tmp_hex);
@@ -205,6 +205,7 @@ void TargetCalculator::compute_reference_corner_matrices(PatchData &pd,
           return;
         }
       }
+    case A0:
     case Ar:
       elems[elem_ind].compute_corner_matrices(ref_pd, W_k, nve, err); MSQ_CHKERR(err);
       return;
