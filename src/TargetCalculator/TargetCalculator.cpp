@@ -206,6 +206,7 @@ void TargetCalculator::compute_reference_corner_matrices(PatchData &pd,
           return;
         }
       }
+      return;
     case A0:
     case Ar:
       elems[elem_ind].compute_corner_matrices(ref_pd, W_k, nve, err); MSQ_CHKERR(err);
