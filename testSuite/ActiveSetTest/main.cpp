@@ -43,9 +43,10 @@ describe main.cpp here
 
 // algorithms
 #include "ConditionNumberQualityMetric.hpp"
-#include "MinTemplate.hpp"
+#include "MaxTemplate.hpp"
 #include "NonSmoothSteepestDescent.hpp"
 
+#include "MeshImpl.hpp"
 using namespace Mesquite;
 
 
@@ -79,23 +80,21 @@ int main()
 
   // Build an objective function with the quality metric
   //  printf("min template\n");
-  MinTemplate* obj_func_min = new MinTemplate(cond_no);
+  MaxTemplate obj_func_min(cond_no);
   
   // Create the NonSmooth Steepest Descent procedures
   //  printf("creating optimizer\n");
-  NonSmoothSteepestDescent *maxmin_method = new NonSmoothSteepestDescent( obj_func_min );
+  NonSmoothSteepestDescent minmax_method( &obj_func_min );
    
-  maxmin_method->set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err, 1);
+  minmax_method.set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err, 1);
 
   // Set a culling method on the first QualityImprover
-  maxmin_method->add_culling_method(PatchData::NO_BOUNDARY_VTX);
+  minmax_method.add_culling_method(PatchData::NO_BOUNDARY_VTX);
 
-  // Set a stopping criterion
-    //StoppingCriterion sc2(StoppingCriterion::NUMBER_OF_PASSES,1);
-    //maxmin_method->set_stopping_criterion(&sc2);
+  // Set a termination criterion
   TerminationCriterion tc2;
   tc2.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
-  maxmin_method->set_outer_termination_criterion(&tc2);
+  minmax_method.set_outer_termination_criterion(&tc2);
   // Set up the quality assessor
   //  printf("Setting up the quality assessor\n");
   QualityAssessor quality_assessor=QualityAssessor(cond_no,QualityAssessor::MAXIMUM);
@@ -108,7 +107,7 @@ int main()
   queue1.add_quality_assessor(&quality_assessor, err); MSQ_CHKERR(err);
 
   // Set the max min method to be the master quality improver
-  queue1.set_master_quality_improver(maxmin_method, err); MSQ_CHKERR(err);
+  queue1.set_master_quality_improver(&minmax_method, err); MSQ_CHKERR(err);
 
   // assess the quality of the final mesh
   queue1.add_quality_assessor(&quality_assessor, err); MSQ_CHKERR(err);
@@ -124,5 +123,5 @@ int main()
   // write out the smoothed mesh
   //  printf("Writing out the final mesh\n");
   mesh->write_vtk("smoothed_mesh", err); MSQ_CHKERR(err);
-
+  delete cond_no;
 }
