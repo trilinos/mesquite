@@ -143,7 +143,7 @@ settings:
 depend: 
 	@touch $(dependenciesfile)
 	@echo "Generating dependencies for all Mesquite source files."
-	$(PREFIX) $(MAKEDEPEND)  -f $(dependenciesfile) $(CONFIG_CFLAGS) \
+	$(PREFIX) $(MAKEDEPEND)  -f $(dependenciesfile) $(CONFIG_CFLAGS) $(TSTT_INC)\
 	$(ALLSRC) 2> /dev/null
 	$(PREFIX) cat $(dependenciesfile) | perl -np -e "s/^.*\/(.*\.o:)/obj\/\1/;" > $(dependenciesfile).tmp
 	$(PREFIX) mv $(dependenciesfile).tmp $(dependenciesfile)

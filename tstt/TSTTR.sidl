@@ -31,7 +31,8 @@ package TSTTR version 001
  *   mesh entity sets
  */
     void relateGeomEntities(in opaque geom, in opaque mesh,
-	                    in array<opaque> geom_handles)
+                            in array<opaque> geom_handles,
+                            in int geom_handles_size)
       throws TSTT.Error;
 
 
@@ -41,7 +42,8 @@ package TSTTR version 001
  *   and corresponding geometry entities
  */
     void relateMeshEntities(in opaque geom, in opaque mesh,
-	                    in array<opaque> mesh_handles)
+	                    in array<opaque> mesh_handles,
+                            in int mesh_handles_size)
       throws TSTT.Error;
 
 
@@ -50,8 +52,10 @@ package TSTTR version 001
  *   get related mesh entity sets of requested geometry entities
  */
     void getGeomRelatedEntities(in opaque geom, in opaque mesh,
-	                        in array<opaque> from_geom_handles,
-				out array<opaque> to_mesh_handles)
+                                in array<opaque> from_geom_handles,
+                                in int from_geom_handles_size,
+                                inout array<opaque> to_mesh_handles,
+                                inout int to_mesh_handles_size)
       throws TSTT.Error;
 
 //==========================getMeshRelatedEntities====================
@@ -59,8 +63,10 @@ package TSTTR version 001
  *   get related geometry entities of requested mesh entity sets
  */
     void getMeshRelatedEntities(in opaque geom, in opaque mesh,
-	                        in array<opaque> from_mesh_handles,
-				out array<opaque> to_geom_handles)
+                                in array<opaque> from_mesh_handles,
+                                in int from_mesh_handles_size,
+                                inout array<opaque> to_geom_handles,
+                                inout int to_geom_handles_size)
       throws TSTT.Error;
 
 //==========================moveTo====================

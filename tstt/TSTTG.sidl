@@ -28,7 +28,6 @@ package TSTTG version 0.5.1
     GEDGE, 
     GFACE, 
     GREGION,
-    GNUMBER_OF_ENTITY_TYPES,
     GALL_TYPES
   }
 
@@ -58,7 +57,7 @@ package TSTTG version 0.5.1
  * @param options String options 
  */
     void gLoad(in string name, in array<string> options,
-               in int num_options) 
+               in int options_size) 
       throws TSTT.Error;
 
   }
@@ -82,7 +81,7 @@ package TSTTG version 0.5.1
     void gentitysetGetGentitiesOfType(in opaque set_handle,
                                       in GentityType gentity_type,
                                       out array<opaque> gentity_handles,
-                                      out int num_gentity_handles) 
+                                      out int gentity_handles_size) 
       throws TSTT.Error;
 
 //==========================gentitysetGetNumberGentitiesOfType=================
@@ -103,9 +102,9 @@ package TSTTG version 0.5.1
  *    array of entity handles.
  */
     void gentityGetType(in array<opaque> gentity_handles,
-                        in int num_gentity_handles,
+                        in int gentity_handles_size,
                         inout array<GentityType> gtype,
-                        inout int num_gtype) 
+                        inout int gtype_size) 
       throws TSTT.Error;
   
 
@@ -119,7 +118,7 @@ package TSTTG version 0.5.1
     void gentityGetAdjacencies(in opaque gentity_handle, 
                                in int to_dimension, 
                                inout array<opaque> adj_gentities,
-                               inout int num_adj_gentities) 
+                               inout int adj_gentities_size) 
       throws TSTT.Error;
   
 
@@ -140,7 +139,7 @@ package TSTTG version 0.5.1
                                  in int bridge_dimension, 
                                  in int to_dimension, 
                                  out array<opaque> adjacent_gentities,
-                                 out int num_adjacent_gentities) 
+                                 out int adjacent_gentities_size) 
       throws TSTT.Error;
 
 //==========================gentityIsAdjacent=================
@@ -177,11 +176,11 @@ package TSTTG version 0.5.1
  * @param on_coordinates Closest point on gentity
  */
     void gentityClosestPoint(in array<opaque> gentity_handles, 
-                             in int num_gentity_handles,
+                             in int gentity_handles_size,
                              in array <double> near_coordinates, 
-                             in int num_near_coordinates,
+                             in int near_coordinates_size,
                              out array <double> on_coordinates,
-                             out int num_on_coordinates) 
+                             out int on_coordinates_size) 
       throws TSTT.Error;
    
 //==========================gentityNormal=================
@@ -194,11 +193,11 @@ package TSTTG version 0.5.1
  * @param normals The normals at the specified points, interleaved
  */
     void gentityNormal(in array<opaque> gentity_handles, 
-                       in int num_gentity_handles,
+                       in int gentity_handles_size,
                        in array <double> coordinates, 
-                       in int num_coordinates,
+                       in int coordinates_size,
                        out array <double> normals,
-                       out int num_normals) 
+                       out int normals_size) 
       throws TSTT.Error;
    
 //==========================gentityTangent=================
@@ -211,11 +210,11 @@ package TSTTG version 0.5.1
  * @param tangents The tangents at the specified points, interleaved
  */
     void gentityTangent(in array<opaque> gentity_handles, 
-                        in int num_gentity_handles,
+                        in int gentity_handles_size,
                         in array <double> coordinates, 
-                        in int num_coordinates,
+                        in int coordinates_size,
                         out array <double> tangents,
-                        out int num_tangents) 
+                        out int tangents_size) 
       throws TSTT.Error;
    
 // Various Derivatives
@@ -229,11 +228,11 @@ package TSTTG version 0.5.1
  * @param max_corners Maximum corner coordinates of the boxes, interleaved
  */
     void gentityBoundingBox(in array<opaque> gentity_handles, 
-                            in int num_gentity_handles,
+                            in int gentity_handles_size,
                             out array <double> min_corner, 
-                            out int num_min_corner,
+                            out int min_corner_size,
                             out array <double> max_corner,
-                            out int num_max_corner) 
+                            out int max_corner_size) 
       throws TSTT.Error;
    
 //==========================getGvertexCoordinates=================
@@ -244,9 +243,9 @@ package TSTTG version 0.5.1
  * @param coordinates The coordinates of the gvertices, interleaved.
  */
     void getGvertexCoordinates(in array<opaque> gentity_handles, 
-                               in int num_gentity_handles,
+                               in int gentity_handles_size,
                                out array <double> coordinates,
-                               out int num_coordinates)
+                               out int coordinates_size)
       throws TSTT.Error;
    
 //==========================getGnormalSense=================
@@ -319,11 +318,11 @@ package TSTTG version 0.5.1
  * @param xyz Output real space coordinates
  */
     void gentityUvToXyz(in array<opaque> gentity_handles, 
-                        in int num_gentity_handles,
+                        in int gentity_handles_size,
                         in array <double> uv, 
-                        in int num_uv,
+                        in int uv_size,
                         out array <double> coordinates,
-                        out int num_coordinates) 
+                        out int coordinates_size) 
       throws TSTT.Error;
    
 //==========================gentityXyzToUv=================
@@ -336,11 +335,11 @@ package TSTTG version 0.5.1
  * @param uv Output parametric coordinates
  */
     void gentityXyzToUv(in array<opaque> gentity_handles, 
-                        in int num_gentity_handles,
+                        in int gentity_handles_size,
                         in array <double> coordinates,
-                        in int num_coordinates,
+                        in int coordinates_size,
                         out array <double> uv,
-                        out int num_uv) 
+                        out int uv_size) 
       throws TSTT.Error;
    
 //==========================gentityUvRange=================
@@ -351,11 +350,11 @@ package TSTTG version 0.5.1
  * @param uv_max Maximum parameters of gentities, interleaved
  */
     void gentityUvRange(in array<opaque> gentity_handles, 
-                        in int num_gentity_handles,
+                        in int gentity_handles_size,
                         out array <double> uv_min, 
-                        out int num_uv_min,
+                        out int uv_min_size,
                         out array <double> uv_max,
-                        out int num_uv_max) 
+                        out int uv_max_size) 
       throws TSTT.Error;
 
 //==========================getAdjacentUv=================
@@ -372,13 +371,13 @@ package TSTTG version 0.5.1
  * @param trg_uv Uv positions on target gentities
  */
     void Greparam_edge_face(in array<opaque> src_gentity_handles, 
-                            in int num_src_gentity_handles, 
+                            in int src_gentity_handles_size, 
                             in array<double> src_uv,
-                            in int num_src_uv,
+                            in int src_uv_size,
                             in array<opaque> trg_gentity_handles, 
-                            in int num_trg_gentity_handles, 
+                            in int trg_gentity_handles_size, 
                             in array<double> trg_uv,
-                            in int num_trg_uv) 
+                            in int trg_uv_size) 
       throws TSTT.Error;
 
 //==========================gentityNormalUv=================
@@ -391,11 +390,11 @@ package TSTTG version 0.5.1
  * @param normals Normals at specified points, interleaved
  */
     void gentityNormalUv(in array<opaque> gface_handles, 
-                         in int num_gface_handles, 
+                         in int gface_handles_size, 
                          in array <double> parameters, 
-                         in int num_parameters, 
+                         in int parameters_size, 
                          out array <double> normals,
-                         in int num_normals) 
+                         in int normals_size) 
       throws TSTT.Error;
    
 //==========================gentityTangentU=================
@@ -408,11 +407,11 @@ package TSTTG version 0.5.1
  * @param tangents Tangents at specified points, interleaved
  */
     void gentityTangentU(in array<opaque> gedge_handles, 
-                         in int num_gedge_handles,
+                         in int gedge_handles_size,
                          in array <double> parameters, 
-                         in int num_parameters, 
+                         in int parameters_size, 
                          out array <double> tangents,
-                         out int num_tangents) 
+                         out int tangents_size) 
       throws TSTT.Error;
    
   }
@@ -448,11 +447,11 @@ package TSTTG version 0.5.1
  * @param absolute_tolerances Absolute tolerances
  */
     void getGentityTolerance(in array<opaque> gentity_handles,
-                             in int num_gentity_handles,
+                             in int gentity_handles_size,
                              out array<double> relative_tolerances,
-                             out int num_relative_tolerances,
+                             out int relative_tolerances_size,
                              out array<double> absolute_tolerances,
-                             out int num_absolute_tolerances)
+                             out int absolute_tolerances_size)
       throws TSTT.Error;
 
   }
@@ -589,7 +588,7 @@ package TSTTG version 0.5.1
          * are unmodified
          */
       void Unite(in array<opaque> geom_entities,
-                 in int num_geom_entities,
+                 in int geom_entities_size,
                  out opaque geom_entity);
       
         /* Subtract the tool from the blank, resulting in a new entity; original

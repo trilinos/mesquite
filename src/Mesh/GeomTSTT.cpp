@@ -192,11 +192,12 @@ void GeomTSTTImpl::normal_at( Mesh::EntityHandle handle,
 void* GeomTSTTImpl::geom_from_mesh( void* mesh_ent_handle ) const
                                     throw ( TSTT::Error )
 {
+  int junk;
   oneMeshHandle.set( 0, mesh_ent_handle );
   relateIface.getMeshRelatedEntities( &geomIface,
                                       &meshIface,
-                                      oneMeshHandle,
-                                      oneGeomHandle );
+                                      oneMeshHandle, 1,
+                                      oneGeomHandle, junk );
   return oneGeomHandle.get(0);
 }
 

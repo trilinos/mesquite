@@ -42,6 +42,12 @@ TSTT_ASSO_SIDL = $(TSTT_DIR)/TSTTR.sidl
 TSTT_SHAR_INC = -I$(TSTT_SHAR_DIR)
 TSTT_GEOM_INC = -I$(TSTT_GEOM_DIR) -I$(TSTT_ASSO_DIR)
 TSTT_MESH_INC = -I$(TSTT_MESH_DIR)
+ifeq ($(MSQ_TSTT_MESH),yes)
+  TSTT_INC += $(TSTT_MESH_INC) $(TSTT_SHAR_INC)
+endif
+ifeq ($(MSQ_TSTT_GEOM),yes)
+  TSTT_INC += $(TSTT_GEOM_INC) $(TSTT_SHAR_INC)
+endif
 
 # Utility library names for linking test code
 TSTT_SHAR_CLIENT_LIBNAME = msqtsttclient
