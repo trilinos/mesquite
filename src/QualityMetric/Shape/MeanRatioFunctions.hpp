@@ -1636,6 +1636,229 @@ inline bool h_fcn_3e(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
 
 /*****************************************************************************/
 /* The following set of functions reference tetrahedral elements to a        */
+/* equilateral tetrahedron.  These functions are specialized toward          */
+/* obtaining the gradient and Hessian with respect to a single vertex.       */
+/*****************************************************************************/
+
+inline bool g_fcn_3e_v3(double &obj, Vector3D &g_obj, const Vector3D x[4],
+			const double a, const double b, const double c)
+{
+  double matr[9], f;
+  double adj_m[9], g;
+  double loc1, loc2, loc3;
+
+  /* Calculate M = A*inv(W). */
+  f       = x[1][0] + x[0][0];
+  matr[0] = x[1][0] - x[0][0];
+  matr[1] = (2.0*x[2][0] - f)*isqrt3;
+  matr[2] = (3.0*x[3][0] - x[2][0] - f)*isqrt6;
+
+  f       = x[1][1] + x[0][1];
+  matr[3] = x[1][1] - x[0][1];
+  matr[4] = (2.0*x[2][1] - f)*isqrt3;
+  matr[5] = (3.0*x[3][1] - x[2][1] - f)*isqrt6;
+
+  f       = x[1][2] + x[0][2];
+  matr[6] = x[1][2] - x[0][2];
+  matr[7] = (2.0*x[2][2] - f)*isqrt3;
+  matr[8] = (3.0*x[3][2] - x[2][2] - f)*isqrt6;
+
+  /* Calculate det(M). */
+  loc1 = matr[4]*matr[8] - matr[5]*matr[7];
+  loc2 = matr[5]*matr[6] - matr[3]*matr[8];
+  loc3 = matr[3]*matr[7] - matr[4]*matr[6];
+  g = matr[0]*loc1 + matr[1]*loc2 + matr[2]*loc3;
+  if (g < MSQ_MIN) { obj = g; return false; }
+
+  /* Calculate norm(M). */
+  f = matr[0]*matr[0] + matr[1]*matr[1] + matr[2]*matr[2] +
+      matr[3]*matr[3] + matr[4]*matr[4] + matr[5]*matr[5] +
+      matr[6]*matr[6] + matr[7]*matr[7] + matr[8]*matr[8];
+
+  /* Calculate objective function. */
+  obj  = a * pow(f, b) * pow(g, c);
+
+  /* Calculate the derivative of the objective function.    */
+  f = b * obj / f;		/* Constant on nabla f      */
+  g = c * obj / g;              /* Constant on nable g      */
+  f *= 2.0;                     /* Modification for nabla f */
+
+  g_obj[0] = tisqrt6*(matr[2]*f + loc3*g);
+
+  loc1 = matr[0]*g;
+  loc2 = matr[1]*g;
+
+  g_obj[1] = tisqrt6*(matr[5]*f + loc2*matr[6] - loc1*matr[7]);
+  g_obj[2] = tisqrt6*(matr[8]*f + loc1*matr[4] - loc2*matr[3]);
+  return true;
+}
+
+inline bool g_fcn_3e_v0(double &obj, Vector3D &g_obj, const Vector3D x[4],
+			const double a, const double b, const double c)
+{
+  static Vector3D my_x[4];
+
+  my_x[0] = x[1];
+  my_x[1] = x[3];
+  my_x[2] = x[2];
+  my_x[3] = x[0];
+  return g_fcn_3e_v3(obj, g_obj, my_x, a, b, c);
+}
+
+inline bool g_fcn_3e_v1(double &obj, Vector3D &g_obj, const Vector3D x[4],
+			const double a, const double b, const double c)
+{
+  static Vector3D my_x[4];
+
+  my_x[0] = x[0];
+  my_x[1] = x[2];
+  my_x[2] = x[3];
+  my_x[3] = x[1];
+  return g_fcn_3e_v3(obj, g_obj, my_x, a, b, c);
+}
+
+inline bool g_fcn_3e_v2(double &obj, Vector3D &g_obj, const Vector3D x[4],
+			const double a, const double b, const double c)
+{
+  static Vector3D my_x[4];
+
+  my_x[0] = x[1];
+  my_x[1] = x[0];
+  my_x[2] = x[3];
+  my_x[3] = x[2];
+  return g_fcn_3e_v3(obj, g_obj, my_x, a, b, c);
+}
+
+inline bool h_fcn_3e_v3(double &obj, Vector3D &g_obj, Matrix3D &h_obj,
+			const Vector3D x[4],
+			const double a, const double b, const double c)
+{
+  double matr[9], f;
+  double adj_m[9], g;
+  double dg[9], loc0, loc1, loc2, loc3, loc4;
+  double A[12], J_A[6], J_B[9], J_C[9], cross;
+
+  /* Calculate M = A*inv(W). */
+  f       = x[1][0] + x[0][0];
+  matr[0] = x[1][0] - x[0][0];
+  matr[1] = (2.0*x[2][0] - f)*isqrt3;
+  matr[2] = (3.0*x[3][0] - x[2][0] - f)*isqrt6;
+
+  f       = x[1][1] + x[0][1];
+  matr[3] = x[1][1] - x[0][1];
+  matr[4] = (2.0*x[2][1] - f)*isqrt3;
+  matr[5] = (3.0*x[3][1] - x[2][1] - f)*isqrt6;
+
+  f       = x[1][2] + x[0][2];
+  matr[6] = x[1][2] - x[0][2];
+  matr[7] = (2.0*x[2][2] - f)*isqrt3;
+  matr[8] = (3.0*x[3][2] - x[2][2] - f)*isqrt6;
+
+  /* Calculate det(M). */
+  dg[0] = matr[4]*matr[8] - matr[5]*matr[7];
+  dg[1] = matr[5]*matr[6] - matr[3]*matr[8];
+  dg[2] = matr[3]*matr[7] - matr[4]*matr[6];
+  g = matr[0]*dg[0] + matr[1]*dg[1] + matr[2]*dg[2];
+  if (g < MSQ_MIN) { obj = g; return false; }
+
+  /* Calculate norm(M). */
+  f = matr[0]*matr[0] + matr[1]*matr[1] + matr[2]*matr[2] + 
+      matr[3]*matr[3] + matr[4]*matr[4] + matr[5]*matr[5] +
+      matr[6]*matr[6] + matr[7]*matr[7] + matr[8]*matr[8];
+
+  loc3 = f;
+  loc4 = g;
+
+  /* Calculate objective function. */
+  obj  = a * pow(f, b) * pow(g, c);
+
+  /* Calculate the derivative of the objective function.    */
+  f = b * obj / f;		/* Constant on nabla f      */
+  g = c * obj / g;              /* Constant on nable g      */
+  f *= 2.0;                     /* Modification for nabla f */
+
+  dg[5] = matr[1]*matr[6] - matr[0]*matr[7];
+  dg[8] = matr[0]*matr[4] - matr[1]*matr[3];
+
+  g_obj[0] = tisqrt6*(matr[2]*f + dg[2]*g);
+  g_obj[1] = tisqrt6*(matr[5]*f + dg[5]*g);
+  g_obj[2] = tisqrt6*(matr[8]*f + dg[8]*g);
+
+  /* Calculate the hessian of the objective.                   */
+  loc0 = f;			/* Constant on nabla^2 f       */
+  loc1 = g;			/* Constant on nabla^2 g       */
+  cross = f * c / loc4;		/* Constant on nabla g nabla f */
+  f = f * (b-1) / loc3;		/* Constant on nabla f nabla f */
+  g = g * (c-1) / loc4;		/* Constant on nabla g nabla g */
+  f *= 2.0;                     /* Modification for nabla f    */
+
+  /* First block of rows */
+  loc3 = matr[2]*f + dg[2]*cross;
+  loc4 = dg[2]*g + matr[2]*cross;
+
+  h_obj[0][0] = 1.5*(loc0 + loc3*matr[2] + loc4*dg[2]);
+  h_obj[0][1] = 1.5*(loc3*matr[5] + loc4*dg[5]);
+  h_obj[0][2] = 1.5*(loc3*matr[8] + loc4*dg[8]);
+
+  /* Second block of rows */
+  loc3 = matr[5]*f + dg[5]*cross;
+  loc4 = dg[5]*g + matr[5]*cross;
+
+  h_obj[1][1] = 1.5*(loc0 + loc3*matr[5] + loc4*dg[5]);
+  h_obj[1][2] = 1.5*(loc3*matr[8] + loc4*dg[8]);
+
+  /* Third block of rows */
+  loc3 = matr[8]*f + dg[8]*cross;
+  loc4 = dg[8]*g + matr[8]*cross;
+
+  h_obj[2][2] = 1.5*(loc0 + loc3*matr[8] + loc4*dg[8]);
+
+  // completes diagonal block.
+  h_obj.fill_lower_triangle();
+  return true;
+}
+
+inline bool h_fcn_3e_v0(double &obj, Vector3D &g_obj, Matrix3D &h_obj,
+			const Vector3D x[4],
+			const double a, const double b, const double c)
+{
+  static Vector3D my_x[4];
+
+  my_x[0] = x[1];
+  my_x[1] = x[3];
+  my_x[2] = x[2];
+  my_x[3] = x[0];
+  return h_fcn_3e_v3(obj, g_obj, h_obj, my_x, a, b, c);
+}
+
+inline bool h_fcn_3e_v1(double &obj, Vector3D &g_obj, Matrix3D &h_obj,
+			const Vector3D x[4],
+			const double a, const double b, const double c)
+{
+  static Vector3D my_x[4];
+
+  my_x[0] = x[0];
+  my_x[1] = x[2];
+  my_x[2] = x[3];
+  my_x[3] = x[1];
+  return h_fcn_3e_v3(obj, g_obj, h_obj, my_x, a, b, c);
+}
+
+inline bool h_fcn_3e_v2(double &obj, Vector3D &g_obj, Matrix3D &h_obj,
+			const Vector3D x[4],
+			const double a, const double b, const double c)
+{
+  static Vector3D my_x[4];
+
+  my_x[0] = x[1];
+  my_x[1] = x[0];
+  my_x[2] = x[3];
+  my_x[3] = x[2];
+  return h_fcn_3e_v3(obj, g_obj, h_obj, my_x, a, b, c);
+}
+
+/*****************************************************************************/
+/* The following set of functions reference tetrahedral elements to a        */
 /* right tetrahedron.  They are used when assessing the quality of a         */
 /* hexahedral element.  A zero return value indicates success, while         */
 /* a nonzero value indicates failure.                                        */
