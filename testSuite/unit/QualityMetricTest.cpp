@@ -288,6 +288,8 @@ public:
      if(pF)
        PRINT_INFO("\nGEN HEX %f", val2);
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,0.0,qualTol);
+     delete met;
+     delete gmet;
    }
 
 
@@ -357,6 +359,8 @@ public:
      if(pF)
        PRINT_INFO("\nInv MEAN HEX %f", val);
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
+     delete met;
+     delete imet;
    }
   
   void test_aspect_ratio_gamma()
@@ -381,6 +385,7 @@ public:
      valid=met->evaluate_element(tetPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(valid==true);
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
+     delete met;
    }
 
   void test_composite_multiply()
@@ -435,6 +440,9 @@ public:
      if(pF)
        PRINT_INFO("\nMULT HEX %f", val);
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
+     delete met;
+     delete mmet;
+     delete cmet;
    }
   void test_other_composites()
      {
@@ -478,6 +486,7 @@ public:
        delete sa_m1;
        delete sa_m2;
        delete pow_mneg2;
+       
      }
   
 
@@ -549,6 +558,7 @@ public:
        CPPUNIT_ASSERT(third_val<1.0);
        CPPUNIT_ASSERT(third_bool==true);
        destroy_patch_with_domain(p3);
+       delete met;
      }
   
   void test_corner_jacobian_metric()
@@ -582,6 +592,7 @@ public:
        CPPUNIT_ASSERT(third_val<1.0);
        CPPUNIT_ASSERT(third_bool==true);
        destroy_patch_with_domain(p3);
+       delete met;
      }
   
   void test_local_size_metric()
@@ -626,6 +637,7 @@ public:
        CPPUNIT_ASSERT(third_val<1.0);
        CPPUNIT_ASSERT(third_bool==true);
          */
+       delete met;
      }
   void test_vertex_based_condition_number_metric()
      {
@@ -657,6 +669,7 @@ public:
          PRINT_INFO("\nVertex Condition No. Metric ideal tris %f", second_val);
        CPPUNIT_ASSERT_DOUBLES_EQUAL(second_val, 1.0, qualTol);
        CPPUNIT_ASSERT(second_bool==true);
+       delete met;
      }
   
   void test_untangle_metric()
@@ -684,6 +697,7 @@ public:
          //Michael:: double check to make sure that 2.0 is correct here.
        CPPUNIT_ASSERT_DOUBLES_EQUAL(val, 2.0, qualTol);
        CPPUNIT_ASSERT(first_bool==true);
+       delete met;
      }  
   
   void test_averaging_method()
@@ -744,6 +758,7 @@ public:
        //Check mean ratio of ideal SUM_OF_RATIOS_SQR (NOTICE:: should be 1.0)
      met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
+     delete met;
    }
 
   void test_mean_ratio_gradient(PatchData &pd)
@@ -808,9 +823,9 @@ public:
     for (int i=0; i<2; ++i)
       for (int j=0; j<3; ++j)
         CPPUNIT_ASSERT_DOUBLES_EQUAL(grad_num[i][j], grad_ana[i][j], 0.001);
-
-    delete grad_num;
-    delete grad_ana;
+    delete mean_ratio;
+    delete []grad_num;
+    delete []grad_ana;
   }
 
   void test_mean_ratio_tri_gradient_planar()
@@ -1064,7 +1079,7 @@ public:
           CPPUNIT_ASSERT_DOUBLES_EQUAL(hessian_num[m][i][j], hessian_ana[m][i][j], 0.003);
 
        
- 
+    delete mean_ratio;
     delete[] all_vtces;
     delete[] grad_num;
     delete[] grad_ana;
@@ -1081,6 +1096,7 @@ public:
       mean_rat->set_averaging_method(QualityMetric::SUM_SQUARED,
                                      err);
       test_metric_hessian(triPatch, mean_rat);
+      delete mean_rat;
     }
   
         
@@ -1147,6 +1163,7 @@ public:
     mean_rat->set_averaging_method(QualityMetric::SUM_SQUARED,
                                    err);
     test_metric_hessian(hexPatch, mean_rat);
+    delete mean_rat;
   }
  void test_mean_ratio_hex_hessian_linear()
     {
@@ -1252,6 +1269,11 @@ public:
     for (int i=0; i<nve; ++i)
       for (int j=0; j<3; ++j)
         CPPUNIT_ASSERT_DOUBLES_EQUAL(grad1[i][j], grad2[i][j], 1e-12);
+    delete []grad1;
+    delete []grad2;
+    delete []hessian;
+    delete []all_vtces;
+    delete mean_ratio;
   }
 
   void test_mean_ratio_tri_grad_from_hessian()

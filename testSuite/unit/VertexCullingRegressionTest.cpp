@@ -133,6 +133,7 @@ public:
       CPPUNIT_ASSERT(!err.errorOn);
       delete shape_metric;
       delete lapl1;
+      delete lapl2;
       delete lapl_met;
     }
   

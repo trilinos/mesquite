@@ -314,6 +314,9 @@ public:
                                           mErr);
     CPPUNIT_ASSERT( mErr.errorOn == true );
     mErr.reset();
+    delete []vert_handles;
+    delete []csr_data;
+    delete []csr_offsets;
   }
 
   
@@ -365,6 +368,7 @@ public:
     }
     CPPUNIT_ASSERT_EQUAL(1,nb_tri);
     CPPUNIT_ASSERT_EQUAL(3,nb_quads);
+    delete []topos;
   }
 
 

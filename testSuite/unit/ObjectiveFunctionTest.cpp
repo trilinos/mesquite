@@ -176,7 +176,7 @@ public:
     QM__ = comp_OF.get_quality_metric_list();
     CPPUNIT_ASSERT( QM__.size()==2 );
     std::list<QualityMetric*>::const_iterator QM2 = QM__.begin();
-    std::list<QualityMetric*>::const_iterator QM1 = QM2++;;
+    std::list<QualityMetric*>::const_iterator QM1 = QM2++;
     CPPUNIT_ASSERT( *QM1==mean_ratio   || *QM2==mean_ratio &&
                     *QM1==condition_nb || *QM2==condition_nb  );
 
@@ -432,6 +432,7 @@ public:
 //    cout << H <<endl;
 
     delete mean_ratio;
+    delete [] g;
   }
   
   void test_compute_ana_hessian_tet_scaled()
@@ -479,7 +480,7 @@ public:
         CPPUNIT_ASSERT_DOUBLES_EQUAL((*mat)[i][j], mat13[i][j], 1e-4);
     
 //    cout << H <<endl;
-
+    delete [] g;
     delete mean_ratio;
   }
   //! Tests that the Objective function value returned from evaluate() is the
