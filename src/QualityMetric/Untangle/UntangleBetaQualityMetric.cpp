@@ -71,7 +71,7 @@ bool UntangleBetaQualityMetric::evaluate_element(PatchData &pd,
     if(num_jacobian_vectors==2)
     {
       vertex1=element->get_vertex_index(0);
-      pd.get_surface_normal(vertex1,surface_normal,err);
+      pd.get_domain_normal_at_vertex(vertex1,surface_normal,err);
       cross_vec=jacobian_vectors[0]*jacobian_vectors[1];
         //std::cout<<"\nsurface_normal "<<surface_normal;
         //std::cout<<"\cross_vec "<<cross_vec;

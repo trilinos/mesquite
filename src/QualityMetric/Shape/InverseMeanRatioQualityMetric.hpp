@@ -78,7 +78,7 @@ namespace Mesquite
        //NOTE:: the equal below is ONLY to get the code to work
        //when no normal is available.
      Vector3D surf_norm=cross_vec;
-     pd.get_surface_normal(v_ind,surf_norm,err);MSQ_CHKERR(err);
+     pd.get_domain_normal_at_vertex(v_ind,surf_norm,err);MSQ_CHKERR(err);
        //if invalid
      if(surf_norm%cross_vec < 0.0){
        return false;
