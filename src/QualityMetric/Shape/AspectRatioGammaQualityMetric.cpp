@@ -49,21 +49,52 @@ double AspectRatioGammaQualityMetric::evaluate_element(PatchData &pd,
         //area
       vol=(((vert[1]-vert[0])*(vert[2]-vert[0])).length())/2.0;
       vol=fabs(vol);
-        //sum of edges squared
-      temp_vec=vert[1]-vert[0];
-      total_metric=temp_vec.length_squared();
-      temp_vec=vert[2]-vert[0];
-      total_metric+=temp_vec.length_squared();
-      temp_vec=vert[1]-vert[2];
-      total_metric+=temp_vec.length_squared();
-        //average sum of edges squared
-      total_metric/=3.0;
-        //normalize to equil. and div by area
-        // Where does the 2.309 below come from?
-      total_metric/=(vol*2.30940108);
+      if(vol<MSQ_MIN){
+        total_metric=MSQ_MAX_CAP;
+      }
+      else{
+          //sum of edges squared
+        temp_vec=vert[1]-vert[0];
+        total_metric=temp_vec.length_squared();
+        temp_vec=vert[2]-vert[0];
+        total_metric+=temp_vec.length_squared();
+        temp_vec=vert[1]-vert[2];
+        total_metric+=temp_vec.length_squared();
+          //average sum of edges squared
+        total_metric/=3.0;
+          //normalize to equil. and div by area
+          // 2.309... is 4/sqrt(3) (inverse of the area of an equil. tri
+        total_metric/=(vol*2.30940108);
+      }
+      
       break;
     case TETRAHEDRON:
-      total_metric=MSQ_MAX_CAP;
+      vol=(vert[1]-vert[0])%((vert[2]-vert[0])*(vert[3]-vert[0]))/6.0;
+        //sum of edges squared
+      if(fabs(vol)<MSQ_MIN){
+        total_metric=MSQ_MAX_CAP;
+      }
+      else{
+        temp_vec=vert[1]-vert[0];
+        total_metric=temp_vec.length_squared();
+        temp_vec=vert[2]-vert[0];
+        total_metric+=temp_vec.length_squared();
+        temp_vec=vert[3]-vert[0];
+        total_metric+=temp_vec.length_squared();
+        temp_vec=vert[2]-vert[1];
+        total_metric+=temp_vec.length_squared();
+        temp_vec=vert[3]-vert[1];
+        total_metric+=temp_vec.length_squared();
+        temp_vec=vert[3]-vert[2];
+        total_metric+=temp_vec.length_squared();
+          //average sum of edges squared
+        total_metric/=6.0;
+        total_metric=sqrt(total_metric);
+        total_metric*=(total_metric);
+        total_metric*=(total_metric);
+          //normalize to equil. and div by area
+        total_metric/=(vol*8.479670);
+      }
       break;
     default:
       total_metric=MSQ_MAX_CAP;
