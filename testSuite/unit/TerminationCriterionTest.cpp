@@ -8,7 +8,7 @@
 //    E-MAIL: mbrewer@sandia.gov
 //
 // ORIG-DATE: March 5, 2003
-//  LAST-MOD: March 5, 2003
+//  LAST-MOD:  9-Apr-03 at 10:08:33 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -112,8 +112,8 @@ public:
       MeshSet mesh_set1;
       mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
         //create geometry
-      Vector3D center(2,2,0);
-      Vector3D geo_center(0,0,0);
+//       Vector3D center(2,2,0);
+//       Vector3D geo_center(0,0,0);
       Vector3D pnt(0,-5,0);
       Vector3D s_norm(0, -1,0);
       SimplifiedGeometryEngine msq_geom;

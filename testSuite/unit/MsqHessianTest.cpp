@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 13-Jan-03 at 09:05:56
-//  LAST-MOD: 19-Feb-03 at 15:33:43 by Thomas Leurent
+//  LAST-MOD:  9-Apr-03 at 10:06:52 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -72,13 +72,13 @@ public:
     MsqHessian::initialize(twoTriangles, err); MSQ_CHKERR(err);
 
     // Checks values of mRowStart are correct.
-    int row_start[] = {0, 4, 7, 8, 9};
-    for (int i=0; i<5; ++i) 
+    size_t row_start[] = {0, 4, 7, 8, 9};
+    for (size_t i=0; i<5; ++i) 
       CPPUNIT_ASSERT( mRowStart[i] == row_start[i] );
 
     // Checks values of mColIndex are correct.
-    int col_index[] = {0,1,2,3,1,2,3,2,3};
-    for (int i=0; i<9; ++i) 
+    size_t col_index[] = {0,1,2,3,1,2,3,2,3};
+    for (size_t i=0; i<9; ++i) 
       CPPUNIT_ASSERT( mColIndex[i] == col_index[i] );
 
     // Checks values of mAccumulation are correct. 
@@ -99,7 +99,7 @@ public:
     
     MsqHessian::initialize(twoTriangles, err); MSQ_CHKERR(err);
 
-    int hs = MsqHessian::size();
+    size_t hs = MsqHessian::size();
 
     Vector3D* res = new Vector3D[hs];
     Vector3D* x = new Vector3D[hs];
@@ -142,7 +142,7 @@ public:
     ans[2].set(150, 199, 220);
     ans[3].set(166, 204, 174);
 
-    for (int i=0; i<hs; ++i)
+    for (size_t i=0; i<hs; ++i)
       CPPUNIT_ASSERT( res[i] == ans[i] );
 
     
@@ -158,7 +158,7 @@ public:
 
     axpy(res, hs, *this, x, hs, y, hs, err); MSQ_CHKERR(err);
 
-    for (int i=0; i<hs; ++i)
+    for (size_t i=0; i<hs; ++i)
       CPPUNIT_ASSERT( res[i] == ans[i] );
 
     delete[] res;
@@ -174,7 +174,7 @@ public:
     
     MsqHessian::initialize(twoTriangles, err); MSQ_CHKERR(err);
 
-    int hs = MsqHessian::size();
+    size_t hs = MsqHessian::size();
 
     Vector3D* res = new Vector3D[hs];
     Vector3D* x = new Vector3D[hs];
@@ -212,8 +212,8 @@ public:
     ans[2].set(-0.4361, 4.7640, -8.1006);
     ans[3].set(-0.1218, -0.8817, -4.5571);
 
-    for (int i=0; i<hs; ++i)
-      for (int j=0; j<3; ++j)
+    for (size_t i=0; i<hs; ++i)
+      for (short j=0; j<3; ++j)
         CPPUNIT_ASSERT_DOUBLES_EQUAL(x[i][j], ans[i][j], 10e-1);
 
     delete[] res;

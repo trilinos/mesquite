@@ -8,7 +8,7 @@
 //    E-MAIL: mbrewer@sandia.gov
 //
 // ORIG-DATE: 03-Dec-02
-//  LAST-MOD:  7-Apr-03 at 17:15:11 by Thomas Leurent
+//  LAST-MOD:  9-Apr-03 at 10:04:28 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -83,8 +83,6 @@ public:
     MsqError err;
     
     qualTol = MSQ_MIN;
-    size_t ind[20];
-    size_t elem_ind[8];
     
      /* Our triangular patch is made of two tris.  tri_1 is a perfect
         equilateral (the ideal for most metrics).  tri_2 is an arbitrary
@@ -409,7 +407,6 @@ public:
      MsqError err;
      double val;
      MsqMeshEntity* elems;
-     MsqVertex* verts = quadPatch.get_vertex_array(err);
      elems=quadPatch.get_element_array(err);
      MSQ_CHKERR(err);
      ShapeQualityMetric *met = MeanRatioQualityMetric::create_new();

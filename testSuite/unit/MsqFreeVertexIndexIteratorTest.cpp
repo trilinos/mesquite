@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 12-Nov-02 at 18:05:56
-//  LAST-MOD:  5-Dec-02 at 10:39:44 by Thomas Leurent
+//  LAST-MOD:  9-Apr-03 at 11:14:48 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -81,6 +81,7 @@ public:
      ind.reset();
      while (ind.next()) {
         indices[i] = ind.value();
+//         cout << i << "th free vertex value: " << ind.value() << endl; 
         ++i;
      } 
 

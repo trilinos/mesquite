@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 13-Nov-02 at 18:05:56
-//  LAST-MOD:  8-Apr-03 at 14:35:07 by Thomas Leurent
+//  LAST-MOD:  9-Apr-03 at 11:50:44 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -190,11 +190,11 @@ public:
     LPTemplate* LP2 = new LPTemplate(mean_ratio, 2, err);
 
     LP2->set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
-    LP2->compute_gradient(m6Quads, grad_num, err);
+    LP2->compute_gradient(m6Quads, grad_num, err); MSQ_CHKERR(err);
     
     LP2->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
     mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
-    LP2->compute_gradient(m6Quads, grad_ana, err);
+    LP2->compute_gradient(m6Quads, grad_ana, err); MSQ_CHKERR(err);
     
     for (int i=0; i<2; ++i)
       for (int j=0; j<3; ++j)
@@ -368,8 +368,8 @@ public:
     Matrix3D* block_num;
     Matrix3D* block_ana;
     CPPUNIT_ASSERT(OF_hessian_num.size() == OF_hessian_ana.size());
-    for (int m=0; m<OF_hessian_ana.size(); ++m) {
-      for (int n=m; n<OF_hessian_ana.size(); ++n) {
+    for (size_t m=0; m<OF_hessian_ana.size(); ++m) {
+      for (size_t n=m; n<OF_hessian_ana.size(); ++n) {
         block_num = OF_hessian_num.get_block(m,n);
         block_ana = OF_hessian_ana.get_block(m,n);
         for (int i=0; i<3; ++i)

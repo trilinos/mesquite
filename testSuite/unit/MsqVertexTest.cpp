@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 12-Nov-02 at 18:05:56
-//  LAST-MOD: 13-Dec-02 at 08:27:21 by Thomas Leurent
+//  LAST-MOD:  9-Apr-03 at 10:05:06 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -243,7 +243,7 @@ public:
     hex->get_sample_points(QualityMetric::ELEMENT_VERTICES, sample_points, err); MSQ_CHKERR(err);
       // and get the jacobian vectors (should be the identity matrix).
       //for the first sample point (0,0,0)
-    int num_jac_vec;
+    short num_jac_vec;
     std::vector<Vector3D>::iterator sp;
     sp=sample_points.begin();
     Vector3D jacobian_vectors[3];
@@ -280,7 +280,7 @@ public:
     std::vector<Vector3D> sample_points;
     tet->get_sample_points(QualityMetric::ELEMENT_VERTICES, sample_points, err); MSQ_CHKERR(err);
     // and get the jacobian vectors (should be the identity matrix).
-    int num_jac_vec;
+    short num_jac_vec;
     std::vector<Vector3D>::iterator sp;
     sp=sample_points.begin();
     Vector3D jacobian_vectors[3];
@@ -316,7 +316,7 @@ void test_compute_weigted_jacobian_ideal_quad()
     std::vector<Vector3D> sample_points;
     quad->get_sample_points(QualityMetric::ELEMENT_VERTICES, sample_points, err); MSQ_CHKERR(err);
     // and get the jacobian vectors (should be the identity matrix).
-    int num_jac_vec;
+    short num_jac_vec;
     std::vector<Vector3D>::iterator sp;
     sp=sample_points.begin();
     Vector3D jacobian_vectors[3];
@@ -350,7 +350,7 @@ void test_compute_weigted_jacobian_ideal_tri()
     std::vector<Vector3D> sample_points;
     tri->get_sample_points(QualityMetric::ELEMENT_VERTICES, sample_points, err); MSQ_CHKERR(err);
     // and get the jacobian vectors (should be the identity matrix).
-    int num_jac_vec;
+    short num_jac_vec;
     std::vector<Vector3D>::iterator sp;
     sp=sample_points.begin();
     Vector3D jacobian_vectors[3];
