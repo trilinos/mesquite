@@ -105,11 +105,18 @@ public:
       MsqPrintError err(cout);
       Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
       mesh->read_vtk("../../meshFiles/2D/VTK/square_quad_10_rand.vtk", err);
+      
+      Vector3D pnt(0,0,5);
+      Vector3D s_norm(0,0,1);
+      Mesquite::PlanarDomain msq_geom(s_norm, pnt);
+      
         //Make sure no errors
       CPPUNIT_ASSERT(!err);
         // initialises a MeshSet object
       MeshSet mesh_set1;
       mesh_set1.add_mesh(mesh, err); CPPUNIT_ASSERT(!err);
+      
+      mesh_set1.set_domain_constraint(&msq_geom, err); CPPUNIT_ASSERT(!err);
       
         // creates an intruction queue
       InstructionQueue queue1;
