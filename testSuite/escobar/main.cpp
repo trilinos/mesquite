@@ -63,8 +63,9 @@ int main()
     Vector3D s_norm(0,0,1);
     Mesquite::PlanarDomain msq_geom(s_norm, pnt, mesh);
      
- mesh->read_vtk("../../meshFiles/2D/VTK/hybrid_3quad_1tri_tangled.vtk", err);
+ //mesh->read_vtk("../../meshFiles/2D/VTK/hybrid_3quad_1tri_tangled.vtk", err);
  //mesh->read_vtk("../../meshFiles/2D/VTK/rotsq.vtk", err);
+ mesh->read_vtk("../../meshFiles/2D/VTK/horseshoe.vtk", err);
 
     // initializes a MeshSet object
     MeshSet mesh_set1;
