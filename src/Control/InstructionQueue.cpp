@@ -309,8 +309,10 @@ void InstructionQueue::run_instructions(MeshSet &ms, MsqError &err)
   }  
  
   if (globalPatch != 0)
+  {
     delete globalPatch; // clean up once all instructions are executed.
-
+    globalPatch = 0;
+  }
 }
 
   
