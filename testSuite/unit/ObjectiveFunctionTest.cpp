@@ -35,7 +35,7 @@ Unit testing of various functions in the ObjectiveFunction class.
 
 #include "cppunit/extensions/HelperMacros.h"
 #include "cppunit/SignalException.h"
-
+#include "MsqFreeVertexIndexIterator.hpp"
 #include <list>
 #include <iterator>
 
@@ -218,6 +218,7 @@ public:
   void test_compute_gradient_3D_LPtoPTemplate()
   {
     MsqError err;
+    MsqFreeVertexIndexIterator free_ind(&m12Hex, err);
     Vector3D* grad_num_2 = new Vector3D[m12Hex.num_vertices()];
     Vector3D* grad_ana_2 = new Vector3D[m12Hex.num_vertices()];
     Vector3D* grad_num_1 = new Vector3D[m12Hex.num_vertices()];
@@ -232,44 +233,73 @@ public:
       //**********************L 2 tests**************************
     LP2->set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
     LP2->compute_gradient(m12Hex, grad_num_2, err);
+    int grad_pos=0;
+    free_ind.reset();
     std::cout << "NUMERICAL GRADIENT\n";
-    for (int i=0; i<2; ++i)
-      for (int j=0; j<3; ++j)
-        std::cout << grad_num_2[i][j] << std::endl;
-    
+    for (int i=0; i<2; ++i){
+      free_ind.next();
+      grad_pos=free_ind.value();
+      for (int j=0; j<3; ++j){
+        std::cout << grad_num_2[grad_pos][j] << std::endl;
+      }
+    }    
     LP2->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
     mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
 //    mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
     LP2->compute_gradient(m12Hex, grad_ana_2, err);
     std::cout << "ANALYTICAL GRADIENT\n";
-    for (int i=0; i<2; ++i)
-      for (int j=0; j<3; ++j)
-        std::cout << grad_ana_2[i][j] << std::endl;
-  
-    for (int i=0; i<2; ++i)
-      for (int j=0; j<3; ++j)
-        CPPUNIT_ASSERT_DOUBLES_EQUAL(grad_num_2[i][j], grad_ana_2[i][j], 0.001);
+    free_ind.reset();
+    for (int i=0; i<2; ++i){
+      free_ind.next();
+      grad_pos=free_ind.value();
+      for (int j=0; j<3; ++j){
+        std::cout << grad_ana_2[grad_pos][j] << std::endl;
+      }
+    }
+    free_ind.reset();
+    for (int i=0; i<2; ++i){
+      free_ind.next();
+      grad_pos=free_ind.value();
+      for (int j=0; j<3; ++j){
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(grad_num_2[grad_pos][j],
+                                     grad_ana_2[grad_pos][j], 0.001);
+      }
+    }
 
           //**********************L 1 tests**************************
     LP1->set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
     LP1->compute_gradient(m12Hex, grad_num_1, err);
+    free_ind.reset();
     std::cout << "NUMERICAL GRADIENT\n";
-    for (int i=0; i<2; ++i)
-      for (int j=0; j<3; ++j)
-        std::cout << grad_num_1[i][j] << std::endl;
-    
+    for (int i=0; i<2; ++i){
+      free_ind.next();
+      grad_pos=free_ind.value();
+      for (int j=0; j<3; ++j){
+        std::cout << grad_num_1[grad_pos][j] << std::endl;
+      }
+    }    
     LP1->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
     mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
 //    mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
     LP1->compute_gradient(m12Hex, grad_ana_1, err);
     std::cout << "ANALYTICAL GRADIENT\n";
-    for (int i=0; i<2; ++i)
-      for (int j=0; j<3; ++j)
-        std::cout << grad_ana_1[i][j] << std::endl;
-  
-    for (int i=0; i<2; ++i)
-      for (int j=0; j<3; ++j)
-        CPPUNIT_ASSERT_DOUBLES_EQUAL(grad_num_1[i][j], grad_ana_1[i][j], 0.001);
+    free_ind.reset();
+    for (int i=0; i<2; ++i){
+      free_ind.next();
+      grad_pos=free_ind.value();
+      for (int j=0; j<3; ++j){
+        std::cout << grad_ana_1[grad_pos][j] << std::endl;
+      }
+    }
+    free_ind.reset();
+    for (int i=0; i<2; ++i){
+      free_ind.next();
+      grad_pos=free_ind.value();
+      for (int j=0; j<3; ++j){
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(grad_num_1[grad_pos][j],
+                                     grad_ana_1[grad_pos][j], 0.001);
+      }
+    }
  
     delete grad_num_2;
     delete grad_ana_2;
