@@ -58,9 +58,20 @@ package TSTTR version 001
                                 inout int to_mesh_handles_size)
       throws TSTT.Error;
 
+//==========================getGeomOwnedMesh====================
+/**
+ *   get related mesh entities of requested geometry entities
+ */
+    void getGeomOwnedMesh(in opaque geom, in opaque mesh,
+                          in opaque from_geom_handle,
+                          in int requested_mesh_entity_dim,
+                          inout array<opaque> to_mesh_handles,
+                          inout int to_mesh_handles_size)
+      throws TSTT.Error;
+
 //==========================getMeshRelatedEntities====================
 /**
- *   get related geometry entities of requested mesh entity sets
+ *   get related geometry entities of requested mesh entities
  */
     void getMeshRelatedEntities(in opaque geom, in opaque mesh,
                                 in array<opaque> from_mesh_handles,
@@ -69,12 +80,30 @@ package TSTTR version 001
                                 inout int to_geom_handles_size)
       throws TSTT.Error;
 
+//==========================getMeshSetRelatedEntities====================
+/**
+ *   get related geometry entities of requested mesh entity sets
+ */
+    void getMeshSetRelatedEntities(in opaque geom, in opaque mesh,
+                                   in array<opaque> from_mesh_handles,
+                                   in int from_mesh_handles_size,
+                                   inout array<opaque> to_geom_handles,
+                                   inout int to_geom_handles_size)
+      throws TSTT.Error;
+
 //==========================moveTo====================
 /**
  *   move mesh on a geometry entity to that entity
  */
     void moveTo(in opaque geom, in opaque mesh,
                 in opaque geom_entity_handle)
+      throws TSTT.Error;
+
+//==========================removeRelations====================
+/**
+ *   remove relations data between geometry and mesh
+ */
+    void removeRelations(in opaque geom, in opaque mesh)
       throws TSTT.Error;
   }
 
