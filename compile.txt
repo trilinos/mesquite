@@ -1,20 +1,18 @@
 This file explains how to build the Mesquite library
 (mesquite.a) from source code.
 
-1) cd to the src/ directory.
-
-2) While in the src/ directory, type 'config'.  This
+1) While in the main directory (mesquite/), type 'config'.  This
    will set up the makefiles with a default configuration
    for your platform.
 
-3) Examine the file src/Makefile.customize.  This file
+2) Examine the file src/Makefile.customize.  This file
    defines the tools and settings to be used while
    compiling Mesquite.  Make any modifications you
    deem necessary.  A description of each of the
    makefile variables is included at the end of this file
    (or at least there will be - haven't done it yet).
 
-4) While in the src/ directory, type 'make'.  This will
+4) While in the mesquite/ directory, type 'gmake -f GNUmakefile'.  This will
    compile all source files and create mesquite.a.  If
    the build is not successful, you may need to make
    additional modifications to Makefile.customize.
