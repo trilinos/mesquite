@@ -25,7 +25,7 @@ using namespace Mesquite;
 */
 UntangleBetaQualityMetric::UntangleBetaQualityMetric(double bet)
 {
-  avgMethod=QualityMetric::SUM;
+  avgMethod=QualityMetric::RMS;
   evalMode=QualityMetric::ELEMENT_VERTICES;
   feasible=0;
   set_name("Untangle Beta");

@@ -19,8 +19,10 @@ namespace Mesquite
      /*! \class UntangleBetaQualityMetric
        Given a scalar value beta and local signed element volume alpha_i,
        define delta_i to be alpha_i minus beta.  The Untangle beta value
-       is then defined as the sum over sample points of the absolute value
-       of delta_i minus delta_i.
+       is then defined as square root of the sum over sample points
+       of the absolute value of delta_i minus delta_i, difference squared.
+       That is, the root mean square of the difference, abs(delta_i) minus
+       delta_i.
      */
    
    class UntangleBetaQualityMetric : public UntangleQualityMetric
@@ -29,7 +31,7 @@ namespace Mesquite
      
        /*! \fn UntangleQualityMetric* UntangleBetaQualityMetric::create_new()
          \brief The function create_new is used to create a untangle quality
-         metric.  The constructor defaults to SUM AveragingMethod and
+         metric.  The constructor defaults to RMS AveragingMethod and
          ELEMENT_VERTICES evaluationMode.  The default beta value is
          .05.
        */
@@ -40,7 +42,7 @@ namespace Mesquite
         }
        /*! \fn UntangleQualityMetric* UntangleBetaQualityMetric::create_new(double bet)
          \brief The function create_new is used to create a untangle quality
-         metric.  The constructor defaults to SUM AveragingMethod and
+         metric.  The constructor defaults to RMS AveragingMethod and
          ELEMENT_VERTICES evaluationMode.  mBeta, the scalar value used
          to compute the metric value, is set to 'bet'.
        */
