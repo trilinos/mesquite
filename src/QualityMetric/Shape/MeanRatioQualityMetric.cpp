@@ -2305,6 +2305,20 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
       }
       break;
 
+    case LINEAR:
+      m = 0;
+      for (i = 0; i < 4; ++i) {
+        m += metrics[i];
+      }
+      m *= 0.25;
+      
+      for (i = 0; i < 4; ++i) {
+        grad[locs_hex[i][0]] += gradients[3*i+0] *0.25;
+        grad[locs_hex[i][1]] += gradients[3*i+1] *0.25;
+        grad[locs_hex[i][2]] += gradients[3*i+2] *0.25;
+      }
+      break;
+
     case GEOMETRIC:
       m = 0.0;
       for (i = 0; i < 4; ++i) {
@@ -2327,10 +2341,6 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 
     default:
       switch(avgMethod) {
-      case LINEAR:
-        t = 1.0;
-        break;
-
       case RMS:
         t = 2.0;
         break;
@@ -2471,6 +2481,21 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
       }
       break;
 
+    case LINEAR:
+      m = 0;
+      for (i = 0; i < 8; ++i) {
+        m += metrics[i];
+      }
+      m *= 0.125;
+
+      for (i = 0; i < 8; ++i) {
+        grad[locs_hex[i][0]] += gradients[4*i+0] *0.125;
+        grad[locs_hex[i][1]] += gradients[4*i+1] *0.125;
+        grad[locs_hex[i][2]] += gradients[4*i+2] *0.125;
+        grad[locs_hex[i][3]] += gradients[4*i+3] *0.125;
+      }
+      break;
+
     case GEOMETRIC:
       m = 0.0;
       for (i = 0; i < 8; ++i) {
@@ -2494,10 +2519,6 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 
     default:
       switch(avgMethod) {
-      case LINEAR:
-        t = 1.0;
-        break;
-
       case RMS:
         t = 2.0;
         break;
@@ -2672,32 +2693,66 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     case SUM:
       m = 0;
       for (i = 0; i < 4; ++i) {
-	m += metrics[i];
+        m += metrics[i];
       }
 
       l = 0;
       for (i = 0; i < 4; ++i) {
         g[locs_hex[i][0]] += gradients[3*i+0];
-	g[locs_hex[i][1]] += gradients[3*i+1];
-	g[locs_hex[i][2]] += gradients[3*i+2];
+        g[locs_hex[i][1]] += gradients[3*i+1];
+        g[locs_hex[i][2]] += gradients[3*i+2];
 
-	for (j = 0; j < 3; ++j) {
-	  for (k = j; k < 3; ++k) {
-	    r = locs_hex[i][j];
-	    c = locs_hex[i][k];
+        for (j = 0; j < 3; ++j) {
+          for (k = j; k < 3; ++k) {
+            r = locs_hex[i][j];
+            c = locs_hex[i][k];
 
-	    if (r <= c) {
-	      loc = 4*r - (r*(r+1)/2) + c;
-	      h[loc] += hessians[l];
-	    } 
-	    else {
-	      loc = 4*c - (c*(c+1)/2) + r;
-	      h[loc] += transpose(hessians[l]);
-	    }
-	    ++l;
-	  }
-	}
+            if (r <= c) {
+              loc = 4*r - (r*(r+1)/2) + c;
+              h[loc] += hessians[l];
+            } 
+            else {
+              loc = 4*c - (c*(c+1)/2) + r;
+              h[loc] += transpose(hessians[l]);
+            }
+            ++l;
+          }
+        }
       }
+      break;
+
+    case LINEAR:
+      m = 0;
+      for (i = 0; i < 4; ++i) {
+        m += metrics[i];
+      }
+      m *= 0.25;
+
+      l = 0;
+      for (i = 0; i < 4; ++i) {
+        g[locs_hex[i][0]] += gradients[3*i+0] *0.25;
+        g[locs_hex[i][1]] += gradients[3*i+1] *0.25;
+        g[locs_hex[i][2]] += gradients[3*i+2] *0.25;
+
+        for (j = 0; j < 3; ++j) {
+          for (k = j; k < 3; ++k) {
+            r = locs_hex[i][j];
+            c = locs_hex[i][k];
+
+            if (r <= c) {
+              loc = 4*r - (r*(r+1)/2) + c;
+              h[loc] += hessians[l];
+            } 
+            else {
+              loc = 4*c - (c*(c+1)/2) + r;
+              h[loc] += transpose(hessians[l]);
+            }
+            ++l;
+          }
+        }
+      }
+      for (i=0; i<10; ++i)
+        h[i] *= 0.25;
       break;
 
     case GEOMETRIC:
@@ -2706,10 +2761,6 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 
     default:
       switch(avgMethod) {
-      case LINEAR:
-	err.set_msg("LINEAR averaging method does not work.");
-	return false;
-
       case RMS:
 	err.set_msg("RMS averaging method does not work.");
 	return false;
@@ -2898,33 +2949,68 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     case SUM:
       m = 0;
       for (i = 0; i < 8; ++i) {
-	m += metrics[i];
+        m += metrics[i];
       }
 
       l = 0;
       for (i = 0; i < 8; ++i) {
         g[locs_hex[i][0]] += gradients[4*i+0];
-	g[locs_hex[i][1]] += gradients[4*i+1];
-	g[locs_hex[i][2]] += gradients[4*i+2];
-	g[locs_hex[i][3]] += gradients[4*i+3];
+        g[locs_hex[i][1]] += gradients[4*i+1];
+        g[locs_hex[i][2]] += gradients[4*i+2];
+        g[locs_hex[i][3]] += gradients[4*i+3];
 
-	for (j = 0; j < 4; ++j) {
-	  for (k = j; k < 4; ++k) {
-	    r = locs_hex[i][j];
-	    c = locs_hex[i][k];
+        for (j = 0; j < 4; ++j) {
+          for (k = j; k < 4; ++k) {
+            r = locs_hex[i][j];
+            c = locs_hex[i][k];
 
-	    if (r <= c) {
-	      loc = 8*r - (r*(r+1)/2) + c;
-	      h[loc] += hessians[l];
-	    } 
-	    else {
-	      loc = 8*c - (c*(c+1)/2) + r;
-	      h[loc] += transpose(hessians[l]);
-	    }
-	    ++l;
-	  }
-	}
+            if (r <= c) {
+              loc = 8*r - (r*(r+1)/2) + c;
+              h[loc] += hessians[l];
+            } 
+            else {
+              loc = 8*c - (c*(c+1)/2) + r;
+              h[loc] += transpose(hessians[l]);
+            }
+            ++l;
+          }
+        }
       }
+      break;
+
+    case LINEAR:
+      m = 0;
+      for (i = 0; i < 8; ++i) {
+        m += metrics[i];
+      }
+      m *= 0.125;
+
+      l = 0;
+      for (i = 0; i < 8; ++i) {
+        g[locs_hex[i][0]] += gradients[4*i+0] *0.125;
+        g[locs_hex[i][1]] += gradients[4*i+1] *0.125;
+        g[locs_hex[i][2]] += gradients[4*i+2] *0.125;
+        g[locs_hex[i][3]] += gradients[4*i+3] *0.125;
+
+        for (j = 0; j < 4; ++j) {
+          for (k = j; k < 4; ++k) {
+            r = locs_hex[i][j];
+            c = locs_hex[i][k];
+
+            if (r <= c) {
+              loc = 8*r - (r*(r+1)/2) + c;
+              h[loc] += hessians[l];
+            } 
+            else {
+              loc = 8*c - (c*(c+1)/2) + r;
+              h[loc] += transpose(hessians[l]);
+            }
+            ++l;
+          }
+        }
+      }
+      for (i=0; i<36; ++i)
+        h[i] *= 0.125;
       break;
 
     case GEOMETRIC:
@@ -2952,12 +3038,6 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 
     default:
       switch(avgMethod) {
-      case LINEAR:
-        err.set_msg("LINEAR averaging method does not work.");
-        return false;
-//         t = 1.0;
-//         break;
-
       case RMS:
 	err.set_msg("RMS averaging method does not work.");
 	return false;
