@@ -121,9 +121,9 @@ int main()
   pass1->set_patch_type(PatchData::GLOBAL_PATCH, err);
 
   // **************Set stopping criterion****************
-  //  TerminationCriterion tc_inner;
-  //  tc_inner.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,10,err);
-  //  pass1->set_inner_termination_criterion(&tc_inner);
+  TerminationCriterion tc_inner;
+  tc_inner.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,10,err);
+  pass1->set_inner_termination_criterion(&tc_inner);
    
   TerminationCriterion tc_outer;
   tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
