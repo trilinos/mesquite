@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 13-Nov-02 at 18:05:56
-//  LAST-MOD: 20-Jan-03 at 16:34:27 by Thomas Leurent
+//  LAST-MOD: 20-Mar-03 at 17:26:30 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -53,6 +53,7 @@ private:
   CPPUNIT_TEST (test_compute_gradient_3D_LPtoPTemplate_L1_hex);
   CPPUNIT_TEST (test_compute_gradient_3D_LPtoPTemplate_L2_hex);
   CPPUNIT_TEST (test_compute_gradient3D_composite);
+  CPPUNIT_TEST (test_compute_hessian_tet_patch);
 
   CPPUNIT_TEST_SUITE_END();
    
@@ -61,6 +62,7 @@ private:
   PatchData m4Quads;
   PatchData m6Quads;
   PatchData m12Hex;
+  PatchData tetPatch;
 
 public:
   void setUp()
@@ -103,6 +105,13 @@ public:
       1----2----3----9     13---14---15---21     25---26---27---33
     */
     create_twelve_hex_patch(m12Hex, err); MSQ_CHKERR(err);
+
+     /* Our tet patch is made of two tets.  tet_1 is a perfect
+        equilateral (the ideal for most metrics).  tet_2 is an arbitrary
+        tet.
+     */
+    create_qm_two_tet_patch(tetPatch,err);MSQ_CHKERR(err);
+    
   }
 
   void tearDown()
@@ -194,28 +203,33 @@ public:
        obj->set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
        return_bool=obj->compute_gradient(pd, grad_num, err);
        CPPUNIT_ASSERT(return_bool==true);
+       
        int grad_pos=0;
-       free_ind.reset();
-       std::cout << "NUMERICAL GRADIENT\n";
-       for (int i=0; i<2; ++i){
-         free_ind.next();
-         grad_pos=free_ind.value();
-         for (int j=0; j<3; ++j){
-           std::cout << grad_num[grad_pos][j] << std::endl;
-         }
-       }    
+
+//        free_ind.reset();
+//        std::cout << "NUMERICAL GRADIENT\n";
+//        for (int i=0; i<2; ++i){
+//          free_ind.next();
+//          grad_pos=free_ind.value();
+//          for (int j=0; j<3; ++j){
+//            std::cout << grad_num[grad_pos][j] << std::endl;
+//          }
+//        }
+       
        obj->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
        return_bool=obj->compute_gradient(pd, grad_ana, err);
        CPPUNIT_ASSERT(return_bool==true);
-       std::cout << "ANALYTICAL GRADIENT\n";
-       free_ind.reset();
-       for (int i=0; i<2; ++i){
-         free_ind.next();
-         grad_pos=free_ind.value();
-         for (int j=0; j<3; ++j){
-           std::cout << grad_ana[grad_pos][j] << std::endl;
-         }
-       }
+       
+//        std::cout << "ANALYTICAL GRADIENT\n";
+//        free_ind.reset();
+//        for (int i=0; i<2; ++i){
+//          free_ind.next();
+//          grad_pos=free_ind.value();
+//          for (int j=0; j<3; ++j){
+//            std::cout << grad_ana[grad_pos][j] << std::endl;
+//          }
+//        }
+       
        free_ind.reset();
        for (int i=0; i<2; ++i){
          free_ind.next();
@@ -300,6 +314,54 @@ public:
        compare_numerical_analytical_gradient(cm_of, m12Hex);
      }
   
+
+  void test_compute_hessian(PatchData &pd)
+  {
+    MsqError err;
+
+    MsqHessian OF_hessian_num;
+    MsqHessian OF_hessian_ana;
+    OF_hessian_num.initialize(pd, err); MSQ_CHKERR(err);
+    OF_hessian_ana.initialize(pd, err); MSQ_CHKERR(err);
+    
+    // creates a mean ratio quality metric ...
+    ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
+    mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+    mean_ratio->set_averaging_method(QualityMetric::SUM, err); MSQ_CHKERR(err);
+    mean_ratio->set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
+
+    // Creates an L1 objective function.
+    LPtoPTemplate L_1(mean_ratio, 1, err); MSQ_CHKERR(err);
+
+    // Compute numerical hessian.
+    L_1.set_hessian_type(ObjectiveFunction::NUMERICAL_HESSIAN);
+    L_1.compute_hessian(pd, OF_hessian_num, err); MSQ_CHKERR(err);
+
+    // Compute analytical hessian
+    L_1.set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
+    L_1.set_hessian_type(ObjectiveFunction::ANALYTICAL_HESSIAN);
+    L_1.compute_hessian(pd, OF_hessian_ana, err); MSQ_CHKERR(err);
+
+    // test
+    Matrix3D* block_num;
+    Matrix3D* block_ana;
+    CPPUNIT_ASSERT(OF_hessian_num.size() == OF_hessian_ana.size());
+    for (int m=0; m<OF_hessian_ana.size(); ++m) {
+      for (int n=m; n<OF_hessian_ana.size(); ++n) {
+        block_num = OF_hessian_num.get_block(m,n);
+        block_ana = OF_hessian_ana.get_block(m,n);
+        for (int i=0; i<3; ++i)
+          for (int j=0; j<3; ++j)
+            CPPUNIT_ASSERT_DOUBLES_EQUAL( (*block_num)[i][j], (*block_ana)[i][j], 0.001);
+      }
+    }
+    
+  }
+
+  void test_compute_hessian_tet_patch() {
+    test_compute_hessian(tetPatch);
+  }
+
 };
 
 
