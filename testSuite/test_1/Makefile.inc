@@ -7,6 +7,6 @@ TEST1EXEC = $(TEST1DIR)/main
 all_tests: $(TEST1EXEC)
 
 
-$(TEST1EXEC): $(TEST1SRC) $(locallibdir)/mesquite.a
+$(TEST1EXEC): $(TEST1SRC) $(locallibdir)/libmesquite.a
 	@echo "Linking Mesquite driver application ($@)..."
-	${LINKER} $(CXXFLAGS) ${LDFLAGS} -o $@ ${TEST1SRC} $(locallibdir)/mesquite.a -Lexternal/AOMD/lib/ -lAOMD -lm
+	${LINKER} $(CXXFLAGS) ${LDFLAGS} -o $@ ${TEST1SRC} -L$(locallibdir) -lmesquite -Lexternal/AOMD/lib/ -lAOMD -lm

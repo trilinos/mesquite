@@ -6,7 +6,7 @@ UNTEXEC = $(UNTDIR)/main
 
 all_tests: $(UNTEXEC)
 
-$(UNTEXEC): $(UNTSRC) $(locallibdir)/mesquite.a
+$(UNTEXEC): $(UNTSRC) $(locallibdir)/libmesquite.a
 	@echo "Linking Mesquite driver application ($@)..."
-	${LINKER} $(CXXFLAGS) ${LDFLAGS} -o $@ ${UNTSRC} $(locallibdir)/mesquite.a -Lexternal/AOMD/lib/ -lAOMD
+	${LINKER} $(CXXFLAGS) ${LDFLAGS} -o $@ ${UNTSRC} -L$(locallibdir) -lmesquite -Lexternal/AOMD/lib/ -lAOMD
 

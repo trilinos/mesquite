@@ -1,5 +1,5 @@
 This file explains how to build the Mesquite library
-(mesquite.a) from source code.
+(libmesquite.a) from source code.
 
 1) While in the main directory (mesquite/), type 'config'.  This
    will set up the makefiles with a default configuration

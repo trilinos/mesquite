@@ -1,3 +1,3 @@
 MSQLIBDIR = lib
 
-MSQLIB  = $(MSQLIBDIR)/mesquite.a
+MSQLIB  = $(MSQLIBDIR)/libmesquite.a

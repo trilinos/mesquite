@@ -6,4 +6,4 @@ $(MSQLIB): $(wildcard $(localobjdir)/*.o )
 	@echo "Creation of Mesquite Library complete."
 
 
-	
+

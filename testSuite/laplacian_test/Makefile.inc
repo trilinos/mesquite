@@ -6,6 +6,6 @@ LAPLEXEC = $(LAPLDIR)/main
 
 all_tests: $(LAPLEXEC)
 
-$(LAPLEXEC): $(LAPLSRC) $(locallibdir)/mesquite.a
+$(LAPLEXEC): $(LAPLSRC) $(locallibdir)/libmesquite.a
 	@echo "Linking Mesquite driver application ($@)..."
-	${LINKER} $(CXXFLAGS) ${LDFLAGS} -o $@ ${LAPLSRC} $(locallibdir)/mesquite.a -Lexternal/AOMD/lib/ -lAOMD
+	${LINKER} $(CXXFLAGS) ${LDFLAGS} -o $@ ${LAPLSRC} -L$(locallibdir) -lmesquite -Lexternal/AOMD/lib/ -lAOMD

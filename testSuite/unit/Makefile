@@ -1,19 +1,21 @@
-DEBUG_FLAG = -g
-CXX = CC
-LINKER = ${CXX}
-LDFLAGS = -LANG:std ${DEBUG_FLAG}
+# To switch to AOMD, set this in Makefile.customize:
+# TSTT_LINK = -L../../external/AOMD/lib/ -lAOMD -lm
 
-CXXFLAGS = -LANG:std ${DEBUG_FLAG}
+# These are the things you're most likely to need to
+# over-ride in Makefile.customize.
+CPPUNIT_DIR = ../../../cppunit
+MDB_DIR = ../../../mdb
+EXODUS_LIB_DIR = ../../../exodus
 
-CPPUNIT_INCLUDE = -I/disk2/pub/djmelan/mesquite/cppunit/include
+# The rest of these items probably won't need to be messed with
+CPPUNIT_INCLUDE = -I${CPPUNIT_DIR}/include
 TSTT_INCLUDE = -I../../TSTT-interface
 MESQUITE_INCLUDE = ${TSTT_INCLUDE} -I../../include -I../../includeLinks
-TEST_INCLUDE = ${CPPUNIT_INCLUDE} ${MESQUITE_INCLUDE}
+INCLUDE = ${CPPUNIT_INCLUDE} ${MESQUITE_INCLUDE}
 
-CPPUNIT_LINK = -L/disk2/pub/djmelan/mesquite/cppunit/src/cppunit/.libs -lcppunit
-EXODUS_LIB_DIR = /usr/local/eng_sci/cubit/exodus/exodus3.07/lib/irix65_n32
-TSTT_LINK = -L/disk2/pub/djmelan/mesquite/mdb -lMDB -L$(EXODUS_LIB_DIR) -lexoIIv2c -lnetcdf -lm
-MESQUITE_LINK = /disk2/pub/djmelan/mesquite/mesquite/lib/mesquite.a ${TSTT_LINK}
+CPPUNIT_LINK = -L${CPPUNIT_DIR}/src/cppunit/.libs -lcppunit
+TSTT_LINK = -L${MDB_DIR} -lMDB -L$(EXODUS_LIB_DIR) -lexoIIv2c -lnetcdf
+MESQUITE_LINK = -L../../lib -lmesquite ${TSTT_LINK}
 TEST_LINK = ${CPPUNIT_LINK} ${MESQUITE_LINK}
 
 TEST_SRCS = sample_main.cpp \
@@ -21,6 +23,8 @@ TEST_SRCS = sample_main.cpp \
     sample_test.cpp
 
 TEST_OBJS = ${TEST_SRCS:.cpp=.o}
+
+include ../../Makefile.customize
 
 sample_test : ${TEST_OBJS}
 	@echo "Linking $@"
