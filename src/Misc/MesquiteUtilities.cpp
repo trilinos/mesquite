@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 21-Aug-02 at 16:04:29
-//  LAST-MOD: 15-Jan-03 at 18:36:14 by Thomas Leurent
+//  LAST-MOD: 16-Jan-03 at 13:30:03 by Thomas Leurent
 //
 // RCS Infos:
 // ==========
@@ -129,16 +129,19 @@ void Mesquite::writeVtkMesh(const char filebase[128], TSTT::cMesh_Handle mesh_h,
   
   // get and prints out the connectivity for each element
   TSTT::Entity_Handle* elem_vertices = new TSTT::Entity_Handle[MSQ_MAX_NUM_VERT_PER_ENT];
+  int* csr_pointer; // dummy
+  int* csr_data; // dummy
   int e;
   for (e=0; e<num_elem; ++e) {
-    int* csr_pointer; // dummy
-    int* csr_data; // dummy
-    int num_elem_vtx; num_elem_vtx=8;
+    int num_elem_vtx; num_elem_vtx=MSQ_MAX_NUM_VERT_PER_ENT;
     TSTT::Entity_GetAdjacencies( mesh_h, (TSTT::cEntity_Handle *) &(elements[e]),
                                  1, TSTT::VERTEX, &elem_vertices,
                                  &csr_pointer, &csr_data, 
                                  &num_elem_vtx, &tstt_err );
     assert(!tstt_err);
+    delete[] csr_pointer; // because TSTT memory management is deficient for now.
+    delete[] csr_data; // because TSTT memory management is deficient for now.
+
     int index=0;
     int num_vtx_in_element = MsqMeshEntity::vertex_count(topologies[e], err);
     fprintf(vtk_fp,"%d ", num_vtx_in_element); MSQ_CHKERR(err);
@@ -171,6 +174,8 @@ void Mesquite::writeVtkMesh(const char filebase[128], TSTT::cMesh_Handle mesh_h,
     }
     fprintf(vtk_fp,"\n");
   }
+
+  delete[] elem_vertices;
 
   // writes the topology of each element.
   fprintf(vtk_fp, "CELL_TYPES %d\n", num_elem);
@@ -226,7 +231,6 @@ void Mesquite::writeVtkMesh(const char filebase[128], TSTT::cMesh_Handle mesh_h,
   delete id_2;
   delete[] vtx_coords;
   delete[] topologies;
-  delete[] elem_vertices;
 }
 
 
