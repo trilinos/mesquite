@@ -1,3 +1,19 @@
+// -*- Mode : c++; tab-width: 3; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 3 -*-
+//
+// ORIG-DATE: 16-May-02 at 10:26:21
+//  LAST-MOD: 31-Jan-03 at 13:51:14 by Thomas Leurent
+//
+/*! \file MsqMeshEntity.cpp
+
+\brief This files implements all the memory management issues related
+to the copy of the original TSTT (or other maybe) mesh entity handles
+into Mesquite.
+That copy is of course encapsulated in the MsqMeshEntity class.
+  
+    \author Thomas Leurent
+    \date 2002-05-16  
+ */
+
 #include "MsqMeshEntity.hpp"
 #include "MsqVertex.hpp"
 #include "PatchData.hpp"
@@ -16,6 +32,7 @@ using namespace Mesquite;
 void Mesquite::MsqMeshEntity::get_vertex_indices(std::vector<size_t> &vertices)
 {
   vertices.clear();
+  vertices.reserve(vertex_count());
   vertices.insert(vertices.end(),
                    vertexIndices,
                    vertexIndices + vertex_count());
