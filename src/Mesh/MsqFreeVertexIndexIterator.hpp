@@ -27,7 +27,7 @@ namespace Mesquite {
     flags activated.
     
     Use the iterator as follow:
-    MsqFreeVertexIndexIterator ind(&patch_data);
+    MsqFreeVertexIndexIterator ind(&patch_data,err);
     ind.reset();
     while (ind.next()) {
       cout << ind.value();
