@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 12-Nov-02 at 18:05:56
-//  LAST-MOD:  6-May-03 at 10:44:51 by Thomas Leurent
+//  LAST-MOD:  7-May-03 at 12:17:03 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -17,6 +17,9 @@
 This header file contains some functions to instantiates particular PatchData Objects.
 Those objects can be used in unit tests.
 Patches must be allocated and dealocated by the caller. 
+
+\author Thomas Leurent
+\author Michael Brewer
 
 */
 // DESCRIP-END.
