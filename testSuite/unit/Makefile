@@ -5,15 +5,14 @@
 
 # The rest of these items probably won't need to be messed with
 #CPPUNIT_INCLUDE = -I${CPPUNIT_DIR}/include
-TSTT_INCLUDE = -I../../TSTT-interface
-MESQUITE_INCLUDE = ${TSTT_INCLUDE} -I../../include -I../../includeLinks
+MSQ_BASE_DIR = ../..
+TSTT_INCLUDE = -I$(MSQ_BASE_DIR)/TSTT-interface
+MESQUITE_INCLUDE = ${TSTT_INCLUDE} -I$(MSQ_BASE_DIR)/include -I$(MSQ_BASE_DIR)/includeLinks
 TEST_INCLUDE = ${CPPUNIT_INCLUDE} ${MESQUITE_INCLUDE}
 
-CPPUNIT_LINK = -L${CPPUNIT_DIR}/src/cppunit/.libs -lcppunit -ldl
-
-MESQUITE_LINK = -L../../lib -lmesquite ${TSTT_LINK}
-MESQUITE_AOMD_LINK = -L../../lib -lmesquite ${AOMD_TSTT_LINK}
-MESQUITE_MDB_LINK = -L../../lib -lmesquite ${MDB_TSTT_LINK}
+MESQUITE_LINK = -L$(MSQ_BASE_DIR)/lib -lmesquite ${TSTT_LINK}
+MESQUITE_AOMD_LINK = -L$(MSQ_BASE_DIR)/lib -lmesquite ${AOMD_TSTT_LINK}
+MESQUITE_MDB_LINK = -L$(MSQ_BASE_DIR)/lib -lmesquite ${MDB_TSTT_LINK}
 
 TEST_LINK = ${CPPUNIT_LINK} ${MESQUITE_LINK} -lm
 TEST_AOMD_LINK = ${CPPUNIT_LINK} ${MESQUITE_AOMD_LINK} -lm
@@ -21,35 +20,19 @@ TEST_MDB_LINK = ${CPPUNIT_LINK} ${MESQUITE_MDB_LINK} -lm
 PREFIX = @
 PREFIX = 
 
-include ../../Makefile.customize
+default: msq_test
 
+include Makefile.inc
+include $(MSQ_BASE_DIR)/Makefile.customize
 MSQ_BASE_DIR = ../..
 
-TEST_SRCS = msq_test_main.cpp \
-    VtkTest.cpp \
-    Matrix3DTest.cpp \
-    MsqMeshEntityTest.cpp \
-    Vector3DTest.cpp \
-    InstructionQueueTest.cpp \
-    PatchDataTest.cpp \
-    QualityMetricTest.cpp \
-    ObjectiveFunctionTest.cpp \
-    MeshSetTest.cpp \
-    MsqVertexTest.cpp \
-    MsqFreeVertexIndexIteratorTest.cpp \
-    MsqHessianTest.cpp \
-    SphericalGeometryTest.cpp \
-    PlanarGeometryTest.cpp \
-    TerminationCriterionTest.cpp \
-    VertexCullingRegressionTest.cpp \
-    ExodusTest.cpp \
-    MeshInterfaceTest.cpp
-
-TEST_OBJS = ${TEST_SRCS:.cpp=.o}
-
-msq_test : ${TEST_OBJS} ../../lib/libmesquite.a
+msq_test : $(TEST_OBJS) $(MSQ_BASE_DIR)/lib/libmesquite.a
 	@echo "Linking $@"
-	${PREFIX}${LINKER} ${LDFLAGS} ${TEST_OBJS} ${TEST_LINK} -o $@
+	$(PREFIX)$(LINKER) $(LDFLAGS) \
+        $(TEST_OBJS) \
+        -o $@ \
+        -L$(MSQ_BASE_DIR)/lib -lmesquite \
+        -L$(CPPUNIT_DIR)/lib -lcppunit -ldl
 
 msq_test_aomd : ${TEST_OBJS}
 	@echo "Linking $@"

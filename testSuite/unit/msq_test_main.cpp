@@ -26,17 +26,45 @@
   ***************************************************************** */
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TestRunner.h>
-//#include "MesquiteTestRunner.hpp"
-#include "MsqMessage.hpp"
+#include <cppunit/Outputter.h>
+#include <cppunit/TestResultCollector.h>
+#include <cppunit/TestFailure.h>
+#include <assert.h>
+#include <stdio.h>
+
+class CPPUNIT_API SummaryOutput : public CppUnit::Outputter 
+{
+  public:
+    SummaryOutput( FILE* file, CppUnit::TestResultCollector* result ) 
+      : file_(file), results_(result) {}
+    void write();
+  private:
+    FILE* file_;
+    CppUnit::TestResultCollector* results_;
+};
+
+
 int main(int argc, char **argv)
 {
-    // Create a test runner
   CppUnit::TextUi::TestRunner runner;
+  int firsttest = 1;
+
+  if (argc > 1 && !strcmp(argv[1],"-s"))
+  {
+    FILE* file = fopen(argv[2],"w");
+    if (!file) 
+    {
+      perror( argv[2] );
+      exit(1);
+    }
+    runner.setOutputter( new SummaryOutput( file, &runner.result() ) );
+    firsttest += 2;
+  }
 
     // If the user requested a specific test...
-  if (argc > 1)
+  if (argc > firsttest)
   {
-    while (argc > 1)
+    while (argc > firsttest)
     {
       argc--;
       CppUnit::TestFactoryRegistry &registry =
@@ -56,5 +84,23 @@ int main(int argc, char **argv)
   
     // Return 0 if there were no errors
   return !runner.run( );
+}
+
+void SummaryOutput::write()
+{
+  CppUnit::TestResultCollector::TestFailures fails = results_->failures();
+  CppUnit::TestResultCollector::Tests tests = results_->tests();
+  
+  CppUnit::TestResultCollector::TestFailures::const_iterator f_iter = fails.begin();
+  CppUnit::TestResultCollector::Tests::const_iterator t_iter;
+  
+  fprintf(file_,"****Tests Run:\n");
+  for (t_iter = tests.begin(); t_iter != tests.end(); ++t_iter)
+    fprintf(file_, "%s\n", (*t_iter)->getName().c_str());
+
+  fprintf(file_,"****Tests Failed:\n");
+  for (f_iter = fails.begin(); f_iter != fails.end(); ++f_iter)
+    fprintf(file_, "%s\n", (*f_iter)->failedTestName().c_str());
+ 
 }
 

@@ -34,4 +34,4 @@ $(MSQ_TEST) : $(TEST_OBJS_P) $(locallibdir)/libmesquite.a
         $(TEST_OBJS_P) \
         -o $@ \
         -L$(locallibdir) -lmesquite \
-        -lcppunit -ldl
+        -L$(CPPUNIT_DIR)/lib -lcppunit -ldl
