@@ -213,45 +213,108 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
     // normal is constant.  If the normal is not constant, you need
     // to get the gradient of the normal with respect to the vertex
     // positions to obtain the correct values.
-
-    for (i = 0; i < 3; ++i) {
-      mAccGrads[i] = 0.0;
-    }
     
-    for (i = 0; i < 3; ++i) {
-      for (j = 0; j < 3; ++j) {
-	mCoords[j] = vertices[v_i[tetInd[i][j]]];
+    if (1 == nfv) {
+      // One free vertex; use the specialized code for computing the gradient.
+
+      g[0] = 0.0;
+      for (i = 0; i < 3; ++i) {
+	mVert = -1;
+	for (j = 0; j < 3; ++j) {
+	  mCoords[j] = vertices[v_i[tetInd[i][j]]];
+	  if (vertices + v_i[tetInd[i][j]] == fv[0]) {
+	    mVert = j;
+	  }
+	}
+
+	if (mVert >= 0) {
+	  e->compute_corner_normal( i, mNormal, pd, err ); MSQ_ERRZERO(err);
+	  mNormal *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
+	  
+	  QR(mQ, mR, W[i]);
+	  inv(invR, mR);
+
+	  switch(mVert) {
+	  case 0:
+	    mValid = g_gdft_2_v0(mMetric, mGrads[0], mCoords, mNormal,
+				 invR, mQ, mAlpha, mGamma, delta, mBeta);
+	    break;
+	    
+	  case 1:
+	    mValid = g_gdft_2_v1(mMetric, mGrads[0], mCoords, mNormal,
+				 invR, mQ, mAlpha, mGamma, delta, mBeta);
+	    break;
+	    
+	  default:
+	    mValid = g_gdft_2_v2(mMetric, mGrads[0], mCoords, mNormal,
+				 invR, mQ, mAlpha, mGamma, delta, mBeta);
+	    break;
+	  }
+
+	  if (!mValid) return false;
+	  m += W[i].get_cK() * mMetric;
+	  g[0] += W[i].get_cK() * mGrads[0];
+	}
+	else {
+	  // For triangles, the free vertex must appear in every element.
+	  // Therefore, there these accumulations should not get used.
+
+	  e->compute_corner_normal( i, mNormal, pd, err ); MSQ_ERRZERO(err);
+	  mNormal *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
+	  
+	  QR(mQ, mR, W[i]);
+	  inv(invR, mR);
+
+	  mValid = m_gdft_2(mMetric, mCoords, mNormal,
+			    invR, mQ, mAlpha, mGamma, delta, mBeta);
+	  if (!mValid) return false;
+	  m += W[i].get_cK() * mMetric;
+	}
       }
-      
-      e->compute_corner_normal( i, mNormal, pd, err );  MSQ_ERRZERO(err);
-      mNormal *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
-      
-      QR(mQ, mR, W[i]);
-      inv(invR, mR);
-      mValid = g_gdft_2(mMetric, mGrads, mCoords, mNormal, invR, mQ, 
-			mAlpha, mGamma, delta, mBeta);
 
-      if (!mValid) return false;
-      m += W[i].get_cK() * mMetric;
-      for (j = 0; j < 3; ++j) {
-	mAccGrads[tetInd[i][j]] += W[i].get_cK() * mGrads[j];
+      m *= MSQ_ONE_THIRD;
+      g[0] *= MSQ_ONE_THIRD;
+    }
+    else {
+      for (i = 0; i < 3; ++i) {
+	mAccGrads[i] = 0.0;
       }
-    }
+    
+      for (i = 0; i < 3; ++i) {
+	for (j = 0; j < 3; ++j) {
+	  mCoords[j] = vertices[v_i[tetInd[i][j]]];
+	}
+      
+	e->compute_corner_normal( i, mNormal, pd, err ); MSQ_ERRZERO(err);
+	mNormal *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
+      
+	QR(mQ, mR, W[i]);
+	inv(invR, mR);
+	mValid = g_gdft_2(mMetric, mGrads, mCoords, mNormal, invR, mQ, 
+			  mAlpha, mGamma, delta, mBeta);
 
-    m *= MSQ_ONE_THIRD;
-    for (i = 0; i < 3; ++i) {
-      mAccGrads[i] *= MSQ_ONE_THIRD;
-    }
+	if (!mValid) return false;
+	m += W[i].get_cK() * mMetric;
+	for (j = 0; j < 3; ++j) {
+	  mAccGrads[tetInd[i][j]] += W[i].get_cK() * mGrads[j];
+	}
+      }
 
-    // This is not very efficient, but is one way to select correct gradients.
-    // For gradients, info is returned only for free vertices, in the order
-    // of fv[].
+      m *= MSQ_ONE_THIRD;
+      for (i = 0; i < 3; ++i) {
+	mAccGrads[i] *= MSQ_ONE_THIRD;
+      }
 
-    for (i = 0; i < 3; ++i) {
-      for (j = 0; j < nfv; ++j) {
-        if (vertices + v_i[i] == fv[j]) {
-          g[j] = mAccGrads[i];
-        }
+      // This is not very efficient, but is one way to select correct 
+      // gradients.  For gradients, info is returned only for free 
+      // vertices, in the order of fv[].
+
+      for (i = 0; i < 3; ++i) {
+	for (j = 0; j < nfv; ++j) {
+	  if (vertices + v_i[i] == fv[j]) {
+	    g[j] = mAccGrads[i];
+	  }
+	}
       }
     }
     break;
@@ -264,43 +327,109 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
     // to get the gradient of the normal with respect to the vertex
     // positions to obtain the correct values.
 
-    for (i = 0; i < 4; ++i) {
-      mAccGrads[i] = 0.0;
-    }
+    if (1 == nfv) {
+      // One free vertex; use the specialized code for computing the gradient.
 
-    for (i = 0; i < 4; ++i) {
-      for (j = 0; j < 3; ++j) {
-	mCoords[j] = vertices[v_i[hexInd[i][j]]];
+      g[0] = 0.0;
+      for (i = 0; i < 4; ++i) {
+	mVert = -1;
+	for (j = 0; j < 3; ++j) {
+	  mCoords[j] = vertices[v_i[hexInd[i][j]]];
+	  if (vertices + v_i[hexInd[i][j]] == fv[0]) {
+	    mVert = j;
+	  }
+	}
+
+	if (mVert >= 0) {
+	  e->compute_corner_normal( i, mNormal, pd, err ); MSQ_ERRZERO(err);
+	  
+	  QR(mQ, mR, W[i]);
+	  inv(invR, mR);
+
+	  switch(mVert) {
+	  case 0:
+	    mValid = g_gdft_2_v0(mMetric, mGrads[0], mCoords, mNormal,
+				 invR, mQ, mAlpha, mGamma, delta, mBeta);
+	    break;
+	    
+	  case 1:
+	    mValid = g_gdft_2_v1(mMetric, mGrads[0], mCoords, mNormal,
+				 invR, mQ, mAlpha, mGamma, delta, mBeta);
+	    break;
+	    
+	  default:
+	    mValid = g_gdft_2_v2(mMetric, mGrads[0], mCoords, mNormal,
+				 invR, mQ, mAlpha, mGamma, delta, mBeta);
+	    break;
+	  }
+
+	  if (!mValid) return false;
+	  m += W[i].get_cK() * mMetric;
+	  g[0] += W[i].get_cK() * mGrads[0];
+	}
+	else {
+	  // For quadrilaterals, the free vertex only appears in three 
+	  // elements.  Therefore, there these accumulations are needed 
+	  // to get the true local objective function.  Note: this code 
+          // can be commented out for local codes to improve performance 
+          // because you are unable to change the contributions from the 
+	  // elements where the free vertex does not appear.  (If the 
+	  // weight matrices change, then the code needs to be modified.)
+
+	  e->compute_corner_normal( i, mNormal, pd, err ); MSQ_ERRZERO(err);
+	  
+	  QR(mQ, mR, W[i]);
+	  inv(invR, mR);
+
+	  mValid = m_gdft_2(mMetric, mCoords, mNormal,
+			    invR, mQ, mAlpha, mGamma, delta, mBeta);
+	  if (!mValid) return false;
+	  m += W[i].get_cK() * mMetric;
+	}
       }
 
-      e->compute_corner_normal( i, mNormal, pd, err ); MSQ_ERRZERO(err);
-
-      QR(mQ, mR, W[i]);
-      inv(invR, mR);
-      mValid = g_gdft_2(mMetric, mGrads, mCoords, mNormal, invR, mQ, 
-			mAlpha, mGamma, delta, mBeta);
-
-      if (!mValid) return false;
-      m += W[i].get_cK() * mMetric;
-      for (j = 0; j < 3; ++j) {
-	mAccGrads[hexInd[i][j]] += W[i].get_cK() * mGrads[j];
-      }
+      m *= 0.25;
+      g[0] *= 0.25;
     }
+    else {
+      for (i = 0; i < 4; ++i) {
+	mAccGrads[i] = 0.0;
+      }
+
+      for (i = 0; i < 4; ++i) {
+	for (j = 0; j < 3; ++j) {
+	  mCoords[j] = vertices[v_i[hexInd[i][j]]];
+	}
+
+	e->compute_corner_normal( i, mNormal, pd, err ); MSQ_ERRZERO(err);
+
+	QR(mQ, mR, W[i]);
+	inv(invR, mR);
+	mValid = g_gdft_2(mMetric, mGrads, mCoords, mNormal, invR, mQ, 
+			  mAlpha, mGamma, delta, mBeta);
+
+	if (!mValid) return false;
+	m += W[i].get_cK() * mMetric;
+	for (j = 0; j < 3; ++j) {
+	  mAccGrads[hexInd[i][j]] += W[i].get_cK() * mGrads[j];
+	}
+      }
     
-    m *= 0.25;
-    for (i = 0; i < 4; ++i) {
-      mAccGrads[i] *= 0.25;
-    }
+      m *= 0.25;
+      for (i = 0; i < 4; ++i) {
+	mAccGrads[i] *= 0.25;
+      }
 
-    // This is not very efficient, but is one way to select correct gradients
-    // For gradients, info is returned only for free vertices, in the order 
-    // of fv[].
+      // This is not very efficient, but is one way to select correct gradients
+      // For gradients, info is returned only for free vertices, in the order 
+      // of fv[].
 
-    for (i = 0; i < 4; ++i) {
-      for (j = 0; j < nfv; ++j) {
-        if (vertices + v_i[i] == fv[j]) {
-          g[j] = mAccGrads[i];
-        }
+      for (i = 0; i < 4; ++i) {
+	for (j = 0; j < nfv; ++j) {
+	  if (vertices + v_i[i] == fv[j]) {
+	    g[j] = mAccGrads[i];
+	  }
+	}
       }
     }
     break;
@@ -584,79 +713,174 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
       h[i].zero();
     }
 
-    // Compute the metric and sum them together
-    for (i = 0; i < 3; ++i) {
-      for (j = 0; j < 3; ++j) {
-	mCoords[j] = vertices[v_i[tetInd[i][j]]];
+    if (1 == nfv) {
+      // One free vertex; use the specialized code for computing the 
+      // gradient and Hessian.
+
+      Vector3D mG;
+      Matrix3D mH;
+
+      mG = 0.0;
+      mH.zero();
+
+      for (i = 0; i < 3; ++i) {
+	mVert = -1;
+	for (j = 0; j < 3; ++j) {
+	  mCoords[j] = vertices[v_i[tetInd[i][j]]];
+	  if (vertices + v_i[tetInd[i][j]] == fv[0]) {
+	    mVert = j;
+	  }
+	}
+	
+	if (mVert >= 0) {
+	  e->compute_corner_normal( i, mNormal, pd, err ); MSQ_ERRZERO(err);
+	  mNormal *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
+	  
+	  QR(mQ, mR, W[i]);
+	  inv(invR, mR);
+	  
+	  switch(mVert) {
+	  case 0:
+	    mValid = h_gdft_2_v0(mMetric, mGrads[0], mHessians[0],
+				 mCoords, mNormal,
+				 invR, mQ, mAlpha, mGamma, delta, mBeta);
+	    break;
+	    
+	  case 1:
+	    mValid = h_gdft_2_v1(mMetric, mGrads[0], mHessians[0],
+				 mCoords, mNormal,
+				 invR, mQ, mAlpha, mGamma, delta, mBeta);
+	    break;
+	    
+	  default:
+	    mValid = h_gdft_2_v2(mMetric, mGrads[0], mHessians[0],
+				 mCoords, mNormal,
+				 invR, mQ, mAlpha, mGamma, delta, mBeta);
+	    break;
+	  }
+
+	  if (!mValid) return false;
+	  m += W[i].get_cK() * mMetric;
+	  mG += W[i].get_cK() * mGrads[0];
+	  mH += W[i].get_cK() * mHessians[0];
+	}
+	else {
+	  // For triangles, the free vertex must appear in every element.
+	  // Therefore, there these accumulations should not get used.
+
+	  e->compute_corner_normal( i, mNormal, pd, err ); MSQ_ERRZERO(err);
+	  mNormal *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
+	  
+	  QR(mQ, mR, W[i]);
+	  inv(invR, mR);
+
+	  mValid = m_gdft_2(mMetric, mCoords, mNormal,
+			    invR, mQ, mAlpha, mGamma, delta, mBeta);
+	  if (!mValid) return false;
+	  m += W[i].get_cK() * mMetric;
+	}
       }
 
-      e->compute_corner_normal( i, mNormal, pd, err );  MSQ_ERRZERO(err);
-      mNormal *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
-      
-      QR(mQ, mR, W[i]);
-      inv(invR, mR);
-      mValid = h_gdft_2(mMetric, mGrads, mHessians, mCoords, mNormal, 
-			invR, mQ, mAlpha, mGamma, delta, mBeta);
+      m *= MSQ_ONE_THIRD;
+      mG *= MSQ_ONE_THIRD;
+      mH *= MSQ_ONE_THIRD;
 
-      if (!mValid) return false;
-      m += W[i].get_cK() * mMetric;
+      for (i = 0; i < 3; ++i) {
+	if (vertices + v_i[i] == fv[0]) {
+	  // free vertex, see next
+	  g[i] = mG;
+	  switch(i) {
+	  case 0:
+	    h[0] = mH;
+	    break;
 
-      for (j = 0; j < 3; ++j) {
-	g[tetInd[i][j]] += W[i].get_cK() * mGrads[j];
-      }
+	  case 1:
+	    h[3] = mH;
+	    break;
 
-      l = 0;
-      for (j = 0; j < 3; ++j) {
-	for (k = j; k < 3; ++k) {
-	  row = tetInd[i][j];
-	  col = tetInd[i][k];
-
-	  if (row <= col) {
-	    loc = 3*row - (row*(row+1)/2) + col;
-	    h[loc] += W[i].get_cK() * mHessians[l];
+	  default:
+	    h[5] = mH;
+	    break;
 	  }
-	  else {
-	    loc = 3*col - (col*(col+1)/2) + row;
-	    h[loc] += W[i].get_cK() * transpose(mHessians[l]);
-	  }
-	  ++l;
+	  break;
 	}
       }
     }
+    else {
+      // Compute the metric and sum them together
+      for (i = 0; i < 3; ++i) {
+	for (j = 0; j < 3; ++j) {
+	  mCoords[j] = vertices[v_i[tetInd[i][j]]];
+	}
 
-    m *= MSQ_ONE_THIRD;
-    for (i = 0; i < 3; ++i) {
-      g[i] *= MSQ_ONE_THIRD;
-    }
+	e->compute_corner_normal( i, mNormal, pd, err );  MSQ_ERRZERO(err);
+	mNormal *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
+      
+	QR(mQ, mR, W[i]);
+	inv(invR, mR);
+	mValid = h_gdft_2(mMetric, mGrads, mHessians, mCoords, mNormal, 
+			  invR, mQ, mAlpha, mGamma, delta, mBeta);
 
-    for (i = 0; i < 6; ++i) {
-      h[i] *= MSQ_ONE_THIRD;
-    }
+	if (!mValid) return false;
+	m += W[i].get_cK() * mMetric;
 
-    // zero out fixed elements of g
-    j = 0;
-    for (i = 0; i < 3; ++i) {
-      if (vertices + v_i[i] == fv[j]) {
-	// if free vertex, see next
-        ++j;
+	for (j = 0; j < 3; ++j) {
+	  g[tetInd[i][j]] += W[i].get_cK() * mGrads[j];
+	}
+
+	l = 0;
+	for (j = 0; j < 3; ++j) {
+	  for (k = j; k < 3; ++k) {
+	    row = tetInd[i][j];
+	    col = tetInd[i][k];
+
+	    if (row <= col) {
+	      loc = 3*row - (row*(row+1)/2) + col;
+	      h[loc] += W[i].get_cK() * mHessians[l];
+	    }
+	    else {
+	      loc = 3*col - (col*(col+1)/2) + row;
+	      h[loc] += W[i].get_cK() * transpose(mHessians[l]);
+	    }
+	    ++l;
+	  }
+	}
       }
-      else {
-	// else zero gradient entry and hessian entries.
-        g[i] = 0.;
 
-        switch(i) {
-        case 0:
-          h[0].zero(); h[1].zero(); h[2].zero();
-          break;
+      m *= MSQ_ONE_THIRD;
+      for (i = 0; i < 3; ++i) {
+	g[i] *= MSQ_ONE_THIRD;
+      }
+
+      for (i = 0; i < 6; ++i) {
+	h[i] *= MSQ_ONE_THIRD;
+      }
+
+      // zero out fixed elements of g
+      j = 0;
+      for (i = 0; i < 3; ++i) {
+	if (vertices + v_i[i] == fv[j]) {
+	  // if free vertex, see next
+	  ++j;
+	}
+	else {
+	  // else zero gradient entry and hessian entries.
+	  g[i] = 0.;
+
+	  switch(i) {
+	  case 0:
+	    h[0].zero(); h[1].zero(); h[2].zero();
+	    break;
 	  
-        case 1:
-          h[1].zero(); h[3].zero(); h[4].zero();
-          break;
+	  case 1:
+	    h[1].zero(); h[3].zero(); h[4].zero();
+	    break;
 	  
-        case 2:
-          h[2].zero(); h[4].zero(); h[5].zero();
-          break;
-        }
+	  case 2:
+	    h[2].zero(); h[4].zero(); h[5].zero();
+	    break;
+	  }
+	}
       }
     }
     break;
@@ -678,82 +902,184 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
       h[i].zero();
     }
 
-    // Compute the metric and sum them together
-    for (i = 0; i < 4; ++i) {
-      for (j = 0; j < 3; ++j) {
-	mCoords[j] = vertices[v_i[hexInd[i][j]]];
+    if (1 == nfv) {
+      // One free vertex; use the specialized code for computing the 
+      // gradient and Hessian.
+
+      Vector3D mG;
+      Matrix3D mH;
+
+      mG = 0.0;
+      mH.zero();
+
+      for (i = 0; i < 4; ++i) {
+	mVert = -1;
+	for (j = 0; j < 3; ++j) {
+	  mCoords[j] = vertices[v_i[hexInd[i][j]]];
+	  if (vertices + v_i[hexInd[i][j]] == fv[0]) {
+	    mVert = j;
+	  }
+	}
+	
+	if (mVert >= 0) {
+	  e->compute_corner_normal( i, mNormal, pd, err ); MSQ_ERRZERO(err);
+	  
+	  QR(mQ, mR, W[i]);
+	  inv(invR, mR);
+	  
+	  switch(mVert) {
+	  case 0:
+	    mValid = h_gdft_2_v0(mMetric, mGrads[0], mHessians[0],
+				 mCoords, mNormal,
+				 invR, mQ, mAlpha, mGamma, delta, mBeta);
+	    break;
+	    
+	  case 1:
+	    mValid = h_gdft_2_v1(mMetric, mGrads[0], mHessians[0],
+				 mCoords, mNormal,
+				 invR, mQ, mAlpha, mGamma, delta, mBeta);
+	    break;
+	    
+	  default:
+	    mValid = h_gdft_2_v2(mMetric, mGrads[0], mHessians[0],
+				 mCoords, mNormal,
+				 invR, mQ, mAlpha, mGamma, delta, mBeta);
+	    break;
+	  }
+
+	  if (!mValid) return false;
+	  m += W[i].get_cK() * mMetric;
+	  mG += W[i].get_cK() * mGrads[0];
+	  mH += W[i].get_cK() * mHessians[0];
+	}
+	else {
+	  // For quadrilaterals, the free vertex only appears in three 
+	  // elements.  Therefore, there these accumulations are needed 
+	  // to get the true local objective function.  Note: this code 
+          // can be commented out for local codes to improve performance 
+          // because you are unable to change the contributions from the 
+	  // elements where the free vertex does not appear.  (If the 
+	  // weight matrices change, then the code needs to be modified.)
+
+	  e->compute_corner_normal( i, mNormal, pd, err ); MSQ_ERRZERO(err);
+	  
+	  QR(mQ, mR, W[i]);
+	  inv(invR, mR);
+
+	  mValid = m_gdft_2(mMetric, mCoords, mNormal,
+			    invR, mQ, mAlpha, mGamma, delta, mBeta);
+	  if (!mValid) return false;
+	  m += W[i].get_cK() * mMetric;
+	}
       }
 
-      e->compute_corner_normal( i, mNormal, pd, err ); MSQ_ERRZERO(err);
+      m *= 0.25;
+      mG *= 0.25;
+      mH *= 0.25;
 
-      QR(mQ, mR, W[i]);
-      inv(invR, mR);
-      mValid = h_gdft_2(mMetric, mGrads, mHessians, mCoords, mNormal, 
-			invR, mQ, mAlpha, mGamma, delta, mBeta);
+      for (i = 0; i < 4; ++i) {
+	if (vertices + v_i[i] == fv[0]) {
+	  // free vertex, see next
+	  g[i] = mG;
+	  switch(i) {
+	  case 0:
+	    h[0] = mH;
+	    break;
 
-      if (!mValid) return false;
-      m += W[i].get_cK() * mMetric;
+	  case 1:
+	    h[4] = mH;
+	    break;
 
-      for (j = 0; j < 3; ++j) {
-	g[hexInd[i][j]] += W[i].get_cK() * mGrads[j];
-      }
+	  case 2:
+	    h[7] = mH;
+	    break;
 
-      l = 0;
-      for (j = 0; j < 3; ++j) {
-	for (k = j; k < 3; ++k) {
-	  row = hexInd[i][j];
-	  col = hexInd[i][k];
-
-	  if (row <= col) {
-	    loc = 4*row - (row*(row+1)/2) + col;
-	    h[loc] += W[i].get_cK() * mHessians[l];
+	  default:
+	    h[9] = mH;
+	    break;
 	  }
-	  else {
-	    loc = 4*col - (col*(col+1)/2) + row;
-	    h[loc] += W[i].get_cK() * transpose(mHessians[l]);
-	  }
-	  ++l;
+	  break;
 	}
       }
     }
+    else {
+      // Compute the metric and sum them together
+      for (i = 0; i < 4; ++i) {
+	for (j = 0; j < 3; ++j) {
+	  mCoords[j] = vertices[v_i[hexInd[i][j]]];
+	}
 
-    m *= 0.25;
-    for (i = 0; i < 4; ++i) {
-      g[i] *= 0.25;
-    }
+	e->compute_corner_normal( i, mNormal, pd, err ); MSQ_ERRZERO(err);
 
-    for (i = 0; i < 10; ++i) {
-      h[i] *= 0.25;
-    }
+	QR(mQ, mR, W[i]);
+	inv(invR, mR);
+	mValid = h_gdft_2(mMetric, mGrads, mHessians, mCoords, mNormal, 
+			  invR, mQ, mAlpha, mGamma, delta, mBeta);
 
-    // zero out fixed elements of gradient and Hessian
-    j = 0;
-    for (i = 0; i < 4; ++i) {
-      if (vertices + v_i[i] == fv[j]) {
-	// if free vertex, see next
-        ++j;
+	if (!mValid) return false;
+	m += W[i].get_cK() * mMetric;
+
+	for (j = 0; j < 3; ++j) {
+	  g[hexInd[i][j]] += W[i].get_cK() * mGrads[j];
+	}
+
+	l = 0;
+	for (j = 0; j < 3; ++j) {
+	  for (k = j; k < 3; ++k) {
+	    row = hexInd[i][j];
+	    col = hexInd[i][k];
+
+	    if (row <= col) {
+	      loc = 4*row - (row*(row+1)/2) + col;
+	      h[loc] += W[i].get_cK() * mHessians[l];
+	    }
+	    else {
+	      loc = 4*col - (col*(col+1)/2) + row;
+	      h[loc] += W[i].get_cK() * transpose(mHessians[l]);
+	    }
+	    ++l;
+	  }
+	}
       }
-      else {
-	// else zero gradient entry and hessian entries.
-        g[i] = 0.;
 
-        switch(i) {
-        case 0:
-          h[0].zero();   h[1].zero();   h[2].zero();   h[3].zero();
-          break;
+      m *= 0.25;
+      for (i = 0; i < 4; ++i) {
+	g[i] *= 0.25;
+      }
+
+      for (i = 0; i < 10; ++i) {
+	h[i] *= 0.25;
+      }
+
+      // zero out fixed elements of gradient and Hessian
+      j = 0;
+      for (i = 0; i < 4; ++i) {
+	if (vertices + v_i[i] == fv[j]) {
+	  // if free vertex, see next
+	  ++j;
+	}
+	else {
+	  // else zero gradient entry and hessian entries.
+	  g[i] = 0.;
+
+	  switch(i) {
+	  case 0:
+	    h[0].zero();   h[1].zero();   h[2].zero();   h[3].zero();
+	    break;
           
-        case 1:
-          h[1].zero();   h[4].zero();   h[5].zero();   h[6].zero();
-          break;
+	  case 1:
+	    h[1].zero();   h[4].zero();   h[5].zero();   h[6].zero();
+	    break;
           
-        case 2:
-          h[2].zero();   h[5].zero();   h[7].zero();  h[8].zero();
-          break;
+	  case 2:
+	    h[2].zero();   h[5].zero();   h[7].zero();  h[8].zero();
+	    break;
           
-        case 3:
-          h[3].zero();   h[6].zero();   h[8].zero();  h[9].zero();
-          break;
-        }
+	  case 3:
+	    h[3].zero();   h[6].zero();   h[8].zero();  h[9].zero();
+	    break;
+	  }
+	}
       }
     }
     break;
