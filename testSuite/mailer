@@ -7,7 +7,7 @@
 use IO::File;
 use MIME::Lite;
 
-my $debug = 1;
+my $debug = 0;
 
 # The first argument to this script should be the directory to search
 # for result files.
@@ -243,8 +243,8 @@ foreach $number (1, 2, 3)
          my $rslt = $hashref->{$test};
          printf $file $fmtstr2, $rslt == 0 ? "OK" : $rslt == 1 ? "FAIL" : "ERR";
          }
-         print $file "\n";
       }
+      print $file "\n";
    }
 }
 
