@@ -225,6 +225,12 @@ void PatchData::move_free_vertices(Vector3D dk[], int nb_vtx,
   }
 }
 
+/*! \fn PatchData::get_element_vertex_coordinates(size_t elem_index, std::vector<Vector3D> &coords, MsqError &err)
+
+    \param elem_index The element index in the Patch
+    \param coords This std::vector will have the coordinates appended to it.
+    If necessary, make sure to clear the vector before calling the function. 
+  */
 void PatchData::get_element_vertex_coordinates(
   size_t elem_index,
   std::vector<Vector3D> &coords,
