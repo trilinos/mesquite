@@ -60,6 +60,7 @@ void TargetCalculator::compute_target_matrices_and_check_det(PatchData &pd, MsqE
     for (size_t j=0; j<num_corners; ++j) {    
       if ( det(tag->target_matrix(j)) <= 0 ) {
         err.set_msg("A Target matrix has a non-positive determinant. Please review your target calculator.");
+        FUNCTION_TIMER_END();
         return;
       }
     }
