@@ -519,8 +519,8 @@ void QualityAssessor::Assessor::reset_data()
 {
   count = 0;
   sum = 0;
-  maximum = -DBL_MAX;
-  minimum = DBL_MAX;
+  maximum = -HUGE_VAL;
+  minimum = HUGE_VAL;
   sqrSum = 0;
   numInvalid = 0;
   memset( &histogram[0], 0, sizeof(int)*histogram.size() );
