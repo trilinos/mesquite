@@ -4,8 +4,8 @@
 //       ORG: Argonne National Laboratory
 //    E-MAIL: tmunson@mcs.anl.gov
 //
-// ORIG-DATE:  2-Jan-03 at 11:02:19 bu Tom Leurent
-//  LAST-MOD: 13-Jan-03 at 11:32:08 by Todd Munson
+// ORIG-DATE:  2-Jan-03 at 11:02:19 bu Thomas Leurent
+//  LAST-MOD: 14-Jan-03 at 13:30:48 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -30,7 +30,7 @@ describe MsqHessian.hpp here
 #endif
 
 #include <iostream>
-
+ 
 
 namespace Mesquite
 {
@@ -42,7 +42,7 @@ namespace Mesquite
   */
   class MsqHessian
   {
-  private:
+  protected:
     Matrix3D* mEntries;	   // size: number of nonzero blocks 
     size_t* mColIndex;     //< column indexes of the entries in the row. 
     size_t* mColInstr;	   //< accumulation pattern instructions
