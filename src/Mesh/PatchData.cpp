@@ -36,6 +36,7 @@ PatchData::PatchData()
     elemArraySize(0),
     v2eSize(0),
     v2eOffsetSize(0),
+    v2eValid(false),
     subpatchIndexSize(0)
 {}
 
