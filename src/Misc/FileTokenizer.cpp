@@ -131,7 +131,7 @@ bool FileTokenizer::get_double_internal( double& result, MsqError& err )
   {
     MSQ_SETERR(err)( MsqError::PARSE_ERROR,
       "Syntax error at line %d: expected number, got \"%s\"",
-      line_number(), buffer );
+      line_number(), token );
     return false;
   }
   
@@ -172,7 +172,7 @@ bool FileTokenizer::get_long_int_internal( long& result, MsqError& err )
   {
     MSQ_SETERR(err)( MsqError::PARSE_ERROR,
       "Syntax error at line %d: expected integer, got \"%s\"",
-      line_number(), buffer );
+      line_number(), token );
     return false;
   }
 
@@ -237,11 +237,11 @@ bool FileTokenizer::get_boolean_internal( bool& result, MsqError& err )
   if (MSQ_CHKERR(err))
     return false;
   
-  if (token[1] || (token[0] != '0' && token[1] != '1'))
+  if (token[1] || (token[0] != '0' && token[0] != '1'))
   {
     MSQ_SETERR(err)( MsqError::PARSE_ERROR,
       "Syntax error at line %d: expected 0 or 1, got \"%s\"",
-      line_number(), buffer );
+      line_number(), token );
     return false;
   }
 
@@ -364,7 +364,7 @@ bool FileTokenizer::match_token( const char* str, MsqError& err )
     // Construct error message
   MSQ_SETERR(err)( MsqError::PARSE_ERROR,
     "Syntax error at line %d: expected \"%s\", got \"%s\"",
-    line_number(),token, buffer );
+    line_number(), str, token );
   return false;
 }  // namespace Mesquite
 

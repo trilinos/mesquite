@@ -160,6 +160,9 @@ namespace Mesquite
                                 const Vector3D &p2);
     //- Interpolate between two points. Returns (1-param)*v1 + param*v2.
 
+    const double* to_array() const 
+      { return mCoords; }
+
   protected:
     double mCoords[3];
   };
