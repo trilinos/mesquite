@@ -126,7 +126,7 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &pd,
 {
   FUNCTION_TIMER_START(__FUNC__);
     //initialize the scaling value
-  double scaling_value=get_negate_flag();
+  double scaling_value=1.0;
  
   size_t num_elements=pd.num_elements();
   size_t num_vertices=pd.num_vertices();
