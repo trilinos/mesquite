@@ -291,7 +291,7 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError& err)
     for(ii=0;ii<MSQ_HIST_SIZE+2;ii++){
       QAData[i].histVar[ii]=0;
     }
-      //initialize max, min, rms, stddev.
+      //initialize max, min, rms, stddev., valid
     QAData[i].maxVar=0.0;
     QAData[i].minVar=MSQ_MAX_CAP;
     QAData[i].rmsVar=0.0;
@@ -299,6 +299,7 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError& err)
     QAData[i].histMax=assessor_array[i]->maxHist;
     QAData[i].histMin=assessor_array[i]->minHist;
     QAData[i].histDelta=(QAData[i].histMax-QAData[i].histMin)/MSQ_HIST_SIZE;
+    QAData[i].numInvalid=0;
     ++i;
     ++pos;
   }
@@ -366,7 +367,11 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError& err)
               //if first pass or if two passes are required
             if(!num_pass||assessor_array[metric_counter]->maxHist>MSQ_MAX_CAP){
               
-              assessor_array[metric_counter]->metric->evaluate_element(elem_group,&elems[element_counter], temp_val, err);  MSQ_CHKERR(err);
+              if(!assessor_array[metric_counter]->metric->evaluate_element(elem_group,&elems[element_counter], temp_val, err)){
+                QAData[metric_counter].numInvalid++;
+              }
+            
+                MSQ_CHKERR(err);
               
                 //if we are on the first loop over the mesh, calculate
                 //everything we can.  That is accumlate for
@@ -482,7 +487,10 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError& err)
               //if first pass or if two passes are required
             if(!num_pass||assessor_array[metric_counter]->maxHist>MSQ_MAX_CAP){
               
-              assessor_array[metric_counter]->metric->evaluate_vertex(vert_group,&verts[vertex_counter],temp_val,err);  MSQ_CHKERR(err);
+              if(!assessor_array[metric_counter]->metric->evaluate_vertex(vert_group,&verts[vertex_counter],temp_val,err)){
+                QAData[metric_counter].numInvalid++;
+              }
+              MSQ_CHKERR(err);
               
                 //if we are on the first loop over the mesh, calculate
                 //everything we can.  That is accumlate for
@@ -643,64 +651,70 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError& err)
         PRINT_INFO("\nVERTEX BASED METRIC :: %s (%i vertices)\n",assessor_array[metric_counter]->metric->get_name().c_str(),tot_num);
       }
       column_counter=0;
-      if(assessor_array[metric_counter]->funcFlagBits&MINIMUM)
-      {
-        PRINT_INFO("%s = %8.6e   ", get_QAFunction_name(QualityAssessor::MINIMUM).c_str(),QAData[metric_counter].minVar);
-        column_counter++;
-          //return_value=QAData[metric_counter].minVar;
+        //PRINT only a warning if invalid
+      if(QAData[metric_counter].numInvalid>0){
+        PRINT_INFO("MESH IS INVALID WITH RESPECT TO THIS METRIC (%i values)\n",QAData[metric_counter].numInvalid);
       }
-      if(assessor_array[metric_counter]->funcFlagBits&MAXIMUM)
-      {
-        PRINT_INFO("%s = %8.6e   ", get_QAFunction_name(QualityAssessor::MAXIMUM).c_str(),QAData[metric_counter].maxVar);
-        column_counter++;
-          //return_value=QAData[metric_counter].maxVar;
-      }
-        //new line every two entries
-      if(column_counter==2){
-        column_counter=0;
-        PRINT_INFO("\n");
-      }
-      
-      if(assessor_array[metric_counter]->funcFlagBits&AVERAGE)
-      {
-        PRINT_INFO("%s = %8.6e   ",get_QAFunction_name(QualityAssessor::AVERAGE).c_str(),QAData[metric_counter].avgVar);
-        column_counter++;
-          //return_value=QAData[metric_counter].avgVar;
-      }
-        //new line every two entries
-      if(column_counter==2){
-        column_counter=0;
-        PRINT_INFO("\n");
-      }
-      if(assessor_array[metric_counter]->funcFlagBits&RMS)
-      {
-        PRINT_INFO("%s = %8.6e   ", get_QAFunction_name(QualityAssessor::RMS).c_str(),QAData[metric_counter].rmsVar);
-        column_counter++;
-          //return_value=QAData[metric_counter].rmsVar;
-      }
-        //new line every two entries
-      if(column_counter==2){
-        column_counter=0;
-        PRINT_INFO("\n");
-      }
-      if(assessor_array[metric_counter]->funcFlagBits&STDDEV)
-      {
-        PRINT_INFO("%s = %8.6e   ", get_QAFunction_name(QualityAssessor::STDDEV).c_str(),QAData[metric_counter].stdVar);
-          //return_value=QAData[metric_counter].stdVar;
-      }
-      if(assessor_array[metric_counter]->funcFlagBits&HISTOGRAM)
-      {
-         PRINT_INFO("\n%s  \n", get_QAFunction_name(QualityAssessor::HISTOGRAM).c_str());
-         int inner_loop;
-        if(QAData[metric_counter].histVar[0])
-          PRINT_INFO("NOTICE:  VALUES BELOW HISTOGRAM RANGE = %d\n",QAData[metric_counter].histVar[0]);
-        for (inner_loop=0;inner_loop<MSQ_HIST_SIZE; inner_loop++){
-          PRINT_INFO("Values between %8.6e and %8.6e = %d\n",QAData[metric_counter].histMin+(QAData[metric_counter].histDelta*inner_loop),QAData[metric_counter].histMin+(QAData[metric_counter].histDelta*(inner_loop+1)),QAData[metric_counter].histVar[inner_loop+1]);
-        }//end inner_loop       
-        if(QAData[metric_counter].histVar[MSQ_HIST_SIZE+1])
-          PRINT_INFO("NOTICE:  VALUES ABOVE HISTOGRAM RANGE = %d\n",QAData[metric_counter].histVar[MSQ_HIST_SIZE+1]);
-      }//end if histo
-    
+        //mesh was valid with respect to the metric
+      else{
+        if(assessor_array[metric_counter]->funcFlagBits&MINIMUM)
+        {
+          PRINT_INFO("%s = %8.6e   ", get_QAFunction_name(QualityAssessor::MINIMUM).c_str(),QAData[metric_counter].minVar);
+          column_counter++;
+            //return_value=QAData[metric_counter].minVar;
+        }
+        if(assessor_array[metric_counter]->funcFlagBits&MAXIMUM)
+        {
+          PRINT_INFO("%s = %8.6e   ", get_QAFunction_name(QualityAssessor::MAXIMUM).c_str(),QAData[metric_counter].maxVar);
+          column_counter++;
+            //return_value=QAData[metric_counter].maxVar;
+        }
+          //new line every two entries
+        if(column_counter==2){
+          column_counter=0;
+          PRINT_INFO("\n");
+        }
+        
+        if(assessor_array[metric_counter]->funcFlagBits&AVERAGE)
+        {
+          PRINT_INFO("%s = %8.6e   ",get_QAFunction_name(QualityAssessor::AVERAGE).c_str(),QAData[metric_counter].avgVar);
+          column_counter++;
+            //return_value=QAData[metric_counter].avgVar;
+        }
+          //new line every two entries
+        if(column_counter==2){
+          column_counter=0;
+          PRINT_INFO("\n");
+        }
+        if(assessor_array[metric_counter]->funcFlagBits&RMS)
+        {
+          PRINT_INFO("%s = %8.6e   ", get_QAFunction_name(QualityAssessor::RMS).c_str(),QAData[metric_counter].rmsVar);
+          column_counter++;
+            //return_value=QAData[metric_counter].rmsVar;
+        }
+          //new line every two entries
+        if(column_counter==2){
+          column_counter=0;
+          PRINT_INFO("\n");
+        }
+        if(assessor_array[metric_counter]->funcFlagBits&STDDEV)
+        {
+          PRINT_INFO("%s = %8.6e   ", get_QAFunction_name(QualityAssessor::STDDEV).c_str(),QAData[metric_counter].stdVar);
+            //return_value=QAData[metric_counter].stdVar;
+        }
+        if(assessor_array[metric_counter]->funcFlagBits&HISTOGRAM)
+        {
+          PRINT_INFO("\n%s  \n", get_QAFunction_name(QualityAssessor::HISTOGRAM).c_str());
+          int inner_loop;
+          if(QAData[metric_counter].histVar[0])
+            PRINT_INFO("NOTICE:  VALUES BELOW HISTOGRAM RANGE = %d\n",QAData[metric_counter].histVar[0]);
+          for (inner_loop=0;inner_loop<MSQ_HIST_SIZE; inner_loop++){
+            PRINT_INFO("Values between %8.6e and %8.6e = %d\n",QAData[metric_counter].histMin+(QAData[metric_counter].histDelta*inner_loop),QAData[metric_counter].histMin+(QAData[metric_counter].histDelta*(inner_loop+1)),QAData[metric_counter].histVar[inner_loop+1]);
+          }//end inner_loop       
+          if(QAData[metric_counter].histVar[MSQ_HIST_SIZE+1])
+            PRINT_INFO("N       OTICE:  VALUES ABOVE HISTOGRAM RANGE = %d\n",QAData[metric_counter].histVar[MSQ_HIST_SIZE+1]);
+        }//end if histo         
+      }//end else (else the mesh was valid)
     }//end while loop over metrics
     PRINT_INFO("\n");
   }

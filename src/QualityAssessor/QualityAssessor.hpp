@@ -119,6 +119,7 @@ namespace Mesquite
       double minVar;//holds min metric val
       double rmsVar;//hold sum of squares until print
       double stdVar;//holds std dev squared until print
+      int numInvalid;//counts the number of invalid metric values
     };
     
     std::list<Assessor*> assessList;
