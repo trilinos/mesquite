@@ -130,22 +130,39 @@ bool QualityMetric::compute_element_numerical_gradient(PatchData &pd,
 
   if (!valid)
     return false;
-  
   double delta = 10e-6;
+  int counter=0;
   double metric_value1=0;
   for (int v=0; v<num_vtx; ++v) 
   {
     /* gradient in the x, y, z direction */
     for (int j=0;j<3;++j) 
     {
-      // perturb the coordinates of the free vertex in the j direction by delta
-      (*vertices[v])[j]+=delta;
-      //compute the function at the perturbed point location
-      this->evaluate_element(pd, element,  metric_value1, err); MSQ_CHKERR(err);
-      //compute the numerical gradient
-      grad_vec[v][j]=(metric_value1-metric_value)/delta;
-      // put the coordinates back where they belong
-      (*vertices[v])[j] -= delta;
+        //re-initialize variables.
+      valid=false;
+      delta = 10e-6;
+      counter=0;
+        //perturb the node and calculate gradient.  The while loop is a
+        //safety net to make sure the epsilon perturbation does not take
+        //the element out of the feasible region.
+      while(!valid && counter<10){
+          // perturb the coordinates of the free vertex in the j direction
+          // by delta       
+        (*vertices[v])[j]+=delta;
+          //compute the function at the perturbed point location
+        valid=this->evaluate_element(pd, element,  metric_value1, err);
+        MSQ_CHKERR(err);
+          //compute the numerical gradient
+        grad_vec[v][j]=(metric_value1-metric_value)/delta;
+          // put the coordinates back where they belong
+        (*vertices[v])[j] -= delta;
+        ++counter;
+        delta/=10.0;
+      }
+      if(counter>=10){
+        err.set_msg("Perturbing vertex by delta caused an inverted element.");
+      }
+      
     }
   }
   FUNCTION_TIMER_END();
