@@ -52,7 +52,7 @@ void MsqError::reset()
 {
   errorOn = false;
   errorCode = MSQ_NO_ERROR;
-  msg.clear();
+  msg = "";
 }
 
 /*! \fn MsqError::handler(...)
