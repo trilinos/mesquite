@@ -1745,6 +1745,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 		        {6, 5, 7, 2},
 		        {7, 6, 4, 3}};
   int i, j, k, l, ind;
+  int r, c, loc;
 
   m = 0.0;
 
@@ -1788,7 +1789,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
           h[ind] = hessians[ind];
         else {
           h[ind] = 0.;
-        }   
+        }
       }
     }
     
@@ -1865,6 +1866,26 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 	grad[locs_hex[i][1]] += gradients[4*i+1];
 	grad[locs_hex[i][2]] += gradients[4*i+2];
 	grad[locs_hex[i][3]] += gradients[4*i+3];
+      }
+
+      l = 0;
+      for (i = 0; i < 8; ++i) {
+	for (j = 0; j < 4; ++j) {
+	  for (k = j; k < 4; ++k) {
+	    r = locs_hex[i][j];
+	    c = locs_hex[i][k];
+
+	    if (r <= c) {
+	      loc = 8*r - (r*(r+1)/2) + c;
+	      hess[loc] += hessians[l];
+	    } 
+	    else {
+	      loc = 8*c - (c*(c+1)/2) + r;
+	      hess[loc] += transpose(hessians[l]);
+	    }
+	    ++l;
+	  }
+	}
       }
       break;
 
