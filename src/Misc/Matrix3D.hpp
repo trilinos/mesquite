@@ -5,7 +5,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 18-Dec-02 at 11:08:22
-//  LAST-MOD: 26-Mar-03 at 14:26:10 by Thomas Leurent
+//  LAST-MOD: 26-Mar-03 at 18:06:40 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -170,9 +170,10 @@ namespace Mesquite
     friend Vector3D operator*(const Vector3D &x, const Matrix3D  &A);
     Matrix3D& operator+=(const Matrix3D &rhs);
     Matrix3D& operator-=(const Matrix3D &rhs);
+    Matrix3D& Matrix3D::operator*=(const double &s);
     Matrix3D plus_transpose(const Matrix3D &B) const;
     Matrix3D& plus_transpose_equal(const Matrix3D &B);
-    Matrix3D& outer_product(const Vector3D &v);
+    Matrix3D& outer_product(const Vector3D &v1, const Vector3D &v2);
     void fill_lower_triangle();
     
     size_t num_rows() const { return 3; }
@@ -302,6 +303,16 @@ namespace Mesquite
       return *this;
   }
 
+  //! multiplies each entry by the scalar s
+  inline Matrix3D& Matrix3D::operator*=(const double &s)
+  {
+      v_[0] *= s; v_[1] *= s; v_[2] *= s;
+      v_[3] *= s; v_[4] *= s; v_[5] *= s;
+      v_[6] *= s; v_[7] *= s; v_[8] *= s;
+
+      return *this;
+  }
+
   //! \f$ + B^T  \f$
   inline Matrix3D Matrix3D::plus_transpose(const Matrix3D &B) const
   {
@@ -327,20 +338,25 @@ namespace Mesquite
     return *this;
   }
 
-  //! Computes \f$ A = vv^T \f$
-  inline Matrix3D& Matrix3D::outer_product(const Vector3D  &v)
+  //! Computes \f$ A = v_1 v_2^T \f$
+  inline Matrix3D& Matrix3D::outer_product(const Vector3D  &v1, const Vector3D &v2)
   {
     // remember, matrix entries are v_[0] to v_[8].
     
     // diagonal
-    v_[0] = v[0]*v[0];
-    v_[4] = v[1]*v[1];
-    v_[8] = v[2]*v[2];
+    v_[0] = v1[0]*v2[0];
+    v_[4] = v1[1]*v2[1];
+    v_[8] = v1[2]*v2[2];
 
-    // upper and lower triangular parts (matrix is symetric).
-    v_[3] = v_[1] = v[0]*v[1];
-    v_[6] = v_[2] = v[0]*v[2];
-    v_[7] = v_[5] = v[1]*v[2];
+    // upper triangular part
+    v_[1] = v1[0]*v2[1];
+    v_[2] = v1[0]*v2[2];
+    v_[5] = v1[1]*v2[2];
+
+    // lower triangular part
+    v_[3] = v2[0]*v1[1];
+    v_[6] = v2[0]*v1[2];
+    v_[7] = v2[1]*v1[2];
 
     return *this;
   }
