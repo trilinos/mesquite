@@ -82,6 +82,7 @@ void ConjugateGradient::initialize_mesh_iteration(PatchData &/*pd*/,
 /*!Performs Conjugate gradient minimization on the PatchData, pd.*/
 void ConjugateGradient::optimize_vertex_positions(PatchData &pd, 
                                                 MsqError &err){
+  FUNCTION_TIMER_START(__FUNC__);
   Timer c_timer;
   MeshSet *vertex_mover_mesh=get_mesh_set();
   int num_local_vertices = pd.num_vertices();
@@ -131,6 +132,13 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
     MSQ_CHKERR(err);
     err.set_msg("Conjugate Gradient not able to get valid gradient on intial patch.");
   }
+  double grad_norm=MSQ_MAX_CAP;
+  if(conjGradDebug>0){
+    grad_norm=infinity_norm(fGrad,num_vert,err);
+    PRINT_INFO("\nCG's FIRST VALUE = %f,grad_norm = %f",f,grad_norm);
+    PRINT_INFO("\n   TIME %f",c_timer.since_birth());
+    grad_norm=MSQ_MAX_CAP;
+  }
   MSQ_CHKERR(err);
   ind=0;
     //Initializing pGrad (search direction).  
@@ -146,7 +154,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
     //loop_over_mesh before being sent here.
   bool inner_criterion=false;//inner_criterion_met(*vertex_mover_mesh,err);
   
-  double grad_norm=MSQ_MAX_CAP;
+  
   while ((i<maxIteration && alp>stepBound && grad_norm>normGradientBound)
          && !inner_criterion){
     ++i;
@@ -235,10 +243,27 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
     MSQ_CHKERR(err);
   }//end while
   if(conjGradDebug>0){
-    PRINT_INFO("\nConjagate Gradient complete i=%i ",i);
+      //Print the reasons for stopping
+    if(conjGradDebug>1){
+      PRINT_INFO("\n---Conjugate Gradient iterations terminated due to:");
+      if(i>maxIteration){ 
+        PRINT_INFO("\n-  Iteration bound satisfied:\n    %i is not less than or equal to %i",i,maxIteration);
+      }
+      if(alp<=stepBound){
+        PRINT_INFO("\n-  Step criterion satisfied:\n     step=%e is not larger than %e",alp,stepBound);
+      }
+      if(grad_norm<=normGradientBound){
+        PRINT_INFO("\n-  Gradient norm bound satisfied:\n    Gradient norm = %e is not greater than %e",grad_norm,normGradientBound);
+      }
+      if(inner_criterion){
+        PRINT_INFO("\n-  Global criterion was satisfied.");
+      }
+    }//end debug value greater than 0
+    PRINT_INFO("\nConjugate Gradient complete i=%i ",i);
     PRINT_INFO("\n-  FINAL value = %f, alp=%4.2e grad_norm=%4.2e",f,alp,grad_norm);
     PRINT_INFO("\n   FINAL TIME %f",c_timer.since_birth());
   }
+  FUNCTION_TIMER_END();
 }
 
 
