@@ -195,7 +195,7 @@ void TerminationCriterion::initialize(MeshSet &/*ms*/, PatchData &pd,
       //in mind that the Termination Criterion Object may have been used
       //previously?  We must delete the memento that we create here.
     previousVerticesMemento=pd.create_vertices_memento(err);
-    if(terminationCriterionFlag & (VERTEX_MOVEMENT_RELATIVE)){
+    if(totalFlag & (VERTEX_MOVEMENT_RELATIVE)){
       initialVerticesMemento=pd.create_vertices_memento(err);
     }
     MSQ_CHKERR(err);
