@@ -46,6 +46,7 @@ MODULENAMES :=  Mesh \
 		QualityMetric/Smoothness \
 		QualityMetric/Untangle \
 		QualityMetric/Volume \
+                TargetCalculator \
 		../lib 
 
 testdir = testSuite
@@ -59,7 +60,7 @@ TESTNAMES := test_1\
              simple_hybrid_test\
              wrapper_tests\
              tutorial\
-             escobar\
+             escobar
 ###             random_test\
 ###             convert\
 ###             shape_wrapper_test
