@@ -5,7 +5,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 15-Jan-03 at 08:05:56
-//  LAST-MOD: 19-Feb-03 at 13:45:04 by Thomas Leurent
+//  LAST-MOD: 20-Feb-03 at 13:18:31 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -50,7 +50,7 @@ namespace Mesquite
     /*! Sets a minimum value for the gradient. If the gradient is below that value,
       we stop iterating. */  
     void set_lower_gradient_bound(double gradc){
-        gradientLessThan=gradc;}
+        convTol=gradc;}
     
     
   protected:
@@ -63,9 +63,10 @@ namespace Mesquite
 
   private:
     ObjectiveFunction* objFunc;
-    double gradientLessThan;
+    double convTol;
     int maxIteration;
     MsqHessian mHessian;
+    PatchDataVerticesMemento* coordsMem;
   };
   
 }
