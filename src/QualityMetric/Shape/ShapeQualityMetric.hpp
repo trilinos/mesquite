@@ -105,6 +105,7 @@ namespace Mesquite
 
      double h;
      double delta=pd.get_barrier_delta_2d(err); 
+     MSQ_CHKERR(err);
 
      // Note: technically, we want delta=eta*tau-max
      //       whereas the function above gives delta=eta*alpha-max
@@ -114,7 +115,13 @@ namespace Mesquite
      //       ignore the discrepancy
 
      if (delta==0) { 
-        h=temp_var;
+        if (temp_var < MSQ_DBL_MIN ) {
+           return false;
+        }
+        else {
+           h=temp_var;
+        }
+
      // Note: when delta=0, the vertex_barrier_function
      //       formally gives h=temp_var as well.
      //       We just do it this way to avoid any 
@@ -125,6 +132,7 @@ namespace Mesquite
      }
      else {
         h = vertex_barrier_function(temp_var,delta);
+
         if (h<MSQ_DBL_MIN && fabs(temp_var) > MSQ_DBL_MIN ) { 
           h = delta*delta/fabs(temp_var); }
         // Note: Analytically, h is strictly positive, but
@@ -142,7 +150,7 @@ namespace Mesquite
      fval=term1/(2*h);
 
      if (fval>MSQ_MAX_CAP) {
-        return false; 
+        fval=MSQ_MAX_CAP;
      }
      return true;
 
@@ -174,6 +182,8 @@ namespace Mesquite
 
      double h;
      double delta=pd.get_barrier_delta_3d(err); 
+     MSQ_CHKERR(err);
+
      // Note: technically, we want delta=eta*tau-max
      //       whereas the function above gives delta=eta*alpha-max
      //      
@@ -182,7 +192,13 @@ namespace Mesquite
      //       ignore the discrepancy
 
      if (delta==0) { 
-        h=temp_var;
+        if (temp_var < MSQ_DBL_MIN ) {
+           return false;
+        }
+        else {
+           h=temp_var;
+        }
+
      // Note: when delta=0, the vertex_barrier_function
      //       formally gives h=temp_var as well.
      //       We just do it this way to avoid any 
@@ -194,15 +210,16 @@ namespace Mesquite
      }
      else {
         h = vertex_barrier_function(temp_var,delta);
+ 
         if (h<MSQ_DBL_MIN && fabs(temp_var) > MSQ_DBL_MIN ) { 
           h = delta*delta/fabs(temp_var); }
+ 
         // Note: Analytically, h is strictly positive, but
         //       it can be zero numerically if temp_var
         //       is a large negative number 
         //       In the h=0, we use a different analytic
         //       approximation to compute h.
      }
-
      if (h<MSQ_DBL_MIN) {
        err.set_msg("Barrier function is zero due to excessively large negative area compared to delta. /n Try to untangle mesh another way. ");
        return false;
@@ -211,7 +228,7 @@ namespace Mesquite
      fval=sqrt(term1*term2)/(3*h);
 
      if (fval>MSQ_MAX_CAP) {
-        return false; 
+        fval=MSQ_MAX_CAP;
      }
      return true;
 

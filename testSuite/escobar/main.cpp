@@ -55,16 +55,33 @@ int main()
 {
   Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
   MsqError err;
-    //create geometry: plane z=0, normal (0,0,1)
-  Vector3D pnt(0,0,0);
-  Vector3D s_norm(0,0,1);
-  Mesquite::PlanarDomain msq_geom(s_norm, pnt, mesh);
+
+  // If want 2D test use this section (and comment out next)
+
+    // create geometry: plane z=0, normal (0,0,1)
+    Vector3D pnt(0,0,0);
+    Vector3D s_norm(0,0,1);
+    Mesquite::PlanarDomain msq_geom(s_norm, pnt, mesh);
      
-  //mesh->read_vtk("../../meshFiles/2D/VTK/hybrid_3quad_1tri_tangled.vtk", err);
- mesh->read_vtk("../../meshFiles/2D/VTK/rotsq.vtk", err);
+ mesh->read_vtk("../../meshFiles/2D/VTK/hybrid_3quad_1tri_tangled.vtk", err);
+ //mesh->read_vtk("../../meshFiles/2D/VTK/rotsq.vtk", err);
+
     // initializes a MeshSet object
-  MeshSet mesh_set1;
-  mesh_set1.set_domain_constraint(&msq_geom, err); MSQ_CHKERR(err);
+    MeshSet mesh_set1;
+    mesh_set1.set_domain_constraint(&msq_geom, err); MSQ_CHKERR(err);
+
+  // End 2D Section
+
+  // If want 3D test use this section (and comment out former)
+
+    //mesh->read_vtk("../../meshFiles/3D/VTK/two_tets.vtk", err);
+   // Note: this mesh has two inverted tets
+
+    // initializes a MeshSet object
+    //MeshSet mesh_set1;
+
+ // End 3D Section
+
   mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
   
     // creates an intruction queue
