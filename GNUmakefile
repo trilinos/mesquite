@@ -57,7 +57,7 @@ TESTNAMES := test_1\
              algorithm_test\
              ActiveSetTest\
              simple_hybrid_test\
-###             shape_wrapper_test\
+             wrapper_tests\
 ###             random_test\
 ###             exo_convert
 
