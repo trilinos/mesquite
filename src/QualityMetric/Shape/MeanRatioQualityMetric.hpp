@@ -47,35 +47,37 @@ namespace Mesquite
       virtual ~MeanRatioQualityMetric() {
       }
      
-       //! evaluate using mesquite objects 
-     bool evaluate_element(PatchData &pd, MsqMeshEntity *element, double &fval,
-                             MsqError &err); 
+      //! evaluate using mesquite objects 
+      bool evaluate_element(PatchData &pd, MsqMeshEntity *element, double &fval,
+                            MsqError &err); 
 
-     bool compute_element_analytical_gradient(PatchData &pd,
-                                              MsqMeshEntity *element,
-                                              MsqVertex *vertices[], 
-                                              Vector3D grad_vec[],
-                                              int num_vtx, 
-                                              double &metric_value,
+      bool compute_element_analytical_gradient(PatchData &pd,
+                                               MsqMeshEntity *element,
+                                               MsqVertex *vertices[], 
+                                               Vector3D grad_vec[],
+                                               int num_vtx, 
+                                               double &metric_value,
+                                               MsqError &err);
+
+      bool compute_element_analytical_hessian(PatchData &pd,
+                                              MsqMeshEntity *e,
+                                              MsqVertex *v[], 
+                                              Vector3D g[],
+                                              Matrix3D h[],
+                                              int nv, 
+                                              double &m,
                                               MsqError &err);
+   protected:     
+      bool mean_ratio_2d(Vector3D temp_vec[],double &fval,MsqError &err);
 
-     bool compute_element_analytical_hessian(PatchData &pd,
-                                             MsqMeshEntity *e,
-                                             MsqVertex *v[], 
-                                             Vector3D g[],
-                                             Matrix3D h[],
-                                             int nv, 
-                                             double &m,
-                                             MsqError &err);
-  protected:     
-     bool mean_ratio_2d(Vector3D temp_vec[],double &fval,MsqError &err);
-     bool mean_ratio_3d(Vector3D temp_vec[],double &fval,MsqError &err);
-
-  private:
+   private:
      
-     MeanRatioQualityMetric();
-  };
-     //BEGIN INLINE FUNCITONS
+      MeanRatioQualityMetric();
+   };
+
+   // BEGIN INLINE FUNCITONS
+   // TO BE REMOVED AND REPLACED WITH CORRECT VALUE
+
    inline bool MeanRatioQualityMetric::mean_ratio_2d(Vector3D temp_vec[],
                                                      double &fval,
                                                      MsqError &/*err*/)
@@ -94,24 +96,6 @@ namespace Mesquite
                temp_vec[1].length_squared()) / (2.0*determinant));
       return true;
    }
-
-   inline bool MeanRatioQualityMetric::mean_ratio_3d(Vector3D temp_vec[],
-                                                     double &fval,
-                                                     MsqError &/*err*/)
-   {   
-      // NOTE: Fixed to check for degenerate or inverted elements
-      double determinant = temp_vec[0]%(temp_vec[1]*temp_vec[2]);
-
-      if (determinant <= MSQ_MIN) {
-         return false;
-      }
-
-      fval = ((temp_vec[0].length_squared() +
-               temp_vec[1].length_squared() +
-               temp_vec[2].length_squared()) / (3.0*pow(determinant,2.0/3.0)));
-      return true;
-   }
-
 } //namespace
 
 

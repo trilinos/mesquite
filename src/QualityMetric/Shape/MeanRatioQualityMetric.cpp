@@ -30,120 +30,6 @@ MeanRatioQualityMetric::MeanRatioQualityMetric()
   set_name("Mean Ratio");
 }
 
-bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
-                                              MsqMeshEntity *element,
-                                              double &fval,
-                                              MsqError &err)
-{
-  double metric_values[20];
-  fval=0.0;
-  bool return_flag;
-  std::vector<size_t> v_i;
-  element->get_vertex_indices(v_i);
-  //only 3 temp_vec will be sent to mean ratio calculator, but the
-  //additional vector3D may be needed during the calculations
-  Vector3D temp_vec[5];
-  MsqVertex *vertices=pd.get_vertex_array(err);
-  switch(element->get_element_type()){
-    case TRIANGLE:
-      temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
-      temp_vec[2]=vertices[v_i[2]]-vertices[v_i[0]];
-        //make relative to equilateral
-      temp_vec[1]=((2*temp_vec[2])-temp_vec[0])*MSQ_SQRT_THREE_INV;
-      return_flag=mean_ratio_2d(temp_vec,fval,err);
-      return return_flag;
-    case QUADRILATERAL:
-      temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
-      temp_vec[1]=vertices[v_i[3]]-vertices[v_i[0]];
-      return_flag=mean_ratio_2d(temp_vec,metric_values[0],err);
-      if(!return_flag)
-        return false;
-      
-      temp_vec[0]=vertices[v_i[2]]-vertices[v_i[1]];
-      temp_vec[1]=vertices[v_i[0]]-vertices[v_i[1]];
-      return_flag=mean_ratio_2d(temp_vec,metric_values[1],err);
-      if(!return_flag)
-        return false;
-      temp_vec[0]=vertices[v_i[3]]-vertices[v_i[2]];
-      temp_vec[1]=vertices[v_i[1]]-vertices[v_i[2]];
-      return_flag=mean_ratio_2d(temp_vec,metric_values[2],err);
-      if(!return_flag)
-        return false;
-      temp_vec[0]=vertices[v_i[0]]-vertices[v_i[3]];
-      temp_vec[1]=vertices[v_i[2]]-vertices[v_i[3]];
-      return_flag=mean_ratio_2d(temp_vec,metric_values[3],err);
-      if(!return_flag)
-        return false;
-      fval=average_metrics(metric_values,4,err);
-      break;
-    case TETRAHEDRON:
-      temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
-      temp_vec[3]=vertices[v_i[2]]-vertices[v_i[0]];
-      temp_vec[4]=vertices[v_i[3]]-vertices[v_i[0]];
-        //transform to equilateral tet
-      temp_vec[1]=((2*temp_vec[3])-temp_vec[0])*MSQ_SQRT_THREE_INV;
-      temp_vec[2]=((3*temp_vec[4])-temp_vec[0]-temp_vec[3])*
-        (MSQ_SQRT_THREE_INV*MSQ_SQRT_TWO_INV);
-      return_flag=mean_ratio_3d(temp_vec,fval,err);
-      break;
-    case HEXAHEDRON:
-      temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
-      temp_vec[1]=vertices[v_i[3]]-vertices[v_i[0]];
-      temp_vec[2]=vertices[v_i[4]]-vertices[v_i[0]];
-      return_flag=mean_ratio_3d(temp_vec,metric_values[0],err);
-      if(!return_flag)
-        return false;
-      temp_vec[0]=vertices[v_i[2]]-vertices[v_i[1]];
-      temp_vec[1]=vertices[v_i[0]]-vertices[v_i[1]];
-      temp_vec[2]=vertices[v_i[5]]-vertices[v_i[1]];
-      return_flag=mean_ratio_3d(temp_vec,metric_values[1],err);
-      if(!return_flag)
-        return false;
-      temp_vec[0]=vertices[v_i[3]]-vertices[v_i[2]];
-      temp_vec[1]=vertices[v_i[1]]-vertices[v_i[2]];
-      temp_vec[2]=vertices[v_i[6]]-vertices[v_i[2]];
-      return_flag=mean_ratio_3d(temp_vec,metric_values[2],err);
-      if(!return_flag)
-        return false;
-      temp_vec[0]=vertices[v_i[0]]-vertices[v_i[3]];
-      temp_vec[1]=vertices[v_i[2]]-vertices[v_i[3]];
-      temp_vec[2]=vertices[v_i[7]]-vertices[v_i[3]];
-      return_flag=mean_ratio_3d(temp_vec,metric_values[3],err);
-      if(!return_flag)
-        return false;
-      temp_vec[0]=vertices[v_i[7]]-vertices[v_i[4]];
-      temp_vec[1]=vertices[v_i[5]]-vertices[v_i[4]];
-      temp_vec[2]=vertices[v_i[0]]-vertices[v_i[4]];
-      return_flag=mean_ratio_3d(temp_vec,metric_values[4],err);
-      if(!return_flag)
-        return false;
-      temp_vec[0]=vertices[v_i[4]]-vertices[v_i[5]];
-      temp_vec[1]=vertices[v_i[6]]-vertices[v_i[5]];
-      temp_vec[2]=vertices[v_i[1]]-vertices[v_i[5]];
-      return_flag=mean_ratio_3d(temp_vec,metric_values[5],err);
-      if(!return_flag)
-        return false;
-      temp_vec[0]=vertices[v_i[5]]-vertices[v_i[6]];
-      temp_vec[1]=vertices[v_i[7]]-vertices[v_i[6]];
-      temp_vec[2]=vertices[v_i[2]]-vertices[v_i[6]];
-      return_flag=mean_ratio_3d(temp_vec,metric_values[6],err);
-      if(!return_flag)
-        return false;
-      temp_vec[0]=vertices[v_i[6]]-vertices[v_i[7]];
-      temp_vec[1]=vertices[v_i[4]]-vertices[v_i[7]];
-      temp_vec[2]=vertices[v_i[3]]-vertices[v_i[7]];
-      return_flag=mean_ratio_3d(temp_vec,metric_values[7],err);
-      if(!return_flag)
-        return false;
-      fval=average_metrics(metric_values,8,err);
-      
-      break;
-    default:
-      fval=0.0;
-  }// end switch over element type
-  return true;
-}
-
 /*****************************************************************************/
 /* Not all compilers substitute out constants (especially the square root).  */
 /* Therefore, they are substituted out manually.  The values below were      */
@@ -236,11 +122,14 @@ inline bool g_fcn_2e(double &obj, Vector3D /*g_obj[3]*/,
 }
 
 /*****************************************************************************/
-/* This set of functions reference tetrahedral elements to a regular         */
-/* tetrahedron.  A zero return value indicates success, while a nonzero      */
-/* value indicates failure.                                                  */
-/*                                                                           */
-/* This function requires 61 flops.                                          */
+/* The following set of functions reference tetrahedral elements to a        */
+/* regular tetrahedron.  They are used when assessing the quality of a       */
+/* tetrahedral element.  A zero return value indicates success, while        */
+/* a nonzero value indicates failure.                                        */
+/*****************************************************************************/
+
+/*****************************************************************************/
+/* Function evaluation -- requires 61 flops.                                 */
 /*****************************************************************************/
 
 inline bool m_fcn_3e(double &obj, const Vector3D x[4])
@@ -281,7 +170,7 @@ inline bool m_fcn_3e(double &obj, const Vector3D x[4])
 }
 
 /*****************************************************************************/
-/* Optimal derivative calculation courtesy of Paul Hovland (at least we      */
+/* Optimal gradient calculation courtesy of Paul Hovland (at least we        */
 /* think it is optimal).  The original code provided was modified to         */
 /* reduce the number of flops and intermediate variables, and improve the    */
 /* locality of reference.                                                    */
@@ -477,8 +366,8 @@ inline bool h_fcn_3e(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
 
   /* Calculate norm(M). */
   f = matr[0]*matr[0] + matr[1]*matr[1] + matr[2]*matr[2] + 
-      matr[3]*matr[3] + matr[4]*matr[4] + matr[5]*matr[5] +
-      matr[6]*matr[6] + matr[7]*matr[7] + matr[8]*matr[8];
+    matr[3]*matr[3] + matr[4]*matr[4] + matr[5]*matr[5] +
+    matr[6]*matr[6] + matr[7]*matr[7] + matr[8]*matr[8];
 
   loc4 = g;
 
@@ -1007,11 +896,14 @@ inline bool h_fcn_3e(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
 }
 
 /*****************************************************************************/
-/* This set of functions reference tetrahedral elements to a right           */
-/* tetrahedron.  A zero return value indicates success, while a nonzero      */
-/* value indicates failure.                                                  */
-/*                                                                           */
-/* This function requires 43 flops.                                          */
+/* The following set of functions reference tetrahedral elements to a        */
+/* right tetrahedron.  They are used when assessing the quality of a         */
+/* hexahedral element.  A zero return value indicates success, while         */
+/* a nonzero value indicates failure.                                        */
+/*****************************************************************************/
+
+/*****************************************************************************/
+/* Function evaluation -- requires 43 flops.                                 */
 /*****************************************************************************/
 
 inline bool m_fcn_3i(double &obj, const Vector3D x[4])
@@ -1049,7 +941,7 @@ inline bool m_fcn_3i(double &obj, const Vector3D x[4])
 }
 
 /*****************************************************************************/
-/* Optimal derivative calculation courtesy of Paul Hovland (at least we      */
+/* Optimal gradient calculation courtesy of Paul Hovland (at least we        */
 /* think it is optimal).  The original code provided was modified to         */
 /* reduce the number of flops and intermediate variables, and improve the    */
 /* locality of reference.                                                    */
@@ -1139,7 +1031,7 @@ inline bool g_fcn_3i(double &obj, Vector3D g_obj[4], const Vector3D x[12])
 /* The code requires 364 flops.                                              */
 /*****************************************************************************/
 
-inline bool h_fcn_3i(double &obj, Vector3D g_obj[4], double h_obj[78], 
+inline bool h_fcn_3i(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
 		     const Vector3D x[4])
 {
   double matr[9], f;
@@ -1264,19 +1156,19 @@ inline bool h_fcn_3i(double &obj, Vector3D g_obj[4], double h_obj[78],
   A[1] = -J_A[1] - J_A[3] - J_A[4];
   A[2] = -J_A[2] - J_A[4] - J_A[5];
 
-  h_obj[0] = -A[0] - A[1] - A[2];
-  h_obj[1] =  A[0];
-  h_obj[2] =  A[1];
-  h_obj[3] =  A[2];
+  h_obj[0][0][0] = -A[0] - A[1] - A[2];
+  h_obj[1][0][0] =  A[0];
+  h_obj[2][0][0] =  A[1];
+  h_obj[3][0][0] =  A[2];
 
-  h_obj[4] = J_A[0];
-  h_obj[5] = J_A[1];
-  h_obj[6] = J_A[2];
+  h_obj[4][0][0] = J_A[0];
+  h_obj[5][0][0] = J_A[1];
+  h_obj[6][0][0] = J_A[2];
 
-  h_obj[7] = J_A[3];
-  h_obj[8] = J_A[4];
+  h_obj[7][0][0] = J_A[3];
+  h_obj[8][0][0] = J_A[4];
 
-  h_obj[9] = J_A[5];
+  h_obj[9][0][0] = J_A[5];
 
   /* First off-diagonal block */
   loc2 = matr[8]*loc0;
@@ -1295,25 +1187,25 @@ inline bool h_fcn_3i(double &obj, Vector3D g_obj[4], double h_obj[78],
   A[1] = -J_B[1] - J_B[4] - J_B[7];
   A[2] = -J_B[2] - J_B[5] - J_B[8];
 
-  h_obj[10] = -A[0] - A[1] - A[2];
-  h_obj[11] =  A[0];
-  h_obj[12] =  A[1];
-  h_obj[13] =  A[2];
+  h_obj[0][0][1] = -A[0] - A[1] - A[2];
+  h_obj[1][0][1] =  A[0];
+  h_obj[2][0][1] =  A[1];
+  h_obj[3][0][1] =  A[2];
 
-  h_obj[14] = -J_B[0] - J_B[1] - J_B[2];
-  h_obj[15] =  J_B[0];
-  h_obj[16] =  J_B[1];
-  h_obj[17] =  J_B[2];
+  h_obj[1][1][0] = -J_B[0] - J_B[1] - J_B[2];
+  h_obj[4][0][1] =  J_B[0];
+  h_obj[5][0][1] =  J_B[1];
+  h_obj[6][0][1] =  J_B[2];
 
-  h_obj[18] = -J_B[3] - J_B[4] - J_B[5];
-  h_obj[19] =  J_B[3];
-  h_obj[20] =  J_B[4];
-  h_obj[21] =  J_B[5];
+  h_obj[2][1][0] = -J_B[3] - J_B[4] - J_B[5];
+  h_obj[5][1][0] =  J_B[3];
+  h_obj[7][0][1] =  J_B[4];
+  h_obj[8][0][1] =  J_B[5];
 
-  h_obj[22] = -J_B[6] - J_B[7] - J_B[8];
-  h_obj[23] =  J_B[6];
-  h_obj[24] =  J_B[7];
-  h_obj[25] =  J_B[8];
+  h_obj[3][1][0] = -J_B[6] - J_B[7] - J_B[8];
+  h_obj[6][1][0] =  J_B[6];
+  h_obj[8][1][0] =  J_B[7];
+  h_obj[9][0][1] =  J_B[8];
 
   /* Second off-diagonal block */
   loc2 = matr[5]*loc0;
@@ -1332,25 +1224,25 @@ inline bool h_fcn_3i(double &obj, Vector3D g_obj[4], double h_obj[78],
   A[1] = -J_C[1] - J_C[4] - J_C[7];
   A[2] = -J_C[2] - J_C[5] - J_C[8];
 
-  h_obj[26] = -A[0] - A[1] - A[2];
-  h_obj[27] =  A[0];
-  h_obj[28] =  A[1];
-  h_obj[29] =  A[2];
+  h_obj[0][0][2] = -A[0] - A[1] - A[2];
+  h_obj[1][0][2] =  A[0];
+  h_obj[2][0][2] =  A[1];
+  h_obj[3][0][2] =  A[2];
 
-  h_obj[30] = -J_C[0] - J_C[1] - J_C[2];
-  h_obj[31] =  J_C[0];
-  h_obj[32] =  J_C[1];
-  h_obj[33] =  J_C[2];
+  h_obj[1][2][0] = -J_C[0] - J_C[1] - J_C[2];
+  h_obj[4][0][2] =  J_C[0];
+  h_obj[5][0][2] =  J_C[1];
+  h_obj[6][0][2] =  J_C[2];
 
-  h_obj[34] = -J_C[3] - J_C[4] - J_C[5];
-  h_obj[35] =  J_C[3];
-  h_obj[36] =  J_C[4];
-  h_obj[37] =  J_C[5];
+  h_obj[2][2][0] = -J_C[3] - J_C[4] - J_C[5];
+  h_obj[5][2][0] =  J_C[3];
+  h_obj[7][0][2] =  J_C[4];
+  h_obj[8][0][2] =  J_C[5];
 
-  h_obj[38] = -J_C[6] - J_C[7] - J_C[8];
-  h_obj[39] =  J_C[6];
-  h_obj[40] =  J_C[7];
-  h_obj[41] =  J_C[8];
+  h_obj[3][2][0] = -J_C[6] - J_C[7] - J_C[8];
+  h_obj[6][2][0] =  J_C[6];
+  h_obj[8][2][0] =  J_C[7];
+  h_obj[9][0][2] =  J_C[8];
 
   /* Second block of rows */
   loc2 = matr[3]*f;
@@ -1388,19 +1280,19 @@ inline bool h_fcn_3i(double &obj, Vector3D g_obj[4], double h_obj[78],
   A[1] = -J_A[1] - J_A[3] - J_A[4];
   A[2] = -J_A[2] - J_A[4] - J_A[5];
 
-  h_obj[42] = -A[0] - A[1] - A[2];
-  h_obj[43] =  A[0];
-  h_obj[44] =  A[1];
-  h_obj[45] =  A[2];
+  h_obj[0][1][1] = -A[0] - A[1] - A[2];
+  h_obj[1][1][1] =  A[0];
+  h_obj[2][1][1] =  A[1];
+  h_obj[3][1][1] =  A[2];
 
-  h_obj[46] = J_A[0];
-  h_obj[47] = J_A[1];
-  h_obj[48] = J_A[2];
+  h_obj[4][1][1] = J_A[0];
+  h_obj[5][1][1] = J_A[1];
+  h_obj[6][1][1] = J_A[2];
 
-  h_obj[49] = J_A[3];
-  h_obj[50] = J_A[4];
+  h_obj[7][1][1] = J_A[3];
+  h_obj[8][1][1] = J_A[4];
 
-  h_obj[51] = J_A[5];
+  h_obj[9][1][1] = J_A[5];
 
   /* Third off-diagonal block */
   loc2 = matr[2]*loc0;
@@ -1419,25 +1311,25 @@ inline bool h_fcn_3i(double &obj, Vector3D g_obj[4], double h_obj[78],
   A[1] = -J_B[1] - J_B[4] - J_B[7];
   A[2] = -J_B[2] - J_B[5] - J_B[8];
 
-  h_obj[52] = -A[0] - A[1] - A[2];
-  h_obj[53] =  A[0];
-  h_obj[54] =  A[1];
-  h_obj[55] =  A[2];
+  h_obj[0][1][2] = -A[0] - A[1] - A[2];
+  h_obj[1][1][2] =  A[0];
+  h_obj[2][1][2] =  A[1];
+  h_obj[3][1][2] =  A[2];
 
-  h_obj[56] = -J_B[0] - J_B[1] - J_B[2];
-  h_obj[57] =  J_B[0];
-  h_obj[58] =  J_B[1];
-  h_obj[59] =  J_B[2];
+  h_obj[1][2][1] = -J_B[0] - J_B[1] - J_B[2];
+  h_obj[4][1][2] =  J_B[0];
+  h_obj[5][1][2] =  J_B[1];
+  h_obj[6][1][2] =  J_B[2];
 
-  h_obj[60] = -J_B[3] - J_B[4] - J_B[5];
-  h_obj[61] =  J_B[3];
-  h_obj[62] =  J_B[4];
-  h_obj[63] =  J_B[5];
+  h_obj[2][2][1] = -J_B[3] - J_B[4] - J_B[5];
+  h_obj[5][2][1] =  J_B[3];
+  h_obj[7][1][2] =  J_B[4];
+  h_obj[8][1][2] =  J_B[5];
 
-  h_obj[64] = -J_B[6] - J_B[7] - J_B[8];
-  h_obj[65] =  J_B[6];
-  h_obj[66] =  J_B[7];
-  h_obj[67] =  J_B[8];
+  h_obj[3][2][1] = -J_B[6] - J_B[7] - J_B[8];
+  h_obj[6][2][1] =  J_B[6];
+  h_obj[8][2][1] =  J_B[7];
+  h_obj[9][1][2] =  J_B[8];
 
   /* Third block of rows */
   loc2 = matr[6]*f;
@@ -1465,19 +1357,106 @@ inline bool h_fcn_3i(double &obj, Vector3D g_obj[4], double h_obj[78],
   A[1] = -J_A[1] - J_A[3] - J_A[4];
   A[2] = -J_A[2] - J_A[4] - J_A[5];
 
-  h_obj[68] = -A[0] - A[1] - A[2];
-  h_obj[69] =  A[0];
-  h_obj[70] =  A[1];
-  h_obj[71] =  A[2];
+  h_obj[0][2][2] = -A[0] - A[1] - A[2];
+  h_obj[1][2][2] =  A[0];
+  h_obj[2][2][2] =  A[1];
+  h_obj[3][2][2] =  A[2];
 
-  h_obj[72] = J_A[0];
-  h_obj[73] = J_A[1];
-  h_obj[74] = J_A[2];
+  h_obj[4][2][2] = J_A[0];
+  h_obj[5][2][2] = J_A[1];
+  h_obj[6][2][2] = J_A[2];
 
-  h_obj[75] = J_A[3];
-  h_obj[76] = J_A[4];
+  h_obj[7][2][2] = J_A[3];
+  h_obj[8][2][2] = J_A[4];
 
-  h_obj[77] = J_A[5];
+  h_obj[9][2][2] = J_A[5];
+
+  // completes diagonal blocks.
+  h_obj[0].fill_lower_triangle();
+  h_obj[4].fill_lower_triangle();
+  h_obj[7].fill_lower_triangle();
+  h_obj[9].fill_lower_triangle();
+
+  return true;
+}
+
+bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
+                                              MsqMeshEntity *e,
+                                              double &m,
+                                              MsqError &err)
+{
+  EntityTopology topo = e->get_element_type();
+
+  MsqVertex *vertices = pd.get_vertex_array(err);
+  std::vector<size_t> v_i;
+  e->get_vertex_indices(v_i);
+
+  Vector3D coords[4];		// Vertex coordinates for the (decomposed) elements
+  double metrics[8];
+
+  int locs_hex[8][4] = {{0, 1, 3, 4},	// Hex element descriptions
+		        {1, 2, 0, 5},
+		        {2, 3, 1, 6},
+		        {3, 0, 2, 7},
+		        {4, 7, 5, 0},
+		        {5, 4, 6, 1},
+		        {6, 5, 7, 2},
+		        {7, 6, 4, 3}};
+  int i;
+
+  m = 0.0;
+
+  switch(topo) {
+  case TRIANGLE:
+    coords[0]=vertices[v_i[1]]-vertices[v_i[0]];
+    coords[2]=vertices[v_i[2]]-vertices[v_i[0]];
+
+    //make relative to equilateral
+    coords[1]=((2*coords[2])-coords[0])*MSQ_SQRT_THREE_INV;
+    return mean_ratio_2d(coords, m, err);
+
+  case QUADRILATERAL:
+    coords[0]=vertices[v_i[1]]-vertices[v_i[0]];
+    coords[1]=vertices[v_i[3]]-vertices[v_i[0]];
+    if (!mean_ratio_2d(coords,metrics[0],err)) return false;
+      
+    coords[0]=vertices[v_i[2]]-vertices[v_i[1]];
+    coords[1]=vertices[v_i[0]]-vertices[v_i[1]];
+    if (!mean_ratio_2d(coords,metrics[1],err)) return false;
+
+    coords[0]=vertices[v_i[3]]-vertices[v_i[2]];
+    coords[1]=vertices[v_i[1]]-vertices[v_i[2]];
+    if (!mean_ratio_2d(coords,metrics[2],err)) return false;
+
+    coords[0]=vertices[v_i[0]]-vertices[v_i[3]];
+    coords[1]=vertices[v_i[2]]-vertices[v_i[3]];
+    if (!mean_ratio_2d(coords,metrics[3],err)) return false;
+
+    m = average_metrics(metrics, 4, err);
+    break;
+
+  case TETRAHEDRON:
+    coords[0] = vertices[v_i[0]];
+    coords[1] = vertices[v_i[1]];
+    coords[2] = vertices[v_i[2]];
+    coords[3] = vertices[v_i[3]];
+    if (!m_fcn_3e(m, coords)) return false;
+    break;
+
+  case HEXAHEDRON:
+    for (i = 0; i < 8; ++i) {
+      coords[0] = vertices[v_i[locs_hex[i][0]]];
+      coords[1] = vertices[v_i[locs_hex[i][1]]];
+      coords[2] = vertices[v_i[locs_hex[i][2]]];
+      coords[3] = vertices[v_i[locs_hex[i][3]]];
+      if (!m_fcn_3i(metrics[i], coords)) return false;
+    }
+    m = average_metrics(metrics, 8, err);
+    break;
+
+  default:
+    break;
+  } // end switch over element type
   return true;
 }
 
@@ -1503,7 +1482,6 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 
   Vector3D coords[4];		// Vertex coordinates for the (decomposed) elements
   Vector3D gradients[32];	// Gradient of metric with respect to the coords
-  Vector3D grad[8];		// Accumulated gradients (composed merit function)
   double   metrics[8];		// Metric values for the (decomposed) elements
   double   nm, t;
 
@@ -1530,21 +1508,14 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
     coords[1] = vertices[v_i[1]];
     coords[2] = vertices[v_i[2]];
     coords[3] = vertices[v_i[3]];
-    if (!g_fcn_3e(m, gradients, coords)) return false;
-    
-    // This is not very efficient, but is one way to select correct gradients
-    for (i = 0; i < 4; ++i) {
-      for (j = 0; j < nv; ++j) {
-        if (vertices + v_i[i] == v[j]) {
-          g[j] = gradients[i];
-        }
-      }
-    }
+    if (!g_fcn_3e(m, g, coords)) return false;
+
+    // Tom: zero out fixed elements of g
     break;
 
   case HEXAHEDRON:
     for (i = 0; i < 8; ++i) {
-      grad[i] = 0.0;
+      g[i] = 0.0;
 
       coords[0] = vertices[v_i[locs_hex[i][0]]];
       coords[1] = vertices[v_i[locs_hex[i][1]]];
@@ -1562,17 +1533,17 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 
       nm = 0;
       for (i = 0; i < 8; ++i) {
-        if (metrics[i] <= m + MSQ_MIN) {
-	  grad[locs_hex[i][0]] += gradients[4*i+0];
-	  grad[locs_hex[i][1]] += gradients[4*i+1];
-	  grad[locs_hex[i][2]] += gradients[4*i+2];
-	  grad[locs_hex[i][3]] += gradients[4*i+3];
+        if (metrics[i] - m <= MSQ_MIN) {
+	  g[locs_hex[i][0]] += gradients[4*i+0];
+	  g[locs_hex[i][1]] += gradients[4*i+1];
+	  g[locs_hex[i][2]] += gradients[4*i+2];
+	  g[locs_hex[i][3]] += gradients[4*i+3];
 	  ++nm;
         }
       }
 
       for (i = 0; i < 8; ++i) {
-	grad[i] /= nm;
+	g[i] /= nm;
       }
       break;
 
@@ -1584,17 +1555,17 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 
       nm = 0;
       for (i = 0; i < 8; ++i) {
-        if (metrics[i] >= m - MSQ_MIN) {
-	  grad[locs_hex[i][0]] += gradients[4*i+0];
-	  grad[locs_hex[i][1]] += gradients[4*i+1];
-	  grad[locs_hex[i][2]] += gradients[4*i+2];
-	  grad[locs_hex[i][3]] += gradients[4*i+3];
+        if (m - metrics[i] <= MSQ_MIN) {
+	  g[locs_hex[i][0]] += gradients[4*i+0];
+	  g[locs_hex[i][1]] += gradients[4*i+1];
+	  g[locs_hex[i][2]] += gradients[4*i+2];
+	  g[locs_hex[i][3]] += gradients[4*i+3];
 	  ++nm;
         }
       }
 
       for (i = 0; i < 8; ++i) {
-	grad[i] /= nm;
+	g[i] /= nm;
       }
       break;
 
@@ -1605,10 +1576,10 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
       }
 
       for (i = 0; i < 8; ++i) {
-        grad[locs_hex[i][0]] += gradients[4*i+0];
-	grad[locs_hex[i][1]] += gradients[4*i+1];
-	grad[locs_hex[i][2]] += gradients[4*i+2];
-	grad[locs_hex[i][3]] += gradients[4*i+3];
+        g[locs_hex[i][0]] += gradients[4*i+0];
+	g[locs_hex[i][1]] += gradients[4*i+1];
+	g[locs_hex[i][2]] += gradients[4*i+2];
+	g[locs_hex[i][3]] += gradients[4*i+3];
       }
       break;
 
@@ -1621,15 +1592,15 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
       m = exp(m / 8.0);
 
       for (i = 0; i < 8; ++i) {
-        grad[locs_hex[i][0]] += metrics[i]*gradients[4*i+0];
-	grad[locs_hex[i][1]] += metrics[i]*gradients[4*i+1];
-	grad[locs_hex[i][2]] += metrics[i]*gradients[4*i+2];
-	grad[locs_hex[i][3]] += metrics[i]*gradients[4*i+3];
+        g[locs_hex[i][0]] += metrics[i]*gradients[4*i+0];
+	g[locs_hex[i][1]] += metrics[i]*gradients[4*i+1];
+	g[locs_hex[i][2]] += metrics[i]*gradients[4*i+2];
+	g[locs_hex[i][3]] += metrics[i]*gradients[4*i+3];
       }
 
       nm = m / 8.0;
       for (i = 0; i < 8; ++i) {
-	grad[i] *= nm;
+	g[i] *= nm;
       }
       break;
 
@@ -1660,48 +1631,30 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 	metrics[i] = t*nm/metrics[i];
       }
 
-      if (avgMethod == SUM) {
-	nm = m;
-      }
-      else {
-	nm = m / 8.0;
-      }
+      nm = m / 8.0;
       m = pow(nm, 1.0 / t);
 
       for (i = 0; i < 8; ++i) {
-        grad[locs_hex[i][0]] += metrics[i]*gradients[4*i+0];
-	grad[locs_hex[i][1]] += metrics[i]*gradients[4*i+1];
-	grad[locs_hex[i][2]] += metrics[i]*gradients[4*i+2];
-	grad[locs_hex[i][3]] += metrics[i]*gradients[4*i+3];
+        g[locs_hex[i][0]] += metrics[i]*gradients[4*i+0];
+	g[locs_hex[i][1]] += metrics[i]*gradients[4*i+1];
+	g[locs_hex[i][2]] += metrics[i]*gradients[4*i+2];
+	g[locs_hex[i][3]] += metrics[i]*gradients[4*i+3];
       }
 
-      if (avgMethod == SUM) {
-	nm = m / (nm*t);
-      }
-      else {
-	nm = m / (8.0*nm*t);
-      }
-
+      nm = m / (8.0*nm*t);
       for (i = 0; i < 8; ++i) {
-	grad[i] *= nm;
+	g[i] *= nm;
       }
       break;
     }
 
-    // This is not very efficient, but is one way to select correct gradients
-    for (i = 0; i < 8; ++i) {
-      for (j = 0; j < nv; ++j) {
-        if (vertices + v_i[i] == v[j]) {
-          g[j] = grad[i];
-        }
-      }
-    }
+    // Tom: zero out fixed elements of g
     break;
 
   default:
-    m = 0.0;
     break;
   } // end switch over element type
+
   return true;
 }
 
@@ -1730,9 +1683,6 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
   Vector3D coords[4];		// Vertex coordinates for the (decomposed) elements
   Vector3D gradients[32];	// Gradient of metric with respect to the coords
   Matrix3D hessians[80];	// Hessian of matrix with respect to the coords
-
-  Vector3D grad[8];		// Accumulated gradients (composed merit function)
-  Matrix3D hess[36];		// Accumulated hessians (composed merit function)
   double   metrics[8];		// Metric values for the (decomposed) elements
   double   nm, t;
 
@@ -1760,54 +1710,20 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     coords[1] = vertices[v_i[1]];
     coords[2] = vertices[v_i[2]];
     coords[3] = vertices[v_i[3]];
-    if (!h_fcn_3e(m, grad, hess, coords)) return false;
+    if (!h_fcn_3e(m, g, h, coords)) return false;
 
-    // This is not very efficient, but is one way to select correct gradient
-    for (i = 0; i < 4; ++i) {
-      for (j = 0; j < nv; ++j) {
-        if (vertices + v_i[i] == v[j])
-          g[i] = grad[i];
-        else
-          g[i] = 0.;
-      }
-    }
-
-    // Makes sure we give null entries to the blocks corresponding to fixed vertices. 
-    for(i=0; i<4; ++i) {
-      for (j=i; j<4; ++j) {
-        
-        // for an entry i,j in the upper right part of a  4*4 matrix, index in a 1D array is
-        ind = 4*i- (i*(i+1)/2) +j; // 4*i - \sum_{n=0}^i n +j 
-
-        bool nul_hessian = true; 
-        for (k=0; k<nv; ++k) 
-          for (l=0; l<nv; ++l) 
-            if ( (vertices + v_i[i] == v[k]) && (vertices + v_i[j] == v[l]) )
-              nul_hessian = false;
-
-        if (nul_hessian == false)
-          h[ind] = hess[ind];
-        else {
-          h[ind] = 0.;
-        }
-      }
-    }
-    
+    // Tom: zero out fixed elements of g and h
     break;
 
   case HEXAHEDRON:
-    // Hessians for hexes are not done yet.  Need to changes to fcn_3i, and
-    // do the accumulation and calculation correctly.
-
-    // err.set_msg("Hessian for hexes not done yet!  Talk to Tom.\n"); return false;
     for (i = 0; i < 8; ++i) {
-      grad[i] = 0.0;
+      g[i] = 0.0;
 
       coords[0] = vertices[v_i[locs_hex[i][0]]];
       coords[1] = vertices[v_i[locs_hex[i][1]]];
       coords[2] = vertices[v_i[locs_hex[i][2]]];
       coords[3] = vertices[v_i[locs_hex[i][3]]];
-      if (!h_fcn_3e(metrics[i], gradients+4*i, hessians+10*i, coords)) return false;
+      if (!h_fcn_3i(metrics[i], gradients+4*i, hessians+10*i, coords)) return false;
     }
 
     switch(avgMethod) {
@@ -1820,16 +1736,16 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
       nm = 0;
       for (i = 0; i < 8; ++i) {
         if (metrics[i] <= m + MSQ_MIN) {
-	  grad[locs_hex[i][0]] += gradients[4*i+0];
-	  grad[locs_hex[i][1]] += gradients[4*i+1];
-	  grad[locs_hex[i][2]] += gradients[4*i+2];
-	  grad[locs_hex[i][3]] += gradients[4*i+3];
+	  g[locs_hex[i][0]] += gradients[4*i+0];
+	  g[locs_hex[i][1]] += gradients[4*i+1];
+	  g[locs_hex[i][2]] += gradients[4*i+2];
+	  g[locs_hex[i][3]] += gradients[4*i+3];
 	  ++nm;
         }
       }
 
       for (i = 0; i < 8; ++i) {
-	grad[i] /= nm;
+	g[i] /= nm;
       }
       break;
 
@@ -1842,16 +1758,16 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
       nm = 0;
       for (i = 0; i < 8; ++i) {
         if (metrics[i] >= m - MSQ_MIN) {
-	  grad[locs_hex[i][0]] += gradients[4*i+0];
-	  grad[locs_hex[i][1]] += gradients[4*i+1];
-	  grad[locs_hex[i][2]] += gradients[4*i+2];
-	  grad[locs_hex[i][3]] += gradients[4*i+3];
+	  g[locs_hex[i][0]] += gradients[4*i+0];
+	  g[locs_hex[i][1]] += gradients[4*i+1];
+	  g[locs_hex[i][2]] += gradients[4*i+2];
+	  g[locs_hex[i][3]] += gradients[4*i+3];
 	  ++nm;
         }
       }
 
       for (i = 0; i < 8; ++i) {
-	grad[i] /= nm;
+	g[i] /= nm;
       }
       break;
 
@@ -1863,10 +1779,10 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 
       l = 0;
       for (i = 0; i < 8; ++i) {
-        grad[locs_hex[i][0]] += gradients[4*i+0];
-	grad[locs_hex[i][1]] += gradients[4*i+1];
-	grad[locs_hex[i][2]] += gradients[4*i+2];
-	grad[locs_hex[i][3]] += gradients[4*i+3];
+        g[locs_hex[i][0]] += gradients[4*i+0];
+	g[locs_hex[i][1]] += gradients[4*i+1];
+	g[locs_hex[i][2]] += gradients[4*i+2];
+	g[locs_hex[i][3]] += gradients[4*i+3];
 
 	for (j = 0; j < 4; ++j) {
 	  for (k = j; k < 4; ++k) {
@@ -1875,11 +1791,11 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 
 	    if (r <= c) {
 	      loc = 8*r - (r*(r+1)/2) + c;
-	      hess[loc] += hessians[l];
+	      h[loc] += hessians[l];
 	    } 
 	    else {
 	      loc = 8*c - (c*(c+1)/2) + r;
-	      hess[loc] += transpose(hessians[l]);
+	      h[loc] += transpose(hessians[l]);
 	    }
 	    ++l;
 	  }
@@ -1896,15 +1812,15 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
       m = exp(m / 8.0);
 
       for (i = 0; i < 8; ++i) {
-        grad[locs_hex[i][0]] += metrics[i]*gradients[4*i+0];
-	grad[locs_hex[i][1]] += metrics[i]*gradients[4*i+1];
-	grad[locs_hex[i][2]] += metrics[i]*gradients[4*i+2];
-	grad[locs_hex[i][3]] += metrics[i]*gradients[4*i+3];
+        g[locs_hex[i][0]] += metrics[i]*gradients[4*i+0];
+	g[locs_hex[i][1]] += metrics[i]*gradients[4*i+1];
+	g[locs_hex[i][2]] += metrics[i]*gradients[4*i+2];
+	g[locs_hex[i][3]] += metrics[i]*gradients[4*i+3];
       }
 
       nm = m / 8.0;
       for (i = 0; i < 8; ++i) {
-	grad[i] *= nm;
+	g[i] *= nm;
       }
       break;
 
@@ -1935,68 +1851,27 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 	metrics[i] = t*nm/metrics[i];
       }
 
-      if (avgMethod == SUM) {
-	nm = m;
-      }
-      else {
-	nm = m / 8.0;
-      }
+      nm = m / 8.0;
       m = pow(nm, 1.0 / t);
 
       for (i = 0; i < 8; ++i) {
-        grad[locs_hex[i][0]] += metrics[i]*gradients[4*i+0];
-	grad[locs_hex[i][1]] += metrics[i]*gradients[4*i+1];
-	grad[locs_hex[i][2]] += metrics[i]*gradients[4*i+2];
-	grad[locs_hex[i][3]] += metrics[i]*gradients[4*i+3];
+        g[locs_hex[i][0]] += metrics[i]*gradients[4*i+0];
+	g[locs_hex[i][1]] += metrics[i]*gradients[4*i+1];
+	g[locs_hex[i][2]] += metrics[i]*gradients[4*i+2];
+	g[locs_hex[i][3]] += metrics[i]*gradients[4*i+3];
       }
 
-      if (avgMethod == SUM) {
-	nm = m / (nm*t);
-      }
-      else {
-	nm = m / (8.0*nm*t);
-      }
-
+      nm = m / (8.0*nm*t);
       for (i = 0; i < 8; ++i) {
-	grad[i] *= nm;
+	g[i] *= nm;
       }
       break;
     }
 
-    // This is not very efficient, but is one way to select correct gradients
-    for (i = 0; i < 8; ++i) {
-      for (j = 0; j < nv; ++j) {
-        if (vertices + v_i[i] == v[j])
-          g[i] = grad[i];
-        else
-          g[i] = 0.;
-      }
-    }
-
-    // Makes sure we give null entries to the blocks corresponding to fixed vertices. 
-    for(i=0; i<8; ++i) {
-      for (j=i; j<8; ++j) {
-        
-        // for an entry i,j in the upper right part of a  8*8 matrix, index in a 1D array is
-        ind = 8*i- (i*(i+1)/2) +j; // 8*i - \sum_{n=0}^i n +j 
-
-        bool nul_hessian = true; 
-        for (k=0; k<nv; ++k) 
-          for (l=0; l<nv; ++l) 
-            if ( (vertices + v_i[i] == v[k]) && (vertices + v_i[j] == v[l]) )
-              nul_hessian = false;
-
-        if (nul_hessian == false)
-          h[ind] = hess[ind];
-        else {
-          h[ind] = 0.;
-        }
-      }
-    }
+    // Tom: zero out fixed elements of g and h
     break;
 
   default:
-    m = 0.0;
     break;
   } // end switch over element type
   return true;
