@@ -29,18 +29,19 @@ describe main.cpp here
 #include <stdlib.h>
 #endif
 
-#include "TSTT_Base.h"
 
 #include "Mesquite.hpp"
+#include "TSTT_Base.h"
+#include "MesquiteUtilities.hpp" //  for writeShowMeMesh()
 #include "MesquiteError.hpp"
 #include "Vector3D.hpp"
 #include "InstructionQueue.hpp"
 #include "MeshSet.hpp"
 #include "PatchData.hpp"
+#include "StoppingCriterion.hpp"
+#include "QualityAssessor.hpp"
 
-#include "CubitMesh.h" //  for writeShowMeMesh()
-
-// algorythms
+// algorithms
 #include "ConditionNumberQualityMetric.hpp"
 #include "MinTemplate.hpp"
 #include "NonSmoothSteepestDescent.hpp"
@@ -51,46 +52,79 @@ using namespace Mesquite;
 int main()
 {     
   /* Reads a Mesh file */
-  Mesh_Handle mesh;
-
   char file_name[128];
-  strcpy(file_name, "../MeshFiles/CUBIT/2D/bad_circle");
-  TSTT_Mesh_loadFile(&mesh, file_name);
+  TSTT::Mesh_Handle mesh;
+  TSTT::MeshError tstt_err;
+  TSTT::Mesh_Create(&mesh, &tstt_err);
+  strcpy(file_name, "../../meshFiles/2D/VTK/equil_tri2.vtk");
+  strcpy(file_name, "../../meshFiles/2D/VTK/bad_circle_tri_rhr.vtk");
+  strcpy(file_name, "../../meshFiles/2D/VTK/tri_20258.vtk");
+  strcpy(file_name, "../../meshFiles/3D/VTK/tet_1.vtk");
+  strcpy(file_name, "../../meshFiles/3D/VTK/cube_tet_2.vtk");
+  strcpy(file_name, "../../meshFiles/3D/VTK/tire.vtk");
+  printf("Loading mesh set 1\n");
+  TSTT::Mesh_Load(mesh, file_name, &tstt_err);
   
   // Mesquite error object
   MsqError err;
   
   // initialises a MeshSet object
   MeshSet mesh_set1;
+  //  printf("Creating mesh set 1\n");
   mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
-  mesh_set1.set_space_dim(3);
-  mesh_set1.set_element_type(Mesquite::TRIANGLE);
 
   // Creates an intruction queue
+  //  printf("Creating instruction queue\n");
   InstructionQueue queue1;
 
   // Creates a condition number quality metric 
+  //  printf("Creating quality metric\n");
   ShapeQualityMetric* cond_no = ConditionNumberQualityMetric::create_new();
 
   // Build an objective function with the quality metric
+  //  printf("min template\n");
   MinTemplate* obj_func_min = new MinTemplate(cond_no);
   
   // Create the NonSmooth Steepest Descent procedures
+  //  printf("creating optimizer\n");
   NonSmoothSteepestDescent *maxmin_method = new NonSmoothSteepestDescent( obj_func_min );
-  
+   
+  maxmin_method->set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err, 1);
+
   // Set a culling method on the first QualityImprover
-  maxmin_method->add_culling_method(QualityImprover::NO_BOUNDARY_VTX);
+  maxmin_method->add_culling_method(PatchData::NO_BOUNDARY_VTX);
+
+  // Set a stopping criterion
+  StoppingCriterion sc2(StoppingCriterion::NUMBER_OF_PASSES,1);
+  maxmin_method->set_stopping_criterion(&sc2);
+
+  // Set up the quality assessor
+  //  printf("Setting up the quality assessor\n");
+  QualityAssessor quality_assessor=QualityAssessor(cond_no,QualityAssessor::MAXIMUM);
+  quality_assessor.add_quality_assessment(cond_no,QualityAssessor::MINIMUM, err); 
+                   MSQ_CHKERR(err);
+  quality_assessor.add_quality_assessment(cond_no,QualityAssessor::AVERAGE, err);
+                   MSQ_CHKERR(err);
+
+  // assess the quality of the initial mesh
+  queue1.add_quality_assessor(&quality_assessor, err); MSQ_CHKERR(err);
 
   // Set the max min method to be the master quality improver
   queue1.set_master_quality_improver(maxmin_method, err); MSQ_CHKERR(err);
 
+  // assess the quality of the final mesh
+  queue1.add_quality_assessor(&quality_assessor, err); MSQ_CHKERR(err);
+
   // write out the original mesh
-  writeShowMeMesh("original_mesh", mesh);
+  //  printf("Writing out the original mesh\n");
+  writeVtkMesh("original_mesh", mesh, err); MSQ_CHKERR(err);
 
   // launches optimization on mesh_set1
+  //  printf("Running the instruction queue\n");
   queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
 
   // write out the smoothed mesh
-  writeShowMeMesh("smoothed_mesh", mesh);
+  //  printf("Writing out the final mesh\n");
+  writeVtkMesh("smoothed_mesh", mesh, err); MSQ_CHKERR(err);
 
 }
