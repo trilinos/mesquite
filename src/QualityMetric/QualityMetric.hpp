@@ -160,6 +160,12 @@ namespace Mesquite
        //!Returns the name of this metric (as a string).
      inline string get_name()
         { return metricName; }
+
+       //!Escobar Barrier Function for Shape and Other Metrics
+       // det = signed determinant of Jacobian Matrix at a Vertex
+       // delta = scaling parameter
+     inline double vertex_barrier_function(double det, double delta) 
+            { return 0.5*(det+sqrt(det*det+4*delta*delta)); }
      
        //!Evaluate the metric for a vertex
      virtual bool evaluate_vertex(PatchData& /*pd*/, MsqVertex* /*vertex*/,

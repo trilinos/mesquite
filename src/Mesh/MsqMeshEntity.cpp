@@ -462,7 +462,7 @@ double MsqMeshEntity::compute_signed_volume(PatchData &pd, MsqError &err) {
   an error is set. Warning: if there is no geometry available an error
   will be set. */
   void MsqMeshEntity::compute_minmax_signed_corner_det2d(PatchData &pd, 
-        double &dmin, double & dmax, MsqError &err) {
+        double &dmin, double &dmax, MsqError &err) {
 
   bool normalize = true;
   double tem;

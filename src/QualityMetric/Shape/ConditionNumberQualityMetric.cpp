@@ -80,7 +80,7 @@ bool ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
       temp_vec[1]=((2*temp_vec[3])-temp_vec[0])/MSQ_SQRT_THREE;
       temp_vec[2]=((3*temp_vec[4])-temp_vec[0]-temp_vec[3])/
         (MSQ_SQRT_THREE*MSQ_SQRT_TWO);
-      return_flag=condition_number_3d(temp_vec,fval,err);
+      return_flag=condition_number_3d(temp_vec,pd,fval,err);
       return return_flag;
         /*
     case PYRAMID:
@@ -95,7 +95,7 @@ bool ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
       temp_vec[0]=temp_vec[3];
       temp_vec[1]=temp_vec[4]-temp_vec[3];
       temp_vec[2]=MSQ_SQRT_TWO*(temp_vec[5]-(temp_vec[4]/2.0));
-      return_flag=condition_number_3d(temp_vec,met_vals[0],err);
+      return_flag=condition_number_3d(temp_vec,pd,met_vals[0],err);
       if(!return_flag)
         return return_flag;
         //transform to origina v_i[1]
@@ -106,7 +106,7 @@ bool ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
       temp_vec[0]=temp_vec[3]-temp_vec[4];
       temp_vec[1]=temp_vec[3];
       temp_vec[2]=MSQ_SQRT_TWO*(temp_vec[5]-(temp_vec[4]/2.0));
-      return_flag=condition_number_3d(temp_vec,met_vals[1],err);
+      return_flag=condition_number_3d(temp_vec,pd,met_vals[1],err);
       if(!return_flag)
         return return_flag;
         //transform to origina v_i[1]     
@@ -117,7 +117,7 @@ bool ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
       temp_vec[0]=-temp_vec[3];
       temp_vec[1]=temp_vec[3]-temp_vec[4];
       temp_vec[2]=MSQ_SQRT_TWO*(temp_vec[5]-(temp_vec[4]/2.0));
-      return_flag=condition_number_3d(temp_vec,met_vals[2],err);
+      return_flag=condition_number_3d(temp_vec,pd,met_vals[2],err);
       if(!return_flag)
         return return_flag;
         //transform to origina v_i[1]     
@@ -128,7 +128,7 @@ bool ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
       temp_vec[0]=temp_vec[4]-temp_vec[3];
       temp_vec[1]=-temp_vec[3];
       temp_vec[2]=MSQ_SQRT_TWO*(temp_vec[5]-(temp_vec[4]/2.0));
-      return_flag=condition_number_3d(temp_vec,met_vals[3],err);
+      return_flag=condition_number_3d(temp_vec,pd,met_vals[3],err);
       fval=average_metrics(met_vals, 4, err);
       if(!return_flag)
         return return_flag;
@@ -139,49 +139,49 @@ bool ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
       temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
       temp_vec[1]=vertices[v_i[3]]-vertices[v_i[0]];
       temp_vec[2]=vertices[v_i[4]]-vertices[v_i[0]];
-      return_flag=condition_number_3d(temp_vec,met_vals[0],err);
+      return_flag=condition_number_3d(temp_vec,pd,met_vals[0],err);
       if(!return_flag)
         return return_flag;
       temp_vec[0]=vertices[v_i[2]]-vertices[v_i[1]];
       temp_vec[1]=vertices[v_i[0]]-vertices[v_i[1]];
       temp_vec[2]=vertices[v_i[5]]-vertices[v_i[1]];
-      return_flag=condition_number_3d(temp_vec,met_vals[1],err);
+      return_flag=condition_number_3d(temp_vec,pd,met_vals[1],err);
       if(!return_flag)
         return return_flag;
       temp_vec[0]=vertices[v_i[3]]-vertices[v_i[2]];
       temp_vec[1]=vertices[v_i[1]]-vertices[v_i[2]];
       temp_vec[2]=vertices[v_i[6]]-vertices[v_i[2]];
-      return_flag=condition_number_3d(temp_vec,met_vals[2],err);
+      return_flag=condition_number_3d(temp_vec,pd,met_vals[2],err);
       if(!return_flag)
         return return_flag;
       temp_vec[0]=vertices[v_i[0]]-vertices[v_i[3]];
       temp_vec[1]=vertices[v_i[2]]-vertices[v_i[3]];
       temp_vec[2]=vertices[v_i[7]]-vertices[v_i[3]];
-      return_flag=condition_number_3d(temp_vec,met_vals[3],err);
+      return_flag=condition_number_3d(temp_vec,pd,met_vals[3],err);
       if(!return_flag)
         return return_flag;
       temp_vec[0]=vertices[v_i[7]]-vertices[v_i[4]];
       temp_vec[1]=vertices[v_i[5]]-vertices[v_i[4]];
       temp_vec[2]=vertices[v_i[0]]-vertices[v_i[4]];
-      return_flag=condition_number_3d(temp_vec,met_vals[4],err);
+      return_flag=condition_number_3d(temp_vec,pd,met_vals[4],err);
       if(!return_flag)
         return return_flag;
       temp_vec[0]=vertices[v_i[4]]-vertices[v_i[5]];
       temp_vec[1]=vertices[v_i[6]]-vertices[v_i[5]];
       temp_vec[2]=vertices[v_i[1]]-vertices[v_i[5]];
-      return_flag=condition_number_3d(temp_vec,met_vals[5],err);
+      return_flag=condition_number_3d(temp_vec,pd,met_vals[5],err);
       if(!return_flag)
         return return_flag;
       temp_vec[0]=vertices[v_i[5]]-vertices[v_i[6]];
       temp_vec[1]=vertices[v_i[7]]-vertices[v_i[6]];
       temp_vec[2]=vertices[v_i[2]]-vertices[v_i[6]];
-      return_flag=condition_number_3d(temp_vec,met_vals[6],err);
+      return_flag=condition_number_3d(temp_vec,pd,met_vals[6],err);
       if(!return_flag)
         return return_flag;
       temp_vec[0]=vertices[v_i[6]]-vertices[v_i[7]];
       temp_vec[1]=vertices[v_i[4]]-vertices[v_i[7]];
       temp_vec[2]=vertices[v_i[3]]-vertices[v_i[7]];
-      return_flag=condition_number_3d(temp_vec,met_vals[7],err);
+      return_flag=condition_number_3d(temp_vec,pd,met_vals[7],err);
       fval=average_metrics(met_vals, 8, err);
       return return_flag;
     default:

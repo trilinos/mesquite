@@ -96,7 +96,7 @@ bool VertexConditionNumberQualityMetric::evaluate_vertex(PatchData &pd,
         temp_vec[1]=((2*temp_vec[3])-temp_vec[0])/MSQ_SQRT_THREE;
         temp_vec[2]=((3*temp_vec[4])-temp_vec[0]-temp_vec[3])/
           (MSQ_SQRT_THREE*MSQ_SQRT_TWO);
-        return_flag=condition_number_3d(temp_vec,met_vals[i],err);
+        return_flag=condition_number_3d(temp_vec,pd,met_vals[i],err);
         if(!return_flag)
           return return_flag;
         break;
@@ -104,7 +104,7 @@ bool VertexConditionNumberQualityMetric::evaluate_vertex(PatchData &pd,
         temp_vec[0]=vertices[other_vertices[0]]-vertices[this_vert];
         temp_vec[1]=vertices[other_vertices[1]]-vertices[this_vert];
         temp_vec[2]=vertices[other_vertices[2]]-vertices[this_vert];
-        return_flag=condition_number_3d(temp_vec,met_vals[i],err);
+        return_flag=condition_number_3d(temp_vec,pd,met_vals[i],err);
         if(!return_flag)
           return return_flag;
         break;
