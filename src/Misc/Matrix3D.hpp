@@ -5,7 +5,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 18-Dec-02 at 11:08:22
-//  LAST-MOD: 13-Jan-03 at 14:54:01 by Thomas Leurent
+//  LAST-MOD: 22-Jan-03 at 17:31:19 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -150,6 +150,7 @@ namespace Mesquite
     friend int matmult(Matrix3D& C, const Matrix3D  &A, const Matrix3D &B);
     friend Vector3D operator*(const Matrix3D  &A, const Vector3D &x);
     friend Vector3D operator*(const Vector3D &x, const Matrix3D  &A);
+    Matrix3D& operator+=(const Matrix3D &rhs);
     Matrix3D plus_transpose(const Matrix3D &B);
 
     size_t num_rows() const { return 3; }
@@ -262,6 +263,15 @@ namespace Mesquite
         S[size_t(2)][i] = A[i][2];
     }
     return S;
+  }
+
+  inline Matrix3D& Matrix3D::operator+=(const Matrix3D &rhs)
+  {
+      v_[0] += rhs.v_[0]; v_[1] += rhs.v_[1]; v_[2] += rhs.v_[2];
+      v_[3] += rhs.v_[3]; v_[4] += rhs.v_[4]; v_[5] += rhs.v_[5];
+      v_[6] += rhs.v_[6]; v_[7] += rhs.v_[7]; v_[8] += rhs.v_[8];
+
+      return *this;
   }
 
   inline Matrix3D Matrix3D::plus_transpose(const Matrix3D &B)

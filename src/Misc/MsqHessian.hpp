@@ -5,7 +5,7 @@
 //    E-MAIL: tmunson@mcs.anl.gov
 //
 // ORIG-DATE:  2-Jan-03 at 11:02:19 bu Thomas Leurent
-//  LAST-MOD: 22-Jan-03 at 14:40:05 by Thomas Leurent
+//  LAST-MOD: 22-Jan-03 at 17:55:18 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -43,25 +43,30 @@ namespace Mesquite
   class MsqHessian
   {
   protected:
+    PatchData* origin_pd;
+    
     Matrix3D* mEntries;	   //!< CSR block entries.  size: number of nonzero blocks 
     size_t* mRowStart;	   //!< start of each row in mEntries. size: number of vertices.
     size_t* mColIndex;     //!< CSR block structure: column indexes of the row entries. 
 
     int* mAccumulation;	   //!< accumulation pattern instructions
+    size_t* mAccumElemStart;  //!< Starting index in mAccumulation for element i, i=1,...
 
     int mSize; //!< number of rows (or number of columns, this is a square matrix).
 
-    //! Hessian - vector product summed with a second vector.
-    friend void axpy(Vector3D res[], int size_r,
-                     const MsqHessian &H, const Vector3D x[], int size_x,
-                     const Vector3D y[], int size_y, MsqError &err);
   public:
+    MsqHessian();
+    
     void initialize(PatchData &pd, MsqError &err);
     int size() {return mSize;}
     //! returns the diagonal blocks, memory must be allocated before call.
     void get_diagonal_blocks(std::vector<Matrix3D> &diag, MsqError &err);
-
-
+    void accumulate_entries(PatchData &pd, size_t elem_index,
+                            Matrix3D mat3d_array[], size_t nb_mat3d, MsqError &err); 
+    //! Hessian - vector product summed with a second vector.
+    friend void axpy(Vector3D res[], int size_r,
+                     const MsqHessian &H, const Vector3D x[], int size_x,
+                     const Vector3D y[], int size_y, MsqError &err);
   };
 
   

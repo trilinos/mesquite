@@ -5,7 +5,7 @@
 //    E-MAIL: tmunson@mcs.anl.gov
 //
 // ORIG-DATE:  2-Jan-03 at 11:02:19 by Thomas Leurent
-//  LAST-MOD: 22-Jan-03 at 14:39:56 by Thomas Leurent
+//  LAST-MOD: 22-Jan-03 at 17:56:42 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -23,6 +23,13 @@ using namespace Mesquite;
 using std::cout;
 using std::endl;
 
+
+MsqHessian::MsqHessian() :
+  origin_pd(0), mEntries(0), mRowStart(0), mColIndex(0), 
+  mAccumulation(0), mAccumElemStart(0), mSize(0)
+{ }
+
+
 #undef __FUNC__
 #define __FUNC__ "MsqHessian::initialize"
 /*! \brief creates a sparse structure for a Hessian, based on the
@@ -30,10 +37,16 @@ using std::endl;
   Only the upper triangular part of the Hessian is stored. */
 void MsqHessian::initialize(PatchData &pd, MsqError &err)
 {
+  delete[] mEntries;
+  delete[] mRowStart;
+  delete[] mColIndex;
+  delete[] mAccumulation;
+  delete[] mAccumElemStart;
+  
   size_t num_vertices = pd.num_vertices();
   size_t num_elements = pd.num_elements();
   std::vector<size_t> vtx_list;
-  size_t e, r, rs, re, c, cs, ce, nz, nnz, nve, i, j;
+  size_t e, r, rs, re, c, cs, ce, nz, nnz, nv, nve, i, j;
   MsqMeshEntity* element_array = pd.get_element_array(err); MSQ_CHKERR(err);
 
   if (num_vertices == 0) {
@@ -47,7 +60,10 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
   // pattern.
 
   size_t* col_start = new size_t[num_vertices + 1];
-    
+  mAccumElemStart = new size_t[num_elements+1];
+  mAccumElemStart[0] = 0;
+  nv = 0;
+  
   for (i = 0; i < num_vertices; ++i) {
     col_start[i] = 0;
   }
@@ -55,7 +71,9 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
   for (e = 0; e < num_elements; ++e) {
     nve = element_array[e].vertex_count();
     element_array[e].get_vertex_indices(vtx_list);
-
+    nv+=nve;
+    mAccumElemStart[e+1] = nv;
+    
     for (i = 0; i < nve; ++i) {
       r = vtx_list[i];
       
@@ -191,7 +209,7 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
 
   // Compaction -- count the number of nonzeros
   mRowStart = col_start;   // don't need to reallocate
-  mAccumulation = row_instr;   // don;t need to reallocate
+  mAccumulation = row_instr;   // don't need to reallocate
 
   for (i = 0; i <= num_vertices; ++i) {
     mRowStart[i] = 0;
@@ -283,3 +301,40 @@ void MsqHessian::get_diagonal_blocks(std::vector<Matrix3D> &diag, MsqError &err)
   }
 }
 
+
+#undef __FUNC__
+#define __FUNC__ "MsqHessian::accumulate_entries"
+/*! \param pd: PatchData in that contains the element which Hessian
+           we are accumulating in the Hessian matrix. This must be the same
+           PatchData that was used in MsqHessian::initialize().
+    \param elem_index: index of the element in the PatchData.
+    \param mat3d_array: This is the upper triangular part of the element Hessian for all nodes, including fixed nodes, for which the entries must be null Matrix3Ds.
+    \param nb_mat3d. The size of the mat3d_array: (n+1)n/2, where n is
+           the number of nodes in the element.
+  */
+ void MsqHessian::accumulate_entries(PatchData &pd, size_t elem_index,
+                         Matrix3D mat3d_array[], size_t nb_mat3d, MsqError &err)
+{
+  int i;
+  
+  if (&pd != origin_pd) {
+    err.set_msg("Cannot accumulate elements from a different patch. "
+                "Use MsqHessian::initialize first.");
+    return;
+  }
+
+  int nve = pd.get_element_array(err)[elem_index].vertex_count(); MSQ_CHKERR(err);
+
+  assert( nb_mat3d == (nve+1)*nve/2 );
+
+  int e = mAccumElemStart[elem_index];
+  for (i=0; i<nb_mat3d; ++i) {
+    if (mEntries[e] >= 0)
+      mEntries[e] += mat3d_array[i];
+    else
+      mEntries[e].plus_transpose(mat3d_array[i]);
+    ++e;
+  }
+
+  assert( e == mAccumElemStart[elem_index+1] );
+}
