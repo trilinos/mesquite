@@ -69,6 +69,11 @@ namespace Mesquite
        : Vector3D(0,0,0), vertexBitFlags(0), mTag(0)
        {}
 
+       //!Construct default vertex with coordinates (0.0,0.0,0.0)
+     MsqVertex(const MsqVertex& rhs) 
+       : Vector3D(rhs), vertexBitFlags(0), mTag(0)
+       {}
+
        //! Initializes with coordinates. Sets tag data/pointer to 0.
      MsqVertex& operator=(const Vector3D& rhs)
        { Vector3D::operator=(rhs);

@@ -43,12 +43,13 @@ namespace Mesquite {
 //! This operator= makes a deep copy, including the tag data. 
 MsqVertex& MsqVertex::operator=(const MsqVertex& rhs)
 {
+  delete mTag;
+  mTag = 0;
+  
   Vector3D::operator=(rhs);
   vertexBitFlags = rhs.vertexBitFlags; 
   if (rhs.mTag != 0)
     mTag = new MsqTag(*(rhs.mTag));
-  else
-    mTag = 0;
   return *this;
 }
 

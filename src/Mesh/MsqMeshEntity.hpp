@@ -75,6 +75,13 @@ namespace Mesquite
       : mType(MIXED), vertexIndices(0), numVertexIndices(0), mTag(0)
       {}
 
+    MsqMeshEntity( const MsqMeshEntity& rhs )
+      : mType( rhs.mType ),
+        vertexIndices( rhs.vertexIndices ),
+        numVertexIndices( rhs.numVertexIndices ),
+        mTag( rhs.mTag ? new MsqTag(*rhs.mTag) : 0 )
+      {}
+
       //! Destructor also deletes associated tag data. 
     ~MsqMeshEntity()
       { delete mTag; mTag=0; }

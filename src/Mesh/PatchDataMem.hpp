@@ -99,7 +99,7 @@ PatchDataMem<X>::PatchDataMem( const PatchDataMem<X>& other )
 
 template <typename X>
 PatchDataMem<X>::~PatchDataMem()
-  { free( arrayData ); }
+  { clear(); free( arrayData ); }
 
 template <typename X> 
 size_t PatchDataMem<X>::size() const
