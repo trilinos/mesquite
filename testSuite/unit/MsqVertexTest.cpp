@@ -373,12 +373,18 @@ void test_compute_weigted_jacobian_ideal_tri()
     CPPUNIT_ASSERT(counter==3);
   }
 
-   void test_flags()
-   {
-      MsqVertex vtx(1,2,3);
-      vtx.set_hard_fixed_flag();
-      CPPUNIT_ASSERT( vtx.is_flag_set(MsqVertex::MSQ_HARD_FIXED)==true );
-   }
+  void test_flags()
+  {
+     MsqVertex vtx(1,2,3);
+     CPPUNIT_ASSERT( vtx.is_flag_set(MsqVertex::MSQ_HARD_FIXED)==false );
+     vtx.set_hard_fixed_flag();
+     CPPUNIT_ASSERT( vtx.is_flag_set(MsqVertex::MSQ_SOFT_FIXED)==false );
+     CPPUNIT_ASSERT( vtx.is_flag_set(MsqVertex::MSQ_HARD_FIXED)==true );
+     CPPUNIT_ASSERT( ( vtx.is_flag_set(MsqVertex::MSQ_SOFT_FIXED) ||
+                       vtx.is_flag_set(MsqVertex::MSQ_HARD_FIXED) ) == true);
+     CPPUNIT_ASSERT( ( vtx.is_flag_set(MsqVertex::MSQ_SOFT_FIXED) &&
+                       vtx.is_flag_set(MsqVertex::MSQ_HARD_FIXED) ) == false);
+  }
 };
 
 
