@@ -26,14 +26,15 @@ namespace Mesquite {
 
   /*! \class QualityAssessor
 
-      \brief The QualityAssessor class contains all the information needed to perform a
-      single sweep over the mesh and make all relevant quality assessments.
+      \brief The QualityAssessor class contains all the information needed
+      to perform a single sweep over the mesh and make all relevant
+      quality assessments.
 
-      The relevant quality assessments are set by the user or automatically (default)
-      by Mesquite when an InstructionQueue object is used. 
-
-      If the mesh has been changed (improved), it is often useful to reuse the same
-      QualityAssessor object to reassess the mesh quality.
+      The relevant quality assessments are set by the user or
+      automatically (default) by Mesquite when an InstructionQueue
+      object is used.  If the mesh has been changed (improved),
+      it is often useful to reuse the same QualityAssessor object
+      to reassess the mesh quality.
   */
    class QualityAssessor : public PatchDataUser
   {

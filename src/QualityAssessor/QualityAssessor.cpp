@@ -43,6 +43,9 @@ QualityAssessor::QualityAssessor(QualityMetric* qm, enum QAFunction func,
   MSQ_CHKERR(err);
   printingTurnedOff=0;
     //sigDig=5;
+    //When we are no longer doing a GLOBAL patch, we          
+    //must also remove the 'elem_bool=0' below.         
+  set_patch_type(PatchData::GLOBAL_PATCH, err, 0); MSQ_CHKERR(err);
 }
 
 #undef __FUNC__
@@ -301,7 +304,7 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError &err)
     QAData[i].histMax=assessor_array[i]->maxHist;
     QAData[i].histMin=assessor_array[i]->minHist;
     QAData[i].histDelta=(QAData[i].histMax-QAData[i].histMin)/MSQ_HIST_SIZE;
-    i++;
+    ++i;
     ++pos;
   }
     //pointers to elems
@@ -318,28 +321,24 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError &err)
     //of the histogram.  We then accumulate the histogram
     //data on the second pass over the mesh.
     //
-  int num_nodes_per_elem=0;
   
   while(num_pass<2 && two_loops){
       //two_loops will be set to one if two loops are necessary
     two_loops=0;
     double temp_val=0;
     if(num_elem_based){
-        //construct the patch we will send to get_next_element_group
+        //construct the patch we will send to get_next_patch
       PatchData elem_group;
-        //Michael:: temporary solution to bug
-      set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err, 1); MSQ_CHKERR(err);
+        
       no_culling_method();
       
       bool elem_bool;
-      elem_bool=ms.get_next_element_group(elem_group, this, err);
+      elem_bool=ms.get_next_patch(elem_group, this, err);
       
-        //until there are no more element groups
-        //there is another get_next_element_group at
+        //until there are no more patches
+        //there is another get_next_patch at
         //the end of this loop
-        //int remove_this_var=0;
       while(elem_bool){
-          //remove_this_var++;
         
         elems=elem_group.get_element_array(err);
         num_elems=elem_group.num_elements();
@@ -369,7 +368,6 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError &err)
             if(!num_pass||assessor_array[metric_counter]->maxHist>MSQ_MAX_CAP){
               
               temp_val=assessor_array[metric_counter]->metric->evaluate_element(elem_group,&elems[element_counter],err);
-              num_nodes_per_elem=elems[element_counter].vertex_count();
               
                 //if we are on the first loop over the mesh, calculate
                 //everything we can.  That is accumlate for
@@ -429,10 +427,14 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError &err)
             metric_counter++;
           }//end while metric_counter is less than num_elem_based
           element_counter++;
-        }//end         while element counter < num_elems
+        }//end  while element counter < num_elems
 
           //get next element group (PatchData object)
-        elem_bool=ms.get_next_element_group(elem_group, this, err);
+        elem_bool=ms.get_next_patch(elem_group,this, err);
+          //Michael:: Since we are doing global right now:
+          //Remove this when no longer doing global
+        elem_bool=0;
+          //PRINT_INFO("\nInside QA get_next returning %i",elem_bool);        
       }//end  while (elem_bool)
       
     }//end   if num_elem_based
@@ -509,9 +511,9 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError &err)
         //if elem based, print element header
       if(metric_counter<num_elem_based){
         if(num_pass==1)
-          tot_num=total_num_elements/(num_nodes_per_elem);
+          tot_num=total_num_elements;
         else
-          tot_num=total_num_elements/(num_nodes_per_elem*2);
+          tot_num=total_num_elements/(2);
         PRINT_INFO("\nELEMENT BASED METRIC :: %s  (%i elements)\n",assessor_array[metric_counter]->metric->get_name().c_str(),tot_num);
       }
         //if metric is vertex_based, print vertex_header
@@ -570,12 +572,12 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError &err)
          PRINT_INFO("\n%s  \n", get_QAFunction_name(QualityAssessor::HISTOGRAM).c_str());
          int inner_loop;
         if(QAData[metric_counter].histVar[0])
-          PRINT_INFO("NOTICE:  VALUES BELOW HISTOGRAM RANGE = %d\n",QAData[metric_counter].histVar[0]/num_nodes_per_elem);
+          PRINT_INFO("NOTICE:  VALUES BELOW HISTOGRAM RANGE = %d\n",QAData[metric_counter].histVar[0]);
         for (inner_loop=0;inner_loop<MSQ_HIST_SIZE; inner_loop++){
-          PRINT_INFO("Values between %8.6e and %8.6e = %d\n",QAData[metric_counter].histMin+(QAData[metric_counter].histDelta*inner_loop),QAData[metric_counter].histMin+(QAData[metric_counter].histDelta*(inner_loop+1)),QAData[metric_counter].histVar[inner_loop+1]/num_nodes_per_elem);
+          PRINT_INFO("Values between %8.6e and %8.6e = %d\n",QAData[metric_counter].histMin+(QAData[metric_counter].histDelta*inner_loop),QAData[metric_counter].histMin+(QAData[metric_counter].histDelta*(inner_loop+1)),QAData[metric_counter].histVar[inner_loop+1]);
         }//end inner_loop       
         if(QAData[metric_counter].histVar[MSQ_HIST_SIZE+1])
-          PRINT_INFO("NOTICE:  VALUES ABOVE HISTOGRAM RANGE = %d\n",QAData[metric_counter].histVar[MSQ_HIST_SIZE+1]/num_nodes_per_elem);
+          PRINT_INFO("NOTICE:  VALUES ABOVE HISTOGRAM RANGE = %d\n",QAData[metric_counter].histVar[MSQ_HIST_SIZE+1]);
       }//end if histo
     
     }//end while loop over metrics
