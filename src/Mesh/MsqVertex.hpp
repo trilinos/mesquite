@@ -1,8 +1,8 @@
 // -*- Mode : c++; tab-width: 2; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 
-//! \file MsqVertex.hpp
-
-
+/*! \file MsqVertex.hpp
+  \brief Mesquite's vertex object.
+*/
 #ifndef MSQVERTEX_HPP
 #define MSQVERTEX_HPP
 
@@ -12,22 +12,26 @@
 
 namespace Mesquite
 {
-   class MsqVertex : public Vector3D
+    /*!
+      \class MsqVertex
+      \brief MsqVertex is the Mesquite object that stores information about
+      the vertices in the mesh.*/
+  class MsqVertex : public Vector3D
    {
    public:
-     
+       //!Construct vertex using three doubles.
      MsqVertex(double x, double y, double z) 
          : Vector3D(x, y, z), vertexBitFlags(0)
        {}
-     
+       //!Construct vertex using Vector3D.
      MsqVertex(const Vector3D &vec) 
          : Vector3D(vec), vertexBitFlags(0)
        {}
-     
+       //!Construct default vertex with coordinates (0.0,0.0,0.0)
      MsqVertex() 
          : Vector3D(0,0,0), vertexBitFlags(0)
        {}
-
+     
      void operator=(const Vector3D& rhs)
        { Vector3D::operator=(rhs); }
      
@@ -47,7 +51,7 @@ namespace Mesquite
        MSQ_FLAG_3 = 4,
        MSQ_FLAG_4 = 8
      };
-     
+       //!Returns 1 if vertex is ``free''.
      int is_free_vertex()
        { return (vertexBitFlags & MSQ_FREE_VERTEX); }
      

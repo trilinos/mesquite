@@ -20,6 +20,10 @@
 
 namespace Mesquite
 {
+  /*!
+      \class MsqMeshEntity
+      \brief MsqMeshEntity is the Mesquite object that stores information about
+      the elements in the mesh.*/
   class PatchData;
   class MsqMeshEntity
   {
