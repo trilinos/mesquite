@@ -304,7 +304,6 @@ double MsqMeshEntity::compute_unsigned_area(PatchData &pd, MsqError &err) {
                    (verts[vertexIndices[2]]-verts[vertexIndices[0]])).length()
                   /2.0);
       return tem;
-      break;
       
     case QUADRILATERAL:
       tem = ((verts[vertexIndices[1]]-verts[vertexIndices[0]])*
@@ -312,7 +311,6 @@ double MsqMeshEntity::compute_unsigned_area(PatchData &pd, MsqError &err) {
       tem += ((verts[vertexIndices[3]]-verts[vertexIndices[2]])*
               (verts[vertexIndices[1]]-verts[vertexIndices[2]])).length();
       return fabs(tem)/2.0;
-      break;
       
     default:
       err.set_msg("Invalid type of element passed to compute unsigned area.");
@@ -339,13 +337,11 @@ double MsqMeshEntity::compute_unsigned_volume(PatchData &pd, MsqError &err) {
         ((verts[vertexIndices[1]]-verts[vertexIndices[0]])*
          (verts[vertexIndices[1]]-verts[vertexIndices[0]]))/6.0;
       return fabs(tem);
-      break;
       
     case HEXAHEDRON:
       compute_weighted_jacobian(pd,sample_point,jac_vecs,
                                 num_jacobian_vectors, err );
       return fabs(jac_vecs[2]%(jac_vecs[0]*jac_vecs[1]));
-      break;
       
     default:
       err.set_msg("Invalid type of element passed to compute unsigned volume.");
@@ -367,7 +363,7 @@ double MsqMeshEntity::compute_unsigned_volume(PatchData &pd, MsqError &err) {
 void Mesquite::MsqMeshEntity::get_connected_vertices(size_t vertex_index,
                                                      std::vector<size_t>
                                                      &vert_indices,
-                                                     MsqError &err)
+                                                     MsqError &/*err*/)
 {
     //i iterates through elem's vertices
   int i=0;

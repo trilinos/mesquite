@@ -79,7 +79,6 @@ bool StoppingCriterion::stop(MeshSet &ms, MsqError &err)
         return true;
       else
         return false;
-      break;
    case StoppingCriterionEntry::SCFUNCTION_CRIT:
       switch(criterion.mSCFunc){
         case(NUMBER_OF_PASSES): 
@@ -87,7 +86,6 @@ bool StoppingCriterion::stop(MeshSet &ms, MsqError &err)
              return true;
            else
              return false;
-           break;
         default:
            err.set_msg("Enum not implemented.");
            return true;

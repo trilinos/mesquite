@@ -69,21 +69,16 @@ std::string QualityAssessor::get_QAFunction_name(
   switch(fun){
     case(AVERAGE):
       return "Average   ";
-      break;
     case(HISTOGRAM):
       return "Histogram of metric values: ";
-      break;
     case(MAXIMUM):
       return "Maximum   ";
-      break;
     case(MINIMUM):
       return "Minimum   ";
-      break;
     case(RMS):
       return "RMS       ";
     case(STDDEV):
       return "Stan. Dev.";
-      break;
     default:
       return "DEFAULT   ";
   };
@@ -103,7 +98,7 @@ std::string QualityAssessor::get_QAFunction_name(
  */
 void QualityAssessor::add_quality_assessment(QualityMetric* qm,
                                              enum QAFunction  func,
-                                             MsqError &err)
+                                             MsqError &/*err*/)
 { 
   int found=0;
   std::list<Assessor*>::iterator pos;
@@ -178,7 +173,7 @@ for the histogram.
     */
 void QualityAssessor::set_histogram_range(QualityMetric* qm,
                                              double min_val, double max_val,
-                                             MsqError &err)
+                                          MsqError &/*err*/)
 {
   int found=0;
   std::list<Assessor*>::iterator pos;
@@ -236,7 +231,7 @@ void QualityAssessor::set_histogram_range(QualityMetric* qm,
   set_stopping_assessemnt().
   \param ms (const MeshSet &) MeshSet used for quality assessment.
  */
-double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError &err)
+double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError& err)
 {
     /*! \TODO (Michael) Begin NOTE
       It does not currently work with vertex_based

@@ -317,7 +317,7 @@ namespace Mesquite
     objects may no longer be valid after this call.
   */
   inline void PatchData::reserve_vertex_capacity(size_t min_num_vertices,
-                                                 MsqError &err)
+                                                 MsqError &/*err*/)
   {
     if ( min_num_vertices > vertexArraySize
          || min_num_vertices < vertexArraySize/10)
@@ -353,7 +353,7 @@ namespace Mesquite
     objects may no longer be valid after this call.
   */
   inline void PatchData::reserve_element_capacity(size_t min_num_elements,
-                                                  MsqError &err)
+                                                  MsqError &/*err*/)
   {
     if ( min_num_elements > elemArraySize
          || min_num_elements < elemArraySize/10)
@@ -566,7 +566,7 @@ inline int PatchData::add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
    It is the responsibility of the caller to discard the PatchDataVerticesMemento
    when not needed any more.
   */
-  inline PatchDataVerticesMemento* PatchData::create_vertices_memento(MsqError &err)
+  inline PatchDataVerticesMemento* PatchData::create_vertices_memento(MsqError& /*err*/)
   {
     PatchDataVerticesMemento* memento = new PatchDataVerticesMemento;
     memento->originator = this;

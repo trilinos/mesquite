@@ -75,7 +75,7 @@ void MeshSet::add_mesh(TSTT::Mesh_Handle mh, MsqError &err)
   */
 #undef __FUNC__
 #define __FUNC__ "MeshSet::reset"
-void MeshSet::reset(MsqError &err)
+void MeshSet::reset(MsqError& /*err*/)
 {
   verticesSet.clear();
   currentVertex = verticesSet.begin();

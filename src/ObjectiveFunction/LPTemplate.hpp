@@ -44,7 +44,7 @@ namespace Mesquite
    };
    
    inline double LPTemplate::compute_function(double metric_values[],
-                                              int total_num, MsqError &err)
+                                              int total_num, MsqError&/*err*/)
    {
      int ind=0;
      int jnd=0;

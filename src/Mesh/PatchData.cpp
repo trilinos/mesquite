@@ -321,7 +321,7 @@ void PatchData::move_free_vertices_constrained(Vector3D dk[], int nb_vtx,
 void PatchData::get_element_vertex_coordinates(
   size_t elem_index,
   std::vector<Vector3D> &coords,
-  MsqError &err)
+  MsqError& /*err*/)
 {
     // Check index
   if (elem_index >= numElements)
@@ -338,7 +338,7 @@ void PatchData::get_element_vertex_coordinates(
 void PatchData::get_element_vertex_indices(
   size_t elem_index,
   std::vector<size_t> &vertex_indices,
-  MsqError &err)
+  MsqError& /*err*/)
 {
     // Check index
   if (elem_index >= numElements)
@@ -511,7 +511,7 @@ void PatchData::get_adjacent_entities_via_n_dim(int n, size_t ent_ind,
 */
 #undef __FUNC__
 #define __FUNC__ "PatchData::update_mesh" 
-void PatchData::update_mesh(MsqError &err)
+void PatchData::update_mesh(MsqError &/*err*/)
 {
   double coordsc[3];
   TSTT::cMesh_Handle mh;
@@ -673,7 +673,7 @@ void PatchData::get_subpatch(size_t center_vertex_index,
 //! Adjust the position of the specified vertex so that it
 //! lies on its constraining domain.  The actual domain constraint
 //! is managed by the TSTT mesh implementation
-void PatchData::snap_vertex_to_domain(size_t vertex_index, MsqError &err)
+void PatchData::snap_vertex_to_domain(size_t /*vertex_index*/, MsqError &/*err*/)
 {
     //geometry for Mesquite_geo grids
     /*
@@ -688,8 +688,9 @@ void PatchData::snap_vertex_to_domain(size_t vertex_index, MsqError &err)
 
 /*! Gives the normal to the surface which 'owns'  the vertex given by
   vertex_index*/
-void PatchData::get_surface_normal(size_t vertex_index, Vector3D &surf_norm,
-                                   MsqError &err){
+void PatchData::get_surface_normal(size_t /*vertex_index*/,
+                                   Vector3D &/*surf_norm*/,
+                                   MsqError &/*err*/){
     //normal for z= const
     //surf_norm.set(0.0,0.0,1.0);
     //Normal for unit sphere

@@ -128,7 +128,7 @@ void InstructionQueue::insert_preconditioner(QualityImprover* instr,
     QualityAssessor pointers can be added at any time to the instruction queue.
 */
 void InstructionQueue::add_quality_assessor(QualityAssessor* instr,
-                                          MsqError &err)
+                                            MsqError &/*err*/)
 {
   // creepy shallow copy
   //  QualityAssessor* instr_copy = instr->clone(); 

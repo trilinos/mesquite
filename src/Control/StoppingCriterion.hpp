@@ -82,7 +82,7 @@ namespace Mesquite {
 
       /*!Resets dynamic information so that a StoppingCriterion may be used
         multiple times.*/
-    inline void reset_all(MsqError &err)
+    inline void reset_all(MsqError &/*err*/)
        {
          loopCounter=0;
        }
