@@ -79,7 +79,7 @@ namespace Mesquite
        return false;
      }
      
-     double temp_val=fabs(cross_vec.length()*2.0);
+     double temp_val=cross_vec.length()*2.0;
      fval=MSQ_MAX_CAP;
      if(temp_val>MSQ_MIN){
        fval=(temp_vec[0].length_squared()+temp_vec[1].length_squared())/
