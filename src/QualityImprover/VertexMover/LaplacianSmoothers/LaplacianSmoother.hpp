@@ -24,7 +24,7 @@ namespace Mesquite
   class LaplacianSmoother : public VertexMover 
   {
   public:
-    LaplacianSmoother();
+    LaplacianSmoother(MsqError &err);
 
   protected:
     virtual void initialize(PatchData &pd, MsqError &err);

@@ -10,15 +10,17 @@
 */
 
 #include "LaplacianSmoother.hpp"
-
 using namespace Mesquite;
 
 
 #undef __FUNC__
 #define __FUNC__ "LaplacianSmoother::LaplacianSmoother" 
-LaplacianSmoother::LaplacianSmoother() 
+LaplacianSmoother::LaplacianSmoother(MsqError &err) 
 {
   this->set_name("LaplacianSmoother");
+  
+  set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err,1,1);MSQ_CHKERR(err);
+  
 }  
   
   
@@ -26,7 +28,7 @@ LaplacianSmoother::LaplacianSmoother()
 #define __FUNC__ "LaplacianSmoother::initialize" 
 void LaplacianSmoother::initialize(PatchData &pd, MsqError &err)
 {
-  this->set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err, 1);
+ 
 }
 
 #undef __FUNC__
@@ -41,7 +43,7 @@ void LaplacianSmoother::initialize_mesh_iteration(PatchData &pd, MsqError &err)
 void LaplacianSmoother::optimize_vertex_positions(PatchData &pd, 
                                                 MsqError &err)
 {
-  std::cout << "- Executing LaplacianSmoother::optimize_vertex_position()\n";
+    //std::cout << "- Executing LaplacianSmoother::optimize_vertex_position()\n";
 
   int num_local_vertices = pd.num_vertices();
     //int dim = pd.space_dim();
