@@ -5920,12 +5920,12 @@ fi
 
     else
       if test "$NETCDF_DIR" != "$EXODUS_DIR"; then
-        EXODUS_LDFLAGS="$EXODUS_LDFLAGS -L${NETCDF_DIR}/lib"
-        EXODUS_CFLAGS="$EXODUS_CFLAGS -I${NETCDF_DIR}/include"
+        EXODUS_LDFLAGS="$EXODUS_LDFLAGS -L${NETCDF_DIR}"
+        EXODUS_CFLAGS="$EXODUS_CFLAGS -I${NETCDF_DIR}/inc"
       fi
-      as_ac_File=`echo "ac_cv_file_${NETCDF_DIR}/include/netcdf.h" | $as_tr_sh`
-echo "$as_me:$LINENO: checking for ${NETCDF_DIR}/include/netcdf.h" >&5
-echo $ECHO_N "checking for ${NETCDF_DIR}/include/netcdf.h... $ECHO_C" >&6
+      as_ac_File=`echo "ac_cv_file_${NETCDF_DIR}/inc/netcdf.h" | $as_tr_sh`
+echo "$as_me:$LINENO: checking for ${NETCDF_DIR}/inc/netcdf.h" >&5
+echo $ECHO_N "checking for ${NETCDF_DIR}/inc/netcdf.h... $ECHO_C" >&6
 if eval "test \"\${$as_ac_File+set}\" = set"; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
@@ -5933,7 +5933,7 @@ else
   { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
 echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
    { (exit 1); exit 1; }; }
-if test -r "${NETCDF_DIR}/include/netcdf.h"; then
+if test -r "${NETCDF_DIR}/inc/netcdf.h"; then
   eval "$as_ac_File=yes"
 else
   eval "$as_ac_File=no"
@@ -5944,14 +5944,14 @@ echo "${ECHO_T}`eval echo '${'$as_ac_File'}'`" >&6
 if test `eval echo '${'$as_ac_File'}'` = yes; then
   :
 else
-  { { echo "$as_me:$LINENO: error: \"${NETCDF_DIR}/include/netcdf.h does not exist\"" >&5
-echo "$as_me: error: \"${NETCDF_DIR}/include/netcdf.h does not exist\"" >&2;}
+  { { echo "$as_me:$LINENO: error: \"${NETCDF_DIR}/inc/netcdf.h does not exist\"" >&5
+echo "$as_me: error: \"${NETCDF_DIR}/inc/netcdf.h does not exist\"" >&2;}
    { (exit 1); exit 1; }; }
 fi
 
-      as_ac_File=`echo "ac_cv_file_${NETCDF_DIR}/lib/libnetcdf.a" | $as_tr_sh`
-echo "$as_me:$LINENO: checking for ${NETCDF_DIR}/lib/libnetcdf.a" >&5
-echo $ECHO_N "checking for ${NETCDF_DIR}/lib/libnetcdf.a... $ECHO_C" >&6
+      as_ac_File=`echo "ac_cv_file_${NETCDF_DIR}/libnetcdf.a" | $as_tr_sh`
+echo "$as_me:$LINENO: checking for ${NETCDF_DIR}/libnetcdf.a" >&5
+echo $ECHO_N "checking for ${NETCDF_DIR}/libnetcdf.a... $ECHO_C" >&6
 if eval "test \"\${$as_ac_File+set}\" = set"; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
@@ -5959,7 +5959,7 @@ else
   { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
 echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
    { (exit 1); exit 1; }; }
-if test -r "${NETCDF_DIR}/lib/libnetcdf.a"; then
+if test -r "${NETCDF_DIR}/libnetcdf.a"; then
   eval "$as_ac_File=yes"
 else
   eval "$as_ac_File=no"
@@ -5970,8 +5970,8 @@ echo "${ECHO_T}`eval echo '${'$as_ac_File'}'`" >&6
 if test `eval echo '${'$as_ac_File'}'` = yes; then
   EXODUS_LDFLAGS="${EXODUS_LDFLAGS} -lnetcdf"
 else
-  { { echo "$as_me:$LINENO: error: \"${NETCDF_DIR}/lib/libnetcdf.a does not exist\"" >&5
-echo "$as_me: error: \"${NETCDF_DIR}/lib/libnetcdf.a does not exist\"" >&2;}
+  { { echo "$as_me:$LINENO: error: \"${NETCDF_DIR}/libnetcdf.a does not exist\"" >&5
+echo "$as_me: error: \"${NETCDF_DIR}/libnetcdf.a does not exist\"" >&2;}
    { (exit 1); exit 1; }; }
 fi
 

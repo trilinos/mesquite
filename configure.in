@@ -201,14 +201,14 @@ if test -n "$EXODUS_CFLAGS"; then
         [EXODUS_LDFLAGS="$EXODUS_LDFLAGS -lnetcdf"], [AC_MSG_WARN("No NetCDF library")])
     else
       if test "$NETCDF_DIR" != "$EXODUS_DIR"; then
-        EXODUS_LDFLAGS="$EXODUS_LDFLAGS -L${NETCDF_DIR}/lib"
-        EXODUS_CFLAGS="$EXODUS_CFLAGS -I${NETCDF_DIR}/include"
+        EXODUS_LDFLAGS="$EXODUS_LDFLAGS -L${NETCDF_DIR}"
+        EXODUS_CFLAGS="$EXODUS_CFLAGS -I${NETCDF_DIR}/inc"
       fi
-      AC_CHECK_FILE( [${NETCDF_DIR}/include/netcdf.h], [], 
-         [AC_MSG_ERROR("${NETCDF_DIR}/include/netcdf.h does not exist")] )
-      AC_CHECK_FILE( [${NETCDF_DIR}/lib/libnetcdf.a], 
+      AC_CHECK_FILE( [${NETCDF_DIR}/inc/netcdf.h], [], 
+         [AC_MSG_ERROR("${NETCDF_DIR}/inc/netcdf.h does not exist")] )
+      AC_CHECK_FILE( [${NETCDF_DIR}/libnetcdf.a], 
          [EXODUS_LDFLAGS="${EXODUS_LDFLAGS} -lnetcdf"], 
-         [AC_MSG_ERROR("${NETCDF_DIR}/lib/libnetcdf.a does not exist")] )
+         [AC_MSG_ERROR("${NETCDF_DIR}/libnetcdf.a does not exist")] )
     fi
   fi
 fi
