@@ -287,22 +287,22 @@ void PatchData::get_element_vertex_indices(
   elementArray[elem_index].get_vertex_indices(vertex_indices);
 }
 
-void PatchData::get_vertex_element_indices(
-  size_t vertex_index,
-  std::vector<size_t> &elem_indices)
+void PatchData::get_vertex_element_indices(size_t vertex_index,
+                                           std::vector<size_t> &elem_indices,
+                                           MsqError &err) 
 {
     // Check index
   if (vertex_index >= numVertices)
     return;
   
     // Make sure we've got the data
-  if (!vertexToElemOffset)
+  if (!vertexToElemOffset){
+    err.set_msg("Vertex to element connectivity requested before connectivity data was generated.");
     return;
-  
+  }
     // Find the starting point for this vertex's data
   size_t *pos = elemsInVertex + vertexToElemOffset[vertex_index];
   size_t elem_count = *pos;
-  
     // Add each element index to the list
   while (elem_count--)
     elem_indices.push_back(*(++pos));
