@@ -974,8 +974,7 @@ non-NULL otherwise.
                cEntity_Handle *entity_handles, Int num_entities, 
                StorageOrder storage_order, Double **coords, 
                Int *num_coords, MeshError *errorReturn);
-      
-
+   
 //====================================================================
 // Entity_SetVertexCoords  // NON STANDARD // added by tleurent@mcs.anl.gov
 //====================================================================
@@ -997,7 +996,6 @@ non-NULL otherwise.
                cEntity_Handle *entity_handles, Int num_entities, 
                StorageOrder storage_order, Int num_dimension,
                Double *coords, MeshError *errorReturn);
-
 
 //====================================================================
 // Entity_GetAdjacencies
@@ -1044,15 +1042,37 @@ non-NULL otherwise.
   /* TAG FUNCTIONALITY TO BE REVISED BY TIM */
   void Mesh_tagGetHandle (cMesh_Handle mesh,
                           const char *tag_name,
-                          void** tag_handle,
-                          MeshError *errorReturn);
+                     void** tag_handle,
+                     MeshError *errorReturn);
   
   void Mesh_GetTag_Entity(cMesh_Handle mesh,
                           cEntity_Handle this_entity,
                           void* tag_handle,
                           void **tag_value, Int *tag_size,
                           MeshError *errorReturn);
-  
+			
+// The following set of functions are from SIDL version with minor
+// modifications. They allow to add a new tag to all elements in a
+// mesh, delete a tag from all elements, change the data for a specific
+// element and get tag data from a specific element.
+
+void Mesh_AddTag (cMesh_Handle mesh, const char* tag_name,
+		  void* default_value,
+		  void* tag_handle,
+		  MeshError *errorReturn);
+		  
+void Mesh_DeleteTag (cMesh_Handle mesh, void* tag_handle,  
+		      MeshError *errorReturn);
+		      
+void Entity_SetTag (cMesh_Handle mesh, void* tag_handle,
+                    cEntity_Handle entity_handle,
+		    void* tag_value,
+		    MeshError *errorReturn);
+		      
+void Entity_GetTag (cMesh_Handle mesh, void* tag_handle,
+                    cEntity_Handle entity_handle,
+		    void*& tag_value,
+		    MeshError *errorReturn);
   /* ITERATORS TO BE REVISED BY OTTMAR */
 
   /* HIGHER ORDER NODE ACCESS TO BE REVISED BY TIM/PROPOSED 
