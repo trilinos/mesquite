@@ -2,8 +2,10 @@
 #include "MsqError.hpp"
 #ifdef MSQ_USE_OLD_C_HEADERS
 #  include <string.h>
+#  include <ctype.h>
 #else
 #  include <cstring>
+#  include <cctype>
    using namespace std;
 #endif
 
