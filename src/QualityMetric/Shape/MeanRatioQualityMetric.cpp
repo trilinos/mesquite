@@ -788,15 +788,15 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
       switch(avgMethod) {
       case RMS:
 	t = 2.0;
-	return false;
+	break;
 
       case HARMONIC:
 	t = -1.0;
-	return false;
+	break;
 
       case HMS:
 	t = -2.0;
-	return false;
+	break;
 
       default:
         err.set_msg("averaging method not available.");
@@ -1062,15 +1062,15 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
       switch(avgMethod) {
       case RMS:
 	t = 2.0;
-	return false;
+	break;
 
       case HARMONIC:
 	t = -1.0;
-	return false;
+	break;
 
       case HMS:
 	t = -2.0;
-	return false;
+	break;
 
       default:
         err.set_msg("averaging method not available.");
