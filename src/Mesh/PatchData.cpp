@@ -287,6 +287,9 @@ void PatchData::get_element_vertex_indices(
   elementArray[elem_index].get_vertex_indices(vertex_indices);
 }
 
+
+#undef __FUNC__
+#define __FUNC__ "PatchData::get_vertex_element_indices" 
 void PatchData::get_vertex_element_indices(size_t vertex_index,
                                            std::vector<size_t> &elem_indices,
                                            MsqError &err) 
@@ -300,6 +303,7 @@ void PatchData::get_vertex_element_indices(size_t vertex_index,
     err.set_msg("Vertex to element connectivity requested before connectivity data was generated.");
     return;
   }
+  
     // Find the starting point for this vertex's data
   size_t *pos = elemsInVertex + vertexToElemOffset[vertex_index];
   size_t elem_count = *pos;
@@ -390,6 +394,9 @@ void PatchData::update_mesh(MsqError &err)
   }
 }
 
+
+#undef __FUNC__
+#define __FUNC__ "PatchData::generate_vertex_to_element_data" 
 void PatchData::generate_vertex_to_element_data()
 {
     // Skip if data already exists
@@ -438,6 +445,9 @@ void PatchData::generate_vertex_to_element_data()
   delete [] element_indices;
 }
 
+
+#undef __FUNC__
+#define __FUNC__ "PatchData::get_subpatch" 
 void PatchData::get_subpatch(size_t center_vertex_index,
                              PatchData &pd_to_fill,
                              MsqError &err)
