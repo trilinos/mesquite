@@ -202,12 +202,10 @@ namespace Mesquite
                                    MsqVertex* vertices[], Vector3D grad_vec[],
                                    int num_vtx, double &metric_value, MsqError &err);
      
-       /*!For MetricType == ELEMENT_BASED.
+       /*! \brief For MetricType == ELEMENT_BASED.
          Calls either compute_element_numerical_hessian() or
          compute_element_analytical_hessian() for hessianType equal
          NUMERICAL_HESSIAN or ANALYTICAL_HESSIAN, respectively.
-
-         \return true if the element is valid, false otherwise. 
        */
      bool compute_element_hessian(PatchData &pd, MsqMeshEntity* element,
                                   MsqVertex* vertices[], Vector3D grad_vec[],
@@ -461,35 +459,6 @@ namespace Mesquite
    }
    
 
-#undef __FUNC__
-#define __FUNC__ "QualityMetric::compute_element_hessian"
-  inline bool QualityMetric::compute_element_hessian(PatchData &pd,
-                                                     MsqMeshEntity* el,
-                                                     MsqVertex* vertices[],
-                                                     Vector3D grad_vec[],
-                                                     Matrix3D hessian[],
-                                                     int num_vtx,
-                                                     double &metric_value,
-                                                     MsqError &err)
-  {
-    bool ret;
-    switch(hessianType)
-      {
-      case NUMERICAL_HESSIAN:
-        ret = compute_element_numerical_hessian(pd, el, vertices, grad_vec, hessian,
-                                                num_vtx, metric_value, err);
-        MSQ_CHKERR(err);
-        break;
-      case ANALYTICAL_HESSIAN:
-        ret = compute_element_analytical_hessian(pd, el, vertices, grad_vec, hessian,
-                                                 num_vtx, metric_value, err);
-        MSQ_CHKERR(err);
-        break;
-      }
-    return ret;
-  }
-   
-   
 #undef __FUNC__
 #define __FUNC__ "QualityMetric::average_metrics"
      /*! 

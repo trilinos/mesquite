@@ -20,6 +20,63 @@ using std::cerr;
 
 
 #undef __FUNC__
+#define __FUNC__ "QualityMetric::compute_element_hessian"
+/*!
+  \param vertices: those are the free vertices within the element.
+  The vertices within this array must be ordered in the same order
+  as the vertices within the element, el. 
+  Only the Hessian entries corresponding to a pair of free vertices
+  will be non-zero. 
+  
+  \return true if the element is valid, false otherwise. 
+*/
+bool QualityMetric::compute_element_hessian(PatchData &pd,
+                                            MsqMeshEntity* el,
+                                            MsqVertex* vertices[],
+                                            Vector3D grad_vec[],
+                                            Matrix3D hessian[],
+                                            int num_free_vtx,
+                                            double &metric_value,
+                                            MsqError &err)
+{
+  // first, checks that free vertices order is consistent with the
+  // element order. 
+  std::vector<size_t> elem_vtx_indices;
+  std::vector<size_t>::const_iterator v;
+  el->get_vertex_indices(elem_vtx_indices);
+  int i;
+  v=elem_vtx_indices.begin();
+  for (i=0; i<num_free_vtx; ++i) {
+    while ( *v != pd.get_vertex_index(vertices[i]) ) {
+      if ( v==elem_vtx_indices.end() ) {
+        err.set_msg("free vertices cannot be given in a different"
+                    "order than the element's.");
+        return false;
+      }
+      else  ++v;
+    }
+  }
+    
+    
+  bool ret;
+  switch(hessianType)
+    {
+    case NUMERICAL_HESSIAN:
+      ret = compute_element_numerical_hessian(pd, el, vertices, grad_vec, hessian,
+                                              num_free_vtx, metric_value, err);
+      MSQ_CHKERR(err);
+      break;
+    case ANALYTICAL_HESSIAN:
+      ret = compute_element_analytical_hessian(pd, el, vertices, grad_vec, hessian,
+                                               num_free_vtx, metric_value, err);
+      MSQ_CHKERR(err);
+      break;
+    }
+  return ret;
+}
+   
+   
+#undef __FUNC__
 #define __FUNC__ "QualityMetric::compute_vertex_analytical_gradient"
 /*! If that function is not over-riden in the concrete class, the base
     class function makes it default to a numerical gradient.
@@ -240,7 +297,7 @@ bool QualityMetric::compute_element_numerical_gradient(PatchData &pd,
 */
 bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
                                              MsqMeshEntity* element,
-                                             MsqVertex* vertices[],
+                                             MsqVertex* free_vtces[],
                                                        Vector3D grad_vec[],
                                                       Matrix3D hessian[],
                                              int num_vtx, double &metric_value,
@@ -248,7 +305,7 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
 {
   MSQ_DEBUG_PRINT(2,"Computing Numerical Hessian\n");
   
-  bool valid=this->compute_element_gradient_expanded(pd, element, vertices, grad_vec,
+  bool valid=this->compute_element_gradient_expanded(pd, element, free_vtces, grad_vec,
                                     num_vtx, metric_value, err); MSQ_CHKERR(err);
   
   if (!valid)
@@ -261,14 +318,17 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
   std::vector<size_t> ev_i;
   element->get_vertex_indices(ev_i);
   int v,w,i,j,k,s, sum_w, mat_index;
-  
+
+  int fv_ind=0; // index in array free_vtces .
+
+  // loop over all vertices in element.
   for (v=0; v<nve; ++v) {
     
     // finds out whether vertex v in the element is fixed or free,
-    // as according to argument vertices[]
+    // as according to argument free_vtces[]
     bool free_vertex = false;
     for (k=0; k<num_vtx; ++k) {
-      if ( ev_i[v] == pd.get_vertex_index(vertices[k]) )
+      if ( ev_i[v] == pd.get_vertex_index(free_vtces[k]) )
         free_vertex = true;
     }
 
@@ -289,9 +349,9 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
     if (free_vertex==true) {
       for (j=0;j<3;++j) {
         // perturb the coordinates of the vertex v in the j direction by delta
-        (*vertices[v])[j]+=delta;
+        (*free_vtces[fv_ind])[j]+=delta;
         //compute the gradient at the perturbed point location
-        valid = this->compute_element_gradient_expanded(pd, element, vertices, grad_vec1,
+        valid = this->compute_element_gradient_expanded(pd, element, free_vtces, grad_vec1,
                                                         num_vtx, metric_value, err); MSQ_CHKERR(err);
         assert(valid);
         //compute the numerical Hessian
@@ -310,8 +370,9 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
           }
         }
         // put the coordinates back where they belong
-        (*vertices[v])[j] -= delta;
+        (*free_vtces[fv_ind])[j] -= delta;
       }
+      ++fv_ind;
     }
   }
 
