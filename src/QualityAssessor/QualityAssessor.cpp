@@ -94,6 +94,7 @@ QualityAssessor::QualityAssessor( QualityMetric* metric,
   stoppingFunction( (QAFunction)0 )
 { 
   set_patch_type( PatchData::GLOBAL_PATCH, err, 0 );
+  add_quality_assessment( metric, function, err );
   set_stopping_assessment( metric, function, err );
 }
 
@@ -109,6 +110,7 @@ QualityAssessor::QualityAssessor( QualityMetric* metric,
   stoppingFunction( (QAFunction)0 )
 { 
   set_patch_type( PatchData::GLOBAL_PATCH, err, 0 );
+  add_quality_assessment( metric, function, err );
   set_stopping_assessment( metric, function, err );
 }
 
