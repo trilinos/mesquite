@@ -75,21 +75,14 @@ void VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
     next_patch = true;
     while( next_patch )
     {
-      MSQ_DEBUG_ACTION(3,{Timer loop_timer;});
 #if MSQ_DEBUG_LEVEL != 0
       double aomd_t=0;
       double msq_t=0;
 #endif
-      MSQ_DEBUG_ACTION(3,{std::cout.setf(std::ios_base::fixed, std::ios_base::floatfield);
-                       loop_timer.since_last_check(); });
       next_patch =  ms.get_next_patch(patch_data, this, err); 
       MSQ_CHKERR(err);
      
-      MSQ_DEBUG_ACTION(3,{aomd_t += loop_timer.since_last_check();
-                       std::cout << "\t\t- total time spent retrieving AOMD info: "
-                                 << aomd_t << std::endl; });
       if (next_patch == true ) {
-        MSQ_DEBUG_ACTION(3,{loop_timer.since_last_check(); });
         if(inner_crit!=NULL){
           inner_crit->reset(patch_data,objFunc,err);
         }
@@ -99,9 +92,6 @@ void VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
         }
           //we need update to also update the soft_fixed flags
         patch_data.update_mesh(err); MSQ_CHKERR(err); // TSTT mesh update !!
-        MSQ_DEBUG_ACTION(3,{msq_t += loop_timer.since_last_check();
-                         std::cout << "\t\t- total time optimizing patch: "
-                                   << msq_t << std::endl;});
       }
       if (get_patch_type() == PatchData::GLOBAL_PATCH) {
         next_patch = false; }
