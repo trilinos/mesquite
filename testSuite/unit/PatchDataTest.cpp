@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 13-Nov-02 at 18:05:56
-//  LAST-MOD: 13-Dec-02 at 08:17:41 by Thomas Leurent
+//  LAST-MOD: 13-Dec-02 at 08:57:24 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -103,6 +103,8 @@ public:
   PatchDataTest()
     {}
   
+#undef __FUNC__
+#define __FUNC__ "PatchDataTest::test_reserve_vertex_capacity" 
    void test_reserve_vertex_capacity()
    {
       MsqError err;
@@ -120,6 +122,8 @@ public:
       CPPUNIT_ASSERT_EQUAL(6, num);
    }
    
+#undef __FUNC__
+#define __FUNC__ "PatchDataTest::test_reserve_element_capacity" 
    void test_reserve_element_capacity()
    {
       MsqError err;
@@ -134,6 +138,8 @@ public:
       CPPUNIT_ASSERT_EQUAL(3, num);
    }
    
+#undef __FUNC__
+#define __FUNC__ "PatchDataTest::test_add_vertex" 
    void test_add_vertex()
    {
       MsqError err;
@@ -153,6 +159,8 @@ public:
       CPPUNIT_ASSERT_MESSAGE("vertex already existed.", !err.errorOn);
    }
 
+#undef __FUNC__
+#define __FUNC__ "PatchDataTest::test_get_element_vertex_indices" 
    void test_get_element_vertex_indices()
    {
 
@@ -173,31 +181,41 @@ public:
       CPPUNIT_ASSERT( vtx_ind==res );
    }
 
+#undef __FUNC__
+#define __FUNC__ "PatchDataTest::test_get_vertex_element_indices" 
    void test_get_vertex_element_indices()
    {
-      MsqError err;
-      
-      std::vector<size_t> elem_ind;
-      std::vector<size_t> res;
-      
-      // test we get the elements contiguous to vertex 3
-      mPatch2D.get_vertex_element_indices(3, elem_ind,err);
-      res.push_back(1); res.push_back(2);
-      CPPUNIT_ASSERT(res==elem_ind);
-      
-      // test we get the elements contiguous to vertex 2
-      elem_ind.clear(); res.clear();
-      mPatch2D.get_vertex_element_indices(2, elem_ind,err);
-      res.push_back(0); res.push_back(1); res.push_back(2);
-      CPPUNIT_ASSERT(res==elem_ind);
+     /*  1___3___5
+         |\1|   |
+         |0\| 2 |
+         0---2---4   */
+     MsqError err;
+     
+     std::vector<size_t> elem_ind;
+     std::vector<size_t> res;
+     
+     mPatch2D.generate_vertex_to_element_data();
+     
+     // test we get the elements contiguous to vertex 3
+     mPatch2D.get_vertex_element_indices(3, elem_ind,err); MSQ_CHKERR(err);
+     res.push_back(2); res.push_back(1);
+     CPPUNIT_ASSERT(res==elem_ind);
+     
+     // test we get the elements contiguous to vertex 2
+     elem_ind.clear(); res.clear();
+     mPatch2D.get_vertex_element_indices(2, elem_ind,err); MSQ_CHKERR(err);
+     res.push_back(2); res.push_back(1); res.push_back(0);
+     CPPUNIT_ASSERT(res==elem_ind);
    }
 
+#undef __FUNC__
+#define __FUNC__ "PatchDataTest::test_get_element_vertex_coordinates" 
    void test_get_element_vertex_coordinates()
    {
       MsqError err;
 
       std::vector< Vector3D > coords;
-      mPatch2D.get_element_vertex_coordinates(1, coords,err);
+      mPatch2D.get_element_vertex_coordinates(1, coords,err); MSQ_CHKERR(err);
       
       CPPUNIT_ASSERT( coords[0]==vtx_0_1 );
       CPPUNIT_ASSERT( coords[1]==vtx_1_0 );
@@ -207,6 +225,8 @@ public:
    /* This tests the move_free_vertices() function as well as the
       PatchDataCoordsMemento functionality
       */
+#undef __FUNC__
+#define __FUNC__ "PatchDataTest::test_move_free_vertices" 
    void test_move_free_vertices()
    {
       MsqError err;
