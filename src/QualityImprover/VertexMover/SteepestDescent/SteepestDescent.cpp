@@ -87,10 +87,10 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
 
     // Prints out free vertices coordinates. 
     MSQ_DEBUG_ACTION(3,{
-      std::cout << "\n  o Free vertices original coordinates: ";
+      std::cout << "\n  o Free vertices ("<< num_free_vertices <<")original coordinates:\n ";
       MsqVertex* toto1 = pd.get_vertex_array(err); MSQ_CHKERR(err);
       for (int i=0; i<num_free_vertices; ++i)
-        std::cout << toto1[i];
+        std::cout << "\t\t\t" << toto1[i];
     });
       
       // computes the gradient norm
@@ -140,10 +140,10 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
 
     // Prints out free vertices coordinates. 
     MSQ_DEBUG_ACTION(3,{
-      std::cout << "  o Free vertices new coordinates: ";
+      std::cout << "  o Free vertices new coordinates: \n";
       MsqVertex* toto1 = pd.get_vertex_array(err); MSQ_CHKERR(err);
       for (int i=0; i<num_free_vertices; ++i)
-        std::cout << toto1[i];
+        std::cout << "\t\t\t" << toto1[i];
     });
     
     delete pd_previous_coords; // user manages the memento.
