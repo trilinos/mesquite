@@ -75,10 +75,15 @@ namespace Mesquite
     BETA,
     ALPHA
   };
-  ReleaseType release_type();
+  Mesquite::ReleaseType release_type();
   
-
-  //GLOBAL variables
+    // This function should be called by the calling
+    // application when it wants to interrupt a Mesquite
+    // algorithm before it has completed, such as when
+    // the user hits ctrl-c
+  void signal_interrupt();
+  
+    //GLOBAL variables
   const int MSQ_MAX_NUM_VERT_PER_ENT=8;
   const int MSQ_HIST_SIZE=7;//number of division in histogram
   const double MSQ_MIN=1.e-12;
