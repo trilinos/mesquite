@@ -28,7 +28,6 @@ if it was needed.  Defaults to the analytical gradient.
  */
 CompositeOFAdd::CompositeOFAdd(ObjectiveFunction* Obj1,
                                ObjectiveFunction* Obj2){
-  
   if(Obj1->get_quality_metric()==Obj2->get_quality_metric()){
     set_quality_metric(Obj1->get_quality_metric());
   }

@@ -28,14 +28,14 @@ namespace Mesquite
   */
    class LInfTemplate :public ObjectiveFunction
    {
-	public:
-	  LInfTemplate(QualityMetric *);
-	  ~LInfTemplate();
-	  virtual bool concrete_evaluate(PatchData &patch, double &fval,
+   public:
+     LInfTemplate(QualityMetric *);
+     virtual ~LInfTemplate();
+     virtual bool concrete_evaluate(PatchData &patch, double &fval,
                                     MsqError &err);
-	protected:
-	private:
-	  
+   protected:
+   private:
+     
    };
 }//namespace
 #endif // LInfTemplate_hpp

@@ -29,17 +29,17 @@ namespace Mesquite
      */
    class LPTemplate :public ObjectiveFunction
    {
-	public:
-	  LPTemplate(QualityMetric *, int, MsqError &);
-	  ~LPTemplate();
-	  virtual bool concrete_evaluate(PatchData &patch, double &fval,
+   public:
+     LPTemplate(QualityMetric *, int, MsqError &);
+     virtual ~LPTemplate();
+     virtual bool concrete_evaluate(PatchData &patch, double &fval,
                                     MsqError &err);
-	protected:
+   protected:
      virtual bool  compute_analytical_gradient(PatchData &patch,
                                                Vector3D *const &grad,
                                                MsqError &err, size_t array_size);
      
-	private:
+   private:
      double compute_function(double metric_values[], int total_num, MsqError &err);
        //! \param pVal
 	  int pVal;

@@ -27,17 +27,17 @@ namespace Mesquite
    class PatchData;
    class CompositeOFMultiply : public ObjectiveFunction
    {
-	public:
-	   CompositeOFMultiply(ObjectiveFunction*, ObjectiveFunction*);
-	   ~CompositeOFMultiply();
-	  virtual bool concrete_evaluate(PatchData &patch, double &fval,
+   public:
+     CompositeOFMultiply(ObjectiveFunction*, ObjectiveFunction*);
+     virtual ~CompositeOFMultiply();
+     virtual bool concrete_evaluate(PatchData &patch, double &fval,
                                     MsqError &err);
      virtual std::list<QualityMetric*> get_quality_metric_list();
-	protected:
-      //!Implement the scalar multiply analytic gradient
+   protected:
+     //!Implement the scalar multiply analytic gradient
      bool compute_analytical_gradient(PatchData &patch,Vector3D *const &grad,
                                       MsqError &err,size_t array_size);
-	private:
+   private:
      ObjectiveFunction* objFunc1;
      ObjectiveFunction* objFunc2;
    };

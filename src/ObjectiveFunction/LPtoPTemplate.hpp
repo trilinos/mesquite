@@ -28,24 +28,24 @@ namespace Mesquite
    class MsqMeshEntity;
    class LPtoPTemplate :public ObjectiveFunction
    {
-	public:
-	  LPtoPTemplate(QualityMetric *, short, MsqError &);
-	  ~LPtoPTemplate();
-	  virtual bool concrete_evaluate(PatchData &patch, double &fval,
+   public:
+     LPtoPTemplate(QualityMetric *, short, MsqError &);
+     virtual ~LPtoPTemplate();
+     virtual bool concrete_evaluate(PatchData &patch, double &fval,
                                     MsqError &err);
-	protected:
+   protected:
      virtual bool compute_analytical_gradient(PatchData &patch,
-                                               Vector3D *const &grad,
-                                               MsqError &err, size_t array_size);
+					      Vector3D *const &grad,
+					      MsqError &err, size_t array_size);
      
      virtual bool  compute_analytical_hessian(PatchData &patch,
                                               MsqHessian &hessian, MsqError &err);
      
-	private:
+   private:
      double compute_function(double metric_values[], size_t total_num,
                              MsqError &err);
        //! \param pVal
-	  short pVal;
+     short pVal;
    };
    
    inline double LPtoPTemplate::compute_function(double metric_values[],

@@ -23,13 +23,13 @@ namespace Mesquite
    class PatchData;
    class MinTemplate :public ObjectiveFunction
    {
-	public:
-	  MinTemplate(QualityMetric *);
-	  ~MinTemplate();
-	  virtual bool concrete_evaluate(PatchData &patch, double &fval,
+   public:
+     MinTemplate(QualityMetric *);
+     virtual ~MinTemplate();
+     virtual bool concrete_evaluate(PatchData &patch, double &fval,
                                     MsqError &err);
-	protected:
-	private:
+   protected:
+   private:
 	  
    };
 }//namespace

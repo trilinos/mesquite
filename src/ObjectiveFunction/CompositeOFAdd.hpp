@@ -27,10 +27,10 @@ namespace Mesquite
    class PatchData;
    class CompositeOFAdd : public ObjectiveFunction
    {
-	public:
-	   CompositeOFAdd(ObjectiveFunction*, ObjectiveFunction*);
-	   ~CompositeOFAdd();
-	  virtual bool concrete_evaluate(PatchData &patch, double &fval,
+   public:
+     CompositeOFAdd(ObjectiveFunction*, ObjectiveFunction*);
+     virtual ~CompositeOFAdd();
+     virtual bool concrete_evaluate(PatchData &patch, double &fval,
                                     MsqError &err);
      virtual std::list<QualityMetric*> get_quality_metric_list();
      
