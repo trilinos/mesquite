@@ -11,6 +11,7 @@
 
 #include "VertexMover.hpp"
 #include "MeshSet.hpp"
+#include "MsqTimer.hpp"
 //#include "StoppingCriterion.hpp"
 
 #include "TSTT_C.h"
@@ -47,20 +48,39 @@ void VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
   int qi_depth=get_patch_depth();
   int dummy=0;
   ms.set_patch_type(MeshSet::ELEMENTS_ON_VERTEX_PATCH, qi_depth, dummy);
+//  ms.set_patch_type(MeshSet::GLOBAL_PATCH, dummy, dummy);
   ms.copy_culling_method_bits( QualityImprover::get_culling_method_bits() );
   
   // creates a PatchData object at the VertexMover level
     // in order to reduce the number of memory allocations
   PatchData patch_data;
+  bool next_patch;
   this->initialize(patch_data, err); MSQ_CHKERR(err);
     //reset the stopping criterion's loop counter
   crit->reset_counter();  
   while ( !stop_met ) {
     this->initialize_mesh_iteration(patch_data, err);MSQ_CHKERR(err); 
-    while( ms.get_next_patch(patch_data, err) ) {
+    next_patch = true;
+    while( next_patch ) {
+      Timer loop_timer; double aomd_t=0; double msq_t=0;
+      MSQ_DEBUG_ACTION(3,{std::cout.setf(ios_base::fixed, ios_base::floatfield);
+                       loop_timer.since_last_check(); });
+      next_patch =  ms.get_next_patch(patch_data, err); 
       MSQ_CHKERR(err);
+     
+      MSQ_DEBUG_ACTION(3,{aomd_t += loop_timer.since_last_check();
+                       std::cout << "\t\t- total time spent retrieving AOMD info: "
+                                 << aomd_t << std::endl; });
+      if (next_patch == true ) {
+        MSQ_DEBUG_ACTION(3,{loop_timer.since_last_check(); });
         this->optimize_vertex_positions(patch_data, err); MSQ_CHKERR(err);
-        ms.update_mesh(patch_data, err); MSQ_CHKERR(err); // TSTT mesh update !!
+        patch_data.update_mesh(err); MSQ_CHKERR(err); // TSTT mesh update !!
+        MSQ_DEBUG_ACTION(3,{msq_t += loop_timer.since_last_check();
+                         std::cout << "\t\t- total time optimizing patch: "
+                                   << msq_t << std::endl;});
+      }
+      if (ms.get_patch_type() == MeshSet::GLOBAL_PATCH) {
+        next_patch = false; }
     }
     this->terminate_mesh_iteration(patch_data, err); MSQ_CHKERR(err);
       //increment stopping criterion's loop counter
