@@ -111,6 +111,10 @@ namespace Mesquite
     bool inner_criterion_met;
     int depth=get_patch_depth();
     StoppingCriterion* crit = get_stopping_criterion();
+    if(crit==0){
+      err.set_msg("Stopping Criterion pointer is Null");
+      return true;
+    }
     if(depth<1)
       inner_criterion_met=crit->stop(ms,err);
     else

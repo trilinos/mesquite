@@ -37,6 +37,10 @@ void VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
   cout << "o Executing VertexMover::loop_over_mesh()\n";
   set_mesh_set(&ms);
   StoppingCriterion* crit = get_stopping_criterion();
+  if(crit==0){
+    err.set_msg("Stopping Criterion pointer is Null");
+    return;
+  }
   crit->reset_all(err);
   bool stop_met=crit->stop(ms,err); MSQ_CHKERR(err);
 
