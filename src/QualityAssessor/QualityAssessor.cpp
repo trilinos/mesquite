@@ -61,7 +61,7 @@ QualityAssessor::~QualityAssessor()
 #undef __FUNC__
 #define __FUNC__ "QualityAssessor::get_QAFunction_name"
 std::string QualityAssessor::get_QAFunction_name(
-                                    QualityAssessor::QAFunction fun)
+                              enum QualityAssessor::QAFunction fun)
 {
   switch(fun){
     case(AVERAGE):

@@ -60,7 +60,7 @@ namespace Mesquite
       // returns the 0-based index of where the parameter
       // with the given name can be found in mParameterArray,
       // or mNumParameters if it can't be found.
-    size_t get_parameter_index(const char* name);
+    size_t get_parameter_index(const char* name, MsqError &err);
     
     void generic_add_parameter(const char* name, MsqError &err);
   };
