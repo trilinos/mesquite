@@ -69,7 +69,7 @@ void VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
     while( next_patch )
     {
       Timer loop_timer;
-#if MSQ_DEBUG_LEVEL >= 3
+#if MSQ_DEBUG_LEVEL != 0
       double aomd_t=0;
       double msq_t=0;
 #endif
