@@ -1801,48 +1801,52 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 
     switch(avgMethod) {
     case MINIMUM:
-      m = metrics[0];
-      for (i = 1; i < 8; ++i) {
-	if (metrics[i] < m) m = metrics[i];
-      }
+      err.set_msg("MINIMUM averaging method does not work.");
+      return false;
+//       m = metrics[0];
+//       for (i = 1; i < 8; ++i) {
+// 	if (metrics[i] < m) m = metrics[i];
+//       }
 
-      nm = 0;
-      for (i = 0; i < 8; ++i) {
-        if (metrics[i] <= m + MSQ_MIN) {
-	  g[locs_hex[i][0]] += gradients[4*i+0];
-	  g[locs_hex[i][1]] += gradients[4*i+1];
-	  g[locs_hex[i][2]] += gradients[4*i+2];
-	  g[locs_hex[i][3]] += gradients[4*i+3];
-	  ++nm;
-        }
-      }
+//       nm = 0;
+//       for (i = 0; i < 8; ++i) {
+//         if (metrics[i] <= m + MSQ_MIN) {
+// 	  g[locs_hex[i][0]] += gradients[4*i+0];
+// 	  g[locs_hex[i][1]] += gradients[4*i+1];
+// 	  g[locs_hex[i][2]] += gradients[4*i+2];
+// 	  g[locs_hex[i][3]] += gradients[4*i+3];
+// 	  ++nm;
+//         }
+//       }
 
-      for (i = 0; i < 8; ++i) {
-	g[i] /= nm;
-      }
-      break;
+//       for (i = 0; i < 8; ++i) {
+// 	g[i] /= nm;
+//       }
+//       break;
 
     case MAXIMUM:
-      m = metrics[0];
-      for (i = 1; i < 8; ++i) {
-	if (metrics[i] > m) m = metrics[i];
-      }
+      err.set_msg("MAXIMUM averaging method does not work.");
+      return false;
+//       m = metrics[0];
+//       for (i = 1; i < 8; ++i) {
+// 	if (metrics[i] > m) m = metrics[i];
+//       }
 
-      nm = 0;
-      for (i = 0; i < 8; ++i) {
-        if (metrics[i] >= m - MSQ_MIN) {
-	  g[locs_hex[i][0]] += gradients[4*i+0];
-	  g[locs_hex[i][1]] += gradients[4*i+1];
-	  g[locs_hex[i][2]] += gradients[4*i+2];
-	  g[locs_hex[i][3]] += gradients[4*i+3];
-	  ++nm;
-        }
-      }
+//       nm = 0;
+//       for (i = 0; i < 8; ++i) {
+//         if (metrics[i] >= m - MSQ_MIN) {
+// 	  g[locs_hex[i][0]] += gradients[4*i+0];
+// 	  g[locs_hex[i][1]] += gradients[4*i+1];
+// 	  g[locs_hex[i][2]] += gradients[4*i+2];
+// 	  g[locs_hex[i][3]] += gradients[4*i+3];
+// 	  ++nm;
+//         }
+//       }
 
-      for (i = 0; i < 8; ++i) {
-	g[i] /= nm;
-      }
-      break;
+//       for (i = 0; i < 8; ++i) {
+// 	g[i] /= nm;
+//       }
+//       break;
 
     case SUM:
       m = 0;
@@ -1877,43 +1881,53 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
       break;
 
     case GEOMETRIC:
-      m = 0.0;
-      for (i = 0; i < 8; ++i) {
-	m += log(metrics[i]);
-	metrics[i] = 1.0 / metrics[i];
-      }
-      m = exp(m / 8.0);
+      err.set_msg("GEOMETRIC averaging method does not work.");
+      return false;
+//       m = 0.0;
+//       for (i = 0; i < 8; ++i) {
+// 	m += log(metrics[i]);
+// 	metrics[i] = 1.0 / metrics[i];
+//       }
+//       m = exp(m / 8.0);
 
-      for (i = 0; i < 8; ++i) {
-        g[locs_hex[i][0]] += metrics[i]*gradients[4*i+0];
-	g[locs_hex[i][1]] += metrics[i]*gradients[4*i+1];
-	g[locs_hex[i][2]] += metrics[i]*gradients[4*i+2];
-	g[locs_hex[i][3]] += metrics[i]*gradients[4*i+3];
-      }
+//       for (i = 0; i < 8; ++i) {
+//         g[locs_hex[i][0]] += metrics[i]*gradients[4*i+0];
+// 	g[locs_hex[i][1]] += metrics[i]*gradients[4*i+1];
+// 	g[locs_hex[i][2]] += metrics[i]*gradients[4*i+2];
+// 	g[locs_hex[i][3]] += metrics[i]*gradients[4*i+3];
+//       }
 
-      nm = m / 8.0;
-      for (i = 0; i < 8; ++i) {
-	g[i] *= nm;
-      }
-      break;
+//       nm = m / 8.0;
+//       for (i = 0; i < 8; ++i) {
+// 	g[i] *= nm;
+//       }
+//       break;
 
     default:
       switch(avgMethod) {
       case LINEAR:
-	t = 1.0;
-	break;
+	err.set_msg("LINEAR averaging method does not work.");
+	return false;
+// 	t = 1.0;
+// 	break;
 
       case RMS:
-	t = 2.0;
-	break;
+	err.set_msg("RMS averaging method does not work.");
+	return false;
+// 	t = 2.0;
+// 	break;
 
       case HARMONIC:
-	t = -1.0;
-	break;
+	err.set_msg("HARMONIC averaging method does not work.");
+	return false;
+// 	t = -1.0;
+// 	break;
 
       case HMS:
-	t = -2.0;
-	break;
+	err.set_msg("HMS averaging method does not work.");
+	return false;
+// 	t = -2.0;
+// 	break;
       default:
         err.set_msg("averaging method not available.");
         break;
