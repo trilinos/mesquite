@@ -305,7 +305,7 @@ void PatchData::reorder()
 /*! \fn PatchData::num_free_vertices()
    This function has to iterate through all the PatchData vertices to determine
    the number of free vertices. Use with care ! */
-int PatchData::num_free_vertices(MsqError &err)
+int PatchData::num_free_vertices(MsqError &/*err*/)
 {
   int num_free_vertices=0;
   
@@ -599,7 +599,7 @@ double PatchData::get_max_vertex_movement_squared(PatchDataVerticesMemento*
 #define __FUNC__ "PatchData::set_all_vertices_soft_fixed"
 /*!
  */
-void PatchData::set_all_vertices_soft_fixed(MsqError &err)
+void PatchData::set_all_vertices_soft_fixed(MsqError &/*err*/)
 {
   for(size_t i=0;i<numVertices;++i)
     vertexArray[i].set_soft_fixed_flag();
@@ -609,7 +609,7 @@ void PatchData::set_all_vertices_soft_fixed(MsqError &err)
 #define __FUNC__ "PatchData::set_free_vertices_soft_fixed"
 /*!
  */
-void PatchData::set_free_vertices_soft_fixed(MsqError &err)
+void PatchData::set_free_vertices_soft_fixed(MsqError &/*err*/)
 {
   for(size_t i=0;i<numVertices;++i){
     if(vertexArray[i].is_free_vertex())
@@ -675,7 +675,7 @@ void PatchData::get_element_vertex_indices(
 #define __FUNC__ "PatchData::get_vertex_element_indices" 
 void PatchData::get_vertex_element_indices(size_t vertex_index,
                                            std::vector<size_t> &elem_indices,
-                                           MsqError &err) 
+                                           MsqError &/*err*/) 
 {
     // Check index
   if (vertex_index >= numVertices)
@@ -1025,7 +1025,7 @@ void PatchData::get_subpatch(size_t center_vertex_index,
 //! Adjust the position of the specified vertex so that it
 //! lies on its constraining domain.  The actual domain constraint
 //! is managed by the TSTT mesh implementation
-void PatchData::snap_vertex_to_domain(size_t vertex_index, MsqError &err)
+void PatchData::snap_vertex_to_domain(size_t vertex_index, MsqError &/*err*/)
 {
   if (meshSet && meshSet->get_domain_constraint())
   {

@@ -367,8 +367,11 @@ void Mesquite::MeshImpl::write_vtk(const char* out_filebase,
   file.close();
 }
 
-void Mesquite::MeshImpl::read_exodus(const char* in_filename,
-                                     Mesquite::MsqError &err)
+void Mesquite::MeshImpl::read_exodus(const char*
+#ifdef MSQ_USING_EXODUS
+                                     in_filename
+#endif                                     
+                                     , Mesquite::MsqError &err)
 {
 #ifndef MSQ_USING_EXODUS
   err.set_msg("Exodus not enabled in this build of Mesquite");
@@ -648,7 +651,7 @@ Mesquite::ElementIterator* Mesquite::MeshImpl::element_iterator()
 // is fixed and cannot be moved.  Note that this is a read-only
 // property; this flag can't be modified by users of the
 // Mesquite::Mesh interface.
-bool Mesquite::MeshImpl::vertex_is_fixed(Mesquite::Mesh::VertexHandle vertex)
+bool Mesquite::MeshImpl::vertex_is_fixed(Mesquite::Mesh::VertexHandle /*vertex*/)
 {
   return false;
 }
@@ -747,7 +750,7 @@ void Mesquite::MeshImpl::create_vertex_to_element_data()
     // each vertex is used.
   for (elem_num = elementCount; elem_num--; )
   {
-    for (size_t vert_num =
+    for (vert_num =
            Mesquite::vertices_in_topology(elementArray[elem_num].mType);
          vert_num--;
          )
@@ -990,8 +993,8 @@ void Mesquite::MeshImpl::elements_get_topologies(
 // Tells the mesh that the client is finished with a given
 // entity handle.  
 void Mesquite::MeshImpl::release_entity_handles(
-  Mesquite::Mesh::EntityHandle *handle_array,
-  size_t num_handles)
+  Mesquite::Mesh::EntityHandle */*handle_array*/,
+  size_t /*num_handles*/)
 {
     // Do nothing
 }
