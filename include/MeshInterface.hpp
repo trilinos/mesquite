@@ -40,6 +40,8 @@
 #define MESQUITE_INTERFACE_HPP
 
 #include "Mesquite.hpp"
+#include "TopologyInfo.hpp"
+
 #ifdef MSQ_USE_OLD_C_HEADERS
 #  include <stddef.h>
 #else
@@ -206,6 +208,9 @@ namespace Mesquite
       //! of vertices per element for that topology type.
     virtual size_t element_get_attached_vertex_count(ElementHandle elem,
                                                      MsqError &err) = 0;
+    virtual size_t get_vertex_use_count( ElementHandle* handle_array,
+                                         size_t num_handles,
+                                         MsqError& err ) = 0;
 
     /*! \brief  
   Returns the vertices that are part of the topological definition of each
@@ -463,11 +468,9 @@ namespace Mesquite
   };
 }
 
-#include "MsqMeshEntity.hpp"
-
 inline size_t Mesquite::vertices_in_topology(Mesquite::EntityTopology topo)
 {
-  return Mesquite::MsqMeshEntity::vertex_count(topo);
+  return TopologyInfo::corners( topo );
 }
 
 #endif

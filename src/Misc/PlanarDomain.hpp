@@ -38,6 +38,7 @@
 #define MSQ_PLANAR_DOMAIN_HPP
 
 #include "MeshInterface.hpp"
+#include "Vector3D.hpp"
 
 namespace Mesquite
 {

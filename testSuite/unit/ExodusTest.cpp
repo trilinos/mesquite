@@ -35,6 +35,7 @@ static bool create_exodus_file( const char* filename );
 #include "Mesquite.hpp"
 #include "MeshImpl.hpp"
 #include "MsqVertex.hpp"
+#include "MsqError.hpp"
 
 #include "cppunit/extensions/HelperMacros.h"
 
