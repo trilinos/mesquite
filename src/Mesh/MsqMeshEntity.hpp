@@ -49,23 +49,25 @@ namespace Mesquite
     
       //! Returns the number of vertices in this element,
       //! based on its element type.
-    inline short vertex_count() const;
+    inline size_t vertex_count() const;
     
       //! Returns the number of vertices in this element type.
-    static inline short vertex_count(EntityTopology type);
-    static inline short vertex_count(TSTT::EntityTopology type,
-                                      MsqError& err);
+    static inline size_t vertex_count(EntityTopology type);
     
       //! gets the vertices of the mesh entity
     void get_vertex_indices(std::vector<size_t> &vertex_list);
     void append_vertex_indices(std::vector<size_t> &vertex_list);
     inline const size_t *get_vertex_index_array() const;
+    inline size_t* get_modifiable_vertex_index_array();
     
       //! Sets element data
     void set_element_type(EntityTopology type)
       { mType = type; }
-    void set_vertex_index(short vertex_in_element, size_t vertex_patch_index);
-    size_t get_vertex_index(short vertex_in_element);
+    void set_vertex_index(size_t vertex_in_element, size_t vertex_patch_index);
+      //! Sets the vertex indices and element type in a single function call.
+      //! /param indices is an array of size vertex_count(type).
+    void set( EntityTopology type, const size_t *indices);
+    size_t get_vertex_index(size_t vertex_in_element);
     
       //fills array of Vector3D's with the jacobian vectors and the 
       //number of jacobian vectors
@@ -78,17 +80,17 @@ namespace Mesquite
     void get_sample_points(QualityMetric::ElementEvaluationMode mode,
                            std::vector<Vector3D> &coords,
                            MsqError &err);
-
+    
       //!Fills a std::vector<size_t> with vertices connected to the given
       //!vertex through the edges of this MsqMeshEntity.
     void get_connected_vertices(size_t vertex_index,
                                 std::vector<size_t> &vert_indices,
                                 MsqError &err);
-
+    
       //!Computes the area of the element.
       //!The returned value is always non-negative.
     double compute_unsigned_area(PatchData &pd, MsqError &err );
-
+    
       //!Computes the volume of the element.
       //!The returned value is always non-negative.
     double compute_unsigned_volume(PatchData &pd, MsqError &err );
@@ -107,13 +109,13 @@ namespace Mesquite
     
     EntityTopology mType;
     size_t vertexIndices[MSQ_MAX_NUM_VERT_PER_ENT];
-
-    // output operator for debugging.
+    
+      // output operator for debugging.
     friend std::ostream& operator<<(std::ostream &s, const MsqMeshEntity &E);
-
+    
   };
   
-  inline short MsqMeshEntity::vertex_count(EntityTopology type)
+  inline size_t MsqMeshEntity::vertex_count(EntityTopology type)
   {
     switch (type)
     {
@@ -137,42 +139,42 @@ namespace Mesquite
     }
   }
 
-  inline short MsqMeshEntity::vertex_count(TSTT::EntityTopology type,
-                                            MsqError& err)
-  {
-    switch (type)
-    {
-      case TSTT::POINT:
-        return 1;
-      case TSTT::LINE:
-        return 2;
-      case TSTT::TRIANGLE:
-        return 3;
-      case TSTT::QUADRILATERAL:
-      case TSTT::TETRAHEDRON:
-        return 4;
-      case TSTT::PYRAMID:
-        return 5;
-      case TSTT::PRISM:
-        return 6;
-      case TSTT::SEPTAHEDRON:
-        return 7;
-      case TSTT::HEXAHEDRON:
-        return 8;
-      case TSTT::POLYGON:
-      case TSTT::POLYHEDRON:
-      default:
-        err.set_msg("Unknown element type");
-        return 0;
-    }
-  }
+//   inline size_t MsqMeshEntity::vertex_count(TSTT::EntityTopology type,
+//                                             MsqError& err)
+//   {
+//     switch (type)
+//     {
+//       case TSTT::POINT:
+//         return 1;
+//       case TSTT::LINE:
+//         return 2;
+//       case TSTT::TRIANGLE:
+//         return 3;
+//       case TSTT::QUADRILATERAL:
+//       case TSTT::TETRAHEDRON:
+//         return 4;
+//       case TSTT::PYRAMID:
+//         return 5;
+//       case TSTT::PRISM:
+//         return 6;
+//       case TSTT::SEPTAHEDRON:
+//         return 7;
+//       case TSTT::HEXAHEDRON:
+//         return 8;
+//       case TSTT::POLYGON:
+//       case TSTT::POLYHEDRON:
+//       default:
+//         err.set_msg("Unknown element type");
+//         return 0;
+//     }
+//   }
   
     // Returns the number of vertices in this type
     // of element, or 0 if a variable number.
-  inline short MsqMeshEntity::vertex_count() const
+  inline size_t MsqMeshEntity::vertex_count() const
   { return vertex_count(mType); }
 
-  inline void MsqMeshEntity::set_vertex_index(short vertex_in_element,
+  inline void MsqMeshEntity::set_vertex_index(size_t vertex_in_element,
                                               size_t vertex_patch_index)
   {
       // Make sure we're in range
@@ -181,10 +183,19 @@ namespace Mesquite
     vertexIndices[vertex_in_element] = vertex_patch_index;
   }
   
-  inline const size_t* MsqMeshEntity::get_vertex_index_array() const
+  inline void MsqMeshEntity::set(EntityTopology type, const size_t *indices)
+  {
+    mType = type;
+    memcpy(vertexIndices, indices, sizeof(size_t) * vertex_count(type));
+  }
+  
+  inline const size_t *MsqMeshEntity::get_vertex_index_array() const
   { return vertexIndices; }
   
-  inline size_t MsqMeshEntity::get_vertex_index(short vertex_in_element)
+  inline size_t* MsqMeshEntity::get_modifiable_vertex_index_array()
+  { return vertexIndices; }
+  
+  inline size_t MsqMeshEntity::get_vertex_index(size_t vertex_in_element)
   {
       // Make sure we're in range
     assert(vertex_in_element < vertex_count());

@@ -34,9 +34,6 @@ class PatchDataTest : public CppUnit::TestFixture
 {
 private:
    CPPUNIT_TEST_SUITE(PatchDataTest);
-   CPPUNIT_TEST (test_add_vertex);
-   CPPUNIT_TEST (test_reserve_vertex_capacity);
-   CPPUNIT_TEST (test_reserve_element_capacity);
    CPPUNIT_TEST (test_get_element_vertex_indices);
    CPPUNIT_TEST (test_get_vertex_element_indices);
    CPPUNIT_TEST (test_get_element_vertex_coordinates);
@@ -79,25 +76,27 @@ public:
      vtx_2_0.set(2,0,0);
      vtx_2_1.set(2,1,0);
 
-     mPatch2D.reserve_vertex_capacity(6, err); MSQ_CHKERR(err);
-     mPatch2D.add_vertex(NULL, NULL, 0,0,0, true, err); 
-     mPatch2D.add_vertex(NULL, NULL, 0,1,0, true, err); 
-     mPatch2D.add_vertex(NULL, NULL, 1,0,0, true, err, MsqVertex::MSQ_HARD_FIXED); 
-     mPatch2D.add_vertex(NULL, NULL, 1,1,0, true, err, MsqVertex::MSQ_HARD_FIXED); 
-     mPatch2D.add_vertex(NULL, NULL, 2,0,0, true, err, MsqVertex::MSQ_HARD_FIXED); 
-     mPatch2D.add_vertex(NULL, NULL, 2,1,0, true, err, MsqVertex::MSQ_HARD_FIXED); 
-     MSQ_CHKERR(err);
-
+     mPatch2D.set_num_vertices(6);
+     mPatch2D.vertex_by_index(0).set(0,0,0);
+     mPatch2D.vertex_by_index(1).set(0,1,0);
+     mPatch2D.vertex_by_index(2).set(1,0,0);
+     mPatch2D.vertex_by_index(3).set(1,1,0);
+     mPatch2D.vertex_by_index(4).set(2,0,0);
+     mPatch2D.vertex_by_index(5).set(2,1,0);
+     
      size_t ind[4];
-     mPatch2D.reserve_element_capacity(3, err); MSQ_CHKERR(err);
+     mPatch2D.set_num_elements(3);
+     
      ind[0] = 0; ind[1]=2; ind[2]=1;
-     mPatch2D.add_element(NULL, NULL, ind, TRIANGLE, err); MSQ_CHKERR(err);
+     mPatch2D.element_by_index(0).set(TRIANGLE, ind);
+     
      ind[0] = 1; ind[1]=2; ind[2]=3;
-     mPatch2D.add_element(NULL, NULL, ind, TRIANGLE, err); MSQ_CHKERR(err);
+     mPatch2D.element_by_index(1).set(TRIANGLE, ind);
+     
      ind[0] = 3; ind[1]=2; ind[2]=4; ind[3]=5;
-     mPatch2D.add_element(NULL, NULL, ind, QUADRILATERAL, err); MSQ_CHKERR(err);     
+     mPatch2D.element_by_index(2).set(QUADRILATERAL, ind);
   }
-
+  
   void tearDown()
   {
   }
@@ -106,62 +105,6 @@ public:
   PatchDataTest()
     {}
   
-#undef __FUNC__
-#define __FUNC__ "PatchDataTest::test_reserve_vertex_capacity" 
-   void test_reserve_vertex_capacity()
-   {
-      MsqError err;
-
-      // checks that adding too many vertices returns an error.
-      mPatch2D.add_vertex(NULL, NULL, 1.5,5.6,0, true, err);
-      CPPUNIT_ASSERT(err.errorOn);
-      err.reset();
-
-      mPatch2D.add_vertex(NULL, NULL, 1.5,5.6,0, false, err);
-      CPPUNIT_ASSERT(err.errorOn);
-      err.reset();
-
-      int num = mPatch2D.num_vertices();
-      CPPUNIT_ASSERT_EQUAL(6, num);
-   }
-   
-#undef __FUNC__
-#define __FUNC__ "PatchDataTest::test_reserve_element_capacity" 
-   void test_reserve_element_capacity()
-   {
-      MsqError err;
-
-      size_t ind[3];
-      ind[0] = 4; ind[1]=2; ind[2]=1;
-      mPatch2D.add_element(NULL, NULL, ind, TRIANGLE, err);
-      CPPUNIT_ASSERT(err.errorOn);
-      err.reset();
-      
-      int num = mPatch2D.num_elements();
-      CPPUNIT_ASSERT_EQUAL(3, num);
-   }
-   
-#undef __FUNC__
-#define __FUNC__ "PatchDataTest::test_add_vertex" 
-   void test_add_vertex()
-   {
-      MsqError err;
-      
-      MsqVertex* vertices = mPatch2D.get_vertex_array(err); MSQ_CHKERR(err);
-
-      CPPUNIT_ASSERT_EQUAL(vtx_0_0, vertices[0]);
-      CPPUNIT_ASSERT_EQUAL(vtx_0_1, vertices[1]);
-      CPPUNIT_ASSERT_EQUAL(vtx_1_0, vertices[2]);
-      CPPUNIT_ASSERT_EQUAL(vtx_1_1, vertices[3]);
-      CPPUNIT_ASSERT_EQUAL(vtx_2_0, vertices[4]);
-      CPPUNIT_ASSERT_EQUAL(vtx_2_1, vertices[5]);
-
-      size_t ind = mPatch2D.add_vertex(NULL, NULL, 0,0,0, true, err);
-      size_t zero = 0;
-      CPPUNIT_ASSERT_EQUAL(zero, ind);
-      CPPUNIT_ASSERT_MESSAGE("vertex already existed.", !err.errorOn);
-   }
-
 #undef __FUNC__
 #define __FUNC__ "PatchDataTest::test_get_element_vertex_indices" 
    void test_get_element_vertex_indices()
@@ -201,13 +144,13 @@ public:
      
      // test we get the elements contiguous to vertex 3
      mPatch2D.get_vertex_element_indices(3, elem_ind,err); MSQ_CHKERR(err);
-     res.push_back(2); res.push_back(1);
+     res.push_back(1); res.push_back(2);
      CPPUNIT_ASSERT(res==elem_ind);
      
      // test we get the elements contiguous to vertex 2
      elem_ind.clear(); res.clear();
      mPatch2D.get_vertex_element_indices(2, elem_ind,err); MSQ_CHKERR(err);
-     res.push_back(2); res.push_back(1); res.push_back(0);
+     res.push_back(0); res.push_back(1); res.push_back(2);
      CPPUNIT_ASSERT(res==elem_ind);
    }
 
@@ -239,11 +182,11 @@ public:
       MSQ_CHKERR(err);
       
       // Move the two first vertices in direction dk by step size s;
-      Vector3D dk[2];
+      Vector3D dk[6];
       dk[0].set(-1,-2,0);
       dk[1].set(-1, 2,0);
       double s = 0.3;
-      mPatch2D.move_vertices(dk, 2, s, err); MSQ_CHKERR(err);
+      mPatch2D.move_vertices(dk, 6, s, err); MSQ_CHKERR(err);
 
       // gets the new coordinates and  checks the vertices were displaced as expected.
       std::vector< Vector3D > coords;
@@ -275,11 +218,11 @@ public:
       MSQ_CHKERR(err);
       
       // Move the two first vertices in direction dk by step size s;
-      Vector3D dk[2];
+      Vector3D dk[6];
       dk[0].set(0,-2,0);
       dk[1].set(-1,0,0);
       double s = 1;
-      mPatch2D.move_vertices(dk, 2, 1, err); MSQ_CHKERR(err);
+      mPatch2D.move_vertices(dk, 6, 1, err); MSQ_CHKERR(err);
       // gets the new coordinates and  checks the vertices were displaced as expected.
       std::vector< Vector3D > coords;
       mPatch2D.get_element_vertex_coordinates(0, coords,err);

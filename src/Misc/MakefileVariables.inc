@@ -1,12 +1,11 @@
 MISCDIR = $(srcdir)/Misc
 
 MISCSRC = $(MISCDIR)/MesquiteError.cpp \
-	       $(MISCDIR)/MesquiteUtilities.cpp \
 	       $(MISCDIR)/MsqTimer.cpp \
 	       $(MISCDIR)/MsqMessage.cpp \
 	       $(MISCDIR)/MsqHessian.cpp \
-	       $(MISCDIR)/SimplifiedGeometryEngine.cpp \
-##	       $(MISCDIR)/ExodusConversion.cpp
+	       $(MISCDIR)/PlanarDomain.cpp \
+	       $(MISCDIR)/SphericalDomain.cpp
 
 MISCHEADERS = \
 	$(patsubst $(MISCDIR)/%,$(localincludedir)/%,\

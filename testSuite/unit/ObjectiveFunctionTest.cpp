@@ -343,7 +343,7 @@ public:
     mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
     mean_ratio->set_averaging_method(QualityMetric::SUM, err); MSQ_CHKERR(err);
 //    mean_ratio->set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
-    mean_ratio->set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
+      //mean_ratio->set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
 
     // Creates an L1 objective function.
     LPtoPTemplate L_1(mean_ratio, 1, err); MSQ_CHKERR(err);

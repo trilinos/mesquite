@@ -32,6 +32,7 @@ describe main.cpp here
 
 #include "Mesquite.hpp"
 #include "TSTT_Base.h"
+#include "MsqTSTTImpl.hpp"
 #include "MesquiteUtilities.hpp" //  for writeShowMeMesh()
 #include "MesquiteError.hpp"
 #include "Vector3D.hpp"
@@ -68,7 +69,9 @@ int main()
   
   // initialises a MeshSet object
   MeshSet mesh_set1;
-  mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
+  Mesquite::TSTTMesh m1;
+  m1.set_mesh(mesh);
+  mesh_set1.add_mesh(&m1, err); MSQ_CHKERR(err);
 
   // dbg
    std::cout << " TSTT mesh handle: " << mesh << std::endl;

@@ -1,4 +1,4 @@
-// -*- Mode : c++; tab-width: 3; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 3 -*-
+// -*- Mode : c++; tab-width: 2; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 //
 //   SUMMARY: 
 //     USAGE:
@@ -70,7 +70,7 @@ private:
   CPPUNIT_TEST (test_corner_jacobian_metric);
     //Test local size metric
   CPPUNIT_TEST (test_local_size_metric);
-  //Test local size metric
+    //Test local size metric
   CPPUNIT_TEST (test_vertex_based_condition_number_metric);
   CPPUNIT_TEST_SUITE_END();
   

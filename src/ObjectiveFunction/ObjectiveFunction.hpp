@@ -21,7 +21,6 @@ Header file for the Mesquite::ObjectiveFunction class
 #include "PatchData.hpp"
 #include "MsqHessian.hpp"
 
-
 namespace Mesquite
 {
    class PatchData;
@@ -69,7 +68,8 @@ namespace Mesquite
          return return_bool;
        }
     
-    enum GRADIENT_TYPE{
+    enum GRADIENT_TYPE
+    {
        NUMERICAL_GRADIENT,
        ANALYTICAL_GRADIENT
     };

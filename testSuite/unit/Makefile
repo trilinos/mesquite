@@ -27,7 +27,7 @@ MSQ_BASE_DIR = ../..
 
 TEST_SRCS = msq_test_main.cpp \
     MesquiteTestRunner.cpp \
-    AomdVtkTest.cpp \
+    VtkTest.cpp \
     Matrix3DTest.cpp \
     MsqMeshEntityTest.cpp \
     Vector3DTest.cpp \
@@ -45,7 +45,7 @@ TEST_SRCS = msq_test_main.cpp \
 
 TEST_OBJS = ${TEST_SRCS:.cpp=.o}
 
-msq_test : ${TEST_OBJS}
+msq_test : ${TEST_OBJS} ../../lib/libmesquite.a
 	@echo "Linking $@"
 	${PREFIX}${LINKER} ${LDFLAGS} ${TEST_OBJS} ${TEST_LINK} -o $@
 

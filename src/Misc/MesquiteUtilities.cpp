@@ -34,6 +34,7 @@ describe MesquiteUtilities.cpp here
 //#include <iostream.h>
 using namespace Mesquite; 
 
+#if 0
 
 #undef __FUNC__
 #define __FUNC__ "writeVtkMesh"
@@ -427,3 +428,4 @@ void Mesquite::writeTSTTFacetMesh(const char filebase[128], TSTT::cMesh_Handle m
 }
 
 
+#endif

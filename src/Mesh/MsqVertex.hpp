@@ -12,6 +12,8 @@
 
 namespace Mesquite
 {
+  class MeshSet;
+  
     /*!
       \class MsqVertex
       \brief MsqVertex is the Mesquite object that stores information about
@@ -85,6 +87,8 @@ namespace Mesquite
      
    private:
      FlagMask vertexBitFlags;
+
+     friend MeshSet;
    };
   
 } //namespace

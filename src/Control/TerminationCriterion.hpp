@@ -19,8 +19,10 @@ Header file for the TerminationCriterion classes.
 #include "PatchData.hpp"
 #include "ObjectiveFunction.hpp"
 #include "MsqTimer.hpp"
+#include "PatchDataUser.hpp"
 
-namespace Mesquite {
+namespace Mesquite
+{
    class MeshSet;
   /*! \class TerminationCriterion
 

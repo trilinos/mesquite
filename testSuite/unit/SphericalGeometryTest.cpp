@@ -49,6 +49,9 @@ SimplifiedGeometryEngine.
 #include "UntangleBetaQualityMetric.hpp"
 #include "MultiplyQualityMetric.hpp"
 #include "SimplifiedGeometryEngine.hpp"
+#include "SphericalDomain.hpp"
+
+#include "MeshImpl.hpp"
 
 
 using namespace Mesquite;
@@ -86,36 +89,28 @@ public:
   
    void test_cg_mesh_cond_sphere()
    {
-     char file_name[128];
-       /* Reads a TSTT Mesh file */
-     TSTT::Mesh_Handle mesh;
-     TSTT::MeshError tstt_err;
-     TSTT::Mesh_Create(&mesh, &tstt_err);
-     strcpy(file_name, "../../meshFiles/2D/VTK/quads_on_sphere_529.vtk");
-     TSTT::Mesh_Load(mesh, file_name, &tstt_err);
-       // Mesquite error object
-     MsqError err;
+     Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
+     Mesquite::MsqError err;
+     mesh->read_vtk("../../meshFiles/2D/VTK/quads_on_sphere_529.vtk", err);
      
        // initialises a MeshSet object
      MeshSet mesh_set1;
      mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err.errorOn);
+     
        //create geometry: sphere, center (2,2,0), radius 3
      Vector3D center(2,2,0);
-     SimplifiedGeometryEngine msq_geom;
-     msq_geom.set_geometry_to_sphere(center,3.0,err);
-       //Make sure no errors
-     CPPUNIT_ASSERT(!err.errorOn);
-     mesh_set1.set_simplified_geometry_engine(&msq_geom);
+     SphericalDomain msq_geom(center, 3.0, mesh);
+     mesh_set1.set_domain_constraint(&msq_geom);
      
        // creates an intruction queue
      InstructionQueue queue1;
-
+     
        // creates a mean ratio quality metric ...
      ShapeQualityMetric* shape = ConditionNumberQualityMetric::create_new();
      UntangleQualityMetric* untan = UntangleBetaQualityMetric::create_new();
-  
+     
        // ... and builds an objective function with it
      LPTemplate* obj_func = new LPTemplate(shape, 2, err);
        //Make sure no errors
@@ -166,29 +161,23 @@ public:
   
   void test_lapl_geo_sphere()
      {
-       char file_name[128];
-         /* Reads a TSTT Mesh file */
-       TSTT::Mesh_Handle mesh;
-       TSTT::MeshError tstt_err;
-       TSTT::Mesh_Create(&mesh, &tstt_err);
-       strcpy(file_name, "../../meshFiles/2D/VTK/Mesquite_geo_10242.vtk");
-       TSTT::Mesh_Load(mesh, file_name, &tstt_err);
+       Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
+       Mesquite::MsqError err;
        
-         // Mesquite error object
-       MsqError err;
-  
+       mesh->read_vtk("../../meshFiles/2D/VTK/Mesquite_geo_10242.vtk", err);
+       
          // initialises a MeshSet object
        MeshSet mesh_set1;
        mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
+       
          //create geometry sphere:  ratius 1, centered at (0,0,0)
        Vector3D center(0,0,0);
-       SimplifiedGeometryEngine msq_geom;
-       msq_geom.set_geometry_to_sphere(center,1.0,err);
+       Mesquite::SphericalDomain msq_geom(center, 1.0, mesh);
         //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
-       mesh_set1.set_simplified_geometry_engine(&msq_geom);
+       mesh_set1.set_domain_constraint(&msq_geom);
   
          // creates an intruction queue
        InstructionQueue queue1;

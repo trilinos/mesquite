@@ -3,7 +3,8 @@ MESHDIR = $(srcdir)/Mesh
 MESHSRC = $(MESHDIR)/MeshSet.cpp \
 	       $(MESHDIR)/MsqMeshEntity.cpp \
 	       $(MESHDIR)/MsqVertex.cpp \
-	       $(MESHDIR)/PatchData.cpp
+	       $(MESHDIR)/PatchData.cpp \
+	       $(MESHDIR)/MeshImpl.cpp
 
 MESHHEADERS = \
 	$(patsubst $(MESHDIR)/%,$(localincludedir)/%,\

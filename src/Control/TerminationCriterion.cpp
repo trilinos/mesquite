@@ -11,6 +11,7 @@
  */
 
 #include "TerminationCriterion.hpp"
+#include "MeshSet.hpp"
 #include "MsqVertex.hpp"
 using namespace Mesquite;
 //temporary include
@@ -602,10 +603,12 @@ bool TerminationCriterion::cull_vertices(PatchData &pd,
        err.set_msg("Requested culling method not yet implemented.");
   };
     //Now actually have patch data cull vertices
-  if(cull_bool){
-    pd.set_free_vertices_soft_fixed(err);
+  if(cull_bool)
+  {
+    pd.set_all_vertices_soft_fixed(err);
   }
-  else{
+  else
+  {
     pd.set_all_vertices_soft_free(err); 
   }
   MSQ_CHKERR(err);

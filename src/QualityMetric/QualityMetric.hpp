@@ -1,4 +1,4 @@
-// -*- Mode : c++; tab-width: 3; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 3 -*-
+// -*- Mode : c++; tab-width: 2; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 
 /*! \file QualityMetric.hpp
     \brief
@@ -38,23 +38,23 @@ namespace Mesquite
        // virtual destructor ensures use of polymorphism during destruction
      virtual ~QualityMetric()
         {};
-
-
-     /*! \enum MetricType
+     
+     
+       /*! \enum MetricType
        is a property of the metric. It should be set correctly in the constructor
        of the concrete QualityMetric.
        An example of a (mediocre) VERTEX_BASED metric is the smallest edge
        connected to a vertex.
        An example of a (mediocre) ELEMENT_BASED metric is the aspect ratio of an element.
-     */
+       */
      enum MetricType
      {
-       MT_UNDEFINED,
-       VERTEX_BASED,
-       ELEMENT_BASED,
-       VERTEX_BASED_FREE_ONLY
+        MT_UNDEFINED,
+        VERTEX_BASED,
+        ELEMENT_BASED,
+        VERTEX_BASED_FREE_ONLY
      };
-
+     
      MetricType get_metric_type() { return mType; }
 
      /*!\enum ElementEvaluationMode

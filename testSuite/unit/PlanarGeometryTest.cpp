@@ -1,4 +1,4 @@
-// -*- Mode : c++; tab-width: 3; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 3 -*-
+// -*- Mode : c++; tab-width: 2; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 //
 //   SUMMARY: 
 //     USAGE:
@@ -50,8 +50,9 @@ SimplifiedGeometryEngine.
 #include "AspectRatioGammaQualityMetric.hpp"
 #include "UntangleBetaQualityMetric.hpp"
 #include "MultiplyQualityMetric.hpp"
-#include "SimplifiedGeometryEngine.hpp"
+#include "PlanarDomain.hpp"
 
+#include "MeshImpl.hpp"
 
 using namespace Mesquite;
 
@@ -90,37 +91,33 @@ public:
   
    void test_plane_tri_tangled()
    {
-     char file_name[128];
-       /* Reads a TSTT Mesh file */
-     TSTT::Mesh_Handle mesh;
-     TSTT::MeshError tstt_err;
-     TSTT::Mesh_Create(&mesh, &tstt_err);
-     strcpy(file_name, "../../meshFiles/2D/VTK/tangled_tri.vtk");
-     TSTT::Mesh_Load(mesh, file_name, &tstt_err);
-       // Mesquite error object
-     MsqError err;
+     Mesquite::MsqError err;
+     Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
+     
+     mesh->read_vtk("../../meshFiles/2D/VTK/tangled_tri.vtk", err);
      
        // initialises a MeshSet object
      MeshSet mesh_set1;
      mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
+     
        //Make sure no errors
      CPPUNIT_ASSERT(!err.errorOn);
+     
        //create geometry: plane z=5, normal (0,0,1)
      Vector3D pnt(0,0,5);
      Vector3D s_norm(0,0,1);
-     SimplifiedGeometryEngine msq_geom;
-     msq_geom.set_geometry_to_plane(s_norm,pnt,err);
+     Mesquite::PlanarDomain msq_geom(s_norm, pnt, mesh);
        //Make sure no errors
      CPPUNIT_ASSERT(!err.errorOn);
-     mesh_set1.set_simplified_geometry_engine(&msq_geom);
+     mesh_set1.set_domain_constraint(&msq_geom);
      
        // creates an intruction queue
      InstructionQueue queue1, queue2;
-
+     
        // creates a mean ratio quality metric ...
      ShapeQualityMetric* shape = ConditionNumberQualityMetric::create_new();
      UntangleQualityMetric* untan = UntangleBetaQualityMetric::create_new(.1);
-  
+     
        // ... and builds an objective function with it (untangle)
      LInfTemplate* untan_func = new LInfTemplate(untan);
      LPTemplate* shape_func = new LPTemplate(shape,2,err);
@@ -207,15 +204,9 @@ public:
   
   void test_plane_quad_tangled()
      {
-       char file_name[128];
-         /* Reads a TSTT Mesh file */
-       TSTT::Mesh_Handle mesh;
-       TSTT::MeshError tstt_err;
-       TSTT::Mesh_Create(&mesh, &tstt_err);
-       strcpy(file_name, "../../meshFiles/2D/VTK/tangled_quad.vtk");
-       TSTT::Mesh_Load(mesh, file_name, &tstt_err);
-         // Mesquite error object
+       Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
        MsqError err;
+       mesh->read_vtk("../../meshFiles/2D/VTK/tangled_quad.vtk", err);
        
          // initialises a MeshSet object
        MeshSet mesh_set1;
@@ -225,11 +216,10 @@ public:
          //create geometry: plane z=5, normal (0,0,1)
        Vector3D pnt(0,0,5);
        Vector3D s_norm(0,0,1);
-       SimplifiedGeometryEngine msq_geom;
-       msq_geom.set_geometry_to_plane(s_norm,pnt,err);
+       Mesquite::PlanarDomain msq_geom(s_norm, pnt, mesh);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
-       mesh_set1.set_simplified_geometry_engine(&msq_geom);
+       mesh_set1.set_domain_constraint(&msq_geom);
        
          // creates an intruction queue
        InstructionQueue queue1, queue2;
@@ -324,15 +314,9 @@ public:
   
   void test_plane_tri_xz()
      {
-       char file_name[128];
-         /* Reads a TSTT Mesh file */
-       TSTT::Mesh_Handle mesh;
-       TSTT::MeshError tstt_err;
-       TSTT::Mesh_Create(&mesh, &tstt_err);
-       strcpy(file_name, "../../meshFiles/2D/VTK/tri_5_xz.vtk");
-       TSTT::Mesh_Load(mesh, file_name, &tstt_err);
-         // Mesquite error object
        MsqError err;
+       Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
+       mesh->read_vtk("../../meshFiles/2D/VTK/tri_5_xz.vtk", err);
        
          // initialises a MeshSet object
        MeshSet mesh_set1;
@@ -342,18 +326,16 @@ public:
          //create geometry: plane y=5, normal (0,1,0)
        Vector3D pnt(0,-5,0);
        Vector3D s_norm(0,-1,0);
-       SimplifiedGeometryEngine msq_geom;
-       msq_geom.set_geometry_to_plane(s_norm,pnt,err);
+       Mesquite::PlanarDomain msq_geom(s_norm, pnt, mesh);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
-       mesh_set1.set_simplified_geometry_engine(&msq_geom);
+       mesh_set1.set_domain_constraint(&msq_geom);
        
          // creates an intruction queue
        InstructionQueue queue1;
-
+       
          //creates a asm quality metric ...
        SmoothnessQualityMetric* smooth = ASMQualityMetric::create_new();
- 
        
          // ... and builds an objective function with it (untangle)
        LPtoPTemplate* smooth_func = new LPtoPTemplate(smooth,1,err);

@@ -1,4 +1,4 @@
-// -*- Mode : c++; tab-width: 3; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 3 -*-
+// -*- Mode : c++; tab-width: 2; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 //
 //   SUMMARY: 
 //     USAGE:
@@ -25,8 +25,7 @@ Unit testing of various functions in the MeshSet class.
 #include "Mesquite.hpp"
 #include "MeshSet.hpp"
 #include "PatchData.hpp"
-
-#include "TSTT_Base.h"
+#include "MeshImpl.hpp"
 
 #include "cppunit/extensions/HelperMacros.h"
 #include "cppunit/SignalException.h"
@@ -39,42 +38,34 @@ using namespace Mesquite;
 class MeshSetTest : public CppUnit::TestFixture
 {
 private:
-   CPPUNIT_TEST_SUITE(MeshSetTest);
-   CPPUNIT_TEST (test_add_multiple_meshes);
-   CPPUNIT_TEST_SUITE_END();
-   
+  CPPUNIT_TEST_SUITE(MeshSetTest);
+  CPPUNIT_WORK_IN_PROGRESS (test_add_multiple_meshes);
+  CPPUNIT_TEST_SUITE_END();
+  
 private:
-   
-   TSTT::Mesh_Handle tri8;
-   TSTT::Mesh_Handle quad4;
-
+  
+  Mesquite::MeshImpl *tri8;
+  Mesquite::MeshImpl *quad4;
+  
 public:
-   /* Automatically called by CppUnit before each test function. */
+    /* Automatically called by CppUnit before each test function. */
   void setUp()
   {
-     MsqError err;
-     
-     char file_name[128];
-     TSTT::MeshError tstt_err;
-     
-     /* Reads a TSTT Mesh file -- square meshed by 8 triangles */
-     TSTT::Mesh_Create(&tri8, &tstt_err); assert(!tstt_err);
-     strcpy(file_name, "../../meshFiles/2D/VTK/square_tri_2.vtk");
-     std::cout << file_name << std::endl; // dbg
-     TSTT::Mesh_Load(tri8, file_name, &tstt_err);
-     std::cout << tstt_err << std::endl; // dbg
-     assert(!tstt_err);
-     
-     /* Reads a TSTT Mesh file -- square meshed by 4 quads, adjacent to the previous mesh */
-     TSTT::Mesh_Create(&quad4, &tstt_err); assert(!tstt_err);
-     strcpy(file_name, "../../meshFiles/2D/VTK/four_more_quads.vtk");
-     std::cout << file_name << std::endl; // dbg
-     TSTT::Mesh_Load(quad4, file_name, &tstt_err);
-     std::cout << tstt_err << std::endl; // dbg
-     assert(!tstt_err);
+    MsqError err;
+    
+      // Read a vtk file -- square meshed by 8 triangles
+    tri8 = new Mesquite::MeshImpl;
+    tri8->read_vtk("../../meshFiles/2D/VTK/square_tri_2.vtk", err);
+    MSQ_CHKERR(err);
+    
+      // Read a vtk file
+      // -- square meshed by 4 quads, adjacent to the previous mesh
+    quad4 = new Mesquite::MeshImpl;
+    quad4->read_vtk("../../meshFiles/2D/VTK/four_more_quads.vtk", err);
+    MSQ_CHKERR(err);
   }
-
-   /* Automatically called by CppUnit after each test function. */
+  
+    // Automatically called by CppUnit after each test function.
   void tearDown()
   {
   }
@@ -83,28 +74,26 @@ public:
   MeshSetTest()
    {}
 
-   /* this function test the MeshSet concept of concatenating several TSTT meshes. */
+   /*this function test the MeshSet concept of concatenating several meshes.*/
    void test_add_multiple_meshes()
    {
-      MsqError err;
-
-      /* Adds 2 adjacent TSTT meshes to the MeshSet. */
-      MeshSet mesh_set;
-      mesh_set.add_mesh(tri8, err); MSQ_CHKERR(err);
-      mesh_set.add_mesh(quad4, err); MSQ_CHKERR(err);
-
-      /* Retrieves a global patch */
-      PatchData pd;
-      PatchDataParameters pd_params;
-      pd_params.set_patch_type(PatchData::GLOBAL_PATCH, err, 0, 0);
-      mesh_set.get_next_patch(pd, pd_params, err); MSQ_CHKERR(err);
-
-      int num_vtx = pd.num_vertices();
-      CPPUNIT_ASSERT( num_vtx == 15 );
-
-      
+     MsqError err;
+     
+       /* Adds 2 adjacent meshes to the MeshSet. */
+     MeshSet mesh_set;
+     mesh_set.add_mesh(tri8, err); MSQ_CHKERR(err);
+     mesh_set.add_mesh(quad4, err); MSQ_CHKERR(err);
+     
+       /* Retrieves a global patch */
+     PatchData pd;
+     PatchDataParameters pd_params;
+     pd_params.set_patch_type(PatchData::GLOBAL_PATCH, err, 0, 0);
+     mesh_set.get_next_patch(pd, pd_params, err); MSQ_CHKERR(err);
+     
+     int num_vtx = pd.num_vertices();
+     CPPUNIT_ASSERT( num_vtx == 18 );
    }
-   
+  
 };
 
 

@@ -32,7 +32,6 @@ Tests for the TerminationCriterion class..
 
 
 #include "Mesquite.hpp"
-#include "TSTT_Base.h"
 #include "MesquiteUtilities.hpp" //  for writeShowMeMesh()
 #include "MesquiteError.hpp"
 #include "Vector3D.hpp"
@@ -41,12 +40,13 @@ Tests for the TerminationCriterion class..
 #include "PatchData.hpp"
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
+#include "MeshImpl.hpp"
 
 // algorythms
 #include "ConditionNumberQualityMetric.hpp"
 #include "LPTemplate.hpp"
 #include "ConjugateGradient.hpp"
-#include "SimplifiedGeometryEngine.hpp"
+#include "PlanarDomain.hpp"
 
 #include "cppunit/extensions/HelperMacros.h"
 #include "cppunit/SignalException.h"
@@ -100,30 +100,20 @@ public:
     //This function is called by several of the tests in this suite.
   void test_outer_criterion(TerminationCriterion* tc_outer, MsqError &err)
     {
-      char file_name[128];
-        /*Reads a TSTT Mesh file */
-      TSTT::Mesh_Handle mesh;
-      TSTT::MeshError tstt_err;
-      TSTT::Mesh_Create(&mesh, &tstt_err);
-      strcpy(file_name, "../../meshFiles/2D/VTK/tri_5_xz.vtk");
-      TSTT::Mesh_Load(mesh, file_name, &tstt_err);
-  
-        // initialises a MeshSet object
+      Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
+      mesh->read_vtk("../../meshFiles/2D/VTK/tri_5_xz.vtk", err);
       MeshSet mesh_set1;
       mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
-        //create geometry
-//       Vector3D center(2,2,0);
-//       Vector3D geo_center(0,0,0);
+      
       Vector3D pnt(0,-5,0);
       Vector3D s_norm(0, -1,0);
-      SimplifiedGeometryEngine msq_geom;
-      msq_geom.set_geometry_to_plane(s_norm,pnt,err);
-      mesh_set1.set_simplified_geometry_engine(&msq_geom);
-  
-        // creates an intruction queue        
+      Mesquite::PlanarDomain msq_geom(s_norm, pnt, mesh);
+      mesh_set1.set_domain_constraint(&msq_geom);
+      
+        // create an intruction queue        
       InstructionQueue queue1;
       
-        //     creates a mean ratio quality metric ...
+        // create a mean ratio quality metric ...
       ShapeQualityMetric* cond_num=ConditionNumberQualityMetric::create_new();
       LPTemplate* obj_func = new LPTemplate(cond_num, 2, err);
       CPPUNIT_ASSERT(!err.errorOn);

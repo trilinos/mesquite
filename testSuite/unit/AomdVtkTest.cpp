@@ -27,6 +27,7 @@ Unit testing of the uploading of VTK format into AOMD.
 #include "PatchData.hpp"
 
 #include "TSTT_Base.h"
+#include "MsqTSTTImpl.hpp"
 
 #include "cppunit/extensions/HelperMacros.h"
 #include "cppunit/SignalException.h"
@@ -88,7 +89,9 @@ public:
       MsqError err;
      /* Adds TSTT mesh to a MeshSet. */
       MeshSet mesh_set;
-      mesh_set.add_mesh(tri10, err); MSQ_CHKERR(err);
+      TSTTMesh tstt_mesh;
+      tstt_mesh.set_mesh(tri10);
+      mesh_set.add_mesh(&tstt_mesh, err); MSQ_CHKERR(err);
 
       /* Retrieves a global patch */
       PatchData pd;

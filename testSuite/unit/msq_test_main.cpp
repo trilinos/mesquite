@@ -1,4 +1,6 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
+#include <cppunit/SignalException.h>
+#include <signal.h>
 #include "MesquiteTestRunner.hpp"
 #include "MsqMessage.hpp"
 int main(int argc, char **argv)
@@ -7,7 +9,8 @@ int main(int argc, char **argv)
   Mesquite::TestRunner runner;
   bool wasSuccessful = false;
   
-
+  CppUnit::SignalException::throw_on_signal(SIGSEGV, false);
+  
     // If the user requested a specific test...
   if (argc > 1)
   {

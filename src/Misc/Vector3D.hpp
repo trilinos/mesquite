@@ -152,7 +152,8 @@ namespace Mesquite
     assert(0<=(int)index);
     assert(index<=2);     
 #endif
-    return mCoords[index]; }
+    return mCoords[index];
+  }
   
   // Functions to set coordinates
   inline void Vector3D::x( const double x )

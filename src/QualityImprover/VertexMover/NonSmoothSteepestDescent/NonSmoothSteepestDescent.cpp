@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <vector>
 #include "NonSmoothSteepestDescent.hpp"
+#include "MeshSet.hpp"
 #include "MsqTimer.hpp"
 
 using namespace Mesquite;

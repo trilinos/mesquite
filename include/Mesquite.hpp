@@ -25,7 +25,6 @@
 #endif
 
 
-#include "TSTT_Base.h"
 /*! \file Mesquite.hpp
  */
 
@@ -77,62 +76,6 @@ namespace Mesquite
     MSQ_DEFINED
   };
   
-  inline TSTT::EntityTopology mesquite_to_tstt(EntityTopology type)
-  {
-    switch (type)
-    {
-      case POLYGON:
-        return TSTT::POLYGON;
-      case TRIANGLE:
-        return TSTT::TRIANGLE;
-      case QUADRILATERAL:
-        return TSTT::QUADRILATERAL;
-      case POLYHEDRON:
-        return TSTT::POLYHEDRON;
-      case TETRAHEDRON:
-        return TSTT::TETRAHEDRON;
-      case HEXAHEDRON:
-        return TSTT::HEXAHEDRON;
-      case PRISM:
-        return TSTT::PRISM;
-      case PYRAMID:
-        return TSTT::PYRAMID;
-      case SEPTAHEDRON:
-        return TSTT::SEPTAHEDRON;
-      case MIXED:
-      default:
-        return TSTT::UNDEFINED;
-    }
-  }
-  
-  inline EntityTopology tstt_to_mesquite(TSTT::EntityTopology type)
-  {
-    switch (type)
-    {
-      case TSTT::POLYGON:
-        return Mesquite::POLYGON;
-      case TSTT::TRIANGLE:
-        return Mesquite::TRIANGLE;
-      case TSTT::QUADRILATERAL:
-        return Mesquite::QUADRILATERAL;
-      case TSTT::POLYHEDRON:
-        return Mesquite::POLYHEDRON;
-      case TSTT::TETRAHEDRON:
-        return Mesquite::TETRAHEDRON;
-      case TSTT::HEXAHEDRON:
-        return Mesquite::HEXAHEDRON;
-      case TSTT::PRISM:
-        return Mesquite::PRISM;
-      case TSTT::PYRAMID:
-        return Mesquite::PYRAMID;
-      case TSTT::SEPTAHEDRON:
-        return Mesquite::SEPTAHEDRON;
-      case TSTT::UNDEFINED:
-      default:
-        return Mesquite::MIXED;
-    }
-  }
-
   //GLOBALS variables
   const int MSQ_MAX_NUM_VERT_PER_ENT=8;
   const int MSQ_HIST_SIZE=7;//number of division in histogram
