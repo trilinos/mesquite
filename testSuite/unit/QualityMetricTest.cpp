@@ -8,7 +8,7 @@
 //    E-MAIL: mbrewer@sandia.gov
 //
 // ORIG-DATE: 03-Dec-02
-//  LAST-MOD:  9-Apr-03 at 10:04:28 by Thomas Leurent
+//  LAST-MOD:  5-May-03 at 15:18:24 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -40,6 +40,11 @@ correct metric return values.
 #include "SmoothnessQualityMetric.hpp"
 #include "LocalSizeQualityMetric.hpp"
 #include "CornerJacobianQualityMetric.hpp"
+#include "MeshImpl.hpp"
+#include "MeshSet.hpp"
+#include "PlanarDomain.hpp"
+
+
 #include <math.h>
 
 using namespace Mesquite;
@@ -60,8 +65,14 @@ private:
   CPPUNIT_TEST (test_edge_length_metric);  
     //Test averaging methods
   CPPUNIT_TEST (test_averaging_method);
+    // test analytical gradients
+  CPPUNIT_TEST (test_mean_ratio_tri_gradient);
+  CPPUNIT_WORK_IN_PROGRESS (test_mean_ratio_quad_gradient);
   CPPUNIT_TEST (test_mean_ratio_tet_gradient);
   CPPUNIT_TEST (test_mean_ratio_hex_gradient);
+    // test analytical Hessians
+  CPPUNIT_TEST (test_mean_ratio_tri_hessian);
+  CPPUNIT_TEST (test_mean_ratio_quad_hessian);
   CPPUNIT_TEST (test_mean_ratio_tet_hessian);
   CPPUNIT_TEST (test_mean_ratio_hex_hessian);
     //Test ASM (area smoothness quality metric)
@@ -96,12 +107,14 @@ public:
         equilateral (the ideal for most metrics).  tri_2 is an arbitrary
         triangle.
      */
-    create_qm_two_tri_patch(triPatch, err);MSQ_CHKERR(err);
+    create_qm_two_tri_patch_with_domain(triPatch, err);MSQ_CHKERR(err);
+    
      /* Our quad patch is made of two quads.  quad_1 is a perfect
         square (the ideal for most metrics).  quad_2 is an arbitrary
         quad.
      */
-    create_qm_two_quad_patch(quadPatch,err);MSQ_CHKERR(err);
+    create_qm_two_quad_patch_with_domain(quadPatch,err);MSQ_CHKERR(err);
+    
      /* Our tet patch is made of two tets.  tet_1 is a perfect
         equilateral (the ideal for most metrics).  tet_2 is an arbitrary
         tet.
@@ -117,12 +130,16 @@ public:
 
   void tearDown()
   {
+    destroy_patch_with_domain(triPatch);
+    destroy_patch_with_domain(quadPatch);
   }
   
 public:
   QualityMetricTest()
     {}
-  
+
+#undef __FUNC__
+#define __FUNC__ "QualityMetricTest::test_condition_number"
    void test_condition_number()
    {
      bool v_flag;
@@ -397,7 +414,7 @@ public:
 
         //Test on a patch with two tris one not ideal
        PatchData p3;
-       create_qm_two_tri_patch(p3, err);
+       create_qm_two_tri_patch_with_domain(p3, err);
        MsqMeshEntity* elem3=p3.get_element_array(err);
        double third_val;
        bool third_bool=met->evaluate_element(p3,&elem3[0],third_val,err);
@@ -405,6 +422,7 @@ public:
        CPPUNIT_ASSERT(third_val>0.0);
        CPPUNIT_ASSERT(third_val<1.0);
        CPPUNIT_ASSERT(third_bool==true);
+       destroy_patch_with_domain(p3);
      }
   
   void test_corner_jacobian_metric()
@@ -430,13 +448,14 @@ public:
 
         //Test on a patch with two tris one not ideal
        PatchData p3;
-       create_qm_two_tri_patch(p3, err);
+       create_qm_two_tri_patch_with_domain(p3, err);
        MsqMeshEntity* elem3=p3.get_element_array(err);
        double third_val;
        bool third_bool=met->evaluate_element(p3,&elem3[0],third_val,err);
        CPPUNIT_ASSERT(third_val>0.0);
        CPPUNIT_ASSERT(third_val<1.0);
        CPPUNIT_ASSERT(third_bool==true);
+       destroy_patch_with_domain(p3);
      }
   
   void test_local_size_metric()
@@ -620,6 +639,16 @@ public:
     delete grad_ana;
   }
 
+  void test_mean_ratio_tri_gradient()
+  {
+    test_mean_ratio_gradient(triPatch);
+  }
+       
+  void test_mean_ratio_quad_gradient()
+  {
+    test_mean_ratio_gradient(quadPatch);
+  }
+       
   void test_mean_ratio_hex_gradient()
   {
     test_mean_ratio_gradient(hexPatch);
@@ -768,6 +797,16 @@ public:
     delete[] hessian_ana;
   }
        
+  void test_mean_ratio_tri_hessian()
+  {
+    test_mean_ratio_hessian(tetPatch);
+  }
+  
+  void test_mean_ratio_quad_hessian()
+  {
+    test_mean_ratio_hessian(hexPatch);
+  }
+  
   void test_mean_ratio_tet_hessian()
   {
     test_mean_ratio_hessian(tetPatch);
