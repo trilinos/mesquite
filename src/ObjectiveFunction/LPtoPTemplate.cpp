@@ -332,8 +332,7 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
   QualityMetric* currentQM = get_quality_metric();
   
   MsqVertex* elem_vtx[MSQ_MAX_NUM_VERT_PER_ENT];
-  std::vector< size_t > vtx_indices;
-  std::vector<size_t>::const_iterator index; 
+  const size_t* vtx_indices;
     
   size_t e;
   size_t num_vtx;
@@ -345,11 +344,11 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
     short nve = elements[e].vertex_count();
     
     // Gets a list of free vertices in the element.
-    elements[e].get_vertex_indices(vtx_indices);
+    vtx_indices = elements[e].get_vertex_index_array();
     num_vtx=0;
-    for (index=vtx_indices.begin(); index!=vtx_indices.end(); ++index) {
-      if ( vertices[*index].is_free_vertex() ) {
-        elem_vtx[num_vtx] = vertices + (*index); ++num_vtx; }
+    for (i=0; i<nve; ++i) {
+      if ( vertices[vtx_indices[i]].is_free_vertex() ) {
+        elem_vtx[num_vtx] = vertices + vtx_indices[i]; ++num_vtx; }
     }
     
     // Computes \nabla^2 Q(e). Only the free vertices will have non-zero entries. 
@@ -374,10 +373,14 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
         }
       }
 
-      // Computes  pQ(e)^{p-1}
-      fac1 = pVal * pow(metric_value, pVal-1);
+      double metric_pow = 1;
+      for (i=0; i<pVal-2; ++i)
+	metric_pow *= metric_value;
       // Computes p(p-1)Q(e)^{p-2}
-      fac2 = pVal* (pVal-1) * pow(metric_value, pVal-2);
+      fac2 = pVal* (pVal-1) * metric_pow;
+      // Computes  pQ(e)^{p-1}
+      metric_pow *= metric_value;
+      fac1 = pVal * metric_pow;
 
       for (i=0; i<nve*(nve+1)/2; ++i) {
         elem_hessian[i] *= fac1;
