@@ -75,6 +75,8 @@ namespace Mesquite {
   protected:
     PatchDataUser() : mParams() { }
   public:
+    virtual ~PatchDataUser() { }
+    
     virtual void set_patch_type(PatchData::PatchType patch_type, MsqError &err,
                                 int param1=0, int param2=0) {
       mParams.set_patch_type(patch_type, err, param1, param2); }
