@@ -13,11 +13,12 @@ using namespace Mesquite;
 
 #undef __FUNC__
 #define __FUNC__ "ObjectiveFunction::compute_numerical_gradient"
-/*! 
+/*! \fn ObjectiveFunction::compute_numerical_gradient(Mesquite::PatchData &pd, Vector3D *const &grad, MsqError &err, int array_size)
+  
   Numerically Calculates the gradient of the ObjectiveFunction for the
   free vertices in the patch.
-  \param pd (PatchData &) PatchData on which the gradient is taken.
-  \param grad (Vecotr3D *const &) Array of Vector3D used to store gradient.
+  \param pd  PatchData on which the gradient is taken.
+  \param grad  Array of Vector3D used to store gradient.
   \param array_size Either the length of grad or -1.
  */
 void ObjectiveFunction::compute_numerical_gradient(Mesquite::PatchData &pd,

@@ -122,9 +122,8 @@ namespace Mesquite
     
    protected:
 
-      /*!Non-virtual function which numerically computes the gradient
-        of the Objective Function.
-      */
+      //!Non-virtual function which numerically computes the gradient
+      //!  of the Objective Function.
     void compute_numerical_gradient(PatchData &patch, Vector3D *const &grad,
                                     MsqError &err, int array_size);
 
