@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 19-Feb-02 at 10:57:52
-//  LAST-MOD: 17-Jul-02 at 13:53:05 by Thomas Leurent
+//  LAST-MOD:  7-Nov-02 at 15:39:47 by Thomas Leurent
 //
 //
 // DESCRIPTION:
@@ -29,11 +29,7 @@ describe main.cpp here
 #include <stdlib.h>
 #endif
 
-#ifdef MESQUITE_USES_TSTT
 #include "TSTT_Base.h"
-#else
-#include "TSTT_C.h"
-#endif
 
 #include "Mesquite.hpp"
 #include "MesquiteError.hpp"
