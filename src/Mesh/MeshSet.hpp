@@ -118,6 +118,8 @@ namespace Mesquite
       }
     
     bool clear_all_soft_fixed_flags(MsqError &err);
+
+    void write_vtk(const char* out_filebase, MsqError &err);
     
   private:
     

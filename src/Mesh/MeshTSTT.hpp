@@ -174,13 +174,16 @@ namespace Mesquite
                                                 size_t *csr_offsets,
                                                 MsqError &err);
     
-      // Identifies the vertices attached to this element by returning
+      // Identifies the vertices attached to the elements by returning
       // each vertex's global index.  The vertex's global index indicates
-      // where that element can be found in the array returned by
+      // where that vertex can be found in the array returned by
       // Mesh::get_all_vertices.
-    virtual void element_get_attached_vertex_indices(ElementHandle element,
-                                                     size_t *index_array,
-                                                     size_t array_size, MsqError &err);
+    void elements_get_attached_vertex_indices(Mesquite::Mesh::ElementHandle elems[],
+                                              size_t num_elems,
+                                              size_t index_array[],
+                                              size_t array_size,
+                                              size_t* offsets,
+                                              MsqError &err);
     
       // Returns the topology of the given entity.
     virtual EntityTopology element_get_topology(ElementHandle entity_handle,

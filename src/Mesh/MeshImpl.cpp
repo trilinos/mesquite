@@ -1,3 +1,20 @@
+//
+//   SUMMARY: 
+//     USAGE:
+//
+// ORIG-DATE: 16-May-02 at 10:26:21
+//  LAST-MOD:  5-Feb-04 at 22:27:18 by Thomas Leurent
+//
+/*! \file MeshImpl.cpp
+
+\brief This files contains a mesh database implementation that can be used
+to run mesquite by default.
+  
+    \author Thomas Leurent
+    \author Darryl Melander
+    \date 2003-05-16  
+ */
+
 #include "MeshImpl.hpp"
 #include "MsqMessage.hpp"
 
@@ -1281,26 +1298,41 @@ void Mesquite::MeshImpl::elements_get_attached_vertices(
   }
 }
 
-// Identifies the vertices attached to this element by returning
+// Identifies the vertices attached to the elements by returning
 // each vertex's global index.  The vertex's global index indicates
 // where that element can be found in the array returned by
-// Mesh::get_all_vertices.
-void Mesquite::MeshImpl::element_get_attached_vertex_indices(
-  Mesquite::Mesh::ElementHandle element,
-  size_t *index_array,
+// Mesh::get_all_vertices. The indexes can be repeated.
+// \param elems Array of element handles.
+// \param num_elems number of elements in the array elems
+// \param index_array Array containing the indexes of the elements vertices.
+//                    Indexes can be repeated.
+// \param index_array_size indicates the size of index_array
+// \param offsets An array of offsets into the index_array that indicates where
+//                the indexes corresponding to an element start. First entry is 0.
+// For example element, to get the vertex indices of elems[3], we look at the entries
+// index_array[offsets[3]] to index_array[offsets[4]] . 
+#undef __FUNC__
+#define __FUNC__ "MeshImpl::elements_get_attached_vertex_indices"
+void Mesquite::MeshImpl::elements_get_attached_vertex_indices(
+  Mesquite::Mesh::ElementHandle elems[],
+  size_t num_elems,
+  size_t index_array[],
   size_t array_size,
-  MsqError &/*err*/)
+  size_t* offsets,
+  MsqError &err)
 {
-  Mesquite::MeshImpl::Element* elem =
-    reinterpret_cast<Mesquite::MeshImpl::Element*>(element);
+  offsets[0] = 0;
+  for (size_t i=0; i<num_elems; ++i) {
+    Mesquite::MeshImpl::Element* elem =
+      reinterpret_cast<Mesquite::MeshImpl::Element*>(elems[i]);
 
-  size_t num_verts = Mesquite::vertices_in_topology(elem->mType);
-  if (array_size > num_verts)
-    array_size = num_verts;
-
-  for ( ; array_size--; )
-  {
-    index_array[array_size] = elem->vertexIndices[array_size];
+    size_t num_verts = Mesquite::vertices_in_topology(elem->mType);
+    offsets[i+1] = offsets[i] + num_verts;
+    
+    for ( ; num_verts--; )
+    {
+      index_array[offsets[i]+num_verts] = elem->vertexIndices[num_verts];
+    }
   }
 }
 

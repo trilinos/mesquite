@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD:  3-Feb-04 at 13:00:56 by Thomas Leurent
+//  LAST-MOD:  6-Feb-04 at 01:06:06 by Thomas Leurent
 //
 /*! \file MeshSet.cpp
 
@@ -17,8 +17,24 @@ That copy is of course encapsulated in the MeshSet class.
     \date 2002-05-16  
  */
 
+#ifdef USE_STD_INCLUDES
+#include <fstream>
+#include <string>
+#include <iomanip>
+#else
+#include <fstream.h>
+#include <string.h>
+#include <iomanip.h>
+#endif
+
 #include "MeshSet.hpp"
 #include "QualityImprover.hpp"
+
+MSQ_USE(ifstream);
+MSQ_USE(ofstream);
+MSQ_USE(setprecision);
+MSQ_USE(string);
+MSQ_USE(cerr);
 
 using namespace Mesquite;  
 
@@ -182,6 +198,15 @@ bool MeshSet::get_next_patch(PatchData &pd,
       bool next_vertex_identified = false;
       while (!next_vertex_identified)
       {
+        bool on_bnd;
+        on_bnd=false;
+        if (!(vertexIterator->is_at_end()))
+        {
+          Mesquite::Mesh::VertexHandle vtx;
+          vtx = **vertexIterator;
+          (*currentMesh)->vertices_are_on_boundary(&vtx, &on_bnd, 1, err);
+          cout << " dbg : vtx " << vtx << "  on_bnd: " << on_bnd << endl;
+        }
           // Move to next mesh if necessary
         if (vertexIterator->is_at_end())
         {
@@ -196,12 +221,9 @@ bool MeshSet::get_next_patch(PatchData &pd,
           vertexIterator = (*currentMesh)->vertex_iterator(err); MSQ_CHKERR(err);
         }
           //if this is a 'boundary' fixed flag, skip it now
-        else if ((culling_method_bits & PatchData::NO_BOUNDARY_VTX))
+        else if ((culling_method_bits & PatchData::NO_BOUNDARY_VTX)
+                 && (on_bnd==true))
         {
-          bool on_bnd;
-          Mesquite::Mesh::VertexHandle vtx = **vertexIterator;
-          (*currentMesh)->vertices_are_on_boundary(&vtx, &on_bnd, 1, err);
-          if (on_bnd)
             ++(*vertexIterator);
         }
           //otherwise we check to see if this vertex has been culled
@@ -270,8 +292,6 @@ bool MeshSet::get_next_patch(PatchData &pd,
       {
         delete [] vertArray;
         vertArray = new Mesh::VertexHandle[num_verts];
-        delete [] vertexOnBoundary;
-        vertexOnBoundary = new bool[num_verts];
         vertArraySize = num_verts;
       }
       if (csrDataSize < num_vert_uses)
@@ -334,17 +354,17 @@ bool MeshSet::get_next_patch(PatchData &pd,
       
         // Put the elements into the PatchData
       MsqMeshEntity* pd_elem_array = pd.get_element_array(err);
-      for (i = 0; i < num_elems; ++i)
-      {
-        pd_elem_array[i].set_element_type(elemTopologies[i]);
-        for (size_t j = vertices_in_topology(elemTopologies[i]); j--; )
-        {
-          pd_elem_array[i].set_vertex_index(j, csrData[csrOffsets[i]+j]);
-        }
-          // Copy the element's handle to the patch
-        pd.elementHandlesArray[i] = elemArray[i];
-      }
-      pd.numElements = num_elems;
+//       for (i = 0; i < num_elems; ++i)
+//       {
+//         pd_elem_array[i].set_element_type(elemTopologies[i]);
+//         for (size_t j = vertices_in_topology(elemTopologies[i]); j--; )
+//         {
+//           pd_elem_array[i].set_vertex_index(j, csrData[csrOffsets[i]+j]);
+//         }
+//           // Copy the element's handle to the patch
+//         pd.elementHandlesArray[i] = elemArray[i];
+//       }
+//       pd.numElements = num_elems;
     }
     FUNCTION_TIMER_END();  
     return true;
@@ -435,20 +455,30 @@ bool MeshSet::get_next_patch(PatchData &pd,
       size_t num_attached_vtx=0;
       for (i = 0; i < num_elems; ++i)
         num_attached_vtx += vertices_in_topology(elemTopologies[i]);
+      size_t* index_array = new size_t[num_attached_vtx]; 
+      size_t* offsets = new size_t[num_elems+1]; 
       
+      (*currentMesh)->elements_get_attached_vertex_indices(elemArray, num_elems,
+                                         index_array, num_attached_vtx,
+                                         offsets, err); MSQ_CHKERR(err);                 
+
         // Put them into the patch
       pd.reserve_element_capacity(num_elems, err); MSQ_CHKERR(err);
       MsqMeshEntity* pd_elem_array = pd.get_element_array(err);
       for (i = 0; i < num_elems; ++i)
       {
         pd_elem_array[i].set_element_type(elemTopologies[i]);
-        (*currentMesh)->element_get_attached_vertex_indices(
-          elemArray[i],
-          pd_elem_array[i].get_modifiable_vertex_index_array(),
-          MSQ_MAX_NUM_VERT_PER_ENT,
-          err); MSQ_CHKERR(err);
+        size_t* vtx_indices = pd_elem_array[i].get_modifiable_vertex_index_array();
+        size_t j=0; 
+        for (size_t v=offsets[i]; v<offsets[i+1]; ++v) {
+          vtx_indices[j++] = index_array[v];
+        }
         pd.elementHandlesArray[i] = elemArray[i];
       }
+      
+      delete [] index_array;
+      delete [] offsets;
+      
       pd.numElements = num_elems;
     }
     FUNCTION_TIMER_END();
@@ -562,4 +592,124 @@ bool MeshSet::clear_all_soft_fixed_flags(MsqError &err)
     }
   }
   return true;
+}
+
+
+
+/* ************************************************************************* */
+/* ************* Mesh Files can be written directly from the MeshSet ******* */
+/* *************      Various formats are available below            ******* */
+/* ************************************************************************* */
+
+
+
+/*! Writes a VTK file directly from the MeshSet.
+    This means that any mesh imported successfully into Mesquite
+    can be outputed in VTK format.
+    This is not geared for performance, since it has to load a global Patch from
+    the mesh to write a mesh file. 
+*/
+#undef __FUNC__
+#define __FUNC__ "MeshSet::write_vtk" 
+void MeshSet::write_vtk(const char* out_filebase,
+                   Mesquite::MsqError &err)
+{
+    // Open the file
+  string out_filename = out_filebase;
+  out_filename += ".vtk";
+  ofstream file(out_filename.c_str());
+  if (!file)
+  {
+    err.set_msg("Unable to open file");
+    return;
+  }
+
+    // loads a global patch
+  PatchData pd;
+  PatchDataParameters pd_params;
+  pd_params.set_patch_type(PatchData::GLOBAL_PATCH, err); MSQ_CHKERR(err);
+  pd_params.no_culling_method();
+  get_next_patch(pd, pd_params, err); MSQ_CHKERR(err);
+    
+    // Write a header
+  file << "# vtk DataFile Version 2.0\n";
+  file << "Mesquite Mesh " << out_filebase << " .\n";
+  file << "ASCII\n";
+  file << "DATASET UNSTRUCTURED_GRID\n";
+  
+    // Write vertex coordinates
+  file << "POINTS " << pd.numVertices << " float\n";
+  size_t i;
+  for (i = 0; i < pd.numVertices; i++)
+  {
+      //MB: Is there a way to use setprecision (or an equivalent)
+      //when use_std_includes is not defined.
+#ifdef USE_STD_INCLUDES   
+    file <<setprecision(15)<< pd.vertexArray[i][0] << ' '
+         <<setprecision(15)<< pd.vertexArray[i][1] << ' '
+         <<setprecision(15)<< pd.vertexArray[i][2] << '\n';
+#else
+    file << pd.vertexArray[i][0] << ' '
+         << pd.vertexArray[i][1] << ' '
+         << pd.vertexArray[i][2] << '\n';
+#endif
+  }
+  
+    // Write out the connectivity table
+  size_t connectivity_size = 0;
+  for (i = 0; i < pd.numElements; ++i)
+    connectivity_size += pd.elementArray[i].vertex_count()+1;
+    
+  file << "CELLS " << pd.numElements << ' ' << connectivity_size << '\n';
+  for (i = 0; i < pd.numElements; i++)
+  {
+    std::vector<size_t> vtx_indices;
+    pd.elementArray[i].get_vertex_indices(vtx_indices);
+    file << vtx_indices.size();
+    for (size_t j = 0; j < vtx_indices.size(); ++j)
+    {
+      file << ' ' << vtx_indices[j];
+    }
+    file << '\n';
+  }
+  
+    // Write out the element types
+  file << "CELL_TYPES " << pd.numElements << '\n';
+  for (i = 0; i < pd.numElements; i++)
+  {
+    unsigned char type_id = 0;
+    switch (pd.elementArray[i].get_element_type())
+    {
+      case Mesquite::TRIANGLE:
+        type_id = 5;
+        break;
+      case Mesquite::QUADRILATERAL:
+        type_id = 9;
+        break;
+      case Mesquite::TETRAHEDRON:
+        type_id = 10;
+        break;
+      case Mesquite::HEXAHEDRON:
+        type_id = 12;
+        break;
+    default:
+      err.set_msg("element type not implemented");
+      break;
+    }
+    file << (int)type_id << '\n';
+  }
+  
+    // Write out which points are fixed.
+  file << "POINT_DATA " << pd.numVertices
+       << "\nSCALARS fixed float\nLOOKUP_TABLE default\n";
+  for (i = 0; i < pd.numVertices; ++i)
+  {
+    if (pd.vertexArray[i].is_free_vertex())
+      file << "0\n";
+    else
+      file << "1\n";
+  }
+  
+    // Close the file
+  file.close();
 }

@@ -600,66 +600,6 @@ void Mesquite::MeshTSTT::vertices_get_byte(
 //**************** Vertex Topology *****************
 
 
-
-// void Mesquite::MeshTSTT::create_vertex_to_element_data()
-// {
-//   if (v2E)
-//     return;
-  
-//   v2eOffset = new size_t[vertexCount + 1];
-//   v2E = new size_t[totalVertexUses];
-  
-//     // Initialize each use count to zero
-//   memset(v2eOffset, 0, (vertexCount+1)*sizeof(size_t));
-  
-//   size_t elem_num, vert_num;
-  
-//     // Go through each element, keep track of how many times
-//     // each vertex is used.
-//   for (elem_num = elementCount; elem_num--; )
-//   {
-//     for (vert_num =
-//            Mesquite::vertices_in_topology(elementArray[elem_num].mType);
-//          vert_num--;
-//          )
-//     {
-//       v2eOffset[elementArray[elem_num].vertexIndices[vert_num]]++;
-//     }
-//   }
-  
-//     // Convert the uses counts to array offsets.
-//   elem_num = 0;
-//   for (vert_num = 0; vert_num < vertexCount; vert_num++)
-//   {
-//     size_t temp = v2eOffset[vert_num];
-//     v2eOffset[vert_num] = elem_num;
-//     elem_num += temp;
-//   }
-//   v2eOffset[vertexCount] = totalVertexUses;
-
-//     // Use newVertIndices to store how many elements
-//     // have already been added to v2E for each vertex.
-//     // Should already be initialized to zero
-  
-//     // Finally, store the v2E data
-//   for (elem_num = 0; elem_num < elementCount; elem_num++)
-//   {
-//     for (vert_num =
-//            Mesquite::vertices_in_topology(elementArray[elem_num].mType);
-//          vert_num--;
-//          )
-//     {
-//       size_t vert_index = elementArray[elem_num].vertexIndices[vert_num];
-//       v2E[v2eOffset[vert_index] + newVertIndices[vert_index]++] = elem_num;
-//     }
-//   }
-  
-//     // Reset newVertIndices to zero
-//   memset(newVertIndices, 0, vertexCount*sizeof(size_t));
-// }
-
-
-
 // Gets the number of elements attached to this vertex.
 // Useful to determine how large the "elem_array" parameter
 // of the vertex_get_attached_elements() function must be.
@@ -856,33 +796,52 @@ void Mesquite::MeshTSTT::elements_get_attached_vertices(
   }
 }
 
-// Identifies the vertices attached to this element by returning
+// Identifies the vertices attached to the elements by returning
 // each vertex's global index.  The vertex's global index indicates
 // where that element can be found in the array returned by
-// Mesh::get_all_vertices.
+// Mesh::get_all_vertices. The indexes can be repeated.
+// \param elems Array of element handles.
+// \param num_elems number of elements in the array elems
+// \param index_array Array containing the indexes of the elements vertices.
+//                    Indexes can be repeated.
+// \param index_array_size indicates the size of index_array
+// \param offsets An array of offsets into the index_array that indicates where
+//                the indexes corresponding to an element start. First entry is 0.
+// For example element, to get the vertex indices of elems[3], we look at the entries
+// index_array[offsets[3]] to index_array[offsets[4]] . 
 #undef __FUNC__
-#define __FUNC__ "MeshTSTT::element_get_attached_vertex_indices"
-void Mesquite::MeshTSTT::element_get_attached_vertex_indices(
-  Mesquite::Mesh::ElementHandle element,
-  size_t *index_array,
-  size_t array_size, MsqError &err)
+#define __FUNC__ "MeshTSTT::elements_get_attached_vertex_indices"
+void Mesquite::MeshTSTT::elements_get_attached_vertex_indices(
+  Mesquite::Mesh::ElementHandle elems[],
+  size_t num_elems,
+  size_t index_array[],
+  size_t array_size,
+  size_t* offsets,
+  MsqError &err)
 {
   try {
     FUNCTION_TIMER_START(__FUNC__);
-    int32_t lower= 0;
+    int32_t zero= 0;
+    int32_t upper = array_size-1;
     int32_t stride = 1;
-    int32_t upper = Mesquite::MSQ_MAX_NUM_VERT_PER_ENT -1;
     ::SIDL::array<int32_t> index_array_b;
-    index_array_b.borrow((int32_t*)index_array, 1, &lower, &upper, &stride);
-    oneEntity.set(0, element);
+    index_array_b.borrow((int32_t*)index_array, 1, &zero, &upper, &stride);
 
-    //! \todo : THIS IS A HACK : the first argument is not valid for a real TSTT interface.
-    //! An EntitySet with a single member element should be used instead.
-    //! This hack catters to a temporary AOMD implementation of TSTT without EntitySet
+    int32_t num_elems_m1 = num_elems - 1;
+    ::SIDL::array<void*> elems_b;
+    elems_b.borrow(elems, 1, &zero, &num_elems_m1, &stride);
+    upper = num_elems;
+    ::SIDL::array<int32_t> offsets_b;
+    offsets_b.borrow((int32_t*)offsets, 1, &zero, &upper , &stride);
+    ::SIDL::array<TSTT::EntityTopology> topos_s = ::SIDL::array<TSTT::EntityTopology>::create1d(0);
+
+    //! \todo Here one should create an entityset with the elements handles. !!!!!!
+    //!       and use it instead of ENTIRE_MESH in the following functions call. !!!!
+
     tsttMesh.entitysetGetEntityVertexCoordinateIndices(
-                          element, elementType, ::TSTT::ALL_TOPOLOGIES,
-                          oneInt, index_array_b,
-                          oneTopo);
+                          ENTIRE_MESH, elementType, ::TSTT::ALL_TOPOLOGIES,
+                          offsets_b, index_array_b,
+                          topos_s);
      
     //dbg
 /*    for (int i=0; i<Mesquite::MSQ_MAX_NUM_VERT_PER_ENT; ++i) 
