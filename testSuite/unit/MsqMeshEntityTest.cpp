@@ -249,13 +249,17 @@ void test_compute_weigted_jacobian_ideal_tri()
        MsqError err;
        MsqMeshEntity* tri = one_tri_patch.get_element_array(err);
        MSQ_CHKERR(err);
-       CPPUNIT_ASSERT(tri->compute_unsigned_area(one_tri_patch,err)-(sqrt(3.0)/4.0) < MSQ_MIN);
+       CPPUNIT_ASSERT(fabs(tri->compute_unsigned_area(one_tri_patch,err)
+                           -(sqrt(3.0)/4.0)) < MSQ_MIN);
        MsqMeshEntity* quad = one_qua_patch.get_element_array(err);
        MSQ_CHKERR(err);
-       CPPUNIT_ASSERT(quad->compute_unsigned_area(one_qua_patch,err)-1.0 < MSQ_MIN);
+       CPPUNIT_ASSERT(fabs(quad->compute_unsigned_area(one_qua_patch,err)
+                           -1.0) < MSQ_MIN);
        MsqMeshEntity* hex = one_hex_patch.get_element_array(err);
        MSQ_CHKERR(err);
-       CPPUNIT_ASSERT(hex->compute_unsigned_volume(one_hex_patch,err)-1.0 < MSQ_MIN);
+         //PRINT_INFO("\nHEX _ _ _ %f\n",hex->compute_unsigned_volume(one_hex_patch,err));
+       CPPUNIT_ASSERT(fabs(hex->compute_unsigned_volume(one_hex_patch,err)
+                           -1.0) < MSQ_MIN);
      }
   
 };
