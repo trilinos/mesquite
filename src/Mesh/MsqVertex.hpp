@@ -17,7 +17,12 @@ namespace Mesquite
     /*!
       \class MsqVertex
       \brief MsqVertex is the Mesquite object that stores information about
-      the vertices in the mesh.*/
+      the vertices in the mesh.
+
+      This class has no virtual destructor for performance reasons.
+      !!! Make sure NOT to delete a MsqVertex object from a pointer
+          to Vector3D !!!
+    */
   class MsqVertex : public Vector3D
    {
    public:
@@ -34,9 +39,6 @@ namespace Mesquite
          : Vector3D(0,0,0), vertexBitFlags(0)
        {}
 
-     //! Virtual destructor ensures polymorphism
-     virtual ~MsqVertex() { }
-     
      void operator=(const Vector3D& rhs)
        { Vector3D::operator=(rhs);
          vertexBitFlags = 0; }
