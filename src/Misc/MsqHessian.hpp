@@ -5,7 +5,7 @@
 //    E-MAIL: tmunson@mcs.anl.gov
 //
 // ORIG-DATE:  2-Jan-03 at 11:02:19 bu Thomas Leurent
-//  LAST-MOD: 20-Feb-03 at 10:38:40 by Thomas Leurent
+//  LAST-MOD: 20-Mar-03 at 16:10:11 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -34,6 +34,7 @@ describe MsqHessian.hpp here
 
 namespace Mesquite
 {
+  class ObjectiveFunction;
   
   /*!
     \class MsqHessian
@@ -72,6 +73,7 @@ namespace Mesquite
     int size() {return mSize;}
     //! returns the diagonal blocks, memory must be allocated before call.
     void get_diagonal_blocks(std::vector<Matrix3D> &diag, MsqError &err);
+    Matrix3D* get_block(size_t i, size_t j);
     void accumulate_entries(PatchData &pd, size_t elem_index,
                             Matrix3D mat3d_array[], MsqError &err);
     void compute_preconditionner(MsqError &err);
@@ -81,6 +83,7 @@ namespace Mesquite
     friend void axpy(Vector3D res[], int size_r,
                      const MsqHessian &H, const Vector3D x[], int size_x,
                      const Vector3D y[], int size_y, MsqError &err);
+    friend class ObjectiveFunction;
   };
 
   
@@ -153,6 +156,21 @@ namespace Mesquite
     for (m=0; m<mSize; ++m) {
       zloc[m] = mPreconditionner[m] * rloc[m]; 
     }
+  }
+
+  
+#undef __FUNC__
+#define __FUNC__ "MsqHessian::get_block"
+  /*! Computes \f$ z=M^{-1}r \f$ . */
+  inline Matrix3D* MsqHessian::get_block(size_t i, size_t j)
+  {
+    assert(i<mSize);
+    assert(j<mSize);
+    assert(j>=i);
+
+    assert( mColIndex[mRowStart[i]+j] == j ); // since our Matrix is in fact not sparse. 
+    
+    return ( mEntries + (mRowStart[i]+j)  );
   }
 
   

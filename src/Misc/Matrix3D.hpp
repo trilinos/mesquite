@@ -5,7 +5,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 18-Dec-02 at 11:08:22
-//  LAST-MOD: 19-Feb-03 at 15:17:54 by Thomas Leurent
+//  LAST-MOD: 20-Mar-03 at 16:13:42 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -147,6 +147,14 @@ namespace Mesquite
     { 
       set_values(s); 
       return *this;
+    }
+
+    //! Sets column j (0, 1 or 2) to Vector3D c.
+    void set_column(int j, const Vector3D c)
+    {
+      v_[0+j]=c[0];
+      v_[3+j]=c[1];
+      v_[6+j]=c[2];
     }
 
     // Matrix Operators
