@@ -75,7 +75,7 @@ namespace Mesquite {
   public:
     InstructionQueue();
 
-    virtual ~InstructionQueue() { }
+    virtual ~InstructionQueue() {};
     
     void add_preconditioner(QualityImprover* instr, MsqError &err);
     void remove_preconditioner(size_t index, MsqError &err);
@@ -101,6 +101,31 @@ namespace Mesquite {
       //! wraper classes.
     virtual void run_instructions(MeshSet &msc, MsqError &err);
     void clear();
+
+      /**\brief Generate SIGFPE whenever a floating point exception occurs
+       *
+       * Generate a FPE signal when overflow, divbyzero, etc. occur
+       * during floating-point arithmatic.  This is intended for debugging
+       * purposes only, as enabling this will typically result in a 
+       * crash when such arithmatic errors occur.
+       *
+       * If this option is enabled, Mesquite will attempt to set 
+       * platform-specific flags such that a SIGFPE is generated for
+       * floating point errors while the instruction queue is running.
+       * If this option ins disabled, Mesquite will not change the
+       * flags.  There is no option to explicitly disable such flags
+       * because that is the default behavior on most platforms, and
+       * presumably if the application has enabled such flags it makes
+       * little sense to disable them while Mesquite is running.
+       *
+       * This functionality may not be supported on all platforms.  If
+       * it is not supported, this option has no effect.
+       */
+    void trap_floating_point_exception( bool enable )
+      { trapFPE = enable; }
+    bool trap_floating_point_exception() const
+      { return trapFPE; }
+  
     
   protected:
     
@@ -119,6 +144,8 @@ namespace Mesquite {
 
     PatchData* globalPatch; //!< Used to prevent reallocating a global patch
                             //!< for successive global algorithms.    
+                            
+    bool trapFPE;
   };
 
 

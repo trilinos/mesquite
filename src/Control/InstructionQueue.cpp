@@ -51,8 +51,16 @@ Member functions of the Mesquite::InstructionQueue class
 #include "MsqError.hpp"
 #include "MsqDebug.hpp"
 #include "MeanMidNodeMover.hpp"
+#include "MsqFPE.hpp"
 
 using namespace Mesquite;
+
+#ifdef MSQ_TRAP_FPE
+const bool IQ_TRAP_FPE_DEFAULT = true;
+#else
+const bool IQ_TRAP_FPE_DEFAULT = false;
+#endif
+
 
 InstructionQueue::InstructionQueue() :
   autoQualAssess(true),
@@ -60,7 +68,8 @@ InstructionQueue::InstructionQueue() :
   nbPreConditionners(0),
   isMasterSet(false),
   masterInstrIndex(0),
-  globalPatch(0)
+  globalPatch(0),
+  trapFPE(IQ_TRAP_FPE_DEFAULT)
 {
 }
 
@@ -252,8 +261,12 @@ void InstructionQueue::run_instructions(MeshSet &ms, MsqError &err)
   }
   
 #ifdef ENABLE_INTERRUPT
+   // Register SIGINT handler
   MsqInterrupt msq_interrupt;
 #endif
+
+    // Generate SIGFPE on floating point errors
+  MsqFPE( this->trapFPE );
   
   msq_std::list<PatchDataUser*>::const_iterator instr_iter;
   PatchDataUser* prev_global = 0;

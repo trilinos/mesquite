@@ -33,15 +33,22 @@ AC_ARG_ENABLE( [release], [[
 AC_ARG_ENABLE( [debug], [[
   --enable-debug                  Debug build]], 
   [MSQ_DO_DEBUG="$enableval"], [MSQ_DO_DEBUG="no"] )
+
 AC_ARG_ENABLE( [debug-output], [[
   --enable-debug-output[=n,m,...] Enable debug output.  Optionally specify 
                                   comma-separated list of flags to enable.  
                                   --enable-debug implies --enable-debug-output=1,2
   --disable-debug-output          Override default enable implied by --enable-debug]],
   [MSQ_DEBUG_OUT="$enableval"], [MSQ_DEBUG_OUT=""] )
+
 AC_ARG_ENABLE( [function-timers], [[  
   --enable-function-timers        Enable function timers]], 
   [MSQ_DO_TIMERS="$enableval"], [MSQ_DO_TIMERS="no"] )
+
+AC_ARG_ENABLE( [trap-fpe], [[  
+  --enable-trap-fpe               Enable trapping of floating point exceptions.
+                                  Default is no unless --enable-debug.]], 
+  [MSQ_TRAP_FPE="$enableval"], [MSQ_TRAP_FPE=""] )
 
 if test -z "$MSQ_DO_RELEASE"; then
   # do default unless CXXFLAGS or -debug have been specified
@@ -57,6 +64,9 @@ if test "$MSQ_DO_DEBUG" != "no"; then
   if test -z "$MSQ_DEBUG_OUT"; then
     CXXFLAGS="$CXXFLAGS -DMSQ_ENABLE_DEBUG=1,2"
   fi
+  if test -z "$MSQ_TRAP_FPE"; then
+    MSQ_TRAP_FPE="yes"
+  fi
 fi
 
 if test -n "$MSQ_DEBUG_OUT"; then
@@ -65,6 +75,10 @@ if test -n "$MSQ_DEBUG_OUT"; then
   elif test "$MSQ_DEBUG_OUT" != "no"; then
     CXXFLAGS="$CXXFLAGS -DMSQ_ENABLE_DEBUG=$MSQ_DEBUG_OUT"
   fi
+fi
+
+if test "$MSQ_TRAP_FPE" = "yes"; then
+  CXXFLAGS="$CXXFLAGS -DMSQ_TRAP_FPE"
 fi
 
 if test "$MSQ_DO_TIMERS" = "yes"; then
@@ -106,6 +120,25 @@ AC_CHECK_FUNCS( vsnprintf, [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_VSNPRINTF"] )
 AC_CHECK_FUNCS( vsprintf, [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_VSPRINTF"] )
 AC_CHECK_FUNCS( clock, [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_CLOCK"] )
 AC_CHECK_FUNCS( times, [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_TIMES"] )
+
+# Use C++ compiler because C allows undefined functions, so these
+# checks don't achive much if compiled as C.  Also, if C and C++
+# compilers are mis-matched, what works for one may not work for the
+# other and the C++ one is what is actually used for this in Mesquite.
+AC_LANG_PUSH(C++)
+AC_MSG_CHECKING( for fpsetmask );
+AC_TRY_COMPILE( [#include <ieeefp.h>],
+                [fpsetmask(FP_X_INV|FP_X_OFL|FP_X_DZ);],
+                [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_FPSETMASK"
+                 AC_MSG_RESULT(yes)], [AC_MSG_RESULT(no)] )
+AC_MSG_CHECKING( for feenableexcept );
+AC_TRY_COMPILE( [#define _GNU_SOURCE
+                 #include <fenv.h>  ],
+                [feenableexcept(FE_DIVBYZERO|FE_INVALID|FE_OVERFLOW);],
+                [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_FEENABLEEXCEPT"
+                 AC_MSG_RESULT(yes)], [AC_MSG_RESULT(no)] )
+AC_LANG_POP(C++)
+
 AC_SUBST(MSQ_FUNC_DEFS)
 
 #-----------------------------------------------------------------------------
