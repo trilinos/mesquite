@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 13-Nov-02 at 18:05:56
-//  LAST-MOD:  5-May-03 at 15:50:03 by Thomas Leurent
+//  LAST-MOD: 19-May-03 at 13:23:51 by Michael Brewer
 //
 // DESCRIPTION:
 // ============
@@ -58,6 +58,7 @@ private:
   CPPUNIT_TEST (test_compute_gradient_3D_LPTemplate);
   CPPUNIT_TEST (test_compute_gradient_3D_LPtoPTemplate_L1_hex);
   CPPUNIT_TEST (test_compute_gradient_3D_LPtoPTemplate_L2_hex);
+  CPPUNIT_TEST (test_compute_ana_hessian_hex);
   CPPUNIT_TEST (test_compute_gradient3D_composite);
 
   CPPUNIT_TEST_SUITE_END();
@@ -329,6 +330,48 @@ public:
        compare_numerical_analytical_gradient(cm_of, m12Hex);
      }
   
+
+  void test_compute_ana_hessian_hex()
+  {
+    MsqError err;
+    
+    // creates a mean ratio quality metric ...
+    ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
+    mean_ratio->set_averaging_method(QualityMetric::SUM, err);
+    
+    // ... and builds an objective function with it
+    LPtoPTemplate LP2(mean_ratio, 2, err);
+    mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+    mean_ratio->set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
+    
+    MsqHessian H;
+    H.initialize(tetPatch, err); MSQ_CHKERR(err);
+    LP2.compute_hessian(tetPatch, H, err); MSQ_CHKERR(err);
+
+    Matrix3D mat00(" 2.44444  0.2566   0.181444 "
+		   " 0.2566   2.14815  0.104757 "
+		   " 0.181444 0.104757 2.07407 ");
+
+
+    Matrix3D mat13(" 5.47514 3.16659    9.83479 "
+		   " -1.11704 -5.29718 -3.67406 "
+		   " 10.3635 -13.5358  -15.5638 ");
+
+    Matrix3D* mat; 
+
+    mat = H.get_block(0,0);
+    for (int i=0; i<3; ++i)
+      for (int j=0; j<3; ++j)
+	CPPUNIT_ASSERT_DOUBLES_EQUAL((*mat)[i][j], mat00[i][j], 1e-4);
+    
+    mat = H.get_block(1,3);
+    for (int i=0; i<3; ++i)
+      for (int j=0; j<3; ++j)
+	CPPUNIT_ASSERT_DOUBLES_EQUAL((*mat)[i][j], mat13[i][j], 1e-4);
+    
+//    cout << H <<endl;
+  }
+
 
   void test_compute_hessian(PatchData &pd)
   {
