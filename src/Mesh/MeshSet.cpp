@@ -323,6 +323,8 @@ bool MeshSet::get_next_patch(PatchData &pd,
         {
           pd_elem_array[i].set_vertex_index(j, csrData[csrOffsets[i]+j]);
         }
+          // Copy the element's handle to the patch
+        pd.elementHandlesArray[i] = elemArray[i];
       }
       pd.numElements = num_elems;
     }
@@ -399,6 +401,7 @@ bool MeshSet::get_next_patch(PatchData &pd,
           elemArray[i],
           pd_elem_array[i].get_modifiable_vertex_index_array(),
           MSQ_MAX_NUM_VERT_PER_ENT);
+        pd.elementHandlesArray[i] = elemArray[i];
       }
       pd.numElements = num_elems;
     }
