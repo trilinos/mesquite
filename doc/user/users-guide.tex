@@ -192,7 +192,7 @@ softwar (makedepend, gmake, Babel, etc.?), and any related information.
 \subsubsection{Acquiring the Necessary Code/Libraries}
 TODO:  How and where Mesquite, AOMD, CPPUnit, (MDB), etc. can be
 acquired... with appropriate acknowledgments.
-\subsubsection{Compiling Mesquite}
+\subsubsection{Compiling Mesquite} \label{sec:compiling}
 Having acquired the Mesquite source code, the user can perform the
 following steps which outline the process for compiling the code and
 creating the library, `libmesquite.a'. Here is the fastest way to compile Mesquite:
@@ -219,13 +219,13 @@ Makefile.customize directly.
 \paragraph{Configure Options.}  \label{config_options}
 
 Those options can be given to the configure script through the command line, for example the C headers
-option would be given by typing './configure --with-c-headers=yes' in the mesquite/ directory.
+option would be given by typing \texttt{./configure --with-c-headers=yes} in the \texttt{mesquite/} directory.
 
 \begin{description}
 \item \texttt{--with-c-headers=yes} Uses the deprecated C style for headers:
   will use headers like \texttt{<iostream.h>} and \texttt{<math.h>}
   instead of the new C++ style \texttt{<iostream>} and \texttt{<cmath>}. This might make older
-  compilers work. With newer compilers, you will get a warning for using that option.
+  compilers find those headers. With newer compilers, you will get a warning for using that option.
 \item \texttt{--with-makedepend=EXECUTABLE} Location of alternative makedepend program:
 Give the full path:  --with-makedepend='/usr/local/bin/makedepend'
 \item \texttt{--with-archiver=EXECUTABLE} Location of alternative archiver (default is 'ar ru'):
@@ -243,13 +243,13 @@ tstt web pages.
 Give the full path: --with-dox='/usr/local/bin/doxygen'
 \end{description}
 
-\paragraph{Makefile Definitions.}  \label{mes_vars_and_defs}
+\paragraph{Makefile Variables.}  \label{mes_vars_and_defs}
 
 The following is a list of variables used in Mesquite's Makefile
 structure to allow for custimization of the compilation process.
 Most of the provided examples come directly from Mesquite's default
-linux setup which is defined in Makefile.lin, a file located in
-the main directory.
+linux setup. If you decided not to use the configure script and its options (previous paragraph),
+you can edit Makefile.customize directly. Here are the variables and their meaning.
 \begin{enumerate}
 
 \item Tools used by Mesquite:
@@ -275,7 +275,8 @@ the main directory.
   \item[DEPEND\_FLAGS]
   \item[LD\_FLAGS]
   \item[STD\_INCLUDE\_FLAG] defines certain global definitions that
-	tell the compiler which types of header files to include.
+	tell the compiler which types of header files to include. The configure script has the
+	option \texttt{--with-c-headers} to help set this variable.
  	Essentially, the two options are USE\_STD\_INCLUDES and
 	USE\_C\_PREFIX\_INCLUDES.  With USE\_STD\_INCLUDES defined
 	Mesquite will include the standard header files.  For example,
@@ -321,84 +322,157 @@ the main directory.
 
 \subsection{Tutorial: Running a Simple Example Program}
 
-In this section, we will write a mesquite driver in order to improve the quality of a test mesh. At first,
-we will write a small program using Mesquite's simplified API, or wrappers, in order to show the
+In this section, we will write a Mesquite driver in order to improve the quality of a test
+mesh. This tutorial section is aimed at giving you a feel for Mesquite: \emph{this section is not where to look
+for detailed information}. In particular, informations on loading a particular mesh format, or
+interacting through a particular mesh interface, and details of the API classes
+are not given in this section.
+
+At first, we will write a small program using Mesquite's simplified API, or wrappers, in order to show the
 fastest way to get Mesquite running on a mesh. The concept of the wrappers, as well as the different
-wrappers available, are described in section \ref{sec:}.
+wrappers available, are described in section \ref{sec:wrappers}. We will then set up a more customized mesh
+improvement tool through the mesquite low-level API, described in section \ref{sec:}
 
-\subsection{Example Programs}
-The Mesquite code is designed to improve and assess the quality of
-a mesh. To accomplish this task, however, Mesquite needs the mesh
-to be stored in some type of mesh data-base which has an implementation
-of the TSTT interace  (TODO: reference the interface).  That is, the
-mesh must be stored in another program which is capable of communicating
-with Mesquite through the TSTT interface.  Through this interface
-the mesh can be identified using its Mesh\_Handle.  Below is an example
-of a function which takes a Mesh\_Handle as an arguement and performs
-a Laplacian smooth (using a Mesquite wrapper function for simplificity)
-on the associated mesh.  It is assumed that ``Mesquite.hpp'' has been
-included in the file.  The example code just adds ``my\_mesh'' to a
-Mesquite MeshSet object and then runs a Laplacian smoother on that
-MeshSet.
+\subsubsection{Tutorial File Template}
+\label{sec:tutfile}
 
-TODO: Verify the following compiles.
-
+In order to create and link a driver code, the Mesquite library must have been compiled, as per the
+instructions of section \ref{sec:compiling}. For this tutorial, we will edit the file
+\texttt{testSuite/tutorial/tutorial.cpp}, which contains the following template:
 \begin{verbatim}
-void laplace_smooth_my_mesh(TSTT::Mesh_Handle my_mesh)
-{     
-    // Mesquite error object
-  Mesquite::MsqError err;
-    // initialises a MeshSet object
-  Mesquite::MeshSet mesh_set1;
-    //  adds my_mesh to the Mesquite MeshSet
-  mesh_set1.add_mesh(my_mesh, err);
-    //  checks to see whether the previous call caused an error
-  MSQ_CHKERR(err);
-    // creates an intruction queue
-  Mesquite::LaplacianIQ laplacian_smoother;
-    // launches optimization on mesh_set1
-  laplacian_smoother.run_instructions(mesh_set1, err);
-    //checks to see if the previous call caused an error
-  MSQ_CHKERR(err);
-}
-\end{verbatim}
-
-It is often the case that users have a mesh in file format and wish
-to improve the quality of that mesh.  However, Mesquite does not have
-the capability to read a mesh directly from a file.  Therefore, the mesh
-must first be read into a mesh data-base which provides a compatible TSTT
-interface.  Examples of such data-bases are MDB and AOMD.  TODO:
-where these programs can be found.  Mesquite does provide some utility
-functions to simplify this process.  As an example, the following
-code reads a mesh which has been stored in ExodusII (TODO reference
-Exodus/Genesis/etc) format into MDB, uses Mesquite to smooth the mesh,
-and then writes the mesh to another file.  The following code requires
-that ``MDBMesquite.hpp'' be included as well as ``Mesquite.hpp''.  This
-code sample calls the above function, laplace\_smooth\_my\_mesh($\cdots$),
-to smooth the mesh.
-
-TODO:: verify that the following compiles.
-
-\begin{verbatim}
-void load_and_improve_my_mesh(char* input_file, char* output_file)
+#include "Mesquite_all_headers.hpp"
+using namespace Mesquite;
+int main(int argc, char* argv[])
 {
-    //creates a Mesh_Handle and an error object
-  TSTT::Mesh_Handle my_mesh;
-  TSTT::MeshError error=0;
-    //loades the mesh into MDB and flags the boundary vertices as fixed.
-  load_and_flag_mesh(&my_mesh, input_file, &error);  
-    //Smooth the mesh
-  laplace_smooth_my_mesh(my_mesh);
-    //write out the results to a new file (given by output_file)
-  write_results(my_mesh, output_file, &error);
-    // clean up
-  deinit_mesh(my_mesh);
+  MsqError err;
+  
+  
 }
 \end{verbatim}
+Mesquite provides a convenient header file \texttt{include/Mesquite\_all\_headers.hpp} that includes
+all Mesquite headers. This is the easiest way to deal with the include directives although it is likely to slow
+down your Mesquite compilation.
+All Mesquite classes are part of the \texttt{Mesquite} namespace. Be aware that general mesh interfaces
+classes usually have their own namespace. The \texttt{MsqError} class is an error object passed to 
+certain function calls (see section \ref{sec:}), its value is checked after the functions calls with
+the macro \texttt{MSQ\_CHKERR(...)}.
 
-\subsection{Writing a Mesquite Application}
+Although the code above does not perform any action, we can compile from the main directory
+(\texttt{mesquite/}) it with the command 
+\begin{verbatim}
+gmake testSuite/tutorial/tutorial
+\end{verbatim}
 
-\subsubsection{Telling Mesquite About Your Mesh}
+\subsubsection{Loading a Test Mesh}
+
+Here we want to improve one of the test meshes distributed with Mesquite. Those meshes are in
+the very readable but inefficient VTK format. You can open one of the ASCII files in
+\texttt{mesquite/meshFiles/...} and check it out for yourself.
+To load a VTK test mesh in Mesquite, instantiate the Mesquite mesh database object,
+\texttt{MeshImpl}\footnote{Note that if you have your own mesh
+database running, you should use the interfaces described in section \ref{sec:meshes}.}, 
+and use the \texttt{read\_vtk} function by adding those lines to the file
+template described in \ref{sec:tutfile}.
+\begin{verbatim}
+  Mesquite::MeshImpl *my_mesh = new Mesquite::MeshImpl;
+  my_mesh->read_vtk("../../meshFiles/2D/VTK/cube_hex_2.vtk", err); 
+  MSQ_CHKERR(err);
+\end{verbatim}
+You now need to add the mesh to a MeshSet, an object that can regroup several contiguous meshes to
+improve them all at once:
+\begin{verbatim}
+  Mesquite::MeshSet mesh_set;
+  mesh_set.add_mesh(my_mesh, err); MSQ_CHKERR(err);
+\end{verbatim}
+Mesquite also provides a function to write a mesh file in VTK format, given a \texttt{MeshImpl}
+object: 
+\begin{verbatim}
+  my_mesh->write_vtk("original_mesh",err); MSQ_CHKERR(err);
+\end{verbatim}
+
+
+\subsubsection{Improving the Mesh with a Wrapper Class}
+The simplest way to launch a Mesquite mesh quality improvement procedure is to use one of the
+wrapper classes described in section \ref{sec:wrappers}. Here, we will instantiate the
+\texttt{ShapeImprovement} and run it over the MeshSet we created earlier. Mesquite
+optimizes the mesh without further input from the user, although wrapper classes also allow the
+users to set some important parameters.
+\begin{verbatim}
+  Mesquite::ShapeImprovementWrapper algorithm;
+  algorithm.run_instructions(mesh_set, err); MSQ_CHKERR(err);
+\end{verbatim}
+We then proceed to write the improved mesh in a new file:
+\begin{verbatim}
+  my_mesh->write_vtk("smoothed_mesh",err); MSQ_CHKERR(err);
+\end{verbatim}
+Compiling this code and running it will create in the current directory the files original\_mesh.vtk
+and improved\_mesh.vtk. 
+
+\subsubsection{Improving the Mesh with the Low Level API}
+
+If the user requires in-depth control over the mesh quality improvement
+process, the use of the Mesquite classes allow an extensive
+level of flexibility.   In particular, the user can specify the quality
+metric, objective function template, and optimization algorithm by
+instantiating particular instances of each.  For each, various options
+such as numerical or analytical gradient and Hessian evaluations or
+the patch size can be selected.  Furthermore, the user can fine tune
+the optimization algorithm performance by creating and setting the parameters 
+of the termination criterion for both inner and outer iterations.
+
+Once these core objects have been created and customized, the user
+creates an instruction queue and adds one or more quality improvers
+and quality assessors.  The mesh optimization process is initiated
+with the {\tt run\_instructions} method on the instruction queue
+class.
+\begin{verbatim}
+    // creates a mean ratio quality metric ...
+  MeanRatioQualityMetric mean_ratio;
+  mean_ratio.set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+  mean_ratio.set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
+
+    // sets the objective function template
+  LPtoPTemplate obj_func(&mean_ratio, 2, err); MSQ_CHKERR(err);
+  obj_func.set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
+  
+    // creates the optimization procedures
+  FeasibleNewton f_newton(&obj_func);
+
+    //performs optimization globally
+  f_newton.set_patch_type(PatchData::GLOBAL_PATCH, err); 
+  MSQ_CHKERR(err);
+
+    // creates a termination criterion and 
+    // add it to the optimization procedure
+    // outer loop: default behavior: 1 iteration
+    // inner loop: stop if gradient norm < eps
+  TerminationCriterion tc_inner;
+  tc_inner.add_criterion_type_with_double(
+    TerminationCriterion::GRADIENT_L2_NORM_ABSOLUTE, 1e-4, err); 
+  MSQ_CHKERR(err);
+  f_newton.set_inner_termination_criterion(&tc_inner);
+
+    // creates a quality assessor
+  QualityAssessor m_ratio_qa(&mean_ratio,QualityAssessor::AVERAGE);
+
+    // creates an instruction queue
+  InstructionQueue queue1;
+  queue1.add_quality_assessor(&m_ratio_qa, err); 
+  MSQ_CHKERR(err);
+  queue1.set_master_quality_improver(&f_newton, err); 
+  MSQ_CHKERR(err);
+  queue1.add_quality_assessor(&m_ratio_qa, err); 
+  MSQ_CHKERR(err);
+
+    // launches optimization on the mesh_set
+  queue1.run_instructions(mesh_set, err); MSQ_CHKERR(err);
+\end{verbatim} 
+
+
+\section{Writing a Mesquite Application}
+
+\subsection{Telling Mesquite About Your Mesh}
+\label{sec:meshes}
 
 Mesquite is responsible for gathering information from the
 application's mesh and geometry.  Because this must be as efficient as
@@ -478,90 +552,8 @@ interface, the Mesquite-specific interface is not as general, and
 therefore consist of fewer
 functions and does not require additional tools such as Babel.
 
-\subsubsection{Application API}
-
-We provide a number of mechanisms that lower the ``expertise'' barrier
-for using Mesquite.  In the simplest usage scenario, a TSTT mesh
-pointer is passed to Mesquite and improved using a default set of
-metrics and strategies determined by the mesh type (Section
-\ref{sec:wrappers}).  If desired, the user can guide the mesh
-improvement process by setting a few parameter values indicating
-preferred metrics and strategies from a list of provided
-functionalities.  Once these parameters are defined, Mesquite
-optimizes the mesh without further input from the user.  Additional
-interfaces are provided for those who desire advanced functionalities,
-user-defined metrics or objective functions, or more control over the
-optimization process(Section \ref{sec:lowlevelAPI}).
-
-In this section, we 
-assume that a \texttt{MeshSet} has already been instantiated 
-and a TSTT mesh handle given to it to populate the database:
-\begin{verbatim}
-  // Create a TSTT mesh
-TSTT::Mesh wing = TSTT::Mesh::_create();
-wing.load(``wing_file.xx'');
-
-  // Create a Mesquite MeshSet
-Mesquite::MeshSet mesh_set;
-mesh_set.add_mesh(wing);
-\end{verbatim}
-
-{\it Low-level API} \\
-
-If the user requires in-depth control over the mesh quality improvement
-process, the use of the Mesquite classes allow an extensive
-level of flexibility.   In particular, the user can specify the quality
-metric, objective function template, and optimization algorithm by
-instantiating particular instances of each.  For each, various options
-such as numerical or analytical gradient and Hessian evaluations or
-the patch size can be selected.  Furthermore, the user can fine tune
-the optimization algorithm performance by creating and setting the parameters 
-of the termination criterion for both inner and outer iterations.
-
-Once these core objects have been created and customized, the user
-creates an instruction queue and adds one or more quality improvers
-and quality assessors.  The mesh optimization process is initiated
-with the {\tt run\_instructions} method on the instruction queue
-class.
-\begin{verbatim}
-  // creates a mean ratio quality metric ...
-ShapeQM* m_ratio = MeanRatioQM::create_new();
-m_ratio->set_gradient_type(ANALYTIC_GRADIENT);
-m_ratio->set_hessian_type(ANALYTIC_HESSIAN);
-
-  // sets the objective function template
-LPtoPTemplate obj_func(m_ratio, 2);
-obj_func->set_gradient_type(ANALYTIC_GRADIENT);
-
-  // creates the optimization procedures
-FeasibleNewton f_newton(&obj_func);
-
-  //performs optimization globally
-f_newton->set_patch_type(GLOBAL_PATCH);
-
-  // creates a termination criterion and 
-  // add it to the optimization procedure
-  // outer loop: default behavior: 1 iteration
-  // inner loop: stop if gradient norm < eps
-TerminationCriterion tc_inner;
-tc_inner.add_criterion_type(GRAD_L2_NORM, e-4);
-f_newton->set_inner_terminate_crit(&tc_inner);
-
-  // creates a quality assessor
-QualityAssessor m_ratio_qa(&m_ratio,AVERAGE);
-
-  // creates an instruction queue
-InstructionQueue queue1;
-queue1.add_quality_assessor(&m_ratio_qa);
-queue1.set_master_quality_improver(&f_newton);
-queue1.add_quality_assessor(&m_ratio_qa);
-
-  // launches optimization on the mesh_set
-queue1.run_instructions(mesh_set);
-\end{verbatim} 
-
-{\it Simplified API} \\
-
+\subsection{Simplified Application Programming Interface}
+\label{sec:wrappers}
 To improve meshes with a minimum of Mesquite function calls, we have 
 provided a set of wrapper classes that encapsulate the 
 most commonly used combination of quality metrics, improvement
@@ -570,21 +562,20 @@ inherited from the InstructionQueue, setting in their constructors
 which algorithms to call. Using these wrappers, only
 two lines of code are required to improve a \texttt{MeshSet}.
 
-For example, the code below will use the feasible Newton mean ratio
-wrapper, which essentially performs the same operations as the
-low-level code given in section \ref{sec:lowlevelAPI}, but without
-providing access to low-level features such as setting a specific
-termination criterion.  This wrapper first uses the mean ratio quality
+For example, the \texttt{ShapeImprovementWrapper} class 
+first uses the mean ratio quality
 metric to assess and report the quality of the mesh elements. It then
 untangles the mesh if necessary and improves the mesh with the
 feasible Newton algorithm applied to the composition of the mean ratio
 quality metric with the $\ell_2^2$ objective function. Finally, the
-mesh quality is assessed and reported again.
-\begin{verbatim}
-  // Creates wrapper and improves mesh
-Mesquite::ShapeImprovementWrapper shape_improver;
-shape_improver.run_instructions(mesh_set);
-\end{verbatim}
+mesh quality is assessed and reported again. 
+
+Wrappers do not provide access to low-level 
+features such as setting a specific
+termination criterion.  
+
+
+\subsection{Detailed Application Programming Interface}
 
 
 \subsection{Hints for Performance Profiling}
@@ -611,7 +602,7 @@ smoothers into this framework.}
 
 {\it Swapping algorithms.}
 
-\section{Software Design}
+\section{Mesquite Design}
 \label{sec:arch}
 
 \begin{figure*}[htb]
@@ -1060,6 +1051,8 @@ Performing these tests not only helps
 validate the code but also allows developers to evaluate the
 effects of code modifications in terms of Mesquite's accuracy
 and efficiency on `real world' problems.
+
+
 
 \section{Advanced Use of Mesquite}
 
