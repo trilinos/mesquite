@@ -43,6 +43,7 @@
 #include "MesquiteError.hpp"
 #include "MsqTimer.hpp"
 #include "MsqMessage.hpp"
+#include "Matrix3D.hpp"
 #include "PatchData.hpp"
 
 namespace Mesquite
@@ -73,15 +74,74 @@ namespace Mesquite
 
     TargetCalculator() : refMesh(0), originator(0) { }
     
-    //! virtual destructor ensures use of polymorphism during destruction
-      virtual ~TargetCalculator()
+      //! virtual destructor ensures use of polymorphism during destruction
+    virtual ~TargetCalculator()
     {};
 
+    void initialize_default_target_matrices(Matrix3D &tri_M3D, Matrix3D &quad_M3D,
+                                    Matrix3D &tet_M3D, Matrix3D &hex_M3D);
+
+//       //!
+//     bool get_next_reference_patch(MsqError &err)
+//     { refMesh->get_next_patch(refPatch, *originator, err); }
+//       //!
+//     void reset_reference_meshset(MsqError &err) { refMesh->reset(err); }
+
+      //! \enum chooses the calculation for the \f$ \lambda_k \f$ coefficient.
+    enum lambda_type {
+      L11, //!< 
+      L12, //!< 
+      L13, //!< 
+      L21, //!< 
+      L22, //!< 
+      L31, //!< 
+      L32, //!< 
+      L41  //!< 
+    };
+      //! Computes the \f$ \lambda \f$ coefficient when it is Mesh-Based,
+    double compute_L(enum lambda_type l_type, MsqError &err);
+      //! Computes the \f$ \lambda \f$ coefficient when it is element-based.
+    void compute_Lk(enum lambda_type l_type, PatchData &ref_pd, size_t elem_ind, double L_k[], int num, MsqError &err);
+    
+      //! \enum chooses the calculation for the \f$ D_k \f$ diagonal matrix.
+    enum D_type {
+      D11, //!<
+      D21, //!<
+      D31, //!<
+      D41, //!<
+      D42, //!<
+      D43, //!<
+      D51, //!<
+      D52, //!<
+      D53  //!<
+    };
+      //! Computes the \f$ D \f$ diagonal matrix when it is Mesh-Based,
+    Matrix3D compute_D(enum D_type l_type, MsqError &err);
+      //! Computes the \f$ D \f$ diagonal matrix when it is element-based ( \f$ D_k \f$ ).
+    void compute_Dk(enum D_type l_type, PatchData &ref_pd, size_t elem_ind, Matrix3D D_k[], int num, MsqError &err);
+    
+      //! chooses the calculation for the \f$ R_k \f$ matrix.
+    enum R_type {
+      R00, //!<
+      R11, //!<
+      R21, //!<
+      R31, //!<
+      R32, //!<
+      R33, //!<
+      R41, //!<
+      R42, //!<
+      R43, //!<
+      R44  //!<
+    };
+      //! Computes the \f$ R \f$ matrix when it is Mesh-Based,
+    Matrix3D compute_R(enum R_type l_type, MsqError &err);
+      //! Computes the \f$ R \f$ matrix when it is element-based ( \f$ R_k \f$ ).
+    void compute_Rk(enum R_type l_type, PatchData &ref_pd, size_t elem_ind, Matrix3D R_k[], int num, MsqError &err);
+    
       //! Compute the default "isotropic" target matrices that are often used in the computation
       //! of reference-based target matrices.
       //! The resulting corner matrices are stored in tags on the elements of the PatchData.
     void compute_default_target_matrices(PatchData &pd, MsqError &err);
-
 
       //! Compute the corner matrices for the reference mesh refMesh.
       //! The refMesh data member is set by the constructors of a concrete TargetCalculator
@@ -106,12 +166,37 @@ namespace Mesquite
 
   protected:
     MeshSet* refMesh;
+    PatchData refPatch;
     
   private:
     PatchDataParameters* originator; //! This is the object the TargetCalculator is attached to.
   };
 
+  
+  inline void TargetCalculator::initialize_default_target_matrices(Matrix3D &tri_M3D,
+                                                      Matrix3D &quad_M3D,
+                                                      Matrix3D &tet_M3D,
+                                                      Matrix3D &hex_M3D)
+  {
+    const double v_tri[] = {1, 0.5, 0, 0, MSQ_SQRT_THREE/2, 0, 0, 0, 0};
+    Matrix3D m1(v_tri);
+    tri_M3D = m1;
+
+    const double v_quad[] = {1, 0, 0, 0, 1, 0, 0, 0, 0};
+    Matrix3D m2(v_quad);
+    quad_M3D = m2;
     
+    const double v_tet[] = {1, 0.5, 0.5, 0, MSQ_SQRT_THREE/2, MSQ_SQRT_THREE/6, 0, 0, MSQ_SQRT_TWO/MSQ_SQRT_THREE};
+    Matrix3D m3(v_tet);
+    tet_M3D = m3;
+
+    const double v_hex[] = {1, 0, 0,  0, 1, 0,  0, 0, 1};
+    Matrix3D m4(v_hex);
+    hex_M3D = m4;
+  }
+
+
+  
 } //namespace
 
 

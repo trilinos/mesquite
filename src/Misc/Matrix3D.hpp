@@ -30,7 +30,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 18-Dec-02 at 11:08:22
-//  LAST-MOD: 15-Apr-04 at 14:53:35 by Thomas Leurent
+//  LAST-MOD: 12-May-04 at 17:09:15 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -203,6 +203,10 @@ namespace Mesquite
       v_[3+j]=c[1];
       v_[6+j]=c[2];
     }
+
+    //! returns the column length -- i is 0-based. 
+    double column_length(int i)
+    { return sqrt( v_[0+i]*v_[0+i] + v_[3+i]*v_[3+i] + v_[6+i]*v_[6+i] ); }
 
     // Matrix Operators
     friend bool operator==(const Matrix3D &lhs, const Matrix3D &rhs);

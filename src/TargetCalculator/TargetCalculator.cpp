@@ -82,18 +82,9 @@ void TargetCalculator::compute_default_target_matrices(PatchData &pd,
   MsqMeshEntity* elems=pd.get_element_array(err);
   size_t num_elements=pd.num_elements();
 
-  const double v_tri[] = {1, 0.5, 0, 0, MSQ_SQRT_THREE/2, 0, 0, 0, 0};
-  Matrix3D tmp_tri(v_tri);
-
-  const double v_quad[] = {1, 0, 0, 0, 1, 0, 0, 0, 0};
-  Matrix3D tmp_quad(v_quad);
-    
-  const double v_tet[] = {1, 0.5, 0.5, 0, MSQ_SQRT_THREE/2, MSQ_SQRT_THREE/6, 0, 0, MSQ_SQRT_TWO/MSQ_SQRT_THREE};
-  Matrix3D tmp_tet(v_tet);
-
-  const double v_hex[] = {1, 0, 0,  0, 1, 0,  0, 0, 1};
-  Matrix3D tmp_hex(v_hex);
-
+  Matrix3D tmp_tri, tmp_quad, tmp_tet, tmp_hex;
+  initialize_default_target_matrices(tmp_tri, tmp_quad, tmp_tet, tmp_hex);
+  
   // set the corner matrices to the correct value for each tag.
   for (size_t i=0; i<num_elements; ++i) {
 
@@ -174,7 +165,302 @@ void TargetCalculator::compute_reference_corner_matrices(PatchData &pd,
       tag->target_matrix(i) = A[i];
     }
   }
-
     
   FUNCTION_TIMER_END();
 }
+
+
+
+
+/*! This function computes the \f$ \lambda \f$ coefficient when it is Mesh-Based, i.e. depends on
+  the whole mesh (e.g. an average of the value on the whole mesh).
+  If called whereas \f$ \lambda \f$ is set to an element-based type, this function returns 1.0, so
+  that is can be called safely in any context.
+  
+  See also the TargetCalculator::compute_Lk function for use when the \f$ \lambda \f$ coefficient
+  is element-based, i.e depends only on the geometry of one element.
+ */
+#undef __FUNC__
+#define __FUNC__ "TargetCalculator::compute_L" 
+double TargetCalculator::compute_L(enum lambda_type l_type, MsqError &err)
+{
+    // Returns 1.0 if a local (element-based) lambda was needed. 
+    switch (l_type) {
+    case L11:
+    case L12:
+    case L13:
+    case L21:
+    case L22:
+      break;
+    case L31:
+    case L32:
+    case L41:
+      return 1.0;
+    }
+
+    // Creates a Global Patch.
+    PatchDataParameters pd_params;
+    PatchData ref_pd;
+    pd_params.set_patch_type(PatchData::GLOBAL_PATCH, err); MSQ_CHKERR(err);
+    refMesh->get_next_patch(ref_pd, pd_params, err ); MSQ_CHKERR(err);
+
+    // Computes lambda 
+    MsqMeshEntity* elems = ref_pd.get_element_array(err); MSQ_CHKERR(err);
+    double lambda=0. ;
+    Matrix3D W_tri, W_quad, W_tet, W_hex;
+    initialize_default_target_matrices(W_tri, W_quad, W_tet, W_hex);
+//     double det_W_tri=det(W_tri);
+//     double det_W_quad=det(W_quad);
+    double det_W_tet=det(W_tet);
+    double det_W_hex=det(W_hex);
+    size_t nb_corners=0;
+    Matrix3D corners[MSQ_MAX_NUM_VERT_PER_ENT];
+
+    switch (l_type) {
+    case L22:
+      for (size_t i=0; i<ref_pd.num_elements(); ++i) {
+        switch( elems[i].get_element_type() ) {
+        case TETRAHEDRON:
+          nb_corners += 4;
+          elems[i].compute_corner_matrices(ref_pd, corners, 4, err); MSQ_CHKERR(err);
+          for (int c=0; c<4; ++c)
+            lambda += det(corners[c]) / det_W_tet;
+          break;
+        case HEXAHEDRON:
+          nb_corners += 8;
+          elems[i].compute_corner_matrices(ref_pd, corners, 8, err); MSQ_CHKERR(err);
+          for (int c=0; c<8; ++c)
+            lambda += det(corners[c]) / det_W_hex;
+          break;
+        default:
+          err.set_msg("L22 not implemented for element type.");
+          return 0;
+        }
+      }
+      return pow(lambda/nb_corners, 1/3);
+      
+    default:
+      err.set_msg("Lambda type not implemented");
+      return 0;
+    }
+
+  }
+    
+
+/*! This function computes the \f$ \lambda \f$ coefficient when it is element-based, , i.e. it
+  depends only on the geometry of one element.
+  If called whereas \f$ \lambda \f$ is set to a mesh-based type, this function returns 1.0, so
+  that is can be called safely in any context.
+  
+  See also the TargetCalculator::compute_L function for use when the \f$ \lambda \f$ coefficient
+  is mesh-based, i.e. depends on  the whole mesh.
+ */
+#undef __FUNC__
+#define __FUNC__ "TargetCalculator::compute_Lk" 
+void TargetCalculator::compute_Lk(enum lambda_type l_type, PatchData &ref_pd,
+                                   size_t elem_ind, double L_k[], int num, MsqError &err)
+  {
+    // Returns 1.0 if a local (element-based) lambda was needed. 
+    switch (l_type) {
+    case L11:
+    case L12:
+    case L13:
+    case L21:
+    case L22:
+      for (int i=0; i<num; ++i)
+        L_k[i] = 1.0;
+      return;
+    case L31:
+    case L32:
+    case L41:
+      err.set_msg("Lambda type not implemented yet");
+      return;
+    }
+
+  }
+
+  
+/*! This function computes the \f$ D \f$ Matrix when it is Mesh-Based, i.e. depends on
+  the whole mesh (e.g. an average of the value on the whole mesh).
+  If called whereas \f$ D \f$ is set to an element-based type, this function returns
+  a 3*3 identity matrix, so that is can be called safely in any context.
+  
+  See also the TargetCalculator::compute_Dk function for use when the \f$ D \f$ diagonal matrix
+  is element-based, i.e depends only on the geometry of one element.
+ */
+#undef __FUNC__
+#define __FUNC__ "TargetCalculator::compute_D" 
+ Matrix3D TargetCalculator::compute_D(enum D_type type, MsqError &err)
+  {
+    // Returns 1.0 if a local (element-based) lambda was needed. 
+    switch (type) {
+    case D11:
+    case D21:
+    case D31:
+      break;
+    case D41:
+    case D42:
+    case D43:
+    case D51:
+    case D52:
+    case D53:
+      Matrix3D id;
+      id[0][0]=1; id[1][1]=1; id[2][2]=1;
+      return id;
+    }
+
+    // Creates a Global Patch.
+    PatchDataParameters pd_params;
+    PatchData ref_pd;
+    pd_params.set_patch_type(PatchData::GLOBAL_PATCH, err); MSQ_CHKERR(err);
+    refMesh->get_next_patch(ref_pd, pd_params, err ); MSQ_CHKERR(err);
+
+    // Compute mesh-based D 
+    switch (type) {
+    default:
+      err.set_msg("D type not implemented");
+      Matrix3D zero;
+      return zero;
+    }
+
+  }
+    
+
+/*! This function computes the \f$ D \f$ diagonal matrix when it is element-based, , i.e. it
+  depends only on the geometry of one element.
+  If called whereas \f$ D \f$ is set to a mesh-based type, this function returns a 3*3 identity
+  matrix, so that is can be called safely in any context.
+  
+  See also the TargetCalculator::compute_D function for use when the \f$ D \f$ coefficient
+  is mesh-based, i.e. depends on  the whole mesh.
+ */
+#undef __FUNC__
+#define __FUNC__ "TargetCalculator::compute_Dk" 
+ void TargetCalculator::compute_Dk(enum D_type type, PatchData &ref_pd, size_t elem_ind,
+                                           Matrix3D D_k[], int num, MsqError &err)
+  {
+    // Returns 1.0 if a global (mesh-based) D was needed. 
+    switch (type) {
+    case D11:
+    case D21:
+    case D31:
+      for (int i=0; i<num; ++i) {
+        D_k[i].zero();
+        D_k[i][0][0]=1; D_k[i][1][1]=1; D_k[i][2][2]=1;
+      }
+      return;
+    case D41:
+    case D42:
+    case D43:
+    case D51:
+    case D52:
+    case D53:
+      break;
+    }
+
+    MsqMeshEntity* elems = ref_pd.get_element_array(err); MSQ_CHKERR(err);
+    Matrix3D corners[MSQ_MAX_NUM_VERT_PER_ENT];
+    size_t nve = elems[elem_ind].vertex_count();
+    
+    switch(type) {
+    case D31:
+      elems[elem_ind].compute_corner_matrices(refPatch, corners, nve, err); MSQ_CHKERR(err);
+      for (size_t c=0; c<nve; ++c) {
+        D_k[c].zero();
+        D_k[c][0][0] = corners[c].column_length(0);
+        D_k[c][1][1] = corners[c].column_length(1);
+        D_k[c][2][2] = corners[c].column_length(2);
+      }
+    default:
+      err.set_msg("D type not implemented.");
+    }
+    
+  }
+
+  
+/*! This function computes the \f$ R \f$ Matrix when it is Mesh-Based, i.e. depends on
+  the whole mesh (e.g. an average of the value on the whole mesh).
+  If called whereas \f$ R \f$ is set to an element-based type, this function returns
+  a 3*3 identity matrix, so that is can be called safely in any context.
+  
+  See also the TargetCalculator::compute_Rk function for use when the \f$ R \f$ diagonal matrix
+  is element-based, i.e depends only on the geometry of one element.
+ */
+#undef __FUNC__
+#define __FUNC__ "TargetCalculator::compute_R" 
+ Matrix3D TargetCalculator::compute_R(enum R_type type, MsqError &err)
+  {
+    // Returns 1.0 if a local (element-based) lambda was needed. 
+    switch (type) {
+    case R11:
+    case R21:
+    case R31:
+    case R32:
+    case R33:
+      break;
+    case R00:
+    case R41:
+    case R42:
+    case R43:
+    case R44:
+      Matrix3D id;
+      id[0][0]=1; id[1][1]=1; id[2][2]=1;
+      return id;
+    }
+
+    // Creates a Global Patch.
+    PatchDataParameters pd_params;
+    PatchData ref_pd;
+    pd_params.set_patch_type(PatchData::GLOBAL_PATCH, err); MSQ_CHKERR(err);
+    refMesh->get_next_patch(ref_pd, pd_params, err ); MSQ_CHKERR(err);
+
+    // Compute mesh-based R 
+    switch (type) {
+    default:
+      err.set_msg("R type not implemented");
+      Matrix3D zero;
+      return zero;
+    }
+
+  }
+    
+
+/*! This function computes the \f$ R \f$ diagonal matrix when it is element-based, , i.e. it
+  depends only on the geometry of one element.
+  If called whereas \f$ R \f$ is set to a mesh-based type, this function returns a 3*3 identity
+  matrix, so that is can be called safely in any context.
+  
+  See also the TargetCalculator::compute_R function for use when the \f$ R \f$ coefficient
+  is mesh-based, i.e. depends on  the whole mesh.
+ */
+#undef __FUNC__
+#define __FUNC__ "TargetCalculator::compute_Rk" 
+ void TargetCalculator::compute_Rk(enum R_type type, PatchData &ref_pd, size_t elem_ind,
+                                           Matrix3D R_k[], int num, MsqError &err)
+  {
+    // Returns 1.0 if a global (mesh-based) R was needed. 
+    switch (type) {
+    case R00:
+    case R11:
+    case R21:
+    case R31:
+    case R32:
+    case R33:
+      for (int i=0; i<num; ++i) {
+        R_k[i].zero();
+        R_k[i][0][0]=1; R_k[i][1][1]=1; R_k[i][2][2]=1;
+      }
+      return;
+    case R41:
+    case R42:
+    case R43:
+    case R44:
+      break;
+    }
+
+    switch(type) {
+    default:
+      err.set_msg("R type not implemented.");
+    }
+    
+  }
