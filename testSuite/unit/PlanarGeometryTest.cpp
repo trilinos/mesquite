@@ -31,8 +31,9 @@ SimplifiedGeometryEngine.
 #include "InstructionQueue.hpp"
 #include "MeshSet.hpp"
 #include "PatchData.hpp"
-#include "StoppingCriterion.hpp"
+//#include "StoppingCriterion.hpp"
 #include "QualityAssessor.hpp"
+#include "MsqMessage.hpp"
 
 #include "InverseMeanRatioQualityMetric.hpp"
 #include "GeneralizedConditionNumberQualityMetric.hpp"
@@ -140,15 +141,25 @@ public:
        qa.disable_printing_results();
      }  
        //**********Set stopping criterion  untangle ver small ********
-     StoppingCriterion sc_qa(&stop_qa,-100,MSQ_MIN);
-     pass1->set_stopping_criterion(&sc_qa);
+       //StoppingCriterion sc_qa(&stop_qa,-100,MSQ_MIN);
+       //pass1->set_stopping_criterion(&sc_qa);
+     TerminationCriterion sc_of;
+     sc_of.add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,10,err);
+     pass1->set_outer_termination_criterion(&sc_of);
+     
        //**********Set stopping criterion  5 iterates ****************
-     StoppingCriterion sc5(StoppingCriterion::NUMBER_OF_PASSES,5);
-     pass2->set_stopping_criterion(&sc5);
+       //StoppingCriterion sc5(StoppingCriterion::NUMBER_OF_PASSES,5);
+       //pass2->set_stopping_criterion(&sc5);
+     TerminationCriterion sc5;
+     sc5.add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,5,err);
+     pass2->set_inner_termination_criterion(&sc5);
        // sets a culling method on the first QualityImprover
      pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
      pass2->add_culling_method(PatchData::NO_BOUNDARY_VTX);
-     pass2->set_maximum_iteration(5);
+       //TerminationCriterion sc_inner;
+       //sc_inner.add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,5,err);
+       //pass2->set_inner_termination_criterion(&sc_inner);
+       //pass2->set_maximum_iteration(5);
   
      queue1.set_master_quality_improver(pass1, err); MSQ_CHKERR(err);
      queue2.set_master_quality_improver(pass2, err); MSQ_CHKERR(err);
@@ -185,6 +196,7 @@ public:
      CPPUNIT_ASSERT(!err.errorOn);
        //make sure 'quality' improved
      CPPUNIT_ASSERT( (fin_qa_val-orig_qa_val) <= 0.0 );
+     PRINT_TIMING_DIAGNOSTICS();
      
    }
   
@@ -228,8 +240,8 @@ public:
        CPPUNIT_ASSERT(!err.errorOn);
        shape_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
          // creates the cg optimization procedures
-       ConjugateGradient* pass1 = new ConjugateGradient( untan_func );
-       ConjugateGradient* pass2 = new ConjugateGradient( shape_func );
+       ConjugateGradient* pass1 = new ConjugateGradient( untan_func, err );
+       ConjugateGradient* pass2 = new ConjugateGradient( shape_func, err );
        pass1->set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err,1 ,1);
        pass2->set_patch_type(PatchData::GLOBAL_PATCH, err,1 ,1);
          //Make sure no errors
@@ -240,18 +252,27 @@ public:
        if(pF==0){
          stop_qa.disable_printing_results();
          qa.disable_printing_results();
-       }  
-         //**********Set stopping criterion  untangle ver small ********
-       StoppingCriterion sc_qa(&stop_qa,-100,MSQ_MIN);
-       pass1->set_stopping_criterion(&sc_qa);
+       }
+       //**********Set stopping criterion  untangle ver small ********
+       //StoppingCriterion sc_qa(&stop_qa,-100,MSQ_MIN);
+       //pass1->set_stopping_criterion(&sc_qa);
+       TerminationCriterion sc_of;
+       sc_of.add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,10,err);
+       pass1->set_outer_termination_criterion(&sc_of);
+       
          //**********Set stopping criterion  5 iterates ****************
-       StoppingCriterion sc5(StoppingCriterion::NUMBER_OF_PASSES,5);
-       pass2->set_stopping_criterion(&sc5);
+         //StoppingCriterion sc5(StoppingCriterion::NUMBER_OF_PASSES,5);
+         //pass2->set_stopping_criterion(&sc5);
+       TerminationCriterion sc5;
+       sc5.add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,5,err);
+       pass2->set_inner_termination_criterion(&sc5);
          // sets a culling method on the first QualityImprover
        pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
        pass2->add_culling_method(PatchData::NO_BOUNDARY_VTX);
-       pass2->set_maximum_iteration(5);
-       
+         //pass2->set_maximum_iteration(5);
+         //TerminationCriterion sc_inner;
+         //sc_inner.add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,5,err);
+         //pass2->set_inner_termination_criterion(&sc_inner);
        queue1.set_master_quality_improver(pass1, err); MSQ_CHKERR(err);
        queue2.set_master_quality_improver(pass2, err); MSQ_CHKERR(err);
          //********************UNTANGLE*******************************
@@ -287,6 +308,7 @@ public:
        CPPUNIT_ASSERT(!err.errorOn);
          //make sure 'quality' improved
        CPPUNIT_ASSERT( (fin_qa_val-orig_qa_val) <= 0.0 );
+       PRINT_TIMING_DIAGNOSTICS();
      }
   
   void test_plane_tri_xz()
@@ -328,21 +350,26 @@ public:
        CPPUNIT_ASSERT(!err.errorOn);
        smooth_func->set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
          // creates the cg optimization procedures
-       ConjugateGradient* pass1 = new ConjugateGradient( smooth_func );
+       ConjugateGradient* pass1 = new ConjugateGradient( smooth_func, err );
          //pass1->set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err,1 ,1);
        pass1->set_patch_type(PatchData::GLOBAL_PATCH, err,1 ,1);
-       pass1->set_debugging_level(0);
-       pass1->set_patch_type(PatchData::GLOBAL_PATCH, err,1 ,1);
+       pass1->set_debugging_level(1);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
        QualityAssessor qa=QualityAssessor(smooth,QualityAssessor::AVERAGE);
        
          //**********Set stopping criterion  5 iterates ****************
-       StoppingCriterion sc5(StoppingCriterion::NUMBER_OF_PASSES,5);
-       pass1->set_stopping_criterion(&sc5);
+       TerminationCriterion sc5;
+       sc5.add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,5,err);
+       pass1->set_inner_termination_criterion(&sc5);
+         //StoppingCriterion sc5(StoppingCriterion::NUMBER_OF_PASSES,5);
+         //pass1->set_stopping_criterion(&sc5);
          // sets a culling method on the first QualityImprover
        pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
-       pass1->set_maximum_iteration(5);
+       TerminationCriterion sc_inner;
+       sc_inner.add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,5,err);
+       pass1->set_inner_termination_criterion(&sc_inner);
+         //pass1->set_maximum_iteration(5);
        
        queue1.set_master_quality_improver(pass1, err); MSQ_CHKERR(err);
          //********************UNTANGLE*******************************
@@ -360,7 +387,7 @@ public:
        CPPUNIT_ASSERT(!err.errorOn);
          //make sure 'quality' improved
        CPPUNIT_ASSERT( (fin_qa_val-orig_qa_val) <= 0.0 );
-       
+       PRINT_TIMING_DIAGNOSTICS();
      }
   
    

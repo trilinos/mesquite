@@ -41,7 +41,8 @@ private:
    CPPUNIT_TEST (test_get_vertex_element_indices);
    CPPUNIT_TEST (test_get_element_vertex_coordinates);
    CPPUNIT_TEST (test_move_vertices);
-   CPPUNIT_TEST (test_get_adj_elems_2d);
+  CPPUNIT_TEST (test_movement_function);
+  CPPUNIT_TEST (test_get_adj_elems_2d);
   
    CPPUNIT_TEST_SUITE_END();
    
@@ -263,6 +264,42 @@ public:
 
       delete coords_mem;
    }
+
+#undef __FUNC__
+#define __FUNC__ "PatchDataTest::test_max_movement_function" 
+   void test_movement_function()
+   {
+      MsqError err;
+      // gets a memento of the patch coordinates.
+      PatchDataVerticesMemento* coords_mem = mPatch2D.create_vertices_memento(err);
+      MSQ_CHKERR(err);
+      
+      // Move the two first vertices in direction dk by step size s;
+      Vector3D dk[2];
+      dk[0].set(0,-2,0);
+      dk[1].set(-1,0,0);
+      double s = 1;
+      mPatch2D.move_vertices(dk, 2, 1, err); MSQ_CHKERR(err);
+      // gets the new coordinates and  checks the vertices were displaced as expected.
+      std::vector< Vector3D > coords;
+      mPatch2D.get_element_vertex_coordinates(0, coords,err);
+      Vector3D new_vtx_0_0 = vtx_0_0 + s*dk[0];
+      Vector3D new_vtx_0_1 = vtx_0_1 + s*dk[1];
+      CPPUNIT_ASSERT(coords[0] == new_vtx_0_0);
+      CPPUNIT_ASSERT(coords[2] == new_vtx_0_1);
+      double m_dist=mPatch2D.get_max_vertex_movement_squared(coords_mem,err);
+      CPPUNIT_ASSERT(m_dist==4.0);
+      // restore the PatchData to previous coords.
+      mPatch2D.set_to_vertices_memento(coords_mem, err); MSQ_CHKERR(err);
+      // gets the new coordinates and  checks the vertices are back to original.
+      coords.clear();
+      mPatch2D.get_element_vertex_coordinates(0, coords,err);
+      CPPUNIT_ASSERT(coords[0] == vtx_0_0);
+      CPPUNIT_ASSERT(coords[2] == vtx_0_1);
+
+      delete coords_mem;
+   }
+  
 /*Tests the function PatchData::get_adjacent_entities_via_n_dim()
   which finds the elements adjacent to a given element.  If 'n'
   equals 0 the elements must share a vertex; if 'n' equals 1 the

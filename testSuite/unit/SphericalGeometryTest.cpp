@@ -31,7 +31,7 @@ SimplifiedGeometryEngine.
 #include "InstructionQueue.hpp"
 #include "MeshSet.hpp"
 #include "PatchData.hpp"
-#include "StoppingCriterion.hpp"
+//#include "StoppingCriterion.hpp"
 #include "QualityAssessor.hpp"
 
 #include "InverseMeanRatioQualityMetric.hpp"
@@ -122,7 +122,7 @@ public:
      CPPUNIT_ASSERT(!err.errorOn);
      obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
        // creates the steepest descent optimization procedures
-     ConjugateGradient* pass1 = new ConjugateGradient( obj_func );
+     ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
        //SteepestDescent* pass2 = new SteepestDescent( obj_func );
      pass1->set_patch_type(PatchData::GLOBAL_PATCH, err,1 ,1);
        //Make sure no errors
@@ -130,8 +130,12 @@ public:
      QualityAssessor qa=QualityAssessor(shape,QualityAssessor::MAXIMUM);
      
        //**********Set stopping criterion  5 iterates ****************
-     StoppingCriterion sc5(StoppingCriterion::NUMBER_OF_PASSES,5);
-     pass1->set_stopping_criterion(&sc5);
+       //StoppingCriterion sc5(StoppingCriterion::NUMBER_OF_PASSES,5);
+       //pass1->set_stopping_criterion(&sc5);
+     TerminationCriterion sc5;
+     sc5.add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,
+                                     5,err);
+     pass1->set_inner_termination_criterion(&sc5);
        // sets a culling method on the first QualityImprover
      pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
      pass1->set_maximum_iteration(5);
@@ -197,8 +201,12 @@ public:
        QualityAssessor qa=QualityAssessor(edg_len,QualityAssessor::RMS);
 
          //*******Set stopping criterion 10 iterates  ***********
-       StoppingCriterion sc10(StoppingCriterion::NUMBER_OF_PASSES,10);
-       lapl->set_stopping_criterion(&sc10);
+         //StoppingCriterion sc10(StoppingCriterion::NUMBER_OF_PASSES,10);
+         //lapl->set_stopping_criterion(&sc10);
+       TerminationCriterion sc10;
+       sc10.add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,
+                                        10,err);
+       lapl->set_outer_termination_criterion(&sc10);
          // sets a culling method on the laplacian quality improver
        lapl->add_culling_method(PatchData::NO_BOUNDARY_VTX);  
          //qa, qi, qa
