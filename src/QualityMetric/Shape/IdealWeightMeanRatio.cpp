@@ -25,20 +25,21 @@
    
   ***************************************************************** */
 /*!
-  \file   MeanRatioQualityMetric.cpp
+  \file   IdealWeightMeanRatio.cpp
   \brief  
 
   \author Michael Brewer
-  \author Todd Munson
-  \author Thomas Leurent
-
-  \date   2002-06-9
+  \date   2002-11-11
 */
-#include "MeanRatioQualityMetric.hpp"
+#include "IdealWeightMeanRatio.hpp"
 #include "MeanRatioFunctions.hpp"
+#include "Vector3D.hpp"
+#include "ShapeQualityMetric.hpp"
+#include "QualityMetric.hpp"
 #include "MsqTimer.hpp"
 #include "MsqDebug.hpp"
 
+#include <math.h>
 #ifdef MSQ_USE_OLD_STD_HEADERS
 #  include <vector.h>
 #else
@@ -46,64 +47,16 @@
    using std::vector;
 #endif
 
-#include <math.h>
+using namespace Mesquite;
 
-namespace Mesquite {
-
-MeanRatioQualityMetric::MeanRatioQualityMetric( MsqError& err, double pow_dbl )
-{
-  set_metric_type(ELEMENT_BASED);
-  set_element_evaluation_mode(ELEMENT_VERTICES, err); MSQ_ERRRTN(err);
-
-  set_gradient_type(ANALYTICAL_GRADIENT);
-  set_hessian_type(ANALYTICAL_HESSIAN);
-  avgMethod=QualityMetric::LINEAR;
-  feasible=1;
-  set_name("Mean Ratio");
-
-    //Note:  the following are redundant since set_metric_power is called
-  set_negate_flag(1);
-
-  a2Con =  1.0 / 2.0;
-  b2Con =  1.0;
-  c2Con = -1.0;
-
-  a3Con =  1.0 / 3.0;
-  b3Con =  1.0;
-  c3Con = -2.0 / 3.0;
-    //the above are redundant since set_metric_power is called
-
-  set_metric_power(pow_dbl, err);  MSQ_ERRRTN(err);
-}
-
-       //! Sets the power value in the metric computation.
-void MeanRatioQualityMetric::set_metric_power(double pow_dbl, MsqError& err)
-{
-  if(fabs(pow_dbl)<=MSQ_MIN){
-    MSQ_SETERR(err)(MsqError::INVALID_ARG);
-    return;
-  }
-  if(pow_dbl<0)
-    set_negate_flag(-1);
-  else
-    set_negate_flag(1);
-  a2Con=pow(.5,pow_dbl);
-  b2Con=pow_dbl;
-  c2Con=-pow_dbl;
-  a3Con=pow(1.0/3.0,pow_dbl);
-  b3Con=pow_dbl;
-  c3Con=-2.0*pow_dbl/3.0;
-}
-
-
-bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
-                                              MsqMeshEntity *e,
-                                              double &m,
-                                              MsqError &err)
+bool IdealWeightMeanRatio::evaluate_element(PatchData &pd,
+						     MsqMeshEntity *e,
+						     double &m,
+						     MsqError &err)
 {
   EntityTopology topo = e->get_element_type();
 
-  MsqVertex *vertices = pd.get_vertex_array(err);  MSQ_ERRZERO(err);
+  MsqVertex *vertices = pd.get_vertex_array(err);
   const size_t *v_i = e->get_vertex_index_array();
 
   Vector3D n;			// Surface normal for 2D objects
@@ -118,6 +71,14 @@ bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
 				     {6, 5, 7, 2},
 				     {7, 6, 4, 3}};
 
+  const double a2_con =  2.0;
+  const double b2_con = -1.0;
+  const double c2_con =  1.0;
+
+  const double a3_con =  3.0;
+  const double b3_con = -1.0;
+  const double c3_con =  2.0 / 3.0;
+
   const Vector3D d_con(1.0, 1.0, 1.0);
 
   int i;
@@ -131,22 +92,22 @@ bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
     mCoords[0] = vertices[v_i[0]];
     mCoords[1] = vertices[v_i[1]];
     mCoords[2] = vertices[v_i[2]];
-    metric_valid = m_fcn_2e(m, mCoords, n, a2Con, b2Con, c2Con);
+    metric_valid = m_fcn_2e(m, mCoords, n, a2_con, b2_con, c2_con);
     if (!metric_valid) return false;
     break;
     
   case QUADRILATERAL:
     pd.get_domain_normal_at_element(e, n, err); MSQ_ERRZERO(err);
-    n = n / n.length();	// Need unit normal
     for (i = 0; i < 4; ++i) {
+      n = n / n.length();	// Need unit normal
       mCoords[0] = vertices[v_i[locs_hex[i][0]]];
       mCoords[1] = vertices[v_i[locs_hex[i][1]]];
       mCoords[2] = vertices[v_i[locs_hex[i][2]]];
       metric_valid = m_fcn_2i(mMetrics[i], mCoords, n, 
-			      a2Con, b2Con, c2Con, d_con);
+			      a2_con, b2_con, c2_con, d_con);
       if (!metric_valid) return false;
     }
-    m = average_metrics(mMetrics, 4, err);
+    m = average_metrics(mMetrics, 4, err); MSQ_ERRZERO(err);
     break;
 
   case TETRAHEDRON:
@@ -154,7 +115,7 @@ bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
     mCoords[1] = vertices[v_i[1]];
     mCoords[2] = vertices[v_i[2]];
     mCoords[3] = vertices[v_i[3]];
-    metric_valid = m_fcn_3e(m, mCoords, a3Con, b3Con, c3Con);
+    metric_valid = m_fcn_3e(m, mCoords, a3_con, b3_con, c3_con);
     if (!metric_valid) return false;
     break;
 
@@ -165,7 +126,7 @@ bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
       mCoords[2] = vertices[v_i[locs_hex[i][2]]];
       mCoords[3] = vertices[v_i[locs_hex[i][3]]];
       metric_valid = m_fcn_3i(mMetrics[i], mCoords, 
-			      a3Con, b3Con, c3Con, d_con);
+			      a3_con, b3_con, c3_con, d_con);
       if (!metric_valid) return false;
     }
     m = average_metrics(mMetrics, 8, err); MSQ_ERRZERO(err);
@@ -177,24 +138,25 @@ bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
   return true;
 }
 
-bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
-								 MsqMeshEntity *e,
-								 MsqVertex *v[], 
-								 Vector3D g[],
-								 int nv, 
-								 double &m,
-                         MsqError &err)
+bool IdealWeightMeanRatio::compute_element_analytical_gradient(PatchData &pd,
+									MsqMeshEntity *e,
+									MsqVertex *v[], 
+									Vector3D g[],
+									int nv, 
+									double &m,
+									MsqError &err)
 {
+//  FUNCTION_TIMER_START(__FUNC__);
   EntityTopology topo = e->get_element_type();
 
   if (((topo == QUADRILATERAL) || (topo == HEXAHEDRON)) && 
       ((avgMethod == MINIMUM) || (avgMethod == MAXIMUM))) {
-    MSQ_DBGOUT(1) <<
+    MSQ_PRINT(1)(
       "Minimum and maximum not continuously differentiable.\n"
-      "Element of subdifferential will be returned.\n";
+      "Element of subdifferential will be returned.\n");
   }
 
-  MsqVertex *vertices = pd.get_vertex_array(err);  MSQ_ERRZERO(err);
+  MsqVertex *vertices = pd.get_vertex_array(err);
   const size_t *v_i = e->get_vertex_index_array();
 
   Vector3D n;			// Surface normal for 2D objects
@@ -211,6 +173,14 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 				     {6, 5, 7, 2},
 				     {7, 6, 4, 3}};
 
+  const double a2_con =  2.0;
+  const double b2_con = -1.0;
+  const double c2_con =  1.0;
+
+  const double a3_con =  3.0;
+  const double b3_con = -1.0;
+  const double c3_con =  2.0 / 3.0;
+
   const Vector3D d_con(1.0, 1.0, 1.0);
 
   int i, j;
@@ -226,7 +196,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
     mCoords[0] = vertices[v_i[0]];
     mCoords[1] = vertices[v_i[1]];
     mCoords[2] = vertices[v_i[2]];
-    if (!g_fcn_2e(m, mAccumGrad, mCoords, n, a2Con, b2Con, c2Con)) return false;
+    if (!g_fcn_2e(m, mAccumGrad, mCoords, n, a2_con, b2_con, c2_con)) return false;
 
     // This is not very efficient, but is one way to select correct gradients.
     // For gradients, info is returned only for free vertices, in the 
@@ -250,7 +220,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
       mCoords[1] = vertices[v_i[locs_hex[i][1]]];
       mCoords[2] = vertices[v_i[locs_hex[i][2]]];
       if (!g_fcn_2i(mMetrics[i], mGradients+3*i, mCoords, n,
-		    a2Con, b2Con, c2Con, d_con)) return false;
+		    a2_con, b2_con, c2_con, d_con)) return false;
     }
 
     switch(avgMethod) {
@@ -309,20 +279,6 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
       }
       break;
 
-    case SUM_SQUARED:
-      m = 0;
-      for (i = 0; i < 4; ++i) {
-        m += (mMetrics[i]*mMetrics[i]);
-	mMetrics[i] *= 2.0; 
-      }
-
-      for (i = 0; i < 4; ++i) {
-        mAccumGrad[locs_hex[i][0]] += mMetrics[i]*mGradients[3*i+0];
-        mAccumGrad[locs_hex[i][1]] += mMetrics[i]*mGradients[3*i+1];
-        mAccumGrad[locs_hex[i][2]] += mMetrics[i]*mGradients[3*i+2];
-      }
-      break;
-
     case LINEAR:
       m = 0;
       for (i = 0; i < 4; ++i) {
@@ -331,9 +287,9 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
       m *= 0.25;
       
       for (i = 0; i < 4; ++i) {
-        mAccumGrad[locs_hex[i][0]] += 0.25*mGradients[3*i+0];
-        mAccumGrad[locs_hex[i][1]] += 0.25*mGradients[3*i+1];
-        mAccumGrad[locs_hex[i][2]] += 0.25*mGradients[3*i+2];
+        mAccumGrad[locs_hex[i][0]] += mGradients[3*i+0] *0.25;
+        mAccumGrad[locs_hex[i][1]] += mGradients[3*i+1] *0.25;
+        mAccumGrad[locs_hex[i][2]] += mGradients[3*i+2] *0.25;
       }
       break;
 
@@ -370,9 +326,8 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
       case HMS:
         t = -2.0;
         break;
-
       default:
-        MSQ_SETERR(err)("averaging method not available.",MsqError::INVALID_STATE);
+        MSQ_SETERR(err)("averaging method not available.", MsqError::INVALID_STATE);
         return false;
         break;
       }
@@ -382,18 +337,19 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
         nm = pow(mMetrics[i], t);
         m += nm;
 
-        mMetrics[i] = 0.25*t*nm/mMetrics[i];
+        mMetrics[i] = t*nm/mMetrics[i];
       }
 
-      nm = 0.25 * m;
+      nm = m / 4.0;
+      m = pow(nm, 1.0 / t);
+
       for (i = 0; i < 4; ++i) {
         mAccumGrad[locs_hex[i][0]] += mMetrics[i]*mGradients[3*i+0];
         mAccumGrad[locs_hex[i][1]] += mMetrics[i]*mGradients[3*i+1];
         mAccumGrad[locs_hex[i][2]] += mMetrics[i]*mGradients[3*i+2];
       }
 
-      m = pow(nm, 1.0 / t);
-      nm = m / (t*nm);
+      nm = m / (4.0*nm*t);
       for (i = 0; i < 4; ++i) {
         mAccumGrad[i] *= nm;
       }
@@ -416,7 +372,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
     mCoords[1] = vertices[v_i[1]];
     mCoords[2] = vertices[v_i[2]];
     mCoords[3] = vertices[v_i[3]];
-    metric_valid = g_fcn_3e(m, mAccumGrad, mCoords, a3Con, b3Con, c3Con);
+    metric_valid = g_fcn_3e(m, mAccumGrad, mCoords, a3_con, b3_con, c3_con);
     if (!metric_valid) return false;
 
     // This is not very efficient, but is one way to select correct gradients.
@@ -440,7 +396,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
       mCoords[2] = vertices[v_i[locs_hex[i][2]]];
       mCoords[3] = vertices[v_i[locs_hex[i][3]]];
       if (!g_fcn_3i(mMetrics[i], mGradients+4*i, mCoords, 
-		    a3Con, b3Con, c3Con, d_con)) return false;
+		    a3_con, b3_con, c3_con, d_con)) return false;
     }
 
     switch(avgMethod) {
@@ -502,21 +458,6 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
       }
       break;
 
-    case SUM_SQUARED:
-      m = 0;
-      for (i = 0; i < 8; ++i) {
-        m += (mMetrics[i]*mMetrics[i]);
-	mMetrics[i] *= 2.0;
-      }
-
-      for (i = 0; i < 8; ++i) {
-        mAccumGrad[locs_hex[i][0]] += mMetrics[i]*mGradients[4*i+0];
-        mAccumGrad[locs_hex[i][1]] += mMetrics[i]*mGradients[4*i+1];
-        mAccumGrad[locs_hex[i][2]] += mMetrics[i]*mGradients[4*i+2];
-        mAccumGrad[locs_hex[i][3]] += mMetrics[i]*mGradients[4*i+3];
-      }
-      break;
-
     case LINEAR:
       m = 0;
       for (i = 0; i < 8; ++i) {
@@ -525,10 +466,10 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
       m *= 0.125;
 
       for (i = 0; i < 8; ++i) {
-        mAccumGrad[locs_hex[i][0]] += 0.125*mGradients[4*i+0];
-        mAccumGrad[locs_hex[i][1]] += 0.125*mGradients[4*i+1];
-        mAccumGrad[locs_hex[i][2]] += 0.125*mGradients[4*i+2];
-        mAccumGrad[locs_hex[i][3]] += 0.125*mGradients[4*i+3];
+        mAccumGrad[locs_hex[i][0]] += mGradients[4*i+0] *0.125;
+        mAccumGrad[locs_hex[i][1]] += mGradients[4*i+1] *0.125;
+        mAccumGrad[locs_hex[i][2]] += mGradients[4*i+2] *0.125;
+        mAccumGrad[locs_hex[i][3]] += mGradients[4*i+3] *0.125;
       }
       break;
 
@@ -567,7 +508,8 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
         t = -2.0;
         break;
       default:
-        MSQ_SETERR(err)("averaging method not available.",MsqError::INVALID_STATE);
+        MSQ_SETERR(err)("averaging method not available.", MsqError::INVALID_STATE);
+        return false;
         break;
       }
 
@@ -576,10 +518,12 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
         nm = pow(mMetrics[i], t);
         m += nm;
 
-        mMetrics[i] = 0.125*t*nm/mMetrics[i];
+        mMetrics[i] = t*nm/mMetrics[i];
       }
 
-      nm = 0.125 * m;
+      nm = m / 8.0;
+      m = pow(nm, 1.0 / t);
+
       for (i = 0; i < 8; ++i) {
         mAccumGrad[locs_hex[i][0]] += mMetrics[i]*mGradients[4*i+0];
         mAccumGrad[locs_hex[i][1]] += mMetrics[i]*mGradients[4*i+1];
@@ -587,8 +531,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
         mAccumGrad[locs_hex[i][3]] += mMetrics[i]*mGradients[4*i+3];
       }
 
-      m = pow(nm, 1.0 / t);
-      nm = m / (t*nm);
+      nm = m / (8.0*nm*t);
       for (i = 0; i < 8; ++i) {
         mAccumGrad[i] *= nm;
       }
@@ -610,36 +553,36 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
     break;
   } // end switch over element type
 
+//  FUNCTION_TIMER_END();
   return true;
 }
 
 
-bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
-								MsqMeshEntity *e,
-								MsqVertex *fv[], 
-								Vector3D g[],
-								Matrix3D h[],
-                                                                int nfv, 
-								double &m,
-								MsqError &err)
+bool IdealWeightMeanRatio::compute_element_analytical_hessian(PatchData &pd,
+								       MsqMeshEntity *e,
+								       MsqVertex *fv[], 
+								       Vector3D g[],
+								       Matrix3D h[],
+								       int /*nfv*/, 
+								       double &m,
+								       MsqError &err)
 {
+//  FUNCTION_TIMER_START(__FUNC__);
   EntityTopology topo = e->get_element_type();
 
   if (((topo == QUADRILATERAL) || (topo == HEXAHEDRON)) && 
       ((avgMethod == MINIMUM) || (avgMethod == MAXIMUM))) {
-    MSQ_DBGOUT(1) <<
+    MSQ_PRINT(1)(
       "Minimum and maximum not continuously differentiable.\n"
       "Element of subdifferential will be returned.\n"
-      "Who knows what the Hessian is?\n" ;
+      "Who knows what the Hessian is?\n" );
   }
 
-  MsqVertex *vertices = pd.get_vertex_array(err);  MSQ_ERRZERO(err);
+  MsqVertex *vertices = pd.get_vertex_array(err);
   const size_t *v_i = e->get_vertex_index_array();
 
 
   Vector3D n;			// Surface normal for 2D objects
-  Matrix3D outer;
-  double   nm, t=0;
 
   // Hex element descriptions
   static const int locs_hex[8][4] = {{0, 1, 3, 4},  
@@ -650,6 +593,14 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 				     {5, 4, 6, 1},
 				     {6, 5, 7, 2},
 				     {7, 6, 4, 3}};
+
+  const double a2_con =  2.0;
+  const double b2_con = -1.0;
+  const double c2_con =  1.0;
+
+  const double a3_con =  3.0;
+  const double b3_con = -1.0;
+  const double c3_con =  2.0 / 3.0;
 
   const Vector3D d_con(1.0, 1.0, 1.0);
 
@@ -667,13 +618,13 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     mCoords[0] = vertices[v_i[0]];
     mCoords[1] = vertices[v_i[1]];
     mCoords[2] = vertices[v_i[2]];
-    if (!h_fcn_2e(m, g, h, mCoords, n, a2Con, b2Con, c2Con)) return false;
+    if (!h_fcn_2e(m, g, h, mCoords, n, a2_con, b2_con, c2_con)) return false;
 
     // zero out fixed elements of g
     j = 0;
     for (i = 0; i < 3; ++i) {
       // if free vertex, see next
-      if (j<nfv && vertices + v_i[i] == fv[j] )
+      if (vertices + v_i[i] == fv[j] )
         ++j;
       // else zero gradient and Hessian entries
       else {
@@ -709,16 +660,16 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
       mCoords[1] = vertices[v_i[locs_hex[i][1]]];
       mCoords[2] = vertices[v_i[locs_hex[i][2]]];
       if (!h_fcn_2i(mMetrics[i], mGradients+3*i, mHessians+6*i, mCoords, n,
-		    a2Con, b2Con, c2Con, d_con)) return false;
+		    a2_con, b2_con, c2_con, d_con)) return false;
     }
 
     switch(avgMethod) {
     case MINIMUM:
-      MSQ_SETERR(err)("MINIMUM averaging method does not work.",MsqError::INVALID_STATE);
+      MSQ_SETERR(err)("MINIMUM averaging method does not work.", MsqError::INVALID_STATE);
       return false;
 
     case MAXIMUM:
-      MSQ_SETERR(err)("MAXIMUM averaging method does not work.",MsqError::INVALID_STATE);
+      MSQ_SETERR(err)("MAXIMUM averaging method does not work.", MsqError::INVALID_STATE);
       return false;
 
     case SUM:
@@ -752,41 +703,6 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
       }
       break;
 
-    case SUM_SQUARED:
-      m = 0;
-      for (i = 0; i < 4; ++i) {
-        m += (mMetrics[i]*mMetrics[i]);
-	mMetrics[i] *= 2;
-      }
-
-      l = 0;
-      for (i = 0; i < 4; ++i) {
-        g[locs_hex[i][0]] += mMetrics[i]*mGradients[3*i+0];
-        g[locs_hex[i][1]] += mMetrics[i]*mGradients[3*i+1];
-        g[locs_hex[i][2]] += mMetrics[i]*mGradients[3*i+2];
-
-        for (j = 0; j < 3; ++j) {
-          for (k = j; k < 3; ++k) {
-	    outer = 2.0*outer.outer_product(mGradients[3*i+j], 
-					    mGradients[3*i+k]);
-	    
-            r = locs_hex[i][j];
-            c = locs_hex[i][k];
-
-            if (r <= c) {
-              loc = 4*r - (r*(r+1)/2) + c;
-              h[loc] += mMetrics[i]*mHessians[l] + outer;
-            } 
-            else {
-              loc = 4*c - (c*(c+1)/2) + r;
-              h[loc] += transpose(mMetrics[i]*mHessians[l] + outer);
-            }
-            ++l;
-          }
-        }
-      }
-      break;
-
     case LINEAR:
       m = 0;
       for (i = 0; i < 4; ++i) {
@@ -796,9 +712,9 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 
       l = 0;
       for (i = 0; i < 4; ++i) {
-        g[locs_hex[i][0]] += 0.25*mGradients[3*i+0];
-        g[locs_hex[i][1]] += 0.25*mGradients[3*i+1];
-        g[locs_hex[i][2]] += 0.25*mGradients[3*i+2];
+        g[locs_hex[i][0]] += mGradients[3*i+0] *0.25;
+        g[locs_hex[i][1]] += mGradients[3*i+1] *0.25;
+        g[locs_hex[i][2]] += mGradients[3*i+2] *0.25;
 
         for (j = 0; j < 3; ++j) {
           for (k = j; k < 3; ++k) {
@@ -817,10 +733,8 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
           }
         }
       }
-
-      for (i=0; i<10; ++i) {
+      for (i=0; i<10; ++i)
         h[i] *= 0.25;
-      }
       break;
 
     case GEOMETRIC:
@@ -828,83 +742,15 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
       return false;
 
     default:
-      switch(avgMethod) {
-      case RMS:
-	t = 2.0;
-	break;
-
-      case HARMONIC:
-	t = -1.0;
-	break;
-
-      case HMS:
-	t = -2.0;
-	break;
-
-      default:
-        MSQ_SETERR(err)("averaging method not available.",MsqError::NOT_IMPLEMENTED);
-        break;
-      }
-
-      m = 0;
-      for (i = 0; i < 4; ++i) {
-	nm = pow(mMetrics[i], t);
-	m += nm;
-
-	g_factor[i] = 0.25*t*nm / mMetrics[i];
-	h_factor[i] = (t-1)*g_factor[i] / mMetrics[i];
-      }
-
-      nm = 0.25 * m;
-
-      l = 0;
-      for (i = 0; i < 4; ++i) {
-        g[locs_hex[i][0]] += g_factor[i]*mGradients[3*i+0];
-	g[locs_hex[i][1]] += g_factor[i]*mGradients[3*i+1];
-	g[locs_hex[i][2]] += g_factor[i]*mGradients[3*i+2];
-
-        for (j = 0; j < 3; ++j) {
-          for (k = j; k < 3; ++k) {
-	    outer = h_factor[i] * outer.outer_product(mGradients[3*i+j], 
-						      mGradients[3*i+k]);
-	    
-            r = locs_hex[i][j];
-            c = locs_hex[i][k];
-
-            if (r <= c) {
-              loc = 4*r - (r*(r+1)/2) + c;
-              h[loc] += g_factor[i]*mHessians[l] + outer;
-            } 
-            else {
-              loc = 4*c - (c*(c+1)/2) + r;
-              h[loc] += transpose(g_factor[i]*mHessians[l] + outer);
-            }
-            ++l;
-          }
-        }
-      }
-
-      m = pow(nm, 1.0 / t);
-      g_factor[0] = m / (t*nm);
-      h_factor[0] = (1.0 / t - 1)*g_factor[0] / nm;
-
-      l = 0;
-      for (i = 0; i < 4; ++i) {
-	for (j = i; j < 4; ++j) {
-	  outer = outer.outer_product(g[i], g[j]);
-	  h[l] = g_factor[0]*h[l] + h_factor[0]*outer;
-	  ++l;
-	}
-	g[i] *= g_factor[0];
-      }
-      break;
+      MSQ_SETERR(err)("averaging method not available.",MsqError::INVALID_STATE);
+      return false;
     }
 
     // zero out fixed elements of gradient and Hessian
     ind = 0;
     for (i=0; i<4; ++i) {
       // if free vertex, see next
-      if (ind<nfv && vertices+v_i[i] == fv[ind] )
+      if ( vertices+v_i[i] == fv[ind] )
         ++ind;
       // else zero gradient entry and hessian entries.
       else {
@@ -935,14 +781,14 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     mCoords[1] = vertices[v_i[1]];
     mCoords[2] = vertices[v_i[2]];
     mCoords[3] = vertices[v_i[3]];
-    metric_valid = h_fcn_3e(m, g, h, mCoords, a3Con, b3Con, c3Con);
+    metric_valid = h_fcn_3e(m, g, h, mCoords, a3_con, b3_con, c3_con);
     if (!metric_valid) return false;
 
     // zero out fixed elements of g
     j = 0;
     for (i = 0; i < 4; ++i) {
       // if free vertex, see next
-      if (j<nfv && vertices + v_i[i] == fv[j] )
+      if (vertices + v_i[i] == fv[j] )
         ++j;
       // else zero gradient entry
       else {
@@ -981,16 +827,16 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
       mCoords[2] = vertices[v_i[locs_hex[i][2]]];
       mCoords[3] = vertices[v_i[locs_hex[i][3]]];
       if (!h_fcn_3i(mMetrics[i], mGradients+4*i, mHessians+10*i, mCoords,
-		    a3Con, b3Con, c3Con, d_con)) return false;
+		    a3_con, b3_con, c3_con, d_con)) return false;
     }
 
     switch(avgMethod) {
     case MINIMUM:
-      MSQ_SETERR(err)("MINIMUM averaging method does not work.",MsqError::NOT_IMPLEMENTED);
+      MSQ_SETERR(err)("MINIMUM averaging method does not work.",MsqError::INVALID_STATE);
       return false;
 
     case MAXIMUM:
-      MSQ_SETERR(err)("MAXIMUM averaging method does not work.",MsqError::NOT_IMPLEMENTED);
+      MSQ_SETERR(err)("MAXIMUM averaging method does not work.",MsqError::INVALID_STATE);
       return false;
 
     case SUM:
@@ -1025,42 +871,6 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
       }
       break;
 
-    case SUM_SQUARED:
-      m = 0;
-      for (i = 0; i < 8; ++i) {
-        m += (mMetrics[i]*mMetrics[i]);
-	mMetrics[i] *= 2.0;
-      }
-
-      l = 0;
-      for (i = 0; i < 8; ++i) {
-        g[locs_hex[i][0]] += mMetrics[i]*mGradients[4*i+0];
-        g[locs_hex[i][1]] += mMetrics[i]*mGradients[4*i+1];
-        g[locs_hex[i][2]] += mMetrics[i]*mGradients[4*i+2];
-        g[locs_hex[i][3]] += mMetrics[i]*mGradients[4*i+3];
-
-        for (j = 0; j < 4; ++j) {
-          for (k = j; k < 4; ++k) {
-	    outer = 2.0*outer.outer_product(mGradients[4*i+j], 
-					    mGradients[4*i+k]);
-
-            r = locs_hex[i][j];
-            c = locs_hex[i][k];
-
-            if (r <= c) {
-              loc = 8*r - (r*(r+1)/2) + c;
-              h[loc] += mMetrics[i]*mHessians[l] + outer;
-            } 
-            else {
-              loc = 8*c - (c*(c+1)/2) + r;
-              h[loc] += transpose(mMetrics[i]*mHessians[l] + outer);
-            }
-            ++l;
-          }
-        }
-      }
-      break;
-
     case LINEAR:
       m = 0;
       for (i = 0; i < 8; ++i) {
@@ -1070,10 +880,10 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 
       l = 0;
       for (i = 0; i < 8; ++i) {
-        g[locs_hex[i][0]] += 0.125*mGradients[4*i+0];
-        g[locs_hex[i][1]] += 0.125*mGradients[4*i+1];
-        g[locs_hex[i][2]] += 0.125*mGradients[4*i+2];
-        g[locs_hex[i][3]] += 0.125*mGradients[4*i+3];
+        g[locs_hex[i][0]] += mGradients[4*i+0] *0.125;
+        g[locs_hex[i][1]] += mGradients[4*i+1] *0.125;
+        g[locs_hex[i][2]] += mGradients[4*i+2] *0.125;
+        g[locs_hex[i][3]] += mGradients[4*i+3] *0.125;
 
         for (j = 0; j < 4; ++j) {
           for (k = j; k < 4; ++k) {
@@ -1092,94 +902,24 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
           }
         }
       }
-
       for (i=0; i<36; ++i)
         h[i] *= 0.125;
       break;
 
     case GEOMETRIC:
-      MSQ_SETERR(err)("GEOMETRIC averaging method does not work.",MsqError::NOT_IMPLEMENTED);
+      MSQ_SETERR(err)("GEOMETRIC averaging method does not work.",MsqError::INVALID_STATE);
       return false;
 
     default:
-      switch(avgMethod) {
-      case RMS:
-	t = 2.0;
-	break;
-
-      case HARMONIC:
-	t = -1.0;
-	break;
-
-      case HMS:
-	t = -2.0;
-	break;
-
-      default:
-        MSQ_SETERR(err)("averaging method not available.",MsqError::NOT_IMPLEMENTED);
-        break;
-      }
-
-      m = 0;
-      for (i = 0; i < 8; ++i) {
-	nm = pow(mMetrics[i], t);
-	m += nm;
-
-	g_factor[i] = 0.125*t*nm / mMetrics[i];
-	h_factor[i] = (t-1)*g_factor[i] / mMetrics[i];
-      }
-
-      nm = 0.125 * m;
-
-      l = 0;
-      for (i = 0; i < 8; ++i) {
-        g[locs_hex[i][0]] += g_factor[i]*mGradients[4*i+0];
-        g[locs_hex[i][1]] += g_factor[i]*mGradients[4*i+1];
-        g[locs_hex[i][2]] += g_factor[i]*mGradients[4*i+2];
-        g[locs_hex[i][3]] += g_factor[i]*mGradients[4*i+3];
-
-        for (j = 0; j < 4; ++j) {
-          for (k = j; k < 4; ++k) {
-	    outer = h_factor[i]*outer.outer_product(mGradients[4*i+j], 
-						    mGradients[4*i+k]);
-
-            r = locs_hex[i][j];
-            c = locs_hex[i][k];
-
-            if (r <= c) {
-              loc = 8*r - (r*(r+1)/2) + c;
-              h[loc] += g_factor[i]*mHessians[l] + outer;
-            } 
-            else {
-              loc = 8*c - (c*(c+1)/2) + r;
-              h[loc] += transpose(g_factor[i]*mHessians[l] + outer);
-            }
-            ++l;
-          }
-        }
-      }
-
-      m = pow(nm, 1.0 / t);
-      g_factor[0] = m / (t*nm);
-      h_factor[0] = (1.0 / t - 1)*g_factor[0] / nm;
-
-      l = 0;
-      for (i = 0; i < 8; ++i) {
-	for (j = i; j < 8; ++j) {
-	  outer = outer.outer_product(g[i], g[j]);
-	  h[l] = g_factor[0]*h[l] + h_factor[0]*outer;
-	  ++l;
-	}
-	g[i] *= g_factor[0];
-      }
-      break;
+      MSQ_SETERR(err)("averaging method not available.",MsqError::INVALID_STATE);
+      return false;
     }
 
     // zero out fixed elements of gradient and Hessian
     ind = 0;
     for (i=0; i<8; ++i) {
       // if free vertex, see next
-      if (ind<nfv && vertices+v_i[i] == fv[ind] )
+      if ( vertices+v_i[i] == fv[ind] )
         ++ind;
       // else zero gradient entry and hessian entries.
       else {
@@ -1233,7 +973,6 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     break;
   } // end switch over element type
 
+//  FUNCTION_TIMER_END();
   return true;
 }
-
-} // namespace Mesquite

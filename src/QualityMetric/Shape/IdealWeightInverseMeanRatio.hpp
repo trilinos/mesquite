@@ -26,62 +26,61 @@
   ***************************************************************** */
 // -*- Mode : c++; tab-width: 3; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 3 -*-
 
-/*! \file InverseMeanRatioQualityMetric.hpp
+/*! \file IdealWeightInverseMeanRatio.hpp
 
-Header file for the Mesquite::InverseMeanRatioQualityMetric class
+Header file for the Mesquite::IdealWeightInverseMeanRatio class
 
 \author Michael Brewer
-\author Todd Munson
-\date   2002-11-11
+\author Thomas Leurent
+\date   2002-06-19
  */
 
 
-#ifndef InverseMeanRatioQualityMetric_hpp
-#define InverseMeanRatioQualityMetric_hpp
+#ifndef IdealWeightInverseMeanRatio_hpp
+#define IdealWeightInverseMeanRatio_hpp
 
 #include "Mesquite.hpp"
-#include "MsqError.hpp"
 #include "ShapeQualityMetric.hpp"
 #include "Vector3D.hpp"
 #include "Matrix3D.hpp"
 
 namespace Mesquite
 {
-   /*! \class InverseMeanRatioQualityMetric
-     \brief Computes the inverse mean ratio quality metric
-     of given element.
-     
+    class MsqMeshEntity;
+    class PatchData;
+    class MsqError;
+
+   /*! \class IdealWeightInverseMeanRatio
+     \brief Computes the inverse mean ratio of given element.
+
      The metric does not use the sample point functionality or the
      compute_weighted_jacobian.  It evaluates the metric at
      the element vertices, and uses the isotropic ideal element.
-     It does require a feasible region, and the metric needs
-     to be maximized.
+     Optionally, the metric computation can be raised to the
+     'pow_dbl' power.  This does not necessarily raise the metric
+     value to the 'pow_dbl' power but instead raises each local
+     metric.  For example, if the corner inverse mean ratios of a quadraliteral
+     element were m1,m2,m3, and m4 and we set pow_dbl=2 and
+     used linear averaging, the metric value would then be
+     m = .25(m1*m1 + m2*m2 + m3*m3 + m4*m4).  The metric does
+     require a feasible region, and the metric needs to be minimized
+     if pow_dbl is greater than zero and maximized if pow_dbl
+     is less than zero.  pow_dbl being equal to zero is invalid.
    */
-   class InverseMeanRatioQualityMetric : public ShapeQualityMetric
+   class IdealWeightInverseMeanRatio : public ShapeQualityMetric
    {
    public:
- 
-     InverseMeanRatioQualityMetric() : ShapeQualityMetric() {
-       MsqError err;
-       set_metric_type(ELEMENT_BASED);
-       set_element_evaluation_mode(ELEMENT_VERTICES, err); 
-       set_negate_flag(-1);
-       set_gradient_type(ANALYTICAL_GRADIENT);
-       set_hessian_type(ANALYTICAL_HESSIAN);
-       avgMethod=QualityMetric::LINEAR;
-       feasible=1;
-       set_name("Inverse Mean Ratio");
-     }
+      IdealWeightInverseMeanRatio(MsqError& err, double pow_dbl = 1.0);
+
+      //! virtual destructor ensures use of polymorphism during destruction
+      virtual ~IdealWeightInverseMeanRatio() {
+      }
      
-     //! virtual destructor ensures use of polymorphism during destruction
-     virtual ~InverseMeanRatioQualityMetric() {
-     }
-     
-     //! evaluate using mesquite objects 
-     bool evaluate_element(PatchData &pd, MsqMeshEntity *element,
-                           double &fval, MsqError &err); 
-          
-     bool compute_element_analytical_gradient(PatchData &pd,
+      //! evaluate using mesquite objects 
+      bool evaluate_element(PatchData &pd, MsqMeshEntity *element, 
+                            double &fval, MsqError &err); 
+
+      bool compute_element_analytical_gradient(PatchData &pd,
                                                MsqMeshEntity *element,
                                                MsqVertex *free_vtces[], 
                                                Vector3D grad_vec[],
@@ -89,7 +88,7 @@ namespace Mesquite
                                                double &metric_value,
                                                MsqError &err);
 
-     bool compute_element_analytical_hessian(PatchData &pd,
+      bool compute_element_analytical_hessian(PatchData &pd,
                                               MsqMeshEntity *e,
                                               MsqVertex *v[], 
                                               Vector3D g[],
@@ -97,8 +96,11 @@ namespace Mesquite
                                               int nv, 
                                               double &m,
                                               MsqError &err);
-
+      
     private:
+       //! Sets the power value in the metric computation.
+     void set_metric_power(double pow_dbl, MsqError& err);
+     
       // arrays used in Hessian computations 
       // We allocate them here, so that one allocation only is done.
       // This gives a big computation speed increase.
@@ -107,11 +109,18 @@ namespace Mesquite
       Vector3D mAccumGrad[8];  // Accumulated gradients (composed merit)
       Matrix3D mHessians[80]; // Hessian of metric with respect to the coords
       double   mMetrics[8]; // Metric values for the (decomposed) elements
-
+      double   g_factor[8]; // Metric values for the (decomposed) elements
+     double   h_factor[8]; // Metric values for the (decomposed) elements
+       //variables used in the definition of the metric (2d and 3d)
+     double a2Con;
+     double b2Con;
+     double c2Con;
+     
+     double a3Con;
+     double b3Con;
+     double c3Con;
    };
 } //namespace
 
 
-#endif // InverseMeanRatioQualityMetric_hpp
-
-
+#endif // IdealWeightInverseMeanRatio_hpp
