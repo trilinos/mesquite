@@ -10,8 +10,7 @@
 */
 
 #include "ConjugateGradient.hpp"
-#include<math.h>
-#include "ConditionNumberQualityMetric.hpp"
+#include <math.h>
 #include "MsqMessage.hpp"
 #include "MsqTimer.hpp"
 #include "MsqFreeVertexIndexIterator.hpp"
@@ -81,6 +80,7 @@ void ConjugateGradient::initialize_mesh_iteration(PatchData &pd, MsqError &err)
 /*!Performs Conjugate gradient minimization on the PatchData, pd.*/
 void ConjugateGradient::optimize_vertex_positions(PatchData &pd, 
                                                 MsqError &err){
+  Timer c_timer;
   MeshSet *vertex_mover_mesh=get_mesh_set();
   int num_local_vertices = pd.num_vertices();
   if(num_local_vertices>arraySize){
@@ -198,6 +198,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
       grad_norm=infinity_norm(fNewGrad,num_vert,err);
       if(conjGradDebug>0){
         PRINT_INFO("\nCG's VALUE = %f,  iter. = %i,  grad_norm = %f,  alp = %f",f,i,grad_norm,alp);
+        PRINT_INFO("\n   TIME %f",c_timer.since_birth());
       }
       double s11=0;
       double s12=0;
@@ -238,6 +239,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
   if(conjGradDebug>0){
     PRINT_INFO("\nConjagate Gradient complete i=%i ",i);
     PRINT_INFO("\n-  FINAL value = %f, alp=%4.2e grad_norm=%4.2e",f,alp,grad_norm);
+    PRINT_INFO("\n   FINAL TIME %f",c_timer.since_birth());
   }
 }
 
