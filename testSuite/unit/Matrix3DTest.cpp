@@ -24,17 +24,13 @@
     pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov      
    
   ***************************************************************** */
-// -*- Mode : c++; tab-width: 3; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 3 -*-
-//
-//   SUMMARY: 
-//     USAGE:
 //
 //    AUTHOR: Thomas Leurent <tleurent@mcs.anl.gov>
 //       ORG: Argonne National Laboratory
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 12-Nov-02 at 18:05:56
-//  LAST-MOD: 26-Mar-03 at 18:16:34 by Thomas Leurent
+//  LAST-MOD:  2-Apr-04 at 18:30:35 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -80,6 +76,7 @@ private:
   CPPUNIT_TEST (test_mult_element);
   CPPUNIT_TEST (test_times_vector);
   CPPUNIT_TEST (test_vector_times);
+  CPPUNIT_TEST (test_B_times_invA);
   CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -93,6 +90,7 @@ private:
   Matrix3D mMat1plus2;
   Matrix3D mMat1plus2trans;
   Matrix3D mMat1times2;
+  Matrix3D mMat1times2inv;
   double tolEps;
 public:
   void setUp()
@@ -133,6 +131,12 @@ public:
     mMat1times2 =     " 10.4 22.2  33.6 "
                       " 16.4 51.8  67.0 "
                       " 16.0 13.8  29.2 ";
+
+    mMat1times2inv =  " 2.519141   0.088216  -0.977863 "
+                      " 1.009487   0.304594  -0.593375 "
+                      " 5.838881  -0.699068  -2.203728 ";
+
+
     tolEps = 1e-14;
   }
   
@@ -273,7 +277,20 @@ public:
       CPPUNIT_ASSERT_DOUBLES_EQUAL(vec[loop_i], correct[loop_i], tolEps);
     }
   }
+  
+  void test_B_times_invA()
+  {
+    Matrix3D orig1(mMat1);
+    timesInvA(mMat2, mMat1);
 
+    // Checks mMat1 is unchanged
+    CPPUNIT_ASSERT( mMat1 == orig1 );
+     
+    // Checks mMat2 now contains the correct result 
+    for (int i=0; i<3; ++i)
+      for (int j=0; j<3; ++j)
+        CPPUNIT_ASSERT_DOUBLES_EQUAL( mMat2[i][j], mMat1times2inv[i][j], 0.0001 );
+  }
 };
 
 

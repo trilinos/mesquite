@@ -24,17 +24,13 @@
     pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov      
    
   ***************************************************************** */
-// -*- Mode : c++; tab-width: 3; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 3 -*-
-//
-//   SUMMARY: 
-//     USAGE:
 //
 //    AUTHOR: Thomas Leurent <tleurent@mcs.anl.gov>
 //       ORG: Argonne National Laboratory
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 12-Nov-02 at 18:05:56
-//  LAST-MOD: 25-Feb-04 at 10:48:17 by Thomas Leurent
+//  LAST-MOD:  2-Apr-04 at 12:17:29 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -75,7 +71,8 @@ namespace Mesquite
   }
 
 
-  //! creates a patch containing one ideal hexahedra
+  /*! creates a patch containing one ideal hexahedra
+  */
    inline void create_one_hex_patch(PatchData &one_hex_patch, MsqError &err)
    {
        // creates empty Patch
@@ -153,7 +150,7 @@ namespace Mesquite
             indices,
             4*sizeof(size_t));
    }
-      //! creates a Patch containing an ideal tetrahedra
+      //! creates a Patch containing an ideal tetrahedra, inverted
    inline void create_one_inverted_tet_patch(PatchData &one_tet_patch,
                                              MsqError &err)
    {

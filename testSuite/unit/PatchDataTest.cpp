@@ -24,17 +24,13 @@
     pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov      
    
   ***************************************************************** */
-// -*- Mode : c++; tab-width: 3; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 3 -*-
-//
-//   SUMMARY: 
-//     USAGE:
 //
 //    AUTHOR: Thomas Leurent <tleurent@mcs.anl.gov>
 //       ORG: Argonne National Laboratory
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 13-Nov-02 at 18:05:56
-//  LAST-MOD: 27-Jan-04 at 19:23:30 by Thomas Leurent
+//  LAST-MOD:  2-Apr-04 at 11:03:27 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -60,6 +56,7 @@ class PatchDataTest : public CppUnit::TestFixture
 {
 private:
   CPPUNIT_TEST_SUITE(PatchDataTest);
+  CPPUNIT_TEST (test_num_corners);
   CPPUNIT_TEST (test_get_element_vertex_indices);
   CPPUNIT_TEST (test_get_vertex_element_indices);
   CPPUNIT_TEST (test_get_element_vertex_coordinates);
@@ -131,6 +128,15 @@ public:
   PatchDataTest()
     {}
   
+#undef __FUNC__
+#define __FUNC__ "PatchDataTest::test_num_corners" 
+   void test_num_corners()
+   {
+     MsqError err;
+     size_t n = mPatch2D.num_corners();
+     CPPUNIT_ASSERT(n==10);
+   }
+
 #undef __FUNC__
 #define __FUNC__ "PatchDataTest::test_get_element_vertex_indices" 
    void test_get_element_vertex_indices()

@@ -24,7 +24,6 @@
     pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov      
    
   ***************************************************************** */
-// -*- Mode : c++; tab-width: 2; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 //
 //   SUMMARY: 
 //     USAGE:
@@ -34,7 +33,7 @@
 //    E-MAIL: mbrewer@sandia.gov
 //
 // ORIG-DATE: 03-Dec-02
-//  LAST-MOD: 29-Jan-04 at 18:29:51 by Thomas Leurent
+//  LAST-MOD: 31-Mar-04 at 12:06:47 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
