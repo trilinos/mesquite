@@ -1,7 +1,7 @@
 // -*- Mode : c++; tab-width: 2; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD:  8-Apr-03 at 17:00:54 by Thomas Leurent
+//  LAST-MOD:  7-May-03 at 12:33:49 by Thomas Leurent
 //
 /*! \file MsqMeshEntity.cpp
 
@@ -53,6 +53,23 @@ void Mesquite::MsqMeshEntity::append_vertex_indices(std::vector<size_t> &vertex_
                      vertexIndices,
                      vertexIndices + vertex_count());
 }
+
+
+#undef __FUNC__
+#define __FUNC__ "MsqMeshEntity::get_centroid"
+/*! The centroid of an element containing n vertices with equal masses is defined by
+  \f[ \b{x} = \frac{ \sum{i=1}{n} \b{x}_n }{ n }  \f]
+  where \f$ \b{x}_n \f$
+*/
+void MsqMeshEntity::get_centroid(Vector3D &centroid, PatchData &pd, MsqError &err) const
+{
+  MsqVertex* vtces = pd.get_vertex_array(err); MSQ_CHKERR(err);
+  size_t nve = vertex_count();
+  for (size_t i=0; i<nve; ++i)
+    centroid += vtces[vertexIndices[i]];
+  centroid /= nve;
+}
+  
 
 #undef __FUNC__
 #define __FUNC__ "MsqMeshEntity::compute_weighted_jacobian"

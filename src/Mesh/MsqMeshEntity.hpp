@@ -1,6 +1,12 @@
 // -*- Mode : c++; tab-width: 2; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 
-//! \file MsqMeshEntity.hpp
+/*! \file MsqMeshEntity.hpp
+
+\author Thomas Leurent
+\author Michael Brewer
+\author Darryl Melander
+
+*/
 
 #ifndef MSQMESHENTITY_HPP
 #define MSQMESHENTITY_HPP
@@ -80,6 +86,9 @@ namespace Mesquite
     void get_sample_points(QualityMetric::ElementEvaluationMode mode,
                            std::vector<Vector3D> &coords,
                            MsqError &err);
+
+    //! Returns the centroid of the element.
+    void get_centroid(Vector3D& centroid, PatchData &pd, MsqError &err) const;
     
       //!Fills a std::vector<size_t> with vertices connected to the given
       //!vertex through the edges of this MsqMeshEntity.
@@ -202,7 +211,7 @@ namespace Mesquite
       // Return the index
     return vertexIndices[vertex_in_element];
   }
-  
+
   inline void MsqMeshEntity::get_linear_quad_jac(Vector3D *sp,
                                                  Vector3D &coord0,
                                                  Vector3D &coord1,
