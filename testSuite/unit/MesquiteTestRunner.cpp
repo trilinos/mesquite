@@ -1,6 +1,7 @@
 #include "MesquiteTestRunner.hpp"
 #include "MsqTimer.hpp"
 #include "cppunit/Test.h"
+#include "cppunit/TestSuite.h"
 #include "cppunit/TestResult.h"
 #include "cppunit/TestFailure.h"
 #include "cppunit/Exception.h"
@@ -55,6 +56,7 @@ bool Mesquite::TestRunner::run(const std::string& name_of_run,
   
     // Run each test
   CppUnit::TestResult result;
+  myResult = &result;
   result.addListener(this);
   for (std::vector<CppUnit::Test*>::iterator iter = mTests.begin();
        iter != mTests.end();
@@ -81,7 +83,10 @@ void Mesquite::TestRunner::startTest(CppUnit::Test *test)
   indent();
   
     // Output a header
-  *mOut << "Beginning of Test : " << test->getName() << std::endl;
+  *mOut << "Beginning of Test : " << test->getName();
+  if (test->is_work_in_progress())
+    *mOut << " (work in progress)";
+  *mOut << std::endl;
   
     // increase the indent level
   indentLevel += TestRunner::INDENT_SIZE;
@@ -92,22 +97,39 @@ void Mesquite::TestRunner::startTest(CppUnit::Test *test)
 
 // This function is called by the TestRunner just before
 // a suite begins.
-void Mesquite::TestRunner::startSuite(CppUnit::Test *test)
+void Mesquite::TestRunner::startSuite(CppUnit::TestSuite *suite)
 {
     // Indent
   indent();
   
     // Output a header
-  *mOut << "Beginning of Test Suite : " << test->getName()
-        << " (" << test->countTestCases() << " tests)" << std::endl;
-  
-    // increase the indent level
-  indentLevel += TestRunner::INDENT_SIZE;
+  *mOut << "Beginning of Test Suite : " << suite->getName()
+        << " (" << suite->countTestCases() << " tests)" << std::endl;
 
-    // Add a timer
-  push_timer(new Mesquite::Timer);
-    // Add a failure counter
-  failureCounters.push(0);
+    // See if we've already run this suite
+  if (suite->key() != 0 &&
+      std::find(completedSuites.begin(),
+                completedSuites.end(),
+                suite->key()) != completedSuites.end())
+  {
+      // We've run this before...
+    myResult->stop();
+    indent();
+    *mOut << "Tests run previously, skipping suite..." << std::endl;
+  }
+  else
+  {
+      // Add this test to the list of tests we've already started to run
+    completedSuites.push_back(suite->key());
+    
+      // increase the indent level
+    indentLevel += TestRunner::INDENT_SIZE;
+    
+      // Add a timer
+    push_timer(new Mesquite::Timer);
+      // Add a failure counter
+    failureCounters.push(0);
+  }
 }
 
 // This function is called if a test fails, either
@@ -115,7 +137,8 @@ void Mesquite::TestRunner::startSuite(CppUnit::Test *test)
 void Mesquite::TestRunner::addFailure(const CppUnit::TestFailure &failure)
 {
   last_test_succeeded = false;
-  failureCounters.top() += 1;
+  if (!failure.failedTest()->is_work_in_progress())
+    failureCounters.top() += 1;
   
     // Indicate whether error or failure.
     // An error is something you didn't specifically
@@ -167,12 +190,24 @@ void Mesquite::TestRunner::endTest(CppUnit::Test *test)
   {
     *mOut << " failed after "<< elapsed_time
           << " seconds" << std::endl;
+    if (test->is_work_in_progress())
+    {
+      indent();
+      *mOut << "Test is work in progress, failure counted as success"
+            << std::endl;
+    }
   }
 }
 
 // This function is called just after a test completes.
-void Mesquite::TestRunner::endSuite(CppUnit::Test *test)
+void Mesquite::TestRunner::endSuite(CppUnit::TestSuite *suite)
 {
+  if (myResult->shouldStop())
+  {
+    myResult->reset();
+    return;
+  }
+  
     // Pop the timer
   Mesquite::Timer *timer = pop_timer();
   double elapsed_time = timer->since_birth();
@@ -189,16 +224,16 @@ void Mesquite::TestRunner::endSuite(CppUnit::Test *test)
   
     // Output a footer
   indent();
-  *mOut << test->getName() << " Test Suite completed in "
+  *mOut << suite->getName() << " Test Suite completed in "
         << elapsed_time << " seconds, ";
   if (failure_count)
   {
-    *mOut << failure_count << " of " << test->countTestCases()
+    *mOut << failure_count << " of " << suite->countTestCases()
           << " tests failed" << std::endl;
   }
   else
   {
-    *mOut << "All " << test->countTestCases() << " tests succeeded"
+    *mOut << "All " << suite->countTestCases() << " tests succeeded"
           << std::endl;
   }
 }

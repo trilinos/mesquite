@@ -2,6 +2,7 @@
 #define MESQUITE_TESTRUNNER_HPP
 
 #include <cppunit/TestListener.h>
+#include <cppunit/TestSuite.h>
 #include <string>
 #include <stack>
 #include <vector>
@@ -40,11 +41,11 @@ namespace Mesquite
     inline void indent();
     
       // TestListener functions
-    virtual void startSuite(CppUnit::Test *test);
+    virtual void startSuite(CppUnit::TestSuite *suite);
     virtual void startTest(CppUnit::Test *test);
     virtual void addFailure(const CppUnit::TestFailure &failure);
     virtual void endTest(CppUnit::Test *test);
-    virtual void endSuite(CppUnit::Test *test);
+    virtual void endSuite(CppUnit::TestSuite *suite);
 
       // Timer functions
     inline void push_timer(Mesquite::Timer* timer);
@@ -54,7 +55,9 @@ namespace Mesquite
     std::vector<CppUnit::Test*> mTests;
     std::stack<Mesquite::Timer*> mTimers;
     std::stack<int> failureCounters;
+    std::vector<CppUnit::TestSuite::Key> completedSuites;
     std::ostream* mOut;
+    CppUnit::TestResult* myResult;
     unsigned int indentLevel;
     unsigned int numSuccesses;
     unsigned int numFailures;
