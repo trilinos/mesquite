@@ -10,10 +10,10 @@
 #ifndef MESQUITE_MESH_TSTT_HPP
 #define MESQUITE_MESH_TSTT_HPP
 
+#include "TSTT_LocalTSTTMesh.hh"
+
 #include "MsqMessage.hpp"
 #include "MeshInterface.hpp"
-
-#include "TSTT_LocalTSTTMesh.hh"
 
 //class TSTT::LocalTSTTMesh;
 
