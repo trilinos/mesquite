@@ -217,6 +217,7 @@ namespace Mesquite
     mutable ::SIDL::array<EntityHandle> oneEntity; //!< array has one entry only.
     mutable ::SIDL::array<TagHandle> oneTagValue; //!< array has one entry only.
     mutable ::SIDL::array<int32_t> oneInt; //!< array has one entry only.
+    mutable ::SIDL::array<TSTT::EntityTopology> oneTopo; //!< array has one entry only.
     ::SIDL::array<double> threeDoubles; //!< array has 3 entries only..
 
     //! This array usually has size 0 when passed to TSTT functions with size 0. 
