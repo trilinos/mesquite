@@ -345,6 +345,9 @@ void Mesquite::MeshImpl::write_vtk(const char* out_filebase,
       case Mesquite::HEXAHEDRON:
         type_id = 12;
         break;
+    default:
+      err.set_msg("element type not implemented");
+      break;
     }
     file << (int)type_id << '\n';
   }
