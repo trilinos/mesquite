@@ -148,7 +148,17 @@ namespace Mesquite
       */
     void move_vertices(Vector3D dk[], int nb_vtx,
                        double step_size, MsqError &err);
+
+      /*! Moves free vertices and then snaps the free vertices to the domain.
+        /*! \param dk an array of directions, ordered like the vertices in
+          the PatchData.
+          \param nb_vtx number of vertices.
+          \param step_size a scalar that multiplies the vectors given in dk.
+      */
+    void move_free_vertices_constrained(Vector3D dk[], int nb_vtx,
+                                        double step_size, MsqError &err);
     
+      
     //! Updates the TSTT mesh with any changes made to the PatchData
     void update_mesh(MsqError &err);
 

@@ -240,13 +240,13 @@ void PatchData::move_vertices(Vector3D dk[], int nb_vtx,
     return;
   }
 
-  int i=0;
-  for (int m=0; m<numVertices; ++m) {
+  int m=0;
+  for (m=0; m<numVertices; ++m) {
     vertexArray[m] += (step_size * dk[m]);
   }
 
   // Checks that moving direction is zero for fixed vertices.
-  MSQ_DEBUG_ACTION(1,{ for (int m=0; m<numVertices; ++m) {
+  MSQ_DEBUG_ACTION(1,{ for (m=0; m<numVertices; ++m) {
     Vector3D zero_3d(0.,0.,0.);
     if (   ! vertexArray[m].is_free_vertex()
         && dk[m] != zero_3d                  )
@@ -255,6 +255,62 @@ void PatchData::move_vertices(Vector3D dk[], int nb_vtx,
   });
       
 }
+
+
+#undef __FUNC__
+#define __FUNC__ "PatchData::move_free_vertices_constrained"
+/*! \fn PatchData::move_free_vertices_constrained(Vector3D dk[], int nb_vtx, double step_size, MsqError &err)
+   PatchData::move_free_vertices_constrained() is similar to the function
+   PatchData::move_vertices().  The main difference between the two
+   being that for this funciton after the free vertices are moved
+   as specified by the search direction (dk) and scale factor (step_size),
+   they are then projected onto the appropriate geometry.  The second
+   difference being that for this function fixed vertices are not moved
+   regardless of their corresponding dk direction.
+   It is often useful to use the create_coords_momento() function before
+   calling this function.
+   Compile with -DMSQ_DBG1 or higher to check that fixed vertices
+   are not moved with that call.
+
+   \param dk: must be a [nb_vtx] array of Vector3D that contains
+   the direction in which to move each vertex. Fixed vertices moving
+   direction should be zero, although fixed vertices will not be
+   moved regardless of their corresponding dk value.
+   \param nb_vtx is the number of vertices to move. must corresponds
+   to the number of vertices in the PatchData.
+   \param step_size will multiply the moving direction given in dk
+   for each vertex.
+  */
+void PatchData::move_free_vertices_constrained(Vector3D dk[], int nb_vtx,
+                                               double step_size, MsqError &err)
+{
+  if (nb_vtx != numVertices) {
+    err.set_msg("The directional vector must be of length numVertices.");
+    MSQ_CHKERR(err);
+    return;
+  }
+
+  int m=0;
+  MsqFreeVertexIndexIterator free_iter(this, err);
+  free_iter.reset();
+  while (free_iter.next()) {
+    vertexArray[free_iter.value()] += (step_size * dk[free_iter.value()]);
+    snap_vertex_to_domain(free_iter.value(), err);
+    MSQ_CHKERR(err);
+  }
+
+  // Checks that moving direction is zero for fixed vertices.
+  MSQ_DEBUG_ACTION(1,{ for (m=0; m<numVertices; ++m) {
+    Vector3D zero_3d(0.,0.,0.);
+    if (   ! vertexArray[m].is_free_vertex()
+        && dk[m] != zero_3d                  )
+      err.set_msg("moving a fixed vertex.");
+    MSQ_CHKERR(err); }
+  });
+      
+}
+
+
 
 /*! \fn PatchData::get_element_vertex_coordinates(size_t elem_index, std::vector<Vector3D> &coords, MsqError &err)
 
@@ -619,4 +675,11 @@ void PatchData::get_subpatch(size_t center_vertex_index,
 // is managed by the TSTT mesh implementation
 void PatchData::snap_vertex_to_domain(size_t vertex_index, MsqError &err)
 {
+    //geometry for Mesquite_geo grids
+    /*  
+  double len = vertexArray[vertex_index].length();
+  vertexArray[vertex_index][0]/=len;
+  vertexArray[vertex_index][1]/=len;
+  vertexArray[vertex_index][2]/=len;
+    */
 }
