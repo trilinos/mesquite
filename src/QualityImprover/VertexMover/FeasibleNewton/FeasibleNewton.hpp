@@ -62,7 +62,6 @@ namespace Mesquite
     virtual void cleanup();
 
   private:
-    ObjectiveFunction* objFunc;
     double convTol;
     int maxIteration;
     MsqHessian mHessian;

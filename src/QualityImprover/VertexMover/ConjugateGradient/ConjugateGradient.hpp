@@ -27,7 +27,7 @@ namespace Mesquite
   class ConjugateGradient : public VertexMover 
   {
   public:
-    ConjugateGradient(ObjectiveFunction* objective);
+    ConjugateGradient(ObjectiveFunction* objective, MsqError &err);
       /*!Set the maximum number of search directions to try before moving
         to the next patch.
       */
@@ -79,7 +79,6 @@ namespace Mesquite
     
      
 private:
-    ObjectiveFunction* objFunc;
     int maxIteration;
     double stepBound;
     double normGradientBound;

@@ -32,9 +32,9 @@ using std::endl;
 #undef __FUNC__
 #define __FUNC__ "FeasibleNewton::FeasibleNewton" 
 FeasibleNewton::FeasibleNewton(ObjectiveFunction* of) :
-  VertexMover(),
-  objFunc(of)
+  VertexMover()
 {
+  objFunc=of;
   MsqError err;
   convTol=.001;
   maxIteration=6;
@@ -83,7 +83,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
 
   /* Computes the value of the stopping criterion*/
   MeshSet *mesh=get_mesh_set();
-  bool inner_criterion=inner_criterion_met(*mesh,err);
+  bool inner_criterion=false;//inner_criterion_met(*mesh,err);
   int i;//,n;
   
   // 1.  Allocate a hessian and calculate the sparsity pattern.
@@ -199,7 +199,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
       }
     });
 
-    inner_criterion=inner_criterion_met(*mesh,err);
+    inner_criterion=false;//inner_criterion_met(*mesh,err);
   }
 
   delete[] grad;

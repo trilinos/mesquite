@@ -13,14 +13,15 @@
 #include "MeshSet.hpp"
 #include "MsqTimer.hpp"
 #include "MsqMessage.hpp"
-//#include "StoppingCriterion.hpp"
+
 #include <fstream.h>
 #include <iostream>
 using namespace Mesquite;
 
 VertexMover::VertexMover() :
   QualityImprover()
-{  
+{
+  objFunc=NULL;
 }
 
 
@@ -37,26 +38,30 @@ VertexMover::VertexMover() :
 void VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
 {
   std::cout << "o Executing VertexMover::loop_over_mesh()\n";
-  set_mesh_set(&ms);
-  StoppingCriterion* crit = get_stopping_criterion();
-  if(crit==0){
-    err.set_msg("Stopping Criterion pointer is Null");
-    return;
-  }
-  crit->reset_all(err);
-  bool stop_met=crit->stop(ms,err); MSQ_CHKERR(err);
 
   // creates a PatchData object at the VertexMover level
     // in order to reduce the number of memory allocations
   PatchData patch_data;
   bool next_patch;
-
+  TerminationCriterion* outer_crit=this->get_outer_termination_criterion();
+  TerminationCriterion* inner_crit=this->get_inner_termination_criterion();
+    //if outer-criterion is NULL, we wet an error.
+  if(outer_crit == 0){
+    err.set_msg("Termination Criterion pointer is Null");
+    return;
+  }
+  outer_crit->initialize(ms, patch_data, err);
+    //inner criterion is allowed to be NULL.
+  if(inner_crit!=NULL)
+    inner_crit->initialize(ms, patch_data, err);
+  
+  bool stop_met=false; MSQ_CHKERR(err);
   // This should probably pass the MeshSet so that the data requirements
   // can be calculated exactly.
   this->initialize(patch_data, err); MSQ_CHKERR(err);
     //reset the stopping criterion's loop counter
-  crit->reset_counter();
-  PRINT_INFO("\n");
+  std::cout<<"\n";
+  outer_crit->reset(ms,objFunc,err);
   while ( !stop_met ) {
       //Status bar
     std::cout<<".";
@@ -84,7 +89,14 @@ void VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
                                  << aomd_t << std::endl; });
       if (next_patch == true ) {
         MSQ_DEBUG_ACTION(3,{loop_timer.since_last_check(); });
+        if(inner_crit!=NULL){
+          inner_crit->reset(patch_data,objFunc,err);
+        }
         this->optimize_vertex_positions(patch_data, err); MSQ_CHKERR(err);
+        if(inner_crit!=NULL){
+          inner_crit->cull_vertices(patch_data,objFunc,err);
+        }
+          //we need update to also update the soft_fixed flags
         patch_data.update_mesh(err); MSQ_CHKERR(err); // TSTT mesh update !!
         MSQ_DEBUG_ACTION(3,{msq_t += loop_timer.since_last_check();
                          std::cout << "\t\t- total time optimizing patch: "
@@ -94,17 +106,19 @@ void VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
         next_patch = false; }
     }
     this->terminate_mesh_iteration(patch_data, err); MSQ_CHKERR(err);
-      //increment stopping criterion's loop counter
-    crit->increment_counter();
       //if global don't loop again.
       //if local loop until criteria are met
     if(this->get_patch_type() == PatchData::GLOBAL_PATCH)
       stop_met=true;
     else
-      stop_met=crit->stop(ms,err); MSQ_CHKERR(err);
+      stop_met=outer_crit->terminate(ms,objFunc,err);
+    MSQ_CHKERR(err);
   }
-  PRINT_INFO("\n");
-  
+  std::cout<<"\n";
+  outer_crit->cleanup(ms,err);
+  if(inner_crit!=NULL){ 
+    inner_crit->cleanup(ms,err);
+  }
   this->cleanup();
 }
   

@@ -27,9 +27,10 @@ using namespace Mesquite;
 
 #undef __FUNC__
 #define __FUNC__ "ConjugateGradient::ConjugateGradient" 
-ConjugateGradient::ConjugateGradient(ObjectiveFunction* objective) 
+ConjugateGradient::ConjugateGradient(ObjectiveFunction* objective,
+                                     MsqError &err) :
+  VertexMover()
 {
-  MsqError err;
   this->set_name("ConjugateGradient");
   this->set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err, 1); MSQ_CHKERR(err);
   objFunc=objective;
@@ -38,6 +39,15 @@ ConjugateGradient::ConjugateGradient(ObjectiveFunction* objective)
   set_gradient_bound(.001);
   set_maximum_iteration(6);
   set_debugging_level(0);
+    //set the default inner termination criterion
+  TerminationCriterion* default_crit=get_inner_termination_criterion();
+  if(default_crit==NULL){
+    err.set_msg("QualityImprover did not create a default inner termination criterion.");
+  }
+  else{
+    default_crit->add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,5,err);
+  }
+  
 }  
   
   
@@ -153,7 +163,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
     //we know inner_criterion is false because it was checked in
     //loop_over_mesh before being sent here.
   bool inner_criterion=false;//inner_criterion_met(*vertex_mover_mesh,err);
-  
+  TerminationCriterion* term_crit=get_inner_termination_criterion();
   
   while ((i<maxIteration && alp>stepBound && grad_norm>normGradientBound)
          && !inner_criterion){
@@ -239,7 +249,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
     }//end if on alp == 0
       //Update mesh before checking criterion
     pd.update_mesh(err);
-    inner_criterion=inner_criterion_met(*vertex_mover_mesh,err);
+    inner_criterion=term_crit->terminate(pd,objFunc,err);
     MSQ_CHKERR(err);
   }//end while
   if(conjGradDebug>0){
@@ -256,7 +266,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
         PRINT_INFO("\n-  Gradient norm bound satisfied:\n    Gradient norm = %e is not greater than %e",grad_norm,normGradientBound);
       }
       if(inner_criterion){
-        PRINT_INFO("\n-  Global criterion was satisfied.");
+        PRINT_INFO("\n-  Termination Criterion was satisfied.");
       }
     }//end debug value greater than 0
     PRINT_INFO("\nConjugate Gradient complete i=%i ",i);

@@ -53,7 +53,6 @@ namespace Mesquite
     virtual void cleanup();
 
   private:
-    ObjectiveFunction* objFunc;
     double gradientLessThan;
     int maxIteration;
   };

@@ -15,7 +15,8 @@
 
 #include "Mesquite.hpp"
 #include "MesquiteError.hpp"
-#include "StoppingCriterion.hpp"
+//#include "StoppingCriterion.hpp"
+#include "TerminationCriterion.hpp"
 #include "PatchData.hpp"
 #include "MeshSet.hpp"
 #include <iostream>
@@ -24,7 +25,6 @@ namespace Mesquite
 {
 
 //   class MeshSet;
-//   class StoppingCriterion;
   
   /*! \class QualityImprover
     Base class for all quality improvers.
@@ -49,9 +49,17 @@ namespace Mesquite
     //! retrieves the QualityImprover name. A default name should be set in the constructor.
     std::string get_name() { return qualityImproverName; }
 
-    void set_stopping_criterion(StoppingCriterion* crit)
+      //!Sets in the termination criterion for the concrete solver's
+      //! optimization.
+    void set_inner_termination_criterion(TerminationCriterion* crit)
       {
-        stoppingCriterion=crit;
+        innerTerminationCriterion=crit;
+      }
+      //!Sets in the termination criterion for the outer loop over 
+      //! patches.
+    void set_outer_termination_criterion(TerminationCriterion* crit)
+      {
+        outerTerminationCriterion=crit;
       }
 
   protected:
@@ -59,15 +67,18 @@ namespace Mesquite
     /*! The default constructor initialises a few member variables
         to default values.
         This can be reused by concrete class constructor. */
-    QualityImprover() : mMeshSet(0), qualityImproverName("noname"),
-                        stoppingCriterion(0) {}
+    QualityImprover() : mMeshSet(0), qualityImproverName("noname"){
+        //Temporary solution to not having an err object
+      MsqError temp_err;
+      defaultOuterCriterion.add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,1,temp_err);
+      outerTerminationCriterion = & defaultOuterCriterion;
+      innerTerminationCriterion = & defaultInnerCriterion;
+    }
     
     friend class MeshSet;
       //friend double QualityMetric::evaluate_element(MsqMeshEntity* element, MsqError &err);
       //friend double QualityMetric::evaluate_node(MsqNode* node, MsqError &err);
-    StoppingCriterion* get_stopping_criterion() { return stoppingCriterion; }
-    bool inner_criterion_met(MeshSet &ms, MsqError &err);
-    
+      //will not be needed when we remove stopping criterion
     const MeshSet* get_mesh_set() const
       { return mMeshSet; }
     MeshSet* get_mesh_set()
@@ -78,37 +89,25 @@ namespace Mesquite
       {
         mMeshSet=ms;
       }
+      //!return the outer termination criterion pointer 
+    TerminationCriterion* get_outer_termination_criterion() {
+      return outerTerminationCriterion; }
+      //!return the inner termination criterion pointer       
+    TerminationCriterion* get_inner_termination_criterion() {
+      return innerTerminationCriterion; } 
     
   private:
     MeshSet* mMeshSet;
     std::string qualityImproverName;
     int patchDepth;
-    StoppingCriterion* stoppingCriterion;
+      //
+    TerminationCriterion* innerTerminationCriterion;
+    TerminationCriterion* outerTerminationCriterion;
+      //default TerminationCriterion for outer loop will be set in constructor
+    TerminationCriterion defaultOuterCriterion;
+      //default TerminationCriterion for inner loop set by concrete improver
+    TerminationCriterion defaultInnerCriterion;
   };
-
-#undef __FUNC__
-#define __FUNC__ "QualityImprover::inner_criterion_met"
-  /*! \fn QualityImprover::inner_criterion_met(MeshSet &ms, MsqError &err)
-    */
-  inline bool QualityImprover::inner_criterion_met(MeshSet &ms, MsqError &err)
-  {
-    
-    bool inner_criterion_met;
-    StoppingCriterion* crit = get_stopping_criterion();
-    if(crit==0){
-      err.set_msg("Stopping Criterion pointer is Null");
-      return true;
-    }
-    if(this->get_patch_type()==PatchData::GLOBAL_PATCH){
-        //status bar for global case
-      std::cout<<"_";
-      std::cout.flush();
-      inner_criterion_met=crit->stop(ms,err);
-    }
-    else
-      inner_criterion_met=0;
-    return inner_criterion_met;
-  }
 
 }
 

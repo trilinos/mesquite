@@ -15,6 +15,7 @@
 #include "Mesquite.hpp"
 #include "QualityImprover.hpp"
 #include "PatchData.hpp"
+#include "ObjectiveFunction.hpp"
 
 namespace Mesquite
 {
@@ -48,6 +49,8 @@ namespace Mesquite
 
       //!CHECK FEASIBLE IS NOT YET IMPLEMENTED.
     int check_feasible(PatchData &pd, MsqError &err);
+    
+    ObjectiveFunction* objFunc;
   };
 
   

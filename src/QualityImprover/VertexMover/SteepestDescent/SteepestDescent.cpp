@@ -17,9 +17,9 @@ using namespace Mesquite;
 #undef __FUNC__
 #define __FUNC__ "SteepestDescent::SteepestDescent" 
 SteepestDescent::SteepestDescent(ObjectiveFunction* of) :
-  VertexMover(),
-  objFunc(of)
+  VertexMover()
 {
+  objFunc=of;
   MsqError err;
   gradientLessThan=.01;
   maxIteration=6;
@@ -56,8 +56,8 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
   double norm=10e6;
   bool sd_bool=true;//bool for OF values
   double smallest_edge = 0.4; // TODO -- update -- used for step_size
-  bool inner_criterion=inner_criterion_met(*vertex_mover_mesh,err);
-
+  bool inner_criterion=false;//inner_criterion_met(*vertex_mover_mesh,err);
+  TerminationCriterion* term_crit=get_inner_termination_criterion();
   
   // does the steepest descent iteration until stopping is required.
   while ( (nb_iterations<maxIteration &&
@@ -153,7 +153,11 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
     });
     
     delete pd_previous_coords; // user manages the memento.
-    inner_criterion=inner_criterion_met(*vertex_mover_mesh,err); MSQ_CHKERR(err);
+    if(term_crit!=NULL){
+      
+      inner_criterion=term_crit->terminate(pd,objFunc,err);;
+        //inner_criterion_met(*vertex_mover_mesh,err); MSQ_CHKERR(err);
+    }
     
   }
 
