@@ -57,7 +57,6 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
   double smallest_edge = 0.4; // TODO -- update -- used for step_size
   bool inner_criterion=inner_criterion_met(*vertex_mover_mesh,err);
 
-  objFunc->set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
   
   // does the steepest descent iteration until stopping is required.
   while ( (nb_iterations<maxIteration &&
