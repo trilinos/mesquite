@@ -93,7 +93,9 @@ namespace Mesquite
         GEOMETRIC,
         SUM,
         GENERALIZED_MEAN,
+        STANDARD_DEVIATION,
         MAX_OVER_MIN,
+        MAX_MINUS_MIN,
         SUM_OF_RATIOS_SQUARED
      };
      
@@ -107,8 +109,12 @@ namespace Mesquite
          MINIMUM:  the minimum value,
          RMS:  the root-mean-squared average,
          HMS:  the harmonic-mean-squared average,
-         SUM:  the sum of the values
-         GENERALIZED_MEAN: self explainatory
+         SUM:  the sum of the values,
+         GENERALIZED_MEAN: self explainatory,
+         STANDARD_DEVIATION:  the standard deviation squared of the values,
+         MAX_MINUS_MIN:  the maximum value minus the minum value,
+         MAX_OVER_MIN:  the maximum value divided by the minimum value,
+         SUM_OF_RATIOS_SQUARED:  (1/(N^2))*(SUM (SUM (v_i/v_j)^2))
        */
      inline void set_averaging_method(AveragingMethod method, MsqError &err);
      
@@ -379,8 +385,10 @@ namespace Mesquite
       case(MINIMUM):
       case(RMS):
       case(HMS):
+      case(STANDARD_DEVIATION):
       case(SUM):
       case(MAX_OVER_MIN):
+      case(MAX_MINUS_MIN):
       case(SUM_OF_RATIOS_SQUARED):
         avgMethod=method;
         break;
@@ -473,6 +481,7 @@ namespace Mesquite
    inline double QualityMetric::average_metrics(double* metric_values,
                                                 int num_values, MsqError &err)
    {
+       //MSQ_MAX needs to be made global?
      double MSQ_MAX=1e10;
      double total_value=0.0;
      double temp_value=0.0;
@@ -515,7 +524,7 @@ namespace Mesquite
           for (i=0;i<num_values;++i){
             total_value+=metric_values[i];
           }
-          total_value/=num_values;
+          total_value/= (double) num_values;
           break;
           
        case MAXIMUM:
@@ -543,7 +552,7 @@ namespace Mesquite
           for (i=0;i<num_values;++i){
             total_value+=(metric_values[i]*metric_values[i]);
           }
-          total_value/=num_values;
+          total_value/= (double) num_values;
           total_value=sqrt(total_value);
           break;
           
@@ -562,13 +571,42 @@ namespace Mesquite
           }
           total_value = sqrt(num_values/total_value);
           break;
-          
+       case STANDARD_DEVIATION:
+          total_value=0;
+          temp_value=0;
+          for (i=0;i<num_values;++i){
+            temp_value+=metric_values[i];
+            total_value+=(metric_values[i]*metric_values[i]);
+          }
+          temp_value/= (double) num_values;
+          temp_value*=temp_value;
+          total_value/= (double) num_values;
+          total_value-=temp_value;
+          break;
        case SUM:
           for (i=0;i<num_values;++i){
             total_value+=metric_values[i];
           }
           break;
-
+       case MAX_MINUS_MIN:
+          //total_value used to store the maximum
+            //temp_value used to store the minimum
+          temp_value=MSQ_MAX_CAP;
+          for (i=0;i<num_values;++i){
+            if(metric_values[i]<temp_value){
+              temp_value=metric_values[i];
+            }
+            if(metric_values[i]>total_value){
+              total_value=metric_values[i];
+            }
+          }
+          
+            //ensure no divide by zero, return MSQ_MAX_CAP
+          if (temp_value < MSQ_MIN) {
+            return MSQ_MAX_CAP;
+          }
+          total_value-=temp_value;
+          break;
        case MAX_OVER_MIN:
             //total_value used to store the maximum
             //temp_value used to store the minimum
@@ -599,8 +637,8 @@ namespace Mesquite
               total_value+=((metric_values[i]/metric_values[j])*
                             (metric_values[i]/metric_values[j]));
             }
-            total_value/=(num_values*num_values);
           }
+          total_value/=(double)(num_values*num_values);
           break;
           
        default:

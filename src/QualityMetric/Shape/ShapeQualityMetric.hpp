@@ -53,7 +53,9 @@ namespace Mesquite
                                                        MsqError &err)
    {       
      Vector3D cross_vec=(temp_vec[0]*temp_vec[1]);
-     
+       //If the domain is not set, we assume all elements are valid.
+       //Otherwise, we ensure the surface normal and the cross
+       //vector have generally the same direction.
      if ( pd.domain_set() ) {
        Vector3D surf_norm;
        pd.get_domain_normal_at_vertex(v_ind,surf_norm,err);MSQ_CHKERR(err);
