@@ -13,6 +13,7 @@
 #include "MsqMessage.hpp"
 
 using namespace Mesquite;  
+using namespace std;
 
 #undef __FUNC__
 #define __FUNC__ "PatchData::PatchData"
@@ -304,9 +305,63 @@ void PatchData::move_free_vertices_constrained(Vector3D dk[], int nb_vtx,
   MSQ_DEBUG_ACTION(1,{ for (m=0; m<numVertices; ++m) {
     Vector3D zero_3d(0.,0.,0.);
     if (   ! vertexArray[m].is_free_vertex()
-        && dk[m] != zero_3d                  )
+        && ( dk[m] != zero_3d && dk[m] != -zero_3d)  ) 
+       {
+	  cout << "dk["<<m<<"]: " << dk[m] << endl;
       err.set_msg("moving a fixed vertex.");
-    MSQ_CHKERR(err); }
+    MSQ_CHKERR(err);} 
+  }     
+  });
+      
+}
+
+
+#undef __FUNC__
+#define __FUNC__ "PatchData::set_free_vertices_constrained"
+/*! set_free_vertices_constrained is similar to 
+PatchData::move_vertices_constrained except the original vertices positions
+those stored in the PatchDataVerticesMemento instead of the actual vertex
+position stored in the PatchData Vertex array.
+
+   \param dk: must be a [nb_vtx] array of Vector3D that contains
+   the direction in which to move each vertex. Fixed vertices moving
+   direction should be zero, although fixed vertices will not be
+   moved regardless of their corresponding dk value.
+   \param nb_vtx is the number of vertices to move. must corresponds
+   to the number of vertices in the PatchData.
+   \param step_size will multiply the moving direction given in dk
+   for each vertex.
+  */
+void PatchData::set_free_vertices_constrained(PatchDataVerticesMemento* memento, Vector3D dk[], int nb_vtx,
+                                               double step_size, MsqError &err)
+{
+  if (nb_vtx != memento->numVertices) {
+    std::cout << "nb_vtx: "<< nb_vtx << "   mem num vtx; " <<  memento->numVertices << std::endl;
+    err.set_msg("The directional vector must be of length memento numVertices.");
+    MSQ_CHKERR(err);
+    return;
+  }
+
+  int m=0;
+  MsqFreeVertexIndexIterator free_iter(this, err);
+  free_iter.reset();
+  while (free_iter.next()) {
+    m=free_iter.value();
+    vertexArray[m] = memento->vertices[m] + (step_size * dk[m]);
+    snap_vertex_to_domain(m, err);
+    MSQ_CHKERR(err);
+  }
+
+  // Checks that moving direction is zero for fixed vertices.
+  MSQ_DEBUG_ACTION(1,{ for (m=0; m<numVertices; ++m) {
+    Vector3D zero_3d(0.,0.,0.);
+    if (   ! vertexArray[m].is_free_vertex()
+        && ( dk[m] != zero_3d && dk[m] != -zero_3d)  ) 
+       {
+	  cout << "dk["<<m<<"]: " << dk[m] << endl;
+      err.set_msg("moving a fixed vertex.");
+    MSQ_CHKERR(err);} 
+  }     
   });
       
 }

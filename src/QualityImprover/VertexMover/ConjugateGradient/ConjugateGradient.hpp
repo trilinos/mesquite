@@ -85,7 +85,8 @@ private:
     double normGradientBound;
     Vector3D* fGrad;
     Vector3D* pGrad;
-    Vector3D* mCoord;
+    //Vector3D* mCoord;
+    PatchDataVerticesMemento* pMemento;
     Vector3D* fNewGrad;
     int arraySize;
       //just for debugging

@@ -163,7 +163,17 @@ namespace Mesquite
     void move_free_vertices_constrained(Vector3D dk[], int nb_vtx,
                                         double step_size, MsqError &err);
     
-      
+      /*! Moves free vertices from a memento position along a certain direction 
+	and then snaps the free vertices to the domain.
+	\param dk an array of directions, ordered like the vertices in
+          the PatchData.
+          \param nb_vtx number of vertices.
+          \param step_size a scalar that multiplies the vectors given in dk.
+      */
+    void set_free_vertices_constrained(PatchDataVerticesMemento* memento, 
+				       Vector3D dk[], int nb_vtx,
+				       double step_size, MsqError &err);
+    
     //! Updates the TSTT mesh with any changes made to the PatchData
     void update_mesh(MsqError &err);
 
@@ -180,6 +190,10 @@ namespace Mesquite
     //! Creates a memento that holds the current
     //! state of the PatchData coordinates. 
     PatchDataVerticesMemento* create_vertices_memento(MsqError &err);
+    
+    //! reinstantiates a memento to holds the current
+    //! state of the PatchData coordinates. Improves memory management.
+    void recreate_vertices_memento(PatchDataVerticesMemento* memento, MsqError &err);
     
     //! Restore the PatchData coordinates to the state
     //! contained in the memento.
@@ -292,6 +306,7 @@ namespace Mesquite
     PatchData* originator; // PatchData whose state is kept
     MsqVertex *vertices; // array of vertices
     int numVertices;
+    int arraySize;
   };
 
 
@@ -591,13 +606,49 @@ inline int PatchData::add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
     if (numVertices)
       memento->vertices = new MsqVertex[numVertices];
     memento->numVertices = numVertices;
-    
+    memento->arraySize = numVertices;
+     
     // Copy the coordinates
+    // TODO : use memcpy()
     for (int i=0; i<numVertices; ++i)
     {
       memento->vertices[i] = vertexArray[i];
     }
     return memento;
+  }
+  
+#undef __FUNC__
+#define __FUNC__ "PatchData::recreate_vertices_memento"
+  /*! \fn PatchData::recreate_vertices_memento(MsqError &err)
+   This function reinstantiate a PatchDataVerticesMemento object.
+   The PatchDataVerticesMemento contains the current state of the PatchData coordinates.
+   It can be used to restore the same PatchData object to those coordinates.
+
+   It is the responsibility of the caller to discard the PatchDataVerticesMemento
+   when not needed any more.
+  */
+   inline void PatchData::recreate_vertices_memento(PatchDataVerticesMemento* memento, 
+						    MsqError& /*err*/)
+     {
+	memento->originator = this;
+     
+	if ( numVertices > memento->arraySize
+	     || numVertices < memento->arraySize/10)
+	  {
+	     delete[] memento->vertices;
+	     // Allocate the new array
+	     memento->vertices = new MsqVertex[numVertices];
+	     memento->arraySize = numVertices;
+	  }	
+
+    // Copy the coordinates
+    // TODO : use memcpy()
+    for (int i=0; i<numVertices; ++i)
+    {
+      memento->vertices[i] = vertexArray[i];
+    }
+
+    memento->numVertices = numVertices;
   }
   
 #undef __FUNC__
@@ -627,7 +678,8 @@ inline int PatchData::add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
       return;
     }
     
-      // copies the memento array into the PatchData array. 
+    // copies the memento array into the PatchData array.
+    // TODO : use memcpy()
     for (int i=0; i<numVertices; ++i)
     {
       vertexArray[i] = memento->vertices[i];

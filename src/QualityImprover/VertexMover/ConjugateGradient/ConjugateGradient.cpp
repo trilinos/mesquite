@@ -43,14 +43,15 @@ ConjugateGradient::ConjugateGradient(ObjectiveFunction* objective)
   
 #undef __FUNC__
 #define __FUNC__ "ConjugateGradient::initialize" 
-void ConjugateGradient::initialize(PatchData &/*pd*/, MsqError &/*err*/)
+void ConjugateGradient::initialize(PatchData &pd, MsqError &err)
 {
   PRINT_INFO("\no   Performing Conjugate Gradient optimization.\n");
   arraySize=5;
   fGrad = new Vector3D[ arraySize ];
   pGrad = new Vector3D[ arraySize ];
   fNewGrad = new Vector3D[ arraySize ];
-  mCoord = new Vector3D[ arraySize ];
+  //mCoord = new Vector3D[ arraySize ];
+  pMemento=pd.create_vertices_memento(err);
 }
 
 
@@ -88,13 +89,11 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
     delete []fGrad;
     delete []pGrad;
     delete []fNewGrad;
-    delete []mCoord;
       //Increase number to try to avoid reallocating
     arraySize=num_local_vertices + 5;
     fGrad = new Vector3D[ arraySize ];
     pGrad = new Vector3D[ arraySize ];
     fNewGrad = new Vector3D[ arraySize ];
-    mCoord = new Vector3D[ arraySize ];
   }
     //zero out arrays
   int zero_loop=0;
@@ -102,31 +101,28 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
     fGrad[zero_loop].set(0,0,0);
     pGrad[zero_loop].set(0,0,0);
     fNewGrad[zero_loop].set(0,0,0);
-    mCoord[zero_loop].set(0,0,0);
     ++zero_loop;
   }
   
   int is=0;
   
-    // gets the array of coordinates for the patch  
+    // gets the array of vertices for the patch  
   MsqVertex* vertices=pd.get_vertex_array(err);
   int ind;
-    //Michael cull list
-    //Michael hard coded for now... fix this
-    //But, the culling method needs to be completely re-done anyway
-    //For example, calls to evaluate_element????
-    //cull_list(pd,free_vertex_list,beta, err);
-  int num_free=pd.num_free_vertices(err);
-  int num_vert=pd.num_vertices();
-  MsqFreeVertexIndexIterator free_iter(&pd, err);
+    //Michael cull list:  possibly set soft_fixed flags here
+
+   int num_vert=pd.num_vertices();
+   MsqFreeVertexIndexIterator free_iter(&pd, err);
   
-  if(num_free<1){
-    PRINT_INFO("\nEmpty free vertex list in ConjugateGradient\n");
-  }
-  double f=0;
-    //Michael, this isn't equivalent to CUBIT because we only want to check
-    //the objective function value of the 'bad' elements
-    //if invalid initial patch set an error.
+   MSQ_DEBUG_ACTION(1,{ 
+      if(pd.num_free_vertices(err)<1) 
+	PRINT_INFO("\nEmpty free vertex list in ConjugateGradient\n"); 
+   });
+      
+   double f=0;
+   //Michael, this isn't equivalent to CUBIT because we only want to check
+   //the objective function value of the 'bad' elements
+   //if invalid initial patch set an error.
   if(! objFunc->evaluate(pd,f,err)){
     MSQ_CHKERR(err);
     err.set_msg("Conjugate Gradient passed an invalid intital patch.");
@@ -137,15 +133,15 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
   }
   MSQ_CHKERR(err);
   ind=0;
-    //Initializing pGrad.  
+    //Initializing pGrad (search direction).  
   while(ind<num_vert){    
     pGrad[ind]=(-fGrad[ind]);
     ++ind;
   }
-  int j=0;
-  int i=0;
-  int m=0;
-  double alp=MSQ_MAX_CAP;
+  int j=0; // total nb of step size changes ... not used much
+  int i=0; // iteration counter
+  int m=0; // 
+  double alp=MSQ_MAX_CAP; // alp: scale factor of search direction
     //we know inner_criterion is false because it was checked in
     //loop_over_mesh before being sent here.
   bool inner_criterion=false;//inner_criterion_met(*vertex_mover_mesh,err);
@@ -161,6 +157,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
       PRINT_INFO("\n  Alp initial, alp = %20.18f",alp);
     }
     MSQ_CHKERR(err);
+     // if alp ==0, revert to steepest descent search direction
     if(alp==0){
       free_iter.reset();
       while (free_iter.next()) {
@@ -262,7 +259,7 @@ void ConjugateGradient::cleanup()
   delete []fGrad;
   delete []pGrad;
   delete []fNewGrad;
-  delete []mCoord;
+  pMemento->~PatchDataVerticesMemento();
 }
 
 //!Computes a distance to move vertices given an initial position and search direction (stored in data member pGrad).
@@ -275,6 +272,7 @@ void ConjugateGradient::cleanup()
 double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
                                    MsqError &err){
   MsqFreeVertexIndexIterator free_iter(&pd, err);
+  int num_vertices=pd.num_vertices();
     //iterator for several for statements
   int m=0;
   MsqVertex* vertices=pd.get_vertex_array(err);
@@ -290,22 +288,13 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
   double fnew=0;
     //Counter to avoid infinitly scaling alp
   j=0;
+  //save memento
+  pd.recreate_vertices_memento(pMemento, err);
     //if we must check feasiblility
-  free_iter.reset();
-  while (free_iter.next()) {
-    m=free_iter.value();
-    mCoord[m]=vertices[m];
-  }
     //while step takes mesh into infeasible region and ...
   while (j<jmax && !feasible && alp>MSQ_MIN) {
     ++j;
-    free_iter.reset();
-    while (free_iter.next()) {
-      m=free_iter.value();
-      vertices[m]=(mCoord[m]+ (alp * pGrad[m]));
-        //std::cout<<"\nFirst gradient vector "<<pGrad[m];
-      pd.snap_vertex_to_domain(m,err);
-    }      
+    pd.set_free_vertices_constrained(pMemento,pGrad,num_vertices,alp,err);
     feasible=objFunc->evaluate(pd,f,err);      
     MSQ_CHKERR(err);
       //if not feasible, try a smaller alp (take smaller step)
@@ -326,28 +315,14 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
     while (j<jmax && found == 0){
       ++j;
       alp *= rho;
-      free_iter.reset();
-      while (free_iter.next()) {
-        m=free_iter.value();
-        vertices[m]=mCoord[m]+ (alp*pGrad[m]);
-        pd.snap_vertex_to_domain(m,err);
-      }
+      pd.set_free_vertices_constrained(pMemento,pGrad,num_vertices,alp,err);
         //Get new obj value
-        //if patch is no invalid, then the feasible region is  convex or
+        //if patch is now invalid, then the feasible region is  convex or
         //we have an error.  For now, we assume an error.
       if(! objFunc->evaluate(pd,f,err) ){
         err.set_msg("Non-convex feasiblility region found.");
       }
-      free_iter.reset();
-      while (free_iter.next()) {
-        m=free_iter.value();
-        vertices[m][0]=mCoord[m][0];
-        vertices[m][1]=mCoord[m][1];
-        vertices[m][2]=mCoord[m][2];
-         //move vertex to owning geometry
-        pd.snap_vertex_to_domain(m,err);
-      }
-      MSQ_CHKERR(err);
+      pd.set_to_vertices_memento(pMemento,err);MSQ_CHKERR(err);
         //if our step has now improved the objective function value
       if(f<f0){
         found=1;
@@ -373,13 +348,9 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
     while(j<jmax){
       ++j;
       alp*=rho;
-      free_iter.reset();
-      while (free_iter.next()) {
-        m=free_iter.value();
-        vertices[m]=mCoord[m] + (alp*pGrad[m]);
-          //move vertex to owning geometry
-        pd.snap_vertex_to_domain(m,err);
-      }
+      //step alp in search direction from original positions
+      pd.set_free_vertices_constrained(pMemento,pGrad,num_vertices,alp,err);MSQ_CHKERR(err);
+
         //get new objective function value
       if (! objFunc->evaluate(pd,fnew,err))
         err.set_msg("Non-convex feasiblility region found while computing new f.");
@@ -387,28 +358,14 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
         f=fnew;
       }
       else{
-        free_iter.reset();
-        while (free_iter.next()) {
-          m=free_iter.value();
-          vertices[m][0]=mCoord[m][0];
-          vertices[m][1]=mCoord[m][1];
-          vertices[m][2]=mCoord[m][2];
-           //move vertex to owning geometry
-          pd.snap_vertex_to_domain(m,err);
-        }
+	//Reset the vertices to original position
+	pd.set_to_vertices_memento(pMemento,err);MSQ_CHKERR(err);
 	alp/=rho;
 	return alp;
       }
     }
-    free_iter.reset();
-    while (free_iter.next()) {
-      m=free_iter.value();
-      vertices[m][0]=mCoord[m][0];
-      vertices[m][1]=mCoord[m][1];
-      vertices[m][2]=mCoord[m][2];
-       //move vertex to owning geometry
-      pd.snap_vertex_to_domain(m,err);
-    }
+    //Reset the vertices to original position and return alp
+    pd.set_to_vertices_memento(pMemento,err);MSQ_CHKERR(err);
     return alp;
   }
     //else our new f was already smaller than our original
@@ -419,25 +376,15 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
       ++j;
         //scale alp up (rho must be less than 1)
       alp /= rho;
-      free_iter.reset();
-      while (free_iter.next()) {
-        m=free_iter.value();
-        vertices[m] = mCoord[m] + (alp * pGrad[m]);
-         //move vertex to owning geometry
-        pd.snap_vertex_to_domain(m,err);        
-      }
+      //step alp in search direction from original positions
+      pd.set_free_vertices_constrained(pMemento,pGrad,num_vertices,alp,err);MSQ_CHKERR(err);
+
       feasible = objFunc->evaluate(pd,fnew, err);
       if ( ! feasible ){
          alp *= rho;
-         free_iter.reset();
-         while (free_iter.next()) {
-           m=free_iter.value();
-           vertices[m][0]=mCoord[m][0];
-           vertices[m][1]=mCoord[m][1];
-           vertices[m][2]=mCoord[m][2];
-            //move vertex to owning geometry
-           pd.snap_vertex_to_domain(m,err);
-         }
+	 
+	 //Reset the vertices to original position and return alp
+	 pd.set_to_vertices_memento(pMemento,err);MSQ_CHKERR(err);
          return alp;
       }
       if (fnew<f) { 
@@ -448,15 +395,9 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
          alp *= rho;
        }
     }
-    free_iter.reset();
-    while (free_iter.next()) {
-      m=free_iter.value();
-      vertices[m][0]=mCoord[m][0];
-      vertices[m][1]=mCoord[m][1];
-      vertices[m][2]=mCoord[m][2];
-        //move vertex to owning geometry
-      pd.snap_vertex_to_domain(m,err);
-    }
+
+    //Reset the vertices to original position and return alp
+    pd.set_to_vertices_memento(pMemento,err);MSQ_CHKERR(err);
     return alp;
   }
 }
