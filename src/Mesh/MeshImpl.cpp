@@ -49,6 +49,7 @@ to run mesquite by default.
 #include "MsqVertex.hpp"
 #include "MeshImplData.hpp"
 #include "MeshImplTags.hpp"
+#include "MsqDebug.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 #  include <string.h>
@@ -191,7 +192,7 @@ void MeshImpl::write_vtk(const char* out_filebase, MsqError &err)
       default:
         MSQ_SETERR(err)( MsqError::NOT_IMPLEMENTED ,
                         "Cannot write element type %d to a VTK file\n",
-                        type );
+                        (int)topo );
         delete e_iter;
         return;
     }
@@ -479,7 +480,7 @@ void Mesquite::MeshImpl::write_exodus(const char* out_filename,
 #ifndef MSQ_USING_EXODUS
   MSQ_SETERR(err)("Exodus not enabled in this build of Mesquite",
                   MsqError::NOT_IMPLEMENTED);
-  MSQ_DBGOUT << "Cannot read ExodusII file: " << out_filename << "\n";
+  MSQ_DBGOUT(1) << "Cannot read ExodusII file: " << out_filename << "\n";
   return;
 #else
   size_t i, j, k;
