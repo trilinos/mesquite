@@ -5,7 +5,7 @@
 //    E-MAIL: tmunson@mcs.anl.gov
 //
 // ORIG-DATE:  2-Jan-03 at 11:02:19 bu Thomas Leurent
-//  LAST-MOD: 23-Jan-03 at 16:21:09 by Thomas Leurent
+//  LAST-MOD: 31-Jan-03 at 14:10:56 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -62,7 +62,7 @@ namespace Mesquite
     //! returns the diagonal blocks, memory must be allocated before call.
     void get_diagonal_blocks(std::vector<Matrix3D> &diag, MsqError &err);
     void accumulate_entries(PatchData &pd, size_t elem_index,
-                            Matrix3D mat3d_array[], size_t nb_mat3d, MsqError &err); 
+                            Matrix3D mat3d_array[], MsqError &err); 
     //! Hessian - vector product summed with a second vector.
     friend void axpy(Vector3D res[], int size_r,
                      const MsqHessian &H, const Vector3D x[], int size_x,

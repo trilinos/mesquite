@@ -5,7 +5,7 @@
 //    E-MAIL: tmunson@mcs.anl.gov
 //
 // ORIG-DATE:  2-Jan-03 at 11:02:19 by Thomas Leurent
-//  LAST-MOD: 29-Jan-03 at 16:15:47 by Thomas Leurent
+//  LAST-MOD: 31-Jan-03 at 14:13:11 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -310,7 +310,7 @@ void MsqHessian::get_diagonal_blocks(std::vector<Matrix3D> &diag, MsqError &err)
            the number of nodes in the element.
   */
  void MsqHessian::accumulate_entries(PatchData &pd, size_t elem_index,
-                         Matrix3D mat3d_array[], size_t nb_mat3d, MsqError &err)
+                         Matrix3D mat3d_array[], MsqError &err)
 {
   int i;
   
@@ -321,8 +321,7 @@ void MsqHessian::get_diagonal_blocks(std::vector<Matrix3D> &diag, MsqError &err)
   }
 
   int nve = pd.get_element_array(err)[elem_index].vertex_count(); MSQ_CHKERR(err);
-
-  assert( nb_mat3d == (nve+1)*nve/2 );
+  int nb_mat3d = (nve+1)*nve/2;
 
   int e = mAccumElemStart[elem_index];
   for (i=0; i<nb_mat3d; ++i) {
