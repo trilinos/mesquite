@@ -113,12 +113,12 @@ public:
     blocks[4] = "2 4 7   3 2 7   1 4 3 ";
     blocks[5] = "8 4 9   4 5 7   9 7 3 ";
 
-    accumulate_entries(twoTriangles, 0, blocks, 6, err); MSQ_CHKERR(err);
+    accumulate_entries(twoTriangles, 0, blocks, err); MSQ_CHKERR(err);
 
     blocks[2] += blocks[5];
     blocks[5] = blocks[3];
     
-    accumulate_entries(twoTriangles, 1, blocks, 6, err); MSQ_CHKERR(err);
+    accumulate_entries(twoTriangles, 1, blocks, err); MSQ_CHKERR(err);
 
     Matrix3D entries_6_ans("2 3 1   4 2 4   7 7 3");
     CPPUNIT_ASSERT( mEntries[6] == entries_6_ans );
