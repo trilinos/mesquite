@@ -127,8 +127,6 @@ namespace Mesquite
     virtual void cleanup();
     
   private:
-    ObjectiveFunction* objFunc;
-    
       /* local copy of patch data */
       //    PatchData patch_data;
     int mDimension;

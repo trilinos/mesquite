@@ -15,8 +15,8 @@ using namespace Mesquite;
 #undef __FUNC__
 #define __FUNC__ "NonSmoothSteepestDescent::NonSmoothSteepestDescent" 
 NonSmoothSteepestDescent::NonSmoothSteepestDescent(ObjectiveFunction* of)
-  : objFunc(of)
 {
+  objFunc=of;
   this->set_name("NonSmoothSteepestDescent");
 
   mFunction = (double *)malloc(sizeof(double)*150);
