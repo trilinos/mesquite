@@ -308,7 +308,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS MSQ_ROOT MSQ_INSTALL_ROOT STD_INCLUDE_FLAG build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP EGREP LN_S SET_MAKE RANLIB ac_ct_RANLIB MAKEDEPEND CXX CXXFLAGS ac_ct_CXX CXXCPP CFLAGS_WARNING CXX_TEMPLATES AOMD_LIB AOMD_ROOT AOMD_FLAG DOXYGEN_PATH $GENFILES LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS MSQ_ROOT MSQ_INSTALL_ROOT STD_INCLUDE_FLAG MAKEDEPEND AR build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP EGREP LN_S SET_MAKE RANLIB ac_ct_RANLIB CXX CXXFLAGS ac_ct_CXX CXXCPP CFLAGS_WARNING CXX_TEMPLATES AOMD_LIB AOMD_ROOT AOMD_FLAG DOXYGEN_PATH $GENFILES LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -865,16 +865,21 @@ Location of alternative makedepend program:
                           The location of makedepend.
                           Give the full path:
                               --with-makedepend='/usr/local/bin/makedepend'
+Location of alternative archiver (default is 'ar ru'):
+  --with-archiver=EXECUTABLE
+                          The location of the prefered archiver.
+                          Give the full path and arguments:
+                              --with-archiver='/usr/local/bin/ar ru'
 Location of alternative c compiler:
   --with-cc=EXECUTABLE
                           The location of C.
                           Give the full path:
                               --with-cc='/usr/local/gcc/bin/gcc'
 Location of alternative c++ compiler:
-  --with-c++=EXECUTABLE
+  --with-cPP=EXECUTABLE
                           The location of C++.
                           Give the full path:
-                              --with-c++='/usr/local/gcc/bin/g++'
+                              --with-cPP='/usr/local/gcc/bin/g++'
 Location of aomd library:
   --with-aomd=AOMD_LIB
                           The location of AOMD libary
@@ -1372,6 +1377,10 @@ MSQ_INSTALL_ROOT="$MSQ_ROOT"
 
 
 
+# ---------------------------------------------------------
+# Decide whether to use standard C++ headers (default)
+# or old style C/C++ headers (with option --with-c-headers)
+# ---------------------------------------------------------
 
 # Check whether --with-c-headers or --without-c-headers was given.
 if test "${with_c_headers+set}" = set; then
@@ -1395,6 +1404,303 @@ esac
 
 
 
+# --------------------------------------------------
+# Checks for Makedepend (can be passed in as option).
+# --------------------------------------------------
+
+# Check whether --with-makedepend or --without-makedepend was given.
+if test "${with_makedepend+set}" = set; then
+  withval="$with_makedepend"
+
+else
+  with_makedepend=yes
+fi;
+
+case "$with_makedepend" in
+    no)
+	# no check for makedepend
+	{ echo "$as_me:$LINENO: WARNING: No makedepend given. Will not generate Makefile dependencies for your installation ... or please use --with-makedepend=path option." >&5
+echo "$as_me: WARNING: No makedepend given. Will not generate Makefile dependencies for your installation ... or please use --with-makedepend=path option." >&2;}
+        ;;
+    yes)
+        # search for it ourselves
+	# Extract the first word of "makedepend", so it can be a program name with args.
+set dummy makedepend; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_MAKEDEPEND+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$MAKEDEPEND"; then
+  ac_cv_prog_MAKEDEPEND="$MAKEDEPEND" # Let the user override the test.
+else
+  ac_prog_rejected=no
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    if test "$as_dir/$ac_word$ac_exec_ext" = ":"; then
+       ac_prog_rejected=yes
+       continue
+     fi
+    ac_cv_prog_MAKEDEPEND="makedepend"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+if test $ac_prog_rejected = yes; then
+  # We found a bogon in the path, so make sure we never use it.
+  set dummy $ac_cv_prog_MAKEDEPEND
+  shift
+  if test $# != 0; then
+    # We chose a different compiler from the bogus one.
+    # However, it has the same basename, so the bogon will be chosen
+    # first if we set MAKEDEPEND to just the basename; use the full file name.
+    shift
+    ac_cv_prog_MAKEDEPEND="$as_dir/$ac_word${1+' '}$@"
+  fi
+fi
+  test -z "$ac_cv_prog_MAKEDEPEND" && ac_cv_prog_MAKEDEPEND="nomakedepend"
+fi
+fi
+MAKEDEPEND=$ac_cv_prog_MAKEDEPEND
+if test -n "$MAKEDEPEND"; then
+  echo "$as_me:$LINENO: result: $MAKEDEPEND" >&5
+echo "${ECHO_T}$MAKEDEPEND" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+        ;;
+    *)
+	# Checks path given by user.
+	# Extract the first word of ""$with_makedepend"", so it can be a program name with args.
+set dummy "$with_makedepend"; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_MAKEDEPEND+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$MAKEDEPEND"; then
+  ac_cv_prog_MAKEDEPEND="$MAKEDEPEND" # Let the user override the test.
+else
+  ac_prog_rejected=no
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in /.
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    if test "$as_dir/$ac_word$ac_exec_ext" = ":"; then
+       ac_prog_rejected=yes
+       continue
+     fi
+    ac_cv_prog_MAKEDEPEND=""$with_makedepend""
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+if test $ac_prog_rejected = yes; then
+  # We found a bogon in the path, so make sure we never use it.
+  set dummy $ac_cv_prog_MAKEDEPEND
+  shift
+  if test $# != 0; then
+    # We chose a different compiler from the bogus one.
+    # However, it has the same basename, so the bogon will be chosen
+    # first if we set MAKEDEPEND to just the basename; use the full file name.
+    shift
+    ac_cv_prog_MAKEDEPEND="$as_dir/$ac_word${1+' '}$@"
+  fi
+fi
+  test -z "$ac_cv_prog_MAKEDEPEND" && ac_cv_prog_MAKEDEPEND="nomakedepend"
+fi
+fi
+MAKEDEPEND=$ac_cv_prog_MAKEDEPEND
+if test -n "$MAKEDEPEND"; then
+  echo "$as_me:$LINENO: result: $MAKEDEPEND" >&5
+echo "${ECHO_T}$MAKEDEPEND" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+	if test "$MAKEDEPEND" = "nomakedepend" ; then
+	  { { echo "$as_me:$LINENO: error: option --with-makedepend='...' has been given an invalid executable." >&5
+echo "$as_me: error: option --with-makedepend='...' has been given an invalid executable." >&2;}
+   { (exit 1); exit 1; }; }
+	fi
+        ;;
+esac
+
+#  print a warning if none found.
+if test "$MAKEDEPEND" = nomakedepend ; then
+   { echo "$as_me:$LINENO: WARNING: Needs makedepend to generate dependencies for your installation. You need the dependencies for a robust (re)compilation." >&5
+echo "$as_me: WARNING: Needs makedepend to generate dependencies for your installation. You need the dependencies for a robust (re)compilation." >&2;}
+   { echo "$as_me:$LINENO: WARNING: Please try to use --with-makedepend='/PATH/makedepend'." >&5
+echo "$as_me: WARNING: Please try to use --with-makedepend='/PATH/makedepend'." >&2;}
+fi
+
+# ----------------------------------------------------------------
+
+
+#-----------------------------------------------------------------
+#  see if the user gave us the location of a prefered archiver
+#-----------------------------------------------------------------
+
+# Check whether --with-archiver or --without-archiver was given.
+if test "${with_archiver+set}" = set; then
+  withval="$with_archiver"
+
+else
+  with_archiver=yes
+fi;
+
+case "$with_archiver" in
+    no)
+        #  User specified --without-archiver
+        #  print a warning.
+        { echo "$as_me:$LINENO: WARNING: Option '--without-archiver' Causes linking to be suppressed." >&5
+echo "$as_me: WARNING: Option '--without-archiver' Causes linking to be suppressed." >&2;}
+        { { echo "$as_me:$LINENO: error: An archiver is required." >&5
+echo "$as_me: error: An archiver is required." >&2;}
+   { (exit 1); exit 1; }; }
+        ;;
+    yes)
+        # search for it ourselves
+	# Extract the first word of ""ar"", so it can be a program name with args.
+set dummy "ar"; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_AR+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$AR"; then
+  ac_cv_prog_AR="$AR" # Let the user override the test.
+else
+  ac_prog_rejected=no
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    if test "$as_dir/$ac_word$ac_exec_ext" = ":"; then
+       ac_prog_rejected=yes
+       continue
+     fi
+    ac_cv_prog_AR=""ar""
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+if test $ac_prog_rejected = yes; then
+  # We found a bogon in the path, so make sure we never use it.
+  set dummy $ac_cv_prog_AR
+  shift
+  if test $# != 0; then
+    # We chose a different compiler from the bogus one.
+    # However, it has the same basename, so the bogon will be chosen
+    # first if we set AR to just the basename; use the full file name.
+    shift
+    ac_cv_prog_AR="$as_dir/$ac_word${1+' '}$@"
+  fi
+fi
+  test -z "$ac_cv_prog_AR" && ac_cv_prog_AR="noarchiver"
+fi
+fi
+AR=$ac_cv_prog_AR
+if test -n "$AR"; then
+  echo "$as_me:$LINENO: result: $AR" >&5
+echo "${ECHO_T}$AR" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+        ;;
+    *)
+	# Checks path given by user.
+	# Extract the first word of ""$with_archiver"", so it can be a program name with args.
+set dummy "$with_archiver"; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_AR+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$AR"; then
+  ac_cv_prog_AR="$AR" # Let the user override the test.
+else
+  ac_prog_rejected=no
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in /.
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    if test "$as_dir/$ac_word$ac_exec_ext" = ":"; then
+       ac_prog_rejected=yes
+       continue
+     fi
+    ac_cv_prog_AR=""$with_archiver""
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+if test $ac_prog_rejected = yes; then
+  # We found a bogon in the path, so make sure we never use it.
+  set dummy $ac_cv_prog_AR
+  shift
+  if test $# != 0; then
+    # We chose a different compiler from the bogus one.
+    # However, it has the same basename, so the bogon will be chosen
+    # first if we set AR to just the basename; use the full file name.
+    shift
+    ac_cv_prog_AR="$as_dir/$ac_word${1+' '}$@"
+  fi
+fi
+  test -z "$ac_cv_prog_AR" && ac_cv_prog_AR="noarchiver"
+fi
+fi
+AR=$ac_cv_prog_AR
+if test -n "$AR"; then
+  echo "$as_me:$LINENO: result: $AR" >&5
+echo "${ECHO_T}$AR" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+	if test "$AR" = "noarchiver" ; then
+	  { { echo "$as_me:$LINENO: error: option --with-archiver='...' has been given an invalid executable." >&5
+echo "$as_me: error: option --with-archiver='...' has been given an invalid executable." >&2;}
+   { (exit 1); exit 1; }; }
+	fi
+        ;;
+esac
+
+#  print a warning if none found.
+if test "$AR" = noarchiver ; then
+   { { echo "$as_me:$LINENO: error: Needs archiver to generate library used in code linking. Please use --with-archiver='/PATH/archiver' option to give a valid archiver." >&5
+echo "$as_me: error: Needs archiver to generate library used in code linking. Please use --with-archiver='/PATH/archiver' option to give a valid archiver." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test "$AR" = ar ; then
+  AR="ar ru" # space between ar and ru would mess up AC_CHECK_PROG ... so we deal with it here.
+fi
+
+
+# -----------------------------------------------------------
 
 
 # Make sure we can run config.sub.
@@ -3095,129 +3401,6 @@ fi
 
 
 
-# Checks for Makedepend (can be passed in as option).
-
-# Check whether --with-makedepend or --without-makedepend was given.
-if test "${with_makedepend+set}" = set; then
-  withval="$with_makedepend"
-
-else
-  with_makedepend=yes
-fi;
-
-case "$with_makedepend" in
-    no)
-	# no check for makedepend
-	{ echo "$as_me:$LINENO: WARNING: No makedepend given. Will not generate Makefile dependencies for your installation ... or please use --with-makedepend=path option." >&5
-echo "$as_me: WARNING: No makedepend given. Will not generate Makefile dependencies for your installation ... or please use --with-makedepend=path option." >&2;}
-        ;;
-    yes)
-        # search for it ourselves
-	# Extract the first word of "makedepend", so it can be a program name with args.
-set dummy makedepend; ac_word=$2
-echo "$as_me:$LINENO: checking for $ac_word" >&5
-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
-if test "${ac_cv_prog_MAKEDEPEND+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  if test -n "$MAKEDEPEND"; then
-  ac_cv_prog_MAKEDEPEND="$MAKEDEPEND" # Let the user override the test.
-else
-  ac_prog_rejected=no
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-  for ac_exec_ext in '' $ac_executable_extensions; do
-  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    if test "$as_dir/$ac_word$ac_exec_ext" = ":"; then
-       ac_prog_rejected=yes
-       continue
-     fi
-    ac_cv_prog_MAKEDEPEND="makedepend"
-    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-done
-
-if test $ac_prog_rejected = yes; then
-  # We found a bogon in the path, so make sure we never use it.
-  set dummy $ac_cv_prog_MAKEDEPEND
-  shift
-  if test $# != 0; then
-    # We chose a different compiler from the bogus one.
-    # However, it has the same basename, so the bogon will be chosen
-    # first if we set MAKEDEPEND to just the basename; use the full file name.
-    shift
-    ac_cv_prog_MAKEDEPEND="$as_dir/$ac_word${1+' '}$@"
-  fi
-fi
-  test -z "$ac_cv_prog_MAKEDEPEND" && ac_cv_prog_MAKEDEPEND="nomakedepend"
-fi
-fi
-MAKEDEPEND=$ac_cv_prog_MAKEDEPEND
-if test -n "$MAKEDEPEND"; then
-  echo "$as_me:$LINENO: result: $MAKEDEPEND" >&5
-echo "${ECHO_T}$MAKEDEPEND" >&6
-else
-  echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
-fi
-        ;;
-    *)
-	# Checks path given by user.
-        MAKEDEPEND="$with_makedepend"
-	# Extract the first word of ""$with_makedepend"", so it can be a program name with args.
-set dummy "$with_makedepend"; ac_word=$2
-echo "$as_me:$LINENO: checking for $ac_word" >&5
-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
-if test "${ac_cv_prog_MAKEDEPEND+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  if test -n "$MAKEDEPEND"; then
-  ac_cv_prog_MAKEDEPEND="$MAKEDEPEND" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-as_dummy=":"
-for as_dir in $as_dummy
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-  for ac_exec_ext in '' $ac_executable_extensions; do
-  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_MAKEDEPEND=""$with_makedepend""
-    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-done
-
-  test -z "$ac_cv_prog_MAKEDEPEND" && ac_cv_prog_MAKEDEPEND="nomakedepend"
-fi
-fi
-MAKEDEPEND=$ac_cv_prog_MAKEDEPEND
-if test -n "$MAKEDEPEND"; then
-  echo "$as_me:$LINENO: result: $MAKEDEPEND" >&5
-echo "${ECHO_T}$MAKEDEPEND" >&6
-else
-  echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
-fi
-        ;;
-esac
-
-#  print a warning if none found.
-if test "$MAKEDEPEND" = nomakedepend ; then
-   { echo "$as_me:$LINENO: WARNING: Needs makedepend to generate dependencies for your installation." >&5
-echo "$as_me: WARNING: Needs makedepend to generate dependencies for your installation." >&2;}
-   { { echo "$as_me:$LINENO: error: Must use --with-makedepend='/PATH/makedepend'." >&5
-echo "$as_me: error: Must use --with-makedepend='/PATH/makedepend'." >&2;}
-   { (exit 1); exit 1; }; }
-fi
-
-
 
 # source tree vars
 CURRDIR=`pwd`
@@ -3951,8 +4134,8 @@ case "$with_cPP" in
     no)
         #  User specified --without-c++
         #  print a warning.
-        { echo "$as_me:$LINENO: WARNING: Option '--without-c++' Causes compilation to be suppressed." >&5
-echo "$as_me: WARNING: Option '--without-c++' Causes compilation to be suppressed." >&2;}
+        { echo "$as_me:$LINENO: WARNING: Option '--without-cPP' Causes compilation to be suppressed." >&5
+echo "$as_me: WARNING: Option '--without-cPP' Causes compilation to be suppressed." >&2;}
         { { echo "$as_me:$LINENO: error: A c++ compiler is required; current code is a c++ code." >&5
 echo "$as_me: error: A c++ compiler is required; current code is a c++ code." >&2;}
    { (exit 1); exit 1; }; }
@@ -3964,7 +4147,6 @@ echo "$as_me: error: A c++ compiler is required; current code is a c++ code." >&
         ;;
     *)
         CXX="$with_cPP"
-        cca_have_cpp=yes
         ;;
 esac
 
@@ -5355,6 +5537,8 @@ s,@LIBS@,$LIBS,;t t
 s,@MSQ_ROOT@,$MSQ_ROOT,;t t
 s,@MSQ_INSTALL_ROOT@,$MSQ_INSTALL_ROOT,;t t
 s,@STD_INCLUDE_FLAG@,$STD_INCLUDE_FLAG,;t t
+s,@MAKEDEPEND@,$MAKEDEPEND,;t t
+s,@AR@,$AR,;t t
 s,@build@,$build,;t t
 s,@build_cpu@,$build_cpu,;t t
 s,@build_vendor@,$build_vendor,;t t
@@ -5380,7 +5564,6 @@ s,@LN_S@,$LN_S,;t t
 s,@SET_MAKE@,$SET_MAKE,;t t
 s,@RANLIB@,$RANLIB,;t t
 s,@ac_ct_RANLIB@,$ac_ct_RANLIB,;t t
-s,@MAKEDEPEND@,$MAKEDEPEND,;t t
 s,@CXX@,$CXX,;t t
 s,@CXXFLAGS@,$CXXFLAGS,;t t
 s,@ac_ct_CXX@,$ac_ct_CXX,;t t

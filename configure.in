@@ -53,38 +53,6 @@ AC_SUBST(SET_MAKE)
 AC_PROG_RANLIB
 AC_SUBST(RANLIB)
 
-# Checks for Makedepend (can be passed in as option).
-AC_ARG_WITH(makedepend,
-    [Location of alternative makedepend program:
-  --with-makedepend=EXECUTABLE
-                          The location of makedepend.
-                          Give the full path:
-                              --with-makedepend='/usr/local/bin/makedepend' ],
-    , [with_makedepend=yes])
-
-case "$with_makedepend" in
-    no)
-	# no check for makedepend
-	AC_MSG_WARN([No makedepend given. Will not generate Makefile dependencies for your installation ... or please use --with-makedepend=[path] option.])
-        ;;
-    yes)
-        # search for it ourselves
-	AC_CHECK_PROG(MAKEDEPEND, makedepend, makedepend, nomakedepend, $PATH, :)dnl
-        ;;
-    *)
-	# Checks path given by user. 
-        MAKEDEPEND="$with_makedepend"
-	AC_CHECK_PROG(MAKEDEPEND, "$with_makedepend", "$with_makedepend", nomakedepend, :)dnl
-        ;;
-esac
-
-#  print a warning if none found.
-if test "$MAKEDEPEND" = nomakedepend ; then
-   AC_MSG_WARN([Needs makedepend to generate dependencies for your installation.])
-   AC_MSG_ERROR([Must use --with-makedepend='/PATH/makedepend'.])
-fi
-AC_SUBST(MAKEDEPEND)
-
 
 # source tree vars
 CURRDIR=`pwd`
@@ -143,17 +111,17 @@ AC_SUBST(CC)
 #------------------------------------------------------------------------------
 AC_ARG_WITH(cPP,
     [Location of alternative c++ compiler:
-  --with-c++=EXECUTABLE
+  --with-cPP=EXECUTABLE
                           The location of C++.
                           Give the full path:
-                              --with-c++='/usr/local/gcc/bin/g++' ],
+                              --with-cPP='/usr/local/gcc/bin/g++' ],
     , [with_cPP=yes])
 
 case "$with_cPP" in
     no)
         #  User specified --without-c++
         #  print a warning.
-        AC_MSG_WARN([Option '--without-c++' Causes compilation to be suppressed.])
+        AC_MSG_WARN([Option '--without-cPP' Causes compilation to be suppressed.])
         AC_MSG_ERROR([A c++ compiler is required; current code is a c++ code.])
         ;;
     yes)
@@ -163,7 +131,6 @@ case "$with_cPP" in
         ;;
     *)
         CXX="$with_cPP"
-        cca_have_cpp=yes
         ;;
 esac
 
@@ -328,6 +295,10 @@ AC_SUBST(MSQ_ROOT)
 AC_SUBST(MSQ_INSTALL_ROOT)
 
 
+# ---------------------------------------------------------
+# Decide whether to use standard C++ headers (default) 
+# or old style C/C++ headers (with option --with-c-headers)
+# ---------------------------------------------------------
 AC_ARG_WITH(c-headers, 
     [Uses the deprecated C style for headers:
   --with-c-headers=yes
@@ -349,6 +320,85 @@ esac
 AC_SUBST(STD_INCLUDE_FLAG)
 
 
+# --------------------------------------------------
+# Checks for Makedepend (can be passed in as option).
+# --------------------------------------------------
+AC_ARG_WITH(makedepend,
+    [Location of alternative makedepend program:
+  --with-makedepend=EXECUTABLE
+                          The location of makedepend.
+                          Give the full path:
+                              --with-makedepend='/usr/local/bin/makedepend' ],
+    , [with_makedepend=yes])
+
+case "$with_makedepend" in
+    no)
+	# no check for makedepend
+	AC_MSG_WARN([No makedepend given. Will not generate Makefile dependencies for your installation ... or please use --with-makedepend=[path] option.])
+        ;;
+    yes)
+        # search for it ourselves
+	AC_CHECK_PROG(MAKEDEPEND, makedepend, makedepend, nomakedepend, $PATH, :)dnl
+        ;;
+    *)
+	# Checks path given by user. 
+	AC_CHECK_PROG(MAKEDEPEND,"$with_makedepend","$with_makedepend", nomakedepend, /., :)dnl
+	if test "$MAKEDEPEND" = "nomakedepend" ; then
+	  AC_MSG_ERROR([option --with-makedepend='...' has been given an invalid executable.])
+	fi
+        ;;
+esac
+
+#  print a warning if none found.
+if test "$MAKEDEPEND" = nomakedepend ; then
+   AC_MSG_WARN([Needs makedepend to generate dependencies for your installation. You need the dependencies for a robust (re)compilation.])
+   AC_MSG_WARN([Please try to use --with-makedepend='/PATH/makedepend'.])
+fi
+AC_SUBST(MAKEDEPEND)
+# ----------------------------------------------------------------
+
+
+#-----------------------------------------------------------------
+#  see if the user gave us the location of a prefered archiver
+#-----------------------------------------------------------------
+AC_ARG_WITH(archiver,
+    [Location of alternative archiver (default is 'ar ru'):
+  --with-archiver=EXECUTABLE
+                          The location of the prefered archiver.
+                          Give the full path and arguments:
+                              --with-archiver='/usr/local/bin/ar ru' ],
+    , [with_archiver=yes])
+
+case "$with_archiver" in
+    no)
+        #  User specified --without-archiver
+        #  print a warning.
+        AC_MSG_WARN([Option '--without-archiver' Causes linking to be suppressed.])
+        AC_MSG_ERROR([An archiver is required.])
+        ;;
+    yes)
+        # search for it ourselves
+	AC_CHECK_PROG(AR, "ar", "ar", noarchiver, $PATH, :)dnl
+        ;;
+    *)
+	# Checks path given by user. 
+	AC_CHECK_PROG(AR,"$with_archiver","$with_archiver", noarchiver, /., :)dnl
+	if test "$AR" = "noarchiver" ; then
+	  AC_MSG_ERROR([option --with-archiver='...' has been given an invalid executable.])
+	fi
+        ;;
+esac
+
+#  print a warning if none found.
+if test "$AR" = noarchiver ; then
+   AC_MSG_ERROR([Needs archiver to generate library used in code linking. Please use --with-archiver='/PATH/archiver' option to give a valid archiver.])
+fi
+if test "$AR" = ar ; then
+  AR="ar ru" # space between ar and ru would mess up AC_CHECK_PROG ... so we deal with it here.  
+fi
+AC_SUBST(AR)
+
+# -----------------------------------------------------------
 
 
 MSQ_UNIX_PROGRAMS

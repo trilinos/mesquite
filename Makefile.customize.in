@@ -3,7 +3,7 @@ CXX = @CXX@
 LINKER = ${CXX}
 PREFIX = @
 MAKEDEPEND = @MAKEDEPEND@
-ARCHIVER = @RANLIB@
+ARCHIVER = @AR@
 
 ## Default settings for flags
 DEBUG_FLAG = 
