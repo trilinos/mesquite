@@ -58,24 +58,34 @@ PatchData::~PatchData()
 }
 
 
-double PatchData::get_max_element_area(MsqError &err)
+void PatchData::get_minmax_element_unsigned_area(double& min, double& max, MsqError &err)
 {
   std::map<ComputedInfo, double>::iterator max_it;
   max_it = computedInfos.find(MAX_UNSIGNED_AREA);
-  if ( max_it != computedInfos.end() ) { // if a max area is already there
-    return max_it->second;
+  std::map<ComputedInfo, double>::iterator min_it;
+  min_it = computedInfos.find(MIN_UNSIGNED_AREA);
+  if ( max_it != computedInfos.end() 
+       && min_it != computedInfos.end() ) { // if a max area is already there
+    max = max_it->second;
+    min = min_it->second;
   }
   else { // if there is no max area available.
-    double max=0;
+    max=0;
+    min=MSQ_DBL_MAX;
     for (size_t i=0; i<numElements; ++i) {
       double vol;
       vol = elementArray[i].compute_unsigned_area(*this, err);
       MSQ_CHKERR(err);
       max = vol > max ? vol : max;
+      min = vol < min ? vol : min;
     }
     computedInfos.insert(std::pair<const ComputedInfo, double>(MAX_UNSIGNED_AREA,max));
-    return max;
+    computedInfos.insert(std::pair<const ComputedInfo, double>(MIN_UNSIGNED_AREA,min));
   }
+  assert(max > 0 && min > 0);
+  assert(max != 0);
+  assert(min != MSQ_DBL_MAX);
+  return;
 }
 
 double PatchData::get_barrier_delta_2d(MsqError &err)
@@ -1099,13 +1109,13 @@ void PatchData::print()
    cout << " Vertices coordinates \n"; 
    for (size_t i=0; i<numVertices; ++i)
      {
-	cout << vertexArray[i];
+	cout << i << "\t" << vertexArray[i];
      }
    
    cout << "Element Connectivity \n";
    for (size_t i=0; i<numElements; ++i)
      {
-	cout << elementArray[i];
+	cout << i << "\t" << elementArray[i];
      }
    
 }

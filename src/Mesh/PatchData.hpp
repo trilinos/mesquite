@@ -77,7 +77,7 @@ namespace Mesquite
     //! Returns the maximum volume or area out of all the elements in the patch 
     //! This information is stored in the patch and should not decrease performance
     //! when used properly. See also PatchData::clear_computed_info() .
-    double get_max_element_area(MsqError &err);
+    void get_minmax_element_unsigned_area(double& min, double& max, MsqError &err);
     
     //! Returns delta based the minimum and maximum det2d over all elements in the patch
     //! This information is stored in the patch and should not decrease performance
