@@ -164,7 +164,7 @@ inline bool g_fcn_2e(double &obj, Vector3D g_obj[3],
 {
   double matr[9], f;
   double adj_m[9], g;		// adj_m[2,5,8] not used
-  double loc1, loc2, loc3, loc4;
+  double loc1, loc2, loc3;
 
   /* Calculate M = [A*inv(W) n] */
   matr[0] = x[1][0] - x[0][0];
@@ -579,7 +579,7 @@ inline bool g_fcn_2i(double &obj, Vector3D g_obj[3],
 {
   double matr[9], f;
   double adj_m[9], g;            // adj_m[2,5,8] not used
-  double loc1, loc2, loc3, loc4;
+  double loc1, loc2, loc3;
 
   /* Calculate M = [A*inv(W) n] */
   matr[0] = d[0]*(x[1][0] - x[0][0]);
@@ -966,7 +966,7 @@ inline bool g_fcn_3e(double &obj, Vector3D g_obj[4], const Vector3D x[4],
 {
   double matr[9], f;
   double adj_m[9], g;
-  double loc1, loc2, loc3, loc4;
+  double loc1, loc2, loc3;
 
   /* Calculate M = A*inv(W). */
   f       = x[1][0] + x[0][0];
@@ -1665,7 +1665,7 @@ inline bool g_fcn_3i(double &obj, Vector3D g_obj[4], const Vector3D x[4],
 {
   double matr[9], f;
   double adj_m[9], g;
-  double loc1, loc2, loc3, loc4;
+  double loc1, loc2, loc3;
 
   /* Calculate M = A*inv(W). */
   matr[0] = d[0]*(x[1][0] - x[0][0]);
