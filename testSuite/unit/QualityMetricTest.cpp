@@ -36,6 +36,7 @@ correct metric return values.
 #include "AspectRatioGammaQualityMetric.hpp"
 #include "MultiplyQualityMetric.hpp"
 #include "EdgeLengthQualityMetric.hpp"
+#include "UntangleBetaQualityMetric.hpp"
 #include "MsqMessage.hpp"
 #include "cppunit/extensions/HelperMacros.h"
 #include "cppunit/SignalException.h"
@@ -43,10 +44,11 @@ correct metric return values.
 #include "SmoothnessQualityMetric.hpp"
 #include "LocalSizeQualityMetric.hpp"
 #include "CornerJacobianQualityMetric.hpp"
+#include "PowerQualityMetric.hpp"
+#include "ScalarAddQualityMetric.hpp"
 #include "MeshImpl.hpp"
 #include "MeshSet.hpp"
 #include "PlanarDomain.hpp"
-
 
 #include <math.h>
 
@@ -68,6 +70,8 @@ private:
   CPPUNIT_TEST (test_aspect_ratio_gamma);
     //Test composite multiply
   CPPUNIT_TEST (test_composite_multiply);
+  CPPUNIT_TEST (test_other_composites);
+  
     //Test edge length metric
   CPPUNIT_TEST (test_edge_length_metric);  
     //Test averaging methods
@@ -99,6 +103,8 @@ private:
   CPPUNIT_TEST (test_mean_ratio_tet_grad_from_hessian);
   CPPUNIT_TEST (test_mean_ratio_hex_grad_from_hessian);
 
+  CPPUNIT_TEST (test_untangle_metric);
+
   CPPUNIT_TEST_SUITE_END();
   
 private:
@@ -107,6 +113,10 @@ private:
   PatchData quadPatch;
   PatchData tetPatch;
   PatchData hexPatch;
+  PatchData invertedTri;
+  PatchData invertedTet;
+  PatchData idealTri;
+  PatchData idealTet;
     //Tol used for double comparisons
   double qualTol;
   int pF;//PRINT_FLAG
@@ -142,6 +152,13 @@ public:
         hex.
      */
      create_qm_two_hex_patch(hexPatch,err);MSQ_CHKERR(err);
+
+       //'ideal' inverted tet
+     create_one_inverted_tet_patch(invertedTet, err);MSQ_CHKERR(err);
+       //ideal tri
+     create_one_tri_patch(idealTri, err);MSQ_CHKERR(err);
+       //ideal tet
+     create_one_tet_patch(idealTet, err);MSQ_CHKERR(err);
   }
 
   void tearDown()
@@ -403,6 +420,50 @@ public:
        PRINT_INFO("\nMULT HEX %f", val);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
    }
+  void test_other_composites()
+     {
+       MsqError err;
+       double val;
+       double temp_val;
+       MsqMeshEntity* elems;
+       MsqVertex* verts = triPatch.get_vertex_array(err);
+       elems=triPatch.get_element_array(err);
+       MSQ_CHKERR(err);
+         //vertex based
+       SmoothnessQualityMetric *m1 = EdgeLengthQualityMetric::create_new();
+       CompositeQualityMetric *pow_m1 = PowerQualityMetric::create_new(m1,2,
+                                                                       err);
+       CompositeQualityMetric *sa_m1 =ScalarAddQualityMetric::create_new(m1,2,
+                                                                         err);
+       m1->evaluate_vertex(triPatch,&verts[2],val,err);MSQ_CHKERR(err);
+       pow_m1->evaluate_vertex(triPatch,&verts[2],temp_val,err);
+       MSQ_CHKERR(err);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(val*val,temp_val,qualTol);
+       sa_m1->evaluate_vertex(triPatch,&verts[2],temp_val,err);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(val+2.0,temp_val,qualTol);
+         //element based
+       ShapeQualityMetric *m2 = ConditionNumberQualityMetric::create_new();
+       CompositeQualityMetric *pow_m2 = PowerQualityMetric::create_new(m2,2,
+                                                                       err);
+       CompositeQualityMetric *sa_m2 =ScalarAddQualityMetric::create_new(m2,2,
+                                                                         err);
+       m2->evaluate_element(triPatch,&elems[0],val,err);MSQ_CHKERR(err);
+       pow_m2->evaluate_element(triPatch,&elems[0],temp_val,err);
+       MSQ_CHKERR(err);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(val*val,temp_val,qualTol);
+       sa_m2->evaluate_element(triPatch,&elems[0],temp_val,err);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(val+2.0,temp_val,qualTol);
+         //element based with a negative power
+       CompositeQualityMetric *pow_mneg2 = PowerQualityMetric::create_new(m2,
+                                                                          -2,
+                                                                          err);
+       m2->evaluate_element(triPatch,&elems[0],val,err);MSQ_CHKERR(err);
+       pow_mneg2->evaluate_element(triPatch,&elems[0],temp_val,err);
+       MSQ_CHKERR(err);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0/(val*val),temp_val,qualTol);
+       delete m1, m2, pow_m1, pow_m2, sa_m1, sa_m2, pow_mneg2;
+     }
+  
 
   void test_edge_length_metric()
    {
@@ -414,12 +475,17 @@ public:
      elems=triPatch.get_element_array(err);
      MSQ_CHKERR(err);
      SmoothnessQualityMetric *met = EdgeLengthQualityMetric::create_new();
+       //SmoothnessQualityMetric *lam_met = EdgeLengthQualityMetric::create_new(EdgeLengthQualityMetric::DIVIDE_BY_LAMBDA);
        //Check aspect ratio gamma of ideal tri patch
        //Vert[2] has two edges connected of length 1
      met->evaluate_vertex(triPatch,&verts[2],val,err);MSQ_CHKERR(err);
      if(pF)
        PRINT_INFO("\nEdge Length Metric tris (should be 2) %f", val);
-     CPPUNIT_ASSERT(fabs(val-2.0)<qualTol);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,2.0,qualTol);
+       //lam_met->evaluate_vertex(triPatch,&verts[2],val,err);MSQ_CHKERR(err);
+       //if(pF)
+       //PRINT_INFO("\nEdge Length Metric tris (should be 4) %f", val);
+       //CPPUNIT_ASSERT_DOUBLES_EQUAL(val,4.0,qualTol);
        //Vert[1] has two edges connected of length 1
        //THIRD TET's
      verts = tetPatch.get_vertex_array(err);
@@ -428,8 +494,9 @@ public:
      met->evaluate_vertex(tetPatch,&verts[0],val,err);MSQ_CHKERR(err);
      if(pF)
        PRINT_INFO("\nEdge Length Metric tets (should be 3) %f", val);
-     CPPUNIT_ASSERT(fabs(val-3.0)<qualTol);
-     
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,3.0,qualTol);
+     delete met;
+       //delete lam_met;
    }
   
   void test_asm()
@@ -512,12 +579,12 @@ public:
        double first_val=-1;
        bool first_bool=met->evaluate_vertex(p1,&vert1[0],first_val,err);
        if(pF)
-         PRINT_INFO("\nEdge Length Metric ideal tri %f", first_val);
+         PRINT_INFO("\nLocal size ideal tri %f", first_val);
        CPPUNIT_ASSERT_DOUBLES_EQUAL(first_val, 1.0, MSQ_MIN);
        CPPUNIT_ASSERT(first_bool==true);
        first_bool=met->evaluate_vertex(p1,&vert1[1],first_val,err);
        if(pF)
-         PRINT_INFO("\nEdge Length Metric ideal tri %f", first_val);
+         PRINT_INFO("\nLocal size ideal tri %f", first_val);
        CPPUNIT_ASSERT_DOUBLES_EQUAL(first_val, 1.0, MSQ_MIN);
        CPPUNIT_ASSERT(first_bool==true);
          //Test on a patch with two ideal tris
@@ -528,7 +595,7 @@ public:
        bool second_bool=met->evaluate_vertex(p2,&vert2[0],second_val,err);
          //Two neighboring tris with equal area should have local size of 1.0
        if(pF)
-         PRINT_INFO("\nEdge Length Metric two ideal tris %f", second_val);
+         PRINT_INFO("\nLocal Size Metric two ideal tris %f", second_val);
        CPPUNIT_ASSERT_DOUBLES_EQUAL(second_val, 1.0, MSQ_MIN);
        CPPUNIT_ASSERT(second_bool==true);
          /*
@@ -576,6 +643,32 @@ public:
        CPPUNIT_ASSERT(second_bool==true);
      }
   
+  void test_untangle_metric()
+     {
+       UntangleQualityMetric *met = UntangleBetaQualityMetric::create_new(0.0);
+       MsqError err;
+       double val;
+         //Test the metric on a single elemnt patch
+       MsqMeshEntity* elem1=idealTri.get_element_array(err);
+       bool first_bool=met->evaluate_element(idealTri,&elem1[0],val,err);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(val, 0.0, MSQ_MIN);
+       CPPUNIT_ASSERT(first_bool==true);
+       elem1=idealTet.get_element_array(err);
+       first_bool=met->evaluate_element(idealTet,&elem1[0],val,err);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(val, 0.0, MSQ_MIN);
+       CPPUNIT_ASSERT(first_bool==true);
+         //elem1=invertedTri.get_element_array(err);
+         //first_bool=met->evaluate_element(invertedTri,&elem1[0],val,err);
+         //std::cout<<"\nINVERTED TRI "<<val<<"\n";
+         //CPPUNIT_ASSERT_DOUBLES_EQUAL(first_val, 0.0, MSQ_MIN);
+         //CPPUNIT_ASSERT(first_bool==true);
+       elem1=invertedTet.get_element_array(err);
+       first_bool=met->evaluate_element(invertedTet,&elem1[0],val,err);
+         //std::cout<<"\nINVERTED TET "<<val<<"\n";
+         //Michael:: double check to make sure that 2.0 is correct here.
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(val, 2.0, MSQ_MIN);
+       CPPUNIT_ASSERT(first_bool==true);
+     }  
   
   void test_averaging_method()
      {
@@ -588,35 +681,53 @@ public:
      ShapeQualityMetric *met = MeanRatioQualityMetric::create_new();
        //Check mean ratio of ideal quad
      met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
-     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
      met->set_averaging_method(QualityMetric::GEOMETRIC, err);
        //Check mean ratio of ideal quad GEOMETRIC
      met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
-     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
      met->set_averaging_method(QualityMetric::HARMONIC, err);
        //Check mean ratio of ideal quad HARMONIC
      met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
-     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
      met->set_averaging_method(QualityMetric::LINEAR, err);
        //Check mean ratio of ideal quad LINEAR
      met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
-     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
      met->set_averaging_method(QualityMetric::MAXIMUM, err);
        //Check mean ratio of ideal quad MAXIMUM
      met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
-     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
      met->set_averaging_method(QualityMetric::MINIMUM, err);
        //Check mean ratio of ideal quad MINIMUM
      met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
-     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
      met->set_averaging_method(QualityMetric::RMS, err);
        //Check mean ratio of ideal quad RMS
      met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
-     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
      met->set_averaging_method(QualityMetric::SUM, err);
        //Check mean ratio of ideal SUM (NOTICE:: should be 4.0)
      met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
-     CPPUNIT_ASSERT(fabs(val-4.0)<qualTol);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,4.0,qualTol);
+     met->set_averaging_method(QualityMetric::MAX_OVER_MIN, err);
+       //Check mean ratio of ideal MAX_OVER_MIN (NOTICE:: should be 1.0)
+     met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
+     
+     met->set_averaging_method(QualityMetric::MAX_MINUS_MIN, err);
+       //Check mean ratio of ideal MAX_MINUS_MIN (NOTICE:: should be 0.0)
+     met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,0.0,qualTol);
+     met->set_averaging_method(QualityMetric::STANDARD_DEVIATION, err);
+       //Check mean ratio of ideal STANDARD_DEVIATION (NOTICE:: should be 0.0)
+     met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,0.0,qualTol);
+     
+     met->set_averaging_method(QualityMetric::SUM_OF_RATIOS_SQUARED, err);
+       //Check mean ratio of ideal SUM_OF_RATIOS_SQR (NOTICE:: should be 1.0)
+     met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
    }
 
   void test_mean_ratio_gradient(PatchData &pd)

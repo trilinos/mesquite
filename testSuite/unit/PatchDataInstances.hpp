@@ -49,7 +49,7 @@ namespace Mesquite
   }
 
 
-  //! creates a patch containing one ideal tetrahedra
+  //! creates a patch containing one ideal hexahedra
    inline void create_one_hex_patch(PatchData &one_hex_patch, MsqError &err)
    {
        // creates empty Patch
@@ -127,7 +127,40 @@ namespace Mesquite
             indices,
             4*sizeof(size_t));
    }
-   
+      //! creates a Patch containing an ideal tetrahedra
+   inline void create_one_inverted_tet_patch(PatchData &one_tet_patch,
+                                             MsqError &err)
+   {
+       //**********************FILL TET*************************
+       // creates empty Patch
+     one_tet_patch.set_num_vertices(4);
+     one_tet_patch.set_num_elements(1);
+     
+       // Fills up with vertices for ideal tet
+     double coords[3];
+     MsqVertex* vert_array = one_tet_patch.get_vertex_array(err);
+     
+     coords[0] = 1; coords[1] = 1; coords[2] = 1;
+     vert_array[0] = coords;
+     
+     coords[0] = 2; coords[1] = 1; coords[2] = 1;
+     vert_array[1] = coords;
+
+     coords[0] = 1.5; coords[1] = 1+sqrt(3.0)/2.0; coords[2] = 1;
+     vert_array[2] = coords;
+
+     coords[0] = 1.5; coords[1] = 1+sqrt(3.0)/6.0;
+     coords[2] = 1-sqrt(2.0)/sqrt(3.0);
+     vert_array[3] = coords;
+     
+       // patch has only one element: an ideal tet.
+     size_t indices[4] = { 0, 1, 2, 3 };
+     MsqMeshEntity& tet = one_tet_patch.element_by_index(0);
+     tet.set_element_type(Mesquite::TETRAHEDRON);
+     memcpy(tet.get_modifiable_vertex_index_array(),
+            indices,
+            4*sizeof(size_t));
+   }
    
    //! creates a Patch containing an ideal quadrilateral
    inline void create_one_quad_patch(PatchData &one_qua_patch, MsqError &err)
@@ -194,7 +227,37 @@ namespace Mesquite
             indices,
             3*sizeof(size_t));
    }
+     /*
+    inline void create_one_inverted_tri_patch(PatchData &one_tri_patch, MsqError &err)
+   {
 
+     //**********************FILL tri*************************
+       // creates empty Patch
+     one_tri_patch.set_num_vertices(3);
+     one_tri_patch.set_num_elements(1);
+     
+       // Fills up with vertices for ideal tri
+     double coords[3];
+     MsqVertex* vert_array = one_tri_patch.get_vertex_array(err);
+     
+     coords[0] = 1; coords[1] = 1; coords[2] = 1;
+     vert_array[0] = coords;
+     
+     coords[0] = 2; coords[1] = 1; coords[2] = 1;
+     vert_array[1] = coords;
+     
+     coords[0] = 1.5; coords[1] = 1-sqrt(3.0)/2.0; coords[2] = 1;
+     vert_array[2] = coords;
+     
+       // patch has only one element: an ideal tri
+     size_t indices[3] = { 0, 1, 2 };
+     MsqMeshEntity& tri = one_tri_patch.element_by_index(0);
+     tri.set_element_type(Mesquite::TRIANGLE);
+     memcpy(tri.get_modifiable_vertex_index_array(),
+            indices,
+            3*sizeof(size_t));
+   }
+      */
   
    /*! \fn create_two_tri_patch(PatchData &one_tri_patch, MsqError &err)
             2
@@ -548,7 +611,7 @@ namespace Mesquite
       Memory allocated in this function must be deallocated with
       destroy_patch_with_domain().
    */
-   inline void create_qm_two_tri_patch_with_domain(PatchData &triPatch, MsqError &err) 
+   inline void create_qm_two_tri_patch_with_domain(PatchData &triPatch, MsqError &/*err*/) 
    {
      MeshSet* mesh_set1 = new MeshSet;;
      Vector3D pnt(0,0,0);
@@ -585,7 +648,7 @@ namespace Mesquite
        Memory allocated in this function must be deallocated with
        destroy_patch_with_domain().
      */
-   inline void create_qm_two_quad_patch_with_domain(PatchData &quadPatch, MsqError &err)
+   inline void create_qm_two_quad_patch_with_domain(PatchData &quadPatch, MsqError &/*err*/)
    {
      MeshSet* mesh_set1 = new MeshSet;;
      Vector3D pnt(0,0,0);
@@ -625,7 +688,7 @@ namespace Mesquite
         equilateral (the ideal for most metrics).  tet_2 is an arbitrary
         tet.
      */
-   inline void create_qm_two_tet_patch(PatchData &tetPatch, MsqError &err)
+   inline void create_qm_two_tet_patch(PatchData &tetPatch, MsqError &/*err*/)
    {
      tetPatch.set_num_vertices(5);
 
@@ -656,7 +719,7 @@ namespace Mesquite
       unit cube (the ideal for most metrics).  hex_2 is an arbitrary
       hex.
    */
-   inline void create_qm_two_hex_patch(PatchData &hexPatch, MsqError &err)
+   inline void create_qm_two_hex_patch(PatchData &hexPatch, MsqError &/*err*/)
    {
      hexPatch.set_num_vertices(12);
 
