@@ -12,7 +12,6 @@
 #include "Vector3D.hpp"
 #include "QualityMetric.hpp"
 #include "MsqMeshEntity.hpp"
-#include "PatchData.hpp"
 #include "MsqMessage.hpp"
 using namespace Mesquite;
 
@@ -42,67 +41,103 @@ bool UntangleBetaQualityMetric::evaluate_element(PatchData &pd,
                                                 MsqMeshEntity *element,
                                                  double &fval,
                                                 MsqError &err){
-  int num_sample_points;
-  std::vector<Vector3D> sample_points;
-  // get sample points
-  if(element==NULL)
-     err.set_msg("Function passed NULL MsqMeshEntity pointer");
-  ElementEvaluationMode eval_mode = get_element_evaluation_mode();
-  element->get_sample_points(eval_mode, sample_points, err);
   
-    // loop over sample points
-  Vector3D jacobian_vectors[3];
-  short num_jacobian_vectors;
-  int i=0;
-  num_sample_points=sample_points.size();
-  double *metric_values=new double[num_sample_points];
-  double temp_var;
-    //vars used for 2d
-  Vector3D surface_normal, cross_vec;
-  size_t vertex1;
-  std::vector<Vector3D>::iterator iter=sample_points.begin();
-  for(i=0;i<num_sample_points;++i)
-  {
-      // compute weighted jacobian
-    element->compute_weighted_jacobian(pd, (*iter), jacobian_vectors,
-                                       num_jacobian_vectors, err);
-      // evaluate mean ratio at ith sample point
-      //if 2 jacobian vectors (2D elem)    
-    if(num_jacobian_vectors==2)
-    {
-      vertex1=element->get_vertex_index(0);
-      pd.get_domain_normal_at_vertex(vertex1,surface_normal,err);
-      cross_vec=jacobian_vectors[0]*jacobian_vectors[1];
-        //std::cout<<"\nsurface_normal "<<surface_normal;
-        //std::cout<<"\cross_vec "<<cross_vec;
-      temp_var=cross_vec.length();
-      if(cross_vec%surface_normal<0.0){
-        temp_var*=-1;
-      }
-      temp_var -= mBeta;
-        //std::cout<<"temp_var == "<<temp_var;
+  double met_vals[MSQ_MAX_NUM_VERT_PER_ENT];
+  fval=MSQ_MAX_CAP;
+  const size_t* v_i = element->get_vertex_index_array();
+    //only 3 temp_vec will be sent to untangle calculator, but the
+    //additional vector3Ds may be needed during the calculations
+  Vector3D temp_vec[6];
+  MsqVertex *vertices=pd.get_vertex_array(err);
+  switch(element->get_element_type()){
+    case TRIANGLE:
+      temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
+      temp_vec[2]=vertices[v_i[2]]-vertices[v_i[0]];
+        //make relative to equilateral
+      temp_vec[1]=((2*temp_vec[2])-temp_vec[0])*MSQ_SQRT_THREE_INV;
+      untangle_function_2d(temp_vec,v_i[0],pd,fval,err);
+      return true;
+    case QUADRILATERAL:
+      temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
+      temp_vec[1]=vertices[v_i[3]]-vertices[v_i[0]];
+      untangle_function_2d(temp_vec,v_i[0],pd,met_vals[0],err);
       
-      metric_values[i]=fabs(temp_var)-temp_var;
-    }
-      //if three jacobian vectors (3D elem)
-    else if(num_jacobian_vectors==3)
-    {
-      temp_var=jacobian_vectors[0]%(jacobian_vectors[1]*jacobian_vectors[2]);
-      temp_var-=mBeta;
-      metric_values[i]=fabs(temp_var)-temp_var;
-        
-    }
-    else
-    {
-      metric_values[i]=MSQ_MAX_CAP;
-    }
-    ++iter;
-  }// end loop over sample points
-  
-  MSQ_CHKERR(err);
-  fval=average_metrics(metric_values,num_sample_points,err);
-  MSQ_CHKERR(err);
-  delete[] metric_values;
+      temp_vec[0]=vertices[v_i[2]]-vertices[v_i[1]];
+      temp_vec[1]=vertices[v_i[0]]-vertices[v_i[1]];
+      untangle_function_2d(temp_vec,v_i[1],pd,met_vals[1],err);
+      
+      temp_vec[0]=vertices[v_i[3]]-vertices[v_i[2]];
+      temp_vec[1]=vertices[v_i[1]]-vertices[v_i[2]];
+      untangle_function_2d(temp_vec,v_i[2],pd,met_vals[2],err);
+      
+      temp_vec[0]=vertices[v_i[0]]-vertices[v_i[3]];
+      temp_vec[1]=vertices[v_i[2]]-vertices[v_i[3]];
+      untangle_function_2d(temp_vec,v_i[3],pd,met_vals[3],err);
+      fval=average_metrics(met_vals, 4, err);
   return true;
+    case TETRAHEDRON:
+      temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
+      temp_vec[3]=vertices[v_i[2]]-vertices[v_i[0]];
+      temp_vec[4]=vertices[v_i[3]]-vertices[v_i[0]];
+        //transform to equilateral tet
+      temp_vec[1]=((2*temp_vec[3])-temp_vec[0])/MSQ_SQRT_THREE;
+      temp_vec[2]=((3*temp_vec[4])-temp_vec[0]-temp_vec[3])/
+        (MSQ_SQRT_THREE*MSQ_SQRT_TWO);
+      untangle_function_3d(temp_vec,fval,err);
+      return true;
+    case HEXAHEDRON:
+        //transform to v_i[0]
+      temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
+      temp_vec[1]=vertices[v_i[3]]-vertices[v_i[0]];
+      temp_vec[2]=vertices[v_i[4]]-vertices[v_i[0]];
+      untangle_function_3d(temp_vec,met_vals[0],err);
+      
+      temp_vec[0]=vertices[v_i[2]]-vertices[v_i[1]];
+      temp_vec[1]=vertices[v_i[0]]-vertices[v_i[1]];
+      temp_vec[2]=vertices[v_i[5]]-vertices[v_i[1]];
+      untangle_function_3d(temp_vec,met_vals[1],err);
+      
+      temp_vec[0]=vertices[v_i[3]]-vertices[v_i[2]];
+      temp_vec[1]=vertices[v_i[1]]-vertices[v_i[2]];
+      temp_vec[2]=vertices[v_i[6]]-vertices[v_i[2]];
+      untangle_function_3d(temp_vec,met_vals[2],err);
+      
+      temp_vec[0]=vertices[v_i[0]]-vertices[v_i[3]];
+      temp_vec[1]=vertices[v_i[2]]-vertices[v_i[3]];
+      temp_vec[2]=vertices[v_i[7]]-vertices[v_i[3]];
+      untangle_function_3d(temp_vec,met_vals[3],err);
+      
+      temp_vec[0]=vertices[v_i[7]]-vertices[v_i[4]];
+      temp_vec[1]=vertices[v_i[5]]-vertices[v_i[4]];
+      temp_vec[2]=vertices[v_i[0]]-vertices[v_i[4]];
+      untangle_function_3d(temp_vec,met_vals[4],err);
+      
+      temp_vec[0]=vertices[v_i[4]]-vertices[v_i[5]];
+      temp_vec[1]=vertices[v_i[6]]-vertices[v_i[5]];
+      temp_vec[2]=vertices[v_i[1]]-vertices[v_i[5]];
+      untangle_function_3d(temp_vec,met_vals[5],err);
+      
+      temp_vec[0]=vertices[v_i[5]]-vertices[v_i[6]];
+      temp_vec[1]=vertices[v_i[7]]-vertices[v_i[6]];
+      temp_vec[2]=vertices[v_i[2]]-vertices[v_i[6]];
+      untangle_function_3d(temp_vec,met_vals[6],err);
+      
+      temp_vec[0]=vertices[v_i[6]]-vertices[v_i[7]];
+      temp_vec[1]=vertices[v_i[4]]-vertices[v_i[7]];
+      temp_vec[2]=vertices[v_i[3]]-vertices[v_i[7]];
+      untangle_function_3d(temp_vec,met_vals[7],err);
+      fval=average_metrics(met_vals, 8, err);
+      return true;
+    default:
+      err.set_msg("Element of incorrect type sent to UntangleBetaQualityMetric");
+      return false;
+  }// end switch over element type
+
+  
 }
 
+
+
+
+
+     
