@@ -8,7 +8,7 @@
 //    E-MAIL: mbrewer@sandia.gov
 //
 // ORIG-DATE: 03-Dec-02
-//  LAST-MOD:  6-May-03 at 12:55:10 by Thomas Leurent
+//  LAST-MOD: 20-May-03 at 09:18:01 by Michael Brewer
 //
 // DESCRIPTION:
 // ============
@@ -158,12 +158,19 @@ public:
      ShapeQualityMetric *met = ConditionNumberQualityMetric::create_new();
      ShapeQualityMetric *gmet = GeneralizedConditionNumberQualityMetric::create_new();
        //Check condition number of ideal tri
-     met->evaluate_element(triPatch,&elems[0],val,err);MSQ_CHKERR(err);
+     v_flag=met->evaluate_element(triPatch,&elems[0],val,err);MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(v_flag==true);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+       //Check generalized condition number of ideal tri
+     v_flag=gmet->evaluate_element(triPatch,&elems[0],val2,err);MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(v_flag==true);
+     CPPUNIT_ASSERT(fabs(val2-1.0)<qualTol);
        //For now, make sure cond num and generalized cond num give
        //equivalent answer for arbitrary tri.
-     met->evaluate_element(triPatch,&elems[1],val,err); MSQ_CHKERR(err);
-     gmet->evaluate_element(triPatch,&elems[1],val2,err); MSQ_CHKERR(err);
+     v_flag=met->evaluate_element(triPatch,&elems[1],val,err); MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(v_flag==true);
+     v_flag=gmet->evaluate_element(triPatch,&elems[1],val2,err); MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(v_flag==true);
      val -= val2;
      if(pF)
        PRINT_INFO("\nGEN TRI %f", val2);
@@ -174,12 +181,19 @@ public:
      verts = quadPatch.get_vertex_array(err);
      elems = quadPatch.get_element_array(err);
        //Check condition number of ideal quad
-     met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
-     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+     v_flag=met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(v_flag==true);
+     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol); 
+     //Check generalized condition number of ideal quad
+     v_flag=gmet->evaluate_element(quadPatch,&elems[0],val2,err);MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(v_flag==true);
+     CPPUNIT_ASSERT(fabs(val2-1.0)<qualTol);
        //For now, make sure cond num and generalized cond num give
        //equivalent answer for arbitrary quad.
-     met->evaluate_element(quadPatch,&elems[1],val,err); MSQ_CHKERR(err);
-     gmet->evaluate_element(quadPatch,&elems[1],val2,err); MSQ_CHKERR(err);
+     v_flag=met->evaluate_element(quadPatch,&elems[1],val,err); MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(v_flag==true);
+     v_flag=gmet->evaluate_element(quadPatch,&elems[1],val2,err); MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(v_flag==true);
      
      val -= val2;
      if(pF)
@@ -191,11 +205,17 @@ public:
      verts = tetPatch.get_vertex_array(err);
      elems = tetPatch.get_element_array(err);
        //Check condition number of ideal tet
-     val = met->evaluate_element(tetPatch,&elems[0],val,err);MSQ_CHKERR(err);
+     v_flag=met->evaluate_element(tetPatch,&elems[0],val,err);MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(v_flag==true);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+       //Check generalized condition number of ideal tet
+     v_flag=gmet->evaluate_element(tetPatch,&elems[0],val2,err);MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(v_flag==true);
+     CPPUNIT_ASSERT(fabs(val2-1.0)<qualTol);
        //For now, make sure cond num and generalized cond num give
        //equivalent answer for arbitrary tet.
-     met->evaluate_element(tetPatch,&elems[1],val,err); MSQ_CHKERR(err);
+     v_flag=met->evaluate_element(tetPatch,&elems[1],val,err); MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(v_flag==true);
      v_flag=gmet->evaluate_element(tetPatch,&elems[1],val2,err); MSQ_CHKERR(err);
      CPPUNIT_ASSERT(v_flag==true);
      
@@ -209,16 +229,23 @@ public:
      verts = hexPatch.get_vertex_array(err);
      elems = hexPatch.get_element_array(err);
        //Check condition number of ideal hex
-     met->evaluate_element(hexPatch,&elems[0],val,err);MSQ_CHKERR(err);
+     v_flag=met->evaluate_element(hexPatch,&elems[0],val,err);MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(v_flag==true);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+       //Check generalized condition number of ideal hex
+     v_flag=gmet->evaluate_element(hexPatch,&elems[0],val2,err);MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(v_flag==true);
+     CPPUNIT_ASSERT(fabs(val2-1.0)<qualTol);
        //For now, make sure cond num and generalized cond num give
        //equivalent answer for arbitrary tet.
      v_flag=met->evaluate_element(hexPatch,&elems[1],val,err); MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(v_flag==true);
      if(pF)
        PRINT_INFO("\nCON HEX %f", val);
      CPPUNIT_ASSERT(v_flag==true);
      
-     gmet->evaluate_element(hexPatch,&elems[1],val2,err); MSQ_CHKERR(err);
+     v_flag=gmet->evaluate_element(hexPatch,&elems[1],val2,err); MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(v_flag==true);
      val -= val2;
      if(pF)
        PRINT_INFO("\nGEN HEX %f", val2);
