@@ -64,19 +64,21 @@ namespace Mesquite
     MIXED
   };
 
-    /*!Enumeration telling where the geometry can be found.
-      NONE: No geometry is known.
-      TSTT_DEFINED:  The geometry is defined through the TSTT interface.
-      MSQ_DEFINED:  The geometry is stored in a SimplifiedGeometryEngine.
-      */
-  enum GeometryEngine
+    // Version information
+  const char* version_string(bool include_build_number = false);
+  unsigned int major_version_number();
+  unsigned int minor_version_number();
+  unsigned int build_number();
+  enum ReleaseType
   {
-    NONE,
-    TSTT_DEFINED,
-    MSQ_DEFINED
+    STABLE_RELEASE,
+    BETA,
+    ALPHA
   };
+  ReleaseType release_type();
   
-  //GLOBALS variables
+
+  //GLOBAL variables
   const int MSQ_MAX_NUM_VERT_PER_ENT=8;
   const int MSQ_HIST_SIZE=7;//number of division in histogram
   const double MSQ_MIN=1.e-12;

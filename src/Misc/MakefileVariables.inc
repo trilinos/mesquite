@@ -5,7 +5,8 @@ MISCSRC = $(MISCDIR)/MesquiteError.cpp \
 	       $(MISCDIR)/MsqMessage.cpp \
 	       $(MISCDIR)/MsqHessian.cpp \
 	       $(MISCDIR)/PlanarDomain.cpp \
-	       $(MISCDIR)/SphericalDomain.cpp
+	       $(MISCDIR)/SphericalDomain.cpp \
+	       $(MISCDIR)/MesquiteVersion.cpp
 
 MISCHEADERS = \
 	$(patsubst $(MISCDIR)/%,$(localincludedir)/%,\
