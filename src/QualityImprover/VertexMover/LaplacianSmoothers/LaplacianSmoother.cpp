@@ -49,8 +49,11 @@ void LaplacianSmoother::optimize_vertex_positions(PatchData &pd,
     //std::cout << "- Executing LaplacianSmoother::optimize_vertex_position()\n";
 
   int num_local_vertices = pd.num_vertices();
-
-  int dim = get_mesh_set()->space_dim();
+    //default the laplacian smoother to 3 even for 2-d elements.
+    //int dim = get_mesh_set()->space_dim();
+  int dim = 3;
+  
+  
   
   // gets the array of coordinates for the patch and print it 
   MsqVertex *patch_coords = pd.get_vertex_array(err); MSQ_CHKERR(err);
