@@ -54,5 +54,6 @@ MsqVertex& MsqVertex::operator=(const MsqVertex& rhs)
 MsqVertex::~MsqVertex()
 {
   delete mTag;
+  mTag =0;
 }
  

@@ -30,7 +30,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD: 27-Feb-04 at 11:29:43 by Thomas Leurent
+//  LAST-MOD: 14-Apr-04 at 17:12:15 by Thomas Leurent
 //
 /*! \file MeshSet.cpp
 
@@ -401,6 +401,13 @@ bool MeshSet::get_next_patch(PatchData &pd,
 //       }
 //       pd.numElements = num_elems;
     }
+
+    // If a target calculator is set, compute the targets. 
+    if (pd_params.get_target_calculator() != 0) {
+      pd_params.get_target_calculator()->compute_target_matrices(pd, err);
+      MSQ_CHKERR(err);
+    }
+    
     FUNCTION_TIMER_END();  
     return true;
     case PatchData::GLOBAL_PATCH:
@@ -517,6 +524,13 @@ bool MeshSet::get_next_patch(PatchData &pd,
       
       pd.numElements = num_elems;
     }
+
+    // If a target calculator is set, compute the targets. 
+    if (pd_params.get_target_calculator() != 0) {
+      pd_params.get_target_calculator()->compute_target_matrices(pd, err);
+      MSQ_CHKERR(err);
+    }
+    
     FUNCTION_TIMER_END();
 //    pd.print(); //dbg
     return true;

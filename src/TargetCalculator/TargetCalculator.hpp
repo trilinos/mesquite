@@ -41,6 +41,7 @@
 
 #include "Mesquite.hpp"
 #include "MesquiteError.hpp"
+#include "MsqTimer.hpp"
 #include "MsqMessage.hpp"
 #include "PatchData.hpp"
 
@@ -96,6 +97,8 @@ namespace Mesquite
   inline void TargetCalculator::compute_default_target_matrices(PatchData &pd,
                                                       MsqError &err)
   {
+    FUNCTION_TIMER_START(__FUNC__);
+    
     // set on each element in the patch a tag containing an array of corner matrices
     // (the size of the array is adequate for each element, e.g. 4 for a quad).
     pd.allocate_corner_matrices(err); MSQ_CHKERR(err);
@@ -103,16 +106,16 @@ namespace Mesquite
     MsqMeshEntity* elems=pd.get_element_array(err);
     size_t num_elements=pd.num_elements();
 
-    double v_tri[] = {1, 0.5, 0, 0, MSQ_SQRT_THREE/2, 0, 0, 0, 0};
+    const double v_tri[] = {1, 0.5, 0, 0, MSQ_SQRT_THREE/2, 0, 0, 0, 0};
     Matrix3D tmp_tri(v_tri);
 
-    double v_quad[] = {1, 0, 0, 0, 1, 0, 0, 0, 0};
+    const double v_quad[] = {1, 0, 0, 0, 1, 0, 0, 0, 0};
     Matrix3D tmp_quad(v_quad);
     
-    double v_tet[] = {1, 0.5, 0.5, 0, MSQ_SQRT_THREE/2, MSQ_SQRT_THREE/6, 0, 0, MSQ_SQRT_TWO/MSQ_SQRT_THREE};
+    const double v_tet[] = {1, 0.5, 0.5, 0, MSQ_SQRT_THREE/2, MSQ_SQRT_THREE/6, 0, 0, MSQ_SQRT_TWO/MSQ_SQRT_THREE};
     Matrix3D tmp_tet(v_tet);
 
-    double v_hex[] = {1, 0, 0,  0, 1, 0,  0, 0, 1};
+    const double v_hex[] = {1, 0, 0,  0, 1, 0,  0, 0, 1};
     Matrix3D tmp_hex(v_hex);
 
     // set the corner matrices to the correct value for each tag.
@@ -155,7 +158,10 @@ namespace Mesquite
           return;
         } //end switch
     } // end loop
+    FUNCTION_TIMER_END();   
   }
+
+  
   
 } //namespace
 

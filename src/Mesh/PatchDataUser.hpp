@@ -46,8 +46,9 @@
 #endif
 
 #include "Mesquite.hpp"
-#include "PatchData.hpp"
 #include "MesquiteError.hpp"
+#include "PatchData.hpp"
+#include "TargetCalculator.hpp"
 
 MSQ_USE(string);
 
@@ -64,7 +65,8 @@ namespace Mesquite
       mParam1(0),
       mParam2(0),
       cullingMethodBits(0),
-      globalPatch(0)
+      globalPatch(0),
+      mTarget(0)
     {}
 
     friend class PatchDataUser;
@@ -107,12 +109,21 @@ namespace Mesquite
     void no_global_patch()
     { globalPatch=0; }
 
+    //! Sets the target calculator used in conjunction with DFT metrics 'DistanceFromTarget'.
+    void set_target_calculator(TargetCalculator* target) { mTarget = target; }
+    //! Gets the TargetCalculator set on this QualityImprover
+    //! Returns 0 if no target calculator has been set.
+    TargetCalculator* get_target_calculator() { return mTarget; }
+
+
+
   private:
     PatchData::PatchType mType; //!< see the enum ... 
     int mParam1, mParam2; //!< For general use in conjunction with PatchType. 
     long unsigned int cullingMethodBits; //!< type of cullings are contained in this bitset.
     PatchData* globalPatch; //!< Allows storage of global patch through
-                            //!< successive PatchDataUsers. 
+                            //!< successive PatchDataUsers.
+    TargetCalculator* mTarget;
 
   };
 
@@ -183,6 +194,15 @@ namespace Mesquite
     //! PatchDataUSer, typically in InstructionQueue
     void no_global_patch()
     { mParams.no_global_patch(); }
+
+    //! Sets the target calculator used in conjunction with DFT metrics 'DistanceFromTarget'.
+    void set_target_calculator(TargetCalculator* target)
+    { mParams.set_target_calculator(target); }
+    //! Gets the TargetCalculator set on this QualityImprover
+    //! Returns 0 if no target calculator has been set.
+    TargetCalculator* get_target_calculator()
+    { return mParams.get_target_calculator(); }
+
 
     // *** functions related to the algorithms, no to the patch parameters *** 
     //! This is the "run" function of PatchDataUser. It can do anything really. 

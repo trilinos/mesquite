@@ -26,7 +26,7 @@
   ***************************************************************** */
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD:  2-Apr-04 at 15:42:54 by Thomas Leurent
+//  LAST-MOD:  8-Apr-04 at 13:51:34 by Thomas Leurent
 //
 /*! \file MsqMeshEntity.cpp
 
@@ -751,6 +751,7 @@ void MsqMeshEntity::compute_corner_matrices(PatchData &pd, Matrix3D A[], const i
 {
   MsqVertex* vertices = pd.get_vertex_array(err); MSQ_CHKERR(err); 
   const size_t* v_i = vertexIndices;
+  Vector3D zeros(0,0,0);
   switch(get_element_type()){
     
   case TRIANGLE:
@@ -758,15 +759,15 @@ void MsqMeshEntity::compute_corner_matrices(PatchData &pd, Matrix3D A[], const i
 
     A[0].set_column(0, vertices[v_i[1]]-vertices[v_i[0]]);
     A[0].set_column(1, vertices[v_i[2]]-vertices[v_i[0]]);
-    A[0].set_column(2, 0);
+    A[0].set_column(2, zeros);
     
     A[1].set_column(0, vertices[v_i[2]]-vertices[v_i[1]]);
     A[1].set_column(1, vertices[v_i[0]]-vertices[v_i[1]]);
-    A[1].set_column(2, 0);
+    A[1].set_column(2, zeros);
 
     A[2].set_column(0, vertices[v_i[0]]-vertices[v_i[2]]);
     A[2].set_column(1, vertices[v_i[1]]-vertices[v_i[2]]);
-    A[2].set_column(2, 0);
+    A[2].set_column(2, zeros);
 
     break;
     
@@ -775,19 +776,19 @@ void MsqMeshEntity::compute_corner_matrices(PatchData &pd, Matrix3D A[], const i
 
     A[0].set_column(0, vertices[v_i[1]]-vertices[v_i[0]]);
     A[0].set_column(1, vertices[v_i[3]]-vertices[v_i[0]]);
-    A[0].set_column(2, 0);
+    A[0].set_column(2, zeros);
     
     A[1].set_column(0, vertices[v_i[2]]-vertices[v_i[1]]);
     A[1].set_column(1, vertices[v_i[0]]-vertices[v_i[1]]);
-    A[1].set_column(2, 0);
+    A[1].set_column(2, zeros);
 
     A[2].set_column(0, vertices[v_i[3]]-vertices[v_i[2]]);
     A[2].set_column(1, vertices[v_i[1]]-vertices[v_i[2]]);
-    A[2].set_column(2, 0);
+    A[2].set_column(2, zeros);
 
     A[3].set_column(0, vertices[v_i[0]]-vertices[v_i[3]]);
     A[3].set_column(1, vertices[v_i[2]]-vertices[v_i[3]]);
-    A[3].set_column(2, 0);
+    A[3].set_column(2, zeros);
 
     break;
     

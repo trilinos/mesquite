@@ -50,7 +50,7 @@ namespace Mesquite
            In fact it delegates this computation to the base class
            function TargetCalculator::compute_default_target_matrices . 
   */
-  class DefaultTargetCalculator : TargetCalculator
+  class DefaultTargetCalculator : public TargetCalculator
   {
   public:
     
@@ -61,7 +61,7 @@ namespace Mesquite
       //! Just delegates to the base class function
       //! TargetCalculator::compute_default_target_matrices
     virtual void compute_target_matrices(PatchData& pd, MsqError& err)
-    { compute_default_target_matrices(pd, err); MSQ_CHKERR(err);  }
+    { compute_default_target_matrices(pd, err); MSQ_CHKERR(err); }
 
   protected:
     

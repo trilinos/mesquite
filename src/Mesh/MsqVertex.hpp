@@ -133,7 +133,7 @@ namespace Mesquite
      MsqTag* mTag; //!< The mTag data member is a pointer, so that the memory 
                    //!< footprint stays small when no tag is used (mTag=0).
                    //!< But when a tag is pointed to by this data member, the
-                   //!< tag in fact leaves with the MsqVertex, i.e. MsqVertex copies 
+                   //!< tag in fact lives with the MsqVertex, i.e. MsqVertex copies 
                    //!< are deep and the tag is deleted when the MsqVertex is.
 
      friend class Mesquite::MeshSet;

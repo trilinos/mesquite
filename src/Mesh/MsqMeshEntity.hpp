@@ -83,7 +83,7 @@ namespace Mesquite
 
       //! Destructor also deletes associated tag data. 
     ~MsqMeshEntity()
-      { delete mTag; }
+      { if (mTag) { delete mTag; mTag=0; } }
 
      //! This operator= makes a deep copy of the tag data. 
     MsqMeshEntity& operator=(const MsqMeshEntity& rhs) { 
@@ -123,6 +123,11 @@ namespace Mesquite
       //! /param indices is an array of size vertex_count(type).
     void set( EntityTopology type, const size_t *indices);
     size_t get_vertex_index(size_t vertex_in_element);
+    
+      //! Sets the element tag. This will overwritte an existing tag. 
+    void set_tag(MsqTag* tag) {mTag = tag;}
+      //! Gets the element tag.
+    MsqTag* get_tag() {return mTag;}
     
       //fills array of Vector3D's with the jacobian vectors and the 
       //number of jacobian vectors
@@ -171,11 +176,10 @@ namespace Mesquite
       //! Stores those corner matrices in the mTag data member.  
     void compute_corner_matrices(PatchData &pd, Matrix3D A[], int num_m3d, MsqError &err );
 
-      //! Sets the element tag. This will overwritte an existing tag. 
-    void set_tag(MsqTag* tag) {mTag = tag;}
-      //! Gets the element tag.
-    MsqTag* get_tag() {return mTag;}
-    
+      //! This returns a pointer to the target matrices.
+      //! An error is set if they are not available. 
+    TargetMatrix* get_target_matrices(size_t &num_targets, MsqError &err);
+
   private:
     static void get_linear_quad_jac(Vector3D *sp,
                                     Vector3D &coord0, Vector3D &coord1,
@@ -187,7 +191,7 @@ namespace Mesquite
     MsqTag* mTag; //!< The mTag data member is a pointer, so that the memory 
                   //!< footprint stays small when no tag is used (mTag=0).
                   //!< But when a tag is pointed to by this data member, the tag
-                  //!< in fact leaves with the MsqMeshEntity, i.e. copies are 
+                  //!< in fact lives with the MsqMeshEntity, i.e. copies are 
                   //!< deep and the tag is deleted when the MsqMeshEntity is.
     
       // output operator for debugging.
@@ -293,6 +297,21 @@ namespace Mesquite
     jac[0]=coord1-coord0+(*sp)[1]*(coord2+coord0-coord3-coord1);
     jac[1]=coord3-coord0+(*sp)[0]*(coord2+coord0-coord3-coord1);
   }
+
+    //! \param num_targets is set to the number of corners for the element.
+  inline TargetMatrix* MsqMeshEntity::get_target_matrices(size_t &num_targets, MsqError &err)
+  {
+    if (mTag == 0) {
+      err.set_msg("no target matrix available.");
+      return 0;
+    }
+    else {
+      num_targets = vertex_count();
+      return mTag->get_targets(num_targets);
+    }
+  }
+
+
   
   /* ***********  I/O  **************/
 
