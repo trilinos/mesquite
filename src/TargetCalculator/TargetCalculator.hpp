@@ -87,11 +87,7 @@ namespace Mesquite
       REGULAR, //!< Each element has a lambda coefficient 
       AVERAGE  //!< The Lambda coefficient is the average on the mesh.
     };
-      //! Computes the \f$ \lambda \f$ coefficient when it is Mesh-Based,
-    double compute_L(enum Lambda_type l_type, MsqError &err);
-      //! Computes the \f$ \lambda \f$ coefficient when it is element-based.
-    void compute_Lk(enum Lambda_type l_type, PatchData &ref_pd, size_t elem_ind, double L_k[], int num, MsqError &err);
-    
+
       //! \enum chooses the type of guide matrix used in the target calculator
     enum guide_type {
       Ad, //!< Default Guide
