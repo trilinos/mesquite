@@ -120,14 +120,6 @@ bool QualityMetric::compute_element_gradient_expanded(PatchData &pd,
                                                       double &metric_value,
                                                       MsqError &err)
 {
-  cout << "vertices: \n"; //dbg
-  for (int j=0; j<num_vtx; ++j) cout << vertices[j] << endl; //dbg
-  MsqVertex* toto = pd.get_vertex_array(err); //dbg
-  std::vector<size_t> titi; //dbg
-  el->get_vertex_indices(titi); //dbg
-  cout << "element vertices:\n"; //dbg
-  for (int j=0; j<4; ++j) cout << &toto[titi[j]] << endl; //dbg
-    
   int i, g, e;
   bool ret;
   Vector3D* grad_vec_nz = new Vector3D[num_vtx];
@@ -145,9 +137,6 @@ bool QualityMetric::compute_element_gradient_expanded(PatchData &pd,
   std::vector<size_t> ev_i;
   el->get_vertex_indices(ev_i);
 
-  for (int j=0; j<ev_i.size(); ++j) cout << "ev_i["<<j<<"]: " << ev_i[j] <<endl; //dbg
-  for (int j=0; j<gv_i.size(); ++j) cout << "gv_i["<<j<<"]: " << gv_i[j] <<endl; //dbg
-  
   bool inc;
   std::vector<size_t>::iterator ev;
   std::vector<size_t>::iterator gv;
@@ -157,7 +146,6 @@ bool QualityMetric::compute_element_gradient_expanded(PatchData &pd,
     while (gv!=gv_i.end()) {
       if (*ev == *gv) {
         inc = true;
-        cout << "inc=true for ev " << *ev << " and gv " << *gv << " e = " << e <<" g = " << g << endl; //dbg
         break;
       }
       ++gv; ++g;
@@ -268,39 +256,62 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
   
   double delta = 10e-6;
   int nve = element->vertex_count();
-  cout << "grad_vec: \n"; for (int i=0; i<nve; ++i) cout << grad_vec[i] ;  //dbg
   Vector3D* grad_vec1 = new Vector3D[nve];
   Vector3D fd;
-  int v,w,i,j,s, sum_w, mat_index;
-  for (v=0; v<nve; ++v) 
-  {
-    for (j=0;j<3;++j) 
-    {
-      // perturb the coordinates of the vertex v in the j direction by delta
-      (*vertices[v])[j]+=delta;
-      //compute the gradient at the perturbed point location
-      valid = this->compute_element_gradient_expanded(pd, element, vertices, grad_vec1,
-                                     num_vtx, metric_value, err); MSQ_CHKERR(err);
-      assert(valid);
-      //compute the numerical Hessian
+  std::vector<size_t> ev_i;
+  element->get_vertex_indices(ev_i);
+  int v,w,i,j,k,s, sum_w, mat_index;
+  
+  for (v=0; v<nve; ++v) {
+    
+    // finds out whether vertex v in the element is fixed or free,
+    // as according to argument vertices[]
+    bool free_vertex = false;
+    for (k=0; k<num_vtx; ++k) {
+      if ( ev_i[v] == pd.get_vertex_index(vertices[k]) )
+        free_vertex = true;
+    }
+
+    // If vertex is fixed, enters null blocks for that column.
+    // Note that null blocks for the row will be taken care of by
+    // the gradient null entries. 
+    if (free_vertex==false) {
       for (w=0; w<nve; ++w) {
         if (v>=w) {
-          //finite difference to get some entries of the Hessian
-          fd = (grad_vec1[w]-grad_vec[w])/delta;
-          // For the block at position w,v in a matrix, we need the corresponding index
-          // (mat_index) in a 1D array containing only upper triangular blocks.
           sum_w = w*(w+1)/2; // 1+2+3+...+w
           mat_index = w*nve+v-sum_w;
-//           int sum_v = v*(v+1)/2; // 1+2+3+...+v
-//           mat_index = v*nve+w-sum_v;
-          
-          for (i=0; i<3; ++i)
-            hessian[mat_index][i][j] = fd[i];   
-     
+          hessian[mat_index] = 0.;
         }
       }
-      // put the coordinates back where they belong
-      (*vertices[v])[j] -= delta;
+    }
+
+    // If vertex is free, use finite difference on the gradient to find the Hessian.
+    if (free_vertex==true) {
+      for (j=0;j<3;++j) {
+        // perturb the coordinates of the vertex v in the j direction by delta
+        (*vertices[v])[j]+=delta;
+        //compute the gradient at the perturbed point location
+        valid = this->compute_element_gradient_expanded(pd, element, vertices, grad_vec1,
+                                                        num_vtx, metric_value, err); MSQ_CHKERR(err);
+        assert(valid);
+        //compute the numerical Hessian
+        for (w=0; w<nve; ++w) {
+          if (v>=w) {
+            //finite difference to get some entries of the Hessian
+            fd = (grad_vec1[w]-grad_vec[w])/delta;
+            // For the block at position w,v in a matrix, we need the corresponding index
+            // (mat_index) in a 1D array containing only upper triangular blocks.
+            sum_w = w*(w+1)/2; // 1+2+3+...+w
+            mat_index = w*nve+v-sum_w;
+          
+            for (i=0; i<3; ++i)
+              hessian[mat_index][i][j] = fd[i];   
+     
+          }
+        }
+        // put the coordinates back where they belong
+        (*vertices[v])[j] -= delta;
+      }
     }
   }
 
