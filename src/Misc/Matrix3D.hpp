@@ -30,7 +30,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 18-Dec-02 at 11:08:22
-//  LAST-MOD:  2-Apr-04 at 18:31:20 by Thomas Leurent
+//  LAST-MOD: 15-Apr-04 at 14:53:35 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -207,11 +207,12 @@ namespace Mesquite
     // Matrix Operators
     friend bool operator==(const Matrix3D &lhs, const Matrix3D &rhs);
     friend bool operator!=(const Matrix3D &lhs, const Matrix3D &rhs);
+    friend double Frobenius_2(const Matrix3D &A);
+    friend Matrix3D transpose(const Matrix3D &A);
     friend const Matrix3D operator+(const Matrix3D &A, const Matrix3D &B);
     friend const Matrix3D operator-(const Matrix3D &A, const Matrix3D &B) ;
     friend const Matrix3D operator*(const Matrix3D &A, const Matrix3D &B);
     friend const Matrix3D mult_element(const Matrix3D &A, const Matrix3D &B);
-    friend Matrix3D transpose(const Matrix3D &A);
     friend int matmult(Matrix3D& C, const Matrix3D  &A, const Matrix3D &B);
     friend const Vector3D operator*(const Matrix3D  &A, const Vector3D &x);
     friend const Vector3D operator*(const Vector3D &x, const Matrix3D  &A);
@@ -234,6 +235,9 @@ namespace Mesquite
      
     //! \f$ B += a*A \f$
     friend void plusEqaA(Matrix3D& B, const double a, const Matrix3D &A);
+
+    //! determinant of matrix A, det(A).
+    friend double det(const Matrix3D &A);
 
     //! \f$ B *= A^{-1} \f$
     friend void timesInvA(Matrix3D& B, const Matrix3D &A);
@@ -333,6 +337,16 @@ namespace Mesquite
       tmp[i][2] = A[i][2] * B[i][2];
     }
     return tmp;
+  }
+
+  //! Return the square of the Frobenius norm of A, i.e. sum (diag (A' * A))
+  inline double Frobenius_2(const Matrix3D &A)
+  {
+    double fro=0.;
+    for (int i=0; i<3; ++i) {
+        fro += A[0][i]*A[0][i] + A[1][i]*A[1][i] + A[2][i]*A[2][i] ;
+    }
+    return fro;
   }
 
   inline Matrix3D transpose(const Matrix3D &A)
@@ -549,14 +563,17 @@ namespace Mesquite
     B.v_[6] += a*A.v_[6]; B.v_[7] += a*A.v_[7]; B.v_[8] += a*A.v_[8];
   }
 
+  inline double det(const Matrix3D &A) {
+    return (  A.v_[0]*(A.v_[4]*A.v_[8]-A.v_[7]*A.v_[5])
+            -A.v_[1]*(A.v_[3]*A.v_[8]-A.v_[6]*A.v_[5])
+            +A.v_[2]*(A.v_[3]*A.v_[7]-A.v_[6]*A.v_[4]) );
+  }
+
   inline void timesInvA(Matrix3D& B, const Matrix3D &A) {
 
     Matrix3D Ainv;
 
-    double inv_detA = 1 / (
-                   A.v_[0]*(A.v_[4]*A.v_[8]-A.v_[7]*A.v_[5])
-                  -A.v_[1]*(A.v_[3]*A.v_[8]-A.v_[6]*A.v_[5])
-                  +A.v_[2]*(A.v_[3]*A.v_[7]-A.v_[6]*A.v_[4]) );
+    double inv_detA = 1 / ( det(A) );
 
     Ainv[0][0] = inv_detA*( A.v_[4]*A.v_[8]-A.v_[5]*A.v_[7] );
     Ainv[0][1] = inv_detA*( A.v_[2]*A.v_[7]-A.v_[8]*A.v_[1] );

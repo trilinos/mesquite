@@ -119,6 +119,10 @@ namespace Mesquite
     }
     
       //!
+    TargetMatrix* get_targets(const short int &num_targets)
+      { assert(num_targets==numTargets); return targets; }
+
+      //!
     TargetMatrix& target_matrix(const short int &i)
       { assert(i<numTargets); return targets[i]; }
 
