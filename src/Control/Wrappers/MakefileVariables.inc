@@ -1,7 +1,7 @@
 WRAPPERSDIR = $(srcdir)/Control/Wrappers
 
 #WRAPPERSSRC = $(WRAPPERSDIR)/file.cpp
-WRAPPERSSRC = $(WRAPPERSDIR)/
+WRAPPERSSRC = 
 
 WRAPPERSHEADERS = \
 	$(patsubst $(WRAPPERSDIR)/%,$(localincludedir)/%,\
