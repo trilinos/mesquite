@@ -42,40 +42,28 @@ namespace Mesquite
   
 #undef __FUNC__
 #define __FUNC__ "centroid_smooth_mesh" 
-  inline void centroid_smooth_mesh(PatchData &pd, int num_vtx,
-                                   MsqVertex *incident_vtx,
-                                   MsqVertex &free_vtx,
-                                   int dimension, MsqError &err)
+  inline void centroid_smooth_mesh(PatchData &pd, size_t num_vtx,
+                                   MsqVertex *vtx_array,
+                                   size_t free_ind,
+                                   size_t dimension, MsqError &err)
   {
-    int i,j;
-    double avg[3];
-    MsqFreeVertexIndexIterator free_iter(&pd, err);
-      //figure out which vertex is center
-    free_iter.reset();
-    free_iter.next();
-    int skip_ind=free_iter.value();
+    size_t i,j;
+    double scale_val=1.0;
     if (num_vtx<=1) 
       err.set_msg("WARNING: Number of incident vertex is zero\n");
-      //std::cout << "centroid_smooth_mesh(): original ["<<free_vtx[0]<<","<<free_vtx[1]<<","<<free_vtx[2]<<"] = " << std::endl;
+    else
+      scale_val=1.0/((double) num_vtx -1.0);
+    double avg[3];
     for (j=0;j<dimension;++j) {
-      free_iter.reset();
-      free_iter.next();
-      skip_ind=free_iter.value();
       avg[j] = 0.;
       for (i=0;i<num_vtx;++i){
-          //cout<<"INSIDE v:  i="<<i<<"   "<<incident_vtx[i];
           //if we are at the free vertex, skip it
-        if(i==skip_ind){
-          free_iter.next();
-          skip_ind=free_iter.value();
+        if(i!=free_ind){
+          avg[j]+=vtx_array[i][j];
         }
-          //otherwise:
-        else{
-          avg[j]+=incident_vtx[i][j];
-        }
+        
       }
-      free_vtx[j] = avg[j]/((double) num_vtx - 1.0);
-        //std::cout << "centroid_smooth_mesh(): final --  avg["<<j<<"] = " << free_vtx[j] << std::endl;
+      vtx_array[free_ind][j] = avg[j]*scale_val;
     }
 
     return;

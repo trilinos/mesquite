@@ -67,7 +67,7 @@ void LaplacianSmoother::optimize_vertex_positions(PatchData &pd,
   int num_local_vertices = pd.num_vertices();
     //default the laplacian smoother to 3 even for 2-d elements.
     //int dim = get_mesh_set()->space_dim();
-  int dim = 3;
+  size_t dim = 3;
   
   
   
@@ -80,10 +80,11 @@ void LaplacianSmoother::optimize_vertex_positions(PatchData &pd,
   free_iter.reset();
   free_iter.next();
     //find the free vertex.
-  int m=free_iter.value();
+  size_t m=free_iter.value();
   centroid_smooth_mesh(pd, num_local_vertices, &patch_coords[0],
-                       patch_coords[m], dim, err); MSQ_CHKERR(err);
+                       m, dim, err); MSQ_CHKERR(err);
   pd.snap_vertex_to_domain(m,err);
+  
 }
   
 #undef __FUNC__
