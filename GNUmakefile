@@ -59,6 +59,7 @@ TESTNAMES := test_1\
              simple_hybrid_test\
              wrapper_tests\
              tutorial\
+             escobar\
 ###             random_test\
 ###             convert\
 ###             shape_wrapper_test
