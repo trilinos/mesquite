@@ -676,12 +676,12 @@ void PatchData::get_subpatch(size_t center_vertex_index,
 void PatchData::snap_vertex_to_domain(size_t vertex_index, MsqError &err)
 {
     //geometry for Mesquite_geo grids
-    
+    /*
   double len = vertexArray[vertex_index].length();
   vertexArray[vertex_index][0]/=len;
   vertexArray[vertex_index][1]/=len;
   vertexArray[vertex_index][2]/=len;
-  
+    */
     //geometry for z = 5 plane
     //vertexArray[vertex_index][2]=5.0;
 }
