@@ -39,7 +39,7 @@ double MinTemplate::concrete_evaluate(PatchData &patch, MsqError &err){
   //For elements in Patch
   int index;
   QualityMetric* currentQM = get_quality_metric();
-  if(currentQM->get_evaluation_mode()!=QualityMetric::VERTEX){
+  if(currentQM->get_metric_type()==QualityMetric::ELEMENT_BASED){
     
     int num_elements=patch.num_elements();
     MsqMeshEntity* elems=patch.get_element_array(err);
@@ -56,7 +56,7 @@ double MinTemplate::concrete_evaluate(PatchData &patch, MsqError &err){
     }//end loop over elements
   }//end if not VERTEX
 
-  else {//VERTEX
+  else if (currentQM->get_metric_type()==QualityMetric::VERTEX_BASED) {
 
     int num_vertices=patch.num_vertices();
     MsqVertex* vertices=patch.get_vertex_array(err);
@@ -71,7 +71,11 @@ double MinTemplate::concrete_evaluate(PatchData &patch, MsqError &err){
         total_value=temp_value;
 
     }//end loop over vertices
-  }//end elseVERTEX
+  }//end else VERTEX
+  else {
+    err.set_msg("Make sure MetricType is initialised in concrete QualityMetric constructor.");
+  }
+  
   return total_value;
 }
 	
