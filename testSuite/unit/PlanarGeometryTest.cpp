@@ -149,6 +149,7 @@ public:
      
        // ... and builds an objective function with it (untangle)
      LInfTemplate* untan_func = new LInfTemplate(untan);
+     untan_func->set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
      LPtoPTemplate* shape_func = new LPtoPTemplate(shape,2,err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
@@ -259,6 +260,7 @@ public:
   
          // ... and builds an objective function with it (untangle)
        LInfTemplate* untan_func = new LInfTemplate(untan);
+       untan_func->set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
        LPtoPTemplate* shape_func = new LPtoPTemplate(shape,2,err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
