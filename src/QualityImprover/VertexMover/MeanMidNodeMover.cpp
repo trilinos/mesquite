@@ -138,6 +138,8 @@ double MeanMidNodeMover::loop_over_mesh( MeshSet& ms, MsqError& err )
     pd.snap_vertex_to_domain( vtx, err );       MSQ_ERRZERO(err);
   }
   
+  pd.update_mesh(err); MSQ_ERRZERO(err);
+  
   return 0;
 }
                        
