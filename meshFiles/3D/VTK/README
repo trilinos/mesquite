@@ -6,3 +6,6 @@ slightly modified.  Contains 12,753 vertices and 10,752 HEX elements.
 cub_fru_scaled_100.vtk:  This is the same mesh as cub_fru.vtk except
 that everything has been scaled by a factor of 100.
 
+cub_wedge_like.vtk:  This is tet mesh.  The geometry originated in
+a test in the cubit test suite.  It contains 21,156 vertices and
+112,393 TET elements.
