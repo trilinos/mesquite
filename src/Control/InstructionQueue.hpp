@@ -91,9 +91,9 @@ namespace Mesquite {
   protected:
     
   private:
-    list<QueueEntry>::iterator clear_master(MsqError &err);
+    std::list<QueueEntry>::iterator clear_master(MsqError &err);
 
-    list<QueueEntry> instructions;
+    std::list<QueueEntry> instructions;
 
     bool autoQualAssess;
     

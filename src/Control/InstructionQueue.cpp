@@ -72,12 +72,12 @@ void InstructionQueue::remove_preconditioner(int index, MsqError &err)
   }
   
   // position the instruction iterator over the preconditionner to delete
-  list<QueueEntry>::iterator pos;
+  std::list<QueueEntry>::iterator pos;
   pos = instructions.begin();
   advance(pos, index);
   if ( pos->mType == QueueEntry::IMPROVER ) {
     std::string name = pos->mImprover->get_name();
-    cout << "  o InstructionQueue: removing QualityImprover " << name <<  ".\n"; 
+    std::cout << "  o InstructionQueue: removing QualityImprover " << name <<  ".\n"; 
     instructions.erase(pos);
     nbPreConditionners--;
   }
@@ -110,7 +110,7 @@ void InstructionQueue::insert_preconditioner(QualityImprover* instr,
   }
 
   // position the instruction iterator
-  list<QueueEntry>::iterator pos;
+  std::list<QueueEntry>::iterator pos;
   pos = instructions.begin();
   advance(pos, index);
   // adds the preconditioner
@@ -156,12 +156,12 @@ void InstructionQueue::remove_quality_assessor(int index, MsqError &err)
   }
   
   // position the instruction iterator over the QualityAssessor to delete
-  list<QueueEntry>::iterator pos;
+  std::list<QueueEntry>::iterator pos;
   pos = instructions.begin();
   advance(pos, index);
   if ( pos->mType == QueueEntry::ASSESSOR ) {
     std::string name = pos->mAssessor->get_name();
-    cout << "  o InstructionQueue: removing QualityAssessor " << name << ".\n"; 
+    std::cout << "  o InstructionQueue: removing QualityAssessor " << name << ".\n"; 
     instructions.erase(pos);
   }
   else
@@ -188,7 +188,7 @@ void InstructionQueue::insert_quality_assessor(QualityAssessor* instr,
   }
 
   // position the instruction iterator
-  list<QueueEntry>::iterator pos;
+  std::list<QueueEntry>::iterator pos;
   pos = instructions.begin();
   advance(pos, index);
   // adds the QualityAssessor
@@ -207,10 +207,10 @@ void InstructionQueue::set_master_quality_improver(QualityImprover* instr,
   // masterInstruction = instr_copy;
 
   if (isMasterSet) {
-    cout << "WARNING: InstructionQueue::set_master_quality_improver():\n"
+    std::cout << "WARNING: InstructionQueue::set_master_quality_improver():\n"
          << "\tOverwriting previously specified master quality improver.\n";
     // if master is already set, clears it and insert the new one at the same position.
-    list<QueueEntry>::iterator master_pos;
+    std::list<QueueEntry>::iterator master_pos;
     master_pos = this->clear_master(err); MSQ_CHKERR(err);
     QueueEntry entry(instr);
     instructions.insert(master_pos, entry);
@@ -233,8 +233,9 @@ void InstructionQueue::run_instructions(MeshSet &ms, MsqError &err)
     return;
   }
   
-  list<QueueEntry>::const_iterator instr_iter;
-
+  std::list<QueueEntry>::const_iterator instr_iter;
+    //Michael
+    //std::cout<<"\nFirst check of time "<<err.since_last_check();
   // For each pass QualityImprover/QualityAssessor in the preconditionner list
   for (instr_iter = instructions.begin();
        instr_iter != instructions.end(); ++instr_iter) {
@@ -245,8 +246,9 @@ void InstructionQueue::run_instructions(MeshSet &ms, MsqError &err)
       instr_iter->mAssessor->assess_mesh_quality(ms, err); MSQ_CHKERR(err); }
     else
       err.set_msg("Unknown instruction type.");
+      //std::cout<<"\nInstruction queue time "<<err.since_last_check();
   }
-  
+    //std::cout<<"\nApproximate TOTAL time "<<err.since_birth();
 }
 
   
@@ -265,8 +267,8 @@ void InstructionQueue::clear()
 #define __FUNC__ "InstructionQueue::clear_master"
 std::list<InstructionQueue::QueueEntry>::iterator InstructionQueue::clear_master(MsqError &err)
 {
-  list<QueueEntry>::iterator instr_iter;
-  list<QueueEntry>::iterator master_pos;
+  std::list<QueueEntry>::iterator instr_iter;
+  std::list<QueueEntry>::iterator master_pos;
   
   if (!isMasterSet) {
     err.set_msg("No master quality improver to clear.");
