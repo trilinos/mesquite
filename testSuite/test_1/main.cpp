@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 19-Feb-02 at 10:57:52
-//  LAST-MOD: 30-Oct-02 at 17:36:38 by Thomas Leurent
+//  LAST-MOD:  8-Nov-02 at 10:38:27 by Thomas Leurent
 //
 //
 // DESCRIPTION:
@@ -68,6 +68,9 @@ int main()
   // initialises a MeshSet object
   MeshSet mesh_set1;
   mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
+
+  // dbg
+   std::cout << " TSTT mesh handle: " << mesh << std::endl;
   
   // creates an intruction queue
   InstructionQueue queue1;
@@ -80,12 +83,13 @@ int main()
   LPTemplate* obj_func = new LPTemplate(mean_ratio, 2, err);
     // creates the steepest descent optimization procedures
   SteepestDescent* pass1 = new SteepestDescent( obj_func );
-
+  pass1->set_patch_type(MeshSet::GLOBAL_PATCH, err);
+  
  QualityAssessor stop_qa=QualityAssessor(mean_ratio,QualityAssessor::MAXIMUM);
 
    //**************Set stopping criterion****************
 // StoppingCriterion sc1(&stop_qa,1.0,1.8);
- StoppingCriterion sc2(StoppingCriterion::NUMBER_OF_PASSES,10);
+ StoppingCriterion sc2(StoppingCriterion::NUMBER_OF_PASSES,1);
 // CompositeAndStoppingCriterion sc(&sc1,&sc2);
  pass1->set_stopping_criterion(&sc2);
  // sets a culling method on the first QualityImprover
