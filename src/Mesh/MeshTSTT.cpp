@@ -8,6 +8,7 @@
 */
 
 #include "MeshTSTT.hpp"
+#include "TSTT.hh"
 
 namespace
 {
@@ -123,6 +124,8 @@ namespace
 
 }
 
+using Mesquite::MsqError;
+
 Mesquite::MeshTSTT::MeshTSTT(TSTT::LocalTSTTMesh* tstt_mesh,
                        Mesquite::MsqError& err) 
   : tsttMesh(tstt_mesh),
@@ -167,7 +170,7 @@ Mesquite::MeshTSTT::~MeshTSTT()
 
     
 // Returns whether this mesh lies in a 2D or 3D coordinate system.
-int Mesquite::MeshTSTT::get_geometric_dimension() const
+int Mesquite::MeshTSTT::get_geometric_dimension(Mesquite::MsqError &/*err*/) const
 {
   int32_t d;
   try {
@@ -200,7 +203,7 @@ size_t Mesquite::MeshTSTT::get_total_vertex_count(Mesquite::MsqError &/*err*/) c
 //! Sets data member elementType to region or face.
 #undef __FUNC__
 #define __FUNC__ "MeshTSTT::get_total_element_count" 
-size_t Mesquite::MeshTSTT::get_total_element_count(Mesquite::MsqError &err)
+size_t Mesquite::MeshTSTT::get_total_element_count(Mesquite::MsqError &err) const 
 {
   int32_t ne=0;
   try {
@@ -298,7 +301,7 @@ void Mesquite::MeshTSTT::get_all_elements(
 // delete the returned iterator when it is finished with it.
 // If vertices are added or removed from the Mesh after obtaining
 // an iterator, the behavior of that iterator is undefined.
-Mesquite::VertexIterator* Mesquite::MeshTSTT::vertex_iterator()
+Mesquite::VertexIterator* Mesquite::MeshTSTT::vertex_iterator(MsqError &/*err*/)
 {
   return new MeshTSTT_EntityIterator(tsttMesh, TSTT::VERTEX);
 }
@@ -308,7 +311,7 @@ Mesquite::VertexIterator* Mesquite::MeshTSTT::vertex_iterator()
 // delete the returned iterator when it is finished with it.
 // If elements are added or removed from the Mesh after obtaining
 // an iterator, the behavior of that iterator is undefined.
-Mesquite::ElementIterator* Mesquite::MeshTSTT::element_iterator()
+Mesquite::ElementIterator* Mesquite::MeshTSTT::element_iterator(MsqError &/*err*/)
 {
   return new MeshTSTT_EntityIterator(tsttMesh, elementType);
 }
@@ -319,7 +322,7 @@ Mesquite::ElementIterator* Mesquite::MeshTSTT::element_iterator()
 // is fixed and cannot be moved.  Note that this is a read-only
 // property; this flag can't be modified by users of the
 // Mesquite::Mesh interface.
-bool Mesquite::MeshTSTT::vertex_is_fixed(Mesquite::Mesh::VertexHandle vertex)
+bool Mesquite::MeshTSTT::vertex_is_fixed(Mesquite::Mesh::VertexHandle vertex, MsqError &err)
 {
   try {
     int32_t tag_size;
@@ -340,7 +343,7 @@ bool Mesquite::MeshTSTT::vertex_is_fixed(Mesquite::Mesh::VertexHandle vertex)
 // property; this flag can't be modified by users of the
 // Mesquite::Mesh interface.
 bool Mesquite::MeshTSTT::vertex_is_on_boundary(
-  Mesquite::Mesh::VertexHandle vertex)
+  Mesquite::Mesh::VertexHandle vertex, MsqError &/*err*/)
 {
   try {
     int32_t tag_size;
@@ -357,7 +360,7 @@ bool Mesquite::MeshTSTT::vertex_is_on_boundary(
 // Get/set location of a vertex
 void Mesquite::MeshTSTT::vertex_get_coordinates(
   Mesquite::Mesh::VertexHandle vertex,
-  Vector3D &coordinates)
+  Vector3D &coordinates, MsqError &err)
 {
   try {
     oneEntity.set(0, vertex);
@@ -376,7 +379,7 @@ void Mesquite::MeshTSTT::vertex_get_coordinates(
 
 void Mesquite::MeshTSTT::vertex_set_coordinates(
   Mesquite::Mesh::VertexHandle vertex,
-  const Vector3D &coordinates)
+  const Vector3D &coordinates, MsqError &err)
 {
   try {
     // Turns Vector3D into SIDL array.
@@ -400,7 +403,7 @@ void Mesquite::MeshTSTT::vertex_set_coordinates(
 // Until a vertex's byte has been explicitly set, its value is 0.
 void Mesquite::MeshTSTT::vertex_set_byte (
   Mesquite::Mesh::VertexHandle vertex,
-  unsigned char byte)
+  unsigned char byte, MsqError &err)
 {
   try {
     oneEntity.set(0, vertex);
@@ -416,7 +419,7 @@ void Mesquite::MeshTSTT::vertex_set_byte (
 void Mesquite::MeshTSTT::vertices_set_byte (
   Mesquite::Mesh::VertexHandle *vert_array,
   unsigned char *byte_array,
-  size_t array_size)
+  size_t array_size, MsqError &err)
 {
   try {
     // Creating borrowed SIDL array holding vertices.
@@ -444,7 +447,7 @@ void Mesquite::MeshTSTT::vertices_set_byte (
 // *_set_byte() functions.
 void Mesquite::MeshTSTT::vertex_get_byte(
   Mesquite::Mesh::VertexHandle vertex,
-  unsigned char *byte)
+  unsigned char *byte, MsqError &err)
 {
   try {
     oneEntity.set(0, vertex);
@@ -461,7 +464,7 @@ void Mesquite::MeshTSTT::vertex_get_byte(
 void Mesquite::MeshTSTT::vertices_get_byte(
   Mesquite::Mesh::VertexHandle *vert_array,
   unsigned char *byte_array,
-  size_t array_size)
+  size_t array_size, MsqError &err)
 {
   try {
     // Creating borrowed SIDL array holding vertices.
@@ -553,7 +556,7 @@ void Mesquite::MeshTSTT::vertices_get_byte(
 // Useful to determine how large the "elem_array" parameter
 // of the vertex_get_attached_elements() function must be.
 size_t Mesquite::MeshTSTT::vertex_get_attached_element_count(
-  Mesquite::Mesh::VertexHandle vertex) const
+  Mesquite::Mesh::VertexHandle vertex, MsqError &err) const
 {
   try {
     oneEntity.set(0, vertex);
@@ -693,7 +696,7 @@ void Mesquite::MeshTSTT::elements_get_attached_vertices(
 void Mesquite::MeshTSTT::element_get_attached_vertex_indices(
   Mesquite::Mesh::ElementHandle element,
   size_t *index_array,
-  size_t array_size)
+  size_t array_size, MsqError &err)
 {
   try {
     int32_t lower= 0;
@@ -738,7 +741,7 @@ Mesquite::EntityTopology Mesquite::MeshTSTT::element_get_topology(
 void Mesquite::MeshTSTT::elements_get_topologies(
   Mesquite::Mesh::ElementHandle *element_handle_array,
   Mesquite::EntityTopology *element_topologies,
-  size_t num_elements)
+  size_t num_elements, MsqError &err)
 {
 //   for (size_t i = 0; i < num_elements; i++)
 //   {
@@ -752,7 +755,7 @@ void Mesquite::MeshTSTT::elements_get_topologies(
 // entity handle.  
 void Mesquite::MeshTSTT::release_entity_handles(
   Mesquite::Mesh::EntityHandle */*handle_array*/,
-  size_t /*num_handles*/)
+  size_t /*num_handles*/, MsqError &err)
 {
     // Do nothing
 }

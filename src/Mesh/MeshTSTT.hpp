@@ -41,11 +41,11 @@ namespace Mesquite
     
 //********* Functions that ARE inherited ************
       // Returns whether this mesh lies in a 2D or 3D coordinate system.
-    virtual int get_geometric_dimension() const;
+    virtual int get_geometric_dimension(Mesquite::MsqError &/*err*/) const;
     
       // Returns the number of entities of the indicated type.
     virtual size_t get_total_vertex_count(MsqError &err) const;
-    virtual size_t get_total_element_count(MsqError &err);
+    virtual size_t get_total_element_count(MsqError &err) const;
     
       // Fills array with handles to all vertices/elements
       // in the mesh.
@@ -59,14 +59,14 @@ namespace Mesquite
       // delete the returned iterator when it is finished with it.
       // If vertices are added or removed from the Mesh after obtaining
       // an iterator, the behavior of that iterator is undefined.
-    virtual VertexIterator* vertex_iterator();
+    virtual VertexIterator* vertex_iterator(MsqError &err);
     
       // Returns a pointer to an iterator that iterates over the
       // set of all top-level elements in this mesh.  The calling code should
       // delete the returned iterator when it is finished with it.
       // If elements are added or removed from the Mesh after obtaining
       // an iterator, the behavior of that iterator is undefined.
-    virtual ElementIterator* element_iterator();
+    virtual ElementIterator* element_iterator(MsqError &err);
 
 //************ Vertex Properties ********************
       // Returns true or false, indicating whether the vertex
@@ -74,7 +74,7 @@ namespace Mesquite
       // is fixed and cannot be moved.  Note that this is a read-only
       // property; this flag can't be modified by users of the
       // Mesquite::Mesh interface.
-    virtual bool vertex_is_fixed(VertexHandle vertex);
+    virtual bool vertex_is_fixed(VertexHandle vertex, MsqError &err);
 
       // Returns true or false, indicating whether the vertex
       // is on the boundary.  Boundary nodes may be treated as
@@ -82,38 +82,38 @@ namespace Mesquite
       // Note that this is a read-only
       // property; this flag can't be modified by users of the
       // Mesquite::Mesh interface.
-    virtual bool vertex_is_on_boundary(VertexHandle vertex);
+    virtual bool vertex_is_on_boundary(VertexHandle vertex, MsqError &err);
     
       // Get/set location of a vertex
     virtual void vertex_get_coordinates(VertexHandle vertex,
-                                        Vector3D &coordinates);
+                                 Vector3D &coordinates, MsqError &err);
     virtual void vertex_set_coordinates(VertexHandle vertex,
-                                        const Vector3D &coordinates);
+                                 const Vector3D &coordinates, MsqError &err);
     
       // Each vertex has a byte-sized flag that can be used to store
       // flags.  This byte's value is neither set nor used by the mesh
       // implementation.  It is intended to be used by Mesquite algorithms.
       // Until a vertex's byte has been explicitly set, its value is 0.
     virtual void vertex_set_byte (VertexHandle vertex,
-                                  unsigned char byte);
+                            unsigned char byte, MsqError &err);
     virtual void vertices_set_byte (VertexHandle *vert_array,
-                                    unsigned char *byte_array,
-                                    size_t array_size);
+                              unsigned char *byte_array,
+                              size_t array_size, MsqError &err);
     
       // Retrieve the byte value for the specified vertex or vertices.
       // The byte value is 0 if it has not yet been set via one of the
       // *_set_byte() functions.
     virtual void vertex_get_byte(VertexHandle vertex,
-                                 unsigned char *byte);
+                                 unsigned char *byte, MsqError &err);
     virtual void vertices_get_byte(VertexHandle *vert_array,
                                    unsigned char *byte_array,
-                                   size_t array_size);
+                                   size_t array_size, MsqError &err);
     
 //**************** Vertex Topology *****************    
       // Gets the number of elements attached to this vertex.
       // Useful to determine how large the "elem_array" parameter
       // of the vertex_get_attached_elements() function must be.
-    virtual size_t vertex_get_attached_element_count(VertexHandle vertex) const;
+    virtual size_t vertex_get_attached_element_count(VertexHandle vertex, MsqError &err) const;
     
       // Gets the elements attached to this vertex.
     virtual void vertex_get_attached_elements(VertexHandle vertex,
@@ -178,7 +178,7 @@ namespace Mesquite
       // Mesh::get_all_vertices.
     virtual void element_get_attached_vertex_indices(ElementHandle element,
                                                      size_t *index_array,
-                                                     size_t array_size);
+                                                     size_t array_size, MsqError &err);
     
       // Returns the topology of the given entity.
     virtual EntityTopology element_get_topology(ElementHandle entity_handle,
@@ -187,13 +187,13 @@ namespace Mesquite
       // array must be at least "num_elements" in size.
     virtual void elements_get_topologies(ElementHandle *element_handle_array,
                                          EntityTopology *element_topologies,
-                                         size_t num_elements);
+                                         size_t num_elements, MsqError &err);
     
 //**************** Memory Management ****************
       // Tells the mesh that the client is finished with a given
       // entity handle.  
     virtual void release_entity_handles(EntityHandle *handle_array,
-                                        size_t num_handles);
+                                        size_t num_handles, MsqError &err);
     
       // Instead of deleting a Mesh when you think you are done,
       // call release().  In simple cases, the implementation could
@@ -207,7 +207,7 @@ namespace Mesquite
     size_t nbVertices;
     size_t nbElements;
 
-    ::TSTT::EntityType elementType; //!< Whether the mesh elements are
+    mutable ::TSTT::EntityType elementType; //!< Whether the mesh elements are
                                    //!< regions (3D) or faces (2D)
     
     TagHandle fixedVertexTag;
