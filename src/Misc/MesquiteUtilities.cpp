@@ -146,7 +146,7 @@ void Mesquite::writeVtkMesh(const char filebase[128], TSTT::cMesh_Handle mesh_h,
     int num_vtx_in_element = MsqMeshEntity::vertex_count(topologies[e], err);
     fprintf(vtk_fp,"%d ", num_vtx_in_element); MSQ_CHKERR(err);
     // for each vertex in the element
-    for (int i=0; i<num_vtx_in_element; ++i)
+    for (i=0; i<num_vtx_in_element; ++i)
     {
         // finds out the vertex index in the local scope
         // list given its global TSTT ID
