@@ -46,6 +46,7 @@ MODULENAMES :=  Mesh \
 		QualityMetric/Smoothness \
 		QualityMetric/Untangle \
 		QualityMetric/Volume \
+		QualityMetric/DFT \
                 TargetCalculator \
 		../lib 
 
@@ -60,6 +61,8 @@ TESTNAMES := test_1\
              simple_hybrid_test\
              wrapper_tests\
              tutorial\
+
+             test_DFT \
              escobar
 ###             random_test\
 ###             convert\
