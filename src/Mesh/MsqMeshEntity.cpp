@@ -291,6 +291,9 @@ void Mesquite::MsqMeshEntity::get_sample_points(QualityMetric::ElementEvaluation
 #define __FUNC__ "MsqMeshEntity::get_connected_vertices"
 /*!Appends the indices (in the vertex array) of the vertices to connected
   to vertex_array[vertex_index] to the end of the vector vert_indices.
+  The connected vertices are right-hand ordered as defined by the
+  entity.
+  
 */
 void Mesquite::MsqMeshEntity::get_connected_vertices(size_t vertex_index,
                                                      std::vector<size_t>
@@ -352,17 +355,18 @@ void Mesquite::MsqMeshEntity::get_connected_vertices(size_t vertex_index,
         ++i;
       }
       
-      if(index>=0 && index<4){
+      if(index>=0 && index<4)
+      {
         vert_indices.push_back(vertexIndices[(index+1)%4]);
         vert_indices.push_back(vertexIndices[(index+3)%4]);
         vert_indices.push_back(vertexIndices[(index)+4]);
       }
       else if(index>=4)
-        {
-          vert_indices.push_back(vertexIndices[(index+1)%4]+4);
-          vert_indices.push_back(vertexIndices[(index+3)%4]+4);
-          vert_indices.push_back(vertexIndices[(index)-4]);
-        }
+      {
+        vert_indices.push_back(vertexIndices[(index+3)%4]+4);
+        vert_indices.push_back(vertexIndices[(index+1)%4]+4);
+        vert_indices.push_back(vertexIndices[(index)-4]);
+      }
           
       break;
   }
