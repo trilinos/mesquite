@@ -59,10 +59,6 @@ PatchData::~PatchData()
    the locality of reference.  This method implements a Reverse Breadth First 
    Search order starting with the vertex furthest from the origin.  Other
    orderings can also be implemented.
-
-   This method should invalidate the vertex to element translation and other 
-   computed information.  I do not know how to invalidate them, so someone
-   else will need to fix up this function.  -- Todd Munson
 */
 void PatchData::reorder()
 {
@@ -294,6 +290,13 @@ void PatchData::reorder()
 
   delete[] per;
   delete[] pel;
+
+  // Step 10: Recompute vertex to element mapping if it existed.
+ 
+  if (v2eValid) {
+    v2eValid = false;
+    generate_vertex_to_element_data();
+  }
   return;
 }
 
@@ -304,9 +307,9 @@ int PatchData::num_free_vertices(MsqError &err)
 {
   int num_free_vertices=0;
   
-  for (int i = numVertices; i--; )
+  for (size_t i = 0; i < numVertices; ++i)
     if (vertexArray[i].is_free_vertex())
-      num_free_vertices++;
+      ++num_free_vertices;
   
   return num_free_vertices;
 }
