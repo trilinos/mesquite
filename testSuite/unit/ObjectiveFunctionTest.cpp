@@ -65,7 +65,6 @@ Unit testing of various functions in the ObjectiveFunction class.
 #include "PatchDataInstances.hpp"
 
 #include "cppunit/extensions/HelperMacros.h"
-#include "cppunit/SignalException.h"
 #include "MsqFreeVertexIndexIterator.hpp"
 #include <list>
 #include <iterator>

@@ -54,7 +54,6 @@ Unit testing of various functions in the MeshSet class.
 #include "MeshImpl.hpp"
 
 #include "cppunit/extensions/HelperMacros.h"
-#include "cppunit/SignalException.h"
 
 #include <list>
 #include <iterator>
@@ -65,7 +64,7 @@ class MeshSetTest : public CppUnit::TestFixture
 {
 private:
   CPPUNIT_TEST_SUITE(MeshSetTest);
-  CPPUNIT_WORK_IN_PROGRESS (test_add_multiple_meshes);
+  CPPUNIT_TEST (test_add_multiple_meshes);
   CPPUNIT_TEST_SUITE_END();
   
 private:

@@ -53,7 +53,6 @@ Unit testing of the MsqHessian class.
 #include <math.h>
 
 #include "cppunit/extensions/HelperMacros.h"
-#include "cppunit/SignalException.h"
 
 using namespace Mesquite;
 using std::cout;

@@ -1,15 +1,15 @@
 # Change this in Makefile.customize so that it points to your
 # installation of cppunit
-CPPUNIT_DIR = ../../../cppunit
+#CPPUNIT_DIR = ../../../cppunit
 
 
 # The rest of these items probably won't need to be messed with
-CPPUNIT_INCLUDE = -I${CPPUNIT_DIR}/include
+#CPPUNIT_INCLUDE = -I${CPPUNIT_DIR}/include
 TSTT_INCLUDE = -I../../TSTT-interface
 MESQUITE_INCLUDE = ${TSTT_INCLUDE} -I../../include -I../../includeLinks
 TEST_INCLUDE = ${CPPUNIT_INCLUDE} ${MESQUITE_INCLUDE}
 
-CPPUNIT_LINK = -L${CPPUNIT_DIR}/src/cppunit/.libs -lcppunit
+CPPUNIT_LINK = -L${CPPUNIT_DIR}/src/cppunit/.libs -lcppunit -ldl
 
 MESQUITE_LINK = -L../../lib -lmesquite ${TSTT_LINK}
 MESQUITE_AOMD_LINK = -L../../lib -lmesquite ${AOMD_TSTT_LINK}
@@ -26,7 +26,6 @@ include ../../Makefile.customize
 MSQ_BASE_DIR = ../..
 
 TEST_SRCS = msq_test_main.cpp \
-    MesquiteTestRunner.cpp \
     VtkTest.cpp \
     Matrix3DTest.cpp \
     MsqMeshEntityTest.cpp \

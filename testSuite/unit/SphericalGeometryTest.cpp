@@ -48,7 +48,6 @@ SimplifiedGeometryEngine.
 
 #include "PatchDataInstances.hpp"
 #include "cppunit/extensions/HelperMacros.h"
-#include "cppunit/SignalException.h"
 #include <math.h>
 
 #include "Mesquite.hpp"

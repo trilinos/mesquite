@@ -54,7 +54,6 @@ Unit testing of various functions in the MsqFreeVertexIndexIterator class.
 #include <iostream>
 
 #include "cppunit/extensions/HelperMacros.h"
-#include "cppunit/SignalException.h"
 
 using namespace Mesquite;
 using std::cout;

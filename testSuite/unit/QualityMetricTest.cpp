@@ -64,7 +64,6 @@ correct metric return values.
 #include "UntangleBetaQualityMetric.hpp"
 #include "MsqMessage.hpp"
 #include "cppunit/extensions/HelperMacros.h"
-#include "cppunit/SignalException.h"
 #include "ASMQualityMetric.hpp"
 #include "SmoothnessQualityMetric.hpp"
 #include "LocalSizeQualityMetric.hpp"
@@ -103,9 +102,9 @@ private:
   CPPUNIT_TEST (test_averaging_method);
     // test analytical gradients
   CPPUNIT_TEST (test_mean_ratio_tri_gradient_planar);
-  CPPUNIT_WORK_IN_PROGRESS (test_mean_ratio_tri_gradient_nonplanar);
+  CPPUNIT_TEST (test_mean_ratio_tri_gradient_nonplanar);
   CPPUNIT_TEST (test_mean_ratio_quad_gradient_planar);
-  CPPUNIT_WORK_IN_PROGRESS (test_mean_ratio_quad_gradient_nonplanar);
+  CPPUNIT_TEST (test_mean_ratio_quad_gradient_nonplanar);
   CPPUNIT_TEST (test_mean_ratio_tet_gradient);
   CPPUNIT_TEST (test_mean_ratio_hex_gradient);
     // test analytical Hessians

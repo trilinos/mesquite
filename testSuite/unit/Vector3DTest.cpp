@@ -29,7 +29,6 @@
 
 #include "Vector3D.hpp"
 #include "cppunit/extensions/HelperMacros.h"
-#include "cppunit/SignalException.h"
 
 class Vector3DTest : public CppUnit::TestFixture
 {

@@ -59,7 +59,6 @@ Patches must be allocated and dealocated by the caller.
 #include <iostream>
 
 #include "cppunit/extensions/HelperMacros.h"
-#include "cppunit/SignalException.h"
 
 namespace Mesquite
 {

@@ -49,7 +49,6 @@ Unit testing of various functions in the Matrix3D class.
 #include <math.h>
 
 #include "cppunit/extensions/HelperMacros.h"
-#include "cppunit/SignalException.h"
 
 using namespace Mesquite;
 using std::cout;

@@ -33,7 +33,6 @@
 #include "MeshImpl.hpp"
 
 #include "cppunit/extensions/HelperMacros.h"
-#include "cppunit/SignalException.h"
 
 class VtkTest : public CppUnit::TestFixture
 {

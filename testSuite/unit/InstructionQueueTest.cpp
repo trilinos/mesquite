@@ -60,7 +60,6 @@ Unit testing of various functions in the InstructionQueue class.
 #include "PatchData.hpp"
 
 #include "cppunit/extensions/HelperMacros.h"
-#include "cppunit/SignalException.h"
 
 using namespace Mesquite;
 

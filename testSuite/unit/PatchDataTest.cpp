@@ -49,7 +49,6 @@ Unit testing of various functions in the PatchData class.
 #include "PatchDataInstances.hpp"
 
 #include "cppunit/extensions/HelperMacros.h"
-#include "cppunit/SignalException.h"
 
 using namespace Mesquite;
 
