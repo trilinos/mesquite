@@ -444,7 +444,6 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError &err)
     }//end   if num_elem_based
 
     if((num_metrics-num_elem_based)>0){
-      PRINT_INFO("\nINSIDE VERTEX BASED LOOP\n");
         //construct the patch we will send to get_next_patch
       PatchData vert_group;
       no_culling_method();
