@@ -38,38 +38,8 @@ namespace Mesquite
    class EdgeLengthRangeQualityMetric : public SmoothnessQualityMetric
   {
    public:
-      // The function create_new is used to create a shape quality metric
-      static SmoothnessQualityMetric* create_new(double low_a, double high_a,
-                                                 MsqError &err){
-
-        EdgeLengthRangeQualityMetric* m = new EdgeLengthRangeQualityMetric(low_a, high_a, err);
-        return m;
-      }
     
-      // virtual destructor ensures use of polymorphism during destruction
-    virtual ~EdgeLengthRangeQualityMetric()
-       {}
-
-  
-   protected:
-   
-    bool evaluate_vertex(PatchData &pd, MsqVertex *vert, double &fval,
-                         MsqError &err);
-
-   private:
-    
-      //Generally, this constructor should not be used.  See below.
-    EdgeLengthRangeQualityMetric()
-       {
-         lowVal=0;
-         highVal=0;
-         avgMethod=SUM;
-         feasible=0;
-         set_metric_type(QualityMetric::VERTEX_BASED);
-         set_name("Edge Length Range Metric Default Constructor");
-       }
-    
-      //This is the form of the constructor used by create_new();
+      //This is the form of the constructor that should beused.
     EdgeLengthRangeQualityMetric(double low_a, double high_a, MsqError &err)
        {
          if(low_a>high_a){
@@ -82,6 +52,30 @@ namespace Mesquite
          set_metric_type(QualityMetric::VERTEX_BASED);
          set_name("Edge Length Range Metric");
        }
+
+      // virtual destructor ensures use of polymorphism during destruction
+    virtual ~EdgeLengthRangeQualityMetric()
+       {}
+
+  
+   protected:
+   
+    bool evaluate_vertex(PatchData &pd, MsqVertex *vert, double &fval,
+                         MsqError &err);
+
+   private:
+    
+      //Generally, this constructor should not be used.
+    EdgeLengthRangeQualityMetric()
+       {
+         lowVal=0;
+         highVal=0;
+         avgMethod=SUM;
+         feasible=0;
+         set_metric_type(QualityMetric::VERTEX_BASED);
+         set_name("Edge Length Range Metric Default Constructor");
+       }
+    
     double highVal;
     double lowVal;
     

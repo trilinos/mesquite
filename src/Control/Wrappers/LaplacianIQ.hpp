@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 14-Nov-02 at 16:51:36
-//  LAST-MOD: 19-May-03 at 17:48:38 by Thomas Leurent
+//  LAST-MOD: 23-Jul-03 at 18:06:13 by Thomas Leurent
 
 
 /*! \file LaplacianIQ.hpp
@@ -44,7 +44,7 @@ namespace Mesquite {
       LaplacianIQ() {
          MsqError err;
          // creates a mean ratio quality metric ...
-         meanRatio = MeanRatioQualityMetric::create_new();
+         meanRatio = new MeanRatioQualityMetric;
      
          // creates the laplacian smoother  procedures
          lapl1 = new LaplacianSmoother(err);

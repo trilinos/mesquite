@@ -25,20 +25,13 @@ namespace Mesquite
    class ScalarAddQualityMetric : public CompositeQualityMetric
    {
   public:
-       //! The function create_new is used to create a composite quality metric
        /*! Ensures that qm1 is not NULL.  If qm1 is only valid
          on a certain feasible, then the composite metric has the same
          constraint.  The composite metric also has the same negate flag
          as qm1.
        */
-     static CompositeQualityMetric* create_new(QualityMetric* qm1,
-                                               double scalar_double, 
-                                               MsqError &err){
-       CompositeQualityMetric* m = new ScalarAddQualityMetric(qm1,
-                                                              scalar_double,
-                                                              err);
-       return m;
-     }
+     ScalarAddQualityMetric(QualityMetric* qm1, double scalar_double,
+                            MsqError &err);
      
        // virtual destructor ensures use of polymorphism during destruction
      virtual ~ScalarAddQualityMetric()
@@ -48,14 +41,7 @@ namespace Mesquite
                              MsqError &err);
      bool evaluate_vertex(PatchData& pd, MsqVertex *vertex, double &value,
                             MsqError &err);
-     
-  protected:
-     
-  private:
-     
-     ScalarAddQualityMetric(QualityMetric* qm1, double scalar_double,
-                            MsqError &err);
-     
+          
    };
    
 

@@ -137,7 +137,8 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &pd,
   bool qm_bool=true;
   double QM_val;
   OF_val = 0.;
-  size_t i, p;
+  size_t i;
+  int p1;
   
   // If MSQ_DBG1 is defined, check to make sure that num_vert == array_size.
   MSQ_DEBUG_ACTION(1,{
@@ -207,7 +208,7 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &pd,
       if (pVal==1) factor=1;
       else {
         QM_pow=QM_val;
-        for (p=1; p<pVal-1; ++p)
+        for (p1=1; p1<pVal-1; ++p1)
           QM_pow*=QM_val;
         factor = QM_pow * pVal;
       }
@@ -297,7 +298,7 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &pd,
       if (pVal==1) factor=1;
       else {
         QM_pow=QM_val;
-        for (p=1; p<pVal-1; ++p)
+        for (p1=1; p1<pVal-1; ++p1)
           QM_pow*=QM_val;
         factor = QM_pow * pVal;
       }

@@ -29,15 +29,17 @@ namespace Mesquite
      */
    class AspectRatioGammaQualityMetric : public ShapeQualityMetric
    {
-   public:
-       /*! The function create_new is used to create a shape quality metric.
-        */
-     static ShapeQualityMetric* create_new()
+   public:     
+     AspectRatioGammaQualityMetric()
         {
-          ShapeQualityMetric* m = new AspectRatioGammaQualityMetric();
-          return m;
+          MsqError err;
+          set_metric_type(ELEMENT_BASED);
+          set_element_evaluation_mode(ELEMENT_VERTICES, err); MSQ_CHKERR(err);
+          fourDivRootThree=4.0/sqrt(3.0);
+          twelveDivRootTwo=12.0/sqrt(2.0);
+          feasible=0;
+          set_name("Aspect Ratio Gamma");
         }
-     
        //! virtual destructor ensures use of polymorphism during destruction
      virtual ~AspectRatioGammaQualityMetric()
         {}
@@ -49,16 +51,6 @@ namespace Mesquite
        //constants used in metric calculations
      double fourDivRootThree;
      double twelveDivRootTwo;
-     AspectRatioGammaQualityMetric()
-        {
-          MsqError err;
-          set_metric_type(ELEMENT_BASED);
-          set_element_evaluation_mode(ELEMENT_VERTICES, err); MSQ_CHKERR(err);
-          fourDivRootThree=4.0/sqrt(3.0);
-          twelveDivRootTwo=12.0/sqrt(2.0);
-          feasible=0;
-          set_name("Aspect Ratio Gamma");
-        }
        //!Computes the aspect ratio gamma of element.  If element
        //!is not a tetrahedron or triangle, sets an error.
      bool evaluate_element(PatchData& pd,

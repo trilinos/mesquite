@@ -38,17 +38,9 @@ namespace Mesquite
    class ASMQualityMetric : public SmoothnessQualityMetric
    {
   public:
- 
-       /*!Returns a pointer to a SmoothnessQualityMetric. 
-         
-       */
-     static SmoothnessQualityMetric* create_new(){
-       
-       SmoothnessQualityMetric* m = new ASMQualityMetric();
-       return m;
-     }
-     
-       //! virtual destructor ensures use of polymorphism during destruction
+     ASMQualityMetric();
+
+     //! virtual destructor ensures use of polymorphism during destruction
      virtual ~ASMQualityMetric()
         {}
      
@@ -56,11 +48,6 @@ namespace Mesquite
      bool evaluate_element(PatchData &pd, MsqMeshEntity *element,double &fval,
                            MsqError &err); 
           
-  protected:
-  private:
-     
-     ASMQualityMetric();
-    
   };
 
    

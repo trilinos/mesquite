@@ -26,7 +26,7 @@ LaplacianSmoother::LaplacianSmoother(MsqError &err)
   
   set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err,1,1);MSQ_CHKERR(err);
 
-  edgeQM = EdgeLengthQualityMetric::create_new();
+  edgeQM = new EdgeLengthQualityMetric;
   edgeQM->set_averaging_method(QualityMetric::RMS,err);
   objFunc = new LPtoPTemplate(edgeQM, 2, err);
   

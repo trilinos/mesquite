@@ -25,34 +25,18 @@ namespace Mesquite
        of the absolute value of delta_i minus delta_i, difference squared.
        That is, the root mean square of the difference, abs(delta_i) minus
        delta_i.
+
+       The constructor defaults to RMS AveragingMethod and
+       ELEMENT_VERTICES evaluationMode.  The default beta value is
+       .05.
      */
    
    class UntangleBetaQualityMetric : public UntangleQualityMetric
    {
    public:
      
-       /*! The function create_new is used to create a untangle quality
-         metric.  The constructor defaults to RMS AveragingMethod and
-         ELEMENT_VERTICES evaluationMode.  The default beta value is
-         .05.
-       */
-     static UntangleQualityMetric* create_new()
-        {
-          UntangleQualityMetric* m = new UntangleBetaQualityMetric(.05);
-          return m;
-        }
-       /*! 
-         \brief The function create_new is used to create a untangle quality
-         metric.  The constructor defaults to RMS AveragingMethod and
-         ELEMENT_VERTICES evaluationMode.  mBeta, the scalar value used
-         to compute the metric value, is set to 'bet'.
-       */
-     static UntangleQualityMetric* create_new(double bet)
-        {
-          UntangleQualityMetric* m = new UntangleBetaQualityMetric(bet);
-          return m;
-        }
-     
+     UntangleBetaQualityMetric(double bet=0.05);
+
        // virtual destructor ensures use of polymorphism during destruction
      virtual ~UntangleBetaQualityMetric()
         {}
@@ -74,7 +58,6 @@ namespace Mesquite
      
    private:
      double mBeta;
-     UntangleBetaQualityMetric(double bet);
    };
      //************BEGIN INLINE FUNCTIONS**************************
    

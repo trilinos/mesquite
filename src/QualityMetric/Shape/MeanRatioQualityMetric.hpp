@@ -26,12 +26,25 @@ namespace Mesquite
 {
    /*! \class MeanRatioQualityMetric
      \brief Computes the mean ratio of given element.
+
+     The metric does not use the sample point functionality or the
+     compute_weighted_jacobian.  It evaluates the metric at
+     the element vertices, and uses the isotropic ideal element.
+     Optionally, the metric computation can be raised to the
+     'pow_dbl' power.  This does not necessarily raise the metric
+     value to the 'pow_dbl' power but instead raises each local
+     metric.  For example, if the corner mean ratios of a quadraliteral
+     element were m1,m2,m3, and m4 and we set pow_dbl=2 and
+     used linear averaging, the metric value would then be
+     m = .25(m1*m1 + m2*m2 + m3*m3 + m4*m4).  The metric does
+     require a feasible region, and the metric needs to be minimized
+     if pow_dbl is greater than zero and maximized if pow_dbl
+     is less than zero.  pow_dbl being equal to zero is invalid.
    */
    class MeanRatioQualityMetric : public ShapeQualityMetric
    {
-   private:
- 
-     MeanRatioQualityMetric() : ShapeQualityMetric() {
+   public:
+      MeanRatioQualityMetric(double pow_dbl=1.0) : ShapeQualityMetric() {
        MsqError err;
        set_metric_type(ELEMENT_BASED);
        set_element_evaluation_mode(ELEMENT_VERTICES, err); MSQ_CHKERR(err);
@@ -48,32 +61,10 @@ namespace Mesquite
        a3Con =  1.0 / 3.0;
        b3Con =  1.0;
        c3Con = -2.0 / 3.0;
-     }
 
-   public:
-      /*!Returns a pointer to a ShapeQualityMetric.  The metric
-        does not use the sample point functionality or the
-        compute_weighted_jacobian.  It evaluates the metric at
-        the element vertices, and uses the isotropic ideal element.
-        Optionally, the metric computation can be raised to the
-        'pow_dbl' power.  This does not necessarily raise the metric
-        value to the 'pow_dbl' power but instead raises each local
-        metric.  For example, if the corner mean ratios of a quadraliteral
-        element were m1,m2,m3, and m4 and we set pow_dbl=2 and
-        used linear averaging, the metric value would then be
-        m = .25(m1*m1 + m2*m2 + m3*m3 + m4*m4).  The metric does
-        require a feasible region, and the metric needs to be minimized
-        if pow_dbl is greater than zero and maximized if pow_dbl
-        is less than zero.  pow_dbl being equal to zero is invalid.
-      */
-      static ShapeQualityMetric* create_new(double pow_dbl=1.0) {
-         MeanRatioQualityMetric* m = new MeanRatioQualityMetric();
-         m->set_metric_power(pow_dbl);
-         ShapeQualityMetric* r_m=m;
-         return r_m;
+       set_metric_power(pow_dbl);
       }
-     
-     
+
       //! virtual destructor ensures use of polymorphism during destruction
       virtual ~MeanRatioQualityMetric() {
       }

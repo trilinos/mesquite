@@ -25,23 +25,19 @@ namespace Mesquite
      /*! \class GeneralizedConditionNumberQualityMetric
        \brief Computes the condition number of given element.
        The``condition number" is scaled between one and infinity,
-       with an ideal element having condition number one.  
+       with an ideal element having condition number one.
+
+       Constructor defaults the metric
+       to the LINEAR averaging method and ELEMENT_VERTICES sample points.
+       The default metric name is "Condition Number".  It does require a
+       feasible region, and the metric needs to be maximized.
      */
    class GeneralizedConditionNumberQualityMetric : public ShapeQualityMetric
    {
   public:
- 
-       /*!Returns a pointer to a ShapeQualityMetric.  Defaults the metric
-         to the LINEAR averaging method and ELEMENT_VERTICES sample points.
-         The default metric name is "Condition Number".  It does require a
-         feasible region, and the metric needs to be maximized.
-       */
-     static ShapeQualityMetric* create_new(){
-       
-       ShapeQualityMetric* m = new GeneralizedConditionNumberQualityMetric();
-       return m;
-     }
      
+     GeneralizedConditionNumberQualityMetric();
+          
        //! virtual destructor ensures use of polymorphism during destruction
      virtual ~GeneralizedConditionNumberQualityMetric()
         {}
@@ -61,13 +57,8 @@ namespace Mesquite
                                    int num_jacobian_vectors,
                                    double &fval,
                                    MsqError &err);
-     
-     
-  private:
-     
-     GeneralizedConditionNumberQualityMetric();
-    
-  };
+   };
+  
 //BEGIN INLINE FUNCTIONS
 
    inline bool GeneralizedConditionNumberQualityMetric::compute_condition_number(

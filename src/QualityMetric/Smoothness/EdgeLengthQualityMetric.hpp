@@ -33,12 +33,14 @@ namespace Mesquite
    class EdgeLengthQualityMetric : public SmoothnessQualityMetric
   {
    public:
-      // The function create_new is used to create a shape quality metric
-      static SmoothnessQualityMetric* create_new(){
-
-        EdgeLengthQualityMetric* m = new EdgeLengthQualityMetric();
-        return m;
-      }
+    
+    EdgeLengthQualityMetric()
+       {
+         avgMethod=SUM;
+         feasible=0;
+         set_metric_type(QualityMetric::VERTEX_BASED);
+         set_name("Edge Length Metric");
+       }
     
       // virtual destructor ensures use of polymorphism during destruction
     virtual ~EdgeLengthQualityMetric()
@@ -49,17 +51,6 @@ namespace Mesquite
    
     bool evaluate_vertex(PatchData &pd, MsqVertex *vert, double &fval,
                          MsqError &err);
-
-   private:
-
-    EdgeLengthQualityMetric()
-       {
-         avgMethod=SUM;
-         feasible=0;
-         set_metric_type(QualityMetric::VERTEX_BASED);
-         set_name("Edge Length Metric");
-       }
-    
   };
 
 

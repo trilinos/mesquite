@@ -29,7 +29,6 @@ namespace Mesquite
    class MultiplyQualityMetric : public CompositeQualityMetric
    {
   public:
-       //! The function create_new is used to create a composite quality metric
        /*! Ensures that qm1 and qm2 are not NULL.  If either qm1 or qm2
          are valid only on a feasible region, then the composite
          metric's feasibility flag is set to one.  If qm1 and qm2 have
@@ -38,12 +37,8 @@ namespace Mesquite
          metric's negateFlag is set to qm1's negateFlag (and, thus, qm2's
          negateFlag).  
        */
-     static CompositeQualityMetric* create_new(QualityMetric* qm1,
-                                               QualityMetric* qm2,
-                                               MsqError &err){
-      CompositeQualityMetric* m = new MultiplyQualityMetric(qm1, qm2, err);
-      return m;
-     }
+     MultiplyQualityMetric(QualityMetric* qm1, QualityMetric* qm2,
+                           MsqError &err);
      
        // virtual destructor ensures use of polymorphism during destruction
      virtual ~MultiplyQualityMetric()
@@ -65,8 +60,6 @@ namespace Mesquite
      
   private:
      
-     MultiplyQualityMetric(QualityMetric* qm1, QualityMetric* qm2,
-                           MsqError &err);
      
    };
    

@@ -27,19 +27,13 @@ namespace Mesquite
    class PowerQualityMetric : public CompositeQualityMetric
    {
   public:
-       //! The function create_new is used to create a composite quality metric
        /*! Ensures that qm1 is not NULL.  If qm1 is only valid
          on a certain feasible, then the composite metric has the same
          constraint.  The composite metric also has the same negate flag
          as qm1.
        */
-     static CompositeQualityMetric* create_new(QualityMetric* qm1,
-                                               double pow_double, 
-                                               MsqError &err){
-      CompositeQualityMetric* m = new PowerQualityMetric(qm1, pow_double,
-                                                         err);
-      return m;
-     }
+     PowerQualityMetric(QualityMetric* qm1, double pow_double,MsqError &err);
+     
      
        // virtual destructor ensures use of polymorphism during destruction
      virtual ~PowerQualityMetric()
@@ -49,13 +43,6 @@ namespace Mesquite
                              MsqError &err);
      bool evaluate_vertex(PatchData& pd, MsqVertex *vertex, double &value,
                             MsqError &err);
-     
-  protected:
-     
-  private:
-     
-     PowerQualityMetric(QualityMetric* qm1, double pow_double,MsqError &err);
-     
    };
    
 

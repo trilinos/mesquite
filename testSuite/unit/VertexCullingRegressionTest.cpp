@@ -8,7 +8,7 @@
 //    E-MAIL: mbrewer@sandia.gov
 //
 // ORIG-DATE: May 8, 2003
-//  LAST-MOD: 
+//  LAST-MOD: 23-Jul-03 at 17:44:57 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -81,8 +81,8 @@ public:
       InstructionQueue queue1;
       
         // creates a mean ratio quality metric ...
-      ShapeQualityMetric* shape_metric = ConditionNumberQualityMetric::create_new();
-      SmoothnessQualityMetric* lapl_met = EdgeLengthQualityMetric::create_new();
+      ShapeQualityMetric* shape_metric = new ConditionNumberQualityMetric;
+      SmoothnessQualityMetric* lapl_met = new EdgeLengthQualityMetric;
       lapl_met->set_averaging_method(QualityMetric::RMS,err);
       
         // creates the laplacian smoother  procedures

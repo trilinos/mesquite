@@ -23,24 +23,17 @@ namespace Mesquite
 {
      /*! \class ConditionNumberQualityMetric
        \brief Computes the condition number of given element.
-       
+
+       The metric does not use the sample point functionality or the
+       compute_weighted_jacobian.  It evaluates the metric at
+       the element vertices, and uses the isotropic ideal element.
+       It does require a feasible region, and the metric needs
+       to be minimized.
      */
    class ConditionNumberQualityMetric : public ShapeQualityMetric
    {
   public:
- 
-       /*!Returns a pointer to a ShapeQualityMetric.  The metric
-         does not use the sample point functionality or the
-         compute_weighted_jacobian.  It evaluates the metric at
-         the element vertices, and uses the isotropic ideal element.
-         It does require a feasible region, and the metric needs
-         to be minimized.
-       */
-     static ShapeQualityMetric* create_new(){
-       
-       ShapeQualityMetric* m = new ConditionNumberQualityMetric();
-       return m;
-     }
+     ConditionNumberQualityMetric();
      
        //! virtual destructor ensures use of polymorphism during destruction
      virtual ~ConditionNumberQualityMetric()
@@ -53,8 +46,6 @@ namespace Mesquite
   protected:
      
   private:
-     
-     ConditionNumberQualityMetric();
     
   };
     

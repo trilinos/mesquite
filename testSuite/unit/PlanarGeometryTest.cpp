@@ -8,7 +8,7 @@
 //    E-MAIL: mbrewer@sandia.gov
 //
 // ORIG-DATE: Jan. 29, 2003
-//  LAST-MOD: 22-May-03 at 09:38:45 by Michael Brewer
+//  LAST-MOD: 23-Jul-03 at 17:43:38 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -114,8 +114,8 @@ public:
      InstructionQueue queue1, queue2;
      
        // creates a mean ratio quality metric ...
-     ShapeQualityMetric* shape = ConditionNumberQualityMetric::create_new();
-     UntangleQualityMetric* untan = UntangleBetaQualityMetric::create_new(.1);
+     ShapeQualityMetric* shape = new ConditionNumberQualityMetric;
+     UntangleQualityMetric* untan = new UntangleBetaQualityMetric(.1);
      
        // ... and builds an objective function with it (untangle)
      LInfTemplate* untan_func = new LInfTemplate(untan);
@@ -224,8 +224,8 @@ public:
        InstructionQueue queue1, queue2;
 
          //creates a mean ratio quality metric ...
-       ShapeQualityMetric* shape = ConditionNumberQualityMetric::create_new();
-       UntangleQualityMetric* untan= UntangleBetaQualityMetric::create_new(.1);
+       ShapeQualityMetric* shape = new ConditionNumberQualityMetric();
+       UntangleQualityMetric* untan= new UntangleBetaQualityMetric(.1);
   
          // ... and builds an objective function with it (untangle)
        LInfTemplate* untan_func = new LInfTemplate(untan);
@@ -334,7 +334,7 @@ public:
        InstructionQueue queue1;
        
          //creates a asm quality metric ...
-       SmoothnessQualityMetric* smooth = ASMQualityMetric::create_new();
+       SmoothnessQualityMetric* smooth = new ASMQualityMetric;
        
          // ... and builds an objective function with it (untangle)
        LPtoPTemplate* smooth_func = new LPtoPTemplate(smooth,1,err);

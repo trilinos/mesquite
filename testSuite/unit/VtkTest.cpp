@@ -97,7 +97,7 @@ public:
     double x1, x2, x3, y1, y2, y3;// z1, z2, z3;
     std::vector<size_t> vertex_indices;
     
-    for (int i=0;i<num_elements;i++)
+    for (size_t i=0;i<num_elements;i++)
     {
       element_array[i].get_vertex_indices(vertex_indices);
       
@@ -134,7 +134,7 @@ public:
     double x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4;
     std::vector<size_t> vertex_indices;
     
-    for (int i=0;i<num_elements;i++)
+    for (size_t i=0;i<num_elements;i++)
     {
       element_array[i].get_vertex_indices(vertex_indices);
       

@@ -26,10 +26,16 @@ namespace Mesquite
    /*! \class InverseMeanRatioQualityMetric
      \brief Computes the inverse mean ratio quality metric
      of given element.
+     
+     The metric does not use the sample point functionality or the
+     compute_weighted_jacobian.  It evaluates the metric at
+     the element vertices, and uses the isotropic ideal element.
+     It does require a feasible region, and the metric needs
+     to be maximized.
    */
    class InverseMeanRatioQualityMetric : public ShapeQualityMetric
    {
-   private:
+   public:
  
      InverseMeanRatioQualityMetric() : ShapeQualityMetric() {
        MsqError err;
@@ -42,30 +48,16 @@ namespace Mesquite
        feasible=1;
        set_name("Inverse Mean Ratio");
      }
-
-   public:
- 
-      /*!Returns a pointer to a ShapeQualityMetric.  The metric
-        does not use the sample point functionality or the
-        compute_weighted_jacobian.  It evaluates the metric at
-        the element vertices, and uses the isotropic ideal element.
-        It does require a feasible region, and the metric needs
-        to be maximized.
-      */
-      static ShapeQualityMetric* create_new() {
-         ShapeQualityMetric* m = new InverseMeanRatioQualityMetric();
-         return m;
-      }
      
-      //! virtual destructor ensures use of polymorphism during destruction
-      virtual ~InverseMeanRatioQualityMetric() {
-      }
+     //! virtual destructor ensures use of polymorphism during destruction
+     virtual ~InverseMeanRatioQualityMetric() {
+     }
      
-      //! evaluate using mesquite objects 
-      bool evaluate_element(PatchData &pd, MsqMeshEntity *element,
-                            double &fval, MsqError &err); 
+     //! evaluate using mesquite objects 
+     bool evaluate_element(PatchData &pd, MsqMeshEntity *element,
+                           double &fval, MsqError &err); 
           
-      bool compute_element_analytical_gradient(PatchData &pd,
+     bool compute_element_analytical_gradient(PatchData &pd,
                                                MsqMeshEntity *element,
                                                MsqVertex *free_vtces[], 
                                                Vector3D grad_vec[],
@@ -73,7 +65,7 @@ namespace Mesquite
                                                double &metric_value,
                                                MsqError &err);
 
-      bool compute_element_analytical_hessian(PatchData &pd,
+     bool compute_element_analytical_hessian(PatchData &pd,
                                               MsqMeshEntity *e,
                                               MsqVertex *v[], 
                                               Vector3D g[],

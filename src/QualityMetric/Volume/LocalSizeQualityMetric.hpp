@@ -32,12 +32,15 @@ namespace Mesquite
    class LocalSizeQualityMetric : public VolumeQualityMetric
    {
   public:
-       //! The function create_new is used to create a volume quality metric
-     static VolumeQualityMetric* create_new(){
-       VolumeQualityMetric* m = new LocalSizeQualityMetric();
-       return m;
-     }
-     
+        //Default constructor. 
+      LocalSizeQualityMetric()
+       {
+         avgMethod=RMS;
+         feasible=0;
+         set_metric_type(QualityMetric::VERTEX_BASED);
+         set_name("Local Size Quality Metric");
+       }
+
        // virtual destructor ensures use of polymorphism during destruction
      virtual ~LocalSizeQualityMetric()
         {}
@@ -58,16 +61,7 @@ namespace Mesquite
      inline double compute_corner_volume(PatchData &pd, size_t vert_1,
                                          size_t vert_2, size_t vert_3,
                                          size_t vert_4, MsqError &err);
-     
-       //Default constructor.  This is the constructor used by create_new.
-     LocalSizeQualityMetric()
-        {
-         avgMethod=RMS;
-         feasible=0;
-         set_metric_type(QualityMetric::VERTEX_BASED);
-         set_name("Local Size Quality Metric");
-       }
-    
+         
   };
 
    //!Calculate the area of the triangle formed by the three vertices.

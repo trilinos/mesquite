@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 13-Nov-02 at 18:05:56
-//  LAST-MOD: 22-May-03 at 09:17:18 by Michael Brewer
+//  LAST-MOD: 23-Jul-03 at 17:33:18 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -62,7 +62,7 @@ public:
   {
      MsqError err;
      // creates a quality assessor and a qualilty improver
-     mQM = MeanRatioQualityMetric::create_new();
+     mQM = new MeanRatioQualityMetric;
      mOF = new LPtoPTemplate(mQM, 2, err);
      mQI = new SteepestDescent( mOF );
      mQA = new QualityAssessor(mQM, QualityAssessor::MAXIMUM);

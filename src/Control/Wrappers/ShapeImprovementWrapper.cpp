@@ -41,7 +41,7 @@ ShapeImprovementWrapper::ShapeImprovementWrapper(double cpu_time,
   maxTime=cpu_time;
   
   MsqError err;
-  untangleMetric = UntangleBetaQualityMetric::create_new(untBeta);
+  untangleMetric = new UntangleBetaQualityMetric(untBeta);
   untangleFunc =  new LPtoPTemplate(untangleMetric, 2, err);
   untangleFunc->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
   untangleGlobal = new ConjugateGradient(untangleFunc,err);
@@ -66,7 +66,7 @@ ShapeImprovementWrapper::ShapeImprovementWrapper(double cpu_time,
   untangleLocalOuter->add_criterion_type_with_double(TerminationCriterion::SUCCESSIVE_IMPROVEMENTS_RELATIVE,successiveEps*.1,err);
   
   
-  meanRatio = MeanRatioQualityMetric::create_new();
+  meanRatio = new MeanRatioQualityMetric;
   meanRatio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
   meanRatio->set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
   meanRatio->set_averaging_method(QualityMetric::LINEAR,err);

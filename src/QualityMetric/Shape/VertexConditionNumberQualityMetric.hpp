@@ -22,23 +22,16 @@ namespace Mesquite
      /*! \class VertexConditionNumberQualityMetric
        \brief Computes the condition numbers of the corner's of elements
        connected to the given vertex and then averages those values.
-       
+
+       The metric does not use the sample point functionality or the
+       compute_weighted_jacobian.  It uses the isotropic ideal
+       element.  This metric does require a feasible region, and
+       the metric needs to be minimized.
      */
    class VertexConditionNumberQualityMetric : public ShapeQualityMetric
    {
   public:
- 
-       /*!Returns a pointer to a ShapeQualityMetric.  The metric
-         does not use the sample point functionality or the
-         compute_weighted_jacobian.  It uses the isotropic ideal
-         element.  This metric does require a feasible region, and
-         the metric needs to be minimized.
-       */
-     static ShapeQualityMetric* create_new(){
-       
-       ShapeQualityMetric* m = new VertexConditionNumberQualityMetric();
-       return m;
-     }
+     VertexConditionNumberQualityMetric();
      
        //! virtual destructor ensures use of polymorphism during destruction
      virtual ~VertexConditionNumberQualityMetric()
@@ -48,12 +41,6 @@ namespace Mesquite
      bool evaluate_vertex(PatchData &pd, MsqVertex *vert, double &fval,
                            MsqError &err); 
           
-  protected:
-     
-  private:
-     
-     VertexConditionNumberQualityMetric();
-    
   };
     
    

@@ -8,7 +8,7 @@
 //    E-MAIL: mbrewer@sandia.gov
 //
 // ORIG-DATE: March 5, 2003
-//  LAST-MOD: 22-May-03 at 10:17:38 by Michael Brewer
+//  LAST-MOD: 23-Jul-03 at 17:44:17 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -113,7 +113,7 @@ public:
       InstructionQueue queue1;
       
         // create a mean ratio quality metric ...
-      ShapeQualityMetric* cond_num=ConditionNumberQualityMetric::create_new();
+      ShapeQualityMetric* cond_num= new ConditionNumberQualityMetric;
       LPtoPTemplate* obj_func = new LPtoPTemplate(cond_num, 2, err);
       CPPUNIT_ASSERT(!err.errorOn);
       obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);

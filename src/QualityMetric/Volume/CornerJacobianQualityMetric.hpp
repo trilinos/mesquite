@@ -25,6 +25,13 @@ namespace Mesquite
        \brief Computes the volume or area of the element, as appropriate.
        This metric uses the average of the corner Jacobian determinants
        for the approximation to the volume of hex.
+
+        The metric does not use the sample point functionality or the
+        compute_weighted_jacobian (except for possibly indirectly
+        when evaluating the metric value for a hex).  It evaluates
+        the signed area of surface elements and the signed volume
+        of volume elements.  It does require a feasible region,
+        and (in general) the metric needs to be minimized.
      */
      /*!\todo MB:  CornerJacobianQualityMetric is currently not being
        evaluated using the corner jacobian method (instead it is using
@@ -34,20 +41,8 @@ namespace Mesquite
    {
   public:
  
-       /*!Returns a pointer to a VolumeQualityMetric.  The metric
-         does not use the sample point functionality or the
-         compute_weighted_jacobian (except for possibly indirectly
-         when evaluating the metric value for a hex).  It evaluates
-         the signed area of surface elements and the signed volume
-         of volume elements.  It does require a feasible region,
-         and (in general) the metric needs to be minimized.
-       */
-     static VolumeQualityMetric* create_new(){
-       
-       VolumeQualityMetric* m = new CornerJacobianQualityMetric();
-       return m;
-     }
-     
+     CornerJacobianQualityMetric();
+
        //! virtual destructor ensures use of polymorphism during destruction
      virtual ~CornerJacobianQualityMetric()
         {}
@@ -56,12 +51,6 @@ namespace Mesquite
      bool evaluate_element(PatchData &pd, MsqMeshEntity *element,double &fval,
                            MsqError &err); 
           
-  protected:
-
-  private:
-     
-     CornerJacobianQualityMetric();
-    
   };
 
 } //namespace

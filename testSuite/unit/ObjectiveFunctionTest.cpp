@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 13-Nov-02 at 18:05:56
-//  LAST-MOD: 23-May-03 at 17:08:07 by Thomas Leurent
+//  LAST-MOD: 23-Jul-03 at 17:40:28 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -149,8 +149,8 @@ public:
     MsqError err;
       
     // instantiates a couple of QualityMetrics
-    ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
-    ShapeQualityMetric* condition_nb = GeneralizedConditionNumberQualityMetric::create_new();
+    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
+    ShapeQualityMetric* condition_nb = new GeneralizedConditionNumberQualityMetric;
 
     // and creates a composite objective function.
     LPtoPTemplate* LP2_mean_ratio = new LPtoPTemplate(mean_ratio, 2, err); MSQ_CHKERR(err);
@@ -198,9 +198,9 @@ public:
        bool return_bool;
        double max_val=0.0;
        double l_inf_val = 1.0;
-       ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
+       ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
          //creates an edge length metric
-       SmoothnessQualityMetric* smooth = EdgeLengthQualityMetric::create_new();
+       SmoothnessQualityMetric* smooth = new EdgeLengthQualityMetric;
        
          // ... and builds an objective function with it
        LInfTemplate l_inf_mean(mean_ratio);
@@ -303,7 +303,7 @@ public:
     MsqError err;
     
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
+    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
     mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
     
     // ... and builds an objective function with it
@@ -318,7 +318,7 @@ public:
     MsqError err;
     
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* i_mean_ratio = InverseMeanRatioQualityMetric::create_new();
+    ShapeQualityMetric* i_mean_ratio = new InverseMeanRatioQualityMetric;
     i_mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
     
     // ... and builds an objective function with it
@@ -333,7 +333,7 @@ public:
     MsqError err;
     
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
+    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
     mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
     
     // ... and builds an objective function with it
@@ -349,7 +349,7 @@ public:
     MsqError err;
     
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
+    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
     mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
     
     // ... and builds an objective function with it
@@ -364,7 +364,7 @@ public:
      {
        MsqError err;
          // creates a mean ratio quality metric ...
-       ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
+       ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
        mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
        
          // ... and builds an objective function with it
@@ -394,7 +394,7 @@ public:
     MsqError err;
     
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
+    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
     mean_ratio->set_averaging_method(QualityMetric::SUM, err);
     
     // ... and builds an objective function with it
@@ -439,7 +439,7 @@ public:
     MsqError err;
     
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
+    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
     mean_ratio->set_averaging_method(QualityMetric::SUM, err);
     
     // ... and builds an objective function with it
@@ -510,7 +510,7 @@ public:
     MsqError err;
     
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
+    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
     mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
     mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
     
@@ -522,7 +522,7 @@ public:
     LPtoPTemplate LP1(mean_ratio, 1, err);
     test_OFval_from_evaluate_and_gradient(&LP1, m12Hex);
 
-    SmoothnessQualityMetric* edge = EdgeLengthQualityMetric::create_new();
+    SmoothnessQualityMetric* edge = new EdgeLengthQualityMetric;
     LPtoPTemplate LP5(edge, 1, err);
 
     test_OFval_from_evaluate_and_gradient(&LP5, m12Hex);
@@ -570,7 +570,7 @@ public:
     
     
     CPPUNIT_ASSERT_DOUBLES_EQUAL(OF_val1, OF_val2, 1e-8);
-    for (int i=0; i<pd.num_vertices(); ++i){
+    for (size_t i=0; i<pd.num_vertices(); ++i){
       for (int j=0; j<3; ++j){
         CPPUNIT_ASSERT_DOUBLES_EQUAL(grad1[i][j], grad2[i][j], 5e-5);
       }
@@ -585,7 +585,7 @@ public:
     MsqError err;
     
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
+    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
     mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
     mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
     
@@ -610,7 +610,7 @@ public:
     MsqError err;
     
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* i_mean_ratio = InverseMeanRatioQualityMetric::create_new();
+    ShapeQualityMetric* i_mean_ratio = new InverseMeanRatioQualityMetric;
     i_mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
     i_mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
     
@@ -644,7 +644,7 @@ public:
 //     OF_hessian_ana.initialize(pd, err); MSQ_CHKERR(err);
     
 //     // creates a mean ratio quality metric ...
-//     ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
+//     ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
 // //    mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
 //     mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
 //     mean_ratio->set_averaging_method(QualityMetric::SUM, err); MSQ_CHKERR(err);
@@ -705,7 +705,8 @@ public:
     // the same except for a negative sign.
   void test_LPtoP_negate_flag()
   {
-    int i, j;
+    size_t i;
+    int j;
     bool valid;
     MsqError err;
     MsqHessian Hpos;
@@ -717,10 +718,10 @@ public:
     Hpos.initialize(tetPatch, err); MSQ_CHKERR(err);
     Hneg.initialize(tetPatch, err); MSQ_CHKERR(err);
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
+    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
     mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
     mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
-    ShapeQualityMetric* mean_ratio_neg = MeanRatioQualityMetric::create_new();
+    ShapeQualityMetric* mean_ratio_neg = new MeanRatioQualityMetric;
     mean_ratio_neg->set_averaging_method(QualityMetric::LINEAR, err);
     mean_ratio_neg->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
     mean_ratio_neg->set_negate_flag(-1);

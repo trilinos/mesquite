@@ -8,7 +8,7 @@
 //    E-MAIL: mbrewer@sandia.gov
 //
 // ORIG-DATE: Jan. 29, 2003
-//  LAST-MOD: 22-May-03 at 09:24:58 by Michael Brewer
+//  LAST-MOD: 23-Jul-03 at 17:42:17 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -107,8 +107,8 @@ public:
      InstructionQueue queue1;
      
        // creates a mean ratio quality metric ...
-     ShapeQualityMetric* shape = ConditionNumberQualityMetric::create_new();
-     UntangleQualityMetric* untan = UntangleBetaQualityMetric::create_new();
+     ShapeQualityMetric* shape = new ConditionNumberQualityMetric;
+     UntangleQualityMetric* untan = new UntangleBetaQualityMetric;
      
        // ... and builds an objective function with it
      LPtoPTemplate* obj_func = new LPtoPTemplate(shape, 2, err);
@@ -181,7 +181,7 @@ public:
        InstructionQueue queue1;
 
          // creates an edge length metric ...
-       SmoothnessQualityMetric* edg_len=EdgeLengthQualityMetric::create_new();
+       SmoothnessQualityMetric* edg_len= new EdgeLengthQualityMetric;
       
          //create the laplacian smoother
        LaplacianSmoother* lapl = new LaplacianSmoother(err);

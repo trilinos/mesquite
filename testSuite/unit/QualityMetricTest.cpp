@@ -8,7 +8,7 @@
 //    E-MAIL: mbrewer@sandia.gov
 //
 // ORIG-DATE: 03-Dec-02
-//  LAST-MOD: 23-May-03 at 14:48:38 by Thomas Leurent
+//  LAST-MOD: 23-Jul-03 at 17:34:39 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -193,8 +193,8 @@ public:
      MsqVertex* verts = triPatch.get_vertex_array(err);
      elems=triPatch.get_element_array(err);
      MSQ_CHKERR(err);
-     ShapeQualityMetric *met = ConditionNumberQualityMetric::create_new();
-     ShapeQualityMetric *gmet = GeneralizedConditionNumberQualityMetric::create_new();
+     ShapeQualityMetric *met = new ConditionNumberQualityMetric;
+     ShapeQualityMetric *gmet = new GeneralizedConditionNumberQualityMetric;
        //Check condition number of ideal tri
      v_flag=met->evaluate_element(triPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(v_flag==true);
@@ -301,8 +301,8 @@ public:
      MsqVertex* verts = triPatch.get_vertex_array(err);
      elems=triPatch.get_element_array(err);
      MSQ_CHKERR(err);
-     ShapeQualityMetric *met = MeanRatioQualityMetric::create_new();
-     ShapeQualityMetric *imet = InverseMeanRatioQualityMetric::create_new();
+     ShapeQualityMetric *met = new MeanRatioQualityMetric;
+     ShapeQualityMetric *imet = new InverseMeanRatioQualityMetric;
        //Check mean ratio of ideal tri
      met->evaluate_element(triPatch,&elems[0],val,err);MSQ_CHKERR(err);
      if(pF)
@@ -369,7 +369,7 @@ public:
      MsqVertex* verts = triPatch.get_vertex_array(err);
      elems=triPatch.get_element_array(err);
      MSQ_CHKERR(err);
-     ShapeQualityMetric *met = AspectRatioGammaQualityMetric::create_new();
+     ShapeQualityMetric *met = new AspectRatioGammaQualityMetric;
        //Check aspect ratio gamma of ideal tri
      valid=met->evaluate_element(triPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
@@ -392,11 +392,11 @@ public:
      MsqVertex* verts = triPatch.get_vertex_array(err);
      elems=triPatch.get_element_array(err);
      MSQ_CHKERR(err);
-     ShapeQualityMetric *mmet = MeanRatioQualityMetric::create_new();
-     ShapeQualityMetric *cmet = ConditionNumberQualityMetric::create_new();
-     CompositeQualityMetric *met = MultiplyQualityMetric::create_new(mmet,
-                                                                     cmet,
-                                                                     err);
+     ShapeQualityMetric *mmet = new MeanRatioQualityMetric;
+     ShapeQualityMetric *cmet = new ConditionNumberQualityMetric;
+     CompositeQualityMetric *met = new MultiplyQualityMetric(mmet,
+                                                            cmet,
+                                                            err);
        //Check ideal tri
      met->evaluate_element(triPatch,&elems[0],val,err);MSQ_CHKERR(err);
      if(pF)
@@ -446,11 +446,9 @@ public:
        elems=triPatch.get_element_array(err);
        MSQ_CHKERR(err);
          //vertex based
-       SmoothnessQualityMetric *m1 = EdgeLengthQualityMetric::create_new();
-       CompositeQualityMetric *pow_m1 = PowerQualityMetric::create_new(m1,2,
-                                                                       err);
-       CompositeQualityMetric *sa_m1 =ScalarAddQualityMetric::create_new(m1,2,
-                                                                         err);
+       SmoothnessQualityMetric *m1 = new EdgeLengthQualityMetric;
+       CompositeQualityMetric *pow_m1 = new PowerQualityMetric(m1,2,err);
+       CompositeQualityMetric *sa_m1 = new ScalarAddQualityMetric(m1,2,err);
        m1->evaluate_vertex(triPatch,&verts[2],val,err);MSQ_CHKERR(err);
        pow_m1->evaluate_vertex(triPatch,&verts[2],temp_val,err);
        MSQ_CHKERR(err);
@@ -458,11 +456,9 @@ public:
        sa_m1->evaluate_vertex(triPatch,&verts[2],temp_val,err);
        CPPUNIT_ASSERT_DOUBLES_EQUAL(val+2.0,temp_val,qualTol);
          //element based
-       ShapeQualityMetric *m2 = ConditionNumberQualityMetric::create_new();
-       CompositeQualityMetric *pow_m2 = PowerQualityMetric::create_new(m2,2,
-                                                                       err);
-       CompositeQualityMetric *sa_m2 =ScalarAddQualityMetric::create_new(m2,2,
-                                                                         err);
+       ShapeQualityMetric *m2 = new ConditionNumberQualityMetric;
+       CompositeQualityMetric *pow_m2 = new PowerQualityMetric(m2,2,err);
+       CompositeQualityMetric *sa_m2 = new ScalarAddQualityMetric(m2,2,err);
        m2->evaluate_element(triPatch,&elems[0],val,err);MSQ_CHKERR(err);
        pow_m2->evaluate_element(triPatch,&elems[0],temp_val,err);
        MSQ_CHKERR(err);
@@ -470,9 +466,7 @@ public:
        sa_m2->evaluate_element(triPatch,&elems[0],temp_val,err);
        CPPUNIT_ASSERT_DOUBLES_EQUAL(val+2.0,temp_val,qualTol);
          //element based with a negative power
-       CompositeQualityMetric *pow_mneg2 = PowerQualityMetric::create_new(m2,
-                                                                          -2,
-                                                                          err);
+       CompositeQualityMetric *pow_mneg2 = new PowerQualityMetric(m2,-2,err);
        m2->evaluate_element(triPatch,&elems[0],val,err);MSQ_CHKERR(err);
        pow_mneg2->evaluate_element(triPatch,&elems[0],temp_val,err);
        MSQ_CHKERR(err);
@@ -496,8 +490,8 @@ public:
      MsqVertex* verts = triPatch.get_vertex_array(err);
      elems=triPatch.get_element_array(err);
      MSQ_CHKERR(err);
-     SmoothnessQualityMetric *met = EdgeLengthQualityMetric::create_new();
-       //SmoothnessQualityMetric *lam_met = EdgeLengthQualityMetric::create_new(EdgeLengthQualityMetric::DIVIDE_BY_LAMBDA);
+     SmoothnessQualityMetric *met = new EdgeLengthQualityMetric;
+       //SmoothnessQualityMetric *lam_met = new EdgeLengthQualityMetric(EdgeLengthQualityMetric::DIVIDE_BY_LAMBDA);
        //Check aspect ratio gamma of ideal tri patch
        //Vert[2] has two edges connected of length 1
      met->evaluate_vertex(triPatch,&verts[2],val,err);MSQ_CHKERR(err);
@@ -523,7 +517,7 @@ public:
   
   void test_asm()
      {
-       QualityMetric *met = ASMQualityMetric::create_new();
+       QualityMetric *met = new ASMQualityMetric;
        MsqError err;
          //Test the metric on a single elemnt patch
        PatchData p1;
@@ -559,7 +553,7 @@ public:
   
   void test_corner_jacobian_metric()
      {
-       QualityMetric *met = CornerJacobianQualityMetric::create_new();
+       QualityMetric *met = new CornerJacobianQualityMetric;
        MsqError err;
          //Test the metric on a single elemnt patch
        PatchData p1;
@@ -592,7 +586,7 @@ public:
   
   void test_local_size_metric()
      {
-       VolumeQualityMetric *met = LocalSizeQualityMetric::create_new();
+       VolumeQualityMetric *met = new LocalSizeQualityMetric;
        MsqError err;
          //Test the metric on a single elemnt patch
        PatchData p1;
@@ -635,7 +629,7 @@ public:
      }
   void test_vertex_based_condition_number_metric()
      {
-       ShapeQualityMetric *met = VertexConditionNumberQualityMetric::create_new();
+       ShapeQualityMetric *met = new VertexConditionNumberQualityMetric;
        MsqError err;
          //Test the metric on a single elemnt patch
        PatchData p1;
@@ -667,7 +661,7 @@ public:
   
   void test_untangle_metric()
      {
-       UntangleQualityMetric *met = UntangleBetaQualityMetric::create_new(0.0);
+       UntangleQualityMetric *met = new UntangleBetaQualityMetric(0.0);
        MsqError err;
        double val;
          //Test the metric on a single elemnt patch
@@ -700,7 +694,7 @@ public:
      MsqMeshEntity* elems;
      elems=quadPatch.get_element_array(err);
      MSQ_CHKERR(err);
-     ShapeQualityMetric *met = MeanRatioQualityMetric::create_new();
+     ShapeQualityMetric *met = new MeanRatioQualityMetric;
        //Check mean ratio of ideal quad
      met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
@@ -770,7 +764,7 @@ public:
     two_vtces[1] = &vertices[bad_elem_vertex_indices[2]];
     
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
+    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
     mean_ratio->set_averaging_method(QualityMetric::SUM, err);
 
     mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
@@ -964,7 +958,7 @@ public:
 
     // 1 **** test with all vertices free
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
+    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
     
 
 //    mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
@@ -1082,7 +1076,7 @@ public:
     {
       MsqError err;
       test_mean_ratio_hessian(triPatch);
-      QualityMetric* mean_rat = MeanRatioQualityMetric::create_new();
+      QualityMetric* mean_rat = new MeanRatioQualityMetric;
         //make sure the code handles this case correctly
       mean_rat->set_averaging_method(QualityMetric::SUM_SQUARED,
                                      err);
@@ -1098,7 +1092,7 @@ public:
   void test_mean_ratio_quad_hessian_linear()
     {
       MsqError err;
-      QualityMetric* mean_rat = MeanRatioQualityMetric::create_new();
+      QualityMetric* mean_rat = new MeanRatioQualityMetric;
       mean_rat->set_averaging_method(QualityMetric::LINEAR,
                                    err);
       test_metric_hessian(quadPatch, mean_rat);
@@ -1107,7 +1101,7 @@ public:
   void test_mean_ratio_quad_hessian_sum_squared()
     {
       MsqError err;
-      QualityMetric* mean_rat = MeanRatioQualityMetric::create_new();
+      QualityMetric* mean_rat = new MeanRatioQualityMetric;
       mean_rat->set_averaging_method(QualityMetric::SUM_SQUARED,
                                      err);
       test_metric_hessian(quadPatch, mean_rat);
@@ -1116,7 +1110,7 @@ public:
    void test_mean_ratio_quad_hessian_rms()
     {
       MsqError err;
-      QualityMetric* mean_rat = MeanRatioQualityMetric::create_new();
+      QualityMetric* mean_rat = new MeanRatioQualityMetric;
       mean_rat->set_averaging_method(QualityMetric::RMS,
                                      err);
       test_metric_hessian(quadPatch, mean_rat);
@@ -1125,7 +1119,7 @@ public:
   void test_mean_ratio_quad_hessian_harmonic()
     {
       MsqError err;
-      QualityMetric* mean_rat = MeanRatioQualityMetric::create_new();
+      QualityMetric* mean_rat = new MeanRatioQualityMetric;
       mean_rat->set_averaging_method(QualityMetric::HARMONIC,
                                      err);
       test_metric_hessian(quadPatch, mean_rat);
@@ -1134,7 +1128,7 @@ public:
   void test_mean_ratio_quad_hessian_hms()
     {
       MsqError err;
-      QualityMetric* mean_rat = MeanRatioQualityMetric::create_new();
+      QualityMetric* mean_rat = new MeanRatioQualityMetric;
       mean_rat->set_averaging_method(QualityMetric::HMS,
                                      err);
       test_metric_hessian(quadPatch, mean_rat);
@@ -1149,7 +1143,7 @@ public:
   {
     test_mean_ratio_hessian(hexPatch);
      MsqError err;
-    QualityMetric* mean_rat = MeanRatioQualityMetric::create_new();
+    QualityMetric* mean_rat = new MeanRatioQualityMetric;
     mean_rat->set_averaging_method(QualityMetric::SUM_SQUARED,
                                    err);
     test_metric_hessian(hexPatch, mean_rat);
@@ -1157,7 +1151,7 @@ public:
  void test_mean_ratio_hex_hessian_linear()
     {
       MsqError err;
-      QualityMetric* mean_rat = MeanRatioQualityMetric::create_new();
+      QualityMetric* mean_rat = new MeanRatioQualityMetric;
       mean_rat->set_averaging_method(QualityMetric::LINEAR,
                                      err);
       test_metric_hessian(hexPatch, mean_rat);
@@ -1166,7 +1160,7 @@ public:
  void test_mean_ratio_hex_hessian_sum_squared()
     {
       MsqError err;
-      QualityMetric* mean_rat = MeanRatioQualityMetric::create_new();
+      QualityMetric* mean_rat = new MeanRatioQualityMetric;
       mean_rat->set_averaging_method(QualityMetric::SUM_SQUARED,
                                      err);
       test_metric_hessian(hexPatch, mean_rat);
@@ -1175,7 +1169,7 @@ public:
   void test_mean_ratio_hex_hessian_rms()
     {
       MsqError err;
-      QualityMetric* mean_rat = MeanRatioQualityMetric::create_new();
+      QualityMetric* mean_rat = new MeanRatioQualityMetric;
       mean_rat->set_averaging_method(QualityMetric::RMS,
                                      err);
       test_metric_hessian(hexPatch, mean_rat);
@@ -1184,7 +1178,7 @@ public:
  void test_mean_ratio_hex_hessian_harmonic()
     {
       MsqError err;
-      QualityMetric* mean_rat = MeanRatioQualityMetric::create_new();
+      QualityMetric* mean_rat = new MeanRatioQualityMetric;
       mean_rat->set_averaging_method(QualityMetric::HARMONIC,
                                      err);
       test_metric_hessian(hexPatch, mean_rat);
@@ -1193,7 +1187,7 @@ public:
   void test_mean_ratio_hex_hessian_hms()
     {
       MsqError err;
-      QualityMetric* mean_rat = MeanRatioQualityMetric::create_new();
+      QualityMetric* mean_rat = new MeanRatioQualityMetric;
       mean_rat->set_averaging_method(QualityMetric::HMS,
                                      err);
       test_metric_hessian(hexPatch, mean_rat);
@@ -1225,7 +1219,7 @@ public:
 
     // 1 **** test with all vertices free
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
+    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
     mean_ratio->set_averaging_method(QualityMetric::SUM, err); MSQ_CHKERR(err);
     mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
     mean_ratio->set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
