@@ -2099,6 +2099,9 @@ inline bool h_fcn_3i(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   return true;
 }
 
+
+#undef __FUNC__
+#define __FUNC__ "MeanRatioQualityMetric::evaluate_element" 
 bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
                                               MsqMeshEntity *e,
                                               double &m,
