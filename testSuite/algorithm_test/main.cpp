@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 19-Feb-02 at 10:57:52
-//  LAST-MOD:  8-Nov-02 at 10:38:27 by Thomas Leurent
+//  LAST-MOD:  2-Apr-03 at 17:23:53 by Thomas Leurent
 //
 //
 // DESCRIPTION:
@@ -74,14 +74,18 @@ int main()
 
   // creates a mean ratio quality metric ...
   ShapeQualityMetric* mean = MeanRatioQualityMetric::create_new();
-  mean->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
+//   mean->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
+//   mean->set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
+  mean->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+  mean->set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
   
-  LPtoPTemplate* obj_func = new LPtoPTemplate(mean, 2, err);
+  LPtoPTemplate* obj_func = new LPtoPTemplate(mean, 1, err);
   obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
+  obj_func->set_hessian_type(ObjectiveFunction::ANALYTICAL_HESSIAN);
   
   // creates the optimization procedures
-  ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
-  //FeasibleNewton* pass1 = FeasibleNewton( obj_func, err);
+//   ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
+  FeasibleNewton* pass1 = new FeasibleNewton( obj_func );
 
   //perform optimization globally
   pass1->set_patch_type(PatchData::GLOBAL_PATCH, err,1 ,1);
@@ -100,8 +104,9 @@ int main()
   //reached.  The exact value needs to be determined (about 18095).
   //As a safety, also stop if the time exceeds 10 minutes (600 seconds).
   TerminationCriterion tc_inner;
-  tc_inner.add_criterion_type_with_double(TerminationCriterion::QUALITY_IMPROVEMENT_ABSOLUTE, 18095, err);
-  tc_inner.add_criterion_type_with_double(TerminationCriterion::CPU_TIME, 600, err);
+  tc_inner.add_criterion_type_with_double(TerminationCriterion::QUALITY_IMPROVEMENT_ABSOLUTE, 13975, err);
+//  tc_inner.add_criterion_type_with_double(TerminationCriterion::QUALITY_IMPROVEMENT_ABSOLUTE, 13964.93818, err);
+  tc_inner.add_criterion_type_with_double(TerminationCriterion::CPU_TIME, 1800, err);
   
   pass1->set_inner_termination_criterion(&tc_inner);
   
@@ -109,7 +114,7 @@ int main()
   //This should probably be removed
   pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
   //used for cg to get some info
-  pass1->set_debugging_level(2);
+//  pass1->set_debugging_level(2);
   
   // adds 1 pass of pass1 to mesh_set1
   queue1.add_quality_assessor(&mean_qa,err);
