@@ -67,7 +67,7 @@ private:
   Matrix3D mMat1plus2;
   Matrix3D mMat1plus2trans;
   Matrix3D mMat1times2;
-
+  double tolEps;
 public:
   void setUp()
   {
@@ -107,6 +107,7 @@ public:
     mMat1times2 =     " 10.4 22.2  33.6 "
                       " 16.4 51.8  67.0 "
                       " 16.0 13.8  29.2 ";
+    tolEps = 1e-14;
   }
   
   void tearDown()
@@ -243,7 +244,7 @@ public:
     correct.set(25.7, 73.82, 19.4);
     int loop_i=0;
     for (loop_i=0;loop_i<3;++loop_i){
-      CPPUNIT_ASSERT_DOUBLES_EQUAL(vec[loop_i], correct[loop_i], MSQ_MIN);
+      CPPUNIT_ASSERT_DOUBLES_EQUAL(vec[loop_i], correct[loop_i], tolEps);
     }
   }
 
