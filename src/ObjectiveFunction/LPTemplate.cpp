@@ -183,7 +183,7 @@ void  LPTemplate::compute_analytical_gradient(PatchData &patch,
       //TODO should be done only with local elements
       patch.get_vertex_element_indices(vert_count, elem_on_vert_ind,err);
       size_t ele_num_vtces = elem_on_vert_ind.size();
-      MsqVertex* ele_free_vtces[ele_num_vtces];
+      MsqVertex** ele_free_vtces = new MsqVertex*[ele_num_vtces];
       elem_pos=0;
       //while(elem_pos<num_elements){
       while(!elem_on_vert_ind.empty()){
@@ -200,6 +200,7 @@ void  LPTemplate::compute_analytical_gradient(PatchData &patch,
         grad[grad_pos] += temp_value*grad_vec;
         //elem_pos++;
       }
+      delete []ele_free_vtces;     
     }
     else{
       err.set_msg("Vertex based metric gradients not yet implemented");
