@@ -41,6 +41,12 @@ Header file for the Mesquite::MsqTag class
 #include "MsqError.hpp"
 #include "TargetMatrix.hpp"
 
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#  include <algorithm.h>
+#else
+#  include <algorithm>
+#endif
+
 namespace Mesquite
 {
   
@@ -77,7 +83,7 @@ namespace Mesquite
       maxNumScalars = A.maxNumScalars;
       targets = new TargetMatrix[maxNumTargets];
       scalars = new double[maxNumScalars];
-      memcpy( targets, A.targets, numTargets * sizeof(TargetMatrix ) );
+      msq_std::copy( A.targets, A.targets + numTargets, targets );
       memcpy( scalars, A.scalars, numScalars * sizeof(double) );
     }
      
