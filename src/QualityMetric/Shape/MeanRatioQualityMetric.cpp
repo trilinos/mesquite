@@ -254,6 +254,20 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
       }
       break;
 
+    case SUM_SQUARED:
+      m = 0;
+      for (i = 0; i < 4; ++i) {
+        m += (mMetrics[i]*mMetrics[i]);
+	mMetrics[i] *= 2.0; 
+      }
+
+      for (i = 0; i < 4; ++i) {
+        mAccumGrad[locs_hex[i][0]] += mMetrics[i]*mGradients[3*i+0];
+        mAccumGrad[locs_hex[i][1]] += mMetrics[i]*mGradients[3*i+1];
+        mAccumGrad[locs_hex[i][2]] += mMetrics[i]*mGradients[3*i+2];
+      }
+      break;
+
     case LINEAR:
       m = 0;
       for (i = 0; i < 4; ++i) {
@@ -262,9 +276,9 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
       m *= 0.25;
       
       for (i = 0; i < 4; ++i) {
-        mAccumGrad[locs_hex[i][0]] += mGradients[3*i+0] *0.25;
-        mAccumGrad[locs_hex[i][1]] += mGradients[3*i+1] *0.25;
-        mAccumGrad[locs_hex[i][2]] += mGradients[3*i+2] *0.25;
+        mAccumGrad[locs_hex[i][0]] += 0.25*mGradients[3*i+0];
+        mAccumGrad[locs_hex[i][1]] += 0.25*mGradients[3*i+1];
+        mAccumGrad[locs_hex[i][2]] += 0.25*mGradients[3*i+2];
       }
       break;
 
@@ -301,6 +315,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
       case HMS:
         t = -2.0;
         break;
+
       default:
         err.set_msg("averaging method not available.");
         break;
@@ -311,7 +326,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
         nm = pow(mMetrics[i], t);
         m += nm;
 
-        mMetrics[i] = t*nm/mMetrics[i];
+        mMetrics[i] = nm/mMetrics[i];
       }
 
       nm = m / 4.0;
@@ -323,7 +338,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
         mAccumGrad[locs_hex[i][2]] += mMetrics[i]*mGradients[3*i+2];
       }
 
-      nm = m / (4.0*nm*t);
+      nm = m / (4.0*nm);
       for (i = 0; i < 4; ++i) {
         mAccumGrad[i] *= nm;
       }
@@ -432,6 +447,21 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
       }
       break;
 
+    case SUM_SQUARED:
+      m = 0;
+      for (i = 0; i < 8; ++i) {
+        m += (mMetrics[i]*mMetrics[i]);
+	mMetrics[i] *= 2.0;
+      }
+
+      for (i = 0; i < 8; ++i) {
+        mAccumGrad[locs_hex[i][0]] += mMetrics[i]*mGradients[4*i+0];
+        mAccumGrad[locs_hex[i][1]] += mMetrics[i]*mGradients[4*i+1];
+        mAccumGrad[locs_hex[i][2]] += mMetrics[i]*mGradients[4*i+2];
+        mAccumGrad[locs_hex[i][3]] += mMetrics[i]*mGradients[4*i+3];
+      }
+      break;
+
     case LINEAR:
       m = 0;
       for (i = 0; i < 8; ++i) {
@@ -440,10 +470,10 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
       m *= 0.125;
 
       for (i = 0; i < 8; ++i) {
-        mAccumGrad[locs_hex[i][0]] += mGradients[4*i+0] *0.125;
-        mAccumGrad[locs_hex[i][1]] += mGradients[4*i+1] *0.125;
-        mAccumGrad[locs_hex[i][2]] += mGradients[4*i+2] *0.125;
-        mAccumGrad[locs_hex[i][3]] += mGradients[4*i+3] *0.125;
+        mAccumGrad[locs_hex[i][0]] += 0.125*mGradients[4*i+0];
+        mAccumGrad[locs_hex[i][1]] += 0.125*mGradients[4*i+1];
+        mAccumGrad[locs_hex[i][2]] += 0.125*mGradients[4*i+2];
+        mAccumGrad[locs_hex[i][3]] += 0.125*mGradients[4*i+3];
       }
       break;
 
@@ -491,7 +521,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
         nm = pow(mMetrics[i], t);
         m += nm;
 
-        mMetrics[i] = t*nm/mMetrics[i];
+        mMetrics[i] = nm/mMetrics[i];
       }
 
       nm = m / 8.0;
@@ -504,7 +534,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
         mAccumGrad[locs_hex[i][3]] += mMetrics[i]*mGradients[4*i+3];
       }
 
-      nm = m / (8.0*nm*t);
+      nm = m / (8.0*nm);
       for (i = 0; i < 8; ++i) {
         mAccumGrad[i] *= nm;
       }
@@ -557,6 +587,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 
 
   Vector3D n;			// Surface normal for 2D objects
+  Matrix3D outer;
 
   double   nm, t=0;
 
@@ -679,6 +710,41 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
       }
       break;
 
+    case SUM_SQUARED:
+      m = 0;
+      for (i = 0; i < 4; ++i) {
+        m += (mMetrics[i]*mMetrics[i]);
+	mMetrics[i] *= 2;
+      }
+
+      l = 0;
+      for (i = 0; i < 4; ++i) {
+        g[locs_hex[i][0]] += mMetrics[i]*mGradients[3*i+0];
+        g[locs_hex[i][1]] += mMetrics[i]*mGradients[3*i+1];
+        g[locs_hex[i][2]] += mMetrics[i]*mGradients[3*i+2];
+
+        for (j = 0; j < 3; ++j) {
+          for (k = j; k < 3; ++k) {
+	    outer = 2.0*outer.outer_product(mGradients[3*i+j], 
+					    mGradients[3*i+k]);
+	    
+            r = locs_hex[i][j];
+            c = locs_hex[i][k];
+
+            if (r <= c) {
+              loc = 4*r - (r*(r+1)/2) + c;
+              h[loc] += mMetrics[i]*mHessians[l] + outer;
+            } 
+            else {
+              loc = 4*c - (c*(c+1)/2) + r;
+              h[loc] += transpose(mMetrics[i]*mHessians[l] + outer);
+            }
+            ++l;
+          }
+        }
+      }
+      break;
+
     case LINEAR:
       m = 0;
       for (i = 0; i < 4; ++i) {
@@ -688,9 +754,9 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 
       l = 0;
       for (i = 0; i < 4; ++i) {
-        g[locs_hex[i][0]] += mGradients[3*i+0] *0.25;
-        g[locs_hex[i][1]] += mGradients[3*i+1] *0.25;
-        g[locs_hex[i][2]] += mGradients[3*i+2] *0.25;
+        g[locs_hex[i][0]] += 0.25*mGradients[3*i+0];
+        g[locs_hex[i][1]] += 0.25*mGradients[3*i+1];
+        g[locs_hex[i][2]] += 0.25*mGradients[3*i+2];
 
         for (j = 0; j < 3; ++j) {
           for (k = j; k < 3; ++k) {
@@ -709,8 +775,10 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
           }
         }
       }
-      for (i=0; i<10; ++i)
+
+      for (i=0; i<10; ++i) {
         h[i] *= 0.25;
+      }
       break;
 
     case GEOMETRIC:
@@ -734,7 +802,6 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
       default:
         err.set_msg("averaging method not available.");
         break;
-
       }
 
       m = 0;
@@ -849,50 +916,10 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     case MINIMUM:
       err.set_msg("MINIMUM averaging method does not work.");
       return false;
-//       m = mMetrics[0];
-//       for (i = 1; i < 8; ++i) {
-// 	if (mMetrics[i] < m) m = mMetrics[i];
-//       }
-
-//       nm = 0;
-//       for (i = 0; i < 8; ++i) {
-//         if (mMetrics[i] <= m + MSQ_MIN) {
-// 	  g[locs_hex[i][0]] += mGradients[4*i+0];
-// 	  g[locs_hex[i][1]] += mGradients[4*i+1];
-// 	  g[locs_hex[i][2]] += mGradients[4*i+2];
-// 	  g[locs_hex[i][3]] += mGradients[4*i+3];
-// 	  ++nm;
-//         }
-//       }
-
-//       for (i = 0; i < 8; ++i) {
-// 	g[i] /= nm;
-//       }
-//       break;
 
     case MAXIMUM:
       err.set_msg("MAXIMUM averaging method does not work.");
       return false;
-//       m = mMetrics[0];
-//       for (i = 1; i < 8; ++i) {
-// 	if (mMetrics[i] > m) m = mMetrics[i];
-//       }
-
-//       nm = 0;
-//       for (i = 0; i < 8; ++i) {
-//         if (mMetrics[i] >= m - MSQ_MIN) {
-// 	  g[locs_hex[i][0]] += mGradients[4*i+0];
-// 	  g[locs_hex[i][1]] += mGradients[4*i+1];
-// 	  g[locs_hex[i][2]] += mGradients[4*i+2];
-// 	  g[locs_hex[i][3]] += mGradients[4*i+3];
-// 	  ++nm;
-//         }
-//       }
-
-//       for (i = 0; i < 8; ++i) {
-// 	g[i] /= nm;
-//       }
-//       break;
 
     case SUM:
       m = 0;
@@ -926,6 +953,42 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
       }
       break;
 
+    case SUM_SQUARED:
+      m = 0;
+      for (i = 0; i < 8; ++i) {
+        m += (mMetrics[i]*mMetrics[i]);
+	mMetrics[i] *= 2.0;
+      }
+
+      l = 0;
+      for (i = 0; i < 8; ++i) {
+        g[locs_hex[i][0]] += mMetrics[i]*mGradients[4*i+0];
+        g[locs_hex[i][1]] += mMetrics[i]*mGradients[4*i+1];
+        g[locs_hex[i][2]] += mMetrics[i]*mGradients[4*i+2];
+        g[locs_hex[i][3]] += mMetrics[i]*mGradients[4*i+3];
+
+        for (j = 0; j < 4; ++j) {
+          for (k = j; k < 4; ++k) {
+	    outer = 2.0*outer.outer_product(mGradients[4*i+j], 
+					    mGradients[4*i+k]);
+
+            r = locs_hex[i][j];
+            c = locs_hex[i][k];
+
+            if (r <= c) {
+              loc = 8*r - (r*(r+1)/2) + c;
+              h[loc] += mMetrics[i]*mHessians[l] + outer;
+            } 
+            else {
+              loc = 8*c - (c*(c+1)/2) + r;
+              h[loc] += transpose(mMetrics[i]*mHessians[l] + outer);
+            }
+            ++l;
+          }
+        }
+      }
+      break;
+
     case LINEAR:
       m = 0;
       for (i = 0; i < 8; ++i) {
@@ -935,10 +998,10 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 
       l = 0;
       for (i = 0; i < 8; ++i) {
-        g[locs_hex[i][0]] += mGradients[4*i+0] *0.125;
-        g[locs_hex[i][1]] += mGradients[4*i+1] *0.125;
-        g[locs_hex[i][2]] += mGradients[4*i+2] *0.125;
-        g[locs_hex[i][3]] += mGradients[4*i+3] *0.125;
+        g[locs_hex[i][0]] += 0.125*mGradients[4*i+0];
+        g[locs_hex[i][1]] += 0.125*mGradients[4*i+1];
+        g[locs_hex[i][2]] += 0.125*mGradients[4*i+2];
+        g[locs_hex[i][3]] += 0.125*mGradients[4*i+3];
 
         for (j = 0; j < 4; ++j) {
           for (k = j; k < 4; ++k) {
@@ -964,49 +1027,24 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     case GEOMETRIC:
       err.set_msg("GEOMETRIC averaging method does not work.");
       return false;
-//       m = 0.0;
-//       for (i = 0; i < 8; ++i) {
-// 	m += log(mMetrics[i]);
-// 	mMetrics[i] = 1.0 / mMetrics[i];
-//       }
-//       m = exp(m / 8.0);
-
-//       for (i = 0; i < 8; ++i) {
-//         g[locs_hex[i][0]] += mMetrics[i]*mGradients[4*i+0];
-// 	g[locs_hex[i][1]] += mMetrics[i]*mGradients[4*i+1];
-// 	g[locs_hex[i][2]] += mMetrics[i]*mGradients[4*i+2];
-// 	g[locs_hex[i][3]] += mMetrics[i]*mGradients[4*i+3];
-//       }
-
-//       nm = m / 8.0;
-//       for (i = 0; i < 8; ++i) {
-// 	g[i] *= nm;
-//       }
-//       break;
 
     default:
       switch(avgMethod) {
       case RMS:
 	err.set_msg("RMS averaging method does not work.");
 	return false;
-// 	t = 2.0;
-// 	break;
 
       case HARMONIC:
 	err.set_msg("HARMONIC averaging method does not work.");
 	return false;
-// 	t = -1.0;
-// 	break;
 
       case HMS:
 	err.set_msg("HMS averaging method does not work.");
 	return false;
-// 	t = -2.0;
-// 	break;
+
       default:
         err.set_msg("averaging method not available.");
         break;
-
       }
 
       m = 0;

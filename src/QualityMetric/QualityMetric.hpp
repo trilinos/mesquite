@@ -107,6 +107,7 @@ namespace Mesquite
         HARMONIC,
         GEOMETRIC,
         SUM,
+	SUM_SQUARED,
         GENERALIZED_MEAN,
         STANDARD_DEVIATION,
         MAX_OVER_MIN,
@@ -125,6 +126,7 @@ namespace Mesquite
          RMS:  the root-mean-squared average,
          HMS:  the harmonic-mean-squared average,
          SUM:  the sum of the values,
+         SUM_SQUARED:  the sum of the squares of the values,
          GENERALIZED_MEAN: self explainatory,
          STANDARD_DEVIATION:  the standard deviation squared of the values,
          MAX_MINUS_MIN:  the maximum value minus the minum value,
@@ -390,6 +392,7 @@ namespace Mesquite
       case(HMS):
       case(STANDARD_DEVIATION):
       case(SUM):
+      case(SUM_SQUARED):
       case(MAX_OVER_MIN):
       case(MAX_MINUS_MIN):
       case(SUM_OF_RATIOS_SQUARED):
@@ -589,6 +592,11 @@ namespace Mesquite
        case SUM:
           for (i=0;i<num_values;++i){
             total_value+=metric_values[i];
+          }
+          break;
+       case SUM_SQUARED:
+          for (i=0;i<num_values;++i){
+            total_value+= (metric_values[i]*metric_values[i]);
           }
           break;
        case MAX_MINUS_MIN:
