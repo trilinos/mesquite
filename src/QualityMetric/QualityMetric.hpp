@@ -15,6 +15,7 @@ Header file for the Mesquite::QualityMetric class
 #include "Mesquite.hpp"
 #include "MesquiteError.hpp"
 #include "Vector3D.hpp"
+#include "Matrix3D.hpp"
 #include <math.h>
 #include <string.h>
 
@@ -145,7 +146,7 @@ namespace Mesquite
         }
      
        /*!\enum GRADIENT_TYPE Sets to either NUMERICAL_GRADIENT or
-         ANALYTICAL_GRADINET*/
+         ANALYTICAL_GRADIENT*/
      enum GRADIENT_TYPE
      {
         NUMERICAL_GRADIENT,
@@ -155,6 +156,18 @@ namespace Mesquite
        //!Sets gradType for this metric.
      void set_gradient_type(GRADIENT_TYPE grad)
         { gradType=grad; }
+     
+       /*!\enum HESSIAN_TYPE Sets to either NUMERICAL_HESSIAN or
+         ANALYTICAL_HESSIAN*/
+     enum HESSIAN_TYPE
+     {
+        NUMERICAL_HESSIAN,
+        ANALYTICAL_HESSIAN
+     };
+     
+       //!Sets hessianType for this metric.
+     void set_hessian_type(HESSIAN_TYPE ht)
+        { hessianType=ht; }
      
        /*!For MetricType == VERTEX_BASED.
          Calls either compute_vertex_numerical_gradient or
@@ -178,6 +191,18 @@ namespace Mesquite
      bool compute_element_gradient(PatchData &pd, MsqMeshEntity* element,
                                    MsqVertex* vertices[], Vector3D grad_vec[],
                                    int num_vtx, double &metric_value, MsqError &err);
+     
+       /*!For MetricType == ELEMENT_BASED.
+         Calls either compute_element_numerical_hessian() or
+         compute_element_analytical_hessian() for hessianType equal
+         NUMERICAL_HESSIAN or ANALYTICAL_HESSIAN, respectively.
+
+         \return true if the element is valid, false otherwise. 
+       */
+     bool compute_element_hessian(PatchData &pd, MsqMeshEntity* element,
+                                  MsqVertex* vertices[], Vector3D grad_vec[],
+                                  Matrix3D hessian[],
+                                  int num_vtx, double &metric_value, MsqError &err);
      
        /*! Set the value of QualityMetric's negateFlag.  Concrete
          QualityMetrics should set this flag to -1 if the QualityMetric
@@ -210,6 +235,7 @@ namespace Mesquite
      QualityMetric() :
        mType(MT_UNDEFINED),
        gradType(NUMERICAL_GRADIENT),
+       hessianType(NUMERICAL_HESSIAN),
        negateFlag(1)
      {}
 
@@ -273,6 +299,25 @@ namespace Mesquite
                                                       double &metric_value,
                                                       MsqError &err);
 
+
+     bool compute_element_numerical_hessian(PatchData &pd,
+                                            MsqMeshEntity* element,
+                                            MsqVertex* vertices[],
+                                            Vector3D grad_vec[],
+                                            Matrix3D hessian[],
+                                            int num_vtx,
+                                            double &metric_value,
+                                            MsqError &err);
+
+     virtual bool compute_element_analytical_hessian(PatchData &pd,
+                                            MsqMeshEntity* element,
+                                            MsqVertex* vertices[],
+                                            Vector3D grad_vec[],
+                                            Matrix3D hessian[],
+                                            int num_vtx,
+                                            double &metric_value,
+                                            MsqError &err);
+
      friend class MsqMeshEntity;
 
      // TODO : pass this private and write protected access fucntions.
@@ -283,6 +328,7 @@ namespace Mesquite
      ElementEvaluationMode evalMode;
      MetricType mType;
      GRADIENT_TYPE gradType;
+     HESSIAN_TYPE hessianType;
      int negateFlag;
    };
 
@@ -401,6 +447,35 @@ namespace Mesquite
      }
      return ret;
    }
+   
+   
+#undef __FUNC__
+#define __FUNC__ "QualityMetric::compute_element_hessian"
+  inline bool QualityMetric::compute_element_hessian(PatchData &pd,
+                                                     MsqMeshEntity* el,
+                                                     MsqVertex* vertices[],
+                                                     Vector3D grad_vec[],
+                                                     Matrix3D hessian[],
+                                                     int num_vtx,
+                                                     double &metric_value,
+                                                     MsqError &err)
+  {
+    bool ret;
+    switch(hessianType)
+      {
+      case NUMERICAL_HESSIAN:
+        ret = compute_element_numerical_hessian(pd, el, vertices, grad_vec, hessian,
+                                                num_vtx, metric_value, err);
+        MSQ_CHKERR(err);
+        break;
+      case ANALYTICAL_HESSIAN:
+        ret = compute_element_analytical_hessian(pd, el, vertices, grad_vec, hessian,
+                                                 num_vtx, metric_value, err);
+        MSQ_CHKERR(err);
+        break;
+      }
+    return ret;
+  }
    
    
 #undef __FUNC__

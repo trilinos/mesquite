@@ -8,6 +8,7 @@
 
 #include "QualityMetric.hpp"
 #include "MsqVertex.hpp"
+#include "MsqMeshEntity.hpp"
 #include "MsqMessage.hpp"
 using namespace Mesquite;
 
@@ -69,6 +70,36 @@ bool QualityMetric::compute_element_analytical_gradient(PatchData &pd,
 
 
 #undef __FUNC__
+#define __FUNC__ "QualityMetric::compute_element_analytical_hessian"
+/*! If that function is not over-riden in the concrete class, the base
+    class function makes it default to a numerical hessian.
+    \param vertices base address of an array of pointers to the element vertices which
+    are considered free for purposes of computing the hessian. The quality metric
+    gradient relatice to each of those vertices is computed and stored in grad_vec.
+    \param grad_vec base address of an array of Vector3D where the gradient is stored.
+    \param hessian base address of an array of Matrix3D where the upper part of the
+    hessian is stored.
+    \param num_vtx This is the size of the vertices arrays. The gradient array has
+    the size of the number of vertices in the element, regardless.  
+    \param metric_value Since the metric is computed, we return it. 
+    \return true if the element is valid, false otherwise.
+*/
+bool QualityMetric::compute_element_analytical_hessian(PatchData &pd,
+                                             MsqMeshEntity* element,
+                                             MsqVertex* vertices[], Vector3D grad_vec[],
+                                             Matrix3D hessian[],
+                                             int num_vtx, double &metric_value,
+                                             MsqError &err)
+{
+  PRINT_WARNING("QualityMetric has no analytical hessian defined. ",
+                "Defaulting to numerical hessian.\n");
+  set_hessian_type(NUMERICAL_HESSIAN);
+  return compute_element_numerical_hessian(pd, element, vertices, grad_vec,
+                                           hessian, num_vtx, metric_value, err);
+}
+
+
+#undef __FUNC__
 #define __FUNC__ "QualityMetric::compute_element_numerical_gradient"
 /*!
   Numerically calculates the gradient of the QualityMetric value on
@@ -91,7 +122,7 @@ bool QualityMetric::compute_element_numerical_gradient(PatchData &pd,
 {
     /*!TODO: (MICHAEL)  Try to inline this function (currenlty conflicts
       with MsqVertex.hpp).*/    
-  MSQ_DEBUG_PRINT(2,"Computing Gradient\n");
+  MSQ_DEBUG_PRINT(2,"Computing Numerical Gradient\n");
   
   bool valid=this->evaluate_element(pd, element, metric_value, err); MSQ_CHKERR(err);
 
@@ -115,6 +146,75 @@ bool QualityMetric::compute_element_numerical_gradient(PatchData &pd,
       (*vertices[v])[j] -= delta;
     }
   }
+  return true;
+}
+
+
+#undef __FUNC__
+#define __FUNC__ "QualityMetric::compute_element_numerical_hessian"
+bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
+                                             MsqMeshEntity* element,
+                                             MsqVertex* vertices[],
+                                                       Vector3D grad_vec[],
+                                                      Matrix3D hessian[],
+                                             int num_vtx, double &metric_value,
+                                             MsqError &err)
+{
+  MSQ_DEBUG_PRINT(2,"Computing Numerical Hessian\n");
+  
+  bool valid=this->compute_element_gradient(pd, element, vertices, grad_vec,
+                                    num_vtx, metric_value, err); MSQ_CHKERR(err);
+
+  if (!valid)
+    return false;
+  
+  double delta = 10e-6;
+  int nve = element->vertex_count();
+  Vector3D grad_vec1[nve];
+ // Matrix3D full_hessian[nve][nve];
+  int v,w,i,j,s, sum_w, mat_index;
+  for (v=0; v<nve; ++v) 
+  {
+    for (j=0;j<3;++j) 
+    {
+      // perturb the coordinates of the vertex v in the j direction by delta
+      (*vertices[v])[j]+=delta;
+      //compute the gradient at the perturbed point location
+      valid = this->compute_element_gradient(pd, element, vertices, grad_vec1,
+                                     num_vtx, metric_value, err); MSQ_CHKERR(err);
+      assert(valid);
+      //compute the numerical Hessian
+      for (w=0; w<nve; ++w) {
+        if (v>=w) {
+          //finite difference to get some entries of the Hessian
+          Vector3D fd = (grad_vec1[w]-grad_vec[w])/delta;
+          // For the block at position w,v in a matrix, we need the corresponding index
+          // (mat_index) in a 1D array containing only upper triangular blocks.
+          sum_w = 0;
+          for (s=1; s<=w; ++s) sum_w+=s;
+          mat_index = w*nve+v-sum_w;
+          
+          for (i=0; i<3; ++i)
+            //          full_hessian[w][v][i][j]=fd[i];
+            hessian[w*nve+v-sum_w][i][j] = fd[i];   
+     
+        }
+      }
+      // put the coordinates back where they belong
+      (*vertices[v])[j] -= delta;
+    }
+  }
+
+//   i=0; 
+//   for (w=0; w<nve; ++w)
+//     for (v=0; v<nve; ++v)
+//       if (v>=w) {
+//         hessian[i] = full_hessian[w][v];
+//         ++i;
+//       }
+
+//   assert(i==(nve+1)*nve/2);
+    
   return true;
 }
 
