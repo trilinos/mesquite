@@ -72,8 +72,17 @@ namespace Mesquite
 
     //! Gets the next PatchData.
     /*! The type of the patch is usually set on the algorythm with set_patch_type()
-        and propagated to the MeshSet. */
-    bool get_next_patch(PatchData &pd, PatchDataUser* pd_user, MsqError &err);
+        and propagated to the MeshSet.
+        This version of the get_next_patch function is the most often used. It actually
+        delegates to the original get_next_patch function, which has a slightly different
+        signature. */
+    bool get_next_patch(PatchData &pd, PatchDataUser* pd_user, MsqError &err) {
+     return get_next_patch(pd, pd_user->get_all_parameters(), err); }
+
+    /*! This signature is rarely used, but this is where the implementation actually is.
+        See the most frequently used signature:
+        get_next_patch(PatchData &pd, PatchDataUser* pd_user, MsqError &err) . */
+    bool get_next_patch(PatchData &pd, PatchDataParameters &pd_params, MsqError &err);
 
     //! Resets MeshSet object, but keeps the mesh handles added with add_mesh().
     void reset(MsqError &err);

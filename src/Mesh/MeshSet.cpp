@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD: 18-Nov-02 at 15:25:16 by Thomas Leurent
+//  LAST-MOD:  3-Dec-02 at 15:26:08 by Thomas Leurent
 //
 /*! \file MeshSet.cpp
 
@@ -163,12 +163,12 @@ bool MeshSet::get_next_vertices_set(MsqError &err)
 */
 #undef __FUNC__
 #define __FUNC__ "MeshSet::get_next_patch" 
-bool MeshSet::get_next_patch(PatchData &pd, PatchDataUser* pd_user, MsqError &err )
+bool MeshSet::get_next_patch(PatchData &pd, PatchDataParameters &pd_params, MsqError &err )
 {
 
   TSTT::MeshError tstt_err=0;
-  PatchData::PatchType patch_type = pd_user->get_patch_type();
-  long unsigned int culling_method_bits = pd_user->get_culling_method_bits();
+  PatchData::PatchType patch_type = pd_params.get_patch_type();
+  long unsigned int culling_method_bits = pd_params.get_culling_method_bits();
 
   // *************************************************
   // get the next vertices set from the TSTT interface.
@@ -205,7 +205,7 @@ bool MeshSet::get_next_patch(PatchData &pd, PatchDataUser* pd_user, MsqError &er
   if ( patch_type==PatchData::ELEMENTS_ON_VERTEX_PATCH ) {
 
     // checks second argument.
-     int num_layers = pd_user->get_nb_layers(err); MSQ_CHKERR(err);
+     int num_layers = pd_params.get_nb_layers(err); MSQ_CHKERR(err);
     if (num_layers != 1)
       {
         err.set_msg("no implementation for patch depth !=1 yet."); 

@@ -96,6 +96,8 @@ namespace Mesquite {
     /*! Sets all parameters at once by copying a PatchDataParameters object */
     void set_all_parameters(PatchDataParameters &params)
     { mParams = params; }
+    PatchDataParameters& get_all_parameters()
+    { return mParams; }
 
   private:
     PatchDataParameters mParams;
