@@ -32,6 +32,7 @@ LPtoPTemplate::LPtoPTemplate(QualityMetric *qualitymetric, short Pinput, MsqErro
   set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
     //set_use_local_gradient(true);
   set_negate_flag(qualitymetric->get_negate_flag());
+  dividingByN=false;
 }
 
 #undef __FUNC__
@@ -124,7 +125,9 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &pd,
                                               MsqError &err, size_t array_size)
 {
   FUNCTION_TIMER_START(__FUNC__);
-  
+    //initialize the scaling value
+  double scaling_value=get_negate_flag();
+ 
   size_t num_elements=pd.num_elements();
   size_t num_vertices=pd.num_vertices();
   if( num_vertices!=array_size && array_size>0)
@@ -162,7 +165,13 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &pd,
   
   // Computes objective function gradient for an element based metric
   if(qm_type==QualityMetric::ELEMENT_BASED){
-
+      //if scaling, divid by num_elements
+    if(dividingByN){
+      if(num_elements<=0)
+        err.set_msg("\nThe number of elements should not be zero.");
+      else
+        scaling_value/=num_elements;
+    }
     size_t e, ve;
     size_t nfve; // num free vtx in element
     size_t nve; // num vtx in element
@@ -202,10 +211,12 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &pd,
           QM_pow*=QM_val;
         factor = QM_pow * pVal;
       }
-      factor *= get_negate_flag();
+        //this scales the gradient
+      factor *= (scaling_value * get_negate_flag());
 
-      // computes Objective Function value \sum_{i=1}^{N_e} |q_i|^P
-      OF_val += QM_pow * QM_val;
+        // computes Objective Function value \sum_{i=1}^{N_e} |q_i|^P
+        // possibly scaled by 1/num.
+      OF_val += (scaling_value * QM_pow * QM_val);
       
       // For each free vertex in the element ... 
       for (i=0; i<nfve; ++i) {
@@ -219,7 +230,13 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &pd,
   
   // Computes objective function gradient for a vertex based metric  
   else if (qm_type==QualityMetric::VERTEX_BASED){
-
+      //if scaling, divide by the number of vertices
+    if(dividingByN){
+      if(num_elements<=0)
+        err.set_msg("\nThe number of vertices should not be zero.");
+      else
+        scaling_value/=num_vertices;
+    }
     //vector for storing indices of vertex's connected elems
     std::vector<size_t> vert_on_vert_ind;
     //position in pd's vertex array
@@ -284,10 +301,12 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &pd,
           QM_pow*=QM_val;
         factor = QM_pow * pVal;
       }
-      factor *= get_negate_flag();
+        //this scales the gradient
+      factor *= (scaling_value * get_negate_flag());
 
       // computes Objective Function value \sum_{i=1}^{N_v} |q_i|^P
-      OF_val += QM_pow * QM_val;
+        // possibly scaled by 1/num
+      OF_val += (scaling_value * QM_pow * QM_val);
       // For each free vertex around the vertex (and the vertex itself if free) ... 
       for (i=0; i < vert_num_free_vtces ; ++i) {
         // ... computes p*q^{p-1}*grad(q) ...
@@ -325,6 +344,8 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &pd,
 
     The \f$ p=1 \f$ simplified version is implemented directly
     to speed up computation. 
+
+    This function does not support vertex-based metrics.
     
     \param pd The PatchData object for which the objective function
            hessian is computed.
@@ -336,11 +357,21 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
                                                double &OF_val,
                                                MsqError &err)
 {
+  double scaling_value=1.0;
+  
   FUNCTION_TIMER_START(__FUNC__);
 
   MsqMeshEntity* elements = pd.get_element_array(err); MSQ_CHKERR(err);
   MsqVertex* vertices = pd.get_vertex_array(err); MSQ_CHKERR(err);
   size_t num_elems = pd.num_elements();
+    //if scaling divide by the number of elements.
+  if(dividingByN){
+    if(num_elems<=0)
+      err.set_msg("\nLPtoP is attempting to divide by zero in analytical Hessian.");
+    else
+      scaling_value/=num_elems;
+  }
+  
   size_t num_vertices = pd.num_vertices();
   Matrix3D elem_hessian[MSQ_MAX_NUM_VERT_PER_ENT*(MSQ_MAX_NUM_VERT_PER_ENT+1)/2];
   Matrix3D elem_outer_product;
@@ -421,6 +452,8 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
             // elem_outer_product is nul 
             elem_hessian[n] *= fac1;
           }
+            //scale the hessian by the scaling factor
+          elem_hessian[n] *= scaling_value;
           ++n;
         }
       }
@@ -441,12 +474,14 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
         // ... computes p*q^{p-1}*grad(q) ...
         grad_vec[i] *= fac1;
         // ... and accumulates it in the objective function gradient.
-        grad[vtx_indices[i]] += grad_vec[i];
+          //also scale the gradient by the scaling factor
+        grad[vtx_indices[i]] += (scaling_value * grad_vec[i]);
       }
     }
     
     // **** computes Objective Function value \sum_{i=1}^{N_e} |q_i|^P ****
-    OF_val += QM_pow * QM_val;
+      //and scale by 1/num if necessary
+    OF_val += (scaling_value * QM_pow * QM_val);
     
   }
 
