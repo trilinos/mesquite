@@ -4,8 +4,9 @@
 
 Header file for the Mesquite::MeanRatioQualityMetric class
 
-  \author Michael Brewer
-  \date   2002-06-19
+\author Michael Brewer
+\author Thomas Leurent
+\date   2002-06-19
  */
 
 

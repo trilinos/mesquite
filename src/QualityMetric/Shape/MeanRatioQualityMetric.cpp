@@ -3,6 +3,9 @@
   \brief  
 
   \author Michael Brewer
+  \author Todd Munson
+  \author Thomas Leurent
+
   \date   2002-06-9
 */
 #include <vector>
@@ -2125,7 +2128,7 @@ bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
 
   switch(topo) {
   case TRIANGLE:
-    pd.get_surface_normal(v_i[0], n, err); MSQ_CHKERR(err);
+    pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
     n = n / n.length();		// Need unit normal
     coords[0] = vertices[v_i[0]];
     coords[1] = vertices[v_i[1]];
@@ -2134,8 +2137,8 @@ bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
     break;
     
   case QUADRILATERAL:
+    pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
     for (i = 0; i < 4; ++i) {
-      pd.get_surface_normal(v_i[locs_hex[i][0]], n, err); MSQ_CHKERR(err);
       n = n / n.length();	// Need unit normal
       coords[0] = vertices[v_i[locs_hex[i][0]]];
       coords[1] = vertices[v_i[locs_hex[i][1]]];
@@ -2215,7 +2218,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 
   switch(topo) {
   case TRIANGLE:
-    pd.get_surface_normal(v_i[0], n, err); MSQ_CHKERR(err);
+    pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
     n = n / n.length();		// Need unit normal
     coords[0] = vertices[v_i[0]];
     coords[1] = vertices[v_i[1]];
@@ -2235,10 +2238,10 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
     break;
 
   case QUADRILATERAL:
+    pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
     for (i = 0; i < 4; ++i) {
       grad[i] = 0.0;
 
-      pd.get_surface_normal(v_i[locs_hex[i][0]], n, err); MSQ_CHKERR(err);
       n = n / n.length();	// Need unit normal
       coords[0] = vertices[v_i[locs_hex[i][0]]];
       coords[1] = vertices[v_i[locs_hex[i][1]]];
@@ -2602,7 +2605,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 
   switch(topo) {
   case TRIANGLE:
-    pd.get_surface_normal(v_i[0], n, err); MSQ_CHKERR(err);
+    pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
     n = n / n.length();		// Need unit normal
     coords[0] = vertices[v_i[0]];
     coords[1] = vertices[v_i[1]];
@@ -2645,11 +2648,11 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     for (i=0; i < 10; ++i) {
       h[i] = 0.;
     }
-
+    
+    pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
     for (i = 0; i < 4; ++i) {
       g[i] = 0.0;
 
-      pd.get_surface_normal(v_i[locs_hex[i][0]], n, err); MSQ_CHKERR(err);
       n = n / n.length();	// Need unit normal
       coords[0] = vertices[v_i[locs_hex[i][0]]];
       coords[1] = vertices[v_i[locs_hex[i][1]]];
