@@ -299,8 +299,13 @@ inline double** NonSmoothSteepestDescent::compute_gradient(PatchData *patch_data
 
 #undef __FUNC__
 #define __FUNC__ "NonSmoothSteepestDescent::find_active_set"
-inline void NonSmoothSteepestDescent::find_active_set(double *function, ActiveSet *active_set,
-                                               MsqError &err)
+inline void NonSmoothSteepestDescent::find_active_set(double *function,
+                                                      ActiveSet *active_set,
+                                                      MsqError &
+#if MSQ_DEBUG_LEVEL > 0
+                                                      err
+#endif
+                                                      )
 { 
     int         i, ind;
     double      function_val;
@@ -365,7 +370,7 @@ inline void NonSmoothSteepestDescent::find_active_set(double *function, ActiveSe
 
 #undef __FUNC__
 #define __FUNC__ "NonSmoothSteepestDescent::validity_check"
-inline int NonSmoothSteepestDescent::validity_check(MsqError &err)
+inline int NonSmoothSteepestDescent::validity_check(MsqError &/*err*/)
         
 {
 //  FUNCTION_TIMER_START("Validity Check");
@@ -476,7 +481,8 @@ inline int NonSmoothSteepestDescent::validity_check(MsqError &err)
 #undef __FUNC__
 #define __FUNC__ "NonSmoothSteepestDescent::get_active_directions" 
 inline void NonSmoothSteepestDescent::get_active_directions(double **gradient, 
-                                         double ***dir, MsqError &err)
+                                                            double ***dir,
+                                                            MsqError &/*err*/)
 {
     int i;
     int num_active = mActive->num_active;
@@ -491,8 +497,10 @@ inline void NonSmoothSteepestDescent::get_active_directions(double **gradient,
 
 #undef __FUNC__
 #define __FUNC__ "NonSmoothSteepestDescent::check_vector_dots"
-inline int NonSmoothSteepestDescent::check_vector_dots(double **vec, int num_vec, 
-                                             double *normal, MsqError &err)
+inline int NonSmoothSteepestDescent::check_vector_dots(double **vec,
+                                                       int num_vec, 
+                                                       double *normal,
+                                                       MsqError &/*err*/)
 {
     int equil;
     int i, ind;
@@ -520,8 +528,11 @@ inline int NonSmoothSteepestDescent::check_vector_dots(double **vec, int num_vec
 
 #undef __FUNC__
 #define __FUNC__ "NonSmoothSteepestDescent::find_plane_normal"
-inline void NonSmoothSteepestDescent::find_plane_normal(double pt1[3], double pt2[3], double pt3[3], 
-                       double *cross, MsqError &err)
+inline void NonSmoothSteepestDescent::find_plane_normal(double pt1[3],
+                                                        double pt2[3],
+                                                        double pt3[3],
+                                                        double *cross,
+                                                        MsqError &/*err*/)
 {
   int i;
   double vecA[3], vecB[3];
@@ -716,7 +727,8 @@ inline void NonSmoothSteepestDescent::check_equilibrium(int *equil, int *status,
 
 #undef __FUNC__
 #define __FUNC__ "NonSmoothSteepestDescent::condition3x3" 
-inline void NonSmoothSteepestDescent::condition3x3(double **A, double *cond, MsqError &err) 
+inline void NonSmoothSteepestDescent::condition3x3(double **A, double *cond,
+                                                   MsqError &/*err*/) 
 {
 //   int ierr;
    double a11, a12, a13;
@@ -934,8 +946,10 @@ inline void NonSmoothSteepestDescent::search_edges_faces(double **dir, MsqError 
 
 #undef __FUNC__
 #define __FUNC__ "NonSmoothSteepestDescent::solve2x2" 
-inline void NonSmoothSteepestDescent::solve2x2(double a11, double a12, double a21, double a22, 
-		   double b1, double b2, double **x, MsqError &err)
+inline void NonSmoothSteepestDescent::solve2x2(double a11, double a12,
+                                               double a21, double a22, 
+                                               double b1, double b2,
+                                               double **x, MsqError &/*err*/)
 {
     double factor;
 
@@ -959,7 +973,8 @@ inline void NonSmoothSteepestDescent::solve2x2(double a11, double a12, double a2
 
 #undef __FUNC__
 #define __FUNC__ "NonSmoothSteepestDescent::form_reduced_matrix" 
-inline void NonSmoothSteepestDescent::form_reduced_matrix(double ***P, MsqError &err)
+inline void NonSmoothSteepestDescent::form_reduced_matrix(double ***P,
+                                                          MsqError &/*err*/)
 {
     int i,j;
     int num_active = mActive->num_active;
@@ -980,7 +995,8 @@ inline void NonSmoothSteepestDescent::form_reduced_matrix(double ***P, MsqError 
 
 #undef __FUNC__
 #define __FUNC__ "NonSmoothSteepestDescent::get_min_estimate"
-inline void  NonSmoothSteepestDescent::get_min_estimate(double *final_est, MsqError &err)
+inline void  NonSmoothSteepestDescent::get_min_estimate(double *final_est,
+                                                        MsqError &/*err*/)
 {
     int    i;
     double est_imp;
@@ -1004,7 +1020,7 @@ inline void  NonSmoothSteepestDescent::get_min_estimate(double *final_est, MsqEr
 
 #undef __FUNC__
 #define __FUNC__ "NonSmoothSteepestDescent::get_gradient_projections"
-inline void NonSmoothSteepestDescent::get_gradient_projections(MsqError &err)
+inline void NonSmoothSteepestDescent::get_gradient_projections(MsqError &/*err*/)
 {
     for (int i=0;i<numFunctionValues;i++) 
 	MSQ_DOT(mGS[i],mGradient[i],mSearch,mDimension);
@@ -1015,7 +1031,7 @@ inline void NonSmoothSteepestDescent::get_gradient_projections(MsqError &err)
 
 #undef __FUNC__
 #define __FUNC__ "NonSmoothSteepestDescent::compute_alpha"
-inline void NonSmoothSteepestDescent::compute_alpha(MsqError &err)
+inline void NonSmoothSteepestDescent::compute_alpha(MsqError &/*err*/)
 {
 //    int       ierr;
 //    int       j;
@@ -1096,7 +1112,11 @@ inline void NonSmoothSteepestDescent::copy_active(ActiveSet *active1, ActiveSet 
 #undef __FUNC__
 #define __FUNC__ "NonSmoothSteepestDescent::print_active_set" 
 inline void NonSmoothSteepestDescent::print_active_set(ActiveSet *active_set, 
-                                        double *func, MsqError &err)
+                                                       double *
+#if MSQ_DEBUG_LEVEL > 0
+                                                       func
+#endif
+                                                       ,MsqError &err)
 {
     if (active_set==0) err.set_msg("Null ActiveSet \n");
     if (active_set->num_active == 0) std::cout<< "No active values\n";

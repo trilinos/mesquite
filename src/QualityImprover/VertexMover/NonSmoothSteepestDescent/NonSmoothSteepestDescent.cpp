@@ -25,7 +25,7 @@ NonSmoothSteepestDescent::NonSmoothSteepestDescent(ObjectiveFunction* of)
 {
   objFunc=of;
   this->set_name("NonSmoothSteepestDescent");
-
+  
   mFunction = (double *)malloc(sizeof(double)*150);
   testFunction = (double *)malloc(sizeof(double)*150);
   originalFunction = (double *)malloc(sizeof(double)*150);
@@ -51,7 +51,7 @@ NonSmoothSteepestDescent::NonSmoothSteepestDescent(ObjectiveFunction* of)
   
 #undef __FUNC__
 #define __FUNC__ "NonSmoothSteepestDescent::initialize" 
-void NonSmoothSteepestDescent::initialize(PatchData &pd, MsqError &err)
+void NonSmoothSteepestDescent::initialize(PatchData &/*pd*/, MsqError &err)
 {
   this->set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err, 1);
   
@@ -65,7 +65,8 @@ void NonSmoothSteepestDescent::initialize(PatchData &pd, MsqError &err)
 
 #undef __FUNC__
 #define __FUNC__ "NonSmoothSteepestDescent::initialize_mesh_iteration" 
-void NonSmoothSteepestDescent::initialize_mesh_iteration(PatchData &pd, MsqError &err)
+void NonSmoothSteepestDescent::initialize_mesh_iteration(PatchData &/*pd*/,
+                                                         MsqError &/*err*/)
 {
 }
 #undef __FUNC__
@@ -121,7 +122,6 @@ void NonSmoothSteepestDescent::optimize_vertex_positions(PatchData &pd,
       fprintf(stdout,"ERROR: Invalid mesh\n");
       err.set_msg("Invalid Mesh: Use untangle to create a valid triangulation");
       exit(0);
-      return;
   }
 
   /* assumes one function value per element */
@@ -148,7 +148,8 @@ void NonSmoothSteepestDescent::optimize_vertex_positions(PatchData &pd,
 
 #undef __FUNC__
 #define __FUNC__ "NonSmoothSteepestDescent::terminate_mesh_iteration" 
-void NonSmoothSteepestDescent::terminate_mesh_iteration(PatchData &pd, MsqError &err)
+void NonSmoothSteepestDescent::terminate_mesh_iteration(PatchData &/*pd*/,
+                                                        MsqError &/*err*/)
 {
 }
   
@@ -182,7 +183,7 @@ void NonSmoothSteepestDescent::cleanup()
 
 #undef __FUNC__
 #define __FUNC__ "NonSmoothSteepestDescent::improvement_check"
-int NonSmoothSteepestDescent::improvement_check(MsqError &err)
+int NonSmoothSteepestDescent::improvement_check(MsqError &/*err*/)
 {
   int improved = 1;
   
@@ -203,9 +204,11 @@ int NonSmoothSteepestDescent::improvement_check(MsqError &err)
 
 #undef __FUNC__
 #define __FUNC__ "NonSmoothSteepestDescent::find_plane_points"
-void NonSmoothSteepestDescent::find_plane_points(int dir1, int dir2, double **vec, 
-                          int num_vec, double *pt1,
-			  double *pt2, double*pt3, int *status, MsqError &err)
+void NonSmoothSteepestDescent::find_plane_points(int dir1, int dir2,
+                                                 double **vec, int num_vec,
+                                                 double *pt1, double *pt2,
+                                                 double* /*pt3*/, int *status,
+                                                 MsqError &/*err*/)
 {
     int i;
     int ind[50], num_min, num_max;
@@ -396,7 +399,8 @@ void NonSmoothSteepestDescent::find_plane_points(int dir1, int dir2, double **ve
 
 #undef __FUNC__
 #define __FUNC__ "NonSmoothSteepestDescent::search_direction" 
-void NonSmoothSteepestDescent::search_direction(PatchData &pd, MsqError &err)
+void NonSmoothSteepestDescent::search_direction(PatchData &/*pd*/,
+                                                MsqError &err)
 {
    int        i;
    int        viable;
