@@ -728,7 +728,7 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError& err)
     }
   }
     
-  delete assessor_array;
-  delete QAData;
+  delete []assessor_array;
+  delete []QAData;
   return return_value;
 }
