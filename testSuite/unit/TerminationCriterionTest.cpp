@@ -79,6 +79,10 @@ private:
   CPPUNIT_TEST (test_successive_improvements_absolute);
     //terminat when the successive imporovements is below .996 of the original
   CPPUNIT_TEST (test_successive_improvements_relative);
+    //tests vertex bound should NOT stop due to vertices outside the bound
+  CPPUNIT_TEST (test_cpu_time_or_vertex_bound);
+    //tests vertex bound SHOULD stop due to vertices outside the bound
+  CPPUNIT_TEST (test_vertex_bound_or_cpu_time);
   CPPUNIT_TEST_SUITE_END();
   int pF;
   
@@ -249,14 +253,37 @@ public:
   
     //SUCCESSIVE IMPROVEMENTS RELATIVE
   void test_successive_improvements_relative()
-    {
-      MsqError err;
-      TerminationCriterion t1;
-      t1.add_criterion_type_with_double(TerminationCriterion::SUCCESSIVE_IMPROVEMENTS_RELATIVE,.25, err);
-      if(pF)
-        std::cout<<"\nTEST_SUCCESSIVE_IMPROVEMENTS_RELATIVE\n";
-      test_outer_criterion(&t1,err);
-    }
+     {
+       MsqError err;
+       TerminationCriterion t1;
+       t1.add_criterion_type_with_double(TerminationCriterion::SUCCESSIVE_IMPROVEMENTS_RELATIVE,.25, err);
+       if(pF)
+         std::cout<<"\nTEST_SUCCESSIVE_IMPROVEMENTS_RELATIVE\n";
+       test_outer_criterion(&t1,err);
+     }
+  
+    //VERTEX BOUND OR CPU TIME
+  void test_vertex_bound_or_cpu_time()
+     {
+       MsqError err;
+       TerminationCriterion t1;
+       t1.add_criterion_type_with_double(TerminationCriterion::CPU_TIME,5000, err);
+       t1.add_criterion_type_with_double(TerminationCriterion::BOUNDED_VERTEX_MOVEMENT, .01 , err);
+       if(pF)
+        std::cout<<"\nTEST_VERTEX_BOUND_OR_CPU_TIME\n";
+       test_outer_criterion(&t1,err);
+     }
+    //CPU TIME OR VERTEX BOUND
+  void test_cpu_time_or_vertex_bound()
+     {
+       MsqError err;
+       TerminationCriterion t1;
+       t1.add_criterion_type_with_double(TerminationCriterion::CPU_TIME,5, err);
+       t1.add_criterion_type_with_double(TerminationCriterion::BOUNDED_VERTEX_MOVEMENT, 50000 , err);
+       if(pF)
+         std::cout<<"\nTEST_CPU_TIME_OR_VERTEX_BOUND\n";
+       test_outer_criterion(&t1,err);
+     }
 };
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TerminationCriterionTest, "TerminationCriterionTest");
