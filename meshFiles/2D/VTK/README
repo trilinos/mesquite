@@ -22,8 +22,11 @@ quad_2_not_xy.vtk:  Quad mesh with one free vertex; 4 quad elements;
 quads_4by2.vtk:  Quad mesh with ideal square elements.  8 quad
   elements with 3 free vertices.
 
-quad_4by2_bad.vtk:  Same as quads_4by2.vtk except the free vertices
+quads_4by2_bad.vtk:  Same as quads_4by2.vtk except the free vertices
   have been perturbed away from the ideal positions.
+
+quads_on_sphere_529.vtk:  529 quad elements on a sphere centered at
+  (2,2,0) with radius 3.
 
 square_quad_10_rand.vtk:  A ten-by-ten grid of quad elements, with
   the free vertices randomly perturbed. (z = 5 plane)
