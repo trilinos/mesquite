@@ -306,9 +306,7 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError &err)
   }
     //pointers to elems
   MsqMeshEntity* elems;
-    //pointers to vertices
-    // MsqVertex* ndoes;
-  int num_elems;
+  int num_elems=0;
     //int num_vertices;
     //michael temp solution
   int num_pass=0;
@@ -320,7 +318,7 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError &err)
     //of the histogram.  We then accumulate the histogram
     //data on the second pass over the mesh.
     //
-  int num_nodes_per_elem;
+  int num_nodes_per_elem=0;
   
   while(num_pass<2 && two_loops){
       //two_loops will be set to one if two loops are necessary
@@ -331,6 +329,8 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError &err)
       PatchData elem_group;
         //Michael:: temporary solution to bug
       ms.set_patch_type(MeshSet::ELEMENTS_ON_VERTEX_PATCH, 1);
+      ms.copy_culling_method_bits(0);
+      
       bool elem_bool;
       elem_bool=ms.get_next_element_group(elem_group, err);
       
