@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 12-Nov-02 at 18:05:56
-//  LAST-MOD: 19-Dec-02 at 10:08:18 by Thomas Leurent
+//  LAST-MOD: 23-Jan-03 at 11:52:20 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -43,7 +43,9 @@ private:
   CPPUNIT_TEST (test_plus);
   CPPUNIT_TEST (test_minus);
   CPPUNIT_TEST (test_transpose);
+  CPPUNIT_TEST (test_plus_equal);
   CPPUNIT_TEST (test_plus_transpose);
+  CPPUNIT_TEST (test_fill_lower_triangle);
   CPPUNIT_TEST (test_times);
   CPPUNIT_TEST (test_mult_element);
   CPPUNIT_TEST (test_times_vector);
@@ -55,6 +57,7 @@ private:
   Vector3D e1, e2, e3;
   Matrix3D mIdentity;
   Matrix3D mMat1;
+  Matrix3D mMat1sym;
   Matrix3D mMat2;
   Matrix3D mMat2trans;
   Matrix3D mMat1plus2;
@@ -76,6 +79,10 @@ public:
     mMat1 =           " 1    4.2  2 "
                       " 5.2  3    4 "
                       " 1    7    0.4";
+   
+    mMat1sym =        " 1    4.2  2 "
+                      " 4.2  3    4 "
+                      " 2    4    0.4";
    
     mMat2 =           " 2    4    5 "
                       " 2    1    3 "
@@ -135,10 +142,22 @@ public:
     CPPUNIT_ASSERT( trans==mMat2trans );
   }
    
+  void test_plus_equal()
+  {
+    mMat1 += mMat2;
+    CPPUNIT_ASSERT( mMat1==mMat1plus2 );
+  }
+   
   void test_plus_transpose()
   {
     Matrix3D plus_trans = mMat1.plus_transpose(mMat2);
     CPPUNIT_ASSERT( plus_trans==mMat1plus2trans );
+  }
+   
+  void test_fill_lower_triangle()
+  {
+    mMat1.fill_lower_triangle();
+    CPPUNIT_ASSERT( mMat1==mMat1sym );
   }
    
   void test_times()
