@@ -30,6 +30,7 @@ MeanRatioQualityMetric::MeanRatioQualityMetric()
   feasible=1;
   set_name("Mean Ratio");
   set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
+  set_negate_flag(-1);
 }
 
 #undef __FUNC__
@@ -39,10 +40,7 @@ double MeanRatioQualityMetric::evaluate_element(PatchData &pd,
                                                 MsqMeshEntity *element,
                                                 MsqError &err){
   int num_sample_points;
-    //Michael:  Need to return 1/total_metric, but we need
-    //a template to invert qm value before we make this change
   std::vector<Vector3D> sample_points;
-  
   // get sample points
   if(element==NULL)
      err.set_msg("Function passed NULL MsqMeshEntity pointer");
@@ -67,15 +65,15 @@ double MeanRatioQualityMetric::evaluate_element(PatchData &pd,
     {
         //Michael:: Do we need fabs here?
       temp_var=fabs((jacobian_vectors[0]*jacobian_vectors[1]).length());
-      if(temp_var>=MSQ_MIN) //if not degenerate
+      metric_values[i]=jacobian_vectors[0].length_squared();
+      metric_values[i]+=jacobian_vectors[1].length_squared();
+      if(temp_var>=MSQ_MIN && metric_values[i]>=MSQ_MIN) //if not degenerate
       {
-        metric_values[i]=jacobian_vectors[0].length_squared();
-        metric_values[i]+=jacobian_vectors[1].length_squared();
-        metric_values[i]/=2*temp_var;
+        metric_values[i]=2*temp_var/metric_values[i];
       }
       else
       {
-        metric_values[i]=MSQ_MAX_CAP;
+        metric_values[i]=0.0;
       }
     }
     
@@ -83,16 +81,16 @@ double MeanRatioQualityMetric::evaluate_element(PatchData &pd,
     else if(num_jacobian_vectors==3)
     {
       temp_var=jacobian_vectors[0]%(jacobian_vectors[1]*jacobian_vectors[2]);
+      metric_values[i]=jacobian_vectors[0].length_squared();
+      metric_values[i]+=jacobian_vectors[1].length_squared();
+      metric_values[i]+=jacobian_vectors[2].length_squared();
       if(temp_var>MSQ_MIN) //if not degenerate or inverted???
       {
-        metric_values[i]=jacobian_vectors[0].length_squared();
-        metric_values[i]+=jacobian_vectors[1].length_squared();
-        metric_values[i]+=jacobian_vectors[2].length_squared();
-        metric_values[i]/=(3*pow(temp_var,MSQ_TWO_THIRDS));
+        metric_values[i]=(3*pow(temp_var,MSQ_TWO_THIRDS))/metric_values[i];
       }
       else
       {
-        metric_values[i]=MSQ_MAX_CAP;
+        metric_values[i]=0.0;
       }
     }
     else

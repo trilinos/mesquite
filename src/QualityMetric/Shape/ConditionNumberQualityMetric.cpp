@@ -25,7 +25,6 @@ ConditionNumberQualityMetric::ConditionNumberQualityMetric()
   feasible=1;
   evalMode=QualityMetric::ELEMENT_VERTICES;
   set_name("Condition Number");
-  set_negate_flag(-1);
 }
 /*
 #undef __FUNC__
@@ -75,9 +74,8 @@ double ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
 {
   int num_sample_points;
   std::vector<Vector3D> sample_points;
-  std::vector<Vector3D>::iterator iter;
-  iter=sample_points.begin();
-  element->get_sample_points(evalMode,sample_points,err);  
+  element->get_sample_points(evalMode,sample_points,err);
+  std::vector<Vector3D>::iterator iter=sample_points.begin();
     // loop over sample points
   Vector3D jacobian_vectors[3];
   int num_jacobian_vectors;
@@ -85,11 +83,10 @@ double ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
   num_sample_points=sample_points.size();
   double *metric_values=new double[num_sample_points];
     //Vector3D* current_sample_point;
-  while(iter!=sample_points.end()){
+  for(i=0;i<num_sample_points;++i){   
     ++iter;
-    ++i;
       // compute weighted jacobian
-       element->compute_weighted_jacobian(pd, (*iter),
+    element->compute_weighted_jacobian(pd, (*iter),
                                        jacobian_vectors,
                                        num_jacobian_vectors, err);
       // evaluate condition number at ith sample point

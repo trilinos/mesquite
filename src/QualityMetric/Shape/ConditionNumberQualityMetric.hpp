@@ -24,9 +24,8 @@ namespace Mesquite
 {
      /*! \class ConditionNumberQualityMetric
        \brief Computes the condition number of given element.
-       The``condition number" is currently scaled between zero
-       and one, with an ideal element having condition number
-       one.
+       The``condition number" is scaled between one and infinity,
+       with an ideal element having condition number one.
      */
    class ConditionNumberQualityMetric : public ShapeQualityMetric
    {
@@ -79,20 +78,14 @@ namespace Mesquite
      double temp_var=0;
      double return_val=0;
      if(num_jacobian_vectors==2){
-         //Michael:: hack for geo
-         //#ifdef MESQUITE_GEO
-         //return_val=fabs((jacobian_vectors[0]*
-         //            jacobian_vectors[1]).length())/.009;
-         //return return_val;
-         //#endif
        temp_var=fabs((jacobian_vectors[0]*jacobian_vectors[1]).length());
        return_val=jacobian_vectors[0].length_squared();
        return_val+=jacobian_vectors[1].length_squared();
-       if(return_val>=MSQ_MIN && temp_var>=MSQ_MIN){ //if not degenerate
-         return_val=2*temp_var/return_val;
+       if(temp_var>=MSQ_MIN){ //if not degenerate
+         return_val/=2*temp_var;
        }
        else{
-         return_val=0.0;
+         return_val=MSQ_MAX_CAP;
        }
        return return_val;
      }
@@ -113,17 +106,17 @@ namespace Mesquite
          //det of J
        temp_var=jacobian_vectors[0]%(jacobian_vectors[1]*jacobian_vectors[2]);
        return_val=sqrt(term1*term2);
-       if(temp_var>MSQ_MIN&&return_val>MSQ_MIN){
+       if(return_val>MSQ_MIN){
            //if not degenerate or inverted???
-         return_val=(3*temp_var)/return_val;
+         return_val/=(3*temp_var);
        }
        else{
-         return_val=0.0;
+         return_val=MSQ_MAX_CAP;
        }
      }
        
      else{
-       return_val=0.0;
+       return_val=MSQ_MAX_CAP;
      }
      
      return return_val;
