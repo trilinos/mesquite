@@ -56,6 +56,7 @@ namespace Mesquite
     std::stack<Mesquite::Timer*> mTimers;
     std::stack<int> failureCounters;
     std::vector<CppUnit::TestSuite::Key> completedSuites;
+    std::vector<std::string> failedTestNames;
     std::ostream* mOut;
     CppUnit::TestResult* myResult;
     unsigned int indentLevel;

@@ -55,15 +55,40 @@ bool Mesquite::TestRunner::run(const std::string& name_of_run,
 {
   mOut = &out_stream;
   *mOut << "Start of test run: " << name_of_run << "\n\n";
-  
-    // Run each test
-  CppUnit::TestResult result;
-  myResult = &result;
-  result.addListener(this);
+
+    // Create a test that runs all sub-tests
+  CppUnit::TestSuite big_suite(name_of_run);
+
+    // Add each test
   for (std::vector<CppUnit::Test*>::iterator iter = mTests.begin();
        iter != mTests.end();
        ++iter)
-    (*iter)->run(&result);
+    big_suite.addTest(*iter);
+  mTests.clear();
+  
+    // Run the tests
+  CppUnit::TestResult result;
+  myResult = &result;
+  result.addListener(this);
+  big_suite.run(&result);
+  
+//     // Run each test
+//   CppUnit::TestResult result;
+//   myResult = &result;
+//   result.addListener(this);
+//   for (std::vector<CppUnit::Test*>::iterator iter = mTests.begin();
+//        iter != mTests.end();
+//        ++iter)
+//     (*iter)->run(&result);
+  
+  if (failedTestNames.size())
+  {
+    *mOut << "\nFailed Test Names:\n";
+    for (std::vector<std::string>::iterator name_iter = failedTestNames.begin();
+         name_iter != failedTestNames.end();
+         ++name_iter)
+      *mOut << "  " << *name_iter << std::endl;
+  }
   
   *mOut << "\nEnd of test run: " << name_of_run << std::endl;
 
@@ -166,6 +191,15 @@ void Mesquite::TestRunner::addFailure(const CppUnit::TestFailure &failure)
     indent();
     *mOut << "Problem occured on line " << failure.sourceLine().lineNumber()
           << " of " << failure.sourceLine().fileName() << std::endl;
+  }
+
+  if (failure.failedTest())
+  {
+    if (failure.failedTest()->is_work_in_progress())
+      failedTestNames.push_back(failure.failedTest()->getName() +
+                                " (work in progress)");
+    else
+      failedTestNames.push_back(failure.failedTest()->getName());
   }
 }
 
