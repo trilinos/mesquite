@@ -1,0 +1,273 @@
+/* ***************************************************************** 
+    MESQUITE -- The Mesh Quality Improvement Toolkit
+
+    Copyright 2004 Sandia Corporation and Argonne National
+    Laboratory.  Under the terms of Contract DE-AC04-94AL85000 
+    with Sandia Corporation, the U.S. Government retains certain 
+    rights in this software.
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License 
+    (lgpl.txt) along with this library; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ 
+    diachin2@llnl.gov, djmelan@sandia.gov, mbrewer@sandia.gov, 
+    pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov      
+   
+  ***************************************************************** */
+// -*- Mode : c++; tab-width: 3; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 3 -*-
+
+/*! \file I_DFTFamilyFunctions.hpp
+
+Header defining function, gradient, and Hessian for generalized
+distance from target metrics.  This code replaces specialized versions
+for the mu1 distance from target metric and the and inverse mean ratio
+metric.  These metrics are recovered by setting the parameters to
+specific values.  Note that the best efficiency will be obtained by
+setting the parameter values as constants and eliminating dead code.
+Further savings can be obtained by specializing the code for
+particular weight matrices, such as the right tetrahedron and regular
+tetrahedron.
+
+The generalized distance from target metric is of the form:
+
+                  || A*inv(W) - delta*I ||_F^2
+   --------------------------------------------------------
+   (det(A*inv(W)) + sqrt(det(A*inv(W))^2 + 4*beta^2))^alpha
+
+where alpha is a positive constant bounded above by one, and beta and
+delta are nonnegative constants.  Beta is zero, the denominator becomes
+max(det(A*inv(W)),0)^alpha, which is undefined for inverted elements.
+
+Instead of passing inv(W) to the routine, Q and inv(R) from the QR 
+factorization of W are passed, where Q and R have been formed so that 
+transpose(Q)*Q = I, det(Q) = 1, and R and inv(R) are upper triangular 
+matrices.  The metric is then equivalent to:
+
+                  || A*inv(R) - delta*Q ||_F^2
+   --------------------------------------------------------
+   (det(A*inv(R)) + sqrt(det(A*inv(R))^2 + 4*beta^2))^alpha
+
+The function evaluation is cheaper to perform in this case because computing 
+A*inv(R) requires 18 fewer operations than A*inv(W), while the modification 
+for delta*Q adds 15 extra operations, resulting in a net reduction of 3 
+operations.  Further savings are obtained in the analytic gradient and 
+Hessian evaluations.  Moreover, the savings are magnified when delta has a 
+value of zero or one.
+
+Special cases of primary interest are:
+
+   delta = 0, beta = 0:	inverse mean-ratio metric
+   delta = 1, beta > 0:	distance from target metric (mu1)
+
+The reason for the ordering of the constants is that we use default values 
+in the function definitions (alpha= 1 or 2/3 depending on the element type, 
+beta=0, delta=0) and rely upon the compiler to do specialization to gain 
+better performance for these special cases.  Note that the defaults
+recover the inverse mean-ratio metric.
+
+\author Todd Munson
+\date   2004-12-17
+ */
+
+#ifndef I_DFTFamilyFunctions_hpp
+#define I_DFTFamilyFunctions_hpp
+
+#include <math.h>
+#include "Mesquite.hpp"
+#include "Vector3D.hpp"
+#include "Matrix3D.hpp"
+
+namespace Mesquite 
+{
+  /***************************************************************************/
+  /* Gradient calculation courtesy of Paul Hovland.  The code was  modified  */
+  /* to reduce the number of flops and intermediate variables, and improve   */
+  /* the locality of reference.                                              */
+  /***************************************************************************/
+  /* The Hessian calculation is computes everyting in (x,y,z) blocks and     */
+  /* stores only the upper triangular blocks.  The results are put into      */
+  /* (c1,c2,c3,c4) order prior to returning the Hessian matrix.              */
+  /***************************************************************************/
+  /* The form of the function, gradient, and Hessian follows:                */
+  /*   o(x) = a * pow(f(A(x)), b) * pow(g(A(x)), c)                          */
+  /* where A(x) is the incidence matrix generated by:                        */
+  /*           [x1-x0 x2-x0 x3-x0]                                           */
+  /*    A(x) = [y1-y0 y2-y0 y3-y0] * inv(W)                                  */
+  /*           [z1-z0 z2-z0 z3-z0]                                           */
+  /* and f() is the squared Frobenius norm of A(x), and g() is the           */
+  /* determinant of A(x).                                                    */
+  /*                                                                         */
+  /* The gradient is calculated as follows:                                  */
+  /*   alpha := a*b*pow(f(A(x)),b-1)*pow(g(A(x)),c)                          */
+  /*   beta  := a*c*pow(f(A(x)),b)*pow(g(A(x)),c-1)                          */
+  /*                                                                         */
+  /*   do/dx = (alpha * (df/dA) + beta * (dg/dA)) (dA/dx)                    */
+  /*                                                                         */
+  /*   (df/dA)_i = 2*A_i                                                     */
+  /*   (dg/dA)_i = A_j*A_k - A_l*A_m for some {j,k,l,m}                      */
+  /*                                                                         */
+  /*   d^2o/dx^2 = (dA/dx)' * ((d alpha/dA) * (df/dA) +                      */
+  /*                           (d  beta/dA) * (dg/dA)                        */
+  /*                                  alpha * (d^2f/dA^2)                    */
+  /*                                   beta * (d^2g/dA^2)) * (dA/dx)         */
+  /*                                                                         */
+  /*   Note: since A(x) is a linear function, there are no terms involving   */
+  /*   d^2A/dx^2 since this matrix is zero.                                  */
+  /*                                                                         */
+  /*   gamma := a*b*c*pow(f(A(x)),b-1)*pow(g(A(x)),c-1)                      */
+  /*   delta := a*c*(c-1)*pow(f(A(x)),b)*pow(g(A(x)),c-2)                    */
+  /*   psi   := a*b*(b-1)*pow(f(A(x)),b-2)*pow(g(A(x)),c)                    */
+  /*                                                                         */
+  /*   d^2o/dx^2 = (dA/dx)' * (gamma*((dg/dA)'*(df/dA) + (df/dA)'*(dg/dA)) + */
+  /*                           delta* (dg/dA)'*(dg/dA) +                     */
+  /*                             psi* (df/dA)'*(df/dA) +                     */
+  /*                           alpha*(d^2f/dA^2) +                           */
+  /*                            beta*(d^2g/dA^2)) * (dA/dx)                  */
+  /*                                                                         */
+  /*   Note: (df/dA) and (dg/dA) are row vectors and we only calculate the   */
+  /*   upper triangular part of the inner matrices.                          */
+  /***************************************************************************/
+
+  inline bool m_gdft_2(double &obj, const Vector3D x[3], const Vector3D &n,
+		       const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
+		       const Matrix3D &invR,	/* upper triangular          */
+		       const double alpha = 1.0,/* planar elements           */
+		       const double beta  = 0.0,/* max in denominator        */
+		       const double delta = 0.0)/* no modification           */
+  {
+    double matr[9], f, t1, t2 = 0.0;
+    double matd[9], g;
+
+    /* Calculate M = A*inv(R). */
+    f       = x[1][0] - x[0][0];
+    g       = x[2][0] - x[0][0];
+    matr[0] = f*invR[0][0];
+    matr[1] = f*invR[0][1] + g*invR[1][1];
+    matr[2] = f*invR[0][2] + g*invR[1][2] + n[0]*invR[2][2];
+
+    f       = x[1][1] - x[0][1];
+    g       = x[2][1] - x[0][1];
+    matr[3] = f*invR[0][0];
+    matr[4] = f*invR[0][1] + g*invR[1][1];
+    matr[5] = f*invR[0][2] + g*invR[1][2] + n[0]*invR[2][2];
+
+    f       = x[1][2] - x[0][2];
+    g       = x[2][2] - x[0][2];
+    matr[6] = f*invR[0][0];
+    matr[7] = f*invR[0][1] + g*invR[1][1];
+    matr[8] = f*invR[0][2] + g*invR[1][2] + n[0]*invR[2][2];
+
+    /* Calculate det(M). */
+    t1 = matr[0]*(matr[4]*matr[8] - matr[5]*matr[7]) +
+         matr[3]*(matr[2]*matr[7] - matr[1]*matr[8]) +
+         matr[6]*(matr[1]*matr[5] - matr[2]*matr[4]);
+
+    /* Calculate sqrt(det(M)^2 + 4*beta^2). */
+    if (beta) {
+      t2 = sqrt(t1*t1 + 4.0*beta*beta);
+    }
+
+    /* Calculate denominator. */
+    g = t1 + t2;
+    if (g < MSQ_MIN) { obj = g; return false; }
+    
+    /* Calculate N = M - delta*Q. */
+    matd[0] = matr[0] - delta*Q[0][0];
+    matd[1] = matr[1] - delta*Q[0][1];
+    matd[2] = matr[2] - delta*Q[0][2];
+    matd[3] = matr[3] - delta*Q[1][0];
+    matd[4] = matr[4] - delta*Q[1][1];
+    matd[5] = matr[5] - delta*Q[1][2];
+    matd[6] = matr[6] - delta*Q[2][0];
+    matd[7] = matr[7] - delta*Q[2][1];
+    matd[8] = matr[8] - delta*Q[2][2];
+
+    /* Calculate norm(N) */
+    f = matd[0]*matd[0] + matd[1]*matd[1] + matd[2]*matd[2] +
+        matd[3]*matd[3] + matd[4]*matd[4] + matd[5]*matd[5] +
+        matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
+
+    /* Calculate objective function. */
+    obj = f / pow(g, alpha);
+    return true;
+  }
+
+  inline bool g_gdft_3(double &obj, Vector3D g_obj[4], const Vector3D x[4],
+		       const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
+		       const Matrix3D &invR,	/* upper triangular          */
+		       const double alpha = 2.0/3.0, /* simplicial elements  */
+		       const double beta  = 0.0,/* max in denominator        */
+		       const double delta = 0.0)/* no modification           */
+  {
+    double matr[9], f, t1, t2 = 0.0;
+    double matd[9], g;
+
+    /* Calculate M = A*inv(R). */
+    f       = x[1][0] - x[0][0];
+    g       = x[2][0] - x[0][0];
+    t1      = x[3][0] - x[0][0];
+    matr[0] = f*invR[0][0];
+    matr[1] = f*invR[0][1] + g*invR[1][1];
+    matr[2] = f*invR[0][2] + g*invR[1][2] + t1*invR[2][2];
+
+    f       = x[1][1] - x[0][1];
+    g       = x[2][1] - x[0][1];
+    t1      = x[3][1] - x[0][1];
+    matr[3] = f*invR[0][0];
+    matr[4] = f*invR[0][1] + g*invR[1][1];
+    matr[5] = f*invR[0][2] + g*invR[1][2] + t1*invR[2][2];
+
+    f       = x[1][2] - x[0][2];
+    g       = x[2][2] - x[0][2];
+    t1      = x[3][2] - x[0][2];
+    matr[6] = f*invR[0][0];
+    matr[7] = f*invR[0][1] + g*invR[1][1];
+    matr[8] = f*invR[0][2] + g*invR[1][2] + t1*invR[2][2];
+
+    /* Calculate det(M). */
+    t1 = matr[0]*(matr[4]*matr[8] - matr[5]*matr[7]) +
+         matr[3]*(matr[2]*matr[7] - matr[1]*matr[8]) +
+         matr[6]*(matr[1]*matr[5] - matr[2]*matr[4]);
+
+    /* Calculate sqrt(det(M)^2 + 4*beta^2). */
+    if (beta) {
+      t2 = sqrt(t1*t1 + 4.0*beta*beta);
+    }
+
+    /* Calculate denominator. */
+    g = t1 + t2;
+    if (g < MSQ_MIN) { obj = g; return false; }
+    
+    /* Calculate N = M - delta*Q. */
+    matd[0] = matr[0] - delta*Q[0][0];
+    matd[1] = matr[1] - delta*Q[0][1];
+    matd[2] = matr[2] - delta*Q[0][2];
+    matd[3] = matr[3] - delta*Q[1][0];
+    matd[4] = matr[4] - delta*Q[1][1];
+    matd[5] = matr[5] - delta*Q[1][2];
+    matd[6] = matr[6] - delta*Q[2][0];
+    matd[7] = matr[7] - delta*Q[2][1];
+    matd[8] = matr[8] - delta*Q[2][2];
+
+    /* Calculate norm(N) */
+    f = matd[0]*matd[0] + matd[1]*matd[1] + matd[2]*matd[2] +
+        matd[3]*matd[3] + matd[4]*matd[4] + matd[5]*matd[5] +
+        matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
+
+    /* Calculate objective function. */
+    obj = f / pow(g, alpha);
+    return true;
+  }
+}
+#endif
+
