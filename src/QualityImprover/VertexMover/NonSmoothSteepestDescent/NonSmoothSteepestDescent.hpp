@@ -117,6 +117,8 @@ namespace Mesquite
   {
   public:
     NonSmoothSteepestDescent(ObjectiveFunction* of);
+
+    virtual ~NonSmoothSteepestDescent() { }
     
   protected:
     virtual void initialize(PatchData &pd, MsqError &err);
