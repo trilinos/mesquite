@@ -199,4 +199,4 @@ public:
 
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(InstructionQueueTest, "InstructionQueueTest");
-
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(InstructionQueueTest, "Unit");

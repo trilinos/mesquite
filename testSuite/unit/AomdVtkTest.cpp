@@ -149,7 +149,7 @@ public:
     int valid = 1;
     double dEps = 1.e-13;
 
-    double x1, x2, x3, y1, y2, y3, z1, z2, z3;
+    double x1, x2, x3, y1, y2, y3;// z1, z2, z3;
     std::vector<size_t> vertex_indices;
 
     for (int i=0;i<num_elements;i++)
@@ -270,4 +270,4 @@ public:
 
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(AomdVtkTest, "AomdVtkTest");
-
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(AomdVtkTest, "Unit");
