@@ -89,8 +89,8 @@ inline bool m_fcn_2e(double &obj, const Vector3D x[3], const Vector3D &n)
 
   /* Calculate norm(M). */
   f = matr[0]*matr[0] + matr[1]*matr[1] +
-      matr[2]*matr[2] + matr[3]*matr[3] +
-      matr[4]*matr[4] + matr[5]*matr[5];
+      matr[3]*matr[3] + matr[4]*matr[4] +
+      matr[6]*matr[6] + matr[7]*matr[7];
 
   /* Calculate objective function. */
   obj = a2 * f * pow(g, b2);
@@ -498,8 +498,8 @@ inline bool m_fcn_2i(double &obj, const Vector3D x[3], const Vector3D &n)
 
   /* Calculate norm(M). */
   f = matr[0]*matr[0] + matr[1]*matr[1] +
-      matr[2]*matr[2] + matr[3]*matr[3] +
-      matr[4]*matr[4] + matr[5]*matr[5];
+      matr[3]*matr[3] + matr[4]*matr[4] +
+      matr[6]*matr[6] + matr[7]*matr[7];
 
   /* Calculate objective function. */
   obj = a2 * f * pow(g, b2);
