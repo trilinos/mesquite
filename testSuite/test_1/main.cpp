@@ -38,7 +38,7 @@ describe main.cpp here
 #include "InstructionQueue.hpp"
 #include "MeshSet.hpp"
 #include "PatchData.hpp"
-#include "StoppingCriterion.hpp"
+#include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
 
 // algorythms
@@ -90,9 +90,11 @@ int main()
 
    //**************Set stopping criterion****************
 // StoppingCriterion sc1(&stop_qa,1.0,1.8);
- StoppingCriterion sc2(StoppingCriterion::NUMBER_OF_PASSES,1);
+   //StoppingCriterion sc2(StoppingCriterion::NUMBER_OF_PASSES,1);
+ TerminationCriterion sc2;
+ sc2.add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,1,err);
 // CompositeAndStoppingCriterion sc(&sc1,&sc2);
- pass1->set_stopping_criterion(&sc2);
+ pass1->set_inner_termination_criterion(&sc2);
  // sets a culling method on the first QualityImprover
  pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
 
