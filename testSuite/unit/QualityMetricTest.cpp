@@ -8,7 +8,7 @@
 //    E-MAIL: mbrewer@sandia.gov
 //
 // ORIG-DATE: 03-Dec-02
-//  LAST-MOD: 13-Dec-02 at 08:26:36 by Thomas Leurent
+//  LAST-MOD: 17-Dec-02 at 14:15:05 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -51,8 +51,7 @@ private:
   CPPUNIT_TEST (test_composite_multiply);
     //Test averaging methods
   CPPUNIT_TEST (test_averaging_method);
-  
-  
+  CPPUNIT_TEST (test_mean_ratio_gradient);
   CPPUNIT_TEST_SUITE_END();
   
 private:
@@ -500,10 +499,51 @@ void test_averaging_method()
        //Check mean ratio of ideal SUM (NOTICE:: should be 4.0)
      met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-4.0)<qualTol);
-     
-
    }
 
+  void test_mean_ratio_gradient()
+  {
+    MsqError err;
+    Vector3D* grad_num = new Vector3D[2];
+    Vector3D* grad_ana = new Vector3D[2];
+    double metric_value;
+
+    MsqMeshEntity* elems = hexPatch.get_element_array(err);MSQ_CHKERR(err);
+    MsqVertex* vertices =  hexPatch.get_vertex_array(err);MSQ_CHKERR(err);
+
+    std::vector<size_t> bad_elem_vertex_indices;
+    elems[1].get_vertex_indices(bad_elem_vertex_indices);
+    MsqVertex* two_vtces[2];
+    two_vtces[0] = &vertices[bad_elem_vertex_indices[0]];
+    two_vtces[1] = &vertices[bad_elem_vertex_indices[2]];
+    
+    // creates a mean ratio quality metric ...
+    ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
+    mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
+
+    mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
+    mean_ratio->compute_element_gradient (hexPatch, &elems[1], two_vtces,
+                                          grad_num, 2, metric_value, err); MSQ_CHKERR(err);
+//     std::cout << "NUMERICAL GRADIENT\n";
+//     for (int i=0; i<2; ++i)
+//       for (int j=0; j<3; ++j)
+//         std::cout << grad[i][j] << std::endl;
+
+    mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+    mean_ratio->compute_element_gradient (hexPatch, &elems[1], two_vtces,
+                                          grad_ana, 2, metric_value, err); MSQ_CHKERR(err);
+//     std::cout << "ANALYTICAL GRADIENT\n";
+//     for (int i=0; i<2; ++i)
+//       for (int j=0; j<3; ++j)
+//         std::cout << grad[i][j]/8 << std::endl;
+
+    for (int i=0; i<2; ++i)
+      for (int j=0; j<3; ++j)
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(grad_num[i][j], grad_ana[i][j], 0.001);
+    
+    delete grad_num;
+    delete grad_ana;
+  }
    
 };
 
