@@ -1,4 +1,4 @@
-// -*- Mode : c++; tab-width: 3; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 3 -*-
+// -*- Mode : c++; tab-width: 2; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
 //  LAST-MOD: 31-Jan-03 at 13:51:14 by Thomas Leurent
@@ -46,11 +46,12 @@ void Mesquite::MsqMeshEntity::get_vertex_indices(std::vector<size_t> &vertices)
 //! The order of the vertices is the canonical order for this
 //! element's type.
 //! The indices are placed appended to the end of the list.
+//! The list is not cleared before appending this entity's vertices.
 void Mesquite::MsqMeshEntity::append_vertex_indices(std::vector<size_t> &vertex_list)
 {
   vertex_list.insert(vertex_list.end(),
-                   vertexIndices,
-                   vertexIndices + vertex_count());
+                     vertexIndices,
+                     vertexIndices + vertex_count());
 }
 
 #undef __FUNC__
@@ -63,8 +64,11 @@ void Mesquite::MsqMeshEntity::compute_weighted_jacobian(PatchData &pd,
                                                         int &num_jacobian_vectors,
                                                         MsqError &err )
 {
-  std::vector<size_t> v_v;
-  get_vertex_indices(v_v);
+    // v_v is just an alias for vertexIndices
+  size_t (&v_v)[MSQ_MAX_NUM_VERT_PER_ENT] = vertexIndices;
+  
+//   std::vector<size_t> v_v;
+//   get_vertex_indices(v_v);
   MsqVertex *vertices=pd.get_vertex_array(err);
   Vector3D ideal_coords[8];
   Vector3D ideal_jac[3];
@@ -379,8 +383,7 @@ double MsqMeshEntity::compute_unsigned_volume(PatchData &pd, MsqError &err) {
   
 */
 void Mesquite::MsqMeshEntity::get_connected_vertices(size_t vertex_index,
-                                                     std::vector<size_t>
-                                                     &vert_indices,
+                                                     std::vector<size_t> &vert_indices,
                                                      MsqError &/*err*/)
 {
     //i iterates through elem's vertices
@@ -392,12 +395,17 @@ void Mesquite::MsqMeshEntity::get_connected_vertices(size_t vertex_index,
   switch (mType)
   {
     case TRIANGLE:
-      while(index<0 && i<3){
+      while(i<3)
+      {
         if(vertexIndices[i]==vertex_index)
+        {
           index=i;
+          break;
+        }
         ++i;
       }
-      if(index>=0){
+      if(index>=0)
+      {
         vert_indices.push_back(vertexIndices[(index+1)%3]);
         vert_indices.push_back(vertexIndices[(index+2)%3]);
       }
@@ -405,12 +413,17 @@ void Mesquite::MsqMeshEntity::get_connected_vertices(size_t vertex_index,
       break;
       
     case QUADRILATERAL:
-      while(index<0 && i<4){
+      while(i<4)
+      {
         if(vertexIndices[i]==vertex_index)
+        {
           index=i;
+          break;
+        }
         ++i;
       }
-      if(index>=0){
+      if(index>=0)
+      {
         vert_indices.push_back(vertexIndices[(index+1)%4]);
         vert_indices.push_back(vertexIndices[(index+3)%4]);
       }
@@ -418,12 +431,17 @@ void Mesquite::MsqMeshEntity::get_connected_vertices(size_t vertex_index,
       break;
       
     case TETRAHEDRON:
-      while(index<0 && i<4){
+      while(i<4)
+      {
         if(vertexIndices[i]==vertex_index)
+        {
           index=i;
+          break;
+        }
         ++i;
       }
-      if(index>=0){
+      if(index>=0)
+      {
         vert_indices.push_back(vertexIndices[(index+1)%4]);
         vert_indices.push_back(vertexIndices[(index+2)%4]);
         vert_indices.push_back(vertexIndices[(index+3)%4]);
@@ -432,28 +450,34 @@ void Mesquite::MsqMeshEntity::get_connected_vertices(size_t vertex_index,
       break;
       
     case HEXAHEDRON:
-      while(index<0 && i<8){
+      while(i<8)
+      {
         if(vertexIndices[i]==vertex_index)
+        {
           index=i;
+          break;
+        }
         ++i;
       }
       
-      if(index>=0 && index<4)
+      if(index>=0)
       {
-        vert_indices.push_back(vertexIndices[(index+1)%4]);
-        vert_indices.push_back(vertexIndices[(index+3)%4]);
-        vert_indices.push_back(vertexIndices[(index)+4]);
+        if (index<4)
+        {
+          vert_indices.push_back(vertexIndices[(index+1)%4]);
+          vert_indices.push_back(vertexIndices[(index+3)%4]);
+          vert_indices.push_back(vertexIndices[(index)+4]);
+        }
+        else
+        {
+          vert_indices.push_back(vertexIndices[(index+3)%4]+4);
+          vert_indices.push_back(vertexIndices[(index+1)%4]+4);
+          vert_indices.push_back(vertexIndices[(index)-4]);
+        }
       }
-      else if(index>=4)
-      {
-        vert_indices.push_back(vertexIndices[(index+3)%4]+4);
-        vert_indices.push_back(vertexIndices[(index+1)%4]+4);
-        vert_indices.push_back(vertexIndices[(index)-4]);
-      }
-          
+      
       break;
   }
-  
 }
 
 

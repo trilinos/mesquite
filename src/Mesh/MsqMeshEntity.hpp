@@ -59,6 +59,8 @@ namespace Mesquite
       //! gets the vertices of the mesh entity
     void get_vertex_indices(std::vector<size_t> &vertex_list);
     void append_vertex_indices(std::vector<size_t> &vertex_list);
+    inline const size_t *get_vertex_index_array() const;
+    
       //! Sets element data
     void set_element_type(EntityTopology type)
       { mType = type; }
@@ -92,9 +94,10 @@ namespace Mesquite
     double compute_unsigned_volume(PatchData &pd, MsqError &err );
     
   private:
-    void get_linear_quad_jac(Vector3D *sp, Vector3D &coord0, Vector3D &coord1,
-                             Vector3D &coord2, Vector3D &coord3,
-                             Vector3D* jac);
+    static void get_linear_quad_jac(Vector3D *sp,
+                                    Vector3D &coord0, Vector3D &coord1,
+                                    Vector3D &coord2, Vector3D &coord3,
+                                    Vector3D* jac);
     
     EntityTopology mType;
     size_t vertexIndices[MSQ_MAX_NUM_VERT_PER_ENT];
@@ -172,6 +175,9 @@ namespace Mesquite
     vertexIndices[vertex_in_element] = vertex_patch_index;
   }
   
+  inline const size_t *MsqMeshEntity::get_vertex_index_array() const
+  { return vertexIndices; }
+  
   inline size_t MsqMeshEntity::get_vertex_index(size_t vertex_in_element)
   {
       // Make sure we're in range
@@ -179,7 +185,7 @@ namespace Mesquite
       // Return the index
     return vertexIndices[vertex_in_element];
   }
-
+  
   inline void MsqMeshEntity::get_linear_quad_jac(Vector3D *sp,
                                                  Vector3D &coord0,
                                                  Vector3D &coord1,
