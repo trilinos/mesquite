@@ -1,4 +1,6 @@
-\documentstyle[psfig]{article}
+\documentclass[psfig]{article}
+\usepackage{epsfig}
+\usepackage{amssymb}
 
 \pagestyle{empty}
 
@@ -31,62 +33,153 @@ MESQUITE is a software library for improving mesh quality.
 \section{Introduction to Mesh Quality Improvement} 
 
 \subsection{General Overview}
-What do we mean by mesh quality. Why is it important? A priori vs. a posteriori
-quality control.
 
-Goals:
+Mesh quality has been shown to be critical for solution accuracy and
+efficiency in the solution of PDE-based applications.  However, it can
+be negatively impacted during many stages of the mesh generation
+process from defeaturing CAD models to postprocessing via a smoothing
+scheme to mesh adaptivity. At any stage after a mesh is created, its
+quality can be improved by techniques such as node point movement and
+topology modification.  There are a number of techniques that have
+been developed for mesh improvement ranging from simple Laplacian smoothing
+\cite{F88} to more sophisticated algorithms such as Winslow smoothers
+for structured meshes (for example, \cite{winslow}), the numerical
+optimization methods and topology modification schemes recently
+developed for unstructured meshes (for example, \cite{Opt-MS,Kn00,FrKn01,
+FeasNewt,bjoe:swap,bjoe:chain-swap,es92}).
+
+Mesquite (Mesh Quality Improvement Toolkit) is designed to provide a
+stand-alone, portable package for mesh quality improvement which
+includes a comprehensive suite of these algorithms.  It is designed in
+such a way that they can be applied to many different mesh element
+types and orders and referenced to both isotropic and anisotropic
+ideal elements.  The successful completion of Mesquite will provide a
+robust and effective mesh improvement toolkit to the broader
+scientific community.  This will allow both mesh generation
+researchers and application scientists to benefit from the latest
+developments in mesh quality control and improvement.
+
+The goals of this user's manual are to
 \begin{itemize}
-\item To provide a vision for Mesquite (what it is and what it will become),
-\item To cover both noice and expert users. The novice should know what to
-do after reading a small percentage of the guide (perhaps a third); more 
-advanced concepts are also included but are done later in the text.
-\item To provide practical instructions on using Mesquite API, compiling,
+\item provide a vision for Mesquite (what it is and what it will become),
+\item cover both novice and expert users. The novice should know how to
+download, compile and use the simplified Mesquite user's interface
+after reading a small percentage of the guide. More 
+advanced concepts are included later in the text.
+\item provide practical instructions on using Mesquite API, compiling,
 linking, TSTT interface,
-\item To provide insight into the optimization algorithms
+\item provide insight into the mathematical concepts and optimization 
+algorithms which are the heart of the Mesquite mesh quality improvement 
+toolkit
 \end{itemize}
 
-\subsection{Mesquite Philosophy}
-The hippocratic oath: we will do no harm (can we do an undo or should the 
-user keep track of the original mesh?).  What are the boundaries of Mesquite?
-What it is not going to do. What do we mean by a mesh quality improvement 
-algorithm. Including the best known algorithms for a particular goal (not 
-just a collection of hacked tools). Provides both a useful tool that is easy
-to use for application scientists and is extensible to provide a platform for
-mesh quality improvment research. Give an example API file (script for 
-Laplace smoothing - novice). Show the expert view of the world. Readers can
-use script to build from. Use example to help explain our philosophy.
+\subsection{The Mesquite Philosophy}
+
+{\it 
+The hippocratic oath: we will do no harm (can we do an undo or
+should the user keep track of the original mesh?).  What are the
+boundaries of Mesquite?  What it is not going to do. What do we mean
+by a mesh quality improvement algorithm. Including the best known
+algorithms for a particular goal (not just a collection of hacked
+tools). Provides both a useful tool that is easy to use for
+application scientists and is extensible to provide a platform for
+mesh quality improvment research. Give an example API file (script for
+Laplace smoothing - novice). Show the expert view of the
+world. Readers can use script to build from. Use example to help
+explain our philosophy. 
+}
 
 \subsection{The Mesquite Vision}
-Comprehensive, robust, flexible, efficient. In core to applications, not 
-just a preprocessign step.
 
-\section{Mesh Improvement Goals}
-Why have different mesh improvement goals? What are they (shape, untangle, 
-alignment, morph, etc.). Improvement goals currently supported (shape, untangle).
+Mesquite design goals are derived from a mathematical framework and
+are focused on providing a versatile, comprehensive, effective,
+interoperable, and efficient library of mesh quality improvement
+algorithms that can be used by the non-expert and extended and
+customized by experts.  In this section we highlight the current
+status of Mesquite in several of our design goal areas.
 
-\section{Methods - Theory and Algorithms}
+{\bf Mathematical Framework.}  Mesquite design is based on a currently
+evolving, but rigorous mathematical framework that poses the mesh
+quality improvement, node-movement problem as an optimization problem.
+That is, suppose a mesh $M$ contains $n$ vertices, $v_i$, and $k$
+elements, $e_i$.  Then the quality of each element or vertex is given
+as a general function $q_i ( {\bf x} )$ of the coordinates of the
+vertex locations.  The index $i$ ranges from 1 to $n$ or 1 to $k$
+depending on whether a vertex-based or element-based metric is chosen.
+A mesh quality objective function ${\cal F} = f(q_i({\bf x} ))$ for
+$i=1,\cdots,n_s$ or $i=1,\cdots,k_s$ is formed to give an overall
+measure of mesh quality where $n_s$ and $k_s$ are the number of
+vertices or elements in a mesh sub-domain needing improvement,
+respectively.  Mesquite is designed to solve the minimization problem
+${\rm min}~{\cal F}$ for a broad collection of quality metrics $q_i$
+and objective functions ${\cal F}$.
 
-\subsection{Vertex Movement Schemes}
-Why use an optimization-based approach. Posing mesh quality as an optimization
-problem (metrics, objective function templates and goals, L1, L2, Linf).
-Optimization Algorithms (brief description, enough to have the API discussion 
-make sense): variational, discrete, solvers (CG, active set), local vs. global,
-fitting Laplacian and other common smoothers into this framework.
+{\bf Versatile and Comprehensive.}  Mesquite works on structured,
+unstructured, and hybrid meshes in both two and three dimensions. The
+design permits improvements to meshes composed of triangular,
+tetrahedral, quadrilateral, and hexahedral elements. Prismatic,
+pyramidal, and polyhedral elements can be easily added.  
+%Mesquiteincorporates the best quality improvement methods to solve 
+%discrete objective functions composed of mesh quality metrics. 
+It currently incorporates only methods for node movement; plans for 
+topology modification and hybrid improvement strategies lie in the future.
+Node movement strategies include both local patch-based iteration
+schemes for one or a few free vertices and global objective functions
+which improve all vertices simultaneously.  Mesquite will be
+applicable to both adaptive and nonadaptive meshing and to both low-
+and high-order discretization schemes, but currently works with
+non-adaptive meshes containing linear elements.
 
-\subsection{Topology Modifiers}
-Swapping algorithms.
+{\bf Effective.}  Mesquite uses state-of-the-art algorithms and
+metrics to guarantee improvement in mesh quality.  Because the
+definition of mesh quality is application specific, we provide quality
+metrics that allow the user to untangle meshes, improve mesh
+smoothness, element size, and shape. In the future these metrics will
+be referenced to permit non-isotropic smoothing and adaptivity. The
+software is easily customizable, enabling users to insert their own
+quality metrics, objective functions, and algorithms and also provides
+mechanisms for creating combined approaches that use one or more
+improvement algorithms.
+
+{\bf Inter-operable.}  To ensure that Mesquite is inter-operable with a
+large number of mesh generation packages, we will use the common
+interfaces for mesh query currently under development by the TSTT
+center.  These interfaces provide uniform access to mesh geometry and
+topology and will be implemented by all TSTT center software including
+several DOE-supported mesh generation packages.  We are working with
+the TSTT interface design team to ensure that Mesquite has efficient
+access to mesh and geometry information through strategies such as
+information caching and agglomeration.  We are also participating in
+the design of interfaces needed to support topological changes
+generated by mesh swapping and flipping algorithms and to constrain
+vertices to the surface of a geometrical model.
+
+%{\bf Robust.} Mesquite guarantees that there will be no degradation to
+%mesh quality as measured by the objective function and quality metric
+%used for improvement.  To achieve this goal, we use sound software
+%engineering principles and robust numerical algorithms.  A
+%comprehensive suite of test problems and a unit testing framework have
+%been developed to verify the correct execution of the code.
+
+{\bf Efficient.}  The outer layers of Mesquite use 
+object-oriented design in C++ while the inner kernels use
+optimizable coding constructs such as arrays and inlined
+functions.  To ensure efficient use of computationally intensive
+optimization algorithms, we employ inexpensive smoothers, such as
+Laplacian smoothing, as ``preconditioners'' for the more expensive
+optimization techniques.  In addition, mesh culling algorithms can be
+used to smooth only those areas of the mesh that require improvement.
+Considerable attention has been devoted to understanding and
+implementing a variety of termination criteria that can be used to
+control the computational cost of the optimization algorithms.
+
+{\it In core to applications, not just a preprocessign step.}
 
 \section{Basic Mesquite Usage}
 
-\subsection{Telling Mesquite About Your Mesh}
-TSTT and Mesquite interface overview. Particular interfaces needed. 
-Testing your TSTT interface implementation.
+\subsection{Downloading Mesquite}
 
-\subsection{Wrapper Classes}
-Provides sophisticated functionality via simple interface. List the ones
-provided (goal, stopping criterion, customization options).
-
-\subsection{Compilling and Linking Mesquite}
+\subsection{Compiling and Linking Mesquite}
 TODO:  Software dependencies, compiling AOMD, TSTT interfaces
 (need the .h file),
 other (gmake, makedepend)?  Makefiles (examples that link Mesquite to an 
@@ -205,21 +298,598 @@ the main directory.
 \end{description}
 \end{enumerate}
 
+\subsection{Running a Simple Example Program}
+
+\subsection{Writing a Mesquite Application}
+
+\subsubsection{Telling Mesquite About Your Mesh}
+
+Mesquite is responsible for gathering information from the
+application's mesh and geometry.  Because this must be as efficient as
+possible, considerable attention has been given to the interface
+between Mesquite and the application code.  Because Mesquite is
+designed as a library to work on a broad assortment of mesh and
+element types on complex geometrical domains, a general,
+data-structure neutral API is needed.  In general, Mesquite requires
+access to basic information about the mesh such as the number of
+vertices and elements in the mesh, the vertex locations, and the
+element connectivities.  To move the vertex locations, Mesquite needs
+to set the vertex coordinate positions, and eventually, to perform
+swapping operations Mesquite will need to add and delete various mesh
+entities.  In addition, for smoothing meshes on complex surfaces,
+access to operations on the underlying solid model such as normal
+information and closest point information are required to ensure
+vertices are constrained to the surface.
+
+To expose this information, Mesquite defines a set of interfaces 
+(C++ abstract base classes) that are specifically designed for mesh
+quality improvement needs.  There are four such interfaces: Mesh,
+VertexIterator, ElementIterator, and MeshDomain.
+\begin{itemize}
+\item {\it Mesh:} The Mesh interface represents the set of mesh
+entities that are to be operated on.  It is through this interface
+that one retrieves information about the mesh and its entities.
+Examples of functionality provided by this interface include:
+retrieving the number of elements in the mesh, determining which
+elements contain a particular vertex, and modifying vertex
+coordinates.
+\item {\it VertexIterator:} The VertexIterator provides access to each
+vertex in a mesh.  A VertexIterator is obtained from a Mesh object,
+and is used to iterate through the list of all vertices in the Mesh
+from which it was obtained.
+\item {\it ElementIterator:} The ElementIterator provides access to
+each element in a mesh.  Other than the type of entity it exposes, it
+is identical to the VertexIterator.
+\item {\it MeshDomain} The MeshDomain represents the set of geometric
+domains to which the mesh may be constrained.  The MeshDomain
+interface enables an application to restrict the locations to which a
+vertex can be moved, such as constraining a vertex to a surface.
+Through the MeshDomain interface, Mesquite's algorithms can also
+obtain a domain's normal vector, which aides validity checking and 
+decision making during the quality improvement process.
+\end{itemize}
+These interfaces are data-structure neutral and use only primitive
+data types; an application may implement the Mesquite interfaces
+without changing its existing mesh data structures.  Instead of
+representing mesh entities with complex data structures or with typed
+pointers, entities are identified with opaque values called handles.
+Each mesh entity has a unique handle value, but otherwise handles have
+no intrinsic meaning to Mesquite.  
+
+Mesquite can instead use the mesh interfaces currently
+being developed through the TSTT center.  This interface definition
+effort focuses on providing access to information pertaining to low
+level mesh objects such as vertices, edges, faces, and regions through
+both array-based and iterator-based mechanisms.  It is designed to
+support existing packages such as CUBIT, NWGrid, PAOMD, and Overture.
+Considerations such as data neutrality, language interoperability
+(achieved through use of the SIDL/Babel tools from LLNL \cite{babel}),
+and achieving consensus within a large group of participants is
+paramount (see \cite{Cubit-website}, \cite{overture}, \cite{aomd-imr},
+and \cite{NWGrid-website}).  This interface definition effort is
+evolving, and the Mesquite team is actively participating to ensure
+that our needs for mesh quality improvement are adequately and
+efficiently addressed.  A TSTT-based implementation of the Mesquite
+interfaces will be available soon.  As such, any tool that exposes its
+mesh through the TSTT interfaces can be used with Mesquite without
+additional development.
+
+The Mesquite-specific interfaces described above are fully compatible
+with the current TSTT mesh and geometry interfaces, and in fact,
+Mesquite's approach to data structure neutrality is directly derived
+from the TSTT interfaces.  Although similar in spirit to the TSTT
+interface, the Mesquite-specific interface is not as general, and 
+therefore consist of fewer
+functions and does not require additional tools such as Babel.
+
+\subsubsection{Application API}
+
+We provide a number of mechanisms that lower the ``expertise'' barrier
+for using Mesquite.  In the simplest usage scenario, a TSTT mesh
+pointer is passed to Mesquite and improved using a default set of
+metrics and strategies determined by the mesh type (Section
+\ref{sec:wrappers}).  If desired, the user can guide the mesh
+improvement process by setting a few parameter values indicating
+preferred metrics and strategies from a list of provided
+functionalities.  Once these parameters are defined, Mesquite
+optimizes the mesh without further input from the user.  Additional
+interfaces are provided for those who desire advanced functionalities,
+user-defined metrics or objective functions, or more control over the
+optimization process(Section \ref{sec:lowlevelAPI}).
+
+In this section, we 
+assume that a \texttt{MeshSet} has already been instantiated 
+and a TSTT mesh handle given to it to populate the database:
+\begin{verbatim}
+  // Create a TSTT mesh
+TSTT::Mesh wing = TSTT::Mesh::_create();
+wing.load(``wing_file.xx'');
+
+  // Create a Mesquite MeshSet
+Mesquite::MeshSet mesh_set;
+mesh_set.add_mesh(wing);
+\end{verbatim}
+
+{\it Low-level API} \\
+
+If the user requires in-depth control over the mesh quality improvement
+process, the use of the Mesquite classes allow an extensive
+level of flexibility.   In particular, the user can specify the quality
+metric, objective function template, and optimization algorithm by
+instantiating particular instances of each.  For each, various options
+such as numerical or analytical gradient and Hessian evaluations or
+the patch size can be selected.  Furthermore, the user can fine tune
+the optimization algorithm performance by creating and setting the parameters 
+of the termination criterion for both inner and outer iterations.
+
+Once these core objects have been created and customized, the user
+creates an instruction queue and adds one or more quality improvers
+and quality assessors.  The mesh optimization process is initiated
+with the {\tt run\_instructions} method on the instruction queue
+class.
+\begin{verbatim}
+  // creates a mean ratio quality metric ...
+ShapeQM* m_ratio = MeanRatioQM::create_new();
+m_ratio->set_gradient_type(ANALYTIC_GRADIENT);
+m_ratio->set_hessian_type(ANALYTIC_HESSIAN);
+
+  // sets the objective function template
+LPtoPTemplate obj_func(m_ratio, 2);
+obj_func->set_gradient_type(ANALYTIC_GRADIENT);
+
+  // creates the optimization procedures
+FeasibleNewton f_newton(&obj_func);
+
+  //performs optimization globally
+f_newton->set_patch_type(GLOBAL_PATCH);
+
+  // creates a termination criterion and 
+  // add it to the optimization procedure
+  // outer loop: default behavior: 1 iteration
+  // inner loop: stop if gradient norm < eps
+TerminationCriterion tc_inner;
+tc_inner.add_criterion_type(GRAD_L2_NORM, e-4);
+f_newton->set_inner_terminate_crit(&tc_inner);
+
+  // creates a quality assessor
+QualityAssessor m_ratio_qa(&m_ratio,AVERAGE);
+
+  // creates an instruction queue
+InstructionQueue queue1;
+queue1.add_quality_assessor(&m_ratio_qa);
+queue1.set_master_quality_improver(&f_newton);
+queue1.add_quality_assessor(&m_ratio_qa);
+
+  // launches optimization on the mesh_set
+queue1.run_instructions(mesh_set);
+\end{verbatim} 
+
+{\it Simplified API} \\
+
+To improve meshes with a minimum of Mesquite function calls, we have 
+provided a set of wrapper classes that encapsulate the 
+most commonly used combination of quality metrics, improvement
+algorithms and stopping criterion. Essentially, the wrappers are
+inherited from the InstructionQueue, setting in their constructors
+which algorithms to call. Using these wrappers, only
+two lines of code are required to improve a \texttt{MeshSet}.
+
+For example, the code below will use the feasible Newton mean ratio
+wrapper, which essentially performs the same operations as the
+low-level code given in section \ref{sec:lowlevelAPI}, but without
+providing access to low-level features such as setting a specific
+termination criterion.  This wrapper first uses the mean ratio quality
+metric to assess and report the quality of the mesh elements. It then
+untangles the mesh if necessary and improves the mesh with the
+feasible Newton algorithm applied to the composition of the mean ratio
+quality metric with the $\ell_2^2$ objective function. Finally, the
+mesh quality is assessed and reported again.
+\begin{verbatim}
+  // Creates wrapper and improves mesh
+Mesquite::ShapeImprovementWrapper shape_improver;
+shape_improver.run_instructions(mesh_set);
+\end{verbatim}
+
 
 \subsection{Hints for Performance Profiling}
 Compiler options, aggregation.
 
+\section{Mesh Improvement Goals}
+
+{\it Why have different mesh improvement goals? What are they (shape,
+untangle, alignment, morph, etc.). Improvement goals currently
+supported (shape, untangle).  }
+
+\section{Methods - Theory and Algorithms}
+
+\subsection{Vertex Movement Schemes}
+
+{\it Why use an optimization-based approach. Posing mesh quality as an
+optimization problem (metrics, objective function templates and goals,
+L1, L2, Linf).  Optimization Algorithms (brief description, enough to
+have the API discussion make sense): variational, discrete, solvers
+(CG, active set), local vs. global, fitting Laplacian and other common
+smoothers into this framework.}
+
+\subsection{Topology Modifiers}
+
+{\it Swapping algorithms.}
+
 \section{Software Design}
+\label{sec:arch}
 
-\subsection{Overview}
-Why did we choose C++ (extensibility)? Achieving performance in the 
-numerical kernals.
+\begin{figure*}[htb]
+\begin{center}
+    \includegraphics{uml.ps}
+    \caption{Mesquite user interface UML class diagram.  Abstract
+             classes and virtual functions are in italic. Vertical
+             links with a triangle indicate inheritance. Plain links
+             indicate association. Protected functions are prefixed
+             with '\#', public ones with '+' .}
+    \label{fig:uml}
+\end{center}
+\end{figure*}
 
-\subsection{Mesquite Classes}
-QualityMetric, Objective Function Templates, Vertex Movers, Instruction Queue,
-Stopping Criterion, MeshSet and PatchData
+The Mesquite architecture, shown in Figure \ref{fig:uml}, closely
+follows the abstractions defined by the mathemtical framework 
+to describe the optimization problem.
+In particular, the core abstract classes needed to
+define a mesh quality improvement algorithm are {\tt QualityMetric},
+{\tt ObjectiveFunction} (which takes a {\tt QualityMetric} as
+input), and {\tt QualityImprover} (which takes an {\tt ObjectiveFunction}
+as input).
+
+In addition, a number of other classes have been created to support
+the needs of mesh quality improvement algorithms:
+\begin{itemize}
+\item {\tt QualityAssessor}: to provide an evaluation of mesh
+quality using standard statistical procedures,
+\item {\tt TerminationCriterion}: to customize the stopping criteria
+used with a mesh quality improvement algorithm,
+\item {\tt InstructionQueue}: to compose quality improvers and
+quality assessors together to form efficient mesh quality improvement
+and evaluation methods, and
+\item {\tt MeshSet} and {\tt PatchData}: to provide the mechanisms
+for managing the application mesh and geometry information and the
+mesh sub-domains used in optimization procedures.
+\end{itemize}
+
+The Mesquite architecture uses as much dynamic polymorphism in the
+form of inheritance and virtual functions as is possible without
+degrading performance.  This allows developers to add new
+functionality to Mesquite by inheriting from the appropriate abstract
+class and implementing its interface (i.e. its abstract virtual
+functions).  We note that the mesh entities, defined by class {\tt
+MsqMeshEntity}, are the only exception in our architecture.  Mesh
+entities, i.e. triangles, tetrahedrons, quadrangles and hexahedrons,
+are implemented in a single class, without the use of dynamic
+polymorphism, to eliminate the performance impact of runtime
+resolution.
+
+We describe the details of the core classes {\tt
+QualityMetric}, {\tt ObjectiveFunction}, {\tt QualityImprover}, {\tt
+TerminationCriterion}, {\tt QualityAssessor}, {\tt MeshSet}, {\tt
+PatchData}, and {\tt InstructionQueue}.
+In each case, we give details
+of the design and discuss the functionality currently implemented in
+Mesquite.
+
+\subsection{Quality Metrics} \label{sec:QM}
+
+In Mesquite, the \texttt{QualityMetric} class provides a measure of
+the quality of individual mesh entities.  Quality metrics can evaluate
+either element quality (for example, the mean ratio shape quality
+metric) or vertex quality (for example, the sum of the adjacent edge
+lengths squared can be used as a measure of vertex smoothness).  
+The primary functionality associated with the {\tt QualityMetric}
+class is the `evaluate' function which returns a single quality value
+for a given mesh entity.
+
+In addition to the quality metric function value, the {\tt
+QualityMetric} class also provides the gradient and Hessian
+information needed for many optimization algorithms.  Numerical
+approximations of the gradient and Hessian are automatically provided
+by the \texttt{QualityMetric} base class.  Users can optionally
+implement analytical expressions which are potentially more
+computationally efficient.  For example, in the case of the mean ratio
+quality metric implementation, the analytic calculation is
+approximately twice as fast as the numerical computation although this
+improved efficiency often comes at a higher implementation cost.  The
+cost of implementing the analytical gradients and Hessians can often
+be alleviated, however, by the use of automatic differentiation tools
+(for example, \cite{bischofadic}).
+
+Mesquite also allows the user to scale metric values or combine
+multiple metrics together to form a composite metric.  However, only
+metrics which are evaluated on the same type of mesh entity can be
+composed together.  That is, Mesquite does not allow element-based
+metrics and vertex-based metrics to be added or multiplied together
+because the result is not a meaningful measure of either element or
+vertex quality.
+
+\subsection{Objective Functions}
+\label{objective_section}
+
+While the \texttt{QualityMetric} class provides a way to evaluate the
+properties of individual mesh entities, the \texttt{ObjectiveFunction}
+class provides a way of combining those values into a single number
+for the domain of the optimization problem.  This domain can either be
+the entire mesh or a sub-mesh containing a subset of the free vertices.
+For example, one available objective function template $f$ is the $\ell_{2}^2$
+function which is the standard $\ell_{2}$ vector norm squared.  
+Given an element-based quality metric $q$ and a mesh sub-domain $E$, the mesh 
+quality objective function $\cal F$ would be the composition of the template
+objective function and the quality metric function 
+\begin{equation}
+{\cal F}({\bf x}) = f \circ q({\bf x}) = \sum_{i \in E} (q_i({\bf x}))^2 \;\; .
+\end{equation}
+
+Given a \texttt{QualityMetric} $q$ and a mesh sub-domain $E$, the
+\texttt{ObjectiveFunction} derived class computes the value of $\cal
+F$ and, for $f$ and $q$ satisfying the appropriate smoothness
+conditions, the mesh quality objective function's gradient and Hessian
+with respect to the vertex positions.  As with {\tt QualityMetric},
+Mesquite allows the gradient of $\cal F$ to be calculated either
+analytically or numerically. Computing the gradient of $\cal F$
+numerically is computationally expensive but requires only the quality
+metric values.  If the gradient is calculated analytically, the the
+first derivative of the template objective function $f'$ and the
+quality metric gradient $\nabla q$ are both required.\footnote{The 
+quality metric gradients $\nabla q$ can be provided either numerically 
+or analytically.}
+To obtain the gradient of ${\cal F}$, the chain rule is applied
+\begin{equation}
+\nabla {\cal F}({\bf x}) = \amalg_{i \in E} \left[ \nabla q_i({\bf x}) 
+ (f' \circ q({\bf x}) ) \right] \;\; ,
+\end{equation}
+where $ f' \circ q({\bf x})$ is a scalar and $\amalg_{i \in E}$ denotes the
+assembly over all the elements or vertices, for element-based or 
+vertex-based quality metrics respectively.
+Due to the significant advantages in computational
+cost, analytical gradients have been implemented for all of the
+continuously differentiable template objective functions in Mesquite.
+Furthermore, an analytical Hessian calculation has been implemented
+for the $\ell_p^p$ template objective function.  
+
+%\begin{table}[htb]
+%\begin{center}
+%\begin{tabular}{|c|c|c|}
+%\hline
+%Function & Gradient & Hessian\\
+%\hline
+%$\ell_P^P$     & Ana./Num.&Ana.\\
+%$\ell_P$       & Ana./Num.& Not Avail.\\
+%$\ell_{\infty}$& Not Avail.& Not Avail.\\
+%Comp. Add      & Ana./Num.& Not Avail.\\
+%Comp. Mult.    & Ana./Num.& Not Avail.\\
+%Scalar Add     & Ana./Num.& Not Avail.\\
+%Scalar Mult.   & Ana./Num.& Not Avail.\\
+%\hline
+%\end{tabular}
+%\label{current-objfunc}
+%\caption{List of the current objective functions available within
+%Mesquite.  With each function is a description of the types of
+%gradient and Hessian information available (Analytical and/or Numerical
+%or Not Available).}
+%\end{center}
+%\end{table}
+
+Mesquite has four composite objective functions.  These are
+composite add, composite multiply, composite scalar add, and
+composite scalar multiply.  This combination allows users
+to combine two objective functions by adding or multiplying
+their respective values or to adjust a single objective function
+by adding a scalar value or by multiplying by a scalar value.  
+The user can adjust the objective function to modify the
+optimization problem or to make the objective function value
+more easily interpreted.  Scaling objective function values
+is often useful when using a termination criterion based on the
+objective function values. Unlike the quality metrics, 
+two objective functions can be combined
+even if the underlying quality metrics are defined on different entity
+types.  That is, an objective function which operates on a vertex-based
+quality metric can be added to an objective function which operates
+on an element-based quality metric.  This structure allows the user
+to have the maximum flexibility in defining an objective function with
+which to measure the quality of a mesh.
+
+
+{\it Available Template Objective Functions.}  Mesquite currently has objective
+function templates for the standard $\ell_{P}$ (where $P$ is a
+positive integer) and $\ell_{\infty}$ vector norms.  A separate
+template is provided for $\ell_{P}^{P}$, a function which has some
+nice properties including a sparse Hessian matrix.  All of Mesquite's
+quality improvers are designed to minimize a given objective function.
+For objective functions that need to be maximized ({\it e.g.} an
+$\ell_{1}$ objective function using an inverted mean ratio metric),
+the function value is multiplied by negative one to obtain the
+equivalent minimization problem.
+
+\subsection{Quality Improvers}
+
+The mesh quality improvement algorithms are a crucial component of the
+Mesquite framework.  The two main types of improvement schemes
+designed into Mesquite are {\tt VertexMover} and {\tt
+TopologyModifier} for vertex relocation or topology modification,
+respectively.  These methods take as input an {\tt ObjectiveFunction}
+and often make extensive use of the gradient (and sometimes the
+Hessian) information provided therein.  When writing a new algorithm,
+the concrete \texttt{QualityImprover} always acts on an
+\texttt{ObjectiveFunction} pointer to retrieve the function value and
+gradient for a certain mesh and concrete \texttt{ObjectiveFunction} /
+\texttt{QualityMetric} combination.  Dynamic polymorphism ensures at
+runtime that the correct evaluations are performed.
+
+One important aspect of both vertex movers and topology modifiers is
+the ability to seamlessly perform an optimization of a whole mesh or
+to perform a sequence of optimizations on sub-patches of the mesh.
+This behavior is chosen by the user at the \texttt{QualityImprover}
+level with the \texttt{set\_patch\_type} function inherited from
+\texttt{QualityImprover}'s parent class, \texttt{PatchDataUser}. The
+implementation to gather the mesh information into the patch is
+carried out by \texttt{MeshSet} and \texttt{PatchData}, so that the
+optimization algorithm receives the appropriate patch to improve
+simply by inheriting from \texttt{QualityImprover}.  If needed, one can 
+override the \texttt{set\_patch\_type} function to accept only specific
+patch types.
+
+A new quality improver is defined by inheriting from either the
+\texttt{VertexMover} or the \texttt{TopologyModifier} abstract class.
+Both classes are intermediate abstract classes inheriting from the
+\texttt{QualityImprover} class (see Figure \ref{fig:uml}).  Their
+essential functionality is to implement the \texttt{loop\_over\_mesh}
+virtual function which shields the optimization algorithm developer
+from the need to distinguish between local or global patches.  The
+{\tt VertexMover} base class also checks the outer termination
+criterion to stop iterating over mesh subsets (see section
+\ref{termination_section}) and updates the application mesh after
+optimizing a patch.
+
+{\it Available Quality Improvement Algorithms.}  There are currently
+three major concrete optimization algorithms implemented as {\tt VertexMover}s
+in Mesquite: the conjugate gradient algorithm, the feasible Newton
+algorithm, and the active set algorithm. The optimization of mesh
+topology has been accounted for in the architecture, but no
+implementation is available yet (i.e. no concrete
+\texttt{TopologyModifier} class exists yet).
+
+
+\subsection{Termination Criterion}
+\label{termination_section}
+
+Mesquite's \texttt{TerminationCriterion} class contains functionality
+to customize the termination of the mesh quality improvement process.
+As mentioned previously, many quality improvement algorithms can
+perform mesh optimization on either the global mesh or on sub-meshes.
+In the latter case, the algorithm must be capable of determining when
+to terminate two processes: 1) the optimization on the sub-mesh and 2)
+the iteration over the sub-meshes.  Mesquite's
+\texttt{TerminationCriterion} class has been designed to handle either
+of these cases.  Therefore, in general, quality improvers use two
+\texttt{TerminationCriterion} objects: one, called the {\it inner
+criterion}, to terminate the optimization of the sub-domain and
+another, called the {\it outer criterion}, to terminate the iteration
+over the sub-meshes.  Typically, quality improvers that support both
+local and global optimizations always use two termination criterion. 
+The outer criteria is set to terminate the optimization process after
+one iteration in the global case.
+
+{\it Available Termination Criterion.}  A wide range of cost, quality, 
+and progress-centric termination
+criterion types have been studied. These criteria have two basic types - 
+absolute or relative - depending on whether or not the criterion is scale 
+dependent.  Fourteen of these have been
+implemented in \texttt{TerminationCriterion}.  Among the implemented
+types are criteria which terminate optimization procedures due to
+exceeding a set number of iterations, exceeding an allotted amount of
+time, or reaching a mesh with a sufficiently small objective function
+gradient.  Any combination of the available criteria can be set on a given
+\texttt{TerminationCriterion} object.  Compound criteria types consist
+of statements joined by 'OR', for which 
+the optimization process will be terminated when {\it any} of
+the criteria have been satisfied.  Currently we have found little use
+for compound criteria joined by 'AND', but this also could be implemented. 
+
+\subsection{Quality Assessors}
+
+Mesquite's \texttt{QualityAssessor} class encapsulates functionality to
+evaluate quality metric values for a given mesh, to accumulate
+statistical information about those values, and to report that data to
+the user.  In particular, a \texttt{QualityAssessor} object takes a
+{\tt QualityMetric} class as input to evaluate a given mesh and then
+reports information like the maximum, average, and standard deviation
+of those values.
+
+% \subsubsection{Culling Capabilities} \label{sec:culling}
+% Mesquite includes methods called {\it culling} schemes
+% which are intended to decrease the time it takes for the
+% quality improvers to reach an adequate mesh.  These schemes
+% the mporarily fix the positions of certain vertices which
+%satisfy a given culling criteria.  These fixed vertices
+%are said to be {\it culled} from the optimization procedure.
+%This reduces the number of variables in the optimization
+%problem, and therefore this modified problem can often
+%be solved in significantly less time than the original problem.  
+% LAF - there are no details here - it's not worth including as is
+
+\subsection{Mesh Data Classes} \label{sec:MeshData}
+
+There are two mesh data classes in Mesquite, \texttt{MeshSet} and
+\texttt{PatchData}, which have been designed to meet two different
+needs.  The {\tt MeshSet} class is a container that holds pointers, or
+handles, to the meshes provided by the application.  It also provides
+the mechanisms necessary to obtain the mesh information from the
+application through a well-defined, flexible API (see Section
+\ref{sec:meshset}).  To minimize the memory footprint of the Mesquite
+library, only detailed information for the optimization procedure
+subdomains is stored at any given time in the {\tt PatchData} class.
+One or more {\tt PatchData} objects can be originated from the {\tt
+MeshSet} object, and {\tt PatchData} obtains detailed mesh
+information, such as vertex coordinates and element connectivity,
+through the MeshSet accessor functionality.  The \texttt{PatchData}
+class makes Mesquite scalable in that prohibitive memory costs
+associated with making a copy of a large application mesh can be
+avoided by dividing the mesh into patches on which to perform the
+optimization sequentially.
+
+\subsubsection{MeshSet Interactions with Application Meshes}
+\label{sec:meshset}
+
+\subsubsection{PatchData Interactions with QualityImprovers}
+
+Quality improvers are written to relocate nodes or modify topology
+within a \texttt{PatchData}, without any need to know whether the
+\texttt{PatchData} corresponds to the whole mesh or a subset of
+it. The \texttt{PatchData} information is generated by the
+\texttt{MeshSet} class with the \texttt{get\_next\_patch} function ---
+the equivalent of an iterator over a series of patches covering the
+mesh.  The user can set Mesquite to use different types of
+\texttt{PatchData}, ranging from a patch of elements containing one
+particular vertex to a patch of vertices connected to a central vertex
+through edges or a unique patch that covers the whole MeshSet
+(recall that this could be the union of several meshes added by the
+application to \texttt{MeshSet}).
+
+\texttt{PatchData} and its associated classes
+(e.g. \texttt{PatchDataVerticesMemento}) provides much functionality
+to the optimization algorithms.  Memento patterns can remember the
+state of a \texttt{PatchData} geometry or topology at a given
+iteration and restore the \texttt{PatchData} to that state
+later. Simple functions can move the \texttt{PatchData} $n$ vertices
+in a direction $d \in \Bbb{R}^{3n}$ while constraining the boundary
+vertices to their geometrical surface.
+
+\subsection{The Instruction Queue} \label{sec:IQ}
+
+The \texttt{InstructionQueue} class allows a sequence of operations
+such as quality assessment and quality improvement to be performed on
+a \texttt{MeshSet} object. The {\tt
+InstructionQueue} provides a convenient framework to shield the user
+from the algorithm syntax and to ensure a consistent use of the
+Mesquite capabilities.  One or more quality improvers can be
+associated with an {\tt InstructionQueue}, but one must be designated
+as the {\it master} quality improver that determines the ultimate 
+improvement goal.  All progress made by Mesquite will be
+measured against the quality metrics set in the master quality
+improver.  To improve the effectiveness and efficiency of the mesh
+quality improvement process, several quality improvers can be used as
+'pre-conditioners' for the master quality improver.  For example, a
+user may precede an optimization-based master quality improver with a
+mesh untangler and/or Laplacian smoothing.
+
+Some predefined {\tt InstructionQueue} objects, called \emph
+{wrappers}, are available for high-level or novice users. Those
+typically consist of a quality assessor, followed by a mesh
+pre-conditioner such as an untangler, followed by a master quality
+improver, and finally another quality assessor.  Once an
+InstructionQueue has been defined, a single call to {\tt
+run\_instructions} will perform all the contained operations.  We note
+that once an {\tt InstructionQueue} has been defined, it can be used
+for several \texttt{MeshSet} objects.
 
 \subsection{Directory Structure}
+
+
 The base directory of the Mesquite project contains several
 sub-directories which are intended to help keep the project's
 files organized.  Some of the sub-directories themselves are
@@ -319,17 +989,130 @@ void load_and_improve_my_mesh(char* input_file, char* output_file)
   deinit_mesh(my_mesh);
 }
 \end{verbatim}
-\subsection{Testing Philosophy}
+
+\subsection{Code Testing Framework}
+
+Another integral part of the Mesquite framework is the code testing
+infrastructure.  Several testing methodologies have been included
+within Mesquite. Unit testing is extensively used to facilitate
+development and ensure low-level robustness. Functional testing is
+used to ensure that user case scenarios run smoothly.
+
+We use a broad definition for unit tests in Mesquite. Any test
+performed on a class without need for the entire Mesquite framework is
+considered a unit test. This encompasses simple assertions like
+checking the result of the multiplication of a matrix $A \in
+\Bbb{R}^{3 \times 3}$ by a vector $v \in \Bbb{R}^{3}$ to more complex
+assertions such as checking that a concrete \texttt{QualityImprover}
+correctly repositions a free vertex in a simple patch for a given
+objective function and quality metric.
+
+Mesquite uses a readily available testing framework called CppUnit
+\cite{cppunit} --- essentially the well known jUnit testing framework
+ported to C++.  Using the unit testing methodology allows the
+developers to write far more robust code.
+
+Applications using Mesquite may also find the testing framework useful
+when verifying their additions to the code. In particular,
+applications that prefer to implement Mesquite's mesh interface
+instead of using the TSTT mesh interface will want to
+check their implementation with the corresponding unit test collection
+available in Mesquite. In addition, analytic gradient and Hessian
+implementations can be checked against the numerical version provided
+by the {\tt QualityMetric} base class using readily available unit
+tests.
+
+In addition to unit tests, the Mesquite test suite also includes
+a range of functional tests.  While these tests also use the
+CPPUnit framework, they differ from unit tests in that 
+functional tests require the entire Mesquite framework.
+The functional tests are complete and often complex mesh
+optimization problems.  These tests are intended to ensure that
+the individual units of the Mesquite code work together correctly.
+Performing these tests not only helps
+validate the code but also allows developers to evaluate the
+effects of code modifications in terms of Mesquite's accuracy
+and efficiency on `real world' problems.
 
 \section{Advanced Use of Mesquite}
 
 \subsection{The Simplified Geometry Engine}
 
 \subsection{Creating a Quality Metric}
+
+{\it 
 What is a quality metric? Define full range, acceptable range, what is means 
 if the metric uses a map, nodal-invariance, well-posed metrics, averaging 
 methods, sample points. Give a list of the individual metrics we support. 
 Provide a key to the tables.
+}
+
+To implement a new quality metric, a user must inherit from the base
+{\tt QualityMetric} class and implement the `evaluate' function.
+{\tt QualityMetric} provides a wide range of
+functionality that allows the quality metrics to be defined in a
+flexible way and therefore gives the user the ability to modify the
+metric in a variety of ways.  For example, the condition number
+quality metric for a quadrilateral or hexahedral element is computed
+by evaluating the condition number at a number of sample points in the
+element.  Mesquite allows the user to select which set of sample
+points are used in this calculation ({\it e.g.}, the element's
+vertices) and how these values are combined to form a single metric
+value ({\it e.g.}, linear averaging).  Mesquite is currently being
+extended to allow certain quality metrics to be referenced to a
+non-isotropic element.
+
+{\it Currently Available Quality Metrics.}  Quality metrics within
+Mesquite are grouped by the type of mesh properties that they measure.
+Currently, there are four property groups: shape, smoothness, volume,
+and untangle.  Composite metrics which allow the user to combine
+multiple metrics or to scale metrics are given a separate group,
+composite.  Future Mesquite development will include the
+implementation of metrics falling under other group headings such as
+orthogonality, shear, and alignment.  Table \ref{current-metrics}
+lists the quality metrics currently available within Mesquite.  For
+detailed definitions of the metrics, see \cite{Kn01}.  We note that
+the implementation of the mean ratio metric has been extensively
+optimized, and analytical gradients and Hessians are available for
+that function.  Other metrics currently use numerical gradients and
+Hessians.
+
+The two composite metrics which are currently implemented
+allow users to either multiply two metrics' values
+together or raise a single metric's value to a given power.
+The latter allows for negative powers and can therefore be used
+to obtain the inverse of any Mesquite quality metric.  
+
+\begin{table*}[htb]
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+Metric & Group & Mesh Type & Feasibility Region &Entity Type\\
+\hline
+Area Smoothness &Smoothness & Any & No & Elements\\
+Aspect Ratio & Shape &Tri/Tet & No & Elements\\
+Composite Mult. & Composite &Any& Yes/No & Either\\
+Composite Power & Composite &Any& Yes/No & Either\\
+Cond. Num.& Shape & Any & Yes & Elements \\
+Corner Jacobian & Volume & Any & No & Elements \\
+Edge Length &Smoothness & Any & No & Vertices \\
+Edge Length Range & Smoothness & Any &No & Vertices\\
+Mean Ratio &Shape & Any & Yes &Elements\\
+Untangle Beta &Untangle &Any&Yes&Elements\\
+Vert. Cond. Num.& Shape & Any & Yes & Vertices\\
+\hline
+\end{tabular}
+\label{current-metrics}
+\caption{List of the current Mesquite quality metrics. The table also
+indicates the metric group, the mesh types for which the metric is
+valid, whether the metric is only valid within a feasible
+region, and the type of entity for which the metric is defined (elements
+or vertices).  Note that there may be a feasible region for composite
+metrics depending on whether the underlying metrics require such a
+constraint.}
+\end{center}
+\end{table*}
+
 
 \begin{table}[h]
 \begin{center}
@@ -455,42 +1238,99 @@ mover.
 \section{Caveats, Limitations, and Disclaimers}
 
 \section{User Support}
-Mailing lists, web site, examples, tutorials (pointer to slides?), 
+
+{\it Mailing lists, web site, examples, tutorials (pointer to slides?), 
 instructions on downloading the software (open source, preparing 
-derivative works), referencing Mesquite.
+derivative works), referencing Mesquite.}
 
 \section{The Mesquite Team}
-Development team, external contributors.
+
+The core Mesquite team consists of five people from Sandia
+National Laboratories (SNL) and Argonne National Laboratory (ANL):
+Micheal Brewer (SNL), Lori Freitag (Co-PI, SNL), Patrick Knupp (Co-PI, SNL), 
+Thomas Leurent (ANL), and Darryl Melander (SNL).  In addition,
+significant contributions to the software have been made by
+Todd Munson (ANL) who developed the Feasible Newton Solver.
 
 \section{The Mesquite Development Plan}
-Timeline for proposed additions to the software.
+
+{\it Timeline for proposed additions to the software.}
 
 \section{Acknowledgements}
-Funding sources (DOE SciDAC Program, Chuck Romine), Related activities 
-(TSTT, Cubit, Opt-MS), helpful folks (RPI for AOMD, TSTT for MDB, 
-LLNL for Overture tests, etc.
 
-\begin{thebibliography}{999}
-\bibitem{Hawaii}
-L. Freitag, P. Knupp, T. Leurent, and D. Melander, {\it MESQUITE Design: Issues in the Development of a Mesh Quality Improvement Toolkit}, p159-168, Proceedings of the 8th Intl. Conference on Numerical Grid Generation in Computational Field Simulations, Honolulu 2002.
+Mesquite is supported under the DOE SciDAC Terascale Simulation 
+Tools and Technology (TSTT) project \cite{tstt}.  
 
-\bibitem{unt}
-P. Knupp, {\it Hexahedral and Tetrahedral Mesh Untangling}, Engineering with Computers, Vol. 17, No. 3, pp261-268, 2001.
+{\it Funding sources (DOE SciDAC Program, Chuck Romine), Related activities
+(TSTT, Cubit, Opt-MS), helpful folks (RPI for AOMD, TSTT for MDB, LLNL
+for Overture tests, etc.}
 
-\bibitem{Nocedal}
-J. Nocedal and S. Wright, {\it Numerical Optimization}, Springer, New York, 1999.
 
-\end{thebibliography}
+\bibliographystyle{plain}
+\bibliography{mesquite}
+
 
 \newpage
 \appendix{\large {\bf Appendix A: The Conjugate Gradient Algorithm }} \newline
 \label{append_A}
+This algorithm requires only
+the objective function value and the objective function gradient. 
+In Mesquite this is usually done by applying the chain rule described in 
+section \ref{objective_section} to the
+analytical gradient of the objective function given the numerical or
+analytical gradients of the elements. The conjugate gradient algorithm
+has a linear convergence property for most problems. By using the
+Polak-Ribi\`ere scheme to select a search direction which is a
+combination of the gradient at the current iteration with the gradient
+from one or more previous iteration, it avoids the zigzagging behavior
+exhibited by the steepest descent algorithm when the equal cost
+surfaces of the objective function are elongated (e.g. in narrow
+valleys). In Mesquite this algorithm can be used with mesh patches of
+any size; thus it is appropriate for optimizing all node positions 
+simultaneously for any combination of $C^1$ objective functions and
+quality metrics (see \cite{FeasNewt} for more details). 
+
 \newpage
 \appendix{\large {\bf Appendix B: The Feasible Newton Algorithm }} \newline
 \label{append_B}
+Newton's method minimizes a quadratic
+approximation of a non-linear objective function. The algorithm requires
+the objective function value, its gradient, \emph{and} its Hessian information.
+Again, in Mesquite this
+is usually done by computing the analytical gradient and Hessian of
+the objective function given the numerical or analytical gradients and
+Hessians of the quality metrics.  Note that objective functions that
+lead to non-sparse Hessians entail a prohibitive memory cost in
+Mesquite.\footnote{$\ell_p$ for $p \geq 2$ is such a function. The
+number of variables in the objective function is the number of degrees
+of freedom of the mesh, which must be squared to obtain the number of
+entries in a dense Hessian.}  Newton's method is known to converge
+super-linearly near a non-singular local minimum.   
+Mesh-optimization problems that are performed within the neighborhood of
+the minimum are a perfect application for Newton's method. In
+Mesquite this algorithm can be used with mesh patches of any size,
+making it appropriate to optimize all vertex positions simultaneously
+for any $C^2$ objective function with a sparse Hessian.  In practice,
+users will often observe an order of magnitude improvement in
+computation time when using the feasible Newton algorithm instead of
+the conjugate gradient algorithm, making feasible Newton a worthwhile
+choice when applicable (see \cite{FeasNewt} for more details).
+
 \newpage
 \appendix{\large {\bf Appendix C: The Active Set Method }} \newline
 \label{append_C}
+The active set algorithm has been
+developed for non-continuously differentiable objective functions such
+as those computing the maximum value of a quality metric within a
+patch of elements. This method is based on a non-smooth steepest
+descent algorithm which efficiently computes a search direction and
+step size based on the gradients of the values contained in the active
+set.  Currently, this algorithm works on a patch of triangular or 
+tetrahedral elements that 
+contain a single free vertex.  Repeated
+sweeps over the free vertices in the mesh leads to overall mesh
+improvement (see \cite{fp:ijnme00} for more details).
+
 
 \end{document}
 
