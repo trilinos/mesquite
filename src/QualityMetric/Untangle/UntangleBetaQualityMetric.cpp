@@ -25,6 +25,7 @@ UntangleBetaQualityMetric::UntangleBetaQualityMetric(double bet)
 {
   avgMethod=QualityMetric::RMS;
   evalMode=QualityMetric::ELEMENT_VERTICES;
+  set_metric_type(QualityMetric::ELEMENT_BASED);
   feasible=0;
   set_name("Untangle Beta");
   set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
