@@ -38,39 +38,41 @@ namespace Mesquite
        // virtual destructor ensures use of polymorphism during destruction
      virtual ~QualityMetric()
         {};
-     
-       /*!EvaluationMode allows you to indicate whether we are evaluating
-         the metric based on vertices, element vertices, or element gauss
-         points.
-       */
-     enum EvaluationMode
+
+
+     /*! \enum MetricType
+       is a property of the metric. It should be set correctly in the constructor
+       of the concrete QualityMetric.
+       An example of a (mediocre) VERTEX_BASED metric is the smallest edge
+       connected to a vertex.
+       An example of a (mediocre) ELEMENT_BASED metric is the aspect ratio of an element.
+     */
+     enum MetricType
      {
-       VERTEX,
+       MT_UNDEFINED,
+       VERTEX_BASED,
+       ELEMENT_BASED
+     };
+
+     MetricType get_metric_type() { return mType; }
+
+     /*!\enum ElementEvaluationMode
+       is for metrics of type ELEMENT_BASED only.
+       It allows you to indicate whether we are evaluating
+       the metric based on element vertices, or element gauss points. */
+     enum ElementEvaluationMode
+     {
        ELEMENT_VERTICES,
        LINEAR_GAUSS_POINTS,
        QUADRATIC_GAUSS_POINTS,
        CUBIC_GAUSS_POINTS
      };
-       //!Set the evuation mode for the metric
-     void set_mode(EvaluationMode mode, MsqError &err)
-        {
-          switch(mode)
-          {
-            case(VERTEX):
-            case(ELEMENT_VERTICES):
-            case(LINEAR_GAUSS_POINTS):
-            case(QUADRATIC_GAUSS_POINTS):
-            case(CUBIC_GAUSS_POINTS):
-               evalMode=mode;
-               break;
-            default:
-               err.set_msg("Requested Mode (sample point locations)  Not Implemented");
-          }
-          return;
-        }
      
-       //!Returns the evaluation mode for the metric
-     inline EvaluationMode  get_evaluation_mode()
+     //!Sets the evaluation mode for the ELEMENT_BASED metrics.
+     void set_element_evaluation_mode(EvaluationMode mode, MsqError &err);
+     
+     //!Returns the evaluation mode for the metric
+     inline ElementEvaluationMode  get_element_evaluation_mode()
         { return evalMode; }
      
        /*!AveragingMethod allows you to set how the quality metric values
@@ -100,25 +102,7 @@ namespace Mesquite
          RMS:  the root-mean-squared average,
          SUM:  the sum of the values
        */
-     inline void set_averaging_method(AveragingMethod method, MsqError &err)
-        {
-          switch(method)
-          {
-            case(NONE):
-            case(GEOMETRIC):
-            case(HARMONIC):
-            case(LINEAR):
-            case(MAXIMUM):
-            case(MINIMUM):
-            case(RMS):
-            case(SUM):
-               avgMethod=method;
-               break;
-            default:
-               err.set_msg("Requested Averaging Method Not Implemented");
-          };
-          return;
-        }
+     inline void set_averaging_method(AveragingMethod method, MsqError &err);
      
        /*! Set feasible flag (i.e., does this metric have a feasible region
          that the mesh must maintain.)
@@ -168,13 +152,27 @@ namespace Mesquite
      void set_gradient_type(GRADIENT_TYPE grad)
         { gradType=grad; }
      
-       /*!Calls either compute_numerical_gradient or
-         compute_analytical_gradient for gradType equal
+       /*!For MetricType == VERTEX_BASED.
+         Calls either compute_vertex_numerical_gradient or
+         compute_vertex_analytical_gradient for gradType equal
          NUMERICAL_GRADIENT or ANALYTICAL_GRADIENT, respectively.
+
+         \return true if the element is valid, false otherwise. 
        */
-     void compute_gradient(PatchData &pd, MsqMeshEntity* element,
-                           MsqVertex &vertex, Vector3D &grad_vec,
-                           MsqError &err);
+     bool compute_vertex_gradient(PatchData &pd,
+                                 MsqVertex &vertex, Vector3D &grad_vec,
+                                 double &metric_value, MsqError &err);
+     
+       /*!For MetricType == ELEMENT_BASED.
+         Calls either compute_element_numerical_gradient() or
+         compute_element_analytical_gradient() for gradType equal
+         NUMERICAL_GRADIENT or ANALYTICAL_GRADIENT, respectively.
+
+         \return true if the element is valid, false otherwise. 
+       */
+     bool compute_element_gradient(PatchData &pd, MsqMeshEntity* element,
+                                   MsqVertex* vertices, Vector3D* grad_vec,
+                                   int num_vtx, double &metric_value, MsqError &err);
      
        /*! Set the value of QualityMetric's negateFlag.  Concrete
          QualityMetrics should set this flag to -1 if the QualityMetric
@@ -195,45 +193,126 @@ namespace Mesquite
          when appropriate.
        */
      QualityMetric() :
-         gradType(NUMERICAL_GRADIENT),
-         negateFlag(1)
-        {}
+       mType(MT_UNDEFINED),
+       gradType(NUMERICAL_GRADIENT),
+       negateFlag(1)
+     {}
+
+     //! This function should be used in the constructor of every concrete
+     //! quality metric. Errors will result if type is left to MT_UNDEFINED.
+     void set_metric_type(MetricType t) { mType = t; }
      
-       /*! average_metrics takes an array of length num_values and averages the
+     /*! average_metrics takes an array of length num_values and averages the
          contents using averaging method 'avgMethod'.
        */
      double average_metrics(double* metric_values, int num_values,
                             MsqError &err);
      
        /*!Non-virtual function which numerically computes the gradient
-         of a QualityMetric of a given element for a given free vertex.
-       */
-     void compute_numerical_gradient(PatchData &pd, MsqMeshEntity* element,
-                                     MsqVertex &vertex, Vector3D &grad_vec,
-                                     MsqError &err);
+         of a QualityMetric of a given free vertex. This is used by metric
+         which mType is VERTEX_BASED. 
+         \return true if the element is valid, false otherwise. */
+     bool compute_vertex_numerical_gradient(PatchData &pd,
+                                            MsqVertex &vertex, Vector3D &grad_vec,
+                                            double &metric_value, MsqError &err);
      
-       /*Virtual function that computes the gradient of the QualityMetric
+     
+       /*!Non-virtual function which numerically computes the gradient
+         of a QualityMetric of a given element for a given set of free vertices
+         on that element.
+         This is used by metric which mType is ELEMENT_BASED.
+         \return true if the element is valid, false otherwise. */
+     bool compute_element_numerical_gradient(PatchData &pd, MsqMeshEntity* element,
+                                             MsqVertex* vertices, Vector3D* grad_vec,
+                                             int num_vtx, double &metric_value,
+                                             MsqError &err);
+
+     /*!Virtual function that computes the gradient of the QualityMetric
          analytically.  The base class implementation of this function
          simply prints a warning and calls compute_numerical_gradient
-         to calculate the gradient. 
-       */
-     virtual void compute_analytical_gradient(PatchData &pd,
-                                              MsqMeshEntity* element,
-                                              MsqVertex &vertex,
-                                              Vector3D &grad_vec,
-                                              MsqError &err);
+         to calculate the gradient. This is used by metric
+         which mType is VERTEX_BASED.
+         \return true if the element is valid, false otherwise. */
+     virtual bool compute_vertex_analytical_gradient(PatchData &pd,
+                                                     MsqVertex &vertex,
+                                                     Vector3D &grad_vec,
+                                                     double &metric_value,
+                                                     MsqError &err);
      
+     
+     /*!Virtual function that computes the gradient of the QualityMetric
+         analytically.  The base class implementation of this function
+         simply prints a warning and calls compute_numerical_gradient
+         to calculate the gradient. This is used by metric
+         which mType is VERTEX_BASED.
+         \return true if the element is valid, false otherwise. */
+     virtual bool compute_element_analytical_gradient(PatchData &pd,
+                                                      MsqMeshEntity* element,
+                                             MsqVertex* vertices, Vector3D* grad_vec,
+                                             int num_vtx, double &metric_value,
+                                             MsqError &err);
+
      friend class MsqMeshEntity;
 
      // TODO : pass this private and write protected access fucntions.
      AveragingMethod avgMethod;
-     EvaluationMode evalMode;
+     MetricType mType;
+     ElementEvaluationMode evalMode;
      int feasible;
      std::string metricName;
   private:
+     MetricType mType;
      GRADIENT_TYPE gradType;
      int negateFlag;
    };
+
+  
+#undef __FUNC__
+#define __FUNC__ "QualityMetric::set_element_evaluation_mode"
+  inline void QualityMetric::set_element_evaluation_mode(EvaluationMode mode, MsqError &err)
+  {
+    if (mType == VERTEX_BASED) {
+      err.set_msg("function must only be used for ELEMENT_BASED metrics.");
+      return;
+    }
+    
+    switch(mode)
+      {
+      case(ELEMENT_VERTICES):
+      case(LINEAR_GAUSS_POINTS):
+      case(QUADRATIC_GAUSS_POINTS):
+      case(CUBIC_GAUSS_POINTS):
+        evalMode=mode;
+        break;
+      default:
+        err.set_msg("Requested Mode (sample point locations)  Not Implemented");
+      }
+    return;
+  }
+
+  
+#undef __FUNC__
+#define __FUNC__ "QualityMetric::set_averaging_method"
+  inline void set_averaging_method(AveragingMethod method, MsqError &err)
+  {
+    switch(method)
+      {
+      case(NONE):
+      case(GEOMETRIC):
+      case(HARMONIC):
+      case(LINEAR):
+      case(MAXIMUM):
+      case(MINIMUM):
+      case(RMS):
+      case(SUM):
+        avgMethod=method;
+        break;
+      default:
+        err.set_msg("Requested Averaging Method Not Implemented");
+      };
+    return;
+  }
+  
 
 #undef __FUNC__
 #define __FUNC__ "QualityMetric::compute_gradient"
