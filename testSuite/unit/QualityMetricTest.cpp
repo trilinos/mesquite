@@ -8,7 +8,7 @@
 //    E-MAIL: mbrewer@sandia.gov
 //
 // ORIG-DATE: 03-Dec-02
-//  LAST-MOD: 17-Dec-02 at 15:40:50 by Thomas Leurent
+//  LAST-MOD: 29-Jan-03 at 11:21:23 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -57,7 +57,9 @@ private:
   CPPUNIT_TEST (test_edge_length_metric);  
     //Test averaging methods
   CPPUNIT_TEST (test_averaging_method);
-  CPPUNIT_TEST (test_mean_ratio_gradient);
+  CPPUNIT_TEST (test_mean_ratio_hex_gradient);
+  CPPUNIT_TEST (test_mean_ratio_tet_gradient);
+  CPPUNIT_TEST (test_mean_ratio_hessian);
     //Test ASM (area smoothness quality metric)
   CPPUNIT_TEST (test_asm);  
   
@@ -440,15 +442,15 @@ public:
      CPPUNIT_ASSERT(fabs(val-4.0)<qualTol);
    }
 
-  void test_mean_ratio_gradient()
+  void test_mean_ratio_gradient(PatchData &pd)
   {
     MsqError err;
     Vector3D* grad_num = new Vector3D[2];
     Vector3D* grad_ana = new Vector3D[2];
     double metric_value;
 
-    MsqMeshEntity* elems = hexPatch.get_element_array(err);MSQ_CHKERR(err);
-    MsqVertex* vertices =  hexPatch.get_vertex_array(err);MSQ_CHKERR(err);
+    MsqMeshEntity* elems = pd.get_element_array(err);MSQ_CHKERR(err);
+    MsqVertex* vertices =  pd.get_vertex_array(err);MSQ_CHKERR(err);
 
     std::vector<size_t> bad_elem_vertex_indices;
     elems[1].get_vertex_indices(bad_elem_vertex_indices);
@@ -461,16 +463,18 @@ public:
     mean_ratio->set_averaging_method(QualityMetric::SUM, err);
 
     mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
-    mean_ratio->compute_element_gradient (hexPatch, &elems[1], two_vtces,
+    mean_ratio->compute_element_gradient (pd, &elems[1], two_vtces,
                                           grad_num, 2, metric_value, err); MSQ_CHKERR(err);
+
 //     std::cout << "NUMERICAL GRADIENT\n";
 //     for (int i=0; i<2; ++i)
 //        for (int j=0; j<3; ++j)
 //          std::cout << grad_num[i][j] << std::endl;
 
     mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
-    mean_ratio->compute_element_gradient (hexPatch, &elems[1], two_vtces,
+    mean_ratio->compute_element_gradient (pd, &elems[1], two_vtces,
                                           grad_ana, 2, metric_value, err); MSQ_CHKERR(err);
+    
 //     std::cout << "ANALYTICAL GRADIENT\n";
 //     for (int i=0; i<2; ++i)
 //       for (int j=0; j<3; ++j)
@@ -482,6 +486,74 @@ public:
     
     delete grad_num;
     delete grad_ana;
+  }
+
+  void test_mean_ratio_hex_gradient()
+  {
+    test_mean_ratio_gradient(hexPatch);
+  }
+       
+  void test_mean_ratio_tet_gradient()
+  {
+    test_mean_ratio_gradient(tetPatch);
+  }
+       
+  void test_mean_ratio_hessian()
+  {
+    MsqError err;
+    Vector3D* grad = new Vector3D[4];
+    Matrix3D* hessian_num = new Matrix3D[10];
+    Matrix3D* hessian_ana = new Matrix3D[10];
+    double metric_value;
+
+    MsqMeshEntity* elems = tetPatch.get_element_array(err);MSQ_CHKERR(err);
+    MsqVertex* vertices =  tetPatch.get_vertex_array(err);MSQ_CHKERR(err);
+
+    std::vector<size_t> bad_elem_vertex_indices;
+    elems[1].get_vertex_indices(bad_elem_vertex_indices);
+    MsqVertex* all_vtces[4];
+    all_vtces[0] = &vertices[bad_elem_vertex_indices[0]];
+    all_vtces[1] = &vertices[bad_elem_vertex_indices[1]];
+    all_vtces[2] = &vertices[bad_elem_vertex_indices[2]];
+    all_vtces[3] = &vertices[bad_elem_vertex_indices[3]];
+    
+    // creates a mean ratio quality metric ...
+    ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
+//    mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
+    mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+    mean_ratio->set_averaging_method(QualityMetric::SUM, err); MSQ_CHKERR(err);
+
+    mean_ratio->set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
+    mean_ratio->compute_element_hessian(tetPatch, &elems[1], all_vtces,
+                                        grad, hessian_num, 4, metric_value,
+                                        err); MSQ_CHKERR(err);
+
+//     std::cout << "GRADIENT\n";
+//     for (int i=0; i<4; ++i)
+//       for (int j=0; j<3; ++j)
+//         std::cout << grad[i][j] << std::endl;
+
+//     std::cout << "NUMERICAL HESSIAN\n";
+//     for (int i=0; i<10; ++i)
+//          std::cout << hessian_num[i] << std::endl;
+
+    mean_ratio->set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
+    mean_ratio->compute_element_hessian(tetPatch, &elems[1], all_vtces,
+                                        grad, hessian_ana, 4, metric_value,
+                                        err); MSQ_CHKERR(err);
+
+//     std::cout << "ANALYTICAL HESSIAN\n";
+//     for (int i=0; i<10; ++i)
+//         std::cout << hessian_ana[i] << std::endl;
+
+    for (int m=0; m<10; ++m)
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+          CPPUNIT_ASSERT_DOUBLES_EQUAL(hessian_num[m][i][j], hessian_ana[m][i][j], 0.001);
+    
+    delete[] grad;
+    delete[] hessian_num;
+    delete[] hessian_ana;
   }
        
    
