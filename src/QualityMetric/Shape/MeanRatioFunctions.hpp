@@ -1643,8 +1643,7 @@ inline bool h_fcn_3e(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
 inline bool g_fcn_3e_v3(double &obj, Vector3D &g_obj, const Vector3D x[4],
 			const double a, const double b, const double c)
 {
-  double matr[9], f;
-  double adj_m[9], g;
+  double matr[9], f, g;
   double loc1, loc2, loc3;
 
   /* Calculate M = A*inv(W). */
@@ -1733,10 +1732,9 @@ inline bool h_fcn_3e_v3(double &obj, Vector3D &g_obj, Matrix3D &h_obj,
 			const Vector3D x[4],
 			const double a, const double b, const double c)
 {
-  double matr[9], f;
-  double adj_m[9], g;
-  double dg[9], loc0, loc1, loc2, loc3, loc4;
-  double A[12], J_A[6], J_B[9], J_C[9], cross;
+  double matr[9], f, g;
+  double dg[9], loc0, loc1, loc3, loc4;
+  double cross;
 
   /* Calculate M = A*inv(W). */
   f       = x[1][0] + x[0][0];

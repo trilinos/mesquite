@@ -84,7 +84,7 @@ void LVQDTargetCalculator::compute_target_matrices(PatchData &pd, MsqError &err)
   
   for (size_t i=0; i<num_elements; ++i) {
     MsqTag* tag = elems[i].get_tag();
-    int nve = elems[i].vertex_count();
+    unsigned nve = elems[i].vertex_count();
     if (nve != elems_ref[i].vertex_count())
     {
       MSQ_SETERR(err)(MsqError::INVALID_STATE);
@@ -98,7 +98,7 @@ void LVQDTargetCalculator::compute_target_matrices(PatchData &pd, MsqError &err)
     compute_guide_matrices(guideQ, ref_pd, i, Q_guides, nve, err); MSQ_ERRRTN(err);
     compute_guide_matrices(guideDelta, ref_pd, i, D_guides, nve, err); MSQ_ERRRTN(err);
 
-    for (int c=0; c<nve; ++c) {
+    for (unsigned c=0; c<nve; ++c) {
       if (lambdaBase == REGULAR) Lambda = compute_Lambda(L_guides[c], err); MSQ_ERRRTN(err);
       V = compute_V_3D(V_guides[c], err); MSQ_ERRRTN(err);
       Q = compute_Q_3D(Q_guides[c], err); MSQ_ERRRTN(err);
