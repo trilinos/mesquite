@@ -144,20 +144,20 @@ public:
        //StoppingCriterion sc_qa(&stop_qa,-100,MSQ_MIN);
        //pass1->set_stopping_criterion(&sc_qa);
      TerminationCriterion sc_of;
-     sc_of.add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,10,err);
+     sc_of.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,10,err);
      pass1->set_outer_termination_criterion(&sc_of);
      
        //**********Set stopping criterion  5 iterates ****************
        //StoppingCriterion sc5(StoppingCriterion::NUMBER_OF_PASSES,5);
        //pass2->set_stopping_criterion(&sc5);
      TerminationCriterion sc5;
-     sc5.add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,5,err);
+     sc5.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,5,err);
      pass2->set_inner_termination_criterion(&sc5);
        // sets a culling method on the first QualityImprover
      pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
      pass2->add_culling_method(PatchData::NO_BOUNDARY_VTX);
        //TerminationCriterion sc_inner;
-       //sc_inner.add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,5,err);
+       //sc_inner.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,5,err);
        //pass2->set_inner_termination_criterion(&sc_inner);
        //pass2->set_maximum_iteration(5);
   
@@ -257,21 +257,21 @@ public:
        //StoppingCriterion sc_qa(&stop_qa,-100,MSQ_MIN);
        //pass1->set_stopping_criterion(&sc_qa);
        TerminationCriterion sc_of;
-       sc_of.add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,10,err);
+       sc_of.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,10,err);
        pass1->set_outer_termination_criterion(&sc_of);
        
          //**********Set stopping criterion  5 iterates ****************
          //StoppingCriterion sc5(StoppingCriterion::NUMBER_OF_PASSES,5);
          //pass2->set_stopping_criterion(&sc5);
        TerminationCriterion sc5;
-       sc5.add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,5,err);
+       sc5.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,5,err);
        pass2->set_inner_termination_criterion(&sc5);
          // sets a culling method on the first QualityImprover
        pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
        pass2->add_culling_method(PatchData::NO_BOUNDARY_VTX);
          //pass2->set_maximum_iteration(5);
          //TerminationCriterion sc_inner;
-         //sc_inner.add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,5,err);
+         //sc_inner.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,5,err);
          //pass2->set_inner_termination_criterion(&sc_inner);
        queue1.set_master_quality_improver(pass1, err); MSQ_CHKERR(err);
        queue2.set_master_quality_improver(pass2, err); MSQ_CHKERR(err);
@@ -360,14 +360,14 @@ public:
        
          //**********Set stopping criterion  5 iterates ****************
        TerminationCriterion sc5;
-       sc5.add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,5,err);
+       sc5.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,5,err);
        pass1->set_inner_termination_criterion(&sc5);
          //StoppingCriterion sc5(StoppingCriterion::NUMBER_OF_PASSES,5);
          //pass1->set_stopping_criterion(&sc5);
          // sets a culling method on the first QualityImprover
        pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
        TerminationCriterion sc_inner;
-       sc_inner.add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,5,err);
+       sc_inner.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,5,err);
        pass1->set_inner_termination_criterion(&sc_inner);
          //pass1->set_maximum_iteration(5);
        

@@ -133,7 +133,7 @@ public:
        //StoppingCriterion sc5(StoppingCriterion::NUMBER_OF_PASSES,5);
        //pass1->set_stopping_criterion(&sc5);
      TerminationCriterion sc5;
-     sc5.add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,
+     sc5.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,
                                      5,err);
      pass1->set_inner_termination_criterion(&sc5);
        // sets a culling method on the first QualityImprover
@@ -204,8 +204,7 @@ public:
          //StoppingCriterion sc10(StoppingCriterion::NUMBER_OF_PASSES,10);
          //lapl->set_stopping_criterion(&sc10);
        TerminationCriterion sc10;
-       sc10.add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,
-                                        10,err);
+       sc10.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,10,err);
        lapl->set_outer_termination_criterion(&sc10);
          // sets a culling method on the laplacian quality improver
        lapl->add_culling_method(PatchData::NO_BOUNDARY_VTX);  
