@@ -8,7 +8,7 @@
 //    E-MAIL: mbrewer@sandia.gov
 //
 // ORIG-DATE: 03-Dec-02
-//  LAST-MOD: 20-May-03 at 09:18:01 by Michael Brewer
+//  LAST-MOD: 21-May-03 at 14:55:13 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -614,6 +614,7 @@ public:
     Vector3D* grad_num = new Vector3D[2];
     Vector3D* grad_ana = new Vector3D[2];
     double metric_value;
+    bool valid;
 
     MsqMeshEntity* elems = pd.get_element_array(err);MSQ_CHKERR(err);
     MsqVertex* vertices =  pd.get_vertex_array(err);MSQ_CHKERR(err);
@@ -629,18 +630,19 @@ public:
     mean_ratio->set_averaging_method(QualityMetric::SUM, err);
 
     mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
-    mean_ratio->compute_element_gradient (pd, &elems[1], two_vtces,
+    valid = mean_ratio->compute_element_gradient (pd, &elems[1], two_vtces,
                                           grad_num, 2, metric_value, err); MSQ_CHKERR(err);
-
+    CPPUNIT_ASSERT(valid);
+    
 //     std::cout << "NUMERICAL GRADIENT\n";
 //     for (int i=0; i<2; ++i)
 //        for (int j=0; j<3; ++j)
 //          std::cout << grad_num[i][j] << std::endl;
 
     mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
-    mean_ratio->compute_element_gradient (pd, &elems[1], two_vtces,
+    valid = mean_ratio->compute_element_gradient (pd, &elems[1], two_vtces,
                                           grad_ana, 2, metric_value, err); MSQ_CHKERR(err);
-    
+    CPPUNIT_ASSERT(valid);
 //     std::cout << "ANALYTICAL GRADIENT\n";
 //     for (int i=0; i<2; ++i)
 //       for (int j=0; j<3; ++j)
@@ -656,12 +658,14 @@ public:
     two_vtces[1] = &vertices[bad_elem_vertex_indices[0]];
     
     mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
-    mean_ratio->compute_element_gradient (pd, &elems[1], two_vtces,
+    valid = mean_ratio->compute_element_gradient (pd, &elems[1], two_vtces,
                                           grad_num, 2, metric_value, err); MSQ_CHKERR(err);
+    CPPUNIT_ASSERT(valid);
 
     mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
-    mean_ratio->compute_element_gradient (pd, &elems[1], two_vtces,
+    valid = mean_ratio->compute_element_gradient (pd, &elems[1], two_vtces,
                                           grad_ana, 2, metric_value, err); MSQ_CHKERR(err);
+    CPPUNIT_ASSERT(valid);
 
     for (int i=0; i<2; ++i)
       for (int j=0; j<3; ++j)
