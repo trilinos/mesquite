@@ -6,6 +6,8 @@
 #include "cppunit/TestFailure.h"
 #include "cppunit/Exception.h"
 
+#include <algorithm>
+
 const unsigned char Mesquite::TestRunner::INDENT_SIZE = 2;
 static bool last_test_succeeded = true;
 
