@@ -6810,7 +6810,7 @@ else
   ac_cv_prog_BABEL="$BABEL" # Let the user override the test.
 else
 as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in
+for as_dir 
 do
   IFS=$as_save_IFS
   test -z "$as_dir" && as_dir=.
