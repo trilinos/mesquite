@@ -41,22 +41,26 @@ namespace Mesquite
 
     
   };
- //BEGIN INLINE FUNCITONS
+
+
+  //BEGIN INLINE FUNCITONS
+#undef __FUNC__
+#define __FUNC__ "ShapeQualityMetric::condition_number_2d"
    inline bool ShapeQualityMetric::condition_number_2d(Vector3D temp_vec[],
                                                        size_t v_ind,
                                                        PatchData &pd,
                                                        double &fval,
                                                        MsqError &err)
-   {
-       
+   {       
      Vector3D cross_vec=(temp_vec[0]*temp_vec[1]);
-     //NOTE:: the equal below is ONLY to get the code to work
-         //when no normal is available.
-     Vector3D surf_norm=cross_vec;
-     pd.get_surface_normal(v_ind,surf_norm,err);MSQ_CHKERR(err);
+     
+     if ( pd.domain_set() ) {
+       Vector3D surf_norm;
+       pd.get_surface_normal(v_ind,surf_norm,err);MSQ_CHKERR(err);
        //if invalid 
-     if(surf_norm%cross_vec < 0.0){
-       return false;
+       if(surf_norm%cross_vec < 0.0){
+         return false;
+       }
      }
      
      double temp_val=cross_vec.length()*2.0;
@@ -69,7 +73,10 @@ namespace Mesquite
      return true;
    }
 
-   inline bool ShapeQualityMetric::condition_number_3d(Vector3D temp_vec[],
+
+#undef __FUNC__
+#define __FUNC__ "ShapeQualityMetric::condition_number_3d"
+  inline bool ShapeQualityMetric::condition_number_3d(Vector3D temp_vec[],
                                                        double &fval,
                                                        MsqError &/*err*/)
    {   

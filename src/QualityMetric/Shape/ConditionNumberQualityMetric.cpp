@@ -27,6 +27,9 @@ ConditionNumberQualityMetric::ConditionNumberQualityMetric()
   set_name("Condition Number");
 }
 
+
+#undef __FUNC__
+#define __FUNC__ "ConditionNumberQualityMetric::evaluate_element"
 bool ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
                                                     MsqMeshEntity *element,
                                                     double &fval,
