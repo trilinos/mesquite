@@ -181,8 +181,7 @@ void TerminationCriterion::set_culling_type(TCType tc_type, double eps,
   PatchData &pd is only in the arguement list so that we can
   reset the memento (???).  So, it should be the PatchData
   object that is going to be used in the optimization.
-  TODO:  When culling, we  need to reset the soft_fixed flag to
-  free either here or in cleanup();
+  
  */
 void TerminationCriterion::initialize(MeshSet &/*ms*/, PatchData &pd,
                                       MsqError &err)
@@ -669,8 +668,7 @@ bool TerminationCriterion::cull_vertices(PatchData &pd,
 /*!
   Currently this only deletes the memento of the vertex positions and the
   mGrad vector if neccessary.
-  TODO:  When culling, we  need to reset the soft_fixed flag to
-  free either here or in initialize();
+  When culling, we remove the soft fixed flags from all of the vertices.
  */
 void TerminationCriterion::cleanup(MeshSet &ms, MsqError &err)
 {
