@@ -48,7 +48,7 @@ describe main.cpp here
 #include "LInfTemplate.hpp"
 #include "SteepestDescent.hpp"
 #include "LaplacianSmoother.hpp"
-#include "LaplacianQualityMetric.hpp"
+#include "EdgeLengthQualityMetric.hpp"
 using namespace Mesquite;
 
 
@@ -76,7 +76,9 @@ int main()
 
   // creates a mean ratio quality metric ...
   ShapeQualityMetric* shape_metric = ConditionNumberQualityMetric::create_new();
-  SmoothnessQualityMetric* lapl_met = LaplacianQualityMetric::create_new();
+  SmoothnessQualityMetric* lapl_met = EdgeLengthQualityMetric::create_new();
+  lapl_met->set_averaging_method(QualityMetric::RMS,err);
+  
     // creates the laplacian smoother  procedures
   LaplacianSmoother* lapl1 = new LaplacianSmoother(err);
  QualityAssessor stop_qa=QualityAssessor(shape_metric,QualityAssessor::MAXIMUM);
