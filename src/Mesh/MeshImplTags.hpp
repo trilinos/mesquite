@@ -154,8 +154,6 @@ class MeshImplTags {
                         const size_t* elem_indices,
                         void* tag_data,
                         MsqError& err ) const;
-
-  friend class TagIterator;  
   
   /**\class TagIterator
    *
@@ -185,6 +183,8 @@ class MeshImplTags {
   bool tag_has_element_data( size_t index, MsqError& err ) ;
   
   private:
+
+  friend class MeshImplTags::TagIterator;  
   
     msq_std::vector<TagData*> tagList;
 }; // class MeshImplTags
