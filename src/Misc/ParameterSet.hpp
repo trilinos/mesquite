@@ -35,6 +35,7 @@
 #endif
 
 #include "Mesquite.hpp"
+#include "MesquiteError.hpp"
 
 namespace Mesquite
 {
@@ -55,26 +56,27 @@ namespace Mesquite
     void remove_parameter(const char* name, MsqError &err);
     
   private:
-    union ParameterValue
-    {
-      int intVal;
-      double dblVal;
-      void* ptrVal;
-      char* strVal;
-      bool boolVal;
-    };
-
-    enum ParameterType
-    {
-      MSQ_INT,
-      MSQ_DBL,
-      MSQ_PTR,
-      MSQ_STRING,
-      MSQ_BOOL
-    };
     
     struct ParameterRecord
     {
+      enum ParameterType
+      {
+        MSQ_INT,
+        MSQ_DBL,
+        MSQ_PTR,
+        MSQ_STRING,
+        MSQ_BOOL
+      };
+
+      union ParameterValue
+      {
+        int intVal;
+        double dblVal;
+        void* ptrVal;
+        char* strVal;
+        bool boolVal;
+      };
+
       char* name;
       ParameterType type;
       ParameterValue value;

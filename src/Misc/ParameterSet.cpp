@@ -29,6 +29,32 @@
 
 using namespace Mesquite;
 
+enum ParameterType
+{
+  MSQ_INT,
+  MSQ_DBL,
+  MSQ_PTR,
+  MSQ_STRING,
+  MSQ_BOOL
+};
+
+union ParameterValue
+{
+  int intVal;
+  double dblVal;
+  void* ptrVal;
+  char* strVal;
+  bool boolVal;
+};
+
+struct ParameterRecord
+{
+  char* name;
+  ParameterType type;
+  ParameterValue value;
+};
+
+
 #undef __FUNC__
 #define __FUNC__ "ParameterSet::ParameterSet" 
 ParameterSet::ParameterSet() 
