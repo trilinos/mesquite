@@ -86,7 +86,7 @@ int main()
  
    //**************Set stopping criterion****************
  TerminationCriterion sc2;
- sc2.add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,10,err);
+ sc2.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,10,err);
  lapl1->set_outer_termination_criterion(&sc2);
  // sets a culling method on the first QualityImprover
  lapl1->add_culling_method(PatchData::NO_BOUNDARY_VTX);

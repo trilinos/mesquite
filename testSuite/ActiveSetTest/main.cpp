@@ -98,7 +98,7 @@ int main()
     //StoppingCriterion sc2(StoppingCriterion::NUMBER_OF_PASSES,1);
     //maxmin_method->set_stopping_criterion(&sc2);
   TerminationCriterion tc2;
-  tc2.add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,1,err);
+  tc2.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
   maxmin_method->set_outer_termination_criterion(&tc2);
   // Set up the quality assessor
   //  printf("Setting up the quality assessor\n");

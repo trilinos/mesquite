@@ -294,7 +294,7 @@ void run_mesquite(TSTT::Mesh_Handle &mh, TSTT::MeshError *error)
     // Create the steepest descent  optimization procedures
   Mesquite::SteepestDescent* pass1 = new Mesquite::SteepestDescent( obj_func );
   Mesquite::TerminationCriterion tc2;
-  tc2.add_criterion_type_with_int(Mesquite::TerminationCriterion::ITERATION_BOUND,10,err);
+  tc2.add_criterion_type_with_int(Mesquite::TerminationCriterion::NUMBER_OF_ITERATES,10,err);
     //Mesquite::StoppingCriterion sc2(Mesquite::StoppingCriterion::NUMBER_OF_PASSES, 10);
   pass1->set_outer_termination_criterion(&tc2);
   pass1->add_culling_method(Mesquite::PatchData::NO_BOUNDARY_VTX);
