@@ -109,6 +109,12 @@ namespace Mesquite
     void get_vertex_element_indices(size_t vertex_index,
                                     std::vector<size_t> &elem_indices,
                                     MsqError &err);
+
+      /*!Get the indices of vertices attached to vertex (given by vertex_index)
+       */
+    void get_adjacent_vertex_indices(size_t vertex_index,
+                                     std::vector<size_t> &vert_indices,
+                                     MsqError &err);
     
       /*! Create the arrays that store which elements are attached
           to each node */

@@ -76,7 +76,12 @@ namespace Mesquite
     void get_sample_points(QualityMetric::ElementEvaluationMode mode,
                            std::vector<Vector3D> &coords,
                            MsqError &err);
-    
+
+      //!Fills a std::vector<size_t> with vertices connected to the given
+      //!vertex through the edges of this MsqMeshEntity.
+    void get_connected_vertices(size_t vertex_index,
+                                std::vector<size_t> &vert_indices,
+                                MsqError &err);
   private:
     void get_linear_quad_jac(Vector3D *sp, Vector3D &coord0, Vector3D &coord1,
                              Vector3D &coord2, Vector3D &coord3,

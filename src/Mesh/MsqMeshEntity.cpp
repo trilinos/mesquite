@@ -169,8 +169,7 @@ void Mesquite::MsqMeshEntity::compute_weighted_jacobian(PatchData &pd,
 */
 void Mesquite::MsqMeshEntity::get_sample_points(QualityMetric::ElementEvaluationMode mode,
                                       std::vector<Vector3D> &coords,
-                                      MsqError &err)
-{
+                                      MsqError &err){
   switch (mType)
   {
     case TRIANGLE:
@@ -287,6 +286,87 @@ void Mesquite::MsqMeshEntity::get_sample_points(QualityMetric::ElementEvaluation
         //return error saying sample points for mode not implem.
       err.set_msg("Requested Sample Point Mode not implemented");
   }
+}
+#undef __FUNC__
+#define __FUNC__ "MsqMeshEntity::get_connected_vertices"
+/*!Appends the indices (in the vertex array) of the vertices to connected
+  to vertex_array[vertex_index] to the end of the vector vert_indices.
+*/
+void Mesquite::MsqMeshEntity::get_connected_vertices(size_t vertex_index,
+                                                     std::vector<size_t>
+                                                     &vert_indices,
+                                                     MsqError &err)
+{
+    //i iterates through elem's vertices
+  int i=0;
+    //index is set to the index in the vertexIndices corresponding
+    //to vertex_index
+  int index=-1;
+  
+  switch (mType)
+  {
+    case TRIANGLE:
+      while(index<0 && i<3){
+        if(vertexIndices[i]==vertex_index)
+          index=i;
+        ++i;
+      }
+      if(index>=0){
+        vert_indices.push_back(vertexIndices[(index+1)%3]);
+        vert_indices.push_back(vertexIndices[(index+2)%3]);
+      }
+      
+      break;
+      
+    case QUADRILATERAL:
+      while(index<0 && i<4){
+        if(vertexIndices[i]==vertex_index)
+          index=i;
+        ++i;
+      }
+      if(index>=0){
+        vert_indices.push_back(vertexIndices[(index+1)%4]);
+        vert_indices.push_back(vertexIndices[(index+3)%4]);
+      }
+          
+      break;
+      
+    case TETRAHEDRON:
+      while(index<0 && i<4){
+        if(vertexIndices[i]==vertex_index)
+          index=i;
+        ++i;
+      }
+      if(index>=0){
+        vert_indices.push_back(vertexIndices[(index+1)%4]);
+        vert_indices.push_back(vertexIndices[(index+2)%4]);
+        vert_indices.push_back(vertexIndices[(index+3)%4]);
+      }
+      
+      break;
+      
+    case HEXAHEDRON:
+      while(index<0 && i<8){
+        if(vertexIndices[i]==vertex_index)
+          index=i;
+        ++i;
+      }
+      
+      if(index>=0 && index<4){
+        vert_indices.push_back(vertexIndices[(index+1)%4]);
+        vert_indices.push_back(vertexIndices[(index+3)%4]);
+        vert_indices.push_back(vertexIndices[(index)+4]);
+      }
+      else if(index>4)
+        {
+          vert_indices.push_back(vertexIndices[(index+1)%4]+4);
+          vert_indices.push_back(vertexIndices[(index+3)%4]+4);
+          vert_indices.push_back(vertexIndices[(index)-4]);
+        }
+          
+      break;
+  }
+  
 }
 
 

@@ -308,6 +308,55 @@ void PatchData::get_vertex_element_indices(size_t vertex_index,
     elem_indices.push_back(*(++pos));
 }
 
+/*!
+    \brief This function fills a std::vector<size_t> with the indices
+    to vertices connected to the given vertex by an edge.  If vert_indices
+    is not initially empty, the function will not delete the current
+    contents.  Instead, it will append the new indices at the end of
+    the vector.
+
+*/
+#undef __FUNC__
+#define __FUNC__ "PatchData::get_adjacent_vertex_indices" 
+void PatchData::get_adjacent_vertex_indices(size_t vertex_index,
+                                            std::vector<size_t> &vert_indices,
+                                            MsqError &err)
+{
+    //This should probably be removed
+  generate_vertex_to_element_data();
+    //First get elems attached to vertex[vertex_index]
+  std::vector<size_t> elem_indices;
+  std::vector<size_t> temp_vert_indices;
+  std::vector<size_t>::iterator iter;
+  size_t cur_vert;
+  int found=0;
+  get_vertex_element_indices(vertex_index, elem_indices,err);
+  MSQ_CHKERR(err);
+  MsqMeshEntity* elems=get_element_array(err);MSQ_CHKERR(err);
+    //get nodes attached to vertex_index... with some duplication
+  while(!elem_indices.empty()){
+    elems[elem_indices.back()].get_connected_vertices(vertex_index, temp_vert_indices,err); MSQ_CHKERR(err);;
+    elem_indices.pop_back();
+  }
+    //eliminate duplication.
+  while(!temp_vert_indices.empty()){
+    cur_vert=temp_vert_indices.back();
+    temp_vert_indices.pop_back();
+    iter=&(vert_indices.front());
+    found=0;
+    while(iter!=vert_indices.end() && !found){
+      if(*(iter)==cur_vert)
+        found=1;
+      ++iter;
+    }
+    if(!found)
+      vert_indices.push_back(cur_vert);
+  }
+}
+
+  
+      
+
 
 /*! \fn PatchData::update_mesh(MsqError &err)
 
