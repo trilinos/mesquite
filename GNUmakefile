@@ -39,6 +39,7 @@ MODULENAMES :=  Mesh \
 		QualityImprover/VertexMover/LaplacianSmoothers \
 		QualityImprover/VertexMover/NonSmoothSteepestDescent \
 		QualityImprover/VertexMover/SteepestDescent \
+		QualityImprover/VertexMover/FeasibleNewton \
 		QualityImprover/VertexMover/Randomize \
 		QualityMetric \
 		QualityMetric/Shape \
