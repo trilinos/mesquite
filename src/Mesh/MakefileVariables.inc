@@ -1,10 +1,14 @@
 MESHDIR = $(srcdir)/Mesh
 
-MESHSRC = $(MESHDIR)/MeshSet.cpp \
-	       $(MESHDIR)/MsqMeshEntity.cpp \
-	       $(MESHDIR)/MsqVertex.cpp \
-	       $(MESHDIR)/PatchData.cpp \
-	       $(MESHDIR)/MeshImpl.cpp
+MESHSRCFILES = MeshSet.cpp \
+               MsqMeshEntity.cpp \
+               MsqVertex.cpp \
+               PatchData.cpp \
+               MeshImpl.cpp \
+               TopologyInfo.cpp
+               
+
+MESHSRC = $(MESHSRCFILES:%=$(MESHDIR)/%)
 
 MESHHEADERS = \
 	$(patsubst $(MESHDIR)/%,$(localincludedir)/%,\
