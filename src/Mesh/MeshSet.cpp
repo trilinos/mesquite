@@ -481,7 +481,6 @@ void Mesquite::MeshSet::update_mesh(const PatchData &pd, MsqError &err)
     break;
   default:
     {
-      MsqError err;
       err.set_msg("PatchData Type not accepted yet."); MSQ_CHKERR(err);
       break;
     }

@@ -578,7 +578,245 @@ void Mesquite::MeshImpl::read_exodus(const char*
   
 #endif
 }
-    
+//!Writes an exodus file of the mesh.
+void Mesquite::MeshImpl::write_exodus(const char*
+#ifdef MSQ_USING_EXODUS
+                                       out_filename
+#endif                                     
+                                       , Mesquite::MsqError &err)
+{
+    //just return an error if we don't have access to exodus
+#ifndef MSQ_USING_EXODUS
+  err.set_msg("Exodus not enabled in this build of Mesquite");
+  return;
+#else
+  size_t i, j, counter;
+  if (vertexArray == NULL)
+  {
+    err.set_msg("No vertices in MeshImpl.  Nothing written to file.");
+    return;
+  }
+    //get some element info
+    //We need to know how many of each element type we have.  We
+    //are going to create an element block for each element type
+    //that exists the mesh.  Block 1 will be tri3; block 2 will be
+    //shell; block 3 will be tetra, and block 4 will be hex.
+  int num_tri=0;
+  int num_quad=0;
+  int num_tet=0;
+  int num_hex=0;
+  int block_count=0;//one block for each element type
+    //count each element 
+  for(i=0;i<elementCount;++i){
+    if(elementArray[i].mType==Mesquite::TRIANGLE){
+      ++num_tri;
+    }
+    else if (elementArray[i].mType==Mesquite::QUADRILATERAL){
+      ++num_quad;
+    }
+    else if(elementArray[i].mType==Mesquite::TETRAHEDRON){
+      ++num_tet;
+    }
+    else if (elementArray[i].mType==Mesquite::HEXAHEDRON){
+      ++num_hex;
+    }
+    else
+      err.set_msg("Unrecognized element type");
+  }
+    //if an element of the specific type exists, we need a block for it
+  if(num_tri>0)
+    ++block_count;
+  if(num_quad>0)
+    ++block_count;
+  if(num_tet>0)
+    ++block_count;
+  if(num_hex>0)
+    ++block_count;
+  if(block_count>4){
+    err.set_msg("Too many element types in file");
+  }
+  if(block_count<1){
+    err.set_msg("Too few element types in file");
+  }
+    //write doubles instead of floats
+  int app_float_size = sizeof(double);
+  int file_float_size = sizeof(double);
+  int exo_err = 0;
+  
+    // Create the file.  If it exists, clobber it.  This could be dangerous.
+  int file_id = ex_create(out_filename, EX_CLOBBER, &app_float_size,
+                          &file_float_size);
+
+    // Make sure we opened the file correctly
+  if (file_id < 0)
+  {
+    err.set_msg("Unable to create file");
+    return;
+  }
+  
+  char title[MAX_LINE_LENGTH]="Mesquite Generated Exodus File";
+  int dim=3;
+  int vert_count=get_total_vertex_count(err);
+  int elem_count=get_total_element_count(err);
+  
+  int ns_count=0;
+  int ss_count=0;
+  
+    // put the initial info about the file
+  exo_err = ex_put_init(file_id, title, dim, vert_count,
+                        elem_count, block_count, ns_count, ss_count);
+  if (exo_err < 0)
+  {
+    err.set_msg("Unable to initialize file data.");
+    return;
+  }
+    //array of nodal coords.
+  double* temp_doubles = new double[vertexCount*3];
+ 
+  counter=0;
+  for (i = 0; i < 3; i++)
+  {
+    for (j = 0; j < vertexCount; j++)
+    {
+      temp_doubles[counter]=vertexArray[j].coords[i];
+      ++counter;
+    }
+  }
+  if(counter!= (3*vertexCount))
+    err.set_msg("Counter at incorrect number.");
+  
+    //put the coords
+  exo_err = ex_put_coord(file_id,
+                         reinterpret_cast<void*>(temp_doubles),
+                         reinterpret_cast<void*>(temp_doubles + vertexCount),
+                         reinterpret_cast<void*>(temp_doubles +
+                                                 vertexCount + vertexCount));
+  
+    // Make sure it worked
+  if (exo_err < 0)
+  {
+    err.set_msg("Unable to put vertex coordinates in file.");
+    return;
+  } 
+  delete [] temp_doubles;
+  
+    // Process elements in a block
+  int block_ids[4];
+  block_ids[0]=1;//tri
+  block_ids[1]=2;//quad
+  block_ids[2]=3;//tet
+  block_ids[3]=4;//hex
+  
+    //double check things
+  if ((num_tri + num_quad + num_tet + num_hex) != elementCount){
+    err.set_msg("Error in determining the element types.");
+  }
+  int num_atts=0;
+
+    //for each element type that exists, set up the block
+  if(num_tri>0)
+    exo_err = ex_put_elem_block(file_id, block_ids[0], "TRI3",
+                                num_tri, 3, num_atts);
+  if(exo_err<0)
+    err.set_msg("Error creating the tri block.");
+  if(num_quad>0)
+    exo_err = ex_put_elem_block(file_id, block_ids[1], "SHELL",
+                                num_quad, 4, num_atts);
+  if(exo_err<0)
+    err.set_msg("Error creating the quad block.");
+  if(num_tet>0)
+    exo_err = ex_put_elem_block(file_id, block_ids[2], "TETRA",
+                                num_tet, 4, num_atts);
+  if(exo_err<0)
+    err.set_msg("Error creating the tet block.");
+  if(num_hex>0)
+    exo_err = ex_put_elem_block(file_id, block_ids[3], "HEX",
+                                num_hex, 8, num_atts);
+  if(exo_err<0)
+    err.set_msg("Error creating the hex block.");
+    //alloc space for the connectivity arrays
+  int *tri_connectivity = new int[3*num_tri];
+  int *quad_connectivity = new int[4*num_quad];
+  int *tet_connectivity = new int[4*num_tet];
+  int *hex_connectivity = new int[8*num_hex];
+    //counters for the different element types
+  int tri_counter=0;
+  int quad_counter=0;
+  int tet_counter=0;
+  int hex_counter=0;
+    //put each element in the appropriate connectivity array
+  for(i=0;i<elementCount;++i){
+    if(elementArray[i].mType==Mesquite::TRIANGLE){
+      tri_connectivity[3*tri_counter]=elementArray[i].vertexIndices[0]+1;
+      tri_connectivity[1+(3*tri_counter)]=elementArray[i].vertexIndices[1]+1;
+      tri_connectivity[2+(3*tri_counter)]=elementArray[i].vertexIndices[2]+1;
+      ++tri_counter;
+    }
+    else if (elementArray[i].mType==Mesquite::QUADRILATERAL){
+      quad_connectivity[4*quad_counter]=elementArray[i].vertexIndices[0]+1;
+      quad_connectivity[1+(4*quad_counter)]=elementArray[i].vertexIndices[1]+1;
+      quad_connectivity[2+(4*quad_counter)]=elementArray[i].vertexIndices[2]+1;
+      quad_connectivity[3+(4*quad_counter)]=elementArray[i].vertexIndices[3]+1;
+      ++quad_counter;
+    }
+    else if(elementArray[i].mType==Mesquite::TETRAHEDRON){
+      tet_connectivity[4*tet_counter]=elementArray[i].vertexIndices[0]+1;
+      tet_connectivity[1+(4*tet_counter)]=elementArray[i].vertexIndices[1]+1;
+      tet_connectivity[2+(4*tet_counter)]=elementArray[i].vertexIndices[2]+1;
+      tet_connectivity[3+(4*tet_counter)]=elementArray[i].vertexIndices[3]+1;
+      ++tet_counter;
+    }
+    else if (elementArray[i].mType==Mesquite::HEXAHEDRON){
+      hex_connectivity[8*hex_counter]=elementArray[i].vertexIndices[0]+1;
+      hex_connectivity[1+(8*hex_counter)]=elementArray[i].vertexIndices[1]+1;
+      hex_connectivity[2+(8*hex_counter)]=elementArray[i].vertexIndices[2]+1;
+      hex_connectivity[3+(8*hex_counter)]=elementArray[i].vertexIndices[3]+1;
+      hex_connectivity[4+(8*hex_counter)]=elementArray[i].vertexIndices[4]+1;
+      hex_connectivity[5+(8*hex_counter)]=elementArray[i].vertexIndices[5]+1;
+      hex_connectivity[6+(8*hex_counter)]=elementArray[i].vertexIndices[6]+1;
+      hex_connectivity[7+(8*hex_counter)]=elementArray[i].vertexIndices[7]+1;
+      ++hex_counter;
+    }
+    else
+      err.set_msg("Unrecognized element type again");
+  }
+    //double check number of each element type
+  if(tri_counter != num_tri)
+    err.set_msg("Tri numbers not consistent");
+  if(quad_counter != num_quad)
+    err.set_msg("Quad numbers not consistent");
+  if(tet_counter != num_tet)
+    err.set_msg("Tet numbers not consistent");
+  if(hex_counter != num_hex)
+    err.set_msg("Hex numbers not consistent");
+  
+  //for each element type that exists, put the connectivity with the block
+  if(num_tri>0)
+    exo_err = ex_put_elem_conn(file_id, block_ids[0], tri_connectivity);
+  if(exo_err<0)
+    err.set_msg("Error in putting tri block");
+  if(num_quad>0)
+    exo_err = ex_put_elem_conn(file_id, block_ids[1], quad_connectivity);
+  if(exo_err<0)
+    err.set_msg("Error in putting quad block");
+  if(num_tet>0)
+    exo_err = ex_put_elem_conn(file_id, block_ids[2], tet_connectivity);
+  if(exo_err<0)
+    err.set_msg("Error in putting tet block");
+  if(num_hex>0)
+    exo_err = ex_put_elem_conn(file_id, block_ids[3], hex_connectivity);
+  if(exo_err<0)
+    err.set_msg("Error in putting hex block");
+    //delete connectivity arrays.
+  delete [] tri_connectivity;
+  delete [] quad_connectivity;
+  delete [] tet_connectivity;
+  delete [] hex_connectivity;
+  
+    // Finally, mark boundary nodes
+  
+#endif
+}   
 // Returns whether this mesh lies in a 2D or 3D coordinate system.
 int Mesquite::MeshImpl::get_geometric_dimension(MsqError &/*err*/) const
 {
