@@ -39,11 +39,11 @@ void LaplacianSmoother::initialize_mesh_iteration(PatchData &pd, MsqError &err)
 }
 
 #undef __FUNC__
-#define __FUNC__ "LaplacianSmoother::optimize_nodes_position" 
-void LaplacianSmoother::optimize_nodes_position(PatchData &pd, 
+#define __FUNC__ "LaplacianSmoother::optimize_vertex_position" 
+void LaplacianSmoother::optimize_vertex_positions(PatchData &pd, 
                                                 MsqError &err)
 {
-  cout << "- Executing LaplacianSmoother::optimize_nodes_position()\n";
+  cout << "- Executing LaplacianSmoother::optimize_vertex_position()\n";
 
   int num_local_vertices = pd.num_vertices();
     //int dim = pd.space_dim();
@@ -52,11 +52,7 @@ void LaplacianSmoother::optimize_nodes_position(PatchData &pd,
   // gets the array of coordinates for the patch and print it 
   MsqVertex *patch_coords = pd.get_vertex_array(err); MSQ_CHKERR(err);
   for (size_t i=0; i<num_local_vertices; i++) 
-    cout << "vertex " << i << " : " << patch_coords[i];
-  
-  // gets the array of connectivity for the patch and print it 
-  //  ConnectivityArrayT *patch_connec = pd.get_connectivity_array(err); MSQ_CHKERR(err);
-
+      //cout << "vertex " << i << " : " << patch_coords[i];
   // does the dumb Laplacian smoothing
   centroid_smooth_mesh(num_local_vertices-1, &patch_coords[1],
                        patch_coords[0], dim, err); MSQ_CHKERR(err);
