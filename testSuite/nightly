@@ -57,17 +57,22 @@ export MAKE
   # Echo all commands
 set -v
 
+  # Change to mesquite root directory
+CDPATH=
+MESQUITE=`dirname $0`
+cd $MESQUITE/..
+
+  # Read environment if specified
+if [ -f testSuite/env ]; then
+  source testSuite/env
+fi
+
   # Echo some useful info for the log file
 echo
 uname -a 
 pwd
 env
 
-
-  # Change to mesquite root directory
-CDPATH=
-MESQUITE=`dirname $0`
-cd $MESQUITE/..
 
 echo
 echo "********************************************************"

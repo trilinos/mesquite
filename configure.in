@@ -169,11 +169,11 @@ AC_ARG_WITH(exodus,[[
   elif test "$withval" != "no"; then
     
     EXODUS_DIR=$withval
-    EXODUS_CFLAGS="-DMSQ_USING_EXODUS -I${EXODUS_DIR}/include"
+    EXODUS_CFLAGS='-DMSQ_USING_EXODUS -I$(EXODUS_DIR)/include'
     AC_CHECK_FILE( [${EXODUS_DIR}/include/exodusII.h], [], 
        [AC_MSG_ERROR("${EXODUS_DIR}/include/exodusII.h does not exist")] )
     AC_CHECK_FILE( [${EXODUS_DIR}/lib/libexoIIv2c.a], 
-       [EXODUS_LDFLAGS="-L${EXODUS_DIR}/lib -lexoIIv2c"], 
+       [EXODUS_LDFLAGS='-L$(EXODUS_DIR)/lib -lexoIIv2c'], 
        [AC_MSG_ERROR("${EXODUS_DIR}/lib/libexoIIv2c.a does not exist")] )
   fi
   ])
@@ -205,8 +205,8 @@ if test -n "$EXODUS_CFLAGS"; then
         [AC_MSG_WARN("No NetCDF library")])
     else
       if test "$NETCDF_DIR" != "$EXODUS_DIR"; then
-        EXODUS_LDFLAGS="$EXODUS_LDFLAGS -L${NETCDF_DIR}"
-        EXODUS_CFLAGS="$EXODUS_CFLAGS -I${NETCDF_DIR}/inc"
+        EXODUS_LDFLAGS="$EXODUS_LDFLAGS -L\$(NETCDF_DIR)"
+        EXODUS_CFLAGS="$EXODUS_CFLAGS -I\$(NETCDF_DIR)/inc"
       fi
       AC_CHECK_FILE( [${NETCDF_DIR}/inc/netcdf.h], [], 
          [AC_MSG_ERROR("${NETCDF_DIR}/inc/netcdf.h does not exist")] )
@@ -218,6 +218,8 @@ if test -n "$EXODUS_CFLAGS"; then
   fi
 fi
 
+AC_SUBST(EXODUS_DIR)
+AC_SUBST(NETCDF_DIR)
 AC_SUBST(EXODUS_CFLAGS)
 AC_SUBST(EXODUS_LDFLAGS)
 
@@ -258,9 +260,11 @@ AC_ARG_WITH(hdf5,
 [ if test "$withval" = "yes"; then
     AC_CHECK_LIB( [hdf5], H5Fopen, [HDF5_LNK=-lhdf5], [AC_MSG_ERROR("HDF5 library not found.")])
   elif test "$withval" != "no"; then
-    HDF5_LNK="-L$withval/lib -lhdf5"
+    HDF5_DIR="$withval"
+    HDF5_LNK='-L$(HDF5_DIR)/lib -lhdf5'
   fi
 ],[ AC_CHECK_LIB( [hdf5], H5Fopen, [HDF5_LNK=-lhdf5]) ])
+AC_SUBST(HDF5_DIR)
 AC_SUBST(HDF5_LNK)
     
 
@@ -274,8 +278,8 @@ AC_ARG_WITH(moab,
     AC_MSG_ERROR( "Argument required for --with-moab" )
   elif test "$withval" != "no"; then
     MOAB_DIR="$withval"
-    MOAB_INC="-I${MOAB_DIR}"
-    MOAB_LNK="-L${MOAB_DIR} -lMOAB"
+    MOAB_INC='-I$(MOAB_DIR)'
+    MOAB_LNK='-L$(MOAB_DIR) -lMOAB'
     TSTT_SERVER=MOAB
 
       # MOAB requires C++ exodus library - check for it
@@ -316,8 +320,8 @@ AC_ARG_WITH(aomd,
     AC_MSG_ERROR( "Argument required for --with-aomd" )
   elif test "$withval" != "no"; then
     AOMD_DIR="$withval"
-    AOMD_LNK="-L${AOMD_DIR}/lib -laomd"
-    AOMD_INC="-I${AOMD_DIR}/include"
+    AOMD_LNK='-L$(AOMD_DIR)/lib -laomd'
+    AOMD_INC='-I$(AOMD_DIR)/include'
     TSTT_SERVER=AOMD
   fi
 ])
@@ -356,9 +360,9 @@ AC_ARG_WITH(tstt,
    fi 
 ], [TSTT_CLIENT_DIR=])
 if test "$TSTT_CLIENT_DIR" = "$MSQ_DEFAULT_TSTT_DIR"; then
-  TSTT_CFLAGS="$TSTT_CFLAGS -I$TSTT_CLIENT_DIR"
+  TSTT_CFLAGS="$TSTT_CFLAGS -I\$(TSTT_CLIENT_DIR)"
   TSTT_CLIENT_SRCS='$(IORSRCS) $(STUBSRCS)'
-  TSTT_MKINCL="include ${TSTT_CLIENT_DIR}/babel.make"
+  TSTT_MKINCL='include $(TSTT_CLIENT_DIR)/babel.make'
   TSTT_OBJS='$(TSTT_SRCS:src/Mesh/%.cpp=obj/%.o)'
 fi
 AC_SUBST(TSTT_CLIENT_DIR)
@@ -409,6 +413,7 @@ fi
 
 
   # Check for SIDL library (required for TSTT)
+BABEL_DIR=
 AC_ARG_WITH(babel,
 [[  --with-babel[=DIR]      Specify directory where Babel exectuable and 
                           SIDL headers/libs are installed.
@@ -424,11 +429,12 @@ AC_ARG_WITH(babel,
 
   elif test "$withval" != "no"; then
     
-    TSTT_CFLAGS="$TSTT_CFLAGS -I${withval}/include"
+    BABEL_DIR="$withval"
+    TSTT_CFLAGS="$TSTT_CFLAGS -I\$(BABEL_DIR)/include"
     AC_CHECK_FILE( [${withval}/include/sidl.h], [], 
        [AC_MSG_ERROR("${withval}/include/sidl.h does not exist")] )
     AC_CHECK_FILE( [${withval}/lib/libsidl.so], 
-       [TSTT_LDFLAGS="$TSTT_LDFLAGS -L${withval}/lib -lsidl"], 
+       [TSTT_LDFLAGS="$TSTT_LDFLAGS -L\$(BABEL_DIR)/lib -lsidl"], 
        [AC_CHECK_FILE( [${withval}/lib/libsidl.a], 
           [TSTT_LDFLAGS="$TSTT_LDFLAGS -L${withval}/lib -lsidl"], 
           [AC_MSG_ERROR("${withval}/lib/libexoIIv2c.a does not exist")] )])
@@ -464,6 +470,7 @@ AC_SUBST(TSTT_LDFLAGS)
 AC_SUBST(TSTT_CLIENT_SRCS)
 AC_SUBST(TSTT_MKINCL)
 AC_SUBST(BABEL)
+AC_SUBST(BABEL_DIR)
 
 
 #------------------------------------------------------------------------------
@@ -545,3 +552,5 @@ done
 #------------------------------------------------------------------------------
 AC_CONFIG_HEADERS(include/mesquite_config.h)
 AC_OUTPUT(Makefile.customize)
+AC_OUTPUT(testSuite/env)
+
