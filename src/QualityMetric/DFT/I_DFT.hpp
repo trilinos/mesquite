@@ -56,9 +56,9 @@ see that file for more detail):
 
 The default for data members (corresponding to the variables above):
 
-      mKappa = 1/2.0; \n
-      mAlpha = MSQ_TWO_THIRDS; \n
+      mAlpha = 1/2.0; \n
       mBeta = 1.0; \n
+      mGamma = MSQ_TWO_THIRDS; \n
 
 delta, above, is calculated using PatchData::get_barrier_delta(MsqError &err),
 if useBarrierDelta == true.  Otherwise, delta is zero.
@@ -76,7 +76,8 @@ if useBarrierDelta == true.  Otherwise, delta is zero.
       set_metric_type(ELEMENT_BASED);
       set_gradient_type(NUMERICAL_GRADIENT);
       set_hessian_type(NUMERICAL_HESSIAN);
-      mAlpha = 1/2.0;//pow(2.0, -MSQ_ONE_THIRD);
+      set_name("I_DFT");
+      mAlpha = 1/2.0;
       mBeta = 1.0;
       mGamma = MSQ_TWO_THIRDS;
       useBarrierDelta = true;
@@ -107,7 +108,34 @@ if useBarrierDelta == true.  Otherwise, delta is zero.
 					    double &m,
 					    MsqError &err);
 
+
   protected:
+    
+      //! access function to set mAlpha
+    void p_set_alpha(double alpha)
+      {mAlpha = alpha;}
+      //! access function to get mAlpha  
+    double p_get_alpha()
+      {return mAlpha;}
+      //! access function to set mBeta
+    void p_set_beta(double beta)
+      {mBeta = beta;}
+      //! access function to get mBeta  
+    double p_get_beta()
+      {return mBeta;}
+      //! access function to set mGamma
+    void p_set_gamma(double gamma)
+      {mGamma = gamma;}
+      //! access function to get mGamma  
+    double p_get_gamma()
+      {return mGamma;}
+      //! access function to set useBarrierDelta
+    void p_set_use_barrier_delta(bool use_delta)
+      {useBarrierDelta = use_delta;}
+      //! access function to get useBarrierDelta  
+    bool p_get_use_barrier_delta()
+      {return useBarrierDelta;}
+
     
   private:
     // variables used in the definition of the metric (2d and 3d)
