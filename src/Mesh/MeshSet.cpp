@@ -30,7 +30,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD:  3-Jun-04 at 16:17:56 by Thomas Leurent
+//  LAST-MOD:  3-Jun-04 at 16:21:44 by Thomas Leurent
 //
 /*! \file MeshSet.cpp
 
@@ -824,15 +824,15 @@ void MeshSet::write_gnuplot(const char* out_filebase,
            << pd.vertexArray[vtx_indices[j]][2] << '\n';
 #endif
     }
-// #ifdef USE_STD_INCLUDES   
-//       file <<setprecision(15)<< pd.vertexArray[vtx_indices[0]][0] << ' '
-//            <<setprecision(15)<< pd.vertexArray[vtx_indices[0]][1] << ' '
-//            <<setprecision(15)<< pd.vertexArray[vtx_indices[0]][2] << '\n';
-// #else
-//       file << pd.vertexArray[vtx_indices[0]][0] << ' '
-//            << pd.vertexArray[vtx_indices[0]][1] << ' '
-//            << pd.vertexArray[vtx_indices[0]][2] << '\n';
-// #endif
+#ifdef USE_STD_INCLUDES   
+      file <<setprecision(15)<< pd.vertexArray[vtx_indices[0]][0] << ' '
+           <<setprecision(15)<< pd.vertexArray[vtx_indices[0]][1] << ' '
+           <<setprecision(15)<< pd.vertexArray[vtx_indices[0]][2] << '\n';
+#else
+      file << pd.vertexArray[vtx_indices[0]][0] << ' '
+           << pd.vertexArray[vtx_indices[0]][1] << ' '
+           << pd.vertexArray[vtx_indices[0]][2] << '\n';
+#endif
     file << '\n';
   }
   
