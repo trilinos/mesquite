@@ -1,7 +1,6 @@
 TARGCALCDIR = $(srcdir)/TargetCalculator
 
-#TARGCALCSRC = $(TARGCALCDIR)/TargetCalculator.cpp
-TARGCALCSRC =
+TARGCALCSRC = $(TARGCALCDIR)/TargetCalculator.cpp
 
 TARGCALCHEADERS = \
 	$(patsubst $(TARGCALCDIR)/%,$(localincludedir)/%,\

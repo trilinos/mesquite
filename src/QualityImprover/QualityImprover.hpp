@@ -128,7 +128,7 @@ namespace Mesquite
     MeshSet* mMeshSet;
     string qualityImproverName;
     int patchDepth;
-      //
+    
     TerminationCriterion* innerTerminationCriterion;
     TerminationCriterion* outerTerminationCriterion;
       //default TerminationCriterion for outer loop will be set in constructor

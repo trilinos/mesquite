@@ -110,7 +110,7 @@ namespace Mesquite
     { globalPatch=0; }
 
     //! Sets the target calculator used in conjunction with DFT metrics 'DistanceFromTarget'.
-    void set_target_calculator(TargetCalculator* target) { mTarget = target; }
+    void set_target_calculator(TargetCalculator* target, MsqError &err);
     //! Gets the TargetCalculator set on this QualityImprover
     //! Returns 0 if no target calculator has been set.
     TargetCalculator* get_target_calculator() { return mTarget; }
@@ -196,8 +196,8 @@ namespace Mesquite
     { mParams.no_global_patch(); }
 
     //! Sets the target calculator used in conjunction with DFT metrics 'DistanceFromTarget'.
-    void set_target_calculator(TargetCalculator* target)
-    { mParams.set_target_calculator(target); }
+    void set_target_calculator(TargetCalculator* target, MsqError &err)
+    { mParams.set_target_calculator(target, err); }
     //! Gets the TargetCalculator set on this QualityImprover
     //! Returns 0 if no target calculator has been set.
     TargetCalculator* get_target_calculator()
@@ -308,7 +308,16 @@ namespace Mesquite
     }
   }
 
-  
+
+#undef __FUNC__
+#define __FUNC__ "PatchDataParameters::set_target_calculator"
+  inline void PatchDataParameters::set_target_calculator(TargetCalculator* target, MsqError &err)
+  {
+    mTarget = target;
+    target->set_originator(this, err);
+    MSQ_CHKERR(err);
+  }
+ 
 } // namespace
 
 #endif //  PatchDataUser_hpp

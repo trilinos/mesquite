@@ -47,6 +47,8 @@
 
 namespace Mesquite
 {
+  class PatchDataParameters;
+
   
   /*! \class TargetCalculator
     \brief Base class that provides the interface for computing the target corner matrices
@@ -68,15 +70,23 @@ namespace Mesquite
   class TargetCalculator 
   {
   public:
+
+    TargetCalculator() : refMesh(0), originator(0) { }
     
     //! virtual destructor ensures use of polymorphism during destruction
-    virtual ~TargetCalculator()
-      {};
+      virtual ~TargetCalculator()
+    {};
 
       //! Compute the default "isotropic" target matrices that are often used in the computation
       //! of reference-based target matrices.
       //! The resulting corner matrices are stored in tags on the elements of the PatchData.
     void compute_default_target_matrices(PatchData &pd, MsqError &err);
+
+
+      //! Compute the corner matrices for the reference mesh refMesh.
+      //! The refMesh data member is set by the constructors of a concrete TargetCalculator
+      //! that requires a reference mesh.
+    void compute_reference_corner_matrices(PatchData &pd, MsqError &err);
 
     //! This function wraps compute_target_matrices and checks that the determinant of each target
     //! is positive.
@@ -89,111 +99,19 @@ namespace Mesquite
     */
     virtual void compute_target_matrices(PatchData& pd, MsqError& err)=0;
 
+    void set_originator(PatchDataParameters* pdm, MsqError &err)
+    { if (originator != 0)
+        err.set_msg("Each TargetCalculator can be set on one object only.");
+      else originator = pdm; }
+
   protected:
     
   private:
-    
+    MeshSet* refMesh;
+    PatchDataParameters* originator; //! This is the object the TargetCalculator is attached to.
   };
 
-
-#undef __FUNC__
-#define __FUNC__ "TargetCalculator::compute_target_matrices_and_check_det" 
-  inline void TargetCalculator::compute_target_matrices_and_check_det(PatchData &pd, MsqError &err)
-  {
-    FUNCTION_TIMER_START(__FUNC__);
-
-    // Compute the target matrices
-    compute_target_matrices(pd, err); MSQ_CHKERR(err);
-
-    //checks that the determinant of each target matrix is positive.
-    MsqMeshEntity* elems=pd.get_element_array(err);
-    size_t num_elements=pd.num_elements();
-    for (size_t i=0; i<num_elements; ++i) {
-      MsqTag* tag = elems[i].get_tag();
-      size_t num_corners = elems[i].vertex_count();
-      for (size_t j=0; j<num_corners; ++j) {    
-        if ( det(tag->target_matrix(j)) <= 0 ) {
-          err.set_msg("A Target matrix has a non-positive determinant. Please review your target calculator.");
-          return;
-        }
-      }
-    }
     
-    FUNCTION_TIMER_END();
-  }
-
-  
-#undef __FUNC__
-#define __FUNC__ "TargetCalculator::compute_default_target_matrices" 
-  inline void TargetCalculator::compute_default_target_matrices(PatchData &pd,
-                                                      MsqError &err)
-  {
-    FUNCTION_TIMER_START(__FUNC__);
-    
-    // set on each element in the patch a tag containing an array of corner matrices
-    // (the size of the array is adequate for each element, e.g. 4 for a quad).
-    pd.allocate_corner_matrices(err); MSQ_CHKERR(err);
-    
-    MsqMeshEntity* elems=pd.get_element_array(err);
-    size_t num_elements=pd.num_elements();
-
-    const double v_tri[] = {1, 0.5, 0, 0, MSQ_SQRT_THREE/2, 0, 0, 0, 0};
-    Matrix3D tmp_tri(v_tri);
-
-    const double v_quad[] = {1, 0, 0, 0, 1, 0, 0, 0, 0};
-    Matrix3D tmp_quad(v_quad);
-    
-    const double v_tet[] = {1, 0.5, 0.5, 0, MSQ_SQRT_THREE/2, MSQ_SQRT_THREE/6, 0, 0, MSQ_SQRT_TWO/MSQ_SQRT_THREE};
-    Matrix3D tmp_tet(v_tet);
-
-    const double v_hex[] = {1, 0, 0,  0, 1, 0,  0, 0, 1};
-    Matrix3D tmp_hex(v_hex);
-
-    // set the corner matrices to the correct value for each tag.
-    for (size_t i=0; i<num_elements; ++i) {
-
-      MsqTag* tag = elems[i].get_tag(); 
-      
-      EntityTopology type = elems[i].get_element_type();
-      switch (type)
-        {
-        case TRIANGLE:
-          tag->target_matrix(0) = tmp_tri; 
-          tag->target_matrix(1) = tmp_tri; 
-          tag->target_matrix(2) = tmp_tri; 
-          break;
-        case QUADRILATERAL:
-          tag->target_matrix(0) = tmp_quad; 
-          tag->target_matrix(1) = tmp_quad; 
-          tag->target_matrix(2) = tmp_quad; 
-          tag->target_matrix(3) = tmp_quad; 
-          break;
-        case TETRAHEDRON:
-          tag->target_matrix(0) = tmp_tet; 
-          tag->target_matrix(1) = tmp_tet; 
-          tag->target_matrix(2) = tmp_tet; 
-          tag->target_matrix(3) = tmp_tet; 
-          break;
-        case HEXAHEDRON:
-          tag->target_matrix(0) = tmp_hex; 
-          tag->target_matrix(1) = tmp_hex; 
-          tag->target_matrix(2) = tmp_hex; 
-          tag->target_matrix(3) = tmp_hex; 
-          tag->target_matrix(4) = tmp_hex; 
-          tag->target_matrix(5) = tmp_hex; 
-          tag->target_matrix(6) = tmp_hex; 
-          tag->target_matrix(7) = tmp_hex; 
-          break;
-        default:
-          err.set_msg("Type not implemented.");
-          return;
-        } //end switch
-    } // end loop
-    FUNCTION_TIMER_END();   
-  }
-
-  
-  
 } //namespace
 
 
