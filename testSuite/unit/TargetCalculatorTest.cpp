@@ -30,7 +30,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 13-Nov-02 at 18:05:56
-//  LAST-MOD: 15-Jun-04 at 15:54:59 by Thomas Leurent
+//  LAST-MOD: 16-Jun-04 at 12:27:09 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -175,7 +175,7 @@ public:
 
     // checks corner matrices for first triangle, first corner.
     W = elems[0].get_tag()->target_matrix(0);
-    double fac = pow(2./sqrt(3.), 1./2.);
+    double fac = pow(2./sqrt(3.), 1./3.);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(W[0][0], fac*1., 1e-6);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(W[0][1], fac*.5, 1e-6);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(W[0][2], 0, 1e-6);
@@ -184,7 +184,7 @@ public:
     CPPUNIT_ASSERT_DOUBLES_EQUAL(W[1][2], 0, 1e-6);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(W[2][0], 0, 1e-6);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(W[2][1], 0, 1e-6);
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(W[2][2], 1., 1e-6);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(W[2][2], fac, 1e-6);
 
     // checks corner matrices for second triangle, third corner.
     W = elems[1].get_tag()->target_matrix(2);
@@ -196,7 +196,7 @@ public:
     CPPUNIT_ASSERT_DOUBLES_EQUAL(W[1][2], 0, 1e-6);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(W[2][0], 0, 1e-6);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(W[2][1], 0, 1e-6);
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(W[2][2], 1., 1e-6);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(W[2][2], fac, 1e-6);
 
     // checks there isn't a 4th corner matrix available
     // (normally commented out, since the embedded assert will stop the code). 
@@ -308,7 +308,7 @@ public:
   
   void test_optimize_vertex_positions_triangles()
   {
-    Vector3D res(0,0,0);
+    Vector3D res(0,0,5);
     size_t vtx_index=8;
     Vector3D normal (0,0,1);
     Vector3D point (0,0,5);
@@ -318,10 +318,12 @@ public:
   
   void test_optimize_vertex_positions_quads()
   {
-    Vector3D res(0,0,0);
+    Vector3D res(0,0,5);
     size_t vtx_index=8;
+    Vector3D normal (0,0,1);
+    Vector3D point (0,0,5);
     test_optimize_vertex_positions("../../meshFiles/2D/VTK/square_quad_2.vtk",
-                                   vtx_index, res);
+                                   vtx_index, res, &normal, &point);
   }
   
 };

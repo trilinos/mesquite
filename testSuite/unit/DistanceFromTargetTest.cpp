@@ -164,7 +164,7 @@ public:
 
      double coords[3];
      MsqVertex* vert_array = idealTri.get_vertex_array(err);
-     double fac = pow(2./sqrt(3.), 1./2.);
+     double fac = pow(2./sqrt(3.), 1./3.);
      coords[0] = 0; coords[1] = 0; coords[2] = 0;
      vert_array[0] = coords;
      coords[0] = fac; coords[1] = 0; coords[2] = 0;
@@ -284,20 +284,20 @@ public:
      
      Matrix3D T_check[3];
 
-     T_check[0] = "  1.86121    0        -0.169031 "
-                  "  0.930605  -2.68642  -0.507093 "
-                  " -0.930605   1.61185  -0.845154 ";
+     T_check[0] = "  1.90637    0        -0.169031 "
+                  "  0.953184  -2.75161  -0.507093 "
+                  " -0.953184   1.65096  -0.845154 ";
 
-     T_check[1] = " -0.930605 -1.61185  -0.169031 "
-                  " -2.79181   0.537285 -0.507093 "
-                  "  1.86121   0        -0.845154 ";
+     T_check[1] = " -0.953184 -1.65096  -0.169031 "
+                  " -2.85955   0.550321 -0.507093 "
+                  "  1.90637   0        -0.845154 ";
 
-     T_check[2] = " -0.930605  1.61185  -0.169031 "
-                  "  1.86121   2.14914  -0.507093 "
-                  " -0.930605 -1.61185  -0.845154 ";
+     T_check[2] = " -0.953184  1.65096  -0.169031 "
+                  "  1.90637   2.20128  -0.507093 "
+                  " -0.953184 -1.65096  -0.845154 ";
 
-//      oneTri.print();
-//      cout << T[0] << endl << T[1] << endl << T[2] << endl;
+//       oneTri.print();
+//       cout << T[0] << endl << T[1] << endl << T[2] << endl;
      
      for (int t=0; t<3; ++t) 
        for (int i=0; i<3; ++i)
@@ -309,22 +309,22 @@ public:
      double value1;     
      I_DFT mu1;
      mu1.evaluate_element(oneTri, &elem[0], value1, err);
-     CPPUNIT_ASSERT_DOUBLES_EQUAL(3.16432, value1, .00001);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(3.17393, value1, .00001);
      
      double value2;     
      sI_DFT mu2;
      mu2.evaluate_element(oneTri, &elem[0], value2, err);
-     CPPUNIT_ASSERT_DOUBLES_EQUAL(4.41468, value2, .00001);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(4.43943, value2, .00001);
      
      double value3;     
      RI_DFT mu3;
      mu3.evaluate_element(oneTri, &elem[0], value3, err);
-     CPPUNIT_ASSERT_DOUBLES_EQUAL(5.94919, value3, .00001);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(6.20141, value3, .00001);
      
      double value4;
      sRI_DFT mu4;
      mu4.evaluate_element(oneTri, &elem[0], value4, err);
-     CPPUNIT_ASSERT_DOUBLES_EQUAL(3.91061, value4, .00001);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(4.07917, value4, .00001);
 
    }
 };
