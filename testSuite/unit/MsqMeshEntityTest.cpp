@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 12-Nov-02 at 18:05:56
-//  LAST-MOD: 12-Nov-02 at 18:10:15 by Thomas Leurent
+//  LAST-MOD: 13-Nov-02 at 10:10:53 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -26,25 +26,27 @@ Unit testing of various functions in the MsqMeshEntity class.
 #define MsqMeshEntityTest_cpp
 
 #include "MsqMeshEntity.hpp"
+#include "Vector3D.hpp"
+#include "PatchData.hpp"
+
 #include "cppunit/extensions/HelperMacros.h"
 #include "cppunit/SignalException.h"
+
+using namespace Mesquite;
 
 class MsqMeshEntityTest : public CppUnit::TestFixture
 {
 
 private:
   CPPUNIT_TEST_SUITE(MsqMeshEntityTest);
-  CPPUNIT_TEST (test_default_constructor);
-  CPPUNIT_TEST (test_double_constructor);
-  CPPUNIT_TEST (test_copy_constructor);
-  CPPUNIT_TEST_EXCEPTION (throw_exception, CppUnit::SignalException);
+  CPPUNIT_TEST (test_compute_weigthed_jacobian_ideal_hex);
   CPPUNIT_TEST_SUITE_END();
 
 private:
   PatchData one_hex_patch;
   Vector3D e1, e2, e3;
 
-protected:
+public:
   void setUp()
   {
     // sets up the unit vectors
@@ -60,33 +62,41 @@ protected:
     // Fills up with vertices for ideal hexahedra.
     double coords[3];
     coords[0] = 0; coords[1] = 0; coords[2] = 0;
-    cout << one_hex_patch.add_vertex(coords, false, err); MSQ_CHKERR(err);
+    std::cout << one_hex_patch.add_vertex(NULL, NULL, coords, false, err);
+    MSQ_CHKERR(err);
     coords[0] = 1; coords[1] = 0; coords[2] = 0;
-    cout << one_hex_patch.add_vertex(coords, false, err); MSQ_CHKERR(err);
+    std::cout << one_hex_patch.add_vertex(NULL, NULL, coords, false, err);
+    MSQ_CHKERR(err);
     coords[0] = 1.; coords[1] = 1.; coords[2] = 0;
-    cout << one_hex_patch.add_vertex(coords, false, err); MSQ_CHKERR(err);
+    std::cout << one_hex_patch.add_vertex(NULL, NULL, coords, false, err);
+    MSQ_CHKERR(err);
     coords[0] = 0.; coords[1] = 1.; coords[2] = 0;
-    cout << one_hex_patch.add_vertex(coords, false, err) << endl; MSQ_CHKERR(err);
+    std::cout << one_hex_patch.add_vertex(NULL, NULL, coords, false, err) << std::endl;
+    MSQ_CHKERR(err);
     coords[0] = 0.; coords[1] = 0.; coords[2] = 1;
-    cout << one_hex_patch.add_vertex(coords, false, err) << endl; MSQ_CHKERR(err);
+    std::cout << one_hex_patch.add_vertex(NULL, NULL, coords, false, err) << std::endl;
+    MSQ_CHKERR(err);
     coords[0] = 1.; coords[1] = 0.; coords[2] = 1;
-    cout << one_hex_patch.add_vertex(coords, false, err) << endl; MSQ_CHKERR(err);
+    std::cout << one_hex_patch.add_vertex(NULL, NULL, coords, false, err) << std::endl;
+    MSQ_CHKERR(err);
     coords[0] = 1.; coords[1] = 1.; coords[2] = 1;
-    cout << one_hex_patch.add_vertex(coords, false, err) << endl; MSQ_CHKERR(err);
+    std::cout << one_hex_patch.add_vertex(NULL, NULL, coords, false, err) << std::endl;
+    MSQ_CHKERR(err);
     coords[0] = 0.; coords[1] = 1.; coords[2] = 1;
-    cout << one_hex_patch.add_vertex(coords, false, err) << endl; MSQ_CHKERR(err);
+    std::cout << one_hex_patch.add_vertex(NULL, NULL, coords, false, err) << std::endl;
+    MSQ_CHKERR(err);
     // patch has only one element: an ideal tet.
     int indices[8];
     indices[0] = 0; indices[1] = 1; indices[2] = 2; indices[3] = 3;
     indices[4] = 4; indices[5] = 5; indices[6] = 6; indices[7] = 7;
-    one_hex_patch.add_element(indices, HEXAHEDRON, me); MSQ_CHKERR(me);
+    one_hex_patch.add_element(NULL, NULL, indices, HEXAHEDRON, err); MSQ_CHKERR(err);
 
     // prints out the vertices.
-    MsqVertex* ideal_vertices = simple_patch.get_vertex_array(me); MSQ_CHKERR(me);
-    int num_vtx = simple_patch.num_vertices();
-    cout << endl << "ideal Hex vertices \n";
+    MsqVertex* ideal_vertices = one_hex_patch.get_vertex_array(err); MSQ_CHKERR(err);
+    int num_vtx = one_hex_patch.num_vertices();
+    std::cout << std::endl << "ideal Hex vertices \n";
     for (int i=0; i<num_vtx; ++i)
-      cout << ideal_vertices[i];
+      std::cout << ideal_vertices[i];
   }
 
   void tearDown()
@@ -104,24 +114,25 @@ public:
 
   void test_compute_weigthed_jacobian_ideal_hex()
     {
-      MsqMeshEntity* hex = one_hex_patch.get_element_array(me); MSQ_CHKERR(me);
+      MsqError err;
+      MsqMeshEntity* hex = one_hex_patch.get_element_array(err); MSQ_CHKERR(err);
       // get the ideal tets sample points 
       std::vector<Vector3D> sample_points;
-      hex->get_sample_points(QualityMetric::ELEMENT_VERTICES, sample_points, me); MSQ_CHKERR(err);
+      hex->get_sample_points(QualityMetric::ELEMENT_VERTICES, sample_points, err); MSQ_CHKERR(err);
       // prints the sample points
       std::vector<Vector3D>::iterator sp;
-      cout << endl << "Hexahedra sample points \n";
+      std::cout << std::endl << "Hexahedra sample points \n";
       for (sp=sample_points.begin(); sp!=sample_points.end(); ++sp)
-        cout << *sp;
+        std::cout << *sp;
       // and get the jacobian vectors (should be the identity matrix).
       int num_jac_vec;
       sp=sample_points.begin();
       Vector3D jacobian_vectors[3];
-      hex->compute_weighted_jacobian(simple_patch, &(*sp), jacobian_vectors,
-                                     num_jac_vec , me); MSQ_CHKERR(me);
-      cout << endl << "Jacobian matrix \n";
+      hex->compute_weighted_jacobian(one_hex_patch, *sp, jacobian_vectors,
+                                     num_jac_vec , err); MSQ_CHKERR(err);
+      std::cout << std::endl << "Jacobian matrix \n";
       for (int i=0; i< num_jac_vec; ++i)
-        cout << jacobian_vectors[i];
+        std::cout << jacobian_vectors[i];
 
       CPPUNIT_ASSERT(jacobian_vectors[0] == e1);
       CPPUNIT_ASSERT(jacobian_vectors[1] == e2);
@@ -147,6 +158,6 @@ public:
 };
 
 
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(MsqMeshEntityTest, "Misc");
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(MsqMeshEntityTest, "MsqMeshEntityTest");
 
 #endif
