@@ -230,7 +230,7 @@ bool MeshSet::get_next_patch(PatchData &pd,
                                 &num_elements, &tstt_err);
   }
   assert(!tstt_err);
-  std::cout << "num_elements: " << num_elements << std::endl;
+    //std::cout << "num_elements: " << num_elements << std::endl;
     // If there are neither regions or faces adjacent to the vertex, EXIT_FAILURE.
   if ( num_elements == 0 )
   {
