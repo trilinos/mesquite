@@ -98,6 +98,12 @@ namespace Mesquite
      */
     static MeshTSTT* create( TSTTM::Mesh& mesh, void* meshset, MsqError& err );
     
+    /** \brief factory method
+     *
+     * Create an instance of MeshTSTT with no initial mesh.
+     */
+    static MeshTSTT* create( TSTTM::Mesh& mesh, MsqError& err );
+    
     virtual ~MeshTSTT();
     
       /** \brief set mesh to be smoothed.

@@ -625,6 +625,8 @@ void TSTTArrIter::operator++()
     /** TSTT interface for entity set operations */
     TSTT::EntSet setIFace;
     
+    /** Have mesh */
+    bool haveMesh;
     /** TSTTM entity set handle for elements to improve */
     void* elementSet;
     /** TSTTM entity set handle for nodes to move */
@@ -660,6 +662,17 @@ MeshTSTT* MeshTSTT::create( TSTTM::Mesh& mesh, void* meshset, MsqError& err )
     return 0;
   }
   result->set_active_set( meshset, err );
+  if (MSQ_CHKERR(err))
+  {
+    delete result;
+    return 0;
+  }
+  return result;
+}
+
+MeshTSTT* MeshTSTT::create( TSTTM::Mesh& mesh, MsqError& err )
+{
+  MeshTSTT* result = new MeshTSTTImpl( mesh, err );
   if (MSQ_CHKERR(err))
   {
     delete result;
@@ -766,9 +779,9 @@ MeshTSTTImpl::MeshTSTTImpl(TSTTM::Mesh& tstt_mesh, Mesquite::MsqError& err)
     }
     
       // Get/create tag for vertex byte
-    //try {
-    //  byteTag = tagIFace.getTagHandle( VERTEX_BYTE_TAG_NAME );
-    //} catch (...) {}
+    try {
+      byteTag = tagIFace.getTagHandle( VERTEX_BYTE_TAG_NAME );
+    } catch (...) {}
 
     if (!byteTag) {
       tagIFace.createTag( VERTEX_BYTE_TAG_NAME, sizeof(int), TSTT::TagValueType_INTEGER, byteTag );
@@ -859,7 +872,7 @@ void MeshTSTTImpl::set_int_tag( void* tag,
   sidl::array<int> value_array( alloc_sidl_vector<int>( BUFFER_COUNT, value ) );
   
   sidl::array<void*> handle_array( alloc_sidl_vector<void*>( BUFFER_COUNT ) );
-  int count;
+  int count = BUFFER_COUNT;
   void* iter = 0;
   bool more;
   
@@ -1302,10 +1315,12 @@ void MeshTSTTImpl::vertex_get_attached_elements(
 
     elem_wrapper = convert_to_sidl_vector( elem_array, sizeof_elem_array );
     entIFace.getEntAdj( vertex, TSTTM::EntityType_FACE, elem_wrapper, face_size );
-
-    elem_wrapper = convert_to_sidl_vector( elem_array + face_size,
-                                           sizeof_elem_array - face_size );
-    entIFace.getEntAdj( vertex, TSTTM::EntityType_REGION, elem_wrapper, region_size );
+    
+    if (sizeof_elem_array - face_size > 0) {
+      elem_wrapper = convert_to_sidl_vector( elem_array + face_size,
+                                             sizeof_elem_array - face_size );
+      entIFace.getEntAdj( vertex, TSTTM::EntityType_REGION, elem_wrapper, region_size );
+    }
   }
   catch(::TSTT::Error &tstt_err) {
     MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );

@@ -15,8 +15,8 @@ PREFIX =
 
 default: msq_test
 
-include Makefile.inc
 include $(MSQ_BASE_DIR)/Makefile.customize
+include Makefile.inc
 MSQ_BASE_DIR = ../..
 
 msq_test : $(TEST_OBJS) $(MSQ_BASE_DIR)/lib/libmesquite.a
@@ -25,7 +25,7 @@ msq_test : $(TEST_OBJS) $(MSQ_BASE_DIR)/lib/libmesquite.a
         $(TEST_OBJS) \
         -o $@ \
         -L$(MSQ_BASE_DIR)/lib -lmesquite \
-         $(CONFIG_LDFLAGS) $(CPPUNIT_LNK)
+         $(CONFIG_LDFLAGS) $(CPPUNIT_LNK) $(TSTT_MESH_LDFLAGS)
 
 clean:
 	@rm -f *.o msq_test

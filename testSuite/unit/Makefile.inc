@@ -24,7 +24,11 @@ TEST_SRCS = msq_test_main.cpp \
     VertexCullingRegressionTest.cpp \
     ExodusTest.cpp \
     MeshInterfaceTest.cpp \
-    TopologyInfoTest.cpp
+    TopologyInfoTest.cpp 
+
+ifeq ($(MSQ_TSTT_MESH),yes)
+    TEST_SRCS += TSTT_Test.cpp
+endif
 
 TEST_OBJS = ${TEST_SRCS:.cpp=.o}
 
@@ -36,12 +40,12 @@ $(MSQ_TEST) : $(TEST_OBJS_P) $(locallibdir)/libmesquite.a
         $(TEST_OBJS_P) \
         -o $@ \
         -L$(locallibdir) -lmesquite \
-        $(CPPUNIT_LNK) $(CONFIG_LDFLAGS)
+        $(CPPUNIT_LNK) $(CONFIG_LDFLAGS) $(TSTT_MESH_LDFLAGS)
 
 .SUFFIXES : .cpp .o
 
 .cpp.o:
 	@echo "Compiling $<"
 	$(PREFIX)$(CXX) -c $(CXXFLAGS) $(CONFIG_CFLAGS) \
-        $(MESQUITE_INCLUDE) $(CPPUNIT_INC) \
+        $(MESQUITE_INCLUDE) $(CPPUNIT_INC) $(TSTT_MESH_CFLAGS) \
         -c -o $@ $<

@@ -73,11 +73,13 @@ protected:
 private:
 
   mutable TSTTG::Shape  geomIface;
+  mutable TSTTG::Topology topoIface;
   mutable TSTTM::Mesh   meshIface;
   mutable TSTTR::Relate relateIface;
   
   mutable sidl::array<void*> oneGeomHandle, oneMeshHandle;
   mutable sidl::array<double> oneVectorIn, oneVectorOut;
+  mutable sidl::array<TSTTG::GentityType> oneTypeOut;
 };
 
 
@@ -104,12 +106,14 @@ GeomTSTTImpl::GeomTSTTImpl( TSTTG::Geometry& geom,
                             TSTTR::Relate& relate ) 
                             throw ( TSTT::Error )
   : geomIface( geom ), 
+    topoIface( geom ),
     meshIface(mesh), 
     relateIface( relate ),
     oneGeomHandle( alloc_sidl_vector<void*>(1) ),
     oneMeshHandle( alloc_sidl_vector<void*>(1) ),
     oneVectorIn ( alloc_sidl_vector<double>(3) ),
-    oneVectorOut( alloc_sidl_vector<double>(3) )
+    oneVectorOut( alloc_sidl_vector<double>(3) ),
+    oneTypeOut( alloc_sidl_vector<TSTTG::GentityType>(1) )
 {
 }
 
@@ -151,7 +155,11 @@ void* GeomTSTTImpl::geom_from_mesh( void* mesh_ent_handle ) const
                                       &meshIface,
                                       oneMeshHandle, 1,
                                       oneGeomHandle, junk );
-  return oneGeomHandle.get(0);
+  // get dimension
+  junk = 1;
+  topoIface.gentityGetType( oneGeomHandle, 1, oneTypeOut, junk );
+                                      
+  return oneTypeOut[0] == TSTTG::GentityType_GREGION ? 0 : oneGeomHandle.get(0);
 }
 
 void GeomTSTTImpl::move_to( void* geom, Vector3D& coord ) const
@@ -162,7 +170,7 @@ void GeomTSTTImpl::move_to( void* geom, Vector3D& coord ) const
   oneVectorIn.set( 2, coord[2] );
   oneGeomHandle.set( 0, geom );
 
-  int junk;
+  int junk = 3;
   geomIface.gentityClosestPoint( oneGeomHandle, 1,
                                  oneVectorIn,   3,
                                  oneVectorOut, junk );
