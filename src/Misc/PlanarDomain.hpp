@@ -18,6 +18,8 @@ namespace Mesquite
           mMesh(mesh)
       {}
     
+    virtual ~PlanarDomain() { }
+
     void set_plane(const Vector3D& normal, const Vector3D& point)
       {
         mNormal = normal / normal.length();

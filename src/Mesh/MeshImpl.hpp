@@ -26,7 +26,7 @@ namespace Mesquite
   public:
 //********* Functions that are NOT inherited ************
     MeshImpl();
-    ~MeshImpl();
+    virtual ~MeshImpl();
     void read_vtk(const char* in_filename, Mesquite::MsqError &err);
     void write_vtk(const char* out_filename, Mesquite::MsqError &err);
     void read_exodus(const char* in_filename, Mesquite::MsqError &err);

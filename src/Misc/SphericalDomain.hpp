@@ -17,6 +17,8 @@ namespace Mesquite
           mRadius(radius),
           mMesh(mesh)
       {}
+
+    virtual ~SphericalDomain() { }
     
     void set_sphere(const Vector3D& center, double radius)
       {
