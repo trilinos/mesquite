@@ -81,8 +81,6 @@ AC_PROG_RANLIB
 AC_PROG_CC
 AC_PROG_CXXCPP
 AC_PROG_CXX
-AC_CHECK_PROG(SED,sed,sed)
-if test -z $SED; then AC_MSG_ERROR("configure requires sed"); fi
 MSQ_CHK_PROG_WITH(MAKEDEPEND, makedepend, /bin/true, [[
   --with-makedpend=PROG   Full path to C/C++ dependency generator
   --without-makedepend    Do not generate dependency information during build]], 
@@ -181,8 +179,10 @@ AC_ARG_WITH(exodus,[[
   ])
 
 NETCDF_DIR=
+HAVE_NETCDF=no
 AC_ARG_WITH(netcdf,[[
-  --with-netcdf[=DIR]     ExodusII requires NetCDF - defaults to values for --with-exodus
+  --with-netcdf[=DIR]     ExodusII requires NetCDF - defaults to values for 
+                          --with-exodus
   --without-netcdf        Skip NetCDF check]],
   [NETCDF_DIR=$withval], [NETCDF_DIR=none])
 # Ignore netcdf if no exodus
@@ -198,7 +198,11 @@ if test -n "$EXODUS_CFLAGS"; then
     if test "$NETCDF_DIR" = "yes"; then
       AC_CHECK_HEADER( [netcdf.h], [], [AC_MSG_ERROR("netcdf.h not found")])
       AC_CHECK_LIB( [netcdf], nc_open, 
-        [EXODUS_LDFLAGS="$EXODUS_LDFLAGS -lnetcdf"], [AC_MSG_WARN("No NetCDF library")])
+        [HAVE_NETCDF=yes
+         NETCDF_DIR=
+         EXODUS_LDFLAGS="$EXODUS_LDFLAGS -lnetcdf"
+        ], 
+        [AC_MSG_WARN("No NetCDF library")])
     else
       if test "$NETCDF_DIR" != "$EXODUS_DIR"; then
         EXODUS_LDFLAGS="$EXODUS_LDFLAGS -L${NETCDF_DIR}"
@@ -209,6 +213,7 @@ if test -n "$EXODUS_CFLAGS"; then
       AC_CHECK_FILE( [${NETCDF_DIR}/libnetcdf.a], 
          [EXODUS_LDFLAGS="${EXODUS_LDFLAGS} -lnetcdf"], 
          [AC_MSG_ERROR("${NETCDF_DIR}/libnetcdf.a does not exist")] )
+      HAVE_NETCDF=yes
     fi
   fi
 fi
@@ -216,6 +221,110 @@ fi
 AC_SUBST(EXODUS_CFLAGS)
 AC_SUBST(EXODUS_LDFLAGS)
 
+#------------------------------------------------------------------------------
+# OVERTURE
+#------------------------------------------------------------------------------
+
+OVERTURE_DIR=
+OVERTURE_LNK=
+OVERTURED_INC=
+AC_ARG_WITH(overture, 
+[[  
+  --with-overture=DIR     Root directory of Overture installation.  Required
+                          for OVERTURE test, may be used for TSTT test ]] ,
+[ if test "$withhval" = "yes"; then
+    AC_MSG_ERROR( "Argument required for --with-overture" )
+  elif test "$withval" != "no"; then
+    OVERTURE_DIR="$withval"
+    OVERTURE_LNK="-L${$withval} -loverture"
+    OVERTURE_INC="-I${$withval}"
+    TSTT_SERVER=OVERTURE
+  fi
+])
+
+AC_SUBST(OVERTURE_DIR)
+AC_SUBST(OVERTURE_LNK)
+AC_SUBST(OVERTURE_INC)
+
+
+#------------------------------------------------------------------------------
+# MOAB
+#------------------------------------------------------------------------------
+
+HDF5_LNK=
+AC_ARG_WITH(hdf5,
+[[  --with-hdf5=[DIR]       Specify path where HDF5 is installed.  libhdf5 may
+                          be required by MOAB. ]],
+[ if test "$withval" = "yes"; then
+    AC_CHECK_LIB( [hdf5], H5Fopen, [HDF5_LNK=-lhdf5], [AC_MSG_ERROR("HDF5 library not found.")])
+  elif test "$withval" != "no"; then
+    HDF5_LNK="-L$withval/lib -lhdf5"
+  fi
+],[ AC_CHECK_LIB( [hdf5], H5Fopen, [HDF5_LNK=-lhdf5]) ])
+AC_SUBST(HDF5_LNK)
+    
+
+MOAB_DIR=
+MOAB_LNK=
+MOAB_INC=
+AC_ARG_WITH(moab, 
+[[  --with-moab=DIR         Root directory of MOAB installation.  Required
+                          for MDB test, may be used for TSTT test ]] ,
+[ if test "$withhval" = "yes"; then
+    AC_MSG_ERROR( "Argument required for --with-moab" )
+  elif test "$withval" != "no"; then
+    MOAB_DIR="$withval"
+    MOAB_INC="-I${MOAB_DIR}"
+    MOAB_LNK="-L${MOAB_DIR} -lMOAB"
+    TSTT_SERVER=MOAB
+
+      # MOAB requires C++ exodus library - check for it
+    if test "$HAVE_NETCDF" != "yes"; then
+      AC_MSG_ERROR( "MOAB requires NetCDF.  Try --with-netcdf=DIR" );
+    fi
+    if test -z "$NETCDF_DIR" -o ! -r "${NETCDF_DIR}/libnetcdf_c++.a"; then
+      if test ! -r "${MOAB_DIR}/libnetcdf_c++.a"; then
+        AC_CHECK_LIB( [netcdf_c++], main, ,
+         [AC_MSG_ERROR("MOAB requires libnetcdf_c++.a.  Try --with-netcdf=DIR")])
+      fi
+    fi
+    
+      # MOAB may require HDF5 library
+    if test -z "$HDF5_LNK"; then
+      AC_MSG_WARN("MOAB may require libhdf5")
+    fi
+    MOAB_LNK="$MOAB_LNK \$(HDF5_LNK)" 
+  fi
+])
+
+AC_SUBST(MOAB_DIR)
+AC_SUBST(MOAB_LNK)
+AC_SUBST(MOAB_INC)
+
+
+#------------------------------------------------------------------------------
+# AOMD
+#------------------------------------------------------------------------------
+
+AOMD_DIR=
+AOMD_LNK=
+AOMD_INC=
+AC_ARG_WITH(aomd, 
+[[  --with-aomd=DIR         Root directory of AOMD installation.  Required
+                          for AOMD test, may be used for TSTT test ]] ,
+[ if test "$withhval" = "yes"; then
+    AC_MSG_ERROR( "Argument required for --with-aomd" )
+  elif test "$withval" != "no"; then
+    AOMD_DIR="$withval"
+    AOMD_LNK="-L${AOMD_DIR}/lib -laomd"
+    AOMD_INC="-I${AOMD_DIR}/include"
+    TSTT_SERVER=AOMD
+  fi
+])
+
+AC_SUBST(AOMD_DIR)
+AC_SUBST(AOMD_LNK)
+AC_SUBST(AOMD_INC)
 
 #------------------------------------------------------------------------------
 # TSTT-support
@@ -236,7 +345,7 @@ AC_ARG_WITH(tstt,
                           directory is specified, the client interface will
                           be generated from the TSTT interface SIDL 
                           defintion in ${TSTT_CLIENT_DIR}.  This requires the
-                          bable compiler.
+                          babel compiler.
   --without-tstt          Disable compilation of Mesquite-TSTT interface.]],
 [  if test "$withval" == "no"; then
      TSTT_CLIENT_DIR=
@@ -250,70 +359,66 @@ if test "$TSTT_CLIENT_DIR" = "$MSQ_DEFAULT_TSTT_DIR"; then
   TSTT_CFLAGS="$TSTT_CFLAGS -I$TSTT_CLIENT_DIR"
   TSTT_CLIENT_SRCS='$(IORSRCS) $(STUBSRCS)'
   TSTT_MKINCL="include ${TSTT_CLIENT_DIR}/babel.make"
-  TSTT_OBJS='$(TSTT_SRCS:.cpp=.o)'
+  TSTT_OBJS='$(TSTT_SRCS:src/Mesh/%.cpp=obj/%.o)'
 fi
 AC_SUBST(TSTT_CLIENT_DIR)
 
-
-TSTT_SERVER_LINK=
+TEST_TSTT=
 AC_ARG_WITH(tstt-server,
-[[  --with-tstt-server=DIR,LIB[,LIB2] Specify an mesh database implementing the
-                          TSTT interface for use in testing.  This is not
-                          required for building Mesquite.  It is used to build
-                          test cases which test/require a TSTT implementation.
-                          The argument list is required, and is a comma-
-                          separated list of values.  The first value is the
-                          directory containing the libraries composing the TSTT
-                          server implementation.  If no directory is specified,
-                          the default library search path will be used.  The
-                          remaining arguments are the names of libraries 
-                          required for the TSTT server implementation.  
-                          Example:
-                          --with-tstt-server=../MOAB,MOAB,MOABServer will
-                          include ../MOAB/libMOAB.so and ../MOAB/libMOABServer.so
-                          in the list of link libs.
+[[  --with-tstt-server=[AOMD|MOAB|OVERTURE] Specify an mesh database implementing 
+                          the TSTT interface for use in testing.  This is not
+                          required for building Mesquite.  It is also necessary
+                          to specify the location of the corresponding TSTT 
+                          server with one of "--with-aomd=DIR", 
+                          "--with-moab=DIR" or "--with-overture=DIR".  If no
+                          parameter is specified, will default to the first
+                          option for which the location has been specified.
   --without-tstt-server   Do not build tests that require TSTT. ]],
-[ if test "$withval" == "yes"; then
-    AC_MSG_ERROR("An argument is required for --with-tstt-server")
-  elif test "$withval" != "no"; then
-    
-    SERVER_DIR=`echo "$withval" | $SED -e "s/,.*$//"
-    withval=`echo "$withval" | $SED -e "s/^[^,]*,//"
-    if test -n "$SERVER_DIR"; then
-      if test ! -d "$SERVER_DIR"; then
-        AC_MSG_ERROR("$SERVER_DIR is not a directory.")
-      fi
-      SERVER_DIR="-L$SERVER_DIR"
-    fi
-    
-    if test -z "$withval"; then
-      AC_MSG_ERROR("No library specified for --with-tstt-server")
-    fi
-    
-    LIBLIST=
-    while test -n "$withval"; do
-      lib=`echo "$withval" | $SED -e "s/,.*$//"
-      withval=`echo "$withval" | $SED -e "s/^[^,]*,//"
-      LIBLIST="$LIBLIST -l$lib"
-    done
-  
-    TSTT_LDFLAGS="$TSTT_LDFLAGS ${SERVER_DIR}${LIBLIST}"
+[ TEST_TSTT=$withval ], [ TEST_TSTT= ] )
+if test -z "$TEST_TSTT"; then
+  TEST_TSTT="$TSTT_SERVER"
+elif test "$TEST_TSTT" = "yes"; then
+  if test -z "$TSTT_SERVER"; then
+    AC_MSG_ERROR( "No server implementation specified for TSTT test" )
   fi
-])
-    
-    
+  TEST_TSTT="$TSTT_SERVER"
+elif test "$TSTT_TEST" = "no"; then
+  TSTT_TEST=
+fi
+if test "$TEST_TSTT" = "AOMD"; then
+  if test -z "$AOMD_DIR"; then
+    AC_MSG_ERROR( "Path for AOMD server to specfied" )
+  fi
+  TSTT_LDFLAGS="$TSTT_LDFLAGS \$(AOMD_LNK)"
+  TSTT_CFLAGS="$TSTT_CFLAGS \$(AOMD_INC) -DMSQ_TSTT_USE_AOMD"
+elif test "$TEST_TSTT" = "MOAB"; then
+  if test -z "$MOAB_DIR"; then
+    AC_MSG_ERROR( "Path for MOAB server to specfied" )
+  fi
+  TSTT_LDFLAGS="$TSTT_LDFLAGS \$(MOAB_LNK) -L\$(MOAB_DIR)/TSTT -lMOABserver -lnetcdf_c++"
+  TSTT_CFLAGS="$TSTT_CFLAGS \$(MOAB_INC) \$(MOAB_INC)/TSTT \$(MOAB_INC)/TSTT/server -DMSQ_TSTT_USE_MOAB"
+elif test "$TEST_TSTT" = "OVERTURE"; then
+  if test -z "$OVERTURE_DIR"; then
+    AC_MSG_ERROR( "Path for OVERTURE server to specfied" )
+  fi
+  TSTT_LDFLAGS="$TSTT_LDFLAGS \$(OVERTURE_LNK)"
+  TSTT_CFLAGS="$TSTT_CFLAGS \$(OVERTURE_INC) -DMSQ_TSTT_USE_OVERTURE"
+elif test -n "$TEST_TSTT"; then
+  AC_MSG_ERROR( "Invalid argument for --with-tstt-server : $TEST_TSTT" );
+fi
 
 
   # Check for SIDL library (required for TSTT)
 AC_ARG_WITH(babel,
-[[  --with-babel[=DIR]       Specify directory where Babel exectuable and SIDL headers/libs are installed.
-  --without-babel          Disable use of Babel/SIDL]],
+[[  --with-babel[=DIR]      Specify directory where Babel exectuable and 
+                          SIDL headers/libs are installed.
+  --without-babel         Disable use of Babel/SIDL]],
   [
   if test "$withval" == "yes"; then
 
     AC_CHECK_HEADER( [sidl.h], [], [AC_MSG_ERROR("sidl.h not found")])
     AC_CHECK_LIB( [sidl], SIDL_long__array_copy, 
-      [TSTT_LDFLAGS="$TSTT_LDFLAGS -lsidl"], 
+      [TSTT_LDFLAGS="TSTT_LDFLAGS -lsidl"], 
       [AC_MSG_WARN("No SIDL library")])
     AC_CHECK_PROG( BABEL, babel, babel )
 
@@ -360,54 +465,6 @@ AC_SUBST(TSTT_CLIENT_SRCS)
 AC_SUBST(TSTT_MKINCL)
 AC_SUBST(BABEL)
 
-#------------------------------------------------------------------------------
-# AOMD: See if the user gave us the location of cca-spec
-# then search $ccatut_cca_spec_dirs.
-# One of these directories must be
-# present and contain the correct files, or else the user
-# must give the directory that contains the correct files.
-#------------------------------------------------------------------------------
-# cca spec (must contain java and cxx binding subdirs)
-
-AC_ARG_WITH(aomd, 
-    [Location of aomd library:
-  --with-aomd=AOMD_LIB
-                          The location of AOMD libary
-                          Give the full path:
-                              --with-aomd='/.../libaomd.so'
-                          or check out the library from the 
-                          tstt web pages. ] ,
-    , [with_aomd=no])
-
-case "$with_aomd" in
-    no)
-        # Default. No AOMD link. 
-        with_aomd=no 
-        ;;
-    yes)
-        #  User asked for AOMD. No path given. 
-	# Looking if it is in standard Mesquite location.
-	AC_CHECK_PROG(AOMD_LIB, libaomd.so, "$with_aomd"/libaomd.so, notfound, "$MSQROOT"/external/AOMD/lib/) 
-        ;;
-    *)
-	# User gave AOMD exact location.
-	AC_CHECK_PROG(AOMD_LIB, libaomd.so, "$with_aomd"/libaomd.so, notfound, "$MSQROOT"/external/AOMD/lib/)        
-	AOMD_ROOT="$with_aomd" 
-        ;;
-esac
-
-AOMD_ROOT="$with_aomd"
-
-AC_SUBST(AOMD_ROOT)
-
-AOMD_FLAG=""
-if test ! "$with_aomd" = no ; then
-  AOMD_FLAG="-D_MY_HASH_TABLE_"
-fi
-AC_SUBST(AOMD_FLAG)
-
-
-# ----------------------------------------------------------------
 
 #------------------------------------------------------------------------------
 # CppUnit
@@ -416,8 +473,8 @@ CPPUNIT_INC=
 CPPUNIT_LNK=
 WITH_CPPUNIT=no
 AC_ARG_WITH(cppunit,[[
-  --with-cppunit[=DIR]     Specify directory where CppUnit is installed.
-  --without-cppunit        Disable CppUnit tests]],
+  --with-cppunit[=DIR]    Specify directory where CppUnit is installed.
+  --without-cppunit       Disable CppUnit tests]],
   [
   AC_LANG_PUSH(C++)
   if test "$withval" == "yes"; then

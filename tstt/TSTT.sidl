@@ -8,7 +8,7 @@ package TSTT version 0.6
 
    enum ErrorActions {
       SILENT,
-      PRINT_ERROR,		 
+      WARN_ONLY,		 
       ABORT_ON_ERROR,
       PRINT_AND_THROW_ERROR, 
       THROW_ERROR		 
@@ -61,245 +61,60 @@ package TSTT version 0.6
    };
 
 
+   //====================================================
+   //  BASCI TAG FUNCTIONALITY
+   //====================================================
    interface Tag {
       void createTag(in string tag_name, in int tag_size,
                      in TagValueType tag_type,
-                     in opaque default_value,
                      out opaque tag_handle) throws Error;
       void destroyTag(in opaque tag_handle, in bool forced) throws Error;
       string getTagName(in opaque tag_handle) throws Error;
       int getTagSize(in opaque tag_handle) throws Error;
       opaque getTagHandle(in string tag_name) throws Error;
-      TagValueType getTagType(in opaque tag_handle) throws TSTT.Error;
-   };
-
-}  // END TSTT
-
-
-//==========================================================
-// TSTT MESH INTERFACE
-//==========================================================
-
-//
-// Only import TSTT if the TSTTM package appears in a separate sidl file. -TLD
-//
-//import TSTT version 0.6;
-package TSTTM version 0.6
-{
-
-   enum EntityType {       
-      VERTEX, 
-      EDGE, 
-      FACE, 
-      REGION,
-      ALL_TYPES
-   };
-
-
-   enum EntityTopology {
-      POINT,              /**< a general zero-dimensional entity  */
-      LINE_SEGMENT,       /**< a general one-dimensional entity  */
-      POLYGON,            /**< a general two-dimensional element  */
-      TRIANGLE,           /**< a three-sided, two-dimensional element  */
-      QUADRILATERAL,      /**< a four-sided, two-dimensional element  */
-      POLYHEDRON,         /**< a general three-dimensional element */
-      TETRAHEDRON,        /**< a four-sided, three-dimensional element whose 
-       *                            faces are quadrilaterals */
-      HEXAHEDRON,         /**< a six-sided, three-dimensional element whose 
-       *                            faces are quadrilaterals */
-      PRISM,              /**< a five-sided, three-dimensional element which 
-       *                            has three quadrilateral faces and two
-       *                            triangular faces  */
-      PYRAMID,            /**< a five-sided, three-dimensional element
-       *                            which has one quadrilateral face and four
-       *                            triangular faces */
-      SEPTAHEDRON,        /**< a hexahedral entity with one collapsed edge */
-      ALL_TOPOLOGIES      /**< allows the user to request information 
-       *                            about all the topology types */
-   };
-
-
-   enum StorageOrder {
-      BLOCKED,
-      INTERLEAVED,
-      UNDETERMINED
-   };
-
-   enum AdjacencyCost {
-      UNAVAILABLE,          /**< Adjacency information not supported */
-      IMMEDIATE,            /**< No mesh traversal required */
-      LOCAL_TRAVERSAL,      /**< Must traverse entity's neighborhood */
-      GLOBAL_TRAVERSAL      /**< Must traverse entire mesh */
+      TagValueType getTagType(in opaque tag_handle) throws Error;
    };
 
 
    //====================================================
-   //  Core Mesh Interface
+   //  ENTITY TAGS
    //====================================================
-
-   interface Mesh {
-
-      // input/output
-      void load( in string name) throws TSTT.Error;
-      void save( in string name) throws TSTT.Error;
-
-      // global info
-      opaque getRootSet() throws TSTT.Error;
-      int getGeometricDim() throws TSTT.Error;
-      StorageOrder getDfltStorage() throws TSTT.Error;
-      void getAdjTable( inout array< AdjacencyCost > adjacency_table,
-                        out int adjacency_table_size) throws TSTT.Error;
-  
-      int  getNumOfType( in opaque entity_set_handle, 
-                         in EntityType entity_type) throws TSTT.Error;
-      int  getNumOfTopo( in opaque entity_set_handle,
-                         in EntityTopology entity_topology) throws TSTT.Error;
-
-      // primitive arrays
-      void getAllVtxCoords( in opaque entity_set,
-                            inout array<double> coords, 
-                            out int coords_size,
-                            inout array<int> in_entity_set,
-                            out int in_entity_set_size,
-                            inout StorageOrder storage_order) 
-            throws TSTT.Error;
-      void getVtxCoordIndex( in opaque entity_set,
-                             in EntityType requested_entity_type, 
-                             in EntityTopology requested_entity_topology,
-                             in EntityType entity_adjacency_type,
-                             inout array<int> offset,
-                             out int offset_size,
-                             inout array<int> index,
-                             out int index_size,
-                             inout array<EntityTopology> entity_topologies,
-                             out int entity_topologies_size) throws TSTT.Error;
-
-      // entity arrays
-      void getEntities( in opaque entity_set, 
-                        in EntityType entity_type, 
-                        in EntityTopology entity_topology,
-                        inout array<opaque> entity_handles,
-                        out int entity_handles_size) throws TSTT.Error;
-      void getVtxArrCoords( in array<opaque> vertex_handles, 
-                            in int vertex_handles_size,
-                            inout StorageOrder storage_order,
-                            inout array<double> coords,
-                            out int coords_size) throws TSTT.Error;
-      void getAdjEntities( in opaque entity_set,
-                           in EntityType entity_type_requestor, 
-                           in EntityTopology entity_topology_requestor,
-                           in EntityType entity_type_requested,
-                           inout array<opaque> adj_entity_handles, 
-                           out int adj_entity_handles_size,
-                           inout array<int> offset,
-                           out int offset_size,
-                           inout array<int> in_entity_set,
-                           out int in_entity_set_size) throws TSTT.Error;
-   };
-
-
-   //====================================================
-   //  SINGLE ENTITY TRAVERSAL, QUERY
-   //====================================================
-
-   interface Entity extends Mesh {
-      // traverse
-      void initEntIter( in opaque entity_set_handle,
-                        in EntityType requested_entity_type, 
-                        in EntityTopology requested_entity_topology,
-                        out opaque entity_iterator ) throws TSTT.Error;
-      bool getNextEntIter( in opaque entity_iterator,
-                           out opaque entity_handle ) throws TSTT.Error;
-      void resetEntIter( in opaque entity_iterator) throws TSTT.Error;
-      void endEntIter( in opaque entity_iterator) throws TSTT.Error;
-    
-      // query
-      EntityTopology getEntTopo( in opaque entity_handle) throws TSTT.Error;
-      EntityType getEntType( in opaque entity_handle) throws TSTT.Error;
-      void getVtxCoord( in opaque vertex_handle, inout array<double> coords,
-                        out int coords_size) throws TSTT.Error;
-      void getEntAdj( in opaque entity_handle, 
-                      in EntityType entity_type_requested, 
-                      inout array<opaque> adj_entity_handles, 
-                      out int adj_entity_handles_size) throws TSTT.Error;
-   };
-
-
-   //====================================================
-   //  SINGLE ENTITY TAGS
-   //====================================================
-
-   interface EntTag extends Entity, TSTT.Tag {
+   interface EntTag extends Tag {
       void getData( in opaque entity_handle, 
                     in opaque tag_handle,
-                    out opaque tag_value,
-                    out int tag_size) throws TSTT.Error;
+                    inout array<opaque> tag_value,
+                    out int tag_value_size,
+                    out int tag_size) throws Error;
       int getIntData( in opaque entity_handle, 
-                      in opaque tag_handle) throws TSTT.Error;
+                      in opaque tag_handle) throws Error;
       double getDblData( in opaque entity_handle, 
-                         in opaque tag_handle) throws TSTT.Error;
+                         in opaque tag_handle) throws Error;
       bool getBoolData( in opaque entity_handle, 
-                        in opaque tag_handle) throws TSTT.Error;
+                        in opaque tag_handle) throws Error;
       opaque getEHData( in opaque entity_handle, 
-                        in opaque tag_handle) throws TSTT.Error;
+                        in opaque tag_handle) throws Error;
       void setData( in opaque entity_handle, in opaque tag_handle, 
-                    in opaque tag_value, in int tag_size) throws TSTT.Error; 
+                    in array<opaque> tag_value, in int tag_value_size,
+                    in int tag_size) throws Error; 
       void setIntData( in opaque entity_handle, in opaque tag_handle, 
-                       in int tag_value) throws TSTT.Error; 
+                       in int tag_value) throws Error; 
       void setDblData( in opaque entity_handle, in opaque tag_handle, 
-                       in double tag_value) throws TSTT.Error; 
+                       in double tag_value) throws Error; 
       void setBoolData( in opaque entity_handle, in opaque tag_handle, 
-                        in bool tag_value) throws TSTT.Error;
+                        in bool tag_value) throws Error;
       void setEHData( in opaque entity_handle, in opaque tag_handle,
-                      in opaque tag_value) throws TSTT.Error;
+                      in opaque tag_value) throws Error;
       void getAllTags( in opaque entity_handle, 
                        inout array<opaque> tag_handles,
-                       out int tag_handles_size) throws TSTT.Error;
+                       out int tag_handles_size) throws Error;
       void rmvTag( in opaque entity_handle,
-                   in opaque tag_handle) throws TSTT.Error;
+                   in opaque tag_handle) throws Error;
    };
-
-
-   //====================================================
-   //  ENTITY ARRAY TRAVERSAL, QUERY
-   //====================================================
-
-   interface Arr extends Mesh {
-      //traverse
-      void initEntArrIter( in opaque entity_set_handle,
-                           in EntityType requested_entity_type, 
-                           in EntityTopology requested_entity_topology,
-                           in int requested_array_size,
-                           out opaque entArr_iterator ) throws TSTT.Error;
-      bool getEntArrNextIter( in opaque entArr_iterator,
-                              inout array<opaque> entity_handles,
-                              out int entity_handles_size) throws TSTT.Error;
-      void resetEntArrIter( in opaque entArr_iterator) throws TSTT.Error;
-      void endEntArrIter( in opaque entArr_iterator) throws TSTT.Error;
-
-      //query 
-      void getEntArrTopo( in array<opaque> entity_handles, 
-                          in int entity_handles_size,
-                          inout array<EntityTopology> topology,
-                          out int topology_size) throws TSTT.Error;
-      void getEntArrType( in array<opaque> entity_handles, 
-                          in int entity_handles_size,
-                          inout array<EntityType> type,
-                          out int type_size) throws TSTT.Error;
-      void getEntArrAdj( in array<opaque> entity_handles, 
-                         in int entity_handles_size,
-                         in EntityType entity_type_requested, 
-                         inout array<opaque> adj_entity_handles, 
-                         out int adj_entity_handles_size,
-                         inout array<int> offset,
-                         out int offset_size) throws TSTT.Error;
-   };
-
 
    //====================================================
    //  ENTITY ARRAY TAGS
    //====================================================
-   interface ArrTag extends Arr, TSTT.Tag {
+   interface ArrTag extends Tag {
       void getArrData( in array<opaque> entity_handles, 
                         in int entity_handles_size,
                         in opaque tag_handle,
@@ -314,7 +129,7 @@ package TSTTM version 0.6
       void getDblArrData( in array<opaque> entity_handles, 
                           in int entity_handles_size,
                           in opaque tag_handle,
-                          inout array<int> tag_value,
+                          inout array<double> tag_value,
                           out int tag_value_size) throws TSTT.Error;
       void getBoolArrData( in array<opaque> entity_handles, 
                            in int entity_handles_size,
@@ -324,7 +139,6 @@ package TSTTM version 0.6
       void getEHArrData( in array<opaque> entity_handles,
                          in int entity_handles_size, 
                          in opaque tag_handle,
-                         inout array<int> tag_value, 
                          inout array<opaque> tag_value,
                          out int tag_value_size) throws TSTT.Error;
       void setArrData( in array<opaque> entity_handles, 
@@ -360,54 +174,14 @@ package TSTTM version 0.6
 
 
    //===================================================
-   // BASIC ENTITY SET (CREATE)
-   //===================================================
-
-   interface EntSet extends Mesh {
-
-      // create/destroy 
-      void createEntSet( in bool isList,
-                         out opaque entity_set) throws TSTT.Error;
-      void destroyEntSet( in opaque entity_set) throws TSTT.Error;
-
-      // get the entity sets
-      int getNumEntSets( in opaque entity_set, 
-                         in bool recursive) throws TSTT.Error;
-      void getEntSets ( in opaque entity_set,
-                        inout array<opaque> contained_entity_set_handles,
-                        out int contained_entity_set_handles_size,
-                        in bool recursive) throws TSTT.Error;
-
-      // add and remove entities 
-      void addEntToSet( inout opaque entity_set, 
-                        in opaque entity_handle) throws TSTT.Error;
-      void rmvEntFromSet( inout opaque entity_set, 
-                          in opaque entity_handle) throws TSTT.Error;
-      void addEntArrToSet( inout opaque entity_set, 
-                           in array<opaque> entity_handles,
-                           in int entity_handles_size) throws TSTT.Error;
-      void rmvEntArrFromSet( inout opaque entity_set, 
-                             in array<opaque> entity_handles,
-                             in int entity_handles_size) throws TSTT.Error;
-
-      // add/remove entity sets
-      void addEntSets( inout opaque entity_set, 
-                       in array<opaque> entity_set_handles,
-                       in int entity_set_handles_size) throws TSTT.Error;
-      void rmvEntSets( inout opaque entity_set, 
-                       in array<opaque> entity_set_handles,
-                       in int entity_set_handles_size) throws TSTT.Error;
-   };
-
-
-   //===================================================
    // ENTITY SET TAGS
    //===================================================
 
-   interface SetTag extends EntSet, TSTT.Tag {
+   interface SetTag extends Tag {
       //tags 
       void setEntSetData( in opaque entity_set,
-                          in opaque tag_handle, in opaque tag_value, 
+                          in opaque tag_handle, in array<opaque> tag_value, 
+                          in int tag_value_size,
                           in int tag_size) throws TSTT.Error;
       void setEntSetIntData( in opaque entity_set,
                              in opaque tag_handle, in int tag_value)
@@ -422,7 +196,9 @@ package TSTTM version 0.6
                             in opaque tag_handle, in opaque tag_value) 
             throws TSTT.Error;
       void getEntSetData( in opaque entity_set,
-                          in opaque tag_handle, inout opaque tag_value, 
+                          in opaque tag_handle, 
+                          inout array<opaque> tag_value, 
+                          inout int tag_value_size,
                           out int tag_size) throws TSTT.Error;
       int getEntSetIntData( in opaque entity_set, 
                             in opaque tag_handle) throws TSTT.Error;
@@ -433,103 +209,97 @@ package TSTTM version 0.6
       opaque getEntSetEHData( in opaque entity_set, 
                               in opaque tag_handle) throws TSTT.Error;
 
-      void getEntSetAllTags( in opaque entity_set, 
+      void getAllEntSetTags( in opaque entity_set, 
                              inout array<opaque> tag_handles,
                              out int tag_handles_size) throws TSTT.Error;
-      void rmvEntSetTag( in opaque entity_set, in opaque tag_handle,
-                         out int tag_handles_size) throws TSTT.Error;
+      void rmvEntSetTag( in opaque entity_set, 
+                         in opaque tag_handle) throws TSTT.Error;
    };
 
 
-   //============================================
-   //  SET RELATIONS INTERFACE (PARENT/CHILD)
-   //============================================
+   interface EntSet {
+
+      // create/destroy 
+      void createEntSet( in bool isList,
+                         out opaque entity_set) throws TSTT.Error;
+
+      void destroyEntSet( in opaque entity_set) throws TSTT.Error;
+
+      // is this set ordered?
+      bool isList(in opaque entity_set) throws TSTT.Error;
+
+      // get the entity sets
+      int getNumEntSets( in opaque entity_set, 
+                         in int num_hops) throws TSTT.Error;
+
+      void getEntSets ( in opaque entity_set, in int num_hops,
+                        inout array<opaque> contained_entity_set_handles,
+                        out int contained_entity_set_handles_size) throws TSTT.Error;
+
+      // add and remove entities 
+      void addEntToSet(in opaque entity_handle,
+                       inout opaque entity_set) throws TSTT.Error;
+
+      void rmvEntFromSet( in opaque entity_handle,
+                          inout opaque entity_set) throws TSTT.Error;
+
+      void addEntArrToSet( in array<opaque> entity_handles,
+                           in int entity_handles_size,
+                           inout opaque entity_set) throws TSTT.Error;
+
+      void rmvEntArrFromSet( in array<opaque> entity_handles,
+                             in int entity_handles_size,
+                             inout opaque entity_set) throws TSTT.Error;
+
+      // add/remove entity sets
+      void addEntSet( in opaque entity_set_to_add, 
+                      inout opaque entity_set_handle) 
+                      throws TSTT.Error;
+
+      void rmvEntSet( in opaque entity_set_to_remove, 
+                      inout opaque entity_set_handle) 
+                      throws TSTT.Error;
+
+      // check whether an entity set is contained in another
+      bool isContainedIn(in opaque containing_entity_set,
+			in opaque contained_entity_set) throws TSTT.Error;
+   };
+
+
 
    interface SetRelation extends EntSet {
-      bool areRelated( in opaque entity_set_1, 
-                       in opaque entity_set_2) throws TSTT.Error;
-      int  getNumChld( in opaque entity_set) throws TSTT.Error;
-      int  getNumPrnt( in opaque entity_set) throws TSTT.Error;
+      void addPrntChld( inout opaque parent_entity_set, 
+			inout opaque child_entity_set) throws TSTT.Error;
+      void rmvPrntChld( inout opaque parent_entity_set, 
+			inout opaque child_entity_set) throws TSTT.Error;
+
+      bool isChildOf( in opaque parent_entity_set, 
+		      in opaque child_entity_set) throws TSTT.Error;
+
+      int  getNumChld( in opaque entity_set, in int num_hops) throws TSTT.Error;
+      int  getNumPrnt( in opaque entity_set, in int num_hops) throws TSTT.Error;
+
       void getChldn( in opaque from_entity_set, in int num_hops, 
                      inout array<opaque> entity_set_handles,
                      out int entity_set_handles_size) throws TSTT.Error;
       void getPrnts( in opaque from_entity_set, in int num_hops, 
                      inout array<opaque> entity_set_handles,
                      out int entity_set_handles_size) throws TSTT.Error;
-      void addPrnts( inout array<opaque> parent_entity_sets, 
-                     inout array<opaque> child_entity_sets) throws TSTT.Error;
-      void addChldn( inout array<opaque> children_entity_sets,
-                     inout array<opaque> parent_entity_sets) throws TSTT.Error;
-      void rmvLink( inout opaque parent_entity_set, 
-                    inout opaque child_entity_set) throws TSTT.Error;
    };
 
-
-   //============================================
-   //  SET OPERATIONS INTERFACE
-   //============================================
 
    interface SetBoolOps extends EntSet {
       void subtract( in opaque entity_set_1, 
                      in opaque entity_set_2,
                      out opaque result_entity_set) throws TSTT.Error;
-      void intersect( inout opaque entity_set_1, 
+
+      void intersect( in opaque entity_set_1, 
                       in opaque entity_set_2,
                       out opaque result_entity_set) throws TSTT.Error;
-      void unite( inout opaque entity_set_1, 
+
+      void unite( in opaque entity_set_1, 
                   in opaque entity_set_2,
                   out opaque result_entity_set) throws TSTT.Error;
    };
 
- 
-   //============================================
-   //  MODIFY INTERFACE
-   //============================================
-
-   enum CreationStatus {	
-      NEW,               
-      ALREADY_EXISTED,   
-      CREATED_DUPLICATE  
-   };
-
-
-   interface Modify extends Mesh {
-
-      // single entities
-      void setVtxCoords( in opaque vertex_handles, 
-                         in array<double> new_coords) throws TSTT.Error;
-      void createVertex( in array<double> new_coords,
-                         out opaque new_vertex_handle) throws TSTT.Error;
-      void createEntity( in EntityTopology new_entity_topology,
-                         in array<opaque> lower_order_entity_handles, 
-                         in int lower_order_entity_handles_size,
-                         out opaque new_entity_handle,
-                         out CreationStatus status) throws TSTT.Error; 
-      void deleteEntity( in opaque entity_handle) throws TSTT.Error;
-   };
-
-
-   interface ArrMod extends Mesh {
-      // entity arrays
-      void setVtxArrCoords( in array<opaque> vertex_handles, 
-                            in int vertex_handles_size,
-                            in StorageOrder storage_order, 
-                            in array<double> new_coords, 
-                            in int new_coords_size) throws TSTT.Error;
-      void createVertices( in int num_verts,
-                          in StorageOrder storage_order,
-                          in array<double> new_coords,
-                          out array<opaque> new_vertex_handles) 
-            throws TSTT.Error;
-      void createEntities( in EntityTopology new_entity_topology,
-                           in array<opaque> lower_order_entity_handles, 
-                           in int lower_order_entity_handles_size,
-                           inout array<opaque> new_entity_handles,
-                           out int new_entity_handles_size,
-                           inout array<CreationStatus> status,
-                           out int status_size) throws TSTT.Error; 
-      void deleteEntities( in array<opaque> entity_handles,
-                           in int entity_handles_size) throws TSTT.Error;
-   };
-
-} // END TSTTM
+}  // END TSTT

@@ -62,6 +62,7 @@ TESTNAMES := test_1\
              wrapper_tests\
              tutorial\
              test_DFT \
+             test_TSTT \
              escobar \
              Guides843 \
              deforming \
@@ -190,9 +191,11 @@ distrib: all
 	rm -rf mesquite-1.0
 
 # TSTT-interface
-tstt/client/babel.make: tstt/TSTT.sidl
+tstt/client/babel.make: tstt/TSTT.sidl tstt/TSTTM.sidl
 	@echo "Generating TSTT client interface headers and stubs"
-	$(PREFIX) $(BABEL) -cC++ -otstt/client $<
+	$(PREFIX) rm -f tstt/client/* tstt/repo/*
+	$(PREFIX) $(BABEL) -tXML -otstt/repo tstt/TSTT.sidl
+	$(PREFIX) $(BABEL) -cC++ -Rtstt/repo -otstt/client tstt/TSTTM.sidl
 
 
 #distclean: veryclean

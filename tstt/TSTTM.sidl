@@ -1,0 +1,244 @@
+//==========================================================
+// TSTT MESH INTERFACE
+//==========================================================
+
+//
+// Only import TSTT if the TSTTM package appears in a separate sidl file. -TLD
+//
+import TSTT;
+
+package TSTTM version 0.6
+{
+
+   enum EntityType {       
+      VERTEX, 
+      EDGE, 
+      FACE, 
+      REGION,
+      ALL_TYPES
+   };
+
+
+   enum EntityTopology {
+      POINT,              /**< a general zero-dimensional entity  */
+      LINE_SEGMENT,       /**< a general one-dimensional entity  */
+      POLYGON,            /**< a general two-dimensional element  */
+      TRIANGLE,           /**< a three-sided, two-dimensional element  */
+      QUADRILATERAL,      /**< a four-sided, two-dimensional element  */
+      POLYHEDRON,         /**< a general three-dimensional element */
+      TETRAHEDRON,        /**< a four-sided, three-dimensional element whose 
+       *                            faces are quadrilaterals */
+      HEXAHEDRON,         /**< a six-sided, three-dimensional element whose 
+       *                            faces are quadrilaterals */
+      PRISM,              /**< a five-sided, three-dimensional element which 
+       *                            has three quadrilateral faces and two
+       *                            triangular faces  */
+      PYRAMID,            /**< a five-sided, three-dimensional element
+       *                            which has one quadrilateral face and four
+       *                            triangular faces */
+      SEPTAHEDRON,        /**< a hexahedral entity with one collapsed edge */
+      ALL_TOPOLOGIES      /**< allows the user to request information 
+       *                            about all the topology types */
+   };
+
+
+   enum StorageOrder {
+      BLOCKED,
+      INTERLEAVED,
+      UNDETERMINED
+   };
+
+   enum AdjacencyCost {
+      UNAVAILABLE,          /**< Adjacency information not supported */
+      IMMEDIATE,            /**< No mesh traversal required */
+      LOCAL_TRAVERSAL,      /**< Must traverse entity's neighborhood */
+      GLOBAL_TRAVERSAL      /**< Must traverse entire mesh */
+   };
+
+
+   //====================================================
+   //  Core Mesh Interface
+   //====================================================
+
+   interface Mesh {
+
+      // input/output
+      void load( in string name) throws TSTT.Error;
+      void save( in string name) throws TSTT.Error;
+
+      // global info
+      opaque getRootSet() throws TSTT.Error;
+      int getGeometricDim() throws TSTT.Error;
+      StorageOrder getDfltStorage() throws TSTT.Error;
+      void getAdjTable( inout array< AdjacencyCost > adjacency_table,
+                        out int adjacency_table_size) throws TSTT.Error;
+  
+      int  getNumOfType( in opaque entity_set_handle, 
+                         in EntityType entity_type) throws TSTT.Error;
+      int  getNumOfTopo( in opaque entity_set_handle,
+                         in EntityTopology entity_topology) throws TSTT.Error;
+
+      // primitive arrays
+      void getAllVtxCoords( in opaque entity_set,
+                            inout array<double> coords, 
+                            out int coords_size,
+                            inout array<int> in_entity_set,
+                            out int in_entity_set_size,
+                            inout StorageOrder storage_order) 
+                            throws TSTT.Error;
+      void getVtxCoordIndex( in opaque entity_set,
+                             in EntityType requested_entity_type, 
+                             in EntityTopology requested_entity_topology,
+                             in EntityType entity_adjacency_type,
+                             inout array<int> offset,
+                             out int offset_size,
+                             inout array<int> index,
+                             out int index_size,
+                             inout array<EntityTopology> entity_topologies,
+                             out int entity_topologies_size) throws TSTT.Error;
+
+      // entity arrays
+      void getEntities( in opaque entity_set, 
+                        in EntityType entity_type, 
+                        in EntityTopology entity_topology,
+                        inout array<opaque> entity_handles,
+                        out int entity_handles_size) throws TSTT.Error;
+      void getVtxArrCoords( in array<opaque> vertex_handles, 
+                            in int vertex_handles_size,
+                            inout StorageOrder storage_order,
+                            inout array<double> coords,
+                            out int coords_size) throws TSTT.Error;
+      void getAdjEntities( in opaque entity_set,
+                           in EntityType entity_type_requestor, 
+                           in EntityTopology entity_topology_requestor,
+                           in EntityType entity_type_requested,
+                           inout array<opaque> adj_entity_handles, 
+                           out int adj_entity_handles_size,
+                           inout array<int> offset,
+                           out int offset_size,
+                           inout array<int> in_entity_set,
+                           out int in_entity_set_size) throws TSTT.Error;
+   };
+
+
+   //====================================================
+   //  SINGLE ENTITY TRAVERSAL, QUERY
+   //====================================================
+
+   interface Entity extends Mesh {
+      // traverse
+      void initEntIter( in opaque entity_set_handle,
+                        in EntityType requested_entity_type, 
+                        in EntityTopology requested_entity_topology,
+                        out opaque entity_iterator ) throws TSTT.Error;
+      bool getNextEntIter( in opaque entity_iterator,
+                           out opaque entity_handle ) throws TSTT.Error;
+      void resetEntIter( in opaque entity_iterator) throws TSTT.Error;
+      void endEntIter( in opaque entity_iterator) throws TSTT.Error;
+    
+      // query
+      EntityTopology getEntTopo( in opaque entity_handle) throws TSTT.Error;
+      EntityType getEntType( in opaque entity_handle) throws TSTT.Error;
+      void getVtxCoord( in opaque vertex_handle, inout array<double> coords,
+                        out int coords_size) throws TSTT.Error;
+      void getEntAdj( in opaque entity_handle, 
+                      in EntityType entity_type_requested, 
+                      inout array<opaque> adj_entity_handles, 
+                      out int adj_entity_handles_size) throws TSTT.Error;
+   };
+
+
+
+
+   //====================================================
+   //  ENTITY ARRAY TRAVERSAL, QUERY
+   //====================================================
+
+   interface Arr extends Mesh {
+      //traverse
+      void initEntArrIter( in opaque entity_set_handle,
+                           in EntityType requested_entity_type, 
+                           in EntityTopology requested_entity_topology,
+                           in int requested_array_size,
+                           out opaque entArr_iterator ) throws TSTT.Error;
+      bool getEntArrNextIter( in opaque entArr_iterator,
+                              inout array<opaque> entity_handles,
+                              out int entity_handles_size) throws TSTT.Error;
+      void resetEntArrIter( in opaque entArr_iterator) throws TSTT.Error;
+      void endEntArrIter( in opaque entArr_iterator) throws TSTT.Error;
+
+      //query 
+      void getEntArrTopo( in array<opaque> entity_handles, 
+                          in int entity_handles_size,
+                          inout array<EntityTopology> topology,
+                          out int topology_size) throws TSTT.Error;
+      void getEntArrType( in array<opaque> entity_handles, 
+                          in int entity_handles_size,
+                          inout array<EntityType> type,
+                          out int type_size) throws TSTT.Error;
+      void getEntArrAdj( in array<opaque> entity_handles, 
+                         in int entity_handles_size,
+                         in EntityType entity_type_requested, 
+                         inout array<opaque> adj_entity_handles, 
+                         out int adj_entity_handles_size,
+                         inout array<int> offset,
+                         out int offset_size) throws TSTT.Error;
+   };
+
+
+   //============================================
+   //  MODIFY INTERFACE
+   //============================================
+
+   enum CreationStatus {	
+      NEW,               
+      ALREADY_EXISTED,   
+      CREATED_DUPLICATE,
+      CREATION_FAILED
+   };
+
+
+   interface Modify extends Mesh {
+
+      // single entities
+      void setVtxCoords( in opaque vertex_handles, 
+                         in array<double> new_coords,
+                         in int new_coords_size) throws TSTT.Error;
+      void createVtx( in array<double> new_coords,
+                      in int new_coords_size,
+                      out opaque new_vertex_handle) throws TSTT.Error;
+      void createEnt( in EntityTopology new_entity_topology,
+                         in array<opaque> lower_order_entity_handles, 
+                         in int lower_order_entity_handles_size,
+                         out opaque new_entity_handle,
+                         out CreationStatus status) throws TSTT.Error; 
+      void deleteEnt( in opaque entity_handle) throws TSTT.Error;
+   };
+
+
+   interface ArrMod extends Mesh {
+      // entity arrays
+      void setVtxArrCoords( in array<opaque> vertex_handles, 
+                            in int vertex_handles_size,
+                            in StorageOrder storage_order, 
+                            in array<double> new_coords, 
+                            in int new_coords_size) throws TSTT.Error;
+      void createVtxArr( in int num_verts,
+                          in StorageOrder storage_order,
+                          in array<double> new_coords,
+                         in int new_coords_size,
+                          inout array<opaque> new_vertex_handles,
+                         inout int new_vertex_handles_size) 
+            throws TSTT.Error;
+      void createEntArr( in EntityTopology new_entity_topology,
+                           in array<opaque> lower_order_entity_handles, 
+                           in int lower_order_entity_handles_size,
+                           inout array<opaque> new_entity_handles,
+                           out int new_entity_handles_size,
+                           inout array<CreationStatus> status,
+                           out int status_size) throws TSTT.Error; 
+      void deleteEntArr( in array<opaque> entity_handles,
+                           in int entity_handles_size) throws TSTT.Error;
+   };
+
+} // END TSTTM

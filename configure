@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os LN_S SET_MAKE RANLIB ac_ct_RANLIB CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXX CXXFLAGS ac_ct_CXX CXXCPP SED MAKEDEPEND DOXYGEN CPP EGREP HAVE_IEEEFP MSQ_FUNC_DEFS CXX_ARCHIVER EXODUS_CFLAGS EXODUS_LDFLAGS TSTT_CLIENT_DIR BABEL TSTT_CFLAGS TSTT_OBJS TSTT_LDFLAGS TSTT_CLIENT_SRCS TSTT_MKINCL AOMD_LIB AOMD_ROOT AOMD_FLAG CPPUNIT_INC CPPUNIT_LNK MSQ_BASE_DIR LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os LN_S SET_MAKE RANLIB ac_ct_RANLIB CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXX CXXFLAGS ac_ct_CXX CXXCPP MAKEDEPEND DOXYGEN CPP EGREP HAVE_IEEEFP MSQ_FUNC_DEFS CXX_ARCHIVER EXODUS_CFLAGS EXODUS_LDFLAGS OVERTURE_DIR OVERTURE_LNK OVERTURE_INC HDF5_LNK MOAB_DIR MOAB_LNK MOAB_INC AOMD_DIR AOMD_LNK AOMD_INC TSTT_CLIENT_DIR BABEL TSTT_CFLAGS TSTT_OBJS TSTT_LDFLAGS TSTT_CLIENT_SRCS TSTT_MKINCL CPPUNIT_INC CPPUNIT_LNK MSQ_BASE_DIR LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -885,44 +885,41 @@ Optional Packages:
   --with-exodus[=DIR]     Enable exodusII support and specifiy directory
   --without-exodus        Disable exodusII support (default)
 
-  --with-netcdf[=DIR]     ExodusII requires NetCDF - defaults to values for --with-exodus
+  --with-netcdf[=DIR]     ExodusII requires NetCDF - defaults to values for
+                          --with-exodus
   --without-netcdf        Skip NetCDF check
+
+  --with-overture=DIR     Root directory of Overture installation.  Required
+                          for OVERTURE test, may be used for TSTT test
+  --with-hdf5=[DIR]       Specify path where HDF5 is installed.  libhdf5 may
+                          be required by MOAB.
+  --with-moab=DIR         Root directory of MOAB installation.  Required
+                          for MDB test, may be used for TSTT test
+  --with-aomd=DIR         Root directory of AOMD installation.  Required
+                          for AOMD test, may be used for TSTT test
   --with-tstt[=DIR]       Enable compilation of Mesquite-TSTT interface.
                           The argument is the directory containing the TSTT
                           C++ client interface and glue code.  If no
                           directory is specified, the client interface will
                           be generated from the TSTT interface SIDL
                           defintion in ${TSTT_CLIENT_DIR}.  This requires the
-                          bable compiler.
+                          babel compiler.
   --without-tstt          Disable compilation of Mesquite-TSTT interface.
-  --with-tstt-server=DIR,LIB[,LIB2] Specify an mesh database implementing the
-                          TSTT interface for use in testing.  This is not
-                          required for building Mesquite.  It is used to build
-                          test cases which test/require a TSTT implementation.
-                          The argument list is required, and is a comma-
-                          separated list of values.  The first value is the
-                          directory containing the libraries composing the TSTT
-                          server implementation.  If no directory is specified,
-                          the default library search path will be used.  The
-                          remaining arguments are the names of libraries
-                          required for the TSTT server implementation.
-                          Example:
-                          --with-tstt-server=../MOAB,MOAB,MOABServer will
-                          include ../MOAB/libMOAB.so and ../MOAB/libMOABServer.so
-                          in the list of link libs.
+  --with-tstt-server=[AOMD|MOAB|OVERTURE] Specify an mesh database implementing
+                          the TSTT interface for use in testing.  This is not
+                          required for building Mesquite.  It is also necessary
+                          to specify the location of the corresponding TSTT
+                          server with one of "--with-aomd=DIR",
+                          "--with-moab=DIR" or "--with-overture=DIR".  If no
+                          parameter is specified, will default to the first
+                          option for which the location has been specified.
   --without-tstt-server   Do not build tests that require TSTT.
-  --with-babel[=DIR]       Specify directory where Babel exectuable and SIDL headers/libs are installed.
-  --without-babel          Disable use of Babel/SIDL
-Location of aomd library:
-  --with-aomd=AOMD_LIB
-                          The location of AOMD libary
-                          Give the full path:
-                              --with-aomd='/.../libaomd.so'
-                          or check out the library from the
-                          tstt web pages.
+  --with-babel[=DIR]      Specify directory where Babel exectuable and
+                          SIDL headers/libs are installed.
+  --without-babel         Disable use of Babel/SIDL
 
-  --with-cppunit[=DIR]     Specify directory where CppUnit is installed.
-  --without-cppunit        Disable CppUnit tests
+  --with-cppunit[=DIR]    Specify directory where CppUnit is installed.
+  --without-cppunit       Disable CppUnit tests
 
 Some influential environment variables:
   CC          C compiler command
@@ -3516,44 +3513,6 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
-# Extract the first word of "sed", so it can be a program name with args.
-set dummy sed; ac_word=$2
-echo "$as_me:$LINENO: checking for $ac_word" >&5
-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
-if test "${ac_cv_prog_SED+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  if test -n "$SED"; then
-  ac_cv_prog_SED="$SED" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-  for ac_exec_ext in '' $ac_executable_extensions; do
-  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_SED="sed"
-    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-done
-
-fi
-fi
-SED=$ac_cv_prog_SED
-if test -n "$SED"; then
-  echo "$as_me:$LINENO: result: $SED" >&5
-echo "${ECHO_T}$SED" >&6
-else
-  echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
-fi
-
-if test -z $SED; then { { echo "$as_me:$LINENO: error: \"configure requires sed\"" >&5
-echo "$as_me: error: \"configure requires sed\"" >&2;}
-   { (exit 1); exit 1; }; }; fi
 
   msq_tmp_path=$PATH
   if test -n "/usr/bin/X11:/usr/openwin/bin"; then
@@ -5683,6 +5642,7 @@ fi
 fi;
 
 NETCDF_DIR=
+HAVE_NETCDF=no
 
 # Check whether --with-netcdf or --without-netcdf was given.
 if test "${with_netcdf+set}" = set; then
@@ -5912,7 +5872,10 @@ fi
 echo "$as_me:$LINENO: result: $ac_cv_lib_netcdf_nc_open" >&5
 echo "${ECHO_T}$ac_cv_lib_netcdf_nc_open" >&6
 if test $ac_cv_lib_netcdf_nc_open = yes; then
-  EXODUS_LDFLAGS="$EXODUS_LDFLAGS -lnetcdf"
+  HAVE_NETCDF=yes
+         NETCDF_DIR=
+         EXODUS_LDFLAGS="$EXODUS_LDFLAGS -lnetcdf"
+
 else
   { echo "$as_me:$LINENO: WARNING: \"No NetCDF library\"" >&5
 echo "$as_me: WARNING: \"No NetCDF library\"" >&2;}
@@ -5975,9 +5938,337 @@ echo "$as_me: error: \"${NETCDF_DIR}/libnetcdf.a does not exist\"" >&2;}
    { (exit 1); exit 1; }; }
 fi
 
+      HAVE_NETCDF=yes
     fi
   fi
 fi
+
+
+
+
+#------------------------------------------------------------------------------
+# OVERTURE
+#------------------------------------------------------------------------------
+
+OVERTURE_DIR=
+OVERTURE_LNK=
+OVERTURED_INC=
+
+# Check whether --with-overture or --without-overture was given.
+if test "${with_overture+set}" = set; then
+  withval="$with_overture"
+   if test "$withhval" = "yes"; then
+    { { echo "$as_me:$LINENO: error: \"Argument required for --with-overture\" " >&5
+echo "$as_me: error: \"Argument required for --with-overture\" " >&2;}
+   { (exit 1); exit 1; }; }
+  elif test "$withval" != "no"; then
+    OVERTURE_DIR="$withval"
+    OVERTURE_LNK="-L${$withval} -loverture"
+    OVERTURE_INC="-I${$withval}"
+    TSTT_SERVER=OVERTURE
+  fi
+
+fi;
+
+
+
+
+
+
+#------------------------------------------------------------------------------
+# MOAB
+#------------------------------------------------------------------------------
+
+HDF5_LNK=
+
+# Check whether --with-hdf5 or --without-hdf5 was given.
+if test "${with_hdf5+set}" = set; then
+  withval="$with_hdf5"
+   if test "$withval" = "yes"; then
+    echo "$as_me:$LINENO: checking for H5Fopen in -lhdf5" >&5
+echo $ECHO_N "checking for H5Fopen in -lhdf5... $ECHO_C" >&6
+if test "${ac_cv_lib_hdf5_H5Fopen+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lhdf5  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char H5Fopen ();
+int
+main ()
+{
+H5Fopen ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_hdf5_H5Fopen=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_lib_hdf5_H5Fopen=no
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_hdf5_H5Fopen" >&5
+echo "${ECHO_T}$ac_cv_lib_hdf5_H5Fopen" >&6
+if test $ac_cv_lib_hdf5_H5Fopen = yes; then
+  HDF5_LNK=-lhdf5
+else
+  { { echo "$as_me:$LINENO: error: \"HDF5 library not found.\"" >&5
+echo "$as_me: error: \"HDF5 library not found.\"" >&2;}
+   { (exit 1); exit 1; }; }
+fi
+
+  elif test "$withval" != "no"; then
+    HDF5_LNK="-L$withval/lib -lhdf5"
+  fi
+
+else
+   echo "$as_me:$LINENO: checking for H5Fopen in -lhdf5" >&5
+echo $ECHO_N "checking for H5Fopen in -lhdf5... $ECHO_C" >&6
+if test "${ac_cv_lib_hdf5_H5Fopen+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lhdf5  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char H5Fopen ();
+int
+main ()
+{
+H5Fopen ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_hdf5_H5Fopen=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_lib_hdf5_H5Fopen=no
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_hdf5_H5Fopen" >&5
+echo "${ECHO_T}$ac_cv_lib_hdf5_H5Fopen" >&6
+if test $ac_cv_lib_hdf5_H5Fopen = yes; then
+  HDF5_LNK=-lhdf5
+fi
+
+fi;
+
+
+
+MOAB_DIR=
+MOAB_LNK=
+MOAB_INC=
+
+# Check whether --with-moab or --without-moab was given.
+if test "${with_moab+set}" = set; then
+  withval="$with_moab"
+   if test "$withhval" = "yes"; then
+    { { echo "$as_me:$LINENO: error: \"Argument required for --with-moab\" " >&5
+echo "$as_me: error: \"Argument required for --with-moab\" " >&2;}
+   { (exit 1); exit 1; }; }
+  elif test "$withval" != "no"; then
+    MOAB_DIR="$withval"
+    MOAB_INC="-I${MOAB_DIR}"
+    MOAB_LNK="-L${MOAB_DIR} -lMOAB"
+    TSTT_SERVER=MOAB
+
+      # MOAB requires C++ exodus library - check for it
+    if test "$HAVE_NETCDF" != "yes"; then
+      { { echo "$as_me:$LINENO: error: \"MOAB requires NetCDF.  Try --with-netcdf=DIR\" " >&5
+echo "$as_me: error: \"MOAB requires NetCDF.  Try --with-netcdf=DIR\" " >&2;}
+   { (exit 1); exit 1; }; };
+    fi
+    if test -z "$NETCDF_DIR" -o ! -r "${NETCDF_DIR}/libnetcdf_c++.a"; then
+      if test ! -r "${MOAB_DIR}/libnetcdf_c++.a"; then
+
+echo "$as_me:$LINENO: checking for main in -lnetcdf_c++" >&5
+echo $ECHO_N "checking for main in -lnetcdf_c++... $ECHO_C" >&6
+if test "${ac_cv_lib_netcdf_cpp_main+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lnetcdf_c++  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+main ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_netcdf_cpp_main=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_lib_netcdf_cpp_main=no
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_netcdf_cpp_main" >&5
+echo "${ECHO_T}$ac_cv_lib_netcdf_cpp_main" >&6
+if test $ac_cv_lib_netcdf_cpp_main = yes; then
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBNETCDF_C__ 1
+_ACEOF
+
+  LIBS="-lnetcdf_c++ $LIBS"
+
+else
+  { { echo "$as_me:$LINENO: error: \"MOAB requires libnetcdf_c++.a.  Try --with-netcdf=DIR\"" >&5
+echo "$as_me: error: \"MOAB requires libnetcdf_c++.a.  Try --with-netcdf=DIR\"" >&2;}
+   { (exit 1); exit 1; }; }
+fi
+
+      fi
+    fi
+
+      # MOAB may require HDF5 library
+    if test -z "$HDF5_LNK"; then
+      { echo "$as_me:$LINENO: WARNING: \"MOAB may require libhdf5\"" >&5
+echo "$as_me: WARNING: \"MOAB may require libhdf5\"" >&2;}
+    fi
+    MOAB_LNK="$MOAB_LNK \$(HDF5_LNK)"
+  fi
+
+fi;
+
+
+
+
+
+
+#------------------------------------------------------------------------------
+# AOMD
+#------------------------------------------------------------------------------
+
+AOMD_DIR=
+AOMD_LNK=
+AOMD_INC=
+
+# Check whether --with-aomd or --without-aomd was given.
+if test "${with_aomd+set}" = set; then
+  withval="$with_aomd"
+   if test "$withhval" = "yes"; then
+    { { echo "$as_me:$LINENO: error: \"Argument required for --with-aomd\" " >&5
+echo "$as_me: error: \"Argument required for --with-aomd\" " >&2;}
+   { (exit 1); exit 1; }; }
+  elif test "$withval" != "no"; then
+    AOMD_DIR="$withval"
+    AOMD_LNK="-L${AOMD_DIR}/lib -laomd"
+    AOMD_INC="-I${AOMD_DIR}/include"
+    TSTT_SERVER=AOMD
+  fi
+
+fi;
 
 
 
@@ -6104,48 +6395,56 @@ if test "$TSTT_CLIENT_DIR" = "$MSQ_DEFAULT_TSTT_DIR"; then
 fi
 
 
-
-TSTT_SERVER_LINK=
+TEST_TSTT=
 
 # Check whether --with-tstt-server or --without-tstt-server was given.
 if test "${with_tstt_server+set}" = set; then
   withval="$with_tstt_server"
-   if test "$withval" == "yes"; then
-    { { echo "$as_me:$LINENO: error: \"An argument is required for --with-tstt-server\"" >&5
-echo "$as_me: error: \"An argument is required for --with-tstt-server\"" >&2;}
-   { (exit 1); exit 1; }; }
-  elif test "$withval" != "no"; then
-
-    SERVER_DIR=`echo "$withval" | $SED -e "s/,.*$//"
-    withval=`echo "$withval" | $SED -e "s/^^,*,//"
-    if test -n "$SERVER_DIR"; then
-      if test ! -d "$SERVER_DIR"; then
-        { { echo "$as_me:$LINENO: error: \"$SERVER_DIR is not a directory.\"" >&5
-echo "$as_me: error: \"$SERVER_DIR is not a directory.\"" >&2;}
-   { (exit 1); exit 1; }; }
-      fi
-      SERVER_DIR="-L$SERVER_DIR"
-    fi
-
-    if test -z "$withval"; then
-      { { echo "$as_me:$LINENO: error: \"No library specified for --with-tstt-server\"" >&5
-echo "$as_me: error: \"No library specified for --with-tstt-server\"" >&2;}
-   { (exit 1); exit 1; }; }
-    fi
-
-    LIBLIST=
-    while test -n "$withval"; do
-      lib=`echo "$withval" | $SED -e "s/,.*$//"
-      withval=`echo "$withval" | $SED -e "s/^^,*,//"
-      LIBLIST="$LIBLIST -l$lib"
-    done
-
-    TSTT_LDFLAGS="$TSTT_LDFLAGS ${SERVER_DIR}${LIBLIST}"
-  fi
-
+   TEST_TSTT=$withval
+else
+   TEST_TSTT=
 fi;
-
-
+if test -z "$TEST_TSTT"; then
+  TEST_TSTT="$TSTT_SERVER"
+elif test "$TEST_TSTT" = "yes"; then
+  if test -z "$TSTT_SERVER"; then
+    { { echo "$as_me:$LINENO: error: \"No server implementation specified for TSTT test\" " >&5
+echo "$as_me: error: \"No server implementation specified for TSTT test\" " >&2;}
+   { (exit 1); exit 1; }; }
+  fi
+  TEST_TSTT="$TSTT_SERVER"
+elif test "$TSTT_TEST" = "no"; then
+  TSTT_TEST=
+fi
+if test "$TEST_TSTT" = "AOMD"; then
+  if test -z "$AOMD_DIR"; then
+    { { echo "$as_me:$LINENO: error: \"Path for AOMD server to specfied\" " >&5
+echo "$as_me: error: \"Path for AOMD server to specfied\" " >&2;}
+   { (exit 1); exit 1; }; }
+  fi
+  TSTT_LDFLAGS="$TSTT_LDFLAGS \$(AOMD_LNK)"
+  TSTT_CFLAGS="$TSTT_CFLAGS \$(AOMD_INC) -DMSQ_TSTT_USE_AOMD"
+elif test "$TEST_TSTT" = "MOAB"; then
+  if test -z "$MOAB_DIR"; then
+    { { echo "$as_me:$LINENO: error: \"Path for MOAB server to specfied\" " >&5
+echo "$as_me: error: \"Path for MOAB server to specfied\" " >&2;}
+   { (exit 1); exit 1; }; }
+  fi
+  TSTT_LDFLAGS="$TSTT_LDFLAGS \$(MOAB_LNK) -L\$(MOAB_DIR)/TSTT -lMOABserver -lnetcdf_c++"
+  TSTT_CFLAGS="$TSTT_CFLAGS \$(MOAB_INC) \$(MOAB_INC)/TSTT \$(MOAB_INC)/TSTT/server -DMSQ_TSTT_USE_MOAB"
+elif test "$TEST_TSTT" = "OVERTURE"; then
+  if test -z "$OVERTURE_DIR"; then
+    { { echo "$as_me:$LINENO: error: \"Path for OVERTURE server to specfied\" " >&5
+echo "$as_me: error: \"Path for OVERTURE server to specfied\" " >&2;}
+   { (exit 1); exit 1; }; }
+  fi
+  TSTT_LDFLAGS="$TSTT_LDFLAGS \$(OVERTURE_LNK)"
+  TSTT_CFLAGS="$TSTT_CFLAGS \$(OVERTURE_INC) -DMSQ_TSTT_USE_OVERTURE"
+elif test -n "$TEST_TSTT"; then
+  { { echo "$as_me:$LINENO: error: \"Invalid argument for --with-tstt-server : $TEST_TSTT\" " >&5
+echo "$as_me: error: \"Invalid argument for --with-tstt-server : $TEST_TSTT\" " >&2;}
+   { (exit 1); exit 1; }; };
+fi
 
 
   # Check for SIDL library (required for TSTT)
@@ -6365,7 +6664,7 @@ fi
 echo "$as_me:$LINENO: result: $ac_cv_lib_sidl_SIDL_long__array_copy" >&5
 echo "${ECHO_T}$ac_cv_lib_sidl_SIDL_long__array_copy" >&6
 if test $ac_cv_lib_sidl_SIDL_long__array_copy = yes; then
-  TSTT_LDFLAGS="$TSTT_LDFLAGS -lsidl"
+  TSTT_LDFLAGS="TSTT_LDFLAGS -lsidl"
 else
   { echo "$as_me:$LINENO: WARNING: \"No SIDL library\"" >&5
 echo "$as_me: WARNING: \"No SIDL library\"" >&2;}
@@ -6801,123 +7100,6 @@ fi
 
 
 
-#------------------------------------------------------------------------------
-# AOMD: See if the user gave us the location of cca-spec
-# then search $ccatut_cca_spec_dirs.
-# One of these directories must be
-# present and contain the correct files, or else the user
-# must give the directory that contains the correct files.
-#------------------------------------------------------------------------------
-# cca spec (must contain java and cxx binding subdirs)
-
-
-# Check whether --with-aomd or --without-aomd was given.
-if test "${with_aomd+set}" = set; then
-  withval="$with_aomd"
-
-else
-  with_aomd=no
-fi;
-
-case "$with_aomd" in
-    no)
-        # Default. No AOMD link.
-        with_aomd=no
-        ;;
-    yes)
-        #  User asked for AOMD. No path given.
-	# Looking if it is in standard Mesquite location.
-	# Extract the first word of "libaomd.so", so it can be a program name with args.
-set dummy libaomd.so; ac_word=$2
-echo "$as_me:$LINENO: checking for $ac_word" >&5
-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
-if test "${ac_cv_prog_AOMD_LIB+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  if test -n "$AOMD_LIB"; then
-  ac_cv_prog_AOMD_LIB="$AOMD_LIB" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in "$MSQROOT"/external/AOMD/lib/
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-  for ac_exec_ext in '' $ac_executable_extensions; do
-  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_AOMD_LIB=""$with_aomd"/libaomd.so"
-    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-done
-
-  test -z "$ac_cv_prog_AOMD_LIB" && ac_cv_prog_AOMD_LIB="notfound"
-fi
-fi
-AOMD_LIB=$ac_cv_prog_AOMD_LIB
-if test -n "$AOMD_LIB"; then
-  echo "$as_me:$LINENO: result: $AOMD_LIB" >&5
-echo "${ECHO_T}$AOMD_LIB" >&6
-else
-  echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
-fi
-
-        ;;
-    *)
-	# User gave AOMD exact location.
-	# Extract the first word of "libaomd.so", so it can be a program name with args.
-set dummy libaomd.so; ac_word=$2
-echo "$as_me:$LINENO: checking for $ac_word" >&5
-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
-if test "${ac_cv_prog_AOMD_LIB+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  if test -n "$AOMD_LIB"; then
-  ac_cv_prog_AOMD_LIB="$AOMD_LIB" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in "$MSQROOT"/external/AOMD/lib/
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-  for ac_exec_ext in '' $ac_executable_extensions; do
-  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_AOMD_LIB=""$with_aomd"/libaomd.so"
-    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-done
-
-  test -z "$ac_cv_prog_AOMD_LIB" && ac_cv_prog_AOMD_LIB="notfound"
-fi
-fi
-AOMD_LIB=$ac_cv_prog_AOMD_LIB
-if test -n "$AOMD_LIB"; then
-  echo "$as_me:$LINENO: result: $AOMD_LIB" >&5
-echo "${ECHO_T}$AOMD_LIB" >&6
-else
-  echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
-fi
-
-	AOMD_ROOT="$with_aomd"
-        ;;
-esac
-
-AOMD_ROOT="$with_aomd"
-
-
-
-AOMD_FLAG=""
-if test ! "$with_aomd" = no ; then
-  AOMD_FLAG="-D_MY_HASH_TABLE_"
-fi
-
-
-
-# ----------------------------------------------------------------
 
 #------------------------------------------------------------------------------
 # CppUnit
@@ -8257,7 +8439,6 @@ s,@CXX@,$CXX,;t t
 s,@CXXFLAGS@,$CXXFLAGS,;t t
 s,@ac_ct_CXX@,$ac_ct_CXX,;t t
 s,@CXXCPP@,$CXXCPP,;t t
-s,@SED@,$SED,;t t
 s,@MAKEDEPEND@,$MAKEDEPEND,;t t
 s,@DOXYGEN@,$DOXYGEN,;t t
 s,@CPP@,$CPP,;t t
@@ -8267,6 +8448,16 @@ s,@MSQ_FUNC_DEFS@,$MSQ_FUNC_DEFS,;t t
 s,@CXX_ARCHIVER@,$CXX_ARCHIVER,;t t
 s,@EXODUS_CFLAGS@,$EXODUS_CFLAGS,;t t
 s,@EXODUS_LDFLAGS@,$EXODUS_LDFLAGS,;t t
+s,@OVERTURE_DIR@,$OVERTURE_DIR,;t t
+s,@OVERTURE_LNK@,$OVERTURE_LNK,;t t
+s,@OVERTURE_INC@,$OVERTURE_INC,;t t
+s,@HDF5_LNK@,$HDF5_LNK,;t t
+s,@MOAB_DIR@,$MOAB_DIR,;t t
+s,@MOAB_LNK@,$MOAB_LNK,;t t
+s,@MOAB_INC@,$MOAB_INC,;t t
+s,@AOMD_DIR@,$AOMD_DIR,;t t
+s,@AOMD_LNK@,$AOMD_LNK,;t t
+s,@AOMD_INC@,$AOMD_INC,;t t
 s,@TSTT_CLIENT_DIR@,$TSTT_CLIENT_DIR,;t t
 s,@BABEL@,$BABEL,;t t
 s,@TSTT_CFLAGS@,$TSTT_CFLAGS,;t t
@@ -8274,9 +8465,6 @@ s,@TSTT_OBJS@,$TSTT_OBJS,;t t
 s,@TSTT_LDFLAGS@,$TSTT_LDFLAGS,;t t
 s,@TSTT_CLIENT_SRCS@,$TSTT_CLIENT_SRCS,;t t
 s,@TSTT_MKINCL@,$TSTT_MKINCL,;t t
-s,@AOMD_LIB@,$AOMD_LIB,;t t
-s,@AOMD_ROOT@,$AOMD_ROOT,;t t
-s,@AOMD_FLAG@,$AOMD_FLAG,;t t
 s,@CPPUNIT_INC@,$CPPUNIT_INC,;t t
 s,@CPPUNIT_LNK@,$CPPUNIT_LNK,;t t
 s,@MSQ_BASE_DIR@,$MSQ_BASE_DIR,;t t
