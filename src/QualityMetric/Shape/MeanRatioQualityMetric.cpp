@@ -3105,7 +3105,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 								MsqVertex *fv[], 
 								Vector3D g[],
 								Matrix3D h[],
-								int nfv, 
+                                                                int /*nfv*/, 
 								double &m,
 								MsqError &err)
 {
