@@ -37,7 +37,7 @@ namespace Mesquite
 	protected:
      virtual bool  compute_analytical_gradient(PatchData &patch,
                                                Vector3D *const &grad,
-                                               MsqError &err, int array_size);
+                                               MsqError &err, size_t array_size);
      
 	private:
      double compute_function(double metric_values[], int total_num, MsqError &err);

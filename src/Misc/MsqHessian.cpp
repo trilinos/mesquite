@@ -5,7 +5,7 @@
 //    E-MAIL: tmunson@mcs.anl.gov
 //
 // ORIG-DATE:  2-Jan-03 at 11:02:19 by Thomas Leurent
-//  LAST-MOD:  2-Apr-03 at 17:27:38 by Thomas Leurent
+//  LAST-MOD:  9-Apr-03 at 09:27:54 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -27,9 +27,9 @@ using std::endl;
 
 MsqHessian::MsqHessian() :
   origin_pd(0), mEntries(0), mRowStart(0), mColIndex(0), 
-  mAccumulation(0), mAccumElemStart(0), mSize(0), cgArraySizes(0),
+  mAccumulation(0), mAccumElemStart(0), mSize(0), 
   mPreconditionner(0), precondArraySize(0),
-  r(0), z(0), p(0), w(0), maxCGiter(50)
+  r(0), z(0), p(0), w(0), cgArraySizes(0), maxCGiter(50)
 { }
 
 
@@ -316,7 +316,7 @@ void MsqHessian::get_diagonal_blocks(std::vector<Matrix3D> &diag, MsqError &err)
     diag.reserve(size());
   }
 
-  for (int i=0; i<size(); ++i) {
+  for (size_t i=0; i<size(); ++i) {
     diag[i] = mEntries[mRowStart[i]];
   }
 }
@@ -337,7 +337,7 @@ void MsqHessian::compute_preconditionner(MsqError &err)
 
   Matrix3D* diag_block;
   double sum, inv_sum;
-  int m;
+  size_t m;
   // For each diagonal block, the (inverted) preconditionner is
   // the inverse of the sum of the diagonal entries.
   for (m=0; m<mSize; ++m) {
@@ -381,7 +381,7 @@ void MsqHessian::cg_solver(Vector3D x[], Vector3D b[], MsqError &err)
     cgArraySizes = mSize;
   }
 
-  int i;
+  size_t i;
   double alpha_, alpha, beta; 
   double cg_tol =10e-2; // 10e-2 will give a reasonably good solution (~1%). 
   double norm_g = length(b, mSize);
@@ -398,7 +398,7 @@ void MsqHessian::cg_solver(Vector3D x[], Vector3D b[], MsqError &err)
   for (i=0; i<mSize; ++i)  p[i] = z[i] ; // p_1 = z_0  
   rzm1 = inner(z,r,mSize); // inner product r_{k-1}^T z_{k-1} 
     
-  int cg_iter = 0;
+  size_t cg_iter = 0;
   while ((norm_r > norm_g) && (cg_iter < maxCGiter)) {
     ++cg_iter;
       

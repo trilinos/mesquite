@@ -245,7 +245,7 @@ bool QualityMetric::compute_element_numerical_gradient(PatchData &pd,
   FUNCTION_TIMER_START(__FUNC__);
     /*!TODO: (MICHAEL)  Try to inline this function (currenlty conflicts
       with MsqVertex.hpp).*/    
-  MSQ_DEBUG_PRINT(2,"Computing Numerical Gradient\n");
+  MSQ_DEBUG_PRINT(3,"Computing Numerical Gradient\n");
   
   bool valid=this->evaluate_element(pd, element, metric_value, err); MSQ_CHKERR(err);
 
@@ -310,7 +310,8 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
                                              int num_free_vtx, double &metric_value,
                                              MsqError &err)
 {
-  MSQ_DEBUG_PRINT(2,"Computing Numerical Hessian\n");
+  FUNCTION_TIMER_START(__FUNC__);
+  MSQ_DEBUG_PRINT(3,"Computing Numerical Hessian\n");
   
   bool valid=this->compute_element_gradient_expanded(pd, element, free_vtces, grad_vec,
                                     num_free_vtx, metric_value, err); MSQ_CHKERR(err);
@@ -319,12 +320,13 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
     return false;
   
   double delta = 10e-6;
-  int nve = element->vertex_count();
+  double vj_coord;
+  short nve = element->vertex_count();
   Vector3D* grad_vec1 = new Vector3D[nve];
   Vector3D fd;
   std::vector<size_t> ev_i;
   element->get_vertex_indices(ev_i);
-  int v,w,i,j,k,s, sum_w, mat_index;
+  short w, v, i, j, sum_w, mat_index, k;
 
   int fv_ind=0; // index in array free_vtces .
 
@@ -351,15 +353,15 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
         }
       }
     }
-
+    else  {
     // If vertex is free, use finite difference on the gradient to find the Hessian.
-    if (free_vertex==true) {
       for (j=0;j<3;++j) {
         // perturb the coordinates of the vertex v in the j direction by delta
+        vj_coord = (*free_vtces[fv_ind])[j];
         (*free_vtces[fv_ind])[j]+=delta;
         //compute the gradient at the perturbed point location
-        valid = this->compute_element_gradient_expanded(pd, element, free_vtces, grad_vec1,
-                                                        num_free_vtx, metric_value, err); MSQ_CHKERR(err);
+        valid = this->compute_element_gradient_expanded(pd, element, free_vtces,
+                              grad_vec1, num_free_vtx, metric_value, err); MSQ_CHKERR(err);
         assert(valid);
         //compute the numerical Hessian
         for (w=0; w<nve; ++w) {
@@ -377,7 +379,7 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
           }
         }
         // put the coordinates back where they belong
-        (*free_vtces[fv_ind])[j] -= delta;
+        (*free_vtces[fv_ind])[j] = vj_coord;
       }
       ++fv_ind;
     }
@@ -385,6 +387,7 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
 
   delete[] grad_vec1;
 
+  FUNCTION_TIMER_END();
   return true;
 }
 

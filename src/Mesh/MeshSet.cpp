@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD: 15-Jan-03 at 16:17:22 by Thomas Leurent
+//  LAST-MOD:  8-Apr-03 at 16:26:49 by Thomas Leurent
 //
 /*! \file MeshSet.cpp
 
@@ -28,8 +28,8 @@ using namespace Mesquite;
 
 
 MeshSet::MeshSet() :
-  spaceDim(0),
   fixedVertexTagName("fixed"),
+  spaceDim(0),
   mGeom(NONE),
   simplifiedEngine(NULL)
 {
@@ -239,7 +239,6 @@ bool MeshSet::get_next_patch(PatchData &pd, PatchDataParameters &pd_params, MsqE
     int* csr_data; 
       //  int num_vertices=0;
     int num_elements;
-    Vector3D vertex_coordV;
     
       //   ::set_new_handler(out_of_store);
     

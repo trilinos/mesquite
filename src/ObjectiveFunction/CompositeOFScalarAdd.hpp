@@ -37,7 +37,7 @@ namespace Mesquite
      
 	protected:
      bool compute_analytical_gradient(PatchData &patch,Vector3D *const &grad,
-                                      MsqError &err,int array_size);
+                                      MsqError &err,size_t array_size);
 	private:
      double mAlpha;
      ObjectiveFunction* objFunc;

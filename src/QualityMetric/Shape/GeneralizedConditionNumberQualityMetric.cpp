@@ -81,7 +81,7 @@ bool GeneralizedConditionNumberQualityMetric::evaluate_element(PatchData &pd,
   std::vector<Vector3D>::iterator iter=sample_points.begin();
     // loop over sample points
   Vector3D jacobian_vectors[3];
-  int num_jacobian_vectors;
+  short num_jacobian_vectors;
   int i=0;
   num_sample_points=sample_points.size();
   double *metric_values=new double[num_sample_points];

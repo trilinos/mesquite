@@ -45,10 +45,10 @@ namespace Mesquite
     virtual void terminate_mesh_iteration(PatchData &, 
                                          MsqError &err) = 0;
     //!Computes the L_inf norm of an array of Vector3D of length len
-    double infinity_norm(Vector3D * const vec, int len, MsqError &err);
+    double infinity_norm(Vector3D * const vec, size_t len, MsqError &err);
 
       //!CHECK FEASIBLE IS NOT YET IMPLEMENTED.
-    int check_feasible(PatchData &pd, MsqError &err);
+    size_t check_feasible(PatchData &pd, MsqError &err);
     
     ObjectiveFunction* objFunc;
   };
@@ -60,14 +60,14 @@ namespace Mesquite
   Takes a PatchData object (by reference) and returns whether the
   patch is within the feasible region, 0, or outside the region, 1.
 */
-  inline int VertexMover::check_feasible(PatchData &pd, MsqError &err)
+  inline size_t VertexMover::check_feasible(PatchData &pd, MsqError &err)
   {
     MsqMeshEntity* elems=pd.get_element_array(err);
-    int num_elements=pd.num_elements();
+    size_t num_elements=pd.num_elements();
     std::vector<Vector3D> sample_points;
     Vector3D jacobian_vectors[3];
-    int num_jacobian_vectors;
-    int i =0;
+    short num_jacobian_vectors;
+    size_t i =0;
     for(i=0;i<num_elements;++i){
       elems[i].get_sample_points(QualityMetric::ELEMENT_VERTICES,sample_points,err);
       std::vector<Vector3D>::iterator iter=sample_points.begin();
@@ -101,12 +101,12 @@ namespace Mesquite
   Takes an array of Vecort3D, vec, of length len, and
   and returns the infinity norm of vec.
 */
-  inline double VertexMover:: infinity_norm(Vector3D * const vec, int len,
+  inline double VertexMover:: infinity_norm(Vector3D * const vec, size_t len,
                                             MsqError &/*err*/)
   {
     double grad_norm=0;
-    for(int gi=0;gi<len;++gi){
-      for (int gj=0;gj<3;++gj){
+    for(size_t gi=0;gi<len;++gi){
+      for (short gj=0;gj<3;++gj){
         if(grad_norm<fabs(vec[gi][gj])){
           grad_norm=fabs(vec[gi][gj]);
         }

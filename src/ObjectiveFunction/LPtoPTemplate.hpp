@@ -28,31 +28,31 @@ namespace Mesquite
    class LPtoPTemplate :public ObjectiveFunction
    {
 	public:
-	  LPtoPTemplate(QualityMetric *, int, MsqError &);
+	  LPtoPTemplate(QualityMetric *, short, MsqError &);
 	  ~LPtoPTemplate();
 	  virtual bool concrete_evaluate(PatchData &patch, double &fval,
                                     MsqError &err);
 	protected:
      virtual bool compute_analytical_gradient(PatchData &patch,
                                                Vector3D *const &grad,
-                                               MsqError &err, int array_size);
+                                               MsqError &err, size_t array_size);
      
      virtual bool  compute_analytical_hessian(PatchData &patch,
                                               MsqHessian &hessian, MsqError &err);
      
 	private:
-     double compute_function(double metric_values[], int total_num,
+     double compute_function(double metric_values[], size_t total_num,
                              MsqError &err);
        //! \param pVal
-	  int pVal;
+	  short pVal;
    };
    
    inline double LPtoPTemplate::compute_function(double metric_values[],
-                                                 int total_num,
+                                                 size_t total_num,
                                                  MsqError &/*err*/)
    {
-     int ind=0;
-     int jnd=0;
+     size_t ind=0;
+     short jnd=0;
      double temp_value=1;
      double total_value=0;
      for(ind=0;ind<total_num;++ind){

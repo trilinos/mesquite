@@ -71,12 +71,12 @@ namespace Mesquite {
     InstructionQueue();
     
     void add_preconditioner(QualityImprover* instr, MsqError &err);
-    void remove_preconditioner(int index, MsqError &err);
-    void insert_preconditioner(QualityImprover* instr, int index, MsqError &err);
+    void remove_preconditioner(size_t index, MsqError &err);
+    void insert_preconditioner(QualityImprover* instr, size_t index, MsqError &err);
     
     void add_quality_assessor(QualityAssessor* instr, MsqError &err);
-    void remove_quality_assessor(int index, MsqError &err);
-    void insert_quality_assessor(QualityAssessor* instr, int index, MsqError &err);
+    void remove_quality_assessor(size_t index, MsqError &err);
+    void insert_quality_assessor(QualityAssessor* instr, size_t index, MsqError &err);
     
     void set_master_quality_improver(QualityImprover* instr, MsqError &err);
     
@@ -97,9 +97,9 @@ namespace Mesquite {
 
     bool autoQualAssess;
     
-    int nbPreConditionners;
+    size_t nbPreConditionners;
     bool isMasterSet;
-    int masterInstrIndex; // 0-based
+    size_t masterInstrIndex; // 0-based
     // keeping an index instead of an iterator in case list is reallocated
   };
 

@@ -1635,6 +1635,9 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
       case HMS:
         t = -2.0;
         break;
+      default:
+        err.set_msg("averaging method not available.");
+        break;
       }
 
       m = 0;
@@ -1911,6 +1914,10 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
       case HMS:
 	t = -2.0;
 	break;
+      default:
+        err.set_msg("averaging method not available.");
+        break;
+
       }
 
       m = 0;

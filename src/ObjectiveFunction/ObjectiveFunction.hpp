@@ -86,7 +86,7 @@ namespace Mesquite
         feasible regeion.  Otherwise, it returns 'true'.
       */
     bool compute_gradient(PatchData &patch, Vector3D *const &grad,
-                          MsqError &err, int array_size=-1);          
+                          MsqError &err, size_t array_size=0);          
               
       /*!\brief
         Calls compute_analytical_hessian. 
@@ -154,7 +154,7 @@ namespace Mesquite
         feasible regeion.  Otherwise, it returns 'true'.
       */
     bool compute_numerical_gradient(PatchData &patch, Vector3D *const &grad,
-                                    MsqError &err, int array_size);
+                                    MsqError &err, size_t array_size);
 
      /*! 
         Fills an array of Vector3D, grad, with the gradient of
@@ -167,8 +167,8 @@ namespace Mesquite
       */
     virtual bool compute_analytical_gradient(PatchData &patch,
                                              Vector3D *const &grad,
-                                             MsqError &err, int array_size){
-      PRINT_WARNING("Analytic gradient not implemented for this Objective ",
+                                             MsqError &err, size_t array_size){
+      PRINT_WARNING("Analytic gradient not implemented for this Objective "
                     "Function. Defaulting to numerical gradient.\n");
       set_gradient_type(NUMERICAL_GRADIENT);
       return compute_numerical_gradient(patch, grad, err, array_size);
@@ -250,7 +250,7 @@ namespace Mesquite
    inline bool ObjectiveFunction::compute_gradient(PatchData &patch,
                                                    Vector3D *const &grad,
                                                    MsqError &err,
-                                                   int array_size)
+                                                   size_t array_size)
    {
      bool obj_bool;
      switch(gradType){

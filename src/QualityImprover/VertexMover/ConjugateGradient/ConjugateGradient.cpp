@@ -94,7 +94,6 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
                                                 MsqError &err){
   FUNCTION_TIMER_START(__FUNC__);
   Timer c_timer;
-  MeshSet *vertex_mover_mesh=get_mesh_set();
   int num_local_vertices = pd.num_vertices();
   if(num_local_vertices>arraySize){
     delete []fGrad;
@@ -115,9 +114,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
     ++zero_loop;
   }
   
-  int is=0;
-  
-    // gets the array of vertices for the patch  
+  // gets the array of vertices for the patch  
   MsqVertex* vertices=pd.get_vertex_array(err);
   int ind;
     //Michael cull list:  possibly set soft_fixed flags here
@@ -164,7 +161,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
   double alp=MSQ_MAX_CAP; // alp: scale factor of search direction
     //we know inner_criterion is false because it was checked in
     //loop_over_mesh before being sent here.
-  bool inner_criterion=false;//inner_criterion_met(*vertex_mover_mesh,err);
+  bool inner_criterion=false;
   TerminationCriterion* term_crit=get_inner_termination_criterion();
   
     //while ((i<maxIteration && alp>stepBound && grad_norm>normGradientBound)
@@ -312,12 +309,9 @@ void ConjugateGradient::cleanup()
   initial test.  It can be removed.*/
 
 double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
-                                   MsqError &err){
-  MsqFreeVertexIndexIterator free_iter(&pd, err);
-  int num_vertices=pd.num_vertices();
-    //iterator for several for statements
-  int m=0;
-  MsqVertex* vertices=pd.get_vertex_array(err);
+                                   MsqError &err)
+{
+  size_t num_vertices=pd.num_vertices();
     //initial guess for alp
   double alp=1.0;
   int jmax=100;

@@ -48,7 +48,6 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
   FUNCTION_TIMER_START(__FUNC__);
     //PRINT_INFO("\no  Performing Steepest Descent optimization.\n");
   // Get the array of vertices of the patch. Free vertices are first.
-  MeshSet *vertex_mover_mesh=get_mesh_set();
   int num_vertices = pd.num_vertices();
   Vector3D* gradient = new Vector3D[num_vertices];
   Vector3D* dk = new Vector3D[num_vertices];
@@ -56,7 +55,7 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
   double norm=10e6;
   bool sd_bool=true;//bool for OF values
   double smallest_edge = 0.4; // TODO -- update -- used for step_size
-  bool inner_criterion=false;//inner_criterion_met(*vertex_mover_mesh,err);
+  bool inner_criterion=false;
   TerminationCriterion* term_crit=get_inner_termination_criterion();
   
   // does the steepest descent iteration until stopping is required.
@@ -156,7 +155,6 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
     if(term_crit!=NULL){
       
       inner_criterion=term_crit->terminate(pd,objFunc,err);;
-        //inner_criterion_met(*vertex_mover_mesh,err); MSQ_CHKERR(err);
     }
     
   }

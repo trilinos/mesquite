@@ -53,7 +53,7 @@ QualityAssessor::QualityAssessor(QualityMetric* qm, enum QAFunction func,
 QualityAssessor::~QualityAssessor()
 {
   Assessor* tmp;
-  int i;
+  size_t i;
   for(i=0;i<assessList.size();i++){
     tmp=assessList.front();
     delete tmp;
@@ -180,7 +180,7 @@ void QualityAssessor::set_histogram_range(QualityMetric* qm,
   pos=assessList.begin();
   Assessor* assess_ptr=NULL;
     //loop over the assessList (list of Assessor of this QA.)
-  int i=0;
+  size_t i=0;
   while(i<assessList.size() && !found){
     assess_ptr=*pos;
       //if this metric (qm) is already in the list
@@ -250,7 +250,6 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError& err)
   int total_num_elements=0;
   int total_num_vertices=0;
   std::list<Assessor*>::iterator pos = assessList.begin();
-  std::list<QualityAssessor::QAFunction>::iterator func_pos;
   int num_elem_based=0;
   int num_metrics=assessList.size();
   Assessor** assessor_array = new Assessor*[num_metrics];

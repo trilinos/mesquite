@@ -85,7 +85,7 @@ std::list<QualityMetric*> CompositeOFScalarAdd::get_quality_metric_list(){
 bool CompositeOFScalarAdd::compute_analytical_gradient(PatchData &patch,
                                                        Vector3D *const &grad,
                                                        MsqError &err,
-                                                       int array_size)
+                                                       size_t array_size)
 {
   FUNCTION_TIMER_START(__FUNC__);
   bool rval=objFunc->compute_gradient(patch, grad, err, array_size);

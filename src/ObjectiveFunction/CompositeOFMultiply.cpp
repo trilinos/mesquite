@@ -115,7 +115,7 @@ bool CompositeOFMultiply::concrete_evaluate(PatchData &patch, double &fval,
 bool CompositeOFMultiply::compute_analytical_gradient(PatchData &patch,
                                                  Vector3D *const &grad,
                                                  MsqError &err,
-                                                 int array_size)
+                                                 size_t array_size)
 {
   FUNCTION_TIMER_START(__FUNC__);
   double obj_1_val=0.0;

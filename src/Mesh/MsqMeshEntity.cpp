@@ -1,7 +1,7 @@
 // -*- Mode : c++; tab-width: 2; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD: 31-Jan-03 at 13:51:14 by Thomas Leurent
+//  LAST-MOD:  8-Apr-03 at 17:00:54 by Thomas Leurent
 //
 /*! \file MsqMeshEntity.cpp
 
@@ -61,7 +61,7 @@ void Mesquite::MsqMeshEntity::append_vertex_indices(std::vector<size_t> &vertex_
 void Mesquite::MsqMeshEntity::compute_weighted_jacobian(PatchData &pd,
                                                         Vector3D &sample_point,
                                                         Vector3D jacobian_vectors[],
-                                                        int &num_jacobian_vectors,
+                                                        short &num_jacobian_vectors,
                                                         MsqError &err )
 {
     // v_v is just an alias for vertexIndices
@@ -70,9 +70,9 @@ void Mesquite::MsqMeshEntity::compute_weighted_jacobian(PatchData &pd,
 //   std::vector<size_t> v_v;
 //   get_vertex_indices(v_v);
   MsqVertex *vertices=pd.get_vertex_array(err);
-  Vector3D ideal_coords[8];
-  Vector3D ideal_jac[3];
-  Vector3D phys_jac[3];
+//   Vector3D ideal_coords[8];
+//   Vector3D ideal_jac[3];
+//   Vector3D phys_jac[3];
 //  double deter;
   switch (mType)
   {
@@ -348,7 +348,7 @@ double MsqMeshEntity::compute_unsigned_area(PatchData &pd, MsqError &err) {
 double MsqMeshEntity::compute_unsigned_volume(PatchData &pd, MsqError &err) {
   Vector3D sample_point(.5,.5,.5);
   Vector3D jac_vecs[3];
-  int num_jacobian_vectors=-1;
+  short num_jacobian_vectors=-1;
   double tem=0;
   MsqVertex *verts = pd.get_vertex_array(err);MSQ_CHKERR(err);
   switch (mType)
@@ -384,7 +384,7 @@ double MsqMeshEntity::compute_unsigned_volume(PatchData &pd, MsqError &err) {
 */
 void Mesquite::MsqMeshEntity::get_connected_vertices(size_t vertex_index,
                                                      std::vector<size_t> &vert_indices,
-                                                     MsqError &/*err*/)
+                                                     MsqError &err)
 {
     //i iterates through elem's vertices
   int i=0;
@@ -477,6 +477,10 @@ void Mesquite::MsqMeshEntity::get_connected_vertices(size_t vertex_index,
       }
       
       break;
+      
+  default:
+    err.set_msg("Element type not available");
+    break;
   }
 }
 

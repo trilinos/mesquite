@@ -124,7 +124,7 @@ Mesquite::StopWatchCollection::Key Mesquite::StopWatchCollection::add(
   if (!key)
   {
       // See if there is an unused existing stopwatch
-    int i;
+    size_t i;
     for (i = 0; i < mEntries.size(); i++)
     {
       if (mEntries[i].first == "")
@@ -154,7 +154,7 @@ Mesquite::StopWatchCollection::Key Mesquite::StopWatchCollection::get_key(
 {
   Key key = 0;
   
-  for (int i = 0; i < mEntries.size(); i++)
+  for (size_t i = 0; i < mEntries.size(); i++)
   {
     if (mEntries[i].first == name)
     {

@@ -50,9 +50,9 @@ PatchData::~PatchData()
 /*! \fn PatchData::num_free_vertices()
    This function has to iterate through all the PatchData vertices to determine
    the number of free vertices. Use with care ! */
-int PatchData::num_free_vertices(MsqError &err)
+size_t PatchData::num_free_vertices(MsqError &err)
 {   
-  int num_free_vertices=0;
+  size_t num_free_vertices=0;
   MsqFreeVertexIndexIterator ind(this, err);
   ind.reset();
   while (ind.next()) {
@@ -64,18 +64,18 @@ int PatchData::num_free_vertices(MsqError &err)
 
 #undef __FUNC__
 #define __FUNC__ "PatchData::add_element"
-/*! \fn PatchData::add_element(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh, int* vertex_indices, EntityTopology topo,  MsqError &err)
+/*! \fn PatchData::add_element(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh, size_t* vertex_indices, EntityTopology topo,  MsqError &err)
 
-\param int* vertex_indices ... those indices corresponds to the indices of
+\param size_t* vertex_indices ... those indices corresponds to the indices of
 the element's vertices in the PatchData arrays -- see output
 of the add_vertex function.
 */
-int PatchData::add_element(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
+size_t PatchData::add_element(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
                            size_t* vertex_indices, EntityTopology topo,
                            MsqError &err)
 {
-  int num_verts = MsqMeshEntity::vertex_count(topo);
-  if (!num_verts)
+  size_t num_verts = MsqMeshEntity::vertex_count(topo);
+  if (num_verts==0)
     err.set_msg("Attempting to add unknown element type to PatchData.");
   else if (numElements >= elemArraySize)
     err.set_msg("No space available. Use reserve_element_capacity().");
@@ -86,7 +86,7 @@ int PatchData::add_element(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
     elementHandlesArray[numElements].mesh = mh;
     elementHandlesArray[numElements].entity = eh;
       // Go through each vertex
-    for (int n=0; n<num_verts; ++n)
+    for (size_t n=0; n<num_verts; ++n)
     {
         // Make sure it's a valid index
       if (vertex_indices[n]>=numVertices)
@@ -96,7 +96,7 @@ int PatchData::add_element(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
     }
     return numElements++;
   }
-  return -1;
+  return 0;
 }
 
 #undef __FUNC__
@@ -105,7 +105,7 @@ int PatchData::add_element(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
 
 \brief adds a triangle element to the PatchData object.
 
-\param int index_vertex1 ... those 3 indices corresponds to the indices of
+\param size_t index_vertex1 ... those 3 indices corresponds to the indices of
 the triangle's vertices in the PatchData arrays -- see output
 of the add_vertex function.
 */
@@ -143,7 +143,7 @@ void PatchData::add_triangle(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
 
 #undef __FUNC__
 #define __FUNC__ "PatchData::move_vertices"
-/*! \fn PatchData::move_vertices(Vector3D dk[], int nb_vtx, double step_size, MsqError &err)
+/*! \fn PatchData::move_vertices(Vector3D dk[], size_t nb_vtx, double step_size, MsqError &err)
 
    It is often useful to use the create_coords_momento() function before
    calling this function.
@@ -156,7 +156,7 @@ void PatchData::add_triangle(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
           vertices in the PatchData.
    \param step_size will multiply the moving direction given in dk for each vertex.
   */
-void PatchData::move_vertices(Vector3D dk[], int nb_vtx,
+void PatchData::move_vertices(Vector3D dk[], size_t nb_vtx,
                                    double step_size, MsqError &err)
 {
   if (nb_vtx > numVertices) {
@@ -165,7 +165,7 @@ void PatchData::move_vertices(Vector3D dk[], int nb_vtx,
     return;
   }
 
-  int m=0;
+  size_t m=0;
   for (m=0; m<numVertices; ++m) {
     vertexArray[m] += (step_size * dk[m]);
   }
@@ -184,7 +184,7 @@ void PatchData::move_vertices(Vector3D dk[], int nb_vtx,
 
 #undef __FUNC__
 #define __FUNC__ "PatchData::move_free_vertices_constrained"
-/*! \fn PatchData::move_free_vertices_constrained(Vector3D dk[], int nb_vtx, double step_size, MsqError &err)
+/*! \fn PatchData::move_free_vertices_constrained(Vector3D dk[], size_t nb_vtx, double step_size, MsqError &err)
    PatchData::move_free_vertices_constrained() is similar to the function
    PatchData::move_vertices().  The main difference between the two
    being that for this funciton after the free vertices are moved
@@ -206,7 +206,7 @@ void PatchData::move_vertices(Vector3D dk[], int nb_vtx,
    \param step_size will multiply the moving direction given in dk
    for each vertex.
   */
-void PatchData::move_free_vertices_constrained(Vector3D dk[], int nb_vtx,
+void PatchData::move_free_vertices_constrained(Vector3D dk[], size_t nb_vtx,
                                                double step_size, MsqError &err)
 {
   if (nb_vtx != numVertices) {
@@ -215,7 +215,6 @@ void PatchData::move_free_vertices_constrained(Vector3D dk[], int nb_vtx,
     return;
   }
 
-  int m=0;
   MsqFreeVertexIndexIterator free_iter(this, err);
   free_iter.reset();
   while (free_iter.next()) {
@@ -225,7 +224,7 @@ void PatchData::move_free_vertices_constrained(Vector3D dk[], int nb_vtx,
   }
 
   // Checks that moving direction is zero for fixed vertices.
-  MSQ_DEBUG_ACTION(1,{ for (m=0; m<numVertices; ++m) {
+  MSQ_DEBUG_ACTION(1,{ for (size_t m=0; m<numVertices; ++m) {
     Vector3D zero_3d(0.,0.,0.);
     if (   ! vertexArray[m].is_free_vertex()
         && ( dk[m] != zero_3d && dk[m] != -zero_3d)  ) 
@@ -257,7 +256,7 @@ position stored in the PatchData Vertex array.
   */
 void PatchData::set_free_vertices_constrained(PatchDataVerticesMemento*
                                               memento, Vector3D dk[],
-                                              int nb_vtx, double step_size,
+                                              size_t nb_vtx, double step_size,
                                               MsqError &err)
 {
   if (nb_vtx != memento->numVertices) {
@@ -267,7 +266,7 @@ void PatchData::set_free_vertices_constrained(PatchDataVerticesMemento*
     return;
   }
 
-  int m=0;
+  size_t m=0;
   MsqFreeVertexIndexIterator free_iter(this, err);
   free_iter.reset();
   while (free_iter.next()) {
@@ -305,7 +304,7 @@ double PatchData::get_max_vertex_movement_squared(PatchDataVerticesMemento*
                                                   memento,
                                                   MsqError &err)
 {
-  int m=0;
+  size_t m=0;
   Vector3D temp_vec;
   double temp_dist=0.0;
   double max_dist=0.0;
@@ -328,7 +327,7 @@ double PatchData::get_max_vertex_movement_squared(PatchDataVerticesMemento*
  */
 void PatchData::set_free_vertices_soft_fixed(MsqError &err)
   {
-    int m =0;
+    size_t m =0;
     MsqFreeVertexIndexIterator free_iter(this, err);
     free_iter.reset();
     while (free_iter.next()) {
@@ -343,7 +342,7 @@ void PatchData::set_free_vertices_soft_fixed(MsqError &err)
  */
 void PatchData::set_all_vertices_soft_free(MsqError &/*err*/)
   {
-    int i = 0;
+    size_t i = 0;
     for(i=0;i<numVertices;++i){
       vertexArray[i].remove_soft_fixed_flag();
     }
@@ -368,7 +367,7 @@ void PatchData::get_element_vertex_coordinates(
   std::vector<size_t> vertex_indices;
   elementArray[elem_index].get_vertex_indices(vertex_indices);
     // Get the coords for each indicated vertex
-  for (int i = 0; i < vertex_indices.size(); i++)
+  for (size_t i = 0; i < vertex_indices.size(); i++)
     coords.push_back(Vector3D(vertexArray[vertex_indices[i]]));
 }
 
@@ -432,7 +431,7 @@ void PatchData::get_adjacent_vertex_indices(size_t vertex_index,
   std::vector<size_t> temp_vert_indices;
   std::vector<size_t>::iterator iter;
   size_t cur_vert;
-  int found=0;
+  size_t found=0;
   get_vertex_element_indices(vertex_index, elem_indices,err);
   MSQ_CHKERR(err);
   MsqMeshEntity* elems=get_element_array(err);MSQ_CHKERR(err);
@@ -463,7 +462,7 @@ void PatchData::get_adjacent_vertex_indices(size_t vertex_index,
     n-diminsional entity (where 'n' is a given integer).
 
 */
-void PatchData::get_adjacent_entities_via_n_dim(int n, size_t ent_ind,
+void PatchData::get_adjacent_entities_via_n_dim(size_t n, size_t ent_ind,
                                                 std::vector<size_t> &adj_ents,
                                                 MsqError &err)
 {
@@ -474,12 +473,12 @@ void PatchData::get_adjacent_entities_via_n_dim(int n, size_t ent_ind,
     //vector to store elements attached to the vertices in verts
   std::vector<size_t> elem_on_vert[MSQ_MAX_NUM_VERT_PER_ENT];
     //length of above vectos
-  int length_elem_on_vert[MSQ_MAX_NUM_VERT_PER_ENT];
+  size_t length_elem_on_vert[MSQ_MAX_NUM_VERT_PER_ENT];
     //get verts on this element
   get_element_vertex_indices(ent_ind, verts, err);
-  int num_vert=verts.size();
-  int i=0;
-  int j=0;
+  size_t num_vert=verts.size();
+  size_t i=0;
+  size_t j=0;
   for(i=0;i<num_vert;++i){
       //get elements on the vertices in verts and the number of vertices
     get_vertex_element_indices(verts[i],elem_on_vert[i],err);
@@ -489,7 +488,7 @@ void PatchData::get_adjacent_entities_via_n_dim(int n, size_t ent_ind,
     //into adj_ents
   size_t this_ent;
     //num of times this_ent has been found in the vectors of entity indices
-  int counter=0;
+  size_t counter=0;
   i = 0;
     //loop of each vert on ent_ind
   while(i<num_vert){
@@ -502,8 +501,8 @@ void PatchData::get_adjacent_entities_via_n_dim(int n, size_t ent_ind,
       if(this_ent!=ent_ind){
           //if this_ent occurred earlier we would have already considered it
           //so start at i and j+1
-        int k1=i;
-        int k2=j+1;
+        size_t k1=i;
+        size_t k2=j+1;
           //this_ent has occured once so far
         counter=1;
           //while k1 < num_vert
@@ -556,7 +555,7 @@ void PatchData::update_mesh(MsqError &/*err*/)
   TSTT::Entity_Handle vertex;
   TSTT::MeshError tstt_err=0;
 
-  for (int n=0; n<numVertices; ++n)
+  for (size_t n=0; n<numVertices; ++n)
   {
     mh = vertexHandlesArray[n].mesh;
     vertex = vertexHandlesArray[n].entity;
@@ -593,10 +592,10 @@ void PatchData::generate_vertex_to_element_data()
   
     // Go through each element
   size_t total_entries = num_vertices();
-  for (int elem_num = num_elements();
+  for (size_t elem_num = num_elements();
        elem_num--; )
   {
-    for (int which_node = elementArray[elem_num].vertex_count();
+    for (size_t which_node = elementArray[elem_num].vertex_count();
          which_node--; )
     {
         // Put the element number into the vertex's list
@@ -609,7 +608,7 @@ void PatchData::generate_vertex_to_element_data()
   vertexToElemOffset = new size_t[num_vertices()];
   elemsInVertex = new size_t[total_entries];
   size_t cur_index = 0;
-  for (int i = 0; i < num_vertices(); i++)
+  for (size_t i = 0; i < num_vertices(); i++)
   {
       // Save the start point for this vertex's data
     vertexToElemOffset[i] = cur_index;
@@ -652,7 +651,7 @@ void PatchData::get_subpatch(size_t center_vertex_index,
     // old_to_new_vertex_id[new_id] = old_id...
   std::vector<size_t> old_to_new_vertex_id;
   size_t *new_vert_indices = NULL;
-  size_t new_vert_indices_size = 0;
+  short new_vert_indices_size = 0;
   
     // For each element attached to the center vertex...
   for (size_t elems_left = *(vert_to_elem_iter++);

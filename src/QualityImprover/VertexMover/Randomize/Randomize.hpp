@@ -45,7 +45,7 @@ namespace Mesquite
         the incident vertex randomly in each of the three coordinate
         directions (relative to the scale factor multiplied by mPercent).
       */
-    inline void randomize_vertex(PatchData &pd,int num_vtx,
+    inline void randomize_vertex(PatchData &pd,size_t num_vtx,
                                  MsqVertex &free_vtx,
                                  MsqError &err);
   };
@@ -54,11 +54,12 @@ namespace Mesquite
 #undef __FUNC__
 #define __FUNC__ "randomize_vertex"
     //!Perturbs the free vertex randomly.
-  inline void Randomize::randomize_vertex(PatchData &pd, int num_vtx,
+  inline void Randomize::randomize_vertex(PatchData &pd, size_t num_vtx,
                                           MsqVertex &free_vtx,
                                           MsqError &err)
   {
-    int i,j;
+    size_t i;
+    short j;
     MsqVertex* verts = pd.get_vertex_array(err);
       //a scale w.r.t. the patch size
     double scale_factor=0.0;

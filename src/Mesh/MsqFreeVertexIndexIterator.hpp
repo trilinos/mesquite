@@ -35,19 +35,20 @@ namespace Mesquite
   class MsqFreeVertexIndexIterator {
   public:
     MsqFreeVertexIndexIterator(PatchData *pd, MsqError &err) :
-      originator(pd), current_index(-1)
-    { vertex_array = pd->get_vertex_array(err); }
+      iterOriginator(pd), iterCurrentIndex(0), initialState(true)
+    { iterVertexArray = pd->get_vertex_array(err); }
     //! Resets the iterator. 
     //! The next call to next() will set the iterator on the first free vertex. 
-    void reset() { current_index=-1; }
+    void reset() { initialState=true; iterCurrentIndex=0; }
     //! Increments the iterator. returns false if there is no more free vertex.
     inline bool next();
     //! Returns an index corresponding to a free vertex.
-    int value() {return current_index;}
+    size_t value() {return iterCurrentIndex;}
   private:
-    PatchData* originator;
-    int current_index;
-    MsqVertex* vertex_array;
+    PatchData* iterOriginator;
+    size_t iterCurrentIndex;
+    MsqVertex* iterVertexArray;
+    bool initialState;
   };
   
 
@@ -59,12 +60,14 @@ namespace Mesquite
     bool fixed=true;
     while ( fixed ) 
       {
-	++current_index;
-	if ( current_index == originator->num_vertices() ) {
-	  return false; 
-	}
-	fixed = vertex_array[current_index].is_flag_set(MsqVertex::MSQ_SOFT_FIXED) ||
-        	vertex_array[current_index].is_flag_set(MsqVertex::MSQ_HARD_FIXED) ;
+        if ( initialState==true )  initialState=false;
+        else  ++iterCurrentIndex;
+        
+        if ( iterCurrentIndex == iterOriginator->num_vertices() ) {
+          return false; 
+        }
+        fixed = iterVertexArray[iterCurrentIndex].is_flag_set(MsqVertex::MSQ_SOFT_FIXED) ||
+          iterVertexArray[iterCurrentIndex].is_flag_set(MsqVertex::MSQ_HARD_FIXED) ;
       }
     return true;
   }

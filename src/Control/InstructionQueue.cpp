@@ -20,7 +20,7 @@ InstructionQueue::InstructionQueue() :
   autoQualAssess(true),
   nbPreConditionners(0),
   isMasterSet(false),
-  masterInstrIndex(-1)
+  masterInstrIndex(0)
 {
 }
 
@@ -54,16 +54,16 @@ void InstructionQueue::add_preconditioner(QualityImprover* instr,
 
 #undef __FUNC__
 #define __FUNC__ "InstructionQueue::remove_preconditioner"
-/*! \fn InstructionQueue::remove_preconditioner(int index, MsqError &err)
+/*! \fn InstructionQueue::remove_preconditioner(size_t index, MsqError &err)
     \brief removes a QualityImprover* from the instruction queue
 
     \param index is 0-based. An error is set if the index does not correspond
            to a valid element in the queue.
 */
-void InstructionQueue::remove_preconditioner(int index, MsqError &err)
+void InstructionQueue::remove_preconditioner(size_t index, MsqError &err)
 {
   // checks index is valid
-  if ( index == masterInstrIndex ) {
+  if ( isMasterSet && index == masterInstrIndex ) {
     err.set_msg("cannot remove master QualityImprover.");
     return;
   } else if (index >= instructions.size() ) {
@@ -88,7 +88,7 @@ void InstructionQueue::remove_preconditioner(int index, MsqError &err)
 
 #undef __FUNC__
 #define __FUNC__ "InstructionQueue::insert_preconditioner"
-/*! \fn InstructionQueue::insert_preconditioner(QualityImprover* instr, int index, MsqError &err)
+/*! \fn InstructionQueue::insert_preconditioner(QualityImprover* instr, size_t index, MsqError &err)
     \brief inserts a QualityImprover* into the instruction queue.
 
     Pre-conditionners can only be inserted before the master QualityImprover.
@@ -97,7 +97,7 @@ void InstructionQueue::remove_preconditioner(int index, MsqError &err)
            to a valid position in the queue.
 */
 void InstructionQueue::insert_preconditioner(QualityImprover* instr,
-                                           int index, MsqError &err)
+                                           size_t index, MsqError &err)
 {
   // checks index is valid
   if (isMasterSet==true && index > masterInstrIndex) {
@@ -141,13 +141,13 @@ void InstructionQueue::add_quality_assessor(QualityAssessor* instr,
 
 #undef __FUNC__
 #define __FUNC__ "InstructionQueue::remove_quality_assessor"
-/*! \fn InstructionQueue::remove_quality_assessor(int index, MsqError &err)
+/*! \fn InstructionQueue::remove_quality_assessor(size_t index, MsqError &err)
     \brief removes a QualityAssessor* from the instruction queue
 
     \param index is 0-based. An error is set if the index does not correspond
            to a valid element in the queue.
 */
-void InstructionQueue::remove_quality_assessor(int index, MsqError &err)
+void InstructionQueue::remove_quality_assessor(size_t index, MsqError &err)
 {
   // checks index is valid
   if (index >= instructions.size() ) {
@@ -171,7 +171,7 @@ void InstructionQueue::remove_quality_assessor(int index, MsqError &err)
 
 #undef __FUNC__
 #define __FUNC__ "InstructionQueue::insert_quality_assessor"
-/*! \fn InstructionQueue::insert_quality_assessor(QualityAssessor* instr, int index, MsqError &err)
+/*! \fn InstructionQueue::insert_quality_assessor(QualityAssessor* instr, size_t index, MsqError &err)
     \brief inserts a QualityAssessor* into the instruction queue.
 
     QualityAssessors can be inserted at any position in the instruction queue.
@@ -179,7 +179,7 @@ void InstructionQueue::remove_quality_assessor(int index, MsqError &err)
     \param index is 0-based. An error is set if the index is past the end of the queue.
 */
 void InstructionQueue::insert_quality_assessor(QualityAssessor* instr,
-                                           int index, MsqError &err)
+                                           size_t index, MsqError &err)
 {
   // checks index is valid
   if (index > instructions.size()) {
@@ -259,7 +259,7 @@ void InstructionQueue::clear()
   instructions.clear();
   autoQualAssess = true;
   isMasterSet = false;
-  masterInstrIndex = -1;
+  masterInstrIndex = 0;
 }
 
 

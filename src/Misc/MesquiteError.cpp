@@ -108,6 +108,11 @@ void MsqError::handler(int line, const char *func,
    case MSQ_NO_PD_STORAGE_MODE:
      std::cerr << "MESQUITE ERROR: no storage mode set in PatchData object.\n";
      break;
+  case MSQ_NO_ERROR:
+    break;
+  default:
+    break;
+      
   }
   
   errorCode = MSQ_PRINT_STACK; /* set it to print the stack */

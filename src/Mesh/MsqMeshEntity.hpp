@@ -49,11 +49,11 @@ namespace Mesquite
     
       //! Returns the number of vertices in this element,
       //! based on its element type.
-    inline size_t vertex_count() const;
+    inline short vertex_count() const;
     
       //! Returns the number of vertices in this element type.
-    static inline size_t vertex_count(EntityTopology type);
-    static inline size_t vertex_count(TSTT::EntityTopology type,
+    static inline short vertex_count(EntityTopology type);
+    static inline short vertex_count(TSTT::EntityTopology type,
                                       MsqError& err);
     
       //! gets the vertices of the mesh entity
@@ -64,14 +64,14 @@ namespace Mesquite
       //! Sets element data
     void set_element_type(EntityTopology type)
       { mType = type; }
-    void set_vertex_index(size_t vertex_in_element, size_t vertex_patch_index);
-    size_t get_vertex_index(size_t vertex_in_element);
+    void set_vertex_index(short vertex_in_element, size_t vertex_patch_index);
+    size_t get_vertex_index(short vertex_in_element);
     
       //fills array of Vector3D's with the jacobian vectors and the 
       //number of jacobian vectors
     void compute_weighted_jacobian(PatchData &pd, Vector3D& sample_point,
                                    Vector3D jacobian_vectors[],
-                                   int &num_jacobian_vectors,
+                                   short &num_jacobian_vectors,
                                    MsqError &err );
     
       //Returns a list of sample points given an evaluationmode 
@@ -107,7 +107,7 @@ namespace Mesquite
 
   };
   
-  inline size_t MsqMeshEntity::vertex_count(EntityTopology type)
+  inline short MsqMeshEntity::vertex_count(EntityTopology type)
   {
     switch (type)
     {
@@ -131,7 +131,7 @@ namespace Mesquite
     }
   }
 
-  inline size_t MsqMeshEntity::vertex_count(TSTT::EntityTopology type,
+  inline short MsqMeshEntity::vertex_count(TSTT::EntityTopology type,
                                             MsqError& err)
   {
     switch (type)
@@ -163,10 +163,10 @@ namespace Mesquite
   
     // Returns the number of vertices in this type
     // of element, or 0 if a variable number.
-  inline size_t MsqMeshEntity::vertex_count() const
+  inline short MsqMeshEntity::vertex_count() const
   { return vertex_count(mType); }
 
-  inline void MsqMeshEntity::set_vertex_index(size_t vertex_in_element,
+  inline void MsqMeshEntity::set_vertex_index(short vertex_in_element,
                                               size_t vertex_patch_index)
   {
       // Make sure we're in range
@@ -175,10 +175,10 @@ namespace Mesquite
     vertexIndices[vertex_in_element] = vertex_patch_index;
   }
   
-  inline const size_t *MsqMeshEntity::get_vertex_index_array() const
+  inline const size_t* MsqMeshEntity::get_vertex_index_array() const
   { return vertexIndices; }
   
-  inline size_t MsqMeshEntity::get_vertex_index(size_t vertex_in_element)
+  inline size_t MsqMeshEntity::get_vertex_index(short vertex_in_element)
   {
       // Make sure we're in range
     assert(vertex_in_element < vertex_count());

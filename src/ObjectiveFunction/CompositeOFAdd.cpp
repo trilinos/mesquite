@@ -110,7 +110,7 @@ bool CompositeOFAdd::concrete_evaluate(PatchData &patch, double &fval,
 bool CompositeOFAdd::compute_analytical_gradient(PatchData &patch,
                                                  Vector3D *const &grad,
                                                  MsqError &err,
-                                                 int array_size)
+                                                 size_t array_size)
 {
   FUNCTION_TIMER_START(__FUNC__);
     //get first objective function's gradient

@@ -43,7 +43,7 @@ bool LPTemplate::concrete_evaluate(PatchData &patch, double &fval,
                                    MsqError &err){
   FUNCTION_TIMER_START(__FUNC__);
     //Total value of objective function
-  int index=0;
+  size_t index=0;
   bool lp_bool=true;
 //  double accum=0;
   MsqMeshEntity* elems=patch.get_element_array(err);
@@ -60,9 +60,9 @@ bool LPTemplate::concrete_evaluate(PatchData &patch, double &fval,
   QualityMetric* currentQM = get_quality_metric();
   if(currentQM==NULL)
     currentQM=get_quality_metric_list().front();
-  int num_elements=patch.num_elements();
-  int num_vertices=patch.num_vertices();
-  int total_num=0;
+  size_t num_elements=patch.num_elements();
+  size_t num_vertices=patch.num_vertices();
+  size_t total_num=0;
   if(currentQM->get_metric_type()==QualityMetric::ELEMENT_BASED)   
     total_num=num_elements;
   else if (currentQM->get_metric_type()==QualityMetric::VERTEX_BASED)
@@ -117,7 +117,7 @@ bool LPTemplate::concrete_evaluate(PatchData &patch, double &fval,
 
 #undef __FUNC__
 #define __FUNC__ "LPTemplate::compute_analytical_gradient"
-/*! \fn LPTemplate::compute_analytical_gradient(PatchData &patch,Vector3D *const &grad, MsqError &err, int array_size)
+/*! \fn LPTemplate::compute_analytical_gradient(PatchData &patch,Vector3D *const &grad, MsqError &err, size_t array_size)
     \param patch The PatchData object for which the objective function
            gradient is computed.
     \param grad An array of Vector3D, at least the size of the number
@@ -127,7 +127,7 @@ bool LPTemplate::concrete_evaluate(PatchData &patch, double &fval,
 */ /*Michael:: TODO, should we not use pop() functions below?*/
 bool LPTemplate::compute_analytical_gradient(PatchData &patch,
                                               Vector3D *const &grad,
-                                              MsqError &err, int array_size)
+                                              MsqError &err, size_t array_size)
 {
   FUNCTION_TIMER_START(__FUNC__);
   //Generate vertex to element connectivity if needed
@@ -138,22 +138,23 @@ bool LPTemplate::compute_analytical_gradient(PatchData &patch,
   MsqMeshEntity* elems=patch.get_element_array(err);
   MsqVertex* vertices=patch.get_vertex_array(err);
   bool lp_bool=true;
-  int num_elements=patch.num_elements();
-  int num_vertices=patch.num_vertices(); 
-  if( num_vertices!=array_size && array_size>=0 ){
+  size_t num_elements=patch.num_elements();
+  size_t num_vertices=patch.num_vertices(); 
+  if( num_vertices!=array_size && array_size>0 ){
     err.set_msg("Analytical Gradient passed arrays of incorrect size.");
     MSQ_CHKERR(err); }
 
   double big_f=0;
   double temp_value=0;
-  int index=0;
+  size_t index=0;
+  short p_i;
   
   //Set currentQM to be the first quality metric* in the list
   QualityMetric* currentQM = get_quality_metric();
   if(currentQM==NULL)
     err.set_msg("LPTemplate has NULL QualityMetric pointer.");
   enum QualityMetric::MetricType qm_type=currentQM->get_metric_type();
-  int total_num=0;
+  size_t total_num=0;
   if (qm_type==QualityMetric::ELEMENT_BASED)
     total_num=num_elements;
   else if (qm_type==QualityMetric::VERTEX_BASED)
@@ -214,7 +215,7 @@ bool LPTemplate::compute_analytical_gradient(PatchData &patch,
   
   Vector3D grad_vec;
   // Loops over free vertices
-  for (int m=0; m<num_vertices; ++m) {
+  for (size_t m=0; m<num_vertices; ++m) {
     grad[m].set(0.,0.,0.);
     temp_value=0;
     if (vertices[m].is_free_vertex()) {
@@ -233,7 +234,7 @@ bool LPTemplate::compute_analytical_gradient(PatchData &patch,
                                               ele_free_vtces,
                                               &grad_vec, 1, dummy, err);
           temp_value=1;
-          for(index=0;index<pVal-1;++index){
+          for(p_i=0;p_i<pVal-1;++p_i){
             temp_value*=metric_values[elem_pos];
           }
           //if pval is odd and met val is negative
@@ -263,7 +264,7 @@ bool LPTemplate::compute_analytical_gradient(PatchData &patch,
                                              vert_free_vtces,
                                              &grad_vec, 1, dummy, err);
           temp_value=1;
-          for(index=0;index<pVal-1;++index){
+          for(p_i=0;p_i<pVal-1;++p_i){
             temp_value*=metric_values[vert_pos];
           }
           //if pval is odd and met val is negative

@@ -70,16 +70,16 @@ namespace Mesquite
     void reserve_element_capacity(size_t min_num_elements,
                                   MsqError &err);
     
-    int add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
+    size_t add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
                    const double vertex_coords[3],
                    bool check_redundancy, MsqError &err,
                    MsqVertex::FlagMaskID flag);
     //! delegates to the other form of add_vertex.
-    inline int add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
+    inline size_t add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
                           double x, double y, double z,
                           bool check_redundancy, MsqError &err,
                           MsqVertex::FlagMaskID flag);
-    int add_element(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
+    size_t add_element(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
                     size_t* vertex_indices,
                     EntityTopology topo,
                     MsqError &err);
@@ -89,13 +89,13 @@ namespace Mesquite
                       size_t index_vertex3,
                       MsqError &err);
     
-    int num_vertices() const
+    size_t num_vertices() const
       { return numVertices;}
-    int num_elements() const
+    size_t num_elements() const
       { return numElements; } 
 
     //! This is a costly function, since we have to check the flags of all vertices !
-    int num_free_vertices(MsqError &err);
+    size_t num_free_vertices(MsqError &err);
     
     //! returns the start of the vertex array
     MsqVertex* get_vertex_array(MsqError &err) const;
@@ -149,7 +149,7 @@ namespace Mesquite
       NOTE:  if n is 2 and the elements in the entity array are
       two-dimensional, no entities should meet this criterion.
     */
-    void get_adjacent_entities_via_n_dim(int n, size_t ent_ind,
+    void get_adjacent_entities_via_n_dim(size_t n, size_t ent_ind,
                                          std::vector<size_t> &adj_ents,
                                          MsqError &err);
     
@@ -175,7 +175,7 @@ namespace Mesquite
       \param nb_vtx number of vertices.
       \param step_size a scalar that multiplies the vectors given in dk.
     */
-    void move_vertices(Vector3D dk[], int nb_vtx,
+    void move_vertices(Vector3D dk[], size_t nb_vtx,
                        double step_size, MsqError &err);
 
       //! Moves free vertices and then snaps the free vertices to the domain.
@@ -184,7 +184,7 @@ namespace Mesquite
         \param nb_vtx number of vertices.
         \param step_size a scalar that multiplies the vectors given in dk.
       */
-    void move_free_vertices_constrained(Vector3D dk[], int nb_vtx,
+    void move_free_vertices_constrained(Vector3D dk[], size_t nb_vtx,
                                         double step_size, MsqError &err);
     
     /*! Moves free vertices from a memento position along a certain direction 
@@ -195,7 +195,7 @@ namespace Mesquite
       \param step_size a scalar that multiplies the vectors given in dk.
     */
     void set_free_vertices_constrained(PatchDataVerticesMemento* memento, 
-                                       Vector3D dk[], int nb_vtx,
+                                       Vector3D dk[], size_t nb_vtx,
                                        double step_size, MsqError &err);
 
       //!Calculates the distance each vertex has moved from its original
@@ -292,16 +292,16 @@ namespace Mesquite
     friend class MeshSet;
     
     // Member data for the "local" patch
-    int numVertices;
-    int numElements;
+    size_t numVertices;
+    size_t numElements;
     MsqVertex *vertexArray;
     EntityEntry *vertexHandlesArray;
     MsqMeshEntity *elementArray;
     EntityEntry *elementHandlesArray;
     
     // memory management utilities
-    int vertexArraySize;
-    int elemArraySize;
+    size_t vertexArraySize;
+    size_t elemArraySize;
 
     // Links from vertices to elements
     size_t *elemsInVertex;
@@ -334,8 +334,8 @@ namespace Mesquite
     
     PatchData* originator; //!< PatchData whose state is kept
     MsqVertex *vertices; //!< array of vertices
-    int numVertices;
-    int arraySize;
+    size_t numVertices;
+    size_t arraySize;
   };
 
 
@@ -463,7 +463,7 @@ namespace Mesquite
   the function return value will be the index at which the vertex was
   already inserted. 
   */
-  inline int PatchData::add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
+  inline size_t PatchData::add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
                                    const double vertex_coord[3],
                                    bool check_redundancy,
                                    MsqError &err, 
@@ -474,7 +474,7 @@ namespace Mesquite
       {
         //       MsqVertex vertex(vertex_coord[0], vertex_coord[1], vertex_coord[2]);
         Vector3D vertex(vertex_coord[0], vertex_coord[1], vertex_coord[2]);
-        for (int i = 0; i < numVertices; i++)
+        for (size_t i = 0; i < numVertices; i++)
           {
             if (vertex == vertexArray[i]) 
               return i; // vertex was already in array
@@ -485,8 +485,8 @@ namespace Mesquite
     if (numVertices==vertexArraySize)
       {
         // Shouldn't we just re-allocate?
-        err.set_msg("Vertices array is already full.");
-        return -1;
+        err.set_msg("Vertices array is already full."); MSQ_CHKERR(err);
+        return 0;
       }
     
     // if we get here, we add the vertex to the array
@@ -502,14 +502,14 @@ namespace Mesquite
   
 #undef __FUNC__
 #define __FUNC__ "PatchData::add_vertex"
-  inline int PatchData::add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
+  inline size_t PatchData::add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
                                    double x, double y, double z,
                                    bool check_redundancy, MsqError &err, 
                                    MsqVertex::FlagMaskID flag=MsqVertex::MSQ_NO_VTX_FLAG)
   {
     double coords[3];
     coords[0] = x; coords[1] = y; coords[2] = z;
-    int index = add_vertex(mh, eh, coords, check_redundancy, err, flag); MSQ_CHKERR(err);
+    size_t index = add_vertex(mh, eh, coords, check_redundancy, err, flag); MSQ_CHKERR(err);
     return index;
   }
   

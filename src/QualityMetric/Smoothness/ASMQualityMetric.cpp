@@ -38,7 +38,7 @@ bool ASMQualityMetric::evaluate_element(PatchData &pd,
   std::vector<size_t> adj_elems;
  
   MsqMeshEntity *elems = pd.get_element_array(err);
-  MsqVertex *vertices=pd.get_vertex_array(err);
+//  MsqVertex *vertices=pd.get_vertex_array(err);
   switch(element->get_element_type()){
     case TRIANGLE:
     case QUADRILATERAL:

@@ -36,7 +36,7 @@ namespace Mesquite
 	protected:
       //!Implement the scalar multiply analytic gradient
      bool compute_analytical_gradient(PatchData &patch,Vector3D *const &grad,
-                                      MsqError &err,int array_size);
+                                      MsqError &err,size_t array_size);
 	private:
      ObjectiveFunction* objFunc1;
      ObjectiveFunction* objFunc2;

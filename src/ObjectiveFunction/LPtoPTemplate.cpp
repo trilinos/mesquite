@@ -19,7 +19,7 @@ using std::endl;
 #undef __FUNC__
 #define __FUNC__ "LPtoPTemplate::LPtoPTemplate"
 
-LPtoPTemplate::LPtoPTemplate(QualityMetric *qualitymetric, int Pinput, MsqError &err){
+LPtoPTemplate::LPtoPTemplate(QualityMetric *qualitymetric, short Pinput, MsqError &err){
   set_quality_metric(qualitymetric);
   pVal=Pinput;
   if(pVal<1){
@@ -43,7 +43,7 @@ LPtoPTemplate::~LPtoPTemplate(){
 #define __FUNC__ "LPtoPTemplate::concrete_evaluate"
 bool LPtoPTemplate::concrete_evaluate(PatchData &patch, double &fval,
                                       MsqError &err){
-  int index=0;
+  size_t index=0;
   MsqMeshEntity* elems=patch.get_element_array(err);
   bool obj_bool=true;
     //double check for pVal=0;
@@ -59,9 +59,9 @@ bool LPtoPTemplate::concrete_evaluate(PatchData &patch, double &fval,
     currentQM=get_quality_metric_list().front();
   if(currentQM==NULL)
     err.set_msg("NULL QualityMetric pointer in LPtoPTemplate");
-  int num_elements=patch.num_elements();
-  int num_vertices=patch.num_vertices();
-  int total_num=0;
+  size_t num_elements=patch.num_elements();
+  size_t num_vertices=patch.num_vertices();
+  size_t total_num=0;
   if(currentQM->get_metric_type()==QualityMetric::ELEMENT_BASED)   
     total_num=num_elements;
   else if (currentQM->get_metric_type()==QualityMetric::VERTEX_BASED)
@@ -114,7 +114,7 @@ bool LPtoPTemplate::concrete_evaluate(PatchData &patch, double &fval,
 
 #undef __FUNC__
 #define __FUNC__ "LPtoPTemplate::compute_analytical_gradient"
-/*! \fn LPtoPTemplate::compute_analytical_gradient(PatchData &patch, Vector3D *const &grad, MsqError &err, int array_size)
+/*! \fn LPtoPTemplate::compute_analytical_gradient(PatchData &patch, Vector3D *const &grad, MsqError &err, size_t array_size)
     \param patch The PatchData object for which the objective function
            gradient is computed.
     \param grad An array of Vector3D, at least the size of the number
@@ -126,11 +126,11 @@ bool LPtoPTemplate::concrete_evaluate(PatchData &patch, double &fval,
 */
 bool LPtoPTemplate::compute_analytical_gradient(PatchData &patch,
                                               Vector3D *const &grad,
-                                              MsqError &err, int array_size)
+                                              MsqError &err, size_t array_size)
 {
-  int num_elements=patch.num_elements();
-  int num_vertices=patch.num_vertices();
-  if( num_vertices!=array_size && array_size>=0)
+  size_t num_elements=patch.num_elements();
+  size_t num_vertices=patch.num_vertices();
+  if( num_vertices!=array_size && array_size>0)
     err.set_msg("Incorrect array size.");
   //Generate vertex to element connectivity if needed
   patch.generate_vertex_to_element_data();
@@ -142,7 +142,7 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &patch,
   bool obj_bool=true;
   // If MSQ_DBG1 is defined, check to make sure that num_vert == array_size.
   MSQ_DEBUG_ACTION(1,{
-    int num_vert=patch.num_vertices(); 
+    size_t num_vert=patch.num_vertices(); 
     if(num_vert!=array_size && array_size!=-1){
       err.set_msg("Analytical Gradient passed arrays of incorrect size.");
       MSQ_CHKERR(err); cout << num_vert << " instead of " << array_size << endl; }
@@ -150,7 +150,7 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &patch,
     
   double big_f=0;
   double temp_value=0;
-  int index=0;
+  size_t index=0;
   
   //Set currentQM to be the first quality metric* in the list
   QualityMetric* currentQM = get_quality_metric();
@@ -158,7 +158,7 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &patch,
     err.set_msg("LPtoPTemplate has NULL QualityMetric pointer.");
   enum QualityMetric::MetricType qm_type=currentQM->get_metric_type();
   
-  int total_num=0;
+  size_t total_num=0;
   if (qm_type==QualityMetric::ELEMENT_BASED)
     total_num=num_elements;
   else if (qm_type==QualityMetric::VERTEX_BASED)
@@ -202,9 +202,10 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &patch,
   MsqFreeVertexIndexIterator free_ind(&patch, err);
   free_ind.reset();
   //position in patch's vertex array
-  int vert_count=0;
+  size_t vert_count=0;
   //corresponding position in grad array
   double dummy;
+  short p_i;
   //position in elem array
   size_t elem_pos=0;
   size_t vert_pos=0;
@@ -232,7 +233,7 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &patch,
                                               ele_free_vtces,
                                               &grad_vec, 1, dummy, err);
           temp_value=pVal;
-          for(index=0;index<pVal-1;++index){
+          for(p_i=0;p_i<pVal-1;++p_i){
             temp_value*=(metric_values[elem_pos]);
           }
             //if pval is odd and met val is negative
@@ -262,7 +263,7 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &patch,
                                              vert_free_vtces,
                                              &grad_vec, 1, dummy, err);
           temp_value=pVal;
-          for(index=0;index<pVal-1;++index){
+          for(p_i=0;p_i<pVal-1;++p_i){
             temp_value*=(metric_values[vert_pos]);
           }
             //if pval is odd and met val is negative
@@ -312,7 +313,7 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
 
   MsqMeshEntity* elements = pd.get_element_array(err); MSQ_CHKERR(err);
   MsqVertex* vertices = pd.get_vertex_array(err); MSQ_CHKERR(err);
-  int num_elems = pd.num_elements();
+  size_t num_elems = pd.num_elements();
   Matrix3D elem_hessian[MSQ_MAX_NUM_VERT_PER_ENT*(MSQ_MAX_NUM_VERT_PER_ENT+1)/2];
   Matrix3D elem_outer_product[MSQ_MAX_NUM_VERT_PER_ENT*(MSQ_MAX_NUM_VERT_PER_ENT+1)/2];
   Vector3D grad_vec[MSQ_MAX_NUM_VERT_PER_ENT];
@@ -327,13 +328,13 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
   std::vector<size_t>::const_iterator index; 
     
   size_t e;
-  int num_vtx;
-  int i,j,n;
+  size_t num_vtx;
+  short i,j,n;
 
   hessian.zero_out();
   
   for (e=0; e<num_elems; ++e) {
-    int nve = elements[e].vertex_count();
+    short nve = elements[e].vertex_count();
     
     // Gets a list of free vertices in the element.
     elements[e].get_vertex_indices(vtx_indices);

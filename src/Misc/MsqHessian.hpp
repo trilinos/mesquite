@@ -5,7 +5,7 @@
 //    E-MAIL: tmunson@mcs.anl.gov
 //
 // ORIG-DATE:  2-Jan-03 at 11:02:19 bu Thomas Leurent
-//  LAST-MOD: 21-Mar-03 at 11:19:14 by Thomas Leurent
+//  LAST-MOD:  8-Apr-03 at 16:23:39 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -53,17 +53,17 @@ namespace Mesquite
     int* mAccumulation;	   //!< accumulation pattern instructions
     size_t* mAccumElemStart;  //!< Starting index in mAccumulation for element i, i=1,...
 
-    int mSize; //!< number of rows (or number of columns, this is a square matrix).
+    size_t mSize; //!< number of rows (or number of columns, this is a square matrix).
     
     Matrix3D* mPreconditionner;
-    int precondArraySize;
+    size_t precondArraySize;
     
     Vector3D* r; //!< array used in the CG solver
     Vector3D* z; //!< array used in the CG solver
     Vector3D* p; //!< array used in the CG solver
     Vector3D* w; //!< array used in the CG solver
-    int cgArraySizes; //!< size of arrays allocated in the CG solver.
-    int maxCGiter; //!< max nb of iterations of the CG solver.
+    size_t cgArraySizes; //!< size of arrays allocated in the CG solver.
+    size_t maxCGiter; //!< max nb of iterations of the CG solver.
     
   public:
     MsqHessian();
@@ -71,7 +71,7 @@ namespace Mesquite
     
     void initialize(PatchData &pd, MsqError &err);
     void zero_out();
-    int size() {return mSize;}
+    size_t size() {return mSize;}
     //! returns the diagonal blocks, memory must be allocated before call.
     void get_diagonal_blocks(std::vector<Matrix3D> &diag, MsqError &err);
     Matrix3D* get_block(size_t i, size_t j);
@@ -81,9 +81,9 @@ namespace Mesquite
     void apply_preconditionner(Vector3D zloc[], Vector3D rloc[], MsqError &err);
     void cg_solver(Vector3D x[], Vector3D b[], MsqError &err);
     //! Hessian - vector product, summed with a second vector (optional).
-    friend void axpy(Vector3D res[], int size_r,
-                     const MsqHessian &H, const Vector3D x[], int size_x,
-                     const Vector3D y[], int size_y, MsqError &err);
+    friend void axpy(Vector3D res[], size_t size_r,
+                     const MsqHessian &H, const Vector3D x[], size_t size_x,
+                     const Vector3D y[], size_t size_y, MsqError &err);
     friend class ObjectiveFunction;
     friend std::ostream& operator<<(std::ostream &s, const MsqHessian &h);
   };
@@ -96,7 +96,7 @@ namespace Mesquite
       hessian. */
   inline void MsqHessian::zero_out()
   {
-    int i;
+    size_t i;
     for (i=0; i<mRowStart[mSize]; ++i) {
       mEntries[i] = 0.;
     }
@@ -125,11 +125,11 @@ namespace Mesquite
       err.set_msg("Cannot accumulate elements from a different patch. "
                   "Use MsqHessian::initialize first."); return;}});
 
-    int nve = pd.get_element_array(err)[elem_index].vertex_count(); MSQ_CHKERR(err);
-    int nb_mat3d = (nve+1)*nve/2;
+    size_t nve = pd.get_element_array(err)[elem_index].vertex_count(); MSQ_CHKERR(err);
+    size_t nb_mat3d = (nve+1)*nve/2;
     
-    int e = mAccumElemStart[elem_index];
-    int i;
+    size_t e = mAccumElemStart[elem_index];
+    size_t i;
     for (i=0; i<nb_mat3d; ++i) {
        if (mAccumulation[e] >= 0)
           mEntries[mAccumulation[e]] += mat3d_array[i];
@@ -151,20 +151,20 @@ namespace Mesquite
     \param y: vector added to the Hessian vector product. Set to 0 if not needed.
     \param size_y: size of the y array. Set to 0 if not needed.
   */
-  inline void axpy(Vector3D res[], int size_r,
-                   const MsqHessian &H, const Vector3D x[], int size_x,
-                   const Vector3D y[], int size_y, MsqError &err)
+  inline void axpy(Vector3D res[], size_t size_r,
+                   const MsqHessian &H, const Vector3D x[], size_t size_x,
+                   const Vector3D y[], size_t size_y, MsqError &err)
   {
     if ((size_r != H.mSize) || (size_x != H.mSize) ||
         (size_y != H.mSize && size_y != 0)) {
       // throw an error
     }
 
-    const int nn = H.mSize;
-    int rl; // row length
-    int e;  // entries index
-    int c;  // column index
-    int i, j;
+    const size_t nn = H.mSize;
+    size_t rl; // row length
+    size_t e;  // entries index
+    size_t c;  // column index
+    size_t i, j;
     size_t* col = H.mColIndex;
 
     if (y!=0) 
@@ -205,7 +205,7 @@ namespace Mesquite
                                                 Vector3D rloc[],
                                                 MsqError& /*err*/)
   {
-    int m;
+    size_t m;
     // preconditionner is identity matrix for now.
     for (m=0; m<mSize; ++m) {
       zloc[m] = mPreconditionner[m] * rloc[m]; 
@@ -221,7 +221,7 @@ namespace Mesquite
       (symetric) hessian. */
   inline Matrix3D* MsqHessian::get_block(size_t i, size_t j)
   {
-    int c;
+    size_t c;
     assert(i<mSize);
     assert(j<mSize);
     assert(j>=i);
@@ -241,7 +241,7 @@ namespace Mesquite
    //! Prints out the MsqHessian blocks.
   inline std::ostream& operator<<(std::ostream &s, const MsqHessian &h)
   {
-    int i,j;
+    size_t i,j;
     s << "MsqHessian of size: " << h.mSize <<"x"<< h.mSize << "\n";
     for (i=0; i<h.mSize; ++i) {
       s << " ROW " << i << " ------------------------\n";

@@ -5,7 +5,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 15-Jan-03 at 08:05:56
-//  LAST-MOD:  2-Apr-03 at 17:23:13 by Thomas Leurent
+//  LAST-MOD:  9-Apr-03 at 09:19:49 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -75,7 +75,6 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   double original_value, new_value;
   double grad_norm, beta;
      
-  int num_free_vertices = pd.num_free_vertices(err);
   int nv = pd.num_vertices();
   Vector3D* grad = new Vector3D[nv];
   Vector3D* d = new Vector3D[nv];
@@ -110,7 +109,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
     
     // Prints out free vertices coordinates. 
     MSQ_DEBUG_ACTION(3,{
-      std::cout << "\n  o Free vertices ("<< num_free_vertices
+      std::cout << "\n  o Free vertices ("<< pd.num_free_vertices(err)
                 <<")original coordinates:\n ";
       MsqVertex* toto1 = pd.get_vertex_array(err); MSQ_CHKERR(err);
       MsqFreeVertexIndexIterator ind1(&pd, err); MSQ_CHKERR(err);
@@ -124,9 +123,6 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
     if(!fn_bool){
       err.set_msg("Feasible Newton passed invalid patch");
     }
-    MSQ_DEBUG_ACTION(2,{std::cout << "  o  original_value: " << original_value
-                                  << std::endl;});
-    
 
     // 4. Calculate a direction using preconditionned conjugate gradients
     //    to find a zero of the Newton system of equations (H*d = -g)
