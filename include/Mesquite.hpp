@@ -24,6 +24,7 @@
 #include <string.h>
 #endif
 
+#include <float.h>
 
 /*! \file Mesquite.hpp
  */
@@ -86,8 +87,6 @@ namespace Mesquite
     //GLOBAL variables
   const int MSQ_MAX_NUM_VERT_PER_ENT=8;
   const int MSQ_HIST_SIZE=7;//number of division in histogram
-  const double MSQ_MIN=1.e-12;
-  const double MSQ_MAX_CAP=1.e6;//Upper cap on metric values	
   static const double MSQ_SQRT_TWO = sqrt(2.0);
   static const double MSQ_SQRT_THREE = sqrt(3.0);
   static const double MSQ_SQRT_THREE_DIV_TWO=MSQ_SQRT_THREE/2.0;
@@ -95,7 +94,37 @@ namespace Mesquite
   static const double MSQ_SQRT_TWO_INV=1.0/MSQ_SQRT_TWO;
   static const double MSQ_SQRT_TWO_DIV_SQRT_THREE=MSQ_SQRT_TWO/MSQ_SQRT_THREE;
   static const double MSQ_TWO_THIRDS = 2.0 / 3.0;
+
+#ifdef INT_MAX
+  const int MSQ_INT_MAX = INT_MAX;
+#else     
+  const int MSQ_INT_MAX = 2147483647;
+#endif
+
+#ifdef INT_MIN
+const int MSQ_INT_MIN = INT_MIN;
+#else
+const int MSQ_INT_MIN = -2147483647;
+#endif
+
+#ifdef DBL_MIN
+  const double MSQ_DBL_MIN = DBL_MIN;
+#else
+  const double MSQ_DBL_MIN = 1.0E-30;
+#endif
+  const double MSQ_MIN=DBL_MIN;
+  
+#ifdef DBL_MAX
+  const double MSQ_DBL_MAX = DBL_MAX;
+#else
+  const double MSQ_DBL_MAX = 1.0E30;
+#endif    
+  const double MSQ_MAX = DBL_MAX;
+  const double MSQ_MAX_CAP = 1.e6;
 }
+//#ifndef USE_FUNCTION_TIMERS
+//#define USE_FUNCTION_TIMERS
+//#endif
 
 #define MSQ_DEBUG
 #define MSQ_DEBUG4 // notify of all constructor / copy / destructor uses
