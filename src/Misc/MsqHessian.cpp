@@ -5,7 +5,7 @@
 //    E-MAIL: tmunson@mcs.anl.gov
 //
 // ORIG-DATE:  2-Jan-03 at 11:02:19 by Thomas Leurent
-//  LAST-MOD: 23-Jan-03 at 15:13:30 by Thomas Leurent
+//  LAST-MOD: 29-Jan-03 at 16:15:47 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -274,7 +274,8 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
   delete [] row_start;
   delete [] col_index;
 
-  mEntries = new Matrix3D[nnz](0.);
+  mEntries = new Matrix3D[nnz]; // On Solaris, no initializer allowed for new of an array 
+  for (i=0;i<nnz;++i) mEntries[i] = 0.; // so we initialize all entries manually. 
 
   origin_pd = &pd;
   
