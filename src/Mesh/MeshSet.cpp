@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD:  6-Nov-02 at 17:57:37 by Thomas Leurent
+//  LAST-MOD:  7-Nov-02 at 09:09:46 by Thomas Leurent
 //
 /*! \file MeshSet.cpp
 
@@ -486,6 +486,11 @@ bool MeshSet::get_next_patch(PatchData &pd,
       // fill up the adequate info in PatchData.
       store_in_patch store = free_vtx;
       while (store != over) {
+        // before starting 2nd pass
+        if (store == fixed_vtx) {
+          int num_free_vtx = pd.num_vertices(); // gets nb of vtx added in 1st pass
+          pd.set_num_free_vertices(num_free_vtx);
+        }
         
         for (int e=0; e<num_elements; ++e) {
           
