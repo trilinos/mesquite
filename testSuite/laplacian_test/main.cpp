@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 19-Feb-02 at 10:57:52
-//  LAST-MOD: 30-Oct-02 at 17:55:35 by Thomas Leurent
+//  LAST-MOD:  3-Dec-02 at 11:44:35 by Thomas Leurent
 //
 //
 // DESCRIPTION:
@@ -83,7 +83,7 @@ int main()
  StoppingCriterion sc2(StoppingCriterion::NUMBER_OF_PASSES,10);
  lapl1->set_stopping_criterion(&sc2);
  // sets a culling method on the first QualityImprover
- lapl1->add_culling_method(QualityImprover::NO_BOUNDARY_VTX);
+ lapl1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
 
   // adds 1 pass of pass1 to mesh_set1
  queue1.add_quality_assessor(&stop_qa,err); MSQ_CHKERR(err);
