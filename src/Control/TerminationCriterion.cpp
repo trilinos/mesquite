@@ -316,7 +316,7 @@ void TerminationCriterion::reset(PatchData &pd, ObjectiveFunction* obj_ptr,
 bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
                                    MsqError &err)
 {
-    std::cout<<"\nInside terminate(pd,of,err):  flag = "<<terminationCriterionFlag;
+  //  cout<<"\nInside terminate(pd,of,err):  flag = "<<terminationCriterionFlag << endl;
   
     //if terminating on numbering of inner iterations
   if(terminationCriterionFlag & NUMBER_OF_ITERATES){
@@ -416,7 +416,6 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
                                   GRADIENT_INF_NORM_ABSOLUTE |
                                   GRADIENT_L2_NORM_RELATIVE  |
                                   GRADIENT_INF_NORM_RELATIVE ) ){
-    cout << "toto" << endl; //dbg
     int num_vertices=pd.num_vertices();
       //temp_grad holds the value of mGrad.  If the gradient array is
       //supplied by the QualityImprover, mGrad may be set to point to
@@ -442,7 +441,7 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
     double grad_L2_norm=10e6;
     if (terminationCriterionFlag & (GRADIENT_L2_NORM_ABSOLUTE | GRADIENT_L2_NORM_RELATIVE)) {
       grad_L2_norm = length(mGrad, num_vertices); // get the L2 norm
-      cout << "grad_L2_norm: " << grad_L2_norm << endl; //dbg
+      MSQ_DEBUG_ACTION(1, {cout << "  o TermCrit -- gradient L2 norm: " << grad_L2_norm << endl;});
     }
     double grad_inf_norm=10e6;
     if (terminationCriterionFlag & (GRADIENT_INF_NORM_ABSOLUTE | GRADIENT_INF_NORM_RELATIVE)) {
