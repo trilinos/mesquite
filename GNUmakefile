@@ -54,6 +54,7 @@ TESTNAMES := test_1\
              laplacian_wrapper_test\
              untangle_test\
              analytical_grad_3D\
+             algorithm_test\
 ###             random_test\
 ###             exo_convert
 

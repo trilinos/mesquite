@@ -2,7 +2,7 @@ ALGTESTDIR = $(testdir)/algorithm_test
 
 ALGTESTSRC = $(ALGTESTDIR)/main.cpp
 
-ALGTESTEXEC = $(ALGTESTDIR)/algorithm_test
+ALGTESTEXEC = $(ALGTESTDIR)/main
 
 all_tests: $(ALGTESTEXEC)
 
