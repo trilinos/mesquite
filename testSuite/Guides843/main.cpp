@@ -123,13 +123,13 @@ int main(int argc, char* argv[])
   ref_mesh->read_vtk("../../meshFiles/2D/VTK/DFT/tfi_horse10x4-12.vtk", err);
   MeshSet ref_mesh_set;
   ref_mesh_set.add_mesh(ref_mesh, err); MSQ_CHKERR(err);
-  DeformingGeometryGuides843 target(&ref_mesh_set);
+  DeformingDomainGuides843 target(&ref_mesh_set);
 
   Mesquite::MeshImpl *ref_mesh2 = new Mesquite::MeshImpl;
   ref_mesh2->read_vtk("../../meshFiles/2D/VTK/DFT/tfi_horse10x4-12.vtk", err);
   MeshSet ref_mesh2_set;
   ref_mesh2_set.add_mesh(ref_mesh2, err); MSQ_CHKERR(err);
-  DeformingGeometryGuides843 assessor_target(&ref_mesh2_set);
+  DeformingDomainGuides843 assessor_target(&ref_mesh2_set);
 
   // ... and builds an objective function with it
   LPtoPTemplate* obj_func = new LPtoPTemplate(&mu, 1, err);
