@@ -31,7 +31,6 @@ describe main.cpp here
 
 #include "Mesquite.hpp"
 #include "MeshImpl.hpp"
-#include "MesquiteUtilities.hpp" //  for writeShowMeMesh()
 #include "MesquiteError.hpp"
 #include "Vector3D.hpp"
 #include "InstructionQueue.hpp"

@@ -72,20 +72,20 @@ int main()
   lapl_met->set_averaging_method(QualityMetric::RMS,err);
   
     // creates the laplacian smoother  procedures
-  LaplacianSmoother* lapl1 = new LaplacianSmoother(err);
+  LaplacianSmoother lapl1(err);
   QualityAssessor stop_qa=QualityAssessor(shape_metric,QualityAssessor::MAXIMUM);
   stop_qa.add_quality_assessment(lapl_met,QualityAssessor::ALL_MEASURES,err);
   
     //**************Set stopping criterion****************
   TerminationCriterion sc2;
   sc2.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,10,err);
-  lapl1->set_outer_termination_criterion(&sc2);
+  lapl1.set_outer_termination_criterion(&sc2);
     // sets a culling method on the first QualityImprover
-  lapl1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
+  lapl1.add_culling_method(PatchData::NO_BOUNDARY_VTX);
   
     // adds 1 pass of pass1 to mesh_set1
   queue1.add_quality_assessor(&stop_qa,err); MSQ_CHKERR(err);
-  queue1.set_master_quality_improver(lapl1, err); MSQ_CHKERR(err);
+  queue1.set_master_quality_improver(&lapl1, err); MSQ_CHKERR(err);
   queue1.add_quality_assessor(&stop_qa,err); MSQ_CHKERR(err);
     // adds 1 passes of pass2 to mesh_set1
     //  mesh_set1.add_quality_pass(pass2);
