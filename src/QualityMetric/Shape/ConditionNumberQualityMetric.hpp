@@ -24,17 +24,18 @@ namespace Mesquite
 {
      /*! \class ConditionNumberQualityMetric
        \brief Computes the condition number of given element.
-       The``condition number" is scaled between one and infinity,
-       with an ideal element having condition number one.
+       
      */
    class ConditionNumberQualityMetric : public ShapeQualityMetric
    {
   public:
  
-       /*!Returns a poitner to a ShapeQualityMetric.  Defaults the metric
-         to the LINEAR averaging method and ELEMENT_VERTICES sample points.
-         The default metric name is "Condition Number".  It does require a
-         feasible region, and the metric needs to be maximized.
+       /*!Returns a poitner to a ShapeQualityMetric.  The metric
+         does not use the sample point functionality or the
+         compute_weighted_jacobian.  It evaluates the metric at
+         the element vertices, and uses the isotropic ideal element.
+         It does require a feasible region, and the metric needs
+         to be minimized.
        */
      static ShapeQualityMetric* create_new(){
        
@@ -48,79 +49,60 @@ namespace Mesquite
      
        //! evaluate using mesquite objects 
      double evaluate_element(PatchData &pd, MsqMeshEntity *element,
-                             MsqError &err);
-     
-       // evaluate using patch data raw arrays 
-       //double evaluate_element(PatchData *pd, int element_index,
-       //                    MsqError &err);
-
-     //! Evaluate the "condition number" for a vertex
-     double evaluate_vertex(PatchData &pd, MsqVertex *vertex, MsqError &err);
-     
-  protected:
-
-     double compute_condition_number(Vector3D* jacobian_vectors,
-                                     int num_jacobian_vectors,
-                                     MsqError &err);
-     
-     
+                             MsqError &err); 
+          
+  protected:     
+     double condition_number_2d(Vector3D temp_vec[],MsqError &err);
+     double condition_number_3d(Vector3D temp_vec[],MsqError &err);
   private:
      
      ConditionNumberQualityMetric();
     
   };
-//BEGIN INLINE FUNCTIONS
-
-   inline double ConditionNumberQualityMetric::compute_condition_number(
-      Vector3D* jacobian_vectors, int num_jacobian_vectors, MsqError &err)
+     //BEGIN INLINE FUNCITONS
+   inline double ConditionNumberQualityMetric::condition_number_2d(Vector3D
+                                                                   temp_vec[],
+                                                                   MsqError
+                                                                   &err)
    {
-       //PRINT_INFO("INSIDE CONDITION NUMBER COMPUTE_CON\n");
-     double temp_var=0;
-     double return_val=0;
-     if(num_jacobian_vectors==2){
-       temp_var=fabs((jacobian_vectors[0]*jacobian_vectors[1]).length());
-       return_val=jacobian_vectors[0].length_squared();
-       return_val+=jacobian_vectors[1].length_squared();
-       if(temp_var>=MSQ_MIN){ //if not degenerate
-         return_val/=2*temp_var;
-       }
-       else{
-         return_val=MSQ_MAX_CAP;
-       }
-       return return_val;
+       //NOTE:  We take absolute value here
+     double temp_val=fabs((temp_vec[0]*temp_vec[1]).length()*2.0);
+     double return_val=MSQ_MAX_CAP;
+     if(temp_val>MSQ_MIN){
+       return_val=(temp_vec[0].length_squared()+temp_vec[1].length_squared())/
+          temp_val;
      }
-     
-       //if three jacobian vectors (3D elem)
-     else if(num_jacobian_vectors==3){
-         //norm squared of J
-       double term1=jacobian_vectors[0]%jacobian_vectors[0]+
-          jacobian_vectors[1]%jacobian_vectors[1]+
-          jacobian_vectors[2]%jacobian_vectors[2];
-         //norm squared of adjoint of J
-       double term2=(jacobian_vectors[0]*jacobian_vectors[1])%
-          (jacobian_vectors[0]*jacobian_vectors[1])+
-          (jacobian_vectors[1]*jacobian_vectors[2])%
-          (jacobian_vectors[1]*jacobian_vectors[2])+
-          (jacobian_vectors[2]*jacobian_vectors[0])%
-          (jacobian_vectors[2]*jacobian_vectors[0]);
-         //det of J
-       temp_var=jacobian_vectors[0]%(jacobian_vectors[1]*jacobian_vectors[2]);
-       return_val=sqrt(term1*term2);
-       if(return_val>MSQ_MIN){
-           //if not degenerate or inverted???
-         return_val/=(3*temp_var);
-       }
-       else{
-         return_val=MSQ_MAX_CAP;
-       }
-     }
-       
-     else{
-       return_val=MSQ_MAX_CAP;
-     }
-     
      return return_val;
    }
+
+   inline double ConditionNumberQualityMetric::condition_number_3d(Vector3D
+                                                                   temp_vec[],
+                                                                   MsqError
+                                                                   &err)
+   {   
+     double term1=temp_vec[0]%temp_vec[0]+
+        temp_vec[1]%temp_vec[1]+
+        temp_vec[2]%temp_vec[2];
+       //norm squared of adjoint of J
+     double term2=(temp_vec[0]*temp_vec[1])%
+        (temp_vec[0]*temp_vec[1])+
+        (temp_vec[1]*temp_vec[2])%
+        (temp_vec[1]*temp_vec[2])+
+        (temp_vec[2]*temp_vec[0])%
+        (temp_vec[2]*temp_vec[0]);
+       //det of J
+     double temp_var=temp_vec[0]%(temp_vec[1]*temp_vec[2]);
+     double return_val=sqrt(term1*term2);
+     if(return_val>MSQ_MIN){
+         //if not degenerate or inverted???
+       return_val/=(3*temp_var);
+     }
+     else
+       return_val=MSQ_MAX_CAP;
+     return return_val;
+   }
+   
+   
 
 } //namespace
 

@@ -26,117 +26,90 @@ ConditionNumberQualityMetric::ConditionNumberQualityMetric()
   evalMode=QualityMetric::ELEMENT_VERTICES;
   set_name("Condition Number");
 }
-/*
-#undef __FUNC__
-#define __FUNC__ "ConditionNumberQualityMetric::evaluate_element"
 
-double ConditionNumberQualityMetric::evaluate_element(PatchData *pd, int element_index,
-                                                      MsqError &err)
-{
-  // THIS FUNCTION SHOULD EVENTUALLY BE MADE VERY EFFICIENT BY USING
-  // RAW ARRAYS DIRECTLY.  RIGHT NOW IT IS A HACK TO PORT OPT-MS
-
-  if ( pd->get_storage_mode() != PatchData::RAW_ARRAYS ) {
-    err.set_msg("Need raw arrays in evaluate element function taking pd as argument\n");
-    return(0.0);
-  }
-  if (element_index >= pd->get_element_array_size()) {
-    err.set_msg("element index exceeds element array size\n");
-    return(0.0);
-  }
-
-  Vector3D* coords = pd->get_coords_array(err);
-  ConnectivityArrayT element_connectivity = (pd->get_connectivity_array(err))[element_index];
-
-  switch (element_connectivity.entity_type) {
-  case TRIANGLE:
-    MsqNode node1(coords[element_connectivity.indices[0]][0], 
-                  coords[element_connectivity.indices[0]][1], 
-                  coords[element_connectivity.indices[0]][2]);
-    MsqNode node2(coords[element_connectivity.indices[1]][0], 
-                  coords[element_connectivity.indices[1]][1], 
-                  coords[element_connectivity.indices[1]][2]);
-    MsqNode node3(coords[element_connectivity.indices[2]][0], 
-                  coords[element_connectivity.indices[2]][1], 
-                  coords[element_connectivity.indices[2]][2]);
-    MsqTri tri(&node1,&node2,&node3);
-    return( this->evaluate_element(&tri, err) );
-    break;
-    //  default:
-    //    err.set_msg("only supporting triangles in evaluate element for now\n");
-    //    return(0.0);
-  }
-}
-*/
 double ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
                                                       MsqMeshEntity *element,
                                                       MsqError &err)
 {
-  int num_sample_points;
-  std::vector<Vector3D> sample_points;
-  element->get_sample_points(evalMode,sample_points,err);
-  std::vector<Vector3D>::iterator iter=sample_points.begin();
-    // loop over sample points
-  Vector3D jacobian_vectors[3];
-  int num_jacobian_vectors;
-  int i=0;
-  num_sample_points=sample_points.size();
-  double *metric_values=new double[num_sample_points];
-    //Vector3D* current_sample_point;
-  for(i=0;i<num_sample_points;++i){   
-    ++iter;
-      // compute weighted jacobian
-    element->compute_weighted_jacobian(pd, (*iter),
-                                       jacobian_vectors,
-                                       num_jacobian_vectors, err);
-      // evaluate condition number at ith sample point
-      //if 2 jacobian vectors (2D elem)
-    
-    metric_values[i]=compute_condition_number(jacobian_vectors,
-                                              num_jacobian_vectors, err);
-    MSQ_CHKERR(err);
-    
-  }// end loop over sample points
-  double total_metric=average_metrics(metric_values,num_sample_points,err);
-  MSQ_CHKERR(err);
-  delete metric_values;
-  return total_metric;
+  double return_val=0.0;
+  std::vector<size_t> v_i;
+  element->get_vertex_indices(v_i);
+    //only 3 temp_vec will be sent to cond-num calculator, but the
+    //additional vector3D may be needed during the calculations
+  Vector3D temp_vec[5];
+  MsqVertex *vertices=pd.get_vertex_array(err);
+  switch(element->get_element_type()){
+    case TRIANGLE:
+      temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
+      temp_vec[2]=vertices[v_i[2]]-vertices[v_i[0]];
+        //make relative to equilateral
+      temp_vec[1]=((2*temp_vec[2])-temp_vec[0])*MSQ_SQRT_THREE_INV;
+      return_val=condition_number_2d(temp_vec,err);
+      break;
+    case QUADRILATERAL:
+      temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
+      temp_vec[1]=vertices[v_i[3]]-vertices[v_i[0]];
+      return_val=condition_number_2d(temp_vec,err);
+      temp_vec[0]=vertices[v_i[2]]-vertices[v_i[1]];
+      temp_vec[1]=vertices[v_i[0]]-vertices[v_i[1]];
+      return_val+=condition_number_2d(temp_vec,err);
+      temp_vec[0]=vertices[v_i[3]]-vertices[v_i[2]];
+      temp_vec[1]=vertices[v_i[1]]-vertices[v_i[2]];
+      return_val+=condition_number_2d(temp_vec,err);
+      temp_vec[0]=vertices[v_i[0]]-vertices[v_i[3]];
+      temp_vec[1]=vertices[v_i[2]]-vertices[v_i[3]];
+      return_val+=condition_number_2d(temp_vec,err);
+      return_val/=4.0;
+      break;
+    case TETRAHEDRON:
+      temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
+      temp_vec[3]=vertices[v_i[2]]-vertices[v_i[0]];
+      temp_vec[4]=vertices[v_i[3]]-vertices[v_i[0]];
+        //transform to equilateral tet
+      temp_vec[1]=((2*temp_vec[3])-temp_vec[0])/MSQ_SQRT_THREE;
+      temp_vec[2]=((3*temp_vec[4])-temp_vec[0]-temp_vec[3])/
+        (MSQ_SQRT_THREE*MSQ_SQRT_TWO);
+      return_val=condition_number_3d(temp_vec,err);
+      break;
+    case HEXAHEDRON:
+      temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
+      temp_vec[1]=vertices[v_i[3]]-vertices[v_i[0]];
+      temp_vec[2]=vertices[v_i[4]]-vertices[v_i[0]];
+      return_val=condition_number_3d(temp_vec,err);
+      temp_vec[0]=vertices[v_i[2]]-vertices[v_i[1]];
+      temp_vec[1]=vertices[v_i[0]]-vertices[v_i[1]];
+      temp_vec[2]=vertices[v_i[5]]-vertices[v_i[1]];
+      return_val+=condition_number_3d(temp_vec,err);
+      temp_vec[0]=vertices[v_i[3]]-vertices[v_i[2]];
+      temp_vec[1]=vertices[v_i[1]]-vertices[v_i[2]];
+      temp_vec[2]=vertices[v_i[6]]-vertices[v_i[2]];
+      return_val+=condition_number_3d(temp_vec,err);
+      temp_vec[0]=vertices[v_i[0]]-vertices[v_i[3]];
+      temp_vec[1]=vertices[v_i[2]]-vertices[v_i[3]];
+      temp_vec[2]=vertices[v_i[7]]-vertices[v_i[3]];
+      return_val+=condition_number_3d(temp_vec,err);
+      temp_vec[0]=vertices[v_i[7]]-vertices[v_i[4]];
+      temp_vec[1]=vertices[v_i[5]]-vertices[v_i[4]];
+      temp_vec[2]=vertices[v_i[0]]-vertices[v_i[4]];
+      return_val+=condition_number_3d(temp_vec,err);
+      temp_vec[0]=vertices[v_i[4]]-vertices[v_i[5]];
+      temp_vec[1]=vertices[v_i[6]]-vertices[v_i[5]];
+      temp_vec[2]=vertices[v_i[1]]-vertices[v_i[5]];
+      return_val+=condition_number_3d(temp_vec,err);
+      temp_vec[0]=vertices[v_i[5]]-vertices[v_i[6]];
+      temp_vec[1]=vertices[v_i[7]]-vertices[v_i[6]];
+      temp_vec[2]=vertices[v_i[2]]-vertices[v_i[6]];
+      return_val+=condition_number_3d(temp_vec,err);
+      temp_vec[0]=vertices[v_i[6]]-vertices[v_i[7]];
+      temp_vec[1]=vertices[v_i[4]]-vertices[v_i[7]];
+      temp_vec[2]=vertices[v_i[3]]-vertices[v_i[7]];
+      return_val+=condition_number_3d(temp_vec,err);
+      return_val/=8.0;
+      break;
+    default:
+      return_val=MSQ_MAX_CAP;
+  }// end switch over element type
+  return return_val;
 }
 
-double ConditionNumberQualityMetric::evaluate_vertex(PatchData &pd,
-                                                     MsqVertex *vertex,
-                                                     MsqError &err)
-{
-  err.set_msg("Condition Number's evaluate_vertex is currently being implemented");
-  double total_metric=0.0;
-    /*Commented out until we have new data structures
-  MsqMeshEntity* elems = vertex->get_elements(err);
-  double num_elems = vertex->get_num_adjacent_elements();
-  double *metric_values=new double[ num_elems ];
-  int num_jacobian_vectors;
-  Vector3D sample_point;
-  Vecotr3D jacobian_vectors[3];
-    //!\TODO: Probably need to check the dimension here.  Depending on
-    //   how we store the elements connected to the vertex.  If we are
-    //   allowing 2-d elements in a 3-d mesh, then we don't want to use
-    //   the 2-d elements here, unless we are doing a surface smooth,
-    //   in which case we don't want the 3-d???
-  
-  int i;
-  for ( i = 0; i<num_elems; i++){
-    elems[i]->get_sample_point(vertex, sample_point, err); MSQ_CHKERR(err);
-    elems[i]->compute_weighted_jacobian(&current_sample_point,
-                                        jacobian_vectors,
-                                        num_jacobian_vectors, err);
-                                        MSQ_CHKERR(err);
-    metric_values[i]=compute_condition_number(jacobian_vectors,
-                                              num_jacobian_vectors, err);
-                                              MSQ_CHKERR(err);
-  }
-  total_metric=average_metrics(metric_values, num_elems, err);
-  MSQ_CHKERR(err);
-  delete metric_values;
-    */
-  return total_metric;
-}
-  
+

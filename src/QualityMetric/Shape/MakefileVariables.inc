@@ -2,6 +2,7 @@ QMSHAPEDIR = $(srcdir)/QualityMetric/Shape
 
 QMSHAPESRC = $(QMSHAPEDIR)/AspectRatioGammaQualityMetric.cpp \
              $(QMSHAPEDIR)/ConditionNumberQualityMetric.cpp \
+             $(QMSHAPEDIR)/GeneralizedConditionNumberQualityMetric.cpp \
 	     $(QMSHAPEDIR)/MeanRatioQualityMetric.cpp 
 
 QMSHAPEHEADERS = \
