@@ -16,7 +16,8 @@ using namespace Mesquite;
 #include <iostream.h>
 #undef __FUNC__
 #define  __FUNC__ "TerminationCriterion::TerminationCriterion"
-
+/*!Constructor initializes all of the data members which are not
+  necessarily automatically initialized in their constructors.*/
 TerminationCriterion::TerminationCriterion() 
 {
   terminationCriterionFlag=NONE;
@@ -27,7 +28,7 @@ TerminationCriterion::TerminationCriterion()
   previousOFValue=0.0;
   lowerOFBound=0.0;
   initialGradNorm=0.0;
-    //itial size of the gradient array
+    //initial size of the gradient array
   gradSize=10;
   gradNormAbsoluteEps=0.0;
   gradNormRelativeEps=0.0;
@@ -41,6 +42,12 @@ TerminationCriterion::TerminationCriterion()
   successiveImprovementsAbsoluteEps=0.0;
   successiveImprovementsRelativeEps=0.0;
   boundedVertexMovementEps=0.0;
+    //variables for supplied information
+  functionSupplied=false;
+  gradientSupplied=false;
+  suppliedFunctionVal=0;
+  suppliedGradientArray=NULL;
+  
 }
 
 
@@ -215,8 +222,15 @@ void TerminationCriterion::reset(MeshSet &ms, ObjectiveFunction* obj_ptr,
     
 #undef __FUNC__
 #define  __FUNC__ "TerminationCriterion::reset"
-/*!
-
+/*!Reset function using using a PatchData object.  This function is
+  called for the inner-stopping criterion directly from the
+  loop over mesh function in VertexMover.  For outer criterion,
+  it is called from the reset function which takes a MeshSet object.
+  This function prepares the object to be used by seting the initial
+  values of some of the data members.  As examples, if needed, it resets
+  the cpu timer to zero, the iteration counter to zero, and the
+  initial and previous objective function values to the current
+  objective function value for this patch.
  */
 void TerminationCriterion::reset(PatchData &pd, ObjectiveFunction* obj_ptr,
                                     MsqError &err)
@@ -315,6 +329,7 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
         return true;
       }
     }
+      //if terminating on RELATIVE vertex movement
     if(terminationCriterionFlag & ( VERTEX_MOVEMENT_RELATIVE) ){
       double max_movement_sqr_abs=
          pd.get_max_vertex_movement_squared(initialVerticesMemento,err);
@@ -326,13 +341,18 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
       //else we need to store the new memento
     pd.recreate_vertices_memento(previousVerticesMemento,err);
   }
-    //if we need to compute the objective function value
+    //if using a criterion that needs the objective function value
   if(terminationCriterionFlag & (QUALITY_IMPROVEMENT_ABSOLUTE |
                                  QUALITY_IMPROVEMENT_RELATIVE |
                                  SUCCESSIVE_IMPROVEMENTS_ABSOLUTE |
                                  SUCCESSIVE_IMPROVEMENTS_RELATIVE) ){
     double obj_val;
-    if(!obj_ptr->evaluate(pd, obj_val, err)){
+      //if the function val was supplied, use it
+    if(functionSupplied){
+      obj_val=suppliedFunctionVal;
+    }
+      //otherwise calcuate and set an error if invalid
+    else if(!obj_ptr->evaluate(pd, obj_val, err)){
       err.set_msg("Invalid patch passed to TerminationCriterion.");
       MSQ_CHKERR(err);
     }
@@ -376,20 +396,35 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
   if(terminationCriterionFlag & (GRADIENT_NORM_ABSOLUTE |
                                  GRADIENT_NORM_RELATIVE) ){
     int num_vertices=pd.num_vertices();
-      //if the array, mGrad, is too small, set an error for now
-    if(num_vertices>gradSize){
-      err.set_msg("Number of vertices has increased making the gradient too small");
+      //temp_grad holds the value of mGrad.  If the gradient array is
+      //supplied by the QualityImprover, mGrad may be set to point to
+      //another array, but we need to save a pointer to the old array,
+      //because it was created using the new operator.
+    Vector3D* temp_grad=mGrad;
+      //if gradient is supplied use it
+    if(gradientSupplied){
+      mGrad=suppliedGradientArray;
     }
-      //get gradient and make sure it is valid
-    if(!obj_ptr->compute_gradient(pd, mGrad , err, num_vertices)){
-      err.set_msg("Initial patch is invalid for gradient compuation.");
-    }
+      //otherwise, calculate it
+    else{
+        //if the array, mGrad, is too small, set an error for now
+      if(num_vertices>gradSize){
+        err.set_msg("Number of vertices has increased making the gradient too small");
+      }
+        //get gradient and make sure it is valid
+      if(!obj_ptr->compute_gradient(pd, mGrad , err, num_vertices)){
+        err.set_msg("Initial patch is invalid for gradient compuation.");
+      }
+    }//end else if gradient needed to be calcuated
+    
       //get the norm of the gradient
     double grad_norm = compute_gradient_norm(mGrad, num_vertices, err);
       //std::cout<<"\n Gradient norm = "<<grad_norm;
       //if stopping on norm of the gradient absolute
     if(terminationCriterionFlag & GRADIENT_NORM_ABSOLUTE){
       if(grad_norm <= gradNormAbsoluteEps){
+          //reset mGrad to temp_grad so that it may be correctly deleted
+        mGrad=temp_grad;
         return true;
       }
     }
@@ -397,11 +432,15 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
     if(terminationCriterionFlag & GRADIENT_NORM_RELATIVE){
       if(grad_norm <= (gradNormRelativeEps*initialGradNorm))
       {
+          //reset mGrad to temp_grad so that it may be correctly deleted
+        mGrad=temp_grad;
           //std::cout<<"\nALKSJF eps ="<<gradNormRelativeEps;
           //std::cout<<"\nALKSJ init ="<<initialGradNorm;;
         return true;
       }
     }
+      //reset mGrad to temp_grad so that it may be correctly deleted
+    mGrad=temp_grad;
   }
     //if none of the criteria were satisfied
   return false;
@@ -444,13 +483,39 @@ bool TerminationCriterion::terminate(MeshSet &ms, ObjectiveFunction* obj_ptr,
 }
 
 #undef __FUNC__
+#define  __FUNC__ "TerminationCriterion::terminate_with_function_and_gradient"
+/*!Sets the function and gradient values to be used in terminate (if needed),
+  and then calls terminate using the given PatchData and ObjectiveFunction
+  pointer.  Finally resets the functionSupplied and gradientSupplied
+  booleans to false for the next iteration.*/
+bool TerminationCriterion::terminate_with_function_and_gradient(PatchData &pd, ObjectiveFunction* obj_ptr, double func_val, Vector3D* sup_grad, MsqError &err)
+{
+    //set functionSupplied and gradientSupplied booleans to true
+  functionSupplied=true;
+  gradientSupplied=true;
+    //set the function value and gradient array
+  suppliedFunctionVal=func_val;
+  suppliedGradientArray=sup_grad;
+    //call terminate
+  bool return_bool=terminate(pd, obj_ptr,err);
+    //reset the booleans to false
+  functionSupplied=false;
+  gradientSupplied=false;
+    //return the value given by terminate
+  return return_bool;
+}
+
+
+
+
+#undef __FUNC__
 #define  __FUNC__ "TerminationCriterion::cull_vertices"
-/*!This function check the culling method criterion supplied to the object
+/*!This function checks the culling method criterion supplied to the object
   by the user.  If the user does not supply a culling method criterion,
   the default criterion is NONE, and in that case, no culling is performed.
   If the culling method criterion is satisfied, the interior vertices
   of the given patch are flagged as soft_fixed.  Otherwise, the soft_fixed
-  flag is removed from each of the vertices in the patch (interior or
+  flag is removed from each of the vertices in the patch (interior and
   boundary vertices).  Also, if the criterion was satisfied, then the
   function returns true.  Otherwise, the function returns false.
  */
@@ -458,62 +523,54 @@ bool TerminationCriterion::cull_vertices(PatchData &pd,
                                       ObjectiveFunction* obj_ptr,
                                       MsqError &err)
 {
+    //cull_bool will be changed to true if the criterion is satisfied
   bool cull_bool=false;
   double obj_val=0.0;
   switch(cullingMethodFlag){
+      //if no culling is requested, always return false
     case NONE:
        return cull_bool;
+         //if culling on quality improvement absolute
     case QUALITY_IMPROVEMENT_ABSOLUTE:
+         //get obj_val
        if(!obj_ptr->evaluate(pd, obj_val, err)){
          err.set_msg("Invalid patch passed to TerminationCriterion.");
          MSQ_CHKERR(err);
        }
-         //if the improvement was enough
-       if((obj_val)<=(cullingEps))
+         //if the improvement was enough, cull
+       if(obj_val <= cullingEps)
        {
          cull_bool=true;  
        }
-       else
-       {
-         cull_bool=false;
-       }
        break;
+         //if culing on quality improvement relative
     case QUALITY_IMPROVEMENT_RELATIVE:
+         //get obj_val
        if(!obj_ptr->evaluate(pd, obj_val, err)){
          err.set_msg("Invalid patch passed to TerminationCriterion.");
          MSQ_CHKERR(err);
        }
-         //if the improvement was enough
+         //if the improvement was enough, cull
        if((obj_val-lowerOFBound)<=(cullingEps*(initialOFValue-lowerOFBound)))
        {
          cull_bool=true;  
        }
-       else
-       {
-         cull_bool=false;
-       }
        break;
+         //if culling on vertex movement absolute
     case VERTEX_MOVEMENT_ABSOLUTE:
-         //if movement was small enough
+         //if movement was enough, cull
        if(pd.get_max_vertex_movement_squared(previousVerticesMemento,err)<
           cullingEps){
          cull_bool=true;  
        }
-       else
-       {
-         cull_bool=false;
-       }
        break;
+         //if culling on vertex movement relative
     case VERTEX_MOVEMENT_RELATIVE:
-         //if movement was small enough
+         //if movement was small enough, cull
        if(pd.get_max_vertex_movement_squared(previousVerticesMemento,err)<
           (cullingEps*
            pd.get_max_vertex_movement_squared(initialVerticesMemento,err))){
          cull_bool=true;  
-       }
-       else
-       {
-         cull_bool=false;
        }
        break;
     default:
@@ -563,13 +620,19 @@ void TerminationCriterion::cleanup(MeshSet &/*ms*/, MsqError &/*err*/)
 double TerminationCriterion::compute_gradient_norm(Vector3D * const vec,
                                                    int len, MsqError &/*err*/)
 {
+    //calculate the infinity norm of the gradient array
   double grad_norm=0;
+    //loop over the length of the gradient array
   for(int gi=0;gi<len;++gi){
+      //loop over the three coordinates
     for (int gj=0;gj<3;++gj){
+        //if current entry is larger than any previous entry
       if(grad_norm<fabs(vec[gi][gj])){
+          //then store this entry as the current largest
         grad_norm=fabs(vec[gi][gj]);
       }
     }
   }
+    //return the value of the largest entry in the array
   return grad_norm;
 }

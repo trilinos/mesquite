@@ -77,6 +77,14 @@ namespace Mesquite {
     bool terminate(PatchData &pd, ObjectiveFunction* obj_ptr, MsqError &err);
       //!Returns true if termination criterion is met (for the outer loop).
     bool terminate(MeshSet &ms, ObjectiveFunction* obj_ptr, MsqError &err);
+      //!Returns true if termination criterion is met (for the inner loop).
+      //!Also supplies the function and gradient values for effeciency.
+    bool terminate_with_function_and_gradient(PatchData &pd,
+                                              ObjectiveFunction* obj_ptr,
+                                              double func_val,
+                                              Vector3D* sup_grad,
+                                              MsqError &err);
+    
       //!Function which determines whether this patch should be 'culled'
     bool cull_vertices(PatchData &pd, ObjectiveFunction* obj_ptr,
                        MsqError &err);
@@ -133,6 +141,17 @@ namespace Mesquite {
     double successiveImprovementsRelativeEps;
       //crit 8
     double boundedVertexMovementEps;
+
+      //Variables for usr supplied data
+      //true if function was supplied
+    bool functionSupplied;
+      //true if function was supplied
+    bool gradientSupplied;
+      //place holder for supplied FunctionVal
+    double suppliedFunctionVal;
+      //place holder for supplied Gradient
+    Vector3D* suppliedGradientArray;
+    
   };
 
    
