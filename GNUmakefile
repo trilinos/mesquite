@@ -106,10 +106,12 @@ endif
 all: all_headers all_objects all_libs 
 
 depend: 
-	@touch make.dependencies
+	@touch $(dependenciesfile)
 	@echo "Generating dependencies for all Mesquite source files."
-	$(MAKEDEPEND) -f $(dependenciesfile) $(DEPEND_FLAGS) \
+	$(MAKEDEPEND)  -f $(dependenciesfile) $(DEPEND_FLAGS) \
 	$(ALLSRC) 2> /dev/null
+	cat $(dependenciesfile) | perl -np -e "s/^.*\/(.*\.o:)/obj\/\1/;" > $(dependenciesfile).tmp
+	mv $(dependenciesfile).tmp $(dependenciesfile)
 	@echo " *** Done making depend"
 
 
@@ -123,7 +125,7 @@ all_libs: all_objects
 
 
 
-clean mostlyclean: 
+clean mostlyclean:
 	-rm -f $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.o))
 	-rm -f $(localincludedir)/*
 	-rm -f $(localobjdir)/*.o
