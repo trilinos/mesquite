@@ -117,10 +117,7 @@ bool CompositeOFMultiply::compute_analytical_gradient(PatchData &patch,
                                                  MsqError &err,
                                                  int array_size)
 {
-#ifdef USE_FUNCTION_TIMERS          
-  StopWatchCollection::Key this_key = GlobalStopWatches.add(__FUNC__,false);
-  GlobalStopWatches.start(this_key);
-#endif
+  FUNCTION_TIMER_START(__FUNC__);
   double obj_1_val=0.0;
   double obj_2_val=0.0;
     //get first obj function's value
@@ -153,9 +150,7 @@ bool CompositeOFMultiply::compute_analytical_gradient(PatchData &patch,
       delete []second_grad;
     }
   }
-#ifdef USE_FUNCTION_TIMERS          
-  GlobalStopWatches.stop(this_key);
-#endif
+  FUNCTION_TIMER_END();
     //true if both gradient and both evaluate were successful.
   return rval;
 }

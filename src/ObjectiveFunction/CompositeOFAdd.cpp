@@ -112,10 +112,7 @@ bool CompositeOFAdd::compute_analytical_gradient(PatchData &patch,
                                                  MsqError &err,
                                                  int array_size)
 {
-#ifdef USE_FUNCTION_TIMERS          
-  StopWatchCollection::Key this_key = GlobalStopWatches.add(__FUNC__,false);
-  GlobalStopWatches.start(this_key);
-#endif
+  FUNCTION_TIMER_START(__FUNC__);
     //get first objective function's gradient
   bool rval=objFunc1->compute_gradient(patch, grad, err, array_size);
   if(rval){
@@ -133,9 +130,7 @@ bool CompositeOFAdd::compute_analytical_gradient(PatchData &patch,
       delete []second_grad;
     }
   }
-#ifdef USE_FUNCTION_TIMERS          
-  GlobalStopWatches.stop(this_key);
-#endif
+  FUNCTION_TIMER_END();
     //true if both of the above compute gradient's were successful.
   return rval;
 }

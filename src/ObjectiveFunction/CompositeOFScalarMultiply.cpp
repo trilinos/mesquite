@@ -97,10 +97,7 @@ bool CompositeOFScalarMultiply::compute_analytical_gradient(PatchData &patch,
                                                             MsqError &err,
                                                             int array_size)
 {
-#ifdef USE_FUNCTION_TIMERS          
-  StopWatchCollection::Key this_key = GlobalStopWatches.add(__FUNC__,false);
-  GlobalStopWatches.start(this_key);
-#endif
+  FUNCTION_TIMER_START(__FUNC__);
   double scale_factor=(get_negate_flag()*mAlpha);
   bool rval=objFunc->compute_gradient(patch, grad, err, array_size);
   int num_vert=patch.num_vertices();
@@ -112,8 +109,6 @@ bool CompositeOFScalarMultiply::compute_analytical_gradient(PatchData &patch,
       grad[i]*=scale_factor;
     }
   }
-#ifdef USE_FUNCTION_TIMERS          
-  GlobalStopWatches.stop(this_key);
-#endif
+  FUNCTION_TIMER_END();
   return rval;
 }
