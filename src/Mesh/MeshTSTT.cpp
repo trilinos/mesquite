@@ -701,13 +701,13 @@ MeshTSTT* MeshTSTT::create( TSTTM::Mesh& mesh, void* meshset, MsqError& err )
   if (MSQ_CHKERR(err))
   {
     delete result;
-    result = 0;
+    return 0;
   }
   result->set_active_set( meshset, err );
   if (MSQ_CHKERR(err))
   {
     delete result;
-    result = 0;
+    return 0;
   }
   return result;
 }

@@ -1,0 +1,615 @@
+import TSTT;
+
+package TSTTG version 0.5.1
+{
+
+//This file shows the high level organization of the methods into
+//interface groupings and classes
+
+//====================================================================
+// Enumerator GEntityType
+//====================================================================
+
+/**
+ * TSTT supports zero-, one-, two-, and three-dimensional entities associated 
+ * with a mesh infrastructure, we allow users to access these dimensional 
+ * entities using the enumerated type EntityType which contains
+ *   @param GVERTEX a zero-dimensional entity (value=0)
+ *   @param GEDGE a one-dimensional entity  (value=1)
+ *   @param GFACE a two-dimensional entity  (value=2)
+ *   @param GREGION a three-dimensional entity  (value=3)
+ *   @param GNUMBER_OF_ENTITY_TYPES the number of entities (value=4)
+ *   @param GALL_TYPES allows the user to request information about all
+ *                    entity types (value=5) 
+ */ 
+
+  enum GentityType {
+    GVERTEX, 
+    GEDGE, 
+    GFACE, 
+    GREGION,
+    GNUMBER_OF_ENTITY_TYPES,
+    GALL_TYPES
+  }
+
+//===========================================================================
+//  Fundamental interface from which all geometry related interfaces inherit.
+//===========================================================================
+/**
+ * This serves as a base interface for all the TSTT geometry query interfaces.
+ * This interface does not have any methods.
+ */
+  interface Geometry {
+
+  }
+
+//===========================================================================
+//  Core entity set query through primitive arrays
+//===========================================================================
+  interface CoreQuery extends Geometry {
+
+//==========================gLoad=============================
+/** 
+ * Load a model specified by name. Which formats are supported and the
+ * specific meaning of this name string (e.g. file name, model name,
+ * etc.) are implementation-dependent.  Options are also implementation-
+ * dependent.
+ * @param name Name of the model
+ * @param options String options 
+ */
+    void gLoad(in string name, in array<string> options,
+               in int num_options) 
+      throws TSTT.Error;
+
+  }
+
+//===========================================================================
+//  Topology functions
+//===========================================================================
+/**
+ * Functions for evaluating topological characteristics of and relations 
+ * between gentities of various dimensions.
+ */
+  interface Topology extends Geometry {
+
+//==========================gentitysetGetGentitiesOfType=================
+/**
+ * Return gentities of specified dimension in this set, or in whole model.
+ * @param set_handle Entity set being queried (if 0, whole model)
+ * @param gentity_dimension Dimension of entities being queried
+ * @param gentity_handles Gentity handles
+ */
+    void gentitysetGetGentitiesOfType(in opaque set_handle,
+                                      in GentityType gentity_type,
+                                      out array<opaque> gentity_handles,
+                                      out int num_gentity_handles) 
+      throws TSTT.Error;
+
+//==========================gentitysetGetNumberGentitiesOfType=================
+/**
+ * Return number of gentities of specified dimension in this set, or in
+ * whole model.
+ * @param set_handle Entity set being queried (if 0, whole model)
+ * @param gentity_dimension Dimension of entities being queried
+ * @return Number of entities
+ */
+    int gentitysetGetNumberGentitiesOfType(in opaque set_handle,
+                                           in GentityType gentity_type) 
+      throws TSTT.Error;
+
+//==========================gentityGetType=================
+/**
+ *    Returns an integer array of topological dimensions for an input
+ *    array of entity handles.
+ */
+    void gentityGetType(in array<opaque> gentity_handles,
+                        in int num_gentity_handles,
+                        inout array<GentityType> gtype,
+                        inout int num_gtype) 
+      throws TSTT.Error;
+  
+
+//==========================gentityGetAdjacencies=================
+/**
+ * Get the adjacent entities of a given dimension.
+ * @param gentity_handle Entity for which adjacencies are requested
+ * @param to_dimension Target dimension of adjacent entities
+ * @param adj_gentities List returned with adjacent entities
+ */
+    void gentityGetAdjacencies(in opaque gentity_handle, 
+                               in int to_dimension, 
+                               inout array<opaque> adj_gentities,
+                               inout int num_adj_gentities) 
+      throws TSTT.Error;
+  
+
+//==========================gentityGet2OAdjacencies=================
+/**
+ * Get the "2nd order" adjacent entities, through a specified "bridge"
+ * dimension, of a target dimension.  For example, given a region, return
+ * the regions (to_dimension=3) sharing an edge (bridge_dimension=1)
+ * with that region.  bridge_dimension must be less than dimension of 
+ * gentity_handle, and to_dimension must be greater than bridge dimension.
+ * 
+ * @param gentity_handle Entity for which 2nd order adjacencies are requested
+ * @param to_dimension Target dimension of 2nd order adjacent entities
+ * @param bridge_dimension Dimension of "bridge" entities
+ * @param adj_gentities List returned with 2nd order adjacent entities
+ */
+    void gentityGet2OAdjacencies(in opaque gentity_handle, 
+                                 in int bridge_dimension, 
+                                 in int to_dimension, 
+                                 out array<opaque> adjacent_gentities,
+                                 out int num_adjacent_gentities) 
+      throws TSTT.Error;
+
+//==========================gentityIsAdjacent=================
+/**
+ * Return whether or not entities are adjacent.
+ * @param gentity_handle1 1st entity
+ * @param gentity_handle2 2nd entity
+ * @param are_adjacent If true, entities are adjacent
+ */
+    void gentityIsAdjacent(in opaque gentity_handle1, 
+                           in opaque gentity_handle2,
+                           out bool are_adjacent) 
+      throws TSTT.Error;
+  
+
+  }
+
+//===========================================================================
+//  Shape functions
+//===========================================================================
+/**
+ * Functions for evaluating shape characteristics of gentities of 
+ * various dimensions.
+ */
+  interface Shape extends Geometry {
+
+//==========================gentityClosestPoint=================
+/**
+ * Return a points on specified entities closest to specified points
+ * in space.  Input coordinates and output points are interleaved in 
+ * the arrays.
+ * @param gentity_handles The gentities being queried
+ * @param near_coordinates Input coordinates
+ * @param on_coordinates Closest point on gentity
+ */
+    void gentityClosestPoint(in array<opaque> gentity_handles, 
+                             in int num_gentity_handles,
+                             in array <double> near_coordinates, 
+                             in int num_near_coordinates,
+                             out array <double> on_coordinates,
+                             out int num_on_coordinates) 
+      throws TSTT.Error;
+   
+//==========================gentityNormal=================
+/**
+ * Return the normals at point on specified entities.  Returns error
+ * if any input entity is not a gface.  Input coordinates and normals
+ * are interleaved in the arrays.
+ * @param gentity_handles The gentities being queried
+ * @param coordinates Input coordinates, interleaved
+ * @param normals The normals at the specified points, interleaved
+ */
+    void gentityNormal(in array<opaque> gentity_handles, 
+                       in int num_gentity_handles,
+                       in array <double> coordinates, 
+                       in int num_coordinates,
+                       out array <double> normals,
+                       out int num_normals) 
+      throws TSTT.Error;
+   
+//==========================gentityTangent=================
+/**
+ * Return the tangent at point on specified entities.  Returns error
+ * if any input entity is not a gedge.  Input coordinates and tangents
+ * are interleaved in the arrays.
+ * @param gentity_handles The gentities being queried
+ * @param coordinates Input coordinates, interleaved
+ * @param tangents The tangents at the specified points, interleaved
+ */
+    void gentityTangent(in array<opaque> gentity_handles, 
+                        in int num_gentity_handles,
+                        in array <double> coordinates, 
+                        in int num_coordinates,
+                        out array <double> tangents,
+                        out int num_tangents) 
+      throws TSTT.Error;
+   
+// Various Derivatives
+
+//==========================gentityBoundingBox=================
+/**
+ * Return the bounding boxex of given entities; coordinates returned
+ * interleaved.
+ * @param gentity_handles The gentities being queried
+ * @param min_corners Minimum corner coordinates of the boxes, interleaved
+ * @param max_corners Maximum corner coordinates of the boxes, interleaved
+ */
+    void gentityBoundingBox(in array<opaque> gentity_handles, 
+                            in int num_gentity_handles,
+                            out array <double> min_corner, 
+                            out int num_min_corner,
+                            out array <double> max_corner,
+                            out int num_max_corner) 
+      throws TSTT.Error;
+   
+//==========================getGvertexCoordinates=================
+/**
+ * Return the coordinates of the specified vertices; returns error if any
+ * of the entities are not gvertices.  Coordinates returned interleaved.
+ * @param gentity_handles The gentities being queried
+ * @param coordinates The coordinates of the gvertices, interleaved.
+ */
+    void getGvertexCoordinates(in array<opaque> gentity_handles, 
+                               in int num_gentity_handles,
+                               out array <double> coordinates,
+                               out int num_coordinates)
+      throws TSTT.Error;
+   
+//==========================getGnormalSense=================
+/**
+ * Return the sense of a gface with respect to a gregion.  Sense is either
+ * forward (=1), reverse (=-1), both (=2), or unknown (=0).  Error is returned
+ * if first entity is not a gface or second entity is not a gregion.
+ * @param gface Gface whose sense is being queried.
+ * @param gregion Gregion gface is being queried with respect to
+ */
+    int getGnormalSense(in opaque gface,
+                        in opaque gregion) 
+      throws TSTT.Error;
+   
+//==========================getGtangentSense=================
+/**
+ * Return the sense of a gedge with respect to a gface.  Sense is either
+ * forward (=1), reverse (=-1), both (=2), or unknown (=0).  Error is returned
+ * if first entity is not a gedge or second entity is not a gface.
+ * @param gedge Gedge whose sense is being queried.
+ * @param gface Gface gedge is being queried with respect to
+ */
+    int getGtangentSense(in opaque gedge,
+                         in opaque gface)
+      throws TSTT.Error;
+   
+//==========================getGvertexTangentSense=================
+/**
+ * Return the sense of a gedge with respect to a specified order of
+ * vertices bounding the gedge.  Sense is either forward (=1), reverse (=-1), 
+ * or unknown (=0).  Error is returned if any gentities are not the expected
+ * type or if the gedge is bounded by only one gvertex (in this case, use
+ * getGtangentSense).
+ * @param gedge Gedge whose sense is being queried.
+ * @param gvertex1 First gvertex
+ * @param gvertex2 Second gvertex
+ */
+    int getGvertexTangentSense(in opaque gedge,
+                               in opaque gvertex1,
+                               in opaque gvertex2)
+      throws TSTT.Error;
+   
+  }
+
+//===========================================================================
+//  Parametric interface
+//===========================================================================
+/**
+ * Functions dealing with parametric space and parameter-based evaluation
+ */
+  interface Parametric extends Geometry {
+
+//==========================gentityIsParametric=================
+/**
+ * Return whether a given gentity is parametric or not.  If a gentity
+ * is not parametric, all of the following functions will return an error
+ * when called on that entity.
+ * @param gentity_handle Gentity being queried.
+ */
+    int gentityIsParametric(in opaque gentity_handle) 
+      throws TSTT.Error;
+
+//==========================gentityUvToXyz=================
+/**
+ * Given sets of parametric coordinates, return the corresponding real
+ * space coordinates on the gentities.  Input and output coordinates are
+ * interleaved.
+ * @param gentity_handles Gentities being queried.
+ * @param uv Input parametric coordinates
+ * @param xyz Output real space coordinates
+ */
+    void gentityUvToXyz(in array<opaque> gentity_handles, 
+                        in int num_gentity_handles,
+                        in array <double> uv, 
+                        in int num_uv,
+                        out array <double> coordinates,
+                        out int num_coordinates) 
+      throws TSTT.Error;
+   
+//==========================gentityXyzToUv=================
+/**
+ * Given sets of real space coordinates, return the corresponding 
+ * parametric coordinates on the gentities.  Input and output coordinates 
+ * are interleaved.
+ * @param gentity_handles Gentities being queried.
+ * @param xyz Input real space coordinates
+ * @param uv Output parametric coordinates
+ */
+    void gentityXyzToUv(in array<opaque> gentity_handles, 
+                        in int num_gentity_handles,
+                        in array <double> coordinates,
+                        in int num_coordinates,
+                        out array <double> uv,
+                        out int num_uv) 
+      throws TSTT.Error;
+   
+//==========================gentityUvRange=================
+/**
+ * Return the uv range of the specified gentities.  Parameters are interleaved.
+ * @param gentity_handles Gentities being queried.
+ * @param uv_min Minimum parameters of gentities, interleaved
+ * @param uv_max Maximum parameters of gentities, interleaved
+ */
+    void gentityUvRange(in array<opaque> gentity_handles, 
+                        in int num_gentity_handles,
+                        out array <double> uv_min, 
+                        out int num_uv_min,
+                        out array <double> uv_max,
+                        out int num_uv_max) 
+      throws TSTT.Error;
+
+//==========================getAdjacentUv=================
+/**
+ * Given source gentities, parametric positions on those gentities, and 
+ * bounding gentities, return the parametric positions on the bounding
+ * gentities.  If a source gentity is a gvertex, parametric positions for
+ * that entry are ignored.  In cases where multiple source entities are
+ * input, two input and output parameters per gentity is assumed, even if
+ * input consists only of gedges or gvertices.
+ * @param src_gentity_handles Source gentities
+ * @param src_uv Uv positions on source gentities
+ * @param trg_gentity_handles Target gentities
+ * @param trg_uv Uv positions on target gentities
+ */
+    void Greparam_edge_face(in array<opaque> src_gentity_handles, 
+                            in int num_src_gentity_handles, 
+                            in array<double> src_uv,
+                            in int num_src_uv,
+                            in array<opaque> trg_gentity_handles, 
+                            in int num_trg_gentity_handles, 
+                            in array<double> trg_uv,
+                            in int num_trg_uv) 
+      throws TSTT.Error;
+
+//==========================gentityNormalUv=================
+/**
+ * Return the normals at specified uv positions on gfaces.  If any
+ * gentity input is not a face, returns error.  Input parameters and 
+ * output normals are interleaved.
+ * @param gface_handles The entities being queried
+ * @param parameters The uv parameters of points being queried, interleaved
+ * @param normals Normals at specified points, interleaved
+ */
+    void gentityNormalUv(in array<opaque> gface_handles, 
+                         in int num_gface_handles, 
+                         in array <double> parameters, 
+                         in int num_parameters, 
+                         out array <double> normals,
+                         in int num_normals) 
+      throws TSTT.Error;
+   
+//==========================gentityTangentU=================
+/**
+ * Return the tangents at specified u positions on gedges.  If any
+ * gentity input is not a face, returns error.  Output normals are 
+ * interleaved.
+ * @param gentity_handles The gedges being queried
+ * @param parameters The u parameters of points being queried
+ * @param tangents Tangents at specified points, interleaved
+ */
+    void gentityTangentU(in array<opaque> gedge_handles, 
+                         in int num_gedge_handles,
+                         in array <double> parameters, 
+                         in int num_parameters, 
+                         out array <double> tangents,
+                         out int num_tangents) 
+      throws TSTT.Error;
+   
+  }
+
+ 
+//===========================================================================
+//  Tolerance interface
+//===========================================================================
+/**
+ * Tolerances (relative and absolute) for models and gentities in a model
+ */
+  interface Tolerance extends Geometry {
+
+//==========================getGtolerance=================
+/**
+ * Return the relative and absolute tolerances at the modeler level.  If
+ * model does not have a modeler-wide tolerance, zero is returned for both
+ * values.
+ * @param relative_tolerance Relative tolerance for model as a whole
+ * @param absolute_tolerance Absolute tolerance for model as a whole
+ */
+    void getGtolerance(out double relative_tolerance,
+                       out double absolute_tolerance)
+      throws TSTT.Error;
+   
+//==========================getGentityTolerance=================
+/**
+ * Return the relative and absolute tolerances for specified gentities.  If
+ * a gentity does not have a specific tolerance, zero is returned for both
+ * values.
+ * @param gentity_handles Gentities being queried
+ * @param relative_tolerances Relative tolerances
+ * @param absolute_tolerances Absolute tolerances
+ */
+    void getGentityTolerance(in array<opaque> gentity_handles,
+                             in int num_gentity_handles,
+                             out array<double> relative_tolerances,
+                             out int num_relative_tolerances,
+                             out array<double> absolute_tolerances,
+                             out int num_absolute_tolerances)
+      throws TSTT.Error;
+
+  }
+
+//===========================================================================
+//  Iterators interface
+//===========================================================================
+/**
+ * This interface provides a means for iterating over all gentities of
+ * a given topological dimension
+ */
+  interface Iterators extends Geometry {
+
+//==========================gentityIteratorInit=================
+/**
+ * Initialize an iterator over gentities of a specified dimension.
+ * @param gentity_dimension Dimension of gentities to be iterated over
+ * @param gentity_iterator Iterator initialized by this function
+ */
+    void gentityIteratorInit(in int gentity_dimension, 
+                             out opaque gentity_iterator) 
+      throws TSTT.Error;
+
+//==========================gentityIteratorNext=================
+/**
+ * Get the next entity for this iterator.
+ * @param gentity_iterator Iterator being iterated over
+ * @param gentity_handle Next gentity
+ * @return If true, there are more gentities, if false, this is the last one
+ */
+    bool gentityIteratorNext(inout opaque gentity_iterator, 
+                             out opaque gentity_handle) 
+      throws TSTT.Error;
+
+//==========================gentityIteratorReset=================
+/**
+ * Reset an iterator back to the first gentity
+ * @param gentity_iterator Iterator reset by this function
+ */
+    void gentityIteratorReset (inout opaque gentity_iterator) 
+      throws TSTT.Error;
+
+//==========================gentityIteratorDelete=================
+/**
+ * Delete an iterator
+ * @param gentity_iterator Iterator deleted by this function
+ */
+    void gentityIteratorDelete (in opaque Gentity_dim_iterator) 
+      throws TSTT.Error;
+
+  }
+
+
+  interface Modify extends Geometry 
+    {
+    }
+  
+  interface Construct extends Modify
+    {
+        /* Duplicate the input entity
+         */
+      void Copy(in opaque geom_entity,
+                out opaque geom_entity2);
+      
+        /* Sweep the entity around axis specified by normal, by angle specified in degrees.
+         * Generates a new entity, leaving input entity unchanged.
+         * Result undefined if region (dim = 3) is specified
+         */
+      void SweepAboutAxis(in opaque geom_entity,
+                          in double angle,
+                          in double axis_normal_x, 
+                          in double axis_normal_y, 
+                          in double axis_normal_z, 
+                          out opaque geom_entity2);
+      
+        /* Delete the specified entity.  Deletes any lower-dimensional entities.
+         * Result undefined if any higher-dimensional entities still use input
+         * entity.
+         */
+      void Delete(in opaque geom_entity);
+    }
+
+  interface Primitives extends Modify
+    {
+        /* Construct a brick with specified dimensions.  If both y and z are
+         * zero, a cube of dimension x is constructed.  
+         * Result is undefined if only one dimension is zero.
+         */
+      void Brick(in double x, in double y, in double z,
+                 out opaque geom_entity);
+          
+        /* Construct a cylinder with specified height and major/minor radii.
+         * Major radius is along x axis, minor along y axis, and height along z.
+         * If minor radius is zero, a circular cylinder is produced.
+         */
+      void Cylinder(in double height, in double major_rad, in double minor_rad,
+                    out opaque geom_entity);
+          
+        /* Construct a torus with circular cross-section, with major and minor
+         * radii specified.  Torus is aligned with z axis, i.e. the locus of points
+         * defined by the cross-section centers lies in the xy plane.
+         */
+      void Torus(in double major_rad, in double minor_rad,
+                 out opaque geom_entity);
+    }
+  
+  interface Transforms extends Modify
+    {
+        /* Move the specified entity by the specified vector 
+         */
+      void Move(inout opaque geom_entity,
+                in double x, in double y, in double z);
+      
+        /* Rotate the specified entity the specified angle (in degrees) about the
+         * specified axis; axis_normal is assumed to pass through the origin.
+         */
+      void Rotate(inout opaque geom_entity,
+                  in double angle, 
+                  in double axis_normal_x,
+                  in double axis_normal_y,
+                  in double axis_normal_z);
+      
+        /* Reflect the specified entity through a plane defined by the specified normal
+         */
+      void Reflect(inout opaque geom_entity,
+                   in double plane_normal_x,
+                   in double plane_normal_y,
+                   in double plane_normal_z);
+    }
+  
+  interface Booleans extends Modify
+    {
+        /* Unite the specified entities, resulting in a new entity; original entities
+         * are unmodified
+         */
+      void Unite(in array<opaque> geom_entities,
+                 in int num_geom_entities,
+                 out opaque geom_entity);
+      
+        /* Subtract the tool from the blank, resulting in a new entity; original
+         * entities are unmodified
+         */
+      void Subtract(in opaque blank, in opaque tool,
+                    out opaque geom_entity);
+
+        /* Cut the specified entity with a plane containing the origin defined by 
+         * the specified normal, discarding anything on the negative side of the
+         * plane (as defined by the normal direction).  If offset is specified, 
+         * plane is offset along the normal direction by the specified distance.  
+         * If reverse is true, positive side of the plane is discarded instead.
+         */
+      void Section(inout opaque geom_entity, 
+                   in double plane_normal_x,
+                   in double plane_normal_y,
+                   in double plane_normal_z,
+                   in double offset, in bool reverse,
+                   out opaque geom_entity2);
+    }
+}
+

@@ -15,7 +15,7 @@ template_dir =
 include Makefile.customize
 
 OUTPUT_OPTION = -o $@ # Use the -o option when generating .o files.
-INCLUDE = ${SYSTEM_INCLUDE} -I./include -I$(localincludedir) -I./tstt
+INCLUDE = ${SYSTEM_INCLUDE} -I./include -I$(localincludedir)
 
 # Add to this in each subdirectory.  It's the list of files
 # that get added to the mesquite library.
@@ -90,6 +90,8 @@ MODULEMAKEFILES := $(wildcard $(patsubst %, %/MakefileVariables.inc,\
 # not in use - using links setup includeLinks instead 
 #INCLUDES += $(patsubst %, -I%, $(MODULES))
 
+include tstt/Makefile.inc
+
 # add all .cpp and .cc files to the list of sources. This
 # list will be sent to makedepend to automatically generate
 # dependancies.
@@ -131,13 +133,6 @@ ifdef TESTMAKEFILES
 include $(TESTMAKEFILES)
 endif
 # *************
-
-ifdef TSTT_CLIENT_DIR
-include $(TSTT_CLIENT_DIR)/babel.make
-endif
-
-TSTT_CLIENT_OBJS = $(STUBSRCS:%.cc=$(TSTT_CLIENT_DIR)/%.o) \
-                   $(IORSRCS:%.c=$(TSTT_CLIENT_DIR)/%.o)
 
 all: all_headers all_objects all_libs 
 
@@ -189,14 +184,6 @@ distrib: all
 	@cp includeLinks/*.hpp mesquite-1.0/include
 	tar cf mesquite-1.0.tar mesquite-1.0
 	rm -rf mesquite-1.0
-
-# TSTT-interface
-tstt/client/babel.make: tstt/TSTT.sidl tstt/TSTTM.sidl
-	@echo "Generating TSTT client interface headers and stubs"
-	$(PREFIX) rm -f tstt/client/* tstt/repo/*
-	$(PREFIX) $(BABEL) -tXML -otstt/repo tstt/TSTT.sidl
-	$(PREFIX) $(BABEL) -cC++ -Rtstt/repo -otstt/client tstt/TSTTM.sidl
-
 
 #distclean: veryclean
 #	-rm -f GNUmakefile config.status config.cache
