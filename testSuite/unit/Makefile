@@ -19,6 +19,7 @@ MSQ_BASE_DIR = ../..
 
 TEST_SRCS = sample_main.cpp \
     MesquiteTestRunner.cpp \
+    Matrix3DTest.cpp \
     MsqMeshEntityTest.cpp \
     sample_test.cpp \
     InstructionQueueTest.cpp \
