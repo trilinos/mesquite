@@ -42,6 +42,7 @@ SimplifiedGeometryEngine.
 #include "ASMQualityMetric.hpp"
 #include "EdgeLengthQualityMetric.hpp"
 #include "LaplacianSmoother.hpp"
+#include "SmartLaplacianSmoother.hpp"
 #include "LInfTemplate.hpp"
 #include "SteepestDescent.hpp"
 #include "ConjugateGradient.hpp"
@@ -61,6 +62,8 @@ private:
   CPPUNIT_TEST_SUITE(SphericalGeometryTest);
     //run cg on the quad sphere mesh with condition number L2
   CPPUNIT_TEST (test_cg_mesh_cond_sphere);
+    //run cg on the quad sphere mesh with condition number L2
+  CPPUNIT_TEST (test_smart_lapl_sphere);
     //run laplacian smoothing on the geo tri mesh
   CPPUNIT_TEST (test_lapl_geo_sphere);
   
@@ -156,6 +159,68 @@ public:
      delete shape;
      delete untan;
    }
+   void test_smart_lapl_sphere()
+     {
+       Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
+       Mesquite::MsqError err;
+       mesh->read_vtk("../../meshFiles/2D/VTK/quads_on_sphere_529.vtk", err);
+        
+         // initialises a MeshSet object
+       MeshSet mesh_set1;
+       mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
+         //Make sure no errors
+       CPPUNIT_ASSERT(!err.errorOn);
+       
+         //create geometry sphere:  ratius 1, centered at (0,0,0)
+       Vector3D center(0,0,0);
+       Mesquite::SphericalDomain msq_geom(center, 1.0, mesh);
+        //Make sure no errors
+       CPPUNIT_ASSERT(!err.errorOn);
+       mesh_set1.set_domain_constraint(&msq_geom);
+  
+         // creates an intruction queue
+       InstructionQueue queue1;
+
+         // creates an edge length metric ...
+       ShapeQualityMetric* shape_metric= new MeanRatioQualityMetric;
+       LInfTemplate shape_func(shape_metric);
+       
+         //create the smart laplacian smoother
+       SmartLaplacianSmoother* s_lapl = new SmartLaplacianSmoother(&shape_func,
+                                                                   err);
+         //Make sure no errors
+       CPPUNIT_ASSERT(!err.errorOn);
+
+         //*******Set stopping criterion 5 iterates  ***********
+       TerminationCriterion sc5;
+       sc5.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,5,err);
+       s_lapl->set_outer_termination_criterion(&sc5);
+         // sets a culling method on the laplacian quality improver
+       s_lapl->add_culling_method(PatchData::NO_BOUNDARY_VTX);  
+         //qa, qi, qa
+       queue1.set_master_quality_improver(s_lapl, err); MSQ_CHKERR(err);
+         //Make sure no errors
+       CPPUNIT_ASSERT(!err.errorOn);
+         // launches optimization on mesh_set1
+       QualityAssessor qa=QualityAssessor(shape_metric,
+                                          QualityAssessor::MAXIMUM);
+       double orig_val=qa.loop_over_mesh(mesh_set1,err);
+       
+         //Make sure no errors
+       CPPUNIT_ASSERT(!err.errorOn);
+       queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
+         //Make sure no errors
+       CPPUNIT_ASSERT(!err.errorOn);
+
+       double final_val= qa.loop_over_mesh(mesh_set1,err);
+  
+         //Make sure no errors
+       CPPUNIT_ASSERT(!err.errorOn);
+         //make sure 'quality' improved
+       CPPUNIT_ASSERT( (final_val-orig_val) <= 0.0 );
+       delete shape_metric;
+       delete s_lapl;
+     }
   
   void test_lapl_geo_sphere()
      {
