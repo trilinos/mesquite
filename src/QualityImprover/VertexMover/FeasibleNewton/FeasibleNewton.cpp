@@ -79,6 +79,8 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   double original_value, new_value;
   double beta;
   
+  pd.reorder();
+
   int nv = pd.num_vertices();
   Vector3D* grad = new Vector3D[nv];
   Vector3D* d = new Vector3D[nv];
