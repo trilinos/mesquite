@@ -2241,6 +2241,8 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 
   case QUADRILATERAL:
     for (i = 0; i < 4; ++i) {
+      grad[i] = 0.0;
+
       pd.get_surface_normal(v_i[locs_hex[i][0]], n, err); MSQ_CHKERR(err);
       n = n / n.length();	// Need unit normal
       coords[0] = vertices[v_i[locs_hex[i][0]]];
