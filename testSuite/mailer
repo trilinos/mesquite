@@ -280,7 +280,7 @@ foreach $platform (@platforms)
    next unless( $mtime gt $otime );
 
    my $type = "TEXT";
-   unless (system( gzip, $name ))
+   unless (system( gzip, '-f', $name ))
    {
       $name = "${name}.gz";
       $type = "x-gzip";
