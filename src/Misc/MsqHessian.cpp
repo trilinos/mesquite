@@ -430,7 +430,7 @@ void MsqHessian::cg_solver(Vector3D x[], Vector3D b[], MsqError &err)
 
   size_t i;
   double alpha_, alpha, beta; 
-  double cg_tol =10e-2; // 10e-2 will give a reasonably good solution (~1%). 
+  double cg_tol =10e-4; // 10e-2 will give a reasonably good solution (~1%). 
   double norm_g = length(b, mSize);
   double norm_r = norm_g;
   double rzm1; // r^T_{k-1} z_{k-1}
@@ -462,7 +462,7 @@ void MsqHessian::cg_solver(Vector3D x[], Vector3D b[], MsqError &err)
     for (i=0; i<mSize; ++i)  x[i] += alpha*p[i]; // x_{k+1} = x_k + alpha_{k+1} p_{k+1} 
     for (i=0; i<mSize; ++i)  r[i] -= alpha*w[i]; // r_{k+1} = r_k - alpha_{k+1} A p_{k+1} 
     norm_r = length(r, mSize);
-      
+ 
     this->apply_preconditioner(z, r, err); // solve Mz = r (computes z = M^-1 r)
       
     rzm2 = rzm1;
