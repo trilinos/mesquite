@@ -29,7 +29,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 13-Apr-04 at 10:57:52
-//  LAST-MOD: 21-May-04 at 13:45:21 by Thomas Leurent
+//  LAST-MOD:  3-Jun-04 at 15:19:11 by Thomas Leurent
 //
 //
 // DESCRIPTION:
@@ -111,7 +111,7 @@ int main(int argc, char* argv[])
   InstructionQueue queue1;
 
   // creates a mean ratio quality metric ...
-  I_DFT mean_ratio;
+  sI_DFT mean_ratio;
 //  mean_ratio.set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
 //   mean_ratio.set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
    mean_ratio.set_averaging_method(QualityMetric::LINEAR, err); MSQ_CHKERR(err);
@@ -120,16 +120,16 @@ int main(int argc, char* argv[])
 //  DefaultTargetCalculator target;
 
   Mesquite::MeshImpl *ref_mesh = new Mesquite::MeshImpl;
-  ref_mesh->read_vtk("../../meshFiles/3D/VTK/cube_hex_rm.vtk", err);
+  ref_mesh->read_vtk("../../meshFiles/2D/VTK/tfi_horse10x4-12.vtk", err);
   MeshSet ref_mesh_set;
   ref_mesh_set.add_mesh(ref_mesh, err); MSQ_CHKERR(err);
-  ReferenceMeshTargetCalculator target(&ref_mesh_set);
+  DesignOpt3TargetCalculator target(&ref_mesh_set);
 
   Mesquite::MeshImpl *ref_mesh2 = new Mesquite::MeshImpl;
-  ref_mesh2->read_vtk("../../meshFiles/3D/VTK/cube_hex_rm.vtk", err);
+  ref_mesh2->read_vtk("../../meshFiles/2D/VTK/tfi_horse10x4-12.vtk", err);
   MeshSet ref_mesh2_set;
   ref_mesh2_set.add_mesh(ref_mesh2, err); MSQ_CHKERR(err);
-  ReferenceMeshTargetCalculator assessor_target(&ref_mesh2_set);
+  DesignOpt3TargetCalculator assessor_target(&ref_mesh2_set);
    
   // ... and builds an objective function with it
   LPtoPTemplate* obj_func = new LPtoPTemplate(&mean_ratio, 1, err);
