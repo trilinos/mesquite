@@ -162,8 +162,8 @@ void TargetCalculator::compute_reference_corner_matrices(PatchData &pd,
     int nve = elems[i].vertex_count();
     assert( nve = elems_ref[i].vertex_count() );
     elems_ref[i].compute_corner_matrices(ref_pd, A, nve, err); MSQ_ERRRTN(err);
-    for (int i=0; i<nve; ++i) {
-      tag->target_matrix(i) = A[i];
+    for (int j=0; j<nve; ++j) {
+      tag->target_matrix(j) = A[j];
     }
   }
 }

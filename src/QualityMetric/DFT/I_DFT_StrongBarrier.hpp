@@ -56,7 +56,7 @@ The default for data members (corresponding to the variables above):\n
 
       mAlpha = 1/2 \n
       mBeta = 1.0 \n
-      mGamma = 0.0 \n
+      mGamma = 2/3 \n
       delta = 0.0 \n
 
 */

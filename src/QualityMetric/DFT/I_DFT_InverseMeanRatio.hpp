@@ -43,7 +43,7 @@ namespace Mesquite
 {
   
   /*! \class I_DFT_InverseMeanRatio
-    \brief I_DFT metric with mAlpha = 1/2, mBeta = 0.0, mGamma = 2/3
+    \brief I_DFT metric with mAlpha = 1/3, mBeta = 0.0, mGamma = 2/3
 
 The form of this metric is as follows (taken from I_DFTFamilyFunctions.hpp,
 see that file for more detail): \n
@@ -54,7 +54,7 @@ see that file for more detail): \n
 
 The default for data members (corresponding to the variables above): \n
 
-      mAlpha = 1/2 \n
+      mAlpha = 1/3 \n
       mBeta = 0.0 \n
       mGamma = 2/3; \n
 
@@ -69,7 +69,7 @@ delta, above, is not used.
     I_DFT_InverseMeanRatio()
     {
       set_name("I_DFT_InverseMeanRatio");
-      p_set_alpha(1.0/2.0);
+      p_set_alpha(1.0/3.0);
       p_set_beta(0.0);
       p_set_gamma(2.0/3.0);
       p_set_use_barrier_delta(false);      
