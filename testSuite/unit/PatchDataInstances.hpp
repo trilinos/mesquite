@@ -30,7 +30,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 12-Nov-02 at 18:05:56
-//  LAST-MOD:  2-Apr-04 at 12:17:29 by Thomas Leurent
+//  LAST-MOD:  9-Jun-04 at 14:43:39 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -487,6 +487,31 @@ namespace Mesquite
    }
    
 
+   /*! \fn create_six_quads_patch_inverted_with_domain(PatchData &four_quads, MsqError &err)
+     our 2D set up: 6 quads, 1 center vertex outcentered by (0,-0.5), the other centered
+      7____6____5___11
+      |    |    |    |
+      | 2  |  3 | 5  |
+      8    |    4---10       vertex 1 is at (0,0)
+      |\       /|    |       vertex 11 is at (3,2)
+      |    |    | 4  |
+      1----2----3----9
+         \  /
+          0      
+      use destroy_patch_with_domain() in sync.
+   */
+   inline void create_six_quads_patch_inverted_with_domain(PatchData &pd, MsqError &err) 
+   {
+     create_six_quads_patch_with_domain(pd,err); MSQ_CHKERR(err);
+
+     MsqVertex* vtx = pd.get_vertex_array(err); 
+
+     Vector3D displacement(0,-1.5,0);
+     
+     vtx[0] += displacement;
+   }
+   
+
    /*! \fn create_twelve_hex_patch(PatchData &pd, MsqError &err)
      3D set up: 12 quads, one center vertex outcentered by (0,-0.5),
      the other centered. Vertex 1 is at (0,0,-1). Vertex 35 is at (3,2,1).
@@ -643,6 +668,18 @@ namespace Mesquite
             8*sizeof(size_t));
    }
    
+   inline void create_twelve_hex_patch_inverted(PatchData &pd, MsqError &err)
+   {
+     create_twelve_hex_patch(pd,err); MSQ_CHKERR(err); 
+
+     MsqVertex* vtx = pd.get_vertex_array(err); 
+
+     Vector3D displacement(0,0,1.5);
+     
+     vtx[16] += displacement;
+   }
+     
+     
    /* Patch used in several quality metric tests.
       Our triangular patch is made of two tris.  tri_1 is a perfect
       equilateral (the ideal for most metrics).  tri_2 is an arbitrary
