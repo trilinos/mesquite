@@ -28,11 +28,11 @@ PowerQualityMetric::PowerQualityMetric(QualityMetric* qm1,
     //If the power is negative, then negate flag needs
     //to be (-n_flag).  If the power is very, very small
     //then we just set an error.
-  if(fabs((float)n_flag)<MSQ_MIN)
+  if(fabs(pow_factor)<MSQ_MIN)
   {
     err.set_msg("PowerQualityMetric passed a double smaller than Mesquite's minimum.");
   }
-  else if(n_flag<0)
+  else if(pow_factor<0)
   {
     n_flag=(-n_flag);
   }
