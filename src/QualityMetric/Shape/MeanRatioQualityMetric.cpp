@@ -619,7 +619,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 								MsqVertex *fv[], 
 								Vector3D g[],
 								Matrix3D h[],
-                                                                int /*nfv*/, 
+                                                                int nfv, 
 								double &m,
 								MsqError &err)
 {
@@ -673,7 +673,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     j = 0;
     for (i = 0; i < 3; ++i) {
       // if free vertex, see next
-      if (vertices + v_i[i] == fv[j] )
+      if (j<nfv && vertices + v_i[i] == fv[j] )
         ++j;
       // else zero gradient and Hessian entries
       else {
@@ -904,7 +904,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     ind = 0;
     for (i=0; i<4; ++i) {
       // if free vertex, see next
-      if ( vertices+v_i[i] == fv[ind] )
+      if (ind<nfv && vertices+v_i[i] == fv[ind] )
         ++ind;
       // else zero gradient entry and hessian entries.
       else {
@@ -942,7 +942,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     j = 0;
     for (i = 0; i < 4; ++i) {
       // if free vertex, see next
-      if (vertices + v_i[i] == fv[j] )
+      if (j<nfv && vertices + v_i[i] == fv[j] )
         ++j;
       // else zero gradient entry
       else {
@@ -1179,7 +1179,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     ind = 0;
     for (i=0; i<8; ++i) {
       // if free vertex, see next
-      if ( vertices+v_i[i] == fv[ind] )
+      if (ind<nfv && vertices+v_i[i] == fv[ind] )
         ++ind;
       // else zero gradient entry and hessian entries.
       else {
