@@ -50,9 +50,19 @@ namespace Mesquite
      bool evaluate_element(PatchData &pd, MsqMeshEntity *element, double &fval,
                              MsqError &err); 
 
+     bool compute_element_analytical_gradient(PatchData &pd,
+                                              MsqMeshEntity *element,
+                                              MsqVertex *vertices[], 
+                                              Vector3D grad_vec[],
+                                              int num_vtx, 
+                                              double &metric_value,
+                                              MsqError &err);
+
+
   protected:     
      bool mean_ratio_2d(Vector3D temp_vec[],double &fval,MsqError &err);
      bool mean_ratio_3d(Vector3D temp_vec[],double &fval,MsqError &err);
+
   private:
      
      MeanRatioQualityMetric();
@@ -64,6 +74,8 @@ namespace Mesquite
    {
       // NOTE: Fixed to check for degenerate or inverted elements
       // NOTE: If coordinates are always first two, can make calculation faster
+      // CHANGE: Change to (normal_vector%(temp_vec[0]*temp_vec[1]))
+      //         to have the correct 2-D behavior
       double determinant = 1.0%(temp_vec[0]*temp_vec[1]);
 
       if (determinant <= MSQ_MIN) {
