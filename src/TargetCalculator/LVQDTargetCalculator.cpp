@@ -54,7 +54,11 @@ void LVQDTargetCalculator::compute_target_matrices(PatchData &pd, MsqError &err)
   PatchData ref_pd;
   PatchDataParameters ref_pd_params(*originator);
   ref_pd_params.no_target_calculator();
-  refMesh->get_next_patch(ref_pd, ref_pd_params, err); MSQ_ERRRTN(err);
+  if (refMesh)
+    refMesh->get_next_patch(ref_pd, ref_pd_params, err); 
+  else
+    pd.get_reference_mesh( ref_pd, err );
+  MSQ_ERRRTN(err);
   compute_target_matrices(pd, ref_pd, err);
 }
 void LVQDTargetCalculator::compute_target_matrices(PatchData &pd,

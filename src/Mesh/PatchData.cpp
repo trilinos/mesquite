@@ -1353,4 +1353,77 @@ void PatchData::allocate_storage( size_t vertex_count,
 }
 
 
+void PatchData::get_reference_mesh( PatchData& output, MsqError& err )
+{
+    // Copy all data
+  output.meshSet               = this->meshSet;
+  output.domainSet             = this->domainSet;
+  output.mType                 = this->mType;
+  output.vertexArray           = this->vertexArray;
+  output.vertexHandlesArray    = this->vertexHandlesArray;
+  output.elementArray          = this->elementArray;
+  output.elementHandlesArray   = this->elementHandlesArray;
+  output.elemConnectivityArray = this->elemConnectivityArray;
+  output.vertAdjacencyArray    = this->vertAdjacencyArray;
+  output.vertAdjacencyOffsets  = this->vertAdjacencyOffsets;
+  output.numCornerVertices     = this->numCornerVertices;
+  memcpy( output.computedInfos,  this->computedInfos, sizeof(computedInfos) );
+  output.haveComputedInfos     = this->haveComputedInfos;
+
+    // Fix element connectivity array pointers
+  for (PatchDataMem<MsqMeshEntity>::iterator elem = output.elementArray.begin();
+       elem != output.elementArray.end(); ++elem)
+  {
+    size_t* old_ptr = elem->get_vertex_index_array();
+    size_t offset = old_ptr - &elemConnectivityArray[0];
+    size_t* new_ptr = &output.elemConnectivityArray[0] + offset;
+    elem->set_connectivity( new_ptr, elem->node_count() );
+  }
+
+     // Get vertex coordinates from tag
+ 
+    // Get Mesh from MeshSet
+  msq_std::list<Mesh*> meshlist;
+  meshSet->get_meshes( meshlist );
+  if (meshlist.size() != 1) {
+    MSQ_SETERR(err)(MsqError::INVALID_STATE,
+      "MeshSet must contain exactly 1 Mesh for construction of "
+      "reference mesh.  MeshSet contains %d meshes.\n", meshlist.size());
+    return;
+  }
+  Mesh* mesh = *meshlist.begin();
+  
+    // Get tag from mesh
+  const char* tagname = "MESH_VERTEX_COORDS";
+  TagHandle tag = mesh->tag_get( tagname, err ); MSQ_ERRRTN(err);
+  msq_std::string name2;
+  Mesh::TagType type;
+  unsigned length;
+  mesh->tag_properties( tag, name2, type, length, err ); MSQ_ERRRTN(err);
+  if (type != Mesh::DOUBLE || length != 3) {
+    MSQ_SETERR(err)(
+      "Tag \"%s\" is not a tuple of three doubles (a point).\n", 
+      MsqError::INVALID_STATE );
+    return;
+  }
+  
+    // Get ref mesh coords from tag
+  msq_std::vector<double> coords( 3*num_nodes() );
+  mesh->tag_get_vertex_data( tag, num_nodes(), 
+                             &vertexHandlesArray[0],
+                             &coords[0], err ); MSQ_ERRRTN(err);
+  
+    // Set vertex coordinates in output patchdata to the tag values
+  PatchDataMem<MsqVertex>::iterator vert_iter = output.vertexArray.begin();
+  msq_std::vector<double>::iterator coord_iter = coords.begin();
+  while (vert_iter != output.vertexArray.end())
+  {
+    vert_iter->x( *coord_iter ); ++coord_iter;
+    vert_iter->y( *coord_iter ); ++coord_iter;
+    vert_iter->z( *coord_iter ); ++coord_iter;
+    ++vert_iter;
+  }
+}
+
+
 } // namespace Mesquite

@@ -97,6 +97,18 @@ namespace Mesquite
     PatchData& operator=(const PatchData &pd);
     
   public:
+  
+    
+      /** Used by target calculators
+       *
+       * Used by target calculators to construct a reference mesh
+       * when none is provided.  Copies this PatchData, except
+       * that vertex coordinates are extracted from a tag on the
+       * vertices which is expected to contain the corresponding
+       * positions in the reference mesh.
+       */
+    void get_reference_mesh( PatchData& output, MsqError& err );
+    
 
     enum ComputedInfo {
       MIN_UNSIGNED_AREA = 0, //!< minimum volume or area out of all elements in the patch

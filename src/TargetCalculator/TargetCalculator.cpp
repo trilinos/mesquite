@@ -45,7 +45,8 @@ using namespace Mesquite;
 
 void TargetCalculator::reset_reference_meshset(MsqError &err)
 {
-  refMesh->reset(err);
+  if (refMesh)
+    refMesh->reset(err);
   MSQ_CHKERR(err);
 } 
 
@@ -138,17 +139,13 @@ void TargetCalculator::compute_reference_corner_matrices(PatchData &pd,
 {
   MSQ_FUNCTION_TIMER( "TargetCalculator::compute_reference_corner_matrices" );
 
-  if (refMesh == 0) {
-    MSQ_SETERR(err)( "Reference mesh has not been set. If the target "
-                     "calculator uses a reference mesh, it should set it "
-                     "to a constructor argument.",
-                     MsqError::INVALID_STATE);
-    return;
-  }
-
   PatchData ref_pd;
-  refMesh->get_next_patch(ref_pd, *originator, err); MSQ_ERRRTN(err);
-    
+  if (refMesh)
+    refMesh->get_next_patch(ref_pd, *originator, err); 
+  else 
+    pd.get_reference_mesh( ref_pd, err );
+  MSQ_ERRRTN(err);
+  
   // Make sure topology of ref_pd and pd are equal
   size_t num_elements=pd.num_elements();
   assert( num_elements == ref_pd.num_elements() );
