@@ -1,6 +1,6 @@
 QUALIMPROVERDIR = $(srcdir)/QualityImprover
 
-QUALIMPROVERSRC = 
+QUALIMPROVERSRC = $(QUALIMPROVERDIR)/QualityImprover.cpp 
 
 QUALIMPROVERHEADERS = \
 	$(patsubst $(QUALIMPROVERDIR)/%,$(localincludedir)/%,\

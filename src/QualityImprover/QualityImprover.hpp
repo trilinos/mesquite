@@ -16,11 +16,13 @@
 #include "Mesquite.hpp"
 #include "MesquiteError.hpp"
 #include "StoppingCriterion.hpp"
+#include "MeshSet.hpp"
+
 namespace Mesquite
 {
 
-  class MeshSet;
-  class StoppingCriterion;
+//   class MeshSet;
+//   class StoppingCriterion;
   
   /*! \class QualityImprover
     Base class for all quality improvers.
@@ -28,8 +30,10 @@ namespace Mesquite
   */ 
   class QualityImprover{
   public:
+
+    // Constructor is protected ... see below.
     
-    // virtual destructor ensures use of polymorphism during destruction
+     // virtual destructor ensures use of polymorphism during destruction
     virtual ~QualityImprover() { };
     
     virtual void loop_over_mesh(MeshSet &ms, MsqError &err) = 0;
@@ -66,12 +70,19 @@ namespace Mesquite
         stoppingCriterion=crit;
       }
 
+    virtual void set_patch_type(MeshSet::PatchType type, MsqError &err);
+    MeshSet::PatchType get_patch_type() { return patchType; }
+    
     void set_patch_depth(int depth) { patchDepth = depth; }
     int get_patch_depth() { return patchDepth; }
     
   protected:
 
+    /*! The default constructor initialises a few member variables
+        to default values.
+        This can be reused by concrete class constructor. */
     QualityImprover() : mMeshSet(0), qualityImproverName("noname"),
+                        patchType(MeshSet::ELEMENTS_ON_VERTEX_PATCH),
                         patchDepth(1), cullingMethodBits(0),
                         stoppingCriterion(0) {}
     
@@ -93,6 +104,8 @@ namespace Mesquite
         mMeshSet=ms;
       }
     
+    MeshSet::PatchType patchType; //! The patch type is propagated to MeshSet
+
   private:
     MeshSet* mMeshSet;
     std::string qualityImproverName;
