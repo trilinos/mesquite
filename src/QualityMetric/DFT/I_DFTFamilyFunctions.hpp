@@ -40,9 +40,9 @@ tetrahedron.
 
 The generalized distance from target metric is of the form:
 
-                  || A*inv(W) - delta*I ||_F^2
-   --------------------------------------------------------
-   (det(A*inv(W)) + sqrt(det(A*inv(W))^2 + 4*beta^2))^alpha
+                  kappa*|| A*inv(W) - delta*I ||_F^2
+   ------------------------------------------------------------------
+   0.5^alpha*(det(A*inv(W)) + sqrt(det(A*inv(W))^2 + 4*beta^2))^alpha
 
 where alpha is a positive constant bounded above by one, and beta and
 delta are nonnegative constants.  Beta is zero, the denominator becomes
@@ -53,9 +53,9 @@ factorization of W are passed, where Q and R have been formed so that
 transpose(Q)*Q = I, det(Q) = 1, and R and inv(R) are upper triangular 
 matrices.  The metric is then equivalent to:
 
-                  || A*inv(R) - delta*Q ||_F^2
-   --------------------------------------------------------
-   (det(A*inv(R)) + sqrt(det(A*inv(R))^2 + 4*beta^2))^alpha
+                  kappa*|| A*inv(R) - delta*Q ||_F^2
+   ------------------------------------------------------------------
+   0.5^alpha*(det(A*inv(R)) + sqrt(det(A*inv(R))^2 + 4*beta^2))^alpha
 
 The function evaluation is cheaper to perform in this case because computing 
 A*inv(R) requires 18 fewer operations than A*inv(W), while the modification 
@@ -138,9 +138,11 @@ namespace Mesquite
   /*   upper triangular part of the inner matrices.                          */
   /***************************************************************************/
 
-  inline bool m_gdft_2(double &obj, const Vector3D x[3], const Vector3D &n,
-		       const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
+  inline bool m_gdft_2(double &obj, 
+                       const Vector3D x[3], const Vector3D &n,
 		       const Matrix3D &invR,	/* upper triangular          */
+		       const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
+		       const double kappa = 0.5,/* constant                  */
 		       const double alpha = 1.0,/* planar elements           */
 		       const double beta  = 0.0,/* max in denominator        */
 		       const double delta = 0.0)/* no modification           */
@@ -198,13 +200,15 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    obj = f / pow(g, alpha);
+    obj = kappa / pow(0.5, alpha) * f / pow(g, alpha);
     return true;
   }
 
-  inline bool m_gdft_3(double &obj, const Vector3D x[4],
-		       const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
+  inline bool m_gdft_3(double &obj, 
+		       const Vector3D x[4],
 		       const Matrix3D &invR,	/* upper triangular          */
+		       const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
+		       const double kappa = 1.0/3.0, /* constant             */
 		       const double alpha = 2.0/3.0, /* simplicial elements  */
 		       const double beta  = 0.0,/* max in denominator        */
 		       const double delta = 0.0)/* no modification           */
@@ -265,13 +269,15 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    obj = f / pow(g, alpha);
+    obj = kappa / pow(0.5, alpha) * f / pow(g, alpha);
     return true;
   }
 
-  inline bool g_gdft_3(double &obj, Vector3D g_obj[4], const Vector3D x[4],
-		       const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
+  inline bool g_gdft_3(double &obj, Vector3D g_obj[4], 
+                       const Vector3D x[4],
 		       const Matrix3D &invR,	/* upper triangular          */
+		       const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
+		       const double kappa = 1.0/3.0, /* constant             */
 		       const double alpha = 2.0/3.0, /* simplicial elements  */
 		       const double beta  = 0.0,/* max in denominator        */
 		       const double delta = 0.0)/* no modification           */
@@ -334,7 +340,7 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    loc4 = 1.0 / pow(g, alpha);
+    loc4 = kappa / pow(0.5, alpha) / pow(g, alpha);
     obj = f * loc4;
 
     /* Calculate the derivative of the objective function. */
@@ -383,8 +389,9 @@ namespace Mesquite
 
   inline bool h_gdft_3(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
 		       const Vector3D x[4],
-		       const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
 		       const Matrix3D &invR,	/* upper triangular          */
+		       const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
+		       const double kappa = 1.0/3.0, /* constant             */
 		       const double alpha = 2.0/3.0, /* simplicial elements  */
 		       const double beta  = 0.0,/* max in denominator        */
 		       const double delta = 0.0)/* no modification           */
@@ -457,7 +464,7 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    loc1 = 1.0 / pow(g, alpha);
+    loc1 = kappa / pow(0.5, alpha) / pow(g, alpha);
     obj = f * loc1;
 
     /* Calculate the derivative of the objective function. */
@@ -591,7 +598,7 @@ namespace Mesquite
     A[4]  = -A[5] - A[6] - A[7];
 
     A[9]  =  J_A[2]*invR[0][0] + J_A[4]*invR[0][1] + J_A[5]*invR[0][2];
-    A[10] =                      J_A[4]*invR[1][2] + J_A[5]*invR[1][2];
+    A[10] =                      J_A[4]*invR[1][1] + J_A[5]*invR[1][2];
     A[11] =                                          J_A[5]*invR[2][2];
     A[8]  = -A[9] - A[10] - A[11];
 
@@ -621,7 +628,7 @@ namespace Mesquite
     A[4]  = -A[5] - A[6] - A[7];
 
     A[9]  =  J_B[6]*invR[0][0] + J_B[7]*invR[0][1] + J_B[8]*invR[0][2];
-    A[10] =                      J_B[7]*invR[1][2] + J_B[8]*invR[1][2];
+    A[10] =                      J_B[7]*invR[1][1] + J_B[8]*invR[1][2];
     A[11] =                                          J_B[8]*invR[2][2];
     A[8]  = -A[9] - A[10] - A[11];
 
@@ -657,7 +664,7 @@ namespace Mesquite
     A[4]  = -A[5] - A[6] - A[7];
 
     A[9]  =  J_C[6]*invR[0][0] + J_C[7]*invR[0][1] + J_C[8]*invR[0][2];
-    A[10] =                      J_C[7]*invR[1][2] + J_C[8]*invR[1][2];
+    A[10] =                      J_C[7]*invR[1][1] + J_C[8]*invR[1][2];
     A[11] =                                          J_C[8]*invR[2][2];
     A[8]  = -A[9] - A[10] - A[11];
 
@@ -693,7 +700,7 @@ namespace Mesquite
     A[4]  = -A[5] - A[6] - A[7];
 
     A[9]  =  J_D[2]*invR[0][0] + J_D[4]*invR[0][1] + J_D[5]*invR[0][2];
-    A[10] =                      J_D[4]*invR[1][2] + J_D[5]*invR[1][2];
+    A[10] =                      J_D[4]*invR[1][1] + J_D[5]*invR[1][2];
     A[11] =                                          J_D[5]*invR[2][2];
     A[8]  = -A[9] - A[10] - A[11];
 
@@ -723,7 +730,7 @@ namespace Mesquite
     A[4]  = -A[5] - A[6] - A[7];
 
     A[9]  =  J_E[6]*invR[0][0] + J_E[7]*invR[0][1] + J_E[8]*invR[0][2];
-    A[10] =                      J_E[7]*invR[1][2] + J_E[8]*invR[1][2];
+    A[10] =                      J_E[7]*invR[1][1] + J_E[8]*invR[1][2];
     A[11] =                                          J_E[8]*invR[2][2];
     A[8]  = -A[9] - A[10] - A[11];
 
@@ -759,7 +766,7 @@ namespace Mesquite
     A[4]  = -A[5] - A[6] - A[7];
 
     A[9]  =  J_F[2]*invR[0][0] + J_F[4]*invR[0][1] + J_F[5]*invR[0][2];
-    A[10] =                      J_F[4]*invR[1][2] + J_F[5]*invR[1][2];
+    A[10] =                      J_F[4]*invR[1][1] + J_F[5]*invR[1][2];
     A[11] =                                          J_F[5]*invR[2][2];
     A[8]  = -A[9] - A[10] - A[11];
 
