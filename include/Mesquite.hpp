@@ -27,6 +27,9 @@
 
 #include "TSTT_Base.h"
 /*! \file Mesquite.hpp
+ */
+
+/*!
   \namespace Mesquite
   
          Copyright 2002 Sandia Corporation. Under the terms of 
@@ -119,14 +122,10 @@ namespace Mesquite
   }
 
   //GLOBALS variables
+  const int MSQ_MAX_NUM_VERT_PER_ENT=8;
   const int MSQ_HIST_SIZE=7;//number of division in histogram
   const double MSQ_MIN=1.e-12;
   const double MSQ_MAX_CAP=1.e6;//Upper cap on metric values	
-//   const double MSQ_SQRT_THREE_DIV_TWO=.86602554040;// sqrt(3)/2
-//   const double MSQ_SQRT_THREE_INV=.5773502690;// 1/sqrt(3)
-//   const double MSQ_SQRT_TWO_INV=.70710678;// 1/sqrt(2)
-//   const double MSQ_SQRT_TWO_DIV_SQRT_THREE=.81649658;// sqrt(2)/sqrt(3) 
-//   const double MSQ_TWO_THIRDS = 0.66666666666667;
   static const double MSQ_SQRT_TWO = sqrt(2.0);
   static const double MSQ_SQRT_THREE = sqrt(3.0);
   static const double MSQ_SQRT_THREE_DIV_TWO=MSQ_SQRT_THREE/2.0;
@@ -151,6 +150,7 @@ namespace Mesquite
 
      The default is Level 0
 */
+//#define MSQ_DBG3
 #ifdef MSQ_DBG0
 #define MSQ_DEBUG_LEVEL 0
 #endif
