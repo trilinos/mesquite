@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 12-Nov-02 at 18:05:56
-//  LAST-MOD: 13-Nov-02 at 16:48:45 by Thomas Leurent
+//  LAST-MOD:  5-Dec-02 at 16:55:01 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -24,6 +24,7 @@ Unit testing of various functions in the MsqMeshEntity class.
 #include "MsqMeshEntity.hpp"
 #include "Vector3D.hpp"
 #include "PatchData.hpp"
+#include "PatchDataInstances.hpp"
 #include <math.h>
 #include <iostream>
 #include "cppunit/extensions/HelperMacros.h"
@@ -62,141 +63,10 @@ public:
     MsqError err;
 
     // creates empty Patch
-    one_hex_patch.reserve_vertex_capacity (8, err); MSQ_CHKERR(err);
-    one_hex_patch.reserve_element_capacity (1, err); MSQ_CHKERR(err);
-
-    
-    // Fills up with vertices for ideal hexahedra.
-    double coords[3];
-    int index;
-    
-    coords[0] = 1.0; coords[1] = 1.0; coords[2] = 1.0;
-    index = one_hex_patch.add_vertex(NULL, NULL, coords, false, err);
-    MSQ_CHKERR(err);
-
-    coords[0] = 2; coords[1] = 1; coords[2] = 1;
-    index = one_hex_patch.add_vertex(NULL, NULL, coords, false, err);
-    MSQ_CHKERR(err);
-
-    coords[0] = 2.; coords[1] = 2.; coords[2] = 1;
-    index = one_hex_patch.add_vertex(NULL, NULL, coords, false, err);
-    MSQ_CHKERR(err);
-
-    coords[0] = 1.; coords[1] = 2.; coords[2] = 1;
-    index = one_hex_patch.add_vertex(NULL, NULL, coords, false, err);
-    MSQ_CHKERR(err);
-
-    coords[0] = 1.; coords[1] = 1.; coords[2] = 2;
-    index = one_hex_patch.add_vertex(NULL, NULL, coords, false, err);
-    MSQ_CHKERR(err);
-
-    coords[0] = 2.; coords[1] = 1.; coords[2] = 2;
-    index = one_hex_patch.add_vertex(NULL, NULL, coords, false, err);
-    MSQ_CHKERR(err);
-
-    coords[0] = 2.; coords[1] = 2.; coords[2] = 2;
-    index = one_hex_patch.add_vertex(NULL, NULL, coords, false, err);
-    MSQ_CHKERR(err);
-
-    coords[0] = 1.; coords[1] = 2.; coords[2] = 2;
-    index = one_hex_patch.add_vertex(NULL, NULL, coords, false, err);
-    MSQ_CHKERR(err);
-    
-    // patch has only one element: an ideal hex.
-    int indices[8];
-    indices[0] = 0; indices[1] = 1; indices[2] = 2; indices[3] = 3;
-    indices[4] = 4; indices[5] = 5; indices[6] = 6; indices[7] = 7;
-    one_hex_patch.add_element(NULL, NULL, indices, HEXAHEDRON, err);
-    MSQ_CHKERR(err);
-
-      //**********************FILL TET*************************
-      // creates empty Patch
-    one_tet_patch.reserve_vertex_capacity (4, err); MSQ_CHKERR(err);
-    one_tet_patch.reserve_element_capacity (1, err); MSQ_CHKERR(err);
-
-    
-      // Fills up with vertices for ideal tet
-    
-    coords[0] = 1; coords[1] = 1; coords[2] = 1;
-    index = one_tet_patch.add_vertex(NULL, NULL, coords, false, err);
-    MSQ_CHKERR(err);
-
-    coords[0] = 2; coords[1] = 1; coords[2] = 1;
-    index = one_tet_patch.add_vertex(NULL, NULL, coords, false, err);
-    MSQ_CHKERR(err);
-
-    coords[0] = 1.5; coords[1] = 1+sqrt(3.0)/2.0; coords[2] = 1;
-    index = one_tet_patch.add_vertex(NULL, NULL, coords, false, err);
-    MSQ_CHKERR(err);
-
-    coords[0] = 1.5; coords[1] = 1+sqrt(3.0)/6.0 ;
-    coords[2] = 1+sqrt(2.0)/sqrt(3.0);
-    index = one_tet_patch.add_vertex(NULL, NULL, coords, false, err);
-    MSQ_CHKERR(err);
-    
-      // patch has only one element: an ideal tet.
-    int indices_tet[4];
-    indices_tet[0] = 0; indices_tet[1] = 1; indices_tet[2] = 2;
-    indices_tet[3] = 3;
-    one_tet_patch.add_element(NULL, NULL, indices_tet, TETRAHEDRON, err);
-    MSQ_CHKERR(err);
-    
-      //**********************FILL QUAD*************************
-      // creates empty Patch
-    one_qua_patch.reserve_vertex_capacity (4, err); MSQ_CHKERR(err);
-    one_qua_patch.reserve_element_capacity (1, err); MSQ_CHKERR(err);
-
-    
-      // Fills up with vertices for ideal quad
-    
-    coords[0] = 1; coords[1] = 1; coords[2] = 1;
-    index = one_qua_patch.add_vertex(NULL, NULL, coords, false, err);
-    MSQ_CHKERR(err);
-
-    coords[0] = 2; coords[1] = 1; coords[2] = 1;
-    index = one_qua_patch.add_vertex(NULL, NULL, coords, false, err);
-    MSQ_CHKERR(err);
-
-    coords[0] = 2; coords[1] = 2; coords[2] = 1;
-    index = one_qua_patch.add_vertex(NULL, NULL, coords, false, err);
-    MSQ_CHKERR(err);
-
-    coords[0] = 1; coords[1] = 2 ; coords[2] = 1;
-    index = one_qua_patch.add_vertex(NULL, NULL, coords, false, err);
-    MSQ_CHKERR(err);
-    
-      // patch has only one element: an ideal quad.
-    int indices_qua[4];
-    indices_qua[0] = 0; indices_qua[1] = 1; indices_qua[2] = 2;
-    indices_qua[3] = 3;
-    one_qua_patch.add_element(NULL, NULL, indices_qua, QUADRILATERAL, err);
-    MSQ_CHKERR(err);
-
-          //**********************FILL tri*************************
-      // creates empty Patch
-    one_tri_patch.reserve_vertex_capacity (3, err); MSQ_CHKERR(err);
-    one_tri_patch.reserve_element_capacity (1, err); MSQ_CHKERR(err);
-
-    
-      // Fills up with vertices for ideal tri
-    
-    coords[0] = 1; coords[1] = 1; coords[2] = 1;
-    index = one_tri_patch.add_vertex(NULL, NULL, coords, false, err);
-    MSQ_CHKERR(err);
-
-    coords[0] = 2; coords[1] = 1; coords[2] = 1;
-    index = one_tri_patch.add_vertex(NULL, NULL, coords, false, err);
-    MSQ_CHKERR(err);
-
-    coords[0] = 1.5; coords[1] = 1+sqrt(3.0)/2.0; coords[2] = 1;
-    index = one_tri_patch.add_vertex(NULL, NULL, coords, false, err);
-    MSQ_CHKERR(err);
-    
-      // patch has only one element: an ideal tri
-    int indices_tri[3];
-    indices_tri[0] = 0; indices_tri[1] = 1; indices_tri[2] = 2;
-    one_tri_patch.add_element(NULL, NULL, indices_tri, TRIANGLE, err);
-    MSQ_CHKERR(err);
+    create_one_hex_patch(one_hex_patch, err); MSQ_CHKERR(err);
+    create_one_tet_patch(one_tet_patch, err); MSQ_CHKERR(err);
+    create_one_tri_patch(one_tri_patch, err); MSQ_CHKERR(err);
+    create_one_quad_patch(one_qua_patch, err); MSQ_CHKERR(err);
   }
 
   void tearDown()

@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 13-Nov-02 at 18:05:56
-//  LAST-MOD: 22-Nov-02 at 09:49:22 by Thomas Leurent
+//  LAST-MOD:  5-Dec-02 at 17:09:04 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -29,6 +29,8 @@ Unit testing of various functions in the ObjectiveFunction class.
 #include "CompositeOFScalarMultiply.hpp"
 #include "GeneralizedConditionNumberQualityMetric.hpp"
 #include "MeanRatioQualityMetric.hpp"
+
+#include "PatchDataInstances.hpp"
 
 #include "cppunit/extensions/HelperMacros.h"
 #include "cppunit/SignalException.h"
@@ -53,37 +55,17 @@ public:
   void setUp()
   {
      MsqError err;
-
+     
      /* our 2D set up: 4 quads, center vertex outcentered by (0,-0.5)
-       7____6____5
-       |    |    |
-       | 2  |  3 |
-       8-_  |  _-4       vertex 1 is at (0,0)
-       |  -_0_-  |       vertex 5 is at (2,2)
-       | 0  |  1 |
-       1----2----3
+        7____6____5
+        |    |    |
+        | 2  |  3 |
+        8-_  |  _-4       vertex 1 is at (0,0)
+        |  -_0_-  |       vertex 5 is at (2,2)
+        | 0  |  1 |
+        1----2----3
      */
-     m4Quads.reserve_vertex_capacity(9, err); MSQ_CHKERR(err);
-     m4Quads.add_vertex(NULL, NULL, 1,.5, 0, true, err); MSQ_CHKERR(err);
-     m4Quads.add_vertex(NULL, NULL, 0, 0, 0, true, err); MSQ_CHKERR(err);
-     m4Quads.add_vertex(NULL, NULL, 1, 0, 0, true, err); MSQ_CHKERR(err);
-     m4Quads.add_vertex(NULL, NULL, 2, 0, 0, true, err); MSQ_CHKERR(err);
-     m4Quads.add_vertex(NULL, NULL, 2, 1, 0, true, err); MSQ_CHKERR(err);
-     m4Quads.add_vertex(NULL, NULL, 2, 2, 0, true, err); MSQ_CHKERR(err);
-     m4Quads.add_vertex(NULL, NULL, 1, 2, 0, true, err); MSQ_CHKERR(err);
-     m4Quads.add_vertex(NULL, NULL, 0, 2, 0, true, err); MSQ_CHKERR(err);
-     m4Quads.add_vertex(NULL, NULL, 0, 1, 0, true, err); MSQ_CHKERR(err);
-
-     int ind[4];
-     m4Quads.reserve_element_capacity(4, err); MSQ_CHKERR(err);
-     ind[0] = 1; ind[1]=2; ind[2]=0; ind[3]=8;
-     m4Quads.add_element(NULL, NULL, ind, QUADRILATERAL, err); MSQ_CHKERR(err);
-     ind[0] = 2; ind[1]=3; ind[2]=4; ind[3]=0;
-     m4Quads.add_element(NULL, NULL, ind, QUADRILATERAL, err); MSQ_CHKERR(err);
-     ind[0] = 8; ind[1]=0; ind[2]=6; ind[3]=7;
-     m4Quads.add_element(NULL, NULL, ind, QUADRILATERAL, err); MSQ_CHKERR(err);
-     ind[0] = 0; ind[1]=4; ind[2]=5; ind[3]=6;
-     m4Quads.add_element(NULL, NULL, ind, QUADRILATERAL, err); MSQ_CHKERR(err);
+  //   create_four_quads_patch(m4Quads, err); MSQ_CHKERR(err);
   }
 
   void tearDown()
