@@ -101,3 +101,20 @@ bool QualityMetric::compute_element_numerical_gradient(PatchData &pd,
     }
   }
 }
+
+
+#undef __FUNC__
+#define __FUNC__ "QualityMetric::compute_vertex_numerical_gradient"
+/*!  Numerically calculates the gradient of a vertex-based QualityMetric value on
+  the given free vertex.
+*/
+bool QualityMetric::compute_vertex_numerical_gradient(PatchData &pd,
+                                                     MsqVertex &vertex,
+                                                     Vector3D &grad_vec,
+                                                     double &metric_value,
+                                                     MsqError &err)
+{
+  err.set_msg("Functions not implemented yet."); MSQ_CHKERR(err);
+  return false;
+}
+
