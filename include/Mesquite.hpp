@@ -20,11 +20,6 @@
 #endif
 
 
-// TODO   !!!  get rid of this !!!
-//using namespace std;
-
-
-#define MESQUITE_USES_TSTT
 #include "TSTT_Base.h"
 /*! \file Mesquite.hpp
   \namespace Mesquite
