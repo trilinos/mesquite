@@ -1,0 +1,14 @@
+## Default definitions for tools
+CXX = aCC
+ARCHIVER = ar ru
+MAKEDEPEND = /usr/local/eng_sci/cubit/bin/makedepend -Y
+LINKER = ${CXX} -wl, +s
+
+## Default settings for flags
+DEBUG_FLAG = -g1 +d +DAportable +W829 +W749 +W740 +W552 
+STD_INCLUDE_FLAG = -DUSE_C_PREFIX_HEADERS -DUSE_STD_INCLUDES
+AOMD_FLAG = -D_MY_HASH_TABLE_
+CXXFLAGS = -AA ${DEBUG_FLAG} ${INCLUDE} ${STD_INCLUDE_FLAG} ${AOMD_FLAG}
+SYSTEM_INCLUDE = -I/usr/ -I/opt/aCC/include/
+DEPEND_FLAGS = ${SYSTEM_INCLUDE} ${DEBUG_FLAG} ${INCLUDE} ${STD_INCLUDE_FLAG}
+LDFLAGS = ${DEBUG_FLAG}
