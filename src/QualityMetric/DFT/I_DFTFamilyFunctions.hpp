@@ -159,13 +159,13 @@ namespace Mesquite
     g       = x[2][1] - x[0][1];
     matr[3] = f*invR[0][0];
     matr[4] = f*invR[0][1] + g*invR[1][1];
-    matr[5] = f*invR[0][2] + g*invR[1][2] + n[0]*invR[2][2];
+    matr[5] = f*invR[0][2] + g*invR[1][2] + n[1]*invR[2][2];
 
     f       = x[1][2] - x[0][2];
     g       = x[2][2] - x[0][2];
     matr[6] = f*invR[0][0];
     matr[7] = f*invR[0][1] + g*invR[1][1];
-    matr[8] = f*invR[0][2] + g*invR[1][2] + n[0]*invR[2][2];
+    matr[8] = f*invR[0][2] + g*invR[1][2] + n[2]*invR[2][2];
 
     /* Calculate det(M). */
     t1 = matr[0]*(matr[4]*matr[8] - matr[5]*matr[7]) +
