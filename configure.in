@@ -432,7 +432,7 @@ SIDL_LNK=
 HAVE_SIDL_H=no
 if test -z "$BABEL_ARG"; then
   AC_CHECK_HEADER( [sidl.h], [HAVE_SIDL_H=yes], [HAVE_SIDL_H=no] )
-  AC_CHECK_LIB( [sidl], [SIDL_long__array_copy], [SIDL_LNK="-lsidl"])
+  AC_CHECK_LIB( [sidl], [sidl_long__array_copy], [SIDL_LNK="-lsidl"])
   AC_CHECK_PROG( [BABEL], [babel], [babel] )
 elif test "$BABEL_ARG" == "yes"; then
   AC_CHECK_HEADER( [sidl.h], [HAVE_SIDL_H=yes], [AC_MSG_ERROR("sidl.h not found")])

@@ -6400,9 +6400,9 @@ else
 fi
 
 
-  echo "$as_me:$LINENO: checking for SIDL_long__array_copy in -lsidl" >&5
-echo $ECHO_N "checking for SIDL_long__array_copy in -lsidl... $ECHO_C" >&6
-if test "${ac_cv_lib_sidl_SIDL_long__array_copy+set}" = set; then
+  echo "$as_me:$LINENO: checking for sidl_long__array_copy in -lsidl" >&5
+echo $ECHO_N "checking for sidl_long__array_copy in -lsidl... $ECHO_C" >&6
+if test "${ac_cv_lib_sidl_sidl_long__array_copy+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -6420,11 +6420,11 @@ extern "C"
 #endif
 /* We use char because int might match the return type of a gcc2
    builtin and then its argument prototype would still apply.  */
-char SIDL_long__array_copy ();
+char sidl_long__array_copy ();
 int
 main ()
 {
-SIDL_long__array_copy ();
+sidl_long__array_copy ();
   ;
   return 0;
 }
@@ -6450,20 +6450,20 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_cv_lib_sidl_SIDL_long__array_copy=yes
+  ac_cv_lib_sidl_sidl_long__array_copy=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-ac_cv_lib_sidl_SIDL_long__array_copy=no
+ac_cv_lib_sidl_sidl_long__array_copy=no
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-echo "$as_me:$LINENO: result: $ac_cv_lib_sidl_SIDL_long__array_copy" >&5
-echo "${ECHO_T}$ac_cv_lib_sidl_SIDL_long__array_copy" >&6
-if test $ac_cv_lib_sidl_SIDL_long__array_copy = yes; then
+echo "$as_me:$LINENO: result: $ac_cv_lib_sidl_sidl_long__array_copy" >&5
+echo "${ECHO_T}$ac_cv_lib_sidl_sidl_long__array_copy" >&6
+if test $ac_cv_lib_sidl_sidl_long__array_copy = yes; then
   SIDL_LNK="-lsidl"
 fi
 

@@ -259,7 +259,8 @@ int run_local_smoother( MeshSet& mesh_set, MsqError& err )
   SmartLaplacianSmoother* pass1 = new SmartLaplacianSmoother( obj_func, err );
   if (err) return 1;
   
-  QualityAssessor stop_qa=QualityAssessor(mean_ratio,QualityAssessor::AVERAGE);
+  QualityAssessor stop_qa=QualityAssessor(mean_ratio,QualityAssessor::AVERAGE,err);
+  if (err) return 1;
   
   // **************Set stopping criterion****************
   TerminationCriterion tc_inner;
