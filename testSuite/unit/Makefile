@@ -22,7 +22,8 @@ TEST_SRCS = sample_main.cpp \
     sample_test.cpp \
     MsqMeshEntityTest.cpp \
     InstructionQueueTest.cpp \
-    PatchDataTest.cpp
+    PatchDataTest.cpp \
+    ObjectiveFunctionTest.cpp
 
 TEST_OBJS = ${TEST_SRCS:.cpp=.o}
 

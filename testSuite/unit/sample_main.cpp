@@ -35,6 +35,10 @@ int main(int argc, char **argv)
     CppUnit::TestFactoryRegistry &registry4 =
       CppUnit::TestFactoryRegistry::getRegistry("PatchDataTest");
     runner.add_test( registry4.makeTest() );
+
+    CppUnit::TestFactoryRegistry &registry5 =
+      CppUnit::TestFactoryRegistry::getRegistry("ObjectiveFunctionTest");
+    runner.add_test( registry5.makeTest() );
   }
   
     // Run the tests
