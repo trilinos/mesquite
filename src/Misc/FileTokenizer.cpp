@@ -121,6 +121,18 @@ bool FileTokenizer::get_double_internal( double& result, MsqError& err )
   if (MSQ_CHKERR(err))
     return false;
   
+    // Check for hex value -- on some platforms (e.g. Linux), strtod
+    // will accept hex values, on others (e.g. Sun) it wil not.  Force
+    // failure on hex numbers for consistancy.
+  if (token[0] && token[1] && token[0] == '0' && toupper(token[1]) == 'X')
+  {
+    MSQ_SETERR(err)( MsqError::PARSE_ERROR,
+      "Syntax error at line %d: expected number, got \"%s\"",
+      line_number(), token );
+    return false;
+  }
+  
+  
     // Parse token as double
   result = strtod( token, (char**)&token_end );
 

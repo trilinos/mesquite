@@ -19,7 +19,7 @@ extern const char* const tokens[] =
 extern const char* const spaces[] = 
   { " ", " \n ", "\n\n\n ", "\t", "\t\t", "     ", "\n", "  ", "\t\n", 0 };
 
-extern const bool doubles[]  = { false, false, true, false,  true,  true,  true, false, false,  true };
+extern const bool doubles[]  = { false, false, true, false,  true, false,  true, false, false,  true };
 extern const bool longs[]    = { false, false, true, false,  true,  true, false, false, false, false };
 extern const bool booleans[] = { false, false, true, false, false, false, false, false, false, false };
 
