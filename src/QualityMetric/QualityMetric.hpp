@@ -183,7 +183,7 @@ namespace Mesquite
                                   int num_vtx, double &metric_value,
                                   MsqError &err);
      
-       /*!For MetricType == ELEMENT_BASED.
+       /*! \brief For MetricType == ELEMENT_BASED.
          Calls either compute_element_numerical_gradient() or
          compute_element_analytical_gradient() for gradType equal
          NUMERICAL_GRADIENT or ANALYTICAL_GRADIENT, respectively.
@@ -271,7 +271,8 @@ namespace Mesquite
        /*!\brief Non-virtual function which numerically computes the gradient
          of a QualityMetric of a given element for a given set of free vertices
          on that element.
-         This is used by metric which mType is ELEMENT_BASED.  */
+         This is used by metric which mType is ELEMENT_BASED.
+         For parameters, see compute_element_gradient() . */
      bool compute_element_numerical_gradient(PatchData &pd, MsqMeshEntity* element,
                                              MsqVertex* free_vtces[], Vector3D grad_vec[],
                                              int num_free_vtx, double &metric_value,
@@ -295,7 +296,8 @@ namespace Mesquite
          analytically.  The base class implementation of this function
          simply prints a warning and calls compute_numerical_gradient
          to calculate the gradient. This is used by metric
-         which mType is ELEMENT_BASED. */
+         which mType is ELEMENT_BASED.
+         For parameters, see compute_element_gradient() . */
      virtual bool compute_element_analytical_gradient(PatchData &pd,
                                                       MsqMeshEntity* element,
                                                       MsqVertex* free_vtces[],
