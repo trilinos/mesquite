@@ -63,7 +63,7 @@ void VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
     next_patch = true;
     while( next_patch ) {
       Timer loop_timer; double aomd_t=0; double msq_t=0;
-      MSQ_DEBUG_ACTION(3,{std::cout.setf(ios_base::fixed, ios_base::floatfield);
+      MSQ_DEBUG_ACTION(3,{std::cout.setf(std::ios_base::fixed, std::ios_base::floatfield);
                        loop_timer.since_last_check(); });
       next_patch =  ms.get_next_patch(patch_data, err); 
       MSQ_CHKERR(err);
