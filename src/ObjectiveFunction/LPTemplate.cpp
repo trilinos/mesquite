@@ -132,7 +132,7 @@ bool LPTemplate::compute_analytical_gradient(PatchData &patch,
   bool lp_bool=true;
   int num_elements=patch.num_elements();
   int num_vertices=patch.num_vertices(); 
-  if(num_vertices!=array_size){
+  if( num_vertices!=array_size && array_size>=0 ){
     err.set_msg("Analytical Gradient passed arrays of incorrect size.");
     MSQ_CHKERR(err); }
 
