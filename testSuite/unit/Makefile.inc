@@ -5,6 +5,7 @@ MSQ_TEST = $(UNIT_DIR)/msq_test
 all_tests: $(MSQ_TEST)
 
 TEST_SRCS = msq_test_main.cpp \
+    FileTokenizerTest.cpp \
     VtkTest.cpp \
     Matrix3DTest.cpp \
     MsqMeshEntityTest.cpp \

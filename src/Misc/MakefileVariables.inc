@@ -7,7 +7,8 @@ MISCSRC = $(MISCDIR)/MesquiteError.cpp \
 	       $(MISCDIR)/PlanarDomain.cpp \
 	       $(MISCDIR)/SphericalDomain.cpp \
 	       $(MISCDIR)/MesquiteVersion.cpp \
-	       $(MISCDIR)/MesquiteInterrupt.cpp 
+	       $(MISCDIR)/MesquiteInterrupt.cpp \
+	       $(MISCDIR)/FileTokenizer.cpp
 
 MISCHEADERS = \
 	$(patsubst $(MISCDIR)/%,$(localincludedir)/%,\
