@@ -42,6 +42,7 @@ MODULENAMES :=  Mesh \
 testdir = testSuite
 TESTNAMES := test_1\
              laplacian_test\
+             untangle_test
 
 
 # ************ inclusion of all the modules 
