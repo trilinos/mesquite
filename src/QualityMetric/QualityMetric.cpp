@@ -170,8 +170,7 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
   
   double delta = 10e-6;
   int nve = element->vertex_count();
-  Vector3D grad_vec1[nve];
- // Matrix3D full_hessian[nve][nve];
+  Vector3D* grad_vec1 = new Vector3D[nve];
   int v,w,i,j,s, sum_w, mat_index;
   for (v=0; v<nve; ++v) 
   {
@@ -195,7 +194,6 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
           mat_index = w*nve+v-sum_w;
           
           for (i=0; i<3; ++i)
-            //          full_hessian[w][v][i][j]=fd[i];
             hessian[w*nve+v-sum_w][i][j] = fd[i];   
      
         }
@@ -205,16 +203,8 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
     }
   }
 
-//   i=0; 
-//   for (w=0; w<nve; ++w)
-//     for (v=0; v<nve; ++v)
-//       if (v>=w) {
-//         hessian[i] = full_hessian[w][v];
-//         ++i;
-//       }
+  delete[] grad_vec1;
 
-//   assert(i==(nve+1)*nve/2);
-    
   return true;
 }
 
