@@ -37,7 +37,7 @@ namespace Mesquite
       // Creates the stopwatch.  The stopwatch is stopped
       // until start() is called.
     StopWatch() 
-        :isRunning(false), totalTime(0)
+        :isRunning(false), totalTime(0), numStarts(0)
       {}
     
       // Starts the stopwatch.  If it was already running,
@@ -54,12 +54,20 @@ namespace Mesquite
       // Returns the total accumulated time.  If the stopwatch
       // is currently running, the time between the last start()
       // and the current time IS included in total_time().
-    double total_time() const;
+    double total_time() const;    
+      
+      /*! \brief Returns the number of times this StopWatch has
+        been started.*/
+    int number_of_starts() const{
+        return numStarts;
+      }
+
     
   private:
     bool isRunning;
     double timeAtLastStart;
     double totalTime;
+    int numStarts;
   };
   
   class StopWatchCollection
@@ -82,6 +90,13 @@ namespace Mesquite
       // Gets the Key for an existing stopwatch.  If a stopwatch
       // with the given name does not exist, function returns zero.
     Key get_key(const std::string &name) const;
+
+      //!Gets the string associated with a key
+    std::string get_string(const Key key){
+        return mEntries[key-1].first;}
+      //!Gets the string associated with a key      
+    void get_string(const Key key, std::string &new_string){
+      new_string=mEntries[key-1].first;}
     
       // Remove a specific stopwatch.
     void remove(const Key key);
@@ -108,6 +123,17 @@ namespace Mesquite
     double total_time(const Key key) const;
     double total_time(const std::string &name) const
       { return total_time(get_key(name)); }
+      // Get the number of times a StopWatch was started.
+    int number_of_starts(const Key key) const;
+    int number_of_starts(const std::string &name) const
+      { return number_of_starts(get_key(name));}
+    
+      //Gets the number of stop watches in the collection
+    int number_of_stop_watches(){
+      return mEntries.size();}
+
+    void get_keys_sorted_by_time(std::vector<Key> &sorted_keys);
+    
     
   private:
     std::vector< std::pair<std::string, StopWatch> > mEntries;
@@ -127,10 +153,10 @@ namespace Mesquite
 #define FUNCTION_TIMER_END(name) \
 { \
    GlobalStopWatches.stop(name); \
-} 
+}
 #else
-#define FUNCTION_TIMER_START(){}
-#define FUNCTION_TIMER_END() {}
+#define FUNCTION_TIMER_START(name){}
+#define FUNCTION_TIMER_END(name) {}
 #endif
 
 

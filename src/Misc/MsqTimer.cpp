@@ -10,14 +10,12 @@ Mesquite::StopWatchCollection Mesquite::GlobalStopWatches;
 // define USE_CLOCK_TIMER in your compile line for this file.
 // If USE_CLOCK_TIMER is not defined, the class is implemented
 // using times() instead.
-
 #ifdef USE_CLOCK_TIMER
 #ifdef USE_C_PREFIX_INCLUDES
 #include <ctime>
 #else
 #include <time.h>	
 #endif
-
 static inline double now()
 { return (double)clock() / (double)CLOCKS_PER_SEC; }
 
@@ -78,6 +76,7 @@ void Mesquite::StopWatch::start()
   {
     isRunning = true;
     timeAtLastStart=now();
+    ++numStarts;
   }
 }
 
@@ -94,6 +93,7 @@ void Mesquite::StopWatch::reset()
 {
   isRunning=false;
   totalTime=0;
+  numStarts=0;
 }
 
 double Mesquite::StopWatch::total_time() const
@@ -218,4 +218,61 @@ double Mesquite::StopWatchCollection::total_time(
   else
     return 0.0;
 }
+
+int Mesquite::StopWatchCollection::number_of_starts(
+  const Mesquite::StopWatchCollection::Key key) const
+{
+  if (key > 0 &&
+      key <= mEntries.size() &&
+      mEntries[key-1].first != "")
+    return mEntries[key-1].second.number_of_starts();
+  else
+    return 0;
+}
+/*! Fills a vector of StopWatchCollection::Key in which the Keys are ordered
+  by the associated StopWatch's total_time.  The key associated with the
+  largest total_time StopWatch is in the first position of the vector.  The
+  key associated with the smallest total_time StopWatch is in the last
+  position of the vector.*/
+void Mesquite::StopWatchCollection::get_keys_sorted_by_time(
+  std::vector<Key> &sorted_keys)
+{
+  int num_watches=mEntries.size();
+  int *sorted_indices=new int[num_watches];
+  int i=0;
+  int counter=0;
+  for(i=0;i<num_watches;++i){
+    sorted_indices[i]=0;
+  }
+  double current_max;
+  int index_to_max;
+    //While we haven't added all of the Keys to the vector
+  while(counter<num_watches){
+    current_max=-1;
+    index_to_max=-1;
+      //loop over the times and find the largest remaining
+    for(i=0;i<num_watches;++i){
+      if(mEntries[i].second.total_time()>current_max && sorted_indices[i]==0){
+        current_max=mEntries[i].second.total_time();
+        index_to_max=i;
+      }
+    }
+      //Add the key associated with index_to_max and any subsequent
+      //keys which are associated with a StopWatch that has a total
+      //time equal to current_max;
+    for(i=index_to_max;i<=num_watches;++i){
+      if(mEntries[i].second.total_time()>=current_max && sorted_indices[i]==0)
+      {
+        counter++;
+        sorted_indices[i]=counter;
+        sorted_keys.push_back(i+1);
+      }
+    }
+  }
+    //clean up
+  delete[] sorted_indices;
+}
+
+      
+  
 

@@ -20,6 +20,8 @@
 #define PRINT_WARNING Mesquite::Message::print_warning
 #define PRINT_ERROR Mesquite::Message::print_error
 
+#define PRINT_TIMING_DIAGNOSTICS Mesquite::Message::print_timing_diagnostics
+
 namespace Mesquite
 {
   class Message
@@ -28,6 +30,8 @@ namespace Mesquite
     static void print_info(const char* format, ...);
     static void print_warning(const char* format, ...);
     static void print_error(const char* format, ...);
+
+    static void print_timing_diagnostics();
     
     static void set_print_info(void (*print_func)(const char*));
     static void set_print_warning(void (*print_func)(const char*));
