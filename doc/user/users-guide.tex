@@ -1572,6 +1572,8 @@ local and global optimizations always use two termination criterion.
 The outer criteria is set to terminate the optimization process after
 one iteration in the global case.
 
+Note that an interrupt handler (Ctrl-C) is also available, see section \ref{sec:Ctrl-C}. 
+
 \subsubsection{Available Termination Criterions}
 A wide range of cost, quality, 
 and progress-centric termination
@@ -1660,6 +1662,12 @@ advantage of potential synergies.
 Use the InstructionQueue. 
 \end{verbatim}
 
+\subsection{Interrupt Mechanism -- Ctrl-C} \label{sec:Ctrl-C}
+
+Mesquite provides an interrupt handler in order to gracefully exit an ongoing optimization. When
+the user hits \texttt{Ctrl-C}, Mesquite will catch the interrupt request, signal so, wait for the
+current iteration to finish, update the user mesh with the improved mesh, and finish executing the
+driver code.  
 
 \chapter{Extending Mesquite}  \label{sec:extensions}
 
