@@ -43,6 +43,7 @@ Header file for the Mesquite::DistanceFromTarget class
 #include "PatchData.hpp"
 #include "QualityMetric.hpp"
 #include "MsqMeshEntity.hpp"
+#include "DFTFunctions.hpp"
 
 namespace Mesquite
 {
