@@ -281,5 +281,5 @@ bool LPTemplate::compute_analytical_gradient(PatchData &patch,
 bool LPTemplate::compute_analytical_hessian(PatchData &pd,
                                             MsqHessian &hessian, MsqError &err)
 {
-
+  return false;
 }

@@ -156,5 +156,5 @@ bool ObjectiveFunction::compute_numerical_hessian(Mesquite::PatchData &pd,
                                                   MsqHessian &hessian,
                                                   MsqError &err)
 {
-
+  return false;
 }
