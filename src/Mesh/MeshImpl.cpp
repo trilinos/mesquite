@@ -1194,7 +1194,7 @@ void Mesquite::MeshImpl::elements_get_attached_vertices(
   size_t *csr_data,
   size_t &sizeof_csr_data,
   size_t *csr_offsets,
-  MsqError &/*err*/)
+  MsqError &err)
 {
   if (num_elems == 0)
     return;
@@ -1211,9 +1211,11 @@ void Mesquite::MeshImpl::elements_get_attached_vertices(
     csr_offsets[i+1] = csr_offsets[i] + verts_in_elem;
 
       // Make sure we've got enough room in csr_data
-    if (sizeof_csr_data < csr_offsets[i+1])
+    if (sizeof_csr_data < csr_offsets[i+1]) {
         // Error!!!
+      err.set_msg("Arg. sizeof_csr_data is too small.");
       return;
+    }
     
       // for each vertex in this element
     for (size_t j = 0; j < verts_in_elem; j++)
