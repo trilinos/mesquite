@@ -736,7 +736,7 @@ access to operations on the underlying solid model such as normal
 information and closest point information are required to ensure
 vertices are constrained to the surface.
 
-\section{Reading in a Mesh File}
+\section{Reading in a Mesh File} \label{sec:meshFiles}
 
 The simplest way to start using mesquite is to read a mesh file in one of the format currently
 supported by mesquite. Currently, mesquite has a class that implements its mesh access interface and
@@ -759,7 +759,7 @@ compile option in Mesquite's Makefile.customize:
 %requires the most coding work. 
 %
 %Let's review the alternative in the first place. For very simple meshes, Mesquite has an integrated
-%mesh database that can read in mesh files in specific format, such as VTK (see section \ref{sec:}). 
+%mesh database that can read in mesh files in specific format, such as VTK (see section \ref{sec:meshFiles}). 
 %On the other hand, Mesquite is compatible with the TSTT mesh interface: this means that if you are
 %running a code that has implemented the TSTT mesh interface, you can link Mesquite with your code
 %and perform all mesh improvements through the TSTT mesh interface (see section \ref{sec:TSTT}).
@@ -769,6 +769,8 @@ compile option in Mesquite's Makefile.customize:
 %If you want to implement the specific Mesquite mesh interface, you probably have very specific
 %reasons in mind ... and you know what you are doing. In this section, we will give you the
 %documentation for the abstract classes. This will allow you to implement the interface. 
+
+\subsection{Mesh Interface Concepts}
 
 To expose this information, Mesquite defines a set of interfaces 
 (C++ abstract base classes) that are specifically designed for mesh
@@ -790,12 +792,14 @@ from which it was obtained.
 each element in a mesh.  Other than the type of entity it exposes, it
 is identical to the VertexIterator.
 \item \texttt{MeshDomain}: The MeshDomain represents the set of geometric
-domains to which the mesh may be constrained.  The MeshDomain
-interface enables an application to restrict the locations to which a
-vertex can be moved, such as constraining a vertex to a surface.
-Through the MeshDomain interface, Mesquite's algorithms can also
-obtain a domain's normal vector, which aides validity checking and 
-decision making during the quality improvement process.
+domains to which the mesh may be constrained. Its implementation is \emph{not} systematically 
+required. See section \ref{sec:geometry} for more details. 
+%The MeshDomain
+%interface enables an application to restrict the locations to which a
+%vertex can be moved, such as constraining a vertex to a surface.
+%Through the MeshDomain interface, Mesquite's algorithms can also
+%obtain a domain's normal vector, which aides validity checking and 
+%decision making during the quality improvement process.
 \end{itemize}
 These interfaces are data-structure neutral and use only primitive
 data types; an application may implement the Mesquite interfaces
@@ -805,7 +809,21 @@ pointers, entities are identified with opaque values called handles.
 Each mesh entity has a unique handle value, but otherwise handles have
 no intrinsic meaning to Mesquite.  
 
-The implementation details must be looked up in the doxygen documentation locate in mesquite/doc/developer.
+\subsection{Implementation Details}
+
+The implementation details must be looked up in the doxygen documentation located in mesquite/doc/developer.
+
+\subsection{Testing Your Implementation}
+
+The implementation of the Mesquite mesh interface is considerably eased by using the unit testing
+framework. From the mesquite/testSuite/unit directory, change the MeshInterfaceTest.cpp file to
+instantiate your mesh interface implentation (i.e. replace occurences of \texttt{MeshImpl} with your
+class). Run gmake and run the test:
+\begin{verbatim} 
+./msq_test MeshInterfaceTest
+\end{verbatim} 
+This should help you pinpoint the vast majority of implementation errors. 
+
 
 \section{Linking Mesquite with Implementations of the TSTT Mesh Interface} 
 \label{sec:TSTT}
