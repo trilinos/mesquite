@@ -27,6 +27,7 @@ SteepestDescent::SteepestDescent(ObjectiveFunction* of) :
   maxIteration=6;
   this->set_name("SteepestDescent");
   set_patch_depth(1);
+  patchType = MeshSet::GLOBAL_PATCH;
 }  
   
 #undef __FUNC__
@@ -49,7 +50,6 @@ void SteepestDescent::set_patch_type(MeshSet::PatchType type, MsqError &err)
 #define __FUNC__ "SteepestDescent::initialize" 
 void SteepestDescent::initialize(PatchData &pd, MsqError &err)
 {
-  set_patch_type(MeshSet::GLOBAL_PATCH, err); MSQ_CHKERR(err);
   PRINT_INFO("\no  Performing Steepest Descent optimization.\n");
 }
 
