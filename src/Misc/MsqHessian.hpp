@@ -84,6 +84,7 @@ namespace Mesquite
                      const MsqHessian &H, const Vector3D x[], int size_x,
                      const Vector3D y[], int size_y, MsqError &err);
     friend class ObjectiveFunction;
+     friend std::ostream& operator<<(std::ostream &s, const MsqHessian &h);
   };
 
   
@@ -161,19 +162,43 @@ namespace Mesquite
   
 #undef __FUNC__
 #define __FUNC__ "MsqHessian::get_block"
-  /*! Computes \f$ z=M^{-1}r \f$ . */
+  /*! Returns a pointer to the Matrix3D block at position i,j if it exist. 
+      Returns the NULL pointer if position i,j is a NULL entry.
+      Note that block i,j must be in the upper triangular part of the 
+      (symetric) hessian. */
   inline Matrix3D* MsqHessian::get_block(size_t i, size_t j)
   {
+    int c;
     assert(i<mSize);
     assert(j<mSize);
     assert(j>=i);
 
-//    std::cout << "mColIndex[mRowStart[i]+j]: " << mColIndex[mRowStart[i]+j] << "  mRowStart[i]: " <<mRowStart[i]<< " for i=" << i << " j=" << j << std::endl; //dbg
-    assert( mColIndex[mRowStart[i]+j] == j ); // since our Matrix is in fact not sparse. 
+    for (c=mRowStart[i]; c<mRowStart[i+1]; ++c) {
+      if (mColIndex[c] == j)
+        return ( mEntries + c );
+    }
     
-    return ( mEntries + (mRowStart[i]+j)  );
+    // if there is no block at position i,j (zero entry).
+    return NULL;
   }
 
+
+/* ------------------ I/O ----------------- */
+
+   //! Prints out the MsqHessian blocks.
+  inline std::ostream& operator<<(std::ostream &s, const MsqHessian &h)
+  {
+    int i,j;
+    s << "MsqHessian of size: " << h.mSize <<"x"<< h.mSize << "\n";
+    for (i=0; i<h.mSize; ++i) {
+      s << " ROW " << i << " ------------------------\n";
+      for (j=h.mRowStart[i]; j<h.mRowStart[i+1]; ++j) {
+        s << "   column " << h.mColIndex[j] << " ----\n";
+        s << h.mEntries[j]; 
+      } 
+    }
+    return s;
+  }
   
 } // namespace
 
