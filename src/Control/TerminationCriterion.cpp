@@ -1,4 +1,4 @@
-// -*- Mode : c++; tab-width: 3; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 3 -*-
+// -*- Mode : c++; tab-width: 2; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 //
 // DESCRIPTION:
 // ============
@@ -16,7 +16,7 @@
 #include "MsqVertex.hpp"
 using namespace Mesquite;
 //temporary include
-#include <iostream.h>
+#include <iostream>
 #undef __FUNC__
 #define  __FUNC__ "TerminationCriterion::TerminationCriterion"
 /*!Constructor initializes all of the data members which are not
