@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 13-Nov-02 at 18:05:56
-//  LAST-MOD: 19-Nov-02 at 18:51:11 by Thomas Leurent
+//  LAST-MOD: 20-Nov-02 at 10:52:57 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -157,10 +157,12 @@ public:
       std::vector<size_t> res;
       
       mPatch2D.get_element_vertex_indices(1, vtx_ind, err); MSQ_CHKERR(err);
-      res[0] = 1; res[1] = 2; res[2] = 3;
+      res.push_back(1); res.push_back(2); res.push_back(3);
       CPPUNIT_ASSERT( vtx_ind==res );
+
+      vtx_ind.clear(); res.clear();
       mPatch2D.get_element_vertex_indices(2, vtx_ind, err); MSQ_CHKERR(err);
-      res[0] = 3; res[1] = 2; res[2] = 4; res[2] = 5;
+      res.push_back(3); res.push_back(2); res.push_back(4); res.push_back(5);
       CPPUNIT_ASSERT( vtx_ind==res );
    }
 
@@ -171,11 +173,12 @@ public:
       std::vector<size_t> res;
       
       mPatch2D.get_vertex_element_indices(3, elem_ind);
-      res[0] = 2; res[1] = 3;
+      res.push_back(2); res.push_back(3);
       CPPUNIT_ASSERT(res==elem_ind);
       
+      elem_ind.clear(); res.clear();
       mPatch2D.get_vertex_element_indices(2, elem_ind);
-      res[0] = 1; res[1] = 2; res[2] = 3;
+      res.push_back(1); res.push_back(2); res.push_back(3);
       CPPUNIT_ASSERT(res==elem_ind);
    }
 
