@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 13-Nov-02 at 18:05:56
-//  LAST-MOD: 17-Dec-02 at 15:53:20 by Thomas Leurent
+//  LAST-MOD: 20-Jan-03 at 16:31:59 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -45,7 +45,7 @@ class ObjectiveFunctionTest : public CppUnit::TestFixture
 private:
   CPPUNIT_TEST_SUITE(ObjectiveFunctionTest);
   CPPUNIT_TEST (test_get_quality_metric_list);
-  CPPUNIT_TEST (test_compute_gradient_2D_LPTemplate);
+  CPPUNIT_WORK_IN_PROGRESS (test_compute_gradient_2D_LPTemplate);
   CPPUNIT_TEST (test_compute_gradient_3D_LPTemplate);
   CPPUNIT_TEST_SUITE_END();
    
@@ -178,8 +178,8 @@ public:
   void test_compute_gradient_3D_LPTemplate()
   {
     MsqError err;
-    Vector3D* grad_num = new Vector3D[2];
-    Vector3D* grad_ana = new Vector3D[2];
+    Vector3D* grad_num = new Vector3D[m12Hex.num_vertices()];
+    Vector3D* grad_ana = new Vector3D[m12Hex.num_vertices()];
     
     // creates a mean ratio quality metric ...
     ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
@@ -190,18 +190,19 @@ public:
     
     LP2->set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
     LP2->compute_gradient(m12Hex, grad_num, err);
-//     std::cout << "NUMERICAL GRADIENT\n";
-//     for (int i=0; i<2; ++i)
-//       for (int j=0; j<3; ++j)
-//         std::cout << grad_num[i][j] << std::endl;
+    std::cout << "NUMERICAL GRADIENT\n";
+    for (int i=0; i<2; ++i)
+      for (int j=0; j<3; ++j)
+        std::cout << grad_num[i][j] << std::endl;
     
     LP2->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
     mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+//    mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
     LP2->compute_gradient(m12Hex, grad_ana, err);
-//     std::cout << "ANALYTICAL GRADIENT\n";
-//     for (int i=0; i<2; ++i)
-//       for (int j=0; j<3; ++j)
-//         std::cout << grad_ana[i][j] << std::endl;
+    std::cout << "ANALYTICAL GRADIENT\n";
+    for (int i=0; i<2; ++i)
+      for (int j=0; j<3; ++j)
+        std::cout << grad_ana[i][j] << std::endl;
   
     for (int i=0; i<2; ++i)
       for (int j=0; j<3; ++j)
