@@ -34,13 +34,24 @@
 #ifndef MSQMESSAGE_HPP
 #define MSQMESSAGE_HPP
 
+/* This code is broken.  The difference between the no-extension and .h
+   headers is that the former define all standard C functions in the
+   "std" namespace.  The no-extension headers are included but the
+   namespace is not specified when the corresponding symbols are used.
+   
+   Also, it is more portable to just use the .h headers all the time.
+   Do that, at least for now. -- J.Kraftcheck
+   FIXME
 #ifdef USE_C_PREFIX_INCLUDES
 #include <cstdio>
 #include <cstdarg>
 #else
+*/
 #include <stdio.h>
 #include <stdarg.h>
+/*
 #endif
+*/
 
 #ifndef PRINT_INFO
 #define PRINT_INFO Mesquite::Message::print_info

@@ -623,7 +623,7 @@ void MsqMeshEntity::compute_corner_normal(const size_t corner,
      \param num_m3d The number of matrices in the c_m3d array. The function will check this number
             corresponds to the number of corner in the element. If not, an error is set. 
   */
-void MsqMeshEntity::compute_corner_matrices(PatchData &pd, Matrix3D A[], const int num_m3d, MsqError &err )
+void MsqMeshEntity::compute_corner_matrices(PatchData &pd, Matrix3D A[], int num_m3d, MsqError &err )
 {
 
   MsqVertex* vertices = pd.get_vertex_array(err); MSQ_CHKERR(err); 
