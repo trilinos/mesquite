@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD:  6-Nov-02 at 14:11:43 by Thomas Leurent
+//  LAST-MOD:  6-Nov-02 at 17:57:37 by Thomas Leurent
 //
 /*! \file MeshSet.cpp
 
@@ -385,7 +385,7 @@ bool MeshSet::get_next_patch(PatchData &pd,
         int vtx_ind[MAX_NUM_VERTICES_PER_ELEM];
         for (int n=0; n<num_element_vtx; ++n)
           {
-            vtx_ind[n] = pd.add_vertex(currentVertex->mesh, vertices[0],
+            vtx_ind[n] = pd.add_vertex(currentVertex->mesh, vertices[n],
                                        &vertex_coords[3*n], true, err); MSQ_CHKERR(err);
           }
         // ... and adds the element to PatchData
@@ -405,7 +405,150 @@ bool MeshSet::get_next_patch(PatchData &pd,
   
     return true;
   }
+  else if ( mType == GLOBAL_PATCH ) {
   
+    const int MAX_NUM_VERTICES_PER_ELEM=12;
+    TSTT::Entity_Handle* elem_vtx = new TSTT::Entity_Handle[MAX_NUM_VERTICES_PER_ELEM];
+    TSTT::Entity_Handle *all_elements;
+    TSTT::EntityTopology *element_topologies;
+    int* csr_pointer; 
+    int* csr_data;
+    int num_elements;
+    int num_vertices;
+//    Vector3D vertex_coordV;
+  
+ //   ::set_new_handler(out_of_store);
+
+    // loops over all TSTT mesh handles
+    for ( currentMesh = meshSet.begin();
+          currentMesh != meshSet.end();
+          ++currentMesh ) {
+    
+      // retrieves all the elements of the mesh
+      num_elements = 0; // this will make TSTT allocate the patch_regions array
+      TSTT::Mesh_GetEntities(*currentMesh,
+                             TSTT::REGION, &all_elements,
+                             &num_elements, &tstt_err );
+      // ... if there are no regions adjacent to the vtx,
+      // retrieves adjacent faces.
+      if ( num_elements == 0 )
+        {
+          TSTT::Mesh_GetEntities(*currentMesh,
+                                 TSTT::FACE, &all_elements,
+                                 &num_elements, &tstt_err );
+        }
+      assert(!tstt_err);
+
+      // If there are neither regions or faces adjacent to the vertex, EXIT_FAILURE.
+      if ( num_elements == 0 ) {
+        err.set_msg("no regions or faces are adjacent to free vertex.");
+        return false;
+      }
+  
+      // Now, get the types of the elements.
+      element_topologies = new enum TSTT::EntityTopology[num_elements];
+      TSTT::Entity_GetTopology( *currentMesh,
+                                (TSTT::cEntity_Handle *) all_elements, num_elements,
+                                element_topologies, &tstt_err);
+  
+      // finds the number of vertices in the patch
+      TSTT::Mesh_Services_GetInt( *currentMesh, "number of vertices",
+                            &num_vertices, &tstt_err);
+
+      // gets rid of previous Patch information (but keeps memory allocated).
+      pd.clear();
+      // allocates memory for coordinates array
+      // if current memory is inapropriate
+      pd.reserve_vertex_capacity(num_vertices, err); MSQ_CHKERR(err);
+  
+      // allocates memory for connectivity array
+      // if current memory is inapropriate
+      pd.reserve_element_capacity(num_elements, err); MSQ_CHKERR(err);
+  
+      int num_coords=3*MAX_NUM_VERTICES_PER_ELEM;
+      double* vertex_coords = new double[num_coords];
+
+
+      enum store_in_patch {
+        free_vtx,
+        fixed_vtx,
+        over,
+      };
+      
+      // retrieves value of fixedVertexTagName.
+      // The value can be different for each TSTT mesh handle.
+      const char* bnd_tag_name;
+      bnd_tag_name = fixedVertexTagName.c_str(); // converts from std::string to C-style string.
+      void* bnd_tag_handle;
+      TSTT::Mesh_tagGetHandle(*currentMesh, bnd_tag_name, &bnd_tag_handle, &tstt_err);
+      
+      // For each element within the patch,
+      // fill up the adequate info in PatchData.
+      store_in_patch store = free_vtx;
+      while (store != over) {
+        
+        for (int e=0; e<num_elements; ++e) {
+          
+          // gets the vertices of an element ...
+          int num_element_vtx=MAX_NUM_VERTICES_PER_ELEM;
+          TSTT::Entity_GetAdjacencies( *currentMesh,
+                                       (TSTT::cEntity_Handle *) &(all_elements[e]),
+                                       1, TSTT::VERTEX, &elem_vtx,
+                                       &csr_pointer, &csr_data, 
+                                       &num_element_vtx, &tstt_err );
+          TSTT::Entity_GetVertexCoords(*currentMesh,
+                                       (TSTT::cEntity_Handle *) elem_vtx,
+                                       num_element_vtx, TSTT::INTERLEAVED,
+                                       &vertex_coords, &num_coords,
+                                       &tstt_err);
+          assert(!tstt_err);
+          // ... enters the coordinates of those vertices in PatchData ...
+          int vtx_ind[MAX_NUM_VERTICES_PER_ELEM];
+          for (int n=0; n<num_element_vtx; ++n)
+            {
+              // retrieves the fixed tad value
+              int* on_boundary = NULL;
+              int tag_size = sizeof(int);
+              TSTT::Mesh_GetTag_Entity(*currentMesh,
+                                       (TSTT::cEntity_Handle) elem_vtx[n],
+                                       bnd_tag_handle, (void**)&on_boundary,
+                                       &tag_size, &tstt_err);
+              assert(!tstt_err);
+              assert(on_boundary != NULL);
+              if (   store==free_vtx && *on_boundary==0    // first pass we add free vertices
+                  || store==fixed_vtx ) { // second pass we add all vertices
+                                        // (this retrieves index of previously added vertices). 
+                vtx_ind[n] = pd.add_vertex(*currentMesh, elem_vtx[n],
+                                           &vertex_coords[3*n], true, err); MSQ_CHKERR(err);
+              }
+            }
+          // ... and adds the element to PatchData if in second pass.
+          if (store==fixed_vtx) {
+            pd.add_element(*currentMesh, all_elements[e],
+                           vtx_ind, tstt_to_mesquite(element_topologies[e]), err);
+            MSQ_CHKERR(err);
+          }
+        }
+        
+        if (store == free_vtx)   store=fixed_vtx; // for next round
+        if (store == fixed_vtx)  store=over; // for next round
+      }
+
+      delete[] element_topologies;
+      delete[] elem_vtx;
+      delete[] vertex_coords;
+  
+      //cout << "numVertices for local patch: " << pd.num_vertices() << endl;
+  
+      // TODO : provide patch for several layers of adjacencies.
+  
+      // free entities allocated in TSTT::Entity_GetAdjacencies()
+      TSTT::Mesh_FreeEntityHandles(*currentMesh, all_elements, &tstt_err);
+    }
+  
+    return true;
+  }
+    
   err.set_msg("no implementation for specified patch type.");
   return false;
 }
