@@ -14,6 +14,7 @@ Header file for the Mesquite::ShapeQualityMetric class
 
 #include "Mesquite.hpp"
 #include "MesquiteError.hpp"
+#include "MsqMessage.hpp"
 #include "QualityMetric.hpp"
 #include "PatchData.hpp"
 
@@ -89,8 +90,7 @@ namespace Mesquite
                                                        MsqError &err)
    {   
        //norm squared of J
-     double term1=temp_vec[0]%temp_vec[0]+
-        temp_vec[1]%temp_vec[1];
+     double term1=temp_vec[0]%temp_vec[0]+temp_vec[1]%temp_vec[1];
 
      Vector3D unit_surf_norm;
      if ( pd.domain_set() ) {
@@ -105,6 +105,7 @@ namespace Mesquite
 
      double h;
      double delta=pd.get_barrier_delta_2d(err); 
+
      // Note: technically, we want delta=eta*tau-max
      //       whereas the function above gives delta=eta*alpha-max
      //      
@@ -114,10 +115,6 @@ namespace Mesquite
 
      if (delta==0) { 
         h=temp_var;
-     }
-     else {
-        h = vertex_barrier_function(temp_var,delta);
-     }
      // Note: when delta=0, the vertex_barrier_function
      //       formally gives h=temp_var as well.
      //       We just do it this way to avoid any 
@@ -125,6 +122,17 @@ namespace Mesquite
      // Also: when delta=0, this metric is identical
      //       to the original condition number with
      //       the barrier at temp_var=0
+     }
+     else {
+        h = vertex_barrier_function(temp_var,delta);
+        if (h<MSQ_DBL_MIN && fabs(temp_var) > MSQ_DBL_MIN ) { 
+          h = delta*delta/fabs(temp_var); }
+        // Note: Analytically, h is strictly positive, but
+        //       it can be zero numerically if temp_var
+        //       is a large negative number 
+        //       In the case h=0, we use a different analytic
+        //       approximation to compute h.
+     }
 
      if (h<MSQ_DBL_MIN) {
        err.set_msg("Barrier function is zero due to excessively large negative area compared to delta. /n Try to untangle mesh another way. ");
@@ -175,10 +183,6 @@ namespace Mesquite
 
      if (delta==0) { 
         h=temp_var;
-     }
-     else {
-        h = vertex_barrier_function(temp_var,delta);
-     }
      // Note: when delta=0, the vertex_barrier_function
      //       formally gives h=temp_var as well.
      //       We just do it this way to avoid any 
@@ -186,6 +190,18 @@ namespace Mesquite
      // Also: when delta=0, this metric is identical
      //       to the original condition number with
      //       the barrier at temp_var=0
+
+     }
+     else {
+        h = vertex_barrier_function(temp_var,delta);
+        if (h<MSQ_DBL_MIN && fabs(temp_var) > MSQ_DBL_MIN ) { 
+          h = delta*delta/fabs(temp_var); }
+        // Note: Analytically, h is strictly positive, but
+        //       it can be zero numerically if temp_var
+        //       is a large negative number 
+        //       In the h=0, we use a different analytic
+        //       approximation to compute h.
+     }
 
      if (h<MSQ_DBL_MIN) {
        err.set_msg("Barrier function is zero due to excessively large negative area compared to delta. /n Try to untangle mesh another way. ");

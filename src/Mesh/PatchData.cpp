@@ -106,6 +106,10 @@ double PatchData::get_barrier_delta_2d(MsqError &err)
       max = maxdet2d > max ? maxdet2d : max;
     }
 
+    if (max <= 0) {
+      err.set_msg("Sigma_max is not positive. Pathological Mesh.");
+    }
+
     double delta=0;
     if (min<=MSQ_MIN) delta=0.001 * max;
     computedInfos.insert(std::pair<const ComputedInfo, double>(MINMAX_SIGNED_DET2D,delta));
@@ -129,6 +133,10 @@ double PatchData::get_barrier_delta_3d(MsqError &err)
       MSQ_CHKERR(err);
       min = mindet3d < min ? mindet3d : min;
       max = maxdet3d > max ? maxdet3d : max;
+    }
+
+    if (max <= 0) {
+      err.set_msg("Sigma_max is not positive. Pathological Mesh.");
     }
 
     double delta=0;
