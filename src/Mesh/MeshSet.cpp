@@ -30,7 +30,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD: 22-Apr-04 at 16:59:58 by Thomas Leurent
+//  LAST-MOD:  3-Jun-04 at 16:17:56 by Thomas Leurent
 //
 /*! \file MeshSet.cpp
 
@@ -661,14 +661,14 @@ bool MeshSet::clear_all_soft_fixed_flags(MsqError &err)
 
 
 
+#undef __FUNC__
+#define __FUNC__ "MeshSet::write_vtk" 
 /*! Writes a VTK file directly from the MeshSet.
     This means that any mesh imported successfully into Mesquite
     can be outputed in VTK format.
     This is not geared for performance, since it has to load a global Patch from
     the mesh to write a mesh file. 
 */
-#undef __FUNC__
-#define __FUNC__ "MeshSet::write_vtk" 
 void MeshSet::write_vtk(const char* out_filebase,
                    Mesquite::MsqError &err)
 {
@@ -766,6 +766,74 @@ void MeshSet::write_vtk(const char* out_filebase,
       file << "0\n";
     else
       file << "1\n";
+  }
+  
+    // Close the file
+  file.close();
+}
+
+
+
+#undef __FUNC__
+#define __FUNC__ "MeshSet::write_gnuplot" 
+/*! Writes a gnuplot file directly from the MeshSet.
+    This means that any mesh imported successfully into Mesquite
+    can be outputed in gnuplot format.
+
+    Within gnuplot, use \b plot 'file1.gpt' w l, 'file2.gpt' w l  
+    
+    This is not geared for performance, since it has to load a global Patch from
+    the mesh to write a mesh file. 
+*/
+void MeshSet::write_gnuplot(const char* out_filebase,
+                   Mesquite::MsqError &err)
+{
+    // Open the file
+  string out_filename = out_filebase;
+  out_filename += ".gpt";
+  ofstream file(out_filename.c_str());
+  if (!file)
+  {
+    err.set_msg("Unable to open file");
+    return;
+  }
+
+    // loads a global patch
+  PatchData pd;
+  PatchDataParameters pd_params;
+  pd_params.set_patch_type(PatchData::GLOBAL_PATCH, err); MSQ_CHKERR(err);
+  pd_params.no_culling_method();
+  get_next_patch(pd, pd_params, err); MSQ_CHKERR(err);
+    
+    // Write a header
+  file << "\n";
+  
+  for (size_t i=0; i<pd.numElements; ++i)
+  {
+    std::vector<size_t> vtx_indices;
+    pd.elementArray[i].get_vertex_indices(vtx_indices);
+    for (size_t j = 0; j < vtx_indices.size(); ++j)
+    {
+#ifdef USE_STD_INCLUDES   
+      file <<setprecision(15)<< pd.vertexArray[vtx_indices[j]][0] << ' '
+           <<setprecision(15)<< pd.vertexArray[vtx_indices[j]][1] << ' '
+           <<setprecision(15)<< pd.vertexArray[vtx_indices[j]][2] << '\n';
+#else
+      file << pd.vertexArray[vtx_indices[j]][0] << ' '
+           << pd.vertexArray[vtx_indices[j]][1] << ' '
+           << pd.vertexArray[vtx_indices[j]][2] << '\n';
+#endif
+    }
+// #ifdef USE_STD_INCLUDES   
+//       file <<setprecision(15)<< pd.vertexArray[vtx_indices[0]][0] << ' '
+//            <<setprecision(15)<< pd.vertexArray[vtx_indices[0]][1] << ' '
+//            <<setprecision(15)<< pd.vertexArray[vtx_indices[0]][2] << '\n';
+// #else
+//       file << pd.vertexArray[vtx_indices[0]][0] << ' '
+//            << pd.vertexArray[vtx_indices[0]][1] << ' '
+//            << pd.vertexArray[vtx_indices[0]][2] << '\n';
+// #endif
+    file << '\n';
   }
   
     // Close the file

@@ -147,6 +147,8 @@ namespace Mesquite
 
     void write_vtk(const char* out_filebase, MsqError &err);
     
+    void write_gnuplot(const char* out_filebase, MsqError &err);
+    
   private:
     
       //! Meshes in this MeshSet
