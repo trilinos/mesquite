@@ -36,10 +36,15 @@ namespace Mesquite
    protected:
      virtual bool compute_analytical_gradient(PatchData &patch,
 					      Vector3D *const &grad,
-					      MsqError &err, size_t array_size);
+					      double &OF_val,
+					      MsqError &err, 
+					      size_t array_size);
      
      virtual bool  compute_analytical_hessian(PatchData &patch,
-                                              MsqHessian &hessian, MsqError &err);
+					      MsqHessian &hessian, 
+					      Vector3D *const &grad,
+					      double &OF_val,
+					      MsqError &err);
      
    private:
      double compute_function(double metric_values[], size_t total_num,

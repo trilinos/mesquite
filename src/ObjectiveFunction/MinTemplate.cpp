@@ -16,7 +16,6 @@ using  namespace Mesquite;
 
 MinTemplate::MinTemplate(QualityMetric *qualitymetric){
    set_quality_metric(qualitymetric);
-   set_feasible(qualitymetric->get_feasible_constraint());
 }
 
 #undef __FUNC__

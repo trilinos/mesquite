@@ -16,9 +16,8 @@ using namespace Mesquite;
 #undef __FUNC__
 #define __FUNC__ "CompositeOFScalarAdd::CompositeOFScalarAdd"
 /*!
-Sets the QualityMetric pointer to the metric associated with Obj1.  If
-Obj1 requires a feasible region, then so does the new CompositeOFScalarAdd
-ObjectiveFunction.  The new ObjectiveFunction's negateFlag is also the
+Sets the QualityMetric pointer to the metric associated with Obj1.  
+The new ObjectiveFunction's negateFlag is also the
 same as that of Obj1.  This objective function defaults to the analytical
 gradient which essentially just calls Obj1's gradient function.
   \param alp (double)
@@ -26,7 +25,6 @@ gradient which essentially just calls Obj1's gradient function.
  */
 CompositeOFScalarAdd::CompositeOFScalarAdd(double alp, ObjectiveFunction* Obj1){
   set_quality_metric(Obj1->get_quality_metric());
-  set_feasible(Obj1->get_feasible_constraint());
   objFunc=Obj1;
   mAlpha=alp;
   set_negate_flag(1);
@@ -84,11 +82,13 @@ std::list<QualityMetric*> CompositeOFScalarAdd::get_quality_metric_list(){
 */
 bool CompositeOFScalarAdd::compute_analytical_gradient(PatchData &patch,
                                                        Vector3D *const &grad,
+						       double &OF_val,
                                                        MsqError &err,
                                                        size_t array_size)
 {
   FUNCTION_TIMER_START(__FUNC__);
-  bool rval=objFunc->compute_gradient(patch, grad, err, array_size);
+  bool rval=objFunc->compute_gradient(patch, grad, OF_val,err, array_size);
+  OF_val+=mAlpha;
   FUNCTION_TIMER_END();
   return rval;
 }

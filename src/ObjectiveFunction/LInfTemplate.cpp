@@ -16,7 +16,6 @@ using  namespace Mesquite;
 
 LInfTemplate::LInfTemplate(QualityMetric *qualitymetric){
    set_quality_metric(qualitymetric);
-   set_feasible(qualitymetric->get_feasible_constraint());
    set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
    set_negate_flag(qualitymetric->get_negate_flag());
 }

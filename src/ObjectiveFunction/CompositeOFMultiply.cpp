@@ -18,8 +18,7 @@ using namespace Mesquite;
 /*!
 Sets the QualityMetric pointer to the metric associated with Obj1 and Obj2
 if Obj1 and Obj2 are associated with the same metric.  Otherwise, it sets
-the QualityMetric pointer to NULL.  If Obj1 or Obj2 requires a feasible
-region, then so does the new CompositeOFMultiply ObjectiveFunction.  The new
+the QualityMetric pointer to NULL.  The new
 ObjectiveFunction's negateFlag is set to negative one only if both Obj1 and
 Obj2's negateFlag are negative one (because obj1 and obj2's evaluate function
 multiply their return values by negative one if their respective
@@ -35,10 +34,6 @@ CompositeOFMultiply::CompositeOFMultiply(ObjectiveFunction* Obj1, ObjectiveFunct
   }
   else
     set_quality_metric(NULL);
-  if(Obj1->get_feasible_constraint())
-    set_feasible(Obj1->get_feasible_constraint());
-  else
-    set_feasible(Obj2->get_feasible_constraint());
   objFunc1=Obj1;
   objFunc2=Obj2;
     //if both obj1 and ob2 have been negated
@@ -113,45 +108,43 @@ bool CompositeOFMultiply::concrete_evaluate(PatchData &patch, double &fval,
     must correspond to the number of vertices in the patch.
 */
 bool CompositeOFMultiply::compute_analytical_gradient(PatchData &patch,
-                                                 Vector3D *const &grad,
-                                                 MsqError &err,
-                                                 size_t array_size)
+						      Vector3D *const &grad,
+						      double &OF_val,
+						      MsqError &err,
+						      size_t array_size)
 {
   FUNCTION_TIMER_START(__FUNC__);
-  double obj_1_val=0.0;
   double obj_2_val=0.0;
-    //get first obj function's value
-  bool rval=objFunc1->evaluate(patch, obj_1_val, err);
+  //get the first gradient and objective function value
+  bool rval=objFunc1->compute_gradient(patch, grad, OF_val,  err, array_size);
+  //if the above is valid, get the second gradient
   if(rval){
-      //if the first value was valid, get the second
-    rval=objFunc2->evaluate(patch, obj_2_val, err);
-  }
-    
-  if(rval){
-      //if both obj function values were valid, get first gradient
-    rval=objFunc1->compute_gradient(patch, grad, err, array_size);
-      //if all of the above were valid, get the second gradient
+    int num_vert=patch.num_vertices();
+    Vector3D* second_grad = new Vector3D[num_vert];
+    //get second objective function's gradient
+    rval=objFunc2->compute_gradient(patch, second_grad,obj_2_val, 
+				    err, num_vert);
+    //if both objective functions gradients were successfully computed, 
+    //use the multiplaction rule to get the complete gradient.
     if(rval){
-      int num_vert=patch.num_vertices();
-      Vector3D* second_grad = new Vector3D[num_vert];
-        //get second objective function's gradient
-      rval=objFunc2->compute_gradient(patch, second_grad, err, num_vert);
-        //if both objective functions were successfully computed, and
-        //both evaluates were successful, use the multiplaction rule
-        //to get the complete gradient.
-      if(rval){
-        int i=0;
-        for(i=0;i<num_vert;++i){
-          grad[i]*=obj_2_val;
-          grad[i]+=(second_grad[i]*obj_1_val);
-        }
+      int i=0;
+      for(i=0;i<num_vert;++i){
+        grad[i]*=obj_2_val;
+        grad[i]+=(second_grad[i]*OF_val);
       }
-        //delete the dynamically allocated space for the second gradient
-      delete []second_grad;
     }
+    //delete the dynamically allocated space for the second gradient
+    delete []second_grad;
   }
+  
   FUNCTION_TIMER_END();
     //true if both gradient and both evaluate were successful.
+  //compute the objective function value by mulitiplying
+  //OF_val and obj_2_val
+  if(rval)
+    OF_val*=obj_2_val;
+  else
+    OF_val=0.0;
   return rval;
 }
 	

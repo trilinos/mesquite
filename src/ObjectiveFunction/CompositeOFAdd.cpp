@@ -18,8 +18,7 @@ using namespace Mesquite;
 /*!
 Sets the QualityMetric pointer to the metric associated with Obj1 and Obj2
 if Obj1 and Obj2 are associated with the same metric.  Otherwise, it sets
-the QualityMetric pointer to NULL.  If Obj1 or Obj2 requires a feasible
-region, then so does the new CompositeOFAdd ObjectiveFunction.  The new
+the QualityMetric pointer to NULL.  The new
 ObjectiveFunction's negateFlag is always set to one, because the values
 produced by obj1 and obj2 have already been multiplied by negative one
 if it was needed.  Defaults to the analytical gradient.
@@ -33,10 +32,6 @@ CompositeOFAdd::CompositeOFAdd(ObjectiveFunction* Obj1,
   }
   else
     set_quality_metric(NULL);
-  if(Obj1->get_feasible_constraint())
-    set_feasible(Obj1->get_feasible_constraint());
-  else
-    set_feasible(Obj2->get_feasible_constraint());
   objFunc1=Obj1;
   objFunc2=Obj2;
   set_negate_flag(1);
@@ -98,29 +93,38 @@ bool CompositeOFAdd::concrete_evaluate(PatchData &patch, double &fval,
 #undef __FUNC__
 #define __FUNC__ "CompositeOFAdd::compute_analytical_gradient"
 /*! Analytically computes the composite objective function's gradient
-  by scaling the gradient returned objFunc->compute_gradient().
+  by combining the gradients returned from 
+  objFunc2->compute_gradient() and objFunc2->compute_gradient().
     \param patch The PatchData object for which the objective function
            gradient is computed.
     \param grad An array of Vector3D, at least the size of the number
            of vertices in the patch.
+    \param OF_val The objective function value.
     \param array_size is the size of the grad Vector3D[] array and
     must correspond to the number of vertices in the patch.
 */
 bool CompositeOFAdd::compute_analytical_gradient(PatchData &patch,
                                                  Vector3D *const &grad,
+						 double &OF_val,
                                                  MsqError &err,
                                                  size_t array_size)
 {
   FUNCTION_TIMER_START(__FUNC__);
+  double second_val=0.0;//store the second objective function val
+  OF_val=0.0;
     //get first objective function's gradient
-  bool rval=objFunc1->compute_gradient(patch, grad, err, array_size);
+  bool rval=objFunc1->compute_gradient(patch, grad, OF_val, 
+				       err, array_size);
   if(rval){
     int num_vert=patch.num_vertices();
     Vector3D* second_grad = new Vector3D[num_vert];
       //get second objective function's gradient
-    rval=objFunc2->compute_gradient(patch, second_grad, err, num_vert);
+    rval=objFunc2->compute_gradient(patch, second_grad, second_val,
+				    err, num_vert);
       //if both objective functions were successfully computed, add them
     if(rval){
+      //add the two objective function values.
+      OF_val+=second_val;
       int i=0;
       for(i=0;i<num_vert;++i){
         grad[i]+=second_grad[i];
@@ -131,5 +135,7 @@ bool CompositeOFAdd::compute_analytical_gradient(PatchData &patch,
   }
   FUNCTION_TIMER_END();
     //true if both of the above compute gradient's were successful.
+  if(!rval)
+    OF_val=0.0;
   return rval;
 }

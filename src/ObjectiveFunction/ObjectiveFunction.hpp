@@ -69,10 +69,12 @@ namespace Mesquite
          return return_bool;
        }
     
+    //! \enum GRADIENT_TYPE 
     enum GRADIENT_TYPE
     {
-       NUMERICAL_GRADIENT,
-       ANALYTICAL_GRADIENT
+       NUMERICAL_GRADIENT,  //!< can be very slow. Should be for tests only. 
+       ANALYTICAL_GRADIENT  //!< every differentiable function should have
+                            //!< an analytical gradient implemented.
     };
 
     //! Set gradType to either NUMERICAL_GRADIENT or ANALYTICAL_GRADIENT.
@@ -87,7 +89,7 @@ namespace Mesquite
         feasible regeion.  Otherwise, it returns 'true'.
       */
     bool compute_gradient(PatchData &patch, Vector3D *const &grad,
-                          MsqError &err, size_t array_size=0);          
+                          double &OF_val, MsqError &err, size_t array_size=0);          
               
       /*!\brief
         Calls compute_analytical_hessian. 
@@ -95,7 +97,9 @@ namespace Mesquite
         feasible regeion.  Otherwise, it returns 'true'.
       */
     bool compute_hessian(PatchData &patch, MsqHessian &hessian,
-                          MsqError &err);          
+                         Vector3D *const &grad,
+                         double &OF_val,
+                         MsqError &err);          
               
   /*! 
         Return the quality metric associated with this objective function.
@@ -124,14 +128,6 @@ namespace Mesquite
        }
     
       /*! 
-        return the (integer) feasible constraint (1 implies that the
-        element is required to stay in the feasible region).
-      */
-    int get_feasible_constraint(){
-         return feasibleFlag;
-       }
-    
-      /*! 
         \brief Set the value of ObjectiveFunction's negateFlag.  Unless
         composite, concrete ObjectiveFunctions should set this flag to
         to the value of the associated QualityMetric's negateFLag.
@@ -155,6 +151,7 @@ namespace Mesquite
         feasible regeion.  Otherwise, it returns 'true'.
       */
     bool compute_numerical_gradient(PatchData &patch, Vector3D *const &grad,
+                                    double &OF_val,
                                     MsqError &err, size_t array_size);
 
      /*! 
@@ -165,24 +162,25 @@ namespace Mesquite
         prints a warning and then defaults to numerical gradient.
         Function returns 'false' if the patch is not within a required
         feasible regeion.  Otherwise, it returns 'true'.
-      */
+
+        \param patch The PatchData object for which the objective function
+        gradient is computed.
+        \param grad An array of Vector3D, at least the size of the number
+        of vertices in the patch.
+        \param OF_val is set to the value of the objective function.
+        \param array_size is the size of the grad Vector3D[] array and
+        must correspond to the number of vertices in the patch.
+     */
     virtual bool compute_analytical_gradient(PatchData &patch,
                                              Vector3D *const &grad,
+                                             double &OF_val,
                                              MsqError &err, size_t array_size){
       PRINT_WARNING("Analytic gradient not implemented for this Objective "
                     "Function. Defaulting to numerical gradient.\n");
       set_gradient_type(NUMERICAL_GRADIENT);
-      return compute_numerical_gradient(patch, grad, err, array_size);
+      return compute_numerical_gradient(patch, grad, OF_val, err, array_size);
     }
     
-      /*! \brief Non-virtual function which numerically computes
-        the hessian of the Objective Function.
-         Function returns 'false' if the patch is not within a required
-        feasible regeion.  Otherwise, it returns 'true'.
-      */
-    bool compute_numerical_hessian(PatchData &patch, MsqHessian &hessian,
-                                    MsqError &err);
-
      /*! 
         Fills a MsqHessian object with the Hessian of
         the objective function computed using the hessian of the
@@ -194,6 +192,8 @@ namespace Mesquite
       */
     virtual bool compute_analytical_hessian(PatchData &/*patch*/,
                                             MsqHessian &/*hessian*/,
+                                            Vector3D *const &/*grad*/,
+                                            double &/*OF_val*/,
                                             MsqError &/*err*/) {
       PRINT_WARNING("Analytic hessian not implemented for this Objective ",
                     "Function. Feasible Newton algorythm cannot be used.\n");
@@ -201,18 +201,9 @@ namespace Mesquite
     }
     
       //!Returns eps used in the numerical gradient calculation.
-    double get_eps(PatchData &pd, double &local_val,int k,MsqVertex* vertex,
-                   MsqError &err);
+    inline double get_eps(PatchData &pd, double &local_val,
+                          int k,MsqVertex* vertex, MsqError &err);
     
-      //!Checks to make sure the mesh is in the feasible region.
-    int check_feasible(PatchData &pd, MsqError &err);
-
-      //!Sets feasibleFlag.
-    void set_feasible(int fflag)
-       {
-         feasibleFlag=fflag;
-       }
-
       //!Sets useLocalGradient
       //!This variable determines whether compute_numercial_gradient
       //!can use the most efficient gradient calculation.
@@ -223,14 +214,11 @@ namespace Mesquite
        
     
  private:
-    
       
     enum GRADIENT_TYPE gradType;//!Flag for numerical or analytical gradient.
       
     QualityMetric* qMetric;//!Pointer to associated QualityMetric.
       
-    int feasibleFlag;//!Set to one if metric has a feasibility constraint.
-     
     int negateFlag; /*!Equals one if ObjectiveFunction needs to
         be minimized; equals negative one if ObjectiveFunction needs
         to be maximized.*/
@@ -250,17 +238,20 @@ namespace Mesquite
       */
    inline bool ObjectiveFunction::compute_gradient(PatchData &patch,
                                                    Vector3D *const &grad,
+                                                   double &OF_val,
                                                    MsqError &err,
                                                    size_t array_size)
    {
      bool obj_bool = false;
      switch(gradType){
        case NUMERICAL_GRADIENT:
-          obj_bool=compute_numerical_gradient(patch, grad, err, array_size);
+          obj_bool=compute_numerical_gradient(patch, grad, OF_val,
+                                              err, array_size);
           MSQ_CHKERR(err);
           break;
        case ANALYTICAL_GRADIENT:
-          obj_bool=compute_analytical_gradient(patch, grad, err, array_size);
+          obj_bool=compute_analytical_gradient(patch, grad, OF_val,
+                                               err, array_size);
           MSQ_CHKERR(err);
           break;
      }
@@ -276,11 +267,46 @@ namespace Mesquite
      */
    inline bool ObjectiveFunction::compute_hessian(PatchData &patch,
                                                   MsqHessian &hessian,
+                                                  Vector3D *const &grad,
+                                                  double &OF_val,
                                                   MsqError &err)
    {
-     return compute_analytical_hessian(patch, hessian, err);
+     return compute_analytical_hessian(patch, hessian,
+                                       grad, OF_val, err);
    }
 
+
+  /*!Returns an appropiate value (eps) to use as a delta step for
+    MsqVertex vertex in dimension k (i.e. k=0 -> x, k=1 -> y, k=2 -> z).
+    The objective function value at the perturbed vertex position is given
+    in local_val.
+  */
+  inline double ObjectiveFunction::get_eps(PatchData &pd, double &local_val,
+                                           int k,MsqVertex* vertex, MsqError &err)
+  {
+    double eps = 1.e-07;
+    //  double rho=.5;
+    int imax=20;
+    int i=0;
+    bool feasible=false;
+    double tmp_var=0.0;
+    while (i<imax && !feasible)
+      {
+        i++;
+        //perturb kth coord val and check feas if needed
+        tmp_var=(*vertex)[k];
+        (*vertex)[k]+=eps;
+        feasible = evaluate(pd,local_val,err);
+        //if step was too big, shorten it         
+        if(!feasible)
+          eps*=0.5;
+        //revert kth coord val
+        (*vertex)[k]=tmp_var;
+      }//end while looking for feasible eps
+    return eps;
+  }//end function get_eps
+
+  
 } //namespace
 
 

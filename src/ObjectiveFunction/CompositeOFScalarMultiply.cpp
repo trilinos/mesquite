@@ -17,9 +17,8 @@ using namespace Mesquite;
 #undef __FUNC__
 #define __FUNC__ "CompositeOFScalarMultiply::CompositeOFScalarMultiply"
 /*!
-Sets the QualityMetric pointer to the metric associated with Obj.  If
-Obj requires a feasible region, then so does the new CompositeOFScalarMultiply
-ObjectiveFunction.  However, if alp is less than zero, the new
+Sets the QualityMetric pointer to the metric associated with Obj. 
+However, if alp is less than zero, the new
 ObjectiveFunction's negateFlag is the opposite of Obj's.  This objective
 function defaults to the analytical gradient.
   \param alp (double)
@@ -28,7 +27,6 @@ function defaults to the analytical gradient.
 CompositeOFScalarMultiply::CompositeOFScalarMultiply(double alp, ObjectiveFunction* Obj){
 
   set_quality_metric(Obj->get_quality_metric());
-  set_feasible(Obj->get_feasible_constraint());
   objFunc=Obj;
   mAlpha=alp;
   if(alp<0)
@@ -94,12 +92,13 @@ std::list<QualityMetric*> CompositeOFScalarMultiply::get_quality_metric_list(){
 bool CompositeOFScalarMultiply::compute_analytical_gradient(PatchData &patch,
                                                             Vector3D *const
                                                             &grad,
+							    double &OF_val,
                                                             MsqError &err,
                                                             size_t array_size)
 {
   FUNCTION_TIMER_START(__FUNC__);
   double scale_factor=(get_negate_flag()*mAlpha);
-  bool rval=objFunc->compute_gradient(patch, grad, err, array_size);
+  bool rval=objFunc->compute_gradient(patch, grad, OF_val, err, array_size);
   int num_vert=patch.num_vertices();
   int i=0;
     //If the objFunc was successful in calculating the gradient
@@ -108,6 +107,11 @@ bool CompositeOFScalarMultiply::compute_analytical_gradient(PatchData &patch,
     for(i=0;i<num_vert;++i){
       grad[i]*=scale_factor;
     }
+    //scale the OF_val
+    OF_val*=mAlpha;
+  }
+  else{
+    OF_val=0.0;
   }
   FUNCTION_TIMER_END();
   return rval;

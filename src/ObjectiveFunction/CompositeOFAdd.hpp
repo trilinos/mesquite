@@ -36,7 +36,8 @@ namespace Mesquite
      
 	protected:
      bool compute_analytical_gradient(PatchData &patch,Vector3D *const &grad,
-                                       MsqError &err,size_t array_size);
+                                      double &OF_val,  MsqError &err,
+				      size_t array_size);
 	private:
      ObjectiveFunction* objFunc1;
      ObjectiveFunction* objFunc2;
