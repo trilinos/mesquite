@@ -581,7 +581,7 @@ bool InverseMeanRatioQualityMetric::compute_element_analytical_hessian(PatchData
 
   Vector3D n;			// Surface normal for 2D objects
 
-  double   nm, t=0;
+  double   nm;
 
   // Hex element descriptions
   static const int locs_hex[8][4] = {{0, 1, 3, 4},  
@@ -741,47 +741,8 @@ bool InverseMeanRatioQualityMetric::compute_element_analytical_hessian(PatchData
       return false;
 
     default:
-      switch(avgMethod) {
-      case RMS:
-	err.set_msg("RMS averaging method does not work.");
-	return false;
-
-      case HARMONIC:
-	err.set_msg("HARMONIC averaging method does not work.");
-	return false;
-
-      case HMS:
-	err.set_msg("HMS averaging method does not work.");
-	return false;
-
-      default:
-        err.set_msg("averaging method not available.");
-        break;
-
-      }
-
-      m = 0;
-      for (i = 0; i < 4; ++i) {
-	nm = pow(mMetrics[i], t);
-	m += nm;
-
-	mMetrics[i] = t*nm/mMetrics[i];
-      }
-
-      nm = m / 4.0;
-      m = pow(nm, 1.0 / t);
-
-      for (i = 0; i < 4; ++i) {
-        g[locs_hex[i][0]] += mMetrics[i]*mGradients[3*i+0];
-	g[locs_hex[i][1]] += mMetrics[i]*mGradients[3*i+1];
-	g[locs_hex[i][2]] += mMetrics[i]*mGradients[3*i+2];
-      }
-
-      nm = m / (4.0*nm*t);
-      for (i = 0; i < 4; ++i) {
-	g[i] *= nm;
-      }
-      break;
+      err.set_msg("averaging method not available.");
+      return false;
     }
 
     // zero out fixed elements of gradient and Hessian
@@ -872,50 +833,10 @@ bool InverseMeanRatioQualityMetric::compute_element_analytical_hessian(PatchData
     case MINIMUM:
       err.set_msg("MINIMUM averaging method does not work.");
       return false;
-//       m = mMetrics[0];
-//       for (i = 1; i < 8; ++i) {
-// 	if (mMetrics[i] < m) m = mMetrics[i];
-//       }
-
-//       nm = 0;
-//       for (i = 0; i < 8; ++i) {
-//         if (mMetrics[i] <= m + MSQ_MIN) {
-// 	  g[locs_hex[i][0]] += mGradients[4*i+0];
-// 	  g[locs_hex[i][1]] += mGradients[4*i+1];
-// 	  g[locs_hex[i][2]] += mGradients[4*i+2];
-// 	  g[locs_hex[i][3]] += mGradients[4*i+3];
-// 	  ++nm;
-//         }
-//       }
-
-//       for (i = 0; i < 8; ++i) {
-// 	g[i] /= nm;
-//       }
-//       break;
 
     case MAXIMUM:
       err.set_msg("MAXIMUM averaging method does not work.");
       return false;
-//       m = mMetrics[0];
-//       for (i = 1; i < 8; ++i) {
-// 	if (mMetrics[i] > m) m = mMetrics[i];
-//       }
-
-//       nm = 0;
-//       for (i = 0; i < 8; ++i) {
-//         if (mMetrics[i] >= m - MSQ_MIN) {
-// 	  g[locs_hex[i][0]] += mGradients[4*i+0];
-// 	  g[locs_hex[i][1]] += mGradients[4*i+1];
-// 	  g[locs_hex[i][2]] += mGradients[4*i+2];
-// 	  g[locs_hex[i][3]] += mGradients[4*i+3];
-// 	  ++nm;
-//         }
-//       }
-
-//       for (i = 0; i < 8; ++i) {
-// 	g[i] /= nm;
-//       }
-//       break;
 
     case SUM:
       m = 0;
@@ -987,75 +908,10 @@ bool InverseMeanRatioQualityMetric::compute_element_analytical_hessian(PatchData
     case GEOMETRIC:
       err.set_msg("GEOMETRIC averaging method does not work.");
       return false;
-//       m = 0.0;
-//       for (i = 0; i < 8; ++i) {
-// 	m += log(mMetrics[i]);
-// 	mMetrics[i] = 1.0 / mMetrics[i];
-//       }
-//       m = exp(m / 8.0);
-
-//       for (i = 0; i < 8; ++i) {
-//         g[locs_hex[i][0]] += mMetrics[i]*mGradients[4*i+0];
-// 	g[locs_hex[i][1]] += mMetrics[i]*mGradients[4*i+1];
-// 	g[locs_hex[i][2]] += mMetrics[i]*mGradients[4*i+2];
-// 	g[locs_hex[i][3]] += mMetrics[i]*mGradients[4*i+3];
-//       }
-
-//       nm = m / 8.0;
-//       for (i = 0; i < 8; ++i) {
-// 	g[i] *= nm;
-//       }
-//       break;
 
     default:
-      switch(avgMethod) {
-      case RMS:
-	err.set_msg("RMS averaging method does not work.");
-	return false;
-// 	t = 2.0;
-// 	break;
-
-      case HARMONIC:
-	err.set_msg("HARMONIC averaging method does not work.");
-	return false;
-// 	t = -1.0;
-// 	break;
-
-      case HMS:
-	err.set_msg("HMS averaging method does not work.");
-	return false;
-// 	t = -2.0;
-// 	break;
-      default:
-        err.set_msg("averaging method not available.");
-        return false;
-        break;
-
-      }
-
-      m = 0;
-      for (i = 0; i < 8; ++i) {
-	nm = pow(mMetrics[i], t);
-	m += nm;
-
-	mMetrics[i] = t*nm/mMetrics[i];
-      }
-
-      nm = m / 8.0;
-      m = pow(nm, 1.0 / t);
-
-      for (i = 0; i < 8; ++i) {
-        g[locs_hex[i][0]] += mMetrics[i]*mGradients[4*i+0];
-	g[locs_hex[i][1]] += mMetrics[i]*mGradients[4*i+1];
-	g[locs_hex[i][2]] += mMetrics[i]*mGradients[4*i+2];
-	g[locs_hex[i][3]] += mMetrics[i]*mGradients[4*i+3];
-      }
-
-      nm = m / (8.0*nm*t);
-      for (i = 0; i < 8; ++i) {
-	g[i] *= nm;
-      }
-      break;
+      err.set_msg("averaging method not available.");
+      return false;
     }
 
     // zero out fixed elements of gradient and Hessian
