@@ -121,13 +121,18 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
   FunctionTimer ft( "ConjugateGradient::optimize_vertex_positions" );
 
   Timer c_timer;
-  int num_local_vertices = pd.num_vertices();
-  if(num_local_vertices>arraySize){
+  int num_vert=pd.num_vertices();
+  if(pd.num_free_vertices(err)<1){
+     MSQ_DBGOUT(1) << "\nEmpty free vertex list in ConjugateGradient\n";
+     return;
+  }
+  
+  if(num_vert>arraySize){
     delete []fGrad;
     delete []pGrad;
     delete []fNewGrad;
       //Increase number to try to avoid reallocating
-    arraySize=num_local_vertices + 5;
+    arraySize=num_vert + 5;
     fGrad = new Vector3D[ arraySize ];
     pGrad = new Vector3D[ arraySize ];
     fNewGrad = new Vector3D[ arraySize ];
@@ -145,11 +150,9 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
   MsqVertex* vertices=pd.get_vertex_array(err);  MSQ_ERRRTN(err);
   int ind;
     //Michael cull list:  possibly set soft_fixed flags here
-
-   int num_vert=pd.num_vertices();
+  
    MsqFreeVertexIndexIterator free_iter(&pd, err);  MSQ_ERRRTN(err);
   
-   MSQ_DBGOUT(1) << "\nEmpty free vertex list in ConjugateGradient\n";
       
    double f=0;
    //Michael, this isn't equivalent to CUBIT because we only want to check
