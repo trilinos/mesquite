@@ -35,7 +35,7 @@ using namespace Mesquite;
 #define __FUNC__ "VertexMover::loop_over_mesh" 
 void VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
 {
-  cout << "o Executing VertexMover::loop_over_mesh()\n";
+  std::cout << "o Executing VertexMover::loop_over_mesh()\n";
   set_mesh_set(&ms);
   StoppingCriterion* crit = get_stopping_criterion();
   if(crit==0){

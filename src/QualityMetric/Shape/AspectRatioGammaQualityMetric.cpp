@@ -67,7 +67,7 @@ double AspectRatioGammaQualityMetric::evaluate_element(PatchData &pd,
       break;
     default:
       total_metric=MSQ_MAX_CAP;
-      cout<<"\nEntity type: "<<entity<<" not valid for Aspect Ratio Gamma\n";
+      std::cout<<"\nEntity type: "<<entity<<" not valid for Aspect Ratio Gamma\n";
       break;
   };
   
