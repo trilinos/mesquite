@@ -67,12 +67,20 @@ namespace Mesquite
      virtual ~UntangleBetaQualityMetric()
         {}
        /*!Evaluate the Untangle Beta metric value for an element.
-         \todo This function needs to be modifies so that it no longer
+         \todo This function needs to be modified so that it no longer
          uses compute_weighted_jacobian.  It also needs to set an error
          whenever sent a 2D element and the surface normal information
          is not available.*/
      bool evaluate_element(PatchData &pd,MsqMeshEntity* element,
                            double &fval,MsqError &err);
+     
+       /*!Function to allow users to set the beta value after the
+         metric has already been created. */
+     void set_beta(double beta_in)
+       {mBeta = beta_in;}
+       /*!Function to allow the user to check the value of beta.*/
+     double get_beta()
+       {return mBeta;}
      
    protected:
      inline void untangle_function_2d(Vector3D temp_vec[],size_t e_ind,
