@@ -167,15 +167,22 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
     //         definite.
     // If direction is positive, does a gradient (steepest descent) step.
 
-    if (alpha > epsilon) {
-      MSQ_PRINT(1)("Newton direction not descent; switching to gradient.  Ensure preconditioner is positive definite.\n");
-      alpha = inner(grad, grad, nv); 	// compute norm squared of gradient
-      if (alpha < 1) alpha = 1;	        // take max with constant
-      for (i = 0; i < nv; ++i) {
-        d[i] = -grad[i] / alpha; 	// compute scaled gradient
-      }
-      alpha = inner(grad, d, nv);  	// recompute alpha
-					// equal to one for large gradient
+    if (alpha > -epsilon) {
+      MSQ_PRINT(1)("Newton direction not guaranteed descent.  Ensure preconditioner is positive definite.");
+
+      // TODD: removed performing gradient step here since we will use
+      // gradient if step does not produce descent.  Instead we set
+      // alpha to a small negative value.
+
+      alpha = -epsilon;
+
+      // alpha = inner(grad, grad, nv); // compute norm squared of gradient
+      // if (alpha < 1) alpha = 1;	// take max with constant
+      // for (i = 0; i < nv; ++i) {
+      //   d[i] = -grad[i] / alpha; 	// compute scaled gradient
+      // }
+      // alpha = inner(grad, d, nv);  	// recompute alpha
+      // 				// equal to one for large gradient
     }
     
     alpha *= sigma;
