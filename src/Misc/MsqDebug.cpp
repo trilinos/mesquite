@@ -43,7 +43,7 @@ MsqDebug::InitializeFlags::InitializeFlags( )
   const unsigned flag_array[] = { MSQ_ENABLE_DEBUG };
   size_t length = sizeof(flag_array) / sizeof(unsigned);
   while (length > 0)
-    MsqDebug::set( --length, true );
+    MsqDebug::set( length--, true );
 }
 #else
 MsqDebug::InitializeFlags::InitializeFlags( ) {}
@@ -63,7 +63,7 @@ void MsqDebug::set( unsigned flag, bool state )
   {
     if (flag >= flags.size())
     {
-      flags.resize(flag);
+      flags.resize(flag+1);
     }
     flags[flag] = true;
   }

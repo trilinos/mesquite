@@ -200,7 +200,7 @@ class FunctionTimer
 #else
     inline FunctionTimer( const char* name )
     {
-      mKey = GlobalStopWatches.add( name );
+      mKey = GlobalStopWatches.add( name, false );
       GlobalStopWatches.start( mKey );
     }
     inline ~FunctionTimer()

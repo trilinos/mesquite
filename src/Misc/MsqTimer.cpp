@@ -327,6 +327,7 @@ msq_stdio::ostream& Mesquite::operator<<( msq_stdio::ostream& str,
              <<Mesquite::GlobalStopWatches.get_string(sorted_keys[i])
              <<msq_stdio::endl;
   }
+  return str;
 }
 
 
