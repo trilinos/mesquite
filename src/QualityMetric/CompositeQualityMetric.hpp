@@ -19,9 +19,11 @@ namespace Mesquite
 {
    class MsqMeshEntity;
      /*! \class CompositeQualityMetric
-       \brief Parent class for the Composite Quality Metrics.  Contains
-       private data members qMetric1, qMetric2, and scaleAlpha, and
-       protected member functions to access these data members.
+       \brief Parent class for the Composite Quality Metrics.
+
+       Contains private data members qMetric1, qMetric2,
+       and scaleAlpha, and protected member functions to access
+       these data members.
      */
    class CompositeQualityMetric : public QualityMetric
    {

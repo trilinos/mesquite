@@ -23,6 +23,7 @@ namespace Mesquite
 {
      /*! \class ASMQualityMetric
        \brief Computes the ASM (Area Smoothness Metric) of the given element.
+       
         The metric does not use the sample point functionality or the
         compute_weighted_jacobian.  It computes the unsigned area
         or volume (a_0)of the element and of neighboring elements (a_i).
