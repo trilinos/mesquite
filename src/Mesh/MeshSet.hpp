@@ -59,9 +59,9 @@ namespace Mesquite
     void add_mesh(Mesquite::Mesh* mesh, MsqError &err);
 
 
-      //! Sets the geometrical domain for the MeshSet.  
-    void set_domain_constraint(MeshDomain* domain)
-      { mDomain = domain; }
+      //! Sets the geometrical domain for the MeshSet. This can
+      //! only be used with surface meshes. 
+    void set_domain_constraint(MeshDomain* domain, MsqError &err);
 
     //! Returns the domain associated with the MeshSet from which the Patch originates.
     //! NULL if no domain is defined.
@@ -80,7 +80,7 @@ namespace Mesquite
     
       //! Gets the next PatchData.
       /*! The type of the patch is usually set on the algorithm with
-        set_patch_type()and propagated to the MeshSet.
+        set_patch_type() and propagated to the MeshSet.
         This version of the get_next_patch() function is the most often used.
         It actually delegates to the original get_next_patch function, which
         has a slightly different signature. */

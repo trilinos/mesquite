@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD:  6-Feb-04 at 01:06:06 by Thomas Leurent
+//  LAST-MOD: 10-Feb-04 at 15:22:58 by Thomas Leurent
 //
 /*! \file MeshSet.cpp
 
@@ -135,6 +135,15 @@ void MeshSet::reset(MsqError& err)
     vertexIterator = NULL;
   }
 }
+
+
+#undef __FUNC__
+#define __FUNC__ "MeshSet::set_domain_constraint" 
+void MeshSet::set_domain_constraint(MeshDomain* domain, MsqError &err)
+{
+    mDomain = domain;
+}
+
 
 
 /*! \fn MeshSet::get_next_patch(PatchData &pd, MsqError &err )
@@ -496,8 +505,11 @@ bool MeshSet::get_next_patch(PatchData &pd,
 
 // Currently, the only thing supported is updating each vertices
 // coordinates and flags.  Connectivity changes aren't supported yet.
+#undef __FUNC__
+#define __FUNC__ "MeshSet::update_mesh"
 void Mesquite::MeshSet::update_mesh(const PatchData &pd, MsqError &err)
 {
+  FUNCTION_TIMER_START(__FUNC__);
   if (pd.numVertices == 0)
     return;
   
@@ -532,7 +544,6 @@ void Mesquite::MeshSet::update_mesh(const PatchData &pd, MsqError &err)
       Mesquite::VertexIterator *vert_itr = cur_mesh->vertex_iterator(err);
       for (i = 0; i < pd.numVertices; i++)
       {
-        cout<<"about to set coords for vertex "<<i<<endl;
         if (vert_itr->is_at_end())
         {
           mesh_itr++;
@@ -542,7 +553,6 @@ void Mesquite::MeshSet::update_mesh(const PatchData &pd, MsqError &err)
           delete vert_itr;
           vert_itr = cur_mesh->vertex_iterator(err); MSQ_CHKERR(err);
         }
-        cout<<"setting coords for vertex "<<i<<endl;
 
         cur_mesh->vertex_set_coordinates(pd.vertexHandlesArray[i],
                                          pd.vertexArray[i],
@@ -560,6 +570,7 @@ void Mesquite::MeshSet::update_mesh(const PatchData &pd, MsqError &err)
       break;
     }
   }
+  FUNCTION_TIMER_END();
 }
 
 bool MeshSet::clear_all_soft_fixed_flags(MsqError &err)

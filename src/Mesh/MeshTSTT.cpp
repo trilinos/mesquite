@@ -548,7 +548,8 @@ void Mesquite::MeshTSTT::vertices_get_coordinates(
                                         order, coords_s);
     
     // Turns SIDL array into a Vector3D.
-    int geom_dim = get_geometric_dimension(err); MSQ_CHKERR(err); 
+    int geom_dim = get_geometric_dimension(err); MSQ_CHKERR(err);
+//    cout << "Geometric Dimentsion : " << geom_dim << endl;
     for (size_t i=0; i<num_vtx; ++i) {
       coordinates[i][0] = coords_s.get(geom_dim*i);
       coordinates[i][1] = coords_s.get(geom_dim*i+1);
@@ -578,9 +579,6 @@ void Mesquite::MeshTSTT::vertex_set_coordinates(
     threeDoubles.set(2, coordinates[2]);
 
     oneEntity.set(0, vertex);
-    //kkc 040203    tsttMesh.setVertexCoordinates(oneEntity,
-    //                                  ::TSTT::INTERLEAVED,
-    //                                  threeDoubles);
     tsttModMesh.setVertexCoordinates(oneEntity,
 				      ::TSTT::INTERLEAVED,
 				      threeDoubles);
@@ -605,8 +603,6 @@ void Mesquite::MeshTSTT::vertex_set_byte (
     unsigned char* byte_s = new unsigned char; // leaky . may catter to AOMD implementation only
     *byte_s = byte;
     oneTagValue.set(0, byte_s);
-    //kkc 040203    tsttMesh.entitySetTagData(oneEntity, vertexByteTag,
-    //                                     oneTagValue, sizeof(unsigned char));
     tsttTag.entitySetTagData(oneEntity, vertexByteTag,
 			      oneTagValue, sizeof(unsigned char));
   }
