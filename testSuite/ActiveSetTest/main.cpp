@@ -38,7 +38,7 @@ describe main.cpp here
 #include "InstructionQueue.hpp"
 #include "MeshSet.hpp"
 #include "PatchData.hpp"
-#include "StoppingCriterion.hpp"
+#include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
 
 // algorithms
@@ -95,9 +95,11 @@ int main()
   maxmin_method->add_culling_method(PatchData::NO_BOUNDARY_VTX);
 
   // Set a stopping criterion
-  StoppingCriterion sc2(StoppingCriterion::NUMBER_OF_PASSES,1);
-  maxmin_method->set_stopping_criterion(&sc2);
-
+    //StoppingCriterion sc2(StoppingCriterion::NUMBER_OF_PASSES,1);
+    //maxmin_method->set_stopping_criterion(&sc2);
+  TerminationCriterion tc2;
+  tc2.add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,1,err);
+  maxmin_method->set_outer_termination_criterion(&tc2);
   // Set up the quality assessor
   //  printf("Setting up the quality assessor\n");
   QualityAssessor quality_assessor=QualityAssessor(cond_no,QualityAssessor::MAXIMUM);
