@@ -217,19 +217,21 @@ void PatchData::add_triangle(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
 
 
 #undef __FUNC__
-#define __FUNC__ "PatchData::move_free_vertices"
-/*! \fn PatchData::move_free_vertices(Vector3D dk[], int nb_vtx, double step_size, MsqError &err)
+#define __FUNC__ "PatchData::move_vertices"
+/*! \fn PatchData::move_vertices(Vector3D dk[], int nb_vtx, double step_size, MsqError &err)
 
    It is often useful to use the create_coords_momento() function before
    calling this function.
+   Compile with -DMSQ_DBG1 or higher to check that fixed vertices
+   are not moved with that call.
 
    \param dk: must be a [nb_vtx][3] array of doubles that contains the direction in which
-          to move each free vertex.
-   \param nb_vtx is the number of free vertices to move. must corresponds to the number of
-          free vertices in the PatchData.
+          to move each vertex. Fixed vertices moving direction should be zero.
+   \param nb_vtx is the number of vertices to move. must corresponds to the number of
+          vertices in the PatchData.
    \param step_size will multiply the moving direction given in dk for each vertex.
   */
-void PatchData::move_free_vertices(Vector3D dk[], int nb_vtx,
+void PatchData::move_vertices(Vector3D dk[], int nb_vtx,
                                    double step_size, MsqError &err)
 {
   if (nb_vtx > numVertices) {
@@ -239,17 +241,19 @@ void PatchData::move_free_vertices(Vector3D dk[], int nb_vtx,
   }
 
   int i=0;
-  MsqFreeVertexIndexIterator ind(this, err); MSQ_CHKERR(err);
-  ind.reset();
-  while (ind.next()) {
-      vertexArray[ind.value()] += (step_size * dk[i]);
-      ++i;
+  for (int m=0; m<numVertices; ++m) {
+    vertexArray[m] += (step_size * dk[m]);
   }
 
-  if (i != nb_vtx) {
-    err.set_msg("Argument nb_vtx is not equal to the number of free vertices.");
-    MSQ_CHKERR(err);
-  }
+  // Checks that moving direction is zero for fixed vertices.
+  MSQ_DEBUG_ACTION(1,{ for (int m=0; m<numVertices; ++m) {
+    Vector3D zero_3d(0.,0.,0.);
+    if (   ! vertexArray[m].is_free_vertex()
+        && dk[m] != zero_3d                  )
+      err.set_msg("moving a fixed vertex.");
+    MSQ_CHKERR(err); }
+  });
+      
 }
 
 /*! \fn PatchData::get_element_vertex_coordinates(size_t elem_index, std::vector<Vector3D> &coords, MsqError &err)

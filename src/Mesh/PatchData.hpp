@@ -141,13 +141,13 @@ namespace Mesquite
           is managed by the TSTT mesh implementation */
     void snap_vertex_to_domain(size_t vertex_index, MsqError &err);
     
-    //! moves all free vertices at once according to a set of directions.
-    /*! \param dk an array of directions, ordered like the free vertices in the PatchData.
-        \param nb_vtx number of free vertices.
+    //! moves all vertices at once according to a set of directions.
+    /*! \param dk an array of directions, ordered like the vertices in the PatchData.
+        \param nb_vtx number of vertices.
         \param step_size a scalar that multiplies the vectors given in dk.
       */
-    void move_free_vertices(Vector3D dk[], int nb_vtx,
-                             double step_size, MsqError &err);
+    void move_vertices(Vector3D dk[], int nb_vtx,
+                       double step_size, MsqError &err);
     
     //! Updates the TSTT mesh with any changes made to the PatchData
     void update_mesh(MsqError &err);
