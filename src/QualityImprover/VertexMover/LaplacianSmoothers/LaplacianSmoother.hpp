@@ -14,7 +14,7 @@
 
 #include "Mesquite.hpp"
 #include "VertexMover.hpp"
-
+#include "MsqFreeVertexIndexIterator.hpp"
 namespace Mesquite
 {
 
@@ -39,24 +39,39 @@ namespace Mesquite
   
 #undef __FUNC__
 #define __FUNC__ "centroid_smooth_mesh" 
-  inline void centroid_smooth_mesh(int num_incident_vtx,
+  inline void centroid_smooth_mesh(PatchData &pd, int num_vtx,
                                    MsqVertex *incident_vtx,
                                    MsqVertex &free_vtx,
                                    int dimension, MsqError &err)
   {
     int i,j;
     double avg[3];
-
-    if (num_incident_vtx==0) 
+    MsqFreeVertexIndexIterator free_iter(&pd, err);
+      //figure out which vertex is center
+    free_iter.reset();
+    free_iter.next();
+    int skip_ind=free_iter.value();
+    if (num_vtx<=1) 
       err.set_msg("WARNING: Number of incident vertex is zero\n");
 
     for (j=0;j<dimension;++j) {
+      free_iter.reset();
+      free_iter.next();
+      skip_ind=free_iter.value();
       avg[j] = 0.;
-      for (i=0;i<num_incident_vtx;++i){
+      for (i=0;i<num_vtx;++i){
           //cout<<"INSIDE v:  i="<<i<<"   "<<incident_vtx[i];
-        avg[j]+=incident_vtx[i][j];
+          //if we are at the free vertex, skip it
+        if(i==skip_ind){
+          free_iter.next();
+          skip_ind=free_iter.value();
+        }
+          //otherwise:
+        else{
+          avg[j]+=incident_vtx[i][j];
+        }
       }
-      free_vtx[j] = avg[j]/((double) num_incident_vtx);
+      free_vtx[j] = avg[j]/((double) num_vtx - 1.0);
         //cout << "centroid_smooth_mesh(): final --  avg["<<j<<"] = " << free_vtx[j] << endl;
     }
 

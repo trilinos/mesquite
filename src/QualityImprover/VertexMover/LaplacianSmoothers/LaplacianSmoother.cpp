@@ -12,6 +12,7 @@
 #include "LaplacianSmoother.hpp"
 #include "MsqMessage.hpp"
 
+
 using namespace Mesquite;
 
 
@@ -48,7 +49,7 @@ void LaplacianSmoother::optimize_vertex_positions(PatchData &pd,
     //std::cout << "- Executing LaplacianSmoother::optimize_vertex_position()\n";
 
   int num_local_vertices = pd.num_vertices();
-    //int dim = pd.space_dim();
+
   int dim = get_mesh_set()->space_dim();
   
   // gets the array of coordinates for the patch and print it 
@@ -56,8 +57,13 @@ void LaplacianSmoother::optimize_vertex_positions(PatchData &pd,
     //for (size_t i=0; i<num_local_vertices; i++) 
       //cout << "vertex " << i << " : " << patch_coords[i];
   // does the dumb Laplacian smoothing
-  centroid_smooth_mesh(num_local_vertices-1, &patch_coords[1],
-                       patch_coords[0], dim, err); MSQ_CHKERR(err);
+  MsqFreeVertexIndexIterator free_iter(&pd, err);
+  free_iter.reset();
+  free_iter.next();
+    //find the free vertex.
+  int m=free_iter.value();
+  centroid_smooth_mesh(pd, num_local_vertices, &patch_coords[0],
+                       patch_coords[m], dim, err); MSQ_CHKERR(err);
 }
   
 #undef __FUNC__
