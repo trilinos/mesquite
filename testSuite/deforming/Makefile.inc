@@ -1,12 +1,6 @@
-TESTG843DIR = $(testdir)/deforming
-
-TESTG843SRC = $(TESTG843DIR)/main.cpp
-
-TESTG843EXEC = $(TESTG843DIR)/main
-
-all_tests: $(TESTG843EXEC)
+all_tests: $(testdir)/deforming/main
 
 
-$(TESTG843EXEC): $(TESTG843SRC) $(locallibdir)/libmesquite.a
+$(testdir)/deforming/main: $(testdir)/deforming/main.cpp $(locallibdir)/libmesquite.a
 	@echo "Linking Mesquite driver application ($@)..."
-	${LINKER} $(CXXFLAGS) ${LDFLAGS} -o $@ ${TESTG843SRC} -L$(locallibdir) -lmesquite ${TSTT_LINK} -lm
+	${LINKER} $(CXXFLAGS) ${LDFLAGS} -o $@ $< -L$(locallibdir) -lmesquite ${TSTT_LINK} -lm

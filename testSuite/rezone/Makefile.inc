@@ -1,12 +1,7 @@
-TESTG843DIR = $(testdir)/rezone
 
-TESTG843SRC = $(TESTG843DIR)/main.cpp
-
-TESTG843EXEC = $(TESTG843DIR)/main
-
-all_tests: $(TESTG843EXEC)
+all_tests: $(testdir)/rezone/main
 
 
-$(TESTG843EXEC): $(TESTG843SRC) $(locallibdir)/libmesquite.a
+$(testdir)/rezone/main: $(testdir)/rezone/main.cpp $(locallibdir)/libmesquite.a
 	@echo "Linking Mesquite driver application ($@)..."
-	${LINKER} $(CXXFLAGS) ${LDFLAGS} -o $@ ${TESTG843SRC} -L$(locallibdir) -lmesquite ${TSTT_LINK} -lm
+	${LINKER} $(CXXFLAGS) ${LDFLAGS} -o $@ $< -L$(locallibdir) -lmesquite ${TSTT_LINK} -lm

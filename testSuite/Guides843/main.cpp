@@ -88,7 +88,7 @@ int main()
 
   Vector3D pnt(0,0,0);
   Vector3D s_norm(0,0,1);
-  PlanarDomain* msq_geom = new PlanarDomain(s_norm, pnt, mesh);
+  PlanarDomain* msq_geom = new PlanarDomain(s_norm, pnt);
   mesh_set1.set_domain_constraint(msq_geom, err); 
   if (err) return 1;
 
