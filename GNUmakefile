@@ -62,7 +62,8 @@ TESTNAMES := test_1\
              wrapper_tests\
              tutorial\
              test_DFT \
-             escobar
+             escobar \
+             Guides843 
 ###             random_test\
 ###             convert\
 ###             shape_wrapper_test
