@@ -418,7 +418,7 @@ public:
     std::list<Mesquite::Vector3D> tri_coords;
     Mesquite::Vector3D tmp_vec;
     for (size_t i=0; i<3; ++i) {
-      mesh->vertex_get_coordinates(mVertices[i], tmp_vec, mErr);
+      mesh->vertex_get_coordinates(mVertices[index_array[i]], tmp_vec, mErr);
       tri_coords.push_back(tmp_vec);
     }
 
