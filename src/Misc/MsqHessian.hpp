@@ -5,7 +5,7 @@
 //    E-MAIL: tmunson@mcs.anl.gov
 //
 // ORIG-DATE:  2-Jan-03 at 11:02:19 bu Thomas Leurent
-//  LAST-MOD: 17-Jan-03 at 17:25:29 by Thomas Leurent
+//  LAST-MOD: 22-Jan-03 at 14:32:13 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -50,12 +50,18 @@ namespace Mesquite
     int* mAccumulation;	   //!< accumulation pattern instructions
 
     int mSize; //!< number of rows (or number of columns, this is a square matrix).
-    
+
+    //! Hessian - vector product summed with a second vector.
+    friend void axpy(Vector3D res[], int size_r,
+                     const MsqHessian &H, const Vector3D x[], int size_x,
+                     const Vector3D y[], int size_y, MsqError &err);
   public:
     void initialize(PatchData &pd, MsqError &err);
     int size() {return mSize;}
     //! returns the diagonal blocks, memory must be allocated before call.
     void get_diagonal_blocks(std::vector<Matrix3D> &diag, MsqError &err);
+
+
   };
 
 } // namespace

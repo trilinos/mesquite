@@ -5,7 +5,7 @@
 //    E-MAIL: tmunson@mcs.anl.gov
 //
 // ORIG-DATE:  2-Jan-03 at 11:02:19 by Thomas Leurent
-//  LAST-MOD: 17-Jan-03 at 18:13:40 by Thomas Leurent
+//  LAST-MOD: 22-Jan-03 at 14:28:05 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -280,5 +280,54 @@ void MsqHessian::get_diagonal_blocks(std::vector<Matrix3D> &diag, MsqError &err)
 
   for (int i=0; i<size(); ++i) {
     diag[i] = mEntries[mRowStart[i]];
+  }
+}
+
+
+#undef __FUNC__
+#define __FUNC__ "axpy"
+/*!
+  \param res: array of Vector3D in which the result is stored.
+  \param x: vector multiplied by the Hessian.
+  \param y: vector added to the Hessian vector product.
+*/
+void axpy(Vector3D res[], int size_r,
+          const MsqHessian &H, const Vector3D x[], int size_x,
+          const Vector3D y[], int size_y, MsqError &err)
+{
+  if ((size_r != H.mSize) || (size_x != H.mSize) || (size_y != H.mSize)) {
+    // throw an error
+  }
+
+  Vector3D xl, yl, ml;
+
+  const int nn = H.mSize;
+  int rl; // row length
+  int e;  // entries index
+  int c;  // column index
+  int i, j;
+  int* col = H.mColIndex;
+  
+  for(i=0; i<nn; ++i)
+    res[i] = y[i];
+   
+  for (i = 0; i < nn; ++i) {
+    rl = H.mRowStart[i+1] - H.mRowStart[i]; 
+    e = H.mRowStart[i];
+    if (rl) {
+       
+      // Diagonal entry
+      res[i] += H.mEntries[e++]*x[i];
+      assert(*col == i); // dbg
+
+      //Non-diagonal entries
+      for (j = 1; j < rl; ++j) {
+        c = *(++col);
+         
+        res[i] += H.mEntries[e] * x[c];
+        res[c] += transpose(H.mEntries[e]) * x[i];
+      }
+      ++col;
+    }
   }
 }
