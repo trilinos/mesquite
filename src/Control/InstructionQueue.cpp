@@ -8,7 +8,7 @@ Member functions of the Mesquite::InstructionQueue class
   \date   2002-05-01
  */
 
-#ifdef USE_STD_INCLUDE
+#ifdef USE_STD_INCLUDES
 #include <string>
 #include <iostream>
 #else
