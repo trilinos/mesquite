@@ -78,14 +78,6 @@ namespace Mesquite
     void set_gradient_type(GRADIENT_TYPE grad)
     { gradType = grad; }
 
-    enum HESSIAN_TYPE{
-       NUMERICAL_HESSIAN,
-       ANALYTICAL_HESSIAN
-    };
-
-    //! Set gradType to either NUMERICAL_GRADIENT or ANALYTICAL_GRADIENT.
-    void set_hessian_type(HESSIAN_TYPE ht)
-    { hessianType = ht; }
 
       /*!\brief
         Calls either compute_numerical_gradient or compute_analytical_gradient
@@ -97,8 +89,7 @@ namespace Mesquite
                           MsqError &err, int array_size=-1);          
               
       /*!\brief
-        Calls either compute_numerical_hessian or compute_analytical_hessian
-        depending on the value of gradType.
+        Calls compute_analytical_hessian. 
         Function returns 'false' if the patch is not within a required
         feasible regeion.  Otherwise, it returns 'true'.
       */
@@ -281,25 +272,14 @@ namespace Mesquite
 #undef __FUNC__
 #define __FUNC__ "ObjectiveFunction::compute_hessian"
      /*!  
-       Calls either compute_numerical_hessian or compute_analytical_hessian
-       depending on the value of gradType.           
-      */
+       Calls compute_analytical_hessian.
+       Numerical objective function hessians are only used for test purposes. 
+     */
    inline bool ObjectiveFunction::compute_hessian(PatchData &patch,
                                                   MsqHessian &hessian,
                                                   MsqError &err)
    {
-     bool obj_bool;
-     switch(hessianType){
-     case NUMERICAL_HESSIAN:
-       obj_bool=compute_numerical_hessian(patch, hessian, err);
-       MSQ_CHKERR(err);
-       break;
-     case ANALYTICAL_HESSIAN:
-       obj_bool=compute_analytical_hessian(patch, hessian, err);
-       MSQ_CHKERR(err);
-       break;
-     }
-     return obj_bool;
+     return compute_analytical_hessian(patch, hessian, err);
    }
 
 } //namespace
