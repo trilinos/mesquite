@@ -49,6 +49,9 @@ void VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
     // in order to reduce the number of memory allocations
   PatchData patch_data;
   bool next_patch;
+
+  // This should probably pass the MeshSet so that the data requirements
+  // can be calculated exactly.
   this->initialize(patch_data, err); MSQ_CHKERR(err);
     //reset the stopping criterion's loop counter
   crit->reset_counter();
@@ -56,6 +59,9 @@ void VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
   while ( !stop_met ) {
       //Status bar
     PRINT_INFO(".");
+
+    // Prior to looping over the patches.
+    // Probably want to pass the MeshSet.  
     this->initialize_mesh_iteration(patch_data, err);MSQ_CHKERR(err); 
 
     // propagates information from QualityImprover to MeshSet
