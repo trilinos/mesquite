@@ -11,6 +11,7 @@
 #include "Vector3D.hpp"
 #include "ShapeQualityMetric.hpp"
 #include "QualityMetric.hpp"
+#include "MsqTimer.hpp"
 
 using namespace Mesquite;
 using std::cout;
@@ -1460,6 +1461,8 @@ bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
   return true;
 }
 
+#undef __FUNC__
+#define __FUNC__ "MeanRatioQualityMetric::compute_element_analytical_gradient" 
 bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 								 MsqMeshEntity *e,
 								 MsqVertex *v[], 
@@ -1468,6 +1471,8 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 								 double &m,
                                                                  MsqError &err)
 {
+  FUNCTION_TIMER_START(__FUNC__);
+  
   EntityTopology topo = e->get_element_type();
 
   if (((topo == QUADRILATERAL) || (topo == HEXAHEDRON)) && 
@@ -1672,9 +1677,13 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
     break;
   } // end switch over element type
 
+  FUNCTION_TIMER_END();
   return true;
 }
 
+
+#undef __FUNC__
+#define __FUNC__ "MeanRatioQualityMetric::compute_element_analytical_hessian" 
 bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 								MsqMeshEntity *e,
 								MsqVertex *fv[], 
@@ -1684,6 +1693,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 								double &m,
 								MsqError &err)
 {
+  FUNCTION_TIMER_START(__FUNC__);
   EntityTopology topo = e->get_element_type();
 
   if (((topo == QUADRILATERAL) || (topo == HEXAHEDRON)) && 
@@ -1950,6 +1960,8 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
   default:
     break;
   } // end switch over element type
+
+  FUNCTION_TIMER_END();
   return true;
 }
 
