@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 19-Feb-02 at 10:57:52
-//  LAST-MOD:  8-Nov-02 at 10:38:27 by Thomas Leurent
+//  LAST-MOD:  3-Dec-02 at 11:29:33 by Thomas Leurent
 //
 //
 // DESCRIPTION:
@@ -83,7 +83,7 @@ int main()
   LPTemplate* obj_func = new LPTemplate(mean_ratio, 2, err);
     // creates the steepest descent optimization procedures
   SteepestDescent* pass1 = new SteepestDescent( obj_func );
-  pass1->set_patch_type(MeshSet::GLOBAL_PATCH, err);
+  pass1->set_patch_type(PatchData::GLOBAL_PATCH, err);
   
  QualityAssessor stop_qa=QualityAssessor(mean_ratio,QualityAssessor::MAXIMUM);
 
@@ -93,7 +93,7 @@ int main()
 // CompositeAndStoppingCriterion sc(&sc1,&sc2);
  pass1->set_stopping_criterion(&sc2);
  // sets a culling method on the first QualityImprover
- pass1->add_culling_method(QualityImprover::NO_BOUNDARY_VTX);
+ pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
 
   // adds 1 pass of pass1 to mesh_set1
 //  queue1.add_preconditioner(pass1, err); MSQ_CHKERR(err);
