@@ -111,8 +111,8 @@ bool GeneralizedConditionNumberQualityMetric::evaluate_element(PatchData &pd,
   return true;
 }
 
-bool GeneralizedConditionNumberQualityMetric::evaluate_vertex(PatchData &pd,
-                                                              MsqVertex *vertex,
+bool GeneralizedConditionNumberQualityMetric::evaluate_vertex(PatchData &/*pd*/,
+                                                              MsqVertex */*vertex*/,
                                                               double &fval,
                                                               MsqError &err)
 {

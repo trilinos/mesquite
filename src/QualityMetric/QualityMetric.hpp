@@ -127,8 +127,8 @@ namespace Mesquite
         { return metricName; }
      
        //!Evaluate the metric for a vertex
-     virtual bool evaluate_vertex(PatchData &pd, MsqVertex* vertex,
-                                  double &value, MsqError &err)
+     virtual bool evaluate_vertex(PatchData& /*pd*/, MsqVertex* /*vertex*/,
+                                  double& /*value*/, MsqError &err)
         {
           err.set_msg("No implementation for a "
                       "vertex-version of this metric.");
@@ -136,9 +136,9 @@ namespace Mesquite
         }
      
        //!Evaluate the metric for an element
-     virtual bool evaluate_element(PatchData &pd,
-                                   MsqMeshEntity* element,
-                                   double &value, MsqError &err)
+     virtual bool evaluate_element(PatchData& /*pd*/,
+                                   MsqMeshEntity* /*element*/,
+                                   double& /*value*/, MsqError &err)
         {
           err.set_msg("No implementation for a element-version of this metric.");
           return false;

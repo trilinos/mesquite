@@ -78,7 +78,7 @@ namespace Mesquite
      //BEGIN INLINE FUNCITONS
    inline bool MeanRatioQualityMetric::mean_ratio_2d(Vector3D temp_vec[],
                                                      double &fval,
-                                                     MsqError &err)
+                                                     MsqError &/*err*/)
    {
       // NOTE: Fixed to check for degenerate or inverted elements
       // NOTE: If coordinates are always first two, can make calculation faster
@@ -97,7 +97,7 @@ namespace Mesquite
 
    inline bool MeanRatioQualityMetric::mean_ratio_3d(Vector3D temp_vec[],
                                                      double &fval,
-                                                       MsqError &err)
+                                                     MsqError &/*err*/)
    {   
       // NOTE: Fixed to check for degenerate or inverted elements
       double determinant = temp_vec[0]%(temp_vec[1]*temp_vec[2]);

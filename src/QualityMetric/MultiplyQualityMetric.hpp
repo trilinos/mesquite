@@ -51,7 +51,7 @@ namespace Mesquite
      
      inline void set_multiplication_operands(QualityMetric* qm1,
                                              QualityMetric* qm2,
-                                             MsqError &err){
+                                             MsqError &/*err*/){
        set_qmetric2(qm2);
        set_qmetric1(qm1);
      }

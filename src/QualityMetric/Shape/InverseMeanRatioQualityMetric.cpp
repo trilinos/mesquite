@@ -77,7 +77,6 @@ bool InverseMeanRatioQualityMetric::evaluate_element(PatchData &pd,
         return false; 
       fval=average_metrics(metric_values,4,err);
       return true;
-      break;
     case TETRAHEDRON:
       temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
       temp_vec[3]=vertices[v_i[2]]-vertices[v_i[0]];

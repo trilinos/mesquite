@@ -50,7 +50,6 @@ bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
       temp_vec[1]=((2*temp_vec[2])-temp_vec[0])*MSQ_SQRT_THREE_INV;
       return_flag=mean_ratio_2d(temp_vec,fval,err);
       return return_flag;
-      break;
     case QUADRILATERAL:
       temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
       temp_vec[1]=vertices[v_i[3]]-vertices[v_i[0]];
@@ -202,7 +201,7 @@ inline bool m_fcn_2e(double &obj, const Vector3D x[3], const Vector3D &n)
   return true;
 }
 
-inline bool g_fcn_2e(double &obj, Vector3D g_obj[3], 
+inline bool g_fcn_2e(double &obj, Vector3D /*g_obj[3]*/, 
                      const Vector3D x[3], const Vector3D &n)
 {
   double matr[6], f;
@@ -1523,7 +1522,6 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
   case QUADRILATERAL:
     std::cout << "Gradients in 2D not implemented yet.\n" << std::endl;
     return false;
-    break;
 
   case TETRAHEDRON:
     coords[0] = vertices[v_i[0]];
@@ -1753,7 +1751,6 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
   case QUADRILATERAL:
     std::cout << "Gradients in 2D not implemented yet.\n" << std::endl;
     return false;
-    break;
 
   case TETRAHEDRON:
     coords[0] = vertices[v_i[0]];

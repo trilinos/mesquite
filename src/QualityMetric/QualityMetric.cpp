@@ -37,7 +37,7 @@ bool QualityMetric::compute_vertex_analytical_gradient(PatchData &pd,
 
 #undef __FUNC__
 #define __FUNC__ "QualityMetric::change_metric_type"
-void QualityMetric::change_metric_type(MetricType t, MsqError &err)
+void QualityMetric::change_metric_type(MetricType /*t*/, MsqError &err)
 {
   err.set_msg("This QualityMetric's MetricType can not be changed.");
 }

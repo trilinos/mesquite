@@ -48,7 +48,6 @@ bool ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
       temp_vec[1]=((2*temp_vec[2])-temp_vec[0])*MSQ_SQRT_THREE_INV;
       return_flag=condition_number_2d(temp_vec,v_i[0],pd,fval,err);
       return return_flag;
-      break;
     case QUADRILATERAL:
       temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
       temp_vec[1]=vertices[v_i[3]]-vertices[v_i[0]];
@@ -73,7 +72,6 @@ bool ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
       fval+=temp_double;
       fval/=4.0;
       return return_flag;
-      break;
     case TETRAHEDRON:
       temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
       temp_vec[3]=vertices[v_i[2]]-vertices[v_i[0]];
@@ -84,7 +82,6 @@ bool ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
         (MSQ_SQRT_THREE*MSQ_SQRT_TWO);
       return_flag=condition_number_3d(temp_vec,fval,err);
       return return_flag;
-      break;
     case HEXAHEDRON:
       temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
       temp_vec[1]=vertices[v_i[3]]-vertices[v_i[0]];
@@ -141,7 +138,6 @@ bool ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
       fval+=temp_double;
       fval/=8.0;
       return return_flag;
-      break;
     default:
       fval=MSQ_MAX_CAP;
   }// end switch over element type

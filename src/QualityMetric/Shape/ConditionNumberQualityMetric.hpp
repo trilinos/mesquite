@@ -93,7 +93,7 @@ namespace Mesquite
                                                                  temp_vec[],
                                                                  double &fval,
                                                                  MsqError
-                                                                 &err)
+                                                                 &/*err*/)
    {   
      double term1=temp_vec[0]%temp_vec[0]+
         temp_vec[1]%temp_vec[1]+
