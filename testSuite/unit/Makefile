@@ -1,6 +1,6 @@
 # Change this in Makefile.customize so that it points to your
 # installation of cppunit
-CPPUNIT_DIR = ../../cppunit
+CPPUNIT_DIR = ../../../cppunit
 
 
 # The rest of these items probably won't need to be messed with
