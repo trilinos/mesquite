@@ -5,7 +5,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 15-Jan-03 at 08:05:56
-//  LAST-MOD: 29-Apr-03 at 17:43:34 by Thomas Leurent
+//  LAST-MOD:  1-May-03 at 09:45:33 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -16,6 +16,7 @@
   Implements the FeasibleNewton class member functions.
   
   \author Thomas Leurent
+  \author Todd Munson
   \date   2003-01-15
 */
 // DESCRIP-END.
