@@ -88,7 +88,7 @@ void VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
       //if global don't loop again.
       //if local loop until criteria are met
     if(this->get_patch_type() == PatchData::GLOBAL_PATCH)
-      stop_met=0;
+      stop_met=true;
     else
       stop_met=crit->stop(ms,err); MSQ_CHKERR(err);
   }
