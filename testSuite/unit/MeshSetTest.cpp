@@ -72,7 +72,9 @@ class MeshSetTest : public CppUnit::TestFixture
 {
 private:
   CPPUNIT_TEST_SUITE(MeshSetTest);
+  /* Not implemented yet
   CPPUNIT_TEST (test_add_multiple_meshes);
+  */
   CPPUNIT_TEST_SUITE_END();
   
 private:

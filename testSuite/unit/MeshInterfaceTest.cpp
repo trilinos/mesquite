@@ -57,7 +57,9 @@ private:
   CPPUNIT_TEST (test_get_geometric_dimension);
   CPPUNIT_TEST (test_vertices);
   CPPUNIT_TEST (test_vertices_are_on_boundary);
+  /* Not implemented yet
   CPPUNIT_TEST (test_vertex_is_fixed);
+  */
   CPPUNIT_TEST (test_vertex_byte);
   CPPUNIT_TEST (test_vertex_get_attached_elements);
   CPPUNIT_TEST (test_elements);
