@@ -16,7 +16,6 @@ Argonne, IL 60490 USA}
 
 \date{}
 
-
 \begin{document}
 
 \maketitle
@@ -375,7 +374,7 @@ and use the \texttt{read\_vtk} function by adding those lines to the file
 template described in \ref{sec:tutfile}.
 \begin{verbatim}
   Mesquite::MeshImpl *my_mesh = new Mesquite::MeshImpl;
-  my_mesh->read_vtk("../../meshFiles/2D/VTK/cube_hex_2.vtk", err); 
+  my_mesh->read_vtk("../../meshFiles/2D/VTK/square_quad_10_rand.vtk", err); 
   MSQ_CHKERR(err);
 \end{verbatim}
 You now need to add the mesh to a MeshSet, an object that can regroup several contiguous meshes to
@@ -384,7 +383,22 @@ improve them all at once:
   Mesquite::MeshSet mesh_set;
   mesh_set.add_mesh(my_mesh, err); MSQ_CHKERR(err);
 \end{verbatim}
-Mesquite also provides a function to write a mesh file in VTK format, given a \texttt{MeshImpl}
+At this point, the MeshSet might also need some information concerning the mesh geometry. Mesquite
+deals automatically with all types of supported elements, including hybrid meshes, but some meshes
+require the geometry information: for example when improving a surface mesh, the user should tell
+the MeshSet which surface the vertices are constrained to. In particular, all 2D meshes need to
+specify some geometry constraints, since Mesquite is inherently a 3D code. 
+The details are explained in section
+\ref{sec:geometry}; here we show how to set the geometry of a planar 2D mesh, defined by a point and
+a normal, on the MeshSet: 
+\begin{verbatim}
+  Vector3D normal(0,0,1);
+  Vector3D point(0,0,5);
+  PlanarDomain my_mesh_plan(normal, point, my_mesh);
+  mesh_set.set_domain_constraint(&my_mesh_plan);
+\end{verbatim}
+
+Note that Mesquite also provides a function to write a mesh file in VTK format, given a \texttt{MeshImpl}
 object: 
 \begin{verbatim}
   my_mesh->write_vtk("original_mesh",err); MSQ_CHKERR(err);
@@ -1057,6 +1071,30 @@ and efficiency on `real world' problems.
 \section{Advanced Use of Mesquite}
 
 \subsection{The Simplified Geometry Engine}
+\label{sec:geometry}
+
+\subsubsection{Linking Mesquite with the TSTT Mesh Interface} 
+\label{sec:TSTT}
+
+\subsubsection{Implementing the Mesquite Mesh Interface}
+
+Most users will want to skip this section and avoid the associated work. There are several manners
+to give the mesh data to Mesquite, and implementing the Mesquite mesh interface is the one that
+requires the most coding work. 
+
+Let's review the alternative in the first place. For very simple meshes, Mesquite has an integrated
+mesh database that can read in mesh files in specific format, such as VTK (see section \ref{sec:}). 
+On the other hand, Mesquite is compatible with the TSTT mesh interface: this means that if you are
+running a code that has implemented the TSTT mesh interface, you can link Mesquite with your code
+and perform all mesh improvements through the TSTT mesh interface (see section \ref{sec:TSTT}).
+Implementing the TSTT mesh interface also has the advantage that your code will be compatible with
+the TSTT mesh interface standard: this is a very good investment. 
+
+If you want to implement the specific Mesquite mesh interface, you probably have very specific
+reasons in mind ... and you know what you are doing. In this section, we will give you the
+documentation for the abstract classes. This will allow you to implement the interface. 
+
+
 
 \subsection{Creating a Quality Metric}
 
