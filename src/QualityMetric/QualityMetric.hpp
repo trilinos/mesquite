@@ -12,12 +12,19 @@ Header file for the Mesquite::QualityMetric class
 #ifndef QualityMetric_hpp
 #define QualityMetric_hpp
 
+#ifdef USE_C_PREFIX_INCLUDES
+#include <cmath>
+#include <cstring>
+#else
+#include <math.h>
+#include <string.h>
+#endif
+
+
 #include "Mesquite.hpp"
 #include "MesquiteError.hpp"
 #include "Vector3D.hpp"
 #include "Matrix3D.hpp"
-#include <math.h>
-#include <string.h>
 
 namespace Mesquite
 {

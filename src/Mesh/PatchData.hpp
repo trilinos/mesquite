@@ -15,8 +15,13 @@
 */
 
 
+#ifdef USE_C_PREFIX_INCLUDES
+#include <cstddef>
+#include <cstdlib>
+#else
 #include <stddef.h>
 #include <stdlib.h>
+#endif
 
 #include "Mesquite.hpp"
 #include "Vector3D.hpp"

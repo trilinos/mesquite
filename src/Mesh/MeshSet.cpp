@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD: 25-Sep-03 at 16:51:53 by Thomas Leurent
+//  LAST-MOD: 10-Oct-03 at 13:10:10 by Thomas Leurent
 //
 /*! \file MeshSet.cpp
 
@@ -16,8 +16,6 @@ That copy is of course encapsulated in the MeshSet class.
     \author Thomas Leurent
     \date 2002-05-16  
  */
-
-#include "stdio.h"
 
 #include "MeshSet.hpp"
 #include "QualityImprover.hpp"

@@ -15,8 +15,13 @@
 #include "MeshSet.hpp"
 #include "MsqVertex.hpp"
 using namespace Mesquite;
-//temporary include
+
+#ifdef USE_STD_INCLUDES
 #include <iostream>
+#else
+#include <iostream.h>
+#endif
+
 #undef __FUNC__
 #define  __FUNC__ "TerminationCriterion::TerminationCriterion"
 /*!Constructor initializes all of the data members which are not

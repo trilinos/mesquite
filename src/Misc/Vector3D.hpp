@@ -8,7 +8,11 @@
 #include <assert.h>
 #endif
 
+#ifdef USE_STD_INCLUDES
 #include <iostream>
+#else
+#include <iostream.h>
+#endif
 
 /*! \file Vector3D.hpp
   \brief Vector object with exactly 3 dimensions.

@@ -5,7 +5,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 18-Dec-02 at 11:08:22
-//  LAST-MOD:  2-Apr-03 at 14:23:18 by Thomas Leurent
+//  LAST-MOD: 10-Oct-03 at 13:33:34 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -26,7 +26,7 @@
 
 #ifdef USE_STD_INCLUDES
 #include <iostream>
-#include <strstream>
+#include <sstream>
 #else
 #include <iostream.h>
 #include <strstream.h>
@@ -80,7 +80,11 @@ namespace Mesquite
 
     void set_values(const char *s)
     {
+#ifdef USE_STD_INCLUDES
+      std::istringstream ins(s);
+#else
       std::istrstream ins(s);
+#endif
       ins>>v_[0];  ins>>v_[1];  ins>>v_[2]; 
       ins>>v_[3];  ins>>v_[4];  ins>>v_[5]; 
       ins>>v_[6];  ins>>v_[7];  ins>>v_[8]; 

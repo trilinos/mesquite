@@ -9,9 +9,15 @@
 #ifndef PatchDataUser_hpp
 #define PatchDataUser_hpp
 
+#ifdef USE_C_PREFIX_INCLUDES
+#include <cstddef>
+#include <cstdlib>
+#include <cstdio>
+#else
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
+#endif
 
 #include "Mesquite.hpp"
 #include "PatchData.hpp"

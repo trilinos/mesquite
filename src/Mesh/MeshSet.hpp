@@ -11,10 +11,12 @@
 #ifndef Mesquite_MeshSet_hpp 
 #define Mesquite_MeshSet_hpp
 
-#ifdef HAVE_STANDARD_INCLUDES
+#ifdef USE_C_PREFIX_INCLUDES
 #include <cstddef>
+#include <cstdio>
 #else
 #include <stddef.h>
+#include <stdio.h>
 #endif
 
 #include <list>
