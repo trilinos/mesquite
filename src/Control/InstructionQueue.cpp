@@ -174,7 +174,7 @@ void InstructionQueue::remove_quality_assessor(int index, MsqError &err)
 /*! \fn InstructionQueue::insert_quality_assessor(QualityAssessor* instr, int index, MsqError &err)
     \brief inserts a QualityAssessor* into the instruction queue.
 
-    QualityAssessors can be insertedat any position in the instruction queue.
+    QualityAssessors can be inserted at any position in the instruction queue.
 
     \param index is 0-based. An error is set if the index is past the end of the queue.
 */
@@ -182,8 +182,8 @@ void InstructionQueue::insert_quality_assessor(QualityAssessor* instr,
                                            int index, MsqError &err)
 {
   // checks index is valid
-  if (index >= instructions.size()) {
-    err.set_msg("index points beyond end of list.");
+  if (index > instructions.size()) {
+    err.set_msg("index points two positions beyond end of list.");
     return;
   }
 
