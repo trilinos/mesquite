@@ -158,7 +158,10 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
    //Michael, this isn't equivalent to CUBIT because we only want to check
    //the objective function value of the 'bad' elements
    //if invalid initial patch set an error.
-  if( ! objFunc->compute_gradient(pd, fGrad, f, err, num_vert) ){
+   bool temp_bool = objFunc->compute_gradient(pd, fGrad, f, err, num_vert);
+   if(MSQ_CHKERR(err))
+      return;
+  if( ! temp_bool){
     MSQ_SETERR(err)("Conjugate Gradient not able to get valid gradient "
                     "and function values on intial patch.", 
                     MsqError::INVALID_MESH);

@@ -41,7 +41,7 @@ namespace Mesquite {
 
 LInfTemplate::LInfTemplate(QualityMetric *qualitymetric){
    set_quality_metric(qualitymetric);
-   set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
+   set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
    set_negate_flag(qualitymetric->get_negate_flag());
 }
 
@@ -101,6 +101,20 @@ bool LInfTemplate::concrete_evaluate(PatchData &patch, double &fval,
   }//end elseVERTEX
   return true;
 }
+
+  bool LInfTemplate::compute_analytical_gradient(PatchData &patch,
+                                                         Vector3D *const &grad,
+                                                         double &OF_val,
+                                                         MsqError &err, 
+                                                         size_t array_size)
+  {
+    MSQ_SETERR(err)("The LInfTemplate is not sufficient for methods requiring\n"
+                    "  gradient information.  If you neeed to try this anyway, \n"
+                    "  set the gradient type to numerical.\n",
+                    MsqError::INVALID_STATE);
+    return false;
+  }
+ 
 
 } // namespace Mesquite
 
