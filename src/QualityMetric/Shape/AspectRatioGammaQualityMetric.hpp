@@ -58,11 +58,11 @@ namespace Mesquite
           set_metric_type(QualityMetric::ELEMENT_BASED);
           set_name("Aspect Ratio Gamma");
         }
-       //!Returns the aspect ratio gamma of element.  If element
+       //!Computes the aspect ratio gamma of element.  If element
        //!is not a tetrahedron or triangle, sets an error.
-     double evaluate_element(PatchData& pd,
-                             MsqMeshEntity* element,
-                             MsqError &err);
+     bool evaluate_element(PatchData& pd,
+                           MsqMeshEntity* element, double &fval,
+                           MsqError &err);
    };
    
    

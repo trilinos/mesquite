@@ -48,35 +48,36 @@ namespace Mesquite
         {}
      
        //! evaluate using mesquite objects 
-     double evaluate_element(PatchData &pd, MsqMeshEntity *element,
+     bool evaluate_element(PatchData &pd, MsqMeshEntity *element, double &fval,
                              MsqError &err); 
           
   protected:     
-     double mean_ratio_2d(Vector3D temp_vec[],MsqError &err);
-     double mean_ratio_3d(Vector3D temp_vec[],MsqError &err);
+     bool mean_ratio_2d(Vector3D temp_vec[],double &fval,MsqError &err);
+     bool mean_ratio_3d(Vector3D temp_vec[],double &fval,MsqError &err);
   private:
      
      MeanRatioQualityMetric();
     
   };
      //BEGIN INLINE FUNCITONS
-   inline double MeanRatioQualityMetric::mean_ratio_2d(Vector3D temp_vec[],
-                                                       MsqError &err)
+   inline bool MeanRatioQualityMetric::mean_ratio_2d(Vector3D temp_vec[],
+                                                     double &fval,
+                                                     MsqError &err)
    {
        //NOTE:  We take absolute value here
      double area_val=fabs((temp_vec[0]*temp_vec[1]).length()*2.0);
-     double return_val=(temp_vec[0].length_squared()+
-                        temp_vec[1].length_squared());
+     fval=(temp_vec[0].length_squared()+temp_vec[1].length_squared());
      if(area_val>MSQ_MIN){
-       return_val/=area_val;
+       fval/=area_val;
      }
      else{
-       return_val=MSQ_MAX_CAP;
+       fval=MSQ_MAX_CAP;
      }
-     return return_val;
+     return true;
    }
 
-   inline double MeanRatioQualityMetric::mean_ratio_3d(Vector3D temp_vec[],
+   inline bool MeanRatioQualityMetric::mean_ratio_3d(Vector3D temp_vec[],
+                                                     double &fval,
                                                        MsqError &err)
    {   
      double term1=temp_vec[0]%temp_vec[0]+
@@ -84,13 +85,17 @@ namespace Mesquite
         temp_vec[2]%temp_vec[2];
        //det of J
      double temp_vol_sqr=temp_vec[0]%(temp_vec[1]*temp_vec[2]);
+       //if invalid
+     if(temp_vol_sqr<=0.0){
+       return false;
+     }
      temp_vol_sqr*=temp_vol_sqr;
-     double return_val=MSQ_MAX_CAP;
+     fval=MSQ_MAX_CAP;
      if(temp_vol_sqr>MSQ_MIN){
          //if not degenerate or inverted???
-       return_val=term1/(3*(pow(temp_vol_sqr,(1.0/3.0))));
+       fval=term1/(3*(pow(temp_vol_sqr,(1.0/3.0))));
      }
-     return return_val;
+     return true;
    }
    
    

@@ -47,37 +47,41 @@ namespace Mesquite
         {}
      
        //! evaluate using mesquite objects 
-     double evaluate_element(PatchData &pd, MsqMeshEntity *element,
-                             MsqError &err); 
+     bool evaluate_element(PatchData &pd, MsqMeshEntity *element,double &fval,
+                           MsqError &err); 
           
-  protected:     
-     double condition_number_2d(Vector3D temp_vec[],MsqError &err);
-     double condition_number_3d(Vector3D temp_vec[],MsqError &err);
+  protected:
+     bool condition_number_2d(Vector3D temp_vec[],double &fval, MsqError &err);
+     bool condition_number_3d(Vector3D temp_vec[],double &fval, MsqError &err);
   private:
      
      ConditionNumberQualityMetric();
     
   };
      //BEGIN INLINE FUNCITONS
-   inline double ConditionNumberQualityMetric::condition_number_2d(Vector3D
+   inline bool ConditionNumberQualityMetric::condition_number_2d(Vector3D
                                                                    temp_vec[],
+                                                                   double
+                                                                   &fval,
                                                                    MsqError
                                                                    &err)
    {
        //NOTE:  We take absolute value here
      double temp_val=fabs((temp_vec[0]*temp_vec[1]).length()*2.0);
-     double return_val=MSQ_MAX_CAP;
+     fval=MSQ_MAX_CAP;
      if(temp_val>MSQ_MIN){
-       return_val=(temp_vec[0].length_squared()+temp_vec[1].length_squared())/
+       fval=(temp_vec[0].length_squared()+temp_vec[1].length_squared())/
           temp_val;
      }
-     return return_val;
+       //returning true always until surf_normal is avail.
+     return true;
    }
 
-   inline double ConditionNumberQualityMetric::condition_number_3d(Vector3D
-                                                                   temp_vec[],
-                                                                   MsqError
-                                                                   &err)
+   inline bool ConditionNumberQualityMetric::condition_number_3d(Vector3D
+                                                                 temp_vec[],
+                                                                 double &fval,
+                                                                 MsqError
+                                                                 &err)
    {   
      double term1=temp_vec[0]%temp_vec[0]+
         temp_vec[1]%temp_vec[1]+
@@ -91,14 +95,21 @@ namespace Mesquite
         (temp_vec[2]*temp_vec[0]);
        //det of J
      double temp_var=temp_vec[0]%(temp_vec[1]*temp_vec[2]);
-     double return_val=sqrt(term1*term2);
-     if(return_val>MSQ_MIN){
-         //if not degenerate or inverted???
-       return_val/=(3*temp_var);
+       //if invalid
+     if(temp_var<=0.0){
+       fval=MSQ_MAX_CAP;
+       return false;
+     }
+     
+     fval=sqrt(term1*term2);
+     if(fval>MSQ_MIN){
+         //if not degenerate
+       fval/=(3*temp_var);
      }
      else
-       return_val=MSQ_MAX_CAP;
-     return return_val;
+       fval=MSQ_MAX_CAP;
+       //return true
+     return true;
    }
    
    

@@ -49,53 +49,62 @@ namespace Mesquite
         {}
      
        //! evaluate using mesquite objects 
-     double evaluate_element(PatchData &pd, MsqMeshEntity *element,
-                             MsqError &err); 
+     bool evaluate_element(PatchData &pd, MsqMeshEntity *element,
+                           double &fval, MsqError &err); 
           
   protected:     
-     double inverse_mean_ratio_2d(Vector3D temp_vec[],MsqError &err);
-     double inverse_mean_ratio_3d(Vector3D temp_vec[],MsqError &err);
+     bool inverse_mean_ratio_2d(Vector3D temp_vec[],double &fval,
+                                MsqError &err);
+     bool inverse_mean_ratio_3d(Vector3D temp_vec[],double &fval,
+                                MsqError &err);
   private:
      
      InverseMeanRatioQualityMetric();
     
   };
      //BEGIN INLINE FUNCITONS
-   inline double InverseMeanRatioQualityMetric::inverse_mean_ratio_2d(Vector3D
+   inline bool InverseMeanRatioQualityMetric::inverse_mean_ratio_2d(Vector3D
                                                                    temp_vec[],
+                                                                    double
+                                                                    &fval,
                                                                    MsqError
                                                                    &err)
    {
        //NOTE:  We take absolute value here
      double area_val=fabs((temp_vec[0]*temp_vec[1]).length()*2.0);
-     double return_val=(temp_vec[0].length_squared()+
-                        temp_vec[1].length_squared());
-     if(return_val>MSQ_MIN){
-       return_val=area_val/return_val;
+     fval=(temp_vec[0].length_squared()+temp_vec[1].length_squared());
+     if(fval>MSQ_MIN){
+       fval=area_val/fval;
      }
      else{
-       return_val=0.0;
+       fval=0.0;
      }
-     return return_val;
+     return true;
    }
 
-   inline double InverseMeanRatioQualityMetric::inverse_mean_ratio_3d(Vector3D
-                                                                   temp_vec[],
-                                                                   MsqError
-                                                                   &err)
+   inline bool InverseMeanRatioQualityMetric::inverse_mean_ratio_3d(Vector3D
+                                                                    temp_vec[],
+                                                                    double
+                                                                    &fval,
+                                                                    MsqError
+                                                                    &err)
    {   
      double term1=temp_vec[0]%temp_vec[0]+
         temp_vec[1]%temp_vec[1]+
         temp_vec[2]%temp_vec[2];
        //det of J
      double temp_vol_sqr=temp_vec[0]%(temp_vec[1]*temp_vec[2]);
+       //if inverted
+     if(temp_vol_sqr<=0.0)
+       return false;
+     
      temp_vol_sqr*=temp_vol_sqr;
-     double return_val=0.0;
+     fval=0.0;
      if(term1>MSQ_MIN){
-         //if not degenerate or inverted???
-       return_val=3*(pow(temp_vol_sqr,(1.0/3.0)))/term1;
+         //if not degenerate (or inverted)
+       fval=3*(pow(temp_vol_sqr,(1.0/3.0)))/term1;
      }
-     return return_val;
+     return true;
    }
    
    

@@ -47,21 +47,22 @@ namespace Mesquite
         {}
      
        //! evaluate using mesquite objects 
-     double evaluate_element(PatchData &pd, MsqMeshEntity *element,
-                             MsqError &err);
+     bool evaluate_element(PatchData &pd, MsqMeshEntity *element, double &fval,
+                           MsqError &err);
      
        // evaluate using patch data raw arrays 
        //double evaluate_element(PatchData *pd, int element_index,
        //                    MsqError &err);
 
      //! Evaluate the "condition number" for a vertex
-     double evaluate_vertex(PatchData &pd, MsqVertex *vertex, MsqError &err);
+       //double evaluate_vertex(PatchData &pd, MsqVertex *vertex, MsqError &err);
      
   protected:
 
-     double compute_condition_number(Vector3D* jacobian_vectors,
-                                     int num_jacobian_vectors,
-                                     MsqError &err);
+     bool compute_condition_number(Vector3D* jacobian_vectors,
+                                   int num_jacobian_vectors,
+                                   double &fval,
+                                   MsqError &err);
      
      
   private:
@@ -71,23 +72,23 @@ namespace Mesquite
   };
 //BEGIN INLINE FUNCTIONS
 
-   inline double GeneralizedConditionNumberQualityMetric::compute_condition_number(
-      Vector3D* jacobian_vectors, int num_jacobian_vectors, MsqError &err)
+   inline bool GeneralizedConditionNumberQualityMetric::compute_condition_number(
+      Vector3D* jacobian_vectors, int num_jacobian_vectors,
+      double &fval, MsqError &err)
    {
        //PRINT_INFO("INSIDE CONDITION NUMBER COMPUTE_CON\n");
      double temp_var=0;
-     double return_val=0;
      if(num_jacobian_vectors==2){
        temp_var=fabs((jacobian_vectors[0]*jacobian_vectors[1]).length());
-       return_val=jacobian_vectors[0].length_squared();
-       return_val+=jacobian_vectors[1].length_squared();
+       fval=jacobian_vectors[0].length_squared();
+       fval+=jacobian_vectors[1].length_squared();
        if(temp_var>=MSQ_MIN){ //if not degenerate
-         return_val/=(2.0*temp_var);
+         fval/=(2.0*temp_var);
        }
        else{
-         return_val=MSQ_MAX_CAP;
+         fval=MSQ_MAX_CAP;
        }
-       return return_val;
+       return true;
      }
      
        //if three jacobian vectors (3D elem)
@@ -105,21 +106,25 @@ namespace Mesquite
           (jacobian_vectors[2]*jacobian_vectors[0]);
          //det of J
        temp_var=jacobian_vectors[0]%(jacobian_vectors[1]*jacobian_vectors[2]);
-       return_val=sqrt(term1*term2);
-       if(return_val>MSQ_MIN){
+       if(temp_var<=0.0){
+         return false;
+       }
+       
+       fval=sqrt(term1*term2);
+       if(fval>MSQ_MIN){
            //if not degenerate or inverted???
-         return_val/=(3*temp_var);
+         fval/=(3*temp_var);
        }
        else{
-         return_val=MSQ_MAX_CAP;
+         fval=MSQ_MAX_CAP;
        }
      }
        
      else{
-       return_val=MSQ_MAX_CAP;
+       fval=MSQ_MAX_CAP;
      }
      
-     return return_val;
+     return true;
    }
 
 } //namespace

@@ -67,11 +67,13 @@ double GeneralizedConditionNumberQualityMetric::evaluate_element(PatchData *pd, 
   }
 }
 */
-double GeneralizedConditionNumberQualityMetric::evaluate_element(PatchData &pd,
+bool GeneralizedConditionNumberQualityMetric::evaluate_element(PatchData &pd,
                                                       MsqMeshEntity *element,
+                                                               double &fval,
                                                       MsqError &err)
 {
   int num_sample_points;
+  bool return_flag;
   std::vector<Vector3D> sample_points;
   element->get_sample_points(evalMode,sample_points,err);
   std::vector<Vector3D>::iterator iter=sample_points.begin();
@@ -90,23 +92,30 @@ double GeneralizedConditionNumberQualityMetric::evaluate_element(PatchData &pd,
       // evaluate condition number at ith sample point
       //if 2 jacobian vectors (2D elem)
     
-    metric_values[i]=compute_condition_number(jacobian_vectors,
-                                              num_jacobian_vectors, err);
+    return_flag=compute_condition_number(jacobian_vectors,
+                                         num_jacobian_vectors,
+                                         metric_values[i],err);
+    if(!return_flag){
+      delete metric_values;
+      return false;
+    }
+    
     MSQ_CHKERR(err);
     ++iter;
   }// end loop over sample points
-  double total_metric=average_metrics(metric_values,num_sample_points,err);
+  fval=average_metrics(metric_values,num_sample_points,err);
   MSQ_CHKERR(err);
   delete metric_values;
-  return total_metric;
+  return true;
 }
-
+/*
 double GeneralizedConditionNumberQualityMetric::evaluate_vertex(PatchData &pd,
                                                      MsqVertex *vertex,
                                                      MsqError &err)
 {
   err.set_msg("Condition Number's evaluate_vertex is currently being implemented");
   double total_metric=0.0;
+  */
     /*Commented out until we have new data structures
   MsqMeshEntity* elems = vertex->get_elements(err);
   double num_elems = vertex->get_num_adjacent_elements();
@@ -135,6 +144,6 @@ double GeneralizedConditionNumberQualityMetric::evaluate_vertex(PatchData &pd,
   MSQ_CHKERR(err);
   delete metric_values;
     */
-  return total_metric;
-}
+//  return total_metric;
+//}
   
