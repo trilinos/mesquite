@@ -50,11 +50,13 @@ Member functions of the Mesquite::InstructionQueue class
 #include "QualityAssessor.hpp"
 #include "MsqError.hpp"
 #include "MsqDebug.hpp"
+#include "MeanMidNodeMover.hpp"
 
 using namespace Mesquite;
 
 InstructionQueue::InstructionQueue() :
   autoQualAssess(true),
+  autoAdjMidNodes(true),
   nbPreConditionners(0),
   isMasterSet(false),
   masterInstrIndex(0),
@@ -255,6 +257,9 @@ void InstructionQueue::run_instructions(MeshSet &ms, MsqError &err)
   
   msq_std::list<PatchDataUser*>::const_iterator instr_iter;
   
+  if (autoAdjMidNodes)
+    instructions.push_back( new MeanMidNodeMover );
+  
   // For each instruction in the list
   for (instr_iter = instructions.begin();
        !(instr_iter == instructions.end()); ++instr_iter) {
@@ -283,6 +288,12 @@ void InstructionQueue::run_instructions(MeshSet &ms, MsqError &err)
     // global patch will still be valid. 
     (*instr_iter)->no_global_patch();
   }
+  
+  if (autoAdjMidNodes)
+  {
+    delete *instructions.rbegin();
+    instructions.pop_back( );
+  }  
  
   if (globalPatch != 0)
     delete globalPatch; // clean up once all instructions are executed.
@@ -294,6 +305,7 @@ void InstructionQueue::clear()
 {
   instructions.clear();
   autoQualAssess = true;
+  autoAdjMidNodes = false;
   isMasterSet = false;
   masterInstrIndex = 0;
 }

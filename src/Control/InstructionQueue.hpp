@@ -91,6 +91,12 @@ namespace Mesquite {
        { autoQualAssess = false; }
     void enable_automatic_quality_assessment()
        { autoQualAssess = true; }
+    
+    void disable_automatic_midnode_adjustment()
+       { autoAdjMidNodes = false; }
+    void enable_automatic_midnode_adjustment()
+       { autoAdjMidNodes = true; }
+
       //!This function is virtual so that it may be redefined in the
       //! wraper classes.
     virtual void run_instructions(MeshSet &msc, MsqError &err);
@@ -104,6 +110,7 @@ namespace Mesquite {
     msq_std::list<PatchDataUser*> instructions;
 
     bool autoQualAssess;
+    bool autoAdjMidNodes;
     
     size_t nbPreConditionners;
     bool isMasterSet;
