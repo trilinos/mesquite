@@ -5,7 +5,7 @@
 //    E-MAIL: tmunson@mcs.anl.gov
 //
 // ORIG-DATE:  2-Jan-03 at 11:02:19 by Thomas Leurent
-//  LAST-MOD: 18-Feb-03 at 13:53:38 by Thomas Leurent
+//  LAST-MOD: 19-Feb-03 at 13:59:27 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -26,21 +26,26 @@ using std::endl;
 
 MsqHessian::MsqHessian() :
   origin_pd(0), mEntries(0), mRowStart(0), mColIndex(0), 
-  mAccumulation(0), mAccumElemStart(0), mSize(0), mPreconditionner(0)
+  mAccumulation(0), mAccumElemStart(0), mSize(0), cgArraySizes(0),
+  mPreconditionner(0), r(0), z(0), p(0), w(0), maxCGiter(50)
 { }
 
 
 MsqHessian::~MsqHessian()
 {
-    delete[] mEntries;	
-    delete[] mRowStart;	
-    delete[] mColIndex; 
+  delete[] mEntries;	
+  delete[] mRowStart;	
+  delete[] mColIndex; 
 
-    delete[] mAccumulation;
-    delete[] mAccumElemStart;
+  delete[] mAccumulation;
+  delete[] mAccumElemStart;
 
-    delete[] mPreconditionner;
+  delete[] mPreconditionner;
 
+  delete[] r;
+  delete[] z;
+  delete[] p;
+  delete[] w;
 }
 
   
@@ -148,18 +153,18 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
   col_start[1] = col_start[0];
   col_start[0] = 0;
 
-//   cout << "col_start: ";
-//   for (int t=0; t<num_vertices+1; ++t)
-//     cout << col_start[t] << " ";
-//   cout << endl;
-//   cout << "row_index: ";
-//   for (int t=0; t<nz; ++t)
-//     cout << row_index[t] << " ";
-//   cout << endl;
-//   cout << "row_instr: ";
-//   for (int t=0; t<nz; ++t)
-//     cout << row_instr[t] << " ";
-//   cout << endl;
+  //   cout << "col_start: ";
+  //   for (int t=0; t<num_vertices+1; ++t)
+  //     cout << col_start[t] << " ";
+  //   cout << endl;
+  //   cout << "row_index: ";
+  //   for (int t=0; t<nz; ++t)
+  //     cout << row_index[t] << " ";
+  //   cout << endl;
+  //   cout << "row_instr: ";
+  //   for (int t=0; t<nz; ++t)
+  //     cout << row_instr[t] << " ";
+  //   cout << endl;
   
   
   // Convert CSC to CSR
@@ -316,15 +321,15 @@ void MsqHessian::get_diagonal_blocks(std::vector<Matrix3D> &diag, MsqError &err)
 #undef __FUNC__
 #define __FUNC__ "MsqHessian::accumulate_entries"
 /*! \param pd: PatchData in that contains the element which Hessian
-           we are accumulating in the Hessian matrix. This must be the same
-           PatchData that was used in MsqHessian::initialize().
-    \param elem_index: index of the element in the PatchData.
-    \param mat3d_array: This is the upper triangular part of the element Hessian for all nodes, including fixed nodes, for which the entries must be null Matrix3Ds.
-    \param nb_mat3d. The size of the mat3d_array: (n+1)n/2, where n is
-           the number of nodes in the element.
-  */
- void MsqHessian::accumulate_entries(PatchData &pd, size_t elem_index,
-                         Matrix3D mat3d_array[], MsqError &err)
+  we are accumulating in the Hessian matrix. This must be the same
+  PatchData that was used in MsqHessian::initialize().
+  \param elem_index: index of the element in the PatchData.
+  \param mat3d_array: This is the upper triangular part of the element Hessian for all nodes, including fixed nodes, for which the entries must be null Matrix3Ds.
+  \param nb_mat3d. The size of the mat3d_array: (n+1)n/2, where n is
+  the number of nodes in the element.
+*/
+void MsqHessian::accumulate_entries(PatchData &pd, size_t elem_index,
+                                    Matrix3D mat3d_array[], MsqError &err)
 {
   int i;
   
@@ -353,8 +358,8 @@ void MsqHessian::get_diagonal_blocks(std::vector<Matrix3D> &diag, MsqError &err)
 #undef __FUNC__
 #define __FUNC__ "MsqHessian::compute_preconditionner"
 /*! compute a preconditionner used in the preconditionned conjugate gradient
-    algebraic solver. In fact, this computes \f$ M^{-1} \f$ .
-  */
+  algebraic solver. In fact, this computes \f$ M^{-1} \f$ .
+*/
 void MsqHessian::compute_preconditionner(MsqError &err)
 {
   mPreconditionner = new Matrix3D[mSize];
@@ -367,3 +372,71 @@ void MsqHessian::compute_preconditionner(MsqError &err)
   }
 }
 
+
+#undef __FUNC__
+#define __FUNC__ "MsqHessian::cg_solver"
+/*! uses the preconditionned conjugate gradient algebraic solver
+  to find d in \f$ H * d = -g \f$ .
+  \param x : the solution, usually the descent direction d.
+  \param b : -b will be the right hand side. Usually b is the gradient.
+*/
+void MsqHessian::cg_solver(Vector3D x[], Vector3D b[], MsqError &err)
+{
+
+  // reallocates arrays if size of the Hessian has changed too much.
+  if (mSize > cgArraySizes || mSize < cgArraySizes/10 ) {
+    delete[] r;
+    delete[] z;
+    delete[] p;
+    delete[] w;
+    r = new Vector3D[mSize];
+    z = new Vector3D[mSize];
+    p = new Vector3D[mSize];
+    w = new Vector3D[mSize];
+    cgArraySizes = mSize;
+  }
+
+  int i;
+  double alpha_, alpha, beta; 
+  double cg_tol =10e-2;
+  double norm_g = length(b, mSize);
+  double norm_r = norm_g;
+  double rzm1; // r^T_{k-1} z_{k-1}
+  double rzm2; // r^T_{k-2} z_{k-2}
+  this->compute_preconditionner(err); MSQ_CHKERR(err); // get M^{-1}
+
+  for (i=0; i<mSize; ++i)  x[i] = 0. ;  
+  for (i=0; i<mSize; ++i)  r[i] = -b[i] ;  // r = -b because x_0 = 0 and we solve H*x = -b
+  norm_g *= cg_tol;
+
+  this->apply_preconditionner(z, r, err); // solve Mz = r (computes z = M^-1 r)
+  for (i=0; i<mSize; ++i)  p[i] = z[i] ; // p_1 = z_0  
+  rzm1 = inner(z,r,mSize); // inner product r_{k-1}^T z_{k-1} 
+    
+  int cg_iter = 0;
+  while ((norm_r > norm_g) && (cg_iter < maxCGiter)) {
+    ++cg_iter;
+      
+    axpy(w, mSize, *this, p, mSize, 0,0,err); // w = A * p_k
+      
+    alpha_ = inner(p,w,mSize); // alpha_ = p_k^T A p_k
+    if (alpha_ <= 0.0) {
+      printf("Direction of Negative Curvature\n");
+      break; // Newton goes on with this direction of negative curvature 
+    }
+      
+    alpha = rzm1 / alpha_;
+      
+    for (i=0; i<mSize; ++i)  x[i] += alpha*p[i]; // x_{k+1} = x_k + alpha_{k+1} p_{k+1} 
+    for (i=0; i<mSize; ++i)  r[i] -= alpha*w[i]; // r_{k+1} = r_k - alpha_{k+1} A p_{k+1} 
+    norm_r = length(r, mSize);
+      
+    this->apply_preconditionner(z, r, err); // solve Mz = r (computes z = M^-1 r)
+      
+    rzm2 = rzm1;
+    rzm1 = inner(z,r,mSize); // inner product r_{k-1}^T z_{k-1} 
+    beta = rzm1 / rzm2;
+    for (i=0; i<mSize; ++i)  p[i] = z[i] + beta*p[i]; // p_k = z_{k-1} + Beta_k * p_{k-1}
+  }
+
+}

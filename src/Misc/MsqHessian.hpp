@@ -5,7 +5,7 @@
 //    E-MAIL: tmunson@mcs.anl.gov
 //
 // ORIG-DATE:  2-Jan-03 at 11:02:19 bu Thomas Leurent
-//  LAST-MOD: 18-Feb-03 at 17:02:47 by Thomas Leurent
+//  LAST-MOD: 19-Feb-03 at 14:42:23 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -53,8 +53,15 @@ namespace Mesquite
     size_t* mAccumElemStart;  //!< Starting index in mAccumulation for element i, i=1,...
 
     int mSize; //!< number of rows (or number of columns, this is a square matrix).
-
+    
     Matrix3D* mPreconditionner;
+
+    Vector3D* r; //!< array used in the CG solver
+    Vector3D* z; //!< array used in the CG solver
+    Vector3D* p; //!< array used in the CG solver
+    Vector3D* w; //!< array used in the CG solver
+    int cgArraySizes; //!< size of arrays allocated in the CG solver.
+    int maxCGiter; //!< max nb of iterations of the CG solver.
     
   public:
     MsqHessian();
@@ -68,6 +75,7 @@ namespace Mesquite
                             Matrix3D mat3d_array[], MsqError &err);
     void compute_preconditionner(MsqError &err);
     void apply_preconditionner(Vector3D z[], Vector3D r[], MsqError &err);
+    void cg_solver(Vector3D x[], Vector3D b[], MsqError &err);
     //! Hessian - vector product, summed with a second vector (optional).
     friend void axpy(Vector3D res[], int size_r,
                      const MsqHessian &H, const Vector3D x[], int size_x,
@@ -135,7 +143,7 @@ namespace Mesquite
 #undef __FUNC__
 #define __FUNC__ "MsqHessian::apply_preconditionner"
   /*! Computes \f$ z=M^{-1}r \f$ . */
-  void MsqHessian::apply_preconditionner(Vector3D z[], Vector3D r[], MsqError& /*err*/)
+  inline void MsqHessian::apply_preconditionner(Vector3D z[], Vector3D r[], MsqError& /*err*/)
   {
     int m;
     // preconditionner is identity matrix for now.
