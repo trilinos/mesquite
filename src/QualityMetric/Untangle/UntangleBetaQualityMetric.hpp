@@ -56,9 +56,8 @@ namespace Mesquite
      virtual ~UntangleBetaQualityMetric()
         {}
      
-     double evaluate_element(PatchData &pd,
-                             MsqMeshEntity* element,
-                             MsqError &err);
+     bool evaluate_element(PatchData &pd,MsqMeshEntity* element,
+                           double &fval,MsqError &err);
      
    protected:
      
