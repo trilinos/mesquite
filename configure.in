@@ -9,12 +9,12 @@ define([AC_CACHE_LOAD], )dnl
 define([AC_CACHE_SAVE], )dnl
 
 # Make sure we're us.
-AC_INIT(toto.c)
+AC_INIT(include/Mesquite.hpp)
 
 #------------------------------------------------------------------------------
 # Directory where we keep the autoconf stuff and some HPC environment folklore.
 #------------------------------------------------------------------------------
-AC_CONFIG_AUX_DIR(./config)
+AC_CONFIG_AUX_DIR(./config_aux)
 
 if test "${prefix}" = "NONE"; then
     prefix=/usr/local
@@ -218,76 +218,42 @@ AC_SUBST(CXX_TEMPLATES)
 
 AC_DEFUN(MSQ_AOMD,
 [
-msq_aomd_dirs="
-    $CURRDIR_PARENT/aomd
-    $CURRDIR_GRANDPARENT/aomd
-    $CURRDIR_GREATGRANDPARENT/aomd
-    $CURRDIR_ANCESTOR/aomd
-    $prefix/aomd
-    $HOME/aomd
-    /usr/local/aomd
-    $MSQ_HOME/aomd
-    $HOME/software/aomd
-    $CURRDIR_PARENT/AOMD
-    $CURRDIR_GRANDPARENT/AOMD
-    $CURRDIR_GREATGRANDPARENT/AOMD
-    $CURRDIR_ANCESTOR/AOMD
-    $prefix/AOMD
-    $HOME/AOMD
-    /usr/local/AOMD
-    $MSQ_HOME/AOMD
-    $HOME/software/AOMD
-    $HOME/aomd/TSTT-AOMD-1.0.56
-"
 AC_ARG_WITH(aomd, 
     [Location of aomd library:
   --with-aomd=AOMD_LIB
                           The location of AOMD libary
                           Give the full path:
-                              --with-aomd='/usr/local/AOMD'
+                              --with-aomd='/.../libaomd.so'
                           or check out the library from the 
                           tstt web pages. ] ,
     , [with_aomd=no])
 
 case "$with_aomd" in
     no)
-        # lUser input error
-        with_aomd=no
+        # Default. No AOMD link. 
+        with_aomd=no 
         ;;
     yes)
-        #  User didn't give the option or didn't give useful
-        #  information, search for it ourselves
-        with_aomd=_searching
+        #  User asked for AOMD. No path given. 
+	# Looking if it is in standard Mesquite location.
+	AC_CHECK_PROG(AOMD_LIB, libaomd.so, "$with_aomd"/libaomd.so, notfound, "$MSQROOT"/external/AOMD/lib/) 
         ;;
     *)
-        AOMD_ROOT="$with_aomd"
+	# User gave AOMD exact location.
+	AC_CHECK_PROG(AOMD_LIB, libaomd.so, "$with_aomd"/libaomd.so, notfound, "$MSQROOT"/external/AOMD/lib/)        
+	AOMD_ROOT="$with_aomd" 
         ;;
 esac
 
-if test "$with_aomd" = _searching ; then
-    AC_MSG_CHECKING([for AOMD])
-    for chome in $msq_aomd_dirs ; do
-        if test -d $chome ; then
-            with_aomd=$chome
-            AC_MSG_RESULT([found $chome.])
-            break
-        fi
-    done
-fi
-if test "$with_aomd" = _searching ; then
-    AC_MSG_RESULT([Cannot find AOMD root directory.])
-    AC_MSG_ERROR([Please install it and/or use --with-aomd=AOMD_ROOT.])
-fi
-if test ! "$with_aomd" = no ; then
-  AC_MSG_CHECKING([for AOMD])
-  if test ! -f "$with_aomd/Trellis/AOMD/include/AOMD.h" ; then
-      AC_MSG_RESULT([No Trellis/AOMD/include/AOMD.h in $with_aomd.])
-      AC_MSG_ERROR([Please install a correct AOMD directory.])
-  fi
-fi
 AOMD_ROOT="$with_aomd"
 
 AC_SUBST(AOMD_ROOT)
+
+AOMD_FLAG=""
+if test ! "$with_aomd" = no ; then
+  AOMD_FLAG="-D_MY_HASH_TABLE_"
+fi
+AC_SUBST(AOMD_FLAG)
 ]
 )
 
@@ -360,6 +326,30 @@ AC_SUBST(DOXYGEN_PATH)
 
 AC_SUBST(MSQ_ROOT)
 AC_SUBST(MSQ_INSTALL_ROOT)
+
+
+AC_ARG_WITH(c-headers, 
+    [Uses the deprecated C style for headers:
+  --with-c-headers=yes
+    			will use headers like <iostream.h> and <math.h>
+    			instead of the new C++ style <iostream> and <cmath>. ] ,
+    , [with_c_headers=no])
+
+case "$with_c_headers" in
+    no)
+        # Default. Uses new C++ standard style headers.
+        STD_INCLUDE_FLAG="-DUSE_STD_INCLUDES -DUSE_C_PREFIX_INCLUDES"
+        ;;
+    yes)
+	# Uses old C style headers.
+	STD_INCLUDE_FLAG=''
+        ;;
+esac
+
+AC_SUBST(STD_INCLUDE_FLAG)
+
+
+
 
 MSQ_UNIX_PROGRAMS
 MSQ_COMPILER
