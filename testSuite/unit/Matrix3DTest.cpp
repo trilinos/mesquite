@@ -214,6 +214,11 @@ public:
     Vector3D vec = mMat1*e1;
     Vector3D correct(1, 5.2, 1);
     CPPUNIT_ASSERT( vec==correct);
+
+    Vector3D vec_2(3.,2.,5.);
+    Vector3D vec_12 = mMat1*vec_2;
+    correct.set(21.4, 41.6, 19.);
+    CPPUNIT_ASSERT( vec_12==correct );
   }
 
   void test_vector_times()
