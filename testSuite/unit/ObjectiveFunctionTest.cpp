@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 13-Nov-02 at 18:05:56
-//  LAST-MOD: 21-Nov-02 at 17:28:07 by Thomas Leurent
+//  LAST-MOD: 22-Nov-02 at 09:49:22 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -129,6 +129,12 @@ public:
       std::list<QualityMetric*>::const_iterator QM1 = QM2++;;
       CPPUNIT_ASSERT( *QM1==mean_ratio   || *QM2==mean_ratio &&
                       *QM1==condition_nb || *QM2==condition_nb  );
+
+      delete mean_ratio;
+      delete condition_nb;
+      delete LP2_mean_ratio;
+      delete LP2_condition_nb;
+      delete LP2_condition_nb_x3;
    }
    
 };
