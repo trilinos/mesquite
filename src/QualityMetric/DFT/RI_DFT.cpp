@@ -116,7 +116,7 @@ inline bool g_fcn_ridft2(double &obj, Vector3D g_obj[3],
 {
   static double matr[9], f, t1, t2;
   static double fmat[6], g;
-  static double adj_m[9], df[9], loc1, loc2, loc3 ;//, loc4;
+  static double adj_m[9], df[9], loc1, loc2, loc3;
 
   /* Calculate M = A*inv(W). */
   f       = x[1][0] - x[0][0];
@@ -891,7 +891,7 @@ inline bool g_fcn_ridft3(double &obj, Vector3D g_obj[4], const Vector3D x[4],
 {
   static double matr[9], f, t1, t2;
   static double fmat[6], g;
-  static double adj_m[9], df[9], loc1, loc2, loc3 ;//, loc4;
+  static double adj_m[9], df[9], loc1, loc2, loc3;
 
   /* Calculate M = A*inv(W). */
   f       = x[1][0] - x[0][0];
@@ -938,12 +938,37 @@ inline bool g_fcn_ridft3(double &obj, Vector3D g_obj[4], const Vector3D x[4],
                             fmat[3]*fmat[3] + 2.0*fmat[4]*fmat[4] +
                                                   fmat[5]*fmat[5];
 
-  /* Calculate objective function. */
-  obj = a * pow(f, b) * pow(g, c);
-
-  /* Calculate the derivative of the objective function. */
-  f = b * obj / f * 4.0;              /* Constant on nabla f */
-  g = c * obj / g * (1 + t1 / t2);    /* Constant on nabla g */
+  /* Compute objective function and constants.  Note that this */
+  /* is now done by cases on $b$.  We only allow $b=1$, $b=2$, */
+  /* or $b > 2$ in the computations becasue other values do    */
+  /* not have defined Hessians when  $f = 0$.                  */
+  
+  if (1 == b) { 
+    obj = a * f * pow(g, c);
+    f = a * pow(g, c) * 2.0;            /* Constant on nabla f */
+    g = c * obj / g * (1 + t1 / t2);    /* Constant on nabla g */
+  }
+  else if (2 == b) {
+    obj = a * f * f * pow(g, c);
+    f = a * f * pow(g, c) * 4.0;        /* Constant on nabla f */
+    g = c * obj / g * (1 + t1 / t2);    /* Constant on nabla g */
+  }
+  else if (2 < b) {
+    if (0 == f) {
+      obj = 0;
+      f = 0;
+      g = 0;
+    }
+    else {
+      obj = a * pow(f, b) * pow(g, c);
+      f = b * obj / f * 2.0;            /* Constant on nabla f */
+      g = c * obj / g * (1 + t1 / t2);  /* Constant on nabla g */
+    }
+  }
+  else {
+    printf("b = %5.4e not allowed in RI_DFT\n", b);
+    exit(-1);
+  }
 
   df[0] = fmat[0]*matr[0] + fmat[1]*matr[3] + fmat[2]*matr[6];
   df[1] = fmat[0]*matr[1] + fmat[1]*matr[4] + fmat[2]*matr[7];
@@ -1153,14 +1178,38 @@ inline bool h_fcn_ridft3(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   loc3 = f;
   loc4 = g;
 
-  /* Calculate objective function. */
-  obj  = a * pow(f, b) * pow(g, c);
+  /* Compute objective function and constants.  Note that this */
+  /* is now done by cases on $b$.  We only allow $b=1$, $b=2$, */
+  /* or $b > 2$ in the computations becasue other values do    */
+  /* not have defined Hessians when  $f = 0$.                  */
 
-  /* Calculate the derivative of the objective function. */
   t4 = 1 + t1 / t3;
-
-  f = b * obj / f * 4.0;                /* Constant on nabla f */
-  g = c * obj / g * t4;                 /* Constant on nabla g */
+  if (1 == b) {
+    obj = a * f * pow(g, c);
+    f = a * pow(g, c) * 2.0;            /* Constant on nabla f */
+    g = c * obj / g * t4;               /* Constant on nabla g */
+  }
+  else if (2 == b) {
+    obj = a * f * f * pow(g, c);
+    f = a * f * pow(g, c) * 4.0;        /* Constant on nabla f */
+    g = c * obj / g * t4;               /* Constant on nabla g */
+  }
+  else if (2 < b) {
+    if (0 == f) {
+      obj = 0;
+      f = 0;
+      g = 0;
+    }
+    else {
+      obj = a * pow(f, b) * pow(g, c);
+      f = b * obj / f * 2.0;            /* Constant on nabla f */
+      g = c * obj / g * t4;             /* Constant on nabla g */
+    }
+  }
+  else {
+    printf("b = %5.4e not allowed in RI_DFT\n", b);
+    exit(-1);
+  }
 
   df[0] = fmat[0]*matr[0] + fmat[1]*matr[3] + fmat[2]*matr[6];
   df[1] = fmat[0]*matr[1] + fmat[1]*matr[4] + fmat[2]*matr[7];
@@ -1277,10 +1326,36 @@ inline bool h_fcn_ridft3(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
 
   loc0 = f;                           /* Constant on nabla^2 f */
   loc1 = g;                           /* Constant on nabla^2 g */
-  cross = f * c / loc4 * t4;          /* Constant on nabla g nabla f */
-  f = f * (b - 1) / loc3 * 4.0;       /* Constant on nabla f nabla f */
-  g = g *((c - 1) * t4 + 4.0*delta*delta / t2) / loc4;
-  /* Constant on nabla g nabla g */
+  if (1 == b) {
+    cross = f * c / loc4 * t4;          /* Constant on nabla g nabla f */
+    f = 0;                              /* Constant on nabla f nabla f */
+    g = g *((c - 1) * t4 + 4.0*delta*delta / t2) / loc4;
+                                        /* Constant on nabla g nabla g */
+  }
+  else if (2 == b) {
+    cross = f * c / loc4 * t4;          /* Constant on nabla g nabla f */
+    f = a * pow(loc4, c) * 8.0;         /* Constant on nabla f nabla f */
+    g = g *((c - 1) * t4 + 4.0*delta*delta / t2) / loc4;
+                                        /* Constant on nabla g nabla g */
+  }
+  else if (2 < b) {
+    if (0 ==loc3) {
+      cross = 0;
+      f = 0;
+      g = 0;
+    }
+    else {
+      cross = f * c / loc4 * t4;        /* Constant on nabla g nabla f */
+      f = f * (b - 1) / loc3 * 2.0;     /* Constant on nabla f nabla f */
+      g = g *((c - 1) * t4 + 4.0*delta*delta / t2) / loc4;
+                                        /* Constant on nabla g nabla g */
+    }
+  }
+  else {
+    cross = 0;
+    f = 0;
+    g = 0;
+  }
 
   /* First block of rows */
   loc3 = df[0]*f + dg[0]*cross;
@@ -1926,7 +2001,7 @@ bool RI_DFT::compute_element_analytical_gradient(PatchData &pd,
       m += W[i].get_cK() * mMetric;
 
       for (j = 0; j < 3; ++j) {
-	mAccGrads[tetInd[i][j]] += W[i].get_cK() * mGrads[i];
+	mAccGrads[tetInd[i][j]] += W[i].get_cK() * mGrads[j];
       }
     }
 
@@ -1982,7 +2057,7 @@ bool RI_DFT::compute_element_analytical_gradient(PatchData &pd,
       m += W[i].get_cK() * mMetric;
 
       for (j = 0; j < 3; ++j) {
-	mAccGrads[hexInd[i][j]] += W[i].get_cK() * mGrads[i];
+	mAccGrads[hexInd[i][j]] += W[i].get_cK() * mGrads[j];
       }
     }
 
@@ -2024,7 +2099,7 @@ bool RI_DFT::compute_element_analytical_gradient(PatchData &pd,
       m += W[i].get_cK() * mMetric;
 
       for (j = 0; j < 4; ++j) {
-	mAccGrads[tetInd[i][j]] += W[i].get_cK() * mGrads[i];
+	mAccGrads[tetInd[i][j]] += W[i].get_cK() * mGrads[j];
       }
     }
 
@@ -2064,7 +2139,7 @@ bool RI_DFT::compute_element_analytical_gradient(PatchData &pd,
       m += W[i].get_cK() * mMetric;
 
       for (j = 0; j < 4; ++j) {
-	mAccGrads[hexInd[i][j]] += W[i].get_cK() * mGrads[i];
+	mAccGrads[hexInd[i][j]] += W[i].get_cK() * mGrads[j];
       }
     }
 
@@ -2175,12 +2250,12 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
       m += W[i].get_cK() * mMetric;
 
       for (j = 0; j < 3; ++j) {
-	g[tetInd[i][j]] += W[i].get_cK() * mGrads[i];
+	g[tetInd[i][j]] += W[i].get_cK() * mGrads[j];
       }
 
       l = 0;
       for (j = 0; j < 3; ++j) {
-	for (k = 0; k < 3; ++k) {
+	for (k = j; k < 3; ++k) {
 	  row = tetInd[i][j];
 	  col = tetInd[i][k];
 
@@ -2275,12 +2350,12 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
       m += W[i].get_cK() * mMetric;
 
       for (j = 0; j < 3; ++j) {
-	g[hexInd[i][j]] += W[i].get_cK() * mGrads[i];
+	g[hexInd[i][j]] += W[i].get_cK() * mGrads[j];
       }
 
       l = 0;
       for (j = 0; j < 3; ++j) {
-	for (k = 0; k < 3; ++k) {
+	for (k = j; k < 3; ++k) {
 	  row = hexInd[i][j];
 	  col = hexInd[i][k];
 
@@ -2366,12 +2441,12 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
       m += W[i].get_cK() * mMetric;
 
       for (j = 0; j < 4; ++j) {
-	g[tetInd[i][j]] += W[i].get_cK() * mGrads[i];
+	g[tetInd[i][j]] += W[i].get_cK() * mGrads[j];
       }
 
       l = 0;
       for (j = 0; j < 4; ++j) {
-	for (k = 0; k < 4; ++k) {
+	for (k = j; k < 4; ++k) {
 	  row = tetInd[i][j];
 	  col = tetInd[i][k];
 
@@ -2455,12 +2530,12 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
       m += W[i].get_cK() * mMetric;
 
       for (j = 0; j < 4; ++j) {
-	g[hexInd[i][j]] += W[i].get_cK() * mGrads[i];
+	g[hexInd[i][j]] += W[i].get_cK() * mGrads[j];
       }
 
       l = 0;
       for (j = 0; j < 4; ++j) {
-	for (k = 0; k < 4; ++k) {
+	for (k = j; k < 4; ++k) {
 	  row = hexInd[i][j];
 	  col = hexInd[i][k];
 
