@@ -32,7 +32,7 @@ describe main.cpp here
 
 #include "Mesquite.hpp"
 #include "TSTT_Base.h"
-#include "MsqTSTTImpl.hpp"
+#include "MeshImpl.hpp"
 #include "MesquiteUtilities.hpp" //  for writeShowMeMesh()
 #include "MesquiteError.hpp"
 #include "Vector3D.hpp"
@@ -55,23 +55,16 @@ using namespace Mesquite;
 #undef __FUNC__
 #define __FUNC__ "main"
 int main()
-{     
+{
+  Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
+  Mesquite::MsqError err;
   char file_name[128];
-  /* Reads a TSTT Mesh file */
-  TSTT::Mesh_Handle mesh;
-  TSTT::MeshError tstt_err;
-  TSTT::Mesh_Create(&mesh, &tstt_err);
   strcpy(file_name, "../../meshFiles/2D/VTK/square_tri_2.vtk");
-  TSTT::Mesh_Load(mesh, file_name, &tstt_err);
-  
-  // Mesquite error object
-  MsqError err;
+  mesh->read_vtk(file_name, err);
   
   // initialises a MeshSet object
   MeshSet mesh_set1;
-  Mesquite::TSTTMesh m1;
-  m1.set_mesh(mesh);
-  mesh_set1.add_mesh(&m1, err); MSQ_CHKERR(err);
+  mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
 
   // dbg
    std::cout << " TSTT mesh handle: " << mesh << std::endl;
@@ -107,11 +100,11 @@ int main()
   // adds 1 passes of pass2 to mesh_set1
 //  mesh_set1.add_quality_pass(pass2);
 
-  writeVtkMesh("original_mesh", mesh, err); MSQ_CHKERR(err);
+    //writeVtkMesh("original_mesh", mesh, err); MSQ_CHKERR(err);
   
   // launches optimization on mesh_set1
   queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
   
-  writeVtkMesh("smoothed_mesh", mesh, err); MSQ_CHKERR(err);
+    //writeVtkMesh("smoothed_mesh", mesh, err); MSQ_CHKERR(err);
   PRINT_TIMING_DIAGNOSTICS();
 }
