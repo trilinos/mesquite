@@ -15,7 +15,7 @@
 
 */
 
-
+#include <cmath>
 #include "MsqHessian.hpp"
 #include "MsqTimer.hpp"
 
@@ -430,11 +430,12 @@ void MsqHessian::cg_solver(Vector3D x[], Vector3D b[], MsqError &err)
 
   size_t i;
   double alpha_, alpha, beta; 
-  double cg_tol =10e-4; // 10e-2 will give a reasonably good solution (~1%). 
+  double cg_tol = 1e-2; // 1e-2 will give a reasonably good solution (~1%). 
   double norm_g = length(b, mSize);
   double norm_r = norm_g;
   double rzm1; // r^T_{k-1} z_{k-1}
   double rzm2; // r^T_{k-2} z_{k-2}
+
   this->compute_preconditioner(err); MSQ_CHKERR(err); // get M^{-1} for diagonal blocks
 
   for (i=0; i<mSize; ++i)  x[i] = 0. ;  
