@@ -74,7 +74,7 @@ void InstructionQueue::remove_preconditioner(int index, MsqError &err)
   // position the instruction iterator over the preconditionner to delete
   std::list<QueueEntry>::iterator pos;
   pos = instructions.begin();
-  advance(pos, index);
+  std::advance(pos, index);
   if ( pos->mType == QueueEntry::IMPROVER ) {
     std::string name = pos->mImprover->get_name();
     std::cout << "  o InstructionQueue: removing QualityImprover " << name <<  ".\n"; 
@@ -112,7 +112,7 @@ void InstructionQueue::insert_preconditioner(QualityImprover* instr,
   // position the instruction iterator
   std::list<QueueEntry>::iterator pos;
   pos = instructions.begin();
-  advance(pos, index);
+  std::advance(pos, index);
   // adds the preconditioner
   QueueEntry entry(instr);
   instructions.insert(pos,entry);
@@ -158,7 +158,7 @@ void InstructionQueue::remove_quality_assessor(int index, MsqError &err)
   // position the instruction iterator over the QualityAssessor to delete
   std::list<QueueEntry>::iterator pos;
   pos = instructions.begin();
-  advance(pos, index);
+  std::advance(pos, index);
   if ( pos->mType == QueueEntry::ASSESSOR ) {
     std::string name = pos->mAssessor->get_name();
     std::cout << "  o InstructionQueue: removing QualityAssessor " << name << ".\n"; 
@@ -190,7 +190,7 @@ void InstructionQueue::insert_quality_assessor(QualityAssessor* instr,
   // position the instruction iterator
   std::list<QueueEntry>::iterator pos;
   pos = instructions.begin();
-  advance(pos, index);
+  std::advance(pos, index);
   // adds the QualityAssessor
   QueueEntry entry(instr);
   instructions.insert(pos,entry);
@@ -277,7 +277,7 @@ std::list<InstructionQueue::QueueEntry>::iterator InstructionQueue::clear_master
   
     // position the instruction iterator over the master quality improver
   master_pos = instructions.begin();
-  advance(master_pos, masterInstrIndex);
+  std::advance(master_pos, masterInstrIndex);
   
     // erases the master quality improver
   instr_iter = instructions.erase(master_pos);
