@@ -59,12 +59,14 @@
 
 namespace Mesquite {
 
+const int DEFAULT_HISTOGRAM_INTERVALS = 10;
+
 QualityAssessor::QualityAssessor(string name) :
   qualityAssessorName(name),
   outputStream( cout ),
   printSummary( true ),
   stoppingMetric( assessList.end() ),
-  stoppingFunction( (QAFunction)0 )
+  stoppingFunction( NO_FUNCTION )
 { 
   MsqError err;
   set_patch_type( PatchData::GLOBAL_PATCH, err, 0 );
@@ -75,7 +77,7 @@ QualityAssessor::QualityAssessor(ostream& stream, string name) :
   outputStream( stream ),
   printSummary( true ),
   stoppingMetric( assessList.end() ),
-  stoppingFunction( (QAFunction)0 )
+  stoppingFunction( NO_FUNCTION )
 { 
   MsqError err;
   set_patch_type( PatchData::GLOBAL_PATCH, err, 0 );
@@ -153,7 +155,7 @@ void QualityAssessor::add_quality_assessment(QualityMetric* qm,
   iter = find_or_add( qm );
   iter->funcFlags |= func;
   if (func&HISTOGRAM)
-    iter->histogram.resize(12);
+    iter->histogram.resize(DEFAULT_HISTOGRAM_INTERVALS+2);
 }
 
 list<QualityAssessor::Assessor>::iterator QualityAssessor::find_or_add( QualityMetric* qm )
@@ -201,12 +203,13 @@ void QualityAssessor::set_stopping_assessment(QualityMetric* qm,
     MSQ_SETERR(err)("HISTOGRAM DOES NOT GIVE A VALID RETURN VALUE", MsqError::INVALID_ARG);
     return;
   }
+  else if (func == NO_FUNCTION) {
+    MSQ_SETERR(err)("No function specified for stopping assessment", MsqError::INVALID_ARG);
+    return;
+  }
   
   stoppingMetric = find_or_add( qm );
-  stoppingMetric->funcFlags |= func;
   stoppingFunction = func;
-  if (func&HISTOGRAM)
-    stoppingMetric->histogram.resize(12);
 }
 
 
@@ -286,16 +289,14 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
     // Do element-based metrics
   if (assessList.begin() != elem_end)
   {
-    PatchData* pd;
-    PatchData local_patch;
-    bool more_mesh;
-    no_culling_method();
-      
     bool first_pass = false;
     do { // might need to loop twice to calculate histograms
       first_pass = !first_pass;
      
-      more_mesh = true;
+      PatchData* pd;
+      PatchData local_patch;
+      no_culling_method();
+      bool more_mesh = true;
       if (get_global_patch() == 0) {
         pd = &local_patch;
         more_mesh=ms.get_next_patch(*pd, this, err);  MSQ_ERRZERO(err);
@@ -356,17 +357,15 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
       // Do vertex-based metrics
   if (assessList.end() != elem_end)
   {
-    PatchData* pd;
-    PatchData local_patch;
-    no_culling_method();
-    bool more_mesh;
-
     bool first_pass = false;
     do { // might need to loop twice to calculate histograms
       first_pass = !first_pass;
      
         //construct the patch we will send to get_next_patch
-      more_mesh = true;
+      PatchData* pd;
+      PatchData local_patch;
+      no_culling_method();
+      bool more_mesh = true;
       if (get_global_patch() == 0) {
         pd = &local_patch; 
         more_mesh=ms.get_next_patch(*pd, this, err);  MSQ_ERRZERO(err);
@@ -468,9 +467,9 @@ void QualityAssessor::reset_data()
 QualityAssessor::Assessor::Assessor( QualityMetric* metric )
   : qualMetric(metric),
     funcFlags(0),
+    haveHistRange(false),
     histMin(1.0),
-    histMax(0.0),
-    haveHistRange(false)
+    histMax(0.0)
 {
   reset_data();
 }
@@ -539,7 +538,6 @@ void QualityAssessor::Assessor::add_value( double metric_value )
 
 void QualityAssessor::Assessor::add_invalid_value()
 {
-  ++count;
   ++numInvalid;
 }
 
@@ -601,17 +599,26 @@ void QualityAssessor::print_summary( msq_stdio::ostream& stream ) const
     // Get union of function flags, and list any metrics with invalid values
   msq_std::list<Assessor>::const_iterator iter;
   unsigned flags = 0;
+  int invalid_count = 0;
   for (iter = assessList.begin(); iter != assessList.end(); ++iter)
   {
-    flags |= iter->funcFlags;
+    flags |= (iter->funcFlags & ~HISTOGRAM);
     
     if (iter->get_invalid_element_count())
     {
-      stream << iter->get_invalid_element_count() << " of "
-             << iter->get_count() << " INVALID VALUES reported for " 
+      ++invalid_count;
+      
+      stream << "  " << iter->get_invalid_element_count()
+             << " OF " << iter->get_count()
+             << " VALUES ARE INVALID FOR " 
              << iter->get_metric()->get_name() 
              << msq_stdio::endl << msq_stdio::endl;
     }
+  }
+  
+  if (0 == invalid_count) {
+    stream << "  No invalid values for any metric." 
+           << msq_stdio::endl << msq_stdio::endl;
   }
   
     // If printing any values
@@ -634,6 +641,10 @@ void QualityAssessor::print_summary( msq_stdio::ostream& stream ) const
       // Print out values for each assessor
     for (iter = assessList.begin(); iter != assessList.end(); ++iter)
     {
+        // If no output (other than histogram) for this metric, skip it
+      if (!(iter->funcFlags & ~HISTOGRAM))
+        continue;
+      
         // Name column
       stream << msq_stdio::setw(NAMEW) << iter->get_metric()->get_name();
 
@@ -685,6 +696,13 @@ void QualityAssessor::print_summary( msq_stdio::ostream& stream ) const
 
 void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream ) const
 {
+  // Portability notes:
+  //  Use log10 rather than log10f because the float variations require
+  //  including platform-dependent headers on some platforms.  
+  //  Explicitly cast log10 argument to double because some platforms
+  //  have overloaded float and double variations in C++ making an 
+  //  implicit cast from an integer ambiguous.
+  
   const char GRAPH_CHAR = '=';  // Character used to create bar graphs
   const int FLOATW = 12;        // Width of floating-point output
   const int GRAPHW = 50;        // Width of bar graph
@@ -724,10 +742,10 @@ void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream ) co
     // Do log plot if standard deviation is less that 1.5
     // histogram intervals.
   bool log_plot = false;
-  if (get_stddev() < 1.5*step)
+  if (get_stddev() < 2.0*step)
   {
     log_plot = true;
-    max_interval = (int)(log(1+max_interval));
+    max_interval = (int)(log10((double)(1+max_interval)));
   }
 
   
@@ -772,7 +790,7 @@ void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream ) co
       // First calculate the number of characters to output
     int num_graph;
     if (log_plot)
-      num_graph = GRAPHW * (int)log(1+histogram[i]) / max_interval;
+      num_graph = GRAPHW * (int)log10((double)(1+histogram[i])) / max_interval;
     else
       num_graph = GRAPHW * histogram[i] / max_interval;
       

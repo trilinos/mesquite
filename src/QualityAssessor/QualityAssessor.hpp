@@ -69,15 +69,30 @@ namespace Mesquite
 
   /*! \class QualityAssessor
 
-      \brief The QualityAssessor class contains all the information needed
-      to perform a single sweep over the mesh and make all relevant
-      quality assessments.
+      \brief A QualityAssessor instance can be inserted into an 
+      \ref InstructionQueue to calculate and summarize registered
+      \ref QualityMetrics for the mesh.
 
       The relevant quality assessments are set by the user or
       automatically (default) by Mesquite when an InstructionQueue
       object is used.  If the mesh has been changed (improved),
       it is often useful to reuse the same QualityAssessor object
       to reassess the mesh quality.
+      
+      The \ref QAFunction flags passed for each metric control the output
+      for that metric.  If no \ref QAFuction flags are passed, no results
+      are printed for the metric except the count of invalid 
+      vertices/elements reported by that metric, if any.
+      
+      The "stopping assessor" and "stopping function", if set,
+      determinte the value reported to Mesquite for the overall
+      run of of the QualityAssessor.
+      
+      All summary data except the histogram is accumulated for all
+      registered metrics, and can be accessed by the calling application.
+      Histogram data is accumulated only if the \ref HISTOGRAM 
+      \ref QUFunction output is requested for the metric (which is 
+      impled by calling \ref add_histogram_assessment.
   */
   class QualityAssessor : public PatchDataUser
   {
@@ -87,6 +102,7 @@ namespace Mesquite
     /*! \enum QAFunction
       type of function used in conjunction with QualityMetric to compute mesh quality */ 
     enum QAFunction {
+       NO_FUNCTION = 0,
        AVERAGE=1,
        HISTOGRAM=2,
        MAXIMUM=4, 
@@ -166,7 +182,17 @@ namespace Mesquite
       //! Reset calculated data 
     void reset_data();
     
-    
+    /** \brief Per-metric QualityAssessor data
+     *
+     * The Assessor class holds QualityAssessor data for
+     * each metric added by the calling application, including
+     * a pointer to the metric instance, \ref QAFunction flags
+     * dictating what is to be calculated and output, histogram
+     * parameters, and the variables used to accumulate results as
+     * the \ref QualityAssessor is running.  It also provides 
+     * methods to access the calculated data once the QualityAssessor
+     * pass is completed.
+     */
     class Assessor
     {
       public:
@@ -237,17 +263,33 @@ namespace Mesquite
          * bound, respectively.  The remaining values are the histogram
          * counts.
          */
+        bool haveHistRange;
         double histMin;   //< Lower bound of histogram
         double histMax;   //< Upper bound of histogram
-        bool haveHistRange;
         msq_std::vector<int> histogram;
     };    
         
-    
+    /** \brief Request summary data for a specific QualityMetric 
+     * This method allows the application to request the summary
+     * data for a metric it has registered with the QualityAssessor.
+     * If the passed QualityMetric has not been registered with the
+     * QualityAssessor instance, NULL is returned.
+     */
     const Assessor* get_results( QualityMetric* metric ) const;
     
+    /** \brief Get list of all summary data.
+     *  Return a const reference to the internal list of 
+     *  calculated data.
+     */
+   const msq_std::list<Assessor>& get_all_results() const
+      { return assessList; }
+      
   private:
   
+    /** Find an Assessor corresponding to the passed
+     *  QualityMetric, or create it if is not found in
+     *  the list.
+     */
     msq_std::list<Assessor>::iterator find_or_add( QualityMetric* qm );
    
     /** Name */
