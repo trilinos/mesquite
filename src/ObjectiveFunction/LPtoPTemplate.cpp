@@ -388,6 +388,8 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
   QualityMetric* currentQM = get_quality_metric();
   
   MsqVertex* ele_free_vtces[MSQ_MAX_NUM_VERT_PER_ENT];
+  for (int i=0; i<MSQ_MAX_NUM_VERT_PER_ENT; ++i) ele_free_vtces[i]=NULL;
+  
   const size_t* vtx_indices;
     
   size_t e, v;
