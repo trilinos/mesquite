@@ -157,6 +157,8 @@ clean mostlyclean:
 	-rm -f $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.o))
 	-rm -f $(localincludedir)/*
 	-rm -f $(localobjdir)/*.o
+	-rm -f testSuite/unit/*.o testSuite/unit/msq_test
+	-rm -f $(TESTNAMES:%=%/main)
 	-rm -rf $(template_dir)
 
 veryclean: clean 
