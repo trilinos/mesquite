@@ -129,7 +129,7 @@ void QualityAssessor::add_quality_assessment(QualityMetric* qm,
     assess_ptr->maxHist = MSQ_MAX_CAP+1.0;    
       //add vertex based metrics to back of list
       //add element based metrics to front of list
-    if(assess_ptr->metric->get_evaluation_mode()==QualityMetric::VERTEX){
+    if(assess_ptr->metric->get_metric_type()==QualityMetric::VERTEX_BASED){
       assessList.push_back( assess_ptr );
     }
     else{
@@ -202,7 +202,7 @@ void QualityAssessor::set_histogram_range(QualityMetric* qm,
     assess_ptr->metric=qm;    
       //add vertex based metrics to back of list
       //add element based metrics to front of list
-    if(assess_ptr->metric->get_evaluation_mode()==QualityMetric::VERTEX){
+    if(assess_ptr->metric->get_metric_type()==QualityMetric::VERTEX_BASED){
       assessList.push_back( assess_ptr );
     }
     else{
@@ -278,7 +278,7 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError &err)
     //
   while(i<num_metrics){
     assessor_array[i]=(*pos);
-    if((*pos)->metric->get_evaluation_mode()!=QualityMetric::VERTEX)
+    if((*pos)->metric->get_metric_type()==QualityMetric::ELEMENT_BASED)
       num_elem_based=i+1;
       //if histogram must calc min and max
     if(assessor_array[i]->funcFlagBits&QualityAssessor::HISTOGRAM){
