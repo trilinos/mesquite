@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 22-Nov-02 at 08:05:56
-//  LAST-MOD: 22-Nov-02 at 11:55:36 by Thomas Leurent
+//  LAST-MOD:  3-Dec-02 at 15:24:27 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -95,8 +95,9 @@ public:
 
       /* Retrieves a global patch */
       PatchData pd;
-      mesh_set.set_patch_type(MeshSet::GLOBAL_PATCH, 0, 0);
-      mesh_set.get_next_patch(pd, err); MSQ_CHKERR(err);
+      PatchDataParameters pd_params;
+      pd_params.set_patch_type(PatchData::GLOBAL_PATCH, err, 0, 0);
+      mesh_set.get_next_patch(pd, pd_params, err); MSQ_CHKERR(err);
 
       int num_vtx = pd.num_vertices();
       CPPUNIT_ASSERT( num_vtx == 15 );
