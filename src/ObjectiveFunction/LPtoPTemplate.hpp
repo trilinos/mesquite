@@ -23,6 +23,21 @@ namespace Mesquite
        \brief Calculates the L_p objective function raised to the pth
        power.  That is, sums the p_th powers of (the absolute value of)
        the quality metric values.
+
+       \todo MB. Suggestions made by Todd Munson:
+       a)  There is an inconsistent use of fabs.  The hessian evaluation
+       when using the one norm does not take the absolute value, while the
+       gradient does.
+       b)  The analytic gradient and hessian evaluations are incorrect when
+       the quality metric changes sign due to taking the absolute value.
+       The negative of the element gradient and hessian also needs to be
+       taken.
+       c)  Done.  The analytic gradient and hessian evaluations are
+       incorrect when the negate flag is set to -1.  The negative
+       of the element gradient and hessian also needs to be taken
+       in this case.
+       d)  The malloc in the concrete_eval routine should be removed.
+
      */
    class PatchData;
    class MsqMeshEntity;
@@ -73,7 +88,7 @@ namespace Mesquite
                                                  MsqError &err)
    {
      double scale_factor=1.0;
-       //if scaling, divid by total_num
+       //if scaling, divide by total_num
      if(dividingByN){
        if(total_num<=0)
          err.set_msg("\nIn compute_function, attempting to divide by zero.");
