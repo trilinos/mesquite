@@ -45,82 +45,64 @@ evaluations.
 
 namespace Mesquite 
 {
-/*****************************************************************************/
-/* Optimal derivative calculations courtesy of Paul Hovland (at least we     */
-/* think it is optimal).  The original code provided was modified to         */
-/* reduce the number of flops and intermediate variables, and improve the    */
-/* locality of reference.                                                    */
-/*****************************************************************************/
-/* The Hessian calculation is done by blocks.  Only the upper triangular     */
-/* blocks are stored.  The results in the data is in the following order:    */
-/*    [d1 b1 b2 d2 b3 d3 ]                                                   */
-/* The matrices on the diagonal (d1-d3) each contain 10 elements, while the  */
-/* off-diagonal elements (b1-b3) each contain 16 elements.                   */
-/*****************************************************************************/
-/* NOTE: THIS IS NO LONGER ENTIRELY CORRECT!  VARIABLE POWERS MESSES THE     */
-/* DESCRIPTION UP!                                                           */
-/*                                                                           */
-/* The form of the function, gradient, and Hessian is the following:         */
-/*   o(x) = a * f(A(x)) * pow(g(A(x)), b)                                    */
-/* where A(x) is the matrix generated from:                                  */
-/*           [x1-x0 x2-x0 x3-x0]                                             */
-/*    A(x) = [y1-y0 y2-y0 y3-y0] * inv(W)                                    */
-/*           [z1-z0 z2-z0 z3-z0]                                             */
-/* and f() is the squared Frobenius norm of A(x), and g() is the determinant */
-/* of A(x).                                                                  */
-/*                                                                           */
-/* The gradient is calculated as follows:                                    */
-/*   alpha := a*pow(g(A(x)),b)                                               */
-/*   beta  := a*b*f(A(x))*pow(g(A(x)),b-1)                                   */
-/*                                                                           */
-/*                                                                           */
-/*   do/dx = (alpha * (df/dA) + beta * (dg/dA)) (dA/dx)                      */
-/*                                                                           */
-/*   Note: this is the optimal ordering for the gradient vector.             */
-/*   Distributing (dA/dx) would result in two matrix vector products as      */
-/*   opposed to the single matrix vector product in the above formulation.   */
-/*                                                                           */
-/*   (df/dA)_i = 2*A_i                                                       */
-/*   (dg/dA)_i = A_j*A_k - A_l*A_m for some {j,k,l,m}                        */
-/*                                                                           */
-/*   d^2o/dx^2 = (dA/dx)' * ((d alpha/dA) * (df/dA) +                        */
-/*                           (d  beta/dA) * (dg/dA)                          */
-/*                                  alpha * (d^2f/dA^2)                      */
-/*                                   beta * (d^2g/dA^2)) * (dA/dx)           */
-/*                                                                           */
-/*   Note: since A(x) is a linear function, there are no terms involving     */
-/*   d^2A/dx^2 since this matrix is zero.                                    */
-/*                                                                           */
-/*   gamma := a*b*pow(g(A(x)),b-1)                                           */
-/*   delta := a*b*(b-1)*f(A(x))*pow(g(A(x)),b-2)                             */
-/*                                                                           */
-/*   d^2o/dx^2 = (dA/dx)' * (gamma*((dg/dA)'*(df/dA) + (df/dA)'*(dg/dA)) +   */
-/*                           delta* (dg/dA)'*(dg/dA) +                       */
-/*                           alpha*(d^2f/dA^2) +                             */
-/*                            beta*(d^2g/dA^2)) * (dA/dx)                    */
-/*                                                                           */
-/*   Note: (df/dA) and (dg/dA) are row vectors and we only calculate the     */
-/*   upper triangular part of the inner matrix.                              */
-/*                                                                           */
-/*   For regular tetrahedral elements, we have the following:                */
-/*                                                                           */
-/*           [-1         1        0         0         ]                      */
-/*       M = [-sqrt(3)  -sqrt(3)  2*sqrt(3) 0         ]                      */
-/*           [-sqrt(6)  -sqrt(6)  -sqrt(6)  3*sqrt(6) ]                      */
-/*                                                                           */
-/*           [M 0 0]                                                         */
-/*   dA/dx = [0 M 0]                                                         */
-/*           [0 0 M]                                                         */
-/*                                                                           */
-/*   I belive the above is close to optimal for the calculation of the       */
-/*   Hessian.  Distributing the (dA/dx) results in larger vector which are   */
-/*   detrimental when forming the outer product.  The way the method is      */
-/*   written, we only calculate a 9x9 symmetric matrix in the outer product. */
-/*                                                                           */
-/*   In two dimensions, the inner matrix computed has a nice structure and   */
-/*   we can eliminate some of the computation in the inner product.  This    */
-/*   does not appear to be the case in more than two dimensions.             */
-/*****************************************************************************/
+  /***************************************************************************/
+  /* Gradient calculation courtesy of Paul Hovland.  The code was modified   */
+  /* to reduce the number of flops and intermediate variables, and improve   */
+  /* the locality of reference.                                              */
+  /***************************************************************************/
+  /* The Hessian calculation is computes everyting in (x,y,z) blocks and     */
+  /* stores only the upper triangular blocks.  The results are put into      */
+  /* (c1,c2,c3,c4) order prior to returning the Hessian matrix.              */
+  /***************************************************************************/
+  /* The form of the function, gradient, and Hessian follows:                */
+  /*   o(x) = a * pow(f(A(x)), b) * pow(g(A(x)), c)                          */
+  /* where A(x) is the incidence matrix generated by:                        */
+  /*           [x1-x0 x2-x0 x3-x0]                                           */
+  /*    A(x) = [y1-y0 y2-y0 y3-y0] * inv(W)                                  */
+  /*           [z1-z0 z2-z0 z3-z0]                                           */
+  /* and f() is the squared Frobenius norm of A(x), and g() is the           */
+  /* determinant of A(x).                                                    */
+  /*                                                                         */
+  /* The gradient is calculated as follows:                                  */
+  /*   alpha := a*b*pow(f(A(x)),b-1)*pow(g(A(x)),c)                          */
+  /*   beta  := a*c*pow(f(A(x)),b)*pow(g(A(x)),c-1)                          */
+  /*                                                                         */
+  /*   do/dx = (alpha * (df/dA) + beta * (dg/dA)) (dA/dx)                    */
+  /*                                                                         */
+  /*   (df/dA)_i = 2*A_i                                                     */
+  /*   (dg/dA)_i = A_j*A_k - A_l*A_m for some {j,k,l,m}                      */
+  /*                                                                         */
+  /*   d^2o/dx^2 = (dA/dx)' * ((d alpha/dA) * (df/dA) +                      */
+  /*                           (d  beta/dA) * (dg/dA)                        */
+  /*                                  alpha * (d^2f/dA^2)                    */
+  /*                                   beta * (d^2g/dA^2)) * (dA/dx)         */
+  /*                                                                         */
+  /*   Note: since A(x) is a linear function, there are no terms involving   */
+  /*   d^2A/dx^2 since this matrix is zero.                                  */
+  /*                                                                         */
+  /*   gamma := a*b*c*pow(f(A(x)),b-1)*pow(g(A(x)),c-1)                      */
+  /*   delta := a*c*(c-1)*pow(f(A(x)),b)*pow(g(A(x)),c-2)                    */
+  /*   psi   := a*b*(b-1)*pow(f(A(x)),b-2)*pow(g(A(x)),c)                    */
+  /*                                                                         */
+  /*   d^2o/dx^2 = (dA/dx)' * (gamma*((dg/dA)'*(df/dA) + (df/dA)'*(dg/dA)) + */
+  /*                           delta* (dg/dA)'*(dg/dA) +                     */
+  /*                             psi* (df/dA)'*(df/dA) +                     */
+  /*                           alpha*(d^2f/dA^2) +                           */
+  /*                            beta*(d^2g/dA^2)) * (dA/dx)                  */
+  /*                                                                         */
+  /*   Note: (df/dA) and (dg/dA) are row vectors and we only calculate the   */
+  /*   upper triangular part of the inner matrices.                          */
+  /*                                                                         */
+  /*   For regular tetrahedral elements, we have the following:              */
+  /*                                                                         */
+  /*           [-1         1        0         0         ]                    */
+  /*       M = [-sqrt(3)  -sqrt(3)  2*sqrt(3) 0         ]                    */
+  /*           [-sqrt(6)  -sqrt(6)  -sqrt(6)  3*sqrt(6) ]                    */
+  /*                                                                         */
+  /*           [M 0 0]                                                       */
+  /*   dA/dx = [0 M 0]                                                       */
+  /*           [0 0 M]                                                       */
+  /***************************************************************************/
 
 /*****************************************************************************/
 /* Not all compilers substitute out constants (especially the square root).  */

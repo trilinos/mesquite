@@ -39,10 +39,16 @@ using namespace Mesquite;
 
 
 /*****
-      Functions for:
-	               ||T - I||_F^b
+  Functions for:
+	                ||T - I||_F^(2b)
 	a * ---------------------------------------
 	    (det(T) + sqrt(det(T)^2 + 4*delta^2))^c
+
+  Note: c can be any value since the denominator is always restricted 
+  to be positive.  However, b can only take on values of one, two, or
+  any number greater than 2 because the gradient and/or Hessian may
+  not exist in these other cases.  In particular, you cannot guarantee
+  that the numerator is bounded away from zero.
 *****/
 
 inline bool m_fcn_idft2(double &obj, 
