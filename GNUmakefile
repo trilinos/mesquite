@@ -64,6 +64,8 @@ TESTNAMES := test_1\
              test_DFT \
              escobar \
              Guides843 \
+             deforming \
+             rezone \
              unit
 ###             random_test\
 ###             convert\
