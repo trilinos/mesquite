@@ -32,8 +32,8 @@ void Mesquite::ShapeImprover::improve_quality(MeshSet &mesh_set,
   Mesquite::SteepestDescent* pass1 =
     new Mesquite::SteepestDescent( obj_func );
   Mesquite::TerminationCriterion sc1, sc2;
-  sc1.add_criterion_type_with_int(Mesquite::TerminationCriterion::ITERATION_BOUND, 1, err);
-  sc2.add_criterion_type_with_int(Mesquite::TerminationCriterion::ITERATION_BOUND, 1, err);
+  sc1.add_criterion_type_with_int(Mesquite::TerminationCriterion::NUMBER_OF_ITERATES, 1, err);
+  sc2.add_criterion_type_with_int(Mesquite::TerminationCriterion::NUMBER_OF_ITERATES, 1, err);
   pass1->set_outer_termination_criterion(&sc1);
   pass1->set_inner_termination_criterion(&sc2);
   pass1->add_culling_method(Mesquite::PatchData::NO_BOUNDARY_VTX);

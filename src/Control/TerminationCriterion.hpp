@@ -33,14 +33,18 @@ namespace Mesquite {
      /*! */
     enum TCType {
        NONE    = 0,
-       CRIT_1  = 1,
-       CRIT_2  = 2, 
-       QUALITY_IMPROVEMENT = 4,
-       ITERATION_BOUND  = 8,
-       CPU_TIME  = 16,
-       VERTEX_MOVEMENT  = 32,
-       SUCCESSIVE_IMPROVEMENTS  = 64,
-       CRIT_8  = 128
+       GRADIENT_NORM_ABSOLUTE = 1,
+       GRADIENT_NORM_RELATIVE = 2,
+       KKT  = 4, 
+       QUALITY_IMPROVEMENT_ABSOLUTE = 8,
+       QUALITY_IMPROVEMENT_RELATIVE = 16,
+       NUMBER_OF_ITERATES = 32,
+       CPU_TIME  = 64,
+       VERTEX_MOVEMENT_ABSOLUTE  = 128,
+       VERTEX_MOVEMENT_RELATIVE  = 256,
+       SUCCESSIVE_IMPROVEMENTS_ABSOLUTE = 512,
+       SUCCESSIVE_IMPROVEMENTS_RELATIVE = 1024,
+       BOUNDED_VERTEX_MOVEMENT = 2048
     };
 
       //!Constructor which does not take any arguements
@@ -83,6 +87,12 @@ namespace Mesquite {
  protected:
     
  private:
+      //Private member funcitons
+      //!Currently computes the L_inf norm of an array of Vector3D of
+      //!length len.
+    double compute_gradient_norm(Vector3D * const vec, int len, MsqError &err);
+
+      //PRIVATE DATA MEMBERS
     long unsigned int terminationCriterionFlag;//!<Bit flag of termination crit
     long unsigned int cullingMethodFlag;/*!<Bit flag of criterion for culling*/
     long unsigned int totalFlag;/*!<Bit flag for both culling and terminating.*/
@@ -97,12 +107,15 @@ namespace Mesquite {
     PatchDataParameters globalPatchParams;
       //Data specific to termination criterion 1 (gradient bounds)
     Vector3D* mGrad;
+    int gradSize;
     double initialGradNorm;
-    double crit1Eps;
+    double gradNormAbsoluteEps;
+    double gradNormRelativeEps;
       //Data specific to termination criterion 2 (KKT)
       //???????????????????????????????????????????
       //Data specific to termination criterion 3 (Quality Improvement)
-    double qualityImprovementEps;
+    double qualityImprovementAbsoluteEps;
+    double qualityImprovementRelativeEps;
       //Data specific to termination criterion 4 (inner iterations)
     int iterationBound;
     int iterationCounter;
@@ -112,11 +125,14 @@ namespace Mesquite {
       //Data specific to termination criterion 6 (vertex movement)
     PatchDataVerticesMemento* initialVerticesMemento;
     PatchDataVerticesMemento* previousVerticesMemento;//if we want relative
-    double vertexMovementEps;
+    double vertexMovementAbsoluteEps;
+    double vertexMovementRelativeEps;
+    
       //Data specific to termination criterion 7 (successive improvement to F)
-    double successiveImprovementsEps;
+    double successiveImprovementsAbsoluteEps;
+    double successiveImprovementsRelativeEps;
       //crit 8
-    double crit8Bound;
+    double boundedVertexMovementEps;
   };
 
    
