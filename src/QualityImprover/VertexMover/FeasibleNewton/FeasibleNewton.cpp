@@ -168,7 +168,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
     // If direction is positive, does a gradient (steepest descent) step.
 
     if (alpha > epsilon) {
-      MSQ_PRINT(1)("Newton direction not descent; switching to gradient.  Ensure preconditioner is positive definite.");
+      MSQ_PRINT(1)("Newton direction not descent; switching to gradient.  Ensure preconditioner is positive definite.\n");
       alpha = inner(grad, grad, nv); 	// compute norm squared of gradient
       if (alpha < 1) alpha = 1;	        // take max with constant
       for (i = 0; i < nv; ++i) {
@@ -267,7 +267,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
 	//	   be overcome.  Eventually, the gradient step will
 	//	   fail to compute a new direction and you will stop.
 
-        MSQ_PRINT(1)("Sufficient decrease not obtained in linesearch; switching to gradient.");
+        MSQ_PRINT(1)("Sufficient decrease not obtained in linesearch; switching to gradient.\n");
 
 	alpha = inner(grad, grad, nv); 	// compute norm squared of gradient
 	if (alpha < 1) alpha = 1;	// take max with constant
@@ -311,7 +311,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
 	  //         computing the objective function.  Most likely you
 	  //         are at a critical point for the problem.
 
-	  MSQ_PRINT(1)("Sufficient decrease not obtained with gradient; critical point likely found.");
+	  MSQ_PRINT(1)("Sufficient decrease not obtained with gradient; critical point likely found.\n");
 	  break;
 	}
       }
