@@ -30,7 +30,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 12-Nov-02 at 18:05:56
-//  LAST-MOD:  2-Apr-04 at 18:30:35 by Thomas Leurent
+//  LAST-MOD: 15-Apr-04 at 14:57:05 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -64,6 +64,7 @@ private:
   CPPUNIT_TEST (test_equal);
   CPPUNIT_TEST (test_plus);
   CPPUNIT_TEST (test_minus);
+  CPPUNIT_TEST (test_Frobenius_2);
   CPPUNIT_TEST (test_transpose);
   CPPUNIT_TEST (test_plus_equal);
   CPPUNIT_TEST (test_times_equal_scalar);
@@ -76,6 +77,7 @@ private:
   CPPUNIT_TEST (test_mult_element);
   CPPUNIT_TEST (test_times_vector);
   CPPUNIT_TEST (test_vector_times);
+  CPPUNIT_TEST (test_det         );
   CPPUNIT_TEST (test_B_times_invA);
   CPPUNIT_TEST_SUITE_END();
 
@@ -171,6 +173,12 @@ public:
     CPPUNIT_ASSERT( res==correct );
   }
   
+  void test_Frobenius_2()
+  {
+    double fro = Frobenius_2(mMat1);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 124.84, fro, tolEps );
+  }
+   
   void test_transpose()
   {
     Matrix3D trans = transpose(mMat2);
@@ -277,7 +285,14 @@ public:
       CPPUNIT_ASSERT_DOUBLES_EQUAL(vec[loop_i], correct[loop_i], tolEps);
     }
   }
-  
+
+  void test_det()
+  {
+    double d = det(mMat1);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(48.064, d  , tolEps);
+  }
+
+    
   void test_B_times_invA()
   {
     Matrix3D orig1(mMat1);
