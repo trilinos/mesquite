@@ -5,7 +5,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 18-Dec-02 at 11:08:22
-//  LAST-MOD: 14-Feb-03 at 13:19:18 by Thomas Leurent
+//  LAST-MOD: 14-Feb-03 at 13:27:35 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -45,7 +45,11 @@ namespace Mesquite
 {
 
   /*! \class Matrix3D
-      \brief 3*3 Matric class, row-oriented, 0-based [i][j] indexing.*/
+      \brief 3*3 Matric class, row-oriented, 0-based [i][j] indexing.
+
+      Since the size of the object is fixed at compile time, the Matrix3D
+      object is as fast as a double[9] array.
+  */
   class Matrix3D 
   {
   protected:

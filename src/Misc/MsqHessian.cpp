@@ -5,7 +5,7 @@
 //    E-MAIL: tmunson@mcs.anl.gov
 //
 // ORIG-DATE:  2-Jan-03 at 11:02:19 by Thomas Leurent
-//  LAST-MOD: 31-Jan-03 at 14:13:11 by Thomas Leurent
+//  LAST-MOD: 18-Feb-03 at 13:53:38 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -26,10 +26,24 @@ using std::endl;
 
 MsqHessian::MsqHessian() :
   origin_pd(0), mEntries(0), mRowStart(0), mColIndex(0), 
-  mAccumulation(0), mAccumElemStart(0), mSize(0)
+  mAccumulation(0), mAccumElemStart(0), mSize(0), mPreconditionner(0)
 { }
 
 
+MsqHessian::~MsqHessian()
+{
+    delete[] mEntries;	
+    delete[] mRowStart;	
+    delete[] mColIndex; 
+
+    delete[] mAccumulation;
+    delete[] mAccumElemStart;
+
+    delete[] mPreconditionner;
+
+}
+
+  
 #undef __FUNC__
 #define __FUNC__ "MsqHessian::initialize"
 /*! \brief creates a sparse structure for a Hessian, based on the
@@ -334,3 +348,22 @@ void MsqHessian::get_diagonal_blocks(std::vector<Matrix3D> &diag, MsqError &err)
 
   assert( e == mAccumElemStart[elem_index+1] );
 }
+
+
+#undef __FUNC__
+#define __FUNC__ "MsqHessian::compute_preconditionner"
+/*! compute a preconditionner used in the preconditionned conjugate gradient
+    algebraic solver. In fact, this computes \f$ M^{-1} \f$ .
+  */
+void MsqHessian::compute_preconditionner(MsqError &err)
+{
+  mPreconditionner = new Matrix3D[mSize];
+  int m;
+  // preconditionner is identity matrix for now.
+  for (m=0; m<mSize; ++m) {
+    mPreconditionner[m][0][0] = 1.; 
+    mPreconditionner[m][1][1] = 1.; 
+    mPreconditionner[m][2][2] = 1.; 
+  }
+}
+

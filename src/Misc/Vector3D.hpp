@@ -70,6 +70,8 @@ namespace Mesquite
                               const double scalar); //- lhs / scalar
     friend double operator%(const Vector3D &v1,
                             const Vector3D &v2); //- dot product
+    friend double inner(const Vector3D v1[],
+                        const Vector3D v2[], int n); //- dot product for array
     friend double operator%(const double scalar,
 			    const Vector3D &v2); //- scalar * sum_i v2[i]
     friend double operator%(const Vector3D &v1,
@@ -92,6 +94,8 @@ namespace Mesquite
     // Length functions
     inline double length_squared() const;
     inline double length() const;
+    friend  double length(Vector3D v[] ,int n); // length for an array of Vector3Ds
+
     inline void set_length(const double new_length);
     inline void normalize();
     
@@ -279,6 +283,20 @@ namespace Mesquite
             lhs.mCoords[1] * rhs.mCoords[1] +
             lhs.mCoords[2] * rhs.mCoords[2] );
   }
+
+  /*! Dot product for arrays of Vector3Ds. see also operator% .*/ 
+  inline double inner(const Vector3D lhs[],
+                      const Vector3D rhs[], int n)
+  {
+    int i;
+    double dot=0;
+    for (i=0; i<n; ++i) 
+      dot+= lhs[i].mCoords[0] * rhs[i].mCoords[0] +
+            lhs[i].mCoords[1] * rhs[i].mCoords[1] +
+            lhs[i].mCoords[2] * rhs[i].mCoords[2];
+    return dot;
+  }
+
   inline double operator%(const double scalar,
                           const Vector3D &rhs) // Dot Product
   {
@@ -339,6 +357,15 @@ namespace Mesquite
     return sqrt(mCoords[0]*mCoords[0] +
                 mCoords[1]*mCoords[1] +
                 mCoords[2]*mCoords[2]);
+  }
+  inline double length(Vector3D v[] ,int n) // norm for an array of Vector3Ds
+  {
+    double l=0;
+    for (int j=0; j<n; ++j)
+      l += v[j].mCoords[0]*v[j].mCoords[0] +
+           v[j].mCoords[1]*v[j].mCoords[1] +
+           v[j].mCoords[2]*v[j].mCoords[2];
+    return sqrt(l);
   }
   inline void Vector3D::set_length(const double new_length)
   {
