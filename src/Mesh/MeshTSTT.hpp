@@ -36,7 +36,7 @@ namespace Mesquite
     typedef void* TagHandle;
   public:
 //********* Functions that are NOT inherited ************
-    MeshTSTT(TSTT::LocalTSTTMesh* tstt_mesh, MsqError &err);
+    MeshTSTT(TSTT::LocalTSTTMesh& tstt_mesh, MsqError &err);
     virtual ~MeshTSTT();
     
 //********* Functions that ARE inherited ************
@@ -203,7 +203,7 @@ namespace Mesquite
     virtual void release();
 
   private:
-    ::TSTT::LocalTSTTMesh* tsttMesh;
+    mutable ::TSTT::LocalTSTTMesh tsttMesh;
     size_t nbVertices;
     size_t nbElements;
 
