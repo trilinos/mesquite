@@ -115,6 +115,19 @@ namespace Mesquite
     void get_adjacent_vertex_indices(size_t vertex_index,
                                      std::vector<size_t> &vert_indices,
                                      MsqError &err);
+
+      /*!Get the indices of entities attached to entity (given by ent_ind).
+        adj_ents is filled with the indices into the entity array of elements
+        adjacent to the given element via an n-dimensional entity.
+        Thus, if n = 0, the entities must be connected via a vertex.
+        If n = 1, the entities must be connected via an edge.
+        If n = 2, the entities must be connected via a two-dimensional element.
+        NOTE:  if n is 2 and the elements in the entity array are
+        two-dimensional, no entities will should this criterion.
+      */
+    void get_adjacent_entities_via_n_dim(int n, size_t ent_ind,
+                                         std::vector<size_t> &adj_ents,
+                                         MsqError &err);
     
       /*! Create the arrays that store which elements are attached
           to each node */

@@ -10,6 +10,7 @@
 #include "MsqFreeVertexIndexIterator.hpp"
 
 #include <list>
+#include "MsqMessage.hpp"
 
 using namespace Mesquite;  
 
@@ -358,8 +359,87 @@ void PatchData::get_adjacent_vertex_indices(size_t vertex_index,
   }
 }
 
+/*!
+    \brief Fills a vector of indices into the entities array. The entities
+    in the vector are connected the given entity (ent_ind) via an
+    n-diminsional entity (where 'n' is a given integer).
+
+*/
+void PatchData::get_adjacent_entities_via_n_dim(int n, size_t ent_ind,
+                                                std::vector<size_t> &adj_ents,
+                                                MsqError &err)
+{
+    //This should probably be removed
+  generate_vertex_to_element_data();
+    //vertices of this entity (given by ent_ind)
+  std::vector<size_t> verts;
+    //vector to store elements attached to the vertices in verts
+  std::vector<size_t> elem_on_vert[MSQ_MAX_NUM_VERT_PER_ENT];
+    //length of above vectos
+  int length_elem_on_vert[MSQ_MAX_NUM_VERT_PER_ENT];
+    //get verts on this element
+  get_element_vertex_indices(ent_ind, verts, err);
+  int num_vert=verts.size();
+  int i=0;
+  int j=0;
+  for(i=0;i<num_vert;++i){
+      //get elements on the vertices in verts and the number of vertices
+    get_vertex_element_indices(verts[i],elem_on_vert[i],err);
+    length_elem_on_vert[i]=elem_on_vert[i].size();
+  }
+    //this_ent is the index for an entity which is a candidate to be placed
+    //into adj_ents
+  size_t this_ent;
+    //num of times this_ent has been found in the vectors of entity indices
+  int counter=0;
+  i = 0;
+    //loop of each vert on ent_ind
+  while(i<num_vert){
+      //loop over each ent connected to vert
+    j=0;
+    while(j<length_elem_on_vert[i]){
+        //get candidate element
+      this_ent=elem_on_vert[i][j];
+        //if we haven't already consider this ent
+      if(this_ent!=-1){
+          //if this_ent occurred earlier we would have already considered it
+          //so start at i and j+1
+        int k1=i;
+        int k2=j+1;
+          //this_ent has occured once so far
+        counter=1;
+          //while k1 < num_vert
+        while(k1<num_vert){
+            //loop over entries in the elem on vert vector
+          while(k2<length_elem_on_vert[k1]){
+              //if it matches this_ent
+            if(elem_on_vert[k1][k2]==this_ent){
+                //mark it as 'seen'
+              elem_on_vert[k1][k2]=-1;
+              ++counter;
+                //do not look at remaining elems in this vector
+              k2+=length_elem_on_vert[k1];
+            }
+            else
+              ++k2;
+          }
+          ++k1;
+          k2=0;
+          
+        }
+          //if this_ent occured enough times and isn't ent_ind
+        if(counter>n && this_ent!=ent_ind){
+          adj_ents.push_back(this_ent);
+        }
+      }
+      ++j;
+    }
+    ++i;
+  }
+}
+
+    
   
-      
 
 
 /*! \fn PatchData::update_mesh(MsqError &err)

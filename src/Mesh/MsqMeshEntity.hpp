@@ -82,6 +82,15 @@ namespace Mesquite
     void get_connected_vertices(size_t vertex_index,
                                 std::vector<size_t> &vert_indices,
                                 MsqError &err);
+
+      //!Computes the area of the element.
+      //!The returned value is always non-negative.
+    double compute_unsigned_area(PatchData &pd, MsqError &err );
+
+      //!Computes the volume of the element.
+      //!The returned value is always non-negative.
+    double compute_unsigned_volume(PatchData &pd, MsqError &err );
+    
   private:
     void get_linear_quad_jac(Vector3D *sp, Vector3D &coord0, Vector3D &coord1,
                              Vector3D &coord2, Vector3D &coord3,

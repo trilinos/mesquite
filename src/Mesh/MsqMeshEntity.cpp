@@ -288,6 +288,75 @@ void Mesquite::MsqMeshEntity::get_sample_points(QualityMetric::ElementEvaluation
   }
 }
 #undef __FUNC__
+#define __FUNC__ "MsqMeshEntity::compute_unsigned_area"
+/*!
+  \brief Computes the area of the given element.  Returned value is
+  always non-negative.  If the entity passed is not a two-dimensional
+  element, an error is set.*/
+double MsqMeshEntity::compute_unsigned_area(PatchData &pd, MsqError &err) {
+  MsqVertex* verts=pd.get_vertex_array(err);MSQ_CHKERR(err);
+  double tem=0.0;
+  switch (mType)
+  {
+   
+    case TRIANGLE:
+      tem =  fabs(((verts[vertexIndices[1]]-verts[vertexIndices[0]])*
+                   (verts[vertexIndices[2]]-verts[vertexIndices[0]])).length()
+                  /2.0);
+      return tem;
+      break;
+      
+    case QUADRILATERAL:
+      tem = ((verts[vertexIndices[1]]-verts[vertexIndices[0]])*
+             (verts[vertexIndices[3]]-verts[vertexIndices[0]])).length();
+      tem += ((verts[vertexIndices[3]]-verts[vertexIndices[2]])*
+              (verts[vertexIndices[1]]-verts[vertexIndices[2]])).length();
+      return fabs(tem)/2.0;
+      break;
+      
+    default:
+      err.set_msg("Invalid type of element passed to compute unsigned area.");
+  };
+  
+}
+                                            
+#undef __FUNC__
+#define __FUNC__ "MsqMeshEntity::compute_unsigned_volume"
+/*!
+  \brief Computes the volume of the given element.  Returned value is
+  always non-negative.  If the entity passed is not a three-dimensional
+  element, an error is set.*/
+double MsqMeshEntity::compute_unsigned_volume(PatchData &pd, MsqError &err) {
+  Vector3D sample_point(.5,.5,.5);
+  Vector3D jac_vecs[3];
+  int num_jacobian_vectors=-1;
+  double tem=0;
+  MsqVertex *verts = pd.get_vertex_array(err);MSQ_CHKERR(err);
+  switch (mType)
+  {
+    case TETRAHEDRON:
+      tem = (verts[vertexIndices[3]]-verts[vertexIndices[0]])%
+        ((verts[vertexIndices[1]]-verts[vertexIndices[0]])*
+         (verts[vertexIndices[1]]-verts[vertexIndices[0]]));
+      return fabs(tem);
+      break;
+      
+    case HEXAHEDRON:
+      compute_weighted_jacobian(pd,sample_point,jac_vecs,
+                                num_jacobian_vectors, err );
+      return fabs(jac_vecs[2]%(jac_vecs[0]*jac_vecs[1]))/6.0;
+      break;
+      
+    default:
+      err.set_msg("Invalid type of element passed to compute unsigned volume.");
+  };
+}
+                                              
+    
+
+  
+
+#undef __FUNC__
 #define __FUNC__ "MsqMeshEntity::get_connected_vertices"
 /*!Appends the indices (in the vertex array) of the vertices to connected
   to vertex_array[vertex_index] to the end of the vector vert_indices.
