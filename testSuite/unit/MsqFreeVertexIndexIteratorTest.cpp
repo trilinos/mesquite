@@ -41,6 +41,7 @@ class MsqFreeVertexIndexIteratorTest : public CppUnit::TestFixture
 private:
   CPPUNIT_TEST_SUITE(MsqFreeVertexIndexIteratorTest);
   CPPUNIT_TEST (test_hard_fixed_flags);
+  CPPUNIT_TEST (test_soft_fixed_flags);
   CPPUNIT_TEST_SUITE_END();
 
 private:
