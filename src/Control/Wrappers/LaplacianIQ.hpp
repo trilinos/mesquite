@@ -47,14 +47,14 @@ namespace Mesquite {
          meanRatio = MeanRatioQualityMetric::create_new();
      
          // creates the laplacian smoother  procedures
-         lapl1 = new LaplacianSmoother();
+         lapl1 = new LaplacianSmoother(err);
          mQA = new QualityAssessor(meanRatio,QualityAssessor::MAXIMUM);
      
          //**************Set stopping criterion****************
             mStop = new StoppingCriterion(StoppingCriterion::NUMBER_OF_PASSES,10);
             lapl1->set_stopping_criterion(mStop);
             // sets a culling method on the first QualityImprover
-            lapl1->add_culling_method(QualityImprover::NO_BOUNDARY_VTX);
+            lapl1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
       
             // adds 1 pass of pass1 
             this->add_quality_assessor(mQA,err); MSQ_CHKERR(err);
