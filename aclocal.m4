@@ -103,15 +103,28 @@ AC_LANG_POP(C++)
 AC_DEFUN([MSQ_CPLUSPLUS_HEADERS], [
 AC_LANG_PUSH(C++)
 
+VER=`$CXX --version`
 AC_MSG_CHECKING([for C++-standard header files])
-AC_TRY_COMPILE([#include <vector>],[std::vector<int> v;],
+AC_TRY_COMPILE([#include <vector>
+                #include <string>
+                #include <map>
+                #include <algorithm>
+               ],
+               [std::vector<std::string> v;
+                std::map<std::string,std::string> m;
+               ],
                [AC_MSG_RESULT(yes)],
                [AC_MSG_RESULT(no)
                 AC_DEFINE(MSQ_USE_OLD_STD_HEADERS,,
                  [Define if old .h headers must be used for C++ standard lib.])])
 
 AC_MSG_CHECKING([for C++-standard I/O header files])
-AC_TRY_COMPILE([#include <iostream>],[std::cout << "cout" << std::endl;],
+AC_TRY_COMPILE([#include <iosfwd>
+                #include <iostream>
+                #include <ostream>
+                #include <sstream>
+               ],
+               [std::cout << "cout" << std::endl;],
                [AC_MSG_RESULT(yes)],
                [AC_MSG_RESULT(no)
                 AC_DEFINE(MSQ_USE_OLD_IO_HEADERS,,

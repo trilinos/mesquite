@@ -35,7 +35,7 @@
 #endif
 
 #ifdef MSQ_USE_OLD_IO_HEADERS
-#  include <iostream.h>;
+#  include <iostream.h>
 #else
 #  include <iostream>
 #endif

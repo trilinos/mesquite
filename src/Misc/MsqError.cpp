@@ -36,6 +36,7 @@
 #  include <ostream>
 #endif
 
+#include <stdio.h>
 #include <stdarg.h>
 #include <assert.h>
 

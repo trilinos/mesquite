@@ -93,7 +93,11 @@ namespace Mesquite
 
     void set_values(const char *s)
     {
-      msq_stdio::istringstream ins(s);
+#ifdef MSQ_USE_OLD_IO_HEADERS
+      ::istrstream ins(s);
+#else
+      std::istringstream ins(s);
+#endif
       ins>>v_[0];  ins>>v_[1];  ins>>v_[2]; 
       ins>>v_[3];  ins>>v_[4];  ins>>v_[5]; 
       ins>>v_[6];  ins>>v_[7];  ins>>v_[8]; 

@@ -44,7 +44,7 @@
 #include <string>
 
 #ifdef MSQ_USE_OLD_IO_HEADERS
-#  class ostream;
+   class ostream;
 #else
 #  include <iosfwd>
 #endif
