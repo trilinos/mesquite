@@ -1,6 +1,8 @@
 /*!
   \file   MeshInterface.hpp
-  \brief  
+  \brief  This file contains the Mesquite mesh interface.
+          Many users will want to implement a concrete class derived from
+          the MeshInterface class to access their mesh.
 
 
   \author Darryl Melander
@@ -191,14 +193,26 @@ namespace Mesquite
                                                 size_t *csr_offsets,
                                                 MsqError &err) = 0;
     
-      //! Identifies the vertices attached to this element by returning
+      //! Identifies the vertices attached to the elements by returning
       //! each vertex's global index.  The vertex's global index indicates
-      //! where that element can be found in the array returned by
+      //! where that vertex can be found in the array returned by
       //! Mesh::get_all_vertices.
-    virtual void element_get_attached_vertex_indices(ElementHandle element,
-                                                     size_t *index_array,
-                                                     size_t array_size,
-                                                     MsqError &err) = 0;
+      //! \param elems Array of element handles.
+      //! \param num_elems number of elements in the array elems
+      //! \param index_array Array containing the indexes of the elements vertices.
+      //!                    Indexes can be repeated.
+      //! \param index_array_size indicates the size of index_array
+      //! \param offsets Has length num_elems+1.
+      //!                An array of offsets into the index_array that indicates where
+      //!                the indexes corresponding to an element start. First entry is 0.
+      //! For example element, to get the vertex indices of elems[3], we look at the entries
+      //! index_array[offsets[3]] to index_array[offsets[4]] . 
+    virtual void elements_get_attached_vertex_indices(ElementHandle element[],
+                                             size_t num_elems,
+                                             size_t index_array[],
+                                             size_t array_size,
+                                             size_t* offsets,
+                                             MsqError &err) = 0;
     
       //! Returns the topology of the given entity.
     virtual EntityTopology element_get_topology(ElementHandle entity_handle,
