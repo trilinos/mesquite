@@ -141,12 +141,7 @@ namespace Mesquite
     bool reset(PatchData &pd, ObjectiveFunction* obj_ptr, MsqError &err);
       //!reset called using a MeshSet object instead of PatchData.
       //! When it makes sense,
-      //! the termination criteria are checked.  The return value
-      //! is similar to that of terminate().  The function returns
-      //! false if the checked criteria have not been satisfied, and
-      //! true if they have been.  reset() only checks the
-      //! GRADIENT_INF_NORM_ABSOLUTE, GRADIENT_L2_NORM_ABSOLUTE,
-      //! and the QUALITY_IMPROVEMENT_ABSOLUTE criteria.
+      //! the termination criteria are checked. 
     bool reset(MeshSet &ms, ObjectiveFunction* obj_ptr, MsqError &err);
       
      //!Returns true if termination criterion is met (for the inner loop). 
