@@ -309,8 +309,9 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError &err)
   }
     //pointers to elems
   MsqMeshEntity* elems;
+  MsqVertex* verts;
   int num_elems=0;
-    //int num_vertices;
+  int num_verts=0;
     //michael temp solution
   int num_pass=0;
     //We loop over the mesh twice here if the user requests
@@ -321,9 +322,10 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError &err)
     //of the histogram.  We then accumulate the histogram
     //data on the second pass over the mesh.
     //
-  
+  int metric_counter=0;
   while(num_pass<2 && two_loops){
       //two_loops will be set to one if two loops are necessary
+    metric_counter=0;
     two_loops=0;
     double temp_val=0;
     if(num_elem_based){
@@ -334,23 +336,25 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError &err)
       
       bool elem_bool;
       elem_bool=ms.get_next_patch(elem_group, this, err);
+      MSQ_CHKERR(err);
       
         //until there are no more patches
         //there is another get_next_patch at
         //the end of this loop
       while(elem_bool){
         
-        elems=elem_group.get_element_array(err);
+        elems=elem_group.get_element_array(err); MSQ_CHKERR(err);
         num_elems=elem_group.num_elements();
         
         int element_counter=0;
           //loop over the elems in this group
         while(element_counter<num_elems){
+          metric_counter=0;
             //increment the number of elements in mesh (not the group)
             //later, we can delete this, and give a call to meshSet
             //which will return the number of elements.
           ++total_num_elements;
-          int metric_counter=0;
+          
             //metrics can be either element_based or vertex based
             //and we must treat them differently.  I didn't realize
             //this originally.  If we get an element group, that
@@ -367,7 +371,7 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError &err)
               //if first pass or if two passes are required
             if(!num_pass||assessor_array[metric_counter]->maxHist>MSQ_MAX_CAP){
               
-              assessor_array[metric_counter]->metric->evaluate_element(elem_group,&elems[element_counter], temp_val, err);
+              assessor_array[metric_counter]->metric->evaluate_element(elem_group,&elems[element_counter], temp_val, err);  MSQ_CHKERR(err);
               
                 //if we are on the first loop over the mesh, calculate
                 //everything we can.  That is accumlate for
@@ -430,7 +434,7 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError &err)
         }//end  while element counter < num_elems
 
           //get next element group (PatchData object)
-        elem_bool=ms.get_next_patch(elem_group,this, err);
+        elem_bool=ms.get_next_patch(elem_group,this, err); MSQ_CHKERR(err);
           //Michael:: Since we are doing global right now:
           //Remove this when no longer doing global
         elem_bool=0;
@@ -438,6 +442,126 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError &err)
       }//end  while (elem_bool)
       
     }//end   if num_elem_based
+
+    if((num_metrics-num_elem_based)>0){
+      PRINT_INFO("\nINSIDE VERTEX BASED LOOP\n");
+        //construct the patch we will send to get_next_patch
+      PatchData vert_group;
+      no_culling_method();
+      metric_counter=0;
+      bool vert_bool;
+      vert_bool=ms.get_next_patch(vert_group, this, err);  MSQ_CHKERR(err);
+      
+        //until there are no more patches
+        //there is another get_next_patch at
+        //the end of this loop
+      while(vert_bool){
+        
+        verts=vert_group.get_vertex_array(err);  MSQ_CHKERR(err);
+        num_verts=vert_group.num_vertices();
+        
+        int vertex_counter=0;
+          //loop over the verts in this group
+        while(vertex_counter<num_verts){
+            //increment the number of verticess in mesh (not the group)
+            //later, we can delete this, and give a call to meshSet
+            //which will return the number of verts.
+          ++total_num_vertices;
+          
+          
+            //metrics can be either element_based or vertex based
+            //and we must treat them differently.  I didn't realize
+            //this originally.  If we get an element group, that
+            //ensures that the different groups do not have overlapping
+            //elements.  However, they do have overlapping vertices????
+            //When we place metrics in a QualityAssessor's list
+            //we place element based metrics in the front and
+            //vertex_based metrics in the back (push_front or push_back
+            //respectively).  So, we can loop over the metrics until
+            //we reach num_elem_based, and we know all of these
+            //metrics are elment based.
+          metric_counter=num_elem_based;
+          
+          while(metric_counter<num_metrics){
+           
+              //PRINT_INFO("\nremove_this_var = %i, num_elems=%i",remove_this_var,num_elems);
+              //if first pass or if two passes are required
+            if(!num_pass||assessor_array[metric_counter]->maxHist>MSQ_MAX_CAP){
+              
+              assessor_array[metric_counter]->metric->evaluate_vertex(vert_group,&verts[vertex_counter],temp_val,err);  MSQ_CHKERR(err);
+              
+                //if we are on the first loop over the mesh, calculate
+                //everything we can.  That is accumlate for
+                //avergae, max, min, rms, and stddev (stdVar
+                //accumalates (temp_val^2) just as rms does)
+              if(!num_pass){
+                if(assessor_array[metric_counter]->funcFlagBits&AVERAGE)
+                  QAData[metric_counter].avgVar+=temp_val;
+                if(assessor_array[metric_counter]->funcFlagBits&MAXIMUM)
+                  if(temp_val>QAData[metric_counter].maxVar)
+                    QAData[metric_counter].maxVar=temp_val;
+                if(assessor_array[metric_counter]->funcFlagBits&MINIMUM)
+                  if(temp_val<QAData[metric_counter].minVar)
+                    QAData[metric_counter].minVar=temp_val;
+                if(assessor_array[metric_counter]->funcFlagBits&RMS)
+                  QAData[metric_counter].rmsVar+=(temp_val*temp_val);
+                  //calculate std_dev    
+                if(assessor_array[metric_counter]->funcFlagBits&STDDEV){
+                  QAData[metric_counter].stdVar+=(temp_val*temp_val);
+                }
+              }
+                //Calculate histogram if needed
+              if(QAData[metric_counter].histMax<MSQ_MAX_CAP &&
+                 assessor_array[metric_counter]->funcFlagBits&HISTOGRAM){
+                int hist_counter;
+                  //FIrst and last bins are for "out of range" values
+                  //If temp_val is less that lower histogram bound
+                if(temp_val<QAData[metric_counter].histMin-MSQ_MIN){
+                  QAData[metric_counter].histVar[0]++;
+                }
+                  //if temp_val is greater than uper histogram bound
+                else if(temp_val>QAData[metric_counter].histMax+MSQ_MIN){
+                  QAData[metric_counter].histVar[MSQ_HIST_SIZE+1]++;
+                }
+                else{
+                    //If temp_val is in one of the first MSQ_HIST_SIZE
+                    //(the number of divisions of the histogram) then
+                    //increment the appropiate slot in the histogram.
+                  for(hist_counter=0;hist_counter<MSQ_HIST_SIZE-1;hist_counter++)
+                  {
+                    if(temp_val<=(QAData[metric_counter].histMin)+
+                       (QAData[metric_counter].histDelta*(hist_counter+1))){
+                      QAData[metric_counter].histVar[hist_counter+1]++;
+                      hist_counter+=MSQ_HIST_SIZE;
+                    }
+                  }
+                    //If temp_val is in the last slot of the histogram
+                    //increment the last slot.
+                  if(temp_val>(QAData[metric_counter].histMin)+
+                     (QAData[metric_counter].histDelta*(MSQ_HIST_SIZE-1))){
+                    QAData[metric_counter].histVar[MSQ_HIST_SIZE]++;
+                  }
+                  
+                }//end else (meaning if in range (minHist,maxHist) 
+              }//end if histogram
+            }//end if first pass or second required for this metric
+            metric_counter++;
+          }//end while metric_counter is less than num_metrics (i.e., vertex)
+          vertex_counter++;
+        }//end  while vertex counter < num_verts
+        
+          //get next vertex group (PatchData object)
+        vert_bool=ms.get_next_patch(vert_group,this, err); MSQ_CHKERR(err);
+          //Michael:: Since we are doing global right now:
+          //Remove this when no longer doing global
+        vert_bool=0;
+          //PRINT_INFO("\nInside QA get_next returning %i",elem_bool);        
+      }//end  while (vert_bool)
+      
+    }//end   if (num_metrics-num_elem_based)>0
+
+
+    
     int met_i;
       //Now, we have finished accumulating the data (for one
       //of the passes over the mesh).  We must now:
@@ -500,7 +624,7 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError &err)
     /*!\TODO (Michael) NOTES: delete div 2  when lose pass=2
       div 6 is because we use patch instead of group
       fix the way and format of display*/
-  int metric_counter=0;
+  metric_counter=0;
   int column_counter=0;
   if(!printingTurnedOff){
     
@@ -518,8 +642,11 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError &err)
       }
         //if metric is vertex_based, print vertex_header
       else{
-        tot_num=total_num_vertices/2;
-        PRINT_INFO("VERTEX BASED METRIC :: %s (%i vertices)\n",assessor_array[metric_counter]->metric->get_name().c_str(),tot_num);
+        if(num_pass==1)
+          tot_num=total_num_vertices;
+        else
+          tot_num=total_num_vertices/(2);
+        PRINT_INFO("\nVERTEX BASED METRIC :: %s (%i vertices)\n",assessor_array[metric_counter]->metric->get_name().c_str(),tot_num);
       }
       column_counter=0;
       if(assessor_array[metric_counter]->funcFlagBits&MINIMUM)
