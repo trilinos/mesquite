@@ -403,6 +403,7 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
   if(MsqInterrupt::interrupt()){
     MSQ_SETERR(err)(MsqError::INTERRUPTED);
     return true;
+    MSQ_DBGOUT(2) << "  o TermCrit -- INTERRUPTED" << msq_stdio::endl;
   }
   
     //if terminating on numbering of inner iterations
@@ -412,6 +413,7 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
     
     if(iterationCounter>=iterationBound){
       return_flag = true;
+      MSQ_DBGOUT(2) << "  o TermCrit -- Exceeded " << iterationBound << " iterations." << msq_stdio::endl;
     }
   }
     //if terminating on inner cpu time
@@ -419,6 +421,7 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
       //std::cout<<"\nCHECKED CPU time value = "<<mTimer.since_birth();
     if(mTimer.since_birth()>=timeBound){
       return_flag=true;
+      MSQ_DBGOUT(2) << "  o TermCrit -- Exceeded CPU time." << msq_stdio::endl;
     }
   }
     //if terminating on vertex movement
@@ -436,6 +439,7 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
       if(max_movement_sqr<=vertexMovementAbsoluteEps){
         return_flag = true;
       }
+      MSQ_DBGOUT(2) << "  o TermCrit -- Max absolute movement: " << sqrt(max_movement_sqr) << msq_stdio::endl;
     }
       //if terminating on RELATIVE vertex movement
     if(terminationCriterionFlag & ( VERTEX_MOVEMENT_RELATIVE) ){
@@ -446,6 +450,7 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
       {
         return_flag = true;
       }
+      MSQ_DBGOUT(2) << "  o TermCrit -- Max relative movement: " << sqrt(max_movement_sqr) << msq_stdio::endl;
     } 
       //else we need to store the new memento
     pd.recreate_vertices_memento(previousVerticesMemento,err);
@@ -494,6 +499,7 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
     double grad_inf_norm=10e6;
     if (terminationCriterionFlag & (GRADIENT_INF_NORM_ABSOLUTE | GRADIENT_INF_NORM_RELATIVE)) {
       grad_inf_norm = length(mGrad, num_vertices); // get the Linf norm
+      MSQ_DBGOUT(2) << "  o TermCrit -- gradient Inf norm: " << grad_inf_norm << msq_stdio::endl;
     } 
     
     //if stopping on L2 norm of the gradient
