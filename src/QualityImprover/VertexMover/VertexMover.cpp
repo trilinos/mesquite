@@ -55,12 +55,6 @@ void VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
     this->initialize_mesh_iteration(patch_data, err);MSQ_CHKERR(err); 
 
     // propagates information from QualityImprover to MeshSet
-    int dummy=0;
-    int qi_depth=get_patch_depth();
-    MeshSet::PatchType patch_type = this->get_patch_type();
-    ms.set_patch_type(patch_type, qi_depth, dummy);
-    ms.copy_culling_method_bits( QualityImprover::get_culling_method_bits() );
-  
     next_patch = true;
     while( next_patch )
     {
@@ -71,7 +65,7 @@ void VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
 #endif
       MSQ_DEBUG_ACTION(3,{std::cout.setf(std::ios_base::fixed, std::ios_base::floatfield);
                        loop_timer.since_last_check(); });
-      next_patch =  ms.get_next_patch(patch_data, err); 
+      next_patch =  ms.get_next_patch(patch_data, this, err); 
       MSQ_CHKERR(err);
      
       MSQ_DEBUG_ACTION(3,{aomd_t += loop_timer.since_last_check();
@@ -85,7 +79,7 @@ void VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
                          std::cout << "\t\t- total time optimizing patch: "
                                    << msq_t << std::endl;});
       }
-      if (ms.get_patch_type() == MeshSet::GLOBAL_PATCH) {
+      if (get_patch_type() == PatchData::GLOBAL_PATCH) {
         next_patch = false; }
     }
     this->terminate_mesh_iteration(patch_data, err); MSQ_CHKERR(err);
@@ -93,7 +87,7 @@ void VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
     crit->increment_counter();
       //if global don't loop again.
       //if local loop until criteria are met
-    if(qi_depth<1)
+    if(this->get_patch_type() == PatchData::GLOBAL_PATCH)
       stop_met=0;
     else
       stop_met=crit->stop(ms,err); MSQ_CHKERR(err);

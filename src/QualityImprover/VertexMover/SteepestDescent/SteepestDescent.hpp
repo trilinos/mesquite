@@ -32,9 +32,6 @@ namespace Mesquite
     SteepestDescent(ObjectiveFunction* of);
 
 
-    //! Sets the patch data to global or local.
-    virtual void set_patch_type(MeshSet::PatchType type, MsqError &err);
-
     /*! sets the maximum number of iteration of the steepest descent algorythm,
       i.e. the number of times we compute the gradient and try to move the nodes in the
       opposite direction. This is different from the number of passes over the mesh. */

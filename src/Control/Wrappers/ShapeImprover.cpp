@@ -34,7 +34,7 @@ void Mesquite::ShapeImprover::improve_quality(MeshSet &mesh_set,
   
   Mesquite::StoppingCriterion sc2(Mesquite::StoppingCriterion::NUMBER_OF_PASSES, 1);
   pass1->set_stopping_criterion(&sc2);
-  pass1->add_culling_method(Mesquite::QualityImprover::NO_BOUNDARY_VTX);
+  pass1->add_culling_method(Mesquite::PatchData::NO_BOUNDARY_VTX);
   
   q.set_master_quality_improver(pass1, err); MSQ_CHKERR(err);
   q.run_instructions(mesh_set, err); MSQ_CHKERR(err);

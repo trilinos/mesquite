@@ -33,9 +33,9 @@ using namespace Mesquite;
 #define __FUNC__ "ConjugateGradient::ConjugateGradient" 
 ConjugateGradient::ConjugateGradient(ObjectiveFunction* objective) 
 {
+  MsqError err;
   this->set_name("ConjugateGradient");
-  //this->set_patch_depth(-1);
-  this->set_patch_depth(1);
+  this->set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err, 1); MSQ_CHKERR(err);
   objFunc=objective;
   //Michael:: default to global?
   set_step_size_bound(.001);
@@ -57,14 +57,15 @@ void ConjugateGradient::initialize(PatchData &pd, MsqError &err)
 }
 
 
-/*! \fn ConjugateGradient::set_patch_type(MeshSet::PatchType type, MsqError &err)
+/*! \fn ConjugateGradient::set_patch_type(PatchData::PatchType type, MsqError &err)
 
     ConjugateGradient supports GLOBAL_PATCH and ELEMENTS_ON_VERTEX_PATCH
 */
-void ConjugateGradient::set_patch_type(MeshSet::PatchType type, MsqError &err)
+void ConjugateGradient::set_patch_type(PatchData::PatchType type, MsqError &err,
+				       int patch_param1, int patch_param2)
 {
-  if (type == MeshSet::GLOBAL_PATCH || type == MeshSet::ELEMENTS_ON_VERTEX_PATCH) {
-    patchType = type;
+  if (type == PatchData::GLOBAL_PATCH || type == PatchData::ELEMENTS_ON_VERTEX_PATCH) {
+    PatchDataUser::set_patch_type(type, err, patch_param1, patch_param2);
   } else {
     err.set_msg("Type not supported by ConjugateGradient algorythm.");
   }

@@ -20,21 +20,21 @@ int main(int argc, char **argv)
   else
   {
       // Get the test suites we want to run
-//     CppUnit::TestFactoryRegistry &registry =
-//       CppUnit::TestFactoryRegistry::getRegistry("Misc");
-//     runner.add_test( registry.makeTest() );
+     CppUnit::TestFactoryRegistry &registry =
+       CppUnit::TestFactoryRegistry::getRegistry("Misc");
+     runner.add_test( registry.makeTest() );
     
-//     CppUnit::TestFactoryRegistry &registry2 =
-//       CppUnit::TestFactoryRegistry::getRegistry("MsqMeshEntityTest");
-//     runner.add_test( registry2.makeTest() );
+     CppUnit::TestFactoryRegistry &registry2 =
+       CppUnit::TestFactoryRegistry::getRegistry("MsqMeshEntityTest");
+     runner.add_test( registry2.makeTest() );
     
-//     CppUnit::TestFactoryRegistry &registry3 =
-//       CppUnit::TestFactoryRegistry::getRegistry("InstructionQueueTest");
-//     runner.add_test( registry3.makeTest() );
+     CppUnit::TestFactoryRegistry &registry3 =
+       CppUnit::TestFactoryRegistry::getRegistry("InstructionQueueTest");
+     runner.add_test( registry3.makeTest() );
     
-//     CppUnit::TestFactoryRegistry &registry4 =
-//       CppUnit::TestFactoryRegistry::getRegistry("PatchDataTest");
-//     runner.add_test( registry4.makeTest() );
+     CppUnit::TestFactoryRegistry &registry4 =
+       CppUnit::TestFactoryRegistry::getRegistry("PatchDataTest");
+     runner.add_test( registry4.makeTest() );
 
     CppUnit::TestFactoryRegistry &registry5 =
       CppUnit::TestFactoryRegistry::getRegistry("ObjectiveFunctionTest");

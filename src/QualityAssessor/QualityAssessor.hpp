@@ -18,6 +18,7 @@ Header file for the Mesquite::QualityAssessor class
 #include "Mesquite.hpp"
 #include "MesquiteError.hpp"
 #include "MeshSet.hpp"
+#include "PatchDataUser.hpp"
 
 namespace Mesquite {
 
@@ -34,7 +35,7 @@ namespace Mesquite {
       If the mesh has been changed (improved), it is often useful to reuse the same
       QualityAssessor object to reassess the mesh quality.
   */
-  class QualityAssessor
+   class QualityAssessor : public PatchDataUser
   {
   public:
     /*! \enum QAFunction

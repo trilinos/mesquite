@@ -45,7 +45,7 @@ NonSmoothSteepestDescent::NonSmoothSteepestDescent(ObjectiveFunction* of)
 #define __FUNC__ "NonSmoothSteepestDescent::initialize" 
 void NonSmoothSteepestDescent::initialize(PatchData &pd, MsqError &err)
 {
-  this->set_patch_depth(1);
+  this->set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err, 1);
   
     // local parameter initialization
   max_iterations = 100;

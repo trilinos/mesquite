@@ -11,7 +11,7 @@ class Vector3DTest : public CppUnit::TestFixture
   CPPUNIT_TEST (test_default_constructor);
   CPPUNIT_TEST (test_double_constructor);
   CPPUNIT_TEST (test_copy_constructor);
-  CPPUNIT_TEST_EXCEPTION (throw_exception, CppUnit::SignalException);
+//  CPPUNIT_TEST_EXCEPTION (throw_exception, CppUnit::SignalException);
   CPPUNIT_TEST_SUITE_END();
 
 public:

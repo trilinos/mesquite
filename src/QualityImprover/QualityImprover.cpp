@@ -25,15 +25,3 @@ Implements a couple of default virtual functions of the virtual class
 using namespace Mesquite;
 
 
-#undef __FUNC__
-#define __FUNC__ "QualityImprover::set_patch_type"
-/*! \fn QualityImprover::set_patch_type(MeshSet::PatchType type, MsqError &err)
-
-    By default, this virtual function sets an error flag.
-    It must be explicitly overriden in the concrete class in order to be available,
-    since only the concrete algorythm class knows the types of Patch it can use.
- */
-void QualityImprover::set_patch_type(MeshSet::PatchType type, MsqError &err)
-{
-  err.set_msg("This algorythm does not allow to redefine the Patch type.");
-}

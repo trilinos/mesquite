@@ -328,11 +328,11 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError &err)
         //construct the patch we will send to get_next_element_group
       PatchData elem_group;
         //Michael:: temporary solution to bug
-      ms.set_patch_type(MeshSet::ELEMENTS_ON_VERTEX_PATCH, 1);
-      ms.copy_culling_method_bits(0);
+      set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err, 1); MSQ_CHKERR(err);
+      no_culling_method();
       
       bool elem_bool;
-      elem_bool=ms.get_next_element_group(elem_group, err);
+      elem_bool=ms.get_next_element_group(elem_group, this, err);
       
         //until there are no more element groups
         //there is another get_next_element_group at
@@ -432,7 +432,7 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError &err)
         }//end         while element counter < num_elems
 
           //get next element group (PatchData object)
-        elem_bool=ms.get_next_element_group(elem_group, err);
+        elem_bool=ms.get_next_element_group(elem_group, this, err);
       }//end  while (elem_bool)
       
     }//end   if num_elem_based

@@ -23,28 +23,13 @@ SteepestDescent::SteepestDescent(ObjectiveFunction* of) :
   VertexMover(),
   objFunc(of)
 {
+  MsqError err;
   gradientLessThan=.01;
   maxIteration=6;
   this->set_name("SteepestDescent");
-  set_patch_depth(1);
-  patchType = MeshSet::GLOBAL_PATCH;
+  set_patch_type(PatchData::GLOBAL_PATCH, err);
 }  
   
-#undef __FUNC__
-#define __FUNC__ "SteepestDescent::set_patch_type"
-/*! \fn SteepestDescent::set_patch_type(MeshSet::PatchType type, MsqError &err)
-
-    SteepestDescent supports GLOBAL_PATCH and ELEMENTS_ON_VERTEX_PATCH
-*/
-void SteepestDescent::set_patch_type(MeshSet::PatchType type, MsqError &err)
-{
-  if (type == MeshSet::GLOBAL_PATCH || type == MeshSet::ELEMENTS_ON_VERTEX_PATCH) {
-    patchType = type;
-  } else {
-    err.set_msg("Type not supported by SteepestDescent algorythm.");
-  }
-}
-
 
 #undef __FUNC__
 #define __FUNC__ "SteepestDescent::initialize" 

@@ -35,7 +35,7 @@ Randomize::Randomize(double percent)
 #define __FUNC__ "Randomize::initialize" 
 void Randomize::initialize(PatchData &pd, MsqError &err)
 {
-  this->set_patch_depth(1);
+  this->set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err, 1);
 }
 
 #undef __FUNC__

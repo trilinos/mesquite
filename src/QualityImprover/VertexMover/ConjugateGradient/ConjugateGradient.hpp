@@ -49,7 +49,8 @@ namespace Mesquite
       }
 
       //!Set the patch type
-    virtual void set_patch_type(MeshSet::PatchType type, MsqError &err);
+    virtual void set_patch_type(PatchData::PatchType type, MsqError &err, 
+				int patch_param1=0, int patch_param2=0);
     
   protected:
       

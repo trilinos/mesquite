@@ -25,6 +25,7 @@
 #include "Mesquite.hpp"
 #include "MesquiteError.hpp"
 #include "PatchData.hpp"
+#include "PatchDataUser.hpp"
 
 #include "TSTT_Base.h"
 
@@ -64,52 +65,21 @@ namespace Mesquite
     
     int space_dim() const
       { return spaceDim; }
-
-    //!  Tells MeshSet how to retrieve the mesh entities that will be stored in PatchData.
-    /*!  The PatchType is set by the QualityImprover etc... and mesquite propagates
-         it to the MeshSet.
-    */
-    enum PatchType
-    {
-      UNDEFINED_PATCH_TYPE,     /*!< Default.*/
-      VERTICES_ON_VERTEX_PATCH, /*!< fills PatchData with the vertices connected
-                                     through edges to the center vertex. */
-      ELEMENTS_ON_VERTEX_PATCH, /*!< fills PatchData with the vertices connected
-                                     through elements to the center vertex. */
-      GLOBAL_PATCH              /*!< Fills PatchData with all elements and vertices
-                                     contained in all the meshes of the MeshSet. */
-    };
-    
-    //! Tells the MeshSet what kind of data the patches should include.
-    /*! \param patch_type see the MeshSet::PatchType enumeration.  
-      \param patch_param1 meaning depends on patch_type.
-      \param patch_param2 meaning depends on patch_type.
-    */
-    bool set_patch_type(PatchType patch_type,
-                        int patch_param1=0,
-                        int patch_param2=0);
-
-    PatchType get_patch_type() {return mType;}
-    
     //! Sets the name of the tag that identifies fixed vertices within the MeshSet.
     /*! By default, the tag name for fixed vertices is "fixed". */
     void set_fixed_vertex_tag(std::string tag_name)
     { fixedVertexTagName = tag_name; }
 
-    //! propagates the culling information from the algorythms to the MeshSet.
-    void copy_culling_method_bits (long unsigned int bits)
-    { cullingMethodBits = bits; }
-
     //! Gets the next PatchData.
     /*! The type of the patch is usually set on the algorythm with set_patch_type()
         and propagated to the MeshSet. */
-    bool get_next_patch(PatchData &pd, MsqError &err);
+    bool get_next_patch(PatchData &pd, PatchDataUser* pd_user, MsqError &err);
 
     //! Resets MeshSet object, but keeps the mesh handles added with add_mesh().
     void reset(MsqError &err);
 
     //! This should eventually be handled by get_next_patch()
-    bool get_next_element_group(PatchData &pd, MsqError &err);
+    bool get_next_element_group(PatchData &pd, PatchDataUser* pd_user, MsqError &err);
     //! This should eventually be handled by get_next_patch()
     bool get_next_node_group(PatchData &pd, MsqError &err);
     
@@ -125,9 +95,6 @@ namespace Mesquite
   private:
     bool get_next_vertices_set(MsqError &err);
     
-    PatchType mType;
-    int mParam1, mParam2; 
-    long unsigned int cullingMethodBits;
     std::string fixedVertexTagName; 
     std::list<TSTT::Mesh_Handle> meshSet;
     std::list<TSTT::Mesh_Handle>::iterator currentMesh;

@@ -141,6 +141,33 @@ namespace Mesquite
     void set_to_coords_memento(PatchDataCoordsMemento* memento,
                                MsqError &err);
     
+    //!  Tells MeshSet how to retrieve the mesh entities that will be stored in PatchData.
+    /*!  The PatchType is set by the QualityImprover etc... and mesquite propagates
+         it to the MeshSet.
+    */
+    enum PatchType
+    {
+      UNDEFINED_PATCH_TYPE,     /*!< Default.*/
+      VERTICES_ON_VERTEX_PATCH, /*!< fills PatchData with the vertices connected
+                                     through edges to the center vertex. */
+      ELEMENTS_ON_VERTEX_PATCH, /*!< fills PatchData with the vertices connected
+                                     through elements to the center vertex. */
+      GLOBAL_PATCH              /*!< Fills PatchData with all elements and vertices
+                                     contained in all the meshes of the MeshSet. */
+    };
+
+    /*! \enum culling_method
+      Those are the culling method available to the users.
+      Developpers: The values used in that enum are used by a bitset,
+      so they have to be 2-based (2,4,8,16,32, ...)
+      */
+    enum culling_method {
+      NO_BOUNDARY_VTX = 1, /*!< removes vertices on the boundary. (i.e. with a TSTT tag "boundary"). */
+      CULL_METHOD_2 = 2,   /*!< no other culling method yet. */
+      CULL_METHOD_3 = 4,
+      CULL_METHOD_4 = 8
+    };
+
   private:
 
     struct EntityEntry
@@ -205,7 +232,8 @@ namespace Mesquite
     Vector3D *coords; // array of coordinates triplet
     int numVertices;
   };
-  
+
+
 #undef __FUNC__
 #define __FUNC__ "PatchData::clear"
   inline void PatchData::clear()

@@ -29,9 +29,6 @@ using namespace Mesquite;
 
 MeshSet::MeshSet() :
   spaceDim(0),
-  mType(UNDEFINED_PATCH_TYPE),
-  mParam1(0), mParam2(0),
-  cullingMethodBits(0),
   fixedVertexTagName("fixed")
 {
   currentMesh = meshSet.begin();
@@ -84,29 +81,6 @@ void MeshSet::reset(MsqError &err)
   currentVertex = verticesSet.begin();
   currentMesh = meshSet.begin();
 }
-
-bool MeshSet::set_patch_type(MeshSet::PatchType patch_type,
-                             int patch_param1,
-                             int patch_param2)
-{
-  mType = patch_type;
-  mParam1 = patch_param1;
-  mParam2 = patch_param2;
-  
-    // Setting the patch type restarts iterations through the mesh
-  MsqError err;
-  reset(err); MSQ_CHKERR(err);  
-  
-    // For now, we only support ELEMENTS_ON_VERTEX_PATCH
-  if ( patch_type != ELEMENTS_ON_VERTEX_PATCH
-       && patch_type != GLOBAL_PATCH )
-  {
-    return false;
-  }
-  return true;
-}
-
-
 
 
 /*! \fn MeshSet::get_next_vertices_set(MsqError &err)
@@ -189,10 +163,12 @@ bool MeshSet::get_next_vertices_set(MsqError &err)
 */
 #undef __FUNC__
 #define __FUNC__ "MeshSet::get_next_patch" 
-bool MeshSet::get_next_patch(PatchData &pd, MsqError &err )
+bool MeshSet::get_next_patch(PatchData &pd, PatchDataUser* pd_user, MsqError &err )
 {
 
   TSTT::MeshError tstt_err=0;
+  PatchData::PatchType patch_type = pd_user->get_patch_type();
+  long unsigned int culling_method_bits = pd_user->get_culling_method_bits();
 
   // *************************************************
   // get the next vertices set from the TSTT interface.
@@ -202,7 +178,7 @@ bool MeshSet::get_next_patch(PatchData &pd, MsqError &err )
   
   bool more_vtx;
   // if MeshSet object in initial state
-  if (mType == ELEMENTS_ON_VERTEX_PATCH) {
+  if (patch_type == PatchData::ELEMENTS_ON_VERTEX_PATCH) {
     if ( verticesSet.empty() ) {
       more_vtx = get_next_vertices_set(err); MSQ_CHKERR(err);
       if ( more_vtx == false ) {
@@ -220,16 +196,16 @@ bool MeshSet::get_next_patch(PatchData &pd, MsqError &err )
     }
   }
  
-  MSQ_DEBUG_ACTION(3,{std::cout << "  o Patch Type: " << mType << std::endl; });
+  MSQ_DEBUG_ACTION(3,{std::cout << "  o Patch Type: " << patch_type << std::endl; });
   
   // ***********************************************
   // Gathers the local patch information
   // ***********************************************
 
-  if ( mType==ELEMENTS_ON_VERTEX_PATCH ) {
+  if ( patch_type==PatchData::ELEMENTS_ON_VERTEX_PATCH ) {
 
     // checks second argument.
-    int num_layers = mParam1;
+     int num_layers = pd_user->get_nb_layers(err); MSQ_CHKERR(err);
     if (num_layers != 1)
       {
         err.set_msg("no implementation for patch depth !=1 yet."); 
@@ -257,15 +233,15 @@ bool MeshSet::get_next_patch(PatchData &pd, MsqError &err )
     const char* bnd_tag_name;
     bnd_tag_name = fixedVertexTagName.c_str(); // converts from std::string to C-style string.
     void* bnd_tag_handle;
-    if (cullingMethodBits & QualityImprover::NO_BOUNDARY_VTX) {
+    if (culling_method_bits & PatchData::NO_BOUNDARY_VTX) {
       TSTT::Mesh_tagGetHandle (currentVertex->mesh, bnd_tag_name, &bnd_tag_handle, &tstt_err);
     }
-    while (cullingMethodBits!=0 && cull_vertex) {
+    while (culling_method_bits!=0 && cull_vertex) {
 
       cull_vertex = false; // don't cull , by default
 
-      // Culling of boudary vertices 
-      if (cullingMethodBits & QualityImprover::NO_BOUNDARY_VTX) {
+      // Culling of boundary vertices 
+      if (culling_method_bits & PatchData::NO_BOUNDARY_VTX) {
         int* on_boundary = NULL;
         int tag_size = sizeof(int);
         TSTT::Mesh_GetTag_Entity(currentVertex->mesh,
@@ -417,7 +393,7 @@ bool MeshSet::get_next_patch(PatchData &pd, MsqError &err )
     // Gathers the global patch information
     // ***********************************************
   
-  else if (mType==GLOBAL_PATCH) {
+  else if (patch_type==PatchData::GLOBAL_PATCH) {
   
     const int MAX_NUM_VERTICES_PER_ELEM=12;
     TSTT::Entity_Handle* elem_vtx = new TSTT::Entity_Handle[MAX_NUM_VERTICES_PER_ELEM];
@@ -573,10 +549,10 @@ bool MeshSet::get_next_patch(PatchData &pd, MsqError &err )
 }
 
 
-bool MeshSet::get_next_element_group(PatchData &pd, MsqError &err)
+bool MeshSet::get_next_element_group(PatchData &pd, PatchDataUser* pd_user, MsqError &err)
 {
     //VERY temp solution just to test
-   return get_next_patch(pd, err);
+   return get_next_patch(pd, pd_user, err);
 }
 
 bool MeshSet::get_next_node_group(PatchData &pd, MsqError &err)
