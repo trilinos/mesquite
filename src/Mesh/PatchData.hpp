@@ -135,7 +135,7 @@ namespace Mesquite
       If n = 1, the entities must be connected via an edge.
       If n = 2, the entities must be connected via a two-dimensional element.
       NOTE:  if n is 2 and the elements in the entity array are
-      two-dimensional, no entities will should this criterion.
+      two-dimensional, no entities should meet this criterion.
     */
     void get_adjacent_entities_via_n_dim(int n, size_t ent_ind,
                                          std::vector<size_t> &adj_ents,
@@ -193,6 +193,11 @@ namespace Mesquite
     
     //! Updates the TSTT mesh with any changes made to the PatchData
     void update_mesh(MsqError &err);
+
+      //!Remove the soft_fixed flag from all vertices in the patch.
+    void set_all_vertices_soft_free(MsqError &err);
+      //!Add a soft_fixed flag to all interior (free) vertices in the patch.
+    void set_free_vertices_soft_fixed(MsqError &err);
 
     //! Fills a PatchData with the elements attached to a center vertex.
     //! Note that all entities in the sub-patch are copies of the entities
@@ -599,6 +604,7 @@ namespace Mesquite
   {
     return element - elementArray;
   }
+
   
 #undef __FUNC__
 #define __FUNC__ "PatchData::create_vertices_memento"
@@ -685,6 +691,7 @@ namespace Mesquite
     // copies the memento array into the PatchData array.
     memcpy(vertexArray, memento->vertices, numVertices*sizeof(MsqVertex) );
   }
+  
   
 } // namespace
 

@@ -320,8 +320,33 @@ double PatchData::get_max_vertex_movement_squared(PatchDataVerticesMemento*
   }
   return max_dist;
 }
-
-
+#undef __FUNC__
+#define __FUNC__ "PatchData::set_free_vertices_soft_fixed"
+/*!
+ */
+void PatchData::set_free_vertices_soft_fixed(MsqError &err)
+  {
+    int m =0;
+    MsqFreeVertexIndexIterator free_iter(this, err);
+    free_iter.reset();
+    while (free_iter.next()) {
+      m=free_iter.value(); 
+      vertexArray[m].set_soft_fixed_flag();
+    }
+  }
+      
+#undef __FUNC__
+#define __FUNC__ "PatchData::set_all_vertices_soft_free"
+/*!
+ */
+void PatchData::set_all_vertices_soft_free(MsqError &/*err*/)
+  {
+    int i = 0;
+    for(i=0;i<numVertices;++i){
+      vertexArray[i].remove_soft_fixed_flag();
+    }
+  }
+  
 /*! \fn PatchData::get_element_vertex_coordinates(size_t elem_index, std::vector<Vector3D> &coords, MsqError &err)
 
     \param elem_index The element index in the Patch
