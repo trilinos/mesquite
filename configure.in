@@ -78,9 +78,9 @@ fi
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
-AC_PROG_CC
+AC_PROG_CC( [cc gcc cl egcs] )
 AC_PROG_CXXCPP
-AC_PROG_CXX
+AC_PROG_CXX( [CC aCC g++ c++ gpp cxx cc++ cl FCC KCC RCC xlC_r xlC] )
 MSQ_CHK_PROG_WITH(MAKEDEPEND, makedepend, /bin/true, [[
   --with-makedpend=PROG   Full path to C/C++ dependency generator
   --without-makedepend    Do not generate dependency information during build]], 
@@ -403,8 +403,8 @@ if test -z "$BABEL_ARG"; then
   AC_CHECK_PROG( [BABEL], [babel], [babel] )
 elif test "$BABEL_ARG" == "yes"; then
   AC_CHECK_HEADER( [sidl.h], [HAVE_SIDL_H=yes], [AC_MSG_ERROR("sidl.h not found")])
-  AC_CHECK_LIB( [sidl], [SIDL_long__array_copy], [SIDL_LNK="-lsidl"], [AC_MSG_ERROR("No SIDL library")])
-  AC_CHECK_PROG( [BABEL], [babel], [babel], [], [] )
+  AC_CHECK_LIB( [sidl], [sidl_long__array_copy], [SIDL_LNK="-lsidl"], [AC_MSG_ERROR("No SIDL library")])
+  AC_CHECK_PROG( [BABEL], [babel], [babel], [] )
   if test -z "$BABEL"; then
     AC_MSG_ERROR("Babel not found")
   fi
