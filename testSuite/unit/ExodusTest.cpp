@@ -51,6 +51,7 @@ private:
    CPPUNIT_TEST_SUITE(ExodusTest);
 #ifdef MSQ_USING_EXODUS
    CPPUNIT_TEST (test_read);
+   CPPUNIT_TEST (test_write);
 #endif
    CPPUNIT_TEST_SUITE_END();
     
@@ -68,15 +69,16 @@ public:
   ExodusTest()
     {}
   
-  void test_read()
+  void test_read();
+  
+  void test_write();
+  
+  void check_mesh( const char* filaname );
+};
+
+  
+  void ExodusTest::test_read()
   {
-    Mesquite::MeshImpl *mMesh;
-    Mesquite::MsqPrintError err(msq_stdio::cout);
-    int i;
-    const unsigned NUM_HEXES = 115;
-    const unsigned NUM_QUADS = 0;
-    const unsigned NUM_NODES = 216;
-    
       // Create a mesh file to read
     char filename[] = "MsqExoTestXXXXXX";
     int fid = mkstemp(filename);
@@ -85,7 +87,48 @@ public:
     bool havefile = create_exodus_file( filename );
     CPPUNIT_ASSERT(havefile);
     
-      // Read a Exodus Mesh file -- 10 triangles, 2 free vertices
+    check_mesh( filename );
+  }
+  
+  void ExodusTest::test_write()
+  {
+    Mesquite::MeshImpl *mMesh;
+    Mesquite::MsqPrintError err(msq_stdio::cout);
+
+      // Create a mesh file
+    char filename[] = "MsqExoTestXXXXXX";
+    int fid = mkstemp(filename);
+    CPPUNIT_ASSERT( fid >= 0 );
+    close( fid );
+    bool havefile = create_exodus_file( filename );
+    CPPUNIT_ASSERT(havefile);
+    
+      // Read in test file
+    mMesh = new Mesquite::MeshImpl;
+    mMesh->read_exodus(filename, err);
+    remove( filename );
+    CPPUNIT_ASSERT(!err);
+    
+      // Write the test file back out
+    mMesh->write_exodus( filename, err );
+    if (err) remove( filename );
+    CPPUNIT_ASSERT(!err);
+    delete mMesh;
+    
+      // Read back in the file we just wrote and check it
+    check_mesh( filename );
+  }
+  
+  void ExodusTest::check_mesh( const char* filename )
+  {
+    Mesquite::MeshImpl *mMesh;
+    Mesquite::MsqPrintError err(msq_stdio::cout);
+    int i;
+    const unsigned NUM_HEXES = 115;
+    const unsigned NUM_QUADS = 0;
+    const unsigned NUM_NODES = 216;
+
+      // Read a Exodus Mesh file
     mMesh = new Mesquite::MeshImpl;
     mMesh->read_exodus(filename, err);
     remove( filename );
@@ -186,7 +229,6 @@ public:
     }
           
   }
-};
 
 #else  /* #ifndef DEBUG */
 

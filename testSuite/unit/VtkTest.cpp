@@ -268,7 +268,73 @@ public:
   
     // Check if the 2x2x2 brick of structured mesh
     // read from file is as expected.
-  void check_8hex_structured( Mesh& mesh )
+  void check_8hex_structured( Mesh& mesh );
+  
+    // Check if the 2x2x2 brick of hexes
+    // read from file is as expected.
+  void check_8hex_block( Mesh& mesh, std::vector<Mesh::VertexHandle>::iterator connectivity );
+  
+    // Check if the 2x2 brick of structured mesh
+    // read from file is as expected.
+  void check_4quad_structured( Mesh& mesh );
+  
+    // Check if the 2x2 brick of quads
+    // read from file is as expected.
+  void check_4quad_block( Mesh& mesh, std::vector<Mesh::VertexHandle>::iterator connectivity );
+        
+    
+    // Test reading VTK unstructured mesh
+  void test_read_unstructured();
+  
+  void test_read_unstructured( const char* filename );
+  
+  
+    // Test reading 2D Vtk structured-points mesh
+  void test_read_structured_2d_points();
+  
+  
+    // Test reading 3D Vtk structured-points mesh
+  void test_read_structured_3d_points();
+  
+  
+    // Test reading 3D Vtk structured-grid mesh
+  void test_read_structured_grid();
+  
+  
+    // Test reading 3D Vtk rectilinear-grid mesh
+  void test_read_rectilinear_grid();
+  
+  
+    // Test reading Vtk simple (one-component) scalar attribute
+  void test_read_simple_scalar_attrib();
+   
+  
+    // Test reading Vtk vector attribute
+  void test_read_vector_attrib();
+  
+
+    // Test reading MeshImpl boundary-vertex bit
+    // from Vtk scalar attribute.
+  void test_read_fixed_attrib();
+ 
+    
+    // Test writing VTK unstructured mesh
+  void test_write();
+  
+  void test_elements();
+  
+  int tri_check_validity(Mesquite::MsqMeshEntity* element_array,
+                         size_t num_elements,
+                         Mesquite::MsqVertex* vtx_array,
+                         size_t num_vertices);
+  
+  int tet_validity_check(Mesquite::MsqMeshEntity* element_array,
+                         size_t num_elements,
+                         Mesquite::MsqVertex *vtx_array);
+};
+    // Check if the 2x2x2 brick of structured mesh
+    // read from file is as expected.
+  void VtkTest::check_8hex_structured( Mesh& mesh )
   {
     MsqPrintError err(cout);
     size_t vertex_count, element_count, use_count;
@@ -299,7 +365,7 @@ public:
   
     // Check if the 2x2x2 brick of hexes
     // read from file is as expected.
-  void check_8hex_block( Mesh& mesh, std::vector<Mesh::VertexHandle>::iterator connectivity )
+  void VtkTest::check_8hex_block( Mesh& mesh, std::vector<Mesh::VertexHandle>::iterator connectivity )
   {
     MsqPrintError err(cout);
     const int base_corners[] =   { 0, 1, 3, 4, 9, 10, 12, 13 };
@@ -326,7 +392,7 @@ public:
   
     // Check if the 2x2 brick of structured mesh
     // read from file is as expected.
-  void check_4quad_structured( Mesh& mesh )
+  void VtkTest::check_4quad_structured( Mesh& mesh )
   {
     MsqPrintError err(cout);
     size_t vertex_count, element_count, use_count;
@@ -355,7 +421,7 @@ public:
   
     // Check if the 2x2 brick of quads
     // read from file is as expected.
-  void check_4quad_block( Mesh& mesh, std::vector<Mesh::VertexHandle>::iterator connectivity )
+  void VtkTest::check_4quad_block( Mesh& mesh, std::vector<Mesh::VertexHandle>::iterator connectivity )
   {
     MsqPrintError err(cout);
     const int base_corners[]   = { 0, 1, 3, 4 };
@@ -380,7 +446,7 @@ public:
         
     
     // Test reading VTK unstructured mesh
-  void test_read_unstructured()
+  void VtkTest::test_read_unstructured()
   {
     FILE* file = fopen( temp_file_name, "w+" );
     CPPUNIT_ASSERT( file );
@@ -392,7 +458,7 @@ public:
     test_read_unstructured( temp_file_name );
   }
   
-  void test_read_unstructured( const char* filename )
+  void VtkTest::test_read_unstructured( const char* filename )
   {
     MeshImpl mesh;
     MsqPrintError err(cout);
@@ -456,7 +522,7 @@ public:
   
   
     // Test reading 2D Vtk structured-points mesh
-  void test_read_structured_2d_points()
+  void VtkTest::test_read_structured_2d_points()
   {
     MeshImpl mesh;
     MsqPrintError err(cout);
@@ -474,7 +540,7 @@ public:
   
   
     // Test reading 3D Vtk structured-points mesh
-  void test_read_structured_3d_points()
+  void VtkTest::test_read_structured_3d_points()
   {
     MeshImpl mesh;
     MsqPrintError err(cout);
@@ -492,7 +558,7 @@ public:
   
   
     // Test reading 3D Vtk structured-grid mesh
-  void test_read_structured_grid()
+  void VtkTest::test_read_structured_grid()
   {
     MeshImpl mesh;
     MsqPrintError err(cout);
@@ -510,7 +576,7 @@ public:
   
   
     // Test reading 3D Vtk rectilinear-grid mesh
-  void test_read_rectilinear_grid()
+  void VtkTest::test_read_rectilinear_grid()
   {
     MeshImpl mesh;
     MsqPrintError err(cout);
@@ -528,7 +594,7 @@ public:
   
   
     // Test reading Vtk simple (one-component) scalar attribute
-  void test_read_simple_scalar_attrib()
+  void VtkTest::test_read_simple_scalar_attrib()
   {
     MeshImpl mesh;
     MsqPrintError err(cout);
@@ -574,7 +640,7 @@ public:
    
   
     // Test reading Vtk vector attribute
-  void test_read_vector_attrib()
+  void VtkTest::test_read_vector_attrib()
   {
     MeshImpl mesh;
     MsqPrintError err(cout);
@@ -621,7 +687,7 @@ public:
 
     // Test reading MeshImpl boundary-vertex bit
     // from Vtk scalar attribute.
-  void test_read_fixed_attrib()
+  void VtkTest::test_read_fixed_attrib()
   {
     MeshImpl mesh;
     MsqPrintError err(cout);
@@ -658,7 +724,7 @@ public:
  
     
     // Test writing VTK unstructured mesh
-  void test_write()
+  void VtkTest::test_write()
   {
     MeshImpl mesh;
     MsqPrintError err(cout);
@@ -685,7 +751,7 @@ public:
     test_read_unstructured( temp_file_name );
   }
   
-  void test_elements()
+  void VtkTest::test_elements()
   {
     Mesquite::MsqPrintError err(cout);
     MeshImpl* mMesh = new MeshImpl;
@@ -733,7 +799,7 @@ public:
     CPPUNIT_ASSERT( tri_check_validity(element_array, num_elements, vtx_array, num_vertices) == 1 );
   }
   
-  int tri_check_validity(Mesquite::MsqMeshEntity* element_array,
+  int VtkTest::tri_check_validity(Mesquite::MsqMeshEntity* element_array,
                          size_t num_elements,
                          Mesquite::MsqVertex* vtx_array,
                          size_t num_vertices)
@@ -775,7 +841,7 @@ public:
     return(valid);
   }
   
-  int tet_validity_check(Mesquite::MsqMeshEntity* element_array,
+  int VtkTest::tet_validity_check(Mesquite::MsqMeshEntity* element_array,
                          size_t num_elements,
                          Mesquite::MsqVertex *vtx_array)
   {
@@ -861,7 +927,6 @@ public:
     
     return(valid);
   }
-};
 
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(VtkTest, "VtkTest");
