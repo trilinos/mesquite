@@ -763,6 +763,9 @@ void PatchData::snap_vertex_to_domain(size_t vertex_index, MsqError &err)
   }
 }
 
+
+#undef __FUNC__
+#define __FUNC__ "PatchData::get_surface_normal"
 /*! Gives the normal to the surface which 'owns'  the vertex given by
   vertex_index*/
 void PatchData::get_surface_normal(size_t vertex_index,
@@ -776,4 +779,6 @@ void PatchData::get_surface_normal(size_t vertex_index,
       vertexHandlesArray[vertex_index],
       surf_norm);
   }
+  else
+    err.set_msg("No domain constraint set.");
 }
