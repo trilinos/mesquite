@@ -472,81 +472,66 @@ inline int NonSmoothSteepestDescent::validity_check(MsqError &err)
 
 
 #undef __FUNC__
-#define __FUNC__ "NonSmoothSteepestDescent::check_equilibrium"
-inline void NonSmoothSteepestDescent::check_equilibrium(int *equil, int *status, MsqError &err)
+#define __FUNC__ "NonSmoothSteepestDescent::get_active_directions" 
+inline void NonSmoothSteepestDescent::get_active_directions(double **gradient, 
+                                         double ***dir, MsqError &err)
 {
-//    int  ierr;
-    int  i,j;
-    int  ind1, ind2;  
-    double min;
-    double **dir;
-    double mid_vec[3], mid_cos, test_cos;
-
-    //TODO - this subroutine is no longer clear to me... is it still
-    // appropriate for quads and hexes?  I think it might be in 2D, but
-    // 3D is less clear.  Is there a more general algorithm to use?
-    // ask Todd/check in numerical optimization
-
-    *equil = MSQ_FALSE;
-    ind1 = ind2 = -1;
-
+    int i;
     int num_active = mActive->num_active;
 
-    if (num_active==numFunctionValues)
-    {
-         *equil = 1; *status = MSQ_EQUILIBRIUM;
-         MSQ_DEBUG_PRINT(3,"All the function values are in the active set\n"); 
-    }
-
-    /* set up the active mGradient directions */
-    this->get_active_directions(mGradient,&dir,err);
-
-    /* normalize the active directions */
-    for (j=0;j<num_active;j++) MSQ_NORMALIZE(dir[j],mDimension);
-
-    if (mDimension == 2) {
-      /* form the grammian */
-      this->form_grammian(dir,err);  
-
-    /* find the minimum element in the upper triangular portion of G*/
-    min = 1;
+    (*dir) =(double **)malloc(sizeof(double *)*num_active);
     for (i=0;i<num_active;i++) {
-      for (j=i+1;j<num_active;j++) {
-        if ( fabs(-1 - mG[i][j]) < 1E-08 ) {
-           *equil = 1; *status = MSQ_EQUILIBRIUM;
-           MSQ_DEBUG_PRINT(3,"The gradients are antiparallel, eq. pt\n"); 
-         }
-         if (mG[i][j]  < min) { 
-           ind1 = i; ind2 = j;
-           min = mG[i][j];
-        }
-      }
+        (*dir)[i] =(double *)malloc(sizeof(double)*mDimension);
+        MSQ_COPY_VECTOR((*dir)[i],gradient[mActive->active_ind[i]],mDimension);
     }
+}
 
-    if ((ind1 != -1) && (ind2 != -1)) {
-      /* find the diagonal of the parallelepiped */
-      for (j=0;j<mDimension;j++) {
-       mid_vec[j]=.5*(dir[ind1][j]+dir[ind2][j]);
-      }
-      MSQ_NORMALIZE(mid_vec,mDimension);
-      MSQ_DOT(mid_cos,dir[ind1],mid_vec,mDimension);
 
-      /* test the other vectors to be sure they lie in the cone */
-      for (i=0;i<num_active;i++) {
-         if ((i != ind1) && (i != ind2)) {
-            MSQ_DOT(test_cos,dir[i],mid_vec,mDimension);
-            if ((test_cos < mid_cos)  &&  fabs(test_cos-mid_cos) > MSQ_MACHINE_EPS) {
-              MSQ_DEBUG_PRINT(3,"An equilibrium point \n");
-              *equil = 1; *status = MSQ_EQUILIBRIUM;
-            }
-         }
+#undef __FUNC__
+#define __FUNC__ "NonSmoothSteepestDescent::check_vector_dots"
+inline int NonSmoothSteepestDescent::check_vector_dots(double **vec, int num_vec, 
+                                             double *normal, MsqError &err)
+{
+    int equil;
+    int i, ind;
+    double test_dot, dot;
+
+    equil = MSQ_FALSE;
+    MSQ_DOT(test_dot,vec[0],normal,3);
+    ind = 1;
+    while ((fabs(test_dot) < MSQ_MACHINE_EPS) && (ind<num_vec)) {
+      MSQ_DOT(test_dot,vec[ind],normal,3);
+      ind++;
+    }
+      
+    for (i=ind;i<num_vec;i++) {
+       MSQ_DOT(dot,vec[i],normal,3);
+       if ( ((dot>0 && test_dot<0) || (dot<0 && test_dot>0)) &&
+            (fabs(dot)>MSQ_MACHINE_EPS)) {
+          return(equil = MSQ_TRUE);
+
        }
-     }
     }
-    if (mDimension == 3) {
-       *equil = this->convex_hull_test(dir,num_active,err);
-       if (*equil == 1) *status = MSQ_EQUILIBRIUM;
-    }
+    return(equil);
+}
+
+
+#undef __FUNC__
+#define __FUNC__ "NonSmoothSteepestDescent::find_plane_normal"
+inline void NonSmoothSteepestDescent::find_plane_normal(double pt1[3], double pt2[3], double pt3[3], 
+                       double *cross, MsqError &err)
+{
+  int i;
+  double vecA[3], vecB[3];
+
+  for (i=0;i<3;i++) {
+    vecA[i] = pt2[i] - pt1[i];
+    vecB[i] = pt3[i] - pt1[i];
+  }
+  cross[0] = vecA[1]*vecB[2] - vecA[2]*vecB[1];
+  cross[1] = vecA[2]*vecB[0] - vecA[0]*vecB[2];
+  cross[2] = vecA[0]*vecB[1] - vecA[1]*vecB[0];
+  MSQ_NORMALIZE(cross, 3);
 }
 
 
@@ -627,55 +612,6 @@ inline int NonSmoothSteepestDescent::convex_hull_test(double **vec, int num_vec,
     return (equil);
 }
 
-
-#undef __FUNC__
-#define __FUNC__ "NonSmoothSteepestDescent::check_vector_dots"
-inline int NonSmoothSteepestDescent::check_vector_dots(double **vec, int num_vec, 
-                                             double *normal, MsqError &err)
-{
-    int equil;
-    int i, ind;
-    double test_dot, dot;
-
-    equil = MSQ_FALSE;
-    MSQ_DOT(test_dot,vec[0],normal,3);
-    ind = 1;
-    while ((fabs(test_dot) < MSQ_MACHINE_EPS) && (ind<num_vec)) {
-      MSQ_DOT(test_dot,vec[ind],normal,3);
-      ind++;
-    }
-      
-    for (i=ind;i<num_vec;i++) {
-       MSQ_DOT(dot,vec[i],normal,3);
-       if ( ((dot>0 && test_dot<0) || (dot<0 && test_dot>0)) &&
-            (fabs(dot)>MSQ_MACHINE_EPS)) {
-          return(equil = MSQ_TRUE);
-
-       }
-    }
-    return(equil);
-}
-
-
-#undef __FUNC__
-#define __FUNC__ "NonSmoothSteepestDescent::find_plane_normal"
-inline void NonSmoothSteepestDescent::find_plane_normal(double pt1[3], double pt2[3], double pt3[3], 
-                       double *cross, MsqError &err)
-{
-  int i;
-  double vecA[3], vecB[3];
-
-  for (i=0;i<3;i++) {
-    vecA[i] = pt2[i] - pt1[i];
-    vecB[i] = pt3[i] - pt1[i];
-  }
-  cross[0] = vecA[1]*vecB[2] - vecA[2]*vecB[1];
-  cross[1] = vecA[2]*vecB[0] - vecA[0]*vecB[2];
-  cross[2] = vecA[0]*vecB[1] - vecA[1]*vecB[0];
-  MSQ_NORMALIZE(cross, 3);
-}
-
-
 #undef __FUNC__
 #define __FUNC__ "NonSmoothSteepestDescent::form_grammian" 
 inline void NonSmoothSteepestDescent::form_grammian(double **vec, MsqError &err)
@@ -696,78 +632,84 @@ inline void NonSmoothSteepestDescent::form_grammian(double **vec, MsqError &err)
    }
 }
 
-
 #undef __FUNC__
-#define __FUNC__ "NonSmoothSteepestDescent::form_PD_grammian" 
-inline void NonSmoothSteepestDescent::form_PD_grammian(MsqError &err)
+#define __FUNC__ "NonSmoothSteepestDescent::check_equilibrium"
+inline void NonSmoothSteepestDescent::check_equilibrium(int *equil, int *status, MsqError &err)
 {
-    int  i,j,k;
-    int  g_ind_1;
-    int  singular;
+//    int  ierr;
+    int  i,j;
+    int  ind1, ind2;  
+    double min;
+    double **dir;
+    double mid_vec[3], mid_cos, test_cos;
+
+    //TODO - this subroutine is no longer clear to me... is it still
+    // appropriate for quads and hexes?  I think it might be in 2D, but
+    // 3D is less clear.  Is there a more general algorithm to use?
+    // ask Todd/check in numerical optimization
+
+    *equil = MSQ_FALSE;
+    ind1 = ind2 = -1;
 
     int num_active = mActive->num_active;
-        
-    /* this assumes the grammian has been formed */
+
+    if (num_active==numFunctionValues)
+    {
+         *equil = 1; *status = MSQ_EQUILIBRIUM;
+         MSQ_DEBUG_PRINT(3,"All the function values are in the active set\n"); 
+    }
+
+    /* set up the active mGradient directions */
+    this->get_active_directions(mGradient,&dir,err);
+
+    /* normalize the active directions */
+    for (j=0;j<num_active;j++) MSQ_NORMALIZE(dir[j],mDimension);
+
+    if (mDimension == 2) {
+      /* form the grammian */
+      this->form_grammian(dir,err);  
+
+    /* find the minimum element in the upper triangular portion of G*/
+    min = 1;
     for (i=0;i<num_active;i++) {
-      for (j=0;j<num_active;j++) {
-        if (mG[i][j]==-1) {
-          err.set_msg("Grammian not computed properly");
-          return;
+      for (j=i+1;j<num_active;j++) {
+        if ( fabs(-1 - mG[i][j]) < 1E-08 ) {
+           *equil = 1; *status = MSQ_EQUILIBRIUM;
+           MSQ_DEBUG_PRINT(3,"The gradients are antiparallel, eq. pt\n"); 
+         }
+         if (mG[i][j]  < min) { 
+           ind1 = i; ind2 = j;
+           min = mG[i][j];
         }
       }
     }
 
-    /* use the first gradient in the active set */
-    g_ind_1 = 0;
-    mPDG[0][0] = mG[0][0];
-    pdgInd[0] = mActive->active_ind[0];
+    if ((ind1 != -1) && (ind2 != -1)) {
+      /* find the diagonal of the parallelepiped */
+      for (j=0;j<mDimension;j++) {
+       mid_vec[j]=.5*(dir[ind1][j]+dir[ind2][j]);
+      }
+      MSQ_NORMALIZE(mid_vec,mDimension);
+      MSQ_DOT(mid_cos,dir[ind1],mid_vec,mDimension);
 
-    /* test the rest and add them as appropriate */
-    k = 1; i = 1;
-    while( (k<mDimension) && (i < num_active) ) {
-        mPDG[0][k] = mPDG[k][0] = mG[0][i];
-        mPDG[k][k] = mG[i][i];
-        if ( k == 2) { /* add the dot product of g1 and g2 */
-           mPDG[1][k] = mPDG[k][1] = mG[g_ind_1][i];
-        }
-        this->singular_test(k+1,mPDG,&singular,err);
-        if (!singular) {
-           pdgInd[k] = mActive->active_ind[i];
-           if (k==1) g_ind_1 = i;
-           k++;
-        }
-        i++;
+      /* test the other vectors to be sure they lie in the cone */
+      for (i=0;i<num_active;i++) {
+         if ((i != ind1) && (i != ind2)) {
+            MSQ_DOT(test_cos,dir[i],mid_vec,mDimension);
+            if ((test_cos < mid_cos)  &&  fabs(test_cos-mid_cos) > MSQ_MACHINE_EPS) {
+              MSQ_DEBUG_PRINT(3,"An equilibrium point \n");
+              *equil = 1; *status = MSQ_EQUILIBRIUM;
+            }
+         }
+       }
+     }
+    }
+    if (mDimension == 3) {
+       *equil = this->convex_hull_test(dir,num_active,err);
+       if (*equil == 1) *status = MSQ_EQUILIBRIUM;
     }
 }
 
-#undef __FUNC__
-#define __FUNC__ "NonSmoothSteepestDescent::singular_test" 
-inline void NonSmoothSteepestDescent::singular_test(int n, double **A, int *singular, MsqError &err) 
-{
-//    int test;
-//    double determinant;
-    double cond;
-
-    if ((n>3) || (n<1)) {
-      err.set_msg("Singular test works only for n=1 to n=3");
-    }
-
-    (*singular)=MSQ_TRUE;
-    switch(n) {
-    case 1:
-        if (A[0][0] > 0) (*singular) = MSQ_FALSE;
-        break;
-    case 2:
-        if (fabs(A[0][0]*A[1][1] - A[0][1]*A[1][0]) > MSQ_MACHINE_EPS)           
-            (*singular) = MSQ_FALSE;
-        break;
-    case 3:
-       /* calculate the condition number */
-        this->condition3x3(A, &cond, err); 
-        if (cond < 1E14) (*singular)=MSQ_FALSE;
-        break;
-    }
-}
 
 
 #undef __FUNC__
@@ -836,22 +778,78 @@ inline void NonSmoothSteepestDescent::condition3x3(double **A, double *cond, Msq
    }
 }
 
-
 #undef __FUNC__
-#define __FUNC__ "NonSmoothSteepestDescent::get_active_directions" 
-inline void NonSmoothSteepestDescent::get_active_directions(double **gradient, 
-                                         double ***dir, MsqError &err)
+#define __FUNC__ "NonSmoothSteepestDescent::singular_test" 
+inline void NonSmoothSteepestDescent::singular_test(int n, double **A, int *singular, MsqError &err) 
 {
-    int i;
-    int num_active = mActive->num_active;
+//    int test;
+//    double determinant;
+    double cond;
 
-    (*dir) =(double **)malloc(sizeof(double *)*num_active);
-    for (i=0;i<num_active;i++) {
-        (*dir)[i] =(double *)malloc(sizeof(double)*mDimension);
-        MSQ_COPY_VECTOR((*dir)[i],gradient[mActive->active_ind[i]],mDimension);
+    if ((n>3) || (n<1)) {
+      err.set_msg("Singular test works only for n=1 to n=3");
+    }
+
+    (*singular)=MSQ_TRUE;
+    switch(n) {
+    case 1:
+        if (A[0][0] > 0) (*singular) = MSQ_FALSE;
+        break;
+    case 2:
+        if (fabs(A[0][0]*A[1][1] - A[0][1]*A[1][0]) > MSQ_MACHINE_EPS)           
+            (*singular) = MSQ_FALSE;
+        break;
+    case 3:
+       /* calculate the condition number */
+        this->condition3x3(A, &cond, err); 
+        if (cond < 1E14) (*singular)=MSQ_FALSE;
+        break;
     }
 }
 
+
+#undef __FUNC__
+#define __FUNC__ "NonSmoothSteepestDescent::form_PD_grammian" 
+inline void NonSmoothSteepestDescent::form_PD_grammian(MsqError &err)
+{
+    int  i,j,k;
+    int  g_ind_1;
+    int  singular;
+
+    int num_active = mActive->num_active;
+        
+    /* this assumes the grammian has been formed */
+    for (i=0;i<num_active;i++) {
+      for (j=0;j<num_active;j++) {
+        if (mG[i][j]==-1) {
+          err.set_msg("Grammian not computed properly");
+          return;
+        }
+      }
+    }
+
+    /* use the first gradient in the active set */
+    g_ind_1 = 0;
+    mPDG[0][0] = mG[0][0];
+    pdgInd[0] = mActive->active_ind[0];
+
+    /* test the rest and add them as appropriate */
+    k = 1; i = 1;
+    while( (k<mDimension) && (i < num_active) ) {
+        mPDG[0][k] = mPDG[k][0] = mG[0][i];
+        mPDG[k][k] = mG[i][i];
+        if ( k == 2) { /* add the dot product of g1 and g2 */
+           mPDG[1][k] = mPDG[k][1] = mG[g_ind_1][i];
+        }
+        this->singular_test(k+1,mPDG,&singular,err);
+        if (!singular) {
+           pdgInd[k] = mActive->active_ind[i];
+           if (k==1) g_ind_1 = i;
+           k++;
+        }
+        i++;
+    }
+}
 
 
 #undef __FUNC__
