@@ -461,7 +461,7 @@ void MeshImpl::read_exodus(const char* in_filename , MsqError &err)
     // See if this vertex is marked as a boundary vertex
   for (i=0; i < num_fixed_nodes; ++i)
   {
-    myMesh->fix_vertex( i, fixed_nodes[i] > 1, err ); MSQ_CHKERR(err);
+    myMesh->fix_vertex( fixed_nodes[i]-1, true, err ); MSQ_CHKERR(err);
   }
 
     // Finish up
