@@ -61,7 +61,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   PRINT_INFO("\no  Performing Feasible Newton optimization.\n");
   int num_free_vertices = pd.num_free_vertices(err);
   int nb_iterations = 0;
-
+  bool fn_bool=true;// bool used for determining validity of patch
   /* Computes the value of the stopping criterion*/
   MeshSet *mesh=get_mesh_set();
   bool inner_criterion=inner_criterion_met(*mesh,err);
@@ -83,7 +83,11 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
       }
     });
       
-    double original_value = objFunc->evaluate(pd, err);  MSQ_CHKERR(err);
+    double original_value = 0.0;
+    fn_bool=objFunc->evaluate(pd, original_value, err);  MSQ_CHKERR(err);
+    if(!fn_bool){
+      err.set_msg("Feasible Newton passed invalid patch");
+    }
     MSQ_DEBUG_ACTION(3,{std::cout << "  o  original_value: " << original_value
                                   << std::endl;});
     
