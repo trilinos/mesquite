@@ -202,15 +202,16 @@ void Mesquite::writeVtkMesh(const char filebase[128], TSTT::cMesh_Handle mesh_h,
   // retrieves value of tag "fixed" .
   char bnd_tag_name[6];
   strcpy(bnd_tag_name, "fixed");
-  void* bnd_tag_handle;
+  void* bnd_tag_handle=0;
   TSTT::Mesh_tagGetHandle (mesh_h, bnd_tag_name, &bnd_tag_handle, &tstt_err);
   assert(!tstt_err);
   for (int i=0; i<num_vertices; ++i) {
-    int* on_boundary;
+    int* on_boundary=0;
     int tag_size;
     TSTT::Mesh_GetTag_Entity(mesh_h,
                              (TSTT::cEntity_Handle) vtx[i],
-                             bnd_tag_handle, (void**)&on_boundary, &tag_size, &tstt_err);
+                             bnd_tag_handle, (void**)&on_boundary, &tag_size,
+                             &tstt_err);
     assert(!tstt_err);
     fprintf(vtk_fp, "%d\n", *on_boundary);
   }
