@@ -84,6 +84,10 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
     norm = sqrt(norm);
     MSQ_DEBUG_ACTION(3,{std::cout<< "  o  gradient norm: " << norm << std::endl;});
   
+    if (norm <= gradientLessThan) {
+      break;
+    }
+
     // ******** Chooses the search direction ********
     // i.e., -gradient for the steepest descent
     for (int i=0; i<num_free_vertices; ++i)
