@@ -8,10 +8,10 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 14-Nov-02 at 16:51:36
-//  LAST-MOD: 14-Nov-02 at 17:31:53 by Thomas Leurent
+//  LAST-MOD: 15-Nov-02 at 13:27:34 by Thomas Leurent
 
 
-/*! \file LaplacianIQ.cpp
+/*! \file LaplacianIQ.hpp
 
 This is the second possibility for wrappers. It is based on the InctructionQueue concept. 
 

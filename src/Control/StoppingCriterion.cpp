@@ -2,7 +2,7 @@
 //
 // DESCRIPTION:
 // ============
-/*! \file StoppingCriterion.hpp
+/*! \file StoppingCriterion.cpp
   
     \brief  Member function of the Mesquite::StoppingCriterion class
 

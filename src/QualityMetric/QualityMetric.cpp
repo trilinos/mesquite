@@ -1,5 +1,5 @@
 /*!
-  \file   QualityMetic.cpp
+  \file   QualityMetric.cpp
   \brief  
 
   \author Michael Brewer

@@ -1,10 +1,10 @@
-/*!
-  \file   LaplacianQualityMetric.cpp
-  \brief  
-
-  \author Thomas Leurent
-  \date   2002-05-09
+/*! \file LaplacianQualityMetric.cpp
+  \author Michael Brewer
+  \date 2002-05-14
+  evaluates the sum of lengths of edges connected to a node
+  for two- and three-diminsional elements
 */
+
 
 #include "LaplacianQualityMetric.hpp"
 #include <math.h>
@@ -21,13 +21,6 @@ using namespace Mesquite;
 
 //Michael Notes:  This code is not what we want, it just here
 //mainly as an example of a node based metric
-
-/*! \file LaplacianQualityMetric.cpp
-  \name Michael Brewer
-  \date 2002-05-14
-  evaluates the sum of lengths of edges connected to a node
-  for two- and three-diminsional elements
-*/
 
 double LaplacianQualityMetric::evaluate_node(MsqVertex* node,
                                              MsqError &err)
