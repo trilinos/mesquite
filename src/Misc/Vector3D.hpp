@@ -1,7 +1,7 @@
 #ifndef MESQUITE_VECTOR3D_HPP
 #define MESQUITE_VECTOR3D_HPP
 
-//#include "Mesquite.hpp"
+#include "Mesquite.hpp"
 #ifdef USE_C_PREFIX_INCLUDES
 #include <cassert>
 #else
