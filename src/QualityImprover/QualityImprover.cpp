@@ -16,6 +16,7 @@
 
 Implements a couple of default virtual functions of the virtual class
 
+ \author Thomas Leurent
  */
 // DESCRIP-END.
 //
