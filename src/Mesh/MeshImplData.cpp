@@ -329,6 +329,7 @@ size_t MeshImplData::add_vertex( const Vector3D& coords, bool fixed, MsqError& e
   }
   else
   {
+    index = vertexList.size();
     vertexList.push_back( Vertex(coords, fixed ) );
   }
   
