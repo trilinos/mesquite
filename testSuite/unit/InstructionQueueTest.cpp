@@ -125,7 +125,8 @@ public:
      err.clear();
      mQueue.add_preconditioner(mQI, err);
      CPPUNIT_ASSERT_MESSAGE("preconditionner cannot be added after master QI"
-                            , err);     
+                            , err);
+     err.clear(); 
   }
 
    void test_remove_preconditioner()
@@ -152,6 +153,7 @@ public:
       err.clear();
       mQueue.remove_preconditioner(0, err);
       CPPUNIT_ASSERT_MESSAGE("should not remove QualityAssessor", err);   
+      err.clear();
    }
 
    void test_insert_preconditioner()
@@ -207,6 +209,7 @@ public:
       err.clear();
       mQueue.remove_quality_assessor(1, err);
       CPPUNIT_ASSERT_MESSAGE("should not remove QualityImprover", err);
+      err.clear();
    }
 
    void test_insert_quality_assessor()
