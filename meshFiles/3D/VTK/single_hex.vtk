@@ -15,12 +15,13 @@ CELLS 1 9
 8 7 6 5 4 3 2 1 0  
 CELL_TYPES 1
 12
-BOUNDARY_POINTS 8
-0
+POINT_DATA 8
+SCALARS fixed float
+LOOKUP_TABLE default
 1
-2
-3
-4
-5
-6
-7
+1
+1
+1
+1
+1
+1
