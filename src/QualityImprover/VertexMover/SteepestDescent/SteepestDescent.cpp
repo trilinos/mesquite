@@ -45,7 +45,7 @@ void SteepestDescent::initialize_mesh_iteration(PatchData &pd, MsqError &err)
 void SteepestDescent::optimize_vertex_positions(PatchData &pd, 
                                                 MsqError &err)
 {
-  PRINT_INFO("\no  Performing Steepest Descent optimization.\n");
+    //PRINT_INFO("\no  Performing Steepest Descent optimization.\n");
   // Get the array of vertices of the patch. Free vertices are first.
   MeshSet *vertex_mover_mesh=get_mesh_set();
   int num_free_vertices = pd.num_free_vertices(err);
@@ -53,7 +53,7 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
   Vector3D* dk = new Vector3D[num_free_vertices];
   int nb_iterations = 0;
   double norm=10e6;
-
+  bool sd_bool=true;//bool for OF values
   double smallest_edge = 0.4; // TODO -- update -- used for step_size
   bool inner_criterion=inner_criterion_met(*vertex_mover_mesh,err);
 
@@ -95,7 +95,14 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
         dk[i][j] = -gradient[i][j] / norm;
 
     // ******* Improve Quality *******
-    double original_value = objFunc->evaluate(pd, err);  MSQ_CHKERR(err);
+    double original_value = 0.0;
+      //get intial objective function value, original_value
+    sd_bool=objFunc->evaluate(pd, original_value, err);
+    MSQ_CHKERR(err);
+      //set an error if initial patch is invalid.
+    if(!sd_bool){
+      err.set_msg("SteepestDescent passed invalid initial patch.");
+    }
     MSQ_DEBUG_ACTION(3,{std::cout << "  o  original_value: " << original_value << std::endl;});
     
     double new_value = original_value+1;
@@ -113,7 +120,10 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
       // change vertices coordinates in PatchData according to descent direction.
       pd.move_free_vertices(dk, num_free_vertices, step_size, err); MSQ_CHKERR(err);
       // and evaluate the objective function with the new node positions.
-      new_value = objFunc->evaluate(pd, err); MSQ_CHKERR(err);
+      sd_bool=objFunc->evaluate(pd, new_value, err); MSQ_CHKERR(err);
+      if(!sd_bool){
+        err.set_msg("SteepestDescent created invalid patch.");
+      }
       MSQ_DEBUG_ACTION(3,{std::cout << "    o  step_size: " << step_size << std::endl; std::cout << "    o  new_value: " << new_value << std::endl;
       });
       
