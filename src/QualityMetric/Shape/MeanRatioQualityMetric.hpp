@@ -48,8 +48,8 @@ namespace Mesquite
       }
      
       //! evaluate using mesquite objects 
-      bool evaluate_element(PatchData &pd, MsqMeshEntity *element, double &fval,
-                            MsqError &err); 
+      bool evaluate_element(PatchData &pd, MsqMeshEntity *element, 
+                            double &fval, MsqError &err); 
 
       bool compute_element_analytical_gradient(PatchData &pd,
                                                MsqMeshEntity *element,
@@ -67,35 +67,10 @@ namespace Mesquite
                                               int nv, 
                                               double &m,
                                               MsqError &err);
-   protected:     
-      bool mean_ratio_2d(Vector3D temp_vec[],double &fval,MsqError &err);
-
    private:
      
       MeanRatioQualityMetric();
    };
-
-   // BEGIN INLINE FUNCITONS
-   // TO BE REMOVED AND REPLACED WITH CORRECT VALUE
-
-   inline bool MeanRatioQualityMetric::mean_ratio_2d(Vector3D temp_vec[],
-                                                     double &fval,
-                                                     MsqError &/*err*/)
-   {
-      // NOTE: Fixed to check for degenerate or inverted elements
-      // NOTE: If coordinates are always first two, can make calculation faster
-      // CHANGE: Change to (unit_normal_vector%(temp_vec[0]*temp_vec[1]))
-      //         to have the correct 2-D behavior
-      double determinant = Vector3D(0,0,1)%(temp_vec[0]*temp_vec[1]);
-
-      if (determinant <= MSQ_MIN) {
-         return false;
-      }
-
-      fval = ((temp_vec[0].length_squared() +
-               temp_vec[1].length_squared()) / (2.0*determinant));
-      return true;
-   }
 } //namespace
 
 

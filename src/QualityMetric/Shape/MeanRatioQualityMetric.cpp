@@ -55,29 +55,36 @@ MeanRatioQualityMetric::MeanRatioQualityMetric()
 /* This set of functions reference triangular elements to an equilateral     */
 /* triangle.  The input are the coordinates in the following order:          */
 /*      [x1 x2 x3 y1 y2 y3]                                                  */
+/* A unit normal is also required in order to calculate the value.           */
 /* A zero return value indicates success, while a nonzero value indicates    */
 /* failure.                                                                  */
 /*****************************************************************************/
 
+/*****************************************************************************/
+/* Function evaluation -- requires 43 flops.                                 */
+/*****************************************************************************/
 inline bool m_fcn_2e(double &obj, const Vector3D x[3], const Vector3D &n)
 {
-  double matr[6], f;
+  double matr[9], f;
   double g;
 
-  /* Calculate M = A*inv(W). */
+  /* Calculate M = [A*inv(W) n] */
   matr[0] = x[1][0] - x[0][0];
   matr[1] = (2.0*x[2][0] - x[1][0] - x[0][0])*isqrt3;
+  matr[2] = n[0];
 
-  matr[2] = x[1][1] - x[0][1];
-  matr[3] = (2.0*x[2][1] - x[1][1] - x[0][1])*isqrt3;
+  matr[3] = x[1][1] - x[0][1];
+  matr[4] = (2.0*x[2][1] - x[1][1] - x[0][1])*isqrt3;
+  matr[5] = n[1];
 
-  matr[4] = x[1][2] - x[0][2];
-  matr[5] = (2.0*x[2][2] - x[1][2] - x[0][2])*isqrt3;
+  matr[6] = x[1][2] - x[0][2];
+  matr[7] = (2.0*x[2][2] - x[1][2] - x[0][2])*isqrt3;
+  matr[8] = n[2];
 
-  /* Calculate det([n M]). */
-  g = n[0]*(matr[2]*matr[5] - matr[3]*matr[4]) +
-      n[1]*(matr[1]*matr[4] - matr[0]*matr[5]) +
-      n[2]*(matr[0]*matr[3] - matr[1]*matr[2]);
+  /* Calculate det(M). */
+  g = matr[0]*(matr[4]*matr[8] - matr[5]*matr[7]) +
+      matr[1]*(matr[5]*matr[6] - matr[3]*matr[8]) +
+      matr[2]*(matr[3]*matr[7] - matr[4]*matr[6]);
   if (g < MSQ_MIN) { obj = g; return false; }
 
   /* Calculate norm(M). */
@@ -90,26 +97,116 @@ inline bool m_fcn_2e(double &obj, const Vector3D x[3], const Vector3D &n)
   return true;
 }
 
-inline bool g_fcn_2e(double &obj, Vector3D /*g_obj[3]*/, 
+/*****************************************************************************/
+/* Gradient requires 87 flops.                                               */
+/*****************************************************************************/
+inline bool g_fcn_2e(double &obj, Vector3D g_obj[3], 
                      const Vector3D x[3], const Vector3D &n)
 {
-  double matr[6], f;
+  double matr[9], f;
+  double adj_m[9], g;
+  double loc1, loc2, loc3, loc4;
+
+  /* Calculate M = [A*inv(W) n] */
+  matr[0] = x[1][0] - x[0][0];
+  matr[1] = (2.0*x[2][0] - x[1][0] - x[0][0])*isqrt3;
+  matr[2] = n[0];
+
+  matr[3] = x[1][1] - x[0][1];
+  matr[4] = (2.0*x[2][1] - x[1][1] - x[0][1])*isqrt3;
+  matr[5] = n[1];
+
+  matr[6] = x[1][2] - x[0][2];
+  matr[7] = (2.0*x[2][2] - x[1][2] - x[0][2])*isqrt3;
+  matr[8] = n[2];
+
+  /* Calculate det([n M]). */
+  loc1 = matr[4]*matr[8] - matr[5]*matr[7];
+  loc2 = matr[5]*matr[6] - matr[3]*matr[8];
+  loc3 = matr[3]*matr[7] - matr[4]*matr[6];
+  g = matr[0]*loc1 + matr[1]*loc2 + matr[2]*loc3;
+  if (g < MSQ_MIN) { obj = g; return false; }
+
+  /* Calculate norm(M). */
+  f = matr[0]*matr[0] + matr[1]*matr[1] +
+      matr[3]*matr[3] + matr[4]*matr[4] +
+      matr[6]*matr[6] + matr[7]*matr[7];
+
+  /* Calculate objective function. */
+  loc4 = a2 * pow(g, b2);
+  obj = f * loc4;
+
+  /* Calculate the derivative of the objective function. */
+  f = 2.0 * loc4;
+  g = b2 * obj / g;
+
+  adj_m[0] = matr[0]*f + loc1*g;
+  adj_m[1] = matr[1]*f + loc2*g;
+  adj_m[2] = 0.0;
+
+  loc1 = matr[0]*g;
+  loc2 = matr[1]*g;
+  loc3 = matr[2]*g;
+
+  adj_m[3] = matr[3]*f + loc3*matr[7] - loc2*matr[8];
+  adj_m[4] = matr[4]*f + loc1*matr[8] - loc3*matr[6];
+  adj_m[5] = 0.0;
+
+  adj_m[6] = matr[6]*f + loc2*matr[5] - loc3*matr[4];
+  adj_m[7] = matr[7]*f + loc3*matr[3] - loc1*matr[5];
+  adj_m[8] = 0.0;
+
+  loc1 = isqrt3*adj_m[1];
+  g_obj[0][0] = -adj_m[0] - loc1;
+  g_obj[1][0] = adj_m[0] - loc1;
+  g_obj[2][0] = 2.0*loc1;
+
+  loc1 = isqrt3*adj_m[4];
+  g_obj[0][1] = -adj_m[3] - loc1;
+  g_obj[1][1] = adj_m[3] - loc1;
+  g_obj[2][1] = 2.0*loc1;
+
+  loc1 = isqrt3*adj_m[7];
+  g_obj[0][2] = -adj_m[6] - loc1;
+  g_obj[1][2] = adj_m[6] - loc1;
+  g_obj[2][2] = 2.0*loc1;
+  return true;
+}
+
+/*****************************************************************************/
+/* This set of functions reference triangular elements to an isoscles        */
+/* triangle.  The input are the coordinates in the following order:          */
+/*      [x1 x2 x3 y1 y2 y3]                                                  */
+/* A unit normal is also required in order to calculate the value.           */
+/* A zero return value indicates success, while a nonzero value indicates    */
+/* failure.                                                                  */
+/*****************************************************************************/
+
+/*****************************************************************************/
+/* Function evaluation -- requires 34 flops.                                 */
+/*****************************************************************************/
+inline bool m_fcn_2i(double &obj, const Vector3D x[3], const Vector3D &n)
+{
+  double matr[9], f;
   double g;
 
   /* Calculate M = A*inv(W). */
   matr[0] = x[1][0] - x[0][0];
-  matr[1] = (2.0*x[2][0] - x[1][0] - x[0][0])*isqrt3;
+  matr[1] = x[2][0] - x[0][0];
+  matr[2] = n[0];
 
-  matr[2] = x[1][1] - x[0][1];
-  matr[3] = (2.0*x[2][1] - x[1][1] - x[0][1])*isqrt3;
+  matr[3] = x[1][1] - x[0][1];
+  matr[4] = x[2][1] - x[0][1];
+  matr[5] = n[1];
 
-  matr[4] = x[1][2] - x[0][2];
-  matr[5] = (2.0*x[2][2] - x[1][2] - x[0][2])*isqrt3;
+  matr[6] = x[1][2] - x[0][2];
+  matr[7] = x[2][2] - x[0][2];
+  matr[8] = n[2];
 
-  /* Calculate det([n M]). */
-  g = n[0]*(matr[2]*matr[5] - matr[3]*matr[4]) +
-      n[1]*(matr[1]*matr[4] - matr[0]*matr[5]) +
-      n[2]*(matr[0]*matr[3] - matr[1]*matr[2]);
+  /* Calculate det(M). */
+  g = matr[0]*(matr[4]*matr[8] - matr[5]*matr[7]) +
+      matr[1]*(matr[5]*matr[6] - matr[3]*matr[8]) +
+      matr[2]*(matr[3]*matr[7] - matr[4]*matr[6]);
   if (g < MSQ_MIN) { obj = g; return false; }
 
   /* Calculate norm(M). */
@@ -119,6 +216,79 @@ inline bool g_fcn_2e(double &obj, Vector3D /*g_obj[3]*/,
 
   /* Calculate objective function. */
   obj = a2 * f * pow(g, b2);
+  return true;
+}
+
+/*****************************************************************************/
+/* Gradient requires 69 flops.                                               */
+/*****************************************************************************/
+inline bool g_fcn_2i(double &obj, Vector3D g_obj[3], 
+                     const Vector3D x[3], const Vector3D &n)
+{
+  double matr[9], f;
+  double adj_m[9], g;
+  double loc1, loc2, loc3, loc4;
+
+  /* Calculate M = [A*inv(W) n] */
+  matr[0] = x[1][0] - x[0][0];
+  matr[1] = x[2][0] - x[0][0];
+  matr[2] = n[0];
+
+  matr[3] = x[1][1] - x[0][1];
+  matr[4] = x[2][1] - x[0][1];
+  matr[5] = n[1];
+
+  matr[6] = x[1][2] - x[0][2];
+  matr[7] = x[2][2] - x[0][2];
+  matr[8] = n[2];
+
+  /* Calculate det([n M]). */
+  loc1 = matr[4]*matr[8] - matr[5]*matr[7];
+  loc2 = matr[5]*matr[6] - matr[3]*matr[8];
+  loc3 = matr[3]*matr[7] - matr[4]*matr[6];
+  g = matr[0]*loc1 + matr[1]*loc2 + matr[2]*loc3;
+  if (g < MSQ_MIN) { obj = g; return false; }
+
+  /* Calculate norm(M). */
+  f = matr[0]*matr[0] + matr[1]*matr[1] +
+      matr[3]*matr[3] + matr[4]*matr[4] +
+      matr[6]*matr[6] + matr[7]*matr[7];
+
+  /* Calculate objective function. */
+  loc4 = a2 * pow(g, b2);
+  obj = f * loc4;
+
+  /* Calculate the derivative of the objective function. */
+  f = 2.0 * loc4;
+  g = b2 * obj / g;
+
+  adj_m[0] = matr[0]*f + loc1*g;
+  adj_m[1] = matr[1]*f + loc2*g;
+  adj_m[2] = 0.0;
+
+  loc1 = matr[0]*g;
+  loc2 = matr[1]*g;
+  loc3 = matr[2]*g;
+
+  adj_m[3] = matr[3]*f + loc3*matr[7] - loc2*matr[8];
+  adj_m[4] = matr[4]*f + loc1*matr[8] - loc3*matr[6];
+  adj_m[5] = 0.0;
+
+  adj_m[6] = matr[6]*f + loc2*matr[5] - loc3*matr[4];
+  adj_m[7] = matr[7]*f + loc3*matr[3] - loc1*matr[5];
+  adj_m[8] = 0.0;
+
+  g_obj[0][0] = -adj_m[0] - adj_m[1];
+  g_obj[1][0] = adj_m[0];
+  g_obj[2][0] = adj_m[1];
+
+  g_obj[0][1] = -adj_m[3] - adj_m[4];
+  g_obj[1][1] = adj_m[3];
+  g_obj[2][1] = adj_m[4];
+
+  g_obj[0][2] = -adj_m[6] - adj_m[7];
+  g_obj[1][2] = adj_m[6];
+  g_obj[2][2] = adj_m[7];
   return true;
 }
 
@@ -1389,10 +1559,10 @@ bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
   EntityTopology topo = e->get_element_type();
 
   MsqVertex *vertices = pd.get_vertex_array(err);
-  std::vector<size_t> v_i;
-  e->get_vertex_indices(v_i);
+  const size_t *v_i = e->get_vertex_index_array();
 
-  Vector3D coords[4];		// Vertex coordinates for the (decomposed) elements
+  Vector3D coords[4];		// Coordinates for the (decomposed) elements
+  Vector3D n;			// Surface normal for 2D objects
   double metrics[8];
 
   int locs_hex[8][4] = {{0, 1, 3, 4},	// Hex element descriptions
@@ -1409,30 +1579,23 @@ bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
 
   switch(topo) {
   case TRIANGLE:
-    coords[0]=vertices[v_i[1]]-vertices[v_i[0]];
-    coords[2]=vertices[v_i[2]]-vertices[v_i[0]];
-
-    //make relative to equilateral
-    coords[1]=((2*coords[2])-coords[0])*MSQ_SQRT_THREE_INV;
-    return mean_ratio_2d(coords, m, err);
-
+    pd.get_surface_normal(v_i[0], n, err); MSQ_CHKERR(err);
+    n = n / n.length();		// Need unit normal
+    coords[0] = vertices[v_i[0]];
+    coords[1] = vertices[v_i[1]];
+    coords[2] = vertices[v_i[2]];
+    if (!m_fcn_2e(m, coords, n)) return false;
+    break;
+    
   case QUADRILATERAL:
-    coords[0]=vertices[v_i[1]]-vertices[v_i[0]];
-    coords[1]=vertices[v_i[3]]-vertices[v_i[0]];
-    if (!mean_ratio_2d(coords,metrics[0],err)) return false;
-      
-    coords[0]=vertices[v_i[2]]-vertices[v_i[1]];
-    coords[1]=vertices[v_i[0]]-vertices[v_i[1]];
-    if (!mean_ratio_2d(coords,metrics[1],err)) return false;
-
-    coords[0]=vertices[v_i[3]]-vertices[v_i[2]];
-    coords[1]=vertices[v_i[1]]-vertices[v_i[2]];
-    if (!mean_ratio_2d(coords,metrics[2],err)) return false;
-
-    coords[0]=vertices[v_i[0]]-vertices[v_i[3]];
-    coords[1]=vertices[v_i[2]]-vertices[v_i[3]];
-    if (!mean_ratio_2d(coords,metrics[3],err)) return false;
-
+    for (i = 0; i < 4; ++i) {
+      pd.get_surface_normal(v_i[locs_hex[i][0]], n, err); MSQ_CHKERR(err);
+      n = n / n.length();	// Need unit normal
+      coords[0] = vertices[v_i[locs_hex[i][0]]];
+      coords[1] = vertices[v_i[locs_hex[i][1]]];
+      coords[2] = vertices[v_i[locs_hex[i][2]]];
+      if (!m_fcn_2i(metrics[i], coords, n)) return false;
+    }
     m = average_metrics(metrics, 4, err);
     break;
 
@@ -1482,10 +1645,11 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
   }
 
   MsqVertex *vertices = pd.get_vertex_array(err);
-  std::vector<size_t> v_i;
-  e->get_vertex_indices(v_i);
+  const size_t *v_i = e->get_vertex_index_array();
 
   Vector3D coords[4];		// Vertex coordinates for the (decomposed) elements
+  Vector3D n;			// Surface normal for 2D objects
+
   Vector3D gradients[32];	// Gradient of metric with respect to the coords
   Vector3D grad[8];		// Accumulated gradients (composed merit function)
   double   metrics[8];		// Metric values for the (decomposed) elements
@@ -1505,9 +1669,167 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 
   switch(topo) {
   case TRIANGLE:
+    pd.get_surface_normal(v_i[0], n, err); MSQ_CHKERR(err);
+    n = n / n.length();		// Need unit normal
+    coords[0] = vertices[v_i[0]];
+    coords[1] = vertices[v_i[1]];
+    coords[2] = vertices[v_i[2]];
+    if (!g_fcn_2e(m, grad, coords, n)) return false;
+
+    // This is not very efficient, but is one way to select correct gradients.
+    // For gradients, info is returned only for free vertices, in the 
+    // order of v[].
+    for (i = 0; i < 3; ++i) {
+      for (j = 0; j < nv; ++j) {
+        if (vertices + v_i[i] == v[j]) {
+          g[j] = grad[i];
+        }
+      }
+    }
+    break;
+
   case QUADRILATERAL:
-    std::cout << "Gradients in 2D not implemented yet.\n" << std::endl;
-    return false;
+    for (i = 0; i < 4; ++i) {
+      pd.get_surface_normal(v_i[locs_hex[i][0]], n, err); MSQ_CHKERR(err);
+      n = n / n.length();	// Need unit normal
+      coords[0] = vertices[v_i[locs_hex[i][0]]];
+      coords[1] = vertices[v_i[locs_hex[i][1]]];
+      coords[2] = vertices[v_i[locs_hex[i][2]]];
+      if (!g_fcn_2i(metrics[i], gradients+3*i, coords, n)) return false;
+    }
+
+    switch(avgMethod) {
+    case MINIMUM:
+      m = metrics[0];
+      for (i = 1; i < 4; ++i) {
+        if (metrics[i] < m) m = metrics[i];
+      }
+
+      nm = 0;
+      for (i = 0; i < 4; ++i) {
+        if (metrics[i] - m <= MSQ_MIN) {
+          grad[locs_hex[i][0]] += gradients[3*i+0];
+          grad[locs_hex[i][1]] += gradients[3*i+1];
+          grad[locs_hex[i][2]] += gradients[3*i+2];
+          ++nm;
+        }
+      }
+
+      for (i = 0; i < 4; ++i) {
+        grad[i] /= nm;
+      }
+      break;
+
+    case MAXIMUM:
+      m = metrics[0];
+      for (i = 1; i < 4; ++i) {
+        if (metrics[i] > m) m = metrics[i];
+      }
+
+      nm = 0;
+      for (i = 0; i < 4; ++i) {
+        if (m - metrics[i] <= MSQ_MIN) {
+          grad[locs_hex[i][0]] += gradients[3*i+0];
+          grad[locs_hex[i][1]] += gradients[3*i+1];
+          grad[locs_hex[i][2]] += gradients[3*i+2];
+          ++nm;
+        }
+      }
+
+      for (i = 0; i < 4; ++i) {
+        grad[i] /= nm;
+      }
+      break;
+
+    case SUM:
+      m = 0;
+      for (i = 0; i < 4; ++i) {
+        m += metrics[i];
+      }
+
+      for (i = 0; i < 4; ++i) {
+        grad[locs_hex[i][0]] += gradients[3*i+0];
+        grad[locs_hex[i][1]] += gradients[3*i+1];
+        grad[locs_hex[i][2]] += gradients[3*i+2];
+      }
+      break;
+
+    case GEOMETRIC:
+      m = 0.0;
+      for (i = 0; i < 4; ++i) {
+        m += log(metrics[i]);
+        metrics[i] = 1.0 / metrics[i];
+      }
+      m = exp(m / 4.0);
+
+      for (i = 0; i < 4; ++i) {
+        grad[locs_hex[i][0]] += metrics[i]*gradients[3*i+0];
+        grad[locs_hex[i][1]] += metrics[i]*gradients[3*i+1];
+        grad[locs_hex[i][2]] += metrics[i]*gradients[3*i+2];
+      }
+
+      nm = m / 4.0;
+      for (i = 0; i < 4; ++i) {
+        grad[i] *= nm;
+      }
+      break;
+
+    default:
+      switch(avgMethod) {
+      case LINEAR:
+        t = 1.0;
+        break;
+
+      case RMS:
+        t = 2.0;
+        break;
+
+      case HARMONIC:
+        t = -1.0;
+        break;
+
+      case HMS:
+        t = -2.0;
+        break;
+      default:
+        err.set_msg("averaging method not available.");
+        break;
+      }
+
+      m = 0;
+      for (i = 0; i < 4; ++i) {
+        nm = pow(metrics[i], t);
+        m += nm;
+
+        metrics[i] = t*nm/metrics[i];
+      }
+
+      nm = m / 4.0;
+      m = pow(nm, 1.0 / t);
+
+      for (i = 0; i < 4; ++i) {
+        grad[locs_hex[i][0]] += metrics[i]*gradients[3*i+0];
+        grad[locs_hex[i][1]] += metrics[i]*gradients[3*i+1];
+        grad[locs_hex[i][2]] += metrics[i]*gradients[3*i+2];
+      }
+
+      nm = m / (4.0*nm*t);
+      for (i = 0; i < 4; ++i) {
+        grad[i] *= nm;
+      }
+      break;
+    }
+
+    // This is not very efficient, but is one way to select correct gradients
+    // For gradients, info is returned only for free vertices, in the order of v[].
+    for (i = 0; i < 4; ++i) {
+      for (j = 0; j < nv; ++j) {
+        if (vertices + v_i[i] == v[j]) {
+          g[j] = grad[i];
+        }
+      }
+    }
+    break;
 
   case TETRAHEDRON:
     coords[0] = vertices[v_i[0]];
@@ -1517,7 +1839,8 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
     if (!g_fcn_3e(m, grad, coords)) return false;
 
     // This is not very efficient, but is one way to select correct gradients.
-    // For gradients, info is returned only for free vertices, in the order of v[].
+    // For gradients, info is returned only for free vertices, in the
+    // order of v[].
     for (i = 0; i < 4; ++i) {
       for (j = 0; j < nv; ++j) {
         if (vertices + v_i[i] == v[j]) {
@@ -1707,8 +2030,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
   }
 
   MsqVertex *vertices = pd.get_vertex_array(err);
-  std::vector<size_t> v_i;
-  e->get_vertex_indices(v_i);
+  const size_t *v_i = e->get_vertex_index_array();
 
   Vector3D coords[4];		// Vertex coordinates for the (decomposed) elements
   Vector3D gradients[32];	// Gradient of metric with respect to the coords
