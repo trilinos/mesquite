@@ -163,7 +163,7 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &pd,
   // Computes objective function gradient for an element based metric
   if(qm_type==QualityMetric::ELEMENT_BASED){
 
-    size_t e, ve, fve;
+    size_t e, ve;
     size_t nfve; // num free vtx in element
     size_t nve; // num vtx in element
     MsqVertex* ele_free_vtces[MSQ_MAX_NUM_VERT_PER_ENT];
@@ -243,9 +243,9 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &pd,
       if(vert_num_vtces > vfv_array_length){
         vfv_array_length=vert_num_vtces+5;
         delete [] vert_free_vtces;
-        MsqVertex** vert_free_vtces = new MsqVertex*[vfv_array_length];
+        vert_free_vtces = new MsqVertex*[vfv_array_length];
         delete [] grad_vec;
-        Vector3D* grad_vec = new Vector3D[vfv_array_length];
+        grad_vec = new Vector3D[vfv_array_length];
       }
       
       size_t vert_num_free_vtces=0;

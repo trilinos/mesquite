@@ -1,6 +1,7 @@
 #include "PlanarDomain.hpp"
 
-void Mesquite::PlanarDomain::snap_to(Mesquite::Mesh::EntityHandle entity_handle,
+void Mesquite::PlanarDomain::snap_to(Mesquite::Mesh::EntityHandle
+                                       /*entity_handle*/,
                                      Vector3D &coordinate)
 {
   if (!mMesh)

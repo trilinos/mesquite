@@ -85,6 +85,7 @@ namespace Mesquite
       inline void accumulate_entries(PatchData &pd, const size_t &elem_index,
 				     Matrix3D* const &mat3d_array, MsqError &err);
       void compute_preconditioner(MsqError &err);
+      
       void apply_preconditioner(Vector3D zloc[], Vector3D rloc[], MsqError &err);
       void cg_solver(Vector3D x[], Vector3D b[], MsqError &err);
       //! Hessian - vector product, summed with a second vector (optional).
@@ -161,7 +162,7 @@ namespace Mesquite
   */
   inline void axpy(Vector3D res[], size_t size_r,
                    const MsqHessian &H, const Vector3D x[], size_t size_x,
-                   const Vector3D y[], size_t size_y, MsqError &err)
+                   const Vector3D y[], size_t size_y, MsqError &/*err*/)
     {
       if ((size_r != H.mSize) || (size_x != H.mSize) ||
 	  (size_y != H.mSize && size_y != 0)) {

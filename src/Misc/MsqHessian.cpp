@@ -69,7 +69,7 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
   size_t num_elements = pd.num_elements();
   size_t const * vtx_list;
   size_t e, r, rs, re, c, cs, ce, nz, nnz, nve, i, j;
-  MsqMeshEntity* patchElemArray = pd.get_element_array(err); MSQ_CHKERR(err);
+  patchElemArray = pd.get_element_array(err); MSQ_CHKERR(err);
 
   if (num_vertices == 0) {
     err.set_msg("No vertices in PatchData");
@@ -309,7 +309,8 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
 #undef __FUNC__
 #define __FUNC__ "MsqHessian::get_diagonal_blocks"
 /*! \param diag is an STL vector of size MsqHessian::size() . */
-void MsqHessian::get_diagonal_blocks(std::vector<Matrix3D> &diag, MsqError &err)
+void MsqHessian::get_diagonal_blocks(std::vector<Matrix3D> &diag,
+                                     MsqError &/*err*/)
 {
   // make sure we have enough memory, so that no reallocation is needed later.
   if (diag.size() != size()) {
@@ -327,7 +328,7 @@ void MsqHessian::get_diagonal_blocks(std::vector<Matrix3D> &diag, MsqError &err)
 /*! compute a preconditioner used in the preconditioned conjugate gradient
   algebraic solver. In fact, this computes \f$ M^{-1} \f$ .
 */
-void MsqHessian::compute_preconditioner(MsqError &err)
+void MsqHessian::compute_preconditioner(MsqError &/*err*/)
 {
   // reallocates arrays if size of the Hessian has changed too much.
   if (mSize > precondArraySize || mSize < precondArraySize/10 ) {
