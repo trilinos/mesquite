@@ -1,0 +1,352 @@
+dnl Process this file with autoconf 2.13 to produce a configure script
+dnl for the CCA tutorial software installation.
+
+#--------------------------------------------------------------------
+#       Disable caching since it seems to get in the way
+#       more times than it helps us.
+#--------------------------------------------------------------------
+define([AC_CACHE_LOAD], )dnl
+define([AC_CACHE_SAVE], )dnl
+
+# Make sure we're us.
+AC_INIT(toto.c)
+
+#------------------------------------------------------------------------------
+# Directory where we keep the autoconf stuff and some HPC environment folklore.
+#------------------------------------------------------------------------------
+AC_CONFIG_AUX_DIR(./config)
+
+if test "${prefix}" = "NONE"; then
+    prefix=/usr/local
+fi
+if test "${exec_prefix}" = "NONE"; then
+    exec_prefix=$prefix
+fi
+
+# source tree vars
+MSQ_ROOT=`pwd`
+# The next two lines entirely quoted to keep autoconf/m4 
+# from messing with the [] in the regex.
+[MSQ_PARENT=`echo $MSQ_ROOT | sed 's%[^/][^/]*$%%' | sed 's%\/$%%'`]
+[MSQ_GRANDPARENT=`echo $MSQ_PARENT | sed 's%[^/][^/]*$%%' | sed 's%\/$%%'`]
+[MSQ_ANCESTOR=`echo $MSQ_GRANDPARENT | sed 's%[^/][^/]*$%%' | sed 's%\/$%%'`]
+# install tree vars
+MSQ_INSTALL_ROOT="$MSQ_ROOT"
+
+#-------------------------------------------------------------
+# Load in the Msq macros determined by the config/acsite.m4 file
+#-------------------------------------------------------------
+
+# Checks for unix programs
+AC_DEFUN(MSQ_UNIX_PROGRAMS,
+[
+AC_CANONICAL_SYSTEM
+AC_HEADER_STDC
+AC_CHECK_HEADERS(fcntl.h strings.h sys/file.h sys/time.h unistd.h)
+
+AC_PROG_LN_S
+AC_SUBST(LN_S)
+
+AC_PROG_MAKE_SET
+AC_SUBST(SET_MAKE)
+
+AC_PROG_RANLIB
+AC_SUBST(RANLIB)
+
+AC_PROG_MAKEDEPEND
+AC_SUBST(MAKEDEPEND)
+
+# source tree vars
+CURRDIR=`pwd`
+# The next two lines entirely quoted to keep autoconf/m4 
+# from messing with the [] in the regex.
+[CURRDIR_PARENT=`echo $CURRDIR | sed 's%[^/][^/]*$%%' | sed 's%\/$%%'`]
+[CURRDIR_GRANDPARENT=`echo $CURRDIR_PARENT | sed 's%[^/][^/]*$%%' | sed 's%\/$%%'`]
+[CURRDIR_GREATGRANDPARENT=`echo $CURRDIR_GRANDPARENT | sed 's%[^/][^/]*$%%' | sed 's%\/$%%'`]
+[CURRDIR_ANCESTOR=`echo $CURRDIR_GREATGRANDPARENT | sed 's%[^/][^/]*$%%' | sed 's%\/$%%'`]
+]
+)
+
+## end of paths to search collection
+
+AC_DEFUN(MSQ_COMPILER,
+[
+#AC_LANG_CPLUSPLUS
+
+# FIND C compiler
+#------------------------------------------------------------------------------
+#  see if the user gave us the location of the c compiler
+#------------------------------------------------------------------------------
+AC_ARG_WITH(cc,
+    [Location of alternative c compiler:
+  --with-cc=EXECUTABLE
+                          The location of C.
+                          Give the full path:
+                              --with-cc='/usr/local/gcc/bin/gcc' ],
+    , [with_cc=yes])
+
+case "$with_cc" in
+    no)
+        #  User specified --without-cc
+        #  print a warning.
+        AC_MSG_WARN([Option '--without-cc' Causes demo to be suppressed.])
+        AC_MSG_ERROR([A c compiler is required; demo has a c code.])
+        ;;
+    yes)
+        #  User didn't give the option or didn't give useful
+        #  information, search for it ourselves
+        with_cc=_searching
+        ;;
+    *)
+        CC="$with_cc"
+        ;;
+esac
+
+if test "$with_cc" = _searching ; then
+    AC_PROG_CC
+fi
+AC_SUBST(CC)
+
+# FIND c++ compiler
+#------------------------------------------------------------------------------
+#  see if the user gave us the location of the c++ compiler
+#------------------------------------------------------------------------------
+AC_ARG_WITH(cPP,
+    [Location of alternative c++ compiler:
+  --with-c++=EXECUTABLE
+                          The location of C++.
+                          Give the full path:
+                              --with-c++='/usr/local/gcc/bin/g++' ],
+    , [with_cPP=yes])
+
+case "$with_cPP" in
+    no)
+        #  User specified --without-c++
+        #  print a warning.
+        AC_MSG_WARN([Option '--without-c++' Causes compilation to be suppressed.])
+        AC_MSG_ERROR([A c++ compiler is required; current code is a c++ code.])
+        ;;
+    yes)
+        #  User didn't give the option or didn't give useful
+        #  information, search for it ourselves
+        with_cPP=_searching
+        ;;
+    *)
+        CXX="$with_cPP"
+        cca_have_cpp=yes
+        ;;
+esac
+
+if test "$with_cPP" = _searching ; then
+    AC_PROG_CXX
+fi
+
+# FIND c++ preprocessor
+AC_PROG_CXXCPP
+AC_SUBST(CXXCPP)
+
+# set the warning flags depending on whether or not we are using gcc
+if test "${GCC}" = "yes" ; then
+    CFLAGS_WARNING="-Wall -Wconversion"
+else
+    CFLAGS_WARNING=""
+fi
+AC_SUBST(CFLAGS_WARNING)
+
+#------------------------------------------------------------------------------
+# If we're using GCC, see if the compiler understands -pipe.  If so, use it.
+# It makes compiling go faster.  (This is only a performance feature.)
+#------------------------------------------------------------------------------
+
+if test -z "$no_pipe"; then
+if test -n "$GCC"; then
+  AC_MSG_CHECKING([if c++ compiler understands -pipe])
+  OLDCXX="$CXX"
+  CXX="$CXX -pipe"
+  AC_TRY_COMPILE(,,
+    AC_MSG_RESULT(yes),
+    CXX="$OLDCXX"
+    AC_MSG_RESULT(no))
+fi
+fi
+
+AC_SUBST(CXX)
+AC_SUBST(CXXFLAGS)
+AC_SUBST(CXX_TEMPLATES)
+]
+)
+
+
+#------------------------------------------------------------------------------
+# AOMD: See if the user gave us the location of cca-spec
+# then search $ccatut_cca_spec_dirs.
+# One of these directories must be
+# present and contain the correct files, or else the user
+# must give the directory that contains the correct files.
+#------------------------------------------------------------------------------
+# cca spec (must contain java and cxx binding subdirs)
+
+AC_DEFUN(MSQ_AOMD,
+[
+msq_aomd_dirs="
+    $CURRDIR_PARENT/aomd
+    $CURRDIR_GRANDPARENT/aomd
+    $CURRDIR_GREATGRANDPARENT/aomd
+    $CURRDIR_ANCESTOR/aomd
+    $prefix/aomd
+    $HOME/aomd
+    /usr/local/aomd
+    $MSQ_HOME/aomd
+    $HOME/software/aomd
+    $CURRDIR_PARENT/AOMD
+    $CURRDIR_GRANDPARENT/AOMD
+    $CURRDIR_GREATGRANDPARENT/AOMD
+    $CURRDIR_ANCESTOR/AOMD
+    $prefix/AOMD
+    $HOME/AOMD
+    /usr/local/AOMD
+    $MSQ_HOME/AOMD
+    $HOME/software/AOMD
+    $HOME/aomd/TSTT-AOMD-1.0.56
+"
+AC_ARG_WITH(aomd, 
+    [Location of aomd library:
+  --with-aomd=AOMD_LIB
+                          The location of AOMD libary
+                          Give the full path:
+                              --with-aomd='/usr/local/AOMD'
+                          or check out the library from the 
+                          tstt web pages. ] ,
+    , [with_aomd=no])
+
+case "$with_aomd" in
+    no)
+        # lUser input error
+        with_aomd=_no
+        ;;
+    yes)
+        #  User didn't give the option or didn't give useful
+        #  information, search for it ourselves
+        with_aomd=_searching
+        ;;
+    *)
+        AOMD_ROOT="$with_aomd"
+        ;;
+esac
+
+if test "$with_aomd" = _searching ; then
+    AC_MSG_CHECKING([for AOMD])
+    for chome in $msq_aomd_dirs ; do
+        if test -d $chome ; then
+            with_aomd=$chome
+            AC_MSG_RESULT([found $chome.])
+            break
+        fi
+    done
+fi
+if test "$with_aomd" = _searching ; then
+    AC_MSG_RESULT([Cannot find AOMD root directory.])
+    AC_MSG_ERROR([Please install it and/or use --with-aomd=AOMD_ROOT.])
+fi
+if test ! "$with_aomd" = _no ; then
+  AC_MSG_CHECKING([for AOMD])
+  break
+  if test ! -f "$with_aomd/Trellis/AOMD/include/AOMD.h" ; then
+      AC_MSG_RESULT([No Trellis/AOMD/include/AOMD.h in $with_aomd.])
+      AC_MSG_ERROR([Please install a correct AOMD directory.])
+  fi
+fi
+AOMD_ROOT="$with_aomd"
+
+AC_SUBST(AOMD_ROOT)
+]
+)
+
+#------------------------------------------------------------------------------
+# DOXYGEN_PATH: See if the user gave us the location of doxygen
+# then search $ccatut_dox_dirs_dirs.
+# One of these directories must be
+# present and contain the correct files, or else the user
+# must give the directory that contains the correct files.
+#------------------------------------------------------------------------------
+AC_DEFUN(MSQ_PROG_DOXYGEN,
+[
+ccatut_dox_dirs="
+    $prefix/bin/doxygen
+    /usr/bin/doxygen
+    /usr/local/bin/doxygen
+    $HOME/doxygen/bin/doxygen
+    $MSQ_HOME/doxygen
+    $HOME/bin/doxygen
+"
+AC_ARG_WITH(dox, 
+            [Location of doxygen:
+             --with-dox=DoxygenLocation
+             The location of doxygen. Give the full path:
+                              --with-dox='/usr/local/bin/doxygen'],
+    , [with_dox=_searching])
+
+case "$with_dox" in
+    no)
+ 	AC_MSG_WARN([Option '--without-dox'
+	makes it impossible to produce source-based documentation.])
+        ;;
+    yes)
+        #  User didn't give the option or didn't give useful
+        #  information, search for it ourselves
+        with_dox=_searching
+        ;;
+    *)
+        DOXYGEN_PATH="$with_dox"
+        ;;
+esac
+
+if test "$with_dox" = _searching ; then
+    AC_MSG_CHECKING([for OPTIONAL doxygen])
+    for dox in $ccatut_dox_dirs ; do
+        if test -f $dox ; then
+            with_dox=$dox
+            AC_MSG_RESULT([found $dox.])
+            break
+        fi
+    done
+fi
+
+if test "$with_dox" = _searching ; then
+    AC_MSG_RESULT([Cannot find doxygen.])
+    AC_MSG_WARN([Without doxygen, it is impossible to produce source-based 
+	documentation.  If you wish to be able to generate this documentation,
+	please re-run configure with a --with-dox=doxygen_path option.])
+    with_dox="no"
+fi
+
+if test "$with_dox" = no ; then
+   with_dox="@echo WARNING: doxygen not configured!"
+fi
+
+DOXYGEN_PATH="$with_dox"
+AC_SUBST(DOXYGEN_PATH)
+]
+)
+
+AC_SUBST(MSQ_ROOT)
+AC_SUBST(MSQ_INSTALL_ROOT)
+
+MSQ_UNIX_PROGRAMS
+MSQ_COMPILER
+MSQ_AOMD
+MSQ_PROG_DOXYGEN
+
+
+GENFILES="Makefile.customize"
+
+AC_SUBST($GENFILES)
+AC_OUTPUT($GENFILES)
+
+
+
+
+#touch make.dependencies
+#if [ -d ../driver ]; then
+#  touch ../driver/make.dependencies
+#fi
