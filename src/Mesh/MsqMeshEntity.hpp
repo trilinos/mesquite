@@ -49,10 +49,8 @@ namespace Mesquite
     
       //! Returns the number of vertices in this element type.
     static inline size_t vertex_count(EntityTopology type);
-#ifdef MESQUITE_USES_TSTT
     static inline size_t vertex_count(TSTT::EntityTopology type,
                                       MsqError& err);
-#endif
     
       //! gets the vertices of the mesh entity
     void get_vertex_indices(std::vector<size_t> &vertex_list);
@@ -108,7 +106,6 @@ namespace Mesquite
     }
   }
 
-#ifdef MESQUITE_USES_TSTT
   inline size_t MsqMeshEntity::vertex_count(TSTT::EntityTopology type,
                                             MsqError& err)
   {
@@ -138,7 +135,6 @@ namespace Mesquite
         return 0;
     }
   }
-#endif
   
     // Returns the number of vertices in this type
     // of element, or 0 if a variable number.
