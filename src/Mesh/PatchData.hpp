@@ -150,7 +150,7 @@ namespace Mesquite
       {}
     };
     
-      //! Don't allow PatchData to be copied implicitly
+      //! Doesn't allow PatchData to be copied implicitly
     PatchData(const PatchData &A);
       //! copy function used in copy constructor and assignment
     void copy(const PatchData &A);
@@ -310,7 +310,7 @@ namespace Mesquite
 
 #undef __FUNC__
 #define __FUNC__ "PatchData::add_vertex"
-  /*! \fn PatchData::add_vertex(double* vertex_coord, bool check_redundancy, MsqError &err)
+  /*! \fn PatchData::add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh, double* vertex_coord, bool check_redundancy, MsqError &err)
 
   \brief adds a vertex to the PatchData object.
 
@@ -362,7 +362,7 @@ namespace Mesquite
   
 #undef __FUNC__
 #define __FUNC__ "PatchData::get_coords_array"
-  /*! PatchData::get_coords_array(MsqError &err)
+  /*! \fn PatchData::get_vertex_array(MsqError &err) const 
 
       \brief return the PatchData vertices information as a C array of doubles.
 
@@ -378,7 +378,7 @@ namespace Mesquite
   
 #undef __FUNC__
 #define __FUNC__ "PatchData::set_vertex_coordinates"
-  /*! PatchData::set_vertex_coordinates(Vector3D coords, size_t index, MsqError &err)
+  /*! \fn PatchData::set_vertex_coordinates(const Vector3D &coords, size_t index, MsqError &err)
 
       \brief set the coordinates of a vertex in the raw array
     */
@@ -398,7 +398,7 @@ namespace Mesquite
   
 #undef __FUNC__
 #define __FUNC__ "PatchData::get_element_array" 
-  /*! PatchData::get_element_array(MsqError &err)
+  /*! \fn PatchData::get_element_array(MsqError &err) const 
 
       \brief return the PatchData elements information as a C array of integers,
       i.e. a connectivity array.
@@ -415,9 +415,7 @@ namespace Mesquite
   
 #undef __FUNC__
 #define __FUNC__ "PatchData::get_vertex_to_elem_offset" 
-  /*! PatchData::get_vertex_to_elem_offset(MsqError &err)
-
-      \brief 
+  /*! \fn PatchData::get_vertex_to_elem_offset(MsqError &err) const 
     */
   inline size_t* PatchData::get_vertex_to_elem_offset(MsqError &err) const
   {
@@ -428,9 +426,7 @@ namespace Mesquite
 
 #undef __FUNC__
 #define __FUNC__ "PatchData::get_vertex_to_elem_array" 
-  /*! PatchData::get_vertex_to_elem_array(MsqError &err)
-
-      \brief 
+  /*! \fn PatchData::get_vertex_to_elem_array(MsqError &err) const 
     */
   inline size_t* PatchData::get_vertex_to_elem_array(MsqError &err) const
   {

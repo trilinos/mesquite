@@ -1,9 +1,5 @@
 /*!
   \file   PatchData.cpp
-  \brief  
-
-  The PatchData Class provides the local mesh information and
-  functionality to Mesquite algorythms.
 
   \author Thomas Leurent
   \date   2002-01-17
@@ -113,7 +109,7 @@ PatchData::PatchData()
 // Destructor
 #undef __FUNC__
 #define __FUNC__ "PatchData::~PatchData" 
-Mesquite::PatchData::~PatchData()
+PatchData::~PatchData()
 {
   delete [] vertexArray;
   delete [] vertexHandlesArray;
@@ -125,7 +121,7 @@ Mesquite::PatchData::~PatchData()
 
 #undef __FUNC__
 #define __FUNC__ "PatchData::add_element"
-/*! \fn PatchData::add_element(int* vertex_indices, EntityTopology topo,  MsqError &err)
+/*! \fn PatchData::add_element(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh, int* vertex_indices, EntityTopology topo,  MsqError &err)
 
 \param int* vertex_indices ... those indices corresponds to the indices of
 the element's vertices in the PatchData arrays -- see output
@@ -159,7 +155,7 @@ void PatchData::add_element(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
 
 #undef __FUNC__
 #define __FUNC__ "PatchData::add_triangle"
-/*! \fn PatchData::add_triangle(int index_vtx1, int index_vtx2, int index_vtx3, MsqError &err)
+/*! \fn PatchData::add_triangle(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh, size_t index_vtx1, size_t index_vtx2, size_t index_vtx3, MsqError &err)
 
 \brief adds a triangle element to the PatchData object.
 
@@ -197,18 +193,6 @@ void PatchData::add_triangle(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
   
   return;
 }
-
-#undef __FUNC__
-#define __FUNC__ "PatchData::get_smallest_edge"
-/*! \fn PatchData::get_smallest_edge_length(MsqError &err)
-
-    \brief returns the length of the smallest edge in the PatchData
- */
-// double PatchData::get_smallest_edge_length(MsqError &err)
-// {
-//   err.set_msg("Function not yet implemented");
-//   return 0;
-// }
 
 
 #undef __FUNC__
