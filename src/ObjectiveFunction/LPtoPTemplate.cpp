@@ -13,6 +13,9 @@
 #include "MsqMessage.hpp"
 using  namespace Mesquite;  
 
+using std::cout;
+using std::endl;
+
 #undef __FUNC__
 #define __FUNC__ "LPtoPTemplate::LPtoPTemplate"
 
@@ -139,10 +142,10 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &patch,
   bool obj_bool=true;
   // If MSQ_DBG1 is defined, check to make sure that num_vert == array_size.
   MSQ_DEBUG_ACTION(1,{
-    int num_vert=patch.num_vertices(); // costly function !
-    if(num_vert!=array_size){
+    int num_vert=patch.num_vertices(); 
+    if(num_vert!=array_size && array_size!=-1){
       err.set_msg("Analytical Gradient passed arrays of incorrect size.");
-      MSQ_CHKERR(err); }
+      MSQ_CHKERR(err); cout << num_vert << " instead of " << array_size << endl; }
   });
     
   double big_f=0;
@@ -315,6 +318,7 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
 
   for (e=0; e<num_elems; ++e) {
      
+    // Gets a list of free vertices in the element.
     elements[e].get_vertex_indices(vtx_indices);
     num_vtx=0;
     for (index=vtx_indices.begin(); index!=vtx_indices.end(); ++index) {
@@ -322,6 +326,7 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
         elem_vtx[num_vtx] = vertices + (*index); ++num_vtx; }
     }
     
+    // Only the free vertices will have non-zero entries. 
     currentQM->compute_element_hessian(pd, elements+e, elem_vtx, grad_vec, elem_hessian,
                                        num_vtx, metric_value, err); MSQ_CHKERR(err);
 
