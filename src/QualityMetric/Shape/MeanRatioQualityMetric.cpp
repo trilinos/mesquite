@@ -1743,7 +1743,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 
 	metrics[i] = t*nm/metrics[i];
       }
-      if (avgMethod = SUM) {
+      if (avgMethod == SUM) {
 	nm = m;
       }
       else {
