@@ -179,7 +179,7 @@ namespace Mesquite
     void copy_active(ActiveSet *active1, ActiveSet *active2, MsqError &err);
     
       /* function/gradient/active set computations */
-    void compute_function(PatchData *pd, double *function, MsqError &err);
+    bool compute_function(PatchData *pd, double *function, MsqError &err);
     double** compute_gradient(PatchData *pd, MsqError &err);
     void find_active_set(double *function, ActiveSet *active_set, MsqError &err);
     void print_active_set(ActiveSet *active_set, double *func, MsqError &err);

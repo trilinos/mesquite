@@ -1,3 +1,5 @@
+// -*- Mode : c++; tab-width: 3; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 3 -*-
+
 /*!  \File NonSmoothSteepestDescent.cpp \brief
   
   Implements the NonSmoothSteepestDescent class member functions.
@@ -9,6 +11,7 @@
 #include <stdio.h>
 #include <vector>
 #include "NonSmoothSteepestDescent.hpp"
+#include "MsqTimer.hpp"
 
 using namespace Mesquite;
 
@@ -48,7 +51,7 @@ void NonSmoothSteepestDescent::initialize(PatchData &pd, MsqError &err)
 {
   this->set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err, 1);
   
-    // local parameter initialization
+  // local parameter initialization
   activeEpsilon = .00003;
   //  activeEpsilon = .000000003;
   minAcceptableImprovement = 1e-6;
@@ -61,12 +64,13 @@ void NonSmoothSteepestDescent::initialize(PatchData &pd, MsqError &err)
 void NonSmoothSteepestDescent::initialize_mesh_iteration(PatchData &pd, MsqError &err)
 {
 }
-
 #undef __FUNC__
 #define __FUNC__ "NonSmoothSteepestDescent::optimize_vertex_positions" 
 void NonSmoothSteepestDescent::optimize_vertex_positions(PatchData &pd, 
                                                 MsqError &err)
 {
+  FUNCTION_TIMER_START("NonSmoothSteepestDescent");
+
   //  std::cout << "- Executing NonSmoothSteepestDescent::optimize_node_positions()\n";
   /* perform the min max smoothing algorithm */
   MSQ_DEBUG_PRINT(2,"\nInitializing the patch iteration\n");
@@ -105,6 +109,8 @@ void NonSmoothSteepestDescent::optimize_vertex_positions(PatchData &pd,
     }
   });
 
+  // TODO - need to switch to validity via metric evaluations should
+  // be associated with the compute_function somehow
   /* check for an invalid mesh; if it's invalid return and ask the user 
      to use untangle */
   if (this->validity_check(err)!=1) {
@@ -115,6 +121,7 @@ void NonSmoothSteepestDescent::optimize_vertex_positions(PatchData &pd,
   }
 
   /* assumes one function value per element */
+  // TODO - need to include vertex metrics 
   numFunctionValues = numElements;
 
   /* initialize the optimization data up to numFunctionValues */
@@ -123,12 +130,15 @@ void NonSmoothSteepestDescent::optimize_vertex_positions(PatchData &pd,
   MSQ_DEBUG_PRINT(3,"Done initializing optimization\n");
 
   /* compute the initial function values */
+  //TODO this should return a bool with the validity
   this->compute_function(&pd, originalFunction, err); MSQ_CHKERR(err);
  
   // find the initial active set
   this->find_active_set(originalFunction, mActive, err);  MSQ_CHKERR(err);
 
   this->minmax_opt(pd,err); MSQ_CHKERR(err);
+
+  FUNCTION_TIMER_END();
 }
 
 
@@ -166,14 +176,19 @@ void NonSmoothSteepestDescent::cleanup()
 
 #undef __FUNC__
 #define __FUNC__ "NonSmoothSteepestDescent::compute_function"
-void NonSmoothSteepestDescent::compute_function(PatchData *patch_data, double *func, MsqError &err)
+bool NonSmoothSteepestDescent::compute_function(PatchData *patch_data, double *func, MsqError &err)
 {
   // ASSUMES ONE VALUE PER ELEMENT; ALSO NEED 1.0/FUNCTION WHICH IS ONLY
   // TRUE OF CONDITION NUMBER
 
   //  MSQ_DEBUG_PRINT(2,"Computing Function\n");
+  FUNCTION_TIMER_START("Compute Function");
 
+  //TODO need to switch this to element or vertex metric evaluations
+  //TODO need to include boolean testing for validity
   int i;
+  bool valid_bool=true;
+
   for (i=0;i<numElements;i++) func[i]=0.0;
   QualityMetric* currentQM=objFunc->get_quality_metric();
   if(currentQM==NULL){
@@ -181,17 +196,21 @@ void NonSmoothSteepestDescent::compute_function(PatchData *patch_data, double *f
   }
   
   for (i=0;i<numElements;i++) {
-    currentQM->evaluate_element(*patch_data,
+    valid_bool = currentQM->evaluate_element(*patch_data,
                                 &(patch_data->element_by_index(i)),
                                 func[i], err); MSQ_CHKERR(err);
     //    MSQ_DEBUG_ACTION(3,{fprintf(stdout,"  Function value[%d]=%g\n",i,func[i]);});
   }
+  FUNCTION_TIMER_END();
+  return(valid_bool);
 }
 
 #undef __FUNC__
 #define __FUNC__ "NonSmoothSteepestDescent::compute_gradient"
 double** NonSmoothSteepestDescent::compute_gradient(PatchData *patch_data, MsqError &err)
 {
+  FUNCTION_TIMER_START("Compute Gradient");
+
   MSQ_DEBUG_PRINT(2,"Computing Gradient\n");
 
   double delta = 10e-6;
@@ -231,6 +250,7 @@ double** NonSmoothSteepestDescent::compute_gradient(PatchData *patch_data, MsqEr
   
   free(func);
   free(fdelta);
+  FUNCTION_TIMER_END();
   return(mGradient);
 }
 
@@ -244,6 +264,7 @@ void NonSmoothSteepestDescent::find_active_set(double *function, ActiveSet *acti
     double      active_value0;
     double      temp;
 
+    FUNCTION_TIMER_START("Find Active Set");
     MSQ_DEBUG_PRINT(2,"\nFinding the active set\n");
 
     // initialize the active set indices to zero
@@ -294,6 +315,7 @@ void NonSmoothSteepestDescent::find_active_set(double *function, ActiveSet *acti
       /* Print the active set */
       this->print_active_set(active_set,function,err); MSQ_CHKERR(err);
     });
+   FUNCTION_TIMER_END();
 
 }
 
@@ -301,17 +323,17 @@ void NonSmoothSteepestDescent::find_active_set(double *function, ActiveSet *acti
 #define __FUNC__ "NonSmoothSteepestDescent::improvement_check"
 int NonSmoothSteepestDescent::improvement_check(MsqError &err)
 {
-  int valid = 1;
+  int improved = 1;
   
   /* check to see that the mesh didn't get worse */
   if (originalValue < mActive->true_active_value) {
      MSQ_DEBUG_ACTION(2,{
        fprintf(stdout,"The local mesh got worse; initial value %f; final value %f\n",
 	       originalValue,  mActive->true_active_value );});
-       valid = 0;
+       improved = 0;
    }
 
-  return(valid);
+  return(improved);
 
 }
 
@@ -320,17 +342,20 @@ int NonSmoothSteepestDescent::improvement_check(MsqError &err)
 int NonSmoothSteepestDescent::validity_check(MsqError &err)
         
 {
+  FUNCTION_TIMER_START("Validity Check");
+
   // ONLY FOR SIMPLICIAL MESHES - THERE SHOULD BE A VALIDITY CHECKER ASSOCIATED
   // WITH MSQ ELEMENTS
   
   /* check that the simplicial mesh is still valid, based on right handedness. 
        Returns a 1 or a 0 */
+
+  // TODO as a first step we can switch this over to the function
+  // evaluation and use the rest of the code as is
   int valid = 1;
   double dEps = 1.e-13;
 
   double x1, x2, x3, x4, y1, y2, y3, y4, z1, z2, z3, z4;
-
-  //  MSQ_DEBUG_PRINT(2,"\nChecking Mesh Validity\n");
 
   if (mDimension == 2)
   {
@@ -340,10 +365,6 @@ int NonSmoothSteepestDescent::validity_check(MsqError &err)
       mCoords[mConnectivity[i].get_vertex_index(0)].get_coordinates(x1, y1, dummy);
       mCoords[mConnectivity[i].get_vertex_index(1)].get_coordinates(x2, y2, dummy);
       mCoords[mConnectivity[i].get_vertex_index(2)].get_coordinates(x3, y3, dummy);
-      //      MSQ_DEBUG_ACTION(3,{fprintf(stdout,"  Element %d\n",i);});
-      //      MSQ_DEBUG_ACTION(3,{fprintf(stdout,"  x1 y1 %g %g \n",x1,y1);});
-      //      MSQ_DEBUG_ACTION(3,{fprintf(stdout,"  x2 y2 %g %g \n",x2,y2);});
-      //      MSQ_DEBUG_ACTION(3,{fprintf(stdout,"  x3 y3 %g %g \n",x3,y3);});
       
       double a = x2*y3 - x3*y2;
       double b = y2 - y3;
@@ -421,6 +442,7 @@ int NonSmoothSteepestDescent::validity_check(MsqError &err)
   
   //  MSQ_DEBUG_ACTION(2,{fprintf(stdout,"Mesh Validity is: %d \n",valid);});
   
+  FUNCTION_TIMER_END();
   return(valid);
 }
 
@@ -434,6 +456,11 @@ void NonSmoothSteepestDescent::check_equilibrium(int *equil, int *status, MsqErr
     double min;
     double **dir;
     double mid_vec[3], mid_cos, test_cos;
+
+    //TODO - this subroutine is no longer clear to me... is it still
+    // appropriate for quads and hexes?  I think it might be in 2D, but
+    // 3D is less clear.  Is there a more general algorithm to use?
+    // ask Todd/check in numerical optimization
 
     *equil = MSQ_FALSE;
     ind1 = ind2 = -1;
@@ -464,7 +491,7 @@ void NonSmoothSteepestDescent::check_equilibrium(int *equil, int *status, MsqErr
            *equil = 1; *status = MSQ_EQUILIBRIUM;
            MSQ_DEBUG_PRINT(3,"The gradients are antiparallel, eq. pt\n"); 
          }
-         if (mG[i][j]  < min) {
+         if (mG[i][j]  < min) { 
            ind1 = i; ind2 = j;
            min = mG[i][j];
         }
@@ -508,6 +535,7 @@ int NonSmoothSteepestDescent::convex_hull_test(double **vec, int num_vec, MsqErr
     double pt1[3], pt2[3], pt3[3];
     double normal[3];
 
+    FUNCTION_TIMER_START("Convex Hull Test");
     /* tries to determine equilibrium for the 3D case */
     equil = 0;
     status = MSQ_CHECK_Z_COORD_DIRECTION;
@@ -570,6 +598,7 @@ int NonSmoothSteepestDescent::convex_hull_test(double **vec, int num_vec, MsqErr
         fprintf(stdout,"Failed to determine equil or not; status = %d\n",status);
       });
     }
+    FUNCTION_TIMER_END();
     return (equil);
 }
 
@@ -1003,6 +1032,12 @@ void NonSmoothSteepestDescent::search_direction(PatchData &pd, MsqError &err)
 
    int num_active = mActive->num_active;
 
+   //TODO This might be o.k. actually - i don't see any dependence
+   // on the element geometry here... try it and see if it works.
+   // if not, try taking all of the gradients in the active set
+   // and let the search direction be the average of those.
+   FUNCTION_TIMER_START("Search Direction");
+
    MSQ_DEBUG_PRINT(2,"\nIn Search Direction\n");
    this->print_active_set(mActive, mFunction, err);
    
@@ -1110,6 +1145,9 @@ void NonSmoothSteepestDescent::search_direction(PatchData &pd, MsqError &err)
     if (fabs(search_mag)<1E-13) optStatus = MSQ_ZERO_SEARCH;
     else MSQ_NORMALIZE(mSearch,mDimension);
     MSQ_DEBUG_ACTION(3,{fprintf(stdout,"  Search Direction %g %g  Steepest %d\n",mSearch[0],mSearch[1],mSteepest);});
+
+    FUNCTION_TIMER_END();
+
 }
 
 #undef __FUNC__
@@ -1238,7 +1276,7 @@ void NonSmoothSteepestDescent::form_reduced_matrix(double ***P, MsqError &err)
 void NonSmoothSteepestDescent::minmax_opt(PatchData &pd, MsqError &err)
 {
 //      int valid;
-
+      FUNCTION_TIMER_START("Minmax Opt");
       MSQ_DEBUG_PRINT(2,"In minmax_opt\n");
 
       MSQ_COPY_VECTOR(mFunction,originalFunction,numFunctionValues);
@@ -1363,6 +1401,8 @@ void NonSmoothSteepestDescent::minmax_opt(PatchData &pd, MsqError &err)
 	case MSQ_MAX_ITER_EXCEEDED:
 	  MSQ_DEBUG_PRINT(2,"Optimization Termination OptStatus: Max Iter Exceeded\n"); break;
       }
+
+      FUNCTION_TIMER_END();
       
 }
 
@@ -1382,6 +1422,7 @@ void NonSmoothSteepestDescent::step_acceptance(PatchData &pd, MsqError &err)
   double     current_percent_diff = 1E300;
   double     original_point[3];
 
+  FUNCTION_TIMER_START("Step Acceptance");
   num_values = numFunctionValues;
 
   step_status = MSQ_STEP_NOT_DONE;
@@ -1422,6 +1463,8 @@ void NonSmoothSteepestDescent::step_acceptance(PatchData &pd, MsqError &err)
       accept_alpha=MSQ_TRUE;
 
       /* never take a step that makes a valid mesh invalid or worsens the quality */
+      // TODO Validity check revision -- do the compute function up here
+      // and then the rest based on validity
       valid = validity_check(err); MSQ_CHKERR(err);
       if (valid) valid=improvement_check(err); MSQ_CHKERR(err);
       if (!valid) {
@@ -1482,6 +1525,7 @@ void NonSmoothSteepestDescent::step_acceptance(PatchData &pd, MsqError &err)
             //pd.set_coords_array_element(mCoords[freeVertexIndex],0,err);
 
 	/* does this make an invalid mesh valid? */
+   //TODO Validity check revisison
         valid = 1;
         valid = validity_check(err); MSQ_CHKERR(err);
         if (valid) valid=improvement_check(err); MSQ_CHKERR(err);
@@ -1557,6 +1601,8 @@ void NonSmoothSteepestDescent::step_acceptance(PatchData &pd, MsqError &err)
   if (current_improvement>0 && optStatus==MSQ_STEP_ACCEPTED) {
     MSQ_DEBUG_ACTION(2,{printf("Accepted a negative step %f \n",current_improvement);});
   }
+
+  FUNCTION_TIMER_END();
 }
 
 #undef __FUNC__
@@ -1606,6 +1652,8 @@ void NonSmoothSteepestDescent::compute_alpha(MsqError &err)
     double    alpha_i;
     double    min_positive_value=1E300;
 
+    FUNCTION_TIMER_START("Compute Alpha");
+
     MSQ_DEBUG_PRINT(2,"In compute alpha\n");
 
     num_values = numFunctionValues;
@@ -1648,6 +1696,8 @@ void NonSmoothSteepestDescent::compute_alpha(MsqError &err)
     }
 
     MSQ_DEBUG_ACTION(3,{ fprintf(stdout,"  The initial step size: %f\n",mAlpha); });
+
+    FUNCTION_TIMER_END();
 }
 
 #undef __FUNC__
