@@ -77,11 +77,15 @@ namespace Mesquite
       //! of reference-based target matrices.
       //! The resulting corner matrices are stored in tags on the elements of the PatchData.
     void compute_default_target_matrices(PatchData &pd, MsqError &err);
+
+    //! This function wraps compute_target_matrices and checks that the determinant of each target
+    //! is positive.
+    void compute_target_matrices_and_check_det(PatchData& pd, MsqError& err);
     
     /*! \brief This function must provide the corner matrices for all elements on the Patch.
 
          Useful functionality includes: MsqMeshEntity::set_tag, MsqTag::target_matrix,
-         MsqTag::scalar . 
+         MsqTag::scalar .
     */
     virtual void compute_target_matrices(PatchData& pd, MsqError& err)=0;
 
@@ -92,6 +96,29 @@ namespace Mesquite
   };
 
 
+#undef __FUNC__
+#define __FUNC__ "TargetCalculator::compute_target_matrices_and_check_det" 
+  inline void TargetCalculator::compute_target_matrices_and_check_det(PatchData &pd, MsqError &err)
+  {
+    FUNCTION_TIMER_START(__FUNC__);
+
+    // Compute the target matrices
+    compute_target_matrices(pd, err); MSQ_CHKERR(err);
+
+    //checks that the determinant of each target matrix is positive.
+    MsqMeshEntity* elems=pd.get_element_array(err);
+    size_t num_elements=pd.num_elements();
+    for (size_t i=0; i<num_elements; ++i) {
+      MsqTag* tag = elems[i].get_tag();
+      size_t num_corners = elems[i].vertex_count();
+      for (size_t j=0; j<num_corners; ++j)     
+        assert( det(tag->target_matrix(0)) > 0 ); 
+    }
+    
+    FUNCTION_TIMER_END();
+  }
+
+  
 #undef __FUNC__
 #define __FUNC__ "TargetCalculator::compute_default_target_matrices" 
   inline void TargetCalculator::compute_default_target_matrices(PatchData &pd,
