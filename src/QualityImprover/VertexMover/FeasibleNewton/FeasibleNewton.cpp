@@ -5,7 +5,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 15-Jan-03 at 08:05:56
-//  LAST-MOD: 16-Jan-03 at 17:04:41 by Thomas Leurent
+//  LAST-MOD: 31-Jan-03 at 16:57:51 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -34,7 +34,7 @@ FeasibleNewton::FeasibleNewton(ObjectiveFunction* of) :
   objFunc(of)
 {
   MsqError err;
-  gradientLessThan=.01;
+  gradientLessThan=.001;
   maxIteration=6;
   this->set_name("FeasibleNewton");
   set_patch_type(PatchData::GLOBAL_PATCH, err);
@@ -64,22 +64,36 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
 {
   PRINT_INFO("\no  Performing Feasible Newton optimization.\n");
   int num_free_vertices = pd.num_free_vertices(err);
-  int nb_iterations = 0;
+  int num_vertices = pd.num_vertices();
+  Vector3D* grad = new Vector3D[num_vertices];
   bool fn_bool=true;// bool used for determining validity of patch
   /* Computes the value of the stopping criterion*/
   MeshSet *mesh=get_mesh_set();
   bool inner_criterion=inner_criterion_met(*mesh,err);
+  int n;
   
   // 1.  Allocate a hessian and calculate the sparsity pattern.
+  mHessian.initialize(pd, err); MSQ_CHKERR(err);
   // 2.  Calculate the gradient and Hessian for the patch
   //     (a) if not defined at current point, stop and throw an error
+  fn_bool = objFunc->compute_hessian(pd, mHessian, err); MSQ_CHKERR(err);
+  if (!fn_bool) { err.set_msg("invalid patch for hessian calculation"); return; }
+  fn_bool = objFunc->compute_gradient(pd, grad, err); MSQ_CHKERR(err);
+  if (!fn_bool) { err.set_msg("invalid patch for gradient calculation"); return; }
   // 3.  Calculate the norm of the gradient for the patch
+  double grad_norm=0;
+  for (n=0; n<num_vertices; ++n) 
+    grad_norm += grad[n] % grad[n]; // dot product
+  grad_norm = sqrt(grad_norm);
+  MSQ_DEBUG_ACTION(3,{std::cout<< "  o  gradient norm: " << grad_norm << std::endl;});
 
+  
   // does the Feasible Newton iteration until stopping is required.
   // Terminate when: (a) too many iterations or (b) norm of the 
   // gradient of the patch is small.
 
-  while ( nb_iterations<maxIteration && !inner_criterion) {
+  int nb_iterations = 0;
+  while ( nb_iterations<maxIteration && grad_norm>gradientLessThan && !inner_criterion) {
     
     ++nb_iterations;
 
@@ -133,6 +147,8 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
     bool inner_criterion=inner_criterion_met(*mesh,err);
   }
 
+  delete[] grad;
+  
 }
 
 
