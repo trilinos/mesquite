@@ -1265,8 +1265,7 @@ void MeshTSTTImpl::vertices_set_byte (
     sidl::array<int> data(alloc_sidl_vector<int>(array_size));
     for (size_t i = 0; i < array_size; ++i)
       data.set( i, byte_array[i] );
-    size_t junk;
-    arrTagIFace.setIntArrData( handles, array_size, byteTag, data, junk );
+    arrTagIFace.setIntArrData( handles, array_size, byteTag, data, array_size );
   }
   catch(::TSTT::Error &tstt_err) {
     MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
