@@ -1,0 +1,10 @@
+TOPICS FOR THE CODE REVIEW BEGINNING MAY 19, 2003
+
+Termination Criterion:
+
+Should we remove the '..._with_int' and '..._with_double' from
+the functions that add criteria to the objects.
+
+Add multiple norms to measure the gradients.
+
+
