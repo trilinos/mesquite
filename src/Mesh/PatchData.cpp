@@ -342,7 +342,7 @@ void PatchData::get_adjacent_vertex_indices(size_t vertex_index,
   while(!temp_vert_indices.empty()){
     cur_vert=temp_vert_indices.back();
     temp_vert_indices.pop_back();
-    iter=&(vert_indices.front());
+    iter=vert_indices.begin();
     found=0;
     while(iter!=vert_indices.end() && !found){
       if(*(iter)==cur_vert)
