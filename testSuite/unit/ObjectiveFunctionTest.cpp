@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 13-Nov-02 at 18:05:56
-//  LAST-MOD: 22-May-03 at 14:57:54 by Michael Brewer
+//  LAST-MOD: 23-May-03 at 17:08:07 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -32,6 +32,7 @@ sure everything is still valid.
 #include "CompositeOFScalarAdd.hpp"
 #include "GeneralizedConditionNumberQualityMetric.hpp"
 #include "MeanRatioQualityMetric.hpp"
+#include "EdgeLengthQualityMetric.hpp"
 
 #include "PatchDataInstances.hpp"
 
@@ -58,9 +59,10 @@ private:
   //CPPUNIT_TEST (test_compute_gradient_3D_LPTemplate);
   CPPUNIT_TEST (test_compute_gradient_3D_LPtoPTemplate_L1_hex);
   CPPUNIT_TEST (test_compute_gradient_3D_LPtoPTemplate_L2_hex);
-  CPPUNIT_TEST (test_compute_ana_hessian_hex);
+  CPPUNIT_TEST (test_compute_ana_hessian_tet);
   CPPUNIT_TEST (test_compute_gradient3D_composite);
-
+  CPPUNIT_TEST (test_OFval_from_evaluate_and_gradient_LPtoP);
+  CPPUNIT_TEST (test_grad_from_gradient_and_hessian_LPtoP);
   CPPUNIT_TEST_SUITE_END();
    
 private:
@@ -213,12 +215,13 @@ public:
      {
        MsqError err;
        bool return_bool;
+       double OF_val1, OF_val2;
        MsqFreeVertexIndexIterator free_ind(&pd, err);
        Vector3D* grad_num = new Vector3D[pd.num_vertices()];
        Vector3D* grad_ana = new Vector3D[pd.num_vertices()];     
        
        obj->set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
-       return_bool=obj->compute_gradient(pd, grad_num, err);
+       return_bool=obj->compute_gradient(pd, grad_num, OF_val1, err);
        CPPUNIT_ASSERT(return_bool==true);
        
        int grad_pos=0;
@@ -234,7 +237,7 @@ public:
 //        }
        
        obj->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
-       return_bool=obj->compute_gradient(pd, grad_ana, err);
+       return_bool=obj->compute_gradient(pd, grad_ana, OF_val2, err);
        CPPUNIT_ASSERT(return_bool==true);
        
 //        std::cout << "ANALYTICAL GRADIENT\n";
@@ -246,6 +249,8 @@ public:
 //            std::cout << grad_ana[grad_pos][j] << std::endl;
 //          }
 //        }
+
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(OF_val1, OF_val2, 1e-12);
        
        free_ind.reset();
        for (int i=0; i<2; ++i){
@@ -337,7 +342,7 @@ public:
      }
   
 
-  void test_compute_ana_hessian_hex()
+  void test_compute_ana_hessian_tet()
   {
     MsqError err;
     
@@ -351,8 +356,10 @@ public:
     mean_ratio->set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
     
     MsqHessian H;
+    Vector3D* g = new Vector3D[tetPatch.num_vertices()];
+    double dummy;
     H.initialize(tetPatch, err); MSQ_CHKERR(err);
-    LP2.compute_hessian(tetPatch, H, err); MSQ_CHKERR(err);
+    LP2.compute_hessian(tetPatch, H, g, dummy, err); MSQ_CHKERR(err);
 
     Matrix3D mat00(" 2.44444  0.2566   0.181444 "
 		   " 0.2566   2.14815  0.104757 "
@@ -380,63 +387,177 @@ public:
     delete mean_ratio;
   }
 
-
-  void test_compute_hessian(PatchData &pd)
+  //! Tests that the Objective function value returned from evaluate() is the
+  //! same as the one returned from the gradient.
+  void test_OFval_from_evaluate_and_gradient(ObjectiveFunction* OF,
+                                           PatchData &pd)
   {
     MsqError err;
+    bool OF_bool;
+    Vector3D* grad = new Vector3D[pd.num_vertices()];
 
-    MsqHessian OF_hessian_num;
-    MsqHessian OF_hessian_ana;
-    OF_hessian_num.initialize(pd, err); MSQ_CHKERR(err);
-    OF_hessian_ana.initialize(pd, err); MSQ_CHKERR(err);
+    double OF_val1;
+    OF_bool = OF->evaluate(pd, OF_val1, err); MSQ_CHKERR(err);
+    CPPUNIT_ASSERT(OF_bool);
+
+    double OF_val2;
+    OF_bool = OF->compute_gradient(pd, grad, OF_val2, err); MSQ_CHKERR(err);
+    CPPUNIT_ASSERT(OF_bool);
+
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(OF_val1, OF_val2, 1e-12);
+
+    delete[] grad;
+  }
+
+  //! Calls test_OFval_from_evaluate_and_gradient() for \f$ \ell_4^4 \f$
+  void test_OFval_from_evaluate_and_gradient_LPtoP()
+  {
+    MsqError err;
     
     // creates a mean ratio quality metric ...
     ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
-//    mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
+    mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
     mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
-    mean_ratio->set_averaging_method(QualityMetric::SUM, err); MSQ_CHKERR(err);
-//    mean_ratio->set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
-      //mean_ratio->set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
+    
+    // ... and builds an objective function with it
+    LPtoPTemplate LP4(mean_ratio, 4, err);
+    test_OFval_from_evaluate_and_gradient(&LP4, m12Hex);
 
-    // Creates an L1 objective function.
-    LPtoPTemplate L_1(mean_ratio, 1, err); MSQ_CHKERR(err);
+    // ... and builds an objective function with it
+    LPtoPTemplate LP1(mean_ratio, 1, err);
+    test_OFval_from_evaluate_and_gradient(&LP1, m12Hex);
 
-    // Compute numerical hessian.
-    L_1.set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
-      //L_1.set_hessian_type(ObjectiveFunction::NUMERICAL_HESSIAN);
-    L_1.compute_hessian(pd, OF_hessian_num, err); MSQ_CHKERR(err);
+    SmoothnessQualityMetric* edge = EdgeLengthQualityMetric::create_new();
+    LPtoPTemplate LP5(edge, 1, err);
 
-    cout << "Numerical OF Hessian:\n";
-    cout << OF_hessian_num << "\n\n\n";
+    //TODO Re-add this test
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//    test_OFval_from_evaluate_and_gradient(&LP5, m12Hex);
 
-    // Compute analytical hessian
-    L_1.set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
-      //L_1.set_hessian_type(ObjectiveFunction::ANALYTICAL_HESSIAN);
-    L_1.compute_hessian(pd, OF_hessian_ana, err); MSQ_CHKERR(err);
+    delete edge;
+    delete mean_ratio;
+    
+  }
+  
+  //! Tests that the gradient value returned from compute_gradient() is the
+  //! same as the one returned from the compute_hessian.
+  void test_grad_from_gradient_and_hessian(ObjectiveFunction* OF,
+                                           PatchData &pd)
+  {
+    MsqError err;
+    bool OF_bool;
+    double OF_val1;
+    double OF_val2;
+    Vector3D* grad1 = new Vector3D[pd.num_vertices()];
+    Vector3D* grad2 = new Vector3D[pd.num_vertices()];
+    MsqHessian hessian;
+    hessian.initialize(pd, err); MSQ_CHKERR(err);
 
-    cout << "Analytical OF Hessian:\n";
-    cout << OF_hessian_ana << endl;
+    OF_bool = OF->compute_gradient(pd, grad1, OF_val1, err);
+    MSQ_CHKERR(err);
+    CPPUNIT_ASSERT(OF_bool);
 
-    // test
-    Matrix3D* block_num;
-    Matrix3D* block_ana;
-    CPPUNIT_ASSERT(OF_hessian_num.size() == OF_hessian_ana.size());
-    for (size_t m=0; m<OF_hessian_ana.size(); ++m) {
-      for (size_t n=m; n<OF_hessian_ana.size(); ++n) {
-        block_num = OF_hessian_num.get_block(m,n);
-        block_ana = OF_hessian_ana.get_block(m,n);
-        for (int i=0; i<3; ++i)
-          for (int j=0; j<3; ++j)
-            CPPUNIT_ASSERT_DOUBLES_EQUAL( (*block_num)[i][j], (*block_ana)[i][j], 0.001);
-      }
-    }
+//     cout << "compute_gradient(pd, grad1 ...) " << endl;
+//     for (int i=0; i<pd.num_vertices(); ++i)
+//       cout << grad1[i];
+      
+    OF_bool = OF->compute_hessian(pd, hessian, grad2, OF_val2, err);
+    MSQ_CHKERR(err);
+    CPPUNIT_ASSERT(OF_bool);
+
+//     cout << "\ncompute_hessian(pd, grad2 ...) " << endl;
+//     for (int i=0; i<pd.num_vertices(); ++i)
+//       cout << grad2[i];
+      
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(OF_val1, OF_val2, 1e-8);
+
+    for (int i=0; i<pd.num_vertices(); ++i)
+      for (int j=0; j<3; ++j)
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(grad1[i][j], grad2[i][j], 5e-5); 
+    
+    delete[] grad1;
+    delete[] grad2;
+  }
+
+  //! Calls test_grad_from_gradient_and_hessian() for \f$ \ell_4^4 \f$
+  void test_grad_from_gradient_and_hessian_LPtoP()
+  {
+    MsqError err;
+    
+    // creates a mean ratio quality metric ...
+    ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
+    mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
+    mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+    
+    // ... and builds an objective function with it
+    LPtoPTemplate LP4(mean_ratio, 4, err);
+    test_grad_from_gradient_and_hessian(&LP4, m12Hex);
+
+    // ... and builds an objective function with it
+    LPtoPTemplate LP1(mean_ratio, 1, err);
+    test_grad_from_gradient_and_hessian(&LP1, m12Hex);
 
     delete mean_ratio;
   }
-
   
+// ----------------------------------------------------------- 
 // numerical objective function hessian does not work for now. 
 // It will only be used for test purposes anyway. 
+// ----------------------------------------------------------- 
+  
+//   void test_compute_hessian(PatchData &pd)
+//   {
+//     MsqError err;
+
+//     MsqHessian OF_hessian_num;
+//     MsqHessian OF_hessian_ana;
+//     OF_hessian_num.initialize(pd, err); MSQ_CHKERR(err);
+//     OF_hessian_ana.initialize(pd, err); MSQ_CHKERR(err);
+    
+//     // creates a mean ratio quality metric ...
+//     ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
+// //    mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
+//     mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+//     mean_ratio->set_averaging_method(QualityMetric::SUM, err); MSQ_CHKERR(err);
+// //    mean_ratio->set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
+//       //mean_ratio->set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
+
+//     // Creates an L1 objective function.
+//     LPtoPTemplate L_1(mean_ratio, 1, err); MSQ_CHKERR(err);
+
+//     // Compute numerical hessian.
+//     L_1.set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
+//       //L_1.set_hessian_type(ObjectiveFunction::NUMERICAL_HESSIAN);
+//     L_1.compute_hessian(pd, OF_hessian_num, err); MSQ_CHKERR(err);
+
+//     cout << "Numerical OF Hessian:\n";
+//     cout << OF_hessian_num << "\n\n\n";
+
+//     // Compute analytical hessian
+//     L_1.set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
+//       //L_1.set_hessian_type(ObjectiveFunction::ANALYTICAL_HESSIAN);
+//     L_1.compute_hessian(pd, OF_hessian_ana, err); MSQ_CHKERR(err);
+
+//     cout << "Analytical OF Hessian:\n";
+//     cout << OF_hessian_ana << endl;
+
+//     // test
+//     Matrix3D* block_num;
+//     Matrix3D* block_ana;
+//     CPPUNIT_ASSERT(OF_hessian_num.size() == OF_hessian_ana.size());
+//     for (size_t m=0; m<OF_hessian_ana.size(); ++m) {
+//       for (size_t n=m; n<OF_hessian_ana.size(); ++n) {
+//         block_num = OF_hessian_num.get_block(m,n);
+//         block_ana = OF_hessian_ana.get_block(m,n);
+//         for (int i=0; i<3; ++i)
+//           for (int j=0; j<3; ++j)
+//             CPPUNIT_ASSERT_DOUBLES_EQUAL( (*block_num)[i][j], (*block_ana)[i][j], 0.001);
+//       }
+//     }
+
+//     delete mean_ratio;
+//   }
+
   
 //   void test_compute_hessian_tri_patch() {
 //     test_compute_hessian(triPatch);
