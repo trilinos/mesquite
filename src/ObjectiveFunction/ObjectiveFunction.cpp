@@ -9,6 +9,7 @@
 #include "ObjectiveFunction.hpp"
 #include "MsqVertex.hpp"
 #include "MsqMessage.hpp"
+#include "MsqFreeVertexIndexIterator.hpp"
 using namespace Mesquite;
 
 #undef __FUNC__
@@ -30,13 +31,19 @@ void ObjectiveFunction::compute_numerical_gradient(Mesquite::PatchData &pd,
     PRINT_ERROR("\nArray size not equal n.\n");
   
   MsqVertex* vertices=pd.get_vertex_array(err);
+    //index of current free vertex in pd's vertex array
   int m=0;
+    //index into gradient array that corresponds to current free vertex
+  int grad_pos=0;
+  
   double flocal=0;
   double flocald=0;
   double eps=0;
   double coord_hold;
-//  double xtmp,ytmp,ztmp;
-  for(m=0; m<n; m++){
+  MsqFreeVertexIndexIterator ind(&pd, err);
+  ind.reset();
+  while(ind.next()){
+    m=ind.value();
       //This is NOT right, but it is a temporary solution
       //we need an effective way to evaluate an objective function
       //on a local patch... should we create a local patch data object here
@@ -55,8 +62,9 @@ void ObjectiveFunction::compute_numerical_gradient(Mesquite::PatchData &pd,
         err.set_msg("Dividing by zero in Objective Functions numerical grad");
         return;
       }
-      grad[m][j]=(flocald-flocal)/eps;
+      grad[grad_pos][j]=(flocald-flocal)/eps;
       vertices[m][j]=coord_hold;
+      ++grad_pos;
     }
     MSQ_CHKERR(err);
   }//end loop over free vertices

@@ -9,7 +9,7 @@
 */
 #include <math.h>
 #include "LPTemplate.hpp"
-
+#include "MsqFreeVertexIndexIterator.hpp"
 using  namespace Mesquite;  
 
 #undef __FUNC__
@@ -101,7 +101,6 @@ void  LPTemplate::compute_analytical_gradient(PatchData &patch,
    MsqMeshEntity* elems=patch.get_element_array(err);
    MsqVertex* vertices=patch.get_vertex_array(err);
     //Check to make sure that num_free_vert == array_size
-     //Michael:: this has changed
   int num_free_vert=patch.num_free_vertices(err);
   if(array_size>=0){
     if(num_free_vert!=array_size){
@@ -151,30 +150,39 @@ void  LPTemplate::compute_analytical_gradient(PatchData &patch,
   big_f=pow(big_f,(1-pVal));
     //if the function is negated for minimization, then so is the gradient
   big_f*=get_negate_flag();
-  int outer_counter=0;
-  int inner_counter=0;
+  MsqFreeVertexIndexIterator ind(&patch, err);
+  ind.reset();
+    //position in patch's vertex array
+  int vert_count=0;
+    //corresponding position in grad array
+  int grad_pos=0;
+    //position in elem array
+  int elem_count=0;
   Vector3D grad_vec;
-  for (outer_counter=0;outer_counter<num_free_vert;++outer_counter){
-    grad[outer_counter].set(0.0,0.0,0.0);
+  while(ind.next()){
+    vert_count=ind.value();
+    grad[grad_pos].set(0.0,0.0,0.0);
     temp_value=0;
     if(qm_mode!=QualityMetric::VERTEX){
       temp_value=1;
         //TODO should be done only with local elements
-      for (inner_counter=0; inner_counter<num_elements;++inner_counter){
-        currentQM->compute_gradient(patch, &elems[inner_counter],
-                                    vertices[outer_counter],
+      for (elem_count=0; elem_count<num_elements;++elem_count){
+        currentQM->compute_gradient(patch, &elems[elem_count],
+                                    vertices[vert_count],
                                     grad_vec,err);
         for(index=0;index<pVal-1;++index){
-          temp_value*=metric_values[inner_counter];
+          temp_value*=metric_values[elem_count];
         }
-        grad[outer_counter] += temp_value*grad_vec;
+        grad[grad_pos] += temp_value*grad_vec;
       }
       
     }
     else{
       err.set_msg("Vertex based metric gradients not yet implements");
     }
-    grad[outer_counter]*=big_f;
+    grad[grad_pos]*=big_f;
+    ++grad_pos;
+    
   }
   delete metric_values;
 }
