@@ -64,8 +64,8 @@ void ObjectiveFunction::compute_numerical_gradient(Mesquite::PatchData &pd,
       }
       grad[grad_pos][j]=(flocald-flocal)/eps;
       vertices[m][j]=coord_hold;
-      ++grad_pos;
     }
+    ++grad_pos;
     MSQ_CHKERR(err);
   }//end loop over free vertices
 }
