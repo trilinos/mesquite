@@ -67,6 +67,7 @@ TESTNAMES := test_1\
              deforming \
              rezone \
              convert \
+             higher_order \
 	     transform \
              unit 
 ###             random_test\
