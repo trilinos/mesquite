@@ -83,8 +83,8 @@ inline bool m_fcn_2e(double &obj, const Vector3D x[3], const Vector3D &n)
 
   /* Calculate det(M). */
   g = matr[0]*(matr[4]*matr[8] - matr[5]*matr[7]) +
-      matr[1]*(matr[5]*matr[6] - matr[3]*matr[8]) +
-      matr[2]*(matr[3]*matr[7] - matr[4]*matr[6]);
+      matr[3]*(matr[2]*matr[7] - matr[1]*matr[8]) +
+      matr[6]*(matr[1]*matr[5] - matr[2]*matr[4]);
   if (g < MSQ_MIN) { obj = g; return false; }
 
   /* Calculate norm(M). */
@@ -98,7 +98,7 @@ inline bool m_fcn_2e(double &obj, const Vector3D x[3], const Vector3D &n)
 }
 
 /*****************************************************************************/
-/* Gradient requires 87 flops.                                               */
+/* Gradient requires 85 flops.                                               */
 /*****************************************************************************/
 inline bool g_fcn_2e(double &obj, Vector3D g_obj[3], 
                      const Vector3D x[3], const Vector3D &n)
@@ -122,9 +122,9 @@ inline bool g_fcn_2e(double &obj, Vector3D g_obj[3],
 
   /* Calculate det([n M]). */
   loc1 = matr[4]*matr[8] - matr[5]*matr[7];
-  loc2 = matr[5]*matr[6] - matr[3]*matr[8];
-  loc3 = matr[3]*matr[7] - matr[4]*matr[6];
-  g = matr[0]*loc1 + matr[1]*loc2 + matr[2]*loc3;
+  loc2 = matr[2]*matr[7] - matr[1]*matr[8];
+  loc3 = matr[1]*matr[5] - matr[2]*matr[4];
+  g = matr[0]*loc1 + matr[3]*loc2 + matr[6]*loc3;
   if (g < MSQ_MIN) { obj = g; return false; }
 
   /* Calculate norm(M). */
@@ -141,37 +141,36 @@ inline bool g_fcn_2e(double &obj, Vector3D g_obj[3],
   g = b2 * obj / g;
 
   adj_m[0] = matr[0]*f + loc1*g;
-  adj_m[1] = matr[1]*f + loc2*g;
+  adj_m[3] = matr[3]*f + loc2*g;
+  adj_m[6] = matr[6]*f + loc3*g;
 
   loc1 = matr[0]*g;
-  loc2 = matr[1]*g;
-  loc3 = matr[2]*g;
+  loc2 = matr[3]*g;
+  loc3 = matr[6]*g;
 
-  adj_m[3] = matr[3]*f + loc3*matr[7] - loc2*matr[8];
-  adj_m[4] = matr[4]*f + loc1*matr[8] - loc3*matr[6];
-
-  adj_m[6] = matr[6]*f + loc2*matr[5] - loc3*matr[4];
-  adj_m[7] = matr[7]*f + loc3*matr[3] - loc1*matr[5];
+  adj_m[1] = matr[1]*f + loc3*matr[5] - loc2*matr[8];
+  adj_m[4] = matr[4]*f + loc1*matr[8] - loc3*matr[2];
+  adj_m[7] = matr[7]*f + loc2*matr[2] - loc1*matr[5];
 
   loc1 = isqrt3*adj_m[1];
   g_obj[0][0] = -adj_m[0] - loc1;
-  g_obj[1][0] = adj_m[0] - loc1;
+  g_obj[1][0] =  adj_m[0] - loc1;
   g_obj[2][0] = 2.0*loc1;
 
   loc1 = isqrt3*adj_m[4];
   g_obj[0][1] = -adj_m[3] - loc1;
-  g_obj[1][1] = adj_m[3] - loc1;
+  g_obj[1][1] =  adj_m[3] - loc1;
   g_obj[2][1] = 2.0*loc1;
 
   loc1 = isqrt3*adj_m[7];
   g_obj[0][2] = -adj_m[6] - loc1;
-  g_obj[1][2] = adj_m[6] - loc1;
+  g_obj[1][2] =  adj_m[6] - loc1;
   g_obj[2][2] = 2.0*loc1;
   return true;
 }
 
 /*****************************************************************************/
-/* Hessian requires 292 flops.                                               */
+/* Hessian requires 289 flops.                                               */
 /*****************************************************************************/
 inline bool h_fcn_2e(double &obj, Vector3D g_obj[3], Matrix3D h_obj[6],
                      const Vector3D x[3], const Vector3D &n)
@@ -197,9 +196,9 @@ inline bool h_fcn_2e(double &obj, Vector3D g_obj[3], Matrix3D h_obj[6],
 
   /* Calculate det([n M]). */
   dg[0] = matr[4]*matr[8] - matr[5]*matr[7];
-  dg[1] = matr[5]*matr[6] - matr[3]*matr[8];
-  dg[2] = matr[3]*matr[7] - matr[4]*matr[6];
-  g = matr[0]*dg[0] + matr[1]*dg[1] + matr[2]*dg[2];
+  dg[3] = matr[2]*matr[7] - matr[1]*matr[8];
+  dg[6] = matr[1]*matr[5] - matr[2]*matr[4];
+  g = matr[0]*dg[0] + matr[3]*dg[3] + matr[6]*dg[6];
   if (g < MSQ_MIN) { obj = g; return false; }
 
   /* Calculate norm(M). */
@@ -217,9 +216,8 @@ inline bool h_fcn_2e(double &obj, Vector3D g_obj[3], Matrix3D h_obj[6],
   f = 2.0 * loc1;
   g = b2 * obj / g;
 
-  dg[3] = matr[2]*matr[7] - matr[1]*matr[8];
+  dg[3] = matr[5]*matr[6] - matr[3]*matr[8];
   dg[4] = matr[0]*matr[8] - matr[2]*matr[6];
-  dg[6] = matr[1]*matr[5] - matr[2]*matr[4];
   dg[7] = matr[2]*matr[3] - matr[0]*matr[5];
 
   adj_m[0] = matr[0]*f + dg[0]*g;
@@ -231,17 +229,17 @@ inline bool h_fcn_2e(double &obj, Vector3D g_obj[3], Matrix3D h_obj[6],
 
   loc1 = isqrt3*adj_m[1];
   g_obj[0][0] = -adj_m[0] - loc1;
-  g_obj[1][0] = adj_m[0] - loc1;
+  g_obj[1][0] =  adj_m[0] - loc1;
   g_obj[2][0] = 2.0*loc1;
 
   loc1 = isqrt3*adj_m[4];
   g_obj[0][1] = -adj_m[3] - loc1;
-  g_obj[1][1] = adj_m[3] - loc1;
+  g_obj[1][1] =  adj_m[3] - loc1;
   g_obj[2][1] = 2.0*loc1;
 
   loc1 = isqrt3*adj_m[7];
   g_obj[0][2] = -adj_m[6] - loc1;
-  g_obj[1][2] = adj_m[6] - loc1;
+  g_obj[1][2] =  adj_m[6] - loc1;
   g_obj[2][2] = 2.0*loc1;
 
   loc0 = g;
@@ -494,8 +492,8 @@ inline bool m_fcn_2i(double &obj, const Vector3D x[3], const Vector3D &n)
 
   /* Calculate det(M). */
   g = matr[0]*(matr[4]*matr[8] - matr[5]*matr[7]) +
-      matr[1]*(matr[5]*matr[6] - matr[3]*matr[8]) +
-      matr[2]*(matr[3]*matr[7] - matr[4]*matr[6]);
+      matr[3]*(matr[2]*matr[7] - matr[1]*matr[8]) +
+      matr[6]*(matr[1]*matr[5] - matr[2]*matr[4]);
   if (g < MSQ_MIN) { obj = g; return false; }
 
   /* Calculate norm(M). */
@@ -509,7 +507,7 @@ inline bool m_fcn_2i(double &obj, const Vector3D x[3], const Vector3D &n)
 }
 
 /*****************************************************************************/
-/* Gradient requires 69 flops.                                               */
+/* Gradient requires 67 flops.                                               */
 /*****************************************************************************/
 inline bool g_fcn_2i(double &obj, Vector3D g_obj[3], 
                      const Vector3D x[3], const Vector3D &n)
@@ -533,9 +531,9 @@ inline bool g_fcn_2i(double &obj, Vector3D g_obj[3],
 
   /* Calculate det([n M]). */
   loc1 = matr[4]*matr[8] - matr[5]*matr[7];
-  loc2 = matr[5]*matr[6] - matr[3]*matr[8];
-  loc3 = matr[3]*matr[7] - matr[4]*matr[6];
-  g = matr[0]*loc1 + matr[1]*loc2 + matr[2]*loc3;
+  loc2 = matr[2]*matr[7] - matr[1]*matr[8];
+  loc3 = matr[1]*matr[5] - matr[2]*matr[4];
+  g = matr[0]*loc1 + matr[3]*loc2 + matr[6]*loc3;
   if (g < MSQ_MIN) { obj = g; return false; }
 
   /* Calculate norm(M). */
@@ -552,34 +550,33 @@ inline bool g_fcn_2i(double &obj, Vector3D g_obj[3],
   g = b2 * obj / g;
 
   adj_m[0] = matr[0]*f + loc1*g;
-  adj_m[1] = matr[1]*f + loc2*g;
+  adj_m[3] = matr[3]*f + loc2*g;
+  adj_m[6] = matr[6]*f + loc3*g;
 
   loc1 = matr[0]*g;
-  loc2 = matr[1]*g;
-  loc3 = matr[2]*g;
+  loc2 = matr[3]*g;
+  loc3 = matr[6]*g;
 
-  adj_m[3] = matr[3]*f + loc3*matr[7] - loc2*matr[8];
-  adj_m[4] = matr[4]*f + loc1*matr[8] - loc3*matr[6];
-
-  adj_m[6] = matr[6]*f + loc2*matr[5] - loc3*matr[4];
-  adj_m[7] = matr[7]*f + loc3*matr[3] - loc1*matr[5];
+  adj_m[1] = matr[1]*f + loc3*matr[5] - loc2*matr[8];
+  adj_m[4] = matr[4]*f + loc1*matr[8] - loc3*matr[2];
+  adj_m[7] = matr[7]*f + loc2*matr[2] - loc1*matr[5];
 
   g_obj[0][0] = -adj_m[0] - adj_m[1];
-  g_obj[1][0] = adj_m[0];
-  g_obj[2][0] = adj_m[1];
+  g_obj[1][0] =  adj_m[0];
+  g_obj[2][0] =  adj_m[1];
 
   g_obj[0][1] = -adj_m[3] - adj_m[4];
-  g_obj[1][1] = adj_m[3];
-  g_obj[2][1] = adj_m[4];
+  g_obj[1][1] =  adj_m[3];
+  g_obj[2][1] =  adj_m[4];
 
   g_obj[0][2] = -adj_m[6] - adj_m[7];
-  g_obj[1][2] = adj_m[6];
-  g_obj[2][2] = adj_m[7];
+  g_obj[1][2] =  adj_m[6];
+  g_obj[2][2] =  adj_m[7];
   return true;
 }
 
 /*****************************************************************************/
-/* Hessian requires 193 flops.                                               */
+/* Hessian requires 190 flops.                                               */
 /*****************************************************************************/
 inline bool h_fcn_2i(double &obj, Vector3D g_obj[3], Matrix3D h_obj[6],
                      const Vector3D x[3], const Vector3D &n)
@@ -605,9 +602,9 @@ inline bool h_fcn_2i(double &obj, Vector3D g_obj[3], Matrix3D h_obj[6],
 
   /* Calculate det([n M]). */
   dg[0] = matr[4]*matr[8] - matr[5]*matr[7];
-  dg[1] = matr[5]*matr[6] - matr[3]*matr[8];
-  dg[2] = matr[3]*matr[7] - matr[4]*matr[6];
-  g = matr[0]*dg[0] + matr[1]*dg[1] + matr[2]*dg[2];
+  dg[3] = matr[2]*matr[7] - matr[1]*matr[8];
+  dg[6] = matr[1]*matr[5] - matr[2]*matr[4];
+  g = matr[0]*dg[0] + matr[3]*dg[3] + matr[6]*dg[6];
   if (g < MSQ_MIN) { obj = g; return false; }
 
   /* Calculate norm(M). */
@@ -625,9 +622,8 @@ inline bool h_fcn_2i(double &obj, Vector3D g_obj[3], Matrix3D h_obj[6],
   f = 2.0 * loc1;
   g = b2 * obj / g;
 
-  dg[3] = matr[2]*matr[7] - matr[1]*matr[8];
+  dg[3] = matr[5]*matr[6] - matr[3]*matr[8];
   dg[4] = matr[0]*matr[8] - matr[2]*matr[6];
-  dg[6] = matr[1]*matr[5] - matr[2]*matr[4];
   dg[7] = matr[2]*matr[3] - matr[0]*matr[5];
 
   adj_m[0] = matr[0]*f + dg[0]*g;
@@ -638,16 +634,16 @@ inline bool h_fcn_2i(double &obj, Vector3D g_obj[3], Matrix3D h_obj[6],
   adj_m[7] = matr[7]*f + dg[7]*g;
 
   g_obj[0][0] = -adj_m[0] - adj_m[1];
-  g_obj[1][0] = adj_m[0];
-  g_obj[2][0] = adj_m[1];
+  g_obj[1][0] =  adj_m[0];
+  g_obj[2][0] =  adj_m[1];
 
   g_obj[0][1] = -adj_m[3] - adj_m[4];
-  g_obj[1][1] = adj_m[3];
-  g_obj[2][1] = adj_m[4];
+  g_obj[1][1] =  adj_m[3];
+  g_obj[2][1] =  adj_m[4];
 
   g_obj[0][2] = -adj_m[6] - adj_m[7];
-  g_obj[1][2] = adj_m[6];
-  g_obj[2][2] = adj_m[7];
+  g_obj[1][2] =  adj_m[6];
+  g_obj[2][2] =  adj_m[7];
 
   loc0 = g;
   loc1 = f;
@@ -850,7 +846,6 @@ inline bool h_fcn_2i(double &obj, Vector3D g_obj[3], Matrix3D h_obj[6],
 /*****************************************************************************/
 /* Function evaluation -- requires 61 flops.                                 */
 /*****************************************************************************/
-
 inline bool m_fcn_3e(double &obj, const Vector3D x[4])
 {
   double matr[9], f;
