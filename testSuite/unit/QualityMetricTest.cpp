@@ -8,7 +8,7 @@
 //    E-MAIL: mbrewer@sandia.gov
 //
 // ORIG-DATE: 03-Dec-02
-//  LAST-MOD: 03-Dec-02 
+//  LAST-MOD: 13-Dec-02 at 08:26:36 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -69,9 +69,9 @@ public:
     
     qualTol = MSQ_MIN;
     MsqError err;
-    int ind[20];
+    size_t ind[20];
     
-    int elem_ind[8];
+    size_t elem_ind[8];
     
      /* Our triangular patch is made of two tris.  tri_1 is a perfect
         equilateral (the ideal for most metrics).  tri_2 is an arbitrary
@@ -244,7 +244,7 @@ public:
    {
        //START WITH TRI's
      MsqError err;
-     double val;
+     double val, val2;
      MsqMeshEntity* elems;
      MsqVertex* verts = triPatch.get_vertex_array(err);
      elems=triPatch.get_element_array(err);
@@ -252,48 +252,52 @@ public:
      ShapeQualityMetric *met = ConditionNumberQualityMetric::create_new();
      ShapeQualityMetric *gmet = GeneralizedConditionNumberQualityMetric::create_new();
        //Check condition number of ideal tri
-     val = met->evaluate_element(triPatch,&elems[0],err);MSQ_CHKERR(err);
+     met->evaluate_element(triPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
        //For now, make sure cond num and generalized cond num give
        //equivalent answer for arbitrary tri.
-     val = met->evaluate_element(triPatch,&elems[1],err); MSQ_CHKERR(err);
-     val -= gmet->evaluate_element(triPatch,&elems[1],err); MSQ_CHKERR(err);
+     met->evaluate_element(triPatch,&elems[1],val,err); MSQ_CHKERR(err);
+     gmet->evaluate_element(triPatch,&elems[1],val2,err); MSQ_CHKERR(err);
+     val -= val2;
      CPPUNIT_ASSERT(fabs(val)<qualTol);
      
        //SECOND: QUAD's
      verts = quadPatch.get_vertex_array(err);
      elems = quadPatch.get_element_array(err);
        //Check condition number of ideal quad
-     val = met->evaluate_element(quadPatch,&elems[0],err);MSQ_CHKERR(err);
+     met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
        //For now, make sure cond num and generalized cond num give
        //equivalent answer for arbitrary quad.
-     val = met->evaluate_element(quadPatch,&elems[1],err); MSQ_CHKERR(err);
-     val -= gmet->evaluate_element(quadPatch,&elems[1],err); MSQ_CHKERR(err);
+     met->evaluate_element(quadPatch,&elems[1],val,err); MSQ_CHKERR(err);
+     gmet->evaluate_element(quadPatch,&elems[1],val2,err); MSQ_CHKERR(err);
+     val -= val2;
      CPPUNIT_ASSERT(fabs(val)<qualTol);
 
        //THIRD TET's
      verts = tetPatch.get_vertex_array(err);
      elems = tetPatch.get_element_array(err);
        //Check condition number of ideal tet
-     val = met->evaluate_element(tetPatch,&elems[0],err);MSQ_CHKERR(err);
+     val = met->evaluate_element(tetPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
        //For now, make sure cond num and generalized cond num give
        //equivalent answer for arbitrary tet.
-     val = met->evaluate_element(tetPatch,&elems[1],err); MSQ_CHKERR(err);
-     val -= gmet->evaluate_element(tetPatch,&elems[1],err); MSQ_CHKERR(err);
+     met->evaluate_element(tetPatch,&elems[1],val,err); MSQ_CHKERR(err);
+     gmet->evaluate_element(tetPatch,&elems[1],val2,err); MSQ_CHKERR(err);
+     val -= val2;
      CPPUNIT_ASSERT(fabs(val)<qualTol);
 
        //FOURTH HEX's
      verts = hexPatch.get_vertex_array(err);
      elems = hexPatch.get_element_array(err);
        //Check condition number of ideal hex
-     val = met->evaluate_element(hexPatch,&elems[0],err);MSQ_CHKERR(err);
+     met->evaluate_element(hexPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
        //For now, make sure cond num and generalized cond num give
        //equivalent answer for arbitrary tet.
-     val = met->evaluate_element(hexPatch,&elems[1],err); MSQ_CHKERR(err);
-     val -= gmet->evaluate_element(hexPatch,&elems[1],err); MSQ_CHKERR(err);
+     met->evaluate_element(hexPatch,&elems[1],val,err); MSQ_CHKERR(err);
+     gmet->evaluate_element(hexPatch,&elems[1],val2,err); MSQ_CHKERR(err);
+     val -= val2;
      CPPUNIT_ASSERT(fabs(val)<qualTol);
    }
 
@@ -310,40 +314,40 @@ public:
      ShapeQualityMetric *met = MeanRatioQualityMetric::create_new();
      ShapeQualityMetric *imet = InverseMeanRatioQualityMetric::create_new();
        //Check mean ratio of ideal tri
-     val = met->evaluate_element(triPatch,&elems[0],err);MSQ_CHKERR(err);
+     met->evaluate_element(triPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
        //Check inverse mean ratio of ideal tri (INVERSE)
-     val = imet->evaluate_element(triPatch,&elems[0],err);MSQ_CHKERR(err);
+     imet->evaluate_element(triPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
      
        //SECOND: QUAD's
      verts = quadPatch.get_vertex_array(err);
      elems = quadPatch.get_element_array(err);
        //Check mean ratio of ideal quad
-     val = met->evaluate_element(quadPatch,&elems[0],err);MSQ_CHKERR(err);
+     met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
        //Check inverse mean ratio of ideal quad (INVERSE)
-     val = imet->evaluate_element(quadPatch,&elems[0],err);MSQ_CHKERR(err);
+     imet->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
 
        //THIRD TET's
      verts = tetPatch.get_vertex_array(err);
      elems = tetPatch.get_element_array(err);
        //Check mean ratio of ideal tet
-     val = met->evaluate_element(tetPatch,&elems[0],err);MSQ_CHKERR(err);
+     met->evaluate_element(tetPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
      //Check inverse mean ratio of ideal tet (INVERSE)
-     val = imet->evaluate_element(tetPatch,&elems[0],err); MSQ_CHKERR(err);
+     imet->evaluate_element(tetPatch,&elems[0],val,err); MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
 
        //FOURTH HEX's
      verts = hexPatch.get_vertex_array(err);
      elems = hexPatch.get_element_array(err);
        //Check mean ratio of ideal hex
-     val = met->evaluate_element(hexPatch,&elems[0],err);MSQ_CHKERR(err);
+     met->evaluate_element(hexPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
        //Check inverse mean ratio of ideal hex (INVERSE)
-     val = imet->evaluate_element(hexPatch,&elems[0],err);MSQ_CHKERR(err);
+     imet->evaluate_element(hexPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
    }
   
@@ -358,14 +362,14 @@ public:
      MSQ_CHKERR(err);
      ShapeQualityMetric *met = AspectRatioGammaQualityMetric::create_new();
        //Check aspect ratio gamma of ideal tri
-     val = met->evaluate_element(triPatch,&elems[0],err);MSQ_CHKERR(err);
+     met->evaluate_element(triPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
      
        //THIRD TET's
      verts = tetPatch.get_vertex_array(err);
      elems = tetPatch.get_element_array(err);
        //Check aspect ratio gamma of ideal tet
-     val = met->evaluate_element(tetPatch,&elems[0],err);MSQ_CHKERR(err);
+     met->evaluate_element(tetPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
 
    }
@@ -385,28 +389,28 @@ public:
                                                                      cmet,
                                                                      err);
        //Check ideal tri
-     val = met->evaluate_element(triPatch,&elems[0],err);MSQ_CHKERR(err);
+     met->evaluate_element(triPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
 
        //SECOND: QUAD's
      verts = quadPatch.get_vertex_array(err);
      elems = quadPatch.get_element_array(err);
        //Check ideal quad
-     val = met->evaluate_element(quadPatch,&elems[0],err);MSQ_CHKERR(err);
+     met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
 
        //THIRD TET's
      verts = tetPatch.get_vertex_array(err);
      elems = tetPatch.get_element_array(err);
        //Check ideal tet
-     val = met->evaluate_element(tetPatch,&elems[0],err);MSQ_CHKERR(err);
+     met->evaluate_element(tetPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
 
        //FOURTH HEX's
      verts = hexPatch.get_vertex_array(err);
      elems = hexPatch.get_element_array(err);
        //Check ideal hex
-     val = met->evaluate_element(hexPatch,&elems[0],err);MSQ_CHKERR(err);
+     met->evaluate_element(hexPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
    }
 void test_averaging_method()
@@ -420,35 +424,35 @@ void test_averaging_method()
      MSQ_CHKERR(err);
      ShapeQualityMetric *met = MeanRatioQualityMetric::create_new();
        //Check mean ratio of ideal quad
-     val = met->evaluate_element(quadPatch,&elems[0],err);MSQ_CHKERR(err);
+     met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
      met->set_averaging_method(QualityMetric::GEOMETRIC, err);
        //Check mean ratio of ideal quad GEOMETRIC
-     val = met->evaluate_element(quadPatch,&elems[0],err);MSQ_CHKERR(err);
+     met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
      met->set_averaging_method(QualityMetric::HARMONIC, err);
        //Check mean ratio of ideal quad HARMONIC
-     val = met->evaluate_element(quadPatch,&elems[0],err);MSQ_CHKERR(err);
+     met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
      met->set_averaging_method(QualityMetric::LINEAR, err);
        //Check mean ratio of ideal quad LINEAR
-     val = met->evaluate_element(quadPatch,&elems[0],err);MSQ_CHKERR(err);
+     met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
      met->set_averaging_method(QualityMetric::MAXIMUM, err);
        //Check mean ratio of ideal quad MAXIMUM
-     val = met->evaluate_element(quadPatch,&elems[0],err);MSQ_CHKERR(err);
+     met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
      met->set_averaging_method(QualityMetric::MINIMUM, err);
        //Check mean ratio of ideal quad MINIMUM
-     val = met->evaluate_element(quadPatch,&elems[0],err);MSQ_CHKERR(err);
+     met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
      met->set_averaging_method(QualityMetric::RMS, err);
        //Check mean ratio of ideal quad RMS
-     val = met->evaluate_element(quadPatch,&elems[0],err);MSQ_CHKERR(err);
+     met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
      met->set_averaging_method(QualityMetric::SUM, err);
        //Check mean ratio of ideal SUM (NOTICE:: should be 4.0)
-     val = met->evaluate_element(quadPatch,&elems[0],err);MSQ_CHKERR(err);
+     met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-4.0)<qualTol);
      
 

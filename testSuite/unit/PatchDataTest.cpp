@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 13-Nov-02 at 18:05:56
-//  LAST-MOD: 20-Nov-02 at 12:11:19 by Thomas Leurent
+//  LAST-MOD: 13-Dec-02 at 08:17:41 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -85,7 +85,7 @@ public:
      mPatch2D.add_vertex(NULL, NULL, 2,1,0, true, err, MsqVertex::MSQ_HARD_FIXED); 
      MSQ_CHKERR(err);
 
-     int ind[4];
+     size_t ind[4];
      mPatch2D.reserve_element_capacity(3, err); MSQ_CHKERR(err);
      ind[0] = 0; ind[1]=2; ind[2]=1;
      mPatch2D.add_element(NULL, NULL, ind, TRIANGLE, err); MSQ_CHKERR(err);
@@ -124,7 +124,7 @@ public:
    {
       MsqError err;
 
-      int ind[3];
+      size_t ind[3];
       ind[0] = 4; ind[1]=2; ind[2]=1;
       mPatch2D.add_element(NULL, NULL, ind, TRIANGLE, err);
       CPPUNIT_ASSERT(err.errorOn);
@@ -147,8 +147,9 @@ public:
       CPPUNIT_ASSERT_EQUAL(vtx_2_0, vertices[4]);
       CPPUNIT_ASSERT_EQUAL(vtx_2_1, vertices[5]);
 
-      int ind = mPatch2D.add_vertex(NULL, NULL, 0,0,0, true, err);
-      CPPUNIT_ASSERT_EQUAL(0, ind);
+      size_t ind = mPatch2D.add_vertex(NULL, NULL, 0,0,0, true, err);
+      size_t zero = 0;
+      CPPUNIT_ASSERT_EQUAL(zero, ind);
       CPPUNIT_ASSERT_MESSAGE("vertex already existed.", !err.errorOn);
    }
 

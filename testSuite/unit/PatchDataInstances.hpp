@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 12-Nov-02 at 18:05:56
-//  LAST-MOD:  5-Dec-02 at 17:15:16 by Thomas Leurent
+//  LAST-MOD: 13-Dec-02 at 08:15:58 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -72,7 +72,7 @@ namespace Mesquite {
       MSQ_CHKERR(err);
     
       // patch has only one element: an ideal hex.
-      int indices[8];
+      size_t indices[8];
       indices[0] = 0; indices[1] = 1; indices[2] = 2; indices[3] = 3;
       indices[4] = 4; indices[5] = 5; indices[6] = 6; indices[7] = 7;
       one_hex_patch.add_element(NULL, NULL, indices, HEXAHEDRON, err);
@@ -105,7 +105,7 @@ namespace Mesquite {
       MSQ_CHKERR(err);
     
       // patch has only one element: an ideal tet.
-      int indices_tet[4];
+      size_t indices_tet[4];
       indices_tet[0] = 0; indices_tet[1] = 1; indices_tet[2] = 2;
       indices_tet[3] = 3;
       one_tet_patch.add_element(NULL, NULL, indices_tet, TETRAHEDRON, err);
@@ -137,7 +137,7 @@ namespace Mesquite {
       MSQ_CHKERR(err);
     
       // patch has only one element: an ideal quad.
-      int indices_qua[4];
+      size_t indices_qua[4];
       indices_qua[0] = 0; indices_qua[1] = 1; indices_qua[2] = 2;
       indices_qua[3] = 3;
       one_qua_patch.add_element(NULL, NULL, indices_qua, QUADRILATERAL, err);
@@ -171,7 +171,7 @@ namespace Mesquite {
       MSQ_CHKERR(err);
     
       // patch has only one element: an ideal tri
-      int indices_tri[3];
+      size_t indices_tri[3];
       indices_tri[0] = 0; indices_tri[1] = 1; indices_tri[2] = 2;
       one_tri_patch.add_element(NULL, NULL, indices_tri, TRIANGLE, err);
       MSQ_CHKERR(err);
@@ -200,7 +200,7 @@ namespace Mesquite {
       four_quads.add_vertex(NULL, NULL, 0, 2, 0, true, err); MSQ_CHKERR(err);
       four_quads.add_vertex(NULL, NULL, 0, 1, 0, true, err); MSQ_CHKERR(err);
       
-      int ind[4];
+      size_t ind[4];
       four_quads.reserve_element_capacity(4, err); MSQ_CHKERR(err);
       ind[0] = 1; ind[1]=2; ind[2]=0; ind[3]=8;
       four_quads.add_element(NULL, NULL, ind, QUADRILATERAL, err); MSQ_CHKERR(err);
@@ -239,7 +239,7 @@ namespace Mesquite {
       pd.add_vertex(NULL, NULL, 3, 1, 0, true, err, MsqVertex::MSQ_HARD_FIXED); 
       pd.add_vertex(NULL, NULL, 3, 2, 0, true, err, MsqVertex::MSQ_HARD_FIXED); 
       
-      int ind[4];
+      size_t ind[4];
       pd.reserve_element_capacity(6, err); MSQ_CHKERR(err);
       ind[0] = 1; ind[1]=2; ind[2]=0; ind[3]=8;
       pd.add_element(NULL, NULL, ind, QUADRILATERAL, err); MSQ_CHKERR(err);
