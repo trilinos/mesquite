@@ -414,6 +414,7 @@ namespace Mesquite
 
     unsigned char numCoords;
 
+    public:
 
     struct TagDescription {
         // The VTK attribute type the data was read from, or NONE if not VTK data.
@@ -481,6 +482,8 @@ namespace Mesquite
           
       ~TagData();
     };
+
+    protected:
 
     std::vector<TagData*> tagList;
     TagData* tag_from_handle( TagHandle handle, MsqError& err );
