@@ -69,6 +69,8 @@ namespace Mesquite {
 
   public:
     InstructionQueue();
+
+    virtual ~InstructionQueue() { }
     
     void add_preconditioner(QualityImprover* instr, MsqError &err);
     void remove_preconditioner(size_t index, MsqError &err);
