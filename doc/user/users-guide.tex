@@ -8,15 +8,19 @@
         Mesquite User's Guide\\
                  \emph{DRAFT} }}
 
-\author{Patrick Knupp, Lori Freitag, Darryl Melander, Mike Brewer \\
+\author{Patrick Knupp, Darryl Melander, Mike Brewer \\
 The Sandia National Laboratories \\
 Albuquerque NM USA \\
-and \\
+ \\
+Lori Freitag-Diachin \\
+Livermore National Laboratory \\
+Livermore CA USA \\
+  \\
 Thomas Leurent \\
 Argonne National Laboratory \\
 Argonne, IL 60490 USA}
 
-\date{}
+\date{Last Updated: 19 March, 2004}
 
 \begin{document}
 
@@ -36,9 +40,10 @@ Argonne, IL 60490 USA}
 local volume, smoothness, shape, and orientation that, if not properly 
 controlled, 
 can adversely affect solution accuracy or computational efficiency of numerical simulations. In this section we give an overview of the role of mesh quality 
-in the context of computer simulations of real world phenomena. \newline
+in the context of computer simulations of physical phenomena. \newline
 
-Simulation of many phenomena in the real world involves computing numerical 
+Simulation of many phenomena in the physical world involves computing 
+numerical 
 solutions to partial differential equations (PDE's). Commonly used approaches 
 to computing  numerical solutions such as finite volume and finite 
 element methods require the use of approximations to the continuum operators 
@@ -640,12 +645,13 @@ section \ref{sec:detailedAPI}.
 
 \subsection{Mesh Improvement Examples}
 
-The picture on the left of figure \ref{fig:hole} shows a mesh that has been 
-degraded due to an evolving geometry with a fixed topology:
-the disc was initially on the right side of the square but has been moved to the left side. 
+The picture on the left side of figure \ref{fig:hole} shows a partly tangled 
+and poor quality surface mesh. The right side of the figure shows the mesh 
+after 
+smoothing with the mean ratio metric. 
 The mesh file \texttt{mesquite/meshFiles/2D/VTK/hole\_in\_square.vtk} contains the information for
-that mesh. Note that the normal is now defined in the $(0,0,-1)$ direction, and this must be
-notified to Mesquite, as we did in \ref{sec:tutMesh}, or an error message will be thrown. 
+the initial mesh. Note that the normal is now defined in the $(0,0,-1)$ direction, and this fact must be conveyed 
+to Mesquite, as done in \ref{sec:tutMesh}, or an error message will be thrown. 
 \begin{verbatim}
   Vector3D normal(0,0,-1);
   Vector3D point(0,0,-5);
@@ -660,7 +666,7 @@ normal, and the executable is run with the mesh to be improved:
 ./tutorial ../../meshFiles/2D/VTK/hole_in_square.vtk
 \end{verbatim}
 The smoothed mesh is shown on the right picture of figure
-\ref{fig:hole}. The chosen Mesquite scheme has repositionned the vertices but has not changed the
+\ref{fig:hole}. The chosen Mesquite scheme has repositioned the vertices but has not changed the
 mesh topology; nonetheless, the mesh has been tremendously improved, as shown by the onscreen
 quality assessor output: 
 \begin{verbatim}
