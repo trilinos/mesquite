@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # This is a script to do a nightly build an test of Mesquite.
 # It generates four output files (see comments for "RESULTS"
@@ -48,6 +48,9 @@ set -v
 echo
 uname -a 
 pwd
+which make && make --version
+which CC && (CC --version || CC -V)
+
 
   # Change to mesquite root directory
 CDPATH=
