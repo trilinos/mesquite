@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD: 14-Jan-03 at 16:34:34 by Thomas Leurent
+//  LAST-MOD: 15-Jan-03 at 16:17:22 by Thomas Leurent
 //
 /*! \file MeshSet.cpp
 
@@ -235,8 +235,8 @@ bool MeshSet::get_next_patch(PatchData &pd, PatchDataParameters &pd_params, MsqE
        new TSTT::Entity_Handle[MSQ_MAX_NUM_VERT_PER_ENT];
     TSTT::Entity_Handle *patch_elements;
     TSTT::EntityTopology *element_topologies;
-    int* csr_pointer; // = new int[500]; //dbg
-    int* csr_data; // = new int[500]; //dbg
+    int* csr_pointer; 
+    int* csr_data; 
       //  int num_vertices=0;
     int num_elements;
     Vector3D vertex_coordV;
