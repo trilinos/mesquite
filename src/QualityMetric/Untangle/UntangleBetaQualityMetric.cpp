@@ -70,7 +70,6 @@ double UntangleBetaQualityMetric::evaluate_element(PatchData &pd,
     else if(num_jacobian_vectors==3)
     {
       temp_var=jacobian_vectors[0]%(jacobian_vectors[1]*jacobian_vectors[2]);
-      cout<<"\ntemp_var="<<temp_var;
       temp_var-=mBeta;
       metric_values[i]=fabs(temp_var)-temp_var;
         
@@ -86,7 +85,6 @@ double UntangleBetaQualityMetric::evaluate_element(PatchData &pd,
   double total_metric=average_metrics(metric_values,num_sample_points,err);
   MSQ_CHKERR(err);
   delete metric_values;
-  cout<<"\nreturning total = "<<total_metric;
   return total_metric;
 }
 
