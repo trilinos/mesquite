@@ -99,10 +99,9 @@ public:
   void set_msg(const std::string&);  // also sets errorOn to true
   //! sets a generic error code, later handled by MsqError::handler.
   void set_error_code(enum Error_Codes); // also sets errorOn to true
-    
-  // access functions  !!! those should not be needed !!!
-//  enum Error_Codes error_code() { return errorCode; }
-//  string error_msg() { return msg; }
+
+  //! resets error object to non-active state (no error).
+  void reset(); 
   
   //! Error Handler - Accessed through MSQ_CHKERR(err)
   void  handler(int line, const char *func,

@@ -48,6 +48,13 @@ void MsqError::set_error_code(enum Error_Codes ec)
   errorCode = ec;
 }
 
+void MsqError::reset()
+{
+  errorOn = false;
+  errorCode = MSQ_NO_ERROR;
+  msg.clear();
+}
+
 /*! \fn MsqError::handler(...)
   This functions provides by default the following error handling mechanism:
   - prints the contextual error message, if any was set with set_msg(...) .
