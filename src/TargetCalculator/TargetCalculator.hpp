@@ -154,17 +154,17 @@ namespace Mesquite
                                                       Matrix3D &tet_M3D,
                                                       Matrix3D &hex_M3D)
   {
-    const double v_tri[] = {1, 0.5, 0, 0, MSQ_SQRT_THREE/2, 0, 0, 0, 0};
+    const double v_tri[] = {1, 0.5, 0, 0, MSQ_SQRT_THREE/2, 0, 0, 0, 1};
     Matrix3D m1(v_tri);
-    tri_M3D = m1;
+    tri_M3D = pow(2/MSQ_SQRT_THREE, 1/3) * m1;
 
-    const double v_quad[] = {1, 0, 0, 0, 1, 0, 0, 0, 0};
+    const double v_quad[] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
     Matrix3D m2(v_quad);
     quad_M3D = m2;
     
     const double v_tet[] = {1, 0.5, 0.5, 0, MSQ_SQRT_THREE/2, MSQ_SQRT_THREE/6, 0, 0, MSQ_SQRT_TWO/MSQ_SQRT_THREE};
     Matrix3D m3(v_tet);
-    tet_M3D = m3;
+    tet_M3D =  pow(MSQ_SQRT_TWO, 1/3) * m3;
 
     const double v_hex[] = {1, 0, 0,  0, 1, 0,  0, 0, 1};
     Matrix3D m4(v_hex);
@@ -180,9 +180,9 @@ namespace Mesquite
     Vector3D a2(A[0][1], A[1][1], A[2][1]); 
     Vector3D a3(A[0][2], A[1][2], A[2][2]); 
 
-    double a1_norm = A.column_length(0);
+    double a1_norm = A.column_length(0); MSQ_CHECK_NULL(a1_norm);
     Vector3D a1_x_a2 = a1 * a2;
-    double a1_x_a2_norm = a1_x_a2.length();
+    double a1_x_a2_norm = a1_x_a2.length(); MSQ_CHECK_NULL(a1_x_a2_norm);
     
     Matrix3D V;
     Vector3D v1, v2, v3;
@@ -208,17 +208,17 @@ namespace Mesquite
     Vector3D a2(A[0][1], A[1][1], A[2][1]); 
     Vector3D a3(A[0][2], A[1][2], A[2][2]); 
 
-    double a1_norm = A.column_length(0);
-    double a2_norm = A.column_length(1);
-    double a3_norm = A.column_length(2);
+    double a1_norm = A.column_length(0); MSQ_CHECK_NULL(a1_norm);
+    double a2_norm = A.column_length(1); MSQ_CHECK_NULL(a2_norm);
+    double a3_norm = A.column_length(2); MSQ_CHECK_NULL(a3_norm);
     
     Vector3D a1_x_a2 = a1 * a2;
-    double a1_x_a2_norm = a1_x_a2.length();
+    double a1_x_a2_norm = a1_x_a2.length(); MSQ_CHECK_NULL(a1_x_a2_norm);
     Vector3D a1_x_a3 = a1 * a3;
 
     double nu = pow(a1_norm*a2_norm*a3_norm, 1/3);
-    double det_A = det(A);
-    double fac = nu * pow(det_A, 1/3); // ?? make sure this is right
+    double det_A = det(A);  MSQ_CHECK_NULL(det_A);
+    double fac = nu / fabs(pow(det_A, 1/3));
     
     Matrix3D Q;
 
@@ -237,9 +237,9 @@ namespace Mesquite
 #define __FUNC__ "TargetCalculator::compute_Delta_3D"
   inline  Matrix3D TargetCalculator::compute_Delta_3D(const Matrix3D &A, MsqError &err)
   {
-    double a1_norm = A.column_length(0);
-    double a2_norm = A.column_length(1);
-    double a3_norm = A.column_length(2);
+    double a1_norm = A.column_length(0); MSQ_CHECK_NULL(a1_norm);
+    double a2_norm = A.column_length(1); MSQ_CHECK_NULL(a2_norm);
+    double a3_norm = A.column_length(2); MSQ_CHECK_NULL(a3_norm);
     
     double nu = pow(a1_norm*a2_norm*a3_norm, 1/3);
     double fac = 1/nu ;
