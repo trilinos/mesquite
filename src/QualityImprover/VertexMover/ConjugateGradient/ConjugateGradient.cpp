@@ -107,9 +107,9 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
     //This should be done somewhere else
   for(ind=0;ind<num_local_vertices;ind++){
     if(ind<num_free_vertices)
-      vertices[ind].set_vertex_flag(MsqVertex::MSQ_FREE_VERTEX);
+      vertices[ind].remove_soft_fixed_flag();
     else
-      vertices[ind].remove_vertex_flag(MsqVertex::MSQ_FREE_VERTEX);
+      vertices[ind].set_soft_fixed_flag();
   }
   
     
