@@ -225,7 +225,7 @@ namespace Mesquite {
    */
    inline void create_six_quads_patch(PatchData &pd, MsqError &err) 
    {
-      pd.reserve_vertex_capacity(9, err); MSQ_CHKERR(err);
+      pd.reserve_vertex_capacity(12, err); MSQ_CHKERR(err);
       pd.add_vertex(NULL, NULL, 1,.5, 0, true, err, MsqVertex::MSQ_NO_VTX_FLAG); 
       pd.add_vertex(NULL, NULL, 0, 0, 0, true, err, MsqVertex::MSQ_HARD_FIXED); 
       pd.add_vertex(NULL, NULL, 1, 0, 0, true, err, MsqVertex::MSQ_HARD_FIXED); 

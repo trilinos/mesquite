@@ -77,12 +77,13 @@ public:
      vtx_2_1.set(2,1,0);
 
      mPatch2D.reserve_vertex_capacity(6, err); MSQ_CHKERR(err);
-     mPatch2D.add_vertex(NULL, NULL, 0,0,0, true, err); MSQ_CHKERR(err);
-     mPatch2D.add_vertex(NULL, NULL, 0,1,0, true, err); MSQ_CHKERR(err);
-     mPatch2D.add_vertex(NULL, NULL, 1,0,0, true, err); MSQ_CHKERR(err);
-     mPatch2D.add_vertex(NULL, NULL, 1,1,0, true, err); MSQ_CHKERR(err);
-     mPatch2D.add_vertex(NULL, NULL, 2,0,0, true, err); MSQ_CHKERR(err);
-     mPatch2D.add_vertex(NULL, NULL, 2,1,0, true, err); MSQ_CHKERR(err);
+     mPatch2D.add_vertex(NULL, NULL, 0,0,0, true, err); 
+     mPatch2D.add_vertex(NULL, NULL, 0,1,0, true, err); 
+     mPatch2D.add_vertex(NULL, NULL, 1,0,0, true, err, MsqVertex::MSQ_HARD_FIXED); 
+     mPatch2D.add_vertex(NULL, NULL, 1,1,0, true, err, MsqVertex::MSQ_HARD_FIXED); 
+     mPatch2D.add_vertex(NULL, NULL, 2,0,0, true, err, MsqVertex::MSQ_HARD_FIXED); 
+     mPatch2D.add_vertex(NULL, NULL, 2,1,0, true, err, MsqVertex::MSQ_HARD_FIXED); 
+     MSQ_CHKERR(err);
 
      int ind[4];
      mPatch2D.reserve_element_capacity(3, err); MSQ_CHKERR(err);
@@ -210,7 +211,7 @@ public:
       MsqError err;
 
       // gets a memento of the patch coordinates.
-      PatchDataCoordsMemento* coords_mem = mPatch2D.create_coords_memento(err);
+      PatchDataVerticesMemento* coords_mem = mPatch2D.create_vertices_memento(err);
       MSQ_CHKERR(err);
       
       // states that the 2 first vertices are free and move them in direction dk
@@ -219,7 +220,6 @@ public:
       dk[0].set(-1,-2,0);
       dk[1].set(-1, 2,0);
       double s = 0.3;
-      mPatch2D.set_num_free_vertices(2);
       mPatch2D.move_free_vertices(dk, 2, s, err); MSQ_CHKERR(err);
 
       // gets the new coordinates and  checks the vertices were displaced as expected.
@@ -231,7 +231,7 @@ public:
       CPPUNIT_ASSERT(coords[2] == new_vtx_0_1);
 
       // restore the PatchData to previous coords.
-      mPatch2D.set_to_coords_memento(coords_mem, err); MSQ_CHKERR(err);
+      mPatch2D.set_to_vertices_memento(coords_mem, err); MSQ_CHKERR(err);
 
       // gets the new coordinates and  checks the vertices are back to original.
       coords.clear();
