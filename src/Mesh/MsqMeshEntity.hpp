@@ -89,7 +89,10 @@ namespace Mesquite
     MsqMeshEntity& operator=(const MsqMeshEntity& rhs) { 
       mType = rhs.mType;
       memmove(vertexIndices, rhs.vertexIndices, MSQ_MAX_NUM_VERT_PER_ENT*sizeof(size_t));
-      mTag = new MsqTag(*(rhs.mTag));
+      if (rhs.mTag != 0)
+        mTag = new MsqTag(*(rhs.mTag));
+      else
+        mTag = 0;
       return *this;
     }
 

@@ -44,7 +44,10 @@ MsqVertex& MsqVertex::operator=(const MsqVertex& rhs)
 {
   Vector3D::operator=(rhs);
   vertexBitFlags = rhs.vertexBitFlags; 
-  mTag = new MsqTag(*(rhs.mTag));
+  if (rhs.mTag != 0)
+    mTag = new MsqTag(*(rhs.mTag));
+  else
+    mTag = 0;
   return *this;
 }
 
