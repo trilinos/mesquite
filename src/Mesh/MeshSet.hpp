@@ -86,11 +86,6 @@ namespace Mesquite
 
     //! Resets MeshSet object, but keeps the mesh handles added with add_mesh().
     void reset(MsqError &err);
-
-    //! This should eventually be handled by get_next_patch()
-    bool get_next_element_group(PatchData &pd, PatchDataUser* pd_user, MsqError &err);
-    //! This should eventually be handled by get_next_patch()
-    bool get_next_node_group(PatchData &pd, MsqError &err);
     
     struct EntityEntry
     {

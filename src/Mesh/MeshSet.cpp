@@ -549,22 +549,6 @@ bool MeshSet::get_next_patch(PatchData &pd, PatchDataParameters &pd_params, MsqE
 }
 
 
-bool MeshSet::get_next_element_group(PatchData &pd, PatchDataUser* pd_user, MsqError &err)
-{
-    //VERY temp solution just to test
-   return get_next_patch(pd, pd_user, err);
-}
-
-bool MeshSet::get_next_node_group(PatchData &pd, MsqError &err)
-{
-
-  err.set_msg("no implementation yet."); MSQ_CHKERR(err);
-  
-  return false; // ... no implementation 
-  
-}
-
-
 // ************* AOMD tmp TEST *************
 
 // struct PrintVertex {
