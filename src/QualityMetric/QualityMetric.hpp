@@ -128,7 +128,7 @@ namespace Mesquite
         {
           err.set_msg("No implementation for a "
                       "vertex-version of this metric.");
-          return 0.0;
+          return false;
         }
      
        //!Evaluate the metric for an element
@@ -137,7 +137,7 @@ namespace Mesquite
                                    double &value, MsqError &err)
         {
           err.set_msg("No implementation for a element-version of this metric.");
-          return 0.0;
+          return false;
         }
      
        /*!\enum GRADIENT_TYPE Sets to either NUMERICAL_GRADIENT or
@@ -254,10 +254,10 @@ namespace Mesquite
 
      // TODO : pass this private and write protected access fucntions.
      AveragingMethod avgMethod;
-     ElementEvaluationMode evalMode;
      int feasible;
      std::string metricName;
   private:
+     ElementEvaluationMode evalMode;
      MetricType mType;
      GRADIENT_TYPE gradType;
      int negateFlag;
