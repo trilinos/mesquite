@@ -15,6 +15,8 @@ namespace Mesquite
   {
   public:
     Timer();
+
+    void reset();//resets the timer as if it were just created
     
     double since_last_check(); //- return time in seconds since last
                                //- call to since_last_check().  Note that
@@ -26,7 +28,7 @@ namespace Mesquite
                                //- object was created.
     
   private:
-    const double atBirth;      //- Time at birth
+    double atBirth;      //- Time at birth
     double atLastCheck;        //- Time at last call to since_last_check()
   };
   

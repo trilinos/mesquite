@@ -57,6 +57,12 @@ Mesquite::Timer::Timer()
   atLastCheck = atBirth;
 }
 
+void Mesquite::Timer::reset()
+{
+  atBirth=now();
+  atLastCheck = atBirth;
+}
+
 double Mesquite::Timer::since_last_check()
 {
   double right_now = now();
