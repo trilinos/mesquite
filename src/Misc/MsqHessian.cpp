@@ -5,7 +5,7 @@
 //    E-MAIL: tmunson@mcs.anl.gov
 //
 // ORIG-DATE:  2-Jan-03 at 11:02:19 by Thomas Leurent
-//  LAST-MOD:  9-Apr-03 at 09:27:54 by Thomas Leurent
+//  LAST-MOD:  9-Apr-03 at 17:02:57 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -336,7 +336,7 @@ void MsqHessian::compute_preconditioner(MsqError &err)
   }
 
   Matrix3D* diag_block;
-  double sum, inv_sum, tmp;
+  double sum, tmp;
   size_t m;
   // For each diagonal block, the (inverted) preconditioner is
   // the inverse of the sum of the diagonal entries.
@@ -346,6 +346,7 @@ void MsqHessian::compute_preconditioner(MsqError &err)
 #if DIAGONAL_PRECONDITIONER
     // find sum, and computes inverse, or 0 if sum = 0 .
     sum = (*diag_block)[0][0] + (*diag_block)[1][1] + (*diag_block)[2][2];
+    double inv_sum;
     if (sum != 0.) 
       inv_sum = 1 / sum;
     else

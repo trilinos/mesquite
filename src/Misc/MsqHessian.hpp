@@ -5,7 +5,7 @@
 //    E-MAIL: tmunson@mcs.anl.gov
 //
 // ORIG-DATE:  2-Jan-03 at 11:02:19 bu Thomas Leurent
-//  LAST-MOD:  8-Apr-03 at 16:23:39 by Thomas Leurent
+//  LAST-MOD:  9-Apr-03 at 17:11:27 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -96,6 +96,8 @@ namespace Mesquite
       hessian. */
   inline void MsqHessian::zero_out()
   {
+    if (mSize==0) return; // empty hessian.
+    
     size_t i;
     for (i=0; i<mRowStart[mSize]; ++i) {
       mEntries[i] = 0.;
