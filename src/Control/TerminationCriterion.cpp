@@ -511,7 +511,11 @@ bool TerminationCriterion::terminate(MeshSet &ms, ObjectiveFunction* obj_ptr,
   booleans to false for the next iteration.*/
 bool TerminationCriterion::terminate_with_function_and_gradient(PatchData &pd, ObjectiveFunction* obj_ptr, double func_val, Vector3D* sup_grad, MsqError &err)
 {
-    //set functionSupplied and gradientSupplied booleans to true
+  // outputs OF value.
+  MSQ_DEBUG_ACTION(1,{std::cout << "  o TermCrit -- OF value: "
+                                << func_val << std::endl;});
+
+  //set functionSupplied and gradientSupplied booleans to true
   functionSupplied=true;
   gradientSupplied=true;
     //set the function value and gradient array
