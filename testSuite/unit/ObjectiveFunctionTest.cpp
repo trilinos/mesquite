@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 13-Nov-02 at 18:05:56
-//  LAST-MOD:  9-Apr-03 at 11:50:44 by Thomas Leurent
+//  LAST-MOD:  5-May-03 at 15:50:03 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -54,7 +54,7 @@ class ObjectiveFunctionTest : public CppUnit::TestFixture
 private:
   CPPUNIT_TEST_SUITE(ObjectiveFunctionTest);
   CPPUNIT_TEST (test_get_quality_metric_list);
-  CPPUNIT_WORK_IN_PROGRESS (test_compute_gradient_2D_LPTemplate);
+  CPPUNIT_TEST (test_compute_gradient_2D_LPTemplate);
   CPPUNIT_TEST (test_compute_gradient_3D_LPTemplate);
   CPPUNIT_TEST (test_compute_gradient_3D_LPtoPTemplate_L1_hex);
   CPPUNIT_TEST (test_compute_gradient_3D_LPtoPTemplate_L2_hex);
@@ -96,7 +96,7 @@ public:
       | 0  |  1 | 4  |
       1----2----3----9
     */
-    create_six_quads_patch(m6Quads, err); MSQ_CHKERR(err);
+    create_six_quads_patch_with_domain(m6Quads, err); MSQ_CHKERR(err);
 
     /*! \fn create_twelve_hex_patch(PatchData &pd, MsqError &err)
       3D set up: 12 quads, one center vertex outcentered by (0,-0.5),
@@ -121,7 +121,7 @@ public:
            \ /
             3
    */
-    create_qm_two_tri_patch(triPatch,err);MSQ_CHKERR(err);
+    create_qm_two_tri_patch_with_domain(triPatch,err);MSQ_CHKERR(err);
     
     create_qm_two_tet_patch(tetPatch,err);MSQ_CHKERR(err);
     
@@ -129,6 +129,8 @@ public:
 
   void tearDown()
   {
+    destroy_patch_with_domain(triPatch);
+    destroy_patch_with_domain(m6Quads);
   }
   
 public:

@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 12-Nov-02 at 18:05:56
-//  LAST-MOD:  5-May-03 at 15:09:56 by Thomas Leurent
+//  LAST-MOD:  5-May-03 at 15:48:30 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -323,9 +323,19 @@ namespace Mesquite
       |  -_0_-  |    |       vertex 11 is at (3,2)
       | 0  |  1 | 4  |
       1----2----3----9
+
+      use destroy_patch_with_domain() in sync.
    */
-   inline void create_six_quads_patch(PatchData &pd, MsqError &err) 
+   inline void create_six_quads_patch_with_domain(PatchData &pd, MsqError &err) 
    {
+     // associates domain
+     MeshSet* mesh_set1 = new MeshSet;;
+     Vector3D pnt(0,0,0);
+     Vector3D s_norm(0,0,3);
+     PlanarDomain* msq_geom = new PlanarDomain(s_norm, pnt, NULL);
+     mesh_set1->set_domain_constraint(msq_geom);
+     pd.set_mesh_set(mesh_set1);
+
      pd.set_num_vertices(12);
      MsqVertex* vert_array = pd.get_vertex_array(err);
      vert_array[0] = Vector3D(1,.5, 0);
