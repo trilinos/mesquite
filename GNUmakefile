@@ -152,6 +152,17 @@ veryclean: clean
 	-rm -f $(dependenciesfile)
 	touch $(dependenciesfile)
 
+distrib: all
+	@rm -rf mesquite-1.0
+	@mkdir mesquite-1.0
+	@mkdir mesquite-1.0/lib
+	@cp $(MSQLIB) mesquite-1.0/lib
+	@mkdir mesquite-1.0/include
+	@cp include/*.hpp mesquite-1.0/include
+	@cp includeLinks/*.hpp mesquite-1.0/include
+	tar cf mesquite-1.0.tar mesquite-1.0
+	rm -rf mesquite-1.0
+
 #distclean: veryclean
 #	-rm -f GNUmakefile config.status config.cache
 
