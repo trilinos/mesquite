@@ -37,7 +37,7 @@ namespace Mesquite
       // Creates the stopwatch.  The stopwatch is stopped
       // until start() is called.
     StopWatch() 
-        :isRunning(false), totalTime(0), numStarts(0)
+        :isRunning(false), totalTime(0.0), numStarts(0)
       {}
     
       // Starts the stopwatch.  If it was already running,
@@ -145,18 +145,14 @@ namespace Mesquite
 
 #ifdef USE_FUNCTION_TIMERS
 #define FUNCTION_TIMER_START(name) \
-{ \
    static StopWatchCollection::Key local_func_abd = GlobalStopWatches.add(name); \
-   GlobalStopWatches.start(local_func_abd); \
-} 
+   GlobalStopWatches.start(local_func_abd); 
 
-#define FUNCTION_TIMER_END(name) \
-{ \
-   GlobalStopWatches.stop(name); \
-}
+#define FUNCTION_TIMER_END() \
+   GlobalStopWatches.stop(local_func_abd); 
 #else
 #define FUNCTION_TIMER_START(name){}
-#define FUNCTION_TIMER_END(name) {}
+#define FUNCTION_TIMER_END() {}
 #endif
 
 
