@@ -71,7 +71,7 @@ namespace Mesquite
 
        //!Construct default vertex with coordinates (0.0,0.0,0.0)
      MsqVertex(const MsqVertex& rhs) 
-       : Vector3D(rhs), vertexBitFlags(0), mTag(0)
+       : Vector3D(rhs), vertexBitFlags(rhs.vertexBitFlags), mTag(0)
        {}
 
        //! Initializes with coordinates. Sets tag data/pointer to 0.
