@@ -30,6 +30,7 @@ correct metric return values.
 #include "InverseMeanRatioQualityMetric.hpp"
 #include "AspectRatioGammaQualityMetric.hpp"
 #include "MultiplyQualityMetric.hpp"
+#include "EdgeLengthQualityMetric.hpp"
 #include "MsqMessage.hpp"
 #include "cppunit/extensions/HelperMacros.h"
 #include "cppunit/SignalException.h"
@@ -49,6 +50,8 @@ private:
   CPPUNIT_TEST (test_aspect_ratio_gamma);
     //Test composite multiply
   CPPUNIT_TEST (test_composite_multiply);
+    //Test edge length metric
+  CPPUNIT_TEST (test_edge_length_metric);  
     //Test averaging methods
   CPPUNIT_TEST (test_averaging_method);
   CPPUNIT_TEST (test_mean_ratio_gradient);
@@ -67,7 +70,7 @@ public:
   void setUp()
   {
       //pF=1;//PRINT_FLAG IS ON
-      pF=0;//PRINT_FLAG IS OFF
+    pF=0;//PRINT_FLAG IS OFF
     qualTol = MSQ_MIN;
     MsqError err;
     size_t ind[20];
@@ -458,6 +461,37 @@ public:
        PRINT_INFO("\nMULT HEX %f", val);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
    }
+  
+void test_edge_length_metric()
+   {
+       //START WITH TRI's
+     MsqError err;
+     double val;
+     MsqMeshEntity* elems;
+     MsqVertex* verts = triPatch.get_vertex_array(err);
+     elems=triPatch.get_element_array(err);
+     MSQ_CHKERR(err);
+     SmoothnessQualityMetric *met = EdgeLengthQualityMetric::create_new();
+       //Check aspect ratio gamma of ideal tri patch
+       //Vert[2] has two edges connected of length 1
+     met->evaluate_vertex(triPatch,&verts[2],val,err);MSQ_CHKERR(err);
+     if(pF)
+       PRINT_INFO("\nEdge Length Metric tris (should be 2) %f", val);
+     CPPUNIT_ASSERT(fabs(val-2.0)<qualTol);
+       //Vert[1] has two edges connected of length 1
+       //THIRD TET's
+     verts = tetPatch.get_vertex_array(err);
+     elems = tetPatch.get_element_array(err);
+       //Check aspect ratio gamma of ideal tet
+     met->evaluate_vertex(tetPatch,&verts[0],val,err);MSQ_CHKERR(err);
+     if(pF)
+       PRINT_INFO("\nEdge Length Metric tets (should be 3) %f", val);
+     CPPUNIT_ASSERT(fabs(val-3.0)<qualTol);
+
+   }
+
+
+  
 void test_averaging_method()
    {
        //USE QUAD's
