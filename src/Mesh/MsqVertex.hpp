@@ -95,17 +95,17 @@ namespace Mesquite
      enum FlagMaskID
      {
        MSQ_NO_VTX_FLAG = 0,
-       MSQ_ALGO_FLAG0 = 1, //!< vertex is "free"
-       MSQ_SOFT_FIXED = 2,  //!< vertex is fixed. This flag can be set on and off. 
-       MSQ_HARD_FIXED = 4,  //!< vertex is always fixed. This can only be set on and never off.
-       MSQ_COORDS_CHANGED = 8,
-       MSQ_FLAG_3 = 16,
-       MSQ_FLAG_4 = 32,
-       MSQ_ALGO_FLAG1 = 64, //!< free bit, to be used by algorithm if needed.
-       MSQ_ALGO_FLAG2 = 128 //!< free bit, to be used by algorithm if needed. 
+       MSQ_ALGO_FLAG0 = 1<<0, //!< vertex is "free"
+       MSQ_SOFT_FIXED = 1<<1, //!< vertex is fixed. This flag can be set on and off. 
+       MSQ_HARD_FIXED = 1<<2, //!< vertex is always fixed. This can only be set on and never off.
+       MSQ_COORDS_CHANGED = 1<<3,
+       MSQ_FLAG_3 =     1<<4,
+       MSQ_FLAG_4 =     1<<5,
+       MSQ_ALGO_FLAG1 = 1<<6, //!< free bit, to be used by algorithm if needed.
+       MSQ_ALGO_FLAG2 = 1<<7, //!< free bit, to be used by algorithm if needed. 
      };
        //!Returns true if vertex is ``free''.
-     bool is_free_vertex()
+     bool is_free_vertex() const
        { return (vertexBitFlags & (MSQ_SOFT_FIXED|MSQ_HARD_FIXED)) == 0; }
      
      void set_soft_fixed_flag()
@@ -123,7 +123,7 @@ namespace Mesquite
      void remove_vertex_flag(FlagMaskID flag)
        { vertexBitFlags &= (~flag); }
      
-     bool is_flag_set(FlagMaskID flag)
+     bool is_flag_set(FlagMaskID flag) const
        { return (vertexBitFlags & flag) != 0; }
      
    private:
