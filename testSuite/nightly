@@ -33,12 +33,25 @@ UNITTESTER=testSuite/unit/msq_test
  # can be redirected to a file.
 rm -f ${LOGFILE}
 (
-
   # Save the working directory so we can write output files there
 pwd=`pwd`
 
   # Get rid of old output files
 rm -f ${RESULTS}.tests ${RESULTS}.unit ${RESULTS}.regress
+
+  # Look for a make implementation to use
+if [ -z "$MAKE" ]; then
+  echo "********** Looking for gmake... **********"
+  if gmake -v; then
+    MAKE=gmake
+  elif make -v; then
+    MAKE=make
+  else
+    echo "ERROR - COULD NOT FIND gmake!"
+    exit 1
+  fi
+fi
+export MAKE
 
 
   # Echo all commands
@@ -48,8 +61,7 @@ set -v
 echo
 uname -a 
 pwd
-which make && make --version
-which CC && (CC --version || CC -V)
+env
 
 
   # Change to mesquite root directory
@@ -63,7 +75,7 @@ echo "                      make clean"
 echo "********************************************************"
 echo
 
-make veryclean
+$MAKE veryclean
 
 echo
 echo "********************************************************"
@@ -79,7 +91,16 @@ echo "                      configure"
 echo "********************************************************"
 echo
 
-./configure || exit 1
+# Check for configure options
+confopt=
+#confopt="--with-exodus --with-tstt"
+if [ -f "${pwd}/configure.options" ]; then
+  for opt in `cat "${pwd}/configure.options"`; do
+    confopt="$confopt --$opt"
+  done
+fi
+
+./configure $confopt || exit 1
 
 echo
 echo "********************************************************"
@@ -90,7 +111,7 @@ echo
 
 mkdir includeLinks
 mkdir obj
-make || exit 1
+$MAKE || exit 1
 test -f lib/libmesquite.a || exit 1
 
   # for each subdirectory
@@ -107,7 +128,7 @@ for test in testSuite/*; do
 
       # try to compile it
     rm -f ${test}/main
-    if make ${test}/main && test -x ${test}/main; then
+    if $MAKE ${test}/main && test -x ${test}/main; then
         # and run it
       if (cd ${test} && ./main); then
           # test completed successfully
@@ -133,7 +154,7 @@ echo
 
   # compile CppUnit tests
 rm -f "$UNITTESTER"
-make "$UNITTESTER" || exit 1
+$MAKE "$UNITTESTER" || exit 1
 test -x "$UNITTESTER" || exit 1
 
   # run CppUnit tests
