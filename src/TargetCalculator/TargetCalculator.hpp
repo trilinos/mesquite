@@ -94,17 +94,17 @@ namespace Mesquite
     
       //! \enum chooses the type of guide matrix used in the target calculator
     enum guide_type {
-      Ad, //!<
-      AK, //!<
-      A0, //!<
-      Ar, //!<
-      As, //!<
-      Ab, //!<
-      Ac, //!<
-      Ap, //!<
-      Ae, //!<
-      Af, //!<
-      Ax  //!<
+      Ad, //!< Default Guide
+      AK, //!< Conductivity Guide
+      A0, //!< Initial Mesh Guide
+      Ar, //!< Reference Mesh Guide
+      As, //!< Locally-smoothed IM Guide
+      Ab, //!< Bounding-box Guide
+      Ac, //!< Geometric Curvature Guide
+      Ap, //!< Parametric Guide
+      Ae, //!< Error Indicator Guide
+      Af, //!< Flux-based Guide
+      Ax  //!< Solution Feature-based Guide
     };
       //! Computes the guide corner matrices A for a given element index in the reference patch.
     void compute_guide_matrices(enum guide_type type, PatchData &ref_pd, size_t elem_ind,
@@ -218,7 +218,7 @@ namespace Mesquite
 
     double nu = pow(a1_norm*a2_norm*a3_norm, 1/3);
     double det_A = det(A);  MSQ_CHECK_NULL(det_A);
-    double fac = nu / fabs(pow(det_A, 1/3));
+    double fac = nu / pow(fabs(det_A), 1/3);
     
     Matrix3D Q;
 
