@@ -25,7 +25,7 @@ namespace Mesquite
   {
   public:
     LaplacianSmoother(MsqError &err);
-
+    ~LaplacianSmoother();
   protected:
     virtual void initialize(PatchData &pd, MsqError &err);
     virtual void optimize_vertex_positions(PatchData &pd,
@@ -33,6 +33,9 @@ namespace Mesquite
     virtual void initialize_mesh_iteration(PatchData &pd, MsqError &err);
     virtual void terminate_mesh_iteration(PatchData &pd, MsqError &err);
     virtual void cleanup();
+
+  private:
+    QualityMetric* edgeQM;
 
   };
 
@@ -53,7 +56,7 @@ namespace Mesquite
     int skip_ind=free_iter.value();
     if (num_vtx<=1) 
       err.set_msg("WARNING: Number of incident vertex is zero\n");
-
+      //std::cout << "centroid_smooth_mesh(): original ["<<free_vtx[0]<<","<<free_vtx[1]<<","<<free_vtx[2]<<"] = " << std::endl;
     for (j=0;j<dimension;++j) {
       free_iter.reset();
       free_iter.next();
@@ -72,7 +75,7 @@ namespace Mesquite
         }
       }
       free_vtx[j] = avg[j]/((double) num_vtx - 1.0);
-        //cout << "centroid_smooth_mesh(): final --  avg["<<j<<"] = " << free_vtx[j] << endl;
+        //std::cout << "centroid_smooth_mesh(): final --  avg["<<j<<"] = " << free_vtx[j] << std::endl;
     }
 
     return;

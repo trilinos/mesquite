@@ -11,6 +11,8 @@
 
 #include "LaplacianSmoother.hpp"
 #include "MsqMessage.hpp"
+#include "LPtoPTemplate.hpp"
+#include "EdgeLengthQualityMetric.hpp"
 
 
 using namespace Mesquite;
@@ -23,9 +25,19 @@ LaplacianSmoother::LaplacianSmoother(MsqError &err)
   this->set_name("LaplacianSmoother");
   
   set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err,1,1);MSQ_CHKERR(err);
+
+  edgeQM = EdgeLengthQualityMetric::create_new();
+  edgeQM->set_averaging_method(QualityMetric::RMS,err);
+  objFunc = new LPtoPTemplate(edgeQM, 2, err);
   
 }  
-  
+#undef __FUNC__
+#define __FUNC__ "LaplacianSmoother::~LaplacianSmoother" 
+LaplacianSmoother::~LaplacianSmoother() 
+{
+  delete edgeQM;
+  delete objFunc;
+}    
   
 #undef __FUNC__
 #define __FUNC__ "LaplacianSmoother::initialize" 
@@ -48,7 +60,10 @@ void LaplacianSmoother::optimize_vertex_positions(PatchData &pd,
                                                 MsqError &err)
 {
     //std::cout << "- Executing LaplacianSmoother::optimize_vertex_position()\n";
-
+    //if(pd.num_free_vertices(err)!=1){
+    //PRINT_INFO("\nNum free vertices equals %i\n",pd.num_free_vertices(err));
+    //}
+  
   int num_local_vertices = pd.num_vertices();
     //default the laplacian smoother to 3 even for 2-d elements.
     //int dim = get_mesh_set()->space_dim();

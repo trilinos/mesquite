@@ -34,10 +34,7 @@ ConjugateGradient::ConjugateGradient(ObjectiveFunction* objective,
   this->set_name("ConjugateGradient");
   this->set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err, 1); MSQ_CHKERR(err);
   objFunc=objective;
-  //Michael:: default to global?
-  set_step_size_bound(0);
-  set_gradient_bound(.001);
-  set_maximum_iteration(6);
+    //Michael:: default to global?
   set_debugging_level(0);
     //set the default inner termination criterion
   TerminationCriterion* default_crit=get_inner_termination_criterion();
@@ -257,22 +254,6 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
     MSQ_CHKERR(err);
   }//end while
   if(conjGradDebug>0){
-      //Print the reasons for stopping
-    if(conjGradDebug>1){
-      PRINT_INFO("\n---Conjugate Gradient iterations terminated due to:");
-      if(i>maxIteration){ 
-        PRINT_INFO("\n-  Iteration bound satisfied:\n    %i is not less than or equal to %i",i,maxIteration);
-      }
-      if(alp<=stepBound){
-        PRINT_INFO("\n-  Step criterion satisfied:\n     step=%e is not larger than %e",alp,stepBound);
-      }
-      if(grad_norm<=normGradientBound){
-        PRINT_INFO("\n-  Gradient norm bound satisfied:\n    Gradient norm = %e is not greater than %e",grad_norm,normGradientBound);
-      }
-      if(inner_criterion){
-        PRINT_INFO("\n-  Termination Criterion was satisfied.");
-      }
-    }//end debug value greater than 0
     PRINT_INFO("\nConjugate Gradient complete i=%i ",i);
     PRINT_INFO("\n-  FINAL value = %f, alp=%4.2e grad_norm=%4.2e",f,alp,grad_norm);
     PRINT_INFO("\n   FINAL TIME %f",c_timer.since_birth());

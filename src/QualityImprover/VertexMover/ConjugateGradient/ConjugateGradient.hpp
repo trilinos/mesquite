@@ -28,30 +28,12 @@ namespace Mesquite
   {
   public:
     ConjugateGradient(ObjectiveFunction* objective, MsqError &err);
-      /*!Set the maximum number of search directions to try before moving
-        to the next patch.
-      */
-    void set_maximum_iteration(int iter){
-        maxIteration=iter;}
-
-     /*!Set the minimum step length to be allowed before moving to the
-       next patch.
-      */
-    void set_step_size_bound(double step){
-      stepBound=step;}
-
-      /*!Set the minimum value of the inifinity norm of the ObjectiveFunction
-        gradient to be allowed before moving to the next patch.
-      */
-    void set_gradient_bound(double grad)
-      {
-        normGradientBound=grad;
-      }
-
+    
       //!Set the patch type
     virtual void set_patch_type(PatchData::PatchType type, MsqError &err, 
-				int patch_param1=0, int patch_param2=0);
-      //!Just for cg debugging purposes
+                                int patch_param1=0, int patch_param2=0);
+      //!Just for debugging purposes or for obtaining more data
+      //! during the optimization process.
     void set_debugging_level(int new_lev)
       {
         conjGradDebug=new_lev;
@@ -79,9 +61,6 @@ namespace Mesquite
     
      
 private:
-    int maxIteration;
-    double stepBound;
-    double normGradientBound;
     Vector3D* fGrad;
     Vector3D* pGrad;
     //Vector3D* mCoord;
