@@ -534,18 +534,19 @@ namespace Mesquite
           break;
           
        case MAXIMUM:
-          for (i=0;i<num_values;++i){
-            if(metric_values[i]>total_value){
-              total_value=metric_values[i];
+          total_value = metric_values[0];
+          for (i = 1; i < num_values; ++i){
+            if (metric_values[i] > total_value){
+              total_value = metric_values[i];
             }
           }
           break;
           
        case MINIMUM:
-          total_value=MSQ_MAX;
-          for (i=0;i<num_values;++i){
-            if(metric_values[i]<total_value){
-              total_value=metric_values[i];
+          total_value = metric_values[0];
+          for (i = 1; i < num_values; ++i){
+            if (metric_values[i] < total_value) {
+              total_value = metric_values[i];
             }
           }
           break;
@@ -577,6 +578,7 @@ namespace Mesquite
           }
           total_value = sqrt(num_values/total_value);
           break;
+
        case STANDARD_DEVIATION:
           total_value=0;
           temp_value=0;
@@ -589,16 +591,19 @@ namespace Mesquite
           total_value/= (double) num_values;
           total_value-=temp_value;
           break;
+
        case SUM:
           for (i=0;i<num_values;++i){
             total_value+=metric_values[i];
           }
           break;
+
        case SUM_SQUARED:
           for (i=0;i<num_values;++i){
             total_value+= (metric_values[i]*metric_values[i]);
           }
           break;
+
        case MAX_MINUS_MIN:
           //total_value used to store the maximum
             //temp_value used to store the minimum
@@ -618,6 +623,7 @@ namespace Mesquite
           }
           total_value-=temp_value;
           break;
+
        case MAX_OVER_MIN:
             //total_value used to store the maximum
             //temp_value used to store the minimum
