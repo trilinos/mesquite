@@ -156,5 +156,47 @@ bool ObjectiveFunction::compute_numerical_hessian(Mesquite::PatchData &pd,
                                                   MsqHessian &hessian,
                                                   MsqError &err)
 {
-  return false;
+  int num_vtx=pd.num_vertices();
+  Vector3D* grad = new Vector3D[num_vtx];
+  Vector3D* grad_fd = new Vector3D[num_vtx];
+  Vector3D zero(0);
+  
+  this->compute_gradient(pd, grad, err); MSQ_CHKERR(err);
+  
+  MsqVertex* vertices=pd.get_vertex_array(err);
+  double flocal=0;
+  double flocald=0;
+  double eps=0;
+  int m, v, j;
+  
+  // loop over all vertices in the patch,
+  for (m=0; m<num_vtx; ++m) {
+    //loop over the three coords x,y,z
+    for(j=0;j<3;++j){
+      if (vertices[m].is_free_vertex()) {
+        eps=get_eps(pd, flocald, j, (&vertices[m]), err);
+        //If pd is not in the feasible region, do not calculate anything.
+        //Just return false.
+        if( ! this->compute_gradient(pd, grad_fd, err) ) {
+          delete[] grad;
+          delete[] grad_fd;
+          return false;
+        } MSQ_CHKERR(err);
+        for (v=m; v<num_vtx; ++v) {
+          grad_fd[v] = (grad_fd[v]-grad[v])/eps;
+          hessian.get_block(v,m)->set_column(j, grad_fd[v]);
+        }
+      } else {
+        for (v=m; v<num_vtx; ++v) {
+          hessian.get_block(v,m)->set_column(j, zero);
+        }
+      }
+      
+    }
+    
+    MSQ_CHKERR(err);
+  }//end loop over all vertices
+
+
+  return true;
 }
