@@ -29,7 +29,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 13-Apr-04 at 10:57:52
-//  LAST-MOD:  3-Jun-04 at 16:16:07 by Thomas Leurent
+//  LAST-MOD:  9-Jun-04 at 15:33:59 by Thomas Leurent
 //
 //
 // DESCRIPTION:
@@ -85,7 +85,7 @@ int main(int argc, char* argv[])
 {
   Mesquite::MsqError err;
   char file_name[256];
-  double OF_value = 1.;
+  double OF_value = 0.;
   
   // command line arguments
   if (argc==1 || argc>3)
@@ -111,7 +111,7 @@ int main(int argc, char* argv[])
   InstructionQueue queue1;
 
   // creates a mean ratio quality metric ...
-  sI_DFT mean_ratio;
+  I_DFT mean_ratio;
 //  mean_ratio.set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
 //   mean_ratio.set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
    mean_ratio.set_averaging_method(QualityMetric::LINEAR, err); MSQ_CHKERR(err);
@@ -146,11 +146,13 @@ int main(int argc, char* argv[])
   
   // **************Set stopping criterion****************
   TerminationCriterion tc_inner;
-  tc_inner.add_criterion_type_with_double(
+  if (OF_value!=0) {
+    tc_inner.add_criterion_type_with_double(
            TerminationCriterion::QUALITY_IMPROVEMENT_ABSOLUTE, OF_value, err);
+    pass1->set_inner_termination_criterion(&tc_inner);
+  }
   TerminationCriterion tc_outer;
   tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
-  pass1->set_inner_termination_criterion(&tc_inner);
   pass1->set_outer_termination_criterion(&tc_outer);
 
   // sets a culling method on the first QualityImprover
