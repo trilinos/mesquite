@@ -87,11 +87,124 @@ Provides sophisticated functionality via simple interface. List the ones
 provided (goal, stopping criterion, customization options).
 
 \subsection{Compilling and Linking Mesquite}
-Software dependencies, compiling AOMD, TSTT interfaces (need the .h file),
+TODO:  Software dependencies, compiling AOMD, TSTT interfaces
+(need the .h file),
 other (gmake, makedepend)?  Makefiles (examples that link Mesquite to an 
 application code). Compiler flags and options (debugging, profiling). 
 Platforms supported. Optional functionalities (debugging, profiling, 
-error handling). 
+error handling).
+\subsubsection{System Requirements}
+TODO:  List the supported platforms (Lin, SGI, Sun, etc.?), the required
+softwar (makedepend, gmake, Babel, etc.?), and any related information.
+\subsubsection{Acquiring the Necessary Code/Libraries}
+TODO:  How and where Mesquite, AOMD, CPPUnit, (MDB), etc. can be
+acquired... with appropriate acknowledgments.
+\subsubsection{Compiling Mesquite}
+Having acquired the Mesquite source code, the user can perform the
+following steps which outline the process for compiling the code and
+creating the library, `libmesquite.a'.
+\begin{enumerate}
+
+\item While in the main directory (typically, .../mesquite/), type
+`config'.  This will set up the makefiles with a default configuration
+for your platform.
+
+\item Examine the file Makefile.customize.  This file defines
+the tools and settings to be used while compiling Mesquite.  Make
+any modifications deemed necessary to Makefile.customize.  Section
+\ref{mes_vars_and_defs} lists some of the specific variables which
+may need to be modified before Mesquite will compile correctly.
+
+\item While in the main directory (typically, .../mesquite/),
+type 'gmake -f GNUmakefile'.  This will compile all source files
+and create libmesquite.a.  If the build is not successful, you may need
+to make additional modifications to Makefile.customize.
+
+\item If Makefile.customize is modified such that Mesquite will
+link to a compatible implementation of TSTT, type `gmake -f GNUmakefile
+all\_tests' to compile sample executables that use the Mesquite
+library.
+
+\end{enumerate}
+In general, most customizations to the makefile system should be
+made by modifying Makefile.customize, not by directly modifying
+GNUmakefile.
+\subsubsection{Makefile Definitions}
+The following is a list of variables used in Mesquite's Makefile
+structure to allow for custimization of the compilation process.
+Most of the provided examples come directly from Mesquite's default
+linux setup which is defined in Makefile.lin, a file located in
+the main directory.
+\label{mes_vars_and_defs}
+\begin{enumerate}
+
+\item Tools used by Mesquite:
+  \begin{description}
+  \item[ARCHIVER] defines the command to call the archiver\\
+    	({\it e.g.,} ARCHIVER = ar ru).
+  \item[CXX] defines the command to call the compiler\\
+	({\it e.g.,} CXX = g++).
+  \item [LINKER] defines the command to call the linker\\
+	({\it e.g.,} LINKER = \$\{CXX\}).
+  \item[MAKEDEPEND] defines the command to call makedepend\\
+	({\it e.g.,} MAKEDEPEND = makedepend).
+  \end{description}
+
+\item Compilation flags and variables:
+  \begin{description}
+  \item[AOMD\_FLAG]
+  \item[CXX\_FLAGS]
+  \item[DEBUG\_FLAG] defines the flags to be used to compile the Mesquite
+	with the desired levels of debug information, optimization, and
+	warning statements\\
+	({\it e.g.,} DEBUG\_FLAG = -g -Wno-deprecated).
+  \item[DEPEND\_FLAGS]
+  \item[LD\_FLAGS]
+  \item[STD\_INCLUDE\_FLAG] defines certain global definitions that
+	tell the compiler which types of header files to include.
+ 	Essentially, the two options are USE\_STD\_INCLUDES and
+	USE\_C\_PREFIX\_INCLUDES.  With USE\_STD\_INCLUDES defined
+	Mesquite will include the standard header files.  For example,
+	`list' will be included instead of `list.h'.  With
+	USE\_C\_PREFIX\_INCLUDES defined, Mesquite will include the
+	`c-prefixed' header files.  For example, `cmath' will be
+	inlcuded instead of `math.h'.  \\
+	({\it E.g.,} STD\_INCLUDE\_FLAG = -DUSE\_STD\_INCLUDES\\
+	-DUSE\_C\_PREFIX\_INCLUDES).
+  \end{description}
+\item Directories:
+  \begin{description}
+  \item[AOMD\_LIB\_DIR] is an optional variable which can be set
+	to hold the location of the AOMD library if Mesquite will
+	be linked to AOMD\\
+	({\it e.g.,} AOMD\_LIB\_DIR = \$\{MSQ\_BASE\_DIR/external/AOMD/lib\}).
+  \item[EXODUS\_LIB\_DIR] is an optional variable used to hold the
+	location of the ExodusII library, an external library needed
+	by MDB.  This library is not needed if Mesquite is not being
+	linked to MDB.
+	({\it E.g.,} EXODUS\_LIB\_DIR = \$\{MSQ\_BASE\_DIR\}/external/exodus/lib).
+  \item[MDB\_LIB\_DIR] is another optional variable which can be set
+	to hold the location of the MDB library if Mesquite will
+	be linked to MDB\\
+	({\it e.g.,} MDB\_LIB\_DIR = \$\{MSQ\_BASE\_DIR\}/external/MDB/lib).
+  \item[MSQ\_BASE\_DIR] holds the name of the main Mesquite directory.
+	Generally, the default value for this variable will be correct.\\
+	(The default value is `MSQ\_BASE\_DIR = .').
+  \end{description}
+\item TSTT linking information:
+\begin{description}
+  \item[AOMD\_TSTT\_LINK] is an optional variable that holds the
+	information needed by the linker to link the AOMD to Mesquite\\
+	({\it e.g.,} AOMD\_TSTT\_LINK = -L\$\{AOMD\_LIB\_DIR\} -lAOMD -lm).
+  \item[MDB\_TSTT\_LINK] is an optional variable that holds the
+	information needed by the linker to link the MDB to Mesquite\\
+	({\it e.g.,} MDB\_TSTT\_LINK = -L\$\{MDB\_LIB\_DIR\} -lMDB -lm).
+  \item[TSTT\_LINK] holds the information used by the LINKER to link
+	the TSTT implementation to Mesquite \\
+	({\it e.g.,} TSTT\_LINK = \$\{AOMD\_TSTT\_LINK\}).
+\end{description}
+\end{enumerate}
+
 
 \subsection{Hints for Performance Profiling}
 Compiler options, aggregation.
