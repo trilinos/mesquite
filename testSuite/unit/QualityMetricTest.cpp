@@ -461,7 +461,13 @@ public:
        pow_mneg2->evaluate_element(triPatch,&elems[0],temp_val,err);
        MSQ_CHKERR(err);
        CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0/(val*val),temp_val,qualTol);
-       delete m1, m2, pow_m1, pow_m2, sa_m1, sa_m2, pow_mneg2;
+       delete m1;
+       delete m2;
+       delete pow_m1;
+       delete pow_m2;
+       delete sa_m1;
+       delete sa_m2;
+       delete pow_mneg2;
      }
   
 
