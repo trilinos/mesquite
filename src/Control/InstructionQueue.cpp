@@ -234,8 +234,6 @@ void InstructionQueue::run_instructions(MeshSet &ms, MsqError &err)
   }
   
   std::list<QueueEntry>::const_iterator instr_iter;
-    //Michael
-    //std::cout<<"\nFirst check of time "<<err.since_last_check();
   // For each pass QualityImprover/QualityAssessor in the preconditionner list
   for (instr_iter = instructions.begin();
        instr_iter != instructions.end(); ++instr_iter) {
@@ -246,9 +244,7 @@ void InstructionQueue::run_instructions(MeshSet &ms, MsqError &err)
       instr_iter->mAssessor->assess_mesh_quality(ms, err); MSQ_CHKERR(err); }
     else
       err.set_msg("Unknown instruction type.");
-      //std::cout<<"\nInstruction queue time "<<err.since_last_check();
   }
-    //std::cout<<"\nApproximate TOTAL time "<<err.since_birth();
 }
 
   

@@ -27,7 +27,30 @@ namespace Mesquite
    class MeshSet;
   /*! \class TerminationCriterion
 
-      \brief The TerminationCriterion class contains
+      \brief The TerminationCriterion class contains functionality to
+      terminate the VertexMover's optimization.
+
+      The TerminationCriterion class has three roles.  It
+      is used to terminate the optimization on a single patch; it
+      is used to terminate the iterations over all patches in the
+      mesh; and it is used to cull vertices frm the optimization
+      processes.  Thus, for each optimzation, two TerminationCriterion
+      objects are used.  The class contains five important member
+      functions used in the VertexMover:  initialize(), reset(),
+      terminate(), cull_vertices(), and cleanup().  These functions
+      are each explained in detail below.  In general, the only one
+      of these functions called directly from a concrete VertexMover
+      is terminate() which allows the concrete VertexMover to determine
+      when to stop producing new iterates on a given patch.  All other
+      functionality is handled from the base VertexMover base class.
+
+      There are several different types of termination criteria
+      available.  These types are listed in teh enumberation
+      TCType.  Multiple criteria types can be set on a given
+      TermiantionCriterion object, and when this occurs, the
+      optimization process will terminate whenever any of the
+      criteria have been satisfied.
+      
   */
   class TerminationCriterion
   {
@@ -44,17 +67,50 @@ namespace Mesquite
        //! \f$f : I\!\!R^{3N} \rightarrow I\!\!R \f$ against a double \f$d\f$  
        //! and stops when \f$ \max_{i=1}^{3N} \nabla f_i < d \f$  
        GRADIENT_INF_NORM_ABSOLUTE = 2,
+         //!terminates on the j_th iteration when
+         //! \f$\sqrt{\sum_{i=1}^{3N}\nabla f_{i,j}^2}<d\sqrt{\sum_{i=1}^{3N}\nabla f_{i,0}^2}\f$
+         //!  That is, terminates when the norm of the gradient is small
+         //! than some scaling factor times the norm of the original gradient. 
        GRADIENT_L2_NORM_RELATIVE = 4,
+       //!terminates on the j_th iteration when
+         //! \f$\max_{i=1 \cdots 3N}\nabla f_{i,j}<d \max_{i=1 \cdots 3N}\nabla f_{i,0}\f$
+         //!  That is, terminates when the norm of the gradient is small
+         //! than some scaling factor times the norm of the original gradient.
+         //! (Using the infinity norm.)
        GRADIENT_INF_NORM_RELATIVE = 8,
-       KKT  = 16, 
+         //! Not yet implemented.
+       KKT  = 16,
+         //!Terminates when the objective function value is smaller than
+         //! the given scalar value.
        QUALITY_IMPROVEMENT_ABSOLUTE = 32,
+         //!Terminates when the objective function value is smaller than
+         //! the given scalar value times the original objective function
+         //! value.
        QUALITY_IMPROVEMENT_RELATIVE = 64,
+         //!Terminates when the number of iterations exceeds a given integer.
        NUMBER_OF_ITERATES = 128,
+         //!Terminates when the algorithm exceeds an allotted time limit
+         //! (given in seconds).
        CPU_TIME  = 256,
+         //!Terminates when a the maximum distance moved by any vertex
+         //! during the previous iteration is below the given value.
        VERTEX_MOVEMENT_ABSOLUTE  = 512,
+         //!Terminates when a the maximum distance moved by any vertex
+         //! during the previous iteration is below the given value
+         //! times the maximum distance moved by any vertex over the
+         //! entire course of the optimization.
        VERTEX_MOVEMENT_RELATIVE  = 1024,
+         //!Terminates when the decrease in the objective function value since
+         //! the previous iteration is below the given value.
        SUCCESSIVE_IMPROVEMENTS_ABSOLUTE = 2048,
+         //!Terminates when the decrease in the objective function value since
+         //! the previous iteration is below the given value times the
+         //! decrease in the objective function value since the beginning
+         //! of this optimization process.
        SUCCESSIVE_IMPROVEMENTS_RELATIVE = 4096,
+         //!Terminates when any vertex leaves the bounding box, defined
+         //! by the given value, d.  That is, when the absolute value of
+         //! a single coordinate of vertex's position exceeds d.
        BOUNDED_VERTEX_MOVEMENT = 8192
     };
 
@@ -79,10 +135,19 @@ namespace Mesquite
       //!Does preliminary set up for the TerminationCriterion
     void initialize(MeshSet &ms, PatchData &pd, MsqError &err);
       //!Does some setup and initialization so the criterion can be used
-      //! (not necessarily for the first time).
-    void reset(PatchData &pd, ObjectiveFunction* obj_ptr, MsqError &err);
+      //! (not necessarily for the first time).  When it makes sense,
+      //! the termination criteria are checked.  The return value
+      //! is similar to that of terminate().
+    bool reset(PatchData &pd, ObjectiveFunction* obj_ptr, MsqError &err);
       //!reset called using a MeshSet object instead of PatchData.
-    void reset(MeshSet &ms, ObjectiveFunction* obj_ptr, MsqError &err);
+      //! When it makes sense,
+      //! the termination criteria are checked.  The return value
+      //! is similar to that of terminate().  The function returns
+      //! false if the checked criteria have not been satisfied, and
+      //! true if they have been.  reset() only checks the
+      //! GRADIENT_INF_NORM_ABSOLUTE, GRADIENT_L2_NORM_ABSOLUTE,
+      //! and the QUALITY_IMPROVEMENT_ABSOLUTE criteria.
+    bool reset(MeshSet &ms, ObjectiveFunction* obj_ptr, MsqError &err);
       
      //!Returns true if termination criterion is met (for the inner loop). 
     bool terminate(PatchData &pd, ObjectiveFunction* obj_ptr, MsqError &err);
@@ -101,7 +166,14 @@ namespace Mesquite
                        MsqError &err);
       //!Cleans up after the TerminationCriterion is finished.
     void cleanup(MeshSet &ms, MsqError &err);
-      
+
+      //!This function returns the current function value.
+      /*! \todo Michael:  this function is not reliable.  It
+        needs to be more robust.  How do we know whether
+        currentOFValue got updated or not?  We may want to
+        make sure that all the criteria get checked.*/
+    double get_current_function_value()
+       {return currentOFValue;}
     
  protected:
     
@@ -116,6 +188,7 @@ namespace Mesquite
       //Data not specific to a single criterion
     double initialOFValue;
     double previousOFValue;
+    double currentOFValue;
     double lowerOFBound;
       //if we need to create a global patch from a meshset.
     PatchDataParameters globalPatchParams;
@@ -156,8 +229,8 @@ namespace Mesquite
     bool functionSupplied;
       //true if function was supplied
     bool gradientSupplied;
-      //place holder for supplied FunctionVal
-    double suppliedFunctionVal;
+      //place holder for supplied function value is stored in currentOFValue
+ 
       //place holder for supplied Gradient
     Vector3D* suppliedGradientArray;
     

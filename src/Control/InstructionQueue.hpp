@@ -86,8 +86,9 @@ namespace Mesquite {
        { autoQualAssess = false; }
     void enable_automatic_quality_assessment()
        { autoQualAssess = true; }
-    
-    void run_instructions(MeshSet &msc, MsqError &err);
+      //!This function is virtual so that it may be redefined in the
+      //! wraper classes.
+    virtual void run_instructions(MeshSet &msc, MsqError &err);
     void clear();
     
   protected:
