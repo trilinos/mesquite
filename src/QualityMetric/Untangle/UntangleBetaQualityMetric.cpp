@@ -36,8 +36,9 @@ UntangleBetaQualityMetric::UntangleBetaQualityMetric(double bet)
 #define __FUNC__ "UntangleBetaQualityMetric::evaluate_element"
 /*!Evaluate the Untangle Beta value  of the MsqMeshEntity pointed to
   by 'element'.*/
-double UntangleBetaQualityMetric::evaluate_element(PatchData &pd,
+bool UntangleBetaQualityMetric::evaluate_element(PatchData &pd,
                                                 MsqMeshEntity *element,
+                                                 double &fval,
                                                 MsqError &err){
   int num_sample_points;
   std::vector<Vector3D> sample_points;
@@ -81,9 +82,9 @@ double UntangleBetaQualityMetric::evaluate_element(PatchData &pd,
   }// end loop over sample points
   
   MSQ_CHKERR(err);
-  double total_metric=average_metrics(metric_values,num_sample_points,err);
+  fval=average_metrics(metric_values,num_sample_points,err);
   MSQ_CHKERR(err);
   delete metric_values;
-  return total_metric;
+  return true;
 }
 
