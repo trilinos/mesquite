@@ -356,14 +356,6 @@ namespace Mesquite
                                    MsqError &err, 
 				   MsqVertex::FlagMaskID flag=MsqVertex::MSQ_NO_VTX_FLAG)
   {
-      // Checks that enough memory is allocated to add a vertex.
-    if (numVertices==vertexArraySize)
-    {
-        // Shouldn't we just re-allocate?
-      err.set_msg("Vertices array is already full.");
-      return -1;
-    }
-    
       // checks if the vertex is already in an array
     if ( check_redundancy )
     {
@@ -373,6 +365,14 @@ namespace Mesquite
         if (vertex == vertexArray[i]) 
           return i; // vertex was already in array
       }
+    }
+    
+      // Checks that enough memory is allocated to add a vertex.
+    if (numVertices==vertexArraySize)
+    {
+        // Shouldn't we just re-allocate?
+      err.set_msg("Vertices array is already full.");
+      return -1;
     }
     
       // if we get here, we add the vertex to the array
