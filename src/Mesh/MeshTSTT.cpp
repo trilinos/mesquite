@@ -7,6 +7,9 @@
   \date   2003-06-12
 */
 
+#include <set>
+//#include <pair>
+
 #include "MeshTSTT.hpp"
 #include "TSTT.hh"
 
@@ -121,9 +124,10 @@ namespace
 
   
 #define PRINT_TSTT_ERROR(tstt_err) { \
-    PRINT_INFO("TSTT interface error"); \
+    PRINT_INFO("!!! TSTT interface ERROR caught by Mesquite -- \n!!! "); \
     PRINT_INFO(tstt_err.getNote().c_str()); \
     PRINT_INFO(tstt_err.getTrace().c_str()); \
+    PRINT_INFO("\n"); \
 }
 
 }
@@ -142,11 +146,16 @@ Mesquite::MeshTSTT::MeshTSTT(TSTT::LocalTSTTMesh& tstt_mesh,
     fixedVertexTag = tsttMesh.tagGetHandle(fixed_tag);
     std::string boundary_tag("boundary");
     boundaryVertexTag = tsttMesh.tagGetHandle(boundary_tag);
+    cout << "boundaryVertexTag: " << *((int*)boundaryVertexTag) << endl; //dbg
     oneEntity = ::SIDL::array<EntityHandle>::create1d(1);
     oneTagValue = ::SIDL::array<TagHandle>::create1d(1);
     oneInt = ::SIDL::array<int32_t>::create1d(1);
     oneTopo = ::SIDL::array<TSTT::EntityTopology>::create1d(1);
     threeDoubles = ::SIDL::array<double>::create1d(3);
+
+    cachedAdjEntArray = ::SIDL::array<EntityHandle>::create1d(0);
+    adjCsrPt = ::SIDL::array<int32_t>::create1d(0);
+    adjCsrDat = ::SIDL::array<int32_t>::create1d(0);
 
     // Associates a vertex byte flag to all vertices in the mesh.
     std::string vertex_byte_tag("MsqVtxByteTag");
@@ -346,18 +355,28 @@ bool Mesquite::MeshTSTT::vertex_is_fixed(Mesquite::Mesh::VertexHandle vertex, Ms
 // property; this flag can't be modified by users of the
 // Mesquite::Mesh interface.
 bool Mesquite::MeshTSTT::vertex_is_on_boundary(
-  Mesquite::Mesh::VertexHandle vertex, MsqError &/*err*/)
+  Mesquite::Mesh::VertexHandle vertex, MsqError &err)
 {
-  try {
-    int32_t tag_size;
+  try {    
+    int32_t tag_size = sizeof(int32_t);
     oneEntity.set(0,vertex);
+
+    //dbg
+//     EntityHandle toto = oneEntity.get(0);
+//     Mesquite::Vector3D coords_2;
+//     vertex_get_coordinates(toto, coords_2, err); MSQ_CHKERR(err);
+//     cout << "\ncoords: " << coords_2 << endl;
+//     int* v = new int(0); oneTagValue.set(0,(void*)v); 
+//     tsttMesh.entitySetTagData(oneEntity, boundaryVertexTag,
+//                                      oneTagValue, tag_size);
+    
     tsttMesh.entityGetTagData(oneEntity, boundaryVertexTag,
                                      oneTagValue, tag_size);
   }
   catch(::TSTT::Error &tstt_err) {
     PRINT_TSTT_ERROR(tstt_err);
   }
-  return (bool)(oneTagValue.get(0));
+  return (bool)(*(int*)(oneTagValue.get(0)));
 }
 
 // Get/set location of a vertex
@@ -562,6 +581,9 @@ size_t Mesquite::MeshTSTT::vertex_get_attached_element_count(
   Mesquite::Mesh::VertexHandle vertex, MsqError &err) const
 {
   try {
+    cachedAdjEntArray = ::SIDL::array<EntityHandle>::create1d(0);
+    adjCsrPt = ::SIDL::array<int32_t>::create1d(0);
+    adjCsrDat = ::SIDL::array<int32_t>::create1d(0);
     oneEntity.set(0, vertex);
     tsttMesh.entityGetAdjacencies(oneEntity, elementType,
                                          cachedAdjEntArray,
@@ -616,7 +638,7 @@ size_t Mesquite::MeshTSTT::element_get_attached_vertex_count(
   Mesquite::MsqError &err) const
 {
   Mesquite::EntityTopology topo_msq;
-  this->element_get_topology(elem, err); MSQ_CHKERR(err);
+  topo_msq = this->element_get_topology(elem, err); MSQ_CHKERR(err);
   return Mesquite::MsqMeshEntity::vertex_count(topo_msq);
 }
 
@@ -674,18 +696,68 @@ void Mesquite::MeshTSTT::elements_get_attached_vertices(
     ::SIDL::array<void*> elem_handles_b;
     elem_handles_b.borrow(elem_handles, 1, &lower, &upper, &stride);
     upper = sizeof_vert_handles-1;
-    ::SIDL::array<void*> vert_handles_b;
-    vert_handles_b.borrow(vert_handles, 1, &lower, &upper, &stride);
-    upper = sizeof_csr_data-1;
-    ::SIDL::array<int32_t> csr_data_b;
-    csr_data_b.borrow((int32_t*)csr_data, 1, &lower, &upper, &stride);
+    ::SIDL::array<void*> vert_handles_s;
+    vert_handles_s = ::SIDL::array<void*>::create1d(0);
     upper = num_elems;
     ::SIDL::array<int32_t> csr_offsets_b;
     csr_offsets_b.borrow((int32_t*)csr_offsets, 1, &lower, &upper, &stride);
+    ::SIDL::array<int32_t> dummy;
+    dummy = ::SIDL::array<int32_t>::create1d(0);
 
     tsttMesh.entityGetAdjacencies(elem_handles_b, ::TSTT::VERTEX,
-                                         vert_handles_b, csr_offsets_b,
-                                         csr_data_b);
+                                         vert_handles_s, csr_offsets_b,
+                                         dummy);
+
+    // TODO : assert csr_offsets_b has not been reallocated by TSTT implementation.
+
+    // TODO: Below, distance() is costly. There are faster ways ... 
+     
+    // Converts the TSTT 2 arrays format with repeated adhjacency handles into the
+    // mesquite 3 arrays CSR format without repeated handles.
+    size_t d=0;
+    std::set<Mesquite::Mesh::VertexHandle> vert_handles_csr;
+    for (size_t e=0; e<num_elems; ++e) {
+      for (size_t v=csr_offsets[e]; v<csr_offsets[e+1]; ++v) { 
+
+	// checking we're not writing beyond the index array 
+	if(d>sizeof_csr_data) {
+	  err.set_msg("insuficient size for csr_data array");
+	  return;
+	}
+	
+	// std::set::insert() returns a pair with the location of the entry
+	// and whether an insert was actually done.
+	std::pair<std::set<Mesquite::Mesh::VertexHandle>::iterator,bool> status;
+        status = vert_handles_csr.insert(vert_handles_s[v]);
+        csr_data[d]=distance(vert_handles_csr.begin(),
+                             status.first);
+
+	// if a new unique handle has been inserted
+	// increment the indexes equal or bigger in the index array
+	if (status.second == true)
+          for (size_t j=0; j<d; ++j) 
+	    if (csr_data[j]>=csr_data[d]) 
+	      csr_data[j]+=1;
+			      
+        ++d;
+      }
+    }
+    sizeof_csr_data=d;
+     
+    // Now just copies exactly the std::set into the array 
+    // given as an (output) argument.
+    size_t v=0;
+    std::set<Mesquite::Mesh::VertexHandle>::iterator vertices;
+    for (vertices=vert_handles_csr.begin();
+        vertices!=vert_handles_csr.end();
+         ++vertices) {
+      vert_handles[v] = *vertices;
+      assert(v<=sizeof_vert_handles);
+      ++v;
+    }
+    assert(v!=0);
+    sizeof_vert_handles=v;
+
   }
   catch(::TSTT::Error &tstt_err) {
     PRINT_TSTT_ERROR(tstt_err);
