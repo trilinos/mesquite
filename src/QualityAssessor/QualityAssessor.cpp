@@ -82,7 +82,7 @@ QualityAssessor::QualityAssessor(ostream& stream, string name) :
   MsqError err;
   set_patch_type( PatchData::GLOBAL_PATCH, err, 0 );
 }
- 
+
 QualityAssessor::QualityAssessor( QualityMetric* metric,
                                   QAFunction function,
                                   MsqError& err,
