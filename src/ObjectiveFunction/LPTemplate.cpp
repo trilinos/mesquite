@@ -10,6 +10,7 @@
 #include <math.h>
 #include "LPTemplate.hpp"
 #include "MsqFreeVertexIndexIterator.hpp"
+#include "MsqMessage.hpp"
 using  namespace Mesquite;  
 
 #undef __FUNC__
@@ -55,7 +56,6 @@ double LPTemplate::concrete_evaluate(PatchData &patch, MsqError &err){
   QualityMetric* currentQM = get_quality_metric();
   if(currentQM==NULL)
     currentQM=get_quality_metric_list().front();
-//  MsqMeshEntity* current_ent;
   int num_elements=patch.num_elements();
   int num_vertices=patch.num_vertices();
   int total_num=0;
@@ -98,10 +98,15 @@ void  LPTemplate::compute_analytical_gradient(PatchData &patch,
                                               Vector3D *const &grad,
                                               MsqError &err, int array_size)
 {
+ //Generate vertex to element connectivity if needed
+  patch.generate_vertex_to_element_data();
+    //vector for storing indices of vertex's connected elems
+  std::vector<size_t> elem_on_vert_ind;
    MsqMeshEntity* elems=patch.get_element_array(err);
    MsqVertex* vertices=patch.get_vertex_array(err);
     //Check to make sure that num_free_vert == array_size
   int num_free_vert=patch.num_free_vertices(err);
+    //PRINT_INFO("\nIN ANALYTIC GRAD VERT num_free_vert = %i",num_free_vert);
   if(array_size>=0){
     if(num_free_vert!=array_size){
       err.set_msg("Analytical Gradient passed arrays of incorrect size");
@@ -150,37 +155,46 @@ void  LPTemplate::compute_analytical_gradient(PatchData &patch,
   big_f=pow(big_f,(1-pVal));
     //if the function is negated for minimization, then so is the gradient
   big_f*=get_negate_flag();
-  MsqFreeVertexIndexIterator ind(&patch, err);
-  ind.reset();
+  MsqFreeVertexIndexIterator free_ind(&patch, err);
+  free_ind.reset();
     //position in patch's vertex array
   int vert_count=0;
     //corresponding position in grad array
   int grad_pos=0;
     //position in elem array
-  int elem_count=0;
+  size_t elem_pos=0;
   Vector3D grad_vec;
-  while(ind.next()){
-    vert_count=ind.value();
+  while(free_ind.next()){
+    vert_count=free_ind.value();
     grad[grad_pos].set(0.0,0.0,0.0);
     temp_value=0;
     if(qm_mode!=QualityMetric::VERTEX){
-      temp_value=1;
+ 
         //TODO should be done only with local elements
-      for (elem_count=0; elem_count<num_elements;++elem_count){
-        currentQM->compute_gradient(patch, &elems[elem_count],
+      patch.get_vertex_element_indices(vert_count, elem_on_vert_ind,err);
+        //PRINT_INFO("\nNUM ELEM ATTACHED TO VERT %i = %i",vert_count,elem_on_vert_ind.size());
+      elem_pos=0;
+        //while(elem_pos<num_elements){
+      while(!elem_on_vert_ind.empty()){
+        elem_pos=(elem_on_vert_ind.back());
+        elem_on_vert_ind.pop_back();
+        currentQM->compute_gradient(patch, &elems[elem_pos],
                                     vertices[vert_count],
                                     grad_vec,err);
+        temp_value=1;
         for(index=0;index<pVal-1;++index){
-          temp_value*=metric_values[elem_count];
+          temp_value*=metric_values[elem_pos];
         }
         grad[grad_pos] += temp_value*grad_vec;
+          //elem_pos++;
       }
-      
     }
     else{
       err.set_msg("Vertex based metric gradients not yet implements");
     }
     grad[grad_pos]*=big_f;
+      //PRINT_INFO("  gradx = %f, grady = %f, gradz = %f\n",grad[grad_pos][0],grad[grad_pos][1],grad[grad_pos][2]);
+    
     ++grad_pos;
     
   }
