@@ -48,27 +48,31 @@ bool InverseMeanRatioQualityMetric::evaluate_element(PatchData &pd,
       temp_vec[2]=vertices[v_i[2]]-vertices[v_i[0]];
         //make relative to equilateral
       temp_vec[1]=((2*temp_vec[2])-temp_vec[0])*MSQ_SQRT_THREE_INV;
-      return_flag=inverse_mean_ratio_2d(temp_vec,fval,err);
+      return_flag=inverse_mean_ratio_2d(temp_vec,v_i[0],pd,fval,err);
       break;
     case QUADRILATERAL:
       temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
       temp_vec[1]=vertices[v_i[3]]-vertices[v_i[0]];
-      return_flag=inverse_mean_ratio_2d(temp_vec,metric_values[0],err);
+      return_flag=inverse_mean_ratio_2d(temp_vec,v_i[0],pd,
+                                        metric_values[0],err);
       if(!return_flag)
         return false;      
       temp_vec[0]=vertices[v_i[2]]-vertices[v_i[1]];
       temp_vec[1]=vertices[v_i[0]]-vertices[v_i[1]];
-      return_flag=inverse_mean_ratio_2d(temp_vec,metric_values[1],err);
+      return_flag=inverse_mean_ratio_2d(temp_vec,v_i[1],pd,
+                                        metric_values[1],err);
       if(!return_flag)
         return false;
       temp_vec[0]=vertices[v_i[3]]-vertices[v_i[2]];
       temp_vec[1]=vertices[v_i[1]]-vertices[v_i[2]];
-      return_flag=inverse_mean_ratio_2d(temp_vec,metric_values[2],err);
+      return_flag=inverse_mean_ratio_2d(temp_vec,v_i[2],pd,
+                                        metric_values[2],err);
       if(!return_flag)
         return false; 
       temp_vec[0]=vertices[v_i[0]]-vertices[v_i[3]];
       temp_vec[1]=vertices[v_i[2]]-vertices[v_i[3]];
-      return_flag=inverse_mean_ratio_2d(temp_vec,metric_values[3],err);
+      return_flag=inverse_mean_ratio_2d(temp_vec,v_i[3],pd,
+                                        metric_values[3],err);
       if(!return_flag)
         return false; 
       fval=average_metrics(metric_values,4,err);

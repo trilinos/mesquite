@@ -51,7 +51,8 @@ namespace Mesquite
                            MsqError &err); 
           
   protected:
-     bool condition_number_2d(Vector3D temp_vec[],double &fval, MsqError &err);
+     bool condition_number_2d(Vector3D temp_vec[],size_t v_ind, PatchData &pd,
+                              double &fval, MsqError &err);
      bool condition_number_3d(Vector3D temp_vec[],double &fval, MsqError &err);
   private:
      
@@ -60,14 +61,25 @@ namespace Mesquite
   };
      //BEGIN INLINE FUNCITONS
    inline bool ConditionNumberQualityMetric::condition_number_2d(Vector3D
-                                                                   temp_vec[],
-                                                                   double
-                                                                   &fval,
-                                                                   MsqError
-                                                                   &err)
+                                                                 temp_vec[],
+                                                                 size_t v_ind,
+                                                                 PatchData &pd,
+                                                                 double &fval,
+                                                                 MsqError
+                                                                 &err)
    {
-       //NOTE:  We take absolute value here
-     double temp_val=fabs((temp_vec[0]*temp_vec[1]).length()*2.0);
+       
+     Vector3D cross_vec=(temp_vec[0]*temp_vec[1]);
+     //NOTE:: the equal below is ONLY to get the code to work
+         //when no normal is available.
+     Vector3D surf_norm=cross_vec;
+     pd.get_surface_normal(v_ind,surf_norm,err);MSQ_CHKERR(err);
+       //if invalid 
+     if(surf_norm%cross_vec < 0.0){
+       return false;
+     }
+     
+     double temp_val=fabs(cross_vec.length()*2.0);
      fval=MSQ_MAX_CAP;
      if(temp_val>MSQ_MIN){
        fval=(temp_vec[0].length_squared()+temp_vec[1].length_squared())/

@@ -53,7 +53,8 @@ namespace Mesquite
                            double &fval, MsqError &err); 
           
   protected:     
-     bool inverse_mean_ratio_2d(Vector3D temp_vec[],double &fval,
+     bool inverse_mean_ratio_2d(Vector3D temp_vec[],size_t v_ind,
+                                PatchData &pd, double &fval,
                                 MsqError &err);
      bool inverse_mean_ratio_3d(Vector3D temp_vec[],double &fval,
                                 MsqError &err);
@@ -64,14 +65,24 @@ namespace Mesquite
   };
      //BEGIN INLINE FUNCITONS
    inline bool InverseMeanRatioQualityMetric::inverse_mean_ratio_2d(Vector3D
-                                                                   temp_vec[],
+                                                                    temp_vec[],
+                                                                    size_t v_ind,
+                                                                    PatchData &pd,
                                                                     double
                                                                     &fval,
-                                                                   MsqError
-                                                                   &err)
+                                                                    MsqError
+                                                                    &err)
    {
-       //NOTE:  We take absolute value here
-     double area_val=fabs((temp_vec[0]*temp_vec[1]).length()*2.0);
+     Vector3D cross_vec=(temp_vec[0]*temp_vec[1]);
+     double area_val=fabs((cross_vec).length()*2.0);
+       //NOTE:: the equal below is ONLY to get the code to work
+       //when no normal is available.
+     Vector3D surf_norm=cross_vec;
+     pd.get_surface_normal(v_ind,surf_norm,err);MSQ_CHKERR(err);
+       //if invalid
+     if(surf_norm%cross_vec < 0.0){
+       return false;
+     }
      fval=(temp_vec[0].length_squared()+temp_vec[1].length_squared());
      if(fval>MSQ_MIN){
        fval=area_val/fval;

@@ -50,16 +50,14 @@ namespace Mesquite
      bool evaluate_element(PatchData &pd, MsqMeshEntity *element, double &fval,
                            MsqError &err);
      
-       // evaluate using patch data raw arrays 
-       //double evaluate_element(PatchData *pd, int element_index,
-       //                    MsqError &err);
-
      //! Evaluate the "condition number" for a vertex
-       //double evaluate_vertex(PatchData &pd, MsqVertex *vertex, MsqError &err);
+     bool evaluate_vertex(PatchData &pd, MsqVertex *vertex, double &fval,
+                          MsqError &err);
      
   protected:
 
-     bool compute_condition_number(Vector3D* jacobian_vectors,
+     bool compute_condition_number(PatchData &pd, MsqMeshEntity *elem,
+                                   Vector3D* jacobian_vectors,
                                    int num_jacobian_vectors,
                                    double &fval,
                                    MsqError &err);
@@ -73,13 +71,22 @@ namespace Mesquite
 //BEGIN INLINE FUNCTIONS
 
    inline bool GeneralizedConditionNumberQualityMetric::compute_condition_number(
-      Vector3D* jacobian_vectors, int num_jacobian_vectors,
-      double &fval, MsqError &err)
+      PatchData &pd, MsqMeshEntity *element, Vector3D* jacobian_vectors,
+      int num_jacobian_vectors, double &fval, MsqError &err)
    {
        //PRINT_INFO("INSIDE CONDITION NUMBER COMPUTE_CON\n");
      double temp_var=0;
      if(num_jacobian_vectors==2){
-       temp_var=fabs((jacobian_vectors[0]*jacobian_vectors[1]).length());
+       size_t vert=element->get_vertex_index(0);
+       Vector3D cross_vec=jacobian_vectors[0]*jacobian_vectors[1];
+         //NOTE:: the equal below is ONLY to get the code to work
+         //when no normal is available.
+       Vector3D norm_vec=cross_vec;
+       pd.get_surface_normal(vert,norm_vec,err);MSQ_CHKERR(err);
+       if(cross_vec%norm_vec<0.0){
+         return false;
+       }
+       temp_var=fabs((cross_vec).length());
        fval=jacobian_vectors[0].length_squared();
        fval+=jacobian_vectors[1].length_squared();
        if(temp_var>=MSQ_MIN){ //if not degenerate

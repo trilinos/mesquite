@@ -94,7 +94,7 @@ bool GeneralizedConditionNumberQualityMetric::evaluate_element(PatchData &pd,
       // evaluate condition number at ith sample point
       //if 2 jacobian vectors (2D elem)
     
-    return_flag=compute_condition_number(jacobian_vectors,
+    return_flag=compute_condition_number(pd, element, jacobian_vectors,
                                          num_jacobian_vectors,
                                          metric_values[i],err);
     if(!return_flag){
@@ -110,26 +110,26 @@ bool GeneralizedConditionNumberQualityMetric::evaluate_element(PatchData &pd,
   delete metric_values;
   return true;
 }
-/*
-double GeneralizedConditionNumberQualityMetric::evaluate_vertex(PatchData &pd,
-                                                     MsqVertex *vertex,
-                                                     MsqError &err)
+
+bool GeneralizedConditionNumberQualityMetric::evaluate_vertex(PatchData &pd,
+                                                              MsqVertex *vertex,
+                                                              double &fval,
+                                                              MsqError &err)
 {
   err.set_msg("Condition Number's evaluate_vertex is currently being implemented");
-  double total_metric=0.0;
-  */
-    /*Commented out until we have new data structures
-  MsqMeshEntity* elems = vertex->get_elements(err);
-  double num_elems = vertex->get_num_adjacent_elements();
+  fval=0.0;
+  return false;
+  
+    /*
+  fval=0.0;
+  size_t this_vert = pd.get_vertex_index(vert);
+  std::vector<size_t> adj_elems;
+  pd.get_vertex_element_indices(this_vert, adg_elems, err);
+  double num_elems = adj_elems.size();
   double *metric_values=new double[ num_elems ];
   int num_jacobian_vectors;
   Vector3D sample_point;
   Vecotr3D jacobian_vectors[3];
-    //!\TODO: Probably need to check the dimension here.  Depending on
-    //   how we store the elements connected to the vertex.  If we are
-    //   allowing 2-d elements in a 3-d mesh, then we don't want to use
-    //   the 2-d elements here, unless we are doing a surface smooth,
-    //   in which case we don't want the 3-d???
   
   int i;
   for ( i = 0; i<num_elems; i++){
@@ -146,6 +146,5 @@ double GeneralizedConditionNumberQualityMetric::evaluate_vertex(PatchData &pd,
   MSQ_CHKERR(err);
   delete metric_values;
     */
-//  return total_metric;
-//}
+}
   

@@ -46,30 +46,30 @@ bool ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
       temp_vec[2]=vertices[v_i[2]]-vertices[v_i[0]];
         //make relative to equilateral
       temp_vec[1]=((2*temp_vec[2])-temp_vec[0])*MSQ_SQRT_THREE_INV;
-      return_flag=condition_number_2d(temp_vec,fval,err);
+      return_flag=condition_number_2d(temp_vec,v_i[0],pd,fval,err);
       return return_flag;
       break;
     case QUADRILATERAL:
       temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
       temp_vec[1]=vertices[v_i[3]]-vertices[v_i[0]];
-      return_flag=condition_number_2d(temp_vec,fval,err);
+      return_flag=condition_number_2d(temp_vec,v_i[0],pd,fval,err);
       if(!return_flag)
         return return_flag;
       temp_vec[0]=vertices[v_i[2]]-vertices[v_i[1]];
       temp_vec[1]=vertices[v_i[0]]-vertices[v_i[1]];
-      return_flag=condition_number_2d(temp_vec,temp_double,err);
+      return_flag=condition_number_2d(temp_vec,v_i[1],pd,temp_double,err);
       fval+=temp_double;
       if(!return_flag)
         return return_flag;
       temp_vec[0]=vertices[v_i[3]]-vertices[v_i[2]];
       temp_vec[1]=vertices[v_i[1]]-vertices[v_i[2]];
-      return_flag=condition_number_2d(temp_vec,temp_double,err);
+      return_flag=condition_number_2d(temp_vec,v_i[2],pd,temp_double,err);
       fval+=temp_double;
       if(!return_flag)
         return return_flag;
       temp_vec[0]=vertices[v_i[0]]-vertices[v_i[3]];
       temp_vec[1]=vertices[v_i[2]]-vertices[v_i[3]];
-      return_flag=condition_number_2d(temp_vec,temp_double,err);
+      return_flag=condition_number_2d(temp_vec,v_i[3],pd,temp_double,err);
       fval+=temp_double;
       fval/=4.0;
       return return_flag;
