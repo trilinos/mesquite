@@ -34,8 +34,9 @@ bool ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
 {
   bool return_flag;
   double temp_double;
-  std::vector<size_t> v_i;
-  element->get_vertex_indices(v_i);
+    //std::vector<size_t> v_i;
+    //element->get_vertex_indices(v_i);
+  const size_t* v_i = element->get_vertex_index_array();
     //only 3 temp_vec will be sent to cond-num calculator, but the
     //additional vector3D may be needed during the calculations
   Vector3D temp_vec[5];
