@@ -47,6 +47,7 @@ describe main.cpp here
 #include "LInfTemplate.hpp"
 #include "SteepestDescent.hpp"
 
+#include "MsqMessage.hpp"
 using namespace Mesquite;
 
 
@@ -107,5 +108,5 @@ int main()
   queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
   
   writeVtkMesh("smoothed_mesh", mesh, err); MSQ_CHKERR(err);
-
+  PRINT_TIMING_DIAGNOSTICS();
 }
