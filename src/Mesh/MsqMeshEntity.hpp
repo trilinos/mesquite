@@ -172,9 +172,7 @@ namespace Mesquite
     double compute_signed_volume(PatchData &pd, MsqError &err );
     
       //! Uses a MeshDomain call-back function to compute the normal at the corner.
-    void compute_corner_normal( const msq_stdc::size_t corner_pt, 
-                                const Vector3D &corner_vec1,
-                                const Vector3D &corner_vec2, 
+    void compute_corner_normal( msq_stdc::size_t corner_pt, 
                                 Vector3D &normal,
                                 PatchData &pd, 
                                 MsqError &err);

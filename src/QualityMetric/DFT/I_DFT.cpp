@@ -83,13 +83,8 @@ bool I_DFT::evaluate_element(PatchData& pd,
       for (j = 0; j < 3; ++j) {
 	mCoords[j] = vertices[v_i[tetInd[i][j]]];
       }
-
-      pd.get_domain_normal_at_vertex(v_i[tetInd[i][0]], true, mNormal, mErr);
-      if (mErr || mNormal.length() == 0) {
-        mNormal = (v_i[tetInd[i][1]] - v_i[tetInd[i][0]]) *
-		  (v_i[tetInd[i][2]] - v_i[tetInd[i][0]]);
-        mNormal.normalize();
-      }
+      
+      e->compute_corner_normal( i, mNormal, pd, err );  MSQ_ERRZERO(err);
       mNormal *= pow(2./MSQ_SQRT_THREE, 1./3.);
 
       QR(mQ, mR, W[i]);
@@ -110,12 +105,7 @@ bool I_DFT::evaluate_element(PatchData& pd,
 	mCoords[j] = vertices[v_i[hexInd[i][j]]];
       }
 
-      pd.get_domain_normal_at_vertex(v_i[hexInd[i][0]], true, mNormal, mErr);
-      if (mErr || mNormal.length() == 0) {
-        mNormal = (v_i[tetInd[i][1]] - v_i[tetInd[i][0]]) *
-                  (v_i[tetInd[i][2]] - v_i[tetInd[i][0]]);
-        mNormal.normalize();
-      }
+      e->compute_corner_normal( i, mNormal, pd, err ); MSQ_ERRZERO(err);
 
       QR(mQ, mR, W[i]);
       inv(invR, mR);
@@ -193,6 +183,7 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
   // Only works with the weighted average
 
   MsqVertex *vertices = pd.get_vertex_array(err); MSQ_ERRZERO(err);
+  const size_t pd_elem_idx = pd.get_element_index(e);
 
   EntityTopology topo = e->get_element_type();
 
@@ -244,7 +235,8 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	mCoords[j] = vertices[v_i[tetInd[i][j]]];
       }
       
-      pd.get_domain_normal_at_vertex(v_i[tetInd[i][0]], true, mNormal, err); MSQ_ERRZERO(err);
+      pd.get_domain_normal_at_corner( pd_elem_idx, i, mNormal, err ); MSQ_ERRZERO(err);
+      mNormal.normalize();
       mNormal *= pow(2./MSQ_SQRT_THREE, 1./3.)
 
       inv(invW, W[i]);
@@ -301,7 +293,8 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	mCoords[j] = vertices[v_i[hexInd[i][j]]];
       }
 
-      pd.get_domain_normal_at_vertex(v_i[hexInd[i][0]], true, mNormal, err);  MSQ_ERRZERO(err);
+      pd.get_domain_normal_at_corner( pd_elem_idx, i, mNormal, err ); MSQ_ERRZERO(err);
+      mNormal.normalize();
 
       inv(invW, W[i]);
 
@@ -448,6 +441,7 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
   // Only works with the weighted average
 
   MsqVertex *vertices = pd.get_vertex_array(err);  MSQ_ERRZERO(err);
+  const size_t pd_elem_idx = pd.get_element_index( e );
 
   EntityTopology topo = e->get_element_type();
 
@@ -506,7 +500,8 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	mCoords[j] = vertices[v_i[tetInd[i][j]]];
       }
 
-      pd.get_domain_normal_at_vertex(v_i[tetInd[i][0]], true, mNormal, err); MSQ_ERRZERO(err);
+      pd.get_domain_normal_at_corner( pd_elem_idx, i, mNormal, err ); MSQ_ERRZERO(err);
+      mNormal.normalize();
       mNormal *= pow(2./MSQ_SQRT_THREE, 1./3.)
 
       inv(invW, W[i]);
@@ -607,8 +602,8 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	mCoords[j] = vertices[v_i[hexInd[i][j]]];
       }
 
-      pd.get_domain_normal_at_vertex(v_i[hexInd[i][0]], true, mNormal, err);
-      MSQ_ERRZERO(err);
+      pd.get_domain_normal_at_corner( pd_elem_idx, i, mNormal, err ); MSQ_ERRZERO(err);
+      mNormal.normalize();
 
       inv(invW, W[i]);
 
