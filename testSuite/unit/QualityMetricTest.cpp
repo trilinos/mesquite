@@ -8,7 +8,7 @@
 //    E-MAIL: mbrewer@sandia.gov
 //
 // ORIG-DATE: 03-Dec-02
-//  LAST-MOD:  5-May-03 at 15:18:24 by Thomas Leurent
+//  LAST-MOD:  6-May-03 at 12:55:10 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -16,6 +16,9 @@
 
 Unit testing of various QualityMetrics primarily to test for
 correct metric return values. 
+
+\author Michael Brewer
+\author Thomas Leurent
 
  */
 // DESCRIP-END.
@@ -66,8 +69,10 @@ private:
     //Test averaging methods
   CPPUNIT_TEST (test_averaging_method);
     // test analytical gradients
-  CPPUNIT_TEST (test_mean_ratio_tri_gradient);
-  CPPUNIT_WORK_IN_PROGRESS (test_mean_ratio_quad_gradient);
+  CPPUNIT_TEST (test_mean_ratio_tri_gradient_planar);
+  CPPUNIT_WORK_IN_PROGRESS (test_mean_ratio_tri_gradient_nonplanar);
+  CPPUNIT_TEST (test_mean_ratio_quad_gradient_planar);
+  CPPUNIT_WORK_IN_PROGRESS (test_mean_ratio_quad_gradient_nonplanar);
   CPPUNIT_TEST (test_mean_ratio_tet_gradient);
   CPPUNIT_TEST (test_mean_ratio_hex_gradient);
     // test analytical Hessians
@@ -639,12 +644,25 @@ public:
     delete grad_ana;
   }
 
-  void test_mean_ratio_tri_gradient()
+  void test_mean_ratio_tri_gradient_planar()
+  {
+    triPatch.vertex_by_index(3).z(0.);
+    test_mean_ratio_gradient(triPatch);
+  }
+       
+  void test_mean_ratio_tri_gradient_nonplanar()
   {
     test_mean_ratio_gradient(triPatch);
   }
        
-  void test_mean_ratio_quad_gradient()
+  void test_mean_ratio_quad_gradient_planar()
+  {
+    quadPatch.vertex_by_index(4).z(0.);
+    quadPatch.vertex_by_index(5).z(0.);
+    test_mean_ratio_gradient(quadPatch);
+  }
+       
+  void test_mean_ratio_quad_gradient_nonplanar()
   {
     test_mean_ratio_gradient(quadPatch);
   }
