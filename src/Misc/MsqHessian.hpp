@@ -55,7 +55,7 @@ namespace Mesquite
 
     size_t mSize; //!< number of rows (or number of columns, this is a square matrix).
     
-    Matrix3D* mPreconditionner;
+    Matrix3D* mPreconditioner;
     size_t precondArraySize;
     
     Vector3D* r; //!< array used in the CG solver
@@ -77,8 +77,8 @@ namespace Mesquite
     Matrix3D* get_block(size_t i, size_t j);
     void accumulate_entries(PatchData &pd, size_t elem_index,
                             Matrix3D mat3d_array[], MsqError &err);
-    void compute_preconditionner(MsqError &err);
-    void apply_preconditionner(Vector3D zloc[], Vector3D rloc[], MsqError &err);
+    void compute_preconditioner(MsqError &err);
+    void apply_preconditioner(Vector3D zloc[], Vector3D rloc[], MsqError &err);
     void cg_solver(Vector3D x[], Vector3D b[], MsqError &err);
     //! Hessian - vector product, summed with a second vector (optional).
     friend void axpy(Vector3D res[], size_t size_r,
@@ -199,16 +199,36 @@ namespace Mesquite
 
 
 #undef __FUNC__
-#define __FUNC__ "MsqHessian::apply_preconditionner"
+#define __FUNC__ "MsqHessian::apply_preconditioner"
   /*! Computes \f$ z=M^{-1}r \f$ . */
-  inline void MsqHessian::apply_preconditionner(Vector3D zloc[],
+  inline void MsqHessian::apply_preconditioner(Vector3D zloc[],
                                                 Vector3D rloc[],
                                                 MsqError& /*err*/)
   {
     size_t m;
-    // preconditionner is identity matrix for now.
+
     for (m=0; m<mSize; ++m) {
-      zloc[m] = mPreconditionner[m] * rloc[m]; 
+#ifdef DIAGONAL_PRECONDITIONER
+      // preconditioner is identity matrix for now.
+      zloc[m][0] = mPreconditioner[m][0][0] * rloc[m][0]; 
+      zloc[m][1] = mPreconditioner[m][1][1] * rloc[m][1]; 
+      zloc[m][2] = mPreconditioner[m][2][2] * rloc[m][2]; 
+#else
+      // z = inv(L^T) * r
+      zloc[m][0] = rloc[m][0];
+      zloc[m][1] = rloc[m][1] - mPreconditioner[m][0][1] * zloc[m][0];
+      zloc[m][2] = rloc[m][2] - mPreconditioner[m][0][2] * zloc[m][0] - mPreconditioner[m][1][2] * zloc[m][1];
+
+      // z = inv(D) * z
+      zloc[m][0] *= mPreconditioner[m][0][0];
+      zloc[m][1] *= mPreconditioner[m][1][1];
+      zloc[m][2] *= mPreconditioner[m][2][2];
+
+      // z = inv(L) * z
+      zloc[m][2] = zloc[m][2];
+      zloc[m][1] = zloc[m][1] - mPreconditioner[m][1][2] * zloc[m][2];
+      zloc[m][0] = zloc[m][0] - mPreconditioner[m][0][1] * zloc[m][1] - mPreconditioner[m][0][2] * zloc[m][2];
+#endif
     }
   }
 

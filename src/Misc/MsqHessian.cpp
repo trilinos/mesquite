@@ -28,7 +28,7 @@ using std::endl;
 MsqHessian::MsqHessian() :
   origin_pd(0), mEntries(0), mRowStart(0), mColIndex(0), 
   mAccumulation(0), mAccumElemStart(0), mSize(0), 
-  mPreconditionner(0), precondArraySize(0),
+  mPreconditioner(0), precondArraySize(0),
   r(0), z(0), p(0), w(0), cgArraySizes(0), maxCGiter(50)
 { }
 
@@ -42,7 +42,7 @@ MsqHessian::~MsqHessian()
   delete[] mAccumulation;
   delete[] mAccumElemStart;
 
-  delete[] mPreconditionner;
+  delete[] mPreconditioner;
 
   delete[] r;
   delete[] z;
@@ -323,26 +323,27 @@ void MsqHessian::get_diagonal_blocks(std::vector<Matrix3D> &diag, MsqError &err)
 
 
 #undef __FUNC__
-#define __FUNC__ "MsqHessian::compute_preconditionner"
-/*! compute a preconditionner used in the preconditionned conjugate gradient
+#define __FUNC__ "MsqHessian::compute_preconditioner"
+/*! compute a preconditioner used in the preconditioned conjugate gradient
   algebraic solver. In fact, this computes \f$ M^{-1} \f$ .
 */
-void MsqHessian::compute_preconditionner(MsqError &err)
+void MsqHessian::compute_preconditioner(MsqError &err)
 {
   // reallocates arrays if size of the Hessian has changed too much.
   if (mSize > precondArraySize || mSize < precondArraySize/10 ) {
-    delete[] mPreconditionner;
-    mPreconditionner = new Matrix3D[mSize];
+    delete[] mPreconditioner;
+    mPreconditioner = new Matrix3D[mSize];
   }
 
   Matrix3D* diag_block;
-  double sum, inv_sum;
+  double sum, inv_sum, tmp;
   size_t m;
-  // For each diagonal block, the (inverted) preconditionner is
+  // For each diagonal block, the (inverted) preconditioner is
   // the inverse of the sum of the diagonal entries.
   for (m=0; m<mSize; ++m) {
     diag_block = mEntries + mRowStart[m]; // Gets block at position m,m .
 
+#if DIAGONAL_PRECONDITIONER
     // find sum, and computes inverse, or 0 if sum = 0 .
     sum = (*diag_block)[0][0] + (*diag_block)[1][1] + (*diag_block)[2][2];
     if (sum != 0.) 
@@ -350,9 +351,54 @@ void MsqHessian::compute_preconditionner(MsqError &err)
     else
       inv_sum = 0.;
     
-    mPreconditionner[m][0][0] = inv_sum;
-    mPreconditionner[m][1][1] = inv_sum;
-    mPreconditionner[m][2][2] = inv_sum;
+    mPreconditioner[m][0][0] = inv_sum;
+    mPreconditioner[m][1][1] = inv_sum;
+    mPreconditioner[m][2][2] = inv_sum;
+#else
+    // calculate LDL^T factorization of the diagonal block
+    //  L = [1 pre[0][1] pre[0][2]]
+    //      [0 1         pre[1][2]]
+    //      [0 0         1        ]
+    //  inv(D) = [pre[0][0] 0         0        ]
+    //           [0         pre[1][1] 0        ]
+    //           [0         0         pre[2][2]]
+
+    if ((*diag_block)[0][0] == 0.0) {
+      // Either this is a fixed vertex or the diagonal block is not
+      // invertible.  Switch to the diagonal preconditioner in this
+      // case.
+
+      sum = (*diag_block)[0][0] + (*diag_block)[1][1] + (*diag_block)[2][2];
+      if (sum != 0.0) 
+        sum = 1 / sum;
+      
+      mPreconditioner[m][0][0] = sum;
+      mPreconditioner[m][0][1] = 0.0;
+      mPreconditioner[m][0][2] = 0.0;
+      mPreconditioner[m][1][1] = sum;
+      mPreconditioner[m][1][2] = 0.0;
+      mPreconditioner[m][2][2] = sum;
+    }
+    else {
+      mPreconditioner[m][0][0] = 1.0 / (*diag_block)[0][0];
+      mPreconditioner[m][0][1] = (*diag_block)[0][1] * mPreconditioner[m][0][0];
+      mPreconditioner[m][0][2] = (*diag_block)[0][2] * mPreconditioner[m][0][0];
+
+      mPreconditioner[m][1][1] = 
+        1.0 / ((*diag_block)[1][1] - 
+               (*diag_block)[0][1] * mPreconditioner[m][0][1]);
+     
+      tmp = (*diag_block)[1][2] - 
+            (*diag_block)[0][2] * mPreconditioner[m][0][1];
+
+      mPreconditioner[m][1][2] = mPreconditioner[m][1][1] * tmp;
+
+      mPreconditioner[m][2][2] = 
+        1.0 / ((*diag_block)[2][2] - 
+               (*diag_block)[0][2]*mPreconditioner[m][0][2] - 
+               mPreconditioner[m][1][2]*tmp);
+    }
+#endif
   }
 }
 
@@ -388,13 +434,13 @@ void MsqHessian::cg_solver(Vector3D x[], Vector3D b[], MsqError &err)
   double norm_r = norm_g;
   double rzm1; // r^T_{k-1} z_{k-1}
   double rzm2; // r^T_{k-2} z_{k-2}
-  this->compute_preconditionner(err); MSQ_CHKERR(err); // get M^{-1} for diagonal blocks
+  this->compute_preconditioner(err); MSQ_CHKERR(err); // get M^{-1} for diagonal blocks
 
   for (i=0; i<mSize; ++i)  x[i] = 0. ;  
   for (i=0; i<mSize; ++i)  r[i] = -b[i] ;  // r = -b because x_0 = 0 and we solve H*x = -b
   norm_g *= cg_tol;
 
-  this->apply_preconditionner(z, r, err); // solve Mz = r (computes z = M^-1 r)
+  this->apply_preconditioner(z, r, err); // solve Mz = r (computes z = M^-1 r)
   for (i=0; i<mSize; ++i)  p[i] = z[i] ; // p_1 = z_0  
   rzm1 = inner(z,r,mSize); // inner product r_{k-1}^T z_{k-1} 
     
@@ -416,7 +462,7 @@ void MsqHessian::cg_solver(Vector3D x[], Vector3D b[], MsqError &err)
     for (i=0; i<mSize; ++i)  r[i] -= alpha*w[i]; // r_{k+1} = r_k - alpha_{k+1} A p_{k+1} 
     norm_r = length(r, mSize);
       
-    this->apply_preconditionner(z, r, err); // solve Mz = r (computes z = M^-1 r)
+    this->apply_preconditioner(z, r, err); // solve Mz = r (computes z = M^-1 r)
       
     rzm2 = rzm1;
     rzm1 = inner(z,r,mSize); // inner product r_{k-1}^T z_{k-1} 

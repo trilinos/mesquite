@@ -182,7 +182,7 @@ void Mesquite::writeVtkMesh(const char filebase[128], TSTT::cMesh_Handle mesh_h,
   for (e=0; e<num_elem; ++e) 
   {
     // converts from TSTT to VTK topology type.
-    int vtk_type;
+    int vtk_type = -1;
     switch (topologies[e]) {
     case TSTT::TRIANGLE:
       vtk_type = 5;
