@@ -14,7 +14,7 @@
 #include "MsqTimer.hpp"
 #include "MsqMessage.hpp"
 
-#include <fstream.h>
+#include <fstream>
 #include <iostream>
 using namespace Mesquite;
 

@@ -231,7 +231,7 @@ namespace Mesquite
 //     inline void create_one_inverted_tri_patch(PatchData &one_tri_patch, MsqError &err)
 //    {
 
-//      //**********************FILL tri*************************
+//      // **********************FILL tri*************************
 //        // creates empty Patch
 //      one_tri_patch.set_num_vertices(3);
 //      one_tri_patch.set_num_elements(1);
@@ -270,7 +270,7 @@ namespace Mesquite
    */
    inline void create_two_tri_patch(PatchData &pd, MsqError &err)
    {
-       //**********************FILL tri*************************
+       // **********************FILL tri*************************
        // creates empty Patch
      pd.set_num_vertices(4);
      pd.set_num_elements(2);
