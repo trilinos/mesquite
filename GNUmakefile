@@ -63,7 +63,8 @@ TESTNAMES := test_1\
              tutorial\
              test_DFT \
              escobar \
-             Guides843 
+             Guides843 \
+             unit
 ###             random_test\
 ###             convert\
 ###             shape_wrapper_test
@@ -127,6 +128,10 @@ endif
 
 
 all: all_headers all_objects all_libs 
+
+settings:
+	@echo "TESTS = $(TESTS)"
+	@echo "TESTMAKEFILES = $(TESTMAKEFILES)"
 
 depend: 
 	@touch $(dependenciesfile)
