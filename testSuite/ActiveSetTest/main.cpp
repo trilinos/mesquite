@@ -93,7 +93,8 @@ int main()
     // initialises a MeshSet object
   MeshSet mesh_set1;
     //  printf("Creating mesh set 1\n");
-  mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
+  mesh_set1.add_mesh(mesh, err); 
+  if (err.errorOn) return 1;
   
     // Creates an intruction queue
     //  printf("Creating instruction queue\n");
@@ -124,29 +125,37 @@ int main()
   //  printf("Setting up the quality assessor\n");
   QualityAssessor quality_assessor=QualityAssessor(cond_no,QualityAssessor::MAXIMUM);
   quality_assessor.add_quality_assessment(cond_no,QualityAssessor::MINIMUM, err); 
-                   MSQ_CHKERR(err);
+  if (err.errorOn) return 1;
   quality_assessor.add_quality_assessment(cond_no,QualityAssessor::AVERAGE, err);
-                   MSQ_CHKERR(err);
+  if (err.errorOn) return 1;
 
   // assess the quality of the initial mesh
-  queue1.add_quality_assessor(&quality_assessor, err); MSQ_CHKERR(err);
+  queue1.add_quality_assessor(&quality_assessor, err); 
+  if (err.errorOn) return 1;
 
   // Set the max min method to be the master quality improver
-  queue1.set_master_quality_improver(&minmax_method, err); MSQ_CHKERR(err);
+  queue1.set_master_quality_improver(&minmax_method, err); 
+  if (err.errorOn) return 1;
 
   // assess the quality of the final mesh
-  queue1.add_quality_assessor(&quality_assessor, err); MSQ_CHKERR(err);
+  queue1.add_quality_assessor(&quality_assessor, err); 
+  if (err.errorOn) return 1;
 
   // write out the original mesh
   //  printf("Writing out the original mesh\n");
-  mesh->write_vtk("original_mesh", err); MSQ_CHKERR(err);
+  mesh->write_vtk("original_mesh", err); 
+  if (err.errorOn) return 1;
 
   // launches optimization on mesh_set1
   //  printf("Running the instruction queue\n");
-  queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
+  queue1.run_instructions(mesh_set1, err); 
+  if (err.errorOn) return 1;
 
   // write out the smoothed mesh
   //  printf("Writing out the final mesh\n");
-  mesh->write_vtk("smoothed_mesh", err); MSQ_CHKERR(err);
+  mesh->write_vtk("smoothed_mesh", err); 
+  if (err.errorOn) return 1;
+  
   delete cond_no;
+  return 0;
 }

@@ -98,10 +98,12 @@ int main(int argc, char* argv[])
   
   Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
   mesh->read_vtk(file_name, err);
+  if (err.errorOn) return 1;
   
   // initialises a MeshSet object
   MeshSet mesh_set1;
-  mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
+  mesh_set1.add_mesh(mesh, err); 
+  if (err.errorOn) return 1;
 
   // creates an intruction queue
   InstructionQueue queue1;
@@ -111,16 +113,19 @@ int main(int argc, char* argv[])
   ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
 //  mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
 //   mean_ratio->set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
-  mean_ratio->set_averaging_method(QualityMetric::SUM, err); MSQ_CHKERR(err);
+  mean_ratio->set_averaging_method(QualityMetric::SUM, err); 
+  if (err.errorOn) return 1;
   
   // ... and builds an objective function with it
   LPtoPTemplate* obj_func = new LPtoPTemplate(mean_ratio, 1, err);
+    if (err.errorOn) return 1;
   obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
   
   // creates the steepest descentfeas newt optimization procedures
 //  ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
   FeasibleNewton* pass1 = new FeasibleNewton( obj_func );
   pass1->set_patch_type(PatchData::GLOBAL_PATCH, err);
+    if (err.errorOn) return 1;
   
   QualityAssessor stop_qa=QualityAssessor(mean_ratio,QualityAssessor::AVERAGE);
   
@@ -129,27 +134,34 @@ int main(int argc, char* argv[])
   if (OF_value!=0) {
     tc_inner.add_criterion_type_with_double(
            TerminationCriterion::QUALITY_IMPROVEMENT_ABSOLUTE, OF_value, err);
+    if (err.errorOn) return 1;
     pass1->set_inner_termination_criterion(&tc_inner);
   }
   TerminationCriterion tc_outer;
   tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
+  if (err.errorOn) return 1;
   pass1->set_outer_termination_criterion(&tc_outer);
 
   // sets a culling method on the first QualityImprover
   pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
   
-  queue1.add_quality_assessor(&stop_qa, err); MSQ_CHKERR(err);
+  queue1.add_quality_assessor(&stop_qa, err); 
+  if (err.errorOn) return 1;
    
   // adds 1 pass of pass1 to mesh_set1
-  queue1.set_master_quality_improver(pass1, err); MSQ_CHKERR(err);
+  queue1.set_master_quality_improver(pass1, err); 
+  if (err.errorOn) return 1;
   
-  queue1.add_quality_assessor(&stop_qa, err); MSQ_CHKERR(err);
+  queue1.add_quality_assessor(&stop_qa, err); 
+  if (err.errorOn) return 1;
 
 //mesh->write_vtk("original_mesh",err); MSQ_CHKERR(err);
   
   // launches optimization on mesh_set1
-  queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
+  queue1.run_instructions(mesh_set1, err); 
+  if (err.errorOn) return 1;
   
 //mesh->write_vtk("smoothed_mesh", err); MSQ_CHKERR(err);
   PRINT_TIMING_DIAGNOSTICS();
+  return 0;
 }

@@ -87,7 +87,8 @@ int main()
   
     // initialises a MeshSet object
   MeshSet mesh_set1;
-  mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
+  mesh_set1.add_mesh(mesh, err); 
+  if (err.errorOn) return 1;
   
     // creates an intruction queue
   InstructionQueue queue1;
@@ -96,30 +97,41 @@ int main()
   ShapeQualityMetric* shape_metric = new ConditionNumberQualityMetric;
   SmoothnessQualityMetric* lapl_met = new EdgeLengthQualityMetric;
   lapl_met->set_averaging_method(QualityMetric::RMS,err);
-  
+   if (err.errorOn) return 1;
+ 
     // creates the laplacian smoother  procedures
   LaplacianSmoother lapl1(err);
+  if (err.errorOn) return 1;
   QualityAssessor stop_qa=QualityAssessor(shape_metric,QualityAssessor::MAXIMUM);
   stop_qa.add_quality_assessment(lapl_met,QualityAssessor::ALL_MEASURES,err);
+  if (err.errorOn) return 1;
   
     //**************Set stopping criterion****************
   TerminationCriterion sc2;
   sc2.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,10,err);
+  if (err.errorOn) return 1;
   lapl1.set_outer_termination_criterion(&sc2);
     // sets a culling method on the first QualityImprover
   lapl1.add_culling_method(PatchData::NO_BOUNDARY_VTX);
   
     // adds 1 pass of pass1 to mesh_set1
-  queue1.add_quality_assessor(&stop_qa,err); MSQ_CHKERR(err);
-  queue1.set_master_quality_improver(&lapl1, err); MSQ_CHKERR(err);
-  queue1.add_quality_assessor(&stop_qa,err); MSQ_CHKERR(err);
+  queue1.add_quality_assessor(&stop_qa,err); 
+  if (err.errorOn) return 1;
+  queue1.set_master_quality_improver(&lapl1, err); 
+  if (err.errorOn) return 1;
+  queue1.add_quality_assessor(&stop_qa,err); 
+  if (err.errorOn) return 1;
     // adds 1 passes of pass2 to mesh_set1
     //  mesh_set1.add_quality_pass(pass2);
   
     //writeVtkMesh("original_mesh", mesh, err); MSQ_CHKERR(err);
   
     // launches optimization on mesh_set1
-  queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
+  queue1.run_instructions(mesh_set1, err); 
+  if (err.errorOn) return 1;
   
-  mesh->write_vtk("smoothed_mesh", err); MSQ_CHKERR(err);
+  mesh->write_vtk("smoothed_mesh", err); 
+  if (err.errorOn) return 1;
+  
+  return 0;
 }

@@ -102,10 +102,12 @@ int main(int argc, char* argv[])
   
   Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
   mesh->read_vtk(file_name, err);
+  if (err.errorOn) return 1;
   
   // initialises a MeshSet object
   MeshSet mesh_set1;
-  mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
+  mesh_set1.add_mesh(mesh, err); 
+  if (err.errorOn) return 1;
 
   // creates an intruction queue
   InstructionQueue queue1;
@@ -114,22 +116,27 @@ int main(int argc, char* argv[])
   I_DFT mean_ratio;
 //  mean_ratio.set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
 //   mean_ratio.set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
-   mean_ratio.set_averaging_method(QualityMetric::LINEAR, err); MSQ_CHKERR(err);
+   mean_ratio.set_averaging_method(QualityMetric::LINEAR, err); 
+  if (err.errorOn) return 1;
 
   // creates a target calculator
 //  DefaultTargetCalculator target;
 
   Mesquite::MeshImpl *ref_mesh = new Mesquite::MeshImpl;
   ref_mesh->read_vtk("../../meshFiles/2D/VTK/tfi_horse10x4-12.vtk", err);
+  if (err.errorOn) return 1;
   MeshSet ref_mesh_set;
-  ref_mesh_set.add_mesh(ref_mesh, err); MSQ_CHKERR(err);
+  ref_mesh_set.add_mesh(ref_mesh, err); 
+  if (err.errorOn) return 1;
   //  DesignOpt3TargetCalculator target(&ref_mesh_set);
   DeformingDomainGuides843 target(&ref_mesh_set);
 
   Mesquite::MeshImpl *ref_mesh2 = new Mesquite::MeshImpl;
   ref_mesh2->read_vtk("../../meshFiles/2D/VTK/tfi_horse10x4-12.vtk", err);
+  if (err.errorOn) return 1;
   MeshSet ref_mesh2_set;
-  ref_mesh2_set.add_mesh(ref_mesh2, err); MSQ_CHKERR(err);
+  ref_mesh2_set.add_mesh(ref_mesh2, err); 
+  if (err.errorOn) return 1;
   // DesignOpt3TargetCalculator assessor_target(&ref_mesh2_set);
   DeformingDomainGuides843 assessor_target(&ref_mesh2_set);
 
@@ -140,11 +147,13 @@ int main(int argc, char* argv[])
   // creates the steepest descentfeas newt optimization procedures
 //  ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
   FeasibleNewton* pass1 = new FeasibleNewton( obj_func );
-  pass1->set_target_calculator(&target, err); MSQ_CHKERR(err);
+  pass1->set_target_calculator(&target, err); 
+  if (err.errorOn) return 1;
   pass1->set_patch_type(PatchData::GLOBAL_PATCH, err);
   
   QualityAssessor stop_qa(&mean_ratio,QualityAssessor::AVERAGE);
-  stop_qa.set_target_calculator(&assessor_target, err); MSQ_CHKERR(err);
+  stop_qa.set_target_calculator(&assessor_target, err); 
+  if (err.errorOn) return 1;
   
   // **************Set stopping criterion****************
   TerminationCriterion tc_inner;
@@ -160,21 +169,29 @@ int main(int argc, char* argv[])
   // sets a culling method on the first QualityImprover
   pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
   
-  queue1.add_quality_assessor(&stop_qa, err); MSQ_CHKERR(err);
+  queue1.add_quality_assessor(&stop_qa, err); 
+  if (err.errorOn) return 1;
    
   // adds 1 pass of pass1 to mesh_set1
-  queue1.set_master_quality_improver(pass1, err); MSQ_CHKERR(err);
+  queue1.set_master_quality_improver(pass1, err); 
+  if (err.errorOn) return 1;
   
-  queue1.add_quality_assessor(&stop_qa, err); MSQ_CHKERR(err);
+  queue1.add_quality_assessor(&stop_qa, err); 
+  if (err.errorOn) return 1;
 
-  ref_mesh_set.write_gnuplot("ref_mesh",err); MSQ_CHKERR(err);
+  ref_mesh_set.write_gnuplot("ref_mesh",err); 
+  if (err.errorOn) return 1;
 
-  mesh_set1.write_gnuplot("ori_mesh",err); MSQ_CHKERR(err);
+  mesh_set1.write_gnuplot("ori_mesh",err); 
+  if (err.errorOn) return 1;
   
   // launches optimization on mesh_set1
-  queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
+  queue1.run_instructions(mesh_set1, err); 
+  if (err.errorOn) return 1;
   
-  mesh_set1.write_gnuplot("smo_mesh", err); MSQ_CHKERR(err);
+  mesh_set1.write_gnuplot("smo_mesh", err); 
+  if (err.errorOn) return 1;
 
   PRINT_TIMING_DIAGNOSTICS();
+  return 0;
 }

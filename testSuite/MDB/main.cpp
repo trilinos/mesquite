@@ -47,7 +47,7 @@
 // Function declarations
 void set_fixed_boundary(TSTT::Mesh_Handle &mh,
                         TSTT::MeshError *error);
-void run_mesquite(TSTT::Mesh_Handle &mh,
+int run_mesquite(TSTT::Mesh_Handle &mh,
                   TSTT::MeshError *error);
 void write_results(TSTT::Mesh_Handle &mh,
                    const char* outfile,
@@ -97,7 +97,7 @@ int main(int argc, char** argv)
   
     // Smooth the mesh
   if (error == 0)
-    run_mesquite(my_mesh, &error);
+    error = run_mesquite(my_mesh, &error);
 
     // Write out the results
   if (error == 0)
@@ -105,7 +105,7 @@ int main(int argc, char** argv)
   
     // clean up
   deinit_mesh(my_mesh);
-  return 0;
+  return !error;
 }
 
 void write_results(TSTT::Mesh_Handle &mh,
@@ -301,12 +301,13 @@ void deinit_mesh(TSTT::Mesh_Handle my_mesh)
     std::cout << "Failed to shutdown properly\n";
 }
 
-void run_mesquite(TSTT::Mesh_Handle &mh, TSTT::MeshError *error)
+int run_mesquite(TSTT::Mesh_Handle &mh, TSTT::MeshError *error)
 {
     // Initialize a MeshSet object
   Mesquite::MeshSet mesh_set1;
   Mesquite::MsqError err;
-  mesh_set1.add_mesh(mh, err); MSQ_CHKERR(err);
+  mesh_set1.add_mesh(mh, err); 
+  if (err.errorOn) return 1;
   
     // Create an intruction queue
   Mesquite::InstructionQueue queue1;
@@ -325,8 +326,10 @@ void run_mesquite(TSTT::Mesh_Handle &mh, TSTT::MeshError *error)
   pass1->set_outer_termination_criterion(&tc2);
   pass1->add_culling_method(Mesquite::PatchData::NO_BOUNDARY_VTX);
   
-  queue1.set_master_quality_improver(pass1, err); MSQ_CHKERR(err);
-  queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
+  queue1.set_master_quality_improver(pass1, err); 
+  if (err.errorOn) return 1;
+  queue1.run_instructions(mesh_set1, err); 
+  if (err.errorOn) return 1;
 }
 
 void set_fixed_boundary(TSTT::Mesh_Handle &mh, TSTT::MeshError *error)

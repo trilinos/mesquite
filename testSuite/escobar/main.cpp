@@ -75,8 +75,6 @@ describe main.cpp here
 
 using namespace Mesquite;
 
-#undef __FUNC__
-#define __FUNC__ "main"
 int main()
 {
   Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
@@ -95,7 +93,8 @@ int main()
 
     // initializes a MeshSet object
     MeshSet mesh_set1;
-    mesh_set1.set_domain_constraint(&msq_geom, err); MSQ_CHKERR(err);
+    mesh_set1.set_domain_constraint(&msq_geom, err);
+    if (err.errorOn) return 1;
 
   // End 2D Section
 
@@ -109,7 +108,8 @@ int main()
 
  // End 3D Section
 
-  mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
+  mesh_set1.add_mesh(mesh, err);
+  if (err.errorOn) return 1;
   
     // creates an intruction queue
   InstructionQueue queue1;
@@ -143,16 +143,23 @@ int main()
     //This is an old command that still needs to be there.  It has
     //nothing to do with 'culling methods' described in TerminationCriterion.
   pass1.add_culling_method(PatchData::NO_BOUNDARY_VTX);
-  queue1.add_quality_assessor(&qa,err); MSQ_CHKERR(err);
+  queue1.add_quality_assessor(&qa,err); 
+  if (err.errorOn) return 1;
     // adds 1 pass of pass1 to mesh_set1
-  queue1.set_master_quality_improver(&pass1, err); MSQ_CHKERR(err);
-  queue1.add_quality_assessor(&qa,err); MSQ_CHKERR(err);
-  mesh->write_vtk("original_mesh",err); MSQ_CHKERR(err);
+  queue1.set_master_quality_improver(&pass1, err); 
+  if (err.errorOn) return 1;
+  queue1.add_quality_assessor(&qa,err); 
+  if (err.errorOn) return 1;
+  mesh->write_vtk("original_mesh",err); 
+  if (err.errorOn) return 1;
   
-  queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
-  mesh->write_vtk("smoothed_mesh",err); MSQ_CHKERR(err);
+  queue1.run_instructions(mesh_set1, err); 
+  if (err.errorOn) return 1;
+  mesh->write_vtk("smoothed_mesh",err); 
+  if (err.errorOn) return 1;
 
   delete cond_no;
   PRINT_TIMING_DIAGNOSTICS();
+  return 0;
 }
  
