@@ -78,7 +78,7 @@ public:
   void setUp()
   {
       //pF=1;//PRINT_FLAG IS ON
-    pF=0;//PRINT_FLAG IS OFF
+      pF=0;//PRINT_FLAG IS OFF
     MsqError err;
     
     qualTol = MSQ_MIN;
@@ -561,4 +561,4 @@ public:
 
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(QualityMetricTest, "QualityMetricTest");
-
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(QualityMetricTest, "Unit");

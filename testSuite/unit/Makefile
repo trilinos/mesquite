@@ -34,12 +34,15 @@ TEST_SRCS = sample_main.cpp \
     MsqVertexTest.cpp \
     MsqFreeVertexIndexIteratorTest.cpp \
     MsqHessianTest.cpp \
+    SphericalGeometryTest.cpp
 
 TEST_OBJS = ${TEST_SRCS:.cpp=.o}
+
 
 sample_test : ${TEST_OBJS}
 	@echo "Linking $@"
 	${PREFIX}${LINKER} ${LDFLAGS} ${TEST_OBJS} ${TEST_LINK} -o $@
+
 
 clean:
 	@rm -f *.o sample_test

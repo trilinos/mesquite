@@ -266,3 +266,4 @@ void test_compute_weigted_jacobian_ideal_tri()
 
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(MsqMeshEntityTest, "MsqMeshEntityTest");
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(MsqMeshEntityTest, "Unit");

@@ -1,10 +1,12 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include "MesquiteTestRunner.hpp"
-
+#include "MsqMessage.hpp"
 int main(int argc, char **argv)
 {
     // Create a test runner
   Mesquite::TestRunner runner;
+  bool wasSuccessful = false;
+  
 
     // If the user requested a specific test...
   if (argc > 1)
@@ -16,6 +18,7 @@ int main(int argc, char **argv)
         CppUnit::TestFactoryRegistry::getRegistry(argv[argc]);
       runner.add_test( registry.makeTest() );
     }
+    
   }
   else
   {
@@ -62,9 +65,9 @@ int main(int argc, char **argv)
   }
   
     // Run the tests
-  bool wasSucessful = runner.run("Test Run");
-  
+  wasSuccessful = runner.run("Test Run");
+
     // Return 0 if there were no errors
-  return wasSucessful ? 0 : 1;
+  return wasSuccessful ? 0 : 1;
 }
 

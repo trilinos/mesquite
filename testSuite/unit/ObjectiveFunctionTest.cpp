@@ -217,4 +217,4 @@ public:
 
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(ObjectiveFunctionTest, "ObjectiveFunctionTest");
-
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(ObjectiveFunctionTest, "Unit");

@@ -165,4 +165,4 @@ public:
 
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(MsqHessianTest, "MsqHessianTest");
- 
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(MsqHessianTest, "Unit");

@@ -113,3 +113,4 @@ public:
 
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(MsqFreeVertexIndexIteratorTest, "MsqFreeVertexIndexIteratorTest");
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(MsqFreeVertexIndexIteratorTest, "Unit");
