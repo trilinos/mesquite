@@ -5,7 +5,7 @@
 //    E-MAIL: tmunson@mcs.anl.gov
 //
 // ORIG-DATE:  2-Jan-03 at 11:02:19 bu Thomas Leurent
-//  LAST-MOD: 14-Jan-03 at 13:30:48 by Thomas Leurent
+//  LAST-MOD: 17-Jan-03 at 17:25:29 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -43,14 +43,19 @@ namespace Mesquite
   class MsqHessian
   {
   protected:
-    Matrix3D* mEntries;	   // size: number of nonzero blocks 
-    size_t* mColIndex;     //< column indexes of the entries in the row. 
-    size_t* mColInstr;	   //< accumulation pattern instructions
-    size_t* mRowStart;	   // size: number of vertices
+    Matrix3D* mEntries;	   //!< CSR block entries.  size: number of nonzero blocks 
+    size_t* mRowStart;	   //!< start of each row in mEntries. size: number of vertices.
+    size_t* mColIndex;     //!< CSR block structure: column indexes of the row entries. 
 
+    int* mAccumulation;	   //!< accumulation pattern instructions
+
+    int mSize; //!< number of rows (or number of columns, this is a square matrix).
     
   public:
     void initialize(PatchData &pd, MsqError &err);
+    int size() {return mSize;}
+    //! returns the diagonal blocks, memory must be allocated before call.
+    void get_diagonal_blocks(std::vector<Matrix3D> &diag, MsqError &err);
   };
 
 } // namespace
