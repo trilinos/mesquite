@@ -48,9 +48,6 @@ using std::cout;
 using std::endl;
 using std::cerr;
 
-using std::cout;
-using std::endl;
-
 class ObjectiveFunctionTest : public CppUnit::TestFixture
 {
 private:
@@ -404,7 +401,7 @@ public:
     double OF_val2;
     OF_bool = OF->compute_gradient(pd, grad, OF_val2, err); MSQ_CHKERR(err);
     CPPUNIT_ASSERT(OF_bool);
-
+    
     CPPUNIT_ASSERT_DOUBLES_EQUAL(OF_val1, OF_val2, 1e-12);
 
     delete[] grad;
@@ -433,7 +430,7 @@ public:
 
     //TODO Re-add this test
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//    test_OFval_from_evaluate_and_gradient(&LP5, m12Hex);
+    test_OFval_from_evaluate_and_gradient(&LP5, m12Hex);
 
     delete edge;
     delete mean_ratio;
