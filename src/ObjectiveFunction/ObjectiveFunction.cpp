@@ -37,18 +37,16 @@ bool ObjectiveFunction::compute_numerical_gradient(Mesquite::PatchData &pd,
   double eps=0;
   for (int m=0; m<num_vtx; ++m) {
     if (vertices[m].is_free_vertex()) {
-      PatchData sub_patch;
-      pd.get_subpatch(m, sub_patch, err); MSQ_CHKERR(err);
-      //If sub_patch is not in the feasible region, do not calculate anything.
+      //If pd is not in the feasible region, do not calculate anything.
       //Just return false.
-      if(! evaluate(sub_patch,flocal,err)) {
+      if(! evaluate(pd,flocal,err)) {
         return false;
       }
       MSQ_CHKERR(err);
       int j=0;
       //loop over the three coords x,y,z
       for(j=0;j<3;++j){
-        eps=get_eps(sub_patch, flocald, j, (&vertices[m]), err);
+        eps=get_eps(pd, flocald, j, (&vertices[m]), err);
         //PRINT_INFO("\nin obj num grad j=%i, eps=%20.19f",j,eps);
         if(eps==0){
           err.set_msg("Dividing by zero in Objective Functions numerical grad");
