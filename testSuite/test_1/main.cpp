@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 19-Feb-02 at 10:57:52
-//  LAST-MOD:  3-Dec-02 at 11:29:33 by Thomas Leurent
+//  LAST-MOD: 25-Apr-03 at 13:38:11 by Thomas Leurent
 //
 //
 // DESCRIPTION:
@@ -31,80 +31,90 @@ describe main.cpp here
 
 
 #include "Mesquite.hpp"
-#include "TSTT_Base.h"
 #include "MeshImpl.hpp"
-#include "MesquiteUtilities.hpp" //  for writeShowMeMesh()
 #include "MesquiteError.hpp"
-#include "Vector3D.hpp"
 #include "InstructionQueue.hpp"
 #include "MeshSet.hpp"
-#include "PatchData.hpp"
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
 
 // algorythms
 #include "MeanRatioQualityMetric.hpp"
-#include "LPTemplate.hpp"
-#include "LInfTemplate.hpp"
-#include "SteepestDescent.hpp"
+#include "LPtoPTemplate.hpp"
+#include "FeasibleNewton.hpp"
 
 #include "MsqMessage.hpp"
 using namespace Mesquite;
 
+using std::cout;
+using std::endl;
 
 #undef __FUNC__
 #define __FUNC__ "main"
-int main()
+int main(int argc, char* argv[])
 {
-  Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
   Mesquite::MsqError err;
   char file_name[128];
-  strcpy(file_name, "../../meshFiles/2D/VTK/square_tri_2.vtk");
+  double OF_value = 100;
+  
+  // command line arguments
+  if (argc==1 || argc>3)
+    cout << "meshfile name needed as argument.\n"
+      "objective function value optional as 2nd argument.\n" << endl;
+  else if (argc==2) {
+    cout << " given 1 command line argument.\n";
+    strcpy(file_name, argv[1]);
+  } else if (argc==3) {
+    cout << " given 2 command line arguments.\n";
+    strcpy(file_name, argv[1]);
+    OF_value = atof(argv[2]);
+  }
+  
+  Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
   mesh->read_vtk(file_name, err);
   
   // initialises a MeshSet object
   MeshSet mesh_set1;
   mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
 
-  // dbg
-   std::cout << " TSTT mesh handle: " << mesh << std::endl;
-  
   // creates an intruction queue
   InstructionQueue queue1;
 
   // creates a mean ratio quality metric ...
   ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
-
+  mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
+  mean_ratio->set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
+  
   // ... and builds an objective function with it
-    //LInfTemplate* obj_func = new LInfTemplate(mean_ratio);
-  LPTemplate* obj_func = new LPTemplate(mean_ratio, 2, err);
-    // creates the steepest descent optimization procedures
-  SteepestDescent* pass1 = new SteepestDescent( obj_func );
+  LPtoPTemplate* obj_func = new LPtoPTemplate(mean_ratio, 2, err);
+  obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
+  
+  // creates the steepest descentfeas newt optimization procedures
+  FeasibleNewton* pass1 = new FeasibleNewton( obj_func );
   pass1->set_patch_type(PatchData::GLOBAL_PATCH, err);
   
- QualityAssessor stop_qa=QualityAssessor(mean_ratio,QualityAssessor::MAXIMUM);
+  QualityAssessor stop_qa=QualityAssessor(mean_ratio,QualityAssessor::MAXIMUM);
+  
+  // **************Set stopping criterion****************
+  TerminationCriterion tc_inner;
+  tc_inner.add_criterion_type_with_double(
+           TerminationCriterion::QUALITY_IMPROVEMENT_ABSOLUTE, OF_value, err);
+  TerminationCriterion tc_outer;
+  tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
+  pass1->set_inner_termination_criterion(&tc_inner);
+  pass1->set_outer_termination_criterion(&tc_outer);
 
-   //**************Set stopping criterion****************
-// StoppingCriterion sc1(&stop_qa,1.0,1.8);
-   //StoppingCriterion sc2(StoppingCriterion::NUMBER_OF_PASSES,1);
- TerminationCriterion sc2;
- sc2.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
-// CompositeAndStoppingCriterion sc(&sc1,&sc2);
- pass1->set_inner_termination_criterion(&sc2);
- // sets a culling method on the first QualityImprover
- pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
-
+  // sets a culling method on the first QualityImprover
+  pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
+  
   // adds 1 pass of pass1 to mesh_set1
-//  queue1.add_preconditioner(pass1, err); MSQ_CHKERR(err);
   queue1.set_master_quality_improver(pass1, err); MSQ_CHKERR(err);
-  // adds 1 passes of pass2 to mesh_set1
-//  mesh_set1.add_quality_pass(pass2);
-
+  
   mesh->write_vtk("original_mesh",err); MSQ_CHKERR(err);
   
   // launches optimization on mesh_set1
   queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
   
-   mesh->write_vtk("smoothed_mesh", err); MSQ_CHKERR(err);
+  mesh->write_vtk("smoothed_mesh", err); MSQ_CHKERR(err);
   PRINT_TIMING_DIAGNOSTICS();
 }
