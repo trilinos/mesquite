@@ -37,7 +37,7 @@ namespace Mesquite
      
        // This allows for 8 flag bits.
        // I don't think we'll want more than that (yet).
-     typedef unsigned char FlagMask;
+     typedef char FlagMask;
      
        //! \enum FlagMaskID
        //!   Those are the available flags... currently only return
@@ -46,22 +46,31 @@ namespace Mesquite
        //!               so they have to be 2-based (2,4,8,16,32, ...)
      enum FlagMaskID
      {
-       MSQ_FREE_VERTEX = 1, //!< vertex is "free")
-       MSQ_FLAG_2 = 2,      //!< no other flags at this time
-       MSQ_FLAG_3 = 4,
-       MSQ_FLAG_4 = 8
+       MSQ_ALGO_FLAG0 = 1, //!< vertex is "free"
+       MSQ_SOFT_FIXED = 2,  //!< vertex is fixed. This flag can be set on and off. 
+       MSQ_HARD_FIXED = 4,  //!< vertex is always fixed. This can only be set on and never off.
+       MSQ_COORDS_CHANGED = 8,
+       MSQ_FLAG_3 = 16,
+       MSQ_FLAG_4 = 32,
+       MSQ_ALGO_FLAG1 = 64, //!< free bit, to be used by algorithm if needed.
+       MSQ_ALGO_FLAG2 = 128 //!< free bit, to be used by algorithm if needed. 
      };
-       //!Returns 1 if vertex is ``free''.
-     int is_free_vertex()
-       { return (vertexBitFlags & MSQ_FREE_VERTEX); }
+       //!Returns true if vertex is ``free''.
+     bool is_free_vertex()
+       { return ( !bool(vertexBitFlags & MSQ_SOFT_FIXED) &&
+                  !bool(vertexBitFlags & MSQ_HARD_FIXED) ); }
      
-     void set_vertex_flag(FlagMask alpha)
-       { vertexBitFlags|=alpha; }
+     void set_soft_fixed_flag()
+       { vertexBitFlags|=MSQ_SOFT_FIXED; }
      
-     void remove_vertex_flag(FlagMask alpha)
-       { vertexBitFlags &= (~alpha); }
+     void remove_soft_fixed_flag()
+       { vertexBitFlags &= (~MSQ_SOFT_FIXED); }
      
-     bool is_flag_set(FlagMask flag)
+     void set_hard_fixed_flag()
+       { vertexBitFlags|=MSQ_HARD_FIXED; }
+     
+     
+     bool is_flag_set(FlagMaskID flag)
        { return (vertexBitFlags & flag); }
      
      void move_to_owner()
