@@ -200,7 +200,7 @@ namespace Mesquite
     
       //! Returns the topology of the given entity.
     virtual EntityTopology element_get_topology(ElementHandle entity_handle,
-                                              MsqError &err) = 0;
+                                              MsqError &err) const = 0;
       //! Returns the topologies of the given entities.  The "entity_topologies"
       //! array must be at least "num_elements" in size.
     virtual void elements_get_topologies(ElementHandle *element_handle_array,
