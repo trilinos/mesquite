@@ -78,7 +78,7 @@ bool QualityMetric::compute_element_hessian(PatchData &pd,
   }
     
     
-  bool ret;
+  bool ret=false;
   switch(hessianType)
     {
     case NUMERICAL_HESSIAN:
