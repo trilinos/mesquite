@@ -13,10 +13,14 @@ dependenciesfile = make.dependencies
 include Makefile.customize
 
 OUTPUT_OPTION = -o $@ # Use the -o option when generating .o files.
-INCLUDE = -I./include -I$(localincludedir) -I./TSTT-interface  
+INCLUDE = -I./include -I$(localincludedir) -I./TSTT-interface
+
+# Add to this in each subdirectory.  It's the list of files
+# that get added to the mesquite library.
+ALL_MSQ_OBJ = 
 
 # Make sure that "default" is the first target
-default: all depend
+default: depend all
 
 # List all desired module names explicitly below
 srcdir = src
@@ -110,10 +114,10 @@ all: all_headers all_objects all_libs
 depend: 
 	@touch $(dependenciesfile)
 	@echo "Generating dependencies for all Mesquite source files."
-	$(MAKEDEPEND)  -f $(dependenciesfile) $(DEPEND_FLAGS) \
+	$(PREFIX) $(MAKEDEPEND)  -f $(dependenciesfile) $(DEPEND_FLAGS) \
 	$(ALLSRC) 2> /dev/null
-	cat $(dependenciesfile) | perl -np -e "s/^.*\/(.*\.o:)/obj\/\1/;" > $(dependenciesfile).tmp
-	mv $(dependenciesfile).tmp $(dependenciesfile)
+	$(PREFIX) cat $(dependenciesfile) | perl -np -e "s/^.*\/(.*\.o:)/obj\/\1/;" > $(dependenciesfile).tmp
+	$(PREFIX) mv $(dependenciesfile).tmp $(dependenciesfile)
 	@echo " *** Done making depend"
 
 

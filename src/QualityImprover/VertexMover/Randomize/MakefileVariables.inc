@@ -9,3 +9,5 @@ RANDSMOOTHHEADERS = \
 	$(wildcard $(RANDSMOOTHDIR)/*.hh))
 
 RANDSMOOTHOBJ  = $(patsubst $(RANDSMOOTHDIR)/%.cpp, obj/%.o, $(RANDSMOOTHSRC)) 
+
+ALL_MSQ_OBJ += $(RANDSMOOTHOBJ)

@@ -52,8 +52,9 @@ void Mesquite::MsqMeshEntity::compute_weighted_jacobian(PatchData &pd,
   Vector3D ideal_coords[8];
   Vector3D ideal_jac[3];
   Vector3D phys_jac[3];
-  double deter;
-  switch (mType){
+//  double deter;
+  switch (mType)
+  {
       //Note:: For the linear tri case we do not use sample pt.
     case TRIANGLE:
       jacobian_vectors[0].set(vertices[v_v[1]]-vertices[v_v[0]]);

@@ -16,3 +16,5 @@ OBJFUNCHEADERS = \
 	$(wildcard $(OBJFUNCDIR)/*.hh))
 
 OBJFUNCOBJ  = $(patsubst $(OBJFUNCDIR)/%.cpp, obj/%.o, $(OBJFUNCSRC))
+
+ALL_MSQ_OBJ += $(OBJFUNCOBJ)

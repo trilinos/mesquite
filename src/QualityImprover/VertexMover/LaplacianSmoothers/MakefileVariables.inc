@@ -10,3 +10,5 @@ LAPLSMOOTHHEADERS = \
 	$(wildcard $(LAPLSMOOTHDIR)/*.hh))
 
 LAPLSMOOTHOBJ  = $(patsubst $(LAPLSMOOTHDIR)/%.cpp, obj/%.o, $(LAPLSMOOTHSRC)) 
+
+ALL_MSQ_OBJ += $(LAPLSMOOTHOBJ)

@@ -3,10 +3,10 @@ all_objects: $(RANDSMOOTHOBJ)
 
 # puts links to the headers in the include directory    
 $(localincludedir)/%.hpp : $(RANDSMOOTHDIR)/%.hpp
-	ln -sf ../$< $@
+	${PREFIX} ln -sf ../$< $@
 
 $(localincludedir)/%.hh : $(RANDSMOOTHDIR)/%.hh
-	ln -sf ../$< $@
+	${PREFIX} ln -sf ../$< $@
 
 $(localobjdir)/%.o : $(RANDSMOOTHDIR)/%.cpp
 	@echo "Compiling $<"

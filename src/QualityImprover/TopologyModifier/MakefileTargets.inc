@@ -3,13 +3,12 @@ all_objects: $(TOPOMODIFOBJ)
 
 # puts links to the headers in the include directory    
 $(localincludedir)/%.hpp : $(TOPOMODIFDIR)/%.hpp
-	ln -sf ../$< $@
+	${PREFIX} ln -sf ../$< $@
 
 $(localincludedir)/%.hh : $(TOPOMODIFDIR)/%.hh
-	ln -sf ../$< $@
+	${PREFIX} ln -sf ../$< $@
 
 $(localobjdir)/%.o : $(TOPOMODIFDIR)/%.cpp
 	@echo "Compiling $<"
 	${PREFIX} ${CXX} ${CXXFLAGS} -c -o $@ $<
 
-	

@@ -64,8 +64,13 @@ void VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
     ms.copy_culling_method_bits( QualityImprover::get_culling_method_bits() );
   
     next_patch = true;
-    while( next_patch ) {
-      Timer loop_timer; double aomd_t=0; double msq_t=0;
+    while( next_patch )
+    {
+      Timer loop_timer;
+#if MSQ_DEBUG_LEVEL >= 3
+      double aomd_t=0;
+      double msq_t=0;
+#endif
       MSQ_DEBUG_ACTION(3,{std::cout.setf(std::ios_base::fixed, std::ios_base::floatfield);
                        loop_timer.since_last_check(); });
       next_patch =  ms.get_next_patch(patch_data, err); 

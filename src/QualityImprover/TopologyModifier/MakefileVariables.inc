@@ -9,3 +9,5 @@ TOPOMODIFHEADERS = \
 	$(wildcard $(TOPOMODIFDIR)/*.hh))
 
 TOPOMODIFOBJ  = $(patsubst $(TOPOMODIFDIR)/%.cpp, obj/%.o, $(TOPOMODIFSRC)) 
+
+ALL_MSQ_OBJ += $(TOPOMODIFOBJ)

@@ -1,9 +1,6 @@
 all_libs: $(MSQLIB)
 
-$(MSQLIB): $(wildcard $(localobjdir)/*.o )
+$(MSQLIB): $(ALL_MSQ_OBJ)
 	@echo "Creating Mesquite Library..."
-	@${ARCHIVER} $@ $(wildcard $(localobjdir)/*.o )
+	@${ARCHIVER} $@ $(ALL_MSQ_OBJ)
 	@echo "Creation of Mesquite Library complete."
-
-
-

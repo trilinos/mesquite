@@ -10,3 +10,5 @@ CONTROLHEADERS = \
 	$(wildcard $(CONTROLDIR)/*.hh))
 
 CONTROLOBJ  = $(patsubst $(CONTROLDIR)/%.cpp, obj/%.o, $(CONTROLSRC))
+
+ALL_MSQ_OBJ += $(CONTROLOBJ)

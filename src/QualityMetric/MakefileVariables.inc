@@ -10,3 +10,5 @@ QUALMETRICHEADERS = \
 	$(wildcard $(QUALMETRICDIR)/*.hh))
 
 QUALMETRICOBJ  = $(patsubst $(QUALMETRICDIR)/%.cpp, obj/%.o, $(QUALMETRICSRC)) 
+
+ALL_MSQ_OBJ += $(QUALMETRICOBJ)

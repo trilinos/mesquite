@@ -3,13 +3,12 @@ all_objects: $(MESHOBJ)
 
 # puts links to the headers in the include directory    
 $(localincludedir)/%.hpp : $(MESHDIR)/%.hpp
-	ln -sf ../$< $@
+	${PREFIX} ln -sf ../$< $@
 
 $(localincludedir)/%.hh : $(MESHDIR)/%.hh
-	ln -sf ../$< $@
+	${PREFIX} ln -sf ../$< $@
 
 $(localobjdir)/%.o : $(MESHDIR)/%.cpp
 	@echo "Compiling $<"
 	${PREFIX} ${CXX} ${CXXFLAGS} -c -o $@ $<
 
-	

@@ -13,3 +13,5 @@ QMSHAPEHEADERS = \
 	$(wildcard $(QMSHAPEDIR)/*.hh))
 
 QMSHAPEOBJ  = $(patsubst $(QMSHAPEDIR)/%.cpp, obj/%.o, $(QMSHAPESRC)) 
+
+ALL_MSQ_OBJ += $(QMSHAPEOBJ)

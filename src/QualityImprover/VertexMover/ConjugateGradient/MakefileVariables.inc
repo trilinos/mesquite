@@ -9,3 +9,5 @@ CONJGRADHEADERS = \
 	$(wildcard $(CONJGRADDIR)/*.hh))
 
 CONJGRADOBJ  = $(patsubst $(CONJGRADDIR)/%.cpp, obj/%.o, $(CONJGRADSRC))
+
+ALL_MSQ_OBJ += $(CONJGRADOBJ)

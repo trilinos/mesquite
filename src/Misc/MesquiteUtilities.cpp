@@ -119,8 +119,8 @@ void Mesquite::writeVtkMesh(const char filebase[128], TSTT::cMesh_Handle mesh_h,
     if (topologies[i] == TSTT::HEXAHEDRON)     includes_hexs=true;
   }
   // We only allow tri/quad and tet/hex meshes ...
-  if ( includes_tris && (includes_tets || includes_tets) ||
-       includes_quads && (includes_tets || includes_tets) ) {
+  if ( includes_tris && (includes_tets || includes_hexs) ||
+       includes_quads && (includes_tets || includes_hexs) ) {
     err.set_msg("invalid mix of elements in the mesh. Only tri/quad and tet/hex allowed.");
     return;
   }
@@ -410,7 +410,7 @@ void Mesquite::writeTSTTFacetMesh(const char filebase[128], TSTT::cMesh_Handle m
       // print the index 
       fprintf(facet_fp,"%d   ", index);
     }
-    fprintf(facet_fp,"\n", index);
+    fprintf(facet_fp,"\n");
   }
   delete id_1;
   delete id_2;

@@ -3,13 +3,12 @@ all_objects: $(CONJGRADOBJ)
 
 # puts links to the headers in the include directory    
 $(localincludedir)/%.hpp : $(CONJGRADDIR)/%.hpp
-	ln -sf ../$< $@
+	${PREFIX} ln -sf ../$< $@
 
 $(localincludedir)/%.hh : $(CONJGRADDIR)/%.hh
-	ln -sf ../$< $@
+	${PREFIX} ln -sf ../$< $@
 
 $(localobjdir)/%.o : $(CONJGRADDIR)/%.cpp
 	@echo "Compiling $<"
 	${PREFIX} ${CXX} ${CXXFLAGS} -c -o $@ $<
 
-	

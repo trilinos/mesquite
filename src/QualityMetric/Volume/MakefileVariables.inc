@@ -9,3 +9,5 @@ QMVOLUMEHEADERS = \
 	$(wildcard $(QMVOLUMEDIR)/*.hh))
 
 QMVOLUMEOBJ  = $(patsubst $(QMVOLUMEDIR)/%.cpp, obj/%.o, $(QMVOLUMESRC))
+
+ALL_MSQ_OBJ += $(QMVOLUMEOBJ)

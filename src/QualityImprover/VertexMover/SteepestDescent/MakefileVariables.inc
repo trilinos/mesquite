@@ -9,3 +9,5 @@ STEEPDESCHEADERS = \
 	$(wildcard $(STEEPDESCDIR)/*.hh))
 
 STEEPDESCOBJ  = $(patsubst $(STEEPDESCDIR)/%.cpp, obj/%.o, $(STEEPDESCSRC)) 
+
+ALL_MSQ_OBJ += $(STEEPDESCOBJ)

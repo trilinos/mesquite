@@ -12,3 +12,5 @@ MESHHEADERS = \
 	$(wildcard $(MESHDIR)/*.hh))
 
 MESHOBJ  = $(patsubst $(MESHDIR)/%.cpp, obj/%.o,$(MESHSRC))
+
+ALL_MSQ_OBJ += $(MESHOBJ)

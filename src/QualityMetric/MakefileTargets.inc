@@ -3,13 +3,11 @@ all_objects: $(QUALMETRICOBJ)
 
 # puts links to the headers in the include directory    
 $(localincludedir)/%.hpp : $(QUALMETRICDIR)/%.hpp
-	ln -sf ../$< $@
+	${PREFIX} ln -sf ../$< $@
 
 $(localincludedir)/%.hh : $(QUALMETRICDIR)/%.hh
-	ln -sf ../$< $@
+	${PREFIX} ln -sf ../$< $@
 
 $(localobjdir)/%.o : $(QUALMETRICDIR)/%.cpp
 	@echo "Compiling $<"
 	${PREFIX} ${CXX} ${CXXFLAGS} -c -o $@ $<
-
-	

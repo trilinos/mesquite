@@ -3,13 +3,12 @@ all_objects: $(NONSMOOTHSTEEPDESCOBJ)
 
 # puts links to the headers in the include directory    
 $(localincludedir)/%.hpp : $(NONSMOOTHSTEEPDESCDIR)/%.hpp
-	ln -sf ../$< $@
+	${PREFIX} ln -sf ../$< $@
 
 $(localincludedir)/%.hh : $(NONSMOOTHSTEEPDESCDIR)/%.hh
-	ln -sf ../$< $@
+	${PREFIX} ln -sf ../$< $@
 
 $(localobjdir)/%.o : $(NONSMOOTHSTEEPDESCDIR)/%.cpp
 	@echo "Compiling $<"
 	${PREFIX} ${CXX} ${CXXFLAGS} -c -o $@ $<
 
-	

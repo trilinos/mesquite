@@ -9,3 +9,5 @@ QUALASSESSHEADERS = \
 	$(wildcard $(QUALASSESSDIR)/*.hh))
 
 QUALASSESSOBJ  = $(patsubst $(QUALASSESSDIR)/%.cpp, obj/%.o, $(QUALASSESSSRC)) 
+
+ALL_MSQ_OBJ += $(QUALASSESSOBJ)

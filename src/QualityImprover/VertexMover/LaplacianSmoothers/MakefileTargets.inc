@@ -3,13 +3,12 @@ all_objects: $(LAPLSMOOTHOBJ)
 
 # puts links to the headers in the include directory    
 $(localincludedir)/%.hpp : $(LAPLSMOOTHDIR)/%.hpp
-	ln -sf ../$< $@
+	${PREFIX} ln -sf ../$< $@
 
 $(localincludedir)/%.hh : $(LAPLSMOOTHDIR)/%.hh
-	ln -sf ../$< $@
+	${PREFIX} ln -sf ../$< $@
 
 $(localobjdir)/%.o : $(LAPLSMOOTHDIR)/%.cpp
 	@echo "Compiling $<"
 	${PREFIX} ${CXX} ${CXXFLAGS} -c -o $@ $<
 
-	
