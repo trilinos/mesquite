@@ -9,9 +9,16 @@
 #else
 #include <assert.h>
 #endif
-
+/*! \file Vector3D.hpp
+  \brief Vector object with exactly 3 deminsions.
+*/
 namespace Mesquite
 {
+    /*!
+      \class Vector3D
+      \brief Vector3D is the object that effeciently stores information about
+      about three-deminsional vectors.  It is also the parent class of
+      MsqVertex.      */
   class Vector3D
   {
   public:
