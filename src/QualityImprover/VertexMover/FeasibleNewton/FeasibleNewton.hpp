@@ -5,7 +5,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 15-Jan-03 at 08:05:56
-//  LAST-MOD: 18-Feb-03 at 16:44:27 by Thomas Leurent
+//  LAST-MOD: 19-Feb-03 at 13:45:04 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -65,7 +65,6 @@ namespace Mesquite
     ObjectiveFunction* objFunc;
     double gradientLessThan;
     int maxIteration;
-    int maxCGiter;
     MsqHessian mHessian;
   };
   
