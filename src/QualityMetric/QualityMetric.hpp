@@ -84,6 +84,7 @@ namespace Mesquite
         NONE,
         LINEAR,
         RMS,
+        HMS,
         MINIMUM,
         MAXIMUM,
         HARMONIC,
@@ -100,6 +101,7 @@ namespace Mesquite
          MAXIMUM:  the maximum value,
          MINIMUM:  the minimum value,
          RMS:  the root-mean-squared average,
+         HMS:  the harmonic-mean-squared average,
          SUM:  the sum of the values
        */
      inline void set_averaging_method(AveragingMethod method, MsqError &err);
