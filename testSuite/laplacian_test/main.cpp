@@ -38,7 +38,7 @@ describe main.cpp here
 #include "InstructionQueue.hpp"
 #include "MeshSet.hpp"
 #include "PatchData.hpp"
-#include "StoppingCriterion.hpp"
+#include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
 
 // algorythms
@@ -85,8 +85,9 @@ int main()
  stop_qa.add_quality_assessment(lapl_met,QualityAssessor::ALL_MEASURES,err);
  
    //**************Set stopping criterion****************
- StoppingCriterion sc2(StoppingCriterion::NUMBER_OF_PASSES,10);
- lapl1->set_stopping_criterion(&sc2);
+ TerminationCriterion sc2;
+ sc2.add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,10,err);
+ lapl1->set_outer_termination_criterion(&sc2);
  // sets a culling method on the first QualityImprover
  lapl1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
 
@@ -97,7 +98,7 @@ int main()
   // adds 1 passes of pass2 to mesh_set1
 //  mesh_set1.add_quality_pass(pass2);
 
-  writeVtkMesh("original_mesh", mesh, err); MSQ_CHKERR(err);
+   //writeVtkMesh("original_mesh", mesh, err); MSQ_CHKERR(err);
   
   // launches optimization on mesh_set1
   queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);

@@ -1,5 +1,5 @@
 #include <iostream>
-#include "TSTT_Base.hpp"
+//#include "TSTT_Base.hpp"
 #include "MDBInterface.hpp"
 #include "MDBRange.hpp"
 #include "MDBSkinner.hpp"
@@ -9,7 +9,7 @@
 #include "InstructionQueue.hpp"
 #include "MeshSet.hpp"
 #include "PatchData.hpp"
-#include "StoppingCriterion.hpp"
+#include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
 
 // algorithms
@@ -291,12 +291,13 @@ void run_mesquite(TSTT::Mesh_Handle &mh, TSTT::MeshError *error)
     // Build an objective function with it
   Mesquite::LPTemplate* obj_func = new Mesquite::LPTemplate(mean_ratio, 2, err);
   
-    // Create the steepest descent optimization procedures
+    // Create the steepest descent  optimization procedures
   Mesquite::SteepestDescent* pass1 = new Mesquite::SteepestDescent( obj_func );
-  
-  Mesquite::StoppingCriterion sc2(Mesquite::StoppingCriterion::NUMBER_OF_PASSES, 1);
-  pass1->set_stopping_criterion(&sc2);
-  pass1->add_culling_method(Mesquite::QualityImprover::NO_BOUNDARY_VTX);
+  Mesquite::TerminationCriterion tc2;
+  tc2.add_criterion_type_with_int(Mesquite::TerminationCriterion::ITERATION_BOUND,10,err);
+    //Mesquite::StoppingCriterion sc2(Mesquite::StoppingCriterion::NUMBER_OF_PASSES, 10);
+  pass1->set_outer_termination_criterion(&tc2);
+  pass1->add_culling_method(Mesquite::PatchData::NO_BOUNDARY_VTX);
   
   queue1.set_master_quality_improver(pass1, err); MSQ_CHKERR(err);
   queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
