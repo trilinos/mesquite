@@ -269,22 +269,7 @@ void TerminationCriterion::reset(PatchData &pd, ObjectiveFunction* obj_ptr,
   if(totalFlag & CPU_TIME){
     mTimer.reset();
   }
-    //find the initial objective function value if needed
-  if(totalFlag & (QUALITY_IMPROVEMENT_ABSOLUTE | QUALITY_IMPROVEMENT_RELATIVE
-                  | SUCCESSIVE_IMPROVEMENTS_ABSOLUTE
-                  | SUCCESSIVE_IMPROVEMENTS_RELATIVE ) ){
-      //ensure the obj_ptr is not null
-    if(obj_ptr==NULL){
-      err.set_msg("Error termination criteria set which uses objective functions, but no objective function is available.");
-    }
-    
-    if(!obj_ptr->evaluate(pd, initialOFValue, err)){
-      err.set_msg("Initial patch is invalid for evaluation.");
-      MSQ_CHKERR(err);
-    }
-      //std::cout<<"\nReseting initial of value = "<<initialOFValue;
-    previousOFValue=initialOFValue;
-  }
+   
     //GRADIENT
   if(totalFlag & ((GRADIENT_L2_NORM_ABSOLUTE | GRADIENT_INF_NORM_ABSOLUTE)
                   | (GRADIENT_L2_NORM_RELATIVE | GRADIENT_INF_NORM_RELATIVE) ))
@@ -299,14 +284,37 @@ void TerminationCriterion::reset(PatchData &pd, ObjectiveFunction* obj_ptr,
       //if the initial gradient norm is needed
     if(totalFlag & ((GRADIENT_L2_NORM_RELATIVE | GRADIENT_INF_NORM_RELATIVE) )){
         //get gradient and make sure it is valid
-      if(!obj_ptr->compute_gradient(pd, mGrad , err, num_vertices)){
+      if(!obj_ptr->compute_gradient(pd, mGrad , initialOFValue, 
+				    err, num_vertices)){
         err.set_msg("Initial patch is invalid for gradient computation.");
       }
         //get the gradient norms
       initialGradInfNorm = Linf(mGrad, num_vertices);
       initialGradL2Norm = length(mGrad, num_vertices);
+      //the OFvalue comes for free, so save it
+      previousOFValue=initialOFValue;
     }
-  }   
+  }  
+  //find the initial objective function value if needed and not already
+  //computed.  If we needed the gradient_relative, we have the OF value for free.
+  if((totalFlag & (QUALITY_IMPROVEMENT_ABSOLUTE | 
+                   QUALITY_IMPROVEMENT_RELATIVE | 
+                   SUCCESSIVE_IMPROVEMENTS_ABSOLUTE | 
+                   SUCCESSIVE_IMPROVEMENTS_RELATIVE )) &&
+     !(totalFlag & (GRADIENT_L2_NORM_RELATIVE | 
+                    GRADIENT_INF_NORM_RELATIVE) )){
+      //ensure the obj_ptr is not null
+    if(obj_ptr==NULL){
+      err.set_msg("Error termination criteria set which uses objective functions, but no objective function is available.");
+    }
+    
+    if(!obj_ptr->evaluate(pd, initialOFValue, err)){
+      err.set_msg("Initial patch is invalid for evaluation.");
+      MSQ_CHKERR(err);
+    }
+      //std::cout<<"\nReseting initial of value = "<<initialOFValue;
+    previousOFValue=initialOFValue;
+  }
   
 }
 
@@ -414,7 +422,7 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
       //if not termination, update the previousOFValue to by obj_val
     previousOFValue=obj_val;
   }//end of termination criteria which need objective calculated
-
+  
     //if terminating on the norm of the gradient
   if(terminationCriterionFlag & ( GRADIENT_L2_NORM_ABSOLUTE  |
                                   GRADIENT_INF_NORM_ABSOLUTE |
@@ -437,7 +445,8 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
         err.set_msg("Number of vertices has increased making the gradient too small");
       }
         //get gradient and make sure it is valid
-      if(!obj_ptr->compute_gradient(pd, mGrad , err, num_vertices)){
+      double unused_var;
+      if(!obj_ptr->compute_gradient(pd, mGrad , unused_var, err, num_vertices)){
         err.set_msg("Initial patch is invalid for gradient compuation.");
       }
     }//end else if gradient needed to be calcuated
@@ -462,8 +471,7 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
     }
     //if stopping on Linf norm of the gradient
     if(terminationCriterionFlag & GRADIENT_INF_NORM_ABSOLUTE ){
-      double grad_Inf_norm = Linf(mGrad, num_vertices); // get the Linf norm
-      if(grad_Inf_norm <= gradInfNormAbsoluteEps){
+      if(grad_inf_norm <= gradInfNormAbsoluteEps){
           //reset mGrad to temp_grad so that it may be correctly deleted
         mGrad=temp_grad;
         return true;
