@@ -31,11 +31,11 @@ TEST_OBJS_P = $(TEST_OBJS:%=$(UNIT_DIR)/%)
 
 $(MSQ_TEST) : $(TEST_OBJS_P) $(locallibdir)/libmesquite.a
 	@echo "Linking $@"
-	$(PREFIX)$(LINKER) $(LDFLAGS) $(CONFIG_LDFLAGS) \
+	$(PREFIX)$(LINKER) $(LDFLAGS) \
         $(TEST_OBJS_P) \
         -o $@ \
         -L$(locallibdir) -lmesquite \
-        $(CPPUNIT_LNK)
+        $(CPPUNIT_LNK) $(CONFIG_LDFLAGS)
 
 .SUFFIXES : .cpp .o
 

@@ -34,7 +34,11 @@
 
 #include "cppunit/extensions/HelperMacros.h"
 
-#include <iostream>
+#ifdef MSQ_USE_OLD_IO_HEADERS
+# include <iostream.h>
+#else
+# include <iostream>
+#endif
 
 class ExodusTest : public CppUnit::TestFixture
 {
@@ -51,7 +55,7 @@ public:
   void setUp()
   {
 #ifdef MSQ_USING_EXODUS
-    Mesquite::MsqPrintError err(cout);
+    Mesquite::MsqPrintError err(msq_stdio::cout);
     
       // Read a Exodus Mesh file -- 10 triangles, 2 free vertices
     mMesh = new Mesquite::MeshImpl;
@@ -71,18 +75,22 @@ public:
   void test_elements()
   {
 #ifdef MSQ_USING_EXODUS
-    Mesquite::MsqPrintError err(cout);
+    Mesquite::MsqPrintError err(msq_stdio::cout);
     
       // Add mesh to a MeshSet.
     Mesquite::MeshSet mesh_set;
     mesh_set.add_mesh(mMesh, err); CPPUNIT_ASSERT(!err);
 
-      // Get the number of vertices
-    std::cout << "Number of vertices: "
-              << mMesh->get_total_vertex_count(err) << std::endl;
+    size_t num_vertices, num_elements, num_vtx_uses;
+    mMesh->get_all_sizes( num_vertices, num_elements, num_vtx_uses, err );
+    CPPUNIT_ASSERT(!err);
+    
+     // Get the number of vertices
+    msq_stdio::cout << "Number of vertices: "
+              << num_vertices << msq_stdio::endl;
       // Get the number of elements
-    std::cout << "Number of elements: "
-              << mMesh->get_total_element_count(err) << std::endl;
+    msq_stdio::cout << "Number of elements: "
+              << num_elements << msq_stdio::endl;
 #endif
   }
 };

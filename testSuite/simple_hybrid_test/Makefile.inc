@@ -9,5 +9,6 @@ all_tests: $(SIMPLE_HYBRID_EXEC)
 
 $(SIMPLE_HYBRID_EXEC): $(SIMPLE_HYBRID_SRC) $(locallibdir)/libmesquite.a
 	@echo "Linking Mesquite driver application ($@)..."
-	${LINKER} $(CXXFLAGS) ${LDFLAGS} $(CONFIG_CFLAGS) $(CONFIG_LDFLAGS) \
-	-o $@ ${SIMPLE_HYBRID_SRC} -L$(locallibdir) -lmesquite ${TSTT_LINK} -lm
+	${LINKER} $(CXXFLAGS) ${LDFLAGS} $(CONFIG_CFLAGS) \
+	-o $@ ${SIMPLE_HYBRID_SRC} -L$(locallibdir) -lmesquite \
+        $(CONFIG_LDFLAGS) -lm

@@ -9,5 +9,6 @@ all_tests: $(ANALYTICALGRAD3DEXEC)
 
 $(ANALYTICALGRAD3DEXEC): $(ANALYTICALGRAD3DSRC) $(locallibdir)/libmesquite.a
 	@echo "Linking Mesquite driver application ($@)..."
-	${PREFIX} ${LINKER} $(CXXFLAGS) ${LDFLAGS} $(CONFIG_CFLAGS) $(CONFIG_LDFLAGS) \
-	-o $@ ${ANALYTICALGRAD3DSRC} -L$(locallibdir) -lmesquite ${TSTT_LINK} -lm
+	${PREFIX} ${LINKER} $(CXXFLAGS) ${LDFLAGS} $(CONFIG_CFLAGS) \
+	-o $@ ${ANALYTICALGRAD3DSRC} -L$(locallibdir) -lmesquite \
+        $(CONFIG_LDFLAGS) -lm

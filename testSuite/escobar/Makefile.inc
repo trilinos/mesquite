@@ -9,5 +9,6 @@ all_tests: $(ESCOBAR_EXEC)
 
 $(ESCOBAR_EXEC): $(ESCOBAR_SRC) $(locallibdir)/libmesquite.a
 	@echo "Linking Mesquite driver application ($@)..."
-	${LINKER} $(CXXFLAGS) ${LDFLAGS} $(CONFIG_CFLAGS) $(CONFIG_LDFLAGS) \
-	-o $@ ${ESCOBAR_SRC} -L$(locallibdir) -lmesquite ${TSTT_LINK} -lm
+	${LINKER} $(CXXFLAGS) ${LDFLAGS} $(CONFIG_CFLAGS) \
+	-o $@ ${ESCOBAR_SRC} -L$(locallibdir) -lmesquite \
+        $(CONFIG_LDFLAGS) -lm

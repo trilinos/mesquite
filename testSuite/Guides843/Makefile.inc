@@ -9,5 +9,6 @@ all_tests: $(TESTG843EXEC)
 
 $(TESTG843EXEC): $(TESTG843SRC) $(locallibdir)/libmesquite.a
 	@echo "Linking Mesquite driver application ($@)..."
-	${LINKER} $(CXXFLAGS) ${LDFLAGS} $(CONFIG_CFLAGS) $(CONFIG_LDFLAGS) \
-	-o $@ ${TESTG843SRC} -L$(locallibdir) -lmesquite ${TSTT_LINK} -lm
+	${LINKER} $(CXXFLAGS) ${LDFLAGS} $(CONFIG_CFLAGS) \
+	-o $@ ${TESTG843SRC} -L$(locallibdir) -lmesquite \
+        $(CONFIG_LDFLAGS) -lm
