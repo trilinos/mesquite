@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD:  5-Nov-02 at 17:52:14 by Thomas Leurent
+//  LAST-MOD:  6-Nov-02 at 10:40:11 by Thomas Leurent
 //
 /*! \file MeshSet.cpp
 
@@ -138,9 +138,8 @@ bool MeshSet::get_next_vertices_set(MsqError &err)
   // if MeshSet is in initial state
   if ( verticesSet.empty() )
     currentMesh == meshSet.begin();
-
   // If we're at the end of the MeshSet::verticesSet but there is more
-  if ( currentVertex==verticesSet.end() && currentMesh!=meshSet.end() ) {
+  else if ( currentVertex==verticesSet.end() && currentMesh!=meshSet.end() ) {
       currentMesh++;
   }
 
@@ -259,7 +258,6 @@ bool MeshSet::get_next_patch(PatchData &pd,
                                    (TSTT::cEntity_Handle) (currentVertex->entity),
                                    bnd_tag_handle, (void**)&on_boundary,
                                    &tag_size, &tstt_err);
-          currentVertex++;
       
           // Make sure the call succeeded.
           // NOTE: If the tag doesn't exist, we'll get an error...
@@ -269,8 +267,10 @@ bool MeshSet::get_next_patch(PatchData &pd,
           if ( *on_boundary ==1)
             {
               MSQ_DEBUG_ACTION(2,{
-                std::cout << "      o Culling vertex " << currentVertexInd
+                std::cout << "      o Culling vertex "
+                          << distance(verticesSet.begin(), currentVertex)
                           << " according to NO_BOUNDARY_VTX." << std::endl; });
+              currentVertex++;
               cull_vertex = true;
             }
       
