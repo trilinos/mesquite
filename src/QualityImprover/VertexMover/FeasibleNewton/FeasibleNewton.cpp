@@ -36,7 +36,7 @@ FeasibleNewton::FeasibleNewton(ObjectiveFunction* of) :
 {
   objFunc=of;
   MsqError err;
-  convTol=.001;
+  convTol=1e-6;
   this->set_name("FeasibleNewton");
   set_patch_type(PatchData::GLOBAL_PATCH, err);
   TerminationCriterion* default_crit=get_inner_termination_criterion();
@@ -87,6 +87,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   int i;//,n;
   
   // 1.  Allocate a hessian and calculate the sparsity pattern.
+  // pd.reorder();
   mHessian.initialize(pd, err); MSQ_CHKERR(err);
   // 2.  Calculate the gradient and Hessian for the patch
   //     (a) if not defined at current point, stop and throw an error
@@ -131,15 +132,20 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
     // 5. Check for descent direction (inner produce of gradient and
     //    direction is negative.
     double alpha = inner(grad, d, nv);
+    // TODD -- Add back in if you encounter problems -- do a gradient
+    //         step if the direction from the conjugate gradient solver
+    //         is not a descent direction for the objective function.  We
+    //         SHOULD always get a descent direction from the conjugate
+    //         method though.
     // If direction is positive, does a gradient (steepest descent) step.
-    if (alpha>0) {
-      PRINT_INFO("Taking a gradient step.");
-      alpha = 0;
-      for (i=0; i<nv; ++i) {
-        d[i] = -grad[i]; 
-        alpha += grad[i]%d[i]; // recomputes alpha.
-      }
-    }
+    // if (alpha>0) {
+    //  PRINT_INFO("Taking a gradient step.");
+    //  alpha = 0;
+    //  for (i=0; i<nv; ++i) {
+    //    d[i] = -grad[i]; 
+    //    alpha += grad[i]%d[i]; // recomputes alpha.
+    //  }
+    // }
     
     alpha *= sigma;
     beta = 1.0;
@@ -151,8 +157,20 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
       //    (a) trial = x + beta*d
       pd.move_vertices(d, nv, beta, err); MSQ_CHKERR(err);
       //    (b) gradient evaluation
-      fn_bool = objFunc->compute_gradient(pd, grad, new_value, err); MSQ_CHKERR(err);
-//      objFunc->evaluate(pd, new_value, err);  MSQ_CHKERR(err);
+
+      // TODD -- the Armijo linesearch is based on the objective function,
+      //         so theoretically we only need to evaluate the objective
+      //         function.  However, near a very accurate solution, say with
+      //         the two norm of the gradient of the objective function less
+      //         than 1e-5, the numerical error in the objective function
+      //         calculation is enough that the Armijo linesearch will
+      //         fail.  To correct this situation, the iterate is accepted
+      //         when the norm of the gradient is also small.  If you need
+      //         high accuracy and have a large mesh, talk with Todd about
+      //         the numerical issues so that we can fix it.
+      // fn_bool = objFunc->compute_gradient(pd, grad, new_value, err); MSQ_CHKERR(err);
+
+      fn_bool = objFunc->evaluate(pd, new_value, err);  MSQ_CHKERR(err);
       //    (c) check for sufficient decrease and stop
       if (!fn_bool) { // function not defined at trial point
         beta *= beta0;
@@ -162,7 +180,8 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
         break; // iterate is acceptable.
       }
       else if (length(grad, nv) < convTol) {
-        break; // iterate is acceptable.
+         // Should never be used.
+         break; // iterate is acceptable.
       }
       //    (d) otherwise, shrink beta
       else {/* Iterate not acceptable */
