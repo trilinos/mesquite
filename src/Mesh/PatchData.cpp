@@ -53,6 +53,248 @@ PatchData::~PatchData()
   delete [] subpatchIndexArray;
 }
 
+/*! \fn PatchData::reorder()
+   Physically reorder the vertices and elements in the PatchData to improve
+   the locality of reference.  This method implements a Reverse Breadth First 
+   Search order starting with the vertex furthest from the origin.  Other
+   orderings can also be implemented.
+
+   This method should invalidate the vertex to element translation and other 
+   computed information.  I do not know how to invalidate them, so someone
+   else will need to fix up this function.  -- Todd Munson
+*/
+void PatchData::reorder()
+{
+  const size_t numv = numVertices;
+  const size_t nume = numElements;
+
+  size_t *vtx;
+  size_t *tmp;
+
+  size_t *sta = new size_t[numv + 1];
+  size_t *vte;
+  size_t *ord = new size_t[numv];
+  size_t *per = new size_t[numv];
+  size_t *pel;
+  size_t *que1 = new size_t[numv];
+  size_t *que2 = new size_t[numv];
+
+  MsqVertex *v2a;
+  Mesh::VertexHandle *v2h;
+  MsqMeshEntity *e2a;
+  Mesh::ElementHandle *e2h;
+
+  double val, max;
+
+  size_t toc;
+  size_t vtc;
+  size_t idx;
+  size_t loc;
+  size_t i, j;
+  size_t q1l, q2l, q;
+  size_t st, en;
+
+  // Step 0:  Make sure patch data is valid.
+
+  // Step 1:  Find the length of the element to vertex list for each 
+  //          individual vertex.
+
+  memset(sta, 0, numv*sizeof(size_t));
+  for (i = 0; i < nume; ++i) {
+    vtc = elementArray[i].vertex_count();
+    vtx = elementArray[i].get_modifiable_vertex_index_array();
+
+    for (j = 0; j < vtc; ++j) {
+      ++sta[vtx[j]];
+    }
+  }
+
+  // Step 2:  Compute the offsets, total length of the element to vertex
+  //          list, and allocate the data.
+
+  toc = sta[0];
+  sta[0] = 0;
+  for (i = 1; i <= numv; ++i) {
+    j = sta[i];
+    sta[i] = toc;
+    toc += j;
+  }
+  vte = new size_t[toc];
+
+  // Step 3:  Finish constructing the vertex to element list.
+
+  for (i = 0; i < nume; ++i) {
+    vtc = elementArray[i].vertex_count();
+    vtx = elementArray[i].get_modifiable_vertex_index_array();
+
+    for (j = 0; j < vtc; ++j) {
+      vte[sta[vtx[j]++]] = i;
+    }
+  }
+
+  for (i = numv; i > 0; --i) {
+    sta[i] = sta[i-1];
+  }
+  sta[i] = 0;
+
+  // Step 4:  Begin the reodering by computing the vertex furthest from the
+  //          origin.
+
+  max = -1.0;
+  idx =  0;
+
+  for (i = 0; i < numv; ++i) {
+    val = vertexArray[i].length_squared();
+    if (val > max) {
+      max = val;
+      idx = i+1;
+    }
+  }
+
+  // Step 5:  Perform a breadth first search to find the ordering.
+
+  memset(per, 0, numv*sizeof(size_t));
+
+  loc = 0;
+  while (idx > 0) {
+    // The vertex referenced by idx has not been visited yet.  Insert it
+    // into the queue for processing.
+    --idx;
+
+    q1l = 1;
+    que1[0] = idx;
+    per[idx] = 1;
+
+    while (q1l) {
+      q = 0;
+      q2l = 0;
+
+      while (q < q1l) {
+        idx = que1[q++];
+	ord[loc++] = idx;
+
+        st = sta[idx];
+        en = sta[idx+1];
+        while (st < en) {
+          vtc = elementArray[vte[st]].vertex_count();
+          vtx = elementArray[vte[st]].get_modifiable_vertex_index_array();
+	  ++st;
+
+          for (j = 0; j < vtc; ++j) {
+            idx = vtx[j];
+            if (!per[idx]) {
+              que2[q2l++] = idx;
+              per[idx] = 1;
+            }
+          }
+        }
+      }
+
+      q1l = q2l;
+
+      tmp  = que1;
+      que1 = que2;
+      que2 = tmp;
+    }
+
+    if (loc >= numv) {
+      break;
+    }
+
+    // The mesh is not connected.  There is another piece with some vertices
+    // remaining.  Repeat the breadth-first search algorithm on the new
+    // mesh component.
+
+    max = -1.0;
+    idx =  0;
+    for (i = 0; i < numv; ++i) {
+      if (!per[i]) {
+        val = vertexArray[i].length_squared();
+        if (val > max) {
+          max = val;
+          idx = i+1;
+        }
+      }
+    }
+  }
+
+  delete[] que1;
+  delete[] que2;
+
+  // Step 6:  Compute the permutation vectors
+
+  pel = new size_t[nume];
+  for (i = 0; i < nume; ++i) {
+    pel[i] = numv;
+  }
+
+  toc = 0;
+  for (i = 0; i < numv; ++i) {
+    loc = ord[numv-1-i];
+
+    per[loc] = i;
+
+    st = sta[loc];
+    en = sta[loc+1];
+    while (st < en) {
+      loc = vte[st++];
+      if (numv == pel[loc]) {
+        pel[loc] = toc++;
+      }
+    }
+  }
+
+  delete[] ord;
+  delete[] vte;
+  delete[] sta;
+
+  // Step 7:  Permute the vertices
+
+  v2a = new MsqVertex[vertexArraySize];
+  v2h = new Mesh::VertexHandle[vertexArraySize];
+
+  for (i = 0; i < numv; ++i) {
+    loc = per[i];
+    v2a[loc] = vertexArray[i];
+    v2h[loc] = vertexHandlesArray[i];
+  }
+
+  delete[] vertexArray;
+  delete[] vertexHandlesArray;
+
+  vertexArray = v2a;
+  vertexHandlesArray = v2h;
+
+  // Step 8: Permute the elements and vertex indices for the elements
+
+  e2a = new MsqMeshEntity[elemArraySize];
+  e2h = new Mesh::ElementHandle[elemArraySize];
+
+  for (i = 0; i < nume; ++i) {
+    vtc = elementArray[i].vertex_count();
+    vtx = elementArray[i].get_modifiable_vertex_index_array();
+
+    for (j = 0; j < vtc; ++j) {
+      vtx[j] = per[vtx[j]];
+    }
+
+    loc = pel[i];
+    e2a[loc] = elementArray[i];
+    e2h[loc] = elementHandlesArray[i];
+  }
+
+  delete[] elementArray;
+  delete[] elementHandlesArray;
+
+  elementArray = e2a;
+  elementHandlesArray = e2h;
+
+  // Step 9: Finish by deleting allocated memory
+
+  delete[] per;
+  delete[] pel;
+  return;
+}
 
 /*! \fn PatchData::num_free_vertices()
    This function has to iterate through all the PatchData vertices to determine

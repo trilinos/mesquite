@@ -55,7 +55,9 @@ namespace Mesquite
     void clear();
       //! Removes data, frees memory used by patch
     void reset();
-    
+      //! Reorders the mesh data 
+    void reorder();
+
       /*! Ensures that at least 'min_num' vertices can be stored
           in the private arrays without requiring further allocation. */
     void reserve_vertex_capacity (size_t min_num_vertices,
