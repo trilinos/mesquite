@@ -67,14 +67,17 @@ bool LocalSizeQualityMetric::evaluate_vertex(PatchData &pd, MsqVertex* vert,
     //conver the MsqVertex pointer into an index
   size_t this_vert = pd.get_vertex_index(vert);
     //get the vertex to element array and the offset array
-  const size_t* elem_offset = pd.get_vertex_to_elem_offset(err);  MSQ_ERRZERO(err);
-  const size_t* v_to_e_array = pd.get_vertex_to_elem_array(err);  MSQ_ERRZERO(err);
+  //const size_t* elem_offset = pd.get_vertex_to_elem_offset(err);  MSQ_ERRZERO(err);
+  //const size_t* v_to_e_array = pd.get_vertex_to_elem_array(err);  MSQ_ERRZERO(err);
     //find the offset for this vertex
-  size_t this_offset = elem_offset[this_vert];
+  //size_t this_offset = elem_offset[this_vert];
     //get the number of elements attached to this vertex (given by the
     //first entry in the vertex to element array)
-  size_t num_elems = v_to_e_array[this_offset];
+  //size_t num_elems = v_to_e_array[this_offset];
     //PRINT_INFO("\nIN LOCAL SIZE CPP, num_elements = %i",num_elems);
+  size_t num_elems, *v_to_e_array;
+  v_to_e_array = pd.get_vertex_element_adjacencies( this_vert, num_elems, err ); 
+  MSQ_ERRZERO(err);
   
   if(num_elems <= 0){
     return true;
@@ -92,7 +95,7 @@ bool LocalSizeQualityMetric::evaluate_vertex(PatchData &pd, MsqVertex* vert,
   for(i=0;i<num_elems;++i){
       //get the vertices which (with this_vert) form the corner of
       //the ith element.
-    elems[v_to_e_array[this_offset+i+1]].get_connected_vertices(this_vert,
+    elems[v_to_e_array[i]].get_connected_vertices(this_vert,
                                                               other_vertices,
                                                               err);  MSQ_ERRZERO(err);
       ////PRINT_INFO("\nINSIDE LOCAL SIZE CPP other_vertices size = %i",other_vertices.size());

@@ -63,80 +63,65 @@
 namespace Mesquite {
 
 PatchData::PatchData()
-  : meshSet(NULL),
+  : meshSet(0),
     domainSet(false),
     mType(UNDEFINED_PATCH_TYPE),
-    numVertices(0),
-    numElements(0),
-    vertexArray(NULL),
-    vertexHandlesArray(NULL),
-    elementArray(NULL),
-    elementHandlesArray(NULL),
-    v2E(NULL),
-    v2eOffset(NULL),
-    subpatchIndexArray(NULL),
-    vertexArraySize(0),
-    elemArraySize(0),
-    v2eSize(0),
-    v2eOffsetSize(0),
-    v2eValid(false),
-    subpatchIndexSize(0)
-{}
+    numCornerVertices(0),
+    haveComputedInfos(0)
+{
+}
 
 
 // Destructor
 PatchData::~PatchData()
 {
-  delete [] vertexArray;
-  delete [] vertexHandlesArray;
-  delete [] elementArray;
-  delete [] elementHandlesArray;
-  delete [] v2E;
-  delete [] v2eOffset;
-  delete [] subpatchIndexArray;
 }
 
 
 void PatchData::get_minmax_element_unsigned_area(double& min, double& max, MsqError &err)
 {
-  std::map<ComputedInfo, double>::iterator max_it;
-  max_it = computedInfos.find(MAX_UNSIGNED_AREA);
-  std::map<ComputedInfo, double>::iterator min_it;
-  min_it = computedInfos.find(MIN_UNSIGNED_AREA);
-  if ( max_it != computedInfos.end() 
-       && min_it != computedInfos.end() ) { // if a max area is already there
-    max = max_it->second;
-    min = min_it->second;
-  }
-  else { // if there is no max area available.
+  if (!have_computed_info(MAX_UNSIGNED_AREA) ||
+      !have_computed_info(MIN_UNSIGNED_AREA))
+  {
     max=0;
     min=MSQ_DBL_MAX;
-    for (size_t i=0; i<numElements; ++i) {
+    size_t count = num_elements();
+    for (size_t i=0; i<count; ++i) {
       double vol;
-      vol = elementArray[i].compute_unsigned_area(*this, err);
-      MSQ_ERRRTN(err);
-      max = vol > max ? vol : max;
-      min = vol < min ? vol : min;
+      vol = elementArray[i].compute_unsigned_area(*this, err); MSQ_ERRRTN(err);
+      if (vol > max)
+        max = vol;
+      if (vol < min)
+        min = vol;
     }
-    computedInfos.insert(std::pair<const ComputedInfo, double>(MAX_UNSIGNED_AREA,max));
-    computedInfos.insert(std::pair<const ComputedInfo, double>(MIN_UNSIGNED_AREA,min));
+    note_have_info(MAX_UNSIGNED_AREA);
+    note_have_info(MIN_UNSIGNED_AREA);
+    computedInfos[MAX_UNSIGNED_AREA] = max;
+    computedInfos[MIN_UNSIGNED_AREA] = min;
   }
+  else
+  {
+    max = computedInfos[MAX_UNSIGNED_AREA];
+    min = computedInfos[MIN_UNSIGNED_AREA];
+  }
+    
   if (max <= 0 || min < 0 || min == MSQ_DBL_MAX)
     MSQ_SETERR(err)(MsqError::INTERNAL_ERROR);
-  return;
 }
 
 double PatchData::get_barrier_delta(MsqError &err)
 {
-  msq_std::map<ComputedInfo, double>::iterator delta_it;
-  delta_it = computedInfos.find(MINMAX_SIGNED_DET3D);
-  if ( delta_it != computedInfos.end() ) { // if a delta is already there
-    return delta_it->second;
+  double result;
+  if (have_computed_info(MINMAX_SIGNED_DET3D))
+  {
+    result = computedInfos[MINMAX_SIGNED_DET3D];
   }
-  else { // if there is no delta available.
+  else
+  {
     double min= MSQ_DBL_MAX;
     double max=-MSQ_DBL_MAX;
-    for (size_t i=0; i<numElements; ++i) {
+    size_t count = num_elements();
+    for (size_t i=0; i<count; ++i) {
       Matrix3D A[MSQ_MAX_NUM_VERT_PER_ENT];
       size_t nve = elementArray[i].vertex_count();
       elementArray[i].compute_corner_matrices(*this, A, nve, err);
@@ -156,26 +141,28 @@ double PatchData::get_barrier_delta(MsqError &err)
       //  meshes to retain that barrier.  If there is a negative jacobian
       //  corner in the mesh, we set delta to a small fraction of the
       //  maximum jacobian in the mesh.
-    double delta=0;
-    if (min<=MSQ_MIN) delta=0.001 * max;
-    computedInfos.insert(std::pair<const ComputedInfo, double>(MINMAX_SIGNED_DET3D,delta));
-    return delta;
+    result = (min<=MSQ_MIN) ? 0.001 * max : 0;
+    computedInfos[MINMAX_SIGNED_DET3D] = result;
+    note_have_info(MINMAX_SIGNED_DET3D);
   }
+  
+  return result;
 }
 
 
 double PatchData::get_average_Lambda_3d(MsqError &err)
 {
-  std::map<ComputedInfo, double>::iterator avg_it;
-  avg_it = computedInfos.find(AVERAGE_DET3D);
-  if ( avg_it != computedInfos.end() ) { // if an average is already there
-    return avg_it->second;
+  double avg;
+  if (have_computed_info(AVERAGE_DET3D))
+  {
+    avg = computedInfos[AVERAGE_DET3D];
   }
-  else { // if there is no average available.
-    double avg =0.;
+  else 
+  {
+    avg =0.;
     int total_num_corners =0;
     Matrix3D A[MSQ_MAX_NUM_VERT_PER_ENT];
-    for (size_t i=0; i<numElements; ++i) {
+    for (size_t i=0; i<elementArray.size(); ++i) {
       int nve = elementArray[i].vertex_count();
       elementArray[i].compute_corner_matrices(*this, A, nve, err); 
       MSQ_ERRZERO(err);
@@ -187,10 +174,10 @@ double PatchData::get_average_Lambda_3d(MsqError &err)
     }
 
     avg = avg / total_num_corners;
-
-    computedInfos.insert(std::pair<const ComputedInfo, double>(AVERAGE_DET3D,avg));
-    return avg;
+    computedInfos[AVERAGE_DET3D] = avg;
+    note_have_info(AVERAGE_DET3D);
   }
+  return avg;
 }
 
 
@@ -203,8 +190,8 @@ double PatchData::get_average_Lambda_3d(MsqError &err)
 */
 void PatchData::reorder()
 {
-  const size_t numv = numVertices;
-  const size_t nume = numElements;
+  const size_t numv = num_vertices();
+  const size_t nume = num_elements();
 
   size_t *vtx;
   size_t *tmp;
@@ -217,10 +204,15 @@ void PatchData::reorder()
   size_t *que1 = new size_t[numv];
   size_t *que2 = new size_t[numv];
 
-  MsqVertex *v2a;
-  Mesh::VertexHandle *v2h;
-  MsqMeshEntity *e2a;
-  Mesh::ElementHandle *e2h;
+  //MsqVertex *v2a;
+  //Mesh::VertexHandle *v2h;
+  //MsqMeshEntity *e2a;
+  //Mesh::ElementHandle *e2h;
+    // Copy arrays so higher-order nodes get copied
+  PatchDataMem<MsqVertex> v2a( vertexArray );
+  PatchDataMem<Mesh::VertexHandle> v2h( vertexHandlesArray );
+  PatchDataMem<MsqMeshEntity> e2a( elementArray.size() );
+  PatchDataMem<Mesh::ElementHandle> e2h( elementHandlesArray.size() );
 
   double val, max;
 
@@ -240,7 +232,7 @@ void PatchData::reorder()
   memset(sta, 0, (numv+1)*sizeof(size_t));
   for (i = 0; i < nume; ++i) {
     vtc = elementArray[i].vertex_count();
-    vtx = elementArray[i].get_modifiable_vertex_index_array();
+    vtx = elementArray[i].get_vertex_index_array();
 
     for (j = 0; j < vtc; ++j) {
       ++sta[vtx[j]];
@@ -264,7 +256,7 @@ void PatchData::reorder()
 
   for (i = 0; i < nume; ++i) {
     vtc = elementArray[i].vertex_count();
-    vtx = elementArray[i].get_modifiable_vertex_index_array();
+    vtx = elementArray[i].get_vertex_index_array();
 
     for (j = 0; j < vtc; ++j) {
       vte[sta[vtx[j]]++] = i;
@@ -316,7 +308,7 @@ void PatchData::reorder()
         en = sta[idx+1];
         while (st < en) {
           vtc = elementArray[vte[st]].vertex_count();
-          vtx = elementArray[vte[st]].get_modifiable_vertex_index_array();
+          vtx = elementArray[vte[st]].get_vertex_index_array();
 	  ++st;
 
           for (j = 0; j < vtc; ++j) {
@@ -389,8 +381,8 @@ void PatchData::reorder()
 
   // Step 7:  Permute the vertices
 
-  v2a = new MsqVertex[vertexArraySize];
-  v2h = new Mesh::VertexHandle[vertexArraySize];
+  //v2a = new MsqVertex[vertexArraySize];
+  //v2h = new Mesh::VertexHandle[vertexArraySize];
 
   for (i = 0; i < numv; ++i) {
     loc = per[i];
@@ -398,20 +390,20 @@ void PatchData::reorder()
     v2h[loc] = vertexHandlesArray[i];
   }
 
-  delete[] vertexArray;
-  delete[] vertexHandlesArray;
+  //delete[] vertexArray;
+  //delete[] vertexHandlesArray;
 
   vertexArray = v2a;
   vertexHandlesArray = v2h;
 
   // Step 8: Permute the elements and vertex indices for the elements
 
-  e2a = new MsqMeshEntity[elemArraySize];
-  e2h = new Mesh::ElementHandle[elemArraySize];
+  //e2a = new MsqMeshEntity[elemArraySize];
+  //e2h = new Mesh::ElementHandle[elemArraySize];
 
   for (i = 0; i < nume; ++i) {
     vtc = elementArray[i].vertex_count();
-    vtx = elementArray[i].get_modifiable_vertex_index_array();
+    vtx = elementArray[i].get_vertex_index_array();
 
     for (j = 0; j < vtc; ++j) {
       vtx[j] = per[vtx[j]];
@@ -422,8 +414,8 @@ void PatchData::reorder()
     e2h[loc] = elementHandlesArray[i];
   }
 
-  delete[] elementArray;
-  delete[] elementHandlesArray;
+  //delete[] elementArray;
+  //delete[] elementHandlesArray;
 
   elementArray = e2a;
   elementHandlesArray = e2h;
@@ -435,8 +427,9 @@ void PatchData::reorder()
 
   // Step 10: Recompute vertex to element mapping if it existed.
  
-  if (v2eValid) {
-    v2eValid = false;
+  if (vertAdjacencyOffsets.size()) {
+    vertAdjacencyOffsets.clear();
+    vertAdjacencyArray.clear();
     generate_vertex_to_element_data();
   }
   return;
@@ -445,15 +438,26 @@ void PatchData::reorder()
 /*! \fn PatchData::num_free_vertices()
    This function has to iterate through all the PatchData vertices to determine
    the number of free vertices. Use with care ! */
-int PatchData::num_free_vertices(MsqError &/*err*/)
+int PatchData::num_free_vertices(MsqError &/*err*/) const
 {
   int num_free_vertices=0;
   
-  for (size_t i = 0; i < numVertices; ++i)
+  size_t count = num_vertices();
+  for (size_t i = 0; i < count; ++i)
     if (vertexArray[i].is_free_vertex())
       ++num_free_vertices;
   
   return num_free_vertices;
+}
+
+unsigned PatchData::num_free_nodes( MsqError& ) const
+{
+  unsigned result = 0;
+  size_t count = num_nodes();
+  for (size_t i = 0; i < count; ++i)
+    if (vertexArray[i].is_free_vertex())
+      ++result;
+  return result;
 }
 
 
@@ -559,7 +563,7 @@ int PatchData::num_free_vertices(MsqError &/*err*/)
 void PatchData::move_free_vertices_constrained(Vector3D dk[], size_t nb_vtx,
                                                double step_size, MsqError &err)
 {
-  if (nb_vtx != numVertices)
+  if (nb_vtx != num_vertices())
   {
     MSQ_SETERR(err)("The directional vector must be of length numVertices.",
                     MsqError::INVALID_ARG);
@@ -577,7 +581,7 @@ void PatchData::move_free_vertices_constrained(Vector3D dk[], size_t nb_vtx,
   
     // Checks that moving direction is zero for fixed vertices.
   if (MSQ_DBG(3)) {
-  for (size_t m=0; m<numVertices; ++m) {
+  for (size_t m=0; m<num_vertices(); ++m) {
     Vector3D zero_3d(0.,0.,0.);
     if (!vertexArray[m].is_free_vertex() 
      && dk[m] != zero_3d 
@@ -632,7 +636,7 @@ void PatchData::set_free_vertices_constrained(PatchDataVerticesMemento* memento,
   
     // Checks that moving direction is zero for fixed vertices.
   if (MSQ_DBG(3)) {
-  for (m=0; m<numVertices; ++m)
+  for (m=0; m<num_vertices(); ++m)
   {
     Vector3D zero_3d(0.,0.,0.);
     if (   ! vertexArray[m].is_free_vertex()
@@ -682,7 +686,7 @@ double PatchData::get_max_vertex_movement_squared(PatchDataVerticesMemento*
  */
 void PatchData::set_all_vertices_soft_fixed(MsqError &/*err*/)
 {
-  for(size_t i=0;i<numVertices;++i)
+  for(size_t i=0;i<num_vertices();++i)
     vertexArray[i].set_soft_fixed_flag();
 }
 
@@ -690,7 +694,7 @@ void PatchData::set_all_vertices_soft_fixed(MsqError &/*err*/)
  */
 void PatchData::set_free_vertices_soft_fixed(MsqError &/*err*/)
 {
-  for(size_t i=0;i<numVertices;++i){
+  for(size_t i=0;i<num_vertices();++i){
     if(vertexArray[i].is_free_vertex())
       vertexArray[i].set_soft_fixed_flag();
   }
@@ -700,7 +704,7 @@ void PatchData::set_free_vertices_soft_fixed(MsqError &/*err*/)
  */
 void PatchData::set_all_vertices_soft_free(MsqError &/*err*/)
   {
-    for(size_t i=0;i<numVertices;++i)
+    for(size_t i=0;i<num_vertices();++i)
       vertexArray[i].remove_soft_fixed_flag();
   }
   
@@ -716,7 +720,7 @@ void PatchData::get_element_vertex_coordinates(
   MsqError& /*err*/)
 {
     // Check index
-  if (elem_index >= numElements)
+  if (elem_index >= num_elements())
     return;
   
     // Ask the element for its vertex indices
@@ -739,10 +743,6 @@ void PatchData::get_element_vertex_indices(
   vector<size_t> &vertex_indices,
   MsqError& /*err*/)
 {
-    // Check index
-  if (elem_index >= numElements)
-    return;
-  
     // Ask the element for its vertex indices
   elementArray[elem_index].get_vertex_indices(vertex_indices);
 }
@@ -750,28 +750,30 @@ void PatchData::get_element_vertex_indices(
 
 void PatchData::get_vertex_element_indices(size_t vertex_index,
                                            vector<size_t> &elem_indices,
-                                           MsqError &/*err*/) 
+                                           MsqError &err) 
 {
-    // Check index
-  if (vertex_index >= numVertices)
-  {
-    return;
-  }
-  
+  size_t count, *ptr;
+  ptr = get_vertex_element_adjacencies( vertex_index, count, err );
+  elem_indices.resize( count );
+  memcpy( &elem_indices[0], ptr, count * sizeof(size_t) );
+}
+
+size_t* PatchData::get_vertex_element_adjacencies( size_t vertex_index,
+                                                   size_t& array_len_out,
+                                                   MsqError& err )
+{
     // Make sure we've got the data
-  if (!v2eValid || !v2eOffset)
+  if (vertAdjacencyArray.empty())
   {
     generate_vertex_to_element_data();
   }
   
-    // Find the starting point for this vertex's data
-  size_t *pos = v2E + v2eOffset[vertex_index];
-  size_t elem_count = *pos;
-  elem_indices.reserve(elem_indices.size() + elem_count);
-    // Add each element index to the list
-  while (elem_count--)
-    elem_indices.push_back(*(++pos));
+  const size_t begin = vertAdjacencyOffsets[vertex_index];
+  const size_t end = vertAdjacencyOffsets[vertex_index+1];
+  array_len_out = end - begin;
+  return &vertAdjacencyArray[begin];
 }
+
 
 /*!
     \brief This function fills a vector<size_t> with the indices
@@ -922,83 +924,73 @@ void PatchData::update_mesh(MsqError &err)
   MSQ_CHKERR(err);
 }
 
-void PatchData::generate_vertex_to_element_data(size_t num_vertex_uses)
+void PatchData::generate_vertex_to_element_data()
 {
   MSQ_FUNCTION_TIMER( "PatchData::generate_vertex_to_element_data" );
   
     // Skip if data already exists
-  if (v2eValid && v2E && v2eOffset)
+  if (!vertAdjacencyArray.empty())
     return;
   
-    // Create an array that will temporarily hold the number of
-    // times each vertex is used in an element.
-  if (v2eOffsetSize < num_vertices())
+    // Allocate offset array
+  vertAdjacencyOffsets.resize( num_nodes() + 1 );
+  memset( &vertAdjacencyOffsets[0], 0, sizeof(size_t)*vertAdjacencyOffsets.size() );
+  
+    // Temporarily use offsets array to hold per-vertex element count
+  PatchDataMem<MsqMeshEntity>::iterator elem_iter;
+  const PatchDataMem<MsqMeshEntity>::iterator elem_end = elementArray.end();
+  for (elem_iter = elementArray.begin(); elem_iter != elem_end; ++elem_iter)
   {
-    v2eOffset = new size_t[num_vertices()];
-    v2eOffsetSize = num_vertices();
+    size_t* conn_iter = elem_iter->get_vertex_index_array();
+    const size_t* conn_end = conn_iter + elem_iter->node_count();
+    for ( ; conn_iter != conn_end; ++conn_iter )
+      ++vertAdjacencyOffsets[*conn_iter];
   }
   
-    // Initialize each use count to zero
-  memset(v2eOffset, 0, num_vertices()*sizeof(size_t));
-  
-    // Find out how many vertex uses we've got...
-  size_t elem_num, vert_num;
-  const size_t* vert_array;
-  if (num_vertex_uses == 0)
+    // Convert counts to end indices.
+    // When done, vertAdjacencyOffsets will contain, for each vertex,
+    // one more than the *last* index for that vertex's data in the
+    // adjacency array.  This is *not* the final state for this data.
+    // See comments for next loop.
+  PatchDataMem<size_t>::iterator off_iter = vertAdjacencyOffsets.begin();
+  const PatchDataMem<size_t>::iterator off_end = vertAdjacencyOffsets.end();
+  size_t prev = *off_iter;
+  ++off_iter;
+  for ( ; off_iter != off_end; ++off_iter)
   {
-    for (elem_num = num_elements(); elem_num--; )
+    prev += *off_iter;
+    *off_iter = prev;
+  }
+  
+    // Allocate space for element numbers
+  const size_t num_vert_uses = vertAdjacencyOffsets[num_nodes()-1];
+  assert( num_vert_uses == elemConnectivityArray.size() );
+  vertAdjacencyArray.resize( num_vert_uses );
+  
+    // Fill vertAdjacencyArray, using the indices in vertAdjacencyOffsets
+    // as the location to insert the next element number in
+    // vertAdjacencyArray.  When done, vertAdjacenyOffsets will contain
+    // the start index for each vertex, rather than one past the last
+    // index.
+  for (size_t i = 0; i < elementArray.size(); ++i)
+  {
+    size_t* conn_iter = elementArray[i].get_vertex_index_array();
+    const size_t* conn_end = conn_iter + elementArray[i].node_count();
+    for ( ; conn_iter != conn_end; ++conn_iter )
     {
-      num_vertex_uses += elementArray[elem_num].vertex_count();
-      vert_array = elementArray[elem_num].get_vertex_index_array();
-        // Go through the element, add to each vertex's use count
-      for (vert_num = elementArray[elem_num].vertex_count(); vert_num--; )
-      {
-        v2eOffset[vert_array[vert_num]]++;
-      }
-    }
-  }
-    // For each vertex, we store the number of elements along
-    // with the element indices.  Increase array size accordingly.
-  num_vertex_uses += num_vertices();
-  
-    // Now that we know how many vertex uses, allocate if necessary
-  if (v2eSize < num_vertex_uses)
-  {
-    v2E = new size_t[num_vertex_uses];
-    v2eSize = num_vertex_uses;
-  }
-  
-    // Convert the uses counts to array offsets.
-  elem_num = 0;
-  for (vert_num = 0; vert_num < num_vertices(); vert_num++)
-  {
-    size_t temp = v2eOffset[vert_num] + 1;
-    v2eOffset[vert_num] = elem_num;
-    v2E[elem_num] = 0;
-    elem_num += temp;
-  }
-  
-    // Finally, store the v2E data
-  for (elem_num = 0; elem_num < num_elements(); elem_num++)
-  {
-    vert_array = elementArray[elem_num].get_vertex_index_array();
-    for (vert_num = elementArray[elem_num].vertex_count(); vert_num--; )
-    {
-        // Point at the start of the vertex's data
-      size_t* ptr = v2E + v2eOffset[vert_array[vert_num]];
-        // add one to the number of elements already stored for this element
-      (*ptr)++;
-        // Store the element number
-      ptr[*ptr] = elem_num;
+      const size_t array_index = --vertAdjacencyOffsets[*conn_iter];
+      vertAdjacencyArray[array_index] = i;
     }
   }
   
-  v2eValid = true;
+    // Last entry should be number of vertex uses (one past the
+    // last index of the last vertex.)
+  vertAdjacencyOffsets[num_nodes()] = num_vert_uses;
 }
 
 void PatchData::allocate_target_matrices(MsqError &err, bool alloc_inv)
 {
-  for (size_t i=0; i<numElements; ++i)
+  for (size_t i=0; i<num_elements(); ++i)
   {
     MsqTag* tag = new MsqTag;
     size_t c = elementArray[i].vertex_count();
@@ -1013,84 +1005,82 @@ void PatchData::get_subpatch(size_t center_vertex_index,
                              MsqError &err)
 {
     // Make sure we're in range
-  if (center_vertex_index >= numVertices)
+  if (center_vertex_index >= num_vertices())
   {
     MSQ_SETERR(err)("Invalid index for center vertex",MsqError::INVALID_ARG);
     return;
   }
-
-    // Make sure we've got the subpatchIndexArray
-  if (subpatchIndexSize < numVertices)
-  {
-    if (subpatchIndexSize > 0)
-      delete [] subpatchIndexArray;
-    subpatchIndexArray = new size_t[numVertices];
-    subpatchIndexSize = numVertices;
-  }
   
-    // Get the number of elements attached to the requested vertex
-  size_t num_elems = v2E[ v2eOffset[center_vertex_index] ];
-  subpatch.reserve_element_capacity(num_elems, err);
+    // Map vertex indices from this patch data to indices in new patch data
+  msq_std::map<size_t, size_t> vertex_index_map;
+  
+  size_t num_elems;
+  const size_t* vertex_adjacencies;
+  vertex_adjacencies = get_vertex_element_adjacencies( center_vertex_index,
+                                                       num_elems, err );
   MSQ_ERRRTN(err);
-  subpatch.numElements = num_elems;
   
-    // Loop through each element, count the vertices
-  size_t which_elem, which_vert, total_verts = 0;
-  for (which_elem = num_elems; which_elem--; )
+    // Loop through each element, populating vertex_index_map.
+  size_t which_elem, which_vert, vertex_count = 0;
+  size_t vertex_uses = 0;
+  for (which_elem = 0; which_elem < num_elems; ++which_elem )
   {
-    size_t elem_index = v2E[v2eOffset[center_vertex_index] + which_elem];
+    size_t elem_index = vertex_adjacencies[which_elem];
     MsqMeshEntity& elem = elementArray[elem_index];
-    for (which_vert = elem.vertex_count(); which_vert--; )
+    for (which_vert = elem.node_count(); which_vert--; )
     {
       size_t vert_index = elem.get_vertex_index(which_vert);
-      if (subpatchIndexArray[vert_index] == 0)
-      {
-          // This will give the vert a 1-based index.
-        subpatchIndexArray[vert_index] = ++total_verts;
-      }
+      if (vertex_index_map.find(vert_index) != vertex_index_map.end())
+        vertex_index_map[vert_index] = vertex_count++;
     }
+    vertex_uses += elem.node_count();
   }
   
-    // Now that we know how many verts, allocate...
-  subpatch.reserve_vertex_capacity(total_verts, err);
-  MSQ_ERRRTN(err);
-  subpatch.numVertices = total_verts;
+    // Allocate storage in subpatch
+  subpatch.vertexHandlesArray.resize( vertex_count );
+  subpatch.elementArray.resize( num_elems );
+  subpatch.elementHandlesArray.resize( num_elems );
+  subpatch.elemConnectivityArray.resize( vertex_uses );
   
-    // Loop through the elements again, placing verts and elems into subpatch
-  total_verts = 1;
-  for (which_elem = num_elems; which_elem--; )
+    // For now, put reverse of index map into handles array (such that
+    // the handles array in the subpatch contains the index in this
+    // patch for each vertex.)  When PatchData::initalize_data re-orders 
+    // the vertices, we can then use this array to determine which vertices
+    // where placed where.
+  msq_std::map<size_t,size_t>::iterator iter;
+  for (iter = vertex_index_map.begin(); iter != vertex_index_map.end(); ++iter)
+    subpatch.vertexHandlesArray[iter->second] = (Mesh::VertexHandle)(iter->first);
+  
+    // Store elements with updated connectivity list in subpatch
+  msq_std::vector<size_t> elem_conn_offsets(vertex_uses);
+  size_t* elem_connectivity = &(subpatch.elemConnectivityArray[0]);
+  size_t elem_conn_index = 0;
+  for (which_elem = 0; which_elem < num_elems; ++which_elem)
   {
-    size_t elem_index = v2E[v2eOffset[center_vertex_index] + which_elem];
+    size_t elem_index = vertex_adjacencies[which_elem];
     MsqMeshEntity& elem = elementArray[elem_index];
-    for (which_vert = elem.vertex_count(); which_vert--; )
+    elem_conn_offsets[which_elem] = elem_conn_index;
+    for (which_vert = 0; which_vert < elem.node_count(); which_vert++ )
     {
       size_t vert_index = elem.get_vertex_index(which_vert);
-
-        // If we haven't put this vertex into the subpatch yet...
-      if (subpatchIndexArray[vert_index] == total_verts)
-      {
-          // Add this vertex to the subpatch
-        subpatch.vertexArray[total_verts-1] = vertexArray[vert_index];
-          // Advance total_verts so we know which vertex to add next
-        total_verts++;
-      }
       
         // Add this vertex to the new element's array
-      subpatch.elementArray[which_elem].
-        set_vertex_index(which_vert, subpatchIndexArray[vert_index]-1);
+      elem_connectivity[elem_conn_index++] = vertex_index_map[vert_index];
     }
+    subpatch.elementArray[which_elem].set_element_type( elem.get_element_type() );
   }
-
-    // Loop one final time, setting all vertex indices back to zero
-  for (which_elem = num_elems; which_elem--; )
+  
+    // Re-order vertices and initialize other data in subpatch
+  subpatch.initialize_data( &elem_conn_offsets[0], err ); MSQ_ERRRTN(err);
+  
+    // Copy vertex data into subpatch.  subpatch.vertexHandlesArray contains
+    // the indices into this PatchData for each vertex
+  subpatch.vertexArray.resize( vertex_count );
+  for (which_vert = 0; which_vert < vertex_count; ++which_vert)
   {
-    size_t elem_index = v2E[v2eOffset[center_vertex_index] + which_elem];
-    MsqMeshEntity& elem = elementArray[elem_index];
-    for (which_vert = elem.vertex_count(); which_vert--; )
-    {
-      size_t vert_index = elem.get_vertex_index(which_vert);
-      subpatchIndexArray[vert_index] = 0;
-    }
+    size_t vert_index = (size_t)(subpatch.vertexHandlesArray[which_vert]);
+    subpatch.vertexHandlesArray[which_vert] = vertexHandlesArray[vert_index];
+    subpatch.vertexArray[which_vert] = vertexArray[vert_index];
   }
 }
 
@@ -1146,23 +1136,214 @@ void PatchData::set_mesh_set(MeshSet* ms)
 { meshSet = ms;
   if (ms->get_domain_constraint()!=NULL) domainSet = true; }
 
-ostream& PatchData::operator<<( ostream& stream ) const
+ostream& operator<<( ostream& stream, const PatchData& pd )
 {
-   stream << "Vertex coordinates: ";
    size_t i;
-   for (i = 0; i < numVertices; ++i)
-      stream << endl << "\t(" 
-             << vertexArray[i].x() 
-             << vertexArray[i].y()
-             << vertexArray[i].z()
-             << ")" << endl;
-   for (i = 0; i < numElements; ++i)
+   
+   stream << "Vertices: " << endl;
+   for (i = 0; i < pd.num_nodes(); ++i)
    {
-      stream << endl << "\t";
-      for (size_t j = 0; j < elementArray[i].vertex_count(); ++j)
-        stream << elementArray[i].get_vertex_index_array()[j] << " ";
+      if (i == pd.num_vertices())
+        stream << "Higher-Order Nodes: " << endl;
+      
+      stream << i << ". (" 
+             << pd.vertexArray[i].x() << ","
+             << pd.vertexArray[i].y() << ","
+             << pd.vertexArray[i].z()
+             << ") ";
+      if (pd.vertexArray[i].is_flag_set( MsqVertex::MSQ_SOFT_FIXED ))
+        stream << "S";
+      if (pd.vertexArray[i].is_flag_set( MsqVertex::MSQ_HARD_FIXED ))
+        stream << "H";
+      if (pd.vertexArray[i].is_flag_set( MsqVertex::MSQ_COORDS_CHANGED ))
+        stream << "C";
+      
+      if (pd.vertAdjacencyArray.size())
+      {
+        size_t j = pd.vertAdjacencyOffsets[i];
+        size_t end = pd.vertAdjacencyOffsets[i+1];
+        for ( ; j < end; ++j )
+          stream << " " << pd.vertAdjacencyArray[j];
+      }
+      
+      stream << endl;
    }
-   return stream << endl;
+   
+   stream << "Elements: " << endl;
+   for (i = 0; i < pd.num_elements(); ++i)
+   {
+      stream << i << ". ";
+      switch (pd.elementArray[i].get_element_type()) {
+        case POLYGON:       stream << "Polygon";    break;
+        case TRIANGLE:      stream << "Tri";        break;
+        case QUADRILATERAL: stream << "Quad";       break;
+        case POLYHEDRON:    stream << "Polyhedron"; break;
+        case TETRAHEDRON:   stream << "Tet";        break;
+        case HEXAHEDRON:    stream << "Hex";        break;
+        case PRISM:         stream << "Wedge";      break;
+        case PYRAMID:       stream << "Pyr";        break;
+        default:            stream << "Unknown";    break;
+      }
+      stream << pd.elementArray[i].node_count() << ": ";
+      for (size_t j = 0; j < pd.elementArray[i].node_count(); ++j)
+        stream << pd.elementArray[i].get_vertex_index_array()[j] << " ";
+      stream << endl;
+   }
+   stream << endl;
+   
+   stream << "MeshSet: " << (pd.meshSet?"yes":"no") << endl;
+   stream << "domainSet: " << (pd.domainSet?"true":"false") << endl;
+   stream << "mType: " << (pd.mType==PatchData::VERTICES_ON_VERTEX_PATCH?"vert-on-vert":
+                           pd.mType==PatchData::ELEMENTS_ON_VERTEX_PATCH?"elem-on-vert":
+                           pd.mType==PatchData::GLOBAL_PATCH?"global":"unknown") << endl;
+   
+   if (pd.haveComputedInfos)
+   {
+     stream << "ComputedInfos:" << endl;
+     if (pd.have_computed_info(PatchData::MIN_UNSIGNED_AREA))
+       stream << "\t MIN_UNSINGED_AREA = " << pd.computedInfos[PatchData::MIN_UNSIGNED_AREA] << endl;
+     if (pd.have_computed_info(PatchData::MAX_UNSIGNED_AREA))
+       stream << "\t MAX_UNSIGNED_AREA = " << pd.computedInfos[PatchData::MAX_UNSIGNED_AREA] << endl;
+     if (pd.have_computed_info(PatchData::MIN_EDGE_LENGTH))
+       stream << "\t MIN_EDGE_LENGTH = " << pd.computedInfos[PatchData::MIN_EDGE_LENGTH] << endl;
+     if (pd.have_computed_info(PatchData::MAX_EDGE_LENGTH))
+       stream << "\t MAX_EDGE_LENGTH = " << pd.computedInfos[PatchData::MAX_EDGE_LENGTH] << endl;
+     if (pd.have_computed_info(PatchData::MINMAX_SIGNED_DET2D))
+       stream << "\t MINMAX_SIGNED_DET2D = " << pd.computedInfos[PatchData::MINMAX_SIGNED_DET2D] << endl;
+     if (pd.have_computed_info(PatchData::MINMAX_SIGNED_DET3D))
+       stream << "\t MINMAX_SIGNED_DET3D = " << pd.computedInfos[PatchData::MINMAX_SIGNED_DET3D] << endl;
+     if (pd.have_computed_info(PatchData::AVERAGE_DET3D))
+       stream << "\t AVERAGE_DET3D = " << pd.computedInfos[PatchData::AVERAGE_DET3D] << endl;
+  }
+  
+  return stream << endl;
 }
+
+
+void PatchData::initialize_data( size_t* elem_offset_array, MsqError& err )
+{
+  if (numCornerVertices)
+  {
+    MSQ_SETERR(err)(MsqError::INVALID_STATE);
+    return;
+  }
+  
+    // Clear any vertex->element adjacency data.  It
+    // is probably invalid, and certainly will be by the time
+    // this function completes if the mesh contains higher-order
+    // elements.
+  vertAdjacencyArray.clear();
+  vertAdjacencyOffsets.clear();
+  
+    // Initialize connectivity data in each element
+  size_t i, j;
+  bool higher_order = false;
+  for (i = 0; i < elementArray.size(); ++i)
+  {
+    size_t start = elem_offset_array[i];
+    size_t conn_len = elem_offset_array[i+1] - start;
+    assert(conn_len > 0);
+    elementArray[i].set_connectivity( &elemConnectivityArray[start], conn_len );
+    if (conn_len != elementArray[i].vertex_count())
+      higher_order = true;
+  }
+  
+    // If no higher-order elements, then we're done
+  if (!higher_order)
+  {
+      // All nodes are corner vertices
+    numCornerVertices = vertexHandlesArray.size();
+    return;
+  }
+  
+    // Need to move higher-order nodes to end of list.
+  
+    // Use vertAdjacencyOffsets array as temporary storage.
+  vertAdjacencyOffsets.resize( vertexHandlesArray.size() + 1 );
+  size_t* vertex_index_map = &vertAdjacencyOffsets[0];
+  
+    // Note which are mid-nodes (1) and which are corner vertices (0)
+  for (i = 0; i < elementArray.size(); ++i)
+  {
+    MsqMeshEntity& elem = elementArray[i];
+    size_t* conn_array = elem.get_vertex_index_array();
+    size_t num_vertices = elem.vertex_count();
+    size_t num_nodes = elem.node_count();
+    for (j = 0; j < num_vertices; ++j)
+      vertex_index_map[ conn_array[j] ] = 0;
+    for ( ; j < num_nodes; ++j)
+      vertex_index_map[ conn_array[j] ] = 1;
+  }
+  
+    // Shuffle nodes around such that all higher-order nodes
+    // are at the end of the array.
+    // Store new index for each node in index_map, replacing
+    // flag value currently there for each node.
+  i = 0;
+  j = vertexHandlesArray.size() - 1;
+  while (i < j)
+  {
+    if (!vertex_index_map[i])
+    {
+      // Is a corner vertex in first part of array, skip it.
+      vertex_index_map[i] = i;
+      ++i;
+    }
+    else if (vertex_index_map[j])
+    {
+      // Is a mid-node in latter part of array, skip it
+      vertex_index_map[j] = j;
+      --j;
+    }
+    else
+    {
+      // Swap mid-node from first part of array with 
+      // corner vertex from latter part of array.
+      msq_std::swap( vertexHandlesArray[i], vertexHandlesArray[j] );
+      
+      vertex_index_map[i] = j;
+      vertex_index_map[j] = i;
+      ++i;
+      --j;
+    }
+  }
+  
+    // Finish up - set numCornerVertices to indicate 
+    // where corner vertices end and mid-nodes begin in
+    // vertexArray, and get the handle remaining vertex
+    // if missed in the above loop.
+  if (i > j)
+  {
+    numCornerVertices = i;
+  }
+  else // (i == j)
+  {
+    if (vertex_index_map[i])
+      numCornerVertices = i;
+    else
+      numCornerVertices = i+1;
+    vertex_index_map[i] = i;
+  }
+  
+    // Update element connectivity data for new vertex indices
+  for (i = 0; i < elemConnectivityArray.size(); ++i)
+    elemConnectivityArray[i] = vertex_index_map[elemConnectivityArray[i]];
+    
+  vertAdjacencyOffsets.clear();
+}
+
+void PatchData::allocate_storage( size_t vertex_count,
+                                  size_t element_count,
+                                  size_t vertex_use_count,
+                                  MsqError& err )
+{
+  vertexArray.resize( vertex_count );
+  vertexHandlesArray.resize( vertex_count );
+  elementArray.resize( element_count );
+  elementHandlesArray.resize( element_count );
+  elemConnectivityArray.resize( vertex_use_count );
+  numCornerVertices = 0;
+}
+
 
 } // namespace Mesquite

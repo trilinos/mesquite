@@ -39,6 +39,7 @@
 #include "Mesquite.hpp"
 #include "QualityMetric.hpp"
 #include "MsqTag.hpp"
+#include "TopologyInfo.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 #  include <vector.h>
@@ -70,17 +71,8 @@ namespace Mesquite
   {
   public:
     
-    MsqMeshEntity(EntityTopology type,
-                  size_t vertex_indices[])
-      : mType(type), mTag(0)
-      {
-        msq_stdc::memcpy(vertexIndices,
-               vertex_indices,
-               sizeof(size_t)*vertex_count(type));
-      }
-    
     MsqMeshEntity()
-      : mType(MIXED), mTag(0)
+      : mType(MIXED), vertexIndices(0), numVertexIndices(0), mTag(0)
       {}
 
       //! Destructor also deletes associated tag data. 
@@ -90,7 +82,8 @@ namespace Mesquite
      //! This operator= makes a deep copy of the tag data. 
     MsqMeshEntity& operator=(const MsqMeshEntity& rhs) { 
       mType = rhs.mType;
-      msq_stdc::memmove(vertexIndices, rhs.vertexIndices, MSQ_MAX_NUM_VERT_PER_ENT*sizeof(size_t));
+      vertexIndices = rhs.vertexIndices;
+      numVertexIndices = rhs.numVertexIndices;
       if (rhs.mTag != 0)
         mTag = new MsqTag(*(rhs.mTag));
       else
@@ -99,32 +92,42 @@ namespace Mesquite
     }
 
       //! Returns element type
-    inline EntityTopology get_element_type()
+    inline EntityTopology get_element_type() const
       { return mType; }
     
       //! Returns the number of vertices in this element,
       //! based on its element type.
     inline msq_stdc::size_t vertex_count() const;
-    
-      //! Returns the number of vertices in this element type.
-    static inline msq_stdc::size_t vertex_count(EntityTopology type);
+      //! Return number of nodes in element (number of corner
+      //! vertices + number of higher-order nodes).
+    inline msq_stdc::size_t node_count() const 
+      { return numVertexIndices; }
     
       //! gets the vertices of the mesh entity
-    void get_vertex_indices(msq_std::vector<msq_stdc::size_t> &vertex_list);
-    void append_vertex_indices(msq_std::vector<msq_stdc::size_t> &vertex_list);
+    void get_vertex_indices(msq_std::vector<msq_stdc::size_t> &vertex_list) const;
+    void append_vertex_indices(msq_std::vector<msq_stdc::size_t> &vertex_list) const;
+      //! gets the vertices of the mesh entity
+    void get_node_indices(msq_std::vector<msq_stdc::size_t> &vertex_list) const;
+    void append_node_indices(msq_std::vector<msq_stdc::size_t> &vertex_list) const;
     //! Very efficient retrieval of vertices indexes 
     //! (corresponding to the PatchData vertex array).
     inline const msq_stdc::size_t *get_vertex_index_array() const;
-    inline msq_stdc::size_t* get_modifiable_vertex_index_array();
+    inline msq_stdc::size_t *get_vertex_index_array();
     
       //! Sets element data
     void set_element_type(EntityTopology type)
       { mType = type; }
-    void set_vertex_index(msq_stdc::size_t vertex_in_element, msq_stdc::size_t vertex_patch_index);
-      //! Sets the vertex indices and element type in a single function call.
-      //! /param indices is an array of size vertex_count(type).
-    void set( EntityTopology type, const msq_stdc::size_t *indices);
-    msq_stdc::size_t get_vertex_index(msq_stdc::size_t vertex_in_element);
+
+      //! Set connectivity data (vertex array) for element.
+      //! MsqMeshEntity keeps the pointer to the passed array, it
+      //! does not copy it.  The caller is still responsible for
+      //! releasing the memory for the passed index array after
+      //! the MsqMeshEntity is destroyed.  The intention is that
+      //! this is a pointer to a portion of a larger connectivity array
+      //! managed by the owning \ref PatchData.
+    void set_connectivity( msq_stdc::size_t *indices, size_t num_vertices);
+
+    msq_stdc::size_t get_vertex_index(msq_stdc::size_t vertex_in_element) const;
     
       //! Sets the element tag. This will overwritte an existing tag. 
     void set_tag(MsqTag* tag) {mTag = tag;}
@@ -189,7 +192,13 @@ namespace Mesquite
                                     Vector3D* jac);
     
     EntityTopology mType;
-    size_t vertexIndices[MSQ_MAX_NUM_VERT_PER_ENT];
+    /** Pointer to connectivity array.
+     *  NOTE: The memory occupied by this array is assumed to be
+     *        owned/managed by the owning PatchData.  Do not try
+     *        to delete/resize/etc. this array directly!
+     */
+    size_t* vertexIndices;  
+    size_t numVertexIndices;
     MsqTag* mTag; //!< The mTag data member is a pointer, so that the memory 
                   //!< footprint stays small when no tag is used (mTag=0).
                   //!< But when a tag is pointed to by this data member, the tag
@@ -202,88 +211,28 @@ namespace Mesquite
     
   };
   
-  inline size_t MsqMeshEntity::vertex_count(EntityTopology type)
-  {
-    switch (type)
-    {
-      case TRIANGLE:
-        return 3;
-      case QUADRILATERAL:
-      case TETRAHEDRON:
-        return 4;
-      case PYRAMID:
-        return 5;
-      case PRISM:
-        return 6;
-      case SEPTAHEDRON:
-        return 7;
-      case HEXAHEDRON:
-        return 8;
-      case POLYGON:
-      case POLYHEDRON:
-      default:
-        return 0;
-    }
-  }
-
-//   inline size_t MsqMeshEntity::vertex_count(TSTT::EntityTopology type,
-//                                             MsqError& err)
-//   {
-//     switch (type)
-//     {
-//       case TSTT::POINT:
-//         return 1;
-//       case TSTT::LINE:
-//         return 2;
-//       case TSTT::TRIANGLE:
-//         return 3;
-//       case TSTT::QUADRILATERAL:
-//       case TSTT::TETRAHEDRON:
-//         return 4;
-//       case TSTT::PYRAMID:
-//         return 5;
-//       case TSTT::PRISM:
-//         return 6;
-//       case TSTT::SEPTAHEDRON:
-//         return 7;
-//       case TSTT::HEXAHEDRON:
-//         return 8;
-//       case TSTT::POLYGON:
-//       case TSTT::POLYHEDRON:
-//       default:
-//         err.set_msg("Unknown element type");
-//         return 0;
-//     }
-//   }
   
     // Returns the number of vertices in this type
     // of element, or 0 if a variable number.
   inline size_t MsqMeshEntity::vertex_count() const
-  { return vertex_count(mType); }
+  { return mType == POLYGON || mType == POLYHEDRON ? 
+           node_count() : TopologyInfo::corners( mType ); }
 
-  inline void MsqMeshEntity::set_vertex_index(size_t vertex_in_element,
-                                              size_t vertex_patch_index)
+  inline void MsqMeshEntity::set_connectivity( msq_stdc::size_t *indices,
+                                               size_t num_vertices )
   {
-      // Make sure we're in range
-    assert(vertex_in_element < vertex_count());
-      // Set the index
-    vertexIndices[vertex_in_element] = vertex_patch_index;
-  }
-  
-  inline void MsqMeshEntity::set(EntityTopology type, const msq_stdc::size_t *indices)
-  {
-    mType = type;
-    memcpy(vertexIndices, indices, sizeof(size_t) * vertex_count(type));
+    vertexIndices = indices;
+    numVertexIndices = num_vertices;
   }
   
   inline const msq_stdc::size_t *MsqMeshEntity::get_vertex_index_array() const
   { return vertexIndices; }
   
-  inline msq_stdc::size_t* MsqMeshEntity::get_modifiable_vertex_index_array()
+  inline msq_stdc::size_t *MsqMeshEntity::get_vertex_index_array()
   { return vertexIndices; }
-  
+ 
   inline msq_stdc::size_t 
-  MsqMeshEntity::get_vertex_index(msq_stdc::size_t vertex_in_element)
+  MsqMeshEntity::get_vertex_index(msq_stdc::size_t vertex_in_element) const
   {
       // Make sure we're in range
     assert(vertex_in_element < vertex_count());

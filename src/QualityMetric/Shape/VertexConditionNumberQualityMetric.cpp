@@ -67,15 +67,19 @@ bool VertexConditionNumberQualityMetric::evaluate_vertex(PatchData &pd,
     //convert the MsqVertex pointer into an index
   size_t this_vert = pd.get_vertex_index(vert);
     //get the vertex to element array and the offset array
-  const size_t* elem_offset = pd.get_vertex_to_elem_offset(err);  MSQ_ERRZERO(err);
-  const size_t* v_to_e_array = pd.get_vertex_to_elem_array(err);  MSQ_ERRZERO(err);
+  //const size_t* elem_offset = pd.get_vertex_to_elem_offset(err);  MSQ_ERRZERO(err);
+  //const size_t* v_to_e_array = pd.get_vertex_to_elem_array(err);  MSQ_ERRZERO(err);
     //find the offset for this vertex
-  size_t this_offset = elem_offset[this_vert];
+  //size_t this_offset = elem_offset[this_vert];
     //get the number of elements attached to this vertex (given by the
     //first entry in the vertex to element array)
-  size_t num_elems = v_to_e_array[this_offset];
+  //size_t num_elems = v_to_e_array[this_offset];
     //PRINT_INFO("\nIN LOCAL SIZE CPP, num_elements = %i",num_elems);
     //if no elements, then return true
+  size_t num_elems, *v_to_e_array;
+  v_to_e_array = pd.get_vertex_element_adjacencies( this_vert, num_elems, err );
+  MSQ_ERRZERO(err);  
+    
   if(num_elems <= 0){
     return true;
   }
@@ -94,11 +98,11 @@ bool VertexConditionNumberQualityMetric::evaluate_vertex(PatchData &pd,
   //loop over the elements attached to this vertex
   for(i=0;i<num_elems;++i){
       //get the vertices connected to this vertex for this element
-    elems[v_to_e_array[this_offset+i+1]].get_connected_vertices(this_vert,
+    elems[v_to_e_array[i]].get_connected_vertices(this_vert,
                                                                 other_vertices,
                                                                 err);  MSQ_ERRZERO(err);
       //switch over the element type of this element
-    switch(elems[v_to_e_array[this_offset+i+1]].get_element_type()){
+    switch(elems[v_to_e_array[i]].get_element_type()){
     
       case TRIANGLE:
         temp_vec[0]=vertices[other_vertices[0]]-vertices[this_vert];

@@ -113,6 +113,11 @@ namespace Mesquite
                                size_t* elem_conn_indices, size_t index_len,
                                MsqError& err );
     
+    /** Get sum of number of vertices in each element */
+    virtual size_t get_vertex_use_count( ElementHandle* elem_array,
+                                         size_t elem_array_length,
+                                         MsqError& err );
+    
       // Returns a pointer to an iterator that iterates over the
       // set of all vertices in this mesh.  The calling code should
       // delete the returned iterator when it is finished with it.

@@ -50,6 +50,7 @@ to run mesquite by default.
 #include "MeshImplData.hpp"
 #include "MeshImplTags.hpp"
 #include "MsqDebug.hpp"
+#include "MsqError.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 #  include <string.h>
@@ -794,6 +795,18 @@ void MeshImpl::get_all_mesh(   VertexHandle*  vert_array, size_t vert_len,
                      (size_t*)elem_array, 
                      elem_conn_offsets, 
                      elem_conn_indices );
+}
+
+size_t MeshImpl::get_vertex_use_count( ElementHandle* elem_array,
+                                       size_t count, MsqError& err )
+{
+  size_t result = 0;
+  for (size_t i = 0; i < count; ++i)
+  {
+    result += myMesh->element_connectivity( (size_t)(elem_array[i]), err ).size();
+    MSQ_ERRZERO(err);
+  }
+  return result;
 }
 
 

@@ -144,6 +144,9 @@ namespace Mesquite
     void write_gnuplot(const char* out_filebase, MsqError &err);
     
   private:
+  
+    bool get_next_elem_on_vert_patch( PatchData&, PatchDataParameters&, MsqError& );
+    bool get_next_global_patch( PatchData&, PatchDataParameters&, MsqError& );
     
       //! Meshes in this MeshSet
     msq_std::list<Mesquite::Mesh*> meshSet;
@@ -164,13 +167,13 @@ namespace Mesquite
       //! These are arrays that we cache so we don't have to reallocate
       //! at every patch.
     msq_stdc::size_t *csrOffsets;
-    msq_stdc::size_t *csrData;
-    Mesh::VertexHandle *vertArray;
-    Mesh::ElementHandle *elemArray;
+    //msq_stdc::size_t *csrData;
+    //Mesh::VertexHandle *vertArray;
+    //Mesh::ElementHandle *elemArray;
     Mesquite::EntityTopology *elemTopologies;
     bool *vertexOnBoundary;
     msq_stdc::size_t csrOffsetsSize;
-    msq_stdc::size_t csrDataSize;
+    //msq_stdc::size_t csrDataSize;
     msq_stdc::size_t vertArraySize;
     msq_stdc::size_t elemArraySize;
 

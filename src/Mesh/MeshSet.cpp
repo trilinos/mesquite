@@ -47,6 +47,7 @@ That copy is of course encapsulated in the MeshSet class.
 #include "QualityImprover.hpp"
 #include "MsqError.hpp"
 #include "MsqDebug.hpp"
+#include "TopologyInfo.hpp"
 
 #ifdef MSQ_USE_OLD_IO_HEADERS
 #include <fstream.h>
@@ -65,13 +66,13 @@ MeshSet::MeshSet() :
   vertexIterator(NULL),
   spaceDim(0),
   csrOffsets(0),
-  csrData(0),
-  vertArray(NULL),
-  elemArray(NULL),
+//  csrData(0),
+//  vertArray(NULL),
+//  elemArray(NULL),
   elemTopologies(0),
   vertexOnBoundary(0),
   csrOffsetsSize(0),
-  csrDataSize(0),
+//  csrDataSize(0),
   vertArraySize(0),
   elemArraySize(0),
   mDomain(NULL)
@@ -90,9 +91,9 @@ MeshSet::~MeshSet()
   
     // Delete cache arrays
   delete [] csrOffsets;
-  delete [] csrData;
-  delete [] vertArray;
-  delete [] elemArray;
+//  delete [] csrData;
+//  delete [] vertArray;
+//  delete [] elemArray;
   delete [] elemTopologies;
   delete [] vertexOnBoundary;
 }
@@ -182,372 +183,347 @@ bool MeshSet::get_next_patch(PatchData &pd,
 
     // Mark this MeshSet as the originator
   pd.meshSet = this;
-  if (mDomain != NULL)  pd.domainSet = true;
-  else                  pd.domainSet = false;
-    // Get the patch parameters.
-  PatchData::PatchType patch_type = pd_params.get_patch_type();
-  long unsigned int culling_method_bits = pd_params.get_culling_method_bits();
-  
-  MSQ_DBGOUT(3) << "  o Patch Type: " << patch_type << endl;
+  pd.domainSet = (mDomain != NULL);
 
-  switch (patch_type)
+  bool result = false;
+  switch (pd_params.get_patch_type())
   {
     case PatchData::ELEMENTS_ON_VERTEX_PATCH:
-    {
-        //variable to store the center vertex's fixed flag
-      MsqVertex::FlagMask center_fixed_byte;
-        // Make sure we're only getting a patch depth of 1
-      int num_layers = pd_params.get_nb_layers(err); 
-      if (MSQ_CHKERR(err)) return false;
-      
-      if (num_layers != 1 && num_layers != 0)
-      {
-        MSQ_SETERR(err)( "no implementation for patch depth > 1.",
-                         MsqError::NOT_IMPLEMENTED ); 
-        return false;
-      }
-
-        // Set the patch type
-      pd.mType = PatchData::ELEMENTS_ON_VERTEX_PATCH;
-      
-        // If this is our first time through the mesh,
-        // initialize everything.
-      if (!vertexIterator)
-      {
-        reset(err);
-        if (MSQ_CHKERR(err)) return false;
-      }
-      
-        // currentVertex is pointing at next potential center vertex.
-        // Move forward in the list of vertices if necessary.
-      bool next_vertex_identified = false;
-      while (!next_vertex_identified)
-      {
-        bool on_bnd;
-        on_bnd=false;
-        if (!(vertexIterator->is_at_end()))
-        {
-          Mesquite::Mesh::VertexHandle vtx;
-          vtx = **vertexIterator;
-          (*currentMesh)->vertices_are_on_boundary(&vtx, &on_bnd, 1, err);
-          if (MSQ_CHKERR(err)) return false;
-          //          cout << " dbg : vtx " << vtx << "  on_bnd: " << on_bnd << endl;
-        }
-          // Move to next mesh if necessary
-        if (vertexIterator->is_at_end())
-        {
-          delete vertexIterator;
-          ++currentMesh;
-          if (currentMesh == meshSet.end())
-          {
-            vertexIterator = NULL;
-                // If a target calculator is set, compute the targets. 
-            if (pd_params.get_target_calculator() != 0) {
-              pd_params.get_target_calculator()->reset_reference_meshset(err);
-              if (MSQ_CHKERR(err)) return false;
-            }
-            return false;
-          }
-          vertexIterator = (*currentMesh)->vertex_iterator(err); MSQ_CHKERR(err);
-        }
-          //if this is a 'boundary' fixed flag, skip it now
-        else if ((culling_method_bits & PatchData::NO_BOUNDARY_VTX)
-                 && (on_bnd==true))
-        {
-            ++(*vertexIterator);
-        }
-        else if ((culling_method_bits & PatchData::NO_INTERIOR_VTX)
-                 && (on_bnd==false))
-        {
-            ++(*vertexIterator);
-        }
-          //otherwise we check to see if this vertex has been culled
-        else{
-            //get the fixed_bit_flag for the center vertex
-          (*currentMesh)->vertex_get_byte(**vertexIterator,&center_fixed_byte, err);
-          if (MSQ_CHKERR(err)) return false;
-          
-            //remove the hard fixed flag if it has been set
-          center_fixed_byte &= ~(MsqVertex::MSQ_HARD_FIXED);
-            //if it is culled, skip it
-          if(center_fixed_byte & cullFlag)
-          {
-            ++(*vertexIterator);
-          }
-          else
-          {
-              // We found the right one
-            next_vertex_identified = true;
-          }//end else (vertex was not fixed [boundary] or culled)
-        }//end else (iterator was not at the end and vertex was not boundary)  
-      }//end while (!next_vertex_identified)
-      Mesh::VertexHandle vertex = **vertexIterator;
-      ++(*vertexIterator);
-      if(num_layers == 0 ){
-        if (vertArraySize < 1)
-        {
-          delete [] vertArray;
-          vertArray = new Mesh::VertexHandle[1];
-          vertArraySize = 1;
-        }
-        pd.reserve_vertex_capacity(1, err);
-        MsqVertex* pd_vert_array = pd.get_vertex_array(err);
-        (*currentMesh)->vertices_get_coordinates(&vertex,
-                                                 pd_vert_array,
-                                                 1,
-                                                 err);
-        pd_vert_array[0].vertexBitFlags=center_fixed_byte;
-        pd.numVertices = 1;
-        pd.vertexHandlesArray[0]=vertex;
-        pd.numElements = 0;
-        return true;
-      }
-          // Get the number of elements in this vertex
-      size_t num_elems =
-        (*currentMesh)->vertex_get_attached_element_count(vertex, err);
-      if (MSQ_CHKERR(err)) return false;
-      
-        // Get the elements attached to this vertex
-      if (elemArraySize < num_elems)
-      {
-        delete [] elemArray;
-        delete [] elemTopologies;
-        elemArray = new Mesh::ElementHandle[num_elems];
-        elemTopologies = new EntityTopology[num_elems];
-        elemArraySize = num_elems;
-      }
-      
-      (*currentMesh)->vertex_get_attached_elements(vertex,
-                                                   elemArray,
-                                                   num_elems, err);
-      if (MSQ_CHKERR(err)) return false;
-      
-        // Get the topologies of those elements
-      (*currentMesh)->elements_get_topologies(elemArray,
-                                              elemTopologies,
-                                              num_elems, err);
-      if (MSQ_CHKERR(err)) return false;
-      
-        // Figure out how many vertices we need to allocate
-      size_t num_vert_uses = 1;
-      size_t i;
-      for (i = 0; i < num_elems; ++i)
-      {
-        num_vert_uses += vertices_in_topology(elemTopologies[i]);
-      }
-        // All elems share at least 1 vertex (the center vertex)
-      size_t num_verts = num_vert_uses - num_elems;
-      
-        // Get the vertices attached to those elements
-      if (vertArraySize < num_verts)
-      {
-        delete [] vertArray;
-        vertArray = new Mesh::VertexHandle[num_verts];
-        vertArraySize = num_verts;
-      }
-      if (csrDataSize < num_vert_uses)
-      {
-        delete [] csrData;
-        csrData = new size_t[num_vert_uses];
-        csrDataSize = num_vert_uses;
-      }
-      if (csrOffsetsSize < num_elems + 1)
-      {
-        delete [] csrOffsets;
-        csrOffsets = new size_t[num_elems + 1];
-        csrOffsetsSize = num_elems + 1;
-      }
-      (*currentMesh)->elements_get_attached_vertices(elemArray,
-                                                     num_elems,
-                                                     vertArray,
-                                                     num_verts,
-                                                     csrData,
-                                                     num_vert_uses,
-                                                     csrOffsets,
-                                                     err); 
-      if (MSQ_CHKERR(err)) return false;
-      
-        // Allocate the space for the vertices in the PatchData
-      pd.reserve_vertex_capacity(num_verts, err); 
-      if (MSQ_CHKERR(err)) return false;
-      
-        // Get the coordinates of the vertices and its flags.
-      MsqVertex* pd_vert_array = pd.get_vertex_array(err);
-        //get the coordinates
-      (*currentMesh)->vertices_get_coordinates(vertArray,
-                                               pd_vert_array,
-                                                    num_verts,
-                                               err);
-      if (MSQ_CHKERR(err)) return false;
-      for (i = 0; i < num_verts; i++)
-      {
-        
-          // If it's not the center vertex, mark it as hard fixed
-        if (vertArray[i] != vertex)
-        {
-            // Get its flags
-          (*currentMesh)->vertex_get_byte(vertArray[i],
-                                          &(pd_vert_array[i].vertexBitFlags),
-                                          err);
-          if (MSQ_CHKERR(err)) return false;
-          pd_vert_array[i].vertexBitFlags |= MsqVertex::MSQ_HARD_FIXED;
-        }
-          //else it is the center vertex.  We therefore already have
-          //the fixed flag stored center_fixed_byte.  The hard fixed
-          //flag has already been removed (when flag was retreived).
-        else{
-          pd_vert_array[i].vertexBitFlags = (center_fixed_byte);
-        }
-        
-          // Add its handle to the patch
-        pd.vertexHandlesArray[i] = vertArray[i];
-      }
-      pd.numVertices = num_verts;
-      
-        // Allocate space for the elements in the PatchData
-      pd.reserve_element_capacity(num_elems, err);
-      if (MSQ_CHKERR(err)) return false;
-      
-        // Put the elements into the PatchData
-      MsqMeshEntity* pd_elem_array = pd.get_element_array(err);
-      for (i = 0; i < num_elems; ++i)
-      {
-        pd_elem_array[i].set_element_type(elemTopologies[i]);
-        for (size_t j = vertices_in_topology(elemTopologies[i]); j--; )
-        {
-          pd_elem_array[i].set_vertex_index(j, csrData[csrOffsets[i]+j]);
-        }
-          // Copy the element's handle to the patch
-        pd.elementHandlesArray[i] = elemArray[i];
-      }
-      pd.numElements = num_elems;
-    }
-
-//    pd.print(); std::cerr << std::endl; //dbg
-
-    // If a target calculator is set, compute the targets. 
-    if (pd_params.get_target_calculator() != 0) {
-      pd_params.get_target_calculator()->compute_target_matrices_and_check_det(pd, err);
-      if (MSQ_CHKERR(err)) return false;
-    }
-    
-    return true;
-    
+      result = get_next_elem_on_vert_patch( pd, pd_params, err );
+      break;
     case PatchData::GLOBAL_PATCH:
-    {
-        // We only support global patches for a single Mesh
-      if (meshSet.size() != 1)
-      {
-        MSQ_SETERR(err)( 
-           "Global patches only supported for single-Mesh MeshSets.",
-           MsqError::NOT_IMPLEMENTED );
-        return false;
-      }
-      
-      pd.mType = PatchData::GLOBAL_PATCH;
-      
-        // for a global patch, we always reset to start of the mesh.
-      reset(err);
-      if (MSQ_CHKERR(err)) return false;
-      
-      size_t i;
-      
-        // Get sizes for mesh data
-      size_t num_verts, num_elems, num_uses;
-      (*currentMesh)->get_all_sizes( num_verts, num_elems, num_uses, err ); MSQ_ERRZERO(err);
-      
-        // Allocate arrays for mesh data
-      if (vertArraySize < num_verts)
-      {
-        delete [] vertArray;
-        delete [] vertexOnBoundary;
-        vertArraySize = num_verts;
-        vertArray = new Mesh::VertexHandle[vertArraySize];
-        vertexOnBoundary = new bool[vertArraySize];
-      }
-      if (elemArraySize < num_elems)
-      {
-        delete [] elemArray;
-        delete [] elemTopologies;
-        elemArraySize = num_elems;
-        elemArray = new Mesh::ElementHandle[elemArraySize];
-        elemTopologies = new EntityTopology[elemArraySize];
-      }
-      msq_std::vector<size_t> index_array(num_uses);
-      msq_std::vector<size_t> offsets(num_elems+1);
-      
-        // Get mesh data
-      (*currentMesh)->get_all_mesh( vertArray, num_verts,
-                                    elemArray, num_elems,
-                                    &offsets[0], offsets.size(),
-                                    &index_array[0], index_array.size(),
-                                    err ); MSQ_ERRZERO(err);
-      (*currentMesh)->elements_get_topologies( elemArray, elemTopologies, 
-                                               num_elems, err );MSQ_ERRZERO(err);
-      (*currentMesh)->vertices_are_on_boundary( vertArray,
-                                                vertexOnBoundary,
-                                                num_verts,
-                                                err );MSQ_ERRZERO(err);
-     
-        // Put them into the patch
-      pd.reserve_vertex_capacity(num_verts, err); MSQ_ERRZERO(err);
-      MsqVertex* pd_vert_array = pd.get_vertex_array(err);MSQ_ERRZERO(err);
-      (*currentMesh)->vertices_get_coordinates(vertArray,
-                                               pd_vert_array,
-                                               num_verts,
-                                               err); MSQ_ERRZERO(err);
-
-      for (i = 0; i < num_verts; i++)
-      {
-          // Get its flags
-        /*(*currentMesh)->vertex_get_byte(vertArray[i],
-                                        &(pd_vert_array[i].vertexBitFlags),
-                                        err); MSQ_CHKERR(err);*/
-          // Set its hard-fixed flag
-        if (/*(*currentMesh)->vertex_is_fixed(vertArray[i], err) ||*/
-           vertexOnBoundary[i])
-        {
-          pd_vert_array[i].vertexBitFlags |= MsqVertex::MSQ_HARD_FIXED;
-        }
-        else
-        {
-          pd_vert_array[i].vertexBitFlags &= ~(MsqVertex::MSQ_HARD_FIXED);
-        }
-          // Add its handle to the patch data
-        pd.vertexHandlesArray[i] = vertArray[i];
-      }
-      pd.numVertices = num_verts;
-      
-        // Put them into the patch
-      pd.reserve_element_capacity(num_elems, err);MSQ_ERRZERO(err);
-      MsqMeshEntity* pd_elem_array = pd.get_element_array(err);MSQ_ERRZERO(err);
-      for (i = 0; i < num_elems; ++i)
-      {
-        pd_elem_array[i].set_element_type(elemTopologies[i]);
-        size_t* vtx_indices = pd_elem_array[i].get_modifiable_vertex_index_array();
-        size_t j=0;
-        for (size_t v=offsets[i]; v<offsets[i+1]; ++v) {
-          vtx_indices[j++] = index_array[v];
-          //assert( 0 <= index_array[v] < num_verts); // Makes sure vertex indices are 0-based. 
-        }
-        pd.elementHandlesArray[i] = elemArray[i];
-      }
-      
-      pd.numElements = num_elems;
-    }
-
-    // If a target calculator is set, compute the targets. 
-    if (pd_params.get_target_calculator() != 0) {
-      pd_params.get_target_calculator()->compute_target_matrices_and_check_det(pd, err);
-      if (MSQ_CHKERR(err)) return false;
-    }
-    
-//    pd.print(); //dbg
-    return true;
+      result = get_next_global_patch( pd, pd_params, err );
+      break;
     default:
       MSQ_SETERR(err)( "no implementation for specified patch type.",
                        MsqError::NOT_IMPLEMENTED );
-      return false;
+      result = false;
+      break;
+  }
+  
+  return !MSQ_CHKERR(err) && result;
+}
+
+
+bool MeshSet::get_next_elem_on_vert_patch( PatchData& pd,
+                                           PatchDataParameters &pd_params,
+                                           MsqError& err )
+{
+  size_t i;
+
+    // Get the patch parameters.
+  long unsigned int culling_method_bits = pd_params.get_culling_method_bits();
+
+    //variable to store the center vertex's fixed flag
+  MsqVertex::FlagMask center_fixed_byte;
+    // Make sure we're only getting a patch depth of 1
+  int num_layers = pd_params.get_nb_layers(err); 
+  if (MSQ_CHKERR(err)) return false;
+
+  if ((unsigned)num_layers > (unsigned)1)
+  {
+    MSQ_SETERR(err)( "no implementation for patch depth > 1.",
+                     MsqError::NOT_IMPLEMENTED ); 
+    return false;
+  }
+
+    // Set the patch type
+  pd.mType = PatchData::ELEMENTS_ON_VERTEX_PATCH;
+
+    // If this is our first time through the mesh,
+    // initialize everything.
+  if (!vertexIterator)
+  {
+    reset(err);
+    if (MSQ_CHKERR(err)) return false;
+  }
+
+    // currentVertex is pointing at next potential center vertex.
+    // Move forward in the list of vertices if necessary.
+  bool next_vertex_identified = false;
+  while (!next_vertex_identified)
+  {
+      // Move to next mesh if necessary
+    while (vertexIterator->is_at_end())
+    {
+      delete vertexIterator;
+      ++currentMesh;
+      if (currentMesh == meshSet.end())
+      {
+        vertexIterator = NULL;
+            // If a target calculator is set, compute the targets. 
+        if (pd_params.get_target_calculator() != 0) {
+          pd_params.get_target_calculator()->reset_reference_meshset(err);
+          if (MSQ_CHKERR(err)) return false;
+        }
+        return false;
+      }
+      vertexIterator = (*currentMesh)->vertex_iterator(err); MSQ_CHKERR(err);
+    }
+
+    bool on_bnd = false;
+    bool is_mid = false;
+    Mesquite::Mesh::VertexHandle vtx = **vertexIterator;
+    (*currentMesh)->vertices_are_on_boundary(&vtx, &on_bnd, 1, err);
+    if (MSQ_CHKERR(err)) return false;
+    //(*currentMesh)->vertices_are_midnodes(&vtx, &is_mid, 1, err);
+    //if (MSQ_CHKERR(err)) return false;
+
+      //always skip midnodes
+    if (is_mid)
+    {
+       vertexIterator->operator++();
+    }
+      //if this is a 'boundary' fixed flag, skip it now
+    else if ((culling_method_bits & PatchData::NO_BOUNDARY_VTX)
+             && (on_bnd==true))
+    {
+        ++(*vertexIterator);
+    }
+    else if ((culling_method_bits & PatchData::NO_INTERIOR_VTX)
+             && (on_bnd==false))
+    {
+        ++(*vertexIterator);
+    }
+      //otherwise we check to see if this vertex has been culled
+    else{
+        //get the fixed_bit_flag for the center vertex
+      (*currentMesh)->vertex_get_byte(**vertexIterator,&center_fixed_byte, err);
+      if (MSQ_CHKERR(err)) return false;
+
+        //remove the hard fixed flag if it has been set
+      center_fixed_byte &= ~(MsqVertex::MSQ_HARD_FIXED);
+        //if it is culled, skip it
+      if(center_fixed_byte & cullFlag)
+      {
+        ++(*vertexIterator);
+      }
+      else
+      {
+          // We found the right one
+        next_vertex_identified = true;
+      }//end else (vertex was not fixed [boundary] or culled)
+    }//end else (iterator was not at the end and vertex was not boundary)  
+  }//end while (!next_vertex_identified)
+  Mesh::VertexHandle vertex = **vertexIterator;
+  vertexIterator->operator++();
+  if(num_layers == 0 ){
+    pd.vertexArray.resize( 1 );
+    MsqVertex* pd_vert_array = pd.get_vertex_array(err);
+    (*currentMesh)->vertices_get_coordinates(&vertex,
+                                             pd_vert_array,
+                                             1,
+                                             err); MSQ_ERRZERO(err);
+    pd_vert_array[0].vertexBitFlags=center_fixed_byte;
+    
+    pd.vertexHandlesArray.resize(1);
+    pd.vertexHandlesArray[0]=vertex;
+    
+    pd.initialize_data( NULL, err ); MSQ_ERRZERO(err);
+    return true;
+  }
+      // Get the number of elements in this vertex
+  size_t num_elems =
+    (*currentMesh)->vertex_get_attached_element_count(vertex, err);
+  if (MSQ_CHKERR(err)) return false;
+  pd.elementHandlesArray.resize( num_elems );
+ 
+    // Get the elements attached to this vertex
+  if (elemArraySize < num_elems)
+  {
+    delete [] elemTopologies;
+    elemTopologies = new EntityTopology[num_elems];
+    elemArraySize = num_elems;
+  }
+
+  (*currentMesh)->vertex_get_attached_elements(vertex,
+                                               &pd.elementHandlesArray[0],
+                                               num_elems, err);
+  if (MSQ_CHKERR(err)) return false;
+
+    // Get the topologies of those elements
+  (*currentMesh)->elements_get_topologies(&pd.elementHandlesArray[0],
+                                          elemTopologies,
+                                          num_elems, err);
+  if (MSQ_CHKERR(err)) return false;
+
+    // Figure out how many vertices we need to allocate
+  //size_t num_vert_uses = 1;
+  //size_t i;
+  //for (i = 0; i < num_elems; ++i)
+  //  num_vert_uses += vertices_in_topology(elemTopologies[i]);
+  size_t num_vert_uses = (*currentMesh)->
+    get_vertex_use_count( &pd.elementHandlesArray[0], num_elems, err ); 
+  MSQ_ERRZERO(err);
+
+    // All elems share at least 1 vertex (the center vertex)
+  size_t num_verts = num_vert_uses - num_elems;
+  pd.vertexHandlesArray.resize( num_verts );
+  pd.elementArray.resize( num_elems );
+  pd.elemConnectivityArray.resize( num_vert_uses );
+
+    // Get the vertices attached to those elements
+  
+  if (csrOffsetsSize < num_elems + 1)
+  {
+    delete [] csrOffsets;
+    csrOffsets = new size_t[num_elems + 1];
+    csrOffsetsSize = num_elems + 1;
+  }
+  (*currentMesh)->elements_get_attached_vertices(&pd.elementHandlesArray[0],
+                                                 num_elems,
+                                                 &pd.vertexHandlesArray[0],
+                                                 num_verts,
+                                                 &pd.elemConnectivityArray[0],
+                                                 num_vert_uses,
+                                                 csrOffsets,
+                                                 err); 
+  if (MSQ_CHKERR(err)) return false;
+  
+    // Update with actual vertex count
+  pd.vertexHandlesArray.resize( num_verts );
+
+    // Put the elements into the PatchData
+  MsqMeshEntity* pd_elem_array = pd.get_element_array(err);
+  for (i = 0; i < num_elems; ++i)
+    pd_elem_array[i].set_element_type( elemTopologies[i] );
+  pd.initialize_data( csrOffsets, err ); MSQ_ERRZERO(err);
+
+    // Get the coordinates of the vertices and its flags.
+  pd.vertexArray.resize( num_verts );
+  MsqVertex* pd_vert_array = pd.get_vertex_array(err);
+    //get the coordinates
+  (*currentMesh)->vertices_get_coordinates(&pd.vertexHandlesArray[0],
+                                           pd_vert_array,
+                                           num_verts,
+                                           err);
+  if (MSQ_CHKERR(err)) return false;
+  for (i = 0; i < num_verts; i++)
+  {
+
+      // If it's not the center vertex, mark it as hard fixed
+    if (pd.vertexHandlesArray[i] != vertex)
+    {
+        // Get its flags
+      (*currentMesh)->vertex_get_byte(pd.vertexHandlesArray[i],
+                                      &(pd_vert_array[i].vertexBitFlags),
+                                      err);
+      if (MSQ_CHKERR(err)) return false;
+      pd_vert_array[i].vertexBitFlags |= MsqVertex::MSQ_HARD_FIXED;
+    }
+      //else it is the center vertex.  We therefore already have
+      //the fixed flag stored center_fixed_byte.  The hard fixed
+      //flag has already been removed (when flag was retreived).
+    else{
+      pd_vert_array[i].vertexBitFlags = (center_fixed_byte);
+    }
+  }
+  
+  // If a target calculator is set, compute the targets. 
+  if (pd_params.get_target_calculator() != 0) {
+    pd_params.get_target_calculator()->compute_target_matrices_and_check_det(pd, err);
+    if (MSQ_CHKERR(err)) return false;
+  }
+
+  return true;
+}
+
+
+bool MeshSet::get_next_global_patch( PatchData& pd,
+                                     PatchDataParameters& pd_params,
+                                     MsqError& err )
+{
+    // We only support global patches for a single Mesh
+  if (meshSet.size() != 1)
+  {
+    MSQ_SETERR(err)( 
+       "Global patches only supported for single-Mesh MeshSets.",
+       MsqError::NOT_IMPLEMENTED );
+    return false;
+  }
+
+  pd.mType = PatchData::GLOBAL_PATCH;
+
+    // for a global patch, we always reset to start of the mesh.
+  reset(err);
+  if (MSQ_CHKERR(err)) return false;
+
+  size_t i;
+
+    // Get sizes for mesh data
+  size_t num_verts, num_elems, num_uses;
+  (*currentMesh)->get_all_sizes( num_verts, num_elems, num_uses, err ); MSQ_ERRZERO(err);
+
+    // Get handles and connectivity
+  pd.vertexHandlesArray.resize( num_verts );
+  pd.elementHandlesArray.resize( num_elems );
+  pd.elemConnectivityArray.resize( num_uses );
+  msq_std::vector<size_t> offsets(num_elems+1);
+  (*currentMesh)->get_all_mesh( &pd.vertexHandlesArray[0], num_verts,
+                                &pd.elementHandlesArray[0], num_elems,
+                                &offsets[0], offsets.size(),
+                                &pd.elemConnectivityArray[0], 
+                                pd.elemConnectivityArray.size(),
+                                err ); MSQ_ERRZERO(err);
+  
+    // Get element topologies
+  pd.elementArray.resize( num_elems );
+  msq_std::vector<EntityTopology> elem_topologies(num_elems);
+  (*currentMesh)->elements_get_topologies( &pd.elementHandlesArray[0], 
+                                           &elem_topologies[0], 
+                                           num_elems, err );MSQ_ERRZERO(err);
+
+    // Put them into the patch
+  MsqMeshEntity* pd_elem_array = pd.get_element_array(err);MSQ_ERRZERO(err);
+  for (i = 0; i < num_elems; ++i)
+    pd_elem_array[i].set_element_type( elem_topologies[i] );
+    
+    // Complete connectivity data in patch
+  pd.initialize_data( &offsets[0], err ); MSQ_ERRZERO(err);
+
+
+    // Get vertex coordinates
+  pd.vertexArray.resize( num_verts );
+  MsqVertex* pd_vert_array = pd.get_vertex_array(err);MSQ_ERRZERO(err);
+  (*currentMesh)->vertices_get_coordinates(&pd.vertexHandlesArray[0],
+                                           pd_vert_array,
+                                           num_verts,
+                                           err); MSQ_ERRZERO(err);
+
+    // Get vertex boundary flag
+  if (vertArraySize < num_verts)
+  {
+    delete [] vertexOnBoundary;
+    vertArraySize = num_verts;
+    vertexOnBoundary = new bool[vertArraySize];
+  }
+  (*currentMesh)->vertices_are_on_boundary( &pd.vertexHandlesArray[0],
+                                            vertexOnBoundary,
+                                            num_verts,
+                                            err );MSQ_ERRZERO(err);
+
+  for (i = 0; i < num_verts; i++)
+  {
+      // Get its flags
+    /*(*currentMesh)->vertex_get_byte(vertArray[i],
+                                    &(pd_vert_array[i].vertexBitFlags),
+                                    err); MSQ_CHKERR(err);*/
+      // Set its hard-fixed flag
+    if (/*(*currentMesh)->vertex_is_fixed(vertArray[i], err) ||*/
+       vertexOnBoundary[i])
+    {
+      pd_vert_array[i].vertexBitFlags |= MsqVertex::MSQ_HARD_FIXED;
+    }
+    else
+    {
+      pd_vert_array[i].vertexBitFlags &= ~(MsqVertex::MSQ_HARD_FIXED);
+    }
+  }
+
+  // If a target calculator is set, compute the targets. 
+  if (pd_params.get_target_calculator() != 0) {
+    pd_params.get_target_calculator()->compute_target_matrices_and_check_det(pd, err);
+    if (MSQ_CHKERR(err)) return false;
   }
 
   return true;
@@ -558,7 +534,7 @@ bool MeshSet::get_next_patch(PatchData &pd,
 void Mesquite::MeshSet::update_mesh(const PatchData &pd, MsqError &err)
 {
   MSQ_FUNCTION_TIMER( "MeshSet::update_mesh" );
-  if (pd.numVertices == 0)
+  if (pd.num_nodes() == 0)
     return;
   
   size_t i;
@@ -570,7 +546,7 @@ void Mesquite::MeshSet::update_mesh(const PatchData &pd, MsqError &err)
   case PatchData::ELEMENTS_ON_VERTEX_PATCH:
       // For each vertex, update the coordinates
         // and the "mesquite byte".
-      for (i = 0; i < pd.numVertices; i++)
+      for (i = 0; i < pd.num_nodes(); i++)
       {
         (*currentMesh)->vertex_set_coordinates(pd.vertexHandlesArray[i],
                                                pd.vertexArray[i],
@@ -591,7 +567,7 @@ void Mesquite::MeshSet::update_mesh(const PatchData &pd, MsqError &err)
       Mesquite::Mesh* cur_mesh = *mesh_itr;
       Mesquite::VertexIterator *vert_itr = cur_mesh->vertex_iterator(err);
       MSQ_ERRRTN(err);
-      for (i = 0; i < pd.numVertices; i++)
+      for (i = 0; i < pd.num_nodes(); i++)
       {
         if (vert_itr->is_at_end())
         {
@@ -701,9 +677,9 @@ void MeshSet::write_vtk(const char* out_filename,
   file << "DATASET UNSTRUCTURED_GRID\n";
   
     // Write vertex coordinates
-  file << "POINTS " << pd.numVertices << " float\n";
+  file << "POINTS " << pd.num_nodes() << " float\n";
   size_t i;
-  for (i = 0; i < pd.numVertices; i++)
+  for (i = 0; i < pd.num_nodes(); i++)
   {
     file << pd.vertexArray[i][0] << ' '
          << pd.vertexArray[i][1] << ' '
@@ -712,14 +688,14 @@ void MeshSet::write_vtk(const char* out_filename,
   
     // Write out the connectivity table
   size_t connectivity_size = 0;
-  for (i = 0; i < pd.numElements; ++i)
-    connectivity_size += pd.elementArray[i].vertex_count()+1;
+  for (i = 0; i < pd.num_elements(); ++i)
+    connectivity_size += pd.elementArray[i].node_count()+1;
     
-  file << "CELLS " << pd.numElements << ' ' << connectivity_size << '\n';
-  for (i = 0; i < pd.numElements; i++)
+  file << "CELLS " << pd.num_elements() << ' ' << connectivity_size << '\n';
+  for (i = 0; i < pd.num_elements(); i++)
   {
     std::vector<size_t> vtx_indices;
-    pd.elementArray[i].get_vertex_indices(vtx_indices);
+    pd.elementArray[i].get_node_indices(vtx_indices);
     file << vtx_indices.size();
     for (msq_stdc::size_t j = 0; j < vtx_indices.size(); ++j)
     {
@@ -729,8 +705,8 @@ void MeshSet::write_vtk(const char* out_filename,
   }
   
     // Write out the element types
-  file << "CELL_TYPES " << pd.numElements << '\n';
-  for (i = 0; i < pd.numElements; i++)
+  file << "CELL_TYPES " << pd.num_elements() << '\n';
+  for (i = 0; i < pd.num_elements(); i++)
   {
     unsigned char type_id = 0;
     switch (pd.elementArray[i].get_element_type())
@@ -755,9 +731,9 @@ void MeshSet::write_vtk(const char* out_filename,
   }
   
     // Write out which points are fixed.
-  file << "POINT_DATA " << pd.numVertices
+  file << "POINT_DATA " << pd.num_nodes()
        << "\nSCALARS fixed float\nLOOKUP_TABLE default\n";
-  for (i = 0; i < pd.numVertices; ++i)
+  for (i = 0; i < pd.num_nodes(); ++i)
   {
     if (pd.vertexArray[i].is_free_vertex())
       file << "0\n";
@@ -803,10 +779,10 @@ void MeshSet::write_gnuplot(const char* out_filebase,
     // Write a header
   file << "\n";
   
-  for (size_t i=0; i<pd.numElements; ++i)
+  for (size_t i=0; i<pd.num_elements(); ++i)
   {
     std::vector<size_t> vtx_indices;
-    pd.elementArray[i].get_vertex_indices(vtx_indices);
+    pd.elementArray[i].get_node_indices(vtx_indices);
     for (size_t j = 0; j < vtx_indices.size(); ++j)
     {
       file << pd.vertexArray[vtx_indices[j]][0] << ' '

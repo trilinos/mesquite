@@ -1,4 +1,4 @@
-/* ***************************************************************** 
+;/* ***************************************************************** 
     MESQUITE -- The Mesh Quality Improvement Toolkit
 
     Copyright 2004 Sandia Corporation and Argonne National
@@ -67,13 +67,10 @@ namespace Mesquite {
 //! this element was retrieved.
 //! The order of the vertices is the canonical order for this
 //! element's type.
-void Mesquite::MsqMeshEntity::get_vertex_indices(vector<size_t> &vertices)
+void Mesquite::MsqMeshEntity::get_vertex_indices(vector<size_t> &vertices) const
 {
-  vertices.clear();
-  vertices.reserve(vertex_count());
-  vertices.insert(vertices.end(),
-                   vertexIndices,
-                   vertexIndices + vertex_count());
+  vertices.resize( vertex_count() );
+  memcpy( &vertices[0], vertexIndices, vertex_count() * sizeof(size_t) );
 }
 
 //! Gets the indices of the vertices of this element.
@@ -83,11 +80,22 @@ void Mesquite::MsqMeshEntity::get_vertex_indices(vector<size_t> &vertices)
 //! element's type.
 //! The indices are placed appended to the end of the list.
 //! The list is not cleared before appending this entity's vertices.
-void Mesquite::MsqMeshEntity::append_vertex_indices(vector<size_t> &vertex_list)
+void Mesquite::MsqMeshEntity::append_vertex_indices(vector<size_t> &vertex_list) const
 {
   vertex_list.insert(vertex_list.end(),
                      vertexIndices,
                      vertexIndices + vertex_count());
+}
+
+void MsqMeshEntity::get_node_indices( vector<size_t>& indices ) const
+{
+  indices.resize( node_count() );
+  memcpy( &indices[0], vertexIndices, node_count() * sizeof( size_t ) );
+}
+
+void MsqMeshEntity::append_node_indices( vector<size_t>& indices ) const
+{
+  indices.insert( indices.end(), vertexIndices, vertexIndices + node_count() );
 }
 
 
@@ -97,7 +105,7 @@ void Mesquite::MsqMeshEntity::append_vertex_indices(vector<size_t> &vertex_list)
 */
 void MsqMeshEntity::get_centroid(Vector3D &centroid, const PatchData &pd, MsqError &err) const
 {
-  MsqVertex* vtces = pd.get_vertex_array(err); MSQ_ERRRTN(err);
+  const MsqVertex* vtces = pd.get_vertex_array(err); MSQ_ERRRTN(err);
   size_t nve = vertex_count();
   for (size_t i=0; i<nve; ++i)
     centroid += vtces[vertexIndices[i]];
@@ -114,7 +122,7 @@ void Mesquite::MsqMeshEntity::compute_weighted_jacobian(PatchData &pd,
                                                         MsqError &err )
 {
     // v_v is just an alias for vertexIndices
-  size_t (&v_v)[MSQ_MAX_NUM_VERT_PER_ENT] = vertexIndices;
+  const size_t* v_v = &vertexIndices[0];
   
     //   vector<size_t> v_v;
     //   get_vertex_indices(v_v);
@@ -638,7 +646,7 @@ void MsqMeshEntity::compute_corner_matrices(PatchData &pd, Matrix3D A[], int num
 {
 
   MsqVertex* vertices = pd.get_vertex_array(err); MSQ_ERRRTN(err); 
-  const size_t* v_i = vertexIndices;
+  const size_t* v_i = &vertexIndices[0];
 
   // If 2D element, we will get the surface normal 
   Vector3D normal, vec1, vec2, vec3, vec4;
