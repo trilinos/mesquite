@@ -36,6 +36,9 @@ square_tri_2.vtk:  Triangular mesh (z=5 plane) on a square.  One free vertex.
 tangled_tri.vtk:  58 triangles in the z=5 plane on a square.  Contains
   inverted elements.
 
+tangled_quad.vtk:  25 quads in the z=5 plane on a square.  Contains
+  inverted elements.
+
 tri_20258.vtk:  Triangular mesh with 20258 elements on a square
   (z=5 plane).
 
