@@ -76,7 +76,7 @@ int main()
   ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
   
     // creates the laplacian smoother  procedures
-  LaplacianSmoother* lapl1 = new LaplacianSmoother();
+  LaplacianSmoother* lapl1 = new LaplacianSmoother(err);
  QualityAssessor stop_qa=QualityAssessor(mean_ratio,QualityAssessor::MAXIMUM);
 
    //**************Set stopping criterion****************
