@@ -215,15 +215,15 @@ namespace Mesquite
       {};
   };
 
-  /*! \class DeformingGeometryGuides842 */
+  /*! \class DeformingDomainGuides842 */
 
-  /*! \class DeformingGeometryGuides843
-    \brief  Deforming Geometry with Angle Improvement. Use with I-DFT or R-DFT.
+  /*! \class DeformingDomainGuides843
+    \brief  Deforming Domain with Angle Improvement. Use with I-DFT or R-DFT.
   */
-  class DeformingGeometryGuides843 : public LVQDTargetCalculator
+  class DeformingDomainGuides843 : public LVQDTargetCalculator
   {
   public:
-    DeformingGeometryGuides843(MeshSet* ref_mesh)
+    DeformingDomainGuides843(MeshSet* ref_mesh)
     {
       refMesh = ref_mesh;
       lambdaBase = REGULAR; 
@@ -234,19 +234,19 @@ namespace Mesquite
     }
     
       //! virtual destructor ensures use of polymorphism during destruction
-    virtual ~DeformingGeometryGuides843()
+    virtual ~DeformingDomainGuides843()
       {};
   };
 
 
-  /*! \class DeformingGeometryGuides844
-    \brief  Deforming Geometry with Angle Improvement, non-Unit AR. 
+  /*! \class DeformingDomainGuides844
+    \brief  Deforming Domain with Angle Improvement, non-Unit AR. 
             Use with R-DFT.
   */
-  class DeformingGeometryGuides844 : public LVQDTargetCalculator
+  class DeformingDomainGuides844 : public LVQDTargetCalculator
   {
   public:
-    DeformingGeometryGuides844(MeshSet* ref_mesh)
+    DeformingDomainGuides844(MeshSet* ref_mesh)
     {
       refMesh = ref_mesh;
       lambdaBase = REGULAR; 
@@ -257,7 +257,7 @@ namespace Mesquite
     }
     
       //! virtual destructor ensures use of polymorphism during destruction
-    virtual ~DeformingGeometryGuides844()
+    virtual ~DeformingDomainGuides844()
       {};
   };
   /*! \class MorphGuides851 */
