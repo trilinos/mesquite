@@ -7,7 +7,7 @@
 #include "exodusII.h"
 #endif
 
-namespace
+namespace Mesquite
 {
   template<typename X> class MeshImpl_EntityIterator : public Mesquite::VertexIterator
   {
@@ -632,7 +632,7 @@ void Mesquite::MeshImpl::get_all_elements(
 // an iterator, the behavior of that iterator is undefined.
 Mesquite::VertexIterator* Mesquite::MeshImpl::vertex_iterator()
 {
-  return new MeshImpl_EntityIterator<Mesquite::MeshImpl::Vertex>(vertexArray, vertexCount);
+  return new Mesquite::MeshImpl_EntityIterator<Mesquite::MeshImpl::Vertex>(vertexArray, vertexCount);
 }
     
 // Returns a pointer to an iterator that iterates over the
@@ -642,7 +642,7 @@ Mesquite::VertexIterator* Mesquite::MeshImpl::vertex_iterator()
 // an iterator, the behavior of that iterator is undefined.
 Mesquite::ElementIterator* Mesquite::MeshImpl::element_iterator()
 {
-  return new MeshImpl_EntityIterator<Mesquite::MeshImpl::Element>(elementArray, elementCount);
+  return new Mesquite::MeshImpl_EntityIterator<Mesquite::MeshImpl::Element>(elementArray, elementCount);
 }
 
 //************ Vertex Properties ********************
