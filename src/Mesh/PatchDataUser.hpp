@@ -37,19 +37,19 @@ namespace Mesquite {
       \param patch_param1 meaning depends on patch_type.
       \param patch_param2 meaning depends on patch_type.
     */
-    void set_patch_type(PatchData::PatchType patch_type, MsqError &err,
+    inline void set_patch_type(PatchData::PatchType patch_type, MsqError &err,
                         int patch_param1=0, int patch_param2=0);
 
     PatchData::PatchType get_patch_type()
     {return mType;}
-    int get_nb_layers(MsqError &err);
+    inline int get_nb_layers(MsqError &err);
 
     //! Sets on a culling criterion.
-    void add_culling_method(enum PatchData::culling_method cm);
+    inline void add_culling_method(enum PatchData::culling_method cm);
     //! No culling performed (sets off all culling criteria).
-    void no_culling_method();
+    inline void no_culling_method();
     //! Sets off a certain culling criteria. 
-    void remove_culling_method(enum PatchData::culling_method cm);
+    inline void remove_culling_method(enum PatchData::culling_method cm);
     //! returns the bitset.
     long unsigned int get_culling_method_bits() { return cullingMethodBits; }
 
