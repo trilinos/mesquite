@@ -1485,10 +1485,10 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
       nm = 0;
       for (i = 0; i < 8; ++i) {
         if (metrics[i] <= m + MSQ_MIN) {
-	  grad[v_i[locs_hex[i][0]]] += gradients[4*i+0];
-	  grad[v_i[locs_hex[i][1]]] += gradients[4*i+1];
-	  grad[v_i[locs_hex[i][2]]] += gradients[4*i+2];
-	  grad[v_i[locs_hex[i][3]]] += gradients[4*i+3];
+	  grad[locs_hex[i][0]] += gradients[4*i+0];
+	  grad[locs_hex[i][1]] += gradients[4*i+1];
+	  grad[locs_hex[i][2]] += gradients[4*i+2];
+	  grad[locs_hex[i][3]] += gradients[4*i+3];
 	  ++nm;
         }
       }
@@ -1507,10 +1507,10 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
       nm = 0;
       for (i = 0; i < 8; ++i) {
         if (metrics[i] >= m - MSQ_MIN) {
-	  grad[v_i[locs_hex[i][0]]] += gradients[4*i+0];
-	  grad[v_i[locs_hex[i][1]]] += gradients[4*i+1];
-	  grad[v_i[locs_hex[i][2]]] += gradients[4*i+2];
-	  grad[v_i[locs_hex[i][3]]] += gradients[4*i+3];
+	  grad[locs_hex[i][0]] += gradients[4*i+0];
+	  grad[locs_hex[i][1]] += gradients[4*i+1];
+	  grad[locs_hex[i][2]] += gradients[4*i+2];
+	  grad[locs_hex[i][3]] += gradients[4*i+3];
 	  ++nm;
         }
       }
@@ -1527,10 +1527,10 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
       }
 
       for (i = 0; i < 8; ++i) {
-        grad[v_i[locs_hex[i][0]]] += gradients[4*i+0];
-	grad[v_i[locs_hex[i][1]]] += gradients[4*i+1];
-	grad[v_i[locs_hex[i][2]]] += gradients[4*i+2];
-	grad[v_i[locs_hex[i][3]]] += gradients[4*i+3];
+        grad[locs_hex[i][0]] += gradients[4*i+0];
+	grad[locs_hex[i][1]] += gradients[4*i+1];
+	grad[locs_hex[i][2]] += gradients[4*i+2];
+	grad[locs_hex[i][3]] += gradients[4*i+3];
       }
       break;
 
@@ -1543,10 +1543,10 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
       m = exp(m / 8.0);
 
       for (i = 0; i < 8; ++i) {
-        grad[v_i[locs_hex[i][0]]] += metrics[i]*gradients[4*i+0];
-	grad[v_i[locs_hex[i][1]]] += metrics[i]*gradients[4*i+1];
-	grad[v_i[locs_hex[i][2]]] += metrics[i]*gradients[4*i+2];
-	grad[v_i[locs_hex[i][3]]] += metrics[i]*gradients[4*i+3];
+        grad[locs_hex[i][0]] += metrics[i]*gradients[4*i+0];
+	grad[locs_hex[i][1]] += metrics[i]*gradients[4*i+1];
+	grad[locs_hex[i][2]] += metrics[i]*gradients[4*i+2];
+	grad[locs_hex[i][3]] += metrics[i]*gradients[4*i+3];
       }
 
       nm = m / 8.0;
@@ -1591,10 +1591,10 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
       m = pow(nm, 1.0 / t);
 
       for (i = 0; i < 8; ++i) {
-        grad[v_i[locs_hex[i][0]]] += metrics[i]*gradients[4*i+0];
-	grad[v_i[locs_hex[i][1]]] += metrics[i]*gradients[4*i+1];
-	grad[v_i[locs_hex[i][2]]] += metrics[i]*gradients[4*i+2];
-	grad[v_i[locs_hex[i][3]]] += metrics[i]*gradients[4*i+3];
+        grad[locs_hex[i][0]] += metrics[i]*gradients[4*i+0];
+	grad[locs_hex[i][1]] += metrics[i]*gradients[4*i+1];
+	grad[locs_hex[i][2]] += metrics[i]*gradients[4*i+2];
+	grad[locs_hex[i][3]] += metrics[i]*gradients[4*i+3];
       }
 
       if (avgMethod == SUM) {

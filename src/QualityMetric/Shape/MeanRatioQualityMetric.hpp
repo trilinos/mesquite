@@ -74,9 +74,9 @@ namespace Mesquite
    {
       // NOTE: Fixed to check for degenerate or inverted elements
       // NOTE: If coordinates are always first two, can make calculation faster
-      // CHANGE: Change to (normal_vector%(temp_vec[0]*temp_vec[1]))
+      // CHANGE: Change to (unit_normal_vector%(temp_vec[0]*temp_vec[1]))
       //         to have the correct 2-D behavior
-      double determinant = 1.0%(temp_vec[0]*temp_vec[1]);
+      double determinant = Vector3D(0,0,1)%(temp_vec[0]*temp_vec[1]);
 
       if (determinant <= MSQ_MIN) {
          return false;
