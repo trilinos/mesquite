@@ -344,7 +344,7 @@ double MsqMeshEntity::compute_unsigned_volume(PatchData &pd, MsqError &err) {
     case HEXAHEDRON:
       compute_weighted_jacobian(pd,sample_point,jac_vecs,
                                 num_jacobian_vectors, err );
-      return fabs(jac_vecs[2]%(jac_vecs[0]*jac_vecs[1]))/6.0;
+      return fabs(jac_vecs[2]%(jac_vecs[0]*jac_vecs[1]));
       break;
       
     default:
