@@ -598,6 +598,7 @@ namespace Mesquite
               total_value+=((metric_values[i]/metric_values[j])*
                             (metric_values[i]/metric_values[j]));
             }
+            total_value/=(num_values*num_values);
           }
           break;
           
