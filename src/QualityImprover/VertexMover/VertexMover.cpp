@@ -12,6 +12,7 @@
 #include "VertexMover.hpp"
 #include "MeshSet.hpp"
 #include "MsqTimer.hpp"
+#include "MsqMessage.hpp"
 //#include "StoppingCriterion.hpp"
 
 using namespace Mesquite;
@@ -50,8 +51,11 @@ void VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
   bool next_patch;
   this->initialize(patch_data, err); MSQ_CHKERR(err);
     //reset the stopping criterion's loop counter
-  crit->reset_counter();  
+  crit->reset_counter();
+  PRINT_INFO("\n");
   while ( !stop_met ) {
+      //Status bar
+    PRINT_INFO(".");
     this->initialize_mesh_iteration(patch_data, err);MSQ_CHKERR(err); 
 
     // propagates information from QualityImprover to MeshSet
@@ -92,6 +96,7 @@ void VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
     else
       stop_met=crit->stop(ms,err); MSQ_CHKERR(err);
   }
+  PRINT_INFO("\n");
   
   this->cleanup();
 }
