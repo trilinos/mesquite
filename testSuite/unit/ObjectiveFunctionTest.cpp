@@ -42,6 +42,9 @@ Unit testing of various functions in the ObjectiveFunction class.
 #include <iterator>
 
 using namespace Mesquite;
+using std::cout;
+using std::endl;
+using std::cerr;
 
 class ObjectiveFunctionTest : public CppUnit::TestFixture
 {
@@ -53,6 +56,7 @@ private:
   CPPUNIT_TEST (test_compute_gradient_3D_LPtoPTemplate_L1_hex);
   CPPUNIT_TEST (test_compute_gradient_3D_LPtoPTemplate_L2_hex);
   CPPUNIT_TEST (test_compute_gradient3D_composite);
+  CPPUNIT_TEST (test_compute_hessian_tri_patch);
   CPPUNIT_TEST (test_compute_hessian_tet_patch);
 
   CPPUNIT_TEST_SUITE_END();
@@ -62,6 +66,7 @@ private:
   PatchData m4Quads;
   PatchData m6Quads;
   PatchData m12Hex;
+  PatchData triPatch;
   PatchData tetPatch;
 
 public:
@@ -106,10 +111,17 @@ public:
     */
     create_twelve_hex_patch(m12Hex, err); MSQ_CHKERR(err);
 
-     /* Our tet patch is made of two tets.  tet_1 is a perfect
-        equilateral (the ideal for most metrics).  tet_2 is an arbitrary
-        tet.
-     */
+   /*! \fn create_two_tri_patch(PatchData &one_tri_patch, MsqError &err)
+            2
+           / \      creates a Patch containing two ideal triangles
+          / 0 \
+         0-----1
+          \ 1 /
+           \ /
+            3
+   */
+    create_qm_two_tri_patch(triPatch,err);MSQ_CHKERR(err);
+    
     create_qm_two_tet_patch(tetPatch,err);MSQ_CHKERR(err);
     
   }
@@ -326,21 +338,30 @@ public:
     
     // creates a mean ratio quality metric ...
     ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
+//    mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
     mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
     mean_ratio->set_averaging_method(QualityMetric::SUM, err); MSQ_CHKERR(err);
+//    mean_ratio->set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
     mean_ratio->set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
 
     // Creates an L1 objective function.
     LPtoPTemplate L_1(mean_ratio, 1, err); MSQ_CHKERR(err);
 
     // Compute numerical hessian.
+    L_1.set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
     L_1.set_hessian_type(ObjectiveFunction::NUMERICAL_HESSIAN);
     L_1.compute_hessian(pd, OF_hessian_num, err); MSQ_CHKERR(err);
+
+    cout << "Numerical OF Hessian:\n";
+    cout << OF_hessian_num << endl;
 
     // Compute analytical hessian
     L_1.set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
     L_1.set_hessian_type(ObjectiveFunction::ANALYTICAL_HESSIAN);
     L_1.compute_hessian(pd, OF_hessian_ana, err); MSQ_CHKERR(err);
+
+    cout << "Analytical OF Hessian:\n";
+    cout << OF_hessian_ana << endl;
 
     // test
     Matrix3D* block_num;
@@ -356,6 +377,10 @@ public:
       }
     }
     
+  }
+
+  void test_compute_hessian_tri_patch() {
+    test_compute_hessian(triPatch);
   }
 
   void test_compute_hessian_tet_patch() {
