@@ -256,6 +256,7 @@ void InstructionQueue::run_instructions(MeshSet &ms, MsqError &err)
 #endif
   
   msq_std::list<PatchDataUser*>::const_iterator instr_iter;
+  PatchDataUser* prev_global = 0;
   
   if (autoAdjMidNodes)
     instructions.push_back( new MeanMidNodeMover );
@@ -270,9 +271,21 @@ void InstructionQueue::run_instructions(MeshSet &ms, MsqError &err)
         globalPatch = new PatchData;
         ms.get_next_patch(*globalPatch, (*instr_iter)->get_all_parameters(), err);
         MSQ_ERRRTN(err);
+      } 
+      else if ((*instr_iter)->get_all_parameters().get_target_calculator() &&
+               prev_global &&
+               (*instr_iter)->get_all_parameters().get_target_calculator() !=
+                 prev_global->get_all_parameters().get_target_calculator())
+      {
+        (*instr_iter)->get_all_parameters().get_target_calculator()->
+          compute_target_matrices_and_check_det(*globalPatch, err);
+          MSQ_ERRRTN(err);
       }
+        
+               
       (*instr_iter)->set_global_patch(globalPatch, err); MSQ_ERRRTN(err);
       
+      prev_global = *instr_iter;
     }
     // If instruction does not use a Global Patch, make sure we discard any existing patch.
     else {
