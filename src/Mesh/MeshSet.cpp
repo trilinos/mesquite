@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD:  6-Nov-02 at 10:40:11 by Thomas Leurent
+//  LAST-MOD:  6-Nov-02 at 14:11:43 by Thomas Leurent
 //
 /*! \file MeshSet.cpp
 
@@ -80,12 +80,9 @@ void MeshSet::add_mesh(TSTT::Mesh_Handle mh, MsqError &err)
 #define __FUNC__ "MeshSet::reset"
 void MeshSet::reset(MsqError &err)
 {
-  currentVertex = verticesSet.end();
-  currentMesh = meshSet.end();
-  bool more_vtx;
-  more_vtx = get_next_vertices_set(err); MSQ_CHKERR(err);
-  if ( more_vtx )
-    err.errorOn = true;
+  verticesSet.clear();
+  currentVertex = verticesSet.begin();
+  currentMesh = meshSet.begin();
 }
 
 bool MeshSet::set_patch_type(MeshSet::PatchType patch_type,
@@ -125,24 +122,35 @@ bool MeshSet::set_patch_type(MeshSet::PatchType patch_type,
 #undef __FUNC__
 #define __FUNC__ "MeshSet::get_next_vertices_set"
 bool MeshSet::get_next_vertices_set(MsqError &err)
-{  
-  // If we're at the end of the MeshSet
-  if ( currentVertex==verticesSet.end() && currentMesh==meshSet.end() ) {
-    // reset MeshSet
-    currentMesh = meshSet.begin();
-    verticesSet.clear();
-    currentVertex = verticesSet.begin();
-    return false; 
+{
+  // finds last mesh handle.
+  std::list<TSTT::Mesh_Handle>::iterator last_mesh;
+  last_mesh = meshSet.end();
+  --last_mesh; // we want this to be the last Mesh handle, not one past the end.
+
+  if (meshSet.empty()) {
+    err.set_msg("MeshSet does not contain any mesh.");
+    return false;
   }
-  
+ 
   // if MeshSet is in initial state
   if ( verticesSet.empty() )
-    currentMesh == meshSet.begin();
+    currentMesh = meshSet.begin();
   // If we're at the end of the MeshSet::verticesSet but there is more
-  else if ( currentVertex==verticesSet.end() && currentMesh!=meshSet.end() ) {
+  else if ( currentVertex==verticesSet.end() && currentMesh!=last_mesh ) {
       currentMesh++;
   }
-
+  else {
+    // If we're at the end of the MeshSet
+    if ( currentVertex==verticesSet.end() && currentMesh==last_mesh ) {
+      // reset MeshSet
+      currentMesh = meshSet.begin();
+      verticesSet.clear();
+      currentVertex = verticesSet.begin();
+      return false; 
+    }
+  }
+  
   // we need to create the next vertices set
   int num_vertices=0;
   TSTT::MeshError tstt_err=0;
@@ -192,10 +200,23 @@ bool MeshSet::get_next_patch(PatchData &pd,
   // *************************************************
 
   bool more_vtx;
-  more_vtx = get_next_vertices_set(err); MSQ_CHKERR(err);
-  if ( more_vtx == false ) {
-    return false; 
+  // if MeshSet object in initial state
+  if ( verticesSet.empty() ) {
+    more_vtx = get_next_vertices_set(err); MSQ_CHKERR(err);
+    if ( more_vtx == false ) {
+      return false; 
+    }
   }
+  else {
+    currentVertex++;
+    // If this is the end of the current vertices list
+    if (currentVertex == verticesSet.end() ) {
+      more_vtx = get_next_vertices_set(err);  MSQ_CHKERR(err);
+      if ( more_vtx == false )
+        return false; // no error needed, we're just at the end of the list.
+    }
+  }
+    
 
   
   // ***********************************************
@@ -235,48 +256,47 @@ bool MeshSet::get_next_patch(PatchData &pd,
     if (cullingMethodBits & QualityImprover::NO_BOUNDARY_VTX) {
       TSTT::Mesh_tagGetHandle (currentVertex->mesh, bnd_tag_name, &bnd_tag_handle, &tstt_err);
     }
-    while (cull_vertex) {
+    while (cullingMethodBits!=0 && cull_vertex) {
 
       cull_vertex = false; // don't cull , by default
-      // If this is the end of the MeshSet vertices list
-      if (currentVertex == verticesSet.end() ) {
-        more_vtx = get_next_vertices_set(err);  MSQ_CHKERR(err);
-        if ( more_vtx == false )
-          return false; // no error needed, we're just at the end of the list.
-      }
 
-      if (cullingMethodBits == 0) {
-        currentVertex++;
-        break; // no culling asked.
-      }
       // Culling of boudary vertices 
-      if (cullingMethodBits & QualityImprover::NO_BOUNDARY_VTX)
-        {
-          int* on_boundary = NULL;
-          int tag_size = sizeof(int);
-          TSTT::Mesh_GetTag_Entity(currentVertex->mesh,
-                                   (TSTT::cEntity_Handle) (currentVertex->entity),
-                                   bnd_tag_handle, (void**)&on_boundary,
-                                   &tag_size, &tstt_err);
+      if (cullingMethodBits & QualityImprover::NO_BOUNDARY_VTX) {
+        int* on_boundary = NULL;
+        int tag_size = sizeof(int);
+        TSTT::Mesh_GetTag_Entity(currentVertex->mesh,
+                                 (TSTT::cEntity_Handle) (currentVertex->entity),
+                                 bnd_tag_handle, (void**)&on_boundary,
+                                 &tag_size, &tstt_err);
       
-          // Make sure the call succeeded.
-          // NOTE: If the tag doesn't exist, we'll get an error...
-          assert(!tstt_err);
-          assert(on_boundary != NULL);
+        // Make sure the call succeeded.
+        // NOTE: If the tag doesn't exist, we'll get an error...
+        assert(!tstt_err);
+        assert(on_boundary != NULL);
       
-          if ( *on_boundary ==1)
-            {
-              MSQ_DEBUG_ACTION(2,{
-                std::cout << "      o Culling vertex "
-                          << distance(verticesSet.begin(), currentVertex)
-                          << " according to NO_BOUNDARY_VTX." << std::endl; });
-              currentVertex++;
-              cull_vertex = true;
+        if ( *on_boundary ==1)
+          {
+            MSQ_DEBUG_ACTION(2,{
+              std::cout << "      o Culling vertex "
+                        << distance(verticesSet.begin(), currentVertex)
+                        << " according to NO_BOUNDARY_VTX." << std::endl; });
+            cull_vertex = true;
+            currentVertex++;
+            // If this is the end of the MeshSet vertices list
+            if (currentVertex == verticesSet.end() ) {
+              more_vtx = get_next_vertices_set(err);  MSQ_CHKERR(err);
+              if ( more_vtx == false )
+                return false; // no error needed, we're just at the end of the list.
             }
+          }
       
-          // Delete memory allocated by Mesh_GetTag_Entity.
-          delete on_boundary;
-        }
+        // Delete memory allocated by Mesh_GetTag_Entity.
+        delete on_boundary;
+      }
+      // other type of culling ...
+      //else if () {
+      //}
+
     } // end of culling loop
   
 
