@@ -99,6 +99,7 @@ namespace Mesquite
     double c;
 
     // variables used during the analytic gradient calculations
+    Vector3D mNormal;		// Normal vector for merit function
     Vector3D mCoords[4]; 	// Vertex coordinates
     Vector3D mGrads[4];		// Gradients for element
     Vector3D mAccGrads[8];	// Accumulated gradients
