@@ -200,7 +200,12 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    obj = kappa / pow(0.5, alpha) * f / pow(g, alpha);
+    if (beta) {
+      obj = kappa / pow(0.5, alpha) * f / pow(g, alpha);
+    }
+    else {
+      obj = kappa * f / pow(g, alpha);
+    }
     return true;
   }
 
@@ -269,7 +274,12 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    obj = kappa / pow(0.5, alpha) * f / pow(g, alpha);
+    if (beta) {
+      obj = kappa / pow(0.5, alpha) * f / pow(g, alpha);
+    }
+    else {
+      obj = kappa * f / pow(g, alpha);
+    }
     return true;
   }
 
@@ -340,7 +350,12 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    loc4 = kappa / pow(0.5, alpha) / pow(g, alpha);
+    if (beta) {
+      loc4 = kappa / pow(0.5, alpha) / pow(g, alpha);
+    }
+    else {
+      loc4 = kappa / pow(g, alpha);
+    }
     obj = f * loc4;
 
     /* Calculate the derivative of the objective function. */
@@ -464,7 +479,12 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    loc1 = kappa / pow(0.5, alpha) / pow(g, alpha);
+    if (beta) {
+      loc1 = kappa / pow(0.5, alpha) / pow(g, alpha);
+    }
+    else {
+      loc1 = kappa / pow(g, alpha);
+    }
     obj = f * loc1;
 
     /* Calculate the derivative of the objective function. */
