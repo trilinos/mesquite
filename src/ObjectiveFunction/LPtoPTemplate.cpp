@@ -287,6 +287,20 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &patch,
 #undef __FUNC__
 #define __FUNC__ "LPtoPTemplate::compute_analytical_hessian"
 /*! \fn LPtoPTemplate::compute_analytical_hessian(PatchData &pd, MsqHessian &hessian, MsqError &err)
+
+    For each element, each entry to be accumulated in the Hessian for
+    this objective function (\f$ \sum_{e \in E} Q(e)^p \f$ where \f$ E \f$
+    is the set of all elements in the patch) has the form:
+    \f$ pQ(e)^{p-1} \nabla^2 Q(e) + p(p-1)Q(e)^{p-2} \nabla Q(e) [\nabla Q(e)]^T \f$.
+
+    For \f$ p=2 \f$, this simplifies to
+    \f$ 2Q(e) \nabla^2 Q(e) + 2 \nabla Q(e) [\nabla Q(e)]^T \f$.
+
+    For \f$ p=1 \f$, this simplifies to \f$ \nabla^2 Q(e) \f$.
+
+    The \f$ p=1 \f$ implified versions are implemented directly
+    to speed up computations. 
+    
     \param patch The PatchData object for which the objective function
            hessian is computed.
     \param hessian: this object must have been previously initialized.
@@ -305,8 +319,12 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
   MsqVertex* vertices = pd.get_vertex_array(err); MSQ_CHKERR(err);
   int num_elems = pd.num_elements();
   Matrix3D elem_hessian[MSQ_MAX_NUM_VERT_PER_ENT*(MSQ_MAX_NUM_VERT_PER_ENT+1)/2];
+  Matrix3D elem_outer_product[MSQ_MAX_NUM_VERT_PER_ENT*(MSQ_MAX_NUM_VERT_PER_ENT+1)/2];
   Vector3D grad_vec[MSQ_MAX_NUM_VERT_PER_ENT];
   double metric_value;
+  double fac1, fac2;
+  Matrix3D grad_outprod;
+//  Vector3D zero3D(0,0,0);
   QualityMetric* currentQM = get_quality_metric();
   
   MsqVertex* elem_vtx[MSQ_MAX_NUM_VERT_PER_ENT];
@@ -315,9 +333,11 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
     
   size_t e;
   int num_vtx;
-
+  int i,j,n;
+  
   for (e=0; e<num_elems; ++e) {
-     
+    int nve = elements[e].vertex_count();
+    
     // Gets a list of free vertices in the element.
     elements[e].get_vertex_indices(vtx_indices);
     num_vtx=0;
@@ -326,12 +346,46 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
         elem_vtx[num_vtx] = vertices + (*index); ++num_vtx; }
     }
     
-    // Only the free vertices will have non-zero entries. 
+    // Computes \nabla^2 Q(e). Only the free vertices will have non-zero entries. 
     currentQM->compute_element_hessian(pd, elements+e, elem_vtx, grad_vec, elem_hessian,
                                        num_vtx, metric_value, err); MSQ_CHKERR(err);
-
      
-    hessian.accumulate_entries(pd, e, elem_hessian, err);
+    if (pVal == 1) {
+      hessian.accumulate_entries(pd, e, elem_hessian, err);
+    }
+    else if (pVal >= 2) {
+      // Computes \nabla Q(e) [\nabla Q(e)]^T 
+      n=0;
+      for (i=0; i<nve; ++i) {
+        for (j=i; j<nve; ++j) {
+          if ( vertices[vtx_indices[i]].is_free_vertex() &&
+               vertices[vtx_indices[j]].is_free_vertex() ) {
+            elem_outer_product[n].outer_product(grad_vec[i], grad_vec[j]);
+          } else {
+            elem_outer_product[n] = 0.;
+          }
+          ++n;
+        }
+      }
+
+      // Computes  pQ(e)^{p-1}
+      fac1 = pVal * pow(metric_value, pVal-1);
+      // Computes p(p-1)Q(e)^{p-2}
+      fac2 = pVal* (pVal-1) * pow(metric_value, pVal-2);
+
+      for (i=0; i<nve*(nve+1)/2; ++i) {
+        elem_hessian[i] *= fac1;
+        elem_outer_product[i] *= fac2;
+      }
+      
+      hessian.accumulate_entries(pd, e, elem_hessian, err);
+      hessian.accumulate_entries(pd, e, elem_outer_product, err);
+
+    } else {
+      err.set_msg(" invalid P value.");
+      return false;
+    }
+    
   }
   
 
