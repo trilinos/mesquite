@@ -5,9 +5,7 @@
 \pagestyle{empty}
 
 \title{ {\LARGE\bf 
-        \emph{DRAFT} \vspace{.5cm}\\
         MESQUITE \\ MESh QUality Improvement Toolkit \\ \vspace{.5cm} User's Guide\\
-        \vspace{.5cm} \emph{DRAFT} 
 }}
 
 \author{Patrick Knupp, Darryl Melander, Mike Brewer \\
@@ -22,7 +20,7 @@ Thomas Leurent \\
 Argonne National Laboratory \\
 Argonne, IL 60490 USA}
 
-\date{Last Updated: 24 March, 2004}
+\date{Last Updated: 24 June, 2004}
 
 \begin{document}
 
@@ -1417,7 +1415,7 @@ the quality of the worst elements.
 \noindent {\bf The $\ell_{\infty}$ Template} \newline
 The $\ell_{\infty}$ template is
 \begin{equation}
-\| Q \|_{\infty} = \max_{N=1,\ldots,N} \mid q_n \mid
+\| Q \|_{\infty} = \max_{n=1,\ldots,N} \mid q_n \mid
 \end{equation}
 
 
@@ -1674,6 +1672,109 @@ driver code.
 \section{Mesquite Programming Framework}
 
 \subsection{Mesquite Repository} 
+
+The CVS repository is currently located on the unix NFS at mcs.anl.gov, for example log on to
+'shakey.mcs.anl.gov' and go to the directory '/home/mesquite/cvs'; the name of the CVS module is
+'mesquite'.
+
+Access to the mesquite repository requires an Argonne MCS account, which can be granted through Todd
+Munson, among others: tmunson@mcs.anl.gov .
+One way to use the cvs directory at argonne is through the ssh protocol, i.e. define the environment
+variable 'CVS\_RSH' to be 'ssh' and for example, checking out a working copy would require the
+following command, where :ext: will require CVS to consult the 'CVS\_RSH' variable: 
+\begin{verbatim}
+cvs -d :ext:username@shakey.mcs.anl.gov:/home/mesquite/cvs co mesquite
+\end{verbatim}
+
+\subsection{Mesquite Makefile} 
+
+The mesquite makefile is \emph{not} a recursive makefile, i.e. a makefile that tells sub-directories
+to execute their own makefile. Instead, it includes all variables from sub-directories into one main
+makefile located in the main mesquite/ directory and called GNUmakefile.
+
+Here we describe simple procedures needed for code development.
+
+\subsubsection{Adding a header file within an existing directory}
+
+Since adding a header file (.hpp) does not require to compile an extra objet file, no action is
+needed in order for the makefile to use the header file. Just run 'gmake clean; gmake' in order for
+the makefile to rerun its symbolinc links section or altenatively, create a symbolic link manually from
+'mesquite/includeLinks' to the new header file.
+
+\subsubsection{Adding a file within an existing directory}
+
+When adding a '.cpp' file to an existing directory,  one needs to notify the makefile that a new
+object file (.o) needs to be compiled. This is not done automatically in order to provide some
+versatility.
+
+Simply edit the 'MakefileVariables.inc' file within the directory where your new .cpp file has been added. The first
+variable defines the current directory, let's call it CURRENTDIR. The second variable describes the
+sources in the present directory (let's call it CONTROLSRC): that's the variable you need to add
+your new file name to. For example, the MakefileVariables.inc file used to start with: 
+\begin{verbatim}
+CURRENTDIR = $(srcdir)/dir1
+
+CURRENTSRC = $(CURRENTDIR)/file1.cpp \
+            $(CURRENTDIR)/file2.cpp
+\end{verbatim}
+and it now starts with:
+\begin{verbatim}
+CURRENTDIR = $(srcdir)/dir1
+
+CURRENTSRC = $(CURRENTDIR)/file1.cpp \
+            $(CURRENTDIR)/file2.cpp \
+            $(CURRENTDIR)/file3.cpp
+\end{verbatim}
+That's it, you can now run gmake from the 'mesquite'directory 
+and it will pick up all dependencies and include your new file in
+the mesquite library.
+
+\subsubsection{Adding a directory within the source tree}
+
+To add a new directory to the source tree, you need two files 
+in the new directory: the 'MakefileVariables.inc' file and
+ the 'MakefileTargets.inc' file. For example, copy those files from 
+ the mesquite/src/Control directory and replace the string 'CONTROL' in 
+those two files by a string unique to your new directory (for example 
+'CONTROLSRC' becomes 'NEWDIRSRC'). Make sure not to miss any querry/replace.
+
+You can now define the new directory location and the new source files 
+names in the 'MakefileVariables.inc' file, as explained in the 
+previous section.
+
+Finally, you need to add the new directory to the MODULENAMES variable in the main makefile
+mesquite/GNUmakefile, and you can run gmake. 
+
+\subsubsection{Adding a new driver code}
+
+To add a new driver code (e.g. mesquite/testSuite/test\_1/main.cpp), 
+copy to a new directory under 'mesquite/testSuite/' the
+'mesquite/testSuite/test\_1/Makefile.inc' file and change 
+within that file the string TEST1 to a new unique string. 
+Now, add the new directory to the TESTNAMES variable within 
+'mesquite/GNUmakefile'. 
+
+To compile the new driver, go to the main 'mesquite/' directory and type:
+\begin{verbatim}
+gmake mesquite/yournewdir/main
+\end{verbatim}
+where main will be the executable name (note that this name can be 
+changed in the third variable in Makefile.inc).
+
+
+\subsection{Unit Test Suite Makefile}
+
+The unit test suite, located in 'mesquite/testSuite/unit/' has its 
+own makefile. It is not as robust as the main mesquite makefile and can 
+be improved (it does not pick up all dependencies properly).
+
+To compile the unit test suite, go into 'mesquite/testSuite/unit/' 
+and type 'gmake'. 
+
+As you modify the test suite and mesquite in parallel, you might 
+need to use 'gmake clean; gmake' to pick up some dependencies ... 
+or you could improve the makefile. 
+
 
 \subsection{Directory Structure}
 
