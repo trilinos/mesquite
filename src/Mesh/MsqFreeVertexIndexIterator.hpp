@@ -35,21 +35,21 @@
 #ifndef MsqFreeVertexIndexIterator_hpp
 #define MsqFreeVertexIndexIterator_hpp
 
-#ifdef USE_C_PREFIX_INCLUDES
-#include <cstddef>
-#include <cstdlib>
+#ifdef MSQ_USE_OLD_C_HEADERS
+#  include <stdlib.h>
+#  include <stddef.h>
 #else
-#include <stddef.h>
-#include <stdlib.h>
+#  include <cstddef>
+#  include <cstdlib>
 #endif
 
 #include "Mesquite.hpp"
 #include "MsqVertex.hpp"
 #include "PatchData.hpp"
-#include "MesquiteError.hpp"
 
 namespace Mesquite
 {
+  class MsqError;
 
   /*! \class MsqFreeVertexIndexIterator
     \brief iterates over indexes of free vetices in a PatchData.
@@ -83,8 +83,6 @@ namespace Mesquite
   };
   
 
-#undef __FUNC__
-#define __FUNC__ "MsqFreeVertexIndexIterator::next"
   /*! \fn inline bool MsqFreeVertexIndexIterator::next() */
   inline bool MsqFreeVertexIndexIterator::next()
   {

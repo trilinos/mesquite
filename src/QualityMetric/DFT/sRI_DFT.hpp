@@ -38,8 +38,7 @@ Header file for the Mesquite::sRI_DFT class
 #define sRI_DFT_hpp
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
-#include "MsqMessage.hpp"
+#include "MsqError.hpp"
 #include "DistanceFromTarget.hpp"
 
 namespace Mesquite

@@ -1,14 +1,17 @@
 MISCDIR = $(srcdir)/Misc
 
-MISCSRC = $(MISCDIR)/MesquiteError.cpp \
-	       $(MISCDIR)/MsqTimer.cpp \
-	       $(MISCDIR)/MsqMessage.cpp \
-	       $(MISCDIR)/MsqHessian.cpp \
-	       $(MISCDIR)/PlanarDomain.cpp \
-	       $(MISCDIR)/SphericalDomain.cpp \
-	       $(MISCDIR)/MesquiteVersion.cpp \
-	       $(MISCDIR)/MesquiteInterrupt.cpp \
-	       $(MISCDIR)/FileTokenizer.cpp
+MISCSRCFILES = FileTokenizer.cpp \
+               MesquiteVersion.cpp \
+               MsqDebug.cpp \
+               MsqError.cpp \
+               MsqHessian.cpp \
+               MsqInterrupt.cpp \
+               MsqTimer.cpp \
+               PlanarDomain.cpp \
+               SphericalDomain.cpp \
+               Vector3D.cpp
+
+MISCSRC = $(MISCSRCFILES:%=$(MISCDIR)/%)
 
 MISCHEADERS = \
 	$(patsubst $(MISCDIR)/%,$(localincludedir)/%,\

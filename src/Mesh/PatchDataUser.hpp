@@ -35,7 +35,12 @@
 #ifndef PatchDataUser_hpp
 #define PatchDataUser_hpp
 
-#ifdef USE_C_PREFIX_INCLUDES
+#include "Mesquite.hpp"
+#include "MsqError.hpp"
+#include "PatchData.hpp"
+#include "TargetCalculator.hpp"
+
+#ifndef MSQ_USE_OLD_C_HEADERS
 #include <cstddef>
 #include <cstdlib>
 #include <cstdio>
@@ -45,12 +50,6 @@
 #include <stdio.h>
 #endif
 
-#include "Mesquite.hpp"
-#include "MesquiteError.hpp"
-#include "PatchData.hpp"
-#include "TargetCalculator.hpp"
-
-MSQ_USE(string);
 
 namespace Mesquite
 {
@@ -222,7 +221,7 @@ namespace Mesquite
     //! This is the "run" function of PatchDataUser. It can do anything really. 
     virtual double loop_over_mesh(MeshSet &ms, MsqError &err) = 0;
     //! Returns the algorithm name
-    virtual string get_name() = 0;
+    virtual msq_std::string get_name() = 0;
     enum AlgorithmType { QUALITY_IMPROVER, QUALITY_ASSESSOR};
     //! Return the algorithm type (to avoid RTTI use). 
     virtual enum AlgorithmType get_algorithm_type() = 0;
@@ -232,8 +231,6 @@ namespace Mesquite
   };
   
 
-#undef __FUNC__
-#define __FUNC__ "PatchDataParameter::set_patch_type"
   /*! \fn PatchDataParameters::set_patch_type(PatchData::PatchType patch_type, MsqError &err, int patch_param1, int patch_param2)
       This function can be over-ridden by the concrete PatchDataUser, in order to cusotomize the Patches available to for the specific algorithm implemented. 
 
@@ -248,7 +245,8 @@ namespace Mesquite
     if ( patch_type != PatchData::ELEMENTS_ON_VERTEX_PATCH
 	 && patch_type != PatchData::GLOBAL_PATCH )
       {
-	err.set_msg("VERTICES_ON_ELEMENT_PATCH not supported yet.");
+	MSQ_SETERR(err)("VERTICES_ON_ELEMENT_PATCH not supported yet.",
+                        MsqError::NOT_IMPLEMENTED);
 	return;
       }
     
@@ -256,8 +254,9 @@ namespace Mesquite
       {
         if (patch_param1 < 1)
         {
-          err.set_msg("ELEMENTS_ON_VERTEX_PATCH must have the number of layers in patch_param1.");
-	return;
+	  MSQ_SETERR(err)("ELEMENTS_ON_VERTEX_PATCH not supported yet.",
+                          MsqError::NOT_IMPLEMENTED);
+	  return;
         }
       }
     
@@ -269,20 +268,16 @@ namespace Mesquite
   }
   
   
-#undef __FUNC__
-#define __FUNC__ "PatchDataParameter::get_nb_layers"
   inline int PatchDataParameters::get_nb_layers(MsqError &err)
   {
     if (mType == PatchData::GLOBAL_PATCH) {
-      err.set_msg("Patch Type is GLOBAL_PATCH.");
+      MSQ_SETERR(err)("Patch Type is GLOBAL_PATCH.", MsqError::INVALID_STATE);
       return 0;
     }
 
     return mParam1;
   }
   
-#undef __FUNC__
-#define __FUNC__ "PatchDataParameters::add_culling_method"
   /*! \fn PatchDataParameters::add_culling_method(enum PatchData::culling_method cm)
    */
   inline void PatchDataParameters::add_culling_method(enum PatchData::culling_method cm)
@@ -290,8 +285,6 @@ namespace Mesquite
     cullingMethodBits |= cm;
   }
   
-#undef __FUNC__
-#define __FUNC__ "PatchDataParameters::no_culling_method"
   /*! \fn PatchDataParameters::no_culling_method()
    */
   inline void PatchDataParameters::no_culling_method()
@@ -299,8 +292,6 @@ namespace Mesquite
     cullingMethodBits = 0;
   }
   
-#undef __FUNC__
-#define __FUNC__ "PatchDataParameters::remove_culling_method"
   /*! \fn PatchDataParameters::remove_culling_method(enum PatchData::culling_method cm)
    */
   inline void PatchDataParameters::remove_culling_method(enum PatchData::culling_method cm)
@@ -309,26 +300,24 @@ namespace Mesquite
   }
   
 
-#undef __FUNC__
-#define __FUNC__ "PatchDataParameters::set_global_patch"
   inline void PatchDataParameters::set_global_patch(PatchData* pd, MsqError &err)
   {
     if (get_patch_type() != PatchData::GLOBAL_PATCH)
-      err.set_msg("Trying to set a global patch whereas the "
+      MSQ_SETERR(err)("Trying to set a global patch whereas the "
                   "PatchType is set to something else\n."
-                  "Consider using the function no_global_patch().");
+                  "Consider using the function no_global_patch().",
+                  MsqError::INVALID_STATE);
     else { 
       globalPatch = pd;
     }
   }
 
 
-#undef __FUNC__
-#define __FUNC__ "PatchDataParameters::set_target_calculator"
   inline void PatchDataParameters::set_target_calculator(TargetCalculator* target, MsqError &err)
   {
     if (target == 0) {
-      err.set_msg("Use PatchDataParameters::no_target_calculator.");
+      MSQ_SETERR(err)("Use PatchDataParameters::no_target_calculator.",
+                      MsqError::INVALID_STATE);
       return;
     }
     mTarget = target;

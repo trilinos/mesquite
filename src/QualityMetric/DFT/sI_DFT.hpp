@@ -38,8 +38,7 @@ Header file for the Mesquite::sI_DFT class
 #define sI_DFT_hpp
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
-#include "MsqMessage.hpp"
+#include "MsqError.hpp"
 #include "DistanceFromTarget.hpp"
 
 namespace Mesquite
@@ -55,7 +54,7 @@ namespace Mesquite
     sI_DFT()
     {
       MsqError err;
-      set_averaging_method(LINEAR, err); MSQ_CHKERR(err);
+      set_averaging_method(LINEAR, err); 
       set_metric_type(ELEMENT_BASED);
       set_gradient_type(NUMERICAL_GRADIENT);
       set_hessian_type(NUMERICAL_HESSIAN);

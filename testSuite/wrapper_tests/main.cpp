@@ -43,34 +43,30 @@ Calls the Mesquite wrappers. First command line argument is the mesh file.
 // DESCRIP-END.
 //
 
-#ifdef USE_STD_INCLUDES
+#include "Mesquite.hpp"
+#include "MeshImpl.hpp"
+#include "MsqError.hpp"
+#include "MeshSet.hpp"
+
+#ifndef MSQ_USE_OLD_IO_HEADERS
 #include <iostream>
+using std::cout;
+using std::endl;
 #else
 #include <iostream.h>
 #endif
 
-#ifdef USE_C_PREFIX_INCLUDES
+#ifdef MSQ_USE_OLD_C_HEADERS
 #include <cstdlib>
 #else
 #include <stdlib.h>
 #endif
-
-
-#include "Mesquite.hpp"
-#include "MeshImpl.hpp"
-#include "MesquiteError.hpp"
-#include "MeshSet.hpp"
 
 // algorythms
 #include "ShapeImprovementWrapper.hpp"
 
 using namespace Mesquite;
 
-using std::cout;
-using std::endl;
-
-#undef __FUNC__
-#define __FUNC__ "main"
 int main(int argc, char* argv[])
 {
   Mesquite::MsqError err;
@@ -96,18 +92,18 @@ int main(int argc, char* argv[])
   // initialises a MeshSet object
   MeshSet mesh_set1;
   mesh_set1.add_mesh(mesh, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
 
   // creates a wrapper
-  ShapeImprovementWrapper wrapper;
+  ShapeImprovementWrapper wrapper(err); if (err) return 1;
 
 //  mesh->write_vtk("original_mesh",err); MSQ_CHKERR(err);
   
   // launches optimization on mesh_set1
   wrapper.run_instructions(mesh_set1, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   
 //  mesh->write_vtk("smoothed_mesh", err); MSQ_CHKERR(err);
-  Message::print_timing_diagnostics();
+  print_timing_diagnostics(cout);
   return 0;
 }

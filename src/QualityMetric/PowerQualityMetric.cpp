@@ -35,17 +35,17 @@
 #include "PowerQualityMetric.hpp"
 #include "QualityMetric.hpp"
 #include "Vector3D.hpp"
-#include "MsqMessage.hpp"
+#include "MsqDebug.hpp"
 
 using namespace Mesquite;
-#undef __FUNC__
-#define __FUNC__ "PowerQualityMetric::PowerQualityMetric"
 
 PowerQualityMetric::PowerQualityMetric(QualityMetric* qm1,
                                        double pow_factor,
                                        MsqError &err){
   if(qm1 == NULL){
-    err.set_msg("PowerQualityMetric constructor passed NULL pointer.");
+    MSQ_SETERR(err)("PowerQualityMetric constructor passed NULL pointer.",
+                    MsqError::INVALID_ARG);
+    return;
   }
   set_scalealpha(pow_factor);
   set_qmetric1(qm1);
@@ -56,7 +56,9 @@ PowerQualityMetric::PowerQualityMetric(QualityMetric* qm1,
     //then we just set an error.
   if(fabs(pow_factor)<MSQ_MIN)
   {
-    err.set_msg("PowerQualityMetric passed a double smaller than Mesquite's minimum.");
+    MSQ_SETERR(err)("PowerQualityMetric passed a double smaller than "
+                    "Mesquite's minimum.", MsqError::INVALID_ARG);
+    return;
   }
   else if(pow_factor<0)
   {
@@ -70,9 +72,6 @@ PowerQualityMetric::PowerQualityMetric(QualityMetric* qm1,
   set_name("Composite Power");
 }
 
-#undef __FUNC__
-#define __FUNC__ "PowerQualityMetric::evaluate_element"
-
 /*! Returns qMetric1->evaluate_element(element, err) raised to the
  scaleAlpha power.  This function uses the math function pow(...).*/
 bool PowerQualityMetric::evaluate_element(PatchData& pd,
@@ -82,15 +81,13 @@ bool PowerQualityMetric::evaluate_element(PatchData& pd,
 {
   bool valid_flag;
   double metric1;
-  valid_flag=get_qmetric1()->evaluate_element(pd, element, metric1, err);
+  valid_flag=get_qmetric1()->evaluate_element(pd, element, metric1, err); MSQ_ERRZERO(err);
   if(!valid_flag)
     return false;
   value = pow(metric1,get_scalealpha());
   return valid_flag;
 }
 
-#undef __FUNC__
-#define __FUNC__ "PowerQualityMetric::evaluate_vertex"
 /*! Returns qMetric1->evaluate_vertex(...) raised to the scaleAlpha power.
   This function uses the math function pow(...).*/
 bool PowerQualityMetric::evaluate_vertex(PatchData& pd,
@@ -100,7 +97,7 @@ bool PowerQualityMetric::evaluate_vertex(PatchData& pd,
 {
   bool valid_flag;
   double metric1;
-  valid_flag=get_qmetric1()->evaluate_vertex(pd, vert, metric1, err);
+  valid_flag=get_qmetric1()->evaluate_vertex(pd, vert, metric1, err); MSQ_ERRZERO(err);
   if(!valid_flag)
     return false;
   value = pow(metric1,get_scalealpha());

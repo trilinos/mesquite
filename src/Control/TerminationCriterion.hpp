@@ -39,18 +39,18 @@ Header file for the TerminationCriterion classes.
 #ifndef TerminationCriterion_hpp
 #define TerminationCriterion_hpp
 
-#include <string>
-
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
-#include "PatchData.hpp"
-#include "ObjectiveFunction.hpp"
-#include "MsqTimer.hpp"
 #include "PatchDataUser.hpp"
+#include "MsqTimer.hpp"
+
+#include <string>
 
 namespace Mesquite
 {
    class MeshSet;
+   class MsqError;
+   class ObjectiveFunction;
+   
   /*! \class TerminationCriterion
 
       \brief The TerminationCriterion class contains functionality to

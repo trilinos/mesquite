@@ -38,8 +38,6 @@ Header file for the Mesquite::LVQDTargetCalculator class
 #define LVQDTargetCalculators_hpp
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
-#include "MsqMessage.hpp"
 #include "TargetCalculator.hpp"
 
 namespace Mesquite

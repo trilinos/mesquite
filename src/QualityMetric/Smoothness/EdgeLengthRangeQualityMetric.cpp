@@ -33,19 +33,23 @@
 
 
 #include "EdgeLengthRangeQualityMetric.hpp"
-#include <math.h>
-#include <list>
 #include "Vector3D.hpp"
 #include "QualityMetric.hpp"
 #include "MsqVertex.hpp"
 #include "PatchData.hpp"
-#include "MsqMessage.hpp"
+#include "MsqDebug.hpp"
+
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#  include <vector.h>
+#else
+#  include <vector>
+   using std::vector;
+#endif
+
+
 using namespace Mesquite;
-MSQ_USE(vector);
 
 
-#undef __FUNC__
-#define __FUNC__ "EdgeLengthRangeQualityMetric::evaluate_node"
 /*!For the given vertex, vert, with connected edges of lengths l_j for
   j=1...k, the metric value is the average (where the default average
   type is SUM) of
@@ -60,10 +64,10 @@ bool EdgeLengthRangeQualityMetric::evaluate_vertex(PatchData &pd, MsqVertex* ver
   size_t other_vert;
   vector<size_t> adj_verts;
   Vector3D edg;
-  pd.get_adjacent_vertex_indices(this_vert,adj_verts,err);
+  pd.get_adjacent_vertex_indices(this_vert,adj_verts,err);  MSQ_ERRZERO(err);
   int num_sample_points=adj_verts.size();
   double *metric_values=new double[num_sample_points];
-  MsqVertex* verts = pd.get_vertex_array(err);
+  MsqVertex* verts = pd.get_vertex_array(err);  MSQ_ERRZERO(err);
   int point_counter=0;
     //store the length of the edge, and the first and second component of
     //metric values, respectively.
@@ -94,7 +98,7 @@ bool EdgeLengthRangeQualityMetric::evaluate_vertex(PatchData &pd, MsqVertex* ver
     ++point_counter;
   }
     //average the metric values of the edges
-  fval=average_metrics(metric_values,num_sample_points,err);
+  fval=average_metrics(metric_values,num_sample_points,err);  MSQ_ERRZERO(err);
     //clean up
   delete[] metric_values;
     //always return true because mesh is always valid wrt this metric.

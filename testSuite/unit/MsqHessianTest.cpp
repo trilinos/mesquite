@@ -79,8 +79,8 @@ private:
 public:
   void setUp()
   {
-    MsqError err;
-    create_two_tri_patch(twoTriangles, err); CPPUNIT_ASSERT(!err.errorOn);
+    MsqPrintError err(cout);
+    create_two_tri_patch(twoTriangles, err); CPPUNIT_ASSERT(!err);
   }
 
   void tearDown()
@@ -93,9 +93,9 @@ public:
 
   void test_initialize()
   {
-    MsqError err;
+    MsqPrintError err(cout);
     
-    MsqHessian::initialize(twoTriangles, err); CPPUNIT_ASSERT(!err.errorOn);
+    MsqHessian::initialize(twoTriangles, err); CPPUNIT_ASSERT(!err);
 
     // Checks values of mRowStart are correct.
     size_t row_start[] = {0, 4, 7, 8, 9};
@@ -121,9 +121,9 @@ public:
   
   void test_axpy()
   {
-    MsqError err;
+    MsqPrintError err(cout);
     
-    MsqHessian::initialize(twoTriangles, err); CPPUNIT_ASSERT(!err.errorOn);
+    MsqHessian::initialize(twoTriangles, err); CPPUNIT_ASSERT(!err);
 
     size_t hs = MsqHessian::size();
 
@@ -141,12 +141,12 @@ public:
     blocks[4] = "2 4 7   3 2 7   1 4 3 ";
     blocks[5] = "8 4 9   4 5 7   9 7 3 ";
 
-    accumulate_entries(twoTriangles, 0, blocks, err); CPPUNIT_ASSERT(!err.errorOn);
+    accumulate_entries(twoTriangles, 0, blocks, err); CPPUNIT_ASSERT(!err);
 
     blocks[2] += blocks[5];
     blocks[5] = blocks[3];
     
-    accumulate_entries(twoTriangles, 1, blocks, err); CPPUNIT_ASSERT(!err.errorOn);
+    accumulate_entries(twoTriangles, 1, blocks, err); CPPUNIT_ASSERT(!err);
 
     Matrix3D entries_6_ans("2 3 1   4 2 4   7 7 3");
     CPPUNIT_ASSERT( mEntries[6] == entries_6_ans );
@@ -161,7 +161,7 @@ public:
     y[2].set(0, 0, 0);
     y[3].set(0, 0, 0);
 
-    axpy(res, hs, *this, x, hs, y, hs, err); CPPUNIT_ASSERT(!err.errorOn);
+    axpy(res, hs, *this, x, hs, y, hs, err); CPPUNIT_ASSERT(!err);
 
     ans[0].set(636, 635, 453);
     ans[1].set(365, 460, 461);
@@ -182,7 +182,7 @@ public:
     ans[2].set(153, 205, 229);
     ans[3].set(168, 208, 178);
 
-    axpy(res, hs, *this, x, hs, y, hs, err); CPPUNIT_ASSERT(!err.errorOn);
+    axpy(res, hs, *this, x, hs, y, hs, err); CPPUNIT_ASSERT(!err);
 
     for (size_t i=0; i<hs; ++i)
       CPPUNIT_ASSERT( res[i] == ans[i] );
@@ -196,9 +196,9 @@ public:
   
   void test_cg_solver()
   {
-    MsqError err;
+    MsqPrintError err(cout);
     
-    MsqHessian::initialize(twoTriangles, err); CPPUNIT_ASSERT(!err.errorOn);
+    MsqHessian::initialize(twoTriangles, err); CPPUNIT_ASSERT(!err);
 
     size_t hs = MsqHessian::size();
 
@@ -216,19 +216,19 @@ public:
     blocks[4] = "2 4 7   3 2 7   1 4 3 ";
     blocks[5] = "18 4 9   4 15 7   9 7 13 ";
 
-    accumulate_entries(twoTriangles, 0, blocks, err); CPPUNIT_ASSERT(!err.errorOn);
+    accumulate_entries(twoTriangles, 0, blocks, err); CPPUNIT_ASSERT(!err);
 
     blocks[2] -= blocks[5];
     blocks[5] = blocks[3];
     
-    accumulate_entries(twoTriangles, 1, blocks, err); CPPUNIT_ASSERT(!err.errorOn);
+    accumulate_entries(twoTriangles, 1, blocks, err); CPPUNIT_ASSERT(!err);
         
     y[0].set(3, 2, 6);
     y[1].set(1, 2, 4);
     y[2].set(3, 6, 9);
     y[3].set(2, 4, 4);
 
-    cg_solver(x, y, err); CPPUNIT_ASSERT(!err.errorOn);
+    cg_solver(x, y, err); CPPUNIT_ASSERT(!err);
 
 //     for (int i=0; i<4; ++i) 
 //       cout << x[i];
@@ -251,9 +251,9 @@ public:
 
     void test_cholesky_preconditioner()
   {
-    MsqError err;
+    MsqPrintError err(cout);
 
-    MsqHessian::initialize(twoTriangles, err); CPPUNIT_ASSERT(!err.errorOn);
+    MsqHessian::initialize(twoTriangles, err); CPPUNIT_ASSERT(!err);
     MsqHessian::zero_out();
 
     Matrix3D blocks[6]; // 6 blocks correspond to a triangular element (n+1)n/2 .
@@ -267,9 +267,9 @@ public:
     blocks[4] = "0 0 0   0 0 0   0 0 0 ";
     blocks[5] = "0 0 0   0 0 0   0 0 0 ";
 
-    accumulate_entries(twoTriangles, 0, blocks, err); CPPUNIT_ASSERT(!err.errorOn);
+    accumulate_entries(twoTriangles, 0, blocks, err); CPPUNIT_ASSERT(!err);
 
-    MsqHessian::compute_preconditioner(err); CPPUNIT_ASSERT(!err.errorOn);
+    MsqHessian::compute_preconditioner(err); CPPUNIT_ASSERT(!err);
     Matrix3D block_0 = mPreconditioner[0];
 
     Matrix3D correct(" 0.5  0.5  0.5 "

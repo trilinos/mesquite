@@ -35,21 +35,25 @@ Header file for the Mesquite::InstructionQueue class
  */
 
 
-#ifndef MSQ_INSTRUCTIONQUEUE_HPP
-#define MSQ_INSTRUCTIONQUEUE_HPP
+#ifndef MSQ_INSTRUCTION_QUEUE_HPP
+#define MSQ_INSTRUCTION_QUEUE_HPP
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
-#include "QualityAssessor.hpp"
-#include "QualityImprover.hpp"
-#include <list>
 
-MSQ_USE(list);
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#  include <list.h>
+#else
+#  include <list>
+#endif
 
 namespace Mesquite {
 
- // class QualityAssessor;
-//  class QualityImprover;
+  class MsqError;
+  class QualityImprover;
+  class QualityAssessor;
+  class MeshSet;
+  class PatchDataUser;
+  class PatchData;
 
   /*! \class InstructionQueue
     \brief An InstructionQueue object gathers Mesquite Instructions and ensures
@@ -95,9 +99,9 @@ namespace Mesquite {
   protected:
     
   private:
-    list<PatchDataUser*>::iterator clear_master(MsqError &err);
+    msq_std::list<PatchDataUser*>::iterator clear_master(MsqError &err);
 
-    list<PatchDataUser*> instructions;
+    msq_std::list<PatchDataUser*> instructions;
 
     bool autoQualAssess;
     

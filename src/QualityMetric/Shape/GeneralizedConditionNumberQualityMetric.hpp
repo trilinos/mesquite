@@ -37,14 +37,14 @@ Header file for the Mesquite::GeneralizedConditionNumberQualityMetric class
 
 #ifndef GeneralizedConditionNumberQualityMetric_hpp
 #define GeneralizedConditionNumberQualityMetric_hpp
-#include "MsqMeshEntity.hpp"
+
+
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
+#include "MsqMeshEntity.hpp"
+#include "MsqError.hpp"
 #include "ShapeQualityMetric.hpp"
 #include "Vector3D.hpp"
 #include "PatchData.hpp"
-//Michael delete
-#include "MsqMessage.hpp"
 
 namespace Mesquite
 {
@@ -98,7 +98,7 @@ namespace Mesquite
        Vector3D cross_vec=jacobian_vectors[0]*jacobian_vectors[1];
        if ( pd.domain_set() ) {
          Vector3D norm_vec;
-         pd.get_domain_normal_at_vertex(vert,false,norm_vec,err);MSQ_CHKERR(err);
+         pd.get_domain_normal_at_vertex(vert,false,norm_vec,err);MSQ_ERRZERO(err);
          if(cross_vec%norm_vec<0.0){
            return false;
          }

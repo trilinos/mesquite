@@ -1,11 +1,16 @@
 #ifndef FILE_TOKENIZER_HPP
 #define FILE_TOKENIZER_HPP
 
-#include "MesquiteError.hpp"
-#include <stdio.h>
+#ifdef MSQ_USE_OLD_C_HEADERS
+#  include <stdio.h>
+#else
+#  include <cstdio>
+#endif
 
 namespace Mesquite
 {
+
+  class MsqError;
 
 /** 
  * \class  FileTokenizer
@@ -171,14 +176,6 @@ class FileTokenizer
        *         string, or zero if no match.
        */
     int match_token( const char* const* string_list, MsqError& err );
-    
-      /**
-       * Utility function for parser errors.
-       * Set the message in the passed MsqError object to
-       * be the passed prefix stirng with " at line <linenumber>"
-       * appended to it.
-       */
-    void set_error( MsqError& err, const char* prefix );
   
   private:
   

@@ -37,11 +37,10 @@ Header file for the Mesquite::EdgeLengthRangeQualityMetric class
 
 #ifndef EdgeLengthRangeQualityMetric_hpp
 #define EdgeLengthRangeQualityMetric_hpp
-#include "MsqMeshEntity.hpp"
+
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
+#include "MsqError.hpp"
 #include "SmoothnessQualityMetric.hpp"
-#include "Vector3D.hpp"
 
 namespace Mesquite
 {
@@ -69,7 +68,8 @@ namespace Mesquite
     EdgeLengthRangeQualityMetric(double low_a, double high_a, MsqError &err)
        {
          if(low_a>high_a){
-           err.set_msg("Edge Length Range values given in descending order.");
+           MSQ_SETERR(err)("Edge Length Range values given in descending order.",
+                           MsqError::INVALID_ARG);
          }
          lowVal=low_a;
          highVal=high_a;

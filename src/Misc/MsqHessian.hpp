@@ -31,7 +31,7 @@
 //    E-MAIL: tmunson@mcs.anl.gov
 //
 // ORIG-DATE:  2-Jan-03 at 11:02:19 bu Thomas Leurent
-//  LAST-MOD: 19-May-03 at 13:11:09 by Michael Brewer
+//  LAST-MOD:  5-Oct-04 by Jason Kraftcheck
 //
 // DESCRIPTION:
 // ============
@@ -54,21 +54,15 @@
 #include "PatchData.hpp"
 #include "MsqTimer.hpp"
 
-#ifdef USE_C_PREFIX_INCLUDES
-#include <cassert>
+
+
+#ifdef MSQ_USE_OLD_IO_HEADERS
+class ostream;
 #else
-#include <assert.h>
-#endif
-#ifdef USE_STD_INCLUDES
-#include <iostream>
-#else
-#include <iostream.h>
+#include <iosfwd>
 #endif
 
  
-MSQ_USE(vector);
-MSQ_USE(ostream);
-
 namespace Mesquite
 {
   class ObjectiveFunction;
@@ -85,11 +79,11 @@ namespace Mesquite
       MsqMeshEntity* patchElemArray; //!< stored once during initialization for
       //!< fast access.
      
-      Matrix3D* mEntries;	//!< CSR block entries. size: nb of nonzero blocks, i.e. mRowStart[mSize] . 
-      size_t* mRowStart;	//!< start of each row in mEntries. size: nb of vertices (mSize).
+      Matrix3D* mEntries;        //!< CSR block entries. size: nb of nonzero blocks, i.e. mRowStart[mSize] . 
+      size_t* mRowStart;        //!< start of each row in mEntries. size: nb of vertices (mSize).
       size_t* mColIndex;  //!< CSR block structure: column indexes of the row entries. 
 
-      int* mAccumulation;	   //!< accumulation pattern instructions
+      int* mAccumulation;           //!< accumulation pattern instructions
       size_t* mAccumElemStart;  //!< Starting index in mAccumulation for element i, i=1,...
 
       size_t mSize; //!< number of rows (or number of columns, this is a square matrix).
@@ -112,25 +106,23 @@ namespace Mesquite
       inline void zero_out();
       size_t size() {return mSize;}
       //! returns the diagonal blocks, memory must be allocated before call.
-      void get_diagonal_blocks(vector<Matrix3D> &diag, MsqError &err);
+      void get_diagonal_blocks(msq_std::vector<Matrix3D> &diag, MsqError &err);
       Matrix3D* get_block(size_t i, size_t j);
       inline void accumulate_entries(PatchData &pd, const size_t &elem_index,
-				     Matrix3D* const &mat3d_array, MsqError &err);
+                                     Matrix3D* const &mat3d_array, MsqError &err);
       void compute_preconditioner(MsqError &err);
       
       void apply_preconditioner(Vector3D zloc[], Vector3D rloc[], MsqError &err);
       void cg_solver(Vector3D x[], Vector3D b[], MsqError &err);
       //! Hessian - vector product, summed with a second vector (optional).
       friend void axpy(Vector3D res[], size_t size_r,
-		       const MsqHessian &H, const Vector3D x[], size_t size_x,
-		       const Vector3D y[], size_t size_y, MsqError &err);
+                       const MsqHessian &H, const Vector3D x[], size_t size_x,
+                       const Vector3D y[], size_t size_y, MsqError &err);
       friend class ObjectiveFunction;
-      friend ostream& operator<<(ostream &s, const MsqHessian &h);
+      friend msq_stdio::ostream& operator<<( msq_stdio::ostream&, const MsqHessian& );
     };
 
 
-#undef __FUNC__
-#define __FUNC__ "MsqHessian::zero_out"
   /*! Sets all Hessian entries to zero. This is usually used before 
     starting to accumulate elements hessian in the objective function
     hessian. */
@@ -140,13 +132,11 @@ namespace Mesquite
     
       size_t i;
       for (i=0; i<mRowStart[mSize]; ++i) {
-	mEntries[i].zero();
+        mEntries[i].zero();
       }
     }
 
   
-#undef __FUNC__
-#define __FUNC__ "MsqHessian::accumulate_entries"
   /*! Accumulates entries of an element hessian into an objective function
     hessian. Make sure to use zero_out() before starting the accumulation
     process. 
@@ -161,11 +151,15 @@ namespace Mesquite
     the number of nodes in the element.
   */
   inline void MsqHessian::accumulate_entries(PatchData &pd, const size_t &elem_index,
-					     Matrix3D* const &mat3d_array, MsqError &err)
+                                             Matrix3D* const &mat3d_array, MsqError &err)
     {
-      MSQ_DEBUG_ACTION(3,{if (&pd != origin_pd) {
-	err.set_msg("Cannot accumulate elements from a different patch. "
-		    "Use MsqHessian::initialize first."); return;}});
+      if (&pd != origin_pd) {
+        MSQ_SETERR(err)( 
+                    "Cannot accumulate elements from a different patch. "
+                    "Use MsqHessian::initialize first.",
+                    MsqError::INVALID_ARG ); 
+        return;
+      }
 
       size_t nve = pd.get_element_array(err)[elem_index].vertex_count(); 
       const size_t nb_mat3d = (nve+1)*nve/2;
@@ -175,15 +169,13 @@ namespace Mesquite
       int j;
       for (i = 0; i < nb_mat3d; ++i) {
         j = mAccumulation[e++];
-	if (j >= 0)
+        if (j >= 0)
           mEntries[j] += mat3d_array[i];
-	else
+        else
           mEntries[-j].plus_transpose_equal(mat3d_array[i]);
       }
     }
    
-#undef __FUNC__
-#define __FUNC__ "axpy"
   /*!
     \param res: array of Vector3D in which the result is stored.
     \param size_r: size of the res array.
@@ -197,8 +189,8 @@ namespace Mesquite
                    const Vector3D y[], size_t size_y, MsqError &/*err*/)
     {
       if ((size_r != H.mSize) || (size_x != H.mSize) ||
-	  (size_y != H.mSize && size_y != 0)) {
-	// throw an error
+          (size_y != H.mSize && size_y != 0)) {
+        // throw an error
       }
 
       Vector3D tmpx, tmpm; // for cache opt.
@@ -211,76 +203,72 @@ namespace Mesquite
       size_t i, j;
      
       if (y != 0) {
-	for (i = 0; i < nn; ++i) {
-	  res[i] = y[i];
-	}
+        for (i = 0; i < nn; ++i) {
+          res[i] = y[i];
+        }
       } 
       else {          // y == 0
-	for (i = 0; i < nn; ++i) {
-	  res[i] = 0.;
-	}
+        for (i = 0; i < nn; ++i) {
+          res[i] = 0.;
+        }
       }
       
       el = 0;
       for (i = 0; i < nn; ++i) {
-	rl = H.mRowStart[i+1] - H.mRowStart[i];
-	lo = *col++;
+        rl = H.mRowStart[i+1] - H.mRowStart[i];
+        lo = *col++;
 
-	// Diagonal entry
-	tmpx = x[i];
-	eqAx(tmpm, H.mEntries[el], tmpx);
-	++el;
-	
-	//Non-diagonal entries
-	for (j = 1; j < rl; ++j) {
-	  c = *col++;
-	  //          res[i] += H.mEntries[e] * x[c];
-	  plusEqAx(tmpm, H.mEntries[el], x[c]);
-	  //          res[c] += transpose(H.mEntries[e]) * tmpxi;
-	  plusEqTransAx(res[c], H.mEntries[el], tmpx);
-	  ++el;
-	}
-	res[lo] += tmpm;
+        // Diagonal entry
+        tmpx = x[i];
+        eqAx(tmpm, H.mEntries[el], tmpx);
+        ++el;
+        
+        //Non-diagonal entries
+        for (j = 1; j < rl; ++j) {
+          c = *col++;
+          //          res[i] += H.mEntries[e] * x[c];
+          plusEqAx(tmpm, H.mEntries[el], x[c]);
+          //          res[c] += transpose(H.mEntries[e]) * tmpxi;
+          plusEqTransAx(res[c], H.mEntries[el], tmpx);
+          ++el;
+        }
+        res[lo] += tmpm;
       }
     }
 
-#undef __FUNC__
-#define __FUNC__ "MsqHessian::apply_preconditioner"
   /*! Computes \f$ z=M^{-1}r \f$ . */
   inline void MsqHessian::apply_preconditioner(Vector3D zloc[],
-					       Vector3D rloc[],
-					       MsqError& /*err*/)
+                                               Vector3D rloc[],
+                                               MsqError& /*err*/)
     {
       size_t m;
 
       for (m=0; m<mSize; ++m) {
 #ifdef DIAGONAL_PRECONDITIONER
-	// preconditioner is identity matrix for now.
-	zloc[m][0] = mPreconditioner[m][0][0] * rloc[m][0]; 
-	zloc[m][1] = mPreconditioner[m][1][1] * rloc[m][1]; 
-	zloc[m][2] = mPreconditioner[m][2][2] * rloc[m][2]; 
+        // preconditioner is identity matrix for now.
+        zloc[m][0] = mPreconditioner[m][0][0] * rloc[m][0]; 
+        zloc[m][1] = mPreconditioner[m][1][1] * rloc[m][1]; 
+        zloc[m][2] = mPreconditioner[m][2][2] * rloc[m][2]; 
 #else
-	// z = inv(L^T) * r
-	zloc[m][0] = rloc[m][0];
-	zloc[m][1] = rloc[m][1] - mPreconditioner[m][0][1] * zloc[m][0];
-	zloc[m][2] = rloc[m][2] - mPreconditioner[m][0][2] * zloc[m][0] - mPreconditioner[m][1][2] * zloc[m][1];
+        // z = inv(L^T) * r
+        zloc[m][0] = rloc[m][0];
+        zloc[m][1] = rloc[m][1] - mPreconditioner[m][0][1] * zloc[m][0];
+        zloc[m][2] = rloc[m][2] - mPreconditioner[m][0][2] * zloc[m][0] - mPreconditioner[m][1][2] * zloc[m][1];
 
-	// z = inv(D) * z
-	zloc[m][0] *= mPreconditioner[m][0][0];
-	zloc[m][1] *= mPreconditioner[m][1][1];
-	zloc[m][2] *= mPreconditioner[m][2][2];
+        // z = inv(D) * z
+        zloc[m][0] *= mPreconditioner[m][0][0];
+        zloc[m][1] *= mPreconditioner[m][1][1];
+        zloc[m][2] *= mPreconditioner[m][2][2];
 
-	// z = inv(L) * z
-	zloc[m][2] = zloc[m][2];
-	zloc[m][1] = zloc[m][1] - mPreconditioner[m][1][2] * zloc[m][2];
-	zloc[m][0] = zloc[m][0] - mPreconditioner[m][0][1] * zloc[m][1] - mPreconditioner[m][0][2] * zloc[m][2];
+        // z = inv(L) * z
+        zloc[m][2] = zloc[m][2];
+        zloc[m][1] = zloc[m][1] - mPreconditioner[m][1][2] * zloc[m][2];
+        zloc[m][0] = zloc[m][0] - mPreconditioner[m][0][1] * zloc[m][1] - mPreconditioner[m][0][2] * zloc[m][2];
 #endif
       }
     }
 
   
-#undef __FUNC__
-#define __FUNC__ "MsqHessian::get_block"
   /*! Returns a pointer to the Matrix3D block at position i,j if it exist. 
     Returns the NULL pointer if position i,j (0-based) is a NULL entry.
     Note that block i,j must be in the upper triangular part of the 
@@ -288,13 +276,13 @@ namespace Mesquite
   inline Matrix3D* MsqHessian::get_block(size_t i, size_t j)
     {
       size_t c;
-      assert(i<mSize);
-      assert(j<mSize);
-      assert(j>=i);
+      
+      if (i >= mSize || j >= mSize || j < i)
+        return NULL;
 
       for (c=mRowStart[i]; c<mRowStart[i+1]; ++c) {
-	if (mColIndex[c] == j)
-	  return ( mEntries + c );
+        if (mColIndex[c] == j)
+          return ( mEntries + c );
       }
     
       // if there is no block at position i,j (zero entry).
@@ -304,21 +292,8 @@ namespace Mesquite
 
   /* ------------------ I/O ----------------- */
 
-  //! Prints out the MsqHessian blocks.
-  inline ostream& operator<<(ostream &s, const MsqHessian &h)
-    {
-      size_t i,j;
-      s << "MsqHessian of size: " << h.mSize <<"x"<< h.mSize << "\n";
-      for (i=0; i<h.mSize; ++i) {
-	s << " ROW " << i << " ------------------------\n";
-	for (j=h.mRowStart[i]; j<h.mRowStart[i+1]; ++j) {
-	  s << "   column " << h.mColIndex[j] << " ----\n";
-	  s << h.mEntries[j]; 
-	} 
-      }
-      return s;
-    }
-  
+ msq_stdio::ostream& operator<<(msq_stdio::ostream &s, const MsqHessian &h);
+
 } // namespace
 
 #endif // MsqHessian_hpp

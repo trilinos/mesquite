@@ -40,10 +40,9 @@
 #include <string>
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
+#include "MsqError.hpp"
 #include "TerminationCriterion.hpp"
 #include "PatchDataUser.hpp"
-MSQ_USE(string);
 
 namespace Mesquite
 {
@@ -67,13 +66,13 @@ namespace Mesquite
     virtual double loop_over_mesh(MeshSet &ms, MsqError &err) = 0;
 
     //! provides a name to the QualityImprover (use it in constructor).
-    void set_name(string name)
+    void set_name(msq_std::string name)
       {
         qualityImproverName = name;
       };
     
     //! retrieves the QualityImprover name. A default name should be set in the constructor.
-    virtual string get_name() { return qualityImproverName; }
+    virtual msq_std::string get_name() { return qualityImproverName; }
     virtual AlgorithmType get_algorithm_type() { return QUALITY_IMPROVER; }
 
       //!Sets in the termination criterion for the concrete solver's
@@ -126,7 +125,7 @@ namespace Mesquite
     
   private:
     MeshSet* mMeshSet;
-    string qualityImproverName;
+    msq_std::string qualityImproverName;
     int patchDepth;
     
     TerminationCriterion* innerTerminationCriterion;

@@ -31,7 +31,8 @@
 
   \author Thomas Leurent
   \date   2002-01-17
-*/#ifndef MSQ_SPHERICAL_DOMAIN_HPP
+*/
+#ifndef MSQ_SPHERICAL_DOMAIN_HPP
 #define MSQ_SPHERICAL_DOMAIN_HPP
 
 #include "MeshInterface.hpp"

@@ -36,16 +36,19 @@
 #include "QualityMetric.hpp"
 #include "MsqVertex.hpp"
 #include "MsqMeshEntity.hpp"
-#include "MsqMessage.hpp"
+#include "MsqDebug.hpp"
 #include "MsqTimer.hpp"
 #include "PatchData.hpp"
 
 using namespace Mesquite;
 
-MSQ_USE(vector);
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#  include <vector.h>
+#else
+#  include <vector>
+   using namespace std;
+#endif
 
-#undef __FUNC__
-#define __FUNC__ "QualityMetric::compute_element_hessian"
 /*!
   \param pd: PatchData that contains the element which Hessian we want.
 
@@ -94,8 +97,8 @@ bool QualityMetric::compute_element_hessian(PatchData &pd,
   for (i=0; i<num_free_vtx; ++i) {
     while ( *v != pd.get_vertex_index(free_vtces[i]) ) {
       if ( v==elem_vtx_indices.end() ) {
-        err.set_msg("free vertices cannot be given in a different"
-                    "order than the element's.");
+        MSQ_SETERR(err)("free vertices cannot be given in a different"
+                        "order than the element's.", MsqError::INTERNAL_ERROR);
         return false;
       }
       else  ++v;
@@ -109,20 +112,18 @@ bool QualityMetric::compute_element_hessian(PatchData &pd,
     case NUMERICAL_HESSIAN:
       ret = compute_element_numerical_hessian(pd, el, free_vtces, grad_vec, hessian,
                                               num_free_vtx, metric_value, err);
-      MSQ_CHKERR(err);
+      MSQ_ERRZERO(err);
       break;
     case ANALYTICAL_HESSIAN:
       ret = compute_element_analytical_hessian(pd, el, free_vtces, grad_vec, hessian,
                                                num_free_vtx, metric_value, err);
-      MSQ_CHKERR(err);
+      MSQ_ERRZERO(err);
       break;
     }
   return ret;
 }
    
    
-#undef __FUNC__
-#define __FUNC__ "QualityMetric::compute_vertex_analytical_gradient"
 /*! If that function is not over-riden in the concrete class, the base
     class function makes it default to a numerical gradient.
     \param vertex  Vertex which is considered free for purposes of computing the gradient.
@@ -138,23 +139,21 @@ bool QualityMetric::compute_vertex_analytical_gradient(PatchData &pd,
                                                        double &metric_value,
                                                        MsqError &err)
 {
-  Message::print_warning("QualityMetric has no analytical gradient defined. ",
+  MSQ_PRINT(1)("QualityMetric has no analytical gradient defined. "
                             "Defaulting to numerical gradient.\n");
   set_gradient_type(NUMERICAL_GRADIENT);
-  return compute_vertex_numerical_gradient(pd, vertex, free_vtces, grad_vec,
+  bool b = compute_vertex_numerical_gradient(pd, vertex, free_vtces, grad_vec,
                                            num_free_vtx, metric_value, err);
+  return !MSQ_CHKERR(err) && b;
 }
 
-#undef __FUNC__
-#define __FUNC__ "QualityMetric::change_metric_type"
 void QualityMetric::change_metric_type(MetricType /*t*/, MsqError &err)
 {
-  err.set_msg("This QualityMetric's MetricType can not be changed.");
+  MSQ_SETERR(err)("This QualityMetric's MetricType can not be changed.",
+                  MsqError::NOT_IMPLEMENTED);
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "QualityMetric::compute_element_analytical_gradient"
 /*! If that function is not over-riden in the concrete class, the base
 
     Parameters description, see QualityMetric::compute_element_gradient() .
@@ -167,15 +166,14 @@ bool QualityMetric::compute_element_analytical_gradient(PatchData &pd,
                                              int num_free_vtx, double &metric_value,
                                              MsqError &err)
 {
-  Message::print_warning("QualityMetric has no analytical gradient defined. ",
+  MSQ_PRINT(1)("QualityMetric has no analytical gradient defined. "
                 "Defaulting to numerical gradient.\n");
   set_gradient_type(NUMERICAL_GRADIENT);
-  return compute_element_numerical_gradient(pd, element, free_vtces, grad_vec, num_free_vtx, metric_value, err);
+  bool b = compute_element_numerical_gradient(pd, element, free_vtces, grad_vec, num_free_vtx, metric_value, err);
+  return !MSQ_CHKERR(err) && b;
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "QualityMetric::compute_element_analytical_hessian"
 /*! If that function is not over-riden in the concrete class, the base
   class function makes it default to a numerical hessian.
   
@@ -190,16 +188,15 @@ bool QualityMetric::compute_element_analytical_hessian(PatchData &pd,
                                              int num_free_vtx, double &metric_value,
                                              MsqError &err)
 {
-  Message::print_warning("QualityMetric has no analytical hessian defined. ",
+  MSQ_PRINT(1)("QualityMetric has no analytical hessian defined. "
                 "Defaulting to numerical hessian.\n");
   set_hessian_type(NUMERICAL_HESSIAN);
-  return compute_element_numerical_hessian(pd, element, free_vtces, grad_vec,
+  bool b = compute_element_numerical_hessian(pd, element, free_vtces, grad_vec,
                                            hessian, num_free_vtx, metric_value, err);
+  return !MSQ_CHKERR(err) && b;
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "QualityMetric::compute_element_gradient_expanded"
 /*!
   Note that for this function, grad_vec should be an array of size the
   number of vertices in el, not of size num_free_vtx.
@@ -217,7 +214,10 @@ bool QualityMetric::compute_element_gradient_expanded(PatchData &pd,
   Vector3D* grad_vec_nz = new Vector3D[num_free_vtx];
   ret = compute_element_gradient(pd, el, free_vtces, grad_vec_nz,
                                  num_free_vtx, metric_value, err);
-  MSQ_CHKERR(err);
+  if (MSQ_CHKERR(err)) {
+    delete [] grad_vec_nz;
+    return false;
+  }
 
   vector<size_t> gv_i;
   gv_i.reserve(num_free_vtx);
@@ -253,8 +253,6 @@ bool QualityMetric::compute_element_gradient_expanded(PatchData &pd,
 }
    
    
-#undef __FUNC__
-#define __FUNC__ "QualityMetric::compute_element_numerical_gradient"
 /*!
   Parameters description, see QualityMetric::compute_element_gradient() .
   
@@ -267,15 +265,15 @@ bool QualityMetric::compute_element_numerical_gradient(PatchData &pd,
                                              int num_free_vtx, double &metric_value,
                                              MsqError &err)
 {
-  FUNCTION_TIMER_START(__FUNC__);
+  FunctionTimer ft( "QualityMetric::compute_element_numerical_gradient" );
     /*!TODO: (MICHAEL)  Try to inline this function (currenlty conflicts
       with MsqVertex.hpp).*/    
-  MSQ_DEBUG_PRINT(3,"Computing Numerical Gradient\n");
+  MSQ_PRINT(3)("Computing Numerical Gradient\n");
   
-  bool valid=this->evaluate_element(pd, element, metric_value, err); MSQ_CHKERR(err);
-
-  if (!valid)
+  bool valid=this->evaluate_element(pd, element, metric_value, err);
+  if (MSQ_CHKERR(err) || !valid)
     return false;
+
   const double delta_C = 10e-6;
   double delta = delta_C;
   const double delta_inv_C = 1. / delta; // avoids division in the loop. 
@@ -314,18 +312,17 @@ bool QualityMetric::compute_element_numerical_gradient(PatchData &pd,
 	delta_inv*=10.;
       }
       if(counter>=10){
-        err.set_msg("Perturbing vertex by delta caused an inverted element.");
+        MSQ_SETERR(err)("Perturbing vertex by delta caused an inverted element.",
+                        MsqError::INTERNAL_ERROR);
+        return false;
       }
       
     }
   }
-  FUNCTION_TIMER_END();
   return true;
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "QualityMetric::compute_element_numerical_hessian"
 /*!
   Note that for this function, grad_vec should be an array of size the
   number of vertices in el, not of size num_free_vtx. Entries that do not correspond
@@ -343,13 +340,12 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
                                              int num_free_vtx, double &metric_value,
                                              MsqError &err)
 {
-  FUNCTION_TIMER_START(__FUNC__);
-  MSQ_DEBUG_PRINT(3,"Computing Numerical Hessian\n");
+  FunctionTimer ft( "QualityMetric::compute_element_numerical_hessian" );
+  MSQ_PRINT(3)("Computing Numerical Hessian\n");
   
   bool valid=this->compute_element_gradient_expanded(pd, element, free_vtces, grad_vec,
-                                    num_free_vtx, metric_value, err); MSQ_CHKERR(err);
-  
-  if (!valid)
+                                    num_free_vtx, metric_value, err); 
+  if (MSQ_CHKERR(err) || !valid)
     return false;
   
   double delta = 10e-6;
@@ -421,13 +417,10 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
 
   delete[] grad_vec1;
 
-  FUNCTION_TIMER_END();
   return true;
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "QualityMetric::compute_vertex_numerical_gradient"
 /*!  Numerically calculates the gradient of a vertex-based QualityMetric
   value on the given free vertex.  The metric is evaluated at MsqVertex
   'vertex', and the gradient is calculated with respect to the degrees
@@ -443,12 +436,10 @@ bool QualityMetric::compute_vertex_numerical_gradient(PatchData &pd,
 {
    /*!TODO: (MICHAEL)  Try to inline this function (currenlty conflicts
       with MsqVertex.hpp).*/    
-  MSQ_DEBUG_PRINT(2,"Computing Gradient (QualityMetric's numeric, vertex based.\n");
+  MSQ_PRINT(2)("Computing Gradient (QualityMetric's numeric, vertex based.\n");
   
   bool valid=this->evaluate_vertex(pd, &(vertex), metric_value, err);
-  MSQ_CHKERR(err);
-
-  if (!valid)
+  if (MSQ_CHKERR(err) || !valid)
     return false;
   
   const double delta = 10e-6;
@@ -467,7 +458,7 @@ bool QualityMetric::compute_vertex_numerical_gradient(PatchData &pd,
       // perturb the coordinates of the free vertex in the j direction by delta
       (*free_vtces[v])[j]+=delta;
       //compute the function at the perturbed point location
-      this->evaluate_vertex(pd, &(vertex),  metric_value1, err); MSQ_CHKERR(err);
+      this->evaluate_vertex(pd, &(vertex),  metric_value1, err); MSQ_ERRZERO(err);
       //compute the numerical gradient
       grad_vec[v][j]=(metric_value1-metric_value)*delta_inv;
       // put the coordinates back where they belong
@@ -476,4 +467,25 @@ bool QualityMetric::compute_vertex_numerical_gradient(PatchData &pd,
   }
   return true;  
 }
+
+     
+       //!Evaluate the metric for a vertex
+bool QualityMetric::evaluate_vertex(PatchData& /*pd*/, MsqVertex* /*vertex*/,
+                                  double& /*value*/, MsqError &err)
+        {
+          MSQ_SETERR(err)("No implementation for a "
+                      "vertex-version of this metric.",
+                      MsqError::NOT_IMPLEMENTED);
+          return false;
+        }
+     
+       //!Evaluate the metric for an element
+bool QualityMetric::evaluate_element(PatchData& /*pd*/,
+                                   MsqMeshEntity* /*element*/,
+                                   double& /*value*/, MsqError &err)
+        {
+          MSQ_SETERR(err)("No implementation for a element-version of this "
+                          "metric.", MsqError::NOT_IMPLEMENTED);
+          return false;
+        }
 

@@ -43,7 +43,6 @@
 #include "TSTT_Tag.hh"
 #include "TSTT_ModifiableMesh.hh"
 
-#include "MsqMessage.hpp"
 #include "MeshInterface.hpp"
 
 //class TSTT::LocalTSTTMesh;
@@ -248,8 +247,8 @@ namespace Mesquite
     mutable ::TSTT::Tag tsttTag;
     mutable ::TSTT::ModifiableMesh tsttModMesh;
 
-    size_t nbVertices;
-    size_t nbElements;
+    msq_stdc::size_t nbVertices;
+    msq_stdc::size_t nbElements;
 
     mutable ::TSTT::EntityType elementType; //!< Whether the mesh elements are
                                    //!< regions (3D) or faces (2D)

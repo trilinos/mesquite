@@ -27,28 +27,41 @@
 #ifndef MESQUITE_HPP
 #define MESQUITE_HPP
 
-#ifdef WIN32
-#pragma warning ( 4 : 4786)
+#ifdef _MSC_VER
+#  pragma warning ( 4 : 4786)
+#  include "mesquite_config.win.h"
+#else
+#  include "mesquite_config.h"
 #endif
 
-#include <stdexcept>
-#ifdef USE_STD_INCLUDES
-#include <iostream>
+#ifdef MSQ_USE_OLD_C_HEADERS
+#  define msq_stdc 
 #else
-#include <iostream.h>
+#  define msq_stdc std
 #endif
 
-#ifdef USE_C_PREFIX_INCLUDES
-#include <cmath>
-#include <cstddef>
-#include <cstring>
+#ifdef MSQ_USE_OLD_IO_HEADERS
+#  define msq_stdio
 #else
+#  define msq_stdio std
+#endif
+
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#  define msq_std
+#else
+#  define msq_std std
+#endif
+
+
+#ifdef MSQ_USE_OLD_C_INCLUDES
 #include <math.h>
-#include <stddef.h>
-#include <string.h>
-#endif
-
 #include <float.h>
+#include <limits.h>
+#else
+#include <cmath>
+#include <cfloat>
+#include <climits>
+#endif
 
 /*! \file Mesquite.hpp
  */
@@ -63,12 +76,6 @@
 */
 namespace Mesquite
 {
-//#ifndef MESQUITE_PRINT_ERROR_STACK
-//#define MESQUITE_PRINT_ERROR_STACK
-//#endif
-#ifndef ENABLE_INTERRUPT
-#define ENABLE_INTERRUPT
-#endif  
   typedef int StatusCode;
 
   typedef double real;
@@ -106,17 +113,11 @@ namespace Mesquite
   };
   Mesquite::ReleaseType release_type();
   
-    // This function should be called by the calling
-    // application when it wants to interrupt a Mesquite
-    // algorithm before it has completed, such as when
-    // the user hits ctrl-c
-  void signal_interrupt();
-  
     //GLOBAL variables
   const int MSQ_MAX_NUM_VERT_PER_ENT=8;
   const int MSQ_HIST_SIZE=7;//number of division in histogram
-  static const double MSQ_SQRT_TWO = sqrt(2.0);
-  static const double MSQ_SQRT_THREE = sqrt(3.0);
+  static const double MSQ_SQRT_TWO = msq_stdc::sqrt(2.0);
+  static const double MSQ_SQRT_THREE = msq_stdc::sqrt(3.0);
   static const double MSQ_SQRT_THREE_DIV_TWO=MSQ_SQRT_THREE/2.0;
   static const double MSQ_SQRT_THREE_INV=1.0/MSQ_SQRT_THREE;
   static const double MSQ_SQRT_TWO_INV=1.0/MSQ_SQRT_TWO;
@@ -124,107 +125,54 @@ namespace Mesquite
   static const double MSQ_ONE_THIRD = 1.0 / 3.0;
   static const double MSQ_TWO_THIRDS = 2.0 / 3.0;
 
+#ifdef UINT_MAX
+  const unsigned MSQ_UINT_MAX = UINT_MAX;
+#else
+  const unsigned MSQ_UINT_MAX = ~(unsigned)0;
+#endif
+
 #ifdef INT_MAX
   const int MSQ_INT_MAX = INT_MAX;
 #else     
-  const int MSQ_INT_MAX = 2147483647;
+  const int MSQ_INT_MAX = MSQ_UINT_MAX >> 1;
 #endif
 
 #ifdef INT_MIN
-const int MSQ_INT_MIN = INT_MIN;
+  const int MSQ_INT_MIN = INT_MIN;
 #else
-const int MSQ_INT_MIN = -2147483647;
+  const int MSQ_INT_MIN = ~MSQ_INT_MAX;
 #endif
 
 #ifdef DBL_MIN
   const double MSQ_DBL_MIN = DBL_MIN;
 #else
+  /* This value is rather large - DBL_MIN is normally about 2e-308 
+     Put an error here to see if any platform really doesn't
+     have DBL_MIN or DBL_MAX defined, and evaluate what to do then.
+  */
+  #error DBL_MIN not defined
   const double MSQ_DBL_MIN = 1.0E-30;
 #endif
-  const double MSQ_MIN=DBL_MIN;
+  const double MSQ_MIN = MSQ_DBL_MIN;
   
 #ifdef DBL_MAX
   const double MSQ_DBL_MAX = DBL_MAX;
 #else
+  /* This value is rather small - DBL_MAX is normally about 2e308 
+     Put an error here to see if any platform really doesn't
+     have DBL_MIN or DBL_MAX defined, and evaluate what to do then.
+  */
+  #error DBL_MAX not defined
   const double MSQ_DBL_MAX = 1.0E30;
 #endif    
-  const double MSQ_MAX = DBL_MAX;
+  const double MSQ_MAX = MSQ_DBL_MAX;
   const double MSQ_MAX_CAP = 1.e6;
 
     //macro to return the min/max of a set of arguements.  The integer
     // (e.g., '2') tells how many arguements should be passed for comparison.
-#ifndef MSQ_MIN_2 
-#define MSQ_MIN_2(a,b)     ( (a) < (b) ? (a) : (b) )
-#endif
-#ifndef MSQ_MAX_2           
-#define MSQ_MAX_2(a,b)     ( (a) > (b) ? (a) : (b) )
-#endif
+template <class T> inline T MSQ_MIN_2(T a, T b) { return a < b ? a : b; }
+template <class T> inline T MSQ_MAX_2(T a, T b) { return a > b ? a : b; }
 }
 
-#ifndef USE_FUNCTION_TIMERS
-#define USE_FUNCTION_TIMERS
-#endif
-
-#ifdef USE_STD_INCLUDES
-  #define MSQ_USE(A) using std::A 
-#else
-  #define MSQ_USE(A) //empty statement
-#endif
-
-
-#define MSQ_DEBUG
-#define MSQ_DEBUG4 // notify of all constructor / copy / destructor uses
-
-
-/* the Mesquite Debugging system
-     Level 0 provides no information and the debug macros are empty
-     Level 1 provides user function information only
-             e.g. threshold set, function used, etc.
-     Level 2 provides basic algorithmic information for each local
-             submesh
-     Level 3 provides more information, data structures, and details
-             than most users would want to know about 
-
-     The default is Level 0
-*/
-//#define MSQ_DBG3
-
-#ifdef MSQ_DBG3
-#define MSQ_DEBUG_LEVEL 3
-#elif  MSQ_DBG2
-#define MSQ_DEBUG_LEVEL 2
-#elif  MSQ_DBG1
-#define MSQ_DEBUG_LEVEL 1
-#elif  MSQ_DBG0
-#define MSQ_DEBUG_LEVEL 0
-#else
-#define MSQ_DEBUG_LEVEL 0
-#endif
-
-#if MSQ_DEBUG_LEVEL != 0
-#define MSQ_DEBUG_PRINT(level, statement)\
-{\
-   if ((level <= MSQ_DEBUG_LEVEL))\
-     {\
-     fprintf(stdout,statement);\
-     fflush(stdout);\
-     }\
-}
-#define MSQ_DEBUG_ACTION(level, action)\
-{\
-   if ((level <= MSQ_DEBUG_LEVEL))\
-     {\
-     action\
-     fflush(stdout);\
-     }\
-}
-#else
-#define MSQ_DEBUG_PRINT(level, statement)\
-{\
-}
-#define MSQ_DEBUG_ACTION(level, statement)\
-{\
-}
-#endif
 
 #endif

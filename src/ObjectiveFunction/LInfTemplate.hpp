@@ -39,14 +39,14 @@ Header file for the Mesquite::LInfTemplate class
 #define LInfTemplate_hpp
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
 #include "ObjectiveFunction.hpp"
 #include "PatchData.hpp"
-#include <list>
 
 namespace Mesquite
 {
    class PatchData;
+   class MsqError;
+   
   /*! \class LInfTemplate
     \brief Computes the L_infinity objective function for a given patch,
     i.e., LInfTemplate::concrete_evaluate returns the maximum absolute value of

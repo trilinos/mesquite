@@ -36,11 +36,11 @@
 #include "ObjectiveFunction.hpp"
 #include "CompositeOFAdd.hpp"
 #include "MsqTimer.hpp"
-using namespace Mesquite;
+#include "PatchData.hpp"
+
+namespace Mesquite {
 
 
-#undef __FUNC__
-#define __FUNC__ "CompositeOFAdd::CompositeOFAdd"
 /*!
 Sets the QualityMetric pointer to the metric associated with Obj1 and Obj2
 if Obj1 and Obj2 are associated with the same metric.  Otherwise, it sets
@@ -64,31 +64,24 @@ CompositeOFAdd::CompositeOFAdd(ObjectiveFunction* Obj1,
   set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
 }
 
-#undef __FUNC__
-#define __FUNC__ "CompositeOFAdd::~CompositeOFAdd"
-
 //Michael:  need to clean up here
 CompositeOFAdd::~CompositeOFAdd(){
 
 }
 
-#undef __FUNC__
-#define __FUNC__ "CompositeOFAdd::get_quality_metric_list"
 /*! Returns the QualityMetric list associated with objFunc1 merged
   with the QualityMetric list associated with objFunc2.  The entries
   in this merged list may not be unique.
 */
-list<QualityMetric*> CompositeOFAdd::get_quality_metric_list()
+msq_std::list<QualityMetric*> CompositeOFAdd::get_quality_metric_list()
 {
-  list<QualityMetric*> temp_list=objFunc1->get_quality_metric_list();
-  list<QualityMetric*> temp_list2=objFunc2->get_quality_metric_list();
+  msq_std::list<QualityMetric*> temp_list=objFunc1->get_quality_metric_list();
+  msq_std::list<QualityMetric*> temp_list2=objFunc2->get_quality_metric_list();
   temp_list.merge(temp_list2);
   return temp_list;
     
 }
 
-#undef __FUNC__
-#define __FUNC__ "CompositeOFAdd::concrete_evaluate"
 /*!Compute fval= objFunc1->evaluate(patch,err)+objFunc2->evaluate(patch,err).
   Note that since objFunc1 and objFunc2's evaluate() functions are called
   (as opposed to their concrete_evaluates) the returned values have
@@ -103,11 +96,13 @@ bool CompositeOFAdd::concrete_evaluate(PatchData &patch, double &fval,
                                        MsqError &err){
   double second_val=0.0;
     //If patch is invalid
-  if(! objFunc1->evaluate(patch, fval, err)){
+  bool b = objFunc1->evaluate( patch, fval, err );
+  if (MSQ_CHKERR(err) || !b) { 
     fval=0.0;
     return false;
   }
-  if(! objFunc2->evaluate(patch, second_val, err)){
+  b = objFunc2->evaluate(patch, second_val, err);
+  if (MSQ_CHKERR(err) || !b) {
     fval=0.0;
     return false;
   }
@@ -116,8 +111,6 @@ bool CompositeOFAdd::concrete_evaluate(PatchData &patch, double &fval,
 }
 	
 	
-#undef __FUNC__
-#define __FUNC__ "CompositeOFAdd::compute_analytical_gradient"
 /*! Analytically computes the composite objective function's gradient
   by combining the gradients returned from 
   objFunc2->compute_gradient() and objFunc2->compute_gradient().
@@ -131,16 +124,16 @@ bool CompositeOFAdd::concrete_evaluate(PatchData &patch, double &fval,
 */
 bool CompositeOFAdd::compute_analytical_gradient(PatchData &patch,
                                                  Vector3D *const &grad,
-						 double &OF_val,
+                                                 double &OF_val,
                                                  MsqError &err,
                                                  size_t array_size)
 {
-  FUNCTION_TIMER_START(__FUNC__);
+  FunctionTimer ft( "CompositeOFAdd::compute_analytical_gradient" );
   double second_val=0.0;//store the second objective function val
   OF_val=0.0;
     //get first objective function's gradient
   bool rval=objFunc1->compute_gradient(patch, grad, OF_val, 
-				       err, array_size);
+				       err, array_size);  MSQ_ERRZERO(err);
   if(rval){
     int num_vert=patch.num_vertices();
     Vector3D* second_grad = new Vector3D[num_vert];
@@ -159,9 +152,10 @@ bool CompositeOFAdd::compute_analytical_gradient(PatchData &patch,
       delete []second_grad;
     }
   }
-  FUNCTION_TIMER_END();
     //true if both of the above compute gradient's were successful.
   if(!rval)
     OF_val=0.0;
   return rval;
 }
+
+} //namespace Mesquite

@@ -39,12 +39,13 @@ Header file for the Mesquite::PowerQualityMetric class
 #define PowerQualityMetric_hpp
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
 #include "CompositeQualityMetric.hpp"
-#include "Vector3D.hpp"
 
 namespace Mesquite
 {
+  class MsqError;
+  class Vector3D;
+
      /*! \class PowerQualityMetric
        \brief Raises a single quality metrics (qMetric1) to an arbitrary
        power (a double value, scaleAlpha) for two- and three-diminsional

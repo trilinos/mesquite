@@ -35,12 +35,9 @@ Header file for the Mesquite::VertexConditionNumberQualityMetric class
 
 #ifndef VertexConditionNumberQualityMetric_hpp
 #define VertexConditionNumberQualityMetric_hpp
-#include "MsqMeshEntity.hpp"
+
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
 #include "ShapeQualityMetric.hpp"
-#include "Vector3D.hpp"
-#include "PatchData.hpp"
 
 
 namespace Mesquite

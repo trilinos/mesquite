@@ -36,22 +36,24 @@
 #ifndef MSQMESHENTITY_HPP
 #define MSQMESHENTITY_HPP
 
-#include <vector>
-#ifdef USE_C_PREFIX_INCLUDES
-#include <cstring>
-#include <cassert>
-#else
-#include <string.h>
-#include <assert.h>
-#endif
-
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
 #include "QualityMetric.hpp"
 #include "MsqTag.hpp"
 
-MSQ_USE(vector);
-MSQ_USE(ostream);
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#  include <vector.h>
+#else
+#  include <vector>
+#endif
+
+#ifdef MSQ_USE_OLD_C_HEADERS
+#  include <string.h>
+#  include <assert.h>
+#else
+#  include <cstring>
+#  include <cassert>
+#endif
+
 
 namespace Mesquite
 {
@@ -72,7 +74,7 @@ namespace Mesquite
                   size_t vertex_indices[])
       : mType(type), mTag(0)
       {
-        memcpy(vertexIndices,
+        msq_stdc::memcpy(vertexIndices,
                vertex_indices,
                sizeof(size_t)*vertex_count(type));
       }
@@ -83,12 +85,12 @@ namespace Mesquite
 
       //! Destructor also deletes associated tag data. 
     ~MsqMeshEntity()
-      { if (mTag) { delete mTag; mTag=0; } }
+      { delete mTag; mTag=0; }
 
      //! This operator= makes a deep copy of the tag data. 
     MsqMeshEntity& operator=(const MsqMeshEntity& rhs) { 
       mType = rhs.mType;
-      memmove(vertexIndices, rhs.vertexIndices, MSQ_MAX_NUM_VERT_PER_ENT*sizeof(size_t));
+      msq_stdc::memmove(vertexIndices, rhs.vertexIndices, MSQ_MAX_NUM_VERT_PER_ENT*sizeof(size_t));
       if (rhs.mTag != 0)
         mTag = new MsqTag(*(rhs.mTag));
       else
@@ -102,27 +104,27 @@ namespace Mesquite
     
       //! Returns the number of vertices in this element,
       //! based on its element type.
-    inline size_t vertex_count() const;
+    inline msq_stdc::size_t vertex_count() const;
     
       //! Returns the number of vertices in this element type.
-    static inline size_t vertex_count(EntityTopology type);
+    static inline msq_stdc::size_t vertex_count(EntityTopology type);
     
       //! gets the vertices of the mesh entity
-    void get_vertex_indices(vector<size_t> &vertex_list);
-    void append_vertex_indices(vector<size_t> &vertex_list);
+    void get_vertex_indices(msq_std::vector<msq_stdc::size_t> &vertex_list);
+    void append_vertex_indices(msq_std::vector<msq_stdc::size_t> &vertex_list);
     //! Very efficient retrieval of vertices indexes 
     //! (corresponding to the PatchData vertex array).
-    inline const size_t *get_vertex_index_array() const;
-    inline size_t* get_modifiable_vertex_index_array();
+    inline const msq_stdc::size_t *get_vertex_index_array() const;
+    inline msq_stdc::size_t* get_modifiable_vertex_index_array();
     
       //! Sets element data
     void set_element_type(EntityTopology type)
       { mType = type; }
-    void set_vertex_index(size_t vertex_in_element, size_t vertex_patch_index);
+    void set_vertex_index(msq_stdc::size_t vertex_in_element, msq_stdc::size_t vertex_patch_index);
       //! Sets the vertex indices and element type in a single function call.
       //! /param indices is an array of size vertex_count(type).
-    void set( EntityTopology type, const size_t *indices);
-    size_t get_vertex_index(size_t vertex_in_element);
+    void set( EntityTopology type, const msq_stdc::size_t *indices);
+    msq_stdc::size_t get_vertex_index(msq_stdc::size_t vertex_in_element);
     
       //! Sets the element tag. This will overwritte an existing tag. 
     void set_tag(MsqTag* tag) {mTag = tag;}
@@ -138,7 +140,7 @@ namespace Mesquite
     
       //!Returns a list of sample points given an evaluationmode 
     void get_sample_points(QualityMetric::ElementEvaluationMode mode,
-                           vector<Vector3D> &coords,
+                           msq_std::vector<Vector3D> &coords,
                            MsqError &err);
 
     //! Returns the centroid of the element.
@@ -146,8 +148,8 @@ namespace Mesquite
     
       //!Fills a vector<size_t> with vertices connected to the given
       //!vertex through the edges of this MsqMeshEntity.
-    void get_connected_vertices(size_t vertex_index,
-                                vector<size_t> &vert_indices,
+    void get_connected_vertices(msq_stdc::size_t vertex_index,
+                                msq_std::vector<msq_stdc::size_t> &vert_indices,
                                 MsqError &err);
     
       //!Computes the area of the element.
@@ -165,9 +167,12 @@ namespace Mesquite
     double compute_signed_volume(PatchData &pd, MsqError &err );
     
       //! Uses a MeshDomain call-back function to compute the normal at the corner.
-    void compute_corner_normal(const size_t corner_pt, const Vector3D &corner_vec1,
-                         const Vector3D &corner_vec2, Vector3D &normal,
-                         PatchData &pd, MsqError &err);
+    void compute_corner_normal( const msq_stdc::size_t corner_pt, 
+                                const Vector3D &corner_vec1,
+                                const Vector3D &corner_vec2, 
+                                Vector3D &normal,
+                                PatchData &pd, 
+                                MsqError &err);
 
       //! Compute matrices which column are the vectors issued from a corner.
       //! Stores those corner matrices in the mTag data member.  
@@ -192,7 +197,8 @@ namespace Mesquite
                   //!< deep and the tag is deleted when the MsqMeshEntity is.
     
       // output operator for debugging.
-    friend ostream& operator<<(ostream &s, const MsqMeshEntity &E);
+    friend msq_stdio::ostream& operator<<(msq_stdio::ostream &stream, 
+                                          const MsqMeshEntity &entity);
     
   };
   
@@ -264,19 +270,20 @@ namespace Mesquite
     vertexIndices[vertex_in_element] = vertex_patch_index;
   }
   
-  inline void MsqMeshEntity::set(EntityTopology type, const size_t *indices)
+  inline void MsqMeshEntity::set(EntityTopology type, const msq_stdc::size_t *indices)
   {
     mType = type;
     memcpy(vertexIndices, indices, sizeof(size_t) * vertex_count(type));
   }
   
-  inline const size_t *MsqMeshEntity::get_vertex_index_array() const
+  inline const msq_stdc::size_t *MsqMeshEntity::get_vertex_index_array() const
   { return vertexIndices; }
   
-  inline size_t* MsqMeshEntity::get_modifiable_vertex_index_array()
+  inline msq_stdc::size_t* MsqMeshEntity::get_modifiable_vertex_index_array()
   { return vertexIndices; }
   
-  inline size_t MsqMeshEntity::get_vertex_index(size_t vertex_in_element)
+  inline msq_stdc::size_t 
+  MsqMeshEntity::get_vertex_index(msq_stdc::size_t vertex_in_element)
   {
       // Make sure we're in range
     assert(vertex_in_element < vertex_count());
@@ -294,35 +301,6 @@ namespace Mesquite
     jac[0]=coord1-coord0+(*sp)[1]*(coord2+coord0-coord3-coord1);
     jac[1]=coord3-coord0+(*sp)[0]*(coord2+coord0-coord3-coord1);
   }
-
-    //! \param num_targets is set to the number of corners for the element.
-  inline TargetMatrix* MsqMeshEntity::get_target_matrices(size_t &num_targets, MsqError &err)
-  {
-    if (mTag == 0) {
-      err.set_msg("no target matrix available.");
-      return 0;
-    }
-    else {
-      num_targets = vertex_count();
-      return mTag->get_targets(num_targets);
-    }
-  }
-
-
-  
-  /* ***********  I/O  **************/
-
-  inline ostream& operator<<(ostream &s, const MsqMeshEntity &E)
-  {
-    size_t num_vtx = E.vertex_count();
-    s << "MsqMeshEntity " << &E << " with vertices ";
-    for (size_t i=0; i<num_vtx; ++i)
-      s << E.vertexIndices[i] << "  ";
-    s << "\n";
-    return s;
-  }
-
-  
 } //namespace
 
 

@@ -40,8 +40,8 @@
 
 #include "Mesquite.hpp"
 #include "VertexMover.hpp"
-#include "MsqMessage.hpp"
 #include "MsqFreeVertexIndexIterator.hpp"
+#include "MsqDebug.hpp"
 #include <math.h>
 namespace Mesquite
 {
@@ -79,8 +79,6 @@ namespace Mesquite
   };
 
   
-#undef __FUNC__
-#define __FUNC__ "randomize_vertex"
     //!Perturbs the free vertex randomly.
   inline void Randomize::randomize_vertex(PatchData &pd, size_t num_vtx,
                                           MsqVertex &free_vtx,
@@ -88,7 +86,7 @@ namespace Mesquite
   {
     size_t i;
     short j;
-    MsqVertex* verts = pd.get_vertex_array(err);
+    MsqVertex* verts = pd.get_vertex_array(err);  MSQ_ERRRTN(err);
       //a scale w.r.t. the patch size
     double scale_factor=0.0;
       //a "random" number between -1 and 1
@@ -96,7 +94,7 @@ namespace Mesquite
       //a "random" int
     int rand_int=0;
     if (num_vtx<=1){
-      Mesquite::Message::print_warning("WARNING: Number of incident vertex is zero.  Returning.\n");
+      MSQ_PRINT(1)("WARNING: Number of incident vertex is zero.  Returning.\n");
       return;
     }
 

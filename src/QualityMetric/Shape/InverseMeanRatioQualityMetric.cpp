@@ -31,19 +31,24 @@
   \author Michael Brewer
   \date   2002-11-11
 */
-#include <vector>
 #include "InverseMeanRatioQualityMetric.hpp"
 #include "MeanRatioFunctions.hpp"
-#include <math.h>
 #include "Vector3D.hpp"
 #include "ShapeQualityMetric.hpp"
 #include "QualityMetric.hpp"
 #include "MsqTimer.hpp"
+#include "MsqDebug.hpp"
+
+#include <math.h>
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#  include <vector.h>
+#else
+#  include <vector>
+   using std::vector;
+#endif
 
 using namespace Mesquite;
 
-#undef __FUNC__
-#define __FUNC__ "InverseMeanRatioQualityMetric::evaluate_element" 
 bool InverseMeanRatioQualityMetric::evaluate_element(PatchData &pd,
 						     MsqMeshEntity *e,
 						     double &m,
@@ -82,7 +87,7 @@ bool InverseMeanRatioQualityMetric::evaluate_element(PatchData &pd,
   bool metric_valid = false;
   switch(topo) {
   case TRIANGLE:
-    pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
+    pd.get_domain_normal_at_element(e, n, err); MSQ_ERRZERO(err);
     n = n / n.length();		// Need unit normal
     mCoords[0] = vertices[v_i[0]];
     mCoords[1] = vertices[v_i[1]];
@@ -92,7 +97,7 @@ bool InverseMeanRatioQualityMetric::evaluate_element(PatchData &pd,
     break;
     
   case QUADRILATERAL:
-    pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
+    pd.get_domain_normal_at_element(e, n, err); MSQ_ERRZERO(err);
     for (i = 0; i < 4; ++i) {
       n = n / n.length();	// Need unit normal
       mCoords[0] = vertices[v_i[locs_hex[i][0]]];
@@ -102,7 +107,7 @@ bool InverseMeanRatioQualityMetric::evaluate_element(PatchData &pd,
 			      a2_con, b2_con, c2_con, d_con);
       if (!metric_valid) return false;
     }
-    m = average_metrics(mMetrics, 4, err);
+    m = average_metrics(mMetrics, 4, err); MSQ_ERRZERO(err);
     break;
 
   case TETRAHEDRON:
@@ -124,7 +129,7 @@ bool InverseMeanRatioQualityMetric::evaluate_element(PatchData &pd,
 			      a3_con, b3_con, c3_con, d_con);
       if (!metric_valid) return false;
     }
-    m = average_metrics(mMetrics, 8, err);
+    m = average_metrics(mMetrics, 8, err); MSQ_ERRZERO(err);
     break;
 
   default:
@@ -133,8 +138,6 @@ bool InverseMeanRatioQualityMetric::evaluate_element(PatchData &pd,
   return true;
 }
 
-#undef __FUNC__
-#define __FUNC__ "InverseMeanRatioQualityMetric::compute_element_analytical_gradient" 
 bool InverseMeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 									MsqMeshEntity *e,
 									MsqVertex *v[], 
@@ -148,7 +151,7 @@ bool InverseMeanRatioQualityMetric::compute_element_analytical_gradient(PatchDat
 
   if (((topo == QUADRILATERAL) || (topo == HEXAHEDRON)) && 
       ((avgMethod == MINIMUM) || (avgMethod == MAXIMUM))) {
-    Message::print_warning(
+    MSQ_PRINT(1)(
       "Minimum and maximum not continuously differentiable.\n"
       "Element of subdifferential will be returned.\n");
   }
@@ -188,7 +191,7 @@ bool InverseMeanRatioQualityMetric::compute_element_analytical_gradient(PatchDat
 
   switch(topo) {
   case TRIANGLE:
-    pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
+    pd.get_domain_normal_at_element(e, n, err); MSQ_ERRZERO(err);
     n = n / n.length();		// Need unit normal
     mCoords[0] = vertices[v_i[0]];
     mCoords[1] = vertices[v_i[1]];
@@ -208,7 +211,7 @@ bool InverseMeanRatioQualityMetric::compute_element_analytical_gradient(PatchDat
     break;
 
   case QUADRILATERAL:
-    pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
+    pd.get_domain_normal_at_element(e, n, err); MSQ_ERRZERO(err);
     for (i = 0; i < 4; ++i) {
       mAccumGrad[i] = 0.0;
 
@@ -324,7 +327,8 @@ bool InverseMeanRatioQualityMetric::compute_element_analytical_gradient(PatchDat
         t = -2.0;
         break;
       default:
-        err.set_msg("averaging method not available.");
+        MSQ_SETERR(err)("averaging method not available.", MsqError::INVALID_STATE);
+        return false;
         break;
       }
 
@@ -504,7 +508,8 @@ bool InverseMeanRatioQualityMetric::compute_element_analytical_gradient(PatchDat
         t = -2.0;
         break;
       default:
-        err.set_msg("averaging method not available.");
+        MSQ_SETERR(err)("averaging method not available.", MsqError::INVALID_STATE);
+        return false;
         break;
       }
 
@@ -553,8 +558,6 @@ bool InverseMeanRatioQualityMetric::compute_element_analytical_gradient(PatchDat
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "InverseMeanRatioQualityMetric::compute_element_analytical_hessian" 
 bool InverseMeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 								       MsqMeshEntity *e,
 								       MsqVertex *fv[], 
@@ -569,7 +572,7 @@ bool InverseMeanRatioQualityMetric::compute_element_analytical_hessian(PatchData
 
   if (((topo == QUADRILATERAL) || (topo == HEXAHEDRON)) && 
       ((avgMethod == MINIMUM) || (avgMethod == MAXIMUM))) {
-    Message::print_warning(
+    MSQ_PRINT(1)(
       "Minimum and maximum not continuously differentiable.\n"
       "Element of subdifferential will be returned.\n"
       "Who knows what the Hessian is?\n" );
@@ -610,7 +613,7 @@ bool InverseMeanRatioQualityMetric::compute_element_analytical_hessian(PatchData
 
   switch(topo) {
   case TRIANGLE:
-    pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
+    pd.get_domain_normal_at_element(e, n, err); MSQ_ERRZERO(err);
     n = n / n.length();		// Need unit normal
     mCoords[0] = vertices[v_i[0]];
     mCoords[1] = vertices[v_i[1]];
@@ -648,7 +651,7 @@ bool InverseMeanRatioQualityMetric::compute_element_analytical_hessian(PatchData
       h[i].zero();
     }
     
-    pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
+    pd.get_domain_normal_at_element(e, n, err); MSQ_ERRZERO(err);
     for (i = 0; i < 4; ++i) {
       g[i] = 0.0;
 
@@ -662,11 +665,11 @@ bool InverseMeanRatioQualityMetric::compute_element_analytical_hessian(PatchData
 
     switch(avgMethod) {
     case MINIMUM:
-      err.set_msg("MINIMUM averaging method does not work.");
+      MSQ_SETERR(err)("MINIMUM averaging method does not work.", MsqError::INVALID_STATE);
       return false;
 
     case MAXIMUM:
-      err.set_msg("MAXIMUM averaging method does not work.");
+      MSQ_SETERR(err)("MAXIMUM averaging method does not work.", MsqError::INVALID_STATE);
       return false;
 
     case SUM:
@@ -735,11 +738,11 @@ bool InverseMeanRatioQualityMetric::compute_element_analytical_hessian(PatchData
       break;
 
     case GEOMETRIC:
-      err.set_msg("GEOMETRIC averaging method does not work.");
+      MSQ_SETERR(err)("GEOMETRIC averaging method does not work.",MsqError::INVALID_STATE);
       return false;
 
     default:
-      err.set_msg("averaging method not available.");
+      MSQ_SETERR(err)("averaging method not available.",MsqError::INVALID_STATE);
       return false;
     }
 
@@ -829,11 +832,11 @@ bool InverseMeanRatioQualityMetric::compute_element_analytical_hessian(PatchData
 
     switch(avgMethod) {
     case MINIMUM:
-      err.set_msg("MINIMUM averaging method does not work.");
+      MSQ_SETERR(err)("MINIMUM averaging method does not work.",MsqError::INVALID_STATE);
       return false;
 
     case MAXIMUM:
-      err.set_msg("MAXIMUM averaging method does not work.");
+      MSQ_SETERR(err)("MAXIMUM averaging method does not work.",MsqError::INVALID_STATE);
       return false;
 
     case SUM:
@@ -904,11 +907,11 @@ bool InverseMeanRatioQualityMetric::compute_element_analytical_hessian(PatchData
       break;
 
     case GEOMETRIC:
-      err.set_msg("GEOMETRIC averaging method does not work.");
+      MSQ_SETERR(err)("GEOMETRIC averaging method does not work.",MsqError::INVALID_STATE);
       return false;
 
     default:
-      err.set_msg("averaging method not available.");
+      MSQ_SETERR(err)("averaging method not available.",MsqError::INVALID_STATE);
       return false;
     }
 

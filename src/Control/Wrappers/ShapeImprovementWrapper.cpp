@@ -38,19 +38,31 @@ Member functions of the Mesquite::ShapeImprovementWrapper class
 #include "ShapeImprovementWrapper.hpp"
 #include "MeshSet.hpp"
 #include "MsqTimer.hpp"
+#include "MsqDebug.hpp"
 
-using namespace Mesquite;
+namespace Mesquite {
 
-#undef __FUNC__
-#define __FUNC__ "ShapeImprovementWrapper::ShapeImprovementWrapper"
 /*! The consturctor allows for two values.  The first is a 
   time bound (in seconds) used as a termination criterion.  If
   this value is non-positive, no time bound will be set.
   By default, the value is set to zero and no time bound
   is used.  The second value is the tolerance for the gradient
   norm termination criteria.  The default value is 1.e-6.*/
-ShapeImprovementWrapper::ShapeImprovementWrapper(double cpu_time,
-                                                 double grad_norm) {
+ShapeImprovementWrapper::ShapeImprovementWrapper(MsqError& err,
+                                                 double cpu_time,
+                                                 double grad_norm) 
+ : untangleMetric(0),
+   untangleFunc(0),
+   untangleGlobal(0),
+   untangleGlobalOuter(0),
+   untangleGlobalInner(0),
+   meanRatio(0),
+   objFunc(0),
+   feasNewt(0),
+   mQA(0),
+   termOuter(0),
+   termInner(0)
+{
 
     //arbitrarily chosen variables
   untBeta=1.e-8;
@@ -66,40 +78,39 @@ ShapeImprovementWrapper::ShapeImprovementWrapper(double cpu_time,
   }
   maxTime=cpu_time;
   
-  MsqError err;
   untangleMetric = new UntangleBetaQualityMetric(untBeta);
-  untangleFunc =  new LPtoPTemplate(untangleMetric, 2, err);
+  untangleFunc =  new LPtoPTemplate(untangleMetric, 2, err);  MSQ_ERRRTN(err);
   untangleFunc->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
-  untangleGlobal = new ConjugateGradient(untangleFunc,err);
-  untangleGlobal->set_patch_type(PatchData::GLOBAL_PATCH, err,1 ,1);
+  untangleGlobal = new ConjugateGradient(untangleFunc,err);  MSQ_ERRRTN(err);
+  untangleGlobal->set_patch_type(PatchData::GLOBAL_PATCH, err,1 ,1);  MSQ_ERRRTN(err);
   
   untangleGlobalInner = new TerminationCriterion();
   untangleGlobalOuter = new TerminationCriterion();
   
-  untangleGlobalInner->add_criterion_type_with_double(TerminationCriterion::QUALITY_IMPROVEMENT_ABSOLUTE,0.0,err);
-  untangleGlobalInner->add_criterion_type_with_double(TerminationCriterion::SUCCESSIVE_IMPROVEMENTS_ABSOLUTE,successiveEps,err);
-  untangleGlobalOuter->add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
+  untangleGlobalInner->add_criterion_type_with_double(TerminationCriterion::QUALITY_IMPROVEMENT_ABSOLUTE,0.0,err);  MSQ_ERRRTN(err);
+  untangleGlobalInner->add_criterion_type_with_double(TerminationCriterion::SUCCESSIVE_IMPROVEMENTS_ABSOLUTE,successiveEps,err);  MSQ_ERRRTN(err);
+  untangleGlobalOuter->add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);  MSQ_ERRRTN(err);
   
-  meanRatio = new MeanRatioQualityMetric;
+  meanRatio = new MeanRatioQualityMetric(err); MSQ_ERRRTN(err);
   meanRatio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
   meanRatio->set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
-  meanRatio->set_averaging_method(QualityMetric::LINEAR,err);
+  meanRatio->set_averaging_method(QualityMetric::LINEAR,err);  MSQ_ERRRTN(err);
     // creates the l_2 squared objective function
-  objFunc = new LPtoPTemplate(meanRatio, 2, err);
+  objFunc = new LPtoPTemplate(meanRatio, 2, err);  MSQ_ERRRTN(err);
   objFunc->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
     //creates a FeasibleNewtone improver
   feasNewt = new FeasibleNewton(objFunc);
-  feasNewt->set_patch_type(PatchData::GLOBAL_PATCH, err,1 ,1);
+  feasNewt->set_patch_type(PatchData::GLOBAL_PATCH, err,1 ,1);  MSQ_ERRRTN(err);
   mQA = new QualityAssessor(meanRatio,QualityAssessor::MAXIMUM);
-  mQA->add_quality_assessment(meanRatio, QualityAssessor::MINIMUM,err);
-  mQA->add_quality_assessment(meanRatio, QualityAssessor::AVERAGE,err);
-  mQA->add_quality_assessment(meanRatio, QualityAssessor::RMS,err);   
+  mQA->add_quality_assessment(meanRatio, QualityAssessor::MINIMUM,err);  MSQ_ERRRTN(err);
+  mQA->add_quality_assessment(meanRatio, QualityAssessor::AVERAGE,err);  MSQ_ERRRTN(err);
+  mQA->add_quality_assessment(meanRatio, QualityAssessor::RMS,err);  MSQ_ERRRTN(err);   
         //**************Set stopping criterion*e***************
   termInner = new TerminationCriterion();
   termOuter = new TerminationCriterion();
-  termInner->add_criterion_type_with_double(TerminationCriterion::GRADIENT_L2_NORM_ABSOLUTE,grad_norm,err);
-  termInner->add_criterion_type_with_double(TerminationCriterion::SUCCESSIVE_IMPROVEMENTS_RELATIVE,successiveEps,err);
-  termOuter->add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
+  termInner->add_criterion_type_with_double(TerminationCriterion::GRADIENT_L2_NORM_ABSOLUTE,grad_norm,err);  MSQ_ERRRTN(err);
+  termInner->add_criterion_type_with_double(TerminationCriterion::SUCCESSIVE_IMPROVEMENTS_RELATIVE,successiveEps,err);  MSQ_ERRRTN(err);
+  termOuter->add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);  MSQ_ERRRTN(err);
     // sets a culling method on the first QualityImprover
   untangleGlobal->add_culling_method(PatchData::NO_BOUNDARY_VTX);
   untangleGlobal->set_inner_termination_criterion(untangleGlobalInner);
@@ -116,8 +127,6 @@ ShapeImprovementWrapper::ShapeImprovementWrapper(double cpu_time,
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "ShapeImprovementWrapper::~ShapeImprovementWrapper"
 ShapeImprovementWrapper::~ShapeImprovementWrapper()
 {
   delete untangleMetric;
@@ -135,8 +144,6 @@ ShapeImprovementWrapper::~ShapeImprovementWrapper()
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "ShapeImprovementWrapper::run_instructions"
 /*!Run instructions first calls the global untangler.  If the
   resulting mesh is tangled after that pre-conditioning step,
   The mesh is iteratively smoothed with a local and then global
@@ -152,34 +159,39 @@ void ShapeImprovementWrapper::run_instructions(MeshSet &ms, MsqError &err)
     //wrapper must terminate.  If the wrapper is set to terminate on
     //a time constraint, time_remaining will always be 1.0
   double time_remaining=1.0;
-  mQA->loop_over_mesh(ms, err);
+  mQA->loop_over_mesh(ms, err);  MSQ_ERRRTN(err);
     //if using a time constraint set the termination criteria.
   if(timerNeeded){
     time_remaining=maxTime;
     untangleGlobalInner->add_criterion_type_with_double(TerminationCriterion::CPU_TIME,time_remaining,err);
+    MSQ_ERRRTN(err);
   }
     //global untangler
-  untangleGlobal->loop_over_mesh(ms, err);
+  untangleGlobal->loop_over_mesh(ms, err);  MSQ_ERRRTN(err);
   if(timerNeeded)
     time_remaining=maxTime-totalTimer.since_birth();
   double func_val=untangleGlobalInner->get_current_function_value();
 
-  mQA->loop_over_mesh(ms, err);
+  mQA->loop_over_mesh(ms, err);  MSQ_ERRRTN(err);
   if(timerNeeded)
     time_remaining=maxTime-totalTimer.since_birth();
     //if all the time constraint has been exceeded, notify the user that
     //the shape improvement has not been performed.
   if(time_remaining<=0){
-    Message::print_info("\nOptimization is terminating without perfoming shape improvement");
-    Message::print_info("\n Untangle Function Value is %f",func_val);
+    MSQ_DBGOUT(2) << "Optimization is terminating without perfoming shape improvement.  "
+                  << "Untangle Function Value is " << func_val << " .\n";
   }
     //otherwise, perform the shape improvement.
   else{
-    if(timerNeeded)
+    if(timerNeeded) {
       termInner->add_criterion_type_with_double(TerminationCriterion::CPU_TIME,time_remaining,err);
-    feasNewt->loop_over_mesh(ms, err);
-    mQA->loop_over_mesh(ms, err);
+      MSQ_ERRRTN(err);
+    }
+    feasNewt->loop_over_mesh(ms, err);  MSQ_ERRRTN(err);
+    mQA->loop_over_mesh(ms, err);  MSQ_ERRRTN(err);
   } 
 }
+
+} // namespace Mesquite
 
   

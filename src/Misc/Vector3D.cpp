@@ -24,44 +24,48 @@
     pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov      
    
   ***************************************************************** */
-#ifndef MESQUITEINTERRUPT_HPP
-#define MESQUITEINTERRUPT_HPP
+#include "Vector3D.hpp"
+#include "MsqError.hpp"
 
-#include "Mesquite.hpp"
-#ifdef ENABLE_INTERRUPT
-#include <signal.h>
-#include "MsqMessage.hpp"
+#ifdef MSQ_USE_OLD_IO_HEADERS
+#  include <iostream.h>
+#else
+#  include <iostream>
 #endif
 
-//do this because sighandler_t is not defined on all platforms
-extern "C"
+#include <math.h>
+
+namespace Mesquite {
+
+msq_stdio::ostream& operator<<(msq_stdio::ostream &s, const Mesquite::Vector3D &v)
 {
-  typedef void (*msq_sig_handler_t)(int);
+    return s << v[0] << ' ' << v[1] << ' ' << v[2] << ' ' << msq_stdio::endl;
 }
 
-namespace Mesquite
-{
-  class MesquiteInterrupt
+double Vector3D::interior_angle(const Vector3D &lhs,
+                                const Vector3D &rhs,
+                                MsqError& err)
   {
-  public:
-#ifdef ENABLE_INTERRUPT
-    static void catch_interrupt( bool yesno );
-#endif
-    static inline bool interrupt_was_signaled()
-      { return interruptFlag; }
-   
-    static inline void clear_interrupt()
-      { interruptFlag = false; }
-     // should this be 'volatile' ???
-    static bool interruptFlag;
-      //this is a pointer function that will point back to the original
-      //signal handler if there was one.
-    static msq_sig_handler_t oldSigIntHandler;
+    double len1 = lhs.length();
+    double len2 = rhs.length();
+    double angle_cos = (lhs % rhs)/(len1 * len2);
+    if (!finite( angle_cos ))
+    {
+      MSQ_SETERR(err)(MsqError::INTERNAL_ERROR);
+      return 0.0;
+    }
     
+    // Adjust the cosine if slightly out of range
+    if ((angle_cos > 1.0) && (angle_cos < 1.0001))
+      {
+        angle_cos = 1.0;
+      }
+    else if (angle_cos < -1.0 && angle_cos > -1.0001)
+      {
+        angle_cos = -1.0;
+      }
     
-  };
-  
-  
-}
+    return msq_stdc::acos(angle_cos);
+  }
 
-#endif
+}

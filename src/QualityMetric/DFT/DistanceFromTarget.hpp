@@ -38,8 +38,7 @@ Header file for the Mesquite::DistanceFromTarget class
 #define DistanceFromTarget_hpp
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
-#include "MsqMessage.hpp"
+#include "MsqError.hpp"
 #include "PatchData.hpp"
 #include "QualityMetric.hpp"
 #include "MsqMeshEntity.hpp"
@@ -72,8 +71,6 @@ namespace Mesquite
   };
 
   
-#undef __FUNC__
-#define __FUNC__ "DistanceFromTarget::compute_T_matrices" 
   inline void DistanceFromTarget::compute_T_matrices(MsqMeshEntity &elem, PatchData& pd,
                         Matrix3D T[], size_t num_T, double c_k[], MsqError &err)
   {    
@@ -84,8 +81,11 @@ namespace Mesquite
 //       std::cout << "A["<<i<<"]:\n" << T[i] << std::endl;
 
     size_t num_targets=0;
-    TargetMatrix* W = elem.get_target_matrices(num_targets, err); MSQ_CHKERR(err);
-    assert( num_T == num_targets );
+    TargetMatrix* W = elem.get_target_matrices(num_targets, err); MSQ_ERRRTN(err);
+    if( num_T != num_targets ) {
+      MSQ_SETERR(err)(MsqError::INTERNAL_ERROR);
+      return;
+    }
     
 //     for (size_t i=0; i<num_T; ++i)
 //       std::cout << "W["<<i<<"]:\n" << W[i] << std::endl;
@@ -99,13 +99,10 @@ namespace Mesquite
 
   /*! Returns the 
    */
-#undef __FUNC__
-#define __FUNC__ "DistanceFromTarget::get_barrier_function" 
   inline bool DistanceFromTarget::get_barrier_function(PatchData& pd, const double &tau, double &h, MsqError &err)
   { 
 
-     double delta=pd.get_barrier_delta(err); 
-     MSQ_CHKERR(err);
+     double delta=pd.get_barrier_delta(err);  MSQ_ERRZERO(err);
 
      // Note: technically, we want delta=eta*tau-max
      //       whereas the function above gives delta=eta*alpha-max
@@ -144,7 +141,9 @@ namespace Mesquite
         //       approximation to compute h.
      }
      if (h<MSQ_DBL_MIN) {
-       err.set_msg("Barrier function is zero due to excessively large negative area compared to delta. /n Try to untangle mesh another way. ");
+       MSQ_SETERR(err)("Barrier function is zero due to excessively large "
+                       "negative area compared to delta.\nTry to untangle "
+                       "mesh another way.", MsqError::INVALID_MESH);
        return false;
      }
      return true;

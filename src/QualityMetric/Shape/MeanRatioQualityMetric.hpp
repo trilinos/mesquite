@@ -38,18 +38,18 @@ Header file for the Mesquite::MeanRatioQualityMetric class
 
 #ifndef MeanRatioQualityMetric_hpp
 #define MeanRatioQualityMetric_hpp
-#include "MsqMeshEntity.hpp"
+
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
 #include "ShapeQualityMetric.hpp"
 #include "Vector3D.hpp"
 #include "Matrix3D.hpp"
-#include "PatchData.hpp"
-//Michael delete
-#include "MsqMessage.hpp"
 
 namespace Mesquite
 {
+    class MsqMeshEntity;
+    class PatchData;
+    class MsqError;
+
    /*! \class MeanRatioQualityMetric
      \brief Computes the mean ratio of given element.
 
@@ -70,31 +70,7 @@ namespace Mesquite
    class MeanRatioQualityMetric : public ShapeQualityMetric
    {
    public:
-      MeanRatioQualityMetric(double pow_dbl=1.0) : ShapeQualityMetric() {
-       MsqError err;
-       set_metric_type(ELEMENT_BASED);
-       set_element_evaluation_mode(ELEMENT_VERTICES, err); MSQ_CHKERR(err);
-
-       set_gradient_type(ANALYTICAL_GRADIENT);
-       set_hessian_type(ANALYTICAL_HESSIAN);
-       avgMethod=QualityMetric::LINEAR;
-       feasible=1;
-       set_name("Mean Ratio");
-       
-         //Note:  the following are redundant since set_metric_power is called
-       set_negate_flag(1);
-
-       a2Con =  1.0 / 2.0;
-       b2Con =  1.0;
-       c2Con = -1.0;
-
-       a3Con =  1.0 / 3.0;
-       b3Con =  1.0;
-       c3Con = -2.0 / 3.0;
-         //the above are redundant since set_metric_power is called
-       
-       set_metric_power(pow_dbl);
-      }
+      MeanRatioQualityMetric(MsqError& err, double pow_dbl = 1.0);
 
       //! virtual destructor ensures use of polymorphism during destruction
       virtual ~MeanRatioQualityMetric() {
@@ -123,23 +99,8 @@ namespace Mesquite
       
     private:
        //! Sets the power value in the metric computation.
-     void set_metric_power(double pow_dbl)
-        {
-          if(fabs(pow_dbl)<MSQ_MIN){
-            pow_dbl=1.0;
-            Mesquite::Message::print_warning("\nInvalid power passed to set_metric_power(double ), Metric using the default value, 1.0, instead.");
-          }
-          if(pow_dbl<0)
-            set_negate_flag(-1);
-          else
-            set_negate_flag(1);
-          a2Con=pow(.5,pow_dbl);
-          b2Con=pow_dbl;
-          c2Con=-pow_dbl;
-          a3Con=pow(1.0/3.0,pow_dbl);
-          b3Con=pow_dbl;
-          c3Con=-2.0*pow_dbl/3.0;
-        }
+     void set_metric_power(double pow_dbl, MsqError& err);
+     
       // arrays used in Hessian computations 
       // We allocate them here, so that one allocation only is done.
       // This gives a big computation speed increase.

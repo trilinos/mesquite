@@ -44,13 +44,15 @@ Tests for the TerminationCriterion class..
 
 */
 //
-#ifdef USE_STD_INCLUDES
+#ifndef MSQ_USE_OLD_IO_HEADERS
 #include <iostream>
+using std::cout;
+using std::endl;
 #else
 #include <iostream.h>
 #endif
 
-#ifdef USE_C_PREFIX_INCLUDES
+#ifdef MSQ_USE_OLD_C_HEADERS
 #include <cstdlib>
 #else
 #include <stdlib.h>
@@ -58,7 +60,7 @@ Tests for the TerminationCriterion class..
 
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
+#include "MsqError.hpp"
 #include "Vector3D.hpp"
 #include "InstructionQueue.hpp"
 #include "MeshSet.hpp"
@@ -127,12 +129,12 @@ public:
       Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
       mesh->read_vtk("../../meshFiles/2D/VTK/tri_5_xz.vtk", err);
       MeshSet mesh_set1;
-      mesh_set1.add_mesh(mesh, err); CPPUNIT_ASSERT(!err.errorOn);
+      mesh_set1.add_mesh(mesh, err); CPPUNIT_ASSERT(!err);
       
       Vector3D pnt(0,-5,0);
       Vector3D s_norm(0, -1,0);
       Mesquite::PlanarDomain msq_geom(s_norm, pnt, mesh);
-      mesh_set1.set_domain_constraint(&msq_geom, err); CPPUNIT_ASSERT(!err.errorOn);
+      mesh_set1.set_domain_constraint(&msq_geom, err); CPPUNIT_ASSERT(!err);
       
         // create an intruction queue        
       InstructionQueue queue1;
@@ -140,24 +142,20 @@ public:
         // create a mean ratio quality metric ...
       ShapeQualityMetric* cond_num= new ConditionNumberQualityMetric;
       LPtoPTemplate* obj_func = new LPtoPTemplate(cond_num, 2, err);
-      CPPUNIT_ASSERT(!err.errorOn);
+      CPPUNIT_ASSERT(!err);
       obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
       ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
-      CPPUNIT_ASSERT(!err.errorOn);
+      CPPUNIT_ASSERT(!err);
       pass1->set_outer_termination_criterion(tc_outer);
       pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
       
       pass1->set_debugging_level(0);
       QualityAssessor all_qa=QualityAssessor(cond_num,
                                              QualityAssessor::ALL_MEASURES);
-      queue1.add_quality_assessor(&all_qa,err);
-      CPPUNIT_ASSERT(!err.errorOn);
-      queue1.set_master_quality_improver(pass1, err); CPPUNIT_ASSERT(!err.errorOn);
-      CPPUNIT_ASSERT(!err.errorOn);
-        //queue1.add_quality_assessor(&all_qa,err);
-      CPPUNIT_ASSERT(!err.errorOn);
-      queue1.run_instructions(mesh_set1, err); CPPUNIT_ASSERT(!err.errorOn);
-      CPPUNIT_ASSERT(!err.errorOn);
+      queue1.add_quality_assessor(&all_qa,err); CPPUNIT_ASSERT(!err);
+      queue1.set_master_quality_improver(pass1, err); CPPUNIT_ASSERT(!err);
+        //queue1.add_quality_assessor(&all_qa,err); CPPUNIT_ASSERT(!err);
+      queue1.run_instructions(mesh_set1, err); CPPUNIT_ASSERT(!err);
       delete pass1;
       delete obj_func;
       delete cond_num;
@@ -166,137 +164,163 @@ public:
     //NUMBER OF ITERATES
   void test_number_of_iterates()
     {
-      MsqError err;
+      MsqPrintError err(cout);
       TerminationCriterion t1;
       t1.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,
-                                     2, err);
+                                     2, err);CPPUNIT_ASSERT(!err);
       if(pF)
         std::cout<<"\nTEST_NUMBER_OF_ITERATES\n";
-      test_outer_criterion(&t1,err);
+      test_outer_criterion(&t1,err);CPPUNIT_ASSERT(!err);
     }
   
     //GRADIENT NORM ABSOLUTE
   void test_gradient_norm_absolute()
     {
-      MsqError err;
+      MsqPrintError err(cout);
       TerminationCriterion t1;
       t1.add_criterion_type_with_double(TerminationCriterion::GRADIENT_INF_NORM_ABSOLUTE,.02, err);
+      CPPUNIT_ASSERT(!err);
       if(pF)
         std::cout<<"\nTEST_GRADIENT_INF_NORM_ABSOLUTE\n";
       test_outer_criterion(&t1,err);
+      CPPUNIT_ASSERT(!err);
     }
   
     //GRADIENT NORM RELATIVE
   void test_gradient_norm_relative()
     {
-      MsqError err;
+      MsqPrintError err(cout);
       TerminationCriterion t1;
       t1.add_criterion_type_with_double(TerminationCriterion::GRADIENT_INF_NORM_RELATIVE,.3, err);
+      CPPUNIT_ASSERT(!err);
       if(pF)
         std::cout<<"\nTEST_GRADIENT_INF_NORM_RELATIVE\n";
       test_outer_criterion(&t1,err);
+      CPPUNIT_ASSERT(!err);
     }
   
     //CPU TIME
   void test_cpu_time()
     {
-      MsqError err;
+      MsqPrintError err(cout);
       TerminationCriterion t1;
       t1.add_criterion_type_with_double(TerminationCriterion::CPU_TIME,5, err);
+      CPPUNIT_ASSERT(!err);
       if(pF)
         std::cout<<"\nTEST_CPU_TIME\n";
       test_outer_criterion(&t1,err);
+      CPPUNIT_ASSERT(!err);
     }
   
     //CPU TIME OR NUMBER OF ITERATES
    void test_cpu_time_or_iterates()
     {
-      MsqError err;
+      MsqPrintError err(cout);
       TerminationCriterion t1;
       t1.add_criterion_type_with_double(TerminationCriterion::CPU_TIME,5, err);
+      CPPUNIT_ASSERT(!err);
       t1.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,5000, err);
+      CPPUNIT_ASSERT(!err);
       if(pF)
         std::cout<<"\nTEST_CPU_TIME_OR_ITERATES\n";
       test_outer_criterion(&t1,err);
+      CPPUNIT_ASSERT(!err);
     }
   
     //NUMBER OF ITERATES OR CPU TIME
   void test_iterates_or_cpu_time()
     {
-      MsqError err;
+      MsqPrintError err(cout);
       TerminationCriterion t1;
       t1.add_criterion_type_with_double(TerminationCriterion::CPU_TIME,5000, err);
+      CPPUNIT_ASSERT(!err);
       t1.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,2, err);
+      CPPUNIT_ASSERT(!err);
       if(pF)
         std::cout<<"\nTEST_ITERATES_OR_CPU_TIME\n";
       test_outer_criterion(&t1,err);
+      CPPUNIT_ASSERT(!err);
     }
   
     //QUALITY IMPROVEMENT ABSOLUTE
   void test_quality_improvement_absolute()
     {
-      MsqError err;
+      MsqPrintError err(cout);
       TerminationCriterion t1;
       t1.add_criterion_type_with_double(TerminationCriterion::QUALITY_IMPROVEMENT_ABSOLUTE,143.0, err);
+      CPPUNIT_ASSERT(!err);
       if(pF)
         std::cout<<"\nTEST_QUALITY_IMPROVEMENT_ABSOLUTE\n";
       test_outer_criterion(&t1,err);
+      CPPUNIT_ASSERT(!err);
     }
 
     //QUALITY IMPROVEMENT RELATIVE
   void test_quality_improvement_relative()
     {
-      MsqError err;
+      MsqPrintError err(cout);
       TerminationCriterion t1;
       t1.add_criterion_type_with_double(TerminationCriterion::QUALITY_IMPROVEMENT_RELATIVE,.996, err);
+      CPPUNIT_ASSERT(!err);
       if(pF)
         std::cout<<"\nTEST_QUALITY_IMPROVEMENT_RELATIVE\n";
       test_outer_criterion(&t1,err);
+      CPPUNIT_ASSERT(!err);
     }
 
     //SUCCESSIVE IMPROVEMENTS ABSOLUTE
   void test_successive_improvements_absolute()
     {
-      MsqError err;
+      MsqPrintError err(cout);
       TerminationCriterion t1;
       t1.add_criterion_type_with_double(TerminationCriterion::SUCCESSIVE_IMPROVEMENTS_ABSOLUTE,.005, err);
+      CPPUNIT_ASSERT(!err);
       if(pF)
         std::cout<<"\nTEST_SUCCESSIVE_IMPROVEMENTS_ABSOLUTE\n";
       test_outer_criterion(&t1,err);
-    }
+      CPPUNIT_ASSERT(!err);
+   }
   
     //SUCCESSIVE IMPROVEMENTS RELATIVE
   void test_successive_improvements_relative()
      {
-       MsqError err;
+       MsqPrintError err(cout);
        TerminationCriterion t1;
        t1.add_criterion_type_with_double(TerminationCriterion::SUCCESSIVE_IMPROVEMENTS_RELATIVE,.25, err);
+       CPPUNIT_ASSERT(!err);
        if(pF)
          std::cout<<"\nTEST_SUCCESSIVE_IMPROVEMENTS_RELATIVE\n";
        test_outer_criterion(&t1,err);
+       CPPUNIT_ASSERT(!err);
      }
   
     //VERTEX BOUND OR CPU TIME
   void test_vertex_bound_or_cpu_time()
      {
-       MsqError err;
+       MsqPrintError err(cout);
        TerminationCriterion t1;
        t1.add_criterion_type_with_double(TerminationCriterion::CPU_TIME,5000, err);
+       CPPUNIT_ASSERT(!err);
        t1.add_criterion_type_with_double(TerminationCriterion::BOUNDED_VERTEX_MOVEMENT, .01 , err);
+       CPPUNIT_ASSERT(!err);
        if(pF)
         std::cout<<"\nTEST_VERTEX_BOUND_OR_CPU_TIME\n";
        test_outer_criterion(&t1,err);
+       CPPUNIT_ASSERT(!err);
      }
     //CPU TIME OR VERTEX BOUND
   void test_cpu_time_or_vertex_bound()
      {
-       MsqError err;
+       MsqPrintError err(cout);
        TerminationCriterion t1;
        t1.add_criterion_type_with_double(TerminationCriterion::CPU_TIME,5, err);
+       CPPUNIT_ASSERT(!err);
        t1.add_criterion_type_with_double(TerminationCriterion::BOUNDED_VERTEX_MOVEMENT, 50000 , err);
+       CPPUNIT_ASSERT(!err);
        if(pF)
          std::cout<<"\nTEST_CPU_TIME_OR_VERTEX_BOUND\n";
        test_outer_criterion(&t1,err);
+       CPPUNIT_ASSERT(!err);
      }
 };
 

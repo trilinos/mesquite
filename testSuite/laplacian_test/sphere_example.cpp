@@ -45,13 +45,15 @@ iterations.
 // DESCRIP-END.
 //
 
-#ifdef USE_STD_INCLUDES
+#ifndef MSQ_USE_OLD_IO_HEADERS
 #include <iostream>
+using std::cout;
+using std::end;
 #else
 #include <iostream.h>
 #endif
 
-#ifdef USE_C_PREFIX_INCLUDES
+#ifdef MSQ_USE_OLD_C_HEADERS
 #include <cstdlib>
 #else
 #include <stdlib.h>
@@ -61,7 +63,7 @@ iterations.
 #include "Mesquite.hpp"
 #include "TSTT_Base.h"
 #include "MesquiteUtilities.hpp" //  for writeShowMeMesh()
-#include "MesquiteError.hpp"
+#include "MsqError.hpp"
 #include "Vector3D.hpp"
 #include "InstructionQueue.hpp"
 #include "MeshSet.hpp"
@@ -80,8 +82,6 @@ iterations.
 using namespace Mesquite;
 
 
-#undef __FUNC__
-#define __FUNC__ "main"
 int main()
 {     
   char file_name[128];
@@ -93,11 +93,12 @@ int main()
   TSTT::Mesh_Load(mesh, file_name, &tstt_err);
   
   // Mesquite error object
-  MsqError err;
+  MsqPrintError err(cout);
   
   // initialises a MeshSet object
   MeshSet mesh_set1;
-  mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
+  mesh_set1.add_mesh(mesh, err); 
+  if (err) return 1;
   
   // creates an intruction queue
   InstructionQueue queue1;
@@ -106,11 +107,15 @@ int main()
   ShapeQualityMetric* shape_metric = ConditionNumberQualityMetric::create_new();
   SmoothnessQualityMetric* lapl_met = EdgeLengthQualityMetric::create_new();
   lapl_met->set_averaging_method(QualityMetric::RMS,err);
+  if (err) return 1;
+  
   
     // creates the laplacian smoother  procedures
   LaplacianSmoother* lapl1 = new LaplacianSmoother(err);
  QualityAssessor stop_qa=QualityAssessor(shape_metric,QualityAssessor::MAXIMUM);
  stop_qa.add_quality_assessment(lapl_met,QualityAssessor::AVERAGE,err);
+  if (err) return 1;
+  
  
    //**************Set stopping criterion****************
  StoppingCriterion sc2(StoppingCriterion::NUMBER_OF_PASSES,500);
@@ -119,17 +124,23 @@ int main()
  lapl1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
 
   // adds 1 pass of pass1 to mesh_set1
- queue1.add_quality_assessor(&stop_qa,err); MSQ_CHKERR(err);
- queue1.set_master_quality_improver(lapl1, err); MSQ_CHKERR(err);
- queue1.add_quality_assessor(&stop_qa,err); MSQ_CHKERR(err);
+ queue1.add_quality_assessor(&stop_qa,err); 
+  if (err) return 1;
+ queue1.set_master_quality_improver(lapl1, err); 
+  if (err) return 1;
+ queue1.add_quality_assessor(&stop_qa,err); 
+  if (err) return 1;
   // adds 1 passes of pass2 to mesh_set1
 //  mesh_set1.add_quality_pass(pass2);
 
    //writeVtkMesh("original_mesh", mesh, err); MSQ_CHKERR(err);
   
   // launches optimization on mesh_set1
-  queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
+  queue1.run_instructions(mesh_set1, err); 
+  if (err) return 1;
   
-  writeVtkMesh("smoothed_mesh", mesh, err); MSQ_CHKERR(err);
+  writeVtkMesh("smoothed_mesh", mesh, err); 
+  if (err) return 1;
 
+  return 0;
 }

@@ -75,7 +75,7 @@ private:
 public:
   void setUp()
   {
-    MsqError err;
+    MsqPrintError err(cout);
 
     /*      7____6____5___11
             |    |    |    |
@@ -99,7 +99,7 @@ public:
   
   void test_hard_fixed_flags()
   {   
-     MsqError err;
+     MsqPrintError err(cout);
      int indices[10];
      int i=0;
      MsqFreeVertexIndexIterator ind(&pd, err);
@@ -117,7 +117,7 @@ public:
 
   void test_soft_fixed_flags()
   {   
-     MsqError err;
+     MsqPrintError err(cout);
      MsqVertex* vtces = pd.get_vertex_array(err);
      vtces[0].set_soft_fixed_flag();
 

@@ -32,7 +32,6 @@
 #include "Mesquite.hpp"
 #include <assert.h>
 
-#include <iostream>
 // Function declarations
 void set_fixed_boundary_faces(TSTT::Mesh_Handle &mh,
                         TSTT::MeshError *error);

@@ -33,14 +33,13 @@
   \date   2002-01-23
 */
 #include <math.h>
-#include "ObjectiveFunction.hpp"
 #include "CompositeOFMultiply.hpp"
 #include "MsqTimer.hpp"
-using namespace Mesquite;
+#include "PatchData.hpp"
+
+namespace Mesquite {
 
 
-#undef __FUNC__
-#define __FUNC__ "CompositeOFMultiply::CompositeOFMultiply"
 /*!
 Sets the QualityMetric pointer to the metric associated with Obj1 and Obj2
 if Obj1 and Obj2 are associated with the same metric.  Otherwise, it sets
@@ -70,31 +69,24 @@ CompositeOFMultiply::CompositeOFMultiply(ObjectiveFunction* Obj1, ObjectiveFunct
   set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
 }
 
-#undef __FUNC__
-#define __FUNC__ "CompositeOFMultiply::~CompositeOFMultiply"
-
 //Michael:  need to clean up here
 CompositeOFMultiply::~CompositeOFMultiply(){
 
 }
 
-#undef __FUNC__
-#define __FUNC__ "CompositeOFMultiply::get_quality_metric_list"
 /*! Returns the QualityMetric list associated with objFunc1 merged
   with the QualityMetric list associated with objFunc2.  The entries
   in this merged list may not be unique.
 */
-list<QualityMetric*> CompositeOFMultiply::get_quality_metric_list()
+msq_std::list<QualityMetric*> CompositeOFMultiply::get_quality_metric_list()
 {
-  list<QualityMetric*> temp_list=objFunc1->get_quality_metric_list();
-  list<QualityMetric*> temp_list2=objFunc2->get_quality_metric_list();
+  msq_std::list<QualityMetric*> temp_list=objFunc1->get_quality_metric_list();
+  msq_std::list<QualityMetric*> temp_list2=objFunc2->get_quality_metric_list();
   temp_list.merge(temp_list2);
   return temp_list;
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "CompositeOFMultiply::concrete_evaluate"
 /*!Computes fval= objFunc1->evaluate(patch,err)*objFunc2->evaluate(patch,err).
   Note that since objFunc1 and objFunc2's evaluate() functions are called
   (as opposed to their concrete_evaluates) the returned values have
@@ -108,12 +100,14 @@ bool CompositeOFMultiply::concrete_evaluate(PatchData &patch, double &fval,
                                             MsqError &err){
   double second_val;
     //if invalid, return false without calculating fval.
-  if(! objFunc1->evaluate(patch, fval, err)){
+  bool b = objFunc1->evaluate(patch, fval, err); 
+  if(MSQ_CHKERR(err) || !b){
     fval=0.0;
     return false;
   }
   
-  if(! objFunc2->evaluate(patch, second_val, err)){
+  b = objFunc2->evaluate(patch, second_val, err); 
+  if(MSQ_CHKERR(err) || !b){
     fval=0.0;
     return false;
   }
@@ -121,8 +115,6 @@ bool CompositeOFMultiply::concrete_evaluate(PatchData &patch, double &fval,
   return true;
 }
 
-#undef __FUNC__
-#define __FUNC__ "CompositeOFMultiply::compute_analytical_gradient"
 /*! Analytically computes the composite objective function's gradient,
   using the multiplication rule.
   by scaling the gradient returned objFunc->compute_gradient().
@@ -139,10 +131,11 @@ bool CompositeOFMultiply::compute_analytical_gradient(PatchData &patch,
 						      MsqError &err,
 						      size_t array_size)
 {
-  FUNCTION_TIMER_START(__FUNC__);
+  FunctionTimer ft( "CompositeOFMultiply::compute_analytical_gradient" );
+  
   double obj_2_val=0.0;
   //get the first gradient and objective function value
-  bool rval=objFunc1->compute_gradient(patch, grad, OF_val,  err, array_size);
+  bool rval=objFunc1->compute_gradient(patch, grad, OF_val,  err, array_size); MSQ_ERRZERO(err);
   //if the above is valid, get the second gradient
   if(rval){
     int num_vert=patch.num_vertices();
@@ -163,7 +156,6 @@ bool CompositeOFMultiply::compute_analytical_gradient(PatchData &patch,
     delete []second_grad;
   }
   
-  FUNCTION_TIMER_END();
     //true if both gradient and both evaluate were successful.
   //compute the objective function value by mulitiplying
   //OF_val and obj_2_val
@@ -175,3 +167,4 @@ bool CompositeOFMultiply::compute_analytical_gradient(PatchData &patch,
 }
 	
 	
+} // namespace Mesquite

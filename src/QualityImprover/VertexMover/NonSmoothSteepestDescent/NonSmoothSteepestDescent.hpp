@@ -43,8 +43,7 @@
 #include "VertexMover.hpp"
 #include "ObjectiveFunction.hpp"
 #include "MsqFreeVertexIndexIterator.hpp"
-MSQ_USE(cout);
-MSQ_USE(endl);
+#include "MsqDebug.hpp"
 
 namespace Mesquite
 {
@@ -244,8 +243,6 @@ namespace Mesquite
   };
   
 
-#undef __FUNC__
-#define __FUNC__ "NonSmoothSteepestDescent::compute_function"
 inline bool NonSmoothSteepestDescent::compute_function(PatchData *patch_data, double *func, MsqError &err)
 {
   // ASSUMES ONE VALUE PER ELEMENT; ALSO NEED 1.0/FUNCTION WHICH IS ONLY
@@ -268,7 +265,7 @@ inline bool NonSmoothSteepestDescent::compute_function(PatchData *patch_data, do
   for (i=0;i<numElements;i++) {
     valid_bool = currentQM->evaluate_element(*patch_data,
                                 &(patch_data->element_by_index(i)),
-                                func[i], err); MSQ_CHKERR(err);
+                                func[i], err); MSQ_ERRZERO(err);
     //    MSQ_DEBUG_ACTION(3,{fprintf(stdout,"  Function value[%d]=%g\n",i,func[i]);});
   }
 //  FUNCTION_TIMER_END();
@@ -276,13 +273,11 @@ inline bool NonSmoothSteepestDescent::compute_function(PatchData *patch_data, do
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "NonSmoothSteepestDescent::compute_gradient"
 inline double** NonSmoothSteepestDescent::compute_gradient(PatchData *patch_data, MsqError &err)
 {
 //  FUNCTION_TIMER_START("Compute Gradient");
 
-  MSQ_DEBUG_PRINT(2,"Computing Gradient\n");
+  MSQ_DBGOUT(2) << "Computing Gradient\n";
 
   double delta = 10e-6;
 
@@ -297,7 +292,12 @@ inline double** NonSmoothSteepestDescent::compute_gradient(PatchData *patch_data
   func = (double *)malloc(sizeof(double)*150);
   fdelta = (double *)malloc(sizeof(double)*150);
 
-  this->compute_function(patch_data, func, err); MSQ_CHKERR(err);
+  this->compute_function(patch_data, func, err); 
+  if (MSQ_CHKERR(err)) {
+    free(func);
+    free(fdelta);
+    return 0;
+  }
 
   /* gradient in the x, y, z direction */
 
@@ -307,7 +307,12 @@ inline double** NonSmoothSteepestDescent::compute_gradient(PatchData *patch_data
     mCoords[freeVertexIndex][j] += delta;
 
     //compute the function at the perturbed point location
-    this->compute_function(patch_data, fdelta, err); MSQ_CHKERR(err);
+    this->compute_function(patch_data, fdelta, err);  
+    if (MSQ_CHKERR(err)) {
+      free(func);
+      free(fdelta);
+      return 0;
+    }
 
     //compute the numerical gradient
     for (int i=0;i<numFunctionValues;i++) {
@@ -325,15 +330,9 @@ inline double** NonSmoothSteepestDescent::compute_gradient(PatchData *patch_data
   return(mGradient);
 }
 
-#undef __FUNC__
-#define __FUNC__ "NonSmoothSteepestDescent::find_active_set"
 inline void NonSmoothSteepestDescent::find_active_set(double *function,
                                                       ActiveSet *active_set,
-                                                      MsqError &
-#if MSQ_DEBUG_LEVEL > 0
-                                                      err
-#endif
-                                                      )
+                                                      MsqError & /*err*/ )
 { 
     int         i, ind;
     double      function_val;
@@ -341,7 +340,7 @@ inline void NonSmoothSteepestDescent::find_active_set(double *function,
     double      temp;
 
 //    FUNCTION_TIMER_START("Find Active Set");
-    MSQ_DEBUG_PRINT(2,"\nFinding the active set\n");
+    MSQ_DBGOUT(2) << "\nFinding the active set\n";
 
     // initialize the active set indices to zero
     for (i=0;i<numFunctionValues;i++) active_set->active_ind[i] = 0; 
@@ -387,17 +386,9 @@ inline void NonSmoothSteepestDescent::find_active_set(double *function,
 	}
     }
 
-    MSQ_DEBUG_ACTION(3,{
-      /* Print the active set */
-      this->print_active_set(active_set,function,err); MSQ_CHKERR(err);
-    });
-//   FUNCTION_TIMER_END();
-
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "NonSmoothSteepestDescent::validity_check"
 inline int NonSmoothSteepestDescent::validity_check(MsqError &/*err*/)
         
 {
@@ -506,8 +497,6 @@ inline int NonSmoothSteepestDescent::validity_check(MsqError &/*err*/)
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "NonSmoothSteepestDescent::get_active_directions" 
 inline void NonSmoothSteepestDescent::get_active_directions(double **gradient, 
                                                             double ***dir,
                                                             MsqError &/*err*/)
@@ -523,8 +512,6 @@ inline void NonSmoothSteepestDescent::get_active_directions(double **gradient,
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "NonSmoothSteepestDescent::check_vector_dots"
 inline int NonSmoothSteepestDescent::check_vector_dots(double **vec,
                                                        int num_vec, 
                                                        double *normal,
@@ -554,8 +541,6 @@ inline int NonSmoothSteepestDescent::check_vector_dots(double **vec,
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "NonSmoothSteepestDescent::find_plane_normal"
 inline void NonSmoothSteepestDescent::find_plane_normal(double pt1[3],
                                                         double pt2[3],
                                                         double pt3[3],
@@ -576,8 +561,6 @@ inline void NonSmoothSteepestDescent::find_plane_normal(double pt1[3],
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "NonSmoothSteepestDescent::convex_hull_test"
 inline int NonSmoothSteepestDescent::convex_hull_test(double **vec, int num_vec, MsqError &err)
 {
 //    int ierr;
@@ -631,37 +614,34 @@ inline int NonSmoothSteepestDescent::convex_hull_test(double **vec, int num_vec,
            } else if (equil == 0) {
                status = MSQ_NO_EQUIL;
            } else {
-               err.set_msg("equil flag not set to 0 or 1");
+              MSQ_SETERR(err)("equil flag not set to 0 or 1",MsqError::INVALID_STATE);
            }
        }
     }
     switch (status){
     case MSQ_NO_EQUIL:
-      MSQ_DEBUG_PRINT(3,"Not an equilibrium point\n");
+      MSQ_PRINT(3)("Not an equilibrium point\n");
       equil = 0; 
       break;
     case MSQ_EQUIL:
-      MSQ_DEBUG_PRINT(3,"An equilibrium point\n");
+      MSQ_PRINT(3)("An equilibrium point\n");
       equil = 1;
       break;
     default:
-      MSQ_DEBUG_ACTION(3,{
-        fprintf(stdout,"Failed to determine equil or not; status = %d\n",status);
-      });
+      MSQ_PRINT(3)("Failed to determine equil or not; status = %d\n",status);
     }
 //    FUNCTION_TIMER_END();
     return (equil);
 }
 
-#undef __FUNC__
-#define __FUNC__ "NonSmoothSteepestDescent::form_grammian" 
 inline void NonSmoothSteepestDescent::form_grammian(double **vec, MsqError &err)
 {
    int i, j;
    int num_active = mActive->num_active;
 
    if (num_active > 150) {
-      err.set_msg("Exceeded maximum allowed active values");
+      MSQ_SETERR(err)("Exceeded maximum allowed active values",MsqError::INVALID_STATE);
+      return;
    }
    /* form the grammian with the dot products of the gradients */
    for (i=0; i<num_active; i++) {
@@ -673,8 +653,6 @@ inline void NonSmoothSteepestDescent::form_grammian(double **vec, MsqError &err)
    }
 }
 
-#undef __FUNC__
-#define __FUNC__ "NonSmoothSteepestDescent::check_equilibrium"
 inline void NonSmoothSteepestDescent::check_equilibrium(int *equil, int *status, MsqError &err)
 {
 //    int  ierr;
@@ -697,7 +675,7 @@ inline void NonSmoothSteepestDescent::check_equilibrium(int *equil, int *status,
     if (num_active==numFunctionValues)
     {
          *equil = 1; *status = MSQ_EQUILIBRIUM;
-         MSQ_DEBUG_PRINT(3,"All the function values are in the active set\n"); 
+         MSQ_PRINT(3)("All the function values are in the active set\n"); 
     }
 
     /* set up the active mGradient directions */
@@ -716,7 +694,7 @@ inline void NonSmoothSteepestDescent::check_equilibrium(int *equil, int *status,
       for (j=i+1;j<num_active;j++) {
         if ( fabs(-1 - mG[i][j]) < 1E-08 ) {
            *equil = 1; *status = MSQ_EQUILIBRIUM;
-           MSQ_DEBUG_PRINT(3,"The gradients are antiparallel, eq. pt\n"); 
+           MSQ_PRINT(3)("The gradients are antiparallel, eq. pt\n"); 
          }
          if (mG[i][j]  < min) { 
            ind1 = i; ind2 = j;
@@ -738,7 +716,7 @@ inline void NonSmoothSteepestDescent::check_equilibrium(int *equil, int *status,
          if ((i != ind1) && (i != ind2)) {
             MSQ_DOT(test_cos,dir[i],mid_vec,mDimension);
             if ((test_cos < mid_cos)  &&  fabs(test_cos-mid_cos) > MSQ_MACHINE_EPS) {
-              MSQ_DEBUG_PRINT(3,"An equilibrium point \n");
+              MSQ_PRINT(3)("An equilibrium point \n");
               *equil = 1; *status = MSQ_EQUILIBRIUM;
             }
          }
@@ -753,8 +731,6 @@ inline void NonSmoothSteepestDescent::check_equilibrium(int *equil, int *status,
 
 
 
-#undef __FUNC__
-#define __FUNC__ "NonSmoothSteepestDescent::condition3x3" 
 inline void NonSmoothSteepestDescent::condition3x3(double **A, double *cond,
                                                    MsqError &/*err*/) 
 {
@@ -820,8 +796,6 @@ inline void NonSmoothSteepestDescent::condition3x3(double **A, double *cond,
    }
 }
 
-#undef __FUNC__
-#define __FUNC__ "NonSmoothSteepestDescent::singular_test" 
 inline void NonSmoothSteepestDescent::singular_test(int n, double **A, int *singular, MsqError &err) 
 {
 //    int test;
@@ -829,7 +803,8 @@ inline void NonSmoothSteepestDescent::singular_test(int n, double **A, int *sing
     double cond;
 
     if ((n>3) || (n<1)) {
-      err.set_msg("Singular test works only for n=1 to n=3");
+      MSQ_SETERR(err)("Singular test works only for n=1 to n=3",MsqError::INVALID_ARG);
+      return;
     }
 
     (*singular)=MSQ_TRUE;
@@ -850,8 +825,6 @@ inline void NonSmoothSteepestDescent::singular_test(int n, double **A, int *sing
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "NonSmoothSteepestDescent::form_PD_grammian" 
 inline void NonSmoothSteepestDescent::form_PD_grammian(MsqError &err)
 {
     int  i,j,k;
@@ -864,7 +837,7 @@ inline void NonSmoothSteepestDescent::form_PD_grammian(MsqError &err)
     for (i=0;i<num_active;i++) {
       for (j=0;j<num_active;j++) {
         if (mG[i][j]==-1) {
-          err.set_msg("Grammian not computed properly");
+          MSQ_SETERR(err)("Grammian not computed properly",MsqError::INVALID_STATE);
           return;
         }
       }
@@ -894,8 +867,6 @@ inline void NonSmoothSteepestDescent::form_PD_grammian(MsqError &err)
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "NonSmoothSteepestDescent::search_edges_faces" 
 inline void NonSmoothSteepestDescent::search_edges_faces(double **dir, MsqError &err)
 {
 //    int ierr;
@@ -909,7 +880,7 @@ inline void NonSmoothSteepestDescent::search_edges_faces(double **dir, MsqError 
     int num_active = mActive->num_active;
 
     if ( (mDimension != 2) && (mDimension != 3)) {
-       err.set_msg("Dimension must be 2 or 3");
+       MSQ_SETERR(err)("Dimension must be 2 or 3", MsqError::INVALID_MESH);
     }
 
     /* initialize the search direction to 0,0 */
@@ -972,8 +943,6 @@ inline void NonSmoothSteepestDescent::search_edges_faces(double **dir, MsqError 
 }         
 
 
-#undef __FUNC__
-#define __FUNC__ "NonSmoothSteepestDescent::solve2x2" 
 inline void NonSmoothSteepestDescent::solve2x2(double a11, double a12,
                                                double a21, double a22, 
                                                double b1, double b2,
@@ -999,8 +968,6 @@ inline void NonSmoothSteepestDescent::solve2x2(double a11, double a12,
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "NonSmoothSteepestDescent::form_reduced_matrix" 
 inline void NonSmoothSteepestDescent::form_reduced_matrix(double ***P,
                                                           MsqError &/*err*/)
 {
@@ -1021,8 +988,6 @@ inline void NonSmoothSteepestDescent::form_reduced_matrix(double ***P,
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "NonSmoothSteepestDescent::get_min_estimate"
 inline void  NonSmoothSteepestDescent::get_min_estimate(double *final_est,
                                                         MsqError &/*err*/)
 {
@@ -1046,19 +1011,15 @@ inline void  NonSmoothSteepestDescent::get_min_estimate(double *final_est,
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "NonSmoothSteepestDescent::get_gradient_projections"
 inline void NonSmoothSteepestDescent::get_gradient_projections(MsqError &/*err*/)
 {
     for (int i=0;i<numFunctionValues;i++) 
 	MSQ_DOT(mGS[i],mGradient[i],mSearch,mDimension);
 
-    MSQ_DEBUG_ACTION(3,{fprintf(stdout,"steepest in get_gradient_projections %d\n",mSteepest);});
+    MSQ_PRINT(3)("steepest in get_gradient_projections %d\n",mSteepest);
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "NonSmoothSteepestDescent::compute_alpha"
 inline void NonSmoothSteepestDescent::compute_alpha(MsqError &/*err*/)
 {
 //    int       ierr;
@@ -1073,7 +1034,7 @@ inline void NonSmoothSteepestDescent::compute_alpha(MsqError &/*err*/)
 
 //    FUNCTION_TIMER_START("Compute Alpha");
 
-    MSQ_DEBUG_PRINT(2,"In compute alpha\n");
+    MSQ_PRINT(2)("In compute alpha\n");
 
     num_values = numFunctionValues;
     mAlpha = 1E300;
@@ -1096,7 +1057,7 @@ inline void NonSmoothSteepestDescent::compute_alpha(MsqError &/*err*/)
 	  }
 	  if ((alpha_i > minStepSize ) && (fabs(alpha_i) < fabs(mAlpha))) {
 	    mAlpha = fabs(alpha_i); 
-            MSQ_DEBUG_ACTION(3,{ fprintf(stdout,"Setting alpha %d %g\n",i,alpha_i); });
+            MSQ_PRINT(3)("Setting alpha %d %g\n",i,alpha_i);
 	  }
           if ((alpha_i > 0) && (alpha_i < min_positive_value)) {
             min_positive_value = alpha_i;
@@ -1111,22 +1072,22 @@ inline void NonSmoothSteepestDescent::compute_alpha(MsqError &/*err*/)
     /* if it never gets set, set it to the default */
     if (mAlpha == 1E300) {
       mAlpha = maxAlpha;
-      MSQ_DEBUG_ACTION(3,{ fprintf(stdout,"Setting alpha to the maximum step length\n"); });
+      MSQ_PRINT(3)("Setting alpha to the maximum step length\n");
     }
 
-    MSQ_DEBUG_ACTION(3,{ fprintf(stdout,"  The initial step size: %f\n",mAlpha); });
+    MSQ_PRINT(3)("  The initial step size: %f\n",mAlpha);
 
 //    FUNCTION_TIMER_END();
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "NonSmoothSteepestDescent::copy_active"
 inline void NonSmoothSteepestDescent::copy_active(ActiveSet *active1, ActiveSet *active2, 
                                           MsqError &err)
 {
-    if (active1==NULL || active2==NULL)
-       err.set_msg("Null memory in copy_active\n");
+    if (active1==NULL || active2==NULL) {
+       MSQ_SETERR(err)("Null memory in copy_active\n",MsqError::INVALID_ARG);
+       return;
+    }
 
     active2->num_active = active1->num_active;
     active2->num_equal  = active1->num_equal;
@@ -1137,36 +1098,31 @@ inline void NonSmoothSteepestDescent::copy_active(ActiveSet *active1, ActiveSet 
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "NonSmoothSteepestDescent::print_active_set" 
 inline void NonSmoothSteepestDescent::print_active_set(ActiveSet *active_set, 
-                                                       double *
-#if MSQ_DEBUG_LEVEL > 0
-                                                       func
-#endif
-                                                       ,MsqError &err)
+                                                       double * func,
+                                                       MsqError &err)
 {
-    if (active_set==0) err.set_msg("Null ActiveSet \n");
-    if (active_set->num_active == 0) cout<< "No active values\n";
+    if (active_set==0) {
+      MSQ_SETERR(err)("Null ActiveSet", MsqError::INVALID_ARG);
+      return;
+    }
+ 
+    if (active_set->num_active == 0) MSQ_DBGOUT(3)<< "No active values\n";
     /* print the active set */
-    MSQ_DEBUG_ACTION(3,{
-      for (int i=0;i<active_set->num_active;i++) {
-       fprintf(stdout,"Active value %d:   %f \n",
-	               i+1,func[active_set->active_ind[i]]); 
-      }
-    });
+    for (int i=0;i<active_set->num_active;i++) {
+     MSQ_PRINT(3)("Active value %d:   %f \n",
+	             i+1,func[active_set->active_ind[i]]); 
+    }
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "NonSmoothSteepestDescent::init_opt"
 inline void NonSmoothSteepestDescent::init_opt(MsqError &err)
 {
     int        i, j;
 
-    MSQ_DEBUG_PRINT(2,"\nInitializing Optimization \n");
+    MSQ_PRINT(2)("\nInitializing Optimization \n");
     if (numFunctionValues > 150) {
-      err.set_msg("num_values exceeds 150");
+      MSQ_SETERR(err)("num_values exceeds 150", MsqError::INVALID_STATE);
     }
     /* for the purposes of initialization will be set to zero after */
     equilibriumPt = 0;
@@ -1177,14 +1133,14 @@ inline void NonSmoothSteepestDescent::init_opt(MsqError &err)
     mAlpha = 0;
     maxAlpha = 0;
 
-    MSQ_DEBUG_PRINT(3,"  Initialized Constants \n");
+    MSQ_PRINT(3)("  Initialized Constants \n");
     for (i=0;i<3;i++) {
       mSearch[i] = 0;
       pdgInd[i] = -1;
       for (j=0;j<3;j++) mPDG[i][j] = 0;
     }
 
-    MSQ_DEBUG_PRINT(3,"  Initialized search and PDG \n");
+    MSQ_PRINT(3)("  Initialized search and PDG \n");
     for (i=0;i<numFunctionValues;i++) {
        mFunction[i] = 0;
        testFunction[i] = 0;
@@ -1194,7 +1150,7 @@ inline void NonSmoothSteepestDescent::init_opt(MsqError &err)
            mGradient[i][j] = 0;
        }
     }
-    MSQ_DEBUG_PRINT(3,"  Initialized function/gradient \n");
+    MSQ_PRINT(3)("  Initialized function/gradient \n");
     if (numFunctionValues > 150) {
       for (i=0;i<150;i++) {
        for (j=0;j<150;j++) mG[i][j] = -1;
@@ -1204,27 +1160,29 @@ inline void NonSmoothSteepestDescent::init_opt(MsqError &err)
        for (j=0;j<numFunctionValues;j++) mG[i][j] = -1;
       }
     }
-    MSQ_DEBUG_PRINT(3,"  Initialized G\n");
+    MSQ_PRINT(3)("  Initialized G\n");
  
     for (i=0;i<100;i++) prevActiveValues[i] = 0;
-    MSQ_DEBUG_PRINT(3,"  Initialized prevActiveValues\n");
+    MSQ_PRINT(3)("  Initialized prevActiveValues\n");
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "NonSmoothSteepestDescent::init_max_step_length"
 inline void NonSmoothSteepestDescent::init_max_step_length(MsqError &err)
 {
   int i, j, k;
   double max_diff = 0;
   double diff=0;
 
-  MSQ_DEBUG_PRINT(2,"In init_max_step_length\n");
+  MSQ_PRINT(2)("In init_max_step_length\n");
 
   /* check that the input data is correct */
-  if (numElements==0) err.set_msg("Num incident vtx = 0\n");
+  if (numElements==0) {
+    MSQ_SETERR(err)("Num incident vtx = 0\n",MsqError::INVALID_MESH);
+    return;
+  }
   if ((mDimension!=2) && (mDimension!=3)) {
-     err.set_msg("Problem dimension is incorrect\n");
+     MSQ_SETERR(err)("Problem dimension is incorrect", MsqError::INVALID_MESH);
+     return;
   }
 
   /* find the maximum distance between two incident vertex locations */
@@ -1239,11 +1197,13 @@ inline void NonSmoothSteepestDescent::init_max_step_length(MsqError &err)
   }
   max_diff = sqrt(max_diff);
   if (max_diff==0) {
-     err.set_msg("Maximum distance between incident vertices = 0\n");
+     MSQ_SETERR(err)("Maximum distance between incident vertices = 0\n",
+                     MsqError::INVALID_MESH);
+    return;
   }
   maxAlpha = max_diff/100;
 
-  MSQ_DEBUG_ACTION(3,{fprintf(stdout,"  Maximum step is %g\n",maxAlpha);});
+  MSQ_PRINT(3)("  Maximum step is %g\n",maxAlpha);
 }
 
 

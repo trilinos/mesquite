@@ -93,7 +93,7 @@ private:
 public:
   void setUp()
   {
-    MsqError err;
+    MsqPrintError err(cout);
 
     mG =  "  2.   0.  -1  "
           "  1.   1.  -1  "
@@ -108,7 +108,7 @@ public:
        | 0  |  1 |
        1----2----3
     */
-    create_four_quads_patch(m4Quads, err); CPPUNIT_ASSERT(!err.errorOn);
+    create_four_quads_patch(m4Quads, err); CPPUNIT_ASSERT(!err);
 
     /*! \fn create_six_quads_patch(PatchData &four_quads, MsqError &err)
       our 2D set up: 6 quads, 1 center vertex outcentered by (0,-0.5), the other centered
@@ -120,7 +120,7 @@ public:
       | 0  |  1 | 4  |
       1----2----3----9
     */
-    create_six_quads_patch_with_domain(m6Quads, err); CPPUNIT_ASSERT(!err.errorOn);
+    create_six_quads_patch_with_domain(m6Quads, err); CPPUNIT_ASSERT(!err);
 
     /*! \fn create_twelve_hex_patch(PatchData &pd, MsqError &err)
       3D set up: 12 quads, one center vertex outcentered by (0,-0.5),
@@ -134,7 +134,7 @@ public:
       | 0  |  1 | 4  |      |    |    |    |      | 6  |  7 | 10 |
       1----2----3----9     13---14---15---21     25---26---27---33
     */
-    create_twelve_hex_patch(m12Hex, err); CPPUNIT_ASSERT(!err.errorOn);
+    create_twelve_hex_patch(m12Hex, err); CPPUNIT_ASSERT(!err);
 
    /*! \fn create_two_tri_patch(PatchData &one_tri_patch, MsqError &err)
             2
@@ -145,9 +145,9 @@ public:
            \ /
             3
    */
-    create_qm_two_tri_patch_with_domain(triPatch,err);CPPUNIT_ASSERT(!err.errorOn);
+    create_qm_two_tri_patch_with_domain(triPatch,err);CPPUNIT_ASSERT(!err);
     
-    create_qm_two_tet_patch(tetPatch,err);CPPUNIT_ASSERT(!err.errorOn);
+    create_qm_two_tet_patch(tetPatch,err);CPPUNIT_ASSERT(!err);
     
   }
 
@@ -163,13 +163,13 @@ public:
   
   void test_DefaultTargetCalculator()
   {
-    MsqError err;
+    MsqPrintError err(cout);
 
     // Creates calculator and compute isotropic target corner matrices.
     ShapeGuides811 iso_calc;
-    iso_calc.compute_target_matrices(triPatch, err); CPPUNIT_ASSERT(!err.errorOn);
+    iso_calc.compute_target_matrices(triPatch, err); CPPUNIT_ASSERT(!err);
 
-    MsqMeshEntity* elems = triPatch.get_element_array(err); CPPUNIT_ASSERT(!err.errorOn);
+    MsqMeshEntity* elems = triPatch.get_element_array(err); CPPUNIT_ASSERT(!err);
 
     TargetMatrix W;
 
@@ -206,17 +206,17 @@ public:
 
   void test_compute_Lambda()
   {
-    MsqError err;
+    MsqPrintError err(cout);
     
-    double Lambda = compute_Lambda(mG, err); CPPUNIT_ASSERT(!err.errorOn);
+    double Lambda = compute_Lambda(mG, err); CPPUNIT_ASSERT(!err);
 
     CPPUNIT_ASSERT_DOUBLES_EQUAL(1.4422, Lambda, .0001);
 
-    Lambda = m4Quads.get_average_Lambda_3d(err); CPPUNIT_ASSERT(!err.errorOn);
+    Lambda = m4Quads.get_average_Lambda_3d(err); CPPUNIT_ASSERT(!err);
 
     CPPUNIT_ASSERT_DOUBLES_EQUAL(0.984604, Lambda, .0001); // this test result is not 100% checked
     
-    Lambda = m12Hex.get_average_Lambda_3d(err); CPPUNIT_ASSERT(!err.errorOn);
+    Lambda = m12Hex.get_average_Lambda_3d(err); CPPUNIT_ASSERT(!err);
 
     CPPUNIT_ASSERT_DOUBLES_EQUAL(0.994868, Lambda, .0001); // this test result is not 100% checked
     
@@ -224,9 +224,9 @@ public:
 
   void test_compute_V()
   {
-    MsqError err;
+    MsqPrintError err(cout);
     
-    Matrix3D V = compute_V_3D(mG, err); CPPUNIT_ASSERT(!err.errorOn);
+    Matrix3D V = compute_V_3D(mG, err); CPPUNIT_ASSERT(!err);
 
     Matrix3D result = "  0.8165   -0.3651   0.4472 "
                       "  0.4082    0.9129   0.     "
@@ -239,9 +239,9 @@ public:
 
   void test_compute_Q()
   {
-    MsqError err;
+    MsqPrintError err(cout);
     
-    Matrix3D Q = compute_Q_3D(mG, err); CPPUNIT_ASSERT(!err.errorOn);
+    Matrix3D Q = compute_Q_3D(mG, err); CPPUNIT_ASSERT(!err);
 
     Matrix3D result = "  1.2599    0.5143  -1.0499 "
                       "  0.        1.1502  -0.0939 "
@@ -254,9 +254,9 @@ public:
 
   void test_compute_Delta()
   {
-    MsqError err;
+    MsqPrintError err(cout);
     
-    Matrix3D Delta = compute_Delta_3D(mG, err); CPPUNIT_ASSERT(!err.errorOn);
+    Matrix3D Delta = compute_Delta_3D(mG, err); CPPUNIT_ASSERT(!err);
 
     Matrix3D result = "  1.348   0.  0. "
                       "  0.      0.5503  0. "
@@ -280,29 +280,29 @@ public:
   void test_optimize_vertex_positions(const char* file_name, size_t vtx_index, Vector3D res,
                               Vector3D* normal=0, Vector3D* point=0)
   {
-    MsqError err;
+    MsqPrintError err(cout);
 
     Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
-    mesh->read_vtk(file_name, err); CPPUNIT_ASSERT(!err.errorOn);
+    mesh->read_vtk(file_name, err); CPPUNIT_ASSERT(!err);
     MeshSet mesh_set;
-    mesh_set.add_mesh(mesh, err); CPPUNIT_ASSERT(!err.errorOn);
+    mesh_set.add_mesh(mesh, err); CPPUNIT_ASSERT(!err);
     if (normal) {
       PlanarDomain* domain = new PlanarDomain(*normal, *point, mesh);
-      mesh_set.set_domain_constraint(domain, err); CPPUNIT_ASSERT(!err.errorOn);
+      mesh_set.set_domain_constraint(domain, err); CPPUNIT_ASSERT(!err);
     }
     
     sRI_DFT dft;
-    LPtoPTemplate obj_func(&dft, 1, err); CPPUNIT_ASSERT(!err.errorOn);
+    LPtoPTemplate obj_func(&dft, 1, err); CPPUNIT_ASSERT(!err);
     FeasibleNewton improver(&obj_func);
-    improver.set_patch_type(PatchData::GLOBAL_PATCH, err); CPPUNIT_ASSERT(!err.errorOn);
+    improver.set_patch_type(PatchData::GLOBAL_PATCH, err); CPPUNIT_ASSERT(!err);
     ShapeGuides811 targ_calc;
-    improver.set_target_calculator(&targ_calc, err); CPPUNIT_ASSERT(!err.errorOn);
+    improver.set_target_calculator(&targ_calc, err); CPPUNIT_ASSERT(!err);
         
-    improver.loop_over_mesh(mesh_set, err); CPPUNIT_ASSERT(!err.errorOn);
+    improver.loop_over_mesh(mesh_set, err); CPPUNIT_ASSERT(!err);
 
     PatchData pd;
-    mesh_set.get_next_patch(pd, &improver, err); CPPUNIT_ASSERT(!err.errorOn);
-    MsqVertex* vtx = pd.get_vertex_array(err); CPPUNIT_ASSERT(!err.errorOn);
+    mesh_set.get_next_patch(pd, &improver, err); CPPUNIT_ASSERT(!err);
+    MsqVertex* vtx = pd.get_vertex_array(err); CPPUNIT_ASSERT(!err);
     int good = vtx[vtx_index].within_tolerance_box(res, 1e-4);
     cout << "vtx[]: " << vtx[vtx_index] << endl;
     CPPUNIT_ASSERT( good==1 );

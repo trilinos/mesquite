@@ -69,7 +69,9 @@ namespace Mesquite {
      
   public:  
       //Constructor sets the instructions in the queue.
-    ShapeImprovementWrapper(double cpu_time = 0.0, double grad_norm =1.e-6);
+    ShapeImprovementWrapper(MsqError& err,
+                            double cpu_time = 0.0, 
+                            double grad_norm =1.e-6);
     
       //! Destructor must delete the objects inserted in the queue.
     virtual ~ShapeImprovementWrapper();

@@ -40,9 +40,6 @@
 
 using namespace Mesquite;
 
-#undef __FUNC__
-#define __FUNC__ "ConditionNumberQualityMetric::ConditionNumberQualityMetric"
-
 ConditionNumberQualityMetric::ConditionNumberQualityMetric()
 {
   MsqError err;
@@ -54,8 +51,6 @@ ConditionNumberQualityMetric::ConditionNumberQualityMetric()
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "ConditionNumberQualityMetric::evaluate_element"
 bool ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
                                                     MsqMeshEntity *element,
                                                     double &fval,
@@ -75,27 +70,27 @@ bool ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
       temp_vec[2]=vertices[v_i[2]]-vertices[v_i[0]];
         //make relative to equilateral
       temp_vec[1]=((2*temp_vec[2])-temp_vec[0])*MSQ_SQRT_THREE_INV;
-      return_flag=condition_number_2d(temp_vec,v_i[0],pd,fval,err);
+      return_flag=condition_number_2d(temp_vec,v_i[0],pd,fval,err); MSQ_ERRZERO(err);
       return return_flag;
     case QUADRILATERAL:
       temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
       temp_vec[1]=vertices[v_i[3]]-vertices[v_i[0]];
-      return_flag=condition_number_2d(temp_vec,v_i[0],pd,met_vals[0],err);
+      return_flag=condition_number_2d(temp_vec,v_i[0],pd,met_vals[0],err);  MSQ_ERRZERO(err);
       if(!return_flag)
         return return_flag;
       temp_vec[0]=vertices[v_i[2]]-vertices[v_i[1]];
       temp_vec[1]=vertices[v_i[0]]-vertices[v_i[1]];
-      return_flag=condition_number_2d(temp_vec,v_i[1],pd,met_vals[1],err);
+      return_flag=condition_number_2d(temp_vec,v_i[1],pd,met_vals[1],err);  MSQ_ERRZERO(err);
       if(!return_flag)
         return return_flag;
       temp_vec[0]=vertices[v_i[3]]-vertices[v_i[2]];
       temp_vec[1]=vertices[v_i[1]]-vertices[v_i[2]];
-      return_flag=condition_number_2d(temp_vec,v_i[2],pd,met_vals[2],err);
+      return_flag=condition_number_2d(temp_vec,v_i[2],pd,met_vals[2],err);  MSQ_ERRZERO(err);
       if(!return_flag)
         return return_flag;
       temp_vec[0]=vertices[v_i[0]]-vertices[v_i[3]];
       temp_vec[1]=vertices[v_i[2]]-vertices[v_i[3]];
-      return_flag=condition_number_2d(temp_vec,v_i[3],pd,met_vals[3],err);
+      return_flag=condition_number_2d(temp_vec,v_i[3],pd,met_vals[3],err);  MSQ_ERRZERO(err);
       fval = average_metrics(met_vals, 4, err);
       return return_flag;
     case TETRAHEDRON:
@@ -106,7 +101,7 @@ bool ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
       temp_vec[1]=((2*temp_vec[3])-temp_vec[0])/MSQ_SQRT_THREE;
       temp_vec[2]=((3*temp_vec[4])-temp_vec[0]-temp_vec[3])/
         (MSQ_SQRT_THREE*MSQ_SQRT_TWO);
-      return_flag=condition_number_3d(temp_vec,pd,fval,err);
+      return_flag=condition_number_3d(temp_vec,pd,fval,err);  MSQ_ERRZERO(err);
       return return_flag;
         /*
     case PYRAMID:
@@ -165,50 +160,50 @@ bool ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
       temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
       temp_vec[1]=vertices[v_i[3]]-vertices[v_i[0]];
       temp_vec[2]=vertices[v_i[4]]-vertices[v_i[0]];
-      return_flag=condition_number_3d(temp_vec,pd,met_vals[0],err);
+      return_flag=condition_number_3d(temp_vec,pd,met_vals[0],err);  MSQ_ERRZERO(err);
       if(!return_flag)
         return return_flag;
       temp_vec[0]=vertices[v_i[2]]-vertices[v_i[1]];
       temp_vec[1]=vertices[v_i[0]]-vertices[v_i[1]];
       temp_vec[2]=vertices[v_i[5]]-vertices[v_i[1]];
-      return_flag=condition_number_3d(temp_vec,pd,met_vals[1],err);
+      return_flag=condition_number_3d(temp_vec,pd,met_vals[1],err);  MSQ_ERRZERO(err);
       if(!return_flag)
         return return_flag;
       temp_vec[0]=vertices[v_i[3]]-vertices[v_i[2]];
       temp_vec[1]=vertices[v_i[1]]-vertices[v_i[2]];
       temp_vec[2]=vertices[v_i[6]]-vertices[v_i[2]];
-      return_flag=condition_number_3d(temp_vec,pd,met_vals[2],err);
+      return_flag=condition_number_3d(temp_vec,pd,met_vals[2],err);  MSQ_ERRZERO(err);
       if(!return_flag)
         return return_flag;
       temp_vec[0]=vertices[v_i[0]]-vertices[v_i[3]];
       temp_vec[1]=vertices[v_i[2]]-vertices[v_i[3]];
       temp_vec[2]=vertices[v_i[7]]-vertices[v_i[3]];
-      return_flag=condition_number_3d(temp_vec,pd,met_vals[3],err);
+      return_flag=condition_number_3d(temp_vec,pd,met_vals[3],err);  MSQ_ERRZERO(err);
       if(!return_flag)
         return return_flag;
       temp_vec[0]=vertices[v_i[7]]-vertices[v_i[4]];
       temp_vec[1]=vertices[v_i[5]]-vertices[v_i[4]];
       temp_vec[2]=vertices[v_i[0]]-vertices[v_i[4]];
-      return_flag=condition_number_3d(temp_vec,pd,met_vals[4],err);
+      return_flag=condition_number_3d(temp_vec,pd,met_vals[4],err);  MSQ_ERRZERO(err);
       if(!return_flag)
         return return_flag;
       temp_vec[0]=vertices[v_i[4]]-vertices[v_i[5]];
       temp_vec[1]=vertices[v_i[6]]-vertices[v_i[5]];
       temp_vec[2]=vertices[v_i[1]]-vertices[v_i[5]];
-      return_flag=condition_number_3d(temp_vec,pd,met_vals[5],err);
+      return_flag=condition_number_3d(temp_vec,pd,met_vals[5],err);  MSQ_ERRZERO(err);
       if(!return_flag)
         return return_flag;
       temp_vec[0]=vertices[v_i[5]]-vertices[v_i[6]];
       temp_vec[1]=vertices[v_i[7]]-vertices[v_i[6]];
       temp_vec[2]=vertices[v_i[2]]-vertices[v_i[6]];
-      return_flag=condition_number_3d(temp_vec,pd,met_vals[6],err);
+      return_flag=condition_number_3d(temp_vec,pd,met_vals[6],err);  MSQ_ERRZERO(err);
       if(!return_flag)
         return return_flag;
       temp_vec[0]=vertices[v_i[6]]-vertices[v_i[7]];
       temp_vec[1]=vertices[v_i[4]]-vertices[v_i[7]];
       temp_vec[2]=vertices[v_i[3]]-vertices[v_i[7]];
-      return_flag=condition_number_3d(temp_vec,pd,met_vals[7],err);
-      fval=average_metrics(met_vals, 8, err);
+      return_flag=condition_number_3d(temp_vec,pd,met_vals[7],err);  MSQ_ERRZERO(err);
+      fval=average_metrics(met_vals, 8, err);  MSQ_ERRZERO(err);
       return return_flag;
     default:
       fval=MSQ_MAX_CAP;

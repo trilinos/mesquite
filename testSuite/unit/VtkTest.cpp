@@ -27,6 +27,13 @@
 // -*- Mode : c++; tab-width: 2; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 //
 
+#ifdef MSQ_USE_OLD_IO_HEADERS
+#include <iostream.h>
+#else
+#include <iostream>
+using std::cout;
+#endif
+
 #ifndef DEBUG
 #  include "Mesquite.hpp"
 #  include "MeshSet.hpp"
@@ -37,7 +44,7 @@
    using Mesquite::MeshImpl;
    using Mesquite::Vector3D;
    using Mesquite::MsqVertex;
-   using Mesquite::MsqError;
+   using Mesquite::MsqPrintError;
    using Mesquite::EntityTopology;
 #else
 #  include <stdio.h>
@@ -260,13 +267,12 @@ public:
     // read from file is as expected.
   void check_8hex_structured( Mesh& mesh )
   {
-    MsqError err;
-    err.printError = true;
-    CPPUNIT_ASSERT(mesh.get_total_vertex_count(err) == 27 && !err.errorOn);
-    CPPUNIT_ASSERT(mesh.get_total_element_count(err) == 8 && !err.errorOn);
+    MsqPrintError err(cout);
+    CPPUNIT_ASSERT(mesh.get_total_vertex_count(err) == 27 && !err);
+    CPPUNIT_ASSERT(mesh.get_total_element_count(err) == 8 && !err);
     Mesh::ElementHandle elems[8];
     mesh.get_all_elements( &elems[0], 8, err );
-    CPPUNIT_ASSERT(!err.errorOn);
+    CPPUNIT_ASSERT(!err);
     
     
     std::vector<Mesh::VertexHandle> connectivity(8*8);
@@ -278,7 +284,7 @@ public:
       size_t junk1size = sizeof(junk1) / sizeof(size_t);
       size_t junk2size = sizeof(junk2) / sizeof(size_t);
       mesh.elements_get_attached_vertices( &elem, 1, &*iter, junk1size, junk1, junk2size, junk2, err );
-      CPPUNIT_ASSERT(!err.errorOn);
+      CPPUNIT_ASSERT(!err);
       iter += 8;
     }
     
@@ -289,8 +295,7 @@ public:
     // read from file is as expected.
   void check_8hex_block( Mesh& mesh, std::vector<Mesh::VertexHandle>::iterator connectivity )
   {
-    MsqError err;
-    err.printError = true;
+    MsqPrintError err(cout);
     const int base_corners[] =   { 0, 1, 3, 4, 9, 10, 12, 13 };
     const int corner_offsets[] = { 0, 1, 4, 3, 9, 10, 13, 12 };
 
@@ -307,8 +312,7 @@ public:
         Mesh::VertexHandle* conn_ptr = &*connectivity;
         ++connectivity;
         mesh.vertices_get_coordinates( conn_ptr, &actual_coords, 1, err );
-        CPPUNIT_ASSERT( !err.errorOn );
-        assert(expected_coords.within_tolerance_box( actual_coords, DBL_EPSILON ));
+        CPPUNIT_ASSERT( !err );
         CPPUNIT_ASSERT( expected_coords.within_tolerance_box( actual_coords, DBL_EPSILON ) );
       }
     }
@@ -318,13 +322,12 @@ public:
     // read from file is as expected.
   void check_4quad_structured( Mesh& mesh )
   {
-    MsqError err;
-    err.printError = true;
-    CPPUNIT_ASSERT(mesh.get_total_vertex_count(err) == 9 && !err.errorOn);
-    CPPUNIT_ASSERT(mesh.get_total_element_count(err) == 4 && !err.errorOn);
+    MsqPrintError err(cout);
+    CPPUNIT_ASSERT(mesh.get_total_vertex_count(err) == 9 && !err);
+    CPPUNIT_ASSERT(mesh.get_total_element_count(err) == 4 && !err);
     Mesh::ElementHandle elems[4];
     mesh.get_all_elements( &elems[0], 4, err );
-    CPPUNIT_ASSERT(!err.errorOn);
+    CPPUNIT_ASSERT(!err);
     
     
     std::vector<Mesh::VertexHandle> connectivity(4*4);
@@ -334,7 +337,7 @@ public:
       Mesh::ElementHandle elem = elems[i];
       size_t junk1[4], junk2 = 4, junk3[4];
       mesh.elements_get_attached_vertices( &elem, 1, &*iter, junk2, junk1, junk2, junk3, err );
-      CPPUNIT_ASSERT(!err.errorOn);
+      CPPUNIT_ASSERT(!err);
       iter += 4;
     }
     
@@ -345,8 +348,7 @@ public:
     // read from file is as expected.
   void check_4quad_block( Mesh& mesh, std::vector<Mesh::VertexHandle>::iterator connectivity )
   {
-    MsqError err;
-    err.printError = true;
+    MsqPrintError err(cout);
     const int base_corners[]   = { 0, 1, 3, 4 };
     const int corner_offsets[] = { 0, 1, 4, 3 };
     for (int quad = 0; quad < 4; ++quad)
@@ -361,8 +363,7 @@ public:
         Mesh::VertexHandle* conn_ptr = &*connectivity;
         ++connectivity;
         mesh.vertices_get_coordinates( conn_ptr, &actual_coords, 1, err );
-        CPPUNIT_ASSERT( !err.errorOn );
-        assert(expected_coords.within_tolerance_box( actual_coords, DBL_EPSILON ));
+        CPPUNIT_ASSERT( !err );
         CPPUNIT_ASSERT( expected_coords.within_tolerance_box( actual_coords, DBL_EPSILON ) );
       }
     }
@@ -373,8 +374,7 @@ public:
   void test_read_unstructured()
   {
     MeshImpl mesh;
-    MsqError err;
-    err.printError = true;
+    MsqPrintError err(cout);
     
     FILE* file = fopen( temp_file_name, "w+" );
     fputs( mixed_unstructured_data, file );
@@ -382,16 +382,16 @@ public:
     
     mesh.read_vtk( temp_file_name, err );
     remove( temp_file_name );
-    CPPUNIT_ASSERT(!err.errorOn);
+    CPPUNIT_ASSERT(!err);
     
-    CPPUNIT_ASSERT(mesh.get_total_vertex_count(err) == 35 && !err.errorOn);
-    CPPUNIT_ASSERT(mesh.get_total_element_count(err) == 38 && !err.errorOn);
+    CPPUNIT_ASSERT(mesh.get_total_vertex_count(err) == 35 && !err);
+    CPPUNIT_ASSERT(mesh.get_total_element_count(err) == 38 && !err);
     std::vector<Mesh::VertexHandle> verts(35);
     std::vector<Mesh::ElementHandle> elems(38);
     mesh.get_all_vertices( &verts[0], verts.size(), err );
-    CPPUNIT_ASSERT(!err.errorOn);
+    CPPUNIT_ASSERT(!err);
     mesh.get_all_elements( &elems[0], elems.size(), err );
-    CPPUNIT_ASSERT(!err.errorOn);
+    CPPUNIT_ASSERT(!err);
 
     unsigned i;
     struct meshdata { EntityTopology type; size_t nodes; size_t count; };
@@ -417,13 +417,13 @@ public:
       for (unsigned j = 0 ; j < list[i].count; ++j)
       {
         CPPUNIT_ASSERT( mesh.element_get_topology( *e_iter, err ) == list[i].type );
-        CPPUNIT_ASSERT( !err.errorOn );
+        CPPUNIT_ASSERT( !err );
         CPPUNIT_ASSERT( mesh.element_get_attached_vertex_count( *e_iter, err ) == list[i].nodes );
-        CPPUNIT_ASSERT( !err.errorOn );
+        CPPUNIT_ASSERT( !err );
         size_t junk1size = list[1].nodes;
         size_t junk2size = sizeof(junk2) / sizeof(size_t);
         mesh.elements_get_attached_vertices( &*e_iter, 1, &*c_iter, list[i].nodes, junk1, junk2size, junk2, err );
-        CPPUNIT_ASSERT( !err.errorOn );
+        CPPUNIT_ASSERT( !err );
         c_iter += list[i].nodes;
         ++e_iter;
       }
@@ -440,8 +440,7 @@ public:
   void test_read_structured_2d_points()
   {
     MeshImpl mesh;
-    MsqError err;
-     err.printError = true;
+    MsqPrintError err(cout);
    
     FILE* file = fopen( temp_file_name, "w+" );
     fputs( structured_2d_points_data, file );
@@ -449,7 +448,7 @@ public:
     
     mesh.read_vtk( temp_file_name, err );
     remove( temp_file_name );
-    CPPUNIT_ASSERT(!err.errorOn);
+    CPPUNIT_ASSERT(!err);
     
     check_4quad_structured( mesh );
   }
@@ -459,8 +458,7 @@ public:
   void test_read_structured_3d_points()
   {
     MeshImpl mesh;
-    MsqError err;
-    err.printError = true;
+    MsqPrintError err(cout);
     
     FILE* file = fopen( temp_file_name, "w+" );
     fputs( structured_3d_points_data, file );
@@ -468,7 +466,7 @@ public:
     
     mesh.read_vtk( temp_file_name, err );
     remove( temp_file_name );
-    CPPUNIT_ASSERT(!err.errorOn);
+    CPPUNIT_ASSERT(!err);
     
     check_8hex_structured( mesh );
   }
@@ -478,8 +476,7 @@ public:
   void test_read_structured_grid()
   {
     MeshImpl mesh;
-    MsqError err;
-    err.printError = true;
+    MsqPrintError err(cout);
     
     FILE* file = fopen( temp_file_name, "w+" );
     fputs( structured_grid_data, file );
@@ -487,7 +484,7 @@ public:
     
     mesh.read_vtk( temp_file_name, err );
     remove( temp_file_name );
-    CPPUNIT_ASSERT(!err.errorOn);
+    CPPUNIT_ASSERT(!err);
     
     check_8hex_structured( mesh );
   }
@@ -497,8 +494,7 @@ public:
   void test_read_rectilinear_grid()
   {
     MeshImpl mesh;
-    MsqError err;
-    err.printError = true;
+    MsqPrintError err(cout);
     
     FILE* file = fopen( temp_file_name, "w+" );
     fputs( rectilinear_grid_data, file );
@@ -506,7 +502,7 @@ public:
     
     mesh.read_vtk( temp_file_name, err );
     remove( temp_file_name );
-    CPPUNIT_ASSERT(!err.errorOn);
+    CPPUNIT_ASSERT(!err);
     
     check_8hex_structured( mesh );
   }
@@ -516,8 +512,7 @@ public:
   void test_read_simple_scalar_attrib()
   {
     MeshImpl mesh;
-    MsqError err;
-    err.printError = true;
+    MsqPrintError err(cout);
    
     FILE* file = fopen( temp_file_name, "w+" );
     fputs( structured_3d_points_data, file );
@@ -526,19 +521,19 @@ public:
     
     mesh.read_vtk( temp_file_name, err );
     remove( temp_file_name );
-    CPPUNIT_ASSERT(!err.errorOn);
+    CPPUNIT_ASSERT(!err);
     
-    CPPUNIT_ASSERT(mesh.get_total_vertex_count(err) == 27 && !err.errorOn);
-    CPPUNIT_ASSERT(mesh.get_total_element_count(err) == 8 && !err.errorOn);
+    CPPUNIT_ASSERT(mesh.get_total_vertex_count(err) == 27 && !err);
+    CPPUNIT_ASSERT(mesh.get_total_element_count(err) == 8 && !err);
     
     void* th = mesh.tag_get_handle( "global_id", err );
-    CPPUNIT_ASSERT( th && !err.errorOn );
+    CPPUNIT_ASSERT( th && !err );
     //int elem_data[8];
     int tagsize = sizeof(int);
     void* ptr;
     mesh.elements_get_tag_data( 8, th, ptr, tagsize, err );
     int* elem_data = (int*)ptr;
-    CPPUNIT_ASSERT( tagsize == sizeof(int) && !err.errorOn );
+    CPPUNIT_ASSERT( tagsize == sizeof(int) && !err );
     
     for (int i = 0; i < 8; ++i)
       CPPUNIT_ASSERT( elem_data[i] == (1+i) );
@@ -549,8 +544,7 @@ public:
   void test_read_vector_attrib()
   {
     MeshImpl mesh;
-    MsqError err;
-    err.printError = true;
+    MsqPrintError err(cout);
     
     FILE* file = fopen( temp_file_name, "w+" );
     fputs( structured_3d_points_data, file );
@@ -559,19 +553,19 @@ public:
     
     mesh.read_vtk( temp_file_name, err );
     remove( temp_file_name );
-    CPPUNIT_ASSERT(!err.errorOn);
+    CPPUNIT_ASSERT(!err);
     
-    CPPUNIT_ASSERT(mesh.get_total_vertex_count(err) == 27 && !err.errorOn);
-    CPPUNIT_ASSERT(mesh.get_total_element_count(err) == 8 && !err.errorOn);
+    CPPUNIT_ASSERT(mesh.get_total_vertex_count(err) == 27 && !err);
+    CPPUNIT_ASSERT(mesh.get_total_element_count(err) == 8 && !err);
     
     void* th = mesh.tag_get_handle( "hexvect", err );
-    CPPUNIT_ASSERT( th && !err.errorOn );
+    CPPUNIT_ASSERT( th && !err );
     //double elem_data[24];
     int tagsize = 3*sizeof(double);
     void* ptr;
     mesh.elements_get_tag_data( 8, th, ptr, tagsize, err );
     double* elem_data = (double*)ptr;
-    CPPUNIT_ASSERT( tagsize == 3*sizeof(double) && !err.errorOn );
+    CPPUNIT_ASSERT( tagsize == 3*sizeof(double) && !err );
     
     for (int i = 0; i < 8; ++i)
       CPPUNIT_ASSERT( Vector3D( elem_data+3*i ) == Vector3D( i+1, i+1, i+1 ) );
@@ -583,8 +577,7 @@ public:
   void test_read_fixed_attrib()
   {
     MeshImpl mesh;
-    MsqError err;
-    err.printError = true;
+    MsqPrintError err(cout);
     
     FILE* file = fopen( temp_file_name, "w+" );
     fputs( structured_3d_points_data, file );
@@ -593,21 +586,21 @@ public:
     
     mesh.read_vtk( temp_file_name, err );
     remove( temp_file_name );
-    CPPUNIT_ASSERT(!err.errorOn);
+    CPPUNIT_ASSERT(!err);
     
-    CPPUNIT_ASSERT(mesh.get_total_vertex_count(err) == 27 && !err.errorOn);
-    CPPUNIT_ASSERT(mesh.get_total_element_count(err) == 8 && !err.errorOn);
+    CPPUNIT_ASSERT(mesh.get_total_vertex_count(err) == 27 && !err);
+    CPPUNIT_ASSERT(mesh.get_total_element_count(err) == 8 && !err);
     
     Mesh::VertexHandle vertices[27];
     mesh.get_all_vertices( vertices, 27, err );
-    CPPUNIT_ASSERT( !err.errorOn );
+    CPPUNIT_ASSERT( !err );
     
     for (int i = 0; i < 27; ++i)
     {
       bool should_be_fixed = (i != 13);
       bool is_fixed ;
       mesh.vertices_are_on_boundary( vertices + i, &is_fixed, 1, err );
-      CPPUNIT_ASSERT( !err.errorOn );
+      CPPUNIT_ASSERT( !err );
       CPPUNIT_ASSERT( should_be_fixed == is_fixed );
     }
   }
@@ -616,14 +609,14 @@ public:
   
   void test_elements()
   {
-    Mesquite::MsqError err;
+    Mesquite::MsqPrintError err(cout);
     MeshImpl* mMesh = new MeshImpl;
     mMesh->read_vtk("../../meshFiles/2D/VTK/equil_tri2.vtk", err);
-    CPPUNIT_ASSERT(!err.errorOn);
+    CPPUNIT_ASSERT(!err);
     
       // Add mesh to a MeshSet.
     Mesquite::MeshSet mesh_set;
-    mesh_set.add_mesh(mMesh, err); CPPUNIT_ASSERT(!err.errorOn);
+    mesh_set.add_mesh(mMesh, err); CPPUNIT_ASSERT(!err);
     
       // Retrieve a patch
     Mesquite::PatchData pd;
@@ -632,30 +625,30 @@ public:
                              err, 1, 0);
     pd_params.add_culling_method(Mesquite::PatchData::NO_BOUNDARY_VTX);
     
-    mesh_set.get_next_patch(pd, pd_params, err); CPPUNIT_ASSERT(!err.errorOn);
-//    mesh_set.write_gnuplot("toto", err); CPPUNIT_ASSERT(!err.errorOn);
+    mesh_set.get_next_patch(pd, pd_params, err); CPPUNIT_ASSERT(!err);
+//    mesh_set.write_gnuplot("toto", err); CPPUNIT_ASSERT(!err);
     
-    int free_vtx = pd.num_free_vertices(err); CPPUNIT_ASSERT(!err.errorOn);
+    int free_vtx = pd.num_free_vertices(err); CPPUNIT_ASSERT(!err);
 //    std::cout << "nb of free vertices: " << free_vtx << std::endl;
     CPPUNIT_ASSERT( free_vtx == 1 );
     
-    Mesquite::MsqMeshEntity* element_array =  pd.get_element_array(err); CPPUNIT_ASSERT(!err.errorOn);
+    Mesquite::MsqMeshEntity* element_array =  pd.get_element_array(err); CPPUNIT_ASSERT(!err);
     size_t num_elements = pd.num_elements();
     CPPUNIT_ASSERT( num_elements == 6 );
     
-    Mesquite::MsqVertex* vtx_array = pd.get_vertex_array(err); CPPUNIT_ASSERT(!err.errorOn);
+    Mesquite::MsqVertex* vtx_array = pd.get_vertex_array(err); CPPUNIT_ASSERT(!err);
     size_t num_vertices = pd.num_vertices();
     CPPUNIT_ASSERT( num_vertices == 7 );
     
     CPPUNIT_ASSERT( tri_check_validity(element_array, num_elements, vtx_array, num_vertices) == 1 );
     
-    mesh_set.get_next_patch(pd, pd_params, err); CPPUNIT_ASSERT(!err.errorOn);
+    mesh_set.get_next_patch(pd, pd_params, err); CPPUNIT_ASSERT(!err);
     
-    element_array =  pd.get_element_array(err); CPPUNIT_ASSERT(!err.errorOn);
+    element_array =  pd.get_element_array(err); CPPUNIT_ASSERT(!err);
     num_elements = pd.num_elements();
     CPPUNIT_ASSERT( num_elements == 6 );
     
-    vtx_array = pd.get_vertex_array(err); CPPUNIT_ASSERT(!err.errorOn);
+    vtx_array = pd.get_vertex_array(err); CPPUNIT_ASSERT(!err);
     num_vertices = pd.num_vertices();
     CPPUNIT_ASSERT( num_vertices == 7 );
     

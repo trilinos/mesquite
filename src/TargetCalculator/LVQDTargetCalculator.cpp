@@ -38,6 +38,7 @@ file for the Mesquite::LVQDTargetCalculator class
 #include "PatchDataUser.hpp"
 #include "PatchData.hpp"
 #include "MeshSet.hpp"
+#include "MsqTimer.hpp"
 
 using namespace Mesquite;
 
@@ -45,17 +46,15 @@ using namespace Mesquite;
 
 /*! The type of targets computed by this function is selected by the constructor of
     the base classes. */
-#undef __FUNC__
-#define __FUNC__ "LVQDTargetCalculator::compute_target_matrices" 
 void LVQDTargetCalculator::compute_target_matrices(PatchData &pd, MsqError &err)
 {
-  FUNCTION_TIMER_START(__FUNC__);
+  FunctionTimer ft( "LVQDTargetCalculator::compute_target_matrices" );
 
   // Gets from the reference mesh a patch ref_pd equivalent to the patch pd of the main mesh.
   PatchData ref_pd;
   PatchDataParameters ref_pd_params(*originator);
   ref_pd_params.no_target_calculator();
-  refMesh->get_next_patch(ref_pd, ref_pd_params, err); MSQ_CHKERR(err);
+  refMesh->get_next_patch(ref_pd, ref_pd_params, err); MSQ_ERRRTN(err);
   
   // Make sure topology of ref_pd and pd are equal
   size_t num_elements=pd.num_elements();
@@ -64,9 +63,9 @@ void LVQDTargetCalculator::compute_target_matrices(PatchData &pd, MsqError &err)
   assert( num_vertices == ref_pd.num_vertices() );
     
   
-  MsqMeshEntity* elems = pd.get_element_array(err);
-  MsqMeshEntity* elems_ref = ref_pd.get_element_array(err);
-  pd.allocate_target_matrices(err); MSQ_CHKERR(err);
+  MsqMeshEntity* elems = pd.get_element_array(err); MSQ_ERRRTN(err);
+  MsqMeshEntity* elems_ref = ref_pd.get_element_array(err); MSQ_ERRRTN(err);
+  pd.allocate_target_matrices(err); MSQ_ERRRTN(err);
 
   Matrix3D L_guides[MSQ_MAX_NUM_VERT_PER_ENT];
   Matrix3D V_guides[MSQ_MAX_NUM_VERT_PER_ENT];
@@ -78,7 +77,7 @@ void LVQDTargetCalculator::compute_target_matrices(PatchData &pd, MsqError &err)
 //  std::map<enum guide_type, Matrix3D[MSQ_MAX_NUM_VERT_PER_ENT]> guides;
 
   if (lambdaBase == AVERAGE)
-    Lambda = ref_pd.get_average_Lambda_3d(err); MSQ_CHKERR(err);
+    Lambda = ref_pd.get_average_Lambda_3d(err); MSQ_ERRRTN(err);
   
   for (size_t i=0; i<num_elements; ++i) {
     MsqTag* tag = elems[i].get_tag();
@@ -87,20 +86,18 @@ void LVQDTargetCalculator::compute_target_matrices(PatchData &pd, MsqError &err)
 
     if (lambdaBase == REGULAR) {
       compute_guide_matrices(guideLambda, ref_pd, i, L_guides, nve, err);
-      MSQ_CHKERR(err); }
-    compute_guide_matrices(guideV, ref_pd, i, V_guides, nve, err); MSQ_CHKERR(err);
-    compute_guide_matrices(guideQ, ref_pd, i, Q_guides, nve, err); MSQ_CHKERR(err);
-    compute_guide_matrices(guideDelta, ref_pd, i, D_guides, nve, err); MSQ_CHKERR(err);
+      MSQ_ERRRTN(err); }
+    compute_guide_matrices(guideV, ref_pd, i, V_guides, nve, err); MSQ_ERRRTN(err);
+    compute_guide_matrices(guideQ, ref_pd, i, Q_guides, nve, err); MSQ_ERRRTN(err);
+    compute_guide_matrices(guideDelta, ref_pd, i, D_guides, nve, err); MSQ_ERRRTN(err);
 
     for (int c=0; c<nve; ++c) {
-      if (lambdaBase == REGULAR) Lambda = compute_Lambda(L_guides[c], err);
-      V = compute_V_3D(V_guides[c], err); MSQ_CHKERR(err);
-      Q = compute_Q_3D(Q_guides[c], err); MSQ_CHKERR(err);
-      Delta = compute_Delta_3D(D_guides[c], err); MSQ_CHKERR(err);
+      if (lambdaBase == REGULAR) Lambda = compute_Lambda(L_guides[c], err); MSQ_ERRRTN(err);
+      V = compute_V_3D(V_guides[c], err); MSQ_ERRRTN(err);
+      Q = compute_Q_3D(Q_guides[c], err); MSQ_ERRRTN(err);
+      Delta = compute_Delta_3D(D_guides[c], err); MSQ_ERRRTN(err);
       tag->target_matrix(c) = Lambda * V * Q * Delta;
     }
   }
-    
-  FUNCTION_TIMER_END();
 }
 

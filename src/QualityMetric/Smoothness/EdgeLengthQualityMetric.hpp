@@ -37,11 +37,9 @@ Header file for the Mesquite::EdgeLengthQualityMetric class
 
 #ifndef EdgeLengthQualityMetric_hpp
 #define EdgeLengthQualityMetric_hpp
-#include "MsqMeshEntity.hpp"
+
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
 #include "SmoothnessQualityMetric.hpp"
-#include "Vector3D.hpp"
 
 namespace Mesquite
 {
@@ -55,8 +53,10 @@ namespace Mesquite
      */
    class MsqMeshEntity;
    class MsqVertex;
+   class MsqError;
+   class PatchData;
    
-   class EdgeLengthQualityMetric : public SmoothnessQualityMetric
+  class EdgeLengthQualityMetric : public SmoothnessQualityMetric
   {
    public:
     

@@ -61,6 +61,14 @@ Unit testing of various functions in the InstructionQueue class.
 
 #include "cppunit/extensions/HelperMacros.h"
 
+#ifdef MSQ_USE_OLD_IO_HEADERS
+#include <iostream.h>
+#else 
+#include <iostream>
+using std::cout;
+using std::endl;
+#endif
+
 using namespace Mesquite;
 
 class InstructionQueueTest : public CppUnit::TestFixture
@@ -85,9 +93,9 @@ private:
 public:
   void setUp()
   {
-     MsqError err;
+     MsqPrintError err(cout);
      // creates a quality assessor and a qualilty improver
-     mQM = new MeanRatioQualityMetric;
+     mQM = new MeanRatioQualityMetric(err);
      mOF = new LPtoPTemplate(mQM, 2, err);
      mQI = new SteepestDescent( mOF );
      mQA = new QualityAssessor(mQM, QualityAssessor::MAXIMUM);
@@ -107,116 +115,116 @@ public:
   
   void test_add_preconditionner()
   {
-     MsqError err;
+     MsqPrintError err(cout);
      mQueue.clear();
      mQueue.add_preconditioner(mQI, err);
-     CPPUNIT_ASSERT(!err.errorOn);
-     err.reset();
+     CPPUNIT_ASSERT(!err);
+     err.clear();
      mQueue.set_master_quality_improver(mQI,err);
-     CPPUNIT_ASSERT(!err.errorOn);
-     err.reset();
+     CPPUNIT_ASSERT(!err);
+     err.clear();
      mQueue.add_preconditioner(mQI, err);
      CPPUNIT_ASSERT_MESSAGE("preconditionner cannot be added after master QI"
-                            , err.errorOn);     
+                            , err);     
   }
 
    void test_remove_preconditioner()
    {
-      MsqError err;
+      MsqPrintError err(cout);
       mQueue.clear();
       mQueue.add_preconditioner(mQI, err);   // 0
       mQueue.add_quality_assessor(mQA, err); // 1
       mQueue.add_preconditioner(mQI, err);   // 2
       mQueue.set_master_quality_improver(mQI, err);
-      CPPUNIT_ASSERT(!err.errorOn);
-      err.reset();
+      CPPUNIT_ASSERT(!err);
+      err.clear();
       mQueue.remove_preconditioner(2, err);
-      CPPUNIT_ASSERT_MESSAGE("should remove QualityImprover", !err.errorOn);
-      err.reset();
+      CPPUNIT_ASSERT_MESSAGE("should remove QualityImprover", !err);
+      err.clear();
       mQueue.remove_preconditioner(3, err);
-      CPPUNIT_ASSERT_MESSAGE("should not remove master QualityImprover", err.errorOn);
-      err.reset();
+      CPPUNIT_ASSERT_MESSAGE("should not remove master QualityImprover", err);
+      err.clear();
       mQueue.remove_preconditioner(1, err);
-      CPPUNIT_ASSERT_MESSAGE("should not remove QualityAssessor", err.errorOn);
-      err.reset();
+      CPPUNIT_ASSERT_MESSAGE("should not remove QualityAssessor", err);
+      err.clear();
       mQueue.remove_preconditioner(0, err);
-      CPPUNIT_ASSERT_MESSAGE("should  remove QualityImprover", !err.errorOn);
-      err.reset();
+      CPPUNIT_ASSERT_MESSAGE("should  remove QualityImprover", !err);
+      err.clear();
       mQueue.remove_preconditioner(0, err);
-      CPPUNIT_ASSERT_MESSAGE("should not remove QualityAssessor", err.errorOn);   
+      CPPUNIT_ASSERT_MESSAGE("should not remove QualityAssessor", err);   
    }
 
    void test_insert_preconditioner()
    {
-      MsqError err;
+      MsqPrintError err(cout);
       mQueue.clear();
       mQueue.add_preconditioner(mQI, err);   // 0
       mQueue.add_quality_assessor(mQA, err); // 1
       mQueue.add_preconditioner(mQI, err);   // 2
       mQueue.set_master_quality_improver(mQI, err);
-      CPPUNIT_ASSERT(!err.errorOn);
-      err.reset();
+      CPPUNIT_ASSERT(!err);
+      err.clear();
       mQueue.insert_preconditioner(mQI,2, err);
-      CPPUNIT_ASSERT(!err.errorOn);
-      err.reset();
+      CPPUNIT_ASSERT(!err);
+      err.clear();
       mQueue.insert_preconditioner(mQI, 5, err);
-      CPPUNIT_ASSERT_MESSAGE("should not insert after master QualityImprover", err.errorOn);
-      err.reset();
+      CPPUNIT_ASSERT_MESSAGE("should not insert after master QualityImprover", err);
+      err.clear();
    }
 
    void test_add_quality_assessor()
   {
-     MsqError err;
+     MsqPrintError err(cout);
      mQueue.clear();
      mQueue.add_quality_assessor(mQA, err);
-     CPPUNIT_ASSERT(!err.errorOn);
-     err.reset();
+     CPPUNIT_ASSERT(!err);
+     err.clear();
      mQueue.set_master_quality_improver(mQI,err);
-     CPPUNIT_ASSERT(!err.errorOn);
-     err.reset();
+     CPPUNIT_ASSERT(!err);
+     err.clear();
      mQueue.add_quality_assessor(mQA, err);
-     CPPUNIT_ASSERT(!err.errorOn);
+     CPPUNIT_ASSERT(!err);
   }
 
    void test_remove_quality_assessor()
    {
-      MsqError err;
+      MsqPrintError err(cout);
       mQueue.clear();
       mQueue.add_preconditioner(mQI, err);   // 0
       mQueue.add_quality_assessor(mQA, err); // 1
       mQueue.add_preconditioner(mQI, err);   // 2
       mQueue.set_master_quality_improver(mQI, err);
-      CPPUNIT_ASSERT(!err.errorOn);
-      err.reset();
+      CPPUNIT_ASSERT(!err);
+      err.clear();
       mQueue.remove_quality_assessor(2, err);
-      CPPUNIT_ASSERT_MESSAGE("should not remove QualityImprover", err.errorOn);
-      err.reset();
+      CPPUNIT_ASSERT_MESSAGE("should not remove QualityImprover", err);
+      err.clear();
       mQueue.remove_quality_assessor(3, err);
-      CPPUNIT_ASSERT_MESSAGE("should not remove master QualityImprover", err.errorOn);
-      err.reset();
+      CPPUNIT_ASSERT_MESSAGE("should not remove master QualityImprover", err);
+      err.clear();
       mQueue.remove_quality_assessor(1, err);
-      CPPUNIT_ASSERT_MESSAGE("should remove QualityAssessor", !err.errorOn);
-      err.reset();
+      CPPUNIT_ASSERT_MESSAGE("should remove QualityAssessor", !err);
+      err.clear();
       mQueue.remove_quality_assessor(1, err);
-      CPPUNIT_ASSERT_MESSAGE("should not remove QualityImprover", err.errorOn);
+      CPPUNIT_ASSERT_MESSAGE("should not remove QualityImprover", err);
    }
 
    void test_insert_quality_assessor()
    {
-      MsqError err;
+      MsqPrintError err(cout);
       mQueue.clear();
       mQueue.add_preconditioner(mQI, err);   // 0
       mQueue.add_quality_assessor(mQA, err); // 1
       mQueue.add_preconditioner(mQI, err);   // 2
       mQueue.set_master_quality_improver(mQI, err);
-      CPPUNIT_ASSERT(!err.errorOn);
-      err.reset();
+      CPPUNIT_ASSERT(!err);
+      err.clear();
       mQueue.insert_quality_assessor(mQA,2, err);
-      CPPUNIT_ASSERT(!err.errorOn);
-      err.reset();
+      CPPUNIT_ASSERT(!err);
+      err.clear();
       mQueue.insert_quality_assessor(mQA, 5, err);
-      CPPUNIT_ASSERT(!err.errorOn);
-      err.reset();
+      CPPUNIT_ASSERT(!err);
+      err.clear();
    }
 
      

@@ -31,18 +31,20 @@
   \author Michael Brewer
   \date   2002-06-9
 */
-#include <vector>
 #include "ASMQualityMetric.hpp"
-#include <math.h>
 #include "Vector3D.hpp"
 #include "ShapeQualityMetric.hpp"
 #include "QualityMetric.hpp"
-#include "MsqMessage.hpp"
-using namespace Mesquite;
-MSQ_USE(vector);
 
-#undef __FUNC__
-#define __FUNC__ "ASMQualityMetric::ASMQualityMetric"
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#  include <vector.h>
+#else
+#  include <vector>
+   using std::vector;
+#endif
+
+using namespace Mesquite;
+
 
 ASMQualityMetric::ASMQualityMetric()
 {
@@ -68,14 +70,16 @@ bool ASMQualityMetric::evaluate_element(PatchData &pd,
   switch(element->get_element_type()){
     case TRIANGLE:
     case QUADRILATERAL:
-      pd.get_adjacent_entities_via_n_dim(1,elem_ind,adj_elems,err);
+      pd.get_adjacent_entities_via_n_dim(1,elem_ind,adj_elems,err);  MSQ_ERRZERO(err);
       break;
     case TETRAHEDRON:
     case HEXAHEDRON:
-      pd.get_adjacent_entities_via_n_dim(2,elem_ind,adj_elems,err);
+      pd.get_adjacent_entities_via_n_dim(2,elem_ind,adj_elems,err);  MSQ_ERRZERO(err);
       break;
     default:
-      err.set_msg("ASM quality metric not implemented for this element type.");
+      MSQ_SETERR(err)("ASM quality metric not implemented for this "
+                      "element type.", MsqError::NOT_IMPLEMENTED);
+      return false;
   };
   int num_samp=adj_elems.size();
   if(num_samp < 1){
@@ -87,10 +91,10 @@ bool ASMQualityMetric::evaluate_element(PatchData &pd,
     switch(element->get_element_type()){
       case TRIANGLE:
       case QUADRILATERAL:
-        temp_double=element->compute_unsigned_area(pd,err);
+        temp_double=element->compute_unsigned_area(pd,err);  MSQ_ERRZERO(err);
           //PRINT_INFO("\nunsigned area = %f",temp_double);
         for(i=0;i<num_samp;++i){
-          met_vals[i]=elems[adj_elems[i]].compute_unsigned_area(pd,err);
+          met_vals[i]=elems[adj_elems[i]].compute_unsigned_area(pd,err);  MSQ_ERRZERO(err);
             //PRINT_INFO("neighboring nunsigned area = %f",met_vals[i]);
           if((temp_double+met_vals[i])>MSQ_MIN){
             met_vals[i]=fabs((temp_double-met_vals[i])/(temp_double+
@@ -103,9 +107,9 @@ bool ASMQualityMetric::evaluate_element(PatchData &pd,
         
       case TETRAHEDRON:
       case HEXAHEDRON:
-        temp_double=element->compute_unsigned_volume(pd,err);
+        temp_double=element->compute_unsigned_volume(pd,err);  MSQ_ERRZERO(err);
         for(i=0;i<num_samp;++i){
-          met_vals[i]=elems[adj_elems[i]].compute_unsigned_volume(pd,err);
+          met_vals[i]=elems[adj_elems[i]].compute_unsigned_volume(pd,err);  MSQ_ERRZERO(err);
           if((temp_double+met_vals[i])>MSQ_MIN){
             met_vals[i]=fabs((temp_double-met_vals[i])/(temp_double+
                                                         met_vals[i]));
@@ -115,9 +119,11 @@ bool ASMQualityMetric::evaluate_element(PatchData &pd,
         }
         break;
       default:
-        err.set_msg("ASM quality metric not implemented for this element type.");
+      MSQ_SETERR(err)("ASM quality metric not implemented for this "
+                      "element type.", MsqError::NOT_IMPLEMENTED);
+      return false;
     };
-    fval=average_metrics(met_vals,num_samp,err);
+    fval=average_metrics(met_vals,num_samp,err);  MSQ_ERRZERO(err);
       //PRINT_INFO("\nRETURNING %f \n",fval);
     delete []met_vals;
   }

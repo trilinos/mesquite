@@ -39,12 +39,16 @@ Header file for the Mesquite::MultiplyQualityMetric class
 #define MultiplyQualityMetric_hpp
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
 #include "CompositeQualityMetric.hpp"
-#include "Vector3D.hpp"
 
 namespace Mesquite
 {
+   class Vector3D;
+   class MsqError;
+   class PatchData;
+   class MsqMeshEntity;
+   class MsqVertex;
+   
      /*! \class MultiplyQualityMetric
        \brief Combines two quality metrics (qMetric1 and qMetric2 defined
        in the parent class CompositeQualityMetric) by multiplication for two-

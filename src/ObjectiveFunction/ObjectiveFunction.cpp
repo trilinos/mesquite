@@ -36,13 +36,11 @@
 
 #include "ObjectiveFunction.hpp"
 #include "MsqVertex.hpp"
-#include "MsqMessage.hpp"
+#include "MsqDebug.hpp"
 #include "MsqFreeVertexIndexIterator.hpp"
 
-using namespace Mesquite;
+namespace Mesquite {
 
-#undef __FUNC__
-#define __FUNC__ "ObjectiveFunction::compute_numerical_gradient"
 /*! 
   Numerically Calculates the gradient of the ObjectiveFunction for the
   free vertices in the patch.  Returns 'false' if the patch is outside
@@ -72,7 +70,7 @@ bool ObjectiveFunction::compute_numerical_gradient(Mesquite::PatchData &pd,
 {
   size_t num_vtx=pd.num_vertices();
   if(num_vtx!=array_size && array_size>0)
-    Message::print_error("\nArray size not equal to the number of vertices.\n");
+    MSQ_DBGOUT(1) << "\nArray size not equal to the number of vertices.\n";
 
   OF_val = 0.; // in case of return false. 
   MsqVertex* vertices=pd.get_vertex_array(err);
@@ -88,31 +86,32 @@ bool ObjectiveFunction::compute_numerical_gradient(Mesquite::PatchData &pd,
     PatchData sub_patch;
     for (m=0; m<num_vtx; ++m) {
       if (vertices[m].is_free_vertex()) {
-        pd.get_subpatch(m, sub_patch, err); MSQ_CHKERR(err);
+        pd.get_subpatch(m, sub_patch, err); MSQ_ERRZERO(err);
         //If sub_patch is not in the feasible region, do not
         //calculate anything.  Just return false.
-        if(! evaluate(sub_patch,flocal,err)) {
+        bool b = evaluate(sub_patch,flocal,err);
+        if(MSQ_CHKERR(err) || !b) {
           return false;
         }
-        MSQ_CHKERR(err);
+
         //loop over the three coords x,y,z
         for(j=0;j<3;++j){
-          eps=get_eps(sub_patch, flocald, j, (&vertices[m]), err);
+          eps=get_eps(sub_patch, flocald, j, (&vertices[m]), err); MSQ_ERRZERO(err);
           //PRINT_INFO("\nin obj num grad j=%i, eps=%20.19f",j,eps);
           if(eps==0){
-            err.set_msg("Dividing by zero in Objective Functions numerical grad");
+            MSQ_SETERR(err)("Dividing by zero in Objective Functions numerical grad",
+                            MsqError::INVALID_STATE);
             return false;
           }
           grad[m][j]=(flocald-flocal)/eps;
         }
-        MSQ_CHKERR(err);
       }
       else {
         for(j=0;j<3;++j)
           grad[m][j] = 0.0;
       }
     }
-    evaluate(pd, OF_val, err);
+    evaluate(pd, OF_val, err);  MSQ_ERRZERO(err);
   }
   else {
     //********************DO NOT useLocalGradient********************
@@ -121,32 +120,55 @@ bool ObjectiveFunction::compute_numerical_gradient(Mesquite::PatchData &pd,
       if (vertices[m].is_free_vertex()) {
         //If pd is not in the feasible region, do not calculate anything.
         //Just return false.
-        if(! evaluate(pd,flocal,err)) {
+        bool b = evaluate(pd,flocal,err);
+        if(MSQ_CHKERR(err) || !b) {
           return false;
         }
         OF_val = flocal;
-        MSQ_CHKERR(err);
         //loop over the three coords x,y,z
         for(j=0;j<3;++j){
-          eps=get_eps(pd, flocald, j, (&vertices[m]), err);
+          eps=get_eps(pd, flocald, j, (&vertices[m]), err); MSQ_ERRZERO(err);
           //PRINT_INFO("\nin obj num grad j=%i, eps=%20.19f",j,eps);
           if(eps==0){
-            err.set_msg("Dividing by zero in Objective Functions numerical grad");
+            MSQ_SETERR(err)("Dividing by zero in Objective Functions numerical grad",
+                            MsqError::INVALID_STATE);
             return false;
           }
           grad[m][j]=(flocald-flocal)/eps;
         }
-        MSQ_CHKERR(err);
       }
       else {
         for(j=0;j<3;++j)
           grad[m][j] = 0.0;
       }
       //PRINT_INFO("  gradx = %f, grady = %f, gradz = %f\n",grad[m][0],grad[m][1],grad[m][2]);   
-      MSQ_CHKERR(err);
     }//end loop over all vertices
   }
   //*****************END of DO NOT useLocalGradient*****************
                         return true;
 }
+
+bool ObjectiveFunction::compute_analytical_gradient(PatchData &patch,
+                                             Vector3D *const &grad,
+                                             double &OF_val,
+                                             MsqError &err, size_t array_size){
+      set_gradient_type(NUMERICAL_GRADIENT);
+      bool result = compute_numerical_gradient(patch, grad, OF_val, err, array_size);
+      return !MSQ_CHKERR(err) && result;
+    }
+
+bool ObjectiveFunction::compute_analytical_hessian(PatchData &/*patch*/,
+                                            MsqHessian &/*hessian*/,
+                                            Vector3D *const &/*grad*/,
+                                            double &/*OF_val*/,
+                                            MsqError &err) {
+      MSQ_SETERR(err)("Analytic hessian not implemented for this Objective "
+                    "Function. Feasible Newton algorythm cannot be used.\n",
+                    MsqError::INVALID_STATE);
+      return false;
+    }
+
+
+
+} // namespace Mesquite
 

@@ -37,6 +37,7 @@ file for the Mesquite::WTargetCalculator class
 #include "WTargetCalculator.hpp"
 #include "PatchDataUser.hpp"
 #include "MeshSet.hpp"
+#include "MsqTimer.hpp"
 
 using namespace Mesquite;
 
@@ -44,11 +45,9 @@ using namespace Mesquite;
 
 /*! The type of targets computed by this function is selected by the constructor of
     the base classes. */
-#undef __FUNC__
-#define __FUNC__ "WTargetCalculator::compute_target_matrices" 
 void WTargetCalculator::compute_target_matrices(PatchData &pd, MsqError &err)
 {
-  FUNCTION_TIMER_START(__FUNC__);
+  FunctionTimer ft( "WTargetCalculator::compute_target_matrice" );
 
   size_t num_elements=pd.num_elements();
   
@@ -58,7 +57,7 @@ void WTargetCalculator::compute_target_matrices(PatchData &pd, MsqError &err)
     ref_pd = new PatchData;
     PatchDataParameters ref_pd_params(*originator);
     ref_pd_params.no_target_calculator();
-    refMesh->get_next_patch(*ref_pd, ref_pd_params, err); MSQ_CHKERR(err);
+    refMesh->get_next_patch(*ref_pd, ref_pd_params, err); MSQ_ERRRTN(err);
     // Make sure topology of ref_pd and pd are equal
     assert( num_elements == ref_pd->num_elements() );
     size_t num_vertices=pd.num_vertices();
@@ -69,9 +68,9 @@ void WTargetCalculator::compute_target_matrices(PatchData &pd, MsqError &err)
     ref_pd = &pd;
   }
   
-  MsqMeshEntity* elems = pd.get_element_array(err);
-  MsqMeshEntity* elems_ref = ref_pd->get_element_array(err);
-  pd.allocate_target_matrices(err); MSQ_CHKERR(err);
+  MsqMeshEntity* elems = pd.get_element_array(err); MSQ_ERRRTN(err);
+  MsqMeshEntity* elems_ref = ref_pd->get_element_array(err); MSQ_ERRRTN(err);
+  pd.allocate_target_matrices(err); MSQ_ERRRTN(err);
 
   Matrix3D W_guides[MSQ_MAX_NUM_VERT_PER_ENT];
   
@@ -80,7 +79,7 @@ void WTargetCalculator::compute_target_matrices(PatchData &pd, MsqError &err)
     int nve = elems[i].vertex_count();
     assert( nve = elems_ref[i].vertex_count() );
 
-    compute_guide_matrices(guideMatrix, *ref_pd, i, W_guides, nve, err); MSQ_CHKERR(err);
+    compute_guide_matrices(guideMatrix, *ref_pd, i, W_guides, nve, err); MSQ_ERRRTN(err);
 
     for (int c=0; c<nve; ++c) {
       tag->target_matrix(c) = W_guides[c];
@@ -88,7 +87,5 @@ void WTargetCalculator::compute_target_matrices(PatchData &pd, MsqError &err)
   }
 
   if ( refMesh != 0 ) delete ref_pd;
-
-  FUNCTION_TIMER_END();
 }
 

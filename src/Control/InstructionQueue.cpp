@@ -34,22 +34,24 @@ Member functions of the Mesquite::InstructionQueue class
   \date   2002-05-01
  */
 
-#ifdef USE_STD_INCLUDES
-#include <string>
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#  include <string.h>
+#  include <list.h>
 #else
-#include <string.h>
+#  include <string>
+#  include <list>
+   using namespace std;
 #endif
 
 #include "InstructionQueue.hpp"
 #include "MeshSet.hpp"
-#ifdef ENABLE_INTERRUPT
-#include "MesquiteInterrupt.hpp"
-#endif
+#include "MsqInterrupt.hpp"
+#include "QualityImprover.hpp"
+#include "QualityAssessor.hpp"
+#include "MsqError.hpp"
+#include "MsqDebug.hpp"
 
 using namespace Mesquite;
-
-MSQ_USE(advance);
-MSQ_USE(string);
 
 InstructionQueue::InstructionQueue() :
   autoQualAssess(true),
@@ -60,8 +62,6 @@ InstructionQueue::InstructionQueue() :
 {
 }
 
-#undef __FUNC__
-#define __FUNC__ "InstructionQueue::add_preconditioner"
 /*! \fn InstructionQueue::add_preconditioner(QualityImprover* instr, MsqError &err)
     \brief adds a QualityImprover at the end of the instruction list
 
@@ -74,7 +74,8 @@ void InstructionQueue::add_preconditioner(QualityImprover* instr,
                                         MsqError &err)
 {
   if (isMasterSet) {
-    err.set_msg("cannot add preconditionners once the master QualityImprover has been set.");
+    MSQ_SETERR(err)("Cannot add preconditionners once the master "
+                    "QualityImprover has been set.", MsqError::INVALID_STATE);
     return;
   }
   
@@ -83,8 +84,6 @@ void InstructionQueue::add_preconditioner(QualityImprover* instr,
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "InstructionQueue::remove_preconditioner"
 /*! \fn InstructionQueue::remove_preconditioner(size_t index, MsqError &err)
     \brief removes a QualityImprover* from the instruction queue
 
@@ -95,31 +94,31 @@ void InstructionQueue::remove_preconditioner(size_t index, MsqError &err)
 {
   // checks index is valid
   if ( isMasterSet && index == masterInstrIndex ) {
-    err.set_msg("cannot remove master QualityImprover.");
+    MSQ_SETERR(err)("cannot remove master QualityImprover.", MsqError::INVALID_ARG);
     return;
   } else if (index >= instructions.size() ) {
-    err.set_msg("index points beyond end of list.");
+    MSQ_SETERR(err)("Index points beyond end of list.",MsqError::INVALID_ARG);
     return;
   }
   
   // position the instruction iterator over the preconditionner to delete
-  list<PatchDataUser*>::iterator pos;
+  msq_std::list<PatchDataUser*>::iterator pos;
   pos = instructions.begin();
   advance(pos, index);
 
-  if ( (*pos)->get_algorithm_type() == PatchDataUser::QUALITY_IMPROVER ) {
-    string name = (*pos)->get_name();
-      //cout << "  o InstructionQueue: removing QualityImprover " << name <<  ".\n"; 
-    instructions.erase(pos);
-    nbPreConditionners--;
-   }
-   else
-     err.set_msg("index does not point to a QualityImprover.");
+  if ( (*pos)->get_algorithm_type() != PatchDataUser::QUALITY_IMPROVER ) 
+  {
+    MSQ_SETERR(err)("Index does not point to a QualityImprover.",
+                    MsqError::INVALID_ARG);
+    return;
+  }
+  
+  string name = (*pos)->get_name();
+  instructions.erase(pos);
+  nbPreConditionners--;
 }  
 
 
-#undef __FUNC__
-#define __FUNC__ "InstructionQueue::insert_preconditioner"
 /*! \fn InstructionQueue::insert_preconditioner(QualityImprover* instr, size_t index, MsqError &err)
     \brief inserts a QualityImprover* into the instruction queue.
 
@@ -133,11 +132,12 @@ void InstructionQueue::insert_preconditioner(QualityImprover* instr,
 {
   // checks index is valid
   if (isMasterSet==true && index > masterInstrIndex) {
-    err.set_msg("cannot add a preconditionner after the master QualityImprover.");
+    MSQ_SETERR(err)("Cannot add a preconditionner after the master "
+                    "QualityImprover.", MsqError::INVALID_STATE);
     return;
   }
   if (index >= instructions.size() ) {
-    err.set_msg("index points beyond end of list.");
+    MSQ_SETERR(err)("index", MsqError::INVALID_ARG);
     return;
   }
 
@@ -151,8 +151,6 @@ void InstructionQueue::insert_preconditioner(QualityImprover* instr,
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "InstructionQueue::add_quality_assessor"
 /*! \fn InstructionQueue::add_quality_assessor(QualityAssessor* instr, MsqError &err)
     \brief adds a QualityAssessor to the instruction queue.
 
@@ -165,8 +163,6 @@ void InstructionQueue::add_quality_assessor(QualityAssessor* instr,
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "InstructionQueue::remove_quality_assessor"
 /*! \fn InstructionQueue::remove_quality_assessor(size_t index, MsqError &err)
     \brief removes a QualityAssessor* from the instruction queue
 
@@ -177,7 +173,7 @@ void InstructionQueue::remove_quality_assessor(size_t index, MsqError &err)
 {
   // checks index is valid
   if (index >= instructions.size() ) {
-    err.set_msg("index points beyond end of list.");
+    MSQ_SETERR(err)("index", MsqError::INVALID_ARG);
     return;
   }
   
@@ -186,18 +182,18 @@ void InstructionQueue::remove_quality_assessor(size_t index, MsqError &err)
   pos = instructions.begin();
   advance(pos, index);
 
-  if ( (*pos)->get_algorithm_type() == PatchDataUser::QUALITY_ASSESSOR ) {
-    string name = (*pos)->get_name();
-      //cout << "  o InstructionQueue: removing QualityAssessor " << name << ".\n"; 
-    instructions.erase(pos);
-   }
-   else
-     err.set_msg("index does not point to a QualityAssessor.");
+  if ( (*pos)->get_algorithm_type() != PatchDataUser::QUALITY_ASSESSOR ) 
+  {
+    MSQ_SETERR(err)("Index does not point to a QualityImprover.",
+                    MsqError::INVALID_ARG);
+    return;
+  }
+  
+  string name = (*pos)->get_name();
+  instructions.erase(pos);
 }  
 
 
-#undef __FUNC__
-#define __FUNC__ "InstructionQueue::insert_quality_assessor"
 /*! \fn InstructionQueue::insert_quality_assessor(QualityAssessor* instr, size_t index, MsqError &err)
     \brief inserts a QualityAssessor* into the instruction queue.
 
@@ -210,7 +206,8 @@ void InstructionQueue::insert_quality_assessor(QualityAssessor* instr,
 {
   // checks index is valid
   if (index > instructions.size()) {
-    err.set_msg("index points two positions beyond end of list.");
+    MSQ_SETERR(err)("index points two positions beyond end of list.",
+                    MsqError::INVALID_ARG);
     return;
   }
 
@@ -223,18 +220,15 @@ void InstructionQueue::insert_quality_assessor(QualityAssessor* instr,
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "InstructionQueue::set_master_quality_improver"
 void InstructionQueue::set_master_quality_improver(QualityImprover* instr,
                                                  MsqError &err)
 {
   if (isMasterSet) {
-    Message::print_warning(
-         "InstructionQueue::set_master_quality_improver():\n"
-         "\tOverwriting previously specified master quality improver.\n" );
+    MSQ_DBGOUT(1) << "InstructionQueue::set_master_quality_improver():\n"
+        << "\tOverwriting previously specified master quality improver.\n";
     // if master is already set, clears it and insert the new one at the same position.
     list<PatchDataUser*>::iterator master_pos;
-    master_pos = this->clear_master(err); MSQ_CHKERR(err);
+    master_pos = this->clear_master(err); MSQ_ERRRTN(err);
     instructions.insert(master_pos, instr);
     isMasterSet = true;
   } else {
@@ -245,22 +239,21 @@ void InstructionQueue::set_master_quality_improver(QualityImprover* instr,
   }
 }
 
-#undef __FUNC__
-#define __FUNC__ "InstructionQueue::run_instructions"
 void InstructionQueue::run_instructions(MeshSet &ms, MsqError &err)
 { 
-  Message::print_info(version_string(false));
+  MSQ_DBGOUT(1) << version_string(false) << "\n";
 
   if (nbPreConditionners != 0 && isMasterSet == false ) {
-    err.set_msg("no pre-conditionners allowed if master QualityImprover is not set.");
+    MSQ_SETERR(err)("no pre-conditionners allowed if master QualityImprover "
+                    "is not set.", MsqError::INVALID_STATE);
     return;
   }
   
 #ifdef ENABLE_INTERRUPT
-  MesquiteInterrupt::catch_interrupt(true);
+  MsqInterrupt msq_interrupt;
 #endif
   
-  list<PatchDataUser*>::const_iterator instr_iter;
+  msq_std::list<PatchDataUser*>::const_iterator instr_iter;
   
   // For each instruction in the list
   for (instr_iter = instructions.begin();
@@ -271,9 +264,9 @@ void InstructionQueue::run_instructions(MeshSet &ms, MsqError &err)
       if (globalPatch == 0) {
         globalPatch = new PatchData;
         ms.get_next_patch(*globalPatch, (*instr_iter)->get_all_parameters(), err);
-        MSQ_CHKERR(err);
+        MSQ_ERRRTN(err);
       }
-      (*instr_iter)->set_global_patch(globalPatch, err); MSQ_CHKERR(err);
+      (*instr_iter)->set_global_patch(globalPatch, err); MSQ_ERRRTN(err);
       
     }
     // If instruction does not use a Global Patch, make sure we discard any existing patch.
@@ -284,7 +277,7 @@ void InstructionQueue::run_instructions(MeshSet &ms, MsqError &err)
     }
     
     // applies the QualityImprover/QualityAssessor to the MeshSet
-      (*instr_iter)->loop_over_mesh(ms, err); MSQ_CHKERR(err);
+      (*instr_iter)->loop_over_mesh(ms, err); MSQ_ERRRTN(err);
 
     // If this same instruction is reused in this queue, we can't assume the
     // global patch will still be valid. 
@@ -293,18 +286,10 @@ void InstructionQueue::run_instructions(MeshSet &ms, MsqError &err)
  
   if (globalPatch != 0)
     delete globalPatch; // clean up once all instructions are executed.
-#ifdef ENABLE_INTERRUPT
-    //If an innterrupt was called, we respect that interrupt until
-    //the end of the instruction queue run.  
-  MesquiteInterrupt::clear_interrupt();
-  MesquiteInterrupt::catch_interrupt(false);
-#endif
 
 }
 
   
-#undef __FUNC__
-#define __FUNC__ "InstructionQueue::clear"
 void InstructionQueue::clear()
 {
   instructions.clear();
@@ -314,15 +299,13 @@ void InstructionQueue::clear()
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "InstructionQueue::clear_master"
 list<PatchDataUser*>::iterator InstructionQueue::clear_master(MsqError &err)
 {
-  list<PatchDataUser*>::iterator instr_iter;
-  list<PatchDataUser*>::iterator master_pos;
+  msq_std::list<PatchDataUser*>::iterator instr_iter;
+  msq_std::list<PatchDataUser*>::iterator master_pos;
   
   if (!isMasterSet) {
-    err.set_msg("No master quality improver to clear.");
+    MSQ_SETERR(err)("No master quality improver to clear.", MsqError::INVALID_STATE);
     return instr_iter;
   }
   

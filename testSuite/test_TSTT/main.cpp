@@ -43,13 +43,15 @@ describe main.cpp here
 // DESCRIP-END.
 //
 
-#ifdef USE_STD_INCLUDES
+#ifndef MSQ_USE_OLD_IO_HEADERS
 #include <iostream>
+using std::cout;
+using std::end;
 #else
 #include <iostream.h>
 #endif
 
-#ifdef USE_C_PREFIX_INCLUDES
+#ifdef MSQ_USE_OLD_C_HEADERS
 #include <cstdlib>
 #else
 #include <stdlib.h>
@@ -66,7 +68,7 @@ describe main.cpp here
 
 #include "Mesquite.hpp"
 #include "MeshTSTT.hpp"
-#include "MesquiteError.hpp"
+#include "MsqError.hpp"
 #include "InstructionQueue.hpp"
 #include "MeshSet.hpp"
 #include "TerminationCriterion.hpp"
@@ -80,19 +82,12 @@ describe main.cpp here
 #include "FeasibleNewton.hpp"
 #include "ConjugateGradient.hpp"
 
-#include "MsqMessage.hpp"
-
 
 using namespace Mesquite;
 
-using std::cout;
-using std::endl;
-
-#undef __FUNC__
-#define __FUNC__ "main"
 int main(int argc, char* argv[])
 {
-  Mesquite::MsqError err;
+  Mesquite::MsqPrintError err(cout);
   char file_name[256];
   double OF_value = 1.;
   
@@ -125,14 +120,14 @@ int main(int argc, char* argv[])
 
   if ( !tstt_core_query )
   {
-     err.set_msg("ERROR: could not perform tstt cast to CoreEntitySetQuery");
+     cout << "ERROR: could not perform tstt cast to CoreEntitySetQuery" << endl;
      return 1;
   }
 
   tstt_core_query.load(file_name);
 
   Mesquite::MeshTSTT* mesh = new Mesquite::MeshTSTT(tstt_mesh, err);
-  if (err.errorOn) return 1;;
+  if (err) return 1;;
   
   // Creates a domain constraint
   Vector3D normal(0,0,1);
@@ -142,7 +137,7 @@ int main(int argc, char* argv[])
   // initialises a MeshSet object
   MeshSet mesh_set1;
   mesh_set1.add_mesh(mesh, err); 
-  if (err.errorOn) return 1;;
+  if (err) return 1;;
   //  mesh_set1.set_domain_constraint(&planar_domain, err); MSQ_CHKERR(err);
 
   // creates an intruction queue
@@ -154,18 +149,18 @@ int main(int argc, char* argv[])
 //  mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
 //   mean_ratio->set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
   mean_ratio->set_averaging_method(QualityMetric::SUM, err); 
-  if (err.errorOn) return 1;;
+  if (err) return 1;;
   
   // ... and builds an objective function with it
   LPtoPTemplate* obj_func = new LPtoPTemplate(mean_ratio, 1, err);
-  if (err.errorOn) return 1;;
+  if (err) return 1;;
   obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
   
   // creates the steepest descentfeas newt optimization procedures
 //  ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
   FeasibleNewton* pass1 = new FeasibleNewton( obj_func );
   pass1->set_patch_type(PatchData::GLOBAL_PATCH, err);
-  if (err.errorOn) return 1;;
+  if (err) return 1;;
   
   QualityAssessor stop_qa=QualityAssessor(mean_ratio,QualityAssessor::AVERAGE);
   
@@ -173,10 +168,10 @@ int main(int argc, char* argv[])
   TerminationCriterion tc_inner;
   tc_inner.add_criterion_type_with_double(
            TerminationCriterion::QUALITY_IMPROVEMENT_ABSOLUTE, OF_value, err);
-  if (err.errorOn) return 1;;
+  if (err) return 1;;
   TerminationCriterion tc_outer;
   tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
-  if (err.errorOn) return 1;;
+  if (err) return 1;;
   pass1->set_inner_termination_criterion(&tc_inner);
   pass1->set_outer_termination_criterion(&tc_outer);
 
@@ -184,25 +179,25 @@ int main(int argc, char* argv[])
   pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
   
   queue1.add_quality_assessor(&stop_qa, err);
-  if (err.errorOn) return 1;;
+  if (err) return 1;;
    
   // adds 1 pass of pass1 to mesh_set1
   queue1.set_master_quality_improver(pass1, err);
-  if (err.errorOn) return 1;;
+  if (err) return 1;;
   
   queue1.add_quality_assessor(&stop_qa, err); 
-  if (err.errorOn) return 1;;
+  if (err) return 1;;
 
   mesh_set1.write_vtk("original", err); 
-  if (err.errorOn) return 1;;
+  if (err) return 1;;
 
   // launches optimization on mesh_set1
   queue1.run_instructions(mesh_set1, err);
-  if (err.errorOn) return 1;;
+  if (err) return 1;;
 
   mesh_set1.write_vtk("smoothed", err); 
-  if (err.errorOn) return 1;;
+  if (err) return 1;;
 
-  Message::print_timing_diagnostics();
+  print_timing_diagnostics( cout );
   return 0;
 }

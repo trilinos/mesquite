@@ -31,14 +31,23 @@
 #pragma warning ( 4 : 4786)
 #endif
 
-#include <vector>
-#include <utility>
-#include <string>
 #include "Mesquite.hpp"
+#include "MsqDebug.hpp"
 
-MSQ_USE(string);
-MSQ_USE(vector);
-MSQ_USE(pair);
+#ifdef MSQ_USE_OLD_STD_HEADERS
+# include <vector.h>
+# include <utility.h>
+#else
+# include <vector>
+# include <utility>
+#endif
+#include <string>
+
+#ifdef MSQ_USE_OLD_IO_HEADERS
+#  class ostream;
+#else
+#  include <iosfwd>
+#endif
 
 namespace Mesquite
 {
@@ -118,75 +127,95 @@ namespace Mesquite
       // collection, the Key of the existing StopWatch is returned
       // if 'fail_if_exists' is false, or zero is returned if
       // 'fail_if_exists' is true.
-    Key add(const string &name, bool fail_if_exists = true);
+    Key add(const msq_std::string &name, bool fail_if_exists = true);
     
       // Gets the Key for an existing stopwatch.  If a stopwatch
       // with the given name does not exist, function returns zero.
-    Key get_key(const string &name) const;
+    Key get_key(const msq_std::string &name) const;
 
       //!Gets the string associated with a key
-    string get_string(const Key key){
+    msq_std::string get_string(const Key key){
         return mEntries[key-1].first;}
       //!Gets the string associated with a key      
-    void get_string(const Key key, string &new_string){
+    void get_string(const Key key, msq_std::string &new_string){
       new_string=mEntries[key-1].first;}
     
       // Remove a specific stopwatch.
     void remove(const Key key);
-    void remove(const string &name)
+    void remove(const msq_std::string &name)
       { remove(get_key(name)); }
     
       // start a specific stopwatch
     void start(const Key key);
-    void start(const string &name)
+    void start(const msq_std::string &name)
       { start(get_key(name)); }
     
       // stop a specific stopwatch
     void stop(const Key key);
-    void stop(const string &name)
+    void stop(const msq_std::string &name)
       { stop(get_key(name)); }
     
       // reset a specific stopwatch
     void reset(const Key key);
-    void reset(const string &name)
+    void reset(const msq_std::string &name)
       { reset(get_key(name)); }
     
       // Get the total time for a specific stopwatch, zero if
       // the stopwatch doesn't exist.
     double total_time(const Key key) const;
-    double total_time(const string &name) const
+    double total_time(const msq_std::string &name) const
       { return total_time(get_key(name)); }
       // Get the number of times a StopWatch was started.
     int number_of_starts(const Key key) const;
-    int number_of_starts(const string &name) const
+    int number_of_starts(const msq_std::string &name) const
       { return number_of_starts(get_key(name));}
     
       //Gets the number of stop watches in the collection
     int number_of_stop_watches(){
       return mEntries.size();}
 
-    void get_keys_sorted_by_time(vector<Key> &sorted_keys);
-    
+    void get_keys_sorted_by_time(msq_std::vector<Key> &sorted_keys);
     
   private:
-    vector< pair<string, StopWatch> > mEntries;
+    msq_std::vector< msq_std::pair<msq_std::string, StopWatch> > mEntries;
   };
+  
+  msq_stdio::ostream& operator<<( msq_stdio::ostream&, StopWatchCollection& coll );
   
     // A stopWatchCollection available anywhere
   extern Mesquite::StopWatchCollection GlobalStopWatches;
-}
 
-#ifdef USE_FUNCTION_TIMERS
-#define FUNCTION_TIMER_START(name) \
-   static StopWatchCollection::Key local_func_abd = GlobalStopWatches.add(name); \
-   GlobalStopWatches.start(local_func_abd); 
+  inline void print_timing_diagnostics( int debugflag )
+    { MSQ_DBGOUT(debugflag) << GlobalStopWatches; }
 
-#define FUNCTION_TIMER_END() \
-   GlobalStopWatches.stop(local_func_abd); 
+  inline void print_timing_diagnostics( msq_stdio::ostream& stream )
+    { stream << GlobalStopWatches; }
+
+
+class FunctionTimer
+{
+  public:
+#ifndef MSQ_USE_FUNCTION_TIMERS  
+    inline FunctionTimer( const char* ) {}
 #else
-#define FUNCTION_TIMER_START(name){}
-#define FUNCTION_TIMER_END() {}
+    inline FunctionTimer( const char* name )
+    {
+      mKey = GlobalStopWatches.add( name );
+      GlobalStopWatches.start( mKey );
+    }
+    inline ~FunctionTimer()
+    {
+      GlobalStopWatches.stop( mKey );
+    }
+  private:
+    StopWatchCollection::Key mKey;
 #endif
+    // Don't allow any of this stuff (make them private)
+    void* operator new(size_t size);
+    FunctionTimer( const FunctionTimer& );
+    FunctionTimer& operator=( const FunctionTimer& );
+};
 
+}  // namespace Mesquite
 
 #endif

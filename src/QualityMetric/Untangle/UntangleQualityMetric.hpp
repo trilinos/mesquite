@@ -39,7 +39,6 @@ Header file for the Mesquite::UntangleQualityMetric class
 #define UntangleQualityMetric_hpp
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
 #include "QualityMetric.hpp"
 
 namespace Mesquite

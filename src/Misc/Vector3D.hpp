@@ -28,21 +28,20 @@
 #define MESQUITE_VECTOR3D_HPP
 
 #include "Mesquite.hpp"
-#ifdef USE_C_PREFIX_INCLUDES
-#include <cassert>
+
+#ifdef MSQ_USE_OLD_IO_HEADERS
+   class ostream;
 #else
-#include <assert.h>
+#  include <iosfwd>
 #endif
 
-#ifdef USE_STD_INCLUDES
-#include <iostream>
+#ifdef MSQ_USE_OLD_C_HEADERS
+#  include <assert.h>
+#  include <string.h>
 #else
-#include <iostream.h>
+#  include <cassert>
+#  include <cstring>
 #endif
-
-MSQ_USE(ostream);
-MSQ_USE(endl);
-
 
 /*! \file Vector3D.hpp
   \brief Vector object with exactly 3 dimensions.
@@ -54,8 +53,8 @@ MSQ_USE(endl);
 */
 namespace Mesquite
 {
-
    class Matrix3D;
+   class MsqError;
    
    /*!
       \class Vector3D
@@ -132,8 +131,8 @@ namespace Mesquite
     friend void plusEqTransAx(Vector3D& v, const Matrix3D& A, const Vector3D& x);
     
     // Comparison functions
-    friend int operator==(const Vector3D &lhs, const Vector3D &rhs);
-    friend int operator!=(const Vector3D &lhs, const Vector3D &rhs);
+    friend bool operator==(const Vector3D &lhs, const Vector3D &rhs);
+    friend bool operator!=(const Vector3D &lhs, const Vector3D &rhs);
     static double distance_between(const Vector3D& p1,
                                    const Vector3D& p2);
     int within_tolerance_box(const Vector3D &compare_to,
@@ -154,7 +153,8 @@ namespace Mesquite
     
     // Utility functions.  All angle functions work in radians.
     static double interior_angle(const Vector3D &a,
-                                 const Vector3D &b);
+                                 const Vector3D &b,
+                                 MsqError& err);
     //- Interior angle: acos((a%b)/(|a||b|))
     static Vector3D interpolate(const double param, const Vector3D &p1,
                                 const Vector3D &p2);
@@ -180,9 +180,9 @@ namespace Mesquite
     mCoords[2] = z;
   }
   inline Vector3D::Vector3D(const double xyz[3]) 
-  { memcpy(mCoords, xyz, 3*sizeof(double)); }
+  { msq_stdc::memcpy(mCoords, xyz, 3*sizeof(double)); }
   inline Vector3D::Vector3D(const Vector3D& to_copy) 
-  { memcpy(mCoords, to_copy.mCoords, 3*sizeof(double)); }
+  { msq_stdc::memcpy(mCoords, to_copy.mCoords, 3*sizeof(double)); }
   
   // Functions to get coordinates
   inline double Vector3D::x() const
@@ -198,13 +198,9 @@ namespace Mesquite
     z = mCoords[2];
   }
   inline void Vector3D::get_coordinates(double xyz[3]) const
-  { memcpy(xyz, mCoords, 3*sizeof(double)); }
+  { msq_stdc::memcpy(xyz, mCoords, 3*sizeof(double)); }
   inline const double& Vector3D::operator[](size_t index) const
   {
-#ifdef MSQ_DEBUG
-    assert(0<=(int)index);
-    assert(index<=2);     
-#endif
     return mCoords[index];
   }
   
@@ -224,16 +220,11 @@ namespace Mesquite
     mCoords[2] = z;
   }
   inline void Vector3D::set(const double xyz[3])
-  { memcpy(mCoords, xyz, 3*sizeof(double)); }
+  { msq_stdc::memcpy(mCoords, xyz, 3*sizeof(double)); }
   inline void Vector3D::set(const Vector3D& to_copy)
-  { memcpy(mCoords, to_copy.mCoords, 3*sizeof(double)); }
+  { msq_stdc::memcpy(mCoords, to_copy.mCoords, 3*sizeof(double)); }
   inline double& Vector3D::operator[](size_t index)
-  {
-#ifdef MSQ_DBG3
-    assert(0<=(int)index);
-    assert(index<=2);     
-#endif
-    return mCoords[index]; }
+  { return mCoords[index]; }
    
   inline Vector3D& Vector3D::operator=(const Vector3D &to_copy)  
   {
@@ -267,7 +258,6 @@ namespace Mesquite
   //! divides each Vector3D entry by the given scalar.
   inline Vector3D& Vector3D::operator/=(const double scalar)
   {
-    assert (scalar != 0);
     mCoords[0] /= scalar;
     mCoords[1] /= scalar;
     mCoords[2] /= scalar;
@@ -280,7 +270,7 @@ namespace Mesquite
        mCoords[2]*rhs.mCoords[0] - mCoords[0]*rhs.mCoords[2],
        mCoords[0]*rhs.mCoords[1] - mCoords[1]*rhs.mCoords[0]
       };
-    memcpy(mCoords, new_coords, 3*sizeof(double));
+    msq_stdc::memcpy(mCoords, new_coords, 3*sizeof(double));
     return *this;
   }
   inline Vector3D& Vector3D::operator+=(const Vector3D &rhs)
@@ -375,21 +365,8 @@ namespace Mesquite
   }
   
   // output operator
-  inline ostream& operator<<(ostream &s,
-                                  const Mesquite::Vector3D &v)
-  {
-    return s << v[0] << ' ' << v[1] << ' ' << v[2] << ' ' << endl;
-  }
+  msq_stdio::ostream& operator<<(msq_stdio::ostream &s, const Mesquite::Vector3D &v);
   
-  // comparison functions
-  inline int operator==(const Vector3D &lhs, const Vector3D &rhs)
-  {
-    return (memcmp(lhs.mCoords, rhs.mCoords, 3*sizeof(double)) == 0);
-  }
-  inline int operator!=(const Vector3D &lhs, const Vector3D &rhs)
-  {
-    return (memcmp(lhs.mCoords, rhs.mCoords, 3*sizeof(double)) != 0);
-  }
   inline double Vector3D::distance_between(const Vector3D &p1,
                                            const Vector3D &p2)
   {
@@ -399,9 +376,9 @@ namespace Mesquite
   inline int Vector3D::within_tolerance_box(const Vector3D &compare_to,
                                             double tolerance) const
   {
-    return ((fabs(this->mCoords[0] - compare_to.mCoords[0]) < tolerance) &&
-            (fabs(this->mCoords[1] - compare_to.mCoords[1]) < tolerance) &&
-            (fabs(this->mCoords[2] - compare_to.mCoords[2]) < tolerance));
+    return ((msq_stdc::fabs(this->mCoords[0] - compare_to.mCoords[0]) < tolerance) &&
+            (msq_stdc::fabs(this->mCoords[1] - compare_to.mCoords[1]) < tolerance) &&
+            (msq_stdc::fabs(this->mCoords[2] - compare_to.mCoords[2]) < tolerance));
   }
   
   // Length functions
@@ -413,9 +390,9 @@ namespace Mesquite
   }
   inline double Vector3D::length() const
   {
-    return sqrt(mCoords[0]*mCoords[0] +
-                mCoords[1]*mCoords[1] +
-                mCoords[2]*mCoords[2]);
+    return msq_stdc::sqrt(mCoords[0]*mCoords[0] +
+                          mCoords[1]*mCoords[1] +
+                          mCoords[2]*mCoords[2]);
   }
   inline double length(Vector3D* const v,int n) // norm for an array of Vector3Ds
   {
@@ -424,28 +401,22 @@ namespace Mesquite
       l += v[j].mCoords[0]*v[j].mCoords[0] +
            v[j].mCoords[1]*v[j].mCoords[1] +
            v[j].mCoords[2]*v[j].mCoords[2];
-    return sqrt(l);
+    return msq_stdc::sqrt(l);
   }
   inline double Linf(Vector3D* const v,int n) // max entry for an array of Vector3Ds
   {
     double max=0;  
     //loop over the length of the array
     for(int i=0;i<n;++i){
-      if ( max < fabs(v[i][0]) )   max=fabs(v[i][0]) ;
-      if ( max < fabs(v[i][1]) )   max=fabs(v[i][1]) ;
-      if ( max < fabs(v[i][2]) )   max=fabs(v[i][2]) ;
+      if ( max < msq_stdc::fabs(v[i][0]) )   max=msq_stdc::fabs(v[i][0]) ;
+      if ( max < msq_stdc::fabs(v[i][1]) )   max=msq_stdc::fabs(v[i][1]) ;
+      if ( max < msq_stdc::fabs(v[i][2]) )   max=msq_stdc::fabs(v[i][2]) ;
     }
     //return the value of the largest entry in the array
     return max;
   }
   inline void Vector3D::set_length(const double new_length)
   {
-    // Make sure at least one coordinate is non-zero so
-    // we've got a non-zero length.
-    assert(mCoords[0] != 0.0 ||
-           mCoords[1] != 0.0 ||
-           mCoords[2] != 0.0);
-    
     double factor = new_length / length();
     *this *= factor;
   }
@@ -453,36 +424,22 @@ namespace Mesquite
   { set_length(1.0); }
 
   // Utility functions.
-  inline double Vector3D::interior_angle(const Vector3D &lhs,
-                                         const Vector3D &rhs)
-  {
-    double len1 = lhs.length();
-    double len2 = rhs.length();
-    
-    assert(len1 > 0);
-    assert(len2 > 0);
-    
-    double angle_cos = (lhs % rhs)/(len1 * len2);
-    
-    // Adjust the cosine if slightly out of range
-    if ((angle_cos > 1.0) && (angle_cos < 1.0001))
-      {
-        angle_cos = 1.0;
-      }
-    else if (angle_cos < -1.0 && angle_cos > -1.0001)
-      {
-        angle_cos = -1.0;
-      }
-    assert(angle_cos >= -1.0 && angle_cos <= 1.0);
-    
-    return acos(angle_cos);
-  }
   inline Vector3D Vector3D::interpolate(const double param,
                                         const Vector3D &p1,
                                         const Vector3D &p2)
   {
     return (1-param)*p1 + param*p2;
   }
+
+  inline bool operator==( const Vector3D& v1, const Vector3D&v2 )
+    { return v1.mCoords[0] == v2.mCoords[0] &&
+             v1.mCoords[1] == v2.mCoords[1] &&
+             v1.mCoords[2] == v2.mCoords[2]; }
+
+  inline bool operator!=( const Vector3D& v1, const Vector3D&v2 )
+    { return v1.mCoords[0] != v2.mCoords[0] ||
+             v1.mCoords[1] != v2.mCoords[1] ||
+             v1.mCoords[2] != v2.mCoords[2]; }
 
 } // namespace Mesquite
 

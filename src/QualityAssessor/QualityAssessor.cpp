@@ -36,16 +36,22 @@
 #include "PatchData.hpp"
 #include "MsqMeshEntity.hpp"
 #include "MsqVertex.hpp"
+#include "MsqDebug.hpp"
+#include "MeshSet.hpp"
+
 #include <math.h>
-#include "MsqMessage.hpp"
 
-MSQ_USE(string);
-MSQ_USE(list);
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#  include <list.h>
+#  include <vector.h>
+#else
+#  include <list>
+#  include <vector>
+   using namespace std;
+#endif
 
-using namespace Mesquite;
+namespace Mesquite {
 
-#undef __FUNC__
-#define __FUNC__ "QualityAssessor::QualityAssessor"
 /*! 
   Constructor creates a QualityAssessor, and adds the given QualityMetric
   pointer and QAFunciton to the list of Assessors (a structure containing
@@ -63,22 +69,19 @@ QualityAssessor::QualityAssessor(QualityMetric* qm, enum QAFunction func,
 {
   MsqError err;
   if(func==QualityAssessor::HISTOGRAM || func==QualityAssessor::ALL_MEASURES){
-    add_quality_assessment(qm, func, err);
-    set_stopping_assessment(qm, QualityAssessor::MAXIMUM, err);
+    add_quality_assessment(qm, func, err);  MSQ_ERRRTN(err);
+    set_stopping_assessment(qm, QualityAssessor::MAXIMUM, err);  MSQ_ERRRTN(err);
   }
   else{
-    set_stopping_assessment(qm,func, err);
+    set_stopping_assessment(qm,func, err);  MSQ_ERRRTN(err);
   }
-  MSQ_CHKERR(err);
   printingTurnedOff=0;
     //sigDig=5;
     //When we are no longer doing a GLOBAL patch, we          
     //must also remove the 'elem_bool=0' below.         
-  set_patch_type(PatchData::GLOBAL_PATCH, err, 0); MSQ_CHKERR(err);
+  set_patch_type(PatchData::GLOBAL_PATCH, err, 0); MSQ_ERRRTN(err);
 }
 
-#undef __FUNC__
-#define __FUNC__ "QualityAssessor::~QualityAssessor"
 QualityAssessor::~QualityAssessor()
 {
   list<Assessor*>::iterator pos;
@@ -91,8 +94,6 @@ QualityAssessor::~QualityAssessor()
   }
 }
 
-#undef __FUNC__
-#define __FUNC__ "QualityAssessor::get_QAFunction_name"
 string QualityAssessor::get_QAFunction_name(
                               enum QualityAssessor::QAFunction fun)
 {
@@ -115,8 +116,6 @@ string QualityAssessor::get_QAFunction_name(
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "QualityAssessor::add_quality_assessment"
 /*!
     Several QualityMetric objects can be added to a single QualityAssessor
     object.  This allows to perform several quality assessments over a
@@ -163,8 +162,6 @@ void QualityAssessor::add_quality_assessment(QualityMetric* qm,
   }
 }
 
-#undef __FUNC__
-#define __FUNC__ "QualityAssessor::set_stopping_assessment"
 /*!Sets which QualityMetric and QAFunction
 combination is used to determine the value return from assess_mesh_quality().
 It first ensures that the inputed QAFunction was not HISTOGRAM.  It then
@@ -179,10 +176,9 @@ void QualityAssessor::set_stopping_assessment(QualityMetric* qm,
                                               MsqError &err)
 {
   if(func==HISTOGRAM){
-    err.set_msg("HISTOGRAM DOES NOT GIVE A VALID RETURN VALUE");
+    MSQ_SETERR(err)("HISTOGRAM DOES NOT GIVE A VALID RETURN VALUE", MsqError::INVALID_ARG);
   }
-  add_quality_assessment(qm,func,err);
-  MSQ_CHKERR(err);
+  add_quality_assessment(qm,func,err);  MSQ_ERRRTN(err);
   stoppingFunction=func;
   stoppingMetric=qm;
 }
@@ -190,8 +186,6 @@ void QualityAssessor::set_stopping_assessment(QualityMetric* qm,
   
 
 
-#undef __FUNC__
-#define __FUNC__ "QualityAssessor::set_histogram_range"
 /*! 
 Checks first to see if the QualityMetric, qm, has been added to this
 QualityAssessor, and if it has not, adds it.  It then adds HISTOGRAM as a
@@ -248,8 +242,6 @@ void QualityAssessor::set_histogram_range(QualityMetric* qm,
 
 
 
-#undef __FUNC__
-#define __FUNC__ "QualityAssessor::loop_over_mesh"
 /*! 
   Computes the quality data for a given
   MeshSet, ms. What quality information is calculated, depends
@@ -277,7 +269,8 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
   list<Assessor*>::iterator pos = assessList.begin();
   int num_elem_based=0;
   int num_metrics=assessList.size();
-  Assessor** assessor_array = new Assessor*[num_metrics];
+  //Assessor** assessor_array = new Assessor*[num_metrics];
+  vector<Assessor*> assessor_array(num_metrics);
     //array of data holders QAVars.  QAVars is a struct
     //defined in QualityAssessor.hpp which creates a
     //way to store the data we accumulate for the each metric.
@@ -285,7 +278,8 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
     //Each QAVar also has an bit flag int, funcFlagBits,
     //which tells us (after we initialize it) what we
     //need to calcuate... max, min, avg, rms, hist, std_dev.
-  QAVars *QAData = new QAVars[num_metrics];
+  //QAVars *QAData = new QAVars[num_metrics];
+  vector<QAVars> QAData(num_metrics);
   
   int i=0;
     //find num_elem_based (the number of elem based metrics)
@@ -351,25 +345,25 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
     if(num_elem_based){
         //construct the patch we will send to get_next_patch
       PatchData* elem_group;
+      PatchData local_elem_group;
         
       no_culling_method();
       
       bool elem_bool=true;
       if (get_global_patch() == 0) {
-        elem_group = new PatchData;
-        elem_bool=ms.get_next_patch(*elem_group, this, err);
+        elem_group = &local_elem_group;
+        elem_bool=ms.get_next_patch(*elem_group, this, err);  MSQ_ERRZERO(err);
       }
       else {
         elem_group = get_global_patch();
       }
-      MSQ_CHKERR(err);
       
         //until there are no more patches
         //there is another get_next_patch at
         //the end of this loop
       while(elem_bool){
         
-        elems=elem_group->get_element_array(err); MSQ_CHKERR(err);
+        elems=elem_group->get_element_array(err); MSQ_ERRZERO(err);
         num_elems=elem_group->num_elements();
         
         int element_counter=0;
@@ -397,11 +391,12 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
               //if first pass or if two passes are required
             if(!num_pass||assessor_array[metric_counter]->maxHist>MSQ_MAX_CAP){
               
-              if(!assessor_array[metric_counter]->metric->evaluate_element(*elem_group,&elems[element_counter], temp_val, err)){
+              bool b = assessor_array[metric_counter]->metric->
+                evaluate_element(*elem_group,&elems[element_counter], 
+                temp_val, err);  MSQ_ERRZERO(err);
+              if(!b){
                 QAData[metric_counter].numInvalid++;
               }
-            
-                MSQ_CHKERR(err);
               
                 //if we are on the first loop over the mesh, calculate
                 //everything we can.  That is accumlate for
@@ -465,27 +460,25 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
 
           // If dealing with local patches, get next element group (PatchData object)
         if (get_patch_type() != PatchData::GLOBAL_PATCH)
-          elem_bool=ms.get_next_patch(*elem_group,this, err); MSQ_CHKERR(err);
+          elem_bool=ms.get_next_patch(*elem_group,this, err); MSQ_ERRZERO(err);
           //Michael:: Since we are doing global right now:
           //Remove this when no longer doing global
         elem_bool=0;
           //Message::print_info("\nInside QA get_next returning %i",elem_bool);        
       }//end  while (elem_bool)
 
-      if (get_global_patch() == 0 )
-        delete elem_group; 
-      
     }//end   if num_elem_based
 
     if((num_metrics-num_elem_based)>0){
         //construct the patch we will send to get_next_patch
       PatchData* vert_group;
+      PatchData local_vert_group;
       no_culling_method();
       metric_counter=0;
       bool vert_bool=true;
       if (get_global_patch() == 0) {
-        vert_group = new PatchData; 
-        vert_bool=ms.get_next_patch(*vert_group, this, err);  MSQ_CHKERR(err);
+        vert_group = &local_vert_group; 
+        vert_bool=ms.get_next_patch(*vert_group, this, err);  MSQ_ERRZERO(err);
       }
       else {
         vert_group = get_global_patch();
@@ -496,7 +489,7 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
         //the end of this loop
       while(vert_bool){
         
-        verts=vert_group->get_vertex_array(err);  MSQ_CHKERR(err);
+        verts=vert_group->get_vertex_array(err);  MSQ_ERRZERO(err);
         num_verts=vert_group->num_vertices();
         
         int vertex_counter=0;
@@ -530,7 +523,7 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
               if(!assessor_array[metric_counter]->metric->evaluate_vertex(*vert_group,&verts[vertex_counter],temp_val,err)){
                 QAData[metric_counter].numInvalid++;
               }
-              MSQ_CHKERR(err);
+              MSQ_ERRZERO(err);
               
                 //if we are on the first loop over the mesh, calculate
                 //everything we can.  That is accumlate for
@@ -595,15 +588,13 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
           //get next vertex group (PatchData object)
         
         if (get_patch_type() != PatchData::GLOBAL_PATCH)
-          vert_bool=ms.get_next_patch(*vert_group,this, err); MSQ_CHKERR(err);
+          vert_bool=ms.get_next_patch(*vert_group,this, err); MSQ_ERRZERO(err);
           //Michael:: Since we are doing global right now:
           //Remove this when no longer doing global
         vert_bool=0;
           //Message::print_info("\nInside QA get_next returning %i",elem_bool);        
       }//end  while (vert_bool)
 
-      if (get_global_patch() == 0 )
-        delete vert_group; 
     }//end   if (num_metrics-num_elem_based)>0
 
 
@@ -670,6 +661,7 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
     /*!\TODO (Michael) NOTES: delete div 2  when lose pass=2.
        Fix the way and format of display*/
   metric_counter=0;
+/*
   int column_counter=0;
   if(!printingTurnedOff){
     
@@ -697,8 +689,10 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
         //PRINT only a warning if invalid
       if(num_pass==2)
         QAData[metric_counter].numInvalid/=(2);
-      else if (num_pass!=1)
-        err.set_msg("Incorrect number of passes over the mesh");
+      else if (num_pass!=1) {
+        MSQ_SETERR(err)("Incorrect number of passes over the mesh", MsqError::INTERNAL_ERROR);
+        return 0.0;
+      }
       
       if(QAData[metric_counter].numInvalid>0){
         Message::print_info("MESH IS INVALID WITH RESPECT TO THIS METRIC (%i values)\n",QAData[metric_counter].numInvalid);
@@ -766,6 +760,7 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
     }//end while loop over metrics
     Message::print_info("\n");
   }
+*/
   for(metric_counter=0;metric_counter<num_metrics;metric_counter++){
     if(assessor_array[metric_counter]->metric==stoppingMetric){
       switch(stoppingFunction){
@@ -785,12 +780,13 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
           return_value=QAData[metric_counter].avgVar;
           break;
         default:
-          err.set_msg("QAFunction used for return value is invalid.");
+          MSQ_SETERR(err)("QAFunction used for return value is invalid.",MsqError::INVALID_STATE);
+          return 0;
       };
     }
   }
     
-  delete []assessor_array;
-  delete []QAData;
   return return_value;
 }
+
+} //namespace Mesquite

@@ -31,17 +31,19 @@
   \author Michael Brewer
   \date   2002-06-9
 */
-#include <vector>
 #include "CornerJacobianQualityMetric.hpp"
-#include <math.h>
 #include "Vector3D.hpp"
 #include "ShapeQualityMetric.hpp"
 #include "QualityMetric.hpp"
 
-using namespace Mesquite;
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#  include <vector.h>
+#else
+#  include <vector>
+   using std::vector;
+#endif
 
-#undef __FUNC__
-#define __FUNC__ "CornerJacobianQualityMetric::CornerJacobianQualityMetric"
+using namespace Mesquite;
 
 CornerJacobianQualityMetric::CornerJacobianQualityMetric()
 {
@@ -61,11 +63,11 @@ bool CornerJacobianQualityMetric::evaluate_element(PatchData &pd,
   switch(element->get_element_type()){
     case TRIANGLE:
     case QUADRILATERAL:
-      fval=element->compute_unsigned_area(pd,err);
+      fval=element->compute_unsigned_area(pd,err);  MSQ_ERRZERO(err);
       break;
     case TETRAHEDRON:
     case HEXAHEDRON:
-      fval=element->compute_unsigned_volume(pd,err);
+      fval=element->compute_unsigned_volume(pd,err);  MSQ_ERRZERO(err);
       break;
     default:
       fval=MSQ_MAX_CAP;

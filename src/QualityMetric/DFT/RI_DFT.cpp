@@ -116,7 +116,7 @@ inline bool g_fcn_ridft2(double &obj, Vector3D g_obj[3],
 {
   static double matr[9], f, t1, t2;
   static double fmat[6], g;
-  static double adj_m[9], df[9], loc1, loc2, loc3, loc4;
+  static double adj_m[9], df[9], loc1, loc2, loc3 ;//, loc4;
 
   /* Calculate M = A*inv(W). */
   f       = x[1][0] - x[0][0];
@@ -891,7 +891,7 @@ inline bool g_fcn_ridft3(double &obj, Vector3D g_obj[4], const Vector3D x[4],
 {
   static double matr[9], f, t1, t2;
   static double fmat[6], g;
-  static double adj_m[9], df[9], loc1, loc2, loc3, loc4;
+  static double adj_m[9], df[9], loc1, loc2, loc3 ;//, loc4;
 
   /* Calculate M = A*inv(W). */
   f       = x[1][0] - x[0][0];
@@ -1707,7 +1707,7 @@ bool RI_DFT::evaluate_element(PatchData& pd,
   double h, tau;
     
   size_t num_T = element->vertex_count();
-  compute_T_matrices(*element, pd, T, num_T, c_k, err); MSQ_CHKERR(err);
+  compute_T_matrices(*element, pd, T, num_T, c_k, err); MSQ_ERRZERO(err);
 
   const double id[] = {1., 0., 0.,  0., 1., 0.,  0., 0., 1.};
   const Matrix3D I(id);
@@ -1718,11 +1718,11 @@ bool RI_DFT::evaluate_element(PatchData& pd,
     TT = TT * T[i];
     TT -= I; 
     dft[i] = .5 * Frobenius_2(TT);
-    return_flag = get_barrier_function(pd, tau, h, err);
+    return_flag = get_barrier_function(pd, tau, h, err); MSQ_ERRZERO(err);
     dft[i] /= pow(h, 4.0/3.0);
   }
     
-  value = weighted_average_metrics(c_k, dft, num_T, err); MSQ_CHKERR(err);
+  value = weighted_average_metrics(c_k, dft, num_T, err); MSQ_ERRZERO(err);
     
   return return_flag;
 }
@@ -1735,7 +1735,7 @@ bool RI_DFT::evaluate_element(PatchData& pd,
 {
   // Only works with the weighted average
   MsqError   mErr;
-  MsqVertex *vertices = pd.get_vertex_array(err);
+  MsqVertex *vertices = pd.get_vertex_array(err); MSQ_ERRZERO(err);
 
   EntityTopology topo = e->get_element_type();
 
@@ -1743,11 +1743,11 @@ bool RI_DFT::evaluate_element(PatchData& pd,
   const size_t *v_i = e->get_vertex_index_array();
 
   size_t nt = 0;		// Number of target matrices
-  TargetMatrix *W = e->get_target_matrices(nt, err); MSQ_CHKERR(err);
+  TargetMatrix *W = e->get_target_matrices(nt, err); MSQ_ERRZERO(err);
   assert(nv == nt);
 
   // Initialize constants for the metric
-  const double delta = pd.get_barrier_delta(err); MSQ_CHKERR(err);
+  const double delta = pd.get_barrier_delta(err); MSQ_ERRZERO(err);
 
   const int tetInd[4][4] = {{0, 1, 2, 3}, {1, 2, 0, 3},
 			    {2, 0, 1, 3}, {3, 2, 1, 0}};
@@ -1764,15 +1764,14 @@ bool RI_DFT::evaluate_element(PatchData& pd,
   m = 0.0;
   switch(topo) {
   case TRIANGLE:
-    assert(3 == nv);
 
     for (i = 0; i < 3; ++i) {
       for (j = 0; j < 3; ++j) {
 	mCoords[j] = vertices[v_i[tetInd[i][j]]];
       }
 
-      pd.get_domain_normal_at_vertex(v_i[tetInd[i][0]], true, mNormal, mErr);
-      if (mErr.errorOn || mNormal.length() == 0) {
+      pd.get_domain_normal_at_vertex(v_i[tetInd[i][0]], true, mNormal, mErr); MSQ_ERRZERO(err);
+      if (mErr || mNormal.length() == 0) {
         mNormal = (v_i[tetInd[i][1]] - v_i[tetInd[i][0]]) *
                   (v_i[tetInd[i][2]] - v_i[tetInd[i][0]]);
         mNormal.normalize();
@@ -1790,7 +1789,6 @@ bool RI_DFT::evaluate_element(PatchData& pd,
     break;
 
   case QUADRILATERAL:
-    assert(4 == nv);
 
     for (i = 0; i < 4; ++i) {
       for (j = 0; j < 3; ++j) {
@@ -1798,7 +1796,7 @@ bool RI_DFT::evaluate_element(PatchData& pd,
       }
 
       pd.get_domain_normal_at_vertex(v_i[hexInd[i][0]], true, mNormal, mErr);
-      if (mErr.errorOn || mNormal.length() == 0) {
+      if (mErr || mNormal.length() == 0) {
         mNormal = (v_i[hexInd[i][1]] - v_i[hexInd[i][0]]) *
                   (v_i[hexInd[i][2]] - v_i[hexInd[i][0]]);
         mNormal.normalize();
@@ -1815,7 +1813,6 @@ bool RI_DFT::evaluate_element(PatchData& pd,
     break;
 
   case TETRAHEDRON:
-    assert(4 == nv);
 
     for (i = 0; i < 4; ++i) {
       for (j = 0; j < 4; ++j) {
@@ -1833,7 +1830,6 @@ bool RI_DFT::evaluate_element(PatchData& pd,
     break;
 
   case HEXAHEDRON:
-    assert(8 == nv);
 
     for (i = 0; i < 8; ++i) {
       for (j = 0; j < 4; ++j) {
@@ -1851,15 +1847,13 @@ bool RI_DFT::evaluate_element(PatchData& pd,
     break;
 
   default:
-    err.set_msg("element type not implemented.");
+    MSQ_SETERR(err)("element type not implemented.", MsqError::NOT_IMPLEMENTED);
     return false;
   }
 
   return true;
 }
 
-#undef __FUNC__
-#define __FUNC__ "RI_DFT::compute_element_analytical_gradient" 
 bool RI_DFT::compute_element_analytical_gradient(PatchData &pd,
 						 MsqMeshEntity *e,
 						 MsqVertex *fv[], 
@@ -1870,7 +1864,7 @@ bool RI_DFT::compute_element_analytical_gradient(PatchData &pd,
 {
   // Only works with the weighted average
 
-  MsqVertex *vertices = pd.get_vertex_array(err);
+  MsqVertex *vertices = pd.get_vertex_array(err); MSQ_ERRZERO(err);
 
   EntityTopology topo = e->get_element_type();
 
@@ -1878,11 +1872,11 @@ bool RI_DFT::compute_element_analytical_gradient(PatchData &pd,
   const size_t *v_i = e->get_vertex_index_array();
 
   size_t nt = 0;		// Number of target matrices
-  TargetMatrix *W = e->get_target_matrices(nt, err); MSQ_CHKERR(err);
+  TargetMatrix *W = e->get_target_matrices(nt, err); MSQ_ERRZERO(err);
   assert(nv == nt);
 
   // Initialize constants for the metric
-  const double delta = pd.get_barrier_delta(err); MSQ_CHKERR(err);
+  const double delta = pd.get_barrier_delta(err); MSQ_ERRZERO(err);
 
   const int tetInd[4][4] = {{0, 1, 2, 3}, {1, 2, 0, 3},
 			    {2, 0, 1, 3}, {3, 2, 1, 0}};
@@ -1902,7 +1896,8 @@ bool RI_DFT::compute_element_analytical_gradient(PatchData &pd,
     assert(3 == nv);
 
 #ifndef ANALYTIC
-    return compute_element_numerical_gradient(pd, e, fv, g, nfv, m, err);
+    mValid = compute_element_numerical_gradient(pd, e, fv, g, nfv, m, err);
+    return !MSQ_CHKERR(err) && mValid;
 #else
 
     // The following analytic calculation only works correctly if the
@@ -1920,7 +1915,7 @@ bool RI_DFT::compute_element_analytical_gradient(PatchData &pd,
       }
       
       pd.get_domain_normal_at_vertex(v_i[tetInd[i][0]], true, mNormal, err);
-      MSQ_CHKERR(err);
+      MSQ_ERRZERO(err);
       mNormal *= pow(2./MSQ_SQRT_THREE, 1./3.);
 
       inv(invW, W[i]);
@@ -1956,10 +1951,10 @@ bool RI_DFT::compute_element_analytical_gradient(PatchData &pd,
     break;
 
   case QUADRILATERAL:
-    assert(4 == nv);
 
 #ifndef ANALYTIC
-    return compute_element_numerical_gradient(pd, e, fv, g, nfv, m, err);
+    mValid = compute_element_numerical_gradient(pd, e, fv, g, nfv, m, err);
+    return !MSQ_CHKERR(err) && mValid;
 #else
 
     // The following analytic calculation only works correctly if the
@@ -1977,7 +1972,7 @@ bool RI_DFT::compute_element_analytical_gradient(PatchData &pd,
       }
 
       pd.get_domain_normal_at_vertex(v_i[hexInd[i][0]], true, mNormal, err);
-      MSQ_CHKERR(err);
+      MSQ_ERRZERO(err);
 
       inv(invW, W[i]);
 
@@ -2012,7 +2007,6 @@ bool RI_DFT::compute_element_analytical_gradient(PatchData &pd,
     break;
 
   case TETRAHEDRON:
-    assert(4 == nv);
 
     for (i = 0; i < 4; ++i) {
       mAccGrads[i] = 0.0;
@@ -2044,16 +2038,15 @@ bool RI_DFT::compute_element_analytical_gradient(PatchData &pd,
     // of fv[].
 
     for (i = 0; i < 4; ++i) {
-      for (j = 0; j < nv; ++j) {
-        if (vertices + v_i[i] == fv[j]) {
-          g[j] = mAccGrads[i];
+      for (size_t k = 0; k < nv; ++k) {
+        if (vertices + v_i[i] == fv[k]) {
+          g[k] = mAccGrads[i];
         }
       }
     }
     break;
 
   case HEXAHEDRON:
-    assert(8 == nv);
 
     for (i = 0; i < 8; ++i) {
       mAccGrads[i] = 0.0;
@@ -2094,15 +2087,13 @@ bool RI_DFT::compute_element_analytical_gradient(PatchData &pd,
     break;
 
   default:
-    err.set_msg("element type not implemented.");
+    MSQ_SETERR(err)("element type not implemented.",MsqError::NOT_IMPLEMENTED);
     return false;
   }
 
   return true;
 }
 
-#undef __FUNC__
-#define __FUNC__ "RI_DFT::compute_element_analytical_hessian" 
 bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
 						MsqMeshEntity *e,
 						MsqVertex *fv[], 
@@ -2114,7 +2105,7 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
 {
   // Only works with the weighted average
 
-  MsqVertex *vertices = pd.get_vertex_array(err);
+  MsqVertex *vertices = pd.get_vertex_array(err);  MSQ_ERRZERO(err);
 
   EntityTopology topo = e->get_element_type();
 
@@ -2122,11 +2113,11 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
   const size_t *v_i = e->get_vertex_index_array();
 
   size_t nt = 0;		// Number of target matrices
-  TargetMatrix *W = e->get_target_matrices(nt, err); MSQ_CHKERR(err);
+  TargetMatrix *W = e->get_target_matrices(nt, err); MSQ_ERRZERO(err);
   assert(nv == nt);
 
   // Initialize constants for the metric
-  const double delta = pd.get_barrier_delta(err); MSQ_CHKERR(err);
+  const double delta = pd.get_barrier_delta(err); MSQ_ERRZERO(err);
 
   const int tetInd[4][4] = {{0, 1, 2, 3}, {1, 2, 0, 3},
 			    {2, 0, 1, 3}, {3, 2, 1, 0}};
@@ -2147,7 +2138,8 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
     assert(3 == nv);
 
 #ifndef ANALYTIC
-    return compute_element_numerical_gradient(pd, e, fv, g, nfv, m, err);
+    mValid = compute_element_numerical_gradient(pd, e, fv, g, nfv, m, err);
+    return !MSQ_CHKERR(err) && mValid;
 #else
 
     // The following analytic calculation only works correctly if the
@@ -2171,7 +2163,7 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
       }
 
       pd.get_domain_normal_at_vertex(v_i[tetInd[i][0]], true, mNormal, err);
-      MSQ_CHKERR(err);
+      MSQ_ERRZERO(err);
       mNormal *= pow(2./MSQ_SQRT_THREE, 1./3.);
 
       inv(invW, W[i]);
@@ -2245,10 +2237,10 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
     break;
 
   case QUADRILATERAL:
-    assert(4 == nv);
 
 #ifndef ANALYTIC
-    return compute_element_numerical_gradient(pd, e, fv, g, nfv, m, err);
+    mValid = compute_element_numerical_gradient(pd, e, fv, g, nfv, m, err);
+    return !MSQ_CHKERR(err) && mValid;
 #else
 
     // The following analytic calculation only works correctly if the
@@ -2272,7 +2264,7 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
       }
 
       pd.get_domain_normal_at_vertex(v_i[hexInd[i][0]], true, mNormal, err);
-      MSQ_CHKERR(err);
+      MSQ_ERRZERO(err);
 
       inv(invW, W[i]);
 
@@ -2349,7 +2341,6 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
     break;
 
   case TETRAHEDRON:
-    assert(4 == nv);
 
     // Zero out the hessian and gradient vector
     for (i = 0; i < 4; ++i) {
@@ -2439,7 +2430,6 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
     break;
 
   case HEXAHEDRON:
-    assert(8 == nv);
 
     // Zero out the hessian and gradient vector
     for (i = 0; i < 8; ++i) {
@@ -2553,7 +2543,7 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
     break;
 
   default:
-    err.set_msg("element type not implemented.");
+    MSQ_SETERR(err)("element type not implemented.",MsqError::NOT_IMPLEMENTED);
     return false;
   }
 

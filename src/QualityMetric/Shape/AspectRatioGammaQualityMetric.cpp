@@ -36,16 +36,19 @@
 #include "AspectRatioGammaQualityMetric.hpp"
 #include <math.h>
 #include "Vector3D.hpp"
-#include <list>
-
 #include "MsqMeshEntity.hpp"
 #include "PatchData.hpp"
+
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#  include <vector.h>
+#else
+#  include <vector>
+   using std::vector;
+#endif
+
 using namespace Mesquite;
-MSQ_USE(vector);
 
 
-#undef __FUNC__
-#define __FUNC__ "AspectRatioGammaQualityMetric::evaluate_element"
 //note that we can define this metric for other element types?
 //!Evaluate aspect ratio gamma on ``element''
 bool AspectRatioGammaQualityMetric::evaluate_element(PatchData &pd,
@@ -61,7 +64,7 @@ bool AspectRatioGammaQualityMetric::evaluate_element(PatchData &pd,
     //get element's nodes
   vector<Vector3D> vert;
   size_t elem_index = pd.get_element_index(element);
-  pd.get_element_vertex_coordinates(elem_index, vert, err);
+  pd.get_element_vertex_coordinates(elem_index, vert, err);  MSQ_ERRZERO(err);
   
   switch(entity)
   {
@@ -118,7 +121,9 @@ bool AspectRatioGammaQualityMetric::evaluate_element(PatchData &pd,
       break;
     default:
       fval=MSQ_MAX_CAP;
-      Message::print_error("Entity type %d is not valid for Aspect Ratio Gamma\n", (int)entity);
+      MSQ_SETERR(err)(MsqError::INVALID_ARG, 
+                     "Entity type %d is not valid for Aspect Ratio Gamma\n", 
+                     (int)entity);
       return_val = false;
       break;
   };

@@ -42,23 +42,21 @@ describe main.cpp here
 // DESCRIP-END.
 //
 
-#ifdef USE_STD_INCLUDES
-#include <iostream>
+#ifdef MSQ_USE_OLD_IO_HEADERS
+#  include <iostream.h>
 #else
-#include <iostream.h>
+#  include <iostream>
+   using std::cout;
+   using std::endl;
 #endif
 
-#ifdef USE_C_PREFIX_INCLUDES
-#include <cstdlib>
-#else
 #include <stdlib.h>
-#endif
 
 
 #include "Mesquite.hpp"
 #include "MeshImpl.hpp"
 //#include "MeshMunson.hpp"
-#include "MesquiteError.hpp"
+#include "MsqError.hpp"
 #include "InstructionQueue.hpp"
 #include "MeshSet.hpp"
 #include "TerminationCriterion.hpp"
@@ -74,17 +72,11 @@ describe main.cpp here
 #include "LPtoPTemplate.hpp"
 #include "FeasibleNewton.hpp"
 #include "ConjugateGradient.hpp"
-#include "MsqMessage.hpp"
 using namespace Mesquite;
 
-using std::cout;
-using std::endl;
-
-#undef __FUNC__
-#define __FUNC__ "main"
 int main()
 {
-  Mesquite::MsqError err;
+  Mesquite::MsqPrintError err(cout);
 
   Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
   mesh->read_vtk("../../meshFiles/2D/VTK/tfi_horse10x4-14.vtk", err);
@@ -92,13 +84,13 @@ int main()
   // initialises a MeshSet object
   MeshSet mesh_set1;
   mesh_set1.add_mesh(mesh, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
 
   Vector3D pnt(0,0,0);
   Vector3D s_norm(0,0,1);
   PlanarDomain* msq_geom = new PlanarDomain(s_norm, pnt, mesh);
   mesh_set1.set_domain_constraint(msq_geom, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
 
   // creates an intruction queue
   InstructionQueue queue1;
@@ -108,7 +100,7 @@ int main()
 //  mu.set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
 //   mu.set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
    mu.set_averaging_method(QualityMetric::LINEAR, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
 
   // creates a target calculator
 //  DefaultTargetCalculator target;
@@ -117,18 +109,18 @@ int main()
   ref_mesh->read_vtk("../../meshFiles/2D/VTK/tfi_horse10x4-12.vtk", err);
   MeshSet ref_mesh_set;
   ref_mesh_set.add_mesh(ref_mesh, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   ref_mesh_set.set_domain_constraint(msq_geom, err);
-  if (err.errorOn) return 1;
+  if (err) return 1;
   DeformingDomainGuides843 target(&ref_mesh_set);
 
   Mesquite::MeshImpl *ref_mesh2 = new Mesquite::MeshImpl;
   ref_mesh2->read_vtk("../../meshFiles/2D/VTK/tfi_horse10x4-12.vtk", err);
   MeshSet ref_mesh2_set;
   ref_mesh2_set.add_mesh(ref_mesh2, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   ref_mesh2_set.set_domain_constraint(msq_geom, err);
-  if (err.errorOn) return 1;
+  if (err) return 1;
   DeformingDomainGuides843 assessor_target(&ref_mesh2_set);
 
   // ... and builds an objective function with it
@@ -139,12 +131,12 @@ int main()
 //  ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
   FeasibleNewton* pass1 = new FeasibleNewton( obj_func );
   pass1->set_target_calculator(&target, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   pass1->set_patch_type(PatchData::GLOBAL_PATCH, err);
   
   QualityAssessor stop_qa(&mu,QualityAssessor::AVERAGE);
   stop_qa.set_target_calculator(&assessor_target, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   
   // **************Set stopping criterion****************
   TerminationCriterion tc_inner;
@@ -159,30 +151,30 @@ int main()
   pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
   
   queue1.add_quality_assessor(&stop_qa, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
    
   // adds 1 pass of pass1 to mesh_set1
   queue1.set_master_quality_improver(pass1, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   
   queue1.add_quality_assessor(&stop_qa, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
 
   ref_mesh_set.write_gnuplot("ref_mesh",err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
 
   mesh_set1.write_gnuplot("ori_mesh",err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   
   // launches optimization on mesh_set1
   queue1.run_instructions(mesh_set1, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   
   mesh->write_vtk("smo_mesh",err);
-  if (err.errorOn) return 1;
+  if (err) return 1;
   mesh_set1.write_gnuplot("smo_mesh", err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
 
-  Message::print_timing_diagnostics();
+  print_timing_diagnostics(cout);
   return 0;
 }

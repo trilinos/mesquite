@@ -40,12 +40,14 @@
 #include "TerminationCriterion.hpp"
 #include "MeshSet.hpp"
 #include "MsqVertex.hpp"
-using namespace Mesquite;
+#include "MsqInterrupt.hpp"
+#include "ObjectiveFunction.hpp"
+#include "MsqError.hpp"
+#include "MsqDebug.hpp"
 
-#include "MesquiteInterrupt.hpp"
+namespace Mesquite {
 
-#undef __FUNC__
-#define  __FUNC__ "TerminationCriterion::TerminationCriterion"
+
 /*!Constructor initializes all of the data members which are not
   necessarily automatically initialized in their constructors.*/
 TerminationCriterion::TerminationCriterion() 
@@ -85,8 +87,6 @@ TerminationCriterion::TerminationCriterion()
 
 
 
-#undef __FUNC__
-#define  __FUNC__ "TerminationCriterion::add_criterion_type_with_double"
 /*! Function to add a type of termination criterion to this object.  It is
   only valid if the specified criterion type requires a single double
   value.*/
@@ -146,12 +146,10 @@ void TerminationCriterion::add_criterion_type_with_double(TCType tc_type,
        boundedVertexMovementEps=eps;
        break;
     default:
-       err.set_msg("TCType not valid for this function.");
+       MSQ_SETERR(err)("TCType not valid for this function.",MsqError::INVALID_ARG);
   };
 }
 
-#undef __FUNC__
-#define  __FUNC__ "TerminationCriterion::add_criterion_type_with_int"
 /*! Function to add a type of termination criterion to this object.  It is
   only valid if the specified criterion type requires a single integer
   value.*/
@@ -165,11 +163,9 @@ void TerminationCriterion::add_criterion_type_with_int(TCType tc_type,
        iterationBound=bound;
        break;
     default:
-       err.set_msg("TCType not valid for this function.");
+       MSQ_SETERR(err)("TCType not valid for this function.",MsqError::INVALID_ARG);
   };
 }
-#undef __FUNC__
-#define  __FUNC__ "TerminationCriterion::remove_criterion_type"
 /*! Function to remove a previously set criterion type.*/
 void TerminationCriterion::remove_criterion_type(TCType tc_type,
                                                  MsqError &/*err*/)
@@ -178,8 +174,6 @@ void TerminationCriterion::remove_criterion_type(TCType tc_type,
 }
 
 
-#undef __FUNC__
-#define  __FUNC__ "TerminationCriterion::set_culling_type"
 /*! Function to add a type of termination criterion to this object which
   will be used for culling purposes only.  As part of the global
   termination criterion, the outer criterion will also check to make
@@ -207,13 +201,11 @@ void TerminationCriterion::set_culling_type(TCType tc_type, double eps,
        cullingMethodFlag=SUCCESSIVE_IMPROVEMENTS_RELATIVE;
        break;  
     default:
-       err.set_msg("TCType not valid for this function.");
+       MSQ_SETERR(err)("TCType not valid for this function.",MsqError::INVALID_ARG);
   };
   cullingEps=eps;
 }
 
-#undef __FUNC__
-#define  __FUNC__ "TerminationCriterion::remove_culling"
 /*!Sets the culling type to be NONE.*/
 void TerminationCriterion::remove_culling(MsqError &/*err*/)
 {
@@ -222,8 +214,6 @@ void TerminationCriterion::remove_culling(MsqError &/*err*/)
 
   
 
-#undef __FUNC__
-#define  __FUNC__ "TerminationCriterion::initialize"
 /*!
   PatchData &pd is only in the arguement list so that we can
   reset the memento (???).  So, it should be the PatchData
@@ -240,11 +230,10 @@ void TerminationCriterion::initialize(MeshSet &/*ms*/, PatchData &pd,
       //we need to reset the vertex memento. Do we need to keep
       //in mind that the Termination Criterion Object may have been used
       //previously?  We must delete the memento that we create here.
-    previousVerticesMemento=pd.create_vertices_memento(err);
+    previousVerticesMemento=pd.create_vertices_memento(err); MSQ_ERRRTN(err);
     if(totalFlag & (VERTEX_MOVEMENT_RELATIVE)){
-      initialVerticesMemento=pd.create_vertices_memento(err);
+      initialVerticesMemento=pd.create_vertices_memento(err); MSQ_ERRRTN(err);
     }
-    MSQ_CHKERR(err);
   }
     //if needed create an array so that it will be there
   if(totalFlag & ( (GRADIENT_L2_NORM_ABSOLUTE | GRADIENT_INF_NORM_ABSOLUTE)
@@ -255,8 +244,6 @@ void TerminationCriterion::initialize(MeshSet &/*ms*/, PatchData &pd,
   
 }
 
-#undef __FUNC__
-#define  __FUNC__ "TerminationCriterion::reset"
 /*!This version of reset is called using a MeshSet, which implies
   it is only called when this criterion is used as the 'outer' termination
   criterion.  
@@ -271,21 +258,22 @@ bool TerminationCriterion::reset(MeshSet &ms, ObjectiveFunction* obj_ptr,
                   | SUCCESSIVE_IMPROVEMENTS_RELATIVE
                   | (GRADIENT_L2_NORM_ABSOLUTE | GRADIENT_INF_NORM_ABSOLUTE) 
                   | (GRADIENT_L2_NORM_RELATIVE | GRADIENT_INF_NORM_RELATIVE)   ) ){
-    globalPatchParams.set_patch_type(PatchData::GLOBAL_PATCH, err,0,0);
-    ms.get_next_patch(global_patch,globalPatchParams,err);
+    globalPatchParams.set_patch_type(PatchData::GLOBAL_PATCH, err,0,0); MSQ_ERRZERO(err);
+    ms.get_next_patch(global_patch,globalPatchParams,err); MSQ_ERRZERO(err);
   }
     //currently set an error if the user is trying to terminate on the
     //outer loop using vertex movement
   if((totalFlag) & (VERTEX_MOVEMENT_ABSOLUTE | VERTEX_MOVEMENT_RELATIVE)){
-    err.set_msg("Outer loop termination criterion on vertex movement, not implemented.");
+    MSQ_SETERR(err)("Outer loop termination criterion on vertex movement, "
+                    "not implemented.", MsqError::NOT_IMPLEMENTED);
+    return false;
   }
     //now call the other reset
-  return reset(global_patch,obj_ptr,err);
+  bool result = reset(global_patch,obj_ptr,err); MSQ_ERRZERO(err);
+  return result;
 }
 
     
-#undef __FUNC__
-#define  __FUNC__ "TerminationCriterion::reset"
 /*!Reset function using using a PatchData object.  This function is
   called for the inner-stopping criterion directly from the
   loop over mesh function in VertexMover.  For outer criterion,
@@ -314,10 +302,10 @@ bool TerminationCriterion::reset(PatchData &pd, ObjectiveFunction* obj_ptr,
     //recreate the initial memento if needed
   if(totalFlag & (VERTEX_MOVEMENT_ABSOLUTE | VERTEX_MOVEMENT_RELATIVE) ){
       //we need to store the previous vertex memento.
-    pd.recreate_vertices_memento(previousVerticesMemento,err);
+    pd.recreate_vertices_memento(previousVerticesMemento,err); MSQ_ERRZERO(err);
     if(totalFlag & (VERTEX_MOVEMENT_RELATIVE)){
         //we need to store the initial vertex memento.
-      pd.recreate_vertices_memento(initialVerticesMemento,err);
+      pd.recreate_vertices_memento(initialVerticesMemento,err); MSQ_ERRZERO(err);
     }
   }
     //reset the inner timer if needed
@@ -337,10 +325,14 @@ bool TerminationCriterion::reset(PatchData &pd, ObjectiveFunction* obj_ptr,
       mGrad = new Vector3D[gradSize];
     }
       //get gradient and make sure it is valid
-    if(!obj_ptr->compute_gradient(pd, mGrad , currentOFValue, 
-                                  err, num_vertices)){
-      err.set_msg("Initial patch is invalid for gradient computation.");
-    }
+    bool b = obj_ptr->compute_gradient(pd, mGrad , currentOFValue, 
+                                       err, num_vertices); MSQ_ERRZERO(err);
+    if (!b) {
+      MSQ_SETERR(err)("Initial patch is invalid for gradient computation.", 
+                      MsqError::INVALID_STATE);
+      return false;
+    } 
+
       //get the gradient norms
     initialGradInfNorm = Linf(mGrad, num_vertices);
     initialGradL2Norm = length(mGrad, num_vertices);
@@ -373,12 +365,15 @@ bool TerminationCriterion::reset(PatchData &pd, ObjectiveFunction* obj_ptr,
                     GRADIENT_INF_NORM_ABSOLUTE) )){
       //ensure the obj_ptr is not null
     if(obj_ptr==NULL){
-      err.set_msg("Error termination criteria set which uses objective functions, but no objective function is available.");
+      MSQ_SETERR(err)("Error termination criteria set which uses objective "
+                      "functions, but no objective function is available.",
+                      MsqError::INVALID_STATE);
     }
     
-    if(!obj_ptr->evaluate(pd, currentOFValue, err)){
-      err.set_msg("Initial patch is invalid for evaluation.");
-      MSQ_CHKERR(err);
+    bool b = obj_ptr->evaluate(pd, currentOFValue, err); MSQ_ERRZERO(err);
+    if (!b){
+      MSQ_SETERR(err)("Initial patch is invalid for evaluation.",MsqError::INVALID_STATE);
+      return false;
     }
       //std::cout<<"\nReseting initial of value = "<<initialOFValue;
     previousOFValue=currentOFValue;
@@ -394,8 +389,6 @@ bool TerminationCriterion::reset(PatchData &pd, ObjectiveFunction* obj_ptr,
 }
 
 
-#undef __FUNC__
-#define  __FUNC__ "TerminationCriterion::terminate"
 /*!  This function evaluates the needed information and then evaluates
   the termination criteria.  If any of the selected criteria are satisfied,
   the function returns true.  Otherwise, the function returns false.
@@ -407,9 +400,9 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
   //  cout<<"\nInside terminate(pd,of,err):  flag = "<<terminationCriterionFlag << endl;
 
     //First check for an interrupt signal
-  return_flag = MesquiteInterrupt::interrupt_was_signaled();
-  if(return_flag){
-    err.set_msg("Optimization terminated by user.");
+  if(MsqInterrupt::interrupt()){
+    MSQ_SETERR(err)(MsqError::INTERRUPTED);
+    return true;
   }
   
     //if terminating on numbering of inner iterations
@@ -436,6 +429,8 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
       //old
     double max_movement_sqr=
        pd.get_max_vertex_movement_squared(previousVerticesMemento,err);
+    if (MSQ_CHKERR(err)) return true;
+    
       //std::cout<<"\nNODE_MOVEMENT = "<<max_movement_sqr;
     if(terminationCriterionFlag & ( VERTEX_MOVEMENT_ABSOLUTE) ){
       if(max_movement_sqr<=vertexMovementAbsoluteEps){
@@ -446,6 +441,7 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
     if(terminationCriterionFlag & ( VERTEX_MOVEMENT_RELATIVE) ){
       double max_movement_sqr_abs=
          pd.get_max_vertex_movement_squared(initialVerticesMemento,err);
+      if (MSQ_CHKERR(err)) return true;
       if(max_movement_sqr <= (vertexMovementRelativeEps*max_movement_sqr_abs))
       {
         return_flag = true;
@@ -453,6 +449,7 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
     } 
       //else we need to store the new memento
     pd.recreate_vertices_memento(previousVerticesMemento,err);
+    if (MSQ_CHKERR(err)) return true;
   }
 
 
@@ -475,18 +472,24 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
     else{
         //if the array, mGrad, is too small, set an error for now
       if(num_vertices>gradSize){
-        err.set_msg("Number of vertices has increased making the gradient too small");
+        MSQ_SETERR(err)("Number of vertices has increased making the "
+                       "gradient too small", MsqError::INVALID_STATE);
+        return true;
       }
         //get gradient and make sure it is valid
-      if(!obj_ptr->compute_gradient(pd, mGrad, currentOFValue, err, num_vertices)){
-        err.set_msg("Initial patch is invalid for gradient compuation.");
+      bool b = obj_ptr->compute_gradient(pd, mGrad, currentOFValue, err, num_vertices);
+      if (MSQ_CHKERR(err)) return true;
+      if (!b) {
+        MSQ_SETERR(err)("Initial patch is invalid for gradient compuation.",
+                        MsqError::INVALID_MESH);
+        return true;
       }
     }//end else if gradient needed to be calcuated
 
     double grad_L2_norm=10e6;
     if (terminationCriterionFlag & (GRADIENT_L2_NORM_ABSOLUTE | GRADIENT_L2_NORM_RELATIVE)) {
       grad_L2_norm = length(mGrad, num_vertices); // get the L2 norm
-      MSQ_DEBUG_ACTION(1, {cout << "  o TermCrit -- gradient L2 norm: " << grad_L2_norm << endl;});
+      MSQ_DBGOUT(1) << "  o TermCrit -- gradient L2 norm: " << grad_L2_norm << msq_stdio::endl;
     }
     double grad_inf_norm=10e6;
     if (terminationCriterionFlag & (GRADIENT_INF_NORM_ABSOLUTE | GRADIENT_INF_NORM_RELATIVE)) {
@@ -539,11 +542,13 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
                                  GRADIENT_INF_NORM_ABSOLUTE |
                                  GRADIENT_L2_NORM_RELATIVE  |
                                  GRADIENT_INF_NORM_RELATIVE )))){
-      if(!obj_ptr->evaluate(pd, currentOFValue, err)){
-        err.set_msg("Invalid patch passed to TerminationCriterion.");
+      bool b = obj_ptr->evaluate(pd, currentOFValue, err);
+      if (MSQ_CHKERR(err)) return true;
+      if (!b) {
+        MSQ_SETERR(err)("Invalid patch passed to TerminationCriterion.",
+                        MsqError::INVALID_MESH);
+        return true;
       }
-        //std::cout<<"\nOF val "<<currentOFValue;
-      MSQ_CHKERR(err);
     }
       //std::cout<<"\nOF current "<<currentOFValue;
       //std::cout<<"\nOF previous - current "<<previousOFValue-currentOFValue;
@@ -605,8 +610,6 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
 }
   
 
-#undef __FUNC__
-#define  __FUNC__ "TerminationCriterion::terminate"
 /*!  This version of terminate only creates a global patch from the
   given MeshSet and then calls terminate using that PatchData object.
   Currently, this function sets an error if VERTEX_MOVEMENT is one of
@@ -626,23 +629,23 @@ bool TerminationCriterion::terminate(MeshSet &ms, ObjectiveFunction* obj_ptr,
                                  (GRADIENT_L2_NORM_RELATIVE | GRADIENT_INF_NORM_RELATIVE)  |
                                  BOUNDED_VERTEX_MOVEMENT)){
     globalPatchParams.set_patch_type(PatchData::GLOBAL_PATCH, err,0,0);
+    if (MSQ_CHKERR(err)) return true;
     
     ms.get_next_patch(global_patch,globalPatchParams,err);
+    if (MSQ_CHKERR(err)) return true;
   }
     //currently set an error if the user is trying to terminate on the
     //outer loop using vertex movement
   if(terminationCriterionFlag & (VERTEX_MOVEMENT_ABSOLUTE |
                                  VERTEX_MOVEMENT_RELATIVE ) ){
-    err.set_msg("Outer loop termination criterion on vertex movement, not implemented.");
+    MSQ_SETERR(err)("Outer loop termination criterion on vertex movement, "
+                    "not implemented.", MsqError::NOT_IMPLEMENTED);
   }
     //now call the other terminate... with the patchdata object.
   bool return_bool=terminate(global_patch,obj_ptr,err);
-  MSQ_CHKERR(err);
-  return return_bool;
+  return MSQ_CHKERR(err) || return_bool;
 }
 
-#undef __FUNC__
-#define  __FUNC__ "TerminationCriterion::terminate_with_function_and_gradient"
 /*!Sets the function and gradient values to be used in terminate (if needed),
   and then calls terminate using the given PatchData and ObjectiveFunction
   pointer.  Finally resets the functionSupplied and gradientSupplied
@@ -650,8 +653,7 @@ bool TerminationCriterion::terminate(MeshSet &ms, ObjectiveFunction* obj_ptr,
 bool TerminationCriterion::terminate_with_function_and_gradient(PatchData &pd, ObjectiveFunction* obj_ptr, double func_val, Vector3D* sup_grad, MsqError &err)
 {
   // outputs OF value.
-  MSQ_DEBUG_ACTION(1,{std::cout << "  o TermCrit -- OF value: "
-                                << func_val << endl;});
+  MSQ_DBGOUT(1) << "  o TermCrit -- OF value: " << func_val << msq_stdio::endl;
 
   //set functionSupplied and gradientSupplied booleans to true
   functionSupplied=true;
@@ -665,13 +667,11 @@ bool TerminationCriterion::terminate_with_function_and_gradient(PatchData &pd, O
   functionSupplied=false;
   gradientSupplied=false;
     //return the value given by terminate
-  return return_bool;
+  return MSQ_CHKERR(err) || return_bool;
 }
 
 
 
-#undef __FUNC__
-#define  __FUNC__ "TerminationCriterion::cull_vertices"
 /*!This function checks the culling method criterion supplied to the object
   by the user.  If the user does not supply a culling method criterion,
   the default criterion is NONE, and in that case, no culling is performed.
@@ -688,7 +688,8 @@ bool TerminationCriterion::cull_vertices(PatchData &pd,
     //PRINT_INFO("CULLING_METHOD FLAG = %i",cullingMethodFlag);
   
     //cull_bool will be changed to true if the criterion is satisfied
-  bool cull_bool=false;
+  bool b, cull_bool=false;
+  double prev_m, init_m;
   switch(cullingMethodFlag){
       //if no culling is requested, always return false
     case NONE:
@@ -696,9 +697,11 @@ bool TerminationCriterion::cull_vertices(PatchData &pd,
          //if culling on quality improvement absolute
     case QUALITY_IMPROVEMENT_ABSOLUTE:
          //get objective function value
-       if(!obj_ptr->evaluate(pd, currentOFValue, err)){
-         err.set_msg("Invalid patch passed to TerminationCriterion.");
-         MSQ_CHKERR(err);
+       b = obj_ptr->evaluate(pd, currentOFValue, err);
+       if (MSQ_CHKERR(err)) return false;
+       if (!b) {
+         MSQ_SETERR(err)(MsqError::INVALID_MESH);
+         return false;
        }
          //if the improvement was enough, cull
        if(currentOFValue <= cullingEps)
@@ -711,9 +714,11 @@ bool TerminationCriterion::cull_vertices(PatchData &pd,
          //if culing on quality improvement relative
     case QUALITY_IMPROVEMENT_RELATIVE:
          //get objective function value
-       if(!obj_ptr->evaluate(pd, currentOFValue, err)){
-         err.set_msg("Invalid patch passed to TerminationCriterion.");
-         MSQ_CHKERR(err);
+       b = obj_ptr->evaluate(pd, currentOFValue, err);
+       if (MSQ_CHKERR(err)) return false;
+       if(!b){
+         MSQ_SETERR(err)(MsqError::INVALID_MESH);
+         return false;
        }
          //if the improvement was enough, cull
        if((currentOFValue-lowerOFBound)<=
@@ -725,40 +730,41 @@ bool TerminationCriterion::cull_vertices(PatchData &pd,
          //if culling on vertex movement absolute
     case VERTEX_MOVEMENT_ABSOLUTE:
          //if movement was enough, cull
-       if(pd.get_max_vertex_movement_squared(previousVerticesMemento,err)<=
-          cullingEps){
+       prev_m = pd.get_max_vertex_movement_squared(previousVerticesMemento,err);
+       MSQ_ERRZERO(err);
+       if(prev_m <= cullingEps){
          cull_bool=true;  
        }
-         //PRINT_INFO("\nVertexMovement=-%f, cull =%i",pd.get_max_vertex_movement_squared(previousVerticesMemento,err),cull_bool);
        
        break;
          //if culling on vertex movement relative
     case VERTEX_MOVEMENT_RELATIVE:
          //if movement was small enough, cull
-       if(pd.get_max_vertex_movement_squared(previousVerticesMemento,err)<=
-          (cullingEps*
-           pd.get_max_vertex_movement_squared(initialVerticesMemento,err))){
+       prev_m = pd.get_max_vertex_movement_squared(previousVerticesMemento,err);
+       MSQ_ERRZERO(err);
+       init_m = pd.get_max_vertex_movement_squared(initialVerticesMemento,err);
+       MSQ_ERRZERO(err);
+       if(prev_m <= (cullingEps * init_m)){
          cull_bool=true;  
        }
        break;
     default:
-       err.set_msg("Requested culling method not yet implemented.");
+       MSQ_SETERR(err)("Requested culling method not yet implemented.",
+                       MsqError::NOT_IMPLEMENTED);
+       return false;
   };
     //Now actually have patch data cull vertices
   if(cull_bool)
   {
-    pd.set_free_vertices_soft_fixed(err);
+    pd.set_free_vertices_soft_fixed(err); MSQ_ERRZERO(err);
   }
   else
   {
-    pd.set_all_vertices_soft_free(err); 
+    pd.set_all_vertices_soft_free(err); MSQ_ERRZERO(err);
   }
-  MSQ_CHKERR(err);
   return cull_bool;
 }
 
-#undef __FUNC__
-#define  __FUNC__ "TerminationCriterion::cleanup"
 /*!
   Currently this only deletes the memento of the vertex positions and the
   mGrad vector if neccessary.
@@ -781,6 +787,8 @@ void TerminationCriterion::cleanup(MeshSet &ms, MsqError &err)
     delete [] mGrad;
   }
   if(cullingMethodFlag){
-    ms.clear_all_soft_fixed_flags(err);
+    ms.clear_all_soft_fixed_flags(err); MSQ_ERRRTN(err);
   }
 }
+
+} //namespace Mesquite

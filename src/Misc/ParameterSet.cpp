@@ -25,7 +25,11 @@
    
   ***************************************************************** */
 #include "ParameterSet.hpp"
-#include <cstring>
+#ifdef MSQ_USE_OLD_C_HEADERS
+#  include <string.h>
+#else
+#  include <cstring>
+#endif
 
 using namespace Mesquite;
 
@@ -55,16 +59,12 @@ struct ParameterRecord
 };
 
 
-#undef __FUNC__
-#define __FUNC__ "ParameterSet::ParameterSet" 
 ParameterSet::ParameterSet() 
     : mParameterArray(NULL),
       mNumParameters(0)
 {
 }
 
-#undef __FUNC__
-#define __FUNC__ "ParameterSet::~ParameterSet" 
 ParameterSet::~ParameterSet()
 {
   while (mNumParameters--)
@@ -81,26 +81,21 @@ ParameterSet::~ParameterSet()
   delete mParameterArray;
 }
 
-#undef __FUNC__
-#define __FUNC__ "ParameterSet::get_parameter_index" 
-size_t ParameterSet::get_parameter_index(const char* name, MsqError &err)
+msq_stdc::size_t ParameterSet::get_parameter_index(const char* name, MsqError &err)
 {
     // Search for a parameter with the same name
-  size_t i = 0;
-  while (i < mNumParameters && strcmp(mParameterArray[i].name, name))
-    i++;
+  for (size_t i = 0; (i < mNumParameters; ++i)
+    if (!msq_stdc::strcmp(mParameterArray[i].name, name))
+      return i;
   
-  return i;
+  MSQ_SETERR(err)( MsqError::INVALID_ARG );
+  return mNumParameters;
 }
 
-#undef __FUNC__
-#define __FUNC__ "ParameterSet::remove_parameter" 
 void ParameterSet::remove_parameter(const char* name, MsqError &err)
 {
     // Make sure it exists
-  size_t index = get_parameter_index(name);
-  if (index == mNumParameters)
-    return MSQ_FAILURE;
+  size_t index = get_parameter_index(name);  MSQ_ERRRTN(err);
   
     // Free the string holding the name
   delete [] mParameterArray[index].name;
@@ -120,17 +115,17 @@ void ParameterSet::remove_parameter(const char* name, MsqError &err)
   }
   
   mNumParameters--;
-  
-  return MSQ_SUCCESS;
 }
 
-#undef __FUNC__
-#define __FUNC__ "ParameterSet::generic_add_parameter" 
 void ParameterSet::generic_add_parameter(const char* name, MsqError &err)
 {
     // Make sure it doesn't already exist
-  if (get_parameter_index(name) != mNumParameters) {
-    err.errorOn=true; return; }
+  if(get_parameter_index(name, err) == mNumParameters) {
+    err.clear();
+  } else {
+    MSQ_SETERR(err)(MsqError::INVALID_ARG);
+    return;
+  }
   
     // Make the array big enough
   ParameterRecord* new_array = new ParameterRecord[mNumParameters + 1];
@@ -149,57 +144,45 @@ void ParameterSet::generic_add_parameter(const char* name, MsqError &err)
   return;
 }
 
-#undef __FUNC__
-#define __FUNC__ "ParameterSet::add_int_parameter" 
 void ParameterSet::add_int_parameter(const char* name,
                                            int initial_value, MsqError &err)
 {
   generic_add_parameter(name, err);
+  MSQ_ERRRTN(err);
   
-  if (!err.errorOn)
-  {
-    mParameterArray[mNumParameters - 1].type = MSQ_INT;
-    mParameterArray[mNumParameters - 1].value.intVal = initial_value;
-  }
+  mParameterArray[mNumParameters - 1].type = MSQ_INT;
+  mParameterArray[mNumParameters - 1].value.intVal = initial_value;
   
   return;
 }
 
-#undef __FUNC__
-#define __FUNC__ "ParameterSet::set_int_parameter" 
 void ParameterSet::set_int_parameter(const char* name,
                                            int value, MsqError &err)
 {
     // Make sure it exists
-  size_t index = get_parameter_index(name);
-  if (index == mNumParameters)
-    return MSQ_FAILURE;
+  size_t index = get_parameter_index(name, err);
+  MSQ_ERRRTN(err);
   
     // Make sure it's the right type
-  if (mParameterArray[index].type != MSQ_INT)
-    return MSQ_FAILURE;
+  if (mParameterArray[index].type != MSQ_INT)  {
+    MSQ_SETERR(err)(MsqError::INVALID_ARG);
+    return;
+  }
   
     // Set the value
   mParameterArray[index].value.intVal = value;
-  
-  return MSQ_SUCCESS;
 }
 
-#undef __FUNC__
-#define __FUNC__ "ParameterSet::get_int_parameter" 
 void ParameterSet::get_int_parameter(const char* name,
                                      int* value, MsqError &err)
 {
     // Make sure it exists
-  size_t index = get_parameter_index(name);
-  if (index == mNumParameters) {
-    err.set_msg("parameter name undefined");
-    return;
-  }
+  size_t index = get_parameter_index(name, err);
+  MSQ_ERRRTN(err);
   
     // Make sure it's the right type
   if (mParameterArray[index].type != MSQ_INT) {
-    err.set_msg("wrong parameter type");
+     MSQ_SETERR(err)(MsqError::INVALID_ARG);
     return;
   }
   

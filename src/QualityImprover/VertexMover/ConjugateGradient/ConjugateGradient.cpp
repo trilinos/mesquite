@@ -37,14 +37,12 @@
 
 #include "ConjugateGradient.hpp"
 #include <math.h>
-#include "MsqMessage.hpp"
+#include "MsqDebug.hpp"
 #include "MsqTimer.hpp"
 #include "MsqFreeVertexIndexIterator.hpp"
 
-using namespace Mesquite;
+namespace Mesquite {
 
-#undef __FUNC__
-#define __FUNC__ "ConjugateGradient::ConjugateGradient" 
 ConjugateGradient::ConjugateGradient(ObjectiveFunction* objective,
                                      MsqError &err) :
   VertexMover(),
@@ -54,24 +52,25 @@ ConjugateGradient::ConjugateGradient(ObjectiveFunction* objective,
   fNewGrad(NULL)
 {
   this->set_name("ConjugateGradient");
-  this->set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err, 1); MSQ_CHKERR(err);
+  this->set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err, 1); MSQ_ERRRTN(err);
   objFunc=objective;
     //Michael:: default to global?
   set_debugging_level(0);
     //set the default inner termination criterion
   TerminationCriterion* default_crit=get_inner_termination_criterion();
   if(default_crit==NULL){
-    err.set_msg("QualityImprover did not create a default inner termination criterion.");
+    MSQ_SETERR(err)("QualityImprover did not create a default inner "
+                    "termination criterion.", MsqError::INVALID_STATE);
+    return;
   }
   else{
     default_crit->add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,5,err);
+    MSQ_ERRRTN(err);
   }
   
 }  
 
 
-#undef __FUNC__
-#define __FUNC__ "ConjugateGradient::~ConjugateGradient" 
 ConjugateGradient::~ConjugateGradient()
 {
   // Checks that cleanup() has been called. 
@@ -81,11 +80,9 @@ ConjugateGradient::~ConjugateGradient()
   assert(fNewGrad==NULL);
 }
   
-#undef __FUNC__
-#define __FUNC__ "ConjugateGradient::initialize" 
 void ConjugateGradient::initialize(PatchData &pd, MsqError &err)
 {
-  Message::print_info("\no   Performing Conjugate Gradient optimization.\n");
+  MSQ_DBGOUT(2) << "\no   Performing Conjugate Gradient optimization.\n";
   arraySize=5;
   fGrad = new Vector3D[ arraySize ];
   pGrad = new Vector3D[ arraySize ];
@@ -105,26 +102,23 @@ void ConjugateGradient::set_patch_type(PatchData::PatchType type, MsqError &err,
   if (type == PatchData::GLOBAL_PATCH || type == PatchData::ELEMENTS_ON_VERTEX_PATCH) {
     PatchDataUser::set_patch_type(type, err, patch_param1, patch_param2);
   } else {
-    err.set_msg("Type not supported by ConjugateGradient algorythm.");
+    MSQ_SETERR(err)("Type not supported by ConjugateGradient algorythm.",
+                    MsqError::INVALID_ARG);
   }
 }
 
-#undef __FUNC__
-#define __FUNC__ "ConjugateGradient::initialize_mesh_iteration" 
 void ConjugateGradient::initialize_mesh_iteration(PatchData &/*pd*/,
                                                   MsqError &/*err*/)
 {
   
 }
 
-#undef __FUNC__
-#define __FUNC__ "ConjugateGradient::optimize_vertex_position"
 /*!Performs Conjugate gradient minimization on the PatchData, pd.*/
 void ConjugateGradient::optimize_vertex_positions(PatchData &pd, 
                                                 MsqError &err){
   // pd.reorder();
 
-  FUNCTION_TIMER_START(__FUNC__);
+  FunctionTimer ft( "ConjugateGradient::optimize_vertex_positions" );
 
   Timer c_timer;
   int num_local_vertices = pd.num_vertices();
@@ -148,36 +142,35 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
   }
   
   // gets the array of vertices for the patch  
-  MsqVertex* vertices=pd.get_vertex_array(err);
+  MsqVertex* vertices=pd.get_vertex_array(err);  MSQ_ERRRTN(err);
   int ind;
     //Michael cull list:  possibly set soft_fixed flags here
 
    int num_vert=pd.num_vertices();
-   MsqFreeVertexIndexIterator free_iter(&pd, err);
+   MsqFreeVertexIndexIterator free_iter(&pd, err);  MSQ_ERRRTN(err);
   
-   MSQ_DEBUG_ACTION(1,{ 
-      if(pd.num_free_vertices(err)<1) 
-	Message::print_info("\nEmpty free vertex list in ConjugateGradient\n"); 
-   });
+   MSQ_DBGOUT(1) << "\nEmpty free vertex list in ConjugateGradient\n";
       
    double f=0;
    //Michael, this isn't equivalent to CUBIT because we only want to check
    //the objective function value of the 'bad' elements
    //if invalid initial patch set an error.
   if( ! objFunc->compute_gradient(pd, fGrad, f, err, num_vert) ){
-    MSQ_CHKERR(err);
-    err.set_msg("Conjugate Gradient not able to get valid gradient and function values on intial patch.");
+    MSQ_SETERR(err)("Conjugate Gradient not able to get valid gradient "
+                    "and function values on intial patch.", 
+                    MsqError::INVALID_MESH);
+    return;
   }
   double grad_norm=MSQ_MAX_CAP;
   
   if(conjGradDebug>0){
-    Message::print_info("\nCG's DEGUB LEVEL = %i \n",conjGradDebug);
+    MSQ_PRINT(2)("\nCG's DEGUB LEVEL = %i \n",conjGradDebug);
     grad_norm=Linf(fGrad,num_vert);
-    Message::print_info("\nCG's FIRST VALUE = %f,grad_norm = %f",f,grad_norm);
-    Message::print_info("\n   TIME %f",c_timer.since_birth());
+    MSQ_PRINT(2)("\nCG's FIRST VALUE = %f,grad_norm = %f",f,grad_norm);
+    MSQ_PRINT(2)("\n   TIME %f",c_timer.since_birth());
     grad_norm=MSQ_MAX_CAP;
   }
-  MSQ_CHKERR(err);
+
   ind=0;
     //Initializing pGrad (search direction).  
   while(ind<num_vert){    
@@ -202,9 +195,9 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
     alp=get_step(pd,f,k,err);
     j+=k;
     if(conjGradDebug>2){
-      Message::print_info("\n  Alp initial, alp = %20.18f",alp);
+      MSQ_PRINT(2)("\n  Alp initial, alp = %20.18f",alp);
     }
-    MSQ_CHKERR(err);
+
      // if alp == 0, revert to steepest descent search direction
     if(alp==0){
       free_iter.reset();
@@ -215,9 +208,9 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
       alp=get_step(pd,f,k,err);
       j+=k;
       if(conjGradDebug>1){
-        Message::print_info("\n CG's search direction reset.");
+        MSQ_PRINT(2)("\n CG's search direction reset.");
         if(conjGradDebug>2)
-          Message::print_info("\n  Alp was zero, alp = %20.18f",alp);
+          MSQ_PRINT(2)("\n  Alp was zero, alp = %20.18f",alp);
       }
       
     }
@@ -230,14 +223,16 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
         pd.snap_vertex_to_domain(m,err);
       }
       if (! objFunc->compute_gradient(pd, fNewGrad, f, err, num_vert)){
-        MSQ_CHKERR(err);
-        err.set_msg("Error inside Conjugate Gradient, vertices moved making function value invalid.");
+        MSQ_SETERR(err)("Error inside Conjugate Gradient, vertices moved "
+                        "making function value invalid.", 
+                        MsqError::INVALID_MESH);
+        return;
       }
       
       if(conjGradDebug>0){
         grad_norm=Linf(fNewGrad,num_vert);
-        Message::print_info("\nCG's VALUE = %f,  iter. = %i,  grad_norm = %f,  alp = %f",f,i,grad_norm,alp);
-        Message::print_info("\n   TIME %f",c_timer.since_birth());
+        MSQ_PRINT(2)("\nCG's VALUE = %f,  iter. = %i,  grad_norm = %f,  alp = %f",f,i,grad_norm,alp);
+        MSQ_PRINT(2)("\n   TIME %f",c_timer.since_birth());
       }
       double s11=0;
       double s12=0;
@@ -265,7 +260,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
         fGrad[m]=fNewGrad[m];
       }
       if(conjGradDebug>2){
-        Message::print_info(" \nSEARCH DIRECTION INFINITY NORM = %e",
+        MSQ_PRINT(2)(" \nSEARCH DIRECTION INFINITY NORM = %e",
                    Linf(fNewGrad,num_vert));
       }
       
@@ -277,19 +272,16 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
     inner_criterion=term_crit->terminate_with_function_and_gradient(pd,objFunc,
                                                                     f,fNewGrad,
                                                                     err);
-    MSQ_CHKERR(err);
+    MSQ_ERRRTN(err);
   }//end while
   if(conjGradDebug>0){
-    Message::print_info("\nConjugate Gradient complete i=%i ",i);
-    Message::print_info("\n-  FINAL value = %f, alp=%4.2e grad_norm=%4.2e",f,alp,grad_norm);
-    Message::print_info("\n   FINAL TIME %f",c_timer.since_birth());
+    MSQ_PRINT(2)("\nConjugate Gradient complete i=%i ",i);
+    MSQ_PRINT(2)("\n-  FINAL value = %f, alp=%4.2e grad_norm=%4.2e",f,alp,grad_norm);
+    MSQ_PRINT(2)("\n   FINAL TIME %f",c_timer.since_birth());
   }
-  FUNCTION_TIMER_END();
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "ConjugateGradient::terminate_mesh_iteration" 
 void ConjugateGradient::terminate_mesh_iteration(PatchData &/*pd*/,
                                                  MsqError &/*err*/)
 {
@@ -297,8 +289,6 @@ void ConjugateGradient::terminate_mesh_iteration(PatchData &/*pd*/,
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "ConjugateGradient::cleanup" 
 void ConjugateGradient::cleanup()
 {
     //  cout << "- Executing ConjugateGradient::iteration_end()\n";
@@ -341,8 +331,7 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
   while (j<jmax && !feasible && alp>MSQ_MIN) {
     ++j;
     pd.set_free_vertices_constrained(pMemento,pGrad,num_vertices,alp,err);
-    feasible=objFunc->evaluate(pd,f,err);      
-    MSQ_CHKERR(err);
+    feasible=objFunc->evaluate(pd,f,err); MSQ_ERRZERO(err);
       //if not feasible, try a smaller alp (take smaller step)
     if(!feasible){
       alp*=rho;
@@ -351,7 +340,7 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
   
     //if above while ended due to j>=jmax, no valid step was found.
   if(j>=jmax){
-    Message::print_info("\nFeasible Point Not Found");
+    MSQ_PRINT(2)("\nFeasible Point Not Found");
     return 0.0;
   }
     //Message::print_info("\nOriginal f %f, first new f = %f, alp = %f",f0,f,alp);
@@ -366,9 +355,9 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
         //if patch is now invalid, then the feasible region is  convex or
         //we have an error.  For now, we assume an error.
       if(! objFunc->evaluate(pd,f,err) ){
-        err.set_msg("Non-convex feasiblility region found.");
+        MSQ_SETERR(err)("Non-convex feasiblility region found.",MsqError::INVALID_MESH);
       }
-      pd.set_to_vertices_memento(pMemento,err);MSQ_CHKERR(err);
+      pd.set_to_vertices_memento(pMemento,err);MSQ_ERRZERO(err);
         //if our step has now improved the objective function value
       if(f<f0){
         found=1;
@@ -390,23 +379,24 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
       ++j;
       alp*=rho;
       //step alp in search direction from original positions
-      pd.set_free_vertices_constrained(pMemento,pGrad,num_vertices,alp,err);MSQ_CHKERR(err);
+      pd.set_free_vertices_constrained(pMemento,pGrad,num_vertices,alp,err);MSQ_ERRZERO(err);
 
         //get new objective function value
       if (! objFunc->evaluate(pd,fnew,err))
-        err.set_msg("Non-convex feasiblility region found while computing new f.");
+        MSQ_SETERR(err)("Non-convex feasiblility region found while "
+                        "computing new f.",MsqError::INVALID_MESH);
       if(fnew<f){
         f=fnew;
       }
       else{
 	//Reset the vertices to original position
-	pd.set_to_vertices_memento(pMemento,err);MSQ_CHKERR(err);
+	pd.set_to_vertices_memento(pMemento,err);MSQ_ERRZERO(err);
 	alp/=rho;
 	return alp;
       }
     }
     //Reset the vertices to original position and return alp
-    pd.set_to_vertices_memento(pMemento,err);MSQ_CHKERR(err);
+    pd.set_to_vertices_memento(pMemento,err);MSQ_ERRZERO(err);
     return alp;
   }
     //else our new f was already smaller than our original
@@ -418,14 +408,14 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
         //scale alp up (rho must be less than 1)
       alp /= rho;
       //step alp in search direction from original positions
-      pd.set_free_vertices_constrained(pMemento,pGrad,num_vertices,alp,err);MSQ_CHKERR(err);
+      pd.set_free_vertices_constrained(pMemento,pGrad,num_vertices,alp,err);MSQ_ERRZERO(err);
 
-      feasible = objFunc->evaluate(pd,fnew, err);
+      feasible = objFunc->evaluate(pd,fnew, err);MSQ_ERRZERO(err);
       if ( ! feasible ){
          alp *= rho;
 	 
 	 //Reset the vertices to original position and return alp
-	 pd.set_to_vertices_memento(pMemento,err);MSQ_CHKERR(err);
+	 pd.set_to_vertices_memento(pMemento,err);MSQ_ERRZERO(err);
          return alp;
       }
       if (fnew<f) { 
@@ -438,7 +428,7 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
     }
 
     //Reset the vertices to original position and return alp
-    pd.set_to_vertices_memento(pMemento,err);MSQ_CHKERR(err);
+    pd.set_to_vertices_memento(pMemento,err);MSQ_ERRZERO(err);
     return alp;
   }
 }
@@ -560,7 +550,9 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
   return x;
 }
 */
-          
+
+} //namespace Mesquite
+    
 
 
 

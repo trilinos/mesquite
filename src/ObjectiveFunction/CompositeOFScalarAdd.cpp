@@ -33,14 +33,12 @@
   \date   2002-06-24
 */
 #include <math.h>
-#include "ObjectiveFunction.hpp"
 #include "CompositeOFScalarAdd.hpp"
+#include "PatchData.hpp"
 #include "MsqTimer.hpp"
 using namespace Mesquite;
 
 
-#undef __FUNC__
-#define __FUNC__ "CompositeOFScalarAdd::CompositeOFScalarAdd"
 /*!
 Sets the QualityMetric pointer to the metric associated with Obj1.  
 The new ObjectiveFunction's negateFlag is also the
@@ -58,16 +56,11 @@ CompositeOFScalarAdd::CompositeOFScalarAdd(double alp, ObjectiveFunction* Obj1){
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "CompositeOFScalarAdd::~CompositeOFScalarAdd"
-
 //Michael:  need to clean up here
 CompositeOFScalarAdd::~CompositeOFScalarAdd(){
 
 }
 
-#undef __FUNC__
-#define __FUNC__ "CompositeOFScalarAdd::concrete_evaluate()"
 /*!Computes fval= mAlpha+objFunc->evaluate(patch,err).  Note that since Obj's
   evaluate() function is called (as opposed to its concrete_evaluate) the
   returned value has been multiplied by objFunc's negateFlag (that is,
@@ -79,7 +72,8 @@ CompositeOFScalarAdd::~CompositeOFScalarAdd(){
 bool CompositeOFScalarAdd::concrete_evaluate(PatchData &patch, double &fval,
                                              MsqError &err){
     //if invalid return false without calculating fval.
-  if( ! objFunc->evaluate(patch, fval, err)){
+  bool b = objFunc->evaluate(patch, fval, err);
+  if( MSQ_CHKERR(err) || !b ){
     fval = 0.0;
     return false;
   }
@@ -88,15 +82,11 @@ bool CompositeOFScalarAdd::concrete_evaluate(PatchData &patch, double &fval,
   return true;
 }
 
-#undef __FUNC__
-#define __FUNC__ "CompositeOFScalarAdd::get_quality_metric_list()"
 //!Returns the QualityMetric list assossiated with objFunc.
-list<QualityMetric*> CompositeOFScalarAdd::get_quality_metric_list(){
+msq_std::list<QualityMetric*> CompositeOFScalarAdd::get_quality_metric_list(){
   return objFunc->get_quality_metric_list();
 }
 
-#undef __FUNC__
-#define __FUNC__ "CompositeOFScalarAdd::compute_analytical_gradient"
 /*! Analytically computes the composite objective function's gradient
   by scaling the gradient returned objFunc->compute_gradient().
     \param patch The PatchData object for which the objective function
@@ -108,14 +98,13 @@ list<QualityMetric*> CompositeOFScalarAdd::get_quality_metric_list(){
 */
 bool CompositeOFScalarAdd::compute_analytical_gradient(PatchData &patch,
                                                        Vector3D *const &grad,
-						       double &OF_val,
+                                                       double &OF_val,
                                                        MsqError &err,
                                                        size_t array_size)
 {
-  FUNCTION_TIMER_START(__FUNC__);
-  bool rval=objFunc->compute_gradient(patch, grad, OF_val,err, array_size);
+  FunctionTimer ft( "CompositeOFScalarAdd::compute_analytical_gradient" );
+  bool rval=objFunc->compute_gradient(patch, grad, OF_val,err, array_size); MSQ_ERRZERO(err);
   OF_val+=mAlpha;
-  FUNCTION_TIMER_END();
   return rval;
 }
 

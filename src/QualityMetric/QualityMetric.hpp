@@ -37,7 +37,7 @@ Header file for the Mesquite::QualityMetric class
 #ifndef QualityMetric_hpp
 #define QualityMetric_hpp
 
-#ifdef USE_C_PREFIX_INCLUDES
+#ifndef MSQ_USE_OLD_C_HEADERS
 #include <cmath>
 #include <cstring>
 #else
@@ -47,10 +47,9 @@ Header file for the Mesquite::QualityMetric class
 
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
+#include "MsqError.hpp"
 #include "Vector3D.hpp"
 #include "Matrix3D.hpp"
-MSQ_USE(string);
 
 namespace Mesquite
 {
@@ -140,7 +139,7 @@ namespace Mesquite
         HARMONIC,
         GEOMETRIC,
         SUM,
-	SUM_SQUARED,
+        SUM_SQUARED,
         GENERALIZED_MEAN,
         STANDARD_DEVIATION,
         MAX_OVER_MIN,
@@ -179,11 +178,11 @@ namespace Mesquite
         { return feasible; }
      
        //!Sets the name of this metric
-     inline void set_name(string st)
+     inline void set_name(msq_std::string st)
         { metricName=st; }
      
        //!Returns the name of this metric (as a string).
-     inline string get_name()
+     inline msq_std::string get_name()
         { return metricName; }
 
        //!Escobar Barrier Function for Shape and Other Metrics
@@ -194,21 +193,12 @@ namespace Mesquite
      
        //!Evaluate the metric for a vertex
      virtual bool evaluate_vertex(PatchData& /*pd*/, MsqVertex* /*vertex*/,
-                                  double& /*value*/, MsqError &err)
-        {
-          err.set_msg("No implementation for a "
-                      "vertex-version of this metric.");
-          return false;
-        }
+                                  double& /*value*/, MsqError &err);
      
        //!Evaluate the metric for an element
      virtual bool evaluate_element(PatchData& /*pd*/,
                                    MsqMeshEntity* /*element*/,
-                                   double& /*value*/, MsqError &err)
-        {
-          err.set_msg("No implementation for a element-version of this metric.");
-          return false;
-        }
+                                   double& /*value*/, MsqError &err);
      
        /*!\enum GRADIENT_TYPE Sets to either NUMERICAL_GRADIENT or
          ANALYTICAL_GRADIENT*/
@@ -385,7 +375,7 @@ namespace Mesquite
      // TODO : pass this private and write protected access fucntions.
      AveragingMethod avgMethod;
      int feasible;
-     string metricName;
+     msq_std::string metricName;
   private:
      ElementEvaluationMode evalMode;
      MetricType mType;
@@ -395,12 +385,10 @@ namespace Mesquite
    };
 
   
-#undef __FUNC__
-#define __FUNC__ "QualityMetric::set_element_evaluation_mode"
   inline void QualityMetric::set_element_evaluation_mode(ElementEvaluationMode mode, MsqError &err)
   {
     if (mType == VERTEX_BASED) {
-      err.set_msg("function must only be used for ELEMENT_BASED metrics.");
+      MSQ_SETERR(err)("function must only be used for ELEMENT_BASED metrics.", MsqError::INVALID_STATE);
       return;
     }
     
@@ -413,14 +401,12 @@ namespace Mesquite
         evalMode=mode;
         break;
       default:
-        err.set_msg("Requested Mode (sample point locations)  Not Implemented");
+        MSQ_SETERR(err)("Requested mode not implemented", MsqError::NOT_IMPLEMENTED);
       }
     return;
   }
 
   
-#undef __FUNC__
-#define __FUNC__ "QualityMetric::set_averaging_method"
   inline void  QualityMetric::set_averaging_method(AveragingMethod method, MsqError &err)
   {
     switch(method)
@@ -442,14 +428,12 @@ namespace Mesquite
         avgMethod=method;
         break;
       default:
-        err.set_msg("Requested Averaging Method Not Implemented");
+       MSQ_SETERR(err)("Requested Averaging Method Not Implemented", MsqError::NOT_IMPLEMENTED);
       };
     return;
   }
   
 
-#undef __FUNC__
-#define __FUNC__ "QualityMetric::compute_vertex_gradient"
 /*! 
   \brief Calls compute_vertex_numerical_gradient if gradType equals
   NUMERCIAL_GRADIENT.  Calls compute_vertex_analytical_gradient if 
@@ -483,8 +467,6 @@ namespace Mesquite
    }
    
 
-#undef __FUNC__
-#define __FUNC__ "QualityMetric::compute_element_gradient"
 /*! 
     \param free_vtces base address of an array of pointers to the element vertices which
     are considered free for purposes of computing the gradient. The quality metric
@@ -521,8 +503,6 @@ namespace Mesquite
    }
    
 
-#undef __FUNC__
-#define __FUNC__ "QualityMetric::average_metrics"
      /*! 
        average_metrics takes an array of length num_value and averages the
        contents using averaging method 'method'.
@@ -595,7 +575,7 @@ namespace Mesquite
           break;
           
        case NONE:
-          err.set_msg("Averaging method set to NONE");
+          MSQ_SETERR(err)("Averaging method set to NONE", MsqError::INVALID_ARG);
           break;
           
        case RMS:
@@ -703,7 +683,7 @@ namespace Mesquite
           
        default:
             //Return error saying Averaging Method mode not implemented
-          err.set_msg("Requested Averaging Method Not Implemented");
+          MSQ_SETERR(err)("Requested Averaging Method Not Implemented", MsqError::NOT_IMPLEMENTED);
           return 0;
      }
      return total_value;
@@ -711,8 +691,6 @@ namespace Mesquite
    
    
 
-#undef __FUNC__
-#define __FUNC__ "QualityMetric::weighted_average_metrics"
   inline double QualityMetric::weighted_average_metrics(const double coef[],
                                                         const double metric_values[],
                                                         const int& num_values, MsqError &err)
@@ -737,7 +715,7 @@ namespace Mesquite
           
     default:
       //Return error saying Averaging Method mode not implemented
-      err.set_msg("Requested Averaging Method Not Implemented");
+      MSQ_SETERR(err)("Requested Averaging Method Not Implemented",MsqError::NOT_IMPLEMENTED);
       return 0;
     }
     return total_value;

@@ -42,7 +42,6 @@
 #include "QualityImprover.hpp"
 #include "PatchData.hpp"
 #include "ObjectiveFunction.hpp"
-MSQ_USE(vector);
 
 namespace Mesquite
 {
@@ -79,8 +78,6 @@ namespace Mesquite
   };
 
   
-#undef __FUNC__
-#define __FUNC__ "VertexMover::check_feasible"
 /*!
   Takes a PatchData object (by reference) and returns whether the
   patch is within the feasible region, 0, or outside the region, 1.
@@ -89,13 +86,13 @@ namespace Mesquite
   {
     MsqMeshEntity* elems=pd.get_element_array(err);
     size_t num_elements=pd.num_elements();
-    vector<Vector3D> sample_points;
+    msq_std::vector<Vector3D> sample_points;
     Vector3D jacobian_vectors[3];
     short num_jacobian_vectors;
     size_t i =0;
     for(i=0;i<num_elements;++i){
       elems[i].get_sample_points(QualityMetric::ELEMENT_VERTICES,sample_points,err);
-      vector<Vector3D>::iterator iter=sample_points.begin();
+      msq_std::vector<Vector3D>::iterator iter=sample_points.begin();
       while(iter!=sample_points.end()){
         elems[i].compute_weighted_jacobian(pd, (*iter),
                                            jacobian_vectors,

@@ -384,7 +384,7 @@ public:
                                           csr_data, sizeof_csr_data,
                                           csr_offsets,
                                           mErr);
-    CPPUNIT_ASSERT( mErr.errorOn == true );
+    CPPUNIT_ASSERT( mErr == true );
     mErr.reset();
     delete []vert_handles;
     delete []csr_data;

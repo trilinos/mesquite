@@ -35,8 +35,11 @@
 
 //kkc 040203 - changed implementation to use more general TSTT interfaces
 
-#include <set>
-//#include <pair>
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#  include <set.h>
+#else
+#  include <set>
+#endif
 
 #include "MeshTSTT.hpp"
 //kkc 040203 now included in MeshTSTT.hpp #include "TSTT.hh"
@@ -46,34 +49,42 @@
 namespace // unnamed namespace (scope is the file only)
 {
 
+#if defined(MSQ_USE_OLD_STD_HEADERS)|| defined(MSQ_USE_OLD_IO_HEADERS) || defined(MSQ_USE_OLD_C_HEADERS)   
+using namespace std;
+#endif
+
 #define ENTIRE_MESH 0  // passing the null pointer as the first argument of
                    // TSTT::entitySet functions queries the data for the whole mesh
 
-#define PRINT_TSTT_ERROR(tstt_err) { \
-    Message::print_info("!!! TSTT interface ERROR caught by Mesquite -- \n!!! "); \
-    Message::print_info("%s\n",tstt_err.getNote().c_str()); \
-    std::string errs; tstt_err.getErrorDescription(errs); \
-    Message::print_info("%s\n",errs.c_str()); \
-    Message::print_info("%s\n",tstt_err.getTrace().c_str()); \
-}
+
+  static string proccess_tstt_error( TSTT::Error &tstt_err )
+  {
+    string str;
+    string result("TSTT ERROR: ");
+    result += tstt_err.getNote();
+    MSQ_OUT(1) << "TSTT Error:" << endl;
+    MSQ_OUT(1) << tstt_err.getNote() << endl;
+    tstt_err.getErrorDescription(str);
+    MSQ_OUT(1) << str << endl;
+    MSQ_OUT(1) << tstt_err.getTrace() << endl;
+    return result;
+  }
 
   
   class MeshTSTT_EntityIterator : public Mesquite::EntityIterator
   {
   public:
     MeshTSTT_EntityIterator(TSTT::Mesh& tstt_mesh,
-                            const TSTT::EntityType& entity_type)
+                            const TSTT::EntityType& entity_type,
+                            MsqError& err)
       : iteratorEntityType(entity_type)
     {
       try {
         iteratorMesh = tstt_mesh; 
 	if ( !iteratorMesh )
 	  {
-	    //kkc XXX is this how errors should be handled?
-	    TSTT::Error err = TSTT::Error::_create();
-	    err.set(1,"MeshTSTT_EntityIterator::MeshTSTT_EntityIterator : TSTT::Mesh does not"
-		    " implement TSTT::AdvancedEntitySetQuery");
-	    throw err;
+	    MSQ_SETERR(err)(MsqError::INVALID_ARG);
+            return;
 	  }
 
         iteratorMesh.entitysetInitializeWorksetIterator(
@@ -89,7 +100,7 @@ namespace // unnamed namespace (scope is the file only)
           entityHandle.set(0, NULL);
       }
       catch (TSTT::Error &tstt_err) {
-        PRINT_TSTT_ERROR(tstt_err);
+        MSQ_SETERR(err)( process_tstt_error( tstt_err ), MsqError::INTERNAL_ERROR );
       }
     }
     
@@ -108,7 +119,7 @@ namespace // unnamed namespace (scope is the file only)
                                          tsttWorksetIterator);
         }
         catch (TSTT::Error &tstt_err) {
-          PRINT_TSTT_ERROR(tstt_err);
+          process_tstt_error(tstt_err);
         }
       }
     
@@ -128,7 +139,7 @@ namespace // unnamed namespace (scope is the file only)
             entityHandle.set(0, NULL);
         }
         catch (TSTT::Error &tstt_err) {
-          PRINT_TSTT_ERROR(tstt_err);
+          process_tstt_error(tstt_err);
         }
       }
     
@@ -151,34 +162,21 @@ namespace // unnamed namespace (scope is the file only)
   };
 
   
-#undef __FUNC__
-#define __FUNC__ "::mesquite_equivalent_topology"
   inline Mesquite::EntityTopology mesquite_equivalent_topology(
                                      const TSTT::EntityTopology &topo,
                                      Mesquite::MsqError &err)
   {
     switch(topo) {
-    case TSTT::TRIANGLE:
-      return Mesquite::TRIANGLE;
-      break;
-    case TSTT::QUADRILATERAL:
-      return Mesquite::QUADRILATERAL;
-      break;
-    case TSTT::TETRAHEDRON:
-      return Mesquite::TETRAHEDRON;
-      break;
-    case TSTT::HEXAHEDRON:
-      return Mesquite::HEXAHEDRON;
-      break;
-    case TSTT::PRISM:
-      return Mesquite::PRISM;
-      break;
-    case TSTT::PYRAMID:
-      return Mesquite::PYRAMID;
-      break;
+    case TSTT::TRIANGLE:       return Mesquite::TRIANGLE;
+    case TSTT::QUADRILATERAL:  return Mesquite::QUADRILATERAL;
+    case TSTT::TETRAHEDRON:    return Mesquite::TETRAHEDRON;
+    case TSTT::HEXAHEDRON:     return Mesquite::HEXAHEDRON;
+    case TSTT::PRISM:          return Mesquite::PRISM;
+    case TSTT::PYRAMID:        return Mesquite::PYRAMID;
     default:
-      err.set_msg("Topology unsufficiently defined. "
-                  "Cannot convert to a Mesquite Topology");
+      MSQ_SETERR(err)( "Topology unsufficiently defined. "
+                       "Cannot convert to a Mesquite Topology",
+                       MsqError::NOT_IMPLEMENTED );
       return Mesquite::MIXED;
     }
   }
@@ -187,8 +185,6 @@ namespace // unnamed namespace (scope is the file only)
 
 using Mesquite::MsqError;
 
-#undef __FUNC__
-#define __FUNC__ "MeshTSTT::MeshTSTT" 
 Mesquite::MeshTSTT::MeshTSTT(TSTT::Mesh& tstt_mesh,
                        Mesquite::MsqError& err) 
   : elementType(TSTT::ALL_TYPES),
@@ -204,43 +200,43 @@ Mesquite::MeshTSTT::MeshTSTT(TSTT::Mesh& tstt_mesh,
     tsttCoreQuery = tsttMesh;
     if ( !tsttCoreQuery ) 
       {
-	TSTT::Error err = TSTT::Error::_create();
-	err.set(1,"Mesquite::MeshTSTT::MeshTSTT : the TSTT::Mesh does not implement TSTT::CoreEntitySetQuery");
-	throw err;
+	MSQ_SETERR(err)( "TSTT::Mesh does not implement TSTT::CoreEntitySetQuery", 
+                         MsqError::INVALID_STATE );
+        return;
       }
 
     tsttAdvQuery  = tsttMesh;
     if ( !tsttAdvQuery ) 
       {
-	TSTT::Error err = TSTT::Error::_create();
-	err.set(1,"Mesquite::MeshTSTT::MeshTSTT : the TSTT::Mesh does not implement TSTT::AdvancedEntitySetQuery");
-	throw err;
+	MSQ_SETERR(err)( "TSTT::Mesh does not implement TSTT::AdvancedEntitySetQuery",
+                         MsqError::INVALID_STATE );
+        return;
       }
 
     tsttTag       = tsttMesh;
     if ( !tsttTag ) 
       {
-	TSTT::Error err = TSTT::Error::_create();
-	err.set(1,"Mesquite::MeshTSTT::MeshTSTT : the TSTT::Mesh does not implement TSTT::Tag");
-	throw err;
+	MSQ_SETERR(err)( "TSTT::Mesh does not implement TSTT::Tag",
+                         MsqError::INVALID_STATE );
+        return;
       }
 
     tsttModMesh   = tsttMesh;
     if ( !tsttModMesh ) 
       {
-	TSTT::Error err = TSTT::Error::_create();
-	err.set(1,"Mesquite::MeshTSTT::MeshTSTT : the TSTT::Mesh does not implement TSTT::ModifiableMesh");
-	throw err;
+	MSQ_SETERR(err)( "TSTT::Mesh does not implement TSTT::ModifiableMesh",
+                         MsqError::INVALID_STATE );
+        return;
       }
 
     //kkc 040203 if we get here then presumably all the interfaces we need are implemented by the
     //           TSTT::Mesh implementation we have been given.  
 
-    std::string fixed_tag("fixed");
+    string fixed_tag("fixed");
     //kkc 040203    fixedVertexTag = tsttMesh.tagGetHandle(fixed_tag);
     //kkc 040203 not used?    fixedVertexTag = tsttTag.tagGetHandle(fixed_tag);
 
-    std::string boundary_tag("boundary");
+    string boundary_tag("boundary");
     //kkc 040203    boundaryVertexTag = tsttMesh.tagGetHandle(boundary_tag);
     boundaryVertexTag = tsttTag.tagGetHandle(boundary_tag);
 
@@ -260,7 +256,7 @@ Mesquite::MeshTSTT::MeshTSTT(TSTT::Mesh& tstt_mesh,
     adjCsrDat = ::SIDL::array<int32_t>();
 
     // Associates a vertex byte flag to all vertices in the mesh.
-    std::string vertex_byte_tag("MsqVtxByteTag");
+    string vertex_byte_tag("MsqVtxByteTag");
     unsigned char tag_value = 0;
     //kkc 040203    tsttMesh.tagCreate(vertex_byte_tag, (int)sizeof(unsigned char),
     //                              &tag_value, vertexByteTag);
@@ -294,15 +290,13 @@ Mesquite::MeshTSTT::MeshTSTT(TSTT::Mesh& tstt_mesh,
     tsttTag.entitySetTagData(vertices, vertexByteTag, vtx_byte_values,
                               (int32_t)sizeof(unsigned char));
 
-    nbElements = get_total_element_count(err); MSQ_CHKERR(err);
+    nbElements = get_total_element_count(err); MSQ_ERRRTN(err);
   }
   catch (TSTT::Error &tstt_err) {
-    PRINT_TSTT_ERROR(tstt_err);
+    MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
   }
 }
 
-#undef __FUNC__
-#define __FUNC__ "MeshTSTT::~MeshTSTT" 
 Mesquite::MeshTSTT::~MeshTSTT() 
 {
   //kkc 040203  tsttMesh.tagDelete(vertexByteTag, true);
@@ -311,9 +305,7 @@ Mesquite::MeshTSTT::~MeshTSTT()
 
     
 // Returns whether this mesh lies in a 2D or 3D coordinate system.
-#undef __FUNC__
-#define __FUNC__ "MeshTSTT::get_geometric_dimension" 
-int Mesquite::MeshTSTT::get_geometric_dimension(Mesquite::MsqError &/*err*/) const
+int Mesquite::MeshTSTT::get_geometric_dimension(Mesquite::MsqError &err) const
 {
   int32_t d=0;
   try {
@@ -321,15 +313,13 @@ int Mesquite::MeshTSTT::get_geometric_dimension(Mesquite::MsqError &/*err*/) con
     d = tsttCoreQuery.getGeometricDimension();
   }
   catch (TSTT::Error &tstt_err) {
-    PRINT_TSTT_ERROR(tstt_err);
+   MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
   }
   return (int)d;
 }
     
 // Returns the number of vertices.
-#undef __FUNC__
-#define __FUNC__ "MeshTSTT::get_total_vertex_count" 
-size_t Mesquite::MeshTSTT::get_total_vertex_count(Mesquite::MsqError &/*err*/) const
+size_t Mesquite::MeshTSTT::get_total_vertex_count(Mesquite::MsqError &err) const
 {
   int32_t nv=0;
   try {
@@ -338,16 +328,13 @@ size_t Mesquite::MeshTSTT::get_total_vertex_count(Mesquite::MsqError &/*err*/) c
     nv = tsttAdvQuery.entitysetGetNumberEntityOfType(ENTIRE_MESH, ::TSTT::VERTEX);
   }
   catch(::TSTT::Error &tstt_err) {
-    PRINT_TSTT_ERROR(tstt_err);
-    throw;
+    MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
   }
   return (size_t)nv;
 }
 
 //! Returns the number of regions or number of faces if there are no regions.
 //! Sets data member elementType to region or face.
-#undef __FUNC__
-#define __FUNC__ "MeshTSTT::get_total_element_count" 
 size_t Mesquite::MeshTSTT::get_total_element_count(Mesquite::MsqError &err) const 
 {
   int32_t ne=0;
@@ -366,25 +353,26 @@ size_t Mesquite::MeshTSTT::get_total_element_count(Mesquite::MsqError &err) cons
         elementType = TSTT::FACE;
       }
       else
-        err.set_msg("No 2D or 3D elements available in mesh.");
+      {
+        MSQ_SETERR(err)("No 2D or 3D elements available in mesh.", MsqError::INVALID_MESH);
+        return 0;
+      }
     }
   }
   catch(::TSTT::Error &tstt_err) {
-    PRINT_TSTT_ERROR(tstt_err);
+    MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
   }
   return (size_t)ne;
 }
     
 // Fills array with handles to all vertices in the mesh.
-#undef __FUNC__
-#define __FUNC__ "MeshTSTT::get_all_vertices"
 void Mesquite::MeshTSTT::get_all_vertices(
   Mesquite::Mesh::VertexHandle *vert_array,
   size_t array_size, Mesquite::MsqError &err)
 {
   try {
     // Checking size compatibility.
-    size_t nv = get_total_vertex_count(err); MSQ_CHKERR(err);
+    size_t nv = get_total_vertex_count(err); MSQ_ERRTN(err);
     if (array_size > nv)
       array_size = nv; // only copies existing vertices.
     if (array_size < nv) {
@@ -410,20 +398,18 @@ void Mesquite::MeshTSTT::get_all_vertices(
 					vert_array_b);
   }
   catch(::TSTT::Error &tstt_err) {
-    PRINT_TSTT_ERROR(tstt_err);
+    MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
   }
 }
 
 // Fills array with handles to all elements in the mesh.
-#undef __FUNC__
-#define __FUNC__ "MeshTSTT::get_all_all_elements"
 void Mesquite::MeshTSTT::get_all_elements(
   Mesquite::Mesh::ElementHandle *elem_array,
   size_t array_size, Mesquite::MsqError &err)
 {
   try {
     // Checking size compatibility.
-    size_t ne = get_total_element_count(err); MSQ_CHKERR(err);
+    size_t ne = get_total_element_count(err); MSQ_ERRRTN(err);
     if (array_size > ne)
       array_size = ne; // only copies existing vertices.
     if (array_size < ne) {
@@ -449,7 +435,7 @@ void Mesquite::MeshTSTT::get_all_elements(
 					elem_array_b);
   }
   catch(::TSTT::Error &tstt_err) {
-    PRINT_TSTT_ERROR(tstt_err);
+    MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
   }
 }
 
@@ -458,8 +444,6 @@ void Mesquite::MeshTSTT::get_all_elements(
 // delete the returned iterator when it is finished with it.
 // If vertices are added or removed from the Mesh after obtaining
 // an iterator, the behavior of that iterator is undefined.
-#undef __FUNC__
-#define __FUNC__ "MeshTSTT::vertex_iterator"
 Mesquite::VertexIterator* Mesquite::MeshTSTT::vertex_iterator(MsqError &/*err*/)
 {
   //kkc 040203  return new MeshTSTT_EntityIterator(tsttMesh, TSTT::VERTEX);
@@ -471,8 +455,6 @@ Mesquite::VertexIterator* Mesquite::MeshTSTT::vertex_iterator(MsqError &/*err*/)
 // delete the returned iterator when it is finished with it.
 // If elements are added or removed from the Mesh after obtaining
 // an iterator, the behavior of that iterator is undefined.
-#undef __FUNC__
-#define __FUNC__ "MeshTSTT::element_iterator"
 Mesquite::ElementIterator* Mesquite::MeshTSTT::element_iterator(MsqError &/*err*/)
 {
   //kkc 040203  return new MeshTSTT_EntityIterator(tsttMesh, elementType);
@@ -485,8 +467,6 @@ Mesquite::ElementIterator* Mesquite::MeshTSTT::element_iterator(MsqError &/*err*
 // is fixed and cannot be moved.  Note that this is a read-only
 // property; this flag can't be modified by users of the
 // Mesquite::Mesh interface.
-#undef __FUNC__
-#define __FUNC__ "MeshTSTT::vertex_is_fixed"
 bool Mesquite::MeshTSTT::vertex_is_fixed(Mesquite::Mesh::VertexHandle vertex, MsqError &err)
 {
 //   try {
@@ -509,14 +489,12 @@ bool Mesquite::MeshTSTT::vertex_is_fixed(Mesquite::Mesh::VertexHandle vertex, Ms
 // Note that this is a read-only
 // property; this flag can't be modified by users of the
 // Mesquite::Mesh interface.
-#undef __FUNC__
-#define __FUNC__ "MeshTSTT::vertices_are_on_boundary"
 void Mesquite::MeshTSTT::vertices_are_on_boundary(
   Mesquite::Mesh::VertexHandle vert_array[], bool on_bnd[],
   size_t num_vtx, MsqError &err)
 {
   try {
-    FUNCTION_TIMER_START(__FUNC__);
+    FunctionTimer ft( "MeshTSTT::vertices_are_on_boundary" );
 
     int32_t lower=0, upper=num_vtx-1, stride=1;
     ::SIDL::array<void*> vert_array_b;
@@ -540,22 +518,19 @@ void Mesquite::MeshTSTT::vertices_are_on_boundary(
     for (size_t i=0; i<num_vtx; ++i)
       on_bnd[i] = (bool)(*(int*)(tag_s.get(i)));
 
-    FUNCTION_TIMER_END();
   }
   catch(::TSTT::Error &tstt_err) {
-    PRINT_TSTT_ERROR(tstt_err);
+    MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
   }
 }
 
 // Get/set location of a vertex
-#undef __FUNC__
-#define __FUNC__ "MeshTSTT::vertices_get_coordinates"
 void Mesquite::MeshTSTT::vertices_get_coordinates(
   Mesquite::Mesh::VertexHandle vert_array[],
   MsqVertex* const &coordinates, const size_t &num_vtx, MsqError &err)
 {
   try {
-    FUNCTION_TIMER_START(__FUNC__);
+    FunctinTimer ft( "MeshTSTT::vertices_get_coordinates" );
     int32_t lower=0, upper=num_vtx-1, stride=1;
     ::SIDL::array<void*> vert_array_b;
     vert_array_b.borrow(vert_array, 1, &lower, &upper, &stride);
@@ -567,7 +542,7 @@ void Mesquite::MeshTSTT::vertices_get_coordinates(
                                         order, coords_s);
     
     // Turns SIDL array into a Vector3D.
-    int geom_dim = get_geometric_dimension(err); MSQ_CHKERR(err);
+    int geom_dim = get_geometric_dimension(err); MSQ_ERRRTN(err);
 //    cout << "Geometric Dimentsion : " << geom_dim << endl;
     for (size_t i=0; i<num_vtx; ++i) {
       coordinates[i][0] = coords_s.get(geom_dim*i);
@@ -577,16 +552,12 @@ void Mesquite::MeshTSTT::vertices_get_coordinates(
       else
 	coordinates[i][2] = 0;
     }
-    FUNCTION_TIMER_END();
-
   }
   catch(::TSTT::Error &tstt_err) {
-    PRINT_TSTT_ERROR(tstt_err);
+    MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
   }
 }
 
-#undef __FUNC__
-#define __FUNC__ "MeshTSTT::vertex_set_coordinates"
 void Mesquite::MeshTSTT::vertex_set_coordinates(
   Mesquite::Mesh::VertexHandle vertex,
   const Vector3D &coordinates, MsqError &err)
@@ -603,7 +574,7 @@ void Mesquite::MeshTSTT::vertex_set_coordinates(
 				      threeDoubles);
   }
   catch(::TSTT::Error &tstt_err) {
-    PRINT_TSTT_ERROR(tstt_err);
+    MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
   }
 }
 
@@ -611,8 +582,6 @@ void Mesquite::MeshTSTT::vertex_set_coordinates(
 // flags.  This byte's value is neither set nor used by the mesh
 // implementation.  It is intended to be used by Mesquite algorithms.
 // Until a vertex's byte has been explicitly set, its value is 0.
-#undef __FUNC__
-#define __FUNC__ "MeshTSTT::vertex_set_byte"
 void Mesquite::MeshTSTT::vertex_set_byte (
   Mesquite::Mesh::VertexHandle vertex,
   unsigned char byte, MsqError &err)
@@ -626,12 +595,10 @@ void Mesquite::MeshTSTT::vertex_set_byte (
 			      oneTagValue, sizeof(unsigned char));
   }
   catch(::TSTT::Error &tstt_err) {
-    PRINT_TSTT_ERROR(tstt_err);
+    MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
   }
 }
 
-#undef __FUNC__
-#define __FUNC__ "MeshTSTT::vertices_set_byte"
 void Mesquite::MeshTSTT::vertices_set_byte (
   Mesquite::Mesh::VertexHandle *vert_array,
   unsigned char *byte_array,
@@ -657,15 +624,13 @@ void Mesquite::MeshTSTT::vertices_set_byte (
 			      byte_array_s, sizeof(unsigned char));
   }
   catch(::TSTT::Error &tstt_err) {
-    PRINT_TSTT_ERROR(tstt_err);
+    MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
   }
 }
 
 // Retrieve the byte value for the specified vertex or vertices.
 // The byte value is 0 if it has not yet been set via one of the
 // *_set_byte() functions.
-#undef __FUNC__
-#define __FUNC__ "MeshTSTT::vertex_get_byte"
 void Mesquite::MeshTSTT::vertex_get_byte(
   Mesquite::Mesh::VertexHandle vertex,
   unsigned char *byte, MsqError &err)
@@ -680,12 +645,10 @@ void Mesquite::MeshTSTT::vertex_get_byte(
     *byte = *(unsigned char*)oneTagValue.get(0);
   }
   catch(::TSTT::Error &tstt_err) {
-    PRINT_TSTT_ERROR(tstt_err);
+    MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
   }
 }
 
-#undef __FUNC__
-#define __FUNC__ "MeshTSTT::vertices_get_byte"
 void Mesquite::MeshTSTT::vertices_get_byte(
   Mesquite::Mesh::VertexHandle *vert_array,
   unsigned char *byte_array,
@@ -714,7 +677,7 @@ void Mesquite::MeshTSTT::vertices_get_byte(
       
   }
   catch(::TSTT::Error &tstt_err) {
-    PRINT_TSTT_ERROR(tstt_err);
+    MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
   }
 }
 
@@ -725,8 +688,6 @@ void Mesquite::MeshTSTT::vertices_get_byte(
 // Gets the number of elements attached to this vertex.
 // Useful to determine how large the "elem_array" parameter
 // of the vertex_get_attached_elements() function must be.
-#undef __FUNC__
-#define __FUNC__ "MeshTSTT::vertex_get_attached_element_count"
 size_t Mesquite::MeshTSTT::vertex_get_attached_element_count(
   Mesquite::Mesh::VertexHandle vertex, MsqError &err) const
 {
@@ -750,31 +711,33 @@ size_t Mesquite::MeshTSTT::vertex_get_attached_element_count(
     assert(cachedAdjEntArray.dimen()==1);
   }
   catch(::TSTT::Error &tstt_err) {
-    PRINT_TSTT_ERROR(tstt_err);
+    MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
+    return 0;
   }
 
   return static_cast<size_t>(cachedAdjEntArray.upper(0)-cachedAdjEntArray.lower(0)+1);
 }
 
 // Gets the elements attached to this vertex.
-#undef __FUNC__
-#define __FUNC__ "MeshTSTT::vertex_get_attached_elements" 
 void Mesquite::MeshTSTT::vertex_get_attached_elements(
   Mesquite::Mesh::VertexHandle vertex,
   Mesquite::Mesh::ElementHandle* elem_array,
   size_t sizeof_elem_array, Mesquite::MsqError &err)
 {
+  //FIXME:  Is this correct???  Maybe should update cached vertex??? -- J.Kraftcheck
   // check that adjacencies are cached
   if (vertex != cachedVertex) {
-    err.set_msg("argument vertex different from latest call to "
-                "vertex_get_attached_element_count. "
-                "Cannot use cached data.");
+    MSQ_SETERR(err)("argument vertex different from latest call to "
+                    "vertex_get_attached_element_count. "
+                    "Cannot use cached data.",
+                    MsqError::INVALID_ARG);
     return;
   }
   // Checks that cached array will fit.
   if (sizeof_elem_array != static_cast<size_t>(cachedAdjEntArray.upper(0) - cachedAdjEntArray.lower(0)+1)) {
-    err.set_msg("elem_array is not the right size. "
-                "Use vertex_get_attached_element_count first.");
+    MSQ_SETERR(err)("elem_array is not the right size. "
+                    "Use vertex_get_attached_element_count first.",
+                    MsqError::INVALID_ARG));
     return;
   }
 
@@ -789,14 +752,12 @@ void Mesquite::MeshTSTT::vertex_get_attached_elements(
 // This data can also be found by querying the
 // element's topology and getting the number
 // of vertices per element for that topology type.
-#undef __FUNC__
-#define __FUNC__ "MeshTSTT::element_get_attached_vertex_count" 
 size_t Mesquite::MeshTSTT::element_get_attached_vertex_count(
   Mesquite::Mesh::ElementHandle elem,
   Mesquite::MsqError &err) const
 {
   Mesquite::EntityTopology topo_msq;
-  topo_msq = this->element_get_topology(elem, err); MSQ_CHKERR(err);
+  topo_msq = this->element_get_topology(elem, err); MSQ_ERRZERO(err);
   return Mesquite::MsqMeshEntity::vertex_count(topo_msq);
 }
 
@@ -833,8 +794,6 @@ size_t Mesquite::MeshTSTT::element_get_attached_vertex_count(
 // and the second vertex of element #3 like this:
 //   VertexHandle vh = vert_handles[ csr_data[ csr_offsets[3]+1 ] ]
 // 
-#undef __FUNC__
-#define __FUNC__ "MeshTSTT::elements_get_attached_vertices"
 void Mesquite::MeshTSTT::elements_get_attached_vertices(
   Mesquite::Mesh::ElementHandle *elem_handles,
   size_t num_elems,
@@ -849,7 +808,7 @@ void Mesquite::MeshTSTT::elements_get_attached_vertices(
     return;
 
   try {
-    FUNCTION_TIMER_START(__FUNC__);
+    FunctionTimer ft( "MeshTSTT::elements_get_attached_vertices" );
     // Creating borrowed SIDL arrays with arrays passed as arguments.
     int32_t lower= 0;
     int32_t stride = 1;
@@ -887,8 +846,7 @@ void Mesquite::MeshTSTT::elements_get_attached_vertices(
 
 	// checking we're not writing beyond the index array 
 	if(d>sizeof_csr_data) {
-	  err.set_msg("insuficient size for csr_data array");
-     FUNCTION_TIMER_END();
+	  MSQ_SETERR("insuficient size for csr_data array", MsqError::INVALID_ARG);
 	  return;
 	}
 	
@@ -926,10 +884,9 @@ void Mesquite::MeshTSTT::elements_get_attached_vertices(
     }
     assert(v!=0);
     sizeof_vert_handles=v;
-    FUNCTION_TIMER_END();
   }
   catch(::TSTT::Error &tstt_err) {
-    PRINT_TSTT_ERROR(tstt_err);
+    MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
   }
 }
 
@@ -946,8 +903,6 @@ void Mesquite::MeshTSTT::elements_get_attached_vertices(
 //                the indexes corresponding to an element start. First entry is 0.
 // For example element, to get the vertex indices of elems[3], we look at the entries
 // index_array[offsets[3]] to index_array[offsets[4]] . 
-#undef __FUNC__
-#define __FUNC__ "MeshTSTT::elements_get_attached_vertex_indices"
 void Mesquite::MeshTSTT::elements_get_attached_vertex_indices(
   Mesquite::Mesh::ElementHandle elems[],
   size_t num_elems,
@@ -957,7 +912,7 @@ void Mesquite::MeshTSTT::elements_get_attached_vertex_indices(
   MsqError &err)
 {
   try {
-    FUNCTION_TIMER_START(__FUNC__);
+    FunctionTimer ft( "MeshTSTT::elements_get_attached_vertex_indices" );
     int32_t zero= 0;
     int32_t upper = array_size-1;
     int32_t stride = 1;
@@ -989,16 +944,13 @@ void Mesquite::MeshTSTT::elements_get_attached_vertex_indices(
 //        cout << "index_array: " << index_array[i] << endl;	  
 //     }
      
-    FUNCTION_TIMER_END();
   }
   catch(::TSTT::Error &tstt_err) {
-    PRINT_TSTT_ERROR(tstt_err);
+    MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
   }
 }
 
 // Returns the topology of the given entity.
-#undef __FUNC__
-#define __FUNC__ "MeshTSTT::element_get_topology"
 Mesquite::EntityTopology Mesquite::MeshTSTT::element_get_topology(
   Mesquite::Mesh::ElementHandle element, Mesquite::MsqError &err) const
 {
@@ -1009,25 +961,23 @@ Mesquite::EntityTopology Mesquite::MeshTSTT::element_get_topology(
     tsttAdvQuery.entityGetTopology(oneEntity, oneTopo);
     //kkc 040203    TSTT::EntityTopology topo_tstt = (TSTT::EntityTopology)oneInt.get(0);
     TSTT::EntityTopology topo_tstt = (TSTT::EntityTopology)oneTopo.get(0);
-    topo_msq = mesquite_equivalent_topology(topo_tstt, err); MSQ_CHKERR(err);
+    topo_msq = mesquite_equivalent_topology(topo_tstt, err); MSQ_RTNERR(err);
   }
   catch(::TSTT::Error &tstt_err) {
-    PRINT_TSTT_ERROR(tstt_err);
+    MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
   }
   return topo_msq;
 }
 
 // Returns the topologies of the given entities.  The "entity_topologies"
 // array must be at least "num_elements" in size.
-#undef __FUNC__
-#define __FUNC__ "MeshTSTT::elements_get_topologies"
 void Mesquite::MeshTSTT::elements_get_topologies(
   Mesquite::Mesh::ElementHandle *element_handle_array,
   Mesquite::EntityTopology *element_topologies,
   size_t num_elements, MsqError &err)
 {
   try {
-    FUNCTION_TIMER_START(__FUNC__);
+    FunctionTimer ft( "MeshTSTT::elements_get_topologies" );
     ::SIDL::array< ::TSTT::EntityTopology > topos_s;
     topos_s = ::SIDL::array< ::TSTT::EntityTopology >::create1d(num_elements);
 
@@ -1041,20 +991,17 @@ void Mesquite::MeshTSTT::elements_get_topologies(
     for(size_t i=0; i<num_elements; ++i) {
       TSTT::EntityTopology topo_tstt = (TSTT::EntityTopology)topos_s.get(i);
       element_topologies[i]= mesquite_equivalent_topology(topo_tstt, err);
-      MSQ_CHKERR(err);
+      MSQ_ERRRTN(err);
     }
-    FUNCTION_TIMER_END();
   }
   catch(::TSTT::Error &tstt_err) {
-    PRINT_TSTT_ERROR(tstt_err);
+    MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
   }
 }
 
 //**************** Memory Management ****************
 // Tells the mesh that the client is finished with a given
 // entity handle.  
-#undef __FUNC__
-#define __FUNC__ "MeshTSTT::release_entity_handles"
 void Mesquite::MeshTSTT::release_entity_handles(
   Mesquite::Mesh::EntityHandle */*handle_array*/,
   size_t /*num_handles*/, MsqError &/*err*/)

@@ -36,52 +36,45 @@
 */
 
 #include "LaplacianSmoother.hpp"
-#include "MsqMessage.hpp"
 #include "LPtoPTemplate.hpp"
 #include "EdgeLengthQualityMetric.hpp"
 
 
-using namespace Mesquite;
+namespace Mesquite {
 
 
-#undef __FUNC__
-#define __FUNC__ "LaplacianSmoother::LaplacianSmoother" 
 LaplacianSmoother::LaplacianSmoother(MsqError &err) 
 {
   this->set_name("LaplacianSmoother");
   
-  set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err,1,1);MSQ_CHKERR(err);
+  set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err,1,1);MSQ_ERRRTN(err);
 
   edgeQM = new EdgeLengthQualityMetric;
-  edgeQM->set_averaging_method(QualityMetric::RMS,err);
-  objFunc = new LPtoPTemplate(edgeQM, 2, err);
+  edgeQM->set_averaging_method(QualityMetric::RMS,err);MSQ_ERRRTN(err);
+  objFunc = new LPtoPTemplate(edgeQM, 2, err);MSQ_ERRRTN(err);
   
 }  
-#undef __FUNC__
-#define __FUNC__ "LaplacianSmoother::~LaplacianSmoother" 
+
 LaplacianSmoother::~LaplacianSmoother() 
 {
   delete edgeQM;
   delete objFunc;
 }    
   
-#undef __FUNC__
-#define __FUNC__ "LaplacianSmoother::initialize" 
+
 void LaplacianSmoother::initialize(PatchData& /*pd*/, MsqError& /*err*/)
 {
  
 }
 
-#undef __FUNC__
-#define __FUNC__ "LaplacianSmoother::initialize_mesh_iteration" 
+
 void LaplacianSmoother::initialize_mesh_iteration(PatchData &/*pd*/,
                                                   MsqError &/*err*/)
 {
   //  cout << "- Executing LaplacianSmoother::iteration_complete()\n";
 }
 
-#undef __FUNC__
-#define __FUNC__ "LaplacianSmoother::optimize_vertex_position"
+
 /*! \todo Michael:  optimize_vertex_position is probably not implemented
   in an optimal way.  We used to use all of the vertices in
   the patch as 'adjacent' vertices.  Now we call get_adjacent_vertex_indices.
@@ -96,36 +89,33 @@ void LaplacianSmoother::optimize_vertex_positions(PatchData &pd,
   
   
   // does the Laplacian smoothing
-  MsqFreeVertexIndexIterator free_iter(&pd, err);
+  MsqFreeVertexIndexIterator free_iter(&pd, err);  MSQ_ERRRTN(err);
   free_iter.reset();
   free_iter.next();
     //m is the free vertex.
   size_t m=free_iter.value();
-  vector<size_t> vert_indices;
+  msq_std::vector<size_t> vert_indices;
   vert_indices.reserve(25);
     //get vertices adjacent to vertex m
-  pd.get_adjacent_vertex_indices(m,vert_indices,err);
+  pd.get_adjacent_vertex_indices(m,vert_indices,err);  MSQ_ERRRTN(err);
     //move vertex m
   centroid_smooth_mesh(pd, vert_indices.size(), vert_indices,
-                       m, dim, err); MSQ_CHKERR(err);
+                       m, dim, err); MSQ_ERRRTN(err);
     //snap vertex m to domain
   pd.snap_vertex_to_domain(m,err);
   
 }
   
-#undef __FUNC__
-#define __FUNC__ "LaplacianSmoother::terminate_mesh_iteration" 
 void LaplacianSmoother::terminate_mesh_iteration(PatchData &/*pd*/,
                                                  MsqError &/*err*/)
 {
   //  cout << "- Executing LaplacianSmoother::iteration_complete()\n";
 }
   
-#undef __FUNC__
-#define __FUNC__ "LaplacianSmoother::cleanup" 
 void LaplacianSmoother::cleanup()
 {
   //  cout << "- Executing LaplacianSmoother::iteration_end()\n";
 }
   
+} // namespace Mesquite
 

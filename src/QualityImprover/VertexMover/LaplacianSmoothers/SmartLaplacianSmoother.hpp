@@ -41,11 +41,12 @@
 
 #include "Mesquite.hpp"
 #include "VertexMover.hpp"
-#include "MsqFreeVertexIndexIterator.hpp"
-#include "ObjectiveFunction.hpp"
-#include <vector>
+
 namespace Mesquite
 {
+  class MsqError;
+  class PatchData;
+  class ObjectiveFunction;
 
   /*! \class SmartLaplacianSmoother
     Moves free center vertex to the average of the neighboring vertices if

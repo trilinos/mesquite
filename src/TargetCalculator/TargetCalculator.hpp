@@ -40,9 +40,7 @@
 #define TargetCalculator_hpp
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
-#include "MsqTimer.hpp"
-#include "MsqMessage.hpp"
+#include "MsqError.hpp"
 #include "Matrix3D.hpp"
 #include "PatchData.hpp"
 
@@ -137,7 +135,8 @@ namespace Mesquite
 
     void set_originator(PatchDataParameters* pdm, MsqError &err)
     { if (originator != 0)
-        err.set_msg("Each TargetCalculator can be set on one object only.");
+        MSQ_SETERR(err)("Each TargetCalculator can be set on one object only.",
+                        MsqError::INVALID_STATE);
       else originator = pdm; }
 
   protected:
@@ -147,8 +146,6 @@ namespace Mesquite
   };
 
   
-#undef __FUNC__
-#define __FUNC__ "TargetCalculator::initialize_default_target_matrices" 
   inline void TargetCalculator::initialize_default_target_matrices(Matrix3D &tri_M3D,
                                                       Matrix3D &quad_M3D,
                                                       Matrix3D &tet_M3D,
@@ -176,17 +173,13 @@ namespace Mesquite
   }
 
 
-#undef __FUNC__
-#define __FUNC__ "TargetCalculator::compute_Lambda"
   //! Note that this function is static, i.e. it can be used independently of an object.
-  inline double TargetCalculator::compute_Lambda(const Matrix3D &A, MsqError &err)
+  inline double TargetCalculator::compute_Lambda(const Matrix3D &A, MsqError& )
   {
     return pow(fabs(det(A)), 1./3.);
   }
 
   
-#undef __FUNC__
-#define __FUNC__ "TargetCalculator::compute_V_3D"
   //!
   inline  Matrix3D TargetCalculator::compute_V_3D(const Matrix3D &A, MsqError &err)
   {
@@ -194,17 +187,23 @@ namespace Mesquite
     Vector3D a2(A[0][1], A[1][1], A[2][1]); 
     Vector3D a3(A[0][2], A[1][2], A[2][2]); 
 
-    double a1_norm = A.column_length(0); MSQ_CHECK_NULL(a1_norm);
+    double a1_norm = A.column_length(0); 
     Vector3D a1_x_a2 = a1 * a2;
-    double a1_x_a2_norm = a1_x_a2.length(); MSQ_CHECK_NULL(a1_x_a2_norm);
+    double a1_x_a2_norm = a1_x_a2.length(); 
     
     Matrix3D V;
     Vector3D v1, v2, v3;
     
+    double a1_norm_inv = 1./a1_norm;
+    double a1_x_a2_norm_inv = 1./a1_x_a2_norm;
+    if (!finite(a1_norm_inv) || !finite(a1_x_a2_norm_inv)) {
+      MSQ_SETERR(err)("Numerical error", MsqError::INVALID_STATE);
+    }
+    
     // note : % is the dot product
-    v1 = (1/a1_norm) * a1;
-    v2 = ((-(a1%a2) * a1) + (a1_norm*a1_norm)*a2) / (a1_norm * a1_x_a2_norm);
-    v3 = (1/a1_x_a2_norm) * a1_x_a2;
+    v1 = a1_norm_inv * a1;
+    v2 = ((-(a1%a2) * a1) + (a1_norm*a1_norm)*a2) * a1_norm_inv * a1_x_a2_norm_inv;
+    v3 = a1_x_a2_norm_inv * a1_x_a2;
 
     V.set_column(0, v1);
     V.set_column(1, v2);
@@ -213,8 +212,6 @@ namespace Mesquite
     return V;
   }
   
-#undef __FUNC__
-#define __FUNC__ "TargetCalculator::compute_Q_3D"
   //!
   inline  Matrix3D TargetCalculator::compute_Q_3D(const Matrix3D &A, MsqError &err)
   {
@@ -222,16 +219,16 @@ namespace Mesquite
     Vector3D a2(A[0][1], A[1][1], A[2][1]); 
     Vector3D a3(A[0][2], A[1][2], A[2][2]); 
 
-    double a1_norm = A.column_length(0); MSQ_CHECK_NULL(a1_norm);
-    double a2_norm = A.column_length(1); MSQ_CHECK_NULL(a2_norm);
-    double a3_norm = A.column_length(2); MSQ_CHECK_NULL(a3_norm);
+    double a1_norm = A.column_length(0);
+    double a2_norm = A.column_length(1);
+    double a3_norm = A.column_length(2);
     
     Vector3D a1_x_a2 = a1 * a2;
-    double a1_x_a2_norm = a1_x_a2.length(); MSQ_CHECK_NULL(a1_x_a2_norm);
+    double a1_x_a2_norm = a1_x_a2.length();
     Vector3D a1_x_a3 = a1 * a3;
 
     double nu = pow(a1_norm*a2_norm*a3_norm, 1./3.);
-    double det_A = det(A);  MSQ_CHECK_NULL(det_A);
+    double det_A = det(A);
     double fac = nu / pow(fabs(det_A), 1./3.);
     
     Matrix3D Q;
@@ -243,20 +240,26 @@ namespace Mesquite
     Q[1][2] = fac * a1_x_a2 % a1_x_a3 / (a1_x_a2_norm * a1_norm * a3_norm);
     Q[2][2] = fac * det_A / (a1_x_a2_norm*a3_norm); 
     
+    if (!finite(Q[0][0]) || !finite(Q[0][1]) || !finite(Q[0][2]) ||
+        !finite(Q[1][0]) || !finite(Q[1][2]) || !finite(Q[2][2])) {
+      MSQ_SETERR(err)("Numerical error", MsqError::INVALID_STATE);
+    }
+    
     return Q;
   }
 
-#undef __FUNC__
-#define __FUNC__ "TargetCalculator::compute_Delta_3D"
   //!
   inline  Matrix3D TargetCalculator::compute_Delta_3D(const Matrix3D &A, MsqError &err)
   {
-    double a1_norm = A.column_length(0); MSQ_CHECK_NULL(a1_norm);
-    double a2_norm = A.column_length(1); MSQ_CHECK_NULL(a2_norm);
-    double a3_norm = A.column_length(2); MSQ_CHECK_NULL(a3_norm);
+    double a1_norm = A.column_length(0);
+    double a2_norm = A.column_length(1);
+    double a3_norm = A.column_length(2);
     
     double nu = pow(a1_norm*a2_norm*a3_norm, 1./3.);
     double fac = 1./nu ;
+    if (!finite(fac)) {
+      MSQ_SETERR(err)("Numerical error", MsqError::INVALID_STATE);
+    }
     
     Matrix3D Delta;
 

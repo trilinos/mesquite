@@ -30,7 +30,7 @@
 #include "MDBRange.hpp"
 #include "MDBSkinner.hpp"
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
+#include "MsqError.hpp"
 #include "Vector3D.hpp"
 #include "InstructionQueue.hpp"
 #include "MeshSet.hpp"
@@ -305,9 +305,9 @@ int run_mesquite(TSTT::Mesh_Handle &mh, TSTT::MeshError *error)
 {
     // Initialize a MeshSet object
   Mesquite::MeshSet mesh_set1;
-  Mesquite::MsqError err;
+  Mesquite::MsqPrintError err;
   mesh_set1.add_mesh(mh, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   
     // Create an intruction queue
   Mesquite::InstructionQueue queue1;
@@ -317,19 +317,21 @@ int run_mesquite(TSTT::Mesh_Handle &mh, TSTT::MeshError *error)
   
     // Build an objective function with it
   Mesquite::LPTemplate* obj_func = new Mesquite::LPTemplate(mean_ratio, 2, err);
+  if (err) return 1;
   
     // Create the steepest descent  optimization procedures
   Mesquite::SteepestDescent* pass1 = new Mesquite::SteepestDescent( obj_func );
   Mesquite::TerminationCriterion tc2;
   tc2.add_criterion_type_with_int(Mesquite::TerminationCriterion::NUMBER_OF_ITERATES,10,err);
+  if (err) return 1;
     //Mesquite::StoppingCriterion sc2(Mesquite::StoppingCriterion::NUMBER_OF_PASSES, 10);
   pass1->set_outer_termination_criterion(&tc2);
   pass1->add_culling_method(Mesquite::PatchData::NO_BOUNDARY_VTX);
   
   queue1.set_master_quality_improver(pass1, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   queue1.run_instructions(mesh_set1, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
 }
 
 void set_fixed_boundary(TSTT::Mesh_Handle &mh, TSTT::MeshError *error)

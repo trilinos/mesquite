@@ -38,8 +38,6 @@ Header file for the Mesquite::WTargetCalculator class
 #define WTargetCalculators_hpp
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
-#include "MsqMessage.hpp"
 #include "TargetCalculator.hpp"
 
 namespace Mesquite

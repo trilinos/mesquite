@@ -39,11 +39,7 @@ Header file for the Mesquite:: CompositeOFScalarMultiply class
 #define CompositeOFScalarMultiply_hpp
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
 #include "ObjectiveFunction.hpp"
-#include "PatchData.hpp"
-#include <list>
-MSQ_USE(list);
 
 namespace Mesquite
 {
@@ -52,6 +48,8 @@ namespace Mesquite
      */
    class MsqMeshEntity;
    class PatchData;
+   class MsqError;
+   
    class CompositeOFScalarMultiply : public ObjectiveFunction
    {
    public:
@@ -59,7 +57,7 @@ namespace Mesquite
      virtual ~CompositeOFScalarMultiply();
      virtual bool concrete_evaluate(PatchData &patch, double &fval,
                                     MsqError &err);
-     virtual list<QualityMetric*> get_quality_metric_list();
+     virtual msq_std::list<QualityMetric*> get_quality_metric_list();
      
    protected:
      //!Implement the scalar multiply analytic gradient

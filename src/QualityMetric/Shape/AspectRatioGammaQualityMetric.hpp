@@ -39,14 +39,8 @@
 #define AspectRatioGammaQualityMetric_hpp
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
+#include "MsqError.hpp"
 #include "ShapeQualityMetric.hpp"
-#include "Vector3D.hpp"
-#ifdef USE_C_PREFIX_INCLUDES
-#include <cmath>
-#else
-#include <math.h>
-#endif
 namespace Mesquite
 {
      /*! \class AspectRatioGammaQualityMetric
@@ -60,7 +54,7 @@ namespace Mesquite
         {
           MsqError err;
           set_metric_type(ELEMENT_BASED);
-          set_element_evaluation_mode(ELEMENT_VERTICES, err); MSQ_CHKERR(err);
+          set_element_evaluation_mode(ELEMENT_VERTICES, err);
           fourDivRootThree=4.0/sqrt(3.0);
           twelveDivRootTwo=12.0/sqrt(2.0);
           feasible=0;

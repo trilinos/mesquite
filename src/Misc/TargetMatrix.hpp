@@ -38,8 +38,6 @@ Header file for the Mesquite::TargetMatrix class
 #define TargetMatrix_hpp
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
-#include "MsqMessage.hpp"
 #include "Matrix3D.hpp"
 
 namespace Mesquite

@@ -70,7 +70,7 @@ namespace Mesquite {
       LaplacianIQ() {
          MsqError err;
          // creates a mean ratio quality metric ...
-         meanRatio = new MeanRatioQualityMetric;
+         meanRatio = new MeanRatioQualityMetric(err);
      
          // creates the laplacian smoother  procedures
          lapl1 = new LaplacianSmoother(err);

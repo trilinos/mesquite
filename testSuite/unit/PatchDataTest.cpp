@@ -89,7 +89,7 @@ private:
 public:
   void setUp()
   {
-     MsqError err;
+     MsqPrintError err(cout);
 
      /* our 2D set up: 2 triangles and one quad are available
        1___3___5
@@ -133,46 +133,40 @@ public:
   PatchDataTest()
     {}
   
-#undef __FUNC__
-#define __FUNC__ "PatchDataTest::test_num_corners" 
    void test_num_corners()
    {
-     MsqError err;
+     MsqPrintError err(cout);
      size_t n = mPatch2D.num_corners();
      CPPUNIT_ASSERT(n==10);
    }
 
-#undef __FUNC__
-#define __FUNC__ "PatchDataTest::test_get_element_vertex_indices" 
    void test_get_element_vertex_indices()
    {
 
-      MsqError err;
+      MsqPrintError err(cout);
       
       std::vector<size_t> vtx_ind;
       std::vector<size_t> res;
 
       // test we get the right vertices for element 1 (tri)
-      mPatch2D.get_element_vertex_indices(1, vtx_ind, err); CPPUNIT_ASSERT(!err.errorOn);
+      mPatch2D.get_element_vertex_indices(1, vtx_ind, err); CPPUNIT_ASSERT(!err);
       res.push_back(1); res.push_back(2); res.push_back(3);
       CPPUNIT_ASSERT( vtx_ind==res );
 
       // test we get the right vertices for element 2 (quad)
       vtx_ind.clear(); res.clear();
-      mPatch2D.get_element_vertex_indices(2, vtx_ind, err); CPPUNIT_ASSERT(!err.errorOn);
+      mPatch2D.get_element_vertex_indices(2, vtx_ind, err); CPPUNIT_ASSERT(!err);
       res.push_back(3); res.push_back(2); res.push_back(4); res.push_back(5);
       CPPUNIT_ASSERT( vtx_ind==res );
    }
 
-#undef __FUNC__
-#define __FUNC__ "PatchDataTest::test_get_vertex_element_indices" 
    void test_get_vertex_element_indices()
    {
      /*  1___3___5
          |\1|   |
          |0\| 2 |
          0---2---4   */
-     MsqError err;
+     MsqPrintError err(cout);
      
      std::vector<size_t> elem_ind;
      std::vector<size_t> res;
@@ -180,25 +174,23 @@ public:
      mPatch2D.generate_vertex_to_element_data();
      
      // test we get the elements contiguous to vertex 3
-     mPatch2D.get_vertex_element_indices(3, elem_ind,err); CPPUNIT_ASSERT(!err.errorOn);
+     mPatch2D.get_vertex_element_indices(3, elem_ind,err); CPPUNIT_ASSERT(!err);
      res.push_back(1); res.push_back(2);
      CPPUNIT_ASSERT(res==elem_ind);
      
      // test we get the elements contiguous to vertex 2
      elem_ind.clear(); res.clear();
-     mPatch2D.get_vertex_element_indices(2, elem_ind,err); CPPUNIT_ASSERT(!err.errorOn);
+     mPatch2D.get_vertex_element_indices(2, elem_ind,err); CPPUNIT_ASSERT(!err);
      res.push_back(0); res.push_back(1); res.push_back(2);
      CPPUNIT_ASSERT(res==elem_ind);
    }
 
-#undef __FUNC__
-#define __FUNC__ "PatchDataTest::test_get_element_vertex_coordinates" 
    void test_get_element_vertex_coordinates()
    {
-      MsqError err;
+      MsqPrintError err(cout);
 
       std::vector< Vector3D > coords;
-      mPatch2D.get_element_vertex_coordinates(1, coords,err); CPPUNIT_ASSERT(!err.errorOn);
+      mPatch2D.get_element_vertex_coordinates(1, coords,err); CPPUNIT_ASSERT(!err);
       
       CPPUNIT_ASSERT( coords[0]==vtx_0_1 );
       CPPUNIT_ASSERT( coords[1]==vtx_1_0 );
@@ -208,22 +200,20 @@ public:
    /* This tests the move_vertices() function as well as the
       PatchDataCoordsMemento functionality
       */
-#undef __FUNC__
-#define __FUNC__ "PatchDataTest::test_move_vertices" 
    void test_move_free_vertices_constrained()
    {
-      MsqError err;
+      MsqPrintError err(cout);
 
       // gets a memento of the patch coordinates.
       PatchDataVerticesMemento* coords_mem = mPatch2D.create_vertices_memento(err);
-      CPPUNIT_ASSERT(!err.errorOn);
+      CPPUNIT_ASSERT(!err);
       
       // Move the two first vertices in direction dk by step size s;
       Vector3D dk[6];
       dk[0].set(-1,-2,0);
       dk[1].set(-1, 2,0);
       double s = 0.3;
-      mPatch2D.move_free_vertices_constrained(dk, 6, s, err); CPPUNIT_ASSERT(!err.errorOn);
+      mPatch2D.move_free_vertices_constrained(dk, 6, s, err); CPPUNIT_ASSERT(!err);
 
       // gets the new coordinates and  checks the vertices were displaced as expected.
       std::vector< Vector3D > coords;
@@ -234,7 +224,7 @@ public:
       CPPUNIT_ASSERT(coords[2] == new_vtx_0_1);
 
       // restore the PatchData to previous coords.
-      mPatch2D.set_to_vertices_memento(coords_mem, err); CPPUNIT_ASSERT(!err.errorOn);
+      mPatch2D.set_to_vertices_memento(coords_mem, err); CPPUNIT_ASSERT(!err);
 
       // gets the new coordinates and  checks the vertices are back to original.
       coords.clear();
@@ -245,21 +235,19 @@ public:
       delete coords_mem;
    }
 
-#undef __FUNC__
-#define __FUNC__ "PatchDataTest::test_max_movement_function" 
    void test_movement_function()
    {
-      MsqError err;
+      MsqPrintError err(cout);
       // gets a memento of the patch coordinates.
       PatchDataVerticesMemento* coords_mem = mPatch2D.create_vertices_memento(err);
-      CPPUNIT_ASSERT(!err.errorOn);
+      CPPUNIT_ASSERT(!err);
       
       // Move the two first vertices in direction dk by step size s;
       Vector3D dk[6];
       dk[0].set(0,-2,0);
       dk[1].set(-1,0,0);
       double s = 1;
-      mPatch2D.move_free_vertices_constrained(dk, 6, 1, err); CPPUNIT_ASSERT(!err.errorOn);
+      mPatch2D.move_free_vertices_constrained(dk, 6, 1, err); CPPUNIT_ASSERT(!err);
       // gets the new coordinates and  checks the vertices were displaced as expected.
       std::vector< Vector3D > coords;
       mPatch2D.get_element_vertex_coordinates(0, coords,err);
@@ -270,7 +258,7 @@ public:
       double m_dist=mPatch2D.get_max_vertex_movement_squared(coords_mem,err);
       CPPUNIT_ASSERT(m_dist==4.0);
       // restore the PatchData to previous coords.
-      mPatch2D.set_to_vertices_memento(coords_mem, err); CPPUNIT_ASSERT(!err.errorOn);
+      mPatch2D.set_to_vertices_memento(coords_mem, err); CPPUNIT_ASSERT(!err);
       // gets the new coordinates and  checks the vertices are back to original.
       coords.clear();
       mPatch2D.get_element_vertex_coordinates(0, coords,err);
@@ -285,79 +273,73 @@ public:
   equals 0 the elements must share a vertex; if 'n' equals 1 the
   elements must share an edge; and if 'n' equals 2 the elements
   must share a face.*/
-#undef __FUNC__
-#define __FUNC__ "PatchDataTest::test_get_adj_elems_2d" 
    void test_get_adj_elems_2d()
    {
-     MsqError err;
+     MsqPrintError err(cout);
      std::vector<size_t> elems_0;
        //find elements sharing an edge with oth elem (should be 1)
      mPatch2D.get_adjacent_entities_via_n_dim(1, 0, elems_0, err);
-     CPPUNIT_ASSERT(!err.errorOn);
+     CPPUNIT_ASSERT(!err);
      CPPUNIT_ASSERT(elems_0.back() == 1);
      std::vector<size_t> elems_1;
        //find elements sharing an edge with 1st elem (should be 0 and 2)
      mPatch2D.get_adjacent_entities_via_n_dim(1, 1, elems_1, err);
-     CPPUNIT_ASSERT(!err.errorOn);
+     CPPUNIT_ASSERT(!err);
      CPPUNIT_ASSERT(elems_1.size() == 2);
      std::vector<size_t> elems_2;
        //find elements sharing an vert with 0th elem (should be 1 and 2).
      mPatch2D.get_adjacent_entities_via_n_dim(0, 0, elems_2, err);
-     CPPUNIT_ASSERT(!err.errorOn);
+     CPPUNIT_ASSERT(!err);
      CPPUNIT_ASSERT(elems_2.size() == 2);
      std::vector<size_t> elems_3;
      //find elements sharing an face with 0th elem (should be empty).
      mPatch2D.get_adjacent_entities_via_n_dim(2, 0, elems_3, err);
-     CPPUNIT_ASSERT(!err.errorOn);
+     CPPUNIT_ASSERT(!err);
      CPPUNIT_ASSERT(elems_3.size() == 0);
    }
 
   
-#undef __FUNC__
-#define __FUNC__ "PatchDataTest::test_get_minmax_element_area" 
    void test_get_minmax_element_area()
    {
-     MsqError err;
+     MsqPrintError err(cout);
      double min, max;
-     mPatch2D.get_minmax_element_unsigned_area(min, max, err); CPPUNIT_ASSERT(!err.errorOn);
+     mPatch2D.get_minmax_element_unsigned_area(min, max, err); CPPUNIT_ASSERT(!err);
 
      CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.5, min, 0.0001 );
      CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, max, 0.0001 );
    }        
      
-#undef __FUNC__
-#define __FUNC__ "PatchDataTest::test_barrier_function" 
    void test_get_barrier_delta()
    {
-     MsqError err;
+     MsqPrintError err(cout);
      
      PatchData pd1;
-     create_six_quads_patch_with_domain(pd1, err); CPPUNIT_ASSERT(!err.errorOn);
+     create_six_quads_patch_with_domain(pd1, err); CPPUNIT_ASSERT(!err);
      pd1.clear_computed_info();
-     double b = pd1.get_barrier_delta(err); CPPUNIT_ASSERT(!err.errorOn);
+     double b = pd1.get_barrier_delta(err); CPPUNIT_ASSERT(!err);
 //     cout << "b : " <<b<<endl;     
      CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, b, 0.00001 );
      destroy_patch_with_domain(pd1);
 
      PatchData pd2;
-     create_six_quads_patch_inverted_with_domain(pd2, err); CPPUNIT_ASSERT(!err.errorOn);
+     create_six_quads_patch_inverted_with_domain(pd2, err); CPPUNIT_ASSERT(!err);
      pd2.clear_computed_info();
-     b = pd2.get_barrier_delta(err); CPPUNIT_ASSERT(!err.errorOn);
+     b = pd2.get_barrier_delta(err); CPPUNIT_ASSERT(!err);
 //     cout << "b : " <<b<<endl;     
      CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.003, b, 0.00001 );
      destroy_patch_with_domain(pd2);
 
      PatchData pd3;
-     create_twelve_hex_patch(pd3, err); CPPUNIT_ASSERT(!err.errorOn);
+     create_twelve_hex_patch(pd3, err); CPPUNIT_ASSERT(!err);
      pd3.clear_computed_info();
-     b = pd3.get_barrier_delta(err); CPPUNIT_ASSERT(!err.errorOn);
+     b = pd3.get_barrier_delta(err); CPPUNIT_ASSERT(!err);
 //     cout << "b : " <<b<<endl;     
      CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, b, 0.00001 );
 
      PatchData pd4;
-     create_twelve_hex_patch_inverted(pd4, err); CPPUNIT_ASSERT(!err.errorOn);
+     create_twelve_hex_patch_inverted(pd4, err); CPPUNIT_ASSERT(!err);
      pd4.clear_computed_info();
-     b = pd4.get_barrier_delta(err); CPPUNIT_ASSERT(!err.errorOn);
+     b = pd4.get_barrier_delta(err); CPPUNIT_ASSERT(!err);
 //     cout << "b : " <<b<<endl;     
      CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0025, b, 0.00001 );
    } 

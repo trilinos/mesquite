@@ -42,13 +42,15 @@ describe main.cpp here
 // DESCRIP-END.
 //
 
-#ifdef USE_STD_INCLUDES
+#ifndef MSQ_USE_OLD_IO_HEADERS
 #include <iostream>
+using std::cout;
+using std::endl;
 #else
 #include <iostream.h>
 #endif
 
-#ifdef USE_C_PREFIX_INCLUDES
+#ifdef MSQ_USE_OLD_C_HEADERS
 #include <cstdlib>
 #else
 #include <stdlib.h>
@@ -58,7 +60,7 @@ describe main.cpp here
 #include "Mesquite.hpp"
 #include "MeshImpl.hpp"
 //#include "MeshMunson.hpp"
-#include "MesquiteError.hpp"
+#include "MsqError.hpp"
 #include "InstructionQueue.hpp"
 #include "MeshSet.hpp"
 #include "TerminationCriterion.hpp"
@@ -73,14 +75,8 @@ describe main.cpp here
 #include "LPtoPTemplate.hpp"
 #include "FeasibleNewton.hpp"
 #include "ConjugateGradient.hpp"
-#include "MsqMessage.hpp"
 using namespace Mesquite;
 
-using std::cout;
-using std::endl;
-
-#undef __FUNC__
-#define __FUNC__ "main"
 int main(int argc, char* argv[])
 {
   Mesquite::MsqError err;
@@ -102,12 +98,12 @@ int main(int argc, char* argv[])
   
   Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
   mesh->read_vtk(file_name, err);
-  if (err.errorOn) return 1;
+  if (err) return 1;
   
   // initialises a MeshSet object
   MeshSet mesh_set1;
   mesh_set1.add_mesh(mesh, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
 
   // creates an intruction queue
   InstructionQueue queue1;
@@ -117,81 +113,85 @@ int main(int argc, char* argv[])
 //  mean_ratio.set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
 //   mean_ratio.set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
    mean_ratio.set_averaging_method(QualityMetric::LINEAR, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
 
   // creates a target calculator
 //  DefaultTargetCalculator target;
 
   Mesquite::MeshImpl *ref_mesh = new Mesquite::MeshImpl;
   ref_mesh->read_vtk("../../meshFiles/2D/VTK/tfi_horse10x4-12.vtk", err);
-  if (err.errorOn) return 1;
+  if (err) return 1;
   MeshSet ref_mesh_set;
   ref_mesh_set.add_mesh(ref_mesh, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   //  DesignOpt3TargetCalculator target(&ref_mesh_set);
   DeformingDomainGuides843 target(&ref_mesh_set);
 
   Mesquite::MeshImpl *ref_mesh2 = new Mesquite::MeshImpl;
   ref_mesh2->read_vtk("../../meshFiles/2D/VTK/tfi_horse10x4-12.vtk", err);
-  if (err.errorOn) return 1;
+  if (err) return 1;
   MeshSet ref_mesh2_set;
   ref_mesh2_set.add_mesh(ref_mesh2, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   // DesignOpt3TargetCalculator assessor_target(&ref_mesh2_set);
   DeformingDomainGuides843 assessor_target(&ref_mesh2_set);
 
   // ... and builds an objective function with it
   LPtoPTemplate* obj_func = new LPtoPTemplate(&mean_ratio, 1, err);
+  if (err) return 1;
   obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
   
   // creates the steepest descentfeas newt optimization procedures
 //  ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
   FeasibleNewton* pass1 = new FeasibleNewton( obj_func );
   pass1->set_target_calculator(&target, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   pass1->set_patch_type(PatchData::GLOBAL_PATCH, err);
+  if (err) return 1;
   
   QualityAssessor stop_qa(&mean_ratio,QualityAssessor::AVERAGE);
   stop_qa.set_target_calculator(&assessor_target, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   
   // **************Set stopping criterion****************
   TerminationCriterion tc_inner;
   if (OF_value!=0) {
     tc_inner.add_criterion_type_with_double(
            TerminationCriterion::QUALITY_IMPROVEMENT_ABSOLUTE, OF_value, err);
+    if (err) return 1;
     pass1->set_inner_termination_criterion(&tc_inner);
   }
   TerminationCriterion tc_outer;
   tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
+  if (err) return 1;
   pass1->set_outer_termination_criterion(&tc_outer);
 
   // sets a culling method on the first QualityImprover
   pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
   
   queue1.add_quality_assessor(&stop_qa, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
    
   // adds 1 pass of pass1 to mesh_set1
   queue1.set_master_quality_improver(pass1, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   
   queue1.add_quality_assessor(&stop_qa, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
 
   ref_mesh_set.write_gnuplot("ref_mesh",err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
 
   mesh_set1.write_gnuplot("ori_mesh",err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   
   // launches optimization on mesh_set1
   queue1.run_instructions(mesh_set1, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   
   mesh_set1.write_gnuplot("smo_mesh", err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
 
-  Message::print_timing_diagnostics();
+  print_timing_diagnostics( cout );
   return 0;
 }

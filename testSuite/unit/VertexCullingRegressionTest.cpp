@@ -50,13 +50,12 @@ Regression testing using the vertex culling algorithms.
 #include <math.h>
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
+#include "MsqError.hpp"
 #include "Vector3D.hpp"
 #include "InstructionQueue.hpp"
 #include "MeshSet.hpp"
 #include "PatchData.hpp"
 #include "QualityAssessor.hpp"
-#include "MsqMessage.hpp"
 
 #include "EdgeLengthQualityMetric.hpp"
 #include "ConditionNumberQualityMetric.hpp"
@@ -64,6 +63,16 @@ Regression testing using the vertex culling algorithms.
 #include "PlanarDomain.hpp"
 #include "TerminationCriterion.hpp"
 #include "MeshImpl.hpp"
+
+#ifdef MSQ_USE_OLD_IO_HEADERS
+#include <iostream.h>
+#else 
+#include <iostream>
+using std::cout;
+using std::endl;
+#endif
+
+
 using namespace Mesquite;
 
 class VertexCullingRegressionTest : public CppUnit::TestFixture
@@ -93,14 +102,14 @@ public:
   void test_laplacian_smoothing_with_cull()
     {
         /* Read a VTK Mesh file */
-      MsqError err;
+      MsqPrintError err(cout);
       Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
       mesh->read_vtk("../../meshFiles/2D/VTK/square_quad_10_rand.vtk", err);
         //Make sure no errors
-      CPPUNIT_ASSERT(!err.errorOn);
+      CPPUNIT_ASSERT(!err);
         // initialises a MeshSet object
       MeshSet mesh_set1;
-      mesh_set1.add_mesh(mesh, err); CPPUNIT_ASSERT(!err.errorOn);
+      mesh_set1.add_mesh(mesh, err); CPPUNIT_ASSERT(!err);
       
         // creates an intruction queue
       InstructionQueue queue1;
@@ -108,29 +117,31 @@ public:
         // creates a mean ratio quality metric ...
       ShapeQualityMetric* shape_metric = new ConditionNumberQualityMetric;
       SmoothnessQualityMetric* lapl_met = new EdgeLengthQualityMetric;
-      lapl_met->set_averaging_method(QualityMetric::RMS,err);
+      lapl_met->set_averaging_method(QualityMetric::RMS,err); CPPUNIT_ASSERT(!err);
       
         // creates the laplacian smoother  procedures
-      LaplacianSmoother* lapl1 = new LaplacianSmoother(err);
-      LaplacianSmoother* lapl2 = new LaplacianSmoother(err);
-      QualityAssessor stop_qa=QualityAssessor(shape_metric,QualityAssessor::MAXIMUM);
-      stop_qa.add_quality_assessment(lapl_met,QualityAssessor::ALL_MEASURES,err);
+      LaplacianSmoother* lapl1 = new LaplacianSmoother(err); CPPUNIT_ASSERT(!err);
+      LaplacianSmoother* lapl2 = new LaplacianSmoother(err); CPPUNIT_ASSERT(!err);
+      QualityAssessor stop_qa=QualityAssessor(shape_metric,QualityAssessor::MAXIMUM); CPPUNIT_ASSERT(!err);
+      stop_qa.add_quality_assessment(lapl_met,QualityAssessor::ALL_MEASURES,err); CPPUNIT_ASSERT(!err);
       
         //**************Set termination criterion****************
       TerminationCriterion sc2;
       sc2.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1000,err);
         //Make sure no errors
-      CPPUNIT_ASSERT(!err.errorOn);
+      CPPUNIT_ASSERT(!err);
       sc2.add_criterion_type_with_double(TerminationCriterion::SUCCESSIVE_IMPROVEMENTS_ABSOLUTE,0.0,err);
         //Make sure no errors
-      CPPUNIT_ASSERT(!err.errorOn);
+      CPPUNIT_ASSERT(!err);
         //set a criterion with a culling method for the inner criterion
       TerminationCriterion sc_cull;
       sc_cull.set_culling_type(TerminationCriterion::VERTEX_MOVEMENT_ABSOLUTE,.1,err);
+      CPPUNIT_ASSERT(!err);
       TerminationCriterion sc_cull_2;
       sc_cull_2.set_culling_type(TerminationCriterion::VERTEX_MOVEMENT_ABSOLUTE,.000001,err);
+      CPPUNIT_ASSERT(!err);
         //Make sure no errors
-      CPPUNIT_ASSERT(!err.errorOn);
+      CPPUNIT_ASSERT(!err);
       lapl1->set_outer_termination_criterion(&sc2);
       lapl2->set_outer_termination_criterion(&sc2);
       lapl1->set_inner_termination_criterion(&sc_cull);
@@ -141,21 +152,21 @@ public:
         // adds 1 pass of pass1 to mesh_set1
       queue1.add_quality_assessor(&stop_qa,err);
        //Make sure no errors
-      CPPUNIT_ASSERT(!err.errorOn);
+      CPPUNIT_ASSERT(!err);
       queue1.add_preconditioner(lapl1,err);
         //Make sure no errors
-      CPPUNIT_ASSERT(!err.errorOn);
+      CPPUNIT_ASSERT(!err);
       queue1.set_master_quality_improver(lapl2, err);
        //Make sure no errors
-      CPPUNIT_ASSERT(!err.errorOn);
+      CPPUNIT_ASSERT(!err);
       queue1.add_quality_assessor(&stop_qa,err);
         //Make sure no errors
-      CPPUNIT_ASSERT(!err.errorOn);
+      CPPUNIT_ASSERT(!err);
       queue1.run_instructions(mesh_set1, err);
-      CPPUNIT_ASSERT(!err.errorOn);
+      CPPUNIT_ASSERT(!err);
       
         //Make sure no errors
-      CPPUNIT_ASSERT(!err.errorOn);
+      CPPUNIT_ASSERT(!err);
       delete shape_metric;
       delete lapl1;
       delete lapl2;

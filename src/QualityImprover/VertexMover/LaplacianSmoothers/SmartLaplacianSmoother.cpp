@@ -38,24 +38,30 @@
 
 #include "SmartLaplacianSmoother.hpp"
 #include "LaplacianSmoother.hpp"
-#include "MsqMessage.hpp"
+#include "MsqDebug.hpp"
 #include "LInfTemplate.hpp"
 #include "MeanRatioQualityMetric.hpp"
 
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#  include <vector.h>
+#else
+#  include <vector>
+   using std::vector;
+#endif
 
-using namespace Mesquite;
+
+namespace Mesquite {
 
 
-#undef __FUNC__
-#define __FUNC__ "SmartLaplacianSmoother::SmartLaplacianSmoother" 
 SmartLaplacianSmoother::SmartLaplacianSmoother(ObjectiveFunction* obj_func,
                                                MsqError &err) 
+  : edgeQM(0), defaultObjFunc(0)
 {
   this->set_name("SmartLaplacianSmoother");
   
-  set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err,1,1);MSQ_CHKERR(err);
+  set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err,1,1);MSQ_ERRRTN(err);
   if(obj_func==NULL){
-    edgeQM = new MeanRatioQualityMetric;
+    edgeQM = new MeanRatioQualityMetric(err);  MSQ_ERRRTN(err);
     defaultObjFunc = new LInfTemplate(edgeQM);
     objFunc=defaultObjFunc;
   }
@@ -65,34 +71,24 @@ SmartLaplacianSmoother::SmartLaplacianSmoother(ObjectiveFunction* obj_func,
   }
   
 }  
-#undef __FUNC__
-#define __FUNC__ "SmartLaplacianSmoother::~SmartLaplacianSmoother" 
+
 SmartLaplacianSmoother::~SmartLaplacianSmoother() 
 {
-  if(defaultObjFunc!=NULL){
-    delete edgeQM;
-    delete defaultObjFunc;
-  }
-  
+  delete edgeQM;
+  delete defaultObjFunc;
 }    
   
-#undef __FUNC__
-#define __FUNC__ "SmartLaplacianSmoother::initialize" 
 void SmartLaplacianSmoother::initialize(PatchData& /*pd*/, MsqError& /*err*/)
 {
  
 }
 
-#undef __FUNC__
-#define __FUNC__ "SmartLaplacianSmoother::initialize_mesh_iteration" 
 void SmartLaplacianSmoother::initialize_mesh_iteration(PatchData &/*pd*/,
                                                   MsqError &/*err*/)
 {
   //  cout << "- Executing SmartLaplacianSmoother::iteration_complete()\n";
 }
 
-#undef __FUNC__
-#define __FUNC__ "SmartLaplacianSmoother::optimize_vertex_position"
 /*! \todo Michael:  optimize_vertex_position is probably not implemented
   in an optimal way.  We used to use all of the vertices in
   the patch as 'adjacent' vertices.  Now we call get_adjacent_vertex_indices.
@@ -104,14 +100,14 @@ void SmartLaplacianSmoother::optimize_vertex_positions(PatchData &pd,
     //default the laplacian smoother to 3 even for 2-d elements.
     //int dim = get_mesh_set()->space_dim();
   size_t dim = 3;
-  MsqVertex* verts=pd.get_vertex_array(err);
+  MsqVertex* verts=pd.get_vertex_array(err);  MSQ_ERRRTN(err);
     //variables for the function values.
   double orig_val=0;
   double mod_val=0;
     //compute the original function value and check validity
-  bool valid_flag = objFunc->evaluate(pd,orig_val,err);
+  bool valid_flag = objFunc->evaluate(pd,orig_val,err);  MSQ_ERRRTN(err);
   // does the Laplacian smoothing
-  MsqFreeVertexIndexIterator free_iter(&pd, err);
+  MsqFreeVertexIndexIterator free_iter(&pd, err);  MSQ_ERRRTN(err);
   free_iter.reset();
   free_iter.next();
     //m is the free vertex.
@@ -119,20 +115,20 @@ void SmartLaplacianSmoother::optimize_vertex_positions(PatchData &pd,
   vector<size_t> vert_indices;
   vert_indices.reserve(25);
     //get vertices adjacent to vertex m
-  pd.get_adjacent_vertex_indices(m,vert_indices,err);
+  pd.get_adjacent_vertex_indices(m,vert_indices,err);  MSQ_ERRRTN(err);
     //move vertex m
     //save the original position of the free vertex
   Vector3D orig_position(verts[m]);
     //smooth the patch
   centroid_smooth_mesh(pd, vert_indices.size(), vert_indices,
-                       m, dim, err); MSQ_CHKERR(err);
+                       m, dim, err); MSQ_ERRRTN(err);
     //snap vertex m to domain
-  pd.snap_vertex_to_domain(m,err);
+  pd.snap_vertex_to_domain(m,err);  MSQ_ERRRTN(err);
     //if the original function val was invalid, then we allow the move
     //But, if it wasn valid, we need to decide.
   if(valid_flag){
       //compute the new value
-    valid_flag = objFunc->evaluate(pd,mod_val,err);
+    valid_flag = objFunc->evaluate(pd,mod_val,err);  MSQ_ERRRTN(err);
       //if the new value is worse the original OR if the new value is not
       //valid (we already know the original value was valid by above) then
       //we don't allow the move.
@@ -146,19 +142,16 @@ void SmartLaplacianSmoother::optimize_vertex_positions(PatchData &pd,
   
 }
   
-#undef __FUNC__
-#define __FUNC__ "SmartLaplacianSmoother::terminate_mesh_iteration" 
 void SmartLaplacianSmoother::terminate_mesh_iteration(PatchData &/*pd*/,
                                                  MsqError &/*err*/)
 {
   //  cout << "- Executing SmartLaplacianSmoother::iteration_complete()\n";
 }
   
-#undef __FUNC__
-#define __FUNC__ "SmartLaplacianSmoother::cleanup" 
 void SmartLaplacianSmoother::cleanup()
 {
   //  cout << "- Executing SmartLaplacianSmoother::iteration_end()\n";
 }
   
 
+}

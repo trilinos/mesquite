@@ -35,9 +35,7 @@
 #define MSQVERTEX_HPP
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
 #include "Vector3D.hpp"
-#include "MsqTag.hpp"
 
 namespace Mesquite
 {

@@ -41,15 +41,23 @@
 
 */
 
-#ifdef USE_C_PREFIX_INCLUDES
-#include <cmath>
-#else
-#include <math.h>
-#endif
 #include "MsqHessian.hpp"
 #include "MsqTimer.hpp"
 
-using namespace Mesquite;
+
+#ifdef MSQ_USE_OLD_C_HEADERS
+#  include <math.h>
+#else
+#  include <cmath>
+#endif
+
+#ifdef MSQ_USE_OLD_IO_HEADERS
+#  include <iostream.h>
+#else
+#  include <iostream>
+#endif
+
+namespace Mesquite {
 
 MsqHessian::MsqHessian() :
   origin_pd(0), mEntries(0), mRowStart(0), mColIndex(0), 
@@ -77,14 +85,12 @@ MsqHessian::~MsqHessian()
 }
 
   
-#undef __FUNC__
-#define __FUNC__ "MsqHessian::initialize"
 /*! \brief creates a sparse structure for a Hessian, based on the
   connectivity information contained in the PatchData.
   Only the upper triangular part of the Hessian is stored. */
 void MsqHessian::initialize(PatchData &pd, MsqError &err)
 {
-  FUNCTION_TIMER_START(__FUNC__);
+  FunctionTimer ft("MsqHession::initialize");
   delete[] mEntries;
   delete[] mRowStart;
   delete[] mColIndex;
@@ -98,7 +104,7 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
   patchElemArray = pd.get_element_array(err); MSQ_CHKERR(err);
 
   if (num_vertices == 0) {
-    err.set_msg("No vertices in PatchData");
+    MSQ_SETERR( err )( "No vertices in PatchData", MsqError::INVALID_ARG);
     return;
   }
 
@@ -327,15 +333,12 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
 
   origin_pd = &pd;
 
-  FUNCTION_TIMER_END();
   return;
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "MsqHessian::get_diagonal_blocks"
 /*! \param diag is an STL vector of size MsqHessian::size() . */
-void MsqHessian::get_diagonal_blocks(vector<Matrix3D> &diag,
+void MsqHessian::get_diagonal_blocks(msq_std::vector<Matrix3D> &diag,
                                      MsqError &/*err*/)
 {
   // make sure we have enough memory, so that no reallocation is needed later.
@@ -349,8 +352,6 @@ void MsqHessian::get_diagonal_blocks(vector<Matrix3D> &diag,
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "MsqHessian::compute_preconditioner"
 /*! compute a preconditioner used in the preconditioned conjugate gradient
   algebraic solver. In fact, this computes \f$ M^{-1} \f$ .
 */
@@ -431,8 +432,6 @@ void MsqHessian::compute_preconditioner(MsqError &/*err*/)
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "MsqHessian::cg_solver"
 /*! uses the preconditionned conjugate gradient algebraic solver
   to find d in \f$ H * d = -g \f$ .
   \param x : the solution, usually the descent direction d.
@@ -440,7 +439,7 @@ void MsqHessian::compute_preconditioner(MsqError &/*err*/)
 */
 void MsqHessian::cg_solver(Vector3D x[], Vector3D b[], MsqError &err)
 {
-  FUNCTION_TIMER_START(__FUNC__);
+  FunctionTimer ft("MsqHessian::cg_solver");
   
   // reallocates arrays if size of the Hessian has changed too much.
   if (mSize > cgArraySizes || mSize < cgArraySizes/10 ) {
@@ -500,6 +499,24 @@ void MsqHessian::cg_solver(Vector3D x[], Vector3D b[], MsqError &err)
     beta = rzm1 / rzm2;
     for (i=0; i<mSize; ++i)  mP[i] = mZ[i] + beta*mP[i]; // p_k = z_{k-1} + Beta_k * p_{k-1}
   }
-
-  FUNCTION_TIMER_END();
 }
+
+/* ------------------ I/O ----------------- */
+
+//! Prints out the MsqHessian blocks.
+msq_stdio::ostream& operator<<(msq_stdio::ostream &s, const MsqHessian &h)
+{
+  size_t i,j;
+  s << "MsqHessian of size: " << h.mSize <<"x"<< h.mSize << "\n";
+  for (i=0; i<h.mSize; ++i) {
+    s << " ROW " << i << " ------------------------\n";
+    for (j=h.mRowStart[i]; j<h.mRowStart[i+1]; ++j) {
+      s << "   column " << h.mColIndex[j] << " ----\n";
+      s << h.mEntries[j]; 
+    } 
+  }
+  return s;
+}
+
+} // namespace Mesquite
+

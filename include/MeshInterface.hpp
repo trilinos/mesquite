@@ -39,12 +39,20 @@
 #define MESQUITE_INTERFACE_HPP
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
-#include "MsqVertex.hpp"
+#ifdef MSQ_USE_OLD_C_HEADERS
+#  include <stddef.h>
+#else
+#  include <cstddef>
+#endif
+
+#include <string>
 
 namespace Mesquite
 {
   class EntityIterator;
+  class MsqError;
+  class MsqVertex;
+  class Vector3D;
   typedef EntityIterator VertexIterator;
   typedef EntityIterator ElementIterator;
 
@@ -254,16 +262,14 @@ namespace Mesquite
     
 //***************  Tags  ***********
 
-    virtual void element_tag_create(const string tag_name,
+    virtual void element_tag_create(const msq_std::string tag_name,
                                           int tag_size,
                                           TagHandle& tag_handle,
-                                          MsqError &err)
-    { err.set_error_code(MSQ_NO_IMPL); }
+                                          MsqError &err) = 0;
     
       //! Returns the tag handle corresponding to the string.
       //! Sets an error if the string is not recognised.
-    virtual void* tag_get_handle(const string tag_name, MsqError &err)
-    { err.set_error_code(MSQ_NO_IMPL); return 0; }
+    virtual void* tag_get_handle(const msq_std::string tag_name, MsqError &err) = 0;
       
     
       //! Sets the Tag data pointers for an array of entities.
@@ -274,8 +280,7 @@ namespace Mesquite
                                        const TagHandle tag_handle,
                                        TagDataPt const tag_data_array,
                                        const int& tag_size,
-                                       MsqError &err)
-    { err.set_error_code(MSQ_NO_IMPL); }
+                                       MsqError &err) = 0;
       
       //! Gets the Tag data for an array of entities.
       //! The implementation handles the pointers to the tag data, not the memory pointed to.
@@ -285,8 +290,7 @@ namespace Mesquite
                                        const TagHandle tag_handle,
                                        TagDataPt &tag_data_array,
                                        int& tag_size,
-                                       MsqError &err)
-    { err.set_error_code(MSQ_NO_IMPL); }
+                                       MsqError &err) = 0;
 
     
     

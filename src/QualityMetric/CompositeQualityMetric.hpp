@@ -38,7 +38,6 @@
 #define CompositeQualityMetric_hpp
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
 #include "QualityMetric.hpp"
 
 namespace Mesquite

@@ -51,7 +51,7 @@ public:
   void setUp()
   {
 #ifdef MSQ_USING_EXODUS
-    Mesquite::MsqError err;
+    Mesquite::MsqPrintError err(cout);
     
       // Read a Exodus Mesh file -- 10 triangles, 2 free vertices
     mMesh = new Mesquite::MeshImpl;
@@ -71,11 +71,11 @@ public:
   void test_elements()
   {
 #ifdef MSQ_USING_EXODUS
-    Mesquite::MsqError err;
+    Mesquite::MsqPrintError err(cout);
     
       // Add mesh to a MeshSet.
     Mesquite::MeshSet mesh_set;
-    mesh_set.add_mesh(mMesh, err); CPPUNIT_ASSERT(!err.errorOn);
+    mesh_set.add_mesh(mMesh, err); CPPUNIT_ASSERT(!err);
 
       // Get the number of vertices
     std::cout << "Number of vertices: "

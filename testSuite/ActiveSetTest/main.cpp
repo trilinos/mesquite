@@ -43,13 +43,15 @@ describe main.cpp here
 // DESCRIP-END.
 //
 
-#ifdef USE_STD_INCLUDES
+#ifndef MSQ_USE_OLD_STD_HEADERS
 #include <iostream>
+using std::cout;
+using std::endl;
 #else
 #include <iostream.h>
 #endif
 
-#ifdef USE_C_PREFIX_INCLUDES
+#ifndef MSQ_USE_OLD_C_HEADERS
 #include <cstdlib>
 #else
 #include <stdlib.h>
@@ -58,7 +60,7 @@ describe main.cpp here
 
 #include "Mesquite.hpp"
 #include "MeshImpl.hpp"
-#include "MesquiteError.hpp"
+#include "MsqError.hpp"
 #include "Vector3D.hpp"
 #include "InstructionQueue.hpp"
 #include "MeshSet.hpp"
@@ -86,15 +88,16 @@ int main()
 //      "../../meshFiles/3D/VTK/cube_tet_2.vtk";
      "../../meshFiles/3D/VTK/tire.vtk";
   printf("Loading mesh set 1\n");
-  MsqError err;
-  Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
+  MsqPrintError err( cout );
+  Mesquite::MeshImpl* mesh = new Mesquite::MeshImpl;
   mesh->read_vtk(file_name, err);
+  if (err) return 1;
   
     // initialises a MeshSet object
   MeshSet mesh_set1;
     //  printf("Creating mesh set 1\n");
   mesh_set1.add_mesh(mesh, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   
     // Creates an intruction queue
     //  printf("Creating instruction queue\n");
@@ -113,6 +116,7 @@ int main()
   NonSmoothSteepestDescent minmax_method( &obj_func_min );
    
   minmax_method.set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err, 1);
+  if (err) return 1;
 
   // Set a culling method on the first QualityImprover
   minmax_method.add_culling_method(PatchData::NO_BOUNDARY_VTX);
@@ -120,41 +124,42 @@ int main()
   // Set a termination criterion
   TerminationCriterion tc2;
   tc2.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
+  if (err) return 1;
   minmax_method.set_outer_termination_criterion(&tc2);
   // Set up the quality assessor
   //  printf("Setting up the quality assessor\n");
   QualityAssessor quality_assessor=QualityAssessor(cond_no,QualityAssessor::MAXIMUM);
   quality_assessor.add_quality_assessment(cond_no,QualityAssessor::MINIMUM, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   quality_assessor.add_quality_assessment(cond_no,QualityAssessor::AVERAGE, err);
-  if (err.errorOn) return 1;
+  if (err) return 1;
 
   // assess the quality of the initial mesh
   queue1.add_quality_assessor(&quality_assessor, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
 
   // Set the max min method to be the master quality improver
   queue1.set_master_quality_improver(&minmax_method, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
 
   // assess the quality of the final mesh
   queue1.add_quality_assessor(&quality_assessor, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
 
   // write out the original mesh
   //  printf("Writing out the original mesh\n");
   mesh->write_vtk("original_mesh", err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
 
   // launches optimization on mesh_set1
   //  printf("Running the instruction queue\n");
   queue1.run_instructions(mesh_set1, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
 
   // write out the smoothed mesh
   //  printf("Writing out the final mesh\n");
   mesh->write_vtk("smoothed_mesh", err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   
   delete cond_no;
   return 0;

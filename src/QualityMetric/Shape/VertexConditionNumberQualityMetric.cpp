@@ -31,18 +31,20 @@
   \author Michael Brewer
   \date   2002-06-9
 */
-#include <vector>
 #include "VertexConditionNumberQualityMetric.hpp"
-#include <math.h>
 #include "Vector3D.hpp"
 #include "ShapeQualityMetric.hpp"
 #include "QualityMetric.hpp"
 
-using namespace Mesquite;
-MSQ_USE(vector);
+#include <math.h>
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#  include <vector.h>
+#else
+#  include <vector>
+   using std::vector;
+#endif
 
-#undef __FUNC__
-#define __FUNC__ "VertexConditionNumberQualityMetric::VertexConditionNumberQualityMetric"
+using namespace Mesquite;
 
 VertexConditionNumberQualityMetric::VertexConditionNumberQualityMetric()
 {
@@ -65,8 +67,8 @@ bool VertexConditionNumberQualityMetric::evaluate_vertex(PatchData &pd,
     //convert the MsqVertex pointer into an index
   size_t this_vert = pd.get_vertex_index(vert);
     //get the vertex to element array and the offset array
-  const size_t* elem_offset = pd.get_vertex_to_elem_offset(err);
-  const size_t* v_to_e_array = pd.get_vertex_to_elem_array(err);
+  const size_t* elem_offset = pd.get_vertex_to_elem_offset(err);  MSQ_ERRZERO(err);
+  const size_t* v_to_e_array = pd.get_vertex_to_elem_array(err);  MSQ_ERRZERO(err);
     //find the offset for this vertex
   size_t this_offset = elem_offset[this_vert];
     //get the number of elements attached to this vertex (given by the
@@ -94,7 +96,7 @@ bool VertexConditionNumberQualityMetric::evaluate_vertex(PatchData &pd,
       //get the vertices connected to this vertex for this element
     elems[v_to_e_array[this_offset+i+1]].get_connected_vertices(this_vert,
                                                                 other_vertices,
-                                                                err);
+                                                                err);  MSQ_ERRZERO(err);
       //switch over the element type of this element
     switch(elems[v_to_e_array[this_offset+i+1]].get_element_type()){
     
@@ -103,14 +105,14 @@ bool VertexConditionNumberQualityMetric::evaluate_vertex(PatchData &pd,
         temp_vec[2]=vertices[other_vertices[1]]-vertices[this_vert];
           //make relative to equilateral
         temp_vec[1]=((2*temp_vec[2])-temp_vec[0])*MSQ_SQRT_THREE_INV;
-        return_flag=condition_number_2d(temp_vec,this_vert,pd,met_vals[i],err);
+        return_flag=condition_number_2d(temp_vec,this_vert,pd,met_vals[i],err);  MSQ_ERRZERO(err);
         if(!return_flag)
           return return_flag;
         break;
       case QUADRILATERAL:
         temp_vec[0]=vertices[other_vertices[0]]-vertices[this_vert];
         temp_vec[1]=vertices[other_vertices[1]]-vertices[this_vert];
-        return_flag=condition_number_2d(temp_vec,this_vert,pd,met_vals[i],err);
+        return_flag=condition_number_2d(temp_vec,this_vert,pd,met_vals[i],err);  MSQ_ERRZERO(err);
         if(!return_flag)
           return return_flag;
         break;
@@ -122,7 +124,7 @@ bool VertexConditionNumberQualityMetric::evaluate_vertex(PatchData &pd,
         temp_vec[1]=((2*temp_vec[3])-temp_vec[0])/MSQ_SQRT_THREE;
         temp_vec[2]=((3*temp_vec[4])-temp_vec[0]-temp_vec[3])/
           (MSQ_SQRT_THREE*MSQ_SQRT_TWO);
-        return_flag=condition_number_3d(temp_vec,pd,met_vals[i],err);
+        return_flag=condition_number_3d(temp_vec,pd,met_vals[i],err);  MSQ_ERRZERO(err);
         if(!return_flag)
           return return_flag;
         break;
@@ -130,7 +132,7 @@ bool VertexConditionNumberQualityMetric::evaluate_vertex(PatchData &pd,
         temp_vec[0]=vertices[other_vertices[0]]-vertices[this_vert];
         temp_vec[1]=vertices[other_vertices[1]]-vertices[this_vert];
         temp_vec[2]=vertices[other_vertices[2]]-vertices[this_vert];
-        return_flag=condition_number_3d(temp_vec,pd,met_vals[i],err);
+        return_flag=condition_number_3d(temp_vec,pd,met_vals[i],err);  MSQ_ERRZERO(err);
         if(!return_flag)
           return return_flag;
         break;
@@ -141,7 +143,7 @@ bool VertexConditionNumberQualityMetric::evaluate_vertex(PatchData &pd,
     }// end switch over element type
     other_vertices.clear();
   }//end loop over elements
-  fval = average_metrics(met_vals, num_elems, err);
+  fval = average_metrics(met_vals, num_elems, err);  MSQ_ERRZERO(err);
   delete []met_vals;
   return true;
 }

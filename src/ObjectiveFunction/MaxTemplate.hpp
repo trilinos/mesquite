@@ -39,14 +39,14 @@ Header file for the Mesquite::MaxTemplate class
 #define MaxTemplate_hpp
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
 #include "ObjectiveFunction.hpp"
-#include "PatchData.hpp"
-#include <list>
 
 namespace Mesquite
 {
    class PatchData;
+   class MsqError;
+   class QualityMetric;
+   
    /*! \class MaxTemplate
     \brief Computes the maximum quality metric value.
 

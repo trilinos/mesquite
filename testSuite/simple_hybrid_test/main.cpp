@@ -43,25 +43,13 @@ describe main.cpp here
 // DESCRIP-END.
 //
 
-#ifdef USE_STD_INCLUDES
-#include <iostream>
-#else
-#include <iostream.h>
-#endif
-
-#ifdef USE_C_PREFIX_INCLUDES
-#include <cstdlib>
-#else
-#include <stdlib.h>
-#endif
-
 #include "Mesquite.hpp"
 #include "MeshImpl.hpp"
 #include "PlanarDomain.hpp"
 #include "InstructionQueue.hpp"
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
-#include "MesquiteError.hpp"
+#include "MsqError.hpp"
 #include "MeshSet.hpp"
 #include "ShapeImprovementWrapper.hpp"
 // algorythms
@@ -70,17 +58,28 @@ describe main.cpp here
 #include "LPtoPTemplate.hpp"
 #include "FeasibleNewton.hpp"
 #include "ConjugateGradient.hpp"
-#include "MsqMessage.hpp"
 
+
+#ifndef MSQ_USE_OLD_IO_HEADERS
+#include <iostream>
+using std::cout;
+using std::endl;
+#else
+#include <iostream.h>
+#endif
+
+#ifdef MSQ_USE_OLD_C_HEADERS
+#include <cstdlib>
+#else
+#include <stdlib.h>
+#endif
 
 using namespace Mesquite;
 
-#undef __FUNC__
-#define __FUNC__ "main"
 int main()
 {
   Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
-  MsqError err;
+  MsqPrintError err(cout);
     //create geometry: plane z=0, normal (0,0,1)
   Vector3D pnt(0,0,0);
   Vector3D s_norm(0,0,1);
@@ -88,18 +87,20 @@ int main()
      
     //mesh->read_vtk("../../meshFiles/2D/VTK/cube-clip-corner.vtk", err);
   mesh->read_vtk("../../meshFiles/2D/VTK/hybrid_3quad_1tri.vtk", err);
+  if (err) return 1;
     // initialises a MeshSet object
   MeshSet mesh_set1;
   mesh_set1.set_domain_constraint(&msq_geom, err);  
-  if (err.errorOn) return 1;
+  if (err) return 1;
   mesh_set1.add_mesh(mesh, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   
     // creates an intruction queue
   InstructionQueue queue1;
   
     // creates a mean ratio quality metric ...
-  ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
+  ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);
+  if (err) return 1;
     //   mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
     //   mean_ratio->set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
     //mean_ratio->set_averaging_method(QualityMetric::SUM, err);
@@ -107,21 +108,21 @@ int main()
   
     // ... and builds an objective function with it
   LPtoPTemplate obj_func(mean_ratio, 2, err);
-  if (err.errorOn) return 1;;
+  if (err) return 1;;
   obj_func.set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
   
     // creates the steepest descent, feas newt optimization procedures
     //ConjugateGradient* pass1 = new ConjugateGradient( &obj_func, err );
   FeasibleNewton pass1( &obj_func );
   pass1.set_patch_type(PatchData::GLOBAL_PATCH, err);
-  if (err.errorOn) return 1;;
+  if (err) return 1;;
   
   QualityAssessor qa=QualityAssessor(mean_ratio,QualityAssessor::ALL_MEASURES);
   
     // **************Set termination criterion****************
   TerminationCriterion tc_inner;
   tc_inner.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
-  if (err.errorOn) return 1;;
+  if (err) return 1;;
     //_inner.add_criterion_type_with_double(
     // TerminationCriterion::QUALITY_IMPROVEMENT_ABSOLUTE, OF_value, err);
     //tc_inner.add_criterion_type_with_double(
@@ -129,7 +130,7 @@ int main()
   TerminationCriterion tc_outer;
     //tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
   tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
-  if (err.errorOn) return 1;;
+  if (err) return 1;;
   
   pass1.set_inner_termination_criterion(&tc_inner);
   pass1.set_outer_termination_criterion(&tc_outer);
@@ -139,24 +140,24 @@ int main()
     //nothing to do with 'culling methods' described in TerminationCriterion.
   pass1.add_culling_method(PatchData::NO_BOUNDARY_VTX);
   queue1.add_quality_assessor(&qa,err); 
-  if (err.errorOn) return 1;;
+  if (err) return 1;
     // adds 1 pass of pass1 to mesh_set1
   queue1.set_master_quality_improver(&pass1, err);
-  if (err.errorOn) return 1;
+  if (err) return 1;
   queue1.add_quality_assessor(&qa,err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   mesh->write_vtk("original_mesh",err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   
   queue1.run_instructions(mesh_set1, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   mesh->write_vtk("smoothed_mesh",err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
     //std::cout<<"\n\nNow running the shape wrapper.\n=n";
     //ShapeImprovementWrapper wrap(100);
     //wrap.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
   delete mean_ratio;
-  Message::print_timing_diagnostics();
+  print_timing_diagnostics(cout);
   return 0;
 }
  

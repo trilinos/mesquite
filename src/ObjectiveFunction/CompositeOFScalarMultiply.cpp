@@ -33,15 +33,15 @@
   \date   2002-01-23
 */
 #include <math.h>
-#include "ObjectiveFunction.hpp"
 #include "CompositeOFScalarMultiply.hpp"
-#include "MsqMessage.hpp"
 #include "MsqTimer.hpp"
-using namespace Mesquite;
+#include "MsqError.hpp"
+#include "MsqDebug.hpp"
+#include "PatchData.hpp"
+
+namespace Mesquite {
 
 
-#undef __FUNC__
-#define __FUNC__ "CompositeOFScalarMultiply::CompositeOFScalarMultiply"
 /*!
 Sets the QualityMetric pointer to the metric associated with Obj. 
 However, if alp is less than zero, the new
@@ -60,20 +60,15 @@ CompositeOFScalarMultiply::CompositeOFScalarMultiply(double alp, ObjectiveFuncti
   else if (alp>0)
     set_negate_flag(1);
   else
-    Message::print_warning("ObjectiveFunction being scaled by zero.");
+    MSQ_DBGOUT(1) << "ObjectiveFunction being scaled by zero.";
   set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
 }
-
-#undef __FUNC__
-#define __FUNC__ "CompositeOFScalarMultiply::~CompositeOFScalarMultiply"
 
 //Michael:  need to clean up here
 CompositeOFScalarMultiply::~CompositeOFScalarMultiply(){
 
 }
 
-#undef __FUNC__
-#define __FUNC__ "CompositeOFScalarMultiply::concrete_evaluate"
 /*!Computes fval= mAlpha*objFunc->evaluate(patch,err).  Note that since Obj's
   evaluate() function is called (as opposed to its concrete_evaluate) the
   returned value has been multiplied by objFunc's negateFlag (that is,
@@ -84,7 +79,8 @@ CompositeOFScalarMultiply::~CompositeOFScalarMultiply(){
 bool CompositeOFScalarMultiply::concrete_evaluate(PatchData &patch,
                                                   double &fval, MsqError &err){
     //if invalid return false without calculating fval
-  if(!objFunc->evaluate(patch, fval, err)){
+  bool b = objFunc->evaluate(patch, fval, err);
+  if (MSQ_CHKERR(err) || !b){
     fval = 0.0;
     return false;
     
@@ -93,16 +89,12 @@ bool CompositeOFScalarMultiply::concrete_evaluate(PatchData &patch,
   return true;
 }
 
-#undef __FUNC__
-#define __FUNC__ "CompositeOFScalarMultiply::get_quality_metric_list()"
 //!Returns the QualityMetric list assossiated with objFunc.
-list<QualityMetric*> CompositeOFScalarMultiply::get_quality_metric_list(){
+msq_std::list<QualityMetric*> CompositeOFScalarMultiply::get_quality_metric_list(){
   return objFunc->get_quality_metric_list();
 }
 	
 
-#undef __FUNC__
-#define __FUNC__ "CompositeOFScalarMultiply::compute_analytical_gradient"
 /*! Analytically computes the composite objective function's gradient
   by scaling the gradient returned objFunc->compute_gradient().  If
   mAlpha is less than zero, the gradient is scaled by negatvie mAlpha
@@ -118,13 +110,14 @@ list<QualityMetric*> CompositeOFScalarMultiply::get_quality_metric_list(){
 bool CompositeOFScalarMultiply::compute_analytical_gradient(PatchData &patch,
                                                             Vector3D *const
                                                             &grad,
-							    double &OF_val,
+                                                            double &OF_val,
                                                             MsqError &err,
                                                             size_t array_size)
 {
-  FUNCTION_TIMER_START(__FUNC__);
+  FunctionTimer ft( "CompositeOFScalarMultiply::compute_analytical_gradient" );
+  
   double scale_factor=(get_negate_flag()*mAlpha);
-  bool rval=objFunc->compute_gradient(patch, grad, OF_val, err, array_size);
+  bool rval=objFunc->compute_gradient(patch, grad, OF_val, err, array_size); MSQ_ERRZERO(err);
   int num_vert=patch.num_vertices();
   int i=0;
     //If the objFunc was successful in calculating the gradient
@@ -139,6 +132,7 @@ bool CompositeOFScalarMultiply::compute_analytical_gradient(PatchData &patch,
   else{
     OF_val=0.0;
   }
-  FUNCTION_TIMER_END();
   return rval;
 }
+
+} // namespace Mesquite

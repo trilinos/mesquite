@@ -37,20 +37,18 @@
 #include <math.h>
 #include "LPtoPTemplate.hpp"
 #include "MsqFreeVertexIndexIterator.hpp"
-#include "MsqMessage.hpp"
 #include "MsqTimer.hpp"
 #include "MsqHessian.hpp"
+#include "MsqDebug.hpp"
 
 using  namespace Mesquite;  
-
-#undef __FUNC__
-#define __FUNC__ "LPtoPTemplate::LPtoPTemplate"
 
 LPtoPTemplate::LPtoPTemplate(QualityMetric *qualitymetric, short Pinput, MsqError &err){
   set_quality_metric(qualitymetric);
   pVal=Pinput;
   if(pVal<1){
-    err.set_msg("P_VALUE must be greater than 0.");
+    MSQ_SETERR(err)("P_VALUE must be greater than 0.", MsqError::INVALID_ARG);
+    return;
   }
   set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
     //set_use_local_gradient(true);
@@ -58,16 +56,11 @@ LPtoPTemplate::LPtoPTemplate(QualityMetric *qualitymetric, short Pinput, MsqErro
   dividingByN=false;
 }
 
-#undef __FUNC__
-#define __FUNC__ "LPtoPTemplate::~LPtoPTemplate"
-
 //Michael:  need to clean up here
 LPtoPTemplate::~LPtoPTemplate(){
 
 }
 
-#undef __FUNC__
-#define __FUNC__ "LPtoPTemplate::concrete_evaluate"
 bool LPtoPTemplate::concrete_evaluate(PatchData &pd, double &fval,
                                       MsqError &err){
   size_t index=0;
@@ -75,8 +68,9 @@ bool LPtoPTemplate::concrete_evaluate(PatchData &pd, double &fval,
   bool obj_bool=true;
     //double check for pVal=0;
   if(pVal==0){
-    err.set_msg("pVal equal zero not allowed.  L_0 is not a valid norm.");
-    return 0;
+    MSQ_SETERR(err)("pVal equal zero not allowed.  L_0 is not a valid norm.",
+                    MsqError::INVALID_STATE);
+    return false;
   }
   
     //Michael:  this may not do what we want
@@ -84,8 +78,11 @@ bool LPtoPTemplate::concrete_evaluate(PatchData &pd, double &fval,
   QualityMetric* currentQM = get_quality_metric();
   if(currentQM==NULL)
     currentQM=get_quality_metric_list().front();
-  if(currentQM==NULL)
-    err.set_msg("NULL QualityMetric pointer in LPtoPTemplate");
+  if(currentQM==NULL) {
+    MSQ_SETERR(err)("NULL QualityMetric pointer in LPtoPTemplate",
+                    MsqError::INVALID_STATE);
+    return false;
+  }
   size_t num_elements=pd.num_elements();
   size_t num_vertices=pd.num_vertices();
   size_t total_num=0;
@@ -93,9 +90,13 @@ bool LPtoPTemplate::concrete_evaluate(PatchData &pd, double &fval,
     total_num=num_elements;
   else if (currentQM->get_metric_type()==QualityMetric::VERTEX_BASED)
     total_num=num_vertices;
-  else
-    err.set_msg("Make sure MetricType is initialised in concrete QualityMetric constructor.");
-  double *metric_values= new double[total_num];
+  else {
+    MSQ_SETERR(err)("Make sure MetricType is initialised in concrete "
+                    "QualityMetric constructor.", MsqError::INVALID_STATE);
+    return false;
+  }
+  
+  msq_std::vector<double> metric_values(total_num);
   if(currentQM->get_metric_type()==QualityMetric::ELEMENT_BASED)
   {
     for (index=0; index<num_elements;index++)
@@ -103,84 +104,79 @@ bool LPtoPTemplate::concrete_evaluate(PatchData &pd, double &fval,
         //if invalid return false after clean-up
       obj_bool=currentQM->evaluate_element(pd, (&elems[index]),
                                            metric_values[index], err);
-      MSQ_CHKERR(err);
-      if(!obj_bool){
+      if(MSQ_CHKERR(err) || !obj_bool){
         fval=0.0;
-        delete[] metric_values;
         return false;
       }
       
       metric_values[index]=fabs(metric_values[index]);
-      MSQ_DEBUG_ACTION(3,{cout<< "      o  Quality metric value for element "
-                          << index << "\t: " << metric_values[index] << "\n";});
+      MSQ_DBGOUT(3) << "      o  Quality metric value for element "
+                    << index << "\t: " << metric_values[index] << "\n";
     }
   }
   else if(currentQM->get_metric_type()==QualityMetric::VERTEX_BASED)
   {
-    MsqVertex* vertices=pd.get_vertex_array(err);
+    MsqVertex* vertices=pd.get_vertex_array(err); MSQ_ERRZERO(err);
     for (index=0; index<num_vertices;index++)
     {
         //evaluate metric for this vertex
       obj_bool=currentQM->evaluate_vertex(pd, (&vertices[index]),
                                           metric_values[index], err);
-      MSQ_CHKERR(err);
         //if invalid return false after clean-up
-      if(!obj_bool){
+      if(MSQ_CHKERR(err) || !obj_bool){
         fval=0.0;
-        delete[] metric_values;
         return false;
       }
       
       metric_values[index]=fabs(metric_values[index]);
     }
   }
-  fval=compute_function(metric_values, total_num, err);
-  delete[] metric_values;
-  return true;
+  fval=compute_function(&metric_values[0], total_num, err);
+  return !MSQ_CHKERR(err);
 }
 
-#undef __FUNC__
-#define __FUNC__ "LPtoPTemplate::compute_analytical_gradient"
 /* virtual function reimplemented from QualityMetric. No doxygen doc needed. */
 bool LPtoPTemplate::compute_analytical_gradient(PatchData &pd,
                                               Vector3D *const &grad,
                                               double &OF_val,
                                               MsqError &err, size_t array_size)
 {
-  FUNCTION_TIMER_START(__FUNC__);
+  FunctionTimer ft( "LPtoPTemplate::compute_analytical_gradient" );
+  
     //initialize the scaling value
   double scaling_value=1.0;
  
   size_t num_elements=pd.num_elements();
   size_t num_vertices=pd.num_vertices();
   if( num_vertices!=array_size && array_size>0)
-    err.set_msg("Incorrect array size.");
-  MsqMeshEntity* elems=pd.get_element_array(err);
-  MsqVertex* vertices=pd.get_vertex_array(err);
+  {
+    MSQ_SETERR(err)("Incorrect array size.", MsqError::INVALID_ARG);
+    return false;
+  }
+  
+  MsqMeshEntity* elems=pd.get_element_array(err); MSQ_ERRZERO(err);
+  MsqVertex* vertices=pd.get_vertex_array(err); MSQ_ERRZERO(err);
   bool qm_bool=true;
   double QM_val;
   OF_val = 0.;
   size_t i;
   int p1;
   
-  // If MSQ_DBG1 is defined, check to make sure that num_vert == array_size.
-  MSQ_DEBUG_ACTION(1,{
-    size_t num_vert=pd.num_vertices(); 
-    if(num_vert!=array_size && array_size!=0){
-      err.set_msg("Analytical Gradient passed arrays of incorrect size.");
-      MSQ_CHKERR(err); cout << num_vert << " instead of " << array_size << endl; }
-  });
-  
   //Set currentQM to be quality metric (possibly composite) associated with the objective function
   QualityMetric* currentQM = get_quality_metric();
-  if(currentQM==NULL)
-    err.set_msg("LPtoPTemplate has NULL QualityMetric pointer.");
+  if(currentQM==NULL) {
+    MSQ_SETERR(err)("LPtoPTemplate has NULL QualityMetric pointer.",MsqError::INVALID_STATE);
+    return false;
+  }
   enum QualityMetric::MetricType qm_type=currentQM->get_metric_type();
   
-  if (!qm_type==QualityMetric::ELEMENT_BASED &&
-      !qm_type==QualityMetric::VERTEX_BASED)
-    err.set_msg("Make sure MetricType is initialised"
-                "in concrete QualityMetric constructor.");
+  if (qm_type!=QualityMetric::ELEMENT_BASED &&
+      qm_type!=QualityMetric::VERTEX_BASED) {
+    MSQ_SETERR(err)("Make sure MetricType is initialised"
+                    "in concrete QualityMetric constructor.",
+                    MsqError::INVALID_STATE);
+    return false;
+  }
 
 
   // zeros out objective function gradient
@@ -191,10 +187,12 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &pd,
   if(qm_type==QualityMetric::ELEMENT_BASED){
       //if scaling, divid by num_elements
     if(dividingByN){
-      if(num_elements<=0)
-        err.set_msg("\nThe number of elements should not be zero.");
-      else
-        scaling_value/=num_elements;
+      if(num_elements<=0) {
+        MSQ_SETERR(err)("The number of elements should not be zero.",MsqError::INVALID_MESH);
+        return false;
+      }
+      
+      scaling_value/=num_elements;
     }
     size_t e, ve;
     size_t nfve; // num free vtx in element
@@ -222,7 +220,7 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &pd,
                                      pd, &elems[e],
                                      ele_free_vtces,
                                      grad_vec, nfve, QM_val, err);
-      if(!qm_bool) return false;
+      if(MSQ_CHKERR(err) || !qm_bool) return false;
 
       // computes p*|Q(e)|^{p-1}
       QM_val = fabs(QM_val);
@@ -256,21 +254,23 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &pd,
   else if (qm_type==QualityMetric::VERTEX_BASED){
       //if scaling, divide by the number of vertices
     if(dividingByN){
-      if(num_elements<=0)
-        err.set_msg("\nThe number of vertices should not be zero.");
-      else
-        scaling_value/=num_vertices;
+      if(num_elements<=0) {
+        MSQ_SETERR(err)("The number of vertices should not be zero.",MsqError::INVALID_MESH);
+        return false;
+      }
+      
+      scaling_value/=num_vertices;
     }
     //vector for storing indices of vertex's connected elems
-    vector<size_t> vert_on_vert_ind;
+    msq_std::vector<size_t> vert_on_vert_ind;
     //position in pd's vertex array
     size_t vert_count=0;
     //position in vertex array
     size_t vert_pos=0;
     //loop over the free vertex indices to find the gradient...
     size_t vfv_array_length=10;//holds the current legth of vert_free_vtces
-    MsqVertex** vert_free_vtces = new MsqVertex*[vfv_array_length];
-    Vector3D* grad_vec = new Vector3D[vfv_array_length];
+    msq_std::vector<MsqVertex*> vert_free_vtces(vfv_array_length);
+    msq_std::vector<Vector3D> grad_vec(vfv_array_length); 
     for(vert_count=0; vert_count<num_vertices; ++vert_count){
       //For now we compute the metric for attached vertices and this
       //vertex, the above line gives us the attached vertices.  Now,
@@ -283,10 +283,8 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &pd,
       // dynamic memory management if arrays are too small.
       if(vert_num_vtces > vfv_array_length){
         vfv_array_length=vert_num_vtces+5;
-        delete [] vert_free_vtces;
-        vert_free_vtces = new MsqVertex*[vfv_array_length];
-        delete [] grad_vec;
-        grad_vec = new Vector3D[vfv_array_length];
+        vert_free_vtces.resize(vfv_array_length);
+        grad_vec.resize(vfv_array_length);
       }
       
       size_t vert_num_free_vtces=0;
@@ -305,13 +303,11 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &pd,
       
       qm_bool=currentQM->compute_vertex_gradient(pd,
                                                  vertices[vert_count],
-                                                 vert_free_vtces,
-                                                 grad_vec,
+                                                 &vert_free_vtces[0],
+                                                 &grad_vec[0],
                                                  vert_num_free_vtces,
                                                  QM_val, err);
-      if(!qm_bool){
-        delete[] vert_free_vtces;
-        delete[] grad_vec;
+      if(MSQ_CHKERR(err) || !qm_bool){
         return false;
       }
        // computes p*|Q(e)|^{p-1}
@@ -339,21 +335,15 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &pd,
         grad[pd.get_vertex_index(vert_free_vtces[i])] += grad_vec[i];
       }
     }
-    delete [] vert_free_vtces;
-    delete [] grad_vec;
   }
 
   OF_val *= get_negate_flag();
   
-  
-  FUNCTION_TIMER_END();
   return true;  
 
 }
   
 	
-#undef __FUNC__
-#define __FUNC__ "LPtoPTemplate::compute_analytical_hessian"
 /*! \fn LPtoPTemplate::compute_analytical_hessian(PatchData &pd, MsqHessian &hessian, MsqError &err)
 
     For each element, each entry to be accumulated in the Hessian for
@@ -383,17 +373,19 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
 {
   double scaling_value=1.0;
   
-  FUNCTION_TIMER_START(__FUNC__);
+  FunctionTimer ft( "LPtoPTemplate::compute_analytical_hessian" );
 
-  MsqMeshEntity* elements = pd.get_element_array(err); MSQ_CHKERR(err);
-  MsqVertex* vertices = pd.get_vertex_array(err); MSQ_CHKERR(err);
+  MsqMeshEntity* elements = pd.get_element_array(err); MSQ_ERRZERO(err);
+  MsqVertex* vertices = pd.get_vertex_array(err); MSQ_ERRZERO(err);
   size_t num_elems = pd.num_elements();
     //if scaling divide by the number of elements.
   if(dividingByN){
-    if(num_elems<=0)
-      err.set_msg("\nLPtoP is attempting to divide by zero in analytical Hessian.");
-    else
-      scaling_value/=num_elems;
+    if(num_elems<=0) {
+      MSQ_SETERR(err)("LPtoP is attempting to divide by zero in analytical Hessian.",
+                      MsqError::INVALID_MESH);
+      return false;
+    }
+    scaling_value/=num_elems;
   }
   
   size_t num_vertices = pd.num_vertices();
@@ -407,13 +399,14 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
   QualityMetric* currentQM = get_quality_metric();
   
   MsqVertex* ele_free_vtces[MSQ_MAX_NUM_VERT_PER_ENT];
-  for (int i=0; i<MSQ_MAX_NUM_VERT_PER_ENT; ++i) ele_free_vtces[i]=NULL;
+  short i;
+  for (i=0; i<MSQ_MAX_NUM_VERT_PER_ENT; ++i) ele_free_vtces[i]=NULL;
   
   const size_t* vtx_indices;
     
   size_t e, v;
   size_t nfve; // number of free vertices in element
-  short i,j,n;
+  short j,n;
 
   hessian.zero_out();
   for (v=0; v<num_vertices; ++v) grad[v] = 0.;
@@ -438,8 +431,7 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
                                     elements+e, ele_free_vtces,
                                     grad_vec, elem_hessian,
                                     nfve, QM_val, err);
-    MSQ_CHKERR(err);
-    if (!qm_bool) return false;
+    if (MSQ_CHKERR(err) || !qm_bool) return false;
 
 
     // **** Computes Hessian ****
@@ -492,10 +484,10 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
         }
       }
 
-      hessian.accumulate_entries(pd, e, elem_hessian, err);
+      hessian.accumulate_entries(pd, e, elem_hessian, err); MSQ_ERRZERO(err);
 
     } else {
-      err.set_msg(" invalid P value.");
+      MSQ_SETERR(err)(" invalid P value.", MsqError::INVALID_STATE);
       return false;
     }
 
@@ -521,6 +513,5 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
 
   OF_val *= get_negate_flag();
   
-  FUNCTION_TIMER_END();
   return true;
 }

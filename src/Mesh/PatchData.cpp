@@ -36,15 +36,32 @@
 #include "MsqMeshEntity.hpp"
 #include "MsqFreeVertexIndexIterator.hpp"
 #include "MeshSet.hpp"
-
-#include <list>
-#include "MsqMessage.hpp"
 #include "MsqTimer.hpp"
-using namespace Mesquite;  
-MSQ_USE(cout);
+#include "MsqDebug.hpp"
 
-#undef __FUNC__
-#define __FUNC__ "PatchData::PatchData"
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#  include <list.h>
+#  include <vector.h>
+#  include <map.h>
+#else
+#  include <list>
+#  include <vector>
+#  include <map>
+   using std::list;
+   using std::map;
+   using std::vector;
+#endif
+
+#ifdef MSQ_USE_OLD_IO_HEADERS
+#  include <iostream.h>
+#else
+#  include <iostream>
+   using std::ostream;
+   using std::endl;
+#endif
+
+namespace Mesquite {
+
 PatchData::PatchData()
   : meshSet(NULL),
     domainSet(false),
@@ -68,8 +85,6 @@ PatchData::PatchData()
 
 
 // Destructor
-#undef __FUNC__
-#define __FUNC__ "PatchData::~PatchData" 
 PatchData::~PatchData()
 {
   delete [] vertexArray;
@@ -82,8 +97,6 @@ PatchData::~PatchData()
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "PatchData::get_minmax_element_unsigned_area" 
 void PatchData::get_minmax_element_unsigned_area(double& min, double& max, MsqError &err)
 {
   std::map<ComputedInfo, double>::iterator max_it;
@@ -101,24 +114,21 @@ void PatchData::get_minmax_element_unsigned_area(double& min, double& max, MsqEr
     for (size_t i=0; i<numElements; ++i) {
       double vol;
       vol = elementArray[i].compute_unsigned_area(*this, err);
-      MSQ_CHKERR(err);
+      MSQ_ERRRTN(err);
       max = vol > max ? vol : max;
       min = vol < min ? vol : min;
     }
     computedInfos.insert(std::pair<const ComputedInfo, double>(MAX_UNSIGNED_AREA,max));
     computedInfos.insert(std::pair<const ComputedInfo, double>(MIN_UNSIGNED_AREA,min));
   }
-  assert(max > 0 && min > 0);
-  assert(max != 0);
-  assert(min != MSQ_DBL_MAX);
+  if (max <= 0 || min < 0 || min == MSQ_DBL_MAX)
+    MSQ_SETERR(err)(MsqError::INTERNAL_ERROR);
   return;
 }
 
-#undef __FUNC__
-#define __FUNC__ "PatchData::get_barrier_delta" 
 double PatchData::get_barrier_delta(MsqError &err)
 {
-  std::map<ComputedInfo, double>::iterator delta_it;
+  msq_std::map<ComputedInfo, double>::iterator delta_it;
   delta_it = computedInfos.find(MINMAX_SIGNED_DET3D);
   if ( delta_it != computedInfos.end() ) { // if a delta is already there
     return delta_it->second;
@@ -130,15 +140,16 @@ double PatchData::get_barrier_delta(MsqError &err)
       Matrix3D A[MSQ_MAX_NUM_VERT_PER_ENT];
       size_t nve = elementArray[i].vertex_count();
       elementArray[i].compute_corner_matrices(*this, A, nve, err);
+      MSQ_ERRZERO(err);
       for (size_t j=0; j<nve; ++j) {
         min = det(A[j]) < min ? det(A[j]) : min;
         max = det(A[j]) > max ? det(A[j]) : max;
       }
-      MSQ_CHKERR(err);
     }
 
     if (max <= 0) {
-      err.set_msg("Sigma_max is not positive. Pathological Mesh.");
+      MSQ_SETERR(err)("Sigma_max is not positive.", MsqError::INVALID_MESH);
+      return 0;
     }
 
     double delta=0;
@@ -149,8 +160,6 @@ double PatchData::get_barrier_delta(MsqError &err)
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "PatchData::get_average_Lambda_3d" 
 double PatchData::get_average_Lambda_3d(MsqError &err)
 {
   std::map<ComputedInfo, double>::iterator avg_it;
@@ -164,10 +173,13 @@ double PatchData::get_average_Lambda_3d(MsqError &err)
     Matrix3D A[MSQ_MAX_NUM_VERT_PER_ENT];
     for (size_t i=0; i<numElements; ++i) {
       int nve = elementArray[i].vertex_count();
-      elementArray[i].compute_corner_matrices(*this, A, nve, err); MSQ_CHKERR(err);
+      elementArray[i].compute_corner_matrices(*this, A, nve, err); 
+      MSQ_ERRZERO(err);
       total_num_corners += nve;
-      for (int c=0; c<nve; ++c)
-        avg += TargetCalculator::compute_Lambda(A[c], err);
+      for (int c=0; c<nve; ++c) {
+        avg += TargetCalculator::compute_Lambda(A[c], err); 
+        MSQ_ERRZERO(err);
+      }
     }
 
     avg = avg / total_num_corners;
@@ -520,8 +532,6 @@ int PatchData::num_free_vertices(MsqError &/*err*/)
 // }
 
 
-#undef __FUNC__
-#define __FUNC__ "PatchData::move_free_vertices_constrained"
 /*! \fn PatchData::move_free_vertices_constrained(Vector3D dk[], int nb_vtx, double step_size, MsqError &err)
    PatchData::move_free_vertices_constrained() moves the free vertices
    (see MsqVertex::is_free() ) as specified by the search direction (dk)
@@ -547,8 +557,8 @@ void PatchData::move_free_vertices_constrained(Vector3D dk[], size_t nb_vtx,
 {
   if (nb_vtx != numVertices)
   {
-    err.set_msg("The directional vector must be of length numVertices.");
-    MSQ_CHKERR(err);
+    MSQ_SETERR(err)("The directional vector must be of length numVertices.",
+                    MsqError::INVALID_ARG);
     return;
   }
   
@@ -558,25 +568,25 @@ void PatchData::move_free_vertices_constrained(Vector3D dk[], size_t nb_vtx,
   {
     vertexArray[free_iter.value()] += (step_size * dk[free_iter.value()]);
     snap_vertex_to_domain(free_iter.value(), err);
-    MSQ_CHKERR(err);
+    MSQ_ERRRTN(err);
   }
   
     // Checks that moving direction is zero for fixed vertices.
-  MSQ_DEBUG_ACTION(3,{ for (size_t m=0; m<numVertices; ++m) {
+  if (MSQ_DBG(3)) {
+  for (size_t m=0; m<numVertices; ++m) {
     Vector3D zero_3d(0.,0.,0.);
-    if (   ! vertexArray[m].is_free_vertex()
-           && ( dk[m] != zero_3d && dk[m] != -zero_3d)  ) 
+    if (!vertexArray[m].is_free_vertex() 
+     && dk[m] != zero_3d 
+     && dk[m] != -zero_3d ) 
     {
-      cout << "dk["<<m<<"]: " << dk[m] << endl;
-      err.set_msg("moving a fixed vertex.");
-      MSQ_CHKERR(err);} 
+      MSQ_DBGOUT(3) << "dk["<<m<<"]: " << dk[m] << endl;
+      MSQ_DBGOUT(3) << "moving a fixed vertex." << endl;
+    }
   }     
-  });
+  }
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "PatchData::set_free_vertices_constrained"
 /*! set_free_vertices_constrained is similar to 
 PatchData::move_free_vertices_constrained() except the original vertex positions
 are those stored in the PatchDataVerticesMemento instead of the actual vertex
@@ -600,43 +610,38 @@ void PatchData::set_free_vertices_constrained(PatchDataVerticesMemento* memento,
 {
   if (nb_vtx != memento->numVertices)
   {
-    Message::print_error( "nb_vtx: %d   men num vtx: %d\n",
-                             (int)nb_vtx, (int)memento->numVertices );
-    err.set_msg("The directional vector must be the same length as"
-                "the number of vertices in the patch.");
-    MSQ_CHKERR(err);
+    MSQ_SETERR(err)(MsqError::INVALID_ARG);
     return;
   }
   
   size_t m=0;
   MsqFreeVertexIndexIterator free_iter(this, err);
+  MSQ_ERRRTN(err);
   free_iter.reset();
   while (free_iter.next())
   {
     m=free_iter.value();
     vertexArray[m] = memento->vertices[m] + (step_size * dk[m]);
     snap_vertex_to_domain(m, err);
-    MSQ_CHKERR(err);
+    MSQ_ERRRTN(err);
   }
   
     // Checks that moving direction is zero for fixed vertices.
-  MSQ_DEBUG_ACTION(3,{ for (m=0; m<numVertices; ++m)
+  if (MSQ_DBG(3)) {
+  for (m=0; m<numVertices; ++m)
   {
     Vector3D zero_3d(0.,0.,0.);
     if (   ! vertexArray[m].is_free_vertex()
            && ( dk[m] != zero_3d && dk[m] != -zero_3d)  ) 
     {
-      cout << "dk["<<m<<"]: " << dk[m] << endl;
-      err.set_msg("moving a fixed vertex.");
-      MSQ_CHKERR(err);
+      MSQ_DBGOUT(3) << "dk["<<m<<"]: " << dk[m] << endl;
+      MSQ_DBGOUT(3) <<"moving a fixed vertex." << endl;
     }
   }
-  });
+  }
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "PatchData::get_max_vertex_movement_squared"
 /*! Finds the maximum movement (in the distance norm) of the vertices in a
   patch.  The previous vertex positions are givena as a
   PatchDataVerticesMemento (memento).  The distance squared which each
@@ -654,7 +659,7 @@ double PatchData::get_max_vertex_movement_squared(PatchDataVerticesMemento*
   Vector3D temp_vec;
   double temp_dist=0.0;
   double max_dist=0.0;
-  MsqFreeVertexIndexIterator free_iter(this, err);
+  MsqFreeVertexIndexIterator free_iter(this, err); MSQ_ERRZERO(err);
   free_iter.reset();
   while (free_iter.next())
   {
@@ -665,13 +670,10 @@ double PatchData::get_max_vertex_movement_squared(PatchDataVerticesMemento*
     {
       max_dist=temp_dist;
     }
-    MSQ_CHKERR(err);
   }
   return max_dist;
 }
 
-#undef __FUNC__
-#define __FUNC__ "PatchData::set_all_vertices_soft_fixed"
 /*!
  */
 void PatchData::set_all_vertices_soft_fixed(MsqError &/*err*/)
@@ -680,8 +682,6 @@ void PatchData::set_all_vertices_soft_fixed(MsqError &/*err*/)
     vertexArray[i].set_soft_fixed_flag();
 }
 
-#undef __FUNC__
-#define __FUNC__ "PatchData::set_free_vertices_soft_fixed"
 /*!
  */
 void PatchData::set_free_vertices_soft_fixed(MsqError &/*err*/)
@@ -692,8 +692,6 @@ void PatchData::set_free_vertices_soft_fixed(MsqError &/*err*/)
   }
 }
 
-#undef __FUNC__
-#define __FUNC__ "PatchData::set_all_vertices_soft_free"
 /*!
  */
 void PatchData::set_all_vertices_soft_free(MsqError &/*err*/)
@@ -746,8 +744,6 @@ void PatchData::get_element_vertex_indices(
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "PatchData::get_vertex_element_indices" 
 void PatchData::get_vertex_element_indices(size_t vertex_index,
                                            vector<size_t> &elem_indices,
                                            MsqError &/*err*/) 
@@ -781,8 +777,6 @@ void PatchData::get_vertex_element_indices(size_t vertex_index,
     the vector.
 
 */
-#undef __FUNC__
-#define __FUNC__ "PatchData::get_adjacent_vertex_indices" 
 void PatchData::get_adjacent_vertex_indices(size_t vertex_index,
                                             vector<size_t> &vert_indices,
                                             MsqError &err)
@@ -790,15 +784,17 @@ void PatchData::get_adjacent_vertex_indices(size_t vertex_index,
     //First get elems attached to vertex[vertex_index]
   vector<size_t> elem_indices;
   vector<size_t> temp_vert_indices;
-  vector<size_t>::iterator iter;
+  msq_std::vector<size_t>::iterator iter;
   size_t cur_vert;
   int found=0;
   get_vertex_element_indices(vertex_index, elem_indices,err);
-  MSQ_CHKERR(err);
-  MsqMeshEntity* elems=get_element_array(err);MSQ_CHKERR(err);
+  MSQ_ERRRTN(err);
+  MsqMeshEntity* elems=get_element_array(err);
+  MSQ_ERRRTN(err);
     //get nodes attached to vertex_index... with some duplication
   while(!elem_indices.empty()){
-    elems[elem_indices.back()].get_connected_vertices(vertex_index, temp_vert_indices,err); MSQ_CHKERR(err);;
+    elems[elem_indices.back()].get_connected_vertices(vertex_index, temp_vert_indices,err); 
+    MSQ_ERRRTN(err);
     elem_indices.pop_back();
   }
     //eliminate duplication.
@@ -848,6 +844,7 @@ void PatchData::get_adjacent_entities_via_n_dim(int n, size_t ent_ind,
   for(i=0;i<num_vert;++i){
       //get elements on the vertices in verts and the number of vertices
     get_vertex_element_indices(verts[i],elem_on_vert[i],err);
+    MSQ_ERRRTN(err);
     length_elem_on_vert[i]=elem_on_vert[i].size();
   }
     //this_ent is the index for an entity which is a candidate to be placed
@@ -912,28 +909,22 @@ void PatchData::get_adjacent_entities_via_n_dim(int n, size_t ent_ind,
     free vertices / elements of the PatchData object.
 
 */
-#undef __FUNC__
-#define __FUNC__ "PatchData::update_mesh" 
 void PatchData::update_mesh(MsqError &err)
 {
   if (!meshSet)
     return;
 
   meshSet->update_mesh(*this, err);
+  MSQ_CHKERR(err);
 }
 
-#undef __FUNC__
-#define __FUNC__ "PatchData::generate_vertex_to_element_data" 
 void PatchData::generate_vertex_to_element_data(size_t num_vertex_uses)
 {
-  FUNCTION_TIMER_START(__FUNC__);
+  FunctionTimer ft("PatchData::generate_vertex_to_element_data");
   
     // Skip if data already exists
   if (v2eValid && v2E && v2eOffset)
-  {
-    FUNCTION_TIMER_END();
     return;
-  }
   
     // Create an array that will temporarily hold the number of
     // times each vertex is used in an element.
@@ -999,25 +990,20 @@ void PatchData::generate_vertex_to_element_data(size_t num_vertex_uses)
   }
   
   v2eValid = true;
-  
-  FUNCTION_TIMER_END();
 }
 
-#undef __FUNC__
-#define __FUNC__ "PatchData::allocate_target_matrices" 
 void PatchData::allocate_target_matrices(MsqError &err, bool alloc_inv)
 {
   for (size_t i=0; i<numElements; ++i)
   {
     MsqTag* tag = new MsqTag;
     size_t c = elementArray[i].vertex_count();
-    tag->allocate_targets(c, err, alloc_inv); MSQ_CHKERR(err);
+    tag->allocate_targets(c, err, alloc_inv);
+    MSQ_ERRRTN(err);
     elementArray[i].set_tag(tag);
   }
 }
 
-#undef __FUNC__
-#define __FUNC__ "PatchData::get_subpatch" 
 void PatchData::get_subpatch(size_t center_vertex_index,
                              PatchData &subpatch,
                              MsqError &err)
@@ -1025,7 +1011,7 @@ void PatchData::get_subpatch(size_t center_vertex_index,
     // Make sure we're in range
   if (center_vertex_index >= numVertices)
   {
-    err.set_msg("Invalid index for center vertex");
+    MSQ_SETERR(err)("Invalid index for center vertex",MsqError::INVALID_ARG);
     return;
   }
 
@@ -1041,6 +1027,7 @@ void PatchData::get_subpatch(size_t center_vertex_index,
     // Get the number of elements attached to the requested vertex
   size_t num_elems = v2E[ v2eOffset[center_vertex_index] ];
   subpatch.reserve_element_capacity(num_elems, err);
+  MSQ_ERRRTN(err);
   subpatch.numElements = num_elems;
   
     // Loop through each element, count the vertices
@@ -1062,6 +1049,7 @@ void PatchData::get_subpatch(size_t center_vertex_index,
   
     // Now that we know how many verts, allocate...
   subpatch.reserve_vertex_capacity(total_verts, err);
+  MSQ_ERRRTN(err);
   subpatch.numVertices = total_verts;
   
     // Loop through the elements again, placing verts and elems into subpatch
@@ -1115,8 +1103,6 @@ void PatchData::snap_vertex_to_domain(size_t vertex_index, MsqError &/*err*/)
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "PatchData::get_domain_normal_at_vertex"
 void PatchData::get_domain_normal_at_vertex(size_t vertex_index,
                                    bool normalize,
                                    Vector3D &surf_norm,
@@ -1131,47 +1117,48 @@ void PatchData::get_domain_normal_at_vertex(size_t vertex_index,
     if (normalize) { surf_norm.normalize(); }
   }
   else
-    err.set_msg("No domain constraint set.");
+    MSQ_SETERR(err)( "No domain constraint set.", MsqError::INVALID_STATE );
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "PatchData::get_domain_normal_at_element"
 void PatchData::get_domain_normal_at_element(size_t elem_index,
                                              Vector3D &surf_norm,
                                              MsqError &err) const
 {
   if (meshSet && meshSet->get_domain_constraint())
   {
-    elementArray[elem_index].get_centroid(surf_norm, *this, err); MSQ_CHKERR(err);
+    elementArray[elem_index].get_centroid(surf_norm, *this, err); 
+    MSQ_ERRRTN(err);
     meshSet->get_domain_constraint()->normal_at(
       elementHandlesArray[elem_index],
       surf_norm);
   }
   else
-    err.set_msg("No domain constraint set.");
+    MSQ_SETERR(err)( "No domain constraint set.", MsqError::INVALID_STATE );
 }
 
-#undef __FUNC__
-#define __FUNC__ "PatchData::set_mesh_set"
+
 void PatchData::set_mesh_set(MeshSet* ms)
 { meshSet = ms;
   if (ms->get_domain_constraint()!=NULL) domainSet = true; }
 
-
-#undef __FUNC__
-#define __FUNC__ "PatchData::print"
-void PatchData::print()
+ostream& PatchData::operator<<( ostream& stream ) const
 {
-   Message::print_info( "Vertex coordinates: ");
-   for (size_t i = 0; i < numVertices; ++i)
-      Message::print_info("\n\t(%lf,%lf,%lf)\n", 
-        vertexArray[i].x(), vertexArray[i].y(), vertexArray[i].z());
-   for (size_t i = 0; i < numElements; ++i)
+   stream << "Vertex coordinates: ";
+   size_t i;
+   for (i = 0; i < numVertices; ++i)
+      stream << endl << "\t(" 
+             << vertexArray[i].x() 
+             << vertexArray[i].y()
+             << vertexArray[i].z()
+             << ")" << endl;
+   for (i = 0; i < numElements; ++i)
    {
-      Message::print_info("\n\t");
+      stream << endl << "\t";
       for (size_t j = 0; j < elementArray[i].vertex_count(); ++j)
-        Message::print_info("%d, ", elementArray[i].get_vertex_index_array()[j] );
+        stream << elementArray[i].get_vertex_index_array()[j] << " ";
    }
-   Message::print_info("\n"); 
+   return stream << endl;
 }
+
+} // namespace Mesquite

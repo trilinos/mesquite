@@ -40,8 +40,6 @@
 
 using namespace Mesquite;
 
-#undef __FUNC__
-#define __FUNC__ "TopologyModifier::loop_over_mesh" 
 double TopologyModifier::loop_over_mesh(MeshSet& /*mesh*/,
                                       MsqError &/*err*/)
 {

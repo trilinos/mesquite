@@ -38,11 +38,11 @@
 #define Mesquite_TopologyModifier_hpp
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
 #include "QualityImprover.hpp"
 
 namespace Mesquite
 {
+  class MsqError;
 
   /*   */ 
   class TopologyModifier : public QualityImprover 

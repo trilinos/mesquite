@@ -38,9 +38,9 @@
 #include "VertexMover.hpp"
 #include "MeshSet.hpp"
 #include "MsqTimer.hpp"
-#include "MsqMessage.hpp"
+#include "MsqDebug.hpp"
 
-using namespace Mesquite;
+namespace Mesquite {
 
 VertexMover::VertexMover() :
   QualityImprover()
@@ -57,78 +57,76 @@ VertexMover::VertexMover() :
     \param const MeshSet &: this MeshSet is looped over. Only the
     mutable data members are changed (such as currentVertexInd).
   */
-#undef __FUNC__
-#define __FUNC__ "VertexMover::loop_over_mesh" 
 double VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
 {
   set_mesh_set(&ms);
   
     // creates a PatchData object at the VertexMover level
     // in order to reduce the number of memory allocations
+  PatchData local_patch_data;
   PatchData* patch_data=0;
   bool next_patch=true;
   // if we have already been provided a Global Patch (from a previous algorithm).
   
   if (get_global_patch() != 0) {
     if (get_patch_type() != PatchData::GLOBAL_PATCH) {
-      err.set_msg("PatchDataUser::globalPatch should be NULL.");
+      MSQ_SETERR(err)("PatchDataUser::globalPatch should be NULL.", MsqError::INVALID_STATE);
+      return 0;
     }
     patch_data = get_global_patch();
     next_patch = true; // same as MeshSet::get_next_patch()
   }
   else {
-    patch_data = new PatchData;
+    patch_data = &local_patch_data;
   }
   
   TerminationCriterion* outer_crit=this->get_outer_termination_criterion();
   TerminationCriterion* inner_crit=this->get_inner_termination_criterion();
     //if outer-criterion is NULL, we wet an error.
   if(outer_crit == 0){
-    err.set_msg("Termination Criterion pointer is Null");
+    MSQ_SETERR(err)("Termination Criterion pointer is Null", MsqError::INVALID_STATE);
     return 0.;
   }
     //if inner-criterion is NULL, we wet an error.
   if(inner_crit == 0){
-    err.set_msg("Termination Criterion pointer for inner loop is Null");
+    MSQ_SETERR(err)("Termination Criterion pointer for inner loop is Null", MsqError::INVALID_STATE);
     return 0.;
   }
     //initialize both criterion objects
-  outer_crit->initialize(ms, *patch_data, err);
-  inner_crit->initialize(ms, *patch_data, err);
+  outer_crit->initialize(ms, *patch_data, err);  MSQ_ERRZERO(err);
+  inner_crit->initialize(ms, *patch_data, err);  MSQ_ERRZERO(err);
   
-  bool stop_met=false; MSQ_CHKERR(err);
+  bool stop_met=false; 
   // This should probably pass the MeshSet so that the data requirements
   // can be calculated exactly.
-  this->initialize(*patch_data, err); MSQ_CHKERR(err);
+  this->initialize(*patch_data, err); MSQ_ERRZERO(err);
 
-  Message::print_info("\n");
     //skip booleans set to false if the initial mesh (or patch) satisfies
     //the termination criteria.
   bool inner_skip=false;
-  bool outer_skip=outer_crit->reset(ms,objFunc,err);
+  bool outer_skip=outer_crit->reset(ms,objFunc,err);  MSQ_ERRZERO(err);
   if(!outer_skip){
     
     while ( !stop_met ) {
         //Status bar
-      Message::print_info(".");
+//      Message::print_info(".");
         // Prior to looping over the patches.
         // Probably want to pass the MeshSet.  
-      this->initialize_mesh_iteration(*patch_data, err);MSQ_CHKERR(err); 
+      this->initialize_mesh_iteration(*patch_data, err);MSQ_ERRZERO(err); 
 
         // if there is no global patch previously available
       if (get_global_patch()==0) {
         // propagates information from QualityImprover to MeshSet
         //try to get the first patch, if no patches can be created
         //skip optimization and terminate.
-        next_patch =  ms.get_next_patch(*patch_data, this, err);
-        MSQ_CHKERR(err);
+        next_patch =  ms.get_next_patch(*patch_data, this, err);MSQ_ERRZERO(err); 
       }
         
       if(!next_patch){
         stop_met=true;
           //PRINT_INFO("\nTerminating due to no more free nodes\n");
           //call terminate() anyway, even though we must terminate
-        outer_crit->terminate(ms,objFunc,err);
+        outer_crit->terminate(ms,objFunc,err); MSQ_ERRZERO(err);
       }
         //otherwise one patch has been created and more could be created later.
       else{
@@ -136,47 +134,40 @@ double VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
           //loop over these patches
         while( next_patch )
         {
-          MSQ_CHKERR(err); 
           if (next_patch == true ) {
 
             inner_skip=inner_crit->reset(*patch_data,objFunc,err);
               //if inner criteria are initially satisfied, skip opt.
               //otherwise:
             if(!inner_skip){
-              this->optimize_vertex_positions(*patch_data, err);
-              MSQ_CHKERR(err);
+              this->optimize_vertex_positions(*patch_data, err);  MSQ_ERRZERO(err);
             }
             inner_crit->cull_vertices(*patch_data,objFunc,err);
-            patch_data->update_mesh(err);// TSTT mesh update !!
-            MSQ_CHKERR(err); 
+            patch_data->update_mesh(err); // TSTT mesh update !!
+            MSQ_ERRZERO(err); 
           }
             // if patch is global, don't try to get the next patch
           if (get_patch_type() == PatchData::GLOBAL_PATCH) {
             next_patch = false; }
             // if patch is local, try to get the next one 
           else{
-            next_patch =  ms.get_next_patch(*patch_data, this, err);
+            next_patch =  ms.get_next_patch(*patch_data, this, err);  MSQ_ERRZERO(err);
           }
         }
-        this->terminate_mesh_iteration(*patch_data, err); MSQ_CHKERR(err);
+        this->terminate_mesh_iteration(*patch_data, err); MSQ_ERRZERO(err);
           //check the criteria on the outer loop
-        stop_met=outer_crit->terminate(ms,objFunc,err);
-        MSQ_CHKERR(err);
+        stop_met=outer_crit->terminate(ms,objFunc,err); MSQ_ERRZERO(err);
       }
     } 
   }
   
-  Message::print_info("\n");
     //call the criteria's cleanup funtions.
   outer_crit->cleanup(ms,err);
   inner_crit->cleanup(ms,err);
     //call the optimization cleanup function.
   this->cleanup();
-  
-  if (get_global_patch()==0) {
-    delete patch_data;
-  }
 
   return 0.;
 }
   
+} // namespace Mesquite

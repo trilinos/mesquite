@@ -51,14 +51,12 @@ SimplifiedGeometryEngine.
 #include <math.h>
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
-#include "Vector3D.hpp"
+#include "MsqError.hpp"
 #include "InstructionQueue.hpp"
 #include "MeshSet.hpp"
 #include "PatchData.hpp"
 //#include "StoppingCriterion.hpp"
 #include "QualityAssessor.hpp"
-#include "MsqMessage.hpp"
 
 #include "InverseMeanRatioQualityMetric.hpp"
 #include "GeneralizedConditionNumberQualityMetric.hpp"
@@ -77,6 +75,13 @@ SimplifiedGeometryEngine.
 #include "PlanarDomain.hpp"
 
 #include "MeshImpl.hpp"
+#ifdef MSQ_USE_OLD_IO_HEADERS
+#include <iostream.h>
+#else 
+#include <iostream>
+using std::cout;
+using std::endl;
+#endif
 
 using namespace Mesquite;
 
@@ -115,25 +120,25 @@ public:
   
    void test_plane_tri_tangled()
    {
-     Mesquite::MsqError err;
+     Mesquite::MsqPrintError err(cout); err;
      Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
      
      mesh->read_vtk("../../meshFiles/2D/VTK/tangled_tri.vtk", err);
      
        // initialises a MeshSet object
      MeshSet mesh_set1;
-     mesh_set1.add_mesh(mesh, err); CPPUNIT_ASSERT(!err.errorOn);
+     mesh_set1.add_mesh(mesh, err); CPPUNIT_ASSERT(!err);
      
        //Make sure no errors
-     CPPUNIT_ASSERT(!err.errorOn);
+     CPPUNIT_ASSERT(!err);
      
        //create geometry: plane z=5, normal (0,0,1)
      Vector3D pnt(0,0,5);
      Vector3D s_norm(0,0,1);
      Mesquite::PlanarDomain msq_geom(s_norm, pnt, mesh);
        //Make sure no errors
-     CPPUNIT_ASSERT(!err.errorOn);
-     mesh_set1.set_domain_constraint(&msq_geom, err); CPPUNIT_ASSERT(!err.errorOn);
+     CPPUNIT_ASSERT(!err);
+     mesh_set1.set_domain_constraint(&msq_geom, err); CPPUNIT_ASSERT(!err);
      
        // creates an intruction queue
      InstructionQueue queue1, queue2;
@@ -146,7 +151,7 @@ public:
      LInfTemplate* untan_func = new LInfTemplate(untan);
      LPtoPTemplate* shape_func = new LPtoPTemplate(shape,2,err);
        //Make sure no errors
-     CPPUNIT_ASSERT(!err.errorOn);
+     CPPUNIT_ASSERT(!err);
      shape_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
        // creates the steepest descent optimization procedures
      SteepestDescent* pass1 = new SteepestDescent( untan_func );
@@ -154,7 +159,7 @@ public:
      pass1->set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err,1 ,1);
      pass2->set_patch_type(PatchData::GLOBAL_PATCH, err,1 ,1);
        //Make sure no errors
-     CPPUNIT_ASSERT(!err.errorOn);
+     CPPUNIT_ASSERT(!err);
      QualityAssessor stop_qa=QualityAssessor(untan,QualityAssessor::MAXIMUM);
      QualityAssessor qa=QualityAssessor(shape,QualityAssessor::MAXIMUM);
      if(pF==0){
@@ -182,21 +187,21 @@ public:
        //pass2->set_inner_termination_criterion(&sc_inner);
        //pass2->set_maximum_iteration(5);
   
-     queue1.set_master_quality_improver(pass1, err); CPPUNIT_ASSERT(!err.errorOn);
-     queue2.set_master_quality_improver(pass2, err); CPPUNIT_ASSERT(!err.errorOn);
+     queue1.set_master_quality_improver(pass1, err); CPPUNIT_ASSERT(!err);
+     queue2.set_master_quality_improver(pass2, err); CPPUNIT_ASSERT(!err);
        //********************UNTANGLE*******************************
        //Make sure no errors
-     CPPUNIT_ASSERT(!err.errorOn);
+     CPPUNIT_ASSERT(!err);
        // launches optimization on mesh_set1
      double orig_qa_val=stop_qa.loop_over_mesh(mesh_set1,err);
        //Make sure no errors
-     CPPUNIT_ASSERT(!err.errorOn);
-     queue1.run_instructions(mesh_set1, err); CPPUNIT_ASSERT(!err.errorOn);
+     CPPUNIT_ASSERT(!err);
+     queue1.run_instructions(mesh_set1, err); CPPUNIT_ASSERT(!err);
        //Make sure no errors
-     CPPUNIT_ASSERT(!err.errorOn);
+     CPPUNIT_ASSERT(!err);
      double fin_qa_val=stop_qa.loop_over_mesh(mesh_set1,err);
        //Make sure no errors
-     CPPUNIT_ASSERT(!err.errorOn);
+     CPPUNIT_ASSERT(!err);
        //make sure 'quality' improved
      CPPUNIT_ASSERT( (fin_qa_val-orig_qa_val) <= 0.0 );
        //make sure sc_qa really was satisfied
@@ -204,20 +209,20 @@ public:
 
       //********************SMOOTH*******************************
        //Make sure no errors
-     CPPUNIT_ASSERT(!err.errorOn);
+     CPPUNIT_ASSERT(!err);
        // launches optimization on mesh_set1
      orig_qa_val=qa.loop_over_mesh(mesh_set1,err);
        //Make sure no errors
-     CPPUNIT_ASSERT(!err.errorOn);
-     queue2.run_instructions(mesh_set1, err); CPPUNIT_ASSERT(!err.errorOn);
+     CPPUNIT_ASSERT(!err);
+     queue2.run_instructions(mesh_set1, err); CPPUNIT_ASSERT(!err);
        //Make sure no errors
-     CPPUNIT_ASSERT(!err.errorOn);
+     CPPUNIT_ASSERT(!err);
      fin_qa_val=qa.loop_over_mesh(mesh_set1,err);
        //Make sure no errors
-     CPPUNIT_ASSERT(!err.errorOn);
+     CPPUNIT_ASSERT(!err);
        //make sure 'quality' improved
      CPPUNIT_ASSERT( (fin_qa_val-orig_qa_val) <= 0.0 );
-     Message::print_timing_diagnostics();
+     print_timing_diagnostics(cout);
      delete shape;
      delete untan;
      delete pass1;
@@ -229,21 +234,21 @@ public:
   void test_plane_quad_tangled()
      {
        Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
-       MsqError err;
+       MsqPrintError err(cout); err;
        mesh->read_vtk("../../meshFiles/2D/VTK/tangled_quad.vtk", err);
        
          // initialises a MeshSet object
        MeshSet mesh_set1;
-       mesh_set1.add_mesh(mesh, err); CPPUNIT_ASSERT(!err.errorOn);
+       mesh_set1.add_mesh(mesh, err); CPPUNIT_ASSERT(!err);
          //Make sure no errors
-       CPPUNIT_ASSERT(!err.errorOn);
+       CPPUNIT_ASSERT(!err);
          //create geometry: plane z=5, normal (0,0,1)
        Vector3D pnt(0,0,5);
        Vector3D s_norm(0,0,1);
        Mesquite::PlanarDomain msq_geom(s_norm, pnt, mesh);
          //Make sure no errors
-       CPPUNIT_ASSERT(!err.errorOn);
-       mesh_set1.set_domain_constraint(&msq_geom, err); CPPUNIT_ASSERT(!err.errorOn);
+       CPPUNIT_ASSERT(!err);
+       mesh_set1.set_domain_constraint(&msq_geom, err); CPPUNIT_ASSERT(!err);
        
          // creates an intruction queue
        InstructionQueue queue1, queue2;
@@ -256,7 +261,7 @@ public:
        LInfTemplate* untan_func = new LInfTemplate(untan);
        LPtoPTemplate* shape_func = new LPtoPTemplate(shape,2,err);
          //Make sure no errors
-       CPPUNIT_ASSERT(!err.errorOn);
+       CPPUNIT_ASSERT(!err);
        shape_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
          // creates the cg optimization procedures
        ConjugateGradient* pass1 = new ConjugateGradient( untan_func, err );
@@ -264,7 +269,7 @@ public:
        pass1->set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err,1 ,1);
        pass2->set_patch_type(PatchData::GLOBAL_PATCH, err,1 ,1);
          //Make sure no errors
-       CPPUNIT_ASSERT(!err.errorOn);
+       CPPUNIT_ASSERT(!err);
        QualityAssessor stop_qa=QualityAssessor(untan,QualityAssessor::MAXIMUM);
        QualityAssessor qa=QualityAssessor(shape,QualityAssessor::MAXIMUM);
          //turn off printing if print flag not set.
@@ -292,21 +297,21 @@ public:
          //TerminationCriterion sc_inner;
          //sc_inner.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,5,err);
          //pass2->set_inner_termination_criterion(&sc_inner);
-       queue1.set_master_quality_improver(pass1, err); CPPUNIT_ASSERT(!err.errorOn);
-       queue2.set_master_quality_improver(pass2, err); CPPUNIT_ASSERT(!err.errorOn);
+       queue1.set_master_quality_improver(pass1, err); CPPUNIT_ASSERT(!err);
+       queue2.set_master_quality_improver(pass2, err); CPPUNIT_ASSERT(!err);
          //********************UNTANGLE*******************************
          //Make sure no errors
-       CPPUNIT_ASSERT(!err.errorOn);
+       CPPUNIT_ASSERT(!err);
          // launches optimization on mesh_set1
        double orig_qa_val=stop_qa.loop_over_mesh(mesh_set1,err);
          //Make sure no errors
-       CPPUNIT_ASSERT(!err.errorOn);
-       queue1.run_instructions(mesh_set1, err); CPPUNIT_ASSERT(!err.errorOn);
+       CPPUNIT_ASSERT(!err);
+       queue1.run_instructions(mesh_set1, err); CPPUNIT_ASSERT(!err);
          //Make sure no errors
-       CPPUNIT_ASSERT(!err.errorOn);
+       CPPUNIT_ASSERT(!err);
        double fin_qa_val=stop_qa.loop_over_mesh(mesh_set1,err);
          //Make sure no errors
-       CPPUNIT_ASSERT(!err.errorOn);
+       CPPUNIT_ASSERT(!err);
          //make sure 'quality' improved
        CPPUNIT_ASSERT( (fin_qa_val-orig_qa_val) <= 0.0 );
          //make sure sc_qa really was satisfied
@@ -314,20 +319,20 @@ public:
        
          //********************SMOOTH*******************************
          //Make sure no errors
-       CPPUNIT_ASSERT(!err.errorOn);
+       CPPUNIT_ASSERT(!err);
          // launches optimization on mesh_set1
        orig_qa_val=qa.loop_over_mesh(mesh_set1,err);
          //Make sure no errors
-       CPPUNIT_ASSERT(!err.errorOn);
-       queue2.run_instructions(mesh_set1, err); CPPUNIT_ASSERT(!err.errorOn);
+       CPPUNIT_ASSERT(!err);
+       queue2.run_instructions(mesh_set1, err); CPPUNIT_ASSERT(!err);
        //Make sure no errors
-       CPPUNIT_ASSERT(!err.errorOn);
+       CPPUNIT_ASSERT(!err);
        fin_qa_val=qa.loop_over_mesh(mesh_set1,err);
          //Make sure no errors
-       CPPUNIT_ASSERT(!err.errorOn);
+       CPPUNIT_ASSERT(!err);
          //make sure 'quality' improved
        CPPUNIT_ASSERT( (fin_qa_val-orig_qa_val) <= 0.0 );
-       Message::print_timing_diagnostics();
+       print_timing_diagnostics(cout);
        delete shape;
        delete untan;
        delete pass1;
@@ -338,22 +343,22 @@ public:
   
   void test_plane_tri_xz()
      {
-       MsqError err;
+       MsqPrintError err(cout); err;
        Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
        mesh->read_vtk("../../meshFiles/2D/VTK/tri_5_xz.vtk", err);
        
          // initialises a MeshSet object
        MeshSet mesh_set1;
-       mesh_set1.add_mesh(mesh, err); CPPUNIT_ASSERT(!err.errorOn);
+       mesh_set1.add_mesh(mesh, err); CPPUNIT_ASSERT(!err);
          //Make sure no errors
-       CPPUNIT_ASSERT(!err.errorOn);
+       CPPUNIT_ASSERT(!err);
          //create geometry: plane y=5, normal (0,1,0)
        Vector3D pnt(0,-5,0);
        Vector3D s_norm(0,-1,0);
        Mesquite::PlanarDomain msq_geom(s_norm, pnt, mesh);
          //Make sure no errors
-       CPPUNIT_ASSERT(!err.errorOn);
-       mesh_set1.set_domain_constraint(&msq_geom, err); CPPUNIT_ASSERT(!err.errorOn);
+       CPPUNIT_ASSERT(!err);
+       mesh_set1.set_domain_constraint(&msq_geom, err); CPPUNIT_ASSERT(!err);
        
          // creates an intruction queue
        InstructionQueue queue1;
@@ -364,7 +369,7 @@ public:
          // ... and builds an objective function with it (untangle)
        LPtoPTemplate* smooth_func = new LPtoPTemplate(smooth,1,err);
          //Make sure no errors
-       CPPUNIT_ASSERT(!err.errorOn);
+       CPPUNIT_ASSERT(!err);
        smooth_func->set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
          // creates the cg optimization procedures
        ConjugateGradient* pass1 = new ConjugateGradient( smooth_func, err );
@@ -372,7 +377,7 @@ public:
        pass1->set_patch_type(PatchData::GLOBAL_PATCH, err,1 ,1);
        pass1->set_debugging_level(1);
          //Make sure no errors
-       CPPUNIT_ASSERT(!err.errorOn);
+       CPPUNIT_ASSERT(!err);
        QualityAssessor qa=QualityAssessor(smooth,QualityAssessor::AVERAGE);
        
          //**********Set stopping criterion  5 iterates ****************
@@ -388,23 +393,23 @@ public:
        pass1->set_inner_termination_criterion(&sc_inner);
          //pass1->set_maximum_iteration(5);
        
-       queue1.set_master_quality_improver(pass1, err); CPPUNIT_ASSERT(!err.errorOn);
+       queue1.set_master_quality_improver(pass1, err); CPPUNIT_ASSERT(!err);
          //********************UNTANGLE*******************************
          //Make sure no errors
-       CPPUNIT_ASSERT(!err.errorOn);
+       CPPUNIT_ASSERT(!err);
          // launches optimization on mesh_set1
        double orig_qa_val=qa.loop_over_mesh(mesh_set1,err);
          //Make sure no errors
-       CPPUNIT_ASSERT(!err.errorOn);
-       queue1.run_instructions(mesh_set1, err); CPPUNIT_ASSERT(!err.errorOn);
+       CPPUNIT_ASSERT(!err);
+       queue1.run_instructions(mesh_set1, err); CPPUNIT_ASSERT(!err);
          //Make sure no errors
-       CPPUNIT_ASSERT(!err.errorOn);
+       CPPUNIT_ASSERT(!err);
        double fin_qa_val=qa.loop_over_mesh(mesh_set1,err);
          //Make sure no errors
-       CPPUNIT_ASSERT(!err.errorOn);
+       CPPUNIT_ASSERT(!err);
          //make sure 'quality' improved
        CPPUNIT_ASSERT( (fin_qa_val-orig_qa_val) <= 0.0 );
-       Message::print_timing_diagnostics();
+       print_timing_diagnostics(cout);
        delete smooth;
        delete smooth_func;
        delete pass1;

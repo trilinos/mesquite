@@ -49,7 +49,7 @@ bool sI_DFT::evaluate_element(PatchData& pd,
   double h, tau, s;
 
   size_t num_T = element->vertex_count();
-  compute_T_matrices(*element, pd, T, num_T, c_k, err); MSQ_CHKERR(err);
+  compute_T_matrices(*element, pd, T, num_T, c_k, err); MSQ_ERRZERO(err);
 
   const double id[] = {1, 0, 0,  0, 1, 0,  0, 0, 1};
   const Matrix3D I(id);
@@ -58,11 +58,11 @@ bool sI_DFT::evaluate_element(PatchData& pd,
     s = pow(tau, MSQ_ONE_THIRD); // for 3D (tet & hex)
     T[i] -= s*I; 
     dft[i] = .5 * Frobenius_2(T[i]);
-    return_flag = get_barrier_function(pd, tau, h, err);
+    return_flag = get_barrier_function(pd, tau, h, err); MSQ_ERRZERO(err);
     dft[i] /= pow(h, MSQ_TWO_THIRDS);
   }
     
-  value = weighted_average_metrics(c_k, dft, num_T, err); MSQ_CHKERR(err);
+  value = weighted_average_metrics(c_k, dft, num_T, err); MSQ_ERRZERO(err);
     
   return return_flag;
 }

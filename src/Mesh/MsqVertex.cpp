@@ -34,8 +34,9 @@ describe MsqVertex.cpp here
  */
 
 #include "MsqVertex.hpp"
+#include "MsqTag.hpp"
 
-using namespace Mesquite;
+namespace Mesquite {
 
 
 
@@ -57,3 +58,4 @@ MsqVertex::~MsqVertex()
   mTag =0;
 }
  
+} // namespace Mesquite

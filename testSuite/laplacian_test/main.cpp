@@ -43,13 +43,15 @@ describe main.cpp here
 // DESCRIP-END.
 //
 
-#ifdef USE_STD_INCLUDES
+#ifndef MSQ_USE_OLD_IO_HEADERS
 #include <iostream>
+using std::cout;
+using std::endl;
 #else
 #include <iostream.h>
 #endif
 
-#ifdef USE_C_PREFIX_INCLUDES
+#ifdef MSQ_USE_OLD_C_HEADERS
 #include <cstdlib>
 #else
 #include <stdlib.h>
@@ -57,7 +59,7 @@ describe main.cpp here
 
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
+#include "MsqError.hpp"
 #include "MeshImpl.hpp"
 #include "Vector3D.hpp"
 #include "InstructionQueue.hpp"
@@ -76,19 +78,18 @@ describe main.cpp here
 using namespace Mesquite;
 
 
-#undef __FUNC__
-#define __FUNC__ "main"
 int main()
 {     
     /* Read a VTK Mesh file */
-  MsqError err;
+  MsqPrintError err(cout);
   Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
   mesh->read_vtk("../../meshFiles/2D/VTK/square_quad_2.vtk", err);
+  if (err) return 1;
   
     // initialises a MeshSet object
   MeshSet mesh_set1;
   mesh_set1.add_mesh(mesh, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   
     // creates an intruction queue
   InstructionQueue queue1;
@@ -97,30 +98,30 @@ int main()
   ShapeQualityMetric* shape_metric = new ConditionNumberQualityMetric;
   SmoothnessQualityMetric* lapl_met = new EdgeLengthQualityMetric;
   lapl_met->set_averaging_method(QualityMetric::RMS,err);
-   if (err.errorOn) return 1;
+   if (err) return 1;
  
     // creates the laplacian smoother  procedures
   LaplacianSmoother lapl1(err);
-  if (err.errorOn) return 1;
+  if (err) return 1;
   QualityAssessor stop_qa=QualityAssessor(shape_metric,QualityAssessor::MAXIMUM);
   stop_qa.add_quality_assessment(lapl_met,QualityAssessor::ALL_MEASURES,err);
-  if (err.errorOn) return 1;
+  if (err) return 1;
   
     //**************Set stopping criterion****************
   TerminationCriterion sc2;
   sc2.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,10,err);
-  if (err.errorOn) return 1;
+  if (err) return 1;
   lapl1.set_outer_termination_criterion(&sc2);
     // sets a culling method on the first QualityImprover
   lapl1.add_culling_method(PatchData::NO_BOUNDARY_VTX);
   
     // adds 1 pass of pass1 to mesh_set1
   queue1.add_quality_assessor(&stop_qa,err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   queue1.set_master_quality_improver(&lapl1, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   queue1.add_quality_assessor(&stop_qa,err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
     // adds 1 passes of pass2 to mesh_set1
     //  mesh_set1.add_quality_pass(pass2);
   
@@ -128,10 +129,10 @@ int main()
   
     // launches optimization on mesh_set1
   queue1.run_instructions(mesh_set1, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   
   mesh->write_vtk("smoothed_mesh", err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   
   return 0;
 }

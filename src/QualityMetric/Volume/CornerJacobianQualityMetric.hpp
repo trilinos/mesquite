@@ -37,12 +37,9 @@ Header file for the Mesquite::CornerJacobianQualityMetric class
 
 #ifndef CornerJacobianQualityMetric_hpp
 #define CornerJacobianQualityMetric_hpp
-#include "MsqMeshEntity.hpp"
+
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
 #include "VolumeQualityMetric.hpp"
-#include "Vector3D.hpp"
-#include "PatchData.hpp"
 
 
 namespace Mesquite

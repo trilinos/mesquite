@@ -26,56 +26,56 @@
   ***************************************************************** */
 #include "MsqTimer.hpp"
 
+#ifdef MSQ_USE_OLD_IO_HEADERS
+#  include <iostream.h>
+#  include <iomanip.h>
+#else
+#  include <iostream>
+#  include <iomanip>
+#endif
+
 // Create the global collection of stop watches
 Mesquite::StopWatchCollection Mesquite::GlobalStopWatches;
 
-// Unfortunately, many Unix platforms don't have good support
-// for the ANSI standard clock() function.  That means we have
-// to implement this class differently for WIN32 and Unix.  If
-// your platform wants to use clock() to implement this class,
-// define USE_CLOCK_TIMER in your compile line for this file.
-// If USE_CLOCK_TIMER is not defined, the class is implemented
-// using times() instead.
-#ifdef USE_CLOCK_TIMER
-#ifdef USE_C_PREFIX_INCLUDES
-#include <ctime>
-#else
-#include <time.h>	
-#endif
-static inline double now()
-{ return (double)clock() / (double)CLOCKS_PER_SEC; }
-
-#else // If we aren't using clock()
-
-#include <sys/param.h>
-#include <sys/times.h>
-#include <time.h>	
-#ifdef SOLARIS
-#include <unistd.h>
+#ifdef HAVE_TIMES
+#  include <sys/times.h>
+#  include <unistd.h>
+#  include <limits.h>
+#  ifndef CLK_TCK
+#    ifdef _SC_CLK_TCK
+#      define CLK_TCK sysconf(_SC_CLK_TCK)
+#    else
+#      include <sys/param.h>
+#      ifdef HZ
+#        define CLK_TCK HZ
+#      else
+#        error times(3) w/out CLK_TCK.  Please report this.
+#        undef HAVE_TIMES
+#      endif
+#    endif
+#  endif
 #endif
 
-#ifndef HZ
-#ifdef CLK_TCK
-#define HZ CLK_TCK
-#else
-#ifdef CLOCKS_PER_SEC
-#define HZ CLOCKS_PER_SEC
-#else
-#define HZ 60
+#ifdef HAVE_TIMES
+   static inline double now()
+   {
+     tms t;
+     times( &t );
+     return (double)(t.tms_utime + t.tms_stime) / CLK_TCK;
+   }
+#elif defined(HAVE_CLOCK)
+#  ifdef MSQ_USE_OLD_C_HEADERS
+#    include <time.h>
+#  else
+#    include <ctime>
 #endif
-#endif
+   static inline double now()
+   {
+     return (double)msq_stdc::clock() / CLOCKS_PER_SEC; 
+   }
 #endif
 
-static inline double now()
-{
-  tms current;
-  times( &current );
-  return ((double)(current.tms_utime  +
-                   current.tms_stime  +
-                   current.tms_cutime +
-                   current.tms_cstime)) / (double)HZ;
-}
-#endif // End of times() based implementation
+
 
 Mesquite::Timer::Timer() 
     : atBirth(now())
@@ -137,7 +137,7 @@ double Mesquite::StopWatch::total_time() const
 }
 
 Mesquite::StopWatchCollection::Key Mesquite::StopWatchCollection::add(
-  const string &name,
+  const msq_std::string &name,
   bool fail_if_exists)
 {
     // Don't allow empty name
@@ -163,7 +163,7 @@ Mesquite::StopWatchCollection::Key Mesquite::StopWatchCollection::add(
       // If not, create a new one
     if (i == mEntries.size())
     {
-      mEntries.push_back(pair<string, StopWatch>(name, StopWatch()));
+      mEntries.push_back(msq_std::pair<msq_std::string, StopWatch>(name, StopWatch()));
     }
     key = i+1;
   }
@@ -176,7 +176,7 @@ Mesquite::StopWatchCollection::Key Mesquite::StopWatchCollection::add(
 
 
 Mesquite::StopWatchCollection::Key Mesquite::StopWatchCollection::get_key(
-  const string &name) const
+  const msq_std::string &name) const
 {
   Key key = 0;
   
@@ -267,7 +267,7 @@ int Mesquite::StopWatchCollection::number_of_starts(
   key associated with the smallest total_time StopWatch is in the last
   position of the vector.*/
 void Mesquite::StopWatchCollection::get_keys_sorted_by_time(
-  vector<Key> &sorted_keys)
+  msq_std::vector<Key> &sorted_keys)
 {
   int num_watches=mEntries.size();
   int *sorted_indices=new int[num_watches];
@@ -305,6 +305,28 @@ void Mesquite::StopWatchCollection::get_keys_sorted_by_time(
   delete[] sorted_indices;
 }
 
-      
-  
+// Originally in MsqMessage.cpp
+// Moved here and converted to an ostream operator 
+// by J.Kraftcheck, 2004-10-18
+msq_stdio::ostream& Mesquite::operator<<( msq_stdio::ostream& str,
+                                          Mesquite::StopWatchCollection& coll )
+{
+  msq_std::vector<Mesquite::StopWatchCollection::Key> sorted_keys;
+  Mesquite::GlobalStopWatches.get_keys_sorted_by_time(sorted_keys);
+  int number_of_keys=sorted_keys.size();
+  int i =0;
+  str<<"\nTIME        | NUM. STARTS | TIMER NAME ("<<number_of_keys<<" timers)\n";
+  for(i=0;i<number_of_keys;++i){
+    str<<setiosflags(msq_stdio::ios::left)
+             <<msq_stdio::setw(13)
+             <<Mesquite::GlobalStopWatches.total_time(sorted_keys[i])
+             <<" "
+             <<msq_stdio::setw(13)
+             <<Mesquite::GlobalStopWatches.number_of_starts(sorted_keys[i])
+             <<" "
+             <<Mesquite::GlobalStopWatches.get_string(sorted_keys[i])
+             <<msq_stdio::endl;
+  }
+}
+
 

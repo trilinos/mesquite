@@ -37,12 +37,9 @@ Header file for the Mesquite::ASMQualityMetric class
 
 #ifndef ASMQualityMetric_hpp
 #define ASMQualityMetric_hpp
-#include "MsqMeshEntity.hpp"
+
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
 #include "SmoothnessQualityMetric.hpp"
-#include "Vector3D.hpp"
-#include "PatchData.hpp"
 
 
 namespace Mesquite

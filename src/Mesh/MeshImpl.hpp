@@ -38,7 +38,11 @@
 
 #include "MeshInterface.hpp"
 
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#include <map.h>
+#else
 #include <map>
+#endif
 
 namespace Mesquite
 {
@@ -228,14 +232,14 @@ namespace Mesquite
     
 //*************** Tags  ***********
 
-    virtual void element_tag_create(const string tag_name,
+    virtual void element_tag_create(const msq_std::string tag_name,
                                           int tag_size,
                                           TagHandle& tag_handle,
                                           MsqError &err);
                                   
     virtual void tag_destroy( TagHandle handle, MsqError& err );
     
-    virtual void* tag_get_handle(const string tag_name, MsqError &err);
+    virtual void* tag_get_handle(const msq_std::string tag_name, MsqError &err);
     
     virtual void elements_set_tag_data(const size_t num_elements, 
                                        TagHandle tag_handle,
@@ -290,9 +294,9 @@ namespace Mesquite
     struct tag {
       void* elementData; // points to the beginning of the dense tag array
       void* vertexData; 
-      int size; // size is the increment to use to go from one tag to the next
+      size_t size; // size is the increment to use to go from one tag to the next
     };
-    std::map<std::string, MeshImpl::tag> denseTags; 
+    msq_std::map<std::string, tag> denseTags; 
     
     class Vertex
     {
@@ -312,30 +316,30 @@ namespace Mesquite
 //**************** VTK Parsing ****************
 
       /** Read a data block from the file */
-    bool vtk_read_dataset( FileTokenizer& file, MsqError& err );
+    void vtk_read_dataset( FileTokenizer& file, MsqError& err );
     
       /** Read structured point mesh */
-    bool vtk_read_structured_points( FileTokenizer& file, MsqError& err );
+    void vtk_read_structured_points( FileTokenizer& file, MsqError& err );
       /** Read structured grid mesh */
-    bool vtk_read_structured_grid  ( FileTokenizer& file, MsqError& err );
+    void vtk_read_structured_grid  ( FileTokenizer& file, MsqError& err );
       /** Read rectilinear grid structured mesh */
-    bool vtk_read_rectilinear_grid ( FileTokenizer& file, MsqError& err );
+    void vtk_read_rectilinear_grid ( FileTokenizer& file, MsqError& err );
       /** Read polydata mesh */
-    bool vtk_read_polydata         ( FileTokenizer& file, MsqError& err );
+    void vtk_read_polydata         ( FileTokenizer& file, MsqError& err );
       /** Read unstructured mesh */
-    bool vtk_read_unstructured_grid( FileTokenizer& file, MsqError& err );
+    void vtk_read_unstructured_grid( FileTokenizer& file, MsqError& err );
       /** Read file-level field data */
-    bool vtk_read_field            ( FileTokenizer& file, MsqError& err );
+    void vtk_read_field            ( FileTokenizer& file, MsqError& err );
     
       /** Helper function for \ref vtk_read_polydata - reads polygon subsection */
-    bool vtk_read_polygons( FileTokenizer& file, MsqError& err );
+    void vtk_read_polygons( FileTokenizer& file, MsqError& err );
       /** Helper function for readers of structured mesh - create elements */
-    bool vtk_create_structured_elems( const long* dims, MsqError& err );
+    void vtk_create_structured_elems( const long* dims, MsqError& err );
     
       /** Read attribute data for vertices */
-    bool vtk_read_point_data( FileTokenizer& file, MsqError& err );
+    void vtk_read_point_data( FileTokenizer& file, MsqError& err );
       /** Read attribute data for elements */
-    bool vtk_read_cell_data ( FileTokenizer& file, MsqError& err );
+    void vtk_read_cell_data ( FileTokenizer& file, MsqError& err );
       /** Read actual data for both \ref vtk_read_point_data and \ref vtk_read_cell_data */
     void* vtk_read_attrib_data( FileTokenizer& file, 
                                 long num_data_to_read, 

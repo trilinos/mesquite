@@ -38,8 +38,7 @@ Header file for the Mesquite::MsqTag class
 #define MsqTag_hpp
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
-#include "MsqMessage.hpp"
+#include "MsqError.hpp"
 #include "TargetMatrix.hpp"
 
 namespace Mesquite
@@ -69,9 +68,10 @@ namespace Mesquite
       numTargets = A.numTargets;
       targets = new TargetMatrix[numTargets];
       scalars = new double[numScalars];
-      for (short int i=0; i<numTargets; ++i)
+      short i;
+	  for (i=0; i<numTargets; ++i)
         targets[i] = A.targets[i];
-      for (short int i=0; i<numScalars; ++i)
+      for (i=0; i<numScalars; ++i)
         scalars[i] = A.scalars[i]; }
      
     
@@ -82,14 +82,13 @@ namespace Mesquite
       delete [] scalars;
     }
 
-#undef __FUNC__
-#define __FUNC__ "MsqTag::set_targets"
       //! This sets the targets to an existing array of TargetMatrix s. No allocation is made
       //! by this function.
     void set_targets(TargetMatrix* Ws_pt, short int num_targets, MsqError &err)
     {
       if (targets != 0) {
-        err.set_msg("Targets already allocated. Why are you reallocating ?");
+        MSQ_SETERR(err)( MsqError::INVALID_STATE,
+                   "Targets already allocated. Why are you reallocating ?");
         return;
       }
 
@@ -97,15 +96,14 @@ namespace Mesquite
       numTargets = num_targets;
     }
 
-#undef __FUNC__
-#define __FUNC__ "MsqTag::allocate_targets"
       //! This function allocates target matrices within the tag.
       //! \param num_targets is the number of target matrices to be allocated.
       //! \param alloc_inv if true, allocates space also for the inverse matrices. 
     void allocate_targets(short int num_targets, MsqError &err, bool alloc_inv=false)
     {
       if (targets != 0) {
-        err.set_msg("Targets already allocated. Why are you reallocating ?");
+        MSQ_SETERR(err)( MsqError::INVALID_STATE,
+                   "Targets already allocated. Why are you reallocating ?");
         return;
       }
 
@@ -114,13 +112,12 @@ namespace Mesquite
       numTargets = num_targets;
     }
 
-#undef __FUNC__
-#define __FUNC__ "MsqTag::allocate_scalars"
       //!
     void allocate_scalars(short int num_scalars, MsqError &err)
     {
       if (scalars != 0) {
-        err.set_msg("Scalars already allocated. Why are you reallocating ?");
+        MSQ_SETERR(err)( MsqError::INVALID_STATE,
+                   "Scalars already allocated. Why are you reallocating ?");
         return;
       }
 

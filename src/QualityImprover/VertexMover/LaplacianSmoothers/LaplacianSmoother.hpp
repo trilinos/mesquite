@@ -41,7 +41,13 @@
 #include "Mesquite.hpp"
 #include "VertexMover.hpp"
 #include "MsqFreeVertexIndexIterator.hpp"
-#include <vector>
+
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#  include <vector.h>
+#else
+#  include <vector>
+#endif
+
 namespace Mesquite
 {
 
@@ -67,20 +73,20 @@ namespace Mesquite
   };
 
   
-#undef __FUNC__
-#define __FUNC__ "centroid_smooth_mesh" 
   inline void centroid_smooth_mesh(PatchData &pd, size_t num_adj_vtx,
-                                   vector<size_t> adj_vtx_ind,
+                                   msq_std::vector<size_t> adj_vtx_ind,
                                    size_t free_ind,
                                    size_t dimension, MsqError &err)
   {
     MsqVertex* verts=pd.get_vertex_array(err);
-    vector<size_t>::iterator iter;
+    msq_std::vector<size_t>::iterator iter;
     
     size_t j;
     double scale_val=1.0;
-    if (num_adj_vtx==0) 
-      err.set_msg("Number of incident vertices is zero\n");
+    if (num_adj_vtx==0) {
+      MSQ_SETERR(err)("Number of incident vertices is zero",MsqError::INVALID_ARG);
+      return;
+    }
     else
       scale_val=1.0/((double) num_adj_vtx);
     double avg[3];

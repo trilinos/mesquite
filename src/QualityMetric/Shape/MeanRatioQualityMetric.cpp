@@ -34,19 +34,68 @@
 
   \date   2002-06-9
 */
-#include <vector>
 #include "MeanRatioQualityMetric.hpp"
 #include "MeanRatioFunctions.hpp"
-#include <math.h>
-#include "Vector3D.hpp"
-#include "ShapeQualityMetric.hpp"
-#include "QualityMetric.hpp"
 #include "MsqTimer.hpp"
+#include "MsqDebug.hpp"
 
-using namespace Mesquite;
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#  include <vector.h>
+#else
+#  include <vector>
+   using std::vector;
+#endif
 
-#undef __FUNC__
-#define __FUNC__ "MeanRatioQualityMetric::evaluate_element" 
+#include <math.h>
+
+namespace Mesquite {
+
+MeanRatioQualityMetric::MeanRatioQualityMetric( MsqError& err, double pow_dbl )
+{
+  set_metric_type(ELEMENT_BASED);
+  set_element_evaluation_mode(ELEMENT_VERTICES, err); MSQ_ERRRTN(err);
+
+  set_gradient_type(ANALYTICAL_GRADIENT);
+  set_hessian_type(ANALYTICAL_HESSIAN);
+  avgMethod=QualityMetric::LINEAR;
+  feasible=1;
+  set_name("Mean Ratio");
+
+    //Note:  the following are redundant since set_metric_power is called
+  set_negate_flag(1);
+
+  a2Con =  1.0 / 2.0;
+  b2Con =  1.0;
+  c2Con = -1.0;
+
+  a3Con =  1.0 / 3.0;
+  b3Con =  1.0;
+  c3Con = -2.0 / 3.0;
+    //the above are redundant since set_metric_power is called
+
+  set_metric_power(pow_dbl, err);  MSQ_ERRRTN(err);
+}
+
+       //! Sets the power value in the metric computation.
+void MeanRatioQualityMetric::set_metric_power(double pow_dbl, MsqError& err)
+{
+  if(fabs(pow_dbl)<=MSQ_MIN){
+    MSQ_SETERR(err)(MsqError::INVALID_ARG);
+    return;
+  }
+  if(pow_dbl<0)
+    set_negate_flag(-1);
+  else
+    set_negate_flag(1);
+  a2Con=pow(.5,pow_dbl);
+  b2Con=pow_dbl;
+  c2Con=-pow_dbl;
+  a3Con=pow(1.0/3.0,pow_dbl);
+  b3Con=pow_dbl;
+  c3Con=-2.0*pow_dbl/3.0;
+}
+
+
 bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
                                               MsqMeshEntity *e,
                                               double &m,
@@ -54,7 +103,7 @@ bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
 {
   EntityTopology topo = e->get_element_type();
 
-  MsqVertex *vertices = pd.get_vertex_array(err);
+  MsqVertex *vertices = pd.get_vertex_array(err);  MSQ_ERRZERO(err);
   const size_t *v_i = e->get_vertex_index_array();
 
   Vector3D n;			// Surface normal for 2D objects
@@ -77,7 +126,7 @@ bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
   bool metric_valid = false;
   switch(topo) {
   case TRIANGLE:
-    pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
+    pd.get_domain_normal_at_element(e, n, err); MSQ_ERRZERO(err);
     n = n / n.length();		// Need unit normal
     mCoords[0] = vertices[v_i[0]];
     mCoords[1] = vertices[v_i[1]];
@@ -87,7 +136,7 @@ bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
     break;
     
   case QUADRILATERAL:
-    pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
+    pd.get_domain_normal_at_element(e, n, err); MSQ_ERRZERO(err);
     n = n / n.length();	// Need unit normal
     for (i = 0; i < 4; ++i) {
       mCoords[0] = vertices[v_i[locs_hex[i][0]]];
@@ -119,7 +168,7 @@ bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
 			      a3Con, b3Con, c3Con, d_con);
       if (!metric_valid) return false;
     }
-    m = average_metrics(mMetrics, 8, err);
+    m = average_metrics(mMetrics, 8, err); MSQ_ERRZERO(err);
     break;
 
   default:
@@ -128,8 +177,6 @@ bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
   return true;
 }
 
-#undef __FUNC__
-#define __FUNC__ "MeanRatioQualityMetric::compute_element_analytical_gradient" 
 bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 								 MsqMeshEntity *e,
 								 MsqVertex *v[], 
@@ -138,17 +185,16 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 								 double &m,
                          MsqError &err)
 {
-//  FUNCTION_TIMER_START(__FUNC__);
   EntityTopology topo = e->get_element_type();
 
   if (((topo == QUADRILATERAL) || (topo == HEXAHEDRON)) && 
       ((avgMethod == MINIMUM) || (avgMethod == MAXIMUM))) {
-    Message::print_warning(
+    MSQ_DBGOUT(1) <<
       "Minimum and maximum not continuously differentiable.\n"
-      "Element of subdifferential will be returned.\n");
+      "Element of subdifferential will be returned.\n";
   }
 
-  MsqVertex *vertices = pd.get_vertex_array(err);
+  MsqVertex *vertices = pd.get_vertex_array(err);  MSQ_ERRZERO(err);
   const size_t *v_i = e->get_vertex_index_array();
 
   Vector3D n;			// Surface normal for 2D objects
@@ -175,7 +221,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 
   switch(topo) {
   case TRIANGLE:
-    pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
+    pd.get_domain_normal_at_element(e, n, err); MSQ_ERRZERO(err);
     n = n / n.length();		// Need unit normal
     mCoords[0] = vertices[v_i[0]];
     mCoords[1] = vertices[v_i[1]];
@@ -195,7 +241,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
     break;
 
   case QUADRILATERAL:
-    pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
+    pd.get_domain_normal_at_element(e, n, err); MSQ_ERRZERO(err);
     for (i = 0; i < 4; ++i) {
       mAccumGrad[i] = 0.0;
 
@@ -326,7 +372,8 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
         break;
 
       default:
-        err.set_msg("averaging method not available.");
+        MSQ_SETERR(err)("averaging method not available.",MsqError::INVALID_STATE);
+        return false;
         break;
       }
 
@@ -520,7 +567,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
         t = -2.0;
         break;
       default:
-        err.set_msg("averaging method not available.");
+        MSQ_SETERR(err)("averaging method not available.",MsqError::INVALID_STATE);
         break;
       }
 
@@ -563,13 +610,10 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
     break;
   } // end switch over element type
 
-//  FUNCTION_TIMER_END();
   return true;
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "MeanRatioQualityMetric::compute_element_analytical_hessian" 
 bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 								MsqMeshEntity *e,
 								MsqVertex *fv[], 
@@ -579,18 +623,17 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 								double &m,
 								MsqError &err)
 {
-//  FUNCTION_TIMER_START(__FUNC__);
   EntityTopology topo = e->get_element_type();
 
   if (((topo == QUADRILATERAL) || (topo == HEXAHEDRON)) && 
       ((avgMethod == MINIMUM) || (avgMethod == MAXIMUM))) {
-    Message::print_warning(
+    MSQ_DBGOUT(1) <<
       "Minimum and maximum not continuously differentiable.\n"
       "Element of subdifferential will be returned.\n"
-      "Who knows what the Hessian is?\n" );
+      "Who knows what the Hessian is?\n" ;
   }
 
-  MsqVertex *vertices = pd.get_vertex_array(err);
+  MsqVertex *vertices = pd.get_vertex_array(err);  MSQ_ERRZERO(err);
   const size_t *v_i = e->get_vertex_index_array();
 
 
@@ -619,7 +662,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 
   switch(topo) {
   case TRIANGLE:
-    pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
+    pd.get_domain_normal_at_element(e, n, err); MSQ_ERRZERO(err);
     n = n / n.length();		// Need unit normal
     mCoords[0] = vertices[v_i[0]];
     mCoords[1] = vertices[v_i[1]];
@@ -657,7 +700,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
       h[i].zero();
     }
     
-    pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
+    pd.get_domain_normal_at_element(e, n, err); MSQ_ERRZERO(err);
     for (i = 0; i < 4; ++i) {
       g[i] = 0.0;
 
@@ -671,11 +714,11 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 
     switch(avgMethod) {
     case MINIMUM:
-      err.set_msg("MINIMUM averaging method does not work.");
+      MSQ_SETERR(err)("MINIMUM averaging method does not work.",MsqError::INVALID_STATE);
       return false;
 
     case MAXIMUM:
-      err.set_msg("MAXIMUM averaging method does not work.");
+      MSQ_SETERR(err)("MAXIMUM averaging method does not work.",MsqError::INVALID_STATE);
       return false;
 
     case SUM:
@@ -781,7 +824,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
       break;
 
     case GEOMETRIC:
-      err.set_msg("GEOMETRIC averaging method does not work.");
+      MSQ_SETERR(err)("GEOMETRIC averaging method does not work.",MsqError::INVALID_STATE);
       return false;
 
     default:
@@ -799,7 +842,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 	break;
 
       default:
-        err.set_msg("averaging method not available.");
+        MSQ_SETERR(err)("averaging method not available.",MsqError::NOT_IMPLEMENTED);
         break;
       }
 
@@ -943,11 +986,11 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 
     switch(avgMethod) {
     case MINIMUM:
-      err.set_msg("MINIMUM averaging method does not work.");
+      MSQ_SETERR(err)("MINIMUM averaging method does not work.",MsqError::NOT_IMPLEMENTED);
       return false;
 
     case MAXIMUM:
-      err.set_msg("MAXIMUM averaging method does not work.");
+      MSQ_SETERR(err)("MAXIMUM averaging method does not work.",MsqError::NOT_IMPLEMENTED);
       return false;
 
     case SUM:
@@ -1055,7 +1098,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
       break;
 
     case GEOMETRIC:
-      err.set_msg("GEOMETRIC averaging method does not work.");
+      MSQ_SETERR(err)("GEOMETRIC averaging method does not work.",MsqError::NOT_IMPLEMENTED);
       return false;
 
     default:
@@ -1073,7 +1116,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 	break;
 
       default:
-        err.set_msg("averaging method not available.");
+        MSQ_SETERR(err)("averaging method not available.",MsqError::NOT_IMPLEMENTED);
         break;
       }
 
@@ -1190,6 +1233,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     break;
   } // end switch over element type
 
-//  FUNCTION_TIMER_END();
   return true;
 }
+
+} // namespace Mesquite

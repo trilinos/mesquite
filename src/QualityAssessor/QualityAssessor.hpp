@@ -40,20 +40,25 @@ Header file for the Mesquite::QualityAssessor class
 
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
-#include "MeshSet.hpp"
 #include "PatchDataUser.hpp"
-#include <list>
-#include <string>
 
-MSQ_USE(string);
-MSQ_USE(list);
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#  include <list.h>
+#  include <string.h>
+#else
+#  include <list>
+#  include <string>
+   using std::string;
+   using std::list;
+#endif
 
 
 namespace Mesquite 
 {
 
    class QualityMetric;
+   class MsqError;
+   class MeshSet;
 
   /*! \class QualityAssessor
 

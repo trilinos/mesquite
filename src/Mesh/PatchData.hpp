@@ -40,26 +40,35 @@
   \date   2002-01-17
 */
 
-
-#ifdef USE_C_PREFIX_INCLUDES
-#include <cstddef>
-#include <cstdlib>
-#else
-#include <stddef.h>
-#include <stdlib.h>
-#endif
-
-#include <map>
-
 #include "Mesquite.hpp"
-#include "Vector3D.hpp"
 #include "MsqVertex.hpp"
 #include "MsqMeshEntity.hpp"
-#include "MesquiteError.hpp"
-
+#include "MsqVertex.hpp"
 #include "MeshInterface.hpp"
 
-MSQ_USE(vector);
+
+#ifndef MSQ_USE_OLD_C_HEADERS
+#  include <cstddef>
+#  include <cstdlib>
+#else
+#  include <stddef.h>
+#  include <stdlib.h>
+#endif
+
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#  include <map.h>
+#  include <vector.h>
+#else
+#  include <map>
+#  include <vector>
+#endif
+
+#ifdef MSQ_USE_OLD_IO_HEADERS
+   class ostream;
+#else
+#  include <iosfwd>
+#endif
+
 
 namespace Mesquite
 {
@@ -182,22 +191,22 @@ namespace Mesquite
     
       //! Get the coordinates of vertices attached to the specified element
     void get_element_vertex_coordinates(size_t elem_index,
-                                        vector<Vector3D> &coords,
+                                        msq_std::vector<Vector3D> &coords,
                                         MsqError &err);
       /*! Get the indices of vertices of specified element. !inefficient!*/
     void get_element_vertex_indices(size_t elem_index,
-                                    vector<size_t> &vertex_indices,
+                                    msq_std::vector<size_t> &vertex_indices,
                                     MsqError &err);
       /*! Get the indices of the elements attached to the specified vertex. */
     void get_vertex_element_indices(size_t vertex_index,
-                                    vector<size_t> &elem_indices,
+                                    msq_std::vector<size_t> &elem_indices,
                                     MsqError &err);
     
       /*! Get the indices of vertices that are attached to vertex (given by
         vertex_index) by an element edge.
       */
     void get_adjacent_vertex_indices(size_t vertex_index,
-                                     vector<size_t> &vert_indices,
+                                     msq_std::vector<size_t> &vert_indices,
                                      MsqError &err);
     
     
@@ -208,7 +217,7 @@ namespace Mesquite
         
       */
     void get_adjacent_entities_via_n_dim(int n, size_t ent_ind,
-                                         vector<size_t> &adj_ents,
+                                         msq_std::vector<size_t> &adj_ents,
                                          MsqError &err);
     
       /*! Create the arrays that store which elements are attached
@@ -364,7 +373,7 @@ namespace Mesquite
       { return meshSet; }
     
     //! Display the coordinates and connectivity information
-    void print();
+    msq_stdio::ostream& operator<<( msq_stdio::ostream& stream ) const;
    
    private:
 
@@ -396,7 +405,7 @@ namespace Mesquite
     size_t subpatchIndexSize;
 
       // Patch Computed Information (maxs, mins, etc ... )
-    std::map<ComputedInfo, double>  computedInfos; 
+    msq_std::map<ComputedInfo, double>  computedInfos; 
     
 //       //geometry information
 //     GeometryEngine mGeom;
@@ -430,8 +439,6 @@ namespace Mesquite
   };
 
 
-#undef __FUNC__
-#define __FUNC__ "PatchData::clear"
   inline void PatchData::clear()
   {
     numVertices = 0;
@@ -441,8 +448,6 @@ namespace Mesquite
     computedInfos.clear();
   }
   
-#undef __FUNC__
-#define __FUNC__ "PatchData::reset"
   inline void PatchData::reset()
   {
     clear();
@@ -467,8 +472,6 @@ namespace Mesquite
     subpatchIndexSize = 0;
   }
   
-#undef __FUNC__
-#define __FUNC__ "PatchData::reserve_vertex_capacity"
   /*! \fn PatchData::reserve_vertex_capacity(size_t min_num_vertices, MsqError &err)
     
   Allocates memory for vertex array
@@ -492,10 +495,10 @@ namespace Mesquite
         if (numVertices > min_num_vertices)
           numVertices = min_num_vertices;
         
-        memcpy(new_array,
+        msq_stdc::memcpy(new_array,
                vertexArray,
                sizeof(MsqVertex)*numVertices);
-        memcpy(new_handles_array,
+        msq_stdc::memcpy(new_handles_array,
                vertexHandlesArray,
                sizeof(Mesquite::Mesh::VertexHandle)*numVertices);
       }
@@ -509,8 +512,6 @@ namespace Mesquite
     }
   }
   
-#undef __FUNC__
-#define __FUNC__ "PatchData::reserve_element_capacity"
   /*! \fn PatchData::reserve_element_capacity(size_t num_elements, MsqError &err)
     allocates memory for element array
     if current memory is inapropriate.
@@ -533,9 +534,9 @@ namespace Mesquite
       {
         if (numElements > min_num_elements)
           numElements = min_num_elements;
-        memcpy(new_array, elementArray,
+        msq_stdc::memcpy(new_array, elementArray,
                sizeof(MsqMeshEntity)*numElements);
-        memcpy(new_handles_array, elementHandlesArray,
+        msq_stdc::memcpy(new_handles_array, elementHandlesArray,
                sizeof(Mesquite::Mesh::ElementHandle)*numElements);
       }
       
@@ -548,8 +549,6 @@ namespace Mesquite
     }
   }
 
-#undef __FUNC__
-#define __FUNC__ "PatchData::get_coords_array"
   /*! \fn PatchData::get_vertex_array(MsqError &err) const 
 
   \brief Returns an array of all vertices in the PatchData.
@@ -557,25 +556,21 @@ namespace Mesquite
   inline MsqVertex* PatchData::get_vertex_array(MsqError &err) const 
   {
     if (vertexArray==0) 
-      err.set_msg("\nWARNING: no vertex array defined.\n");
+      MSQ_SETERR(err)( "No vertex array defined", MsqError::INVALID_STATE );
     return vertexArray;
   }
   
-#undef __FUNC__
-#define __FUNC__ "PatchData::get_element_array" 
   /*! \fn PatchData::get_element_array(MsqError &err) const 
 
   \brief Returns the PatchData element array.
   */
   inline MsqMeshEntity* PatchData::get_element_array(MsqError &err) const
   {
-    if (elementArray==0) 
-      err.set_msg("\nWARNING: no element array defined.\n");
+    if (vertexArray==0) 
+      MSQ_SETERR(err)( "No element array defined", MsqError::INVALID_STATE );
     return elementArray;
   }
   
-#undef __FUNC__
-#define __FUNC__ "PatchData::set_vertex_coordinates"
   /*! \fn PatchData::set_vertex_coordinates(const Vector3D &coords, size_t index, MsqError &err)
 
   \brief set the coordinates of a vertex in the raw array
@@ -584,18 +579,20 @@ namespace Mesquite
                                                 size_t index,
                                                 MsqError &err) 
   {
-    if (vertexArray==0)
-      err.set_msg("\nWARNING: no coordinates array defined.\n");
+    if (vertexArray==0) {
+      MSQ_SETERR(err)( "No vertex array defined", MsqError::INVALID_STATE );
+      return;
+    }
     
-    if (index >= numVertices)
-      err.set_msg("\nWARNING: index bigger than numVertices.\n");
+    if (index >= numVertices) {
+      MSQ_SETERR(err)( "Index bigger than numVertices.", MsqError::INVALID_ARG );
+      return;
+    }
     
     vertexArray[index] = coords;
   }
   
   
-#undef __FUNC__
-#define __FUNC__ "PatchData::get_vertex_to_elem_offset" 
   /*! \fn PatchData::get_vertex_to_elem_offset(MsqError &err) const 
    */  inline const size_t* PatchData::get_vertex_to_elem_offset(MsqError &/*err*/)
   {
@@ -607,8 +604,6 @@ namespace Mesquite
     return v2eOffset;
   }
   
-#undef __FUNC__
-#define __FUNC__ "PatchData::get_vertex_to_elem_array" 
   /*! \fn PatchData::get_vertex_to_elem_array(MsqError &err) const 
    */
   inline const size_t* PatchData::get_vertex_to_elem_array(MsqError &/*err*/) 
@@ -621,22 +616,16 @@ namespace Mesquite
     return v2E;
   }
   
-#undef __FUNC__
-#define __FUNC__ "PatchData::vertex_by_index"
   inline MsqVertex& PatchData::vertex_by_index(size_t index)
   {
     return vertexArray[index];
   }
   
-#undef __FUNC__
-#define __FUNC__ "PatchData::element_by_index"
   inline MsqMeshEntity& PatchData::element_by_index(size_t index)
   {
     return elementArray[index];
   }
   
-#undef __FUNC__
-#define __FUNC__ "PatchData::get_vertex_index"
   /*! gets the index of a vertex in the PatchData vertex array,
     given a pointer to the vertex. */
   inline size_t PatchData::get_vertex_index(MsqVertex* vertex)
@@ -644,16 +633,12 @@ namespace Mesquite
     return vertex - vertexArray;
   }
   
-#undef __FUNC__
-#define __FUNC__ "PatchData::get_element_index"
   inline size_t PatchData::get_element_index(MsqMeshEntity* element)
   {
     return element - elementArray;
   }
 
   
-#undef __FUNC__
-#define __FUNC__ "PatchData::create_vertices_memento"
   /*! \fn PatchData::create_vertices_memento(MsqError &err)
     This function instantiate PatchDataVerticesMemento object and returns a pointer to it.
     The PatchDataVerticesMemento contains the current state of the PatchData coordinates.
@@ -672,13 +657,11 @@ namespace Mesquite
     memento->arraySize = numVertices;
      
       // Copy the coordinates
-    memcpy(memento->vertices, vertexArray, numVertices*sizeof(MsqVertex) );
+    msq_stdc::memcpy(memento->vertices, vertexArray, numVertices*sizeof(MsqVertex) );
     
     return memento;
   }
   
-#undef __FUNC__
-#define __FUNC__ "PatchData::recreate_vertices_memento"
   /*! \fn PatchData::recreate_vertices_memento(MsqError &err)
     This function reuses an existing PatchDataVerticesMemento object.
     The PatchDataVerticesMemento contains the current state of the PatchData coordinates.
@@ -702,13 +685,11 @@ namespace Mesquite
     }
     
       // Copy the coordinates
-    memcpy(memento->vertices, vertexArray,numVertices*sizeof(MsqVertex) );
+    msq_stdc::memcpy(memento->vertices, vertexArray,numVertices*sizeof(MsqVertex) );
     
     memento->numVertices = numVertices;
   }
   
-#undef __FUNC__
-#define __FUNC__ "PatchData::set_to_vertices_memento"
   /*! \fn PatchData::set_to_vertices_memento(PatchDataVerticesMemento* memento, MsqError &err)
     This function restores a PatchData object coordinates to a previous state hold in
     a PatchDataVerticesMemento object (see create_vertices_memento() ).
@@ -721,20 +702,22 @@ namespace Mesquite
   {
     if (memento->originator != this)
     {
-      err.set_msg("Memento may only be used to restore the PatchData "
-                  "object from which it was created.");
+      MSQ_SETERR(err)("Memento may only be used to restore the PatchData "
+                      "object from which it was created.",
+                      MsqError::INVALID_ARG);
       return;
     }
     
     if (memento->numVertices != numVertices)
     {
-      err.set_msg("Unable to restore patch coordinates.  Number of "
-                  "vertices in PatchData has changed.");
+      MSQ_SETERR(err)("Unable to restore patch coordinates.  Number of "
+                      "vertices in PatchData has changed.",
+                      MsqError::INVALID_STATE);
       return;
     }
     
       // copies the memento array into the PatchData array.
-    memcpy(vertexArray, memento->vertices, numVertices*sizeof(MsqVertex) );
+    msq_stdc::memcpy(vertexArray, memento->vertices, numVertices*sizeof(MsqVertex) );
   }
 
     /*! For example, a mesh composed of 3 quads has 12 corners,

@@ -37,12 +37,10 @@ Header file for the Mesquite::ConditionNumberQualityMetric class
 
 #ifndef ConditionNumberQualityMetric_hpp
 #define ConditionNumberQualityMetric_hpp
-#include "MsqMeshEntity.hpp"
+
+
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
 #include "ShapeQualityMetric.hpp"
-#include "Vector3D.hpp"
-#include "PatchData.hpp"
 
 
 namespace Mesquite

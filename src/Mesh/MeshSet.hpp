@@ -37,32 +37,26 @@
 #ifndef Mesquite_MeshSet_hpp 
 #define Mesquite_MeshSet_hpp
 
-#ifdef USE_C_PREFIX_INCLUDES
-#include <cstddef>
-#include <cstdio>
+#ifdef MSQ_USE_OLD_C_HEADERS
+#  include <stddef.h>
 #else
-#include <stddef.h>
-#include <stdio.h>
+#  include <cstddef>
 #endif
 
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#include <list.h>
+#else
 #include <list>
-#include <vector>
-#include <iterator>
-#include <string>
+#endif
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
 #include "PatchDataUser.hpp"
-#include "MeshInterface.hpp"
-
-MSQ_USE(list);
-
 
 namespace Mesquite
 {
-  class PatchData;
-  class PatchDataUser;
-  class PatchDataParameters;
+  class MsqError;
+  class Mesh;
+  class MeshDomain;
   
   /*! \class MeshSet
     
@@ -95,7 +89,7 @@ namespace Mesquite
       { return mDomain; }
     
       //! returns the list of mesh pointers previously added. 
-    void get_meshes(list<Mesquite::Mesh*> &mesh_list) const
+    void get_meshes(msq_std::list<Mesquite::Mesh*> &mesh_list) const
       { mesh_list = meshSet; }
 
       //! Returns the number of coordinates in the Mesh's
@@ -152,10 +146,10 @@ namespace Mesquite
   private:
     
       //! Meshes in this MeshSet
-    list<Mesquite::Mesh*> meshSet;
+    msq_std::list<Mesquite::Mesh*> meshSet;
       //! Keeps track of which Mesh* we're currently
       //! working with in get_next_patch().
-    list<Mesquite::Mesh*>::iterator currentMesh;
+    msq_std::list<Mesquite::Mesh*>::iterator currentMesh;
       //! Keeps track of where we are in the current mesh's vertex list
     Mesquite::VertexIterator *vertexIterator;
       //! The number of coordinates in this mesh (2D or 3D)
@@ -169,17 +163,17 @@ namespace Mesquite
 
       //! These are arrays that we cache so we don't have to reallocate
       //! at every patch.
-    size_t *csrOffsets;
-    size_t *csrData;
+    msq_stdc::size_t *csrOffsets;
+    msq_stdc::size_t *csrData;
     Mesh::VertexHandle *vertArray;
     Mesh::ElementHandle *elemArray;
-    EntityTopology *elemTopologies;
+    Mesquite::EntityTopology *elemTopologies;
     bool *vertexOnBoundary;
-    size_t csrOffsetsSize;
-    size_t csrDataSize;
-    size_t vertArraySize;
-    size_t elemArraySize;
-    size_t elemTopologiesSize;
+    msq_stdc::size_t csrOffsetsSize;
+    msq_stdc::size_t csrDataSize;
+    msq_stdc::size_t vertArraySize;
+    msq_stdc::size_t elemArraySize;
+    msq_stdc::size_t elemTopologiesSize;
 
       // This is the domain we snap everything back to.
     Mesquite::MeshDomain *mDomain;

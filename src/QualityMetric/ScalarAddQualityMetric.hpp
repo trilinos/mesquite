@@ -39,9 +39,7 @@ Header file for the Mesquite::ScalarAddQualityMetric class
 #define ScalarAddQualityMetric_hpp
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
 #include "CompositeQualityMetric.hpp"
-#include "Vector3D.hpp"
 
 namespace Mesquite
 {

@@ -49,7 +49,7 @@
 #ifndef Matrix3D_hpp
 #define Matrix3D_hpp
 
-#ifdef USE_STD_INCLUDES
+#ifndef MSQ_USE_OLD_IO_HEADERS
 #include <iostream>
 #include <sstream>
 #else
@@ -57,19 +57,14 @@
 #include <strstream.h>
 #endif
 
-#ifdef USE_C_PREFIX_INCLUDES
-#include <cassert>
+#ifndef MSQ_USE_OLD_C_HEADERS
 #include <cstdlib>
 #else
-#include <assert.h>
 #include <stdlib.h>
 #endif
 
 #include "Mesquite.hpp"
 #include "Vector3D.hpp"
-
-MSQ_USE(ostream);
-MSQ_USE(istream);
 
 namespace Mesquite
 {
@@ -108,11 +103,7 @@ namespace Mesquite
 
     void set_values(const char *s)
     {
-#ifdef USE_STD_INCLUDES
-      std::istringstream ins(s);
-#else
-      istrstream ins(s);
-#endif
+      msq_stdio::istringstream ins(s);
       ins>>v_[0];  ins>>v_[1];  ins>>v_[2]; 
       ins>>v_[3];  ins>>v_[4];  ins>>v_[5]; 
       ins>>v_[6];  ins>>v_[7];  ins>>v_[8]; 
@@ -120,7 +111,9 @@ namespace Mesquite
     
   public:
 
-    operator double**(){ return  row_; }
+    // This casting operator makes the operator[] below
+    // ambiguous - breaks VisualC++ v6 compile.
+    //operator double**(){ return  row_; }
 
     size_t size() const { return 9; }
 
@@ -197,13 +190,13 @@ namespace Mesquite
     }
      
     //! Sets column j (0, 1 or 2) to Vector3D c.
-    void set_column(int j, const Vector3D c)
+    void set_column(int j, const Vector3D& c)
     {
       v_[0+j]=c[0];
       v_[3+j]=c[1];
       v_[6+j]=c[2];
     }
-
+    
     //! returns the column length -- i is 0-based. 
     double column_length(int i) const 
     { return sqrt( v_[0+i]*v_[0+i] + v_[3+i]*v_[3+i] + v_[6+i]*v_[6+i] ); }
@@ -271,7 +264,7 @@ namespace Mesquite
 
   /* ***********  I/O  **************/
 
-  inline ostream& operator<<(ostream &s, const Matrix3D &A)
+  inline msq_stdio::ostream& operator<<(msq_stdio::ostream &s, const Matrix3D &A)
   {
     for (size_t i=0; i<3; ++i)
       {
@@ -282,7 +275,7 @@ namespace Mesquite
     return s;
   }
 
-  inline istream& operator>>(istream &s, Matrix3D &A)
+  inline msq_stdio::istream& operator>>(msq_stdio::istream &s, Matrix3D &A)
   {
     for (size_t i=0; i<3; i++)
       for (size_t j=0; j<3; j++)

@@ -28,7 +28,7 @@
 //#include "TSTT_Base.hpp"
 #include "MDBMesquiteUtil.hpp"
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
+#include "MsqError.hpp"
 #include "Vector3D.hpp"
 #include "InstructionQueue.hpp"
 #include "MeshSet.hpp"
@@ -45,7 +45,6 @@
 #include "EdgeLengthRangeQualityMetric.hpp"
 #include "ConjugateGradient.hpp"
 #include "SimplifiedGeometryEngine.hpp"
-#include "MsqMessage.hpp"
 #include "CompositeOFScalarMultiply.hpp"
 #include "CompositeOFMultiply.hpp"
 #include "CompositeOFAdd.hpp"
@@ -103,17 +102,18 @@ int main(int argc, char** argv)
 int run_mesquite(TSTT::Mesh_Handle &mh, TSTT::MeshError* /*error*/)
 {
   Mesquite::MeshSet mesh_set1;
-  Mesquite::MsqError err;
+  Mesquite::MsqPrintError err;
   Mesquite::InstructionQueue queue1;
     //add the given mesh to mesquite's meshset object
   mesh_set1.add_mesh(mh, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
     //create geometry
   Mesquite::Vector3D pnt(0, 4, 15);
   Mesquite::Vector3D s_norm(0, 0, 1);
   Mesquite::SimplifiedGeometryEngine msq_geom;
     //ADD GEOMETRY OBJECT IF 2D and NEEDED
   msq_geom.set_geometry_to_plane(s_norm,pnt,err);
+  if (err) return 1;
   mesh_set1.set_simplified_geometry_engine(&msq_geom);
   
     //**********************************************************
@@ -126,11 +126,11 @@ int run_mesquite(TSTT::Mesh_Handle &mh, TSTT::MeshError* /*error*/)
    Mesquite::SmoothnessQualityMetric* edg =
      Mesquite::EdgeLengthQualityMetric::create_new();
    edg->set_averaging_method(Mesquite::QualityMetric::SUM, err);
-   if (err.errorOn) return 1;   
+   if (err) return 1;   
    
    Mesquite::SmoothnessQualityMetric* edg_range =
      Mesquite::EdgeLengthRangeQualityMetric::create_new(0,0,err);
-   if (err.errorOn) return 1;   
+   if (err) return 1;   
   
    Mesquite::ShapeQualityMetric* cond_no =
      Mesquite::ConditionNumberQualityMetric::create_new();
@@ -141,12 +141,15 @@ int run_mesquite(TSTT::Mesh_Handle &mh, TSTT::MeshError* /*error*/)
     
    Mesquite::LPTemplate* obj_func_cond =
      new Mesquite::LPTemplate(cond_no, 5, err);
+   if (err) return 1;   
    
    Mesquite::LPTemplate* obj_func_smooth =
      new Mesquite::LPTemplate(smooth, 5, err);
+   if (err) return 1;   
 
    Mesquite::LPTemplate* obj_func_edg =
      new Mesquite::LPTemplate(edg_range, 5, err);
+   if (err) return 1;   
 
    Mesquite::CompositeOFScalarMultiply* obj_func_cond_scaled =
      new Mesquite::CompositeOFScalarMultiply(1,obj_func_cond);
@@ -194,10 +197,10 @@ int run_mesquite(TSTT::Mesh_Handle &mh, TSTT::MeshError* /*error*/)
    
    Mesquite::ConjugateGradient* cg_pass =
      new Mesquite::ConjugateGradient( obj_final, err );
-   if (err.errorOn) return 1;   
+   if (err) return 1;   
 
    cg_pass->set_patch_type( Mesquite::PatchData::GLOBAL_PATCH, err,1 ,1);
-   if (err.errorOn) return 1;   
+   if (err) return 1;   
      //cg_pass->set_patch_type(Mesquite::PatchData::ELEMENTS_ON_VERTEX_PATCH,
      //                      err,1 ,1);
    
@@ -209,23 +212,23 @@ int run_mesquite(TSTT::Mesh_Handle &mh, TSTT::MeshError* /*error*/)
      Mesquite::QualityAssessor(cond_no,
                                Mesquite::QualityAssessor::ALL_MEASURES);
    qual_assessor.add_quality_assessment(edg,Mesquite::QualityAssessor::ALL_MEASURES,err);
-   if (err.errorOn) return 1;   
+   if (err) return 1;   
    qual_assessor.add_quality_assessment(edg_range,Mesquite::QualityAssessor::ALL_MEASURES,err);
-   if (err.errorOn) return 1;   
+   if (err) return 1;   
    qual_assessor.add_quality_assessment(smooth,Mesquite::QualityAssessor::ALL_MEASURES,err);
-   if (err.errorOn) return 1;   
+   if (err) return 1;   
      //**********************************************************       
      // creates inner and outer termination criteria
      //**********************************************************
    Mesquite::TerminationCriterion t1;
    t1.add_criterion_type_with_int(
      Mesquite::TerminationCriterion::NUMBER_OF_ITERATES,60, err);
-   if (err.errorOn) return 1;   
+   if (err) return 1;   
 
    Mesquite::TerminationCriterion t0;
    t0.add_criterion_type_with_int(
      Mesquite::TerminationCriterion::NUMBER_OF_ITERATES,2, err);
-   if (err.errorOn) return 1;   
+   if (err) return 1;   
 
      //add termination criterion to quality improvers
      //if a local scheme do:
@@ -245,18 +248,19 @@ int run_mesquite(TSTT::Mesh_Handle &mh, TSTT::MeshError* /*error*/)
      //**********************************************************
 
    queue1.add_quality_assessor(&qual_assessor,err);
+   if (err) return 1;
    queue1.set_master_quality_improver(cg_pass, err); 
-   if (err.errorOn) return 1;
+   if (err) return 1;
    queue1.add_quality_assessor(&qual_assessor,err);
+   if (err) return 1;
 
    //writeVtkMesh("original_mesh", mesh, err);
-   //if (err.errorOn) return 1;
+   //if (err) return 1;
   
      // launches optimization on mesh_set1
    queue1.run_instructions(mesh_set1, err); 
-   if (err.errorOn) return 1;
+   if (err) return 1;
 
-     //PRINT SOME TIMING INFORMATION
-   Message::print_timing_diagnostics();
+   print_timing_diagnostics( cout );
    return 0;
 }

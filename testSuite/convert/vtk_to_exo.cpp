@@ -43,13 +43,15 @@ describe main.cpp here
 // DESCRIP-END.
 //
 
-#ifdef USE_STD_INCLUDES
+#ifndef MSQ_USE_OLD_IO_HEADERS
 #include <iostream>
+using std::cout;
+using std::endl;
 #else
 #include <iostream.h>
 #endif
 
-#ifdef USE_C_PREFIX_INCLUDES
+#ifndef MSQ_USE_OLD_C_HEADERS
 #include <cstdlib>
 #else
 #include <stdlib.h>
@@ -58,18 +60,13 @@ describe main.cpp here
 
 #include "Mesquite.hpp"
 #include "MeshImpl.hpp"
-#include "MesquiteError.hpp"
+#include "MsqError.hpp"
 
 using namespace Mesquite;
 
-using std::cout;
-using std::endl;
-
-#undef __FUNC__
-#define __FUNC__ "main"
 int main(int argc, char* argv[])
 {
-  Mesquite::MsqError err;
+  Mesquite::MsqPrintError err(cout);
   char in_file_name[256];
   char out_file_name[256];
   double OF_value = 1.;
@@ -85,15 +82,12 @@ int main(int argc, char* argv[])
     strcpy(in_file_name, argv[1]);
     strcpy(out_file_name, argv[2]);
   }
-#ifndef MSQ_USING_EXODUS
-  err.set_msg("Exodus not enabled in this build of Mesquite");
-  MSQ_CHKERR(err);
-  return -1;
-#else
+
   Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
   cout<<"\nReading VTK file.\n";
-  mesh->read_vtk(in_file_name, err);MSQ_CHKERR(err);
+  mesh->read_vtk(in_file_name, err); if(err) return 1;
   cout<<"Writing Exodus file.\n";
-  mesh->write_exodus(out_file_name,err);MSQ_CHKERR(err);
-#endif
+  mesh->write_exodus(out_file_name,err); if(err) return 1;
+  
+  return 0;
 }

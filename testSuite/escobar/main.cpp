@@ -43,13 +43,15 @@ describe main.cpp here
 // DESCRIP-END.
 //
 
-#ifdef USE_STD_INCLUDES
+#ifndef MSQ_USE_OLD_IO_HEADERS
 #include <iostream>
+using std::cout;
+using std::endl;
 #else
 #include <iostream.h>
 #endif
 
-#ifdef USE_C_PREFIX_INCLUDES
+#ifndef MSQ_USE_OLD_C_HEADERS
 #include <cstdlib>
 #else
 #include <stdlib.h>
@@ -61,7 +63,7 @@ describe main.cpp here
 #include "InstructionQueue.hpp"
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
-#include "MesquiteError.hpp"
+#include "MsqError.hpp"
 #include "MeshSet.hpp"
 #include "ShapeImprovementWrapper.hpp"
 // algorythms
@@ -70,7 +72,6 @@ describe main.cpp here
 #include "LPtoPTemplate.hpp"
 #include "FeasibleNewton.hpp"
 #include "ConjugateGradient.hpp"
-#include "MsqMessage.hpp"
 
 
 using namespace Mesquite;
@@ -78,7 +79,7 @@ using namespace Mesquite;
 int main()
 {
   Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
-  MsqError err;
+  MsqPrintError err(cout);
 
   // If want 2D test use this section (and comment out next)
 
@@ -90,11 +91,12 @@ int main()
  //mesh->read_vtk("../../meshFiles/2D/VTK/hybrid_3quad_1tri_tangled.vtk", err);
  //mesh->read_vtk("../../meshFiles/2D/VTK/rotsq.vtk", err);
  mesh->read_vtk("../../meshFiles/2D/VTK/horseshoe.vtk", err);
+ if (err) return 1;
 
     // initializes a MeshSet object
     MeshSet mesh_set1;
     mesh_set1.set_domain_constraint(&msq_geom, err);
-    if (err.errorOn) return 1;
+    if (err) return 1;
 
   // End 2D Section
 
@@ -109,7 +111,7 @@ int main()
  // End 3D Section
 
   mesh_set1.add_mesh(mesh, err);
-  if (err.errorOn) return 1;
+  if (err) return 1;
   
     // creates an intruction queue
   InstructionQueue queue1;
@@ -120,12 +122,15 @@ int main()
                                                                                
     // ... and builds an objective function with it
   LPtoPTemplate obj_func(cond_no, 2, err);
+  if (err) return 1;
   obj_func.set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
   
     // creates the optimization procedure
   ConjugateGradient pass1( &obj_func, err );
   //FeasibleNewton pass1( &obj_func );
+  if (err) return 1;
   pass1.set_patch_type(PatchData::GLOBAL_PATCH, err);
+  if (err) return 1;
   
   QualityAssessor qa=QualityAssessor(cond_no,QualityAssessor::ALL_MEASURES);
   
@@ -144,22 +149,22 @@ int main()
     //nothing to do with 'culling methods' described in TerminationCriterion.
   pass1.add_culling_method(PatchData::NO_BOUNDARY_VTX);
   queue1.add_quality_assessor(&qa,err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
     // adds 1 pass of pass1 to mesh_set1
   queue1.set_master_quality_improver(&pass1, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   queue1.add_quality_assessor(&qa,err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   mesh->write_vtk("original_mesh",err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   
   queue1.run_instructions(mesh_set1, err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
   mesh->write_vtk("smoothed_mesh",err); 
-  if (err.errorOn) return 1;
+  if (err) return 1;
 
   delete cond_no;
-  Message::print_timing_diagnostics();
+  print_timing_diagnostics( cout );
   return 0;
 }
  

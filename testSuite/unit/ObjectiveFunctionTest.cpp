@@ -105,7 +105,7 @@ private:
 public:
   void setUp()
   {
-    MsqError err;
+    MsqPrintError err(cout);
      
     /* our 2D set up: 4 quads, center vertex outcentered by (0,-0.5)
        7____6____5
@@ -116,7 +116,7 @@ public:
        | 0  |  1 |
        1----2----3
     */
-    create_four_quads_patch(m4Quads, err); CPPUNIT_ASSERT(!err.errorOn);
+    create_four_quads_patch(m4Quads, err); CPPUNIT_ASSERT(!err);
 
     /*! \fn create_six_quads_patch(PatchData &four_quads, MsqError &err)
       our 2D set up: 6 quads, 1 center vertex outcentered by (0,-0.5), the other centered
@@ -128,7 +128,7 @@ public:
       | 0  |  1 | 4  |
       1----2----3----9
     */
-    create_six_quads_patch_with_domain(m6Quads, err); CPPUNIT_ASSERT(!err.errorOn);
+    create_six_quads_patch_with_domain(m6Quads, err); CPPUNIT_ASSERT(!err);
 
     /*! \fn create_twelve_hex_patch(PatchData &pd, MsqError &err)
       3D set up: 12 quads, one center vertex outcentered by (0,-0.5),
@@ -142,7 +142,7 @@ public:
       | 0  |  1 | 4  |      |    |    |    |      | 6  |  7 | 10 |
       1----2----3----9     13---14---15---21     25---26---27---33
     */
-    create_twelve_hex_patch(m12Hex, err); CPPUNIT_ASSERT(!err.errorOn);
+    create_twelve_hex_patch(m12Hex, err); CPPUNIT_ASSERT(!err);
 
    /*! \fn create_two_tri_patch(PatchData &one_tri_patch, MsqError &err)
             2
@@ -153,9 +153,9 @@ public:
            \ /
             3
    */
-    create_qm_two_tri_patch_with_domain(triPatch,err);CPPUNIT_ASSERT(!err.errorOn);
+    create_qm_two_tri_patch_with_domain(triPatch,err);CPPUNIT_ASSERT(!err);
     
-    create_qm_two_tet_patch(tetPatch,err);CPPUNIT_ASSERT(!err.errorOn);
+    create_qm_two_tet_patch(tetPatch,err);CPPUNIT_ASSERT(!err);
     
   }
 
@@ -171,15 +171,15 @@ public:
   
   void test_get_quality_metric_list()
   {
-    MsqError err;
+    MsqPrintError err(cout);
       
     // instantiates a couple of QualityMetrics
-    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
+    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
     ShapeQualityMetric* condition_nb = new GeneralizedConditionNumberQualityMetric;
 
     // and creates a composite objective function.
-    LPtoPTemplate* LP2_mean_ratio = new LPtoPTemplate(mean_ratio, 2, err); CPPUNIT_ASSERT(!err.errorOn);
-    LPtoPTemplate* LP2_condition_nb = new LPtoPTemplate(condition_nb, 2, err); CPPUNIT_ASSERT(!err.errorOn);
+    LPtoPTemplate* LP2_mean_ratio = new LPtoPTemplate(mean_ratio, 2, err); CPPUNIT_ASSERT(!err);
+    LPtoPTemplate* LP2_condition_nb = new LPtoPTemplate(condition_nb, 2, err); CPPUNIT_ASSERT(!err);
     CompositeOFScalarMultiply* LP2_condition_nb_x3 = new CompositeOFScalarMultiply(3,LP2_condition_nb);   
     CompositeOFAdd comp_OF(LP2_mean_ratio, LP2_condition_nb_x3);
 
@@ -218,12 +218,12 @@ public:
     //value assuming the metrics are non-negative.
   void compare_l_inf_and_max_templates(PatchData &pd)
      {
-       MsqError err;
+       MsqPrintError err(cout);
          // creates a mean ratio quality metric ...
        bool return_bool;
        double max_val=0.0;
        double l_inf_val = 1.0;
-       ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
+       ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
          //creates an edge length metric
        SmoothnessQualityMetric* smooth = new EdgeLengthQualityMetric;
        
@@ -270,7 +270,7 @@ public:
   void compare_numerical_analytical_gradient(ObjectiveFunction *obj,
                                              PatchData &pd)
      {
-       MsqError err;
+       MsqPrintError err(cout);
        bool return_bool;
        double OF_val1, OF_val2;
        MsqFreeVertexIndexIterator free_ind(&pd, err);
@@ -325,10 +325,10 @@ public:
 
   void test_compute_gradient_3D_LPtoPTemplate_L1_hex()
   {
-    MsqError err;
+    MsqPrintError err(cout);
     
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
+    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
     mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
     
     // ... and builds an objective function with it
@@ -340,7 +340,7 @@ public:
   }
   void test_compute_gradient_3D_LPtoPTemplate_L1_hex_inverse()
   {
-    MsqError err;
+    MsqPrintError err(cout);
     
     // creates a mean ratio quality metric ...
     ShapeQualityMetric* i_mean_ratio = new InverseMeanRatioQualityMetric;
@@ -355,10 +355,10 @@ public:
   }
   void test_compute_gradient_3D_LPtoPTemplate_L2_hex()
   {
-    MsqError err;
+    MsqPrintError err(cout);
     
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
+    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
     mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
     
     // ... and builds an objective function with it
@@ -371,10 +371,10 @@ public:
   
   void test_compute_gradient_3D_LPtoPTemplate_L2_hex_scaled()
   {
-    MsqError err;
+    MsqPrintError err(cout);
     
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
+    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
     mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
     
     // ... and builds an objective function with it
@@ -387,9 +387,9 @@ public:
   }
   void test_compute_gradient3D_composite()
      {
-       MsqError err;
+       MsqPrintError err(cout);
          // creates a mean ratio quality metric ...
-       ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
+       ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
        mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
        
          // ... and builds an objective function with it
@@ -416,10 +416,10 @@ public:
 
   void test_compute_ana_hessian_tet()
   {
-    MsqError err;
+    MsqPrintError err(cout);
     
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
+    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
     mean_ratio->set_averaging_method(QualityMetric::SUM, err);
     
     // ... and builds an objective function with it
@@ -430,8 +430,8 @@ public:
     MsqHessian H;
     Vector3D* g = new Vector3D[tetPatch.num_vertices()];
     double dummy;
-    H.initialize(tetPatch, err); CPPUNIT_ASSERT(!err.errorOn);
-    LP2.compute_hessian(tetPatch, H, g, dummy, err); CPPUNIT_ASSERT(!err.errorOn);
+    H.initialize(tetPatch, err); CPPUNIT_ASSERT(!err);
+    LP2.compute_hessian(tetPatch, H, g, dummy, err); CPPUNIT_ASSERT(!err);
 
     Matrix3D mat00(" 2.44444  0.2566   0.181444 "
 		   " 0.2566   2.14815  0.104757 "
@@ -462,10 +462,10 @@ public:
   
   void test_compute_ana_hessian_tet_scaled()
   {
-    MsqError err;
+    MsqPrintError err(cout);
     
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
+    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
     mean_ratio->set_averaging_method(QualityMetric::SUM, err);
     
     // ... and builds an objective function with it
@@ -477,8 +477,8 @@ public:
     MsqHessian H;
     Vector3D* g = new Vector3D[tetPatch.num_vertices()];
     double dummy;
-    H.initialize(tetPatch, err); CPPUNIT_ASSERT(!err.errorOn);
-    LP2.compute_hessian(tetPatch, H, g, dummy, err); CPPUNIT_ASSERT(!err.errorOn);
+    H.initialize(tetPatch, err); CPPUNIT_ASSERT(!err);
+    LP2.compute_hessian(tetPatch, H, g, dummy, err); CPPUNIT_ASSERT(!err);
 
     Matrix3D mat00(" 2.44444  0.2566   0.181444 "
 		   " 0.2566   2.14815  0.104757 "
@@ -513,16 +513,16 @@ public:
   void test_OFval_from_evaluate_and_gradient(ObjectiveFunction* OF,
                                            PatchData &pd)
   {
-    MsqError err;
+    MsqPrintError err(cout);
     bool OF_bool;
     Vector3D* grad = new Vector3D[pd.num_vertices()];
 
     double OF_val1;
-    OF_bool = OF->evaluate(pd, OF_val1, err); CPPUNIT_ASSERT(!err.errorOn);
+    OF_bool = OF->evaluate(pd, OF_val1, err); CPPUNIT_ASSERT(!err);
     CPPUNIT_ASSERT(OF_bool);
 
     double OF_val2;
-    OF_bool = OF->compute_gradient(pd, grad, OF_val2, err); CPPUNIT_ASSERT(!err.errorOn);
+    OF_bool = OF->compute_gradient(pd, grad, OF_val2, err); CPPUNIT_ASSERT(!err);
     CPPUNIT_ASSERT(OF_bool);
     
     CPPUNIT_ASSERT_DOUBLES_EQUAL(OF_val1, OF_val2, 1e-12);
@@ -533,10 +533,10 @@ public:
   //! Calls test_OFval_from_evaluate_and_gradient() for \f$ \ell_4^4 \f$
   void test_OFval_from_evaluate_and_gradient_LPtoP()
   {
-    MsqError err;
+    MsqPrintError err(cout);
     
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
+    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
     mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
     mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
     
@@ -569,17 +569,17 @@ public:
   void test_grad_from_gradient_and_hessian(ObjectiveFunction* OF,
                                            PatchData &pd)
   {
-    MsqError err;
+    MsqPrintError err(cout);
     bool OF_bool;
     double OF_val1;
     double OF_val2;
     Vector3D* grad1 = new Vector3D[pd.num_vertices()];
     Vector3D* grad2 = new Vector3D[pd.num_vertices()];
     MsqHessian hessian;
-    hessian.initialize(pd, err); CPPUNIT_ASSERT(!err.errorOn);
+    hessian.initialize(pd, err); CPPUNIT_ASSERT(!err);
 
     OF_bool = OF->compute_gradient(pd, grad1, OF_val1, err);
-    CPPUNIT_ASSERT(!err.errorOn);
+    CPPUNIT_ASSERT(!err);
     CPPUNIT_ASSERT(OF_bool);
 
 //     cout << "compute_gradient(pd, grad1 ...) " << endl;
@@ -587,7 +587,7 @@ public:
 //       cout << grad1[i];
       
     OF_bool = OF->compute_hessian(pd, hessian, grad2, OF_val2, err);
-    CPPUNIT_ASSERT(!err.errorOn);
+    CPPUNIT_ASSERT(!err);
     CPPUNIT_ASSERT(OF_bool);
 
 //     cout << "\ncompute_hessian(pd, grad2 ...) " << endl;
@@ -608,10 +608,10 @@ public:
   //! Calls test_grad_from_gradient_and_hessian() for \f$ \ell_4^4 \f$
   void test_grad_from_gradient_and_hessian_LPtoP()
   {
-    MsqError err;
+    MsqPrintError err(cout);
     
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
+    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
     mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
     mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
     
@@ -633,7 +633,7 @@ public:
     //! Calls test_grad_from_gradient_and_hessian() for \f$ \ell_4^4 \f$
   void test_grad_from_gradient_and_hessian_LPtoP_negate()
   {
-    MsqError err;
+    MsqPrintError err(cout);
     
     // creates a mean ratio quality metric ...
     ShapeQualityMetric* i_mean_ratio = new InverseMeanRatioQualityMetric;
@@ -662,28 +662,28 @@ public:
   
 //   void test_compute_hessian(PatchData &pd)
 //   {
-//     MsqError err;
+//     MsqPrintError err(cout);
 
 //     MsqHessian OF_hessian_num;
 //     MsqHessian OF_hessian_ana;
-//     OF_hessian_num.initialize(pd, err); CPPUNIT_ASSERT(!err.errorOn);
-//     OF_hessian_ana.initialize(pd, err); CPPUNIT_ASSERT(!err.errorOn);
+//     OF_hessian_num.initialize(pd, err); CPPUNIT_ASSERT(!err);
+//     OF_hessian_ana.initialize(pd, err); CPPUNIT_ASSERT(!err);
     
 //     // creates a mean ratio quality metric ...
-//     ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
+//     ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
 // //    mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
 //     mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
-//     mean_ratio->set_averaging_method(QualityMetric::SUM, err); CPPUNIT_ASSERT(!err.errorOn);
+//     mean_ratio->set_averaging_method(QualityMetric::SUM, err); CPPUNIT_ASSERT(!err);
 // //    mean_ratio->set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
 //       //mean_ratio->set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
 
 //     // Creates an L1 objective function.
-//     LPtoPTemplate L_1(mean_ratio, 1, err); CPPUNIT_ASSERT(!err.errorOn);
+//     LPtoPTemplate L_1(mean_ratio, 1, err); CPPUNIT_ASSERT(!err);
 
 //     // Compute numerical hessian.
 //     L_1.set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
 //       //L_1.set_hessian_type(ObjectiveFunction::NUMERICAL_HESSIAN);
-//     L_1.compute_hessian(pd, OF_hessian_num, err); CPPUNIT_ASSERT(!err.errorOn);
+//     L_1.compute_hessian(pd, OF_hessian_num, err); CPPUNIT_ASSERT(!err);
 
 //     cout << "Numerical OF Hessian:\n";
 //     cout << OF_hessian_num << "\n\n\n";
@@ -691,7 +691,7 @@ public:
 //     // Compute analytical hessian
 //     L_1.set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
 //       //L_1.set_hessian_type(ObjectiveFunction::ANALYTICAL_HESSIAN);
-//     L_1.compute_hessian(pd, OF_hessian_ana, err); CPPUNIT_ASSERT(!err.errorOn);
+//     L_1.compute_hessian(pd, OF_hessian_ana, err); CPPUNIT_ASSERT(!err);
 
 //     cout << "Analytical OF Hessian:\n";
 //     cout << OF_hessian_ana << endl;
@@ -734,20 +734,20 @@ public:
     size_t i;
     int j;
     bool valid;
-    MsqError err;
+    MsqPrintError err(cout);
     MsqHessian Hpos;
     Vector3D* gpos = new Vector3D[tetPatch.num_vertices()];
     double fpos;
     MsqHessian Hneg;
     Vector3D* gneg = new Vector3D[tetPatch.num_vertices()];
     double fneg;
-    Hpos.initialize(tetPatch, err); CPPUNIT_ASSERT(!err.errorOn);
-    Hneg.initialize(tetPatch, err); CPPUNIT_ASSERT(!err.errorOn);
+    Hpos.initialize(tetPatch, err); CPPUNIT_ASSERT(!err);
+    Hneg.initialize(tetPatch, err); CPPUNIT_ASSERT(!err);
     // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
+    ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
     mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
     mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
-    ShapeQualityMetric* mean_ratio_neg = new MeanRatioQualityMetric;
+    ShapeQualityMetric* mean_ratio_neg = new MeanRatioQualityMetric(err);CPPUNIT_ASSERT(!err);
     mean_ratio_neg->set_averaging_method(QualityMetric::LINEAR, err);
     mean_ratio_neg->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
     mean_ratio_neg->set_negate_flag(-1);
@@ -756,17 +756,17 @@ public:
     LPtoPTemplate LP4(mean_ratio, 4, err);
     LPtoPTemplate LP4_neg(mean_ratio_neg, 4, err);
       //test evaluate
-    valid=LP4.evaluate(tetPatch, fpos, err);CPPUNIT_ASSERT(!err.errorOn);
+    valid=LP4.evaluate(tetPatch, fpos, err);CPPUNIT_ASSERT(!err);
     CPPUNIT_ASSERT(valid);
-    valid=LP4_neg.evaluate(tetPatch, fneg, err);CPPUNIT_ASSERT(!err.errorOn);
+    valid=LP4_neg.evaluate(tetPatch, fneg, err);CPPUNIT_ASSERT(!err);
     CPPUNIT_ASSERT(valid);
       //std::cout<<"\nFrom eval Orig fpos = "<<fpos<<" Mod fneg = "<<fneg;
     CPPUNIT_ASSERT_DOUBLES_EQUAL(fpos,-fneg,1.e-12);
 
     valid=LP4.compute_gradient(tetPatch, gpos, fpos, err);
-    CPPUNIT_ASSERT(!err.errorOn); CPPUNIT_ASSERT(valid);
+    CPPUNIT_ASSERT(!err); CPPUNIT_ASSERT(valid);
     valid=LP4_neg.compute_gradient(tetPatch, gneg, fneg, err);
-    CPPUNIT_ASSERT(!err.errorOn);CPPUNIT_ASSERT(valid);
+    CPPUNIT_ASSERT(!err);CPPUNIT_ASSERT(valid);
       //std::cout<<"\nOrig fpos = "<<fpos<<" Mod fneg = "<<fneg;
       //test function value
     CPPUNIT_ASSERT_DOUBLES_EQUAL(fpos,-fneg,1.e-12);
@@ -778,9 +778,9 @@ public:
     }
     
     valid=LP4.compute_hessian(tetPatch, Hpos, gpos, fpos, err);
-    CPPUNIT_ASSERT(!err.errorOn); CPPUNIT_ASSERT(valid);
+    CPPUNIT_ASSERT(!err); CPPUNIT_ASSERT(valid);
     valid=LP4_neg.compute_hessian(tetPatch, Hneg, gneg, fneg, err);
-    CPPUNIT_ASSERT(!err.errorOn);CPPUNIT_ASSERT(valid);
+    CPPUNIT_ASSERT(!err);CPPUNIT_ASSERT(valid);
       //std::cout<<"\nOrig fpos = "<<fpos<<" Mod fneg = "<<fneg;
       //test function value
     CPPUNIT_ASSERT_DOUBLES_EQUAL(fpos,-fneg,1.e-12);
@@ -816,17 +816,17 @@ public:
     LPtoPTemplate LP1(mean_ratio, 1, err);
     LPtoPTemplate LP1_neg(mean_ratio_neg, 1, err);
       //test evaluate
-    valid=LP1.evaluate(tetPatch, fpos, err);CPPUNIT_ASSERT(!err.errorOn);
+    valid=LP1.evaluate(tetPatch, fpos, err);CPPUNIT_ASSERT(!err);
     CPPUNIT_ASSERT(valid);
-    valid=LP1_neg.evaluate(tetPatch, fneg, err);CPPUNIT_ASSERT(!err.errorOn);
+    valid=LP1_neg.evaluate(tetPatch, fneg, err);CPPUNIT_ASSERT(!err);
     CPPUNIT_ASSERT(valid);
       //std::cout<<"\nFrom eval Orig fpos = "<<fpos<<" Mod fneg = "<<fneg;
     CPPUNIT_ASSERT_DOUBLES_EQUAL(fpos,-fneg,1.e-12);
 
     valid=LP1.compute_gradient(tetPatch, gpos, fpos, err);
-    CPPUNIT_ASSERT(!err.errorOn); CPPUNIT_ASSERT(valid);
+    CPPUNIT_ASSERT(!err); CPPUNIT_ASSERT(valid);
     valid=LP1_neg.compute_gradient(tetPatch, gneg, fneg, err);
-    CPPUNIT_ASSERT(!err.errorOn);CPPUNIT_ASSERT(valid);
+    CPPUNIT_ASSERT(!err);CPPUNIT_ASSERT(valid);
       //std::cout<<"\nOrig fpos = "<<fpos<<" Mod fneg = "<<fneg;
       //test function value
     CPPUNIT_ASSERT_DOUBLES_EQUAL(fpos,-fneg,1.e-12);
@@ -838,9 +838,9 @@ public:
     }
     
     valid=LP1.compute_hessian(tetPatch, Hpos, gpos, fpos, err);
-    CPPUNIT_ASSERT(!err.errorOn); CPPUNIT_ASSERT(valid);
+    CPPUNIT_ASSERT(!err); CPPUNIT_ASSERT(valid);
     valid=LP1_neg.compute_hessian(tetPatch, Hneg, gneg, fneg, err);
-    CPPUNIT_ASSERT(!err.errorOn);CPPUNIT_ASSERT(valid);
+    CPPUNIT_ASSERT(!err);CPPUNIT_ASSERT(valid);
       //std::cout<<"\nOrig fpos = "<<fpos<<" Mod fneg = "<<fneg;
       //test function value
     CPPUNIT_ASSERT_DOUBLES_EQUAL(fpos,-fneg,1.e-12);

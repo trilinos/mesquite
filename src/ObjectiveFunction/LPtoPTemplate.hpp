@@ -38,10 +38,8 @@
 #define LPtoPTemplate_hpp
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
+#include "MsqError.hpp"
 #include "ObjectiveFunction.hpp"
-#include "PatchData.hpp"
-#include <list>
 
 namespace Mesquite
 {
@@ -116,10 +114,11 @@ namespace Mesquite
      double scale_factor=1.0;
        //if scaling, divide by total_num
      if(dividingByN){
-       if(total_num<=0)
-         err.set_msg("\nIn compute_function, attempting to divide by zero.");
-       else
-         scale_factor/=total_num;
+       if(total_num<=0) {
+         MSQ_SETERR(err)(MsqError::INVALID_ARG);
+         return 0.0;
+       }
+       scale_factor/=total_num;
      }
      size_t ind=0;
      short jnd=0;

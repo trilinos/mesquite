@@ -37,12 +37,15 @@ Header file for the Mesquite::LocalSizeQualityMetric class
 
 #ifndef LocalSizeQualityMetric_hpp
 #define LocalSizeQualityMetric_hpp
-#include "MsqMeshEntity.hpp"
+
+
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
 #include "VolumeQualityMetric.hpp"
 #include "Vector3D.hpp"
 #include "PatchData.hpp"
+#include "MsqMeshEntity.hpp"
+
+
 namespace Mesquite
 {
      /*! \class LocalSizeQualityMetric

@@ -58,6 +58,14 @@ Unit testing of various functions in the MeshSet class.
 #include <list>
 #include <iterator>
 
+#ifdef MSQ_USE_OLD_IO_HEADERS
+#include <iostream.h>
+#else 
+#include <iostream>
+using std::cout;
+using std::endl;
+#endif
+
 using namespace Mesquite;
 
 class MeshSetTest : public CppUnit::TestFixture
@@ -76,18 +84,18 @@ public:
     /* Automatically called by CppUnit before each test function. */
   void setUp()
   {
-    MsqError err;
+    MsqPrintError err(cout);
     
       // Read a vtk file -- square meshed by 8 triangles
     tri8 = new Mesquite::MeshImpl;
     tri8->read_vtk("../../meshFiles/2D/VTK/square_tri_2.vtk", err);
-    CPPUNIT_ASSERT(! err.errorOn );
+    CPPUNIT_ASSERT(!err);
     
       // Read a vtk file
       // -- square meshed by 4 quads, adjacent to the previous mesh
     quad4 = new Mesquite::MeshImpl;
     quad4->read_vtk("../../meshFiles/2D/VTK/four_more_quads.vtk", err);
-    CPPUNIT_ASSERT( !err.errorOn );
+    CPPUNIT_ASSERT(!err);
   }
   
     // Automatically called by CppUnit after each test function.
@@ -102,22 +110,22 @@ public:
    /*this function test the MeshSet concept of concatenating several meshes.*/
    void test_add_multiple_meshes()
    {
-     MsqError err;
+     MsqPrintError err(cout);
      
        /* Adds 2 adjacent meshes to the MeshSet. */
      MeshSet mesh_set;
      mesh_set.add_mesh(tri8, err); 
-     CPPUNIT_ASSERT( !err.errorOn );
+     CPPUNIT_ASSERT(!err);
      mesh_set.add_mesh(quad4, err); 
-     CPPUNIT_ASSERT( !err.errorOn );
+     CPPUNIT_ASSERT(!err);
      
        /* Retrieves a global patch */
      PatchData pd;
      PatchDataParameters pd_params;
      pd_params.set_patch_type(PatchData::GLOBAL_PATCH, err, 0, 0);
-     CPPUNIT_ASSERT( !err.errorOn );
+     CPPUNIT_ASSERT(!err);
      mesh_set.get_next_patch(pd, pd_params, err);
-     CPPUNIT_ASSERT( !err.errorOn );
+     CPPUNIT_ASSERT(!err);
      
      int num_vtx = pd.num_vertices();
      CPPUNIT_ASSERT( num_vtx == 18 );

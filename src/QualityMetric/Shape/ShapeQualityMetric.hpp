@@ -39,8 +39,7 @@ Header file for the Mesquite::ShapeQualityMetric class
 #define ShapeQualityMetric_hpp
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
-#include "MsqMessage.hpp"
+#include "MsqError.hpp"
 #include "QualityMetric.hpp"
 #include "PatchData.hpp"
 
@@ -107,8 +106,6 @@ namespace Mesquite
    }
    */
 
-#undef __FUNC__
-#define __FUNC__ "ShapeQualityMetric::condition_number_2d"
   inline bool ShapeQualityMetric::condition_number_2d(Vector3D temp_vec[],
                                                        size_t v_ind,
                                                        PatchData &pd,
@@ -120,7 +117,7 @@ namespace Mesquite
 
      Vector3D unit_surf_norm;
      if ( pd.domain_set() ) {
-       pd.get_domain_normal_at_vertex(v_ind,true,unit_surf_norm,err);MSQ_CHKERR(err);
+       pd.get_domain_normal_at_vertex(v_ind,true,unit_surf_norm,err);MSQ_ERRZERO(err);
      }
      else {
         return false;
@@ -130,8 +127,7 @@ namespace Mesquite
      double temp_var=unit_surf_norm%(temp_vec[0]*temp_vec[1]);
 
      double h;
-     double delta=pd.get_barrier_delta(err); 
-     MSQ_CHKERR(err);
+     double delta=pd.get_barrier_delta(err); MSQ_ERRZERO(err);
 
      // Note: technically, we want delta=eta*tau-max
      //       whereas the function above gives delta=eta*alpha-max
@@ -169,7 +165,9 @@ namespace Mesquite
      }
 
      if (h<MSQ_DBL_MIN) {
-       err.set_msg("Barrier function is zero due to excessively large negative area compared to delta. /n Try to untangle mesh another way. ");
+       MSQ_SETERR(err)( "Barrier function is zero due to excessively large "
+                        "negative area compared to delta. /n Try to untangle "
+                        "mesh another way. ", MsqError::INVALID_MESH);
        return false;
      }
 
@@ -185,8 +183,6 @@ namespace Mesquite
 
    //} //namespace
 
-#undef __FUNC__
-#define __FUNC__ "ShapeQualityMetric::condition_number_3d"
   inline bool ShapeQualityMetric::condition_number_3d(Vector3D temp_vec[],
                                                        PatchData &pd,
                                                        double &fval,
@@ -207,8 +203,7 @@ namespace Mesquite
      double temp_var=temp_vec[0]%(temp_vec[1]*temp_vec[2]);
 
      double h;
-     double delta=pd.get_barrier_delta(err); 
-     MSQ_CHKERR(err);
+     double delta=pd.get_barrier_delta(err); MSQ_ERRZERO(err);
 
      // Note: technically, we want delta=eta*tau-max
      //       whereas the function above gives delta=eta*alpha-max
@@ -247,7 +242,9 @@ namespace Mesquite
         //       approximation to compute h.
      }
      if (h<MSQ_DBL_MIN) {
-       err.set_msg("Barrier function is zero due to excessively large negative area compared to delta. /n Try to untangle mesh another way. ");
+       MSQ_SETERR(err)("Barrier function is zero due to excessively large "
+                       "negative area compared to delta. /n Try to untangle "
+                       "mesh another way. ", MsqError::INVALID_MESH);
        return false;
      }
 

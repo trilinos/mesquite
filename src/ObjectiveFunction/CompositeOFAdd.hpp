@@ -39,12 +39,7 @@ Header file for the Mesquite:: CompositeOFAdd class
 #define CompositeOFAdd_hpp
 
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
 #include "ObjectiveFunction.hpp"
-#include "PatchData.hpp"
-#include <list>
-
-MSQ_USE(list);
 
 namespace Mesquite
 {
@@ -53,6 +48,8 @@ namespace Mesquite
      */
    class MsqMeshEntity;
    class PatchData;
+   class MsqError;
+   
    class CompositeOFAdd : public ObjectiveFunction
    {
    public:
@@ -60,12 +57,12 @@ namespace Mesquite
      virtual ~CompositeOFAdd();
      virtual bool concrete_evaluate(PatchData &patch, double &fval,
                                     MsqError &err);
-     virtual list<QualityMetric*> get_quality_metric_list();
+     virtual msq_std::list<QualityMetric*> get_quality_metric_list();
      
 	protected:
      bool compute_analytical_gradient(PatchData &patch,Vector3D *const &grad,
                                       double &OF_val,  MsqError &err,
-				      size_t array_size);
+                                      size_t array_size);
 	private:
      ObjectiveFunction* objFunc1;
      ObjectiveFunction* objFunc2;

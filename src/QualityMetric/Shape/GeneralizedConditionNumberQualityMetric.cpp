@@ -31,20 +31,22 @@
   \author Michael Brewer
   \date   2002-06-9
 */
-#include <vector>
 #include "GeneralizedConditionNumberQualityMetric.hpp"
-#include <math.h>
 #include "Vector3D.hpp"
 #include "ShapeQualityMetric.hpp"
 #include "QualityMetric.hpp"
 
-MSQ_USE(vector);
+#include <math.h>
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#  include <vector.h>
+#else
+#  include <vector>
+   using namespace std;
+#endif
+
 
 
 using namespace Mesquite;
-
-#undef __FUNC__
-#define __FUNC__ "GeneralizedConditionNumberQualityMetric::GeneralizedConditionNumberQualityMetric"
 
 GeneralizedConditionNumberQualityMetric::GeneralizedConditionNumberQualityMetric()
 {
@@ -98,8 +100,6 @@ double GeneralizedConditionNumberQualityMetric::evaluate_element(PatchData *pd, 
 }
 */
 
-#undef __FUNC__
-#define __FUNC__ "GeneralizedConditionNumberQualityMetric::evaluate_element"
 bool GeneralizedConditionNumberQualityMetric::evaluate_element(PatchData &pd,
                                                       MsqMeshEntity *element,
                                                                double &fval,
@@ -109,46 +109,43 @@ bool GeneralizedConditionNumberQualityMetric::evaluate_element(PatchData &pd,
   bool return_flag;
   vector<Vector3D> sample_points;
   ElementEvaluationMode eval_mode = get_element_evaluation_mode();
-  element->get_sample_points(eval_mode,sample_points,err);
+  element->get_sample_points(eval_mode,sample_points,err);  MSQ_ERRZERO(err);
   vector<Vector3D>::iterator iter=sample_points.begin();
     // loop over sample points
   Vector3D jacobian_vectors[3];
   short num_jacobian_vectors;
   int i=0;
   num_sample_points=sample_points.size();
-  double *metric_values=new double[num_sample_points];
+  std::vector<double> metric_values(num_sample_points);
     //Vector3D* current_sample_point;
   for(i=0;i<num_sample_points;++i){
       // compute weighted jacobian
     element->compute_weighted_jacobian(pd, (*iter),
                                        jacobian_vectors,
-                                       num_jacobian_vectors, err);
+                                       num_jacobian_vectors, err); MSQ_ERRZERO(err);
       // evaluate condition number at ith sample point
       //if 2 jacobian vectors (2D elem)
     
     return_flag=compute_condition_number(pd, element, jacobian_vectors,
                                          num_jacobian_vectors,
                                          metric_values[i],err);
-    if(!return_flag){
-      delete[] metric_values;
+    if(MSQ_CHKERR(err) || !return_flag){
       return false;
     }
     
-    MSQ_CHKERR(err);
     ++iter;
   }// end loop over sample points
-  fval=average_metrics(metric_values,num_sample_points,err);
-  MSQ_CHKERR(err);
-  delete[] metric_values;
+  fval=average_metrics(&metric_values[0],num_sample_points,err); MSQ_ERRZERO(err);
   return true;
 }
 
 bool GeneralizedConditionNumberQualityMetric::evaluate_vertex(PatchData &/*pd*/,
-                                                              MsqVertex */*vertex*/,
+                                                              MsqVertex* /*vertex*/,
                                                               double &fval,
                                                               MsqError &err)
 {
-  err.set_msg("Condition Number's evaluate_vertex is currently being implemented");
+  MSQ_SETERR(err)("Condition Number's evaluate_vertex is currently "
+                  "being implemented", MsqError::NOT_IMPLEMENTED);
   fval=0.0;
   return false;
   

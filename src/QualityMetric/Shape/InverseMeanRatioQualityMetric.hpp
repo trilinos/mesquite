@@ -38,14 +38,12 @@ Header file for the Mesquite::InverseMeanRatioQualityMetric class
 
 #ifndef InverseMeanRatioQualityMetric_hpp
 #define InverseMeanRatioQualityMetric_hpp
-#include "MsqMeshEntity.hpp"
+
 #include "Mesquite.hpp"
-#include "MesquiteError.hpp"
+#include "MsqError.hpp"
 #include "ShapeQualityMetric.hpp"
 #include "Vector3D.hpp"
-#include "PatchData.hpp"
-//Michael delete
-#include "MsqMessage.hpp"
+#include "Matrix3D.hpp"
 
 namespace Mesquite
 {
@@ -66,7 +64,7 @@ namespace Mesquite
      InverseMeanRatioQualityMetric() : ShapeQualityMetric() {
        MsqError err;
        set_metric_type(ELEMENT_BASED);
-       set_element_evaluation_mode(ELEMENT_VERTICES, err); MSQ_CHKERR(err);
+       set_element_evaluation_mode(ELEMENT_VERTICES, err); 
        set_negate_flag(-1);
        set_gradient_type(ANALYTICAL_GRADIENT);
        set_hessian_type(ANALYTICAL_HESSIAN);

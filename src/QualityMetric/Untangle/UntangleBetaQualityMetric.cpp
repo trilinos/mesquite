@@ -33,16 +33,19 @@
 */
 
 #include "UntangleBetaQualityMetric.hpp"
-#include <math.h>
-#include <vector>
 #include "Vector3D.hpp"
 #include "QualityMetric.hpp"
 #include "MsqMeshEntity.hpp"
-#include "MsqMessage.hpp"
+
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#  include <vector.h>
+#else
+#  include <vector>
+   using std::vector;
+#endif
+
 using namespace Mesquite;
 
-#undef __FUNC__
-#define __FUNC__ "UntangleBetaQualityMetric::UntangleBetaQualityMetric"
 /*! \fn UntangleBetaQualityMetric::UntangleBetaQualityMetric(double bet)
   \brief For untangle beta, the constructor defaults to the SUM
   averaging method, and to the ELEMENT_VERTICES evaluation mode.
@@ -59,8 +62,6 @@ UntangleBetaQualityMetric::UntangleBetaQualityMetric(double bet)
   mBeta=bet;
 }
 
-#undef __FUNC__
-#define __FUNC__ "UntangleBetaQualityMetric::evaluate_element"
 /*!Evaluate the Untangle Beta value  of the MsqMeshEntity pointed to
   by 'element'.*/
 bool UntangleBetaQualityMetric::evaluate_element(PatchData &pd,
@@ -75,7 +76,7 @@ bool UntangleBetaQualityMetric::evaluate_element(PatchData &pd,
     //only 3 temp_vec will be sent to untangle calculator, but the
     //additional vector3Ds may be needed during the calculations
   Vector3D temp_vec[6];
-  MsqVertex *vertices=pd.get_vertex_array(err);
+  MsqVertex *vertices=pd.get_vertex_array(err);  MSQ_ERRZERO(err);
   switch(element->get_element_type()){
     case TRIANGLE:
       temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
@@ -87,20 +88,20 @@ bool UntangleBetaQualityMetric::evaluate_element(PatchData &pd,
     case QUADRILATERAL:
       temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
       temp_vec[1]=vertices[v_i[3]]-vertices[v_i[0]];
-      untangle_function_2d(temp_vec,e_ind,pd,met_vals[0],err);
+      untangle_function_2d(temp_vec,e_ind,pd,met_vals[0],err);  MSQ_ERRZERO(err);
       
       temp_vec[0]=vertices[v_i[2]]-vertices[v_i[1]];
       temp_vec[1]=vertices[v_i[0]]-vertices[v_i[1]];
-      untangle_function_2d(temp_vec,e_ind,pd,met_vals[1],err);
+      untangle_function_2d(temp_vec,e_ind,pd,met_vals[1],err);  MSQ_ERRZERO(err);
       
       temp_vec[0]=vertices[v_i[3]]-vertices[v_i[2]];
       temp_vec[1]=vertices[v_i[1]]-vertices[v_i[2]];
-      untangle_function_2d(temp_vec,e_ind,pd,met_vals[2],err);
+      untangle_function_2d(temp_vec,e_ind,pd,met_vals[2],err);  MSQ_ERRZERO(err);
       
       temp_vec[0]=vertices[v_i[0]]-vertices[v_i[3]];
       temp_vec[1]=vertices[v_i[2]]-vertices[v_i[3]];
-      untangle_function_2d(temp_vec,e_ind,pd,met_vals[3],err);
-      fval=average_metrics(met_vals, 4, err);
+      untangle_function_2d(temp_vec,e_ind,pd,met_vals[3],err);  MSQ_ERRZERO(err);
+      fval=average_metrics(met_vals, 4, err);  MSQ_ERRZERO(err);
   return true;
     case TETRAHEDRON:
       temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
@@ -110,53 +111,55 @@ bool UntangleBetaQualityMetric::evaluate_element(PatchData &pd,
       temp_vec[1]=((2*temp_vec[3])-temp_vec[0])/MSQ_SQRT_THREE;
       temp_vec[2]=((3*temp_vec[4])-temp_vec[0]-temp_vec[3])/
         (MSQ_SQRT_THREE*MSQ_SQRT_TWO);
-      untangle_function_3d(temp_vec,fval,err);
+      untangle_function_3d(temp_vec,fval,err);  MSQ_ERRZERO(err);
       return true;
     case HEXAHEDRON:
         //transform to v_i[0]
       temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
       temp_vec[1]=vertices[v_i[3]]-vertices[v_i[0]];
       temp_vec[2]=vertices[v_i[4]]-vertices[v_i[0]];
-      untangle_function_3d(temp_vec,met_vals[0],err);
+      untangle_function_3d(temp_vec,met_vals[0],err);  MSQ_ERRZERO(err);
       
       temp_vec[0]=vertices[v_i[2]]-vertices[v_i[1]];
       temp_vec[1]=vertices[v_i[0]]-vertices[v_i[1]];
       temp_vec[2]=vertices[v_i[5]]-vertices[v_i[1]];
-      untangle_function_3d(temp_vec,met_vals[1],err);
+      untangle_function_3d(temp_vec,met_vals[1],err);  MSQ_ERRZERO(err);
       
       temp_vec[0]=vertices[v_i[3]]-vertices[v_i[2]];
       temp_vec[1]=vertices[v_i[1]]-vertices[v_i[2]];
       temp_vec[2]=vertices[v_i[6]]-vertices[v_i[2]];
-      untangle_function_3d(temp_vec,met_vals[2],err);
+      untangle_function_3d(temp_vec,met_vals[2],err);  MSQ_ERRZERO(err);
       
       temp_vec[0]=vertices[v_i[0]]-vertices[v_i[3]];
       temp_vec[1]=vertices[v_i[2]]-vertices[v_i[3]];
       temp_vec[2]=vertices[v_i[7]]-vertices[v_i[3]];
-      untangle_function_3d(temp_vec,met_vals[3],err);
+      untangle_function_3d(temp_vec,met_vals[3],err);  MSQ_ERRZERO(err);
       
       temp_vec[0]=vertices[v_i[7]]-vertices[v_i[4]];
       temp_vec[1]=vertices[v_i[5]]-vertices[v_i[4]];
       temp_vec[2]=vertices[v_i[0]]-vertices[v_i[4]];
-      untangle_function_3d(temp_vec,met_vals[4],err);
+      untangle_function_3d(temp_vec,met_vals[4],err);  MSQ_ERRZERO(err);
       
       temp_vec[0]=vertices[v_i[4]]-vertices[v_i[5]];
       temp_vec[1]=vertices[v_i[6]]-vertices[v_i[5]];
       temp_vec[2]=vertices[v_i[1]]-vertices[v_i[5]];
-      untangle_function_3d(temp_vec,met_vals[5],err);
+      untangle_function_3d(temp_vec,met_vals[5],err);  MSQ_ERRZERO(err);
       
       temp_vec[0]=vertices[v_i[5]]-vertices[v_i[6]];
       temp_vec[1]=vertices[v_i[7]]-vertices[v_i[6]];
       temp_vec[2]=vertices[v_i[2]]-vertices[v_i[6]];
-      untangle_function_3d(temp_vec,met_vals[6],err);
+      untangle_function_3d(temp_vec,met_vals[6],err);  MSQ_ERRZERO(err);
       
       temp_vec[0]=vertices[v_i[6]]-vertices[v_i[7]];
       temp_vec[1]=vertices[v_i[4]]-vertices[v_i[7]];
       temp_vec[2]=vertices[v_i[3]]-vertices[v_i[7]];
-      untangle_function_3d(temp_vec,met_vals[7],err);
-      fval=average_metrics(met_vals, 8, err);
+      untangle_function_3d(temp_vec,met_vals[7],err);  MSQ_ERRZERO(err);
+      fval=average_metrics(met_vals, 8, err);  MSQ_ERRZERO(err);
       return true;
     default:
-      err.set_msg("Element of incorrect type sent to UntangleBetaQualityMetric");
+      MSQ_SETERR(err)("Element of incorrect type sent to "
+                      "UntangleBetaQualityMetric",
+                      MsqError::NOT_IMPLEMENTED);
       return false;
   }// end switch over element type
 

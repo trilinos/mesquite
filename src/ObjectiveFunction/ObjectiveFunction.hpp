@@ -36,23 +36,24 @@ Header file for the Mesquite::ObjectiveFunction class
  */
 
 
-#ifndef ObjectiveFunction_hpp
-#define ObjectiveFunction_hpp
-
-#include <list>
+#ifndef OBJECTIVE_FUNCTION_HPP
+#define OBJECTIVE_FUNCTION_HPP
 
 #include "Mesquite.hpp"
-#include "MsqMessage.hpp"
-#include "MesquiteError.hpp"
-#include "QualityMetric.hpp"
-#include "PatchData.hpp"
+#include "MsqError.hpp"
+#include "MsqVertex.hpp"
 
-MSQ_USE(list);
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#  include <list.h>
+#else
+#  include <list>
+#endif
 
 namespace Mesquite
 {
    class PatchData;
    class MsqHessian;
+   class QualityMetric;
    
   /*! \class ObjectiveFunction
        \brief Base class for concrete Objective Functions
@@ -142,9 +143,9 @@ namespace Mesquite
       /*! 
         returns a list of all associated metrics;
       */
-    virtual list<QualityMetric*> get_quality_metric_list()
+    virtual msq_std::list<QualityMetric*> get_quality_metric_list()
        {
-         list<QualityMetric*> temp_list;
+         msq_std::list<QualityMetric*> temp_list;
          temp_list.push_front(qMetric);
          return temp_list;
        }
@@ -202,12 +203,7 @@ namespace Mesquite
     virtual bool compute_analytical_gradient(PatchData &patch,
                                              Vector3D *const &grad,
                                              double &OF_val,
-                                             MsqError &err, size_t array_size){
-      Message::print_warning("Analytic gradient not implemented for this Objective "
-                    "Function. Defaulting to numerical gradient.\n");
-      set_gradient_type(NUMERICAL_GRADIENT);
-      return compute_numerical_gradient(patch, grad, OF_val, err, array_size);
-    }
+                                             MsqError &err, size_t array_size);
     
      /*! 
         Fills a MsqHessian object with the Hessian of
@@ -222,11 +218,7 @@ namespace Mesquite
                                             MsqHessian &/*hessian*/,
                                             Vector3D *const &/*grad*/,
                                             double &/*OF_val*/,
-                                            MsqError &/*err*/) {
-      Message::print_warning("Analytic hessian not implemented for this Objective "
-                    "Function. Feasible Newton algorythm cannot be used.\n");
-      return false;
-    }
+                                            MsqError &/*err*/);
     
       //!Returns eps used in the numerical gradient calculation.
     inline double get_eps(PatchData &pd, double &local_val,
@@ -258,8 +250,6 @@ namespace Mesquite
 
 //BEGIN INLINE
 
-#undef __FUNC__
-#define __FUNC__ "ObjectiveFunction::compute_gradient"
      /*!  
        Calls either compute_numerical_gradient or compute_analytical_gradient
        depending on the value of gradType.           
@@ -275,20 +265,16 @@ namespace Mesquite
        case NUMERICAL_GRADIENT:
           obj_bool=compute_numerical_gradient(patch, grad, OF_val,
                                               err, array_size);
-          MSQ_CHKERR(err);
           break;
        case ANALYTICAL_GRADIENT:
           obj_bool=compute_analytical_gradient(patch, grad, OF_val,
                                                err, array_size);
-          MSQ_CHKERR(err);
           break;
      }
-     return obj_bool;
+     return !MSQ_CHKERR(err) && obj_bool;
    }
 
 
-#undef __FUNC__
-#define __FUNC__ "ObjectiveFunction::compute_hessian"
      /*!  
        Calls compute_analytical_hessian.
        Numerical objective function hessians are only used for test purposes. 
@@ -299,8 +285,9 @@ namespace Mesquite
                                                   double &OF_val,
                                                   MsqError &err)
    {
-     return compute_analytical_hessian(patch, hessian,
+     bool result = compute_analytical_hessian(patch, hessian,
                                        grad, OF_val, err);
+     return !MSQ_CHKERR(err) && result;
    }
 
 
@@ -310,7 +297,7 @@ namespace Mesquite
     in local_val.
   */
   inline double ObjectiveFunction::get_eps(PatchData &pd, double &local_val,
-                                           int k,MsqVertex* vertex, MsqError &err)
+                                           int k,MsqVertex* vertex, MsqError& err)
   {
     double eps = 1.e-07;
     //  double rho=.5;
@@ -324,7 +311,7 @@ namespace Mesquite
         //perturb kth coord val and check feas if needed
         tmp_var=(*vertex)[k];
         (*vertex)[k]+=eps;
-        feasible = evaluate(pd,local_val,err);
+        feasible = evaluate(pd,local_val,err); MSQ_ERRZERO(err);
         //if step was too big, shorten it         
         if(!feasible)
           eps*=0.5;

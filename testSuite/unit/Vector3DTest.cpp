@@ -29,6 +29,7 @@
 
 #include "Vector3D.hpp"
 #include "cppunit/extensions/HelperMacros.h"
+#include <iostream>
 
 class Vector3DTest : public CppUnit::TestFixture
 {
@@ -66,12 +67,6 @@ public:
       CPPUNIT_ASSERT(v.y() == 2);
       CPPUNIT_ASSERT(v.z() == 1);
     }
-  void test_equals()
-    {
-      Mesquite::Vector3D v1(1,4,5.2);
-      Mesquite::Vector3D v2(1,4,5.2);
-      CPPUNIT_ASSERT(v1 == v2);
-    }
   void throw_exception()
     {
       Mesquite::Vector3D* v = NULL;
@@ -83,7 +78,6 @@ public:
 class Vector3DTest2 : public CppUnit::TestFixture
 {
   CPPUNIT_TEST_SUITE(Vector3DTest);
-  CPPUNIT_TEST (test_equals);
   CPPUNIT_TEST_SUITE_END();
 
 public:
