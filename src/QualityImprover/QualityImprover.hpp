@@ -15,22 +15,20 @@
 
 #include "Mesquite.hpp"
 #include "MesquiteError.hpp"
-//#include "StoppingCriterion.hpp"
 #include "TerminationCriterion.hpp"
-#include "PatchData.hpp"
-#include "MeshSet.hpp"
-#include <iostream>
-#include <fstream.h>
+#include "PatchDataUser.hpp"
+
 namespace Mesquite
 {
 
-//   class MeshSet;
+  class MeshSet;
   
   /*! \class QualityImprover
     Base class for all quality improvers.
 
   */ 
-  class QualityImprover : public PatchDataUser {
+  class QualityImprover : public PatchDataUser
+  {
   public:
 
     // Constructor is protected ... see below.
@@ -67,13 +65,14 @@ namespace Mesquite
     /*! The default constructor initialises a few member variables
         to default values.
         This can be reused by concrete class constructor. */
-    QualityImprover() : mMeshSet(0), qualityImproverName("noname"){
-        //Temporary solution to not having an err object
-      MsqError temp_err;
-      defaultOuterCriterion.add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,1,temp_err);
-      outerTerminationCriterion = & defaultOuterCriterion;
-      innerTerminationCriterion = & defaultInnerCriterion;
-    }
+    QualityImprover() : mMeshSet(0), qualityImproverName("noname")
+      {
+          //Temporary solution to not having an err object
+        MsqError temp_err;
+        defaultOuterCriterion.add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,1,temp_err);
+        outerTerminationCriterion = & defaultOuterCriterion;
+        innerTerminationCriterion = & defaultInnerCriterion;
+      }
     
     friend class MeshSet;
       //friend double QualityMetric::evaluate_element(MsqMeshEntity* element, MsqError &err);
@@ -90,11 +89,11 @@ namespace Mesquite
         mMeshSet=ms;
       }
       //!return the outer termination criterion pointer 
-    TerminationCriterion* get_outer_termination_criterion() {
-      return outerTerminationCriterion; }
+    TerminationCriterion* get_outer_termination_criterion()
+      { return outerTerminationCriterion; }
       //!return the inner termination criterion pointer       
-    TerminationCriterion* get_inner_termination_criterion() {
-      return innerTerminationCriterion; } 
+    TerminationCriterion* get_inner_termination_criterion()
+      { return innerTerminationCriterion; } 
     
   private:
     MeshSet* mMeshSet;

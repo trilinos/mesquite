@@ -21,13 +21,12 @@
 // DESCRIP-END.
 //
 
+
 #include "FeasibleNewton.hpp"
 #include "MsqFreeVertexIndexIterator.hpp"
 
 using namespace Mesquite;
 
-using std::cout;
-using std::endl;
 
 #undef __FUNC__
 #define __FUNC__ "FeasibleNewton::FeasibleNewton" 

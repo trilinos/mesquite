@@ -167,7 +167,7 @@ namespace Mesquite
                        double step_size, MsqError &err);
 
     /*! Moves free vertices and then snaps the free vertices to the domain.
-      /*! \param dk an array of directions, ordered like the vertices in
+      \param dk an array of directions, ordered like the vertices in
       the PatchData.
       \param nb_vtx number of vertices.
       \param step_size a scalar that multiplies the vectors given in dk.

@@ -17,11 +17,13 @@
 #include "PatchData.hpp"
 #include "MesquiteError.hpp"
 
-namespace Mesquite {
+namespace Mesquite
+{
 
   /*! \class PatchDataParameters
    contains all information necessary to fill up a PatchData instance. */
-  class PatchDataParameters {
+  class PatchDataParameters
+  {
   public:
     PatchDataParameters() :
       mType(PatchData::UNDEFINED_PATCH_TYPE),
@@ -71,11 +73,14 @@ namespace Mesquite {
 
     Alternatively, a PatchDataParameters object can be copied directly (see
     set_all_parameters).*/
-  class PatchDataUser {
+  class PatchDataUser
+  {
   protected:
-    PatchDataUser() : mParams() { }
+    PatchDataUser() : mParams()
+      {}
   public:
-    virtual ~PatchDataUser() { }
+    virtual ~PatchDataUser()
+      {}
     
     virtual void set_patch_type(PatchData::PatchType patch_type, MsqError &err,
                                 int param1=0, int param2=0) {

@@ -11,14 +11,14 @@
 
 #include <stddef.h>
 #include <stdlib.h>
-#include <stdio.h>
 
 #include "Mesquite.hpp"
 #include "MsqVertex.hpp"
 #include "PatchData.hpp"
 #include "MesquiteError.hpp"
 
-namespace Mesquite {
+namespace Mesquite
+{
 
   /*! \class MsqFreeVertexIndexIterator
     \brief iterates over indexes of free vetices in a PatchData.

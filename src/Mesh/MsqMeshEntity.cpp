@@ -331,8 +331,8 @@ double MsqMeshEntity::compute_unsigned_area(PatchData &pd, MsqError &err) {
       
     default:
       err.set_msg("Invalid type of element passed to compute unsigned area.");
-  };
-  
+  }
+  return 0;
 }
                                             
 #undef __FUNC__
@@ -362,7 +362,8 @@ double MsqMeshEntity::compute_unsigned_volume(PatchData &pd, MsqError &err) {
       
     default:
       err.set_msg("Invalid type of element passed to compute unsigned volume.");
-  };
+  }
+  return 0;
 }
                                               
     
