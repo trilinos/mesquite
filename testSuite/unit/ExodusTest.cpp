@@ -75,7 +75,7 @@ public:
     
       // Add mesh to a MeshSet.
     Mesquite::MeshSet mesh_set;
-    mesh_set.add_mesh(mMesh, err); MSQ_CHKERR(err);
+    mesh_set.add_mesh(mMesh, err); CPPUNIT_ASSERT(!err.errorOn);
 
       // Get the number of vertices
     std::cout << "Number of vertices: "

@@ -100,7 +100,7 @@ public:
       CPPUNIT_ASSERT(!err.errorOn);
         // initialises a MeshSet object
       MeshSet mesh_set1;
-      mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
+      mesh_set1.add_mesh(mesh, err); CPPUNIT_ASSERT(!err.errorOn);
       
         // creates an intruction queue
       InstructionQueue queue1;

@@ -122,7 +122,7 @@ public:
      
        // initialises a MeshSet object
      MeshSet mesh_set1;
-     mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
+     mesh_set1.add_mesh(mesh, err); CPPUNIT_ASSERT(!err.errorOn);
      
        //Make sure no errors
      CPPUNIT_ASSERT(!err.errorOn);
@@ -133,7 +133,7 @@ public:
      Mesquite::PlanarDomain msq_geom(s_norm, pnt, mesh);
        //Make sure no errors
      CPPUNIT_ASSERT(!err.errorOn);
-     mesh_set1.set_domain_constraint(&msq_geom, err); MSQ_CHKERR(err);
+     mesh_set1.set_domain_constraint(&msq_geom, err); CPPUNIT_ASSERT(!err.errorOn);
      
        // creates an intruction queue
      InstructionQueue queue1, queue2;
@@ -182,8 +182,8 @@ public:
        //pass2->set_inner_termination_criterion(&sc_inner);
        //pass2->set_maximum_iteration(5);
   
-     queue1.set_master_quality_improver(pass1, err); MSQ_CHKERR(err);
-     queue2.set_master_quality_improver(pass2, err); MSQ_CHKERR(err);
+     queue1.set_master_quality_improver(pass1, err); CPPUNIT_ASSERT(!err.errorOn);
+     queue2.set_master_quality_improver(pass2, err); CPPUNIT_ASSERT(!err.errorOn);
        //********************UNTANGLE*******************************
        //Make sure no errors
      CPPUNIT_ASSERT(!err.errorOn);
@@ -191,7 +191,7 @@ public:
      double orig_qa_val=stop_qa.loop_over_mesh(mesh_set1,err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err.errorOn);
-     queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
+     queue1.run_instructions(mesh_set1, err); CPPUNIT_ASSERT(!err.errorOn);
        //Make sure no errors
      CPPUNIT_ASSERT(!err.errorOn);
      double fin_qa_val=stop_qa.loop_over_mesh(mesh_set1,err);
@@ -209,7 +209,7 @@ public:
      orig_qa_val=qa.loop_over_mesh(mesh_set1,err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err.errorOn);
-     queue2.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
+     queue2.run_instructions(mesh_set1, err); CPPUNIT_ASSERT(!err.errorOn);
        //Make sure no errors
      CPPUNIT_ASSERT(!err.errorOn);
      fin_qa_val=qa.loop_over_mesh(mesh_set1,err);
@@ -234,7 +234,7 @@ public:
        
          // initialises a MeshSet object
        MeshSet mesh_set1;
-       mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
+       mesh_set1.add_mesh(mesh, err); CPPUNIT_ASSERT(!err.errorOn);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
          //create geometry: plane z=5, normal (0,0,1)
@@ -243,7 +243,7 @@ public:
        Mesquite::PlanarDomain msq_geom(s_norm, pnt, mesh);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
-       mesh_set1.set_domain_constraint(&msq_geom, err); MSQ_CHKERR(err);
+       mesh_set1.set_domain_constraint(&msq_geom, err); CPPUNIT_ASSERT(!err.errorOn);
        
          // creates an intruction queue
        InstructionQueue queue1, queue2;
@@ -292,8 +292,8 @@ public:
          //TerminationCriterion sc_inner;
          //sc_inner.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,5,err);
          //pass2->set_inner_termination_criterion(&sc_inner);
-       queue1.set_master_quality_improver(pass1, err); MSQ_CHKERR(err);
-       queue2.set_master_quality_improver(pass2, err); MSQ_CHKERR(err);
+       queue1.set_master_quality_improver(pass1, err); CPPUNIT_ASSERT(!err.errorOn);
+       queue2.set_master_quality_improver(pass2, err); CPPUNIT_ASSERT(!err.errorOn);
          //********************UNTANGLE*******************************
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
@@ -301,7 +301,7 @@ public:
        double orig_qa_val=stop_qa.loop_over_mesh(mesh_set1,err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
-       queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
+       queue1.run_instructions(mesh_set1, err); CPPUNIT_ASSERT(!err.errorOn);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
        double fin_qa_val=stop_qa.loop_over_mesh(mesh_set1,err);
@@ -319,7 +319,7 @@ public:
        orig_qa_val=qa.loop_over_mesh(mesh_set1,err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
-       queue2.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
+       queue2.run_instructions(mesh_set1, err); CPPUNIT_ASSERT(!err.errorOn);
        //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
        fin_qa_val=qa.loop_over_mesh(mesh_set1,err);
@@ -344,7 +344,7 @@ public:
        
          // initialises a MeshSet object
        MeshSet mesh_set1;
-       mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
+       mesh_set1.add_mesh(mesh, err); CPPUNIT_ASSERT(!err.errorOn);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
          //create geometry: plane y=5, normal (0,1,0)
@@ -353,7 +353,7 @@ public:
        Mesquite::PlanarDomain msq_geom(s_norm, pnt, mesh);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
-       mesh_set1.set_domain_constraint(&msq_geom, err); MSQ_CHKERR(err);
+       mesh_set1.set_domain_constraint(&msq_geom, err); CPPUNIT_ASSERT(!err.errorOn);
        
          // creates an intruction queue
        InstructionQueue queue1;
@@ -388,7 +388,7 @@ public:
        pass1->set_inner_termination_criterion(&sc_inner);
          //pass1->set_maximum_iteration(5);
        
-       queue1.set_master_quality_improver(pass1, err); MSQ_CHKERR(err);
+       queue1.set_master_quality_improver(pass1, err); CPPUNIT_ASSERT(!err.errorOn);
          //********************UNTANGLE*******************************
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
@@ -396,7 +396,7 @@ public:
        double orig_qa_val=qa.loop_over_mesh(mesh_set1,err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
-       queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
+       queue1.run_instructions(mesh_set1, err); CPPUNIT_ASSERT(!err.errorOn);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
        double fin_qa_val=qa.loop_over_mesh(mesh_set1,err);

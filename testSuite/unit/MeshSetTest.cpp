@@ -81,13 +81,13 @@ public:
       // Read a vtk file -- square meshed by 8 triangles
     tri8 = new Mesquite::MeshImpl;
     tri8->read_vtk("../../meshFiles/2D/VTK/square_tri_2.vtk", err);
-    MSQ_CHKERR(err);
+    CPPUNIT_ASSERT(! err.errorOn );
     
       // Read a vtk file
       // -- square meshed by 4 quads, adjacent to the previous mesh
     quad4 = new Mesquite::MeshImpl;
     quad4->read_vtk("../../meshFiles/2D/VTK/four_more_quads.vtk", err);
-    MSQ_CHKERR(err);
+    CPPUNIT_ASSERT( !err.errorOn );
   }
   
     // Automatically called by CppUnit after each test function.
@@ -106,14 +106,18 @@ public:
      
        /* Adds 2 adjacent meshes to the MeshSet. */
      MeshSet mesh_set;
-     mesh_set.add_mesh(tri8, err); MSQ_CHKERR(err);
-     mesh_set.add_mesh(quad4, err); MSQ_CHKERR(err);
+     mesh_set.add_mesh(tri8, err); 
+     CPPUNIT_ASSERT( !err.errorOn );
+     mesh_set.add_mesh(quad4, err); 
+     CPPUNIT_ASSERT( !err.errorOn );
      
        /* Retrieves a global patch */
      PatchData pd;
      PatchDataParameters pd_params;
      pd_params.set_patch_type(PatchData::GLOBAL_PATCH, err, 0, 0);
-     mesh_set.get_next_patch(pd, pd_params, err); MSQ_CHKERR(err);
+     CPPUNIT_ASSERT( !err.errorOn );
+     mesh_set.get_next_patch(pd, pd_params, err);
+     CPPUNIT_ASSERT( !err.errorOn );
      
      int num_vtx = pd.num_vertices();
      CPPUNIT_ASSERT( num_vtx == 18 );

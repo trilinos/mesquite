@@ -82,17 +82,21 @@ public:
       // Read a VTK file -- 1 triangle flanked by 1 quad on each side (1 tri + 3 quads)
     mMesh = new Mesquite::MeshImpl;
     mMesh->read_vtk("../../meshFiles/2D/VTK/hybrid_3quad_1tri.vtk", mErr);
-    MSQ_CHKERR(mErr);
+    CPPUNIT_ASSERT(!mErr.errorOn);
 
     // Gets an array of vertices handles
-    nbVert = mMesh->get_total_vertex_count(mErr); MSQ_CHKERR(mErr);
+    nbVert = mMesh->get_total_vertex_count(mErr); 
+    CPPUNIT_ASSERT(!mErr.errorOn);
     mVertices = new Mesquite::Mesh::VertexHandle[nbVert];
-    mMesh->get_all_vertices(mVertices, nbVert, mErr); MSQ_CHKERR(mErr);
+    mMesh->get_all_vertices(mVertices, nbVert, mErr); 
+    CPPUNIT_ASSERT(!mErr.errorOn);
 
     // Gets an array of element handles
-    nbElem = mMesh->get_total_element_count(mErr); MSQ_CHKERR(mErr);
+    nbElem = mMesh->get_total_element_count(mErr);
+    CPPUNIT_ASSERT(!mErr.errorOn);
     mElements = new Mesquite::Mesh::ElementHandle[nbElem];
-    mMesh->get_all_elements(mElements, nbElem, mErr); MSQ_CHKERR(mErr);
+    mMesh->get_all_elements(mElements, nbElem, mErr); 
+    CPPUNIT_ASSERT(!mErr.errorOn);
 
   }
   
@@ -136,16 +140,19 @@ public:
     correct_coords[7].set(-1.732,2.732,0);
     correct_coords[8].set(-2.732,1,0);
 
-    mMesh->vertices_get_coordinates(mVertices, coords, nbVert, mErr); MSQ_CHKERR(mErr);
+    mMesh->vertices_get_coordinates(mVertices, coords, nbVert, mErr);
+    CPPUNIT_ASSERT(!mErr.errorOn);
     for (size_t i=0; i<nbVert; ++i) {
       for (int j=0; j<3; ++j)
         CPPUNIT_ASSERT_DOUBLES_EQUAL(coords[i][j], correct_coords[i][j], .01);
     }
 
     coords[3].set(2.,3.,4.);
-    mMesh->vertex_set_coordinates(mVertices[3], coords[3], mErr); MSQ_CHKERR(mErr);
+    mMesh->vertex_set_coordinates(mVertices[3], coords[3], mErr);
+    CPPUNIT_ASSERT(!mErr.errorOn);
     Mesquite::MsqVertex coords_2;
-    mMesh->vertices_get_coordinates(&mVertices[3], &coords_2, 1, mErr); MSQ_CHKERR(mErr);
+    mMesh->vertices_get_coordinates(&mVertices[3], &coords_2, 1, mErr);
+    CPPUNIT_ASSERT(!mErr.errorOn);
     for (int j=0; j<3; ++j)
       CPPUNIT_ASSERT_DOUBLES_EQUAL(coords[3][j], coords_2[j], 1e-6);
     
@@ -157,7 +164,8 @@ public:
   void test_vertices_are_on_boundary()
   {
     bool on_bnd[9];
-    mMesh->vertices_are_on_boundary(mVertices, on_bnd, nbVert, mErr); MSQ_CHKERR(mErr);
+    mMesh->vertices_are_on_boundary(mVertices, on_bnd, nbVert, mErr);
+    CPPUNIT_ASSERT(!mErr.errorOn);
     bool correct_boundary[9] = {false, false, false, true, true, true, true, true, true};
     for (size_t i=0; i<nbVert; ++i) {
       CPPUNIT_ASSERT(on_bnd[i] == correct_boundary[i]);
@@ -170,7 +178,8 @@ public:
   {
     bool correct_fixed[9] = {false, false, false, true, true, true, true, true, true};
     for (size_t i=0; i<nbVert; ++i) {
-      bool fixed = mMesh->vertex_is_fixed(mVertices[i], mErr); MSQ_CHKERR(mErr);
+      bool fixed = mMesh->vertex_is_fixed(mVertices[i], mErr);
+      CPPUNIT_ASSERT(!mErr.errorOn);
 //      cout << "fixed["<<i<<"] : "<< fixed << endl;
       CPPUNIT_ASSERT(fixed == correct_fixed[i]);
     }
@@ -181,7 +190,8 @@ public:
   void test_vertex_byte()
   {
     unsigned char* bytes = new unsigned char[nbVert];
-    mMesh->vertices_get_byte(mVertices, bytes, nbVert, mErr); MSQ_CHKERR(mErr);
+    mMesh->vertices_get_byte(mVertices, bytes, nbVert, mErr); 
+    CPPUNIT_ASSERT(!mErr.errorOn);
 
     // Asserts all vertex bytes are initialised to 0. 
     for (size_t i=0; i<nbVert; ++i)
@@ -189,12 +199,16 @@ public:
 
     // Test various vertex byte read / write routines.
     bytes[3] |= 4;
-    mMesh->vertices_set_byte(mVertices, bytes, nbVert, mErr); MSQ_CHKERR(mErr);
-    mMesh->vertex_set_byte(mVertices[5], 8, mErr); MSQ_CHKERR(mErr);
+    mMesh->vertices_set_byte(mVertices, bytes, nbVert, mErr); 
+    CPPUNIT_ASSERT(!mErr.errorOn);
+    mMesh->vertex_set_byte(mVertices[5], 8, mErr); 
+    CPPUNIT_ASSERT(!mErr.errorOn);
     unsigned char byte;
-    mMesh->vertex_get_byte(mVertices[3], &byte, mErr); MSQ_CHKERR(mErr);
+    mMesh->vertex_get_byte(mVertices[3], &byte, mErr);
+    CPPUNIT_ASSERT(!mErr.errorOn);
     CPPUNIT_ASSERT(byte == 4);
-    mMesh->vertices_get_byte(mVertices, bytes, nbVert, mErr); MSQ_CHKERR(mErr);
+    mMesh->vertices_get_byte(mVertices, bytes, nbVert, mErr);
+    CPPUNIT_ASSERT(!mErr.errorOn);
     for (size_t i=0; i<nbVert; ++i) {
       if (i==3)
         CPPUNIT_ASSERT(bytes[i] == 4);
@@ -219,7 +233,7 @@ public:
     int n3=0;
     for (size_t i=0; i<nbVert; ++i) {
       size_t nev = mMesh->vertex_get_attached_element_count(mVertices[i], mErr);
-      MSQ_CHKERR(mErr);
+      CPPUNIT_ASSERT(!mErr.errorOn);
       if (nev==1)
         ++n1;
       else if (nev==3)
@@ -235,6 +249,7 @@ public:
     size_t i=nbVert-1;
     while (!one_corner_vertex_index) {
       size_t nev = mMesh->vertex_get_attached_element_count(mVertices[i], mErr);
+      CPPUNIT_ASSERT(!mErr.errorOn);
       if (nev==1)
         one_corner_vertex_index=i;
       --i;
@@ -243,7 +258,7 @@ public:
     // retrieve the attached element.
     Mesquite::Mesh::ElementHandle elem=0;
     mMesh->vertex_get_attached_elements(mVertices[2], &elem, 1, mErr);
-    MSQ_CHKERR(mErr);
+    CPPUNIT_ASSERT(!mErr.errorOn);
     CPPUNIT_ASSERT(elem!=0);
 
   }
@@ -269,7 +284,7 @@ public:
     for (size_t i=0; i<nbElem; ++i) {
       size_t nve = mMesh->element_get_attached_vertex_count(
                                          mElements[i], mErr);
-      MSQ_CHKERR(mErr);
+      CPPUNIT_ASSERT(!mErr.errorOn);
       if (nve==3)
         ++n3;
       else if (nve==4)
@@ -291,7 +306,8 @@ public:
                                           vert_handles, sizeof_vert_handles,
                                           csr_data, sizeof_csr_data,
                                           csr_offsets,
-                                          mErr); MSQ_CHKERR(mErr);
+                                          mErr);
+    CPPUNIT_ASSERT(!mErr.errorOn);
 
 //     cout << "nbElem " << nbElem << endl;
 //     for (size_t i=0; i<nbElem; ++i) {
@@ -355,7 +371,7 @@ public:
     Mesquite::EntityTopology topo;
     for (size_t i=0; i<nbElem; ++i) {
       topo = mMesh->element_get_topology(mElements[i], mErr);
-      MSQ_CHKERR(mErr);
+      CPPUNIT_ASSERT(!mErr.errorOn);
       switch (topo) {
       case Mesquite::TRIANGLE:
         ++nb_tri;
@@ -379,7 +395,7 @@ public:
     int nb_tri=0;
     Mesquite::EntityTopology* topos = new Mesquite::EntityTopology[nbElem];
     mMesh->elements_get_topologies(mElements, topos, nbElem, mErr);
-    MSQ_CHKERR(mErr);
+    CPPUNIT_ASSERT(!mErr.errorOn);
     for (size_t i=0; i<nbElem; ++i) {
       switch (topos[i]) {
       case Mesquite::TRIANGLE:
@@ -409,7 +425,7 @@ public:
     while (topo != Mesquite::TRIANGLE) {
       ++tri_index;
       topo = mMesh->element_get_topology(mElements[tri_index], mErr);
-      MSQ_CHKERR(mErr);
+      CPPUNIT_ASSERT(!mErr.errorOn);
     }
 
     size_t index_array[3];
@@ -417,6 +433,7 @@ public:
     mMesh->elements_get_attached_vertex_indices(&mElements[tri_index], 1,
                                         index_array, 3, offsets, mErr);
 
+    CPPUNIT_ASSERT(!mErr.errorOn);
     // creates list with correct vertices coordinates for the triangle
     std::list<Mesquite::Vector3D> correct_coords;
     correct_coords.push_back(Mesquite::Vector3D(1.,0.,0.));
@@ -428,6 +445,7 @@ public:
     Mesquite::MsqVertex tmp_vtx;
     for (size_t i=0; i<3; ++i) {
       mMesh->vertices_get_coordinates(&mVertices[index_array[i]], &tmp_vtx, 1, mErr);
+      CPPUNIT_ASSERT(!mErr.errorOn);
       tri_coords.push_back(tmp_vtx);
     }
 

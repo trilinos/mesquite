@@ -127,12 +127,12 @@ public:
       Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
       mesh->read_vtk("../../meshFiles/2D/VTK/tri_5_xz.vtk", err);
       MeshSet mesh_set1;
-      mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
+      mesh_set1.add_mesh(mesh, err); CPPUNIT_ASSERT(!err.errorOn);
       
       Vector3D pnt(0,-5,0);
       Vector3D s_norm(0, -1,0);
       Mesquite::PlanarDomain msq_geom(s_norm, pnt, mesh);
-      mesh_set1.set_domain_constraint(&msq_geom, err); MSQ_CHKERR(err);
+      mesh_set1.set_domain_constraint(&msq_geom, err); CPPUNIT_ASSERT(!err.errorOn);
       
         // create an intruction queue        
       InstructionQueue queue1;
@@ -152,11 +152,11 @@ public:
                                              QualityAssessor::ALL_MEASURES);
       queue1.add_quality_assessor(&all_qa,err);
       CPPUNIT_ASSERT(!err.errorOn);
-      queue1.set_master_quality_improver(pass1, err); MSQ_CHKERR(err);
+      queue1.set_master_quality_improver(pass1, err); CPPUNIT_ASSERT(!err.errorOn);
       CPPUNIT_ASSERT(!err.errorOn);
         //queue1.add_quality_assessor(&all_qa,err);
       CPPUNIT_ASSERT(!err.errorOn);
-      queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
+      queue1.run_instructions(mesh_set1, err); CPPUNIT_ASSERT(!err.errorOn);
       CPPUNIT_ASSERT(!err.errorOn);
       delete pass1;
       delete obj_func;

@@ -93,28 +93,28 @@ public:
         equilateral (the ideal for most metrics).  tri_2 is an arbitrary
         triangle.
      */
-    create_qm_two_tri_patch_with_domain(triPatch, err);MSQ_CHKERR(err);
+    create_qm_two_tri_patch_with_domain(triPatch, err);CPPUNIT_ASSERT(!err.errorOn);
     
      /* Our quad patch is made of two quads.  quad_1 is a perfect
         square (the ideal for most metrics).  quad_2 is an arbitrary
         quad.
      */
-    create_qm_two_quad_patch_with_domain(quadPatch,err);MSQ_CHKERR(err);
+    create_qm_two_quad_patch_with_domain(quadPatch,err);CPPUNIT_ASSERT(!err.errorOn);
     
-    create_one_tet_patch(tetPatch,err);MSQ_CHKERR(err);
+    create_one_tet_patch(tetPatch,err);CPPUNIT_ASSERT(!err.errorOn);
     
      /* Our hex patch is made of two hexes.  hex_1 is a perfect
         unit cube (the ideal for most metrics).  hex_2 is an arbitrary
         hex.
      */
-     create_qm_two_hex_patch(hexPatch,err);MSQ_CHKERR(err);
+     create_qm_two_hex_patch(hexPatch,err);CPPUNIT_ASSERT(!err.errorOn);
 
        //'ideal' inverted tet
-     create_one_inverted_tet_patch(invertedTet, err);MSQ_CHKERR(err);
+     create_one_inverted_tet_patch(invertedTet, err);CPPUNIT_ASSERT(!err.errorOn);
        //ideal tri
-     create_one_tri_patch(idealTri, err);MSQ_CHKERR(err);
+     create_one_tri_patch(idealTri, err);CPPUNIT_ASSERT(!err.errorOn);
        //ideal tet
-     create_one_tet_patch(idealTet, err);MSQ_CHKERR(err);
+     create_one_tet_patch(idealTet, err);CPPUNIT_ASSERT(!err.errorOn);
 
      // Creates a patch of one triangle, with specific coordinates, without domain.
      oneTri.set_num_vertices(3);
@@ -155,7 +155,7 @@ public:
         
      TargetCalculator::initialize_default_target_matrices(tri_m3d, quad_m3d, tet_m3d, hex_m3d);
 
-     idealTri.allocate_target_matrices(err); MSQ_CHKERR(err);
+     idealTri.allocate_target_matrices(err); CPPUNIT_ASSERT(!err.errorOn);
      MsqMeshEntity* elem = idealTri.get_element_array(err);
      MsqTag* tag = elem[0].get_tag();
      tag->target_matrix(0) = tri_m3d;
@@ -174,7 +174,7 @@ public:
 
      Matrix3D T[MSQ_MAX_NUM_VERT_PER_ENT];
      double c_k[MSQ_MAX_NUM_VERT_PER_ENT];
-     this->compute_T_matrices(elem[0], idealTri, T, 3, c_k, err); MSQ_CHKERR(err);
+     this->compute_T_matrices(elem[0], idealTri, T, 3, c_k, err); CPPUNIT_ASSERT(!err.errorOn);
 
 //    cout << T[0] << endl;
 
@@ -197,7 +197,7 @@ public:
         
      TargetCalculator::initialize_default_target_matrices(tri_m3d, quad_m3d, tet_m3d, hex_m3d);
 
-     quadPatch.allocate_target_matrices(err); MSQ_CHKERR(err);
+     quadPatch.allocate_target_matrices(err); CPPUNIT_ASSERT(!err.errorOn);
      MsqMeshEntity* elem = quadPatch.get_element_array(err);
      MsqTag* tag = elem[0].get_tag();
      tag->target_matrix(0) = quad_m3d;
@@ -207,7 +207,7 @@ public:
 
      Matrix3D T[MSQ_MAX_NUM_VERT_PER_ENT];
      double c_k[MSQ_MAX_NUM_VERT_PER_ENT];
-     this->compute_T_matrices(elem[0], quadPatch, T, 4, c_k, err); MSQ_CHKERR(err);
+     this->compute_T_matrices(elem[0], quadPatch, T, 4, c_k, err); CPPUNIT_ASSERT(!err.errorOn);
 
 //     cout << T[0] << endl;
 
@@ -230,7 +230,7 @@ public:
         
      TargetCalculator::initialize_default_target_matrices(tri_m3d, quad_m3d, tet_m3d, hex_m3d);
 
-     tetPatch.allocate_target_matrices(err); MSQ_CHKERR(err);
+     tetPatch.allocate_target_matrices(err); CPPUNIT_ASSERT(!err.errorOn);
      MsqMeshEntity* elem = tetPatch.get_element_array(err);
      MsqTag* tag = elem[0].get_tag();
      tag->target_matrix(0) = tet_m3d;
@@ -252,7 +252,7 @@ public:
 
      Matrix3D T[MSQ_MAX_NUM_VERT_PER_ENT];
      double c_k[MSQ_MAX_NUM_VERT_PER_ENT];
-     this->compute_T_matrices(elem[0], tetPatch, T, 4, c_k, err); MSQ_CHKERR(err);
+     this->compute_T_matrices(elem[0], tetPatch, T, 4, c_k, err); CPPUNIT_ASSERT(!err.errorOn);
 
 //     cout << T[0] << endl;
 
@@ -278,9 +278,9 @@ public:
      
      
      // W is a singular matrix in 2D ... code needs fixing.
-     MsqMeshEntity* elem = oneTri.get_element_array(err); MSQ_CHKERR(err);
-     target_calc.compute_target_matrices(oneTri, err); MSQ_CHKERR(err);
-     this->compute_T_matrices(elem[0], oneTri, T, 3, c_k, err); MSQ_CHKERR(err);
+     MsqMeshEntity* elem = oneTri.get_element_array(err); CPPUNIT_ASSERT(!err.errorOn);
+     target_calc.compute_target_matrices(oneTri, err); CPPUNIT_ASSERT(!err.errorOn);
+     this->compute_T_matrices(elem[0], oneTri, T, 3, c_k, err); CPPUNIT_ASSERT(!err.errorOn);
      
      Matrix3D T_check[3];
 

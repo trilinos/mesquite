@@ -122,14 +122,14 @@ public:
      
        // initialises a MeshSet object
      MeshSet mesh_set1;
-     mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
+     mesh_set1.add_mesh(mesh, err); CPPUNIT_ASSERT(!err.errorOn);
        //Make sure no errors
      CPPUNIT_ASSERT(!err.errorOn);
      
        //create geometry: sphere, center (2,2,0), radius 3
      Vector3D center(2,2,0);
      SphericalDomain msq_geom(center, 3.0, mesh);
-     mesh_set1.set_domain_constraint(&msq_geom, err); MSQ_CHKERR(err);
+     mesh_set1.set_domain_constraint(&msq_geom, err); CPPUNIT_ASSERT(!err.errorOn);
      
        // creates an intruction queue
      InstructionQueue queue1;
@@ -163,15 +163,15 @@ public:
        //CG's debugging print, increase integer to get more print info
      pass1->set_debugging_level(0);
   
-       //  queue1.add_preconditioner(pass2, err); MSQ_CHKERR(err);
-     queue1.set_master_quality_improver(pass1, err); MSQ_CHKERR(err);
+       //  queue1.add_preconditioner(pass2, err); CPPUNIT_ASSERT(!err.errorOn);
+     queue1.set_master_quality_improver(pass1, err); CPPUNIT_ASSERT(!err.errorOn);
        //Make sure no errors
      CPPUNIT_ASSERT(!err.errorOn);
        // launches optimization on mesh_set1
      double orig_qa_val=qa.loop_over_mesh(mesh_set1,err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err.errorOn);
-     queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
+     queue1.run_instructions(mesh_set1, err); CPPUNIT_ASSERT(!err.errorOn);
        //Make sure no errors
      CPPUNIT_ASSERT(!err.errorOn);
      double fin_qa_val=qa.loop_over_mesh(mesh_set1,err);
@@ -192,7 +192,7 @@ public:
         
          // initialises a MeshSet object
        MeshSet mesh_set1;
-       mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
+       mesh_set1.add_mesh(mesh, err); CPPUNIT_ASSERT(!err.errorOn);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
        
@@ -201,7 +201,7 @@ public:
        Mesquite::SphericalDomain msq_geom(center, 1.0, mesh);
         //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
-       mesh_set1.set_domain_constraint(&msq_geom, err); MSQ_CHKERR(err);
+       mesh_set1.set_domain_constraint(&msq_geom, err); CPPUNIT_ASSERT(!err.errorOn);
   
          // creates an intruction queue
        InstructionQueue queue1;
@@ -223,7 +223,7 @@ public:
          // sets a culling method on the laplacian quality improver
        s_lapl->add_culling_method(PatchData::NO_BOUNDARY_VTX);  
          //qa, qi, qa
-       queue1.set_master_quality_improver(s_lapl, err); MSQ_CHKERR(err);
+       queue1.set_master_quality_improver(s_lapl, err); CPPUNIT_ASSERT(!err.errorOn);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
          // launches optimization on mesh_set1
@@ -233,7 +233,7 @@ public:
        
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
-       queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
+       queue1.run_instructions(mesh_set1, err); CPPUNIT_ASSERT(!err.errorOn);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
 
@@ -256,7 +256,7 @@ public:
        
          // initialises a MeshSet object
        MeshSet mesh_set1;
-       mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
+       mesh_set1.add_mesh(mesh, err); CPPUNIT_ASSERT(!err.errorOn);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
        
@@ -265,7 +265,7 @@ public:
        Mesquite::SphericalDomain msq_geom(center, 1.0, mesh);
         //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
-       mesh_set1.set_domain_constraint(&msq_geom, err); MSQ_CHKERR(err);
+       mesh_set1.set_domain_constraint(&msq_geom, err); CPPUNIT_ASSERT(!err.errorOn);
   
          // creates an intruction queue
        InstructionQueue queue1;
@@ -290,14 +290,14 @@ public:
          // sets a culling method on the laplacian quality improver
        lapl->add_culling_method(PatchData::NO_BOUNDARY_VTX);  
          //qa, qi, qa
-       queue1.set_master_quality_improver(lapl, err); MSQ_CHKERR(err);
+       queue1.set_master_quality_improver(lapl, err); CPPUNIT_ASSERT(!err.errorOn);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
          // launches optimization on mesh_set1
        double orig_qa_val=qa.loop_over_mesh(mesh_set1,err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
-       queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
+       queue1.run_instructions(mesh_set1, err); CPPUNIT_ASSERT(!err.errorOn);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
        double fin_qa_val=qa.loop_over_mesh(mesh_set1,err);

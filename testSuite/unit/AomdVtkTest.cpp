@@ -117,7 +117,7 @@ public:
       MeshSet mesh_set;
       TSTTMesh tstt_mesh;
       tstt_mesh.set_mesh(tri10);
-      mesh_set.add_mesh(&tstt_mesh, err); MSQ_CHKERR(err);
+      mesh_set.add_mesh(&tstt_mesh, err); CPPUNIT_ASSERT(!err.errorOn);
 
       /* Retrieves a global patch */
       PatchData pd;
@@ -125,13 +125,13 @@ public:
       pd_params.set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err, 1, 0);
       pd_params.add_culling_method(PatchData::NO_BOUNDARY_VTX);
       
-      mesh_set.get_next_patch(pd, pd_params, err); MSQ_CHKERR(err);
+      mesh_set.get_next_patch(pd, pd_params, err); CPPUNIT_ASSERT(!err.errorOn);
 
-      int free_vtx = pd.num_free_vertices(err); MSQ_CHKERR(err);
+      int free_vtx = pd.num_free_vertices(err); CPPUNIT_ASSERT(!err.errorOn);
       std::cout << "nb of free vertices: " << free_vtx << std::endl;
       CPPUNIT_ASSERT( free_vtx == 1 );
       
-      element_array =  pd.get_element_array(err); MSQ_CHKERR(err);
+      element_array =  pd.get_element_array(err); CPPUNIT_ASSERT(!err.errorOn);
       num_elements = pd.num_elements();
       CPPUNIT_ASSERT( num_elements == 6 );
 
@@ -139,7 +139,7 @@ public:
       //         std::cout << element_array[i];
       //      }
       
-      vtx_array = pd.get_vertex_array(err); MSQ_CHKERR(err);
+      vtx_array = pd.get_vertex_array(err); CPPUNIT_ASSERT(!err.errorOn);
       num_vertices = pd.num_vertices();
       CPPUNIT_ASSERT( num_vertices == 7 );
 
@@ -149,9 +149,9 @@ public:
 
       CPPUNIT_ASSERT( tri_check_validity() == 1 );
       
-      mesh_set.get_next_patch(pd, pd_params, err); MSQ_CHKERR(err);
+      mesh_set.get_next_patch(pd, pd_params, err); CPPUNIT_ASSERT(!err.errorOn);
 
-      element_array =  pd.get_element_array(err); MSQ_CHKERR(err);
+      element_array =  pd.get_element_array(err); CPPUNIT_ASSERT(!err.errorOn);
       num_elements = pd.num_elements();
       CPPUNIT_ASSERT( num_elements == 6 );
 
@@ -159,7 +159,7 @@ public:
       //         std::cout << element_array[i];
       //      }
       
-      vtx_array = pd.get_vertex_array(err); MSQ_CHKERR(err);
+      vtx_array = pd.get_vertex_array(err); CPPUNIT_ASSERT(!err.errorOn);
       num_vertices = pd.num_vertices();
       CPPUNIT_ASSERT( num_vertices == 7 );
 
