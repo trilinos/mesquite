@@ -120,7 +120,15 @@ bool QualityMetric::compute_element_gradient_expanded(PatchData &pd,
                                                       double &metric_value,
                                                       MsqError &err)
 {
-  int i;
+  cout << "vertices: \n"; //dbg
+  for (int j=0; j<num_vtx; ++j) cout << vertices[j] << endl; //dbg
+  MsqVertex* toto = pd.get_vertex_array(err); //dbg
+  std::vector<size_t> titi; //dbg
+  el->get_vertex_indices(titi); //dbg
+  cout << "element vertices:\n"; //dbg
+  for (int j=0; j<4; ++j) cout << &toto[titi[j]] << endl; //dbg
+    
+  int i, g, e;
   bool ret;
   Vector3D* grad_vec_nz = new Vector3D[num_vtx];
   ret = compute_element_gradient(pd, el, vertices, grad_vec_nz,
@@ -131,31 +139,35 @@ bool QualityMetric::compute_element_gradient_expanded(PatchData &pd,
   gv_i.reserve(num_vtx);
   i=0;
   for (i=0; i<num_vtx; ++i) {
-    gv_i.push_back( pd.get_vertex_ptr_index(vertices[i]) );
+    gv_i.push_back( pd.get_vertex_index(vertices[i]) );
   }
      
   std::vector<size_t> ev_i;
   el->get_vertex_indices(ev_i);
 
+  for (int j=0; j<ev_i.size(); ++j) cout << "ev_i["<<j<<"]: " << ev_i[j] <<endl; //dbg
+  for (int j=0; j<gv_i.size(); ++j) cout << "gv_i["<<j<<"]: " << gv_i[j] <<endl; //dbg
+  
   bool inc;
   std::vector<size_t>::iterator ev;
   std::vector<size_t>::iterator gv;
-  for (ev=ev_i.begin(); ev!=ev_i.end(); ++ev) {
-    inc = false; i=0;
+  for (ev=ev_i.begin(), e=0; ev!=ev_i.end(); ++ev, ++e) {
+    inc = false; g=0;
     gv = gv_i.begin();
     while (gv!=gv_i.end()) {
       if (*ev == *gv) {
         inc = true;
-        cout << "inc=true for ev " << *ev << "and gv " << *gv << endl; //dbg
+        cout << "inc=true for ev " << *ev << " and gv " << *gv << " e = " << e <<" g = " << g << endl; //dbg
         break;
       }
-      ++gv;
+      ++gv; ++g;
     }
     if (inc == true)
-      grad_vec[*ev] = grad_vec_nz[*gv];
+      grad_vec[e] = grad_vec_nz[g];
     else
-      grad_vec[*ev] = 0;
+      grad_vec[e] = 0;
   }
+  
   delete []grad_vec_nz;
   return ret;
 }
@@ -256,8 +268,9 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
   
   double delta = 10e-6;
   int nve = element->vertex_count();
-  std::cout << "grad_vec: \n"; for (int i=0; i<nve; ++i) std::cout << grad_vec[i] << std::endl;  //dbg
+  cout << "grad_vec: \n"; for (int i=0; i<nve; ++i) cout << grad_vec[i] ;  //dbg
   Vector3D* grad_vec1 = new Vector3D[nve];
+  Vector3D fd;
   int v,w,i,j,s, sum_w, mat_index;
   for (v=0; v<nve; ++v) 
   {
@@ -273,12 +286,13 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
       for (w=0; w<nve; ++w) {
         if (v>=w) {
           //finite difference to get some entries of the Hessian
-          Vector3D fd = (grad_vec1[w]-grad_vec[w])/delta;
+          fd = (grad_vec1[w]-grad_vec[w])/delta;
           // For the block at position w,v in a matrix, we need the corresponding index
           // (mat_index) in a 1D array containing only upper triangular blocks.
-          sum_w = 0;
-          for (s=1; s<=w; ++s) sum_w+=s;
+          sum_w = w*(w+1)/2; // 1+2+3+...+w
           mat_index = w*nve+v-sum_w;
+//           int sum_v = v*(v+1)/2; // 1+2+3+...+v
+//           mat_index = v*nve+w-sum_v;
           
           for (i=0; i<3; ++i)
             hessian[mat_index][i][j] = fd[i];   
