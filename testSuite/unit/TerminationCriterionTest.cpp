@@ -32,7 +32,6 @@ Tests for the TerminationCriterion class..
 
 
 #include "Mesquite.hpp"
-#include "MesquiteUtilities.hpp" //  for writeShowMeMesh()
 #include "MesquiteError.hpp"
 #include "Vector3D.hpp"
 #include "InstructionQueue.hpp"
