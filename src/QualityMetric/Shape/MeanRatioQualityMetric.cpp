@@ -1742,7 +1742,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 		        {5, 4, 6, 1},
 		        {6, 5, 7, 2},
 		        {7, 6, 4, 3}};
-  int i, j;
+  int i, j, k, l, ind;
 
   m = 0.0;
 
@@ -1759,19 +1759,34 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     coords[3] = vertices[v_i[3]];
     if (!h_fcn_3e(m, gradients, hessians, coords)) return false;
 
-    // This is not very efficient, but is one way to select correct Hessian
+    // This is not very efficient, but is one way to select correct gradient
     for (i = 0; i < 4; ++i) {
       for (j = 0; j < nv; ++j) {
         if (vertices + v_i[i] == v[j])
-          g[j] = gradients[i];
-          
+          g[i] = gradients[i];
+        else
+          g[i] = 0.;
       }
     }
     
-    // For now, the whole upper triangular part of the element hessian is filled,
-    // regardless of fixed vertices.
-    for(i=0; i<10; ++i) h[i] = hessians[i];
-
+    // Makes sure we give null entries to the blocks corresponding to fixed vertices. 
+    for(i=0; i<4; ++i) {
+      for (j=i; j<4; ++j) {
+        
+        // for an entry i,j in the upper right part of a  4*4 matrix, index in a 1D array is
+        ind = 4*i- (i*(i+1)/2) +j; // 4*i - \sum_{n=0}^i n +j 
+        
+        for (k=0; k<nv; ++k) {
+          for (l=0; l<nv; ++l) {
+          if ( (vertices + v_i[i] == v[k]) && (vertices + v_i[j] == v[l]) )
+            h[ind] = hessians[ind];
+          else
+            h[ind] = 0.;
+          }
+        }
+      }
+    }
+    
     break;
 
   case HEXAHEDRON:
