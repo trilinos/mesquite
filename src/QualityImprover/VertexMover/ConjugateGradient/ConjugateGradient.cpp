@@ -249,7 +249,9 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
     }//end if on alp == 0
       //Update mesh before checking criterion
     pd.update_mesh(err);
-    inner_criterion=term_crit->terminate(pd,objFunc,err);
+    inner_criterion=term_crit->terminate_with_function_and_gradient(pd,objFunc,
+                                                                    f,fNewGrad,
+                                                                    err);
     MSQ_CHKERR(err);
   }//end while
   if(conjGradDebug>0){
