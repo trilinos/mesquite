@@ -87,6 +87,23 @@ namespace Mesquite
     virtual ~ReferenceMeshTargetCalculator()
       {};
   };
+
+  
+  /*! \class DefaultTargetCalculator
+    \brief Target calculator somewhat equivalent to mean ratio.
+  */
+  class DefaultTargetCalculator : public WTargetCalculator
+  {
+  public:
+    DefaultTargetCalculator()
+    {
+      guideMatrix = Ad;
+    }      
+
+    //! virtual destructor ensures use of polymorphism during destruction
+    virtual ~DefaultTargetCalculator()
+      {};
+  };
   
 
   
