@@ -44,6 +44,7 @@ static bool create_exodus_file( const char* filename );
 # include <iostream>
 #endif
 
+#include "unistd.h"
 
 class ExodusTest : public CppUnit::TestFixture
 {
