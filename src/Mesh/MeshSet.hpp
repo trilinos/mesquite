@@ -28,7 +28,6 @@
 
 #include "TSTT_Base.h"
 
-using namespace std;
 
 namespace Mesquite
 {
@@ -38,28 +37,15 @@ namespace Mesquite
      !!! 
      This is a very preliminary version intended only
      to give a minimum functionality
-
-     TODO (Darryl ?) :
-     create a more dynamic memory management for the list of vertices.
-     currently, it is a minimum implementation with slow initialization
-     of the vector of vertices.
-     We also probably need a mechanism that somehow doesn't have a copy
-     of *all* TSTT vertices.
      !!! */ 
   class MeshSet
   {
   public:
     
-    MeshSet() : currentVertexInd(-1),
-                spaceDim(0),
-                mType(UNDEFINED_PATCH_TYPE),
-                mParam1(0), mParam2(0),
-                cullingMethodBits(0),
-                fixedVertexTagName("fixed")
-      {}
+    MeshSet();
     ~MeshSet();
     void add_mesh(TSTT::Mesh_Handle mesh_handle, MsqError &err);
-    void get_meshes(list<TSTT::Mesh_Handle> &mesh_list) const
+    void get_meshes(std::list<TSTT::Mesh_Handle> &mesh_list) const
       { mesh_list = meshSet; }
     
       // This should normally be set by the MeshSet itself when you
@@ -74,7 +60,8 @@ namespace Mesquite
     {
       UNDEFINED_PATCH_TYPE,
       VERTICES_ON_VERTEX_PATCH,
-      ELEMENTS_ON_VERTEX_PATCH
+      ELEMENTS_ON_VERTEX_PATCH,
+      GLOBAL_PATCH
     };
     
       // Tells the MeshSet what kind of data the patches should include,
@@ -99,6 +86,8 @@ namespace Mesquite
       // set_patch_type().
     bool get_next_patch(PatchData &pd, MsqError &err);
 
+    void reset(MsqError &err);
+
       // These should eventually be handled by get_next_patch()
     bool get_next_element_group(PatchData &pd, MsqError &err);
     bool get_next_node_group(PatchData &pd, MsqError &err);
@@ -116,20 +105,23 @@ namespace Mesquite
     };
     
   private:
+    bool get_next_vertices_set(MsqError &err);
     
     PatchType mType;
     int mParam1, mParam2;
     long unsigned int cullingMethodBits;
     std::string fixedVertexTagName; 
-    list<TSTT::Mesh_Handle> meshSet;
-    vector<EntityEntry> allVertices;
-    int currentVertexInd;
+    std::list<TSTT::Mesh_Handle> meshSet;
+    std::list<TSTT::Mesh_Handle>::iterator currentMesh;
+    std::vector<EntityEntry> verticesSet;
+    std::vector<EntityEntry>::iterator currentVertex;
     
     int spaceDim;
     //! TSTT::FACE or TSTT::REGION.
     //! Must be the same for all meshes added with add_mesh().
     enum TSTT::EntityType elementType;
   };
+
 
     // *********Call MsqMeshEntity::vertex_count() instead**********
 // #undef __FUNC__

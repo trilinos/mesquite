@@ -22,7 +22,9 @@ PatchData::PatchData()
     numFreeVertices(0),
     numFreeElements(0),
     vertexArray(NULL),
+    vertexHandlesArray(NULL),
     elementArray(NULL),
+    elementHandlesArray(NULL),
     vertexArraySize(0),
     elemArraySize(0),
     elemsInVertex(NULL),
@@ -114,7 +116,9 @@ PatchData::PatchData()
 Mesquite::PatchData::~PatchData()
 {
   delete [] vertexArray;
+  delete [] vertexHandlesArray;
   delete [] elementArray;
+  delete [] elementHandlesArray;
   delete [] elemsInVertex;
   delete [] vertexToElemOffset;
 }
@@ -127,8 +131,8 @@ Mesquite::PatchData::~PatchData()
 the element's vertices in the PatchData arrays -- see output
 of the add_vertex function.
 */
-void PatchData::add_element(int* vertex_indices,
-                            EntityTopology topo,
+void PatchData::add_element(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
+                            int* vertex_indices, EntityTopology topo,
                             MsqError &err)
 {
   int num_verts = MsqMeshEntity::vertex_count(topo);
@@ -138,6 +142,8 @@ void PatchData::add_element(int* vertex_indices,
   {
       // Set the element's type
     elementArray[numElements].set_element_type(topo);
+    elementHandlesArray[numElements].mesh = mh;
+    elementHandlesArray[numElements].entity = eh;
       // Go through each vertex
     for (int n=0; n<num_verts; ++n)
     {
@@ -161,7 +167,8 @@ void PatchData::add_element(int* vertex_indices,
 the triangle's vertices in the PatchData arrays -- see output
 of the add_vertex function.
 */
-void PatchData::add_triangle(size_t index_vtx1,
+void PatchData::add_triangle(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
+                             size_t index_vtx1,
                              size_t index_vtx2,
                              size_t index_vtx3,
                              MsqError &err)
@@ -180,6 +187,8 @@ void PatchData::add_triangle(size_t index_vtx1,
       )
     err.set_msg("invalid vertex indices");
   
+  elementHandlesArray[numElements].mesh = mh;
+  elementHandlesArray[numElements].entity = eh;
   elementArray[numElements].set_element_type(TRIANGLE);
   elementArray[numElements].set_vertex_index(0, index_vtx1);
   elementArray[numElements].set_vertex_index(1, index_vtx2);

@@ -59,13 +59,16 @@ namespace Mesquite
     void set_num_free_elements(int f_e)
       { numFreeElements = f_e; }
     
-    int add_vertex(double *vertex_coords,
+    int add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
+                   double *vertex_coords,
                    bool check_redundancy,
                    MsqError &err);
-    void add_element(int* vertex_indices,
+    void add_element(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
+                     int* vertex_indices,
                      EntityTopology topo,
                      MsqError &err);
-    void add_triangle(size_t index_vertex1,
+    void add_triangle(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
+                      size_t index_vertex1,
                       size_t index_vertex2,
                       size_t index_vertex3,
                       MsqError &err);
@@ -120,6 +123,18 @@ namespace Mesquite
                                MsqError &err);
     
   private:
+
+    struct EntityEntry
+    {
+      TSTT::Mesh_Handle mesh;
+      TSTT::Entity_Handle entity;
+      EntityEntry( TSTT::Mesh_Handle m, TSTT::Entity_Handle e ) :
+        mesh(m), entity(e)
+        {}
+      EntityEntry( ) :
+        mesh(0), entity(0)
+      {}
+    };
     
       // Don't allow PatchData to be copied implicitly
     PatchData(const PatchData &A);
@@ -134,7 +149,9 @@ namespace Mesquite
     int numFreeVertices;
     int numFreeElements;
     MsqVertex *vertexArray;
+    EntityEntry *vertexHandlesArray;
     MsqMeshEntity *elementArray;
+    EntityEntry *elementHandlesArray;
     
       // memory management utilities
     int vertexArraySize;
@@ -187,8 +204,12 @@ namespace Mesquite
     clear();
     delete [] vertexArray;
     vertexArray = NULL;
+    delete [] vertexHandlesArray;
+    vertexHandlesArray = NULL;
     delete [] elementArray;
     elementArray = NULL;
+    delete [] elementHandlesArray;
+    elementHandlesArray = NULL;
     vertexArraySize = 0;
     elemArraySize = 0;
     delete [] elemsInVertex;
@@ -215,18 +236,21 @@ namespace Mesquite
     {
         // Allocate the new array
       MsqVertex* new_array = new MsqVertex[min_num_vertices];
-      
+      EntityEntry* new_handles_array = new EntityEntry[min_num_vertices];
         // Copy as much over from the old array as we can
       if (numVertices)
       {
         if (numVertices > min_num_vertices)
           numVertices = min_num_vertices;
         memcpy(new_array, vertexArray, sizeof(MsqVertex)*numVertices);
+        memcpy(new_handles_array, vertexHandlesArray, sizeof(EntityEntry)*numVertices);
       }
       
         // Switch to new array
       delete[] vertexArray;
+      delete[] vertexHandlesArray;
       vertexArray = new_array;
+      vertexHandlesArray = new_handles_array;
       vertexArraySize = min_num_vertices;
     }
   }
@@ -248,6 +272,7 @@ namespace Mesquite
     {
         // Allocate the new array
       MsqMeshEntity* new_array = new MsqMeshEntity[min_num_elements];
+      EntityEntry* new_handles_array = new EntityEntry[min_num_elements];
       
         // Copy as much over from the old array as we can
       if (numElements)
@@ -256,11 +281,15 @@ namespace Mesquite
           numElements = min_num_elements;
         memcpy(new_array, elementArray,
                sizeof(MsqMeshEntity)*numElements);
+        memcpy(new_handles_array, elementHandlesArray,
+               sizeof(EntityEntry)*numElements);
       }
       
         // Switch to new array
       delete[] elementArray;
       elementArray = new_array;
+      delete[] elementHandlesArray;
+      elementHandlesArray = new_handles_array;
       elemArraySize = min_num_elements;
     }
   }
@@ -271,8 +300,6 @@ namespace Mesquite
 
   \brief adds a vertex to the PatchData object.
 
-  Storage type (C arrays or C++ objects)
-  is defined earlier with the set_storage_mode() function.
   add_vertex() returns the index of the vertex position in the vertices array.
   If the vertex was already in the array, the return value will be the index
   at which the vertex was already present. The function sets an error flag if
@@ -285,7 +312,8 @@ namespace Mesquite
          the function return value will be the index at which the vertex was
          already inserted. 
   */
-  inline int PatchData::add_vertex(double* vertex_coord, bool check_redundancy,
+  inline int PatchData::add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
+                                   double* vertex_coord, bool check_redundancy,
                                    MsqError &err)
   {
     MsqVertex vertex(vertex_coord[0], vertex_coord[1], vertex_coord[2]);
@@ -310,6 +338,8 @@ namespace Mesquite
     
       // if we get here, we add the vertex to the array
     vertexArray[numVertices] = vertex;
+    vertexHandlesArray[numVertices].mesh = mh;
+    vertexHandlesArray[numVertices].entity = eh;
     ++numVertices;
     
     return (numVertices-1); // index of added vertex in 0-based arrays 
