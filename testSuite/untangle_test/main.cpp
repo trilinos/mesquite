@@ -91,7 +91,7 @@ int main()
 
     // creates a mean ratio quality metric ...
   ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
-  UntangleQualityMetric* untangle = UntangleBetaQualityMetric::create_new();
+  UntangleQualityMetric* untangle = UntangleBetaQualityMetric::create_new(.1);
   
     // ... and builds an objective function with it
     //LInfTemplate* obj_func = new LInfTemplate(mean_ratio);
@@ -99,22 +99,20 @@ int main()
     // creates the steepest descent optimization procedures
   ConjugateGradient* pass1 = new ConjugateGradient( obj_func );
   
-  QualityAssessor stop_qa=QualityAssessor(mean_ratio,QualityAssessor::MAXIMUM);
+  QualityAssessor stop_qa=QualityAssessor(mean_ratio,QualityAssessor::MINIMUM);
   stop_qa.add_quality_assessment(untangle,QualityAssessor::ALL_MEASURES,err);
   stop_qa.set_stopping_assessment(untangle,QualityAssessor::MAXIMUM,err);
     // **************Set stopping criterion**************
+    //untangle beta should be 0 when untangled
   StoppingCriterion sc1(&stop_qa,-1.0,.0000001);
   StoppingCriterion sc2(StoppingCriterion::NUMBER_OF_PASSES,10);
+    //either until untangled or 10 iterations
   CompositeOrStoppingCriterion sc(&sc1,&sc2);
   pass1->set_stopping_criterion(&sc);
     // sets a culling method on the first QualityImprover
   pass1->add_culling_method(QualityImprover::NO_BOUNDARY_VTX);
-
     // adds 1 pass of pass1 to mesh_set1
-    //  queue1.add_preconditioner(pass1, err); MSQ_CHKERR(err);
   queue1.set_master_quality_improver(pass1, err); MSQ_CHKERR(err);
-    // adds 1 passes of pass2 to mesh_set1
-    //  mesh_set1.add_quality_pass(pass2);
 
 #ifdef MESQUITE_USES_TSTT
   writeVtkMesh("original_mesh", mesh, err); MSQ_CHKERR(err);
