@@ -3,7 +3,8 @@ MISCDIR = $(srcdir)/Misc
 MISCSRC = $(MISCDIR)/MesquiteError.cpp \
 	       $(MISCDIR)/MesquiteUtilities.cpp \
 	       $(MISCDIR)/MsqTimer.cpp \
-	       $(MISCDIR)/MsqMessage.cpp
+	       $(MISCDIR)/MsqMessage.cpp \
+	       $(MISCDIR)/MsqHessian.cpp
 
 MISCHEADERS = \
 	$(patsubst $(MISCDIR)/%,$(localincludedir)/%,\
