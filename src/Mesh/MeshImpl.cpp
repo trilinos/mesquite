@@ -500,6 +500,7 @@ void Mesquite::MeshImpl::read_exodus(const char*
   size_t conn_table_size = 0;
   int *connectivity_table = NULL;
   MeshImpl::Element *cur_elem = elementArray;
+  totalVertexUses=0;
   for (i = 0; i < block_count; i++)
   {
       // Get info about this block's elements
@@ -508,6 +509,7 @@ void Mesquite::MeshImpl::read_exodus(const char*
     exo_err = ex_get_elem_block(file_id, block_ids[i], elem_type_str,
                                 &num_block_elems, &verts_per_elem,
                                 &num_atts);
+    totalVertexUses+=(num_block_elems*verts_per_elem);
     if (exo_err < 0)
     {
       err.set_msg("Unable to read parameters for block.");
@@ -565,7 +567,7 @@ void Mesquite::MeshImpl::read_exodus(const char*
       cur_elem->mType = elem_type;
       for (k = 0; k < verts_per_elem; k++)
       {
-        cur_elem->vertexIndices[k] = *cur_entry;
+        cur_elem->vertexIndices[k] = (*cur_entry)-1;
         cur_entry++;
       }
       cur_elem++;
