@@ -81,13 +81,14 @@ namespace Mesquite
 
      //! This operator= makes a deep copy of the tag data. 
     MsqMeshEntity& operator=(const MsqMeshEntity& rhs) { 
+      delete mTag;
+      mTag = 0;
+      
       mType = rhs.mType;
       vertexIndices = rhs.vertexIndices;
       numVertexIndices = rhs.numVertexIndices;
       if (rhs.mTag != 0)
         mTag = new MsqTag(*(rhs.mTag));
-      else
-        mTag = 0;
       return *this;
     }
 

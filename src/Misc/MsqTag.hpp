@@ -57,7 +57,9 @@ namespace Mesquite
                maxNumScalars(0) {}
 
       //! copy constructor does a deep copy of all the tag data. 
-    MsqTag(const MsqTag& A) { copy(A); }
+    MsqTag(const MsqTag& A)  : targets(0), inverseTargets(0), scalars(0),
+               numTargets(0), maxNumTargets(0), numScalars(0),
+               maxNumScalars(0) { copy(A); }
 
       //! operator= does a deep copy of all the tag data. 
     MsqTag& operator=(const MsqTag& A)
@@ -65,17 +67,19 @@ namespace Mesquite
 
      //! deep copy used in operators.
     void copy(const MsqTag& A) 
-    { numScalars = A.numScalars;
+    { 
+      delete [] targets;
+      delete [] scalars;
+      
+      numScalars = A.numScalars;
       numTargets = A.numTargets;
       maxNumTargets = A.maxNumTargets;
       maxNumScalars = A.maxNumScalars;
       targets = new TargetMatrix[maxNumTargets];
       scalars = new double[maxNumScalars];
-      short i;
-      for (i=0; i<numTargets; ++i)
-        targets[i] = A.targets[i];
-      for (i=0; i<numScalars; ++i)
-        scalars[i] = A.scalars[i]; }
+      memcpy( targets, A.targets, numTargets * sizeof(TargetMatrix ) );
+      memcpy( scalars, A.scalars, numScalars * sizeof(double) );
+    }
      
     
       //! 
