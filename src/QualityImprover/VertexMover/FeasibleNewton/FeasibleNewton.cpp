@@ -5,7 +5,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 15-Jan-03 at 08:05:56
-//  LAST-MOD: 19-May-03 at 16:50:24 by Thomas Leurent
+//  LAST-MOD: 23-May-03 at 17:41:59 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -37,7 +37,6 @@ FeasibleNewton::FeasibleNewton(ObjectiveFunction* of) :
   objFunc=of;
   MsqError err;
   convTol=.001;
-  maxIteration=6;
   this->set_name("FeasibleNewton");
   set_patch_type(PatchData::GLOBAL_PATCH, err);
   TerminationCriterion* default_crit=get_inner_termination_criterion();
@@ -91,19 +90,17 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   mHessian.initialize(pd, err); MSQ_CHKERR(err);
   // 2.  Calculate the gradient and Hessian for the patch
   //     (a) if not defined at current point, stop and throw an error
-  fn_bool = objFunc->compute_hessian(pd, mHessian, err); MSQ_CHKERR(err);
-  if (!fn_bool) { err.set_msg("invalid patch for hessian calculation"); return; }
-
-  // TODO : get the gradient back along with the Hessian
-  fn_bool = objFunc->compute_gradient(pd, grad, err); MSQ_CHKERR(err);
-  if (!fn_bool) { err.set_msg("invalid patch for gradient calculation"); return; }
+  fn_bool = objFunc->compute_hessian(pd, mHessian, grad,
+                             original_value, err); MSQ_CHKERR(err);
+  if (!fn_bool) {
+    err.set_msg("invalid patch for hessian calculation");
+    return; }
 
   // 3.  Calculate the norm of the gradient for the patch
   MSQ_DEBUG_ACTION(3,{std::cout<< "  o  gradient norm: " << length(grad, nv) << std::endl;});
   
   // does the Feasible Newton iteration until stopping is required.
-  // Terminate when: (a) too many iterations or (b) norm of the 
-  // gradient of the patch is small.
+  // Terminate when inner termination criterion signals.
 
   /* Computes the value of the stopping criterion*/
   bool inner_criterion=false;
@@ -123,11 +120,6 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
       }
     });
       
-    fn_bool=objFunc->evaluate(pd, original_value, err);  MSQ_CHKERR(err);
-    if(!fn_bool){
-      err.set_msg("Feasible Newton passed invalid patch");
-    }
-
     // 4. Calculate a direction using preconditionned conjugate gradients
     //    to find a zero of the Newton system of equations (H*d = -g)
     //    (a) stop if conjugate iteration limit reached
@@ -159,8 +151,8 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
       //    (a) trial = x + beta*d
       pd.move_vertices(d, nv, beta, err); MSQ_CHKERR(err);
       //    (b) gradient evaluation
-      fn_bool = objFunc->compute_gradient(pd, grad, err); MSQ_CHKERR(err);
-      objFunc->evaluate(pd, new_value, err);  MSQ_CHKERR(err);
+      fn_bool = objFunc->compute_gradient(pd, grad, new_value, err); MSQ_CHKERR(err);
+//      objFunc->evaluate(pd, new_value, err);  MSQ_CHKERR(err);
       //    (c) check for sufficient decrease and stop
       if (!fn_bool) { // function not defined at trial point
         beta *= beta0;
@@ -203,8 +195,10 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
                                objFunc, new_value, grad, err);  MSQ_CHKERR(err);
 
     // if more Newton steps ahead, recomputes the Hessian.
-    if (!inner_criterion)
-      objFunc->compute_hessian(pd, mHessian, err); MSQ_CHKERR(err);
+    if (!inner_criterion) {
+      objFunc->compute_hessian(pd, mHessian, grad, original_value, err);
+      MSQ_CHKERR(err);
+    }
   }
 
   delete[] grad;

@@ -5,7 +5,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 15-Jan-03 at 08:05:56
-//  LAST-MOD: 19-May-03 at 16:51:21 by Thomas Leurent
+//  LAST-MOD: 23-May-03 at 11:20:14 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -72,10 +72,6 @@ namespace Mesquite
     virtual ~FeasibleNewton()
     { assert(coordsMem==NULL); }
 
-    /*! sets the maximum number of iteration of the Feasible Newton algorythm. */
-    void set_maximum_iteration(int iter){
-      maxIteration=iter;}
-
     /*! Sets a minimum value for the gradient. If the gradient is below that value,
       we stop iterating. */  
     void set_lower_gradient_bound(double gradc){
@@ -92,7 +88,6 @@ namespace Mesquite
 
   private:
     double convTol;
-    int maxIteration;
     MsqHessian mHessian;
     PatchDataVerticesMemento* coordsMem;
   };
