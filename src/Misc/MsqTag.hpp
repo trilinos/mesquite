@@ -86,7 +86,7 @@ namespace Mesquite
 #define __FUNC__ "MsqTag::set_targets"
       //! This sets the targets to an existing array of TargetMatrix s. No allocation is made
       //! by this function.
-    void set_targets(TargetMatrix Ws_pt[], short int num_targets, MsqError &err)
+    void set_targets(TargetMatrix* Ws_pt, short int num_targets, MsqError &err)
     {
       if (targets != 0) {
         err.set_msg("Targets already allocated. Why are you reallocating ?");
