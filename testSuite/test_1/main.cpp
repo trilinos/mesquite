@@ -100,7 +100,7 @@ int main()
   // adds 1 passes of pass2 to mesh_set1
 //  mesh_set1.add_quality_pass(pass2);
 
-    //writeVtkMesh("original_mesh", mesh, err); MSQ_CHKERR(err);
+  mesh->write_vtk("original_mesh",err); MSQ_CHKERR(err);
   
   // launches optimization on mesh_set1
   queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
