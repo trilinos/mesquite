@@ -30,7 +30,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 13-Nov-02 at 18:05:56
-//  LAST-MOD: 16-Jun-04 at 12:27:09 by Thomas Leurent
+//  LAST-MOD: 16-Jun-04 at 12:34:42 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -259,6 +259,15 @@ public:
   }
 
 
+  /*! This test optimizes a mesh with one free vertex and makes sure the vertex moves
+      to a given position. The default target matrices and sRI DFT (size and rotation free)
+      are used
+      \param file_name is the name of the VTK file that contains the mesh.
+      \param vtx_index is the index of the vertex that we expect to move.
+      \param res the position we expect the vertex to move to.
+      \param normal for a surface mesh, this is the normal to the mesh.
+      \param point for a surface mesh, this is a point on the surface.
+    */
   void test_optimize_vertex_positions(const char* file_name, size_t vtx_index, Vector3D res,
                               Vector3D* normal=0, Vector3D* point=0)
   {
