@@ -58,8 +58,13 @@ void Randomize::optimize_vertex_positions(PatchData &pd,
   // gets the array of coordinates for the patch and print it 
   MsqVertex *patch_coords = pd.get_vertex_array(err); MSQ_CHKERR(err);
   // does the randomize smooth
-  randomize_vertex(num_local_vertices-1, &patch_coords[1],
-                   patch_coords[0], dim, err); MSQ_CHKERR(err);
+  MsqFreeVertexIndexIterator free_iter(&pd, err);
+  free_iter.reset();
+  free_iter.next();
+    //find the free vertex.
+  int m=free_iter.value();
+  randomize_vertex(pd, num_local_vertices,
+                   patch_coords[m], dim, err); MSQ_CHKERR(err);
 }
   
 #undef __FUNC__

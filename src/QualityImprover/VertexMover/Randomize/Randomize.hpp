@@ -15,7 +15,7 @@
 #include "Mesquite.hpp"
 #include "VertexMover.hpp"
 #include "MsqMessage.hpp"
-
+#include "MsqFreeVertexIndexIterator.hpp"
 #include <math.h>
 namespace Mesquite
 {
@@ -45,37 +45,40 @@ namespace Mesquite
         the incident vertex randomly in each of the three coordinate
         directions (relative to the scale factor multiplied by mPercent).
       */
-    void randomize_vertex(int num_incident_vtx,
-                          MsqVertex *incident_vtx,
-                          MsqVertex &free_vtx,
-                          int dimension, MsqError &err);
+    inline void randomize_vertex(PatchData &pd,int num_vtx,
+                                 MsqVertex &free_vtx,
+                                 int dimension, MsqError &err);
   };
 
   
 #undef __FUNC__
 #define __FUNC__ "randomize_vertex"
     //!Perturbs the free vertex randomly.
-  inline void Randomize::randomize_vertex(int num_incident_vtx,
-                                          MsqVertex *incident_vtx,
+  inline void Randomize::randomize_vertex(PatchData &pd, int num_vtx,
                                           MsqVertex &free_vtx,
                                           int dimension, MsqError &err)
   {
     int i,j;
+    MsqVertex* verts = pd.get_vertex_array(err);
       //a scale w.r.t. the patch size
     double scale_factor=0.0;
       //a "random" number between -1 and 1
     double rand_double=0.0;
       //a "random" int
     int rand_int=0;
-    if (num_incident_vtx==0){
+    if (num_vtx<=1){
       PRINT_WARNING("WARNING: Number of incident vertex is zero.  Returning.\n");
       return;
     }
+
+    size_t free_ind = pd.get_vertex_index(&(free_vtx));
     
-    for (i=0;i<num_incident_vtx;++i){
-      scale_factor+=(incident_vtx[i]-free_vtx).length();
+    
+    for (i=0;i<num_vtx;++i){
+      if(i != free_ind)
+        scale_factor+=(verts[i]-free_vtx).length();
     }
-    scale_factor/=( (double) num_incident_vtx );    
+    scale_factor/=( (double) num_vtx - 1.0 );    
     for (j=0;j<3;++j){
       rand_int = rand();
         //number between 0 and 1000
