@@ -141,7 +141,6 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
 
     // Prints out free vertices coordinates. 
     MSQ_DEBUG_ACTION(3,{
-      int num_free_vertices = pd.num_free_vertices(err); MSQ_CHKERR(err);
       std::cout << "  o Free vertices new coordinates: \n";
       MsqVertex* toto1 = pd.get_vertex_array(err); MSQ_CHKERR(err);
       MsqFreeVertexIndexIterator ind(&pd, err); MSQ_CHKERR(err);
