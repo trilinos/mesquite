@@ -43,7 +43,7 @@ ConjugateGradient::ConjugateGradient(ObjectiveFunction* objective)
   
 #undef __FUNC__
 #define __FUNC__ "ConjugateGradient::initialize" 
-void ConjugateGradient::initialize(PatchData &pd, MsqError &err)
+void ConjugateGradient::initialize(PatchData &/*pd*/, MsqError &/*err*/)
 {
   PRINT_INFO("\no   Performing Conjugate Gradient optimization.\n");
   arraySize=5;
@@ -70,7 +70,8 @@ void ConjugateGradient::set_patch_type(PatchData::PatchType type, MsqError &err,
 
 #undef __FUNC__
 #define __FUNC__ "ConjugateGradient::initialize_mesh_iteration" 
-void ConjugateGradient::initialize_mesh_iteration(PatchData &pd, MsqError &err)
+void ConjugateGradient::initialize_mesh_iteration(PatchData &/*pd*/,
+                                                  MsqError &/*err*/)
 {
   
 }
@@ -246,7 +247,8 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
 
 #undef __FUNC__
 #define __FUNC__ "ConjugateGradient::terminate_mesh_iteration" 
-void ConjugateGradient::terminate_mesh_iteration(PatchData &pd, MsqError &err)
+void ConjugateGradient::terminate_mesh_iteration(PatchData &/*pd*/,
+                                                 MsqError &/*err*/)
 {
     //  cout << "- Executing ConjugateGradient::iteration_complete()\n";
 }
@@ -294,7 +296,7 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
     m=free_iter.value();
     mCoord[m]=vertices[m];
   }
-  
+    //while step takes mesh into infeasible region and ...
   while (j<jmax && !feasible && alp>MSQ_MIN) {
     ++j;
     free_iter.reset();
@@ -358,9 +360,11 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
       alp=0.0; 
       return alp;
     }
-    else{
-      return alp;
-    }
+
+      //Michael: removed following else statement 1-23-03.
+      //else{
+      //return alp;
+      //}
 
     j=0;
       //while shrinking the step improves the objFunc value further,
