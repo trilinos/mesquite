@@ -171,7 +171,7 @@ namespace Mesquite
          \return true if the element is valid, false otherwise. 
        */
      bool compute_element_gradient(PatchData &pd, MsqMeshEntity* element,
-                                   MsqVertex* vertices, Vector3D* grad_vec,
+                                   MsqVertex* vertices[], Vector3D grad_vec[],
                                    int num_vtx, double &metric_value, MsqError &err);
      
        /*! Set the value of QualityMetric's negateFlag.  Concrete
@@ -223,7 +223,7 @@ namespace Mesquite
          This is used by metric which mType is ELEMENT_BASED.
          \return true if the element is valid, false otherwise. */
      bool compute_element_numerical_gradient(PatchData &pd, MsqMeshEntity* element,
-                                             MsqVertex* vertices, Vector3D* grad_vec,
+                                             MsqVertex* vertices[], Vector3D grad_vec[],
                                              int num_vtx, double &metric_value,
                                              MsqError &err);
 
@@ -246,7 +246,7 @@ namespace Mesquite
          which mType is VERTEX_BASED. */
      virtual bool compute_element_analytical_gradient(PatchData &pd,
                                                       MsqMeshEntity* element,
-                                             MsqVertex* vertices, Vector3D* grad_vec,
+                                             MsqVertex* vertices[], Vector3D grad_vec[],
                                              int num_vtx, double &metric_value,
                                              MsqError &err);
 
@@ -349,8 +349,8 @@ namespace Mesquite
 */
    inline bool QualityMetric::compute_element_gradient(PatchData &pd,
                                                        MsqMeshEntity* el,
-                                                       MsqVertex* vertices,
-                                                       Vector3D* grad_vec,
+                                                       MsqVertex* vertices[],
+                                                       Vector3D grad_vec[],
                                                        int num_vtx,
                                                        double &metric_value,
                                                        MsqError &err)
