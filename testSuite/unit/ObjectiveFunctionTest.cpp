@@ -292,8 +292,8 @@ public:
                                         grad_ana[grad_pos][j], 0.01);
          }
        } 
-       delete grad_num;
-       delete grad_ana;
+       delete[] grad_num;
+       delete[] grad_ana;
      } 
 
   void test_compute_gradient_3D_LPtoPTemplate_L1_hex()
