@@ -276,9 +276,16 @@ namespace Mesquite
 //     }
 
     PatchType type() const
-      {
-        return mType;
-      }
+      { return mType; }
+
+    //! Sets the originating meshSet. This is normally done in MeshSet::get_next_patch().
+    //! This function is only for tests purposes. 
+    void set_mesh_set(MeshSet* ms)
+      { meshSet = ms; }
+    //! Returns the originating meshSet.
+    //! This function is only for tests purposes. 
+    MeshSet* get_mesh_set()
+      { return meshSet; }
     
   private:
 
