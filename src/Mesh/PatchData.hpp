@@ -312,7 +312,10 @@ namespace Mesquite
     MeshSet* get_mesh_set()
       { return meshSet; }
     
-  private:
+    //! Display the coordinates and connectivity information
+    void print();
+   
+   private:
 
     friend class MeshSet;
 

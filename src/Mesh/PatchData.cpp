@@ -1040,3 +1040,22 @@ void PatchData::get_domain_normal_at_element(size_t elem_index,
   else
     err.set_msg("No domain constraint set.");
 }
+
+
+#undef __FUNC__
+#define __FUNC__ "PatchData::print"
+void PatchData::print()
+{
+   cout << " Vertices coordinates \n"; 
+   for (size_t i=0; i<numVertices; ++i)
+     {
+	cout << vertexArray[i];
+     }
+   
+   cout << "Element Connectivity \n";
+   for (size_t i=0; i<numElements; ++i)
+     {
+	cout << elementArray[i];
+     }
+   
+}
