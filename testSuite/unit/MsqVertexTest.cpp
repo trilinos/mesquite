@@ -389,3 +389,4 @@ void test_compute_weigted_jacobian_ideal_tri()
 
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(MsqVertexTest, "MsqVertexTest");
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(MsqVertexTest, "Unit");
