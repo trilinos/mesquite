@@ -17,7 +17,6 @@
 #include "PatchData.hpp"
 #include "MesquiteError.hpp"
 
-
 namespace Mesquite {
 
   /*! \class PatchDataParameters
@@ -76,8 +75,8 @@ namespace Mesquite {
   protected:
     PatchDataUser() : mParams() { }
   public:
-    virtual void set_patch_type(PatchData::PatchType patch_type, MsqError &err, 
-			int param1=0, int param2=0) {
+    virtual void set_patch_type(PatchData::PatchType patch_type, MsqError &err,
+                                int param1=0, int param2=0) {
       mParams.set_patch_type(patch_type, err, param1, param2); }
     PatchData::PatchType get_patch_type() { 
       return mParams.get_patch_type(); }
@@ -112,8 +111,9 @@ namespace Mesquite {
   Utimately, we might want to return an error in the Parent class implementation, 
   in order to force the concrete classes to specify the available types.*/
   inline void PatchDataParameters::set_patch_type(PatchData::PatchType patch_type,
-						  MsqError &err,
-						  int patch_param1, int patch_param2)
+                                                  MsqError &err,
+                                                  int patch_param1,
+                                                  int patch_param2)
   {
     // For now, no support for VERTICES_ON_ELEMENT_PATCH
     if ( patch_type != PatchData::ELEMENTS_ON_VERTEX_PATCH
@@ -125,11 +125,13 @@ namespace Mesquite {
     
     if (patch_type == PatchData::ELEMENTS_ON_VERTEX_PATCH)
       {
-	if (patch_param1 < 1)
-	  err.set_msg("ELEMENTS_ON_VERTEX_PATCH must have the number of layers in patch_param1.");
+        if (patch_param1 < 1)
+        {
+          err.set_msg("ELEMENTS_ON_VERTEX_PATCH must have the number of layers in patch_param1.");
 	return;
+        }
       }
-
+    
     mType = patch_type;
     mParam1 = patch_param1;
     mParam2 = patch_param2;
