@@ -1759,16 +1759,19 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     coords[3] = vertices[v_i[3]];
     if (!h_fcn_3e(m, gradients, hessians, coords)) return false;
 
-    // This is not very efficient, but is one way to select correct gradients
+    // This is not very efficient, but is one way to select correct Hessian
     for (i = 0; i < 4; ++i) {
       for (j = 0; j < nv; ++j) {
-        if (vertices + v_i[i] == v[j]) {
+        if (vertices + v_i[i] == v[j])
           g[j] = gradients[i];
           
-          // Do something with the hessians
-        }
       }
     }
+    
+    // For now, the whole upper triangular part of the element hessian is filled,
+    // regardless of fixed vertices.
+    for(i=0; i<10; ++i) h[i] = hessians[i];
+
     break;
 
   case HEXAHEDRON:
