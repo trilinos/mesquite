@@ -12,16 +12,21 @@ Header file for the Mesquite::ObjectiveFunction class
 #ifndef ObjectiveFunction_hpp
 #define ObjectiveFunction_hpp
 
+#include <list>
+
 #include "Mesquite.hpp"
+#include "MsqMessage.hpp"
 #include "MesquiteError.hpp"
 #include "QualityMetric.hpp"
 #include "PatchData.hpp"
-#include <list>
-#include "MsqMessage.hpp"
+#include "MsqHessian.hpp"
+
+
 namespace Mesquite
 {
    class PatchData;
-     /*! \class ObjectiveFunction
+
+  /*! \class ObjectiveFunction
        \brief Base class for concrete Objective Functions
        ObjectiveFunction contains a pointer to a QualityMetric.  If
        the ObjectiveFunction is associated with more than one
@@ -69,13 +74,18 @@ namespace Mesquite
        ANALYTICAL_GRADIENT
     };
 
-      /*!Set gradType to either NUMERICAL_GRADIENT or
-        ANALYTICAL_GRADIENT.
-      */
+    //! Set gradType to either NUMERICAL_GRADIENT or ANALYTICAL_GRADIENT.
     void set_gradient_type(GRADIENT_TYPE grad)
-       {
-         gradType=grad;
-       }
+    { gradType = grad; }
+
+    enum HESSIAN_TYPE{
+       NUMERICAL_HESSIAN,
+       ANALYTICAL_HESSIAN
+    };
+
+    //! Set gradType to either NUMERICAL_GRADIENT or ANALYTICAL_GRADIENT.
+    void set_hessian_type(HESSIAN_TYPE ht)
+    { hessianType = ht; }
 
       /*!\brief
         Calls either compute_numerical_gradient or compute_analytical_gradient
@@ -85,6 +95,15 @@ namespace Mesquite
       */
     bool compute_gradient(PatchData &patch, Vector3D *const &grad,
                           MsqError &err, int array_size=-1);          
+              
+      /*!\brief
+        Calls either compute_numerical_hessian or compute_analytical_hessian
+        depending on the value of gradType.
+        Function returns 'false' if the patch is not within a required
+        feasible regeion.  Otherwise, it returns 'true'.
+      */
+    bool compute_hessian(PatchData &patch, MsqHessian &hessian,
+                          MsqError &err);          
               
   /*! 
         Return the quality metric associated with this objective function.
@@ -164,6 +183,32 @@ namespace Mesquite
       return compute_numerical_gradient(patch, grad, err, array_size);
     }
     
+      /*! \brief Non-virtual function which numerically computes
+        the hessian of the Objective Function.
+         Function returns 'false' if the patch is not within a required
+        feasible regeion.  Otherwise, it returns 'true'.
+      */
+    bool compute_numerical_hessian(PatchData &patch, MsqHessian &hessian,
+                                    MsqError &err);
+
+     /*! 
+        Fills a MsqHessian object with the Hessian of
+        the objective function computed using the hessian of the
+        quality metric.  If the function has not been over-riden
+        in the concrete Objective Function, the base class implementation
+        prints a warning and then defaults to numerical hessian.
+        Function returns 'false' if the patch is not within a required
+        feasible regeion.  Otherwise, it returns 'true'.
+      */
+    virtual bool compute_analytical_hessian(PatchData &patch,
+                                            MsqHessian &hessian,
+                                            MsqError &err) {
+      PRINT_WARNING("Analytic hessian not implemented for this Objective ",
+                    "Function. Defaulting to numerical hessian.\n");
+      set_hessian_type(NUMERICAL_HESSIAN);
+      return compute_numerical_hessian(patch, hessian, err);
+    }
+    
       //!Returns eps used in the numerical gradient calculation.
     double get_eps(PatchData &pd, double &local_val,int k,MsqVertex* vertex,
                    MsqError &err);
@@ -190,6 +235,7 @@ namespace Mesquite
     
       
     enum GRADIENT_TYPE gradType;//!Flag for numerical or analytical gradient.
+    enum HESSIAN_TYPE hessianType;//!Flag for numerical or analytical hessian.
       
     QualityMetric* qMetric;//!Pointer to associated QualityMetric.
       
@@ -227,6 +273,31 @@ namespace Mesquite
           obj_bool=compute_analytical_gradient(patch, grad, err, array_size);
           MSQ_CHKERR(err);
           break;
+     }
+     return obj_bool;
+   }
+
+
+#undef __FUNC__
+#define __FUNC__ "ObjectiveFunction::compute_hessian"
+     /*!  
+       Calls either compute_numerical_hessian or compute_analytical_hessian
+       depending on the value of gradType.           
+      */
+   inline bool ObjectiveFunction::compute_hessian(PatchData &patch,
+                                                  MsqHessian &hessian,
+                                                  MsqError &err)
+   {
+     bool obj_bool;
+     switch(hessianType){
+     case NUMERICAL_HESSIAN:
+       obj_bool=compute_numerical_hessian(patch, hessian, err);
+       MSQ_CHKERR(err);
+       break;
+     case ANALYTICAL_HESSIAN:
+       obj_bool=compute_analytical_hessian(patch, hessian, err);
+       MSQ_CHKERR(err);
+       break;
      }
      return obj_bool;
    }

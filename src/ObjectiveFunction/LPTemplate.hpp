@@ -18,13 +18,15 @@
 
 namespace Mesquite
 {
+   class PatchData;
+   class MsqMeshEntity;
+
+  
      /*! \class LPTemplate
        \brief Calculates the L_p objective function.  That is, sums
        the p_th powers of the (absolute value of the) quality metric values
        and takes that value to the (1/p)_th power.
      */
-   class PatchData;
-   class MsqMeshEntity;
    class LPTemplate :public ObjectiveFunction
    {
 	public:
@@ -37,12 +39,16 @@ namespace Mesquite
                                                Vector3D *const &grad,
                                                MsqError &err, int array_size);
      
+     virtual bool  compute_analytical_hessian(PatchData &patch,
+                                              MsqHessian &hessian, MsqError &err);
+     
 	private:
      double compute_function(double metric_values[], int total_num, MsqError &err);
        //! \param pVal
 	  int pVal;
    };
-   
+
+  
    inline double LPTemplate::compute_function(double metric_values[],
                                               int total_num, MsqError&/*err*/)
    {

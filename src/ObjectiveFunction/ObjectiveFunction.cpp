@@ -145,3 +145,16 @@ double ObjectiveFunction::get_eps(PatchData &pd, double &local_val,
 }//end funciton get_eps
 
 
+#undef __FUNC__
+#define __FUNC__ "ObjectiveFunction::compute_numerical_hessian"
+/*! 
+  \param pd  PatchData on which the hessian is taken.
+  \param  MsqHessian  hessian object. The MsqHessian object needs at least one call to
+  MsqHessian::initialize() before being used. 
+ */
+bool ObjectiveFunction::compute_numerical_hessian(Mesquite::PatchData &pd,
+                                                  MsqHessian &hessian,
+                                                  MsqError &err)
+{
+
+}
