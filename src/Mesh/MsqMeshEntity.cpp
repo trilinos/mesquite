@@ -621,11 +621,32 @@ void MsqMeshEntity::compute_corner_normal(const size_t corner,
                                  Vector3D &normal,
                                  PatchData &pd, MsqError &err)
 {
-  if ( get_element_type()==TRIANGLE || get_element_type()==QUADRILATERAL ) {
-    MsqError tmp_err;
-    pd.get_domain_normal_at_vertex(vertexIndices[corner],
-                                   true, normal, tmp_err);
-    if ( tmp_err || normal.length()==0 ) {
+  if ( get_element_type()==TRIANGLE || get_element_type()==QUADRILATERAL ) 
+  {
+      // There are two cases where we cannot get a normal from the 
+      // geometry that are not errors:
+      // 1) There is no domain set
+      // 2) The vertex is at a degenerate point on the geometry (e.g. 
+      //     tip of a cone.)
+    
+    bool have_normal = false;
+
+    if (pd.domain_set()) 
+    {
+      size_t index = pd.get_element_index(this);
+      pd.get_domain_normal_at_corner( index, corner, normal, err );
+      MSQ_ERRRTN(err);
+      
+      double length = normal.length();
+      if (length > DBL_EPSILON) 
+      {
+        have_normal = true;
+        normal /= length;
+      }
+    }
+
+    if ( !have_normal )
+    {
       normal = corner_vec1*corner_vec2;
       normal.normalize();
     }
