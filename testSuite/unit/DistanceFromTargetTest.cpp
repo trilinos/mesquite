@@ -155,7 +155,7 @@ public:
         
      TargetCalculator::initialize_default_target_matrices(tri_m3d, quad_m3d, tet_m3d, hex_m3d);
 
-     idealTri.allocate_corner_matrices(err); MSQ_CHKERR(err);
+     idealTri.allocate_target_matrices(err); MSQ_CHKERR(err);
      MsqMeshEntity* elem = idealTri.get_element_array(err);
      MsqTag* tag = elem[0].get_tag();
      tag->target_matrix(0) = tri_m3d;
@@ -197,7 +197,7 @@ public:
         
      TargetCalculator::initialize_default_target_matrices(tri_m3d, quad_m3d, tet_m3d, hex_m3d);
 
-     quadPatch.allocate_corner_matrices(err); MSQ_CHKERR(err);
+     quadPatch.allocate_target_matrices(err); MSQ_CHKERR(err);
      MsqMeshEntity* elem = quadPatch.get_element_array(err);
      MsqTag* tag = elem[0].get_tag();
      tag->target_matrix(0) = quad_m3d;
@@ -230,7 +230,7 @@ public:
         
      TargetCalculator::initialize_default_target_matrices(tri_m3d, quad_m3d, tet_m3d, hex_m3d);
 
-     tetPatch.allocate_corner_matrices(err); MSQ_CHKERR(err);
+     tetPatch.allocate_target_matrices(err); MSQ_CHKERR(err);
      MsqMeshEntity* elem = tetPatch.get_element_array(err);
      MsqTag* tag = elem[0].get_tag();
      tag->target_matrix(0) = tet_m3d;

@@ -30,7 +30,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 13-Nov-02 at 18:05:56
-//  LAST-MOD: 16-Jun-04 at 12:34:42 by Thomas Leurent
+//  LAST-MOD: 18-Jun-04 at 12:23:49 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -211,6 +211,15 @@ public:
     double Lambda = compute_Lambda(mG, err); MSQ_CHKERR(err);
 
     CPPUNIT_ASSERT_DOUBLES_EQUAL(1.4422, Lambda, .0001);
+
+    Lambda = m4Quads.get_average_Lambda_3d(err); MSQ_CHKERR(err);
+
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.984604, Lambda, .0001); // this test result is not 100% checked
+    
+    Lambda = m12Hex.get_average_Lambda_3d(err); MSQ_CHKERR(err);
+
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.994868, Lambda, .0001); // this test result is not 100% checked
+    
   }
 
   void test_compute_V()

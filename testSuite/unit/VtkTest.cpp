@@ -81,9 +81,10 @@ public:
     pd_params.add_culling_method(Mesquite::PatchData::NO_BOUNDARY_VTX);
     
     mesh_set.get_next_patch(pd, pd_params, err); MSQ_CHKERR(err);
+//    mesh_set.write_gnuplot("toto", err); MSQ_CHKERR(err);
     
     int free_vtx = pd.num_free_vertices(err); MSQ_CHKERR(err);
-    std::cout << "nb of free vertices: " << free_vtx << std::endl;
+//    std::cout << "nb of free vertices: " << free_vtx << std::endl;
     CPPUNIT_ASSERT( free_vtx == 1 );
     
     Mesquite::MsqMeshEntity* element_array =  pd.get_element_array(err); MSQ_CHKERR(err);
