@@ -105,9 +105,9 @@ namespace Mesquite
       else originator = pdm; }
 
   protected:
+    MeshSet* refMesh;
     
   private:
-    MeshSet* refMesh;
     PatchDataParameters* originator; //! This is the object the TargetCalculator is attached to.
   };
 

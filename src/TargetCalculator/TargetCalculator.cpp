@@ -43,7 +43,7 @@ using namespace Mesquite;
 
 #undef __FUNC__
 #define __FUNC__ "TargetCalculator::compute_target_matrices_and_check_det" 
-inline void TargetCalculator::compute_target_matrices_and_check_det(PatchData &pd, MsqError &err)
+void TargetCalculator::compute_target_matrices_and_check_det(PatchData &pd, MsqError &err)
 {
   FUNCTION_TIMER_START(__FUNC__);
 
