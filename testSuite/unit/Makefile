@@ -1,6 +1,3 @@
-# To switch to AOMD, set this in Makefile.customize:
-# TSTT_LINK = ${AOMD_TSTT_LINK}
-
 # Change this in Makefile.customize so that it points to your
 # installation of cppunit
 CPPUNIT_DIR = ../../../cppunit
@@ -15,7 +12,6 @@ INCLUDE = ${CPPUNIT_INCLUDE} ${MESQUITE_INCLUDE}
 CPPUNIT_LINK = -L${CPPUNIT_DIR}/src/cppunit/.libs -lcppunit
 MESQUITE_LINK = -L../../lib -lmesquite ${TSTT_LINK}
 TEST_LINK = ${CPPUNIT_LINK} ${MESQUITE_LINK}
-TSTT_LINK = -L../../external/AOMD/lib/ -lAOMD -lm
 
 include ../../Makefile.customize
 
@@ -30,7 +26,7 @@ TEST_OBJS = ${TEST_SRCS:.cpp=.o}
 
 sample_test : ${TEST_OBJS}
 	@echo "Linking $@"
-	@${LINKER} ${LDFLAGS} ${TEST_OBJS} ${TEST_LINK} ${TSTT_LINK} -o $@
+	@${LINKER} ${LDFLAGS} ${TEST_OBJS} ${TEST_LINK} -o $@
 
 clean:
 	@rm -rf *.o sample_test
