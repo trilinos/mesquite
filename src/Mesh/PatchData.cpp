@@ -2,6 +2,7 @@
   \file   PatchData.cpp
 
   \author Thomas Leurent
+  \author Michael Brewer
   \date   2002-01-17
 */
 
@@ -646,6 +647,11 @@ void PatchData::get_element_vertex_coordinates(
     coords.push_back(Vector3D(vertexArray[vertex_indices[i]]));
 }
 
+/*! This is an inefficient way of retrieving vertex_indices.
+    Use PatchData::get_element_array followed by 
+    MsqMeshEntity::get_vertex_index_array() if you don't need
+    to fill an STL vector.
+*/ 
 void PatchData::get_element_vertex_indices(
   size_t elem_index,
   std::vector<size_t> &vertex_indices,
@@ -735,16 +741,23 @@ void PatchData::get_adjacent_vertex_indices(size_t vertex_index,
   }
 }
 
-/*!
-    \brief Fills a vector of indices into the entities array. The entities
+/*! Fills a vector of indices into the entities array. The entities
     in the vector are connected the given entity (ent_ind) via an
     n-diminsional entity (where 'n' is a given integer).
+    Thus, if n = 0, the entities must be connected via a vertex.
+    If n = 1, the entities must be connected via an edge.
+    If n = 2, the entities must be connected via a two-dimensional element.
+    NOTE:  if n is 2 and the elements in the entity array are
+    two-dimensional, no entities should meet this criterion.
+    The adj_ents vector is cleared at the beginning of the call.
 
 */
 void PatchData::get_adjacent_entities_via_n_dim(int n, size_t ent_ind,
                                                 std::vector<size_t> &adj_ents,
                                                 MsqError &err)
 {
+  //reset the vector
+  adj_ents.clear();
     //This should probably be removed
   generate_vertex_to_element_data();
     //vertices of this entity (given by ent_ind)

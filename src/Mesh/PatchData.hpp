@@ -10,6 +10,7 @@
   in order to later restore that object to its previous state.
   
   \author Thomas Leurent
+  \author Michael Brewer
   \date   2002-01-17
 */
 
@@ -113,7 +114,7 @@ namespace Mesquite
     void get_element_vertex_coordinates(size_t elem_index,
                                         std::vector<Vector3D> &coords,
                                         MsqError &err);
-      /*! Get the indices of vertices attached to the specified element. */
+      /*! Get the indices of vertices of specified element. !inefficient!*/
     void get_element_vertex_indices(size_t elem_index,
                                     std::vector<size_t> &vertex_indices,
                                     MsqError &err);
@@ -130,14 +131,11 @@ namespace Mesquite
                                      MsqError &err);
     
     
-      /*!Get the indices of entities attached to entity (given by ent_ind).
+      /*! \brief Get the indices of entities attached to entity 
+	(given by ent_ind).
         adj_ents is filled with the indices into the entity array of elements
         adjacent to the given element via an n-dimensional entity.
-        Thus, if n = 0, the entities must be connected via a vertex.
-        If n = 1, the entities must be connected via an edge.
-        If n = 2, the entities must be connected via a two-dimensional element.
-        NOTE:  if n is 2 and the elements in the entity array are
-        two-dimensional, no entities should meet this criterion.
+        
       */
     void get_adjacent_entities_via_n_dim(int n, size_t ent_ind,
                                          std::vector<size_t> &adj_ents,
