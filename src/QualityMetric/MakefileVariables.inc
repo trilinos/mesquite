@@ -1,8 +1,10 @@
 QUALMETRICDIR = $(srcdir)/QualityMetric
 
-QUALMETRICSRC = $(QUALMETRICDIR)/MultiplyQualityMetric.cpp \
+QUALMETRICSRC = $(QUALMETRICDIR)/AddQualityMetric.cpp \
+		$(QUALMETRICDIR)/MultiplyQualityMetric.cpp \
                 $(QUALMETRICDIR)/PowerQualityMetric.cpp \
                 $(QUALMETRICDIR)/ScalarAddQualityMetric.cpp \
+                $(QUALMETRICDIR)/ScalarMultiplyQualityMetric.cpp \
                 $(QUALMETRICDIR)/QualityMetric.cpp
 
 QUALMETRICHEADERS = \
