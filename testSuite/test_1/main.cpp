@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 19-Feb-02 at 10:57:52
-//  LAST-MOD: 29-Apr-03 at 09:12:51 by Thomas Leurent
+//  LAST-MOD: 23-May-03 at 18:04:38 by Thomas Leurent
 //
 //
 // DESCRIPTION:
@@ -40,9 +40,10 @@ describe main.cpp here
 
 // algorythms
 #include "MeanRatioQualityMetric.hpp"
+#include "EdgeLengthQualityMetric.hpp"
 #include "LPtoPTemplate.hpp"
 #include "FeasibleNewton.hpp"
-
+#include "ConjugateGradient.hpp"
 #include "MsqMessage.hpp"
 using namespace Mesquite;
 
@@ -81,9 +82,10 @@ int main(int argc, char* argv[])
   InstructionQueue queue1;
 
   // creates a mean ratio quality metric ...
+//   SmoothnessQualityMetric* mean_ratio = EdgeLengthQualityMetric::create_new();
   ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
-  mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
-  mean_ratio->set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
+//   mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
+//   mean_ratio->set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
   mean_ratio->set_averaging_method(QualityMetric::SUM, err); MSQ_CHKERR(err);
   
   // ... and builds an objective function with it
@@ -91,6 +93,7 @@ int main(int argc, char* argv[])
   obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
   
   // creates the steepest descentfeas newt optimization procedures
+//  ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
   FeasibleNewton* pass1 = new FeasibleNewton( obj_func );
   pass1->set_patch_type(PatchData::GLOBAL_PATCH, err);
   
