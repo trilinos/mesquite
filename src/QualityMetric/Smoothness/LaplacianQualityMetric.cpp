@@ -1,7 +1,7 @@
 /*! \file LaplacianQualityMetric.cpp
   \author Michael Brewer
   \date 2002-05-14
-  evaluates the sum of lengths of edges connected to a node
+  Evaluates the sum of lengths of edges connected to a node
   for two- and three-diminsional elements
 */
 
@@ -12,7 +12,7 @@
 #include "Vector3D.hpp"
 #include "QualityMetric.hpp"
 #include "MsqVertex.hpp"
-
+#include "PatchData.hpp"
 using namespace Mesquite;
 
 
@@ -22,33 +22,24 @@ using namespace Mesquite;
 //Michael Notes:  This code is not what we want, it just here
 //mainly as an example of a node based metric
 
-double LaplacianQualityMetric::evaluate_node(MsqVertex* node,
-                                             MsqError &err)
+bool LaplacianQualityMetric::evaluate_vertex(PatchData &pd, MsqVertex* vert,
+                                             double &fval, MsqError &err)
 {
-    // ********** IMPORTANT **************
-    //   We need to add support for the following:
-    //     std::vector<size_t> adj_node_indices;
-    //     pd.nodes_adjacent_to_node(node_index, adj_node_indices);
-    // ***********************************
-//   std::list<MsqVertex*> adj_nodes=node->adjacent_nodes(err);
-  std::list<MsqVertex*> adj_nodes;
-  int num_sample_points=adj_nodes.size();
-  double *metric_values=new double[num_sample_points];
-  Vector3D this_node=*node;
-  Vector3D current_node;
-  int i;
-    //compute length squared of connected edges
-  for(i=0;i<num_sample_points;i++)
-  {
-    current_node=*(adj_nodes.front());
-    adj_nodes.pop_front();
-    metric_values[i]=(this_node-current_node).length_squared();
-  }//end loop over sample points
-  
-    //average the above values (by default this sums values)
-  double total_metric=average_metrics(metric_values,num_sample_points,err);
-  MSQ_CHKERR(err);
-  delete [] metric_values;
-  return total_metric;
+  fval=0.0;
+  size_t this_vert = pd.get_vertex_index(vert);
+  size_t other_vert;
+  std::vector<size_t> adj_verts;
+  Vector3D edg;
+  pd.get_adjacent_vertex_indices(this_vert,adj_verts,err);
+  MsqVertex* verts = pd.get_vertex_array(err);
+  while(!adj_verts.empty()){
+    other_vert=adj_verts.back();
+    adj_verts.pop_back();
+    edg[0]=verts[this_vert][0]-verts[other_vert][0];
+    edg[1]=verts[this_vert][1]-verts[other_vert][1];
+    edg[2]=verts[this_vert][2]-verts[other_vert][2];
+    fval+=edg.length_squared();
+  }   
+  return true;
 }
 

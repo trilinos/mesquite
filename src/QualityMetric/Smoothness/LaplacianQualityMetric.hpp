@@ -39,7 +39,8 @@ namespace Mesquite
   
    protected:
    
-    double evaluate_node(MsqVertex *node, MsqError &err);
+    bool evaluate_vertex(PatchData &pd, MsqVertex *vert, double &fval,
+                         MsqError &err);
 
    private:
 
@@ -47,7 +48,7 @@ namespace Mesquite
        {
          avgMethod=SUM;
          feasible=0;
-         set_metric_type(VERTEX_BASED);;
+         set_metric_type(QualityMetric::VERTEX_BASED);
          set_name("Laplacian Metric");
        }
     
