@@ -5,7 +5,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 18-Dec-02 at 11:08:22
-//  LAST-MOD: 26-Mar-03 at 18:06:40 by Thomas Leurent
+//  LAST-MOD:  2-Apr-03 at 14:23:18 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -91,8 +91,12 @@ namespace Mesquite
     size_t size() const { return 9; }
 
     // constructors
+    //! Default constructor sets all entries to 0. 
     Matrix3D()
-    { initialize(); }
+    {
+      initialize();
+      set(0.);
+    }
     
     Matrix3D(const Matrix3D &A)
     {
