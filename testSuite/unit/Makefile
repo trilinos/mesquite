@@ -50,7 +50,3 @@ clean:
 	@rm -rf cxx_repository
 
 .SUFFIXES : .cpp .o
-
-.cpp.o:
-	@echo "Compiling $<"
-	${PREFIX}${CXX} -c ${CXXFLAGS} ${TEST_INCLUDE} -o $@ $<

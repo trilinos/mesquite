@@ -35,3 +35,11 @@ $(MSQ_TEST) : $(TEST_OBJS_P) $(locallibdir)/libmesquite.a
         -o $@ \
         -L$(locallibdir) -lmesquite \
         -L$(CPPUNIT_DIR)/lib -lcppunit -ldl
+
+.SUFFIXES : .cpp .o
+
+.cpp.o:
+	@echo "Compiling $<"
+	$(PREFIX)$(CXX) -c $(CXXFLAGS) \
+        $(MESQUITE_INCLUDE) $(CPPUNIT_INCLUDE) \
+        -c -o $@ $<
