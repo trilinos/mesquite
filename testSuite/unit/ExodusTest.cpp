@@ -54,10 +54,10 @@ public:
 
       // Get the number of vertices
     std::cout << "Number of vertices: "
-              << mMesh->get_total_vertex_count() << std::endl;
+              << mMesh->get_total_vertex_count(err) << std::endl;
       // Get the number of elements
     std::cout << "Number of elements: "
-              << mMesh->get_total_element_count() << std::endl;
+              << mMesh->get_total_element_count(err) << std::endl;
 #endif
   }
 };
