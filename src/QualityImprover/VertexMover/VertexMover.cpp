@@ -99,6 +99,11 @@ double VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
   outer_crit->initialize(ms, *patch_data, err);  if (MSQ_CHKERR(err)) goto ERROR;
   inner_crit->initialize(ms, *patch_data, err);  if (MSQ_CHKERR(err)) goto ERROR;
   
+    // If using a local patch, suppress output of inner termination criterion
+  if (get_patch_type() != PatchData::GLOBAL_PATCH) {
+    inner_crit->set_debug_output_level(3);
+  }
+  
   // This should probably pass the MeshSet so that the data requirements
   // can be calculated exactly.
   this->initialize(*patch_data, err); if (MSQ_CHKERR(err)) goto ERROR;

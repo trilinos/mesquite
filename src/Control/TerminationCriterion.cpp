@@ -51,6 +51,7 @@ namespace Mesquite {
 /*!Constructor initializes all of the data members which are not
   necessarily automatically initialized in their constructors.*/
 TerminationCriterion::TerminationCriterion() 
+  : debugLevel(2)
 {
   terminationCriterionFlag=NONE;
   cullingMethodFlag=NONE;
@@ -403,7 +404,7 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
   if(MsqInterrupt::interrupt()){
     MSQ_SETERR(err)(MsqError::INTERRUPTED);
     return true;
-    MSQ_DBGOUT(2) << "  o TermCrit -- INTERRUPTED" << msq_stdio::endl;
+    MSQ_DBGOUT(debugLevel) << "  o TermCrit -- INTERRUPTED" << msq_stdio::endl;
   }
   
     //if terminating on numbering of inner iterations
@@ -413,7 +414,7 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
     
     if(iterationCounter>=iterationBound){
       return_flag = true;
-      MSQ_DBGOUT(2) << "  o TermCrit -- Exceeded " << iterationBound << " iterations." << msq_stdio::endl;
+      MSQ_DBGOUT(debugLevel) << "  o TermCrit -- Reached " << iterationBound << " iterations." << msq_stdio::endl;
     }
   }
     //if terminating on inner cpu time
@@ -421,7 +422,7 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
       //std::cout<<"\nCHECKED CPU time value = "<<mTimer.since_birth();
     if(mTimer.since_birth()>=timeBound){
       return_flag=true;
-      MSQ_DBGOUT(2) << "  o TermCrit -- Exceeded CPU time." << msq_stdio::endl;
+      MSQ_DBGOUT(debugLevel) << "  o TermCrit -- Exceeded CPU time." << msq_stdio::endl;
     }
   }
     //if terminating on vertex movement
@@ -439,7 +440,7 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
       if(max_movement_sqr<=vertexMovementAbsoluteEps){
         return_flag = true;
       }
-      MSQ_DBGOUT(2) << "  o TermCrit -- Max absolute movement: " << sqrt(max_movement_sqr) << msq_stdio::endl;
+      MSQ_DBGOUT(debugLevel) << "  o TermCrit -- Max absolute movement: " << sqrt(max_movement_sqr) << msq_stdio::endl;
     }
       //if terminating on RELATIVE vertex movement
     if(terminationCriterionFlag & ( VERTEX_MOVEMENT_RELATIVE) ){
@@ -450,7 +451,7 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
       {
         return_flag = true;
       }
-      MSQ_DBGOUT(2) << "  o TermCrit -- Max relative movement: " << sqrt(max_movement_sqr) << msq_stdio::endl;
+      MSQ_DBGOUT(debugLevel) << "  o TermCrit -- Max relative movement: " << sqrt(max_movement_sqr) << msq_stdio::endl;
     } 
       //else we need to store the new memento
     pd.recreate_vertices_memento(previousVerticesMemento,err);
@@ -494,12 +495,12 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
     double grad_L2_norm=10e6;
     if (terminationCriterionFlag & (GRADIENT_L2_NORM_ABSOLUTE | GRADIENT_L2_NORM_RELATIVE)) {
       grad_L2_norm = length(mGrad, num_vertices); // get the L2 norm
-      MSQ_DBGOUT(2) << "  o TermCrit -- gradient L2 norm: " << grad_L2_norm << msq_stdio::endl;
+      MSQ_DBGOUT(debugLevel) << "  o TermCrit -- gradient L2 norm: " << grad_L2_norm << msq_stdio::endl;
     }
     double grad_inf_norm=10e6;
     if (terminationCriterionFlag & (GRADIENT_INF_NORM_ABSOLUTE | GRADIENT_INF_NORM_RELATIVE)) {
       grad_inf_norm = length(mGrad, num_vertices); // get the Linf norm
-      MSQ_DBGOUT(2) << "  o TermCrit -- gradient Inf norm: " << grad_inf_norm << msq_stdio::endl;
+      MSQ_DBGOUT(debugLevel) << "  o TermCrit -- gradient Inf norm: " << grad_inf_norm << msq_stdio::endl;
     } 
     
     //if stopping on L2 norm of the gradient
@@ -573,6 +574,7 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
         return_flag = true;
       }
     }
+
       //if termination on successive improvements absolute
     if(terminationCriterionFlag & SUCCESSIVE_IMPROVEMENTS_ABSOLUTE){
         //if the last improvement was not significant enough
@@ -589,9 +591,15 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
         return_flag = true;
       }
     }
-      //if not termination, update the previousOFValue to be currentOFValue
+    
+    
+    MSQ_DBGOUT(debugLevel) << "  o TermCrit -- OF value: " << currentOFValue << msq_stdio::endl;
+     //if not termination, update the previousOFValue to be currentOFValue
     previousOFValue=currentOFValue;
   }//end of termination criteria which need objective calculated
+  else if (functionSupplied) {
+    MSQ_DBGOUT(debugLevel) << "  o OF value: " << currentOFValue << msq_stdio::endl;
+  }
   
     
     //if terminating on bounded vertex movement (a bounding box for the mesh)
@@ -658,9 +666,6 @@ bool TerminationCriterion::terminate(MeshSet &ms, ObjectiveFunction* obj_ptr,
   booleans to false for the next iteration.*/
 bool TerminationCriterion::terminate_with_function_and_gradient(PatchData &pd, ObjectiveFunction* obj_ptr, double func_val, Vector3D* sup_grad, MsqError &err)
 {
-  // outputs OF value.
-  MSQ_DBGOUT(2) << "  o TermCrit -- OF value: " << func_val << msq_stdio::endl;
-
   //set functionSupplied and gradientSupplied booleans to true
   functionSupplied=true;
   gradientSupplied=true;

@@ -34,32 +34,45 @@ namespace Mesquite {
 MeanMidNodeMover::MeanMidNodeMover() 
 {
   MsqError err;
-  set_name( "MeanMidNodeMover" );
-  set_patch_type( PatchData::GLOBAL_PATCH, err, 1 );
+  PatchDataUser::set_patch_type( PatchData::GLOBAL_PATCH, err );
   MSQ_CHKERR(err);
 }
 
 MeanMidNodeMover::~MeanMidNodeMover() {}
 
-void MeanMidNodeMover::initialize( PatchData& , MsqError& ) 
-{ 
+void MeanMidNodeMover::set_patch_type( PatchData::PatchType, MsqError &err, int , int )
+{
+  MSQ_SETERR(err)("Patch type cannot be changed for MeanMidNodeMover.",MsqError::INVALID_ARG);
+  return;
 }
 
-void MeanMidNodeMover::cleanup() 
-  { }
-void MeanMidNodeMover::initialize_mesh_iteration( PatchData& , MsqError& ) 
-  { }
-void MeanMidNodeMover::terminate_mesh_iteration( PatchData& , MsqError& ) 
-  { }
+msq_std::string MeanMidNodeMover::get_name()
+{ return "MeanMidNodeMover"; }
 
-void MeanMidNodeMover::optimize_vertex_positions( PatchData& pd, MsqError& err )
+PatchDataUser::AlgorithmType MeanMidNodeMover::get_algorithm_type()
+{ return PatchDataUser::QUALITY_IMPROVER; }
+  
+
+double MeanMidNodeMover::loop_over_mesh( MeshSet& ms, MsqError& err )
 {
+  if (get_patch_type() != PatchData::GLOBAL_PATCH) {
+    MSQ_SETERR(err)(MsqError::INVALID_STATE);
+    return 0;
+  }
+  
+  if (!get_global_patch()) {
+    MSQ_SETERR(err)("No global patch", MsqError::INVALID_STATE);
+    return 0;
+  }
+  
+  PatchData& pd = *get_global_patch();
+  
     // For each higher-order node in the patch
   for (size_t vtx = pd.num_vertices(); vtx < pd.num_nodes(); ++vtx)
   {
       // Get an adjacent element
     size_t num_elems, *elem_list;
-    elem_list = pd.get_vertex_element_adjacencies( vtx, num_elems, err ); MSQ_ERRRTN(err);
+    elem_list = pd.get_vertex_element_adjacencies( vtx, num_elems, err ); MSQ_ERRZERO(err);
     if (num_elems < 1) // Mid-node without adjacent elements????
       continue;
     size_t element_index = elem_list[0];
@@ -78,7 +91,7 @@ void MeanMidNodeMover::optimize_vertex_positions( PatchData& pd, MsqError& err )
     if (elem_vert_index == num_verts)
     {
       MSQ_SETERR(err)("Inconsistent connectivity/adjacency data.", MsqError::INVALID_MESH );
-      return;
+      return 0;
     }
       // Must be appropriate element type (e.g. can't have higher-order
       // nodes on a polygon)
@@ -89,28 +102,28 @@ void MeanMidNodeMover::optimize_vertex_positions( PatchData& pd, MsqError& err )
       MSQ_SETERR(err)( MsqError::INVALID_MESH, 
                        "Element type %d cannot have higher-order nodes.",
                        (int)topo );
-      return;
+      return 0;
     }
       // The current vertex must be one of the higher-order nodes of the element
     if (elem_vert_index < num_corners)
     {
       MSQ_SETERR(err)( "Invalid mid-node flag for mesh (mixed connectivity?)", 
                        MsqError::INVALID_MESH );
-      return;
+      return 9;
     }
   
       // Get the element "side" that the node is a mid-node of.
     unsigned side, dimension;
     TopologyInfo::side_number( topo, element.node_count(), elem_vert_index,
-                               side, dimension, err ); MSQ_ERRRTN(err);
+                               side, dimension, err ); MSQ_ERRZERO(err);
       // Get the indices of the vertices defining the "side"
     unsigned side_size;
     const unsigned* side_indices = 
-      TopologyInfo::side_vertices( topo, side, dimension, side_size, err ); MSQ_ERRRTN(err);
+      TopologyInfo::side_vertices( topo, side, dimension, side_size, err ); MSQ_ERRZERO(err);
     if (!side_size)
     {
       MSQ_SETERR(err)(MsqError::INTERNAL_ERROR);
-      return;
+      return 0;
     }
   
       // Calculate average position of side vertices
@@ -121,9 +134,11 @@ void MeanMidNodeMover::optimize_vertex_positions( PatchData& pd, MsqError& err )
     pos /= side_size;
 
       // Set new vertex position
-    pd.set_vertex_coordinates( pos, vtx, err ); MSQ_ERRRTN(err);
-    pd.snap_vertex_to_domain( vtx, err );       MSQ_ERRRTN(err);
+    pd.set_vertex_coordinates( pos, vtx, err ); MSQ_ERRZERO(err);
+    pd.snap_vertex_to_domain( vtx, err );       MSQ_ERRZERO(err);
   }
+  
+  return 0;
 }
                        
   

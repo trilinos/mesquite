@@ -201,6 +201,9 @@ namespace Mesquite
         make sure that all the criteria get checked.*/
     double get_current_function_value()
        {return currentOFValue;}
+       
+    void set_debug_output_level( int i )
+      { debugLevel = i; }
     
  protected:
     
@@ -260,6 +263,8 @@ namespace Mesquite
  
       //place holder for supplied Gradient
     Vector3D* suppliedGradientArray;
+    
+    int debugLevel;
     
   };
 

@@ -33,7 +33,7 @@
  */
 
 #include "Mesquite.hpp"
-#include "VertexMover.hpp"
+#include "PatchDataUser.hpp"
 
 namespace Mesquite {
 
@@ -41,21 +41,24 @@ namespace Mesquite {
  *
  *Move all higher-order nodes to average position of adjacent nodes.
  */
-class MeanMidNodeMover : public VertexMover
+class MeanMidNodeMover : public PatchDataUser
 {
 public:
 
   MeanMidNodeMover();
   
   virtual ~MeanMidNodeMover();
-  
-protected:
 
-  virtual void initialize( PatchData& pd, MsqError& err );
-  virtual void cleanup();
-  virtual void optimize_vertex_positions( PatchData& pd, MsqError& err );
-  virtual void initialize_mesh_iteration( PatchData& pd, MsqError& err ); 
-  virtual void terminate_mesh_iteration( PatchData& pd, MsqError &err );
+    //! Sets the Patch Type. 
+  virtual void set_patch_type(PatchData::PatchType patch_type, MsqError &err,
+                              int param1=0, int param2=0) ;
+                              
+  virtual double loop_over_mesh(MeshSet &ms, MsqError &err);
+
+  virtual msq_std::string get_name();
+  
+  virtual PatchDataUser::AlgorithmType get_algorithm_type();
+
   
 };
 
