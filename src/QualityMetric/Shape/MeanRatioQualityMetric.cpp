@@ -1428,6 +1428,14 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
   double   metrics[8];		// Metric values for the (decomposed) elements
   double   nm, t;
 
+  int locs_hex[8][4] = {{0, 1, 3, 4},	// Hex element descriptions
+		        {1, 2, 0, 5},
+		        {2, 3, 1, 6},
+		        {3, 0, 2, 7},
+		        {4, 7, 5, 0},
+		        {5, 4, 6, 1},
+		        {6, 5, 7, 2},
+		        {7, 6, 4, 3}};
   int i, j;
 
   m = 0.0;
@@ -1457,56 +1465,14 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
     break;
 
   case HEXAHEDRON:
-    coords[0] = vertices[v_i[0]];
-    coords[1] = vertices[v_i[1]];
-    coords[2] = vertices[v_i[3]];
-    coords[3] = vertices[v_i[4]];
-    if (!g_fcn_3i(metrics[0], gradients, coords)) return false;
-
-    coords[0] = vertices[v_i[1]];
-    coords[1] = vertices[v_i[2]];
-    coords[2] = vertices[v_i[0]];
-    coords[3] = vertices[v_i[5]];
-    if (!g_fcn_3i(metrics[1], gradients+4, coords)) return false;
-
-    coords[0] = vertices[v_i[2]];
-    coords[1] = vertices[v_i[3]];
-    coords[2] = vertices[v_i[1]];
-    coords[3] = vertices[v_i[6]];
-    if (!g_fcn_3i(metrics[2], gradients+8, coords)) return false;
-
-    coords[0] = vertices[v_i[3]];
-    coords[1] = vertices[v_i[0]];
-    coords[2] = vertices[v_i[2]];
-    coords[3] = vertices[v_i[7]];
-    if (!g_fcn_3i(metrics[3], gradients+12, coords)) return false;
-
-    coords[0] = vertices[v_i[4]];
-    coords[1] = vertices[v_i[7]];
-    coords[2] = vertices[v_i[5]];
-    coords[3] = vertices[v_i[0]];
-    if (!g_fcn_3i(metrics[4], gradients+16, coords)) return false;
-
-    coords[0] = vertices[v_i[5]];
-    coords[1] = vertices[v_i[4]];
-    coords[2] = vertices[v_i[6]];
-    coords[3] = vertices[v_i[1]];
-    if (!g_fcn_3i(metrics[5], gradients+20, coords)) return false;
-
-    coords[0] = vertices[v_i[6]];
-    coords[1] = vertices[v_i[5]];
-    coords[2] = vertices[v_i[7]];
-    coords[3] = vertices[v_i[2]];
-    if (!g_fcn_3i(metrics[6], gradients+24, coords)) return false;
-
-    coords[0] = vertices[v_i[7]];
-    coords[1] = vertices[v_i[6]];
-    coords[2] = vertices[v_i[4]];
-    coords[3] = vertices[v_i[3]];
-    if (!g_fcn_3i(metrics[7], gradients+28, coords)) return false;
-
     for (i = 0; i < 8; ++i) {
       grad[i] = 0.0;
+
+      coords[0] = vertices[v_i[locs_hex[i][0]]];
+      coords[1] = vertices[v_i[locs_hex[i][1]]];
+      coords[2] = vertices[v_i[locs_hex[i][2]]];
+      coords[3] = vertices[v_i[locs_hex[i][3]]];
+      if (!g_fcn_3i(metrics[i], gradients+4*i, coords)) return false;
     }
 
     switch(avgMethod) {
@@ -1517,68 +1483,14 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
       }
 
       nm = 0;
-      if (metrics[0] <= m + MSQ_MIN) {
-	grad[0] += gradients[0];
-	grad[1] += gradients[1];
-	grad[2] += gradients[2];
-	grad[3] += gradients[3];
-	++nm;
-      }
-
-      if (metrics[1] <= m + MSQ_MIN) {
-	grad[1] += gradients[4];
-	grad[2] += gradients[5];
-	grad[0] += gradients[6];
-	grad[5] += gradients[7];
-	++nm;
-      }
-
-      if (metrics[2] <= m + MSQ_MIN) {
-	grad[2] += gradients[8];
-	grad[3] += gradients[9];
-	grad[1] += gradients[10];
-	grad[6] += gradients[11];
-	++nm;
-      }
-
-      if (metrics[3] <= m + MSQ_MIN) {
-	grad[3] += gradients[12];
-	grad[0] += gradients[13];
-	grad[2] += gradients[14];
-	grad[7] += gradients[15];
-	++nm;
-      }
-
-      if (metrics[4] <= m + MSQ_MIN) {
-	grad[4] += gradients[16];
-	grad[7] += gradients[17];
-	grad[5] += gradients[18];
-	grad[0] += gradients[19];
-	++nm;
-      }
-
-      if (metrics[5] <= m + MSQ_MIN) {
-	grad[5] += gradients[20];
-	grad[4] += gradients[21];
-	grad[6] += gradients[22];
-	grad[1] += gradients[23];
-	++nm;
-      }
-
-      if (metrics[6] <= m + MSQ_MIN) {
-	grad[6] += gradients[24];
-	grad[5] += gradients[25];
-	grad[7] += gradients[26];
-	grad[2] += gradients[27];
-	++nm;
-      }
-
-      if (metrics[7] <= m + MSQ_MIN) {
-	grad[7] += gradients[28];
-	grad[6] += gradients[29];
-	grad[4] += gradients[30];
-	grad[3] += gradients[31];
-	++nm;
+      for (i = 0; i < 8; ++i) {
+        if (metrics[i] <= m + MSQ_MIN) {
+	  grad[v_i[locs_hex[i][0]]] += gradients[4*i+0];
+	  grad[v_i[locs_hex[i][1]]] += gradients[4*i+1];
+	  grad[v_i[locs_hex[i][2]]] += gradients[4*i+2];
+	  grad[v_i[locs_hex[i][3]]] += gradients[4*i+3];
+	  ++nm;
+        }
       }
 
       for (i = 0; i < 8; ++i) {
@@ -1593,72 +1505,32 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
       }
 
       nm = 0;
-      if (metrics[0] >= m - MSQ_MIN) {
-	grad[0] += gradients[0];
-	grad[1] += gradients[1];
-	grad[2] += gradients[2];
-	grad[3] += gradients[3];
-	++nm;
-      }
-
-      if (metrics[1] >= m - MSQ_MIN) {
-	grad[1] += gradients[4];
-	grad[2] += gradients[5];
-	grad[0] += gradients[6];
-	grad[5] += gradients[7];
-	++nm;
-      }
-
-      if (metrics[2] >= m - MSQ_MIN) {
-	grad[2] += gradients[8];
-	grad[3] += gradients[9];
-	grad[1] += gradients[10];
-	grad[6] += gradients[11];
-	++nm;
-      }
-
-      if (metrics[3] >= m - MSQ_MIN) {
-	grad[3] += gradients[12];
-	grad[0] += gradients[13];
-	grad[2] += gradients[14];
-	grad[7] += gradients[15];
-	++nm;
-      }
-
-      if (metrics[4] >= m - MSQ_MIN) {
-	grad[4] += gradients[16];
-	grad[7] += gradients[17];
-	grad[5] += gradients[18];
-	grad[0] += gradients[19];
-	++nm;
-      }
-
-      if (metrics[5] >= m - MSQ_MIN) {
-	grad[5] += gradients[20];
-	grad[4] += gradients[21];
-	grad[6] += gradients[22];
-	grad[1] += gradients[23];
-	++nm;
-      }
-
-      if (metrics[6] >= m - MSQ_MIN) {
-	grad[6] += gradients[24];
-	grad[5] += gradients[25];
-	grad[7] += gradients[26];
-	grad[2] += gradients[27];
-	++nm;
-      }
-
-      if (metrics[7] >= m - MSQ_MIN) {
-	grad[7] += gradients[28];
-	grad[6] += gradients[29];
-	grad[4] += gradients[30];
-	grad[3] += gradients[31];
-	++nm;
+      for (i = 0; i < 8; ++i) {
+        if (metrics[i] >= m - MSQ_MIN) {
+	  grad[v_i[locs_hex[i][0]]] += gradients[4*i+0];
+	  grad[v_i[locs_hex[i][1]]] += gradients[4*i+1];
+	  grad[v_i[locs_hex[i][2]]] += gradients[4*i+2];
+	  grad[v_i[locs_hex[i][3]]] += gradients[4*i+3];
+	  ++nm;
+        }
       }
 
       for (i = 0; i < 8; ++i) {
 	grad[i] /= nm;
+      }
+      break;
+
+    case SUM:
+      m = 0;
+      for (i = 0; i < 8; ++i) {
+	m += metrics[i];
+      }
+
+      for (i = 0; i < 8; ++i) {
+        grad[v_i[locs_hex[i][0]]] += gradients[4*i+0];
+	grad[v_i[locs_hex[i][1]]] += gradients[4*i+1];
+	grad[v_i[locs_hex[i][2]]] += gradients[4*i+2];
+	grad[v_i[locs_hex[i][3]]] += gradients[4*i+3];
       }
       break;
 
@@ -1670,45 +1542,12 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
       }
       m = exp(m / 8.0);
 
-      grad[0] += metrics[0]*gradients[0];
-      grad[1] += metrics[0]*gradients[1];
-      grad[2] += metrics[0]*gradients[2];
-      grad[3] += metrics[0]*gradients[3];
-      
-      grad[1] += metrics[1]*gradients[4];
-      grad[2] += metrics[1]*gradients[5];
-      grad[0] += metrics[1]*gradients[6];
-      grad[5] += metrics[1]*gradients[7];
-
-      grad[2] += metrics[2]*gradients[8];
-      grad[3] += metrics[2]*gradients[9];
-      grad[1] += metrics[2]*gradients[10];
-      grad[6] += metrics[2]*gradients[11];
-
-      grad[3] += metrics[3]*gradients[12];
-      grad[0] += metrics[3]*gradients[13];
-      grad[2] += metrics[3]*gradients[14];
-      grad[7] += metrics[3]*gradients[15];
-
-      grad[4] += metrics[4]*gradients[16];
-      grad[7] += metrics[4]*gradients[17];
-      grad[5] += metrics[4]*gradients[18];
-      grad[0] += metrics[4]*gradients[19];
-
-      grad[5] += metrics[5]*gradients[20];
-      grad[4] += metrics[5]*gradients[21];
-      grad[6] += metrics[5]*gradients[22];
-      grad[1] += metrics[5]*gradients[23];
-
-      grad[6] += metrics[6]*gradients[24];
-      grad[5] += metrics[6]*gradients[25];
-      grad[7] += metrics[6]*gradients[26];
-      grad[2] += metrics[6]*gradients[27];
-
-      grad[7] += metrics[7]*gradients[28];
-      grad[6] += metrics[7]*gradients[29];
-      grad[4] += metrics[7]*gradients[30];
-      grad[3] += metrics[7]*gradients[31];
+      for (i = 0; i < 8; ++i) {
+        grad[v_i[locs_hex[i][0]]] += metrics[i]*gradients[4*i+0];
+	grad[v_i[locs_hex[i][1]]] += metrics[i]*gradients[4*i+1];
+	grad[v_i[locs_hex[i][2]]] += metrics[i]*gradients[4*i+2];
+	grad[v_i[locs_hex[i][3]]] += metrics[i]*gradients[4*i+3];
+      }
 
       nm = m / 8.0;
       for (i = 0; i < 8; ++i) {
@@ -1718,10 +1557,6 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 
     default:
       switch(avgMethod) {
-      case SUM:
-        t = 1.0;
-        break;
-
       case LINEAR:
 	t = 1.0;
 	break;
@@ -1755,45 +1590,12 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
       }
       m = pow(nm, 1.0 / t);
 
-      grad[0] += metrics[0]*gradients[0];
-      grad[1] += metrics[0]*gradients[1];
-      grad[2] += metrics[0]*gradients[2];
-      grad[3] += metrics[0]*gradients[3];
-      
-      grad[1] += metrics[1]*gradients[4];
-      grad[2] += metrics[1]*gradients[5];
-      grad[0] += metrics[1]*gradients[6];
-      grad[5] += metrics[1]*gradients[7];
-
-      grad[2] += metrics[2]*gradients[8];
-      grad[3] += metrics[2]*gradients[9];
-      grad[1] += metrics[2]*gradients[10];
-      grad[6] += metrics[2]*gradients[11];
-
-      grad[3] += metrics[3]*gradients[12];
-      grad[0] += metrics[3]*gradients[13];
-      grad[2] += metrics[3]*gradients[14];
-      grad[7] += metrics[3]*gradients[15];
-
-      grad[4] += metrics[4]*gradients[16];
-      grad[7] += metrics[4]*gradients[17];
-      grad[5] += metrics[4]*gradients[18];
-      grad[0] += metrics[4]*gradients[19];
-
-      grad[5] += metrics[5]*gradients[20];
-      grad[4] += metrics[5]*gradients[21];
-      grad[6] += metrics[5]*gradients[22];
-      grad[1] += metrics[5]*gradients[23];
-
-      grad[6] += metrics[6]*gradients[24];
-      grad[5] += metrics[6]*gradients[25];
-      grad[7] += metrics[6]*gradients[26];
-      grad[2] += metrics[6]*gradients[27];
-
-      grad[7] += metrics[7]*gradients[28];
-      grad[6] += metrics[7]*gradients[29];
-      grad[4] += metrics[7]*gradients[30];
-      grad[3] += metrics[7]*gradients[31];
+      for (i = 0; i < 8; ++i) {
+        grad[v_i[locs_hex[i][0]]] += metrics[i]*gradients[4*i+0];
+	grad[v_i[locs_hex[i][1]]] += metrics[i]*gradients[4*i+1];
+	grad[v_i[locs_hex[i][2]]] += metrics[i]*gradients[4*i+2];
+	grad[v_i[locs_hex[i][3]]] += metrics[i]*gradients[4*i+3];
+      }
 
       if (avgMethod == SUM) {
 	nm = m / (nm*t);
@@ -1820,6 +1622,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 
   default:
     m = 0.0;
+    break;
   } // end switch over element type
   return true;
 }
