@@ -33,6 +33,7 @@ sure everything is still valid.
 #include "GeneralizedConditionNumberQualityMetric.hpp"
 #include "MeanRatioQualityMetric.hpp"
 #include "EdgeLengthQualityMetric.hpp"
+#include "MsqHessian.hpp"
 
 #include "PatchDataInstances.hpp"
 
