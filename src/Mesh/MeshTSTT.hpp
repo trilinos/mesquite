@@ -7,12 +7,15 @@
   \date   2003-06-12
 */
 
-#ifndef MESQUITE_MESH_IMPL_HPP
-#define MESQUITE_MESH_IMPL_HPP
+#ifndef MESQUITE_MESH_TSTT_HPP
+#define MESQUITE_MESH_TSTT_HPP
 
+#include "MsqMessage.hpp"
 #include "MeshInterface.hpp"
 
-class TSTT::TSTT_ModifiableType1Mesh;
+#include "TSTT_LocalTSTTMesh.hh"
+
+//class TSTT::LocalTSTTMesh;
 
 namespace Mesquite
 {
@@ -33,7 +36,7 @@ namespace Mesquite
     typedef void* TagHandle;
   public:
 //********* Functions that are NOT inherited ************
-    MeshTSTT(TSTT::TSTT_ModifiableType1Mesh* tstt_mesh);
+    MeshTSTT(TSTT::LocalTSTTMesh* tstt_mesh, MsqError &err);
     virtual ~MeshTSTT();
     
 //********* Functions that ARE inherited ************
@@ -42,7 +45,7 @@ namespace Mesquite
     
       // Returns the number of entities of the indicated type.
     virtual size_t get_total_vertex_count(MsqError &err) const;
-    virtual size_t get_total_element_count(MsqError &err) const;
+    virtual size_t get_total_element_count(MsqError &err);
     
       // Fills array with handles to all vertices/elements
       // in the mesh.
@@ -102,7 +105,7 @@ namespace Mesquite
       // *_set_byte() functions.
     virtual void vertex_get_byte(VertexHandle vertex,
                                  unsigned char *byte);
-    virtual void vertices_get_byte(VertexHandle *vertex,
+    virtual void vertices_get_byte(VertexHandle *vert_array,
                                    unsigned char *byte_array,
                                    size_t array_size);
     
@@ -115,7 +118,8 @@ namespace Mesquite
       // Gets the elements attached to this vertex.
     virtual void vertex_get_attached_elements(VertexHandle vertex,
                                               ElementHandle* elem_array,
-                                              size_t sizeof_elem_array);
+                                              size_t sizeof_elem_array,
+                                              MsqError &err);
     
 //*************** Element Topology *************
     
@@ -123,7 +127,8 @@ namespace Mesquite
       // This data can also be found by querying the
       // element's topology and getting the number
       // of vertices per element for that topology type.
-    virtual size_t element_get_attached_vertex_count(ElementHandle elem) const;
+    virtual size_t element_get_attached_vertex_count(ElementHandle elem,
+                                                  MsqError &err) const;
     
 // Returns the vertices that are part of the topological definition of each
 // element in the "elem_handles" array.  When this function is called, the
@@ -164,7 +169,8 @@ namespace Mesquite
                                                 size_t &sizeof_vert_handles,
                                                 size_t *csr_data,
                                                 size_t &sizeof_csr_data,
-                                                size_t *csr_offsets);
+                                                size_t *csr_offsets,
+                                                MsqError &err);
     
       // Identifies the vertices attached to this element by returning
       // each vertex's global index.  The vertex's global index indicates
@@ -175,7 +181,8 @@ namespace Mesquite
                                                      size_t array_size);
     
       // Returns the topology of the given entity.
-    virtual EntityTopology element_get_topology(ElementHandle entity_handle);
+    virtual EntityTopology element_get_topology(ElementHandle entity_handle,
+                                           MsqError &err) const;
       // Returns the topologies of the given entities.  The "entity_topologies"
       // array must be at least "num_elements" in size.
     virtual void elements_get_topologies(ElementHandle *element_handle_array,
@@ -196,7 +203,7 @@ namespace Mesquite
     virtual void release();
 
   private:
-    ::TSTT::TSTT_ModifiableType1Mesh* tsttMesh;
+    ::TSTT::LocalTSTTMesh* tsttMesh;
     size_t nbVertices;
     size_t nbElements;
 
@@ -207,17 +214,17 @@ namespace Mesquite
     TagHandle boundaryVertexTag;
     TagHandle vertexByteTag;
     
-    ::SIDL::array<EntityHandle> oneEntity; //!< array has one entry only.
-    ::SIDL::array<TagHandle> oneTagValue; //!< array has one entry only.
-    ::SIDL::array<int32_t> oneInt; //!< array has one entry only.
+    mutable ::SIDL::array<EntityHandle> oneEntity; //!< array has one entry only.
+    mutable ::SIDL::array<TagHandle> oneTagValue; //!< array has one entry only.
+    mutable ::SIDL::array<int32_t> oneInt; //!< array has one entry only.
     ::SIDL::array<double> threeDoubles; //!< array has 3 entries only..
 
     //! This array usually has size 0 when passed to TSTT functions with size 0. 
-    ::SIDL::array<EntityHandle> cachedAdjEntArray;
-    ::SIDL::array<int32_t> adjCsrPt;
-    ::SIDL::array<int32_t> adjCsrDat;
-    EntityHandle cachedVertex;
+    mutable ::SIDL::array<EntityHandle> cachedAdjEntArray;
+    mutable ::SIDL::array<int32_t> adjCsrPt;
+    mutable ::SIDL::array<int32_t> adjCsrDat;
+    mutable EntityHandle cachedVertex;
  };
 }
 
-#endif
+#endif // MESQUITE_MESH_TSTT_HPP
