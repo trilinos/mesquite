@@ -93,9 +93,6 @@ namespace Mesquite
       // These should eventually be handled by get_next_patch()
     bool get_next_element_group(PatchData &pd, MsqError &err);
     bool get_next_node_group(PatchData &pd, MsqError &err);
-
-      // Updates the TSTT mesh with any changes made to the PatchData
-    void update_mesh(PatchData &pd, MsqError &err);
     
     struct EntityEntry
     {

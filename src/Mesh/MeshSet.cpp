@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD:  7-Nov-02 at 11:27:19 by Thomas Leurent
+//  LAST-MOD:  7-Nov-02 at 13:07:53 by Thomas Leurent
 //
 /*! \file MeshSet.cpp
 
@@ -595,35 +595,6 @@ bool MeshSet::get_next_node_group(PatchData &pd, MsqError &err)
   
 }
 
-
-/*! \fn MeshSet::update_mesh
-
-    \brief This function copies to the TSTT mesh  the changes made to the
-    free vertices / elements of the PatchData object.
-
-    !!! only works for PatchDepth == 1 !!!
-*/
-#undef __FUNC__
-#define __FUNC__ "MeshSet::update_mesh" 
-void MeshSet::update_mesh(PatchData &pd,
-                          MsqError &err)
-{
-  double coordsc[3];
-  TSTT::cMesh_Handle mh;
-  TSTT::Entity_Handle vertex;
-  TSTT::MeshError tstt_err=0;
-  
-  mh = currentVertex->mesh;
-  vertex = currentVertex->entity;
-  
-  coordsc[0] = pd.get_vertex_array(err)[0][0];
-  coordsc[1] = pd.get_vertex_array(err)[0][1];
-  coordsc[2] = pd.get_vertex_array(err)[0][2];
-  
-  TSTT::Entity_SetVertexCoords( mh, (TSTT::cEntity_Handle*) &vertex,
-                                1, TSTT::INTERLEAVED,
-                                3, coordsc, &tstt_err);
-}
 
 // ************* AOMD tmp TEST *************
 

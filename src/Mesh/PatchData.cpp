@@ -287,3 +287,34 @@ void PatchData::get_vertex_element_indices(
   while (elem_count--)
     elem_indices.push_back(*(++pos));
 }
+
+
+/*! \fn PatchData::update_mesh(MsqError &err)
+
+    \brief This function copies to the TSTT mesh  the changes made to the
+    free vertices / elements of the PatchData object.
+
+*/
+#undef __FUNC__
+#define __FUNC__ "PatchData::update_mesh" 
+void PatchData::update_mesh(MsqError &err)
+{
+  double coordsc[3];
+  TSTT::cMesh_Handle mh;
+  TSTT::Entity_Handle vertex;
+  TSTT::MeshError tstt_err=0;
+
+  for (int n=0; n<numFreeVertices; ++n) {
+    mh = vertexHandlesArray[n].mesh;
+    vertex = vertexHandlesArray[n].entity;
+    
+    coordsc[0] = vertexArray[0][0];
+    coordsc[1] = vertexArray[0][1];
+    coordsc[2] = vertexArray[0][2];
+    
+    TSTT::Entity_SetVertexCoords( mh, (TSTT::cEntity_Handle*) &vertex,
+                                  1, TSTT::INTERLEAVED,
+                                  3, coordsc, &tstt_err);
+  }
+}
+

@@ -113,7 +113,10 @@ namespace Mesquite
      void move_free_vertices(Vector3D dk[], int nb_vtx,
                              double step_size, MsqError &err);
     
-      //! Creates a memento that holds the current
+    // Updates the TSTT mesh with any changes made to the PatchData
+    void update_mesh(MsqError &err);
+
+    //! Creates a memento that holds the current
       //! state of the PatchData coordinates. 
     PatchDataCoordsMemento* create_coords_memento(MsqError &err);
     
