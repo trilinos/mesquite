@@ -995,6 +995,13 @@ inline bool h_fcn_3e(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   h_obj[8][2][2] = 3.0*loc3;
 
   h_obj[9][2][2] = tisqrt6*A[11];
+
+  // completes diagonal blocks.
+  h_obj[0].fill_lower_triangle();
+  h_obj[4].fill_lower_triangle();
+  h_obj[7].fill_lower_triangle();
+  h_obj[9].fill_lower_triangle();
+  
   return true;
 }
 
@@ -1771,7 +1778,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     // Hessians for hexes are not done yet.  Need to changes to fcn_3i, and
     // do the accumulation and calculation correctly.
 
-    err.set_msq("Hessian for hexes not done yet!  Talk to Tom.\n");
+    err.set_msg("Hessian for hexes not done yet!  Talk to Tom.\n");
     for (i = 0; i < 8; ++i) {
       grad[i] = 0.0;
 

@@ -16,6 +16,7 @@ Header file for the Mesquite::MeanRatioQualityMetric class
 #include "MesquiteError.hpp"
 #include "ShapeQualityMetric.hpp"
 #include "Vector3D.hpp"
+#include "Matrix3D.hpp"
 #include "PatchData.hpp"
 //Michael delete
 #include "MsqMessage.hpp"
@@ -58,7 +59,14 @@ namespace Mesquite
                                               double &metric_value,
                                               MsqError &err);
 
-
+     bool compute_element_analytical_hessian(PatchData &pd,
+                                             MsqMeshEntity *e,
+                                             MsqVertex *v[], 
+                                             Vector3D g[],
+                                             Matrix3D h[],
+                                             int nv, 
+                                             double &m,
+                                             MsqError &err);
   protected:     
      bool mean_ratio_2d(Vector3D temp_vec[],double &fval,MsqError &err);
      bool mean_ratio_3d(Vector3D temp_vec[],double &fval,MsqError &err);
