@@ -220,7 +220,7 @@ void MeshImpl::write_vtk(const char* out_filename, MsqError &err)
     MSQ_ERRRTN(err);
     
     std::vector<char> tagdata( myMesh->num_vertices() * desc.size );
-    std::vector<char>::iterator iter;
+    std::vector<char>::iterator iter = tagdata.begin();
     for (i = 0; i < myMesh->max_vertex_index(); ++i)
     {
       if (myMesh->is_vertex_valid(i))
@@ -260,7 +260,7 @@ void MeshImpl::write_vtk(const char* out_filename, MsqError &err)
     MSQ_ERRRTN(err);
     
     std::vector<char> tagdata( myMesh->num_elements() * desc.size );
-    std::vector<char>::iterator iter;
+    std::vector<char>::iterator iter = tagdata.begin();
     for (i = 0; i < myMesh->max_element_index(); ++i)
     {
       if (myMesh->is_element_valid(i))
