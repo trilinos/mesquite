@@ -864,7 +864,7 @@ inline bool h_fcn_2i(double &obj, Vector3D g_obj[3], Matrix3D h_obj[6],
   h_obj[1][1][2] =  A[0];
   h_obj[2][1][2] =  A[4];
 
-  h_obj[1][2][1] = -J_B[0] - J_B[0];
+  h_obj[1][2][1] = -J_B[0] - J_B[1];
   h_obj[3][1][2] =  J_B[0];
   h_obj[4][1][2] =  J_B[1];
 
