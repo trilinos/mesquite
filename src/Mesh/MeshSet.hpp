@@ -72,6 +72,8 @@ namespace Mesquite
                         int patch_param1=0,
                         int patch_param2=0);
 
+    PatchType get_patch_type() {return mType;}
+    
     /*! Sets the name of the tag that identifies fixed vertices
       within that particular MeshSet .
         By default, the tag name for fixed vertices is "fixed".

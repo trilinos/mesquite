@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD:  7-Nov-02 at 09:09:46 by Thomas Leurent
+//  LAST-MOD:  7-Nov-02 at 11:27:19 by Thomas Leurent
 //
 /*! \file MeshSet.cpp
 
@@ -199,31 +199,35 @@ bool MeshSet::get_next_patch(PatchData &pd,
   // This could also be replaced by a TSTT iterator.
   // *************************************************
 
+  
   bool more_vtx;
   // if MeshSet object in initial state
-  if ( verticesSet.empty() ) {
-    more_vtx = get_next_vertices_set(err); MSQ_CHKERR(err);
-    if ( more_vtx == false ) {
-      return false; 
+  if (mType == ELEMENTS_ON_VERTEX_PATCH) {
+    if ( verticesSet.empty() ) {
+      more_vtx = get_next_vertices_set(err); MSQ_CHKERR(err);
+      if ( more_vtx == false ) {
+        return false; 
+      }
+    }
+    else {
+      currentVertex++;
+      // If this is the end of the current vertices list
+      if (currentVertex == verticesSet.end() ) {
+        more_vtx = get_next_vertices_set(err);  MSQ_CHKERR(err);
+        if ( more_vtx == false )
+          return false; // no error needed, we're just at the end of the list.
+      }
     }
   }
-  else {
-    currentVertex++;
-    // If this is the end of the current vertices list
-    if (currentVertex == verticesSet.end() ) {
-      more_vtx = get_next_vertices_set(err);  MSQ_CHKERR(err);
-      if ( more_vtx == false )
-        return false; // no error needed, we're just at the end of the list.
-    }
-  }
-    
-
+ 
+  MSQ_DEBUG_ACTION(3,{std::cout << "  o Patch Type: " << mType << std::endl; });
   
   // ***********************************************
   // Gathers the local patch information
   // ***********************************************
 
-  if ( mType == ELEMENTS_ON_VERTEX_PATCH ) {
+  if ( mType==ELEMENTS_ON_VERTEX_PATCH ) {
+
     // checks second argument.
     int num_layers = mParam1;
     if (num_layers != 1)
@@ -404,8 +408,13 @@ bool MeshSet::get_next_patch(PatchData &pd,
     TSTT::Mesh_FreeEntityHandles(currentVertex->mesh, patch_elements, &tstt_err);
   
     return true;
-  }
-  else if ( mType == GLOBAL_PATCH ) {
+  }    
+
+    // ***********************************************
+    // Gathers the global patch information
+    // ***********************************************
+  
+  else if (mType==GLOBAL_PATCH) {
   
     const int MAX_NUM_VERTICES_PER_ELEM=12;
     TSTT::Entity_Handle* elem_vtx = new TSTT::Entity_Handle[MAX_NUM_VERTICES_PER_ELEM];
@@ -423,7 +432,7 @@ bool MeshSet::get_next_patch(PatchData &pd,
     for ( currentMesh = meshSet.begin();
           currentMesh != meshSet.end();
           ++currentMesh ) {
-    
+      
       // retrieves all the elements of the mesh
       num_elements = 0; // this will make TSTT allocate the patch_regions array
       TSTT::Mesh_GetEntities(*currentMesh,
@@ -465,8 +474,8 @@ bool MeshSet::get_next_patch(PatchData &pd,
       // if current memory is inapropriate
       pd.reserve_element_capacity(num_elements, err); MSQ_CHKERR(err);
   
-      int num_coords=3*MAX_NUM_VERTICES_PER_ELEM;
-      double* vertex_coords = new double[num_coords];
+      int elem_num_coords=3*MAX_NUM_VERTICES_PER_ELEM;
+      double* elem_vtx_coords = new double[elem_num_coords];
 
 
       enum store_in_patch {
@@ -504,7 +513,7 @@ bool MeshSet::get_next_patch(PatchData &pd,
           TSTT::Entity_GetVertexCoords(*currentMesh,
                                        (TSTT::cEntity_Handle *) elem_vtx,
                                        num_element_vtx, TSTT::INTERLEAVED,
-                                       &vertex_coords, &num_coords,
+                                       &elem_vtx_coords, &elem_num_coords,
                                        &tstt_err);
           assert(!tstt_err);
           // ... enters the coordinates of those vertices in PatchData ...
@@ -524,7 +533,7 @@ bool MeshSet::get_next_patch(PatchData &pd,
                   || store==fixed_vtx ) { // second pass we add all vertices
                                         // (this retrieves index of previously added vertices). 
                 vtx_ind[n] = pd.add_vertex(*currentMesh, elem_vtx[n],
-                                           &vertex_coords[3*n], true, err); MSQ_CHKERR(err);
+                                           &elem_vtx_coords[3*n], true, err); MSQ_CHKERR(err);
               }
             }
           // ... and adds the element to PatchData if in second pass.
@@ -535,13 +544,13 @@ bool MeshSet::get_next_patch(PatchData &pd,
           }
         }
         
-        if (store == free_vtx)   store=fixed_vtx; // for next round
         if (store == fixed_vtx)  store=over; // for next round
+        else if (store == free_vtx)   store=fixed_vtx; // for next round
       }
 
       delete[] element_topologies;
       delete[] elem_vtx;
-      delete[] vertex_coords;
+      delete[] elem_vtx_coords;
   
       //cout << "numVertices for local patch: " << pd.num_vertices() << endl;
   
@@ -552,10 +561,12 @@ bool MeshSet::get_next_patch(PatchData &pd,
     }
   
     return true;
-  }
-    
+  }  
+
+  
   err.set_msg("no implementation for specified patch type.");
   return false;
+
 }
 
 #include "MeanRatioQualityMetric.hpp"
