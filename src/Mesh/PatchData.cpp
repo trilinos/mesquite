@@ -97,7 +97,7 @@ void PatchData::reorder()
   // Step 1:  Find the length of the element to vertex list for each 
   //          individual vertex.
 
-  memset(sta, 0, numv*sizeof(size_t));
+  memset(sta, 0, (numv+1)*sizeof(size_t));
   for (i = 0; i < nume; ++i) {
     vtc = elementArray[i].vertex_count();
     vtx = elementArray[i].get_modifiable_vertex_index_array();
@@ -126,7 +126,7 @@ void PatchData::reorder()
     vtx = elementArray[i].get_modifiable_vertex_index_array();
 
     for (j = 0; j < vtc; ++j) {
-      vte[sta[vtx[j]++]] = i;
+      vte[sta[vtx[j]]++] = i;
     }
   }
 
