@@ -58,6 +58,7 @@ TESTNAMES := test_1\
              ActiveSetTest\
              simple_hybrid_test\
              wrapper_tests\
+             tutorial\
 ###             random_test\
 ###             exo_convert
 
