@@ -32,7 +32,14 @@ MultiplyQualityMetric::MultiplyQualityMetric(QualityMetric* qm1, QualityMetric* 
   else{
     set_negate_flag(n_flag);
   }
-  set_mode(qm1->get_evaluation_mode(),err);
+
+  // Checks that metrics are of the same type 
+  if ( qm1->get_metric_type() != qm2->get_metric_type() ) {
+    err.set_msg("Cannot multiply a vertex-based QM with an element-based QM.");
+  } else {
+    set_metric_type(qm1->get_metric_type());
+  }
+  
   set_name("Composite Multiply");
 }
 
