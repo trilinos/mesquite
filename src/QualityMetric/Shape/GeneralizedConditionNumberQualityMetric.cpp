@@ -98,7 +98,7 @@ bool GeneralizedConditionNumberQualityMetric::evaluate_element(PatchData &pd,
                                          num_jacobian_vectors,
                                          metric_values[i],err);
     if(!return_flag){
-      delete metric_values;
+      delete[] metric_values;
       return false;
     }
     
@@ -107,7 +107,7 @@ bool GeneralizedConditionNumberQualityMetric::evaluate_element(PatchData &pd,
   }// end loop over sample points
   fval=average_metrics(metric_values,num_sample_points,err);
   MSQ_CHKERR(err);
-  delete metric_values;
+  delete[] metric_values;
   return true;
 }
 

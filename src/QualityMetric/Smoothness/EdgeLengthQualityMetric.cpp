@@ -43,7 +43,7 @@ bool EdgeLengthQualityMetric::evaluate_vertex(PatchData &pd, MsqVertex* vert,
     ++point_counter;
   }
   fval=average_metrics(metric_values,num_sample_points,err);
-  delete metric_values;
+  delete[] metric_values;
   
   return true;
   

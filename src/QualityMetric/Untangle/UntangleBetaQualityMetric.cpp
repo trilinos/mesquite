@@ -102,7 +102,7 @@ bool UntangleBetaQualityMetric::evaluate_element(PatchData &pd,
   MSQ_CHKERR(err);
   fval=average_metrics(metric_values,num_sample_points,err);
   MSQ_CHKERR(err);
-  delete metric_values;
+  delete[] metric_values;
   return true;
 }
 
