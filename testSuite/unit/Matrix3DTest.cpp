@@ -69,35 +69,35 @@ public:
     e2.set(0,1,0);
     e3.set(0,0,1);
     
-    mIdentity =       "1    0    0
-                       0    1    0
-                       0    0    1";
+    mIdentity =       " 1    0    0 "
+                      " 0    1    0 "
+                      " 0    0    1";
 
-    mMat1 =           "1    4.2  2
-                       5.2  3    4
-                       1    7    0.4";
+    mMat1 =           " 1    4.2  2 "
+                      " 5.2  3    4 "
+                      " 1    7    0.4";
    
-    mMat2 =           "2    4    5
-                       2    1    3
-                       0    7    8";
+    mMat2 =           " 2    4    5 "
+                      " 2    1    3 "
+                      " 0    7    8 ";
     
-    mMat2trans =      "2    2    0
-                       4    1    7
-                       5    3    8";
+    mMat2trans =      " 2    2    0 "
+                      " 4    1    7 "
+                      " 5    3    8 ";
     
-    mMat1plus2 =      "3    8.2   7
-                       7.2  4     7
-                       1    14    8.4";
+    mMat1plus2 =      " 3    8.2   7 "
+                      " 7.2  4     7 "
+                      " 1    14    8.4";
 
-    mMat1plus2trans = "3    6.2   2
-                       9.2  4     11
-                       6    10    8.4";
+    mMat1plus2trans = " 3    6.2   2 "
+                      " 9.2  4     11 "
+                      " 6    10    8.4";
 
-    mMat1times2 =     "10.4 22.2  33.6
-                       16.4 51.8  67.0
-                       16.0 13.8  29.2";
+    mMat1times2 =     " 10.4 22.2  33.6 "
+                      " 16.4 51.8  67.0 "
+                      " 16.0 13.8  29.2 ";
   }
-
+  
   void tearDown()
   {
   }
@@ -123,12 +123,12 @@ public:
   {
     Matrix3D res;
     res = mMat1 - mIdentity;
-    Matrix3D correct("0    4.2  2
-                      5.2  2    4
-                      1    7    -0.6");
+    Matrix3D correct(" 0    4.2  2 "
+                     " 5.2  2    4 "
+                     " 1    7    -0.6 ");
     CPPUNIT_ASSERT( res==correct );
   }
-
+  
   void test_transpose()
   {
     Matrix3D trans = transpose(mMat2);
@@ -153,9 +153,9 @@ public:
   void test_mult_element()
   {
     Matrix3D mat = mult_element(mMat1, mIdentity);
-    Matrix3D correct("1 0 0
-                      0 3 0
-                      0 0 0.4");
+    Matrix3D correct(" 1 0 0 "
+                     " 0 3 0 "
+                     " 0 0 0.4");
     CPPUNIT_ASSERT( mat==correct );
   }
 
