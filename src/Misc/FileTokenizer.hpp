@@ -6,6 +6,8 @@
 #else
 #  include <cstdio>
 #endif
+#include "Mesquite.hpp"
+#include <sys/types.h>
 
 namespace Mesquite
 {
@@ -37,7 +39,7 @@ class FileTokenizer
        * 
        * \param file_ptr The file to read from.
        */
-    FileTokenizer( FILE* file_ptr );
+    FileTokenizer( msq_stdc::FILE* file_ptr );
     
       /** \brief destructor : closes file.
        *
@@ -196,7 +198,7 @@ class FileTokenizer
     bool get_byte_internal( unsigned char& result, MsqError& err );
   
       /** Pointer to standard C FILE struct */
-    FILE* filePtr;
+    msq_stdc::FILE* filePtr;
     
       /** Input buffer */
     char buffer[512];

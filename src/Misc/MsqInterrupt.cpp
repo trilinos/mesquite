@@ -44,7 +44,7 @@ extern "C" void msq_sigint_handler( int )
 }
    
 
-inline void MsqInterrupt::set_handler()
+void MsqInterrupt::set_handler()
 {
   oldHandler = signal( SIGINT, &msq_sigint_handler );
   if (MsqInterrupt::interruptMode == MsqInterrupt::AUTO &&
