@@ -13,19 +13,19 @@ void Mesquite::out_of_store()
 MsqError::MsqError(bool e, enum Error_Codes ec, std::string m)
 {
   errorOn = e;
+  printError=true;
   errorCode = ec;
   if (m!="")
     msg = m;
-  printError=true;
 }
 
 MsqError::MsqError(Error_Codes ec, std::string m)
 {
   errorOn = true;
+  printError=true;
   errorCode = ec;
   if (m != std::string(""))
     msg = m;
-  printError=true;
 }
 
 /*! 

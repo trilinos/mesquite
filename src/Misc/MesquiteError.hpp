@@ -89,7 +89,7 @@ enum Error_Codes {
 class MsqError {
 public:
   // Constructors
-  MsqError() : errorOn(false), errorCode(MSQ_NO_ERROR), msg(""), printError(true) {} // No error by default
+  MsqError() : errorOn(false), printError(true), errorCode(MSQ_NO_ERROR), msg("") {} // No error by default
   //! Maybe this constructor isn't useful.
 
   MsqError(bool , enum Error_Codes, std::string = "");
