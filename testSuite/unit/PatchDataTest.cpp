@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 13-Nov-02 at 18:05:56
-//  LAST-MOD: 13-Dec-02 at 08:57:24 by Thomas Leurent
+//  LAST-MOD: 20-Jan-03 at 16:21:12 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -40,7 +40,7 @@ private:
    CPPUNIT_TEST (test_get_element_vertex_indices);
    CPPUNIT_TEST (test_get_vertex_element_indices);
    CPPUNIT_TEST (test_get_element_vertex_coordinates);
-   CPPUNIT_TEST (test_move_free_vertices);
+   CPPUNIT_TEST (test_move_vertices);
    CPPUNIT_TEST (test_get_adj_elems_2d);
   
    CPPUNIT_TEST_SUITE_END();
@@ -224,12 +224,12 @@ public:
       CPPUNIT_ASSERT( coords[2]==vtx_1_1 );
    }
 
-   /* This tests the move_free_vertices() function as well as the
+   /* This tests the move_vertices() function as well as the
       PatchDataCoordsMemento functionality
       */
 #undef __FUNC__
-#define __FUNC__ "PatchDataTest::test_move_free_vertices" 
-   void test_move_free_vertices()
+#define __FUNC__ "PatchDataTest::test_move_vertices" 
+   void test_move_vertices()
    {
       MsqError err;
 
@@ -237,13 +237,12 @@ public:
       PatchDataVerticesMemento* coords_mem = mPatch2D.create_vertices_memento(err);
       MSQ_CHKERR(err);
       
-      // states that the 2 first vertices are free and move them in direction dk
-      // by step size s;
+      // Move the two first vertices in direction dk by step size s;
       Vector3D dk[2];
       dk[0].set(-1,-2,0);
       dk[1].set(-1, 2,0);
       double s = 0.3;
-      mPatch2D.move_free_vertices(dk, 2, s, err); MSQ_CHKERR(err);
+      mPatch2D.move_vertices(dk, 2, s, err); MSQ_CHKERR(err);
 
       // gets the new coordinates and  checks the vertices were displaced as expected.
       std::vector< Vector3D > coords;
