@@ -73,9 +73,10 @@ public:
   
   void test_hard_fixed_flags()
   {   
+     MsqError err;
      int indices[10];
      int i=0;
-     MsqFreeVertexIndexIterator ind(&pd);
+     MsqFreeVertexIndexIterator ind(&pd, err);
      ind.reset();
      while (ind.next()) {
         indices[i] = ind.value();
@@ -85,7 +86,25 @@ public:
      CPPUNIT_ASSERT(indices[0]==0);
      CPPUNIT_ASSERT(indices[1]==4);
      CPPUNIT_ASSERT(i==2); // number of free vertices.
+  }
 
+  void test_soft_fixed_flags()
+  {   
+     MsqError err;
+     MsqVertex* vtces = pd.get_vertex_array(err);
+     vtces[0].set_soft_fixed_flag();
+
+     int indices[10];
+     int i=0;
+     MsqFreeVertexIndexIterator ind(&pd, err);
+     ind.reset();
+     while (ind.next()) {
+        indices[i] = ind.value();
+        ++i;
+     } 
+
+     CPPUNIT_ASSERT(indices[0]==4);
+     CPPUNIT_ASSERT(i==1); // number of free vertices.
   }
 
 

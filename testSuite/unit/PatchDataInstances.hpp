@@ -249,9 +249,9 @@ namespace Mesquite {
       pd.add_element(NULL, NULL, ind, QUADRILATERAL, err); MSQ_CHKERR(err);
       ind[0] = 0; ind[1]=4; ind[2]=5; ind[3]=6;
       pd.add_element(NULL, NULL, ind, QUADRILATERAL, err); MSQ_CHKERR(err);
-      ind[0] = 3; ind[1]=9; ind[2]=10 ind[3]=4;
+      ind[0] = 3; ind[1]=9; ind[2]=10; ind[3]=4;
       pd.add_element(NULL, NULL, ind, QUADRILATERAL, err); MSQ_CHKERR(err);
-      ind[0] = 4; ind[1]=10 ind[2]=11 ind[3]=5;
+      ind[0] = 4; ind[1]=10; ind[2]=11; ind[3]=5;
       pd.add_element(NULL, NULL, ind, QUADRILATERAL, err); MSQ_CHKERR(err);
    }
 

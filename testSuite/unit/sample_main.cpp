@@ -43,6 +43,10 @@ int main(int argc, char **argv)
     CppUnit::TestFactoryRegistry &registry6 =
       CppUnit::TestFactoryRegistry::getRegistry("MeshSetTest");
     runner.add_test( registry6.makeTest() );
+
+    CppUnit::TestFactoryRegistry &registry7 =
+      CppUnit::TestFactoryRegistry::getRegistry("MsqFreeVertexIndexIteratorTest");
+    runner.add_test( registry7.makeTest() );
   }
   
     // Run the tests
