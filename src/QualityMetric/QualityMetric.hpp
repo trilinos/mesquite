@@ -405,7 +405,7 @@ namespace Mesquite
                                                       double &metric_value,
                                                       MsqError &err)
    {
-     bool ret;
+     bool ret=false;;
      switch(gradType)
      {
        case NUMERICAL_GRADIENT:
@@ -445,7 +445,7 @@ namespace Mesquite
                                                        double &metric_value,
                                                        MsqError &err)
    {
-     bool ret;
+     bool ret=false;
      switch(gradType)
      {
        case NUMERICAL_GRADIENT:
