@@ -11,6 +11,8 @@
 #include "LPtoPTemplate.hpp"
 #include "MsqFreeVertexIndexIterator.hpp"
 #include "MsqMessage.hpp"
+#include "MsqTimer.hpp"
+
 using  namespace Mesquite;  
 
 using std::cout;
@@ -128,6 +130,8 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &patch,
                                               Vector3D *const &grad,
                                               MsqError &err, size_t array_size)
 {
+  FUNCTION_TIMER_START(__FUNC__);
+  
   size_t num_elements=patch.num_elements();
   size_t num_vertices=patch.num_vertices();
   if( num_vertices!=array_size && array_size>0)
@@ -143,7 +147,7 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &patch,
   // If MSQ_DBG1 is defined, check to make sure that num_vert == array_size.
   MSQ_DEBUG_ACTION(1,{
     size_t num_vert=patch.num_vertices(); 
-    if(num_vert!=array_size && array_size!=-1){
+    if(num_vert!=array_size && array_size!=0){
       err.set_msg("Analytical Gradient passed arrays of incorrect size.");
       MSQ_CHKERR(err); cout << num_vert << " instead of " << array_size << endl; }
   });
@@ -281,6 +285,8 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &patch,
     
   }
   delete [] metric_values;
+
+  FUNCTION_TIMER_END();
   return true;
 }
   
@@ -310,6 +316,7 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
                                                MsqHessian &hessian,
                                                MsqError &err)
 {
+  FUNCTION_TIMER_START(__FUNC__);
 
   MsqMeshEntity* elements = pd.get_element_array(err); MSQ_CHKERR(err);
   MsqVertex* vertices = pd.get_vertex_array(err); MSQ_CHKERR(err);
@@ -386,6 +393,6 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
     
   }
   
-
+  FUNCTION_TIMER_END();
   return true;
 }

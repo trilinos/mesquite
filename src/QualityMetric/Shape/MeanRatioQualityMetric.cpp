@@ -1471,7 +1471,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 								 double &m,
                                                                  MsqError &err)
 {
-  FUNCTION_TIMER_START(__FUNC__);
+//  FUNCTION_TIMER_START(__FUNC__);
   
   EntityTopology topo = e->get_element_type();
 
@@ -1489,7 +1489,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
   Vector3D gradients[32];	// Gradient of metric with respect to the coords
   Vector3D grad[8];		// Accumulated gradients (composed merit function)
   double   metrics[8];		// Metric values for the (decomposed) elements
-  double   nm, t;
+  double   nm, t=0;
 
   int locs_hex[8][4] = {{0, 1, 3, 4},	// Hex element descriptions
                         {1, 2, 0, 5},
@@ -1680,7 +1680,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
     break;
   } // end switch over element type
 
-  FUNCTION_TIMER_END();
+//  FUNCTION_TIMER_END();
   return true;
 }
 
@@ -1696,7 +1696,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 								double &m,
 								MsqError &err)
 {
-  FUNCTION_TIMER_START(__FUNC__);
+//  FUNCTION_TIMER_START(__FUNC__);
   EntityTopology topo = e->get_element_type();
 
   if (((topo == QUADRILATERAL) || (topo == HEXAHEDRON)) && 
@@ -1714,7 +1714,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
   Vector3D gradients[32];	// Gradient of metric with respect to the coords
   Matrix3D hessians[80];	// Hessian of matrix with respect to the coords
   double   metrics[8];		// Metric values for the (decomposed) elements
-  double   nm, t;
+  double   nm, t=0;
 
   int locs_hex[8][4] = {{0, 1, 3, 4},	// Hex element descriptions
                         {1, 2, 0, 5},
@@ -2022,7 +2022,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     break;
   } // end switch over element type
 
-  FUNCTION_TIMER_END();
+//  FUNCTION_TIMER_END();
   return true;
 }
 
