@@ -59,12 +59,14 @@ double LPTemplate::concrete_evaluate(PatchData &patch, MsqError &err){
   int num_elements=patch.num_elements();
   int num_vertices=patch.num_vertices();
   int total_num=0;
-  if(currentQM->get_evaluation_mode()!=QualityMetric::VERTEX)   
+  if(currentQM->get_metric_type()==QualityMetric::ELEMENT_BASED)   
     total_num=num_elements;
-  else
+  else if (currentQM->get_metric_type()==QualityMetric::VERTEX_BASED)
     total_num=num_vertices;
+  else
+    err.set_msg("Make sure MetricType is initialised in concrete QualityMetric constructor.");
   double *metric_values= new double[total_num];
-  if(currentQM->get_evaluation_mode()!=QualityMetric::VERTEX)
+  if(currentQM->get_metric_type()==QualityMetric::ELEMENT_BASED)
   {
 //    MsqMeshEntity* current_ent;
     for (index=0; index<num_elements;index++)
@@ -76,7 +78,7 @@ double LPTemplate::concrete_evaluate(PatchData &patch, MsqError &err){
                           << index << "\t: " << metric_values[index] << "\n";});
     }
   }
-  else
+  else if(currentQM->get_metric_type()==QualityMetric::VERTEX_BASED)
   {
     MsqVertex* vertices=patch.get_vertex_array(err);
     for (index=0; index<num_vertices;index++)
@@ -124,25 +126,28 @@ void  LPTemplate::compute_analytical_gradient(PatchData &patch,
   QualityMetric* currentQM = get_quality_metric();
   if(currentQM==NULL)
     err.set_msg("LPTemplate has NULL QualityMetric pointer.");
-  enum QualityMetric::EvaluationMode qm_mode=currentQM->get_evaluation_mode();
+  enum QualityMetric::MetricType qm_type=currentQM->get_metric_type();
   int num_elements=patch.num_elements();
   int num_vertices=patch.num_vertices();
   int total_num=0;
-  if(currentQM->get_evaluation_mode()!=QualityMetric::VERTEX)
+  if(qm_type==QualityMetric::ELEMENT_BASED)
     total_num=num_elements;
-  else
+  else if(qm_type==QualityMetric::VERTEX_BASED)
     total_num=num_vertices;
+  else
+   err.set_msg("Make sure MetricType is initialised in concrete QualityMetric constructor.");
   
   double *metric_values=new double[total_num];
-    //If element-based, fill array with element quality metrics
-  if(qm_mode!=QualityMetric::VERTEX){
+    // fill array with element quality metrics
+  if(qm_type==QualityMetric::ELEMENT_BASED){
     for (index=0; index<num_elements;++index){
       metric_values[index]=fabs(currentQM->evaluate_element(patch,
                                                             &elems[index],
                                                             err));
     }
   }
-  else{//else vertex based metric
+    // fill array with vertex quality metrics
+  else if (qm_type==QualityMetric::VERTEX_BASED) {
     for (index=0; index<num_vertices;++index){
         //evaluate metric for this vertex
       metric_values[index]=fabs(currentQM->evaluate_vertex(patch,
@@ -161,6 +166,7 @@ void  LPTemplate::compute_analytical_gradient(PatchData &patch,
   int vert_count=0;
     //corresponding position in grad array
   int grad_pos=0;
+  double dummy;
     //position in elem array
   size_t elem_pos=0;
   Vector3D grad_vec;
@@ -168,7 +174,7 @@ void  LPTemplate::compute_analytical_gradient(PatchData &patch,
     vert_count=free_ind.value();
     grad[grad_pos].set(0.0,0.0,0.0);
     temp_value=0;
-    if(qm_mode!=QualityMetric::VERTEX){
+    if(qm_type==QualityMetric::ELEMENT_BASED){
  
         //TODO should be done only with local elements
       patch.get_vertex_element_indices(vert_count, elem_on_vert_ind,err);
@@ -178,9 +184,9 @@ void  LPTemplate::compute_analytical_gradient(PatchData &patch,
       while(!elem_on_vert_ind.empty()){
         elem_pos=(elem_on_vert_ind.back());
         elem_on_vert_ind.pop_back();
-        currentQM->compute_gradient(patch, &elems[elem_pos],
-                                    vertices[vert_count],
-                                    grad_vec,err);
+        currentQM->compute_element_gradient(patch, &elems[elem_pos],
+                                    &vertices[vert_count],
+                                    &grad_vec, 1, dummy, err);
         temp_value=1;
         for(index=0;index<pVal-1;++index){
           temp_value*=metric_values[elem_pos];
