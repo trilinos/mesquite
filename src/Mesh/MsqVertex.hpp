@@ -83,10 +83,6 @@ namespace Mesquite
      bool is_flag_set(FlagMaskID flag)
        { return (vertexBitFlags & flag) != 0; }
      
-     void move_to_owner()
-       { // Not yet written
-       }
-     
    private:
      FlagMask vertexBitFlags;
    };
