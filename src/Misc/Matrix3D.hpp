@@ -13,6 +13,8 @@
 
 3*3 Matric class, row-oriented, 0-based [i][j] indexing.
 
+ \author Thomas Leurent
+ 
 */
 // DESCRIP-END.
 //

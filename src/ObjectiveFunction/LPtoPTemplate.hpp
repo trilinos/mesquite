@@ -2,7 +2,8 @@
 
 /*! \file LPtoPTemplate.hpp
   \brief Header file for the Mesquite::LPtoPTemplate class
-  \author Michael Brewer
+ \author Michael Brewer
+ \author Thomas Leurent
   \date   2002-05-23
  */
 

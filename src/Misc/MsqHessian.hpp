@@ -11,8 +11,12 @@
 // ============
 /*! \file MsqHessian.hpp
 
-describe MsqHessian.hpp here
+ The MsqHessian class stores a sparse hessian for a given objective 
+ function. The objective function must be C2 and such that its hessian
+ has non-zero entries only for the duplet of derivatives corresponding 
+ to nodes of a same element. 
 
+ \author Thomas Leurent
 */
 
 

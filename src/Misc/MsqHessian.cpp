@@ -11,7 +11,7 @@
 // ============
 /*! \file MsqHessian.cpp
 
-describe MsqHessian.cpp here
+  \author Thomas Leurent
 
 */
 

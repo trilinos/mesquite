@@ -5,6 +5,7 @@
   This Objective Function is evaluated using an L P norm to the pth power.
   total=(sum (x_i)^pVal)
   \author Michael Brewer
+  \author Thomas Leurent
   \date   2002-01-23
 */
 #include <math.h>
