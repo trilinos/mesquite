@@ -30,7 +30,7 @@ Argonne, IL 60490 USA}
 
 \chapter{Introduction to Mesh Quality Improvement} 
 
-\section{General Overview}
+\section{General Overview of Mesh Quality Improvement}
 
 Mesh quality has been shown to be critical for solution accuracy and
 efficiency in the solution of PDE-based applications.  However, it can
@@ -492,15 +492,126 @@ class.
 \end{verbatim} 
 
 
-\chapter{Writing a Mesquite Application}
+\chapter{Telling Mesquite About Your Mesh}
+\label{sec:meshes}
 
-\section{Mesquite Concepts}
+Mesquite is responsible for gathering information from the
+application's mesh and geometry.  Because this must be as efficient as
+possible, considerable attention has been given to the interface
+between Mesquite and the application code.  Because Mesquite is
+designed as a library to work on a broad assortment of mesh and
+element types on complex geometrical domains, a general,
+data-structure neutral API is needed.  In general, Mesquite requires
+access to basic information about the mesh such as the number of
+vertices and elements in the mesh, the vertex locations, and the
+element connectivities.  To move the vertex locations, Mesquite needs
+to set the vertex coordinate positions, and eventually, to perform
+swapping operations Mesquite will need to add and delete various mesh
+entities.  In addition, for smoothing meshes on complex surfaces,
+access to operations on the underlying solid model such as normal
+information and closest point information are required to ensure
+vertices are constrained to the surface.
+
+To expose this information, Mesquite defines a set of interfaces 
+(C++ abstract base classes) that are specifically designed for mesh
+quality improvement needs.  There are four such interfaces: Mesh,
+VertexIterator, ElementIterator, and MeshDomain.
+\begin{itemize}
+\item {\it Mesh:} The Mesh interface represents the set of mesh
+entities that are to be operated on.  It is through this interface
+that one retrieves information about the mesh and its entities.
+Examples of functionality provided by this interface include:
+retrieving the number of elements in the mesh, determining which
+elements contain a particular vertex, and modifying vertex
+coordinates.
+\item {\it VertexIterator:} The VertexIterator provides access to each
+vertex in a mesh.  A VertexIterator is obtained from a Mesh object,
+and is used to iterate through the list of all vertices in the Mesh
+from which it was obtained.
+\item {\it ElementIterator:} The ElementIterator provides access to
+each element in a mesh.  Other than the type of entity it exposes, it
+is identical to the VertexIterator.
+\item {\it MeshDomain} The MeshDomain represents the set of geometric
+domains to which the mesh may be constrained.  The MeshDomain
+interface enables an application to restrict the locations to which a
+vertex can be moved, such as constraining a vertex to a surface.
+Through the MeshDomain interface, Mesquite's algorithms can also
+obtain a domain's normal vector, which aides validity checking and 
+decision making during the quality improvement process.
+\end{itemize}
+These interfaces are data-structure neutral and use only primitive
+data types; an application may implement the Mesquite interfaces
+without changing its existing mesh data structures.  Instead of
+representing mesh entities with complex data structures or with typed
+pointers, entities are identified with opaque values called handles.
+Each mesh entity has a unique handle value, but otherwise handles have
+no intrinsic meaning to Mesquite.  
+
+Mesquite can instead use the mesh interfaces currently
+being developed through the TSTT center.  This interface definition
+effort focuses on providing access to information pertaining to low
+level mesh objects such as vertices, edges, faces, and regions through
+both array-based and iterator-based mechanisms.  It is designed to
+support existing packages such as CUBIT, NWGrid, PAOMD, and Overture.
+Considerations such as data neutrality, language interoperability
+(achieved through use of the SIDL/Babel tools from LLNL \cite{babel}),
+and achieving consensus within a large group of participants is
+paramount (see \cite{Cubit-website}, \cite{overture}, \cite{aomd-imr},
+and \cite{NWGrid-website}).  This interface definition effort is
+evolving, and the Mesquite team is actively participating to ensure
+that our needs for mesh quality improvement are adequately and
+efficiently addressed.  A TSTT-based implementation of the Mesquite
+interfaces will be available soon.  As such, any tool that exposes its
+mesh through the TSTT interfaces can be used with Mesquite without
+additional development.
+
+The Mesquite-specific interfaces described above are fully compatible
+with the current TSTT mesh and geometry interfaces, and in fact,
+Mesquite's approach to data structure neutrality is directly derived
+from the TSTT interfaces.  Although similar in spirit to the TSTT
+interface, the Mesquite-specific interface is not as general, and 
+therefore consist of fewer
+functions and does not require additional tools such as Babel.
+
+\section{Reading in a Mesh File}
+
+\section{Linking Mesquite with Implementations of the TSTT Mesh Interface} 
+\label{sec:TSTT}
+
+\section{Implementing the Mesquite Mesh Interface}
+
+Most users will want to skip this section and avoid the associated work. There are several manners
+to give the mesh data to Mesquite, and implementing the Mesquite mesh interface is the one that
+requires the most coding work. 
+
+Let's review the alternative in the first place. For very simple meshes, Mesquite has an integrated
+mesh database that can read in mesh files in specific format, such as VTK (see section \ref{sec:}). 
+On the other hand, Mesquite is compatible with the TSTT mesh interface: this means that if you are
+running a code that has implemented the TSTT mesh interface, you can link Mesquite with your code
+and perform all mesh improvements through the TSTT mesh interface (see section \ref{sec:TSTT}).
+Implementing the TSTT mesh interface also has the advantage that your code will be compatible with
+the TSTT mesh interface standard: this is a very good investment. 
+
+If you want to implement the specific Mesquite mesh interface, you probably have very specific
+reasons in mind ... and you know what you are doing. In this section, we will give you the
+documentation for the abstract classes. This will allow you to implement the interface. 
+
+\section{The Simplified Geometry Engine}
+\label{sec:geometry}
+
+\section{Visualizing the Mesh}
+advices. pointer to VTK doc. 
+pointer to VTK -> Exodus II converter
+
+\chapter{The Mesquite Application Programming Interface (API)}
+
+\section{Relations between the Mesquite API Classes}
 
 \subsection{UML Diagram}
 
-\begin{figure*}[htb]
+\begin{figure*}[htbp]
 \begin{center}
-    \includegraphics{../developer/UML/MesquiteUI.eps}
+    \includegraphics{MesquiteUI.eps}
     \caption{Mesquite user interface UML class diagram.  Abstract
              classes and virtual functions are in italic. Vertical
              links with a triangle indicate inheritance. Plain links
@@ -776,7 +887,7 @@ the user.  In particular, a \texttt{QualityAssessor} object takes a
 reports information like the maximum, average, and standard deviation
 of those values.
 
-% \subsubsection{Culling Capabilities} \label{sec:culling}
+% \subsection{Culling Capabilities} \label{sec:culling}
 % Mesquite includes methods called {\it culling} schemes
 % which are intended to decrease the time it takes for the
 % quality improvers to reach an adequate mesh.  These schemes
@@ -788,52 +899,48 @@ of those values.
 %be solved in significantly less time than the original problem.  
 % LAF - there are no details here - it's not worth including as is
 
-\subsection{Mesh Data Classes} \label{sec:MeshData}
+%\subsection{Mesh Data Classes} \label{sec:MeshData}
+%There are two mesh data classes in Mesquite, \texttt{MeshSet} and
+%\texttt{PatchData}, which have been designed to meet two different
+%needs.  The {\tt MeshSet} class is a container that holds pointers, or
+%handles, to the meshes provided by the application.  It also provides
+%the mechanisms necessary to obtain the mesh information from the
+%application through a well-defined, flexible API (see Section
+%\ref{sec:meshset}).  To minimize the memory footprint of the Mesquite
+%library, only detailed information for the optimization procedure
+%subdomains is stored at any given time in the {\tt PatchData} class.
+%One or more {\tt PatchData} objects can be originated from the {\tt
+%MeshSet} object, and {\tt PatchData} obtains detailed mesh
+%information, such as vertex coordinates and element connectivity,
+%through the MeshSet accessor functionality.  The \texttt{PatchData}
+%class makes Mesquite scalable in that prohibitive memory costs
+%associated with making a copy of a large application mesh can be
+%avoided by dividing the mesh into patches on which to perform the
+%optimization sequentially.
+%\subsubsection{MeshSet Interactions with Application Meshes}
+%\label{sec:meshset}
+%\subsubsection{PatchData Interactions with QualityImprovers}
+%Quality improvers are written to relocate nodes or modify topology
+%within a \texttt{PatchData}, without any need to know whether the
+%\texttt{PatchData} corresponds to the whole mesh or a subset of
+%it. The \texttt{PatchData} information is generated by the
+%\texttt{MeshSet} class with the \texttt{get\_next\_patch} function ---
+%the equivalent of an iterator over a series of patches covering the
+%mesh.  The user can set Mesquite to use different types of
+%\texttt{PatchData}, ranging from a patch of elements containing one
+%particular vertex to a patch of vertices connected to a central vertex
+%through edges or a unique patch that covers the whole MeshSet
+%(recall that this could be the union of several meshes added by the
+%application to \texttt{MeshSet}).
 
-There are two mesh data classes in Mesquite, \texttt{MeshSet} and
-\texttt{PatchData}, which have been designed to meet two different
-needs.  The {\tt MeshSet} class is a container that holds pointers, or
-handles, to the meshes provided by the application.  It also provides
-the mechanisms necessary to obtain the mesh information from the
-application through a well-defined, flexible API (see Section
-\ref{sec:meshset}).  To minimize the memory footprint of the Mesquite
-library, only detailed information for the optimization procedure
-subdomains is stored at any given time in the {\tt PatchData} class.
-One or more {\tt PatchData} objects can be originated from the {\tt
-MeshSet} object, and {\tt PatchData} obtains detailed mesh
-information, such as vertex coordinates and element connectivity,
-through the MeshSet accessor functionality.  The \texttt{PatchData}
-class makes Mesquite scalable in that prohibitive memory costs
-associated with making a copy of a large application mesh can be
-avoided by dividing the mesh into patches on which to perform the
-optimization sequentially.
-
-\subsubsection{MeshSet Interactions with Application Meshes}
-\label{sec:meshset}
-
-\subsubsection{PatchData Interactions with QualityImprovers}
-
-Quality improvers are written to relocate nodes or modify topology
-within a \texttt{PatchData}, without any need to know whether the
-\texttt{PatchData} corresponds to the whole mesh or a subset of
-it. The \texttt{PatchData} information is generated by the
-\texttt{MeshSet} class with the \texttt{get\_next\_patch} function ---
-the equivalent of an iterator over a series of patches covering the
-mesh.  The user can set Mesquite to use different types of
-\texttt{PatchData}, ranging from a patch of elements containing one
-particular vertex to a patch of vertices connected to a central vertex
-through edges or a unique patch that covers the whole MeshSet
-(recall that this could be the union of several meshes added by the
-application to \texttt{MeshSet}).
-
-\texttt{PatchData} and its associated classes
-(e.g. \texttt{PatchDataVerticesMemento}) provides much functionality
-to the optimization algorithms.  Memento patterns can remember the
-state of a \texttt{PatchData} geometry or topology at a given
-iteration and restore the \texttt{PatchData} to that state
-later. Simple functions can move the \texttt{PatchData} $n$ vertices
-in a direction $d \in \Bbb{R}^{3n}$ while constraining the boundary
-vertices to their geometrical surface.
+%\texttt{PatchData} and its associated classes
+%(e.g. \texttt{PatchDataVerticesMemento}) provides much functionality
+%to the optimization algorithms.  Memento patterns can remember the
+%state of a \texttt{PatchData} geometry or topology at a given
+%iteration and restore the \texttt{PatchData} to that state
+%later. Simple functions can move the \texttt{PatchData} $n$ vertices
+%in a direction $d \in \Bbb{R}^{3n}$ while constraining the boundary
+%vertices to their geometrical surface.
 
 \subsection{The Instruction Queue} \label{sec:IQ}
 
@@ -864,112 +971,6 @@ that once an {\tt InstructionQueue} has been defined, it can be used
 for several \texttt{MeshSet} objects.
 
 
-\section{Telling Mesquite About Your Mesh}
-\label{sec:meshes}
-
-Mesquite is responsible for gathering information from the
-application's mesh and geometry.  Because this must be as efficient as
-possible, considerable attention has been given to the interface
-between Mesquite and the application code.  Because Mesquite is
-designed as a library to work on a broad assortment of mesh and
-element types on complex geometrical domains, a general,
-data-structure neutral API is needed.  In general, Mesquite requires
-access to basic information about the mesh such as the number of
-vertices and elements in the mesh, the vertex locations, and the
-element connectivities.  To move the vertex locations, Mesquite needs
-to set the vertex coordinate positions, and eventually, to perform
-swapping operations Mesquite will need to add and delete various mesh
-entities.  In addition, for smoothing meshes on complex surfaces,
-access to operations on the underlying solid model such as normal
-information and closest point information are required to ensure
-vertices are constrained to the surface.
-
-To expose this information, Mesquite defines a set of interfaces 
-(C++ abstract base classes) that are specifically designed for mesh
-quality improvement needs.  There are four such interfaces: Mesh,
-VertexIterator, ElementIterator, and MeshDomain.
-\begin{itemize}
-\item {\it Mesh:} The Mesh interface represents the set of mesh
-entities that are to be operated on.  It is through this interface
-that one retrieves information about the mesh and its entities.
-Examples of functionality provided by this interface include:
-retrieving the number of elements in the mesh, determining which
-elements contain a particular vertex, and modifying vertex
-coordinates.
-\item {\it VertexIterator:} The VertexIterator provides access to each
-vertex in a mesh.  A VertexIterator is obtained from a Mesh object,
-and is used to iterate through the list of all vertices in the Mesh
-from which it was obtained.
-\item {\it ElementIterator:} The ElementIterator provides access to
-each element in a mesh.  Other than the type of entity it exposes, it
-is identical to the VertexIterator.
-\item {\it MeshDomain} The MeshDomain represents the set of geometric
-domains to which the mesh may be constrained.  The MeshDomain
-interface enables an application to restrict the locations to which a
-vertex can be moved, such as constraining a vertex to a surface.
-Through the MeshDomain interface, Mesquite's algorithms can also
-obtain a domain's normal vector, which aides validity checking and 
-decision making during the quality improvement process.
-\end{itemize}
-These interfaces are data-structure neutral and use only primitive
-data types; an application may implement the Mesquite interfaces
-without changing its existing mesh data structures.  Instead of
-representing mesh entities with complex data structures or with typed
-pointers, entities are identified with opaque values called handles.
-Each mesh entity has a unique handle value, but otherwise handles have
-no intrinsic meaning to Mesquite.  
-
-Mesquite can instead use the mesh interfaces currently
-being developed through the TSTT center.  This interface definition
-effort focuses on providing access to information pertaining to low
-level mesh objects such as vertices, edges, faces, and regions through
-both array-based and iterator-based mechanisms.  It is designed to
-support existing packages such as CUBIT, NWGrid, PAOMD, and Overture.
-Considerations such as data neutrality, language interoperability
-(achieved through use of the SIDL/Babel tools from LLNL \cite{babel}),
-and achieving consensus within a large group of participants is
-paramount (see \cite{Cubit-website}, \cite{overture}, \cite{aomd-imr},
-and \cite{NWGrid-website}).  This interface definition effort is
-evolving, and the Mesquite team is actively participating to ensure
-that our needs for mesh quality improvement are adequately and
-efficiently addressed.  A TSTT-based implementation of the Mesquite
-interfaces will be available soon.  As such, any tool that exposes its
-mesh through the TSTT interfaces can be used with Mesquite without
-additional development.
-
-The Mesquite-specific interfaces described above are fully compatible
-with the current TSTT mesh and geometry interfaces, and in fact,
-Mesquite's approach to data structure neutrality is directly derived
-from the TSTT interfaces.  Although similar in spirit to the TSTT
-interface, the Mesquite-specific interface is not as general, and 
-therefore consist of fewer
-functions and does not require additional tools such as Babel.
-
-\subsection{The Simplified Geometry Engine}
-\label{sec:geometry}
-
-\subsection{Linking Mesquite with the TSTT Mesh Interface} 
-\label{sec:TSTT}
-
-\subsection{Implementing the Mesquite Mesh Interface}
-
-Most users will want to skip this section and avoid the associated work. There are several manners
-to give the mesh data to Mesquite, and implementing the Mesquite mesh interface is the one that
-requires the most coding work. 
-
-Let's review the alternative in the first place. For very simple meshes, Mesquite has an integrated
-mesh database that can read in mesh files in specific format, such as VTK (see section \ref{sec:}). 
-On the other hand, Mesquite is compatible with the TSTT mesh interface: this means that if you are
-running a code that has implemented the TSTT mesh interface, you can link Mesquite with your code
-and perform all mesh improvements through the TSTT mesh interface (see section \ref{sec:TSTT}).
-Implementing the TSTT mesh interface also has the advantage that your code will be compatible with
-the TSTT mesh interface standard: this is a very good investment. 
-
-If you want to implement the specific Mesquite mesh interface, you probably have very specific
-reasons in mind ... and you know what you are doing. In this section, we will give you the
-documentation for the abstract classes. This will allow you to implement the interface. 
-
-
 \section{Simplified Application Programming Interface}
 \label{sec:wrappers}
 To improve meshes with a minimum of Mesquite function calls, we have 
@@ -991,6 +992,8 @@ mesh quality is assessed and reported again.
 Wrappers do not provide access to low-level 
 features such as setting a specific
 termination criterion.  
+
+\subsection{The Shape Improvement Wrapper}
 
 
 \section{Detailed Application Programming Interface}
@@ -1106,6 +1109,8 @@ Aspect Ratio Gamma &  &  &  &  &  \\
 \noindent {\bf Mean Ratio Metric} \newline
 Give description, formulas. 
 
+\subsubsection{Composite Metrics}
+
 \subsection{Objective Function}
 List of all the templates. What is the difference between a template and
 an objective function? For each element of the mesh (or for each 
@@ -1143,6 +1148,10 @@ MAX = \max_{m=1,\ldots,M} ( \mu_m )
 
 Which of these templates has numerical/analytic gradient/Hessian?
 
+\subsection{Composite Objective Functions}
+The only ones currently available are CompositeMult, CompositeAdd,
+CompositeScalarMult, and CompositeScalarAdd.
+
 \subsection{Vertex Mover}
 List solvers and appropriate templates. Is a solver the same things as a 
 vertex mover? List options.
@@ -1164,6 +1173,63 @@ Randomize & & None & & & \\
 \end{center}
 \end{table}
 
+\subsubsection{Conjugate Gradient Algorithm }
+\label{append_conjgrad}
+This algorithm requires only
+the objective function value and the objective function gradient. 
+In Mesquite this is usually done by applying the chain rule described in 
+section \ref{objective_section} to the
+analytical gradient of the objective function given the numerical or
+analytical gradients of the elements. The conjugate gradient algorithm
+has a linear convergence property for most problems. By using the
+Polak-Ribi\`ere scheme to select a search direction which is a
+combination of the gradient at the current iteration with the gradient
+from one or more previous iteration, it avoids the zigzagging behavior
+exhibited by the steepest descent algorithm when the equal cost
+surfaces of the objective function are elongated (e.g. in narrow
+valleys). In Mesquite this algorithm can be used with mesh patches of
+any size; thus it is appropriate for optimizing all node positions 
+simultaneously for any combination of $C^1$ objective functions and
+quality metrics (see \cite{FeasNewt} for more details). 
+
+\subsubsection{Feasible Newton Algorithm }
+\label{append_feasnewt}
+Newton's method minimizes a quadratic
+approximation of a non-linear objective function. The algorithm requires
+the objective function value, its gradient, \emph{and} its Hessian information.
+Again, in Mesquite this
+is usually done by computing the analytical gradient and Hessian of
+the objective function given the numerical or analytical gradients and
+Hessians of the quality metrics.  Note that objective functions that
+lead to non-sparse Hessians entail a prohibitive memory cost in
+Mesquite.\footnote{$\ell_p$ for $p \geq 2$ is such a function. The
+number of variables in the objective function is the number of degrees
+of freedom of the mesh, which must be squared to obtain the number of
+entries in a dense Hessian.}  Newton's method is known to converge
+super-linearly near a non-singular local minimum.   
+Mesh-optimization problems that are performed within the neighborhood of
+the minimum are a perfect application for Newton's method. In
+Mesquite this algorithm can be used with mesh patches of any size,
+making it appropriate to optimize all vertex positions simultaneously
+for any $C^2$ objective function with a sparse Hessian.  In practice,
+users will often observe an order of magnitude improvement in
+computation time when using the feasible Newton algorithm instead of
+the conjugate gradient algorithm, making feasible Newton a worthwhile
+choice when applicable (see \cite{FeasNewt} for more details).
+
+\subsubsection{Active Set Method }
+\label{append_activeset}
+The active set algorithm has been
+developed for non-continuously differentiable objective functions such
+as those computing the maximum value of a quality metric within a
+patch of elements. This method is based on a non-smooth steepest
+descent algorithm which efficiently computes a search direction and
+step size based on the gradients of the values contained in the active
+set.  Currently, this algorithm works on a patch of triangular or 
+tetrahedral elements that 
+contain a single free vertex.  Repeated
+sweeps over the free vertices in the mesh leads to overall mesh
+improvement (see \cite{fp:ijnme00} for more details).
 
 \subsection{Topology Modifier}
 
@@ -1178,20 +1244,20 @@ List, along with uses.
 Setting the master quality improver, setting up and using preconditioners,
 using quality assessors, running the instruction queue.
 
-\subsection{Composite Metrics}
-
-\subsection{Composite Objective Functions}
-The only ones currently available are CompositeMult, CompositeAdd,
-CompositeScalarMult, and CompositeScalarAdd.
 
 
 
 \section{Hints for Performance Profiling}
 Compiler options, aggregation.
 
+
 \chapter{Extending Mesquite}
 
+\section{License issues -- LGPL}
+
 \section{Mesquite Programming Framework}
+
+\subsection{Mesquite Repository} 
 
 \subsection{Directory Structure}
 
@@ -1270,13 +1336,22 @@ validate the code but also allows developers to evaluate the
 effects of code modifications in terms of Mesquite's accuracy
 and efficiency on `real world' problems.
 
-\section{Creating a New Quality Metric}
+\section{Defining New Concrete Classes}
 
-\section{Creating a New Objective Function}
+\begin{verbatim}
+Explain that we only mention the truly polymorphic extensions. 
+Extensions that require not only an additional class, 
+but also other changes in the code (switches) are 
+not discussed int he user manual for now. This is a 
+reference manual issue. Give explicit examples of difficult things. 
+\end{verbatim}
+\subsection{Adding a New Quality Metric}
 
-\section{Creating a New Vertex Mover Algorithm}
+\subsection{Adding a New Objective Function}
 
-\section{Creating a New Topology Modifier Algorithm}
+\subsection{Adding a New Vertex Mover Algorithm}
+
+\subsection{Adding a New Topology Modifier Algorithm}
 
 
 \chapter{Troubleshooting}
@@ -1457,66 +1532,6 @@ Returns a pointer to an iterator that iterates over the set of all vertices in t
 
 
 Each vertex has a byte-sized flag that can be used to store flags. This byte's value is neither set nor used by the mesh implementation. It is intended to be used by {\bf Mesquite} algorithms. Until a vertex's byte has been explicitly set, its value is 0. 
-
-
-
-\section{Appendix B: Conjugate Gradient Algorithm }
-\label{append_conjgrad}
-This algorithm requires only
-the objective function value and the objective function gradient. 
-In Mesquite this is usually done by applying the chain rule described in 
-section \ref{objective_section} to the
-analytical gradient of the objective function given the numerical or
-analytical gradients of the elements. The conjugate gradient algorithm
-has a linear convergence property for most problems. By using the
-Polak-Ribi\`ere scheme to select a search direction which is a
-combination of the gradient at the current iteration with the gradient
-from one or more previous iteration, it avoids the zigzagging behavior
-exhibited by the steepest descent algorithm when the equal cost
-surfaces of the objective function are elongated (e.g. in narrow
-valleys). In Mesquite this algorithm can be used with mesh patches of
-any size; thus it is appropriate for optimizing all node positions 
-simultaneously for any combination of $C^1$ objective functions and
-quality metrics (see \cite{FeasNewt} for more details). 
-
-\section{Appendix C: Feasible Newton Algorithm }
-\label{append_feasnewt}
-Newton's method minimizes a quadratic
-approximation of a non-linear objective function. The algorithm requires
-the objective function value, its gradient, \emph{and} its Hessian information.
-Again, in Mesquite this
-is usually done by computing the analytical gradient and Hessian of
-the objective function given the numerical or analytical gradients and
-Hessians of the quality metrics.  Note that objective functions that
-lead to non-sparse Hessians entail a prohibitive memory cost in
-Mesquite.\footnote{$\ell_p$ for $p \geq 2$ is such a function. The
-number of variables in the objective function is the number of degrees
-of freedom of the mesh, which must be squared to obtain the number of
-entries in a dense Hessian.}  Newton's method is known to converge
-super-linearly near a non-singular local minimum.   
-Mesh-optimization problems that are performed within the neighborhood of
-the minimum are a perfect application for Newton's method. In
-Mesquite this algorithm can be used with mesh patches of any size,
-making it appropriate to optimize all vertex positions simultaneously
-for any $C^2$ objective function with a sparse Hessian.  In practice,
-users will often observe an order of magnitude improvement in
-computation time when using the feasible Newton algorithm instead of
-the conjugate gradient algorithm, making feasible Newton a worthwhile
-choice when applicable (see \cite{FeasNewt} for more details).
-
-\section{Appendix D: Active Set Method }
-\label{append_activeset}
-The active set algorithm has been
-developed for non-continuously differentiable objective functions such
-as those computing the maximum value of a quality metric within a
-patch of elements. This method is based on a non-smooth steepest
-descent algorithm which efficiently computes a search direction and
-step size based on the gradients of the values contained in the active
-set.  Currently, this algorithm works on a patch of triangular or 
-tetrahedral elements that 
-contain a single free vertex.  Repeated
-sweeps over the free vertices in the mesh leads to overall mesh
-improvement (see \cite{fp:ijnme00} for more details).
 
 
 \chapter{Acknowledgments}
