@@ -5,7 +5,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 15-Jan-03 at 08:05:56
-//  LAST-MOD: 20-Feb-03 at 17:50:05 by Thomas Leurent
+//  LAST-MOD:  2-Apr-03 at 17:23:13 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -64,6 +64,7 @@ void FeasibleNewton::initialize_mesh_iteration(PatchData &/*pd*/, MsqError &/*er
 void FeasibleNewton::optimize_vertex_positions(PatchData &pd, 
                                                MsqError &err)
 {
+  FUNCTION_TIMER_START(__FUNC__);
   PRINT_INFO("\no  Performing Feasible Newton optimization.\n");
 
   const double sigma   = 1e-4;
@@ -80,9 +81,6 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   Vector3D* d = new Vector3D[nv];
   bool fn_bool=true;// bool used for determining validity of patch
 
-  /* Computes the value of the stopping criterion*/
-  MeshSet *mesh=get_mesh_set();
-  bool inner_criterion=false;//inner_criterion_met(*mesh,err);
   int i;//,n;
   
   // 1.  Allocate a hessian and calculate the sparsity pattern.
@@ -104,11 +102,12 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   // Terminate when: (a) too many iterations or (b) norm of the 
   // gradient of the patch is small.
 
-  int nb_iterations = 0;
-  while ( nb_iterations<maxIteration && grad_norm>convTol && !inner_criterion) {
-    
-    ++nb_iterations;
+  /* Computes the value of the stopping criterion*/
+  bool inner_criterion=false;
+  TerminationCriterion* term_crit=get_inner_termination_criterion();
 
+  while ( !inner_criterion ) {
+    
     // Prints out free vertices coordinates. 
     MSQ_DEBUG_ACTION(3,{
       std::cout << "\n  o Free vertices ("<< num_free_vertices
@@ -125,7 +124,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
     if(!fn_bool){
       err.set_msg("Feasible Newton passed invalid patch");
     }
-    MSQ_DEBUG_ACTION(3,{std::cout << "  o  original_value: " << original_value
+    MSQ_DEBUG_ACTION(2,{std::cout << "  o  original_value: " << original_value
                                   << std::endl;});
     
 
@@ -198,12 +197,16 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
       }
     });
 
-    inner_criterion=false;//inner_criterion_met(*mesh,err);
+    // checks stopping criterion (recomputes the gradient at current position)
+    // TODO : get gradient from hessian computation.
+    fn_bool = objFunc->compute_hessian(pd, mHessian, err); MSQ_CHKERR(err);    
+    inner_criterion=term_crit->terminate_with_function_and_gradient(pd,
+                               objFunc, new_value, grad, err);  MSQ_CHKERR(err);
   }
 
   delete[] grad;
   delete[] d;
-  
+  FUNCTION_TIMER_END();  
 }
 
 
