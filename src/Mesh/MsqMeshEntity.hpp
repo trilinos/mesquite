@@ -97,7 +97,11 @@ namespace Mesquite
                              Vector3D* jac);
     
     EntityTopology mType;
-    size_t vertexIndices[30];
+    size_t vertexIndices[MSQ_MAX_NUM_VERT_PER_ENT];
+
+    // output operator for debugging.
+    friend std::ostream& operator<<(std::ostream &s, const MsqMeshEntity &E);
+
   };
   
   inline size_t MsqMeshEntity::vertex_count(EntityTopology type)
@@ -187,7 +191,18 @@ namespace Mesquite
     jac[1]=coord3-coord0+(*sp)[0]*(coord2+coord0-coord3-coord1);
   }
   
-    
+  /* ***********  I/O  **************/
+
+  inline std::ostream& operator<<(std::ostream &s, const MsqMeshEntity &E)
+  {
+    size_t num_vtx = E.vertex_count();
+    s << "MsqMeshEntity " << &E << " with vertices ";
+    for (size_t i=0; i<num_vtx; ++i)
+      s << E.vertexIndices[i] << "  ";
+    s << "\n";
+    return s;
+  }
+
   
 } //namespace
 
