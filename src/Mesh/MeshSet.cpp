@@ -527,17 +527,23 @@ void Mesquite::MeshSet::update_mesh(const PatchData &pd, MsqError &err)
   case PatchData::GLOBAL_PATCH:
     {
       list<Mesquite::Mesh*>::iterator mesh_itr = meshSet.begin();
+      assert( mesh_itr != meshSet.end() );
       Mesquite::Mesh* cur_mesh = *mesh_itr;
       Mesquite::VertexIterator *vert_itr = cur_mesh->vertex_iterator(err);
       for (i = 0; i < pd.numVertices; i++)
       {
+        cout<<"about to set coords for vertex "<<i<<endl;
         if (vert_itr->is_at_end())
         {
           mesh_itr++;
+          if ( mesh_itr==meshSet.end() )
+            return;
           cur_mesh = *mesh_itr;
           delete vert_itr;
           vert_itr = cur_mesh->vertex_iterator(err); MSQ_CHKERR(err);
         }
+        cout<<"setting coords for vertex "<<i<<endl;
+
         cur_mesh->vertex_set_coordinates(pd.vertexHandlesArray[i],
                                          pd.vertexArray[i],
                                          err); MSQ_CHKERR(err);

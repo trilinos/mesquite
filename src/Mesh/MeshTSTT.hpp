@@ -10,7 +10,12 @@
 #ifndef MESQUITE_MESH_TSTT_HPP
 #define MESQUITE_MESH_TSTT_HPP
 
-#include "TSTT_LocalTSTTMesh.hh"
+//kkc 040203 replace with more general TSTT interfaces #include "TSTT_LocalTSTTMesh.hh"
+#include "TSTT_Mesh.hh"
+#include "TSTT_CoreEntitySetQuery.hh"
+#include "TSTT_AdvancedEntitySetQuery.hh"
+#include "TSTT_Tag.hh"
+#include "TSTT_ModifiableMesh.hh"
 
 #include "MsqMessage.hpp"
 #include "MeshInterface.hpp"
@@ -36,7 +41,8 @@ namespace Mesquite
     typedef void* TagHandle;
   public:
 //********* Functions that are NOT inherited ************
-    MeshTSTT(TSTT::LocalTSTTMesh& tstt_mesh, MsqError &err);
+//kkc 040203    MeshTSTT(TSTT::LocalTSTTMesh& tstt_mesh, MsqError &err);
+    MeshTSTT(TSTT::Mesh& tstt_mesh, MsqError &err);
     virtual ~MeshTSTT();
     
 //********* Functions that ARE inherited ************
@@ -208,7 +214,14 @@ namespace Mesquite
     virtual void release();
 
   private:
-    mutable ::TSTT::LocalTSTTMesh tsttMesh;
+    //kkc 040203 replace in favor of several interfaces    mutable ::TSTT::LocalTSTTMesh tsttMesh;
+    
+    mutable ::TSTT::Mesh tsttMesh;
+    mutable ::TSTT::CoreEntitySetQuery tsttCoreQuery;
+    mutable ::TSTT::AdvancedEntitySetQuery tsttAdvQuery;
+    mutable ::TSTT::Tag tsttTag;
+    mutable ::TSTT::ModifiableMesh tsttModMesh;
+
     size_t nbVertices;
     size_t nbElements;
 
