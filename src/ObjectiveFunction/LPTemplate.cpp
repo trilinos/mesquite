@@ -271,15 +271,3 @@ bool LPTemplate::compute_analytical_gradient(PatchData &patch,
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "LPTemplate::compute_analytical_hessian"
-/*! \fn LPTemplate::compute_analytical_hessian(PatchData &pd, MsqHessian &hessian, MsqError &err)
-    \param patch The PatchData object for which the objective function
-           hessian is computed.
-    \param hessian: this object must have been previously initialized.
-*/
-bool LPTemplate::compute_analytical_hessian(PatchData &pd,
-                                            MsqHessian &hessian, MsqError &err)
-{
-  return false;
-}

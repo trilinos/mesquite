@@ -39,9 +39,6 @@ namespace Mesquite
                                                Vector3D *const &grad,
                                                MsqError &err, int array_size);
      
-     virtual bool  compute_analytical_hessian(PatchData &patch,
-                                              MsqHessian &hessian, MsqError &err);
-     
 	private:
      double compute_function(double metric_values[], int total_num, MsqError &err);
        //! \param pVal

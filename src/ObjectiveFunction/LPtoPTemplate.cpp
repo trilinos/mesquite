@@ -279,13 +279,56 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &patch,
   delete metric_values;
   return true;
 }
-
-    //
   
 	
+#undef __FUNC__
+#define __FUNC__ "LPtoPTemplate::compute_analytical_hessian"
+/*! \fn LPtoPTemplate::compute_analytical_hessian(PatchData &pd, MsqHessian &hessian, MsqError &err)
+    \param patch The PatchData object for which the objective function
+           hessian is computed.
+    \param hessian: this object must have been previously initialized.
+*/
 bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
                                                MsqHessian &hessian,
                                                MsqError &err)
 {
-  return false;
+
+  if (pVal!=1) {
+    err.set_msg("Prototype only works for P=1.");
+    return false;
+  }
+
+  MsqMeshEntity* elements = pd.get_element_array(err); MSQ_CHKERR(err);
+  MsqVertex* vertices = pd.get_vertex_array(err); MSQ_CHKERR(err);
+  int num_elems = pd.num_elements();
+  Matrix3D elem_hessian[MSQ_MAX_NUM_VERT_PER_ENT*(MSQ_MAX_NUM_VERT_PER_ENT+1)/2];
+  Vector3D grad_vec[MSQ_MAX_NUM_VERT_PER_ENT];
+  double metric_value;
+  QualityMetric* currentQM = get_quality_metric();
+  
+  MsqVertex* elem_vtx[MSQ_MAX_NUM_VERT_PER_ENT];
+  std::vector< size_t > vtx_indices;
+  std::vector<size_t>::const_iterator index; 
+    
+  size_t e;
+  int num_vtx;
+
+  for (e=0; e<num_elems; ++e) {
+     
+    elements[e].get_vertex_indices(vtx_indices);
+    num_vtx=0;
+    for (index=vtx_indices.begin(); index!=vtx_indices.end(); ++index) {
+      if ( vertices[*index].is_free_vertex() ) {
+        elem_vtx[num_vtx] = vertices + (*index); ++num_vtx; }
+    }
+    
+    currentQM->compute_element_hessian(pd, elements+e, elem_vtx, grad_vec, elem_hessian,
+                                       num_vtx, metric_value, err); MSQ_CHKERR(err);
+
+     
+    hessian.accumulate_entries(pd, e, elem_hessian, err);
+  }
+  
+
+  return true;
 }
