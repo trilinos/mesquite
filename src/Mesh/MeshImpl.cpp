@@ -1146,7 +1146,7 @@ void Mesquite::MeshImpl::release_entity_handles(
 // is using it.
 void Mesquite::MeshImpl::release()
 {
-  delete this;
+  //delete this;
 }
 
 
