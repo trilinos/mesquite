@@ -727,7 +727,7 @@ void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream ) co
   if (get_stddev() < 1.5*step)
   {
     log_plot = true;
-    max_interval = (int)(logf(1+max_interval));
+    max_interval = (int)(log(1+max_interval));
   }
 
   
@@ -772,7 +772,7 @@ void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream ) co
       // First calculate the number of characters to output
     int num_graph;
     if (log_plot)
-      num_graph = GRAPHW * (int)logf(1+histogram[i]) / max_interval;
+      num_graph = GRAPHW * (int)log(1+histogram[i]) / max_interval;
     else
       num_graph = GRAPHW * histogram[i] / max_interval;
       
