@@ -63,6 +63,8 @@ describe main.cpp here
 #include "LInfTemplate.hpp"
 #include "SteepestDescent.hpp"
 #include "ConjugateGradient.hpp"
+#include "PlanarDomain.hpp"
+
 
 #ifndef MSQ_USE_OLD_IO_HEADERS
 #include <iostream>
@@ -93,7 +95,14 @@ int main()
   MeshSet mesh_set1;
   mesh_set1.add_mesh(mesh, err); 
   if (err) return 1;
-  
+
+  // Set Domain Constraint
+  Vector3D pnt(0,0,0);
+  Vector3D s_norm(0,0,1);
+  PlanarDomain* msq_geom = new PlanarDomain(s_norm, pnt, mesh);
+  mesh_set1.set_domain_constraint(msq_geom, err);
+  if (err) return 1;
+                                                                              
     // creates an intruction queue
   InstructionQueue queue1;
   
