@@ -609,3 +609,10 @@ void PatchData::get_subpatch(size_t center_vertex_index,
   
   delete [] new_vert_indices;
 }
+
+// Adjust the position of the specified vertex so that it
+// lies on its constraining domain.  The actual domain constraint
+// is managed by the TSTT mesh implementation
+void PatchData::snap_vertex_to_domain(size_t vertex_index, MsqError &err)
+{
+}

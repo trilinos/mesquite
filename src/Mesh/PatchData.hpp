@@ -136,6 +136,10 @@ namespace Mesquite
     void set_vertex_coordinates(const Vector3D &coords,
                                 size_t index,
                                 MsqError &err);
+      /*! Adjust the position of the specified vertex so that it
+          lies on its constraining domain.  The actual domain constraint
+          is managed by the TSTT mesh implementation */
+    void snap_vertex_to_domain(size_t vertex_index, MsqError &err);
     
     //! moves all free vertices at once according to a set of directions.
     /*! \param dk an array of directions, ordered like the free vertices in the PatchData.
