@@ -159,7 +159,7 @@ bool ObjectiveFunction::compute_numerical_hessian(Mesquite::PatchData &pd,
   int num_vtx=pd.num_vertices();
   Vector3D* grad = new Vector3D[num_vtx];
   Vector3D* grad_fd = new Vector3D[num_vtx];
-  Vector3D zero(0);
+  Vector3D zero(0., 0., 0.);
   
   this->compute_gradient(pd, grad, err); MSQ_CHKERR(err);
   
@@ -182,7 +182,7 @@ bool ObjectiveFunction::compute_numerical_hessian(Mesquite::PatchData &pd,
           delete[] grad_fd;
           return false;
         } MSQ_CHKERR(err);
-        for (v=m; v<num_vtx; ++v) {
+        for (v=0; v<m; ++v) {
           grad_fd[v] = (grad_fd[v]-grad[v])/eps;
           hessian.get_block(v,m)->set_column(j, grad_fd[v]);
         }
@@ -193,10 +193,9 @@ bool ObjectiveFunction::compute_numerical_hessian(Mesquite::PatchData &pd,
       }
       
     }
-    
-    MSQ_CHKERR(err);
   }//end loop over all vertices
 
-
+  delete[] grad;
+  delete[] grad_fd;
   return true;
 }
