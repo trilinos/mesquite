@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD:  3-Dec-02 at 15:26:08 by Thomas Leurent
+//  LAST-MOD: 12-Dec-02 at 15:58:12 by Thomas Leurent
 //
 /*! \file MeshSet.cpp
 
@@ -352,10 +352,10 @@ bool MeshSet::get_next_patch(PatchData &pd, PatchDataParameters &pd_params, MsqE
                                  1, TSTT::INTERLEAVED,
                                  &vertex_coords, &num_coords, &tstt_err);
     pd.add_vertex(currentVertex->mesh, currentVertex->entity,
-                  &vertex_coords[0], false, err); MSQ_CHKERR(err);
-    
-      // For each element within the patch,
-      // fill up the adequate info in PatchData.
+                  &vertex_coords[0], false, err, MsqVertex::MSQ_NO_VTX_FLAG); MSQ_CHKERR(err);
+  
+    // For each element within the patch,
+    // fill up the adequate info in PatchData.
     for (int e=0; e<num_elements; ++e)
     {
         // gets the vertices of an element ...
@@ -448,7 +448,7 @@ bool MeshSet::get_next_patch(PatchData &pd, PatchDataParameters &pd_params, MsqE
 
        // finds the number of faces in the mesh
        num_faces_current_mesh=0;
-       TSTT::Mesh_Services_GetInt( *currentMesh, "number of vertices",
+       TSTT::Mesh_Services_GetInt( *currentMesh, "number of faces",
                                    &num_faces_current_mesh, &tstt_err);
        num_faces += num_faces_current_mesh;
     
@@ -478,7 +478,7 @@ bool MeshSet::get_next_patch(PatchData &pd, PatchDataParameters &pd_params, MsqE
           ++currentMesh ) {
       
       // retrieves all the elements of the mesh
-      num_elements = 0; // this will make TSTT allocate the patch_regions array
+      num_elements_current_mesh = 0; // this will make TSTT allocate the patch_regions array
       if (num_regions!=0) {
          TSTT::Mesh_GetEntities(*currentMesh,
                                 TSTT::REGION, &current_mesh_elements,
