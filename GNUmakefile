@@ -61,7 +61,6 @@ TESTNAMES := test_1\
              simple_hybrid_test\
              wrapper_tests\
              tutorial\
-
              test_DFT \
              escobar
 ###             random_test\
