@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD: 10-Feb-04 at 15:22:58 by Thomas Leurent
+//  LAST-MOD: 27-Feb-04 at 11:29:43 by Thomas Leurent
 //
 /*! \file MeshSet.cpp
 
@@ -478,9 +478,10 @@ bool MeshSet::get_next_patch(PatchData &pd,
       {
         pd_elem_array[i].set_element_type(elemTopologies[i]);
         size_t* vtx_indices = pd_elem_array[i].get_modifiable_vertex_index_array();
-        size_t j=0; 
+        size_t j=0;
         for (size_t v=offsets[i]; v<offsets[i+1]; ++v) {
           vtx_indices[j++] = index_array[v];
+          assert( 0 <= index_array[v] < num_verts); // Makes sure vertex indices are 0-based. 
         }
         pd.elementHandlesArray[i] = elemArray[i];
       }
