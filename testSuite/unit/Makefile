@@ -10,9 +10,14 @@ MESQUITE_INCLUDE = ${TSTT_INCLUDE} -I../../include -I../../includeLinks
 TEST_INCLUDE = ${CPPUNIT_INCLUDE} ${MESQUITE_INCLUDE}
 
 CPPUNIT_LINK = -L${CPPUNIT_DIR}/src/cppunit/.libs -lcppunit
-MESQUITE_LINK = -L../../lib -lmesquite ${TSTT_LINK}
-TEST_LINK = ${CPPUNIT_LINK} ${MESQUITE_LINK} -lm
 
+MESQUITE_LINK = -L../../lib -lmesquite ${TSTT_LINK}
+MESQUITE_AOMD_LINK = -L../../lib -lmesquite ${AOMD_TSTT_LINK}
+MESQUITE_MDB_LINK = -L../../lib -lmesquite ${MDB_TSTT_LINK}
+
+TEST_LINK = ${CPPUNIT_LINK} ${MESQUITE_LINK} -lm
+TEST_AOMD_LINK = ${CPPUNIT_LINK} ${MESQUITE_AOMD_LINK} -lm
+TEST_MDB_LINK = ${CPPUNIT_LINK} ${MESQUITE_MDB_LINK} -lm
 PREFIX = @
 PREFIX = 
 
@@ -20,7 +25,7 @@ include ../../Makefile.customize
 
 MSQ_BASE_DIR = ../..
 
-TEST_SRCS = sample_main.cpp \
+TEST_SRCS = msq_test_main.cpp \
     MesquiteTestRunner.cpp \
     AomdVtkTest.cpp \
     Matrix3DTest.cpp \
@@ -39,14 +44,22 @@ TEST_SRCS = sample_main.cpp \
 
 TEST_OBJS = ${TEST_SRCS:.cpp=.o}
 
-
-sample_test : ${TEST_OBJS}
+msq_test : ${TEST_OBJS}
 	@echo "Linking $@"
 	${PREFIX}${LINKER} ${LDFLAGS} ${TEST_OBJS} ${TEST_LINK} -o $@
 
+msq_test_aomd : ${TEST_OBJS}
+	@echo "Linking $@"
+	${PREFIX}${LINKER} ${LDFLAGS} ${TEST_OBJS} ${TEST_AOMD_LINK} -o $@
+
+msq_test_mdb : ${TEST_OBJS}
+	@echo "Linking $@"
+	${PREFIX}${LINKER} ${LDFLAGS} ${TEST_OBJS} ${TEST_MDB_LINK} -o $@
 
 clean:
-	@rm -f *.o sample_test
+	@rm -f *.o msq_test
+	@rm -f *.o msq_test_mdb
+	@rm -f *.o msq_test_aomd
 	@rm -rf SunWS_cache
 	@rm -rf cxx_repository
 
