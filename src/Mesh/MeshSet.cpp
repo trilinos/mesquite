@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD:  7-Nov-02 at 13:07:53 by Thomas Leurent
+//  LAST-MOD: 18-Nov-02 at 15:25:16 by Thomas Leurent
 //
 /*! \file MeshSet.cpp
 
@@ -174,7 +174,7 @@ bool MeshSet::get_next_vertices_set(MsqError &err)
 }
 
 
-/*! \fn MeshSet::get_next_patch()
+/*! \fn MeshSet::get_next_patch(PatchData &pd, MsqError &err )
   \brief This function fills up a PatchData object with the mesh information
   necessary for optimization algorythms.
   The return value is true as long there exist a next patch, false otherwise.
@@ -189,8 +189,7 @@ bool MeshSet::get_next_vertices_set(MsqError &err)
 */
 #undef __FUNC__
 #define __FUNC__ "MeshSet::get_next_patch" 
-bool MeshSet::get_next_patch(PatchData &pd,
-                              MsqError &err )
+bool MeshSet::get_next_patch(PatchData &pd, MsqError &err )
 {
 
   TSTT::MeshError tstt_err=0;

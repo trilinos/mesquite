@@ -37,8 +37,8 @@ namespace Mesquite {
   class QualityAssessor
   {
   public:
-    /*! \enum type of function used in conjunction with the QualityMetric to compute
-              the mesh quality*/ 
+    /*! \enum QAFunction
+      type of function used in conjunction with QualityMetric to compute mesh quality */ 
     enum QAFunction {
        AVERAGE=1,
        HISTOGRAM=2,

@@ -55,7 +55,7 @@ void MsqError::reset()
   msg = "";
 }
 
-/*! \fn MsqError::handler(...)
+/*! \fn MsqError::handler(int line, const char *func,const char* file, const char *dir)
   This functions provides by default the following error handling mechanism:
   - prints the contextual error message, if any was set with set_msg(...) .
   - handles a standard error code, if any was set with set_error_code(...) .

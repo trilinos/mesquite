@@ -1,5 +1,5 @@
 /*!
-  \file    CompositeOFAdd.cpp
+  \file    CompositeOFScalarAdd.cpp
   \brief  
 
   This Objective Function combines two Objective Functions by addition

@@ -22,7 +22,7 @@ VertexMover::VertexMover() :
 }
 
 
-/*! \fn VertexMover::loop_over_mesh
+/*! \fn VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
 
     \brief Improves the quality of the MeshSet, calling some
     methods specified in a class derived from VertexMover
