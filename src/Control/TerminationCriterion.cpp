@@ -7,6 +7,7 @@
     \brief  Member functions of the Mesquite::TerminationCriterion class
 
     \author Michael Brewer
+    \author Thomas Leurent
     \date   Feb. 14, 2003
  */
 
@@ -29,11 +30,14 @@ TerminationCriterion::TerminationCriterion()
   initialOFValue=0.0;
   previousOFValue=0.0;
   lowerOFBound=0.0;
-  initialGradNorm=0.0;
+  initialGradL2Norm=0.0;
+  initialGradInfNorm=0.0;
     //initial size of the gradient array
   gradSize=10;
-  gradNormAbsoluteEps=0.0;
-  gradNormRelativeEps=0.0;
+  gradL2NormAbsoluteEps=0.0;
+  gradL2NormRelativeEps=0.0;
+  gradInfNormAbsoluteEps=0.0;
+  gradInfNormRelativeEps=0.0;
   qualityImprovementAbsoluteEps=0.0;
   qualityImprovementRelativeEps=0.0;
   iterationBound=0;
@@ -49,7 +53,6 @@ TerminationCriterion::TerminationCriterion()
   gradientSupplied=false;
   suppliedFunctionVal=0;
   suppliedGradientArray=NULL;
-  
 }
 
 
@@ -64,13 +67,21 @@ void TerminationCriterion::add_criterion_type_with_double(TCType tc_type,
                                                        MsqError &err)
 {
   switch(tc_type){
-    case GRADIENT_NORM_ABSOLUTE:
-       terminationCriterionFlag|=GRADIENT_NORM_ABSOLUTE;
-       gradNormAbsoluteEps=eps;
+    case GRADIENT_L2_NORM_ABSOLUTE:
+       terminationCriterionFlag|=GRADIENT_L2_NORM_ABSOLUTE;
+       gradL2NormAbsoluteEps=eps;
+       break; 
+    case GRADIENT_INF_NORM_ABSOLUTE:
+       terminationCriterionFlag|=GRADIENT_INF_NORM_ABSOLUTE;
+       gradInfNormAbsoluteEps=eps;
        break;
-    case GRADIENT_NORM_RELATIVE:
-       terminationCriterionFlag|=GRADIENT_NORM_RELATIVE;
-       gradNormRelativeEps=eps;
+    case GRADIENT_L2_NORM_RELATIVE:
+       terminationCriterionFlag|=GRADIENT_L2_NORM_RELATIVE;
+       gradL2NormRelativeEps=eps;
+       break;  
+    case GRADIENT_INF_NORM_RELATIVE:
+       terminationCriterionFlag|=GRADIENT_INF_NORM_RELATIVE;
+       gradInfNormRelativeEps=eps;
        break;  
     case QUALITY_IMPROVEMENT_ABSOLUTE:
        terminationCriterionFlag|=QUALITY_IMPROVEMENT_ABSOLUTE;
@@ -190,7 +201,8 @@ void TerminationCriterion::initialize(MeshSet &/*ms*/, PatchData &pd,
     MSQ_CHKERR(err);
   }
     //if needed create an array so that it will be there
-  if(totalFlag & ( GRADIENT_NORM_ABSOLUTE | GRADIENT_NORM_RELATIVE ) ){
+  if(totalFlag & ( (GRADIENT_L2_NORM_ABSOLUTE | GRADIENT_INF_NORM_ABSOLUTE)
+                   | (GRADIENT_L2_NORM_RELATIVE | GRADIENT_INF_NORM_RELATIVE)  ) ){
     mGrad = new Vector3D[gradSize];
   }
     
@@ -211,8 +223,8 @@ void TerminationCriterion::reset(MeshSet &ms, ObjectiveFunction* obj_ptr,
   if(totalFlag & (QUALITY_IMPROVEMENT_ABSOLUTE | QUALITY_IMPROVEMENT_RELATIVE
                   | SUCCESSIVE_IMPROVEMENTS_ABSOLUTE
                   | SUCCESSIVE_IMPROVEMENTS_RELATIVE
-                  | GRADIENT_NORM_ABSOLUTE
-                  | GRADIENT_NORM_RELATIVE  ) ){
+                  | (GRADIENT_L2_NORM_ABSOLUTE | GRADIENT_INF_NORM_ABSOLUTE) 
+                  | (GRADIENT_L2_NORM_RELATIVE | GRADIENT_INF_NORM_RELATIVE)   ) ){
     globalPatchParams.set_patch_type(PatchData::GLOBAL_PATCH, err,0,0);
     ms.get_next_patch(global_patch,globalPatchParams,err);
   }
@@ -270,7 +282,8 @@ void TerminationCriterion::reset(PatchData &pd, ObjectiveFunction* obj_ptr,
     previousOFValue=initialOFValue;
   }
     //GRADIENT
-  if(totalFlag & (GRADIENT_NORM_ABSOLUTE | GRADIENT_NORM_RELATIVE))
+  if(totalFlag & ((GRADIENT_L2_NORM_ABSOLUTE | GRADIENT_INF_NORM_ABSOLUTE)
+                  | (GRADIENT_L2_NORM_RELATIVE | GRADIENT_INF_NORM_RELATIVE) ))
   {
     int num_vertices=pd.num_vertices();
       //if the array, mGrad, is not large enough, lengthen it
@@ -280,14 +293,14 @@ void TerminationCriterion::reset(PatchData &pd, ObjectiveFunction* obj_ptr,
       mGrad = new Vector3D[gradSize];
     }
       //if the initial gradient norm is needed
-    if(totalFlag & (GRADIENT_NORM_RELATIVE)){
+    if(totalFlag & ((GRADIENT_L2_NORM_RELATIVE | GRADIENT_INF_NORM_RELATIVE) )){
         //get gradient and make sure it is valid
       if(!obj_ptr->compute_gradient(pd, mGrad , err, num_vertices)){
-        err.set_msg("Initial patch is invalid for gradient compuation.");
+        err.set_msg("Initial patch is invalid for gradient computation.");
       }
-        //get the norm of the gradient
-      initialGradNorm = compute_gradient_norm(mGrad, num_vertices, err);
-        //std::cout<<"\nInitial gradient norm = "<<initialGradNorm;
+        //get the gradient norms
+      initialGradInfNorm = Linf(mGrad, num_vertices);
+      initialGradL2Norm = length(mGrad, num_vertices);
     }
   }   
   
@@ -303,7 +316,7 @@ void TerminationCriterion::reset(PatchData &pd, ObjectiveFunction* obj_ptr,
 bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
                                    MsqError &err)
 {
-    //std::cout<<"\nInside terminate(pd,of,err):  flag = "<<terminationCriterionFlag;
+    std::cout<<"\nInside terminate(pd,of,err):  flag = "<<terminationCriterionFlag;
   
     //if terminating on numbering of inner iterations
   if(terminationCriterionFlag & NUMBER_OF_ITERATES){
@@ -399,8 +412,11 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
   }//end of termination criteria which need objective calculated
 
     //if terminating on the norm of the gradient
-  if(terminationCriterionFlag & (GRADIENT_NORM_ABSOLUTE |
-                                 GRADIENT_NORM_RELATIVE) ){
+  if(terminationCriterionFlag & ( GRADIENT_L2_NORM_ABSOLUTE  |
+                                  GRADIENT_INF_NORM_ABSOLUTE |
+                                  GRADIENT_L2_NORM_RELATIVE  |
+                                  GRADIENT_INF_NORM_RELATIVE ) ){
+    cout << "toto" << endl; //dbg
     int num_vertices=pd.num_vertices();
       //temp_grad holds the value of mGrad.  If the gradient array is
       //supplied by the QualityImprover, mGrad may be set to point to
@@ -422,21 +438,46 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
         err.set_msg("Initial patch is invalid for gradient compuation.");
       }
     }//end else if gradient needed to be calcuated
+
+    double grad_L2_norm=10e6;
+    if (terminationCriterionFlag & (GRADIENT_L2_NORM_ABSOLUTE | GRADIENT_L2_NORM_RELATIVE)) {
+      grad_L2_norm = length(mGrad, num_vertices); // get the L2 norm
+      cout << "grad_L2_norm: " << grad_L2_norm << endl; //dbg
+    }
+    double grad_inf_norm=10e6;
+    if (terminationCriterionFlag & (GRADIENT_INF_NORM_ABSOLUTE | GRADIENT_INF_NORM_RELATIVE)) {
+      grad_inf_norm = length(mGrad, num_vertices); // get the Linf norm
+    } 
     
-      //get the norm of the gradient
-    double grad_norm = compute_gradient_norm(mGrad, num_vertices, err);
-      //std::cout<<"\n Gradient norm = "<<grad_norm;
-      //if stopping on norm of the gradient absolute
-    if(terminationCriterionFlag & GRADIENT_NORM_ABSOLUTE){
-      if(grad_norm <= gradNormAbsoluteEps){
+    //if stopping on L2 norm of the gradient
+    if(terminationCriterionFlag & GRADIENT_L2_NORM_ABSOLUTE ){
+      if(grad_L2_norm <= gradL2NormAbsoluteEps){
           //reset mGrad to temp_grad so that it may be correctly deleted
         mGrad=temp_grad;
         return true;
       }
     }
-      //if stopping on norm of the gradient relative
-    if(terminationCriterionFlag & GRADIENT_NORM_RELATIVE){
-      if(grad_norm <= (gradNormRelativeEps*initialGradNorm))
+    //if stopping on Linf norm of the gradient
+    if(terminationCriterionFlag & GRADIENT_INF_NORM_ABSOLUTE ){
+      double grad_Inf_norm = Linf(mGrad, num_vertices); // get the Linf norm
+      if(grad_Inf_norm <= gradInfNormAbsoluteEps){
+          //reset mGrad to temp_grad so that it may be correctly deleted
+        mGrad=temp_grad;
+        return true;
+      }
+    }
+    //if stopping on L2 norm of the gradient relative to the previous iteration
+    if(terminationCriterionFlag & GRADIENT_L2_NORM_RELATIVE) {
+      if(grad_L2_norm <= (gradL2NormRelativeEps*initialGradInfNorm))
+      {
+          //reset mGrad to temp_grad so that it may be correctly deleted
+        mGrad=temp_grad;
+        return true;
+      }
+    }
+    //if stopping on Linf norm of the gradient relative to the previous iteration
+    if(terminationCriterionFlag & GRADIENT_INF_NORM_RELATIVE) {
+      if(grad_inf_norm <= (gradInfNormRelativeEps*initialGradInfNorm))
       {
           //reset mGrad to temp_grad so that it may be correctly deleted
         mGrad=temp_grad;
@@ -485,8 +526,8 @@ bool TerminationCriterion::terminate(MeshSet &ms, ObjectiveFunction* obj_ptr,
                                  QUALITY_IMPROVEMENT_RELATIVE |
                                  SUCCESSIVE_IMPROVEMENTS_ABSOLUTE |
                                  SUCCESSIVE_IMPROVEMENTS_RELATIVE |
-                                 GRADIENT_NORM_ABSOLUTE |
-                                 GRADIENT_NORM_RELATIVE |
+                                 (GRADIENT_L2_NORM_ABSOLUTE | GRADIENT_INF_NORM_ABSOLUTE)  |
+                                 (GRADIENT_L2_NORM_RELATIVE | GRADIENT_INF_NORM_RELATIVE)  |
                                  BOUNDED_VERTEX_MOVEMENT)){
     globalPatchParams.set_patch_type(PatchData::GLOBAL_PATCH, err,0,0);
     
@@ -633,34 +674,8 @@ void TerminationCriterion::cleanup(MeshSet &/*ms*/, MsqError &/*err*/)
       initialVerticesMemento->~PatchDataVerticesMemento();
     }
   }
-  if(totalFlag & (GRADIENT_NORM_ABSOLUTE | GRADIENT_NORM_RELATIVE ) ){
+  if(totalFlag & ((GRADIENT_L2_NORM_ABSOLUTE | GRADIENT_INF_NORM_ABSOLUTE)
+                  | (GRADIENT_L2_NORM_RELATIVE | GRADIENT_INF_NORM_RELATIVE)  ) ){
     delete [] mGrad;
   } 
-}
-
-#undef __FUNC__
-#define  __FUNC__ "TerminationCriterion::cleanup"
-/*!
-  Currently this function only computes the infinity norm of the
-  gradient array, vec.  .
-  TODO:  This function needs to be able to compute other norms.
- */
-double TerminationCriterion::compute_gradient_norm(Vector3D * const vec,
-                                                   int len, MsqError &/*err*/)
-{
-    //calculate the infinity norm of the gradient array
-  double grad_norm=0;
-    //loop over the length of the gradient array
-  for(int gi=0;gi<len;++gi){
-      //loop over the three coordinates
-    for (int gj=0;gj<3;++gj){
-        //if current entry is larger than any previous entry
-      if(grad_norm<fabs(vec[gi][gj])){
-          //then store this entry as the current largest
-        grad_norm=fabs(vec[gi][gj]);
-      }
-    }
-  }
-    //return the value of the largest entry in the array
-  return grad_norm;
 }

@@ -8,7 +8,7 @@
 //    E-MAIL: mbrewer@sandia.gov
 //
 // ORIG-DATE: March 5, 2003
-//  LAST-MOD:  9-Apr-03 at 10:08:33 by Thomas Leurent
+//  LAST-MOD: 29-Apr-03 at 17:06:34 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -156,9 +156,9 @@ public:
     {
       MsqError err;
       TerminationCriterion t1;
-      t1.add_criterion_type_with_double(TerminationCriterion::GRADIENT_NORM_ABSOLUTE,.02, err);
+      t1.add_criterion_type_with_double(TerminationCriterion::GRADIENT_INF_NORM_ABSOLUTE,.02, err);
       if(pF)
-        std::cout<<"\nTEST_GRADIENT_NORM_ABS)LUTE\n";
+        std::cout<<"\nTEST_GRADIENT_INF_NORM_ABSOLUTE\n";
       test_outer_criterion(&t1,err);
     }
   
@@ -167,9 +167,9 @@ public:
     {
       MsqError err;
       TerminationCriterion t1;
-      t1.add_criterion_type_with_double(TerminationCriterion::GRADIENT_NORM_RELATIVE,.3, err);
+      t1.add_criterion_type_with_double(TerminationCriterion::GRADIENT_INF_NORM_RELATIVE,.3, err);
       if(pF)
-        std::cout<<"\nTEST_GRADIENT_NORM_RELATIVE\n";
+        std::cout<<"\nTEST_GRADIENT_INF_NORM_RELATIVE\n";
       test_outer_criterion(&t1,err);
     }
   

@@ -5,6 +5,7 @@
 Header file for the TerminationCriterion classes.
 
   \author Michael Brewer
+  \author Thomas Leurent
   \date   Feb. 14, 2003
  */
 
@@ -32,21 +33,29 @@ namespace Mesquite
   {
   public:
     
-     /*! */
+     /*! \enum TCType  defines the termination criterion */
     enum TCType {
        NONE    = 0,
-       GRADIENT_NORM_ABSOLUTE = 1,
-       GRADIENT_NORM_RELATIVE = 2,
-       KKT  = 4, 
-       QUALITY_IMPROVEMENT_ABSOLUTE = 8,
-       QUALITY_IMPROVEMENT_RELATIVE = 16,
-       NUMBER_OF_ITERATES = 32,
-       CPU_TIME  = 64,
-       VERTEX_MOVEMENT_ABSOLUTE  = 128,
-       VERTEX_MOVEMENT_RELATIVE  = 256,
-       SUCCESSIVE_IMPROVEMENTS_ABSOLUTE = 512,
-       SUCCESSIVE_IMPROVEMENTS_RELATIVE = 1024,
-       BOUNDED_VERTEX_MOVEMENT = 2048
+       //! checks the gradient \f$\nabla f \f$ of objective function 
+       //! \f$f : I\!\!R^{3N} \rightarrow I\!\!R \f$ against a double \f$d\f$  
+       //! and stops when \f$\sqrt{\sum_{i=1}^{3N}\nabla f_i^2}<d\f$  
+       GRADIENT_L2_NORM_ABSOLUTE = 1,  
+       //! checks the gradient \f$\nabla f \f$ of objective function 
+       //! \f$f : I\!\!R^{3N} \rightarrow I\!\!R \f$ against a double \f$d\f$  
+       //! and stops when \f$ \max_{i=1}^{3N} \nabla f_i < d \f$  
+       GRADIENT_INF_NORM_ABSOLUTE = 2,
+       GRADIENT_L2_NORM_RELATIVE = 4,
+       GRADIENT_INF_NORM_RELATIVE = 8,
+       KKT  = 16, 
+       QUALITY_IMPROVEMENT_ABSOLUTE = 32,
+       QUALITY_IMPROVEMENT_RELATIVE = 64,
+       NUMBER_OF_ITERATES = 128,
+       CPU_TIME  = 256,
+       VERTEX_MOVEMENT_ABSOLUTE  = 512,
+       VERTEX_MOVEMENT_RELATIVE  = 1024,
+       SUCCESSIVE_IMPROVEMENTS_ABSOLUTE = 2048,
+       SUCCESSIVE_IMPROVEMENTS_RELATIVE = 4096,
+       BOUNDED_VERTEX_MOVEMENT = 8192
     };
 
       //!Constructor which does not take any arguements
@@ -97,12 +106,7 @@ namespace Mesquite
  protected:
     
  private:
-      //Private member funcitons
-      //!Currently computes the L_inf norm of an array of Vector3D of
-      //! length len.
-    double compute_gradient_norm(Vector3D * const vec, int len, MsqError &err);
-
-      //PRIVATE DATA MEMBERS
+    //PRIVATE DATA MEMBERS
     long unsigned int terminationCriterionFlag;//!<Bit flag of termination crit
     long unsigned int cullingMethodFlag;/*!<Bit flag of criterion for culling*/
     long unsigned int totalFlag;/*!<Bit flag for both culling and terminating.*/
@@ -118,9 +122,12 @@ namespace Mesquite
       //Data specific to termination criterion 1 (gradient bounds)
     Vector3D* mGrad;
     int gradSize;
-    double initialGradNorm;
-    double gradNormAbsoluteEps;
-    double gradNormRelativeEps;
+    double initialGradL2Norm;
+    double gradL2NormAbsoluteEps;
+    double gradL2NormRelativeEps;
+    double initialGradInfNorm;
+    double gradInfNormAbsoluteEps;
+    double gradInfNormRelativeEps;
       //Data specific to termination criterion 2 (KKT)
       //???????????????????????????????????????????
       //Data specific to termination criterion 3 (Quality Improvement)
@@ -156,7 +163,6 @@ namespace Mesquite
     
   };
 
-   
 } //namespace
 
 

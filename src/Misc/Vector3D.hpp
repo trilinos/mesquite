@@ -94,7 +94,8 @@ namespace Mesquite
     // Length functions
     inline double length_squared() const;
     inline double length() const;
-    friend  double length(Vector3D v[] ,int n); // length for an array of Vector3Ds
+    friend  double length(Vector3D* const v,int n); //!< L2 norm for an array of Vector3Ds
+    friend  double Linf(Vector3D* const v,int n); //!< L inf norm for array of Vector3Ds
 
     inline void set_length(const double new_length);
     inline void normalize();
@@ -359,7 +360,7 @@ namespace Mesquite
                 mCoords[1]*mCoords[1] +
                 mCoords[2]*mCoords[2]);
   }
-  inline double length(Vector3D v[] ,int n) // norm for an array of Vector3Ds
+  inline double length(Vector3D* const v,int n) // norm for an array of Vector3Ds
   {
     double l=0;
     for (int j=0; j<n; ++j)
@@ -367,6 +368,18 @@ namespace Mesquite
            v[j].mCoords[1]*v[j].mCoords[1] +
            v[j].mCoords[2]*v[j].mCoords[2];
     return sqrt(l);
+  }
+  inline double Linf(Vector3D* const v,int n) // max entry for an array of Vector3Ds
+  {
+    double max=0;  
+    //loop over the length of the array
+    for(int i=0;i<n;++i){
+      if ( max < fabs(v[i][0]) )   max=fabs(v[i][0]) ;
+      if ( max < fabs(v[i][1]) )   max=fabs(v[i][1]) ;
+      if ( max < fabs(v[i][2]) )   max=fabs(v[i][2]) ;
+    }
+    //return the value of the largest entry in the array
+    return max;
   }
   inline void Vector3D::set_length(const double new_length)
   {
