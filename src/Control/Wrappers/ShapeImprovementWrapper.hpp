@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 14-Nov-02 at 16:51:36
-//  LAST-MOD: 21-May-03 at 15:06:17 by Michael Brewer
+//  LAST-MOD: 22-May-03 at 09:04:07 by Michael Brewer
 
 
 /*! \file ShapeImprovementWrapper.hpp
@@ -36,15 +36,14 @@ namespace Mesquite {
        ratio.
        
 
-       \todo MB:  We should probably and a conditional preconditioner
+       \todo MB:  We should probably add a conditional preconditioner
        such that if the initial mesh is tangled we attempt to untangle
        it.
      */
   class ShapeImprovementWrapper : public InstructionQueue {
      
   private:
-    ShapeQualityMetric* meanRatioSum; 
-    ShapeQualityMetric* meanRatioAvg;
+    ShapeQualityMetric* meanRatio;
      
     LPtoPTemplate* objFunc;
     FeasibleNewton* feasNewt;
@@ -64,21 +63,18 @@ namespace Mesquite {
       norm termination criteria.  The default value is 1.e-6.*/
     ShapeImprovementWrapper(double cpu_time = 0.0, double grad_norm =1.e-6) {
       MsqError err;
-      // creates a mean ratio quality metric ...
-      meanRatioSum = MeanRatioQualityMetric::create_new();
-      meanRatioSum->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
-      meanRatioSum->set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
-      meanRatioSum->set_averaging_method(QualityMetric::SUM,err);
+      meanRatio = MeanRatioQualityMetric::create_new();
+      meanRatio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+      meanRatio->set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
+      meanRatio->set_averaging_method(QualityMetric::LINEAR,err);
       // creates the l_2 squared objective function
-      objFunc = new LPtoPTemplate(meanRatioSum, 2, err);
+      objFunc = new LPtoPTemplate(meanRatio, 2, err);
       objFunc->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
       //creates a FeasibleNewtone improver
       feasNewt = new FeasibleNewton(objFunc);
       feasNewt->set_patch_type(PatchData::GLOBAL_PATCH, err,1 ,1);
-      meanRatioAvg = MeanRatioQualityMetric::create_new();
-      meanRatioAvg->set_averaging_method(QualityMetric::SUM,err);
-      mQA = new QualityAssessor(meanRatioAvg,QualityAssessor::MAXIMUM);
-      mQA->add_quality_assessment(meanRatioAvg, QualityAssessor::AVERAGE,err);
+      mQA = new QualityAssessor(meanRatio,QualityAssessor::MAXIMUM);
+      mQA->add_quality_assessment(meanRatio, QualityAssessor::AVERAGE,err);
       
       //**************Set stopping criterion****************
 	termInner = new TerminationCriterion();
@@ -102,8 +98,7 @@ namespace Mesquite {
     //! Destructor must delete the objects inserted in the queue.
     virtual ~ShapeImprovementWrapper()
     {
-      delete meanRatioAvg;
-      delete meanRatioSum;
+      delete meanRatio;
       delete objFunc;
       delete feasNewt;
       delete mQA;
