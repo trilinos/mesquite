@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 12-Nov-02 at 18:05:56
-//  LAST-MOD:  9-Apr-03 at 11:14:48 by Thomas Leurent
+//  LAST-MOD:  5-May-03 at 15:59:29 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -60,12 +60,12 @@ public:
             | 0  |  1 | 4  |
             1----2----3----9
     */
-    create_six_quads_patch(pd, err); 
+    create_six_quads_patch_with_domain(pd, err); 
   }
 
   void tearDown()
   {
-
+    destroy_patch_with_domain(pd);
   }
   
 public:
