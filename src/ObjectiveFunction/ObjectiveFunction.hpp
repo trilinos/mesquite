@@ -49,7 +49,7 @@ namespace Mesquite
                                    MsqError &err)=0;
 
       /*!
-        Computes the valueof the objective funciton as fval*negateFlag,
+        Computes the value of the objective funciton as fval*negateFlag,
         where fval is computed in concrete_evaluate(patch, fval, err)
         and negateFlag is either 1 or -1 depending on whether the
         function needs to be minimized or maximized, respectively.
@@ -77,7 +77,8 @@ namespace Mesquite
          gradType=grad;
        }
 
-      /*!Calls either compute_numerical_gradient or compute_analytical_gradient
+      /*!\brief
+        Calls either compute_numerical_gradient or compute_analytical_gradient
         depending on the value of gradType.
         Function returns 'false' if the patch is not within a required
         feasible regeion.  Otherwise, it returns 'true'.
@@ -137,8 +138,8 @@ namespace Mesquite
     
    protected:
 
-      /*!Non-virtual function which numerically computes the gradient
-         of the Objective Function.
+      /*! \brief Non-virtual function which numerically computes
+        the gradient of the Objective Function.
          Function returns 'false' if the patch is not within a required
         feasible regeion.  Otherwise, it returns 'true'.
       */

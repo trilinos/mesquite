@@ -14,10 +14,22 @@ using namespace Mesquite;
 
 #undef __FUNC__
 #define __FUNC__ "ObjectiveFunction::compute_numerical_gradient"
-/*! \fn ObjectiveFunction::compute_numerical_gradient(Mesquite::PatchData &pd, Vector3D *const &grad, MsqError &err, int array_size)
-  
+/*! 
   Numerically Calculates the gradient of the ObjectiveFunction for the
-  free vertices in the patch.
+  free vertices in the patch.  Returns 'false' if the patch is outside
+  of a required feasible region, returns 'ture' otherwise.
+  The behavior of the function depends on the value of the boolean
+  useLocalGradient.  If useLocalGradient is set to
+  'true', compute_numerical_gradient creates a sub-patch around a free
+  vertex, and then perturbs that vertex in one of the coordinate directions.
+  Only the ObjectiveFunction value on the local sub-patch is used in the
+  computation of the gradient.  Therefore, useLocalGradient should only
+  be set to 'true' for ObjectiveFunctions which can use this method.  Unless
+  the concrete ObjectiveFunction sets useLocalGradient to 'true' in its
+  constructor, the value will be 'false'.  In this case, the objective
+  function value for the entire patch is used in the calculation of the
+  gradient.  This is computationally expensive, but it is numerically
+  correct for all (C_1) functions.
   \param pd  PatchData on which the gradient is taken.
   \param grad  Array of Vector3D of length the number of vertices used to store gradient.
   \param array_size Either the length of grad or -1.
