@@ -1,5 +1,29 @@
-#ifndef __VECTOR3DTEST_H__
-#define __VECTOR3DTEST_H__
+// -*- Mode : c++; tab-width: 3; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 3 -*-
+//
+//   SUMMARY: 
+//     USAGE:
+//
+//    AUTHOR: Thomas Leurent <tleurent@mcs.anl.gov>
+//       ORG: Argonne National Laboratory
+//    E-MAIL: tleurent@mcs.anl.gov
+//
+// ORIG-DATE: 12-Nov-02 at 18:05:56
+//  LAST-MOD: 12-Nov-02 at 18:10:15 by Thomas Leurent
+//
+// DESCRIPTION:
+// ============
+/*! \file MsqMeshEntityTest.cpp
+
+Unit testing of various functions in the MsqMeshEntity class. 
+
+ */
+// DESCRIP-END.
+//
+
+
+// TODO : get rid off ? 
+#ifndef MsqMeshEntityTest_cpp
+#define MsqMeshEntityTest_cpp
 
 #include "MsqMeshEntity.hpp"
 #include "cppunit/extensions/HelperMacros.h"
@@ -123,6 +147,6 @@ public:
 };
 
 
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(Vector3DTest, "Misc");
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(MsqMeshEntityTest, "Misc");
 
 #endif
