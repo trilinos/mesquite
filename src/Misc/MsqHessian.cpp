@@ -5,7 +5,7 @@
 //    E-MAIL: tmunson@mcs.anl.gov
 //
 // ORIG-DATE:  2-Jan-03 at 11:02:19 by Thomas Leurent
-//  LAST-MOD:  2-Apr-03 at 14:41:54 by Thomas Leurent
+//  LAST-MOD:  2-Apr-03 at 17:27:38 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -17,6 +17,7 @@ describe MsqHessian.cpp here
 
 
 #include "MsqHessian.hpp"
+#include "MsqTimer.hpp"
 
 using namespace Mesquite;
 
@@ -368,13 +369,25 @@ void MsqHessian::compute_preconditionner(MsqError &err)
     delete[] mPreconditionner;
     mPreconditionner = new Matrix3D[mSize];
   }
-  
+
+  Matrix3D* diag_block;
+  double sum, inv_sum;
   int m;
-  // preconditionner is identity matrix for now.
+  // For each diagonal block, the (inverted) preconditionner is
+  // the inverse of the sum of the diagonal entries.
   for (m=0; m<mSize; ++m) {
-    mPreconditionner[m][0][0] = 1.; 
-    mPreconditionner[m][1][1] = 1.; 
-    mPreconditionner[m][2][2] = 1.; 
+    diag_block = mEntries + mRowStart[m]; // Gets block at position m,m .
+
+    // find sum, and computes inverse, or 0 if sum = 0 .
+    sum = (*diag_block)[0][0] + (*diag_block)[1][1] + (*diag_block)[2][2];
+    if (sum != 0.) 
+      inv_sum = 1 / sum;
+    else
+      inv_sum = 0.;
+    
+    mPreconditionner[m][0][0] = inv_sum;
+    mPreconditionner[m][1][1] = inv_sum;
+    mPreconditionner[m][2][2] = inv_sum;
   }
 }
 
@@ -388,7 +401,8 @@ void MsqHessian::compute_preconditionner(MsqError &err)
 */
 void MsqHessian::cg_solver(Vector3D x[], Vector3D b[], MsqError &err)
 {
-
+  FUNCTION_TIMER_START(__FUNC__);
+  
   // reallocates arrays if size of the Hessian has changed too much.
   if (mSize > cgArraySizes || mSize < cgArraySizes/10 ) {
     delete[] r;
@@ -445,4 +459,5 @@ void MsqHessian::cg_solver(Vector3D x[], Vector3D b[], MsqError &err)
     for (i=0; i<mSize; ++i)  p[i] = z[i] + beta*p[i]; // p_k = z_{k-1} + Beta_k * p_{k-1}
   }
 
+  FUNCTION_TIMER_END();
 }
