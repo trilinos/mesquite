@@ -165,8 +165,9 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
   bool inner_criterion=false;//inner_criterion_met(*vertex_mover_mesh,err);
   TerminationCriterion* term_crit=get_inner_termination_criterion();
   
-  while ((i<maxIteration && alp>stepBound && grad_norm>normGradientBound)
-         && !inner_criterion){
+    //while ((i<maxIteration && alp>stepBound && grad_norm>normGradientBound)
+    //     && !inner_criterion){
+  while(!inner_criterion){
     ++i;
     int k=0;
     alp=get_step(pd,f,k,err);
@@ -175,7 +176,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
       PRINT_INFO("\n  Alp initial, alp = %20.18f",alp);
     }
     MSQ_CHKERR(err);
-     // if alp ==0, revert to steepest descent search direction
+     // if alp == 0, revert to steepest descent search direction
     if(alp==0){
       free_iter.reset();
       while (free_iter.next()) {
@@ -247,8 +248,10 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
       }
       
     }//end if on alp == 0
+      //Removing the following line of code (4/2/03) as it should not
+      //be needed with the new version of Termination Criterion.
       //Update mesh before checking criterion
-    pd.update_mesh(err);
+      //pd.update_mesh(err);
     inner_criterion=term_crit->terminate_with_function_and_gradient(pd,objFunc,
                                                                     f,fNewGrad,
                                                                     err);
@@ -345,7 +348,7 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
     PRINT_INFO("\nFeasible Point Not Found");
     return 0.0;
   }
-    //PRINT_INFO("\nOrigninal f %f, first new f = %f",f0,f);
+    //PRINT_INFO("\nOriginal f %f, first new f = %f, alp = %f",f0,f,alp);
     //if new f is larger than original, our step was too large
   if(f>=f0){
     j=0;
