@@ -789,20 +789,22 @@ being developed through the TSTT center.  This interface definition
 effort focuses on providing access to information pertaining to low
 level mesh objects such as vertices, edges, faces, and regions through
 both array-based and iterator-based mechanisms.  It is designed to
-support existing packages such as CUBIT, NWGrid, PAOMD, and Overture.
-Considerations such as data neutrality, language interoperability
-(achieved through use of the SIDL/Babel tools from LLNL \cite{babel}),
-and achieving consensus within a large group of participants is
+support existing packages such as CUBIT, NWGrid, PAOMD, and Overture. 
+The TSTT interface achieves language interoperability
+through use of the SIDL/Babel tools from LLNL \cite{babel}.
+Achieving consensus within a large group of participants is
 paramount (see \cite{Cubit-website}, \cite{overture}, \cite{aomd-imr},
-and \cite{NWGrid-website}).  This interface definition effort is
-evolving, and the Mesquite team is actively participating to ensure
-that our needs for mesh quality improvement are adequately and
-efficiently addressed.  A TSTT-based implementation of the Mesquite
-interfaces will be available soon.  As such, any tool that exposes its
+and \cite{NWGrid-website}).  
+%This interface definition effort is
+%evolving, and the Mesquite team is actively participating to ensure
+%that our needs for mesh quality improvement are adequately and
+%efficiently addressed.  
+A TSTT-based implementation of the Mesquite
+interfaces is available.  As such, any tool that exposes its
 mesh through the TSTT interfaces can be used with Mesquite without
 additional development.
 
-The Mesquite-specific interfaces described above are fully compatible
+Note that the Mesquite-specific interface described in section \ref{sec:msq_mesh} is fully compatible
 with the current TSTT mesh and geometry interfaces, and in fact,
 Mesquite's approach to data structure neutrality is directly derived
 from the TSTT interfaces.  Although similar in spirit to the TSTT
@@ -810,8 +812,30 @@ interface, the Mesquite-specific interface is not as general, and
 therefore consist of fewer
 functions and does not require additional tools such as Babel.
 
-\section{The Simplified Geometry Engine}
+\section{The Geometry Engine}
 \label{sec:geometry}
+
+Certain smoothing procedures in Mesquite require some geometry information. The mean ratio quality
+metric for example requires the normal of a 2D element in a surface mesh. Also, boundary
+vertices can be snapped back to the surface they belong to during a smoothing procedure, instead of
+simply fixing the boundary vertices (and therefore lowering the quality of the final mesh). A simple abstract
+class, \texttt{MeshDomain}, must be inherited and implemented by the user in order to provide the
+geometry information to Mesquite.  This class contains only two virtual abstract functions:
+\texttt{MeshDomain::normal\_at} and \texttt{MeshDomain::snap\_to} for which the details are given in
+the doxygen documentation (in the directory mesquite/doc/developer).
+
+Note that MeshDomain does not systematically needs to be implemented. For example it is possible to
+improve a 3D mesh with any metric by fixing the boundary vertices. If the surface mesh is of good
+quality but the volume mesh is poor, Mesquite can generates a high quality mesh without accessing
+any geometry information. 
+
+
+\subsection{The Simplified Geometry Engine}
+
+We provide implementations of the MeshDomain class for basic geometries, such as a plan
+(\texttt{PlanarDomain}) and a sphere (\texttt{SphericalDomain}). Those classes allows the user to use
+Mesquite straight away without any implementation. They are introduced in the tutorial section
+\ref{sec:tutMesh} and are described in details in the doxygen documentation.
 
 \section{Visualizing the Mesh}
 
