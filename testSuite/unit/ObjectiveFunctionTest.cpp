@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 13-Nov-02 at 18:05:56
-//  LAST-MOD: 19-May-03 at 13:23:51 by Michael Brewer
+//  LAST-MOD: 20-May-03 at 10:19:56 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -190,14 +190,14 @@ public:
     // creates a mean ratio quality metric ...
     ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
     // ... and builds an objective function with it
-    LPTemplate* LP2 = new LPTemplate(mean_ratio, 2, err);
+    LPTemplate LP2(mean_ratio, 2, err);
 
-    LP2->set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
-    LP2->compute_gradient(m6Quads, grad_num, err); MSQ_CHKERR(err);
+    LP2.set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
+    LP2.compute_gradient(m6Quads, grad_num, err); MSQ_CHKERR(err);
     
-    LP2->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
+    LP2.set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
     mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
-    LP2->compute_gradient(m6Quads, grad_ana, err); MSQ_CHKERR(err);
+    LP2.compute_gradient(m6Quads, grad_ana, err); MSQ_CHKERR(err);
     
     for (int i=0; i<2; ++i)
       for (int j=0; j<3; ++j)
@@ -205,6 +205,7 @@ public:
 
     delete grad_num;
     delete grad_ana;
+    delete mean_ratio;
   }
   
   void compare_numerical_analytical_gradient(ObjectiveFunction *obj,
@@ -268,10 +269,11 @@ public:
     mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
     
     // ... and builds an objective function with it
-    LPTemplate* LP2 = new LPTemplate(mean_ratio, 2, err);
+    LPTemplate LP2(mean_ratio, 2, err);
     mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
       //    mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
-    compare_numerical_analytical_gradient(LP2, m12Hex);
+    compare_numerical_analytical_gradient(&LP2, m12Hex);
+    delete mean_ratio;
   }
 
   void test_compute_gradient_3D_LPtoPTemplate_L1_hex()
@@ -283,10 +285,11 @@ public:
     mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
     
     // ... and builds an objective function with it
-    LPtoPTemplate* LP1 = new LPtoPTemplate(mean_ratio, 1, err);
+    LPtoPTemplate LP1(mean_ratio, 1, err);
     mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
       //    mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
-    compare_numerical_analytical_gradient(LP1, m12Hex);
+    compare_numerical_analytical_gradient(&LP1, m12Hex);
+    delete mean_ratio;
   }
 
   void test_compute_gradient_3D_LPtoPTemplate_L2_hex()
@@ -298,10 +301,11 @@ public:
     mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
     
     // ... and builds an objective function with it
-    LPtoPTemplate* LP2 = new LPtoPTemplate(mean_ratio, 2, err);
+    LPtoPTemplate LP2(mean_ratio, 2, err);
     mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
       //    mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
-    compare_numerical_analytical_gradient(LP2, m12Hex);
+    compare_numerical_analytical_gradient(&LP2, m12Hex);
+    delete mean_ratio;
   }
 
   void test_compute_gradient3D_composite()
@@ -312,22 +316,24 @@ public:
        mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
        
          // ... and builds an objective function with it
-       LPtoPTemplate* LP3 = new LPtoPTemplate(mean_ratio, 3, err);
-       LPTemplate* LP2 = new LPTemplate(mean_ratio,2,err);
+       LPtoPTemplate LP3(mean_ratio, 3, err);
+       LPTemplate LP2(mean_ratio,2,err);
          //build four composite objective functions
-       CompositeOFScalarAdd* csa_of = new CompositeOFScalarAdd(2,LP2);
-       CompositeOFScalarMultiply* csm_of = new CompositeOFScalarMultiply(20,LP2);
-       CompositeOFAdd* ca_of = new CompositeOFAdd(LP3,LP2);
-       CompositeOFMultiply* cm_of = new CompositeOFMultiply(LP3,LP2);
+       CompositeOFScalarAdd csa_of(2,&LP2);
+       CompositeOFScalarMultiply csm_of(20,&LP2);
+       CompositeOFAdd ca_of(&LP3,&LP2);
+       CompositeOFMultiply cm_of(&LP3,&LP2);
        
          //test scalar add
-       compare_numerical_analytical_gradient(csa_of, m12Hex);
+       compare_numerical_analytical_gradient(&csa_of, m12Hex);
          //test scalar multiply
-       compare_numerical_analytical_gradient(csm_of, m12Hex);
+       compare_numerical_analytical_gradient(&csm_of, m12Hex);
          //test add
-       compare_numerical_analytical_gradient(ca_of, m12Hex);
+       compare_numerical_analytical_gradient(&ca_of, m12Hex);
          //test multiply
-       compare_numerical_analytical_gradient(cm_of, m12Hex);
+       compare_numerical_analytical_gradient(&cm_of, m12Hex);
+
+       delete mean_ratio;
      }
   
 
@@ -370,6 +376,8 @@ public:
 	CPPUNIT_ASSERT_DOUBLES_EQUAL((*mat)[i][j], mat13[i][j], 1e-4);
     
 //    cout << H <<endl;
+
+    delete mean_ratio;
   }
 
 
@@ -422,7 +430,8 @@ public:
             CPPUNIT_ASSERT_DOUBLES_EQUAL( (*block_num)[i][j], (*block_ana)[i][j], 0.001);
       }
     }
-    
+
+    delete mean_ratio;
   }
 
   
