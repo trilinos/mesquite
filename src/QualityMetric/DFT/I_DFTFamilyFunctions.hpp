@@ -147,7 +147,7 @@ namespace Mesquite
 		       const double beta  = 0.0,/* max in denominator        */
 		       const double delta = 0.0)/* no modification           */
   {
-    double matr[9], f, t1, t2 = 0.0;
+    double matr[9], f, t1, t2;
     double matd[9], g;
 
     /* Calculate M = A*inv(R). */
@@ -174,14 +174,11 @@ namespace Mesquite
          matr[3]*(matr[2]*matr[7] - matr[1]*matr[8]) +
          matr[6]*(matr[1]*matr[5] - matr[2]*matr[4]);
 
-    /* Calculate sqrt(det(M)^2 + 4*beta^2). */
-    if (beta) {
-      t2 = sqrt(t1*t1 + 4.0*beta*beta);
-    }
+    if ((0.0 == beta) && (t1 < MSQ_MIN)) { obj = t1; return false; }
 
-    /* Calculate denominator. */
+    /* Calculate sqrt(det(M)^2 + 4*beta^2) and denominator. */
+    t2 = sqrt(t1*t1 + 4.0*beta*beta);
     g = t1 + t2;
-    if (g < MSQ_MIN) { obj = g; return false; }
     
     /* Calculate N = M - delta*Q. */
     matd[0] = matr[0] - delta*Q[0][0];
@@ -200,12 +197,7 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    if (beta) {
-      obj = kappa / pow(0.5, alpha) * f / pow(g, alpha);
-    }
-    else {
-      obj = kappa * f / pow(g, alpha);
-    }
+    obj = kappa * pow(2.0, alpha) * f / pow(g, alpha);
     return true;
   }
 
@@ -218,7 +210,7 @@ namespace Mesquite
 		       const double beta  = 0.0,/* max in denominator        */
 		       const double delta = 0.0)/* no modification           */
   {
-    double matr[9], f, t1, t2 = 0.0;
+    double matr[9], f, t1, t2;
     double matd[9], g;
 
     /* Calculate M = A*inv(R). */
@@ -248,14 +240,11 @@ namespace Mesquite
          matr[3]*(matr[2]*matr[7] - matr[1]*matr[8]) +
          matr[6]*(matr[1]*matr[5] - matr[2]*matr[4]);
 
-    /* Calculate sqrt(det(M)^2 + 4*beta^2). */
-    if (beta) {
-      t2 = sqrt(t1*t1 + 4.0*beta*beta);
-    }
+    if ((0.0 == beta) && (t1 < MSQ_MIN)) { obj = t1; return false; }
 
-    /* Calculate denominator. */
+    /* Calculate sqrt(det(M)^2 + 4*beta^2) and denominator. */
+    t2 = sqrt(t1*t1 + 4.0*beta*beta);
     g = t1 + t2;
-    if (g < MSQ_MIN) { obj = g; return false; }
     
     /* Calculate N = M - delta*Q. */
     matd[0] = matr[0] - delta*Q[0][0];
@@ -274,12 +263,7 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    if (beta) {
-      obj = kappa / pow(0.5, alpha) * f / pow(g, alpha);
-    }
-    else {
-      obj = kappa * f / pow(g, alpha);
-    }
+    obj = kappa * pow(2.0, alpha) * f / pow(g, alpha);
     return true;
   }
 
@@ -292,7 +276,7 @@ namespace Mesquite
 		       const double beta  = 0.0,/* max in denominator        */
 		       const double delta = 0.0)/* no modification           */
   {
-    double matr[9], f, t1, t2 = 0.0;
+    double matr[9], f, t1, t2;
     double matd[9], g;
     double adjm[9], loc1, loc2, loc3, loc4;
 
@@ -324,14 +308,11 @@ namespace Mesquite
     loc3 = matr[3]*matr[7] - matr[4]*matr[6];
     t1 = matr[0]*loc1 + matr[1]*loc2 + matr[2]*loc3;
 
-    /* Calculate sqrt(det(M)^2 + 4*beta^2). */
-    if (beta) {
-      t2 = sqrt(t1*t1 + 4.0*beta*beta);
-    }
+    if ((0.0 == beta) && (t1 < MSQ_MIN)) { obj = t1; return false; }
 
-    /* Calculate denominator. */
+    /* Calculate sqrt(det(M)^2 + 4*beta^2) and denominator. */
+    t2 = sqrt(t1*t1 + 4.0*beta*beta);
     g = t1 + t2;
-    if (g < MSQ_MIN) { obj = g; return false; }
     
     /* Calculate N = M - delta*Q. */
     matd[0] = matr[0] - delta*Q[0][0];
@@ -350,22 +331,12 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    if (beta) {
-      loc4 = kappa / pow(0.5, alpha) / pow(g, alpha);
-    }
-    else {
-      loc4 = kappa / pow(g, alpha);
-    }
+    loc4 = kappa * pow(2.0, alpha) / pow(g, alpha);
     obj = f * loc4;
 
     /* Calculate the derivative of the objective function. */
     f = 2.0 * loc4;
-    if (beta) {
-      g = -alpha * obj / t2;
-    }
-    else {
-      g = -alpha * obj / g;
-    }
+    g = -alpha * obj / t2;
 
     /* Calculate adjoint matrix */
     adjm[0] = f*matd[0] + g*loc1;
@@ -411,8 +382,8 @@ namespace Mesquite
 		       const double beta  = 0.0,/* max in denominator        */
 		       const double delta = 0.0)/* no modification           */
   {
-    double matr[9], f, t1, t2 = 0.0;
-    double matd[9], g, t3 = 0.0, loc1;
+    double matr[9], f, t1, t2;
+    double matd[9], g, t3, loc1;
     double adjm[9], dg[9], dobj_df, dobj_dfdg, dobj_dg, dobj_dgdg;
     double J_A[6], J_B[10], J_C[10], J_D[6], J_E[10], J_F[6];
     double A[12];
@@ -452,15 +423,12 @@ namespace Mesquite
 
     t1 = matr[0]*dg[0] + matr[1]*dg[1] + matr[2]*dg[2];
 
-    /* Calculate sqrt(det(M)^2 + 4*beta^2). */
-    if (beta) {
-      t2 = t1*t1 + 4.0*beta*beta;
-      t3 = sqrt(t2);
-    }
+    if ((0.0 == beta) && (t1 < MSQ_MIN)) { obj = t1; return false; }
 
-    /* Calculate denominator. */
+    /* Calculate sqrt(det(M)^2 + 4*beta^2) and denominator. */
+    t2 = t1*t1 + 4.0*beta*beta;
+    t3 = sqrt(t2);
     g = t1 + t3;
-    if (g < MSQ_MIN) { obj = g; return false; }
     
     /* Calculate N = M - delta*Q. */
     matd[0] = matr[0] - delta*Q[0][0];
@@ -479,29 +447,15 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    if (beta) {
-      loc1 = kappa / pow(0.5, alpha) / pow(g, alpha);
-    }
-    else {
-      loc1 = kappa / pow(g, alpha);
-    }
+    loc1 = kappa * pow(2.0, alpha) / pow(g, alpha);
     obj = f * loc1;
 
     /* Calculate the derivative of the objective function. */
-    if (beta) {
-      t3 = 1.0 / t3;
-      dobj_df = 2.0 * loc1;
-      dobj_dg = -alpha * obj * t3;
-      dobj_dfdg = -alpha * dobj_df * t3;
-      dobj_dgdg = dobj_dg * ((-alpha - 1.0)*t3 + 4.0*beta*beta/(t2*g));
-    }
-    else {
-      g = 1.0 / g;
-      dobj_df = 2.0 * loc1;
-      dobj_dg = -alpha * obj * g;  
-      dobj_dfdg = -alpha * dobj_df * g;
-      dobj_dgdg = (-alpha - 1.0) * dobj_dg * g;
-    }
+    t3 = 1.0 / t3;
+    dobj_df = 2.0 * loc1;
+    dobj_dg = -alpha * obj * t3;
+    dobj_dfdg = -alpha * dobj_df * t3;
+    dobj_dgdg = dobj_dg * ((-alpha - 1.0)*t3 + 4.0*beta*beta/(t2*g));
 
     /* Calculate adjoint matrix */
     adjm[0] = dobj_df*matd[0] + dobj_dg*dg[0];
