@@ -45,14 +45,6 @@ bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
 				     {6, 5, 7, 2},
 				     {7, 6, 4, 3}};
 
-  const double a2_con =  1.0 / 2.0;
-  const double b2_con =  1.0;
-  const double c2_con = -1.0;
-
-  const double a3_con =  1.0 / 3.0;
-  const double b3_con =  1.0;
-  const double c3_con = -2.0 / 3.0;
-
   const Vector3D d_con(1.0, 1.0, 1.0);
 
   int i;
@@ -66,19 +58,19 @@ bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
     mCoords[0] = vertices[v_i[0]];
     mCoords[1] = vertices[v_i[1]];
     mCoords[2] = vertices[v_i[2]];
-    metric_valid = m_fcn_2e(m, mCoords, n, a2_con, b2_con, c2_con);
+    metric_valid = m_fcn_2e(m, mCoords, n, a2Con, b2Con, c2Con);
     if (!metric_valid) return false;
     break;
     
   case QUADRILATERAL:
     pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
+    n = n / n.length();	// Need unit normal
     for (i = 0; i < 4; ++i) {
-      n = n / n.length();	// Need unit normal
       mCoords[0] = vertices[v_i[locs_hex[i][0]]];
       mCoords[1] = vertices[v_i[locs_hex[i][1]]];
       mCoords[2] = vertices[v_i[locs_hex[i][2]]];
       metric_valid = m_fcn_2i(mMetrics[i], mCoords, n, 
-			      a2_con, b2_con, c2_con, d_con);
+			      a2Con, b2Con, c2Con, d_con);
       if (!metric_valid) return false;
     }
     m = average_metrics(mMetrics, 4, err);
@@ -89,7 +81,7 @@ bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
     mCoords[1] = vertices[v_i[1]];
     mCoords[2] = vertices[v_i[2]];
     mCoords[3] = vertices[v_i[3]];
-    metric_valid = m_fcn_3e(m, mCoords, a3_con, b3_con, c3_con);
+    metric_valid = m_fcn_3e(m, mCoords, a3Con, b3Con, c3Con);
     if (!metric_valid) return false;
     break;
 
@@ -100,7 +92,7 @@ bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
       mCoords[2] = vertices[v_i[locs_hex[i][2]]];
       mCoords[3] = vertices[v_i[locs_hex[i][3]]];
       metric_valid = m_fcn_3i(mMetrics[i], mCoords, 
-			      a3_con, b3_con, c3_con, d_con);
+			      a3Con, b3Con, c3Con, d_con);
       if (!metric_valid) return false;
     }
     m = average_metrics(mMetrics, 8, err);
@@ -148,14 +140,6 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 				     {6, 5, 7, 2},
 				     {7, 6, 4, 3}};
 
-  const double a2_con =  1.0 / 2.0;
-  const double b2_con =  1.0;
-  const double c2_con = -1.0;
-
-  const double a3_con =  1.0 / 3.0;
-  const double b3_con =  1.0;
-  const double c3_con = -2.0 / 3.0;
-
   const Vector3D d_con(1.0, 1.0, 1.0);
 
   int i, j;
@@ -171,7 +155,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
     mCoords[0] = vertices[v_i[0]];
     mCoords[1] = vertices[v_i[1]];
     mCoords[2] = vertices[v_i[2]];
-    if (!g_fcn_2e(m, mAccumGrad, mCoords, n, a2_con, b2_con, c2_con)) return false;
+    if (!g_fcn_2e(m, mAccumGrad, mCoords, n, a2Con, b2Con, c2Con)) return false;
 
     // This is not very efficient, but is one way to select correct gradients.
     // For gradients, info is returned only for free vertices, in the 
@@ -195,7 +179,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
       mCoords[1] = vertices[v_i[locs_hex[i][1]]];
       mCoords[2] = vertices[v_i[locs_hex[i][2]]];
       if (!g_fcn_2i(mMetrics[i], mGradients+3*i, mCoords, n,
-		    a2_con, b2_con, c2_con, d_con)) return false;
+		    a2Con, b2Con, c2Con, d_con)) return false;
     }
 
     switch(avgMethod) {
@@ -360,7 +344,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
     mCoords[1] = vertices[v_i[1]];
     mCoords[2] = vertices[v_i[2]];
     mCoords[3] = vertices[v_i[3]];
-    metric_valid = g_fcn_3e(m, mAccumGrad, mCoords, a3_con, b3_con, c3_con);
+    metric_valid = g_fcn_3e(m, mAccumGrad, mCoords, a3Con, b3Con, c3Con);
     if (!metric_valid) return false;
 
     // This is not very efficient, but is one way to select correct gradients.
@@ -384,7 +368,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
       mCoords[2] = vertices[v_i[locs_hex[i][2]]];
       mCoords[3] = vertices[v_i[locs_hex[i][3]]];
       if (!g_fcn_3i(mMetrics[i], mGradients+4*i, mCoords, 
-		    a3_con, b3_con, c3_con, d_con)) return false;
+		    a3Con, b3Con, c3Con, d_con)) return false;
     }
 
     switch(avgMethod) {
@@ -598,14 +582,6 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 				     {6, 5, 7, 2},
 				     {7, 6, 4, 3}};
 
-  const double a2_con =  1.0 / 2.0;
-  const double b2_con =  1.0;
-  const double c2_con = -1.0;
-
-  const double a3_con =  1.0 / 3.0;
-  const double b3_con =  1.0;
-  const double c3_con = -2.0 / 3.0;
-
   const Vector3D d_con(1.0, 1.0, 1.0);
 
   int i, j, k, l, ind;
@@ -622,7 +598,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     mCoords[0] = vertices[v_i[0]];
     mCoords[1] = vertices[v_i[1]];
     mCoords[2] = vertices[v_i[2]];
-    if (!h_fcn_2e(m, g, h, mCoords, n, a2_con, b2_con, c2_con)) return false;
+    if (!h_fcn_2e(m, g, h, mCoords, n, a2Con, b2Con, c2Con)) return false;
 
     // zero out fixed elements of g
     j = 0;
@@ -664,7 +640,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
       mCoords[1] = vertices[v_i[locs_hex[i][1]]];
       mCoords[2] = vertices[v_i[locs_hex[i][2]]];
       if (!h_fcn_2i(mMetrics[i], mGradients+3*i, mHessians+6*i, mCoords, n,
-		    a2_con, b2_con, c2_con, d_con)) return false;
+		    a2Con, b2Con, c2Con, d_con)) return false;
     }
 
     switch(avgMethod) {
@@ -890,7 +866,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     mCoords[1] = vertices[v_i[1]];
     mCoords[2] = vertices[v_i[2]];
     mCoords[3] = vertices[v_i[3]];
-    metric_valid = h_fcn_3e(m, g, h, mCoords, a3_con, b3_con, c3_con);
+    metric_valid = h_fcn_3e(m, g, h, mCoords, a3Con, b3Con, c3Con);
     if (!metric_valid) return false;
 
     // zero out fixed elements of g
@@ -936,7 +912,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
       mCoords[2] = vertices[v_i[locs_hex[i][2]]];
       mCoords[3] = vertices[v_i[locs_hex[i][3]]];
       if (!h_fcn_3i(mMetrics[i], mGradients+4*i, mHessians+10*i, mCoords,
-		    a3_con, b3_con, c3_con, d_con)) return false;
+		    a3Con, b3Con, c3Con, d_con)) return false;
     }
 
     switch(avgMethod) {

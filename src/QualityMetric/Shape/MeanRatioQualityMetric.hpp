@@ -41,6 +41,13 @@ namespace Mesquite
        avgMethod=QualityMetric::LINEAR;
        feasible=1;
        set_name("Mean Ratio");
+       a2Con =  1.0 / 2.0;
+       b2Con =  1.0;
+       c2Con = -1.0;
+
+       a3Con =  1.0 / 3.0;
+       b3Con =  1.0;
+       c3Con = -2.0 / 3.0;
      }
 
    public:
@@ -48,13 +55,24 @@ namespace Mesquite
         does not use the sample point functionality or the
         compute_weighted_jacobian.  It evaluates the metric at
         the element vertices, and uses the isotropic ideal element.
-        It does require a feasible region, and the metric needs
-        to be minimized.
+        Optionally, the metric computation can be raised to the
+        'pow_dbl' power.  This does not necessarily raise the metric
+        value to the 'pow_dbl' power but instead raises each local
+        metric.  For example, if the corner mean ratios of a quadraliteral
+        element were m1,m2,m3, and m4 and we set pow_dbl=2 and
+        used linear averaging, the metric value would then be
+        m = .25(m1*m1 + m2*m2 + m3*m3 + m4*m4).  The metric does
+        require a feasible region, and the metric needs to be minimized
+        if pow_dbl is greater than zero and maximized if pow_dbl
+        is less than zero.  pow_dbl being equal to zero is invalid.
       */
-      static ShapeQualityMetric* create_new() {
-         ShapeQualityMetric* m = new MeanRatioQualityMetric();
-         return m;
+      static ShapeQualityMetric* create_new(double pow_dbl=1.0) {
+         MeanRatioQualityMetric* m = new MeanRatioQualityMetric();
+         m->set_metric_power(pow_dbl);
+         ShapeQualityMetric* r_m=m;
+         return r_m;
       }
+     
      
       //! virtual destructor ensures use of polymorphism during destruction
       virtual ~MeanRatioQualityMetric() {
@@ -82,6 +100,24 @@ namespace Mesquite
                                               MsqError &err);
       
     private:
+       //! Sets the power value in the metric computation.
+     void set_metric_power(double pow_dbl)
+        {
+          if(fabs(pow_dbl)<MSQ_MIN){
+            pow_dbl=1.0;
+            PRINT_WARNING("\nInvalid power passed to set_metric_power(double ), Metric using the default value, 1.0, instead.");
+          }
+          if(pow_dbl<0)
+            set_negate_flag(-1);
+          else
+            set_negate_flag(1);
+          a2Con=pow(.5,pow_dbl);
+          b2Con=pow_dbl;
+          c2Con=-pow_dbl;
+          a3Con=pow(1.0/3.0,pow_dbl);
+          b3Con=pow_dbl;
+          c3Con=-2.0*pow_dbl/3.0;
+        }
       // arrays used in Hessian computations 
       // We allocate them here, so that one allocation only is done.
       // This gives a big computation speed increase.
@@ -91,8 +127,17 @@ namespace Mesquite
       Matrix3D mHessians[80]; // Hessian of metric with respect to the coords
       double   mMetrics[8]; // Metric values for the (decomposed) elements
       double   g_factor[8]; // Metric values for the (decomposed) elements
-      double   h_factor[8]; // Metric values for the (decomposed) elements
-
+     double   h_factor[8]; // Metric values for the (decomposed) elements
+       //variables used in the definition of the metric (2d and 3d)
+     double a2Con;
+     double b2Con;
+     double c2Con;
+     
+     double a3Con;
+     double b3Con;
+     double c3Con;
+     
+     
    };
 } //namespace
 
