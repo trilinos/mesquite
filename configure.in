@@ -321,7 +321,7 @@ if test "$MOAB_ARG" == "yes"; then
 elif test -n "$MOAB_ARG" -a  "$MOAB_ARG" != "no"; then
   MOAB_DIR="$MOAB_ARG"
   MOAB_INC='-I$(MOAB_DIR) -I$(MOAB_DIR)/TSTT -I$(MOAB_DIR)/TSTT/server'
-  MOAB_LNK='-L$(MOAB_DIR) -lMOAB -L$(MOAB_DIR)/TSTT -lMOABserver $(NETCDF_CXX_LNK) $(HDF5_LNK)'
+  MOAB_LNK='-L$(MOAB_DIR) -lMOAB -L$(MOAB_DIR)/TSTT -lMOABserver -lTSTTserver $(NETCDF_CXX_LNK) $(HDF5_LNK)'
   TSTT_MESH_IMPL=MOAB
   
   if test -z "NETCDF_CXX_LNK"; then
