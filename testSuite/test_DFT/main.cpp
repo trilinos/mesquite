@@ -29,7 +29,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 13-Apr-04 at 10:57:52
-//  LAST-MOD:  3-Jun-04 at 15:19:11 by Thomas Leurent
+//  LAST-MOD:  3-Jun-04 at 16:16:07 by Thomas Leurent
 //
 //
 // DESCRIPTION:
@@ -163,11 +163,14 @@ int main(int argc, char* argv[])
   
   queue1.add_quality_assessor(&stop_qa, err); MSQ_CHKERR(err);
 
-mesh->write_vtk("original_mesh",err); MSQ_CHKERR(err);
+  ref_mesh_set.write_gnuplot("ref_mesh",err); MSQ_CHKERR(err);
+
+  mesh_set1.write_gnuplot("ori_mesh",err); MSQ_CHKERR(err);
   
   // launches optimization on mesh_set1
- queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
+  queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
   
-mesh->write_vtk("smoothed_mesh", err); MSQ_CHKERR(err);
+  mesh_set1.write_gnuplot("smo_mesh", err); MSQ_CHKERR(err);
+
   PRINT_TIMING_DIAGNOSTICS();
 }
