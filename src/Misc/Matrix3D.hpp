@@ -5,7 +5,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 18-Dec-02 at 11:08:22
-//  LAST-MOD: 18-Dec-02 at 15:06:27 by Thomas Leurent
+//  LAST-MOD: 19-Dec-02 at 10:01:43 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -40,6 +40,8 @@
 namespace Mesquite
 {
 
+  /*! \class Matrix3D
+      \brief 3*3 Matric class, row-oriented, 0-based [i][j] indexing.*/
   class Matrix3D 
   {
   protected:
@@ -133,14 +135,21 @@ namespace Mesquite
       return *this;
     }
 
-    // Comparison functions
+    // Matrix Operators
     friend bool operator==(const Matrix3D &lhs, const Matrix3D &rhs);
     friend bool operator!=(const Matrix3D &lhs, const Matrix3D &rhs);
+    friend Matrix3D operator+(const Matrix3D &A, const Matrix3D &B);
+    friend Matrix3D operator-(const Matrix3D &A, const Matrix3D &B);
+    friend Matrix3D operator*(const Matrix3D &A, const Matrix3D &B);
+    friend Matrix3D mult_element(const Matrix3D &A, const Matrix3D &B);
+    friend Matrix3D transpose(const Matrix3D &A);
+    friend int matmult(Matrix3D& C, const Matrix3D  &A, const Matrix3D &B);
+    friend Vector3D operator*(const Matrix3D  &A, const Vector3D &x);
+    friend Vector3D operator*(const Vector3D &x, const Matrix3D  &A);
+    Matrix3D plus_transpose(const Matrix3D &B);
 
     size_t num_rows() const { return 3; }
     size_t num_cols() const { return 3; }
-
-    Matrix3D plus_transpose(const Matrix3D &B);
 
     //! returns a pointer to a row.
     inline double* operator[](size_t i)
@@ -165,7 +174,7 @@ namespace Mesquite
   };
 
 
-  /* ***************************  I/O  ********************************/
+  /* ***********  I/O  **************/
 
   std::ostream& operator<<(std::ostream &s, const Matrix3D &A)
   {
@@ -188,7 +197,7 @@ namespace Mesquite
     return s;
   }
 
-  // *******************[ basic matrix algorithms ]***************************
+  // *********** matrix operators *******************
 
   // comparison functions
   inline bool operator==(const Matrix3D &lhs, const Matrix3D &rhs)
@@ -302,6 +311,7 @@ namespace Mesquite
     return 0;
   }
 
+  /*! \brief Computes \f$ A v \f$ . */
   inline Vector3D operator*(const Matrix3D  &A, const Vector3D &x)
   {
     Vector3D tmp;
@@ -315,6 +325,23 @@ namespace Mesquite
         tmp[i] = sum; 
       }
     return tmp;
+  }
+
+  /*! \brief Computes \f$ v^T A \f$ .
+    
+      This function implicitly considers the transpose of vector x times
+      the matrix A and it is implicit that the returned vector must be
+      transposed. */
+  inline Vector3D operator*(const Vector3D &x, const Matrix3D  &A)
+  {
+    Vector3D res(0., 0., 0.);
+    for (size_t i=0; i<3; ++i)
+      {
+        const double* rowi = A[i];
+        for (size_t j=0; j<3; ++j)
+          res[j] += rowi[j] * x[i];
+      }
+    return res;
   }
 
 } // namespace Mesquite
