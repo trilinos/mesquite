@@ -30,8 +30,7 @@ bool VertexConditionNumberQualityMetric::evaluate_vertex(PatchData &pd,
                                                          double &fval,
                                                          MsqError &err)
 {
-    //generate v to e connectivity if it hasn't alread been done
-  pd.generate_vertex_to_element_data();
+    //pd.generate_vertex_to_element_data();
   bool return_flag;
   fval=MSQ_MAX_CAP;
     //get the element array

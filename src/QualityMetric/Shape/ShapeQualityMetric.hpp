@@ -21,9 +21,13 @@ namespace Mesquite
 {
    class ShapeQualityMetric : public QualityMetric
   {
+      /*! \class ShapeQualityMetric
+       \brief Parent class for the Shape Quality Metrics.
+       
+     */
    public:
     
-      // virtual destructor ensures use of polymorphism during destruction
+      //! virtual destructor ensures use of polymorphism during destruction
     virtual ~ShapeQualityMetric()
        {};
 
@@ -31,10 +35,10 @@ namespace Mesquite
  
       //void compute_scalar_weights(int num_scalar_weights, double scalar_weights[], MsqError &err);
 
-      //given the 2-d jacobian matrix, compute the condition number, fval 
+      //! Given the 2-d jacobian matrix, compute the condition number, fval 
     bool condition_number_2d(Vector3D temp_vec[],size_t v_ind, PatchData &pd,
                               double &fval, MsqError &err);
-      //given the 3-d jacobian matrix, compute the condition number, fval 
+      //! Given the 3-d jacobian matrix, compute the condition number, fval 
     bool condition_number_3d(Vector3D temp_vec[],double &fval, MsqError &err);
     
    private:

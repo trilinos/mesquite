@@ -79,7 +79,6 @@ namespace Mesquite
      if(num_jacobian_vectors==2){
        size_t vert=element->get_vertex_index(0);
        Vector3D cross_vec=jacobian_vectors[0]*jacobian_vectors[1];
-
        if ( pd.domain_set() ) {
          Vector3D norm_vec;
          pd.get_domain_normal_at_vertex(vert,norm_vec,err);MSQ_CHKERR(err);
@@ -87,7 +86,7 @@ namespace Mesquite
            return false;
          }
        }
-       
+
        temp_var=fabs((cross_vec).length());
        fval=jacobian_vectors[0].length_squared();
        fval+=jacobian_vectors[1].length_squared();

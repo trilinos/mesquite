@@ -23,15 +23,13 @@ using namespace Mesquite;
   the LocalSizeQualityMetric computes the corner volumes (or areas) of
   each e_i at the corner defined by vert.  The corner volume is defined
   as the volume of the tet defined by the edges of an element which contain
-  the common vertex, vert.  That volume is then dived by the average corner
+  the common vertex, vert.  That volume is then diveded by the average corner
   volume of all the element corners connected to this vertex.  For
   vertices attached to pyramid elements, this metric is undefined.
 */
 bool LocalSizeQualityMetric::evaluate_vertex(PatchData &pd, MsqVertex* vert,
                                              double &fval, MsqError &err)
 {
-  pd.generate_vertex_to_element_data();
-    //initialize the metric value to zero
   fval=0.0;
     //get the element array
   MsqMeshEntity* elems = pd.get_element_array(err);
