@@ -6,6 +6,7 @@ OBJFUNCSRC = $(OBJFUNCDIR)/CompositeOFAdd.cpp\
 	       $(OBJFUNCDIR)/CompositeOFScalarMultiply.cpp \
 	       $(OBJFUNCDIR)/LInfTemplate.cpp \
 	       $(OBJFUNCDIR)/LPTemplate.cpp \
+	       $(OBJFUNCDIR)/LPtoPTemplate.cpp \
 	       $(OBJFUNCDIR)/MinTemplate.cpp \
 	       $(OBJFUNCDIR)/ObjectiveFunction.cpp 
 
