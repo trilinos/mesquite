@@ -8,5 +8,5 @@ all_tests: $(UNTEXEC)
 
 $(UNTEXEC): $(UNTSRC) $(locallibdir)/mesquite.a
 	@echo "Linking Mesquite driver application ($@)..."
-	${LINKER} $(CXXFLAGS) ${LDFLAGS} -o $@ ${UNTSRC} $(locallibdir)/mesquite.a -Lexternal/AOMD/lib/ -lAOMD-O
+	${LINKER} $(CXXFLAGS) ${LDFLAGS} -o $@ ${UNTSRC} $(locallibdir)/mesquite.a -Lexternal/AOMD/lib/ -lAOMD
 
