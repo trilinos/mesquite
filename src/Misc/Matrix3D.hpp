@@ -224,6 +224,9 @@ namespace Mesquite
     //! \f$ B *= A^{-1} \f$
     friend void timesInvA(Matrix3D& B, const Matrix3D &A);
 
+    //! \f$ Q*R = A \f$
+    friend void QR(Matrix3D &Q, Matrix3D &R, const Matrix3D &A);
+
     size_t num_rows() const { return 3; }
     size_t num_cols() const { return 3; }
 
@@ -587,6 +590,49 @@ namespace Mesquite
     Ainv[2][2] = inv_detA*( A.v_[0]*A.v_[4]-A.v_[3]*A.v_[1] );
 
     B = B*Ainv;
+  }
+
+  inline void QR(Matrix3D &Q, Matrix3D &R, const Matrix3D &A) {
+    // Compute the QR factorization of A.  This code uses the
+    // Modified Gram-Schmidt method for computing the factorization.
+    // The Householder version is more stable, but costs twice as many
+    // floating point operations.
+
+    Q = A;
+
+    R[0][0] = sqrt(Q[0][0]*Q[0][0] + Q[1][0]*Q[1][0] + Q[2][0]*Q[2][0]);
+    R[1][0] = 0.0L;
+    R[2][0] = 0.0L;
+    Q[0][0] /= R[0][0];
+    Q[1][0] /= R[0][0];
+    Q[2][0] /= R[0][0];
+
+    R[0][1]  = Q[0][0]*Q[0][1] + Q[1][0]*Q[1][1] + Q[2][0]*Q[2][1];
+    Q[0][1] -= Q[0][0]*R[0][1];
+    Q[1][1] -= Q[1][0]*R[0][1];
+    Q[2][1] -= Q[2][0]*R[0][1];
+
+    R[0][2]  = Q[0][0]*Q[0][2] + Q[1][0]*Q[1][2] + Q[2][0]*Q[2][2];
+    Q[0][2] -= Q[0][0]*R[0][2];
+    Q[1][2] -= Q[1][0]*R[0][2];
+    Q[2][2] -= Q[2][0]*R[0][2];
+
+    R[1][1] = sqrt(Q[0][1]*Q[0][1] + Q[1][1]*Q[1][1] + Q[2][1]*Q[2][1]);
+    R[2][1] = 0.0L;
+    Q[0][1] /= R[1][1];
+    Q[1][1] /= R[1][1];
+    Q[2][1] /= R[1][1];
+
+    R[1][2]  = Q[0][1]*Q[0][2] + Q[1][1]*Q[1][2] + Q[2][1]*Q[2][2];
+    Q[0][2] -= Q[0][1]*R[1][2];
+    Q[1][2] -= Q[1][1]*R[1][2];
+    Q[2][2] -= Q[2][1]*R[1][2];
+  
+    R[2][2] = sqrt(Q[0][2]*Q[0][2] + Q[1][2]*Q[1][2] + Q[2][2]*Q[2][2]);
+    Q[0][2] /= R[2][2];
+    Q[1][2] /= R[2][2];
+    Q[2][2] /= R[2][2];
+    return;
   }
 
 } // namespace Mesquite
