@@ -5,7 +5,7 @@
 //    E-MAIL: tmunson@mcs.anl.gov
 //
 // ORIG-DATE:  2-Jan-03 at 11:02:19 by Thomas Leurent
-//  LAST-MOD:  9-Apr-03 at 17:02:57 by Thomas Leurent
+//  LAST-MOD: 19-May-03 at 11:30:09 by Michael Brewer
 //
 // DESCRIPTION:
 // ============
@@ -67,7 +67,7 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
   
   size_t num_vertices = pd.num_vertices();
   size_t num_elements = pd.num_elements();
-  std::vector<size_t> vtx_list;
+  size_t const * vtx_list;
   size_t e, r, rs, re, c, cs, ce, nz, nnz, nve, i, j;
   MsqMeshEntity* element_array = pd.get_element_array(err); MSQ_CHKERR(err);
 
@@ -91,7 +91,7 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
 
   for (e = 0; e < num_elements; ++e) {
     nve = element_array[e].vertex_count();
-    element_array[e].get_vertex_indices(vtx_list);
+    vtx_list = element_array[e].get_vertex_index_array();
     mAccumElemStart[e+1] = mAccumElemStart[e] + (nve+1)*nve/2;
     
     for (i = 0; i < nve; ++i) {
@@ -126,7 +126,7 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
   nz = 0;
   for (e = 0; e < num_elements; ++e) {
     nve = element_array[e].vertex_count();
-    element_array[e].get_vertex_indices(vtx_list);
+    vtx_list = element_array[e].get_vertex_index_array();
 
     for (i = 0; i < nve; ++i) {
       r = vtx_list[i];

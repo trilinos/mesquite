@@ -5,7 +5,7 @@
 //    E-MAIL: tmunson@mcs.anl.gov
 //
 // ORIG-DATE:  2-Jan-03 at 11:02:19 bu Thomas Leurent
-//  LAST-MOD:  9-Apr-03 at 17:11:27 by Thomas Leurent
+//  LAST-MOD: 19-May-03 at 13:11:09 by Michael Brewer
 //
 // DESCRIPTION:
 // ============
@@ -242,7 +242,7 @@ namespace Mesquite
 #undef __FUNC__
 #define __FUNC__ "MsqHessian::get_block"
   /*! Returns a pointer to the Matrix3D block at position i,j if it exist. 
-      Returns the NULL pointer if position i,j is a NULL entry.
+      Returns the NULL pointer if position i,j (0-based) is a NULL entry.
       Note that block i,j must be in the upper triangular part of the 
       (symetric) hessian. */
   inline Matrix3D* MsqHessian::get_block(size_t i, size_t j)
