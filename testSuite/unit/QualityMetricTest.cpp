@@ -68,6 +68,11 @@ correct metric return values.
 #include "LocalSizeQualityMetric.hpp"
 #include "CornerJacobianQualityMetric.hpp"
 #include "I_DFT.hpp"
+#include "I_DFT_WeakBarrier.hpp"
+#include "I_DFT_NoBarrier.hpp"
+#include "I_DFT_StrongBarrier.hpp"
+#include "I_DFT_InverseMeanRatio.hpp"
+#include "I_DFT_Generalized.hpp"
 #include "PowerQualityMetric.hpp"
 #include "ScalarAddQualityMetric.hpp"
 #include "MeshImpl.hpp"
@@ -141,10 +146,34 @@ private:
     //I_DFT
   CPPUNIT_TEST (test_i_dft_tet_gradient);
   CPPUNIT_TEST (test_i_dft_hex_gradient);
+  CPPUNIT_TEST (test_i_dft_imr_tet_gradient);
+  CPPUNIT_TEST (test_i_dft_imr_hex_gradient);
+  CPPUNIT_TEST (test_i_dft_weak_barrier_tet_gradient);
+  CPPUNIT_TEST (test_i_dft_weak_barrier_hex_gradient);
+  CPPUNIT_TEST (test_i_dft_nobarrier_tet_gradient);
+  CPPUNIT_TEST (test_i_dft_nobarrier_hex_gradient);
+  CPPUNIT_TEST (test_i_dft_strong_barrier_tet_gradient);
+  CPPUNIT_TEST (test_i_dft_strong_barrier_hex_gradient);
   CPPUNIT_TEST (test_i_dft_tet_hessian);
   CPPUNIT_TEST (test_i_dft_hex_hessian);
+  CPPUNIT_TEST (test_i_dft_weak_barrier_tet_hessian);
+  CPPUNIT_TEST (test_i_dft_weak_barrier_hex_hessian);
+  CPPUNIT_TEST (test_i_dft_nobarrier_tet_hessian);
+  CPPUNIT_TEST (test_i_dft_nobarrier_hex_hessian);
+  CPPUNIT_TEST (test_i_dft_strong_barrier_tet_hessian);
+  CPPUNIT_TEST (test_i_dft_strong_barrier_hex_hessian);
+  CPPUNIT_TEST (test_i_dft_imr_tet_hessian);
+  CPPUNIT_TEST (test_i_dft_imr_hex_hessian);
   CPPUNIT_TEST (test_i_dft_tet_grad_from_hessian);
   CPPUNIT_TEST (test_i_dft_hex_grad_from_hessian);
+  CPPUNIT_TEST (test_i_dft_imr_tet_grad_from_hessian);
+  CPPUNIT_TEST (test_i_dft_imr_hex_grad_from_hessian);
+  CPPUNIT_TEST (test_i_dft_weak_barrier_tet_grad_from_hessian);
+  CPPUNIT_TEST (test_i_dft_weak_barrier_hex_grad_from_hessian);
+  CPPUNIT_TEST (test_i_dft_strong_barrier_tet_grad_from_hessian);
+  CPPUNIT_TEST (test_i_dft_strong_barrier_hex_grad_from_hessian);
+  CPPUNIT_TEST (test_i_dft_nobarrier_tet_grad_from_hessian);
+  CPPUNIT_TEST (test_i_dft_nobarrier_hex_grad_from_hessian);
 
   CPPUNIT_TEST (test_untangle_metric);
 
@@ -880,7 +909,7 @@ public:
 
     //for I_DFT test to make sure the numerical and analytical gradients
     // are equivalent
-void test_i_dft_gradient(PatchData &pd)
+void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
   {
     MsqPrintError err(cout); 
     Vector3D* grad_num = new Vector3D[2];
@@ -898,13 +927,13 @@ void test_i_dft_gradient(PatchData &pd)
     two_vtces[1] = &vertices[bad_elem_vertex_indices[2]];
     
     // creates an I_DFT quality metric ...
-    QualityMetric* i_dft_metric = new I_DFT();
+    //QualityMetric* i_dft_metric = new I_DFT();
     CPPUNIT_ASSERT(!err);
-    i_dft_metric->set_averaging_method(QualityMetric::SUM, err);
+    this_metric->set_averaging_method(QualityMetric::SUM, err);
     CPPUNIT_ASSERT(!err);
 
-    i_dft_metric->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
-    valid = i_dft_metric->compute_element_gradient (pd, &elems[1], two_vtces,
+    this_metric->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
+    valid = this_metric->compute_element_gradient (pd, &elems[1], two_vtces,
                                                     grad_num, 2, metric_value,
                                                     err); CPPUNIT_ASSERT(!err);
     CPPUNIT_ASSERT(valid);
@@ -916,8 +945,8 @@ void test_i_dft_gradient(PatchData &pd)
           std::cout << grad_num[i][j] << std::endl;
     }
 
-    i_dft_metric->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
-    valid = i_dft_metric->compute_element_gradient (pd, &elems[1], two_vtces,
+    this_metric->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+    valid = this_metric->compute_element_gradient (pd, &elems[1], two_vtces,
                                                     grad_ana, 2, metric_value,
                                                     err); CPPUNIT_ASSERT(!err);
     CPPUNIT_ASSERT(valid);
@@ -935,14 +964,14 @@ void test_i_dft_gradient(PatchData &pd)
     // same test, but free vertices order differ from vertices order in element. 
     two_vtces[0] = &vertices[bad_elem_vertex_indices[2]];
     two_vtces[1] = &vertices[bad_elem_vertex_indices[0]];
-    i_dft_metric->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
-    valid = i_dft_metric->compute_element_gradient (pd, &elems[1], two_vtces,
+    this_metric->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
+    valid = this_metric->compute_element_gradient (pd, &elems[1], two_vtces,
                                                     grad_num, 2, metric_value,
                                                     err); CPPUNIT_ASSERT(!err);
     CPPUNIT_ASSERT(valid);
 
-    i_dft_metric->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
-    valid = i_dft_metric->compute_element_gradient (pd, &elems[1], two_vtces,
+    this_metric->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+    valid = this_metric->compute_element_gradient (pd, &elems[1], two_vtces,
                                                     grad_ana, 2, metric_value,
                                                     err); CPPUNIT_ASSERT(!err);
     CPPUNIT_ASSERT(valid);
@@ -950,7 +979,7 @@ void test_i_dft_gradient(PatchData &pd)
     for (int i=0; i<2; ++i)
       for (int j=0; j<3; ++j)
         CPPUNIT_ASSERT_DOUBLES_EQUAL(grad_num[i][j], grad_ana[i][j], 0.001);
-    delete i_dft_metric;
+      //delete i_dft_metric;
     delete []grad_num;
     delete []grad_ana;
   }
@@ -982,18 +1011,64 @@ void test_i_dft_gradient(PatchData &pd)
   {
     test_mean_ratio_gradient(hexPatch);
   }
-  void test_i_dft_hex_gradient()
-  {
-    test_i_dft_gradient(hexPatch);
-  }           
   void test_mean_ratio_tet_gradient()
   {
     test_mean_ratio_gradient(tetPatch);
+  }
+  
+  void test_i_dft_hex_gradient()
+  {
+    I_DFT i_dft_metric;
+    test_i_dft_gradient(hexPatch, &i_dft_metric);
   }           
   void test_i_dft_tet_gradient()
   {
-    test_i_dft_gradient(tetPatch);
+    I_DFT i_dft_metric;
+    test_i_dft_gradient(tetPatch, &i_dft_metric);
   }
+  
+  void test_i_dft_imr_hex_gradient()
+  {
+    I_DFT_InverseMeanRatio i_dft_metric;
+    test_i_dft_gradient(hexPatch, &i_dft_metric);
+  }           
+  void test_i_dft_imr_tet_gradient()
+  {
+    I_DFT_InverseMeanRatio i_dft_metric;
+    test_i_dft_gradient(tetPatch, &i_dft_metric);
+  }
+  
+  void test_i_dft_strong_barrier_hex_gradient()
+  {
+    I_DFT_StrongBarrier i_dft_metric;
+    test_i_dft_gradient(hexPatch, &i_dft_metric);
+  }           
+  void test_i_dft_strong_barrier_tet_gradient()
+  {
+    I_DFT_StrongBarrier i_dft_metric;
+    test_i_dft_gradient(tetPatch, &i_dft_metric);
+  } 
+  void test_i_dft_weak_barrier_hex_gradient()
+  {
+    I_DFT_WeakBarrier i_dft_metric;
+    test_i_dft_gradient(hexPatch, &i_dft_metric);
+  }           
+  void test_i_dft_weak_barrier_tet_gradient()
+  {
+    I_DFT_WeakBarrier i_dft_metric;
+    test_i_dft_gradient(tetPatch, &i_dft_metric);
+  }
+  void test_i_dft_nobarrier_hex_gradient()
+  {
+    I_DFT_NoBarrier i_dft_metric;
+    test_i_dft_gradient(hexPatch, &i_dft_metric);
+  }           
+  void test_i_dft_nobarrier_tet_gradient()
+  {
+    I_DFT_NoBarrier i_dft_metric;
+    test_i_dft_gradient(tetPatch, &i_dft_metric);
+  }
+  
   /*! This tests the QualityMetric hessian, comparing analytical
       and numerical versions. 
       
@@ -1036,7 +1111,8 @@ void test_i_dft_gradient(PatchData &pd)
     CPPUNIT_ASSERT(!err);
     CPPUNIT_ASSERT(ret_bool==true);
     if(pF){
-     std::cout << "GRADIENT for element with two free vertices.\n";
+      std::cout << "\nNUMERICAL Metric value "<<metric_value<<".\n";
+     std::cout << "NUMERICAL GRADIENT for element with two free vertices.\n";
      for (int i=0; i<4; ++i)
        for (int j=0; j<3; ++j)
          std::cout << grad_num[i][j] << std::endl;
@@ -1053,6 +1129,11 @@ void test_i_dft_gradient(PatchData &pd)
     CPPUNIT_ASSERT(ret_bool==true);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(metric_value, metric_value2, 0.001);
     if(pF){
+      std::cout << "\nANALYTICAL Metric value "<<metric_value<<".\n";
+      std::cout << "ANALYTICAL GRADIENT for element with two free vertices.\n";
+      for (int i=0; i<4; ++i)
+        for (int j=0; j<3; ++j)
+          std::cout << grad_ana[i][j] << std::endl;
       std::cout << "ANALYTICAL HESSIAN for element with two free vertices.\n";
       for (int i=0; i<nve*(nve+1)/2; ++i)
         std::cout << hessian_ana[i] << std::endl;
@@ -1311,19 +1392,18 @@ void test_i_dft_gradient(PatchData &pd)
       test_metric_hessian(hexPatch, mean_rat);
       delete mean_rat;
     }  
- void test_i_dft_hex_hessian()
+  void test_i_dft_hex_hessian()
     {
       if(pF)
         std::cout<<"\nTesting hex Hessian for I_DFT.\n";
       MsqPrintError err(cout); 
  
-      QualityMetric* i_dft_metric = new I_DFT();
+      I_DFT i_dft_metric;
       CPPUNIT_ASSERT(!err);
-      i_dft_metric->set_averaging_method(QualityMetric::SUM, err);
+      i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
       CPPUNIT_ASSERT(!err);
      
-      test_metric_hessian(hexPatch, i_dft_metric);
-      delete i_dft_metric;
+      test_metric_hessian(hexPatch, &i_dft_metric);
     }
   void test_i_dft_tet_hessian()
     {
@@ -1331,13 +1411,111 @@ void test_i_dft_gradient(PatchData &pd)
         std::cout<<"\nTesting tet Hessian for I_DFT.\n";
       MsqPrintError err(cout); 
  
-      QualityMetric* i_dft_metric = new I_DFT();
+      I_DFT i_dft_metric;
       CPPUNIT_ASSERT(!err);
-      i_dft_metric->set_averaging_method(QualityMetric::SUM, err);
+      i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
+      CPPUNIT_ASSERT(!err);
+      test_metric_hessian(tetPatch, &i_dft_metric);
+    }  
+  void test_i_dft_weak_barrier_hex_hessian()
+    {
+      if(pF)
+        std::cout<<"\nTesting hex Hessian for I_DFT.\n";
+      MsqPrintError err(cout); 
+ 
+      I_DFT_WeakBarrier i_dft_metric;
+      CPPUNIT_ASSERT(!err);
+      i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
       CPPUNIT_ASSERT(!err);
      
-      test_metric_hessian(tetPatch, i_dft_metric);
-      delete i_dft_metric;
+      test_metric_hessian(hexPatch, &i_dft_metric);
+    }
+  void test_i_dft_weak_barrier_tet_hessian()
+    {
+      if(pF)
+        std::cout<<"\nTesting tet Hessian for I_DFT.\n";
+      MsqPrintError err(cout); 
+ 
+      I_DFT_WeakBarrier i_dft_metric;
+      CPPUNIT_ASSERT(!err);
+      i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
+      CPPUNIT_ASSERT(!err);
+      test_metric_hessian(tetPatch, &i_dft_metric);
+    }  
+  void test_i_dft_imr_hex_hessian()
+    {
+      if(pF)
+        std::cout<<"\nTesting hex Hessian for I_DFT.\n";
+      MsqPrintError err(cout); 
+ 
+      I_DFT_InverseMeanRatio i_dft_metric;
+      CPPUNIT_ASSERT(!err);
+      i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
+      CPPUNIT_ASSERT(!err);
+     
+      test_metric_hessian(hexPatch, &i_dft_metric);
+    }
+  void test_i_dft_imr_tet_hessian()
+    {
+      if(pF)
+        std::cout<<"\nTesting tet Hessian for I_DFT.\n";
+      MsqPrintError err(cout); 
+ 
+      I_DFT_InverseMeanRatio i_dft_metric;
+      CPPUNIT_ASSERT(!err);
+      i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
+      CPPUNIT_ASSERT(!err);
+      test_metric_hessian(tetPatch, &i_dft_metric);
+    }  
+  void test_i_dft_strong_barrier_hex_hessian()
+    {
+      if(pF)
+        std::cout<<"\nTesting hex Hessian for I_DFT.\n";
+      MsqPrintError err(cout); 
+ 
+      I_DFT_StrongBarrier i_dft_metric;
+      CPPUNIT_ASSERT(!err);
+      i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
+      CPPUNIT_ASSERT(!err);
+     
+      test_metric_hessian(hexPatch, &i_dft_metric);
+    }
+  void test_i_dft_strong_barrier_tet_hessian()
+    {
+      if(pF)
+        std::cout<<"\nTesting tet Hessian for I_DFT.\n";
+      MsqPrintError err(cout); 
+ 
+      I_DFT_StrongBarrier i_dft_metric;
+      CPPUNIT_ASSERT(!err);
+      i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
+      CPPUNIT_ASSERT(!err);
+      test_metric_hessian(tetPatch, &i_dft_metric);
+    }
+  void test_i_dft_nobarrier_hex_hessian()
+    {
+      if(pF)
+        std::cout<<"\nTesting hex Hessian for I_DFT.\n";
+      MsqPrintError err(cout); 
+ 
+      I_DFT_NoBarrier i_dft_metric;
+      CPPUNIT_ASSERT(!err);
+      i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
+      CPPUNIT_ASSERT(!err);
+     
+      test_metric_hessian(hexPatch, &i_dft_metric);
+    }
+  void test_i_dft_nobarrier_tet_hessian()
+    {
+      if(pF)
+        std::cout<<"\nTesting tet Hessian for I_DFT.\n";
+      MsqPrintError err(cout); 
+ 
+      I_DFT_NoBarrier i_dft_metric;
+      CPPUNIT_ASSERT(!err);
+      i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
+      CPPUNIT_ASSERT(!err);
+      test_metric_hessian(tetPatch, &i_dft_metric);
     }  
 
   void test_mean_ratio_hex_hessian_sum_squared()
@@ -1477,21 +1655,6 @@ void test_i_dft_gradient(PatchData &pd)
     delete mean_ratio;
   }
   
-  void test_i_dft_tet_grad_from_hessian()
-  {
-    if(pF)
-      std::cout<<"\nTesting I_DFT metrics.\n";
-    MsqPrintError err(cout);
-    QualityMetric* i_dft_metric = new I_DFT();
-    CPPUNIT_ASSERT(!err);
-    i_dft_metric->set_averaging_method(QualityMetric::SUM, err);
-    CPPUNIT_ASSERT(!err);
-    i_dft_metric->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
-    i_dft_metric->set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
-    test_metric_grad_from_hessian(tetPatch,i_dft_metric,err);
-    delete i_dft_metric;
-  }
-
   
   void test_mean_ratio_hex_grad_from_hessian()
   {
@@ -1505,20 +1668,148 @@ void test_i_dft_gradient(PatchData &pd)
     test_metric_grad_from_hessian(hexPatch,mean_ratio,err);
     delete mean_ratio;
   }
+
+
+  
+  void test_i_dft_tet_grad_from_hessian()
+  {
+    if(pF)
+      std::cout<<"\nTesting I_DFT metrics.\n";
+    MsqPrintError err(cout);
+    I_DFT i_dft_metric;
+    CPPUNIT_ASSERT(!err);
+    i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
+    CPPUNIT_ASSERT(!err);
+    i_dft_metric.set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+    i_dft_metric.set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
+    test_metric_grad_from_hessian(tetPatch,&i_dft_metric,err);
+  }
+
   void test_i_dft_hex_grad_from_hessian()
   {
     if(pF)
       std::cout<<"\nTesting I_DFT metrics.\n";
     MsqPrintError err(cout);
-    QualityMetric* i_dft_metric = new I_DFT();
+    I_DFT i_dft_metric;
     CPPUNIT_ASSERT(!err);
-    i_dft_metric->set_averaging_method(QualityMetric::SUM, err);
+    i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
     CPPUNIT_ASSERT(!err);
-    i_dft_metric->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
-    i_dft_metric->set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
-    test_metric_grad_from_hessian(hexPatch,i_dft_metric,err);
-    delete i_dft_metric;
+    i_dft_metric.set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+    i_dft_metric.set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
+    test_metric_grad_from_hessian(hexPatch,&i_dft_metric,err);
   }
+  
+  void test_i_dft_strong_barrier_tet_grad_from_hessian()
+  {
+    if(pF)
+      std::cout<<"\nTesting I_DFT metrics.\n";
+    MsqPrintError err(cout);
+    I_DFT_StrongBarrier i_dft_metric;
+    CPPUNIT_ASSERT(!err);
+    i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
+    CPPUNIT_ASSERT(!err);
+    i_dft_metric.set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+    i_dft_metric.set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
+    test_metric_grad_from_hessian(tetPatch,&i_dft_metric,err);
+  }
+
+  void test_i_dft_strong_barrier_hex_grad_from_hessian()
+  {
+    if(pF)
+      std::cout<<"\nTesting I_DFT metrics.\n";
+    MsqPrintError err(cout);
+    I_DFT_StrongBarrier i_dft_metric;
+    CPPUNIT_ASSERT(!err);
+    i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
+    CPPUNIT_ASSERT(!err);
+    i_dft_metric.set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+    i_dft_metric.set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
+    test_metric_grad_from_hessian(hexPatch,&i_dft_metric,err);
+  }
+  
+  void test_i_dft_nobarrier_tet_grad_from_hessian()
+  {
+    if(pF)
+      std::cout<<"\nTesting I_DFT metrics.\n";
+    MsqPrintError err(cout);
+    I_DFT_NoBarrier i_dft_metric;
+    CPPUNIT_ASSERT(!err);
+    i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
+    CPPUNIT_ASSERT(!err);
+    i_dft_metric.set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+    i_dft_metric.set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
+    test_metric_grad_from_hessian(tetPatch,&i_dft_metric,err);
+  }
+
+  void test_i_dft_nobarrier_hex_grad_from_hessian()
+  {
+    if(pF)
+      std::cout<<"\nTesting I_DFT metrics.\n";
+    MsqPrintError err(cout);
+    I_DFT_NoBarrier i_dft_metric;
+    CPPUNIT_ASSERT(!err);
+    i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
+    CPPUNIT_ASSERT(!err);
+    i_dft_metric.set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+    i_dft_metric.set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
+    test_metric_grad_from_hessian(hexPatch,&i_dft_metric,err);
+  }
+  void test_i_dft_weak_barrier_tet_grad_from_hessian()
+  {
+    if(pF)
+      std::cout<<"\nTesting I_DFT metrics.\n";
+    MsqPrintError err(cout);
+    I_DFT_WeakBarrier i_dft_metric;
+    CPPUNIT_ASSERT(!err);
+    i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
+    CPPUNIT_ASSERT(!err);
+    i_dft_metric.set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+    i_dft_metric.set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
+    test_metric_grad_from_hessian(tetPatch,&i_dft_metric,err);
+  }
+
+  void test_i_dft_weak_barrier_hex_grad_from_hessian()
+  {
+    if(pF)
+      std::cout<<"\nTesting I_DFT metrics.\n";
+    MsqPrintError err(cout);
+    I_DFT_WeakBarrier i_dft_metric;
+    CPPUNIT_ASSERT(!err);
+    i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
+    CPPUNIT_ASSERT(!err);
+    i_dft_metric.set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+    i_dft_metric.set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
+    test_metric_grad_from_hessian(hexPatch,&i_dft_metric,err);
+  }
+  
+  void test_i_dft_imr_tet_grad_from_hessian()
+  {
+    if(pF)
+      std::cout<<"\nTesting I_DFT metrics.\n";
+    MsqPrintError err(cout);
+    I_DFT_InverseMeanRatio i_dft_metric;
+    CPPUNIT_ASSERT(!err);
+    i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
+    CPPUNIT_ASSERT(!err);
+    i_dft_metric.set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+    i_dft_metric.set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
+    test_metric_grad_from_hessian(tetPatch,&i_dft_metric,err);
+  }
+
+  void test_i_dft_imr_hex_grad_from_hessian()
+  {
+    if(pF)
+      std::cout<<"\nTesting I_DFT metrics.\n";
+    MsqPrintError err(cout);
+    I_DFT_InverseMeanRatio i_dft_metric;
+    CPPUNIT_ASSERT(!err);
+    i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
+    CPPUNIT_ASSERT(!err);
+    i_dft_metric.set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+    i_dft_metric.set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
+    test_metric_grad_from_hessian(hexPatch,&i_dft_metric,err);
+  }
+  
   
 };
 
