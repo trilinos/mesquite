@@ -27,7 +27,9 @@ Unit testing of various functions in the ObjectiveFunction class.
 #include "LPTemplate.hpp"
 #include "LPtoPTemplate.hpp"
 #include "CompositeOFAdd.hpp"
+#include "CompositeOFMultiply.hpp"
 #include "CompositeOFScalarMultiply.hpp"
+#include "CompositeOFScalarAdd.hpp"
 #include "GeneralizedConditionNumberQualityMetric.hpp"
 #include "MeanRatioQualityMetric.hpp"
 
@@ -50,6 +52,8 @@ private:
   CPPUNIT_TEST (test_compute_gradient_3D_LPTemplate);
   CPPUNIT_TEST (test_compute_gradient_3D_LPtoPTemplate_L1_hex);
   CPPUNIT_TEST (test_compute_gradient_3D_LPtoPTemplate_L2_hex);
+  CPPUNIT_TEST (test_compute_gradient3D_composite);
+
   CPPUNIT_TEST_SUITE_END();
    
 private:
@@ -182,12 +186,14 @@ public:
                                              PatchData &pd)
      {
        MsqError err;
+       bool return_bool;
        MsqFreeVertexIndexIterator free_ind(&pd, err);
        Vector3D* grad_num = new Vector3D[pd.num_vertices()];
        Vector3D* grad_ana = new Vector3D[pd.num_vertices()];     
        
        obj->set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
-       obj->compute_gradient(pd, grad_num, err);
+       return_bool=obj->compute_gradient(pd, grad_num, err);
+       CPPUNIT_ASSERT(return_bool==true);
        int grad_pos=0;
        free_ind.reset();
        std::cout << "NUMERICAL GRADIENT\n";
@@ -199,7 +205,8 @@ public:
          }
        }    
        obj->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
-       obj->compute_gradient(pd, grad_ana, err);
+       return_bool=obj->compute_gradient(pd, grad_ana, err);
+       CPPUNIT_ASSERT(return_bool==true);
        std::cout << "ANALYTICAL GRADIENT\n";
        free_ind.reset();
        for (int i=0; i<2; ++i){
@@ -266,8 +273,33 @@ public:
       //    mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
     compare_numerical_analytical_gradient(LP2, m12Hex);
   }
+
+  void test_compute_gradient3D_composite()
+     {
+       MsqError err;
+         // creates a mean ratio quality metric ...
+       ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
+       mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
+       
+         // ... and builds an objective function with it
+       LPtoPTemplate* LP3 = new LPtoPTemplate(mean_ratio, 3, err);
+       LPTemplate* LP2 = new LPTemplate(mean_ratio,2,err);
+         //build four composite objective functions
+       CompositeOFScalarAdd* csa_of = new CompositeOFScalarAdd(2,LP2);
+       CompositeOFScalarMultiply* csm_of = new CompositeOFScalarMultiply(20,LP2);
+       CompositeOFAdd* ca_of = new CompositeOFAdd(LP3,LP2);
+       CompositeOFMultiply* cm_of = new CompositeOFMultiply(LP3,LP2);
+       
+         //test scalar add
+       compare_numerical_analytical_gradient(csa_of, m12Hex);
+         //test scalar multiply
+       compare_numerical_analytical_gradient(csm_of, m12Hex);
+         //test add
+       compare_numerical_analytical_gradient(ca_of, m12Hex);
+         //test multiply
+       compare_numerical_analytical_gradient(cm_of, m12Hex);
+     }
   
-   
 };
 
 
