@@ -132,7 +132,6 @@ public:
      pass1->set_inner_termination_criterion(&sc5);
        // sets a culling method on the first QualityImprover
      pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
-     pass1->set_maximum_iteration(5);
        //CG's debugging print, increase integer to get more print info
      pass1->set_debugging_level(0);
   
