@@ -148,14 +148,14 @@ int main()
   if (err) return 1;
   queue1.add_quality_assessor(&mean_qa,err);
   if (err) return 1;
-  mesh->write_vtk("original_mesh", err); 
+  mesh->write_vtk("original_mesh.vtk", err); 
   if (err) return 1;
   
     // launches optimization on mesh_set1
   queue1.run_instructions(mesh_set1, err); 
   if (err) return 1;
   
-  mesh->write_vtk("smoothed_mesh", err); 
+  mesh->write_vtk("smoothed_mesh.vtk", err); 
   if (err) return 1;
   print_timing_diagnostics( cout );
   return 0;

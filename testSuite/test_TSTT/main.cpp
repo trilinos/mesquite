@@ -188,14 +188,14 @@ int main(int argc, char* argv[])
   queue1.add_quality_assessor(&stop_qa, err); 
   if (err) return 1;;
 
-  mesh_set1.write_vtk("original", err); 
+  mesh_set1.write_vtk("original.vtk", err); 
   if (err) return 1;;
 
   // launches optimization on mesh_set1
   queue1.run_instructions(mesh_set1, err);
   if (err) return 1;;
 
-  mesh_set1.write_vtk("smoothed", err); 
+  mesh_set1.write_vtk("smoothed.vtk", err); 
   if (err) return 1;;
 
   print_timing_diagnostics( cout );

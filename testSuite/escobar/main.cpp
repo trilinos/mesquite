@@ -155,12 +155,12 @@ int main()
   if (err) return 1;
   queue1.add_quality_assessor(&qa,err); 
   if (err) return 1;
-  mesh->write_vtk("original_mesh",err); 
+  mesh->write_vtk("original_mesh.vtk",err); 
   if (err) return 1;
   
   queue1.run_instructions(mesh_set1, err); 
   if (err) return 1;
-  mesh->write_vtk("smoothed_mesh",err); 
+  mesh->write_vtk("smoothed_mesh.vtk",err); 
   if (err) return 1;
 
   delete cond_no;

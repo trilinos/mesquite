@@ -245,6 +245,9 @@ private:
    CPPUNIT_TEST (test_read_simple_scalar_attrib);
    CPPUNIT_TEST (test_read_vector_attrib);
    CPPUNIT_TEST (test_read_fixed_attrib);
+   
+    // Test writer - J.Kraftcheck, 2004-10-12
+   CPPUNIT_TEST (test_write);
 
    CPPUNIT_TEST_SUITE_END();
    
@@ -379,14 +382,22 @@ public:
     // Test reading VTK unstructured mesh
   void test_read_unstructured()
   {
+    FILE* file = fopen( temp_file_name, "w+" );
+    CPPUNIT_ASSERT( file );
+    int rval = fputs( mixed_unstructured_data, file );
+    fclose( file );
+    if (rval == EOF) remove( temp_file_name );
+    CPPUNIT_ASSERT( rval != EOF );
+
+    test_read_unstructured( temp_file_name );
+  }
+  
+  void test_read_unstructured( const char* filename )
+  {
     MeshImpl mesh;
     MsqPrintError err(cout);
     
-    FILE* file = fopen( temp_file_name, "w+" );
-    fputs( mixed_unstructured_data, file );
-    fclose( file );
-    
-    mesh.read_vtk( temp_file_name, err );
+    mesh.read_vtk( filename, err );
     remove( temp_file_name );
     CPPUNIT_ASSERT(!err);
     
@@ -645,7 +656,34 @@ public:
     }
   }
  
-
+    
+    // Test writing VTK unstructured mesh
+  void test_write()
+  {
+    MeshImpl mesh;
+    MsqPrintError err(cout);
+    
+      // Create file containing unstructured mesh test case
+    FILE* file = fopen( temp_file_name, "w+" );
+    CPPUNIT_ASSERT(file);
+    int rval = fputs( mixed_unstructured_data, file );
+    fclose( file );
+    if (rval == EOF) remove(temp_file_name);
+    CPPUNIT_ASSERT(rval != EOF);
+    
+      // Read unstructured mesh file
+    mesh.read_vtk( temp_file_name, err );
+    remove(temp_file_name);
+    CPPUNIT_ASSERT(!err);
+    
+      // Write unstructured mesh file back out
+    mesh.write_vtk( temp_file_name, err );
+    if (err)  remove( temp_file_name );
+    CPPUNIT_ASSERT(!err);
+    
+      // Check if file contained expected mesh
+    test_read_unstructured( temp_file_name );
+  }
   
   void test_elements()
   {

@@ -131,7 +131,7 @@ int main()
   queue1.run_instructions(mesh_set1, err); 
   if (err) return 1;
   
-  mesh->write_vtk("smoothed_mesh", err); 
+  mesh->write_vtk("smoothed_mesh.vtk", err); 
   if (err) return 1;
   
   return 0;

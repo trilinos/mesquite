@@ -653,13 +653,11 @@ bool MeshSet::clear_all_soft_fixed_flags(MsqError &err)
     This is not geared for performance, since it has to load a global Patch from
     the mesh to write a mesh file. 
 */
-void MeshSet::write_vtk(const char* out_filebase,
+void MeshSet::write_vtk(const char* out_filename,
                    Mesquite::MsqError &err)
 {
     // Open the file
-  string out_filename = out_filebase;
-  out_filename += ".vtk";
-  msq_stdio::ofstream file(out_filename.c_str());
+  msq_stdio::ofstream file(out_filename);
   if (!file)
   {
     MSQ_SETERR(err)(MsqError::FILE_ACCESS);
@@ -675,7 +673,7 @@ void MeshSet::write_vtk(const char* out_filebase,
     
     // Write a header
   file << "# vtk DataFile Version 2.0\n";
-  file << "Mesquite Mesh " << out_filebase << " .\n";
+  file << "Mesquite Mesh " << out_filename << " .\n";
   file << "ASCII\n";
   file << "DATASET UNSTRUCTURED_GRID\n";
   

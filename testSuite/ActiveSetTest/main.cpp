@@ -148,7 +148,7 @@ int main()
 
   // write out the original mesh
   //  printf("Writing out the original mesh\n");
-  mesh->write_vtk("original_mesh", err); 
+  mesh->write_vtk("original_mesh.vtk", err); 
   if (err) return 1;
 
   // launches optimization on mesh_set1
@@ -158,7 +158,7 @@ int main()
 
   // write out the smoothed mesh
   //  printf("Writing out the final mesh\n");
-  mesh->write_vtk("smoothed_mesh", err); 
+  mesh->write_vtk("smoothed_mesh.vtk", err); 
   if (err) return 1;
   
   delete cond_no;

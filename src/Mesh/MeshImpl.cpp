@@ -99,12 +99,9 @@ void MeshImpl::clear()
 }
 
 
-void MeshImpl::write_vtk(const char* out_filebase, MsqError &err)
+void MeshImpl::write_vtk(const char* out_filename, MsqError &err)
 {
-    // Open the file
-  string out_filename = out_filebase;
-  out_filename += ".vtk";
-  ofstream file(out_filename.c_str());
+  ofstream file(out_filename);
   if (!file)
   {
     MSQ_SETERR(err)( MsqError::FILE_ACCESS );
@@ -113,7 +110,7 @@ void MeshImpl::write_vtk(const char* out_filebase, MsqError &err)
   
     // Write a header
   file << "# vtk DataFile Version 2.0\n";
-  file << "Mesquite Mesh " << out_filebase << " .\n";
+  file << "Mesquite Mesh\n";
   file << "ASCII\n";
   file << "DATASET UNSTRUCTURED_GRID\n";
   

@@ -170,9 +170,9 @@ int main()
   queue1.run_instructions(mesh_set1, err); 
   if (err) return 1;
   
-  mesh->write_vtk("smo_mesh",err);
+  mesh->write_vtk("smo_mesh.vtk",err);
   if (err) return 1;
-  mesh_set1.write_gnuplot("smo_mesh", err); 
+  mesh_set1.write_gnuplot("smo_mesh.vtk", err); 
   if (err) return 1;
 
   print_timing_diagnostics(cout);

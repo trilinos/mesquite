@@ -141,14 +141,14 @@ int main()
   // adds 1 passes of pass2 to mesh_set1
 //  mesh_set1.add_quality_pass(pass2);
 
-  mesh->write_vtk("original_mesh", err); 
+  mesh->write_vtk("original_mesh.vtk", err); 
   if (err) return 1;
   
     // launches optimization on mesh_set1
   queue1.run_instructions(mesh_set1, err);
   if (err) return 1;
   
-  mesh->write_vtk("smoothed_mesh", err); 
+  mesh->write_vtk("smoothed_mesh.vtk", err); 
   if (err) return 1;
   
   return 0;

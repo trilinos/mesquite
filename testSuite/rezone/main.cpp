@@ -146,9 +146,9 @@ int main()
   queue1.run_instructions(ini_mesh_set, err); 
   if (err) return 1;
  
-  ini_mesh->write_vtk("smo_mesh",err);
+  ini_mesh->write_vtk("smo_mesh.vtk",err);
   if (err) return 1;
-  ini_mesh_set.write_gnuplot("smo_mesh", err); 
+  ini_mesh_set.write_gnuplot("smo_mesh.vtk", err); 
   if (err) return 1;
  
   print_timing_diagnostics(cout);
