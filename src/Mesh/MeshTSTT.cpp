@@ -187,7 +187,7 @@ Mesquite::MeshTSTT::MeshTSTT(TSTT::LocalTSTTMesh& tstt_mesh,
                                    ::TSTT::ALL_TOPOLOGIES,
                                    vertices);
     tsttMesh.entityAddTag(vertices, vertexByteTag);
-    unsigned char nb_vertices = vertices.upper(0) + 1;
+    int nb_vertices = vertices.upper(0) + 1;
     mZeros = new unsigned char[nb_vertices];
     for (int i=0; i<nb_vertices; ++i)
       mZeros[i] = 0;
