@@ -37,6 +37,7 @@ VertexMover::VertexMover() :
 #define __FUNC__ "VertexMover::loop_over_mesh" 
 void VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
 {
+  set_mesh_set(&ms);
   std::cout << "o Executing VertexMover::loop_over_mesh()\n";
 
   // creates a PatchData object at the VertexMover level
