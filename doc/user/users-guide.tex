@@ -45,7 +45,7 @@ element methods require the use of approximations to the continuum operators
 in the PDE and a mesh or grid to subdivide the physical domain into small 
 subregions. Together, the approximations and the mesh define a discretization. 
 The difference between the exact solution to the PDE and the numerical solution is known as the discretization error. A {\it convergent} 
-discretization means that the discretization error will assymptotically 
+discretization means that the discretization error will asymptotically 
 approach zero as the characteristic mesh size 'h' 
 approaches zero. Decreasing mesh size to reduce discretization error to 
 nearly zero is often impractical in realistic simulations due to limited 
@@ -64,17 +64,17 @@ ratio, and orientation. For example, in some discretization methods there will b
 loss of accuracy if the mesh is not smooth.  In other cases, aspect ratios and 
 orientation must be carefully adapted to the solution in order to maintain a 
 certain level of accuracy. Simulations using meshes or domains that evolve 
-in time (such as in ALE simulatins) usually require that initally good 
+in time (such as in ALE simulations) usually require that initially good 
 geometric mesh properties be retained throughout the simulation time period. 
 It is thus often important to control other geometric mesh properties in addition to local mesh size within an adaptive simulation. \newline
 
 In addition to solution accuracy, geometric mesh properties can also affect the amount of computer time required to obtain the numerical solution. Simulation codes usually employ iterative solvers to solve systems of equations and thus obtain numerical solutions to PDE's. The rate at which these solvers converge is determined by the spectral radius of a certain matrix. The spectral radius of the matrix is affected by, among other things, geometric properties of the mesh. Poor mesh quality can thus adversely impact solution efficiency. \newline
 
 Adaptive meshing techniques require an initial mesh to begin the adaptation procedure. Poor quality of the initial mesh (relative to the adapted mesh) can be difficult to overcome or, at least, reduce the efficiency of 
-the adaptive procedure. For example, if the initial mesh contains locally invertied elements, these can often be fixed before the adaptive procedure begins. As another example, if it is known \`{a} priori that small angles will be needed on the boundary of the domain to obtain reasonable simulation accuracy, one should try to first create the small angles in the initial mesh to improve the efficiency of the subsequent adaptive meshing proceedure. \newline
+the adaptive procedure. For example, if the initial mesh contains locally inverted elements, these can often be fixed before the adaptive procedure begins. As another example, if it is known \`{a} priori that small angles will be needed on the boundary of the domain to obtain reasonable simulation accuracy, one should try to first create the small angles in the initial mesh to improve the efficiency of the subsequent adaptive meshing procedure. \newline
 
 
-Many simulations, particluarly those in industry, are performed in a 
+Many simulations, particularly those in industry, are performed in a 
 non-adaptive setting. That is to say, an initial mesh is generated and
 used throughout the calculation. The mesh is not changed as the solution
 is computed. Mesh quality remains important for such calculations. First, 
@@ -129,9 +129,9 @@ numerical solution via error indicators or other information for adaptive
 meshing. Examples of weighted metrics which have or could be used in 
 adaptive calculations include those of Brackbill (ref), Knupp (ref), etc. \newline
 
-Another way to improve mesh quality is to use local topological modification methods in which mesh vertices or elements are locally created and/or destroyed. These methods are very successful when applied to simplicial meshes, often within an adaptive context.  Local topoology modification is less effective on nonsimplicial meshes. \newline
+Another way to improve mesh quality is to use local topological modification methods in which mesh vertices or elements are locally created and/or destroyed. These methods are very successful when applied to simplicial meshes, often within an adaptive context.  Local topology modification is less effective on non-simplicial meshes. \newline
 
-Mesh quality improvement remains an important on-going reserach area. 
+Mesh quality improvement remains an important on-going research area. 
 There remain, for example, open questions with regard to metrics which 
 can be used in adaptive settings, theoretical questions on problem 
 formulation, and how to obtain improved meshes quickly. \newline
@@ -224,7 +224,7 @@ implementing a variety of termination criteria that can be used to
 control the computational cost of the optimization algorithms. \newline
 
 {\bf Robust.} Sound software engineering principles and robust numerical 
-algorithms are employed in Mesquite. Code interupts due to null pointers and 
+algorithms are employed in Mesquite. Code interrupts due to null pointers and 
 zero-divides will be handled gracefully.  A
 comprehensive suite of test problems and a unit testing framework have
 been developed to verify the correct execution of the code. Input meshes
@@ -234,7 +234,7 @@ mesh in case of such a failure. \newline
 
 Mesquite is not intended to be a mesh generation tool. It can serve as 
 a post-processor to a mesh generation procedure, a mesh pre-processor to a 
-non-adaptive simultion code, or as an algorithm for in-core adaptive mesh 
+non-adaptive simulation code, or as an algorithm for in-core adaptive mesh 
 quality improvement. As a software library, Mesquite is intended to be
 linked to either a meshing code or to a simulation code. \newline
 
@@ -246,7 +246,7 @@ problem to guide the movement of mesh vertices \cite{formal}.
 The user inputs a mesh or 
 submesh consisting of vertices, elements, and the relationships between them. 
 The quality of each vertex or 
-element in the mesh is decribed by a local quality metric that is a function 
+element in the mesh is described by a local quality metric that is a function 
 of a subset of the mesh vertices. The global quality of the mesh is formed by 
 taking the global norm or the average of the local mesh qualities. The global 
 quality is thus a function of the positions of all the mesh vertices. If this 
@@ -267,7 +267,7 @@ Once the global quality (objective function) is defined, the user can
 select a numerical optimization scheme (solver) within Mesquite such as a 
 steepest descent, conjugate gradient, or feasible Newton method. A variety of 
 termination criteria can be selected singly or in combination to tell the 
-solver when to halt. These are useful in controlling the tradeoff between
+solver when to halt. These are useful in controlling the trade-off between
 the accuracy of the minimization procedure vs. how much CPU is consumed. 
 There is also an important flag that determines whether the optimization 
 problem will be solved via a succession of optimizations on local patches 
@@ -301,7 +301,7 @@ future we may include methods for solving global systems of equations
 in Mesquite to obtain solutions more quickly. 
 In the past, some mesh smoothing algorithms have been formulated as a 
 local iterative method that cannot be derived  
-by settting the gradient of an objective function to zero. Such methods are
+by setting the gradient of an objective function to zero. Such methods are
 frowned upon in Mesquite since one cannot state what mesh quality metric is
 improved.  However, if such methods are included in future version sof Mesquite, they will be done in a manner similar to the local Laplace smoothing 
 algorithm in Mesquite. \newline
