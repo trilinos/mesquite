@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD: 12-Dec-02 at 15:58:12 by Thomas Leurent
+//  LAST-MOD: 13-Dec-02 at 09:32:56 by Thomas Leurent
 //
 /*! \file MeshSet.cpp
 
@@ -406,6 +406,8 @@ bool MeshSet::get_next_patch(PatchData &pd, PatchDataParameters &pd_params, MsqE
   
     const int MAX_NUM_VERTICES_PER_ELEM=12;
     TSTT::Entity_Handle* elem_vtx = new TSTT::Entity_Handle[MAX_NUM_VERTICES_PER_ELEM];
+    int elem_num_coords=3*MAX_NUM_VERTICES_PER_ELEM;
+    double* elem_vtx_coords = new double[elem_num_coords];
     TSTT::Entity_Handle *current_mesh_elements;
     TSTT::EntityTopology *element_topologies;
     int* csr_pointer; 
@@ -419,7 +421,6 @@ bool MeshSet::get_next_patch(PatchData &pd, PatchDataParameters &pd_params, MsqE
     int num_faces_current_mesh=0;
     int num_elements_current_mesh=0;
     MsqVertex::FlagMaskID fixed_flag;
-//    Vector3D vertex_coordV;
   
  //   ::set_new_handler(out_of_store);
 
@@ -499,10 +500,6 @@ bool MeshSet::get_next_patch(PatchData &pd, PatchDataParameters &pd_params, MsqE
                                 (TSTT::cEntity_Handle *) current_mesh_elements, 
                                 num_elements_current_mesh,
                                 element_topologies, &tstt_err);
-  
-      int elem_num_coords=3*MAX_NUM_VERTICES_PER_ELEM;
-      double* elem_vtx_coords = new double[elem_num_coords];
-
       
       // retrieves value of fixedVertexTagName.
       // The value can be different for each TSTT mesh handle.
@@ -545,7 +542,8 @@ bool MeshSet::get_next_patch(PatchData &pd, PatchDataParameters &pd_params, MsqE
             }
             // (this retrieves index of previously added vertices). 
             vtx_ind[n] = pd.add_vertex(*currentMesh, elem_vtx[n],
-                                       &elem_vtx_coords[3*n], true, err, fixed_flag); MSQ_CHKERR(err);
+                                       &elem_vtx_coords[3*n], true, err, fixed_flag);
+            MSQ_CHKERR(err);
          }
 
          // ... and adds the element to PatchData.
@@ -555,17 +553,15 @@ bool MeshSet::get_next_patch(PatchData &pd, PatchDataParameters &pd_params, MsqE
       }
       
       delete[] element_topologies;
-      delete[] elem_vtx;
-      delete[] elem_vtx_coords;
-      
-        //cout << "numVertices for local patch: " << pd.num_vertices() << endl;
-      
+            
         // TODO : provide patch for several layers of adjacencies.
       
         // free entities allocated in TSTT::Entity_GetAdjacencies()
       TSTT::Mesh_FreeEntityHandles(*currentMesh, current_mesh_elements, &tstt_err);
     }
     
+    delete[] elem_vtx;
+    delete[] elem_vtx_coords;
     return true;
   }  
   
