@@ -612,7 +612,7 @@ void TSTT_Test::testIntTag()
   myMesh->tag_delete( tag, err );
   CPPUNIT_ASSERT(!err);
   tag2 = myMesh->tag_get( tagname, err );
-  CPPUNIT_ASSERT(err); err.clear();
+  CPPUNIT_ASSERT(!err && 0 == tag2);;
 }
 
   
@@ -663,7 +663,7 @@ void TSTT_Test::testDoubleTag()
   myMesh->tag_delete( tag, err );
   CPPUNIT_ASSERT(!err);
   tag2 = myMesh->tag_get( tagname, err );
-  CPPUNIT_ASSERT(err); err.clear();
+  CPPUNIT_ASSERT(!err && 0 == tag2);
 }
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TSTT_Test, "TSTT_Test");

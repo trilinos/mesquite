@@ -1927,9 +1927,12 @@ void MeshImpl::vtk_read_cell_data( FileTokenizer& tokens,
   void* data = vtk_read_attrib_data( tokens, myMesh->num_elements(), tag, err );
   MSQ_ERRRTN(err);
   
-  MsqError tmperr;
-  size_t tag_handle = myTags->handle( tag.name, tmperr );
-  if (tmperr)
+  size_t tag_handle = myTags->handle( tag.name, err );  
+  if (MSQ_CHKERR(err)) {
+    free( data );
+    return;
+  }
+  if (!tag_handle)
   {
     tag_handle = myTags->create( tag, err ); 
     if (MSQ_CHKERR(err)) {
