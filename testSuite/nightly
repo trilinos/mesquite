@@ -99,10 +99,8 @@ echo
 # Check for configure options
 confopt=
 #confopt="--with-exodus --with-tstt"
-if [ -f "${pwd}/configure.options" ]; then
-  for opt in `cat "${pwd}/configure.options"`; do
-    confopt="$confopt --$opt"
-  done
+if [ -f configure.options ]; then
+  confopt=`cat configure.options`
 fi
 
 ./configure $confopt || exit 1
