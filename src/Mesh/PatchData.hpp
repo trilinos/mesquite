@@ -1,9 +1,13 @@
 /*!
   \file   PatchData.hpp
-  \brief  
+  \brief    This file contains the PatchData class and its associated mementos.
 
-  This file contains the PatchData class and its associated mementos.
+
   The PatchData Class provides the mesh information and functionality to Mesquite.
+  The TSTT information associated with the mesh entities are also kept in PatchData,
+  in order to have a scalable architecture where several PatchData can be instantiated
+  from one MeshSet, without having the MeshSet keeping track of the TSTT information
+  for each PatchData.
   The mementos allows to save the state of a PatchData object in order to
   later restore that object to its previous state.
   
@@ -31,14 +35,14 @@ namespace Mesquite
 {
   class PatchDataCoordsMemento;
   
-    //! \class PatchData
-    //!       Contains all the mesh information necessary for
-    //!       one iteration of the optimization algorythms over the
-    //!       local mesh patch.
+  /*! \class PatchData
+         Contains all the mesh information necessary for
+         one iteration of the optimization algorythms over the
+         local mesh patch. */
   class PatchData
   {
   public:    
-      // Constructor/Destructor
+    // Constructor/Destructor
     PatchData();
     ~PatchData();
     
@@ -47,8 +51,8 @@ namespace Mesquite
       //! Removes data, frees memory used by patch
     void reset();
     
-      //! ensures that at least 'min_num' entities can be stored
-      //! in the private arrays without requiring further allocation.
+      /*! ensures that at least 'min_num' entities can be stored
+          in the private arrays without requiring further allocation. */
     void reserve_vertex_capacity (size_t min_num_vertices,
                                   MsqError &err);
     void reserve_element_capacity(size_t min_num_elements,
@@ -82,8 +86,9 @@ namespace Mesquite
     int num_free_elements() const
       { return numFreeElements; }
     
-      // Get the whole array at a time
+    //! returns the start of the vertex array
     MsqVertex* get_vertex_array(MsqError &err) const;
+    //! returns the start of the element array
     MsqMeshEntity* get_element_array(MsqError &err) const;
     size_t* get_vertex_to_elem_offset(MsqError &err) const;
     size_t* get_vertex_to_elem_array(MsqError &err) const;
@@ -93,14 +98,17 @@ namespace Mesquite
     size_t get_vertex_index(MsqVertex* vertex);
     size_t get_element_index(MsqMeshEntity* element);
     
-      // Get the coordinates of vertices attached to the
-      // specified element
+    //! Get the coordinates of vertices attached to the specified element
     void get_element_vertex_coordinates(size_t elem_index,
                                         std::vector<Vector3D> &coords,
                                         MsqError &err);
+    /*! Get the indices in the vertexArray data member
+      of vertices attached to the specified element. */
     void get_element_vertex_indices(size_t elem_index,
                                     std::vector<size_t> &vertex_indices,
                                     MsqError &err);
+    /*! Get the indices in the elementArray data member
+      of elements attached to the specified vertex. */
     void get_vertex_element_indices(size_t vertex_index,
                                     std::vector<size_t> &elem_indices);
     
@@ -108,20 +116,23 @@ namespace Mesquite
                                 size_t index,
                                 MsqError &err);
     
-      //! advanced use functions 
-//     double get_smallest_edge_length(MsqError &err);
-     void move_free_vertices(Vector3D dk[], int nb_vtx,
+    //! moves all free vertices at once according to a set of directions.
+    /*! \param dk an array of directions, ordered like the free vertices in the PatchData.
+        \param nb_vtx number of free vertices.
+        \param step_size a scalar that multiplies the vectors given in dk.
+      */
+    void move_free_vertices(Vector3D dk[], int nb_vtx,
                              double step_size, MsqError &err);
     
     // Updates the TSTT mesh with any changes made to the PatchData
     void update_mesh(MsqError &err);
 
     //! Creates a memento that holds the current
-      //! state of the PatchData coordinates. 
+    //! state of the PatchData coordinates. 
     PatchDataCoordsMemento* create_coords_memento(MsqError &err);
     
-      //! Restore the PatchData coordinates to the state
-      //! contained in the memento.
+    //! Restore the PatchData coordinates to the state
+    //! contained in the memento.
     void set_to_coords_memento(PatchDataCoordsMemento* memento,
                                MsqError &err);
     
@@ -139,9 +150,9 @@ namespace Mesquite
       {}
     };
     
-      // Don't allow PatchData to be copied implicitly
+      //! Don't allow PatchData to be copied implicitly
     PatchData(const PatchData &A);
-      // copy function used in copy constructor and assignment
+      //! copy function used in copy constructor and assignment
     void copy(const PatchData &A);
     
     friend class MeshSet;
