@@ -41,10 +41,6 @@ mesquite a measure of the perfect mesh.
 #include "MeshSet.hpp"
 #include "MsqTimer.hpp"
 
-#ifdef HAVE_IEEEFP_H
-#  include <ieeefp.h>
-#endif
-
 using namespace Mesquite;
 
 void TargetCalculator::reset_reference_meshset(MsqError &err)

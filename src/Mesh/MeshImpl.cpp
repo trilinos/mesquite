@@ -71,6 +71,7 @@ to run mesquite by default.
 #include "exodusII.h"
 #endif
 
+#include "MsqDebug.hpp"
 namespace Mesquite
 {
   template<typename X> class MeshImpl_EntityIterator : public Mesquite::VertexIterator
@@ -627,8 +628,11 @@ void Mesquite::MeshImpl::write_exodus(const char*
   
   char title[MAX_LINE_LENGTH]="Mesquite Generated Exodus File";
   int dim=3;
-  int vert_count=get_total_vertex_count(err);
-  int elem_count=get_total_element_count(err);
+  
+  size_t vert_count=0;
+  size_t elem_count=0;
+  size_t temp_var=0;
+  get_all_sizes(vert_count, elem_count, temp_var, err);
   
   int ns_count=0;
   if(num_fixed_nodes>0)

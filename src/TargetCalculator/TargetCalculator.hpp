@@ -44,7 +44,7 @@
 #include "Matrix3D.hpp"
 #include "PatchData.hpp"
 
-#ifdef HAVE_IEEEFP_H
+#ifdef HAVE_IEEEFP
 #  include <ieeefp.h>
 #endif
 
