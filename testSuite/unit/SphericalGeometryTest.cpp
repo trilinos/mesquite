@@ -8,7 +8,7 @@
 //    E-MAIL: mbrewer@sandia.gov
 //
 // ORIG-DATE: Jan. 29, 2003
-//  LAST-MOD: 
+//  LAST-MOD: 22-May-03 at 09:24:58 by Michael Brewer
 //
 // DESCRIPTION:
 // ============
@@ -38,7 +38,7 @@ SimplifiedGeometryEngine.
 #include "GeneralizedConditionNumberQualityMetric.hpp"
 #include "MeanRatioQualityMetric.hpp"
 #include "ConditionNumberQualityMetric.hpp"
-#include "LPTemplate.hpp"
+#include "LPtoPTemplate.hpp"
 #include "ASMQualityMetric.hpp"
 #include "EdgeLengthQualityMetric.hpp"
 #include "LaplacianSmoother.hpp"
@@ -111,7 +111,7 @@ public:
      UntangleQualityMetric* untan = UntangleBetaQualityMetric::create_new();
      
        // ... and builds an objective function with it
-     LPTemplate* obj_func = new LPTemplate(shape, 2, err);
+     LPtoPTemplate* obj_func = new LPtoPTemplate(shape, 2, err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err.errorOn);
      obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);

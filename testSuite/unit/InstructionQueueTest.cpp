@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 13-Nov-02 at 18:05:56
-//  LAST-MOD: 14-Nov-02 at 10:49:44 by Thomas Leurent
+//  LAST-MOD: 22-May-03 at 09:17:18 by Michael Brewer
 //
 // DESCRIPTION:
 // ============
@@ -28,7 +28,7 @@ Unit testing of various functions in the InstructionQueue class.
 #include "QualityImprover.hpp"
 #include "ShapeQualityMetric.hpp"
 #include "MeanRatioQualityMetric.hpp"
-#include "LPTemplate.hpp"
+#include "LPtoPTemplate.hpp"
 #include "SteepestDescent.hpp"
 #include "Vector3D.hpp"
 #include "PatchData.hpp"
@@ -63,7 +63,7 @@ public:
      MsqError err;
      // creates a quality assessor and a qualilty improver
      mQM = MeanRatioQualityMetric::create_new();
-     mOF = new LPTemplate(mQM, 2, err);
+     mOF = new LPtoPTemplate(mQM, 2, err);
      mQI = new SteepestDescent( mOF );
      mQA = new QualityAssessor(mQM, QualityAssessor::MAXIMUM);
   }

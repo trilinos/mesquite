@@ -8,7 +8,7 @@
 //    E-MAIL: mbrewer@sandia.gov
 //
 // ORIG-DATE: March 5, 2003
-//  LAST-MOD: 29-Apr-03 at 17:06:34 by Thomas Leurent
+//  LAST-MOD: 22-May-03 at 10:17:38 by Michael Brewer
 //
 // DESCRIPTION:
 // ============
@@ -44,7 +44,7 @@ Tests for the TerminationCriterion class..
 
 // algorythms
 #include "ConditionNumberQualityMetric.hpp"
-#include "LPTemplate.hpp"
+#include "LPtoPTemplate.hpp"
 #include "ConjugateGradient.hpp"
 #include "PlanarDomain.hpp"
 
@@ -115,7 +115,7 @@ public:
       
         // create a mean ratio quality metric ...
       ShapeQualityMetric* cond_num=ConditionNumberQualityMetric::create_new();
-      LPTemplate* obj_func = new LPTemplate(cond_num, 2, err);
+      LPtoPTemplate* obj_func = new LPtoPTemplate(cond_num, 2, err);
       CPPUNIT_ASSERT(!err.errorOn);
       obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
       ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );

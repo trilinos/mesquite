@@ -8,7 +8,7 @@
 //    E-MAIL: mbrewer@sandia.gov
 //
 // ORIG-DATE: Jan. 29, 2003
-//  LAST-MOD: 
+//  LAST-MOD: 22-May-03 at 09:38:45 by Michael Brewer
 //
 // DESCRIPTION:
 // ============
@@ -39,7 +39,6 @@ SimplifiedGeometryEngine.
 #include "GeneralizedConditionNumberQualityMetric.hpp"
 #include "MeanRatioQualityMetric.hpp"
 #include "ConditionNumberQualityMetric.hpp"
-#include "LPTemplate.hpp"
 #include "LPtoPTemplate.hpp"
 #include "ASMQualityMetric.hpp"
 #include "EdgeLengthQualityMetric.hpp"
@@ -120,7 +119,7 @@ public:
      
        // ... and builds an objective function with it (untangle)
      LInfTemplate* untan_func = new LInfTemplate(untan);
-     LPTemplate* shape_func = new LPTemplate(shape,2,err);
+     LPtoPTemplate* shape_func = new LPtoPTemplate(shape,2,err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err.errorOn);
      shape_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
@@ -230,7 +229,7 @@ public:
   
          // ... and builds an objective function with it (untangle)
        LInfTemplate* untan_func = new LInfTemplate(untan);
-       LPTemplate* shape_func = new LPTemplate(shape,2,err);
+       LPtoPTemplate* shape_func = new LPtoPTemplate(shape,2,err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
        shape_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
