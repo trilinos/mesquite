@@ -645,6 +645,11 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError& err)
       }
       column_counter=0;
         //PRINT only a warning if invalid
+      if(num_pass==2)
+        QAData[metric_counter].numInvalid/(2);
+      else if (num_pass!=1)
+        err.set_msg("Incorrect number of passes over the mesh");
+      
       if(QAData[metric_counter].numInvalid>0){
         PRINT_INFO("MESH IS INVALID WITH RESPECT TO THIS METRIC (%i values)\n",QAData[metric_counter].numInvalid);
       }
