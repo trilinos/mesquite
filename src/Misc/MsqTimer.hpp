@@ -117,4 +117,21 @@ namespace Mesquite
   extern Mesquite::StopWatchCollection GlobalStopWatches;
 }
 
+#ifdef USE_FUNCTION_TIMERS
+#define FUNCTION_TIMER_START(name) \
+{ \
+   static StopWatchCollection::Key local_func_abd = GlobalStopWatches.add(name); \
+   GlobalStopWatches.start(local_func_abd); \
+} 
+
+#define FUNCTION_TIMER_END(name) \
+{ \
+   GlobalStopWatches.stop(name); \
+} 
+#else
+#define FUNCTION_TIMER_START(){}
+#define FUNCTION_TIMER_END() {}
+#endif
+
+
 #endif

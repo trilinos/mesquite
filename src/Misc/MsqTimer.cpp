@@ -1,7 +1,7 @@
 #include "MsqTimer.hpp"
 
 // Create the global collection of stop watches
-Mesquite::StopWatchCollection GlobalStopWatches;
+Mesquite::StopWatchCollection Mesquite::GlobalStopWatches;
 
 // Unfortunately, many Unix platforms don't have good support
 // for the ANSI standard clock() function.  That means we have
