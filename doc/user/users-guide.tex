@@ -1,10 +1,12 @@
-\documentclass[psfig]{article}
+\documentclass[letter]{report}
 \usepackage{epsfig}
 \usepackage{amssymb}
 
 \pagestyle{empty}
 
-\title{ {\LARGE\bf Mesquite User's Guide}}
+\title{ {\LARGE\bf \emph{DRAFT} \\
+        Mesquite User's Guide\\
+                 \emph{DRAFT} }}
 
 \author{Patrick Knupp, Lori Freitag, Darryl Melander, Mike Brewer \\
 The Sandia National Laboratories \\
@@ -19,9 +21,6 @@ Argonne, IL 60490 USA}
 \begin{document}
 
 \maketitle
-\begin{abstract} 
-MESQUITE is a software library for improving mesh quality. 
-\end{abstract}
 
 \tableofcontents
 
@@ -29,14 +28,14 @@ MESQUITE is a software library for improving mesh quality.
 
 \listoftables
 
-\section{Introduction to Mesh Quality Improvement} 
+\chapter{Introduction to Mesh Quality Improvement} 
 
-\subsection{General Overview}
+\section{General Overview}
 
 Mesh quality has been shown to be critical for solution accuracy and
 efficiency in the solution of PDE-based applications.  However, it can
 be negatively impacted during many stages of the mesh generation
-process from defeaturing CAD models to postprocessing via a smoothing
+process from de-featuring CAD models to post-processing via a smoothing
 scheme to mesh adaptivity. At any stage after a mesh is created, its
 quality can be improved by techniques such as node point movement and
 topology modification.  There are a number of techniques that have
@@ -72,27 +71,33 @@ algorithms which are the heart of the Mesquite mesh quality improvement
 toolkit
 \end{itemize}
 
-\subsection{The Mesquite Philosophy}
+\section{Mesh Improvement Goals}
+
+{\it Why have different mesh improvement goals? What are they (shape,
+untangle, alignment, morph, etc.). Improvement goals currently
+supported (shape, untangle).  }
+
+\section{The Mesquite Philosophy}
 
 {\it 
-The hippocratic oath: we will do no harm (can we do an undo or
+The Hippocratic oath: we will do no harm (can we do an undo or
 should the user keep track of the original mesh?).  What are the
 boundaries of Mesquite?  What it is not going to do. What do we mean
 by a mesh quality improvement algorithm. Including the best known
 algorithms for a particular goal (not just a collection of hacked
 tools). Provides both a useful tool that is easy to use for
 application scientists and is extensible to provide a platform for
-mesh quality improvment research. Give an example API file (script for
+mesh quality improvement research. Give an example API file (script for
 Laplace smoothing - novice). Show the expert view of the
 world. Readers can use script to build from. Use example to help
 explain our philosophy. 
 }
 
-\subsection{The Mesquite Vision}
+\section{The Mesquite Vision}
 
 Mesquite design goals are derived from a mathematical framework and
 are focused on providing a versatile, comprehensive, effective,
-interoperable, and efficient library of mesh quality improvement
+inter-operable, and efficient library of mesh quality improvement
 algorithms that can be used by the non-expert and extended and
 customized by experts.  In this section we highlight the current
 status of Mesquite in several of our design goal areas.
@@ -172,38 +177,42 @@ Considerable attention has been devoted to understanding and
 implementing a variety of termination criteria that can be used to
 control the computational cost of the optimization algorithms.
 
-{\it In core to applications, not just a preprocessign step.}
+{\it In core to applications, not just a preprocessing step.}
 
-\section{Basic Mesquite Usage}
+\chapter{Basic Mesquite Usage}
 
-\subsection{Downloading Mesquite}
+\section{Downloading Mesquite}
 
-\subsection{Compiling and Linking Mesquite}
+\subsection{System Requirements}
+TODO:  List the supported platforms (Lin, SGI, Sun, etc.?), the required
+software (makedepend, gmake, Babel, etc.?), and any related information.
+\subsection{Acquiring the Necessary Code/Libraries}
+TODO:  How and where Mesquite, AOMD, CppUnit, (MDB), etc. can be
+acquired... with appropriate acknowledgments.
+
+\section{Compiling and Linking Mesquite}
+\label{sec:compiling}
+\begin{verbatim}
 TODO:  Software dependencies, compiling AOMD, TSTT interfaces
-(need the .h file),
-other (gmake, makedepend)?  Makefiles (examples that link Mesquite to an 
+(need the .h file), other (gmake, makedepend)?  
+Makefiles (examples that link Mesquite to an 
 application code). Compiler flags and options (debugging, profiling). 
 Platforms supported. Optional functionalities (debugging, profiling, 
 error handling).
-\subsubsection{System Requirements}
-TODO:  List the supported platforms (Lin, SGI, Sun, etc.?), the required
-softwar (makedepend, gmake, Babel, etc.?), and any related information.
-\subsubsection{Acquiring the Necessary Code/Libraries}
-TODO:  How and where Mesquite, AOMD, CPPUnit, (MDB), etc. can be
-acquired... with appropriate acknowledgments.
-\subsubsection{Compiling Mesquite} \label{sec:compiling}
+\end{verbatim}
+
 Having acquired the Mesquite source code, the user can perform the
 following steps which outline the process for compiling the code and
 creating the library, `libmesquite.a'. Here is the fastest way to compile Mesquite:
 \begin{enumerate}
 \item While in the main directory (typically, .../mesquite/), type
-`./configure'.  This will create the file Mafefile.customize with a default configuration
+`./configure'.  This will create the file Makefile.customize with a default configuration
 for your platform.
 \item Type gmake, this will compile the library lib/libmesquite.a
 \item To compile, one of the test, stay in the main directory (mesquite/) and type 
 for example 'gmake testSuite/test\_1/main'. You can also use 'gmake all\_tests' .
 \end{enumerate}
-If the above worked, you are done. Mesquite compiled succesfully. 
+If the above worked, you are done. Mesquite compiled successfully. 
 
 If the above method did not work for your system, you will have to modify the file
 Makefile.customize that contains the platform specific tools and settings to be used 
@@ -215,7 +224,7 @@ script options (you can also access those options and
 others by typing './configure --help'), or you can edit
 Makefile.customize directly.
 
-\paragraph{Configure Options.}  \label{config_options}
+\subsection{Configure Options.}  \label{config_options}
 
 Those options can be given to the configure script through the command line, for example the C headers
 option would be given by typing \texttt{./configure --with-c-headers=yes} in the \texttt{mesquite/} directory.
@@ -237,17 +246,17 @@ Give the full path: --with-cc='/usr/local/gcc/bin/gcc'
 Give the full path:  --with-cPP='/usr/local/gcc/bin/g++'
 \item \texttt{--with-aomd=AOMD\_LIB} Location of aomd library (optional):
 Give the full path: --with-aomd='/.../libaomd.so'or check out the library from the
-tstt web pages.
+TSTT web pages.
 \item \texttt{--with-dox=EXECUTABLE} Location of doxygen:
 Give the full path: --with-dox='/usr/local/bin/doxygen'
 \end{description}
 
-\paragraph{Makefile Variables.}  \label{mes_vars_and_defs}
+\subsection{Makefile Variables.}  \label{mes_vars_and_defs}
 
 The following is a list of variables used in Mesquite's Makefile
-structure to allow for custimization of the compilation process.
+structure to allow for customization of the compilation process.
 Most of the provided examples come directly from Mesquite's default
-linux setup. If you decided not to use the configure script and its options (previous paragraph),
+Linux setup. If you decided not to use the configure script and its options (previous paragraph),
 you can edit Makefile.customize directly. Here are the variables and their meaning.
 \begin{enumerate}
 
@@ -282,7 +291,7 @@ you can edit Makefile.customize directly. Here are the variables and their meani
 	`list' will be included instead of `list.h'.  With
 	USE\_C\_PREFIX\_INCLUDES defined, Mesquite will include the
 	`c-prefixed' header files.  For example, `cmath' will be
-	inlcuded instead of `math.h'.  \\
+	included instead of `math.h'.  \\
 	({\it E.g.,} STD\_INCLUDE\_FLAG = -DUSE\_STD\_INCLUDES\\
 	-DUSE\_C\_PREFIX\_INCLUDES).
   \end{description}
@@ -293,7 +302,7 @@ you can edit Makefile.customize directly. Here are the variables and their meani
 	be linked to AOMD\\
 	({\it e.g.,} AOMD\_LIB\_DIR = \$\{MSQ\_BASE\_DIR/external/AOMD/lib\}).
   \item[EXODUS\_LIB\_DIR] is an optional variable used to hold the
-	location of the ExodusII library, an external library needed
+	location of the Exodus II library, an external library needed
 	by MDB.  This library is not needed if Mesquite is not being
 	linked to MDB.
 	({\it E.g.,} EXODUS\_LIB\_DIR = \$\{MSQ\_BASE\_DIR\}/external/exodus/lib).
@@ -319,7 +328,7 @@ you can edit Makefile.customize directly. Here are the variables and their meani
 \end{description}
 \end{enumerate}
 
-\subsection{Tutorial: Running a Simple Example Program}
+\section{Short Tutorial}
 
 In this section, we will write a Mesquite driver in order to improve the quality of a test
 mesh. This tutorial section is aimed at giving you a feel for Mesquite: \emph{this section is not where to look
@@ -332,7 +341,7 @@ fastest way to get Mesquite running on a mesh. The concept of the wrappers, as w
 wrappers available, are described in section \ref{sec:wrappers}. We will then set up a more customized mesh
 improvement tool through the mesquite low-level API, described in section \ref{sec:}
 
-\subsubsection{Tutorial File Template}
+\subsection{Tutorial File Template}
 \label{sec:tutfile}
 
 In order to create and link a driver code, the Mesquite library must have been compiled, as per the
@@ -362,7 +371,7 @@ Although the code above does not perform any action, we can compile from the mai
 gmake testSuite/tutorial/tutorial
 \end{verbatim}
 
-\subsubsection{Loading a Test Mesh}
+\subsection{Loading a Test Mesh}
 
 Here we want to improve one of the test meshes distributed with Mesquite. Those meshes are in
 the very readable but inefficient VTK format. You can open one of the ASCII files in
@@ -405,7 +414,7 @@ object:
 \end{verbatim}
 
 
-\subsubsection{Improving the Mesh with a Wrapper Class}
+\subsection{Improving the Mesh with a Wrapper Class}
 The simplest way to launch a Mesquite mesh quality improvement procedure is to use one of the
 wrapper classes described in section \ref{sec:wrappers}. Here, we will instantiate the
 \texttt{ShapeImprovement} and run it over the MeshSet we created earlier. Mesquite
@@ -422,7 +431,7 @@ We then proceed to write the improved mesh in a new file:
 Compiling this code and running it will create in the current directory the files original\_mesh.vtk
 and improved\_mesh.vtk. 
 
-\subsubsection{Improving the Mesh with the Low Level API}
+\subsection{Improving the Mesh with the Low Level API}
 
 If the user requires in-depth control over the mesh quality improvement
 process, the use of the Mesquite classes allow an extensive
@@ -483,9 +492,9 @@ class.
 \end{verbatim} 
 
 
-\section{Writing a Mesquite Application}
+\chapter{Writing a Mesquite Application}
 
-\subsection{Telling Mesquite About Your Mesh}
+\section{Telling Mesquite About Your Mesh}
 \label{sec:meshes}
 
 Mesquite is responsible for gathering information from the
@@ -554,7 +563,7 @@ and \cite{NWGrid-website}).  This interface definition effort is
 evolving, and the Mesquite team is actively participating to ensure
 that our needs for mesh quality improvement are adequately and
 efficiently addressed.  A TSTT-based implementation of the Mesquite
-binterfaces will be available soon.  As such, any tool that exposes its
+interfaces will be available soon.  As such, any tool that exposes its
 mesh through the TSTT interfaces can be used with Mesquite without
 additional development.
 
@@ -566,7 +575,32 @@ interface, the Mesquite-specific interface is not as general, and
 therefore consist of fewer
 functions and does not require additional tools such as Babel.
 
-\subsection{Simplified Application Programming Interface}
+\subsection{The Simplified Geometry Engine}
+\label{sec:geometry}
+
+\subsection{Linking Mesquite with the TSTT Mesh Interface} 
+\label{sec:TSTT}
+
+\subsection{Implementing the Mesquite Mesh Interface}
+
+Most users will want to skip this section and avoid the associated work. There are several manners
+to give the mesh data to Mesquite, and implementing the Mesquite mesh interface is the one that
+requires the most coding work. 
+
+Let's review the alternative in the first place. For very simple meshes, Mesquite has an integrated
+mesh database that can read in mesh files in specific format, such as VTK (see section \ref{sec:}). 
+On the other hand, Mesquite is compatible with the TSTT mesh interface: this means that if you are
+running a code that has implemented the TSTT mesh interface, you can link Mesquite with your code
+and perform all mesh improvements through the TSTT mesh interface (see section \ref{sec:TSTT}).
+Implementing the TSTT mesh interface also has the advantage that your code will be compatible with
+the TSTT mesh interface standard: this is a very good investment. 
+
+If you want to implement the specific Mesquite mesh interface, you probably have very specific
+reasons in mind ... and you know what you are doing. In this section, we will give you the
+documentation for the abstract classes. This will allow you to implement the interface. 
+
+
+\section{Simplified Application Programming Interface}
 \label{sec:wrappers}
 To improve meshes with a minimum of Mesquite function calls, we have 
 provided a set of wrapper classes that encapsulate the 
@@ -589,34 +623,203 @@ features such as setting a specific
 termination criterion.  
 
 
-\subsection{Detailed Application Programming Interface}
+\section{Detailed Application Programming Interface}
+
+\subsection{Quality Metric}
+
+{\it 
+What is a quality metric? Define full range, acceptable range, what is means 
+if the metric uses a map, nodal-invariance, well-posed metrics, averaging 
+methods, sample points. Give a list of the individual metrics we support. 
+Provide a key to the tables.
+}
+
+To implement a new quality metric, a user must inherit from the base
+{\tt QualityMetric} class and implement the `evaluate' function.
+{\tt QualityMetric} provides a wide range of
+functionality that allows the quality metrics to be defined in a
+flexible way and therefore gives the user the ability to modify the
+metric in a variety of ways.  For example, the condition number
+quality metric for a quadrilateral or hexahedral element is computed
+by evaluating the condition number at a number of sample points in the
+element.  Mesquite allows the user to select which set of sample
+points are used in this calculation ({\it e.g.}, the element's
+vertices) and how these values are combined to form a single metric
+value ({\it e.g.}, linear averaging).  Mesquite is currently being
+extended to allow certain quality metrics to be referenced to a
+non-isotropic element.
+
+{\it Currently Available Quality Metrics.}  Quality metrics within
+Mesquite are grouped by the type of mesh properties that they measure.
+Currently, there are four property groups: shape, smoothness, volume,
+and untangle.  Composite metrics which allow the user to combine
+multiple metrics or to scale metrics are given a separate group,
+composite.  Future Mesquite development will include the
+implementation of metrics falling under other group headings such as
+orthogonality, shear, and alignment.  Table \ref{current-metrics}
+lists the quality metrics currently available within Mesquite.  For
+detailed definitions of the metrics, see \cite{Kn01}.  We note that
+the implementation of the mean ratio metric has been extensively
+optimized, and analytical gradients and Hessians are available for
+that function.  Other metrics currently use numerical gradients and
+Hessians.
+
+The two composite metrics which are currently implemented
+allow users to either multiply two metrics' values
+together or raise a single metric's value to a given power.
+The latter allows for negative powers and can therefore be used
+to obtain the inverse of any Mesquite quality metric.  
+
+\begin{table*}[htb]
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+Metric & Group & Mesh Type & Feasibility Region &Entity Type\\
+\hline
+Area Smoothness &Smoothness & Any & No & Elements\\
+Aspect Ratio & Shape &Tri/Tet & No & Elements\\
+Composite Mult. & Composite &Any& Yes/No & Either\\
+Composite Power & Composite &Any& Yes/No & Either\\
+Cond. Num.& Shape & Any & Yes & Elements \\
+Corner Jacobian & Volume & Any & No & Elements \\
+Edge Length &Smoothness & Any & No & Vertices \\
+Edge Length Range & Smoothness & Any &No & Vertices\\
+Mean Ratio &Shape & Any & Yes &Elements\\
+Untangle Beta &Untangle &Any&Yes&Elements\\
+Vert. Cond. Num.& Shape & Any & Yes & Vertices\\
+\hline
+\end{tabular}
+\label{current-metrics}
+\caption{List of the current Mesquite quality metrics. The table also
+indicates the metric group, the mesh types for which the metric is
+valid, whether the metric is only valid within a feasible
+region, and the type of entity for which the metric is defined (elements
+or vertices).  Note that there may be a feasible region for composite
+metrics depending on whether the underlying metrics require such a
+constraint.}
+\end{center}
+\end{table*}
 
 
-\subsection{Hints for Performance Profiling}
+\begin{table}[h]
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+Metric Name & Type & Dimension & Full Range & Ideal & Degenerate \\ \hline
+Inverse Mean Ratio & Shape & 2D, 3D & $[0,1]$ & 1 & 0 \\ 
+Mean Ratio &  &  &  &  &  \\ 
+Condition Number &  &  &  &  &  \\ 
+Untangle &  &  &  &  &  \\ 
+Aspect Ratio Gamma &  &  &  &  &  \\ 
+\hline
+\end{tabular}
+\caption{\label{QualityMetrics1} Mesquite Quality Metrics Summary, Part I}
+\end{center}
+\end{table}
+
+\begin{table}[h]
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|}
+\hline
+Metric Name & Map? & Averaging & Sample Pts & Elements & Gradient & Source \\ \hline
+Inverse Mean Ratio & No & Harmonic & Vertices & TQTH & Analytic & \\ 
+Mean Ratio &  &  &  &  &  \\ 
+Condition Number &  &  &  &  &  \\ 
+Untangle &  &  &  &  &  \\ 
+Aspect Ratio Gamma &  &  &  &  &  \\ 
+\hline
+\end{tabular}
+\caption{\label{QualityMetrics2} Mesquite Quality Metrics Summary, Part II}
+\end{center}
+\end{table}
+
+\noindent {\bf Mean Ratio Metric} \newline
+Give description, formulas. 
+
+\subsection{Objective Function}
+List of all the templates. What is the difference between a template and
+an objective function? For each element of the mesh (or for each 
+free-node of the mesh), let there be an associated quality metric, 
+$\mu_m$.  Define the vector 
+\begin{equation}
+{\bf U} = [ \mu_1, \mu_2, \ldots, \mu_M ]
+\end{equation}
+where $M$ is the number of elements or free-nodes in the mesh. \newline
+
+\noindent Available templates in Mesquite: \newline
+
+\noindent {\bf The $\ell_p$ Template} \newline
+Given $1 \leq p < \infty$, let
+\begin{equation}
+\| {\bf U} \|_p = ( \sum_{m=1}^M \mid \mu_m \mid^p )^{1/p}
+\end{equation}
+be the $\ell_p$ template. \newline
+
+\noindent {\bf The $\ell_p^p$ Template} \newline
+Given $1 \leq p < \infty$, let $\| {\bf U} \|_p^p$ be the 
+$\ell_p^p$ template. \newline
+
+\noindent {\bf The $\ell_{\infty}$ Template} \newline
+The $\ell_{\infty}$ template is
+\begin{equation}
+\| {\bf U} \|_{\infty} = \max_{m=1,\ldots,M} \mid \mu_m \mid
+\end{equation}
+
+These are currently the only templates available in Mesquite.
+We soon hope to add the 'max' template:
+\begin{equation}
+MAX = \max_{m=1,\ldots,M} ( \mu_m )
+\end{equation}
+
+Which of these templates has numerical/analytic gradient/Hessian?
+
+\subsection{Vertex Mover}
+List solvers and appropriate templates. Is a solver the same things as a 
+vertex mover? List options.
+
+\begin{table}[h]
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+Solver Name & Description & Templates & L/G & Num/Anal & Fixed Vertices? \\ \hline
+Steepest Descent & Classical & $\ell_p$ & Both & Both & Yes \\
+Conjugate Gradient & & & & & \\
+Feasible Newton & & & & & \\
+Active Set & & Own & & & \\
+Laplace & & None & & & \\
+Randomize & & None & & & \\
+\hline
+\end{tabular}
+\caption{\label{Solvers} Mesquite Solver Summary}
+\end{center}
+\end{table}
+
+
+\subsection{Topology Modifier}
+
+\subsection{Termination Criteria}
+List, along with uses.
+
+\subsection{Culling Algorithms}
+
+\subsection{Quality Assessment}
+
+\subsection{Instruction Queue}
+Setting the master quality improver, setting up and using preconditioners,
+using quality assessors, running the instruction queue.
+
+\subsection{Composite Metrics}
+
+\subsection{Composite Objective Functions}
+The only ones currently available are CompositeMult, CompositeAdd,
+CompositeScalarMult, and CompositeScalarAdd.
+
+
+
+\section{Hints for Performance Profiling}
 Compiler options, aggregation.
 
-\section{Mesh Improvement Goals}
-
-{\it Why have different mesh improvement goals? What are they (shape,
-untangle, alignment, morph, etc.). Improvement goals currently
-supported (shape, untangle).  }
-
-\section{Methods - Theory and Algorithms}
-
-\subsection{Vertex Movement Schemes}
-
-{\it Why use an optimization-based approach. Posing mesh quality as an
-optimization problem (metrics, objective function templates and goals,
-L1, L2, Linf).  Optimization Algorithms (brief description, enough to
-have the API discussion make sense): variational, discrete, solvers
-(CG, active set), local vs. global, fitting Laplacian and other common
-smoothers into this framework.}
-
-\subsection{Topology Modifiers}
-
-{\it Swapping algorithms.}
-
-\section{Mesquite Design}
+\chapter{Mesquite Design}
 \label{sec:arch}
 
 \begin{figure*}[htb]
@@ -632,7 +835,7 @@ smoothers into this framework.}
 \end{figure*}
 
 The Mesquite architecture, shown in Figure \ref{fig:uml}, closely
-follows the abstractions defined by the mathemtical framework 
+follows the abstractions defined by the mathematical framework 
 to describe the optimization problem.
 In particular, the core abstract classes needed to
 define a mesh quality improvement algorithm are {\tt QualityMetric},
@@ -999,7 +1202,7 @@ of sub-directories ({\it i.e.,} the directories contained in the
 base directory).
 \begin{enumerate}
 \item doc:  Contains a version of this document and a version of
-the developer's documention generated with doxygen (TODO: acknowledge
+the developer's documentation generated with doxygen (TODO: acknowledge
 doxygen).
 \item external:  Contains directories which can be used to store external
 libraries.  These libraries are not necessarily provided with Mesquite.
@@ -1008,7 +1211,7 @@ libraries.  These libraries are not necessarily provided with Mesquite.
 used within Mesquite.  
 \item lib:  The location where the Mesquite library, ``libmesquite.a,'' is
 stored.
-\item meshFiles:  Conatains example meshes that are used in some of
+\item meshFiles:  Contains example meshes that are used in some of
 the test cases.
 \item mswindow:  Contains the project file for compiling with Visual C++
 (TODO: VC++ trademark statement???).
@@ -1056,7 +1259,7 @@ tests.
 
 In addition to unit tests, the Mesquite test suite also includes
 a range of functional tests.  While these tests also use the
-CPPUnit framework, they differ from unit tests in that 
+CppUnit framework, they differ from unit tests in that 
 functional tests require the entire Mesquite framework.
 The functional tests are complete and often complex mesh
 optimization problems.  These tests are intended to ensure that
@@ -1068,240 +1271,30 @@ and efficiency on `real world' problems.
 
 
 
-\section{Advanced Use of Mesquite}
-
-\subsection{The Simplified Geometry Engine}
-\label{sec:geometry}
-
-\subsubsection{Linking Mesquite with the TSTT Mesh Interface} 
-\label{sec:TSTT}
-
-\subsubsection{Implementing the Mesquite Mesh Interface}
-
-Most users will want to skip this section and avoid the associated work. There are several manners
-to give the mesh data to Mesquite, and implementing the Mesquite mesh interface is the one that
-requires the most coding work. 
-
-Let's review the alternative in the first place. For very simple meshes, Mesquite has an integrated
-mesh database that can read in mesh files in specific format, such as VTK (see section \ref{sec:}). 
-On the other hand, Mesquite is compatible with the TSTT mesh interface: this means that if you are
-running a code that has implemented the TSTT mesh interface, you can link Mesquite with your code
-and perform all mesh improvements through the TSTT mesh interface (see section \ref{sec:TSTT}).
-Implementing the TSTT mesh interface also has the advantage that your code will be compatible with
-the TSTT mesh interface standard: this is a very good investment. 
-
-If you want to implement the specific Mesquite mesh interface, you probably have very specific
-reasons in mind ... and you know what you are doing. In this section, we will give you the
-documentation for the abstract classes. This will allow you to implement the interface. 
-
-
-
-\subsection{Creating a Quality Metric}
-
-{\it 
-What is a quality metric? Define full range, acceptable range, what is means 
-if the metric uses a map, nodal-invariance, well-posed metrics, averaging 
-methods, sample points. Give a list of the individual metrics we support. 
-Provide a key to the tables.
-}
-
-To implement a new quality metric, a user must inherit from the base
-{\tt QualityMetric} class and implement the `evaluate' function.
-{\tt QualityMetric} provides a wide range of
-functionality that allows the quality metrics to be defined in a
-flexible way and therefore gives the user the ability to modify the
-metric in a variety of ways.  For example, the condition number
-quality metric for a quadrilateral or hexahedral element is computed
-by evaluating the condition number at a number of sample points in the
-element.  Mesquite allows the user to select which set of sample
-points are used in this calculation ({\it e.g.}, the element's
-vertices) and how these values are combined to form a single metric
-value ({\it e.g.}, linear averaging).  Mesquite is currently being
-extended to allow certain quality metrics to be referenced to a
-non-isotropic element.
-
-{\it Currently Available Quality Metrics.}  Quality metrics within
-Mesquite are grouped by the type of mesh properties that they measure.
-Currently, there are four property groups: shape, smoothness, volume,
-and untangle.  Composite metrics which allow the user to combine
-multiple metrics or to scale metrics are given a separate group,
-composite.  Future Mesquite development will include the
-implementation of metrics falling under other group headings such as
-orthogonality, shear, and alignment.  Table \ref{current-metrics}
-lists the quality metrics currently available within Mesquite.  For
-detailed definitions of the metrics, see \cite{Kn01}.  We note that
-the implementation of the mean ratio metric has been extensively
-optimized, and analytical gradients and Hessians are available for
-that function.  Other metrics currently use numerical gradients and
-Hessians.
-
-The two composite metrics which are currently implemented
-allow users to either multiply two metrics' values
-together or raise a single metric's value to a given power.
-The latter allows for negative powers and can therefore be used
-to obtain the inverse of any Mesquite quality metric.  
-
-\begin{table*}[htb]
-\begin{center}
-\begin{tabular}{|l|c|c|c|c|}
-\hline
-Metric & Group & Mesh Type & Feasibility Region &Entity Type\\
-\hline
-Area Smoothness &Smoothness & Any & No & Elements\\
-Aspect Ratio & Shape &Tri/Tet & No & Elements\\
-Composite Mult. & Composite &Any& Yes/No & Either\\
-Composite Power & Composite &Any& Yes/No & Either\\
-Cond. Num.& Shape & Any & Yes & Elements \\
-Corner Jacobian & Volume & Any & No & Elements \\
-Edge Length &Smoothness & Any & No & Vertices \\
-Edge Length Range & Smoothness & Any &No & Vertices\\
-Mean Ratio &Shape & Any & Yes &Elements\\
-Untangle Beta &Untangle &Any&Yes&Elements\\
-Vert. Cond. Num.& Shape & Any & Yes & Vertices\\
-\hline
-\end{tabular}
-\label{current-metrics}
-\caption{List of the current Mesquite quality metrics. The table also
-indicates the metric group, the mesh types for which the metric is
-valid, whether the metric is only valid within a feasible
-region, and the type of entity for which the metric is defined (elements
-or vertices).  Note that there may be a feasible region for composite
-metrics depending on whether the underlying metrics require such a
-constraint.}
-\end{center}
-\end{table*}
-
-
-\begin{table}[h]
-\begin{center}
-\begin{tabular}{|l|c|c|c|c|c|}
-\hline
-Metric Name & Type & Dimension & Full Range & Ideal & Degenerate \\ \hline
-Inverse Mean Ratio & Shape & 2D, 3D & $[0,1]$ & 1 & 0 \\ 
-Mean Ratio &  &  &  &  &  \\ 
-Condition Number &  &  &  &  &  \\ 
-Untangle &  &  &  &  &  \\ 
-Aspect Ratio Gamma &  &  &  &  &  \\ 
-\hline
-\end{tabular}
-\caption{\label{QualityMetrics1} Mesquite Quality Metrics Summary, Part I}
-\end{center}
-\end{table}
-
-\begin{table}[h]
-\begin{center}
-\begin{tabular}{|l|c|c|c|c|c|c|}
-\hline
-Metric Name & Map? & Averaging & Sample Pts & Elements & Gradient & Source \\ \hline
-Inverse Mean Ratio & No & Harmonic & Vertices & TQTH & Analytic & \\ 
-Mean Ratio &  &  &  &  &  \\ 
-Condition Number &  &  &  &  &  \\ 
-Untangle &  &  &  &  &  \\ 
-Aspect Ratio Gamma &  &  &  &  &  \\ 
-\hline
-\end{tabular}
-\caption{\label{QualityMetrics2} Mesquite Quality Metrics Summary, Part II}
-\end{center}
-\end{table}
-
-\noindent {\bf Mean Ratio Metric} \newline
-Give description, formulas. 
-
-\subsection{Creating an Objective Function}
-List of all the templates. What is the difference between a template and
-an obective function? For each element of the mesh (or for each 
-free-node of the mesh), let there be an associated quality metic, 
-$\mu_m$.  Define the vector 
-\begin{equation}
-{\bf U} = [ \mu_1, \mu_2, \ldots, \mu_M ]
-\end{equation}
-where $M$ is the number of elements or free-nodes in the mesh. \newline
-
-\noindent Available templates in Mesquite: \newline
-
-\noindent {\bf The $\ell_p$ Template} \newline
-Given $1 \leq p < \infty$, let
-\begin{equation}
-\| {\bf U} \|_p = ( \sum_{m=1}^M \mid \mu_m \mid^p )^{1/p}
-\end{equation}
-be the $\ell_p$ template. \newline
-
-\noindent {\bf The $\ell_p^p$ Template} \newline
-Given $1 \leq p < \infty$, let $\| {\bf U} \|_p^p$ be the 
-$\ell_p^p$ template. \newline
-
-\noindent {\bf The $\ell_{\infty}$ Template} \newline
-The $\ell_{\infty}$ template is
-\begin{equation}
-\| {\bf U} \|_{\infty} = \max_{m=1,\ldots,M} \mid \mu_m \mid
-\end{equation}
-
-These are currently the only tempates available in Mesquite.
-We soon hope to add the 'max' template:
-\begin{equation}
-MAX = \max_{m=1,\ldots,M} ( \mu_m )
-\end{equation}
-
-Which of these templates has numerical/analytic gradient/Hessian?
-
-\subsection{Creating a Vertex Mover}
-List solvers and appropriate templates. Is a solver the same things as a 
-vertex mover? List options.
-
-\begin{table}[h]
-\begin{center}
-\begin{tabular}{|l|c|c|c|c|c|}
-\hline
-Solver Name & Description & Templates & L/G & Num/Anal & Fixed Vertices? \\ \hline
-Steepest Descent & Clasical & $\ell_p$ & Both & Both & Yes \\
-Conjugate Gradient & & & & & \\
-Feasible Newton & & & & & \\
-Active Set & & Own & & & \\
-Laplace & & None & & & \\
-Randomize & & None & & & \\
-\hline
-\end{tabular}
-\caption{\label{Solvers} Mesquite Solver Summary}
-\end{center}
-\end{table}
-
-
-\subsection{Creating a Topology Modifier}
-
-\subsection{Termination Criteria}
-List, along with uses.
-
-\subsection{Culling Algorithms}
-
-\subsection{Quality Assessment}
-
-\subsection{The Instruction Queue}
-Setting the master quality improver, setting up and using preconditioners,
-using quality assessors, running the instruction queue.
-
-\subsection{Composite Metrics}
-
-\subsection{Composite Objective Functions}
-The only ones currently available are CompositeMult, CompositeAdd,
-CompositeScalarMult, and CompositeScalarAdd.
-
-\subsection{Running in Parallel}
-
-\section{Extending Mesquite}
+\chapter{Extending Mesquite}
 Adding a new quality metric, adding a new template, adding a new vertex 
 mover.
 
-\section{Troubleshooting}
+\section{Creating a New Quality Metric}
 
-\section{Caveats, Limitations, and Disclaimers}
+\section{Creating a New Objective Function}
 
-\section{User Support}
+\section{Creating a New Vertex Mover Algorithm}
+
+\section{Creating a New Topology Modifier Algorithm}
+
+
+\chapter{Troubleshooting}
+
+\chapter{Caveats, Limitations, and Disclaimers}
+
+\chapter{User Support}
 
 {\it Mailing lists, web site, examples, tutorials (pointer to slides?), 
 instructions on downloading the software (open source, preparing 
 derivative works), referencing Mesquite.}
 
-\section{The Mesquite Team}
+\chapter{The Mesquite Team}
 
 The core Mesquite team consists of five people from Sandia
 National Laboratories (SNL) and Argonne National Laboratory (ANL):
@@ -1310,27 +1303,170 @@ Thomas Leurent (ANL), and Darryl Melander (SNL).  In addition,
 significant contributions to the software have been made by
 Todd Munson (ANL) who developed the Feasible Newton Solver.
 
-\section{The Mesquite Development Plan}
+\chapter{The Mesquite Development Plan}
 
 {\it Timeline for proposed additions to the software.}
 
-\section{Acknowledgements}
-
-Mesquite is supported under the DOE SciDAC Terascale Simulation 
-Tools and Technology (TSTT) project \cite{tstt}.  
-
-{\it Funding sources (DOE SciDAC Program, Chuck Romine), Related activities
-(TSTT, Cubit, Opt-MS), helpful folks (RPI for AOMD, TSTT for MDB, LLNL
-for Overture tests, etc.}
 
 
-\bibliographystyle{plain}
-\bibliography{mesquite}
+\chapter{Appendices}
+
+\section{Appendix A: Mesh Interface}
+\label{append_mesh}
+
+\newcommand{\entrylabel}[1]{
+   {\parbox[b]{\labelwidth-4pt}{\makebox[0pt][l]{\textbf{#1}}\\}}}
+\newenvironment{Desc}
+{\begin{list}{}
+  {
+    \settowidth{\labelwidth}{40pt}
+    \setlength{\leftmargin}{\labelwidth}
+    \setlength{\parsep}{0pt}
+    \setlength{\itemsep}{-4pt}
+    \renewcommand{\makelabel}{\entrylabel}
+  }
+}
+{\end{list}}
+
+\subsection{Detailed Description}
+A Mesquite::Mesh is a collection of mesh elements which are composed of mesh vertices. Intermediate objects are not accessible through this interface (where intermediate objects include things like the faces of a hex, or an element's edges).
+
+\subsection{Member Function Documentation}
+\index{Mesquite::Mesh@{Mesquite::Mesh}!element_get_attached_vertex_count@{element\_\-get\_\-attached\_\-vertex\_\-count}}
+\index{element_get_attached_vertex_count@{element\_\-get\_\-attached\_\-vertex\_\-count}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual size\_\-t Mesquite::Mesh::element\_\-get\_\-attached\_\-vertex\_\-count (Element\-Handle {\em elem}, {\bf Msq\-Error} \& {\em err}) honest\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a17}
 
 
-\newpage
-\appendix{\large {\bf Appendix A: The Conjugate Gradient Algorithm }} \newline
-\label{append_A}
+Gets the number of vertices in this element. This data can also be found by querying the element's topology and getting the number of vertices per element for that topology type. 
+
+\index{element_get_attached_vertex_indices@{element\_\-get\_\-attached\_\-vertex\_\-indices}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual void Mesquite::Mesh::element\_\-get\_\-attached\_\-vertex\_\-indices (Element\-Handle {\em element}, size\_\-t $\ast$ {\em index\_\-array}, size\_\-t {\em array\_\-size}, {\bf Msq\-Error} \& {\em err})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a19}
+
+
+Identifies the vertices attached to this element by returning each vertex's global index. The vertex's global index indicates where that element can be found in the array returned by {\bf Mesh::get\_\-all\_\-vertices}. 
+
+\index{element_iterator@{element\_\-iterator}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual Element\-Iterator$\ast$ Mesquite::Mesh::element\_\-iterator ({\bf Msq\-Error} \& {\em err})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a6}
+
+
+Returns a pointer to an iterator that iterates over the set of all top-level elements in this mesh. The calling code should delete the returned iterator when it is finished with it. If elements are added or removed from the {\bf Mesh} after obtaining an iterator, the behavior of that iterator is undefined. 
+
+\index{elements_get_attached_vertices@{elements\_\-get\_\-attached\_\-vertices}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual void Mesquite::Mesh::elements\_\-get\_\-attached\_\-vertices (Element\-Handle $\ast$ {\em elem\_\-handles}, size\_\-t {\em num\_\-elems}, Vertex\-Handle $\ast$ {\em vert\_\-handles}, size\_\-t \& {\em sizeof\_\-vert\_\-handles}, size\_\-t $\ast$ {\em csr\_\-data}, size\_\-t \& {\em sizeof\_\-csr\_\-data}, size\_\-t $\ast$ {\em csr\_\-offsets}, {\bf Msq\-Error} \& {\em err})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a18}
+
+
+Returns the vertices that are part of the topological definition of each element in the \char`\"{}elem\_\-handles\char`\"{} array.
+
+When this function is called, the following must be true:\begin{enumerate}
+\item 
+\char`\"{}elem\_\-handles\char`\"{} points at an array of \char`\"{}num\_\-elems\char`\"{} element handles.\item 
+\char`\"{}vert\_\-handles\char`\"{} points at an array of size \char`\"{}sizeof\_\-vert\_\-handles\char`\"{}\item 
+\char`\"{}csr\_\-data\char`\"{} points at an array of size \char`\"{}sizeof\_\-csr\_\-data\char`\"{}\item 
+\char`\"{}csr\_\-offsets\char`\"{} points at an array of size \char`\"{}num\_\-elems+1\char`\"{}\end{enumerate}
+When this function returns, adjacency information will be stored in csr format:\begin{enumerate}
+\item 
+\char`\"{}vert\_\-handles\char`\"{} stores handles to all vertices found in one or more of the elements. Each vertex appears only once in \char`\"{}vert\_\-handles\char`\"{}, even if it is in multiple elements.\item 
+\char`\"{}sizeof\_\-vert\_\-handles\char`\"{} is set to the number of vertex handles placed into \char`\"{}vert\_\-handles\char`\"{}.\item 
+\char`\"{}sizeof\_\-csr\_\-data\char`\"{} is set to the total number of vertex uses (for example, sizeof\_\-csr\_\-data = 6 in the case of 2 TRIANGLES, even if the two triangles share some vertices).\item 
+\char`\"{}csr\_\-offsets\char`\"{} is filled such that csr\_\-offset[i] indicates the location of entity i's first adjacency in \char`\"{}csr\_\-data\char`\"{}. The number of vertices in element i is equal to csr\_\-offsets[i+1] - csr\_\-offsets[i]. For this reason, csr\_\-offsets[num\_\-elems] is set to the new value of \char`\"{}sizeof\_\-csr\_\-data\char`\"{}.\item 
+\char`\"{}csr\_\-data\char`\"{} stores integer offsets which give the location of each adjacency in the \char`\"{}vert\_\-handles\char`\"{} array.\end{enumerate}
+As an example of how to use this data, you can get the handle of the first vertex in element \#3 like this: 
+
+\footnotesize\begin{verbatim}VertexHandle vh = vert_handles[ csr_data[ csr_offsets[3] ] ] 
+\end{verbatim}\normalsize 
+
+
+and the second vertex of element \#3 like this: 
+
+\footnotesize\begin{verbatim}VertexHandle vh = vert_handles[ csr_data[ csr_offsets[3]+1 ] ] 
+\end{verbatim}\normalsize 
+ 
+
+\index{elements_get_topologies@{elements\_\-get\_\-topologies}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual void Mesquite::Mesh::elements\_\-get\_\-topologies (Element\-Handle $\ast$ {\em element\_\-handle\_\-array}, Entity\-Topology $\ast$ {\em element\_\-topologies}, size\_\-t {\em num\_\-elements}, {\bf Msq\-Error} \& {\em err})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a21}
+
+
+Returns the topologies of the given entities. The \char`\"{}entity\_\-topologies\char`\"{} array must be at least \char`\"{}num\_\-elements\char`\"{} in size. 
+
+\index{get_all_elements@{get\_\-all\_\-elements}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual void Mesquite::Mesh::get\_\-all\_\-elements (Element\-Handle $\ast$ {\em elem\_\-array}, size\_\-t {\em array\_\-size}, {\bf Msq\-Error} \& {\em err})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a4}
+
+
+Fills array with handles to all elements in the mesh.
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+array\_\-size}]Must be at least the number of elements. If less than the mesh number of elements, an error is set (and a partial copy is made). \end{description}
+\end{Desc}
+
+
+\index{get_all_vertices@{get\_\-all\_\-vertices}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual void Mesquite::Mesh::get\_\-all\_\-vertices (Vertex\-Handle $\ast$ {\em vert\_\-array}, size\_\-t {\em array\_\-size}, {\bf Msq\-Error} \& {\em err})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a3}
+
+
+Fills array with handles to all vertices in the mesh.
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+array\_\-size}]Must be at least the number of vertices. If less than the mesh number of vertices, an error is set (and a partial copy is made). \end{description}
+\end{Desc}
+
+
+\index{release@{release}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual void Mesquite::Mesh::release ()\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a23}
+
+
+Instead of deleting a {\bf Mesh} when you think you are done, call {\bf release()} {\rm (p.\,\pageref{classMesquite_1_1Mesh_a23})}. In simple cases, the implementation could just call the destructor. More sophisticated implementations may want to keep the {\bf Mesh} object to live longer than {\bf Mesquite} is using it. 
+
+\index{release_entity_handles@{release\_\-entity\_\-handles}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual void Mesquite::Mesh::release\_\-entity\_\-handles ({\bf Entity\-Handle} $\ast$ {\em handle\_\-array}, size\_\-t {\em num\_\-handles}, {\bf Msq\-Error} \& {\em err})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a22}
+
+
+Tells the mesh that the client is finished with a given entity handle. 
+
+\index{vertex_get_attached_element_count@{vertex\_\-get\_\-attached\_\-element\_\-count}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual size\_\-t Mesquite::Mesh::vertex\_\-get\_\-attached\_\-element\_\-count (Vertex\-Handle {\em vertex}, {\bf Msq\-Error} \& {\em err}) const\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a15}
+
+
+Gets the number of elements attached to this vertex. Useful to determine how large the \char`\"{}elem\_\-array\char`\"{} parameter of the {\bf vertex\_\-get\_\-attached\_\-elements()} function must be. 
+
+\index{vertex_get_byte@{vertex\_\-get\_\-byte}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual void Mesquite::Mesh::vertex\_\-get\_\-byte (Vertex\-Handle {\em vertex}, unsigned char $\ast$ {\em byte}, {\bf Msq\-Error} \& {\em err})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a13}
+
+
+Retrieve the byte value for the specified vertex or vertices. The byte value is 0 if it has not yet been set via one of the \_\-set\_\-byte() functions. 
+
+\index{vertex_is_fixed@{vertex\_\-is\_\-fixed}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual bool Mesquite::Mesh::vertex\_\-is\_\-fixed (Vertex\-Handle {\em vertex}, {\bf Msq\-Error} \& {\em err})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a7}
+
+Returns true or false, indicating whether the vertex is allowed to be repositioned. True indicates that the vertex is fixed and cannot be moved. Note that this is a read-only property; this flag can't be modified by users of the Mesquite::Mesh interface. 
+
+\index{vertex_is_on_boundary@{vertex\_\-is\_\-on\_\-boundary}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual bool Mesquite::Mesh::vertex\_\-is\_\-on\_\-boundary (Vertex\-Handle {\em vertex}, {\bf Msq\-Error} \& {\em err})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a8}
+
+
+Returns true or false, indicating whether the vertex is on the boundary. Boundary nodes may be treated as a special case by some algorithms or culling methods. Note that this is a read-only property; this flag can't be modified by users of the Mesquite::Mesh interface. 
+
+\index{vertex_iterator@{vertex\_\-iterator}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual Vertex\-Iterator$\ast$ Mesquite::Mesh::vertex\_\-iterator ({\bf Msq\-Error} \& {\em err})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a5}
+
+
+Returns a pointer to an iterator that iterates over the set of all vertices in this mesh. The calling code should delete the returned iterator when it is finished with it. If vertices are added or removed from the {\bf Mesh} after obtaining an iterator, the behavior of that iterator is undefined. 
+
+\index{vertex_set_byte@{vertex\_\-set\_\-byte}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual void Mesquite::Mesh::vertex\_\-set\_\-byte (Vertex\-Handle {\em vertex}, unsigned char {\em byte}, {\bf Msq\-Error} \& {\em err})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a11}
+
+
+Each vertex has a byte-sized flag that can be used to store flags. This byte's value is neither set nor used by the mesh implementation. It is intended to be used by {\bf Mesquite} algorithms. Until a vertex's byte has been explicitly set, its value is 0. 
+
+
+
+\section{Appendix B: Conjugate Gradient Algorithm }
+\label{append_conjgrad}
 This algorithm requires only
 the objective function value and the objective function gradient. 
 In Mesquite this is usually done by applying the chain rule described in 
@@ -1348,9 +1484,8 @@ any size; thus it is appropriate for optimizing all node positions
 simultaneously for any combination of $C^1$ objective functions and
 quality metrics (see \cite{FeasNewt} for more details). 
 
-\newpage
-\appendix{\large {\bf Appendix B: The Feasible Newton Algorithm }} \newline
-\label{append_B}
+\section{Appendix C: Feasible Newton Algorithm }
+\label{append_feasnewt}
 Newton's method minimizes a quadratic
 approximation of a non-linear objective function. The algorithm requires
 the objective function value, its gradient, \emph{and} its Hessian information.
@@ -1374,9 +1509,8 @@ computation time when using the feasible Newton algorithm instead of
 the conjugate gradient algorithm, making feasible Newton a worthwhile
 choice when applicable (see \cite{FeasNewt} for more details).
 
-\newpage
-\appendix{\large {\bf Appendix C: The Active Set Method }} \newline
-\label{append_C}
+\section{Appendix D: Active Set Method }
+\label{append_activeset}
 The active set algorithm has been
 developed for non-continuously differentiable objective functions such
 as those computing the maximum value of a quality metric within a
@@ -1388,6 +1522,20 @@ tetrahedral elements that
 contain a single free vertex.  Repeated
 sweeps over the free vertices in the mesh leads to overall mesh
 improvement (see \cite{fp:ijnme00} for more details).
+
+
+\chapter{Acknowledgments}
+
+Mesquite is supported under the DOE SciDAC Terascale Simulation 
+Tools and Technology (TSTT) project \cite{tstt}.  
+
+{\it Funding sources (DOE SciDAC Program, Chuck Romine), Related activities
+(TSTT, Cubit, Opt-MS), helpful folks (RPI for AOMD, TSTT for MDB, LLNL
+for Overture tests, etc.}
+
+
+\bibliographystyle{plain}
+\bibliography{mesquite}
 
 
 \end{document}
