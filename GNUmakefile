@@ -26,6 +26,7 @@ default: depend all
 srcdir = src
 MODULENAMES :=  Mesh \
 		Control \
+		Control/Wrappers \
 		Misc \
                 ObjectiveFunction \
 		QualityAssessor \
