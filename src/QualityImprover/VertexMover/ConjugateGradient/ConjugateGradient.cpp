@@ -19,10 +19,6 @@
 /* TODO  (Michae) Notes
    What do we do about cull so that it isn't Metric
    dependent... 
-   also fix the < or > problem with the Metric.
-   Change check_feasible, we don't want to call Condition_number...
-   instead we want to check the signed area of the elements.  The
-   problem is 2-d elems. in 3-d.
    Figure out the local vs. global patch problem.  We begin with our
    large patch... do we create a local patch to use in grad(...)
    Go through and do clean_up.
@@ -87,41 +83,44 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
  
   MeshSet *vertex_mover_mesh=get_mesh_set();
   int num_local_vertices = pd.num_vertices();
-  int num_free_vertices=pd.num_free_vertices(err);
-  if(num_free_vertices>arraySize){
+  if(num_local_vertices>arraySize){
     delete []fGrad;
     delete []pGrad;
     delete []fNewGrad;
     delete []mCoord;
       //Increase number to try to avoid reallocating
-    arraySize=num_free_vertices + 5;
-    fGrad = new Vector3D[ num_free_vertices+5 ];
-    pGrad = new Vector3D[ num_free_vertices+5 ];
-    fNewGrad = new Vector3D[ num_free_vertices+5 ];
-    mCoord = new Vector3D[ num_free_vertices+5 ];
-  } 
+    arraySize=num_local_vertices + 5;
+    fGrad = new Vector3D[ arraySize ];
+    pGrad = new Vector3D[ arraySize ];
+    fNewGrad = new Vector3D[ arraySize ];
+    mCoord = new Vector3D[ arraySize ];
+  }
+    //zero out arrays
+  int zero_loop=0;
+  while(zero_loop<arraySize){
+    fGrad[zero_loop].set(0,0,0);
+    pGrad[zero_loop].set(0,0,0);
+    fNewGrad[zero_loop].set(0,0,0);
+    mCoord[zero_loop].set(0,0,0);
+    ++zero_loop;
+  }
+  
   int is=0;
   
     // gets the array of coordinates for the patch  
   MsqVertex* vertices=pd.get_vertex_array(err);
     //PRINT_INFO("\ny %f\n",vertices[0][1]);
   int ind;
-    //Flag setting was originally done here
-
-    //Doing initial feasiblity check if required by metric
-  if(objFunc->get_feasible_constraint()){
-    if(check_feasible(pd,err))
-      err.set_msg("Invalid metric for smoothing a tangled mesh");
-  }
     //Michael cull list
     //Michael hard coded for now... fix this
     //But, the culling method needs to be completely re-done anyway
     //For example, calls to evaluate_element????
     //cull_list(pd,free_vertex_list,beta, err);
-  int n=pd.num_free_vertices(err);
+  int num_free=pd.num_free_vertices(err);
+  int num_vert=pd.num_vertices();
   MsqFreeVertexIndexIterator free_iter(&pd, err);
   
-  if(n<1){
+  if(num_free<1){
     PRINT_INFO("\nEmpty free vertex list in ConjugateGradient\n");
   }
    
@@ -134,21 +133,20 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
     err.set_msg("Conjugate Gradient passed an invalid intital patch.");
   }
   MSQ_CHKERR(err);
-  if( ! objFunc->compute_gradient(pd, fGrad , err, n) ){
+  if( ! objFunc->compute_gradient(pd, fGrad , err, num_vert) ){
     MSQ_CHKERR(err);
     err.set_msg("Conjugate Gradient not able to get valid gradient on intial patch.");
   }
   MSQ_CHKERR(err);
   ind=0;
-  while(ind<n){
-    
+    //Initializing pGrad.  
+  while(ind<num_vert){    
     pGrad[ind]=(-fGrad[ind]);
     ++ind;
   }
   int j=0;
   int i=0;
   int m=0;
-  int grad_pos=0;
   double alp=MSQ_MAX_CAP;
     //we know inner_criterion is false because it was checked in
     //loop_over_mesh before being sent here.
@@ -166,10 +164,10 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
       //PRINT_INFO("\nAlp initial, alp = %10.8f",alp);
     MSQ_CHKERR(err);
     if(alp==0){
-      grad_pos=0;
-      while (grad_pos<n) {
-        pGrad[grad_pos]=(-fGrad[grad_pos]);
-        ++grad_pos;
+      free_iter.reset();
+      while (free_iter.next()) {
+        m=free_iter.value();
+        pGrad[m]=(-fGrad[m]);
       }
       alp=get_step(pd,f,k,err);
       j+=k;
@@ -177,13 +175,11 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
     }
     if(alp!=0){
       free_iter.reset();
-      grad_pos=0;
       while (free_iter.next()) {
         m=free_iter.value();
-        vertices[m] += (alp * pGrad[grad_pos]);
+        vertices[m] += (alp * pGrad[m]);
           //Added move_to_ownever
         pd.snap_vertex_to_domain(m,err);
-        ++grad_pos;
       }
       if (! objFunc->evaluate(pd,f,err)){
         MSQ_CHKERR(err);
@@ -192,24 +188,23 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
       
       MSQ_CHKERR(err);
       
-      if (! objFunc->compute_gradient(pd, fNewGrad, err, n)){
+      if (! objFunc->compute_gradient(pd, fNewGrad, err, num_vert)){
         MSQ_CHKERR(err);
         err.set_msg("Error inside Conjugate Gradient, vertices moved making gradient invalid.");
       }
       
-      grad_norm=infinity_norm(fNewGrad,n,err);
+      grad_norm=infinity_norm(fNewGrad,num_vert,err);
+      PRINT_INFO("\nCG's grad_norm = %f, alp = %f",grad_norm,alp);
       
       double s11=0;
       double s12=0;
       double s22=0;
       free_iter.reset();
-      grad_pos=0;
-      while (grad_pos<n) {
-        s11+=fGrad[grad_pos]%fGrad[grad_pos];
-        s12+=fGrad[grad_pos]%fNewGrad[grad_pos];
-        s22+=fNewGrad[grad_pos]%fNewGrad[grad_pos];
-        ++grad_pos;
-        
+      while (free_iter.next()) {
+        m=free_iter.value();
+        s11+=fGrad[m]%fGrad[m];
+        s12+=fGrad[m]%fNewGrad[m];
+        s22+=fNewGrad[m]%fNewGrad[m];
       }
       
         // Steepest Descent (takes 2-3 times as long as P-R)
@@ -220,18 +215,17 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
 
         // Polack-Ribiere        
       double bet = (s22-s12)/s11;
-      
-      grad_pos=0;
-      while (grad_pos<n) {
-        pGrad[grad_pos]=(-fNewGrad[grad_pos]+(bet*pGrad[grad_pos]));
-        fGrad[grad_pos]=fNewGrad[grad_pos];
-        ++grad_pos;
-        
+      free_iter.reset();
+      while (free_iter.next()) {
+        m=free_iter.value();
+        pGrad[m]=(-fNewGrad[m]+(bet*pGrad[m]));
+        fGrad[m]=fNewGrad[m];
       }
     }//end if on alp == 0
       //Update mesh before checking criterion
     pd.update_mesh(err);
-    inner_criterion=inner_criterion_met(*vertex_mover_mesh,err);MSQ_CHKERR(err);
+    inner_criterion=inner_criterion_met(*vertex_mover_mesh,err);
+    MSQ_CHKERR(err);
   }//end while
     //PRINT_INFO("\n2y %f\n",vertices[0][1]);
     //PRINT_INFO("\nConjagate Gradient complete i=%i alp=%4.2e grad_norm=%4.2e   ",i,alp,grad_norm);
@@ -266,11 +260,9 @@ void ConjugateGradient::cleanup()
 
 double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
                                    MsqError &err){
-  const int n = pd.num_free_vertices(err);
   MsqFreeVertexIndexIterator free_iter(&pd, err);
     //iterator for several for statements
   int m=0;
-  int grad_pos=0;
   MsqVertex* vertices=pd.get_vertex_array(err);
     //initial guess for alp
   double alp=1.0;
@@ -286,22 +278,18 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
   j=0;
     //if we must check feasiblility
   free_iter.reset();
-  grad_pos=0;
   while (free_iter.next()) {
     m=free_iter.value();
-    mCoord[grad_pos]=vertices[m];
-    ++grad_pos;
+    mCoord[m]=vertices[m];
   }
   
   while (j<jmax && !feasible && alp>MSQ_MIN) {
     ++j;
     free_iter.reset();
-    grad_pos=0;
     while (free_iter.next()) {
       m=free_iter.value();
-      vertices[m]=(mCoord[grad_pos]+ (alp * pGrad[grad_pos]));
+      vertices[m]=(mCoord[m]+ (alp * pGrad[m]));
       pd.snap_vertex_to_domain(m,err);
-      ++grad_pos;
     }      
     feasible=objFunc->evaluate(pd,f,err);      
     MSQ_CHKERR(err);
@@ -324,12 +312,10 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
       ++j;
       alp *= rho;
       free_iter.reset();
-      grad_pos=0;
       while (free_iter.next()) {
         m=free_iter.value();
-        vertices[m]=mCoord[grad_pos]+ (alp*pGrad[grad_pos]);
+        vertices[m]=mCoord[m]+ (alp*pGrad[m]);
         pd.snap_vertex_to_domain(m,err);
-        ++grad_pos;
       }
         //Get new obj value
         //if patch is no invalid, then the feasible region is  convex or
@@ -338,15 +324,13 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
         err.set_msg("Non-convex feasiblility region found.");
       }
       free_iter.reset();
-      grad_pos=0;
       while (free_iter.next()) {
         m=free_iter.value();
-        vertices[m][0]=mCoord[grad_pos][0];
-        vertices[m][1]=mCoord[grad_pos][1];
-        vertices[m][2]=mCoord[grad_pos][2];
+        vertices[m][0]=mCoord[m][0];
+        vertices[m][1]=mCoord[m][1];
+        vertices[m][2]=mCoord[m][2];
          //move vertex to owning geometry
         pd.snap_vertex_to_domain(m,err);
-        ++grad_pos;
       }
       MSQ_CHKERR(err);
         //if our step has now improved the objective function value
@@ -373,14 +357,11 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
       ++j;
       alp*=rho;
       free_iter.reset();
-      grad_pos=0;
       while (free_iter.next()) {
         m=free_iter.value();
-        vertices[m]=mCoord[grad_pos] + (alp*pGrad[grad_pos]);
+        vertices[m]=mCoord[m] + (alp*pGrad[m]);
           //move vertex to owning geometry
         pd.snap_vertex_to_domain(m,err);
-        ++grad_pos;
-        
       }
         //get new objective function value
       if (! objFunc->evaluate(pd,fnew,err))
@@ -390,31 +371,26 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
       }
       else{
         free_iter.reset();
-        grad_pos=0;
         while (free_iter.next()) {
           m=free_iter.value();
-          vertices[m][0]=mCoord[grad_pos][0];
-          vertices[m][1]=mCoord[grad_pos][1];
-          vertices[m][2]=mCoord[grad_pos][2];
+          vertices[m][0]=mCoord[m][0];
+          vertices[m][1]=mCoord[m][1];
+          vertices[m][2]=mCoord[m][2];
            //move vertex to owning geometry
           pd.snap_vertex_to_domain(m,err);
-          ++grad_pos;
-          
         }
 	alp/=rho;
 	return alp;
       }
     }
     free_iter.reset();
-    grad_pos=0;
     while (free_iter.next()) {
       m=free_iter.value();
-      vertices[m][0]=mCoord[grad_pos][0];
-      vertices[m][1]=mCoord[grad_pos][1];
-      vertices[m][2]=mCoord[grad_pos][2];
+      vertices[m][0]=mCoord[m][0];
+      vertices[m][1]=mCoord[m][1];
+      vertices[m][2]=mCoord[m][2];
        //move vertex to owning geometry
       pd.snap_vertex_to_domain(m,err);
-      ++grad_pos;
     }
     return alp;
   }
@@ -427,28 +403,23 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
         //scale alp up (rho must be less than 1)
       alp /= rho;
       free_iter.reset();
-      grad_pos=0;
       while (free_iter.next()) {
         m=free_iter.value();
-        vertices[m] = mCoord[grad_pos] + (alp * pGrad[grad_pos]);
+        vertices[m] = mCoord[m] + (alp * pGrad[m]);
          //move vertex to owning geometry
-        pd.snap_vertex_to_domain(m,err);
-        ++grad_pos;
-        
+        pd.snap_vertex_to_domain(m,err);        
       }
       feasible = objFunc->evaluate(pd,fnew, err);
       if ( ! feasible ){
          alp *= rho;
          free_iter.reset();
-         grad_pos=0;
          while (free_iter.next()) {
            m=free_iter.value();
-           vertices[m][0]=mCoord[grad_pos][0];
-           vertices[m][1]=mCoord[grad_pos][1];
-           vertices[m][2]=mCoord[grad_pos][2];
+           vertices[m][0]=mCoord[m][0];
+           vertices[m][1]=mCoord[m][1];
+           vertices[m][2]=mCoord[m][2];
             //move vertex to owning geometry
            pd.snap_vertex_to_domain(m,err);
-           ++grad_pos;
          }
          return alp;
       }
@@ -461,15 +432,13 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
        }
     }
     free_iter.reset();
-    grad_pos=0;
     while (free_iter.next()) {
       m=free_iter.value();
-      vertices[m][0]=mCoord[grad_pos][0];
-      vertices[m][1]=mCoord[grad_pos][1];
-      vertices[m][2]=mCoord[grad_pos][2];
+      vertices[m][0]=mCoord[m][0];
+      vertices[m][1]=mCoord[m][1];
+      vertices[m][2]=mCoord[m][2];
         //move vertex to owning geometry
       pd.snap_vertex_to_domain(m,err);
-      ++grad_pos;
     }
     return alp;
   }
