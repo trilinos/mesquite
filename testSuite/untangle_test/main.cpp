@@ -75,11 +75,11 @@ int main()
 
     // creates a mean ratio quality metric ...
   ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
-  UntangleQualityMetric* untangle = UntangleBetaQualityMetric::create_new(.1);
+  UntangleQualityMetric* untangle = UntangleBetaQualityMetric::create_new(.05);
   
     // ... and builds an objective function with it
     //LInfTemplate* obj_func = new LInfTemplate(mean_ratio);
-  LPTemplate* obj_func = new LPTemplate(untangle, 2, err);
+  LPTemplate* obj_func = new LPTemplate(untangle,2,err);
     // creates the steepest descent optimization procedures
   ConjugateGradient* pass1 = new ConjugateGradient( obj_func );
   
@@ -94,7 +94,7 @@ int main()
   CompositeOrStoppingCriterion sc(&sc1,&sc2);
   pass1->set_stopping_criterion(&sc);
     // sets a culling method on the first QualityImprover
-  pass1->add_culling_method(QualityImprover::NO_BOUNDARY_VTX);
+  pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
     // adds 1 pass of pass1 to mesh_set1
   queue1.set_master_quality_improver(pass1, err); MSQ_CHKERR(err);
 
