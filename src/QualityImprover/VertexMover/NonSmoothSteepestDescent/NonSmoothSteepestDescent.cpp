@@ -671,7 +671,7 @@ void NonSmoothSteepestDescent::step_acceptance(PatchData &pd, MsqError &err)
 //  int        ierr;
   int        i;
   int        num_values, num_steps;
-  int        valid, step_status;
+  int        valid = 1, step_status;
   int        accept_alpha;
   double     estimated_improvement;
   double     current_improvement = 1E300;

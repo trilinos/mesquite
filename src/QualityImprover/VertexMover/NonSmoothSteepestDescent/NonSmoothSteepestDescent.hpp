@@ -92,6 +92,7 @@ namespace Mesquite
   if (n==2) c = a[0]*b[0] + a[1]*b[1]; \
   else if (n==3) c = a[0]*b[0] + a[1]*b[1] + a[2]*b[2];\
   else { \
+    c = 0; \
     for (i99=0;i99<n;i99++) c += a[i99]*b[i99]; \
   } \
 }
@@ -113,6 +114,7 @@ namespace Mesquite
          v[2] = v[2]/mag99; \
      } \
    } else { \
+     mag99 = 0; \
      for (i99=0;i99<n;i99++) mag99+=v[i99]+v[i99]; \
      if (mag99 != 0) { \
        for (i99=0;i99<n;i99++) v[i99] = v[i99]/mag99;\

@@ -45,7 +45,7 @@ bool sI_DFT::evaluate_element(PatchData& pd,
   Matrix3D T[MSQ_MAX_NUM_VERT_PER_ENT];
   double c_k[MSQ_MAX_NUM_VERT_PER_ENT];
   double dft[MSQ_MAX_NUM_VERT_PER_ENT];
-  bool return_flag;
+  bool return_flag = false;
   double h, tau, s;
 
   size_t num_T = element->vertex_count();
