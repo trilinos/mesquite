@@ -225,9 +225,10 @@ namespace Mesquite
     
       //!Remove the soft_fixed flag from all vertices in the patch.
     void set_all_vertices_soft_free(MsqError &err);
-      //!Add a soft_fixed flag to all non-fixed vertices in the patch.
+      //!Add a soft_fixed flag to all vertices in the patch.
     void set_all_vertices_soft_fixed(MsqError &err);
-    
+      //!Add a soft_fixed flag to all free vertices in the patch.
+    void set_free_vertices_soft_fixed(MsqError &err);
       //! Fills a PatchData with the elements attached to a center vertex.
       //! Note that all entities in the sub-patch are copies of the entities
       //! in 'this' patch.  As such, moving a vertex in the sub-patch

@@ -100,6 +100,17 @@ namespace Mesquite
       //! Updates the coordinates in the underlying mesh
       //! with the coordinates stored in PatchData
     void update_mesh(const PatchData &pd);
+
+      //! Sets the cullFlag.  This flag is used to dermine
+      //! which vertices should be culled.  For local schemes,
+      //! get_next_patch() will not build a patch around a
+      //! a culled vertex.
+    void set_flag_to_cull(MsqVertex::FlagMask f_m)
+      {
+        cullFlag=f_m;
+      }
+    
+    bool clear_all_soft_fixed_flags(MsqError &err);
     
   private:
     
@@ -134,6 +145,11 @@ namespace Mesquite
 
       // This is the domain we snap everything back to.
     Mesquite::MeshDomain *mDomain;
+
+      //Flag to tell the MeshSet which MSQ culling flag to use
+      // to determine whether to build a local patch around a vertex
+    Mesquite::MsqVertex::FlagMask cullFlag;
+
   };
   
     // -********** AOMD tmp TEST **********

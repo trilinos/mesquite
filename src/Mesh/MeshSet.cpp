@@ -39,7 +39,9 @@ MeshSet::MeshSet() :
   elemArraySize(0),
   elemTopologiesSize(0),
   mDomain(NULL)
-{}
+{
+  cullFlag=MsqVertex::MSQ_SOFT_FIXED;
+}
 
 MeshSet::~MeshSet()
 {
@@ -152,6 +154,8 @@ bool MeshSet::get_next_patch(PatchData &pd,
   {
     case PatchData::ELEMENTS_ON_VERTEX_PATCH:
     {
+        //variable to store the center vertex's fixed flag
+      MsqVertex::FlagMask center_fixed_byte;
         // Make sure we're only getting a patch depth of 1
       int num_layers = pd_params.get_nb_layers(err); MSQ_CHKERR(err);
       if (num_layers != 1)
@@ -185,18 +189,30 @@ bool MeshSet::get_next_patch(PatchData &pd,
           }
           vertexIterator = (*currentMesh)->vertex_iterator();
         }
-          // Skip this vertex if it is culled
+          //if this is a 'boundary' fixed flag, skip it now
         else if ((culling_method_bits & PatchData::NO_BOUNDARY_VTX) &&
                  (*currentMesh)->vertex_is_on_boundary(**vertexIterator))
         {
           (*vertexIterator)++;
         }
-        else
-        {
-            // We found the right one
-          next_vertex_identified = true;
-        }
-      }
+          //otherwise we check to see if this vertex has been culled
+        else{
+            //get the fixed_bit_flag for the center vertex
+          (*currentMesh)->vertex_get_byte(**vertexIterator,&center_fixed_byte);
+            //remove the hard fixed flag if it has been set
+          center_fixed_byte &= ~(MsqVertex::MSQ_HARD_FIXED);
+            //if it is culled, skip it
+          if(center_fixed_byte & cullFlag)
+          {
+            (*vertexIterator)++;
+          }
+          else
+          {
+              // We found the right one
+            next_vertex_identified = true;
+          }//end else (vertex was not fixed [boundary] or culled)
+        }//end else (iterator was not at the end and vertex was not boundary)  
+      }//end while (!next_vertex_identified)
       Mesh::VertexHandle vertex = **vertexIterator;
       (*vertexIterator)++;
       
@@ -271,20 +287,25 @@ bool MeshSet::get_next_patch(PatchData &pd,
       MsqVertex* pd_vert_array = pd.get_vertex_array(err);
       for (i = 0; i < num_verts; i++)
       {
+          //get the coordinates
         (*currentMesh)->vertex_get_coordinates(vertArray[i],
                                                pd_vert_array[i]);
-          // Get its flags
-        (*currentMesh)->vertex_get_byte(vertArray[i],
-                                        &(pd_vert_array[i].vertexBitFlags));
         
           // If it's not the center vertex, mark it as hard fixed
         if (vertArray[i] != vertex)
         {
+            // Get its flags
+          (*currentMesh)->vertex_get_byte(vertArray[i],
+                                          &(pd_vert_array[i].vertexBitFlags));
           pd_vert_array[i].vertexBitFlags |= MsqVertex::MSQ_HARD_FIXED;
         }
-        else
-          pd_vert_array[i].vertexBitFlags &= ~(MsqVertex::MSQ_HARD_FIXED);
-
+          //else it is the center vertex.  We therefore already have
+          //the fixed flag stored center_fixed_byte.  The hard fixed
+          //flag has already been removed (when flag was retreived).
+        else{
+          pd_vert_array[i].vertexBitFlags = (center_fixed_byte);
+        }
+        
           // Add its handle to the patch
         pd.vertexHandlesArray[i] = vertArray[i];
       }
@@ -445,4 +466,41 @@ void Mesquite::MeshSet::update_mesh(const PatchData &pd)
       break;
     }
   }
+}
+
+bool MeshSet::clear_all_soft_fixed_flags(MsqError &err)
+{
+    //variable to store the center vertex's fixed flag
+  MsqVertex::FlagMask fixed_byte;
+  bool finished_with_vertices=false;
+    // initialize everything.
+  if (!vertexIterator)
+    reset(err);
+    // currentVertex is pointing at next potential center vertex.
+    
+  while(!finished_with_vertices){
+      // Move to next mesh if necessary
+    if (vertexIterator->is_at_end())
+    {
+      delete vertexIterator;
+      ++currentMesh;
+      if (currentMesh == meshSet.end())
+      {
+        vertexIterator = NULL;
+        finished_with_vertices=true;
+      }
+      if(!finished_with_vertices){
+        vertexIterator = (*currentMesh)->vertex_iterator();
+      }
+    }
+      //otherwise we check to see if this vertex has been culled
+    else{
+        //get the fixed_bit_flag 
+      (*currentMesh)->vertex_get_byte(**vertexIterator,&fixed_byte);
+      fixed_byte &= (~MsqVertex::MSQ_SOFT_FIXED);
+      (*currentMesh)->vertex_set_byte(**vertexIterator,fixed_byte);
+      (*vertexIterator)++;
+    }
+  }
+  return true;
 }

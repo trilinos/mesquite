@@ -358,6 +358,18 @@ void PatchData::set_all_vertices_soft_fixed(MsqError &err)
 }
 
 #undef __FUNC__
+#define __FUNC__ "PatchData::set_free_vertices_soft_fixed"
+/*!
+ */
+void PatchData::set_free_vertices_soft_fixed(MsqError &err)
+{
+  for(size_t i=0;i<numVertices;++i){
+    if(vertexArray[i].is_free_vertex())
+      vertexArray[i].set_soft_fixed_flag();
+  }
+}
+
+#undef __FUNC__
 #define __FUNC__ "PatchData::set_all_vertices_soft_free"
 /*!
  */
