@@ -367,7 +367,7 @@ script options (you can also access those options and
 others by typing './configure --help'), or you can edit
 Makefile.customize directly.
 
-\subsection{Configure Options.}  \label{config_options}
+\subsection{Basic Configure Options.}  \label{config_options}
 
 Those options can be given to the configure script through the command line, for example the C headers
 option would be given by typing \texttt{./configure --with-c-headers=yes} in the \texttt{mesquite/} directory.
@@ -387,14 +387,19 @@ archiver and its options.
 Give the full path: --with-cc='/usr/local/gcc/bin/gcc'
 \item \texttt{--with-cPP=EXECUTABLE} Location of alternative c++ compiler:
 Give the full path:  --with-cPP='/usr/local/gcc/bin/g++'
-\item \texttt{--with-aomd=AOMD\_LIB} Location of aomd library (optional):
-Give the full path: --with-aomd='/.../libaomd.so'or check out the library from the
-TSTT web pages.
 \item \texttt{--with-dox=EXECUTABLE} Location of doxygen:
 Give the full path: --with-dox='/usr/local/bin/doxygen'
 \end{description}
 
-\subsection{Makefile Variables.}  \label{mes_vars_and_defs}
+For all configure options, type
+\begin{verbatim}
+./configure --help
+\end{verbatim}
+Also, configure options for the TSTT linking are described in section \ref{sec:TSTT}.
+
+
+
+\subsection{Basic Makefile Variables.}  \label{mes_vars_and_defs}
 
 The following is a list of variables used in Mesquite's Makefile
 structure to allow for customization of the compilation process.
@@ -417,7 +422,6 @@ you can edit Makefile.customize directly. Here are the variables and their meani
 
 \item Compilation flags and variables:
   \begin{description}
-  \item[AOMD\_FLAG]
   \item[CXX\_FLAGS]
   \item[DEBUG\_FLAG] defines the flags to be used to compile the Mesquite
 	with the desired levels of debug information, optimization, and
@@ -440,35 +444,10 @@ you can edit Makefile.customize directly. Here are the variables and their meani
   \end{description}
 \item Directories:
   \begin{description}
-  \item[AOMD\_LIB\_DIR] is an optional variable which can be set
-	to hold the location of the AOMD library if Mesquite will
-	be linked to AOMD\\
-	({\it e.g.,} AOMD\_LIB\_DIR = \$\{MSQ\_BASE\_DIR/external/AOMD/lib\}).
-  \item[EXODUS\_LIB\_DIR] is an optional variable used to hold the
-	location of the Exodus II library, an external library needed
-	by MDB.  This library is not needed if Mesquite is not being
-	linked to MDB.
-	({\it E.g.,} EXODUS\_LIB\_DIR = \$\{MSQ\_BASE\_DIR\}/external/exodus/lib).
-  \item[MDB\_LIB\_DIR] is another optional variable which can be set
-	to hold the location of the MDB library if Mesquite will
-	be linked to MDB\\
-	({\it e.g.,} MDB\_LIB\_DIR = \$\{MSQ\_BASE\_DIR\}/external/MDB/lib).
   \item[MSQ\_BASE\_DIR] holds the name of the main Mesquite directory.
 	Generally, the default value for this variable will be correct.\\
 	(The default value is `MSQ\_BASE\_DIR = .').
   \end{description}
-\item TSTT linking information:
-\begin{description}
-  \item[AOMD\_TSTT\_LINK] is an optional variable that holds the
-	information needed by the linker to link the AOMD to Mesquite\\
-	({\it e.g.,} AOMD\_TSTT\_LINK = -L\$\{AOMD\_LIB\_DIR\} -lAOMD -lm).
-  \item[MDB\_TSTT\_LINK] is an optional variable that holds the
-	information needed by the linker to link the MDB to Mesquite\\
-	({\it e.g.,} MDB\_TSTT\_LINK = -L\$\{MDB\_LIB\_DIR\} -lMDB -lm).
-  \item[TSTT\_LINK] holds the information used by the LINKER to link
-	the TSTT implementation to Mesquite \\
-	({\it e.g.,} TSTT\_LINK = \$\{AOMD\_TSTT\_LINK\}).
-\end{description}
 \end{enumerate}
 
 \section{Short Tutorial}
@@ -733,8 +712,21 @@ vertices are constrained to the surface.
 
 \section{Reading in a Mesh File}
 
+The simplest way to start using mesquite is to read a mesh file in one of the format currently
+supported by mesquite. Currently, mesquite has a class that implements its mesh access interface and
+supports the VTK \cite{VTKbook, VTKuml} and EXODUS formats: \texttt{MeshImpl}, as shown in the tutorial (section
+\ref{sec:tutMesh}). The functions \texttt{MeshImpl::read\_vtk()}
+and \texttt{MeshImpl::read\_exodus()} can be used as template to read instead your own mesh format. This is not
+recommended, since ultimately you want to run mesquite dynamically to interact with your mesh
+database and implementing the Mesquite Mesh Interface (section \ref{sec:msq_mesh}) should require the same amount of work. 
 
-\section{Implementing the Mesquite Mesh Interface}
+If you plan to link in with the EXODUS proprietary library, you will need to define the following
+compile option in Mesquite's Makefile.customize: 
+
+  [{\bf EXODUS\_LIB\_DIR}] is an optional variable that holds the location of the Exodus II library. 
+({\it E.g.,} EXODUS\_LIB\_DIR = \$\{MSQ\_BASE\_DIR\}/external/exodus/lib).
+
+\section{Implementing the Mesquite Mesh Interface} \label{sec:msq_mesh}
 
 %Most users will want to skip this section and avoid the associated work. There are several manners
 %to give the mesh data to Mesquite, and implementing the Mesquite mesh interface is the one that
@@ -754,24 +746,24 @@ vertices are constrained to the surface.
 
 To expose this information, Mesquite defines a set of interfaces 
 (C++ abstract base classes) that are specifically designed for mesh
-quality improvement needs.  There are four such interfaces: Mesh,
-VertexIterator, ElementIterator, and MeshDomain.
+quality improvement needs.  There are four such interfaces: \texttt{Mesh},
+\texttt{VertexIterator}, \texttt{ElementIterator}, and \texttt{MeshDomain}.
 \begin{itemize}
-\item {\it Mesh:} The Mesh interface represents the set of mesh
+\item \texttt{Mesh}: The Mesh interface represents the set of mesh
 entities that are to be operated on.  It is through this interface
 that one retrieves information about the mesh and its entities.
 Examples of functionality provided by this interface include:
 retrieving the number of elements in the mesh, determining which
 elements contain a particular vertex, and modifying vertex
 coordinates.
-\item {\it VertexIterator:} The VertexIterator provides access to each
+\item \texttt{VertexIterator}: The VertexIterator provides access to each
 vertex in a mesh.  A VertexIterator is obtained from a Mesh object,
 and is used to iterate through the list of all vertices in the Mesh
 from which it was obtained.
-\item {\it ElementIterator:} The ElementIterator provides access to
+\item \texttt{ElementIterator}: The ElementIterator provides access to
 each element in a mesh.  Other than the type of entity it exposes, it
 is identical to the VertexIterator.
-\item {\it MeshDomain} The MeshDomain represents the set of geometric
+\item \texttt{MeshDomain}: The MeshDomain represents the set of geometric
 domains to which the mesh may be constrained.  The MeshDomain
 interface enables an application to restrict the locations to which a
 vertex can be moved, such as constraining a vertex to a surface.
@@ -786,6 +778,8 @@ representing mesh entities with complex data structures or with typed
 pointers, entities are identified with opaque values called handles.
 Each mesh entity has a unique handle value, but otherwise handles have
 no intrinsic meaning to Mesquite.  
+
+The implementation details must be looked up in the doxygen documentation locate in mesquite/doc/developer.
 
 \section{Linking Mesquite with Implementations of the TSTT Mesh Interface} 
 \label{sec:TSTT}
