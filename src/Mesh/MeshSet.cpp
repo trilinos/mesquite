@@ -24,7 +24,6 @@ That copy is of course encapsulated in the MeshSet class.
 #include "MeshSet.hpp"
 #include "QualityImprover.hpp"
 
-
 using namespace Mesquite;  
 
 
@@ -574,21 +573,11 @@ bool MeshSet::get_next_patch(PatchData &pd,
 
 }
 
-#include "MeanRatioQualityMetric.hpp"
-#include "LInfTemplate.hpp"
-#include "ConjugateGradient.hpp"
 
 bool MeshSet::get_next_element_group(PatchData &pd, MsqError &err)
 {
     //VERY temp solution just to test
-    //ShapeQualityMetric* sm = MeanRatioQualityMetric::create_new();
-    //LInfTemplate li=LInfTemplate(sm);
-    //ConjugateGradient cg=ConjugateGradient(&li);
-    //cg.set_patch_depth(1);
    return get_next_patch(pd, err);
-     //delete sm;
-     //delete &li;
-     //delete &cg;
 }
 
 bool MeshSet::get_next_node_group(PatchData &pd, MsqError &err)
