@@ -52,43 +52,49 @@ bool ASMQualityMetric::evaluate_element(PatchData &pd,
       err.set_msg("ASM quality metric not implemented for this element type.");
   };
   int num_samp=adj_elems.size();
-  double* met_vals = new double [num_samp];
-  int i=0;
-  switch(element->get_element_type()){
-    case TRIANGLE:
-    case QUADRILATERAL:
-      temp_double=element->compute_unsigned_area(pd,err);
-        //PRINT_INFO("\nunsigned area = %f",temp_double);
-      for(i=0;i<num_samp;++i){
-        met_vals[i]=elems[adj_elems[i]].compute_unsigned_area(pd,err);
-          //PRINT_INFO("  neighboring nunsigned area = %f",met_vals[i]);
-        if((temp_double+met_vals[i])>MSQ_MIN){
-          met_vals[i]=fabs((temp_double-met_vals[i])/(temp_double+met_vals[i]));
+  if(num_samp < 1){
+    fval=0.0;
+  }
+  else{
+    double* met_vals = new double [num_samp];
+    int i=0;
+    switch(element->get_element_type()){
+      case TRIANGLE:
+      case QUADRILATERAL:
+        temp_double=element->compute_unsigned_area(pd,err);
+          //PRINT_INFO("\nunsigned area = %f",temp_double);
+        for(i=0;i<num_samp;++i){
+          met_vals[i]=elems[adj_elems[i]].compute_unsigned_area(pd,err);
+            //PRINT_INFO("neighboring nunsigned area = %f",met_vals[i]);
+          if((temp_double+met_vals[i])>MSQ_MIN){
+            met_vals[i]=fabs((temp_double-met_vals[i])/(temp_double+
+                                                        met_vals[i]));
+          }
+          else
+            met_vals[i]=0.0;
         }
-        else
-          met_vals[i]=0.0;
-      }
-      break;                                
-                                               
-    case TETRAHEDRON:
-    case HEXAHEDRON:
-      temp_double=element->compute_unsigned_volume(pd,err);
-      for(i=0;i<num_samp;++i){
-        met_vals[i]=elems[adj_elems[i]].compute_unsigned_volume(pd,err);
-        if((temp_double+met_vals[i])>MSQ_MIN){
-          met_vals[i]=fabs((temp_double-met_vals[i])/(temp_double+met_vals[i]));
+        break;                                
+        
+      case TETRAHEDRON:
+      case HEXAHEDRON:
+        temp_double=element->compute_unsigned_volume(pd,err);
+        for(i=0;i<num_samp;++i){
+          met_vals[i]=elems[adj_elems[i]].compute_unsigned_volume(pd,err);
+          if((temp_double+met_vals[i])>MSQ_MIN){
+            met_vals[i]=fabs((temp_double-met_vals[i])/(temp_double+
+                                                        met_vals[i]));
+          }
+          else
+            met_vals[i]=0.0;
         }
-        else
-          met_vals[i]=0.0;
-      }
-      break;
-    default:
-      err.set_msg("ASM quality metric not implemented for this element type.");
-  };
-  fval=average_metrics(met_vals,num_samp,err);
-    //PRINT_INFO("\nRETURNING %f \n",fval);
-  delete []met_vals;
-      
+        break;
+      default:
+        err.set_msg("ASM quality metric not implemented for this element type.");
+    };
+    fval=average_metrics(met_vals,num_samp,err);
+      //PRINT_INFO("\nRETURNING %f \n",fval);
+    delete []met_vals;
+  }
   return true;
 }
 
