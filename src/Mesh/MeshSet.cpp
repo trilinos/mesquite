@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD: 13-Dec-02 at 09:32:56 by Thomas Leurent
+//  LAST-MOD: 14-Jan-03 at 16:34:34 by Thomas Leurent
 //
 /*! \file MeshSet.cpp
 
@@ -217,9 +217,8 @@ bool MeshSet::get_next_patch(PatchData &pd, PatchDataParameters &pd_params, MsqE
       return false;
     }
     
-    const int MAX_NUM_VERTICES_PER_ELEM=12;
     TSTT::Entity_Handle* vertices =
-       new TSTT::Entity_Handle[MAX_NUM_VERTICES_PER_ELEM];
+       new TSTT::Entity_Handle[MSQ_MAX_NUM_VERT_PER_ENT];
     TSTT::Entity_Handle *patch_elements;
     TSTT::EntityTopology *element_topologies;
     int* csr_pointer; // = new int[500]; //dbg
@@ -343,7 +342,7 @@ bool MeshSet::get_next_patch(PatchData &pd, PatchDataParameters &pd_params, MsqE
       // if current memory is inapropriate
     pd.reserve_element_capacity(num_elements, err); MSQ_CHKERR(err);
     
-    int num_coords=3*MAX_NUM_VERTICES_PER_ELEM;
+    int num_coords=3*MSQ_MAX_NUM_VERT_PER_ENT;
     double* vertex_coords = new double[num_coords];
       // enters the coordinates of the central vertex in PatchData::coordsArray
       // at position 0.
@@ -359,7 +358,7 @@ bool MeshSet::get_next_patch(PatchData &pd, PatchDataParameters &pd_params, MsqE
     for (int e=0; e<num_elements; ++e)
     {
         // gets the vertices of an element ...
-      int num_element_vtx=MAX_NUM_VERTICES_PER_ELEM;
+      int num_element_vtx=MSQ_MAX_NUM_VERT_PER_ENT;
       TSTT::Entity_GetAdjacencies( currentVertex->mesh,
                                    (TSTT::cEntity_Handle *) &(patch_elements[e]),
                                    1, TSTT::VERTEX, &vertices,
@@ -372,7 +371,7 @@ bool MeshSet::get_next_patch(PatchData &pd, PatchDataParameters &pd_params, MsqE
                                    &tstt_err);
       assert(!tstt_err);
         // ... enters the coordinates of those vertices in PatchData ...
-      size_t vtx_ind[MAX_NUM_VERTICES_PER_ELEM];
+      size_t vtx_ind[MSQ_MAX_NUM_VERT_PER_ENT];
       for (int n=0; n<num_element_vtx; ++n)
       {
         vtx_ind[n] = pd.add_vertex(currentVertex->mesh, vertices[n],
@@ -404,9 +403,8 @@ bool MeshSet::get_next_patch(PatchData &pd, PatchDataParameters &pd_params, MsqE
   
   else if (patch_type==PatchData::GLOBAL_PATCH) {
   
-    const int MAX_NUM_VERTICES_PER_ELEM=12;
-    TSTT::Entity_Handle* elem_vtx = new TSTT::Entity_Handle[MAX_NUM_VERTICES_PER_ELEM];
-    int elem_num_coords=3*MAX_NUM_VERTICES_PER_ELEM;
+    TSTT::Entity_Handle* elem_vtx = new TSTT::Entity_Handle[MSQ_MAX_NUM_VERT_PER_ENT];
+    int elem_num_coords=3*MSQ_MAX_NUM_VERT_PER_ENT;
     double* elem_vtx_coords = new double[elem_num_coords];
     TSTT::Entity_Handle *current_mesh_elements;
     TSTT::EntityTopology *element_topologies;
@@ -511,7 +509,7 @@ bool MeshSet::get_next_patch(PatchData &pd, PatchDataParameters &pd_params, MsqE
       for (int e=0; e<num_elements_current_mesh; ++e) {
          
          // gets the vertices of an element ...
-         int num_element_vtx=MAX_NUM_VERTICES_PER_ELEM;
+         int num_element_vtx=MSQ_MAX_NUM_VERT_PER_ENT;
          TSTT::Entity_GetAdjacencies( *currentMesh,
                                       (TSTT::cEntity_Handle *) &(current_mesh_elements[e]),
                                       1, TSTT::VERTEX, &elem_vtx,
@@ -525,7 +523,7 @@ bool MeshSet::get_next_patch(PatchData &pd, PatchDataParameters &pd_params, MsqE
          assert(!tstt_err);
 
          // ... enters the coordinates of those vertices in PatchData ...
-         size_t vtx_ind[MAX_NUM_VERTICES_PER_ELEM];
+         size_t vtx_ind[MSQ_MAX_NUM_VERT_PER_ENT];
          for (int n=0; n<num_element_vtx; ++n) {
             // retrieves the fixed tag value
             int* on_boundary = NULL;
