@@ -203,6 +203,103 @@ namespace Mesquite
     return true;
   }
 
+  inline bool g_gdft_2(double &obj, Vector3D g_obj[3], 
+                       const Vector3D x[3], const Vector3D &n,
+		       const Matrix3D &invR,	/* upper triangular          */
+		       const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
+		       const double alpha = 0.5,/* constant                  */
+		       const double gamma = 1.0,/* simplicial elements       */
+		       const double delta = 0.0,/* max in denominator        */
+		       const double beta  = 0.0)/* no modification           */
+  {
+    double matr[9], f, t1, t2;
+    double matd[9], g;
+    double adjm[9], loc1, loc2, loc3, loc4;
+
+    /* Calculate M = A*inv(R). */
+    f       = x[1][0] - x[0][0];
+    g       = x[2][0] - x[0][0];
+    matr[0] = f*invR[0][0];
+    matr[1] = f*invR[0][1] + g*invR[1][1];
+    matr[2] = f*invR[0][2] + g*invR[1][2] + n[0]*invR[2][2];
+
+    f       = x[1][1] - x[0][1];
+    g       = x[2][1] - x[0][1];
+    matr[3] = f*invR[0][0];
+    matr[4] = f*invR[0][1] + g*invR[1][1];
+    matr[5] = f*invR[0][2] + g*invR[1][2] + n[1]*invR[2][2];
+
+    f       = x[1][2] - x[0][2];
+    g       = x[2][2] - x[0][2];
+    matr[6] = f*invR[0][0];
+    matr[7] = f*invR[0][1] + g*invR[1][1];
+    matr[8] = f*invR[0][2] + g*invR[1][2] + n[2]*invR[2][2];
+
+    /* Calculate det(M). */
+    loc1 = matr[4]*matr[8] - matr[5]*matr[7];
+    loc2 = matr[5]*matr[6] - matr[3]*matr[8];
+    loc3 = matr[3]*matr[7] - matr[4]*matr[6];
+    t1 = matr[0]*loc1 + matr[1]*loc2 + matr[2]*loc3;
+
+    if ((0.0 == delta) && (t1 < MSQ_MIN)) { obj = t1; return false; }
+
+    /* Calculate sqrt(det(M)^2 + 4*delta^2) and denominator. */
+    t2 = sqrt(t1*t1 + 4.0*delta*delta);
+    g = t1 + t2;
+    
+    /* Calculate N = M - beta*Q. */
+    matd[0] = matr[0] - beta*Q[0][0];
+    matd[1] = matr[1] - beta*Q[0][1];
+    matd[2] = matr[2] - beta*Q[0][2];
+    matd[3] = matr[3] - beta*Q[1][0];
+    matd[4] = matr[4] - beta*Q[1][1];
+    matd[5] = matr[5] - beta*Q[1][2];
+    matd[6] = matr[6] - beta*Q[2][0];
+    matd[7] = matr[7] - beta*Q[2][1];
+    matd[8] = matr[8] - beta*Q[2][2];
+
+    /* Calculate norm(N) */
+    f = matd[0]*matd[0] + matd[1]*matd[1] + matd[2]*matd[2] +
+        matd[3]*matd[3] + matd[4]*matd[4] + matd[5]*matd[5] +
+        matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
+
+    /* Calculate objective function. */
+    loc4 = alpha * pow(2.0, gamma) / pow(g, gamma);
+    obj = f * loc4;
+
+    /* Calculate the derivative of the objective function. */
+    f = 2.0 * loc4;
+    g = -gamma * obj / t2;
+
+    /* Calculate adjoint matrix */
+    adjm[0] = f*matd[0] + g*loc1;
+    adjm[1] = f*matd[1] + g*loc2;
+
+    loc1 = g*matr[0];
+    loc2 = g*matr[1];
+    loc3 = g*matr[2];
+
+    adjm[2] = f*matd[4] + loc1*matr[8] - loc3*matr[6];
+    adjm[3] = f*matd[5] + loc2*matr[6] - loc1*matr[7];
+
+    adjm[4] = f*matd[7] + loc3*matr[3] - loc1*matr[5];
+    adjm[5] = f*matd[8] + loc1*matr[4] - loc2*matr[3];
+
+    /* Construct gradients */
+    g_obj[1][0] = invR[0][0]*adjm[0]+invR[0][1]*adjm[1];
+    g_obj[2][0] =                    invR[1][1]*adjm[1];
+    g_obj[0][0] = -g_obj[1][0] - g_obj[2][0];
+
+    g_obj[1][1] = invR[0][0]*adjm[2]+invR[0][1]*adjm[3];
+    g_obj[2][1] =                    invR[1][1]*adjm[3];
+    g_obj[0][1] = -g_obj[1][1] - g_obj[2][1];
+
+    g_obj[1][2] = invR[0][0]*adjm[4]+invR[0][1]*adjm[5];
+    g_obj[2][2] =                    invR[1][1]*adjm[5];
+    g_obj[0][2] = -g_obj[1][2] - g_obj[2][2];
+    return true;
+  }
+
   inline bool m_gdft_3(double &obj, 
 		       const Vector3D x[4],
 		       const Matrix3D &invR,	/* upper triangular          */
