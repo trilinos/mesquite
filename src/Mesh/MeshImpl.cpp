@@ -345,7 +345,7 @@ void MeshImpl::read_exodus(const char* in_filename , MsqError &err)
   if (dim == 2)
   {
     exo_err = ex_get_coord( file_id, x_iter, y_iter, 0 );
-    memset( x_iter, 0, sizeof(double)*vert_count );
+    memset( z_iter, 0, sizeof(double)*vert_count );
   }
   else
   {
