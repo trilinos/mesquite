@@ -5,7 +5,7 @@
 #include "MeanRatioQualityMetric.hpp"
 #include "LPTemplate.hpp"
 #include "SteepestDescent.hpp"
-#include "StoppingCriterion.hpp"
+#include "TerminationCriterion.hpp"
 
 
 Mesquite::ShapeImprover::ShapeImprover()
@@ -31,9 +31,11 @@ void Mesquite::ShapeImprover::improve_quality(MeshSet &mesh_set,
     // Create the steepest descent optimization procedures
   Mesquite::SteepestDescent* pass1 =
     new Mesquite::SteepestDescent( obj_func );
-  
-  Mesquite::StoppingCriterion sc2(Mesquite::StoppingCriterion::NUMBER_OF_PASSES, 1);
-  pass1->set_stopping_criterion(&sc2);
+  Mesquite::TerminationCriterion sc1, sc2;
+  sc1.add_criterion_type_with_int(Mesquite::TerminationCriterion::ITERATION_BOUND, 1, err);
+  sc2.add_criterion_type_with_int(Mesquite::TerminationCriterion::ITERATION_BOUND, 1, err);
+  pass1->set_outer_termination_criterion(&sc1);
+  pass1->set_inner_termination_criterion(&sc2);
   pass1->add_culling_method(Mesquite::PatchData::NO_BOUNDARY_VTX);
   
   q.set_master_quality_improver(pass1, err); MSQ_CHKERR(err);

@@ -27,7 +27,7 @@ This is the second possibility for wrappers. It is based on the InctructionQueue
 #include "LaplacianSmoother.hpp"
 #include "QualityAssessor.hpp"
 #include "InstructionQueue.hpp"
-#include "StoppingCriterion.hpp"
+#include "TerminationCriterion.hpp"
 
 namespace Mesquite { 
 
@@ -36,7 +36,7 @@ namespace Mesquite {
       ShapeQualityMetric* meanRatio;
       LaplacianSmoother* lapl1;
       QualityAssessor* mQA;
-      StoppingCriterion* mStop;
+      TerminationCriterion* mTerm;
 
    public:
       
@@ -51,8 +51,10 @@ namespace Mesquite {
          mQA = new QualityAssessor(meanRatio,QualityAssessor::MAXIMUM);
      
          //**************Set stopping criterion****************
-            mStop = new StoppingCriterion(StoppingCriterion::NUMBER_OF_PASSES,10);
-            lapl1->set_stopping_criterion(mStop);
+         mTerm = new TerminationCriterion();
+         mTerm->add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,10,err);
+ 
+            lapl1->set_outer_termination_criterion(mTerm);
             // sets a culling method on the first QualityImprover
             lapl1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
       
@@ -69,7 +71,7 @@ namespace Mesquite {
          delete meanRatio;
          delete lapl1;
          delete mQA;
-         delete mStop;
+         delete mTerm;
       }
   
    };
