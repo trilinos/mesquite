@@ -19,10 +19,11 @@ MSQ_BASE_DIR = ../..
 
 TEST_SRCS = sample_main.cpp \
     MesquiteTestRunner.cpp \
-    sample_test.cpp \
     MsqMeshEntityTest.cpp \
+    sample_test.cpp \
     InstructionQueueTest.cpp \
     PatchDataTest.cpp \
+    QualityMetricTest.cpp \
     ObjectiveFunctionTest.cpp \
     MeshSetTest.cpp
 
@@ -34,6 +35,7 @@ sample_test : ${TEST_OBJS}
 
 clean:
 	@rm -rf *.o sample_test
+	rm -R SunWS_cache/*
 
 .SUFFIXES : .cpp .o
 
