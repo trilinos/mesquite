@@ -41,6 +41,8 @@ private:
    CPPUNIT_TEST (test_get_vertex_element_indices);
    CPPUNIT_TEST (test_get_element_vertex_coordinates);
    CPPUNIT_TEST (test_move_free_vertices);
+   CPPUNIT_TEST (test_get_adj_elems_2d);
+  
    CPPUNIT_TEST_SUITE_END();
    
 private:
@@ -262,6 +264,41 @@ public:
 
       delete coords_mem;
    }
+/*Tests the function PatchData::get_adjacent_entities_via_n_dim()
+  which finds the elements adjacent to a given element.  If 'n'
+  equals 0 the elements must share a vertex; if 'n' equals 1 the
+  elements must share an edge; and if 'n' equals 2 the elements
+  must share a face.*/
+#undef __FUNC__
+#define __FUNC__ "PatchDataTest::test_get_adj_elems_2d" 
+   void test_get_adj_elems_2d()
+   {
+     MsqError err;
+     std::vector<size_t> elems_0;
+       //find elements sharing an edge with oth elem (should be 1)
+     mPatch2D.get_adjacent_entities_via_n_dim(1, 0, elems_0, err);
+     MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(elems_0.back() == 1);
+     std::vector<size_t> elems_1;
+       //find elements sharing an edge with 1st elem (should be 0 and 2)
+     mPatch2D.get_adjacent_entities_via_n_dim(1, 1, elems_1, err);
+     MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(elems_1.size() == 2);
+     std::vector<size_t> elems_2;
+       //find elements sharing an vert with 0th elem (should be 1 and 2).
+     mPatch2D.get_adjacent_entities_via_n_dim(0, 0, elems_2, err);
+     MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(elems_2.size() == 2);
+     std::vector<size_t> elems_3;
+     //find elements sharing an face with 0th elem (should be empty).
+     mPatch2D.get_adjacent_entities_via_n_dim(2, 0, elems_3, err);
+     MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(elems_3.size() == 0);
+   }
+  
+     
+        
+     
    
 };
 

@@ -26,6 +26,7 @@ Unit testing of various functions in the MsqMeshEntity class.
 #include "PatchData.hpp"
 #include "PatchDataInstances.hpp"
 #include <math.h>
+#include "MsqMessage.hpp"
 #include <iostream>
 #include "cppunit/extensions/HelperMacros.h"
 #include "cppunit/SignalException.h"
@@ -42,6 +43,7 @@ private:
   CPPUNIT_TEST (test_compute_weigted_jacobian_ideal_tet);
   CPPUNIT_TEST (test_compute_weigted_jacobian_ideal_quad);
   CPPUNIT_TEST (test_compute_weigted_jacobian_ideal_tri);
+  CPPUNIT_TEST (test_unsigned_area);
   CPPUNIT_TEST (test_hex_vertices);
   CPPUNIT_TEST_SUITE_END();
 
@@ -207,6 +209,7 @@ void test_compute_weigted_jacobian_ideal_quad()
     CPPUNIT_ASSERT(counter==4);
     
   }
+  
 void test_compute_weigted_jacobian_ideal_tri()
   {
     MsqError err;
@@ -240,6 +243,21 @@ void test_compute_weigted_jacobian_ideal_tri()
     CPPUNIT_ASSERT(counter==3);
     
   }
+
+  void test_unsigned_area()
+     {
+       MsqError err;
+       MsqMeshEntity* tri = one_tri_patch.get_element_array(err);
+       MSQ_CHKERR(err);
+       CPPUNIT_ASSERT(tri->compute_unsigned_area(one_tri_patch,err)-(sqrt(3.0)/4.0) < MSQ_MIN);
+       MsqMeshEntity* quad = one_qua_patch.get_element_array(err);
+       MSQ_CHKERR(err);
+       CPPUNIT_ASSERT(quad->compute_unsigned_area(one_qua_patch,err)-1.0 < MSQ_MIN);
+       MsqMeshEntity* hex = one_hex_patch.get_element_array(err);
+       MSQ_CHKERR(err);
+       CPPUNIT_ASSERT(hex->compute_unsigned_volume(one_hex_patch,err)-1.0 < MSQ_MIN);
+     }
+  
 };
 
 
