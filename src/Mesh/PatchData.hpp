@@ -202,7 +202,7 @@ namespace Mesquite
       /*! Get the normal of the surface for a given vertex.
           Normal is returned in Vector3D &surf_norm.  If the normal cannot
           be determined, or if the underlying domain is not a surface,
-          the normal will be set to (0,0,0)
+          the normal will be set to (0,0,0).
           Check PatchData::domain_set() is not false first.
       */
     void get_domain_normal_at_vertex(size_t vertex_index, bool normalize,
@@ -213,7 +213,7 @@ namespace Mesquite
           domain) of a given element.
           Normal is returned in Vector3D &surf_norm.  If the normal cannot
           be determined, or if the underlying domain is not a surface,
-          the normal will be set to (0,0,0)
+          the normal will be set to (0,0,0).
           Check PatchData::domain_set() is not false first.
       */
     void get_domain_normal_at_element(size_t elem_index, Vector3D &surf_norm,

@@ -58,6 +58,8 @@ namespace Mesquite
         seamlessly, as if dealing with a single mesh. */
     void add_mesh(Mesquite::Mesh* mesh, MsqError &err);
 
+
+      //! Sets the geometrical domain for the MeshSet.  
     void set_domain_constraint(MeshDomain* domain)
       { mDomain = domain; }
 

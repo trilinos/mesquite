@@ -1,4 +1,11 @@
-#ifndef MSQ_SPHERICAL_DOMAIN_HPP
+/*!
+  \file   SphericalDomain.hpp
+  \brief  
+
+
+  \author Thomas Leurent
+  \date   2002-01-17
+*/#ifndef MSQ_SPHERICAL_DOMAIN_HPP
 #define MSQ_SPHERICAL_DOMAIN_HPP
 
 #include "MeshInterface.hpp"
@@ -6,7 +13,11 @@
 namespace Mesquite
 {
   class Mesh;
-  
+
+  /*! \class SphericalDomain
+       This is a template for a spherical domain.
+       It will provide the normal information necessary for surface mesh optimization.
+    */
   class SphericalDomain : public Mesquite::MeshDomain
   {
   public:

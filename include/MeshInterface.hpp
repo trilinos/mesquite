@@ -256,6 +256,12 @@ namespace Mesquite
     virtual bool is_at_end() const = 0;
   };
   
+
+  /*! \class MeshDomain
+      The MeshDomain class provides geometrical information concerning the Mesh.
+      It is called during surface meshes optimization to figure out the surface normal,
+      how to snap vertices back to the surface, etc... . 
+    */
   class MeshDomain
   {
   public:

@@ -72,7 +72,8 @@ namespace Mesquite
       //! gets the vertices of the mesh entity
     void get_vertex_indices(vector<size_t> &vertex_list);
     void append_vertex_indices(vector<size_t> &vertex_list);
-    //! Very efficient retrieval of vertices indexes (wihtin the PatchData).
+    //! Very efficient retrieval of vertices indexes 
+    //! (corresponding to the PatchData vertex array).
     inline const size_t *get_vertex_index_array() const;
     inline size_t* get_modifiable_vertex_index_array();
     

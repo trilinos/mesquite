@@ -1,3 +1,13 @@
+/*!
+  \file   PlanarDomain.hpp
+  \brief  
+
+
+  \author Thomas Leurent
+  \date   2002-01-17
+*/
+
+
 #ifndef MSQ_PLANAR_DOMAIN_HPP
 #define MSQ_PLANAR_DOMAIN_HPP
 
@@ -7,6 +17,10 @@ namespace Mesquite
 {
   class Mesh;
   
+  /*! \class PlanarDomain
+       This is a template for a planar domain.
+       It will provide the normal information necessary for surface mesh optimization.
+    */
   class PlanarDomain : public Mesquite::MeshDomain
   {
   public:
