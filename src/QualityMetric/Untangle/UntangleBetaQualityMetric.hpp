@@ -90,7 +90,7 @@ namespace Mesquite
    inline void UntangleBetaQualityMetric::untangle_function_2d(Vector3D temp_vec[],size_t e_ind,PatchData &pd, double &fval, MsqError &err)
    {
      Vector3D surface_normal;
-     pd.get_domain_normal_at_element(e_ind,surface_normal,err);
+     pd.get_domain_normal_at_element(e_ind,surface_normal,err); MSQ_ERRRTN(err);
      Vector3D cross_vec=temp_vec[0]*temp_vec[1];
        //cout<<"\nsurface_normal "<<surface_normal;
        //cout<<"\cross_vec "<<cross_vec;
