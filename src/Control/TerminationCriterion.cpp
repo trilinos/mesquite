@@ -274,6 +274,11 @@ void TerminationCriterion::reset(PatchData &pd, ObjectiveFunction* obj_ptr,
   if(totalFlag & (QUALITY_IMPROVEMENT_ABSOLUTE | QUALITY_IMPROVEMENT_RELATIVE
                   | SUCCESSIVE_IMPROVEMENTS_ABSOLUTE
                   | SUCCESSIVE_IMPROVEMENTS_RELATIVE ) ){
+      //ensure the obj_ptr is not null
+    if(obj_ptr==NULL){
+      err.set_msg("Error termination criteria set which uses objective functions, but no objective function is available.");
+    }
+    
     if(!obj_ptr->evaluate(pd, initialOFValue, err)){
       err.set_msg("Initial patch is invalid for evaluation.");
       MSQ_CHKERR(err);
@@ -589,6 +594,8 @@ bool TerminationCriterion::cull_vertices(PatchData &pd,
                                       ObjectiveFunction* obj_ptr,
                                       MsqError &err)
 {
+    //PRINT_INFO("CULLING_METHOD FLAG = %i",cullingMethodFlag);
+  
     //cull_bool will be changed to true if the criterion is satisfied
   bool cull_bool=false;
   double obj_val=0.0;
@@ -629,6 +636,8 @@ bool TerminationCriterion::cull_vertices(PatchData &pd,
           cullingEps){
          cull_bool=true;  
        }
+         //PRINT_INFO("\nVertexMovement=-%f, cull =%i",pd.get_max_vertex_movement_squared(previousVerticesMemento,err),cull_bool);
+       
        break;
          //if culling on vertex movement relative
     case VERTEX_MOVEMENT_RELATIVE:
@@ -645,7 +654,7 @@ bool TerminationCriterion::cull_vertices(PatchData &pd,
     //Now actually have patch data cull vertices
   if(cull_bool)
   {
-    pd.set_all_vertices_soft_fixed(err);
+    pd.set_free_vertices_soft_fixed(err);
   }
   else
   {
@@ -663,7 +672,7 @@ bool TerminationCriterion::cull_vertices(PatchData &pd,
   TODO:  When culling, we  need to reset the soft_fixed flag to
   free either here or in initialize();
  */
-void TerminationCriterion::cleanup(MeshSet &/*ms*/, MsqError &/*err*/)
+void TerminationCriterion::cleanup(MeshSet &ms, MsqError &err)
 {
     //clean up the memento if used
   if(totalFlag & (VERTEX_MOVEMENT_ABSOLUTE | VERTEX_MOVEMENT_RELATIVE )){
@@ -676,5 +685,8 @@ void TerminationCriterion::cleanup(MeshSet &/*ms*/, MsqError &/*err*/)
   if(totalFlag & ((GRADIENT_L2_NORM_ABSOLUTE | GRADIENT_INF_NORM_ABSOLUTE)
                   | (GRADIENT_L2_NORM_RELATIVE | GRADIENT_INF_NORM_RELATIVE)  ) ){
     delete [] mGrad;
-  } 
+  }
+  if(cullingMethodFlag){
+    ms.clear_all_soft_fixed_flags(err);
+  }
 }
