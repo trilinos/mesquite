@@ -13,7 +13,7 @@
 #include "MeshSet.hpp"
 #include "PatchData.hpp"
 #include "MeshTSTT.hpp"
-#include "TSTT.hh"
+//kkc now included by MeshTSTT.hpp #include "TSTT_Mesh.hh"
 #include "Vector3D.hpp"
 
 #include "cppunit/extensions/HelperMacros.h"
@@ -21,6 +21,11 @@
 
 #include <iostream>
 
+
+//kkc 040203 Add a compile time switch to determine the TSTT implementation to use
+#ifdef MSQ_USE_TSTT_OVERTURE_IMPL
+#include "TSTT_Overture_Mesh.hh"
+#endif
 
 using std::cout;
 using std::cerr;
@@ -56,8 +61,26 @@ public:
   void setUp()
   {
       // Read a VTK file -- 1 triangle flanked by 1 quad on each side (1 tri + 3 quads)
-    TSTT::LocalTSTTMesh tstt_mesh=TSTT::LocalTSTTMesh::_create();
-    tstt_mesh.load("../../meshFiles/2D/VTK/hybrid_3quad_1tri.vtk");
+    //kkc 040203    TSTT::LocalTSTTMesh tstt_mesh=TSTT::LocalTSTTMesh::_create();
+    //kkc 040203 tstt_mesh.load("../../meshFiles/2D/VTK/hybrid_3quad_1tri.vtk");
+    
+    TSTT::Mesh tstt_mesh;
+
+#ifdef MSQ_USE_TSTT_OVERTURE_IMPL
+    TSTT_Overture::Mesh           ovMesh  = TSTT_Overture::Mesh::_create();
+    tstt_mesh = ovMesh;
+#endif
+
+    CPPUNIT_ASSERT( tstt_mesh );
+
+    TSTT::CoreEntitySetQuery tstt_coreQuery = tstt_mesh;
+
+    CPPUNIT_ASSERT( tstt_coreQuery );
+
+    //kkc    tstt_coreQuery.load("../../meshFiles/2D/VTK/hybrid_3quad_1tri.vtk");
+    //kkc    tstt_coreQuery.load("../../meshFiles/2D/Overture/square5.hdf");
+    tstt_coreQuery.load("../../meshFiles/2D/Overture/hybrid_3quad_1tri.hdf");
+
     mesh = new Mesquite::MeshTSTT(tstt_mesh, mErr); MSQ_CHKERR(mErr);
 
     // Gets an array of vertices handles
@@ -120,10 +143,18 @@ public:
         CPPUNIT_ASSERT_DOUBLES_EQUAL(coords[i][j], correct_coords[i][j], .01);
     }
 
-    coords[3].set(2.,3.,4.);
+    int d = mesh->get_geometric_dimension(mErr); MSQ_CHKERR(mErr);
+    coords[3][0] = 2.;
+    coords[3][1] = 3.;
+    if ( d==3 )
+      coords[3][2] = 4.;
+    else
+      coords[3][2] = 0;
+
     mesh->vertex_set_coordinates(mVertices[3], coords[3], mErr); MSQ_CHKERR(mErr);
     Mesquite::MsqVertex coords_2;
     mesh->vertices_get_coordinates(&mVertices[3], &coords_2, 1, mErr); MSQ_CHKERR(mErr);
+
     for (int j=0; j<3; ++j)
       CPPUNIT_ASSERT_DOUBLES_EQUAL(coords[3][j], coords_2[j], 1e-6);
     
@@ -392,6 +423,7 @@ public:
 #define __FUNC__ "MeshInterfaceTestTSTT::test_element_get_attached_vertex_indices"
   void test_element_get_attached_vertex_indices()
   {
+
     // Find the index of the triangle
     Mesquite::EntityTopology topo=Mesquite::MIXED;
     int tri_index=-1;
@@ -401,10 +433,17 @@ public:
       MSQ_CHKERR(mErr);
     }
 
+    size_t all_vert_index_array[15];
+    size_t offsets[10];
+    mesh->elements_get_attached_vertex_indices(mElements, 4,
+                                               all_vert_index_array, 15, offsets, mErr);
+
     size_t index_array[3];
-    size_t offsets[2];
-    mesh->elements_get_attached_vertex_indices(&mElements[tri_index], 1,
-                                        index_array, 3, offsets, mErr);
+    CPPUNIT_ASSERT ( offsets[0] == 0 );
+    CPPUNIT_ASSERT ( offsets[tri_index+1]-offsets[tri_index]==3 );
+    index_array[0] = all_vert_index_array[offsets[tri_index]];
+    index_array[1] = all_vert_index_array[offsets[tri_index]+1];
+    index_array[2] = all_vert_index_array[offsets[tri_index]+2];
 
     // creates list with correct vertices coordinates for the triangle
     std::list<Mesquite::Vector3D> correct_coords;

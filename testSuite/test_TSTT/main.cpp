@@ -30,7 +30,9 @@ describe main.cpp here
 #endif
 
 
-#include "TSTT.hh"
+#ifdef MSQ_USE_TSTT_OVERTURE_IMPL
+#include "TSTT_Overture_Mesh.hh"
+#endif
 
 #include "Mesquite.hpp"
 #include "MeshTSTT.hpp"
@@ -39,6 +41,7 @@ describe main.cpp here
 #include "MeshSet.hpp"
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
+#include "PlanarDomain.hpp"
 
 // algorythms
 #include "MeanRatioQualityMetric.hpp"
@@ -75,17 +78,30 @@ int main(int argc, char* argv[])
     OF_value = atof(argv[2]);
   }
   
-  TSTT::LocalTSTTMesh tstt_mesh=TSTT::LocalTSTTMesh::_create();
-  tstt_mesh.load("../../meshFiles/2D/VTK/hybrid_3quad_1tri.vtk");
-  //    tstt_mesh.load("hybrid_3quad_1tri.sms");
-  //    tstt_mesh.load("cube2.sms");
+  TSTT::Mesh tstt_mesh;
+
+#ifdef MSQ_USE_TSTT_OVERTURE_IMPL
+  TSTT_Overture::Mesh           ov_mesh  = TSTT_Overture::Mesh::_create();
+  tstt_mesh = ov_mesh;
+#endif
+
+  TSTT::CoreEntitySetQuery tstt_core_query = tstt_mesh;
+
+  if ( !tstt_core_query )
+     err.set_msg("ERROR: could not perform tstt cast to CoreEntitySetQuery"); MSQ_CHKERR(err);
+
+  tstt_core_query.load(file_name);
 
   Mesquite::MeshTSTT* mesh = new Mesquite::MeshTSTT(tstt_mesh, err);
   MSQ_CHKERR(err);
   
   // initialises a MeshSet object
+  Vector3D normal(0,0,1),point(0,0,0);
+
+  Mesquite::PlanarDomain planar_domain(normal,point,mesh);
   MeshSet mesh_set1;
   mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
+  mesh_set1.set_domain_constraint(&planar_domain);
 
   // creates an intruction queue
   InstructionQueue queue1;
@@ -127,11 +143,14 @@ int main(int argc, char* argv[])
   
   queue1.add_quality_assessor(&stop_qa, err); MSQ_CHKERR(err);
 
-  //  mesh->write_vtk("original_mesh",err); MSQ_CHKERR(err);
-  
+  tstt_core_query.save("original_mesh");
+  mesh_set1.write_vtk("original_mesh",err); MSQ_CHKERR(err);
+
   // launches optimization on mesh_set1
   queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
   
-//  mesh->write_vtk("smoothed_mesh", err); MSQ_CHKERR(err);
+  tstt_core_query.save("smoothed_mesh");
+  mesh_set1.write_vtk("smoothed_mesh",err); MSQ_CHKERR(err);
+
   PRINT_TIMING_DIAGNOSTICS();
 }

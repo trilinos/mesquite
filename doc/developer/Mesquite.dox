@@ -311,7 +311,7 @@ INPUT                  =   ./ ./../../include/ ./../../src/
 # *.c *.cc *.cxx *.c++ *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh *.hxx *.hpp 
 # *.h++ *.idl
 
-FILE_PATTERNS          =  
+FILE_PATTERNS          = *.hpp *.cpp 
 
 # The RECURSIVE tag can be used to turn specify whether or not subdirectories 
 # should be searched for input files as well. Possible values are YES and NO. 
