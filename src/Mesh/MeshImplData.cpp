@@ -27,6 +27,10 @@
 #include "MeshImplData.hpp"
 #include "TopologyInfo.hpp"
 
+// NOTE: If this is defined, the normal vertex query functions
+//       will not return mid-nodes.
+#undef SEPARATE_MID_NODES
+
 namespace Mesquite {
 
 const msq_std::vector<size_t> dummy_list;
@@ -37,7 +41,11 @@ size_t MeshImplData::num_vertices() const
   size_t count = 0;
   for (msq_std::vector<Vertex>::const_iterator iter = vertexList.begin();
        iter != vertexList.end(); ++iter)
+#ifdef SEPARATE_MID_NODES
     if (iter->valid && iter->midcount < iter->adjacencies.size())
+#else
+    if (iter->valid)
+#endif
       ++count;
   return count;
 }
@@ -51,8 +59,12 @@ size_t MeshImplData::num_vertex_uses() const
   for (msq_std::vector<Element>::const_iterator iter = elementList.begin();
        iter != elementList.end(); ++iter)
   {
+#ifdef SEPARATE_MID_NODES
     unsigned from_topo = TopologyInfo::corners( iter->topology );
     result += from_topo ? from_topo : iter->connectivity.size();
+#else
+    result += iter->connectivity.size();
+#endif
   }
   return result;
 }
@@ -383,8 +395,11 @@ void MeshImplData::copy_mesh( size_t* vertex_handle_array,
   size_t vh_index = 0;
   for (size_t v = 0; v < vertexList.size(); ++v)
   {
-    if (vertexList[v].valid && 
-        vertexList[v].midcount < vertexList[v].adjacencies.size())
+    if (vertexList[v].valid
+#ifdef SEPARATE_MID_NODES
+        && vertexList[v].midcount < vertexList[v].adjacencies.size()
+#endif
+       )
     {
       vertex_handle_array[vh_index] = v;
       vertex_map[v] = vh_index;
@@ -400,8 +415,11 @@ void MeshImplData::copy_mesh( size_t* vertex_handle_array,
   for (size_t e = 0; e < elementList.size(); ++e)
   {
     Element& elem = elementList[e];
-    size_t cl = TopologyInfo::corners( elem.topology );
+    size_t cl;
+#ifdef SEPARATE_MID_NODES
+    cl = TopologyInfo::corners( elem.topology );
     if (!cl)
+#endif
       cl = elem.connectivity.size();
     if (cl)
     {
