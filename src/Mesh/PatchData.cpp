@@ -7,6 +7,7 @@
 
 #include "PatchData.hpp"
 #include "MsqMeshEntity.hpp"
+#include "MsqFreeVertexIndexIterator.hpp"
 
 using namespace Mesquite;  
 
@@ -116,6 +117,22 @@ PatchData::~PatchData()
   delete [] elemsInVertex;
   delete [] vertexToElemOffset;
 }
+
+
+/*! \fn PatchData::num_free_vertices()
+   This function has to iterate through all the PatchData vertices to determine
+   the number of free vertices. Use with care ! */
+int PatchData::num_free_vertices()
+{   
+  int num_free_vertices=0;
+  MsqFreeVertexIndexIterator ind(this);
+  ind.reset();
+  while (ind.next()) {
+    ++num_free_vertices;
+  }
+  return num_free_vertices;
+}
+
 
 #undef __FUNC__
 #define __FUNC__ "PatchData::add_element"
