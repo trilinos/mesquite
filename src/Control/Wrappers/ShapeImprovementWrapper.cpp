@@ -140,7 +140,7 @@ void ShapeImprovementWrapper::run_instructions(MeshSet &ms, MsqError &err)
     //wrapper must terminate.  If the wrapper is set to terminate on
     //a time constraint, time_remaining will always be 1.0
   double time_remaining=1.0;
-  mQA->assess_mesh_quality(ms, err);
+  mQA->loop_over_mesh(ms, err);
     //if using a time constraint set the termination criteria.
   if(timerNeeded){
     time_remaining=maxTime;
@@ -169,7 +169,7 @@ void ShapeImprovementWrapper::run_instructions(MeshSet &ms, MsqError &err)
         time_remaining=maxTime-totalTimer.since_birth();
     }
   }
-  mQA->assess_mesh_quality(ms, err);
+  mQA->loop_over_mesh(ms, err);
   if(timerNeeded)
     time_remaining=maxTime-totalTimer.since_birth();
     //if all the time constraint has been exceeded, notify the user that
@@ -183,7 +183,7 @@ void ShapeImprovementWrapper::run_instructions(MeshSet &ms, MsqError &err)
     if(timerNeeded)
       termInner->add_criterion_type_with_double(TerminationCriterion::CPU_TIME,time_remaining,err);
     feasNewt->loop_over_mesh(ms, err);
-    mQA->assess_mesh_quality(ms, err);
+    mQA->loop_over_mesh(ms, err);
   } 
 }
 

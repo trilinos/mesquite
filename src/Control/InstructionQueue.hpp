@@ -41,32 +41,6 @@ namespace Mesquite {
   class InstructionQueue
   {
 
-    struct QueueEntry
-    {
-      enum EntryType
-        {
-          IMPROVER,
-          ASSESSOR
-        };
-
-      enum EntryType mType;
-      union
-      {
-        QualityImprover* mImprover;
-        QualityAssessor* mAssessor;
-      };
-
-      QueueEntry(QualityImprover* entry) :
-        mType(IMPROVER),
-        mImprover(entry)
-      {}
-
-      QueueEntry(QualityAssessor* entry) :
-        mType(ASSESSOR),
-        mAssessor(entry)
-      {}
-    };
-
   public:
     InstructionQueue();
 
@@ -94,16 +68,19 @@ namespace Mesquite {
   protected:
     
   private:
-    std::list<QueueEntry>::iterator clear_master(MsqError &err);
+    std::list<PatchDataUser*>::iterator clear_master(MsqError &err);
 
-    std::list<QueueEntry> instructions;
+    std::list<PatchDataUser*> instructions;
 
     bool autoQualAssess;
     
     size_t nbPreConditionners;
     bool isMasterSet;
-    size_t masterInstrIndex; // 0-based
-    // keeping an index instead of an iterator in case list is reallocated
+    size_t masterInstrIndex; //!< 0-based. Keeping an index instead of an iterator
+                             //!< in case list is reallocated
+
+    PatchData* globalPatch; //!< Used to prevent reallocating a global patch
+                            //!< for successive global algorithms.    
   };
 
 

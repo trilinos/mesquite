@@ -37,7 +37,7 @@ namespace Mesquite
      // virtual destructor ensures use of polymorphism during destruction
     virtual ~QualityImprover() { };
     
-    virtual void loop_over_mesh(MeshSet &ms, MsqError &err) = 0;
+    virtual double loop_over_mesh(MeshSet &ms, MsqError &err) = 0;
 
     //! provides a name to the QualityImprover (use it in constructor).
     void set_name(std::string name)
@@ -46,7 +46,8 @@ namespace Mesquite
       };
     
     //! retrieves the QualityImprover name. A default name should be set in the constructor.
-    std::string get_name() { return qualityImproverName; }
+    virtual std::string get_name() { return qualityImproverName; }
+    virtual AlgorithmType get_algorithm_type() { return QUALITY_IMPROVER; }
 
       //!Sets in the termination criterion for the concrete solver's
       //! optimization.

@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD: 10-Jul-03 at 11:36:25 by Thomas Leurent
+//  LAST-MOD: 25-Sep-03 at 09:40:19 by Thomas Leurent
 //
 /*! \file MeshSet.cpp
 
@@ -136,6 +136,9 @@ bool MeshSet::get_next_patch(PatchData &pd,
                              PatchDataParameters &pd_params,
                              MsqError &err )
 {
+  FUNCTION_TIMER_START(__FUNC__);
+  std::cout << "ENTERING GETNEXTPATCH.\n"; //dbg
+
     // get rid of previous Patch information (but keep memory allocated).
   pd.clear();
 
@@ -161,6 +164,7 @@ bool MeshSet::get_next_patch(PatchData &pd,
       if (num_layers != 1)
       {
         err.set_msg("no implementation for patch depth !=1."); 
+        FUNCTION_TIMER_END();  
         return false;
       }
 
@@ -185,6 +189,7 @@ bool MeshSet::get_next_patch(PatchData &pd,
           if (currentMesh == meshSet.end())
           {
             vertexIterator = NULL;
+            FUNCTION_TIMER_END();  
             return false;
           }
           vertexIterator = (*currentMesh)->vertex_iterator(err); MSQ_CHKERR(err);
@@ -334,6 +339,7 @@ bool MeshSet::get_next_patch(PatchData &pd,
       }
       pd.numElements = num_elems;
     }
+    FUNCTION_TIMER_END();  
     return true;
     case PatchData::GLOBAL_PATCH:
     {
@@ -341,6 +347,7 @@ bool MeshSet::get_next_patch(PatchData &pd,
       if (meshSet.size() != 1)
       {
         err.set_msg("Global patches only supported for single-Mesh MeshSets.");
+        FUNCTION_TIMER_END();  
         return false;
       }
       
@@ -418,11 +425,15 @@ bool MeshSet::get_next_patch(PatchData &pd,
       }
       pd.numElements = num_elems;
     }
+    FUNCTION_TIMER_END();  
     return true;
     default:
       err.set_msg("no implementation for specified patch type.");
+      FUNCTION_TIMER_END();  
       return false;
   }
+
+  FUNCTION_TIMER_END();  
 }
 
 // Currently, the only thing supported is updating each vertices

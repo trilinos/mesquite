@@ -29,7 +29,8 @@ namespace Mesquite
       mType(PatchData::UNDEFINED_PATCH_TYPE),
       mParam1(0),
       mParam2(0),
-      cullingMethodBits(0)
+      cullingMethodBits(0),
+      globalPatch(0)
     {}
 
     friend class PatchDataUser;
@@ -58,10 +59,26 @@ namespace Mesquite
     //! returns the bitset.
     long unsigned int get_culling_method_bits() { return cullingMethodBits; }
 
+    //! Sets the Global Patch, so that it can be use by contiguoug PatchDataUser.
+    void set_global_patch(PatchData* pd, MsqError &err);
+    //! Returns the Global Patch. Will be 0 if not available.
+    //! Make sure not to use that function if a local patch algorithm
+    //! has been used since the last access to the global patch, making it invalid. 
+    PatchData* get_global_patch(MsqError &err);
+    //! Sets the Global Patch pointer to NULL. Make sure to call
+    //! that function before modifying the mesh with local patches.
+    //! Memory handling (creation/deletion) should be done outside
+    //! PatchDataUSer, typically in InstructionQueue
+    void no_global_patch()
+    { globalPatch=0; }
+
   private:
     PatchData::PatchType mType; //!< see the enum ... 
     int mParam1, mParam2; //!< For general use in conjunction with PatchType. 
-    long unsigned int cullingMethodBits; //!< type of cullings are contained in this bitset. 
+    long unsigned int cullingMethodBits; //!< type of cullings are contained in this bitset.
+    PatchData* globalPatch; //!< Allows storage of global patch through
+                            //!< successive PatchDataUsers. 
+
   };
 
 
@@ -72,10 +89,11 @@ namespace Mesquite
     It makes sure that the Patch settings are accessed 
     uniformaly across all those algorithms. Children of PatchDataUser are, 
     among others, thw QualityImprover and QualityAssessor classes. 
-    PatchDataUser delegates all settings to its PatchDataParameter menber. 
+    PatchDataUser delegates all settings to its PatchDataParameter member. 
 
     Alternatively, a PatchDataParameters object can be copied directly (see
-    set_all_parameters).*/
+    set_all_parameters).
+  */
   class PatchDataUser
   {
   protected:
@@ -116,8 +134,32 @@ namespace Mesquite
     PatchDataParameters& get_all_parameters()
     { return mParams; }
 
+    //! Sets the Global Patch, so that it can be use by contiguoug PatchDataUser.
+    void set_global_patch(PatchData* pd, MsqError &err)
+    { mParams.set_global_patch(pd, err); }
+    //! Returns the Global Patch. Will be 0 if not available.
+    //! Make sure not to use that function if a local patch algorithm
+    //! has been used since the last access to the global patch, making it invalid.
+    PatchData* get_global_patch(MsqError &err)
+    { return mParams.get_global_patch(err); }
+    //! Sets the Global Patch pointer to NULL. Make sure to call
+    //! that function before modifying the mesh with local patches.
+    //! Memory handling (creation/deletion) should be done outside
+    //! PatchDataUSer, typically in InstructionQueue
+    void no_global_patch()
+    { mParams.no_global_patch(); }
+
+    // *** functions related to the algorithms, no to the patch parameters *** 
+    //! This is the "run" function of PatchDataUser. It can do anything really. 
+    virtual double loop_over_mesh(MeshSet &ms, MsqError &err) = 0;
+    //! Returns the algorithm name
+    virtual std::string get_name() = 0;
+    enum AlgorithmType { QUALITY_IMPROVER, QUALITY_ASSESSOR};
+    //! Return the algorithm type (to avoid RTTI use). 
+    virtual enum AlgorithmType get_algorithm_type() = 0;
+
   private:
-    PatchDataParameters mParams;
+    PatchDataParameters mParams; //!< Contains Patch parameters
   };
   
 
@@ -171,7 +213,7 @@ namespace Mesquite
   }
   
 #undef __FUNC__
-#define __FUNC__ "PatchDataParameter::add_culling_method"
+#define __FUNC__ "PatchDataParameters::add_culling_method"
   /*! \fn PatchDataParameters::add_culling_method(enum PatchData::culling_method cm)
    */
   inline void PatchDataParameters::add_culling_method(enum PatchData::culling_method cm)
@@ -180,7 +222,7 @@ namespace Mesquite
   }
   
 #undef __FUNC__
-#define __FUNC__ "PatchDataParameter::no_culling_method"
+#define __FUNC__ "PatchDataParameters::no_culling_method"
   /*! \fn PatchDataParameters::no_culling_method()
    */
   inline void PatchDataParameters::no_culling_method()
@@ -189,7 +231,7 @@ namespace Mesquite
   }
   
 #undef __FUNC__
-#define __FUNC__ "PatchDataParameter::remove_culling_method"
+#define __FUNC__ "PatchDataParameters::remove_culling_method"
   /*! \fn PatchDataParameters::remove_culling_method(enum PatchData::culling_method cm)
    */
   inline void PatchDataParameters::remove_culling_method(enum PatchData::culling_method cm)
@@ -197,6 +239,33 @@ namespace Mesquite
     cullingMethodBits &= ~cm;
   }
   
+
+#undef __FUNC__
+#define __FUNC__ "PatchDataParameters::set_global_patch"
+  inline void PatchDataParameters::set_global_patch(PatchData* pd, MsqError &err)
+  {
+    if (get_patch_type() != PatchData::GLOBAL_PATCH)
+      err.set_msg("Trying to set a global patch whereas the "
+                  "PatchType is set to something else\n."
+                  "Consider using the function no_global_patch().");
+    else { 
+      globalPatch = pd;
+      std::cout << "globalPatch = " << pd << std::endl; //dbg
+    }
+  }
+
+#undef __FUNC__
+#define __FUNC__ "PatchDataParameters::get_global_patch"
+  inline PatchData* PatchDataParameters::get_global_patch(MsqError &err)
+  {
+    if (get_patch_type() != PatchData::GLOBAL_PATCH)
+      err.set_msg("Trying to get a global patch whereas the "
+                  "PatchType is set to something else\n");
+
+    return globalPatch;
+  }
+
+
   
 } // namespace
 

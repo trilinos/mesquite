@@ -26,7 +26,7 @@ namespace Mesquite
     virtual ~TopologyModifier()
       {};
     
-    virtual void loop_over_mesh(MeshSet &mesh, MsqError &err);
+    virtual double loop_over_mesh(MeshSet &mesh, MsqError &err);
 
   protected:
     TopologyModifier();

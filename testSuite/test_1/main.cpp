@@ -97,7 +97,7 @@ int main(int argc, char* argv[])
   FeasibleNewton* pass1 = new FeasibleNewton( obj_func );
   pass1->set_patch_type(PatchData::GLOBAL_PATCH, err);
   
-  QualityAssessor stop_qa=QualityAssessor(mean_ratio,QualityAssessor::MAXIMUM);
+  QualityAssessor stop_qa=QualityAssessor(mean_ratio,QualityAssessor::AVERAGE);
   
   // **************Set stopping criterion****************
   TerminationCriterion tc_inner;
@@ -111,10 +111,14 @@ int main(int argc, char* argv[])
   // sets a culling method on the first QualityImprover
   pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
   
+  queue1.add_quality_assessor(&stop_qa, err); MSQ_CHKERR(err);
+   
   // adds 1 pass of pass1 to mesh_set1
   queue1.set_master_quality_improver(pass1, err); MSQ_CHKERR(err);
   
-//  mesh->write_vtk("original_mesh",err); MSQ_CHKERR(err);
+  queue1.add_quality_assessor(&stop_qa, err); MSQ_CHKERR(err);
+
+  //  mesh->write_vtk("original_mesh",err); MSQ_CHKERR(err);
   
   // launches optimization on mesh_set1
   queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);

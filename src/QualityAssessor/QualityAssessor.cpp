@@ -220,7 +220,7 @@ void QualityAssessor::set_histogram_range(QualityMetric* qm,
 
 
 #undef __FUNC__
-#define __FUNC__ "QualityAssessor::assess_mesh_quality"
+#define __FUNC__ "QualityAssessor::loop_over_mesh"
 /*! 
   Computes the quality data for a given
   MeshSet, ms. What quality information is calculated, depends
@@ -232,7 +232,7 @@ void QualityAssessor::set_histogram_range(QualityMetric* qm,
   set_stopping_assessemnt().
   \param ms (const MeshSet &) MeshSet used for quality assessment.
  */
-double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError& err)
+double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
 {
     //tot_num either equals total_num_elements or total_num_vertices
     //depending on whethere the metric is element or vertex_based.
@@ -321,12 +321,18 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError& err)
     double temp_val=0;
     if(num_elem_based){
         //construct the patch we will send to get_next_patch
-      PatchData elem_group;
+      PatchData* elem_group;
         
       no_culling_method();
       
-      bool elem_bool;
-      elem_bool=ms.get_next_patch(elem_group, this, err);
+      bool elem_bool=true;
+      if (get_global_patch(err) == 0) {
+        elem_group = new PatchData;
+        elem_bool=ms.get_next_patch(*elem_group, this, err);
+      }
+      else {
+        elem_group = get_global_patch(err);
+      }
       MSQ_CHKERR(err);
       
         //until there are no more patches
@@ -334,8 +340,8 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError& err)
         //the end of this loop
       while(elem_bool){
         
-        elems=elem_group.get_element_array(err); MSQ_CHKERR(err);
-        num_elems=elem_group.num_elements();
+        elems=elem_group->get_element_array(err); MSQ_CHKERR(err);
+        num_elems=elem_group->num_elements();
         
         int element_counter=0;
           //loop over the elems in this group
@@ -362,7 +368,7 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError& err)
               //if first pass or if two passes are required
             if(!num_pass||assessor_array[metric_counter]->maxHist>MSQ_MAX_CAP){
               
-              if(!assessor_array[metric_counter]->metric->evaluate_element(elem_group,&elems[element_counter], temp_val, err)){
+              if(!assessor_array[metric_counter]->metric->evaluate_element(*elem_group,&elems[element_counter], temp_val, err)){
                 QAData[metric_counter].numInvalid++;
               }
             
@@ -428,31 +434,41 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError& err)
           element_counter++;
         }//end  while element counter < num_elems
 
-          //get next element group (PatchData object)
-        elem_bool=ms.get_next_patch(elem_group,this, err); MSQ_CHKERR(err);
+          // If dealing with local patches, get next element group (PatchData object)
+        if (get_patch_type() != PatchData::GLOBAL_PATCH)
+          elem_bool=ms.get_next_patch(*elem_group,this, err); MSQ_CHKERR(err);
           //Michael:: Since we are doing global right now:
           //Remove this when no longer doing global
         elem_bool=0;
           //PRINT_INFO("\nInside QA get_next returning %i",elem_bool);        
       }//end  while (elem_bool)
+
+      if (get_global_patch(err) == 0 )
+        delete elem_group; 
       
     }//end   if num_elem_based
 
     if((num_metrics-num_elem_based)>0){
         //construct the patch we will send to get_next_patch
-      PatchData vert_group;
+      PatchData* vert_group;
       no_culling_method();
       metric_counter=0;
-      bool vert_bool;
-      vert_bool=ms.get_next_patch(vert_group, this, err);  MSQ_CHKERR(err);
+      bool vert_bool=true;
+      if (get_global_patch(err) == 0) {
+        vert_group = new PatchData; 
+        vert_bool=ms.get_next_patch(*vert_group, this, err);  MSQ_CHKERR(err);
+      }
+      else {
+        vert_group = get_global_patch(err);
+      }
       
         //until there are no more patches
         //there is another get_next_patch at
         //the end of this loop
       while(vert_bool){
         
-        verts=vert_group.get_vertex_array(err);  MSQ_CHKERR(err);
-        num_verts=vert_group.num_vertices();
+        verts=vert_group->get_vertex_array(err);  MSQ_CHKERR(err);
+        num_verts=vert_group->num_vertices();
         
         int vertex_counter=0;
           //loop over the verts in this group
@@ -482,7 +498,7 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError& err)
               //if first pass or if two passes are required
             if(!num_pass||assessor_array[metric_counter]->maxHist>MSQ_MAX_CAP){
               
-              if(!assessor_array[metric_counter]->metric->evaluate_vertex(vert_group,&verts[vertex_counter],temp_val,err)){
+              if(!assessor_array[metric_counter]->metric->evaluate_vertex(*vert_group,&verts[vertex_counter],temp_val,err)){
                 QAData[metric_counter].numInvalid++;
               }
               MSQ_CHKERR(err);
@@ -548,13 +564,15 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError& err)
         }//end  while vertex counter < num_verts
         
           //get next vertex group (PatchData object)
-        vert_bool=ms.get_next_patch(vert_group,this, err); MSQ_CHKERR(err);
+        vert_bool=ms.get_next_patch(*vert_group,this, err); MSQ_CHKERR(err);
           //Michael:: Since we are doing global right now:
           //Remove this when no longer doing global
         vert_bool=0;
           //PRINT_INFO("\nInside QA get_next returning %i",elem_bool);        
       }//end  while (vert_bool)
-      
+
+      if (get_global_patch(err) == 0 )
+        delete vert_group; 
     }//end   if (num_metrics-num_elem_based)>0
 
 

@@ -8,7 +8,7 @@
 //    E-MAIL: mbrewer@sandia.gov
 //
 // ORIG-DATE: Jan. 29, 2003
-//  LAST-MOD: 23-Jul-03 at 17:43:38 by Thomas Leurent
+//  LAST-MOD: 25-Sep-03 at 14:06:38 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -163,13 +163,13 @@ public:
        //Make sure no errors
      CPPUNIT_ASSERT(!err.errorOn);
        // launches optimization on mesh_set1
-     double orig_qa_val=stop_qa.assess_mesh_quality(mesh_set1,err);
+     double orig_qa_val=stop_qa.loop_over_mesh(mesh_set1,err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err.errorOn);
      queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err.errorOn);
-     double fin_qa_val=stop_qa.assess_mesh_quality(mesh_set1,err);
+     double fin_qa_val=stop_qa.loop_over_mesh(mesh_set1,err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err.errorOn);
        //make sure 'quality' improved
@@ -181,13 +181,13 @@ public:
        //Make sure no errors
      CPPUNIT_ASSERT(!err.errorOn);
        // launches optimization on mesh_set1
-     orig_qa_val=qa.assess_mesh_quality(mesh_set1,err);
+     orig_qa_val=qa.loop_over_mesh(mesh_set1,err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err.errorOn);
      queue2.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err.errorOn);
-     fin_qa_val=qa.assess_mesh_quality(mesh_set1,err);
+     fin_qa_val=qa.loop_over_mesh(mesh_set1,err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err.errorOn);
        //make sure 'quality' improved
@@ -273,13 +273,13 @@ public:
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
          // launches optimization on mesh_set1
-       double orig_qa_val=stop_qa.assess_mesh_quality(mesh_set1,err);
+       double orig_qa_val=stop_qa.loop_over_mesh(mesh_set1,err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
        queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
-       double fin_qa_val=stop_qa.assess_mesh_quality(mesh_set1,err);
+       double fin_qa_val=stop_qa.loop_over_mesh(mesh_set1,err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
          //make sure 'quality' improved
@@ -291,13 +291,13 @@ public:
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
          // launches optimization on mesh_set1
-       orig_qa_val=qa.assess_mesh_quality(mesh_set1,err);
+       orig_qa_val=qa.loop_over_mesh(mesh_set1,err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
        queue2.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
        //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
-       fin_qa_val=qa.assess_mesh_quality(mesh_set1,err);
+       fin_qa_val=qa.loop_over_mesh(mesh_set1,err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
          //make sure 'quality' improved
@@ -368,13 +368,13 @@ public:
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
          // launches optimization on mesh_set1
-       double orig_qa_val=qa.assess_mesh_quality(mesh_set1,err);
+       double orig_qa_val=qa.loop_over_mesh(mesh_set1,err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
        queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
-       double fin_qa_val=qa.assess_mesh_quality(mesh_set1,err);
+       double fin_qa_val=qa.loop_over_mesh(mesh_set1,err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
          //make sure 'quality' improved

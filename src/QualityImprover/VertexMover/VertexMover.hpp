@@ -31,7 +31,7 @@ namespace Mesquite
     // virtual destructor ensures use of polymorphism during destruction
     virtual ~VertexMover() { };
     
-    virtual void loop_over_mesh(MeshSet &ms, MsqError &err);
+    virtual double loop_over_mesh(MeshSet &ms, MsqError &err);
 
   protected:
 

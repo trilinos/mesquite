@@ -63,8 +63,9 @@ namespace Mesquite
       //! Provides a name to the QualityAssessor (use it for default name in constructor).
     void set_name(std::string name) { qualityAssessorName = name; };
       //! Retrieves the QualityAssessor name. A default name should be set in the constructor.
-    std::string get_name() { return qualityAssessorName; }
-    
+    virtual std::string get_name() { return qualityAssessorName; }
+
+    virtual AlgorithmType get_algorithm_type() { return QUALITY_ASSESSOR; }
       //! Adds a quality metric and a wrapper function (min, max, ...).
     void add_quality_assessment(QualityMetric* qm, enum QAFunction  func, MsqError &err);
     
@@ -72,7 +73,7 @@ namespace Mesquite
     void set_histogram_range(QualityMetric* qm, double min_val, double max_val, MsqError &err);
     
       //! Does one sweep over the mesh and assess the quality with the metrics previously added.
-    double assess_mesh_quality(MeshSet &ms, MsqError &err);
+    virtual double loop_over_mesh(MeshSet &ms, MsqError &err);
 
       //! Do not print results of assessment.
     void disable_printing_results()
@@ -81,7 +82,7 @@ namespace Mesquite
        }
 
       /*!Sets the QualityMetric and QAFunction combination that will
-        be returned when assess_mesh_quality is called.
+        be returned when loop_over_mesh is called.
       */
     void set_stopping_assessment(QualityMetric* qm, enum QAFunction func,
                                  MsqError &err);
@@ -104,7 +105,7 @@ namespace Mesquite
       {}
     };
 
-      //QAVars is used in assess_mesh_quality.  It gives
+      //QAVars is used in loop_over_mesh.  It gives
       //us a place to store data as we are looping over
       //the mesh
     

@@ -20,7 +20,8 @@ InstructionQueue::InstructionQueue() :
   autoQualAssess(true),
   nbPreConditionners(0),
   isMasterSet(false),
-  masterInstrIndex(0)
+  masterInstrIndex(0),
+  globalPatch(0)
 {
 }
 
@@ -42,12 +43,7 @@ void InstructionQueue::add_preconditioner(QualityImprover* instr,
     return;
   }
   
-  // creepy shallow copy
-  //  QualityImprover* instr_copy = instr->clone();  
-  // QueueEntry entry(instr_copy);
-  
-  QueueEntry entry(instr);
-  instructions.push_back(entry);
+  instructions.push_back(instr);
   nbPreConditionners++;
 }
 
@@ -72,17 +68,18 @@ void InstructionQueue::remove_preconditioner(size_t index, MsqError &err)
   }
   
   // position the instruction iterator over the preconditionner to delete
-  std::list<QueueEntry>::iterator pos;
+  std::list<PatchDataUser*>::iterator pos;
   pos = instructions.begin();
   std::advance(pos, index);
-  if ( pos->mType == QueueEntry::IMPROVER ) {
-    std::string name = pos->mImprover->get_name();
+
+  if ( (*pos)->get_algorithm_type() == PatchDataUser::QUALITY_IMPROVER ) {
+    std::string name = (*pos)->get_name();
     std::cout << "  o InstructionQueue: removing QualityImprover " << name <<  ".\n"; 
     instructions.erase(pos);
     nbPreConditionners--;
-  }
-  else
-    err.set_msg("index does not point to a QualityImprover.");
+   }
+   else
+     err.set_msg("index does not point to a QualityImprover.");
 }  
 
 
@@ -110,12 +107,11 @@ void InstructionQueue::insert_preconditioner(QualityImprover* instr,
   }
 
   // position the instruction iterator
-  std::list<QueueEntry>::iterator pos;
+  std::list<PatchDataUser*>::iterator pos;
   pos = instructions.begin();
   std::advance(pos, index);
   // adds the preconditioner
-  QueueEntry entry(instr);
-  instructions.insert(pos,entry);
+  instructions.insert(pos,instr);
   nbPreConditionners++;
 }
 
@@ -130,12 +126,7 @@ void InstructionQueue::insert_preconditioner(QualityImprover* instr,
 void InstructionQueue::add_quality_assessor(QualityAssessor* instr,
                                             MsqError &/*err*/)
 {
-  // creepy shallow copy
-  //  QualityAssessor* instr_copy = instr->clone(); 
-  // QueueEntry entry(instr_copy);
-  
-  QueueEntry entry(instr);
-  instructions.push_back(entry);
+  instructions.push_back(instr);
 }
 
 
@@ -156,16 +147,17 @@ void InstructionQueue::remove_quality_assessor(size_t index, MsqError &err)
   }
   
   // position the instruction iterator over the QualityAssessor to delete
-  std::list<QueueEntry>::iterator pos;
+  std::list<PatchDataUser*>::iterator pos;
   pos = instructions.begin();
   std::advance(pos, index);
-  if ( pos->mType == QueueEntry::ASSESSOR ) {
-    std::string name = pos->mAssessor->get_name();
+
+  if ( (*pos)->get_algorithm_type() == PatchDataUser::QUALITY_ASSESSOR ) {
+    std::string name = (*pos)->get_name();
     std::cout << "  o InstructionQueue: removing QualityAssessor " << name << ".\n"; 
     instructions.erase(pos);
-  }
-  else
-    err.set_msg("index does not point to a QualityAssessor.");
+   }
+   else
+     err.set_msg("index does not point to a QualityAssessor.");
 }  
 
 
@@ -188,12 +180,11 @@ void InstructionQueue::insert_quality_assessor(QualityAssessor* instr,
   }
 
   // position the instruction iterator
-  std::list<QueueEntry>::iterator pos;
+  std::list<PatchDataUser*>::iterator pos;
   pos = instructions.begin();
   std::advance(pos, index);
   // adds the QualityAssessor
-  QueueEntry entry(instr);
-  instructions.insert(pos,entry);
+  instructions.insert(pos,instr);
 }
 
 
@@ -202,23 +193,17 @@ void InstructionQueue::insert_quality_assessor(QualityAssessor* instr,
 void InstructionQueue::set_master_quality_improver(QualityImprover* instr,
                                                  MsqError &err)
 {
-  // creepy shallow copy
-  //  QualityImprover* instr_copy = instr->clone();  
-  // masterInstruction = instr_copy;
-
   if (isMasterSet) {
     std::cout << "WARNING: InstructionQueue::set_master_quality_improver():\n"
          << "\tOverwriting previously specified master quality improver.\n";
     // if master is already set, clears it and insert the new one at the same position.
-    std::list<QueueEntry>::iterator master_pos;
+    std::list<PatchDataUser*>::iterator master_pos;
     master_pos = this->clear_master(err); MSQ_CHKERR(err);
-    QueueEntry entry(instr);
-    instructions.insert(master_pos, entry);
+    instructions.insert(master_pos, instr);
     isMasterSet = true;
   } else {
     // if master is not set, add it at the end of the queue.
-    QueueEntry entry(instr);
-    instructions.push_back(entry);
+    instructions.push_back(instr);
     isMasterSet = true;
     masterInstrIndex = instructions.size()-1;
   }
@@ -233,18 +218,40 @@ void InstructionQueue::run_instructions(MeshSet &ms, MsqError &err)
     return;
   }
   
-  std::list<QueueEntry>::const_iterator instr_iter;
-  // For each pass QualityImprover/QualityAssessor in the preconditionner list
+  std::list<PatchDataUser*>::const_iterator instr_iter;
+  
+  // For each instruction in the list
   for (instr_iter = instructions.begin();
        instr_iter != instructions.end(); ++instr_iter) {
+    
+    // If instruction uses a global patch, creates one or reuse the existing one.
+    if ((*instr_iter)->get_patch_type() == PatchData::GLOBAL_PATCH) {
+      if (globalPatch == 0) {
+        globalPatch = new PatchData;
+        ms.get_next_patch(*globalPatch, (*instr_iter)->get_all_parameters(), err);
+        MSQ_CHKERR(err);
+      }
+      std::cout << "run intr loop -- GLOBAL PATCH\n"; //dbg 
+      (*instr_iter)->set_global_patch(globalPatch, err); MSQ_CHKERR(err);
+      
+    }
+    // If instruction does not use a Global Patch, make sure we discard any existing patch.
+    else {
+      delete globalPatch;
+      globalPatch = 0;
+      (*instr_iter)->no_global_patch();
+    }
+    
     // applies the QualityImprover/QualityAssessor to the MeshSet
-    if (instr_iter->mType == QueueEntry::IMPROVER) {
-      instr_iter->mImprover->loop_over_mesh(ms, err); MSQ_CHKERR(err); }
-    else if (instr_iter->mType == QueueEntry::ASSESSOR) {
-      instr_iter->mAssessor->assess_mesh_quality(ms, err); MSQ_CHKERR(err); }
-    else
-      err.set_msg("Unknown instruction type.");
+      (*instr_iter)->loop_over_mesh(ms, err); MSQ_CHKERR(err);
+
+    // If this same instruction is reused in this queue, we can't assume the
+    // global patch will still be valid. 
+    (*instr_iter)->no_global_patch();
   }
+ 
+  if (globalPatch != 0)
+    delete globalPatch; // clean up once all instructions are executed.
 }
 
   
@@ -261,10 +268,10 @@ void InstructionQueue::clear()
 
 #undef __FUNC__
 #define __FUNC__ "InstructionQueue::clear_master"
-std::list<InstructionQueue::QueueEntry>::iterator InstructionQueue::clear_master(MsqError &err)
+std::list<PatchDataUser*>::iterator InstructionQueue::clear_master(MsqError &err)
 {
-  std::list<QueueEntry>::iterator instr_iter;
-  std::list<QueueEntry>::iterator master_pos;
+  std::list<PatchDataUser*>::iterator instr_iter;
+  std::list<PatchDataUser*>::iterator master_pos;
   
   if (!isMasterSet) {
     err.set_msg("No master quality improver to clear.");
