@@ -140,6 +140,11 @@ namespace Mesquite
           lies on its constraining domain.  The actual domain constraint
           is managed by the TSTT mesh implementation */
     void snap_vertex_to_domain(size_t vertex_index, MsqError &err);
+
+    /*! Get the normal of the surface for a given vertex.
+        Normal is returned in Vector3D &surf_norm.*/
+    void get_surface_normal(size_t vertex_index, Vector3D &surf_norm,
+                            MsqError &err);
     
     //! moves all vertices at once according to a set of directions.
     /*! \param dk an array of directions, ordered like the vertices in the PatchData.

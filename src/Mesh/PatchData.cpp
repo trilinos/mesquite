@@ -670,16 +670,35 @@ void PatchData::get_subpatch(size_t center_vertex_index,
   delete [] new_vert_indices;
 }
 
-// Adjust the position of the specified vertex so that it
-// lies on its constraining domain.  The actual domain constraint
-// is managed by the TSTT mesh implementation
+//! Adjust the position of the specified vertex so that it
+//! lies on its constraining domain.  The actual domain constraint
+//! is managed by the TSTT mesh implementation
 void PatchData::snap_vertex_to_domain(size_t vertex_index, MsqError &err)
 {
     //geometry for Mesquite_geo grids
-    /*  
+    
   double len = vertexArray[vertex_index].length();
   vertexArray[vertex_index][0]/=len;
   vertexArray[vertex_index][1]/=len;
   vertexArray[vertex_index][2]/=len;
+  
+    //geometry for z = 5 plane
+    //vertexArray[vertex_index][2]=5.0;
+}
+
+/*! Gives the normal to the surface which 'owns'  the vertex given by
+  vertex_index*/
+void PatchData::get_surface_normal(size_t vertex_index, Vector3D &surf_norm,
+                                   MsqError &err){
+    //normal for z= const
+    //surf_norm.set(0.0,0.0,1.0);
+    //Normal for unit sphere
+    /*
+  double len = vertexArray[vertex_index].length();
+  surf_norm[0]=vertexArray[vertex_index][0]/len;
+  surf_norm[1]=vertexArray[vertex_index][1]/len;
+  surf_norm[2]=vertexArray[vertex_index][2]/len;
     */
 }
+
+  
