@@ -20,7 +20,8 @@ MSQ_BASE_DIR = ../..
 TEST_SRCS = sample_main.cpp \
     MesquiteTestRunner.cpp \
     sample_test.cpp \
-    MsqMeshEntityTest.cpp
+    MsqMeshEntityTest.cpp \
+    InstructionQueueTest.cpp
 
 TEST_OBJS = ${TEST_SRCS:.cpp=.o}
 

@@ -15,6 +15,10 @@ int main()
     CppUnit::TestFactoryRegistry::getRegistry("MsqMeshEntityTest");
   runner.add_test( registry2.makeTest() );
 
+  CppUnit::TestFactoryRegistry &registry3 =
+    CppUnit::TestFactoryRegistry::getRegistry("InstructionQueueTest");
+  runner.add_test( registry3.makeTest() );
+
     // Run the tests
   bool wasSucessful = runner.run("Darryl's Test Run");
   
