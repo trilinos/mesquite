@@ -23,9 +23,11 @@ STD_INCLUDE_FLAG = -DUSE_STD_INCLUDES
 ## including Makefile.customize in something other than the main Makefile.
 MSQ_BASE_DIR = .
 
-## Use AOMD by default.  Change this macro to link in
+## Use Mesquite own database by default.  
+## Change this macro to link in
 ## something else.
-TSTT_LINK = ${MDB_TSTT_LINK}
+#TSTT_LINK = ${MDB_TSTT_LINK}
+TSTT_LINK = 
 
 ## How to link in AOMD
 AOMD_LIB_DIR = ${MSQ_BASE_DIR}/external/AOMD/lib

@@ -3,6 +3,7 @@ CXX = g++
 ARCHIVER = ar ru
 MAKEDEPEND = makedepend
 LINKER = ${CXX}
+PREFIX = @
 
 ## Default settings for flags
 DEBUG_FLAG = -g  -Wno-deprecated
@@ -17,13 +18,13 @@ LDFLAGS = ${DEBUG_FLAG}
 ## than the main Makefile.
 MSQ_BASE_DIR = .
 
-## Use AOMD by default.  Change this macro to link in
-## something else.
-TSTT_LINK = ${AOMD_TSTT_LINK}
+## Change this macro to link in a TSTT implementation
+#TSTT_LINK = ${AOMD_TSTT_LINK}
+TSTT_LINK = 
 
-## How to link in AOMD
-AOMD_LIB_DIR = ${MSQ_BASE_DIR}/external/AOMD/lib
-AOMD_TSTT_LINK = -L${AOMD_LIB_DIR} -lAOMD -lm
+## How to link in AOMD (optional)
+#AOMD_LIB_DIR = ${MSQ_BASE_DIR}/external/AOMD/lib
+#AOMD_TSTT_LINK = -L${AOMD_LIB_DIR} -lAOMD -lm
 
 ## How to link in MDB
 MDB_LIB_DIR = ${MSQ_BASE_DIR}/external/MDB/lib

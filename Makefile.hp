@@ -3,6 +3,7 @@ CXX = aCC
 ARCHIVER = ar ru
 MAKEDEPEND = /usr/local/eng_sci/cubit/bin/makedepend -Y
 LINKER = ${CXX}
+PREFIX = @
 
 ## Default settings for flags
 DEBUG_FLAG = -g1 +d +DAportable +W829 +W749 +W740 +W552 
@@ -13,9 +14,11 @@ SYSTEM_INCLUDE = -I/usr/ -I/opt/aCC/include/
 DEPEND_FLAGS = ${SYSTEM_INCLUDE} ${DEBUG_FLAG} ${INCLUDE} ${STD_INCLUDE_FLAG}
 LDFLAGS = -AA ${DEBUG_FLAG}
 
-## Use MDB by default.  Change this macro to link in
+## Use Mesquite own database by default.  
+## Change this macro to link in
 ## something else.
 TSTT_LINK = ${MDB_TSTT_LINK}
+TSTT_LINK =
 
 ## How to link in AOMD
 AOMD_LIB_DIR = ${MSQ_BASE_DIR}/external/AOMD/lib

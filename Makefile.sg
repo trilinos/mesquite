@@ -3,6 +3,7 @@ CXX = CC
 ARCHIVER = $(CXX) -ar -o
 MAKEDEPEND = makedepend
 LINKER = ${CXX}
+PREFIX = @
 
 ## Default settings for flags
 DEBUG_FLAG = -g
@@ -17,9 +18,11 @@ LDFLAGS = -LANG:std ${DEBUG_FLAG}
 ## than the main Makefile.
 MSQ_BASE_DIR = .
 
-## Use AOMD by default.  To change what you're linking in, change
+## Use Mesquite own database by default.  
+## To change what you're linking in, change
 ## this macro (for example, TSTT_LINK = ${MDB_TSTT_LINK}).
-TSTT_LINK = ${AOMD_TSTT_LINK}
+#TSTT_LINK = ${AOMD_TSTT_LINK}
+TSTT_LINK =
 
 ## How to link in AOMD
 AOMD_LIB_DIR = ${MSQ_BASE_DIR}/external/AOMD/lib

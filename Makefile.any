@@ -2,6 +2,7 @@
 CXX = CC
 ARCHIVER = $(CXX) -ar -o
 MAKEDEPEND = makedepend
+PREFIX = @
 
 ## Default settings for flags
 DEBUG_FLAG = -g
