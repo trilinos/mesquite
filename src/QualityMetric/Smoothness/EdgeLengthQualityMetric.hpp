@@ -1,16 +1,16 @@
 // -*- Mode : c++; tab-width: 3; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 3 -*-
 
-/*! \file LaplacianQualityMetric.hpp
+/*! \file EdgeLengthQualityMetric.hpp
 
-Header file for the Mesquite::LaplacianQualityMetric class
+Header file for the Mesquite::EdgeLengthQualityMetric class
 
   \author Michael Brewer
   \date   2002-06-13
  */
 
 
-#ifndef LaplacianQualityMetric_hpp
-#define LaplacianQualityMetric_hpp
+#ifndef EdgeLengthQualityMetric_hpp
+#define EdgeLengthQualityMetric_hpp
 #include "MsqMeshEntity.hpp"
 #include "Mesquite.hpp"
 #include "MesquiteError.hpp"
@@ -22,18 +22,18 @@ namespace Mesquite
    class MsqMeshEntity;
    class MsqVertex;
    
-   class LaplacianQualityMetric : public SmoothnessQualityMetric
+   class EdgeLengthQualityMetric : public SmoothnessQualityMetric
   {
    public:
       // The function create_new is used to create a shape quality metric
       static SmoothnessQualityMetric* create_new(){
 
-        LaplacianQualityMetric* m = new LaplacianQualityMetric();
+        EdgeLengthQualityMetric* m = new EdgeLengthQualityMetric();
         return m;
       }
     
       // virtual destructor ensures use of polymorphism during destruction
-    virtual ~LaplacianQualityMetric()
+    virtual ~EdgeLengthQualityMetric()
        {}
 
   
@@ -44,12 +44,12 @@ namespace Mesquite
 
    private:
 
-    LaplacianQualityMetric()
+    EdgeLengthQualityMetric()
        {
          avgMethod=SUM;
          feasible=0;
          set_metric_type(QualityMetric::VERTEX_BASED);
-         set_name("Laplacian Metric");
+         set_name("Edge Length Metric");
        }
     
   };
@@ -58,6 +58,6 @@ namespace Mesquite
 } //namespace
 
 
-#endif // LaplacianQualityMetric_hpp
+#endif // EdgeLengthQualityMetric_hpp
 
 

@@ -1,6 +1,6 @@
 QMSMOOTHNESSDIR = $(srcdir)/QualityMetric/Smoothness
 
-QMSMOOTHNESSSRC = $(QMSMOOTHNESSDIR)/LaplacianQualityMetric.cpp
+QMSMOOTHNESSSRC = $(QMSMOOTHNESSDIR)/EdgeLengthQualityMetric.cpp
 
 QMSMOOTHNESSHEADERS = \
 	$(patsubst $(QMSMOOTHNESSDIR)/%,$(localincludedir)/%,\
