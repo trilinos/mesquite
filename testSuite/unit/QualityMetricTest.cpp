@@ -542,7 +542,7 @@ public:
     std::vector<size_t> elem_vtx_indices;
     elems[1].get_vertex_indices(elem_vtx_indices);
     int nve = elem_vtx_indices.size(); // number of vertices in element.
-    MsqVertex* all_vtces[nve];
+    MsqVertex** all_vtces = new MsqVertex*[nve];
     for (int i=0; i<nve; ++i) {
       all_vtces[i] = &vertices[elem_vtx_indices[i]];
     }
@@ -585,9 +585,12 @@ public:
     // test returned Hessians
     for (int m=0; m<nve*(nve+1)/2; ++m)
       for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+        for (int j=0; j<3; ++j){
+            //PRINT_INFO("\nm=%i,i=%i,j=%i",m,i,j);
+            //PRINT_INFO("\nNumerical = %f, Analytical = %f",hessian_num[m][i][j], hessian_ana[m][i][j]);
           CPPUNIT_ASSERT_DOUBLES_EQUAL(hessian_num[m][i][j], hessian_ana[m][i][j], 0.001);
-
+        }
+    
     
     // 2 **** same test as 1, but gives the free vertices in an order
     //        different than the order within the elements.
@@ -647,7 +650,7 @@ public:
         for (int j=0; j<3; ++j)
           CPPUNIT_ASSERT_DOUBLES_EQUAL(hessian_num[m][i][j], hessian_ana[m][i][j], 0.001);
 
-    
+    delete[] all_vtces;
     delete[] grad_num;
     delete[] grad_ana;
     delete[] hessian_num;
