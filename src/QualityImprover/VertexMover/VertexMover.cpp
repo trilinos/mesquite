@@ -39,8 +39,8 @@ void VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
 {
   set_mesh_set(&ms);
   std::cout << "o Executing VertexMover::loop_over_mesh()\n";
-
-  // creates a PatchData object at the VertexMover level
+  
+    // creates a PatchData object at the VertexMover level
     // in order to reduce the number of memory allocations
   PatchData patch_data;
   bool next_patch;
@@ -51,71 +51,84 @@ void VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
     err.set_msg("Termination Criterion pointer is Null");
     return;
   }
+    //if inner-criterion is NULL, we wet an error.
+  if(inner_crit == 0){
+    err.set_msg("Termination Criterion pointer for inner loop is Null");
+    return;
+  }
+    //initialize both criterion objects
   outer_crit->initialize(ms, patch_data, err);
-    //inner criterion is allowed to be NULL.
-  if(inner_crit!=NULL)
-    inner_crit->initialize(ms, patch_data, err);
+  inner_crit->initialize(ms, patch_data, err);
   
   bool stop_met=false; MSQ_CHKERR(err);
   // This should probably pass the MeshSet so that the data requirements
   // can be calculated exactly.
   this->initialize(patch_data, err); MSQ_CHKERR(err);
-    //reset the stopping criterion's loop counter
+
   std::cout<<"\n";
+    //skip booleans set to false if the initial mesh (or patch) satisfies
+    //the termination criteria.
   bool inner_skip=false;
   bool outer_skip=outer_crit->reset(ms,objFunc,err);
   if(!outer_skip){
     
-  while ( !stop_met ) {
-      //Status bar
-    std::cout<<".";
-    std::cout.flush();
-    // Prior to looping over the patches.
-    // Probably want to pass the MeshSet.  
-    this->initialize_mesh_iteration(patch_data, err);MSQ_CHKERR(err); 
+    while ( !stop_met ) {
+        //Status bar
+      std::cout<<".";
+      std::cout.flush();
+        // Prior to looping over the patches.
+        // Probably want to pass the MeshSet.  
+      this->initialize_mesh_iteration(patch_data, err);MSQ_CHKERR(err); 
 
-    // propagates information from QualityImprover to MeshSet
-    next_patch = true;
-    while( next_patch )
-    {
-#if MSQ_DEBUG_LEVEL != 0
-      double aomd_t=0;
-      double msq_t=0;
-#endif
-      next_patch =  ms.get_next_patch(patch_data, this, err); 
-      MSQ_CHKERR(err);
-     
-      if (next_patch == true ) {
-        if(inner_crit!=NULL){
-          inner_skip=inner_crit->reset(patch_data,objFunc,err);
-        }
-        if(!inner_skip)
-          this->optimize_vertex_positions(patch_data, err); MSQ_CHKERR(err);
-        if(inner_crit!=NULL){
-          inner_crit->cull_vertices(patch_data,objFunc,err);
-        }
-          //we need update to also update the soft_fixed flags
-        patch_data.update_mesh(err); MSQ_CHKERR(err); // TSTT mesh update !!
+        // propagates information from QualityImprover to MeshSet
+        //try to get the first patch, if no patches can be created
+        //skip optimization and terminate.
+      next_patch =  ms.get_next_patch(patch_data, this, err);
+      if(!next_patch){
+        stop_met=true;
+          //PRINT_INFO("\nTerminating due to no more free nodes\n");
+          //call terminate() anyway, even though we must terminate
+        outer_crit->terminate(ms,objFunc,err);
       }
-      if (get_patch_type() == PatchData::GLOBAL_PATCH) {
-        next_patch = false; }
-    }
-    this->terminate_mesh_iteration(patch_data, err); MSQ_CHKERR(err);
-      //if global don't loop again.
-      //if local loop until criteria are met
-    if(this->get_patch_type() == PatchData::GLOBAL_PATCH)
-      stop_met=true;
-    else
-      stop_met=outer_crit->terminate(ms,objFunc,err);
-    MSQ_CHKERR(err);
-  }
+        //otherwise at least one patch can be created
+      else{
+          //loop over these patches
+        while( next_patch )
+        {
+          MSQ_CHKERR(err); 
+          if (next_patch == true ) {
+            
+            inner_skip=inner_crit->reset(patch_data,objFunc,err);
+              //if inner criteria are initially satisfied, skip opt.
+              //otherwise:
+            if(!inner_skip){
+              this->optimize_vertex_positions(patch_data, err);
+              MSQ_CHKERR(err);
+            }
+            inner_crit->cull_vertices(patch_data,objFunc,err);
+            patch_data.update_mesh(err);// TSTT mesh update !!
+            MSQ_CHKERR(err); 
+          }
+            //if global patch, don't try to get the next patch
+          if (get_patch_type() == PatchData::GLOBAL_PATCH) {
+            next_patch = false; }
+          else{
+            next_patch =  ms.get_next_patch(patch_data, this, err);
+          }
+        }
+        this->terminate_mesh_iteration(patch_data, err); MSQ_CHKERR(err);
+          //check the criteria on the outer loop
+        stop_met=outer_crit->terminate(ms,objFunc,err);
+        MSQ_CHKERR(err);
+      }
+    } 
   }
   
   std::cout<<"\n";
+    //call the criteria's cleanup funtions.
   outer_crit->cleanup(ms,err);
-  if(inner_crit!=NULL){ 
-    inner_crit->cleanup(ms,err);
-  }
+  inner_crit->cleanup(ms,err);
+    //call the optimization cleanup function.
   this->cleanup();
 }
   
