@@ -5,7 +5,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 18-Dec-02 at 11:08:22
-//  LAST-MOD: 14-Feb-03 at 13:27:35 by Thomas Leurent
+//  LAST-MOD: 19-Feb-03 at 15:17:54 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -161,6 +161,7 @@ namespace Mesquite
     friend Vector3D operator*(const Matrix3D  &A, const Vector3D &x);
     friend Vector3D operator*(const Vector3D &x, const Matrix3D  &A);
     Matrix3D& operator+=(const Matrix3D &rhs);
+    Matrix3D& operator-=(const Matrix3D &rhs);
     Matrix3D plus_transpose(const Matrix3D &B) const;
     Matrix3D& plus_transpose_equal(const Matrix3D &B);
     void fill_lower_triangle();
@@ -279,6 +280,15 @@ namespace Mesquite
       v_[0] += rhs.v_[0]; v_[1] += rhs.v_[1]; v_[2] += rhs.v_[2];
       v_[3] += rhs.v_[3]; v_[4] += rhs.v_[4]; v_[5] += rhs.v_[5];
       v_[6] += rhs.v_[6]; v_[7] += rhs.v_[7]; v_[8] += rhs.v_[8];
+
+      return *this;
+  }
+
+  inline Matrix3D& Matrix3D::operator-=(const Matrix3D &rhs)
+  {
+      v_[0] -= rhs.v_[0]; v_[1] -= rhs.v_[1]; v_[2] -= rhs.v_[2];
+      v_[3] -= rhs.v_[3]; v_[4] -= rhs.v_[4]; v_[5] -= rhs.v_[5];
+      v_[6] -= rhs.v_[6]; v_[7] -= rhs.v_[7]; v_[8] -= rhs.v_[8];
 
       return *this;
   }
