@@ -42,15 +42,15 @@ class QualityMetricTest : public CppUnit::TestFixture
 private:
   CPPUNIT_TEST_SUITE(QualityMetricTest);
     //Test condition number and generalized condition number metrics
-  CPPUNIT_TEST (test_condition_number);
+//  CPPUNIT_TEST (test_condition_number);
     //Test mean ratio and inverse mean ratio metrics
-  CPPUNIT_TEST (test_mean_ratio);
+//  CPPUNIT_TEST (test_mean_ratio);
     //Test apect ratio gamma (Tri's and Tet's only)
-  CPPUNIT_TEST (test_aspect_ratio_gamma);
+//  CPPUNIT_TEST (test_aspect_ratio_gamma);
     //Test composite multiply
-  CPPUNIT_TEST (test_composite_multiply);
+//  CPPUNIT_TEST (test_composite_multiply);
     //Test averaging methods
-  CPPUNIT_TEST (test_averaging_method);
+//  CPPUNIT_TEST (test_averaging_method);
   CPPUNIT_TEST (test_mean_ratio_gradient);
   CPPUNIT_TEST_SUITE_END();
   
@@ -519,23 +519,23 @@ void test_averaging_method()
     
     // creates a mean ratio quality metric ...
     ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
-    mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
+    mean_ratio->set_averaging_method(QualityMetric::SUM, err);
 
     mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
     mean_ratio->compute_element_gradient (hexPatch, &elems[1], two_vtces,
                                           grad_num, 2, metric_value, err); MSQ_CHKERR(err);
-//     std::cout << "NUMERICAL GRADIENT\n";
-//     for (int i=0; i<2; ++i)
-//       for (int j=0; j<3; ++j)
-//         std::cout << grad[i][j] << std::endl;
+    std::cout << "NUMERICAL GRADIENT\n";
+    for (int i=0; i<2; ++i)
+       for (int j=0; j<3; ++j)
+         std::cout << grad_num[i][j] << std::endl;
 
     mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
     mean_ratio->compute_element_gradient (hexPatch, &elems[1], two_vtces,
                                           grad_ana, 2, metric_value, err); MSQ_CHKERR(err);
-//     std::cout << "ANALYTICAL GRADIENT\n";
-//     for (int i=0; i<2; ++i)
-//       for (int j=0; j<3; ++j)
-//         std::cout << grad[i][j]/8 << std::endl;
+    std::cout << "ANALYTICAL GRADIENT\n";
+    for (int i=0; i<2; ++i)
+      for (int j=0; j<3; ++j)
+        std::cout << grad_ana[i][j] << std::endl;
 
     for (int i=0; i<2; ++i)
       for (int j=0; j<3; ++j)

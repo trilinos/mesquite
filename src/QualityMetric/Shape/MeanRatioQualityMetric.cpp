@@ -1719,6 +1719,9 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
     default:
       switch(avgMethod) {
       case SUM:
+        t = 1.0;
+        break;
+
       case LINEAR:
 	t = 1.0;
 	break;
@@ -1743,6 +1746,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 
 	metrics[i] = t*nm/metrics[i];
       }
+
       if (avgMethod == SUM) {
 	nm = m;
       }
