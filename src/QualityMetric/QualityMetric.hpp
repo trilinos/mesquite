@@ -64,6 +64,7 @@ namespace Mesquite
        the metric based on element vertices, or element gauss points. */
      enum ElementEvaluationMode
      {
+       EEM_UNDEFINED,
        ELEMENT_VERTICES,
        LINEAR_GAUSS_POINTS,
        QUADRATIC_GAUSS_POINTS,
@@ -246,6 +247,7 @@ namespace Mesquite
          when appropriate.
        */
      QualityMetric() :
+       evalMode(EEM_UNDEFINED),
        mType(MT_UNDEFINED),
        gradType(NUMERICAL_GRADIENT),
        hessianType(NUMERICAL_HESSIAN),

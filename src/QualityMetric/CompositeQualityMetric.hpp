@@ -34,6 +34,12 @@ namespace Mesquite
         {};
      
   protected:
+     //!The constructor is protected so that this class can not be
+     //!instantiated.
+     CompositeQualityMetric():QualityMetric(), qMetric1(NULL),
+			      qMetric2(NULL), scaleAlpha(0.0)
+     {};
+     
        //!Set qMetric1.
      inline void set_qmetric1(QualityMetric* qm){
        qMetric1=qm;
@@ -66,6 +72,7 @@ namespace Mesquite
    };
 
 } //namespace
+//******************BEGIN INLINE FUNCTIONS ******************************
 
 
 #endif // CompositeQualityMetric_hpp
