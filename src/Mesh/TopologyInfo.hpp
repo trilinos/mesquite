@@ -29,10 +29,10 @@
 
 #include "Mesquite.hpp"
 
-class MsqError;
-
 namespace Mesquite
 {
+
+class MsqError;
 
 /** \brief Information about different element topologies */
 class TopologyInfo
