@@ -96,7 +96,10 @@ void ConjugateGradient::initialize_mesh_iteration(PatchData &/*pd*/,
 /*!Performs Conjugate gradient minimization on the PatchData, pd.*/
 void ConjugateGradient::optimize_vertex_positions(PatchData &pd, 
                                                 MsqError &err){
+  // pd.reorder();
+
   FUNCTION_TIMER_START(__FUNC__);
+
   Timer c_timer;
   int num_local_vertices = pd.num_vertices();
   if(num_local_vertices>arraySize){
