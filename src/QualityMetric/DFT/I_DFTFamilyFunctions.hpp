@@ -637,7 +637,7 @@ namespace Mesquite
   }
 
   /***************************************************************************/
-  /* Tetrahedral and hexahedral versions of the metric.                      *
+  /* Tetrahedral and hexahedral versions of the metric.                      */
   /***************************************************************************/
 
   inline bool m_gdft_3(double &obj, 

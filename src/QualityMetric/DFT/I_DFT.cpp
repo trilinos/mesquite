@@ -85,7 +85,7 @@ bool I_DFT::evaluate_element(PatchData& pd,
       }
       
       e->compute_corner_normal( i, mNormal, pd, err );  MSQ_ERRZERO(err);
-      mNormal *= pow(2./MSQ_SQRT_THREE, 1./3.);
+      mNormal *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
 
       QR(mQ, mR, W[i]);
       inv(invR, mR);
@@ -178,8 +178,6 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
   // Only works with the weighted average
 
   MsqVertex *vertices = pd.get_vertex_array(err); MSQ_ERRZERO(err);
-  // const size_t pd_elem_idx = pd.get_element_index(e);
-
   EntityTopology topo = e->get_element_type();
 
   const size_t nv = e->vertex_count();
@@ -211,11 +209,6 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
   case TRIANGLE:
     assert(3 == nv);
 
-#ifndef ANALYTIC
-    mValid = compute_element_numerical_gradient(pd, e, fv, g, nfv, m, err); 
-    return !MSQ_CHKERR(err) && mValid;
-#else
-
     // The following analytic calculation only works correctly if the
     // normal is constant.  If the normal is not constant, you need
     // to get the gradient of the normal with respect to the vertex
@@ -224,23 +217,22 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
     for (i = 0; i < 3; ++i) {
       mAccGrads[i] = 0.0;
     }
-
+    
     for (i = 0; i < 3; ++i) {
       for (j = 0; j < 3; ++j) {
 	mCoords[j] = vertices[v_i[tetInd[i][j]]];
       }
       
-      pd.get_domain_normal_at_corner( pd_elem_idx, i, mNormal, err ); MSQ_ERRZERO(err);
-      mNormal.normalize();
-      mNormal *= pow(2./MSQ_SQRT_THREE, 1./3.)
+      e->compute_corner_normal( i, mNormal, pd, err );  MSQ_ERRZERO(err);
+      mNormal *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
+      
+      QR(mQ, mR, W[i]);
+      inv(invR, mR);
+      mValid = g_gdft_2(mMetric, mGrads, mCoords, mNormal, invR, mQ, 
+			mAlpha, mGamma, delta, mBeta);
 
-      inv(invW, W[i]);
-
-      mValid = g_fcn_idft2(mMetric, mGrads, mCoords, mNormal,
-			   invW, a, b, c, delta);
       if (!mValid) return false;
       m += W[i].get_cK() * mMetric;
-
       for (j = 0; j < 3; ++j) {
 	mAccGrads[tetInd[i][j]] += W[i].get_cK() * mGrads[j];
       }
@@ -262,17 +254,10 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
         }
       }
     }
-#endif
-
     break;
 
   case QUADRILATERAL:
     assert(4 == nv);
-
-#ifndef ANALYTIC
-    mValid = compute_element_numerical_gradient(pd, e, fv, g, nfv, m, err);
-    return !MSQ_CHKERR(err) && mValid;
-#else
 
     // The following analytic calculation only works correctly if the
     // normal is constant.  If the normal is not constant, you need
@@ -288,21 +273,20 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	mCoords[j] = vertices[v_i[hexInd[i][j]]];
       }
 
-      pd.get_domain_normal_at_corner( pd_elem_idx, i, mNormal, err ); MSQ_ERRZERO(err);
-      mNormal.normalize();
+      e->compute_corner_normal( i, mNormal, pd, err ); MSQ_ERRZERO(err);
 
-      inv(invW, W[i]);
+      QR(mQ, mR, W[i]);
+      inv(invR, mR);
+      mValid = g_gdft_2(mMetric, mGrads, mCoords, mNormal, invR, mQ, 
+			mAlpha, mGamma, delta, mBeta);
 
-      mValid = g_fcn_idft2(mMetric, mGrads, mCoords, mNormal,
-			   invW, a, b, c, delta);
       if (!mValid) return false;
       m += W[i].get_cK() * mMetric;
-
       for (j = 0; j < 3; ++j) {
 	mAccGrads[hexInd[i][j]] += W[i].get_cK() * mGrads[j];
       }
     }
-
+    
     m *= 0.25;
     for (i = 0; i < 4; ++i) {
       mAccGrads[i] *= 0.25;
@@ -319,8 +303,6 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
         }
       }
     }
-#endif
-
     break;
 
   case TETRAHEDRON:
@@ -556,8 +538,6 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
   // Only works with the weighted average
 
   MsqVertex *vertices = pd.get_vertex_array(err);  MSQ_ERRZERO(err);
-  // const size_t pd_elem_idx = pd.get_element_index( e );
-
   EntityTopology topo = e->get_element_type();
 
   const size_t nv = e->vertex_count();
@@ -590,11 +570,6 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
   case TRIANGLE:
     assert(3 == nv);
 
-#ifndef ANALYTIC
-    mValid = compute_element_numerical_gradient(pd, e, fv, g, nfv, m, err); 
-    return !MSQ_CHKERR(err) && mValid;
-#else
-
     // The following analytic calculation only works correctly if the
     // normal is constant.  If the normal is not constant, you need
     // to get the gradient of the normal with respect to the vertex
@@ -615,16 +590,15 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	mCoords[j] = vertices[v_i[tetInd[i][j]]];
       }
 
-      pd.get_domain_normal_at_corner( pd_elem_idx, i, mNormal, err ); MSQ_ERRZERO(err);
-      mNormal.normalize();
-      mNormal *= pow(2./MSQ_SQRT_THREE, 1./3.)
+      e->compute_corner_normal( i, mNormal, pd, err );  MSQ_ERRZERO(err);
+      mNormal *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
+      
+      QR(mQ, mR, W[i]);
+      inv(invR, mR);
+      mValid = h_gdft_2(mMetric, mGrads, mHessians, mCoords, mNormal, 
+			invR, mQ, mAlpha, mGamma, delta, mBeta);
 
-	inv(invW, W[i]);
-
-      mValid = h_fcn_idft2(mMetric, mGrads, mHessians, mCoords, mNormal,
-			   invW, a, b, c, delta);
       if (!mValid) return false;
-
       m += W[i].get_cK() * mMetric;
 
       for (j = 0; j < 3; ++j) {
@@ -685,17 +659,10 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
         }
       }
     }
-#endif
-
     break;
 
   case QUADRILATERAL:
     assert(4 == nv);
-
-#ifndef ANALYTIC
-    mValid = compute_element_numerical_gradient(pd, e, fv, g, nfv, m, err);  
-    return !MSQ_CHKERR(err) && mValid;
-#else
 
     // The following analytic calculation only works correctly if the
     // normal is constant.  If the normal is not constant, you need
@@ -717,15 +684,14 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	mCoords[j] = vertices[v_i[hexInd[i][j]]];
       }
 
-      pd.get_domain_normal_at_corner( pd_elem_idx, i, mNormal, err ); MSQ_ERRZERO(err);
-      mNormal.normalize();
+      e->compute_corner_normal( i, mNormal, pd, err ); MSQ_ERRZERO(err);
 
-      inv(invW, W[i]);
+      QR(mQ, mR, W[i]);
+      inv(invR, mR);
+      mValid = h_gdft_2(mMetric, mGrads, mHessians, mCoords, mNormal, 
+			invR, mQ, mAlpha, mGamma, delta, mBeta);
 
-      mValid = h_fcn_idft2(mMetric, mGrads, mHessians, mCoords, mNormal,
-			   invW, a, b, c, delta);
       if (!mValid) return false;
-
       m += W[i].get_cK() * mMetric;
 
       for (j = 0; j < 3; ++j) {
@@ -790,8 +756,6 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
         }
       }
     }
-#endif
-
     break;
 
   case TETRAHEDRON:
