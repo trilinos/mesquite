@@ -1413,7 +1413,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
   EntityTopology topo = e->get_element_type();
 
   if (((topo == QUADRILATERAL) || (topo == HEXAHEDRON)) && 
-      ((avgMethod == MINIMUM) || (avgMethod != MAXIMUM))) {
+      ((avgMethod == MINIMUM) || (avgMethod == MAXIMUM))) {
     std::cout << "Minimum and maximum not continuously differentiable." << std::endl;
     std::cout << "Element of subdifferential will be returned." << std::endl;
   }
