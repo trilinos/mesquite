@@ -10,6 +10,10 @@
 #include "MeshTSTT.hpp"
 #include "TSTT.hh"
 
+using std::cout;
+using std::cerr;
+using std::endl;
+
 namespace
 {
 
@@ -30,10 +34,10 @@ namespace
                                          ::TSTT::ALL_TOPOLOGIES,
                                          1, // requested workset size
                                          tsttWorksetIterator);
-      entityHandles.create1d(1); // array with one entry.
-      bool more = iteratorMesh->entitysetGetNextWorkset(tsttWorksetIterator, entityHandles);
+      entityHandle = ::SIDL::array<void*>::create1d(1); // array with one entry.
+      bool more = iteratorMesh->entitysetGetNextWorkset(tsttWorksetIterator, entityHandle);
       if (!more)
-        entityHandles.set(0, NULL); 
+        entityHandle.set(0, NULL); 
     }
     
       // Moves the iterator back to the first
@@ -54,15 +58,15 @@ namespace
       // being pointed at by the iterator.
     virtual Mesquite::Mesh::EntityHandle operator*() const
       {
-        return entityHandles.get(0); // NULL if past the end. 
+        return entityHandle.get(0); // NULL if past the end. 
       }
     
       // ++iterator
     virtual void operator++()
       {
-        bool more = iteratorMesh->entitysetGetNextWorkset(tsttWorksetIterator, entityHandles);
+        bool more = iteratorMesh->entitysetGetNextWorkset(tsttWorksetIterator, entityHandle);
         if (!more)
-          entityHandles.set(0, NULL); 
+          entityHandle.set(0, NULL); 
       }
     
       // Returns false until the iterator has
@@ -71,14 +75,14 @@ namespace
       // returns NULL.
     virtual bool is_at_end() const
       {
-        return ( entityHandles.get(0)!=NULL ? false : true);
+        return ( entityHandle.get(0)!=NULL ? false : true);
       }
     
   private:
     void* tsttWorksetIterator;
     ::TSTT::LocalTSTTMesh* iteratorMesh;
     ::TSTT::EntityType iteratorEntityType;
-    ::SIDL::array<void*> entityHandles; // Array has one entry only. That entry is
+    ::SIDL::array<void*> entityHandle; // Array has one entry only. That entry is
                                      // set to NULL if the end of the mesh is reached. 
   };
 
@@ -138,19 +142,23 @@ Mesquite::MeshTSTT::MeshTSTT(TSTT::LocalTSTTMesh* tstt_mesh,
     fixedVertexTag = tstt_mesh->tagGetHandle(fixed_tag);
     std::string boundary_tag("boundary");
     boundaryVertexTag = tstt_mesh->tagGetHandle(boundary_tag);
-    oneEntity.create1d(1);
-    oneTagValue.create1d(1);
-    oneInt.create1d(1);
-    oneTopo.create1d(1);
-    threeDoubles.create1d(3);
+    oneEntity = ::SIDL::array<EntityHandle>::create1d(1);
+    oneTagValue = ::SIDL::array<TagHandle>::create1d(1);
+    oneInt = ::SIDL::array<int32_t>::create1d(1);
+    oneTopo = ::SIDL::array<TSTT::EntityTopology>::create1d(1);
+    threeDoubles = ::SIDL::array<double>::create1d(3);
 
     // Associates a vertex byte flag to all vertices in the mesh.
     std::string vertex_byte_tag("MsqVtxByteTag");
     unsigned char tag_value = 0;
     tsttMesh->tagCreate(vertex_byte_tag, (int)sizeof(unsigned char),
                               &tag_value, vertexByteTag);
-    SIDL::array<EntityHandle> vertices;
-    vertices.create1d(0);
+    SIDL::array<EntityHandle> vertices = ::SIDL::array<EntityHandle>::create1d(0);
+//     ::SIDL::array<void*> vH = ::SIDL::array<void*>::create1d(5); //dbg
+//     int titi = vH.upper(0); cerr << "titi : " << titi << endl; //dbg
+//     vH = ::SIDL::array<void*>::create1d(10); //dbg
+//     titi = vH.upper(0); cerr << "titi : " << titi << endl; //dbg
+//     int toto = vertices.upper(1); cerr << "toto : " << toto << endl; //dbg
     tsttMesh->entitysetGetEntities(ENTIRE_MESH,
                                    ::TSTT::VERTEX,
                                    ::TSTT::ALL_TOPOLOGIES,
