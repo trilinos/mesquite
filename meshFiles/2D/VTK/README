@@ -5,6 +5,10 @@ four_more_quad.vtk:
 half_circ.vtk:  640 quad elements; planer mesh; (z=-5 plane)  Mesh is
   on a half-circle geometry, and contains two 3-val vertices.
 
+Mesquite_geo_10242:  20480 triangular elements (10242 vertices) on a
+  unit sphere geometry.  Fixed vertices are the twelve 5 valence vertices.
+  All are vertices are 6 valence.
+
 overt_hyb_1.vtk:  Hybrid mesh provided by Overture.
 
 overt_hyb_2.vtk:  Hybrid mesh provided by Overture.
