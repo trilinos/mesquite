@@ -111,7 +111,7 @@ namespace Mesquite {
     double timeBound;
       //Data specific to termination criterion 6 (vertex movement)
     PatchDataVerticesMemento* initialVerticesMemento;
-      //PatchDataVerticesMemento* previousVerticesMemento;//if we want relative
+    PatchDataVerticesMemento* previousVerticesMemento;//if we want relative
     double vertexMovementEps;
       //Data specific to termination criterion 7 (successive improvement to F)
     double successiveImprovementsEps;

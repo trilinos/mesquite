@@ -59,7 +59,8 @@ void TerminationCriterion::add_criterion_type_with_double(TCType tc_type,
        break;
     case VERTEX_MOVEMENT:
        terminationCriterionFlag|=VERTEX_MOVEMENT;
-       vertexMovementEps=eps;
+         //we actually compare squared movement to squared epsilon
+       vertexMovementEps=(eps*eps);
        break;
     case SUCCESSIVE_IMPROVEMENTS:
        terminationCriterionFlag|=SUCCESSIVE_IMPROVEMENTS;
@@ -100,13 +101,13 @@ void TerminationCriterion::set_culling_type(TCType tc_type, double eps,
 {
   switch(tc_type){
     case QUALITY_IMPROVEMENT:
-       cullingMethodFlag&=QUALITY_IMPROVEMENT;
+       cullingMethodFlag=QUALITY_IMPROVEMENT;
         break;
     case VERTEX_MOVEMENT:
-       cullingMethodFlag&=VERTEX_MOVEMENT;
+       cullingMethodFlag=VERTEX_MOVEMENT;
        break;
     case SUCCESSIVE_IMPROVEMENTS:
-       cullingMethodFlag&=SUCCESSIVE_IMPROVEMENTS;
+       cullingMethodFlag=SUCCESSIVE_IMPROVEMENTS;
        break;
     default:
        err.set_msg("TCType not valid for this function.");
@@ -130,7 +131,7 @@ void TerminationCriterion::initialize(MeshSet &/*ms*/, PatchData &pd,
       //we need to reset the vertex memento. Do we nned to keep
       //in mind that the Termination Criterion Object may have been used
       //previously?  We must delete the memento that we create here.
-    initialVerticesMemento=pd.create_vertices_memento(err);
+    previousVerticesMemento=pd.create_vertices_memento(err);
     MSQ_CHKERR(err);
   }
 
@@ -178,7 +179,7 @@ void TerminationCriterion::reset(PatchData &pd, ObjectiveFunction* obj_ptr,
     //recreate the initial memento if needed
   if(totalFlag & VERTEX_MOVEMENT){
       //we need to store the initial vertex memento.
-    pd.recreate_vertices_memento(initialVerticesMemento,err);
+    pd.recreate_vertices_memento(previousVerticesMemento,err);
   }
     //reset the inner timer if needed
   if(totalFlag & CPU_TIME){
@@ -190,6 +191,7 @@ void TerminationCriterion::reset(PatchData &pd, ObjectiveFunction* obj_ptr,
       err.set_msg("Initial patch is invalid for evaluation.");
       MSQ_CHKERR(err);
     }
+      //std::cout<<"\nReseting initial of value = "<<initialOFValue;
     previousOFValue=initialOFValue;
   }    
   
@@ -218,6 +220,7 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
   }
     //if terminating on inner cpu time
   if(terminationCriterionFlag & CPU_TIME){
+      //std::cout<<"\nCHECKED CPU time value = "<<mTimer.since_birth();
     if(mTimer.since_birth()>=timeBound){
       return true;
     }
@@ -227,7 +230,14 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
       //we need a PatchData memeber funciton which returns the
       //max distance (squared) of current vertex positions to the
       //old
-    pd.get_max_vertex_movement_squared(initialVerticesMemento,err);
+    double max_movement_sqr=
+       pd.get_max_vertex_movement_squared(previousVerticesMemento,err);
+      //std::cout<<"\nNODE_MOVEMENT = "<<max_movement_sqr;
+    if(max_movement_sqr<=vertexMovementEps){
+      return true;
+    }
+      //else we need to store the new memento
+    pd.recreate_vertices_memento(previousVerticesMemento,err);
   }
     //if we need to compute the objective function value
   if(terminationCriterionFlag & (QUALITY_IMPROVEMENT |
@@ -237,6 +247,7 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
       err.set_msg("Invalid patch passed to TerminationCriterion.");
       MSQ_CHKERR(err);
     }
+      //std::cout<<"\nprevious - current "<<previousOFValue-obj_val;
       // if termination on quality improvement
     if(terminationCriterionFlag & QUALITY_IMPROVEMENT){
         //if the improvement was enough
@@ -248,8 +259,8 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
       //if termination on successive improvements
     if(terminationCriterionFlag & SUCCESSIVE_IMPROVEMENTS){
         //if the last improvement was not significant enough
-      if((obj_val-previousOFValue)<=(successiveImprovementsEps*(
-         obj_val-initialOFValue))){
+      if((previousOFValue-obj_val)<=(successiveImprovementsEps*(
+         initialOFValue-obj_val))){
         return true;
       }
     }
@@ -328,7 +339,7 @@ bool TerminationCriterion::cull_vertices(PatchData &pd,
        break;
     case VERTEX_MOVEMENT:
          //if movement was small enough
-       if(pd.get_max_vertex_movement_squared(initialVerticesMemento,err)<
+       if(pd.get_max_vertex_movement_squared(previousVerticesMemento,err)<
           cullingEps){
          cull_bool=true;  
        }
@@ -362,6 +373,6 @@ void TerminationCriterion::cleanup(MeshSet &/*ms*/, MsqError &/*err*/)
 {
     //clean up the memento if used
   if(terminationCriterionFlag & VERTEX_MOVEMENT){
-    initialVerticesMemento->~PatchDataVerticesMemento();
+    previousVerticesMemento->~PatchDataVerticesMemento();
   }
 }
