@@ -48,6 +48,7 @@ MODULENAMES :=  Mesh \
 testdir = testSuite
 TESTNAMES := test_1\
              laplacian_test\
+             laplacian_wrapper_test\
              untangle_test\
 ###             random_test\
 ###             exo_convert
