@@ -154,6 +154,6 @@ int main()
   
   mesh->write_vtk("smoothed_mesh", err); 
   if (err.errorOn) return 1;
-  PRINT_TIMING_DIAGNOSTICS();
+  Message::print_timing_diagnostics();
   return 0;
 }

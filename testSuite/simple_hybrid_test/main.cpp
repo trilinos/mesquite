@@ -156,7 +156,7 @@ int main()
     //ShapeImprovementWrapper wrap(100);
     //wrap.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
   delete mean_ratio;
-  PRINT_TIMING_DIAGNOSTICS();
+  Message::print_timing_diagnostics();
   return 0;
 }
  

@@ -257,6 +257,6 @@ int run_mesquite(TSTT::Mesh_Handle &mh, TSTT::MeshError* /*error*/)
    if (err.errorOn) return 1;
 
      //PRINT SOME TIMING INFORMATION
-   PRINT_TIMING_DIAGNOSTICS();
+   Message::print_timing_diagnostics();
    return 0;
 }

@@ -162,6 +162,6 @@ int main(int argc, char* argv[])
   if (err.errorOn) return 1;
   
 //mesh->write_vtk("smoothed_mesh", err); MSQ_CHKERR(err);
-  PRINT_TIMING_DIAGNOSTICS();
+  Message::print_timing_diagnostics();
   return 0;
 }

@@ -170,8 +170,8 @@ void ShapeImprovementWrapper::run_instructions(MeshSet &ms, MsqError &err)
     //if all the time constraint has been exceeded, notify the user that
     //the shape improvement has not been performed.
   if(time_remaining<=0){
-    PRINT_INFO("\nOptimization is terminating without perfoming shape improvement");
-    PRINT_INFO("\n Untangle Function Value is %f",func_val);
+    Message::print_info("\nOptimization is terminating without perfoming shape improvement");
+    Message::print_info("\n Untangle Function Value is %f",func_val);
   }
     //otherwise, perform the shape improvement.
   else{

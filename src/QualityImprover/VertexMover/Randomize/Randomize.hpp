@@ -96,7 +96,7 @@ namespace Mesquite
       //a "random" int
     int rand_int=0;
     if (num_vtx<=1){
-      PRINT_WARNING("WARNING: Number of incident vertex is zero.  Returning.\n");
+      Mesquite::Message::print_warning("WARNING: Number of incident vertex is zero.  Returning.\n");
       return;
     }
 

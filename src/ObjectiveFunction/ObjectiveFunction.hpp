@@ -203,7 +203,7 @@ namespace Mesquite
                                              Vector3D *const &grad,
                                              double &OF_val,
                                              MsqError &err, size_t array_size){
-      PRINT_WARNING("Analytic gradient not implemented for this Objective "
+      Message::print_warning("Analytic gradient not implemented for this Objective "
                     "Function. Defaulting to numerical gradient.\n");
       set_gradient_type(NUMERICAL_GRADIENT);
       return compute_numerical_gradient(patch, grad, OF_val, err, array_size);
@@ -223,7 +223,7 @@ namespace Mesquite
                                             Vector3D *const &/*grad*/,
                                             double &/*OF_val*/,
                                             MsqError &/*err*/) {
-      PRINT_WARNING("Analytic hessian not implemented for this Objective "
+      Message::print_warning("Analytic hessian not implemented for this Objective "
                     "Function. Feasible Newton algorythm cannot be used.\n");
       return false;
     }

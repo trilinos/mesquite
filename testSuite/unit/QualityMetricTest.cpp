@@ -282,7 +282,7 @@ public:
      
      val -= val2;
      if(pF)
-       PRINT_INFO("\nGEN TET %f", val2);
+       cout << "\nGEN TET " << val2;
      
        //CPPUNIT_ASSERT(fabs(val)<qualTol);
 
@@ -303,14 +303,14 @@ public:
      v_flag=met->evaluate_element(hexPatch,&elems[1],val,err); CPPUNIT_ASSERT(!err.errorOn);
      CPPUNIT_ASSERT(v_flag==true);
      if(pF)
-       PRINT_INFO("\nCON HEX %f", val);
+       cout << "\nCON HEX " << val;
      CPPUNIT_ASSERT(v_flag==true);
      
      v_flag=gmet->evaluate_element(hexPatch,&elems[1],val2,err); CPPUNIT_ASSERT(!err.errorOn);
      CPPUNIT_ASSERT(v_flag==true);
      val -= val2;
      if(pF)
-       PRINT_INFO("\nGEN HEX %f", val2);
+        cout << "\nGEN HEX " << val2;
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,0.0,qualTol);
      delete met;
      delete gmet;
@@ -331,26 +331,22 @@ public:
      ShapeQualityMetric *imet = new InverseMeanRatioQualityMetric;
        //Check mean ratio of ideal tri
      met->evaluate_element(triPatch,&elems[0],val,err);CPPUNIT_ASSERT(!err.errorOn);
-     if(pF)
-       PRINT_INFO("\nMEAN TRI %f", val);
+     if(pF) cout << "\nMEAN TRI " << val;
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
        //Check inverse mean ratio of ideal tri (INVERSE)
      imet->evaluate_element(triPatch,&elems[0],val,err);CPPUNIT_ASSERT(!err.errorOn);
-     if(pF)
-       PRINT_INFO("\nInv MEAN TRI %f", val);
+     if(pF) cout << "\nInv MEAN TRI " << val;
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
        //SECOND: QUAD's
      verts = quadPatch.get_vertex_array(err);
      elems = quadPatch.get_element_array(err);
        //Check mean ratio of ideal quad
      met->evaluate_element(quadPatch,&elems[0],val,err);CPPUNIT_ASSERT(!err.errorOn);
-     if(pF)
-       PRINT_INFO("\nMEAN QUAD %f", val);
+     if(pF) cout << "\nMEAN QUAD " << val;
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
        //Check inverse mean ratio of ideal quad (INVERSE)
      imet->evaluate_element(quadPatch,&elems[0],val,err);CPPUNIT_ASSERT(!err.errorOn);
-     if(pF)
-       PRINT_INFO("\nInv MEAN QUAD %f", val);
+     if(pF) cout << "\nInv MEAN QUAD " << val;
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
 
        //THIRD TET's
@@ -358,14 +354,12 @@ public:
      elems = tetPatch.get_element_array(err);
        //Check mean ratio of ideal tet
      met->evaluate_element(tetPatch,&elems[0],val,err);CPPUNIT_ASSERT(!err.errorOn);
-     if(pF)
-       PRINT_INFO("\nMEAN TET %f", val);
+     if(pF) cout << "\nMEAN TET " << val;
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
 
        //Check inverse mean ratio of ideal tet (INVERSE)
      imet->evaluate_element(tetPatch,&elems[0],val,err); CPPUNIT_ASSERT(!err.errorOn);
-     if(pF)
-       PRINT_INFO("\nInv MEAN TET %f", val);
+     if(pF) cout << "\nInv MEAN TET " << val;
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
 
        //FOURTH HEX's
@@ -374,14 +368,12 @@ public:
        //Check mean ratio of ideal hex
      valid = met->evaluate_element(hexPatch,&elems[0],val,err);CPPUNIT_ASSERT(!err.errorOn);
      CPPUNIT_ASSERT(valid==true);
-     if(pF)
-       PRINT_INFO("\nMEAN HEX %f", val);
+     if(pF) cout << "\nMEAN HEX " << val;
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
        //Check inverse mean ratio of ideal hex (INVERSE)
      valid = imet->evaluate_element(hexPatch,&elems[0],val,err);CPPUNIT_ASSERT(!err.errorOn);
      CPPUNIT_ASSERT(valid==true);
-     if(pF)
-       PRINT_INFO("\nInv MEAN HEX %f", val);
+     if(pF) cout << "\nInv MEAN HEX " << val;
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
      delete met;
      delete imet;
@@ -428,16 +420,14 @@ public:
                                                             err);
        //Check ideal tri
      met->evaluate_element(triPatch,&elems[0],val,err);CPPUNIT_ASSERT(!err.errorOn);
-     if(pF)
-       PRINT_INFO("\nMULT TRI %f", val);
+     if(pF) cout << "\nMULT TRI " << val;
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
        //SECOND: QUAD's
      verts = quadPatch.get_vertex_array(err);
      elems = quadPatch.get_element_array(err);
        //Check ideal quad
      met->evaluate_element(quadPatch,&elems[0],val,err);CPPUNIT_ASSERT(!err.errorOn);
-     if(pF)
-       PRINT_INFO("\nMULT QUAD %f", val);
+     if(pF) cout << "\nMULT QUAD " << val;
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
        //THIRD TET's
      verts = tetPatch.get_vertex_array(err);
@@ -445,15 +435,15 @@ public:
        //Check ideal tet
      
      if(!met->evaluate_element(tetPatch,&elems[0],val,err)){
-        PRINT_INFO("\nMULT RETURNING FALSE FOR TET");
+      cout << "\nMULT RETURNING FALSE FOR TET";
      }
      if(pF){
-       PRINT_INFO("\nMULT TET %f", val);
+       cout << "\nMULT TET " << val;
        double tetm=0;
        if(!mmet->evaluate_element(tetPatch,&elems[0],tetm,err))
-          PRINT_INFO("\nMMET TET %f", tetm);
+          cout << "\nMMET TET " << tetm;
        if(!cmet->evaluate_element(tetPatch,&elems[0],tetm,err))
-          PRINT_INFO("\nCMET TET %f", tetm);
+          cout << "\nCMET TET " << tetm;
      }
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
        //FOURTH HEX's
@@ -461,8 +451,7 @@ public:
      elems = hexPatch.get_element_array(err);
        //Check ideal hex
      met->evaluate_element(hexPatch,&elems[0],val,err);CPPUNIT_ASSERT(!err.errorOn);
-     if(pF)
-       PRINT_INFO("\nMULT HEX %f", val);
+     if(pF) cout << "\nMULT HEX " << val;
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
      delete met;
      delete mmet;
@@ -529,7 +518,7 @@ public:
        //Vert[2] has two edges connected of length 1
      met->evaluate_vertex(triPatch,&verts[2],val,err);CPPUNIT_ASSERT(!err.errorOn);
      if(pF)
-       PRINT_INFO("\nEdge Length Metric tris (should be 2) %f", val);
+       cout << "\nEdge Length Metric tris (should be 2) " << val;
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,2.0,qualTol);
        //lam_met->evaluate_vertex(triPatch,&verts[2],val,err);CPPUNIT_ASSERT(!err.errorOn);
        //if(pF)
@@ -541,8 +530,7 @@ public:
      elems = tetPatch.get_element_array(err);
        //Check aspect ratio gamma of ideal tet
      met->evaluate_vertex(tetPatch,&verts[0],val,err);CPPUNIT_ASSERT(!err.errorOn);
-     if(pF)
-       PRINT_INFO("\nEdge Length Metric tets (should be 3) %f", val);
+     if(pF) cout << "\nEdge Length Metric tets (should be 3) " << val;
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,3.0,qualTol);
      delete met;
        //delete lam_met;
@@ -629,13 +617,11 @@ public:
        MsqVertex* vert1=p1.get_vertex_array(err);
        double first_val=-1;
        bool first_bool=met->evaluate_vertex(p1,&vert1[0],first_val,err);
-       if(pF)
-         PRINT_INFO("\nLocal size ideal tri %f", first_val);
+       if(pF) cout << "\nLocal size ideal tri " << first_val;
        CPPUNIT_ASSERT_DOUBLES_EQUAL(first_val, 1.0, qualTol);
        CPPUNIT_ASSERT(first_bool==true);
        first_bool=met->evaluate_vertex(p1,&vert1[1],first_val,err);
-       if(pF)
-         PRINT_INFO("\nLocal size ideal tri %f", first_val);
+       if(pF) cout << "\nLocal size ideal tri " << first_val;
        CPPUNIT_ASSERT_DOUBLES_EQUAL(first_val, 1.0, qualTol);
        CPPUNIT_ASSERT(first_bool==true);
          //Test on a patch with two ideal tris
@@ -645,8 +631,7 @@ public:
        double second_val;
        bool second_bool=met->evaluate_vertex(p2,&vert2[0],second_val,err);
          //Two neighboring tris with equal area should have local size of 1.0
-       if(pF)
-         PRINT_INFO("\nLocal Size Metric two ideal tris %f", second_val);
+       if(pF) cout << "\nLocal Size Metric two ideal tris " << second_val;
        CPPUNIT_ASSERT_DOUBLES_EQUAL(second_val, 1.0, qualTol);
        CPPUNIT_ASSERT(second_bool==true);
          /*
@@ -673,13 +658,11 @@ public:
        MsqVertex* vert1=p1.get_vertex_array(err);
        double first_val=-1;
        bool first_bool=met->evaluate_vertex(p1,&vert1[0],first_val,err);
-       if(pF)
-         PRINT_INFO("\nVertex Condition No. Metric ideal tri %f", first_val);
+       if(pF) cout << "\nVertex Condition No. Metric ideal tri " << first_val;
        CPPUNIT_ASSERT_DOUBLES_EQUAL(first_val, 1.0, qualTol);
        CPPUNIT_ASSERT(first_bool==true);
        first_bool=met->evaluate_vertex(p1,&vert1[1],first_val,err);
-       if(pF)
-         PRINT_INFO("\nVertex Condition No. Metric ideal tri %f", first_val);
+       if(pF) cout << "\nVertex Condition No. Metric ideal tri " << first_val;
        CPPUNIT_ASSERT_DOUBLES_EQUAL(first_val, 1.0, qualTol);
        CPPUNIT_ASSERT(first_bool==true);
          //Test on a patch with two ideal tris
@@ -689,8 +672,7 @@ public:
        double second_val;
        bool second_bool=met->evaluate_vertex(p2,&vert2[0],second_val,err);
          //Two neighboring tris with equal area should have local size of 1.0
-       if(pF)
-         PRINT_INFO("\nVertex Condition No. Metric ideal tris %f", second_val);
+       if(pF) cout << "\nVertex Condition No. Metric ideal tris " << second_val;
        CPPUNIT_ASSERT_DOUBLES_EQUAL(second_val, 1.0, qualTol);
        CPPUNIT_ASSERT(second_bool==true);
        delete met;

@@ -78,7 +78,7 @@ bool ObjectiveFunction::compute_numerical_gradient(Mesquite::PatchData &pd,
 {
   size_t num_vtx=pd.num_vertices();
   if(num_vtx!=array_size && array_size>0)
-    PRINT_ERROR("\nArray size not equal to the number of vertices.\n");
+    Message::print_error("\nArray size not equal to the number of vertices.\n");
 
   OF_val = 0.; // in case of return false. 
   MsqVertex* vertices=pd.get_vertex_array(err);

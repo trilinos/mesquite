@@ -217,7 +217,7 @@ public:
      CPPUNIT_ASSERT(!err.errorOn);
        //make sure 'quality' improved
      CPPUNIT_ASSERT( (fin_qa_val-orig_qa_val) <= 0.0 );
-     PRINT_TIMING_DIAGNOSTICS();
+     Message::print_timing_diagnostics();
      delete shape;
      delete untan;
      delete pass1;
@@ -327,7 +327,7 @@ public:
        CPPUNIT_ASSERT(!err.errorOn);
          //make sure 'quality' improved
        CPPUNIT_ASSERT( (fin_qa_val-orig_qa_val) <= 0.0 );
-       PRINT_TIMING_DIAGNOSTICS();
+       Message::print_timing_diagnostics();
        delete shape;
        delete untan;
        delete pass1;
@@ -404,7 +404,7 @@ public:
        CPPUNIT_ASSERT(!err.errorOn);
          //make sure 'quality' improved
        CPPUNIT_ASSERT( (fin_qa_val-orig_qa_val) <= 0.0 );
-       PRINT_TIMING_DIAGNOSTICS();
+       Message::print_timing_diagnostics();
        delete smooth;
        delete smooth_func;
        delete pass1;

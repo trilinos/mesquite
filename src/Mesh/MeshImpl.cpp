@@ -650,7 +650,7 @@ void Mesquite::MeshImpl::read_exodus(const char*
     exo_err=ex_get_node_set_param(file_id,111,&num_fixed_nodes,
                                   &num_dist_in_set);
     if(exo_err<0){
-      PRINT_WARNING("\nError opening nodeset 111, no boundary nodes marked.");
+      Message::print_warning("\nError opening nodeset 111, no boundary nodes marked.");
       num_fixed_nodes=0;
     }
   }

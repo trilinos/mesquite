@@ -54,14 +54,11 @@ namespace // unnamed namespace (scope is the file only)
                    // TSTT::entitySet functions queries the data for the whole mesh
 
 #define PRINT_TSTT_ERROR(tstt_err) { \
-    PRINT_INFO("!!! TSTT interface ERROR caught by Mesquite -- \n!!! "); \
-    PRINT_INFO(tstt_err.getNote().c_str()); \
-    PRINT_INFO("\n"); \
-    std::string errs; tstt_err.getErrorDescription(errs); PRINT_INFO(errs.c_str()); \
-    PRINT_INFO("\n"); \
-    PRINT_INFO(tstt_err.getTrace().c_str()); \
-    PRINT_INFO( __FUNC__ ); \
-    PRINT_INFO("\n"); \
+    Message::print_info("!!! TSTT interface ERROR caught by Mesquite -- \n!!! "); \
+    Message::print_info("%s\n",tstt_err.getNote().c_str()); \
+    std::string errs; tstt_err.getErrorDescription(errs); \
+    Message::print_info("%s\n",errs.c_str()); \
+    Message::print_info("%s\n",tstt_err.getTrace().c_str()); \
 }
 
   

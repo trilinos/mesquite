@@ -60,7 +60,7 @@ CompositeOFScalarMultiply::CompositeOFScalarMultiply(double alp, ObjectiveFuncti
   else if (alp>0)
     set_negate_flag(1);
   else
-    PRINT_WARNING("ObjectiveFunction being scaled by zero.");
+    Message::print_warning("ObjectiveFunction being scaled by zero.");
   set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
 }
 

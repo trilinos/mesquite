@@ -85,7 +85,7 @@ ConjugateGradient::~ConjugateGradient()
 #define __FUNC__ "ConjugateGradient::initialize" 
 void ConjugateGradient::initialize(PatchData &pd, MsqError &err)
 {
-  PRINT_INFO("\no   Performing Conjugate Gradient optimization.\n");
+  Message::print_info("\no   Performing Conjugate Gradient optimization.\n");
   arraySize=5;
   fGrad = new Vector3D[ arraySize ];
   pGrad = new Vector3D[ arraySize ];
@@ -157,7 +157,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
   
    MSQ_DEBUG_ACTION(1,{ 
       if(pd.num_free_vertices(err)<1) 
-	PRINT_INFO("\nEmpty free vertex list in ConjugateGradient\n"); 
+	Message::print_info("\nEmpty free vertex list in ConjugateGradient\n"); 
    });
       
    double f=0;
@@ -171,10 +171,10 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
   double grad_norm=MSQ_MAX_CAP;
   
   if(conjGradDebug>0){
-    PRINT_INFO("\nCG's DEGUB LEVEL = %i \n",conjGradDebug);
+    Message::print_info("\nCG's DEGUB LEVEL = %i \n",conjGradDebug);
     grad_norm=Linf(fGrad,num_vert);
-    PRINT_INFO("\nCG's FIRST VALUE = %f,grad_norm = %f",f,grad_norm);
-    PRINT_INFO("\n   TIME %f",c_timer.since_birth());
+    Message::print_info("\nCG's FIRST VALUE = %f,grad_norm = %f",f,grad_norm);
+    Message::print_info("\n   TIME %f",c_timer.since_birth());
     grad_norm=MSQ_MAX_CAP;
   }
   MSQ_CHKERR(err);
@@ -202,7 +202,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
     alp=get_step(pd,f,k,err);
     j+=k;
     if(conjGradDebug>2){
-      PRINT_INFO("\n  Alp initial, alp = %20.18f",alp);
+      Message::print_info("\n  Alp initial, alp = %20.18f",alp);
     }
     MSQ_CHKERR(err);
      // if alp == 0, revert to steepest descent search direction
@@ -215,9 +215,9 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
       alp=get_step(pd,f,k,err);
       j+=k;
       if(conjGradDebug>1){
-        PRINT_INFO("\n CG's search direction reset.");
+        Message::print_info("\n CG's search direction reset.");
         if(conjGradDebug>2)
-          PRINT_INFO("\n  Alp was zero, alp = %20.18f",alp);
+          Message::print_info("\n  Alp was zero, alp = %20.18f",alp);
       }
       
     }
@@ -236,8 +236,8 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
       
       if(conjGradDebug>0){
         grad_norm=Linf(fNewGrad,num_vert);
-        PRINT_INFO("\nCG's VALUE = %f,  iter. = %i,  grad_norm = %f,  alp = %f",f,i,grad_norm,alp);
-        PRINT_INFO("\n   TIME %f",c_timer.since_birth());
+        Message::print_info("\nCG's VALUE = %f,  iter. = %i,  grad_norm = %f,  alp = %f",f,i,grad_norm,alp);
+        Message::print_info("\n   TIME %f",c_timer.since_birth());
       }
       double s11=0;
       double s12=0;
@@ -265,7 +265,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
         fGrad[m]=fNewGrad[m];
       }
       if(conjGradDebug>2){
-        PRINT_INFO(" \nSEARCH DIRECTION INFINITY NORM = %e",
+        Message::print_info(" \nSEARCH DIRECTION INFINITY NORM = %e",
                    Linf(fNewGrad,num_vert));
       }
       
@@ -280,9 +280,9 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
     MSQ_CHKERR(err);
   }//end while
   if(conjGradDebug>0){
-    PRINT_INFO("\nConjugate Gradient complete i=%i ",i);
-    PRINT_INFO("\n-  FINAL value = %f, alp=%4.2e grad_norm=%4.2e",f,alp,grad_norm);
-    PRINT_INFO("\n   FINAL TIME %f",c_timer.since_birth());
+    Message::print_info("\nConjugate Gradient complete i=%i ",i);
+    Message::print_info("\n-  FINAL value = %f, alp=%4.2e grad_norm=%4.2e",f,alp,grad_norm);
+    Message::print_info("\n   FINAL TIME %f",c_timer.since_birth());
   }
   FUNCTION_TIMER_END();
 }
@@ -351,10 +351,10 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
   
     //if above while ended due to j>=jmax, no valid step was found.
   if(j>=jmax){
-    PRINT_INFO("\nFeasible Point Not Found");
+    Message::print_info("\nFeasible Point Not Found");
     return 0.0;
   }
-    //PRINT_INFO("\nOriginal f %f, first new f = %f, alp = %f",f0,f,alp);
+    //Message::print_info("\nOriginal f %f, first new f = %f, alp = %f",f0,f,alp);
     //if new f is larger than original, our step was too large
   if(f>=f0){
     j=0;
@@ -374,10 +374,10 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
         found=1;
       }
     }//   end while j less than jmax
-      //PRINT_INFO("\nj = %d found = %d f = %20.18f f0 = %20.18f\n",j,found,f,f0);
+      //Message::print_info("\nj = %d found = %d f = %20.18f f0 = %20.18f\n",j,found,f,f0);
       //if above ended because of j>=jmax, take no step
     if(found==0){
-        //PRINT_INFO("alp = %10.8f, but returning zero\n",alp);
+        //Message::print_info("alp = %10.8f, but returning zero\n",alp);
       alp=0.0; 
       return alp;
     }
@@ -480,7 +480,7 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
   }
   fw=fv=fx=objFunc->evaluate(pd,err);
   for(iter=0;iter<maxiter;++iter){
-      //PRINT_INFO("a=%f,b=%f,x=%f,iter=%i\n",a,b,x,iter);
+      //Message::print_info("a=%f,b=%f,x=%f,iter=%i\n",a,b,x,iter);
     xm=(a+b)*.5;
     tol2=2.0*(tol1=tol*fabs(x)+ZEPS);
     if(fabs(x-xm)<= (tol2-0.5*(b-a))){

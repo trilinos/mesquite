@@ -52,7 +52,7 @@ MultiplyQualityMetric::MultiplyQualityMetric(QualityMetric* qm1, QualityMetric* 
     feasible=qm2->get_feasible_constraint();
   int n_flag=qm1->get_negate_flag();
   if(n_flag!=qm2->get_negate_flag()){
-    PRINT_WARNING("MultiplyQualityMetric is being used to compose a metric that should be minimized\n with a metric that should be maximized.");
+    Message::print_warning("MultiplyQualityMetric is being used to compose a metric that should be minimized\n with a metric that should be maximized.");
     set_negate_flag(1);
   }
   else{

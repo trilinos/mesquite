@@ -127,7 +127,7 @@ namespace Mesquite
         {
           if(fabs(pow_dbl)<MSQ_MIN){
             pow_dbl=1.0;
-            PRINT_WARNING("\nInvalid power passed to set_metric_power(double ), Metric using the default value, 1.0, instead.");
+            Mesquite::Message::print_warning("\nInvalid power passed to set_metric_power(double ), Metric using the default value, 1.0, instead.");
           }
           if(pow_dbl<0)
             set_negate_flag(-1);

@@ -159,7 +159,7 @@ int main()
   if (err.errorOn) return 1;
 
   delete cond_no;
-  PRINT_TIMING_DIAGNOSTICS();
+  Message::print_timing_diagnostics();
   return 0;
 }
  

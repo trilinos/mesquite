@@ -141,8 +141,8 @@ bool QualityMetric::compute_vertex_analytical_gradient(PatchData &pd,
                                                        double &metric_value,
                                                        MsqError &err)
 {
-  PRINT_WARNING("QualityMetric has no analytical gradient defined. ",
-                "Defaulting to numerical gradient.\n");
+  Message::print_warning("QualityMetric has no analytical gradient defined. ",
+                            "Defaulting to numerical gradient.\n");
   set_gradient_type(NUMERICAL_GRADIENT);
   return compute_vertex_numerical_gradient(pd, vertex, free_vtces, grad_vec,
                                            num_free_vtx, metric_value, err);
@@ -170,7 +170,7 @@ bool QualityMetric::compute_element_analytical_gradient(PatchData &pd,
                                              int num_free_vtx, double &metric_value,
                                              MsqError &err)
 {
-  PRINT_WARNING("QualityMetric has no analytical gradient defined. ",
+  Message::print_warning("QualityMetric has no analytical gradient defined. ",
                 "Defaulting to numerical gradient.\n");
   set_gradient_type(NUMERICAL_GRADIENT);
   return compute_element_numerical_gradient(pd, element, free_vtces, grad_vec, num_free_vtx, metric_value, err);
@@ -193,7 +193,7 @@ bool QualityMetric::compute_element_analytical_hessian(PatchData &pd,
                                              int num_free_vtx, double &metric_value,
                                              MsqError &err)
 {
-  PRINT_WARNING("QualityMetric has no analytical hessian defined. ",
+  Message::print_warning("QualityMetric has no analytical hessian defined. ",
                 "Defaulting to numerical hessian.\n");
   set_hessian_type(NUMERICAL_HESSIAN);
   return compute_element_numerical_hessian(pd, element, free_vtces, grad_vec,

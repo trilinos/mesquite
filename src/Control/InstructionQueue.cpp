@@ -251,7 +251,7 @@ void InstructionQueue::set_master_quality_improver(QualityImprover* instr,
 #define __FUNC__ "InstructionQueue::run_instructions"
 void InstructionQueue::run_instructions(MeshSet &ms, MsqError &err)
 { 
-  PRINT_INFO(version_string(false));
+  Message::print_info(version_string(false));
 
   if (nbPreConditionners != 0 && isMasterSet == false ) {
     err.set_msg("no pre-conditionners allowed if master QualityImprover is not set.");

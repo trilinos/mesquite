@@ -95,7 +95,8 @@ int main(int argc, char* argv[])
   
   // initialises a MeshSet object
   MeshSet mesh_set1;
-  mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
+  mesh_set1.add_mesh(mesh, err); 
+  if (err.errorOn) return 1;
 
   // creates a wrapper
   ShapeImprovementWrapper wrapper;
@@ -103,8 +104,10 @@ int main(int argc, char* argv[])
 //  mesh->write_vtk("original_mesh",err); MSQ_CHKERR(err);
   
   // launches optimization on mesh_set1
-  wrapper.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
+  wrapper.run_instructions(mesh_set1, err); 
+  if (err.errorOn) return 1;
   
 //  mesh->write_vtk("smoothed_mesh", err); MSQ_CHKERR(err);
-  PRINT_TIMING_DIAGNOSTICS();
+  Message::print_timing_diagnostics();
+  return 0;
 }

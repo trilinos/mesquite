@@ -99,7 +99,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   pd.reorder();
 
   FUNCTION_TIMER_START(__FUNC__);
-  PRINT_INFO("\no  Performing Feasible Newton optimization.\n");
+  Message::print_info("\no  Performing Feasible Newton optimization.\n");
 
   const double sigma   = 1e-4;
   const double beta0   = 0.25;
@@ -241,7 +241,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
 
       // Make sure we did not hit the lower limit on beta
       if (beta < tol1) {
-        PRINT_INFO("Newton step not good.");
+        Message::print_info("Newton step not good.");
         return;
       }
 
@@ -271,7 +271,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
       MSQ_CHKERR(err);
     }
   }
-  PRINT_INFO("FINISHED\n");
+  Message::print_info("FINISHED\n");
   delete[] grad;
   delete[] d;
   FUNCTION_TIMER_END();  
