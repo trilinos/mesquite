@@ -93,7 +93,7 @@ bool QualityMetric::compute_element_numerical_gradient(PatchData &pd,
       // perturb the coordinates of the free vertex in the j direction by delta
       vertices[v][j]+=delta;
       //compute the function at the perturbed point location
-      metric_value1=this->evaluate_element(pd, element, err); MSQ_CHKERR(err);
+      this->evaluate_element(pd, element,  metric_value1, err); MSQ_CHKERR(err);
       //compute the numerical gradient
       grad_vec[v][j]=(metric_value1-metric_value)/delta;
       // put the coordinates back where they belong

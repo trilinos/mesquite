@@ -47,7 +47,7 @@ namespace Mesquite
        {
          avgMethod=SUM;
          feasible=0;
-         evalMode=QualityMetric::VERTEX;
+         set_metric_type(VERTEX_BASED);;
          set_name("Laplacian Metric");
        }
     
