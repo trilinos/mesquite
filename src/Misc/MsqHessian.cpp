@@ -5,7 +5,7 @@
 //    E-MAIL: tmunson@mcs.anl.gov
 //
 // ORIG-DATE:  2-Jan-03 at 11:02:19 by Thomas Leurent
-//  LAST-MOD: 19-May-03 at 11:30:09 by Michael Brewer
+//  LAST-MOD: 26-Nov-03 at 15:47:42 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -460,6 +460,9 @@ void MsqHessian::cg_solver(Vector3D x[], Vector3D b[], MsqError &err)
     alpha_ = inner(mP,mW,mSize); // alpha_ = p_k^T A p_k
     if (alpha_ <= 0.0) {
       cout << "Direction of Negative Curvature\n";
+      if (cg_iter == 1) { // makes sure not to send back x=0 . 
+        for (i=0; i<mSize; ++i)  x[i] = -b[i]; 
+      }        
       break; // Newton goes on with this direction of negative curvature 
     }
       
