@@ -5,7 +5,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 15-Jan-03 at 08:05:56
-//  LAST-MOD: 20-Feb-03 at 13:20:55 by Thomas Leurent
+//  LAST-MOD: 20-Feb-03 at 17:50:05 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -26,6 +26,8 @@
 
 using namespace Mesquite;
 
+using std::cout;
+using std::endl;
 
 #undef __FUNC__
 #define __FUNC__ "FeasibleNewton::FeasibleNewton" 
@@ -128,17 +130,6 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
                                   << std::endl;});
     
 
-    // Prints out free vertices coordinates. 
-    MSQ_DEBUG_ACTION(3,{
-      std::cout << "  o Free vertices new coordinates: \n";
-      MsqVertex* toto1 = pd.get_vertex_array(err); MSQ_CHKERR(err);
-      MsqFreeVertexIndexIterator ind(&pd, err); MSQ_CHKERR(err);
-      ind.reset();
-      while (ind.next()) {
-        std::cout << "\t\t\t" << toto1[ind.value()];
-      }
-    });
-
     // 4. Calculate a direction using preconditionned conjugate gradients
     //    to find a zero of the Newton system of equations (H*d = -g)
     //    (a) stop if conjugate iteration limit reached
@@ -192,11 +183,21 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
     }
 
     if (beta < tol1) {
-      err.set_msg("Newton step not good.");
+      PRINT_INFO("Newton step not good.");
       return;
     }
 
     // 7. Set x to trial point and calculate Hessian if needed
+    // Prints out free vertices coordinates. 
+    MSQ_DEBUG_ACTION(3,{
+      std::cout << "  o Free vertices new coordinates: \n";
+      MsqVertex* toto1 = pd.get_vertex_array(err); MSQ_CHKERR(err);
+      MsqFreeVertexIndexIterator ind(&pd, err); MSQ_CHKERR(err);
+      ind.reset();
+      while (ind.next()) {
+        std::cout << "\t\t\t" << toto1[ind.value()];
+      }
+    });
 
     bool inner_criterion=inner_criterion_met(*mesh,err);
   }
