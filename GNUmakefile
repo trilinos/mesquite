@@ -8,7 +8,9 @@ localincludedir = ./includeLinks
 localobjdir = ./obj
 # file where to write dependencies - will be included in this Makefile
 dependenciesfile = make.dependencies
-
+# template_dir - where template instantiations are stored.
+#                Only applies to some platforms.
+template_dir = 
 
 include Makefile.customize
 
@@ -138,6 +140,7 @@ clean mostlyclean:
 	-rm -f $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.o))
 	-rm -f $(localincludedir)/*
 	-rm -f $(localobjdir)/*.o
+	-rm -rf $(template_dir)
 
 veryclean: clean 
 	-rm -f $(locallibdir)/*.a $(locallibdir)/*.so

@@ -11,7 +11,7 @@ INCLUDE = ${CPPUNIT_INCLUDE} ${MESQUITE_INCLUDE}
 
 CPPUNIT_LINK = -L${CPPUNIT_DIR}/src/cppunit/.libs -lcppunit
 MESQUITE_LINK = -L../../lib -lmesquite ${TSTT_LINK}
-TEST_LINK = ${CPPUNIT_LINK} ${MESQUITE_LINK}
+TEST_LINK = ${CPPUNIT_LINK} ${MESQUITE_LINK} -lm
 
 include ../../Makefile.customize
 
@@ -36,8 +36,9 @@ sample_test : ${TEST_OBJS}
 	@${LINKER} ${LDFLAGS} ${TEST_OBJS} ${TEST_LINK} -o $@
 
 clean:
-	@rm -rf *.o sample_test
-	rm -R SunWS_cache/*
+	@rm -f *.o sample_test
+	@rm -rf SunWS_cache
+	@rm -rf cxx_repository
 
 .SUFFIXES : .cpp .o
 

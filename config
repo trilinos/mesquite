@@ -1,3 +1,4 @@
+#!/bin/sh
 
 ## See if the user already has a Makefile.customize
 if [ -f "Makefile.customize" ]; then
@@ -28,6 +29,7 @@ if [ -z "$platform" ]; then
     sg) platform="sg" ;;
     SunOS) platform="ss" ;;
     Linux) platform="lin" ;;
+    OSF1) platform="da" ;;
   esac
 fi
 
@@ -35,6 +37,7 @@ fi
 # or if Makefile.$platform doesn't exist,
 # use a default Makefile
 if [ -z "$platform" -o ! -f "Makefile.$platform" ]; then
+  echo "  ***  Warning ***
   echo "  Unable to determine which makefile template is appropriate "
   echo "  for your system. Copying Makefile.any to Makefile.customize."
   rm -f Makefile.customize

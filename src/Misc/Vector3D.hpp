@@ -1,14 +1,15 @@
 #ifndef MESQUITE_VECTOR3D_HPP
 #define MESQUITE_VECTOR3D_HPP
 
-#include <iostream>
-
 #include "Mesquite.hpp"
 #ifdef USE_C_PREFIX_INCLUDES
 #include <cassert>
 #else
 #include <assert.h>
 #endif
+
+#include <iostream>
+
 /*! \file Vector3D.hpp
   \brief Vector object with exactly 3 deminsions.
 */
