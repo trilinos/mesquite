@@ -74,7 +74,6 @@ MeshSet::MeshSet() :
   csrDataSize(0),
   vertArraySize(0),
   elemArraySize(0),
-  elemTopologiesSize(0),
   mDomain(NULL)
 {
   cullFlag=MsqVertex::MSQ_SOFT_FIXED;
@@ -289,7 +288,9 @@ bool MeshSet::get_next_patch(PatchData &pd,
       if (elemArraySize < num_elems)
       {
         delete [] elemArray;
+        delete [] elemTopologies;
         elemArray = new Mesh::ElementHandle[num_elems];
+        elemTopologies = new EntityTopology[num_elems];
         elemArraySize = num_elems;
       }
       
@@ -299,16 +300,10 @@ bool MeshSet::get_next_patch(PatchData &pd,
       if (MSQ_CHKERR(err)) return false;
       
         // Get the topologies of those elements
-      if (elemTopologiesSize < num_elems)
-      {
-        delete [] elemTopologies;
-        elemTopologies = new EntityTopology[num_elems];
-        (*currentMesh)->elements_get_topologies(elemArray,
-                                                elemTopologies,
-                                                num_elems, err);
-        if (MSQ_CHKERR(err)) return false;
-        elemTopologiesSize = num_elems;
-      }
+      (*currentMesh)->elements_get_topologies(elemArray,
+                                              elemTopologies,
+                                              num_elems, err);
+      if (MSQ_CHKERR(err)) return false;
       
         // Figure out how many vertices we need to allocate
       size_t num_vert_uses = 1;
@@ -434,35 +429,50 @@ bool MeshSet::get_next_patch(PatchData &pd,
       
       size_t i;
       
-        // Get all vertices
-      size_t num_verts = (*currentMesh)->get_total_vertex_count(err);
-      if (MSQ_CHKERR(err)) return false;
+        // Get sizes for mesh data
+      size_t num_verts, num_elems, num_uses;
+      (*currentMesh)->get_all_sizes( num_verts, num_elems, num_uses, err ); MSQ_ERRZERO(err);
+      
+        // Allocate arrays for mesh data
       if (vertArraySize < num_verts)
       {
         delete [] vertArray;
-        vertArray = new Mesh::VertexHandle[num_verts];
         delete [] vertexOnBoundary;
-        vertexOnBoundary = new bool[num_verts];
         vertArraySize = num_verts;
+        vertArray = new Mesh::VertexHandle[vertArraySize];
+        vertexOnBoundary = new bool[vertArraySize];
       }
-      (*currentMesh)->get_all_vertices(vertArray, num_verts,
-                                       err); 
-      if (MSQ_CHKERR(err)) return false;
+      if (elemArraySize < num_elems)
+      {
+        delete [] elemArray;
+        delete [] elemTopologies;
+        elemArraySize = num_elems;
+        elemArray = new Mesh::ElementHandle[elemArraySize];
+        elemTopologies = new EntityTopology[elemArraySize];
+      }
+      msq_std::vector<size_t> index_array(num_uses);
+      msq_std::vector<size_t> offsets(num_elems+1);
       
+        // Get mesh data
+      (*currentMesh)->get_all_mesh( vertArray, num_verts,
+                                    elemArray, num_elems,
+                                    &offsets[0], offsets.size(),
+                                    &index_array[0], index_array.size(),
+                                    err ); MSQ_ERRZERO(err);
+      (*currentMesh)->elements_get_topologies( elemArray, elemTopologies, 
+                                               num_elems, err );MSQ_ERRZERO(err);
+      (*currentMesh)->vertices_are_on_boundary( vertArray,
+                                                vertexOnBoundary,
+                                                num_verts,
+                                                err );MSQ_ERRZERO(err);
+     
         // Put them into the patch
-      pd.reserve_vertex_capacity(num_verts, err);
-      if (MSQ_CHKERR(err)) return false;
-      MsqVertex* pd_vert_array = pd.get_vertex_array(err);
-      if (MSQ_CHKERR(err)) return false;
-
+      pd.reserve_vertex_capacity(num_verts, err); MSQ_ERRZERO(err);
+      MsqVertex* pd_vert_array = pd.get_vertex_array(err);MSQ_ERRZERO(err);
       (*currentMesh)->vertices_get_coordinates(vertArray,
                                                pd_vert_array,
                                                num_verts,
-                                               err); 
-      if (MSQ_CHKERR(err)) return false;
-      (*currentMesh)->vertices_are_on_boundary(vertArray, vertexOnBoundary,
-                                               num_verts, err); 
-      if (MSQ_CHKERR(err)) return false;
+                                               err); MSQ_ERRZERO(err);
 
       for (i = 0; i < num_verts; i++)
       {
@@ -480,51 +490,14 @@ bool MeshSet::get_next_patch(PatchData &pd,
         {
           pd_vert_array[i].vertexBitFlags &= ~(MsqVertex::MSQ_HARD_FIXED);
         }
-        if (MSQ_CHKERR(err)) return false;
           // Add its handle to the patch data
         pd.vertexHandlesArray[i] = vertArray[i];
       }
       pd.numVertices = num_verts;
       
-        // Get all elements
-      size_t num_elems = (*currentMesh)->get_total_element_count(err);
-      if (MSQ_CHKERR(err)) return false;
-      if (elemArraySize < num_elems)
-      {
-        delete [] elemArray;
-        elemArray = new Mesh::ElementHandle[num_elems];
-        elemArraySize = num_elems;
-      }
-      (*currentMesh)->get_all_elements(elemArray, num_elems, err); 
-      if (MSQ_CHKERR(err)) return false;
-
-        // Get the topologies of those elements
-      if (elemTopologiesSize < num_elems)
-      {
-        delete [] elemTopologies;
-        elemTopologies = new EntityTopology[num_elems];
-        elemTopologiesSize = num_elems;
-      }
-      (*currentMesh)->elements_get_topologies(elemArray, elemTopologies,
-                                              num_elems,err);
-      if (MSQ_CHKERR(err)) return false;
-     
-      size_t num_attached_vtx=0;
-      for (i = 0; i < num_elems; ++i)
-        num_attached_vtx += vertices_in_topology(elemTopologies[i]);
-      size_t* index_array = new size_t[num_attached_vtx]; 
-      size_t* offsets = new size_t[num_elems+1]; 
-      
-      (*currentMesh)->elements_get_attached_vertex_indices(elemArray, num_elems,
-                                         index_array, num_attached_vtx,
-                                         offsets, err);             
-      if (MSQ_CHKERR(err)) return false;
-
         // Put them into the patch
-      pd.reserve_element_capacity(num_elems, err);
-      if (MSQ_CHKERR(err)) return false;
-      MsqMeshEntity* pd_elem_array = pd.get_element_array(err);
-      if (MSQ_CHKERR(err)) return false;
+      pd.reserve_element_capacity(num_elems, err);MSQ_ERRZERO(err);
+      MsqMeshEntity* pd_elem_array = pd.get_element_array(err);MSQ_ERRZERO(err);
       for (i = 0; i < num_elems; ++i)
       {
         pd_elem_array[i].set_element_type(elemTopologies[i]);
@@ -536,9 +509,6 @@ bool MeshSet::get_next_patch(PatchData &pd,
         }
         pd.elementHandlesArray[i] = elemArray[i];
       }
-      
-      delete [] index_array;
-      delete [] offsets;
       
       pd.numElements = num_elems;
     }

@@ -73,8 +73,12 @@ private:
   Mesquite::MeshImpl *mMesh; 
   Mesquite::Mesh::VertexHandle* mVertices;
   Mesquite::Mesh::ElementHandle* mElements;
+  size_t* mOffsets;
+  size_t* mIndices;
   size_t nbVert;
   size_t nbElem;
+  size_t nbOffset;
+  size_t nbIndex;
   Mesquite::MsqError mErr;
   
 public:
@@ -95,20 +99,21 @@ public:
     mMesh->read_vtk("../../meshFiles/2D/VTK/hybrid_3quad_1tri.vtk", mErr);
     CPPUNIT_ASSERT(!mErr);
 
-    // Gets an array of vertices handles
-    nbVert = mMesh->get_total_vertex_count(mErr); 
+      // get sizes
+    mMesh->get_all_sizes( nbVert, nbElem, nbIndex, mErr );
     CPPUNIT_ASSERT(!mErr);
+    nbOffset = nbElem+1;
+    
     mVertices = new Mesquite::Mesh::VertexHandle[nbVert];
-    mMesh->get_all_vertices(mVertices, nbVert, mErr); 
-    CPPUNIT_ASSERT(!mErr);
-
-    // Gets an array of element handles
-    nbElem = mMesh->get_total_element_count(mErr);
-    CPPUNIT_ASSERT(!mErr);
     mElements = new Mesquite::Mesh::ElementHandle[nbElem];
-    mMesh->get_all_elements(mElements, nbElem, mErr); 
+    mOffsets = new size_t[nbOffset];
+    mIndices = new size_t[nbIndex];
+    
+    mMesh->get_all_mesh( mVertices, nbVert,
+                         mElements, nbElem,
+                         mOffsets, nbOffset,
+                         mIndices, nbIndex, mErr );
     CPPUNIT_ASSERT(!mErr);
-
   }
   
     // Automatically called by CppUnit after each test function.
@@ -118,6 +123,8 @@ public:
     mMesh->release();
     delete [] mVertices;
     delete [] mElements;
+    delete [] mOffsets;
+    delete [] mIndices;
     if(mErr) cout << mErr << endl;
     mErr.clear();
   }
@@ -131,8 +138,6 @@ public:
   }
 
   
-#undef __FUNC__
-#define __FUNC__ "MeshInterfaceTest::test_vertices"
   void test_vertices()
   {
     CPPUNIT_ASSERT_EQUAL(9,(int)nbVert);
@@ -168,8 +173,6 @@ public:
     delete [] correct_coords;
   }
 
-#undef __FUNC__
-#define __FUNC__ "MeshInterfaceTest::test_vertices_are_on_boundary"
   void test_vertices_are_on_boundary()
   {
     bool on_bnd[9];
@@ -181,8 +184,6 @@ public:
     }
   }
 
-#undef __FUNC__
-#define __FUNC__ "MeshInterfaceTest::test_vertex_is_fixed"
   void test_vertex_is_fixed()
   {
     bool correct_fixed[9] = {false, false, false, true, true, true, true, true, true};
@@ -194,8 +195,6 @@ public:
     }
   }
 
-#undef __FUNC__
-#define __FUNC__ "MeshInterfaceTest::test_vertex_byte"
   void test_vertex_byte()
   {
     unsigned char* bytes = new unsigned char[nbVert];
@@ -231,8 +230,6 @@ public:
   }
 
   
-#undef __FUNC__
-#define __FUNC__ "MeshInterfaceTest::test_vertex_get_attached_elements"
   void test_vertex_get_attached_elements()
   {
 
@@ -272,8 +269,6 @@ public:
 
   }
   
-#undef __FUNC__
-#define __FUNC__ "MeshInterfaceTest::test_elements"
   void test_elements()
   {
     CPPUNIT_ASSERT_EQUAL(4,(int)nbElem);
@@ -282,8 +277,6 @@ public:
   }
 
 
-#undef __FUNC__
-#define __FUNC__ "MeshInterfaceTest::test_elements_get_attached_vertices"
   void test_elements_get_attached_vertices()
   {
     // checks we have 3 elements containing 4 vertices 
@@ -371,8 +364,6 @@ public:
   }
 
   
-#undef __FUNC__
-#define __FUNC__ "MeshInterfaceTest::test_element_get_topology"
   void test_element_get_topology()
   {
     int nb_quads=0;
@@ -396,8 +387,6 @@ public:
     CPPUNIT_ASSERT_EQUAL(3,nb_quads);
   }
 
-#undef __FUNC__
-#define __FUNC__ "MeshInterfaceTest::test_elements_get_topology"
   void test_elements_get_topology()
   {
     int nb_quads=0;
@@ -424,8 +413,6 @@ public:
 
 
 
-#undef __FUNC__
-#define __FUNC__ "MeshInterfaceTest::test_element_get_attached_vertex_indices"
   void test_element_get_attached_vertex_indices()
   {
     // Find the index of the triangle
@@ -436,11 +423,6 @@ public:
       topo = mMesh->element_get_topology(mElements[tri_index], mErr);
       CPPUNIT_ASSERT(!mErr);
     }
-
-    size_t index_array[3];
-    size_t offsets[2];
-    mMesh->elements_get_attached_vertex_indices(&mElements[tri_index], 1,
-                                        index_array, 3, offsets, mErr);
 
     CPPUNIT_ASSERT(!mErr);
     // creates list with correct vertices coordinates for the triangle
@@ -453,7 +435,7 @@ public:
     std::list<Mesquite::Vector3D> tri_coords;
     Mesquite::MsqVertex tmp_vtx;
     for (size_t i=0; i<3; ++i) {
-      mMesh->vertices_get_coordinates(&mVertices[index_array[i]], &tmp_vtx, 1, mErr);
+      mMesh->vertices_get_coordinates(&mVertices[mIndices[i]], &tmp_vtx, 1, mErr);
       CPPUNIT_ASSERT(!mErr);
       tri_coords.push_back(tmp_vtx);
     }

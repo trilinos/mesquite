@@ -58,7 +58,7 @@ extern const char structured_3d_points_data[] =
 "Mesquite Mesh\n"
 "ASCII\n"
 "DATASET STRUCTURED_POINTS\n"
-"DIMENSION 3 3 3\n"
+"DIMENSIONS 3 3 3\n"
 "ORIGIN 0 0 0\n"
 "SPACING 1.5 1.5 1.5\n";
 
@@ -68,7 +68,7 @@ extern const char structured_2d_points_data[] =
 "Mesquite Mesh\n"
 "ASCII\n"
 "DATASET STRUCTURED_POINTS\n"
-"DIMENSION 3 3 1\n"
+"DIMENSIONS 3 3 1\n"
 "ORIGIN 0 0 0\n"
 "SPACING 1.5 1.5 0.0\n";
 
@@ -78,7 +78,7 @@ extern const char structured_grid_data[] =
 "Mesquite Mesh\n"
 "ASCII\n"
 "DATASET STRUCTURED_GRID\n"
-"DIMENSION 3 3 3\n"
+"DIMENSIONS 3 3 3\n"
 "POINTS 27 float\n"
 "0.0 0.0 0.0\n1.5 0.0 0.0\n3.0 0.0 0.0\n"
 "0.0 1.5 0.0\n1.5 1.5 0.0\n3.0 1.5 0.0\n"
@@ -96,7 +96,7 @@ extern const char rectilinear_grid_data[] =
 "Mesquite Mesh\n"
 "ASCII\n"
 "DATASET RECTILINEAR_GRID\n"
-"DIMENSION 3 3 3\n"
+"DIMENSIONS 3 3 3\n"
 "X_COORDINATES 3 float\n"
 "0.0 1.5 3.0\n"
 "Y_COORDINATES 3 float\n"
@@ -268,10 +268,13 @@ public:
   void check_8hex_structured( Mesh& mesh )
   {
     MsqPrintError err(cout);
-    CPPUNIT_ASSERT(mesh.get_total_vertex_count(err) == 27 && !err);
-    CPPUNIT_ASSERT(mesh.get_total_element_count(err) == 8 && !err);
+    size_t vertex_count, element_count, use_count;
+    mesh.get_all_sizes( vertex_count, element_count, use_count, err );
+    CPPUNIT_ASSERT(!err && vertex_count == 27 && element_count == 8 && use_count == 64);
     Mesh::ElementHandle elems[8];
-    mesh.get_all_elements( &elems[0], 8, err );
+    Mesh::VertexHandle verts[27];
+    size_t uses[64], offsets[9];
+    mesh.get_all_mesh( verts, 27, elems, 8, offsets, 9, uses, 64, err );
     CPPUNIT_ASSERT(!err);
     
     
@@ -323,10 +326,13 @@ public:
   void check_4quad_structured( Mesh& mesh )
   {
     MsqPrintError err(cout);
-    CPPUNIT_ASSERT(mesh.get_total_vertex_count(err) == 9 && !err);
-    CPPUNIT_ASSERT(mesh.get_total_element_count(err) == 4 && !err);
+    size_t vertex_count, element_count, use_count;
+    mesh.get_all_sizes( vertex_count, element_count, use_count, err );
+    CPPUNIT_ASSERT(!err && vertex_count == 9 && element_count == 4 && use_count == 16);
     Mesh::ElementHandle elems[4];
-    mesh.get_all_elements( &elems[0], 4, err );
+    Mesh::VertexHandle verts[9];
+    size_t uses[16], offsets[5];
+    mesh.get_all_mesh( verts, 9, elems, 4, offsets, 5, uses, 16, err );
     CPPUNIT_ASSERT(!err);
     
     
@@ -384,13 +390,16 @@ public:
     remove( temp_file_name );
     CPPUNIT_ASSERT(!err);
     
-    CPPUNIT_ASSERT(mesh.get_total_vertex_count(err) == 35 && !err);
-    CPPUNIT_ASSERT(mesh.get_total_element_count(err) == 38 && !err);
+    size_t vertex_count, element_count, use_count;
+    mesh.get_all_sizes( vertex_count, element_count, use_count, err );
+    CPPUNIT_ASSERT(!err && vertex_count == 35 && element_count == 38);
     std::vector<Mesh::VertexHandle> verts(35);
     std::vector<Mesh::ElementHandle> elems(38);
-    mesh.get_all_vertices( &verts[0], verts.size(), err );
-    CPPUNIT_ASSERT(!err);
-    mesh.get_all_elements( &elems[0], elems.size(), err );
+    std::vector<size_t> uses(use_count), offsets(39);
+    mesh.get_all_mesh( &verts[0], verts.size(),
+                       &elems[0], elems.size(),
+                       &offsets[0], offsets.size(),
+                       &uses[0], uses.size(), err );
     CPPUNIT_ASSERT(!err);
 
     unsigned i;
@@ -420,7 +429,6 @@ public:
         CPPUNIT_ASSERT( !err );
         CPPUNIT_ASSERT( mesh.element_get_attached_vertex_count( *e_iter, err ) == list[i].nodes );
         CPPUNIT_ASSERT( !err );
-        size_t junk1size = list[1].nodes;
         size_t junk2size = sizeof(junk2) / sizeof(size_t);
         mesh.elements_get_attached_vertices( &*e_iter, 1, &*c_iter, list[i].nodes, junk1, junk2size, junk2, err );
         CPPUNIT_ASSERT( !err );
@@ -523,17 +531,31 @@ public:
     remove( temp_file_name );
     CPPUNIT_ASSERT(!err);
     
-    CPPUNIT_ASSERT(mesh.get_total_vertex_count(err) == 27 && !err);
-    CPPUNIT_ASSERT(mesh.get_total_element_count(err) == 8 && !err);
+    size_t num_vert, num_elem, num_uses;
+    mesh.get_all_sizes( num_vert, num_elem, num_uses, err );
+    CPPUNIT_ASSERT( !err );
+    msq_std::vector<Mesh::VertexHandle> verts(num_vert);
+    msq_std::vector<Mesh::ElementHandle> elems(num_elem);
+    msq_std::vector<size_t> offsets(num_elem+1);
+    msq_std::vector<size_t> uses(num_uses);
+    mesh.get_all_mesh( &verts[0], verts.size(),
+                       &elems[0], elems.size(),
+                       &offsets[0], offsets.size(),
+                       &uses[0], uses.size(), err );
+    CPPUNIT_ASSERT( !err );
+   
+    void* th = mesh.tag_get( "global_id", err );
+    CPPUNIT_ASSERT( !err );
+
+    msq_std::string name;
+    Mesh::TagType type;
+    unsigned tagsize;
+    mesh.tag_properties( th, name, type, tagsize, err );
+    CPPUNIT_ASSERT( !err && type == Mesh::INT && tagsize == 1 );
     
-    void* th = mesh.tag_get_handle( "global_id", err );
-    CPPUNIT_ASSERT( th && !err );
-    //int elem_data[8];
-    int tagsize = sizeof(int);
-    void* ptr;
-    mesh.elements_get_tag_data( 8, th, ptr, tagsize, err );
-    int* elem_data = (int*)ptr;
-    CPPUNIT_ASSERT( tagsize == sizeof(int) && !err );
+    int elem_data[8];
+    mesh.tag_get_element_data( th, 8, &elems[0], elem_data, err );
+    CPPUNIT_ASSERT( !err );
     
     for (int i = 0; i < 8; ++i)
       CPPUNIT_ASSERT( elem_data[i] == (1+i) );
@@ -555,17 +577,31 @@ public:
     remove( temp_file_name );
     CPPUNIT_ASSERT(!err);
     
-    CPPUNIT_ASSERT(mesh.get_total_vertex_count(err) == 27 && !err);
-    CPPUNIT_ASSERT(mesh.get_total_element_count(err) == 8 && !err);
+    size_t num_vert, num_elem, num_uses;
+    mesh.get_all_sizes( num_vert, num_elem, num_uses, err );
+    CPPUNIT_ASSERT( !err );
+    msq_std::vector<Mesh::VertexHandle> verts(num_vert);
+    msq_std::vector<Mesh::ElementHandle> elems(num_elem);
+    msq_std::vector<size_t> offsets(num_elem+1);
+    msq_std::vector<size_t> uses(num_uses);
+    mesh.get_all_mesh( &verts[0], verts.size(),
+                       &elems[0], elems.size(),
+                       &offsets[0], offsets.size(),
+                       &uses[0], uses.size(), err );
+    CPPUNIT_ASSERT( !err );
+   
+    void* th = mesh.tag_get( "hexvect", err );
+    CPPUNIT_ASSERT( !err );
+
+    msq_std::string name;
+    Mesh::TagType type;
+    unsigned tagsize;
+    mesh.tag_properties( th, name, type, tagsize, err );
+    CPPUNIT_ASSERT( !err && type == Mesh::DOUBLE && tagsize == 3 );
     
-    void* th = mesh.tag_get_handle( "hexvect", err );
-    CPPUNIT_ASSERT( th && !err );
-    //double elem_data[24];
-    int tagsize = 3*sizeof(double);
-    void* ptr;
-    mesh.elements_get_tag_data( 8, th, ptr, tagsize, err );
-    double* elem_data = (double*)ptr;
-    CPPUNIT_ASSERT( tagsize == 3*sizeof(double) && !err );
+    double elem_data[24];
+    mesh.tag_get_element_data( th, 8, &elems[0], elem_data, err );
+    CPPUNIT_ASSERT( !err );
     
     for (int i = 0; i < 8; ++i)
       CPPUNIT_ASSERT( Vector3D( elem_data+3*i ) == Vector3D( i+1, i+1, i+1 ) );
@@ -588,11 +624,15 @@ public:
     remove( temp_file_name );
     CPPUNIT_ASSERT(!err);
     
-    CPPUNIT_ASSERT(mesh.get_total_vertex_count(err) == 27 && !err);
-    CPPUNIT_ASSERT(mesh.get_total_element_count(err) == 8 && !err);
+    size_t vertex_count, element_count, use_count;
+    mesh.get_all_sizes( vertex_count, element_count, use_count, err );
+    CPPUNIT_ASSERT(!err && vertex_count == 27 && element_count == 8);
+    CPPUNIT_ASSERT(use_count == 64);
     
     Mesh::VertexHandle vertices[27];
-    mesh.get_all_vertices( vertices, 27, err );
+    Mesh::ElementHandle elements[8];
+    size_t vertex_uses[64], offsets[9];
+    mesh.get_all_mesh( vertices, 27, elements, 8, offsets, 9, vertex_uses, 64, err );
     CPPUNIT_ASSERT( !err );
     
     for (int i = 0; i < 27; ++i)

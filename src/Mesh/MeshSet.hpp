@@ -173,7 +173,6 @@ namespace Mesquite
     msq_stdc::size_t csrDataSize;
     msq_stdc::size_t vertArraySize;
     msq_stdc::size_t elemArraySize;
-    msq_stdc::size_t elemTopologiesSize;
 
       // This is the domain we snap everything back to.
     Mesquite::MeshDomain *mDomain;

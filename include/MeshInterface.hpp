@@ -55,6 +55,9 @@ namespace Mesquite
   class Vector3D;
   typedef EntityIterator VertexIterator;
   typedef EntityIterator ElementIterator;
+    
+    /** Type used to refer to a tag defintion */
+  typedef void* TagHandle;
 
   inline size_t vertices_in_topology(EntityTopology);
 
@@ -70,8 +73,7 @@ namespace Mesquite
 //************ Type Definitions **************
       //! Opaque EntityHandle type and tag type.
     typedef void* EntityHandle;
-    typedef void* TagHandle;
-    typedef void* TagDataPt;
+    
     
       // We typedef specific types of EntityHandles just
       // to make it clear what kind of entity is to be
@@ -82,26 +84,46 @@ namespace Mesquite
 
 //************ Operations on entire mesh ****************
       //! Returns whether this mesh lies in a 2D or 3D coordinate system.
-    virtual int get_geometric_dimension(MsqError &err) const = 0;
+    virtual int get_geometric_dimension(MsqError &err) = 0;
     
-      //! Returns the number of entities of the indicated type.
-    virtual size_t get_total_vertex_count(MsqError &err) const = 0;
-    virtual size_t get_total_element_count(MsqError &err) const = 0;
+    /** \brief get sizes for calling \ref get_all_mesh
+     *
+     * Get counts of entities in mesh.
+     *
+     *\param vertex_count  - Number of vertices connected to active mesh
+     *\param element_count - Number of elements in active mesh
+     *\param vertex_use_count - Number of vertex uses (sum of the length
+     *                          of the connectivity list for all elements
+     *                          in active.)
+     */
+    virtual void get_all_sizes( size_t& vertex_count,
+                                size_t& element_count,
+                                size_t& vertex_use_count,
+                                MsqError& err ) = 0;
     
-    /*! \brief Fills array with handles to all vertices
-                in the mesh.
-         \param array_size Must be at least the number of vertices.
-                If less than the mesh number of vertices, an error is set
-                (and a partial copy is made). */
-    virtual void get_all_vertices(VertexHandle *vert_array,
-                            size_t array_size, MsqError &err)=0;
-    /*! \brief Fills array with handles to all elements
-                in the mesh.
-         \param array_size Must be at least the number of elements.
-                If less than the mesh number of elements, an error is set
-                (and a partial copy is made). */
-    virtual void get_all_elements(ElementHandle *elem_array,
-                            size_t array_size, MsqError &err)=0;
+    /** \brief Get entities and connectivity 
+     *
+     * Get vertex handles, element handles, and connectivty
+     * for active mesh.  Use \ref get_all_sizes to determine
+     * required array sizes.
+     *
+     *\param vert_array        Array to store vertex handles in
+     *\param vert_len          Length of \ref vert_array
+     *\param elem_array        Array to store element handles in
+     *\param elem_len          Length of \ref elem_array
+     *\param elem_conn_offsets Offsets into \ref elem_conn_indices at
+     *                         which the connectivity data for each
+     *                         element begins.  
+     *\param offset_len        Length of \ref elem_conn_offsets.  Should
+     *                         be \ref elem_len + 1.
+     *\param elem_conn_indices Indices into \ref vert_array
+     *\param index_len         Length of \ref elem_conn_indices.
+     */
+    virtual void get_all_mesh( VertexHandle*  vert_array, size_t vert_len,
+                               ElementHandle* elem_array, size_t elem_len,
+                               size_t* elem_conn_offsets, size_t offset_len,
+                               size_t* elem_conn_indices, size_t index_len,
+                               MsqError& err ) = 0;
     
       //! Returns a pointer to an iterator that iterates over the
       //! set of all vertices in this mesh.  The calling code should
@@ -167,7 +189,7 @@ namespace Mesquite
       //! Useful to determine how large the "elem_array" parameter
       //! of the vertex_get_attached_elements() function must be.
     virtual size_t vertex_get_attached_element_count(VertexHandle vertex,
-                                                     MsqError &err) const = 0;
+                                                     MsqError &err) = 0;
     
       //! Gets the elements attached to this vertex.
     virtual void vertex_get_attached_elements(VertexHandle vertex,
@@ -182,7 +204,7 @@ namespace Mesquite
       //! element's topology and getting the number
       //! of vertices per element for that topology type.
     virtual size_t element_get_attached_vertex_count(ElementHandle elem,
-                                                     MsqError &err) const = 0;
+                                                     MsqError &err) = 0;
 
     /*! \brief  
   Returns the vertices that are part of the topological definition of each
@@ -229,30 +251,10 @@ namespace Mesquite
                                                 size_t *csr_offsets,
                                                 MsqError &err) = 0;
     
-      //! Identifies the vertices attached to the elements by returning
-      //! each vertex's global index.  The vertex's global index indicates
-      //! where that vertex can be found in the array returned by
-      //! Mesh::get_all_vertices.
-      //! \param elems Array of element handles.
-      //! \param num_elems number of elements in the array elems
-      //! \param index_array Array containing the indexes of the elements vertices.
-      //!                    Indexes can be repeated.
-      //! \param index_array_size indicates the size of index_array
-      //! \param offsets Has length num_elems+1.
-      //!                An array of offsets into the index_array that indicates where
-      //!                the indexes corresponding to an element start. First entry is 0.
-      //! For example element, to get the vertex indices of elems[3], we look at the entries
-      //! index_array[offsets[3]] to index_array[offsets[4]] . 
-    virtual void elements_get_attached_vertex_indices(ElementHandle element[],
-                                             size_t num_elems,
-                                             size_t index_array[],
-                                             size_t array_size,
-                                             size_t* offsets,
-                                             MsqError &err) = 0;
     
       //! Returns the topology of the given entity.
     virtual EntityTopology element_get_topology(ElementHandle entity_handle,
-                                              MsqError &err) const = 0;
+                                              MsqError &err) = 0;
       //! Returns the topologies of the given entities.  The "entity_topologies"
       //! array must be at least "num_elements" in size.
     virtual void elements_get_topologies(ElementHandle *element_handle_array,
@@ -261,36 +263,116 @@ namespace Mesquite
 
     
 //***************  Tags  ***********
+    
+      /** The type of a tag */
+    enum TagType { BYTE, BOOL, INT, DOUBLE, HANDLE };
 
-    virtual void element_tag_create(const msq_std::string tag_name,
-                                          int tag_size,
-                                          TagHandle& tag_handle,
-                                          MsqError &err) = 0;
+      /** \brief Create a tag
+       *
+       * Create a user-defined data type that can be attached
+       * to any element or vertex in the mesh.  For an opaque or
+       * undefined type, use type=BYTE and length=sizeof(..).
+       *
+       * \param tag_name  A unique name for the data object
+       * \param type      The type of the data
+       * \param length    Number of values per entity (1->scalar, >1 ->vector)
+       * \param default_value Default value to assign to all entities - may be NULL
+       * \return - Handle for tag definition 
+       */
+    virtual TagHandle tag_create( const msq_std::string& tag_name,
+                                  TagType type, unsigned length,
+                                  const void* default_value,
+                                  MsqError &err) = 0;
     
-      //! Returns the tag handle corresponding to the string.
-      //! Sets an error if the string is not recognised.
-    virtual void* tag_get_handle(const msq_std::string tag_name, MsqError &err) = 0;
-      
+      /** \brief Remove a tag and all corresponding data
+       *
+       * Delete a tag.
+       */
+    virtual void tag_delete( TagHandle handle, MsqError& err ) = 0;
     
-      //! Sets the Tag data pointers for an array of entities.
-      //! The memory pointed to is the reponsibility of the function caller, i.e. either the
-      //! memory was obtained from entities_get_tag_data or the function caller allocated the memory
-      //! and will keep it allocated as long as the tag pointer is set to that memory.
-    virtual void elements_set_tag_data(const size_t num_elements, 
-                                       const TagHandle tag_handle,
-                                       TagDataPt const tag_data_array,
-                                       const int& tag_size,
-                                       MsqError &err) = 0;
-      
-      //! Gets the Tag data for an array of entities.
-      //! The implementation handles the pointers to the tag data, not the memory pointed to.
-      //! This means that the implementation is not responsible for making sure the
-      //! memory pointed to is valid.
-    virtual void elements_get_tag_data(const size_t num_elements,
-                                       const TagHandle tag_handle,
-                                       TagDataPt &tag_data_array,
-                                       int& tag_size,
-                                       MsqError &err) = 0;
+    
+      /** \brief Get handle for existing tag, by name. */
+    virtual TagHandle tag_get( const msq_std::string& name, 
+                               MsqError& err ) = 0;
+     
+      /** \brief Get properites of tag
+       *
+       * Get data type and number of values per entity for tag.
+       * \param handle     Tag to get properties of.
+       * \param name_out   Passed back tag name.
+       * \param type_out   Passed back tag type.
+       * \param length_out Passed back number of values per entity.
+       */
+    virtual void tag_properties( TagHandle handle,
+                                 msq_std::string& name_out,
+                                 TagType& type_out,
+                                 unsigned& length_out,
+                                 MsqError& err ) = 0;
+    
+      /** \brief Set tag values on elements
+       * 
+       * Set the value of a tag for a list of mesh elements.
+       * \param handle     The tag 
+       * \param num_elems  Length of elem_array
+       * \param elem_array Array of elements for which to set the tag value.
+       * \param tag_data   Tag data for each element, contiguous in memory.
+       *                   This data is expected to be 
+       *                   num_elems*tag_length*sizeof(tag_type) bytes.
+       */
+    virtual void tag_set_element_data( TagHandle handle,
+                                       size_t num_elems,
+                                       const ElementHandle* elem_array,
+                                       const void* tag_data,
+                                       MsqError& err ) = 0;
+
+      /** \brief Set tag values on vertices
+       * 
+       * Set the value of a tag for a list of mesh vertices.
+       * \param handle     The tag 
+       * \param num_elems  Length of node_array
+       * \param node_array Array of vertices for which to set the tag value.
+       * \param tag_data   Tag data for each element, contiguous in memory.
+       *                   This data is expected to be 
+       *                   num_elems*tag_length*sizeof(tag_type) bytes.
+       */
+    virtual void tag_set_vertex_data ( TagHandle handle,
+                                       size_t num_elems,
+                                       const VertexHandle* node_array,
+                                       const void* tag_data,
+                                       MsqError& err ) = 0;
+    
+    
+      /** \brief Get tag values on elements
+       * 
+       * Get the value of a tag for a list of mesh elements.
+       * \param handle     The tag 
+       * \param num_elems  Length of elem_array
+       * \param elem_array Array of elements for which to get the tag value.
+       * \param tag_data   Return buffer in which to copy tag data, contiguous 
+       *                   in memory.  This data is expected to be 
+       *                   num_elems*tag_length*sizeof(tag_type) bytes.
+       */
+    virtual void tag_get_element_data( TagHandle handle,
+                                       size_t num_elems,
+                                       const ElementHandle* elem_array,
+                                       void* tag_data,
+                                       MsqError& err ) = 0;
+    
+      /** \brief Get tag values on vertices.
+       * 
+       * Get the value of a tag for a list of mesh vertices.
+       * \param handle     The tag 
+       * \param num_elems  Length of elem_array
+       * \param elem_array Array of vertices for which to get the tag value.
+       * \param tag_data   Return buffer in which to copy tag data, contiguous 
+       *                   in memory.  This data is expected to be 
+       *                   num_elems*tag_length*sizeof(tag_type) bytes.
+       */
+    virtual void tag_get_vertex_data ( TagHandle handle,
+                                       size_t num_elems,
+                                       const VertexHandle* node_array,
+                                       void* tag_data,
+                                       MsqError& err ) = 0;
 
     
     

@@ -67,18 +67,46 @@ namespace Mesquite
     void write_exodus(const char* out_filename, Mesquite::MsqError &err);
 //********* Functions that ARE inherited ************
       // Returns whether this mesh lies in a 2D or 3D coordinate system.
-    virtual int get_geometric_dimension(MsqError &err) const;
+    virtual int get_geometric_dimension(MsqError &err) ;
     
-      // Returns the number of entities of the indicated type.
-    virtual size_t get_total_vertex_count(MsqError &err) const;
-    virtual size_t get_total_element_count(MsqError &err) const;
+    /** \brief get sizes for calling \ref get_all_mesh
+     *
+     * Get counts of entities in mesh.
+     *
+     *\param vertex_count  - Number of vertices connected to active mesh
+     *\param element_count - Number of elements in active mesh
+     *\param vertex_use_count - Number of vertex uses (sum of the length
+     *                          of the connectivity list for all elements
+     *                          in active.)
+     */
+    virtual void get_all_sizes( size_t& vertex_count,
+                                size_t& element_count,
+                                size_t& vertex_use_count,
+                                MsqError& err );
     
-      // Fills array with handles to all vertices/elements
-      // in the mesh.
-    virtual void get_all_vertices(VertexHandle *vert_array,
-                                  size_t array_size, MsqError &err);
-    virtual void get_all_elements(ElementHandle *elem_array,
-                                  size_t array_size, MsqError &err);
+    /** \brief Get entities and connectivity 
+     *
+     * Get vertex handles, element handles, and connectivty
+     * for active mesh.  Use \ref get_all_sizes to determine
+     * required array sizes.
+     *
+     *\param vert_array        Array to store vertex handles in
+     *\param vert_len          Length of \ref vert_array
+     *\param elem_array        Array to store element handles in
+     *\param elem_len          Length of \ref elem_array
+     *\param elem_conn_offsets Offsets into \ref elem_conn_indices at
+     *                         which the connectivity data for each
+     *                         element begins.  
+     *\param offset_len        Length of \ref elem_conn_offsets.  Should
+     *                         be t\ref elem_len + 1.
+     *\param elem_conn_indices Indices into \ref vert_array
+     *\param index_len         Length of \ref elem_conn_indices.
+     */
+    virtual void get_all_mesh( VertexHandle*  vert_array, size_t vert_len,
+                               ElementHandle* elem_array, size_t elem_len,
+                               size_t* elem_conn_offsets, size_t offset_len,
+                               size_t* elem_conn_indices, size_t index_len,
+                               MsqError& err );
     
       // Returns a pointer to an iterator that iterates over the
       // set of all vertices in this mesh.  The calling code should
@@ -148,7 +176,7 @@ namespace Mesquite
       // Useful to determine how large the "elem_array" parameter
       // of the vertex_get_attached_elements() function must be.
     virtual size_t vertex_get_attached_element_count(VertexHandle vertex,
-                                                     MsqError &err) const;
+                                                     MsqError &err);
     
       // Gets the elements attached to this vertex.
     virtual void vertex_get_attached_elements(VertexHandle vertex,
@@ -164,7 +192,7 @@ namespace Mesquite
       // element's topology and getting the number
       // of vertices per element for that topology type.
     virtual size_t element_get_attached_vertex_count(ElementHandle elem,
-                                                     MsqError &err) const;
+                                                     MsqError &err);
     
 // Returns the vertices that are part of the topological definition of each
 // element in the "elem_handles" array.  When this function is called, the
@@ -208,20 +236,9 @@ namespace Mesquite
                                                 size_t *csr_offsets,
                                                 MsqError &err);
     
-      // Identifies the vertices attached to the elements by returning
-      // each vertex's global index.  The vertex's global index indicates
-      // where that vertex can be found in the array returned by
-      // Mesh::get_all_vertices.
-    void elements_get_attached_vertex_indices(Mesquite::Mesh::ElementHandle elems[],
-                                              size_t num_elems,
-                                              size_t index_array[],
-                                              size_t array_size,
-                                              size_t* offsets,
-                                              MsqError &err);
-    
       // Returns the topology of the given entity.
     virtual EntityTopology element_get_topology(ElementHandle entity_handle,
-                                                MsqError &err) const;
+                                                MsqError &err);
       // Returns the topologies of the given entities.  The "entity_topologies"
       // array must be at least "num_elements" in size.
     virtual void elements_get_topologies(ElementHandle *element_handle_array,
@@ -232,26 +249,133 @@ namespace Mesquite
     
 //*************** Tags  ***********
 
-    virtual void element_tag_create(const msq_std::string tag_name,
-                                          int tag_size,
-                                          TagHandle& tag_handle,
-                                          MsqError &err);
-                                  
-    virtual void tag_destroy( TagHandle handle, MsqError& err );
+      /** \brief Create a tag
+       *
+       * Create a user-defined data type that can be attached
+       * to any element or vertex in the mesh.  For an opaque or
+       * undefined type, use type=BYTE and length=sizeof(..).
+       *
+       * \param tag_name  A unique name for the data object
+       * \param type      The type of the data
+       * \param length    Number of values per entity (1->scalar, >1 ->vector)
+       * \param default_value Default value to assign to all entities - may be NULL
+       * \return - Handle for tag definition 
+       */
+    virtual TagHandle tag_create( const msq_std::string& tag_name,
+                                  TagType type, unsigned length,
+                                  const void* default_value,
+                                  MsqError &err);
+     
+      /** \brief Remove a tag and all corresponding data
+       *
+       * Delete a tag.
+       */
+    virtual void tag_delete( TagHandle handle, MsqError& err );
     
-    virtual void* tag_get_handle(const msq_std::string tag_name, MsqError &err);
     
-    virtual void elements_set_tag_data(const size_t num_elements, 
-                                       TagHandle tag_handle,
-                                       TagDataPt const tag_data_array,
-                                       const int& tag_size,
-                                       MsqError &err);
+      /** \brief Get handle for existing tag, by name. */
+    virtual TagHandle tag_get( const msq_std::string& name, 
+                               MsqError& err );
+     
+      /** \brief Get properites of tag
+       *
+       * Get data type and number of values per entity for tag.
+       * \param handle     Tag to get properties of.
+       * \param name_out   Passed back tag name.
+       * \param type_out   Passed back tag type.
+       * \param length_out Passed back number of values per entity.
+       */
+    virtual void tag_properties( TagHandle handle,
+                                 msq_std::string& name_out,
+                                 TagType& type_out,
+                                 unsigned& length_out,
+                                 MsqError& err );
+    
+      /** \brief Set tag values on elements
+       * 
+       * Set the value of a tag for a list of mesh elements.
+       * \param handle     The tag 
+       * \param num_elems  Length of elem_array
+       * \param elem_array Array of elements for which to set the tag value.
+       * \param tag_data   Tag data for each element, contiguous in memory.
+       *                   This data is expected to be 
+       *                   num_elems*tag_length*sizeof(tag_type) bytes.
+       */
+    virtual void tag_set_element_data( TagHandle handle,
+                                       size_t num_elems,
+                                       const ElementHandle* elem_array,
+                                       const void* tag_data,
+                                       MsqError& err );
 
-    virtual void elements_get_tag_data(const size_t num_elements,
-                                       const TagHandle tag_handle,
-                                       TagDataPt &tag_data_array,
-                                       int& tag_size,
-                                       MsqError &err);
+      /** \brief Set tag values on vertices
+       * 
+       * Set the value of a tag for a list of mesh vertices.
+       * \param handle     The tag 
+       * \param num_elems  Length of node_array
+       * \param node_array Array of vertices for which to set the tag value.
+       * \param tag_data   Tag data for each element, contiguous in memory.
+       *                   This data is expected to be 
+       *                   num_elems*tag_length*sizeof(tag_type) bytes.
+       */
+    virtual void tag_set_vertex_data ( TagHandle handle,
+                                       size_t num_elems,
+                                       const VertexHandle* node_array,
+                                       const void* tag_data,
+                                       MsqError& err );
+    
+    
+      /** \brief Get tag values on elements
+       * 
+       * Get the value of a tag for a list of mesh elements.
+       * \param handle     The tag 
+       * \param num_elems  Length of elem_array
+       * \param elem_array Array of elements for which to get the tag value.
+       * \param tag_data   Return buffer in which to copy tag data, contiguous 
+       *                   in memory.  This data is expected to be 
+       *                   num_elems*tag_length*sizeof(tag_type) bytes.
+       */
+    virtual void tag_get_element_data( TagHandle handle,
+                                       size_t num_elems,
+                                       const ElementHandle* elem_array,
+                                       void* tag_data,
+                                       MsqError& err );
+    
+      /** \brief Get tag values on vertices.
+       * 
+       * Get the value of a tag for a list of mesh vertices.
+       * \param handle     The tag 
+       * \param num_elems  Length of elem_array
+       * \param elem_array Array of vertices for which to get the tag value.
+       * \param tag_data   Return buffer in which to copy tag data, contiguous 
+       *                   in memory.  This data is expected to be 
+       *                   num_elems*tag_length*sizeof(tag_type) bytes.
+       */
+    virtual void tag_get_vertex_data ( TagHandle handle,
+                                       size_t num_elems,
+                                       const VertexHandle* node_array,
+                                       void* tag_data,
+                                       MsqError& err );
+    
+    class TagIterator 
+    {
+      public:
+        TagIterator( size_t i ) : index(i) {}
+        TagHandle operator*() const  { return TagHandle(index);     }
+        TagIterator operator++()     { return TagIterator(++index); }
+        TagIterator operator--()     { return TagIterator(--index); }
+        TagIterator operator++(int)  { return TagIterator(index++); }
+        TagIterator operator--(int)  { return TagIterator(index--); }
+        bool operator==(TagIterator other) const { return index == other.index; }
+        bool operator!=(TagIterator other) const { return index != other.index; }
+      private:
+        size_t index;
+    };
+    TagIterator tag_begin() { return 0; }
+    TagIterator tag_end()   { return tagList.size(); }
+    
+    bool tag_has_vertex_data( TagHandle handle, MsqError& err ) ;
+    bool tag_has_element_data( TagHandle handle, MsqError& err ) ;
+        
     
     
 //**************** Memory Management ****************
@@ -290,14 +414,78 @@ namespace Mesquite
 
     unsigned char numCoords;
 
-    // tags
-    struct tag {
-      void* elementData; // points to the beginning of the dense tag array
-      void* vertexData; 
-      size_t size; // size is the increment to use to go from one tag to the next
+
+    struct TagDescription {
+        // The VTK attribute type the data was read from, or NONE if not VTK data.
+        // This property is kept only so that when a vtk file is read and subseqquently
+        // written, it can be preserved for other potential readers that actually care
+        // about it.
+      enum VtkType { NONE = 0, SCALAR, COLOR, VECTOR, NORMAL, TEXTURE, TENSOR, FIELD };
+
+        //! tag name
+      msq_std::string name;
+        //! tag type
+      TagType type;
+        //! VTK attribute type
+      VtkType vtkType;
+        //! size of tag data (sizeof(type) * length)
+      size_t size;
+   
+      inline TagDescription( msq_std::string n, TagType t, VtkType v, size_t s )
+        : name(n), type(t), vtkType(v), size(s) {}
+      
+      inline TagDescription( )
+        : type(BYTE), vtkType(NONE), size(0) {}
+      
+      inline bool operator==(const TagDescription& o) const
+        { return name == o.name && type == o.type && vtkType == o.vtkType && size == o.size; }
+      inline bool operator!=(const TagDescription& o) const
+        { return name != o.name || type != o.type || vtkType != o.vtkType || size != o.size; }
     };
-    msq_std::map<std::string, tag> denseTags; 
-    
+
+    /** \class TagData
+     * Store data for a single tag
+     */
+    struct TagData  {
+
+        //! tag meta data
+      const TagDescription desc;
+
+        //! per-element data, or NULL if none has been set.
+      void* elementData;
+
+        //! per-vertex data, or NULL if none has been set.
+      void* vertexData;
+      
+        //! If this is true, then vertexData points to a single value
+        //! which is the same for all vertices.  If false, it points
+        //! to an array of values, uniqe for each vertex.
+      bool vertIsDefault;
+      
+        //! If this is true, then elementData points to a single value
+        //! which is the same for all elements.  If false, it points
+        //! to an array of values, uniqe for each elements.
+      bool elemIsDefault;
+      
+
+      inline TagData( const msq_std::string& name, 
+               TagType type, unsigned length,
+               TagDescription::VtkType vtk_type = TagDescription::NONE )
+        : desc(name, type, vtk_type, length*size_from_tag_type(type)),
+          elementData(0), vertexData(0), 
+          vertIsDefault(false), elemIsDefault(false) {}
+      
+      inline TagData( const TagDescription& descr )
+        : desc(descr), elementData(0), vertexData(0), 
+          vertIsDefault(false), elemIsDefault(false) {}
+          
+      ~TagData();
+    };
+
+    std::vector<TagData*> tagList;
+    TagData* tag_from_handle( TagHandle handle, MsqError& err );
+    static size_t size_from_tag_type( TagType type );
+   
     class Vertex
     {
     public:
@@ -340,33 +528,45 @@ namespace Mesquite
     void vtk_read_point_data( FileTokenizer& file, MsqError& err );
       /** Read attribute data for elements */
     void vtk_read_cell_data ( FileTokenizer& file, MsqError& err );
-      /** Read actual data for both \ref vtk_read_point_data and \ref vtk_read_cell_data */
+      /** Read actual data for both \ref vtk_read_point_data and \ref vtk_read_cell_data 
+       *  Initializes all fields of passed TagDescription */
     void* vtk_read_attrib_data( FileTokenizer& file, 
                                 long num_data_to_read, 
-                                std::string& name_out, 
-                                size_t& tag_size_out,
+                                TagDescription& tag_out,
                                 MsqError& err );
-      /** Read a 2-D array of data of the specified type from the file */
+      /** Read a 2-D array of data of the specified type from the file 
+       *  Initializes size and type fields of passed TagDescroption */
     void* vtk_read_typed_data( FileTokenizer& file, int type,
                                size_t per_elem, size_t num_elem,
-                               size_t& item_size_out,
+                               TagDescription& tag_out,
                                MsqError& err );
                              
-      /** Read scalar attribute data */
+      /** Read scalar attribute data  
+       *  Initializes size and type fields of passed TagDescroption */
     void* vtk_read_scalar_attrib ( FileTokenizer& file, long count, 
-                                   size_t& tag_size_out, MsqError& err );
-      /** Read color attribute data */
+                                   TagDescription& tag_out, MsqError& err );
+      /** Read color attribute data  
+       *  Initializes size and type fields of passed TagDescroption */
     void* vtk_read_color_attrib  ( FileTokenizer& file, long count, 
-                                   size_t& tag_size_out, MsqError& err );
-      /** Read vector or normal attribute data */
+                                   TagDescription& tag_out, MsqError& err );
+      /** Read vector or normal attribute data  
+       *  Initializes size and type fields of passed TagDescroption */
     void* vtk_read_vector_attrib ( FileTokenizer& file, long count, 
-                                   size_t& tag_size_out, MsqError& err );
-      /** Read texture attribute data */
+                                   TagDescription& tag_out, MsqError& err );
+      /** Read texture attribute data  
+       *  Initializes size and type fields of passed TagDescroption */
     void* vtk_read_texture_attrib( FileTokenizer& file, long count, 
-                                   size_t& tag_size_out, MsqError& err );
-      /** Read tensor (3x3 matrix) data */
+                                   TagDescription& tag_out, MsqError& err );
+      /** Read tensor (3x3 matrix) data  
+       *  Initializes size and type fields of passed TagDescroption */
     void* vtk_read_tensor_attrib ( FileTokenizer& file, long count, 
-                                   size_t& tag_size_out, MsqError& err );
+                                   TagDescription& tag_out, MsqError& err );
+
+      /** Write tag data to VTK attributes */
+    void vtk_write_attrib_data( msq_stdio::ostream& file,
+                                const TagDescription& desc,
+                                const void* data, size_t count,
+                                MsqError& err ) const;
 
 //**************** End VTK Parsing ****************
   };
