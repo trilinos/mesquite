@@ -26,6 +26,7 @@
 
 #include "MeshImplData.hpp"
 #include "TopologyInfo.hpp"
+#include "MsqError.hpp"
 
 // NOTE: If this is defined, the normal vertex query functions
 //       will not return mid-nodes.

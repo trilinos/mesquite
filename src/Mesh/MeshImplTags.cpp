@@ -1,5 +1,6 @@
 #include "MeshImplTags.hpp"
-
+#include "MsqError.hpp"
+#include <assert.h>
 
 namespace Mesquite {
 

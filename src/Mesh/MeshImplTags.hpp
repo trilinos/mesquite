@@ -4,6 +4,12 @@
 #include "Mesquite.hpp"
 #include "MeshInterface.hpp"
 
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#  include <vector.h>
+#else
+#  include <vector>
+#endif
+
 namespace Mesquite {
 
   struct TagDescription {
