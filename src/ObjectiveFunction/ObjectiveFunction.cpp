@@ -96,7 +96,6 @@ bool ObjectiveFunction::compute_numerical_gradient(Mesquite::PatchData &pd,
           return false;
         }
         MSQ_CHKERR(err);
-        int j=0;
         //loop over the three coords x,y,z
         for(j=0;j<3;++j){
           eps=get_eps(pd, flocald, j, (&vertices[m]), err);
@@ -110,7 +109,7 @@ bool ObjectiveFunction::compute_numerical_gradient(Mesquite::PatchData &pd,
         MSQ_CHKERR(err);
       }
       else {
-        for(int j=0;j<3;++j)
+        for(j=0;j<3;++j)
           grad[m][j] = 0.0;
       }
       //PRINT_INFO("  gradx = %f, grady = %f, gradz = %f\n",grad[m][0],grad[m][1],grad[m][2]);   
@@ -159,9 +158,9 @@ double ObjectiveFunction::get_eps(PatchData &pd, double &local_val,
   \param  MsqHessian  hessian object. The MsqHessian object needs at least one call to
   MsqHessian::initialize() before being used. 
  */
-bool ObjectiveFunction::compute_numerical_hessian(Mesquite::PatchData &pd,
-                                                  MsqHessian &hessian,
-                                                  MsqError &err)
+bool ObjectiveFunction::compute_numerical_hessian(Mesquite::PatchData &/*pd*/,
+                                                  MsqHessian &/*hessian*/,
+                                                  MsqError &/*err*/)
 {
   cout << " THIS FUNCTION EXISTS FOR TEST PURPOSES ONLY.\n"
     "  analytical Objective Function Hessians should always be used. ";
