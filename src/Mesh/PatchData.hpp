@@ -139,6 +139,11 @@ namespace Mesquite
                                      std::vector<size_t> &vert_indices,
                                      MsqError &err);
 
+    /*! gets the index of a vertex in the PatchData vertex array,
+      given a pointer to the vertex. */
+    inline size_t get_vertex_ptr_index(MsqVertex* ptr)
+    { return (ptr - vertexArray); }
+    
     /*!Get the indices of entities attached to entity (given by ent_ind).
       adj_ents is filled with the indices into the entity array of elements
       adjacent to the given element via an n-dimensional entity.
