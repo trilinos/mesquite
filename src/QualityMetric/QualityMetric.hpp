@@ -123,8 +123,8 @@ namespace Mesquite
         { return metricName; }
      
        //!Evaluate the metric for a vertex
-     virtual double evaluate_vertex(PatchData &pd, MsqVertex* vertex,
-                                    MsqError &err)
+     virtual bool evaluate_vertex(PatchData &pd, MsqVertex* vertex,
+                                  double &value, MsqError &err)
         {
           err.set_msg("No implementation for a "
                       "vertex-version of this metric.");
@@ -132,9 +132,9 @@ namespace Mesquite
         }
      
        //!Evaluate the metric for an element
-     virtual double evaluate_element(PatchData &pd,
-                                     MsqMeshEntity* element,
-                                     MsqError &err)
+     virtual bool evaluate_element(PatchData &pd,
+                                   MsqMeshEntity* element,
+                                   double &value, MsqError &err)
         {
           err.set_msg("No implementation for a element-version of this metric.");
           return 0.0;
@@ -227,12 +227,11 @@ namespace Mesquite
                                              int num_vtx, double &metric_value,
                                              MsqError &err);
 
-     /*!Virtual function that computes the gradient of the QualityMetric
+     /*! \brief Virtual function that computes the gradient of the QualityMetric
          analytically.  The base class implementation of this function
          simply prints a warning and calls compute_numerical_gradient
          to calculate the gradient. This is used by metric
-         which mType is VERTEX_BASED.
-         \return true if the element is valid, false otherwise. */
+         which mType is VERTEX_BASED. */
      virtual bool compute_vertex_analytical_gradient(PatchData &pd,
                                                      MsqVertex &vertex,
                                                      Vector3D &grad_vec,
@@ -240,12 +239,11 @@ namespace Mesquite
                                                      MsqError &err);
      
      
-     /*!Virtual function that computes the gradient of the QualityMetric
+     /*! \brief Virtual function that computes the gradient of the QualityMetric
          analytically.  The base class implementation of this function
          simply prints a warning and calls compute_numerical_gradient
          to calculate the gradient. This is used by metric
-         which mType is VERTEX_BASED.
-         \return true if the element is valid, false otherwise. */
+         which mType is VERTEX_BASED. */
      virtual bool compute_element_analytical_gradient(PatchData &pd,
                                                       MsqMeshEntity* element,
                                              MsqVertex* vertices, Vector3D* grad_vec,
