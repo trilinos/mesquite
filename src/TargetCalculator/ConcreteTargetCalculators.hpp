@@ -54,12 +54,13 @@ namespace Mesquite
     ReferenceMeshTargetCalculator(MeshSet* ref_mesh)
     {
       refMesh = ref_mesh;
-      mLambda = ;
-      mD = ;
-      mR = ;
+      mLambda = L00;
+      mD = D00;
+      mR = R00;
+      mW = W21;
     }      
       //! virtual destructor ensures use of polymorphism during destruction
-    virtual ~ConcreteTargetCalculator()
+    virtual ~ReferenceMeshTargetCalculator()
       {};
   };
   

@@ -89,6 +89,7 @@ namespace Mesquite
 
       //! \enum chooses the calculation for the \f$ \lambda_k \f$ coefficient.
     enum lambda_type {
+      L00, //!< Returns the scalar 1 . 
       L11, //!< 
       L12, //!< 
       L13, //!< 
@@ -105,6 +106,7 @@ namespace Mesquite
     
       //! \enum chooses the calculation for the \f$ D_k \f$ diagonal matrix.
     enum D_type {
+      D00, //!< Identity matrix
       D11, //!<
       D21, //!<
       D31, //!<
@@ -140,9 +142,9 @@ namespace Mesquite
     
       //! chooses the calculation for the \f$ R_k \f$ matrix.
     enum W_type {
-      W00, //!< W matrices are set to the corners of the reference mesh.
+      W00, //!< W matrices are set to the default corner matrices for ideal elements. 
       W11, //!<
-      W21, //!<
+      W21, //!< W matrices are set to the corners of the reference mesh.
       W31, //!<
       W41, //!<
       W42  //!<

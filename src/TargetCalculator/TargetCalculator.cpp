@@ -192,6 +192,7 @@ double TargetCalculator::compute_L(enum lambda_type l_type, MsqError &err)
     case L21:
     case L22:
       break;
+    case L00:
     case L31:
     case L32:
     case L41:
@@ -262,6 +263,7 @@ void TargetCalculator::compute_Lk(enum lambda_type l_type, PatchData &ref_pd,
   {
     // Returns 1.0 if a local (element-based) lambda was needed. 
     switch (l_type) {
+    case L00:
     case L11:
     case L12:
     case L13:
@@ -298,6 +300,7 @@ void TargetCalculator::compute_Lk(enum lambda_type l_type, PatchData &ref_pd,
     case D21:
     case D31:
       break;
+    case D00:
     case D41:
     case D42:
     case D43:
@@ -341,6 +344,7 @@ void TargetCalculator::compute_Lk(enum lambda_type l_type, PatchData &ref_pd,
   {
     // Returns 1.0 if a global (mesh-based) D was needed. 
     switch (type) {
+    case D00:
     case D11:
     case D21:
     case D31:
@@ -494,7 +498,31 @@ void TargetCalculator::compute_Lk(enum lambda_type l_type, PatchData &ref_pd,
 
     switch(type) {
     case W00:
+      {
+        Matrix3D tmp_tri, tmp_quad, tmp_tet, tmp_hex;
+        initialize_default_target_matrices(tmp_tri, tmp_quad, tmp_tet, tmp_hex);
+        EntityTopology elem_type = elems[elem_ind].get_element_type();
+        switch (elem_type) {
+        case TRIANGLE:
+          for (int i=0; i<3; ++i) W_k[i] = tmp_tri; 
+          break;
+        case QUADRILATERAL:
+          for (int i=0; i<4; ++i) W_k[i] = tmp_quad; 
+          break;
+        case TETRAHEDRON:
+          for (int i=0; i<4; ++i) W_k[i] = tmp_tet; 
+          break;
+        case HEXAHEDRON:
+          for (int i=0; i<8; ++i) W_k[i] = tmp_hex; 
+          break;
+        default:
+          err.set_msg("Element type not implemented.");
+          return;
+        }
+      }
+    case W21:
       elems[elem_ind].compute_corner_matrices(ref_pd, W_k, nve, err); MSQ_CHKERR(err);
+      return;
     default:
       err.set_msg("W type not implemented.");
     }
