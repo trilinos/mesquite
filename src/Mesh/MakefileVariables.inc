@@ -14,4 +14,6 @@ MESHHEADERS = \
 
 MESHOBJ  = $(patsubst $(MESHDIR)/%.cpp, obj/%.o,$(MESHSRC))
 
-ALL_MSQ_OBJ += $(MESHOBJ)
+ALL_MSQ_OBJ += $(MESHOBJ) $(TSTT_OBJS) 
+
+TSTT_SRCS = $(MESHDIR)/MeshTSTT.cpp

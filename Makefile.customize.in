@@ -1,31 +1,39 @@
-CC = @CC@
-CXX = @CXX@
-LINKER = ${CXX}
-PREFIX = @
+  # Base make configuration
+MSQ_BASE_DIR = @MSQ_BASE_DIR@
+PREFIX       = @
+DEBUG_FLAG   = 
+
+  # Programs
+CXX        = @CXX@
+LINKER     = $(CXX)
+ARCHIVER   = @CXX_ARCHIVER@
 MAKEDEPEND = @MAKEDEPEND@
-ARCHIVER = @CXX_ARCHIVER@
+BABEL      = @BABEL@
+DOXYGEN    = @DOXYGEN@
+SED        = @SED@
 
-## Default settings for flags
-DEBUG_FLAG = 
-AOMD_FLAG = @AOMD_FLAG@
-CXXFLAGS = ${DEBUG_FLAG} ${INCLUDE} ${AOMD_FLAG} @MSQ_FUNC_DEFS@ @HAVE_IEEEFP_H@
-DEPEND_FLAGS = ${DEBUG_FLAG} ${INCLUDE} 
-LDFLAGS = ${DEBUG_FLAG}
+  # Flags
+CXXFLAGS   = @CXXFLAGS@
+LDFLAGS    = @LDFLAGS@
+FUNCDEFS   = @MSQ_FUNC_DEFS@ @HAVE_IEEEFP@
+CPPUNIT_INC = @CPPUNIT_INC@
+CPPUNIT_LNK = @CPPUNIT_LNK@
 
-## The path to the root mesquite directory.  Needs to be changed
-## if you are including Makefile.customize in something other
-## than the main Makefile.
-MSQ_BASE_DIR = .
+  # ExodusII
+EXODUS_CFLAGS   = @EXODUS_CFLAGS@
+EXODUS_LDFLAGS  = @EXODUS_LDFLAGS@
 
-## How to link in AOMD (optional)
-#AOMD_LIB_DIR = @AOMD_ROOT@/Trellis/AOMD/lib/x86linux/
-#AOMD_TSTT_LINK = -L${AOMD_LIB_DIR} -lAOMD -lm
+  # TSTT
+TSTT_CLIENT_DIR     = @TSTT_CLIENT_DIR@
+TSTT_CFLAGS         = @TSTT_CFLAGS@
+TSTT_LDFLAGS        = @TSTT_LDFLAGS@
+TSTT_OBJS           = @TSTT_OBJS@
 
-## Change this macro to link in a TSTT implementation
-#TSTT_LINK = ${AOMD_TSTT_LINK}
-TSTT_LINK =
+  # AOMD
+AOMD_FLAG       = @AOMD_FLAG@
 
-## How to link in MDB
-MDB_LIB_DIR = ${MSQ_BASE_DIR}/external/MDB/lib
-EXODUS_LIB_DIR = ${MSQ_BASE_DIR}/external/exodus/lib
-MDB_TSTT_LINK = -L${MDB_LIB_DIR} -lMDB -L$(EXODUS_LIB_DIR) -lexoIIv2c -lnetcdf
+  # Combine
+CONFIG_CFLAGS = $(DEBUG_FLAG) $(FUNCDEFS) $(EXODUS_CFLAGS) $(TSTT_CFLAGS) $(INCLUDE)
+CONFIG_LDFLAGS = $(EXODUS_LDFLAGS) $(TSTT_LDFLAGS)
+CXXFLAGS += $(CONFIG_CFLAGS)
+LDFLAGS += $(CONFIG_LDFLAGS)

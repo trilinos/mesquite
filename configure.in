@@ -16,145 +16,128 @@ AC_INIT(include/Mesquite.hpp)
 #------------------------------------------------------------------------------
 AC_CONFIG_AUX_DIR(./config_aux)
 
-if test "${prefix}" = "NONE"; then
-    prefix=/usr/local
-fi
-if test "${exec_prefix}" = "NONE"; then
-    exec_prefix=$prefix
-fi
-
-# source tree vars
-MSQ_ROOT=`pwd`
-# The next two lines entirely quoted to keep autoconf/m4 
-# from messing with the [] in the regex.
-[MSQ_PARENT=`echo $MSQ_ROOT | sed 's%[^/][^/]*$%%' | sed 's%\/$%%'`]
-[MSQ_GRANDPARENT=`echo $MSQ_PARENT | sed 's%[^/][^/]*$%%' | sed 's%\/$%%'`]
-[MSQ_ANCESTOR=`echo $MSQ_GRANDPARENT | sed 's%[^/][^/]*$%%' | sed 's%\/$%%'`]
-# install tree vars
-MSQ_INSTALL_ROOT="$MSQ_ROOT"
-
-#-------------------------------------------------------------
-# Load in the Msq macros determined by the config/acsite.m4 file
-#-------------------------------------------------------------
-
-# Checks for unix programs
-AC_DEFUN(MSQ_UNIX_PROGRAMS,
-[
+#------------------------------------------------------------------------------
+# Standard stuff
+#------------------------------------------------------------------------------
 AC_CANONICAL_SYSTEM
+
+#------------------------------------------------------------------------------
+# Compile flag options -- need to do this *before* detecting the compiler
+# otherwise cannot tell if user has CXXFLAGS defined already or if config
+# set to a default value.
+#------------------------------------------------------------------------------
+AC_ARG_ENABLE( [release], [[
+  --enable-release                Release build (defualt if other options 
+                                  don't override)]],
+  [MSQ_DO_RELEASE="$enableval"], [MSQ_DO_RELEASE=""] )
+AC_ARG_ENABLE( [debug], [[
+  --enable-debug                  Debug build]], 
+  [MSQ_DO_DEBUG="$enableval"], [MSQ_DO_DEBUG="no"] )
+AC_ARG_ENABLE( [debug-output], [[
+  --enable-debug-output[=n,m,...] Enable debug output.  Optionally specify 
+                                  comma-separated list of flags to enable.  
+                                  --enable-debug implies --enable-debug-output=1,2
+  --disable-debug-output          Override default enable implied by --enable-debug]],
+  [MSQ_DEBUG_OUT="$enableval"], [MSQ_DEBUG_OUT=""] )
+AC_ARG_ENABLE( [function-timers], [[  
+  --enable-function-timers        Enable function timers]], 
+  [MSQ_DO_TIMERS="$enableval"], [MSQ_DO_TIMERS="no"] )
+
+if test -z "$MSQ_DO_RELEASE"; then
+  # do default unless CXXFLAGS or -debug have been specified
+  if test -z "$CXXFLAGS" -a "$MSQ_DO_DEBUG" = "no"; then
+    CXXFLAGS="-O2"
+  fi
+elif test "$MSQ_DO_RELEASE" != "no"; then
+  CXXFLAGS="$CXXFLAGS -O2"
+fi
+
+if test "$MSQ_DO_DEBUG" != "no"; then
+  CXXFLAGS="$CXXFLAGS -g"
+  if test -z "$MSQ_DEBUG_OUT"; then
+    CXXFLAGS="$CXXFLAGS -DMSQ_ENABLE_DEBUG=1,2"
+  fi
+fi
+
+if test -n "$MSQ_DEBUG_OUT"; then
+  if test "$MSQ_DEBUG_OUT" = "yes"; then 
+    CXXFLAGS="$CXXFLAGS -DMSQ_ENABLE_DEBUG"
+  elif test "$MSQ_DEBUG_OUT" != "no"; then
+    CXXFLAGS="$CXXFLAGS -DMSQ_ENABLE_DEBUG=$MSQ_DEBUG_OUT"
+  fi
+fi
+
+if test "$MSQ_DO_TIMERS" = "yes"; then
+  CXXFLAGS="$CXXFLAGS -DMSQ_USE_FUNCTION_TIMERS"
+fi
+  
+
+#------------------------------------------------------------------------------
+# Check for required executables
+#------------------------------------------------------------------------------
+AC_PROG_LN_S
+AC_PROG_MAKE_SET
+AC_PROG_RANLIB
+AC_PROG_CC
+AC_PROG_CXXCPP
+AC_PROG_CXX
+AC_CHECK_PROG(SED,sed,sed)
+if test -z $SED; then AC_MSG_ERROR("configure requires sed"); fi
+MSQ_CHK_PROG_WITH(MAKEDEPEND, makedepend, /bin/true, [[
+  --with-makedpend=PROG   Full path to C/C++ dependency generator
+  --without-makedepend    Do not generate dependency information during build]], 
+ [/usr/bin/X11:/usr/openwin/bin])
+MSQ_CHK_PROG_WITH(DOXYGEN, doxygen, no, [[
+  --with-doxygen[=PROG]   Optionally specify doxygen program.
+  --without-doxygen       Disable generation of documentation]])
+  
+
+#-----------------------------------------------------------------------------
+# Check for required headers
+#-----------------------------------------------------------------------------
 AC_HEADER_STDC
 AC_CHECK_HEADERS(fcntl.h strings.h sys/file.h sys/time.h unistd.h)
+HAVE_IEEEFP=
+AC_CHECK_HEADER( ieeefp.h, HAVE_IEEEFP=-DHAVE_IEEEFP )
+AC_SUBST(HAVE_IEEEFP)
 
-AC_PROG_LN_S
-AC_SUBST(LN_S)
+#-----------------------------------------------------------------------------
+# Check for required functions
+#-----------------------------------------------------------------------------
+AC_CHECK_FUNCS( vsnprintf, [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_VSNPRINTF"] )
+AC_CHECK_FUNCS( vsprintf, [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_VSPRINTF"] )
+AC_CHECK_FUNCS( clock, [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_CLOCK"] )
+AC_CHECK_FUNCS( times, [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_TIMES"] )
+AC_SUBST(MSQ_FUNC_DEFS)
 
-AC_PROG_MAKE_SET
-AC_SUBST(SET_MAKE)
+#-----------------------------------------------------------------------------
+# Check C++ environment
+#-----------------------------------------------------------------------------
+MSQ_CPLUSPLUS_FUNC
+MSQ_CPLUSPLUS_HEADERS
 
-AC_PROG_RANLIB
-AC_SUBST(RANLIB)
-
-
-# source tree vars
-CURRDIR=`pwd`
-# The next two lines entirely quoted to keep autoconf/m4 
-# from messing with the [] in the regex.
-[CURRDIR_PARENT=`echo $CURRDIR | sed 's%[^/][^/]*$%%' | sed 's%\/$%%'`]
-[CURRDIR_GRANDPARENT=`echo $CURRDIR_PARENT | sed 's%[^/][^/]*$%%' | sed 's%\/$%%'`]
-[CURRDIR_GREATGRANDPARENT=`echo $CURRDIR_GRANDPARENT | sed 's%[^/][^/]*$%%' | sed 's%\/$%%'`]
-[CURRDIR_ANCESTOR=`echo $CURRDIR_GREATGRANDPARENT | sed 's%[^/][^/]*$%%' | sed 's%\/$%%'`]
-]
+#-----------------------------------------------------------------------------
+# Try to find an archiver that correctly handles C++ templates
+#-----------------------------------------------------------------------------
+CXX_ARCHIVER=
+AC_ARG_WITH( archiver, [
+  --with-archiver=ARG     Specify tool for creating static libraries], 
+ [
+ MSQ_TEST_ARCHIVER( [$withval], 
+  [ CXX_ARCHIVER=$withval; AC_SUBST(CXX_ARCHIVER) ],
+  [AC_MSG_ERROR(["$with_archiver" : not a valid archiver.])]
+  ) ],
+  [MSQ_CPLUSPLUS_ARCHIVER ]
 )
+AC_SUBST(CXX_ARCHIVER)
 
-## end of paths to search collection
 
-AC_DEFUN(MSQ_COMPILER,
-[
-#AC_LANG_CPLUSPLUS
-
-# FIND C compiler
 #------------------------------------------------------------------------------
-#  see if the user gave us the location of the c compiler
+# Some GCC-specific stuff
 #------------------------------------------------------------------------------
-AC_ARG_WITH(cc,
-    [Location of alternative c compiler:
-  --with-cc=EXECUTABLE
-                          The location of C.
-                          Give the full path:
-                              --with-cc='/usr/local/gcc/bin/gcc' ],
-    , [with_cc=yes])
-
-case "$with_cc" in
-    no)
-        #  User specified --without-cc
-        #  print a warning.
-        AC_MSG_WARN([Option '--without-cc' Causes demo to be suppressed.])
-        AC_MSG_ERROR([A c compiler is required; demo has a c code.])
-        ;;
-    yes)
-        #  User didn't give the option or didn't give useful
-        #  information, search for it ourselves
-        with_cc=_searching
-        ;;
-    *)
-        CC="$with_cc"
-        ;;
-esac
-
-if test "$with_cc" = _searching ; then
-    AC_PROG_CC
-fi
-AC_SUBST(CC)
-
-# FIND c++ compiler
-#------------------------------------------------------------------------------
-#  see if the user gave us the location of the c++ compiler
-#------------------------------------------------------------------------------
-AC_ARG_WITH(cxx,
-    [Location of alternative c++ compiler:
-  --with-cxx=EXECUTABLE
-                          The location of C++.
-                          Give the full path:
-                              --with-cxx='/usr/local/gcc/bin/g++' ],
-    , [with_cxx=yes])
-
-case "$with_cxx" in
-    no)
-        #  User specified --without-cxx
-        #  print a warning.
-        AC_MSG_WARN([Option '--without-cxx' Causes compilation to be suppressed.])
-        AC_MSG_ERROR([A c++ compiler is required; current code is a c++ code.])
-        ;;
-    yes)
-        #  User didn't give the option or didn't give useful
-        #  information, search for it ourselves
-        with_cxx=_searching
-        ;;
-    *)
-        CXX="$with_cxx"
-        ;;
-esac
-
-if test "$with_cxx" = _searching ; then
-    AC_PROG_CXX
-fi
-
-# FIND c++ preprocessor
-AC_PROG_CXXCPP
-AC_SUBST(CXXCPP)
-
-# set the warning flags depending on whether or not we are using gcc
 if test "${GCC}" = "yes" ; then
-    CFLAGS_WARNING="-Wall -Wconversion"
-else
-    CFLAGS_WARNING=""
+    CXXFLAGS="$CXXFLAGS -Wall -Wconversion"
 fi
-AC_SUBST(CFLAGS_WARNING)
-
-#------------------------------------------------------------------------------
-# If we're using GCC, see if the compiler understands -pipe.  If so, use it.
-# It makes compiling go faster.  (This is only a performance feature.)
-#------------------------------------------------------------------------------
-
 if test -z "$no_pipe"; then
 if test -n "$GCC"; then
   AC_MSG_CHECKING([if c++ compiler understands -pipe])
@@ -167,12 +150,216 @@ if test -n "$GCC"; then
 fi
 fi
 
-AC_SUBST(CXX)
-AC_SUBST(CXXFLAGS)
-AC_SUBST(CXX_TEMPLATES)
-]
-)
 
+#------------------------------------------------------------------------------
+# ExodusII support
+#------------------------------------------------------------------------------
+EXODUS_CFLAGS=
+EXODUS_LDFLAGS=
+EXODUS_DIR=
+AC_ARG_WITH(exodus,[[
+  --with-exodus[=DIR]     Enable exodusII support and specifiy directory
+  --without-exodus        Disable exodusII support (default)]],
+  [
+  if test "$withval" == "yes"; then
+
+    EXODUS_CFLAGS="-DMSQ_USING_EXODUS"
+    AC_CHECK_HEADER( [exodusII.h], [], [AC_MSG_ERROR("exodusII.h not found")])
+    AC_CHECK_LIB( [exoIIv2c], ex_open, 
+      [EXODUS_LDFLAGS=-lexoIIv2c], [AC_MSG_WARN("No ExodusII library")])
+
+  elif test "$withval" != "no"; then
+    
+    EXODUS_DIR=$withval
+    EXODUS_CFLAGS="-DMSQ_USING_EXODUS -I${EXODUS_DIR}/include"
+    AC_CHECK_FILE( [${EXODUS_DIR}/include/exodusII.h], [], 
+       [AC_MSG_ERROR("${EXODUS_DIR}/include/exodusII.h does not exist")] )
+    AC_CHECK_FILE( [${EXODUS_DIR}/lib/libexoIIv2c.a], 
+       [EXODUS_LDFLAGS="-L${EXODUS_DIR}/lib -lexoIIv2c"], 
+       [AC_MSG_ERROR("${EXODUS_DIR}/lib/libexoIIv2c.a does not exist")] )
+  fi
+  ])
+
+NETCDF_DIR=
+AC_ARG_WITH(netcdf,[[
+  --with-netcdf[=DIR]     ExodusII requires NetCDF - defaults to values for --with-exodus
+  --without-netcdf        Skip NetCDF check]],
+  [NETCDF_DIR=$withval], [NETCDF_DIR=none])
+# Ignore netcdf if no exodus
+if test -n "$EXODUS_CFLAGS"; then
+  if test "$NETCDF_DIR" = "no"; then
+    AC_MSG_WARN("Configuring ExodusII without NetCDF");
+  else
+    if test -n "$EXODUS_DIR"; then
+      if test "$NETCDF_DIR" = "yes" -o "$NETCDF_DIR" = "none"; then
+        NETCDF_DIR="$EXODUS_DIR"
+      fi
+    fi
+    if test "$NETCDF_DIR" = "yes"; then
+      AC_CHECK_HEADER( [netcdf.h], [], [AC_MSG_ERROR("netcdf.h not found")])
+      AC_CHECK_LIB( [netcdf], nc_open, 
+        [EXODUS_LDFLAGS="$EXODUS_LDFLAGS -lnetcdf"], [AC_MSG_WARN("No NetCDF library")])
+    else
+      if test "$NETCDF_DIR" != "$EXODUS_DIR"; then
+        EXODUS_LDFLAGS="$EXODUS_LDFLAGS -L${NETCDF_DIR}/lib"
+        EXODUS_CFLAGS="$EXODUS_CFLAGS -I${NETCDF_DIR}/include"
+      fi
+      AC_CHECK_FILE( [${NETCDF_DIR}/include/netcdf.h], [], 
+         [AC_MSG_ERROR("${NETCDF_DIR}/include/netcdf.h does not exist")] )
+      AC_CHECK_FILE( [${NETCDF_DIR}/lib/libnetcdf.a], 
+         [EXODUS_LDFLAGS="${EXODUS_LDFLAGS} -lnetcdf"], 
+         [AC_MSG_ERROR("${NETCDF_DIR}/lib/libnetcdf.a does not exist")] )
+    fi
+  fi
+fi
+
+AC_SUBST(EXODUS_CFLAGS)
+AC_SUBST(EXODUS_LDFLAGS)
+
+
+#------------------------------------------------------------------------------
+# TSTT-support
+#------------------------------------------------------------------------------
+
+TSTT_CFLAGS=
+TSTT_OBJS=
+TSTT_LDFLAGS=
+TTST_CLIENT_SRCS=
+TSTT_MKINCL=
+
+MSQ_DEFAULT_TSTT_DIR=tstt/client
+TSTT_CLIENT_DIR="$MSQ_DEFAULT_TSTT_DIR"
+AC_ARG_WITH(tstt, 
+[[  --with-tstt[=DIR]       Enable compilation of Mesquite-TSTT interface.
+                          The argument is the directory containing the TSTT
+                          C++ client interface and glue code.  If no 
+                          directory is specified, the client interface will
+                          be generated from the TSTT interface SIDL 
+                          defintion in ${TSTT_CLIENT_DIR}.  This requires the
+                          bable compiler.
+  --without-tstt          Disable compilation of Mesquite-TSTT interface.]],
+[  if test "$withval" == "no"; then
+     TSTT_CLIENT_DIR=
+   elif test "$withval" != "yes"; then
+     TSTT_CLIENT_DIR="$withval"
+     AC_CHECK_FILES([SIDL.hh TSTT.hh babel.make],[],
+       [AC_MSG_ERROR("$TSTT_CLIENT_DIR does not contain C++ TSTT client interface")])
+   fi 
+], [TSTT_CLIENT_DIR=])
+if test "$TSTT_CLIENT_DIR" = "$MSQ_DEFAULT_TSTT_DIR"; then
+  TSTT_CFLAGS="$TSTT_CFLAGS -I$TSTT_CLIENT_DIR"
+  TSTT_CLIENT_SRCS='$(IORSRCS) $(STUBSRCS)'
+  TSTT_MKINCL="include ${TSTT_CLIENT_DIR}/babel.make"
+  TSTT_LDFLAGS='$(TSTT_CLIENT_OBJS)'
+  TSTT_OBJS='$(TSTT_SRCS:.cpp=.o)'
+fi
+AC_SUBST(TSTT_CLIENT_DIR)
+
+
+TSTT_SERVER_LINK=
+AC_ARG_WITH(tstt-server,
+[[  --with-tstt-server=DIR,LIB[,LIB2] Specify an mesh database implementing the
+                          TSTT interface for use in testing.  This is not
+                          required for building Mesquite.  It is used to build
+                          test cases which test/require a TSTT implementation.
+                          The argument list is required, and is a comma-
+                          separated list of values.  The first value is the
+                          directory containing the libraries composing the TSTT
+                          server implementation.  If no directory is specified,
+                          the default library search path will be used.  The
+                          remaining arguments are the names of libraries 
+                          required for the TSTT server implementation.  
+                          Example:
+                          --with-tstt-server=../MOAB,MOAB,MOABServer will
+                          include ../MOAB/libMOAB.so and ../MOAB/libMOABServer.so
+                          in the list of link libs.
+  --without-tstt-server   Do not build tests that require TSTT. ]],
+[ if test "$withval" == "yes"; then
+    AC_MSG_ERROR("An argument is required for --with-tstt-server")
+  elif test "$withval" != "no"; then
+    
+    SERVER_DIR=`echo "$withval" | $SED -e "s/,.*$//"
+    withval=`echo "$withval" | $SED -e "s/^[^,]*,//"
+    if test -n "$SERVER_DIR"; then
+      if test ! -d "$SERVER_DIR"; then
+        AC_MSG_ERROR("$SERVER_DIR is not a directory.")
+      fi
+      SERVER_DIR="-L$SERVER_DIR"
+    fi
+    
+    if test -z "$withval"; then
+      AC_MSG_ERROR("No library specified for --with-tstt-server")
+    fi
+    
+    LIBLIST=
+    while test -n "$withval"; do
+      lib=`echo "$withval" | $SED -e "s/,.*$//"
+      withval=`echo "$withval" | $SED -e "s/^[^,]*,//"
+      LIBLIST="$LIBLIST -l$lib"
+    done
+  
+    TSTT_LDFLAGS="$TSTT_LDFLAGS ${SERVER_DIR}${LIBLIST}"
+  fi
+])
+    
+    
+
+
+  # Check for SIDL library (required for TSTT)
+AC_ARG_WITH(babel,
+[[  --with-babel[=DIR]       Specify directory where Babel exectuable and SIDL headers/libs are installed.
+  --without-babel          Disable use of Babel/SIDL]],
+  [
+  if test "$withval" == "yes"; then
+
+    AC_CHECK_HEADER( [sidl.h], [], [AC_MSG_ERROR("sidl.h not found")])
+    AC_CHECK_LIB( [sidl], SIDL_long__array_copy, 
+      [TSTT_LDFLAGS="$TSTT_LDFLAGS -lsidl"], 
+      [AC_MSG_WARN("No SIDL library")])
+    AC_CHECK_PROG( BABEL, babel, babel )
+
+  elif test "$withval" != "no"; then
+    
+    TSTT_CFLAGS="$TSTT_CFLAGS -I${withval}/include"
+    AC_CHECK_FILE( [${withval}/include/sidl.h], [], 
+       [AC_MSG_ERROR("${withval}/include/sidl.h does not exist")] )
+    AC_CHECK_FILE( [${withval}/lib/libsidl.so], 
+       [TSTT_LDFLAGS="$TSTT_LDFLAGS -L${withval}/lib -lsidl"], 
+       [AC_CHECK_FILE( [${withval}/lib/libsidl.a], 
+          [TSTT_LDFLAGS="$TSTT_LDFLAGS -L${withval}/lib -lsidl"], 
+          [AC_MSG_ERROR("${withval}/lib/libexoIIv2c.a does not exist")] )])
+    AC_CHECK_PROG( BABEL, babel, [${withval}/bin/babel], [], [${withval}/bin] )
+  fi
+  ],
+  [
+  if test -n "$TSTT_CFLAGS"; then
+
+    AC_CHECK_HEADER( [sidl.h], [], [AC_MSG_ERROR("sidl.h not found")])
+    AC_CHECK_LIB( [sidl], SIDL_long__array_copy, 
+      [TSTT_LDFLAGS="$TSTT_LDFLAGS -lsidl"], 
+      [AC_MSG_WARN("No SIDL library")])
+    AC_CHECK_PROG( BABEL, babel, babel )
+
+  fi  
+  ])
+
+  # If generating TSTT headers/stubs in local tstt directory,
+  # need babel compiler to do so.
+if test -z "$BABEL"; then
+  if test -n "$TSTT_CFLAGS"; then
+    if test "$MSQ_DEFAULT_TSTT_DIR" = "$TSTT_CLIENT_DIR"; then
+      AC_MSG_ERROR( "Babel is required to generated TSTT client headers/stubs" )
+    fi
+  fi
+fi
+
+
+AC_SUBST(TSTT_CFLAGS)
+AC_SUBST(TSTT_OBJS)
+AC_SUBST(TSTT_LDFLAGS)
+AC_SUBST(TSTT_CLIENT_SRCS)
+AC_SUBST(TSTT_MKINCL)
+AC_SUBST(BABEL)
 
 #------------------------------------------------------------------------------
 # AOMD: See if the user gave us the location of cca-spec
@@ -183,8 +370,6 @@ AC_SUBST(CXX_TEMPLATES)
 #------------------------------------------------------------------------------
 # cca spec (must contain java and cxx binding subdirs)
 
-AC_DEFUN(MSQ_AOMD,
-[
 AC_ARG_WITH(aomd, 
     [Location of aomd library:
   --with-aomd=AOMD_LIB
@@ -221,168 +406,86 @@ if test ! "$with_aomd" = no ; then
   AOMD_FLAG="-D_MY_HASH_TABLE_"
 fi
 AC_SUBST(AOMD_FLAG)
-]
-)
-
-#------------------------------------------------------------------------------
-# DOXYGEN_PATH: See if the user gave us the location of doxygen
-# then search $ccatut_dox_dirs_dirs.
-# One of these directories must be
-# present and contain the correct files, or else the user
-# must give the directory that contains the correct files.
-#------------------------------------------------------------------------------
-AC_DEFUN(MSQ_PROG_DOXYGEN,
-[
-ccatut_dox_dirs="
-    $prefix/bin/doxygen
-    /usr/bin/doxygen
-    /usr/local/bin/doxygen
-    $HOME/doxygen/bin/doxygen
-    $MSQ_HOME/doxygen
-    $HOME/bin/doxygen
-"
-AC_ARG_WITH(dox, 
-            [Location of doxygen:
-             --with-dox=DoxygenLocation
-             The location of doxygen. Give the full path:
-                              --with-dox='/usr/local/bin/doxygen'],
-    , [with_dox=_searching])
-
-case "$with_dox" in
-    no)
- 	AC_MSG_WARN([Option '--without-dox'
-	makes it impossible to produce source-based documentation.])
-        ;;
-    yes)
-        #  User didn't give the option or didn't give useful
-        #  information, search for it ourselves
-        with_dox=_searching
-        ;;
-    *)
-        DOXYGEN_PATH="$with_dox"
-        ;;
-esac
-
-if test "$with_dox" = _searching ; then
-    AC_MSG_CHECKING([for OPTIONAL doxygen])
-    for dox in $ccatut_dox_dirs ; do
-        if test -f $dox ; then
-            with_dox=$dox
-            AC_MSG_RESULT([found $dox.])
-            break
-        fi
-    done
-fi
-
-if test "$with_dox" = _searching ; then
-    AC_MSG_RESULT([Cannot find doxygen.])
-    AC_MSG_WARN([Without doxygen, it is impossible to produce source-based 
-	documentation.  If you wish to be able to generate this documentation,
-	please re-run configure with a --with-dox=doxygen_path option.])
-    with_dox="no"
-fi
-
-if test "$with_dox" = no ; then
-   with_dox="@echo WARNING: doxygen not configured!"
-fi
-
-DOXYGEN_PATH="$with_dox"
-AC_SUBST(DOXYGEN_PATH)
-]
-)
-
-AC_SUBST(MSQ_ROOT)
-AC_SUBST(MSQ_INSTALL_ROOT)
 
 
-# --------------------------------------------------
-# Checks for Makedepend (can be passed in as option).
-# --------------------------------------------------
-AC_ARG_WITH(makedepend,
-    [Location of alternative makedepend program:
-  --with-makedepend=EXECUTABLE
-                          The location of makedepend.
-                          Give the full path:
-                              --with-makedepend='/usr/local/bin/makedepend' ],
-    , [with_makedepend=yes])
-
-case "$with_makedepend" in
-    no)
-	# no check for makedepend
-	AC_MSG_WARN([No makedepend given. Will not generate Makefile dependencies for your installation ... or please use --with-makedepend=[path] option.])
-        ;;
-    yes)
-        # search for it ourselves
-	AC_CHECK_PROG(MAKEDEPEND, makedepend, makedepend, nomakedepend, $PATH, :)dnl
-        ;;
-    *)
-	# Checks path given by user. 
-	AC_CHECK_PROG(MAKEDEPEND,"$with_makedepend","$with_makedepend", nomakedepend, /., :)dnl
-	if test "$MAKEDEPEND" = "nomakedepend" ; then
-	  AC_MSG_ERROR([option --with-makedepend='...' has been given an invalid executable.])
-	fi
-        ;;
-esac
-
-#  print a warning if none found.
-if test "$MAKEDEPEND" = nomakedepend ; then
-   AC_MSG_WARN([Needs makedepend to generate dependencies for your installation. You need the dependencies for a robust (re)compilation.])
-   AC_MSG_WARN([Please try to use --with-makedepend='/PATH/makedepend'.])
-fi
-AC_SUBST(MAKEDEPEND)
-touch make.dependencies
 # ----------------------------------------------------------------
 
+#------------------------------------------------------------------------------
+# CppUnit
+#------------------------------------------------------------------------------
+CPPUNIT_INC=
+CPPUNIT_LNK=
+WITH_CPPUNIT=no
+AC_ARG_WITH(cppunit,[[
+  --with-cppunit[=DIR]     Specify directory where CppUnit is installed.
+  --without-cppunit        Disable CppUnit tests]],
+  [
+  AC_LANG_PUSH(C++)
+  if test "$withval" == "yes"; then
 
-#-----------------------------------------------------------------
-#  see if the user gave us the location of a prefered archiver
-#-----------------------------------------------------------------
-AC_ARG_WITH(archiver,
-    [Location of alternative archiver:
-  --with-archiver=EXECUTABLE
-                          The location of the prefered archiver.
-                          Give the full path and arguments:
-                              --with-archiver='/usr/local/bin/ar ru' ],
-    , [with_archiver=])
+    WITH_CPPUNIT=yes
+    AC_CHECK_HEADER( [cppunit/Test.h], [], [AC_MSG_ERROR("cppunit/Test.h not found")])
+    AC_CHECK_LIB( [cppunit], [main], [CPPUNIT_LNK=-lcppunit], [
+      unset ac_cv_lib_cppunit_main
+      AC_CHECK_LIB( [cppunit], [main], [CPPUNIT_LNK="-lcppunit -ldl"], [AC_MSG_ERROR("No libcppunit")], [-ldl])
+    ])
+
+  elif test "$withval" != "no"; then
+    
+    WITH_CPPUNIT=yes
+    CPPUNIT_INC="-I${withval}/include/cppunit"
+    CPPUNIT_LNK="-L${withval}/lib -lcppunit"
+    
+    AC_CHECK_FILE( [${withval}/include/cppunit/Test.h], [], 
+       [AC_MSG_ERROR("${withval}/include/cppunit/Test.h does not exist")] )
+       
+    AC_MSG_CHECKING("Checking if cppunit requires -ldl");
+    LIBS="-L${withval}/lib -lcppunit"
+    AC_TRY_LINK( [], [], [], [
+      LIBS="-L${withval}/lib -lcppunit -ldl"
+      AC_TRY_LINK( [], [], 
+       [CPPUNIT_LNK="$CPPUNIT_LNK -ldl" ], 
+       [AC_MSG_ERROR("Cannot link cppunit")] 
+      )
+    ])
+    AC_MSG_RESULT("done")
+    
+  fi
+  AC_LANG_POP(C++)
+  ], [
+  AC_LANG_PUSH(C++)
+  AC_CHECK_HEADER( [cppunit/Test.h], [WITH_CPPUNIT=yes], [WITH_CPPUNIT=no])
+  AC_CHECK_LIB( [cppunit], [main], [WITH_CPPUNIT=yes; CPPUNIT_LNK="-lcppunit"], [WITH_CPPUNIT=no] )
+  if test "$HAVE_CPPUNIT" != "yes"; then
+    unset ac_cv_lib_cppunit_main
+    AC_CHECK_LIB( [cppunit], [main], [WITH_CPPUNIT=yes; CPPUNIT_LNK="-lcppunit -ldl"], [], [-ldl] )
+  fi
+  if test "$WITH_CPPUNIT" != "yes"; then
+    AC_MSG_WARN("CppUnit not found")
+  fi  
+  AC_LANG_POP(C++)
+  ])
+
+AC_SUBST(CPPUNIT_INC)
+AC_SUBST(CPPUNIT_LNK)
 
 
 
-# -----------------------------------------------------------
 
-MSQ_COMPILER
-MSQ_UNIX_PROGRAMS
-MSQ_AOMD
-MSQ_PROG_DOXYGEN
-MSQ_CPLUSPLUS_FUNC
-MSQ_CPLUSPLUS_HEADERS
-AC_CHECK_FUNCS( vsnprintf, [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_VSNPRINTF"] )
-AC_CHECK_FUNCS( vsprintf, [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_VSPRINTF"] )
-AC_CHECK_FUNCS( clock, [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_CLOCK"] )
-AC_CHECK_FUNCS( times, [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_TIMES"] )
-AC_SUBST(MSQ_FUNC_DEFS)
-HAVE_IEEEFP_H=
-AC_CHECK_HEADER( ieeefp.h, HAVE_IEEEFP_H=-DHAVE_IEEEFP_H )
-AC_SUBST( HAVE_IEEEFP_H )
+#------------------------------------------------------------------------------
+# Set up source directory
+#------------------------------------------------------------------------------
+MSQ_BASE_DIR=`pwd`
+AC_SUBST(MSQ_BASE_DIR)
+touch make.dependencies
+for dir in includeLinks obj lib; do
+  if test ! -d $dir; then
+    mkdir $dir
+  fi
+done
 
-if test -z "$with_archiver"; then
-  MSQ_CPLUSPLUS_ARCHIVER
-else
-  MSQ_TEST_ARCHIVER( [$with_archiver], 
-                     [CXX_ARCHIVER="$with_archiver"
-                      AC_SUBST(CXX_ARCHIVER)],
-                     [AC_MSG_ERROR(["$with_archiver" : not a valid archiver.])] )
-fi
-AR=CXX_ARCHIVER
-AC_SUBST(AR)
-
-
+#------------------------------------------------------------------------------
+# The End
+#------------------------------------------------------------------------------
 AC_CONFIG_HEADERS(include/mesquite_config.h)
 AC_OUTPUT(Makefile.customize)
-
-
-
-
-#touch make.dependencies
-#if [ -d ../driver ]; then
-#  touch ../driver/make.dependencies
-#fi
