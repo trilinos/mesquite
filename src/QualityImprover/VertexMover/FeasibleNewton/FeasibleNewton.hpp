@@ -5,7 +5,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 15-Jan-03 at 08:05:56
-//  LAST-MOD:  1-May-03 at 11:14:44 by Thomas Leurent
+//  LAST-MOD: 19-May-03 at 16:51:21 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -69,6 +69,8 @@ namespace Mesquite
   public:
     FeasibleNewton(ObjectiveFunction* of);
 
+    virtual ~FeasibleNewton()
+    { assert(coordsMem==NULL); }
 
     /*! sets the maximum number of iteration of the Feasible Newton algorythm. */
     void set_maximum_iteration(int iter){
