@@ -162,9 +162,38 @@ class MeshImplData {
                             msq_std::vector<size_t>& index_offsets,
                             MsqError& err );
     
+    /** \brief Get elements adjacent to ALL of the passed nodes.
+     *
+     * Return the list of elements that is the intersection of the
+     * adjacency lists of the specified vertices.
+     */
+    void get_adjacent_elements( msq_std::vector<size_t>::const_iterator nodes,
+                                msq_std::vector<size_t>::const_iterator nodes_end,
+                                msq_std::vector<size_t>& elems_out,
+                                MsqError& err );
+    
+    /**\brief Skin mesh
+     *
+     * Get the boundary of a mesh as element sides
+     *
+     *\param sides Element sides as pairs of values : { elem_index, side_number }
+     */
+    void skin( msq_std::vector<size_t>& sides, MsqError& err );
     
     
   private:
+  
+    /**\brief helper function for skinning
+     *
+     * Check if any elements adjacent to a side of an element
+     * are of the same dimension as the input element.
+     *\param elem  The element 
+     *\param nodes The nodes composing the side of the element
+     */
+    bool has_adjacent_elements( size_t elem,
+                                const msq_std::vector<size_t>& nodes,
+                                MsqError& err );
+     
   
       /** Clear existing element data */
     void clear_element( size_t index, MsqError& err );
@@ -199,7 +228,6 @@ class MeshImplData {
         {}
       
     };
-    
     
     msq_std::vector<Vertex> vertexList;     /**< Array of vertices */
     msq_std::vector<Element> elementList;   /**< Array of elements */

@@ -538,6 +538,149 @@ void MeshImplData::all_elements( msq_std::vector<size_t>& list, MsqError& err ) 
       list.push_back( idx );
 }
 
+void MeshImplData::get_adjacent_elements( 
+                        msq_std::vector<size_t>::const_iterator node_iter,
+                        msq_std::vector<size_t>::const_iterator node_end,
+                        msq_std::vector<size_t>& elems, MsqError& err )
+{
+  if (node_iter == node_end || !is_vertex_valid( *node_iter ))
+  {
+    MSQ_SETERR(err)(MsqError::INVALID_ARG);
+    return;
+  }
+  
+    // Get list of elements adjacent to first node
+  elems = vertexList[*node_iter].adjacencies;
+  
+    // For each aditional node, intersect elems with elements adjacent to node
+  for (++node_iter; node_iter != node_end; ++node_iter)
+  {
+    msq_std::vector<size_t>::iterator elem_iter = elems.begin();
+    while (elem_iter != elems.end())
+    {
+      msq_std::vector<size_t>::const_iterator adj_iter = vertexList[*node_iter].adjacencies.begin();
+      const msq_std::vector<size_t>::const_iterator adj_end = vertexList[*node_iter].adjacencies.end();
+      for (; adj_iter != adj_end; ++adj_iter)
+        if (*elem_iter == *adj_iter)
+          break;
+      
+      if (adj_iter == adj_end)
+      {
+        *elem_iter = elems[elems.size()-1];
+        elems.pop_back();
+      }
+      else
+      {
+        ++elem_iter;
+      }
+    }
+  }
+}
+
+bool MeshImplData::has_adjacent_elements( 
+                        size_t elem,
+                        const msq_std::vector<size_t>& nodes,
+                        MsqError& err )
+{
+  msq_std::vector<size_t> adj_elems;
+  const unsigned dim = TopologyInfo::dimension( elementList[elem].topology );
+  get_adjacent_elements( nodes.begin(), nodes.end(), adj_elems, err );
+  
+  msq_std::vector<size_t>::iterator iter;
+  for (iter = adj_elems.begin(); iter != adj_elems.end(); ++iter)
+    if (*iter != elem && 
+        TopologyInfo::dimension( elementList[*iter].topology ) == dim )
+      break;
+
+  return iter != adj_elems.end();
+}                 
+
+void MeshImplData::skin( msq_std::vector<size_t>& sides, MsqError& err ) 
+{
+  msq_std::vector<size_t> side_nodes;
+  
+    // For each element in mesh
+  for (size_t elem = 0; elem < elementList.size(); ++elem)
+  {
+    if (!is_element_valid(elem))
+      continue;
+    
+      // For each side of the element, check if there
+      // are any adjacent elements.
+    const EntityTopology topo = elementList[elem].topology;
+    msq_std::vector<size_t>& conn = elementList[elem].connectivity;
+    switch (topo)
+    {
+        // For normal elements (not poly****)
+      default:
+      {
+        unsigned num = TopologyInfo::sides( topo );
+        unsigned dim = TopologyInfo::dimension( topo ) - 1;
+          // For each side
+        for (unsigned side = 0; side < num; ++side)
+        {
+            // Get list of vertices defining the side
+          unsigned count;
+          const unsigned* indices = TopologyInfo::side_vertices( topo, dim, side, count, err );
+          MSQ_ERRRTN(err);
+          side_nodes.clear();
+          for (unsigned k = 0; k < count; ++k)
+            side_nodes.push_back( conn[indices[k]] );
+          
+            // If no adjacent element, add side to output list
+          bool adj = has_adjacent_elements( elem, side_nodes, err );
+          MSQ_ERRRTN(err);
+          if ( !adj )
+          {
+            sides.push_back( elem );
+            sides.push_back( side );
+          }
+        }
+      }
+      break;
+      
+      case POLYGON:
+      {
+        for (unsigned side = 0, next = 1; next < conn.size(); ++side, ++next)
+        {
+          side_nodes.clear();
+          side_nodes.push_back( conn[side] );
+          side_nodes.push_back( conn[next] );
+          
+            // If no adjacent element, add side to output list
+          bool adj = has_adjacent_elements( elem, side_nodes, err );
+          MSQ_ERRRTN(err);
+          if ( !adj )
+          {
+            sides.push_back( elem );
+            sides.push_back( side );
+          }
+        }
+      }
+      break;
+      
+      case POLYHEDRON:
+      {
+        for (unsigned side = 0; side < conn.size(); ++side)
+        {
+          side_nodes = elementList[conn[side]].connectivity;
+          
+            // If no adjacent element, add side to output list
+          bool adj = has_adjacent_elements( elem, side_nodes, err );
+          MSQ_ERRRTN(err);
+          if ( !adj )
+          {
+            sides.push_back( elem );
+            sides.push_back( side );
+          }
+        }
+      }
+      break;
+    } // switch(topo)
+  } // for (elementList)
+}          
+
+
 MeshImplVertIter::~MeshImplVertIter()
   {}
 
