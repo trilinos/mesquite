@@ -18,7 +18,8 @@
 #include "StoppingCriterion.hpp"
 #include "PatchData.hpp"
 #include "MeshSet.hpp"
-#include "MsqMessage.hpp"
+#include <iostream>
+#include <fstream.h>
 namespace Mesquite
 {
 
@@ -99,7 +100,9 @@ namespace Mesquite
       return true;
     }
     if(this->get_patch_type()==PatchData::GLOBAL_PATCH){
-      PRINT_INFO("_");
+        //status bar for global case
+      std::cout<<"_";
+      std::cout.flush();
       inner_criterion_met=crit->stop(ms,err);
     }
     else

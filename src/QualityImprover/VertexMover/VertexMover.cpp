@@ -14,7 +14,8 @@
 #include "MsqTimer.hpp"
 #include "MsqMessage.hpp"
 //#include "StoppingCriterion.hpp"
-
+#include <fstream.h>
+#include <iostream>
 using namespace Mesquite;
 
 VertexMover::VertexMover() :
@@ -58,8 +59,8 @@ void VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
   PRINT_INFO("\n");
   while ( !stop_met ) {
       //Status bar
-    PRINT_INFO(".");
-
+    std::cout<<".";
+    std::cout.flush();
     // Prior to looping over the patches.
     // Probably want to pass the MeshSet.  
     this->initialize_mesh_iteration(patch_data, err);MSQ_CHKERR(err); 

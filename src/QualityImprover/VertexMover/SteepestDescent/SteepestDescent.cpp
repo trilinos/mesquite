@@ -10,7 +10,7 @@
 
 #include "SteepestDescent.hpp"
 #include "MsqFreeVertexIndexIterator.hpp"
-
+#include "MsqTimer.hpp"
 using namespace Mesquite;
 
 
@@ -45,6 +45,10 @@ void SteepestDescent::initialize_mesh_iteration(PatchData &/*pd*/, MsqError &/*e
 void SteepestDescent::optimize_vertex_positions(PatchData &pd, 
                                                 MsqError &err)
 {
+#ifdef USE_FUNCTION_TIMERS          
+  StopWatchCollection::Key this_key = GlobalStopWatches.add(__FUNC__,false); 
+  GlobalStopWatches.start(this_key);
+#endif  
     //PRINT_INFO("\no  Performing Steepest Descent optimization.\n");
   // Get the array of vertices of the patch. Free vertices are first.
   MeshSet *vertex_mover_mesh=get_mesh_set();
@@ -158,7 +162,11 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
 
   delete[] gradient;
   delete[] dk;
-    
+#ifdef USE_FUNCTION_TIMERS          
+  GlobalStopWatches.stop(this_key);
+#endif      
+  
+  
 }
 
 
