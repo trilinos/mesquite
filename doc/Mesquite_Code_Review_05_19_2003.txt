@@ -10,9 +10,12 @@ Add multiple norms to measure the gradients.
 
 MsqMeshEntity
 -------------
-why do we have get_vertex_index_array() and get_vertex_indices(). 
+-why do we have get_vertex_index_array() and get_vertex_indices(). 
 Are they both efficient ? Can we remove the inefficient one.
-
+-Templates might be used instead of one object with an internal switch.
+The trick is in making a list of elements which type is not known 
+at compile time. Would a union including all (templated) element
+types do the trick in that list ?
 
 General code
 ------------
