@@ -547,8 +547,8 @@ void Mesquite::MsqMeshEntity::get_connected_vertices(size_t vertex_index,
         }
         else
         {
-          vert_indices.push_back(vertexIndices[(index+3)%4]+4);
-          vert_indices.push_back(vertexIndices[(index+1)%4]+4);
+          vert_indices.push_back(vertexIndices[(index+3)%4+4]);
+          vert_indices.push_back(vertexIndices[(index+1)%4+4]);
           vert_indices.push_back(vertexIndices[(index)-4]);
         }
       }
