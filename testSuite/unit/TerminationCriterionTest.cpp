@@ -8,7 +8,7 @@
 //    E-MAIL: mbrewer@sandia.gov
 //
 // ORIG-DATE: March 5, 2003
-//  LAST-MOD: 23-Jul-03 at 17:44:17 by Thomas Leurent
+//  LAST-MOD: 25-Feb-04 at 10:50:02 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -107,7 +107,7 @@ public:
       Vector3D pnt(0,-5,0);
       Vector3D s_norm(0, -1,0);
       Mesquite::PlanarDomain msq_geom(s_norm, pnt, mesh);
-      mesh_set1.set_domain_constraint(&msq_geom);
+      mesh_set1.set_domain_constraint(&msq_geom, err); MSQ_CHKERR(err);
       
         // create an intruction queue        
       InstructionQueue queue1;

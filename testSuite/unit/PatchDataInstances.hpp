@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 12-Nov-02 at 18:05:56
-//  LAST-MOD: 29-Jan-04 at 17:59:17 by Thomas Leurent
+//  LAST-MOD: 25-Feb-04 at 10:48:17 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -206,7 +206,7 @@ namespace Mesquite
      Vector3D pnt(0,0,0);
      Vector3D s_norm(0,0,3);
      PlanarDomain* msq_geom = new PlanarDomain(s_norm, pnt, NULL);
-     mesh_set1->set_domain_constraint(msq_geom);
+     mesh_set1->set_domain_constraint(msq_geom, err); MSQ_CHKERR(err);
      one_tri_patch.set_mesh_set(mesh_set1);
 
        /* *********************FILL tri************************* */
@@ -283,7 +283,7 @@ namespace Mesquite
      Vector3D pnt(0,0,1);
      Vector3D s_norm(0,0,3);
      PlanarDomain* msq_geom = new PlanarDomain(s_norm, pnt, NULL);
-     mesh_set1->set_domain_constraint(msq_geom);
+     mesh_set1->set_domain_constraint(msq_geom, err); MSQ_CHKERR(err);
      pd.set_mesh_set(mesh_set1);
 
        // **********************FILL tri*************************
@@ -415,7 +415,7 @@ namespace Mesquite
      Vector3D pnt(0,0,0);
      Vector3D s_norm(0,0,3);
      PlanarDomain* msq_geom = new PlanarDomain(s_norm, pnt, NULL);
-     mesh_set1->set_domain_constraint(msq_geom);
+     mesh_set1->set_domain_constraint(msq_geom, err); MSQ_CHKERR(err);
      pd.set_mesh_set(mesh_set1);
 
      pd.set_num_vertices(12);
@@ -627,13 +627,13 @@ namespace Mesquite
       Memory allocated in this function must be deallocated with
       destroy_patch_with_domain().
    */
-   inline void create_qm_two_tri_patch_with_domain(PatchData &triPatch, MsqError &/*err*/) 
+   inline void create_qm_two_tri_patch_with_domain(PatchData &triPatch, MsqError &err) 
    {
      MeshSet* mesh_set1 = new MeshSet;;
      Vector3D pnt(0,0,0);
      Vector3D s_norm(0,0,3);
      PlanarDomain* msq_geom = new PlanarDomain(s_norm, pnt, NULL);
-     mesh_set1->set_domain_constraint(msq_geom);
+     mesh_set1->set_domain_constraint(msq_geom, err); MSQ_CHKERR(err);
      triPatch.set_mesh_set(mesh_set1);
 
      triPatch.set_num_vertices(4);
@@ -664,13 +664,13 @@ namespace Mesquite
        Memory allocated in this function must be deallocated with
        destroy_patch_with_domain().
      */
-   inline void create_qm_two_quad_patch_with_domain(PatchData &quadPatch, MsqError &/*err*/)
+   inline void create_qm_two_quad_patch_with_domain(PatchData &quadPatch, MsqError &err)
    {
      MeshSet* mesh_set1 = new MeshSet;;
      Vector3D pnt(0,0,0);
      Vector3D s_norm(0,0,3);
      PlanarDomain* msq_geom = new PlanarDomain(s_norm, pnt, NULL);
-     mesh_set1->set_domain_constraint(msq_geom);
+     mesh_set1->set_domain_constraint(msq_geom, err); MSQ_CHKERR(err);
      quadPatch.set_mesh_set(mesh_set1);
 
      // Add vertices

@@ -8,7 +8,7 @@
 //    E-MAIL: mbrewer@sandia.gov
 //
 // ORIG-DATE: Jan. 29, 2003
-//  LAST-MOD: 25-Sep-03 at 14:06:51 by Thomas Leurent
+//  LAST-MOD: 25-Feb-04 at 10:49:04 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -104,7 +104,7 @@ public:
        //create geometry: sphere, center (2,2,0), radius 3
      Vector3D center(2,2,0);
      SphericalDomain msq_geom(center, 3.0, mesh);
-     mesh_set1.set_domain_constraint(&msq_geom);
+     mesh_set1.set_domain_constraint(&msq_geom, err); MSQ_CHKERR(err);
      
        // creates an intruction queue
      InstructionQueue queue1;
@@ -176,7 +176,7 @@ public:
        Mesquite::SphericalDomain msq_geom(center, 1.0, mesh);
         //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
-       mesh_set1.set_domain_constraint(&msq_geom);
+       mesh_set1.set_domain_constraint(&msq_geom, err); MSQ_CHKERR(err);
   
          // creates an intruction queue
        InstructionQueue queue1;
@@ -240,7 +240,7 @@ public:
        Mesquite::SphericalDomain msq_geom(center, 1.0, mesh);
         //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
-       mesh_set1.set_domain_constraint(&msq_geom);
+       mesh_set1.set_domain_constraint(&msq_geom, err); MSQ_CHKERR(err);
   
          // creates an intruction queue
        InstructionQueue queue1;

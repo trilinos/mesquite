@@ -8,7 +8,7 @@
 //    E-MAIL: mbrewer@sandia.gov
 //
 // ORIG-DATE: Jan. 29, 2003
-//  LAST-MOD: 25-Sep-03 at 14:06:38 by Thomas Leurent
+//  LAST-MOD: 25-Feb-04 at 10:49:32 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -108,7 +108,7 @@ public:
      Mesquite::PlanarDomain msq_geom(s_norm, pnt, mesh);
        //Make sure no errors
      CPPUNIT_ASSERT(!err.errorOn);
-     mesh_set1.set_domain_constraint(&msq_geom);
+     mesh_set1.set_domain_constraint(&msq_geom, err); MSQ_CHKERR(err);
      
        // creates an intruction queue
      InstructionQueue queue1, queue2;
@@ -218,7 +218,7 @@ public:
        Mesquite::PlanarDomain msq_geom(s_norm, pnt, mesh);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
-       mesh_set1.set_domain_constraint(&msq_geom);
+       mesh_set1.set_domain_constraint(&msq_geom, err); MSQ_CHKERR(err);
        
          // creates an intruction queue
        InstructionQueue queue1, queue2;
@@ -328,7 +328,7 @@ public:
        Mesquite::PlanarDomain msq_geom(s_norm, pnt, mesh);
          //Make sure no errors
        CPPUNIT_ASSERT(!err.errorOn);
-       mesh_set1.set_domain_constraint(&msq_geom);
+       mesh_set1.set_domain_constraint(&msq_geom, err); MSQ_CHKERR(err);
        
          // creates an intruction queue
        InstructionQueue queue1;
