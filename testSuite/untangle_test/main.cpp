@@ -66,7 +66,7 @@ int main()
   TSTT::Mesh_Handle mesh;
   TSTT::MeshError tstt_err;
   TSTT::Mesh_Create(&mesh, &tstt_err);
-  strcpy(file_name, "../../meshFiles/3D/VTK/hex_2_with_bound.vtk");
+  strcpy(file_name, "../../meshFiles/3D/VTK/hex_5_tangled.vtk");
   TSTT::Mesh_Load(mesh, file_name, &tstt_err);
 #else
   Mesh_Handle mesh;
@@ -100,20 +100,19 @@ int main()
   ConjugateGradient* pass1 = new ConjugateGradient( obj_func );
   
   QualityAssessor stop_qa=QualityAssessor(mean_ratio,QualityAssessor::MAXIMUM);
-  
+  stop_qa.add_quality_assessment(untangle,QualityAssessor::ALL_MEASURES,err);
+  stop_qa.set_stopping_assessment(untangle,QualityAssessor::MAXIMUM,err);
     // **************Set stopping criterion**************
-    // StoppingCriterion sc1(&stop_qa,1.0,1.8);
-  StoppingCriterion sc2(StoppingCriterion::NUMBER_OF_PASSES,1);
-    // CompositeAndStoppingCriterion sc(&sc1,&sc2);
-  pass1->set_stopping_criterion(&sc2);
+  StoppingCriterion sc1(&stop_qa,-1.0,.0000001);
+  StoppingCriterion sc2(StoppingCriterion::NUMBER_OF_PASSES,10);
+  CompositeOrStoppingCriterion sc(&sc1,&sc2);
+  pass1->set_stopping_criterion(&sc);
     // sets a culling method on the first QualityImprover
   pass1->add_culling_method(QualityImprover::NO_BOUNDARY_VTX);
 
     // adds 1 pass of pass1 to mesh_set1
     //  queue1.add_preconditioner(pass1, err); MSQ_CHKERR(err);
-  queue1.add_quality_assessor(&stop_qa,err); MSQ_CHKERR(err);
   queue1.set_master_quality_improver(pass1, err); MSQ_CHKERR(err);
-  queue1.add_quality_assessor(&stop_qa,err); MSQ_CHKERR(err);
     // adds 1 passes of pass2 to mesh_set1
     //  mesh_set1.add_quality_pass(pass2);
 
