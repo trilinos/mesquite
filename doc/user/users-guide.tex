@@ -195,40 +195,61 @@ acquired... with appropriate acknowledgments.
 \subsubsection{Compiling Mesquite}
 Having acquired the Mesquite source code, the user can perform the
 following steps which outline the process for compiling the code and
-creating the library, `libmesquite.a'.
+creating the library, `libmesquite.a'. Here is the fastest way to compile Mesquite:
 \begin{enumerate}
-
 \item While in the main directory (typically, .../mesquite/), type
-`config'.  This will set up the makefiles with a default configuration
+`./configure'.  This will create the file Mafefile.customize with a default configuration
 for your platform.
-
-\item Examine the file Makefile.customize.  This file defines
-the tools and settings to be used while compiling Mesquite.  Make
-any modifications deemed necessary to Makefile.customize.  Section
-\ref{mes_vars_and_defs} lists some of the specific variables which
-may need to be modified before Mesquite will compile correctly.
-
-\item While in the main directory (typically, .../mesquite/),
-type 'gmake -f GNUmakefile'.  This will compile all source files
-and create libmesquite.a.  If the build is not successful, you may need
-to make additional modifications to Makefile.customize.
-
-\item If Makefile.customize is modified such that Mesquite will
-link to a compatible implementation of TSTT, type `gmake -f GNUmakefile
-all\_tests' to compile sample executables that use the Mesquite
-library.
-
+\item Type gmake, this will compile the library lib/libmesquite.a
+\item To compile, one of the test, stay in the main directory (mesquite/) and type 
+for example 'gmake testSuite/test\_1/main'. You can also use 'gmake all\_tests' .
 \end{enumerate}
-In general, most customizations to the makefile system should be
-made by modifying Makefile.customize, not by directly modifying
-GNUmakefile.
-\subsubsection{Makefile Definitions}
+If the above worked, you are done. Mesquite compiled succesfully. 
+
+If the above method did not work for your system, you will have to modify the file
+Makefile.customize that contains the platform specific tools and settings to be used 
+while compiling Mesquite. In the remainder of this section, we
+will  list some of the specific variables which
+may need to be modified before Mesquite will compile correctly.
+This can be done in two manners: you can use the configure
+script options (you can also access those options and
+others by typing './configure --help'), or you can edit
+Makefile.customize directly.
+
+\paragraph{Configure Options.}  \label{config_options}
+
+Those options can be given to the configure script through the command line, for example the C headers
+option would be given by typing './configure --with-c-headers=yes' in the mesquite/ directory.
+
+\begin{description}
+\item \texttt{--with-c-headers=yes} Uses the deprecated C style for headers:
+  will use headers like \texttt{<iostream.h>} and \texttt{<math.h>}
+  instead of the new C++ style \texttt{<iostream>} and \texttt{<cmath>}. This might make older
+  compilers work. With newer compilers, you will get a warning for using that option.
+\item \texttt{--with-makedepend=EXECUTABLE} Location of alternative makedepend program:
+Give the full path:  --with-makedepend='/usr/local/bin/makedepend'
+\item \texttt{--with-archiver=EXECUTABLE} Location of alternative archiver (default is 'ar ru'):
+Give the full path: --with-archiver='/usr/local/bin/ar' . If options are needed, we advise to
+create a shell script pointed to by that option. The shell script would contain only one line: the
+archiver and its options. 
+\item \texttt{--with-cc=EXECUTABLE} Location of alternative C compiler:
+Give the full path: --with-cc='/usr/local/gcc/bin/gcc'
+\item \texttt{--with-cPP=EXECUTABLE} Location of alternative c++ compiler:
+Give the full path:  --with-cPP='/usr/local/gcc/bin/g++'
+\item \texttt{--with-aomd=AOMD\_LIB} Location of aomd library (optional):
+Give the full path: --with-aomd='/.../libaomd.so'or check out the library from the
+tstt web pages.
+\item \texttt{--with-dox=EXECUTABLE} Location of doxygen:
+Give the full path: --with-dox='/usr/local/bin/doxygen'
+\end{description}
+
+\paragraph{Makefile Definitions.}  \label{mes_vars_and_defs}
+
 The following is a list of variables used in Mesquite's Makefile
 structure to allow for custimization of the compilation process.
 Most of the provided examples come directly from Mesquite's default
 linux setup which is defined in Makefile.lin, a file located in
 the main directory.
-\label{mes_vars_and_defs}
 \begin{enumerate}
 
 \item Tools used by Mesquite:
@@ -298,7 +319,82 @@ the main directory.
 \end{description}
 \end{enumerate}
 
-\subsection{Running a Simple Example Program}
+\subsection{Tutorial: Running a Simple Example Program}
+
+In this section, we will write a mesquite driver in order to improve the quality of a test mesh. At first,
+we will write a small program using Mesquite's simplified API, or wrappers, in order to show the
+fastest way to get Mesquite running on a mesh. The concept of the wrappers, as well as the different
+wrappers available, are described in section \ref{sec:}.
+
+\subsection{Example Programs}
+The Mesquite code is designed to improve and assess the quality of
+a mesh. To accomplish this task, however, Mesquite needs the mesh
+to be stored in some type of mesh data-base which has an implementation
+of the TSTT interace  (TODO: reference the interface).  That is, the
+mesh must be stored in another program which is capable of communicating
+with Mesquite through the TSTT interface.  Through this interface
+the mesh can be identified using its Mesh\_Handle.  Below is an example
+of a function which takes a Mesh\_Handle as an arguement and performs
+a Laplacian smooth (using a Mesquite wrapper function for simplificity)
+on the associated mesh.  It is assumed that ``Mesquite.hpp'' has been
+included in the file.  The example code just adds ``my\_mesh'' to a
+Mesquite MeshSet object and then runs a Laplacian smoother on that
+MeshSet.
+
+TODO: Verify the following compiles.
+
+\begin{verbatim}
+void laplace_smooth_my_mesh(TSTT::Mesh_Handle my_mesh)
+{     
+    // Mesquite error object
+  Mesquite::MsqError err;
+    // initialises a MeshSet object
+  Mesquite::MeshSet mesh_set1;
+    //  adds my_mesh to the Mesquite MeshSet
+  mesh_set1.add_mesh(my_mesh, err);
+    //  checks to see whether the previous call caused an error
+  MSQ_CHKERR(err);
+    // creates an intruction queue
+  Mesquite::LaplacianIQ laplacian_smoother;
+    // launches optimization on mesh_set1
+  laplacian_smoother.run_instructions(mesh_set1, err);
+    //checks to see if the previous call caused an error
+  MSQ_CHKERR(err);
+}
+\end{verbatim}
+
+It is often the case that users have a mesh in file format and wish
+to improve the quality of that mesh.  However, Mesquite does not have
+the capability to read a mesh directly from a file.  Therefore, the mesh
+must first be read into a mesh data-base which provides a compatible TSTT
+interface.  Examples of such data-bases are MDB and AOMD.  TODO:
+where these programs can be found.  Mesquite does provide some utility
+functions to simplify this process.  As an example, the following
+code reads a mesh which has been stored in ExodusII (TODO reference
+Exodus/Genesis/etc) format into MDB, uses Mesquite to smooth the mesh,
+and then writes the mesh to another file.  The following code requires
+that ``MDBMesquite.hpp'' be included as well as ``Mesquite.hpp''.  This
+code sample calls the above function, laplace\_smooth\_my\_mesh($\cdots$),
+to smooth the mesh.
+
+TODO:: verify that the following compiles.
+
+\begin{verbatim}
+void load_and_improve_my_mesh(char* input_file, char* output_file)
+{
+    //creates a Mesh_Handle and an error object
+  TSTT::Mesh_Handle my_mesh;
+  TSTT::MeshError error=0;
+    //loades the mesh into MDB and flags the boundary vertices as fixed.
+  load_and_flag_mesh(&my_mesh, input_file, &error);  
+    //Smooth the mesh
+  laplace_smooth_my_mesh(my_mesh);
+    //write out the results to a new file (given by output_file)
+  write_results(my_mesh, output_file, &error);
+    // clean up
+  deinit_mesh(my_mesh);
+}
+\end{verbatim}
 
 \subsection{Writing a Mesquite Application}
 
@@ -370,7 +466,7 @@ and \cite{NWGrid-website}).  This interface definition effort is
 evolving, and the Mesquite team is actively participating to ensure
 that our needs for mesh quality improvement are adequately and
 efficiently addressed.  A TSTT-based implementation of the Mesquite
-interfaces will be available soon.  As such, any tool that exposes its
+binterfaces will be available soon.  As such, any tool that exposes its
 mesh through the TSTT interfaces can be used with Mesquite without
 additional development.
 
@@ -920,75 +1016,6 @@ AOMD or MDB).
 \item TSTT-interface:  Contains the copy of the TSTT header file,
 ``TSTT\_Base.h,'' which is compatible with Mesquite.
 \end{enumerate}
-\subsection{Example Programs}
-The Mesquite code is designed to improve and assess the quality of
-a mesh.  To accomplish this task, however, Mesquite needs the mesh
-to be stored in some type of mesh data-base which has an implementation
-of the TSTT interace  (TODO: reference the interface).  That is, the
-mesh must be stored in another program which is capable of communicating
-with Mesquite through the TSTT interface.  Through this interface
-the mesh can be identified using its Mesh\_Handle.  Below is an example
-of a function which takes a Mesh\_Handle as an arguement and performs
-a Laplacian smooth (using a Mesquite wrapper function for simplificity)
-on the associated mesh.  It is assumed that ``Mesquite.hpp'' has been
-included in the file.  The example code just adds ``my\_mesh'' to a
-Mesquite MeshSet object and then runs a Laplacian smoother on that
-MeshSet.
-
-TODO: Verify the following compiles.
-
-\begin{verbatim}
-void laplace_smooth_my_mesh(TSTT::Mesh_Handle my_mesh)
-{     
-    // Mesquite error object
-  Mesquite::MsqError err;
-    // initialises a MeshSet object
-  Mesquite::MeshSet mesh_set1;
-    //  adds my_mesh to the Mesquite MeshSet
-  mesh_set1.add_mesh(my_mesh, err);
-    //  checks to see whether the previous call caused an error
-  MSQ_CHKERR(err);
-    // creates an intruction queue
-  Mesquite::LaplacianIQ laplacian_smoother;
-    // launches optimization on mesh_set1
-  laplacian_smoother.run_instructions(mesh_set1, err);
-    //checks to see if the previous call caused an error
-  MSQ_CHKERR(err);
-}
-\end{verbatim}
-
-It is often the case that users have a mesh in file format and wish
-to improve the quality of that mesh.  However, Mesquite does not have
-the capability to read a mesh directly from a file.  Therefore, the mesh
-must first be read into a mesh data-base which provides a compatible TSTT
-interface.  Examples of such data-bases are MDB and AOMD.  TODO:
-where these programs can be found.  Mesquite does provide some utility
-functions to simplify this process.  As an example, the following
-code reads a mesh which has been stored in ExodusII (TODO reference
-Exodus/Genesis/etc) format into MDB, uses Mesquite to smooth the mesh,
-and then writes the mesh to another file.  The following code requires
-that ``MDBMesquite.hpp'' be included as well as ``Mesquite.hpp''.  This
-code sample calls the above function, laplace\_smooth\_my\_mesh($\cdots$),
-to smooth the mesh.
-
-TODO:: verify that the following compiles.
-
-\begin{verbatim}
-void load_and_improve_my_mesh(char* input_file, char* output_file)
-{
-    //creates a Mesh_Handle and an error object
-  TSTT::Mesh_Handle my_mesh;
-  TSTT::MeshError error=0;
-    //loades the mesh into MDB and flags the boundary vertices as fixed.
-  load_and_flag_mesh(&my_mesh, input_file, &error);  
-    //Smooth the mesh
-  laplace_smooth_my_mesh(my_mesh);
-    //write out the results to a new file (given by output_file)
-  write_results(my_mesh, output_file, &error);
-    // clean up
-  deinit_mesh(my_mesh);
-}
-\end{verbatim}
 
 \subsection{Code Testing Framework}
 
