@@ -203,7 +203,7 @@ void Mesquite::writeVtkMesh(const char filebase[128], TSTT::cMesh_Handle mesh_h,
   char bnd_tag_name[6];
   strcpy(bnd_tag_name, "fixed");
   void* bnd_tag_handle;
-  TSTT::Mesh_tagGetHandle (bnd_tag_name, &bnd_tag_handle, &tstt_err);
+  TSTT::Mesh_tagGetHandle (mesh_h, bnd_tag_name, &bnd_tag_handle, &tstt_err);
   assert(!tstt_err);
   for (int i=0; i<num_vertices; ++i) {
     int* on_boundary;
