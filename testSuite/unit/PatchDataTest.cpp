@@ -180,13 +180,13 @@ public:
       std::vector<size_t> res;
       
       // test we get the elements contiguous to vertex 3
-      mPatch2D.get_vertex_element_indices(3, elem_ind);
+      mPatch2D.get_vertex_element_indices(3, elem_ind,err);
       res.push_back(1); res.push_back(2);
       CPPUNIT_ASSERT(res==elem_ind);
       
       // test we get the elements contiguous to vertex 2
       elem_ind.clear(); res.clear();
-      mPatch2D.get_vertex_element_indices(2, elem_ind);
+      mPatch2D.get_vertex_element_indices(2, elem_ind,err);
       res.push_back(0); res.push_back(1); res.push_back(2);
       CPPUNIT_ASSERT(res==elem_ind);
    }
