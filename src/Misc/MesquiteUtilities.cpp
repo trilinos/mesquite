@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 21-Aug-02 at 16:04:29
-//  LAST-MOD: 31-Oct-02 at 13:05:35 by Thomas Leurent
+//  LAST-MOD: 15-Jan-03 at 18:36:14 by Thomas Leurent
 //
 // RCS Infos:
 // ==========
@@ -128,7 +128,7 @@ void Mesquite::writeVtkMesh(const char filebase[128], TSTT::cMesh_Handle mesh_h,
   fprintf(vtk_fp,"CELLS %d %d\n", num_elem, cells_table_size);
   
   // get and prints out the connectivity for each element
-  TSTT::Entity_Handle* elem_vertices = new TSTT::Entity_Handle[8];
+  TSTT::Entity_Handle* elem_vertices = new TSTT::Entity_Handle[MSQ_MAX_NUM_VERT_PER_ENT];
   int e;
   for (e=0; e<num_elem; ++e) {
     int* csr_pointer; // dummy
@@ -219,6 +219,8 @@ void Mesquite::writeVtkMesh(const char filebase[128], TSTT::cMesh_Handle mesh_h,
     fprintf(vtk_fp, "%d\n", *on_boundary);
   }
   
+  TSTT::Mesh_FreeEntityHandles(mesh_h, elements, &tstt_err); assert(!tstt_err);
+  TSTT::Mesh_FreeEntityHandles(mesh_h, vtx, &tstt_err); assert(!tstt_err);
 
   delete id_1;
   delete id_2;
