@@ -766,10 +766,8 @@ void PatchData::snap_vertex_to_domain(size_t vertex_index, MsqError &err)
 
 
 #undef __FUNC__
-#define __FUNC__ "PatchData::get_surface_normal"
-/*! Gives the normal to the surface which 'owns'  the vertex given by
-  vertex_index*/
-void PatchData::get_surface_normal(size_t vertex_index,
+#define __FUNC__ "PatchData::get_domain_normal_at_vertex"
+void PatchData::get_domain_normal_at_vertex(size_t vertex_index,
                                    Vector3D &surf_norm,
                                    MsqError &err)
 {
@@ -778,6 +776,24 @@ void PatchData::get_surface_normal(size_t vertex_index,
     surf_norm = vertexArray[vertex_index];
     meshSet->get_domain_constraint()->normal_at(
       vertexHandlesArray[vertex_index],
+      surf_norm);
+  }
+  else
+    err.set_msg("No domain constraint set.");
+}
+
+
+#undef __FUNC__
+#define __FUNC__ "PatchData::get_domain_normal_at_element"
+void PatchData::get_domain_normal_at_element(size_t elem_index,
+                                             Vector3D &surf_norm,
+                                             MsqError &err)
+{
+  if (meshSet && meshSet->get_domain_constraint())
+  {
+    elementArray[elem_index].get_centroid(surf_norm, *this, err); MSQ_CHKERR(err);
+    meshSet->get_domain_constraint()->normal_at(
+      elementHandlesArray[elem_index],
       surf_norm);
   }
   else

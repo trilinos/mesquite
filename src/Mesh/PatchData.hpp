@@ -168,8 +168,18 @@ namespace Mesquite
           the normal will be set to (0,0,0)
           Check PatchData::domain_set() is not false first.
       */
-    void get_surface_normal(size_t vertex_index, Vector3D &surf_norm,
-                            MsqError &err);
+    void get_domain_normal_at_vertex(size_t vertex_index, Vector3D &surf_norm,
+                                     MsqError &err);
+    
+      /*! Get the normal to the domain at the centroid (projected to the
+          domain) of a given element.
+          Normal is returned in Vector3D &surf_norm.  If the normal cannot
+          be determined, or if the underlying domain is not a surface,
+          the normal will be set to (0,0,0)
+          Check PatchData::domain_set() is not false first.
+      */
+    void get_domain_normal_at_element(size_t elem_index, Vector3D &surf_norm,
+                                      MsqError &err);
     
       //! moves all vertices at once according to a set of directions.
       /*! \param delta_array An array of directions, ordered like the vertices in the PatchData.
