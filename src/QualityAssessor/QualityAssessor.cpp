@@ -52,12 +52,13 @@ QualityAssessor::QualityAssessor(QualityMetric* qm, enum QAFunction func,
 #define __FUNC__ "QualityAssessor::~QualityAssessor"
 QualityAssessor::~QualityAssessor()
 {
-  Assessor* tmp;
-  size_t i;
-  for(i=0;i<assessList.size();i++){
-    tmp=assessList.front();
+  std::list<Assessor*>::iterator pos;
+  pos=assessList.begin();
+  Assessor* tmp=NULL;
+  while (pos!=assessList.end()){
+    tmp=(*pos);
+    ++pos;
     delete tmp;
-    assessList.pop_front();
   }
 }
 

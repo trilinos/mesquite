@@ -279,7 +279,9 @@ void ConjugateGradient::cleanup()
   delete []fGrad; fGrad = NULL;
   delete []pGrad; pGrad = NULL;
   delete []fNewGrad; fNewGrad = NULL;
-  pMemento->~PatchDataVerticesMemento(); pMemento = NULL;
+    //pMemento->~PatchDataVerticesMemento();
+  delete pMemento;
+  pMemento = NULL;
 }
 
 //!Computes a distance to move vertices given an initial position and search direction (stored in data member pGrad).
