@@ -4,8 +4,9 @@
 
 Header file for the Mesquite::InverseMeanRatioQualityMetric class
 
-  \author Michael Brewer
-  \date   2002-11-11
+\author Michael Brewer
+\author Todd Munson
+\date   2002-11-11
  */
 
 
@@ -22,104 +23,76 @@ Header file for the Mesquite::InverseMeanRatioQualityMetric class
 
 namespace Mesquite
 {
-     /*! \class InverseMeanRatioQualityMetric
-       \brief Computes the inverse mean ratio quality metric
-       of given element.
-       
-     */
+   /*! \class InverseMeanRatioQualityMetric
+     \brief Computes the inverse mean ratio quality metric
+     of given element.
+   */
    class InverseMeanRatioQualityMetric : public ShapeQualityMetric
    {
-  public:
+   private:
  
-       /*!Returns a pointer to a ShapeQualityMetric.  The metric
-         does not use the sample point functionality or the
-         compute_weighted_jacobian.  It evaluates the metric at
-         the element vertices, and uses the isotropic ideal element.
-         It does require a feasible region, and the metric needs
-         to be maximized.
-       */
-     static ShapeQualityMetric* create_new(){
-       
-       ShapeQualityMetric* m = new InverseMeanRatioQualityMetric();
-       return m;
+     InverseMeanRatioQualityMetric() : ShapeQualityMetric() {
+       MsqError err;
+       set_metric_type(ELEMENT_BASED);
+       set_element_evaluation_mode(ELEMENT_VERTICES, err); MSQ_CHKERR(err);
+       set_negate_flag(-1);
+       set_gradient_type(ANALYTICAL_GRADIENT);
+       set_hessian_type(ANALYTICAL_HESSIAN);
+       avgMethod=QualityMetric::LINEAR;
+       feasible=1;
+       set_name("Inverse Mean Ratio");
      }
+
+   public:
+ 
+      /*!Returns a pointer to a ShapeQualityMetric.  The metric
+        does not use the sample point functionality or the
+        compute_weighted_jacobian.  It evaluates the metric at
+        the element vertices, and uses the isotropic ideal element.
+        It does require a feasible region, and the metric needs
+        to be maximized.
+      */
+      static ShapeQualityMetric* create_new() {
+         ShapeQualityMetric* m = new InverseMeanRatioQualityMetric();
+         return m;
+      }
      
-       //! virtual destructor ensures use of polymorphism during destruction
-     virtual ~InverseMeanRatioQualityMetric()
-        {}
+      //! virtual destructor ensures use of polymorphism during destruction
+      virtual ~InverseMeanRatioQualityMetric() {
+      }
      
-       //! evaluate using mesquite objects 
-     bool evaluate_element(PatchData &pd, MsqMeshEntity *element,
-                           double &fval, MsqError &err); 
+      //! evaluate using mesquite objects 
+      bool evaluate_element(PatchData &pd, MsqMeshEntity *element,
+                            double &fval, MsqError &err); 
           
-  protected:     
-     bool inverse_mean_ratio_2d(Vector3D temp_vec[],size_t v_ind,
-                                PatchData &pd, double &fval,
-                                MsqError &err);
-     bool inverse_mean_ratio_3d(Vector3D temp_vec[],double &fval,
-                                MsqError &err);
-  private:
-     
-     InverseMeanRatioQualityMetric();
-    
-  };
-     //BEGIN INLINE FUNCITONS
-   inline bool InverseMeanRatioQualityMetric::inverse_mean_ratio_2d(Vector3D
-                                                                    temp_vec[],
-                                                                    size_t v_ind,
-                                                                    PatchData &pd,
-                                                                    double
-                                                                    &fval,
-                                                                    MsqError
-                                                                    &err)
-   {
-     Vector3D cross_vec=(temp_vec[0]*temp_vec[1]);
-     double area_val=fabs((cross_vec).length()*2.0);
-       //NOTE:: the equal below is ONLY to get the code to work
-       //when no normal is available.
-     Vector3D surf_norm=cross_vec;
-     pd.get_domain_normal_at_vertex(v_ind,surf_norm,err);MSQ_CHKERR(err);
-       //if invalid
-     if(surf_norm%cross_vec < 0.0){
-       return false;
-     }
-     fval=(temp_vec[0].length_squared()+temp_vec[1].length_squared());
-     if(fval>MSQ_MIN){
-       fval=area_val/fval;
-     }
-     else{
-       fval=0.0;
-     }
-     return true;
-   }
+      bool compute_element_analytical_gradient(PatchData &pd,
+                                               MsqMeshEntity *element,
+                                               MsqVertex *free_vtces[], 
+                                               Vector3D grad_vec[],
+                                               int num_vtx, 
+                                               double &metric_value,
+                                               MsqError &err);
 
-   inline bool InverseMeanRatioQualityMetric::inverse_mean_ratio_3d(Vector3D
-                                                                    temp_vec[],
-                                                                    double
-                                                                    &fval,
-                                                                    MsqError
-                                                                    &/*err*/)
-   {   
-     double term1=temp_vec[0]%temp_vec[0]+
-        temp_vec[1]%temp_vec[1]+
-        temp_vec[2]%temp_vec[2];
-       //det of J
-     double temp_vol_sqr=temp_vec[0]%(temp_vec[1]*temp_vec[2]);
-       //if inverted
-     if(temp_vol_sqr<=0.0)
-       return false;
-     
-     temp_vol_sqr*=temp_vol_sqr;
-     fval=0.0;
-     if(term1>MSQ_MIN){
-         //if not degenerate (or inverted)
-       fval=3*(pow(temp_vol_sqr,(1.0/3.0)))/term1;
-     }
-     return true;
-   }
-   
-   
+      bool compute_element_analytical_hessian(PatchData &pd,
+                                              MsqMeshEntity *e,
+                                              MsqVertex *v[], 
+                                              Vector3D g[],
+                                              Matrix3D h[],
+                                              int nv, 
+                                              double &m,
+                                              MsqError &err);
 
+    private:
+      // arrays used in Hessian computations 
+      // We allocate them here, so that one allocation only is done.
+      // This gives a big computation speed increase.
+      Vector3D mCoords[4]; // Vertex coordinates for the (decomposed) elements
+      Vector3D mGradients[32]; // Gradient of metric with respect to the coords
+      Vector3D mAccumGrad[8];  // Accumulated gradients (composed merit)
+      Matrix3D mHessians[80]; // Hessian of metric with respect to the coords
+      double   mMetrics[8]; // Metric values for the (decomposed) elements
+
+   };
 } //namespace
 
 

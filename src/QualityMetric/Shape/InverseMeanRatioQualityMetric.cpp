@@ -7,141 +7,1088 @@
 */
 #include <vector>
 #include "InverseMeanRatioQualityMetric.hpp"
+#include "MeanRatioFunctions.hpp"
 #include <math.h>
 #include "Vector3D.hpp"
 #include "ShapeQualityMetric.hpp"
 #include "QualityMetric.hpp"
+#include "MsqTimer.hpp"
 
 using namespace Mesquite;
+using std::cout;
+using std::endl;
 
 #undef __FUNC__
-#define __FUNC__ "InverseMeanRatioQualityMetric::InverseMeanRatioQualityMetric"
-
-InverseMeanRatioQualityMetric::InverseMeanRatioQualityMetric()
+#define __FUNC__ "InverseMeanRatioQualityMetric::evaluate_element" 
+bool InverseMeanRatioQualityMetric::evaluate_element(PatchData &pd,
+						     MsqMeshEntity *e,
+						     double &m,
+						     MsqError &err)
 {
-  MsqError err;
-  set_metric_type(ELEMENT_BASED);
-  set_element_evaluation_mode(ELEMENT_VERTICES, err); MSQ_CHKERR(err);
-  set_negate_flag(-1);
-  avgMethod=QualityMetric::HARMONIC;
-  feasible=1;
-  set_name("Inverse Mean Ratio");
+  EntityTopology topo = e->get_element_type();
+
+  MsqVertex *vertices = pd.get_vertex_array(err);
+  const size_t *v_i = e->get_vertex_index_array();
+
+  Vector3D n;			// Surface normal for 2D objects
+
+  // Hex element descriptions
+  const static int locs_hex[8][4] = {{0, 1, 3, 4},
+				     {1, 2, 0, 5},
+				     {2, 3, 1, 6},
+				     {3, 0, 2, 7},
+				     {4, 7, 5, 0},
+				     {5, 4, 6, 1},
+				     {6, 5, 7, 2},
+				     {7, 6, 4, 3}};
+
+  const double a2_con =  2.0;
+  const double b2_con = -1.0;
+  const double c2_con =  1.0;
+
+  const double a3_con =  3.0;
+  const double b3_con = -1.0;
+  const double c3_con =  2.0 / 3.0;
+
+  const Vector3D d_con(1.0, 1.0, 1.0);
+
+  int i;
+
+  m = 0.0;
+  bool metric_valid = false;
+  switch(topo) {
+  case TRIANGLE:
+    pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
+    n = n / n.length();		// Need unit normal
+    mCoords[0] = vertices[v_i[0]];
+    mCoords[1] = vertices[v_i[1]];
+    mCoords[2] = vertices[v_i[2]];
+    metric_valid = m_fcn_2e(m, mCoords, n, a2_con, b2_con, c2_con);
+    if (!metric_valid) return false;
+    break;
+    
+  case QUADRILATERAL:
+    pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
+    for (i = 0; i < 4; ++i) {
+      n = n / n.length();	// Need unit normal
+      mCoords[0] = vertices[v_i[locs_hex[i][0]]];
+      mCoords[1] = vertices[v_i[locs_hex[i][1]]];
+      mCoords[2] = vertices[v_i[locs_hex[i][2]]];
+      metric_valid = m_fcn_2i(mMetrics[i], mCoords, n, 
+			      a2_con, b2_con, c2_con, d_con);
+      if (!metric_valid) return false;
+    }
+    m = average_metrics(mMetrics, 4, err);
+    break;
+
+  case TETRAHEDRON:
+    mCoords[0] = vertices[v_i[0]];
+    mCoords[1] = vertices[v_i[1]];
+    mCoords[2] = vertices[v_i[2]];
+    mCoords[3] = vertices[v_i[3]];
+    metric_valid = m_fcn_3e(m, mCoords, a3_con, b3_con, c3_con);
+    if (!metric_valid) return false;
+    break;
+
+  case HEXAHEDRON:
+    for (i = 0; i < 8; ++i) {
+      mCoords[0] = vertices[v_i[locs_hex[i][0]]];
+      mCoords[1] = vertices[v_i[locs_hex[i][1]]];
+      mCoords[2] = vertices[v_i[locs_hex[i][2]]];
+      mCoords[3] = vertices[v_i[locs_hex[i][3]]];
+      metric_valid = m_fcn_3i(mMetrics[i], mCoords, 
+			      a3_con, b3_con, c3_con, d_con);
+      if (!metric_valid) return false;
+    }
+    m = average_metrics(mMetrics, 8, err);
+    break;
+
+  default:
+    break;
+  } // end switch over element type
+  return true;
 }
 
-bool InverseMeanRatioQualityMetric::evaluate_element(PatchData &pd,
-                                                      MsqMeshEntity *element,
-                                                     double &fval,
-                                                      MsqError &err)
+#undef __FUNC__
+#define __FUNC__ "InverseMeanRatioQualityMetric::compute_element_analytical_gradient" 
+bool InverseMeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
+									MsqMeshEntity *e,
+									MsqVertex *v[], 
+									Vector3D g[],
+									int nv, 
+									double &m,
+									MsqError &err)
 {
-  double metric_values[20];
-  fval=0.0;
-  bool return_flag;
-  std::vector<size_t> v_i;
-  element->get_vertex_indices(v_i);
-    //only 3 temp_vec will be sent to mean ratio calculator, but the
-    //additional vector3D may be needed during the calculations
-  Vector3D temp_vec[5];
-  MsqVertex *vertices=pd.get_vertex_array(err);
-  switch(element->get_element_type()){
-    case TRIANGLE:
-      temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
-      temp_vec[2]=vertices[v_i[2]]-vertices[v_i[0]];
-        //make relative to equilateral
-      temp_vec[1]=((2*temp_vec[2])-temp_vec[0])*MSQ_SQRT_THREE_INV;
-      return_flag=inverse_mean_ratio_2d(temp_vec,v_i[0],pd,fval,err);
+//  FUNCTION_TIMER_START(__FUNC__);
+  EntityTopology topo = e->get_element_type();
+
+  if (((topo == QUADRILATERAL) || (topo == HEXAHEDRON)) && 
+      ((avgMethod == MINIMUM) || (avgMethod == MAXIMUM))) {
+    cout << "Minimum and maximum not continuously differentiable." << endl;
+    cout << "Element of subdifferential will be returned." << endl;
+  }
+
+  MsqVertex *vertices = pd.get_vertex_array(err);
+  const size_t *v_i = e->get_vertex_index_array();
+
+  Vector3D n;			// Surface normal for 2D objects
+
+  double   nm, t=0;
+
+  // Hex element descriptions
+  const static int locs_hex[8][4] = {{0, 1, 3, 4},
+				     {1, 2, 0, 5},
+				     {2, 3, 1, 6},
+				     {3, 0, 2, 7},
+				     {4, 7, 5, 0},
+				     {5, 4, 6, 1},
+				     {6, 5, 7, 2},
+				     {7, 6, 4, 3}};
+
+  const double a2_con =  2.0;
+  const double b2_con = -1.0;
+  const double c2_con =  1.0;
+
+  const double a3_con =  3.0;
+  const double b3_con = -1.0;
+  const double c3_con =  2.0 / 3.0;
+
+  const Vector3D d_con(1.0, 1.0, 1.0);
+
+  int i, j;
+
+  bool metric_valid = false;
+
+  m = 0.0;
+
+  switch(topo) {
+  case TRIANGLE:
+    pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
+    n = n / n.length();		// Need unit normal
+    mCoords[0] = vertices[v_i[0]];
+    mCoords[1] = vertices[v_i[1]];
+    mCoords[2] = vertices[v_i[2]];
+    if (!g_fcn_2e(m, mAccumGrad, mCoords, n, a2_con, b2_con, c2_con)) return false;
+
+    // This is not very efficient, but is one way to select correct gradients.
+    // For gradients, info is returned only for free vertices, in the 
+    // order of v[].
+    for (i = 0; i < 3; ++i) {
+      for (j = 0; j < nv; ++j) {
+        if (vertices + v_i[i] == v[j]) {
+          g[j] = mAccumGrad[i];
+        }
+      }
+    }
+    break;
+
+  case QUADRILATERAL:
+    pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
+    for (i = 0; i < 4; ++i) {
+      mAccumGrad[i] = 0.0;
+
+      n = n / n.length();	// Need unit normal
+      mCoords[0] = vertices[v_i[locs_hex[i][0]]];
+      mCoords[1] = vertices[v_i[locs_hex[i][1]]];
+      mCoords[2] = vertices[v_i[locs_hex[i][2]]];
+      if (!g_fcn_2i(mMetrics[i], mGradients+3*i, mCoords, n,
+		    a2_con, b2_con, c2_con, d_con)) return false;
+    }
+
+    switch(avgMethod) {
+    case MINIMUM:
+      m = mMetrics[0];
+      for (i = 1; i < 4; ++i) {
+        if (mMetrics[i] < m) m = mMetrics[i];
+      }
+
+      nm = 0;
+      for (i = 0; i < 4; ++i) {
+        if (mMetrics[i] - m <= MSQ_MIN) {
+          mAccumGrad[locs_hex[i][0]] += mGradients[3*i+0];
+          mAccumGrad[locs_hex[i][1]] += mGradients[3*i+1];
+          mAccumGrad[locs_hex[i][2]] += mGradients[3*i+2];
+          ++nm;
+        }
+      }
+
+      for (i = 0; i < 4; ++i) {
+        mAccumGrad[i] /= nm;
+      }
       break;
-    case QUADRILATERAL:
-      temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
-      temp_vec[1]=vertices[v_i[3]]-vertices[v_i[0]];
-      return_flag=inverse_mean_ratio_2d(temp_vec,v_i[0],pd,
-                                        metric_values[0],err);
-      if(!return_flag)
-        return false;      
-      temp_vec[0]=vertices[v_i[2]]-vertices[v_i[1]];
-      temp_vec[1]=vertices[v_i[0]]-vertices[v_i[1]];
-      return_flag=inverse_mean_ratio_2d(temp_vec,v_i[1],pd,
-                                        metric_values[1],err);
-      if(!return_flag)
-        return false;
-      temp_vec[0]=vertices[v_i[3]]-vertices[v_i[2]];
-      temp_vec[1]=vertices[v_i[1]]-vertices[v_i[2]];
-      return_flag=inverse_mean_ratio_2d(temp_vec,v_i[2],pd,
-                                        metric_values[2],err);
-      if(!return_flag)
-        return false; 
-      temp_vec[0]=vertices[v_i[0]]-vertices[v_i[3]];
-      temp_vec[1]=vertices[v_i[2]]-vertices[v_i[3]];
-      return_flag=inverse_mean_ratio_2d(temp_vec,v_i[3],pd,
-                                        metric_values[3],err);
-      if(!return_flag)
-        return false; 
-      fval=average_metrics(metric_values,4,err);
-      return true;
-    case TETRAHEDRON:
-      temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
-      temp_vec[3]=vertices[v_i[2]]-vertices[v_i[0]];
-      temp_vec[4]=vertices[v_i[3]]-vertices[v_i[0]];
-        //transform to equilateral tet
-      temp_vec[1]=((2*temp_vec[3])-temp_vec[0])/MSQ_SQRT_THREE;
-      temp_vec[2]=((3*temp_vec[4])-temp_vec[0]-temp_vec[3])/
-        (MSQ_SQRT_THREE*MSQ_SQRT_TWO);
-      return_flag=inverse_mean_ratio_3d(temp_vec,fval,err);
+
+    case MAXIMUM:
+      m = mMetrics[0];
+      for (i = 1; i < 4; ++i) {
+        if (mMetrics[i] > m) m = mMetrics[i];
+      }
+
+      nm = 0;
+      for (i = 0; i < 4; ++i) {
+        if (m - mMetrics[i] <= MSQ_MIN) {
+          mAccumGrad[locs_hex[i][0]] += mGradients[3*i+0];
+          mAccumGrad[locs_hex[i][1]] += mGradients[3*i+1];
+          mAccumGrad[locs_hex[i][2]] += mGradients[3*i+2];
+          ++nm;
+        }
+      }
+
+      for (i = 0; i < 4; ++i) {
+        mAccumGrad[i] /= nm;
+      }
       break;
-    case HEXAHEDRON:
-      temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
-      temp_vec[1]=vertices[v_i[3]]-vertices[v_i[0]];
-      temp_vec[2]=vertices[v_i[4]]-vertices[v_i[0]];
-      return_flag=inverse_mean_ratio_3d(temp_vec,metric_values[0],err);
-      if(!return_flag)
-        return false; 
-      temp_vec[0]=vertices[v_i[2]]-vertices[v_i[1]];
-      temp_vec[1]=vertices[v_i[0]]-vertices[v_i[1]];
-      temp_vec[2]=vertices[v_i[5]]-vertices[v_i[1]];
-      return_flag=inverse_mean_ratio_3d(temp_vec,metric_values[1],err);
-      if(!return_flag)
-        return false; 
-      temp_vec[0]=vertices[v_i[3]]-vertices[v_i[2]];
-      temp_vec[1]=vertices[v_i[1]]-vertices[v_i[2]];
-      temp_vec[2]=vertices[v_i[6]]-vertices[v_i[2]];
-      return_flag=inverse_mean_ratio_3d(temp_vec,metric_values[2],err);
-      if(!return_flag)
-        return false; 
-      temp_vec[0]=vertices[v_i[0]]-vertices[v_i[3]];
-      temp_vec[1]=vertices[v_i[2]]-vertices[v_i[3]];
-      temp_vec[2]=vertices[v_i[7]]-vertices[v_i[3]];
-      return_flag=inverse_mean_ratio_3d(temp_vec,metric_values[3],err);
-      if(!return_flag)
-        return false; 
-      temp_vec[0]=vertices[v_i[7]]-vertices[v_i[4]];
-      temp_vec[1]=vertices[v_i[5]]-vertices[v_i[4]];
-      temp_vec[2]=vertices[v_i[0]]-vertices[v_i[4]];
-      return_flag=inverse_mean_ratio_3d(temp_vec,metric_values[4],err);
-      if(!return_flag)
-        return false; 
-      temp_vec[0]=vertices[v_i[4]]-vertices[v_i[5]];
-      temp_vec[1]=vertices[v_i[6]]-vertices[v_i[5]];
-      temp_vec[2]=vertices[v_i[1]]-vertices[v_i[5]];
-      return_flag=inverse_mean_ratio_3d(temp_vec,metric_values[5],err);
-      if(!return_flag)
-        return false; 
-      temp_vec[0]=vertices[v_i[5]]-vertices[v_i[6]];
-      temp_vec[1]=vertices[v_i[7]]-vertices[v_i[6]];
-      temp_vec[2]=vertices[v_i[2]]-vertices[v_i[6]];
-      return_flag=inverse_mean_ratio_3d(temp_vec,metric_values[6],err);
-      if(!return_flag)
-        return false; 
-      temp_vec[0]=vertices[v_i[6]]-vertices[v_i[7]];
-      temp_vec[1]=vertices[v_i[4]]-vertices[v_i[7]];
-      temp_vec[2]=vertices[v_i[3]]-vertices[v_i[7]];
-      return_flag=inverse_mean_ratio_3d(temp_vec,metric_values[7],err);
-      if(!return_flag)
-        return false; 
-      fval=average_metrics(metric_values,8,err);
+
+    case SUM:
+      m = 0;
+      for (i = 0; i < 4; ++i) {
+        m += mMetrics[i];
+      }
+
+      for (i = 0; i < 4; ++i) {
+        mAccumGrad[locs_hex[i][0]] += mGradients[3*i+0];
+        mAccumGrad[locs_hex[i][1]] += mGradients[3*i+1];
+        mAccumGrad[locs_hex[i][2]] += mGradients[3*i+2];
+      }
       break;
+
+    case LINEAR:
+      m = 0;
+      for (i = 0; i < 4; ++i) {
+        m += mMetrics[i];
+      }
+      m *= 0.25;
+      
+      for (i = 0; i < 4; ++i) {
+        mAccumGrad[locs_hex[i][0]] += mGradients[3*i+0] *0.25;
+        mAccumGrad[locs_hex[i][1]] += mGradients[3*i+1] *0.25;
+        mAccumGrad[locs_hex[i][2]] += mGradients[3*i+2] *0.25;
+      }
+      break;
+
+    case GEOMETRIC:
+      m = 0.0;
+      for (i = 0; i < 4; ++i) {
+        m += log(mMetrics[i]);
+        mMetrics[i] = 1.0 / mMetrics[i];
+      }
+      m = exp(m / 4.0);
+
+      for (i = 0; i < 4; ++i) {
+        mAccumGrad[locs_hex[i][0]] += mMetrics[i]*mGradients[3*i+0];
+        mAccumGrad[locs_hex[i][1]] += mMetrics[i]*mGradients[3*i+1];
+        mAccumGrad[locs_hex[i][2]] += mMetrics[i]*mGradients[3*i+2];
+      }
+
+      nm = m / 4.0;
+      for (i = 0; i < 4; ++i) {
+        mAccumGrad[i] *= nm;
+      }
+      break;
+
     default:
-      fval=0.0;
-  }// end switch over element type
+      switch(avgMethod) {
+      case RMS:
+        t = 2.0;
+        break;
+
+      case HARMONIC:
+        t = -1.0;
+        break;
+
+      case HMS:
+        t = -2.0;
+        break;
+      default:
+        err.set_msg("averaging method not available.");
+        break;
+      }
+
+      m = 0;
+      for (i = 0; i < 4; ++i) {
+        nm = pow(mMetrics[i], t);
+        m += nm;
+
+        mMetrics[i] = t*nm/mMetrics[i];
+      }
+
+      nm = m / 4.0;
+      m = pow(nm, 1.0 / t);
+
+      for (i = 0; i < 4; ++i) {
+        mAccumGrad[locs_hex[i][0]] += mMetrics[i]*mGradients[3*i+0];
+        mAccumGrad[locs_hex[i][1]] += mMetrics[i]*mGradients[3*i+1];
+        mAccumGrad[locs_hex[i][2]] += mMetrics[i]*mGradients[3*i+2];
+      }
+
+      nm = m / (4.0*nm*t);
+      for (i = 0; i < 4; ++i) {
+        mAccumGrad[i] *= nm;
+      }
+      break;
+    }
+
+    // This is not very efficient, but is one way to select correct gradients
+    // For gradients, info is returned only for free vertices, in the order of v[].
+    for (i = 0; i < 4; ++i) {
+      for (j = 0; j < nv; ++j) {
+        if (vertices + v_i[i] == v[j]) {
+          g[j] = mAccumGrad[i];
+        }
+      }
+    }
+    break;
+
+  case TETRAHEDRON:
+    mCoords[0] = vertices[v_i[0]];
+    mCoords[1] = vertices[v_i[1]];
+    mCoords[2] = vertices[v_i[2]];
+    mCoords[3] = vertices[v_i[3]];
+    metric_valid = g_fcn_3e(m, mAccumGrad, mCoords, a3_con, b3_con, c3_con);
+    if (!metric_valid) return false;
+
+    // This is not very efficient, but is one way to select correct gradients.
+    // For gradients, info is returned only for free vertices, in the
+    // order of v[].
+    for (i = 0; i < 4; ++i) {
+      for (j = 0; j < nv; ++j) {
+        if (vertices + v_i[i] == v[j]) {
+          g[j] = mAccumGrad[i];
+        }
+      }
+    }
+    break;
+
+  case HEXAHEDRON:
+    for (i = 0; i < 8; ++i) {
+      mAccumGrad[i] = 0.0;
+
+      mCoords[0] = vertices[v_i[locs_hex[i][0]]];
+      mCoords[1] = vertices[v_i[locs_hex[i][1]]];
+      mCoords[2] = vertices[v_i[locs_hex[i][2]]];
+      mCoords[3] = vertices[v_i[locs_hex[i][3]]];
+      if (!g_fcn_3i(mMetrics[i], mGradients+4*i, mCoords, 
+		    a3_con, b3_con, c3_con, d_con)) return false;
+    }
+
+    switch(avgMethod) {
+    case MINIMUM:
+      m = mMetrics[0];
+      for (i = 1; i < 8; ++i) {
+        if (mMetrics[i] < m) m = mMetrics[i];
+      }
+
+      nm = 0;
+      for (i = 0; i < 8; ++i) {
+        if (mMetrics[i] - m <= MSQ_MIN) {
+          mAccumGrad[locs_hex[i][0]] += mGradients[4*i+0];
+          mAccumGrad[locs_hex[i][1]] += mGradients[4*i+1];
+          mAccumGrad[locs_hex[i][2]] += mGradients[4*i+2];
+          mAccumGrad[locs_hex[i][3]] += mGradients[4*i+3];
+          ++nm;
+        }
+      }
+
+      for (i = 0; i < 8; ++i) {
+        mAccumGrad[i] /= nm;
+      }
+      break;
+
+    case MAXIMUM:
+      m = mMetrics[0];
+      for (i = 1; i < 8; ++i) {
+        if (mMetrics[i] > m) m = mMetrics[i];
+      }
+
+      nm = 0;
+      for (i = 0; i < 8; ++i) {
+        if (m - mMetrics[i] <= MSQ_MIN) {
+          mAccumGrad[locs_hex[i][0]] += mGradients[4*i+0];
+          mAccumGrad[locs_hex[i][1]] += mGradients[4*i+1];
+          mAccumGrad[locs_hex[i][2]] += mGradients[4*i+2];
+          mAccumGrad[locs_hex[i][3]] += mGradients[4*i+3];
+          ++nm;
+        }
+      }
+
+      for (i = 0; i < 8; ++i) {
+        mAccumGrad[i] /= nm;
+      }
+      break;
+
+    case SUM:
+      m = 0;
+      for (i = 0; i < 8; ++i) {
+        m += mMetrics[i];
+      }
+
+      for (i = 0; i < 8; ++i) {
+        mAccumGrad[locs_hex[i][0]] += mGradients[4*i+0];
+        mAccumGrad[locs_hex[i][1]] += mGradients[4*i+1];
+        mAccumGrad[locs_hex[i][2]] += mGradients[4*i+2];
+        mAccumGrad[locs_hex[i][3]] += mGradients[4*i+3];
+      }
+      break;
+
+    case LINEAR:
+      m = 0;
+      for (i = 0; i < 8; ++i) {
+        m += mMetrics[i];
+      }
+      m *= 0.125;
+
+      for (i = 0; i < 8; ++i) {
+        mAccumGrad[locs_hex[i][0]] += mGradients[4*i+0] *0.125;
+        mAccumGrad[locs_hex[i][1]] += mGradients[4*i+1] *0.125;
+        mAccumGrad[locs_hex[i][2]] += mGradients[4*i+2] *0.125;
+        mAccumGrad[locs_hex[i][3]] += mGradients[4*i+3] *0.125;
+      }
+      break;
+
+    case GEOMETRIC:
+      m = 0.0;
+      for (i = 0; i < 8; ++i) {
+        m += log(mMetrics[i]);
+        mMetrics[i] = 1.0 / mMetrics[i];
+      }
+      m = exp(m / 8.0);
+
+      for (i = 0; i < 8; ++i) {
+        mAccumGrad[locs_hex[i][0]] += mMetrics[i]*mGradients[4*i+0];
+        mAccumGrad[locs_hex[i][1]] += mMetrics[i]*mGradients[4*i+1];
+        mAccumGrad[locs_hex[i][2]] += mMetrics[i]*mGradients[4*i+2];
+        mAccumGrad[locs_hex[i][3]] += mMetrics[i]*mGradients[4*i+3];
+      }
+
+      nm = m / 8.0;
+      for (i = 0; i < 8; ++i) {
+        mAccumGrad[i] *= nm;
+      }
+      break;
+
+    default:
+      switch(avgMethod) {
+      case RMS:
+        t = 2.0;
+        break;
+
+      case HARMONIC:
+        t = -1.0;
+        break;
+
+      case HMS:
+        t = -2.0;
+        break;
+      default:
+        err.set_msg("averaging method not available.");
+        break;
+      }
+
+      m = 0;
+      for (i = 0; i < 8; ++i) {
+        nm = pow(mMetrics[i], t);
+        m += nm;
+
+        mMetrics[i] = t*nm/mMetrics[i];
+      }
+
+      nm = m / 8.0;
+      m = pow(nm, 1.0 / t);
+
+      for (i = 0; i < 8; ++i) {
+        mAccumGrad[locs_hex[i][0]] += mMetrics[i]*mGradients[4*i+0];
+        mAccumGrad[locs_hex[i][1]] += mMetrics[i]*mGradients[4*i+1];
+        mAccumGrad[locs_hex[i][2]] += mMetrics[i]*mGradients[4*i+2];
+        mAccumGrad[locs_hex[i][3]] += mMetrics[i]*mGradients[4*i+3];
+      }
+
+      nm = m / (8.0*nm*t);
+      for (i = 0; i < 8; ++i) {
+        mAccumGrad[i] *= nm;
+      }
+      break;
+    }
+
+    // This is not very efficient, but is one way to select correct gradients
+    // For gradients, info is returned only for free vertices, in the order of v[].
+    for (i = 0; i < 8; ++i) {
+      for (j = 0; j < nv; ++j) {
+        if (vertices + v_i[i] == v[j]) {
+          g[j] = mAccumGrad[i];
+        }
+      }
+    }
+    break;
+
+  default:
+    break;
+  } // end switch over element type
+
+//  FUNCTION_TIMER_END();
   return true;
 }
 
 
+#undef __FUNC__
+#define __FUNC__ "InverseMeanRatioQualityMetric::compute_element_analytical_hessian" 
+bool InverseMeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
+								       MsqMeshEntity *e,
+								       MsqVertex *fv[], 
+								       Vector3D g[],
+								       Matrix3D h[],
+								       int /*nfv*/, 
+								       double &m,
+								       MsqError &err)
+{
+//  FUNCTION_TIMER_START(__FUNC__);
+  EntityTopology topo = e->get_element_type();
+
+  if (((topo == QUADRILATERAL) || (topo == HEXAHEDRON)) && 
+      ((avgMethod == MINIMUM) || (avgMethod == MAXIMUM))) {
+    cout << "Minimum and maximum not continuously differentiable." << endl;
+    cout << "Element of subdifferential will be returned." << endl;
+    cout << "Who knows what the Hessian is?" << endl;
+  }
+
+  MsqVertex *vertices = pd.get_vertex_array(err);
+  const size_t *v_i = e->get_vertex_index_array();
+
+
+  Vector3D n;			// Surface normal for 2D objects
+
+  double   nm, t=0;
+
+  // Hex element descriptions
+  const static int locs_hex[8][4] = {{0, 1, 3, 4},  
+				     {1, 2, 0, 5},
+				     {2, 3, 1, 6},
+				     {3, 0, 2, 7},
+				     {4, 7, 5, 0},
+				     {5, 4, 6, 1},
+				     {6, 5, 7, 2},
+				     {7, 6, 4, 3}};
+
+  const double a2_con =  2.0;
+  const double b2_con = -1.0;
+  const double c2_con =  1.0;
+
+  const double a3_con =  3.0;
+  const double b3_con = -1.0;
+  const double c3_con =  2.0 / 3.0;
+
+  const Vector3D d_con(1.0, 1.0, 1.0);
+
+  int i, j, k, l, ind;
+  int r, c, loc;
+
+  bool metric_valid = false;
+
+  m = 0.0;
+
+  switch(topo) {
+  case TRIANGLE:
+    pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
+    n = n / n.length();		// Need unit normal
+    mCoords[0] = vertices[v_i[0]];
+    mCoords[1] = vertices[v_i[1]];
+    mCoords[2] = vertices[v_i[2]];
+    if (!h_fcn_2e(m, g, h, mCoords, n, a2_con, b2_con, c2_con)) return false;
+
+    // zero out fixed elements of g
+    j = 0;
+    for (i = 0; i < 3; ++i) {
+      // if free vertex, see next
+      if (vertices + v_i[i] == fv[j] )
+        ++j;
+      // else zero gradient and Hessian entries
+      else {
+        g[i] = 0.;
+
+        switch(i) {
+        case 0:
+          h[0].zero(); h[1].zero(); h[2].zero();
+          break;
+
+        case 1:
+          h[1].zero(); h[3].zero(); h[4].zero();
+          break;
+
+        case 2:
+          h[2].zero(); h[4].zero(); h[5].zero();
+        }
+      }
+    }
+    break;
+
+  case QUADRILATERAL:
+    for (i=0; i < 10; ++i) {
+      h[i].zero();
+    }
+    
+    pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
+    for (i = 0; i < 4; ++i) {
+      g[i] = 0.0;
+
+      n = n / n.length();	// Need unit normal
+      mCoords[0] = vertices[v_i[locs_hex[i][0]]];
+      mCoords[1] = vertices[v_i[locs_hex[i][1]]];
+      mCoords[2] = vertices[v_i[locs_hex[i][2]]];
+      if (!h_fcn_2i(mMetrics[i], mGradients+3*i, mHessians+6*i, mCoords, n,
+		    a2_con, b2_con, c2_con, d_con)) return false;
+    }
+
+    switch(avgMethod) {
+    case MINIMUM:
+      err.set_msg("MINIMUM averaging method does not work.");
+      return false;
+
+    case MAXIMUM:
+      err.set_msg("MAXIMUM averaging method does not work.");
+      return false;
+
+    case SUM:
+      m = 0;
+      for (i = 0; i < 4; ++i) {
+        m += mMetrics[i];
+      }
+
+      l = 0;
+      for (i = 0; i < 4; ++i) {
+        g[locs_hex[i][0]] += mGradients[3*i+0];
+        g[locs_hex[i][1]] += mGradients[3*i+1];
+        g[locs_hex[i][2]] += mGradients[3*i+2];
+
+        for (j = 0; j < 3; ++j) {
+          for (k = j; k < 3; ++k) {
+            r = locs_hex[i][j];
+            c = locs_hex[i][k];
+
+            if (r <= c) {
+              loc = 4*r - (r*(r+1)/2) + c;
+              h[loc] += mHessians[l];
+            } 
+            else {
+              loc = 4*c - (c*(c+1)/2) + r;
+              h[loc] += transpose(mHessians[l]);
+            }
+            ++l;
+          }
+        }
+      }
+      break;
+
+    case LINEAR:
+      m = 0;
+      for (i = 0; i < 4; ++i) {
+        m += mMetrics[i];
+      }
+      m *= 0.25;
+
+      l = 0;
+      for (i = 0; i < 4; ++i) {
+        g[locs_hex[i][0]] += mGradients[3*i+0] *0.25;
+        g[locs_hex[i][1]] += mGradients[3*i+1] *0.25;
+        g[locs_hex[i][2]] += mGradients[3*i+2] *0.25;
+
+        for (j = 0; j < 3; ++j) {
+          for (k = j; k < 3; ++k) {
+            r = locs_hex[i][j];
+            c = locs_hex[i][k];
+
+            if (r <= c) {
+              loc = 4*r - (r*(r+1)/2) + c;
+              h[loc] += mHessians[l];
+            } 
+            else {
+              loc = 4*c - (c*(c+1)/2) + r;
+              h[loc] += transpose(mHessians[l]);
+            }
+            ++l;
+          }
+        }
+      }
+      for (i=0; i<10; ++i)
+        h[i] *= 0.25;
+      break;
+
+    case GEOMETRIC:
+      err.set_msg("GEOMETRIC averaging method does not work.");
+      return false;
+
+    default:
+      switch(avgMethod) {
+      case RMS:
+	err.set_msg("RMS averaging method does not work.");
+	return false;
+
+      case HARMONIC:
+	err.set_msg("HARMONIC averaging method does not work.");
+	return false;
+
+      case HMS:
+	err.set_msg("HMS averaging method does not work.");
+	return false;
+
+      default:
+        err.set_msg("averaging method not available.");
+        break;
+
+      }
+
+      m = 0;
+      for (i = 0; i < 4; ++i) {
+	nm = pow(mMetrics[i], t);
+	m += nm;
+
+	mMetrics[i] = t*nm/mMetrics[i];
+      }
+
+      nm = m / 4.0;
+      m = pow(nm, 1.0 / t);
+
+      for (i = 0; i < 4; ++i) {
+        g[locs_hex[i][0]] += mMetrics[i]*mGradients[3*i+0];
+	g[locs_hex[i][1]] += mMetrics[i]*mGradients[3*i+1];
+	g[locs_hex[i][2]] += mMetrics[i]*mGradients[3*i+2];
+      }
+
+      nm = m / (4.0*nm*t);
+      for (i = 0; i < 4; ++i) {
+	g[i] *= nm;
+      }
+      break;
+    }
+
+    // zero out fixed elements of gradient and Hessian
+    ind = 0;
+    for (i=0; i<4; ++i) {
+      // if free vertex, see next
+      if ( vertices+v_i[i] == fv[ind] )
+        ++ind;
+      // else zero gradient entry and hessian entries.
+      else {
+        g[i] = 0.;
+        switch(i) {
+        case 0:
+          h[0].zero();   h[1].zero();   h[2].zero();   h[3].zero();
+          break;
+          
+        case 1:
+          h[1].zero();   h[4].zero();   h[5].zero();   h[6].zero();
+          break;
+          
+        case 2:
+          h[2].zero();   h[5].zero();   h[7].zero();   h[8].zero();
+          break;
+          
+        case 3:
+          h[3].zero();   h[6].zero();   h[8].zero();   h[9].zero();
+          break;
+        }
+      }
+    }
+    break;
+
+  case TETRAHEDRON:
+    mCoords[0] = vertices[v_i[0]];
+    mCoords[1] = vertices[v_i[1]];
+    mCoords[2] = vertices[v_i[2]];
+    mCoords[3] = vertices[v_i[3]];
+    metric_valid = h_fcn_3e(m, g, h, mCoords, a3_con, b3_con, c3_con);
+    if (!metric_valid) return false;
+
+    // zero out fixed elements of g
+    j = 0;
+    for (i = 0; i < 4; ++i) {
+      // if free vertex, see next
+      if (vertices + v_i[i] == fv[j] )
+        ++j;
+      // else zero gradient entry
+      else {
+        g[i] = 0.;
+
+        switch(i) {
+        case 0:
+          h[0].zero(); h[1].zero(); h[2].zero(); h[3].zero();
+          break;
+
+        case 1:
+          h[1].zero(); h[4].zero(); h[5].zero(); h[6].zero();
+          break;
+
+        case 2:
+          h[2].zero(); h[5].zero(); h[7].zero(); h[8].zero();
+          break;
+
+        case 3:
+          h[3].zero(); h[6].zero(); h[8].zero(); h[9].zero();
+          break;
+        }
+      }
+    }
+    break;
+
+  case HEXAHEDRON:
+    for (i=0; i<36; ++i)
+      h[i].zero();
+
+    for (i = 0; i < 8; ++i) {
+      g[i] = 0.0;
+
+      mCoords[0] = vertices[v_i[locs_hex[i][0]]];
+      mCoords[1] = vertices[v_i[locs_hex[i][1]]];
+      mCoords[2] = vertices[v_i[locs_hex[i][2]]];
+      mCoords[3] = vertices[v_i[locs_hex[i][3]]];
+      if (!h_fcn_3i(mMetrics[i], mGradients+4*i, mHessians+10*i, mCoords,
+		    a3_con, b3_con, c3_con, d_con)) return false;
+    }
+
+    switch(avgMethod) {
+    case MINIMUM:
+      err.set_msg("MINIMUM averaging method does not work.");
+      return false;
+//       m = mMetrics[0];
+//       for (i = 1; i < 8; ++i) {
+// 	if (mMetrics[i] < m) m = mMetrics[i];
+//       }
+
+//       nm = 0;
+//       for (i = 0; i < 8; ++i) {
+//         if (mMetrics[i] <= m + MSQ_MIN) {
+// 	  g[locs_hex[i][0]] += mGradients[4*i+0];
+// 	  g[locs_hex[i][1]] += mGradients[4*i+1];
+// 	  g[locs_hex[i][2]] += mGradients[4*i+2];
+// 	  g[locs_hex[i][3]] += mGradients[4*i+3];
+// 	  ++nm;
+//         }
+//       }
+
+//       for (i = 0; i < 8; ++i) {
+// 	g[i] /= nm;
+//       }
+//       break;
+
+    case MAXIMUM:
+      err.set_msg("MAXIMUM averaging method does not work.");
+      return false;
+//       m = mMetrics[0];
+//       for (i = 1; i < 8; ++i) {
+// 	if (mMetrics[i] > m) m = mMetrics[i];
+//       }
+
+//       nm = 0;
+//       for (i = 0; i < 8; ++i) {
+//         if (mMetrics[i] >= m - MSQ_MIN) {
+// 	  g[locs_hex[i][0]] += mGradients[4*i+0];
+// 	  g[locs_hex[i][1]] += mGradients[4*i+1];
+// 	  g[locs_hex[i][2]] += mGradients[4*i+2];
+// 	  g[locs_hex[i][3]] += mGradients[4*i+3];
+// 	  ++nm;
+//         }
+//       }
+
+//       for (i = 0; i < 8; ++i) {
+// 	g[i] /= nm;
+//       }
+//       break;
+
+    case SUM:
+      m = 0;
+      for (i = 0; i < 8; ++i) {
+        m += mMetrics[i];
+      }
+
+      l = 0;
+      for (i = 0; i < 8; ++i) {
+        g[locs_hex[i][0]] += mGradients[4*i+0];
+        g[locs_hex[i][1]] += mGradients[4*i+1];
+        g[locs_hex[i][2]] += mGradients[4*i+2];
+        g[locs_hex[i][3]] += mGradients[4*i+3];
+
+        for (j = 0; j < 4; ++j) {
+          for (k = j; k < 4; ++k) {
+            r = locs_hex[i][j];
+            c = locs_hex[i][k];
+
+            if (r <= c) {
+              loc = 8*r - (r*(r+1)/2) + c;
+              h[loc] += mHessians[l];
+            } 
+            else {
+              loc = 8*c - (c*(c+1)/2) + r;
+              h[loc] += transpose(mHessians[l]);
+            }
+            ++l;
+          }
+        }
+      }
+      break;
+
+    case LINEAR:
+      m = 0;
+      for (i = 0; i < 8; ++i) {
+        m += mMetrics[i];
+      }
+      m *= 0.125;
+
+      l = 0;
+      for (i = 0; i < 8; ++i) {
+        g[locs_hex[i][0]] += mGradients[4*i+0] *0.125;
+        g[locs_hex[i][1]] += mGradients[4*i+1] *0.125;
+        g[locs_hex[i][2]] += mGradients[4*i+2] *0.125;
+        g[locs_hex[i][3]] += mGradients[4*i+3] *0.125;
+
+        for (j = 0; j < 4; ++j) {
+          for (k = j; k < 4; ++k) {
+            r = locs_hex[i][j];
+            c = locs_hex[i][k];
+
+            if (r <= c) {
+              loc = 8*r - (r*(r+1)/2) + c;
+              h[loc] += mHessians[l];
+            } 
+            else {
+              loc = 8*c - (c*(c+1)/2) + r;
+              h[loc] += transpose(mHessians[l]);
+            }
+            ++l;
+          }
+        }
+      }
+      for (i=0; i<36; ++i)
+        h[i] *= 0.125;
+      break;
+
+    case GEOMETRIC:
+      err.set_msg("GEOMETRIC averaging method does not work.");
+      return false;
+//       m = 0.0;
+//       for (i = 0; i < 8; ++i) {
+// 	m += log(mMetrics[i]);
+// 	mMetrics[i] = 1.0 / mMetrics[i];
+//       }
+//       m = exp(m / 8.0);
+
+//       for (i = 0; i < 8; ++i) {
+//         g[locs_hex[i][0]] += mMetrics[i]*mGradients[4*i+0];
+// 	g[locs_hex[i][1]] += mMetrics[i]*mGradients[4*i+1];
+// 	g[locs_hex[i][2]] += mMetrics[i]*mGradients[4*i+2];
+// 	g[locs_hex[i][3]] += mMetrics[i]*mGradients[4*i+3];
+//       }
+
+//       nm = m / 8.0;
+//       for (i = 0; i < 8; ++i) {
+// 	g[i] *= nm;
+//       }
+//       break;
+
+    default:
+      switch(avgMethod) {
+      case RMS:
+	err.set_msg("RMS averaging method does not work.");
+	return false;
+// 	t = 2.0;
+// 	break;
+
+      case HARMONIC:
+	err.set_msg("HARMONIC averaging method does not work.");
+	return false;
+// 	t = -1.0;
+// 	break;
+
+      case HMS:
+	err.set_msg("HMS averaging method does not work.");
+	return false;
+// 	t = -2.0;
+// 	break;
+      default:
+        err.set_msg("averaging method not available.");
+        break;
+
+      }
+
+      m = 0;
+      for (i = 0; i < 8; ++i) {
+	nm = pow(mMetrics[i], t);
+	m += nm;
+
+	mMetrics[i] = t*nm/mMetrics[i];
+      }
+
+      nm = m / 8.0;
+      m = pow(nm, 1.0 / t);
+
+      for (i = 0; i < 8; ++i) {
+        g[locs_hex[i][0]] += mMetrics[i]*mGradients[4*i+0];
+	g[locs_hex[i][1]] += mMetrics[i]*mGradients[4*i+1];
+	g[locs_hex[i][2]] += mMetrics[i]*mGradients[4*i+2];
+	g[locs_hex[i][3]] += mMetrics[i]*mGradients[4*i+3];
+      }
+
+      nm = m / (8.0*nm*t);
+      for (i = 0; i < 8; ++i) {
+	g[i] *= nm;
+      }
+      break;
+    }
+
+    // zero out fixed elements of gradient and Hessian
+    ind = 0;
+    for (i=0; i<8; ++i) {
+      // if free vertex, see next
+      if ( vertices+v_i[i] == fv[ind] )
+        ++ind;
+      // else zero gradient entry and hessian entries.
+      else {
+        g[i] = 0.;
+        switch(i) {
+        case 0:
+          h[0].zero();   h[1].zero();   h[2].zero();   h[3].zero();
+          h[4].zero();   h[5].zero();   h[6].zero();   h[7].zero();
+          break;
+          
+        case 1:
+          h[1].zero();   h[8].zero();   h[9].zero();   h[10].zero();
+          h[11].zero();  h[12].zero();  h[13].zero();  h[14].zero();
+          break;
+          
+        case 2:
+          h[2].zero();   h[9].zero();   h[15].zero();  h[16].zero();
+          h[17].zero();  h[18].zero();  h[19].zero();  h[20].zero();
+          break;
+          
+        case 3:
+          h[3].zero();   h[10].zero();  h[16].zero();  h[21].zero();
+          h[22].zero();  h[23].zero();  h[24].zero();  h[25].zero();
+          break;
+          
+        case 4:
+          h[4].zero();   h[11].zero();  h[17].zero();  h[22].zero();
+          h[26].zero();  h[27].zero();  h[28].zero();  h[29].zero();
+          break;
+          
+        case 5:
+          h[5].zero();   h[12].zero();  h[18].zero();  h[23].zero();
+          h[27].zero();  h[30].zero();  h[31].zero();  h[32].zero();
+          break;
+          
+        case 6:
+          h[6].zero();   h[13].zero();  h[19].zero();  h[24].zero();
+          h[28].zero();  h[31].zero();  h[33].zero();  h[34].zero();
+          break;
+          
+        case 7:
+          h[7].zero();   h[14].zero();  h[20].zero();  h[25].zero();
+          h[29].zero();  h[32].zero();  h[34].zero();  h[35].zero();
+          break;
+        }
+      }
+    }
+    break;
+
+  default:
+    break;
+  } // end switch over element type
+
+//  FUNCTION_TIMER_END();
+  return true;
+}
