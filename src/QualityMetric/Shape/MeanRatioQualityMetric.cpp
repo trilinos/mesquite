@@ -2780,24 +2780,6 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
         }
       }
     }
-
-    // Makes sure we zero the hessian blocks corresponding to fixed vertices. 
-    for(i=0; i<4; ++i) {
-      for (j=i; j<4; ++j) {
-  
-        // for entry i,j in upper right part of 4*4 matrix, index in a 1D array is
-        ind = 4*i- (i*(i+1)/2) +j; // 4*i - \sum_{n=0}^i n +j 
-
-        bool nul_hessian = true; 
-        for (k=0; k<nfv; ++k) 
-          for (l=0; l<nfv; ++l) 
-            if ( (vertices + v_i[i] == fv[k]) && (vertices + v_i[j] == fv[l]) )
-              nul_hessian = false;
-
-        if (nul_hessian == true)
-          h[ind] = 0.;
-      }
-    }
     break;
 
   case TETRAHEDRON:
@@ -2971,10 +2953,10 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     default:
       switch(avgMethod) {
       case LINEAR:
-	err.set_msg("LINEAR averaging method does not work.");
-	return false;
-// 	t = 1.0;
-// 	break;
+        err.set_msg("LINEAR averaging method does not work.");
+        return false;
+//         t = 1.0;
+//         break;
 
       case RMS:
 	err.set_msg("RMS averaging method does not work.");
@@ -3076,25 +3058,6 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
         }
       }
     }
-
-    // Makes sure we zero the hessian blocks corresponding to fixed vertices. 
-    for(i=0; i<8; ++i) {
-      for (j=i; j<8; ++j) {
-  
-        // for entry i,j in upper right part of 8*8 matrix, index in a 1D array is
-        ind = 8*i- (i*(i+1)/2) +j; // 8*i - \sum_{n=0}^i n +j 
-
-        bool nul_hessian = true; 
-        for (k=0; k<nfv; ++k) 
-          for (l=0; l<nfv; ++l) 
-            if ( (vertices + v_i[i] == fv[k]) && (vertices + v_i[j] == fv[l]) )
-              nul_hessian = false;
-
-        if (nul_hessian == true)
-          h[ind] = 0.;
-      }
-    }
-
     break;
 
   default:
