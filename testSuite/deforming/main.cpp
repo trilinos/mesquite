@@ -112,7 +112,7 @@ int main()
   if (err) return 1;
   ref_mesh_set.set_domain_constraint(msq_geom, err);
   if (err) return 1;
-  DeformingDomainGuides843 target(&ref_mesh_set);
+  DeformingDomainGuides841 target(&ref_mesh_set);
 
   Mesquite::MeshImpl *ref_mesh2 = new Mesquite::MeshImpl;
   ref_mesh2->read_vtk("../../meshFiles/2D/VTK/tfi_horse10x4-12.vtk", err);
@@ -121,7 +121,7 @@ int main()
   if (err) return 1;
   ref_mesh2_set.set_domain_constraint(msq_geom, err);
   if (err) return 1;
-  DeformingDomainGuides843 assessor_target(&ref_mesh2_set);
+  DeformingDomainGuides841 assessor_target(&ref_mesh2_set);
 
   // ... and builds an objective function with it
   LPtoPTemplate* obj_func = new LPtoPTemplate(&mu, 1, err);
@@ -160,6 +160,8 @@ int main()
   queue1.add_quality_assessor(&stop_qa, err); 
   if (err) return 1;
 
+    //mesh->write_exodus("ori_mesh.exo",err); 
+    //ref_mesh->write_exodus("ref_mesh.exo",err);
   ref_mesh_set.write_gnuplot("ref_mesh",err); 
   if (err) return 1;
 
@@ -170,6 +172,7 @@ int main()
   queue1.run_instructions(mesh_set1, err); 
   if (err) return 1;
   
+    //mesh->write_exodus("smo_mesh.exo",err);
   mesh->write_vtk("smo_mesh.vtk",err);
   if (err) return 1;
   mesh_set1.write_gnuplot("smo_mesh.vtk", err); 
