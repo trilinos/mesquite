@@ -31,7 +31,7 @@ namespace Mesquite
   public:
     SteepestDescent(ObjectiveFunction* of);
 
-    virtual ~SteepestDescent();
+    virtual ~SteepestDescent() { }
 
     /*! sets the maximum number of iteration of the steepest descent algorythm,
       i.e. the number of times we compute the gradient and try to move the nodes in the
