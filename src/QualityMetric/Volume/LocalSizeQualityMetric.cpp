@@ -58,7 +58,7 @@ bool LocalSizeQualityMetric::evaluate_vertex(PatchData &pd, MsqVertex* vert,
   std::vector<size_t> other_vertices;
   other_vertices.reserve(4);
   double total_val=0.0;
-  int i=0;
+  size_t i=0;
     //loop over the elements attached to this vertex
   for(i=0;i<num_elems;++i){
       //get the vertices which (with this_vert) form the corner of
