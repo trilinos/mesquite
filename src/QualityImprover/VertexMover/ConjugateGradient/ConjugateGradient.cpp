@@ -135,13 +135,9 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
    //Michael, this isn't equivalent to CUBIT because we only want to check
    //the objective function value of the 'bad' elements
    //if invalid initial patch set an error.
-  if(! objFunc->evaluate(pd,f,err)){
+  if( ! objFunc->compute_gradient(pd, fGrad, f, err, num_vert) ){
     MSQ_CHKERR(err);
-    err.set_msg("Conjugate Gradient passed an invalid intital patch.");
-  }
-  if( ! objFunc->compute_gradient(pd, fGrad , err, num_vert) ){
-    MSQ_CHKERR(err);
-    err.set_msg("Conjugate Gradient not able to get valid gradient on intial patch.");
+    err.set_msg("Conjugate Gradient not able to get valid gradient and function values on intial patch.");
   }
   double grad_norm=MSQ_MAX_CAP;
   
@@ -203,16 +199,9 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
           //Added move_to_ownever
         pd.snap_vertex_to_domain(m,err);
       }
-      if (! objFunc->evaluate(pd,f,err)){
+      if (! objFunc->compute_gradient(pd, fNewGrad, f, err, num_vert)){
         MSQ_CHKERR(err);
-        err.set_msg("Error inside Conjugate Gradient, patch moved to invalid state.");
-      }
-      
-      MSQ_CHKERR(err);
-      
-      if (! objFunc->compute_gradient(pd, fNewGrad, err, num_vert)){
-        MSQ_CHKERR(err);
-        err.set_msg("Error inside Conjugate Gradient, vertices moved making gradient invalid.");
+        err.set_msg("Error inside Conjugate Gradient, vertices moved making function value invalid.");
       }
       
       if(conjGradDebug>0){
