@@ -128,7 +128,7 @@ include $(TESTMAKEFILES)
 endif
 # *************
 
-ifneq ($(TSTT_CLIENT_DIR),"")
+ifdef TSTT_CLIENT_DIR
 include $(TSTT_CLIENT_DIR)/babel.make
 endif
 TSTT_CLIENT_OBJS = $(STUBSRCS:%.cc=$(TSTT_CLIENT_DIR)/%.o) \
