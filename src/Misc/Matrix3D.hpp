@@ -30,7 +30,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 18-Dec-02 at 11:08:22
-//  LAST-MOD: 12-May-04 at 17:09:15 by Thomas Leurent
+//  LAST-MOD: 27-May-04 at 14:48:56 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -205,7 +205,7 @@ namespace Mesquite
     }
 
     //! returns the column length -- i is 0-based. 
-    double column_length(int i)
+    double column_length(int i) const 
     { return sqrt( v_[0+i]*v_[0+i] + v_[3+i]*v_[3+i] + v_[6+i]*v_[6+i] ); }
 
     // Matrix Operators
