@@ -69,7 +69,7 @@ namespace Mesquite
      };
      
      //!Sets the evaluation mode for the ELEMENT_BASED metrics.
-     void set_element_evaluation_mode(EvaluationMode mode, MsqError &err);
+     void set_element_evaluation_mode(ElementEvaluationMode mode, MsqError &err);
      
      //!Returns the evaluation mode for the metric
      inline ElementEvaluationMode  get_element_evaluation_mode()
@@ -256,7 +256,6 @@ namespace Mesquite
 
      // TODO : pass this private and write protected access fucntions.
      AveragingMethod avgMethod;
-     MetricType mType;
      ElementEvaluationMode evalMode;
      int feasible;
      std::string metricName;
@@ -269,7 +268,7 @@ namespace Mesquite
   
 #undef __FUNC__
 #define __FUNC__ "QualityMetric::set_element_evaluation_mode"
-  inline void QualityMetric::set_element_evaluation_mode(EvaluationMode mode, MsqError &err)
+  inline void QualityMetric::set_element_evaluation_mode(ElementEvaluationMode mode, MsqError &err)
   {
     if (mType == VERTEX_BASED) {
       err.set_msg("function must only be used for ELEMENT_BASED metrics.");
@@ -293,7 +292,7 @@ namespace Mesquite
   
 #undef __FUNC__
 #define __FUNC__ "QualityMetric::set_averaging_method"
-  inline void set_averaging_method(AveragingMethod method, MsqError &err)
+  inline void  QualityMetric::set_averaging_method(AveragingMethod method, MsqError &err)
   {
     switch(method)
       {
@@ -315,29 +314,64 @@ namespace Mesquite
   
 
 #undef __FUNC__
-#define __FUNC__ "QualityMetric::compute_gradient"
+#define __FUNC__ "QualityMetric::compute_vertex_gradient"
 /*! 
-  \brief Calls compute_numerical_gradient if gradType equals
-  NUMERCIAL_GRADIENT.  Calls compute_analytical_gradient if 
+  \brief Calls compute_vertex_numerical_gradient if gradType equals
+  NUMERCIAL_GRADIENT.  Calls compute_vertex_analytical_gradient if 
   gradType equals ANALYTICAL_GRADIENT;
 */
-   inline void QualityMetric::compute_gradient(PatchData &pd,
-                                               MsqMeshEntity* element,
-                                               MsqVertex &vertex,
-                                               Vector3D &grad_vec,
-                                               MsqError &err)
+   inline bool QualityMetric::compute_vertex_gradient(PatchData &pd,
+                                                      MsqVertex &vertex,
+                                                      Vector3D &grad_vec,
+                                                      double &metric_value,
+                                                      MsqError &err)
    {
+     bool ret;
      switch(gradType)
      {
        case NUMERICAL_GRADIENT:
-          compute_numerical_gradient(pd, element, vertex, grad_vec, err);
+          ret = compute_vertex_numerical_gradient(pd, vertex, grad_vec, metric_value, err);
           MSQ_CHKERR(err);
           break;
        case ANALYTICAL_GRADIENT:
-          compute_analytical_gradient(pd, element, vertex, grad_vec, err);
+          ret = compute_vertex_analytical_gradient(pd, vertex, grad_vec, metric_value, err);
           MSQ_CHKERR(err);
           break;
      }
+     return ret;
+   }
+   
+
+#undef __FUNC__
+#define __FUNC__ "QualityMetric::compute_element_gradient"
+/*! 
+  \brief Calls compute_element_numerical_gradient if gradType equals
+  NUMERCIAL_GRADIENT.  Calls compute_element_analytical_gradient if 
+  gradType equals ANALYTICAL_GRADIENT;
+*/
+   inline bool QualityMetric::compute_element_gradient(PatchData &pd,
+                                                       MsqMeshEntity* el,
+                                                       MsqVertex* vertices,
+                                                       Vector3D* grad_vec,
+                                                       int num_vtx,
+                                                       double &metric_value,
+                                                       MsqError &err)
+   {
+     bool ret;
+     switch(gradType)
+     {
+       case NUMERICAL_GRADIENT:
+          ret = compute_element_numerical_gradient(pd, el, vertices, grad_vec,
+                                                  num_vtx, metric_value, err);
+          MSQ_CHKERR(err);
+          break;
+       case ANALYTICAL_GRADIENT:
+          ret = compute_element_analytical_gradient(pd, el, vertices, grad_vec,
+                                                   num_vtx, metric_value, err);
+          MSQ_CHKERR(err);
+          break;
+     }
+     return ret;
    }
    
    
