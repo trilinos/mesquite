@@ -187,7 +187,7 @@ namespace Mesquite
         the objective function computed using the hessian of the
         quality metric.  If the function has not been over-riden
         in the concrete Objective Function, the base class implementation
-        prints a warning and then defaults to numerical hessian.
+        prints a warning and returns false.
         Function returns 'false' if the patch is not within a required
         feasible regeion.  Otherwise, it returns 'true'.
       */
@@ -195,9 +195,8 @@ namespace Mesquite
                                             MsqHessian &hessian,
                                             MsqError &err) {
       PRINT_WARNING("Analytic hessian not implemented for this Objective ",
-                    "Function. Defaulting to numerical hessian.\n");
-      set_hessian_type(NUMERICAL_HESSIAN);
-      return compute_numerical_hessian(patch, hessian, err);
+                    "Function. Feasible Newton algorythm cannot be used.\n");
+      return false;
     }
     
       //!Returns eps used in the numerical gradient calculation.
@@ -226,7 +225,6 @@ namespace Mesquite
     
       
     enum GRADIENT_TYPE gradType;//!Flag for numerical or analytical gradient.
-    enum HESSIAN_TYPE hessianType;//!Flag for numerical or analytical hessian.
       
     QualityMetric* qMetric;//!Pointer to associated QualityMetric.
       
