@@ -42,7 +42,7 @@ namespace Mesquite
      
        // This allows for 8 flag bits.
        // I don't think we'll want more than that (yet).
-     typedef char FlagMask;
+     typedef unsigned char FlagMask;
      
        //! \enum FlagMaskID
        //!   Those are the available flags... currently only return
