@@ -43,10 +43,29 @@ describe main.cpp here
 // DESCRIP-END.
 //
 
+#include "Mesquite.hpp"
+#include "MeshTSTT.hpp"
+#include "MeshImpl.hpp"
+#include "MsqError.hpp"
+#include "InstructionQueue.hpp"
+#include "MeshSet.hpp"
+#include "TerminationCriterion.hpp"
+#include "QualityAssessor.hpp"
+#include "PlanarDomain.hpp"
+
+// algorithms
+#include "MeanRatioQualityMetric.hpp"
+#include "EdgeLengthQualityMetric.hpp"
+#include "LPtoPTemplate.hpp"
+#include "FeasibleNewton.hpp"
+#include "ConjugateGradient.hpp"
+#include "SmartLaplacianSmoother.hpp"
+
 #ifndef MSQ_USE_OLD_IO_HEADERS
 #include <iostream>
+using std::cerr;
 using std::cout;
-using std::end;
+using std::endl;
 #else
 #include <iostream.h>
 #endif
@@ -58,120 +77,137 @@ using std::end;
 #endif
 
 
-#ifdef MSQ_USE_TSTT_OVERTURE_IMPL
-#include "TSTT_Overture_Mesh.hh"
+#if   defined( MSQ_TSTT_USE_MOAB )     && MSQ_TSTT_USE_MOAB
+# include "TSTTM_MOAB_MoabMesh.hh"
+  typedef TSTTM_MOAB::MoabMesh ImplType;
+#elif defined( MSQ_TSTT_USE_OVERTURE ) && MSQ_TSTT_USE_OVERTURE
+# include "TSTT_Overture_Mesh.hh"
+  typedef TSTT_Overture::Mesh ImplType;
+#elif defined( MSQ_TSTT_USE_AOMD )     && MSQ_TSTT_USE_AOMD
+# include "TSTT_LocalTSTTMesh_Impl.hh"
+  typedef TSTT::LocalTSTTMesh ImplType;
+#else
+# error
 #endif
 
-#ifdef MSQ_USE_TSTT_AOMD_IMPL
-#include "TSTT_LocalTSTTMesh_Impl.hh"
-#endif
-
-#include "Mesquite.hpp"
-#include "MeshTSTT.hpp"
-#include "MsqError.hpp"
-#include "InstructionQueue.hpp"
-#include "MeshSet.hpp"
-#include "TerminationCriterion.hpp"
-#include "QualityAssessor.hpp"
-#include "PlanarDomain.hpp"
-
-// algorythms
-#include "MeanRatioQualityMetric.hpp"
-#include "EdgeLengthQualityMetric.hpp"
-#include "LPtoPTemplate.hpp"
-#include "FeasibleNewton.hpp"
-#include "ConjugateGradient.hpp"
+#include "TSTT.hh"
+#include "TSTTM.hh"
 
 
 using namespace Mesquite;
 
+const char* const default_file_name = "../../meshFiles/3D/VTK/large_box_hex_1000.vtk";
+
+void usage()
+{
+  cout << "main [-N] [filename]" << endl;
+  cout << "  -N : Use native representation instead of TSTT implementation\n";
+  cout << "  If no file name is specified, will use \"" 
+       << default_file_name << '"' << endl;
+  exit (1);
+}
+
+  // Construct a MeshTSTT from the file
+Mesh* get_tstt_mesh( const char* file_name );
+
+  // Construct a MeshImpl from the file
+Mesh* get_native_mesh( const char* file_name );
+
+  // Run FeasibleNewton solver
+int run_global_smoother( MeshSet& mesh, MsqError& err );
+
+  // Run SmoothLaplacian solver
+int run_local_smoother( MeshSet& mesh, MsqError& err );
+
 int main(int argc, char* argv[])
 {
   Mesquite::MsqPrintError err(cout);
-  char file_name[256];
-  double OF_value = 1.;
   
-  // command line arguments
-  if (argc==1 || argc>3)
-    cout << "meshfile name needed as argument.\n"
-      "objective function value optional as 2nd argument.\n" << endl;
-  else if (argc==2) {
-    cout << " given 1 command line argument.\n";
-    strcpy(file_name, argv[1]);
-  } else if (argc==3) {
-    cout << " given 2 command line arguments.\n";
-    strcpy(file_name, argv[1]);
-    OF_value = atof(argv[2]);
-  }
-  
-  TSTT::Mesh tstt_mesh;
-
-#ifdef MSQ_USE_TSTT_OVERTURE_IMPL
-  TSTT_Overture::Mesh ov_mesh = TSTT_Overture::Mesh::_create();
-  tstt_mesh = ov_mesh;
-#endif
-
-#ifdef MSQ_USE_TSTT_AOMD_IMPL
-  TSTT::LocalTSTTMesh aomd_mesh = TSTT::LocalTSTTMesh::_create();
-  tstt_mesh = aomd_mesh;
-#endif
-  
-  TSTT::CoreEntitySetQuery tstt_core_query = tstt_mesh;
-
-  if ( !tstt_core_query )
+    // command line arguments
+  const char* file_name = 0;
+  bool use_native = false, opts_done = false;
+  for (int arg = 1; arg < argc; ++arg)
   {
-     cout << "ERROR: could not perform tstt cast to CoreEntitySetQuery" << endl;
-     return 1;
+    if (!opts_done && argv[arg][0] == '-')
+    {
+      if (!strcmp( argv[arg], "-N"))
+        use_native = true;
+      else if(!strcmp( argv[arg], "--"))
+        opts_done = true;
+      else
+        usage();
+    }
+    else if (!file_name)
+      file_name = argv[arg];
+    else
+      usage();
   }
-
-  tstt_core_query.load(file_name);
-
-  Mesquite::MeshTSTT* mesh = new Mesquite::MeshTSTT(tstt_mesh, err);
-  if (err) return 1;;
+  if (!file_name)
+  {
+    file_name = default_file_name;
+    cout << "No file specified: using default: " << default_file_name << endl;
+  }  
   
-  // Creates a domain constraint
-  Vector3D normal(0,0,1);
-  Vector3D point(0,0,0);
-  Mesquite::PlanarDomain planar_domain(normal,point,mesh);
-
-  // initialises a MeshSet object
+    // Try running a global smoother on the mesh
+  Mesh* mesh = use_native ? 
+               get_native_mesh(file_name) : 
+               get_tstt_mesh(file_name);
   MeshSet mesh_set1;
   mesh_set1.add_mesh(mesh, err); 
-  if (err) return 1;;
-  //  mesh_set1.set_domain_constraint(&planar_domain, err); MSQ_CHKERR(err);
+  if (err) return 1;
+  mesh_set1.write_vtk("original.vtk", err); 
+  if (err) return 1;
+  cout << "Wrote \"original.vtk\"" << endl;
+  run_global_smoother( mesh_set1, err );
+  if (err) return 1;
+  
+    // Try running a local smoother on the mesh
+  mesh = use_native ? 
+         get_native_mesh(file_name) : 
+         get_tstt_mesh(file_name);
+  MeshSet mesh_set2;
+  mesh_set2.add_mesh(mesh, err); 
+  if (err) return 1;
+  run_local_smoother( mesh_set2, err );
+  if (err) return 1;
+  
+  return 0;
+}
+
+
+int run_global_smoother( MeshSet& mesh_set, MsqError& err )
+{
+  double OF_value = 0.0001;
 
   // creates an intruction queue
   InstructionQueue queue1;
 
   // creates a mean ratio quality metric ...
-//   SmoothnessQualityMetric* mean_ratio = new EdgeLengthQualityMetric;
-  ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
-//  mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
-//   mean_ratio->set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
+  ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);
+  if (err) return 1;
   mean_ratio->set_averaging_method(QualityMetric::SUM, err); 
-  if (err) return 1;;
+  if (err) return 1;
   
   // ... and builds an objective function with it
   LPtoPTemplate* obj_func = new LPtoPTemplate(mean_ratio, 1, err);
-  if (err) return 1;;
+  if (err) return 1;
   obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
   
-  // creates the steepest descentfeas newt optimization procedures
-//  ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
+  // creates the feas newt optimization procedures
   FeasibleNewton* pass1 = new FeasibleNewton( obj_func );
   pass1->set_patch_type(PatchData::GLOBAL_PATCH, err);
-  if (err) return 1;;
+  if (err) return 1;
   
   QualityAssessor stop_qa=QualityAssessor(mean_ratio,QualityAssessor::AVERAGE);
   
   // **************Set stopping criterion****************
   TerminationCriterion tc_inner;
   tc_inner.add_criterion_type_with_double(
-           TerminationCriterion::QUALITY_IMPROVEMENT_ABSOLUTE, OF_value, err);
-  if (err) return 1;;
+           TerminationCriterion::VERTEX_MOVEMENT_ABSOLUTE, OF_value, err);
+  if (err) return 1;
   TerminationCriterion tc_outer;
   tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
-  if (err) return 1;;
+  if (err) return 1;
   pass1->set_inner_termination_criterion(&tc_inner);
   pass1->set_outer_termination_criterion(&tc_outer);
 
@@ -179,25 +215,195 @@ int main(int argc, char* argv[])
   pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
   
   queue1.add_quality_assessor(&stop_qa, err);
-  if (err) return 1;;
+  if (err) return 1;
    
   // adds 1 pass of pass1 to mesh_set1
   queue1.set_master_quality_improver(pass1, err);
-  if (err) return 1;;
+  if (err) return 1;
   
   queue1.add_quality_assessor(&stop_qa, err); 
-  if (err) return 1;;
+  if (err) return 1;
 
-  mesh_set1.write_vtk("original.vtk", err); 
-  if (err) return 1;;
+  // launches optimization on mesh_set
+  queue1.run_instructions(mesh_set, err);
+  if (err) return 1;
 
-  // launches optimization on mesh_set1
-  queue1.run_instructions(mesh_set1, err);
-  if (err) return 1;;
+  mesh_set.write_vtk("feasible-newton-result.vtk", err); 
+  if (err) return 1;
+  cout << "Wrote \"feasible-newton-result.vtk\"" << endl;
 
-  mesh_set1.write_vtk("smoothed.vtk", err); 
-  if (err) return 1;;
-
-  print_timing_diagnostics( cout );
+  //print_timing_diagnostics( cout );
   return 0;
 }
+
+int run_local_smoother( MeshSet& mesh_set, MsqError& err )
+{
+  double OF_value = 0.0001;
+
+  // creates an intruction queue
+  InstructionQueue queue1;
+
+  // creates a mean ratio quality metric ...
+  ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric(err);
+  if (err) return 1;
+  mean_ratio->set_averaging_method(QualityMetric::SUM, err); 
+  if (err) return 1;
+  
+  // ... and builds an objective function with it
+  LPtoPTemplate* obj_func = new LPtoPTemplate(mean_ratio, 1, err);
+  if (err) return 1;
+  obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
+  
+  // creates the smart laplacian optimization procedures
+  SmartLaplacianSmoother* pass1 = new SmartLaplacianSmoother( obj_func, err );
+  if (err) return 1;
+  
+  QualityAssessor stop_qa=QualityAssessor(mean_ratio,QualityAssessor::AVERAGE);
+  
+  // **************Set stopping criterion****************
+  TerminationCriterion tc_inner;
+  tc_inner.add_criterion_type_with_double(
+           TerminationCriterion::VERTEX_MOVEMENT_ABSOLUTE, OF_value, err);
+  if (err) return 1;
+  TerminationCriterion tc_outer;
+  tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
+  if (err) return 1;
+  pass1->set_inner_termination_criterion(&tc_inner);
+  pass1->set_outer_termination_criterion(&tc_outer);
+
+  // sets a culling method on the first QualityImprover
+  pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
+  
+  queue1.add_quality_assessor(&stop_qa, err);
+  if (err) return 1;
+   
+  // adds 1 pass of pass1 to mesh_set
+  queue1.set_master_quality_improver(pass1, err);
+  if (err) return 1;
+  
+  queue1.add_quality_assessor(&stop_qa, err); 
+  if (err) return 1;
+
+  // launches optimization on mesh_set
+  queue1.run_instructions(mesh_set, err);
+  if (err) return 1;
+
+  mesh_set.write_vtk("smart-laplacian-result.vtk", err); 
+  if (err) return 1;
+  cout << "Wrote \"smart-laplacian-result.vtk\"" << endl;
+
+  //print_timing_diagnostics( cout );
+  return 0;
+}
+ 
+
+
+Mesh* get_tstt_mesh( const char* file_name )
+{
+  
+  ImplType mesh_instance = ImplType::_create();
+  TSTTM::Mesh tstt_mesh = mesh_instance;
+
+  tstt_mesh.load(file_name);
+  
+  // **************************************************************
+  // THIS IS A HACK -- READ FIXED FLAG FROM INPUT FILE DIRECTLY
+  // AND SET TAG IN TSTT MESH IMPLEMENTATION
+  //  - assumes TSTTM implementation does not already set tag
+  //  - assumes order of vertex handles in TSTTM implementation 
+  //    is the same as the vertex order in the file. THIS IS A
+  //    BIG ASSUMPTION!  It works for the current MOAB 
+  //    implementation.
+  // **************************************************************
+  FILE* file = fopen( file_name, "r" );
+  char buffer[256];
+  int count = 0;
+  while (fgets( buffer, sizeof(buffer), file ))
+    if (sscanf(buffer, "POINT_DATA %d", &count) == 1)
+      break;
+    // Found fixed flags?
+  if (count)
+  {
+      // skip two lines
+    fgets( buffer, sizeof(buffer), file );
+    fgets( buffer, sizeof(buffer), file );
+      // read flags from file
+    std::vector<int> flags(count);
+    for (std::vector<int>::iterator iter = flags.begin(); iter != flags.end(); ++iter)
+      if (fscanf( file, "%d", &*iter ) != 1) {
+        fprintf(stderr, "Error reading fixed flag from \"%s\"\n", file_name );
+        fclose( file );
+        exit (2);
+      }
+    fclose( file );
+      // Get tag interface
+    TSTT::ArrTag tag_iface = tstt_mesh;
+    if (!tag_iface) {
+      fprintf(stderr, "TSTTM impelementation does not provide tag array interface\n");
+      exit (2);
+    }
+      // Store flags in tag on vertices
+    try {
+        // Get vertices
+      int num_vtx;
+      sidl::array<void*> vertices;
+      tstt_mesh.getEntities( tstt_mesh.getRootSet(),
+                             TSTTM::EntityType_VERTEX,
+                             TSTTM::EntityTopology_POINT,
+                             vertices, num_vtx );
+      if (num_vtx != count) {
+        fprintf(stderr, "File \"%s\" contains fixed flags for %d vertices, "
+                        "while TSTTM implementation has %d vertices.\n",
+                        file_name, count, num_vtx );
+        exit(2);
+      }
+        // Create tag
+      TagHandle tag_handle;
+      tag_iface.createTag( VERTEX_FIXED_TAG_NAME, 
+                           sizeof(int), 
+                           TSTT::TagValueType_INTEGER, 
+                           tag_handle );
+        // Set tag data on vertices
+      sidl::array<int> values;
+      int32_t lower = 0, upper = flags.size(), stride = 1;
+      values.borrow( &flags[0], 1, &lower, &upper, &stride );
+      tag_iface.setIntArrData( vertices, num_vtx, tag_handle, values, flags.size() );
+    } 
+    catch( ... ) {
+      std::cerr << "Error setting fixed tag on vertices\n";
+      exit(2);
+    } 
+  }
+  // **************************************************************
+  // END UGLY HACK
+  // **************************************************************
+  
+
+  MsqError err;
+  Mesquite::MeshTSTT* mesh = MeshTSTT::create( tstt_mesh, tstt_mesh.getRootSet(), err );
+  if (err)
+  {
+    cerr << err << endl;
+    exit (1);
+  }
+  
+  return mesh;
+}
+  
+
+
+Mesh* get_native_mesh( const char* file_name )
+{
+  MsqError err;
+  MeshImpl* mesh = new MeshImpl;
+  mesh->read_vtk( file_name, err );
+  if (err)
+  {
+    cerr << err << endl;
+    exit(3);
+  }
+  
+  return mesh;
+}
+
+
