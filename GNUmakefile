@@ -13,7 +13,7 @@ dependenciesfile = make.dependencies
 include Makefile.customize
 
 OUTPUT_OPTION = -o $@ # Use the -o option when generating .o files.
-INCLUDE = -I./include -I$(localincludedir) -I./TSTT-interface
+INCLUDE = -I./include -I$(localincludedir) -I./TSTT-interface  
 
 # Make sure that "default" is the first target
 default: all depend
@@ -40,7 +40,8 @@ MODULENAMES :=  Mesh \
 		../lib 
 
 testdir = testSuite
-TESTNAMES := test_1
+TESTNAMES := test_1\
+             laplacian_test\
 
 
 # ************ inclusion of all the modules 
