@@ -104,7 +104,7 @@ inline bool g_fcn_2e(double &obj, Vector3D g_obj[3],
                      const Vector3D x[3], const Vector3D &n)
 {
   double matr[9], f;
-  double adj_m[9], g;
+  double adj_m[9], g;		// adj_m[2,5,8] not used
   double loc1, loc2, loc3, loc4;
 
   /* Calculate M = [A*inv(W) n] */
@@ -142,7 +142,6 @@ inline bool g_fcn_2e(double &obj, Vector3D g_obj[3],
 
   adj_m[0] = matr[0]*f + loc1*g;
   adj_m[1] = matr[1]*f + loc2*g;
-  adj_m[2] = 0.0;
 
   loc1 = matr[0]*g;
   loc2 = matr[1]*g;
@@ -150,11 +149,9 @@ inline bool g_fcn_2e(double &obj, Vector3D g_obj[3],
 
   adj_m[3] = matr[3]*f + loc3*matr[7] - loc2*matr[8];
   adj_m[4] = matr[4]*f + loc1*matr[8] - loc3*matr[6];
-  adj_m[5] = 0.0;
 
   adj_m[6] = matr[6]*f + loc2*matr[5] - loc3*matr[4];
   adj_m[7] = matr[7]*f + loc3*matr[3] - loc1*matr[5];
-  adj_m[8] = 0.0;
 
   loc1 = isqrt3*adj_m[1];
   g_obj[0][0] = -adj_m[0] - loc1;
@@ -170,6 +167,298 @@ inline bool g_fcn_2e(double &obj, Vector3D g_obj[3],
   g_obj[0][2] = -adj_m[6] - loc1;
   g_obj[1][2] = adj_m[6] - loc1;
   g_obj[2][2] = 2.0*loc1;
+  return true;
+}
+
+/*****************************************************************************/
+/* Hessian requires 292 flops.                                               */
+/*****************************************************************************/
+inline bool h_fcn_2e(double &obj, Vector3D g_obj[3], Matrix3D h_obj[6],
+                     const Vector3D x[3], const Vector3D &n)
+{
+  double matr[9], f;
+  double adj_m[9], g;		// adj_m[2,5,8] not used
+  double dg[9];			// dg[2,5,8] not used
+  double loc0, loc1, loc2, loc3, loc4;
+  double A[12], J_A[6], J_B[9], J_C[9];  // only 2x2 corners used
+
+  /* Calculate M = [A*inv(W) n] */
+  matr[0] = x[1][0] - x[0][0];
+  matr[1] = (2.0*x[2][0] - x[1][0] - x[0][0])*isqrt3;
+  matr[2] = n[0];
+
+  matr[3] = x[1][1] - x[0][1];
+  matr[4] = (2.0*x[2][1] - x[1][1] - x[0][1])*isqrt3;
+  matr[5] = n[1];
+
+  matr[6] = x[1][2] - x[0][2];
+  matr[7] = (2.0*x[2][2] - x[1][2] - x[0][2])*isqrt3;
+  matr[8] = n[2];
+
+  /* Calculate det([n M]). */
+  dg[0] = matr[4]*matr[8] - matr[5]*matr[7];
+  dg[1] = matr[5]*matr[6] - matr[3]*matr[8];
+  dg[2] = matr[3]*matr[7] - matr[4]*matr[6];
+  g = matr[0]*dg[0] + matr[1]*dg[1] + matr[2]*dg[2];
+  if (g < MSQ_MIN) { obj = g; return false; }
+
+  /* Calculate norm(M). */
+  f = matr[0]*matr[0] + matr[1]*matr[1] +
+      matr[3]*matr[3] + matr[4]*matr[4] +
+      matr[6]*matr[6] + matr[7]*matr[7];
+
+  loc4 = g;
+
+  /* Calculate objective function. */
+  loc1 = a2 * pow(g, b2);
+  obj = f * loc1;
+
+  /* Calculate the derivative of the objective function. */
+  f = 2.0 * loc1;
+  g = b2 * obj / g;
+
+  dg[3] = matr[2]*matr[7] - matr[1]*matr[8];
+  dg[4] = matr[0]*matr[8] - matr[2]*matr[6];
+  dg[6] = matr[1]*matr[5] - matr[2]*matr[4];
+  dg[7] = matr[2]*matr[3] - matr[0]*matr[5];
+
+  adj_m[0] = matr[0]*f + dg[0]*g;
+  adj_m[1] = matr[1]*f + dg[1]*g;
+  adj_m[3] = matr[3]*f + dg[3]*g;
+  adj_m[4] = matr[4]*f + dg[4]*g;
+  adj_m[6] = matr[6]*f + dg[6]*g;
+  adj_m[7] = matr[7]*f + dg[7]*g;
+
+  loc1 = isqrt3*adj_m[1];
+  g_obj[0][0] = -adj_m[0] - loc1;
+  g_obj[1][0] = adj_m[0] - loc1;
+  g_obj[2][0] = 2.0*loc1;
+
+  loc1 = isqrt3*adj_m[4];
+  g_obj[0][1] = -adj_m[3] - loc1;
+  g_obj[1][1] = adj_m[3] - loc1;
+  g_obj[2][1] = 2.0*loc1;
+
+  loc1 = isqrt3*adj_m[7];
+  g_obj[0][2] = -adj_m[6] - loc1;
+  g_obj[1][2] = adj_m[6] - loc1;
+  g_obj[2][2] = 2.0*loc1;
+
+  loc0 = g;
+  loc1 = f;
+  f = f*b2/loc4;
+  g = g*b2m1/loc4;
+
+  /* First block of rows */
+  loc2 = matr[0]*f;
+  loc3 = dg[0]*f;
+  loc4 = dg[0]*g + loc2;
+
+  J_A[0] = loc1 + dg[0]*(loc2 + loc4);
+  J_A[1] = loc3*matr[1] + loc4*dg[1];
+  J_B[0] = loc3*matr[3] + loc4*dg[3];
+  J_B[1] = loc3*matr[4] + loc4*dg[4];
+  J_C[0] = loc3*matr[6] + loc4*dg[6];
+  J_C[1] = loc3*matr[7] + loc4*dg[7];
+
+  loc2 = matr[1]*f;
+  loc3 = dg[1]*f;
+  loc4 = dg[1]*g + loc2;
+
+  J_A[3] = loc1 + dg[1]*(loc2 + loc4);
+  J_B[3] = loc3*matr[3] + loc4*dg[3];
+  J_B[4] = loc3*matr[4] + loc4*dg[4];
+  J_C[3] = loc3*matr[6] + loc4*dg[6];
+  J_C[4] = loc3*matr[7] + loc4*dg[7];
+
+  /* First diagonal block */
+  loc2 = isqrt3*J_A[1];
+  A[0] = -J_A[0] - loc2;
+  A[1] =  J_A[0] - loc2;
+
+  loc2 = isqrt3*J_A[3];
+  A[4] = -J_A[1] - loc2;
+  A[5] =  J_A[1] - loc2;
+  A[6] = 2.0*loc2;
+
+  loc2 = isqrt3*A[4];
+  h_obj[0][0][0] = -A[0] - loc2;
+  h_obj[1][0][0] =  A[0] - loc2;
+  h_obj[2][0][0] = 2.0*loc2;
+
+  loc2 = isqrt3*A[5];
+  h_obj[3][0][0] = A[1] - loc2;
+  h_obj[4][0][0] = 2.0*loc2;
+
+  h_obj[5][0][0] = tisqrt3*A[6];
+
+  /* First off-diagonal block */
+  loc2 = matr[8]*loc0;
+  J_B[1] += loc2;
+  J_B[3] -= loc2;
+
+  loc2 = isqrt3*J_B[3];
+  A[0] = -J_B[0] - loc2;
+  A[1] =  J_B[0] - loc2;
+  A[2] = 2.0*loc2;
+
+  loc2 = isqrt3*J_B[4];
+  A[4] = -J_B[1] - loc2;
+  A[5] =  J_B[1] - loc2;
+  A[6] = 2.0*loc2;
+
+  loc2 = isqrt3*A[4];
+  h_obj[0][0][1] = -A[0] - loc2;
+  h_obj[1][0][1] =  A[0] - loc2;
+  h_obj[2][0][1] = 2.0*loc2;
+
+  loc2 = isqrt3*A[5];
+  h_obj[1][1][0] = -A[1] - loc2;
+  h_obj[3][0][1] =  A[1] - loc2;
+  h_obj[4][0][1] = 2.0*loc2;
+
+  loc2 = isqrt3*A[6];
+  h_obj[2][1][0] = -A[2] - loc2;
+  h_obj[4][1][0] =  A[2] - loc2;
+  h_obj[5][0][1] = 2.0*loc2;
+
+  /* Second off-diagonal block */
+  loc2 = matr[5]*loc0;
+  J_C[1] -= loc2;
+  J_C[3] += loc2;
+
+  loc2 = isqrt3*J_C[3];
+  A[0] = -J_C[0] - loc2;
+  A[1] =  J_C[0] - loc2;
+  A[2] = 2.0*loc2;
+
+  loc2 = isqrt3*J_C[4];
+  A[4] = -J_C[1] - loc2;
+  A[5] =  J_C[1] - loc2;
+  A[6] = 2.0*loc2;
+
+  loc2 = isqrt3*A[4];
+  h_obj[0][0][2] = -A[0] - loc2;
+  h_obj[1][0][2] =  A[0] - loc2;
+  h_obj[2][0][2] = 2.0*loc2;
+
+  loc2 = isqrt3*A[5];
+  h_obj[1][2][0] = -A[1] - loc2;
+  h_obj[3][0][2] =  A[1] - loc2;
+  h_obj[4][0][2] = 2.0*loc2;
+
+  loc2 = isqrt3*A[6];
+  h_obj[2][2][0] = -A[2] - loc2;
+  h_obj[4][2][0] =  A[2] - loc2;
+  h_obj[5][0][2] = 2.0*loc2;
+
+  /* Second block of rows */
+  loc2 = matr[3]*f;
+  loc3 = dg[3]*f;
+  loc4 = dg[3]*g + loc2;
+
+  J_A[0] = loc1 + dg[3]*(loc2 + loc4);
+  J_A[1] = loc3*matr[4] + loc4*dg[4];
+  J_B[0] = loc3*matr[6] + loc4*dg[6];
+  J_B[1] = loc3*matr[7] + loc4*dg[7];
+
+  loc2 = matr[4]*f;
+  loc3 = dg[4]*f;
+  loc4 = dg[4]*g + loc2;
+
+  J_A[3] = loc1 + dg[4]*(loc2 + loc4);
+  J_B[3] = loc3*matr[6] + loc4*dg[6];
+  J_B[4] = loc3*matr[7] + loc4*dg[7];
+
+  /* Second diagonal block */
+  loc2 = isqrt3*J_A[1];
+  A[0] = -J_A[0] - loc2;
+  A[1] =  J_A[0] - loc2;
+
+  loc2 = isqrt3*J_A[3];
+  A[4] = -J_A[1] - loc2;
+  A[5] =  J_A[1] - loc2;
+  A[6] = 2.0*loc2;
+
+  loc2 = isqrt3*A[4];
+  h_obj[0][1][1] = -A[0] - loc2;
+  h_obj[1][1][1] =  A[0] - loc2;
+  h_obj[2][1][1] = 2.0*loc2;
+
+  loc2 = isqrt3*A[5];
+  h_obj[3][1][1] = A[1] - loc2;
+  h_obj[4][1][1] = 2.0*loc2;
+
+  h_obj[5][1][1] = tisqrt3*A[6];
+
+  /* Third off-diagonal block */
+  loc2 = matr[2]*loc0;
+  J_B[1] += loc2;
+  J_B[3] -= loc2;
+
+  loc2 = isqrt3*J_B[3];
+  A[0] = -J_B[0] - loc2;
+  A[1] =  J_B[0] - loc2;
+  A[2] = 2.0*loc2;
+
+  loc2 = isqrt3*J_B[4];
+  A[4] = -J_B[1] - loc2;
+  A[5] =  J_B[1] - loc2;
+  A[6] = 2.0*loc2;
+
+  loc2 = isqrt3*A[4];
+  h_obj[0][1][2] = -A[0] - loc2;
+  h_obj[1][1][2] =  A[0] - loc2;
+  h_obj[2][1][2] = 2.0*loc2;
+
+  loc2 = isqrt3*A[5];
+  h_obj[1][2][1] = -A[1] - loc2;
+  h_obj[3][1][2] =  A[1] - loc2;
+  h_obj[4][1][2] = 2.0*loc2;
+
+  loc2 = isqrt3*A[6];
+  h_obj[2][2][1] = -A[2] - loc2;
+  h_obj[4][2][1] =  A[2] - loc2;
+  h_obj[5][1][2] = 2.0*loc2;
+
+  /* Third block of rows */
+  loc2 = matr[6]*f;
+  loc3 = dg[6]*f;
+  loc4 = dg[6]*g + loc2;
+
+  J_A[0] = loc1 + dg[6]*(loc2 + loc4);
+  J_A[1] = loc3*matr[7] + loc4*dg[7];
+
+  loc2 = matr[7]*f;
+  loc4 = dg[7]*g + loc2;
+
+  J_A[3] = loc1 + dg[7]*(loc2 + loc4);
+
+  /* Third diagonal block */
+  loc2 = isqrt3*J_A[1];
+  A[0] = -J_A[0] - loc2;
+  A[1] =  J_A[0] - loc2;
+
+  loc2 = isqrt3*J_A[3];
+  A[4] = -J_A[1] - loc2;
+  A[5] =  J_A[1] - loc2;
+  A[6] = 2.0*loc2;
+
+  loc2 = isqrt3*A[4];
+  h_obj[0][2][2] = -A[0] - loc2;
+  h_obj[1][2][2] =  A[0] - loc2;
+  h_obj[2][2][2] = 2.0*loc2;
+
+  loc2 = isqrt3*A[5];
+  h_obj[3][2][2] = A[1] - loc2;
+  h_obj[4][2][2] = 2.0*loc2;
+
+  h_obj[5][2][2] = tisqrt3*A[6];
+
+  // completes diagonal blocks.
+  h_obj[0].fill_lower_triangle();
+  h_obj[3].fill_lower_triangle();
+  h_obj[5].fill_lower_triangle();
   return true;
 }
 
@@ -226,7 +515,7 @@ inline bool g_fcn_2i(double &obj, Vector3D g_obj[3],
                      const Vector3D x[3], const Vector3D &n)
 {
   double matr[9], f;
-  double adj_m[9], g;
+  double adj_m[9], g;            // adj_m[2,5,8] not used
   double loc1, loc2, loc3, loc4;
 
   /* Calculate M = [A*inv(W) n] */
@@ -264,7 +553,6 @@ inline bool g_fcn_2i(double &obj, Vector3D g_obj[3],
 
   adj_m[0] = matr[0]*f + loc1*g;
   adj_m[1] = matr[1]*f + loc2*g;
-  adj_m[2] = 0.0;
 
   loc1 = matr[0]*g;
   loc2 = matr[1]*g;
@@ -272,11 +560,9 @@ inline bool g_fcn_2i(double &obj, Vector3D g_obj[3],
 
   adj_m[3] = matr[3]*f + loc3*matr[7] - loc2*matr[8];
   adj_m[4] = matr[4]*f + loc1*matr[8] - loc3*matr[6];
-  adj_m[5] = 0.0;
 
   adj_m[6] = matr[6]*f + loc2*matr[5] - loc3*matr[4];
   adj_m[7] = matr[7]*f + loc3*matr[3] - loc1*matr[5];
-  adj_m[8] = 0.0;
 
   g_obj[0][0] = -adj_m[0] - adj_m[1];
   g_obj[1][0] = adj_m[0];
@@ -289,6 +575,268 @@ inline bool g_fcn_2i(double &obj, Vector3D g_obj[3],
   g_obj[0][2] = -adj_m[6] - adj_m[7];
   g_obj[1][2] = adj_m[6];
   g_obj[2][2] = adj_m[7];
+  return true;
+}
+
+/*****************************************************************************/
+/* Hessian requires 193 flops.                                               */
+/*****************************************************************************/
+inline bool h_fcn_2i(double &obj, Vector3D g_obj[3], Matrix3D h_obj[6],
+                     const Vector3D x[3], const Vector3D &n)
+{
+  double matr[9], f;
+  double adj_m[9], g;		// adj_m[2,5,8] not used
+  double dg[9];			// dg[2,5,8] not used
+  double loc0, loc1, loc2, loc3, loc4;
+  double A[12], J_A[6], J_B[9], J_C[9];  // only 2x2 corners used
+
+  /* Calculate M = [A*inv(W) n] */
+  matr[0] = x[1][0] - x[0][0];
+  matr[1] = x[2][0] - x[0][0];
+  matr[2] = n[0];
+
+  matr[3] = x[1][1] - x[0][1];
+  matr[4] = x[2][1] - x[0][1];
+  matr[5] = n[1];
+
+  matr[6] = x[1][2] - x[0][2];
+  matr[7] = x[2][2] - x[0][2];
+  matr[8] = n[2];
+
+  /* Calculate det([n M]). */
+  dg[0] = matr[4]*matr[8] - matr[5]*matr[7];
+  dg[1] = matr[5]*matr[6] - matr[3]*matr[8];
+  dg[2] = matr[3]*matr[7] - matr[4]*matr[6];
+  g = matr[0]*dg[0] + matr[1]*dg[1] + matr[2]*dg[2];
+  if (g < MSQ_MIN) { obj = g; return false; }
+
+  /* Calculate norm(M). */
+  f = matr[0]*matr[0] + matr[1]*matr[1] +
+      matr[3]*matr[3] + matr[4]*matr[4] +
+      matr[6]*matr[6] + matr[7]*matr[7];
+
+  loc4 = g;
+
+  /* Calculate objective function. */
+  loc1 = a2 * pow(g, b2);
+  obj = f * loc1;
+
+  /* Calculate the derivative of the objective function. */
+  f = 2.0 * loc1;
+  g = b2 * obj / g;
+
+  dg[3] = matr[2]*matr[7] - matr[1]*matr[8];
+  dg[4] = matr[0]*matr[8] - matr[2]*matr[6];
+  dg[6] = matr[1]*matr[5] - matr[2]*matr[4];
+  dg[7] = matr[2]*matr[3] - matr[0]*matr[5];
+
+  adj_m[0] = matr[0]*f + dg[0]*g;
+  adj_m[1] = matr[1]*f + dg[1]*g;
+  adj_m[3] = matr[3]*f + dg[3]*g;
+  adj_m[4] = matr[4]*f + dg[4]*g;
+  adj_m[6] = matr[6]*f + dg[6]*g;
+  adj_m[7] = matr[7]*f + dg[7]*g;
+
+  g_obj[0][0] = -adj_m[0] - adj_m[1];
+  g_obj[1][0] = adj_m[0];
+  g_obj[2][0] = adj_m[1];
+
+  g_obj[0][1] = -adj_m[3] - adj_m[4];
+  g_obj[1][1] = adj_m[3];
+  g_obj[2][1] = adj_m[4];
+
+  g_obj[0][2] = -adj_m[6] - adj_m[7];
+  g_obj[1][2] = adj_m[6];
+  g_obj[2][2] = adj_m[7];
+
+  loc0 = g;
+  loc1 = f;
+  f = f*b2/loc4;
+  g = g*b2m1/loc4;
+
+  /* First block of rows */
+  loc2 = matr[0]*f;
+  loc3 = dg[0]*f;
+  loc4 = dg[0]*g + loc2;
+
+  J_A[0] = loc1 + dg[0]*(loc2 + loc4);
+  J_A[1] = loc3*matr[1] + loc4*dg[1];
+  J_B[0] = loc3*matr[3] + loc4*dg[3];
+  J_B[1] = loc3*matr[4] + loc4*dg[4];
+  J_C[0] = loc3*matr[6] + loc4*dg[6];
+  J_C[1] = loc3*matr[7] + loc4*dg[7];
+
+  loc2 = matr[1]*f;
+  loc3 = dg[1]*f;
+  loc4 = dg[1]*g + loc2;
+
+  J_A[3] = loc1 + dg[1]*(loc2 + loc4);
+  J_B[3] = loc3*matr[3] + loc4*dg[3];
+  J_B[4] = loc3*matr[4] + loc4*dg[4];
+  J_C[3] = loc3*matr[6] + loc4*dg[6];
+  J_C[4] = loc3*matr[7] + loc4*dg[7];
+
+  /* First diagonal block */
+  A[0] = -J_A[0] - J_A[1];
+  A[1] =  J_A[0];
+
+  A[4] = -J_A[1] - J_A[3];
+  A[5] =  J_A[1];
+  A[6] =  J_A[3];
+
+  h_obj[0][0][0] = -A[0] - A[4];
+  h_obj[1][0][0] =  A[0];
+  h_obj[2][0][0] =  A[4];
+
+  h_obj[3][0][0] = A[1];
+  h_obj[4][0][0] = A[5];
+
+  h_obj[5][0][0] = A[6];
+
+  /* First off-diagonal block */
+  loc2 = matr[8]*loc0;
+  J_B[1] += loc2;
+  J_B[3] -= loc2;
+
+  A[0] = -J_B[0] - J_B[3];
+  A[1] =  J_B[0];
+  A[2] =  J_B[3];
+
+  A[4] = -J_B[1] - J_B[4];
+  A[5] =  J_B[1];
+  A[6] =  J_B[4];
+
+  h_obj[0][0][1] = -A[0] - A[4];
+  h_obj[1][0][1] =  A[0];
+  h_obj[2][0][1] =  A[4];
+
+  h_obj[1][1][0] = -A[1] - A[5];
+  h_obj[3][0][1] =  A[1];
+  h_obj[4][0][1] =  A[5];
+
+  h_obj[2][1][0] = -A[2] - A[6];
+  h_obj[4][1][0] =  A[2];
+  h_obj[5][0][1] =  A[6];
+
+  /* Second off-diagonal block */
+  loc2 = matr[5]*loc0;
+  J_C[1] -= loc2;
+  J_C[3] += loc2;
+
+  A[0] = -J_C[0] - J_C[3];
+  A[1] =  J_C[0];
+  A[2] =  J_C[3];
+
+  A[4] = -J_C[1] - J_C[4];
+  A[5] =  J_C[1];
+  A[6] =  J_C[4];
+
+  h_obj[0][0][2] = -A[0] - A[4];
+  h_obj[1][0][2] =  A[0];
+  h_obj[2][0][2] =  A[4];
+
+  h_obj[1][2][0] = -A[1] - A[5];
+  h_obj[3][0][2] =  A[1];
+  h_obj[4][0][2] =  A[5];
+
+  h_obj[2][2][0] = -A[2] - A[6];
+  h_obj[4][2][0] =  A[2];
+  h_obj[5][0][2] =  A[6];
+
+  /* Second block of rows */
+  loc2 = matr[3]*f;
+  loc3 = dg[3]*f;
+  loc4 = dg[3]*g + loc2;
+
+  J_A[0] = loc1 + dg[3]*(loc2 + loc4);
+  J_A[1] = loc3*matr[4] + loc4*dg[4];
+  J_B[0] = loc3*matr[6] + loc4*dg[6];
+  J_B[1] = loc3*matr[7] + loc4*dg[7];
+
+  loc2 = matr[4]*f;
+  loc3 = dg[4]*f;
+  loc4 = dg[4]*g + loc2;
+
+  J_A[3] = loc1 + dg[4]*(loc2 + loc4);
+  J_B[3] = loc3*matr[6] + loc4*dg[6];
+  J_B[4] = loc3*matr[7] + loc4*dg[7];
+
+  /* Second diagonal block */
+  A[0] = -J_A[0] - J_A[1];
+  A[1] =  J_A[0];
+
+  A[4] = -J_A[1] - J_A[3];
+  A[5] =  J_A[1];
+  A[6] =  J_A[3];
+
+  h_obj[0][1][1] = -A[0] - A[4];
+  h_obj[1][1][1] =  A[0];
+  h_obj[2][1][1] =  A[4];
+
+  h_obj[3][1][1] = A[1];
+  h_obj[4][1][1] = A[5];
+
+  h_obj[5][1][1] = A[6];
+
+  /* Third off-diagonal block */
+  loc2 = matr[2]*loc0;
+  J_B[1] += loc2;
+  J_B[3] -= loc2;
+
+  A[0] = -J_B[0] - J_B[3];
+  A[1] =  J_B[0];
+  A[2] =  J_B[3];
+
+  A[4] = -J_B[1] - J_B[4];
+  A[5] =  J_B[1];
+  A[6] =  J_B[4];
+
+  h_obj[0][1][2] = -A[0] - A[4];
+  h_obj[1][1][2] =  A[0];
+  h_obj[2][1][2] =  A[4];
+
+  h_obj[1][2][1] = -A[1] - A[5];
+  h_obj[3][1][2] =  A[1];
+  h_obj[4][1][2] =  A[5];
+
+  h_obj[2][2][1] = -A[2] - A[6];
+  h_obj[4][2][1] =  A[2];
+  h_obj[5][1][2] =  A[6];
+
+  /* Third block of rows */
+  loc2 = matr[6]*f;
+  loc3 = dg[6]*f;
+  loc4 = dg[6]*g + loc2;
+
+  J_A[0] = loc1 + dg[6]*(loc2 + loc4);
+  J_A[1] = loc3*matr[7] + loc4*dg[7];
+
+  loc2 = matr[7]*f;
+  loc4 = dg[7]*g + loc2;
+
+  J_A[3] = loc1 + dg[7]*(loc2 + loc4);
+
+  /* Third diagonal block */
+  A[0] = -J_A[0] - J_A[1];
+  A[1] =  J_A[0];
+
+  A[4] = -J_A[1] - J_A[3];
+  A[5] =  J_A[1];
+  A[6] =  J_A[3];
+
+  h_obj[0][2][2] = -A[0] - A[4];
+  h_obj[1][2][2] =  A[0];
+  h_obj[2][2][2] =  A[4];
+
+  h_obj[3][2][2] = A[1];
+  h_obj[4][2][2] = A[5];
+
+  h_obj[5][2][2] = A[6];
+
+  // completes diagonal blocks.
+  h_obj[0].fill_lower_triangle();
+  h_obj[3].fill_lower_triangle();
+  h_obj[5].fill_lower_triangle();
   return true;
 }
 
@@ -537,8 +1085,8 @@ inline bool h_fcn_3e(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
 
   /* Calculate norm(M). */
   f = matr[0]*matr[0] + matr[1]*matr[1] + matr[2]*matr[2] + 
-    matr[3]*matr[3] + matr[4]*matr[4] + matr[5]*matr[5] +
-    matr[6]*matr[6] + matr[7]*matr[7] + matr[8]*matr[8];
+      matr[3]*matr[3] + matr[4]*matr[4] + matr[5]*matr[5] +
+      matr[6]*matr[6] + matr[7]*matr[7] + matr[8]*matr[8];
 
   loc4 = g;
 
@@ -2033,6 +2581,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
   const size_t *v_i = e->get_vertex_index_array();
 
   Vector3D coords[4];		// Vertex coordinates for the (decomposed) elements
+  Vector3D n;			// Surface normal for 2D objects
   Vector3D gradients[32];	// Gradient of metric with respect to the coords
   Matrix3D hessians[80];	// Hessian of matrix with respect to the coords
   double   metrics[8];		// Metric values for the (decomposed) elements
@@ -2053,9 +2602,200 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 
   switch(topo) {
   case TRIANGLE:
+    pd.get_surface_normal(v_i[0], n, err); MSQ_CHKERR(err);
+    n = n / n.length();		// Need unit normal
+    coords[0] = vertices[v_i[0]];
+    coords[1] = vertices[v_i[1]];
+    coords[2] = vertices[v_i[2]];
+    if (!h_fcn_2e(m, g, h, coords, n)) return false;
+
+    // zero out fixed elements of g
+    j = 0;
+    for (i = 0; i < 3; ++i) {
+      // if free vertex, see next
+      if (vertices + v_i[i] == fv[j] )
+        ++j;
+      // else zero gradient entry
+      else {
+        g[i] = 0.;
+
+        switch(i) {
+        case 0:
+          h[0] = 0.;
+          h[1] = 0.;
+          h[2] = 0.;
+          break;
+
+        case 1:
+          h[1] = 0.;
+          h[3] = 0.;
+          h[4] = 0.;
+          break;
+
+        case 2:
+          h[2] = 0.;
+          h[4] = 0.;
+          h[5] = 0.;
+        }
+      }
+    }
+    break;
+
   case QUADRILATERAL:
-    std::cout << "Hessians in 2D not implemented yet.\n" << std::endl;
-    return false;
+    for (i=0; i < 10; ++i) {
+      h[i] = 0.;
+    }
+
+    for (i = 0; i < 4; ++i) {
+      g[i] = 0.0;
+
+      pd.get_surface_normal(v_i[locs_hex[i][0]], n, err); MSQ_CHKERR(err);
+      n = n / n.length();	// Need unit normal
+      coords[0] = vertices[v_i[locs_hex[i][0]]];
+      coords[1] = vertices[v_i[locs_hex[i][1]]];
+      coords[2] = vertices[v_i[locs_hex[i][2]]];
+      if (!h_fcn_2i(metrics[i], gradients+3*i, hessians+6*i, coords, n)) return false;
+    }
+
+    switch(avgMethod) {
+    case MINIMUM:
+      err.set_msg("MINIMUM averaging method does not work.");
+      return false;
+
+    case MAXIMUM:
+      err.set_msg("MAXIMUM averaging method does not work.");
+      return false;
+
+    case SUM:
+      m = 0;
+      for (i = 0; i < 4; ++i) {
+	m += metrics[i];
+      }
+
+      l = 0;
+      for (i = 0; i < 4; ++i) {
+        g[locs_hex[i][0]] += gradients[3*i+0];
+	g[locs_hex[i][1]] += gradients[3*i+1];
+	g[locs_hex[i][2]] += gradients[3*i+2];
+
+	for (j = 0; j < 3; ++j) {
+	  for (k = j; k < 3; ++k) {
+	    r = locs_hex[i][j];
+	    c = locs_hex[i][k];
+
+	    if (r <= c) {
+	      loc = 4*r - (r*(r+1)/2) + c;
+	      h[loc] += hessians[l];
+	    } 
+	    else {
+	      loc = 4*c - (c*(c+1)/2) + r;
+	      h[loc] += transpose(hessians[l]);
+	    }
+	    ++l;
+	  }
+	}
+      }
+      break;
+
+    case GEOMETRIC:
+      err.set_msg("GEOMETRIC averaging method does not work.");
+      return false;
+
+    default:
+      switch(avgMethod) {
+      case LINEAR:
+	err.set_msg("LINEAR averaging method does not work.");
+	return false;
+
+      case RMS:
+	err.set_msg("RMS averaging method does not work.");
+	return false;
+
+      case HARMONIC:
+	err.set_msg("HARMONIC averaging method does not work.");
+	return false;
+
+      case HMS:
+	err.set_msg("HMS averaging method does not work.");
+	return false;
+
+      default:
+        err.set_msg("averaging method not available.");
+        break;
+
+      }
+
+      m = 0;
+      for (i = 0; i < 4; ++i) {
+	nm = pow(metrics[i], t);
+	m += nm;
+
+	metrics[i] = t*nm/metrics[i];
+      }
+
+      nm = m / 4.0;
+      m = pow(nm, 1.0 / t);
+
+      for (i = 0; i < 4; ++i) {
+        g[locs_hex[i][0]] += metrics[i]*gradients[3*i+0];
+	g[locs_hex[i][1]] += metrics[i]*gradients[3*i+1];
+	g[locs_hex[i][2]] += metrics[i]*gradients[3*i+2];
+      }
+
+      nm = m / (4.0*nm*t);
+      for (i = 0; i < 4; ++i) {
+	g[i] *= nm;
+      }
+      break;
+    }
+
+    // zero out fixed elements of gradient and Hessian
+    ind = 0;
+    for (i=0; i<4; ++i) {
+      // if free vertex, see next
+      if ( vertices+v_i[i] == fv[ind] )
+        ++ind;
+      // else zero gradient entry and hessian entries.
+      else {
+        g[i] = 0.;
+        switch(i) {
+        case 0:
+          h[0]=0.;   h[1]=0.;   h[2]=0.;   h[3]=0.;
+          break;
+          
+        case 1:
+          h[1]=0.;   h[4]=0.;   h[5]=0.;   h[6]=0.;
+          break;
+          
+        case 2:
+          h[2]=0.;   h[5]=0.;   h[7]=0.;   h[8]=0.;
+          break;
+          
+        case 3:
+          h[3]=0.;   h[6]=0.;   h[8]=0.;   h[9]=0.;
+          break;
+        }
+      }
+    }
+
+    // Makes sure we zero the hessian blocks corresponding to fixed vertices. 
+    for(i=0; i<4; ++i) {
+      for (j=i; j<4; ++j) {
+  
+        // for entry i,j in upper right part of 4*4 matrix, index in a 1D array is
+        ind = 4*i- (i*(i+1)/2) +j; // 4*i - \sum_{n=0}^i n +j 
+
+        bool nul_hessian = true; 
+        for (k=0; k<nfv; ++k) 
+          for (l=0; l<nfv; ++l) 
+            if ( (vertices + v_i[i] == fv[k]) && (vertices + v_i[j] == fv[l]) )
+              nul_hessian = false;
+
+        if (nul_hessian == true)
+          h[ind] = 0.;
+      }
+    }
+    break;
 
   case TETRAHEDRON:
     coords[0] = vertices[v_i[0]];
