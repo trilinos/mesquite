@@ -163,17 +163,17 @@ namespace Mesquite
      The default is Level 0
 */
 //#define MSQ_DBG3
-#ifdef MSQ_DBG0
-#define MSQ_DEBUG_LEVEL 0
-#endif
-#ifdef MSQ_DBG1
-#define MSQ_DEBUG_LEVEL 1
-#endif
-#ifdef MSQ_DBG2
-#define MSQ_DEBUG_LEVEL 2
-#endif
+
 #ifdef MSQ_DBG3
 #define MSQ_DEBUG_LEVEL 3
+#elif  MSQ_DBG2
+#define MSQ_DEBUG_LEVEL 2
+#elif  MSQ_DBG1
+#define MSQ_DEBUG_LEVEL 1
+#elif  MSQ_DBG0
+#define MSQ_DEBUG_LEVEL 0
+#else
+#define MSQ_DEBUG_LEVEL 0
 #endif
 
 #if MSQ_DEBUG_LEVEL != 0
