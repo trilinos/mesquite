@@ -184,6 +184,34 @@ extern const char mixed_unstructured_data[] =
 " 5  5  5  5  5  5  5\n"     // 14 tri
 "13 13\n";                   // 2 wedges
 
+extern const char quadratic_unstructured_data[] = 
+"# vtk DataFile Version 2.0\n"
+"Mesquite Mesh\n"
+"ASCII\n"
+"DATASET UNSTRUCTURED_GRID\n"
+"POINTS 30 float\n"
+"\n" // points for a single quadtratic hex, in ExodusII order
+" 1.0 -1.0 -1.0 \n  1.0  1.0 -1.0 \n -1.0  1.0 -1.0 \n -1.0 -1.0 -1.0 \n"  // bottom corners
+" 1.0 -1.0  1.0 \n  1.0  1.0  1.0 \n -1.0  1.0  1.0 \n -1.0 -1.0  1.0 \n"  // top corners
+" 1.0  0.0 -1.0 \n  0.0  1.0 -1.0 \n -1.0  0.0 -1.0 \n  0.0 -1.0 -1.0 \n"  // bottom mid-nodes
+" 1.0 -1.0  0.0 \n  1.0  1.0  0.0 \n -1.0  1.0  0.0 \n -1.0 -1.0  0.0 \n"  // side mid-nodes 
+" 1.0  0.0  1.0 \n  0.0  1.0  1.0 \n -1.0  0.0  1.0 \n  0.0 -1.0  1.0 \n"  // top mid-nodes
+"\n" // points for a single quadtatic tet, in ExodusII order
+" 1.0 -1.0 -1.0 \n  1.0  1.0 -1.0 \n -1.0  0.0 -1.0 \n" // base triangle
+" 0.0  0.0  1.0 \n "                                    // apex
+" 1.0  0.0 -1.0 \n  0.0  0.5 -1.0 \n  0.0 -0.5 -1.0 \n" // base mid-nodes
+" 0.5 -0.5  0.0 \n  0.5  0.5  0.0 \n -0.5  0.0  0.0 \n" // side mid-nodes
+"\n"
+"CELLS 4 48\n"
+"20 0 1 2 3 4 5 6 7 8 9 10 11 16 17 18 19 12 13 14 15\n" // Hex20
+"10 20 21 22 23 24 25 26 27 28 29\n" // Tet10
+"8 0 1 2 3 8 9 10 11\n" // Quad8 (base of hex)
+"6 20 21 22 24 25 26\n" // Tri6 (base of tet)
+"\n"
+"CELL_TYPES 4\n"
+"25 24 23 22\n";
+
+
   // A simple scalar attribute specifying point and hex
   // IDs.  May be appended to any of the above 3D structured
   // mesh files.
@@ -245,6 +273,8 @@ private:
    CPPUNIT_TEST (test_read_simple_scalar_attrib);
    CPPUNIT_TEST (test_read_vector_attrib);
    CPPUNIT_TEST (test_read_fixed_attrib);
+   CPPUNIT_TEST (test_read_quadratic);
+   CPPUNIT_TEST (test_write_quadratic);
    
     // Test writer - J.Kraftcheck, 2004-10-12
    CPPUNIT_TEST (test_write);
@@ -320,6 +350,10 @@ public:
     
     // Test writing VTK unstructured mesh
   void test_write();
+  
+  void test_read_quadratic();
+  void test_read_quadratic(const char* filename);
+  void test_write_quadratic();
   
   void test_elements();
   
@@ -751,6 +785,157 @@ public:
     test_read_unstructured( temp_file_name );
   }
   
+    
+    // Test reading VTK unstructured mesh quadratic elements
+  void VtkTest::test_read_quadratic()
+  {
+    FILE* file = fopen( temp_file_name, "w+" );
+    CPPUNIT_ASSERT( file );
+    int rval = fputs( quadratic_unstructured_data, file );
+    fclose( file );
+    if (rval == EOF) remove( temp_file_name );
+    CPPUNIT_ASSERT( rval != EOF );
+
+    test_read_quadratic( temp_file_name );
+  }
+  
+  void VtkTest::test_read_quadratic( const char* filename )
+  {
+    MeshImpl mesh;
+    MsqPrintError err(cout);
+    
+    mesh.read_vtk( filename, err );
+    remove( temp_file_name );
+    CPPUNIT_ASSERT(!err);
+    
+    size_t vertex_count, element_count, use_count;
+    mesh.get_all_sizes( vertex_count, element_count, use_count, err );
+    CPPUNIT_ASSERT(!err && vertex_count == 30 && element_count == 4);
+    CPPUNIT_ASSERT(use_count == 44 );
+    
+    std::vector<Mesh::VertexHandle> verts(40);
+    std::vector<Mesh::ElementHandle> elems(4);
+    std::vector<size_t> uses(use_count), offsets(5);
+    mesh.get_all_mesh( &verts[0], verts.size(),
+                       &elems[0], elems.size(),
+                       &offsets[0], offsets.size(),
+                       &uses[0], uses.size(), err );
+    CPPUNIT_ASSERT(!err);
+
+    static const double hex_corners[] = 
+     {  1.0, -1.0, -1.0, 
+        1.0,  1.0, -1.0, 
+       -1.0,  1.0, -1.0, 
+       -1.0, -1.0, -1.0,
+        1.0, -1.0,  1.0, 
+        1.0,  1.0,  1.0, 
+       -1.0,  1.0,  1.0, 
+       -1.0, -1.0,  1.0 };
+    static const double tet_corners[] = 
+     {  1.0, -1.0, -1.0,
+        1.0,  1.0, -1.0,
+       -1.0,  0.0, -1.0,
+        0.0,  0.0,  1.0 };
+    static const unsigned hex_edges[] =
+     { 0, 1, 
+       1, 2, 
+       2, 3,
+       3, 0,
+       0, 4,
+       1, 5,
+       2, 6,
+       3, 7,
+       4, 5,
+       5, 6,
+       6, 7,
+       7, 4 };
+    static const unsigned tet_edges[] = 
+     { 0, 1,
+       1, 2, 
+       2, 0,
+       0, 3,
+       1, 3, 
+       2, 3 };
+    
+    static const struct {
+      EntityTopology topology;
+      unsigned num_corners;
+      unsigned num_edges;
+      const double* corners;
+      const unsigned* edges;
+    } expected_elems[] = {
+      { Mesquite::HEXAHEDRON,    8, 12, hex_corners, hex_edges },
+      { Mesquite::TETRAHEDRON,   4,  6, tet_corners, tet_edges },
+      { Mesquite::QUADRILATERAL, 4,  4, hex_corners, hex_edges },
+      { Mesquite::TRIANGLE,      3,  3, tet_corners, tet_edges } };
+    
+    for (unsigned i = 0; i < 4; ++i)
+    {
+      EntityTopology topo = mesh.element_get_topology( elems[i], err );
+      CPPUNIT_ASSERT( !err && expected_elems[i].topology == topo );
+      
+      size_t vtx_start = offsets[i];
+      size_t vtx_end = offsets[i+1];
+      CPPUNIT_ASSERT( (vtx_end - vtx_start) == 
+         (expected_elems[i].num_corners + expected_elems[i].num_edges) );
+      
+      for (unsigned c = 0; c < expected_elems[i].num_corners; ++c)
+      {
+        Vector3D expected(expected_elems[i].corners + 3*c);
+        MsqVertex have;
+        mesh.vertices_get_coordinates( &verts[uses[vtx_start+c]], &have, 1, err );
+        CPPUNIT_ASSERT(!err);
+        expected -= have;
+        CPPUNIT_ASSERT( expected.length() < DBL_EPSILON );
+      }
+      
+      for (unsigned m = 0; m < expected_elems[i].num_edges; ++m)
+      {
+        unsigned start_idx = expected_elems[i].edges[2*m];
+        unsigned end_idx = expected_elems[i].edges[2*m+1];
+        Vector3D start( expected_elems[i].corners + 3*start_idx );
+        Vector3D end( expected_elems[i].corners + 3*end_idx );
+        Vector3D expected = 0.5 * (start + end);
+        
+        MsqVertex have;
+        size_t vtx_idx = vtx_start + expected_elems[i].num_corners + m;
+        mesh.vertices_get_coordinates( &verts[uses[vtx_idx]], &have, 1, err );
+        CPPUNIT_ASSERT(!err);
+        
+        expected -= have;
+        CPPUNIT_ASSERT( expected.length() < DBL_EPSILON );
+      }
+    }
+  }
+    
+    // Test writing quadtratic elements
+  void VtkTest::test_write_quadratic()
+  {
+    MeshImpl mesh;
+    MsqPrintError err(cout);
+    
+      // Create file containing unstructured mesh test case
+    FILE* file = fopen( temp_file_name, "w+" );
+    CPPUNIT_ASSERT(file);
+    int rval = fputs( quadratic_unstructured_data, file );
+    fclose( file );
+    if (rval == EOF) remove(temp_file_name);
+    CPPUNIT_ASSERT(rval != EOF);
+    
+      // Read unstructured mesh file
+    mesh.read_vtk( temp_file_name, err );
+    remove(temp_file_name);
+    CPPUNIT_ASSERT(!err);
+    
+      // Write unstructured mesh file back out
+    mesh.write_vtk( temp_file_name, err );
+    if (err)  remove( temp_file_name );
+    CPPUNIT_ASSERT(!err);
+    
+      // Check if file contained expected mesh
+    test_read_quadratic( temp_file_name );
+  }
+
   void VtkTest::test_elements()
   {
     Mesquite::MsqPrintError err(cout);
@@ -959,6 +1144,10 @@ int  main()
   
   file = fopen( "mixed_unstructured.vtk", "w" );
   fputs( mixed_unstructured_data, file );
+  fclose( file );
+  
+  file = fopen( "quadratic.vtk", "w" );
+  fputs( quadratic_unstructured_data, file );
   fclose( file );
   
   return 0;
