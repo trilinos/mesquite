@@ -29,16 +29,28 @@
 #include "MesquiteInterrupt.hpp"
 
 bool Mesquite::MesquiteInterrupt::interruptFlag = false;
+msq_sig_handler_t Mesquite::MesquiteInterrupt::oldSigIntHandler = SIG_DFL;
+
 
 #ifdef ENABLE_INTERRUPT
 
 //function that catches the interrupt
 extern "C" void msq_sigint_handler(int)
 {
+    //notify the user that we recognized the interrupt signal
+  PRINT_INFO("Handling interrupt signal.\n");
+    //if there was an original handler, call it here.
+  if( Mesquite::MesquiteInterrupt::oldSigIntHandler != SIG_DFL &&
+      Mesquite::MesquiteInterrupt::oldSigIntHandler != SIG_ERR ){
+    PRINT_INFO("Calling original signal handler\n");
+    Mesquite::MesquiteInterrupt::oldSigIntHandler(SIGINT);
+  }
+    //set the signal handler again
   if( signal( SIGINT, msq_sigint_handler ) == SIG_ERR )
     PRINT_INFO("Can't catch SIGINT!\n");
+    //set the flag that will be checked elsewhere in the code
   Mesquite::MesquiteInterrupt::interruptFlag = true;
-  PRINT_INFO("Handling interrupt signal.\n");
+  
 }
 
 // Set signal handler for SIGINT.  Either catch the interrupt or don't.
@@ -46,12 +58,19 @@ void Mesquite::MesquiteInterrupt::catch_interrupt( bool yesno )
 {
   if( yesno )
   {
-    if( signal( SIGINT, msq_sigint_handler ) == SIG_ERR )
+      //also save the pointer to the original handler
+    Mesquite::MesquiteInterrupt::oldSigIntHandler = signal( SIGINT, msq_sigint_handler );
+    if( Mesquite::MesquiteInterrupt::oldSigIntHandler == SIG_ERR )
       PRINT_INFO("Can't catch SIGINT!\n");
   }
   else
   {
-    if( signal( SIGINT, SIG_DFL ) == SIG_ERR )
+      //make sure we are not sending SIG_ERR to signal
+    if(Mesquite::MesquiteInterrupt::oldSigIntHandler == SIG_ERR )
+      Mesquite::MesquiteInterrupt::oldSigIntHandler = SIG_DFL;
+      //reset the signal handler.
+    if( signal( SIGINT, Mesquite::MesquiteInterrupt::oldSigIntHandler )
+        == SIG_ERR )
       PRINT_INFO("Can't reset SIGINT handler!\n");
   }
 }

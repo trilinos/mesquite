@@ -33,6 +33,12 @@
 #include "MsqMessage.hpp"
 #endif
 
+//do this because sighandler_t is not defined on all platforms
+extern "C"
+{
+  typedef void (*msq_sig_handler_t)(int);
+}
+
 namespace Mesquite
 {
   class MesquiteInterrupt
@@ -46,8 +52,13 @@ namespace Mesquite
    
     static inline void clear_interrupt()
       { interruptFlag = false; }
-     //michael should this be 'volatile'
+     // should this be 'volatile' ???
     static bool interruptFlag;
+      //this is a pointer function that will point back to the original
+      //signal handler if there was one.
+    static msq_sig_handler_t oldSigIntHandler;
+    
+    
   };
   
   
