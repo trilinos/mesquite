@@ -32,6 +32,7 @@ MODULENAMES :=  Mesh \
 		QualityImprover/VertexMover/LaplacianSmoothers \
 		QualityImprover/VertexMover/NonSmoothSteepestDescent \
 		QualityImprover/VertexMover/SteepestDescent \
+		QualityImprover/VertexMover/Randomize \
 		QualityMetric \
 		QualityMetric/Shape \
 		QualityMetric/Smoothness \
@@ -42,8 +43,9 @@ MODULENAMES :=  Mesh \
 testdir = testSuite
 TESTNAMES := test_1\
              laplacian_test\
-             untangle_test
-
+             untangle_test\
+###             random_test\
+###             exo_convert
 
 # ************ inclusion of all the modules 
 # ************ MakefileVariables.inc  and
@@ -144,6 +146,10 @@ veryclean: clean
 #config.status: configure
 #	./config.status --recheck
 
+# This next line is here because of an oddity in the
+# SunOS version of 'make'
+/opt/SUNWspro/SC5.0/include/CC/rw/ctype :
+	@:
 
 include $(dependenciesfile)
 
