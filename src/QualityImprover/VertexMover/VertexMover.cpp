@@ -92,19 +92,21 @@ double VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
     MSQ_SETERR(err)("Termination Criterion pointer for inner loop is Null", MsqError::INVALID_STATE);
     return 0.;
   }
-    //initialize both criterion objects
-  outer_crit->initialize(ms, *patch_data, err);  MSQ_ERRZERO(err);
-  inner_crit->initialize(ms, *patch_data, err);  MSQ_ERRZERO(err);
   
-  bool stop_met=false; 
+  bool stop_met = false, inner_skip = false, outer_skip = false;
+  
+    //initialize both criterion objects
+  outer_crit->initialize(ms, *patch_data, err);  if (MSQ_CHKERR(err)) goto ERROR;
+  inner_crit->initialize(ms, *patch_data, err);  if (MSQ_CHKERR(err)) goto ERROR;
+  
   // This should probably pass the MeshSet so that the data requirements
   // can be calculated exactly.
-  this->initialize(*patch_data, err); MSQ_ERRZERO(err);
+  this->initialize(*patch_data, err); if (MSQ_CHKERR(err)) goto ERROR;
 
     //skip booleans set to false if the initial mesh (or patch) satisfies
     //the termination criteria.
-  bool inner_skip=false;
-  bool outer_skip=outer_crit->reset(ms,objFunc,err);  MSQ_ERRZERO(err);
+  outer_skip=outer_crit->reset(ms,objFunc,err);  
+  if (MSQ_CHKERR(err)) goto ERROR;
   if(!outer_skip){
     
     while ( !stop_met ) {
@@ -112,21 +114,24 @@ double VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
 //      Message::print_info(".");
         // Prior to looping over the patches.
         // Probably want to pass the MeshSet.  
-      this->initialize_mesh_iteration(*patch_data, err);MSQ_ERRZERO(err); 
+      this->initialize_mesh_iteration(*patch_data, err);
+      if (MSQ_CHKERR(err)) goto ERROR;
 
         // if there is no global patch previously available
       if (get_global_patch()==0) {
         // propagates information from QualityImprover to MeshSet
         //try to get the first patch, if no patches can be created
         //skip optimization and terminate.
-        next_patch =  ms.get_next_patch(*patch_data, this, err);MSQ_ERRZERO(err); 
+        next_patch =  ms.get_next_patch(*patch_data, this, err);
+        if (MSQ_CHKERR(err)) goto ERROR;
       }
         
       if(!next_patch){
         stop_met=true;
           //PRINT_INFO("\nTerminating due to no more free nodes\n");
           //call terminate() anyway, even though we must terminate
-        outer_crit->terminate(ms,objFunc,err); MSQ_ERRZERO(err);
+        outer_crit->terminate(ms,objFunc,err); 
+        if (MSQ_CHKERR(err)) goto ERROR;
       }
         //otherwise one patch has been created and more could be created later.
       else{
@@ -140,7 +145,8 @@ double VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
               //if inner criteria are initially satisfied, skip opt.
               //otherwise:
             if(!inner_skip){
-              this->optimize_vertex_positions(*patch_data, err);  MSQ_ERRZERO(err);
+              this->optimize_vertex_positions(*patch_data, err);  
+              if (MSQ_CHKERR(err)) goto ERROR;
             }
             inner_crit->cull_vertices(*patch_data,objFunc,err);
             patch_data->update_mesh(err); // TSTT mesh update !!
@@ -151,16 +157,20 @@ double VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
             next_patch = false; }
             // if patch is local, try to get the next one 
           else{
-            next_patch =  ms.get_next_patch(*patch_data, this, err);  MSQ_ERRZERO(err);
+            next_patch =  ms.get_next_patch(*patch_data, this, err);  
+            if (MSQ_CHKERR(err)) goto ERROR;
           }
         }
-        this->terminate_mesh_iteration(*patch_data, err); MSQ_ERRZERO(err);
+        this->terminate_mesh_iteration(*patch_data, err); 
+        if (MSQ_CHKERR(err)) goto ERROR;
           //check the criteria on the outer loop
-        stop_met=outer_crit->terminate(ms,objFunc,err); MSQ_ERRZERO(err);
+        stop_met=outer_crit->terminate(ms,objFunc,err); 
+        if (MSQ_CHKERR(err)) goto ERROR;
       }
     } 
   }
-  
+
+ERROR:  
     //call the criteria's cleanup funtions.
   outer_crit->cleanup(ms,err);
   inner_crit->cleanup(ms,err);

@@ -96,7 +96,7 @@ namespace Mesquite
     FeasibleNewton(ObjectiveFunction* of);
 
     virtual ~FeasibleNewton()
-    { assert(coordsMem==NULL); }
+    { delete coordsMem; }
 
     /*! Sets a minimum value for the gradient. If the gradient is below that value,
       we stop iterating. */  
