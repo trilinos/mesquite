@@ -243,6 +243,9 @@ namespace Mesquite
     //! determinant of matrix A, det(A).
     friend double det(const Matrix3D &A);
 
+    //! \f$ B = A^{-1} \f$
+    friend void inv(Matrix3D& B, const Matrix3D &A);
+
     //! \f$ B *= A^{-1} \f$
     friend void timesInvA(Matrix3D& B, const Matrix3D &A);
 
@@ -571,6 +574,23 @@ namespace Mesquite
     return (  A.v_[0]*(A.v_[4]*A.v_[8]-A.v_[7]*A.v_[5])
             -A.v_[1]*(A.v_[3]*A.v_[8]-A.v_[6]*A.v_[5])
             +A.v_[2]*(A.v_[3]*A.v_[7]-A.v_[6]*A.v_[4]) );
+  }
+
+  inline void inv(Matrix3D &Ainv, const Matrix3D &A) {
+    double inv_detA = 1 / (det(A));
+
+    Ainv[0][0] = inv_detA*( A.v_[4]*A.v_[8]-A.v_[5]*A.v_[7] );
+    Ainv[0][1] = inv_detA*( A.v_[2]*A.v_[7]-A.v_[8]*A.v_[1] );
+    Ainv[0][2] = inv_detA*( A.v_[1]*A.v_[5]-A.v_[4]*A.v_[2] );
+
+    Ainv[1][0] = inv_detA*( A.v_[5]*A.v_[6]-A.v_[8]*A.v_[3] );
+    Ainv[1][1] = inv_detA*( A.v_[0]*A.v_[8]-A.v_[6]*A.v_[2] );
+    Ainv[1][2] = inv_detA*( A.v_[2]*A.v_[3]-A.v_[5]*A.v_[0] );
+
+    Ainv[2][0] = inv_detA*( A.v_[3]*A.v_[7]-A.v_[6]*A.v_[4] );
+    Ainv[2][1] = inv_detA*( A.v_[1]*A.v_[6]-A.v_[7]*A.v_[0] );
+    Ainv[2][2] = inv_detA*( A.v_[0]*A.v_[4]-A.v_[3]*A.v_[1] );
+    return;
   }
 
   inline void timesInvA(Matrix3D& B, const Matrix3D &A) {
