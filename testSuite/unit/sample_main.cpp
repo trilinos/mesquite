@@ -56,9 +56,9 @@ int main(int argc, char **argv)
       CppUnit::TestFactoryRegistry::getRegistry("QualityMetricTest");
     runner.add_test( registry9.makeTest() );
 
-    CppUnit::TestFactoryRegistry &registry9 =
+    CppUnit::TestFactoryRegistry &registry10 =
       CppUnit::TestFactoryRegistry::getRegistry("AomdVtkTest");
-    runner.add_test( registry9.makeTest() );
+    runner.add_test( registry10.makeTest() );
   }
   
     // Run the tests
