@@ -128,7 +128,7 @@ public:
 
   void test_centroid_tri()
   {
-    Vector3D correct(1.5, 1+1/(2*sqrt(3)), 1.0);    
+    Vector3D correct(1.5, 1+1/(2.0*sqrt(3.0)), 1.0);    
     test_centroid(oneTriPatch, correct);
   }
 
