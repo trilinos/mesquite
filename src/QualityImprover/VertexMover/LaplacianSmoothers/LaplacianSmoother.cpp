@@ -43,7 +43,7 @@ void LaplacianSmoother::initialize_mesh_iteration(PatchData &pd, MsqError &err)
 void LaplacianSmoother::optimize_vertex_positions(PatchData &pd, 
                                                 MsqError &err)
 {
-  cout << "- Executing LaplacianSmoother::optimize_vertex_position()\n";
+  std::cout << "- Executing LaplacianSmoother::optimize_vertex_position()\n";
 
   int num_local_vertices = pd.num_vertices();
     //int dim = pd.space_dim();
