@@ -24,7 +24,8 @@ namespace Mesquite
   class MeshSet;
   
   /*! \class QualityImprover
-    Base class for all quality improvers.
+    \brief Base class for all quality improvers.
+    Mote that the PatchData settings are inherited from the PathDataUser class. 
 
   */ 
   class QualityImprover : public PatchDataUser
