@@ -37,7 +37,7 @@ describe main.cpp here
 #include "QualityAssessor.hpp"
 #include "MesquiteError.hpp"
 #include "MeshSet.hpp"
-
+#include "ShapeImprovementWrapper.hpp"
 // algorythms
 #include "MeanRatioQualityMetric.hpp"
 #include "EdgeLengthQualityMetric.hpp"
@@ -60,8 +60,8 @@ int main()
   Vector3D s_norm(0,0,1);
   Mesquite::PlanarDomain msq_geom(s_norm, pnt, mesh);
      
+    //mesh->read_vtk("../../meshFiles/2D/VTK/cube-clip-corner.vtk", err);
   mesh->read_vtk("../../meshFiles/2D/VTK/hybrid_3quad_1tri.vtk", err);
-  
     // initialises a MeshSet object
   MeshSet mesh_set1;
   mesh_set1.set_domain_constraint(&msq_geom);
@@ -78,13 +78,13 @@ int main()
     //MSQ_CHKERR(err);
   
     // ... and builds an objective function with it
-  LPtoPTemplate* obj_func = new LPtoPTemplate(mean_ratio, 2, err);
-  obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
+  LPtoPTemplate obj_func(mean_ratio, 2, err);
+  obj_func.set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
   
     // creates the steepest descent, feas newt optimization procedures
-    //ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
-  FeasibleNewton* pass1 = new FeasibleNewton( obj_func );
-  pass1->set_patch_type(PatchData::GLOBAL_PATCH, err);
+    //ConjugateGradient* pass1 = new ConjugateGradient( &obj_func, err );
+  FeasibleNewton pass1( &obj_func );
+  pass1.set_patch_type(PatchData::GLOBAL_PATCH, err);
   
   QualityAssessor qa=QualityAssessor(mean_ratio,QualityAssessor::ALL_MEASURES);
   
@@ -99,22 +99,25 @@ int main()
     //tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
   tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
   
-  pass1->set_inner_termination_criterion(&tc_inner);
-  pass1->set_outer_termination_criterion(&tc_outer);
+  pass1.set_inner_termination_criterion(&tc_inner);
+  pass1.set_outer_termination_criterion(&tc_outer);
 
     // sets a culling method on the first QualityImprover
     //This is an old command that still needs to be there.  It has
     //nothing to do with 'culling methods' described in TerminationCriterion.
-  pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
+  pass1.add_culling_method(PatchData::NO_BOUNDARY_VTX);
   queue1.add_quality_assessor(&qa,err); MSQ_CHKERR(err);
     // adds 1 pass of pass1 to mesh_set1
-  queue1.set_master_quality_improver(pass1, err); MSQ_CHKERR(err);
+  queue1.set_master_quality_improver(&pass1, err); MSQ_CHKERR(err);
   queue1.add_quality_assessor(&qa,err); MSQ_CHKERR(err);
   mesh->write_vtk("original_mesh",err); MSQ_CHKERR(err);
   
   queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
   mesh->write_vtk("smoothed_mesh",err); MSQ_CHKERR(err);
-  
+    //std::cout<<"\n\nNow running the shape wrapper.\n=n";
+    //ShapeImprovementWrapper wrap(100);
+    //wrap.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
+  delete mean_ratio;
   PRINT_TIMING_DIAGNOSTICS();
 }
  
