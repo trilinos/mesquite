@@ -152,52 +152,76 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
     beta = 1.0;
     pd.recreate_vertices_memento(coordsMem, err); MSQ_CHKERR(err);
     
-    while (beta >= tol1) {
-      
-      // 6. Search along the direction
-      //    (a) trial = x + beta*d
-      pd.move_vertices(d, nv, beta, err); MSQ_CHKERR(err);
-      //    (b) gradient evaluation
+    // TODD: Unrolling the linesearch loop.  We do a function and
+    // gradient evaluation when beta = 1.  Otherwise, we end up
+    // in the linesearch regime.  We expect that several
+    // evaluations will be made, so we only do a function evaluation
+    // and finish with a gradient evaluation.  When beta = 1, we also
+    // check the gradient for stability.
 
-      // TODD -- the Armijo linesearch is based on the objective function,
-      //         so theoretically we only need to evaluate the objective
-      //         function.  However, near a very accurate solution, say with
-      //         the two norm of the gradient of the objective function less
-      //         than 1e-5, the numerical error in the objective function
-      //         calculation is enough that the Armijo linesearch will
-      //         fail.  To correct this situation, the iterate is accepted
-      //         when the norm of the gradient is also small.  If you need
-      //         high accuracy and have a large mesh, talk with Todd about
-      //         the numerical issues so that we can fix it.
-      // fn_bool = objFunc->compute_gradient(pd, grad, new_value, err); MSQ_CHKERR(err);
+    // TODD -- the Armijo linesearch is based on the objective function,
+    //         so theoretically we only need to evaluate the objective
+    //         function.  However, near a very accurate solution, say with
+    //         the two norm of the gradient of the objective function less
+    //         than 1e-5, the numerical error in the objective function
+    //         calculation is enough that the Armijo linesearch will
+    //         fail.  To correct this situation, the iterate is accepted
+    //         when the norm of the gradient is also small.  If you need
+    //         high accuracy and have a large mesh, talk with Todd about
+    //         the numerical issues so that we can fix it.
 
-      fn_bool = objFunc->evaluate(pd, new_value, err);  MSQ_CHKERR(err);
-      //    (c) check for sufficient decrease and stop
-      if (!fn_bool) { // function not defined at trial point
+    pd.move_vertices(d, nv, beta, err); MSQ_CHKERR(err);
+    fn_bool = objFunc->compute_gradient(pd, grad, new_value, err); MSQ_CHKERR(err);
+    if ((fn_bool && (original_value - new_value >= -alpha*beta - epsilon)) ||
+        (fn_bool && (length(grad, nv) < convTol))) {
+      // Armojo linesearch rules passed.
+    }
+    else {
+      if (!fn_bool) {
+	// Function undefined.  Use the higher decrease rate.
         beta *= beta0;
-        pd.set_to_vertices_memento(coordsMem, err); MSQ_CHKERR(err);
       }
-      else if (original_value - new_value >= -alpha*beta - epsilon ) {
-        break; // iterate is acceptable.
-      }
-      else if (length(grad, nv) < convTol) {
-         // Should never be used.
-         break; // iterate is acceptable.
-      }
-      //    (d) otherwise, shrink beta
-      else {/* Iterate not acceptable */
+      else {
+	// Function defined, but not sufficient decrease
+        // Use the lower decrease rate.
         beta *= beta1;
-        pd.set_to_vertices_memento(coordsMem, err); MSQ_CHKERR(err);
       }
-  
+      pd.set_to_vertices_memento(coordsMem, err); MSQ_CHKERR(err);
+
+      // Standard Armijo linesearch rules
+ 
+      while (beta >= tol1) {
+        // 6. Search along the direction
+        //    (a) trial = x + beta*d
+        pd.move_vertices(d, nv, beta, err); MSQ_CHKERR(err);
+        //    (b) function evaluation
+        fn_bool = objFunc->evaluate(pd, new_value, err);  MSQ_CHKERR(err);
+        //    (c) check for sufficient decrease and stop
+        if (!fn_bool) { 
+	  // function not defined at trial point
+          beta *= beta0;
+        }
+        else if (original_value - new_value >= -alpha*beta - epsilon ) {
+          // iterate is acceptable.
+          break; 
+        }
+        else {
+          // iterate is not acceptable -- shrink beta
+          beta *= beta1;
+        }
+        pd.set_to_vertices_memento(coordsMem, err); MSQ_CHKERR(err);
+      } 
+
+      // Make sure we did not hit the lower limit on beta
+      if (beta < tol1) {
+        PRINT_INFO("Newton step not good.");
+        return;
+      }
+
+      // Compute the gradient at the new point -- needed by termination check
+      fn_bool = objFunc->compute_gradient(pd, grad, new_value, err); MSQ_CHKERR(err);
     }
 
-    if (beta < tol1) {
-      PRINT_INFO("Newton step not good.");
-      return;
-    }
-
-    // 7. Set x to trial point and calculate Hessian if needed
     // Prints out free vertices coordinates. 
     MSQ_DEBUG_ACTION(3,{
       std::cout << "  o Free vertices new coordinates: \n";
@@ -210,7 +234,6 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
     });
 
     // checks stopping criterion 
-    // (gradient has been recomputed at current position in line search)
     inner_criterion=term_crit->terminate_with_function_and_gradient(pd,
                                objFunc, new_value, grad, err);  MSQ_CHKERR(err);
 
