@@ -8,7 +8,7 @@
 //    E-MAIL: mbrewer@sandia.gov
 //
 // ORIG-DATE: 03-Dec-02
-//  LAST-MOD: 29-Jan-03 at 11:21:23 by Thomas Leurent
+//  LAST-MOD: 17-Mar-03 at 13:03:13 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -550,6 +550,40 @@ public:
       for (int i=0; i<3; ++i)
         for (int j=0; j<3; ++j)
           CPPUNIT_ASSERT_DOUBLES_EQUAL(hessian_num[m][i][j], hessian_ana[m][i][j], 0.001);
+
+    
+    // same test, but with only 2 free vertices in the element. 
+    all_vtces[0] = &vertices[bad_elem_vertex_indices[0]];
+    all_vtces[1] = &vertices[bad_elem_vertex_indices[2]];
+    mean_ratio->set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
+    mean_ratio->compute_element_hessian(tetPatch, &elems[1], all_vtces,
+                                        grad, hessian_num, 2, metric_value,
+                                        err); MSQ_CHKERR(err);
+
+//     std::cout << "GRADIENT\n";
+//     for (int i=0; i<4; ++i)
+//       for (int j=0; j<3; ++j)
+//         std::cout << grad[i][j] << std::endl;
+
+//     std::cout << "NUMERICAL HESSIAN\n";
+//     for (int i=0; i<10; ++i)
+//          std::cout << hessian_num[i] << std::endl;
+
+    mean_ratio->set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
+    mean_ratio->compute_element_hessian(tetPatch, &elems[1], all_vtces,
+                                        grad, hessian_ana, 2, metric_value,
+                                        err); MSQ_CHKERR(err);
+
+//     std::cout << "ANALYTICAL HESSIAN\n";
+//     for (int i=0; i<10; ++i)
+//         std::cout << hessian_ana[i] << std::endl;
+
+    // test
+    for (int m=0; m<10; ++m)
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+          CPPUNIT_ASSERT_DOUBLES_EQUAL(hessian_num[m][i][j], hessian_ana[m][i][j], 0.001);
+
     
     delete[] grad;
     delete[] hessian_num;
