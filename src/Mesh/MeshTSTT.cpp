@@ -17,11 +17,21 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-namespace
+namespace // unnamed namespace (scope is the file only)
 {
 
 #define ENTIRE_MESH 0  // passing the null pointer as the first argument of
                    // TSTT::entitySet functions queries the data for the whole mesh
+
+#define PRINT_TSTT_ERROR(tstt_err) { \
+    PRINT_INFO("!!! TSTT interface ERROR caught by Mesquite -- \n!!! "); \
+    PRINT_INFO(tstt_err.getNote().c_str()); \
+    PRINT_INFO("\n"); \
+    PRINT_INFO(tstt_err.getTrace().c_str()); \
+    PRINT_INFO( __FUNC__ ); \
+    PRINT_INFO("\n"); \
+}
+
   
   class MeshTSTT_EntityIterator : public Mesquite::EntityIterator
   {
@@ -30,31 +40,41 @@ namespace
                             const TSTT::EntityType& entity_type)
       : iteratorEntityType(entity_type)
     {
-      iteratorMesh = tstt_mesh;
-      iteratorMesh.entitysetInitializeWorksetIterator(
-                                         ENTIRE_MESH,
-                                         iteratorEntityType,
-                                         ::TSTT::ALL_TOPOLOGIES,
-                                         1, // requested workset size
-                                         tsttWorksetIterator);
-      entityHandle = ::SIDL::array<void*>::create1d(1); // array with one entry.
-      bool more = iteratorMesh.entitysetGetNextWorkset(tsttWorksetIterator, entityHandle);
-      if (!more)
-        entityHandle.set(0, NULL); 
-    }
-    
-      // Moves the iterator back to the first
-      // entity in the list.
-    virtual void restart()
-      {
-        iteratorMesh.entitysetDestroyWorksetIterator(
-                                 tsttWorksetIterator);
+      try {
+        iteratorMesh = tstt_mesh;
         iteratorMesh.entitysetInitializeWorksetIterator(
                                          ENTIRE_MESH,
                                          iteratorEntityType,
                                          ::TSTT::ALL_TOPOLOGIES,
                                          1, // requested workset size
                                          tsttWorksetIterator);
+        entityHandle = ::SIDL::array<void*>::create1d(1); // array with one entry.
+        bool more = iteratorMesh.entitysetGetNextWorkset(tsttWorksetIterator, entityHandle);
+        if (!more)
+          entityHandle.set(0, NULL);
+      }
+      catch (TSTT::Error &tstt_err) {
+        PRINT_TSTT_ERROR(tstt_err);
+      }
+    }
+    
+      // Moves the iterator back to the first
+      // entity in the list.
+    virtual void restart()
+      {
+        try{
+          iteratorMesh.entitysetDestroyWorksetIterator(
+                                 tsttWorksetIterator);
+          iteratorMesh.entitysetInitializeWorksetIterator(
+                                         ENTIRE_MESH,
+                                         iteratorEntityType,
+                                         ::TSTT::ALL_TOPOLOGIES,
+                                         1, // requested workset size
+                                         tsttWorksetIterator);
+        }
+        catch (TSTT::Error &tstt_err) {
+          PRINT_TSTT_ERROR(tstt_err);
+        }
       }
     
       // *iterator.  Return the handle currently
@@ -67,9 +87,14 @@ namespace
       // ++iterator
     virtual void operator++()
       {
-        bool more = iteratorMesh.entitysetGetNextWorkset(tsttWorksetIterator, entityHandle);
-        if (!more)
-          entityHandle.set(0, NULL); 
+        try {
+          bool more = iteratorMesh.entitysetGetNextWorkset(tsttWorksetIterator, entityHandle);
+          if (!more)
+            entityHandle.set(0, NULL);
+        }
+        catch (TSTT::Error &tstt_err) {
+          PRINT_TSTT_ERROR(tstt_err);
+        }
       }
     
       // Returns false until the iterator has
@@ -122,17 +147,7 @@ namespace
     }
   }
 
-  
-#define PRINT_TSTT_ERROR(tstt_err) { \
-    PRINT_INFO("!!! TSTT interface ERROR caught by Mesquite -- \n!!! "); \
-    PRINT_INFO(tstt_err.getNote().c_str()); \
-    PRINT_INFO("\n"); \
-    PRINT_INFO(tstt_err.getTrace().c_str()); \
-    PRINT_INFO( __FUNC__ ); \
-    PRINT_INFO("\n"); \
-}
-
-}
+} // end of unnamed namespace (scope is the file only)
 
 using Mesquite::MsqError;
 
@@ -362,16 +377,18 @@ Mesquite::ElementIterator* Mesquite::MeshTSTT::element_iterator(MsqError &/*err*
 #define __FUNC__ "MeshTSTT::vertex_is_fixed"
 bool Mesquite::MeshTSTT::vertex_is_fixed(Mesquite::Mesh::VertexHandle vertex, MsqError &err)
 {
-  try {
-    int32_t tag_size;
-    oneEntity.set(0,vertex);
-    tsttMesh.entityGetTagData(oneEntity, fixedVertexTag,
-                                     oneTagValue, tag_size);
-  }
-  catch(::TSTT::Error &tstt_err) {
-    PRINT_TSTT_ERROR(tstt_err);
-  }
-  return (bool)(oneTagValue.get(0));
+//   try {
+//     int32_t tag_size;
+//     oneEntity.set(0,vertex);
+//     tsttMesh.entityGetTagData(oneEntity, fixedVertexTag,
+//                                      oneTagValue, tag_size);
+//   }
+//   catch(::TSTT::Error &tstt_err) {
+//     PRINT_TSTT_ERROR(tstt_err);
+//   }
+//   return (bool)(oneTagValue.get(0));
+
+  return false; //! \todo vertex_is_fixed is not implemented for now. Not really used either.
 }
 
 // Returns true or false, indicating whether the vertex
@@ -837,9 +854,18 @@ void Mesquite::MeshTSTT::element_get_attached_vertex_indices(
     //! An EntitySet with a single member element should be used instead.
     //! This hack catters to a temporary AOMD implementation of TSTT without EntitySet
     tsttMesh.entitysetGetEntityVertexCoordinateIndices(
-                                element, elementType, ::TSTT::ALL_TOPOLOGIES,
-                                oneInt, index_array_b,
-                                oneTopo);
+                          element, elementType, ::TSTT::ALL_TOPOLOGIES,
+                          oneInt, index_array_b,
+                          oneTopo);
+     
+    //dbg
+/*    for (int i=0; i<Mesquite::MSQ_MAX_NUM_VERT_PER_ENT; ++i) 
+    {
+       cout << "index_array_b: " << index_array_b[i] << endl;
+       cout << "index_array: " << index_array[i] << endl;	  
+    }*/
+     
+     
   }
   catch(::TSTT::Error &tstt_err) {
     PRINT_TSTT_ERROR(tstt_err);
