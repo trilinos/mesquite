@@ -252,7 +252,10 @@ bool QualityMetric::compute_element_numerical_gradient(PatchData &pd,
 
   if (!valid)
     return false;
-  double delta = 10e-6;
+  const double delta_C = 10e-6;
+  double delta = delta_C;
+  const double delta_inv_C = 1. / delta; // avoids division in the loop. 
+  double delta_inv = delta_inv_C;
   int counter=0;
   double pos=0.0;
   double metric_value1=0;
@@ -263,7 +266,8 @@ bool QualityMetric::compute_element_numerical_gradient(PatchData &pd,
     {
         //re-initialize variables.
       valid=false;
-      delta = 10e-6;
+      delta = delta_C;
+      delta_inv = delta_inv_C;
       counter=0;
         //perturb the node and calculate gradient.  The while loop is a
         //safety net to make sure the epsilon perturbation does not take
@@ -278,11 +282,12 @@ bool QualityMetric::compute_element_numerical_gradient(PatchData &pd,
         valid=this->evaluate_element(pd, element,  metric_value1, err);
         MSQ_CHKERR(err);
           //compute the numerical gradient
-        grad_vec[v][j]=(metric_value1-metric_value)/delta;
+        grad_vec[v][j]=(metric_value1-metric_value)*delta_inv;
           // put the coordinates back where they belong
         (*free_vtces[v])[j] = pos;
         ++counter;
-        delta/=10.0;
+        delta*=0.1;
+	delta_inv*=10.;
       }
       if(counter>=10){
         err.set_msg("Perturbing vertex by delta caused an inverted element.");
@@ -324,6 +329,7 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
     return false;
   
   double delta = 10e-6;
+  double delta_inv = 1./delta;
   double vj_coord;
   short nve = element->vertex_count();
   Vector3D* grad_vec1 = new Vector3D[nve];
@@ -371,7 +377,7 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
         for (w=0; w<nve; ++w) {
           if (v>=w) {
             //finite difference to get some entries of the Hessian
-            fd = (grad_vec1[w]-grad_vec[w])/delta;
+            fd = (grad_vec1[w]-grad_vec[w])*delta_inv;
             // For the block at position w,v in a matrix, we need the corresponding index
             // (mat_index) in a 1D array containing only upper triangular blocks.
             sum_w = w*(w+1)/2; // 1+2+3+...+w
@@ -421,7 +427,8 @@ bool QualityMetric::compute_vertex_numerical_gradient(PatchData &pd,
   if (!valid)
     return false;
   
-  double delta = 10e-6;
+  const double delta = 10e-6;
+  const double delta_inv = 1./delta;
   double metric_value1=0;
   double pos;
   int v=0;
@@ -438,7 +445,7 @@ bool QualityMetric::compute_vertex_numerical_gradient(PatchData &pd,
       //compute the function at the perturbed point location
       this->evaluate_vertex(pd, &(vertex),  metric_value1, err); MSQ_CHKERR(err);
       //compute the numerical gradient
-      grad_vec[v][j]=(metric_value1-metric_value)/delta;
+      grad_vec[v][j]=(metric_value1-metric_value)*delta_inv;
       // put the coordinates back where they belong
       (*free_vtces[v])[j] = pos;
     }

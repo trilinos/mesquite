@@ -30,7 +30,7 @@
 #include "Mesquite.hpp"
 #include "VertexMover.hpp"
 #include "ObjectiveFunction.hpp"
-
+#include "MsqHessian.hpp"
 
 namespace Mesquite
 {

@@ -20,12 +20,13 @@ Header file for the Mesquite::ObjectiveFunction class
 #include "MesquiteError.hpp"
 #include "QualityMetric.hpp"
 #include "PatchData.hpp"
-#include "MsqHessian.hpp"
+
 
 namespace Mesquite
 {
    class PatchData;
-
+   class MsqHessian;
+   
   /*! \class ObjectiveFunction
        \brief Base class for concrete Objective Functions
        ObjectiveFunction contains a pointer to a QualityMetric.  If

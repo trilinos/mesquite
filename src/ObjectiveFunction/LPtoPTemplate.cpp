@@ -13,6 +13,7 @@
 #include "MsqFreeVertexIndexIterator.hpp"
 #include "MsqMessage.hpp"
 #include "MsqTimer.hpp"
+#include "MsqHessian.hpp"
 
 using  namespace Mesquite;  
 
@@ -342,13 +343,12 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
   size_t num_elems = pd.num_elements();
   size_t num_vertices = pd.num_vertices();
   Matrix3D elem_hessian[MSQ_MAX_NUM_VERT_PER_ENT*(MSQ_MAX_NUM_VERT_PER_ENT+1)/2];
-  Matrix3D elem_outer_product[MSQ_MAX_NUM_VERT_PER_ENT*(MSQ_MAX_NUM_VERT_PER_ENT+1)/2];
+  Matrix3D elem_outer_product;
   Vector3D grad_vec[MSQ_MAX_NUM_VERT_PER_ENT];
   double QM_val;
   double fac1, fac2;
   Matrix3D grad_outprod;
   bool qm_bool;
-//  Vector3D zero3D(0,0,0);
   QualityMetric* currentQM = get_quality_metric();
   
   MsqVertex* ele_free_vtces[MSQ_MAX_NUM_VERT_PER_ENT];
@@ -362,6 +362,7 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
   for (v=0; v<num_vertices; ++v) grad[v] = 0.;
   OF_val = 0.;
   
+  // Loops over all elements in the patch.
   for (e=0; e<num_elems; ++e) {
     short nve = elements[e].vertex_count();
     
@@ -391,40 +392,40 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
       fac1 = 1;
     }
     else if (pVal >= 2) {
-      // Computes \nabla Q(e) [\nabla Q(e)]^T 
-      n=0;
-      for (i=0; i<nve; ++i) {
-        for (j=i; j<nve; ++j) {
-          if ( vertices[vtx_indices[i]].is_free_vertex() &&
-               vertices[vtx_indices[j]].is_free_vertex() ) {
-            elem_outer_product[n].outer_product(grad_vec[i], grad_vec[j]);
-          } else {
-            elem_outer_product[n] = 0.;
-          }
-          ++n;
-        }
-      }
-
+      // Computes the coefficients:
       QM_val = fabs(QM_val);
       QM_pow = 1;
       for (i=0; i<pVal-2; ++i)
         QM_pow *= QM_val;
-      // Computes p(p-1)Q(e)^{p-2}
+      // 1 - computes p(p-1)Q(e)^{p-2}
       fac2 = pVal* (pVal-1) * QM_pow;
-      // Computes  pQ(e)^{p-1}
+      // 2 - computes  pQ(e)^{p-1}
       QM_pow *= QM_val;
       fac1 = pVal * QM_pow;
 
       fac1 *= get_negate_flag();
       fac2 *= get_negate_flag();
 
-      for (i=0; i<nve*(nve+1)/2; ++i) {
-        elem_hessian[i] *= fac1;
-        elem_outer_product[i] *= fac2;
+      n=0;
+      for (i=0; i<nve; ++i) {
+        for (j=i; j<nve; ++j) {
+          if ( vertices[vtx_indices[i]].is_free_vertex() &&
+               vertices[vtx_indices[j]].is_free_vertex() ) {
+            // Computes \nabla Q(e) [\nabla Q(e)]^T 
+            elem_outer_product.outer_product(grad_vec[i], grad_vec[j]);
+
+	    elem_outer_product *= fac2;
+	    elem_hessian[n] *= fac1;
+	    elem_hessian[n] += elem_outer_product;
+          } else {
+            // elem_outer_product is nul 
+            elem_hessian[n] *= fac1;
+          }
+          ++n;
+        }
       }
-      
+
       hessian.accumulate_entries(pd, e, elem_hessian, err);
-      hessian.accumulate_entries(pd, e, elem_outer_product, err);
 
     } else {
       err.set_msg(" invalid P value.");
@@ -436,10 +437,12 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
 
     // For each vertex in the element ... 
     for (i=0; i<nve; ++i) {
-      // ... computes p*q^{p-1}*grad(q) ...
-      grad_vec[i] *= fac1;
-      // ... and accumulates it in the objective function gradient.
-      grad[vtx_indices[i]] += grad_vec[i];
+      if ( vertices[vtx_indices[i]].is_free_vertex() ) {
+        // ... computes p*q^{p-1}*grad(q) ...
+        grad_vec[i] *= fac1;
+        // ... and accumulates it in the objective function gradient.
+        grad[vtx_indices[i]] += grad_vec[i];
+      }
     }
     
     // **** computes Objective Function value \sum_{i=1}^{N_e} |q_i|^P ****

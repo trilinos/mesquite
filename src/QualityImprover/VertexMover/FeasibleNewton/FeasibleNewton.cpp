@@ -89,7 +89,6 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   int i;//,n;
   
   // 1.  Allocate a hessian and calculate the sparsity pattern.
-  // pd.reorder();
   mHessian.initialize(pd, err); MSQ_CHKERR(err);
   // 2.  Calculate the gradient and Hessian for the patch
   //     (a) if not defined at current point, stop and throw an error

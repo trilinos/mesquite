@@ -69,7 +69,7 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
   size_t num_elements = pd.num_elements();
   size_t const * vtx_list;
   size_t e, r, rs, re, c, cs, ce, nz, nnz, nve, i, j;
-  MsqMeshEntity* element_array = pd.get_element_array(err); MSQ_CHKERR(err);
+  MsqMeshEntity* patchElemArray = pd.get_element_array(err); MSQ_CHKERR(err);
 
   if (num_vertices == 0) {
     err.set_msg("No vertices in PatchData");
@@ -90,8 +90,8 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
   }
 
   for (e = 0; e < num_elements; ++e) {
-    nve = element_array[e].vertex_count();
-    vtx_list = element_array[e].get_vertex_index_array();
+    nve = patchElemArray[e].vertex_count();
+    vtx_list = patchElemArray[e].get_vertex_index_array();
     mAccumElemStart[e+1] = mAccumElemStart[e] + (nve+1)*nve/2;
     
     for (i = 0; i < nve; ++i) {
@@ -125,8 +125,8 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
 
   nz = 0;
   for (e = 0; e < num_elements; ++e) {
-    nve = element_array[e].vertex_count();
-    vtx_list = element_array[e].get_vertex_index_array();
+    nve = patchElemArray[e].vertex_count();
+    vtx_list = patchElemArray[e].get_vertex_index_array();
 
     for (i = 0; i < nve; ++i) {
       r = vtx_list[i];

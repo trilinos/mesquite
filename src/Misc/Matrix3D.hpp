@@ -97,7 +97,7 @@ namespace Mesquite
     Matrix3D()
     {
       initialize();
-      set(0.);
+      zero();
     }
     
     Matrix3D(const Matrix3D &A)
@@ -155,6 +155,15 @@ namespace Mesquite
       return *this;
     }
 
+    //! Sets all entries to zero (more efficient than assignement).
+    void zero()
+    {
+      v_[0]=0.;  v_[1]=0.;  v_[2]=0.;
+      v_[3]=0.;  v_[4]=0.;  v_[5]=0.;
+      v_[6]=0.;  v_[7]=0.;  v_[8]=0.;
+//      memset(v_, 0, 9*sizeof(double));
+    }
+     
     //! Sets column j (0, 1 or 2) to Vector3D c.
     void set_column(int j, const Vector3D c)
     {
@@ -174,28 +183,33 @@ namespace Mesquite
     friend int matmult(Matrix3D& C, const Matrix3D  &A, const Matrix3D &B);
     friend Vector3D operator*(const Matrix3D  &A, const Vector3D &x);
     friend Vector3D operator*(const Vector3D &x, const Matrix3D  &A);
-    Matrix3D& operator+=(const Matrix3D &rhs);
+    void operator+=(const Matrix3D &rhs);
     Matrix3D& operator-=(const Matrix3D &rhs);
     Matrix3D& operator*=(const double &s);
     Matrix3D plus_transpose(const Matrix3D &B) const;
-    Matrix3D& plus_transpose_equal(const Matrix3D &B);
+    void plus_transpose_equal(const Matrix3D &B);
     Matrix3D& outer_product(const Vector3D &v1, const Vector3D &v2);
     void fill_lower_triangle();
-    
+
+    //! \f$ v += A*x \f$
+    friend void plusEqAx(Vector3D& v, const Matrix3D& A, const Vector3D& x);
+    //! \f$ v += A^T*x \f$
+    friend void plusEqTransAx(Vector3D& v, const Matrix3D& A, const Vector3D& x);
+     
     size_t num_rows() const { return 3; }
     size_t num_cols() const { return 3; }
 
     //! returns a pointer to a row.
     inline double* operator[](int i)
     {
-      MSQ_DEBUG_ACTION(1,{ assert(0<=i); assert(i < 3); });
+//      assert(0<=i); assert(i < 3);
       return row_[i];
     }
 
     //! returns a pointer to a row.
     inline const double* operator[](int i) const
     {
-      MSQ_DEBUG_ACTION(1,{ assert(0<=i); assert(i < 3); });
+//      assert(0<=i); assert(i < 3);
       return row_[i];
     }
 
@@ -291,13 +305,11 @@ namespace Mesquite
     return S;
   }
 
-  inline Matrix3D& Matrix3D::operator+=(const Matrix3D &rhs)
+  inline void Matrix3D::operator+=(const Matrix3D &rhs)
   {
       v_[0] += rhs.v_[0]; v_[1] += rhs.v_[1]; v_[2] += rhs.v_[2];
       v_[3] += rhs.v_[3]; v_[4] += rhs.v_[4]; v_[5] += rhs.v_[5];
       v_[6] += rhs.v_[6]; v_[7] += rhs.v_[7]; v_[8] += rhs.v_[8];
-
-      return *this;
   }
 
   inline Matrix3D& Matrix3D::operator-=(const Matrix3D &rhs)
@@ -340,7 +352,7 @@ namespace Mesquite
   }
 
   //! \f$ += B^T  \f$
-  inline Matrix3D& Matrix3D::plus_transpose_equal(const Matrix3D &B)
+  inline void Matrix3D::plus_transpose_equal(const Matrix3D &B)
   {
     v_[0] += B.v_[0];
     v_[1] += B.v_[3];
@@ -353,8 +365,6 @@ namespace Mesquite
     v_[6] += B.v_[2];
     v_[7] += B.v_[5];
     v_[8] += B.v_[8];
-
-    return *this;
   }
 
   //! Computes \f$ A = v_1 v_2^T \f$
@@ -456,7 +466,21 @@ namespace Mesquite
       }
     return res;
   }
-
+   
+  inline void plusEqAx(Vector3D& v, const Matrix3D& A, const Vector3D& x)
+  {
+     v.mCoords[0] += A.v_[0]*x[0] + A.v_[1]*x.mCoords[1] + A.v_[2]*x.mCoords[2];
+     v.mCoords[1] += A.v_[3]*x[0] + A.v_[4]*x.mCoords[1] + A.v_[5]*x.mCoords[2];
+     v.mCoords[2] += A.v_[6]*x[0] + A.v_[7]*x.mCoords[1] + A.v_[8]*x.mCoords[2];
+  }
+   
+  inline void plusEqTransAx(Vector3D& v, const Matrix3D& A, const Vector3D& x)
+  {
+     v.mCoords[0] += A.v_[0]*x.mCoords[0] + A.v_[3]*x.mCoords[1] + A.v_[6]*x.mCoords[2];
+     v.mCoords[1] += A.v_[1]*x.mCoords[0] + A.v_[4]*x.mCoords[1] + A.v_[7]*x.mCoords[2];
+     v.mCoords[2] += A.v_[2]*x.mCoords[0] + A.v_[5]*x.mCoords[1] + A.v_[8]*x.mCoords[2];
+  }
+   
 } // namespace Mesquite
 
 #endif // Matrix3D_hpp

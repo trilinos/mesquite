@@ -20,7 +20,10 @@
 */
 namespace Mesquite
 {
-    /*!
+
+   class Matrix3D;
+   
+   /*!
       \class Vector3D
       \brief Vector3D is the object that effeciently stores information about
       about three-deminsional vectors.  It is also the parent class of
@@ -86,7 +89,12 @@ namespace Mesquite
                             const double scalar); //- scalar * sum_i v1[i]
     friend Vector3D operator*(const Vector3D &v1, 
                               const Vector3D &v2); //- cross product
-
+ 
+    //! \f$ v += A*x \f$
+    friend void plusEqAx(Vector3D& v, const Matrix3D& A, const Vector3D& x);
+    //! \f$ v += A^T*x \f$
+    friend void plusEqTransAx(Vector3D& v, const Matrix3D& A, const Vector3D& x);
+    
     // Comparison functions
     friend int operator==(const Vector3D &lhs, const Vector3D &rhs);
     friend int operator!=(const Vector3D &lhs, const Vector3D &rhs);
@@ -119,7 +127,7 @@ namespace Mesquite
   protected:
     double mCoords[3];
   };
-  
+
   // Constructors
   inline Vector3D::Vector3D() 
   {
@@ -185,14 +193,18 @@ namespace Mesquite
   { memcpy(mCoords, to_copy.mCoords, 3*sizeof(double)); }
   inline double& Vector3D::operator[](size_t index)
   {
-#ifdef MSQ_DEBUG
+#ifdef MSQ_DBG3
     assert(0<=(int)index);
     assert(index<=2);     
 #endif
     return mCoords[index]; }
+   
   inline Vector3D& Vector3D::operator=(const Vector3D &to_copy)  
   {
-    memcpy(mCoords, to_copy.mCoords, 3*sizeof(double));
+    mCoords[0] = to_copy.mCoords[0];
+    mCoords[1] = to_copy.mCoords[1];
+    mCoords[2] = to_copy.mCoords[2];
+//    memcpy(mCoords, to_copy.mCoords, 3*sizeof(double));
     return *this;
   }
 

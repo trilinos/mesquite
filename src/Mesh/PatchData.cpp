@@ -545,7 +545,7 @@ void PatchData::set_free_vertices_constrained(PatchDataVerticesMemento* memento,
   }
   
     // Checks that moving direction is zero for fixed vertices.
-  MSQ_DEBUG_ACTION(1,{ for (m=0; m<numVertices; ++m)
+  MSQ_DEBUG_ACTION(3,{ for (m=0; m<numVertices; ++m)
   {
     Vector3D zero_3d(0.,0.,0.);
     if (   ! vertexArray[m].is_free_vertex()

@@ -146,7 +146,7 @@ namespace Mesquite
         pass it in.  Otherwise the PatchData will calculate that number.
       */
     void generate_vertex_to_element_data(size_t num_vertex_uses = 0);
-    
+
     void set_vertex_coordinates(const Vector3D &coords,
                                 size_t index,
                                 MsqError &err);

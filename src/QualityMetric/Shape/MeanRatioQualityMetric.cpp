@@ -464,7 +464,8 @@ inline bool h_fcn_2e(double &obj, Vector3D g_obj[3], Matrix3D h_obj[6],
 /*****************************************************************************/
 inline bool m_fcn_2i(double &obj, const Vector3D x[3], const Vector3D &n)
 {
-  double matr[9], f;
+  double matr[9];
+  double f;
   double g;
 
   /* Calculate M = A*inv(W). */
@@ -2097,11 +2098,9 @@ bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
   MsqVertex *vertices = pd.get_vertex_array(err);
   const size_t *v_i = e->get_vertex_index_array();
 
-  Vector3D coords[4];		// Coordinates for the (decomposed) elements
   Vector3D n;			// Surface normal for 2D objects
-  double metrics[8];
 
-  int locs_hex[8][4] = {{0, 1, 3, 4},	// Hex element descriptions
+  const static int locs_hex[8][4] = {{0, 1, 3, 4},	// Hex element descriptions
 		        {1, 2, 0, 5},
 		        {2, 3, 1, 6},
 		        {3, 0, 2, 7},
@@ -2112,46 +2111,50 @@ bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
   int i;
 
   m = 0.0;
-
+  bool metric_valid = false;
   switch(topo) {
   case TRIANGLE:
     pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
     n = n / n.length();		// Need unit normal
-    coords[0] = vertices[v_i[0]];
-    coords[1] = vertices[v_i[1]];
-    coords[2] = vertices[v_i[2]];
-    if (!m_fcn_2e(m, coords, n)) return false;
+    mCoords[0] = vertices[v_i[0]];
+    mCoords[1] = vertices[v_i[1]];
+    mCoords[2] = vertices[v_i[2]];
+    metric_valid = m_fcn_2e(m, mCoords, n);
+    if (!metric_valid) return false;
     break;
     
   case QUADRILATERAL:
     pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
     for (i = 0; i < 4; ++i) {
       n = n / n.length();	// Need unit normal
-      coords[0] = vertices[v_i[locs_hex[i][0]]];
-      coords[1] = vertices[v_i[locs_hex[i][1]]];
-      coords[2] = vertices[v_i[locs_hex[i][2]]];
-      if (!m_fcn_2i(metrics[i], coords, n)) return false;
+      mCoords[0] = vertices[v_i[locs_hex[i][0]]];
+      mCoords[1] = vertices[v_i[locs_hex[i][1]]];
+      mCoords[2] = vertices[v_i[locs_hex[i][2]]];
+      metric_valid = m_fcn_2i(mMetrics[i], mCoords, n);
+      if (!metric_valid) return false;
     }
-    m = average_metrics(metrics, 4, err);
+    m = average_metrics(mMetrics, 4, err);
     break;
 
   case TETRAHEDRON:
-    coords[0] = vertices[v_i[0]];
-    coords[1] = vertices[v_i[1]];
-    coords[2] = vertices[v_i[2]];
-    coords[3] = vertices[v_i[3]];
-    if (!m_fcn_3e(m, coords)) return false;
+    mCoords[0] = vertices[v_i[0]];
+    mCoords[1] = vertices[v_i[1]];
+    mCoords[2] = vertices[v_i[2]];
+    mCoords[3] = vertices[v_i[3]];
+    metric_valid = m_fcn_3e(m, mCoords);
+    if(!metric_valid) return false;
     break;
 
   case HEXAHEDRON:
     for (i = 0; i < 8; ++i) {
-      coords[0] = vertices[v_i[locs_hex[i][0]]];
-      coords[1] = vertices[v_i[locs_hex[i][1]]];
-      coords[2] = vertices[v_i[locs_hex[i][2]]];
-      coords[3] = vertices[v_i[locs_hex[i][3]]];
-      if (!m_fcn_3i(metrics[i], coords)) return false;
+      mCoords[0] = vertices[v_i[locs_hex[i][0]]];
+      mCoords[1] = vertices[v_i[locs_hex[i][1]]];
+      mCoords[2] = vertices[v_i[locs_hex[i][2]]];
+      mCoords[3] = vertices[v_i[locs_hex[i][3]]];
+      metric_valid = m_fcn_3i(mMetrics[i], mCoords);
+      if (!metric_valid) return false;
     }
-    m = average_metrics(metrics, 8, err);
+    m = average_metrics(mMetrics, 8, err);
     break;
 
   default:
@@ -2183,22 +2186,18 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
   MsqVertex *vertices = pd.get_vertex_array(err);
   const size_t *v_i = e->get_vertex_index_array();
 
-  Vector3D coords[4];		// Vertex coordinates for the (decomposed) elements
   Vector3D n;			// Surface normal for 2D objects
 
-  Vector3D gradients[32];	// Gradient of metric with respect to the coords
-  Vector3D grad[8];		// Accumulated gradients (composed merit function)
-  double   metrics[8];		// Metric values for the (decomposed) elements
   double   nm, t=0;
 
-  int locs_hex[8][4] = {{0, 1, 3, 4},	// Hex element descriptions
-                        {1, 2, 0, 5},
-                        {2, 3, 1, 6},
-                        {3, 0, 2, 7},
-                        {4, 7, 5, 0},
-                        {5, 4, 6, 1},
-                        {6, 5, 7, 2},
-                        {7, 6, 4, 3}};
+  const static int locs_hex[8][4] = {{0, 1, 3, 4},	// Hex element descriptions
+                    {1, 2, 0, 5},
+                    {2, 3, 1, 6},
+                    {3, 0, 2, 7},
+                    {4, 7, 5, 0},
+                    {5, 4, 6, 1},
+                    {6, 5, 7, 2},
+                    {7, 6, 4, 3}};
   int i, j;
 
   m = 0.0;
@@ -2207,10 +2206,10 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
   case TRIANGLE:
     pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
     n = n / n.length();		// Need unit normal
-    coords[0] = vertices[v_i[0]];
-    coords[1] = vertices[v_i[1]];
-    coords[2] = vertices[v_i[2]];
-    if (!g_fcn_2e(m, grad, coords, n)) return false;
+    mCoords[0] = vertices[v_i[0]];
+    mCoords[1] = vertices[v_i[1]];
+    mCoords[2] = vertices[v_i[2]];
+    if (!g_fcn_2e(m, mAccumGrad, mCoords, n)) return false;
 
     // This is not very efficient, but is one way to select correct gradients.
     // For gradients, info is returned only for free vertices, in the 
@@ -2218,7 +2217,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
     for (i = 0; i < 3; ++i) {
       for (j = 0; j < nv; ++j) {
         if (vertices + v_i[i] == v[j]) {
-          g[j] = grad[i];
+          g[j] = mAccumGrad[i];
         }
       }
     }
@@ -2227,102 +2226,102 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
   case QUADRILATERAL:
     pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
     for (i = 0; i < 4; ++i) {
-      grad[i] = 0.0;
+      mAccumGrad[i] = 0.0;
 
       n = n / n.length();	// Need unit normal
-      coords[0] = vertices[v_i[locs_hex[i][0]]];
-      coords[1] = vertices[v_i[locs_hex[i][1]]];
-      coords[2] = vertices[v_i[locs_hex[i][2]]];
-      if (!g_fcn_2i(metrics[i], gradients+3*i, coords, n)) return false;
+      mCoords[0] = vertices[v_i[locs_hex[i][0]]];
+      mCoords[1] = vertices[v_i[locs_hex[i][1]]];
+      mCoords[2] = vertices[v_i[locs_hex[i][2]]];
+      if (!g_fcn_2i(mMetrics[i], mGradients+3*i, mCoords, n)) return false;
     }
 
     switch(avgMethod) {
     case MINIMUM:
-      m = metrics[0];
+      m = mMetrics[0];
       for (i = 1; i < 4; ++i) {
-        if (metrics[i] < m) m = metrics[i];
+        if (mMetrics[i] < m) m = mMetrics[i];
       }
 
       nm = 0;
       for (i = 0; i < 4; ++i) {
-        if (metrics[i] - m <= MSQ_MIN) {
-          grad[locs_hex[i][0]] += gradients[3*i+0];
-          grad[locs_hex[i][1]] += gradients[3*i+1];
-          grad[locs_hex[i][2]] += gradients[3*i+2];
+        if (mMetrics[i] - m <= MSQ_MIN) {
+          mAccumGrad[locs_hex[i][0]] += mGradients[3*i+0];
+          mAccumGrad[locs_hex[i][1]] += mGradients[3*i+1];
+          mAccumGrad[locs_hex[i][2]] += mGradients[3*i+2];
           ++nm;
         }
       }
 
       for (i = 0; i < 4; ++i) {
-        grad[i] /= nm;
+        mAccumGrad[i] /= nm;
       }
       break;
 
     case MAXIMUM:
-      m = metrics[0];
+      m = mMetrics[0];
       for (i = 1; i < 4; ++i) {
-        if (metrics[i] > m) m = metrics[i];
+        if (mMetrics[i] > m) m = mMetrics[i];
       }
 
       nm = 0;
       for (i = 0; i < 4; ++i) {
-        if (m - metrics[i] <= MSQ_MIN) {
-          grad[locs_hex[i][0]] += gradients[3*i+0];
-          grad[locs_hex[i][1]] += gradients[3*i+1];
-          grad[locs_hex[i][2]] += gradients[3*i+2];
+        if (m - mMetrics[i] <= MSQ_MIN) {
+          mAccumGrad[locs_hex[i][0]] += mGradients[3*i+0];
+          mAccumGrad[locs_hex[i][1]] += mGradients[3*i+1];
+          mAccumGrad[locs_hex[i][2]] += mGradients[3*i+2];
           ++nm;
         }
       }
 
       for (i = 0; i < 4; ++i) {
-        grad[i] /= nm;
+        mAccumGrad[i] /= nm;
       }
       break;
 
     case SUM:
       m = 0;
       for (i = 0; i < 4; ++i) {
-        m += metrics[i];
+        m += mMetrics[i];
       }
 
       for (i = 0; i < 4; ++i) {
-        grad[locs_hex[i][0]] += gradients[3*i+0];
-        grad[locs_hex[i][1]] += gradients[3*i+1];
-        grad[locs_hex[i][2]] += gradients[3*i+2];
+        mAccumGrad[locs_hex[i][0]] += mGradients[3*i+0];
+        mAccumGrad[locs_hex[i][1]] += mGradients[3*i+1];
+        mAccumGrad[locs_hex[i][2]] += mGradients[3*i+2];
       }
       break;
 
     case LINEAR:
       m = 0;
       for (i = 0; i < 4; ++i) {
-        m += metrics[i];
+        m += mMetrics[i];
       }
       m *= 0.25;
       
       for (i = 0; i < 4; ++i) {
-        grad[locs_hex[i][0]] += gradients[3*i+0] *0.25;
-        grad[locs_hex[i][1]] += gradients[3*i+1] *0.25;
-        grad[locs_hex[i][2]] += gradients[3*i+2] *0.25;
+        mAccumGrad[locs_hex[i][0]] += mGradients[3*i+0] *0.25;
+        mAccumGrad[locs_hex[i][1]] += mGradients[3*i+1] *0.25;
+        mAccumGrad[locs_hex[i][2]] += mGradients[3*i+2] *0.25;
       }
       break;
 
     case GEOMETRIC:
       m = 0.0;
       for (i = 0; i < 4; ++i) {
-        m += log(metrics[i]);
-        metrics[i] = 1.0 / metrics[i];
+        m += log(mMetrics[i]);
+        mMetrics[i] = 1.0 / mMetrics[i];
       }
       m = exp(m / 4.0);
 
       for (i = 0; i < 4; ++i) {
-        grad[locs_hex[i][0]] += metrics[i]*gradients[3*i+0];
-        grad[locs_hex[i][1]] += metrics[i]*gradients[3*i+1];
-        grad[locs_hex[i][2]] += metrics[i]*gradients[3*i+2];
+        mAccumGrad[locs_hex[i][0]] += mMetrics[i]*mGradients[3*i+0];
+        mAccumGrad[locs_hex[i][1]] += mMetrics[i]*mGradients[3*i+1];
+        mAccumGrad[locs_hex[i][2]] += mMetrics[i]*mGradients[3*i+2];
       }
 
       nm = m / 4.0;
       for (i = 0; i < 4; ++i) {
-        grad[i] *= nm;
+        mAccumGrad[i] *= nm;
       }
       break;
 
@@ -2346,24 +2345,24 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 
       m = 0;
       for (i = 0; i < 4; ++i) {
-        nm = pow(metrics[i], t);
+        nm = pow(mMetrics[i], t);
         m += nm;
 
-        metrics[i] = t*nm/metrics[i];
+        mMetrics[i] = t*nm/mMetrics[i];
       }
 
       nm = m / 4.0;
       m = pow(nm, 1.0 / t);
 
       for (i = 0; i < 4; ++i) {
-        grad[locs_hex[i][0]] += metrics[i]*gradients[3*i+0];
-        grad[locs_hex[i][1]] += metrics[i]*gradients[3*i+1];
-        grad[locs_hex[i][2]] += metrics[i]*gradients[3*i+2];
+        mAccumGrad[locs_hex[i][0]] += mMetrics[i]*mGradients[3*i+0];
+        mAccumGrad[locs_hex[i][1]] += mMetrics[i]*mGradients[3*i+1];
+        mAccumGrad[locs_hex[i][2]] += mMetrics[i]*mGradients[3*i+2];
       }
 
       nm = m / (4.0*nm*t);
       for (i = 0; i < 4; ++i) {
-        grad[i] *= nm;
+        mAccumGrad[i] *= nm;
       }
       break;
     }
@@ -2373,18 +2372,18 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
     for (i = 0; i < 4; ++i) {
       for (j = 0; j < nv; ++j) {
         if (vertices + v_i[i] == v[j]) {
-          g[j] = grad[i];
+          g[j] = mAccumGrad[i];
         }
       }
     }
     break;
 
   case TETRAHEDRON:
-    coords[0] = vertices[v_i[0]];
-    coords[1] = vertices[v_i[1]];
-    coords[2] = vertices[v_i[2]];
-    coords[3] = vertices[v_i[3]];
-    if (!g_fcn_3e(m, grad, coords)) return false;
+    mCoords[0] = vertices[v_i[0]];
+    mCoords[1] = vertices[v_i[1]];
+    mCoords[2] = vertices[v_i[2]];
+    mCoords[3] = vertices[v_i[3]];
+    if (!g_fcn_3e(m, mAccumGrad, mCoords)) return false;
 
     // This is not very efficient, but is one way to select correct gradients.
     // For gradients, info is returned only for free vertices, in the
@@ -2392,7 +2391,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
     for (i = 0; i < 4; ++i) {
       for (j = 0; j < nv; ++j) {
         if (vertices + v_i[i] == v[j]) {
-          g[j] = grad[i];
+          g[j] = mAccumGrad[i];
         }
       }
     }
@@ -2400,107 +2399,107 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 
   case HEXAHEDRON:
     for (i = 0; i < 8; ++i) {
-      grad[i] = 0.0;
+      mAccumGrad[i] = 0.0;
 
-      coords[0] = vertices[v_i[locs_hex[i][0]]];
-      coords[1] = vertices[v_i[locs_hex[i][1]]];
-      coords[2] = vertices[v_i[locs_hex[i][2]]];
-      coords[3] = vertices[v_i[locs_hex[i][3]]];
-      if (!g_fcn_3i(metrics[i], gradients+4*i, coords)) return false;
+      mCoords[0] = vertices[v_i[locs_hex[i][0]]];
+      mCoords[1] = vertices[v_i[locs_hex[i][1]]];
+      mCoords[2] = vertices[v_i[locs_hex[i][2]]];
+      mCoords[3] = vertices[v_i[locs_hex[i][3]]];
+      if (!g_fcn_3i(mMetrics[i], mGradients+4*i, mCoords)) return false;
     }
 
     switch(avgMethod) {
     case MINIMUM:
-      m = metrics[0];
+      m = mMetrics[0];
       for (i = 1; i < 8; ++i) {
-        if (metrics[i] < m) m = metrics[i];
+        if (mMetrics[i] < m) m = mMetrics[i];
       }
 
       nm = 0;
       for (i = 0; i < 8; ++i) {
-        if (metrics[i] - m <= MSQ_MIN) {
-          grad[locs_hex[i][0]] += gradients[4*i+0];
-          grad[locs_hex[i][1]] += gradients[4*i+1];
-          grad[locs_hex[i][2]] += gradients[4*i+2];
-          grad[locs_hex[i][3]] += gradients[4*i+3];
+        if (mMetrics[i] - m <= MSQ_MIN) {
+          mAccumGrad[locs_hex[i][0]] += mGradients[4*i+0];
+          mAccumGrad[locs_hex[i][1]] += mGradients[4*i+1];
+          mAccumGrad[locs_hex[i][2]] += mGradients[4*i+2];
+          mAccumGrad[locs_hex[i][3]] += mGradients[4*i+3];
           ++nm;
         }
       }
 
       for (i = 0; i < 8; ++i) {
-        grad[i] /= nm;
+        mAccumGrad[i] /= nm;
       }
       break;
 
     case MAXIMUM:
-      m = metrics[0];
+      m = mMetrics[0];
       for (i = 1; i < 8; ++i) {
-        if (metrics[i] > m) m = metrics[i];
+        if (mMetrics[i] > m) m = mMetrics[i];
       }
 
       nm = 0;
       for (i = 0; i < 8; ++i) {
-        if (m - metrics[i] <= MSQ_MIN) {
-          grad[locs_hex[i][0]] += gradients[4*i+0];
-          grad[locs_hex[i][1]] += gradients[4*i+1];
-          grad[locs_hex[i][2]] += gradients[4*i+2];
-          grad[locs_hex[i][3]] += gradients[4*i+3];
+        if (m - mMetrics[i] <= MSQ_MIN) {
+          mAccumGrad[locs_hex[i][0]] += mGradients[4*i+0];
+          mAccumGrad[locs_hex[i][1]] += mGradients[4*i+1];
+          mAccumGrad[locs_hex[i][2]] += mGradients[4*i+2];
+          mAccumGrad[locs_hex[i][3]] += mGradients[4*i+3];
           ++nm;
         }
       }
 
       for (i = 0; i < 8; ++i) {
-        grad[i] /= nm;
+        mAccumGrad[i] /= nm;
       }
       break;
 
     case SUM:
       m = 0;
       for (i = 0; i < 8; ++i) {
-        m += metrics[i];
+        m += mMetrics[i];
       }
 
       for (i = 0; i < 8; ++i) {
-        grad[locs_hex[i][0]] += gradients[4*i+0];
-        grad[locs_hex[i][1]] += gradients[4*i+1];
-        grad[locs_hex[i][2]] += gradients[4*i+2];
-        grad[locs_hex[i][3]] += gradients[4*i+3];
+        mAccumGrad[locs_hex[i][0]] += mGradients[4*i+0];
+        mAccumGrad[locs_hex[i][1]] += mGradients[4*i+1];
+        mAccumGrad[locs_hex[i][2]] += mGradients[4*i+2];
+        mAccumGrad[locs_hex[i][3]] += mGradients[4*i+3];
       }
       break;
 
     case LINEAR:
       m = 0;
       for (i = 0; i < 8; ++i) {
-        m += metrics[i];
+        m += mMetrics[i];
       }
       m *= 0.125;
 
       for (i = 0; i < 8; ++i) {
-        grad[locs_hex[i][0]] += gradients[4*i+0] *0.125;
-        grad[locs_hex[i][1]] += gradients[4*i+1] *0.125;
-        grad[locs_hex[i][2]] += gradients[4*i+2] *0.125;
-        grad[locs_hex[i][3]] += gradients[4*i+3] *0.125;
+        mAccumGrad[locs_hex[i][0]] += mGradients[4*i+0] *0.125;
+        mAccumGrad[locs_hex[i][1]] += mGradients[4*i+1] *0.125;
+        mAccumGrad[locs_hex[i][2]] += mGradients[4*i+2] *0.125;
+        mAccumGrad[locs_hex[i][3]] += mGradients[4*i+3] *0.125;
       }
       break;
 
     case GEOMETRIC:
       m = 0.0;
       for (i = 0; i < 8; ++i) {
-        m += log(metrics[i]);
-        metrics[i] = 1.0 / metrics[i];
+        m += log(mMetrics[i]);
+        mMetrics[i] = 1.0 / mMetrics[i];
       }
       m = exp(m / 8.0);
 
       for (i = 0; i < 8; ++i) {
-        grad[locs_hex[i][0]] += metrics[i]*gradients[4*i+0];
-        grad[locs_hex[i][1]] += metrics[i]*gradients[4*i+1];
-        grad[locs_hex[i][2]] += metrics[i]*gradients[4*i+2];
-        grad[locs_hex[i][3]] += metrics[i]*gradients[4*i+3];
+        mAccumGrad[locs_hex[i][0]] += mMetrics[i]*mGradients[4*i+0];
+        mAccumGrad[locs_hex[i][1]] += mMetrics[i]*mGradients[4*i+1];
+        mAccumGrad[locs_hex[i][2]] += mMetrics[i]*mGradients[4*i+2];
+        mAccumGrad[locs_hex[i][3]] += mMetrics[i]*mGradients[4*i+3];
       }
 
       nm = m / 8.0;
       for (i = 0; i < 8; ++i) {
-        grad[i] *= nm;
+        mAccumGrad[i] *= nm;
       }
       break;
 
@@ -2524,25 +2523,25 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 
       m = 0;
       for (i = 0; i < 8; ++i) {
-        nm = pow(metrics[i], t);
+        nm = pow(mMetrics[i], t);
         m += nm;
 
-        metrics[i] = t*nm/metrics[i];
+        mMetrics[i] = t*nm/mMetrics[i];
       }
 
       nm = m / 8.0;
       m = pow(nm, 1.0 / t);
 
       for (i = 0; i < 8; ++i) {
-        grad[locs_hex[i][0]] += metrics[i]*gradients[4*i+0];
-        grad[locs_hex[i][1]] += metrics[i]*gradients[4*i+1];
-        grad[locs_hex[i][2]] += metrics[i]*gradients[4*i+2];
-        grad[locs_hex[i][3]] += metrics[i]*gradients[4*i+3];
+        mAccumGrad[locs_hex[i][0]] += mMetrics[i]*mGradients[4*i+0];
+        mAccumGrad[locs_hex[i][1]] += mMetrics[i]*mGradients[4*i+1];
+        mAccumGrad[locs_hex[i][2]] += mMetrics[i]*mGradients[4*i+2];
+        mAccumGrad[locs_hex[i][3]] += mMetrics[i]*mGradients[4*i+3];
       }
 
       nm = m / (8.0*nm*t);
       for (i = 0; i < 8; ++i) {
-        grad[i] *= nm;
+        mAccumGrad[i] *= nm;
       }
       break;
     }
@@ -2552,7 +2551,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
     for (i = 0; i < 8; ++i) {
       for (j = 0; j < nv; ++j) {
         if (vertices + v_i[i] == v[j]) {
-          g[j] = grad[i];
+          g[j] = mAccumGrad[i];
         }
       }
     }
@@ -2591,21 +2590,21 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
   MsqVertex *vertices = pd.get_vertex_array(err);
   const size_t *v_i = e->get_vertex_index_array();
 
-  Vector3D coords[4];		// Vertex coordinates for the (decomposed) elements
+
   Vector3D n;			// Surface normal for 2D objects
-  Vector3D gradients[32];	// Gradient of metric with respect to the coords
-  Matrix3D hessians[80];	// Hessian of matrix with respect to the coords
-  double   metrics[8];		// Metric values for the (decomposed) elements
+
   double   nm, t=0;
 
-  int locs_hex[8][4] = {{0, 1, 3, 4},	// Hex element descriptions
-                        {1, 2, 0, 5},
-                        {2, 3, 1, 6},
-                        {3, 0, 2, 7},
-                        {4, 7, 5, 0},
-                        {5, 4, 6, 1},
-                        {6, 5, 7, 2},
-                        {7, 6, 4, 3}};
+  const static int locs_hex[8][4] = {{0, 1, 3, 4},	// Hex element descriptions
+		        {1, 2, 0, 5},
+		        {2, 3, 1, 6},
+		        {3, 0, 2, 7},
+		        {4, 7, 5, 0},
+		        {5, 4, 6, 1},
+		        {6, 5, 7, 2},
+		        {7, 6, 4, 3}};
+
+   
   int i, j, k, l, ind;
   int r, c, loc;
 
@@ -2615,10 +2614,10 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
   case TRIANGLE:
     pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
     n = n / n.length();		// Need unit normal
-    coords[0] = vertices[v_i[0]];
-    coords[1] = vertices[v_i[1]];
-    coords[2] = vertices[v_i[2]];
-    if (!h_fcn_2e(m, g, h, coords, n)) return false;
+    mCoords[0] = vertices[v_i[0]];
+    mCoords[1] = vertices[v_i[1]];
+    mCoords[2] = vertices[v_i[2]];
+    if (!h_fcn_2e(m, g, h, mCoords, n)) return false;
 
     // zero out fixed elements of g
     j = 0;
@@ -2632,21 +2631,15 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 
         switch(i) {
         case 0:
-          h[0] = 0.;
-          h[1] = 0.;
-          h[2] = 0.;
+          h[0].zero(); h[1].zero(); h[2].zero();
           break;
 
         case 1:
-          h[1] = 0.;
-          h[3] = 0.;
-          h[4] = 0.;
+          h[1].zero(); h[3].zero(); h[4].zero();
           break;
 
         case 2:
-          h[2] = 0.;
-          h[4] = 0.;
-          h[5] = 0.;
+          h[2].zero(); h[4].zero(); h[5].zero();
         }
       }
     }
@@ -2654,7 +2647,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 
   case QUADRILATERAL:
     for (i=0; i < 10; ++i) {
-      h[i] = 0.;
+      h[i].zero();
     }
     
     pd.get_domain_normal_at_element(e, n, err); MSQ_CHKERR(err);
@@ -2662,10 +2655,10 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
       g[i] = 0.0;
 
       n = n / n.length();	// Need unit normal
-      coords[0] = vertices[v_i[locs_hex[i][0]]];
-      coords[1] = vertices[v_i[locs_hex[i][1]]];
-      coords[2] = vertices[v_i[locs_hex[i][2]]];
-      if (!h_fcn_2i(metrics[i], gradients+3*i, hessians+6*i, coords, n)) return false;
+      mCoords[0] = vertices[v_i[locs_hex[i][0]]];
+      mCoords[1] = vertices[v_i[locs_hex[i][1]]];
+      mCoords[2] = vertices[v_i[locs_hex[i][2]]];
+      if (!h_fcn_2i(mMetrics[i], mGradients+3*i, mHessians+6*i, mCoords, n)) return false;
     }
 
     switch(avgMethod) {
@@ -2680,14 +2673,14 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     case SUM:
       m = 0;
       for (i = 0; i < 4; ++i) {
-        m += metrics[i];
+        m += mMetrics[i];
       }
 
       l = 0;
       for (i = 0; i < 4; ++i) {
-        g[locs_hex[i][0]] += gradients[3*i+0];
-        g[locs_hex[i][1]] += gradients[3*i+1];
-        g[locs_hex[i][2]] += gradients[3*i+2];
+        g[locs_hex[i][0]] += mGradients[3*i+0];
+        g[locs_hex[i][1]] += mGradients[3*i+1];
+        g[locs_hex[i][2]] += mGradients[3*i+2];
 
         for (j = 0; j < 3; ++j) {
           for (k = j; k < 3; ++k) {
@@ -2696,11 +2689,11 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 
             if (r <= c) {
               loc = 4*r - (r*(r+1)/2) + c;
-              h[loc] += hessians[l];
+              h[loc] += mHessians[l];
             } 
             else {
               loc = 4*c - (c*(c+1)/2) + r;
-              h[loc] += transpose(hessians[l]);
+              h[loc] += transpose(mHessians[l]);
             }
             ++l;
           }
@@ -2711,15 +2704,15 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     case LINEAR:
       m = 0;
       for (i = 0; i < 4; ++i) {
-        m += metrics[i];
+        m += mMetrics[i];
       }
       m *= 0.25;
 
       l = 0;
       for (i = 0; i < 4; ++i) {
-        g[locs_hex[i][0]] += gradients[3*i+0] *0.25;
-        g[locs_hex[i][1]] += gradients[3*i+1] *0.25;
-        g[locs_hex[i][2]] += gradients[3*i+2] *0.25;
+        g[locs_hex[i][0]] += mGradients[3*i+0] *0.25;
+        g[locs_hex[i][1]] += mGradients[3*i+1] *0.25;
+        g[locs_hex[i][2]] += mGradients[3*i+2] *0.25;
 
         for (j = 0; j < 3; ++j) {
           for (k = j; k < 3; ++k) {
@@ -2728,11 +2721,11 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 
             if (r <= c) {
               loc = 4*r - (r*(r+1)/2) + c;
-              h[loc] += hessians[l];
+              h[loc] += mHessians[l];
             } 
             else {
               loc = 4*c - (c*(c+1)/2) + r;
-              h[loc] += transpose(hessians[l]);
+              h[loc] += transpose(mHessians[l]);
             }
             ++l;
           }
@@ -2768,19 +2761,19 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 
       m = 0;
       for (i = 0; i < 4; ++i) {
-	nm = pow(metrics[i], t);
+	nm = pow(mMetrics[i], t);
 	m += nm;
 
-	metrics[i] = t*nm/metrics[i];
+	mMetrics[i] = t*nm/mMetrics[i];
       }
 
       nm = m / 4.0;
       m = pow(nm, 1.0 / t);
 
       for (i = 0; i < 4; ++i) {
-        g[locs_hex[i][0]] += metrics[i]*gradients[3*i+0];
-	g[locs_hex[i][1]] += metrics[i]*gradients[3*i+1];
-	g[locs_hex[i][2]] += metrics[i]*gradients[3*i+2];
+        g[locs_hex[i][0]] += mMetrics[i]*mGradients[3*i+0];
+	g[locs_hex[i][1]] += mMetrics[i]*mGradients[3*i+1];
+	g[locs_hex[i][2]] += mMetrics[i]*mGradients[3*i+2];
       }
 
       nm = m / (4.0*nm*t);
@@ -2801,19 +2794,19 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
         g[i] = 0.;
         switch(i) {
         case 0:
-          h[0]=0.;   h[1]=0.;   h[2]=0.;   h[3]=0.;
+          h[0].zero();   h[1].zero();   h[2].zero();   h[3].zero();
           break;
           
         case 1:
-          h[1]=0.;   h[4]=0.;   h[5]=0.;   h[6]=0.;
+          h[1].zero();   h[4].zero();   h[5].zero();   h[6].zero();
           break;
           
         case 2:
-          h[2]=0.;   h[5]=0.;   h[7]=0.;   h[8]=0.;
+          h[2].zero();   h[5].zero();   h[7].zero();   h[8].zero();
           break;
           
         case 3:
-          h[3]=0.;   h[6]=0.;   h[8]=0.;   h[9]=0.;
+          h[3].zero();   h[6].zero();   h[8].zero();   h[9].zero();
           break;
         }
       }
@@ -2821,11 +2814,11 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     break;
 
   case TETRAHEDRON:
-    coords[0] = vertices[v_i[0]];
-    coords[1] = vertices[v_i[1]];
-    coords[2] = vertices[v_i[2]];
-    coords[3] = vertices[v_i[3]];
-    if (!h_fcn_3e(m, g, h, coords)) return false;
+    mCoords[0] = vertices[v_i[0]];
+    mCoords[1] = vertices[v_i[1]];
+    mCoords[2] = vertices[v_i[2]];
+    mCoords[3] = vertices[v_i[3]];
+    if (!h_fcn_3e(m, g, h, mCoords)) return false;
 
     // zero out fixed elements of g
     j = 0;
@@ -2839,31 +2832,19 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 
         switch(i) {
         case 0:
-          h[0] = 0.;
-          h[1] = 0.;
-          h[2] = 0.;
-          h[3] = 0.;
+          h[0].zero(); h[1].zero(); h[2].zero(); h[3].zero();
           break;
 
         case 1:
-          h[1] = 0.;
-          h[4] = 0.;
-          h[5] = 0.;
-          h[6] = 0.;
+          h[1].zero(); h[4].zero(); h[5].zero(); h[6].zero();
           break;
 
         case 2:
-          h[2] = 0.;
-          h[5] = 0.;
-          h[7] = 0.;
-          h[8] = 0.;
+          h[2].zero(); h[5].zero(); h[7].zero(); h[8].zero();
           break;
 
         case 3:
-          h[3] = 0.;
-          h[6] = 0.;
-          h[8] = 0.;
-          h[9] = 0.;
+          h[3].zero(); h[6].zero(); h[8].zero(); h[9].zero();
           break;
         }
       }
@@ -2872,34 +2853,34 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 
   case HEXAHEDRON:
     for (i=0; i<36; ++i)
-      h[i] = 0.;
+      h[i].zero();
 
     for (i = 0; i < 8; ++i) {
       g[i] = 0.0;
 
-      coords[0] = vertices[v_i[locs_hex[i][0]]];
-      coords[1] = vertices[v_i[locs_hex[i][1]]];
-      coords[2] = vertices[v_i[locs_hex[i][2]]];
-      coords[3] = vertices[v_i[locs_hex[i][3]]];
-      if (!h_fcn_3i(metrics[i], gradients+4*i, hessians+10*i, coords)) return false;
+      mCoords[0] = vertices[v_i[locs_hex[i][0]]];
+      mCoords[1] = vertices[v_i[locs_hex[i][1]]];
+      mCoords[2] = vertices[v_i[locs_hex[i][2]]];
+      mCoords[3] = vertices[v_i[locs_hex[i][3]]];
+      if (!h_fcn_3i(mMetrics[i], mGradients+4*i, mHessians+10*i, mCoords)) return false;
     }
 
     switch(avgMethod) {
     case MINIMUM:
       err.set_msg("MINIMUM averaging method does not work.");
       return false;
-//       m = metrics[0];
+//       m = mMetrics[0];
 //       for (i = 1; i < 8; ++i) {
-// 	if (metrics[i] < m) m = metrics[i];
+// 	if (mMetrics[i] < m) m = mMetrics[i];
 //       }
 
 //       nm = 0;
 //       for (i = 0; i < 8; ++i) {
-//         if (metrics[i] <= m + MSQ_MIN) {
-// 	  g[locs_hex[i][0]] += gradients[4*i+0];
-// 	  g[locs_hex[i][1]] += gradients[4*i+1];
-// 	  g[locs_hex[i][2]] += gradients[4*i+2];
-// 	  g[locs_hex[i][3]] += gradients[4*i+3];
+//         if (mMetrics[i] <= m + MSQ_MIN) {
+// 	  g[locs_hex[i][0]] += mGradients[4*i+0];
+// 	  g[locs_hex[i][1]] += mGradients[4*i+1];
+// 	  g[locs_hex[i][2]] += mGradients[4*i+2];
+// 	  g[locs_hex[i][3]] += mGradients[4*i+3];
 // 	  ++nm;
 //         }
 //       }
@@ -2912,18 +2893,18 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     case MAXIMUM:
       err.set_msg("MAXIMUM averaging method does not work.");
       return false;
-//       m = metrics[0];
+//       m = mMetrics[0];
 //       for (i = 1; i < 8; ++i) {
-// 	if (metrics[i] > m) m = metrics[i];
+// 	if (mMetrics[i] > m) m = mMetrics[i];
 //       }
 
 //       nm = 0;
 //       for (i = 0; i < 8; ++i) {
-//         if (metrics[i] >= m - MSQ_MIN) {
-// 	  g[locs_hex[i][0]] += gradients[4*i+0];
-// 	  g[locs_hex[i][1]] += gradients[4*i+1];
-// 	  g[locs_hex[i][2]] += gradients[4*i+2];
-// 	  g[locs_hex[i][3]] += gradients[4*i+3];
+//         if (mMetrics[i] >= m - MSQ_MIN) {
+// 	  g[locs_hex[i][0]] += mGradients[4*i+0];
+// 	  g[locs_hex[i][1]] += mGradients[4*i+1];
+// 	  g[locs_hex[i][2]] += mGradients[4*i+2];
+// 	  g[locs_hex[i][3]] += mGradients[4*i+3];
 // 	  ++nm;
 //         }
 //       }
@@ -2936,15 +2917,15 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     case SUM:
       m = 0;
       for (i = 0; i < 8; ++i) {
-        m += metrics[i];
+        m += mMetrics[i];
       }
 
       l = 0;
       for (i = 0; i < 8; ++i) {
-        g[locs_hex[i][0]] += gradients[4*i+0];
-        g[locs_hex[i][1]] += gradients[4*i+1];
-        g[locs_hex[i][2]] += gradients[4*i+2];
-        g[locs_hex[i][3]] += gradients[4*i+3];
+        g[locs_hex[i][0]] += mGradients[4*i+0];
+        g[locs_hex[i][1]] += mGradients[4*i+1];
+        g[locs_hex[i][2]] += mGradients[4*i+2];
+        g[locs_hex[i][3]] += mGradients[4*i+3];
 
         for (j = 0; j < 4; ++j) {
           for (k = j; k < 4; ++k) {
@@ -2953,11 +2934,11 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 
             if (r <= c) {
               loc = 8*r - (r*(r+1)/2) + c;
-              h[loc] += hessians[l];
+              h[loc] += mHessians[l];
             } 
             else {
               loc = 8*c - (c*(c+1)/2) + r;
-              h[loc] += transpose(hessians[l]);
+              h[loc] += transpose(mHessians[l]);
             }
             ++l;
           }
@@ -2968,16 +2949,16 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     case LINEAR:
       m = 0;
       for (i = 0; i < 8; ++i) {
-        m += metrics[i];
+        m += mMetrics[i];
       }
       m *= 0.125;
 
       l = 0;
       for (i = 0; i < 8; ++i) {
-        g[locs_hex[i][0]] += gradients[4*i+0] *0.125;
-        g[locs_hex[i][1]] += gradients[4*i+1] *0.125;
-        g[locs_hex[i][2]] += gradients[4*i+2] *0.125;
-        g[locs_hex[i][3]] += gradients[4*i+3] *0.125;
+        g[locs_hex[i][0]] += mGradients[4*i+0] *0.125;
+        g[locs_hex[i][1]] += mGradients[4*i+1] *0.125;
+        g[locs_hex[i][2]] += mGradients[4*i+2] *0.125;
+        g[locs_hex[i][3]] += mGradients[4*i+3] *0.125;
 
         for (j = 0; j < 4; ++j) {
           for (k = j; k < 4; ++k) {
@@ -2986,11 +2967,11 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 
             if (r <= c) {
               loc = 8*r - (r*(r+1)/2) + c;
-              h[loc] += hessians[l];
+              h[loc] += mHessians[l];
             } 
             else {
               loc = 8*c - (c*(c+1)/2) + r;
-              h[loc] += transpose(hessians[l]);
+              h[loc] += transpose(mHessians[l]);
             }
             ++l;
           }
@@ -3005,16 +2986,16 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
       return false;
 //       m = 0.0;
 //       for (i = 0; i < 8; ++i) {
-// 	m += log(metrics[i]);
-// 	metrics[i] = 1.0 / metrics[i];
+// 	m += log(mMetrics[i]);
+// 	mMetrics[i] = 1.0 / mMetrics[i];
 //       }
 //       m = exp(m / 8.0);
 
 //       for (i = 0; i < 8; ++i) {
-//         g[locs_hex[i][0]] += metrics[i]*gradients[4*i+0];
-// 	g[locs_hex[i][1]] += metrics[i]*gradients[4*i+1];
-// 	g[locs_hex[i][2]] += metrics[i]*gradients[4*i+2];
-// 	g[locs_hex[i][3]] += metrics[i]*gradients[4*i+3];
+//         g[locs_hex[i][0]] += mMetrics[i]*mGradients[4*i+0];
+// 	g[locs_hex[i][1]] += mMetrics[i]*mGradients[4*i+1];
+// 	g[locs_hex[i][2]] += mMetrics[i]*mGradients[4*i+2];
+// 	g[locs_hex[i][3]] += mMetrics[i]*mGradients[4*i+3];
 //       }
 
 //       nm = m / 8.0;
@@ -3050,20 +3031,20 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 
       m = 0;
       for (i = 0; i < 8; ++i) {
-	nm = pow(metrics[i], t);
+	nm = pow(mMetrics[i], t);
 	m += nm;
 
-	metrics[i] = t*nm/metrics[i];
+	mMetrics[i] = t*nm/mMetrics[i];
       }
 
       nm = m / 8.0;
       m = pow(nm, 1.0 / t);
 
       for (i = 0; i < 8; ++i) {
-        g[locs_hex[i][0]] += metrics[i]*gradients[4*i+0];
-	g[locs_hex[i][1]] += metrics[i]*gradients[4*i+1];
-	g[locs_hex[i][2]] += metrics[i]*gradients[4*i+2];
-	g[locs_hex[i][3]] += metrics[i]*gradients[4*i+3];
+        g[locs_hex[i][0]] += mMetrics[i]*mGradients[4*i+0];
+	g[locs_hex[i][1]] += mMetrics[i]*mGradients[4*i+1];
+	g[locs_hex[i][2]] += mMetrics[i]*mGradients[4*i+2];
+	g[locs_hex[i][3]] += mMetrics[i]*mGradients[4*i+3];
       }
 
       nm = m / (8.0*nm*t);
@@ -3084,43 +3065,43 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
         g[i] = 0.;
         switch(i) {
         case 0:
-          h[0]=0.;   h[1]=0.;   h[2]=0.;   h[3]=0.;
-          h[4]=0.;   h[5]=0.;   h[6]=0.;   h[7]=0.;
+          h[0].zero();   h[1].zero();   h[2].zero();   h[3].zero();
+          h[4].zero();   h[5].zero();   h[6].zero();   h[7].zero();
           break;
           
         case 1:
-          h[1]=0.;   h[8]=0.;   h[9]=0.;   h[10]=0.;
-          h[11]=0.;  h[12]=0.;  h[13]=0.;  h[14]=0.;
+          h[1].zero();   h[8].zero();   h[9].zero();   h[10].zero();
+          h[11].zero();  h[12].zero();  h[13].zero();  h[14].zero();
           break;
           
         case 2:
-          h[2]=0.;   h[9]=0.;   h[15]=0.;  h[16]=0.;
-          h[17]=0.;  h[18]=0.;  h[19]=0.;  h[20]=0.;
+          h[2].zero();   h[9].zero();   h[15].zero();  h[16].zero();
+          h[17].zero();  h[18].zero();  h[19].zero();  h[20].zero();
           break;
           
         case 3:
-          h[3]=0.;   h[10]=0.;  h[16]=0.;  h[21]=0.;
-          h[22]=0.;  h[23]=0.;  h[24]=0.;  h[25]=0.;
+          h[3].zero();   h[10].zero();  h[16].zero();  h[21].zero();
+          h[22].zero();  h[23].zero();  h[24].zero();  h[25].zero();
           break;
           
         case 4:
-          h[4]=0.;   h[11]=0.;  h[17]=0.;  h[22]=0.;
-          h[26]=0.;  h[27]=0.;  h[28]=0.;  h[29]=0.;
+          h[4].zero();   h[11].zero();  h[17].zero();  h[22].zero();
+          h[26].zero();  h[27].zero();  h[28].zero();  h[29].zero();
           break;
           
         case 5:
-          h[5]=0.;   h[12]=0.;  h[18]=0.;  h[23]=0.;
-          h[27]=0.;  h[30]=0.;  h[31]=0.;  h[32]=0.;
+          h[5].zero();   h[12].zero();  h[18].zero();  h[23].zero();
+          h[27].zero();  h[30].zero();  h[31].zero();  h[32].zero();
           break;
           
         case 6:
-          h[6]=0.;   h[13]=0.;  h[19]=0.;  h[24]=0.;
-          h[28]=0.;  h[31]=0.;  h[33]=0.;  h[34]=0.;
+          h[6].zero();   h[13].zero();  h[19].zero();  h[24].zero();
+          h[28].zero();  h[31].zero();  h[33].zero();  h[34].zero();
           break;
           
         case 7:
-          h[7]=0.;   h[14]=0.;  h[20]=0.;  h[25]=0.;
-          h[29]=0.;  h[32]=0.;  h[34]=0.;  h[35]=0.;
+          h[7].zero();   h[14].zero();  h[20].zero();  h[25].zero();
+          h[29].zero();  h[32].zero();  h[34].zero();  h[35].zero();
           break;
         }
       }

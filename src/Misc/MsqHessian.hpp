@@ -26,6 +26,7 @@
 #include "Mesquite.hpp"
 #include "Matrix3D.hpp"
 #include "PatchData.hpp"
+#include "MsqTimer.hpp"
 
 #ifdef USE_C_PREFIX_INCLUDES
 #include <cassert>
@@ -47,9 +48,11 @@ namespace Mesquite
   */
   class MsqHessian
   {
-  protected:
+  private:
     PatchData* origin_pd;
-    
+    MsqMeshEntity* patchElemArray; //!< stored once during initialization for
+                                   //!< fast access.
+     
     Matrix3D* mEntries;	//!< CSR block entries. size: nb of nonzero blocks, i.e. mRowStart[mSize] . 
     size_t* mRowStart;	//!< start of each row in mEntries. size: nb of vertices (mSize).
     size_t* mColIndex;  //!< CSR block structure: column indexes of the row entries. 
@@ -74,13 +77,13 @@ namespace Mesquite
     ~MsqHessian();
     
     void initialize(PatchData &pd, MsqError &err);
-    void zero_out();
+    inline void zero_out();
     size_t size() {return mSize;}
     //! returns the diagonal blocks, memory must be allocated before call.
     void get_diagonal_blocks(std::vector<Matrix3D> &diag, MsqError &err);
     Matrix3D* get_block(size_t i, size_t j);
-    void accumulate_entries(PatchData &pd, size_t elem_index,
-                            Matrix3D mat3d_array[], MsqError &err);
+    inline void accumulate_entries(PatchData &pd, const size_t &elem_index,
+                            Matrix3D* const &mat3d_array, MsqError &err);
     void compute_preconditioner(MsqError &err);
     void apply_preconditioner(Vector3D zloc[], Vector3D rloc[], MsqError &err);
     void cg_solver(Vector3D x[], Vector3D b[], MsqError &err);
@@ -104,7 +107,7 @@ namespace Mesquite
     
     size_t i;
     for (i=0; i<mRowStart[mSize]; ++i) {
-      mEntries[i] = 0.;
+      mEntries[i].zero();
     }
   }
 
@@ -124,14 +127,14 @@ namespace Mesquite
     \param nb_mat3d. The size of the mat3d_array: (n+1)n/2, where n is
     the number of nodes in the element.
 */
-  inline void MsqHessian::accumulate_entries(PatchData &pd, size_t elem_index,
-                                    Matrix3D mat3d_array[], MsqError &err)
+  inline void MsqHessian::accumulate_entries(PatchData &pd, const size_t &elem_index,
+					     Matrix3D* const &mat3d_array, MsqError &err)
   {
-    MSQ_DEBUG_ACTION(1,{if (&pd != origin_pd) {
+    MSQ_DEBUG_ACTION(3,{if (&pd != origin_pd) {
       err.set_msg("Cannot accumulate elements from a different patch. "
                   "Use MsqHessian::initialize first."); return;}});
 
-    size_t nve = pd.get_element_array(err)[elem_index].vertex_count(); MSQ_CHKERR(err);
+    size_t nve = pd.get_element_array(err)[elem_index].vertex_count(); 
     size_t nb_mat3d = (nve+1)*nve/2;
     
     size_t e = mAccumElemStart[elem_index];
@@ -142,8 +145,8 @@ namespace Mesquite
        else
           mEntries[-mAccumulation[e]].plus_transpose_equal(mat3d_array[i]);
        ++e;
-    }
-    
+     }
+
     assert( e == mAccumElemStart[elem_index+1] );
   }
    
@@ -154,7 +157,7 @@ namespace Mesquite
     \param size_r: size of the res array.
     \param x: vector multiplied by the Hessian.
     \param size_x: size of the x array.
-    \param y: vector added to the Hessian vector product. Set to 0 if not needed.
+    \param y: vector added to the Hessian vector product. Set to 0 (NULL) if not needed.
     \param size_y: size of the y array. Set to 0 if not needed.
   */
   inline void axpy(Vector3D res[], size_t size_r,
@@ -172,7 +175,8 @@ namespace Mesquite
     size_t c;  // column index
     size_t i, j;
     size_t* col = H.mColIndex;
-
+    Vector3D tmpxi; // for cache opt.
+     
     if (y!=0) 
       for(i=0; i<nn; ++i)
         res[i] = y[i];
@@ -182,19 +186,23 @@ namespace Mesquite
    
     for (i = 0; i < nn; ++i) {
       rl = H.mRowStart[i+1] - H.mRowStart[i];
-      e = H.mRowStart[i];
       if (rl) {
+        e = H.mRowStart[i];
+        tmpxi = x[i]; // for cache opt.
        
         // Diagonal entry
-        res[i] += H.mEntries[e]*x[i]; 
+//        res[i] += H.mEntries[e]*tmpxi; 
+          plusEqAx(res[i], H.mEntries[e], tmpxi);
         ++e;
         assert(*col == i);
 
         //Non-diagonal entries
         for (j = 1; j < rl; ++j) {
           c = *(++col);
-          res[i] += H.mEntries[e] * x[c];
-          res[c] += transpose(H.mEntries[e]) * x[i];
+//          res[i] += H.mEntries[e] * x[c];
+          plusEqAx(res[i], H.mEntries[e], x[c]);
+//          res[c] += transpose(H.mEntries[e]) * tmpxi;
+          plusEqTransAx(res[c], H.mEntries[e], tmpxi);
           ++e;
         }
         ++col;
