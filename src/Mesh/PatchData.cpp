@@ -162,7 +162,7 @@ int PatchData::num_free_vertices(MsqError &err)
           vertices in the PatchData.
    \param step_size will multiply the moving direction given in dk for each vertex.
   */
-void PatchData::move_vertices(Vector3D delta[],
+void PatchData::move_vertices(Vector3D dk[],
                               size_t nb_vtx,
                               double scale,
                               MsqError &err)
@@ -179,7 +179,7 @@ void PatchData::move_vertices(Vector3D delta[],
   int m=0;
   for (m=0; m<numVertices; ++m)
   {
-    vertexArray[m] += (scale * delta[m]);
+    vertexArray[m] += (scale * dk[m]);
   }
   
     // Checks that moving direction is zero for fixed vertices.
@@ -238,7 +238,7 @@ void PatchData::move_free_vertices_constrained(Vector3D dk[], int nb_vtx,
   }
   
     // Checks that moving direction is zero for fixed vertices.
-  MSQ_DEBUG_ACTION(1,{ for (m=0; m<numVertices; ++m) {
+  MSQ_DEBUG_ACTION(1,{ for (int m=0; m<numVertices; ++m) {
     Vector3D zero_3d(0.,0.,0.);
     if (   ! vertexArray[m].is_free_vertex()
            && ( dk[m] != zero_3d && dk[m] != -zero_3d)  ) 
