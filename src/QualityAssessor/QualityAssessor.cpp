@@ -393,9 +393,8 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
                                                            value, err );
                                                            MSQ_ERRZERO(err);
               
-              if (valid)
-                iter->add_value(value);
-              else 
+              iter->add_value(value);
+              if (!valid)
                 iter->add_invalid_value();
             }
               // If second pass, only do metrics for which the
@@ -403,13 +402,12 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
             else if (iter->funcFlags&HISTOGRAM && !iter->haveHistRange)
             {
               double value;
-              bool valid = iter->get_metric()->evaluate_vertex( *pd, 
-                                                           &pd->vertex_by_index(i),
-                                                           value, err );
-                                                           MSQ_ERRZERO(err);
+              iter->get_metric()->evaluate_vertex( *pd, 
+                                                   &pd->vertex_by_index(i),
+                                                   value, err );
+                                                   MSQ_ERRZERO(err);
               
-              if (valid)
-                iter->add_hist_value(value);
+              iter->add_hist_value(value);
             }
           }
         }
