@@ -173,6 +173,33 @@ double PatchData::get_barrier_delta_3d(MsqError &err)
 }
 
 
+double PatchData::get_average_Lambda_3d(MsqError &err)
+{
+  std::map<ComputedInfo, double>::iterator avg_it;
+  avg_it = computedInfos.find(AVERAGE_DET3D);
+  if ( avg_it != computedInfos.end() ) { // if an average is already there
+    return avg_it->second;
+  }
+  else { // if there is no average available.
+    double avg =0.;
+    int total_num_corners =0;
+    Matrix3D A[MSQ_MAX_NUM_VERT_PER_ENT];
+    for (size_t i=0; i<numElements; ++i) {
+      int nve = elementArray[i].vertex_count();
+      elementArray[i].compute_corner_matrices(*this, A, nve, err); MSQ_CHKERR(err);
+      total_num_corners += nve;
+      for (int c=0; c<nve; ++c)
+        avg += pow(fabs(det(A[c])), 1/3);
+    }
+
+    avg = avg / total_num_corners;
+
+    computedInfos.insert(std::pair<const ComputedInfo, double>(AVERAGE_DET3D,avg));
+    return avg;
+  }
+}
+
+
 
 /*! \fn PatchData::reorder()
    Physically reorder the vertices and elements in the PatchData to improve

@@ -94,7 +94,8 @@ namespace Mesquite
       MIN_EDGE_LENGTH, //!< minimum edge length in the patch
       MAX_EDGE_LENGTH, //!< maximum edge length in the patch
       MINMAX_SIGNED_DET2D, //!< minimum and maximum corner area out of all elements in the patch
-      MINMAX_SIGNED_DET3D //!< minimum and maximum corner volume out of all elements in the patch
+      MINMAX_SIGNED_DET3D, //!< minimum and maximum corner volume out of all elements in the patch
+      AVERAGE_DET3D //!< average corner determinant out of all elements in the patch
     };
 
     //! This function clears the patch information such as maximum volume, etc ... 
@@ -114,6 +115,11 @@ namespace Mesquite
     //! This information is stored in the patch and should not decrease performance
     //! when used properly. See also PatchData::clear_computed_info() .
     double get_barrier_delta_3d(MsqError &err); 
+
+    //! Returns average corner determinant over all corners in the patch
+    //! This information is stored in the patch and should not decrease performance
+    //! when used properly. See also PatchData::clear_computed_info() .
+    double get_average_Lambda_3d(MsqError &err); 
 
       //! Removes all data, but capacity is unchanged.
     void clear();

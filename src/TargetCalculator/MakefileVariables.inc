@@ -1,6 +1,8 @@
 TARGCALCDIR = $(srcdir)/TargetCalculator
 
-TARGCALCSRC = $(TARGCALCDIR)/TargetCalculator.cpp
+TARGCALCSRC = $(TARGCALCDIR)/TargetCalculator.cpp \
+   $(TARGCALCDIR)/LVQDTargetCalculator.cpp \
+   $(TARGCALCDIR)/WTargetCalculator.cpp 
 
 TARGCALCHEADERS = \
 	$(patsubst $(TARGCALCDIR)/%,$(localincludedir)/%,\

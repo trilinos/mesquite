@@ -69,6 +69,15 @@ namespace Mesquite
       mTarget(0)
     {}
 
+    PatchDataParameters(const PatchDataParameters &A) {
+      mType = A.mType;
+      mParam1 = A.mParam1;
+      mParam2 = A.mParam2;
+      cullingMethodBits = A.cullingMethodBits;
+      globalPatch = A.globalPatch;
+      mTarget = A.mTarget;
+    }
+
     friend class PatchDataUser;
     
     //! Tells the MeshSet what kind of data the patches should include.

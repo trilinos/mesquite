@@ -81,76 +81,38 @@ namespace Mesquite
     void initialize_default_target_matrices(Matrix3D &tri_M3D, Matrix3D &quad_M3D,
                                     Matrix3D &tet_M3D, Matrix3D &hex_M3D);
 
-//       //!
-//     bool get_next_reference_patch(MsqError &err)
-//     { refMesh->get_next_patch(refPatch, *originator, err); }
-//       //!
-//     void reset_reference_meshset(MsqError &err) { refMesh->reset(err); }
-
-      //! \enum chooses the calculation for the \f$ \lambda_k \f$ coefficient.
-    enum lambda_type {
-      L00, //!< Returns the scalar 1 . 
-      L11, //!< 
-      L12, //!< 
-      L13, //!< 
-      L21, //!< 
-      L22, //!< 
-      L31, //!< 
-      L32, //!< 
-      L41  //!< 
+      //! \enum chooses whether the calculation is per element or an average
+      //! for some cases of the \f$ \lambda_k \f$ coefficient.
+    enum Lambda_type {
+      REGULAR, //!< Each element has a lambda coefficient 
+      AVERAGE  //!< The Lambda coefficient is the average on the mesh.
     };
       //! Computes the \f$ \lambda \f$ coefficient when it is Mesh-Based,
-    double compute_L(enum lambda_type l_type, MsqError &err);
+    double compute_L(enum Lambda_type l_type, MsqError &err);
       //! Computes the \f$ \lambda \f$ coefficient when it is element-based.
-    void compute_Lk(enum lambda_type l_type, PatchData &ref_pd, size_t elem_ind, double L_k[], int num, MsqError &err);
+    void compute_Lk(enum Lambda_type l_type, PatchData &ref_pd, size_t elem_ind, double L_k[], int num, MsqError &err);
     
-      //! \enum chooses the calculation for the \f$ D_k \f$ diagonal matrix.
-    enum D_type {
-      D00, //!< Identity matrix
-      D11, //!<
-      D21, //!<
-      D31, //!<
-      D41, //!<
-      D42, //!<
-      D43, //!<
-      D51, //!<
-      D52, //!<
-      D53  //!<
+      //! \enum chooses the type of guide matrix used in the target calculator
+    enum guide_type {
+      AI, //!<
+      AK, //!<
+      A0, //!<
+      Ar, //!<
+      As, //!<
+      Ab, //!<
+      Ac, //!<
+      Ap, //!<
+      Ae, //!<
+      Af, //!<
+      Ax  //!<
     };
-      //! Computes the \f$ D \f$ diagonal matrix when it is Mesh-Based,
-    Matrix3D compute_D(enum D_type l_type, MsqError &err);
-      //! Computes the \f$ D \f$ diagonal matrix when it is element-based ( \f$ D_k \f$ ).
-    void compute_Dk(enum D_type l_type, PatchData &ref_pd, size_t elem_ind, Matrix3D D_k[], int num, MsqError &err);
-    
-      //! chooses the calculation for the \f$ R_k \f$ matrix.
-    enum R_type {
-      R00, //!<
-      R11, //!<
-      R21, //!<
-      R31, //!<
-      R32, //!<
-      R33, //!<
-      R41, //!<
-      R42, //!<
-      R43, //!<
-      R44  //!<
-    };
-      //! Computes the \f$ R \f$ matrix when it is Mesh-Based,
-    Matrix3D compute_R(enum R_type l_type, MsqError &err);
-      //! Computes the \f$ R \f$ matrix when it is element-based ( \f$ R_k \f$ ).
-    void compute_Rk(enum R_type l_type, PatchData &ref_pd, size_t elem_ind, Matrix3D R_k[], int num, MsqError &err);
-    
-      //! chooses the calculation for the \f$ R_k \f$ matrix.
-    enum W_type {
-      W00, //!< W matrices are set to the default corner matrices for ideal elements. 
-      W11, //!<
-      W21, //!< W matrices are set to the corners of the reference mesh.
-      W31, //!<
-      W41, //!<
-      W42  //!<
-    };
-      //! Computes the \f$ W \f$ matrix when it is element-based ( \f$ W_k \f$ ).
-    void compute_Wk(enum W_type l_type, PatchData &ref_pd, size_t elem_ind, Matrix3D W_k[], int num, MsqError &err);
+      //! Computes the guide corner matrices A for a given element index in the reference patch.
+    void compute_guide_matrices(enum guide_type type, PatchData &ref_pd, size_t elem_ind,
+                                           Matrix3D A[], int num, MsqError &err);
+
+    Matrix3D compute_V_3D(const Matrix3D &A, MsqError &err);
+    Matrix3D compute_Q_3D(const Matrix3D &A, MsqError &err);
+    Matrix3D compute_Delta_3D(const Matrix3D &A, MsqError &err);
     
       //! Compute the default "isotropic" target matrices that are often used in the computation
       //! of reference-based target matrices.
@@ -171,7 +133,7 @@ namespace Mesquite
          Useful functionality includes: MsqMeshEntity::set_tag, MsqTag::target_matrix,
          MsqTag::scalar .
     */
-    void compute_target_matrices(PatchData& pd, MsqError& err);
+    virtual void compute_target_matrices(PatchData& pd, MsqError& err) =0;
 
     void set_originator(PatchDataParameters* pdm, MsqError &err)
     { if (originator != 0)
@@ -180,19 +142,13 @@ namespace Mesquite
 
   protected:
     MeshSet* refMesh;
-//    PatchData refPatch;
-
-    enum lambda_type mLambda; 
-    enum D_type mD;
-    enum R_type mR;
-    enum W_type mW;
-    
-  private:
     PatchDataParameters* originator; //! This is the object the TargetCalculator is attached to.
 
   };
 
   
+#undef __FUNC__
+#define __FUNC__ "TargetCalculator::initialize_default_target_matrices" 
   inline void TargetCalculator::initialize_default_target_matrices(Matrix3D &tri_M3D,
                                                       Matrix3D &quad_M3D,
                                                       Matrix3D &tet_M3D,
@@ -215,6 +171,87 @@ namespace Mesquite
     hex_M3D = m4;
   }
 
+  //!
+#undef __FUNC__
+#define __FUNC__ "TargetCalculator::compute_V_3D"
+  inline  Matrix3D TargetCalculator::compute_V_3D(const Matrix3D &A, MsqError &err)
+  {
+    Vector3D a1(A[0][0], A[1][0], A[2][0]); 
+    Vector3D a2(A[0][1], A[1][1], A[2][1]); 
+    Vector3D a3(A[0][2], A[1][2], A[2][2]); 
+
+    double a1_norm = A.column_length(0);
+    Vector3D a1_x_a2 = a1 * a2;
+    double a1_x_a2_norm = a1_x_a2.length();
+    
+    Matrix3D V;
+    Vector3D v1, v2, v3;
+    
+    // note : % is the dot product
+    v1 = (1/a1_norm) * a1;
+    v2 = ((-(a1%a2) * a1) + (a1_norm*a1_norm)*a2) / (a1_norm * a1_x_a2_norm);
+    v3 = (1/a1_x_a2_norm) * a1_x_a2;
+
+    V.set_column(0, v1);
+    V.set_column(1, v2);
+    V.set_column(2, v3);
+
+    return V;
+  }
+  
+  //!
+#undef __FUNC__
+#define __FUNC__ "TargetCalculator::compute_Q_3D"
+  inline  Matrix3D TargetCalculator::compute_Q_3D(const Matrix3D &A, MsqError &err)
+  {
+    Vector3D a1(A[0][0], A[1][0], A[2][0]); 
+    Vector3D a2(A[0][1], A[1][1], A[2][1]); 
+    Vector3D a3(A[0][2], A[1][2], A[2][2]); 
+
+    double a1_norm = A.column_length(0);
+    double a2_norm = A.column_length(1);
+    double a3_norm = A.column_length(2);
+    
+    Vector3D a1_x_a2 = a1 * a2;
+    double a1_x_a2_norm = a1_x_a2.length();
+    Vector3D a1_x_a3 = a1 * a3;
+
+    double nu = pow(a1_norm*a2_norm*a3_norm, 1/3);
+    double det_A = det(A);
+    double fac = nu * pow(det_A, 1/3); // ?? make sure this is right
+    
+    Matrix3D Q;
+
+    Q[0][0] = fac * 1;
+    Q[0][1] = fac * a1%a2 / (a1_norm*a2_norm);
+    Q[0][2] = fac * a1%a3 / (a1_norm*a3_norm);
+    Q[1][1] = fac * a1_x_a2_norm / (a1_norm*a2_norm);
+    Q[1][2] = fac * a1_x_a2 % a1_x_a3 / (a1_x_a2_norm * a1_norm * a3_norm);
+    Q[2][2] = fac * det_A / (a1_x_a2_norm*a3_norm); 
+    
+    return Q;
+  }
+
+  //!
+#undef __FUNC__
+#define __FUNC__ "TargetCalculator::compute_Delta_3D"
+  inline  Matrix3D TargetCalculator::compute_Delta_3D(const Matrix3D &A, MsqError &err)
+  {
+    double a1_norm = A.column_length(0);
+    double a2_norm = A.column_length(1);
+    double a3_norm = A.column_length(2);
+    
+    double nu = pow(a1_norm*a2_norm*a3_norm, 1/3);
+    double fac = 1/nu ;
+    
+    Matrix3D Delta;
+
+    Delta[0][0] = fac * a1_norm;
+    Delta[1][1] = fac * a2_norm;
+    Delta[2][2] = fac * a3_norm;
+    
+    return Delta;
+  }
 
   
 } //namespace
