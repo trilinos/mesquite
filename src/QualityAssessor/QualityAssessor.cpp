@@ -326,12 +326,12 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
       no_culling_method();
       
       bool elem_bool=true;
-      if (get_global_patch(err) == 0) {
+      if (get_global_patch() == 0) {
         elem_group = new PatchData;
         elem_bool=ms.get_next_patch(*elem_group, this, err);
       }
       else {
-        elem_group = get_global_patch(err);
+        elem_group = get_global_patch();
       }
       MSQ_CHKERR(err);
       
@@ -443,7 +443,7 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
           //PRINT_INFO("\nInside QA get_next returning %i",elem_bool);        
       }//end  while (elem_bool)
 
-      if (get_global_patch(err) == 0 )
+      if (get_global_patch() == 0 )
         delete elem_group; 
       
     }//end   if num_elem_based
@@ -454,12 +454,12 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
       no_culling_method();
       metric_counter=0;
       bool vert_bool=true;
-      if (get_global_patch(err) == 0) {
+      if (get_global_patch() == 0) {
         vert_group = new PatchData; 
         vert_bool=ms.get_next_patch(*vert_group, this, err);  MSQ_CHKERR(err);
       }
       else {
-        vert_group = get_global_patch(err);
+        vert_group = get_global_patch();
       }
       
         //until there are no more patches
@@ -571,7 +571,7 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
           //PRINT_INFO("\nInside QA get_next returning %i",elem_bool);        
       }//end  while (vert_bool)
 
-      if (get_global_patch(err) == 0 )
+      if (get_global_patch() == 0 )
         delete vert_group; 
     }//end   if (num_metrics-num_elem_based)>0
 

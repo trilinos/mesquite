@@ -46,12 +46,11 @@ double VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
   bool next_patch=true;
   // if we have already been provided a Global Patch (from a previous algorithm).
   
-  if (get_global_patch(err) != 0) {
+  if (get_global_patch() != 0) {
     if (get_patch_type() != PatchData::GLOBAL_PATCH) {
       err.set_msg("PatchDataUser::globalPatch should be NULL.");
-      MSQ_CHKERR(err);
     }
-    patch_data = get_global_patch(err);
+    patch_data = get_global_patch();
     next_patch = true; // same as MeshSet::get_next_patch()
   }
   else {
@@ -95,12 +94,12 @@ double VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
       this->initialize_mesh_iteration(*patch_data, err);MSQ_CHKERR(err); 
 
       
-      if (get_global_patch(err)==0) {
+      if (get_global_patch()==0) {
         // propagates information from QualityImprover to MeshSet
         //try to get the first patch, if no patches can be created
         //skip optimization and terminate.
-        std::cout << "get_global_patch== "<< get_global_patch(err) <<" .\n"; //dbg 
         next_patch =  ms.get_next_patch(*patch_data, this, err);
+        MSQ_CHKERR(err);
       }
         
       if(!next_patch){
@@ -150,7 +149,7 @@ double VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
     //call the optimization cleanup function.
   this->cleanup();
   
-  if (get_global_patch(err)==0) {
+  if (get_global_patch()==0) {
     delete patch_data;
   }
 

@@ -64,7 +64,8 @@ namespace Mesquite
     //! Returns the Global Patch. Will be 0 if not available.
     //! Make sure not to use that function if a local patch algorithm
     //! has been used since the last access to the global patch, making it invalid. 
-    PatchData* get_global_patch(MsqError &err);
+    PatchData* get_global_patch()
+    { return globalPatch; }
     //! Sets the Global Patch pointer to NULL. Make sure to call
     //! that function before modifying the mesh with local patches.
     //! Memory handling (creation/deletion) should be done outside
@@ -140,8 +141,8 @@ namespace Mesquite
     //! Returns the Global Patch. Will be 0 if not available.
     //! Make sure not to use that function if a local patch algorithm
     //! has been used since the last access to the global patch, making it invalid.
-    PatchData* get_global_patch(MsqError &err)
-    { return mParams.get_global_patch(err); }
+    PatchData* get_global_patch()
+    { return mParams.get_global_patch(); }
     //! Sets the Global Patch pointer to NULL. Make sure to call
     //! that function before modifying the mesh with local patches.
     //! Memory handling (creation/deletion) should be done outside
@@ -250,21 +251,8 @@ namespace Mesquite
                   "Consider using the function no_global_patch().");
     else { 
       globalPatch = pd;
-      std::cout << "globalPatch = " << pd << std::endl; //dbg
     }
   }
-
-#undef __FUNC__
-#define __FUNC__ "PatchDataParameters::get_global_patch"
-  inline PatchData* PatchDataParameters::get_global_patch(MsqError &err)
-  {
-    if (get_patch_type() != PatchData::GLOBAL_PATCH)
-      err.set_msg("Trying to get a global patch whereas the "
-                  "PatchType is set to something else\n");
-
-    return globalPatch;
-  }
-
 
   
 } // namespace

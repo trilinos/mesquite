@@ -231,7 +231,6 @@ void InstructionQueue::run_instructions(MeshSet &ms, MsqError &err)
         ms.get_next_patch(*globalPatch, (*instr_iter)->get_all_parameters(), err);
         MSQ_CHKERR(err);
       }
-      std::cout << "run intr loop -- GLOBAL PATCH\n"; //dbg 
       (*instr_iter)->set_global_patch(globalPatch, err); MSQ_CHKERR(err);
       
     }

@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD: 25-Sep-03 at 09:40:19 by Thomas Leurent
+//  LAST-MOD: 25-Sep-03 at 16:51:53 by Thomas Leurent
 //
 /*! \file MeshSet.cpp
 
@@ -137,7 +137,6 @@ bool MeshSet::get_next_patch(PatchData &pd,
                              MsqError &err )
 {
   FUNCTION_TIMER_START(__FUNC__);
-  std::cout << "ENTERING GETNEXTPATCH.\n"; //dbg
 
     // get rid of previous Patch information (but keep memory allocated).
   pd.clear();
