@@ -20,12 +20,12 @@ using namespace Mesquite;
 #undef __FUNC__
 #define __FUNC__ "MeanRatioQualityMetric::MeanRatioQualityMetric"
 /*! \fn MeanRatioQualityMetric::MeanRatioQualityMetric()
-  \brief For mean ratio, the constructor defaults to the LINEAR
+  \brief For mean ratio, the constructor defaults to the MINIMUM
   averaging method, and to the ELEMENT_VERTICES evaluation mode.
 */
 MeanRatioQualityMetric::MeanRatioQualityMetric()
 {
-  avgMethod=QualityMetric::LINEAR;
+  avgMethod=QualityMetric::MINIMUM;
   evalMode=QualityMetric::ELEMENT_VERTICES;
   feasible=1;
   set_name("Mean Ratio");

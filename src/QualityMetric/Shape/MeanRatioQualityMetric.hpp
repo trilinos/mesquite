@@ -27,7 +27,7 @@ namespace Mesquite
      
        /*! \fn ShapeQualityMetric* MeanRatioQualityMetric::create_new()
          \brief The function create_new is used to create a shape quality
-         metric.  The constructor defaults to LINEAR AveragingMethod and
+         metric.  The constructor defaults to MINIMUM AveragingMethod and
          ELEMENT_VERTICES evaluationMode.
        */
      static ShapeQualityMetric* create_new()
