@@ -89,15 +89,17 @@ void SimplifiedGeometryEngine::snap_vertex_to_domain(MsqVertex* vert,
         //len=1;//temp_vec.length_squared();
       len=((temp_vec%geomVec));
       *vert=temp_vec-(len*geomVec)+geomPoint;
-      if(fabs((*vert-geomPoint)%geomVec)>MSQ_MIN){
-          //err.set_msg("POINT NOT IN PLANE");
-          //PRINT_INFO("POINT NOT IN PLANE x %f, y %f, z %f",vert->x(),vert->y(),vert->z());
-        *vert=temp_vec+(len*geomVec)+geomPoint;
-         if(fabs((*vert-geomPoint)%geomVec)>MSQ_MIN){
-             //PRINT_INFO("POINT STILL NOT IN THE PLANE!!! %f, y %f, z %f\n\n",vert->x(),vert->y(),vert->z());
-           err.set_msg("Vertex moved out of the plane.");
-         }
-      }
+        //As a debug step, make sure step was 'correct'
+      MSQ_DEBUG_ACTION(1,{
+        if(fabs((*vert-geomPoint)%geomVec)>
+           fabs(((temp_vec+(len*geomVec))%geomVec))){
+          PRINT_INFO("POINT NOT IN PLANE x %f, y %f, z %f",vert->x(),vert->y(),vert->z());
+          PRINT_INFO("\nFIRST dot  = %e",(*vert-geomPoint)%geomVec);
+          PRINT_INFO("\nSECOND dot = %e",((temp_vec+(len*geomVec))%geomVec));
+          err.set_msg("Vertex moved out of the plane.");
+        }
+      });
+      
       break;
     case SPHERE:
         //translate sphere and point to origin
