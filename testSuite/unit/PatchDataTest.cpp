@@ -30,7 +30,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 13-Nov-02 at 18:05:56
-//  LAST-MOD:  2-Apr-04 at 11:03:27 by Thomas Leurent
+//  LAST-MOD:  9-Jun-04 at 14:50:51 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -46,11 +46,16 @@ Unit testing of various functions in the PatchData class.
 
 #include "Mesquite.hpp"
 #include "PatchData.hpp"
+#include "PatchDataInstances.hpp"
 
 #include "cppunit/extensions/HelperMacros.h"
 #include "cppunit/SignalException.h"
 
 using namespace Mesquite;
+
+using std::cout;
+using std::cerr;
+using std::endl;
 
 class PatchDataTest : public CppUnit::TestFixture
 {
@@ -64,6 +69,7 @@ private:
   CPPUNIT_TEST (test_movement_function);
   CPPUNIT_TEST (test_get_adj_elems_2d);
   CPPUNIT_TEST (test_get_minmax_element_area);
+  CPPUNIT_TEST (test_get_barrier_delta);
   CPPUNIT_TEST_SUITE_END();
    
 private:
@@ -319,6 +325,43 @@ public:
      CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.5, min, 0.0001 );
      CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, max, 0.0001 );
    }        
+     
+#undef __FUNC__
+#define __FUNC__ "PatchDataTest::test_barrier_function" 
+   void test_get_barrier_delta()
+   {
+     MsqError err;
+     
+     PatchData pd1;
+     create_six_quads_patch_with_domain(pd1, err); MSQ_CHKERR(err);
+     pd1.clear_computed_info();
+     double b = pd1.get_barrier_delta(err); MSQ_CHKERR(err);
+//     cout << "b : " <<b<<endl;     
+     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, b, 0.00001 );
+     destroy_patch_with_domain(pd1);
+
+     PatchData pd2;
+     create_six_quads_patch_inverted_with_domain(pd2, err); MSQ_CHKERR(err);
+     pd2.clear_computed_info();
+     b = pd2.get_barrier_delta(err); MSQ_CHKERR(err);
+//     cout << "b : " <<b<<endl;     
+     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.003, b, 0.00001 );
+     destroy_patch_with_domain(pd2);
+
+     PatchData pd3;
+     create_twelve_hex_patch(pd3, err); MSQ_CHKERR(err);
+     pd3.clear_computed_info();
+     b = pd3.get_barrier_delta(err); MSQ_CHKERR(err);
+//     cout << "b : " <<b<<endl;     
+     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, b, 0.00001 );
+
+     PatchData pd4;
+     create_twelve_hex_patch_inverted(pd4, err); MSQ_CHKERR(err);
+     pd4.clear_computed_info();
+     b = pd4.get_barrier_delta(err); MSQ_CHKERR(err);
+//     cout << "b : " <<b<<endl;     
+     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0025, b, 0.00001 );
+   } 
      
    
 };
