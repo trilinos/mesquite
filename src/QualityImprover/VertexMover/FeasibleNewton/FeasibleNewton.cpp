@@ -45,18 +45,22 @@ FeasibleNewton::FeasibleNewton(ObjectiveFunction* of) :
 #define __FUNC__ "FeasibleNewton::initialize" 
 void FeasibleNewton::initialize(PatchData &pd, MsqError &err)
 {
+  // Cannot do anything.  Variable sizes with maximum size dependent
+  // upon the entire MeshSet.
 }
 
 #undef __FUNC__
 #define __FUNC__ "FeasibleNewton::initialize_mesh_iteration" 
 void FeasibleNewton::initialize_mesh_iteration(PatchData &pd, MsqError &err)
 {
+  // Cannot do anything.  Variable sizes with maximum size dependent
+  // upon the entire MeshSet.
 }
 
 #undef __FUNC__
 #define __FUNC__ "FeasibleNewton::optimize_vertex_positions" 
 void FeasibleNewton::optimize_vertex_positions(PatchData &pd, 
-                                                MsqError &err)
+                                               MsqError &err)
 {
   PRINT_INFO("\no  Performing Feasible Newton optimization.\n");
   int num_free_vertices = pd.num_free_vertices(err);
@@ -66,11 +70,19 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   MeshSet *mesh=get_mesh_set();
   bool inner_criterion=inner_criterion_met(*mesh,err);
   
+  // 1.  Allocate a hessian and calculate the sparsity pattern.
+  // 2.  Calculate the gradient and Hessian for the patch
+  //     (a) if not defined at current point, stop and throw an error
+  // 3.  Calculate the norm of the gradient for the patch
+
   // does the Feasible Newton iteration until stopping is required.
+  // Terminate when: (a) too many iterations or (b) norm of the 
+  // gradient of the patch is small.
+
   while ( nb_iterations<maxIteration && !inner_criterion) {
     
     ++nb_iterations;
-  
+
     // Prints out free vertices coordinates. 
     MSQ_DEBUG_ACTION(3,{
       std::cout << "\n  o Free vertices ("<< num_free_vertices
@@ -102,6 +114,21 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
         std::cout << "\t\t\t" << toto1[ind.value()];
       }
     });
+
+    // 4. Calculate a preconditioner (not needed right now)
+    // 5. Calculate direction using conjugate gradients to find a
+    //    zero of the Newton system of equations (H*d = -g)
+    //    (a) stop if conjugate iteration limit reached
+    //    (b) stop if relative residual is small
+    //    (c) stop if direction of negative curvature is obtained
+    // 6. Check for descent direction (inner produce of gradient and
+    //    direction is negative.
+    // 7. Search along the direction
+    //    (a) trial = x + beta*d
+    //    (b) gradient evaluation  
+    //    (c) check for sufficient decrease and stop
+    //    (d) otherwise, shrink beta
+    // 8. Set x to trial point and calculate Hessian if needed
 
     bool inner_criterion=inner_criterion_met(*mesh,err);
   }
