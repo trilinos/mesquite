@@ -32,6 +32,7 @@ Unit testing of various functions in the ObjectiveFunction class.
 #include "CompositeOFScalarAdd.hpp"
 #include "GeneralizedConditionNumberQualityMetric.hpp"
 #include "MeanRatioQualityMetric.hpp"
+#include "InverseMeanRatioQualityMetric.hpp"
 #include "EdgeLengthQualityMetric.hpp"
 #include "MsqHessian.hpp"
 
@@ -55,6 +56,7 @@ private:
   CPPUNIT_TEST (test_get_quality_metric_list);
   CPPUNIT_TEST (test_max_templates);
   CPPUNIT_TEST (test_compute_gradient_3D_LPtoPTemplate_L1_hex);
+  CPPUNIT_TEST (test_compute_gradient_3D_LPtoPTemplate_L1_hex_inverse);
   CPPUNIT_TEST (test_compute_gradient_3D_LPtoPTemplate_L2_hex);
   CPPUNIT_TEST (test_compute_gradient_3D_LPtoPTemplate_L2_hex_scaled);
   CPPUNIT_TEST (test_compute_ana_hessian_tet);
@@ -249,6 +251,7 @@ public:
        
        obj->set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
        return_bool=obj->compute_gradient(pd, grad_num, OF_val1, err);
+//       std::cout<<"\nNumerical's value = "<<OF_val1;
        CPPUNIT_ASSERT(return_bool==true);
        
        int grad_pos=0;
@@ -265,6 +268,7 @@ public:
        
        obj->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
        return_bool=obj->compute_gradient(pd, grad_ana, OF_val2, err);
+//       std::cout<<"\nAnalytical's value = "<<OF_val2;
        CPPUNIT_ASSERT(return_bool==true);
        
 //        std::cout << "ANALYTICAL GRADIENT\n";
@@ -307,7 +311,21 @@ public:
     compare_numerical_analytical_gradient(&LP1, m12Hex);
     delete mean_ratio;
   }
-
+  void test_compute_gradient_3D_LPtoPTemplate_L1_hex_inverse()
+  {
+    MsqError err;
+    
+    // creates a mean ratio quality metric ...
+    ShapeQualityMetric* i_mean_ratio = InverseMeanRatioQualityMetric::create_new();
+    i_mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
+    
+    // ... and builds an objective function with it
+    LPtoPTemplate LP1(i_mean_ratio, 1, err);
+    i_mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+      //    mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
+    compare_numerical_analytical_gradient(&LP1, m12Hex);
+    delete i_mean_ratio;
+  }
   void test_compute_gradient_3D_LPtoPTemplate_L2_hex()
   {
     MsqError err;
