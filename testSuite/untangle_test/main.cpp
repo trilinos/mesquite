@@ -85,7 +85,7 @@ using namespace Mesquite;
 int main()
 {
   Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
-  MsqError err;
+  MsqPrintError err(cout);
   mesh->read_vtk("../../meshFiles/2D/VTK/tangled_quad.vtk", err);
   if (err) return 1;
   
