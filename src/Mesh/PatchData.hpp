@@ -23,6 +23,8 @@
 #include <stdlib.h>
 #endif
 
+#include <map>
+
 #include "Mesquite.hpp"
 #include "Vector3D.hpp"
 #include "MsqVertex.hpp"
@@ -59,6 +61,24 @@ namespace Mesquite
     PatchData& operator=(const PatchData &pd);
     
   public:
+
+    enum ComputedInfo {
+      MIN_UNSIGNED_AREA, //!< minimum volume or area out of all elements in the patch
+      MAX_UNSIGNED_AREA, //!< maximum volume or area out of all elements in the patch
+      MIN_EDGE_LENGTH, //!< minimum edge length in the patch
+      MAX_EDGE_LENGTH, //!< maximum edge length in the patch
+      MIN_CORNER_VOLUME, //!< minimum corner volume or area out of all elements in the patch
+      MAX_CORNER_VOLUME, //!< maximum corner volume or area out of all elements in the patch
+    };
+
+    //! This function clears the patch information such as maximum volume, etc ... 
+    void clear_computed_info() { computedInfos.clear(); }
+    
+    //! Returns the maximum volume or area out of all the elements in the patch 
+    //! This information is stored in the patch and should not decrease performance
+    //! when used properly. See also PatchData::clear_computed_info() .
+    double get_max_element_area(MsqError &err);
+    
       //! Removes all data, but capacity is unchanged.
     void clear();
       //! Removes data, frees memory used by patch
@@ -320,6 +340,9 @@ namespace Mesquite
     size_t v2eOffsetSize;
     bool v2eValid;
     size_t subpatchIndexSize;
+
+      // Patch Computed Information (maxs, mins, etc ... )
+    std::map<ComputedInfo, double>  computedInfos; 
     
 //       //geometry information
 //     GeometryEngine mGeom;
@@ -361,6 +384,7 @@ namespace Mesquite
     numElements = 0;
     v2eValid = false;
     meshSet = NULL;
+    computedInfos.clear();
   }
   
 #undef __FUNC__

@@ -57,6 +57,29 @@ PatchData::~PatchData()
   delete [] subpatchIndexArray;
 }
 
+
+double PatchData::get_max_element_area(MsqError &err)
+{
+  std::map<ComputedInfo, double>::iterator max_it;
+  max_it = computedInfos.find(MAX_UNSIGNED_AREA);
+  if ( max_it != computedInfos.end() ) { // if a max area is already there
+    return max_it->second;
+  }
+  else { // if there is no max area available.
+    double max=0;
+    for (size_t i=0; i<numElements; ++i) {
+      double vol;
+      vol = elementArray[i].compute_unsigned_area(*this, err);
+      MSQ_CHKERR(err);
+      max = vol > max ? vol : max;
+    }
+    computedInfos.insert(std::pair<const ComputedInfo, double>(MAX_UNSIGNED_AREA,max));
+    return max;
+  }
+}
+
+
+
 /*! \fn PatchData::reorder()
    Physically reorder the vertices and elements in the PatchData to improve
    the locality of reference.  This method implements a Reverse Breadth First 
