@@ -275,7 +275,8 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &pd,
       }
        // computes p*|Q(e)|^{p-1}
       QM_val = fabs(QM_val);
-      double QM_pow, factor;
+      double QM_pow = 1.0;
+      double factor;
       if (pVal==1) factor=1;
       else {
         QM_pow=QM_val;
@@ -287,7 +288,6 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &pd,
 
       // computes Objective Function value \sum_{i=1}^{N_v} |q_i|^P
       OF_val += QM_pow * QM_val;
-      
       // For each free vertex around the vertex (and the vertex itself if free) ... 
       for (i=0; i < vert_num_free_vtces ; ++i) {
         // ... computes p*q^{p-1}*grad(q) ...
