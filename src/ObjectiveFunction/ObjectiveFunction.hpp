@@ -65,7 +65,7 @@ namespace Mesquite
          gradType=grad;
        }
 
-      /*!Calls either compute_numerical_gradient or compute_analytical_gradeint
+      /*!Calls either compute_numerical_gradient or compute_analytical_gradient
         depending on the value of gradType.
       */
     void compute_gradient(PatchData &patch, Vector3D *const &grad, MsqError &err, int array_size=-1);          
