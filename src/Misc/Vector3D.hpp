@@ -69,26 +69,26 @@ namespace Mesquite
     Vector3D& operator-=(const Vector3D &rhs);
     
     // Binary operators (like a+b).
-    friend Vector3D operator+(const Vector3D &lhs,
+    friend const Vector3D operator+(const Vector3D &lhs,
                               const Vector3D &rhs);
-    friend Vector3D operator-(const Vector3D &lhs,
+    friend const Vector3D operator-(const Vector3D &lhs,
                               const Vector3D &rhs);
-    friend Vector3D operator*(const Vector3D &lhs,
-                              const double scalar); //- lhs * scalar
-    friend Vector3D operator*(const double scalar,
-                              const Vector3D &rhs); //- scalar * rhs
-    friend Vector3D operator/(const Vector3D &lhs,
+    friend const Vector3D operator*(const Vector3D &lhs,
+                              const double scalar); //!< lhs * scalar
+    friend const Vector3D operator*(const double scalar,
+                              const Vector3D &rhs); //!< scalar * rhs
+    friend const Vector3D operator/(const Vector3D &lhs,
                               const double scalar); //- lhs / scalar
-    friend double operator%(const Vector3D &v1,
-                            const Vector3D &v2); //- dot product
-    friend double inner(const Vector3D v1[],
-                        const Vector3D v2[], int n); //- dot product for array
-    friend double operator%(const double scalar,
-			    const Vector3D &v2); //- scalar * sum_i v2[i]
-    friend double operator%(const Vector3D &v1,
-                            const double scalar); //- scalar * sum_i v1[i]
-    friend Vector3D operator*(const Vector3D &v1, 
-                              const Vector3D &v2); //- cross product
+    friend const double operator%(const Vector3D &v1,
+                            const Vector3D &v2); //!< dot product
+    friend const double inner(const Vector3D v1[],
+                        const Vector3D v2[], int n); //!< dot product for array
+    friend const double operator%(const double scalar,
+			    const Vector3D &v2); //!< scalar * sum_i v2[i]
+    friend const double operator%(const Vector3D &v1,
+                            const double scalar); //!< scalar * sum_i v1[i]
+    friend const Vector3D operator*(const Vector3D &v1, 
+                              const Vector3D &v2); //!< cross product
  
     //! \f$ v = A*x \f$
     friend void eqAx(Vector3D& v, const Matrix3D& A, const Vector3D& x);
@@ -265,35 +265,35 @@ namespace Mesquite
   }
 
   // Binary operators
-  inline Vector3D operator+(const Vector3D &lhs,
+  inline const Vector3D operator+(const Vector3D &lhs,
                             const Vector3D &rhs)
   {
     return Vector3D(lhs.x() + rhs.x(),
                     lhs.y() + rhs.y(),
                     lhs.z() + rhs.z());
   }
-  inline Vector3D operator-(const Vector3D &lhs,
+  inline const Vector3D operator-(const Vector3D &lhs,
                             const Vector3D &rhs)
   {
     return Vector3D(lhs.x() - rhs.x(),
                     lhs.y() - rhs.y(),
                     lhs.z() - rhs.z());
   }
-  inline Vector3D operator*(const Vector3D &lhs,
+  inline const Vector3D operator*(const Vector3D &lhs,
                             const double scalar)
   {
     return Vector3D(lhs.x() * scalar,
                     lhs.y() * scalar,
                     lhs.z() * scalar);
   }
-  inline Vector3D operator*(const double scalar,
+  inline const Vector3D operator*(const double scalar,
                             const Vector3D &rhs)
   {
     return Vector3D(rhs.x() * scalar,
                     rhs.y() * scalar,
                     rhs.z() * scalar);
   }
-  inline Vector3D operator/(const Vector3D &lhs,
+  inline const Vector3D operator/(const Vector3D &lhs,
                             const double scalar)
   {
     assert (scalar != 0);
@@ -301,7 +301,7 @@ namespace Mesquite
                     lhs.y() / scalar,
                     lhs.z() / scalar);
   }
-  inline double operator%(const Vector3D &lhs,
+  inline const double operator%(const Vector3D &lhs,
                           const Vector3D &rhs) // Dot Product
   {
     return( lhs.mCoords[0] * rhs.mCoords[0] +
@@ -310,7 +310,7 @@ namespace Mesquite
   }
 
   /*! Dot product for arrays of Vector3Ds. see also operator% .*/ 
-  inline double inner(const Vector3D lhs[],
+  inline const double inner(const Vector3D lhs[],
                       const Vector3D rhs[], int n)
   {
     int i;
@@ -322,17 +322,17 @@ namespace Mesquite
     return dot;
   }
 
-  inline double operator%(const double scalar,
+  inline const double operator%(const double scalar,
                           const Vector3D &rhs) // Dot Product
   {
     return( scalar * (rhs.mCoords[0] + rhs.mCoords[1] + rhs.mCoords[2]) );
   }
-  inline double operator%(const Vector3D &lhs,
+  inline const double operator%(const Vector3D &lhs,
 			  const double scalar) // Dot Product
   {
     return( scalar * (lhs.mCoords[0] + lhs.mCoords[1] + lhs.mCoords[2]) );
   }
-  inline Vector3D operator*(const Vector3D &lhs, 
+  inline const Vector3D operator*(const Vector3D &lhs, 
                             const Vector3D &rhs) // Cross Product
   {
     return Vector3D(lhs.mCoords[1]*rhs.mCoords[2]-lhs.mCoords[2]*rhs.mCoords[1],

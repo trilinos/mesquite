@@ -175,17 +175,17 @@ namespace Mesquite
     // Matrix Operators
     friend bool operator==(const Matrix3D &lhs, const Matrix3D &rhs);
     friend bool operator!=(const Matrix3D &lhs, const Matrix3D &rhs);
-    friend Matrix3D operator+(const Matrix3D &A, const Matrix3D &B);
-    friend Matrix3D operator-(const Matrix3D &A, const Matrix3D &B);
-    friend Matrix3D operator*(const Matrix3D &A, const Matrix3D &B);
-    friend Matrix3D mult_element(const Matrix3D &A, const Matrix3D &B);
+    friend const Matrix3D operator+(const Matrix3D &A, const Matrix3D &B);
+    friend const Matrix3D operator-(const Matrix3D &A, const Matrix3D &B) ;
+    friend const Matrix3D operator*(const Matrix3D &A, const Matrix3D &B);
+    friend const Matrix3D mult_element(const Matrix3D &A, const Matrix3D &B);
     friend Matrix3D transpose(const Matrix3D &A);
     friend int matmult(Matrix3D& C, const Matrix3D  &A, const Matrix3D &B);
-    friend Vector3D operator*(const Matrix3D  &A, const Vector3D &x);
-    friend Vector3D operator*(const Vector3D &x, const Matrix3D  &A);
+    friend const Vector3D operator*(const Matrix3D  &A, const Vector3D &x);
+    friend const Vector3D operator*(const Vector3D &x, const Matrix3D  &A);
     void operator+=(const Matrix3D &rhs);
-    Matrix3D& operator-=(const Matrix3D &rhs);
-    Matrix3D& operator*=(const double &s);
+    void operator-=(const Matrix3D &rhs);
+    void operator*=(const double &s);
     Matrix3D plus_transpose(const Matrix3D &B) const;
     void plus_transpose_equal(const Matrix3D &B);
     Matrix3D& outer_product(const Vector3D &v1, const Vector3D &v2);
@@ -257,7 +257,7 @@ namespace Mesquite
   }
 
   //! \return A+B
-  inline Matrix3D operator+(const Matrix3D &A, 
+  inline const Matrix3D operator+(const Matrix3D &A, 
                             const Matrix3D &B)
   {
     Matrix3D tmp;
@@ -271,7 +271,7 @@ namespace Mesquite
   }
 
   //! \return A-B
-  inline Matrix3D operator-(const Matrix3D &A, 
+  inline const Matrix3D operator-(const Matrix3D &A, 
                             const Matrix3D &B)
   {
     Matrix3D tmp;
@@ -285,7 +285,7 @@ namespace Mesquite
   }
 
     //! Multiplies entry by entry. This is NOT a matrix multiplication. 
-  inline Matrix3D mult_element(const Matrix3D &A, 
+  inline const Matrix3D mult_element(const Matrix3D &A, 
                                const Matrix3D &B)
   {
     Matrix3D tmp;
@@ -317,23 +317,19 @@ namespace Mesquite
       v_[6] += rhs.v_[6]; v_[7] += rhs.v_[7]; v_[8] += rhs.v_[8];
   }
 
-  inline Matrix3D& Matrix3D::operator-=(const Matrix3D &rhs)
+  inline void Matrix3D::operator-=(const Matrix3D &rhs)
   {
       v_[0] -= rhs.v_[0]; v_[1] -= rhs.v_[1]; v_[2] -= rhs.v_[2];
       v_[3] -= rhs.v_[3]; v_[4] -= rhs.v_[4]; v_[5] -= rhs.v_[5];
       v_[6] -= rhs.v_[6]; v_[7] -= rhs.v_[7]; v_[8] -= rhs.v_[8];
-
-      return *this;
   }
 
   //! multiplies each entry by the scalar s
-  inline Matrix3D& Matrix3D::operator*=(const double &s)
+  inline void Matrix3D::operator*=(const double &s)
   {
       v_[0] *= s; v_[1] *= s; v_[2] *= s;
       v_[3] *= s; v_[4] *= s; v_[5] *= s;
       v_[6] *= s; v_[7] *= s; v_[8] *= s;
-
-      return *this;
   }
 
   //! \f$ + B^T  \f$
@@ -403,7 +399,7 @@ namespace Mesquite
   } 
 
   //! \return A*B
-  inline Matrix3D operator*(const Matrix3D  &A, 
+  inline const Matrix3D operator*(const Matrix3D  &A, 
                             const Matrix3D &B)
   {
     Matrix3D tmp;
@@ -444,7 +440,7 @@ namespace Mesquite
   }
 
   /*! \brief Computes \f$ A v \f$ . */
-  inline Vector3D operator*(const Matrix3D  &A, const Vector3D &x)
+  inline const Vector3D operator*(const Matrix3D  &A, const Vector3D &x)
   {
     Vector3D tmp; // initializes to 0
     for (size_t i=0; i<3; ++i)
@@ -460,7 +456,7 @@ namespace Mesquite
       This function implicitly considers the transpose of vector x times
       the matrix A and it is implicit that the returned vector must be
       transposed. */
-  inline Vector3D operator*(const Vector3D &x, const Matrix3D  &A)
+  inline const Vector3D operator*(const Vector3D &x, const Matrix3D  &A)
   {
     Vector3D res(0., 0., 0.);
     for (size_t i=0; i<3; ++i)
