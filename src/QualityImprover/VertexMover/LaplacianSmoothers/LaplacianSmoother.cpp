@@ -67,6 +67,7 @@ void LaplacianSmoother::optimize_vertex_positions(PatchData &pd,
   int m=free_iter.value();
   centroid_smooth_mesh(pd, num_local_vertices, &patch_coords[0],
                        patch_coords[m], dim, err); MSQ_CHKERR(err);
+  pd.snap_vertex_to_domain(m,err);
 }
   
 #undef __FUNC__
