@@ -326,19 +326,18 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
         nm = pow(mMetrics[i], t);
         m += nm;
 
-        mMetrics[i] = nm/mMetrics[i];
+        mMetrics[i] = 0.25*t*nm/mMetrics[i];
       }
 
-      nm = m / 4.0;
-      m = pow(nm, 1.0 / t);
-
+      nm = 0.25 * m;
       for (i = 0; i < 4; ++i) {
         mAccumGrad[locs_hex[i][0]] += mMetrics[i]*mGradients[3*i+0];
         mAccumGrad[locs_hex[i][1]] += mMetrics[i]*mGradients[3*i+1];
         mAccumGrad[locs_hex[i][2]] += mMetrics[i]*mGradients[3*i+2];
       }
 
-      nm = m / (4.0*nm);
+      m = pow(nm, 1.0 / t);
+      nm = m / (t*nm);
       for (i = 0; i < 4; ++i) {
         mAccumGrad[i] *= nm;
       }
@@ -521,12 +520,10 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
         nm = pow(mMetrics[i], t);
         m += nm;
 
-        mMetrics[i] = nm/mMetrics[i];
+        mMetrics[i] = 0.125*t*nm/mMetrics[i];
       }
 
-      nm = m / 8.0;
-      m = pow(nm, 1.0 / t);
-
+      nm = 0.125 * m;
       for (i = 0; i < 8; ++i) {
         mAccumGrad[locs_hex[i][0]] += mMetrics[i]*mGradients[4*i+0];
         mAccumGrad[locs_hex[i][1]] += mMetrics[i]*mGradients[4*i+1];
@@ -534,7 +531,8 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
         mAccumGrad[locs_hex[i][3]] += mMetrics[i]*mGradients[4*i+3];
       }
 
-      nm = m / (8.0*nm);
+      m = pow(nm, 1.0 / t);
+      nm = m / (t*nm);
       for (i = 0; i < 8; ++i) {
         mAccumGrad[i] *= nm;
       }
@@ -588,6 +586,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 
   Vector3D n;			// Surface normal for 2D objects
   Matrix3D outer;
+  double   outer_factor;
 
   double   nm, t=0;
 
@@ -788,15 +787,15 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     default:
       switch(avgMethod) {
       case RMS:
-	err.set_msg("RMS averaging method does not work.");
+	t = 2.0;
 	return false;
 
       case HARMONIC:
-	err.set_msg("HARMONIC averaging method does not work.");
+	t = -1.0;
 	return false;
 
       case HMS:
-	err.set_msg("HMS averaging method does not work.");
+	t = -2.0;
 	return false;
 
       default:
@@ -809,21 +808,51 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 	nm = pow(mMetrics[i], t);
 	m += nm;
 
-	mMetrics[i] = t*nm/mMetrics[i];
+	g_factor[i] = 0.25*t*nm / mMetrics[i];
+	h_factor[i] = (t-1)*g_factor[i] / mMetrics[i];
       }
 
-      nm = m / 4.0;
+      nm = 0.25 * m;
+
+      l = 0;
+      for (i = 0; i < 4; ++i) {
+        g[locs_hex[i][0]] += g_factor[i]*mGradients[3*i+0];
+	g[locs_hex[i][1]] += g_factor[i]*mGradients[3*i+1];
+	g[locs_hex[i][2]] += g_factor[i]*mGradients[3*i+2];
+
+        for (j = 0; j < 3; ++j) {
+          for (k = j; k < 3; ++k) {
+	    outer = h_factor[i] * outer.outer_product(mGradients[3*i+j], 
+						      mGradients[3*i+k]);
+	    
+            r = locs_hex[i][j];
+            c = locs_hex[i][k];
+
+            if (r <= c) {
+              loc = 4*r - (r*(r+1)/2) + c;
+              h[loc] += g_factor[i]*mHessians[l] + outer;
+            } 
+            else {
+              loc = 4*c - (c*(c+1)/2) + r;
+              h[loc] += transpose(g_factor[i]*mHessians[l] + outer);
+            }
+            ++l;
+          }
+        }
+      }
+
       m = pow(nm, 1.0 / t);
+      g_factor[0] = m / (t*nm);
+      h_factor[0] = (1.0 / t - 1)*g_factor[0] / nm;
 
+      l = 0;
       for (i = 0; i < 4; ++i) {
-        g[locs_hex[i][0]] += mMetrics[i]*mGradients[3*i+0];
-	g[locs_hex[i][1]] += mMetrics[i]*mGradients[3*i+1];
-	g[locs_hex[i][2]] += mMetrics[i]*mGradients[3*i+2];
-      }
-
-      nm = m / (4.0*nm*t);
-      for (i = 0; i < 4; ++i) {
-	g[i] *= nm;
+	for (j = i; j < 4; ++j) {
+	  outer = outer.outer_product(g[i], g[j]);
+	  h[l] = g_factor[0]*h[l] + h_factor[0]*outer;
+	  ++l;
+	}
+	g[i] *= g_factor[0];
       }
       break;
     }
@@ -1020,6 +1049,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
           }
         }
       }
+
       for (i=0; i<36; ++i)
         h[i] *= 0.125;
       break;
@@ -1031,15 +1061,15 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     default:
       switch(avgMethod) {
       case RMS:
-	err.set_msg("RMS averaging method does not work.");
+	t = 2.0;
 	return false;
 
       case HARMONIC:
-	err.set_msg("HARMONIC averaging method does not work.");
+	t = -1.0;
 	return false;
 
       case HMS:
-	err.set_msg("HMS averaging method does not work.");
+	t = -2.0;
 	return false;
 
       default:
@@ -1052,22 +1082,52 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 	nm = pow(mMetrics[i], t);
 	m += nm;
 
-	mMetrics[i] = t*nm/mMetrics[i];
+	g_factor[i] = 0.125*t*nm / mMetrics[i];
+	h_factor[i] = (t-1)*g_factor[i] / mMetrics[i];
       }
 
-      nm = m / 8.0;
+      nm = 0.125 * m;
+
+      l = 0;
+      for (i = 0; i < 8; ++i) {
+        g[locs_hex[i][0]] += g_factor[i]*mGradients[4*i+0];
+        g[locs_hex[i][1]] += g_factor[i]*mGradients[4*i+1];
+        g[locs_hex[i][2]] += g_factor[i]*mGradients[4*i+2];
+        g[locs_hex[i][3]] += g_factor[i]*mGradients[4*i+3];
+
+        for (j = 0; j < 4; ++j) {
+          for (k = j; k < 4; ++k) {
+	    outer = h_factor[i]*outer.outer_product(mGradients[4*i+j], 
+						    mGradients[4*i+k]);
+
+            r = locs_hex[i][j];
+            c = locs_hex[i][k];
+
+            if (r <= c) {
+              loc = 8*r - (r*(r+1)/2) + c;
+              h[loc] += g_factor[i]*mHessians[l] + outer;
+            } 
+            else {
+              loc = 8*c - (c*(c+1)/2) + r;
+              h[loc] += transpose(g_factor[i]*mHessians[l] + outer);
+            }
+            ++l;
+          }
+        }
+      }
+
       m = pow(nm, 1.0 / t);
+      g_factor[0] = m / (t*nm);
+      h_factor[0] = (1.0 / t - 1)*g_factor[0] / nm;
 
+      l = 0;
       for (i = 0; i < 8; ++i) {
-        g[locs_hex[i][0]] += mMetrics[i]*mGradients[4*i+0];
-	g[locs_hex[i][1]] += mMetrics[i]*mGradients[4*i+1];
-	g[locs_hex[i][2]] += mMetrics[i]*mGradients[4*i+2];
-	g[locs_hex[i][3]] += mMetrics[i]*mGradients[4*i+3];
-      }
-
-      nm = m / (8.0*nm*t);
-      for (i = 0; i < 8; ++i) {
-	g[i] *= nm;
+	for (j = i; j < 8; ++j) {
+	  outer = outer.outer_product(g[i], g[j]);
+	  h[l] = g_factor[0]*h[l] + h_factor[0]*outer;
+	  ++l;
+	}
+	g[i] *= g_factor[0];
       }
       break;
     }

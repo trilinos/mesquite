@@ -90,6 +90,8 @@ namespace Mesquite
       Vector3D mAccumGrad[8];  // Accumulated gradients (composed merit)
       Matrix3D mHessians[80]; // Hessian of metric with respect to the coords
       double   mMetrics[8]; // Metric values for the (decomposed) elements
+      double   g_factor[8]; // Metric values for the (decomposed) elements
+      double   h_factor[8]; // Metric values for the (decomposed) elements
 
    };
 } //namespace
