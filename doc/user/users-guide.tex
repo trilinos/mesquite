@@ -151,50 +151,46 @@ This library is described in the next section. \newline
 
 \section{Mesquite Goals}
 Mesquite (Mesh Quality Improvement Toolkit) is designed to provide a
-stand-alone, portable package for mesh quality improvement which
-includes a comprehensive suite of these algorithms.  It is designed in
-such a way that they can be applied to many different mesh element
-types and orders and referenced to both isotropic and anisotropic
-ideal elements.  Mesquite provides a 
-robust and effective mesh improvement toolkit to meshing researchers and 
-to the broader
-scientific community.  Mesquite allows both mesh generation
-researchers and application scientists to benefit from the latest
+stand-alone, portable, comprehensive suite of mesh quality improvement
+algorithms.  The design flexible so that they can be applied to many
+different mesh element types and orders and referenced to both
+isotropic and anisotropic ideal elements.  Mesquite provides a robust
+and effective mesh improvement toolkit that allows both meshing
+researchers application scientists to benefit from the latest
 developments in mesh quality control and improvement. \newline
 
 Mesquite design goals are derived from a mathematical framework and
-are focused on providing a versatile, comprehensive, effective,
-inter-operable, and efficient library of mesh quality improvement
-algorithms that can be used by the non-expert and extended and
-customized by experts.  In this section we highlight the current
-status of Mesquite in several of our design goal areas. \newline
+are focused on providing a versatile, comprehensive, inter-operable,
+robust, and efficient library of mesh quality improvement algorithms
+that can be used by the non-expert and extended and customized by
+experts.  In this section we highlight the current status of Mesquite
+in several of our design goal areas. \newline
 
 
-{\bf Versatile.}  Mesquite works on structured,
-unstructured, and hybrid meshes in both two and three dimensions. The
-design permits improvements to meshes composed of triangular,
-tetrahedral, quadrilateral, and hexahedral elements. Prismatic,
-pyramidal, and polyhedral elements can be easily added.  
-It currently incorporates only methods for node movement; plans for 
-topology modification and hybrid improvement strategies lie in the future.
-Node movement strategies include both local patch-based iteration
-schemes for one or a few free vertices and global objective functions
-which improve all vertices simultaneously. Mesquite will be 
-applicable to both adaptive and nonadaptive meshing and to both low-
-and high-order discretization schemes, but currently works with
-non-adaptive meshes containing linear elements. \newline
+{\bf Versatile.}  Mesquite works on structured, unstructured, and
+hybrid meshes in both two and three dimensions. The design permits
+improvements to meshes composed of triangular, tetrahedral,
+quadrilateral, and hexahedral elements. Prismatic, pyramidal, and
+polyhedral elements can be easily added.  It currently incorporates
+only methods for node movement; plans for topology modification and
+hybrid improvement strategies lie in the future.  Node movement
+strategies include both local patch-based iteration schemes for one or
+a few free vertices and global objective functions which improve all
+vertices simultaneously. Mesquite will be applicable to both adaptive
+and nonadaptive meshing and to both low- and high-order discretization
+schemes, but currently works with non-adaptive meshes containing
+linear elements. \newline
 
-{\bf Comprehensive.}  Mesquite will address a large variety of mesh 
-quality improvement goals including mesh volume control (sizing, 
-invertibility), mesh angles, aspect ratios, and orientation. Specific 
-goals include mesh untangling, mesh smoothing, shape improvement, anisotropic
-smoothing, mesh rezoning for ALE, mesh alignment, and deforming mesh 
-algorithms. These goals can be pursued in both adaptive and non-adaptive 
-settings. The
-software is customizable, enabling users to insert their own
-quality metrics, objective functions, and algorithms and also provides
-mechanisms for creating combined approaches that use one or more
-improvement algorithms. \newline
+{\bf Comprehensive.}  Mesquite will address a large variety of mesh
+quality improvement goals including mesh volume control (sizing,
+invertibility), mesh angles, aspect ratios, and orientation. Specific
+goals include mesh untangling, mesh smoothing, shape improvement,
+anisotropic smoothing, mesh rezoning for ALE, mesh alignment, and
+deforming mesh algorithms. These goals can be pursued in both adaptive
+and non-adaptive settings. The software is customizable, enabling
+users to insert their own quality metrics, objective functions, and
+algorithms and also provides mechanisms for creating combined
+approaches that use one or more improvement algorithms. \newline
 
 %{\bf Effective.}  Mesquite uses state-of-the-art algorithms and
 %metrics to guarantee improvement in mesh quality.  Because the
@@ -232,10 +228,7 @@ control the computational cost of the optimization algorithms. \newline
 algorithms are employed in Mesquite. Code interrupts due to null pointers and 
 zero-divides will be handled gracefully.  A
 comprehensive suite of test problems and a unit testing framework have
-been developed to verify the correct execution of the code. Input meshes
-may suffer quality dis-improvement in some cases due to failures of the
-numerical algorithm. Users are advised to keep a copy of their original
-mesh in case of such a failure. \newline
+been developed to verify the correct execution of the code. \newline
 
 Mesquite is not intended to be a mesh generation tool. It can serve as 
 a post-processor to a mesh generation procedure, a mesh pre-processor to a 
@@ -245,7 +238,7 @@ linked to either a meshing code or to a simulation code. \newline
 
 \section{Mesquite Concepts}
 
-Mesquite design is based on a mathematical 
+Mesquite software design is based on a mathematical 
 framework that improves mesh quality by solving an optimization 
 problem to guide the movement of mesh vertices \cite{formal}. 
 The user inputs a mesh or 
@@ -382,7 +375,7 @@ Having acquired the Mesquite source code, the user can perform the
 following steps which outline the process for compiling the code and
 creating the library, `libmesquite.a'. Here is the fastest way to compile Mesquite:
 \begin{enumerate}
-\item While in the main directory (typically, .../mesquite/), type
+\item While in the top level Mesquite directory (typically, .../mesquite/), type
 `./configure'.  This will create the file Makefile.customize with a default configuration
 for your platform.
 \item Type gmake, this will compile the library lib/libmesquite.a
@@ -396,8 +389,8 @@ Makefile.customize that contains the platform specific tools and settings to be 
 while compiling Mesquite. In the remainder of this section, we
 will  list some of the specific variables which
 may need to be modified before Mesquite will compile correctly.
-This can be done in two manners: you can use the configure
-script options (you can also access those options and
+This can be done in two ways: you can use the configure
+script options (you can access these options and
 others by typing './configure --help'), or you can edit
 Makefile.customize directly.
 
@@ -408,20 +401,20 @@ option would be given by typing \texttt{./configure --with-c-headers=yes} in the
 
 \begin{description}
 \item \texttt{--with-c-headers=yes} Uses the deprecated C style for headers:
-  will use headers like \texttt{<iostream.h>} and \texttt{<math.h>}
+  will use headers like \texttt{<inostream.h>} and \texttt{<math.h>}
   instead of the new C++ style \texttt{<iostream>} and \texttt{<cmath>}. This might make older
-  compilers find those headers. With newer compilers, you will get a warning for using that option.
-\item \texttt{--with-makedepend=EXECUTABLE} Location of alternative makedepend program:
+  compilers find those headers. With newer compilers, you will get a warning for using deprecated headers.
+\item \texttt{--with-makedepend=EXECUTABLE}  Location of alternative makedepend program:
 Give the full path:  --with-makedepend='/usr/local/bin/makedepend'
 \item \texttt{--with-archiver=EXECUTABLE} Location of alternative archiver (default is 'ar ru'):
 Give the full path: --with-archiver='/usr/local/bin/ar' . If options are needed, we advise to
 create a shell script pointed to by that option. The shell script would contain only one line: the
 archiver and its options. 
-\item \texttt{--with-cc=EXECUTABLE} Location of alternative C compiler:
+\item \texttt{--with-cc=EXECUTABLE}  Location of alternative C compiler:
 Give the full path: --with-cc='/usr/local/gcc/bin/gcc'
-\item \texttt{--with-cPP=EXECUTABLE} Location of alternative c++ compiler:
+\item \texttt{--with-cPP=EXECUTABLE}  Location of alternative c++ compiler:
 Give the full path:  --with-cPP='/usr/local/gcc/bin/g++'
-\item \texttt{--with-dox=EXECUTABLE} Location of doxygen:
+\item \texttt{--with-dox=EXECUTABLE}  Location of doxygen:
 Give the full path: --with-dox='/usr/local/bin/doxygen'
 \end{description}
 
@@ -486,54 +479,75 @@ you can edit Makefile.customize directly. Here are the variables and their meani
 
 \section{Short Tutorial}
 
-In this section, we will write a Mesquite driver in order to improve the quality of a test
-mesh. This tutorial section is aimed at giving you a feel for Mesquite: \emph{this section is not where to look
-for detailed information}. In particular, informations on loading a particular mesh format, or
-interacting through a particular mesh interface, and details of the API classes
-are not given in this section.
+In this section, we write a driver code which calls the Mesquite
+library to improve the quality of a test mesh. This tutorial section
+is aimed at giving the user a feel for Mesquite: \emph{this section is not
+where to look for detailed information}. In particular, information
+pertaining to loading a particular mesh format (see section X), 
+interacting through a particular mesh interface (section Y), 
+and details of the API classes (sections 4.X-4.Y) are not
+given in this section.
 
-At first, we will write a small program using Mesquite's simplified API, or wrappers, in order to show the
-fastest way to get Mesquite running on a mesh. The concept of the wrappers, as well as the different
-wrappers available, are described in section \ref{sec:wrappers}. We will then set up a more customized mesh
-improvement tool through the mesquite low-level API, described in section \ref{sec:detailedAPI}.
+First, we write a small program using Mesquite's simplified API, or
+wrappers, to show the fastest way deploy Mesquite functionality to
+improve a mesh.  The wrapper concept, as well as details about the
+different wrappers available, are described in section
+\ref{sec:wrappers}.  Following this first example, we set up customized mesh
+improvement tool using Mesquite's low-level API, the details of which
+are described in section \ref{sec:detailedAPI}.
 
 \subsection{Tutorial File Template}
 \label{sec:tutfile}
 
-In order to create and link a driver code, the Mesquite library must have been compiled, as per the
-instructions of section \ref{sec:compiling}. For this tutorial, we will edit the file
-\texttt{testSuite/tutorial/tutorial.cpp}, which contains the following template:
+To create and link a driver code, the Mesquite library must be
+compiled per the instructions of section \ref{sec:compiling}. 
+This tutorial begins with the file \newline
+\texttt{testSuite/tutorial/tutorial.cpp}, 
+which contains the following template:
 \begin{verbatim}
-#include "Mesquite_all_headers.hpp"
-using namespace Mesquite;
-int main(int argc, char* argv[])
-{
-  MsqError err;
+1.   #include "Mesquite_all_headers.hpp"
+2.   using namespace Mesquite;
+     int main(int argc, char* argv[])
+     {
+3.      MsqError err;
   
-  char mesh_file_name[256];
+        char mesh_file_name[256];
   
-  // command line arguments
-  if (argc==1 || argc>2) {
-    std::cerr << "meshfile name needed as argument.\n";
-    exit(EXIT_FAILURE);
-  }
-  else if (argc==2) {
-    std::cout << "Working with mesh file: "<< mesh_file_name << "\n";
-    strcpy(mesh_file_name, argv[1]);
-  } 
-  
-}
-\end{verbatim}
-Mesquite provides a convenient header file \texttt{include/Mesquite\_all\_headers.hpp} that includes
-all Mesquite headers. This is the easiest way to deal with the include directives although it is likely to slow
-down your Mesquite compilation.
-All Mesquite classes are part of the \texttt{Mesquite} namespace. Be aware that general mesh interfaces
-classes usually have their own namespace. The \texttt{MsqError} class is an error object passed to 
-certain function calls (see section \ref{sec:MsqError}), its value is checked after the functions calls with
-the macro \texttt{MSQ\_CHKERR(...)}.
+        // command line arguments
+        if (argc==1 || argc>2) {
+          std::cerr << "meshfile name needed as argument.\n";
+          exit(EXIT_FAILURE);
+        }
+        else if (argc==2) {
+          std::cout << "Working with mesh file: "<< mesh_file_name << "\n";
+          strcpy(mesh_file_name, argv[1]);
+        } 
 
-The code above takes a mesh file name as a command line argument and performs no action. 
-We can compile it from the main directory
+        // new code starts here
+4.      //... 
+      }
+\end{verbatim}
+The lines labeled 1-3 highlight three basic aspects of using Mesquite;
+\begin{enumerate}
+\item For convenience, Mesquite provides the header file
+\texttt{include/Mesquite\_all\_headers.hpp} which includes all Mesquite
+headers. Although this is the easiest way to handle the include directives,
+it is likely to slow down Mesquite compilation.  
+\item All Mesquite classes are part of the \texttt{Mesquite} namespace. 
+Be aware that general mesh interfaces classes usually have their own
+namespace. 
+\item  The \texttt{MsqError} class is an error object passed to
+certain function calls (see section \ref{sec:MsqError}), its value is
+checked after the functions calls with the macro
+\texttt{MSQ\_CHKERR(...)}.
+\item In the sections that follow, we guide the user through the steps
+necessary to smooth a mesh using Mesquite.  All new lines of code to be
+added to the template file start in this position and are added in the order
+in which they are discussed.
+\end{enumerate}
+
+The code above takes a mesh file name as a command line argument and
+performs no action. We can compile it from the main directory
 (\texttt{mesquite/}) with the command 
 \begin{verbatim}
 gmake testSuite/tutorial/tutorial
@@ -541,35 +555,43 @@ gmake testSuite/tutorial/tutorial
 
 \subsection{Loading a Test Mesh}
 \label{sec:tutMesh}
-Here we want to improve one of the test meshes distributed with Mesquite. Those meshes are in
-the very readable but inefficient VTK format. You can open one of the ASCII files in
-\texttt{mesquite/meshFiles/...} and check it out for yourself. Details of the VTK unstructured mesh 
-format are given in \cite{VTKbook, VTKuml}. The different options to load a mesh into Mesquite are 
-described in chapter \ref{sec:meshes}, but we only use the simplest option in this tutorial.
-To load a VTK test mesh in Mesquite, instantiate the Mesquite mesh database object,
+Our next step is to load one of the test meshes distributed with
+Mesquite.  These meshes are distributed in the VTK unstructured mesh
+format, the details of which are given in \cite{VTKbook, VTKuml}. This
+format was chosen because of its readability and ease of use (although
+some sacrifice of efficiency has been made).  In this tutorial we use
+the simplest mechanism for loadling a mesh into Mesquite; different
+options are described in chapter \ref{sec:meshes}.  In particular, to
+load a VTK test mesh in Mesquite, instantiate the Mesquite mesh
+database object,
 \texttt{MeshImpl}\footnote{Note that if you have your own mesh
-database running, you should use the interfaces described in section \ref{sec:meshes}.}, 
-and use the \texttt{read\_vtk} function by adding those lines to the file
-template described in \ref{sec:tutfile}.
+database running, you should use the interfaces described in section
+\ref{sec:meshes}.}, and use the \texttt{read\_vtk} member function by
+adding the following lines to the file template described in
+\ref{sec:tutfile}.
 \begin{verbatim}
   Mesquite::MeshImpl *my_mesh = new Mesquite::MeshImpl;
   my_mesh->read_vtk(mesh_file_name, err); 
   MSQ_CHKERR(err);
 \end{verbatim}
-You now need to add the mesh to a MeshSet, an object that can regroup several contiguous meshes to
-improve them all at once:
+Now that the mesh is loaded, you must add it to a {\tt MeshSet}, which
+is a flexible object that can group several contiguous {\tt LAF: do
+they really have to be contiguous?} meshes to improve them simultaneously:
 \begin{verbatim}
   Mesquite::MeshSet mesh_set;
   mesh_set.add_mesh(my_mesh, err); MSQ_CHKERR(err);
 \end{verbatim}
-At this point, the MeshSet might also need some information concerning the mesh geometry. Mesquite
-deals automatically with all types of supported elements, including hybrid meshes, but some meshes
-require the geometry information: for example when improving a surface mesh, the user should tell
-the MeshSet which surface the vertices are constrained to. In particular, all 2D meshes need to
-specify some geometry constraints, since Mesquite is inherently a 3D code. 
-The details are explained in section
-\ref{sec:geometry}; here we show how to set the geometry of a planar 2D mesh, defined by a point and
-a normal, on the MeshSet: 
+Mesquite deals automatically with all types of supported elements,
+including hybrid meshes, but some meshes require geometry information
+as well.  For example when improving a surface mesh, the user needs to
+indicate to which surface the vertices are constrained.  Also, because
+Mesquite is inherently a 3D code, all 2D meshes must specify some
+geometry constraints.  The MeshSet object tracks this geometrical
+domain information, and it should be added at this point.  The details
+for general geometrical surfaces are explained in section
+\ref{sec:geometry}; in this section,
+we show how to set the geometry of a 2D planar mesh, defined by a
+point and a normal, on the MeshSet:
 \begin{verbatim}
   Vector3D normal(0,0,1);
   Vector3D point(0,0,5);
@@ -577,8 +599,8 @@ a normal, on the MeshSet:
   mesh_set.set_domain_constraint(&my_mesh_plan);
 \end{verbatim}
 
-Note that Mesquite also provides a function to write a mesh file in VTK format, given a \texttt{MeshImpl}
-object: 
+Finally, nnote that Mesquite also provides a function to write a mesh
+file in VTK format, given a \texttt{MeshImpl} object:
 \begin{verbatim}
   my_mesh->write_vtk("original_mesh",err); MSQ_CHKERR(err);
 \end{verbatim}
@@ -586,49 +608,68 @@ object:
 
 \subsection{Improving the Mesh with a Wrapper Class}
 \label{sec:tutWrapper}
-The simplest way to launch a Mesquite mesh quality improvement procedure is to use one of the
-wrapper classes described in section \ref{sec:wrappers}. Here, we will instantiate the
-\texttt{ShapeImprovement} and run it over the MeshSet we created earlier. Mesquite
-optimizes the mesh without further input from the user, although wrapper classes also allow the
-users to set the most important parameters of the underlying algorithms and metrics (see section
+The simplest way to use a Mesquite mesh quality improvement
+procedure is to instantiate one of the wrapper classes described in section
+\ref{sec:wrappers}. Here, we will instantiate the
+\texttt{ShapeImprovement} wrapper and use it to improve 
+the MeshSet we created earlier.  Mesquite can optimize the mesh
+without further input from the user by utilizing preset, default
+values.  If some customization is desired, the wrapper classes also
+allow users to set the most important parameters of the underlying
+algorithms and metrics (see section
 \ref{sec:wrappers} for details).
 \begin{verbatim}
-  Mesquite::ShapeImprovementWrapper algorithm;
-  algorithm.run_instructions(mesh_set, err); MSQ_CHKERR(err);
+  Mesquite::ShapeImprovementWrapper mesh_quality_algorithm;
+  mesh_quality_algorithm.run_instructions(mesh_set, err); MSQ_CHKERR(err);
 \end{verbatim}
-We then proceed to write the improved mesh in a new file:
+Once the algorithm has been executed using the {\tt run\_instructions} member
+function of the wrapper class, the improved mesh can be written to a new
+file:
 \begin{verbatim}
   my_mesh->write_vtk("smoothed_mesh",err); MSQ_CHKERR(err);
 \end{verbatim}
-Compile this code and run with a mesh file name as a command line argument by 
-typing 
+This completes the code necessary for the simple wrapper example.  Once
+the code has successfully compiled by typing the {\tt gmake} command given in
+section \ref{sec:tutfile}, 
+run it from the tutorial directory \texttt{mesquite/testSuite/tutorial/}
+with a mesh file name as a command line 
+argument by typing 
 \begin{verbatim}
 ./tutorial ../../meshFiles/2D/VTK/square_quad_10_rand.vtk
 \end{verbatim}
-if you are in the \texttt{mesquite/testSuite/tutorial/} directory.
-The code creates in the current directory the files original\_mesh.vtk
-and improved\_mesh.vtk. 
+The code creates the files original\_mesh.vtk
+and improved\_mesh.vtk in the current directory. 
+
+{\tt LAF include the output of running the tutorial code here too}
 
 \subsection{Improving the Mesh with the Low Level API}
 \label{sec:tutDetailedAPI}
 If the user requires in-depth control over the mesh quality improvement
-process, the use of the Mesquite classes allow an extensive
-level of flexibility.   In particular, the user can specify the quality
+process, the use of lower-level Mesquite classes provides an extensive
+amount of flexibility.   In particular, the user can specify the quality
 metric, objective function template, and optimization algorithm by
 instantiating particular instances of each.  For each, various options
 such as numerical or analytical gradient and Hessian evaluations or
 the patch size can be selected.  Furthermore, the user can fine tune
 the optimization algorithm performance by creating and setting the parameters 
 of the termination criterion for both inner and outer iterations.
+{\tt LAF have we talked about inner and outer iterations before? perhaps
+too advanced for the tutorial}
 
 Once these core objects have been created and customized, the user
 creates an instruction queue and adds one or more quality improvers
-and quality assessors.  The mesh optimization process is initiated
+and quality assessors to it.  The mesh optimization process is initiated
 with the {\tt run\_instructions} method on the instruction queue
 class.
 
-The details of the low-level API are extensively treated in 
-section \ref{sec:detailedAPI}.
+In this section, we provide a simple example to highlight the main
+steps needed for this approach.  The code segment given below performs
+the same functionality as the wrapper class highlighted in the
+previous section.  The comment lines provide high level documentation;
+the details of the each class and the low-level API are extensively
+treated in section
+\ref{spec:detailedAPI}.
+
 \begin{verbatim}
     // creates a mean ratio quality metric ...
   MeanRatioQualityMetric mean_ratio;
@@ -674,29 +715,37 @@ section \ref{sec:detailedAPI}.
 
 \subsection{Mesh Improvement Examples}
 
-The picture on the left side of figure \ref{fig:hole} shows a partly tangled 
-and poor quality surface mesh. The right side of the figure shows the mesh 
-after 
-smoothing with the mean ratio metric. 
-The mesh file \texttt{mesquite/meshFiles/2D/VTK/hole\_in\_square.vtk} contains the information for
-the initial mesh. Note that the normal is now defined in the $(0,0,-1)$ direction, and this fact must be conveyed 
-to Mesquite, as done in \ref{sec:tutMesh}, or an error message will be thrown. 
+The left image in figure \ref{fig:hole} shows a mesh that has
+been degraded by moving the disk from the right side of the square to
+the left while keeping the mesh topology fixed.
+The mesh file
+\texttt{mesquite/meshFiles/2D/VTK/hole\_in\_square.vtk} contains the
+information for this mesh.  If you plan to run this example, note that
+the normal direction that defines the geometry is now $(0,0,-1)$.
+This change must be made in the tutorial example code
+as was done in section \ref{sec:tutMesh}, or an error message will be
+thrown.
 \begin{verbatim}
   Vector3D normal(0,0,-1);
   Vector3D point(0,0,-5);
-  PlanarDomain my_mesh_plan(normal, point, my_mesh);
-  mesh_set.set_domain_constraint(&my_mesh_plan);
+  PlanarDomain my_mesh_plane(normal, point, my_mesh);
+  mesh_set.set_domain_constraint(&my_mesh_plane);
 \end{verbatim}
 
-We can now improve the mesh with the wrapper mentionned in \ref{sec:tutWrapper} or the detailed API
-mentionned in \ref{sec:tutDetailedAPI}. The driver code needs to be recompiled, since we changed the
-normal, and the executable is run with the mesh to be improved:
+We can now improve the mesh with the wrapper mentionned in
+\ref{sec:tutWrapper} or the detailed API mentioned in
+\ref{sec:tutDetailedAPI}. 
+Because we changed tphe normal, the driver code must be recompiled;
+otherwise the code and executable are as before.
+Once the code is recompiled, type 
 \begin{verbatim}
 ./tutorial ../../meshFiles/2D/VTK/hole_in_square.vtk
 \end{verbatim}
-The smoothed mesh is shown on the right picture of figure
-\ref{fig:hole}. The chosen Mesquite scheme has repositioned the vertices but has not changed the
-mesh topology; nonetheless, the mesh has been tremendously improved, as shown by the onscreen
+to improve this mesh.
+The smoothed mesh is shown in the right image of figure
+\ref{fig:hole}.
+The vertex locations have been repositioned and significantly improve
+the quality of the mesh, as shown by the onscreen
 quality assessor output: 
 \begin{verbatim}
 ************  Quality summary of MeshSet  *****************
@@ -1698,6 +1747,10 @@ optimizing a patch.
 \chapter{Troubleshooting}
 
 \chapter{Caveats, Limitations, and Disclaimers}
+
+Input meshes may suffer quality dis-improvement in some cases due to
+failures of the numerical algorithm. Users are advised to keep a copy
+of their original mesh in case of such a failure.
 
 \chapter{User Support}
 
