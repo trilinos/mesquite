@@ -205,7 +205,7 @@ namespace Mesquite {
       coords[0] = 1.5; coords[1] = 1+sqrt(3.0)/2.0; coords[2] = 1;
       index = pd.add_vertex(NULL, NULL, coords, false, err);
       MSQ_CHKERR(err);
-      coords[0] = -1.5; coords[1] = 1+sqrt(3.0)/2.0; coords[2] = 1;
+      coords[0] = 1.5; coords[1] = 1-sqrt(3.0)/2.0; coords[2] = 1;
       index = pd.add_vertex(NULL, NULL, coords, false, err);
       MSQ_CHKERR(err);
     

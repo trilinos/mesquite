@@ -26,6 +26,7 @@ correct metric return values.
 #include "PatchDataInstances.hpp"
 #include "QualityMetric.hpp"
 #include "ConditionNumberQualityMetric.hpp"
+#include "VertexConditionNumberQualityMetric.hpp"
 #include "GeneralizedConditionNumberQualityMetric.hpp"
 #include "MeanRatioQualityMetric.hpp"
 #include "InverseMeanRatioQualityMetric.hpp"
@@ -69,7 +70,8 @@ private:
   CPPUNIT_TEST (test_corner_jacobian_metric);
     //Test local size metric
   CPPUNIT_TEST (test_local_size_metric);
-  
+  //Test local size metric
+  CPPUNIT_TEST (test_vertex_based_condition_number_metric);
   CPPUNIT_TEST_SUITE_END();
   
 private:
@@ -479,6 +481,37 @@ public:
        CPPUNIT_ASSERT(third_val<1.0);
        CPPUNIT_ASSERT(third_bool==true);
          */
+     }
+  void test_vertex_based_condition_number_metric()
+     {
+       ShapeQualityMetric *met = VertexConditionNumberQualityMetric::create_new();
+       MsqError err;
+         //Test the metric on a single elemnt patch
+       PatchData p1;
+       create_one_tri_patch(p1, err);
+       MsqVertex* vert1=p1.get_vertex_array(err);
+       double first_val=-1;
+       bool first_bool=met->evaluate_vertex(p1,&vert1[0],first_val,err);
+       if(pF)
+         PRINT_INFO("\nVertex Condition No. Metric ideal tri %f", first_val);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(first_val, 1.0, MSQ_MIN);
+       CPPUNIT_ASSERT(first_bool==true);
+       first_bool=met->evaluate_vertex(p1,&vert1[1],first_val,err);
+       if(pF)
+         PRINT_INFO("\nVertex Condition No. Metric ideal tri %f", first_val);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(first_val, 1.0, MSQ_MIN);
+       CPPUNIT_ASSERT(first_bool==true);
+         //Test on a patch with two ideal tris
+       PatchData p2;
+       create_two_tri_patch(p2, err);
+       MsqVertex* vert2=p2.get_vertex_array(err);
+       double second_val;
+       bool second_bool=met->evaluate_vertex(p2,&vert2[0],second_val,err);
+         //Two neighboring tris with equal area should have local size of 1.0
+       if(pF)
+         PRINT_INFO("\nVertex Condition No. Metric ideal tris %f", second_val);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(second_val, 1.0, MSQ_MIN);
+       CPPUNIT_ASSERT(second_bool==true);
      }
   
   
