@@ -160,9 +160,9 @@ const int MSQ_INT_MIN = -2147483647;
 #endif
 }
 
-//#ifndef USE_FUNCTION_TIMERS
-//#define USE_FUNCTION_TIMERS
-//#endif
+#ifndef USE_FUNCTION_TIMERS
+#define USE_FUNCTION_TIMERS
+#endif
 
 #ifdef USE_STD_INCLUDES
   #define MSQ_USE(A) using std::A 

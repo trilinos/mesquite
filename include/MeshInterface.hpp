@@ -368,6 +368,9 @@ namespace Mesquite
       //! appropriate point.
       //! In summary, the handle determines the domain.  The coordinate
       //! determines the point of interest on that domain.
+      //!
+      //! User should see also PatchData::get_domain_normal_at_vertex and
+      //! PatchData::get_domain_normal_at_element .
     virtual void normal_at(Mesh::EntityHandle entity_handle,
                            Vector3D &coordinate) = 0;
   };
