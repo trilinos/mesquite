@@ -30,7 +30,8 @@ namespace Mesquite
 	public:
 	   CompositeOFScalarMultiply(double, ObjectiveFunction*);
 	   ~CompositeOFScalarMultiply();
-	  virtual double concrete_evaluate(PatchData &patch, MsqError &err);
+	  virtual bool concrete_evaluate(PatchData &patch, double &fval,
+                                    MsqError &err);
      virtual std::list<QualityMetric*> get_quality_metric_list();
 	protected:
      

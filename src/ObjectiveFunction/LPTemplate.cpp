@@ -23,7 +23,7 @@ LPTemplate::LPTemplate(QualityMetric *qualitymetric, int Pinput, MsqError &err){
     err.set_msg("P_VALUE must be greater than 1.");
   }
   set_feasible(qualitymetric->get_feasible_constraint());
-  set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
+  set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
   set_negate_flag(qualitymetric->get_negate_flag());
 }
 
@@ -37,11 +37,11 @@ LPTemplate::~LPTemplate(){
 
 #undef __FUNC__
 #define __FUNC__ "LPTemplate::concrete_evaluate"
-double LPTemplate::concrete_evaluate(PatchData &patch, MsqError &err){
+bool LPTemplate::concrete_evaluate(PatchData &patch, double &fval,
+                                   MsqError &err){
     //Total value of objective function
-//  double total_value=0;
-//  double temp_value=0;
   int index=0;
+  bool lp_bool=true;
 //  double accum=0;
   MsqMeshEntity* elems=patch.get_element_array(err);
   
@@ -71,7 +71,14 @@ double LPTemplate::concrete_evaluate(PatchData &patch, MsqError &err){
 //    MsqMeshEntity* current_ent;
     for (index=0; index<num_elements;index++)
     {
-      currentQM->evaluate_element(patch, (&elems[index]), metric_values[index], err); 
+      lp_bool=currentQM->evaluate_element(patch, (&elems[index]),
+                                          metric_values[index], err);
+        //if element is inverted, return false without calculating fval.    
+      if(!lp_bool){
+        delete[] metric_values;
+        fval=0.0;
+        return false;
+      }
       metric_values[index]=fabs(metric_values[index]);
       MSQ_DEBUG_ACTION(3,{std::cout<< "      o  Quality metric value for element "
                           << index << "\t: " << metric_values[index] << "\n";});
@@ -83,28 +90,36 @@ double LPTemplate::concrete_evaluate(PatchData &patch, MsqError &err){
     for (index=0; index<num_vertices;index++)
     {
         //evaluate metric for this vertex
-      currentQM->evaluate_vertex(patch, (&vertices[index]), metric_values[index], err);
+      lp_bool=currentQM->evaluate_vertex(patch, (&vertices[index]),
+                                         metric_values[index], err);
+        //if element is inverted, return false without calculating fval.
+      if(!lp_bool){
+        delete[] metric_values;
+        fval=0.0;
+        return false;
+      }
       metric_values[index]=fabs(metric_values[index]);
     }
   }
-  double obj_val=compute_function(metric_values, total_num, err);
+  fval=compute_function(metric_values, total_num, err);
+  fval=pow(fval, 1/((double) pVal));
   delete[] metric_values;
-  return obj_val;
+  return true;
 }
 
 #undef __FUNC__
 #define __FUNC__ "LPTemplate::compute_analytical_gradient"
-/*! \fn LPTemplate::compute_analytical_gradient(PatchData &patch, Vector3D *const &grad, MsqError &err, int array_size)
+/*! \fn LPTemplate::compute_analytical_gradient(PatchData &patch,Vector3D *const &grad, MsqError &err, int array_size)
     \param patch The PatchData object for which the objective function
            gradient is computed.
     \param grad An array of Vector3D, at least the size of the number
            of free vertices in the patch.
-    \param array_size is the size of the grad Vector3D[] array and must correspond
-           to the number of free vertices in the patch. This argument will be used to
-           perform a costly check (counting the number of free vertices) is MSQ_DBG1
-           or higher is defined.
+    \param array_size is the size of the grad Vector3D[] array and
+    must correspond to the number of free vertices in the patch.
+    This argument will be used to perform a costly check (counting
+    the number of free vertices) is MSQ_DBG1 or higher is defined.
 */
-void  LPTemplate::compute_analytical_gradient(PatchData &patch,
+bool LPTemplate::compute_analytical_gradient(PatchData &patch,
                                               Vector3D *const &grad,
                                               MsqError &err, int array_size)
 {
@@ -115,7 +130,7 @@ void  LPTemplate::compute_analytical_gradient(PatchData &patch,
   std::vector<size_t> vert_on_vert_ind;
   MsqMeshEntity* elems=patch.get_element_array(err);
   MsqVertex* vertices=patch.get_vertex_array(err);
-
+  bool lp_bool=true;
   // If MSQ_DBG1 is defined, check to make sure that num_free_vert == array_size.
   MSQ_DEBUG_ACTION(1,{
     int num_free_vert=patch.num_free_vertices(err); // costly function !
@@ -148,7 +163,15 @@ void  LPTemplate::compute_analytical_gradient(PatchData &patch,
   // fill array with element quality metrics
   if(qm_type==QualityMetric::ELEMENT_BASED){
     for (index=0; index<num_elements;++index){
-      currentQM->evaluate_element(patch, &elems[index], metric_values[index], err);
+      lp_bool=currentQM->evaluate_element(patch, &elems[index],
+                                          metric_values[index], err);
+      MSQ_CHKERR(err);
+        //if element is invalid
+      if(!lp_bool){
+        delete[] metric_values;
+        return false;
+      }
+      
       metric_values[index]=fabs(metric_values[index]);
     }
   }
@@ -156,14 +179,24 @@ void  LPTemplate::compute_analytical_gradient(PatchData &patch,
   else if (qm_type==QualityMetric::VERTEX_BASED) {
     for (index=0; index<num_vertices;++index){
       //evaluate metric for this vertex
-      currentQM->evaluate_vertex(patch, &vertices[index], metric_values[index], err);
+      lp_bool=currentQM->evaluate_vertex(patch, &vertices[index],
+                                         metric_values[index], err);
+      MSQ_CHKERR(err);
+      //if patch is invalid
+      if(!lp_bool){
+        delete[] metric_values;
+        return false;
+      }
       metric_values[index] = fabs( metric_values[index] );
     }
   }
   big_f=compute_function(metric_values, total_num, err);
-  big_f=pow(big_f,(1-pVal));
+  if(big_f<0.0){
+    err.set_msg("In LPTemplate, normed value is negative.");
+  }
+  big_f=pow(big_f,((1/ (double) pVal)-1));
   big_f*=get_negate_flag(); //if function negated for minimization, so is gradient.
-
+  
   MsqFreeVertexIndexIterator free_ind(&patch, err);
   free_ind.reset();
   //position in patch's vertex array
@@ -199,6 +232,10 @@ void  LPTemplate::compute_analytical_gradient(PatchData &patch,
         for(index=0;index<pVal-1;++index){
           temp_value*=metric_values[elem_pos];
         }
+        //if pval is odd and met val is negative
+        if(metric_values[elem_pos]<0  && pVal%2 ){
+          temp_value*=(-1);
+        }          
         grad[grad_pos] += temp_value*grad_vec;
         //elem_pos++;
       }
@@ -225,6 +262,10 @@ void  LPTemplate::compute_analytical_gradient(PatchData &patch,
         for(index=0;index<pVal-1;++index){
           temp_value*=metric_values[vert_pos];
         }
+        //if pval is odd and met val is negative
+        if(metric_values[vert_pos]<0  && pVal%2 ){
+          temp_value*=(-1);
+        }          
         grad[grad_pos] += temp_value*grad_vec;
       }
       delete []vert_free_vtces;     
@@ -237,6 +278,7 @@ void  LPTemplate::compute_analytical_gradient(PatchData &patch,
     
   }
   delete metric_values;
+  return true;
 }
 
     //

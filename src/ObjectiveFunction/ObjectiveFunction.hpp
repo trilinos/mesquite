@@ -42,14 +42,23 @@ namespace Mesquite
       /*! 
         Evaluate the objective function on a given patch.
       */
-    virtual double concrete_evaluate(PatchData &patch, MsqError &err)=0;
+    virtual bool concrete_evaluate(PatchData &patch, double &fval,
+                                   MsqError &err)=0;
 
-      /*! 
-        Returns negateFlag*concrete_evaluate(patch, err).
+      /*!
+        Computes the valueof the objective funciton as fval*negateFlag,
+        where fval is computed in concrete_evaluate(patch, fval, err)
+        and negateFlag is either 1 or -1 depending on whether the
+        function needs to be minimized or maximized, respectively.
+        Returns the bool given as a return value from concrete_evaluate.
+        If the bool is 'false', then the patch is not within the feasible
+        region required by the associated QualityMetric(s).
       */
-    double evaluate(PatchData &patch, MsqError &err)
+    bool evaluate(PatchData &patch, double &fval, MsqError &err)
        {
-         return negateFlag*concrete_evaluate(patch,err);
+         bool return_bool = concrete_evaluate(patch, fval, err);
+         fval *= negateFlag;
+         return return_bool;
        }
     
     enum GRADIENT_TYPE{
@@ -67,8 +76,11 @@ namespace Mesquite
 
       /*!Calls either compute_numerical_gradient or compute_analytical_gradient
         depending on the value of gradType.
+        Function returns 'false' if the patch is not within a required
+        feasible regeion.  Otherwise, it returns 'true'.
       */
-    void compute_gradient(PatchData &patch, Vector3D *const &grad, MsqError &err, int array_size=-1);          
+    bool compute_gradient(PatchData &patch, Vector3D *const &grad,
+                          MsqError &err, int array_size=-1);          
               
   /*! 
         Return the quality metric associated with this objective function.
@@ -122,9 +134,12 @@ namespace Mesquite
     
    protected:
 
-      //!Non-virtual function which numerically computes the gradient
-      //!  of the Objective Function.
-    void compute_numerical_gradient(PatchData &patch, Vector3D *const &grad,
+      /*!Non-virtual function which numerically computes the gradient
+         of the Objective Function.
+         Function returns 'false' if the patch is not within a required
+        feasible regeion.  Otherwise, it returns 'true'.
+      */
+    bool compute_numerical_gradient(PatchData &patch, Vector3D *const &grad,
                                     MsqError &err, int array_size);
 
      /*! 
@@ -133,18 +148,21 @@ namespace Mesquite
         quality metric.  If the function has not been over-riden
         in the concrete Objective Function, the base class implementation
         prints a warning and then defaults to numerical gradient.
+        Function returns 'false' if the patch is not within a required
+        feasible regeion.  Otherwise, it returns 'true'.
       */
-    virtual void  compute_analytical_gradient(PatchData &patch,
-                                              Vector3D *const &grad,
-                                              MsqError &err, int array_size){
+    virtual bool compute_analytical_gradient(PatchData &patch,
+                                             Vector3D *const &grad,
+                                             MsqError &err, int array_size){
       PRINT_WARNING("Analytic gradient not implemented for this Objective ",
                     "Function. Defaulting to numerical gradient.\n");
       set_gradient_type(NUMERICAL_GRADIENT);
-      compute_numerical_gradient(patch, grad, err, array_size);
+      return compute_numerical_gradient(patch, grad, err, array_size);
     }
     
       //!Returns eps used in the numerical gradient calculation.
-    double get_eps(PatchData &pd,int k,MsqVertex* vertex, MsqError &err);
+    double get_eps(PatchData &pd, double &local_val,int k,MsqVertex* vertex,
+                   MsqError &err);
     
       //!Checks to make sure the mesh is in the feasible region.
     int check_feasible(PatchData &pd, MsqError &err);
@@ -177,19 +195,23 @@ namespace Mesquite
        Calls either compute_numerical_gradient or compute_analytical_gradient
        depending on the value of gradType.           
       */
-   inline void ObjectiveFunction::compute_gradient(PatchData &patch,
+   inline bool ObjectiveFunction::compute_gradient(PatchData &patch,
                                                    Vector3D *const &grad,
                                                    MsqError &err,
                                                    int array_size)
    {
+     bool obj_bool;
      switch(gradType){
        case NUMERICAL_GRADIENT:
-          compute_numerical_gradient(patch, grad, err, array_size);MSQ_CHKERR(err);
+          obj_bool=compute_numerical_gradient(patch, grad, err, array_size);
+          MSQ_CHKERR(err);
           break;
        case ANALYTICAL_GRADIENT:
-          compute_analytical_gradient(patch, grad, err, array_size);MSQ_CHKERR(err);
+          obj_bool=compute_analytical_gradient(patch, grad, err, array_size);
+          MSQ_CHKERR(err);
           break;
      }
+     return obj_bool;
    }
 
 } //namespace

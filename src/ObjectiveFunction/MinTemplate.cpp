@@ -30,12 +30,13 @@ MinTemplate::~MinTemplate(){
 #undef __FUNC__
 #define __FUNC__ "MinTemplate::concrete_evaluate"
 
-double MinTemplate::concrete_evaluate(PatchData &patch, MsqError &err){
+bool MinTemplate::concrete_evaluate(PatchData &patch, double &fval,
+                                    MsqError &err){
 
   //Total value of objective function
-  double total_value=0;
+  fval = 0.0;
   double temp_value=0;
-
+  bool obj_bool = true;
   //For elements in Patch
   int index;
   QualityMetric* currentQM = get_quality_metric();
@@ -47,11 +48,17 @@ double MinTemplate::concrete_evaluate(PatchData &patch, MsqError &err){
     for (index=0; index<num_elements; index++){
 
       //evaluate metric for this elem
-      currentQM->evaluate_element(patch, &elems[index], temp_value, err);
+      obj_bool = currentQM->evaluate_element(patch, &elems[index],
+                                             temp_value, err);
       MSQ_CHKERR(err);
+        //if invalid patch
+      if(! obj_bool ){
+        fval = 0.0;
+        return false;
+      }
 
-      if(temp_value<total_value)
-        total_value=temp_value;
+      if(temp_value<fval )
+        fval=temp_value;
 
     }//end loop over elements
   }//end if not VERTEX
@@ -64,11 +71,16 @@ double MinTemplate::concrete_evaluate(PatchData &patch, MsqError &err){
     for (index=0; index<num_vertices;index++){
 
       //evaluate metric for this vertex
-      currentQM->evaluate_vertex(patch, &vertices[index], temp_value, err);
+      obj_bool=currentQM->evaluate_vertex(patch, &vertices[index],
+                                          temp_value, err);
       MSQ_CHKERR(err);
-
-      if(temp_value<total_value)
-        total_value=temp_value;
+      //if invalid patch
+      if(! obj_bool ){
+        fval = 0.0;
+        return false;
+      }
+      if(temp_value<fval)
+        fval=temp_value;
 
     }//end loop over vertices
   }//end else VERTEX
@@ -76,7 +88,7 @@ double MinTemplate::concrete_evaluate(PatchData &patch, MsqError &err){
     err.set_msg("Make sure MetricType is initialised in concrete QualityMetric constructor.");
   }
   
-  return total_value;
+  return true;
 }
 	
 	

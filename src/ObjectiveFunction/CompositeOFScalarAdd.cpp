@@ -41,19 +41,24 @@ CompositeOFScalarAdd::~CompositeOFScalarAdd(){
 
 #undef __FUNC__
 #define __FUNC__ "CompositeOFScalarAdd::concrete_evaluate()"
-/*!Returns alpha+objFunc->evaluate(patch,err).  Note that since Obj's
+/*!Computes fval= alpha+objFunc->evaluate(patch,err).  Note that since Obj's
   evaluate() function is called (as opposed to its concrete_evaluate) the
   returned value has been multiplied by objFunc's negateFlag (that is,
   if objFunc needed to be maximized then the value has been multiplied
   by negative one so that it may be minimized instead.)
+  Functions returns `false' if and only if objFunc->evaluate() returns
+  `false'.
 */
-double CompositeOFScalarAdd::concrete_evaluate(PatchData &patch, MsqError &err){
-  //Total value of objective function
-  double total_value=objFunc->evaluate(patch, err);
-    //if(objFunc2)
-    //total_value*=objFunc2->evaluate(patch, err);
-  total_value+=alpha;
-  return total_value;
+bool CompositeOFScalarAdd::concrete_evaluate(PatchData &patch, double &fval,
+                                             MsqError &err){
+    //if invalid return false without calculating fval.
+  if( ! objFunc->evaluate(patch, fval, err)){
+    fval = 0.0;
+    return false;
+  }
+  
+  fval+=alpha;
+  return true;
 }
 
 #undef __FUNC__

@@ -22,7 +22,7 @@ using namespace Mesquite;
   \param grad  Array of Vector3D used to store gradient.
   \param array_size Either the length of grad or -1.
  */
-void ObjectiveFunction::compute_numerical_gradient(Mesquite::PatchData &pd,
+bool ObjectiveFunction::compute_numerical_gradient(Mesquite::PatchData &pd,
                                                    Vector3D *const &grad,
                                                    MsqError &err,
                                                    int array_size) {
@@ -35,11 +35,9 @@ void ObjectiveFunction::compute_numerical_gradient(Mesquite::PatchData &pd,
   int m=0;
     //index into gradient array that corresponds to current free vertex
   int grad_pos=0;
-  
   double flocal=0;
   double flocald=0;
   double eps=0;
-  double coord_hold;
   MsqFreeVertexIndexIterator ind(&pd, err);
   ind.reset();
   while(ind.next()){
@@ -47,62 +45,60 @@ void ObjectiveFunction::compute_numerical_gradient(Mesquite::PatchData &pd,
       //This is NOT right, but it is a temporary solution
       //we need an effective way to evaluate an objective function
       //on a local patch... should we create a local patch data object here
-    flocal=evaluate(pd,err);
+      //
+      //If pd is not in the feasible region, do not calculate anything.
+      //Just return false.
+    if(! evaluate(pd,flocal,err))
+    {
+      return false;
+    }
     MSQ_CHKERR(err);
     int j=0;
       //loop over the three coords x,y,z
     for(j=0;j<3;++j){
-      eps=get_eps(pd,j,(&vertices[m]),err);
+      eps=get_eps(pd,flocald, j,(&vertices[m]),err);
         //PRINT_INFO("\nin obj num grad j=%i, eps=%20.19f",j,eps);
-      coord_hold=vertices[m][j];
-      vertices[m][j]+=eps;
-      flocald=evaluate(pd,err);
-        //PRINT_INFO("\nin obj num grad j=%i, flocal=%18.16f, flocald=%18.16f",j,flocal,flocald);
       if(eps==0){
         err.set_msg("Dividing by zero in Objective Functions numerical grad");
-        return;
+        return false;
       }
       grad[grad_pos][j]=(flocald-flocal)/eps;
-      vertices[m][j]=coord_hold;
     }
     ++grad_pos;
     MSQ_CHKERR(err);
   }//end loop over free vertices
+  return true;
+  
 }
 
 /*!Returns an appropiate value (eps) to use as a delta step for
   MsqVertex vertex in dimension k (i.e. k=0 -> x, k=1 -> y, k=2 -> z).
+  The objective function value at the perturbed vertex position is given
+  in local_val.
   */
-double ObjectiveFunction::get_eps(PatchData &pd,int k,MsqVertex* vertex,
-                                  MsqError &err)
+double ObjectiveFunction::get_eps(PatchData &pd, double &local_val,
+                                  int k,MsqVertex* vertex, MsqError &err)
 {
   double eps = 1.e-07;
 //  double rho=.5;
   int imax=20;
   int i=0;
-  int feasible=1;
+  bool feasible=false;
   double tmp_var=0.0;
-  while (i<imax&&feasible==1)
+  while (i<imax && !feasible)
   {
     i++;
       //perturb kth coord val and check feas if needed
     tmp_var=(*vertex)[k];
     (*vertex)[k]+=eps;
-    if(get_feasible_constraint()){
-      feasible=check_feasible(pd,err);
-        //if step was too big, shorten it
-      if(feasible==1)
-        eps*=0.5;
-    }
+    feasible = evaluate(pd,local_val,err);
+      //if step was too big, shorten it         
+    if(!feasible)
+      eps*=0.5;
       //revert kth coord val
     (*vertex)[k]=tmp_var;
   }//end while looking for feasible eps
-  return eps;
+ return eps;
 }//end funciton get_eps
 
 
-//!Check feasible takes a patch and makes sure that each element is valid
-int ObjectiveFunction::check_feasible(PatchData &pd,MsqError &err){
-  //TODO (Michael) THIS FUNCTION NEEDS TO BE IMPLEMENTED
-  return 0;    
-}

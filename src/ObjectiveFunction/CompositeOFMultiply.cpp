@@ -72,18 +72,30 @@ std::list<QualityMetric*> CompositeOFMultiply::get_quality_metric_list()
 
 #undef __FUNC__
 #define __FUNC__ "CompositeOFMultiply::concrete_evaluate"
-/*!Returns objFunc1->evaluate(patch,err)*objFunc2->evaluate(patch,err).
+/*!Computes fval= objFunc1->evaluate(patch,err)*objFunc2->evaluate(patch,err).
   Note that since objFunc1 and objFunc2's evaluate() functions are called
   (as opposed to their concrete_evaluates) the returned values have
   already been multiplied by the respective negateFlag (that is,
   if objFunc1 (or objFunc2) needed to be maximized then the value has
   been multiplied by negative one so that it may be minimized instead.)
+  Function returns `false' if either objFunc1->evaluate() or
+  objFunc2->evaluate() returns `false'; otherwise function returns `true'.
 */
-double CompositeOFMultiply::concrete_evaluate(PatchData &patch, MsqError &err){
-  //Total value of objective function
-  double total_value=objFunc1->evaluate(patch, err);
-  total_value*=objFunc2->evaluate(patch, err);
-  return total_value;
+bool CompositeOFMultiply::concrete_evaluate(PatchData &patch, double &fval,
+                                            MsqError &err){
+  double second_val;
+    //if invalid, return false without calculating fval.
+  if(! objFunc1->evaluate(patch, fval, err)){
+    fval=0.0;
+    return false;
+  }
+  
+  if(! objFunc2->evaluate(patch, second_val, err)){
+    fval=0.0;
+    return false;
+  }
+  fval*=second_val;
+  return true;
 }
 	
 	

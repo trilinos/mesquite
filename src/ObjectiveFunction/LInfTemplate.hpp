@@ -31,7 +31,8 @@ namespace Mesquite
 	public:
 	  LInfTemplate(QualityMetric *);
 	  ~LInfTemplate();
-	  virtual double concrete_evaluate(PatchData &patch, MsqError &err);
+	  virtual bool concrete_evaluate(PatchData &patch, double &fval,
+                                    MsqError &err);
 	protected:
 	private:
 	  

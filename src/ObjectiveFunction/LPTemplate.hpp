@@ -30,9 +30,10 @@ namespace Mesquite
 	public:
 	  LPTemplate(QualityMetric *, int, MsqError &);
 	  ~LPTemplate();
-	  virtual double concrete_evaluate(PatchData &patch, MsqError &err);
+	  virtual bool concrete_evaluate(PatchData &patch, double &fval,
+                                    MsqError &err);
 	protected:
-     virtual void  compute_analytical_gradient(PatchData &patch,
+     virtual bool  compute_analytical_gradient(PatchData &patch,
                                                Vector3D *const &grad,
                                                MsqError &err, int array_size);
      
@@ -56,7 +57,9 @@ namespace Mesquite
        }
        total_value+=temp_value;
      }
-     return pow(total_value, 1/((double) pVal));
+       //power is now done in cpp file
+       //return pow(total_value, 1/((double) pVal));
+     return total_value;
    }
    
 }//namespace

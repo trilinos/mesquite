@@ -31,10 +31,12 @@ LInfTemplate::~LInfTemplate(){
 
 #undef __FUNC__
 #define __FUNC__ "LInfTemplate::concrete_evaluate"
-double LInfTemplate::concrete_evaluate(PatchData &patch, MsqError &err){
+bool LInfTemplate::concrete_evaluate(PatchData &patch, double &fval,
+                                     MsqError &err){
     //Total value of objective function
-  double total_value=0;
   double temp_value=0;
+  fval=0.0;
+  bool obj_bool=true;
     //For elements in Patch
   int index;
   QualityMetric* currentQM = get_quality_metric();
@@ -47,11 +49,17 @@ double LInfTemplate::concrete_evaluate(PatchData &patch, MsqError &err){
       //Set currentQM to be the first quality metric* in the list 
     for (index=0; index<num_elements;index++){
         //evaluate metric for this elem
-      currentQM->evaluate_element(patch, &elems[index], temp_value, err);
+      obj_bool=currentQM->evaluate_element(patch, &elems[index], temp_value,
+                                           err);
+      MSQ_CHKERR(err);
+        //if invalid patch
+      if(!obj_bool){
+        return false;
+      }
       temp_value = fabs(temp_value);
       MSQ_CHKERR(err);
-      if(temp_value>total_value)
-        total_value=temp_value;
+      if(temp_value>fval)
+        fval=temp_value;
     }//end loop over elements
   }//end if not VERTEX
   else {//VERTEX
@@ -62,14 +70,19 @@ double LInfTemplate::concrete_evaluate(PatchData &patch, MsqError &err){
  
     for (index=0; index<num_vertices;index++){
         //evaluate metric for this vertex
-      currentQM->evaluate_vertex(patch,&vertices[index], temp_value, err);
-      temp_value = fabs(temp_value);                
+      obj_bool=currentQM->evaluate_vertex(patch,&vertices[index],
+                                          temp_value, err);
       MSQ_CHKERR(err);
-      if(temp_value>total_value)
-        total_value=temp_value;
+        //if invalid patch
+      if(!obj_bool){
+        return false;
+      }
+      temp_value = fabs(temp_value);
+      if(temp_value>fval)
+        fval=temp_value;
     }//end loop over vertices
   }//end elseVERTEX
-  return total_value;
+  return true;
 }
 	
 	
