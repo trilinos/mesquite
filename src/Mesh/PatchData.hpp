@@ -94,7 +94,7 @@ namespace Mesquite
       MIN_EDGE_LENGTH, //!< minimum edge length in the patch
       MAX_EDGE_LENGTH, //!< maximum edge length in the patch
       MINMAX_SIGNED_DET2D, //!< minimum and maximum corner area out of all elements in the patch
-      MINMAX_SIGNED_DET3D, //!< minimum and maximum corner volume out of all elements in the patch
+      MINMAX_SIGNED_DET3D //!< minimum and maximum corner volume out of all elements in the patch
     };
 
     //! This function clears the patch information such as maximum volume, etc ... 

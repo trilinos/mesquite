@@ -223,7 +223,7 @@ namespace Mesquite
                                             Vector3D *const &/*grad*/,
                                             double &/*OF_val*/,
                                             MsqError &/*err*/) {
-      PRINT_WARNING("Analytic hessian not implemented for this Objective ",
+      PRINT_WARNING("Analytic hessian not implemented for this Objective "
                     "Function. Feasible Newton algorythm cannot be used.\n");
       return false;
     }
