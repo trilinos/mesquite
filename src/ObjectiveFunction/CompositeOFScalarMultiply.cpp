@@ -10,6 +10,7 @@
 #include "ObjectiveFunction.hpp"
 #include "CompositeOFScalarMultiply.hpp"
 #include "MsqMessage.hpp"
+#include "MsqTimer.hpp"
 using namespace Mesquite;
 
 

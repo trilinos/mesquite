@@ -9,6 +9,7 @@
 #include <math.h>
 #include "ObjectiveFunction.hpp"
 #include "CompositeOFScalarAdd.hpp"
+#include "MsqTimer.hpp"
 using namespace Mesquite;
 
 
