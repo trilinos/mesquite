@@ -88,7 +88,7 @@ namespace Mesquite
    private:
      FlagMask vertexBitFlags;
 
-     friend MeshSet;
+     friend class Mesquite::MeshSet;
    };
   
 } //namespace
