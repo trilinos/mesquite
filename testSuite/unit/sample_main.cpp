@@ -51,6 +51,10 @@ int main(int argc, char **argv)
      CppUnit::TestFactoryRegistry &registry8 =
       CppUnit::TestFactoryRegistry::getRegistry("MsqFreeVertexIndexIteratorTest");
     runner.add_test( registry8.makeTest() );
+
+    CppUnit::TestFactoryRegistry &registry9 =
+      CppUnit::TestFactoryRegistry::getRegistry("QualityMetricTest");
+    runner.add_test( registry9.makeTest() );
   }
   
     // Run the tests
