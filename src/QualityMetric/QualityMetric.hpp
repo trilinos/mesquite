@@ -189,6 +189,16 @@ namespace Mesquite
        //!Returns negateFlag.
      int get_negate_flag()
         { return negateFlag; }
+       /*! This function is user accessible and virtual.  The base
+         class implementation sets an error, because many metrics
+         will only be defined as Element_based or Vertex_based, and
+         this function will not be needed.  Some concrete metrics
+         will have both Element_based and Vertex_based definintions,
+         and those metrics will re-implement this function to the
+         MetricType to be changed to either QualityMetric::VERTEX_BASED
+         or QualityMetric::ELEMENT_BASED.*/
+     virtual void change_metric_type(MetricType t, MsqError &err);
+     
      
   protected:
      
