@@ -47,7 +47,7 @@ namespace Mesquite
       */
     inline void randomize_vertex(PatchData &pd,int num_vtx,
                                  MsqVertex &free_vtx,
-                                 int dimension, MsqError &err);
+                                 MsqError &err);
   };
 
   
@@ -56,7 +56,7 @@ namespace Mesquite
     //!Perturbs the free vertex randomly.
   inline void Randomize::randomize_vertex(PatchData &pd, int num_vtx,
                                           MsqVertex &free_vtx,
-                                          int dimension, MsqError &err)
+                                          MsqError &err)
   {
     int i,j;
     MsqVertex* verts = pd.get_vertex_array(err);

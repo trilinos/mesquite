@@ -16,7 +16,8 @@ using namespace Mesquite;
 
 #undef __FUNC__
 #define __FUNC__ "TopologyModifier::loop_over_mesh" 
-void TopologyModifier::loop_over_mesh(MeshSet& mesh, MsqError &err)
+void TopologyModifier::loop_over_mesh(MeshSet& /*mesh*/,
+                                      MsqError &/*err*/)
 {
   // TODO: for all vertices
 //  cout << "o Executing TopologyModifier::loop_over_mesh()\n"

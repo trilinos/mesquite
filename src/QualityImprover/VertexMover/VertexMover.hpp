@@ -99,7 +99,7 @@ namespace Mesquite
   and returns the infinity norm of vec.
 */
   inline double VertexMover:: infinity_norm(Vector3D * const vec, int len,
-                                          MsqError &err)
+                                            MsqError &/*err*/)
   {
     double grad_norm=0;
     for(int gi=0;gi<len;++gi){

@@ -33,14 +33,14 @@ Randomize::Randomize(double percent)
   
 #undef __FUNC__
 #define __FUNC__ "Randomize::initialize" 
-void Randomize::initialize(PatchData &pd, MsqError &err)
+void Randomize::initialize(PatchData &/*pd*/, MsqError &err)
 {
   this->set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err, 1);
 }
 
 #undef __FUNC__
 #define __FUNC__ "Randomize::initialize_mesh_iteration" 
-void Randomize::initialize_mesh_iteration(PatchData &pd, MsqError &err)
+void Randomize::initialize_mesh_iteration(PatchData &/*pd*/, MsqError &/*err*/)
 {
   //  cout << "- Executing Randomize::iteration_complete()\n";
 }
@@ -53,8 +53,6 @@ void Randomize::optimize_vertex_positions(PatchData &pd,
     //cout << "- Executing Randomize::optimize_vertex_position()\n";
 
   int num_local_vertices = pd.num_vertices();
-    //int dim = pd.space_dim();
-  int dim = get_mesh_set()->space_dim();  
   // gets the array of coordinates for the patch and print it 
   MsqVertex *patch_coords = pd.get_vertex_array(err); MSQ_CHKERR(err);
   // does the randomize smooth
@@ -64,13 +62,13 @@ void Randomize::optimize_vertex_positions(PatchData &pd,
     //find the free vertex.
   int m=free_iter.value();
   randomize_vertex(pd, num_local_vertices,
-                   patch_coords[m], dim, err); MSQ_CHKERR(err);
+                   patch_coords[m], err); MSQ_CHKERR(err);
   pd.snap_vertex_to_domain(m,err);
 }
   
 #undef __FUNC__
 #define __FUNC__ "Randomize::terminate_mesh_iteration" 
-void Randomize::terminate_mesh_iteration(PatchData &pd, MsqError &err)
+void Randomize::terminate_mesh_iteration(PatchData &/*pd*/, MsqError &/*err*/)
 {
   //  cout << "- Executing Randomize::iteration_complete()\n";
 }

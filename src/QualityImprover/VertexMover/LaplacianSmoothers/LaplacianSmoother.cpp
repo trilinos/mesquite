@@ -29,14 +29,15 @@ LaplacianSmoother::LaplacianSmoother(MsqError &err)
   
 #undef __FUNC__
 #define __FUNC__ "LaplacianSmoother::initialize" 
-void LaplacianSmoother::initialize(PatchData &pd, MsqError &err)
+void LaplacianSmoother::initialize(PatchData& /*pd*/, MsqError& /*err*/)
 {
  
 }
 
 #undef __FUNC__
 #define __FUNC__ "LaplacianSmoother::initialize_mesh_iteration" 
-void LaplacianSmoother::initialize_mesh_iteration(PatchData &pd, MsqError &err)
+void LaplacianSmoother::initialize_mesh_iteration(PatchData &/*pd*/,
+                                                  MsqError &/*err*/)
 {
   //  cout << "- Executing LaplacianSmoother::iteration_complete()\n";
 }
@@ -72,7 +73,8 @@ void LaplacianSmoother::optimize_vertex_positions(PatchData &pd,
   
 #undef __FUNC__
 #define __FUNC__ "LaplacianSmoother::terminate_mesh_iteration" 
-void LaplacianSmoother::terminate_mesh_iteration(PatchData &pd, MsqError &err)
+void LaplacianSmoother::terminate_mesh_iteration(PatchData &/*pd*/,
+                                                 MsqError &/*err*/)
 {
   //  cout << "- Executing LaplacianSmoother::iteration_complete()\n";
 }

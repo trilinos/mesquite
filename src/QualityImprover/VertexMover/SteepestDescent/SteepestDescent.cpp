@@ -30,13 +30,13 @@ SteepestDescent::SteepestDescent(ObjectiveFunction* of) :
 
 #undef __FUNC__
 #define __FUNC__ "SteepestDescent::initialize" 
-void SteepestDescent::initialize(PatchData &pd, MsqError &err)
+void SteepestDescent::initialize(PatchData &/*pd*/, MsqError &/*err*/)
 {
 }
 
 #undef __FUNC__
 #define __FUNC__ "SteepestDescent::initialize_mesh_iteration" 
-void SteepestDescent::initialize_mesh_iteration(PatchData &pd, MsqError &err)
+void SteepestDescent::initialize_mesh_iteration(PatchData &/*pd*/, MsqError &/*err*/)
 {
 }
 
@@ -164,7 +164,7 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
 
 #undef __FUNC__
 #define __FUNC__ "SteepestDescent::terminate_mesh_iteration" 
-void SteepestDescent::terminate_mesh_iteration(PatchData &pd, MsqError &err)
+void SteepestDescent::terminate_mesh_iteration(PatchData &/*pd*/, MsqError &/*err*/)
 {
   //  std::cout << "- Executing SteepestDescent::iteration_complete()\n";
 }
