@@ -1,0 +1,56 @@
+
+## See if the user already has a Makefile.customize
+if [ -f "Makefile.customize" ]; then
+  echo
+  echo "  Warning: This setup has already been configured to"
+  echo "           compile Mesquite.  If you choose to reconfigure"
+  echo "           this build, any changes you have made to"
+  echo "           Makefile.customize will be lost."
+  echo
+  printf "           Do you want to continue? (y/n)[n] : "
+  read line
+  case "$line" in
+    y|yes) : ;;
+    n|no|*) echo "Aborting config"; exit;;
+  esac
+fi
+
+echo
+
+# First see if ${MACHINE_TYPE} is set.
+platform=${MACHINE_TYPE-""}
+
+# If MACHINE_TYPE isn't set, use uname to
+# see which platform we're on
+if [ -z "$platform" ]; then
+  os=`uname`
+  case "$os" in
+    sg) platform="sg" ;;
+    SunOS) platform="ss" ;;
+    Linux) platform="lin" ;;
+  esac
+fi
+
+# If we didn't get a valid value for $platform,
+# or if Makefile.$platform doesn't exist,
+# use a default Makefile
+if [ -z "$platform" -o ! -f "Makefile.$platform" ]; then
+  echo "  Unable to determine which makefile template is appropriate "
+  echo "  for your system. Copying Makefile.any to Makefile.customize."
+  rm -f Makefile.customize
+  cp Makefile.any Makefile.customize
+else
+  if [ -f "Makefile.$platform" ]; then
+    echo "  Copying Makefile.$platform to Makefile.customize"
+    cp Makefile.$platform Makefile.customize
+  fi
+fi
+
+echo
+echo "  You may customize your build settings by"
+echo "  modifying Makefile.customize"
+
+touch make.dependencies
+if [ -d ../driver ]; then
+  touch ../driver/make.dependencies
+fi

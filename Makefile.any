@@ -1,0 +1,12 @@
+## Default definitions for tools
+CXX = CC
+ARCHIVER = $(CXX) -ar -o
+MAKEDEPEND = makedepend
+
+## Default settings for flags
+DEBUG_FLAG = -g
+AOMD_FLAG = -D_MY_HASH_TABLE_
+CXXFLAGS = ${DEBUG_FLAG} ${INCLUDE} ${STD_INCLUDE_FLAG} ${AOMD_FLAG}
+LDFLAGS = ${DEBUG_FLAG}
+#STD_INCLUDE_FLAG = -DUSE_STD_INCLUDES
+STD_INCLUDE_FLAG =

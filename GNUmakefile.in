@@ -1,0 +1,102 @@
+$$SHELL = @SHELL@
+
+srcdir      = @iotr_src@
+# locallibdir - where the compiled libraries will be linked
+locallibdir = @srcdir@/lib
+# locallibdir - where all the include files will be (locally) copied.
+localincludedir = @srcdir@/include
+
+CXX      = @CXX@
+CXXFLAGS = @CXXFLAGS@
+CFLAGS   = @CFLAGS@
+CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCLUDES)
+LDFLAGS  = @LDFLAGS@
+DEFS     = @DEFS@
+LIBS     = @LIBS@
+FLIBS    = @FLIBS@
+BLAS     = @BLAS@
+RANLIB   = @RANLIB@
+INSTALL  = @INSTALL@
+GNU_MAKE = @GNU_MAKE@
+FC       = @F77@
+FFLAGS   = @FFLAGS@
+ETAGS    = etags
+
+
+
+OUTPUT_OPTION = -o $@ # Use the -o option when generating .o files.
+
+# Make sure that "default" is the first target
+default: all depend
+
+# List all desired module names explicitly below
+MODULENAMES := @MODULENAMES@
+
+# Add location to the beginning of each (i.e. './')
+MODULES := $(wildcard $(patsubst %, $(srcdir)/%, $(MODULENAMES)))
+
+# Generate a list of module makefiles actually present. 
+MODULEMAKEFILES := $(wildcard $(patsubst %, %/MakefileVariables.inc,\
+                    $(MODULES)))
+
+# the module directories are added to the include path
+INCLUDES += $(patsubst %, -I%, $(MODULES))
+
+# add all .C and .c files to the list of sources. This
+# list will be sent to makedepend to automatically generate
+# dependancies.
+ALLSRC := $(foreach MODULE, $(MODULES),\
+	 $(wildcard $(MODULE)/*.c $(MODULE)/*.cc)) 
+
+# now include the module makefiles (if there are any)
+ifdef MODULEMAKEFILES
+include $(MODULEMAKEFILES)
+endif
+
+# include any module targets, such as executables, that cannot
+# be included in the module makefiles because they require the
+# value of variables from other modules (make expands variables
+# in the dependancy lists as soon as the target is read)
+#MODULETARGETFILES = $(wildcard $(srcdir)/*/MakefileTargets.inc)
+
+MODULETARGETFILES := $(wildcard $(patsubst %, \
+	%/MakefileTargets.inc, $(MODULES)))
+
+ifdef MODULETARGETFILES
+include $(MODULETARGETFILES)
+endif
+
+MAKEDEPEND = makedepend
+
+depend: 
+	$(MAKEDEPEND) -f GNUmakefile $(CPPFLAGS) $(CXXFLAGS) $(DEFS) \
+	$(ALLSRC) 2> /dev/null
+	@echo " *** Done making depend"
+
+# Make dependencies by default
+all: all_libs all_headers
+
+all_libs:
+all_headers:
+
+tags:
+	$(ETAGS) `find $(srcdir) -name "*.cc" -o -name "*.hh" \
+		-o -name "*.[chf]"`
+
+clean mostlyclean: 
+	-rm -f $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.o))
+	-rm -f *.o
+
+veryclean: clean
+
+distclean: veryclean
+	-rm -f GNUmakefile config.status config.cache
+
+GNUmakefile: GNUmakefile.in config.status
+	./config.status
+
+config.status: configure
+	./config.status --recheck
+
+# DO NOT DELETE
+
