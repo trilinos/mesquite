@@ -82,7 +82,7 @@ bool ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
       temp_vec[1]=((2*temp_vec[3])-temp_vec[0])/MSQ_SQRT_THREE;
       temp_vec[2]=((3*temp_vec[4])-temp_vec[0]-temp_vec[3])/
         (MSQ_SQRT_THREE*MSQ_SQRT_TWO);
-      return_flag=condition_number_3d(temp_vec,temp_double,err);
+      return_flag=condition_number_3d(temp_vec,fval,err);
       return return_flag;
       break;
     case HEXAHEDRON:
