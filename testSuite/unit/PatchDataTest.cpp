@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 13-Nov-02 at 18:05:56
-//  LAST-MOD: 20-Jan-03 at 16:21:12 by Thomas Leurent
+//  LAST-MOD: 19-Jun-03 at 18:04:45 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -37,7 +37,7 @@ private:
    CPPUNIT_TEST (test_get_element_vertex_indices);
    CPPUNIT_TEST (test_get_vertex_element_indices);
    CPPUNIT_TEST (test_get_element_vertex_coordinates);
-   CPPUNIT_TEST (test_move_vertices);
+   CPPUNIT_TEST (test_move_free_vertices_constrained);
   CPPUNIT_TEST (test_movement_function);
   CPPUNIT_TEST (test_get_adj_elems_2d);
   
@@ -173,7 +173,7 @@ public:
       */
 #undef __FUNC__
 #define __FUNC__ "PatchDataTest::test_move_vertices" 
-   void test_move_vertices()
+   void test_move_free_vertices_constrained()
    {
       MsqError err;
 
@@ -186,7 +186,7 @@ public:
       dk[0].set(-1,-2,0);
       dk[1].set(-1, 2,0);
       double s = 0.3;
-      mPatch2D.move_vertices(dk, 6, s, err); MSQ_CHKERR(err);
+      mPatch2D.move_free_vertices_constrained(dk, 6, s, err); MSQ_CHKERR(err);
 
       // gets the new coordinates and  checks the vertices were displaced as expected.
       std::vector< Vector3D > coords;
@@ -222,7 +222,7 @@ public:
       dk[0].set(0,-2,0);
       dk[1].set(-1,0,0);
       double s = 1;
-      mPatch2D.move_vertices(dk, 6, 1, err); MSQ_CHKERR(err);
+      mPatch2D.move_free_vertices_constrained(dk, 6, 1, err); MSQ_CHKERR(err);
       // gets the new coordinates and  checks the vertices were displaced as expected.
       std::vector< Vector3D > coords;
       mPatch2D.get_element_vertex_coordinates(0, coords,err);
