@@ -70,10 +70,6 @@ void Mesquite::MsqMeshEntity::compute_weighted_jacobian(PatchData &pd,
     //   std::vector<size_t> v_v;
     //   get_vertex_indices(v_v);
   MsqVertex *vertices=pd.get_vertex_array(err);
-    //   Vector3D ideal_coords[8];
-    //   Vector3D ideal_jac[3];
-    //   Vector3D phys_jac[3];
-    //  double deter;
   switch (mType)
   {
       //Note:: For the linear tri case we do not use sample pt.
@@ -402,7 +398,7 @@ double MsqMeshEntity::compute_signed_area(PatchData &pd, MsqError &err) {
     default:
       err.set_msg("Invalid type of element passed to compute signed area.");
   };
-  
+  return 0.0;
 }
     
 #undef __FUNC__
@@ -432,8 +428,8 @@ double MsqMeshEntity::compute_signed_volume(PatchData &pd, MsqError &err) {
       
     default:
       err.set_msg("Invalid type of element passed to compute signed volume.");
-      return 0.0;
   };
+  return 0.0;      
 }
   
 
