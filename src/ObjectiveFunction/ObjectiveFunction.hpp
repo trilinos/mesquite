@@ -252,7 +252,7 @@ namespace Mesquite
                                                    MsqError &err,
                                                    size_t array_size)
    {
-     bool obj_bool;
+     bool obj_bool = false;
      switch(gradType){
        case NUMERICAL_GRADIENT:
           obj_bool=compute_numerical_gradient(patch, grad, err, array_size);
