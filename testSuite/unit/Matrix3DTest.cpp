@@ -44,6 +44,7 @@ private:
   CPPUNIT_TEST (test_minus);
   CPPUNIT_TEST (test_transpose);
   CPPUNIT_TEST (test_plus_equal);
+  CPPUNIT_TEST (test_times_equal_scalar);
   CPPUNIT_TEST (test_times_scalar);
   CPPUNIT_TEST (test_plus_transpose);
   CPPUNIT_TEST (test_plus_transpose_equal);
@@ -151,7 +152,7 @@ public:
     CPPUNIT_ASSERT( mMat1==mMat1plus2 );
   }
    
-  void test_times_scalar()
+  void test_times_equal_scalar()
   {
     mMat2 *= 3;
     Matrix3D correct( " 6   12   15 "
@@ -159,7 +160,17 @@ public:
                       " 0   21   24 ");
     CPPUNIT_ASSERT( mMat2==correct );
   }
-
+  void test_times_scalar()
+  {
+    Matrix3D tmp = mMat2*3;
+    Matrix3D correct( " 6   12   15 "
+                      " 6    3    9 "
+                      " 0   21   24 ");
+    CPPUNIT_ASSERT( tmp==correct );
+    tmp[0][0]=0;
+    tmp = 3*mMat2;
+    CPPUNIT_ASSERT( tmp==correct );
+  }
   void test_plus_transpose()
   {
     Matrix3D plus_trans = mMat1.plus_transpose(mMat2);
