@@ -56,14 +56,15 @@ namespace Mesquite {
   /*! \fn inline bool MsqFreeVertexIndexIterator::next() */
   inline bool MsqFreeVertexIndexIterator::next()
   {
-    ++current_index;
-    while ( vertex_array[current_index].is_flag_set(MsqVertex::MSQ_SOFT_FIXED) ||
-	    vertex_array[current_index].is_flag_set(MsqVertex::MSQ_HARD_FIXED) )
+    bool fixed=true;
+    while ( fixed ) 
       {
+	++current_index;
 	if ( current_index == originator->num_vertices() ) {
 	  return false; 
 	}
-	++current_index;
+	fixed = vertex_array[current_index].is_flag_set(MsqVertex::MSQ_SOFT_FIXED) ||
+        	vertex_array[current_index].is_flag_set(MsqVertex::MSQ_HARD_FIXED) ;
       }
     return true;
   }

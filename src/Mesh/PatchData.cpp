@@ -234,15 +234,15 @@ void PatchData::move_free_vertices(Vector3D dk[], int nb_vtx,
     return;
   }
 
-  int num_free_vertices=0;
-  for (int n=0; n<numVertices; ++n) {
-    if (vertexArray[n].is_free_vertex()) {
-      vertexArray[n] += (step_size * dk[n]);
-      ++num_free_vertices;
-    }
+  int i=0;
+  MsqFreeVertexIndexIterator ind(this, err); MSQ_CHKERR(err);
+  ind.reset();
+  while (ind.next()) {
+      vertexArray[ind.value()] += (step_size * dk[i]);
+      ++i;
   }
 
-  if (num_free_vertices != nb_vtx) {
+  if (i != nb_vtx) {
     err.set_msg("Argument nb_vtx is not equal to the number of free vertices.");
     MSQ_CHKERR(err);
   }

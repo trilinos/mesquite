@@ -36,6 +36,10 @@ namespace Mesquite
        { Vector3D::operator=(rhs);
          vertexBitFlags = 0; }
      
+     void operator=(const MsqVertex& rhs)
+       { Vector3D::operator=(rhs);
+         vertexBitFlags = rhs.vertexBitFlags; }
+     
        // This allows for 8 flag bits.
        // I don't think we'll want more than that (yet).
      typedef char FlagMask;
@@ -78,7 +82,7 @@ namespace Mesquite
        { vertexBitFlags &= (~flag); }
      
      bool is_flag_set(FlagMaskID flag)
-       { return (vertexBitFlags & flag); }
+       { return bool(vertexBitFlags & flag); }
      
      void move_to_owner()
        { // Not yet written

@@ -531,12 +531,12 @@ bool MeshSet::get_next_patch(PatchData &pd, PatchDataParameters &pd_params, MsqE
                                      &tag_size, &tstt_err);
             assert(!tstt_err);
             assert(on_boundary != NULL);
-            if (*on_boundary==0) {
+            if (*on_boundary==1) {
                fixed_flag = MsqVertex::MSQ_HARD_FIXED;
             }
             // (this retrieves index of previously added vertices). 
             vtx_ind[n] = pd.add_vertex(*currentMesh, elem_vtx[n],
-                                       &elem_vtx_coords[3*n], true, err); MSQ_CHKERR(err);
+                                       &elem_vtx_coords[3*n], true, err, fixed_flag); MSQ_CHKERR(err);
          }
 
          // ... and adds the element to PatchData.

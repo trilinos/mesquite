@@ -212,16 +212,16 @@ namespace Mesquite
   {
   public:
     ~PatchDataVerticesMemento()
-      { delete[] coords; }
+      { delete[] vertices; }
   private:
       // Constructor accessible only to originator (i.e. PatchData)
     friend class PatchData;
     PatchDataVerticesMemento() 
-        : originator(0), coords(0), numVertices(0)
+        : originator(0), vertices(0), numVertices(0)
       {}
     
     PatchData* originator; // PatchData whose state is kept
-    Vector3D *coords; // array of coordinates triplet
+    MsqVertex *vertices; // array of vertices
     int numVertices;
   };
 
@@ -356,7 +356,7 @@ namespace Mesquite
                                    MsqError &err, 
 				   MsqVertex::FlagMaskID flag=MsqVertex::MSQ_NO_VTX_FLAG)
   {
-      // checks if the vertex is already in an array
+      // checks if the vertex is already in array
     if ( check_redundancy )
     {
       MsqVertex vertex(vertex_coord[0], vertex_coord[1], vertex_coord[2]);
@@ -519,13 +519,13 @@ inline int PatchData::add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
     PatchDataVerticesMemento* memento = new PatchDataVerticesMemento;
     memento->originator = this;
     if (numVertices)
-      memento->coords = new Vector3D[numVertices];
+      memento->vertices = new MsqVertex[numVertices];
     memento->numVertices = numVertices;
     
     // Copy the coordinates
     for (int i=0; i<numVertices; ++i)
     {
-      memento->coords[i] = vertexArray[i];
+      memento->vertices[i] = vertexArray[i];
     }
     return memento;
   }
@@ -560,7 +560,7 @@ inline int PatchData::add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
       // copies the memento array into the PatchData array. 
     for (int i=0; i<numVertices; ++i)
     {
-      vertexArray[i] = memento->coords[i];
+      vertexArray[i] = memento->vertices[i];
     }
   }
   
