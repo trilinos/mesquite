@@ -8,7 +8,6 @@ Header file for the Mesquite::QualityMetric class
   \date   2002-05-01
  */
 
-
 #ifndef QualityMetric_hpp
 #define QualityMetric_hpp
 
@@ -52,7 +51,8 @@ namespace Mesquite
      {
        MT_UNDEFINED,
        VERTEX_BASED,
-       ELEMENT_BASED
+       ELEMENT_BASED,
+       VERTEX_BASED_FREE_ONLY
      };
 
      MetricType get_metric_type() { return mType; }
@@ -91,7 +91,9 @@ namespace Mesquite
         HARMONIC,
         GEOMETRIC,
         SUM,
-	GENERALIZED_MEAN
+        GENERALIZED_MEAN,
+        MAX_OVER_MIN,
+        SUM_OF_RATIOS_SQUARED
      };
      
        /*!Set the averaging method for the quality metric. Current
@@ -370,7 +372,7 @@ namespace Mesquite
   inline void  QualityMetric::set_averaging_method(AveragingMethod method, MsqError &err)
   {
     switch(method)
-      {
+    {
       case(NONE):
       case(GEOMETRIC):
       case(HARMONIC):
@@ -380,6 +382,8 @@ namespace Mesquite
       case(RMS):
       case(HMS):
       case(SUM):
+      case(MAX_OVER_MIN):
+      case(SUM_OF_RATIOS_SQUARED):
         avgMethod=method;
         break;
       default:
@@ -497,9 +501,11 @@ namespace Mesquite
    {
      double MSQ_MAX=1e10;
      double total_value=0.0;
+     double temp_value=0.0;
      int i=0;
+     int j=0;
        //if no values, return zero
-     if (num_values==0){
+     if (num_values<=0){
        return 0.0;
      }
      
@@ -586,6 +592,39 @@ namespace Mesquite
        case SUM:
           for (i=0;i<num_values;++i){
             total_value+=metric_values[i];
+          }
+          break;
+
+       case MAX_OVER_MIN:
+            //total_value used to store the maximum
+            //temp_value used to store the minimum
+          temp_value=MSQ_MAX_CAP;
+          for (i=0;i<num_values;++i){
+            if(metric_values[i]<temp_value){
+              temp_value=metric_values[i];
+            }
+            if(metric_values[i]>total_value){
+              total_value=metric_values[i];
+            }
+          }
+          
+            //ensure no divide by zero, return MSQ_MAX_CAP
+          if (temp_value < MSQ_MIN) {
+            return MSQ_MAX_CAP;
+          }
+          total_value/=temp_value;
+          break;
+          
+       case SUM_OF_RATIOS_SQUARED:
+          for (j=0;j<num_values;++j){
+            //ensure no divide by zero, return MSQ_MAX_CAP
+            if (metric_values[j] < MSQ_MIN) {
+              return MSQ_MAX_CAP;
+            }
+            for (i=0;i<num_values;++i){
+              total_value+=((metric_values[i]/metric_values[j])*
+                            (metric_values[i]/metric_values[j]));
+            }
           }
           break;
           
