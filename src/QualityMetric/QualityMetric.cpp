@@ -11,7 +11,13 @@
 #include "MsqMeshEntity.hpp"
 #include "MsqMessage.hpp"
 #include "MsqTimer.hpp"
+#include "PatchData.hpp"
+
 using namespace Mesquite;
+using std::cout;
+using std::endl;
+using std::cerr;
+
 
 #undef __FUNC__
 #define __FUNC__ "QualityMetric::compute_vertex_analytical_gradient"
@@ -101,6 +107,60 @@ bool QualityMetric::compute_element_analytical_hessian(PatchData &pd,
 
 
 #undef __FUNC__
+#define __FUNC__ "QualityMetric::compute_element_gradient_expanded"
+/*!
+  Note that for this function, grad_vec should be an array of size the
+  number of vertices in el, not of size num_vtx.
+*/
+bool QualityMetric::compute_element_gradient_expanded(PatchData &pd,
+                                                      MsqMeshEntity* el,
+                                                      MsqVertex* vertices[],
+                                                      Vector3D grad_vec[],
+                                                      int num_vtx,
+                                                      double &metric_value,
+                                                      MsqError &err)
+{
+  int i;
+  bool ret;
+  Vector3D grad_vec_nz[num_vtx];
+  ret = compute_element_gradient(pd, el, vertices, grad_vec_nz,
+                                 num_vtx, metric_value, err);
+  MSQ_CHKERR(err);
+
+  std::vector<size_t> gv_i;
+  gv_i.reserve(num_vtx);
+  i=0;
+  for (i=0; i<num_vtx; ++i) {
+    gv_i.push_back( pd.get_vertex_ptr_index(vertices[i]) );
+  }
+     
+  std::vector<size_t> ev_i;
+  el->get_vertex_indices(ev_i);
+
+  bool inc;
+  std::vector<size_t>::iterator ev;
+  std::vector<size_t>::iterator gv;
+  for (ev=ev_i.begin(); ev!=ev_i.end(); ++ev) {
+    inc = false; i=0;
+    gv = gv_i.begin();
+    while (gv!=gv_i.end()) {
+      if (*ev == *gv) {
+        inc = true;
+        cout << "inc=true for ev " << *ev << "and gv " << *gv << endl; //dbg
+        break;
+      }
+      ++gv;
+    }
+    if (inc == true)
+      grad_vec[*ev] = grad_vec_nz[*gv];
+    else
+      grad_vec[*ev] = 0;
+  }
+  return ret;
+}
+   
+   
+#undef __FUNC__
 #define __FUNC__ "QualityMetric::compute_element_numerical_gradient"
 /*!
   Numerically calculates the gradient of the QualityMetric value on
@@ -172,6 +232,11 @@ bool QualityMetric::compute_element_numerical_gradient(PatchData &pd,
 
 #undef __FUNC__
 #define __FUNC__ "QualityMetric::compute_element_numerical_hessian"
+/*!
+  Note that for this function, grad_vec should be an array of size the
+  number of vertices in el, not of size num_vtx. Entries that do not correspond
+  with the vertices argument array will be null.
+*/
 bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
                                              MsqMeshEntity* element,
                                              MsqVertex* vertices[],
@@ -182,14 +247,15 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
 {
   MSQ_DEBUG_PRINT(2,"Computing Numerical Hessian\n");
   
-  bool valid=this->compute_element_gradient(pd, element, vertices, grad_vec,
+  bool valid=this->compute_element_gradient_expanded(pd, element, vertices, grad_vec,
                                     num_vtx, metric_value, err); MSQ_CHKERR(err);
-
+  
   if (!valid)
     return false;
   
   double delta = 10e-6;
   int nve = element->vertex_count();
+  std::cout << "grad_vec: \n"; for (int i=0; i<nve; ++i) std::cout << grad_vec[i] << std::endl;  //dbg
   Vector3D* grad_vec1 = new Vector3D[nve];
   int v,w,i,j,s, sum_w, mat_index;
   for (v=0; v<nve; ++v) 
@@ -199,7 +265,7 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
       // perturb the coordinates of the vertex v in the j direction by delta
       (*vertices[v])[j]+=delta;
       //compute the gradient at the perturbed point location
-      valid = this->compute_element_gradient(pd, element, vertices, grad_vec1,
+      valid = this->compute_element_gradient_expanded(pd, element, vertices, grad_vec1,
                                      num_vtx, metric_value, err); MSQ_CHKERR(err);
       assert(valid);
       //compute the numerical Hessian
@@ -214,7 +280,7 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
           mat_index = w*nve+v-sum_w;
           
           for (i=0; i<3; ++i)
-            hessian[w*nve+v-sum_w][i][j] = fd[i];   
+            hessian[mat_index][i][j] = fd[i];   
      
         }
       }

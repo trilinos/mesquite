@@ -191,6 +191,14 @@ namespace Mesquite
      bool compute_element_gradient(PatchData &pd, MsqMeshEntity* element,
                                    MsqVertex* vertices[], Vector3D grad_vec[],
                                    int num_vtx, double &metric_value, MsqError &err);
+
+     /*! same as compute_element_gradient(), but fills fixed vertices spots with
+       zeros instead of not returning values for fixed vertices. Also, the vertices
+       are now ordered according to the element index. 
+       */
+     bool compute_element_gradient_expanded(PatchData &pd, MsqMeshEntity* element,
+                                   MsqVertex* vertices[], Vector3D grad_vec[],
+                                   int num_vtx, double &metric_value, MsqError &err);
      
        /*!For MetricType == ELEMENT_BASED.
          Calls either compute_element_numerical_hessian() or
@@ -448,7 +456,7 @@ namespace Mesquite
      return ret;
    }
    
-   
+
 #undef __FUNC__
 #define __FUNC__ "QualityMetric::compute_element_hessian"
   inline bool QualityMetric::compute_element_hessian(PatchData &pd,
