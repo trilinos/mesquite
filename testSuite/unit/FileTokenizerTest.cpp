@@ -14,14 +14,14 @@ using std::cout;
 using Mesquite::FileTokenizer;
 using Mesquite::MsqPrintError;
   
-const char* const tokens[] = 
+extern const char* const tokens[] = 
   { "foo", "bar", "0", "123abc", "123", "0x5", "1e200", "jason", "abc123", "1.0", 0 };
-const char* const spaces[] = 
+extern const char* const spaces[] = 
   { " ", " \n ", "\n\n\n ", "\t", "\t\t", "     ", "\n", "  ", "\t\n", 0 };
 
-const bool doubles[]  = { false, false, true, false,  true,  true,  true, false, false,  true };
-const bool longs[]    = { false, false, true, false,  true,  true, false, false, false, false };
-const bool booleans[] = { false, false, true, false, false, false, false, false, false, false };
+extern const bool doubles[]  = { false, false, true, false,  true,  true,  true, false, false,  true };
+extern const bool longs[]    = { false, false, true, false,  true,  true, false, false, false, false };
+extern const bool booleans[] = { false, false, true, false, false, false, false, false, false, false };
 
 class FileTokenizerTest : public CppUnit::TestFixture
 {

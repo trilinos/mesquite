@@ -50,10 +50,10 @@ using std::cout;
 #  include <stdio.h>
 #endif
 
-const char temp_file_name[] = "VtkTest.vtk";
+extern const char temp_file_name[] = "VtkTest.vtk";
 
   // VTK file for 2x2x2 block of hexes as structured-point 
-const char structured_3d_points_data[] = 
+extern const char structured_3d_points_data[] = 
 "# vtk DataFile Version 2.0\n"
 "Mesquite Mesh\n"
 "ASCII\n"
@@ -63,7 +63,7 @@ const char structured_3d_points_data[] =
 "SPACING 1.5 1.5 1.5\n";
 
   // VTK file for 2x2 block of quads as structured-point 
-const char structured_2d_points_data[] = 
+extern const char structured_2d_points_data[] = 
 "# vtk DataFile Version 2.0\n"
 "Mesquite Mesh\n"
 "ASCII\n"
@@ -73,7 +73,7 @@ const char structured_2d_points_data[] =
 "SPACING 1.5 1.5 0.0\n";
 
   // VTK file for 2x2x2 block of hexes as structured-grid
-const char structured_grid_data[] = 
+extern const char structured_grid_data[] = 
 "# vtk DataFile Version 2.0\n"
 "Mesquite Mesh\n"
 "ASCII\n"
@@ -91,7 +91,7 @@ const char structured_grid_data[] =
 "0.0 3.0 3.0\n1.5 3.0 3.0\n3.0 3.0 3.0\n";
 
   // VTK file for 2x2x2 block of hexes as rectilinear-grid
-const char rectilinear_grid_data[] =
+extern const char rectilinear_grid_data[] =
 "# vtk DataFile Version 2.0\n"
 "Mesquite Mesh\n"
 "ASCII\n"
@@ -108,7 +108,7 @@ const char rectilinear_grid_data[] =
   // First 8 elems result in same 2x2x2 block of hexes as
   // structured cases above.  The next 4 elems are the same
   // as the quads from the 2D structured-point file above.
-const char mixed_unstructured_data[] = 
+extern const char mixed_unstructured_data[] = 
 "# vtk DataFile Version 2.0\n"
 "Mesquite Mesh\n"
 "ASCII\n"
@@ -187,7 +187,7 @@ const char mixed_unstructured_data[] =
   // A simple scalar attribute specifying point and hex
   // IDs.  May be appended to any of the above 3D structured
   // mesh files.
-const char simple_scalar_attrib[] = 
+extern const char simple_scalar_attrib[] = 
 "CELL_DATA 8\n"
 "SCALARS global_id int 1\n"
 "LOOKUP_TABLE default\n"
@@ -202,7 +202,7 @@ const char simple_scalar_attrib[] =
 
   // A VTK vector attribute.  May be appended to any of the 
   // above 3D structured mesh files.
-const char simple_vector_attrib[] =
+extern const char simple_vector_attrib[] =
 "CELL_DATA 8\n"
 "VECTORS hexvect float\n"
 "1 1 1\n"
@@ -218,7 +218,7 @@ const char simple_vector_attrib[] =
   // expected by MeshImpl for specifying boundary vertices.
   // May be appended to any of the above 3D structured
   // mesh files
-const char fixed_vertex_attrib[] = 
+extern const char fixed_vertex_attrib[] = 
 "POINT_DATA 27\n"
 "SCALARS fixed float\n"
 "LOOKUP_TABLE default\n"
