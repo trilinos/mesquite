@@ -16,8 +16,6 @@
 #include "QualityImprover.hpp"
 #include "PatchData.hpp"
 
-//#include "TSTT_C.h"
-
 namespace Mesquite
 {
 

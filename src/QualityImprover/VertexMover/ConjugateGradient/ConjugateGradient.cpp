@@ -14,7 +14,6 @@
 #include "ConditionNumberQualityMetric.hpp"
 #include "MsqMessage.hpp"
 #include "MsqTimer.hpp"
-#include "TSTT_C.h"
 
 /* TODO  (Michae) Notes
    What do we do about cull so that it isn't Metric

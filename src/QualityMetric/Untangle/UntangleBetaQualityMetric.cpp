@@ -13,8 +13,6 @@
 #include "QualityMetric.hpp"
 #include "MsqMeshEntity.hpp"
 
-#include "TSTT_C.h"
-
 using namespace Mesquite;
 
 #undef __FUNC__

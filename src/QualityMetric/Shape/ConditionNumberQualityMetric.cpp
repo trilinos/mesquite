@@ -12,8 +12,6 @@
 #include "ShapeQualityMetric.hpp"
 #include "QualityMetric.hpp"
 
-#include "TSTT_C.h"
-
 using namespace Mesquite;
 
 #undef __FUNC__

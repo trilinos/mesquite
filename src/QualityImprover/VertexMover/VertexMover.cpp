@@ -14,8 +14,6 @@
 #include "MsqTimer.hpp"
 //#include "StoppingCriterion.hpp"
 
-#include "TSTT_C.h"
-
 using namespace Mesquite;
 
 VertexMover::VertexMover() :

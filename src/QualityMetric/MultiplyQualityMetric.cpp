@@ -9,7 +9,6 @@
 #include "MultiplyQualityMetric.hpp"
 #include "QualityMetric.hpp"
 #include "Vector3D.hpp"
-#include "TSTT_C.h"
 #include "MsqMessage.hpp"
 
 using namespace Mesquite;

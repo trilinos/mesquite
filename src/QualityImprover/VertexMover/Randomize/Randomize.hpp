@@ -16,8 +16,6 @@
 #include "VertexMover.hpp"
 #include "MsqMessage.hpp"
 
-#include "TSTT_C.h"
-
 #include <math.h>
 namespace Mesquite
 {

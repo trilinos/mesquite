@@ -15,8 +15,6 @@
 #include "MesquiteError.hpp"
 #include "QualityImprover.hpp"
 
-#include "TSTT_C.h"
-
 namespace Mesquite
 {
 

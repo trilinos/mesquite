@@ -17,8 +17,6 @@
 #include "VertexMover.hpp"
 #include "ObjectiveFunction.hpp"
 
-#include "TSTT_C.h"
-
 namespace Mesquite
 {
 #define MSQ_XDIR 0

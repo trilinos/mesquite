@@ -11,7 +11,6 @@
 
 #include "TopologyModifier.hpp"
 
-#include "TSTT_C.h"
 
 using namespace Mesquite;
 

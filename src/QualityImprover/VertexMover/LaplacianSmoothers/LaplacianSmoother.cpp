@@ -11,8 +11,6 @@
 
 #include "LaplacianSmoother.hpp"
 
-#include "TSTT_C.h"
-
 using namespace Mesquite;
 
 
