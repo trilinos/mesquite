@@ -61,14 +61,23 @@ private:
   CPPUNIT_TEST_SUITE(TerminationCriterionTest);
     //simple test with number of iterates = 2 termination criterion
   CPPUNIT_TEST (test_number_of_iterates);
+    //terminate when the norm of the gradient is below .02
   CPPUNIT_TEST (test_gradient_norm_absolute);
+    //terminate when the norm of the gradient is below .3*initialNorm
   CPPUNIT_TEST (test_gradient_norm_relative);
+    //terminate when the time exceeds 5 seconds
   CPPUNIT_TEST (test_cpu_time);
+    //terminate when the time exceeds 5 seconds or iterates exceed 5000
   CPPUNIT_TEST (test_cpu_time_or_iterates);
+    //terminate when the iterates exceed 2 or the time exceeds 5000 seconds
   CPPUNIT_TEST (test_iterates_or_cpu_time);
+    //terminate when the function value is below 11.95
   CPPUNIT_TEST (test_quality_improvement_absolute);
+    //terminate when the function value is below (.995*intialOFValue)
   CPPUNIT_TEST (test_quality_improvement_relative);
+    //terminate when the successive improvements is below .005
   CPPUNIT_TEST (test_successive_improvements_absolute);
+    //terminat when the successive imporovements is below .996 of the original
   CPPUNIT_TEST (test_successive_improvements_relative);
   CPPUNIT_TEST_SUITE_END();
   int pF;
@@ -76,13 +85,15 @@ private:
 public:
   void setUp()
   {
-      //pF=1;//PRINT_FLAG IS ON
-    pF=0;//PRINT_FLAG IS OFF
+    pF=1;//PRINT_FLAG IS ON
+      //pF=0;//PRINT_FLAG IS OFF
   }
 
   void tearDown()
   {
   }
+    //Function that gets passed a pointer to the outer termination criterion.
+    //This function is called by several of the tests in this suite.
   void test_outer_criterion(TerminationCriterion* tc_outer, MsqError &err)
     {
       char file_name[128];
@@ -129,8 +140,12 @@ public:
       CPPUNIT_ASSERT(!err.errorOn);
       queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
       CPPUNIT_ASSERT(!err.errorOn);
+      delete pass1;
+      delete obj_func;
+      delete cond_num;
     }
   
+    //NUMBER OF ITERATES
   void test_number_of_iterates()
     {
       MsqError err;
@@ -141,6 +156,8 @@ public:
         std::cout<<"\nTEST_NUMBER_OF_ITERATES\n";
       test_outer_criterion(&t1,err);
     }
+  
+    //GRADIENT NORM ABSOLUTE
   void test_gradient_norm_absolute()
     {
       MsqError err;
@@ -150,6 +167,8 @@ public:
         std::cout<<"\nTEST_GRADIENT_NORM_ABS)LUTE\n";
       test_outer_criterion(&t1,err);
     }
+  
+    //GRADIENT NORM RELATIVE
   void test_gradient_norm_relative()
     {
       MsqError err;
@@ -159,6 +178,8 @@ public:
         std::cout<<"\nTEST_GRADIENT_NORM_RELATIVE\n";
       test_outer_criterion(&t1,err);
     }
+  
+    //CPU TIME
   void test_cpu_time()
     {
       MsqError err;
@@ -168,6 +189,8 @@ public:
         std::cout<<"\nTEST_CPU_TIME\n";
       test_outer_criterion(&t1,err);
     }
+  
+    //CPU TIME OR NUMBER OF ITERATES
    void test_cpu_time_or_iterates()
     {
       MsqError err;
@@ -178,6 +201,8 @@ public:
         std::cout<<"\nTEST_CPU_TIME_OR_ITERATES\n";
       test_outer_criterion(&t1,err);
     }
+  
+    //NUMBER OF ITERATES OR CPU TIME
   void test_iterates_or_cpu_time()
     {
       MsqError err;
@@ -188,6 +213,8 @@ public:
         std::cout<<"\nTEST_ITERATES_OR_CPU_TIME\n";
       test_outer_criterion(&t1,err);
     }
+  
+    //QUALITY IMPROVEMENT ABSOLUTE
   void test_quality_improvement_absolute()
     {
       MsqError err;
@@ -197,6 +224,8 @@ public:
         std::cout<<"\nTEST_QUALITY_IMPROVEMENT_ABSOLUTE\n";
       test_outer_criterion(&t1,err);
     }
+
+    //QUALITY IMPROVEMENT RELATIVE
   void test_quality_improvement_relative()
     {
       MsqError err;
@@ -206,6 +235,8 @@ public:
         std::cout<<"\nTEST_QUALITY_IMPROVEMENT_RELATIVE\n";
       test_outer_criterion(&t1,err);
     }
+
+    //SUCCESSIVE IMPROVEMENTS ABSOLUTE
   void test_successive_improvements_absolute()
     {
       MsqError err;
@@ -215,6 +246,8 @@ public:
         std::cout<<"\nTEST_SUCCESSIVE_IMPROVEMENTS_ABSOLUTE\n";
       test_outer_criterion(&t1,err);
     }
+  
+    //SUCCESSIVE IMPROVEMENTS RELATIVE
   void test_successive_improvements_relative()
     {
       MsqError err;

@@ -158,6 +158,10 @@ public:
      CPPUNIT_ASSERT(!err.errorOn);
        //make sure 'quality' improved
      CPPUNIT_ASSERT( (fin_qa_val-orig_qa_val) <= 0.0 );
+     delete pass1;
+     delete obj_func;
+     delete shape;
+     delete untan;
    }
   
   void test_lapl_geo_sphere()
@@ -224,6 +228,8 @@ public:
        CPPUNIT_ASSERT(!err.errorOn);
          //make sure 'quality' improved
        CPPUNIT_ASSERT( (fin_qa_val-orig_qa_val) <= 0.0 );
+       delete edg_len;
+       delete lapl;
      }
   
    

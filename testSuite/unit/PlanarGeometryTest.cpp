@@ -197,7 +197,12 @@ public:
        //make sure 'quality' improved
      CPPUNIT_ASSERT( (fin_qa_val-orig_qa_val) <= 0.0 );
      PRINT_TIMING_DIAGNOSTICS();
-     
+     delete shape;
+     delete untan;
+     delete pass1;
+     delete pass2;
+     delete untan_func;
+     delete shape_func;
    }
   
   void test_plane_quad_tangled()
@@ -309,6 +314,12 @@ public:
          //make sure 'quality' improved
        CPPUNIT_ASSERT( (fin_qa_val-orig_qa_val) <= 0.0 );
        PRINT_TIMING_DIAGNOSTICS();
+       delete shape;
+       delete untan;
+       delete pass1;
+       delete pass2;
+       delete untan_func;
+       delete shape_func;
      }
   
   void test_plane_tri_xz()
@@ -388,6 +399,9 @@ public:
          //make sure 'quality' improved
        CPPUNIT_ASSERT( (fin_qa_val-orig_qa_val) <= 0.0 );
        PRINT_TIMING_DIAGNOSTICS();
+       delete smooth;
+       delete smooth_func;
+       delete pass1;
      }
   
    
