@@ -5,7 +5,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 15-Jan-03 at 08:05:56
-//  LAST-MOD: 23-May-03 at 17:41:59 by Thomas Leurent
+//  LAST-MOD: 19-Jun-03 at 15:53:39 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -171,7 +171,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
     //         high accuracy and have a large mesh, talk with Todd about
     //         the numerical issues so that we can fix it.
 
-    pd.move_vertices(d, nv, beta, err); MSQ_CHKERR(err);
+    pd.move_free_vertices_constrained(d, nv, beta, err); MSQ_CHKERR(err);
     fn_bool = objFunc->compute_gradient(pd, grad, new_value, err); MSQ_CHKERR(err);
     if ((fn_bool && (original_value - new_value >= -alpha*beta - epsilon)) ||
         (fn_bool && (length(grad, nv) < 100*convTol))) {
@@ -194,7 +194,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
       while (beta >= tol1) {
         // 6. Search along the direction
         //    (a) trial = x + beta*d
-        pd.move_vertices(d, nv, beta, err); MSQ_CHKERR(err);
+        pd.move_free_vertices_constrained(d, nv, beta, err); MSQ_CHKERR(err);
         //    (b) function evaluation
         fn_bool = objFunc->evaluate(pd, new_value, err);  MSQ_CHKERR(err);
         //    (c) check for sufficient decrease and stop
