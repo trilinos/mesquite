@@ -1485,20 +1485,20 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
   std::vector<size_t> v_i;
   e->get_vertex_indices(v_i);
 
-  Vector3D coords[4];		// Vertex coordinates for the (decomposed) elements
-  Vector3D gradients[32];	// Gradient of metric with respect to the coords
-  Vector3D grad[8];		// Accumulated gradients (composed merit function)
-  double   metrics[8];		// Metric values for the (decomposed) elements
+  static Vector3D coords[4];		// Vertex coordinates for the (decomposed) elements
+  static Vector3D gradients[32];	// Gradient of metric with respect to the coords
+  static Vector3D grad[8];		// Accumulated gradients (composed merit function)
+  static double   metrics[8];		// Metric values for the (decomposed) elements
   double   nm, t;
 
-  int locs_hex[8][4] = {{0, 1, 3, 4},	// Hex element descriptions
-                        {1, 2, 0, 5},
-                        {2, 3, 1, 6},
-                        {3, 0, 2, 7},
-                        {4, 7, 5, 0},
-                        {5, 4, 6, 1},
-                        {6, 5, 7, 2},
-                        {7, 6, 4, 3}};
+  static int locs_hex[8][4] = {{0, 1, 3, 4},	// Hex element descriptions
+                               {1, 2, 0, 5},
+                               {2, 3, 1, 6},
+                               {3, 0, 2, 7},
+                               {4, 7, 5, 0},
+                               {5, 4, 6, 1},
+                               {6, 5, 7, 2},
+                               {7, 6, 4, 3}};
   int i, j;
 
   m = 0.0;
@@ -1518,11 +1518,10 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 
     // This is not very efficient, but is one way to select correct gradients.
     // For gradients, info is returned only for free vertices, in the order of v[].
+    j = 0;
     for (i = 0; i < 4; ++i) {
-      for (j = 0; j < nv; ++j) {
-        if (vertices + v_i[i] == v[j]) {
-          g[j] = grad[i];
-        }
+      if (vertices + v_i[i] == v[j]) {
+        g[j++] = grad[i];
       }
     }
     break;
@@ -1707,20 +1706,20 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
   std::vector<size_t> v_i;
   e->get_vertex_indices(v_i);
 
-  Vector3D coords[4];		// Vertex coordinates for the (decomposed) elements
-  Vector3D gradients[32];	// Gradient of metric with respect to the coords
-  Matrix3D hessians[80];	// Hessian of matrix with respect to the coords
-  double   metrics[8];		// Metric values for the (decomposed) elements
+  static Vector3D coords[4];		// Vertex coordinates for the (decomposed) elements
+  static Vector3D gradients[32];	// Gradient of metric with respect to the coords
+  static Matrix3D hessians[80];	// Hessian of matrix with respect to the coords
+  static double   metrics[8];		// Metric values for the (decomposed) elements
   double   nm, t;
 
-  int locs_hex[8][4] = {{0, 1, 3, 4},	// Hex element descriptions
-		        {1, 2, 0, 5},
-		        {2, 3, 1, 6},
-		        {3, 0, 2, 7},
-		        {4, 7, 5, 0},
-		        {5, 4, 6, 1},
-		        {6, 5, 7, 2},
-		        {7, 6, 4, 3}};
+  static int locs_hex[8][4] = {{0, 1, 3, 4},	// Hex element descriptions
+		               {1, 2, 0, 5},
+		               {2, 3, 1, 6},
+		               {3, 0, 2, 7},
+		               {4, 7, 5, 0},
+		               {5, 4, 6, 1},
+		               {6, 5, 7, 2},
+		               {7, 6, 4, 3}};
   int i, j, k, l, ind;
   int r, c, loc;
 
@@ -1740,34 +1739,46 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     if (!h_fcn_3e(m, g, h, coords)) return false;
 
     // zero out fixed elements of g
-    ind = 0;
-    for (i=0; i<4; ++i) {
+    j = 0;
+    for (i = 0; i < 4; ++i) {
       // if free vertex, see next
-      if ( vertices+v_i[i] == fv[ind] )
-        ++ind;
+      if (vertices + v_i[i] == fv[j] )
+        ++j;
       // else zero gradient entry
-      else
+      else {
         g[i] = 0.;
-    }
 
-    // Makes sure we zero the hessian blocks corresponding to fixed vertices. 
-    for(i=0; i<4; ++i) {
-      for (j=i; j<4; ++j) {
-  
-        // for entry i,j in upper right part of 4*4 matrix, index in a 1D array is
-        ind = 4*i- (i*(i+1)/2) +j; // 4*i - \sum_{n=0}^i n +j 
+	switch(i) {
+        case 0:
+          h[0] = 0.0;
+	  h[1] = 0.0;
+	  h[2] = 0.0;
+	  h[3] = 0.0;
+          break;
 
-        bool nul_hessian = true; 
-        for (k=0; k<nfv; ++k) 
-          for (l=0; l<nfv; ++l) 
-            if ( (vertices + v_i[i] == fv[k]) && (vertices + v_i[j] == fv[l]) )
-              nul_hessian = false;
+        case 1:
+	  h[1] = 0.0;
+	  h[4] = 0.0;
+	  h[5] = 0.0;
+	  h[6] = 0.0;
+	  break;
 
-        if (nul_hessian == true)
-          h[ind] = 0.;
+	case 2:
+	  h[2] = 0.0;
+	  h[5] = 0.0;
+	  h[7] = 0.0;
+	  h[8] = 0.0;
+          break;
+
+	case 3:
+	  h[3] = 0.0;
+	  h[6] = 0.0;
+          h[8] = 0.0;
+	  h[9] = 0.0;
+          break;
+        }
       }
-    }      
-    
+    }
     break;
 
   case HEXAHEDRON:
@@ -1964,6 +1975,4 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
   FUNCTION_TIMER_END();
   return true;
 }
-
-
 
