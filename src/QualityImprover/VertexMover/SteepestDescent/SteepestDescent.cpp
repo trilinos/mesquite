@@ -48,9 +48,9 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
     //PRINT_INFO("\no  Performing Steepest Descent optimization.\n");
   // Get the array of vertices of the patch. Free vertices are first.
   MeshSet *vertex_mover_mesh=get_mesh_set();
-  int num_free_vertices = pd.num_free_vertices(err);
-  Vector3D* gradient = new Vector3D[num_free_vertices];
-  Vector3D* dk = new Vector3D[num_free_vertices];
+  int num_vertices = pd.num_vertices();
+  Vector3D* gradient = new Vector3D[num_vertices];
+  Vector3D* dk = new Vector3D[num_vertices];
   int nb_iterations = 0;
   double norm=10e6;
   bool sd_bool=true;//bool for OF values
@@ -64,10 +64,11 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
     
     ++nb_iterations;
   
-    objFunc->compute_gradient(pd, gradient, err, num_free_vertices); MSQ_CHKERR(err);
+    objFunc->compute_gradient(pd, gradient, err, num_vertices); MSQ_CHKERR(err);
 
     // Prints out free vertices coordinates. 
     MSQ_DEBUG_ACTION(3,{
+      int num_free_vertices = pd.num_free_vertices(err); MSQ_CHKERR(err);
       std::cout << "\n  o Free vertices ("<< num_free_vertices <<")original coordinates:\n ";
       MsqVertex* toto1 = pd.get_vertex_array(err); MSQ_CHKERR(err);
       MsqFreeVertexIndexIterator ind1(&pd, err); MSQ_CHKERR(err);
@@ -79,7 +80,7 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
       
       // computes the gradient norm
     norm=0;
-    for (int n=0; n<num_free_vertices; ++n) 
+    for (int n=0; n<num_vertices; ++n) 
       norm += gradient[n] % gradient[n]; // dot product
     norm = sqrt(norm);
     MSQ_DEBUG_ACTION(3,{std::cout<< "  o  gradient norm: " << norm << std::endl;});
@@ -90,7 +91,7 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
 
     // ******** Chooses the search direction ********
     // i.e., -gradient for the steepest descent
-    for (int i=0; i<num_free_vertices; ++i)
+    for (int i=0; i<num_vertices; ++i)
       for (int j=0; j<3; ++j)
         dk[i][j] = -gradient[i][j] / norm;
 
@@ -118,7 +119,7 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
            && nb_iter < 10 ) {
       nb_iter++;
       // change vertices coordinates in PatchData according to descent direction.
-      pd.move_free_vertices(dk, num_free_vertices, step_size, err); MSQ_CHKERR(err);
+      pd.move_vertices(dk, num_vertices, step_size, err); MSQ_CHKERR(err);
       // and evaluate the objective function with the new node positions.
       sd_bool=objFunc->evaluate(pd, new_value, err); MSQ_CHKERR(err);
       if(!sd_bool){
@@ -138,6 +139,7 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
 
     // Prints out free vertices coordinates. 
     MSQ_DEBUG_ACTION(3,{
+      int num_free_vertices = pd.num_free_vertices(err); MSQ_CHKERR(err);
       std::cout << "  o Free vertices new coordinates: \n";
       MsqVertex* toto1 = pd.get_vertex_array(err); MSQ_CHKERR(err);
       MsqFreeVertexIndexIterator ind(&pd, err); MSQ_CHKERR(err);
