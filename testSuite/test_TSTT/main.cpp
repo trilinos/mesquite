@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 19-Feb-02 at 10:57:52
-//  LAST-MOD: 20-Jan-04 at 21:23:28 by Thomas Leurent
+//  LAST-MOD: 10-Feb-04 at 22:44:58 by Thomas Leurent
 //
 //
 // DESCRIPTION:
@@ -34,6 +34,10 @@ describe main.cpp here
 #include "TSTT_Overture_Mesh.hh"
 #endif
 
+#ifdef MSQ_USE_TSTT_AOMD_IMPL
+#include "TSTT_LocalTSTTMesh_Impl.hh"
+#endif
+
 #include "Mesquite.hpp"
 #include "MeshTSTT.hpp"
 #include "MesquiteError.hpp"
@@ -51,6 +55,7 @@ describe main.cpp here
 #include "ConjugateGradient.hpp"
 
 #include "MsqMessage.hpp"
+
 
 using namespace Mesquite;
 
@@ -81,10 +86,15 @@ int main(int argc, char* argv[])
   TSTT::Mesh tstt_mesh;
 
 #ifdef MSQ_USE_TSTT_OVERTURE_IMPL
-  TSTT_Overture::Mesh           ov_mesh  = TSTT_Overture::Mesh::_create();
+  TSTT_Overture::Mesh ov_mesh = TSTT_Overture::Mesh::_create();
   tstt_mesh = ov_mesh;
 #endif
 
+#ifdef MSQ_USE_TSTT_AOMD_IMPL
+  TSTT::LocalTSTTMesh aomd_mesh = TSTT::LocalTSTTMesh::_create();
+  tstt_mesh = aomd_mesh;
+#endif
+  
   TSTT::CoreEntitySetQuery tstt_core_query = tstt_mesh;
 
   if ( !tstt_core_query )
@@ -95,13 +105,15 @@ int main(int argc, char* argv[])
   Mesquite::MeshTSTT* mesh = new Mesquite::MeshTSTT(tstt_mesh, err);
   MSQ_CHKERR(err);
   
-  // initialises a MeshSet object
-  Vector3D normal(0,0,1),point(0,0,0);
-
+  // Creates a domain constraint
+  Vector3D normal(0,0,1);
+  Vector3D point(0,0,0);
   Mesquite::PlanarDomain planar_domain(normal,point,mesh);
+
+  // initialises a MeshSet object
   MeshSet mesh_set1;
   mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
-  mesh_set1.set_domain_constraint(&planar_domain);
+  //  mesh_set1.set_domain_constraint(&planar_domain, err); MSQ_CHKERR(err);
 
   // creates an intruction queue
   InstructionQueue queue1;
@@ -143,14 +155,12 @@ int main(int argc, char* argv[])
   
   queue1.add_quality_assessor(&stop_qa, err); MSQ_CHKERR(err);
 
-  tstt_core_query.save("original_mesh");
-  mesh_set1.write_vtk("original_mesh",err); MSQ_CHKERR(err);
+  mesh_set1.write_vtk("original", err); MSQ_CHKERR(err);
 
   // launches optimization on mesh_set1
   queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
-  
-  tstt_core_query.save("smoothed_mesh");
-  mesh_set1.write_vtk("smoothed_mesh",err); MSQ_CHKERR(err);
+
+  mesh_set1.write_vtk("smoothed", err); MSQ_CHKERR(err);
 
   PRINT_TIMING_DIAGNOSTICS();
 }
