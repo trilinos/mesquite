@@ -1,11 +1,10 @@
 # To switch to AOMD, set this in Makefile.customize:
-# TSTT_LINK = -L../../external/AOMD/lib/ -lAOMD -lm
+# TSTT_LINK = ${AOMD_TSTT_LINK}
 
-# These are the things you're most likely to need to
-# over-ride in Makefile.customize.
+# Change this in Makefile.customize so that it points to your
+# installation of cppunit
 CPPUNIT_DIR = ../../../cppunit
-MDB_DIR = ../../../mdb
-EXODUS_LIB_DIR = ../../../exodus
+
 
 # The rest of these items probably won't need to be messed with
 CPPUNIT_INCLUDE = -I${CPPUNIT_DIR}/include
@@ -14,9 +13,12 @@ MESQUITE_INCLUDE = ${TSTT_INCLUDE} -I../../include -I../../includeLinks
 INCLUDE = ${CPPUNIT_INCLUDE} ${MESQUITE_INCLUDE}
 
 CPPUNIT_LINK = -L${CPPUNIT_DIR}/src/cppunit/.libs -lcppunit
-TSTT_LINK = -L${MDB_DIR} -lMDB -L$(EXODUS_LIB_DIR) -lexoIIv2c -lnetcdf
 MESQUITE_LINK = -L../../lib -lmesquite ${TSTT_LINK}
 TEST_LINK = ${CPPUNIT_LINK} ${MESQUITE_LINK}
+
+include ../../Makefile.customize
+
+MSQ_BASE_DIR = ../..
 
 TEST_SRCS = sample_main.cpp \
     MesquiteTestRunner.cpp \
@@ -24,11 +26,9 @@ TEST_SRCS = sample_main.cpp \
 
 TEST_OBJS = ${TEST_SRCS:.cpp=.o}
 
-include ../../Makefile.customize
-
 sample_test : ${TEST_OBJS}
 	@echo "Linking $@"
-	${LINKER} ${LDFLAGS} ${TEST_OBJS} ${TEST_LINK} -o $@
+	@${LINKER} ${LDFLAGS} ${TEST_OBJS} ${TEST_LINK} -o $@
 
 clean:
 	@rm -rf *.o sample_test
@@ -37,4 +37,4 @@ clean:
 
 .cpp.o:
 	@echo "Compiling $<"
-	${CXX} -c ${CXXFLAGS} ${TEST_INCLUDE} -o $@ $<
+	@${CXX} -c ${CXXFLAGS} ${TEST_INCLUDE} -o $@ $<
