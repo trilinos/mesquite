@@ -356,8 +356,9 @@ bool MeshSet::get_next_elem_on_vert_patch( PatchData& pd,
     get_vertex_use_count( &pd.elementHandlesArray[0], num_elems, err ); 
   MSQ_ERRZERO(err);
 
-    // All elems share at least 1 vertex (the center vertex)
-  size_t num_verts = num_vert_uses - num_elems;
+    // All elems share at least 1 vertex (the center vertex).  The
+    // center vertex is used 1 time, but it was counted num_elems times.
+  size_t num_verts = num_vert_uses - num_elems + 1;
   pd.vertexHandlesArray.resize( num_verts );
   pd.elementArray.resize( num_elems );
   pd.elemConnectivityArray.resize( num_vert_uses );
