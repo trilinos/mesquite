@@ -285,12 +285,11 @@ public:
 //        }
 
        CPPUNIT_ASSERT_DOUBLES_EQUAL(OF_val1, OF_val2, 1e-12);
-       
+       int j;
        free_ind.reset();
-       for (int i=0; i<2; ++i){
-         free_ind.next();
+       while(free_ind.next()){
          grad_pos=free_ind.value();
-         for (int j=0; j<3; ++j){
+         for (j=0; j<3; ++j){
            CPPUNIT_ASSERT_DOUBLES_EQUAL(grad_num[grad_pos][j],
                                         grad_ana[grad_pos][j], 0.01);
          }
