@@ -194,7 +194,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
       }
       
       grad_norm=infinity_norm(fNewGrad,num_vert,err);
-      PRINT_INFO("\nCG's grad_norm = %f, alp = %f",grad_norm,alp);
+        //PRINT_INFO("\nCG's grad_norm = %f, alp = %f",grad_norm,alp);
       
       double s11=0;
       double s12=0;
