@@ -65,7 +65,7 @@ namespace Mesquite
     
       //fills array of Vector3D's with the jacobian vectors and the 
       //number of jacobian vectors
-    void compute_weighted_jacobian(PatchData &pd, Vector3D* sample_point,
+    void compute_weighted_jacobian(PatchData &pd, Vector3D& sample_point,
                                    Vector3D jacobian_vectors[],
                                    int &num_jacobian_vectors,
                                    MsqError &err );

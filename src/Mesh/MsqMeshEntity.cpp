@@ -1,6 +1,7 @@
 #include "MsqMeshEntity.hpp"
 #include "MsqVertex.hpp"
 #include "PatchData.hpp"
+
 using namespace Mesquite;
 
 #ifdef __FUNC__
@@ -40,7 +41,7 @@ void Mesquite::MsqMeshEntity::append_vertex_indices(std::vector<size_t> &vertex_
 //fills array of Vector3D's with the jacobian vectors and the 
 //number of jacobian vecotors
 void Mesquite::MsqMeshEntity::compute_weighted_jacobian(PatchData &pd,
-                                                        Vector3D* sample_point,
+                                                        Vector3D &sample_point,
                                                         Vector3D jacobian_vectors[],
                                                         int &num_jacobian_vectors,
                                                         MsqError &err )
@@ -144,6 +145,7 @@ void Mesquite::MsqMeshEntity::compute_weighted_jacobian(PatchData &pd,
                                                              vertices[v_v[5]]-
                                                              vertices[v_v[2]]-
                                                              vertices[v_v[0]]));
+      
         //Michael :: TODO
         //complete hack to circumvent numbering problem
       jacobian_vectors[0]*=-1;
