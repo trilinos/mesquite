@@ -19,6 +19,14 @@ Header file for the Mesquite::EdgeLengthQualityMetric class
 
 namespace Mesquite
 {
+     /*! \class EdgeLengthQualityMetric
+       \brief Computes the lengths of the edges connected to given a vertex..
+       
+        EdgeLengthQualityMetric is a vertex based metric which computes
+        the lengths of the edges connected to a given vertex and then
+        averages those together, using the specified averaging method
+        The metric uses SUM as the default averaging method.
+     */
    class MsqMeshEntity;
    class MsqVertex;
    
