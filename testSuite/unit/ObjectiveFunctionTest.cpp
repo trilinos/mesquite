@@ -64,6 +64,9 @@ private:
   CPPUNIT_TEST (test_compute_gradient3D_composite);
   CPPUNIT_TEST (test_OFval_from_evaluate_and_gradient_LPtoP);
   CPPUNIT_TEST (test_grad_from_gradient_and_hessian_LPtoP);
+  CPPUNIT_TEST (test_grad_from_gradient_and_hessian_LPtoP_negate);
+  CPPUNIT_TEST (test_LPtoP_negate_flag);
+
   CPPUNIT_TEST_SUITE_END();
    
 private:
@@ -565,13 +568,14 @@ public:
 //     cout << "\ncompute_hessian(pd, grad2 ...) " << endl;
 //     for (int i=0; i<pd.num_vertices(); ++i)
 //       cout << grad2[i];
-      
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(OF_val1, OF_val2, 1e-8);
-
-    for (int i=0; i<pd.num_vertices(); ++i)
-      for (int j=0; j<3; ++j)
-        CPPUNIT_ASSERT_DOUBLES_EQUAL(grad1[i][j], grad2[i][j], 5e-5); 
     
+    
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(OF_val1, OF_val2, 1e-8);
+    for (int i=0; i<pd.num_vertices(); ++i){
+      for (int j=0; j<3; ++j){
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(grad1[i][j], grad2[i][j], 5e-5);
+      }
+    }
     delete[] grad1;
     delete[] grad2;
   }
@@ -601,7 +605,31 @@ public:
     test_grad_from_gradient_and_hessian(&LP1, m12Hex);
     delete mean_ratio;
   }
-  
+    //! Calls test_grad_from_gradient_and_hessian() for \f$ \ell_4^4 \f$
+  void test_grad_from_gradient_and_hessian_LPtoP_negate()
+  {
+    MsqError err;
+    
+    // creates a mean ratio quality metric ...
+    ShapeQualityMetric* i_mean_ratio = InverseMeanRatioQualityMetric::create_new();
+    i_mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
+    i_mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+    
+    // ... and builds an objective function with it
+    LPtoPTemplate LP4(i_mean_ratio, 4, err);
+    test_grad_from_gradient_and_hessian(&LP4, m12Hex);
+
+    // ... and builds an objective function with it
+    LPtoPTemplate LP1(i_mean_ratio, 1, err);
+    test_grad_from_gradient_and_hessian(&LP1, m12Hex);
+
+      //test scaled versions
+    LP4.set_dividing_by_n(true);
+    LP1.set_dividing_by_n(true);
+      //test_grad_from_gradient_and_hessian(&LP4, m12Hex);
+      //test_grad_from_gradient_and_hessian(&LP1, m12Hex);
+    delete i_mean_ratio;
+  }
 // ----------------------------------------------------------- 
 // numerical objective function hessian does not work for now. 
 // It will only be used for test purposes anyway. 
@@ -668,6 +696,159 @@ public:
 //   void test_compute_hessian_tet_patch() {
 //     test_compute_hessian(tetPatch);
 //   }
+
+    //This function tests to make sure that LPtoP handles the negate
+    // flag correctly for the analytical Hessian, gradient, and evaluate.
+    // It does this by creating two objective functions that are
+    // identical except that the metric in one has negate flag of -1
+    // and the metric in the other has a negate flag of 1.  Thus,
+    // the Hessians, gradients, and function values should be the
+    // the same except for a negative sign.
+  void test_LPtoP_negate_flag()
+  {
+    int i, j;
+    bool valid;
+    MsqError err;
+    MsqHessian Hpos;
+    Vector3D* gpos = new Vector3D[tetPatch.num_vertices()];
+    double fpos;
+    MsqHessian Hneg;
+    Vector3D* gneg = new Vector3D[tetPatch.num_vertices()];
+    double fneg;
+    Hpos.initialize(tetPatch, err); MSQ_CHKERR(err);
+    Hneg.initialize(tetPatch, err); MSQ_CHKERR(err);
+    // creates a mean ratio quality metric ...
+    ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
+    mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
+    mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+    ShapeQualityMetric* mean_ratio_neg = MeanRatioQualityMetric::create_new();
+    mean_ratio_neg->set_averaging_method(QualityMetric::LINEAR, err);
+    mean_ratio_neg->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+    mean_ratio_neg->set_negate_flag(-1);
+    // ... and builds an objective function with it
+      //FIRST TEST L4 **********************************************
+    LPtoPTemplate LP4(mean_ratio, 4, err);
+    LPtoPTemplate LP4_neg(mean_ratio_neg, 4, err);
+      //test evaluate
+    valid=LP4.evaluate(tetPatch, fpos, err);MSQ_CHKERR(err);
+    CPPUNIT_ASSERT(valid);
+    valid=LP4_neg.evaluate(tetPatch, fneg, err);MSQ_CHKERR(err);
+    CPPUNIT_ASSERT(valid);
+      //std::cout<<"\nFrom eval Orig fpos = "<<fpos<<" Mod fneg = "<<fneg;
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(fpos,-fneg,1.e-12);
+
+    valid=LP4.compute_gradient(tetPatch, gpos, fpos, err);
+    MSQ_CHKERR(err); CPPUNIT_ASSERT(valid);
+    valid=LP4_neg.compute_gradient(tetPatch, gneg, fneg, err);
+    MSQ_CHKERR(err);CPPUNIT_ASSERT(valid);
+      //std::cout<<"\nOrig fpos = "<<fpos<<" Mod fneg = "<<fneg;
+      //test function value
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(fpos,-fneg,1.e-12);
+      //test gradient;
+    for(i=0;i<tetPatch.num_vertices(); ++i){
+      for(j=0;j<3;++j){
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(gpos[i][j], -gneg[i][j], 1.e-12);
+      }
+    }
+    
+    valid=LP4.compute_hessian(tetPatch, Hpos, gpos, fpos, err);
+    MSQ_CHKERR(err); CPPUNIT_ASSERT(valid);
+    valid=LP4_neg.compute_hessian(tetPatch, Hneg, gneg, fneg, err);
+    MSQ_CHKERR(err);CPPUNIT_ASSERT(valid);
+      //std::cout<<"\nOrig fpos = "<<fpos<<" Mod fneg = "<<fneg;
+      //test function value
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(fpos,-fneg,1.e-12);
+      //test gradient;
+    for(i=0;i<tetPatch.num_vertices(); ++i){
+      for(j=0;j<3;++j){
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(gpos[i][j], -gneg[i][j], 1.e-12);
+      }
+    }
+    
+      // test hessian
+    Matrix3D* block_pos;
+    Matrix3D* block_neg;
+    CPPUNIT_ASSERT(Hpos.size() == Hneg.size());
+      //std::cout<<"\nHessian size "<< Hneg.size();
+      //std::cout<<"Hpos"<<Hpos;
+      //std::cout<<"Hneg"<<Hneg;
+    for (size_t m=0; m<Hpos.size(); ++m) {
+      for (size_t n=m; n<3; ++n) {
+         if(!(m==0 && n==4)){ 
+            block_pos = Hpos.get_block(m,n);
+            block_neg = Hneg.get_block(m,n);
+            for (i=0; i<3; ++i)
+               for (j=0; j<3; ++j)
+                  CPPUNIT_ASSERT_DOUBLES_EQUAL( (*block_pos)[i][j],
+                                                -((*block_neg)[i][j]),
+                                                1.e-12);
+         }
+      }
+    }
+      // THEN TRY L1 **************************************************
+        // ... and builds an objective function with it
+    LPtoPTemplate LP1(mean_ratio, 1, err);
+    LPtoPTemplate LP1_neg(mean_ratio_neg, 1, err);
+      //test evaluate
+    valid=LP1.evaluate(tetPatch, fpos, err);MSQ_CHKERR(err);
+    CPPUNIT_ASSERT(valid);
+    valid=LP1_neg.evaluate(tetPatch, fneg, err);MSQ_CHKERR(err);
+    CPPUNIT_ASSERT(valid);
+      //std::cout<<"\nFrom eval Orig fpos = "<<fpos<<" Mod fneg = "<<fneg;
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(fpos,-fneg,1.e-12);
+
+    valid=LP1.compute_gradient(tetPatch, gpos, fpos, err);
+    MSQ_CHKERR(err); CPPUNIT_ASSERT(valid);
+    valid=LP1_neg.compute_gradient(tetPatch, gneg, fneg, err);
+    MSQ_CHKERR(err);CPPUNIT_ASSERT(valid);
+      //std::cout<<"\nOrig fpos = "<<fpos<<" Mod fneg = "<<fneg;
+      //test function value
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(fpos,-fneg,1.e-12);
+      //test gradient;
+    for(i=0;i<tetPatch.num_vertices(); ++i){
+      for(j=0;j<3;++j){
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(gpos[i][j], -gneg[i][j], 1.e-12);
+      }
+    }
+    
+    valid=LP1.compute_hessian(tetPatch, Hpos, gpos, fpos, err);
+    MSQ_CHKERR(err); CPPUNIT_ASSERT(valid);
+    valid=LP1_neg.compute_hessian(tetPatch, Hneg, gneg, fneg, err);
+    MSQ_CHKERR(err);CPPUNIT_ASSERT(valid);
+      //std::cout<<"\nOrig fpos = "<<fpos<<" Mod fneg = "<<fneg;
+      //test function value
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(fpos,-fneg,1.e-12);
+      //test gradient;
+    for(i=0;i<tetPatch.num_vertices(); ++i){
+      for(j=0;j<3;++j){
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(gpos[i][j], -gneg[i][j], 1.e-12);
+      }
+    }
+    
+      // test hessian
+    CPPUNIT_ASSERT(Hpos.size() == Hneg.size());
+      //std::cout<<"\nHessian size "<< Hneg.size();
+      //std::cout<<"Hpos"<<Hpos;
+      //std::cout<<"Hneg"<<Hneg;
+    for (size_t m=0; m<Hpos.size(); ++m) {
+      for (size_t n=m; n<3; ++n) {
+         if(!(m==0 && n==4)){ 
+            block_pos = Hpos.get_block(m,n);
+            block_neg = Hneg.get_block(m,n);
+            for (i=0; i<3; ++i)
+               for (j=0; j<3; ++j)
+                  CPPUNIT_ASSERT_DOUBLES_EQUAL( (*block_pos)[i][j], -((*block_neg)[i][j]), 1.e-12);
+         }
+      }
+    }
+    
+    delete[] gpos;
+    delete[] gneg;
+    delete mean_ratio;
+    delete mean_ratio_neg;
+    
+  }
+  
 
 };
 
