@@ -27,12 +27,12 @@
 
 namespace Mesquite {
 
-  void writeVtkMesh(const char filebase[128], TSTT::cMesh_Handle mesh_h,
-                           MsqError &err);
-  void writeTSTTShowMeMesh(const char filebase[128], TSTT::cMesh_Handle mesh_h,
-                           MsqError &err);
-  void writeTSTTFacetMesh(const char filebase[128], TSTT::cMesh_Handle mesh_h,
-                           MsqError &err);
+//   void writeVtkMesh(const char filebase[128], TSTT::cMesh_Handle mesh_h,
+//                            MsqError &err);
+//   void writeTSTTShowMeMesh(const char filebase[128], TSTT::cMesh_Handle mesh_h,
+//                            MsqError &err);
+//   void writeTSTTFacetMesh(const char filebase[128], TSTT::cMesh_Handle mesh_h,
+//                            MsqError &err);
 
 } // namespace
 
