@@ -1,7 +1,7 @@
 #ifndef MESQUITE_VECTOR3D_HPP
 #define MESQUITE_VECTOR3D_HPP
 
-#include "Mesquite.hpp"
+//#include "Mesquite.hpp"
 #ifdef USE_C_PREFIX_INCLUDES
 #include <cassert>
 #else
@@ -33,6 +33,9 @@ namespace Mesquite
     Vector3D(const double& x, const double& y, const double& z);
     Vector3D(const double xyz[3]);
     Vector3D(const Vector3D& to_copy);
+
+    // Virtual destructor ensures polymorphism
+    virtual ~Vector3D() { }
     
     // Functions to get the coordinates
     double x() const;

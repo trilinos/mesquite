@@ -33,6 +33,9 @@ namespace Mesquite
      MsqVertex() 
          : Vector3D(0,0,0), vertexBitFlags(0)
        {}
+
+     //! Virtual destructor ensures polymorphism
+     virtual ~MsqVertex() { }
      
      void operator=(const Vector3D& rhs)
        { Vector3D::operator=(rhs);
