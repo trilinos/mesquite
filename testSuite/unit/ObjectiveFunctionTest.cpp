@@ -15,8 +15,6 @@
 /*! \file ObjectiveFunctionTest.cpp
 
 Unit testing of various functions in the ObjectiveFunction class. 
-\todo MB: Double check the removal of LPTemplates to make
-sure everything is still valid.
 */
 // DESCRIP-END.
 //
@@ -26,6 +24,8 @@ sure everything is still valid.
 #include "Mesquite.hpp"
 #include "ObjectiveFunction.hpp"
 #include "LPtoPTemplate.hpp"
+#include "MaxTemplate.hpp"
+#include "LInfTemplate.hpp"
 #include "CompositeOFAdd.hpp"
 #include "CompositeOFMultiply.hpp"
 #include "CompositeOFScalarMultiply.hpp"
@@ -53,8 +53,7 @@ class ObjectiveFunctionTest : public CppUnit::TestFixture
 private:
   CPPUNIT_TEST_SUITE(ObjectiveFunctionTest);
   CPPUNIT_TEST (test_get_quality_metric_list);
-  //CPPUNIT_TEST (test_compute_gradient_2D_LPTemplate);
-  //CPPUNIT_TEST (test_compute_gradient_3D_LPTemplate);
+  CPPUNIT_TEST (test_max_templates);
   CPPUNIT_TEST (test_compute_gradient_3D_LPtoPTemplate_L1_hex);
   CPPUNIT_TEST (test_compute_gradient_3D_LPtoPTemplate_L2_hex);
   CPPUNIT_TEST (test_compute_ana_hessian_tet);
@@ -180,34 +179,62 @@ public:
     delete LP2_condition_nb;
     delete LP2_condition_nb_x3;
   }
-  /*
-  void test_compute_gradient_2D_LPTemplate()
-  {
-    MsqError err;
-    Vector3D* grad_num = new Vector3D[m6Quads.num_vertices()];
-    Vector3D* grad_ana = new Vector3D[m6Quads.num_vertices()];
-    
-    // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
-    // ... and builds an objective function with it
-    LPTemplate LP2(mean_ratio, 2, err);
-
-    LP2.set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
-    LP2.compute_gradient(m6Quads, grad_num, err); MSQ_CHKERR(err);
-    
-    LP2.set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
-    mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
-    LP2.compute_gradient(m6Quads, grad_ana, err); MSQ_CHKERR(err);
-    
-    for (int i=0; i<2; ++i)
-      for (int j=0; j<3; ++j)
-        CPPUNIT_ASSERT_DOUBLES_EQUAL(grad_num[i][j], grad_ana[i][j], 0.001);
-
-    delete grad_num;
-    delete grad_ana;
-    delete mean_ratio;
-  }
-  */
+    //This function takes a patch data object and compares
+    //the max template value and the l_inf value on that patch
+    //for objective functions using a mean ratio metric and
+    //an edge length metric.  These templates return the same
+    //value assuming the metrics are non-negative.
+  void compare_l_inf_and_max_templates(PatchData &pd)
+     {
+       MsqError err;
+         // creates a mean ratio quality metric ...
+       bool return_bool;
+       double max_val=0.0;
+       double l_inf_val = 1.0;
+       ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
+         //creates an edge length metric
+       SmoothnessQualityMetric* smooth = EdgeLengthQualityMetric::create_new();
+       
+         // ... and builds an objective function with it
+       LInfTemplate l_inf_mean(mean_ratio);
+       MaxTemplate max_mean(mean_ratio);
+       LInfTemplate l_inf_smooth(smooth);
+       MaxTemplate max_smooth(smooth);
+         //check an element based metric
+       return_bool=l_inf_mean.evaluate(pd, l_inf_val, err);
+       CPPUNIT_ASSERT(return_bool);
+       return_bool=max_mean.evaluate(pd, max_val, err);
+       CPPUNIT_ASSERT(return_bool);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(l_inf_val, max_val, 1e-12);
+         //check on a vertex based metric
+       return_bool=l_inf_smooth.evaluate(pd, l_inf_val, err);
+       CPPUNIT_ASSERT(return_bool);
+       return_bool=max_smooth.evaluate(pd, max_val, err);
+       CPPUNIT_ASSERT(return_bool);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(l_inf_val, max_val, 1e-12);
+         //std::cout<<"\nL_INF_VAL = "<<l_inf_val<<" MAX_VAL = "<<max_val;
+       
+       delete mean_ratio;
+       delete smooth;
+     }
+  void test_max_templates()
+     {
+       /*
+           PatchData m6Quads;
+           PatchData m12Hex;
+           PatchData triPatch;
+           PatchData tetPatch;
+       */
+         //test on tris
+       compare_l_inf_and_max_templates(triPatch);
+         //test on quads
+       compare_l_inf_and_max_templates(m6Quads);
+         //test on tets
+       compare_l_inf_and_max_templates(tetPatch);
+         //test on hexes
+       compare_l_inf_and_max_templates(m12Hex);
+     } 
+  
   void compare_numerical_analytical_gradient(ObjectiveFunction *obj,
                                              PatchData &pd)
      {
@@ -262,23 +289,7 @@ public:
        delete grad_num;
        delete grad_ana;
      } 
-  /*
-  void test_compute_gradient_3D_LPTemplate()
-  {
-    MsqError err;
-    
-    // creates a mean ratio quality metric ...
-    ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
-    mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
-    
-    // ... and builds an objective function with it
-    LPTemplate LP2(mean_ratio, 2, err);
-    mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
-      //    mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
-    compare_numerical_analytical_gradient(&LP2, m12Hex);
-    delete mean_ratio;
-  }
-  */
+
   void test_compute_gradient_3D_LPtoPTemplate_L1_hex()
   {
     MsqError err;
