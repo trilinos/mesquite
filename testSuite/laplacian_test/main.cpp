@@ -65,7 +65,7 @@ int main()
   TSTT::Mesh_Handle mesh;
   TSTT::MeshError tstt_err;
   TSTT::Mesh_Create(&mesh, &tstt_err);
-  strcpy(file_name, "../../meshFiles/3D/VTK/hex_2_with_bound.vtk");
+  strcpy(file_name, "../../meshFiles/3D/VTK/cube_hex_2.vtk");
   TSTT::Mesh_Load(mesh, file_name, &tstt_err);
 #else
   Mesh_Handle mesh;
