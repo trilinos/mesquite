@@ -71,9 +71,8 @@ double LPTemplate::concrete_evaluate(PatchData &patch, MsqError &err){
 //    MsqMeshEntity* current_ent;
     for (index=0; index<num_elements;index++)
     {
-      metric_values[index]=fabs(currentQM->evaluate_element(patch,
-                                                            (&elems[index]),
-                                                            err));
+      currentQM->evaluate_element(patch, (&elems[index]), metric_values[index], err); 
+      metric_values[index]=fabs(metric_values[index]);
       MSQ_DEBUG_ACTION(3,{std::cout<< "      o  Quality metric value for element "
                           << index << "\t: " << metric_values[index] << "\n";});
     }
@@ -84,9 +83,8 @@ double LPTemplate::concrete_evaluate(PatchData &patch, MsqError &err){
     for (index=0; index<num_vertices;index++)
     {
         //evaluate metric for this vertex
-      metric_values[index]=fabs(currentQM->evaluate_vertex(patch,
-                                                           (&vertices[index]),
-                                                           err));
+      currentQM->evaluate_vertex(patch, (&vertices[index]), metric_values[index], err);
+      metric_values[index]=fabs(metric_values[index]);
     }
   }
   double obj_val=compute_function(metric_values, total_num, err);
@@ -141,18 +139,16 @@ void  LPTemplate::compute_analytical_gradient(PatchData &patch,
     // fill array with element quality metrics
   if(qm_type==QualityMetric::ELEMENT_BASED){
     for (index=0; index<num_elements;++index){
-      metric_values[index]=fabs(currentQM->evaluate_element(patch,
-                                                            &elems[index],
-                                                            err));
+      currentQM->evaluate_element(patch, &elems[index], metric_values[index], err);
+      metric_values[index]=fabs(metric_values[index]);
     }
   }
     // fill array with vertex quality metrics
   else if (qm_type==QualityMetric::VERTEX_BASED) {
     for (index=0; index<num_vertices;++index){
         //evaluate metric for this vertex
-      metric_values[index]=fabs(currentQM->evaluate_vertex(patch,
-                                                           &vertices[index],
-                                                           err));
+      currentQM->evaluate_vertex(patch, &vertices[index], metric_values[index], err);
+      metric_values[index] = fabs( metric_values[index] );
     }
   }
   big_f=compute_function(metric_values, total_num, err);

@@ -47,7 +47,7 @@ double MinTemplate::concrete_evaluate(PatchData &patch, MsqError &err){
     for (index=0; index<num_elements; index++){
 
       //evaluate metric for this elem
-      temp_value=currentQM->evaluate_element(patch, &elems[index], err);
+      currentQM->evaluate_element(patch, &elems[index], temp_value, err);
       MSQ_CHKERR(err);
 
       if(temp_value<total_value)
@@ -64,7 +64,7 @@ double MinTemplate::concrete_evaluate(PatchData &patch, MsqError &err){
     for (index=0; index<num_vertices;index++){
 
       //evaluate metric for this vertex
-      temp_value=currentQM->evaluate_vertex(patch, &vertices[index], err);
+      currentQM->evaluate_vertex(patch, &vertices[index], temp_value, err);
       MSQ_CHKERR(err);
 
       if(temp_value<total_value)
