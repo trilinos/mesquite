@@ -145,7 +145,7 @@ foreach $file ( <*> )
       @statinfo = stat $file;
       $mtime = $statinfo[9];
       $otime = time() - (12*60*60);
-      $platformhash{$name} = 1 if( $mtime gt $otime );
+      $platformhash{$name} = $mtime if( $mtime gt $otime );
    }
 }
 my @platforms = sort keys %platformhash;
@@ -157,7 +157,18 @@ foreach $file ( <*> )
 {
    if ( $file =~ /^([^.]+)\.results\.(tests|regress|unit)/ )
    {
+         # get platform name and test type
       ($name,$type) = ($1,$2);
+
+         # Skip any result files more than an hour older than
+         # the platform test log
+      @statinfo = stat $file;
+      $mtime = $statinfo[9];
+      
+      print "$name: $platformhash{$name}, ${type}: $mtime\n" if ($debug);
+      next if ($platformhash{$name} > 3600+$mtime);
+      
+         # Read test results from file
       if ($type eq "tests") {
          $stand{$name} = stand_alone_read($file);
       } elsif ($type eq "regress") {
@@ -252,6 +263,7 @@ if ($debug)
 {
    seek ($file, 0, 0);
    print while (<$file>);
+   exit 0;
 }
 
   # Construct the email...
