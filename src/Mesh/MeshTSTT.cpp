@@ -1027,6 +1027,11 @@ void MeshTSTTImpl::set_active_set( void* elem_set, MsqError& err )
     
     MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
   }
+  
+    // clear cached data
+  inputElements.clear();
+  vertexAdjElementSize = 0;
+  cachedAdjVertex = 0;
 }
 
 void MeshTSTTImpl::popupate_input_elements( ) throw( TSTT::Error )
