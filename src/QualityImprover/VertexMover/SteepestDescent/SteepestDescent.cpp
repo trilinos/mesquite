@@ -35,7 +35,6 @@ SteepestDescent::SteepestDescent(ObjectiveFunction* of) :
 #define __FUNC__ "SteepestDescent::initialize" 
 void SteepestDescent::initialize(PatchData &pd, MsqError &err)
 {
-  PRINT_INFO("\no  Performing Steepest Descent optimization.\n");
 }
 
 #undef __FUNC__
@@ -45,10 +44,11 @@ void SteepestDescent::initialize_mesh_iteration(PatchData &pd, MsqError &err)
 }
 
 #undef __FUNC__
-#define __FUNC__ "SteepestDescent::optimize_nodes_position" 
+#define __FUNC__ "SteepestDescent::optimize_vertex_positions" 
 void SteepestDescent::optimize_vertex_positions(PatchData &pd, 
                                                 MsqError &err)
 {
+  PRINT_INFO("\no  Performing Steepest Descent optimization.\n");
   // Get the array of vertices of the patch. Free vertices are first.
   MeshSet *vertex_mover_mesh=get_mesh_set();
   int num_free_vertices = pd.num_free_vertices();
