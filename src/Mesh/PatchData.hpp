@@ -315,8 +315,8 @@ namespace Mesquite
 
     //! Sets the originating meshSet. This is normally done in MeshSet::get_next_patch().
     //! This function is only for tests purposes. 
-    void set_mesh_set(MeshSet* ms)
-      { meshSet = ms; }
+    void set_mesh_set(MeshSet* ms);
+    
     //! Returns the originating meshSet.
     //! This function is only for tests purposes. 
     MeshSet* get_mesh_set()

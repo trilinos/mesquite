@@ -1101,6 +1101,12 @@ void PatchData::get_domain_normal_at_element(size_t elem_index,
     err.set_msg("No domain constraint set.");
 }
 
+#undef __FUNC__
+#define __FUNC__ "PatchData::set_mesh_set"
+void PatchData::set_mesh_set(MeshSet* ms)
+{ meshSet = ms;
+  if (ms->get_domain_constraint()!=NULL) domainSet = true; }
+
 
 #undef __FUNC__
 #define __FUNC__ "PatchData::print"
