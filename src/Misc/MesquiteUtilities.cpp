@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 21-Aug-02 at 16:04:29
-//  LAST-MOD: 13-Sep-02 at 15:38:29 by Thomas Leurent
+//  LAST-MOD: 30-Oct-02 at 17:39:37 by Thomas Leurent
 //
 // RCS Infos:
 // ==========
@@ -34,9 +34,6 @@ describe MesquiteUtilities.cpp here
 //#include <iostream.h>
 using namespace Mesquite; 
 
-
-
-#ifdef MESQUITE_USES_TSTT
 
 #undef __FUNC__
 #define __FUNC__ "writeVtkMesh"
@@ -397,5 +394,4 @@ void Mesquite::writeTSTTFacetMesh(const char filebase[128], TSTT::cMesh_Handle m
   delete[] tri_vertices;
 }
 
-#endif
 

@@ -26,11 +26,7 @@
 #include "MesquiteError.hpp"
 #include "PatchData.hpp"
 
-#ifdef MESQUITE_USES_TSTT
 #include "TSTT_Base.h"
-#else
-#include "TSTT_C.h"
-#endif
 
 using namespace std;
 
@@ -62,13 +58,8 @@ namespace Mesquite
                 fixedVertexTagName("fixed")
       {}
     ~MeshSet();
-#ifdef MESQUITE_USES_TSTT
     void add_mesh(TSTT::Mesh_Handle mesh_handle, MsqError &err);
     void get_meshes(list<TSTT::Mesh_Handle> &mesh_list) const
-#else
-    void add_mesh(Mesh_Handle mesh_handle, MsqError &err);
-    void get_meshes(list<Mesh_Handle> &mesh_list) const
-#endif
       { mesh_list = meshSet; }
     
       // This should normally be set by the MeshSet itself when you
@@ -78,13 +69,6 @@ namespace Mesquite
     
     int space_dim() const
       { return spaceDim; }
-#ifndef MESQUITE_USES_TSTT
-      // This should be determined by the Mesh_Handles, not set by us.
-    void set_element_type(Mesquite::EntityTopology e)
-    { elementType = e; }
-    EntityTopology get_element_type()
-      { return elementType; }
-#endif
     
     enum PatchType
     {
@@ -122,15 +106,6 @@ namespace Mesquite
       // Updates the TSTT mesh with any changes made to the PatchData
     void update_mesh(PatchData &pd, MsqError &err);
     
-#ifndef MESQUITE_USES_TSTT
-// Not used for now ... and probably going to the bin soon anyway ... 
-//    struct EntityEntry {
-//       Mesh_Handle mesh;
-//       Entity_Handle entity;
-//       EntityEntry( Mesh_Handle m, Entity_Handle e ) :
-//         mesh(m), entity(e) {}
-//     };
-#else         
     struct EntityEntry
     {
       TSTT::Mesh_Handle mesh;
@@ -139,7 +114,6 @@ namespace Mesquite
         mesh(m), entity(e)
         {}
     };
-#endif
     
   private:
     
@@ -147,26 +121,16 @@ namespace Mesquite
     int mParam1, mParam2;
     long unsigned int cullingMethodBits;
     std::string fixedVertexTagName; 
-#ifdef MESQUITE_USES_TSTT 
     list<TSTT::Mesh_Handle> meshSet;
     vector<EntityEntry> allVertices;
-#else
-    list<Mesh_Handle> meshSet;
-    vector<Entity_Handle> allVertices;
-#endif          
     int currentVertexInd;
     
     int spaceDim;
-#ifdef MESQUITE_USES_TSTT
     //! TSTT::FACE or TSTT::REGION.
     //! Must be the same for all meshes added with add_mesh().
     enum TSTT::EntityType elementType;
-#else
-    enum EntityTopology elementType;
-#endif
   };
 
-#ifdef MESQUITE_USES_TSTT
     // *********Call MsqMeshEntity::vertex_count() instead**********
 // #undef __FUNC__
 // #define __FUNC__ "number_of_vertices"
@@ -193,7 +157,6 @@ namespace Mesquite
 //       return 0;
 //     }
 //   }
-#endif // MESQUITE_USES_TSTT
   
   // -********** AOMD tmp TEST **********
   void test_aomd(void);
