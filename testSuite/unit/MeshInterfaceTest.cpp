@@ -254,7 +254,7 @@ public:
     size_t sizeof_vert_handles = nbVert+3; // testing also with extra space handling
     Mesquite::Mesh::VertexHandle* vert_handles =
       new Mesquite::Mesh::VertexHandle[sizeof_vert_handles];
-    size_t sizeof_csr_data = nbVert;
+    size_t sizeof_csr_data = 15;
     size_t* csr_data = new size_t[sizeof_csr_data];
     size_t* csr_offsets = new size_t[nbElem+1];
     
@@ -263,6 +263,38 @@ public:
                                           csr_data, sizeof_csr_data,
                                           csr_offsets,
                                           mErr); MSQ_CHKERR(mErr);
+
+    // Make sure a handles is returned for each vertex.
+    for (int i=0; i<9; ++i) {
+      CPPUNIT_ASSERT( vert_handles[i] != 0 );
+    }
+    
+//     cout << "nbElem " << nbElem << endl;
+//     for (size_t i=0; i<nbElem; ++i) {
+//       cout << "mElements["<<i<<"]: " << mElements[i] << endl;
+//     }
+//     cout << "sizeof_vert_handles " << sizeof_vert_handles << endl;
+//     for (size_t i=0; i< sizeof_vert_handles ; ++i) {
+//       cout << "vert_handles["<<i<<"]: " << vert_handles[i] << endl;
+//     }
+//     cout << "sizeof_csr_data " << sizeof_csr_data << endl;
+//     for (size_t i=0; i< sizeof_csr_data ; ++i) {
+//       cout << "csr_data["<<i<<"]: " << csr_data[i] << endl;
+//     }
+//     for (size_t i=0; i< nbElem+1 ; ++i) {
+//       cout << "csr_offsets["<<i<<"]: " << csr_offsets[i] << endl;
+//     }
+
+    // When sizeof_csr_data is insufficient, makes sure an error is set 
+    sizeof_csr_data = 12;
+    mMesh->elements_get_attached_vertices(mElements, nbElem,
+                                          vert_handles, sizeof_vert_handles,
+                                          csr_data, sizeof_csr_data,
+                                          csr_offsets,
+                                          mErr);
+    CPPUNIT_ASSERT( mErr.errorOn == true );
+    mErr.reset();
+
   }
 
   
