@@ -96,7 +96,8 @@ void Mesquite::writeVtkMesh(const char filebase[128], TSTT::cMesh_Handle mesh_h,
                                &vtx_coords, &num_coords,
                                &tstt_err);
   assert(!tstt_err);
-  for (int i=0; i<num_vertices; ++i) {
+  int i;
+  for (i=0; i<num_vertices; ++i) {
     fprintf(vtk_fp,"%f   %f   %f\n", vtx_coords[3*i], vtx_coords[3*i+1], vtx_coords[3*i+2]);
   }
 
@@ -111,7 +112,7 @@ void Mesquite::writeVtkMesh(const char filebase[128], TSTT::cMesh_Handle mesh_h,
   bool includes_quads = false;
   bool includes_tets = false;
   bool includes_hexs = false;
-  for (int i=0; i<num_elem; ++i) {
+  for (i=0; i<num_elem; ++i) {
     cells_table_size += 1 + MsqMeshEntity::vertex_count(topologies[i], err); MSQ_CHKERR(err);
     if (topologies[i] == TSTT::TRIANGLE)       includes_tris=true;
     if (topologies[i] == TSTT::QUADRILATERAL)  includes_quads=true;
@@ -128,7 +129,8 @@ void Mesquite::writeVtkMesh(const char filebase[128], TSTT::cMesh_Handle mesh_h,
   
   // get and prints out the connectivity for each element
   TSTT::Entity_Handle* elem_vertices = new TSTT::Entity_Handle[8];
-  for (int e=0; e<num_elem; ++e) {
+  int e;
+  for (e=0; e<num_elem; ++e) {
     int* csr_pointer; // dummy
     int* csr_data; // dummy
     int num_elem_vtx; num_elem_vtx=8;
@@ -172,7 +174,8 @@ void Mesquite::writeVtkMesh(const char filebase[128], TSTT::cMesh_Handle mesh_h,
 
   // writes the topology of each element.
   fprintf(vtk_fp, "CELL_TYPES %d\n", num_elem);
-  for (int e=0; e<num_elem; ++e) {
+  for (e=0; e<num_elem; ++e) 
+  {
     // converts from TSTT to VTK topology type.
     int vtk_type;
     switch (topologies[e]) {
@@ -205,7 +208,7 @@ void Mesquite::writeVtkMesh(const char filebase[128], TSTT::cMesh_Handle mesh_h,
   void* bnd_tag_handle=0;
   TSTT::Mesh_tagGetHandle (mesh_h, bnd_tag_name, &bnd_tag_handle, &tstt_err);
   assert(!tstt_err);
-  for (int i=0; i<num_vertices; ++i) {
+  for (i=0; i<num_vertices; ++i) {
     int* on_boundary=0;
     int tag_size;
     TSTT::Mesh_GetTag_Entity(mesh_h,

@@ -18,6 +18,7 @@
 
 #include <new>
 #include "Mesquite.hpp"
+#include <string>
 
 /*! \def __SDIR__
   \brief Source file directory.
@@ -120,13 +121,6 @@ private:
 };
 
 } // namespace
-
-/* Special handler for the bad_alloc exception thrown by new */ 
-inline void Mesquite::out_of_store()
-{
-  std::cerr << "MESQUITE ERROR: Operator new failed: out of store.\n";
-  throw std::bad_alloc();
-}
 
 
 /*! \def MSQ_CHKERR(err)

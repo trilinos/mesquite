@@ -9,18 +9,19 @@ Header file for the Mesquite::QualityAssessor class
  */
 
 
-#ifndef QualityAssessor_hpp
-#define QualityAssessor_hpp
+#ifndef MSQ_QUALITYASSESSOR_HPP
+#define MSQ_QUALITYASSESSOR_HPP
 
-#include <list>
-#include <string>
 
 #include "Mesquite.hpp"
 #include "MesquiteError.hpp"
 #include "MeshSet.hpp"
 #include "PatchDataUser.hpp"
+#include <list>
+#include <string>
 
-namespace Mesquite {
+namespace Mesquite 
+{
 
    class QualityMetric;
 

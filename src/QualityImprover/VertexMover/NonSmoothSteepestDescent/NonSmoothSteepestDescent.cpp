@@ -28,11 +28,12 @@ NonSmoothSteepestDescent::NonSmoothSteepestDescent(ObjectiveFunction* of)
   PDG = (double **)malloc(sizeof(double *)*3);
   prev_active_values=(double *)malloc(sizeof(double)*150);
 
-  for (int i=0;i<150;i++) {
+  int i;
+  for (i=0;i<150;i++) {
     gradient[i] = (double *)malloc(sizeof(double)*3);
     G[i] = (double *)malloc(sizeof(double)*150);
   }
-  for (int i=0;i<3;i++) PDG[i] = (double *)malloc(sizeof(double)*3);
+  for (i=0;i<3;i++) PDG[i] = (double *)malloc(sizeof(double)*3);
 
   active = (ActiveSet *)malloc(sizeof(ActiveSet));
   test_active = (ActiveSet *)malloc(sizeof(ActiveSet));
@@ -130,11 +131,12 @@ void NonSmoothSteepestDescent::terminate_mesh_iteration(PatchData &pd, MsqError 
 void NonSmoothSteepestDescent::cleanup()
 {
   std::cout << "- Executing NonSmoothSteepestDescent::cleanup()\n";
-  for (int i=0;i<150;i++) {
+  int i;
+  for (i=0;i<150;i++) {
     free(gradient[i]);
     free(G[i]);
   }
-  for (int i=0;i<3;i++) free(PDG[i]);
+  for (i=0;i<3;i++) free(PDG[i]);
 
   free(function);
   free(test_function);
@@ -159,13 +161,14 @@ void NonSmoothSteepestDescent::compute_function(PatchData *patch_data, double *f
 
   //  MSQ_DEBUG_PRINT(2,"Computing Function\n");
 
-  for (int i=0;i<numElements;i++) func[i]=0.0;
+  int i;
+  for (i=0;i<numElements;i++) func[i]=0.0;
   QualityMetric* currentQM=objFunc->get_quality_metric();
   if(currentQM==NULL){
     currentQM = objFunc->get_quality_metric_list().front();
   }
   
-  for (int i=0;i<numElements;i++) {
+  for (i=0;i<numElements;i++) {
     currentQM->evaluate_element(*patch_data,
                                 &(patch_data->element_by_index(i)),
                                 func[i], err); MSQ_CHKERR(err);

@@ -2,6 +2,13 @@
 
 using namespace Mesquite;
 
+/* Special handler for the bad_alloc exception thrown by new */ 
+void Mesquite::out_of_store()
+{
+  std::cerr << "MESQUITE ERROR: Operator new failed: out of store.\n";
+  throw std::bad_alloc();
+}
+
 // Constructors
 MsqError::MsqError(bool e, enum Error_Codes ec, std::string m)
 {
@@ -15,7 +22,7 @@ MsqError::MsqError(Error_Codes ec, std::string m)
 {
   errorOn = true;
   errorCode = ec;
-  if (m!="")
+  if (m != std::string(""))
     msg = m;
 }
 

@@ -31,6 +31,7 @@ bool AspectRatioGammaQualityMetric::evaluate_element(PatchData &pd,
   EntityTopology entity = element->get_element_type();
   double vol=0;
   Vector3D temp_vec(0,0,0);
+  bool return_val = true;
   
     //get element's nodes
   std::vector<Vector3D> vert;
@@ -93,8 +94,9 @@ bool AspectRatioGammaQualityMetric::evaluate_element(PatchData &pd,
     default:
       fval=MSQ_MAX_CAP;
       std::cout<<"\nEntity type: "<<entity<<" not valid for Aspect Ratio Gamma\n";
+      return_val = false;
       break;
   };
   
-  return fval;  
+  return return_val;
 }

@@ -63,8 +63,7 @@ namespace Mesquite
      };
        //!Returns true if vertex is ``free''.
      bool is_free_vertex()
-       { return ( !bool(vertexBitFlags & MSQ_SOFT_FIXED) &&
-                  !bool(vertexBitFlags & MSQ_HARD_FIXED) ); }
+       { return (vertexBitFlags & (MSQ_SOFT_FIXED|MSQ_HARD_FIXED)) == 0; }
      
      void set_soft_fixed_flag()
        { vertexBitFlags|=MSQ_SOFT_FIXED; }
@@ -82,7 +81,7 @@ namespace Mesquite
        { vertexBitFlags &= (~flag); }
      
      bool is_flag_set(FlagMaskID flag)
-       { return bool(vertexBitFlags & flag); }
+       { return (vertexBitFlags & flag) != 0; }
      
      void move_to_owner()
        { // Not yet written

@@ -1,6 +1,10 @@
 #ifndef MESQUITE_TIMER_HPP
 #define MESQUITE_TIMER_HPP
 
+#ifdef WIN32
+#pragma warning ( 4 : 4786)
+#endif
+
 #include <vector>
 #include <utility>
 #include <string>

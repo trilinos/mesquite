@@ -83,13 +83,16 @@ bool QualityMetric::compute_element_numerical_gradient(PatchData &pd,
   
   bool valid=this->evaluate_element(pd, element, metric_value, err); MSQ_CHKERR(err);
 
-  if (!valid) { return false; }
+  if (!valid)
+    return false;
   
   double delta = 10e-6;
   double metric_value1=0;
-  for (int v=0; v<num_vtx; ++v) {
+  for (int v=0; v<num_vtx; ++v) 
+  {
     /* gradient in the x, y, z direction */
-    for (int j=0;j<3;++j) {
+    for (int j=0;j<3;++j) 
+    {
       // perturb the coordinates of the free vertex in the j direction by delta
       vertices[v][j]+=delta;
       //compute the function at the perturbed point location
@@ -100,6 +103,7 @@ bool QualityMetric::compute_element_numerical_gradient(PatchData &pd,
       vertices[v][j] -= delta;
     }
   }
+  return true;
 }
 
 

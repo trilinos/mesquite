@@ -9,15 +9,15 @@ Header file for the Mesquite::InstructionQueue class
  */
 
 
-#ifndef InstructionQueue_hpp
-#define InstructionQueue_hpp
-
-#include <list>
+#ifndef MSQ_INSTRUCTIONQUEUE_HPP
+#define MSQ_INSTRUCTIONQUEUE_HPP
 
 #include "Mesquite.hpp"
 #include "MesquiteError.hpp"
 #include "QualityAssessor.hpp"
 #include "QualityImprover.hpp"
+#include <list>
+
 
 namespace Mesquite {
 

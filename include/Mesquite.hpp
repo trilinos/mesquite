@@ -1,6 +1,11 @@
 #ifndef MESQUITE_HPP
 #define MESQUITE_HPP
 
+#ifdef WIN32
+#pragma warning ( 4 : 4786)
+#endif
+
+
 #ifdef USE_STD_INCLUDES
 #include <iostream>
 #include <stdexcept>
