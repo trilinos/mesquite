@@ -83,7 +83,7 @@ namespace Mesquite
       { return numElements; } 
 
     //! This is a costly function !
-    int num_free_vertices();
+    int num_free_vertices(MsqError &err);
     
     //! returns the start of the vertex array
     MsqVertex* get_vertex_array(MsqError &err) const;

@@ -10,10 +10,7 @@
 
 #include "SteepestDescent.hpp"
 
-//Michael delete
-#include "AspectRatioGammaQualityMetric.hpp"
-#include <time.h>
-#include "MsqMessage.hpp"
+
 using namespace Mesquite;
 
 
@@ -51,7 +48,7 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
   PRINT_INFO("\no  Performing Steepest Descent optimization.\n");
   // Get the array of vertices of the patch. Free vertices are first.
   MeshSet *vertex_mover_mesh=get_mesh_set();
-  int num_free_vertices = pd.num_free_vertices();
+  int num_free_vertices = pd.num_free_vertices(err);
   Vector3D* gradient = new Vector3D[num_free_vertices];
   Vector3D* dk = new Vector3D[num_free_vertices];
   int nb_iterations = 0;
@@ -100,8 +97,8 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
     int nb_iter = 0;
 
     // saves the PatchData coordinates in a memento
-    PatchDataCoordsMemento* pd_previous_coords;
-    pd_previous_coords = pd.create_coords_memento(err); MSQ_CHKERR(err);
+    PatchDataVerticesMemento* pd_previous_coords;
+    pd_previous_coords = pd.create_vertices_memento(err); MSQ_CHKERR(err);
     // Loop to find a step size that improves quality
     double step_size = smallest_edge;
     while (new_value > original_value
@@ -117,7 +114,7 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
       // if no improvement
       if (new_value > original_value) {
         // undoes node movement
-        pd.set_to_coords_memento( pd_previous_coords, err ); MSQ_CHKERR(err);
+        pd.set_to_vertices_memento( pd_previous_coords, err ); MSQ_CHKERR(err);
         // and reduces step size to try again.
         step_size /= 2;
       }

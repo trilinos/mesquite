@@ -34,16 +34,16 @@ namespace Mesquite {
     }  .*/
   class MsqFreeVertexIndexIterator {
   public:
-    MsqFreeVertexIndexIterator(PatchData *pd) :
+    MsqFreeVertexIndexIterator(PatchData *pd, MsqError &err) :
       originator(pd), current_index(-1)
-    { vertex_array = pd->get_vertex_array(); }
+    { vertex_array = pd->get_vertex_array(err); }
     //! Resets the iterator. 
     //! The next call to next() will set the iterator on the first free vertex. 
     void reset() { current_index=-1; }
     //! Increments the iterator. returns false if there is no more free vertex.
     inline bool next();
     //! Returns an index corresponding to a free vertex.
-    int value() {return current_index};
+    int value() {return current_index;}
   private:
     PatchData* originator;
     int current_index;

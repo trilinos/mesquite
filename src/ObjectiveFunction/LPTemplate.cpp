@@ -101,7 +101,8 @@ void  LPTemplate::compute_analytical_gradient(PatchData &patch,
    MsqMeshEntity* elems=patch.get_element_array(err);
    MsqVertex* vertices=patch.get_vertex_array(err);
     //Check to make sure that num_free_vert == array_size
-  int num_free_vert=patch.num_free_vertices();
+     //Michael:: this has changed
+  int num_free_vert=patch.num_free_vertices(err);
   if(array_size>=0){
     if(num_free_vert!=array_size){
       err.set_msg("Analytical Gradient passed arrays of incorrect size");

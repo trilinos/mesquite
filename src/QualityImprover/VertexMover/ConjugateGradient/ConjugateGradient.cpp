@@ -85,7 +85,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
                                                 MsqError &err){
   MeshSet *vertex_mover_mesh=get_mesh_set();
   int num_local_vertices = pd.num_vertices();
-  int num_free_vertices=pd.num_free_vertices();
+  int num_free_vertices=pd.num_free_vertices(err);
   if(num_free_vertices>arraySize){
     delete []fGrad;
     delete []pGrad;
@@ -111,8 +111,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
     else
       vertices[ind].set_soft_fixed_flag();
   }
-  
-    
+
     //Doing initial feasiblity check if required by metric
   if(objFunc->get_feasible_constraint()){
     if(check_feasible(pd,err))
@@ -123,12 +122,10 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
     //But, the culling method needs to be completely re-done anyway
     //For example, calls to evaluate_element????
     //cull_list(pd,free_vertex_list,beta, err);
-  int n=pd.num_free_vertices();
+  int n=pd.num_free_vertices(err);
   if(n<1){
     PRINT_INFO("\nEmpty free vertex list in ConjugateGradient\n");
   }
-
-  
    
   double f=0;
     
@@ -152,19 +149,20 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
     int k=0;
       //PRINT_INFO("\nbefore y %f\n",vertices[0][1]);
     alp=get_step(pd,f,k,err);
+    j+=k;
       //PRINT_INFO("\nafter y %f\n",vertices[0][1]);
       //PRINT_INFO("\nAlp initial, alp = %10.8f",alp);
     MSQ_CHKERR(err);
     if(alp==0){
-      ++is;
       for (m=0; m<n; m++) {
         pGrad[m]=(-fGrad[m]);
       }
       alp=get_step(pd,f,k,err);
-        //PRINT_INFO("\nAlp was zero, alp = %20.18f",alp);
+      j+=k;
+        //PRINT_INFO("\nAlp was zero");
     }
     if(alp!=0){
-      j+=k;
+        //PRINT_INFO("\nIn Conjugate Gradient i = %i  j = %i",i,j);
       for(m=0;m<n;m++){
         vertices[m] += (alp * pGrad[m]);
       }
@@ -193,7 +191,6 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
 
         // Polack-Ribiere        
         double bet = (s22-s12)/s11;
-          //PRINT_INFO("\nbet=%10.8f\n",bet);
       for (m=0; m<n; m++) {
         pGrad[m]=(-fNewGrad[m]+(bet*pGrad[m]));
         fGrad[m]=fNewGrad[m];
@@ -234,8 +231,8 @@ void ConjugateGradient::cleanup()
 
 double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
                                    MsqError &err){
-    //PRINT_INFO("\nEntering get_step  f_x = %10.8f   f_y = %10.8f   f_z = %10.8f\n",pGrad[0][0],pGrad[0][1],pGrad[0][2]);
-  const int n = pd.num_free_vertices();
+  const int n = pd.num_free_vertices(err);
+  
     //iterator for several for statements
   int m=0;
   MsqVertex* vertices=pd.get_vertex_array(err);
@@ -290,7 +287,6 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
     j=0;
     while (j<jmax && found == 0){
       ++j;
-        //alp *= (-sqrt(rho));
       alp *= rho;
       for (m=0;m<n;++m){
         vertices[m]=mCoord[m]+ (alp*pGrad[m]);
@@ -311,7 +307,7 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
       //if above ended because of j>=jmax, take no step
     if(found==0){
         //PRINT_INFO("alp = %10.8f, but returning zero\n",alp);
-      alp=0; 
+      alp=0.0; 
       return alp;
     }
     else{

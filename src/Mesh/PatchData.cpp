@@ -122,10 +122,10 @@ PatchData::~PatchData()
 /*! \fn PatchData::num_free_vertices()
    This function has to iterate through all the PatchData vertices to determine
    the number of free vertices. Use with care ! */
-int PatchData::num_free_vertices()
+int PatchData::num_free_vertices(MsqError &err)
 {   
   int num_free_vertices=0;
-  MsqFreeVertexIndexIterator ind(this);
+  MsqFreeVertexIndexIterator ind(this, err);
   ind.reset();
   while (ind.next()) {
     ++num_free_vertices;
