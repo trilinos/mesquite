@@ -45,8 +45,26 @@ namespace Mesquite
 {
   
   /*! \class I_DFT
-    \brief Class containing the target corner matrices for the context based smoothing. 
-  */
+    \brief Class containing the target corner matrices for the context based smoothing.
+
+The form of this metric is as follows (taken from I_DFTFamilyFunctions.hpp,
+see that file for more detail):
+
+                  mAlpha * || A*inv(W) - mBeta * I ||_F^2                    \n
+   ------------------------------------------------------------------        \n
+   0.5^(mGamma)*(det(A*inv(W)) + sqrt(det(A*inv(W))^2 + 4*delta^2))^(mGamma) \n
+
+The default for data members (corresponding to the variables above):
+
+      mKappa = 1/2.0; \n
+      mAlpha = MSQ_TWO_THIRDS; \n
+      mBeta = 1.0; \n
+
+delta, above, is calculated using PatchData::get_barrier_delta(MsqError &err),
+if useBarrierDelta == true.  Otherwise, delta is zero.
+
+*/
+  
   class I_DFT : public DistanceFromTarget
   {
   public:
@@ -58,10 +76,10 @@ namespace Mesquite
       set_metric_type(ELEMENT_BASED);
       set_gradient_type(NUMERICAL_GRADIENT);
       set_hessian_type(NUMERICAL_HESSIAN);
- 
-      a = pow(2.0, -MSQ_ONE_THIRD);
-      b = 1.0;
-      c = -MSQ_TWO_THIRDS;
+      mAlpha = 1/2.0;//pow(2.0, -MSQ_ONE_THIRD);
+      mBeta = 1.0;
+      mGamma = MSQ_TWO_THIRDS;
+      useBarrierDelta = true;
    }
     
     //! virtual destructor ensures use of polymorphism during destruction
@@ -93,17 +111,19 @@ namespace Mesquite
     
   private:
     // variables used in the definition of the metric (2d and 3d)
-    double a;
-    double b;
-    double c;
-
+    double mAlpha;
+    double mBeta;
+    double mGamma;
+    bool useBarrierDelta;
     // variables used during the analytic gradient calculations
     Vector3D mNormal;		// Normal vector for merit function
     Vector3D mCoords[4]; 	// Vertex coordinates
     Vector3D mGrads[4];		// Gradients for element
     Vector3D mAccGrads[8];	// Accumulated gradients
     Matrix3D mHessians[10];	// Hessian values for element
-    Matrix3D invW;		// Inverse matrix
+    Matrix3D mR;		// R (in QR factorization of W)
+    Matrix3D invR;		// Inverse matrix of R (in QR factorization)
+    Matrix3D mQ;		// Q (in QR factorization of W)
   };
   
 } //namespace
