@@ -131,7 +131,7 @@ bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
       temp_vec[0]=vertices[v_i[6]]-vertices[v_i[7]];
       temp_vec[1]=vertices[v_i[4]]-vertices[v_i[7]];
       temp_vec[2]=vertices[v_i[3]]-vertices[v_i[7]];
-      return_flag=mean_ratio_3d(temp_vec,metric_values[0],err);
+      return_flag=mean_ratio_3d(temp_vec,metric_values[7],err);
       if(!return_flag)
         return false;
       fval=average_metrics(metric_values,8,err);
