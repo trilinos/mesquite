@@ -42,11 +42,13 @@ describe main.cpp here
 #include "QualityAssessor.hpp"
 
 // algorythms
+#include "ConditionNumberQualityMetric.hpp"
 #include "MeanRatioQualityMetric.hpp"
 #include "LPTemplate.hpp"
 #include "LInfTemplate.hpp"
 #include "SteepestDescent.hpp"
 #include "LaplacianSmoother.hpp"
+#include "LaplacianQualityMetric.hpp"
 using namespace Mesquite;
 
 
@@ -73,12 +75,13 @@ int main()
   InstructionQueue queue1;
 
   // creates a mean ratio quality metric ...
-  ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
-  
+  ShapeQualityMetric* shape_metric = ConditionNumberQualityMetric::create_new();
+  SmoothnessQualityMetric* lapl_met = LaplacianQualityMetric::create_new();
     // creates the laplacian smoother  procedures
   LaplacianSmoother* lapl1 = new LaplacianSmoother(err);
- QualityAssessor stop_qa=QualityAssessor(mean_ratio,QualityAssessor::MAXIMUM);
-
+ QualityAssessor stop_qa=QualityAssessor(shape_metric,QualityAssessor::MAXIMUM);
+ stop_qa.add_quality_assessment(lapl_met,QualityAssessor::ALL_MEASURES,err);
+ 
    //**************Set stopping criterion****************
  StoppingCriterion sc2(StoppingCriterion::NUMBER_OF_PASSES,10);
  lapl1->set_stopping_criterion(&sc2);
