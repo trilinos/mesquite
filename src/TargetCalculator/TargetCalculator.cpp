@@ -43,6 +43,15 @@ mesquite a measure of the perfect mesh.
 using namespace Mesquite;
 
 #undef __FUNC__
+#define __FUNC__ "TargetCalculator::reset_reference_meshset" 
+void TargetCalculator::reset_reference_meshset(MsqError &err)
+{
+  refMesh->reset(err);
+  MSQ_CHKERR(err);
+} 
+
+
+#undef __FUNC__
 #define __FUNC__ "TargetCalculator::compute_target_matrices_and_check_det" 
 void TargetCalculator::compute_target_matrices_and_check_det(PatchData &pd, MsqError &err)
 {

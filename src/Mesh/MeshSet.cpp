@@ -30,7 +30,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD: 18-Jun-04 at 16:15:00 by Thomas Leurent
+//  LAST-MOD: 22-Jun-04 at 14:31:34 by Thomas Leurent
 //
 /*! \file MeshSet.cpp
 
@@ -250,6 +250,11 @@ bool MeshSet::get_next_patch(PatchData &pd,
           if (currentMesh == meshSet.end())
           {
             vertexIterator = NULL;
+                // If a target calculator is set, compute the targets. 
+            if (pd_params.get_target_calculator() != 0) {
+              pd_params.get_target_calculator()->reset_reference_meshset(err);
+              MSQ_CHKERR(err);
+            }
             FUNCTION_TIMER_END();  
             return false;
           }
@@ -402,14 +407,17 @@ bool MeshSet::get_next_patch(PatchData &pd,
       pd.numElements = num_elems;
     }
 
+//    pd.print(); std::cerr << std::endl; //dbg
+
     // If a target calculator is set, compute the targets. 
     if (pd_params.get_target_calculator() != 0) {
       pd_params.get_target_calculator()->compute_target_matrices_and_check_det(pd, err);
       MSQ_CHKERR(err);
     }
     
-    FUNCTION_TIMER_END();  
+    FUNCTION_TIMER_END();
     return true;
+    
     case PatchData::GLOBAL_PATCH:
     {
         // We only support global patches for a single Mesh

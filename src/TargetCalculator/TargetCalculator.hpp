@@ -124,6 +124,9 @@ namespace Mesquite
     //! This function wraps compute_target_matrices and checks that the determinant of each target
     //! is positive.
     void compute_target_matrices_and_check_det(PatchData& pd, MsqError& err);
+
+    //! Reset the reference mesh so it starts from the first vertex again. 
+    void reset_reference_meshset(MsqError &err);
     
     /*! \brief This function provides the corner matrices for all elements on the Patch.
 

@@ -43,6 +43,7 @@
 using namespace Mesquite;  
 //using namespace std;
 MSQ_USE(cout);
+MSQ_USE(cerr);
 MSQ_USE(endl);
 
 #undef __FUNC__
@@ -1165,16 +1166,16 @@ void PatchData::set_mesh_set(MeshSet* ms)
 #define __FUNC__ "PatchData::print"
 void PatchData::print()
 {
-   cout << " Vertices coordinates \n"; 
+   cerr << " Vertices coordinates \n"; 
    for (size_t i=0; i<numVertices; ++i)
      {
-	cout << i << "\t" << vertexArray[i];
+	cerr << i << "\t" << vertexArray[i];
      }
    
-   cout << "Element Connectivity \n";
+   cerr << "Element Connectivity \n";
    for (size_t i=0; i<numElements; ++i)
      {
-	cout << i << "\t" << elementArray[i];
+	cerr << i << "\t" << elementArray[i];
      }
    
 }
