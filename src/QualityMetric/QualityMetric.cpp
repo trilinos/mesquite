@@ -281,6 +281,7 @@ bool QualityMetric::compute_element_numerical_gradient(PatchData &pd,
   int counter=0;
   double pos=0.0;
   double metric_value1=0;
+  const int reduction_limit = 15;
   for (int v=0; v<num_free_vtx; ++v) 
   {
     /* gradient in the x, y, z direction */
@@ -294,7 +295,7 @@ bool QualityMetric::compute_element_numerical_gradient(PatchData &pd,
         //perturb the node and calculate gradient.  The while loop is a
         //safety net to make sure the epsilon perturbation does not take
         //the element out of the feasible region.
-      while(!valid && counter<10){
+      while(!valid && counter<reduction_limit){
         //save the original coordinate before the perturbation
         pos=(*free_vtces[v])[j];
           // perturb the coordinates of the free vertex in the j direction
@@ -311,7 +312,7 @@ bool QualityMetric::compute_element_numerical_gradient(PatchData &pd,
         delta*=0.1;
 	delta_inv*=10.;
       }
-      if(counter>=10){
+      if(counter>=reduction_limit){
         MSQ_SETERR(err)("Perturbing vertex by delta caused an inverted element.",
                         MsqError::INTERNAL_ERROR);
         return false;
