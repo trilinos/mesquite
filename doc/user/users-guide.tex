@@ -114,19 +114,114 @@ Stopping Criterion, MeshSet and PatchData
 
 \section{Advanced Use of Mesquite}
 
+\subsection{The Simplified Geometry Engine}
+
 \subsection{Creating a Quality Metric}
-Give a list of the individual metrics we support.
+What is a quality metric? Define full range, acceptable range, what is means 
+if the metric uses a map, nodal-invariance, well-posed metrics, averaging 
+methods, sample points. Give a list of the individual metrics we support. 
+Provide a key to the tables.
+
+\begin{table}[h]
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+Metric Name & Type & Dimension & Full Range & Ideal & Degenerate \\ \hline
+Inverse Mean Ratio & Shape & 2D, 3D & $[0,1]$ & 1 & 0 \\ 
+Mean Ratio &  &  &  &  &  \\ 
+Condition Number &  &  &  &  &  \\ 
+Untangle &  &  &  &  &  \\ 
+Aspect Ratio Gamma &  &  &  &  &  \\ 
+\hline
+\end{tabular}
+\caption{\label{QualityMetrics1} Mesquite Quality Metrics Summary, Part I}
+\end{center}
+\end{table}
+
+\begin{table}[h]
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|}
+\hline
+Metric Name & Map? & Averaging & Sample Pts & Elements & Gradient & Source \\ \hline
+Inverse Mean Ratio & No & Harmonic & Vertices & TQTH & Analytic & \\ 
+Mean Ratio &  &  &  &  &  \\ 
+Condition Number &  &  &  &  &  \\ 
+Untangle &  &  &  &  &  \\ 
+Aspect Ratio Gamma &  &  &  &  &  \\ 
+\hline
+\end{tabular}
+\caption{\label{QualityMetrics2} Mesquite Quality Metrics Summary, Part II}
+\end{center}
+\end{table}
+
+\noindent {\bf Mean Ratio Metric} \newline
+Give description, formulas. 
 
 \subsection{Creating an Objective Function}
-List of all the templates.
+List of all the templates. What is the difference between a template and
+an obective function? For each element of the mesh (or for each 
+free-node of the mesh), let there be an associated quality metic, 
+$\mu_m$.  Define the vector 
+\begin{equation}
+{\bf U} = [ \mu_1, \mu_2, \ldots, \mu_M ]
+\end{equation}
+where $M$ is the number of elements or free-nodes in the mesh. \newline
+
+\noindent Available templates in Mesquite: \newline
+
+\noindent {\bf The $\ell_p$ Template} \newline
+Given $1 \leq p < \infty$, let
+\begin{equation}
+\| {\bf U} \|_p = ( \sum_{m=1}^M \mid \mu_m \mid^p )^{1/p}
+\end{equation}
+be the $\ell_p$ template. \newline
+
+\noindent {\bf The $\ell_p^p$ Template} \newline
+Given $1 \leq p < \infty$, let $\| {\bf U} \|_p^p$ be the 
+$\ell_p^p$ template. \newline
+
+\noindent {\bf The $\ell_{\infty}$ Template} \newline
+The $\ell_{\infty}$ template is
+\begin{equation}
+\| {\bf U} \|_{\infty} = \max_{m=1,\ldots,M} \mid \mu_m \mid
+\end{equation}
+
+These are currently the only tempates available in Mesquite.
+We soon hope to add the 'max' template:
+\begin{equation}
+MAX = \max_{m=1,\ldots,M} ( \mu_m )
+\end{equation}
+
+Which of these templates has numerical/analytic gradient/Hessian?
 
 \subsection{Creating a Vertex Mover}
-List solvers and appropriate templates. List options.
+List solvers and appropriate templates. Is a solver the same things as a 
+vertex mover? List options.
+
+\begin{table}[h]
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+Solver Name & Description & Templates & L/G & Num/Anal & Fixed Vertices? \\ \hline
+Steepest Descent & Clasical & $\ell_p$ & Both & Both & Yes \\
+Conjugate Gradient & & & & & \\
+Feasible Newton & & & & & \\
+Active Set & & Own & & & \\
+Laplace & & None & & & \\
+Randomize & & None & & & \\
+\hline
+\end{tabular}
+\caption{\label{Solvers} Mesquite Solver Summary}
+\end{center}
+\end{table}
+
 
 \subsection{Creating a Topology Modifier}
 
 \subsection{Termination Criteria}
 List, along with uses.
+
+\subsection{Culling Algorithms}
 
 \subsection{Quality Assessment}
 
@@ -137,6 +232,8 @@ using quality assessors, running the instruction queue.
 \subsection{Composite Metrics}
 
 \subsection{Composite Objective Functions}
+The only ones currently available are CompositeMult, CompositeAdd,
+CompositeScalarMult, and CompositeScalarAdd.
 
 \subsection{Running in Parallel}
 
