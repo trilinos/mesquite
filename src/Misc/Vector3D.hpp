@@ -68,6 +68,10 @@ namespace Mesquite
                               const double scalar); //- lhs / scalar
     friend double operator%(const Vector3D &v1,
                             const Vector3D &v2); //- dot product
+    friend double operator%(const double scalar,
+			    const Vector3D &v2); //- scalar * sum_i v2[i]
+    friend double operator%(const Vector3D &v1,
+                            const double scalar); //- scalar * sum_i v1[i]
     friend Vector3D operator*(const Vector3D &v1, 
                               const Vector3D &v2); //- cross product
 
@@ -264,6 +268,16 @@ namespace Mesquite
     return( lhs.mCoords[0] * rhs.mCoords[0] +
             lhs.mCoords[1] * rhs.mCoords[1] +
             lhs.mCoords[2] * rhs.mCoords[2] );
+  }
+  inline double operator%(const double scalar,
+                          const Vector3D &rhs) // Dot Product
+  {
+    return( scalar * (rhs.mCoords[0] + rhs.mCoords[1] + rhs.mCoords[2]) );
+  }
+  inline double operator%(const Vector3D &lhs,
+			  const double scalar) // Dot Product
+  {
+    return( scalar * (lhs.mCoords[0] + lhs.mCoords[1] + lhs.mCoords[2]) );
   }
   inline Vector3D operator*(const Vector3D &lhs, 
                             const Vector3D &rhs) // Cross Product
