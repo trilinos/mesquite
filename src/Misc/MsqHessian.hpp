@@ -5,7 +5,7 @@
 //    E-MAIL: tmunson@mcs.anl.gov
 //
 // ORIG-DATE:  2-Jan-03 at 11:02:19 bu Thomas Leurent
-//  LAST-MOD: 20-Mar-03 at 16:10:11 by Thomas Leurent
+//  LAST-MOD: 21-Mar-03 at 11:19:14 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -168,6 +168,7 @@ namespace Mesquite
     assert(j<mSize);
     assert(j>=i);
 
+//    std::cout << "mColIndex[mRowStart[i]+j]: " << mColIndex[mRowStart[i]+j] << "  mRowStart[i]: " <<mRowStart[i]<< " for i=" << i << " j=" << j << std::endl; //dbg
     assert( mColIndex[mRowStart[i]+j] == j ); // since our Matrix is in fact not sparse. 
     
     return ( mEntries + (mRowStart[i]+j)  );
