@@ -4278,7 +4278,7 @@ msq_cpp_func=
 
   # Loop through list of possibilities...
 for i in __PRETTY_FUNCTION__ __FUNCDNAME__ __func__ __FUNCTION__ __function__ __FUNC__; do
-  if test -z $msq_cpp_func; then
+  if test -z "$msq_cpp_func"; then
     cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
