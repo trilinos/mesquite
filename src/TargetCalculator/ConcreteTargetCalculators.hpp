@@ -41,6 +41,8 @@ Header file for the Mesquite::ConcreteTargetCalculator class
 #include "MesquiteError.hpp"
 #include "MsqMessage.hpp"
 #include "TargetCalculator.hpp"
+#include "LVQDTargetCalculator.hpp"
+#include "WTargetCalculator.hpp"
 
 namespace Mesquite
 {

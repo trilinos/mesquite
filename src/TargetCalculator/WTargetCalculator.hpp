@@ -50,11 +50,10 @@ namespace Mesquite
   */
   class WTargetCalculator : public TargetCalculator
   {
-  private:
-    //! the constructor is private since this is not intended to be a concrete class.
+  protected:
+    //! the constructor is protected since this is not intended to be a concrete class.
     //! Concrete classes will instantiate the various guide enums in their constructor. 
-    WTargetCalculator(enum guide_type guide)
-    { guideMatrix = guide; }
+    WTargetCalculator() {};
 
   public:
       //! virtual destructor ensures use of polymorphism during destruction

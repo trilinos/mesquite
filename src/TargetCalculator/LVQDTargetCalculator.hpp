@@ -51,8 +51,8 @@ namespace Mesquite
   */
   class LVQDTargetCalculator : public TargetCalculator
   {
-  private:
-    //! the constructor is private since this is not intended to be a concrete class.
+  protected:
+    //! the constructor is protected since this is not intended to be a concrete class.
     //! Concrete classes will instantiate the various guide enums in their constructor. 
     LVQDTargetCalculator()
     { }
