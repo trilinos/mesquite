@@ -35,32 +35,70 @@ bool ObjectiveFunction::compute_numerical_gradient(Mesquite::PatchData &pd,
   double flocal=0;
   double flocald=0;
   double eps=0;
-  for (int m=0; m<num_vtx; ++m) {
-    if (vertices[m].is_free_vertex()) {
-      //If pd is not in the feasible region, do not calculate anything.
-      //Just return false.
-      if(! evaluate(pd,flocal,err)) {
-        return false;
-      }
-      MSQ_CHKERR(err);
-      int j=0;
-      //loop over the three coords x,y,z
-      for(j=0;j<3;++j){
-        eps=get_eps(pd, flocald, j, (&vertices[m]), err);
-        //PRINT_INFO("\nin obj num grad j=%i, eps=%20.19f",j,eps);
-        if(eps==0){
-          err.set_msg("Dividing by zero in Objective Functions numerical grad");
+  int m=0;
+  for (m=0; m<num_vtx; ++m) {
+      //********************useLocalGradient***************************
+      //if useLocalGradient is turned on, do more efficient computation
+    if(useLocalGradient){
+      if (vertices[m].is_free_vertex()) {
+        PatchData sub_patch;
+        pd.get_subpatch(m, sub_patch, err); MSQ_CHKERR(err);
+          //If sub_patch is not in the feasible region, do not
+          //calculate anything.  Just return false.
+        if(! evaluate(sub_patch,flocal,err)) {
           return false;
         }
-        grad[m][j]=(flocald-flocal)/eps;
+        MSQ_CHKERR(err);
+        int j=0;
+          //loop over the three coords x,y,z
+        for(j=0;j<3;++j){
+          eps=get_eps(sub_patch, flocald, j, (&vertices[m]), err);
+            //PRINT_INFO("\nin obj num grad j=%i, eps=%20.19f",j,eps);
+          if(eps==0){
+            err.set_msg("Dividing by zero in Objective Functions numerical grad");
+            return false;
+          }
+          grad[m][j]=(flocald-flocal)/eps;
+        }
+        MSQ_CHKERR(err);
       }
+      else {
+        for(int j=0;j<3;++j)
+          grad[m][j] = 0;
+      }
+    }
+      //********************DO NOT useLocalGradient********************
+      //if useLocalGradient is turned of, we must do  iefficient computation
+    else{
+      if (vertices[m].is_free_vertex()) {
+          //If pd is not in the feasible region, do not calculate anything.
+          //Just return false.
+        if(! evaluate(pd,flocal,err)) {
+          return false;
+        }
+        MSQ_CHKERR(err);
+        int j=0;
+          //loop over the three coords x,y,z
+        for(j=0;j<3;++j){
+          eps=get_eps(pd, flocald, j, (&vertices[m]), err);
+            //PRINT_INFO("\nin obj num grad j=%i, eps=%20.19f",j,eps);
+          if(eps==0){
+            err.set_msg("Dividing by zero in Objective Functions numerical grad");
+            return false;
+          }
+          grad[m][j]=(flocald-flocal)/eps;
+        }
+        MSQ_CHKERR(err);
+      }
+      else {
+        for(int j=0;j<3;++j)
+          grad[m][j] = 0;
+      }
+        //PRINT_INFO("  gradx = %f, grady = %f, gradz = %f\n",grad[m][0],grad[m][1],grad[m][2]);   
       MSQ_CHKERR(err);
-    }
-    else {
-      for(int j=0;j<3;++j)
-        grad[m][j] = 0;
-    }
-  }//end loop over all vertices
+    }//end loop over all vertices
+  }
+    //*****************END of DO NOT useLocalGradient*****************
   return true;
 }
 

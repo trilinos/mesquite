@@ -33,7 +33,10 @@ namespace Mesquite
   class ObjectiveFunction
   {
    public:
-      //ObjectiveFunction (QualityMetric *);
+    ObjectiveFunction ():
+        useLocalGradient(false)
+       {}
+    
     
       // virtual destructor ensures use of polymorphism during destruction
     virtual ~ObjectiveFunction()
@@ -172,6 +175,15 @@ namespace Mesquite
        {
          feasibleFlag=fflag;
        }
+
+      //!Sets useLocalGradient
+      //!This variable determines whether compute_numercial_gradient
+      //!can use the most efficient gradient calculation.
+    void set_use_local_gradient(bool new_bool)
+       {
+         useLocalGradient=new_bool;
+       }
+       
     
  private:
     
@@ -185,6 +197,10 @@ namespace Mesquite
     int negateFlag; /*!Equals one if ObjectiveFunction needs to
         be minimized; equals negative one if ObjectiveFunction needs
         to be maximized.*/
+    bool useLocalGradient;/*!Set to true if we should use the more efficient
+                            sub-patch method of computing the numerical
+                            gradient.  Otherwise, it is set to false.*/
+    
   };
 
 //BEGIN INLINE
