@@ -54,14 +54,14 @@ bool I_DFT::evaluate_element(PatchData& pd,
   size_t num_T = element->vertex_count();
   compute_T_matrices(*element, pd, T, num_T, c_k, err); MSQ_CHKERR(err);
 
-  const double id[] = {1, 0, 0,  0, 1, 0,  0, 0, 1};
+  const double id[] = {1., 0., 0.,  0., 1., 0.,  0., 0., 1.};
   const Matrix3D I(id);
   for (size_t i=0; i<num_T; ++i) {
     tau = det(T[i]);
     T[i] -= I; 
     dft[i] = .5 * Frobenius_2(T[i]);
     return_flag = get_barrier_function(pd, tau, h, err);
-    dft[i] /= pow(h, 2/3);
+    dft[i] /= pow(h, MSQ_TWO_THIRDS);
   }
     
   value = weighted_average_metrics(c_k, dft, num_T, err); MSQ_CHKERR(err);

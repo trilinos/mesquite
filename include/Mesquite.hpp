@@ -121,6 +121,7 @@ namespace Mesquite
   static const double MSQ_SQRT_THREE_INV=1.0/MSQ_SQRT_THREE;
   static const double MSQ_SQRT_TWO_INV=1.0/MSQ_SQRT_TWO;
   static const double MSQ_SQRT_TWO_DIV_SQRT_THREE=MSQ_SQRT_TWO/MSQ_SQRT_THREE;
+  static const double MSQ_ONE_THIRD = 1.0 / 3.0;
   static const double MSQ_TWO_THIRDS = 2.0 / 3.0;
 
 #ifdef INT_MAX

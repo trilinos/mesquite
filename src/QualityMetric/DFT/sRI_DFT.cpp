@@ -54,18 +54,18 @@ bool sRI_DFT::evaluate_element(PatchData& pd,
   size_t num_T = element->vertex_count();
   compute_T_matrices(*element, pd, T, num_T, c_k, err); MSQ_CHKERR(err);
 
-  const double id[] = {1, 0, 0,  0, 1, 0,  0, 0, 1};
+  const double id[] = {1., 0., 0.,  0., 1., 0.,  0., 0., 1.};
   const Matrix3D I(id);
   Matrix3D TT;
   for (size_t i=0; i<num_T; ++i) {
     tau = det(T[i]);
-    s = pow(tau, 1/3); // for 3D (tet & hex)
+    s = pow(tau, MSQ_ONE_THIRD); // for 3D (tet & hex)
     TT = transpose(T[i]);
     TT = TT * T[i];
     TT -= (s*s)*I; 
     dft[i] = .5 * Frobenius_2(TT);
     return_flag = get_barrier_function(pd, tau, h, err);
-    dft[i] /= pow(h, 4/3);
+    dft[i] /= pow(h, 4.0/3.0);
   }
     
   value = weighted_average_metrics(c_k, dft, num_T, err); MSQ_CHKERR(err);

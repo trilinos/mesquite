@@ -94,6 +94,8 @@ namespace Mesquite
       numTargets = num_targets;
     }
 
+#undef __FUNC__
+#define __FUNC__ "MsqTag::allocate_targets"
       //!
     void allocate_targets(short int num_targets, MsqError &err)
     {

@@ -58,11 +58,11 @@ bool sI_DFT::evaluate_element(PatchData& pd,
   const Matrix3D I(id);
   for (size_t i=0; i<num_T; ++i) {
     tau = det(T[i]);
-    s = pow(tau, 1/3); // for 3D (tet & hex)
+    s = pow(tau, MSQ_ONE_THIRD); // for 3D (tet & hex)
     T[i] -= s*I; 
     dft[i] = .5 * Frobenius_2(T[i]);
     return_flag = get_barrier_function(pd, tau, h, err);
-    dft[i] /= pow(h, 2/3);
+    dft[i] /= pow(h, MSQ_TWO_THIRDS);
   }
     
   value = weighted_average_metrics(c_k, dft, num_T, err); MSQ_CHKERR(err);

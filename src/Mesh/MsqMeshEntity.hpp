@@ -127,7 +127,7 @@ namespace Mesquite
       //! Sets the element tag. This will overwritte an existing tag. 
     void set_tag(MsqTag* tag) {mTag = tag;}
       //! Gets the element tag.
-    MsqTag* get_tag() {return mTag;}
+    MsqTag* get_tag() {assert(mTag!=0); return mTag;}
     
       //fills array of Vector3D's with the jacobian vectors and the 
       //number of jacobian vectors
