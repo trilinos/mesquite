@@ -148,8 +148,7 @@ inline void Mesquite::out_of_store()
    if (a==0) { MsqError e(true, MSQ_NULL_ERR); MSQ_CHKERR(e); }\
 }
 #endif
-                                          
-                                          
+
 #endif
 
 

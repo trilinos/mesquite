@@ -9,6 +9,8 @@
 #include "MsqMeshEntity.hpp"
 #include "MsqFreeVertexIndexIterator.hpp"
 
+#include <list>
+
 using namespace Mesquite;  
 
 #undef __FUNC__
@@ -142,7 +144,7 @@ int PatchData::num_free_vertices(MsqError &err)
 the element's vertices in the PatchData arrays -- see output
 of the add_vertex function.
 */
-void PatchData::add_element(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
+int PatchData::add_element(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
                             int* vertex_indices, EntityTopology topo,
                             MsqError &err)
 {
@@ -166,8 +168,9 @@ void PatchData::add_element(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
         // Set the element's vertex indices
       elementArray[numElements].set_vertex_index(n, vertex_indices[n]);
     }
-    ++numElements;
+    return numElements++;
   }
+  return -1;
 }
 
 #undef __FUNC__
@@ -299,6 +302,8 @@ void PatchData::get_vertex_element_indices(
     // Find the starting point for this vertex's data
   size_t *pos = elemsInVertex + vertexToElemOffset[vertex_index];
   size_t elem_count = *pos;
+  
+    // Add each element index to the list
   while (elem_count--)
     elem_indices.push_back(*(++pos));
 }
@@ -335,3 +340,50 @@ void PatchData::update_mesh(MsqError &err)
   }
 }
 
+void PatchData::generate_vertex_to_element_data()
+{
+    // Skip if data already exists
+  if (elemsInVertex || vertexToElemOffset)
+    return;
+  
+    // Create an array of linked lists, one list per vertex
+    // The lists hold element indices.
+  std::list<size_t> *element_indices =
+    new std::list<size_t>[num_vertices()];
+  
+    // Go through each element
+  size_t total_entries = num_vertices();
+  for (int elem_num = num_elements();
+       elem_num--; )
+  {
+    for (int which_node = elementArray[elem_num].vertex_count();
+         which_node--; )
+    {
+        // Put the element number into the vertex's list
+      element_indices[elementArray[elem_num].get_vertex_index(which_node)].push_back(elem_num);
+      total_entries++;
+    }
+  }
+  
+    // Transfer the data in the lists into array data
+  vertexToElemOffset = new size_t[num_vertices()];
+  elemsInVertex = new size_t[total_entries];
+  size_t cur_index = 0;
+  for (int i = 0; i < num_vertices(); i++)
+  {
+      // Save the start point for this vertex's data
+    vertexToElemOffset[i] = cur_index;
+      // Indicate how many elements in this vertex
+    elemsInVertex[cur_index++] = element_indices[i].size();
+      // Save the index of each element in this vertex
+    for (std::list<size_t>::const_iterator iter = element_indices[i].begin();
+         iter != element_indices[i].end();
+         ++iter)
+    {
+      elemsInVertex[cur_index++] = *iter;
+    }
+  }
+  
+    // Cleanup
+  delete [] element_indices;
+}

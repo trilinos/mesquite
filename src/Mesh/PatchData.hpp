@@ -67,7 +67,7 @@ namespace Mesquite
 			  double x, double y, double z,
 			  bool check_redundancy, MsqError &err,
 			  MsqVertex::FlagMaskID flag);
-    void add_element(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
+    int add_element(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
                      int* vertex_indices,
                      EntityTopology topo,
                      MsqError &err);
@@ -101,15 +101,17 @@ namespace Mesquite
     void get_element_vertex_coordinates(size_t elem_index,
                                         std::vector<Vector3D> &coords,
                                         MsqError &err);
-    /*! Get the indices in the vertexArray data member
-      of vertices attached to the specified element. */
+    /*! Get the indices of vertices attached to the specified element. */
     void get_element_vertex_indices(size_t elem_index,
                                     std::vector<size_t> &vertex_indices,
                                     MsqError &err);
-    /*! Get the indices in the elementArray data member
-      of elements attached to the specified vertex. */
+    /*! Get the indices of the elements attached to the specified vertex. */
     void get_vertex_element_indices(size_t vertex_index,
                                     std::vector<size_t> &elem_indices);
+    
+      /*! Create the arrays that store which elements are attached
+          to each node */
+    void generate_vertex_to_element_data();
     
     void set_vertex_coordinates(const Vector3D &coords,
                                 size_t index,
@@ -232,6 +234,10 @@ namespace Mesquite
   {
     numVertices = 0;
     numElements = 0;
+    delete [] elemsInVertex;
+    elemsInVertex = NULL;
+    delete [] vertexToElemOffset;
+    vertexToElemOffset = NULL;
   }
   
 #undef __FUNC__
@@ -249,10 +255,6 @@ namespace Mesquite
     elementHandlesArray = NULL;
     vertexArraySize = 0;
     elemArraySize = 0;
-    delete [] elemsInVertex;
-    elemsInVertex = NULL;
-    delete [] vertexToElemOffset;
-    vertexToElemOffset = NULL;
   }
   
 #undef __FUNC__
@@ -352,9 +354,9 @@ namespace Mesquite
   */
   inline int PatchData::add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
                                    double* vertex_coord,
-				   bool check_redundancy,
+                                   bool check_redundancy,
                                    MsqError &err, 
-				   MsqVertex::FlagMaskID flag=MsqVertex::MSQ_NO_VTX_FLAG)
+                                   MsqVertex::FlagMaskID flag=MsqVertex::MSQ_NO_VTX_FLAG)
   {
       // checks if the vertex is already in array
     if ( check_redundancy )

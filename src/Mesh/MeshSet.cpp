@@ -178,17 +178,22 @@ bool MeshSet::get_next_patch(PatchData &pd, PatchDataParameters &pd_params, MsqE
   
   bool more_vtx;
   // if MeshSet object in initial state
-  if (patch_type == PatchData::ELEMENTS_ON_VERTEX_PATCH) {
-    if ( verticesSet.empty() ) {
+  if (patch_type == PatchData::ELEMENTS_ON_VERTEX_PATCH)
+  {
+    if ( verticesSet.empty() )
+    {
       more_vtx = get_next_vertices_set(err); MSQ_CHKERR(err);
-      if ( more_vtx == false ) {
+      if ( more_vtx == false )
+      {
         return false; 
       }
     }
-    else {
+    else
+    {
       currentVertex++;
       // If this is the end of the current vertices list
-      if (currentVertex == verticesSet.end() ) {
+      if (currentVertex == verticesSet.end() )
+      {
         more_vtx = get_next_vertices_set(err);  MSQ_CHKERR(err);
         if ( more_vtx == false )
           return false; // no error needed, we're just at the end of the list.
@@ -202,193 +207,197 @@ bool MeshSet::get_next_patch(PatchData &pd, PatchDataParameters &pd_params, MsqE
   // Gathers the local patch information
   // ***********************************************
 
-  if ( patch_type==PatchData::ELEMENTS_ON_VERTEX_PATCH ) {
-
-    // checks second argument.
-     int num_layers = pd_params.get_nb_layers(err); MSQ_CHKERR(err);
+  if ( patch_type==PatchData::ELEMENTS_ON_VERTEX_PATCH )
+  {
+      // checks second argument.
+    int num_layers = pd_params.get_nb_layers(err); MSQ_CHKERR(err);
     if (num_layers != 1)
-      {
-        err.set_msg("no implementation for patch depth !=1 yet."); 
-        return false;
-      }
-  
+    {
+      err.set_msg("no implementation for patch depth !=1 yet."); 
+      return false;
+    }
+    
     const int MAX_NUM_VERTICES_PER_ELEM=12;
-    TSTT::Entity_Handle* vertices = new TSTT::Entity_Handle[MAX_NUM_VERTICES_PER_ELEM];
+    TSTT::Entity_Handle* vertices =
+       new TSTT::Entity_Handle[MAX_NUM_VERTICES_PER_ELEM];
     TSTT::Entity_Handle *patch_elements;
     TSTT::EntityTopology *element_topologies;
     int* csr_pointer; // = new int[500]; //dbg
     int* csr_data; // = new int[500]; //dbg
-    //  int num_vertices=0;
+      //  int num_vertices=0;
     int num_elements;
     Vector3D vertex_coordV;
-  
- //   ::set_new_handler(out_of_store);
-  
-    // This loop is the list culling process
-    // also checks if this is the end of the vertices list
-    // The culling assumes that you've got the same Mesh_Handle for all vertices
-    // in verticesSet, so that the culling tag_handle stays the same.
+    
+      //   ::set_new_handler(out_of_store);
+    
+      // This loop is the list culling process
+      // also checks if this is the end of the vertices list
+      // The culling assumes that you've got the same Mesh_Handle
+      // for all vertices in verticesSet, so that the culling
+      // tag_handle stays the same.
     bool cull_vertex = true;
-    // retrieves value of fixedVertexTagName .
-    const char* bnd_tag_name;
-    bnd_tag_name = fixedVertexTagName.c_str(); // converts from std::string to C-style string.
+    
+      // retrieves value of fixedVertexTagName .
     void* bnd_tag_handle;
-    if (culling_method_bits & PatchData::NO_BOUNDARY_VTX) {
-      TSTT::Mesh_tagGetHandle (currentVertex->mesh, bnd_tag_name, &bnd_tag_handle, &tstt_err);
+    if (culling_method_bits & PatchData::NO_BOUNDARY_VTX)
+    {
+      const char* bnd_tag_name = fixedVertexTagName.c_str();
+      TSTT::Mesh_tagGetHandle (currentVertex->mesh, bnd_tag_name,
+                               &bnd_tag_handle, &tstt_err);
     }
-    while (culling_method_bits!=0 && cull_vertex) {
-
+    while (culling_method_bits!=0 && cull_vertex)
+    {
       cull_vertex = false; // don't cull , by default
-
-      // Culling of boundary vertices 
-      if (culling_method_bits & PatchData::NO_BOUNDARY_VTX) {
+      
+        // Culling of boundary vertices
+      if (culling_method_bits & PatchData::NO_BOUNDARY_VTX)
+      {
         int* on_boundary = NULL;
         int tag_size = sizeof(int);
         TSTT::Mesh_GetTag_Entity(currentVertex->mesh,
-                                 (TSTT::cEntity_Handle) (currentVertex->entity),
+                                 (TSTT::cEntity_Handle)(currentVertex->entity),
                                  bnd_tag_handle, (void**)&on_boundary,
                                  &tag_size, &tstt_err);
-      
-        // Make sure the call succeeded.
-        // NOTE: If the tag doesn't exist, we'll get an error...
+        
+          // Make sure the call succeeded.
+          // NOTE: If the tag doesn't exist, we'll get an error...
         assert(!tstt_err);
         assert(on_boundary != NULL);
-      
-        if ( *on_boundary ==1)
+        
+        if (*on_boundary ==1)
+        {
+          MSQ_DEBUG_ACTION(2,
           {
-            MSQ_DEBUG_ACTION(2,{
-              std::cout << "      o Culling vertex "
-                        << distance(verticesSet.begin(), currentVertex)
-                        << " according to NO_BOUNDARY_VTX." << std::endl; });
-            cull_vertex = true;
-            currentVertex++;
+            std::cout << "      o Culling vertex "
+                      << distance(verticesSet.begin(), currentVertex)
+                      << " according to NO_BOUNDARY_VTX." << std::endl; });
+          cull_vertex = true;
+          currentVertex++;
             // If this is the end of the MeshSet vertices list
-            if (currentVertex == verticesSet.end() ) {
-              more_vtx = get_next_vertices_set(err);  MSQ_CHKERR(err);
-              if ( more_vtx == false )
-                return false; // no error needed, we're just at the end of the list.
-            }
+          if (currentVertex == verticesSet.end() )
+          {
+            more_vtx = get_next_vertices_set(err);  MSQ_CHKERR(err);
+            if ( more_vtx == false )
+              return false; // no error needed, we're just at the end of the list.
           }
-      
-        // Delete memory allocated by Mesh_GetTag_Entity.
+        }
+          // Delete memory allocated by Mesh_GetTag_Entity.
         delete on_boundary;
       }
       // other type of culling ...
       //else if () {
-      //}
-
+        //}
     } // end of culling loop
-  
-
-
-      // retrieves array of pointers to regions adjacent to the free vertex ...
+    
+      // retrieves array of pointers to regions adjacent to the free vertex...
     num_elements = 0; // this will make TSTT allocate the patch_regions array
     TSTT::Entity_GetAdjacencies(currentVertex->mesh,
-                                (TSTT::cEntity_Handle *)&(currentVertex->entity),
+                                (TSTT::cEntity_Handle*)&(currentVertex->entity),
                                 1, TSTT::REGION, &patch_elements,
                                 &csr_pointer, &csr_data, 
                                 &num_elements, &tstt_err );
-    // ... if there are no regions adjacent to the vtx,
-    // retrieves adjacent faces.
-
+    
+      // ... if there are no regions adjacent to the vtx,
+      // retrieves adjacent faces.
     if ( num_elements == 0 )
-      {
-        TSTT::Entity_GetAdjacencies(currentVertex->mesh,
-                                    (TSTT::cEntity_Handle *) &(currentVertex->entity),
-                                    1, TSTT::FACE, &patch_elements,
-                                    &csr_pointer, &csr_data,
-                                    &num_elements, &tstt_err);
-      }
+    {
+      TSTT::Entity_GetAdjacencies(currentVertex->mesh,
+                                  (TSTT::cEntity_Handle*)&(currentVertex->entity),
+                                  1, TSTT::FACE, &patch_elements,
+                                  &csr_pointer, &csr_data,
+                                  &num_elements, &tstt_err);
+    }
     assert(!tstt_err);
-    //std::cout << "num_elements: " << num_elements << std::endl;
-    // If there are neither regions or faces adjacent to the vertex, EXIT_FAILURE.
+      //std::cout << "num_elements: " << num_elements << std::endl;
+      // If there are neither regions or faces adjacent to the vertex, EXIT_FAILURE.
     if ( num_elements == 0 )
-      {
-        err.set_msg("no regions or faces are adjacent to free vertex.");
-        return false;
-      }
-  
-    // Now, get the types of the adjacent elements.
+    {
+      err.set_msg("no regions or faces are adjacent to free vertex.");
+      return false;
+    }
+    
+      // Now, get the types of the adjacent elements.
     element_topologies = new enum TSTT::EntityTopology[num_elements];
-    TSTT::Entity_GetTopology( currentVertex->mesh,
-                              (TSTT::cEntity_Handle *) patch_elements, num_elements,
-                              element_topologies, &tstt_err);
-  
-    // finds an upper bound to the number of vertices in the patch.
-    // The worst case (2 triangles in the patch with center vertex
-    // on the boundary) must work.
+    TSTT::Entity_GetTopology(currentVertex->mesh,
+                             (TSTT::cEntity_Handle *) patch_elements,
+                             num_elements,
+                             element_topologies, &tstt_err);
+    
+      // finds an upper bound to the number of vertices in the patch.
+      // The worst case (2 triangles in the patch with center vertex
+      // on the boundary) must work.
     int max_num_vertices = 1; // center vtx
     for (int i=0; i<num_elements; ++i)
-      {
-        int n = MsqMeshEntity::vertex_count(element_topologies[i], err); MSQ_CHKERR(err);
-        max_num_vertices += n-1; // no need to count center vertex several times.
-      }
-
-    // gets rid of previous Patch information (but keeps memory allocated).
+    {
+      int n = MsqMeshEntity::vertex_count(element_topologies[i], err); MSQ_CHKERR(err);
+      max_num_vertices += n-1; // no need to count center vertex several times.
+    }
+    
+      // gets rid of previous Patch information (but keeps memory allocated).
     pd.clear();
-    // allocates memory for coordinates array
-    // if current memory is inapropriate
+      // allocates memory for coordinates array
+      // if current memory is inapropriate
     pd.reserve_vertex_capacity(max_num_vertices, err); MSQ_CHKERR(err);
-  
-    // allocates memory for connectivity array
-    // if current memory is inapropriate
+    
+      // allocates memory for connectivity array
+      // if current memory is inapropriate
     pd.reserve_element_capacity(num_elements, err); MSQ_CHKERR(err);
-  
+    
     int num_coords=3*MAX_NUM_VERTICES_PER_ELEM;
     double* vertex_coords = new double[num_coords];
-    // enters the coordinates of the central vertex in PatchData::coordsArray
-    // at position 0.
+      // enters the coordinates of the central vertex in PatchData::coordsArray
+      // at position 0.
     TSTT::Entity_GetVertexCoords(currentVertex->mesh,
                                  (TSTT::cEntity_Handle *) &(currentVertex->entity),
                                  1, TSTT::INTERLEAVED,
                                  &vertex_coords, &num_coords, &tstt_err);
     pd.add_vertex(currentVertex->mesh, currentVertex->entity,
                   &vertex_coords[0], false, err); MSQ_CHKERR(err);
-  
-    // For each element within the patch,
-    // fill up the adequate info in PatchData.
+    
+      // For each element within the patch,
+      // fill up the adequate info in PatchData.
     for (int e=0; e<num_elements; ++e)
-      {
+    {
         // gets the vertices of an element ...
-        int num_element_vtx=MAX_NUM_VERTICES_PER_ELEM;
-        TSTT::Entity_GetAdjacencies( currentVertex->mesh,
-                                     (TSTT::cEntity_Handle *) &(patch_elements[e]),
-                                     1, TSTT::VERTEX, &vertices,
-                                     &csr_pointer, &csr_data, 
-                                     &num_element_vtx, &tstt_err );
-        TSTT::Entity_GetVertexCoords(currentVertex->mesh,
-                                     (TSTT::cEntity_Handle *) vertices,
-                                     num_element_vtx, TSTT::INTERLEAVED,
-                                     &vertex_coords, &num_coords,
-                                     &tstt_err);
-        assert(!tstt_err);
+      int num_element_vtx=MAX_NUM_VERTICES_PER_ELEM;
+      TSTT::Entity_GetAdjacencies( currentVertex->mesh,
+                                   (TSTT::cEntity_Handle *) &(patch_elements[e]),
+                                   1, TSTT::VERTEX, &vertices,
+                                   &csr_pointer, &csr_data, 
+                                   &num_element_vtx, &tstt_err );
+      TSTT::Entity_GetVertexCoords(currentVertex->mesh,
+                                   (TSTT::cEntity_Handle *) vertices,
+                                   num_element_vtx, TSTT::INTERLEAVED,
+                                   &vertex_coords, &num_coords,
+                                   &tstt_err);
+      assert(!tstt_err);
         // ... enters the coordinates of those vertices in PatchData ...
-        int vtx_ind[MAX_NUM_VERTICES_PER_ELEM];
-        for (int n=0; n<num_element_vtx; ++n)
-          {
-            vtx_ind[n] = pd.add_vertex(currentVertex->mesh, vertices[n],
-                                       &vertex_coords[3*n], true, err,
-                                       MsqVertex::MSQ_HARD_FIXED); MSQ_CHKERR(err);
-          }
-        // ... and adds the element to PatchData
-        pd.add_element(currentVertex->mesh, patch_elements[e],
-                       vtx_ind, tstt_to_mesquite(element_topologies[e]), err); MSQ_CHKERR(err);
+      int vtx_ind[MAX_NUM_VERTICES_PER_ELEM];
+      for (int n=0; n<num_element_vtx; ++n)
+      {
+        vtx_ind[n] = pd.add_vertex(currentVertex->mesh, vertices[n],
+                                   &vertex_coords[3*n], true, err,
+                                   MsqVertex::MSQ_HARD_FIXED); MSQ_CHKERR(err);
       }
+        // ... and adds the element to PatchData
+      pd.add_element(currentVertex->mesh, patch_elements[e], vtx_ind,
+                     tstt_to_mesquite(element_topologies[e]), err); MSQ_CHKERR(err);
+    }
     delete[] element_topologies;
     delete[] vertices;
     delete[] vertex_coords;
+    
+      //cout << "numVertices for local patch: " << pd.num_vertices() << endl;
+    
+      // TODO : provide patch for several layers of adjacencies.
   
-    //cout << "numVertices for local patch: " << pd.num_vertices() << endl;
-  
-    // TODO : provide patch for several layers of adjacencies.
-  
-    // free entities allocated in TSTT::Entity_GetAdjacencies()
-
+      // free entities allocated in TSTT::Entity_GetAdjacencies()
+    
     TSTT::Mesh_FreeEntityHandles(currentVertex->mesh, patch_elements, &tstt_err);
-  
+    
     return true;
-  }    
-
+  }
+  
     // ***********************************************
     // Gathers the global patch information
     // ***********************************************
