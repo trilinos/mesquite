@@ -8,7 +8,7 @@
 //    E-MAIL: mbrewer@sandia.gov
 //
 // ORIG-DATE: 03-Dec-02
-//  LAST-MOD:  1-Apr-03 at 16:56:37 by Thomas Leurent
+//  LAST-MOD:  7-Apr-03 at 17:15:11 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -488,6 +488,23 @@ public:
       for (int j=0; j<3; ++j)
         CPPUNIT_ASSERT_DOUBLES_EQUAL(grad_num[i][j], grad_ana[i][j], 0.001);
     
+
+    // same test, but free vertices order differ from vertices order in element. 
+    two_vtces[0] = &vertices[bad_elem_vertex_indices[2]];
+    two_vtces[1] = &vertices[bad_elem_vertex_indices[0]];
+    
+    mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
+    mean_ratio->compute_element_gradient (pd, &elems[1], two_vtces,
+                                          grad_num, 2, metric_value, err); MSQ_CHKERR(err);
+
+    mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+    mean_ratio->compute_element_gradient (pd, &elems[1], two_vtces,
+                                          grad_ana, 2, metric_value, err); MSQ_CHKERR(err);
+
+    for (int i=0; i<2; ++i)
+      for (int j=0; j<3; ++j)
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(grad_num[i][j], grad_ana[i][j], 0.001);
+
     delete grad_num;
     delete grad_ana;
   }
