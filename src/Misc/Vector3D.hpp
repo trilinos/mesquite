@@ -11,7 +11,12 @@
 #include <iostream>
 
 /*! \file Vector3D.hpp
-  \brief Vector object with exactly 3 deminsions.
+  \brief Vector object with exactly 3 dimensions.
+
+  This is as fast as a C array.
+
+  \author Darryl Melander
+  \author Thomas Leurent
 */
 namespace Mesquite
 {
@@ -208,6 +213,7 @@ namespace Mesquite
     mCoords[2] *= scalar;
     return *this;
   }
+  //! divides each Vector3D entry by the given scalar.
   inline Vector3D& Vector3D::operator/=(const double scalar)
   {
     assert (scalar != 0);
