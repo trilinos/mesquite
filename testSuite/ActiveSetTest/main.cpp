@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 19-Feb-02 at 10:57:52
-//  LAST-MOD:  7-Nov-02 at 15:39:47 by Thomas Leurent
+//  LAST-MOD: 23-Jul-03 at 18:10:35 by Thomas Leurent
 //
 //
 // DESCRIPTION:
@@ -75,7 +75,7 @@ int main()
 
   // Creates a condition number quality metric 
   //  printf("Creating quality metric\n");
-  ShapeQualityMetric* cond_no = ConditionNumberQualityMetric::create_new();
+  ShapeQualityMetric* cond_no = new ConditionNumberQualityMetric;
 
   // Build an objective function with the quality metric
   //  printf("min template\n");

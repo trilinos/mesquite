@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 19-Feb-02 at 10:57:52
-//  LAST-MOD: 23-May-03 at 18:04:38 by Thomas Leurent
+//  LAST-MOD: 23-Jul-03 at 18:03:52 by Thomas Leurent
 //
 //
 // DESCRIPTION:
@@ -82,14 +82,14 @@ int main(int argc, char* argv[])
   InstructionQueue queue1;
 
   // creates a mean ratio quality metric ...
-//   SmoothnessQualityMetric* mean_ratio = EdgeLengthQualityMetric::create_new();
-  ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
-//   mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
+//   SmoothnessQualityMetric* mean_ratio = new EdgeLengthQualityMetric;
+  ShapeQualityMetric* mean_ratio = new MeanRatioQualityMetric;
+//  mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
 //   mean_ratio->set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
   mean_ratio->set_averaging_method(QualityMetric::SUM, err); MSQ_CHKERR(err);
   
   // ... and builds an objective function with it
-  LPtoPTemplate* obj_func = new LPtoPTemplate(mean_ratio, 2, err);
+  LPtoPTemplate* obj_func = new LPtoPTemplate(mean_ratio, 1, err);
   obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
   
   // creates the steepest descentfeas newt optimization procedures
@@ -114,11 +114,11 @@ int main(int argc, char* argv[])
   // adds 1 pass of pass1 to mesh_set1
   queue1.set_master_quality_improver(pass1, err); MSQ_CHKERR(err);
   
-  mesh->write_vtk("original_mesh",err); MSQ_CHKERR(err);
+//  mesh->write_vtk("original_mesh",err); MSQ_CHKERR(err);
   
   // launches optimization on mesh_set1
   queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
   
-  mesh->write_vtk("smoothed_mesh", err); MSQ_CHKERR(err);
+//  mesh->write_vtk("smoothed_mesh", err); MSQ_CHKERR(err);
   PRINT_TIMING_DIAGNOSTICS();
 }

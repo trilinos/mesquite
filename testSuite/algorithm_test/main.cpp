@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 19-Feb-02 at 10:57:52
-//  LAST-MOD:  2-Apr-03 at 17:23:53 by Thomas Leurent
+//  LAST-MOD: 23-Jul-03 at 18:09:51 by Thomas Leurent
 //
 //
 // DESCRIPTION:
@@ -64,7 +64,7 @@ int main()
   InstructionQueue queue1;
 
   // creates a mean ratio quality metric ...
-  ShapeQualityMetric* mean = MeanRatioQualityMetric::create_new();
+  ShapeQualityMetric* mean = new MeanRatioQualityMetric;
 //   mean->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
 //   mean->set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
   mean->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);

@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 19-Feb-02 at 10:57:52
-//  LAST-MOD: 22-May-03 at 09:05:57 by Michael Brewer
+//  LAST-MOD: 23-Jul-03 at 18:04:37 by Thomas Leurent
 //
 //
 // DESCRIPTION:
@@ -67,8 +67,8 @@ int main()
   InstructionQueue queue1;
   
     // creates a mean ratio quality metric ...
-  ShapeQualityMetric* shape_metric = ConditionNumberQualityMetric::create_new();
-  SmoothnessQualityMetric* lapl_met = EdgeLengthQualityMetric::create_new();
+  ShapeQualityMetric* shape_metric = new ConditionNumberQualityMetric;
+  SmoothnessQualityMetric* lapl_met = new EdgeLengthQualityMetric;
   lapl_met->set_averaging_method(QualityMetric::RMS,err);
   
     // creates the laplacian smoother  procedures

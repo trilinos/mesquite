@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 19-Feb-02 at 10:57:52
-//  LAST-MOD: 22-May-03 at 09:07:04 by Michael Brewer
+//  LAST-MOD: 23-Jul-03 at 18:08:13 by Thomas Leurent
 //
 //
 // DESCRIPTION:
@@ -33,7 +33,6 @@ describe main.cpp here
 #include "MsqMessage.hpp"
 #include "MsqTimer.hpp"
 #include "Mesquite.hpp"
-#include "MesquiteUtilities.hpp" //  for writeShowMeMesh()
 #include "MesquiteError.hpp"
 #include "Vector3D.hpp"
 #include "InstructionQueue.hpp"
@@ -70,8 +69,8 @@ int main()
   InstructionQueue queue1;
   
     // creates a mean ratio quality metric ...
-  ShapeQualityMetric* shape_metric = ConditionNumberQualityMetric::create_new();
-  UntangleQualityMetric* untangle = UntangleBetaQualityMetric::create_new(2);
+  ShapeQualityMetric* shape_metric = new ConditionNumberQualityMetric;
+  UntangleQualityMetric* untangle = new UntangleBetaQualityMetric(2);
   Randomize* pass0 = new Randomize(.05);
     // ... and builds an objective function with it
     //LInfTemplate* obj_func = new LInfTemplate(shape_metric);
