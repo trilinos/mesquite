@@ -20,6 +20,7 @@
 #include <list>
 #include <vector>
 #include <iterator>
+#include <string>
 
 #include "Mesquite.hpp"
 #include "MesquiteError.hpp"
@@ -57,7 +58,8 @@ namespace Mesquite
                 spaceDim(0),
                 mType(UNDEFINED_PATCH_TYPE),
                 mParam1(0), mParam2(0),
-                cullingMethodBits(0)
+                cullingMethodBits(0),
+                fixedVertexTagName("fixed")
       {}
     ~MeshSet();
 #ifdef MESQUITE_USES_TSTT
@@ -98,6 +100,13 @@ namespace Mesquite
     bool set_patch_type(PatchType patch_type,
                         int patch_param1=0,
                         int patch_param2=0);
+
+    /*! Sets the name of the tag that identifies fixed vertices
+      within that particular MeshSet .
+        By default, the tag name for fixed vertices is "fixed".
+     */
+    void set_fixed_vertex_tag(std::string tag_name)
+    { fixedVertexTagName = tag_name; }
     
     void copy_culling_method_bits (long unsigned int bits)
     { cullingMethodBits = bits; }
@@ -136,7 +145,8 @@ namespace Mesquite
     
     PatchType mType;
     int mParam1, mParam2;
-    long unsigned int cullingMethodBits; 
+    long unsigned int cullingMethodBits;
+    std::string fixedVertexTagName; 
 #ifdef MESQUITE_USES_TSTT 
     list<TSTT::Mesh_Handle> meshSet;
     vector<EntityEntry> allVertices;

@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD: 24-Sep-02 at 13:13:55 by Thomas Leurent
+//  LAST-MOD: 30-Oct-02 at 15:11:17 by Thomas Leurent
 //
 /*! \file MeshSet.cpp
 
@@ -173,12 +173,12 @@ bool MeshSet::get_next_patch(PatchData &pd,
   // also checks if this is the end of the vertices list
   bool cull_vertex = true;
   EntityEntry center_vertex = allVertices[currentVertexInd];
-  // retrieves value of tag "boundary".
-  char boundary[9];
-  strcpy(boundary, "boundary");
+  // retrieves value of fixedVertexTagName .
+  const char* bnd_tag_name;
+  bnd_tag_name = fixedVertexTagName.c_str(); // converts from std::string to C-style string.
   void* bnd_tag_handle;
   if (cullingMethodBits & QualityImprover::NO_BOUNDARY_VTX) {
-    TSTT::Mesh_tagGetHandle (boundary, &bnd_tag_handle, &tstt_err);
+    TSTT::Mesh_tagGetHandle (bnd_tag_name, &bnd_tag_handle, &tstt_err);
   }
   while (cull_vertex) {
 
@@ -194,7 +194,7 @@ bool MeshSet::get_next_patch(PatchData &pd,
 
     if (cullingMethodBits == 0) break; // no culling asked.
 
-    // Culling of boudary vertices (marked with TSTT tag "boundary"
+    // Culling of boudary vertices 
     if (cullingMethodBits & QualityImprover::NO_BOUNDARY_VTX) {
       int* on_boundary;
       int tag_size;
