@@ -22,17 +22,34 @@ using std::cerr;
 #undef __FUNC__
 #define __FUNC__ "QualityMetric::compute_element_hessian"
 /*!
-  \param vertices: those are the free vertices within the element.
+  \param pd: PatchData that contains the element which Hessian we want.
+
+  \param el: this is the element for which the Hessian will be returned.
+  
+  \param free_vtces: those are the free vertices within the element.
   The vertices within this array must be ordered in the same order
   as the vertices within the element, el. 
   Only the Hessian entries corresponding to a pair of free vertices
-  will be non-zero. 
+  will be non-zero.
+
+  \param grad_vec: this is an array of nve Vector3D, where nve is the total
+  number of vertices in the element.
+
+  \param hessian: this is a 1D array of Matrix3D that will contain the upper
+  triangular part of the Hessian. It has size nve*(nve+1)/2, i.e. the number
+  of entries in the upper triangular part of a nve*nve matrix.
+
+  \param num_free_vtx: is the number df free vertices in the element.
+  Essentially, this gives the size of free_vtces[].
+
+  \param metric_value: this is the value of the quality metric, this parameter
+  is set during the computation of the Hessian.
   
   \return true if the element is valid, false otherwise. 
 */
 bool QualityMetric::compute_element_hessian(PatchData &pd,
                                             MsqMeshEntity* el,
-                                            MsqVertex* vertices[],
+                                            MsqVertex* free_vtces[],
                                             Vector3D grad_vec[],
                                             Matrix3D hessian[],
                                             int num_free_vtx,
@@ -47,7 +64,7 @@ bool QualityMetric::compute_element_hessian(PatchData &pd,
   int i;
   v=elem_vtx_indices.begin();
   for (i=0; i<num_free_vtx; ++i) {
-    while ( *v != pd.get_vertex_index(vertices[i]) ) {
+    while ( *v != pd.get_vertex_index(free_vtces[i]) ) {
       if ( v==elem_vtx_indices.end() ) {
         err.set_msg("free vertices cannot be given in a different"
                     "order than the element's.");
@@ -62,12 +79,12 @@ bool QualityMetric::compute_element_hessian(PatchData &pd,
   switch(hessianType)
     {
     case NUMERICAL_HESSIAN:
-      ret = compute_element_numerical_hessian(pd, el, vertices, grad_vec, hessian,
+      ret = compute_element_numerical_hessian(pd, el, free_vtces, grad_vec, hessian,
                                               num_free_vtx, metric_value, err);
       MSQ_CHKERR(err);
       break;
     case ANALYTICAL_HESSIAN:
-      ret = compute_element_analytical_hessian(pd, el, vertices, grad_vec, hessian,
+      ret = compute_element_analytical_hessian(pd, el, free_vtces, grad_vec, hessian,
                                                num_free_vtx, metric_value, err);
       MSQ_CHKERR(err);
       break;
