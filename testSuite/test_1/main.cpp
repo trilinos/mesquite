@@ -24,13 +24,12 @@
     pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov      
    
   ***************************************************************** */
-// -*- Mode : c++; tab-width: 3; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 3 -*-
 //
 //   SUMMARY: 
 //     USAGE:
 //
 // ORIG-DATE: 19-Feb-02 at 10:57:52
-//  LAST-MOD: 23-Jul-03 at 18:03:52 by Thomas Leurent
+//  LAST-MOD:  9-Jun-04 at 15:42:29 by Thomas Leurent
 //
 //
 // DESCRIPTION:
@@ -82,7 +81,7 @@ int main(int argc, char* argv[])
 {
   Mesquite::MsqError err;
   char file_name[256];
-  double OF_value = 1.;
+  double OF_value = 0.;
   
   // command line arguments
   if (argc==1 || argc>3)
@@ -127,11 +126,13 @@ int main(int argc, char* argv[])
   
   // **************Set stopping criterion****************
   TerminationCriterion tc_inner;
-  tc_inner.add_criterion_type_with_double(
+  if (OF_value!=0) {
+    tc_inner.add_criterion_type_with_double(
            TerminationCriterion::QUALITY_IMPROVEMENT_ABSOLUTE, OF_value, err);
+    pass1->set_inner_termination_criterion(&tc_inner);
+  }
   TerminationCriterion tc_outer;
   tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
-  pass1->set_inner_termination_criterion(&tc_inner);
   pass1->set_outer_termination_criterion(&tc_outer);
 
   // sets a culling method on the first QualityImprover
@@ -144,11 +145,11 @@ int main(int argc, char* argv[])
   
   queue1.add_quality_assessor(&stop_qa, err); MSQ_CHKERR(err);
 
-  //  mesh->write_vtk("original_mesh",err); MSQ_CHKERR(err);
+//mesh->write_vtk("original_mesh",err); MSQ_CHKERR(err);
   
   // launches optimization on mesh_set1
   queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
   
-//  mesh->write_vtk("smoothed_mesh", err); MSQ_CHKERR(err);
+//mesh->write_vtk("smoothed_mesh", err); MSQ_CHKERR(err);
   PRINT_TIMING_DIAGNOSTICS();
 }
