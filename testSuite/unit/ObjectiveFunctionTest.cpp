@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 13-Nov-02 at 18:05:56
-//  LAST-MOD: 20-Jan-03 at 16:31:59 by Thomas Leurent
+//  LAST-MOD: 20-Jan-03 at 16:34:27 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -152,8 +152,8 @@ public:
   void test_compute_gradient_2D_LPTemplate()
   {
     MsqError err;
-    Vector3D* grad_num = new Vector3D[2];
-    Vector3D* grad_ana = new Vector3D[2];
+    Vector3D* grad_num = new Vector3D[m6Quads.num_vertices()];
+    Vector3D* grad_ana = new Vector3D[m6Quads.num_vertices()];
     
     // creates a mean ratio quality metric ...
     ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
