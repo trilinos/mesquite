@@ -40,7 +40,7 @@ private:
   CPPUNIT_TEST (test_move_free_vertices_constrained);
   CPPUNIT_TEST (test_movement_function);
   CPPUNIT_TEST (test_get_adj_elems_2d);
-  CPPUNIT_TEST (test_get_max_element_area);
+  CPPUNIT_TEST (test_get_minmax_element_area);
   CPPUNIT_TEST_SUITE_END();
    
 private:
@@ -277,13 +277,15 @@ public:
 
   
 #undef __FUNC__
-#define __FUNC__ "PatchDataTest::test_get_max_element_area" 
-   void test_get_max_element_area()
+#define __FUNC__ "PatchDataTest::test_get_minmax_element_area" 
+   void test_get_minmax_element_area()
    {
      MsqError err;
-     double max = mPatch2D.get_max_element_area(err); MSQ_CHKERR(err);
+     double min, max;
+     mPatch2D.get_minmax_element_unsigned_area(min, max, err); MSQ_CHKERR(err);
 
-     CPPUNIT_ASSERT_DOUBLES_EQUAL( max, 1.0, 0.0001 );
+     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.5, min, 0.0001 );
+     CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, max, 0.0001 );
    }        
      
    
