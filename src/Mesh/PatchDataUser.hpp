@@ -222,7 +222,7 @@ namespace Mesquite
     virtual double loop_over_mesh(MeshSet &ms, MsqError &err) = 0;
     //! Returns the algorithm name
     virtual msq_std::string get_name() = 0;
-    enum AlgorithmType { QUALITY_IMPROVER, QUALITY_ASSESSOR};
+    enum AlgorithmType { QUALITY_IMPROVER, QUALITY_ASSESSOR, MESH_TRANSFORM};
     //! Return the algorithm type (to avoid RTTI use). 
     virtual enum AlgorithmType get_algorithm_type() = 0;
 
@@ -252,7 +252,7 @@ namespace Mesquite
     
     if (patch_type == PatchData::ELEMENTS_ON_VERTEX_PATCH)
       {
-        if (patch_param1 < 1)
+        if (patch_param1 < 0)
         {
 	  MSQ_SETERR(err)("ELEMENTS_ON_VERTEX_PATCH not supported yet.",
                           MsqError::NOT_IMPLEMENTED);

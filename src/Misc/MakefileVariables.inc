@@ -1,6 +1,7 @@
 MISCDIR = $(srcdir)/Misc
 
 MISCSRCFILES = FileTokenizer.cpp \
+		MeshTransform.cpp \
                MesquiteVersion.cpp \
                MsqDebug.cpp \
                MsqError.cpp \

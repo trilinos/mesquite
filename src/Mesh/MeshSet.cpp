@@ -200,9 +200,9 @@ bool MeshSet::get_next_patch(PatchData &pd,
       int num_layers = pd_params.get_nb_layers(err); 
       if (MSQ_CHKERR(err)) return false;
       
-      if (num_layers != 1)
+      if (num_layers != 1 && num_layers != 0)
       {
-        MSQ_SETERR(err)( "no implementation for patch depth !=1.",
+        MSQ_SETERR(err)( "no implementation for patch depth > 1.",
                          MsqError::NOT_IMPLEMENTED ); 
         return false;
       }
@@ -278,8 +278,27 @@ bool MeshSet::get_next_patch(PatchData &pd,
       }//end while (!next_vertex_identified)
       Mesh::VertexHandle vertex = **vertexIterator;
       ++(*vertexIterator);
+      if(num_layers == 0 ){
+        if (vertArraySize < 1)
+        {
+          delete [] vertArray;
+          vertArray = new Mesh::VertexHandle[1];
+          vertArraySize = 1;
+        }
+        pd.reserve_vertex_capacity(1, err);
+        MsqVertex* pd_vert_array = pd.get_vertex_array(err);
+        (*currentMesh)->vertices_get_coordinates(&vertex,
+                                                 pd_vert_array,
+                                                 1,
+                                                 err);
+        pd_vert_array[0].vertexBitFlags=center_fixed_byte;
+        pd.numVertices = 1;
+        pd.vertexHandlesArray[0]=vertex;
+        pd.numElements = 0;
+        break;
+      }
       
-        // Get the number of elements in this vertex
+          // Get the number of elements in this vertex
       size_t num_elems =
         (*currentMesh)->vertex_get_attached_element_count(vertex, err);
       if (MSQ_CHKERR(err)) return false;
@@ -353,7 +372,7 @@ bool MeshSet::get_next_patch(PatchData &pd,
         //get the coordinates
       (*currentMesh)->vertices_get_coordinates(vertArray,
                                                pd_vert_array,
-                                               num_verts,
+                                                    num_verts,
                                                err);
       if (MSQ_CHKERR(err)) return false;
       for (i = 0; i < num_verts; i++)
