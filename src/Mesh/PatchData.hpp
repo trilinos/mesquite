@@ -95,7 +95,7 @@ namespace Mesquite
       //! For each vertex in the patch, this array holds
       //! the number of elements the vertex is attached to,
       //! followed by the indices of those elements.
-    const size_t* get_vertex_to_elem_array(MsqError &err) const;
+    const size_t* get_vertex_to_elem_array(MsqError &err);
       //! Returns the start of the vertex->element offset
       //! array (v2e_o).  For vertex i, v2e_o[i] is the
       //! index into the vertex->element array (v2e) where
@@ -103,7 +103,7 @@ namespace Mesquite
       //! you the number of elements vertex i is attached
       //! to, and v2e[v2e_o[i]+1] gives you the index of
       //! the first element attached to vertex i.
-    const size_t* get_vertex_to_elem_offset(MsqError &err) const;
+    const size_t* get_vertex_to_elem_offset(MsqError &err);
     
     MsqVertex& vertex_by_index(size_t index);
     MsqMeshEntity& element_by_index(size_t index);
@@ -519,10 +519,13 @@ namespace Mesquite
 #undef __FUNC__
 #define __FUNC__ "PatchData::get_vertex_to_elem_offset" 
   /*! \fn PatchData::get_vertex_to_elem_offset(MsqError &err) const 
-   */  inline const size_t* PatchData::get_vertex_to_elem_offset(MsqError &err) const
+   */  inline const size_t* PatchData::get_vertex_to_elem_offset(MsqError &/*err*/)
   {
-    if (!v2eValid || v2eOffset==NULL) 
-      err.set_msg("\nWARNING: no vertex to element data available.\n");
+      // Make sure we've got the data
+    if (!v2eValid || !v2eOffset)
+    {
+      generate_vertex_to_element_data();
+    }
     return v2eOffset;
   }
   
@@ -530,10 +533,13 @@ namespace Mesquite
 #define __FUNC__ "PatchData::get_vertex_to_elem_array" 
   /*! \fn PatchData::get_vertex_to_elem_array(MsqError &err) const 
    */
-  inline const size_t* PatchData::get_vertex_to_elem_array(MsqError &err) const
+  inline const size_t* PatchData::get_vertex_to_elem_array(MsqError &/*err*/) 
   {
-    if (!v2eValid) 
-      err.set_msg("\nWARNING: no vertex to element data available.\n");
+      // Make sure we've got the data
+    if (!v2eValid || !v2eOffset)
+    {
+      generate_vertex_to_element_data();
+    }
     return v2E;
   }
   

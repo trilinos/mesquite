@@ -712,8 +712,6 @@ void PatchData::get_adjacent_vertex_indices(size_t vertex_index,
                                             std::vector<size_t> &vert_indices,
                                             MsqError &err)
 {
-  generate_vertex_to_element_data();
-  
     //First get elems attached to vertex[vertex_index]
   std::vector<size_t> elem_indices;
   std::vector<size_t> temp_vert_indices;
@@ -761,8 +759,6 @@ void PatchData::get_adjacent_entities_via_n_dim(int n, size_t ent_ind,
 {
   //reset the vector
   adj_ents.clear();
-    //This should probably be removed
-  generate_vertex_to_element_data();
     //vertices of this entity (given by ent_ind)
   std::vector<size_t> verts;
     //vector to store elements attached to the vertices in verts
@@ -945,9 +941,6 @@ void PatchData::get_subpatch(size_t center_vertex_index,
     err.set_msg("Invalid index for center vertex");
     return;
   }
-
-    // Make sure we've got the vertex-to-element connectivity
-  generate_vertex_to_element_data();
 
     // Make sure we've got the subpatchIndexArray
   if (subpatchIndexSize < numVertices)
