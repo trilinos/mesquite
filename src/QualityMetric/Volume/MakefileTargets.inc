@@ -10,5 +10,5 @@ $(localincludedir)/%.hh : $(QMVOLUMEDIR)/%.hh
 
 $(localobjdir)/%.o : $(QMVOLUMEDIR)/%.cpp
 	@echo "Compiling $<"
-	${PREFIX} ${CXX} ${CXXFLAGS} -c -o $@ $<
+	${PREFIX} ${CXX} $(CONFIG_CFLAGS) ${CXXFLAGS} -c -o $@ $<
 

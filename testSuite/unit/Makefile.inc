@@ -31,7 +31,7 @@ TEST_OBJS_P = $(TEST_OBJS:%=$(UNIT_DIR)/%)
 
 $(MSQ_TEST) : $(TEST_OBJS_P) $(locallibdir)/libmesquite.a
 	@echo "Linking $@"
-	$(PREFIX)$(LINKER) $(LDFLAGS) \
+	$(PREFIX)$(LINKER) $(LDFLAGS) $(CONFIG_LDFLAGS) \
         $(TEST_OBJS_P) \
         -o $@ \
         -L$(locallibdir) -lmesquite \
@@ -41,6 +41,6 @@ $(MSQ_TEST) : $(TEST_OBJS_P) $(locallibdir)/libmesquite.a
 
 .cpp.o:
 	@echo "Compiling $<"
-	$(PREFIX)$(CXX) -c $(CXXFLAGS) \
+	$(PREFIX)$(CXX) -c $(CXXFLAGS) $(CONFIG_CFLAGS) \
         $(MESQUITE_INCLUDE) $(CPPUNIT_INC) \
         -c -o $@ $<

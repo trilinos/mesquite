@@ -10,5 +10,5 @@ $(localincludedir)/%.hh : $(DFTDIR)/%.hh
 
 $(localobjdir)/%.o : $(DFTDIR)/%.cpp
 	@echo "Compiling $<"
-	${PREFIX} ${CXX} ${CXXFLAGS} -c -o $@ $<
+	${PREFIX} ${CXX} $(CONFIG_CFLAGS) ${CXXFLAGS} -c -o $@ $<
 

@@ -10,5 +10,5 @@ $(localincludedir)/%.hh : $(NONSMOOTHSTEEPDESCDIR)/%.hh
 
 $(localobjdir)/%.o : $(NONSMOOTHSTEEPDESCDIR)/%.cpp
 	@echo "Compiling $<"
-	${PREFIX} ${CXX} ${CXXFLAGS} -DMSQ_DBG0 -DUSE_MSQ_TIMERS -c -o $@ $<
+	${PREFIX} ${CXX} $(CONFIG_CFLAGS) ${CXXFLAGS} -DMSQ_DBG0 -c -o $@ $<
 

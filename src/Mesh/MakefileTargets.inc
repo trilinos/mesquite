@@ -10,5 +10,5 @@ $(localincludedir)/%.hh : $(MESHDIR)/%.hh
 
 $(localobjdir)/%.o : $(MESHDIR)/%.cpp
 	@echo "Compiling $<"
-	${PREFIX} ${CXX} ${CXXFLAGS} -c -o $@ $<
+	${PREFIX} ${CXX} $(CONFIG_CFLAGS) ${CXXFLAGS} -c -o $@ $<
 

@@ -10,5 +10,5 @@ $(localincludedir)/%.hh : $(QUALIMPROVERDIR)/%.hh
 
 $(localobjdir)/%.o : $(QUALIMPROVERDIR)/%.cpp
 	@echo "Compiling $<"
-	${PREFIX} ${CXX} ${CXXFLAGS} -c -o $@ $<
+	${PREFIX} ${CXX} $(CONFIG_CFLAGS) ${CXXFLAGS} -c -o $@ $<
 

@@ -21,7 +21,7 @@ MSQ_BASE_DIR = ../..
 
 msq_test : $(TEST_OBJS) $(MSQ_BASE_DIR)/lib/libmesquite.a
 	@echo "Linking $@"
-	$(PREFIX)$(LINKER) $(LDFLAGS) \
+	$(PREFIX)$(LINKER) $(LDFLAGS) $(CONFIG_LDFLAGS) \
         $(TEST_OBJS) \
         -o $@ \
         -L$(MSQ_BASE_DIR)/lib -lmesquite \

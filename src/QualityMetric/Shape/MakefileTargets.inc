@@ -10,5 +10,5 @@ $(localincludedir)/%.hh : $(QMSHAPEDIR)/%.hh
 
 $(localobjdir)/%.o : $(QMSHAPEDIR)/%.cpp
 	@echo "Compiling $<"
-	${PREFIX} ${CXX} ${CXXFLAGS} -c -o $@ $<
+	${PREFIX} ${CXX} $(CONFIG_CFLAGS) ${CXXFLAGS} -c -o $@ $<
 

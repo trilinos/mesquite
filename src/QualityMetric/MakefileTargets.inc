@@ -10,4 +10,4 @@ $(localincludedir)/%.hh : $(QUALMETRICDIR)/%.hh
 
 $(localobjdir)/%.o : $(QUALMETRICDIR)/%.cpp
 	@echo "Compiling $<"
-	${PREFIX} ${CXX} ${CXXFLAGS} -c -o $@ $<
+	${PREFIX} ${CXX} $(CONFIG_CFLAGS) ${CXXFLAGS} -c -o $@ $<

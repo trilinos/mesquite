@@ -10,5 +10,5 @@ $(localincludedir)/%.hh : $(FEASNEWTDIR)/%.hh
 
 $(localobjdir)/%.o : $(FEASNEWTDIR)/%.cpp
 	@echo "Compiling $<"
-	${PREFIX} ${CXX} ${CXXFLAGS} -c -o $@ $<
+	${PREFIX} ${CXX} $(CONFIG_CFLAGS) ${CXXFLAGS} -c -o $@ $<
 
