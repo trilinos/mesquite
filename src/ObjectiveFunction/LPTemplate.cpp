@@ -11,6 +11,7 @@
 #include "LPTemplate.hpp"
 #include "MsqFreeVertexIndexIterator.hpp"
 #include "MsqMessage.hpp"
+#include "MsqTimer.hpp"
 using  namespace Mesquite;  
 
 #undef __FUNC__
@@ -40,6 +41,10 @@ LPTemplate::~LPTemplate(){
 #define __FUNC__ "LPTemplate::concrete_evaluate"
 bool LPTemplate::concrete_evaluate(PatchData &patch, double &fval,
                                    MsqError &err){
+#ifdef  USE_FUNCTION_TIMERS          
+  StopWatchCollection::Key this_key = GlobalStopWatches.add(__FUNC__,false); 
+  GlobalStopWatches.start(this_key);
+#endif  
     //Total value of objective function
   int index=0;
   bool lp_bool=true;
@@ -49,6 +54,9 @@ bool LPTemplate::concrete_evaluate(PatchData &patch, double &fval,
     //double check for pVal=0;
   if(pVal==0){
     err.set_msg("pVal equal zero not allowed.  L_0 is not a valid norm.");
+#ifdef USE_FUNCTION_TIMERS          
+  GlobalStopWatches.stop(this_key);
+#endif 
     return 0;
   }
   
@@ -78,6 +86,9 @@ bool LPTemplate::concrete_evaluate(PatchData &patch, double &fval,
       if(!lp_bool){
         delete[] metric_values;
         fval=0.0;
+#ifdef USE_FUNCTION_TIMERS          
+  GlobalStopWatches.stop(this_key);
+#endif 
         return false;
       }
       metric_values[index]=fabs(metric_values[index]);
@@ -97,6 +108,9 @@ bool LPTemplate::concrete_evaluate(PatchData &patch, double &fval,
       if(!lp_bool){
         delete[] metric_values;
         fval=0.0;
+#ifdef USE_FUNCTION_TIMERS          
+  GlobalStopWatches.stop(this_key);
+#endif 
         return false;
       }
       metric_values[index]=fabs(metric_values[index]);
@@ -105,7 +119,10 @@ bool LPTemplate::concrete_evaluate(PatchData &patch, double &fval,
   fval=compute_function(metric_values, total_num, err);
   fval=pow(fval, 1/((double) pVal));
   delete[] metric_values;
-  return true;
+#ifdef USE_FUNCTION_TIMERS          
+  GlobalStopWatches.stop(this_key);
+#endif    
+  return true;   
 }
 
 #undef __FUNC__
@@ -122,6 +139,10 @@ bool LPTemplate::compute_analytical_gradient(PatchData &patch,
                                               Vector3D *const &grad,
                                               MsqError &err, int array_size)
 {
+#ifdef USE_FUNCTION_TIMERS          
+  StopWatchCollection::Key this_key = GlobalStopWatches.add(__FUNC__,false);
+  GlobalStopWatches.start(this_key);
+#endif    
   //Generate vertex to element connectivity if needed
   patch.generate_vertex_to_element_data();
   //vector for storing indices of vertex's connected elems
@@ -164,6 +185,9 @@ bool LPTemplate::compute_analytical_gradient(PatchData &patch,
         //if element is invalid
       if(!lp_bool){
         delete[] metric_values;
+#ifdef USE_FUNCTION_TIMERS          
+  GlobalStopWatches.stop(this_key);
+#endif 
         return false;
       }
       
@@ -180,6 +204,9 @@ bool LPTemplate::compute_analytical_gradient(PatchData &patch,
       //if patch is invalid
       if(!lp_bool){
         delete[] metric_values;
+#ifdef USE_FUNCTION_TIMERS          
+  GlobalStopWatches.stop(this_key);
+#endif 
         return false;
       }
       metric_values[index] = fabs( metric_values[index] );
@@ -266,8 +293,12 @@ bool LPTemplate::compute_analytical_gradient(PatchData &patch,
     }
   }
   
-  delete metric_values;
+  delete []metric_values;
+#ifdef USE_FUNCTION_TIMERS          
+  GlobalStopWatches.stop(this_key);
+#endif       
   return true;
+  
 }
 
 

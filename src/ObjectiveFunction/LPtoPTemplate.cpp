@@ -276,7 +276,7 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &patch,
     }//end if free
     
   }
-  delete metric_values;
+  delete [] metric_values;
   return true;
 }
   

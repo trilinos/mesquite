@@ -76,11 +76,11 @@ bool ObjectiveFunction::compute_numerical_gradient(Mesquite::PatchData &pd,
       }
       else {
         for(int j=0;j<3;++j)
-          grad[m][j] = 0;
+          grad[m][j] = 0.0;
       }
     }
       //********************DO NOT useLocalGradient********************
-      //if useLocalGradient is turned of, we must do  iefficient computation
+      //if useLocalGradient is turned off, we do inefficient computation
     else{
       if (vertices[m].is_free_vertex()) {
           //If pd is not in the feasible region, do not calculate anything.
@@ -104,7 +104,7 @@ bool ObjectiveFunction::compute_numerical_gradient(Mesquite::PatchData &pd,
       }
       else {
         for(int j=0;j<3;++j)
-          grad[m][j] = 0;
+          grad[m][j] = 0.0;
       }
         //PRINT_INFO("  gradx = %f, grady = %f, gradz = %f\n",grad[m][0],grad[m][1],grad[m][2]);   
       MSQ_CHKERR(err);
