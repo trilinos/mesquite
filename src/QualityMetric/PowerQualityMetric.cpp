@@ -25,6 +25,18 @@ PowerQualityMetric::PowerQualityMetric(QualityMetric* qm1,
   set_qmetric1(qm1);
   feasible=qm1->get_feasible_constraint();
   int n_flag=qm1->get_negate_flag();
+    //If the power is negative, then negate flag needs
+    //to be (-n_flag).  If the power is very, very small
+    //then we just set an error.
+  if(fabs(n_flag)<MSQ_MIN)
+  {
+    err.set_msg("PowerQualityMetric passed a double smaller than Mesquite's minimum.");
+  }
+  else if(n_flag<0)
+  {
+    n_flag=(-n_flag);
+  }
+    
   set_negate_flag(n_flag);
   
   set_metric_type(qm1->get_metric_type());
