@@ -5,7 +5,7 @@
 //    E-MAIL: tmunson@mcs.anl.gov
 //
 // ORIG-DATE:  2-Jan-03 at 11:02:19 by Thomas Leurent
-//  LAST-MOD: 20-Feb-03 at 10:37:47 by Thomas Leurent
+//  LAST-MOD:  2-Apr-03 at 14:41:54 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -27,7 +27,8 @@ using std::endl;
 MsqHessian::MsqHessian() :
   origin_pd(0), mEntries(0), mRowStart(0), mColIndex(0), 
   mAccumulation(0), mAccumElemStart(0), mSize(0), cgArraySizes(0),
-  mPreconditionner(0), r(0), z(0), p(0), w(0), maxCGiter(50)
+  mPreconditionner(0), precondArraySize(0),
+  r(0), z(0), p(0), w(0), maxCGiter(50)
 { }
 
 
@@ -408,7 +409,7 @@ void MsqHessian::cg_solver(Vector3D x[], Vector3D b[], MsqError &err)
   double norm_r = norm_g;
   double rzm1; // r^T_{k-1} z_{k-1}
   double rzm2; // r^T_{k-2} z_{k-2}
-  this->compute_preconditionner(err); MSQ_CHKERR(err); // get M^{-1}
+  this->compute_preconditionner(err); MSQ_CHKERR(err); // get M^{-1} for diagonal blocks
 
   for (i=0; i<mSize; ++i)  x[i] = 0. ;  
   for (i=0; i<mSize; ++i)  r[i] = -b[i] ;  // r = -b because x_0 = 0 and we solve H*x = -b
