@@ -10,6 +10,7 @@
 #include "MsqVertex.hpp"
 #include "MsqMeshEntity.hpp"
 #include "MsqMessage.hpp"
+#include "MsqTimer.hpp"
 using namespace Mesquite;
 
 #undef __FUNC__
@@ -120,6 +121,7 @@ bool QualityMetric::compute_element_numerical_gradient(PatchData &pd,
                                              int num_vtx, double &metric_value,
                                              MsqError &err)
 {
+  FUNCTION_TIMER_START(__FUNC__);
     /*!TODO: (MICHAEL)  Try to inline this function (currenlty conflicts
       with MsqVertex.hpp).*/    
   MSQ_DEBUG_PRINT(2,"Computing Numerical Gradient\n");
@@ -146,6 +148,7 @@ bool QualityMetric::compute_element_numerical_gradient(PatchData &pd,
       (*vertices[v])[j] -= delta;
     }
   }
+  FUNCTION_TIMER_END();
   return true;
 }
 
