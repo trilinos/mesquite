@@ -33,7 +33,7 @@ MsqHessian::MsqHessian() :
   origin_pd(0), mEntries(0), mRowStart(0), mColIndex(0), 
   mAccumulation(0), mAccumElemStart(0), mSize(0), 
   mPreconditioner(0), precondArraySize(0),
-  r(0), z(0), p(0), w(0), cgArraySizes(0), maxCGiter(50)
+  mR(0), mZ(0), mP(0), mW(0), cgArraySizes(0), maxCGiter(50)
 { }
 
 
@@ -48,10 +48,10 @@ MsqHessian::~MsqHessian()
 
   delete[] mPreconditioner;
 
-  delete[] r;
-  delete[] z;
-  delete[] p;
-  delete[] w;
+  delete[] mR;
+  delete[] mZ;
+  delete[] mP;
+  delete[] mW;
 }
 
   
@@ -422,14 +422,14 @@ void MsqHessian::cg_solver(Vector3D x[], Vector3D b[], MsqError &err)
   
   // reallocates arrays if size of the Hessian has changed too much.
   if (mSize > cgArraySizes || mSize < cgArraySizes/10 ) {
-    delete[] r;
-    delete[] z;
-    delete[] p;
-    delete[] w;
-    r = new Vector3D[mSize];
-    z = new Vector3D[mSize];
-    p = new Vector3D[mSize];
-    w = new Vector3D[mSize];
+    delete[] mR;
+    delete[] mZ;
+    delete[] mP;
+    delete[] mW;
+    mR = new Vector3D[mSize];
+    mZ = new Vector3D[mSize];
+    mP = new Vector3D[mSize];
+    mW = new Vector3D[mSize];
     cgArraySizes = mSize;
   }
 
@@ -444,20 +444,20 @@ void MsqHessian::cg_solver(Vector3D x[], Vector3D b[], MsqError &err)
   this->compute_preconditioner(err); MSQ_CHKERR(err); // get M^{-1} for diagonal blocks
 
   for (i=0; i<mSize; ++i)  x[i] = 0. ;  
-  for (i=0; i<mSize; ++i)  r[i] = -b[i] ;  // r = -b because x_0 = 0 and we solve H*x = -b
+  for (i=0; i<mSize; ++i)  mR[i] = -b[i] ;  // r = -b because x_0 = 0 and we solve H*x = -b
   norm_g *= cg_tol;
 
-  this->apply_preconditioner(z, r, err); // solve Mz = r (computes z = M^-1 r)
-  for (i=0; i<mSize; ++i)  p[i] = z[i] ; // p_1 = z_0  
-  rzm1 = inner(z,r,mSize); // inner product r_{k-1}^T z_{k-1} 
+  this->apply_preconditioner(mZ, mR, err); // solve Mz = r (computes z = M^-1 r)
+  for (i=0; i<mSize; ++i)  mP[i] = mZ[i] ; // p_1 = z_0  
+  rzm1 = inner(mZ,mR,mSize); // inner product r_{k-1}^T z_{k-1} 
     
   size_t cg_iter = 0;
   while ((norm_r > norm_g) && (cg_iter < maxCGiter)) {
     ++cg_iter;
       
-    axpy(w, mSize, *this, p, mSize, 0,0,err); // w = A * p_k
+    axpy(mW, mSize, *this, mP, mSize, 0,0,err); // w = A * p_k
       
-    alpha_ = inner(p,w,mSize); // alpha_ = p_k^T A p_k
+    alpha_ = inner(mP,mW,mSize); // alpha_ = p_k^T A p_k
     if (alpha_ <= 0.0) {
       cout << "Direction of Negative Curvature\n";
       break; // Newton goes on with this direction of negative curvature 
@@ -465,16 +465,16 @@ void MsqHessian::cg_solver(Vector3D x[], Vector3D b[], MsqError &err)
       
     alpha = rzm1 / alpha_;
       
-    for (i=0; i<mSize; ++i)  x[i] += alpha*p[i]; // x_{k+1} = x_k + alpha_{k+1} p_{k+1} 
-    for (i=0; i<mSize; ++i)  r[i] -= alpha*w[i]; // r_{k+1} = r_k - alpha_{k+1} A p_{k+1} 
-    norm_r = length(r, mSize);
+    for (i=0; i<mSize; ++i)  x[i] += alpha*mP[i]; // x_{k+1} = x_k + alpha_{k+1} p_{k+1} 
+    for (i=0; i<mSize; ++i)  mR[i] -= alpha*mW[i]; // r_{k+1} = r_k - alpha_{k+1} A p_{k+1} 
+    norm_r = length(mR, mSize);
  
-    this->apply_preconditioner(z, r, err); // solve Mz = r (computes z = M^-1 r)
+    this->apply_preconditioner(mZ, mR, err); // solve Mz = r (computes z = M^-1 r)
       
     rzm2 = rzm1;
-    rzm1 = inner(z,r,mSize); // inner product r_{k-1}^T z_{k-1} 
+    rzm1 = inner(mZ,mR,mSize); // inner product r_{k-1}^T z_{k-1} 
     beta = rzm1 / rzm2;
-    for (i=0; i<mSize; ++i)  p[i] = z[i] + beta*p[i]; // p_k = z_{k-1} + Beta_k * p_{k-1}
+    for (i=0; i<mSize; ++i)  mP[i] = mZ[i] + beta*mP[i]; // p_k = z_{k-1} + Beta_k * p_{k-1}
   }
 
   FUNCTION_TIMER_END();

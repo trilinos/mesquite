@@ -65,10 +65,10 @@ namespace Mesquite
       Matrix3D* mPreconditioner;
       size_t precondArraySize;
     
-      Vector3D* r; //!< array used in the CG solver
-      Vector3D* z; //!< array used in the CG solver
-      Vector3D* p; //!< array used in the CG solver
-      Vector3D* w; //!< array used in the CG solver
+      Vector3D* mR; //!< array used in the CG solver
+      Vector3D* mZ; //!< array used in the CG solver
+      Vector3D* mP; //!< array used in the CG solver
+      Vector3D* mW; //!< array used in the CG solver
       size_t cgArraySizes; //!< size of arrays allocated in the CG solver.
       size_t maxCGiter; //!< max nb of iterations of the CG solver.
     
