@@ -25,12 +25,17 @@ hex_4by2by2.vtk:  Mesh of box with a 4 by 2 grid on four surfaces and
 a 2 by 2 grid on two surfaces.  The mesh contains 16 hexes and three
 free vertices.
 
-large_box_hex_1000.vtk:  This is hex mesh with 1000 elements.  It
+large_box_hex_1000.vtk:  This is a hex mesh with 1000 elements.  It
 is a structured mesh of a box.  The edges of the box are scaled to
 be 10,000 units long.  The interior vertices are slightly perturbed
 from their ideal positions.
 
 single_hex:  A single hex mesh with no free vertices.
+
+small_box_hex_1000.vtk:  Similar to large_box_hex_1000.  This is
+a hex mesh with 1000 elements.  It is a structured mesh of a box.
+The edges of the box are scaled to be .00001 units long.  The
+interior vertices are slightly perturbed from their ideal positions.
 
 tet_1:  Mesh with 4 tets, 5 vertices, and 1 free vertex.
 
