@@ -397,65 +397,16 @@ int PatchData::num_free_vertices(MsqError &/*err*/)
 
 
 #undef __FUNC__
-#define __FUNC__ "PatchData::move_vertices"
-/*! \fn PatchData::move_vertices(Vector3D dk[], int nb_vtx, double step_size, MsqError &err)
-
-   It is often useful to use the create_coords_momento() function before
-   calling this function.
-   Compile with -DMSQ_DBG1 or higher to check that fixed vertices
-   are not moved with that call.
-
-   \param dk: must be a [nb_vtx][3] array of doubles that contains the direction in which
-          to move each vertex. Fixed vertices moving direction should be zero.
-   \param nb_vtx is the number of vertices to move. must corresponds to the number of
-          vertices in the PatchData.
-   \param step_size will multiply the moving direction given in dk for each vertex.
-  */
-void PatchData::move_vertices(Vector3D dk[],
-                              size_t nb_vtx,
-                              double scale,
-                              MsqError &err)
-{
-  if (nb_vtx != numVertices)
-  {
-    err.set_msg("argument nb_vtx is not equal to the total nb of vertices.");
-    MSQ_CHKERR(err);
-    return;
-  }
-
-    // This will move ALL vertices, only checking for fixed flags after
-    // we are done...shouldn't we check for the fixed flag before moving it?
-  size_t m=0;
-  for (m=0; m<numVertices; ++m)
-  {
-    vertexArray[m] += (scale * dk[m]);
-  }
-  
-    // Checks that moving direction is zero for fixed vertices.
-  MSQ_DEBUG_ACTION(1,{ for (m=0; m<numVertices; ++m)
-  {
-    Vector3D zero_3d(0.,0.,0.);
-    if (   ! vertexArray[m].is_free_vertex()
-           && dk[m] != zero_3d                  )
-      err.set_msg("moving a fixed vertex.");
-    MSQ_CHKERR(err); }
-  });
-}
-
-
-#undef __FUNC__
 #define __FUNC__ "PatchData::move_free_vertices_constrained"
 /*! \fn PatchData::move_free_vertices_constrained(Vector3D dk[], int nb_vtx, double step_size, MsqError &err)
-   PatchData::move_free_vertices_constrained() is similar to the function
-   PatchData::move_vertices().  The main difference between the two
-   being that for this funciton after the free vertices are moved
-   as specified by the search direction (dk) and scale factor (step_size),
-   they are then projected onto the appropriate geometry.  The second
-   difference being that for this function fixed vertices are not moved
+   PatchData::move_free_vertices_constrained() moves the free vertices
+   (see MsqVertex::is_free() ) as specified by the search direction (dk)
+   and scale factor (step_size). After being moved, the vertices are
+   projected onto the appropriate geometry.  Fixed vertices are not moved
    regardless of their corresponding dk direction.
    It is often useful to use the create_coords_momento() function before
    calling this function.
-   Compile with -DMSQ_DBG1 or higher to check that fixed vertices
+   Compile with -DMSQ_DBG3 to check that fixed vertices
    are not moved with that call.
 
    \param dk: must be a [nb_vtx] array of Vector3D that contains
@@ -487,7 +438,7 @@ void PatchData::move_free_vertices_constrained(Vector3D dk[], size_t nb_vtx,
   }
   
     // Checks that moving direction is zero for fixed vertices.
-  MSQ_DEBUG_ACTION(1,{ for (size_t m=0; m<numVertices; ++m) {
+  MSQ_DEBUG_ACTION(3,{ for (size_t m=0; m<numVertices; ++m) {
     Vector3D zero_3d(0.,0.,0.);
     if (   ! vertexArray[m].is_free_vertex()
            && ( dk[m] != zero_3d && dk[m] != -zero_3d)  ) 
@@ -503,7 +454,7 @@ void PatchData::move_free_vertices_constrained(Vector3D dk[], size_t nb_vtx,
 #undef __FUNC__
 #define __FUNC__ "PatchData::set_free_vertices_constrained"
 /*! set_free_vertices_constrained is similar to 
-PatchData::move_vertices_constrained except the original vertex positions
+PatchData::move_free_vertices_constrained() except the original vertex positions
 are those stored in the PatchDataVerticesMemento instead of the actual vertex
 position stored in the PatchData Vertex array.  The final location is stored
 in the PatchData; the PatchDataVerticesMemento is unchanged.

@@ -186,14 +186,6 @@ namespace Mesquite
                                       Vector3D &surf_norm, MsqError &err) const 
     { get_domain_normal_at_element(size_t(elem_ptr-elementArray), surf_norm, err); }
     
-      //! moves all vertices at once according to a set of directions.
-      /*! \param delta_array An array of directions, ordered like the vertices in the PatchData.
-        \param nb_vtx number of vertices.  Must be equal to the number of vertices in the PatchData.
-        \param scale A scalar that multiplies the vectors given in delta_array.
-      */
-    void move_vertices(Vector3D delta_array[], size_t nb_vtx,
-                       double scale, MsqError &err);
-    
       //! Moves free vertices and then snaps the free vertices to the domain.
       /*\param dk an array of directions, ordered like the vertices in
         the PatchData.
