@@ -89,7 +89,8 @@ namespace Mesquite
         MAXIMUM,
         HARMONIC,
         GEOMETRIC,
-        SUM
+        SUM,
+	GENERALIZED_MEAN
      };
      
        /*!Set the averaging method for the quality metric. Current
@@ -103,6 +104,7 @@ namespace Mesquite
          RMS:  the root-mean-squared average,
          HMS:  the harmonic-mean-squared average,
          SUM:  the sum of the values
+         GENERALIZED_MEAN: self explainatory
        */
      inline void set_averaging_method(AveragingMethod method, MsqError &err);
      
@@ -303,6 +305,7 @@ namespace Mesquite
       case(MAXIMUM):
       case(MINIMUM):
       case(RMS):
+      case(HMS):
       case(SUM):
         avgMethod=method;
         break;
@@ -414,7 +417,7 @@ namespace Mesquite
             //ensure no divide by zero, return MSQ_MAX_CAP
           if(total_value<MSQ_MIN){
             if(total_value>MSQ_MIN){
-              return MSQ_MAX_CAP;;
+              return MSQ_MAX_CAP;
             }
           }
           total_value=num_values/total_value;
@@ -454,6 +457,22 @@ namespace Mesquite
           }
           total_value/=num_values;
           total_value=sqrt(total_value);
+          break;
+          
+       case HMS:
+          //ensure no divide by zero, return zero
+          for (i=0;i<num_values;++i){
+            if (metric_values[i]*metric_values[i] < MSQ_MIN) {
+              return 0.0;
+            }
+            total_value += (1.0/(metric_values[i]*metric_values[i]));
+          }
+
+          //ensure no divide by zero, return MSQ_MAX_CAP
+          if (total_value < MSQ_MIN) {
+            return MSQ_MAX_CAP;
+          }
+          total_value = sqrt(num_values/total_value);
           break;
           
        case SUM:
