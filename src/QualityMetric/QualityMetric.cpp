@@ -110,7 +110,7 @@ bool QualityMetric::compute_vertex_analytical_gradient(PatchData &pd,
                                                        MsqVertex &vertex,
                                                        MsqVertex* free_vtces[],
                                                        Vector3D grad_vec[],
-                                                       int num_vtx,
+                                                       int num_free_vtx,
                                                        double &metric_value,
                                                        MsqError &err)
 {
@@ -118,7 +118,7 @@ bool QualityMetric::compute_vertex_analytical_gradient(PatchData &pd,
                 "Defaulting to numerical gradient.\n");
   set_gradient_type(NUMERICAL_GRADIENT);
   return compute_vertex_numerical_gradient(pd, vertex, free_vtces, grad_vec,
-                                           num_vtx, metric_value, err);
+                                           num_free_vtx, metric_value, err);
 }
 
 #undef __FUNC__
@@ -254,6 +254,7 @@ bool QualityMetric::compute_element_numerical_gradient(PatchData &pd,
     return false;
   double delta = 10e-6;
   int counter=0;
+  double pos=0.0;
   double metric_value1=0;
   for (int v=0; v<num_free_vtx; ++v) 
   {
@@ -268,6 +269,8 @@ bool QualityMetric::compute_element_numerical_gradient(PatchData &pd,
         //safety net to make sure the epsilon perturbation does not take
         //the element out of the feasible region.
       while(!valid && counter<10){
+        //save the original coordinate before the perturbation
+        pos=(*free_vtces[v])[j];
           // perturb the coordinates of the free vertex in the j direction
           // by delta       
         (*free_vtces[v])[j]+=delta;
@@ -277,7 +280,7 @@ bool QualityMetric::compute_element_numerical_gradient(PatchData &pd,
           //compute the numerical gradient
         grad_vec[v][j]=(metric_value1-metric_value)/delta;
           // put the coordinates back where they belong
-        (*free_vtces[v])[j] -= delta;
+        (*free_vtces[v])[j] = pos;
         ++counter;
         delta/=10.0;
       }
@@ -404,7 +407,7 @@ bool QualityMetric::compute_vertex_numerical_gradient(PatchData &pd,
                                                       MsqVertex &vertex,
                                                       MsqVertex* free_vtces[],
                                                       Vector3D grad_vec[],
-                                                      int num_vtx,
+                                                      int num_free_vtx,
                                                       double &metric_value,
                                                       MsqError &err)
 {
@@ -420,11 +423,16 @@ bool QualityMetric::compute_vertex_numerical_gradient(PatchData &pd,
   
   double delta = 10e-6;
   double metric_value1=0;
-  for (int v=0; v<num_vtx; ++v) 
+  double pos;
+  int v=0;
+  for (v=0; v<num_free_vtx; ++v) 
   {
     /* gradient in the x, y, z direction */
-    for (int j=0;j<3;++j) 
+    int j=0;
+    for (j=0;j<3;++j) 
     {
+      //save the original coordinate before the perturbation
+      pos=(*free_vtces[v])[j];
       // perturb the coordinates of the free vertex in the j direction by delta
       (*free_vtces[v])[j]+=delta;
       //compute the function at the perturbed point location
@@ -432,7 +440,7 @@ bool QualityMetric::compute_vertex_numerical_gradient(PatchData &pd,
       //compute the numerical gradient
       grad_vec[v][j]=(metric_value1-metric_value)/delta;
       // put the coordinates back where they belong
-      (*free_vtces[v])[j] -= delta;
+      (*free_vtces[v])[j] = pos;
     }
   }
   return true;  

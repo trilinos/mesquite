@@ -31,6 +31,20 @@ namespace Mesquite
    
    class QualityMetric
    {
+   protected:
+     /*!Constructor defaults concrete QualityMetric's to
+       gradType=NUMERCIAL_GRADIENT and negateFlag=1.
+       Concrete QualityMetric constructors over-write these defaults
+       when appropriate.
+       */
+     QualityMetric() :
+       evalMode(EEM_UNDEFINED),
+       mType(MT_UNDEFINED),
+       gradType(NUMERICAL_GRADIENT),
+       hessianType(NUMERICAL_HESSIAN),
+       negateFlag(1)
+     {}
+
    public:
        // This is defined in each concrete class.  It isn't virtual, so
        // it doesn't exist in the base class.
@@ -241,19 +255,6 @@ namespace Mesquite
      
   protected:
      
-       /*!Constructor defaults concrete QualityMetric's to
-         gradType=NUMERCIAL_GRADIENT and negateFlag=1.
-         Concrete QualityMetric constructors over-write these defaults
-         when appropriate.
-       */
-     QualityMetric() :
-       evalMode(EEM_UNDEFINED),
-       mType(MT_UNDEFINED),
-       gradType(NUMERICAL_GRADIENT),
-       hessianType(NUMERICAL_HESSIAN),
-       negateFlag(1)
-     {}
-
      //! This function should be used in the constructor of every concrete
      //! quality metric. Errors will result if type is left to MT_UNDEFINED.
      void set_metric_type(MetricType t) { mType = t; }
@@ -439,7 +440,7 @@ namespace Mesquite
 #undef __FUNC__
 #define __FUNC__ "QualityMetric::compute_element_gradient"
 /*! 
-    \param vertices base address of an array of pointers to the element vertices which
+    \param free_vtces base address of an array of pointers to the element vertices which
     are considered free for purposes of computing the gradient. The quality metric
     gradient relative to each of those vertices is computed and stored in grad_vec.
     \param grad_vec base address of an array of Vector3D where the gradient is stored,
