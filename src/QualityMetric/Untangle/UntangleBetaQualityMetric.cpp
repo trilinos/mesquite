@@ -19,18 +19,18 @@ using namespace Mesquite;
 
 #undef __FUNC__
 #define __FUNC__ "UntangleBetaQualityMetric::UntangleBetaQualityMetric"
-/*! \fn UntangleBetaQualityMetric::UntangleBetaQualityMetric()
+/*! \fn UntangleBetaQualityMetric::UntangleBetaQualityMetric(double bet)
   \brief For untangle beta, the constructor defaults to the SUM
   averaging method, and to the ELEMENT_VERTICES evaluation mode.
 */
-UntangleBetaQualityMetric::UntangleBetaQualityMetric()
+UntangleBetaQualityMetric::UntangleBetaQualityMetric(double bet)
 {
   avgMethod=QualityMetric::SUM;
   evalMode=QualityMetric::ELEMENT_VERTICES;
   feasible=0;
   set_name("Untangle Beta");
   set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
-  mBeta=.05;
+  mBeta=bet;
 }
 
 #undef __FUNC__

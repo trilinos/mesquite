@@ -35,7 +35,18 @@ namespace Mesquite
        */
      static UntangleQualityMetric* create_new()
         {
-          UntangleQualityMetric* m = new UntangleBetaQualityMetric();
+          UntangleQualityMetric* m = new UntangleBetaQualityMetric(.05);
+          return m;
+        }
+       /*! \fn UntangleQualityMetric* UntangleBetaQualityMetric::create_new(double bet)
+         \brief The function create_new is used to create a untangle quality
+         metric.  The constructor defaults to SUM AveragingMethod and
+         ELEMENT_VERTICES evaluationMode.  mBeta, the scalar value used
+         to compute the metric value, is set to 'bet'.
+       */
+     static UntangleQualityMetric* create_new(double bet)
+        {
+          UntangleQualityMetric* m = new UntangleBetaQualityMetric(bet);
           return m;
         }
      
@@ -52,7 +63,7 @@ namespace Mesquite
      
    private:
      double mBeta;
-     UntangleBetaQualityMetric();
+     UntangleBetaQualityMetric(double bet);
    };
 
 
