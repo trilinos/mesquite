@@ -16,7 +16,11 @@
 #include "MesquiteError.hpp"
 #include "ShapeQualityMetric.hpp"
 #include "Vector3D.hpp"
-
+#ifdef USE_C_PREFIX_INCLUDES
+#include <cmath>
+#else
+#include <math.h>
+#endif
 namespace Mesquite
 {
      /*! \class AspectRatioGammaQualityMetric
@@ -42,9 +46,13 @@ namespace Mesquite
      
      
    private:
-     
+       //constants used in metric calculations
+     double fourDivRootThree;
+     double twelveDivRootTwo;
      AspectRatioGammaQualityMetric()
         {
+          fourDivRootThree=4.0/sqrt(3.0);
+          twelveDivRootTwo=12.0/sqrt(2.0);
           feasible=0;
           evalMode=QualityMetric::ELEMENT_VERTICES;
           set_name("Aspect Ratio Gamma");

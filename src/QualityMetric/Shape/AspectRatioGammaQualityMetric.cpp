@@ -58,7 +58,7 @@ double AspectRatioGammaQualityMetric::evaluate_element(PatchData &pd,
         total_metric/=3.0;
           //normalize to equil. and div by area
           // 2.309... is 4/sqrt(3) (inverse of the area of an equil. tri
-        total_metric/=(vol*2.30940108);
+        total_metric/=(vol*fourDivRootThree);
       }
       
       break;
@@ -87,7 +87,7 @@ double AspectRatioGammaQualityMetric::evaluate_element(PatchData &pd,
         total_metric*=(total_metric);
         total_metric*=(total_metric);
           //normalize to equil. and div by area
-        total_metric/=(vol*8.479670);
+        total_metric/=(vol*twelveDivRootTwo);
       }
       break;
     default:
