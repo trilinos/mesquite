@@ -1610,7 +1610,7 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
     break;
 
   case QUADRILATERAL:
-    assert(8 == nv);
+    assert(4 == nv);
 
     pd.get_domain_normal_at_element(e, mNormal, err); MSQ_CHKERR(err);
     mNormal.normalize();	// Need unit normal
@@ -1911,8 +1911,8 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
       l = 0;
       for (j = 0; j < 3; ++j) {
 	for (k = 0; k < 3; ++k) {
-	  row = tetInd[i][j];
-	  col = tetInd[i][k];
+	  row = hexInd[i][j];
+	  col = hexInd[i][k];
 
 	  if (row <= col) {
 	    loc = 4*row - (row*(row+1)/2) + col;
@@ -2091,8 +2091,8 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
       l = 0;
       for (j = 0; j < 4; ++j) {
 	for (k = 0; k < 4; ++k) {
-	  row = tetInd[i][j];
-	  col = tetInd[i][k];
+	  row = hexInd[i][j];
+	  col = hexInd[i][k];
 
 	  if (row <= col) {
 	    loc = 8*row - (row*(row+1)/2) + col;
