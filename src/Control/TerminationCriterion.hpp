@@ -127,9 +127,15 @@ namespace Mesquite
       //!Sets the criterion by specifing the TCType and the integer value
     void add_criterion_type_with_int(TCType tc_type, int bound,
                                      MsqError &err);
+      //!Removes the criterion by specifing just the TCType.
+    void remove_criterion_type(TCType tc_type, MsqError &err);
+    
       //!Sets the type of criterion that the user would like to
       //! use for culling purposes (along with the associated tolerance.
     void set_culling_type(TCType tc_type, double eps, MsqError &err);
+      //!Removes any previously set culling types (sets the culling
+      //! type to be NONE).
+    void remove_culling(MsqError &err);
     
       //Functions usually called from vertex mover (either concrete or base)
       //!Does preliminary set up for the TerminationCriterion

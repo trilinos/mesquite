@@ -141,6 +141,15 @@ void TerminationCriterion::add_criterion_type_with_int(TCType tc_type,
        err.set_msg("TCType not valid for this function.");
   };
 }
+#undef __FUNC__
+#define  __FUNC__ "TerminationCriterion::remove_criterion_type"
+/*! Function to remove a previously set criterion type.*/
+void TerminationCriterion::remove_criterion_type(TCType tc_type,
+                                                 MsqError &/*err*/)
+{
+  terminationCriterionFlag&=(~tc_type);
+}
+
 
 #undef __FUNC__
 #define  __FUNC__ "TerminationCriterion::set_culling_type"
@@ -175,6 +184,16 @@ void TerminationCriterion::set_culling_type(TCType tc_type, double eps,
   };
   cullingEps=eps;
 }
+
+#undef __FUNC__
+#define  __FUNC__ "TerminationCriterion::remove_culling"
+/*!Sets the culling type to be NONE.*/
+void TerminationCriterion::remove_culling(MsqError &/*err*/)
+{
+  cullingMethodFlag=NONE;
+}
+
+  
 
 #undef __FUNC__
 #define  __FUNC__ "TerminationCriterion::initialize"
