@@ -6,6 +6,7 @@
 #include "cppunit/Exception.h"
 
 const unsigned char Mesquite::TestRunner::INDENT_SIZE = 2;
+static bool last_test_succeeded = true;
 
 void Mesquite::TestRunner::indent()
 {
@@ -74,6 +75,8 @@ void Mesquite::TestRunner::add_test(CppUnit::Test *test)
 // a test begins.
 void Mesquite::TestRunner::startTest(CppUnit::Test *test)
 {
+  last_test_succeeded = true;
+  
     // Indent
   indent();
   
@@ -95,41 +98,50 @@ void Mesquite::TestRunner::startSuite(CppUnit::Test *test)
   indent();
   
     // Output a header
-  *mOut << "Beginning of Test Suite : " << test->getName() << std::endl;
+  *mOut << "Beginning of Test Suite : " << test->getName()
+        << " (" << test->countTestCases() << " tests)" << std::endl;
   
     // increase the indent level
   indentLevel += TestRunner::INDENT_SIZE;
 
     // Add a timer
   push_timer(new Mesquite::Timer);
+    // Add a failure counter
+  failureCounters.push(0);
 }
 
 // This function is called if a test fails, either
 // intentionally or unintentionally.
 void Mesquite::TestRunner::addFailure(const CppUnit::TestFailure &failure)
 {
-    // Indent
+  last_test_succeeded = false;
+  failureCounters.top() += 1;
+  
+    // Indicate whether error or failure.
+    // An error is something you didn't specifically
+    // look for or expect.  A failure is something you
+    // looked for, but didn't like what you found.
   indent();
-  
   if (failure.isError())
-  {
     *mOut << "***ERROR***\n";
-    indent();
-    if (failure.thrownException())
-    {
-      *mOut << "Unexpected exception : " << failure.thrownException()->what()
-            << std::endl;
-    }
-    else
-    {
-      *mOut << "Unexpected test failure" << std::endl;
-    }
-  }
   else
-  {
-    *mOut << "Failed assertion : " << std::endl;
-  }
+    *mOut << "*** FAILURE ***\n";
   
+    // If it's an exception, say so.
+  if (failure.thrownException())
+  {
+    indent();
+    *mOut << "Error caught: " << failure.thrownException()->what()
+          << std::endl;
+  }
+
+    // If we know where the error occurred, indicate it
+  if (failure.sourceLine().isValid())
+  {
+    indent();
+    *mOut << "Problem occured on line " << failure.sourceLine().lineNumber()
+          << " of " << failure.sourceLine().fileName() << std::endl;
+  }
 }
 
 // This function is called just after a test completes.
@@ -145,9 +157,17 @@ void Mesquite::TestRunner::endTest(CppUnit::Test *test)
   
     // Output a footer
   indent();
-  *mOut << "Elapsed time: " << elapsed_time << " seconds\n";
-  indent();
-  *mOut << "End of Test : " << test->getName() << std::endl;
+  *mOut << test->getName();
+  if (last_test_succeeded)
+  {
+    *mOut << " completed successfully in "
+          << elapsed_time << " seconds" << std::endl;
+  }
+  else
+  {
+    *mOut << " failed after "<< elapsed_time
+          << " seconds" << std::endl;
+  }
 }
 
 // This function is called just after a test completes.
@@ -158,12 +178,27 @@ void Mesquite::TestRunner::endSuite(CppUnit::Test *test)
   double elapsed_time = timer->since_birth();
   delete timer;
   
+    // Pop the success counter
+  int failure_count = failureCounters.top();
+  failureCounters.pop();
+  if (!failureCounters.empty())
+    failureCounters.top() += failure_count;
+  
     // Decrease the indent level
   indentLevel -= TestRunner::INDENT_SIZE;
   
     // Output a footer
   indent();
-  *mOut << "Elapsed time: " << elapsed_time << " seconds\n";
-  indent();
-  *mOut << "End of Test Suite : " << test->getName() << std::endl;
+  *mOut << test->getName() << " Test Suite completed in "
+        << elapsed_time << " seconds, ";
+  if (failure_count)
+  {
+    *mOut << failure_count << " of " << test->countTestCases()
+          << " tests failed" << std::endl;
+  }
+  else
+  {
+    *mOut << "All " << test->countTestCases() << " tests succeeded"
+          << std::endl;
+  }
 }

@@ -53,6 +53,7 @@ namespace Mesquite
   private:
     std::vector<CppUnit::Test*> mTests;
     std::stack<Mesquite::Timer*> mTimers;
+    std::stack<int> failureCounters;
     std::ostream* mOut;
     unsigned int indentLevel;
     unsigned int numSuccesses;
