@@ -5,7 +5,7 @@
 //    E-MAIL: tmunson@mcs.anl.gov
 //
 // ORIG-DATE:  2-Jan-03 at 11:02:19 bu Thomas Leurent
-//  LAST-MOD: 19-Feb-03 at 14:42:23 by Thomas Leurent
+//  LAST-MOD: 20-Feb-03 at 10:38:40 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -55,7 +55,8 @@ namespace Mesquite
     int mSize; //!< number of rows (or number of columns, this is a square matrix).
     
     Matrix3D* mPreconditionner;
-
+    int precondArraySize;
+    
     Vector3D* r; //!< array used in the CG solver
     Vector3D* z; //!< array used in the CG solver
     Vector3D* p; //!< array used in the CG solver

@@ -5,7 +5,7 @@
 //    E-MAIL: tmunson@mcs.anl.gov
 //
 // ORIG-DATE:  2-Jan-03 at 11:02:19 by Thomas Leurent
-//  LAST-MOD: 19-Feb-03 at 13:59:27 by Thomas Leurent
+//  LAST-MOD: 20-Feb-03 at 10:37:47 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -362,7 +362,12 @@ void MsqHessian::accumulate_entries(PatchData &pd, size_t elem_index,
 */
 void MsqHessian::compute_preconditionner(MsqError &err)
 {
-  mPreconditionner = new Matrix3D[mSize];
+  // reallocates arrays if size of the Hessian has changed too much.
+  if (mSize > precondArraySize || mSize < precondArraySize/10 ) {
+    delete[] mPreconditionner;
+    mPreconditionner = new Matrix3D[mSize];
+  }
+  
   int m;
   // preconditionner is identity matrix for now.
   for (m=0; m<mSize; ++m) {
@@ -398,7 +403,7 @@ void MsqHessian::cg_solver(Vector3D x[], Vector3D b[], MsqError &err)
 
   int i;
   double alpha_, alpha, beta; 
-  double cg_tol =10e-2;
+  double cg_tol =10e-2; // 10e-2 will give a reasonably good solution (~1%). 
   double norm_g = length(b, mSize);
   double norm_r = norm_g;
   double rzm1; // r^T_{k-1} z_{k-1}
