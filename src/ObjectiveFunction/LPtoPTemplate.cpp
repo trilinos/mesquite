@@ -298,8 +298,8 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &patch,
 
     For \f$ p=1 \f$, this simplifies to \f$ \nabla^2 Q(e) \f$.
 
-    The \f$ p=1 \f$ implified versions are implemented directly
-    to speed up computations. 
+    The \f$ p=1 \f$ simplified version is implemented directly
+    to speed up computation. 
     
     \param patch The PatchData object for which the objective function
            hessian is computed.
@@ -309,11 +309,6 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
                                                MsqHessian &hessian,
                                                MsqError &err)
 {
-
-  if (pVal!=1) {
-    err.set_msg("Prototype only works for P=1.");
-    return false;
-  }
 
   MsqMeshEntity* elements = pd.get_element_array(err); MSQ_CHKERR(err);
   MsqVertex* vertices = pd.get_vertex_array(err); MSQ_CHKERR(err);
