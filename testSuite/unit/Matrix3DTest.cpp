@@ -201,7 +201,10 @@ public:
     Vector3D vec2(2.1, 3, 8);
     vec = vec2*mMat1;
     correct.set(25.7, 73.82, 19.4);
-    CPPUNIT_ASSERT( vec==correct );
+    int loop_i=0;
+    for (loop_i=0;loop_i<3;++loop_i){
+      CPPUNIT_ASSERT_DOUBLES_EQUAL(vec[loop_i], correct[loop_i], MSQ_MIN);
+    }
   }
 
 };
