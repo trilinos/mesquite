@@ -1,6 +1,6 @@
 QMUNTANGLEDIR = $(srcdir)/QualityMetric/Untangle
 
-QMUNTANGLESRC = 
+QMUNTANGLESRC = $(QMUNTANGLEDIR)/UntangleBetaQualityMetric.cpp
 
 QMUNTANGLEHEADERS = \
 	$(patsubst $(QMUNTANGLEDIR)/%,$(localincludedir)/%,\
