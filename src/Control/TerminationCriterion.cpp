@@ -11,6 +11,7 @@
  */
 
 #include "TerminationCriterion.hpp"
+#include "MsqVertex.hpp"
 using namespace Mesquite;
 //temporary include
 #include <iostream.h>
@@ -99,7 +100,11 @@ void TerminationCriterion::add_criterion_type_with_double(TCType tc_type,
     case SUCCESSIVE_IMPROVEMENTS_RELATIVE:
        terminationCriterionFlag|=SUCCESSIVE_IMPROVEMENTS_RELATIVE;
        successiveImprovementsRelativeEps=eps;
-       break; 
+       break;
+    case BOUNDED_VERTEX_MOVEMENT:
+       terminationCriterionFlag|=BOUNDED_VERTEX_MOVEMENT;
+       boundedVertexMovementEps=eps;
+       break;
     default:
        err.set_msg("TCType not valid for this function.");
   };
@@ -434,13 +439,28 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
       {
           //reset mGrad to temp_grad so that it may be correctly deleted
         mGrad=temp_grad;
-          //std::cout<<"\nALKSJF eps ="<<gradNormRelativeEps;
-          //std::cout<<"\nALKSJ init ="<<initialGradNorm;;
         return true;
       }
     }
       //reset mGrad to temp_grad so that it may be correctly deleted
     mGrad=temp_grad;
+  }
+    //if terminating on bounded vertex movement (a bounding box for the mesh)
+  if(terminationCriterionFlag & BOUNDED_VERTEX_MOVEMENT){
+    MsqVertex* vert = pd.get_vertex_array(err);
+    int num_vert = pd.num_vertices();
+    int i=0;
+      //for each vertex
+    for(i=0;i<num_vert;++i){
+        //if any of the coordinates are greater than eps
+      if( (vert[i][0]>boundedVertexMovementEps) ||
+          (vert[i][1]>boundedVertexMovementEps) ||
+          (vert[i][2]>boundedVertexMovementEps) ){
+          //then return true
+        return true;
+      }
+        //otherwise consider the next vertex
+    }
   }
     //if none of the criteria were satisfied
   return false;
@@ -465,7 +485,8 @@ bool TerminationCriterion::terminate(MeshSet &ms, ObjectiveFunction* obj_ptr,
                                  SUCCESSIVE_IMPROVEMENTS_ABSOLUTE |
                                  SUCCESSIVE_IMPROVEMENTS_RELATIVE |
                                  GRADIENT_NORM_ABSOLUTE |
-                                 GRADIENT_NORM_RELATIVE )){
+                                 GRADIENT_NORM_RELATIVE |
+                                 BOUNDED_VERTEX_MOVEMENT)){
     globalPatchParams.set_patch_type(PatchData::GLOBAL_PATCH, err,0,0);
     
     ms.get_next_patch(global_patch,globalPatchParams,err);
@@ -559,7 +580,7 @@ bool TerminationCriterion::cull_vertices(PatchData &pd,
          //if culling on vertex movement absolute
     case VERTEX_MOVEMENT_ABSOLUTE:
          //if movement was enough, cull
-       if(pd.get_max_vertex_movement_squared(previousVerticesMemento,err)<
+       if(pd.get_max_vertex_movement_squared(previousVerticesMemento,err)<=
           cullingEps){
          cull_bool=true;  
        }
@@ -567,7 +588,7 @@ bool TerminationCriterion::cull_vertices(PatchData &pd,
          //if culling on vertex movement relative
     case VERTEX_MOVEMENT_RELATIVE:
          //if movement was small enough, cull
-       if(pd.get_max_vertex_movement_squared(previousVerticesMemento,err)<
+       if(pd.get_max_vertex_movement_squared(previousVerticesMemento,err)<=
           (cullingEps*
            pd.get_max_vertex_movement_squared(initialVerticesMemento,err))){
          cull_bool=true;  

@@ -78,7 +78,7 @@ namespace Mesquite {
       //!Returns true if termination criterion is met (for the outer loop).
     bool terminate(MeshSet &ms, ObjectiveFunction* obj_ptr, MsqError &err);
       //!Returns true if termination criterion is met (for the inner loop).
-      //!Also supplies the function and gradient values for effeciency.
+      //!  Also supplies the function and gradient values for effeciency.
     bool terminate_with_function_and_gradient(PatchData &pd,
                                               ObjectiveFunction* obj_ptr,
                                               double func_val,
@@ -97,7 +97,7 @@ namespace Mesquite {
  private:
       //Private member funcitons
       //!Currently computes the L_inf norm of an array of Vector3D of
-      //!length len.
+      //! length len.
     double compute_gradient_norm(Vector3D * const vec, int len, MsqError &err);
 
       //PRIVATE DATA MEMBERS
