@@ -35,9 +35,10 @@ ConjugateGradient::ConjugateGradient(ObjectiveFunction* objective)
   this->set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err, 1); MSQ_CHKERR(err);
   objFunc=objective;
   //Michael:: default to global?
-  set_step_size_bound(.001);
+  set_step_size_bound(0);
   set_gradient_bound(.001);
   set_maximum_iteration(6);
+  set_debugging_level(0);
 }  
   
   
@@ -80,7 +81,6 @@ void ConjugateGradient::initialize_mesh_iteration(PatchData &pd, MsqError &err)
 /*!Performs Conjugate gradient minimization on the PatchData, pd.*/
 void ConjugateGradient::optimize_vertex_positions(PatchData &pd, 
                                                 MsqError &err){
- 
   MeshSet *vertex_mover_mesh=get_mesh_set();
   int num_local_vertices = pd.num_vertices();
   if(num_local_vertices>arraySize){
@@ -109,7 +109,6 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
   
     // gets the array of coordinates for the patch  
   MsqVertex* vertices=pd.get_vertex_array(err);
-    //PRINT_INFO("\ny %f\n",vertices[0][1]);
   int ind;
     //Michael cull list
     //Michael hard coded for now... fix this
@@ -123,7 +122,6 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
   if(num_free<1){
     PRINT_INFO("\nEmpty free vertex list in ConjugateGradient\n");
   }
-   
   double f=0;
     //Michael, this isn't equivalent to CUBIT because we only want to check
     //the objective function value of the 'bad' elements
@@ -132,7 +130,6 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
     MSQ_CHKERR(err);
     err.set_msg("Conjugate Gradient passed an invalid intital patch.");
   }
-  MSQ_CHKERR(err);
   if( ! objFunc->compute_gradient(pd, fGrad , err, num_vert) ){
     MSQ_CHKERR(err);
     err.set_msg("Conjugate Gradient not able to get valid gradient on intial patch.");
@@ -157,11 +154,11 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
          && !inner_criterion){
     ++i;
     int k=0;
-      //PRINT_INFO("\nbefore y %f\n",vertices[4][1]);
     alp=get_step(pd,f,k,err);
     j+=k;
-      //PRINT_INFO("\nafter y %f\n",vertices[0][1]);
-      //PRINT_INFO("\nAlp initial, alp = %10.8f",alp);
+    if(conjGradDebug>2){
+      PRINT_INFO("\n  Alp initial, alp = %20.18f",alp);
+    }
     MSQ_CHKERR(err);
     if(alp==0){
       free_iter.reset();
@@ -171,7 +168,12 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
       }
       alp=get_step(pd,f,k,err);
       j+=k;
-        //PRINT_INFO("\nAlp was zero, alp = %f",alp);
+      if(conjGradDebug>1){
+        PRINT_INFO("\n CG's search direction reset.");
+        if(conjGradDebug>2)
+          PRINT_INFO("\n  Alp was zero, alp = %20.18f",alp);
+      }
+      
     }
     if(alp!=0){
       free_iter.reset();
@@ -194,8 +196,9 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
       }
       
       grad_norm=infinity_norm(fNewGrad,num_vert,err);
-        //PRINT_INFO("\nCG's grad_norm = %f, alp = %f",grad_norm,alp);
-      
+      if(conjGradDebug>0){
+        PRINT_INFO("\nCG's VALUE = %f,  iter. = %i,  grad_norm = %f,  alp = %f",f,i,grad_norm,alp);
+      }
       double s11=0;
       double s12=0;
       double s22=0;
@@ -221,14 +224,21 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
         pGrad[m]=(-fNewGrad[m]+(bet*pGrad[m]));
         fGrad[m]=fNewGrad[m];
       }
+      if(conjGradDebug>2){
+        PRINT_INFO(" \nSEARCH DIRECTION INFINITY NORM = %e",
+                   infinity_norm(fNewGrad,num_vert,err));
+      }
+      
     }//end if on alp == 0
       //Update mesh before checking criterion
     pd.update_mesh(err);
     inner_criterion=inner_criterion_met(*vertex_mover_mesh,err);
     MSQ_CHKERR(err);
   }//end while
-    //PRINT_INFO("\n2y %f\n",vertices[0][1]);
-    //PRINT_INFO("\nConjagate Gradient complete i=%i alp=%4.2e grad_norm=%4.2e   ",i,alp,grad_norm);
+  if(conjGradDebug>0){
+    PRINT_INFO("\nConjagate Gradient complete i=%i ",i);
+    PRINT_INFO("\n-  FINAL value = %f, alp=%4.2e grad_norm=%4.2e",f,alp,grad_norm);
+  }
 }
 
 
@@ -289,6 +299,7 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
     while (free_iter.next()) {
       m=free_iter.value();
       vertices[m]=(mCoord[m]+ (alp * pGrad[m]));
+        //std::cout<<"\nFirst gradient vector "<<pGrad[m];
       pd.snap_vertex_to_domain(m,err);
     }      
     feasible=objFunc->evaluate(pd,f,err);      

@@ -51,6 +51,11 @@ namespace Mesquite
       //!Set the patch type
     virtual void set_patch_type(PatchData::PatchType type, MsqError &err, 
 				int patch_param1=0, int patch_param2=0);
+      //!Just for cg debugging purposes
+    void set_debugging_level(int new_lev)
+      {
+        conjGradDebug=new_lev;
+      }
     
   protected:
       
@@ -83,6 +88,8 @@ private:
     Vector3D* mCoord;
     Vector3D* fNewGrad;
     int arraySize;
+      //just for debugging
+    int conjGradDebug;
   };
 
   
