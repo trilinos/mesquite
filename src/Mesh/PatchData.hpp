@@ -101,8 +101,19 @@ namespace Mesquite
     MsqVertex* get_vertex_array(MsqError &err) const;
     //! returns the start of the element array
     MsqMeshEntity* get_element_array(MsqError &err) const;
-    size_t* get_vertex_to_elem_offset(MsqError &err) const;
-    size_t* get_vertex_to_elem_array(MsqError &err) const;
+      //! Returns the start of the vertex->element array.
+      //! For each vertex in the patch, this array holds
+      //! the number of elements the vertex is attached to,
+      //! followed by the indices of those elements.
+    const size_t* get_vertex_to_elem_array(MsqError &err) const;
+      //! Returns the start of the vertex->element offset
+      //! array (v2e_o).  For vertex i, v2e_o[i] is the
+      //! index into the vertex->element array (v2e) where
+      //! vertex i's data begins.  So, v2e[v2e_o[i]] gives
+      //! you the number of elements vertex i is attached
+      //! to, and v2e[v2e_o[i]+1] gives you the index of
+      //! the first element attached to vertex i.
+    const size_t* get_vertex_to_elem_offset(MsqError &err) const;
     
     MsqVertex& vertex_by_index(size_t index);
     MsqMeshEntity& element_by_index(size_t index);
@@ -166,12 +177,12 @@ namespace Mesquite
     void move_vertices(Vector3D dk[], int nb_vtx,
                        double step_size, MsqError &err);
 
-    /*! Moves free vertices and then snaps the free vertices to the domain.
-      \param dk an array of directions, ordered like the vertices in
-      the PatchData.
-      \param nb_vtx number of vertices.
-      \param step_size a scalar that multiplies the vectors given in dk.
-    */
+      //! Moves free vertices and then snaps the free vertices to the domain.
+      /*\param dk an array of directions, ordered like the vertices in
+        the PatchData.
+        \param nb_vtx number of vertices.
+        \param step_size a scalar that multiplies the vectors given in dk.
+      */
     void move_free_vertices_constrained(Vector3D dk[], int nb_vtx,
                                         double step_size, MsqError &err);
     
@@ -559,7 +570,7 @@ namespace Mesquite
 #undef __FUNC__
 #define __FUNC__ "PatchData::get_vertex_to_elem_offset" 
   /*! \fn PatchData::get_vertex_to_elem_offset(MsqError &err) const 
-   */  inline size_t* PatchData::get_vertex_to_elem_offset(MsqError &err) const
+   */  inline const size_t* PatchData::get_vertex_to_elem_offset(MsqError &err) const
   {
     if (vertexToElemOffset==NULL) 
       err.set_msg("\nWARNING: no vertex to element data available.\n");
@@ -570,7 +581,7 @@ namespace Mesquite
 #define __FUNC__ "PatchData::get_vertex_to_elem_array" 
   /*! \fn PatchData::get_vertex_to_elem_array(MsqError &err) const 
    */
-  inline size_t* PatchData::get_vertex_to_elem_array(MsqError &err) const
+  inline const size_t* PatchData::get_vertex_to_elem_array(MsqError &err) const
   {
     if (elemsInVertex == NULL) 
       err.set_msg("\nWARNING: no vertex to element data available.\n");
