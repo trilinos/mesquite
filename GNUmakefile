@@ -55,6 +55,7 @@ TESTNAMES := test_1\
              untangle_test\
              analytical_grad_3D\
              algorithm_test\
+             ActiveSetTest\
 ###             random_test\
 ###             exo_convert
 
