@@ -1760,13 +1760,13 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     coords[1] = vertices[v_i[1]];
     coords[2] = vertices[v_i[2]];
     coords[3] = vertices[v_i[3]];
-    if (!h_fcn_3e(m, gradients, hessians, coords)) return false;
+    if (!h_fcn_3e(m, grad, hess, coords)) return false;
 
     // This is not very efficient, but is one way to select correct gradient
     for (i = 0; i < 4; ++i) {
       for (j = 0; j < nv; ++j) {
         if (vertices + v_i[i] == v[j])
-          g[i] = gradients[i];
+          g[i] = grad[i];
         else
           g[i] = 0.;
       }
@@ -1786,7 +1786,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
               nul_hessian = false;
 
         if (nul_hessian == false)
-          h[ind] = hessians[ind];
+          h[ind] = hess[ind];
         else {
           h[ind] = 0.;
         }
@@ -1799,7 +1799,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     // Hessians for hexes are not done yet.  Need to changes to fcn_3i, and
     // do the accumulation and calculation correctly.
 
-    err.set_msg("Hessian for hexes not done yet!  Talk to Tom.\n"); return false;
+    // err.set_msg("Hessian for hexes not done yet!  Talk to Tom.\n"); return false;
     for (i = 0; i < 8; ++i) {
       grad[i] = 0.0;
 
@@ -1861,15 +1861,13 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 	m += metrics[i];
       }
 
+      l = 0;
       for (i = 0; i < 8; ++i) {
         grad[locs_hex[i][0]] += gradients[4*i+0];
 	grad[locs_hex[i][1]] += gradients[4*i+1];
 	grad[locs_hex[i][2]] += gradients[4*i+2];
 	grad[locs_hex[i][3]] += gradients[4*i+3];
-      }
 
-      l = 0;
-      for (i = 0; i < 8; ++i) {
 	for (j = 0; j < 4; ++j) {
 	  for (k = j; k < 4; ++k) {
 	    r = locs_hex[i][j];
@@ -1968,9 +1966,31 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     // This is not very efficient, but is one way to select correct gradients
     for (i = 0; i < 8; ++i) {
       for (j = 0; j < nv; ++j) {
-	if (vertices + v_i[i] == v[j]) {
-	  g[j] = grad[i];
-	}
+        if (vertices + v_i[i] == v[j])
+          g[i] = grad[i];
+        else
+          g[i] = 0.;
+      }
+    }
+
+    // Makes sure we give null entries to the blocks corresponding to fixed vertices. 
+    for(i=0; i<8; ++i) {
+      for (j=i; j<8; ++j) {
+        
+        // for an entry i,j in the upper right part of a  8*8 matrix, index in a 1D array is
+        ind = 8*i- (i*(i+1)/2) +j; // 8*i - \sum_{n=0}^i n +j 
+
+        bool nul_hessian = true; 
+        for (k=0; k<nv; ++k) 
+          for (l=0; l<nv; ++l) 
+            if ( (vertices + v_i[i] == v[k]) && (vertices + v_i[j] == v[l]) )
+              nul_hessian = false;
+
+        if (nul_hessian == false)
+          h[ind] = hess[ind];
+        else {
+          h[ind] = 0.;
+        }
       }
     }
     break;
