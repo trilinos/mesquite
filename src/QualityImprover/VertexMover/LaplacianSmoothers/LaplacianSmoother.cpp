@@ -10,6 +10,8 @@
 */
 
 #include "LaplacianSmoother.hpp"
+#include "MsqMessage.hpp"
+
 using namespace Mesquite;
 
 

@@ -14,6 +14,7 @@
 #include "ConditionNumberQualityMetric.hpp"
 #include "MsqMessage.hpp"
 #include "MsqTimer.hpp"
+#include "MsqFreeVertexIndexIterator.hpp"
 
 /* TODO  (Michae) Notes
    What do we do about cull so that it isn't Metric
@@ -104,13 +105,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
   MsqVertex* vertices=pd.get_vertex_array(err);
     //PRINT_INFO("\ny %f\n",vertices[0][1]);
   int ind;
-    //This should be done somewhere else
-  for(ind=0;ind<num_local_vertices;ind++){
-    if(ind<num_free_vertices)
-      vertices[ind].remove_soft_fixed_flag();
-    else
-      vertices[ind].set_soft_fixed_flag();
-  }
+    //Flag setting was originally done here
 
     //Doing initial feasiblity check if required by metric
   if(objFunc->get_feasible_constraint()){
@@ -123,6 +118,8 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
     //For example, calls to evaluate_element????
     //cull_list(pd,free_vertex_list,beta, err);
   int n=pd.num_free_vertices(err);
+  MsqFreeVertexIndexIterator free_iter(&pd, err);
+  free_iter.reset();
   if(n<1){
     PRINT_INFO("\nEmpty free vertex list in ConjugateGradient\n");
   }
@@ -134,7 +131,8 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
   f=objFunc->evaluate(pd,err);
   MSQ_CHKERR(err);
   objFunc->compute_gradient(pd, fGrad , err, n);
-  for(ind=0;ind<n;++ind){
+  while(free_iter.next()){
+    ind=free_iter.value();
     pGrad[ind]=(-fGrad[ind]);
   }
   int j=0;
@@ -154,7 +152,9 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
       //PRINT_INFO("\nAlp initial, alp = %10.8f",alp);
     MSQ_CHKERR(err);
     if(alp==0){
-      for (m=0; m<n; m++) {
+      free_iter.reset();
+      while (free_iter.next()) {
+        m=free_iter.value();
         pGrad[m]=(-fGrad[m]);
       }
       alp=get_step(pd,f,k,err);
@@ -163,7 +163,9 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
     }
     if(alp!=0){
         //PRINT_INFO("\nIn Conjugate Gradient i = %i  j = %i",i,j);
-      for(m=0;m<n;m++){
+      free_iter.reset();
+      while (free_iter.next()) {
+        m=free_iter.value();
         vertices[m] += (alp * pGrad[m]);
       }
       f=objFunc->evaluate(pd,err);
@@ -176,8 +178,9 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
       double s11=0;
       double s12=0;
       double s22=0;
-      
-      for (m=0; m<n; ++m) {
+      free_iter.reset();
+      while (free_iter.next()) {
+        m=free_iter.value();
         s11+=fGrad[m]%fGrad[m];
         s12+=fGrad[m]%fNewGrad[m];
         s22+=fNewGrad[m]%fNewGrad[m];
@@ -190,8 +193,11 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
         //double bet = s22/s11;
 
         // Polack-Ribiere        
-        double bet = (s22-s12)/s11;
-      for (m=0; m<n; m++) {
+      double bet = (s22-s12)/s11;
+      
+      free_iter.reset();
+      while (free_iter.next()) {
+        m=free_iter.value();
         pGrad[m]=(-fNewGrad[m]+(bet*pGrad[m]));
         fGrad[m]=fNewGrad[m];
       }
@@ -232,7 +238,7 @@ void ConjugateGradient::cleanup()
 double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
                                    MsqError &err){
   const int n = pd.num_free_vertices(err);
-  
+  MsqFreeVertexIndexIterator free_iter(&pd, err);
     //iterator for several for statements
   int m=0;
   MsqVertex* vertices=pd.get_vertex_array(err);
@@ -249,13 +255,18 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
     //Counter to avoid infinitly scaling alp
   j=0;
     //if we must check feasiblility
-  for(m=0;m<n;++m)
+  free_iter.reset();
+  while (free_iter.next()) {
+    m=free_iter.value();
     mCoord[m]=vertices[m];
+  }
   
   if(objFunc->get_feasible_constraint()){
     while (j<jmax && feasible!=0 && alp>MSQ_MIN){
       ++j;
-      for (m=0;m<n;++m){
+      free_iter.reset();
+      while (free_iter.next()) {
+        m=free_iter.value();
         vertices[m]=(mCoord[m]+ (alp * pGrad[m]));
       }
       
@@ -270,7 +281,9 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
   }//end if need to check feasible
   else{//if no need for feasiblity, just move using orig. alp
     feasible=0;
-    for (m=0;m<n;++m){
+    free_iter.reset();
+    while (free_iter.next()) {
+      m=free_iter.value();
       vertices[m]=(mCoord[m])+ (alp * pGrad[m]);
     }
   }
@@ -288,11 +301,15 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
     while (j<jmax && found == 0){
       ++j;
       alp *= rho;
-      for (m=0;m<n;++m){
+      free_iter.reset();
+      while (free_iter.next()) {
+        m=free_iter.value();
         vertices[m]=mCoord[m]+ (alp*pGrad[m]);
       }
       f=objFunc->evaluate(pd,err);
-      for(m=0;m<n;++m){
+      free_iter.reset();
+      while (free_iter.next()) {
+        m=free_iter.value();
         vertices[m][0]=mCoord[m][0];
         vertices[m][1]=mCoord[m][1];
         vertices[m][2]=mCoord[m][2];
@@ -321,7 +338,9 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
     while(j<jmax){
       ++j;
       alp*=rho;
-      for(m=0;m<n;++m){
+      free_iter.reset();
+      while (free_iter.next()) {
+        m=free_iter.value();
         vertices[m]=mCoord[m] + (alp*pGrad[m]);
       }
       fnew=objFunc->evaluate(pd,err);
@@ -329,7 +348,9 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
         f=fnew;
       }
       else{
-        for(m=0;m<n;++m){
+        free_iter.reset();
+        while (free_iter.next()) {
+          m=free_iter.value();
           vertices[m][0]=mCoord[m][0];
           vertices[m][1]=mCoord[m][1];
           vertices[m][2]=mCoord[m][2];
@@ -338,7 +359,9 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
 	return alp;
       }
     }
-    for(m=0;m<n;++m){
+    free_iter.reset();
+    while (free_iter.next()) {
+      m=free_iter.value();
       vertices[m][0]=mCoord[m][0];
       vertices[m][1]=mCoord[m][1];
       vertices[m][2]=mCoord[m][2];
@@ -353,14 +376,18 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
       ++j;
         //scale alp up (rho must be less than 1)
       alp /= rho;
-      for(m=0;m<n;++m){
+      free_iter.reset();
+      while (free_iter.next()) {
+        m=free_iter.value();
         vertices[m] = mCoord[m] + (alp * pGrad[m]);
       }
       if(objFunc->get_feasible_constraint())
 	feasible=check_feasible(pd,err);
       if ( feasible != 0 ){
          alp *= rho;
-         for(m=0;m<n;++m){
+         free_iter.reset();
+         while (free_iter.next()) {
+           m=free_iter.value();
            vertices[m][0]=mCoord[m][0];
            vertices[m][1]=mCoord[m][1];
            vertices[m][2]=mCoord[m][2];
@@ -376,7 +403,9 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
          alp *= rho;
        }
     }
-    for(m=0;m<n;++m){
+    free_iter.reset();
+    while (free_iter.next()) {
+      m=free_iter.value();
       vertices[m][0]=mCoord[m][0];
       vertices[m][1]=mCoord[m][1];
       vertices[m][2]=mCoord[m][2];
