@@ -374,13 +374,15 @@ double MsqMeshEntity::compute_signed_area(PatchData &pd, MsqError &err) {
   double tem2=0.0;
   Vector3D surface_normal;
   Vector3D cross_vec;
+  size_t element_index=pd.get_element_index(this);
+  
   switch (mType)
   {
     
     case TRIANGLE:
       cross_vec=((verts[vertexIndices[1]]-verts[vertexIndices[0]])*
       (verts[vertexIndices[2]]-verts[vertexIndices[0]]));
-      pd.get_surface_normal(vertexIndices[0],surface_normal,err);
+      pd.get_domain_normal_at_element(element_index,surface_normal,err);
       tem =  (cross_vec.length()/2.0);
         //if normals do not point in same general direction, negate area
       if(cross_vec%surface_normal<0){ 
@@ -392,7 +394,7 @@ double MsqMeshEntity::compute_signed_area(PatchData &pd, MsqError &err) {
     case QUADRILATERAL:
       cross_vec=((verts[vertexIndices[1]]-verts[vertexIndices[0]])*
                  (verts[vertexIndices[3]]-verts[vertexIndices[0]]));
-      pd.get_surface_normal(vertexIndices[0],surface_normal,err);
+      pd.get_domain_normal_at_element(element_index,surface_normal,err);
       tem =  (cross_vec.length()/2.0);
         //if normals do not point in same general direction, negate area
       if(cross_vec%surface_normal<0){ 
@@ -400,7 +402,6 @@ double MsqMeshEntity::compute_signed_area(PatchData &pd, MsqError &err) {
       }
       cross_vec=((verts[vertexIndices[3]]-verts[vertexIndices[2]])*
                  (verts[vertexIndices[1]]-verts[vertexIndices[2]]));
-      pd.get_surface_normal(vertexIndices[2],surface_normal,err);
       tem2 =  (cross_vec.length()/2.0);
         //if normals do not point in same general direction, negate area
       if(cross_vec%surface_normal<0){ 
