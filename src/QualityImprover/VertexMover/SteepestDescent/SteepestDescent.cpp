@@ -9,7 +9,7 @@
 */
 
 #include "SteepestDescent.hpp"
-
+#include "MsqFreeVertexIndexIterator.hpp"
 
 using namespace Mesquite;
 
@@ -71,8 +71,11 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
     MSQ_DEBUG_ACTION(3,{
       std::cout << "\n  o Free vertices ("<< num_free_vertices <<")original coordinates:\n ";
       MsqVertex* toto1 = pd.get_vertex_array(err); MSQ_CHKERR(err);
-      for (int i=0; i<num_free_vertices; ++i)
-        std::cout << "\t\t\t" << toto1[i];
+      MsqFreeVertexIndexIterator ind1(&pd, err); MSQ_CHKERR(err);
+      ind1.reset();
+      while (ind1.next()) {
+        std::cout << "\t\t\t" << toto1[ind1.value()];
+      }
     });
       
       // computes the gradient norm
@@ -124,8 +127,11 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
     MSQ_DEBUG_ACTION(3,{
       std::cout << "  o Free vertices new coordinates: \n";
       MsqVertex* toto1 = pd.get_vertex_array(err); MSQ_CHKERR(err);
-      for (int i=0; i<num_free_vertices; ++i)
-        std::cout << "\t\t\t" << toto1[i];
+      MsqFreeVertexIndexIterator ind(&pd, err); MSQ_CHKERR(err);
+      ind.reset();
+      while (ind.next()) {
+        std::cout << "\t\t\t" << toto1[ind.value()];
+      }
     });
     
     delete pd_previous_coords; // user manages the memento.
