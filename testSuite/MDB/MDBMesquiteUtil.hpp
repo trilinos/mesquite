@@ -28,6 +28,10 @@ int get_region_info(TSTT::cMesh_Handle my_mesh,
                      TSTT::MeshError* error);
 void deinit_mesh(TSTT::Mesh_Handle my_mesh);
 
+void load_and_flag_mesh(TSTT::Mesh_Handle &my_mesh, const char* file_name,
+                        TSTT::MeshError &error);
+
+
 //Functions
 void write_results(TSTT::Mesh_Handle &mh,
                    const char* outfile,
@@ -326,6 +330,34 @@ void set_fixed_boundary_regions(TSTT::Mesh_Handle &mh,
                                    &tval, tagged_verts);
   std::cout << "Number of tagged boundary vertices: " << tagged_verts.size()
             << std::endl;
+}
+
+void load_and_flag_mesh(TSTT::Mesh_Handle &my_mesh, const char* file_name,
+                        TSTT::MeshError &error)
+{
+  init_mesh(&my_mesh, file_name, &error);
+
+  if(error == 0)
+    get_vert_info(my_mesh, &error);
+
+  if(error == 0)
+    get_edge_info(my_mesh, &error);
+    // get face and region info and tag fixed nodes
+  if(error == 0)
+    get_face_info(my_mesh, &error);
+  TSTT::Int num_regions=0;
+  if(error == 0){
+    num_regions=get_region_info(my_mesh, &error);
+    
+      //set the fixed boundary as the nodes of faces, if regions exist
+    if(num_regions>0){
+      set_fixed_boundary_regions(my_mesh, &error);
+    }
+      //else set the fixed boundary as the nodes of edges.
+    else{
+      set_fixed_boundary_faces(my_mesh, &error);
+    }
+  }
 }
 
 
