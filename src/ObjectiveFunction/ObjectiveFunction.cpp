@@ -25,7 +25,7 @@ void ObjectiveFunction::compute_numerical_gradient(Mesquite::PatchData &pd,
                                                    Vector3D *const &grad,
                                                    MsqError &err,
                                                    int array_size) {
-  int n=pd.num_free_vertices();
+  int n=pd.num_free_vertices(err); MSQ_CHKERR(err);
   if(n!=array_size && array_size>0)
     PRINT_ERROR("\nArray size not equal n.\n");
   
