@@ -8,7 +8,13 @@ Member functions of the Mesquite::InstructionQueue class
   \date   2002-05-01
  */
 
+#ifdef USE_STD_INCLUDE
 #include <string>
+#include <iostream>
+#else
+#include <string.h>
+#include <iostream.h>
+#endif
 
 #include "InstructionQueue.hpp"
 #include "MeshSet.hpp"
@@ -18,6 +24,9 @@ Member functions of the Mesquite::InstructionQueue class
 
 using namespace Mesquite;
 
+MSQ_USE(advance);
+MSQ_USE(string);
+MSQ_USE(cout);
 
 InstructionQueue::InstructionQueue() :
   autoQualAssess(true),
@@ -71,13 +80,13 @@ void InstructionQueue::remove_preconditioner(size_t index, MsqError &err)
   }
   
   // position the instruction iterator over the preconditionner to delete
-  std::list<PatchDataUser*>::iterator pos;
+  list<PatchDataUser*>::iterator pos;
   pos = instructions.begin();
-  std::advance(pos, index);
+  advance(pos, index);
 
   if ( (*pos)->get_algorithm_type() == PatchDataUser::QUALITY_IMPROVER ) {
-    std::string name = (*pos)->get_name();
-    std::cout << "  o InstructionQueue: removing QualityImprover " << name <<  ".\n"; 
+    string name = (*pos)->get_name();
+      //cout << "  o InstructionQueue: removing QualityImprover " << name <<  ".\n"; 
     instructions.erase(pos);
     nbPreConditionners--;
    }
@@ -110,9 +119,9 @@ void InstructionQueue::insert_preconditioner(QualityImprover* instr,
   }
 
   // position the instruction iterator
-  std::list<PatchDataUser*>::iterator pos;
+  list<PatchDataUser*>::iterator pos;
   pos = instructions.begin();
-  std::advance(pos, index);
+  advance(pos, index);
   // adds the preconditioner
   instructions.insert(pos,instr);
   nbPreConditionners++;
@@ -150,13 +159,13 @@ void InstructionQueue::remove_quality_assessor(size_t index, MsqError &err)
   }
   
   // position the instruction iterator over the QualityAssessor to delete
-  std::list<PatchDataUser*>::iterator pos;
+  list<PatchDataUser*>::iterator pos;
   pos = instructions.begin();
-  std::advance(pos, index);
+  advance(pos, index);
 
   if ( (*pos)->get_algorithm_type() == PatchDataUser::QUALITY_ASSESSOR ) {
-    std::string name = (*pos)->get_name();
-    std::cout << "  o InstructionQueue: removing QualityAssessor " << name << ".\n"; 
+    string name = (*pos)->get_name();
+      //cout << "  o InstructionQueue: removing QualityAssessor " << name << ".\n"; 
     instructions.erase(pos);
    }
    else
@@ -183,9 +192,9 @@ void InstructionQueue::insert_quality_assessor(QualityAssessor* instr,
   }
 
   // position the instruction iterator
-  std::list<PatchDataUser*>::iterator pos;
+  list<PatchDataUser*>::iterator pos;
   pos = instructions.begin();
-  std::advance(pos, index);
+  advance(pos, index);
   // adds the QualityAssessor
   instructions.insert(pos,instr);
 }
@@ -197,10 +206,10 @@ void InstructionQueue::set_master_quality_improver(QualityImprover* instr,
                                                  MsqError &err)
 {
   if (isMasterSet) {
-    std::cout << "WARNING: InstructionQueue::set_master_quality_improver():\n"
+    cout << "WARNING: InstructionQueue::set_master_quality_improver():\n"
          << "\tOverwriting previously specified master quality improver.\n";
     // if master is already set, clears it and insert the new one at the same position.
-    std::list<PatchDataUser*>::iterator master_pos;
+    list<PatchDataUser*>::iterator master_pos;
     master_pos = this->clear_master(err); MSQ_CHKERR(err);
     instructions.insert(master_pos, instr);
     isMasterSet = true;
@@ -225,11 +234,11 @@ void InstructionQueue::run_instructions(MeshSet &ms, MsqError &err)
   MesquiteInterrupt::catch_interrupt(true);
 #endif
   
-  std::list<PatchDataUser*>::const_iterator instr_iter;
+  list<PatchDataUser*>::const_iterator instr_iter;
   
   // For each instruction in the list
   for (instr_iter = instructions.begin();
-       instr_iter != instructions.end(); ++instr_iter) {
+       !(instr_iter == instructions.end()); ++instr_iter) {
     
     // If instruction uses a global patch, creates one or reuse the existing one.
     if ((*instr_iter)->get_patch_type() == PatchData::GLOBAL_PATCH) {
@@ -281,10 +290,10 @@ void InstructionQueue::clear()
 
 #undef __FUNC__
 #define __FUNC__ "InstructionQueue::clear_master"
-std::list<PatchDataUser*>::iterator InstructionQueue::clear_master(MsqError &err)
+list<PatchDataUser*>::iterator InstructionQueue::clear_master(MsqError &err)
 {
-  std::list<PatchDataUser*>::iterator instr_iter;
-  std::list<PatchDataUser*>::iterator master_pos;
+  list<PatchDataUser*>::iterator instr_iter;
+  list<PatchDataUser*>::iterator master_pos;
   
   if (!isMasterSet) {
     err.set_msg("No master quality improver to clear.");
@@ -293,7 +302,7 @@ std::list<PatchDataUser*>::iterator InstructionQueue::clear_master(MsqError &err
   
     // position the instruction iterator over the master quality improver
   master_pos = instructions.begin();
-  std::advance(master_pos, masterInstrIndex);
+  advance(master_pos, masterInstrIndex);
   
     // erases the master quality improver
   instr_iter = instructions.erase(master_pos);

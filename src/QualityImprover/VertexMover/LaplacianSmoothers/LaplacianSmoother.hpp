@@ -44,12 +44,12 @@ namespace Mesquite
 #undef __FUNC__
 #define __FUNC__ "centroid_smooth_mesh" 
   inline void centroid_smooth_mesh(PatchData &pd, size_t num_adj_vtx,
-                                   std::vector<size_t> adj_vtx_ind,
+                                   vector<size_t> adj_vtx_ind,
                                    size_t free_ind,
                                    size_t dimension, MsqError &err)
   {
     MsqVertex* verts=pd.get_vertex_array(err);
-    std::vector<size_t>::iterator iter;
+    vector<size_t>::iterator iter;
     
     size_t j;
     double scale_val=1.0;

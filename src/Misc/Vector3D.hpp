@@ -14,6 +14,10 @@
 #include <iostream.h>
 #endif
 
+MSQ_USE(ostream);
+MSQ_USE(endl);
+
+
 /*! \file Vector3D.hpp
   \brief Vector object with exactly 3 dimensions.
 
@@ -345,10 +349,10 @@ namespace Mesquite
   }
   
   // output operator
-  inline std::ostream& operator<<(std::ostream &s,
+  inline ostream& operator<<(ostream &s,
                                   const Mesquite::Vector3D &v)
   {
-    return s << v[0] << ' ' << v[1] << ' ' << v[2] << ' ' << std::endl;
+    return s << v[0] << ' ' << v[1] << ' ' << v[2] << ' ' << endl;
   }
   
   // comparison functions

@@ -25,9 +25,8 @@
 
 using namespace Mesquite;
 
-using std::cout;
-using std::endl;
-
+MSQ_USE(cout);
+MSQ_USE(endl);
 
 MsqHessian::MsqHessian() :
   origin_pd(0), mEntries(0), mRowStart(0), mColIndex(0), 
@@ -313,7 +312,7 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
 #undef __FUNC__
 #define __FUNC__ "MsqHessian::get_diagonal_blocks"
 /*! \param diag is an STL vector of size MsqHessian::size() . */
-void MsqHessian::get_diagonal_blocks(std::vector<Matrix3D> &diag,
+void MsqHessian::get_diagonal_blocks(vector<Matrix3D> &diag,
                                      MsqError &/*err*/)
 {
   // make sure we have enough memory, so that no reallocation is needed later.
@@ -465,7 +464,7 @@ void MsqHessian::cg_solver(Vector3D x[], Vector3D b[], MsqError &err)
       }
       break; // Newton goes on with this direction of negative curvature 
     }
-      
+
     alpha = rzm1 / alpha_;
       
     for (i=0; i<mSize; ++i)  x[i] += alpha*mP[i]; // x_{k+1} = x_k + alpha_{k+1} p_{k+1} 

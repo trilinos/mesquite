@@ -15,7 +15,7 @@ template_dir =
 include Makefile.customize
 
 OUTPUT_OPTION = -o $@ # Use the -o option when generating .o files.
-INCLUDE = -I./include -I$(localincludedir) -I./TSTT-interface
+INCLUDE = ${SYSTEM_INCLUDE} -I./include -I$(localincludedir) -I./TSTT-interface
 
 # Add to this in each subdirectory.  It's the list of files
 # that get added to the mesquite library.
@@ -60,7 +60,8 @@ TESTNAMES := test_1\
              wrapper_tests\
              tutorial\
 ###             random_test\
-###             exo_convert
+###             convert\
+###             shape_wrapper_test
 
 # ************ inclusion of all the modules 
 # ************ MakefileVariables.inc  and
@@ -151,6 +152,7 @@ clean mostlyclean:
 veryclean: clean 
 	-rm -f $(locallibdir)/*.a $(locallibdir)/*.so
 	-rm -f $(dependenciesfile)
+	-rm -rf $(localobjdir)/SunWS_cache
 	touch $(dependenciesfile)
 
 distrib: all

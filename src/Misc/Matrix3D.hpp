@@ -43,6 +43,9 @@
 #include "Mesquite.hpp"
 #include "Vector3D.hpp"
 
+MSQ_USE(ostream);
+MSQ_USE(istream);
+
 namespace Mesquite
 {
 
@@ -83,7 +86,7 @@ namespace Mesquite
 #ifdef USE_STD_INCLUDES
       std::istringstream ins(s);
 #else
-      std::istrstream ins(s);
+      istrstream ins(s);
 #endif
       ins>>v_[0];  ins>>v_[1];  ins>>v_[2]; 
       ins>>v_[3];  ins>>v_[4];  ins>>v_[5]; 
@@ -229,7 +232,7 @@ namespace Mesquite
 
   /* ***********  I/O  **************/
 
-  inline std::ostream& operator<<(std::ostream &s, const Matrix3D &A)
+  inline ostream& operator<<(ostream &s, const Matrix3D &A)
   {
     for (size_t i=0; i<3; ++i)
       {
@@ -240,7 +243,7 @@ namespace Mesquite
     return s;
   }
 
-  inline std::istream& operator>>(std::istream &s, Matrix3D &A)
+  inline istream& operator>>(istream &s, Matrix3D &A)
   {
     for (size_t i=0; i<3; i++)
       for (size_t j=0; j<3; j++)

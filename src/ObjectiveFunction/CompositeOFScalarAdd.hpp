@@ -18,6 +18,7 @@ Header file for the Mesquite:: CompositeOFScalarAdd class
 #include "PatchData.hpp"
 #include <list>
 
+MSQ_USE(list);
 
 namespace Mesquite
 {
@@ -33,7 +34,7 @@ namespace Mesquite
      virtual ~CompositeOFScalarAdd();
      virtual bool concrete_evaluate(PatchData &patch, double &fval,
                                     MsqError &err);
-     virtual std::list<QualityMetric*> get_quality_metric_list();
+     virtual list<QualityMetric*> get_quality_metric_list();
      
    protected:
      bool compute_analytical_gradient(PatchData &patch,Vector3D *const &grad,

@@ -19,6 +19,8 @@ functionality is implemented in this file.
 #include "PatchData.hpp"
 
 using namespace Mesquite;
+MSQ_USE(vector);
+
 
 #ifdef __FUNC__
 #undef __FUNC__
@@ -29,7 +31,7 @@ using namespace Mesquite;
 //! this element was retrieved.
 //! The order of the vertices is the canonical order for this
 //! element's type.
-void Mesquite::MsqMeshEntity::get_vertex_indices(std::vector<size_t> &vertices)
+void Mesquite::MsqMeshEntity::get_vertex_indices(vector<size_t> &vertices)
 {
   vertices.clear();
   vertices.reserve(vertex_count());
@@ -47,7 +49,7 @@ void Mesquite::MsqMeshEntity::get_vertex_indices(std::vector<size_t> &vertices)
 //! element's type.
 //! The indices are placed appended to the end of the list.
 //! The list is not cleared before appending this entity's vertices.
-void Mesquite::MsqMeshEntity::append_vertex_indices(std::vector<size_t> &vertex_list)
+void Mesquite::MsqMeshEntity::append_vertex_indices(vector<size_t> &vertex_list)
 {
   vertex_list.insert(vertex_list.end(),
                      vertexIndices,
@@ -84,7 +86,7 @@ void Mesquite::MsqMeshEntity::compute_weighted_jacobian(PatchData &pd,
     // v_v is just an alias for vertexIndices
   size_t (&v_v)[MSQ_MAX_NUM_VERT_PER_ENT] = vertexIndices;
   
-    //   std::vector<size_t> v_v;
+    //   vector<size_t> v_v;
     //   get_vertex_indices(v_v);
   MsqVertex *vertices=pd.get_vertex_array(err);
   switch (mType)
@@ -177,11 +179,11 @@ void Mesquite::MsqMeshEntity::compute_weighted_jacobian(PatchData &pd,
   and element type combination into a given vector of Vector3D.
   \param QualityMetric::EvaluationMode mode Specifies the type of sample
   points being used.
-  \param std::vector<Vecotr3D> &coords A vector of Vector3D passed by
+  \param vector<Vecotr3D> &coords A vector of Vector3D passed by
   reference which is used to store the sample points.
 */
 void Mesquite::MsqMeshEntity::get_sample_points(QualityMetric::ElementEvaluationMode mode,
-                                      std::vector<Vector3D> &coords,
+                                      vector<Vector3D> &coords,
                                       MsqError &err){
   switch (mType)
   {
@@ -460,7 +462,7 @@ double MsqMeshEntity::compute_signed_volume(PatchData &pd, MsqError &err) {
   
 */
 void Mesquite::MsqMeshEntity::get_connected_vertices(size_t vertex_index,
-                                                     std::vector<size_t> &vert_indices,
+                                                     vector<size_t> &vert_indices,
                                                      MsqError &err)
 {
     //i iterates through elem's vertices

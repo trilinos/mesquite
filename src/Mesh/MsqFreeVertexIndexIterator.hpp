@@ -72,7 +72,8 @@ namespace Mesquite
           return false; 
         }
         fixed = iterVertexArray[iterCurrentIndex].is_flag_set(MsqVertex::MSQ_SOFT_FIXED) ||
-          iterVertexArray[iterCurrentIndex].is_flag_set(MsqVertex::MSQ_HARD_FIXED) ;
+        iterVertexArray[iterCurrentIndex].is_flag_set(MsqVertex::MSQ_HARD_FIXED) ;
+          //fixed = !(iterVertexArray[iterCurrentIndex].is_free_vertex());
       }
     return true;
   }

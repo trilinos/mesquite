@@ -13,6 +13,9 @@
 #include <math.h>
 #include "MsqMessage.hpp"
 
+MSQ_USE(string);
+MSQ_USE(list);
+
 using namespace Mesquite;
 
 #undef __FUNC__
@@ -29,7 +32,7 @@ using namespace Mesquite;
   \param func (QAFUNCTION) Wrapper function for qm (e.g. MINIMUM, MAXIMUM,...).
 */
 QualityAssessor::QualityAssessor(QualityMetric* qm, enum QAFunction func,
-                                 std::string name) :
+                                 string name) :
   qualityAssessorName(name)
 {
   MsqError err;
@@ -52,10 +55,10 @@ QualityAssessor::QualityAssessor(QualityMetric* qm, enum QAFunction func,
 #define __FUNC__ "QualityAssessor::~QualityAssessor"
 QualityAssessor::~QualityAssessor()
 {
-  std::list<Assessor*>::iterator pos;
+  list<Assessor*>::iterator pos;
   pos=assessList.begin();
   Assessor* tmp=NULL;
-  while (pos!=assessList.end()){
+  while ( !(pos==assessList.end())){
     tmp=(*pos);
     ++pos;
     delete tmp;
@@ -64,7 +67,7 @@ QualityAssessor::~QualityAssessor()
 
 #undef __FUNC__
 #define __FUNC__ "QualityAssessor::get_QAFunction_name"
-std::string QualityAssessor::get_QAFunction_name(
+string QualityAssessor::get_QAFunction_name(
                               enum QualityAssessor::QAFunction fun)
 {
   switch(fun){
@@ -102,11 +105,11 @@ void QualityAssessor::add_quality_assessment(QualityMetric* qm,
                                              MsqError &/*err*/)
 { 
   int found=0;
-  std::list<Assessor*>::iterator pos;
+  list<Assessor*>::iterator pos;
   pos=assessList.begin();
   Assessor* assess_ptr=NULL;
     //loop over the assessList (list of Assessor of this QA.)
-  while (pos!=assessList.end() && !found){
+  while ( !(pos==assessList.end()) && !found){
     assess_ptr=*pos;
       //if this metric (qm) is already in the list
       //then add func to the bit flag (funcFlagBits)
@@ -177,7 +180,7 @@ void QualityAssessor::set_histogram_range(QualityMetric* qm,
                                           MsqError &/*err*/)
 {
   int found=0;
-  std::list<Assessor*>::iterator pos;
+  list<Assessor*>::iterator pos;
   pos=assessList.begin();
   Assessor* assess_ptr=NULL;
     //loop over the assessList (list of Assessor of this QA.)
@@ -245,7 +248,7 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
   double return_value=0;
   int total_num_elements=0;
   int total_num_vertices=0;
-  std::list<Assessor*>::iterator pos = assessList.begin();
+  list<Assessor*>::iterator pos = assessList.begin();
   int num_elem_based=0;
   int num_metrics=assessList.size();
   Assessor** assessor_array = new Assessor*[num_metrics];

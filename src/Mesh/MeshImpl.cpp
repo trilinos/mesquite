@@ -1,11 +1,25 @@
 #include "MeshImpl.hpp"
 #include "MsqMessage.hpp"
+
+#ifdef USE_STD_INCLUDES
 #include <fstream>
 #include <string>
 #include <iomanip>
+#else
+#include <fstream.h>
+#include <string.h>
+#include <iomanip.h>
+#endif
+
 #ifdef MSQ_USING_EXODUS
 #include "exodusII.h"
 #endif
+
+MSQ_USE(ifstream);
+MSQ_USE(ofstream);
+MSQ_USE(setprecision);
+MSQ_USE(string);
+MSQ_USE(cerr);
 
 namespace Mesquite
 {
@@ -84,10 +98,10 @@ void Mesquite::MeshImpl::read_vtk(const char* in_filename,
                                   Mesquite::MsqError &err)
 {
     // Open the file
-  std::ifstream ifs(in_filename);
+  ifstream ifs(in_filename);
   if (!ifs)
   {
-    std::string err_msg("file ");
+    string err_msg("file ");
     err_msg += in_filename;
     err_msg += " not found";
     err.set_msg(err_msg);
@@ -105,7 +119,7 @@ void Mesquite::MeshImpl::read_vtk(const char* in_filename,
   ifs >> word;
   if (strcmp(word, "POINTS") != 0)
   {
-    std::string err_msg = "MeshImpl::read_vtk: expecting word POINTS, not ";
+    string err_msg = "MeshImpl::read_vtk: expecting word POINTS, not ";
     err_msg += word;
     err_msg += ".";
     err.set_msg(err_msg);
@@ -133,7 +147,7 @@ void Mesquite::MeshImpl::read_vtk(const char* in_filename,
   ifs >> word;
   if (strcmp(word, "CELLS") != 0)
   {
-    std::string err_msg = "MeshImpl::read_vtk: expecting word CELLS, not ";
+    string err_msg = "MeshImpl::read_vtk: expecting word CELLS, not ";
     (err_msg += word) += ".";
     err.set_msg(err_msg);
   }
@@ -154,7 +168,7 @@ void Mesquite::MeshImpl::read_vtk(const char* in_filename,
   ifs >> word;
   if (strcmp(word, "CELL_TYPES") != 0)
   {
-    std::string err_msg = "MeshImpl::read_vtk: expecting word CELL_TYPES, not ";
+    string err_msg = "MeshImpl::read_vtk: expecting word CELL_TYPES, not ";
     (err_msg += word) += ".";
     err.set_msg(err_msg);
     return;
@@ -166,7 +180,7 @@ void Mesquite::MeshImpl::read_vtk(const char* in_filename,
   }
   
     // Store each cell type
-  std::vector<size_t> cell_type;
+  vector<size_t> cell_type;
   cell_type.reserve(elementCount);
   for (i=0; i < elementCount; ++i)
     ifs >> cell_type[i];
@@ -225,7 +239,7 @@ void Mesquite::MeshImpl::read_vtk(const char* in_filename,
       case 12: // Hex 
         if (*cur_entry++ != 8)
         {
-          std::cerr << "MeshImpl::read_vtk: expecting 8 vtx for an Hex.\n";
+          cerr << "MeshImpl::read_vtk: expecting 8 vtx for an Hex.\n";
           return;
         }
         elementArray[i].mType = Mesquite::HEXAHEDRON;
@@ -281,9 +295,9 @@ void Mesquite::MeshImpl::write_vtk(const char* out_filebase,
                                    Mesquite::MsqError &err)
 {
     // Open the file
-  std::string out_filename = out_filebase;
+  string out_filename = out_filebase;
   out_filename += ".vtk";
-  std::ofstream file(out_filename.c_str());
+  ofstream file(out_filename.c_str());
   if (!file)
   {
     err.set_msg("Unable to open file");
@@ -301,9 +315,17 @@ void Mesquite::MeshImpl::write_vtk(const char* out_filebase,
   size_t i;
   for (i = 0; i < vertexCount; i++)
   {
-    file <<std::setprecision(15)<< vertexArray[i].coords[0] << ' '
-         <<std::setprecision(15)<< vertexArray[i].coords[1] << ' '
-         <<std::setprecision(15)<< vertexArray[i].coords[2] << '\n';
+      //MB: Is there a way to use setprecision (or an equivalent)
+      //when use_std_includes is not defined.
+#ifdef USE_STD_INCLUDES   
+    file <<setprecision(15)<< vertexArray[i].coords[0] << ' '
+         <<setprecision(15)<< vertexArray[i].coords[1] << ' '
+         <<setprecision(15)<< vertexArray[i].coords[2] << '\n';
+#else
+    file << vertexArray[i].coords[0] << ' '
+         << vertexArray[i].coords[1] << ' '
+         << vertexArray[i].coords[2] << '\n';
+#endif
   }
   
     // Write out the connectivity table

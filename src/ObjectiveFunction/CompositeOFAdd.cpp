@@ -52,10 +52,10 @@ CompositeOFAdd::~CompositeOFAdd(){
   with the QualityMetric list associated with objFunc2.  The entries
   in this merged list may not be unique.
 */
-std::list<QualityMetric*> CompositeOFAdd::get_quality_metric_list()
+list<QualityMetric*> CompositeOFAdd::get_quality_metric_list()
 {
-  std::list<QualityMetric*> temp_list=objFunc1->get_quality_metric_list();
-  std::list<QualityMetric*> temp_list2=objFunc2->get_quality_metric_list();
+  list<QualityMetric*> temp_list=objFunc1->get_quality_metric_list();
+  list<QualityMetric*> temp_list2=objFunc2->get_quality_metric_list();
   temp_list.merge(temp_list2);
   return temp_list;
     

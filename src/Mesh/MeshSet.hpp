@@ -29,6 +29,9 @@
 #include "PatchDataUser.hpp"
 #include "MeshInterface.hpp"
 
+MSQ_USE(list);
+
+
 namespace Mesquite
 {
   class PatchData;
@@ -64,7 +67,7 @@ namespace Mesquite
       { return mDomain; }
     
       //! returns the list of mesh pointers previously added. 
-    void get_meshes(std::list<Mesquite::Mesh*> &mesh_list) const
+    void get_meshes(list<Mesquite::Mesh*> &mesh_list) const
       { mesh_list = meshSet; }
 
       //! Returns the number of coordinates in the Mesh's
@@ -117,10 +120,10 @@ namespace Mesquite
   private:
     
       //! Meshes in this MeshSet
-    std::list<Mesquite::Mesh*> meshSet;
+    list<Mesquite::Mesh*> meshSet;
       //! Keeps track of which Mesh* we're currently
       //! working with in get_next_patch().
-    std::list<Mesquite::Mesh*>::iterator currentMesh;
+    list<Mesquite::Mesh*>::iterator currentMesh;
       //! Keeps track of where we are in the current mesh's vertex list
     Mesquite::VertexIterator *vertexIterator;
       //! The number of coordinates in this mesh (2D or 3D)

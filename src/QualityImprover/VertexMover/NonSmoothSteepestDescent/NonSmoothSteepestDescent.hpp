@@ -17,6 +17,8 @@
 #include "VertexMover.hpp"
 #include "ObjectiveFunction.hpp"
 #include "MsqFreeVertexIndexIterator.hpp"
+MSQ_USE(cout);
+MSQ_USE(endl);
 
 namespace Mesquite
 {
@@ -1119,7 +1121,7 @@ inline void NonSmoothSteepestDescent::print_active_set(ActiveSet *active_set,
                                                        ,MsqError &err)
 {
     if (active_set==0) err.set_msg("Null ActiveSet \n");
-    if (active_set->num_active == 0) std::cout<< "No active values\n";
+    if (active_set->num_active == 0) cout<< "No active values\n";
     /* print the active set */
     MSQ_DEBUG_ACTION(3,{
       for (int i=0;i<active_set->num_active;i++) {

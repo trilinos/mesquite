@@ -66,19 +66,19 @@ namespace Mesquite
      Vector3D surface_normal;
      pd.get_domain_normal_at_element(e_ind,surface_normal,err);
      Vector3D cross_vec=temp_vec[0]*temp_vec[1];
-       //std::cout<<"\nsurface_normal "<<surface_normal;
-       //std::cout<<"\cross_vec "<<cross_vec;
+       //cout<<"\nsurface_normal "<<surface_normal;
+       //cout<<"\cross_vec "<<cross_vec;
      double temp_var=cross_vec.length();
      if(cross_vec%surface_normal<0.0){
        temp_var*=-1;
      }
      temp_var -= mBeta;
-       //std::cout<<"temp_var == "<<temp_var;
+       //cout<<"temp_var == "<<temp_var;
      fval=0.0;
      if(temp_var<0.0){
         fval=fabs(temp_var)-temp_var;
      }
-       //  std::cout<<"\nfval == "<<fval<<"  e_ind "<<e_ind;
+       //  cout<<"\nfval == "<<fval<<"  e_ind "<<e_ind;
    }
    
    inline void UntangleBetaQualityMetric::untangle_function_3d(Vector3D temp_vec[],double &fval, MsqError &/*err*/)

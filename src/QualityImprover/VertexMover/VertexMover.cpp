@@ -13,10 +13,16 @@
 #include "MeshSet.hpp"
 #include "MsqTimer.hpp"
 #include "MsqMessage.hpp"
-
+#ifdef USE_STD_INCLUDES
 #include <fstream>
 #include <iostream>
+#else
+#include <fstream.h>
+#include <iostream.h>
+#endif
 using namespace Mesquite;
+MSQ_USE(cout);
+MSQ_USE(endl);
 
 VertexMover::VertexMover() :
   QualityImprover()
@@ -38,7 +44,7 @@ VertexMover::VertexMover() :
 double VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
 {
   set_mesh_set(&ms);
-  std::cout << "o Executing VertexMover::loop_over_mesh()\n";
+  cout << "o Executing VertexMover::loop_over_mesh()\n";
   
     // creates a PatchData object at the VertexMover level
     // in order to reduce the number of memory allocations
@@ -78,7 +84,7 @@ double VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
   // can be calculated exactly.
   this->initialize(*patch_data, err); MSQ_CHKERR(err);
 
-  std::cout<<"\n";
+  cout<<"\n";
     //skip booleans set to false if the initial mesh (or patch) satisfies
     //the termination criteria.
   bool inner_skip=false;
@@ -87,8 +93,8 @@ double VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
     
     while ( !stop_met ) {
         //Status bar
-      std::cout<<".";
-      std::cout.flush();
+      cout<<".";
+      cout.flush();
         // Prior to looping over the patches.
         // Probably want to pass the MeshSet.  
       this->initialize_mesh_iteration(*patch_data, err);MSQ_CHKERR(err); 
@@ -142,7 +148,7 @@ double VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
     } 
   }
   
-  std::cout<<"\n";
+  cout<<"\n";
     //call the criteria's cleanup funtions.
   outer_crit->cleanup(ms,err);
   inner_crit->cleanup(ms,err);

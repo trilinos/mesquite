@@ -17,8 +17,12 @@
 
 using  namespace Mesquite;  
 
-using std::cout;
-using std::endl;
+MSQ_USE(cout);
+MSQ_USE(endl);
+MSQ_USE(vector);
+
+//using std::cout;
+//using std::endl;
 
 #undef __FUNC__
 #define __FUNC__ "LPtoPTemplate::LPtoPTemplate"
@@ -88,7 +92,7 @@ bool LPtoPTemplate::concrete_evaluate(PatchData &pd, double &fval,
       }
       
       metric_values[index]=fabs(metric_values[index]);
-      MSQ_DEBUG_ACTION(3,{std::cout<< "      o  Quality metric value for element "
+      MSQ_DEBUG_ACTION(3,{cout<< "      o  Quality metric value for element "
                           << index << "\t: " << metric_values[index] << "\n";});
     }
   }
@@ -239,7 +243,7 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &pd,
         scaling_value/=num_vertices;
     }
     //vector for storing indices of vertex's connected elems
-    std::vector<size_t> vert_on_vert_ind;
+    vector<size_t> vert_on_vert_ind;
     //position in pd's vertex array
     size_t vert_count=0;
     //position in vertex array

@@ -2,15 +2,22 @@
 
 using namespace Mesquite;
 
+MSQ_USE(cerr);
+MSQ_USE(endl);
+
 /* Special handler for the bad_alloc exception thrown by new */ 
 void Mesquite::out_of_store()
 {
-  std::cerr << "MESQUITE ERROR: Operator new failed: out of store.\n";
+  cerr << "MESQUITE ERROR: Operator new failed: out of store.\n";
+#if USE_STD_INCLUDES
   throw std::bad_alloc();
+#else
+  throw bad_alloc();
+#endif  
 }
 
 // Constructors
-MsqError::MsqError(bool e, enum Error_Codes ec, std::string m)
+MsqError::MsqError(bool e, enum Error_Codes ec, string m)
 {
   errorOn = e;
   printError=true;
@@ -19,12 +26,12 @@ MsqError::MsqError(bool e, enum Error_Codes ec, std::string m)
     msg = m;
 }
 
-MsqError::MsqError(Error_Codes ec, std::string m)
+MsqError::MsqError(Error_Codes ec, string m)
 {
   errorOn = true;
   printError=true;
   errorCode = ec;
-  if (m != std::string(""))
+  if (m != string(""))
     msg = m;
 }
 
@@ -36,7 +43,7 @@ should always be passed by reference.
 */
 MsqError::MsqError(const MsqError &A)
 {
-  std::cerr << "WARNING: the MsqError() copy constructor has been used\n"
+  cerr << "WARNING: the MsqError() copy constructor has been used\n"
             << "         MsqError objects should always be passed by reference";
   errorOn = A.errorOn;
   errorCode = A.errorCode;
@@ -46,7 +53,7 @@ MsqError::MsqError(const MsqError &A)
 }
 
 
-void MsqError::set_msg(const std::string &m)
+void MsqError::set_msg(const string &m)
 {
   errorOn = true;
   msg = m;
@@ -80,38 +87,38 @@ void MsqError::handler(int line, const char *func,
   
   if(printError){
     if (msg!="" && errorCode!=MSQ_PRINT_STACK) {
-      std::cerr << "MESQUITE ERROR: " << msg << std::endl;
+      cerr << "MESQUITE ERROR: " << msg << endl;
     }
     switch(errorCode){
       case MSQ_MEM_ERR:
-        std::cerr << "MESQUITE ERROR:  Out of memory. \n";
+        cerr << "MESQUITE ERROR:  Out of memory. \n";
         break;
       case MSQ_NULL_ERR:
-        std::cerr << "MESQUITE ERROR:  Null pointer. \n";
+        cerr << "MESQUITE ERROR:  Null pointer. \n";
         break;
       case MSQ_INIT_ERR:
-        std::cerr << "MESQUITE ERROR:  Data Structure Not Initialized. \n";
+        cerr << "MESQUITE ERROR:  Data Structure Not Initialized. \n";
         break;
       case MSQ_INPUT_ERR:
-        std::cerr << "MESQUITE ERROR:  Incorrect Input \n";
+        cerr << "MESQUITE ERROR:  Incorrect Input \n";
         break;
       case MSQ_FILE_OPEN_ERR:
-        std::cerr << "MESQUITE ERROR:  File open error \n";
+        cerr << "MESQUITE ERROR:  File open error \n";
         break;
       case MSQ_FREE_ERR:
-        std::cerr << "MESQUITE ERROR:  Error freeing memory \n";
+        cerr << "MESQUITE ERROR:  Error freeing memory \n";
         break;
       case MSQ_INVALID_MESH_ERR:
-        std::cerr << "MESQUITE ERROR:  Invalid Mesh; use SMuntangle to create a valid mesh prior to smoothing \n";
+        cerr << "MESQUITE ERROR:  Invalid Mesh; use SMuntangle to create a valid mesh prior to smoothing \n";
         break;
       case MSQ_DIVIDE_BY_ZERO_ERR:
-        std::cerr << "MESQUITE ERROR:  Division by zero \n";
+        cerr << "MESQUITE ERROR:  Division by zero \n";
         break;
       case MSQ_DATA_ERR:
-        std::cerr << "MESQUITE ERROR:  Incorrect data \n";
+        cerr << "MESQUITE ERROR:  Incorrect data \n";
         break;
       case MSQ_NO_PD_STORAGE_MODE:
-        std::cerr << "MESQUITE ERROR: no storage mode set in PatchData object.\n";
+        cerr << "MESQUITE ERROR: no storage mode set in PatchData object.\n";
         break;
       case MSQ_NO_ERROR:
         break;
@@ -119,8 +126,8 @@ void MsqError::handler(int line, const char *func,
         break;
         
     }
-    std::cerr << "MESQUITE ERROR: " << func << "()  line " << line
-              << " in " << dir <<"/"<< file << std::endl;
+    cerr << "MESQUITE ERROR: " << func << "()  line " << line
+              << " in " << dir <<"/"<< file << endl;
   
 #ifdef MESQUITE_PRINT_ERROR_STACK
     errorCode = MSQ_PRINT_STACK; /* set it to print the stack */

@@ -4,8 +4,22 @@
 
 //delete the following includes whenever we move
 //print_timing_diagnostics()
+#ifdef USE_STD_INCLUDES
 #include <iostream>
 #include <iomanip>
+#else
+#include <iostream.h>
+#include <iomanip.h>
+#endif
+
+
+MSQ_USE(vector);
+MSQ_USE(cout);
+MSQ_USE(endl);
+MSQ_USE(setiosflags);
+MSQ_USE(ios);
+MSQ_USE(setw);
+
 // Forward declarations
 static void default_print_info_func(const char* msg);
 static void default_print_warning_func(const char* msg);
@@ -45,21 +59,21 @@ static void default_print_error_func(const char* msg)
   StopWatchCollection.  */
 void Mesquite::Message::print_timing_diagnostics()
 {
-  std::vector<Mesquite::StopWatchCollection::Key> sorted_keys;
+  vector<Mesquite::StopWatchCollection::Key> sorted_keys;
   Mesquite::GlobalStopWatches.get_keys_sorted_by_time(sorted_keys);
   int number_of_keys=sorted_keys.size();
   int i =0;
-  std::cout<<"\nTIME        | NUM. STARTS | TIMER NAME ("<<number_of_keys<<" timers)\n";
+  cout<<"\nTIME        | NUM. STARTS | TIMER NAME ("<<number_of_keys<<" timers)\n";
   for(i=0;i<number_of_keys;++i){
-    std::cout<<std::setiosflags(std::ios::left)
-             <<std::setw(13)
+    cout<<setiosflags(ios::left)
+             <<setw(13)
              <<Mesquite::GlobalStopWatches.total_time(sorted_keys[i])
              <<" "
-             <<std::setw(13)
+             <<setw(13)
              <<Mesquite::GlobalStopWatches.number_of_starts(sorted_keys[i])
              <<" "
              <<Mesquite::GlobalStopWatches.get_string(sorted_keys[i])
-             <<std::endl;
+             <<endl;
   }
 }
 

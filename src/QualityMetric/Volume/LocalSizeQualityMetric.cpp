@@ -16,6 +16,7 @@
 #include "MsqMessage.hpp"
 #include "MsqMeshEntity.hpp"
 using namespace Mesquite;
+MSQ_USE(vector);
 
 #undef __FUNC__
 #define __FUNC__ "LocalSizeQualityMetric::evaluate_node"
@@ -53,7 +54,7 @@ bool LocalSizeQualityMetric::evaluate_vertex(PatchData &pd, MsqVertex* vert,
     //Can we remove this dynamic allocatio?
   double* met_vals = new double[num_elems];
     //vector to hold the other verts which form a corner.
-  std::vector<size_t> other_vertices;
+  vector<size_t> other_vertices;
   other_vertices.reserve(4);
   double total_val=0.0;
   size_t i=0;

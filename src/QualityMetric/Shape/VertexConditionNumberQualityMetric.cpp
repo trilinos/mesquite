@@ -13,6 +13,7 @@
 #include "QualityMetric.hpp"
 
 using namespace Mesquite;
+MSQ_USE(vector);
 
 #undef __FUNC__
 #define __FUNC__ "VertexConditionNumberQualityMetric::VertexConditionNumberQualityMetric"
@@ -55,7 +56,7 @@ bool VertexConditionNumberQualityMetric::evaluate_vertex(PatchData &pd,
     //Can we remove this dynamic allocatio?
   double* met_vals = new double[num_elems];
     //vector to hold the other verts which form a corner.
-  std::vector<size_t> other_vertices;
+  vector<size_t> other_vertices;
   other_vertices.reserve(4);
   size_t i=0;
     //only 3 temp_vec will be sent to cond-num calculator, but the

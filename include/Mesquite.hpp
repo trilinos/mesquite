@@ -5,13 +5,11 @@
 #pragma warning ( 4 : 4786)
 #endif
 
-
+#include <stdexcept>
 #ifdef USE_STD_INCLUDES
 #include <iostream>
-#include <stdexcept>
 #else
 #include <iostream.h>
-#include <stdexcept.h>
 #endif
 
 #ifdef USE_C_PREFIX_INCLUDES
@@ -39,7 +37,12 @@
 */
 namespace Mesquite
 {
-   
+//#ifndef MESQUITE_PRINT_ERROR_STACK
+//#define MESQUITE_PRINT_ERROR_STACK
+//#endif
+#ifndef ENABLE_INTERRUPT
+#define ENABLE_INTERRUPT
+#endif  
   typedef int StatusCode;
 
   typedef double real;
@@ -121,9 +124,17 @@ const int MSQ_INT_MIN = -2147483647;
   const double MSQ_MAX = DBL_MAX;
   const double MSQ_MAX_CAP = 1.e6;
 }
+
 //#ifndef USE_FUNCTION_TIMERS
 //#define USE_FUNCTION_TIMERS
 //#endif
+
+#ifdef USE_STD_INCLUDES
+  #define MSQ_USE(A) using std::A 
+#else
+  #define MSQ_USE(A) //empty statement
+#endif
+
 
 #define MSQ_DEBUG
 #define MSQ_DEBUG4 // notify of all constructor / copy / destructor uses

@@ -23,6 +23,8 @@
 #include "PatchData.hpp"
 #include "MesquiteError.hpp"
 
+MSQ_USE(string);
+
 namespace Mesquite
 {
 
@@ -160,7 +162,7 @@ namespace Mesquite
     //! This is the "run" function of PatchDataUser. It can do anything really. 
     virtual double loop_over_mesh(MeshSet &ms, MsqError &err) = 0;
     //! Returns the algorithm name
-    virtual std::string get_name() = 0;
+    virtual string get_name() = 0;
     enum AlgorithmType { QUALITY_IMPROVER, QUALITY_ASSESSOR};
     //! Return the algorithm type (to avoid RTTI use). 
     virtual enum AlgorithmType get_algorithm_type() = 0;

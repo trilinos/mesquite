@@ -17,6 +17,8 @@
 #include "MsqMeshEntity.hpp"
 #include "PatchData.hpp"
 using namespace Mesquite;
+MSQ_USE(vector);
+MSQ_USE(cout);
 
 
 #undef __FUNC__
@@ -34,7 +36,7 @@ bool AspectRatioGammaQualityMetric::evaluate_element(PatchData &pd,
   bool return_val = true;
   
     //get element's nodes
-  std::vector<Vector3D> vert;
+  vector<Vector3D> vert;
   size_t elem_index = pd.get_element_index(element);
   pd.get_element_vertex_coordinates(elem_index, vert, err);
   
@@ -93,7 +95,7 @@ bool AspectRatioGammaQualityMetric::evaluate_element(PatchData &pd,
       break;
     default:
       fval=MSQ_MAX_CAP;
-      std::cout<<"\nEntity type: "<<entity<<" not valid for Aspect Ratio Gamma\n";
+      cout<<"\nEntity type: "<<entity<<" not valid for Aspect Ratio Gamma\n";
       return_val = false;
       break;
   };

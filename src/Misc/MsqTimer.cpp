@@ -111,7 +111,7 @@ double Mesquite::StopWatch::total_time() const
 }
 
 Mesquite::StopWatchCollection::Key Mesquite::StopWatchCollection::add(
-  const std::string &name,
+  const string &name,
   bool fail_if_exists)
 {
     // Don't allow empty name
@@ -137,7 +137,7 @@ Mesquite::StopWatchCollection::Key Mesquite::StopWatchCollection::add(
       // If not, create a new one
     if (i == mEntries.size())
     {
-      mEntries.push_back(std::pair<std::string, StopWatch>(name, StopWatch()));
+      mEntries.push_back(pair<string, StopWatch>(name, StopWatch()));
     }
     key = i+1;
   }
@@ -150,7 +150,7 @@ Mesquite::StopWatchCollection::Key Mesquite::StopWatchCollection::add(
 
 
 Mesquite::StopWatchCollection::Key Mesquite::StopWatchCollection::get_key(
-  const std::string &name) const
+  const string &name) const
 {
   Key key = 0;
   
@@ -241,7 +241,7 @@ int Mesquite::StopWatchCollection::number_of_starts(
   key associated with the smallest total_time StopWatch is in the last
   position of the vector.*/
 void Mesquite::StopWatchCollection::get_keys_sorted_by_time(
-  std::vector<Key> &sorted_keys)
+  vector<Key> &sorted_keys)
 {
   int num_watches=mEntries.size();
   int *sorted_indices=new int[num_watches];

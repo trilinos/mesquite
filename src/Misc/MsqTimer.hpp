@@ -8,6 +8,11 @@
 #include <vector>
 #include <utility>
 #include <string>
+#include "Mesquite.hpp"
+
+MSQ_USE(string);
+MSQ_USE(vector);
+MSQ_USE(pair);
 
 namespace Mesquite
 {
@@ -87,58 +92,58 @@ namespace Mesquite
       // collection, the Key of the existing StopWatch is returned
       // if 'fail_if_exists' is false, or zero is returned if
       // 'fail_if_exists' is true.
-    Key add(const std::string &name, bool fail_if_exists = true);
+    Key add(const string &name, bool fail_if_exists = true);
     
       // Gets the Key for an existing stopwatch.  If a stopwatch
       // with the given name does not exist, function returns zero.
-    Key get_key(const std::string &name) const;
+    Key get_key(const string &name) const;
 
       //!Gets the string associated with a key
-    std::string get_string(const Key key){
+    string get_string(const Key key){
         return mEntries[key-1].first;}
       //!Gets the string associated with a key      
-    void get_string(const Key key, std::string &new_string){
+    void get_string(const Key key, string &new_string){
       new_string=mEntries[key-1].first;}
     
       // Remove a specific stopwatch.
     void remove(const Key key);
-    void remove(const std::string &name)
+    void remove(const string &name)
       { remove(get_key(name)); }
     
       // start a specific stopwatch
     void start(const Key key);
-    void start(const std::string &name)
+    void start(const string &name)
       { start(get_key(name)); }
     
       // stop a specific stopwatch
     void stop(const Key key);
-    void stop(const std::string &name)
+    void stop(const string &name)
       { stop(get_key(name)); }
     
       // reset a specific stopwatch
     void reset(const Key key);
-    void reset(const std::string &name)
+    void reset(const string &name)
       { reset(get_key(name)); }
     
       // Get the total time for a specific stopwatch, zero if
       // the stopwatch doesn't exist.
     double total_time(const Key key) const;
-    double total_time(const std::string &name) const
+    double total_time(const string &name) const
       { return total_time(get_key(name)); }
       // Get the number of times a StopWatch was started.
     int number_of_starts(const Key key) const;
-    int number_of_starts(const std::string &name) const
+    int number_of_starts(const string &name) const
       { return number_of_starts(get_key(name));}
     
       //Gets the number of stop watches in the collection
     int number_of_stop_watches(){
       return mEntries.size();}
 
-    void get_keys_sorted_by_time(std::vector<Key> &sorted_keys);
+    void get_keys_sorted_by_time(vector<Key> &sorted_keys);
     
     
   private:
-    std::vector< std::pair<std::string, StopWatch> > mEntries;
+    vector< pair<string, StopWatch> > mEntries;
   };
   
     // A stopWatchCollection available anywhere

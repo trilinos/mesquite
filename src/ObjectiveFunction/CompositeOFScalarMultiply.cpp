@@ -70,7 +70,7 @@ bool CompositeOFScalarMultiply::concrete_evaluate(PatchData &patch,
 #undef __FUNC__
 #define __FUNC__ "CompositeOFScalarMultiply::get_quality_metric_list()"
 //!Returns the QualityMetric list assossiated with objFunc.
-std::list<QualityMetric*> CompositeOFScalarMultiply::get_quality_metric_list(){
+list<QualityMetric*> CompositeOFScalarMultiply::get_quality_metric_list(){
   return objFunc->get_quality_metric_list();
 }
 	

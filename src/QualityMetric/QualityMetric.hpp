@@ -25,6 +25,7 @@ Header file for the Mesquite::QualityMetric class
 #include "MesquiteError.hpp"
 #include "Vector3D.hpp"
 #include "Matrix3D.hpp"
+MSQ_USE(string);
 
 namespace Mesquite
 {
@@ -153,11 +154,11 @@ namespace Mesquite
         { return feasible; }
      
        //!Sets the name of this metric
-     inline void set_name(std::string st)
+     inline void set_name(string st)
         { metricName=st; }
      
        //!Returns the name of this metric (as a string).
-     inline std::string get_name()
+     inline string get_name()
         { return metricName; }
      
        //!Evaluate the metric for a vertex
@@ -349,7 +350,7 @@ namespace Mesquite
      // TODO : pass this private and write protected access fucntions.
      AveragingMethod avgMethod;
      int feasible;
-     std::string metricName;
+     string metricName;
   private:
      ElementEvaluationMode evalMode;
      MetricType mType;

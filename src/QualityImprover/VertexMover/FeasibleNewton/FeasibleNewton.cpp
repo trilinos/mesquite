@@ -28,6 +28,8 @@
 
 using namespace Mesquite;
 
+MSQ_USE(cout);
+MSQ_USE(endl);
 
 #undef __FUNC__
 #define __FUNC__ "FeasibleNewton::FeasibleNewton" 
@@ -95,12 +97,13 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   //     (a) if not defined at current point, stop and throw an error
   fn_bool = objFunc->compute_hessian(pd, mHessian, grad,
                              original_value, err); MSQ_CHKERR(err);
+    //PRINT_INFO("\n--Objective Function value %f\n",original_value);
   if (!fn_bool) {
     err.set_msg("invalid patch for hessian calculation");
     return; }
 
   // 3.  Calculate the norm of the gradient for the patch
-  MSQ_DEBUG_ACTION(3,{std::cout<< "  o  gradient norm: " << length(grad, nv) << std::endl;});
+  MSQ_DEBUG_ACTION(3,{cout<< "  o  gradient norm: " << length(grad, nv) << endl;});
   
   // does the Feasible Newton iteration until stopping is required.
   // Terminate when inner termination criterion signals.
@@ -108,18 +111,16 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   /* Computes the value of the stopping criterion*/
   bool inner_criterion=false;
   TerminationCriterion* term_crit=get_inner_termination_criterion();
-
   while ( !inner_criterion ) {
-    
     // Prints out free vertices coordinates. 
     MSQ_DEBUG_ACTION(3,{
-      std::cout << "\n  o Free vertices ("<< pd.num_free_vertices(err)
+      cout << "\n  o Free vertices ("<< pd.num_free_vertices(err)
                 <<")original coordinates:\n ";
       MsqVertex* toto1 = pd.get_vertex_array(err); MSQ_CHKERR(err);
       MsqFreeVertexIndexIterator ind1(&pd, err); MSQ_CHKERR(err);
       ind1.reset();
       while (ind1.next()) {
-        std::cout << "\t\t\t" << toto1[ind1.value()];
+        cout << "\t\t\t" << toto1[ind1.value()];
       }
     });
       
@@ -225,12 +226,12 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
 
     // Prints out free vertices coordinates. 
     MSQ_DEBUG_ACTION(3,{
-      std::cout << "  o Free vertices new coordinates: \n";
+      cout << "  o Free vertices new coordinates: \n";
       MsqVertex* toto1 = pd.get_vertex_array(err); MSQ_CHKERR(err);
       MsqFreeVertexIndexIterator ind(&pd, err); MSQ_CHKERR(err);
       ind.reset();
       while (ind.next()) {
-        std::cout << "\t\t\t" << toto1[ind.value()];
+        cout << "\t\t\t" << toto1[ind.value()];
       }
     });
 
@@ -241,10 +242,11 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
     // if more Newton steps ahead, recomputes the Hessian.
     if (!inner_criterion) {
       objFunc->compute_hessian(pd, mHessian, grad, original_value, err);
+        //PRINT_INFO("  Objective Function value %f\n",original_value);
       MSQ_CHKERR(err);
     }
   }
-
+  PRINT_INFO("FINISHED\n");
   delete[] grad;
   delete[] d;
   FUNCTION_TIMER_END();  
@@ -257,7 +259,7 @@ void FeasibleNewton::terminate_mesh_iteration(PatchData &/*pd*/, MsqError &/*err
 {
 
     //Michael::  Should the vertices memento be delete here???
-  //  std::cout << "- Executing FeasibleNewton::iteration_complete()\n";
+  //  cout << "- Executing FeasibleNewton::iteration_complete()\n";
 }
   
 #undef __FUNC__

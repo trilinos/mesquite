@@ -16,9 +16,15 @@
 #include <stdarg.h>
 #endif
 
+#ifndef PRINT_INFO
 #define PRINT_INFO Mesquite::Message::print_info
+#endif
+#ifndef PRINT_WARNING
 #define PRINT_WARNING Mesquite::Message::print_warning
+#endif
+#ifndef PRINT_ERROR
 #define PRINT_ERROR Mesquite::Message::print_error
+#endif
 
 #define PRINT_TIMING_DIAGNOSTICS Mesquite::Message::print_timing_diagnostics
 

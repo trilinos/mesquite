@@ -15,10 +15,11 @@
 #include "PatchData.hpp"
 
 using namespace Mesquite;
-using std::cout;
-using std::endl;
-using std::cerr;
 
+MSQ_USE(cout);
+MSQ_USE(endl);
+MSQ_USE(cerr);
+MSQ_USE(vector);
 
 #undef __FUNC__
 #define __FUNC__ "QualityMetric::compute_element_hessian"
@@ -62,8 +63,8 @@ bool QualityMetric::compute_element_hessian(PatchData &pd,
 {
   // first, checks that free vertices order is consistent with the
   // element order. 
-  std::vector<size_t> elem_vtx_indices;
-  std::vector<size_t>::const_iterator v;
+  vector<size_t> elem_vtx_indices;
+  vector<size_t>::const_iterator v;
   el->get_vertex_indices(elem_vtx_indices);
   int i;
   v=elem_vtx_indices.begin();
@@ -195,19 +196,19 @@ bool QualityMetric::compute_element_gradient_expanded(PatchData &pd,
                                  num_free_vtx, metric_value, err);
   MSQ_CHKERR(err);
 
-  std::vector<size_t> gv_i;
+  vector<size_t> gv_i;
   gv_i.reserve(num_free_vtx);
   i=0;
   for (i=0; i<num_free_vtx; ++i) {
     gv_i.push_back( pd.get_vertex_index(free_vtces[i]) );
   }
      
-  std::vector<size_t> ev_i;
+  vector<size_t> ev_i;
   el->get_vertex_indices(ev_i);
 
   bool inc;
-  std::vector<size_t>::iterator ev;
-  std::vector<size_t>::iterator gv;
+  vector<size_t>::iterator ev;
+  vector<size_t>::iterator gv;
   for (ev=ev_i.begin(), e=0; ev!=ev_i.end(); ++ev, ++e) {
     inc = false; g=0;
     gv = gv_i.begin();
@@ -334,7 +335,7 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
   short nve = element->vertex_count();
   Vector3D* grad_vec1 = new Vector3D[nve];
   Vector3D fd;
-  std::vector<size_t> ev_i;
+  vector<size_t> ev_i;
   element->get_vertex_indices(ev_i);
   short w, v, i, j, sum_w, mat_index, k;
 

@@ -12,6 +12,9 @@
 #include "ShapeQualityMetric.hpp"
 #include "QualityMetric.hpp"
 
+MSQ_USE(vector);
+
+
 using namespace Mesquite;
 
 #undef __FUNC__
@@ -78,10 +81,10 @@ bool GeneralizedConditionNumberQualityMetric::evaluate_element(PatchData &pd,
 {
   int num_sample_points;
   bool return_flag;
-  std::vector<Vector3D> sample_points;
+  vector<Vector3D> sample_points;
   ElementEvaluationMode eval_mode = get_element_evaluation_mode();
   element->get_sample_points(eval_mode,sample_points,err);
-  std::vector<Vector3D>::iterator iter=sample_points.begin();
+  vector<Vector3D>::iterator iter=sample_points.begin();
     // loop over sample points
   Vector3D jacobian_vectors[3];
   short num_jacobian_vectors;
@@ -126,7 +129,7 @@ bool GeneralizedConditionNumberQualityMetric::evaluate_vertex(PatchData &/*pd*/,
     /*
   fval=0.0;
   size_t this_vert = pd.get_vertex_index(vert);
-  std::vector<size_t> adj_elems;
+  vector<size_t> adj_elems;
   pd.get_vertex_element_indices(this_vert, adg_elems, err);
   double num_elems = adj_elems.size();
   double *metric_values=new double[ num_elems ];

@@ -48,12 +48,16 @@ namespace Mesquite
        MsqError err;
        set_metric_type(ELEMENT_BASED);
        set_element_evaluation_mode(ELEMENT_VERTICES, err); MSQ_CHKERR(err);
-       set_negate_flag(1);
+
        set_gradient_type(ANALYTICAL_GRADIENT);
        set_hessian_type(ANALYTICAL_HESSIAN);
        avgMethod=QualityMetric::LINEAR;
        feasible=1;
        set_name("Mean Ratio");
+       
+         //Note:  the following are redundant since set_metric_power is called
+       set_negate_flag(1);
+
        a2Con =  1.0 / 2.0;
        b2Con =  1.0;
        c2Con = -1.0;
@@ -61,7 +65,8 @@ namespace Mesquite
        a3Con =  1.0 / 3.0;
        b3Con =  1.0;
        c3Con = -2.0 / 3.0;
-
+         //the above are redundant since set_metric_power is called
+       
        set_metric_power(pow_dbl);
       }
 

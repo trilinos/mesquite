@@ -21,6 +21,7 @@ Header file for the Mesquite::ObjectiveFunction class
 #include "QualityMetric.hpp"
 #include "PatchData.hpp"
 
+MSQ_USE(list);
 
 namespace Mesquite
 {
@@ -115,9 +116,9 @@ namespace Mesquite
       /*! 
         returns a list of all associated metrics;
       */
-    virtual std::list<QualityMetric*> get_quality_metric_list()
+    virtual list<QualityMetric*> get_quality_metric_list()
        {
-         std::list<QualityMetric*> temp_list;
+         list<QualityMetric*> temp_list;
          temp_list.push_front(qMetric);
          return temp_list;
        }

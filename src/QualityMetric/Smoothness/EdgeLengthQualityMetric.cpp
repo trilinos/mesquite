@@ -16,6 +16,7 @@
 #include "MsqMessage.hpp"
 using namespace Mesquite;
 
+MSQ_USE(vector);
 
 #undef __FUNC__
 #define __FUNC__ "EdgeLengthQualityMetric::evaluate_node"
@@ -26,7 +27,7 @@ bool EdgeLengthQualityMetric::evaluate_vertex(PatchData &pd, MsqVertex* vert,
   fval=0.0;
   size_t this_vert = pd.get_vertex_index(vert);
   size_t other_vert;
-  std::vector<size_t> adj_verts;
+  vector<size_t> adj_verts;
   Vector3D edg;
   pd.get_adjacent_vertex_indices(this_vert,adj_verts,err);
   int num_sample_points=adj_verts.size();

@@ -65,7 +65,7 @@ bool CompositeOFScalarAdd::concrete_evaluate(PatchData &patch, double &fval,
 #undef __FUNC__
 #define __FUNC__ "CompositeOFScalarAdd::get_quality_metric_list()"
 //!Returns the QualityMetric list assossiated with objFunc.
-std::list<QualityMetric*> CompositeOFScalarAdd::get_quality_metric_list(){
+list<QualityMetric*> CompositeOFScalarAdd::get_quality_metric_list(){
   return objFunc->get_quality_metric_list();
 }
 

@@ -13,6 +13,7 @@
 #include "QualityMetric.hpp"
 #include "MsqMessage.hpp"
 using namespace Mesquite;
+MSQ_USE(vector);
 
 #undef __FUNC__
 #define __FUNC__ "ASMQualityMetric::ASMQualityMetric"
@@ -35,7 +36,7 @@ bool ASMQualityMetric::evaluate_element(PatchData &pd,
 {
   double temp_double;
   size_t elem_ind=pd.get_element_index(element);
-  std::vector<size_t> adj_elems;
+  vector<size_t> adj_elems;
  
   MsqMeshEntity *elems = pd.get_element_array(err);
   switch(element->get_element_type()){

@@ -18,8 +18,8 @@
 #include "MsqTimer.hpp"
 
 using namespace Mesquite;
-using std::cout;
-using std::endl;
+MSQ_USE(cout);
+MSQ_USE(endl);
 
 #undef __FUNC__
 #define __FUNC__ "MeanRatioQualityMetric::evaluate_element" 

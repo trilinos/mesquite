@@ -16,8 +16,8 @@
 
 using namespace Mesquite;
 
-using std::cout;
-using std::endl;
+//using cout;
+//using endl;
 
 #undef __FUNC__
 #define __FUNC__ "NonSmoothSteepestDescent::NonSmoothSteepestDescent" 
@@ -45,7 +45,7 @@ NonSmoothSteepestDescent::NonSmoothSteepestDescent(ObjectiveFunction* of)
   mActive = (ActiveSet *)malloc(sizeof(ActiveSet));
   testActive = (ActiveSet *)malloc(sizeof(ActiveSet));
   originalActive = (ActiveSet *)malloc(sizeof(ActiveSet));
-  std::cout << "- Executed NonSmoothSteepestDescent::NonSmoothSteepestDescent()\n";
+  cout << "- Executed NonSmoothSteepestDescent::NonSmoothSteepestDescent()\n";
 }  
   
   
@@ -60,7 +60,7 @@ void NonSmoothSteepestDescent::initialize(PatchData &/*pd*/, MsqError &err)
   //  activeEpsilon = .000000003;
   minAcceptableImprovement = 1e-6;
   minStepSize = 1e-6;
-  std::cout << "- Executed NonSmoothSteepestDescent::initialize()\n";
+  cout << "- Executed NonSmoothSteepestDescent::initialize()\n";
 }
 
 #undef __FUNC__
@@ -76,7 +76,7 @@ void NonSmoothSteepestDescent::optimize_vertex_positions(PatchData &pd,
 {
   FUNCTION_TIMER_START("NonSmoothSteepestDescent");
 
-  //  std::cout << "- Executing NonSmoothSteepestDescent::optimize_node_positions()\n";
+  //  cout << "- Executing NonSmoothSteepestDescent::optimize_node_positions()\n";
   /* perform the min max smoothing algorithm */
   MSQ_DEBUG_PRINT(2,"\nInitializing the patch iteration\n");
 
@@ -84,6 +84,7 @@ void NonSmoothSteepestDescent::optimize_vertex_positions(PatchData &pd,
   MSQ_DEBUG_ACTION(3,{fprintf(stdout,"Number of Vertices: %d\n",numVertices);});
   numElements = pd.num_elements();
   MSQ_DEBUG_ACTION(3,{fprintf(stdout,"Number of Elements: %d\n",numElements);});
+    //Michael: Note: is this a reliable way to get the dimension?
   mDimension = get_mesh_set()->space_dim();
   MSQ_DEBUG_ACTION(3,{fprintf(stdout,"Spatial Dimension: %d\n",mDimension);});
 
@@ -106,7 +107,7 @@ void NonSmoothSteepestDescent::optimize_vertex_positions(PatchData &pd,
 
   mConnectivity = pd.get_element_array(err); MSQ_CHKERR(err);
   MSQ_DEBUG_ACTION(3,{
-    std::vector<size_t> indices;
+    vector<size_t> indices;
     for (int i99=0;i99<numElements;i99++) {
       mConnectivity[i99].get_vertex_indices(indices);
       fprintf(stdout,"connectivity: %d %d %d\n",indices[0],
@@ -157,7 +158,7 @@ void NonSmoothSteepestDescent::terminate_mesh_iteration(PatchData &/*pd*/,
 #define __FUNC__ "NonSmoothSteepestDescent::cleanup" 
 void NonSmoothSteepestDescent::cleanup()
 {
-  std::cout << "- Executing NonSmoothSteepestDescent::cleanup()\n";
+  cout << "- Executing NonSmoothSteepestDescent::cleanup()\n";
   int i;
   for (i=0;i<150;i++) {
     free(mGradient[i]);
@@ -176,7 +177,7 @@ void NonSmoothSteepestDescent::cleanup()
   free(mActive);
   free(testActive);
   free(originalActive);
-  std::cout << "- Done with NonSmoothSteepestDescent::cleanup()\n";
+  cout << "- Done with NonSmoothSteepestDescent::cleanup()\n";
 }
 
 

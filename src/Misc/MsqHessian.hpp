@@ -33,9 +33,15 @@
 #else
 #include <assert.h>
 #endif
-
+#ifdef USE_STD_INCLUDES
 #include <iostream>
+#else
+#include <iostream.h>
+#endif
+
  
+MSQ_USE(vector);
+MSQ_USE(ostream);
 
 namespace Mesquite
 {
@@ -80,7 +86,7 @@ namespace Mesquite
       inline void zero_out();
       size_t size() {return mSize;}
       //! returns the diagonal blocks, memory must be allocated before call.
-      void get_diagonal_blocks(std::vector<Matrix3D> &diag, MsqError &err);
+      void get_diagonal_blocks(vector<Matrix3D> &diag, MsqError &err);
       Matrix3D* get_block(size_t i, size_t j);
       inline void accumulate_entries(PatchData &pd, const size_t &elem_index,
 				     Matrix3D* const &mat3d_array, MsqError &err);
@@ -93,7 +99,7 @@ namespace Mesquite
 		       const MsqHessian &H, const Vector3D x[], size_t size_x,
 		       const Vector3D y[], size_t size_y, MsqError &err);
       friend class ObjectiveFunction;
-      friend std::ostream& operator<<(std::ostream &s, const MsqHessian &h);
+      friend ostream& operator<<(ostream &s, const MsqHessian &h);
     };
 
 
@@ -273,7 +279,7 @@ namespace Mesquite
   /* ------------------ I/O ----------------- */
 
   //! Prints out the MsqHessian blocks.
-  inline std::ostream& operator<<(std::ostream &s, const MsqHessian &h)
+  inline ostream& operator<<(ostream &s, const MsqHessian &h)
     {
       size_t i,j;
       s << "MsqHessian of size: " << h.mSize <<"x"<< h.mSize << "\n";

@@ -24,6 +24,9 @@ using namespace Mesquite;
 
 #include "MesquiteInterrupt.hpp"
 
+MSQ_USE(cout);
+MSQ_USE(endl);
+
 #undef __FUNC__
 #define  __FUNC__ "TerminationCriterion::TerminationCriterion"
 /*!Constructor initializes all of the data members which are not
@@ -466,7 +469,7 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
     double grad_L2_norm=10e6;
     if (terminationCriterionFlag & (GRADIENT_L2_NORM_ABSOLUTE | GRADIENT_L2_NORM_RELATIVE)) {
       grad_L2_norm = length(mGrad, num_vertices); // get the L2 norm
-      MSQ_DEBUG_ACTION(1, {std::cout << "  o TermCrit -- gradient L2 norm: " << grad_L2_norm << std::endl;});
+      MSQ_DEBUG_ACTION(1, {cout << "  o TermCrit -- gradient L2 norm: " << grad_L2_norm << endl;});
     }
     double grad_inf_norm=10e6;
     if (terminationCriterionFlag & (GRADIENT_INF_NORM_ABSOLUTE | GRADIENT_INF_NORM_RELATIVE)) {
@@ -631,7 +634,7 @@ bool TerminationCriterion::terminate_with_function_and_gradient(PatchData &pd, O
 {
   // outputs OF value.
   MSQ_DEBUG_ACTION(1,{std::cout << "  o TermCrit -- OF value: "
-                                << func_val << std::endl;});
+                                << func_val << endl;});
 
   //set functionSupplied and gradientSupplied booleans to true
   functionSupplied=true;

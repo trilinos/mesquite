@@ -90,7 +90,7 @@ void SmartLaplacianSmoother::optimize_vertex_positions(PatchData &pd,
   free_iter.next();
     //m is the free vertex.
   size_t m=free_iter.value();
-  std::vector<size_t> vert_indices;
+  vector<size_t> vert_indices;
   vert_indices.reserve(25);
     //get vertices adjacent to vertex m
   pd.get_adjacent_vertex_indices(m,vert_indices,err);

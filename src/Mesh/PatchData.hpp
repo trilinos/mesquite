@@ -31,6 +31,8 @@
 
 #include "MeshInterface.hpp"
 
+MSQ_USE(vector);
+
 namespace Mesquite
 {
   class PatchDataVerticesMemento;
@@ -117,22 +119,22 @@ namespace Mesquite
     
       //! Get the coordinates of vertices attached to the specified element
     void get_element_vertex_coordinates(size_t elem_index,
-                                        std::vector<Vector3D> &coords,
+                                        vector<Vector3D> &coords,
                                         MsqError &err);
       /*! Get the indices of vertices of specified element. !inefficient!*/
     void get_element_vertex_indices(size_t elem_index,
-                                    std::vector<size_t> &vertex_indices,
+                                    vector<size_t> &vertex_indices,
                                     MsqError &err);
       /*! Get the indices of the elements attached to the specified vertex. */
     void get_vertex_element_indices(size_t vertex_index,
-                                    std::vector<size_t> &elem_indices,
+                                    vector<size_t> &elem_indices,
                                     MsqError &err);
     
       /*! Get the indices of vertices that are attached to vertex (given by
         vertex_index) by an element edge.
       */
     void get_adjacent_vertex_indices(size_t vertex_index,
-                                     std::vector<size_t> &vert_indices,
+                                     vector<size_t> &vert_indices,
                                      MsqError &err);
     
     
@@ -143,7 +145,7 @@ namespace Mesquite
         
       */
     void get_adjacent_entities_via_n_dim(int n, size_t ent_ind,
-                                         std::vector<size_t> &adj_ents,
+                                         vector<size_t> &adj_ents,
                                          MsqError &err);
     
       /*! Create the arrays that store which elements are attached

@@ -20,6 +20,10 @@ Header file for the Mesquite::QualityAssessor class
 #include <list>
 #include <string>
 
+MSQ_USE(string);
+MSQ_USE(list);
+
+
 namespace Mesquite 
 {
 
@@ -51,19 +55,19 @@ namespace Mesquite
        STDDEV=32,
        ALL_MEASURES=63
     };
-    std::string get_QAFunction_name(enum QualityAssessor::QAFunction);
+    string get_QAFunction_name(enum QualityAssessor::QAFunction);
     
     //! Constructor requires a QualityMetric and an evaluation function
     QualityAssessor(QualityMetric*, enum QAFunction  func,
-                    std::string name = "DefaultQualAssessName");
+                    string name = "DefaultQualAssessName");
 
       //!Destructor
     ~QualityAssessor();
     
       //! Provides a name to the QualityAssessor (use it for default name in constructor).
-    void set_name(std::string name) { qualityAssessorName = name; };
+    void set_name(string name) { qualityAssessorName = name; };
       //! Retrieves the QualityAssessor name. A default name should be set in the constructor.
-    virtual std::string get_name() { return qualityAssessorName; }
+    virtual string get_name() { return qualityAssessorName; }
 
     virtual AlgorithmType get_algorithm_type() { return QUALITY_ASSESSOR; }
       //! Adds a quality metric and a wrapper function (min, max, ...).
@@ -88,7 +92,7 @@ namespace Mesquite
                                  MsqError &err);
     
   private:
-    std::string qualityAssessorName;  
+    string qualityAssessorName;  
     struct Assessor
     {
       QualityMetric* metric;
@@ -123,7 +127,7 @@ namespace Mesquite
       int numInvalid;//counts the number of invalid metric values
     };
     
-    std::list<Assessor*> assessList;
+    list<Assessor*> assessList;
       //flag to turn off printing
     int printingTurnedOff;
       //pointer to qm used form return value

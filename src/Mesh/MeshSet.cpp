@@ -22,6 +22,8 @@ That copy is of course encapsulated in the MeshSet class.
 
 using namespace Mesquite;  
 
+MSQ_USE(cout);
+MSQ_USE(endl);
 
 MeshSet::MeshSet() :
   vertexIterator(NULL),
@@ -46,8 +48,8 @@ MeshSet::~MeshSet()
     // Delete the vertex iterator
   delete vertexIterator;
     // Release all of our meshes
-  std::list<Mesquite::Mesh*>::iterator it = meshSet.begin();
-  while(it != meshSet.end())
+  list<Mesquite::Mesh*>::iterator it = meshSet.begin();
+  while(!(it == meshSet.end()))
     (*it++)->release();
   
     // Delete cache arrays
@@ -97,7 +99,7 @@ void MeshSet::reset(MsqError& err)
   if (meshSet.size())
   {
       // If we aren't already on the first mesh...
-    if (!vertexIterator || currentMesh != meshSet.begin())
+    if (!vertexIterator || !(currentMesh == meshSet.begin()))
     {
       currentMesh = meshSet.begin();
       delete vertexIterator;
@@ -147,8 +149,8 @@ bool MeshSet::get_next_patch(PatchData &pd,
   PatchData::PatchType patch_type = pd_params.get_patch_type();
   long unsigned int culling_method_bits = pd_params.get_culling_method_bits();
   
-  MSQ_DEBUG_ACTION(3,{std::cout << "  o Patch Type: "
-                                << patch_type << std::endl; });
+  MSQ_DEBUG_ACTION(3,{cout << "  o Patch Type: "
+                                << patch_type << endl; });
 
   switch (patch_type)
   {
@@ -430,7 +432,8 @@ bool MeshSet::get_next_patch(PatchData &pd,
       return false;
   }
 
-  FUNCTION_TIMER_END();  
+  FUNCTION_TIMER_END();
+  return true;
 }
 
 // Currently, the only thing supported is updating each vertices
@@ -465,7 +468,7 @@ void Mesquite::MeshSet::update_mesh(const PatchData &pd, MsqError &err)
     // one Mesh.
   case PatchData::GLOBAL_PATCH:
     {
-      std::list<Mesquite::Mesh*>::iterator mesh_itr = meshSet.begin();
+      list<Mesquite::Mesh*>::iterator mesh_itr = meshSet.begin();
       Mesquite::Mesh* cur_mesh = *mesh_itr;
       Mesquite::VertexIterator *vert_itr = cur_mesh->vertex_iterator(err);
       for (i = 0; i < pd.numVertices; i++)

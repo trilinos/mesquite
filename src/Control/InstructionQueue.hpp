@@ -18,6 +18,7 @@ Header file for the Mesquite::InstructionQueue class
 #include "QualityImprover.hpp"
 #include <list>
 
+MSQ_USE(list);
 
 namespace Mesquite {
 
@@ -68,9 +69,9 @@ namespace Mesquite {
   protected:
     
   private:
-    std::list<PatchDataUser*>::iterator clear_master(MsqError &err);
+    list<PatchDataUser*>::iterator clear_master(MsqError &err);
 
-    std::list<PatchDataUser*> instructions;
+    list<PatchDataUser*> instructions;
 
     bool autoQualAssess;
     

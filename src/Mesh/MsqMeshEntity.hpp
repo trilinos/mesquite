@@ -24,6 +24,9 @@
 #include "MesquiteError.hpp"
 #include "QualityMetric.hpp"
 
+MSQ_USE(vector);
+MSQ_USE(ostream);
+
 namespace Mesquite
 {
   /*!
@@ -67,8 +70,8 @@ namespace Mesquite
     static inline size_t vertex_count(EntityTopology type);
     
       //! gets the vertices of the mesh entity
-    void get_vertex_indices(std::vector<size_t> &vertex_list);
-    void append_vertex_indices(std::vector<size_t> &vertex_list);
+    void get_vertex_indices(vector<size_t> &vertex_list);
+    void append_vertex_indices(vector<size_t> &vertex_list);
     //! Very efficient retrieval of vertices indexes (wihtin the PatchData).
     inline const size_t *get_vertex_index_array() const;
     inline size_t* get_modifiable_vertex_index_array();
@@ -91,16 +94,16 @@ namespace Mesquite
     
       //!Returns a list of sample points given an evaluationmode 
     void get_sample_points(QualityMetric::ElementEvaluationMode mode,
-                           std::vector<Vector3D> &coords,
+                           vector<Vector3D> &coords,
                            MsqError &err);
 
     //! Returns the centroid of the element.
     void get_centroid(Vector3D& centroid, const PatchData &pd, MsqError &err) const;
     
-      //!Fills a std::vector<size_t> with vertices connected to the given
+      //!Fills a vector<size_t> with vertices connected to the given
       //!vertex through the edges of this MsqMeshEntity.
     void get_connected_vertices(size_t vertex_index,
-                                std::vector<size_t> &vert_indices,
+                                vector<size_t> &vert_indices,
                                 MsqError &err);
     
       //!Computes the area of the element.
@@ -127,7 +130,7 @@ namespace Mesquite
     size_t vertexIndices[MSQ_MAX_NUM_VERT_PER_ENT];
     
       // output operator for debugging.
-    friend std::ostream& operator<<(std::ostream &s, const MsqMeshEntity &E);
+    friend ostream& operator<<(ostream &s, const MsqMeshEntity &E);
     
   };
   
@@ -232,7 +235,7 @@ namespace Mesquite
   
   /* ***********  I/O  **************/
 
-  inline std::ostream& operator<<(std::ostream &s, const MsqMeshEntity &E)
+  inline ostream& operator<<(ostream &s, const MsqMeshEntity &E)
   {
     size_t num_vtx = E.vertex_count();
     s << "MsqMeshEntity " << &E << " with vertices ";

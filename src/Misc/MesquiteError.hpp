@@ -19,6 +19,7 @@
 #include <new>
 #include "Mesquite.hpp"
 #include <string>
+MSQ_USE(string);
 
 /*! \def __SDIR__
   \brief Source file directory.
@@ -92,13 +93,13 @@ public:
   MsqError() : errorOn(false), printError(true), errorCode(MSQ_NO_ERROR), msg("") {} // No error by default
   //! Maybe this constructor isn't useful.
 
-  MsqError(bool , enum Error_Codes, std::string = "");
+  MsqError(bool , enum Error_Codes, string = "");
 
   //! Maybe this constructor isn't useful.
-  MsqError(Error_Codes, std::string = "");
+  MsqError(Error_Codes, string = "");
   
   //! sets a context dependent (non-generic) error message.
-  void set_msg(const std::string&);  // also sets errorOn to true
+  void set_msg(const string&);  // also sets errorOn to true
   //! sets a generic error code, later handled by MsqError::handler.
   void set_error_code(enum Error_Codes); // also sets errorOn to true
 
@@ -128,7 +129,7 @@ protected:
 
 private:
   enum Error_Codes errorCode;  
-  std::string msg;
+  string msg;
 };
 
 } // namespace

@@ -15,7 +15,9 @@
 #include "MsqMessage.hpp"
 #include "MsqTimer.hpp"
 using namespace Mesquite;  
-using namespace std;
+//using namespace std;
+MSQ_USE(cout);
+MSQ_USE(endl);
 
 #undef __FUNC__
 #define __FUNC__ "PatchData::PatchData"
@@ -476,8 +478,8 @@ void PatchData::set_free_vertices_constrained(PatchDataVerticesMemento* memento,
 {
   if (nb_vtx != memento->numVertices)
   {
-    std::cout << "nb_vtx: "<< nb_vtx << "   mem num vtx; "
-              <<  memento->numVertices << std::endl;
+    cout << "nb_vtx: "<< nb_vtx << "   mem num vtx; "
+              <<  memento->numVertices << endl;
     err.set_msg("The directional vector must be the same length as"
                 "the number of vertices in the patch.");
     MSQ_CHKERR(err);
@@ -578,15 +580,15 @@ void PatchData::set_all_vertices_soft_free(MsqError &/*err*/)
       vertexArray[i].remove_soft_fixed_flag();
   }
   
-/*! \fn PatchData::get_element_vertex_coordinates(size_t elem_index, std::vector<Vector3D> &coords, MsqError &err)
+/*! \fn PatchData::get_element_vertex_coordinates(size_t elem_index, vector<Vector3D> &coords, MsqError &err)
 
     \param elem_index The element index in the Patch
-    \param coords This std::vector will have the coordinates appended to it.
+    \param coords This vector will have the coordinates appended to it.
     If necessary, make sure to clear the vector before calling the function.
   */
 void PatchData::get_element_vertex_coordinates(
   size_t elem_index,
-  std::vector<Vector3D> &coords,
+  vector<Vector3D> &coords,
   MsqError& /*err*/)
 {
     // Check index
@@ -610,7 +612,7 @@ void PatchData::get_element_vertex_coordinates(
 */ 
 void PatchData::get_element_vertex_indices(
   size_t elem_index,
-  std::vector<size_t> &vertex_indices,
+  vector<size_t> &vertex_indices,
   MsqError& /*err*/)
 {
     // Check index
@@ -625,7 +627,7 @@ void PatchData::get_element_vertex_indices(
 #undef __FUNC__
 #define __FUNC__ "PatchData::get_vertex_element_indices" 
 void PatchData::get_vertex_element_indices(size_t vertex_index,
-                                           std::vector<size_t> &elem_indices,
+                                           vector<size_t> &elem_indices,
                                            MsqError &/*err*/) 
 {
     // Check index
@@ -650,7 +652,7 @@ void PatchData::get_vertex_element_indices(size_t vertex_index,
 }
 
 /*!
-    \brief This function fills a std::vector<size_t> with the indices
+    \brief This function fills a vector<size_t> with the indices
     to vertices connected to the given vertex by an edge.  If vert_indices
     is not initially empty, the function will not delete the current
     contents.  Instead, it will append the new indices at the end of
@@ -660,13 +662,13 @@ void PatchData::get_vertex_element_indices(size_t vertex_index,
 #undef __FUNC__
 #define __FUNC__ "PatchData::get_adjacent_vertex_indices" 
 void PatchData::get_adjacent_vertex_indices(size_t vertex_index,
-                                            std::vector<size_t> &vert_indices,
+                                            vector<size_t> &vert_indices,
                                             MsqError &err)
 {
     //First get elems attached to vertex[vertex_index]
-  std::vector<size_t> elem_indices;
-  std::vector<size_t> temp_vert_indices;
-  std::vector<size_t>::iterator iter;
+  vector<size_t> elem_indices;
+  vector<size_t> temp_vert_indices;
+  vector<size_t>::iterator iter;
   size_t cur_vert;
   int found=0;
   get_vertex_element_indices(vertex_index, elem_indices,err);
@@ -705,15 +707,15 @@ void PatchData::get_adjacent_vertex_indices(size_t vertex_index,
 
 */
 void PatchData::get_adjacent_entities_via_n_dim(int n, size_t ent_ind,
-                                                std::vector<size_t> &adj_ents,
+                                                vector<size_t> &adj_ents,
                                                 MsqError &err)
 {
   //reset the vector
   adj_ents.clear();
     //vertices of this entity (given by ent_ind)
-  std::vector<size_t> verts;
+  vector<size_t> verts;
     //vector to store elements attached to the vertices in verts
-  std::vector<size_t> elem_on_vert[MSQ_MAX_NUM_VERT_PER_ENT];
+  vector<size_t> elem_on_vert[MSQ_MAX_NUM_VERT_PER_ENT];
     //length of above vectos
   int length_elem_on_vert[MSQ_MAX_NUM_VERT_PER_ENT];
     //get verts on this element
