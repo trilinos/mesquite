@@ -73,8 +73,11 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   const double tol1    = 1e-8;
   const double epsilon = 1e-10;
   double original_value, new_value;
-  double grad_norm, beta;
-     
+  double beta;
+#if MSQ_DEBUG_LEVEL >= 3
+  double grad_norm;
+#endif
+  
   int nv = pd.num_vertices();
   Vector3D* grad = new Vector3D[nv];
   Vector3D* d = new Vector3D[nv];
@@ -93,7 +96,11 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   fn_bool = objFunc->compute_gradient(pd, grad, err); MSQ_CHKERR(err);
   if (!fn_bool) { err.set_msg("invalid patch for gradient calculation"); return; }
   // 3.  Calculate the norm of the gradient for the patch
+#if MSQ_DEBUG_LEVEL >= 3
   grad_norm = length(grad, nv);
+#else
+  length(grad,nv);
+#endif
   MSQ_DEBUG_ACTION(3,{std::cout<< "  o  gradient norm: " << grad_norm << std::endl;});
 
   

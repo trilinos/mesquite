@@ -174,7 +174,7 @@ namespace Mesquite
     friend Vector3D operator*(const Vector3D &x, const Matrix3D  &A);
     Matrix3D& operator+=(const Matrix3D &rhs);
     Matrix3D& operator-=(const Matrix3D &rhs);
-    Matrix3D& Matrix3D::operator*=(const double &s);
+    Matrix3D& operator*=(const double &s);
     Matrix3D plus_transpose(const Matrix3D &B) const;
     Matrix3D& plus_transpose_equal(const Matrix3D &B);
     Matrix3D& outer_product(const Vector3D &v1, const Vector3D &v2);
