@@ -5,6 +5,8 @@ MESHSRCFILES = MeshSet.cpp \
                MsqVertex.cpp \
                PatchData.cpp \
                MeshImpl.cpp \
+               MeshImplData.cpp \
+               MeshImplTags.cpp \
                TopologyInfo.cpp
                
 

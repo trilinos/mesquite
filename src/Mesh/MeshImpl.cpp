@@ -21,7 +21,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  
     diachin2@llnl.gov, djmelan@sandia.gov, mbrewer@sandia.gov, 
-    pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov      
+    pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov,
+    kraftche@cae.wisc.edu
    
   ***************************************************************** */
 //
@@ -29,7 +30,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD: 18-Jun-04 at 16:07:03 by Thomas Leurent
+//  LAST-MOD: 15-Nov-04 by kraftche@cae.wisc.edu
 //
 /*! \file MeshImpl.cpp
 
@@ -38,13 +39,16 @@ to run mesquite by default.
   
     \author Thomas Leurent
     \author Darryl Melander
-    \date 2003-05-16  
+    \author Jason Kraftcheck
+    \date 2004-11-15
  */
 
 #include "MeshImpl.hpp"
 #include "FileTokenizer.hpp"
 #include "Vector3D.hpp"
 #include "MsqVertex.hpp"
+#include "MeshImplData.hpp"
+#include "MeshImplTags.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 #  include <string.h>
@@ -74,102 +78,27 @@ to run mesquite by default.
 #include "MsqDebug.hpp"
 namespace Mesquite
 {
-  template<typename X> class MeshImpl_EntityIterator : public Mesquite::VertexIterator
-  {
-  public:
-    MeshImpl_EntityIterator(X* array,
-                            size_t element_count) 
-        : mArray(array),
-          mCount(element_count),
-          mIndex(0)
-      {}
-    
-      // Moves the iterator back to the first
-      // entity in the list.
-    virtual void restart()
-      {
-        mIndex = 0;
-      }
-    
-      // *iterator.  Return the handle currently
-      // being pointed at by the iterator.
-    virtual Mesquite::Mesh::EntityHandle operator*() const
-      {
-        return is_at_end() ? NULL : reinterpret_cast<void*>(mArray+mIndex);
-      }
-    
-      // ++iterator
-    virtual void operator++()
-      {
-        ++mIndex;
-      }
-    
-      // Returns false until the iterator has
-      // been advanced PAST the last entity.
-      // Once is_at_end() returns true, *iterator
-      // returns NULL.
-    virtual bool is_at_end() const
-      {
-        return (mIndex < mCount ? false : true);
-      }
-    
-  private:
-    X *mArray;
-    size_t mCount;
-    size_t mIndex;
-  };
-}
 
-Mesquite::MeshImpl::MeshImpl() 
-    : vertexArray(NULL),
-      elementArray (NULL),
-      vertexCount(0),
-      elementCount(0),
-      onBoundaryBits(NULL),
-      vertexMesquiteByte(NULL),
-      newVertIndices(NULL),
-      v2eOffset(NULL),
-      totalVertexUses(0),
-      v2E(NULL),
-      numCoords(3)
+
+MeshImpl::MeshImpl() 
+    : myMesh( new MeshImplData ),
+      myTags( new MeshImplTags )
 {}
 
-Mesquite::MeshImpl::~MeshImpl() 
+MeshImpl::~MeshImpl() 
 {
-  clear();
+  delete myMesh;
+  delete myTags;
 }
 
-void Mesquite::MeshImpl::clear()
+void MeshImpl::clear()
 {
-  delete [] vertexArray;
-  delete [] elementArray;
-  delete [] onBoundaryBits;
-  delete [] vertexMesquiteByte;
-  delete [] newVertIndices;
-  delete [] v2eOffset;
-  delete [] v2E;
-    
-  vertexArray = 0;
-  elementArray = 0;
-  onBoundaryBits = 0;
-  vertexMesquiteByte = 0;
-  newVertIndices = 0;
-  v2eOffset = 0;
-  v2E = 0;
-  
-  vertexCount = 0;
-  elementCount = 0;
-  numCoords = 0;
-  totalVertexUses = 0;
-  
-  for (unsigned i = 0; i < tagList.size(); ++i)
-    delete tagList[i];
-  tagList.clear();
+  myMesh->clear();
+  myTags->clear();
 }
 
 
-void Mesquite::MeshImpl::write_vtk(const char* out_filebase,
-                                   Mesquite::MsqError &err)
+void MeshImpl::write_vtk(const char* out_filebase, MsqError &err)
 {
     // Open the file
   string out_filename = out_filebase;
@@ -188,118 +117,182 @@ void Mesquite::MeshImpl::write_vtk(const char* out_filebase,
   file << "DATASET UNSTRUCTURED_GRID\n";
   
     // Write vertex coordinates
-  file << "POINTS " << vertexCount << " float\n";
-  size_t i;
-  for (i = 0; i < vertexCount; i++)
+  file << "POINTS " << myMesh->num_vertices() << " float\n";
+  
+  std::vector<size_t> vertex_indices( myMesh->max_vertex_index() );
+  size_t i, count = 0;
+  for (i = 0; i < myMesh->max_vertex_index(); ++i)
   {
-      //MB: Is there a way to use setprecision (or an equivalent)
-      //when use_std_includes is not defined.
-    file << vertexArray[i].coords[0] << ' '
-         << vertexArray[i].coords[1] << ' '
-         << vertexArray[i].coords[2] << '\n';
+    if (myMesh->is_vertex_valid(i))
+    {
+      Vector3D coords = myMesh->get_vertex_coords( i, err ); MSQ_ERRRTN(err);
+      file << coords[0] << ' ' << coords[1] << ' ' << coords[2] << '\n';
+      vertex_indices[i] = ++count;
+    }
+    else
+    {
+      vertex_indices[i] = myMesh->max_vertex_index();
+    }
   }
   
     // Write out the connectivity table
-  size_t connectivity_size = elementCount + totalVertexUses;
-  file << "CELLS " << elementCount << ' ' << connectivity_size << '\n';
-  for (i = 0; i < elementCount; i++)
+  size_t connectivity_size = myMesh->num_elements() + myMesh->num_vertex_uses();
+  file << "CELLS " << myMesh->num_elements() << ' ' << connectivity_size << '\n';
+  ElementIterator* e_iter = element_iterator(err); MSQ_ERRRTN(err);
+  msq_std::vector<VertexHandle> conn;
+  while (!e_iter->is_at_end())
   {
-    size_t verts_this_elem = vertices_in_topology(elementArray[i].mType);
-    file << verts_this_elem;
-    for (size_t j = 0; j < verts_this_elem; j++)
+    ElementHandle elem = **e_iter;
+    count = element_get_attached_vertex_count( elem, err ); MSQ_ERRRTN(err);
+    if (count > conn.size())
+      conn.resize(count);
+      
+    element_get_connectivity( elem, &conn[0], conn.size(), err ); MSQ_ERRRTN(err);
+    EntityTopology topo = element_get_topology( **e_iter, err ); MSQ_ERRRTN(err);
+   
+      // If necessary, convert from Exodus to VTK node-ordering.
+    if (topo == PRISM)  // VTK Wedge
     {
-      file << ' ' << elementArray[i].vertexIndices[j];
+      msq_std::swap( conn[1], conn[2] );
+      msq_std::swap( conn[4], conn[5] );
     }
+    else if (topo == HEXAHEDRON && count == 20)  // VTK Quadratic Hex
+    {
+      msq_std::swap( conn[12], conn[16] );
+      msq_std::swap( conn[13], conn[17] );
+      msq_std::swap( conn[14], conn[18] );
+      msq_std::swap( conn[15], conn[19] );
+    }
+    
+    file << count;
+    for (i = 0; i < count; ++i)
+      file << ' ' << vertex_indices[(size_t)conn[i]];
     file << '\n';
+    
+    ++*e_iter;
   }
   
     // Write out the element types
-  file << "CELL_TYPES " << elementCount << '\n';
-  for (i = 0; i < elementCount; i++)
+  file << "CELL_TYPES " << myMesh->num_elements() << '\n';
+  e_iter->restart();
+  while (!e_iter->is_at_end())
   {
-    unsigned char type_id = 0;
-    switch (elementArray[i].mType)
-    {
-      case Mesquite::TRIANGLE:
-        type_id = 5;
-        break;
-      case Mesquite::QUADRILATERAL:
-        type_id = 9;
-        break;
-      case Mesquite::TETRAHEDRON:
-        type_id = 10;
-        break;
-      case Mesquite::HEXAHEDRON:
-        type_id = 12;
-        break;
-    default:
-      MSQ_SETERR(err)( "element type not implemented",MsqError::NOT_IMPLEMENTED );
-      break;
+    EntityTopology topo = element_get_topology( **e_iter, err ); MSQ_ERRRTN(err);
+    count = element_get_attached_vertex_count( **e_iter, err ); MSQ_ERRRTN(err);
+    int type;
+    switch (topo) {
+      case POLYGON:       type =                     7; break;
+      case TRIANGLE:      type = count ==  6 ? 22 :  5; break;
+      case QUADRILATERAL: type = count ==  8 ? 23 :  9; break;
+      case TETRAHEDRON:   type = count == 10 ? 24 : 10; break;
+      case HEXAHEDRON:    type = count == 20 ? 25 : 12; break;
+      case PRISM:         type =                    13; break;
+      case PYRAMID:       type =                    14; break;
+      default:
+        MSQ_SETERR(err)( MsqError::NOT_IMPLEMENTED ,
+                        "Cannot write element type %d to a VTK file\n",
+                        type );
+        delete e_iter;
+        return;
     }
-    file << (int)type_id << '\n';
+      
+    file << type << '\n';
+    e_iter->operator++();
   }
+  delete e_iter;
   
     // Write out which points are fixed.
-  file << "POINT_DATA " << vertexCount
+  file << "POINT_DATA " << myMesh->num_vertices()
        << "\nSCALARS fixed bit\nLOOKUP_TABLE default\n";
-  for (i = 0; i < vertexCount; i++)
-  {
-    if (onBoundaryBits[i/8] & ((unsigned char)(1) << i % 8))
-      file << "1\n";
-    else
-      file << "0\n";
-  }
+  for (i = 0; i < myMesh->max_vertex_index(); ++i)
+    if (myMesh->is_vertex_valid( i ))
+      file <<( myMesh->vertex_is_fixed( i, err ) ? "1" : "0") << "\n";
   
     // Write vertex tag data to vtk attributes
-  for (i = 0; i < tagList.size(); ++i)
-    if (tagList[i] && tagList[i]->vertexData)
-    { 
-      vtk_write_attrib_data( file, 
-                             tagList[i]->desc, 
-                             tagList[i]->vertexData,
-                             vertexCount,
-                             err );
-      MSQ_ERRRTN(err);
-    }
-  
-    // If there are any element attributes, write them
-  for (i = 0; i< tagList.size(); ++i)
-    if (tagList[i] && tagList[i]->elementData)
+  MeshImplTags::TagIterator tagiter = myTags->tag_begin();
+  for (tagiter = myTags->tag_begin(); tagiter != myTags->tag_end(); ++tagiter)
+  {
+    bool havevert = myTags->tag_has_vertex_data( *tagiter, err ); MSQ_ERRRTN(err);
+    if (!havevert)
+      continue;
+    
+    const TagDescription& desc = myTags->properties( *tagiter, err );
+    MSQ_ERRRTN(err);
+    
+    std::vector<char> tagdata( myMesh->num_vertices() * desc.size );
+    std::vector<char>::iterator iter;
+    for (i = 0; i < myMesh->max_vertex_index(); ++i)
     {
-      file << "\nCELL_DATA " << elementCount << "\n";
+      if (myMesh->is_vertex_valid(i))
+      {
+        myTags->get_vertex_data( *tagiter, 1, &i, &*iter, err );
+        MSQ_ERRRTN(err);
+        iter += desc.size;
+      }
+    }
+    
+    vtk_write_attrib_data( file, 
+                           desc, 
+                           &tagdata[0],
+                           myMesh->num_vertices(),
+                           err );
+    MSQ_ERRRTN(err);
+  }
+
+    // If there are any element attributes, write them
+  for (tagiter = myTags->tag_begin(); tagiter != myTags->tag_end(); ++tagiter)
+  {
+    bool haveelem = myTags->tag_has_element_data( *tagiter, err ); MSQ_ERRRTN(err);
+    if (haveelem)
+    {
+      file << "\nCELL_DATA " << myMesh->num_elements() << "\n";
       break;
     }
-  for (i = 0; i < tagList.size(); ++i)
-    if (tagList[i] && tagList[i]->elementData)
-    { 
-      vtk_write_attrib_data( file, 
-                             tagList[i]->desc, 
-                             tagList[i]->elementData,
-                             elementCount,
-                             err );
-      MSQ_ERRRTN(err);
+  }
+  for (tagiter = myTags->tag_begin(); tagiter != myTags->tag_end(); ++tagiter)
+  {
+    bool haveelem = myTags->tag_has_element_data( *tagiter, err ); MSQ_ERRRTN(err);
+    if (!haveelem)
+      continue;
+    
+    
+    const TagDescription& desc = myTags->properties( *tagiter, err );
+    MSQ_ERRRTN(err);
+    
+    std::vector<char> tagdata( myMesh->num_elements() * desc.size );
+    std::vector<char>::iterator iter;
+    for (i = 0; i < myMesh->max_element_index(); ++i)
+    {
+      if (myMesh->is_element_valid(i))
+      {
+        myTags->get_element_data( *tagiter, 1, &i, &*iter, err );
+        MSQ_ERRRTN(err);
+        iter += desc.size;
+      }
     }
+    
+    vtk_write_attrib_data( file, 
+                           desc, 
+                           &tagdata[0],
+                           myMesh->num_elements(),
+                           err );
+    MSQ_ERRRTN(err);
+  }
     
   
     // Close the file
   file.close();
 }
 
-void Mesquite::MeshImpl::read_exodus(const char*
-#ifdef MSQ_USING_EXODUS
-                                     in_filename
-#endif                                     
-                                     , Mesquite::MsqError &err)
+void MeshImpl::read_exodus(const char* in_filename , MsqError &err)
 {
 #ifndef MSQ_USING_EXODUS
   MSQ_SETERR(err)( MsqError::NOT_IMPLEMENTED );
+  MSQ_DBGOUT(1) << "Cannot read ExodusII file: " << in_filename << "\n";
   return;
 #else
-  if (vertexArray != NULL)
-  {
-    MSQ_SETERR(err)( MsqError::INVALID_STATE );
-    return;
-  }
+  
+  clear();
   
   int app_float_size = sizeof(double);
   int file_float_size = 0;
@@ -338,48 +331,25 @@ void Mesquite::MeshImpl::read_exodus(const char*
     return;
   }
   
-  vertexCount = vert_count;
-  elementCount = elem_count;
-  
-    // Now that we know how big our arrays have to be, allocate...
-    // ...vertices
-  vertexArray = new Mesquite::MeshImpl::Vertex[vertexCount];
-    // ...cache for elements_get_attached_vertices()
-  newVertIndices = new size_t[vertexCount];
-  memset(newVertIndices, 0, vertexCount*sizeof(size_t));
-    // ...elements
-  elementArray = new MeshImpl::Element[elementCount];
-    // ...bits indicating what's on the boundary
-  size_t num_bitset_bytes = (vertexCount / 8);
-  num_bitset_bytes += (vertexCount % 8) ? 1 : 0;
-  onBoundaryBits = new unsigned char[num_bitset_bytes];
-  memset(onBoundaryBits, 0, sizeof(unsigned char)*num_bitset_bytes);
-    // ...a "Mesquite" byte for each vertex
-  vertexMesquiteByte = new unsigned char[vertexCount];
-  memset(vertexMesquiteByte, 0, sizeof(unsigned char)*vertexCount);
+  myMesh->allocate_vertices( vert_count, err ); MSQ_ERRRTN(err);
+  myMesh->allocate_elements( elem_count, err ); MSQ_ERRRTN(err);
   
     // Now fill in the data
   
     // Get the vertex coordinates
-  double* temp_doubles;
+  msq_std::vector<double> coords(vert_count * 3);
+  double* x_iter = &coords[0];
+  double* y_iter = &coords[vert_count];
+  double* z_iter = &coords[2*vert_count];
+  numCoords = dim;
   if (dim == 2)
   {
-    numCoords = 2;
-    temp_doubles = new double[vertexCount*2];
-    exo_err = ex_get_coord(file_id,
-                           reinterpret_cast<void*>(temp_doubles),
-                           reinterpret_cast<void*>(temp_doubles + vertexCount),
-                           NULL);
+    exo_err = ex_get_coord( file_id, x_iter, y_iter, 0 );
+    memset( x_iter, 0, sizeof(double)*vert_count );
   }
   else
   {
-    numCoords = 3;
-    temp_doubles = new double[vertexCount*3];
-    exo_err = ex_get_coord(file_id,
-                           reinterpret_cast<void*>(temp_doubles),
-                           reinterpret_cast<void*>(temp_doubles + vertexCount),
-                           reinterpret_cast<void*>(temp_doubles +
-                                                   vertexCount + vertexCount));
+    exo_err = ex_get_coord( file_id, x_iter, y_iter, z_iter );
   }
     // Make sure it worked
   if (exo_err < 0)
@@ -388,45 +358,26 @@ void Mesquite::MeshImpl::read_exodus(const char*
                     MsqError::PARSE_ERROR);
     return;
   }
-    // Stuff coordinates into vertexArray
-  double *cur_coord = temp_doubles;
-  size_t i, j, k;
-  for (i = 0; i < 2; i++)
-  {
-    for (j = 0; j < vertexCount; j++)
-    {
-      vertexArray[j].coords[i] = *cur_coord;
-      cur_coord++;
-    }
-  }
-  if (dim == 2)
-  {
-    for (j = 0; j < vertexCount; j++)
-      vertexArray[j].coords[2] = 0.0;
-  }
-  else
-  {
-    for (j = 0; j < vertexCount; j++)
-    {
-      vertexArray[j].coords[2] = *cur_coord;
-      cur_coord++;
-    }
-  }
-  delete [] temp_doubles;
-
-    // Process elements block by block
-  int *block_ids = new int[block_count];
-  exo_err = ex_get_elem_blk_ids(file_id, block_ids);
+  
+    // Store vertex coordinates in vertex array
+  int i;
+  for (i = 0; i < vert_count; ++i)
+    myMesh->reset_vertex( i, Vector3D(*(x_iter++), *(y_iter++), *(z_iter)++), false, err );
+  coords.clear();
+  
+  
+    // Get block list
+  msq_std::vector<int> block_ids;
+  exo_err = ex_get_elem_blk_ids(file_id, &block_ids[0]);
   if (exo_err < 0)
   {
     MSQ_SETERR(err)("Unable to read block IDs from file.", MsqError::PARSE_ERROR);
-    delete [] block_ids;
     return;
   }
-  size_t conn_table_size = 0;
-  int *connectivity_table = NULL;
-  MeshImpl::Element *cur_elem = elementArray;
-  totalVertexUses=0;
+
+
+  msq_std::vector<int> conn;
+  size_t index = 0;
   for (i = 0; i < block_count; i++)
   {
       // Get info about this block's elements
@@ -435,17 +386,15 @@ void Mesquite::MeshImpl::read_exodus(const char*
     exo_err = ex_get_elem_block(file_id, block_ids[i], elem_type_str,
                                 &num_block_elems, &verts_per_elem,
                                 &num_atts);
-    totalVertexUses+=(num_block_elems*verts_per_elem);
     if (exo_err < 0)
     {
       MSQ_SETERR(err)("Unable to read parameters for block.",MsqError::PARSE_ERROR);
-      delete [] block_ids;
       return;
     }
     
       // Figure out which type of element we're working with
-    Mesquite::EntityTopology elem_type;
-    for (j = 0; j < 3; j++)
+    EntityTopology elem_type;
+    for (int j = 0; j < 3; j++)
       elem_type_str[j] = toupper(elem_type_str[j]);
     if (!strncmp(elem_type_str, "TRI", 3))
     {
@@ -471,38 +420,27 @@ void Mesquite::MeshImpl::read_exodus(const char*
       continue;
     }
     
-      // Get the connectivity
-    if (conn_table_size < num_block_elems*verts_per_elem)
-    {
-      conn_table_size = num_block_elems*verts_per_elem;
-      delete [] connectivity_table;
-      connectivity_table = new int[conn_table_size];
-    }
-    exo_err = ex_get_elem_conn(file_id, block_ids[i], connectivity_table);
+    if (conn.size() < (unsigned)(num_block_elems*verts_per_elem))
+      conn.resize( num_block_elems*verts_per_elem );
+    exo_err = ex_get_elem_conn( file_id, block_ids[i], &conn[0] );
     if (exo_err < 0)
     {
       MSQ_SETERR(err)("Unable to read element block connectivity.",
                       MsqError::PARSE_ERROR);
-      delete [] block_ids;
-      delete [] connectivity_table;
       return;
     }
-
-      // Put the connectivity into the elementArray
-    int *cur_entry = connectivity_table;
-    for (j = 0; j < num_block_elems; j++)
+    
+    msq_std::vector<size_t> vertices(verts_per_elem);
+    msq_std::vector<int>::iterator conn_iter = conn.begin();
+    for (const size_t end = index + num_block_elems; index < end; ++index)
     {
-      cur_elem->mType = elem_type;
-      for (k = 0; k < verts_per_elem; k++)
-      {
-        cur_elem->vertexIndices[k] = (*cur_entry)-1;
-        cur_entry++;
-      }
-      cur_elem++;
+      for (msq_std::vector<size_t>::iterator iter = vertices.begin();
+           iter != vertices.end(); ++iter, ++conn_iter)
+        *iter = *conn_iter;
+        
+      myMesh->reset_element( index, vertices, elem_type, err ); MSQ_CHKERR(err);
     }
   }
-  delete [] block_ids;
-  delete [] connectivity_table;
   
     // Finally, mark boundary nodes
   int num_fixed_nodes=0;
@@ -515,10 +453,8 @@ void Mesquite::MeshImpl::read_exodus(const char*
       num_fixed_nodes=0;
     }
   }
-  int *fixed_nodes =NULL;
-  if(num_fixed_nodes>0)
-    fixed_nodes = new int[num_fixed_nodes];
-  exo_err = ex_get_node_set(file_id, 111, fixed_nodes);
+  msq_std::vector<int> fixed_nodes(num_fixed_nodes);
+  exo_err = ex_get_node_set(file_id, 111, &fixed_nodes[0]);
   if(exo_err<0){
     MSQ_SETERR(err)("Error retrieving fixed nodes.", MsqError::PARSE_ERROR);
   }
@@ -526,32 +462,28 @@ void Mesquite::MeshImpl::read_exodus(const char*
     // See if this vertex is marked as a boundary vertex
   for (i=0; i < num_fixed_nodes; ++i)
   {
-    fixed_nodes[i]-=1;
-    unsigned char bit_flag = 1 << (fixed_nodes[i]%8);
-    onBoundaryBits[fixed_nodes[i] / 8] |= bit_flag;  
+    myMesh->fix_vertex( i, fixed_nodes[i] > 1, err ); MSQ_CHKERR(err);
   }
-  if(fixed_nodes!=NULL)
-    delete [] fixed_nodes;
+
+    // Finish up
   exo_err=ex_close(file_id);
   if(exo_err<0)
     MSQ_SETERR(err)("Error closing Exodus file.", MsqError::IO_ERROR);
 #endif
 }
 //!Writes an exodus file of the mesh.
-void Mesquite::MeshImpl::write_exodus(const char*
-#ifdef MSQ_USING_EXODUS
-                                       out_filename
-#endif                                     
-                                       , Mesquite::MsqError &err)
+void Mesquite::MeshImpl::write_exodus(const char* out_filename, 
+                                      Mesquite::MsqError &err)
 {
     //just return an error if we don't have access to exodus
 #ifndef MSQ_USING_EXODUS
   MSQ_SETERR(err)("Exodus not enabled in this build of Mesquite",
                   MsqError::NOT_IMPLEMENTED);
+  MSQ_DBGOUT << "Cannot read ExodusII file: " << out_filename << "\n";
   return;
 #else
-  size_t i, j, counter;
-  if (vertexArray == NULL)
+  size_t i, j, k;
+  if (!myMesh || !myMesh->num_vertices())
   {
     MSQ_SETERR(err)("No vertices in MeshImpl.  Nothing written to file.", 
                     MsqError::PARSE_ERROR);
@@ -562,54 +494,43 @@ void Mesquite::MeshImpl::write_exodus(const char*
     //are going to create an element block for each element type
     //that exists the mesh.  Block 1 will be tri3; block 2 will be
     //shell; block 3 will be tetra, and block 4 will be hex.
-  int num_tri=0;
-  int num_quad=0;
-  int num_tet=0;
-  int num_hex=0;
-  int block_count=0;//one block for each element type
-    //count each element 
-  for(i=0;i<elementCount;++i){
-    if(elementArray[i].mType==Mesquite::TRIANGLE){
-      ++num_tri;
-    }
-    else if (elementArray[i].mType==Mesquite::QUADRILATERAL){
-      ++num_quad;
-    }
-    else if(elementArray[i].mType==Mesquite::TETRAHEDRON){
-      ++num_tet;
-    }
-    else if (elementArray[i].mType==Mesquite::HEXAHEDRON){
-      ++num_hex;
-    }
-    else {
-      MSQ_SETERR(err)("Unrecognized element type", MsqError::NOT_IMPLEMENTED);
+  const unsigned MAX_NODES = 27;
+  const unsigned MIN_NODES = 2;
+  int counts[MIXED][MAX_NODES+1];
+  memset( counts, 0, sizeof(counts) );
+  
+  for (i = 0; i < myMesh->max_element_index(); ++i)
+  {
+    if (!myMesh->is_element_valid(i))
+      continue;
+    
+    EntityTopology type = myMesh->element_topology(i, err); MSQ_ERRRTN(err);
+    unsigned nodes = myMesh->element_connectivity(i, err).size(); MSQ_ERRRTN(err);
+    if ((unsigned)type >= MIXED || nodes < MIN_NODES || nodes > MAX_NODES)
+    {
+      MSQ_SETERR(err)("Invalid element typology.", MsqError::INTERNAL_ERROR);
       return;
     }
+    ++counts[type][nodes];
   }
-    //if an element of the specific type exists, we need a block for it
-  if(num_tri>0)
-    ++block_count;
-  if(num_quad>0)
-    ++block_count;
-  if(num_tet>0)
-    ++block_count;
-  if(num_hex>0)
-    ++block_count;
-  if(block_count>4){
-    MSQ_SETERR(err)("Too many element types in file",MsqError::PARSE_ERROR);
-    return;
-  }
-  if(block_count<1){
-    MSQ_SETERR(err)("No elements in file.",MsqError::PARSE_ERROR);
-    return;
-  }
+  
+    // Count number of required element blocks
+  int block_count = 0;
+  for (i = 0; i < MIXED; ++i)
+    for (j = MIN_NODES; j < MAX_NODES; ++j)
+      if (counts[i][j])
+        ++block_count;
+
     //figure out if we have fixed nodes, if so, we need a nodeset
   int num_fixed_nodes=0;
-  for (i = 0; i < vertexCount; i++)
+  for (i = 0; i < myMesh->max_vertex_index(); ++i)
   {
-    if (onBoundaryBits[i/8] & ((unsigned char)(1) << i % 8))
-      ++num_fixed_nodes; 
+    bool fixed = myMesh->is_vertex_valid(i) &&
+                 myMesh->vertex_is_fixed(i, err); MSQ_ERRRTN(err);
+    num_fixed_nodes += fixed;
   }
+  
+  
     //write doubles instead of floats
   int app_float_size = sizeof(double);
   int file_float_size = sizeof(double);
@@ -626,8 +547,7 @@ void Mesquite::MeshImpl::write_exodus(const char*
     return;
   }
   
-  char title[MAX_LINE_LENGTH]="Mesquite Generated Exodus File";
-  int dim=3;
+  char title[MAX_LINE_LENGTH]="Mesquite Export";
   
   size_t vert_count=0;
   size_t elem_count=0;
@@ -640,203 +560,158 @@ void Mesquite::MeshImpl::write_exodus(const char*
   int ss_count=0;
   
     // put the initial info about the file
-  exo_err = ex_put_init(file_id, title, dim, vert_count,
+  exo_err = ex_put_init(file_id, title, numCoords, vert_count,
                         elem_count, block_count, ns_count, ss_count);
   if (exo_err < 0)
   {
     MSQ_SETERR(err)("Unable to initialize file data.", MsqError::IO_ERROR);
     return;
   }
-    //array of nodal coords.
-  double* temp_doubles = new double[vertexCount*3];
- 
-  counter=0;
-  for (i = 0; i < 3; i++)
+  
+  
+    // Gather vertex coordinate data and write to file.
+  msq_std::vector<double> coords(vert_count * 3);
+  msq_std::vector<double>::iterator x, y, z;
+  x = coords.begin();
+  y = x + vert_count;
+  z = y + vert_count;
+  for (i = 0; i < myMesh->max_vertex_index(); ++i)
   {
-    for (j = 0; j < vertexCount; j++)
+    if (!myMesh->is_vertex_valid(i))
+      continue;
+    
+    if (z == coords.end())
     {
-      temp_doubles[counter]=vertexArray[j].coords[i];
-      ++counter;
+      MSQ_SETERR(err)("Array overflow", MsqError::INTERNAL_ERROR);
+      return;
     }
+    
+    Vector3D coords = myMesh->get_vertex_coords(i, err); MSQ_ERRRTN(err);
+    *x = coords.x(); ++x;
+    *y = coords.y(); ++y;
+    *z = coords.z(); ++z;
   }
-  if(counter!= (3*vertexCount))
+  if(z != coords.end())
   {
     MSQ_SETERR(err)("Counter at incorrect number.", MsqError::INTERNAL_ERROR);
     return;
   }
     //put the coords
-  exo_err = ex_put_coord(file_id,
-                         reinterpret_cast<void*>(temp_doubles),
-                         reinterpret_cast<void*>(temp_doubles + vertexCount),
-                         reinterpret_cast<void*>(temp_doubles +
-                                                 vertexCount + vertexCount));
-  
-    // Make sure it worked
+  exo_err = ex_put_coord(file_id, &coords[0], &coords[vert_count], &coords[2*vert_count]);
   if (exo_err < 0)
   {
     MSQ_SETERR(err)("Unable to put vertex coordinates in file.",MsqError::IO_ERROR);
     return;
   } 
-  delete [] temp_doubles;
+
     //put the names of the coordinates
-  char *coord_names[3];
-  char x_co[2]="x";
-  char y_co[2]="y";
-  char z_co[2]="z";
-  coord_names[0]=x_co;
-  coord_names[1]=y_co;
-  coord_names[2]=z_co;
+  char* coord_names[] = { "x", "y", "z" };
   exo_err = ex_put_coord_names(file_id, coord_names);
   
-    // Process elements in a block
-  int block_ids[4];
-  block_ids[0]=1;//tri
-  block_ids[1]=2;//quad
-  block_ids[2]=3;//tet
-  block_ids[3]=4;//hex
+    // Create element-type arrays indexed by Mesquite::EntityTopology
+  const char* tri_name = "TRI";
+  const char* quad_name = "SHELL";
+  const char* tet_name = "TETRA";
+  const char* hex_name = "HEX";
+  const char* wdg_name = "PRISM";
+  const char* pyr_name = "PYR";
+  const char* exo_names[MIXED];
+  memset( exo_names, 0, sizeof(exo_names) );
+  exo_names[TRIANGLE]      = tri_name;
+  exo_names[QUADRILATERAL] = quad_name;
+  exo_names[TETRAHEDRON]   = tet_name;
+  exo_names[HEXAHEDRON]    = hex_name;
+  exo_names[PRISM]         = wdg_name;
+  exo_names[PYRAMID]       = pyr_name;
+  unsigned min_nodes[MIXED];
+  memset( min_nodes, 0, sizeof(min_nodes) );
+  min_nodes[TRIANGLE]      = 3;
+  min_nodes[QUADRILATERAL] = 4;
+  min_nodes[TETRAHEDRON]   = 4;
+  min_nodes[HEXAHEDRON]    = 8;
+  min_nodes[PRISM]         = 6;
+  min_nodes[PYRAMID]       = 5;
   
-    //double check things
-  if ((num_tri + num_quad + num_tet + num_hex) != elementCount){
-    MSQ_SETERR(err)("Error in determining the element types.",MsqError::INTERNAL_ERROR);
-    return;
-  }
-  int num_atts=0;
-
-    //for each element type that exists, set up the block
-  if(num_tri>0)
-    exo_err = ex_put_elem_block(file_id, block_ids[0], "TRI3",
-                                num_tri, 3, num_atts);
-  if(exo_err<0)
+    // For each element type (topology and num nodes)
+  int block_id = 0;
+  char name_buf[16];
+  int num_atts = 0;
+  msq_std::vector<int> conn;
+  for (i = 0; i < MIXED; ++i)
   {
-    MSQ_SETERR(err)("Error creating the tri block.", MsqError::IO_ERROR);
-    return;
-  }
-  if(num_quad>0)
-    exo_err = ex_put_elem_block(file_id, block_ids[1], "SHELL",
-                                num_quad, 4, num_atts);
-  if(exo_err<0)
-  {
-    MSQ_SETERR(err)("Error creating the quad block.",MsqError::IO_ERROR);
-    return;
-  }
-  if(num_tet>0)
-    exo_err = ex_put_elem_block(file_id, block_ids[2], "TETRA",
-                                num_tet, 4, num_atts);
-  if(exo_err<0)
-  {
-    MSQ_SETERR(err)("Error creating the tet block.",MsqError::IO_ERROR);
-    return;
-  }
-  if(num_hex>0)
-    exo_err = ex_put_elem_block(file_id, block_ids[3], "HEX",
-                                num_hex, 8, num_atts);
-  if(exo_err<0)
-  {
-    MSQ_SETERR(err)("Error creating the hex block.",MsqError::IO_ERROR);
-    return;
-  }
-    //alloc space for the connectivity arrays
-  int *tri_connectivity = new int[3*num_tri];
-  int *quad_connectivity = new int[4*num_quad];
-  int *tet_connectivity = new int[4*num_tet];
-  int *hex_connectivity = new int[8*num_hex];
-    //counters for the different element types
-  int tri_counter=0;
-  int quad_counter=0;
-  int tet_counter=0;
-  int hex_counter=0;
-    //put each element in the appropriate connectivity array
-  for(i=0;i<elementCount;++i){
-    if(elementArray[i].mType==Mesquite::TRIANGLE){
-      tri_connectivity[3*tri_counter]=elementArray[i].vertexIndices[0]+1;
-      tri_connectivity[1+(3*tri_counter)]=elementArray[i].vertexIndices[1]+1;
-      tri_connectivity[2+(3*tri_counter)]=elementArray[i].vertexIndices[2]+1;
-      ++tri_counter;
-    }
-    else if (elementArray[i].mType==Mesquite::QUADRILATERAL){
-      quad_connectivity[4*quad_counter]=elementArray[i].vertexIndices[0]+1;
-      quad_connectivity[1+(4*quad_counter)]=elementArray[i].vertexIndices[1]+1;
-      quad_connectivity[2+(4*quad_counter)]=elementArray[i].vertexIndices[2]+1;
-      quad_connectivity[3+(4*quad_counter)]=elementArray[i].vertexIndices[3]+1;
-      ++quad_counter;
-    }
-    else if(elementArray[i].mType==Mesquite::TETRAHEDRON){
-      tet_connectivity[4*tet_counter]=elementArray[i].vertexIndices[0]+1;
-      tet_connectivity[1+(4*tet_counter)]=elementArray[i].vertexIndices[1]+1;
-      tet_connectivity[2+(4*tet_counter)]=elementArray[i].vertexIndices[2]+1;
-      tet_connectivity[3+(4*tet_counter)]=elementArray[i].vertexIndices[3]+1;
-      ++tet_counter;
-    }
-    else if (elementArray[i].mType==Mesquite::HEXAHEDRON){
-      hex_connectivity[8*hex_counter]=elementArray[i].vertexIndices[0]+1;
-      hex_connectivity[1+(8*hex_counter)]=elementArray[i].vertexIndices[1]+1;
-      hex_connectivity[2+(8*hex_counter)]=elementArray[i].vertexIndices[2]+1;
-      hex_connectivity[3+(8*hex_counter)]=elementArray[i].vertexIndices[3]+1;
-      hex_connectivity[4+(8*hex_counter)]=elementArray[i].vertexIndices[4]+1;
-      hex_connectivity[5+(8*hex_counter)]=elementArray[i].vertexIndices[5]+1;
-      hex_connectivity[6+(8*hex_counter)]=elementArray[i].vertexIndices[6]+1;
-      hex_connectivity[7+(8*hex_counter)]=elementArray[i].vertexIndices[7]+1;
-      ++hex_counter;
-    }
-    else
+    for (j = MIN_NODES; j < MAX_NODES; ++j)
     {
-      MSQ_SETERR(err)("Unrecognized element type again", MsqError::NOT_IMPLEMENTED);
-      return;
+        // Have any of this topo & count combination?
+      if (!counts[i][j])
+        continue;
+      
+        // Is a supported ExodusII type?
+      if (!exo_names[i])
+      {
+        MSQ_SETERR(err)(MsqError::INVALID_STATE,
+          "Element topology %d not supported by ExodusII", (int)i );
+        return;
+      }
+      
+        // Construct ExodusII element name from topo & num nodes
+      if (j == min_nodes[i])
+        strcpy( name_buf, exo_names[i] );
+      else
+        sprintf( name_buf, "%s%d", exo_names[i], (int)j );
+      
+        // Create element block
+      ++block_id;
+      exo_err = ex_put_elem_block( file_id, block_id, name_buf, 
+                                   counts[i][j], j, num_atts );
+      if(exo_err<0)
+      {
+        MSQ_SETERR(err)("Error creating the tri block.", MsqError::IO_ERROR);
+        return;
+      }
+      
+        // For each element
+      conn.resize( counts[i][j] * j );
+      std::vector<int>::iterator iter = conn.begin();
+      for (k = 0; k < myMesh->max_element_index(); ++k)
+      {
+          // If not correct topo, skip it.
+        if (!myMesh->is_element_valid(k) ||
+             (unsigned)(myMesh->element_topology(k, err)) != i)
+          continue;
+        MSQ_ERRRTN(err);
+        
+          // If not correct number nodes, skip it
+        const msq_std::vector<size_t>& elem_conn = myMesh->element_connectivity(k, err);
+        MSQ_ERRRTN(err);
+        if (elem_conn.size() != j)
+          continue;
+        
+          // Append element connectivity to list
+        for (msq_std::vector<size_t>::const_iterator citer = elem_conn.begin();
+             citer != elem_conn.end(); ++citer, ++iter)
+        {
+          assert(iter != conn.end());
+          *iter = *citer;
+        }
+      }
+
+        // Make sure everything adds up
+      if (iter != conn.end())
+      {
+        MSQ_SETERR(err)( MsqError::INTERNAL_ERROR );
+        return;
+      }
+
+        // Write element block connectivity
+      exo_err = ex_put_elem_conn( file_id, block_id, &conn[0] );
+      if (exo_err<0)
+      {
+        MSQ_SETERR(err)("Error writing element connectivity.", MsqError::IO_ERROR );
+        return;
+      }
     }
-  }
-    //double check number of each element type
-  if(tri_counter != num_tri)
-  {
-    MSQ_SETERR(err)("Tri numbers not consistent", MsqError::INTERNAL_ERROR);
-    return;
-  }
-  if(quad_counter != num_quad)
-  {
-    MSQ_SETERR(err)("Quad numbers not consistent", MsqError::INTERNAL_ERROR);
-    return;
-  }
-  if(tet_counter != num_tet)
-  {
-    MSQ_SETERR(err)("Tet numbers not consistent", MsqError::INTERNAL_ERROR);
-    return;
-  }
-  if(hex_counter != num_hex)
-  {
-    MSQ_SETERR(err)("Hex numbers not consistent", MsqError::INTERNAL_ERROR);
-    return;
-  }
-  
-  //for each element type that exists, put the connectivity with the block
-  if(num_tri>0)
-    exo_err = ex_put_elem_conn(file_id, block_ids[0], tri_connectivity);
-  if(exo_err<0) {
-    MSQ_SETERR(err)("Error in putting tri block", MsqError::IO_ERROR);
-    return;
-  }
-  if(num_quad>0)
-    exo_err = ex_put_elem_conn(file_id, block_ids[1], quad_connectivity);
-  if(exo_err<0) {
-    MSQ_SETERR(err)("Error in putting quad block", MsqError::IO_ERROR);
-    return;
-  }
-  if(num_tet>0)
-    exo_err = ex_put_elem_conn(file_id, block_ids[2], tet_connectivity);
-  if(exo_err<0) {
-    MSQ_SETERR(err)("Error in putting tet block", MsqError::IO_ERROR);
-    return;
-  }
-  if(num_hex>0)
-    exo_err = ex_put_elem_conn(file_id, block_ids[3], hex_connectivity);
-  if(exo_err<0) {
-    MSQ_SETERR(err)("Error in putting hex block", MsqError::IO_ERROR);
-    return;
-  }
-    //delete connectivity arrays.
-  delete [] tri_connectivity;
-  delete [] quad_connectivity;
-  delete [] tet_connectivity;
-  delete [] hex_connectivity;
-  
+  }  
+ 
     // Finally, mark boundary nodes
   
   if(num_fixed_nodes>0){
@@ -845,17 +720,35 @@ void Mesquite::MeshImpl::write_exodus(const char*
       MSQ_SETERR(err)("Error while initializing node set.", MsqError::IO_ERROR);
       return;
     }
-    int *fixed_nodes= new int[num_fixed_nodes];
-    int fixed_node_counter=0;
-    for (i = 0; i < vertexCount; i++)
+    
+    int node_id = 0;
+    msq_std::vector<int> fixed_nodes( num_fixed_nodes );
+    msq_std::vector<int>::iterator iter = fixed_nodes.begin();
+    for (i = 0; i < myMesh->max_vertex_index(); ++i)
     {
-      if (onBoundaryBits[i/8] & ((unsigned char)(1) << i % 8)){
-        fixed_nodes[fixed_node_counter]=i+1;
-        ++fixed_node_counter;
-      }
+      if (!myMesh->is_vertex_valid(i))
+        continue;
+      ++node_id;
       
+      if (myMesh->vertex_is_fixed( i, err ))
+      {
+        if (iter == fixed_nodes.end())
+        {
+          MSQ_SETERR(err)(MsqError::INTERNAL_ERROR);
+          return;
+        }
+        *iter = node_id;
+        ++iter;
+      }
     }
-    exo_err=ex_put_node_set(file_id, 111, fixed_nodes);
+    
+    if (iter != fixed_nodes.end())
+    {
+      MSQ_SETERR(err)(MsqError::INTERNAL_ERROR);
+      return;
+    }
+
+    exo_err=ex_put_node_set(file_id, 111, &fixed_nodes[0]);
     if(exo_err<0) {
       MSQ_SETERR(err)("Error while writing node set.", MsqError::IO_ERROR);
       return;
@@ -868,60 +761,40 @@ void Mesquite::MeshImpl::write_exodus(const char*
 #endif
 }   
 // Returns whether this mesh lies in a 2D or 3D coordinate system.
-int Mesquite::MeshImpl::get_geometric_dimension(MsqError &/*err*/)
+int MeshImpl::get_geometric_dimension(MsqError &/*err*/)
 {
   return numCoords;
 }
 
 
-void Mesquite::MeshImpl::get_all_sizes( size_t& vertex_count,
-                                        size_t& element_count,
-                                        size_t& vertex_use_count,
-                                        MsqError& )
+void MeshImpl::get_all_sizes( size_t& vertex_count,
+                              size_t& element_count,
+                              size_t& vertex_use_count,
+                              MsqError& )
 {
-  vertex_count = vertexCount;
-  element_count = elementCount;
-  vertex_use_count = totalVertexUses;
+  vertex_count = myMesh->num_vertices();
+  element_count = myMesh->num_elements();
+  vertex_use_count = myMesh->num_vertex_uses();
 }
 
-void Mesquite::MeshImpl::get_all_mesh( 
-                               VertexHandle*  vert_array, size_t vert_len,
+void MeshImpl::get_all_mesh(   VertexHandle*  vert_array, size_t vert_len,
                                ElementHandle* elem_array, size_t elem_len,
                                size_t* elem_conn_offsets, size_t offset_len,
                                size_t* elem_conn_indices, size_t index_len,
                                MsqError& err )
 {
-  if (vert_len < vertexCount ||
-      elem_len < elementCount ||
-      offset_len < elementCount+1 ||
-      index_len < totalVertexUses) {
+  if (vert_len < myMesh->num_vertices() ||
+      elem_len < myMesh->num_elements() ||
+      offset_len < myMesh->num_elements()+1 ||
+      index_len < myMesh->num_vertex_uses()) {
     MSQ_SETERR(err)("Insufficient space in array", MsqError::INVALID_ARG );
     return;
   }
   
-  for( size_t i = 0; i < vertexCount; ++i)
-    vert_array[i] = vertexArray + i;
-  
-  size_t index = 0;
-  ElementHandle* handle_iter = elem_array;
-  size_t* conn_iter = elem_conn_indices;
-  size_t* offset_iter = elem_conn_offsets;
-  size_t* const conn_end = conn_iter + index_len;
-  Element* const end = elementArray + elementCount;
-  for(Element* iter = elementArray; iter != end; ++iter)
-  {
-    *handle_iter = iter; ++handle_iter;
-    *offset_iter = index; ++offset_iter;
-    size_t len = Mesquite::vertices_in_topology(iter->mType);
-    index += len;
-    if (conn_iter + len > conn_end) {
-      MSQ_SETERR(err)(MsqError::INTERNAL_ERROR);
-      return;
-    }
-    memcpy( conn_iter, iter->vertexIndices, len*sizeof(size_t));
-    conn_iter += len;
-  }
-  *offset_iter = index;
+  myMesh->copy_mesh( (size_t*)vert_array, 
+                     (size_t*)elem_array, 
+                     elem_conn_offsets, 
+                     elem_conn_indices );
 }
 
 
@@ -930,9 +803,9 @@ void Mesquite::MeshImpl::get_all_mesh(
 // delete the returned iterator when it is finished with it.
 // If vertices are added or removed from the Mesh after obtaining
 // an iterator, the behavior of that iterator is undefined.
-Mesquite::VertexIterator* Mesquite::MeshImpl::vertex_iterator(MsqError &/*err*/)
+VertexIterator* MeshImpl::vertex_iterator(MsqError &/*err*/)
 {
-  return new Mesquite::MeshImpl_EntityIterator<Mesquite::MeshImpl::Vertex>(vertexArray, vertexCount);
+  return new MeshImplVertIter( myMesh );
 }
     
 // Returns a pointer to an iterator that iterates over the
@@ -940,9 +813,9 @@ Mesquite::VertexIterator* Mesquite::MeshImpl::vertex_iterator(MsqError &/*err*/)
 // delete the returned iterator when it is finished with it.
 // If elements are added or removed from the Mesh after obtaining
 // an iterator, the behavior of that iterator is undefined.
-Mesquite::ElementIterator* Mesquite::MeshImpl::element_iterator(MsqError &/*err*/)
+ElementIterator* MeshImpl::element_iterator(MsqError &/*err*/)
 {
-  return new Mesquite::MeshImpl_EntityIterator<Mesquite::MeshImpl::Element>(elementArray, elementCount);
+  return new MeshImplElemIter( myMesh );
 }
 
 //************ Vertex Properties ********************
@@ -951,8 +824,7 @@ Mesquite::ElementIterator* Mesquite::MeshImpl::element_iterator(MsqError &/*err*
 // is fixed and cannot be moved.  Note that this is a read-only
 // property; this flag can't be modified by users of the
 // Mesquite::Mesh interface.
-bool Mesquite::MeshImpl::vertex_is_fixed(Mesquite::Mesh::VertexHandle /*vertex*/,
-                                         MsqError &/*err*/)
+bool MeshImpl::vertex_is_fixed(Mesh::VertexHandle, MsqError &/*err*/)
 {
   return false;
 }
@@ -963,183 +835,111 @@ bool Mesquite::MeshImpl::vertex_is_fixed(Mesquite::Mesh::VertexHandle /*vertex*/
 // Note that this is a read-only
 // property; this flag can't be modified by users of the
 // Mesquite::Mesh interface.
-void Mesquite::MeshImpl::vertices_are_on_boundary(
- Mesquite::Mesh::VertexHandle vert_array[], bool on_bnd[],
- size_t num_vtx, MsqError &/*err*/)
+void MeshImpl::vertices_are_on_boundary(
+ VertexHandle vert_array[], bool on_bnd[],
+ size_t num_vtx, MsqError& err)
 {
   for (size_t i=0; i<num_vtx; ++i)
   {
-    size_t j = (Vertex*)vert_array[i] - vertexArray;
-    if ( (onBoundaryBits[j / 8] & ((unsigned char)(1) << j % 8)) != 0 )
-      on_bnd[i] = true;
-    else
-      on_bnd[i] = false;
+    on_bnd[i] = myMesh->vertex_is_fixed( (size_t)vert_array[i], err ); 
+    MSQ_ERRRTN(err);
   }
 }
 
 // Get/set location of a vertex
-void Mesquite::MeshImpl::vertices_get_coordinates(
-  Mesquite::Mesh::VertexHandle vert_array[],
-  Mesquite::MsqVertex* const &coordinates,
-  const size_t &num_vtx,
-  MsqError &/*err*/)
+void MeshImpl::vertices_get_coordinates(
+ const VertexHandle vert_array[],
+ MsqVertex* coordinates,
+ size_t num_vtx,
+ MsqError& err)
 {
   for (size_t i=0; i<num_vtx; ++i) {
-    coordinates[i].set(reinterpret_cast<double*>(vert_array[i]));
+    coordinates[i] = myMesh->get_vertex_coords( (size_t)vert_array[i], err );
+    MSQ_ERRRTN(err);
   }
 }
 
-void Mesquite::MeshImpl::vertex_set_coordinates(
-  Mesquite::Mesh::VertexHandle vertex,
+void MeshImpl::vertex_set_coordinates(
+  VertexHandle vertex,
   const Vector3D &coordinates,
-  MsqError &/*err*/)
+  MsqError& err)
 {
-  coordinates.get_coordinates(reinterpret_cast<Vertex*>(vertex)->coords);
+  myMesh->set_vertex_coords( (size_t)vertex, coordinates, err ); MSQ_CHKERR(err);
 }
 
 // Each vertex has a byte-sized flag that can be used to store
 // flags.  This byte's value is neither set nor used by the mesh
 // implementation.  It is intended to be used by Mesquite algorithms.
 // Until a vertex's byte has been explicitly set, its value is 0.
-void Mesquite::MeshImpl::vertex_set_byte (
-  Mesquite::Mesh::VertexHandle vertex,
-  unsigned char byte,
-  MsqError &/*err*/)
+void Mesquite::MeshImpl::vertex_set_byte ( VertexHandle vertex,
+                                           unsigned char byte,
+                                           MsqError& err)
 {
-  size_t index = reinterpret_cast<Vertex*>(vertex) - vertexArray;
-  vertexMesquiteByte[index] = byte;
+  vertices_set_byte( &vertex, &byte, 1, err ); MSQ_CHKERR(err);
 }
 
-void Mesquite::MeshImpl::vertices_set_byte (
-  Mesquite::Mesh::VertexHandle *vert_array,
-  unsigned char *byte_array,
-  size_t array_size,
-  MsqError &/*err*/)
+void MeshImpl::vertices_get_byte ( VertexHandle *vert_array,
+                                   unsigned char *byte_array,
+                                   size_t array_size,
+                                   MsqError& err)
 {
   for (size_t i = 0; i < array_size; i++)
   {
-    size_t index = reinterpret_cast<Vertex*>(vert_array[i]) - vertexArray;
-    vertexMesquiteByte[index] = byte_array[i];
+    byte_array[i] = myMesh->get_vertex_byte( (size_t)vert_array[i], err ); 
+    MSQ_ERRRTN(err);
   }
 }
 
 // Retrieve the byte value for the specified vertex or vertices.
 // The byte value is 0 if it has not yet been set via one of the
 // *_set_byte() functions.
-void Mesquite::MeshImpl::vertex_get_byte(
-  Mesquite::Mesh::VertexHandle vertex,
-  unsigned char *byte,
-  MsqError &/*err*/)
+void MeshImpl::vertex_get_byte( VertexHandle vertex,
+                                unsigned char *byte,
+                                MsqError &err )
 {
-  size_t index = reinterpret_cast<Vertex*>(vertex) - vertexArray;
-  *byte = vertexMesquiteByte[index];
+  vertices_get_byte( &vertex, byte, 1, err ); MSQ_CHKERR(err);
 }
 
-void Mesquite::MeshImpl::vertices_get_byte(
-  Mesquite::Mesh::VertexHandle *vertex,
-  unsigned char *byte_array,
-  size_t array_size,
-  MsqError &/*err*/)
+void MeshImpl::vertices_set_byte( VertexHandle *vertex,
+                                  unsigned char *byte_array,
+                                  size_t array_size,
+                                  MsqError& err)
 {
   for (size_t i = 0; i < array_size; i++)
   {
-    size_t index = reinterpret_cast<Vertex*>(vertex[i]) - vertexArray;
-    byte_array[i] = vertexMesquiteByte[index];
+    myMesh->set_vertex_byte( (size_t)vertex[i], byte_array[i], err );
+    MSQ_ERRRTN(err);
   }
 }
 
-//**************** Vertex Topology *****************
-
-void Mesquite::MeshImpl::create_vertex_to_element_data(MsqError &/*err*/)
-{
-  if (v2E)
-    return;
-  
-  v2eOffset = new size_t[vertexCount + 1];
-  v2E = new size_t[totalVertexUses];
-  
-    // Initialize each use count to zero
-  memset(v2eOffset, 0, (vertexCount+1)*sizeof(size_t));
-  
-  size_t elem_num, vert_num;
-  
-    // Go through each element, keep track of how many times
-    // each vertex is used.
-  for (elem_num = elementCount; elem_num--; )
-  {
-    for (vert_num =
-           Mesquite::vertices_in_topology(elementArray[elem_num].mType);
-         vert_num--;
-         )
-    {
-      v2eOffset[elementArray[elem_num].vertexIndices[vert_num]]++;
-    }
-  }
-  
-    // Convert the uses counts to array offsets.
-  elem_num = 0;
-  for (vert_num = 0; vert_num < vertexCount; vert_num++)
-  {
-    size_t temp = v2eOffset[vert_num];
-    v2eOffset[vert_num] = elem_num;
-    elem_num += temp;
-  }
-  v2eOffset[vertexCount] = totalVertexUses;
-
-    // Use newVertIndices to store how many elements
-    // have already been added to v2E for each vertex.
-    // Should already be initialized to zero
-  
-    // Finally, store the v2E data
-  for (elem_num = 0; elem_num < elementCount; elem_num++)
-  {
-    for (vert_num =
-           Mesquite::vertices_in_topology(elementArray[elem_num].mType);
-         vert_num--;
-         )
-    {
-      size_t vert_index = elementArray[elem_num].vertexIndices[vert_num];
-      v2E[v2eOffset[vert_index] + newVertIndices[vert_index]++] = elem_num;
-    }
-  }
-  
-    // Reset newVertIndices to zero
-  memset(newVertIndices, 0, vertexCount*sizeof(size_t));
-}
 
 // Gets the number of elements attached to this vertex.
 // Useful to determine how large the "elem_array" parameter
 // of the vertex_get_attached_elements() function must be.
-size_t Mesquite::MeshImpl::vertex_get_attached_element_count(
-  Mesquite::Mesh::VertexHandle vertex,
-  MsqError &err) 
+size_t MeshImpl::vertex_get_attached_element_count( VertexHandle vertex,
+                                                    MsqError &err) 
 {
-  const_cast<Mesquite::MeshImpl*>(this)->create_vertex_to_element_data(err);
-  MSQ_ERRZERO(err);
-  
-  size_t i = reinterpret_cast<MeshImpl::Vertex*>(vertex) - vertexArray;
-  return v2eOffset[i+1] - v2eOffset[i];
+  size_t result = myMesh->vertex_adjacencies( (size_t)vertex, err ).size();
+  MSQ_CHKERR(err);
+  return result;
 }
 
 // Gets the elements attached to this vertex.
-void Mesquite::MeshImpl::vertex_get_attached_elements(
-  Mesquite::Mesh::VertexHandle vertex,
-  Mesquite::Mesh::ElementHandle* elem_array,
-  size_t sizeof_elem_array,
-  MsqError &err)
+void MeshImpl::vertex_get_attached_elements( VertexHandle vertex,
+                                             ElementHandle* elem_array,
+                                             size_t sizeof_elem_array,
+                                             MsqError& err )
 {
-  create_vertex_to_element_data(err); MSQ_ERRRTN(err);
+  const msq_std::vector<size_t>& elems 
+    = myMesh->vertex_adjacencies( (size_t)vertex, err ); MSQ_ERRRTN(err);
   
-  size_t index = reinterpret_cast<MeshImpl::Vertex*>(vertex) - vertexArray;
-  
-  if (sizeof_elem_array > v2eOffset[index+1] - v2eOffset[index])
-    sizeof_elem_array = v2eOffset[index+1] - v2eOffset[index];
-  
-  for ( ; sizeof_elem_array--; )
+  if (sizeof_elem_array < elems.size())
   {
-    elem_array[sizeof_elem_array] =
-      elementArray + v2E[v2eOffset[index] + sizeof_elem_array];
+    MSQ_SETERR(err)("Insufficient space in array", MsqError::INVALID_ARG );
+    return;
   }
+  
+  memcpy( elem_array, &elems[0], elems.size() * sizeof(size_t) );
 }
 
 
@@ -1147,11 +947,12 @@ void Mesquite::MeshImpl::vertex_get_attached_elements(
 // This data can also be found by querying the
 // element's topology and getting the number
 // of vertices per element for that topology type.
-size_t Mesquite::MeshImpl::element_get_attached_vertex_count(
-  Mesquite::Mesh::ElementHandle elem,
-  MsqError &/*err*/)
+size_t MeshImpl::element_get_attached_vertex_count( ElementHandle elem,
+                                                    MsqError& err )
 {
-  return Mesquite::vertices_in_topology(reinterpret_cast<MeshImpl::Element*>(elem)->mType);
+  size_t result = myMesh->element_connectivity( (size_t)elem, err ).size();
+  MSQ_CHKERR(err);
+  return result;
 }
 
 // Returns the vertices that are part of the topological definition of each
@@ -1187,91 +988,125 @@ size_t Mesquite::MeshImpl::element_get_attached_vertex_count(
 // and the second vertex of element #3 like this:
 //   VertexHandle vh = vert_handles[ csr_data[ csr_offsets[3]+1 ] ]
 // 
-void Mesquite::MeshImpl::elements_get_attached_vertices(
-  Mesquite::Mesh::ElementHandle *elem_handles,
-  size_t num_elems,
-  Mesquite::Mesh::VertexHandle *vert_handles,
-  size_t &sizeof_vert_handles,
-  size_t *csr_data,
-  size_t &sizeof_csr_data,
-  size_t *csr_offsets,
-  MsqError &err)
+void MeshImpl::elements_get_attached_vertices( ElementHandle* elem_handles,
+                                               size_t num_elems,
+                                               VertexHandle* vert_handles,
+                                               size_t& sizeof_vert_handles,
+                                               size_t* csr_data,
+                                               size_t& sizeof_csr_data,
+                                               size_t* csr_offsets,
+                                               MsqError& err )
 {
   if (num_elems == 0)
     return;
   
-  size_t total_verts = 0;
-  csr_offsets[0] = 0;
-  
-    // for each element
-  for (size_t i = 0; i < num_elems; i++)
+  if (num_elems == 1)
   {
-    MeshImpl::Element* elem =
-      reinterpret_cast<MeshImpl::Element*>(elem_handles[i]);
-    size_t verts_in_elem = Mesquite::vertices_in_topology(elem->mType);
-    csr_offsets[i+1] = csr_offsets[i] + verts_in_elem;
-
-      // Make sure we've got enough room in csr_data
-    if (sizeof_csr_data < csr_offsets[i+1]) {
-        // Error!!!
-      MSQ_SETERR(err)("Arg. sizeof_csr_data is too small.",MsqError::INVALID_ARG);
+    size_t elem = (size_t)elem_handles[0];
+    const msq_std::vector<size_t>& conn 
+      = myMesh->element_connectivity( elem, err );
+    MSQ_ERRRTN(err);
+    
+    if (conn.size() > sizeof_vert_handles ||
+        conn.size() > sizeof_csr_data )
+    {
+      sizeof_vert_handles = sizeof_csr_data = conn.size();
+      MSQ_SETERR(err)("Insufficient space in array.", MsqError::INVALID_ARG );
       return;
     }
     
-      // for each vertex in this element
-    for (size_t j = 0; j < verts_in_elem; j++)
+    memcpy( vert_handles, &conn[0], sizeof(size_t)*conn.size() );
+    csr_offsets[0] = 0;
+    csr_offsets[1] = conn.size();
+    for (size_t j = 0; j < conn.size(); ++j)
+      csr_data[j] = j;
+  
+    return;
+  }
+    
+  
+  size_t vtx_count = 0;
+  size_t use_count = 0;
+  
+  msq_std::map<size_t, size_t> index_map;
+  for (size_t i = 0; i < num_elems; ++i)
+  {
+    size_t elem = (size_t)elem_handles[i];
+    const msq_std::vector<size_t>& conn 
+      = myMesh->element_connectivity( elem, err );
+    MSQ_ERRRTN(err);
+    csr_offsets[i] = use_count;
+  
+    for (size_t j = 0; j < conn.size(); ++j)
     {
-        // Get the index for this vertex
-      size_t vert_index = elem->vertexIndices[j];
-      size_t new_vert_index = newVertIndices[vert_index];
-      if (new_vert_index == 0)
+      size_t idx;
+      size_t vert = conn[j];
+      msq_std::map<size_t, size_t>::const_iterator iter = index_map.find( vert );
+      if (iter == index_map.end())
       {
-        new_vert_index = newVertIndices[vert_index] = ++total_verts;
-        if (total_verts > sizeof_vert_handles) {// ERROR!!!
-          MSQ_SETERR(err)("Insufficient space for vertex handles.", MsqError::INVALID_ARG);
-          return;
-        }
-        vert_handles[total_verts-1] =
-          reinterpret_cast<Mesquite::Mesh::VertexHandle>(vertexArray+vert_index);
+        idx = vtx_count++;
+        if (idx < sizeof_vert_handles)
+          vert_handles[idx] = (VertexHandle)vert;
+        index_map[vert] = idx;
+      }
+      else
+      {
+        idx = iter->second;
       }
       
-        // Place that vertex into the csr_data array
-      csr_data[csr_offsets[i] + j] = new_vert_index-1;
+      if (use_count < sizeof_csr_data)
+        csr_data[use_count] = idx;
+      ++use_count;
     }
   }
+  csr_offsets[num_elems] = use_count;
   
-    // Set the amount of data we are returning
-  sizeof_csr_data = csr_offsets[num_elems];
-  sizeof_vert_handles = total_verts;
-  
-    // Set newVertIndices back to 0
-  for ( ; total_verts--; )
+  if (vtx_count > sizeof_vert_handles ||
+      use_count > sizeof_csr_data )
   {
-    newVertIndices[reinterpret_cast<Mesquite::MeshImpl::Vertex*>(vert_handles[total_verts]) - vertexArray] = 0;
+    MSQ_SETERR(err)("Insufficient space in array.", MsqError::INVALID_ARG );
   }
+
+  sizeof_vert_handles = vtx_count;
+  sizeof_csr_data     = use_count;
+}
+
+void MeshImpl::element_get_connectivity( ElementHandle elem,
+                                         VertexHandle* vert_array,
+                                         size_t array_size,
+                                         MsqError& err )
+{
+  const msq_std::vector<size_t>& conn 
+    = myMesh->element_connectivity( (size_t)elem, err ); MSQ_ERRRTN(err);
+  if (conn.size() > array_size)
+  {
+    MSQ_SETERR(err)("Insufficient array size", MsqError::INVALID_ARG);
+    return;
+  }
+  memcpy( vert_array, &conn[0], conn.size() );
 }
 
 
 // Returns the topology of the given entity.
-Mesquite::EntityTopology Mesquite::MeshImpl::element_get_topology(
-  Mesquite::Mesh::ElementHandle entity_handle,
-  MsqError &/*err*/) 
+EntityTopology MeshImpl::element_get_topology( ElementHandle entity_handle, MsqError& err ) 
 {
-  return reinterpret_cast<MeshImpl::Element*>(entity_handle)->mType;
+  EntityTopology result;
+  elements_get_topologies( &entity_handle, &result, 1, err ); MSQ_CHKERR(err);
+  return result;
 }
 
 // Returns the topologies of the given entities.  The "entity_topologies"
 // array must be at least "num_elements" in size.
-void Mesquite::MeshImpl::elements_get_topologies(
-  Mesquite::Mesh::ElementHandle element_handle_array[],
-  Mesquite::EntityTopology element_topologies[],
-  size_t num_elements,
-  MsqError &/*err*/)
+void MeshImpl::elements_get_topologies( ElementHandle element_handle_array[],
+                                        EntityTopology element_topologies[],
+                                        size_t num_elements,
+                                        MsqError& err)
 {
   for (size_t i = 0; i < num_elements; i++)
   {
-    element_topologies[i] =
-      reinterpret_cast<MeshImpl::Element*>(element_handle_array[i])->mType;
+    element_topologies[i] = myMesh->
+      element_topology( (size_t)element_handle_array[i], err );
+    MSQ_CHKERR(err);
   }
 }
 
@@ -1302,9 +1137,6 @@ void Mesquite::MeshImpl::release()
 
 
 
-namespace Mesquite {
-
-
 const char* const vtk_type_names[] = { "bit",
                                        "char",
                                        "unsigned_char",
@@ -1318,7 +1150,7 @@ const char* const vtk_type_names[] = { "bit",
                                        "double",
                                        0 };
 
-void MeshImpl::read_vtk( const char* filename, Mesquite::MsqError &err )
+void MeshImpl::read_vtk( const char* filename, MsqError &err )
 {
   int major, minor;
   char vendor_string[257];
@@ -1384,7 +1216,7 @@ void MeshImpl::read_vtk( const char* filename, Mesquite::MsqError &err )
   vtk_read_dataset( tokens, err ); MSQ_ERRRTN(err);
   
     // Make sure file actually contained some mesh
-  if (elementCount == 0)
+  if (myMesh->num_elements() == 0)
   {
     MSQ_SETERR(err)("File contained no mesh.", MsqError::PARSE_ERROR);
     return;
@@ -1422,14 +1254,14 @@ void MeshImpl::read_vtk( const char* filename, Mesquite::MsqError &err )
       long count;
       tokens.get_long_ints( 1, &count, err); MSQ_ERRRTN(err);
       
-      if (blocktype == 1 && (unsigned long)count != vertexCount)
+      if (blocktype == 1 && (unsigned long)count != myMesh->num_vertices())
       {
         MSQ_SETERR(err)( MsqError::PARSE_ERROR,
                          "Count inconsistent with number of vertices" 
                          " at line %d.", tokens.line_number());
         return;
       }
-      else if (blocktype == 2 && (unsigned long)count != elementCount)
+      else if (blocktype == 2 && (unsigned long)count != myMesh->num_elements())
       {
          MSQ_SETERR(err)( MsqError::PARSE_ERROR,
                          "Count inconsistent with number of elements" 
@@ -1446,32 +1278,7 @@ void MeshImpl::read_vtk( const char* filename, Mesquite::MsqError &err )
     MSQ_ERRRTN(err);
   }
   
-    // It seems that this variable needs to be initialized here
-  totalVertexUses = 0;
-  for (i = 0; i < elementCount; i++)
-    switch( elementArray[i].mType ) {
-      case TRIANGLE     : totalVertexUses += 3; break;
-      case QUADRILATERAL: totalVertexUses += 4; break;
-      case TETRAHEDRON  : totalVertexUses += 4; break;
-      case HEXAHEDRON   : totalVertexUses += 8; break;
-      case PRISM        : totalVertexUses += 6; break;
-      case PYRAMID      : totalVertexUses += 5; break;
-      case SEPTAHEDRON  : totalVertexUses += 7; break;
-      default:
-        MSQ_SETERR(err)( "Unimplemented element type encountered during vertex-use calculation", 
-                         MsqError::INTERNAL_ERROR );
-        return;
-    }
-  
-    // Apparently MeshImpl needs all these arrays created.
-  size_t num_bitset_bytes = (vertexCount / 8);
-  num_bitset_bytes += (vertexCount % 8) ? 1 : 0;
-  onBoundaryBits = new unsigned char[num_bitset_bytes];
-  memset( onBoundaryBits, 0, num_bitset_bytes );
-  vertexMesquiteByte = new unsigned char[vertexCount];
-  memset( vertexMesquiteByte, 0, vertexCount );
-  newVertIndices = new size_t[vertexCount];
-  memset( newVertIndices, 0, vertexCount * sizeof(size_t) );
+    // There is no option for a 2-D mesh in VTK files.  Always 3
   numCoords = 3;
 
     // Convert tag data for fixed nodes to internal bitmap
@@ -1479,42 +1286,56 @@ void MeshImpl::read_vtk( const char* filename, Mesquite::MsqError &err )
   TagHandle handle = tag_get( "fixed", tmperr );
   if (tmperr) return;
   
-  TagData* tag = tag_from_handle( handle, err ); MSQ_ERRRTN(err);
-  if (tag->desc.size / size_from_tag_type(tag->desc.type) != 1)
-  {
-    MSQ_SETERR(err)("'fixed' attribute is not a scalar value", MsqError::FILE_FORMAT);
-    return;
-  } 
-  
-  if (!tag->vertexData || tag->vertIsDefault)
+  const TagDescription& tag_desc = myTags->properties( (size_t)handle, err ); MSQ_ERRRTN(err);
+  bool havedata = myTags->tag_has_vertex_data( (size_t)handle, err ); MSQ_ERRRTN(err);
+  if (!havedata)
   {
     MSQ_SETERR(err)("'fixed' attribute on elements, not vertices", MsqError::FILE_FORMAT);
     return;
   }
 
-  void* tagdata = tag->vertexData;
-  switch( tag->desc.type )
+  switch( tag_desc.type )
   {
     case BYTE:
-      for (i = 0; i < vertexCount; ++i)
-        if (((char*)tagdata)[i])
-          onBoundaryBits[i / 8] |= ((unsigned char)1 << (i%8));
+    {
+      char data;
+      for (i = 0; i < myMesh->max_vertex_index(); ++i)
+      {
+        myTags->get_vertex_data( (size_t)handle, 1, &i, &data, err ); MSQ_ERRRTN(err);
+        myMesh->fix_vertex( i, !!data, err ); MSQ_ERRRTN(err);
+      }
       break;
-    case BOOL:  
-      for (i = 0; i < vertexCount; ++i)
-        if (((bool*)tagdata)[i])
-          onBoundaryBits[i / 8] |= ((unsigned char)1 << (i%8));
+    }
+    case BOOL:
+    {
+      bool data;
+      for (i = 0; i < myMesh->max_vertex_index(); ++i)
+      {
+        myTags->get_vertex_data( (size_t)handle, 1, &i, &data, err ); MSQ_ERRRTN(err);
+        myMesh->fix_vertex( i, data, err ); MSQ_ERRRTN(err);
+      }
       break;
-    case INT :  
-      for (i = 0; i < vertexCount; ++i)
-        if (((int*)tagdata)[i])
-          onBoundaryBits[i / 8] |= ((unsigned char)1 << (i%8));
+    }
+    case INT:
+    {
+      int data;
+      for (i = 0; i < myMesh->max_vertex_index(); ++i)
+      {
+        myTags->get_vertex_data( (size_t)handle, 1, &i, &data, err ); MSQ_ERRRTN(err);
+        myMesh->fix_vertex( i, !!data, err ); MSQ_ERRRTN(err);
+      }
       break;
+    }
     case DOUBLE:
-      for (i = 0; i < vertexCount; ++i)
-        if (((double*)tagdata)[i])
-          onBoundaryBits[i / 8] |= ((unsigned char)1 << (i%8));
+    {
+      double data;
+      for (i = 0; i < myMesh->max_vertex_index(); ++i)
+      {
+        myTags->get_vertex_data( (size_t)handle, 1, &i, &data, err ); MSQ_ERRRTN(err);
+        myMesh->fix_vertex( i, !!data, err ); MSQ_ERRRTN(err);
+      }
       break;
+    }
     default:
       MSQ_SETERR(err)("'fixed' attribute has invalid type", MsqError::PARSE_ERROR);
       return;
@@ -1572,19 +1393,17 @@ void MeshImpl::vtk_read_structured_points( FileTokenizer& tokens, MsqError& err 
   tokens.get_doubles( 3, space, err );     MSQ_ERRRTN(err);
   tokens.get_newline( err );               MSQ_ERRRTN(err);
   
-  vertexCount = dims[0] * dims[1] * dims[2];
-  Vertex* vtx_ptr = vertexArray = new Vertex[vertexCount];
-
+  myMesh->allocate_vertices( dims[0]*dims[1]*dims[2], err ); MSQ_ERRRTN(err);
+  size_t vtx = 0;
+  Vector3D off( origin[0], origin[1], origin[2] );
   for (k = 0; k < dims[2]; ++k)
     for (j = 0; j < dims[1]; ++j)
       for (i = 0; i < dims[0]; ++i)
       {
-        vtx_ptr->coords[0] = origin[0] + i * space[0];
-        vtx_ptr->coords[1] = origin[1] + j * space[1];
-        vtx_ptr->coords[2] = origin[2] + k * space[2];
-        ++vtx_ptr;
+        myMesh->reset_vertex( vtx++, off + Vector3D( i*space[0], j*space[1], k*space[2] ), false, err ); 
+        MSQ_ERRRTN(err);
       }
-  
+
   vtk_create_structured_elems( dims, err ); MSQ_ERRRTN(err);
 }
 
@@ -1592,7 +1411,7 @@ void MeshImpl::vtk_read_structured_grid( FileTokenizer& tokens, MsqError& err )
 {
   long num_verts, dims[3];
  
-  tokens.match_token( "DIMENSIONS", err );    MSQ_ERRRTN(err);
+  tokens.match_token( "DIMENSIONS", err );   MSQ_ERRRTN(err);
   tokens.get_long_ints( 3, dims, err );      MSQ_ERRRTN(err);
   tokens.get_newline( err );                 MSQ_ERRRTN(err); 
   
@@ -1617,11 +1436,14 @@ void MeshImpl::vtk_read_structured_grid( FileTokenizer& tokens, MsqError& err )
     return;
   }
   
-  vertexCount = dims[0] * dims[1] * dims[2];
-  vertexArray = new Vertex[num_verts];
-  
-  tokens.get_doubles( 3 * vertexCount, (double*)vertexArray, err ); MSQ_ERRRTN(err);
-  
+  myMesh->allocate_vertices( num_verts, err ); MSQ_ERRRTN(err);
+  for (size_t vtx = 0; vtx < (size_t)num_verts; ++vtx)
+  {
+    Vector3D pos;
+    tokens.get_doubles( 3, const_cast<double*>(pos.to_array()), err ); MSQ_ERRRTN(err);
+    myMesh->reset_vertex( vtx, pos, false, err );  MSQ_ERRRTN(err);
+  }
+ 
   vtk_create_structured_elems( dims, err ); MSQ_ERRRTN(err);
 }
 
@@ -1630,7 +1452,7 @@ void MeshImpl::vtk_read_rectilinear_grid( FileTokenizer& tokens, MsqError& err )
   int i, j, k;
   long dims[3];
   const char* labels[] = { "X_COORDINATES", "Y_COORDINATES", "Z_COORDINATES" };
-  vector<double> coordinates[3];
+  vector<double> coords[3];
   
   tokens.match_token( "DIMENSIONS", err );                   MSQ_ERRRTN(err);
   tokens.get_long_ints( 3, dims, err );                     MSQ_ERRRTN(err);
@@ -1660,21 +1482,18 @@ void MeshImpl::vtk_read_rectilinear_grid( FileTokenizer& tokens, MsqError& err )
       return;
     }
     
-    coordinates[i].resize(count);
-    tokens.get_doubles( count, &coordinates[i][0], err );   MSQ_ERRRTN(err);
+    coords[i].resize(count);
+    tokens.get_doubles( count, &coords[i][0], err );   MSQ_ERRRTN(err);
   }
   
-  vertexCount = dims[0] * dims[1] * dims[2];
-  Vertex* vtx_ptr = vertexArray = new Vertex[vertexCount];
-
+  myMesh->allocate_vertices( dims[0]*dims[1]*dims[2], err ); MSQ_ERRRTN(err);
+  size_t vtx = 0;
   for (k = 0; k < dims[2]; ++k)
     for (j = 0; j < dims[1]; ++j)
       for (i = 0; i < dims[0]; ++i)
       {
-        vtx_ptr->coords[0] = coordinates[0][i];
-        vtx_ptr->coords[1] = coordinates[1][j];
-        vtx_ptr->coords[2] = coordinates[2][k];
-        ++vtx_ptr;
+        myMesh->reset_vertex( vtx++, Vector3D( coords[0][i], coords[1][j], coords[2][k] ), false, err );
+        MSQ_ERRRTN(err);
       }
   
   
@@ -1703,9 +1522,13 @@ void MeshImpl::vtk_read_polydata( FileTokenizer& tokens, MsqError& err )
     return;
   }
   
-  Vertex* vtx_ptr = vertexArray = new Vertex[num_verts];
-  tokens.get_doubles( 3*num_verts, (double*)vtx_ptr, err ); MSQ_ERRRTN(err);
-  vertexCount = num_verts;
+  myMesh->allocate_vertices( num_verts, err );              MSQ_ERRRTN(err);
+  for (size_t vtx = 0; vtx < (size_t)num_verts; ++vtx)
+  {
+    Vector3D pos;
+    tokens.get_doubles( 3, const_cast<double*>(pos.to_array()), err ); MSQ_ERRRTN(err);
+    myMesh->reset_vertex( vtx, pos, false, err );           MSQ_ERRRTN(err);
+  }
 
   int poly_type = tokens.match_token( poly_data_names, err );MSQ_ERRRTN(err);
   switch (poly_type)
@@ -1733,40 +1556,18 @@ void MeshImpl::vtk_read_polygons( FileTokenizer& tokens, MsqError& err )
   
   tokens.get_long_ints( 2, size, err );                     MSQ_ERRRTN(err);
   tokens.get_newline( err );                                MSQ_ERRRTN(err);
-  
-  elementCount = size[0];
-  Element* elem_ptr = elementArray = new Element[elementCount];
+  myMesh->allocate_elements( size[0], err );                MSQ_ERRRTN(err);
+  msq_std::vector<size_t> conn;
+  assert(sizeof(long) == sizeof(size_t));
 
   for (int i = 0; i < size[0]; ++i)
   {
     long count;
     tokens.get_long_ints( 1, &count, err );                 MSQ_ERRRTN(err);
-    switch (count)
-    {
-      case 3: elem_ptr->mType = TRIANGLE;      break;
-      case 4: elem_ptr->mType = QUADRILATERAL; break;
-      default:
-        MSQ_SETERR(err)( MsqError::NOT_IMPLEMENTED,
-                         "Unsupported polygon, not 3- or 4-sided at line %d",
-                         tokens.line_number() );
-        return;
-    }
-    
-    size_t* vtx_idx_itr = elem_ptr->vertexIndices;
-    for (int j = 0; j < count; ++j, ++vtx_idx_itr)
-    {
-      long val;
-      tokens.get_long_ints( 1, &val, err);                  MSQ_ERRRTN(err);
-      if (val < 0 || (unsigned long)val >= vertexCount)
-      {
-        MSQ_SETERR(err)( MsqError::PARSE_ERROR,
-                         "Vertex index out of bounds at line %d",
-                         tokens.line_number() );
-        return;
-      }
-      *vtx_idx_itr = val;
-    }
-  }
+    conn.resize( count );
+    tokens.get_long_ints( count, (long*)&conn[0], err );    MSQ_ERRRTN(err);
+    myMesh->reset_element( i, conn, POLYGON, err );         MSQ_ERRRTN(err);
+  } 
 }
 
 
@@ -1787,47 +1588,30 @@ void MeshImpl::vtk_read_unstructured_grid( FileTokenizer& tokens, MsqError& err 
     return;
   }
   
-  
-  vertexArray = new Vertex[num_verts];
-  tokens.get_doubles( num_verts * 3, (double*)vertexArray, err );MSQ_ERRRTN(err);
-  vertexCount = num_verts;
+  myMesh->allocate_vertices( num_verts, err );              MSQ_ERRRTN(err);
+  for (size_t vtx = 0; vtx < (size_t)num_verts; ++vtx)
+  {
+    Vector3D pos;
+    tokens.get_doubles( 3, const_cast<double*>(pos.to_array()), err ); MSQ_ERRRTN(err);
+    myMesh->reset_vertex( vtx, pos, false, err );           MSQ_ERRRTN(err);
+  }
   
   tokens.match_token( "CELLS", err );                       MSQ_ERRRTN(err);
   tokens.get_long_ints( 2, num_elems, err );                MSQ_ERRRTN(err);
   tokens.get_newline( err );                                MSQ_ERRRTN(err);
 
-  elementCount = num_elems[0];
-  Element* elem_ptr = elementArray = new Element[elementCount];
-  for (i = 0; i < num_elems[0]; ++i, ++elem_ptr)
+  myMesh->allocate_elements( num_elems[0], err );           MSQ_ERRRTN(err);
+  msq_std::vector<size_t> conn;
+  assert(sizeof(long) == sizeof(size_t));
+  for (i = 0; i < num_elems[0]; ++i)
   {
     long count;
     tokens.get_long_ints( 1, &count, err);                  MSQ_ERRRTN(err);
-    
-    if (count > MSQ_MAX_NUM_VERT_PER_ENT)
-    {
-      MSQ_SETERR(err)( MsqError::NOT_IMPLEMENTED,
-                       "Too many vertices in element at line %d",
-                       tokens.line_number() );
-      return;
-    }
-    
-    size_t* vtx_idx_itr = elem_ptr->vertexIndices;
-    for (int j = 0; j < count; ++j, ++vtx_idx_itr)
-    {
-      long val;
-      tokens.get_long_ints( 1,&val, err);                   MSQ_ERRRTN(err);
-      
-      if (val < 0 || (unsigned long)val >= vertexCount)
-      {
-        MSQ_SETERR(err)( MsqError::PARSE_ERROR,
-                         "Vertex index out of bounds at line %d",
-                         tokens.line_number() );
-        return;
-      }
-      *vtx_idx_itr = val;
-    }
+    conn.resize( count );
+    tokens.get_long_ints( count, (long*)&conn[0], err );    MSQ_ERRRTN(err);
+    myMesh->reset_element( i, conn, MIXED, err );           MSQ_ERRRTN(err);
   }
-  
+ 
   tokens.match_token( "CELL_TYPES", err );                  MSQ_ERRRTN(err);
   tokens.get_long_ints( 1, &num_elems[1], err );            MSQ_ERRRTN(err);
   tokens.get_newline( err );                                MSQ_ERRRTN(err);
@@ -1840,45 +1624,92 @@ void MeshImpl::vtk_read_unstructured_grid( FileTokenizer& tokens, MsqError& err 
     return;
   }
   
-  elem_ptr = elementArray ;
-  for (i = 0; i < num_elems[0]; ++i, ++elem_ptr)
+    /* Map VTK types to Mesquite Types */
+  const int pixel_swap[] = { 2, 3, -1 };
+  const int voxel_swap[] = { 2, 3, 6, 7, -1 };
+  const int wedge_swap[] = { 1, 2, 4, 5, -1 };
+  const int qhex_swap[] = { 12, 16, 13, 17, 14, 18, 15, 19, -1 };
+  const struct { const char* name;       // name for type from vtk documentation
+                 EntityTopology topo;    // Mesquite element topology type
+                 unsigned size;          // Expected connectivity length
+                 const int* swap;        // Index pairs to swap for vtk->exodus ordering
+    } vtk_cell_types[] = { 
+      { 0,                MIXED,         0, 0 },
+      { "vertex",         MIXED,         1, 0 },
+      { "polyvertex",     MIXED,         0, 0 },
+      { "line",           MIXED,         2, 0 },
+      { "polyline",       MIXED,         0, 0 },
+      { "triangle",       TRIANGLE,      3, 0 },
+      { "triangle strip", MIXED,         0, 0 },
+      { "polygon",        POLYGON,       0, 0 },
+      { "pixel",          QUADRILATERAL, 4, pixel_swap },
+      { "quadrilateral",  QUADRILATERAL, 4, 0 }, 
+      { "tetrahedron",    TETRAHEDRON,   4, 0 }, 
+      { "voxel",          HEXAHEDRON,    8, voxel_swap }, 
+      { "hexahedron",     HEXAHEDRON,    8, 0 }, 
+      { "wedge",          PRISM,         6, wedge_swap }, 
+      { "pyramid",        PYRAMID,       5, 0 },
+      { 0,                MIXED,         0, 0 },
+      { 0,                MIXED,         0, 0 },
+      { 0,                MIXED,         0, 0 },
+      { 0,                MIXED,         0, 0 },
+      { 0,                MIXED,         0, 0 },
+      { 0,                MIXED,         0, 0 },
+      { 0,                MIXED,         0, 0 },
+      { "quadratic tri",  TRIANGLE,      6, 0 },
+      { "quadratic quad", QUADRILATERAL, 8, 0 },
+      { "quadratic tet",  TETRAHEDRON,  10, 0 },
+      { "quadratic hex",  HEXAHEDRON,   20, qhex_swap } 
+    };
+  
+  msq_std::vector<size_t> tconn;
+  for (i = 0; i < num_elems[0]; ++i)
   {
     long type;
-    tokens.get_long_ints( 1, &type, err );                  MSQ_ERRRTN(err);
-    switch (type)
+    size_t size;
+    tokens.get_long_ints( 1, &type, err );                      MSQ_ERRRTN(err);
+
+      // Check if type is a valid value
+    if ((unsigned long)type > 25 || !vtk_cell_types[type].name)
     {
-      case 5: 
-        elem_ptr->mType = TRIANGLE; 
-        break;
-      case 8:
-        std::swap( elem_ptr->vertexIndices[2], elem_ptr->vertexIndices[3] );
-      case 9:
-        elem_ptr->mType = QUADRILATERAL;
-        break;
-      case 10:
-        elem_ptr->mType = TETRAHEDRON;
-        break;
-      case 11:
-        std::swap( elem_ptr->vertexIndices[2], elem_ptr->vertexIndices[3] );
-        std::swap( elem_ptr->vertexIndices[6], elem_ptr->vertexIndices[7] );
-      case 12:
-        elem_ptr->mType = HEXAHEDRON;
-        break;
-      case 13:
-        std::swap( elem_ptr->vertexIndices[1], elem_ptr->vertexIndices[2] );
-        std::swap( elem_ptr->vertexIndices[4], elem_ptr->vertexIndices[5] );
-        elem_ptr->mType = PRISM;
-        break;
-      case 14:
-        elem_ptr->mType = PYRAMID;
-        break;
-      default:
-        MSQ_SETERR(err)( MsqError::NOT_IMPLEMENTED,
-                         "Unsupported cell type (%ld) at line %d.",
-                         type, tokens.line_number() );
-        return;
+      MSQ_SETERR(err)( MsqError::PARSE_ERROR,
+                       "Invalid cell type %ld at line %d.",
+                       type, tokens.line_number() );
+      return;
     }
-  }
+      // Check if Mesquite supports the type
+    if (vtk_cell_types[type].topo == MIXED)
+    {
+      MSQ_SETERR(err)( MsqError::NOT_IMPLEMENTED,
+                       "Unsupported cell type %ld (%s) at line %d.",
+                       type, vtk_cell_types[type].name, tokens.line_number() );
+      return;
+    }
+    
+      // If node-ordering is not the same as exodus...
+    if (vtk_cell_types[type].swap)
+    {
+      size = myMesh->element_connectivity( i, err ).size();     MSQ_ERRRTN(err);
+      if (vtk_cell_types[type].size != size)
+      {
+        MSQ_SETERR(err)(MsqError::PARSE_ERROR,
+          "Cell type %ld (%s) for element with %d nodes at Line %d",
+          type, vtk_cell_types[type].name, (int)size, tokens.line_number() ); 
+        return;
+      }
+      
+      tconn = myMesh->element_connectivity(i, err );            MSQ_ERRRTN(err);
+      for (const int* iter = vtk_cell_types[type].swap; *iter > 0; iter += 2)
+        msq_std::swap( tconn[iter[0]], tconn[iter[1]] );
+        
+      myMesh->reset_element( i, tconn, vtk_cell_types[type].topo, err );MSQ_ERRRTN(err);
+    }
+      // Othewise (if node ordering is the same), just set the type.
+    else
+    {
+      myMesh->element_topology( i, vtk_cell_types[type].topo, err );MSQ_ERRRTN(err);
+    }
+  } // for(i)
 }
 
 void MeshImpl::vtk_create_structured_elems( const long* dims, 
@@ -1919,25 +1750,24 @@ void MeshImpl::vtk_create_structured_elems( const long* dims,
   }
 
     // Allocate storage for elements
-  Element* elem_ptr = elementArray = new Element[num_elems];
+  myMesh->allocate_elements( num_elems, err ); MSQ_ERRRTN(err);
   
     // Offsets of element vertices in grid relative to corner closest to origin 
   long k = dims[0]*dims[1];
   const long corners[8] = { 0, 1, 1+dims[0], dims[0], k, k+1, k+1+dims[0], k+dims[0] };
                              
     // Populate element list
+  msq_std::vector<size_t> conn( vert_per_elem );
+  size_t elem_idx = 0;
   for (long z = 0; z < edims[2]; ++z)
     for (long y = 0; y < edims[1]; ++y)
       for (long x = 0; x < edims[0]; ++x)
       {
         const long index = x + y*dims[0] + z*(dims[0]*dims[1]);
-        elem_ptr->mType = type;
         for (long j = 0; j < vert_per_elem; ++j)
-          elem_ptr->vertexIndices[j] = index + corners[j];
-        ++elem_ptr;
+          conn[j] = index + corners[j];
+        myMesh->reset_element( elem_idx++, conn, type, err ); MSQ_ERRRTN(err);
       }
-  
-  elementCount = num_elems;
 }
 
 void MeshImpl::vtk_read_field( FileTokenizer& tokens, MsqError& err )
@@ -2027,15 +1857,27 @@ void MeshImpl::vtk_read_point_data( FileTokenizer& tokens,
                                     MsqError& err )
 {
   TagDescription tag;
-  void* data = vtk_read_attrib_data( tokens, vertexCount, tag, err );
+  void* data = vtk_read_attrib_data( tokens, myMesh->num_vertices(), tag, err );
   MSQ_ERRRTN(err);
   
-  TagHandle handle = tag_get( tag.name, err );
-  TagData* tag_ptr;
-  if (!err)
+  MsqError tmperr;
+  size_t tag_handle = myTags->handle( tag.name, tmperr );
+  if (tmperr)
   {
-    tag_ptr = tag_from_handle( handle, err );  MSQ_ERRRTN(err);
-    if (tag_ptr->desc != tag)
+    tag_handle = myTags->create( tag, err ); 
+    if (MSQ_CHKERR(err)) {
+      free( data );
+      return;
+    }
+  }
+  else 
+  {
+    const TagDescription& desc = myTags->properties( tag_handle, err ); 
+    if (MSQ_CHKERR(err)) {
+      free( data );
+      return;
+    }
+    if (desc != tag)
     {
       MSQ_SETERR(err)( MsqError::PARSE_ERROR,
                        "Inconsistent types between element "
@@ -2044,29 +1886,21 @@ void MeshImpl::vtk_read_point_data( FileTokenizer& tokens,
       free( data );
       return;
     }
-    
-    if (tag_ptr->vertIsDefault)
-    {
-      free(tag_ptr->vertexData);
-      tag_ptr->vertexData = 0;
-      tag_ptr->vertIsDefault = false;
-    }
-    else if (tag_ptr->vertexData)
-    {
-      MSQ_SETERR(err)( MsqError::PARSE_ERROR,
-                       "Duplicate vertex attribute name"
-                       " at line %d", tokens.line_number() );
-      free( data );
-      return;
-    }
   }
-  else
-  {
-    err.clear();
-    tag_ptr = new TagData( tag );
-    tagList.push_back(tag_ptr);
+  
+  msq_std::vector<size_t> vertex_handles;
+  myMesh->all_vertices( vertex_handles, err );
+  if (MSQ_CHKERR(err)) {
+    free( data );
+    return;
   }
-  tag_ptr->vertexData = data;
+  myTags->set_vertex_data( tag_handle, 
+                           vertex_handles.size(),
+                           &vertex_handles[0],
+                           data,
+                           err ); MSQ_CHKERR(err);
+  free( data );
+  
 }
 
 
@@ -2074,15 +1908,27 @@ void MeshImpl::vtk_read_cell_data( FileTokenizer& tokens,
                                    MsqError& err )
 {
   TagDescription tag;
-  void* data = vtk_read_attrib_data( tokens, elementCount, tag, err );
+  void* data = vtk_read_attrib_data( tokens, myMesh->num_elements(), tag, err );
   MSQ_ERRRTN(err);
   
-  TagHandle handle = tag_get( tag.name, err );
-  TagData* tag_ptr;
-  if (!err)
+  MsqError tmperr;
+  size_t tag_handle = myTags->handle( tag.name, tmperr );
+  if (tmperr)
   {
-    tag_ptr = tag_from_handle( handle, err );  MSQ_ERRRTN(err);
-    if (tag_ptr->desc != tag)
+    tag_handle = myTags->create( tag, err ); 
+    if (MSQ_CHKERR(err)) {
+      free( data );
+      return;
+    }
+  }
+  else 
+  {
+    const TagDescription& desc = myTags->properties( tag_handle, err ); 
+    if (MSQ_CHKERR(err)) {
+      free( data );
+      return;
+    }
+    if (desc != tag)
     {
       MSQ_SETERR(err)( MsqError::PARSE_ERROR,
                        "Inconsistent types between element "
@@ -2091,29 +1937,21 @@ void MeshImpl::vtk_read_cell_data( FileTokenizer& tokens,
       free( data );
       return;
     }
-    
-    if (tag_ptr->elemIsDefault)
-    {
-      free(tag_ptr->elementData);
-      tag_ptr->elementData = 0;
-      tag_ptr->elemIsDefault = false;
-    }
-    else if (tag_ptr->elementData)
-    {
-      MSQ_SETERR(err)( MsqError::PARSE_ERROR,
-                       "Duplicate element attribute name"
-                       " at line %d", tokens.line_number() );
-      free( data );
-      return;
-    }
   }
-  else
-  {
-    err.clear();
-    tag_ptr = new TagData( tag );
-    tagList.push_back(tag_ptr);
+  
+  msq_std::vector<size_t> element_handles;
+  myMesh->all_elements( element_handles, err );
+  if (MSQ_CHKERR(err)) {
+    free( data );
+    return;
   }
-  tag_ptr->elementData = data;
+  myTags->set_element_data( tag_handle, 
+                            element_handles.size(),
+                            &element_handles[0],
+                            data,
+                            err ); MSQ_CHKERR(err);
+  free( data );
+  
 }
 
 void* MeshImpl::vtk_read_typed_data( FileTokenizer& tokens, 
@@ -2366,7 +2204,7 @@ void MeshImpl::vtk_write_attrib_data( msq_stdio::ostream& file,
     
   
   TagDescription::VtkType vtk_type = desc.vtkType;
-  unsigned vlen = desc.size / size_from_tag_type(desc.type);
+  unsigned vlen = desc.size / MeshImplTags::size_from_tag_type(desc.type);
     // guess one from data length if not set
   if (vtk_type == TagDescription::NONE)
   {
@@ -2482,96 +2320,25 @@ void MeshImpl::vtk_write_attrib_data( msq_stdio::ostream& file,
  **************************************************************************/
 
 
-MeshImpl::TagData::~TagData() 
-{
-  if (elementData) 
-    free(elementData);
-  if (vertexData)
-    free(vertexData);
-}
-
-
-MeshImpl::TagData* MeshImpl::tag_from_handle( TagHandle handle, MsqError& err )
-{
-  unsigned index = (unsigned) handle;
-  if (index >= tagList.size() || !tagList[index])
-  {
-    MSQ_SETERR(err)("Invalid tag handle.",MsqError::INVALID_ARG);
-    return 0;
-  }
-  
-  return tagList[index];
-}
-
-size_t MeshImpl::size_from_tag_type( TagType type )
-{
-  switch( type ) {
-    case BYTE:   return 1;
-    case BOOL:   return sizeof(bool);
-    case DOUBLE: return sizeof(double);
-    case INT:    return sizeof(int);
-    case HANDLE: return sizeof(EntityHandle);
-    default: assert(0); return 0;
-  }
-}
-
 TagHandle MeshImpl::tag_create( const string& name,
                                 TagType type,
                                 unsigned length,
                                 const void* defval,
                                 MsqError& err )
 {
-  TagHandle handle = tag_get( name, err );
-  if (!err)
-  {
-    err.clear();
-    MSQ_SETERR(err)(name, MsqError::TAG_ALREADY_EXISTS);
-    return 0;
-  }
-  
-  if (length == 0 || size_from_tag_type(type) == 0)
-  {
-    MSQ_SETERR(err)(MsqError::INVALID_ARG);
-    return 0;
-  }
-  
-  TagData* tag = new TagData( name, type, length );
-  handle = (TagHandle)(tagList.size());
-  tagList.push_back(tag);
-  
-  if (defval)
-  {
-    tag->vertIsDefault = tag->elemIsDefault = true;
-    tag->elementData = malloc( tag->desc.size );
-    tag->vertexData = malloc( tag->desc.size );
-    memcpy( tag->elementData, defval, tag->desc.size );
-    memcpy( tag->vertexData, defval, tag->desc.size );
-  }
-  
-  return handle;
+  size_t index = myTags->create( name, type, length, defval, err ); MSQ_ERRZERO(err);
+  return (TagHandle)index;
 }
 
 void MeshImpl::tag_delete( TagHandle handle, MsqError& err )
 {
-  unsigned index = (unsigned)handle;
-  if (index >= tagList.size() || 0 == tagList[index])
-  {
-    MSQ_SETERR(err)(MsqError::TAG_NOT_FOUND);
-    return ;
-  }
-  
-  delete tagList[index];
-  tagList[index] = 0;
+  myTags->destroy( (size_t)handle, err ); MSQ_CHKERR(err);
 }
 
 TagHandle MeshImpl::tag_get( const msq_std::string& name, MsqError& err )
 {
-  for (unsigned i = 0; i < tagList.size(); ++i)
-    if (tagList[i] && tagList[i]->desc.name == name)
-      return (TagHandle)i;
-      
-  MSQ_SETERR(err)(MsqError::TAG_NOT_FOUND);
-  return 0;
+  size_t index = myTags->handle( name, err ); MSQ_ERRZERO(err);
+  return (TagHandle)index;
 }
 
 void MeshImpl::tag_properties( TagHandle handle,
@@ -2580,10 +2347,12 @@ void MeshImpl::tag_properties( TagHandle handle,
                                unsigned& length,
                                MsqError& err )
 {
-  TagData* data = tag_from_handle(handle,err); MSQ_ERRRTN(err);
-  name = data->desc.name;
-  type = data->desc.type;
-  length = data->desc.size / size_from_tag_type(data->desc.type);
+  const TagDescription& desc 
+    = myTags->properties( (size_t)handle, err ); MSQ_ERRRTN(err);
+  
+  name = desc.name;
+  type = desc.type;
+  length = (unsigned)(desc.size / MeshImplTags::size_from_tag_type( desc.type ));
 }
 
 
@@ -2593,40 +2362,11 @@ void MeshImpl::tag_set_element_data( TagHandle handle,
                                      const void* values,
                                      MsqError& err )
 {
-  size_t i;
-  TagData* tag = tag_from_handle(handle,err); MSQ_ERRRTN(err);
-  
-    // Allocate space for data, if it has not yet been allocated
-  if (tag->elemIsDefault)
-  {
-    tag->elemIsDefault = false;
-    void* def = tag->elementData;
-    tag->elementData = malloc( tag->desc.size * elementCount );
-    for (i = 0; i < elementCount; ++i)
-      memcpy( ((char*)tag->elementData) + i*tag->desc.size, def, tag->desc.size );
-    free( def );
-  }
-  else if (!tag->elementData)
-  {
-    tag->elementData = malloc( tag->desc.size * elementCount );
-    memset( tag->elementData, 0, tag->desc.size * elementCount );
-  }
-  
-    // Store passed tag values
-  char* data = (char*)tag->elementData;
-  const char* iter = (const char*)values;
-  for (size_t i = 0; i < num_elems; ++i)
-  {
-    size_t index = ((Element*)elem_array[i]) - elementArray;
-    if (index > elementCount)
-    {
-      MSQ_SETERR(err)(MsqError::INVALID_ARG);
-      return;
-    }
-    
-    memcpy( data + index*tag->desc.size, iter, tag->desc.size );
-    iter += tag->desc.size;
-  }
+  myTags->set_element_data( (size_t)handle, 
+                            num_elems, 
+                            (const size_t*)elem_array,
+                            values,
+                            err );  MSQ_CHKERR(err);
 }
 
 void MeshImpl::tag_get_element_data( TagHandle handle,
@@ -2635,38 +2375,11 @@ void MeshImpl::tag_get_element_data( TagHandle handle,
                                      void* values,
                                      MsqError& err )
 {
-  TagData* tag = tag_from_handle(handle,err); MSQ_ERRRTN(err);
-  char* iter = (char*)values;
-  const char* data = (const char*)tag->elementData;
-  
-    // If no data (not even a default value) is set, error
-  if (!data)
-  {
-    MSQ_SETERR(err)(MsqError::TAG_NOT_FOUND);
-    return;
-  }
-    // If element data has default value, return that for all elements
-  else if (tag->elemIsDefault)
-  {
-    for (size_t i = 0; i < num_elems; ++i)
-      memcpy( iter, data, tag->desc.size );
-  }
-    // Otherwise return specific value for each requested entity
-  else
-  {
-    for (size_t i = 0; i < num_elems; ++i)
-    {
-      size_t index = ((Element*)elem_array[i]) - elementArray;
-      if (index > elementCount)
-      {
-        MSQ_SETERR(err)(MsqError::INVALID_ARG);
-        return;
-      }
-
-      memcpy( iter, data + index*tag->desc.size, tag->desc.size );
-      iter += tag->desc.size;
-    }
-  }
+  myTags->get_element_data( (size_t)handle, 
+                            num_elems, 
+                            (const size_t*)elem_array,
+                            values,
+                            err );  MSQ_CHKERR(err);
 }
 
 void MeshImpl::tag_set_vertex_data(  TagHandle handle,
@@ -2675,38 +2388,11 @@ void MeshImpl::tag_set_vertex_data(  TagHandle handle,
                                      const void* values,
                                      MsqError& err )
 {
-  size_t i;
-  TagData* tag = tag_from_handle(handle,err); MSQ_ERRRTN(err);
-  
-  if (tag->vertIsDefault)
-  {
-    tag->vertIsDefault = false;
-    void* def = tag->vertexData;
-    tag->vertexData = malloc( tag->desc.size * vertexCount );
-    for (i = 0; i < vertexCount; ++i)
-      memcpy( ((char*)tag->vertexData) + i*tag->desc.size, def, tag->desc.size );
-    free( def );
-  }
-  else if (!tag->vertexData)
-  {
-    tag->vertexData = malloc( tag->desc.size * vertexCount );
-    memset( tag->vertexData, 0, tag->desc.size * vertexCount );
-  }
-  
-  char* data = (char*)tag->vertexData;
-  const char* iter = (const char*)values;
-  for (size_t i = 0; i < num_elems; ++i)
-  {
-    size_t index = ((Vertex*)elem_array[i]) - vertexArray;
-    if (index > vertexCount)
-    {
-      MSQ_SETERR(err)(MsqError::INVALID_ARG);
-      return;
-    }
-    
-    memcpy( data + index*tag->desc.size, iter, tag->desc.size );
-    iter += tag->desc.size;
-  }
+  myTags->set_vertex_data( (size_t)handle, 
+                            num_elems, 
+                            (const size_t*)elem_array,
+                            values,
+                            err );  MSQ_CHKERR(err);
 }
 
 void MeshImpl::tag_get_vertex_data(  TagHandle handle,
@@ -2715,51 +2401,14 @@ void MeshImpl::tag_get_vertex_data(  TagHandle handle,
                                      void* values,
                                      MsqError& err )
 {
-  TagData* tag = tag_from_handle(handle,err); MSQ_ERRRTN(err);
-  char* iter = (char*)values;
-  const char* data = (const char*)tag->vertexData;
-  
-    // If no data (not even a default value) is set, error
-  if (!data)
-  {
-    MSQ_SETERR(err)(MsqError::TAG_NOT_FOUND);
-    return;
-  }
-    // If vertex data has default value, return that for all vertices
-  else if (tag->vertIsDefault)
-  {
-    for (size_t i = 0; i < num_elems; ++i)
-      memcpy( iter, data, tag->desc.size );
-  }
-    // Otherwise return specific value for each requested entity
-  else
-  {
-    for (size_t i = 0; i < num_elems; ++i)
-    {
-      size_t index = ((Vertex*)elem_array[i]) - vertexArray;
-      if (index > vertexCount)
-      {
-        MSQ_SETERR(err)(MsqError::INVALID_ARG);
-        return;
-      }
-
-      memcpy( iter, data + index*tag->desc.size, tag->desc.size );
-      iter += tag->desc.size;
-    }
-  }
+  myTags->get_vertex_data( (size_t)handle, 
+                            num_elems, 
+                            (const size_t*)elem_array,
+                            values,
+                            err );  MSQ_CHKERR(err);
 }
 
-bool MeshImpl::tag_has_vertex_data( TagHandle handle, MsqError& err ) 
-{
-  TagData* tag = tag_from_handle(handle,err); MSQ_ERRZERO(err);
-  return 0 != tag->vertexData;
-}  
 
-bool MeshImpl::tag_has_element_data( TagHandle handle, MsqError& err ) 
-{
-  TagData* tag = tag_from_handle(handle,err); MSQ_ERRZERO(err);
-  return 0 != tag->elementData;
-}  
 
 
 } // namespace Mesquite

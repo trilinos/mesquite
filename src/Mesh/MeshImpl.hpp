@@ -21,7 +21,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  
     diachin2@llnl.gov, djmelan@sandia.gov, mbrewer@sandia.gov, 
-    pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov      
+    pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov  ,
+    kraftche@cae.wisc.edu    
    
   ***************************************************************** */
 /*!
@@ -30,6 +31,7 @@
 
   \author Darryl Melander
   \author Thomas Leurent
+  \author Jason Kraftcheck
   \date   2003-04-17
 */
 
@@ -47,6 +49,9 @@
 namespace Mesquite
 {
   class FileTokenizer;
+  class MeshImplData;
+  class MeshImplTags;
+  struct TagDescription;
   
   /*!  \class MeshImpl
 
@@ -140,9 +145,9 @@ namespace Mesquite
                                   size_t num_vtx, MsqError &err);
     
       // Get/set location of a vertex
-    virtual void vertices_get_coordinates(VertexHandle vert_array[],
-                                  Mesquite::MsqVertex* const &coordinates,
-                                  const size_t &num_vtx,
+    virtual void vertices_get_coordinates(const VertexHandle vert_array[],
+                                  Mesquite::MsqVertex* coordinates,
+                                  size_t num_vtx,
                                   MsqError &err);
     virtual void vertex_set_coordinates(VertexHandle vertex,
                                         const Vector3D &coordinates,
@@ -235,6 +240,11 @@ namespace Mesquite
                                                 size_t &sizeof_csr_data,
                                                 size_t *csr_offsets,
                                                 MsqError &err);
+    
+    void element_get_connectivity( ElementHandle element,
+                                   VertexHandle* vert_handles,
+                                   size_t sizeof_vert_handles, 
+                                   MsqError& err );
     
       // Returns the topology of the given entity.
     virtual EntityTopology element_get_topology(ElementHandle entity_handle,
@@ -355,29 +365,7 @@ namespace Mesquite
                                        const VertexHandle* node_array,
                                        void* tag_data,
                                        MsqError& err );
-    
-    class TagIterator 
-    {
-      public:
-        TagIterator( size_t i ) : index(i) {}
-        TagHandle operator*() const  { return TagHandle(index);     }
-        TagIterator operator++()     { return TagIterator(++index); }
-        TagIterator operator--()     { return TagIterator(--index); }
-        TagIterator operator++(int)  { return TagIterator(index++); }
-        TagIterator operator--(int)  { return TagIterator(index--); }
-        bool operator==(TagIterator other) const { return index == other.index; }
-        bool operator!=(TagIterator other) const { return index != other.index; }
-      private:
-        size_t index;
-    };
-    TagIterator tag_begin() { return 0; }
-    TagIterator tag_end()   { return tagList.size(); }
-    
-    bool tag_has_vertex_data( TagHandle handle, MsqError& err ) ;
-    bool tag_has_element_data( TagHandle handle, MsqError& err ) ;
-        
-    
-    
+
 //**************** Memory Management ****************
       // Tells the mesh that the client is finished with a given
       // entity handle.  
@@ -395,115 +383,14 @@ namespace Mesquite
       // Remove all data
     void clear();
     
-  protected:
-    class Vertex;
-    class Element;
+  private:
     
-    Vertex* vertexArray;
-    Element* elementArray;
-    size_t vertexCount;
-    size_t elementCount;
+    /** Coordinate values per vertex */
+    int numCoords;
     
-    unsigned char* onBoundaryBits;
-    unsigned char* vertexMesquiteByte;
-    size_t *newVertIndices;
+    MeshImplData* myMesh;
+    MeshImplTags* myTags;
 
-    size_t *v2eOffset;  //!< When created, size vertexCount + 1
-    size_t totalVertexUses; //!< Number of vertices in all elements
-    size_t *v2E; //!< When created, size totalVertexUses
-
-    unsigned char numCoords;
-
-    public:
-
-    struct TagDescription {
-        // The VTK attribute type the data was read from, or NONE if not VTK data.
-        // This property is kept only so that when a vtk file is read and subseqquently
-        // written, it can be preserved for other potential readers that actually care
-        // about it.
-      enum VtkType { NONE = 0, SCALAR, COLOR, VECTOR, NORMAL, TEXTURE, TENSOR, FIELD };
-
-        //! tag name
-      msq_std::string name;
-        //! tag type
-      TagType type;
-        //! VTK attribute type
-      VtkType vtkType;
-        //! size of tag data (sizeof(type) * length)
-      size_t size;
-   
-      inline TagDescription( msq_std::string n, TagType t, VtkType v, size_t s )
-        : name(n), type(t), vtkType(v), size(s) {}
-      
-      inline TagDescription( )
-        : type(BYTE), vtkType(NONE), size(0) {}
-      
-      inline bool operator==(const TagDescription& o) const
-        { return name == o.name && type == o.type && vtkType == o.vtkType && size == o.size; }
-      inline bool operator!=(const TagDescription& o) const
-        { return name != o.name || type != o.type || vtkType != o.vtkType || size != o.size; }
-    };
-
-    /** \class TagData
-     * Store data for a single tag
-     */
-    struct TagData  {
-
-        //! tag meta data
-      const TagDescription desc;
-
-        //! per-element data, or NULL if none has been set.
-      void* elementData;
-
-        //! per-vertex data, or NULL if none has been set.
-      void* vertexData;
-      
-        //! If this is true, then vertexData points to a single value
-        //! which is the same for all vertices.  If false, it points
-        //! to an array of values, uniqe for each vertex.
-      bool vertIsDefault;
-      
-        //! If this is true, then elementData points to a single value
-        //! which is the same for all elements.  If false, it points
-        //! to an array of values, uniqe for each elements.
-      bool elemIsDefault;
-      
-
-      inline TagData( const msq_std::string& name, 
-               TagType type, unsigned length,
-               TagDescription::VtkType vtk_type = TagDescription::NONE )
-        : desc(name, type, vtk_type, length*size_from_tag_type(type)),
-          elementData(0), vertexData(0), 
-          vertIsDefault(false), elemIsDefault(false) {}
-      
-      inline TagData( const TagDescription& descr )
-        : desc(descr), elementData(0), vertexData(0), 
-          vertIsDefault(false), elemIsDefault(false) {}
-          
-      ~TagData();
-    };
-
-    static size_t size_from_tag_type( TagType type );
-
-    protected:
-
-    std::vector<TagData*> tagList;
-    TagData* tag_from_handle( TagHandle handle, MsqError& err );
-   
-    class Vertex
-    {
-    public:
-      double coords[3];
-    };
-    
-    class Element
-    {
-    public:
-      Mesquite::EntityTopology mType;
-      size_t vertexIndices[MSQ_MAX_NUM_VERT_PER_ENT];
-    };
-
-    void create_vertex_to_element_data(MsqError &err);
 
 //**************** VTK Parsing ****************
 

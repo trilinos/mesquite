@@ -263,7 +263,7 @@ public:
 
     // retrieve the attached element.
     Mesquite::Mesh::ElementHandle elem=0;
-    mMesh->vertex_get_attached_elements(mVertices[2], &elem, 1, mErr);
+    mMesh->vertex_get_attached_elements(mVertices[one_corner_vertex_index], &elem, 1, mErr);
     CPPUNIT_ASSERT(!mErr);
     CPPUNIT_ASSERT(elem!=0);
 
@@ -328,9 +328,10 @@ public:
 //     }
 
     // Make sure a handle is returned for each vertex.
-    for (int i=0; i<9; ++i) {
-      CPPUNIT_ASSERT( vert_handles[i] != 0 );
-    }
+    // Zero is a valid handle!
+    //for (int i=0; i<9; ++i) {
+    //  CPPUNIT_ASSERT( vert_handles[i] != 0 );
+    //}
     
     // Make sure CSR data is valid
     int vtx_repeated_occurence[9] = {0,0,0,0,0,0,0,0,0};

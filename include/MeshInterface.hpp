@@ -21,7 +21,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  
     diachin2@llnl.gov, djmelan@sandia.gov, mbrewer@sandia.gov, 
-    pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov      
+    pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov,
+    kraftche@cae.wisc.edu
    
   ***************************************************************** */
 /*!
@@ -157,9 +158,9 @@ namespace Mesquite
                                   size_t num_vtx, MsqError &err) = 0;
     
       //! Get/set location of a vertex
-    virtual void vertices_get_coordinates(VertexHandle vert_array[],
-                                        Mesquite::MsqVertex* const &coordinates,
-                                        const size_t &num_vtx,
+    virtual void vertices_get_coordinates(const VertexHandle vert_array[],
+                                        MsqVertex* coordinates,
+                                        size_t num_vtx,
                                         MsqError &err) = 0;
     virtual void vertex_set_coordinates(VertexHandle vertex,
                                         const Vector3D &coordinates,
