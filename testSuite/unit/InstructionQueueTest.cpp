@@ -96,9 +96,13 @@ public:
      MsqPrintError err(cout);
      // creates a quality assessor and a qualilty improver
      mQM = new MeanRatioQualityMetric(err);
+     CPPUNIT_ASSERT(!err);
      mOF = new LPtoPTemplate(mQM, 2, err);
+     CPPUNIT_ASSERT(!err);
      mQI = new SteepestDescent( mOF );
-     mQA = new QualityAssessor(mQM, QualityAssessor::MAXIMUM);
+     mQA = new QualityAssessor();
+     mQA->set_stopping_assessment( mQM, QualityAssessor::MAXIMUM, err );
+     CPPUNIT_ASSERT(!err);
   }
 
   void tearDown()

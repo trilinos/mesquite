@@ -132,7 +132,8 @@ int main()
   pass1.set_patch_type(PatchData::GLOBAL_PATCH, err);
   if (err) return 1;
   
-  QualityAssessor qa=QualityAssessor(cond_no,QualityAssessor::ALL_MEASURES);
+  QualityAssessor qa=QualityAssessor(cond_no,QualityAssessor::ALL_MEASURES, err);
+  if (err) return 1;
   
     // **************Set termination criterion****************
   TerminationCriterion tc_inner;

@@ -151,7 +151,8 @@ public:
       
       pass1->set_debugging_level(0);
       QualityAssessor all_qa=QualityAssessor(cond_num,
-                                             QualityAssessor::ALL_MEASURES);
+                                             QualityAssessor::ALL_MEASURES,
+                                             err); CPPUNIT_ASSERT(!err);
       queue1.add_quality_assessor(&all_qa,err); CPPUNIT_ASSERT(!err);
       queue1.set_master_quality_improver(pass1, err); CPPUNIT_ASSERT(!err);
         //queue1.add_quality_assessor(&all_qa,err); CPPUNIT_ASSERT(!err);

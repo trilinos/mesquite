@@ -158,7 +158,8 @@ public:
      pass1->set_patch_type(PatchData::GLOBAL_PATCH, err,1 ,1);
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
-     QualityAssessor qa=QualityAssessor(shape,QualityAssessor::MAXIMUM);
+     QualityAssessor qa=QualityAssessor(shape,QualityAssessor::MAXIMUM, err);
+     CPPUNIT_ASSERT(!err);
      
        //**********Set stopping criterion  5 iterates ****************
        //StoppingCriterion sc5(StoppingCriterion::NUMBER_OF_PASSES,5);
@@ -237,7 +238,8 @@ public:
        CPPUNIT_ASSERT(!err);
          // launches optimization on mesh_set1
        QualityAssessor qa=QualityAssessor(shape_metric,
-                                          QualityAssessor::MAXIMUM);
+                                          QualityAssessor::MAXIMUM, err);
+       CPPUNIT_ASSERT(!err);
        double orig_val=qa.loop_over_mesh(mesh_set1,err);
        
          //Make sure no errors
@@ -288,7 +290,8 @@ public:
        CPPUNIT_ASSERT(!err);
 
          //create a quality assessor
-       QualityAssessor qa=QualityAssessor(edg_len,QualityAssessor::RMS);
+       QualityAssessor qa=QualityAssessor(edg_len,QualityAssessor::RMS, err);
+       CPPUNIT_ASSERT(!err);
 
          //*******Set stopping criterion 10 iterates  ***********
          //StoppingCriterion sc10(StoppingCriterion::NUMBER_OF_PASSES,10);

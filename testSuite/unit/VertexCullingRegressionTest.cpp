@@ -122,7 +122,7 @@ public:
         // creates the laplacian smoother  procedures
       LaplacianSmoother* lapl1 = new LaplacianSmoother(err); CPPUNIT_ASSERT(!err);
       LaplacianSmoother* lapl2 = new LaplacianSmoother(err); CPPUNIT_ASSERT(!err);
-      QualityAssessor stop_qa=QualityAssessor(shape_metric,QualityAssessor::MAXIMUM); CPPUNIT_ASSERT(!err);
+      QualityAssessor stop_qa=QualityAssessor(shape_metric,QualityAssessor::MAXIMUM, err); CPPUNIT_ASSERT(!err);
       stop_qa.add_quality_assessment(lapl_met,QualityAssessor::ALL_MEASURES,err); CPPUNIT_ASSERT(!err);
       
         //**************Set termination criterion****************

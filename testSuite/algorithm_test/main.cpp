@@ -112,7 +112,8 @@ int main()
   pass1->set_patch_type(PatchData::GLOBAL_PATCH, err,1 ,1);
   if (err) return 1;
   
-  QualityAssessor mean_qa=QualityAssessor(mean,QualityAssessor::AVERAGE);
+  QualityAssessor mean_qa=QualityAssessor(mean,QualityAssessor::AVERAGE, err);
+  if (err) return 1;
 
     //**************Set termination criterion****************
 

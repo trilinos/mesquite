@@ -134,7 +134,8 @@ int main()
   if (err) return 1;
   pass1->set_patch_type(PatchData::GLOBAL_PATCH, err);
   
-  QualityAssessor stop_qa(&mu,QualityAssessor::AVERAGE);
+  QualityAssessor stop_qa(&mu,QualityAssessor::AVERAGE, err);
+  if (err) return 1;
   stop_qa.set_target_calculator(&assessor_target, err); 
   if (err) return 1;
   

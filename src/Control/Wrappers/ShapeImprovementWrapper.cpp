@@ -101,7 +101,7 @@ ShapeImprovementWrapper::ShapeImprovementWrapper(MsqError& err,
     //creates a FeasibleNewtone improver
   feasNewt = new FeasibleNewton(objFunc);
   feasNewt->set_patch_type(PatchData::GLOBAL_PATCH, err,1 ,1);  MSQ_ERRRTN(err);
-  mQA = new QualityAssessor(meanRatio,QualityAssessor::MAXIMUM);
+  mQA = new QualityAssessor(meanRatio,QualityAssessor::MAXIMUM, err); MSQ_ERRRTN(err);
   mQA->add_quality_assessment(meanRatio, QualityAssessor::MINIMUM,err);  MSQ_ERRRTN(err);
   mQA->add_quality_assessment(meanRatio, QualityAssessor::AVERAGE,err);  MSQ_ERRRTN(err);
   mQA->add_quality_assessment(meanRatio, QualityAssessor::RMS,err);  MSQ_ERRRTN(err);   

@@ -161,8 +161,10 @@ public:
      pass2->set_patch_type(PatchData::GLOBAL_PATCH, err,1 ,1);
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
-     QualityAssessor stop_qa=QualityAssessor(untan,QualityAssessor::MAXIMUM);
-     QualityAssessor qa=QualityAssessor(shape,QualityAssessor::MAXIMUM);
+     QualityAssessor stop_qa=QualityAssessor(untan,QualityAssessor::MAXIMUM, err);
+     CPPUNIT_ASSERT(!err);
+     QualityAssessor qa=QualityAssessor(shape,QualityAssessor::MAXIMUM, err);
+     CPPUNIT_ASSERT(!err);
      if(pF==0){
        stop_qa.disable_printing_results();
        qa.disable_printing_results();
@@ -272,8 +274,10 @@ public:
        pass2->set_patch_type(PatchData::GLOBAL_PATCH, err,1 ,1);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
-       QualityAssessor stop_qa=QualityAssessor(untan,QualityAssessor::MAXIMUM);
-       QualityAssessor qa=QualityAssessor(shape,QualityAssessor::MAXIMUM);
+       QualityAssessor stop_qa=QualityAssessor(untan,QualityAssessor::MAXIMUM, err);
+       CPPUNIT_ASSERT(!err);
+       QualityAssessor qa=QualityAssessor(shape,QualityAssessor::MAXIMUM, err);
+       CPPUNIT_ASSERT(!err);
          //turn off printing if print flag not set.
        if(pF==0){
          stop_qa.disable_printing_results();
@@ -380,7 +384,8 @@ public:
        pass1->set_debugging_level(1);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
-       QualityAssessor qa=QualityAssessor(smooth,QualityAssessor::AVERAGE);
+       QualityAssessor qa=QualityAssessor(smooth,QualityAssessor::AVERAGE, err);
+       CPPUNIT_ASSERT(!err);
        
          //**********Set stopping criterion  5 iterates ****************
        TerminationCriterion sc5;

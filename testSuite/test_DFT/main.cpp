@@ -166,7 +166,8 @@ int main(int argc, char* argv[])
   pass1->set_patch_type(PatchData::GLOBAL_PATCH, err);
   if (err) return 1;
   
-  QualityAssessor stop_qa(&mean_ratio,QualityAssessor::AVERAGE);
+  QualityAssessor stop_qa(&mean_ratio,QualityAssessor::AVERAGE, err);
+  if (err) return 1;
   stop_qa.set_target_calculator(&assessor_target, err); 
   if (err) return 1;
   

@@ -198,7 +198,8 @@ int run_global_smoother( MeshSet& mesh_set, MsqError& err )
   pass1->set_patch_type(PatchData::GLOBAL_PATCH, err);
   if (err) return 1;
   
-  QualityAssessor stop_qa=QualityAssessor(mean_ratio,QualityAssessor::AVERAGE);
+  QualityAssessor stop_qa=QualityAssessor(mean_ratio,QualityAssessor::AVERAGE, err);
+  if (err) return 1;
   
   // **************Set stopping criterion****************
   TerminationCriterion tc_inner;

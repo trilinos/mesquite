@@ -32,12 +32,15 @@ Header file for the Mesquite::QualityAssessor class
 
   \author Thomas Leurent
   \date   2002-05-01
+  \author Jason Kraftcheck
+  \date   2005-03-09
  */
 
 
 #ifndef MSQ_QUALITYASSESSOR_HPP
 #define MSQ_QUALITYASSESSOR_HPP
 
+#include <math.h>
 
 #include "Mesquite.hpp"
 #include "PatchDataUser.hpp"
@@ -48,8 +51,12 @@ Header file for the Mesquite::QualityAssessor class
 #else
 #  include <list>
 #  include <string>
-   using std::string;
-   using std::list;
+#endif
+
+#ifdef MSQ_USE_OLD_IO_HEADERS
+#  include <ostream.h>
+#else
+#  include <iosfwd>
 #endif
 
 
@@ -72,9 +79,11 @@ namespace Mesquite
       it is often useful to reuse the same QualityAssessor object
       to reassess the mesh quality.
   */
-   class QualityAssessor : public PatchDataUser
+  class QualityAssessor : public PatchDataUser
   {
   public:
+    
+    
     /*! \enum QAFunction
       type of function used in conjunction with QualityMetric to compute mesh quality */ 
     enum QAFunction {
@@ -84,28 +93,59 @@ namespace Mesquite
        MINIMUM=8,
        RMS=16,
        STDDEV=32,
-       ALL_MEASURES=63
+       ALL_MEASURES=255
     };
-    string get_QAFunction_name(enum QualityAssessor::QAFunction);
     
-    //! Constructor requires a QualityMetric and an evaluation function
-    QualityAssessor(QualityMetric*, enum QAFunction  func,
-                    string name = "DefaultQualAssessName");
+    static msq_std::string get_QAFunction_name(enum QualityAssessor::QAFunction);
+    
+    //! Constructor - output to std::cout
+    QualityAssessor( msq_std::string name = "QualityAssessor" );
+    
+    //! Constructor - specified output stream 
+    QualityAssessor( msq_stdio::ostream& output_stream,
+                     msq_std::string name = "QualityAssessor" );
+                     
+    //! Constructor - initial stopping assessement and specified output stream
+    QualityAssessor( QualityMetric* metric, QAFunction function,
+                     msq_stdio::ostream& output_stream,
+                     MsqError& err,
+                     msq_std::string name = "QualityAssessor" );
+
+                     
+    //! Constructor - initial stopping assessement
+    QualityAssessor( QualityMetric* metric, QAFunction function,
+                     MsqError& err,
+                     msq_std::string name = "QualityAssessor" );
 
       //!Destructor
     ~QualityAssessor();
     
       //! Provides a name to the QualityAssessor (use it for default name in constructor).
-    void set_name(string name) { qualityAssessorName = name; };
+    void set_name(msq_std::string name) { qualityAssessorName = name; };
       //! Retrieves the QualityAssessor name. A default name should be set in the constructor.
-    virtual string get_name() { return qualityAssessorName; }
+    virtual msq_std::string get_name()  { return qualityAssessorName; }
 
     virtual AlgorithmType get_algorithm_type() { return QUALITY_ASSESSOR; }
-      //! Adds a quality metric and a wrapper function (min, max, ...).
-    void add_quality_assessment(QualityMetric* qm, enum QAFunction  func, MsqError &err);
     
-      //! Set the min and max values to be used for the histogram.
-    void set_histogram_range(QualityMetric* qm, double min_val, double max_val, MsqError &err);
+      //! Adds a quality metric and a wrapper function (min, max, ...).
+    void add_quality_assessment( QualityMetric* qm, 
+                                 int function_flags, 
+                                 MsqError &err);
+
+      /*!Sets the QualityMetric and QAFunction combination that will
+        be returned when loop_over_mesh is called.
+      */
+    void set_stopping_assessment( QualityMetric* qm, 
+                                  QAFunction func,
+                                  MsqError &err );
+
+      //! Add a quality metric for which the histogram is to 
+      //! be calculated, and set histogram parameters.
+    void add_histogram_assessment( QualityMetric* qm, 
+                                   double min, 
+                                   double max,
+                                   int intervals,
+                                   MsqError& err );
     
       //! Does one sweep over the mesh and assess the quality with the metrics previously added.
     virtual double loop_over_mesh(MeshSet &ms, MsqError &err);
@@ -113,56 +153,117 @@ namespace Mesquite
       //! Do not print results of assessment.
     void disable_printing_results()
        {
-         printingTurnedOff=1;
+         printSummary = false;
        }
+      
+      //! Print accumulated summary data to specified stream. 
+    void print_summary( msq_stdio::ostream& stream ) const;
+    
+      //! True if any metric evaluated to an invalid value
+      //! for any element
+    bool invalid_elements() const;
+       
+      //! Reset calculated data 
+    void reset_data();
+    
+    
+    class Assessor
+    {
+      public:
+      
+        Assessor( QualityMetric* metric );
+        
+        double get_average() const { return sum/count;          }
+        double get_maximum() const { return maximum;            }
+        double get_minimum() const { return minimum;            }
+        double get_rms()     const { return sqrt(sqrSum/count); }
+        double get_stddev()  const 
+          { return sqrt(sqrSum/count - sum*sum/((double)count*count)); }
+        int get_count() const { return count; }
+        
+        int get_invalid_element_count() const { return numInvalid; }
+        
+        /** Get historgram of data, if calculated.
+         *\param lower_bound_out  The lower bound of the histogram
+         *\param upper_bound_out  The upper bound of the histogram
+         *\param counts_out       An array of counts of elements where
+         *              the first entry is the number of elements for
+         *              which the metric is below the lower bound, the
+         *              last entry is the number of elements above the
+         *              upper bound, and all other values are the counts
+         *              for histogram intervals between the lower and
+         *              upper bounds.
+         */
+        void get_histogram( double& lower_bound_out,
+                            double& upper_bound_out,
+                            msq_std::vector<int>& counts_out,
+                            MsqError& err ) const;
+                            
+        /** Reset all calculated data */
+        void reset_data();
+       
+        /** Print the histogram */
+        void print_histogram( msq_stdio::ostream& ) const;
 
-      /*!Sets the QualityMetric and QAFunction combination that will
-        be returned when loop_over_mesh is called.
-      */
-    void set_stopping_assessment(QualityMetric* qm, enum QAFunction func,
-                                 MsqError &err);
+        /** Get the QualityMetric */
+        QualityMetric* get_metric() const { return qualMetric; }
+        
+        /** Add a value to the running counts */
+        void add_value( double metric_value );
+        
+        /** Add a value to the hisogram data */
+        void add_hist_value( double metric_value );
+        
+        /** Note invalid result */
+        void add_invalid_value() ;
+        
+      private:
+      
+        friend class QualityAssessor;
+        
+        QualityMetric *const qualMetric; //< The quality metric
+        unsigned funcFlags;             //< What to calculate
+        
+        unsigned long count;  //< The total number of times the metric was evaluated
+        
+        double sum;       //< The sum of the metric over all elements
+        double maximum;   //< The maximum of the metric
+        double minimum;   //< The minimum value of the metric
+        double sqrSum;    //< The sum of the square of the metric values
+        unsigned long numInvalid;  //< Count of invalid metric values
+        
+        /** The histogram counts, where the first and last values are
+         * counts of values below the lower bound and above the upper
+         * bound, respectively.  The remaining values are the histogram
+         * counts.
+         */
+        double histMin;   //< Lower bound of histogram
+        double histMax;   //< Upper bound of histogram
+        bool haveHistRange;
+        msq_std::vector<int> histogram;
+    };    
+        
+    
+    const Assessor* get_results( QualityMetric* metric ) const;
     
   private:
-    string qualityAssessorName;  
-    struct Assessor
-    {
-      QualityMetric* metric;
-      long unsigned int funcFlagBits;
-      double minHist;
-      double maxHist;
-
-      // structure constructor
-      Assessor() :
-        metric(0),
-        funcFlagBits(0),
-        minHist(0),
-        maxHist(0)
-      {}
-    };
-
-      //QAVars is used in loop_over_mesh.  It gives
-      //us a place to store data as we are looping over
-      //the mesh
+  
+    msq_std::list<Assessor>::iterator find_or_add( QualityMetric* qm );
+   
+    /** Name */
+    msq_std::string qualityAssessorName;  
     
-    struct QAVars
-    {
-      double avgVar;//holds sum of metric vals until print
-      int histVar[MSQ_HIST_SIZE+2];//holds number per col of hist
-      double histMax;
-      double histMin;
-      double histDelta;//holds step size for histogram
-      double maxVar;//hold max metric val
-      double minVar;//holds min metric val
-      double rmsVar;//hold sum of squares until print
-      double stdVar;//holds std dev squared until print
-      int numInvalid;//counts the number of invalid metric values
-    };
+    /** List of quality metrics and corresponding data */
+    msq_std::list<Assessor> assessList;
+   
+    /** Stream to which to write summary of metric data */
+    msq_stdio::ostream& outputStream;
+    /** Disable printing */
+    bool printSummary;
     
-    list<Assessor*> assessList;
-      //flag to turn off printing
-    int printingTurnedOff;
-      //pointer to qm used form return value
-    QualityMetric* stoppingMetric;
+      /** Metric in \ref assessList to use as return value for loop_over_mesh */
+    msq_std::list<Assessor>::iterator stoppingMetric;
+      /** Value to use as return value for loop_over_mesh */
     QAFunction stoppingFunction;
   };
 
