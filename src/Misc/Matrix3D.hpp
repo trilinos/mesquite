@@ -5,7 +5,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 18-Dec-02 at 11:08:22
-//  LAST-MOD: 23-Jan-03 at 14:57:44 by Thomas Leurent
+//  LAST-MOD: 14-Feb-03 at 13:19:18 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -74,7 +74,6 @@ namespace Mesquite
 
     void set_values(const char *s)
     {
-      //        initialize(M,N);
       std::istrstream ins(s);
       ins>>v_[0];  ins>>v_[1];  ins>>v_[2]; 
       ins>>v_[3];  ins>>v_[4];  ins>>v_[5]; 
@@ -88,7 +87,7 @@ namespace Mesquite
     size_t size() const { return 9; }
 
     // constructors
-    Matrix3D() // : row_[0](v_), row_[1](v_+3), row_[2](v_+6) {}
+    Matrix3D()
     { initialize(); }
     
     Matrix3D(const Matrix3D &A)
@@ -97,18 +96,23 @@ namespace Mesquite
       copy(A.v_);
     }
 
+    //! sets all entries of the matrix to value.
     Matrix3D(const double& value)
     {
       initialize();
       set(value);
     }
 
+    //! sets matrix entries to values in array.
+    //! \param v is an array of 9 doubles. 
     Matrix3D(const double* v)
     {
       initialize();
       copy(v);
     }
 
+    //! for test purposes, matrices can be instantiated as
+    //! \code Matrix3D A("3 2 1  4 5 6  9 8 7"); \endcode
     Matrix3D(const char *s)
     {
       initialize();
@@ -133,6 +137,8 @@ namespace Mesquite
       return *this;
     }
 
+    //! for test purposes, matrices can be assigned as follows
+    //! \code A = "3 2 1  4 5 6  9 8 7"; \endcode
     Matrix3D& operator=(const char* s)
     { 
       set_values(s); 
@@ -161,20 +167,14 @@ namespace Mesquite
     //! returns a pointer to a row.
     inline double* operator[](int i)
     {
-#ifdef MSQ_DEBUG
-      assert(0<=i);
-      assert(i < 3) ;
-#endif
+      MSQ_DEBUG_ACTION(1,{ assert(0<=i); assert(i < 3); });
       return row_[i];
     }
 
     //! returns a pointer to a row.
     inline const double* operator[](int i) const
     {
-#ifdef MSQ_DEBUG
-      assert(0<=i);
-      assert(i < 3) ;
-#endif
+      MSQ_DEBUG_ACTION(1,{ assert(0<=i); assert(i < 3); });
       return row_[i];
     }
 
@@ -216,6 +216,7 @@ namespace Mesquite
     return (memcmp(lhs.v_, rhs.v_, 9*sizeof(double)) != 0);
   }
 
+  //! \return A+B
   inline Matrix3D operator+(const Matrix3D &A, 
                             const Matrix3D &B)
   {
@@ -229,6 +230,7 @@ namespace Mesquite
     return tmp;
   }
 
+  //! \return A-B
   inline Matrix3D operator-(const Matrix3D &A, 
                             const Matrix3D &B)
   {
@@ -242,6 +244,7 @@ namespace Mesquite
     return tmp;
   }
 
+    //! Multiplies entry by entry. This is NOT a matrix multiplication. 
   inline Matrix3D mult_element(const Matrix3D &A, 
                                const Matrix3D &B)
   {
@@ -276,6 +279,7 @@ namespace Mesquite
       return *this;
   }
 
+  //! \f$ + B^T  \f$
   inline Matrix3D Matrix3D::plus_transpose(const Matrix3D &B) const
   {
     Matrix3D tmp;
@@ -288,6 +292,7 @@ namespace Mesquite
     return tmp;
   }
 
+  //! \f$ += B^T  \f$
   inline Matrix3D& Matrix3D::plus_transpose_equal(const Matrix3D &B)
   {
     size_t i;
@@ -306,6 +311,7 @@ namespace Mesquite
     v_[7] = v_[5];
   } 
 
+  //! \return A*B
   inline Matrix3D operator*(const Matrix3D  &A, 
                             const Matrix3D &B)
   {
@@ -322,6 +328,7 @@ namespace Mesquite
     return tmp;
   }
 
+  //! \f$ C = A \times B \f$
   inline int matmult(Matrix3D& C, const Matrix3D  &A, 
                      const Matrix3D &B)
   {
