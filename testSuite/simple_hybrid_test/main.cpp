@@ -60,7 +60,7 @@ int main()
   Vector3D s_norm(0,0,1);
   Mesquite::PlanarDomain msq_geom(s_norm, pnt, mesh);
      
-  mesh->read_vtk("../../../Mesquite_New_Sun/meshFiles/2D/VTK/hybrid_3quad_1tri.vtk", err);
+  mesh->read_vtk("../../meshFiles/2D/VTK/hybrid_3quad_1tri.vtk", err);
   
     // initialises a MeshSet object
   MeshSet mesh_set1;
