@@ -22,16 +22,20 @@
 #ifndef Matrix3D_hpp
 #define Matrix3D_hpp
 
-#ifdef USE_C_PREFIX_INCLUDES
-#include <cassert>
-#include <cstdlib>
+#ifdef USE_STD_INCLUDES
 #include <iostream>
 #include <strstream>
 #else
-#include <assert.h>
-#include <stdlib.h>
 #include <iostream.h>
 #include <strstream.h>
+#endif
+
+#ifdef USE_C_PREFIX_INCLUDES
+#include <cassert>
+#include <cstdlib>
+#else
+#include <assert.h>
+#include <stdlib.h>
 #endif
 
 #include "Mesquite.hpp"
