@@ -24,6 +24,7 @@ That copy is of course encapsulated in the MeshSet class.
 #include "MeshSet.hpp"
 #include "QualityImprover.hpp"
 
+
 using namespace Mesquite;  
 
 
@@ -192,6 +193,7 @@ bool MeshSet::get_next_vertices_set(MsqError &err)
 bool MeshSet::get_next_patch(PatchData &pd,
                               MsqError &err )
 {
+
   TSTT::MeshError tstt_err=0;
 
   // *************************************************
@@ -304,6 +306,7 @@ bool MeshSet::get_next_patch(PatchData &pd,
     } // end of culling loop
   
 
+
       // retrieves array of pointers to regions adjacent to the free vertex ...
     num_elements = 0; // this will make TSTT allocate the patch_regions array
     TSTT::Entity_GetAdjacencies(currentVertex->mesh,
@@ -313,6 +316,7 @@ bool MeshSet::get_next_patch(PatchData &pd,
                                 &num_elements, &tstt_err );
     // ... if there are no regions adjacent to the vtx,
     // retrieves adjacent faces.
+
     if ( num_elements == 0 )
       {
         TSTT::Entity_GetAdjacencies(currentVertex->mesh,
@@ -405,6 +409,7 @@ bool MeshSet::get_next_patch(PatchData &pd,
     // TODO : provide patch for several layers of adjacencies.
   
     // free entities allocated in TSTT::Entity_GetAdjacencies()
+
     TSTT::Mesh_FreeEntityHandles(currentVertex->mesh, patch_elements, &tstt_err);
   
     return true;
@@ -481,7 +486,7 @@ bool MeshSet::get_next_patch(PatchData &pd,
       enum store_in_patch {
         free_vtx,
         fixed_vtx,
-        over,
+        over
       };
       
       // retrieves value of fixedVertexTagName.
