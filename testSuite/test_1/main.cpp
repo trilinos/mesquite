@@ -105,6 +105,6 @@ int main()
   // launches optimization on mesh_set1
   queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
   
-    //writeVtkMesh("smoothed_mesh", mesh, err); MSQ_CHKERR(err);
+   mesh->write_vtk("smoothed_mesh", err); MSQ_CHKERR(err);
   PRINT_TIMING_DIAGNOSTICS();
 }
