@@ -265,10 +265,11 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
   j=0;
     //if we must check feasiblility
   free_iter.reset();
+  grad_pos=0;
   while (free_iter.next()) {
     m=free_iter.value();
-    mCoord[m]=vertices[m];
-    
+    mCoord[grad_pos]=vertices[m];
+    ++grad_pos;
   }
   
   if(objFunc->get_feasible_constraint()){
@@ -278,7 +279,7 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
       grad_pos=0;
       while (free_iter.next()) {
         m=free_iter.value();
-        vertices[m]=(mCoord[m]+ (alp * pGrad[grad_pos]));
+        vertices[m]=(mCoord[grad_pos]+ (alp * pGrad[grad_pos]));
         ++grad_pos;
       }
       
@@ -297,7 +298,7 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
     grad_pos=0;
     while (free_iter.next()) {
       m=free_iter.value();
-      vertices[m]=(mCoord[m])+ (alp * pGrad[grad_pos]);
+      vertices[m]=(mCoord[grad_pos])+ (alp * pGrad[grad_pos]);
         ++grad_pos;
         
     }
@@ -320,17 +321,18 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
       grad_pos=0;
       while (free_iter.next()) {
         m=free_iter.value();
-        vertices[m]=mCoord[m]+ (alp*pGrad[grad_pos]);
+        vertices[m]=mCoord[grad_pos]+ (alp*pGrad[grad_pos]);
         ++grad_pos;
       }
       f=objFunc->evaluate(pd,err);
       free_iter.reset();
+      grad_pos=0;
       while (free_iter.next()) {
         m=free_iter.value();
-        vertices[m][0]=mCoord[m][0];
-        vertices[m][1]=mCoord[m][1];
-        vertices[m][2]=mCoord[m][2];
-        
+        vertices[m][0]=mCoord[grad_pos][0];
+        vertices[m][1]=mCoord[grad_pos][1];
+        vertices[m][2]=mCoord[grad_pos][2];
+        ++grad_pos;
       }
       MSQ_CHKERR(err);
         //if our step has now improved the objective function value
@@ -360,7 +362,7 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
       grad_pos=0;
       while (free_iter.next()) {
         m=free_iter.value();
-        vertices[m]=mCoord[m] + (alp*pGrad[grad_pos]);
+        vertices[m]=mCoord[grad_pos] + (alp*pGrad[grad_pos]);
         ++grad_pos;
         
       }
@@ -370,22 +372,27 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
       }
       else{
         free_iter.reset();
+        grad_pos=0;
         while (free_iter.next()) {
           m=free_iter.value();
-          vertices[m][0]=mCoord[m][0];
-          vertices[m][1]=mCoord[m][1];
-          vertices[m][2]=mCoord[m][2];
+          vertices[m][0]=mCoord[grad_pos][0];
+          vertices[m][1]=mCoord[grad_pos][1];
+          vertices[m][2]=mCoord[grad_pos][2];
+          ++grad_pos;
+          
         }
 	alp/=rho;
 	return alp;
       }
     }
     free_iter.reset();
+    grad_pos=0;
     while (free_iter.next()) {
       m=free_iter.value();
-      vertices[m][0]=mCoord[m][0];
-      vertices[m][1]=mCoord[m][1];
-      vertices[m][2]=mCoord[m][2];
+      vertices[m][0]=mCoord[grad_pos][0];
+      vertices[m][1]=mCoord[grad_pos][1];
+      vertices[m][2]=mCoord[grad_pos][2];
+      ++grad_pos;
     }
     return alp;
   }
@@ -401,7 +408,7 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
       grad_pos=0;
       while (free_iter.next()) {
         m=free_iter.value();
-        vertices[m] = mCoord[m] + (alp * pGrad[grad_pos]);
+        vertices[m] = mCoord[grad_pos] + (alp * pGrad[grad_pos]);
         ++grad_pos;
         
       }
@@ -410,11 +417,13 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
       if ( feasible != 0 ){
          alp *= rho;
          free_iter.reset();
+         grad_pos=0;
          while (free_iter.next()) {
            m=free_iter.value();
-           vertices[m][0]=mCoord[m][0];
-           vertices[m][1]=mCoord[m][1];
-           vertices[m][2]=mCoord[m][2];
+           vertices[m][0]=mCoord[grad_pos][0];
+           vertices[m][1]=mCoord[grad_pos][1];
+           vertices[m][2]=mCoord[grad_pos][2];
+           ++grad_pos;
          }
          return alp;
       }
@@ -428,11 +437,13 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
        }
     }
     free_iter.reset();
+    grad_pos=0;
     while (free_iter.next()) {
       m=free_iter.value();
-      vertices[m][0]=mCoord[m][0];
-      vertices[m][1]=mCoord[m][1];
-      vertices[m][2]=mCoord[m][2];
+      vertices[m][0]=mCoord[grad_pos][0];
+      vertices[m][1]=mCoord[grad_pos][1];
+      vertices[m][2]=mCoord[grad_pos][2];
+      ++grad_pos;
     }
     return alp;
   }
