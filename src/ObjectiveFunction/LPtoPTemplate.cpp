@@ -423,7 +423,7 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
       for (i=0; i<nve; ++i) {
         for (j=i; j<nve; ++j) {
             //negate if necessary
-          elem_hessian[n] *= get_negate_flag();
+          elem_hessian[n] *= (scaling_value * get_negate_flag());
           ++n;
         }
       }
