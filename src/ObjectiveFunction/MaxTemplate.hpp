@@ -21,6 +21,12 @@ Header file for the Mesquite::MaxTemplate class
 namespace Mesquite
 {
    class PatchData;
+   /*! \class MaxTemplate
+    \brief Computes the maximum quality metric value.
+
+    This function is the same as the LInfTemplate except that no
+    absolute values are used.
+  */
    class MaxTemplate :public ObjectiveFunction
    {
    public:
