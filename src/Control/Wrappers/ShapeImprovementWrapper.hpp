@@ -38,10 +38,6 @@ namespace Mesquite {
        an \f$\ell_2^2 \f$ objective function template with mean
        ratio.
        
-
-       \todo MB:  We should probably add a conditional preconditioner
-       such that if the initial mesh is tangled we attempt to untangle
-       it.
      */
   class ShapeImprovementWrapper : public InstructionQueue {
      
@@ -61,14 +57,10 @@ namespace Mesquite {
     LPtoPTemplate* untangleFunc;
     
     VertexMover* untangleGlobal;
-    VertexMover* untangleLocal;
     
     TerminationCriterion* untangleGlobalOuter; 
     TerminationCriterion* untangleGlobalInner;
 
-    TerminationCriterion* untangleLocalOuter; 
-    TerminationCriterion* untangleLocalInner;
-    
     ShapeQualityMetric* meanRatio; 
     LPtoPTemplate* objFunc;
     FeasibleNewton* feasNewt;
