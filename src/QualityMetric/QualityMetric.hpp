@@ -187,20 +187,18 @@ namespace Mesquite
          Calls either compute_element_numerical_gradient() or
          compute_element_analytical_gradient() for gradType equal
          NUMERICAL_GRADIENT or ANALYTICAL_GRADIENT, respectively.
-
-         \return true if the element is valid, false otherwise. 
        */
      bool compute_element_gradient(PatchData &pd, MsqMeshEntity* element,
-                                   MsqVertex* vertices[], Vector3D grad_vec[],
-                                   int num_vtx, double &metric_value, MsqError &err);
+                                   MsqVertex* free_vtces[], Vector3D grad_vec[],
+                                   int num_free_vtx, double &metric_value, MsqError &err);
 
      /*! same as compute_element_gradient(), but fills fixed vertices spots with
        zeros instead of not returning values for fixed vertices. Also, the vertices
-       are now ordered according to the element index. 
+       are now ordered according to the element vertices array.
        */
      bool compute_element_gradient_expanded(PatchData &pd, MsqMeshEntity* element,
-                                   MsqVertex* vertices[], Vector3D grad_vec[],
-                                   int num_vtx, double &metric_value, MsqError &err);
+                                   MsqVertex* free_vtces[], Vector3D grad_vec[],
+                                   int num_free_vtx, double &metric_value, MsqError &err);
      
        /*! \brief For MetricType == ELEMENT_BASED.
          Calls either compute_element_numerical_hessian() or
@@ -208,9 +206,9 @@ namespace Mesquite
          NUMERICAL_HESSIAN or ANALYTICAL_HESSIAN, respectively.
        */
      bool compute_element_hessian(PatchData &pd, MsqMeshEntity* element,
-                                  MsqVertex* vertices[], Vector3D grad_vec[],
+                                  MsqVertex* free_vtces[], Vector3D grad_vec[],
                                   Matrix3D hessian[],
-                                  int num_vtx, double &metric_value, MsqError &err);
+                                  int num_free_vtx, double &metric_value, MsqError &err);
      
        /*! Set the value of QualityMetric's negateFlag.  Concrete
          QualityMetrics should set this flag to -1 if the QualityMetric
@@ -270,14 +268,13 @@ namespace Mesquite
                                             MsqError &err);
      
      
-       /*!Non-virtual function which numerically computes the gradient
+       /*!\brief Non-virtual function which numerically computes the gradient
          of a QualityMetric of a given element for a given set of free vertices
          on that element.
-         This is used by metric which mType is ELEMENT_BASED.
-         \return true if the element is valid, false otherwise. */
+         This is used by metric which mType is ELEMENT_BASED.  */
      bool compute_element_numerical_gradient(PatchData &pd, MsqMeshEntity* element,
-                                             MsqVertex* vertices[], Vector3D grad_vec[],
-                                             int num_vtx, double &metric_value,
+                                             MsqVertex* free_vtces[], Vector3D grad_vec[],
+                                             int num_free_vtx, double &metric_value,
                                              MsqError &err);
 
      /*! \brief Virtual function that computes the gradient of the QualityMetric
@@ -301,28 +298,28 @@ namespace Mesquite
          which mType is ELEMENT_BASED. */
      virtual bool compute_element_analytical_gradient(PatchData &pd,
                                                       MsqMeshEntity* element,
-                                                      MsqVertex* vertices[],
+                                                      MsqVertex* free_vtces[],
                                                       Vector3D grad_vec[],
-                                                      int num_vtx,
+                                                      int num_free_vtx,
                                                       double &metric_value,
                                                       MsqError &err);
 
 
      bool compute_element_numerical_hessian(PatchData &pd,
                                             MsqMeshEntity* element,
-                                            MsqVertex* vertices[],
+                                            MsqVertex* free_vtces[],
                                             Vector3D grad_vec[],
                                             Matrix3D hessian[],
-                                            int num_vtx,
+                                            int num_free_vtx,
                                             double &metric_value,
                                             MsqError &err);
 
      virtual bool compute_element_analytical_hessian(PatchData &pd,
                                             MsqMeshEntity* element,
-                                            MsqVertex* vertices[],
+                                            MsqVertex* free_vtces[],
                                             Vector3D grad_vec[],
                                             Matrix3D hessian[],
-                                            int num_vtx,
+                                            int num_free_vtx,
                                             double &metric_value,
                                             MsqError &err);
 
@@ -429,15 +426,20 @@ namespace Mesquite
 #undef __FUNC__
 #define __FUNC__ "QualityMetric::compute_element_gradient"
 /*! 
-  \brief Calls compute_element_numerical_gradient if gradType equals
-  NUMERCIAL_GRADIENT.  Calls compute_element_analytical_gradient if 
-  gradType equals ANALYTICAL_GRADIENT;
+    \param vertices base address of an array of pointers to the element vertices which
+    are considered free for purposes of computing the gradient. The quality metric
+    gradient relative to each of those vertices is computed and stored in grad_vec.
+    \param grad_vec base address of an array of Vector3D where the gradient is stored,
+    in the order specified by the free_vtces array.
+    \param num_free_vtx This is the size of the vertices and gradient arrays. 
+    \param metric_value Since the metric is computed, we return it. 
+    \return true if the element is valid, false otherwise.
 */
    inline bool QualityMetric::compute_element_gradient(PatchData &pd,
                                                        MsqMeshEntity* el,
-                                                       MsqVertex* vertices[],
+                                                       MsqVertex* free_vtces[],
                                                        Vector3D grad_vec[],
-                                                       int num_vtx,
+                                                       int num_free_vtx,
                                                        double &metric_value,
                                                        MsqError &err)
    {
@@ -445,13 +447,13 @@ namespace Mesquite
      switch(gradType)
      {
        case NUMERICAL_GRADIENT:
-          ret = compute_element_numerical_gradient(pd, el, vertices, grad_vec,
-                                                  num_vtx, metric_value, err);
+          ret = compute_element_numerical_gradient(pd, el, free_vtces, grad_vec,
+                                                  num_free_vtx, metric_value, err);
           MSQ_CHKERR(err);
           break;
        case ANALYTICAL_GRADIENT:
-          ret = compute_element_analytical_gradient(pd, el, vertices, grad_vec,
-                                                   num_vtx, metric_value, err);
+          ret = compute_element_analytical_gradient(pd, el, free_vtces, grad_vec,
+                                                   num_free_vtx, metric_value, err);
           MSQ_CHKERR(err);
           break;
      }
