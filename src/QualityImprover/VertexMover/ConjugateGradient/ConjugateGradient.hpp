@@ -47,6 +47,9 @@ namespace Mesquite
       {
         normGradientBound=grad;
       }
+
+      //!Set the patch type
+    virtual void set_patch_type(MeshSet::PatchType type, MsqError &err);
     
   protected:
       

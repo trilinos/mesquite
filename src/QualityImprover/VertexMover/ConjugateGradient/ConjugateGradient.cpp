@@ -57,24 +57,25 @@ void ConjugateGradient::initialize(PatchData &pd, MsqError &err)
   mCoord = new Vector3D[ arraySize ];
 }
 
+
+/*! \fn ConjugateGradient::set_patch_type(MeshSet::PatchType type, MsqError &err)
+
+    ConjugateGradient supports GLOBAL_PATCH and ELEMENTS_ON_VERTEX_PATCH
+*/
+void ConjugateGradient::set_patch_type(MeshSet::PatchType type, MsqError &err)
+{
+  if (type == MeshSet::GLOBAL_PATCH || type == MeshSet::ELEMENTS_ON_VERTEX_PATCH) {
+    patchType = type;
+  } else {
+    err.set_msg("Type not supported by ConjugateGradient algorythm.");
+  }
+}
+
 #undef __FUNC__
 #define __FUNC__ "ConjugateGradient::initialize_mesh_iteration" 
 void ConjugateGradient::initialize_mesh_iteration(PatchData &pd, MsqError &err)
 {
-  int n=pd.num_free_vertices();
-  if(n>arraySize){
-    delete []fGrad;
-    delete []pGrad;
-    delete []fNewGrad;
-    delete []mCoord;
-      //Increase number to try to avoid reallocating
-    n+=5;
-    arraySize=n;
-    fGrad = new Vector3D[ n ];
-    pGrad = new Vector3D[ n ];
-    fNewGrad = new Vector3D[ n ];
-    mCoord = new Vector3D[ n ];
-  } 
+  
 }
 
 #undef __FUNC__
@@ -82,10 +83,23 @@ void ConjugateGradient::initialize_mesh_iteration(PatchData &pd, MsqError &err)
 /*!Performs Conjugate gradient minimization on the PatchData, pd.*/
 void ConjugateGradient::optimize_vertex_positions(PatchData &pd, 
                                                 MsqError &err){
-  int is=0;
   MeshSet *vertex_mover_mesh=get_mesh_set();
   int num_local_vertices = pd.num_vertices();
   int num_free_vertices=pd.num_free_vertices();
+  if(num_free_vertices>arraySize){
+    delete []fGrad;
+    delete []pGrad;
+    delete []fNewGrad;
+    delete []mCoord;
+      //Increase number to try to avoid reallocating
+    arraySize=num_free_vertices + 5;
+    fGrad = new Vector3D[ num_free_vertices+5 ];
+    pGrad = new Vector3D[ num_free_vertices+5 ];
+    fNewGrad = new Vector3D[ num_free_vertices+5 ];
+    mCoord = new Vector3D[ num_free_vertices+5 ];
+  } 
+  int is=0;
+  
     // gets the array of coordinates for the patch  
   MsqVertex* vertices=pd.get_vertex_array(err);
     //PRINT_INFO("\ny %f\n",vertices[0][1]);
@@ -97,23 +111,8 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
     else
       vertices[ind].remove_vertex_flag(MsqVertex::MSQ_FREE_VERTEX);
   }
-  //Michael hack for geo mesh
-#ifdef MESQUITE_GEO         
-  if(num_local_vertices-num_free_vertices<6){
-    PRINT_INFO("\nSkipping low valence vertex for geo mesh:  vert = %i, free = %i",num_local_vertices,num_free_vertices);
-    if(num_local_vertices==1){
-      Vector3D hack_vec=vertices[0]->get_vector();
-      PRINT_INFO("\nOne vertex patch :  x=%f, y=%f, z=%f",hack_vec[0],hack_vec[1],hack_vec[2]);
-      PRINT_INFO("\nNumber of elements = %        i",pd.num_elements());
-    }
-    
-    return;
-  }
-#endif
-    //Michael hack for boundary nodes
-  if(num_local_vertices==pd.num_elements()+2)
-    return;
   
+    
     //Doing initial feasiblity check if required by metric
   if(objFunc->get_feasible_constraint()){
     if(check_feasible(pd,err))
@@ -138,7 +137,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
   f=objFunc->evaluate(pd,err);
   MSQ_CHKERR(err);
   objFunc->compute_gradient(pd, fGrad , err, n);
-  for(ind=0;ind<n;ind++){
+  for(ind=0;ind<n;++ind){
     pGrad[ind]=(-fGrad[ind]);
   }
   int j=0;
@@ -237,6 +236,7 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
                                    MsqError &err){
     //PRINT_INFO("\nEntering get_step  f_x = %10.8f   f_y = %10.8f   f_z = %10.8f\n",pGrad[0][0],pGrad[0][1],pGrad[0][2]);
   const int n = pd.num_free_vertices();
+  PRINT_INFO("\ninsinde CG n = %i\n",n);
     //iterator for several for statements
   int m=0;
   MsqVertex* vertices=pd.get_vertex_array(err);
@@ -306,9 +306,6 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
         //if our step has now improved the objective function value
       if(f<f0){
         found=1;
-          //Michael delete
-          //if(alp<=0.0)
-          //return 0.0;
       }
     }//   end while j less than jmax
       //PRINT_INFO("\nj = %d found = %d f = %20.18f f0 = %20.18f\n",j,found,f,f0);
@@ -331,7 +328,6 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
       alp*=rho;
       for(m=0;m<n;++m){
         vertices[m]=mCoord[m] + (alp*pGrad[m]);
-        //michael: changed mCoord to mCoord below... check this
       }
       fnew=objFunc->evaluate(pd,err);
       if(fnew<f){
@@ -395,12 +391,13 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
 }
 
 /*!Quadratic one-dimensional line search.*/
-/*double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
+/*
+double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
                                    MsqError &err){
   const double CGOLD = 0.3819660;
   const double ZEPS = 1.0e-10;
   int n=pd.num_free_vertices();
-  MsqVertex** vertices=pd.get_vertices_array(err);
+  MsqVertex* vertices=pd.get_vertex_array(err);
   double a,b,d,etemp,fb,fu,fv,fw,fx,p,q,r,tol,tol1,tol2,u,v,w,x,xm;
   double e=0.0;
   d=0.0;
@@ -418,7 +415,7 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
     b*=2.0;
     for(m=0;m<n;++m){
       mCoord[m]=mCoord[m] + (b*pGrad[m]);
-      vertices[m]->set_coordinates(mCoord[m]);
+      vertices[m]=(mCoord[m]);
     }
     fb=objFunc->evaluate(pd,err);
   }
@@ -426,7 +423,7 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
   x=w=v=(b/2.0);
   for(m=0;m<n;++m){
     mCoord[m]=mCoord[m] + (x*pGrad[m]);
-    vertices[m]->set_coordinates(mCoord[m]);
+    vertices[m]=(mCoord[m]);
   }
   fw=fv=fx=objFunc->evaluate(pd,err);
   for(iter=0;iter<maxiter;++iter){
@@ -471,7 +468,7 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
       u=(fabs(d)>=tol1?x+d:x+d);
     for(m=0;m<n;++m){
       mCoord[m]=mCoord[m] + (u*pGrad[m]);
-      vertices[m]->set_coordinates(mCoord[m]);
+      vertices[m]=(mCoord[m]);
     }
     fu=objFunc->evaluate(pd,err);
     if(fu<fx){
@@ -504,9 +501,9 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
     }
   }
   for(m=0;m<n;++m){   
-    vertices[m]->set_coordinates(mCoord[m]);
+    vertices[m]=(mCoord[m]);
   }
-  PRINT_WARNING("TOO MANY ITERATIONS IN QUADRATIC LINE SEARCH");
+    //PRINT_WARNING("TOO MANY ITERATIONS IN QUADRATIC LINE SEARCH");
   return x;
 }
 */
