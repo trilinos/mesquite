@@ -1042,9 +1042,10 @@ non-NULL otherwise.
   ============================================================ */
     
   /* TAG FUNCTIONALITY TO BE REVISED BY TIM */
-  void Mesh_tagGetHandle (const char *tag_name,
-                     void** tag_handle,
-                     MeshError *errorReturn);
+  void Mesh_tagGetHandle (cMesh_Handle mesh,
+                          const char *tag_name,
+                          void** tag_handle,
+                          MeshError *errorReturn);
   
   void Mesh_GetTag_Entity(cMesh_Handle mesh,
                           cEntity_Handle this_entity,

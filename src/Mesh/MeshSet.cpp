@@ -147,13 +147,14 @@ bool MeshSet::get_next_patch(PatchData &pd,
   // This loop is the list culling process
   // also checks if this is the end of the vertices list
   bool cull_vertex = true;
-  EntityEntry center_vertex = allVertices[currentVertexInd];
+    // Next line assumes that you've got the same Mesh_Handle for all vertices.
+  EntityEntry center_vertex = allVertices[0];
   // retrieves value of fixedVertexTagName .
   const char* bnd_tag_name;
   bnd_tag_name = fixedVertexTagName.c_str(); // converts from std::string to C-style string.
   void* bnd_tag_handle;
   if (cullingMethodBits & QualityImprover::NO_BOUNDARY_VTX) {
-    TSTT::Mesh_tagGetHandle (bnd_tag_name, &bnd_tag_handle, &tstt_err);
+    TSTT::Mesh_tagGetHandle (center_vertex.mesh, bnd_tag_name, &bnd_tag_handle, &tstt_err);
   }
   while (cull_vertex) {
 
@@ -169,21 +170,32 @@ bool MeshSet::get_next_patch(PatchData &pd,
 
     if (cullingMethodBits == 0) break; // no culling asked.
 
-    // Culling of boudary vertices 
-    if (cullingMethodBits & QualityImprover::NO_BOUNDARY_VTX) {
-      int* on_boundary;
-      int tag_size;
+      // Culling of boudary vertices 
+    if (cullingMethodBits & QualityImprover::NO_BOUNDARY_VTX)
+    {
+      int* on_boundary = NULL;
+      int tag_size = sizeof(int);
       TSTT::Mesh_GetTag_Entity(center_vertex.mesh,
                                (TSTT::cEntity_Handle) (center_vertex.entity),
-                               bnd_tag_handle, (void**)&on_boundary, &tag_size, &tstt_err);
+                               bnd_tag_handle, (void**)&on_boundary,
+                               &tag_size, &tstt_err);
+
+        // Make sure the call succeeded.
+        // NOTE: If the tag doesn't exist, we'll get an error...
       assert(!tstt_err);
-      if ( *on_boundary ==1) {
+      assert(on_boundary != NULL);
+      
+      if ( *on_boundary ==1)
+      {
         MSQ_DEBUG_ACTION(2,{
           std::cout << "      o Culling vertex " << currentVertexInd
                     << " according to NO_BOUNDARY_VTX." << std::endl; });
         cull_vertex = true;
       }
-    }  
+      
+        // Delete memory allocated by Mesh_GetTag_Entity.
+      delete on_boundary;
+    }
   } // end of culling loop
   
 
