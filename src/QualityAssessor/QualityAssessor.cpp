@@ -103,7 +103,7 @@ void QualityAssessor::add_quality_assessment(QualityMetric* qm,
                                              MsqError &err)
 { 
   int found=0;
-  list<Assessor*>::iterator pos;
+  std::list<Assessor*>::iterator pos;
   pos=assessList.begin();
   Assessor* assess_ptr=NULL;
     //loop over the assessList (list of Assessor of this QA.)
@@ -178,7 +178,7 @@ void QualityAssessor::set_histogram_range(QualityMetric* qm,
                                              MsqError &err)
 {
   int found=0;
-  list<Assessor*>::iterator pos;
+  std::list<Assessor*>::iterator pos;
   pos=assessList.begin();
   Assessor* assess_ptr=NULL;
     //loop over the assessList (list of Assessor of this QA.)
@@ -251,8 +251,8 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError &err)
   double return_value=0;
   int total_num_elements=0;
   int total_num_vertices=0;
-  list<Assessor*>::iterator pos = assessList.begin();
-  list<QualityAssessor::QAFunction>::iterator func_pos;
+  std::list<Assessor*>::iterator pos = assessList.begin();
+  std::list<QualityAssessor::QAFunction>::iterator func_pos;
   int num_elem_based=0;
   int num_metrics=assessList.size();
   Assessor** assessor_array = new Assessor*[num_metrics];

@@ -118,7 +118,7 @@ namespace Mesquite {
       double stdVar;//holds std dev squared until print
     };
     
-    list<Assessor*> assessList;
+    std::list<Assessor*> assessList;
       //flag to turn off printing
     int printingTurnedOff;
       //pointer to qm used form return value
