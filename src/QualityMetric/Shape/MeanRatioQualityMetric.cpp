@@ -13,6 +13,8 @@
 #include "QualityMetric.hpp"
 
 using namespace Mesquite;
+using std::cout;
+using std::endl;
 
 #undef __FUNC__
 #define __FUNC__ "MeanRatioQualityMetric::MeanRatioQualityMetric"
@@ -1768,6 +1770,13 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
           g[i] = 0.;
       }
     }
+
+    //dbg
+    cout << "vertices + v_i[0...3]" <<endl;
+    for (i=0; i<4; ++i) cout << vertices + v_i[i] <<endl;
+    cout << "v[0..."<<nv<<"]"<<endl;
+    for (i=0; i<nv; ++i) cout << v[i] <<endl;
+    cout << endl;
     
     // Makes sure we give null entries to the blocks corresponding to fixed vertices. 
     for(i=0; i<4; ++i) {
@@ -1775,15 +1784,20 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
         
         // for an entry i,j in the upper right part of a  4*4 matrix, index in a 1D array is
         ind = 4*i- (i*(i+1)/2) +j; // 4*i - \sum_{n=0}^i n +j 
-        
-        for (k=0; k<nv; ++k) {
-          for (l=0; l<nv; ++l) {
-          if ( (vertices + v_i[i] == v[k]) && (vertices + v_i[j] == v[l]) )
-            h[ind] = hessians[ind];
-          else
-            h[ind] = 0.;
-          }
-        }
+
+        bool nul_hessian = true; 
+        for (k=0; k<nv; ++k) 
+          for (l=0; l<nv; ++l) 
+            if ( (vertices + v_i[i] == v[k]) || (vertices + v_i[j] == v[l]) )
+              nul_hessian = false;
+
+        if (nul_hessian == false)
+          h[ind] = hessians[ind];
+        else {
+          cout << "nul Hessian " << ind << " for i, j, k, l = " << i << ", "
+               << j << ", " << k << ", " << l << ", " <<endl; //dbg
+          h[ind] = 0.;
+        }   
       }
     }
     
