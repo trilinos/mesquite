@@ -42,6 +42,8 @@
 
 namespace Mesquite
 {
+  class FileTokenizer;
+  
   /*!  \class MeshImpl
 
   \brief MeshImpl is a Mesquite implementation of the Mesh interface. 
@@ -230,11 +232,13 @@ namespace Mesquite
                                           int tag_size,
                                           TagHandle& tag_handle,
                                           MsqError &err);
+                                  
+    virtual void tag_destroy( TagHandle handle, MsqError& err );
     
     virtual void* tag_get_handle(const string tag_name, MsqError &err);
     
     virtual void elements_set_tag_data(const size_t num_elements, 
-                                       const TagHandle tag_handle,
+                                       TagHandle tag_handle,
                                        TagDataPt const tag_data_array,
                                        const int& tag_size,
                                        MsqError &err);
@@ -259,6 +263,10 @@ namespace Mesquite
       // may want to keep the Mesh object to live longer than Mesquite
       // is using it.
     virtual void release();
+    
+      // Remove all data
+    void clear();
+    
   protected:
     class Vertex;
     class Element;
@@ -280,7 +288,8 @@ namespace Mesquite
 
     // tags
     struct tag {
-      void* pt; // points to the beginning of the dense tag array
+      void* elementData; // points to the beginning of the dense tag array
+      void* vertexData; 
       int size; // size is the increment to use to go from one tag to the next
     };
     std::map<std::string, MeshImpl::tag> denseTags; 
@@ -299,6 +308,63 @@ namespace Mesquite
     };
 
     void create_vertex_to_element_data(MsqError &err);
+
+//**************** VTK Parsing ****************
+
+      /** Read a data block from the file */
+    bool vtk_read_dataset( FileTokenizer& file, MsqError& err );
+    
+      /** Read structured point mesh */
+    bool vtk_read_structured_points( FileTokenizer& file, MsqError& err );
+      /** Read structured grid mesh */
+    bool vtk_read_structured_grid  ( FileTokenizer& file, MsqError& err );
+      /** Read rectilinear grid structured mesh */
+    bool vtk_read_rectilinear_grid ( FileTokenizer& file, MsqError& err );
+      /** Read polydata mesh */
+    bool vtk_read_polydata         ( FileTokenizer& file, MsqError& err );
+      /** Read unstructured mesh */
+    bool vtk_read_unstructured_grid( FileTokenizer& file, MsqError& err );
+      /** Read file-level field data */
+    bool vtk_read_field            ( FileTokenizer& file, MsqError& err );
+    
+      /** Helper function for \ref vtk_read_polydata - reads polygon subsection */
+    bool vtk_read_polygons( FileTokenizer& file, MsqError& err );
+      /** Helper function for readers of structured mesh - create elements */
+    bool vtk_create_structured_elems( const long* dims, MsqError& err );
+    
+      /** Read attribute data for vertices */
+    bool vtk_read_point_data( FileTokenizer& file, MsqError& err );
+      /** Read attribute data for elements */
+    bool vtk_read_cell_data ( FileTokenizer& file, MsqError& err );
+      /** Read actual data for both \ref vtk_read_point_data and \ref vtk_read_cell_data */
+    void* vtk_read_attrib_data( FileTokenizer& file, 
+                                long num_data_to_read, 
+                                std::string& name_out, 
+                                size_t& tag_size_out,
+                                MsqError& err );
+      /** Read a 2-D array of data of the specified type from the file */
+    void* vtk_read_typed_data( FileTokenizer& file, int type,
+                               size_t per_elem, size_t num_elem,
+                               size_t& item_size_out,
+                               MsqError& err );
+                             
+      /** Read scalar attribute data */
+    void* vtk_read_scalar_attrib ( FileTokenizer& file, long count, 
+                                   size_t& tag_size_out, MsqError& err );
+      /** Read color attribute data */
+    void* vtk_read_color_attrib  ( FileTokenizer& file, long count, 
+                                   size_t& tag_size_out, MsqError& err );
+      /** Read vector or normal attribute data */
+    void* vtk_read_vector_attrib ( FileTokenizer& file, long count, 
+                                   size_t& tag_size_out, MsqError& err );
+      /** Read texture attribute data */
+    void* vtk_read_texture_attrib( FileTokenizer& file, long count, 
+                                   size_t& tag_size_out, MsqError& err );
+      /** Read tensor (3x3 matrix) data */
+    void* vtk_read_tensor_attrib ( FileTokenizer& file, long count, 
+                                   size_t& tag_size_out, MsqError& err );
+
+//**************** End VTK Parsing ****************
   };
 }
 

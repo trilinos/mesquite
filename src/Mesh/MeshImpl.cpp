@@ -43,7 +43,7 @@ to run mesquite by default.
 
 #include "MeshImpl.hpp"
 #include "MsqMessage.hpp"
-
+#include "FileTokenizer.hpp"
 #include "Vector3D.hpp"
 
 #ifdef USE_STD_INCLUDES
@@ -130,6 +130,11 @@ Mesquite::MeshImpl::MeshImpl()
 
 Mesquite::MeshImpl::~MeshImpl() 
 {
+  clear();
+}
+
+void Mesquite::MeshImpl::clear()
+{
   delete [] vertexArray;
   delete [] elementArray;
   delete [] onBoundaryBits;
@@ -137,204 +142,26 @@ Mesquite::MeshImpl::~MeshImpl()
   delete [] newVertIndices;
   delete [] v2eOffset;
   delete [] v2E;
-}
-
-void Mesquite::MeshImpl::read_vtk(const char* in_filename,
-                                  Mesquite::MsqError &err)
-{
-    // Open the file
-  ifstream ifs(in_filename);
-  if (!ifs)
-  {
-    string err_msg("file ");
-    err_msg += in_filename;
-    err_msg += " not found";
-    err.set_msg(err_msg);
-    return;
-  }
+    
+  vertexArray = 0;
+  elementArray = 0;
+  onBoundaryBits = 0;
+  vertexMesquiteByte = 0;
+  newVertIndices = 0;
+  v2eOffset = 0;
+  v2E = 0;
   
-    // Skip the first 4 lines
-  char line[256];
-  size_t i;
-  for (i = 0; i < 4; ++i)
-    ifs.getline(line,256);
-  
-    // get the number of vertices.
-  char word[81];
-  ifs >> word;
-  if (strcmp(word, "POINTS") != 0)
-  {
-    string err_msg = "MeshImpl::read_vtk: expecting word POINTS, not ";
-    err_msg += word;
-    err_msg += ".";
-    err.set_msg(err_msg);
-    return;
-  }
-  ifs >> vertexCount;
-  ifs.getline(line,256);
-  
-    // Create an array big enough for all the vertices
-  vertexArray = new Mesquite::MeshImpl::Vertex[vertexCount];
-  
-    // Also create a cache for elements_get_attached_vertices().
-  newVertIndices = new size_t[vertexCount];
-  memset(newVertIndices, 0, vertexCount*sizeof(size_t));
-  
-    // Get the coordinates for each vertex
-  double* coord_ptr = reinterpret_cast<double*>(vertexArray);
-  for(i = 0; i < vertexCount; ++i)
-  {
-    ifs >> *coord_ptr >> *(coord_ptr + 1) >> *(coord_ptr + 2);
-    coord_ptr += 3;
-  }
-  
-    // get the number of regions
-  ifs >> word;
-  if (strcmp(word, "CELLS") != 0)
-  {
-    string err_msg = "MeshImpl::read_vtk: expecting word CELLS, not ";
-    (err_msg += word) += ".";
-    err.set_msg(err_msg);
-  }
-  
-  size_t table_size;
-  ifs >> elementCount >> table_size;
-  
-    // Read the connectivity table
-  size_t *connectivity_table = new size_t[table_size];
-  size_t *cur_entry = connectivity_table;
-  
-  for (i = 0; i < table_size; ++i)
-  {
-    ifs >> *(cur_entry++);
-  }
-  
-    // get the number of CELL_TYPES identifier
-  ifs >> word;
-  if (strcmp(word, "CELL_TYPES") != 0)
-  {
-    string err_msg = "MeshImpl::read_vtk: expecting word CELL_TYPES, not ";
-    (err_msg += word) += ".";
-    err.set_msg(err_msg);
-    return;
-  }
-  ifs >> i;
-  if (i != elementCount)
-  {
-    err.set_msg("MeshImpl::read_vtk: nb of CELL_TYPES != nb of CELLS.");
-  }
-  
-    // Store each cell type
-  vector<size_t> cell_type;
-  cell_type.reserve(elementCount);
-  for (i=0; i < elementCount; ++i)
-    ifs >> cell_type[i];
-  
-    // Create the array of elements
-  elementArray = new MeshImpl::Element[elementCount];
-  
-    // Create an element for each cell
+  vertexCount = 0;
+  elementCount = 0;
+  numCoords = 0;
   totalVertexUses = 0;
-  cur_entry = connectivity_table;
-  for (i=0; i<elementCount; ++i)
-  {
-    int j;
-
-    switch (cell_type[i])
-    {
-      case 5:  // Triangle
-        if (*cur_entry++ != 3)
-        {
-          err.set_msg("MeshImpl::read_vtk: expecting 3 vtx for a triangle.");
-          return;
-        }
-        elementArray[i].mType = Mesquite::TRIANGLE;
-        totalVertexUses += 3;
-        for (j = 0; j < 3; j++)
-        {
-          elementArray[i].vertexIndices[j] = *cur_entry++;
-        }
-        break;
-      case 9:  // Quad
-        if (*cur_entry++ != 4)
-        {
-          err.set_msg("MeshImpl::read_vtk: expecting 4 vtx for a Quad.");
-          return;
-        }
-        elementArray[i].mType = Mesquite::QUADRILATERAL;
-        totalVertexUses += 4;
-        for (j = 0; j < 4; j++)
-        {
-          elementArray[i].vertexIndices[j] = *cur_entry++;
-        }
-        break;
-      case 10: // Tet
-        if (*cur_entry++ != 4)
-        {
-          err.set_msg("MeshImpl::read_vtk: expecting 4 vtx for a Tet.");
-          return;
-        }
-        elementArray[i].mType = Mesquite::TETRAHEDRON;
-        totalVertexUses += 4;
-        for (j = 0; j < 4; j++)
-        {
-          elementArray[i].vertexIndices[j] = *cur_entry++;
-        }
-        break;
-      case 12: // Hex 
-        if (*cur_entry++ != 8)
-        {
-          cerr << "MeshImpl::read_vtk: expecting 8 vtx for an Hex.\n";
-          return;
-        }
-        elementArray[i].mType = Mesquite::HEXAHEDRON;
-        totalVertexUses += 8;
-        for (j = 0; j < 8; j++)
-        {
-          elementArray[i].vertexIndices[j] = *cur_entry++;
-        }
-        break;
-    }
-  }
-  delete [] connectivity_table;
   
-    // Create a set of bits to store whether it's on the boundary or not
-  size_t num_bitset_bytes = (vertexCount / 8);
-  num_bitset_bytes += (vertexCount % 8) ? 1 : 0;
-  onBoundaryBits = new unsigned char[num_bitset_bytes];
-  memset(onBoundaryBits, 0, sizeof(unsigned char)*num_bitset_bytes);
-  
-    // Get the number of BOUNDARY_POINTS,
-    // Set them only if they are present.
-  ifs >> word;
-  if (strcmp(word, "POINT_DATA") == 0)
-  {
-    int num_boundary_verts;
-    ifs >> num_boundary_verts;
-    
-      // Skip the next 5 words
-    for (i = 1; i <= 5; i++)
-      ifs >> word;
-    
-      // See if this vertex is marked as a boundary vertex
-    for (int vert_index=0; vert_index < num_boundary_verts; vert_index++)
-    {
-      int val;
-      ifs >> val;
-      if (val != 0)
-      {
-        unsigned char bit_flag = 1 << (vert_index%8);
-        onBoundaryBits[vert_index / 8] |= bit_flag;
-      }
-    }
-  }
-
-    // Create a Mesquite byte for each vertex
-  vertexMesquiteByte = new unsigned char[vertexCount];
-  memset(vertexMesquiteByte, 0, sizeof(unsigned char)*vertexCount);
-  
-  ifs.close();
+  MsqError err;
+  while (!denseTags.empty())
+    tag_destroy( &(denseTags.begin()->second), err );
+  denseTags.clear();
 }
+
 
 void Mesquite::MeshImpl::write_vtk(const char* out_filebase,
                                    Mesquite::MsqError &err)
@@ -1396,19 +1223,55 @@ void Mesquite::MeshImpl::element_tag_create(const string tag_name, int tag_size,
                                         TagHandle& tag_handle,
                                         MsqError &err)
 {
+  if ( denseTags.find( tag_name ) != denseTags.end() )
+  {
+    err.set_msg( "Tag already exists" );
+    return;
+  }
+  
   tag new_tag;
-  new_tag.pt = 0;
+  new_tag.elementData = 0;
+  new_tag.vertexData = 0;
   new_tag.size = tag_size;
   denseTags[tag_name] = new_tag;
   tag_handle = tag_get_handle(tag_name, err); MSQ_CHKERR(err);
 }
+
+void Mesquite::MeshImpl::tag_destroy( Mesquite::MeshImpl::TagHandle handle, 
+                                      Mesquite::MsqError& err )
+{
+  tag* tag_ptr = (tag*)handle;
+  std::map<std::string, Mesquite::MeshImpl::tag>::iterator iter;
+  for (iter = denseTags.begin(); iter != denseTags.end(); ++iter)
+  {
+    if (&(iter->second) == handle)
+    {
+      if (iter->second.elementData)
+        free( iter->second.elementData );
+      if (iter->second.vertexData)
+        free( iter->second.vertexData );
+      denseTags.erase( iter );
+      return;
+    }
+  }
+  
+  err.set_msg( "Invalid tag handle" );
+}
+  
     
 #undef __FUNC__
 #define __FUNC__ "MeshImpl::tag_get_handle"
 //! only dense tags are implemented in MeshImpl for now.
 void* Mesquite::MeshImpl::tag_get_handle(const string tag_name, MsqError &err)
 {
-  return (void*) &(denseTags[tag_name]);
+  std::map<std::string, Mesquite::MeshImpl::tag>::iterator iter;
+  iter = denseTags.find( tag_name );
+  if (iter == denseTags.end())
+  {
+    err.set_msg( "Tag not found" );
+    return 0;
+  }  
+  return (void*) &iter->second;
 }
     
 #undef __FUNC__
@@ -1416,7 +1279,7 @@ void* Mesquite::MeshImpl::tag_get_handle(const string tag_name, MsqError &err)
 //! only dense tags are implemented in MeshImpl for now.
 void Mesquite::MeshImpl::elements_set_tag_data(
                                    const size_t num_elements, 
-                                   const TagHandle tag_handle,
+                                   TagHandle tag_handle,
                                    TagDataPt const tag_data_array,
                                    const int& tag_size,
                                    MsqError &err)
@@ -1431,7 +1294,11 @@ void Mesquite::MeshImpl::elements_set_tag_data(
     return;
   }
   else
-   ((tag*)tag_handle)->pt = tag_data_array;
+  {
+    tag* ptr = (tag*)tag_handle;
+    ptr->elementData = malloc( tag_size * num_elements );
+    memcpy( ptr->elementData, tag_data_array, tag_size * num_elements );
+  }
 }
 
 
@@ -1455,7 +1322,7 @@ void Mesquite::MeshImpl::elements_get_tag_data(
     return;
   }
   else
-   tag_data_array = ((tag*)tag_handle)->pt;
+   tag_data_array = ((tag*)tag_handle)->elementData;
   
 }
     
@@ -1482,3 +1349,986 @@ void Mesquite::MeshImpl::release()
 {
   delete this;
 }
+
+
+
+namespace Mesquite {
+
+
+const char* const vtk_type_names[] = { "bit",
+                                       "char",
+                                       "unsigned_char",
+                                       "short",
+                                       "unsigned_short",
+                                       "int",
+                                       "unsigned_int",
+                                       "long",
+                                       "unsigned_long",
+                                       "float",
+                                       "double",
+                                       0 };
+
+void MeshImpl::read_vtk( const char* filename, Mesquite::MsqError &err )
+{
+  int major, minor;
+  char vendor_string[257];
+  size_t i;
+  
+  FILE* file = fopen( filename, "r" );
+  if (!file)
+  {
+    err.set_msg("Cannot access file.");
+    return;
+  }
+  
+    // Read file header
+    
+  if (!fgets( vendor_string, sizeof(vendor_string), file ))
+  {
+    err.set_msg( "I/O error." );
+    fclose( file );
+    return;
+  }
+  
+  if (!strchr( vendor_string, '\n' ) ||
+      2 != sscanf( vendor_string, "# vtk DataFile Version %d.%d", &major, &minor ))
+  {
+    err.set_msg( "Not a VTK file." );
+    fclose( file );
+    return;
+  }
+  
+  if (!fgets( vendor_string, sizeof(vendor_string), file )) 
+  {
+    err.set_msg( "I/O error." );
+    fclose( file );
+    return;
+  }
+  
+    // VTK spec says this should not exceed 256 chars.
+  if (!strchr( vendor_string, '\n' ))
+  {
+    err.set_msg( "Vendor string (line 2) exceeds 256 characters.");
+    fclose( file );
+    return;
+  }
+  
+  
+    // Check file type
+  
+  FileTokenizer tokens( file );
+  const char* const file_type_names[] = { "ASCII", "BINARY", 0 };
+  int filetype = tokens.match_token( file_type_names, err );
+  if (1 != filetype)
+  {
+    if (2 == filetype)
+      err.set_msg( "Cannot read BINARY VTK files -- use ASCII." );
+    return;
+  }
+
+    // Clear any existing data
+  this->clear();
+
+    // Read the mesh
+  if (!tokens.match_token( "DATASET", err ) ||
+      !vtk_read_dataset( tokens, err ))
+    return;
+  
+    // Make sure file actually contained some mesh
+  if (elementCount == 0)
+  {
+    err.set_msg( "File contained no mesh.");
+    return;
+  }
+  
+    // Read attribute data until end of file.
+  bool ok = true;
+  const char* const block_type_names[] = { "POINT_DATA", "CELL_DATA", 0 };
+  while (!tokens.eof())
+  {
+    int blocktype = tokens.match_token( block_type_names, err );
+    if (tokens.eof())
+    {
+      err.reset();
+      break;
+    }
+                        
+    switch (blocktype) 
+    {
+      case 1: ok = vtk_read_point_data( tokens, err ); break;
+      case 2: ok = vtk_read_cell_data ( tokens, err ); break;
+      default: ok = false;
+    }
+    
+    if (!ok)
+      return;
+  }
+  
+    // It seems that this variable needs to be initialized here
+  totalVertexUses = 0;
+  for (i = 0; i < elementCount; i++)
+    switch( elementArray[i].mType ) {
+      case TRIANGLE     : totalVertexUses += 3; break;
+      case QUADRILATERAL: totalVertexUses += 4; break;
+      case TETRAHEDRON  : totalVertexUses += 4; break;
+      case HEXAHEDRON   : totalVertexUses += 8; break;
+      case PRISM        : totalVertexUses += 6; break;
+      case PYRAMID      : totalVertexUses += 5; break;
+      case SEPTAHEDRON  : totalVertexUses += 7; break;
+      default:
+        err.set_msg( "Unimplemented element type encountered during vertex-use calculation" );
+        return;
+    }
+  
+    // Apparently MeshImpl needs all these arrays created.
+  size_t num_bitset_bytes = (vertexCount / 8);
+  num_bitset_bytes += (vertexCount % 8) ? 1 : 0;
+  onBoundaryBits = new unsigned char[num_bitset_bytes];
+  memset( onBoundaryBits, 0, num_bitset_bytes );
+  vertexMesquiteByte = new unsigned char[vertexCount];
+  memset( vertexMesquiteByte, 0, vertexCount );
+  newVertIndices = new size_t[vertexCount];
+  memset( newVertIndices, 0, vertexCount * sizeof(size_t) );
+  numCoords = 3;
+
+    // Convert tag data for fixed nodes to internal bitmap
+  
+  std::map<string, tag>::iterator iter = denseTags.find( "fixed" );
+  if (iter == denseTags.end() || !iter->second.vertexData)
+    return;
+  
+  if (iter->second.size != sizeof(double))
+  {
+    err.set_msg( "Invalid data type for 'fixed' attribute" );
+    return;
+  }
+  
+  double* tagdata = (double*)iter->second.vertexData;
+  for (i = 0; i < vertexCount; ++i)
+  {
+    if (tagdata[i])
+    {
+      unsigned char bit = (unsigned char)1 << (i % 8);
+      onBoundaryBits[i / 8] |= bit;
+    }
+  }
+  
+  tag_destroy( (TagHandle)(&iter->second), err );
+}
+
+bool MeshImpl::vtk_read_dataset( FileTokenizer& tokens, MsqError& err )
+{
+  const char* const data_type_names[] = { "STRUCTURED_POINTS",
+                                          "STRUCTURED_GRID",
+                                          "UNSTRUCTURED_GRID",
+                                          "POLYDATA",
+                                          "RECTILINEAR_GRID",
+                                          "FIELD",
+                                          0 };
+  int datatype = tokens.match_token( data_type_names, err );
+  bool result;
+  switch( datatype )
+  {
+    case 1: result = vtk_read_structured_points( tokens, err ); break;
+    case 2: result = vtk_read_structured_grid  ( tokens, err ); break;
+    case 3: result = vtk_read_unstructured_grid( tokens, err ); break;
+    case 4: result = vtk_read_polydata         ( tokens, err ); break;
+    case 5: result = vtk_read_rectilinear_grid ( tokens, err ); break;
+    case 6: result = vtk_read_field            ( tokens, err ); break;
+    default: result = false;
+  }
+  
+  return result;
+}
+
+
+bool MeshImpl::vtk_read_structured_points( FileTokenizer& tokens, MsqError& err )
+{
+  long i, j, k;
+  long dims[3];
+  double origin[3], space[3];
+ 
+  if (!tokens.match_token( "DIMENSION", err ) ||
+      !tokens.get_long_ints( 3, dims, err )    ||
+      !tokens.get_newline( err ))
+    return false;
+  
+  if (dims[0] < 1 || dims[1] < 1 || dims[2] < 1)
+  {
+    tokens.set_error( err, "Invalid dimension" );
+    return false;
+  }
+  
+  if (!tokens.match_token( "ORIGIN", err ) ||
+      !tokens.get_doubles( 3, origin, err )||
+      !tokens.get_newline( err ))
+    return false;
+  
+  const char* const spacing_names[] = { "SPACING", "ASPECT_RATIO", 0 };
+  if (!tokens.match_token( spacing_names, err ) ||
+      !tokens.get_doubles( 3, space, err )      ||
+      !tokens.get_newline( err ))
+    return false;
+  
+  vertexCount = dims[0] * dims[1] * dims[2];
+  Vertex* vtx_ptr = vertexArray = new Vertex[vertexCount];
+
+  for (k = 0; k < dims[2]; ++k)
+    for (j = 0; j < dims[1]; ++j)
+      for (i = 0; i < dims[0]; ++i)
+      {
+        vtx_ptr->coords[0] = origin[0] + i * space[0];
+        vtx_ptr->coords[1] = origin[1] + j * space[1];
+        vtx_ptr->coords[2] = origin[2] + k * space[2];
+        ++vtx_ptr;
+      }
+  
+  return vtk_create_structured_elems( dims, err );
+}
+
+bool MeshImpl::vtk_read_structured_grid( FileTokenizer& tokens, MsqError& err )
+{
+  long num_verts, dims[3];
+ 
+  if (!tokens.match_token( "DIMENSION", err ) ||
+      !tokens.get_long_ints( 3, dims, err )    ||
+      !tokens.get_newline( err )) 
+    return false;
+  
+  if (dims[0] < 1 || dims[1] < 1 || dims[2] < 1)
+  {
+    tokens.set_error( err, "Invalid dimension" );
+    return false;
+  }
+  
+  if (!tokens.match_token( "POINTS", err )       ||
+      !tokens.get_long_ints( 1, &num_verts, err ) ||
+      !tokens.match_token( vtk_type_names, err ) || 
+      !tokens.get_newline( err ))
+    return false;
+  
+  if (num_verts != (dims[0] * dims[1] * dims[2]))
+  {
+    tokens.set_error( err, "Point count not consistent with dimensions." );
+    return false;
+  }
+  
+  vertexCount = dims[0] * dims[1] * dims[2];
+  vertexArray = new Vertex[num_verts];
+  
+  if (!tokens.get_doubles( 3 * vertexCount, (double*)vertexArray, err ))
+    return false;
+  
+  return vtk_create_structured_elems( dims, err );
+}
+
+bool MeshImpl::vtk_read_rectilinear_grid( FileTokenizer& tokens, MsqError& err )
+{
+  int i, j, k;
+  long dims[3];
+  const char* labels[] = { "X_COORDINATES", "Y_COORDINATES", "Z_COORDINATES" };
+  vector<double> coordinates[3];
+  
+  if (!tokens.match_token( "DIMENSION", err ) ||
+      !tokens.get_long_ints( 3, dims, err )    ||
+      !tokens.get_newline( err )) 
+    return false;
+  
+  if (dims[0] < 1 || dims[1] < 1 || dims[2] < 1)
+  {
+    tokens.set_error( err, "Invalid dimension" );
+    return false;
+  }
+
+  for (i = 0; i < 3; i++)
+  {
+    long count;
+    if (!tokens.match_token( labels[i], err )      ||
+        !tokens.get_long_ints( 1, &count, err )    ||
+        !tokens.match_token( vtk_type_names, err ) ||
+        !tokens.get_newline( err ))
+      return false;
+    
+    if (count != dims[i])
+    {
+      tokens.set_error( err, "Coordinate count inconsistent with dimensions");
+      return false;
+    }
+    
+    coordinates[i].resize(count);
+    if (!tokens.get_doubles( count, &coordinates[i][0], err ))
+      return false;
+  }
+  
+  vertexCount = dims[0] * dims[1] * dims[2];
+  Vertex* vtx_ptr = vertexArray = new Vertex[vertexCount];
+
+  for (k = 0; k < dims[2]; ++k)
+    for (j = 0; j < dims[1]; ++j)
+      for (i = 0; i < dims[0]; ++i)
+      {
+        vtx_ptr->coords[0] = coordinates[0][i];
+        vtx_ptr->coords[1] = coordinates[1][j];
+        vtx_ptr->coords[2] = coordinates[2][k];
+        ++vtx_ptr;
+      }
+  
+  
+  return vtk_create_structured_elems( dims, err );
+}
+
+bool MeshImpl::vtk_read_polydata( FileTokenizer& tokens, MsqError& err )
+{
+  long num_verts;
+  vector<int> connectivity;
+  const char* const poly_data_names[] = { "VERTICES",
+                                          "LINES",
+                                          "POLYGONS",
+                                          "TRIANGLE_STRIPS", 
+                                          0 };
+  
+  if (!tokens.match_token( "POINTS", err )        ||
+      !tokens.get_long_ints( 1, &num_verts, err ) ||
+      !tokens.match_token( vtk_type_names, err )  ||
+      !tokens.get_newline( err ))
+    return false;
+  
+  if (num_verts < 1)
+  {
+    tokens.set_error( err, "Invalid point count");
+    return false;
+  }
+  
+  Vertex* vtx_ptr = vertexArray = new Vertex[num_verts];
+  if (!tokens.get_doubles( 3*num_verts, (double*)vtx_ptr, err ))
+    return false;
+  vertexCount = num_verts;
+
+  int poly_type = tokens.match_token( poly_data_names, err );
+  switch (poly_type)
+  {
+    case 3:
+      return vtk_read_polygons( tokens, err );
+    case 4:
+      tokens.set_error( err, "Unsupported type: triangle strips" );
+      return false;
+    case 1:
+    case 2:
+      tokens.set_error( err, "Entities of dimension < 2" );
+    default:
+      return false;
+  }
+}
+
+bool MeshImpl::vtk_read_polygons( FileTokenizer& tokens, MsqError& err )
+{
+  long size[2];
+  
+  if (!tokens.get_long_ints( 2, size, err ) || !tokens.get_newline( err ))
+    return false;
+  
+  elementCount = size[0];
+  Element* elem_ptr = elementArray = new Element[elementCount];
+
+  for (int i = 0; i < size[0]; ++i)
+  {
+    long count;
+    if (!tokens.get_long_ints( 1, &count, err ))
+      return false;
+    
+    switch (count)
+    {
+      case 3: elem_ptr->mType = TRIANGLE;      break;
+      case 4: elem_ptr->mType = QUADRILATERAL; break;
+      default:
+        tokens.set_error( err, "Unsupported polygon, not 3- or 4-sided" );
+        return false;
+    }
+    
+    size_t* vtx_idx_itr = elem_ptr->vertexIndices;
+    for (int j = 0; j < count; ++j, ++vtx_idx_itr)
+    {
+      long val;
+      if (!tokens.get_long_ints( 1, &val, err))
+        return false;
+      
+      if (val < 0 || val >= vertexCount)
+      {
+        tokens.set_error( err, "Vertex index out of bounds" );
+        return false;
+      }
+      *vtx_idx_itr = val;
+    }
+  }
+  
+  return true;
+}
+
+
+
+bool MeshImpl::vtk_read_unstructured_grid( FileTokenizer& tokens, MsqError& err )
+{
+  long i, num_verts, num_elems[2];
+  
+  if (!tokens.match_token( "POINTS", err )       ||
+      !tokens.get_long_ints( 1, &num_verts, err ) ||
+      !tokens.match_token( vtk_type_names, err ) ||
+      !tokens.get_newline( err ))
+    return false;
+  
+  if (num_verts < 1)
+  {
+    tokens.set_error( err, "Invalid point count");
+    return false;
+  }
+  
+  
+  vertexArray = new Vertex[num_verts];
+  if (!tokens.get_doubles( num_verts * 3, (double*)vertexArray, err ))
+    return false;
+  vertexCount = num_verts;
+  
+  if (!tokens.match_token( "CELLS", err ) ||
+      !tokens.get_long_ints( 2, num_elems, err ) ||
+      !tokens.get_newline( err ))
+    return false;
+  
+
+  elementCount = num_elems[0];
+  Element* elem_ptr = elementArray = new Element[elementCount];
+  for (i = 0; i < num_elems[0]; ++i, ++elem_ptr)
+  {
+    long count;
+    if (!tokens.get_long_ints( 1, &count, err))
+      return false;
+    
+    if (count > MSQ_MAX_NUM_VERT_PER_ENT)
+    {
+      tokens.set_error( err, "Too many vertices in element" );
+      return false;
+    }
+    
+    size_t* vtx_idx_itr = elem_ptr->vertexIndices;
+    for (int j = 0; j < count; ++j, ++vtx_idx_itr)
+    {
+      long val;
+      if (!tokens.get_long_ints( 1,&val, err))
+        return false;
+      
+      if (val < 0 || val >= vertexCount)
+      {
+        tokens.set_error( err, "Vertex index out of bounds" );
+        return false;
+      }
+      *vtx_idx_itr = val;
+    }
+  }
+  
+  if (!tokens.match_token( "CELL_TYPES", err )      ||
+      !tokens.get_long_ints( 1, &num_elems[1], err ) ||
+      !tokens.get_newline( err ))
+    return false;
+  
+  if (num_elems[0] != num_elems[1])
+  {
+    tokens.set_error( err, "Number of element types does not match number of elements" );
+    return false;
+  }
+  
+  elem_ptr = elementArray ;
+  for (i = 0; i < num_elems[0]; ++i, ++elem_ptr)
+  {
+    long type;
+    if (!tokens.get_long_ints( 1, &type, err ))
+      return false;
+    
+    switch (type)
+    {
+      case 5: 
+        elem_ptr->mType = TRIANGLE; 
+        break;
+      case 8:
+        std::swap( elem_ptr->vertexIndices[2], elem_ptr->vertexIndices[3] );
+      case 9:
+        elem_ptr->mType = QUADRILATERAL;
+        break;
+      case 10:
+        elem_ptr->mType = TETRAHEDRON;
+        break;
+      case 11:
+        std::swap( elem_ptr->vertexIndices[2], elem_ptr->vertexIndices[3] );
+        std::swap( elem_ptr->vertexIndices[6], elem_ptr->vertexIndices[7] );
+      case 12:
+        elem_ptr->mType = HEXAHEDRON;
+        break;
+      case 13:
+        std::swap( elem_ptr->vertexIndices[1], elem_ptr->vertexIndices[2] );
+        std::swap( elem_ptr->vertexIndices[4], elem_ptr->vertexIndices[5] );
+        elem_ptr->mType = PRISM;
+        break;
+      case 14:
+        elem_ptr->mType = PYRAMID;
+        break;
+      default:
+        tokens.set_error( err, "Unsupported cell type" );
+        return false;
+    }
+  }
+
+  return true;
+}
+
+bool MeshImpl::vtk_create_structured_elems( const long* dims, 
+                                            MsqError& err )
+{
+    //NOTE: this should be work fine for edges also if 
+    //      Mesquite ever supports them.  Just add the
+    //      type for dimension 1 to the switch statement.
+    
+  int non_zero[3] = {0,0,0};  // True if dim > 0 for x, y, z respectively
+  long elem_dim = 0;          // Element dimension (2->quad, 3->hex)
+  long num_elems = 1;         // Total number of elements
+  long vert_per_elem;         // Element connectivity length
+  long edims[3] = { 1, 1, 1 };// Number of elements in each grid direction
+  
+    // Populate above data
+  for (int d = 0; d < 3; d++) 
+    if (dims[d] > 1)
+    {
+      non_zero[elem_dim++] = d;
+      edims[d] = dims[d] - 1;
+      num_elems *= edims[d];
+    }
+  vert_per_elem = 1 << elem_dim;
+  
+    // Get element type from element dimension
+  EntityTopology type;
+  switch( elem_dim )
+  {
+  //case 1: type = EDGE;          break;
+    case 2: type = QUADRILATERAL; break;
+    case 3: type = HEXAHEDRON;    break;
+    default:
+      err.set_msg( "Cannot create structured mesh with elements of dimension < 2 or > 3." );
+      return false;
+  }
+
+    // Allocate storage for elements
+  Element* elem_ptr = elementArray = new Element[num_elems];
+  
+    // Offsets of element vertices in grid relative to corner closest to origin 
+  const long k = dims[0]*dims[1];
+  const long corners[8] = { 0, 1, 1+dims[0], dims[0], k, k+1, k+1+dims[0], k+dims[0] };
+  
+    // Populate element list
+  for (long z = 0; z < edims[2]; ++z)
+    for (long y = 0; y < edims[1]; ++y)
+      for (long x = 0; x < edims[0]; ++x)
+      {
+        const long index = x + y*dims[0] + z*(dims[0]*dims[1]);
+        elem_ptr->mType = type;
+        for (long j = 0; j < vert_per_elem; ++j)
+          elem_ptr->vertexIndices[j] = index + corners[j];
+        ++elem_ptr;
+      }
+  
+  elementCount = num_elems;
+  return true;
+}
+
+bool MeshImpl::vtk_read_field( FileTokenizer& tokens, MsqError& err )
+{
+    // This is not supported yet.
+    // Parse the data but throw it away because
+    // Mesquite has no internal representation for it.
+  
+    // Could save this in tags, but the only useful thing that
+    // could be done with the data is to write it back out
+    // with the modified mesh.  As there's no way to save the
+    // type of a tag in Mesquite, it cannot be written back
+    // out correctly either.
+    // FIXME: Don't know what to do with this data.
+    // For now, read it and throw it out.
+
+  long num_arrays;
+  if (!tokens.get_long_ints( 1, &num_arrays, err ))
+    return false;
+  
+  for (long i = 0; i < num_arrays; ++i)
+  {
+    const char* tmp = tokens.get_string( err );
+    if (!tmp)
+      return false;
+    
+    long dims[2];
+    if (!tokens.get_long_ints( 2, dims, err ) ||
+        !tokens.match_token( vtk_type_names, err ))
+      return false;
+    
+    long num_vals = dims[0] * dims[1];
+    
+    for (long j = 0; j < num_vals; j++)
+    {
+      double junk;
+      if (!tokens.get_doubles( 1, &junk, err ))
+        return false;
+    }
+  }
+  
+  return true;
+}
+
+void* MeshImpl::vtk_read_attrib_data( FileTokenizer& tokens, 
+                                      long count,
+                                      string& name_out,
+                                      size_t& size_out,
+                                      MsqError& err )
+{
+  const char* const type_names[] = { "SCALARS",
+                                     "COLOR_SCALARS",
+                                     "VECTORS",
+                                     "NORMALS",
+                                     "TEXTURE_COORDINATES",
+                                     "TENSORS",
+                                     "FIELD",
+                                     0 };
+
+  int type = tokens.match_token( type_names, err );
+  const char* tmp = tokens.get_string( err );
+  if (!tmp)
+    return 0;
+  name_out = tmp;
+  
+  void* data = 0;
+  switch( type )
+  {
+    case 1: data = vtk_read_scalar_attrib ( tokens, count, size_out, err ); break;
+    case 2: data = vtk_read_color_attrib  ( tokens, count, size_out, err ); break;
+    case 3: data = vtk_read_vector_attrib ( tokens, count, size_out, err ); break;
+    case 4: data = vtk_read_vector_attrib ( tokens, count, size_out, err ); break;
+    case 5: data = vtk_read_texture_attrib( tokens, count, size_out, err ); break;
+    case 6: data = vtk_read_tensor_attrib ( tokens, count, size_out, err ); break;
+    case 7: break;  // Can't handle field data yet.
+  }
+
+  return data;
+}
+
+bool MeshImpl::vtk_read_point_data( FileTokenizer& tokens, 
+                                    MsqError& err )
+{
+  long count;
+  if (!tokens.get_long_ints( 1, &count, err))
+    return false;
+  
+  if (count != vertexCount) 
+  {
+    tokens.set_error( err, "Count inconsistent with number of vertices" );
+    return false;
+  }
+  
+  string name;
+  size_t size;
+  void* data = vtk_read_attrib_data( tokens, count, name, size, err );
+  if (!data)
+    return false;
+  
+  tag junk;
+  junk.size = 0;
+  junk.elementData = junk.vertexData = 0;
+  std::map<std::string, tag>::iterator iter = 
+    denseTags.insert( std::make_pair(name, junk) ).first;
+  if (iter->second.vertexData)
+  {
+    tokens.set_error( err, "Duplicate vertex attribute name" );
+    free( data );
+    return false;
+  }
+  else if (iter->second.elementData && iter->second.size != size)
+  {
+    tokens.set_error( err, "Inconsistent sizes between element "
+                           "and vertex attributes of same name." );
+    free( data );
+    return false;
+  }
+  
+  iter->second.size = size;
+  iter->second.vertexData = data;
+  return true;
+}
+
+
+bool MeshImpl::vtk_read_cell_data( FileTokenizer& tokens, 
+                                   MsqError& err )
+{
+  long count;
+  if (!tokens.get_long_ints( 1, &count, err))
+    return false;
+  
+  if (count != elementCount) 
+  {
+    tokens.set_error( err, "Count inconsistent with number of elements" );
+    return false;
+  }
+  
+  string name;
+  size_t size;
+  void* data = vtk_read_attrib_data( tokens, count, name, size, err );
+  if (!data)
+    return false;
+  
+  tag junk;
+  junk.size = 0;
+  junk.elementData = junk.vertexData = 0;
+  std::map<std::string, tag>::iterator iter = 
+    denseTags.insert( std::make_pair(name, junk) ).first;
+  if (iter->second.elementData)
+  {
+    tokens.set_error( err, "Duplicate element attribute name" );
+    free( data );
+    return false;
+  }
+  else if (iter->second.vertexData && iter->second.size != size)
+  {
+    tokens.set_error( err, "Inconsistent sizes between element "
+                           "and vertex attributes of same name." );
+    free( data );
+    return false;
+  }
+  
+  iter->second.size = size;
+  iter->second.elementData = data;
+  return true;
+}
+
+void* MeshImpl::vtk_read_typed_data( FileTokenizer& tokens, 
+                                     int type, 
+                                     size_t per_elem, 
+                                     size_t num_elem,
+                                     size_t& data_size_out,
+                                     MsqError &err )
+{
+  void* data_ptr;
+  bool ok;
+  size_t count = per_elem * num_elem;
+  switch ( type )
+  {
+    case 1:
+      data_size_out = sizeof(bool);
+      data_ptr = malloc( count*data_size_out );
+      ok = tokens.get_booleans( count, (bool*)data_ptr, err );
+      break;
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+      data_size_out = sizeof(int);
+      data_ptr = malloc( count*data_size_out );
+      ok = tokens.get_integers( count, (int*)data_ptr, err );
+      break;
+    case 10:
+    case 11:
+      data_size_out = sizeof(double);
+      data_ptr = malloc( count*data_size_out );
+      ok = tokens.get_doubles( count, (double*)data_ptr, err );
+      break;
+    default:
+      err.set_msg( "Invalid data type" );
+      return 0;
+  }
+  
+  if (!ok)
+  {
+    free( data_ptr );
+    return 0;
+  }
+  
+  return data_ptr;
+}
+  
+      
+      
+
+void* MeshImpl::vtk_read_scalar_attrib( FileTokenizer& tokens,
+                                        long count,
+                                        size_t& size_out,
+                                        MsqError& err )
+{
+  int type = tokens.match_token( vtk_type_names, err );
+  if (!type)
+    return 0;
+    
+  long size;
+  const char* tok = tokens.get_string( err );
+  const char* end = 0;
+  size = strtol( tok, (char**)&end, 0 );
+  if (*end)
+  {
+    size = 1;
+    tokens.unget_token();
+  }
+  
+    // VTK spec says cannot be greater than 4--do we care?
+  if (size < 1 || size > 4)
+  {
+    tokens.set_error( err, "Scalar count out of range [1,4]" );
+    return 0;
+  }
+  
+  if (!tokens.match_token("LOOKUP_TABLE",err) ||
+      !(tok = tokens.get_string(err)))
+    return 0;
+  
+    // If no lookup table, just read and return the data
+  if (!strcmp( tok, "default" ))
+  {
+    void* ptr = vtk_read_typed_data( tokens, type, size, count, size_out, err );
+    size_out *= size;
+    return ptr;
+  }
+  
+    // If we got this far, then the data has a lookup
+    // table.  First read the lookup table and convert
+    // to integers.
+  string name = tok;
+  vector<long> table( size*count );
+  if (type > 0 && type < 10)  // Is an integer type
+  {
+    if (!tokens.get_long_ints( table.size(), &table[0], err ))
+      return 0;
+  }
+  else // Is a real-number type
+  {
+    for (vector<long>::iterator iter = table.begin(); iter != table.end(); ++iter)
+    {
+      double data;
+      if (!tokens.get_doubles( 1, &data, err ))
+        return 0;
+
+      *iter = (long)data;
+      if ((double)*iter != data)
+      {
+        tokens.set_error( err, "Invalid lookup index" );
+        return 0;
+      }
+    }
+  }
+  
+    // Now read the data - must be float RGBA color triples
+  
+  long table_count;
+  if (!tokens.match_token( "LOOKUP_TABLE", err ) ||
+      !tokens.match_token( name.c_str(), err ) ||
+      !tokens.get_long_ints( 1, &table_count, err ))
+    return 0;
+ 
+  vector<float> table_data(table_count*4);
+  if (!tokens.get_floats( table_data.size(), &table_data[0], err ))
+    return 0;
+  
+    // Create list from indexed data
+  
+  float* data = (float*)malloc( sizeof(float)*count*size*4 );
+  float* data_iter = data;
+  for (std::vector<long>::iterator idx = table.begin(); idx != table.end(); ++idx)
+  {
+    if (*idx < 0 || *idx >= table_count)
+    {
+      err.set_msg( "LOOKUP_TABLE index out of range." );
+      free( data );
+      return  0;
+    }
+    
+    for (int i = 0; i < 4; i++)
+    {
+      *data_iter = table_data[4 * *idx + i];
+      ++data_iter;
+    }
+  }
+  
+  size_out = size * 4 * sizeof(float);
+  return data;
+}
+
+void* MeshImpl::vtk_read_color_attrib( FileTokenizer& tokens, 
+                                       long count, 
+                                       size_t& size_out,
+                                       MsqError& err )
+{
+  long size;
+  if (!tokens.get_long_ints( 1, &size, err ))
+    return 0;
+  
+  if (size < 1)
+  {
+    tokens.set_error( err, "Invalid size" );
+    return 0;
+  }
+  
+  float* data = (float*)malloc( sizeof(float)*count*size );
+  if (!tokens.get_floats( count*size, data, err ))
+  {
+    free( data );
+    return 0;
+  }
+  
+  size_out = size*sizeof(float);
+  return data;
+}
+
+void* MeshImpl::vtk_read_vector_attrib( FileTokenizer& tokens, 
+                                        long count, 
+                                        size_t& size_out,
+                                        MsqError& err )
+{
+  int type = tokens.match_token( vtk_type_names, err );
+  if (!type)
+    return 0;
+    
+  void* result = vtk_read_typed_data( tokens, type, 3, count, size_out, err );
+  size_out *= 3;
+  return result;
+}
+
+void* MeshImpl::vtk_read_texture_attrib( FileTokenizer& tokens,
+                                         long count,
+                                         size_t& size_out,
+                                         MsqError& err )
+{
+  int type, dim;
+  if (!tokens.get_integers( 1, &dim, err ) ||
+      !(type = tokens.match_token( vtk_type_names, err )))
+    return 0;
+    
+  if (dim < 1 || dim > 3)
+  {
+    tokens.set_error( err, "Invalid dimension" );
+    return 0;
+  }
+  
+  void* result = vtk_read_typed_data( tokens, type, dim, count, size_out, err );
+  size_out *= dim;
+  return result;
+}
+
+void* MeshImpl::vtk_read_tensor_attrib( FileTokenizer& tokens,
+                                        long count, 
+                                        size_t& size_out,
+                                        MsqError& err )
+{
+  int type = tokens.match_token( vtk_type_names, err );
+  if (!type)
+    return 0;
+    
+  void* result = vtk_read_typed_data( tokens, type, 9, count, size_out, err );
+  size_out *= 9;
+  return result;
+}  
+  
+} // namespace Mesquite
+
+

@@ -27,32 +27,224 @@
 // -*- Mode : c++; tab-width: 2; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 //
 
-#include "Mesquite.hpp"
-#include "MeshSet.hpp"
-#include "PatchData.hpp"
-#include "MeshImpl.hpp"
+#ifndef DEBUG
+#  include "Mesquite.hpp"
+#  include "MeshSet.hpp"
+#  include "PatchData.hpp"
+#  include "MeshImpl.hpp"
+#  include "cppunit/extensions/HelperMacros.h"
+   using Mesquite::Mesh;
+   using Mesquite::MeshImpl;
+   using Mesquite::Vector3D;
+   using Mesquite::MsqVertex;
+   using Mesquite::MsqError;
+   using Mesquite::EntityTopology;
+#else
+#  include <stdio.h>
+#endif
 
-#include "cppunit/extensions/HelperMacros.h"
+const char temp_file_name[] = "VtkTest.vtk";
+
+  // VTK file for 2x2x2 block of hexes as structured-point 
+const char structured_3d_points_data[] = 
+"# vtk DataFile Version 2.0\n"
+"Mesquite Mesh\n"
+"ASCII\n"
+"DATASET STRUCTURED_POINTS\n"
+"DIMENSION 3 3 3\n"
+"ORIGIN 0 0 0\n"
+"SPACING 1.5 1.5 1.5\n";
+
+  // VTK file for 2x2 block of quads as structured-point 
+const char structured_2d_points_data[] = 
+"# vtk DataFile Version 2.0\n"
+"Mesquite Mesh\n"
+"ASCII\n"
+"DATASET STRUCTURED_POINTS\n"
+"DIMENSION 3 3 1\n"
+"ORIGIN 0 0 0\n"
+"SPACING 1.5 1.5 0.0\n";
+
+  // VTK file for 2x2x2 block of hexes as structured-grid
+const char structured_grid_data[] = 
+"# vtk DataFile Version 2.0\n"
+"Mesquite Mesh\n"
+"ASCII\n"
+"DATASET STRUCTURED_GRID\n"
+"DIMENSION 3 3 3\n"
+"POINTS 27 float\n"
+"0.0 0.0 0.0\n1.5 0.0 0.0\n3.0 0.0 0.0\n"
+"0.0 1.5 0.0\n1.5 1.5 0.0\n3.0 1.5 0.0\n"
+"0.0 3.0 0.0\n1.5 3.0 0.0\n3.0 3.0 0.0\n"
+"0.0 0.0 1.5\n1.5 0.0 1.5\n3.0 0.0 1.5\n"
+"0.0 1.5 1.5\n1.5 1.5 1.5\n3.0 1.5 1.5\n"
+"0.0 3.0 1.5\n1.5 3.0 1.5\n3.0 3.0 1.5\n"
+"0.0 0.0 3.0\n1.5 0.0 3.0\n3.0 0.0 3.0\n"
+"0.0 1.5 3.0\n1.5 1.5 3.0\n3.0 1.5 3.0\n"
+"0.0 3.0 3.0\n1.5 3.0 3.0\n3.0 3.0 3.0\n";
+
+  // VTK file for 2x2x2 block of hexes as rectilinear-grid
+const char rectilinear_grid_data[] =
+"# vtk DataFile Version 2.0\n"
+"Mesquite Mesh\n"
+"ASCII\n"
+"DATASET RECTILINEAR_GRID\n"
+"DIMENSION 3 3 3\n"
+"X_COORDINATES 3 float\n"
+"0.0 1.5 3.0\n"
+"Y_COORDINATES 3 float\n"
+"0.0 1.5 3.0\n"
+"Z_COORDINATES 3 float\n"
+"0.0 1.5 3.0\n";
+
+  // VTK file containing mixed-element unstructured mesh
+  // First 8 elems result in same 2x2x2 block of hexes as
+  // structured cases above.  The next 4 elems are the same
+  // as the quads from the 2D structured-point file above.
+const char mixed_unstructured_data[] = 
+"# vtk DataFile Version 2.0\n"
+"Mesquite Mesh\n"
+"ASCII\n"
+"DATASET UNSTRUCTURED_GRID\n"
+"POINTS 35 float\n"
+"\n" // points for an 2x2x2 brick of hexes (same geom/topo as above structured meshes)
+"0.0 0.0 0.0\n1.5 0.0 0.0\n3.0 0.0 0.0\n"
+"0.0 1.5 0.0\n1.5 1.5 0.0\n3.0 1.5 0.0\n"
+"0.0 3.0 0.0\n1.5 3.0 0.0\n3.0 3.0 0.0\n"
+"0.0 0.0 1.5\n1.5 0.0 1.5\n3.0 0.0 1.5\n"
+"0.0 1.5 1.5\n1.5 1.5 1.5\n3.0 1.5 1.5\n"
+"0.0 3.0 1.5\n1.5 3.0 1.5\n3.0 3.0 1.5\n"
+"0.0 0.0 3.0\n1.5 0.0 3.0\n3.0 0.0 3.0\n"
+"0.0 1.5 3.0\n1.5 1.5 3.0\n3.0 1.5 3.0\n"
+"0.0 3.0 3.0\n1.5 3.0 3.0\n3.0 3.0 3.0\n"
+"\n" // more points on +x side of brick for pyramids and tets
+"4 0.75 0.75\n4 2.25 0.75\n4 0.75 2.25\n4 2.25 2.25\n"
+"\n" // more points for two prisms/wedges
+"6 0.75 0.75\n6 2.25 0.75\n6 0.75 2.25\n6 2.25 2.25\n"
+"\n"
+"CELLS 38 216\n"
+"\n" // 8 hexes in 2x2x2 block
+"8  0  1  4  3  9 10 13 12\n"
+"8  1  2  5  4 10 11 14 13\n"
+"8  3  4  7  6 12 13 16 15\n"
+"8  4  5  8  7 13 14 17 16\n"
+"8  9 10 13 12 18 19 22 21\n"
+"8 10 11 14 13 19 20 23 22\n"
+"8 12 13 16 15 21 22 25 24\n"
+"8 13 14 17 16 22 23 26 25\n"
+"\n"// Quads on -z face of hex (inverted to match structured data)
+"4 0 1 4 3\n" 
+"4 1 2 5 4\n"
+"4 3 4 7 6\n"
+"4 4 5 8 7\n"
+"\n" // some pyramids on the +x side of the block
+"5  2  5 14 11 27\n" 
+"5  5  8 17 14 28\n"
+"5 11 14 23 20 29\n"
+"5 14 17 26 23 30\n"
+"\n" // Some tetrahedrons around the pyramids
+"4  5 14 27 28\n"
+"4 14 28 17 30\n"
+"4 29 14 23 30\n"
+"4 11 27 14 29\n"
+"4 27 29 30 14\n"
+"4 28 27 30 14\n"
+"\n" // Triangles bounding the pyramid/tet region
+"3  2  5 27\n"
+"3  5 28 27\n"
+"3  5  8 28\n"
+"3  8 17 28\n"
+"3 17 30 28\n"
+"3 17 26 30\n"
+"3 26 23 30\n"
+"3 23 29 30\n"
+"3 23 20 29\n"
+"3 20 11 29\n"
+"3 11 27 29\n"
+"3  2 27 11\n"
+"3 27 28 30\n"
+"3 27 30 29\n"
+"\n" // A couple wedges/prisms
+"6 27 30 28 31 34 32\n"
+"6 30 27 29 34 31 33\n"
+"\n" 
+"CELL_TYPES 38\n"
+"12 12 12 12 12 12 12 12\n"  //  8 hexes
+" 9  9  9  9\n"              //  4 quads
+"14 14 14 14\n"              //  4 pyramids
+"10 10 10 10 10 10\n"        //  6 tets
+" 5  5  5  5  5  5  5 "
+" 5  5  5  5  5  5  5\n"     // 14 tri
+"13 13\n";                   // 2 wedges
+
+  // A simple scalar attribute specifying point and hex
+  // IDs.  May be appended to any of the above 3D structured
+  // mesh files.
+const char simple_scalar_attrib[] = 
+"CELL_DATA 8\n"
+"SCALARS global_id int 1\n"
+"LOOKUP_TABLE default\n"
+"1 2 3 4 5 6 7 8\n"
+"\n"
+"POINT_DATA 27\n"
+"SCALARS global_id int\n"
+"LOOKUP_TABLE default\n"
+" 1  2  3  4  5  6  7  8  9\n"
+"10 11 12 13 14 15 16 17 18\n"
+"19 20 21 22 23 24 25 26 27\n";
+
+  // A VTK vector attribute.  May be appended to any of the 
+  // above 3D structured mesh files.
+const char simple_vector_attrib[] =
+"CELL_DATA 8\n"
+"VECTORS hexvect float\n"
+"1 1 1\n"
+"2 2 2\n"
+"3 3 3\n"
+"4 4 4\n"
+"5 5 5\n"
+"6 6 6\n"
+"7 7 7\n"
+"8 8 8\n";
+
+  // A scalar VTK attribute with the name and datatype
+  // expected by MeshImpl for specifying boundary vertices.
+  // May be appended to any of the above 3D structured
+  // mesh files
+const char fixed_vertex_attrib[] = 
+"POINT_DATA 27\n"
+"SCALARS fixed float\n"
+"LOOKUP_TABLE default\n"
+"1 1 1 1 1 1 1 1 1\n"
+"1 1 1 1 0 1 1 1 1\n"
+"1 1 1 1 1 1 1 1 1\n";
+
+#ifndef DEBUG
 
 class VtkTest : public CppUnit::TestFixture
 {
 private:
    CPPUNIT_TEST_SUITE(VtkTest);
-   CPPUNIT_TEST (test_elements);
-   CPPUNIT_TEST_SUITE_END();
 
-private:
-  Mesquite::MeshImpl *mMesh;
-  
+    // Original test for old Vtk parser
+   CPPUNIT_TEST (test_elements);
+
+    // Additional tests for new Vtk parser - J.Kraftcheck, 2004-10-12
+   CPPUNIT_TEST (test_read_unstructured);
+   CPPUNIT_TEST (test_read_structured_2d_points);
+   CPPUNIT_TEST (test_read_structured_3d_points);
+   CPPUNIT_TEST (test_read_structured_grid);
+   CPPUNIT_TEST (test_read_rectilinear_grid);
+   CPPUNIT_TEST (test_read_simple_scalar_attrib);
+   CPPUNIT_TEST (test_read_vector_attrib);
+   CPPUNIT_TEST (test_read_fixed_attrib);
+
+   CPPUNIT_TEST_SUITE_END();
+   
 public:
    /* Automatically called by CppUnit before each test function. */
   void setUp()
   {
-    Mesquite::MsqError err;
-    
-      // Read a Vtk Mesh file -- 10 triangles, 2 free vertices
-    mMesh = new Mesquite::MeshImpl;
-    mMesh->read_vtk("../../meshFiles/2D/VTK/equil_tri2.vtk", err);
   }
   
     // Automatically called by CppUnit after each test function.
@@ -64,9 +256,370 @@ public:
   VtkTest()
     {}
   
+    // Check if the 2x2x2 brick of structured mesh
+    // read from file is as expected.
+  void check_8hex_structured( Mesh& mesh )
+  {
+    MsqError err;
+    err.printError = true;
+    CPPUNIT_ASSERT(mesh.get_total_vertex_count(err) == 27 && !err.errorOn);
+    CPPUNIT_ASSERT(mesh.get_total_element_count(err) == 8 && !err.errorOn);
+    Mesh::ElementHandle elems[8];
+    mesh.get_all_elements( &elems[0], 8, err );
+    CPPUNIT_ASSERT(!err.errorOn);
+    
+    
+    std::vector<Mesh::VertexHandle> connectivity(8*8);
+    std::vector<Mesh::VertexHandle>::iterator iter = connectivity.begin();
+    for (int i = 0; i < 8; ++i)
+    {
+      Mesh::ElementHandle elem = elems[i];
+      size_t junk1[8], junk2[8];
+      size_t junk1size = sizeof(junk1) / sizeof(size_t);
+      size_t junk2size = sizeof(junk2) / sizeof(size_t);
+      mesh.elements_get_attached_vertices( &elem, 1, &*iter, junk1size, junk1, junk2size, junk2, err );
+      CPPUNIT_ASSERT(!err.errorOn);
+      iter += 8;
+    }
+    
+    check_8hex_block( mesh, connectivity.begin() );
+  }
+  
+    // Check if the 2x2x2 brick of hexes
+    // read from file is as expected.
+  void check_8hex_block( Mesh& mesh, std::vector<Mesh::VertexHandle>::iterator connectivity )
+  {
+    MsqError err;
+    err.printError = true;
+    const int base_corners[] =   { 0, 1, 3, 4, 9, 10, 12, 13 };
+    const int corner_offsets[] = { 0, 1, 4, 3, 9, 10, 13, 12 };
+
+    for (int hex = 0; hex < 8; ++hex)
+    {
+      for (int node = 0; node < 8; ++node)
+      {
+        const int index = base_corners[hex] + corner_offsets[node];
+        const int x = index % 3;
+        const int y = (index / 3) % 3;
+        const int z = index / 9;
+        const Vector3D expected_coords( 1.5*x, 1.5*y, 1.5*z );
+        MsqVertex actual_coords;
+        Mesh::VertexHandle* conn_ptr = &*connectivity;
+        ++connectivity;
+        mesh.vertices_get_coordinates( conn_ptr, &actual_coords, 1, err );
+        CPPUNIT_ASSERT( !err.errorOn );
+        assert(expected_coords.within_tolerance_box( actual_coords, DBL_EPSILON ));
+        CPPUNIT_ASSERT( expected_coords.within_tolerance_box( actual_coords, DBL_EPSILON ) );
+      }
+    }
+  }
+  
+    // Check if the 2x2 brick of structured mesh
+    // read from file is as expected.
+  void check_4quad_structured( Mesh& mesh )
+  {
+    MsqError err;
+    err.printError = true;
+    CPPUNIT_ASSERT(mesh.get_total_vertex_count(err) == 9 && !err.errorOn);
+    CPPUNIT_ASSERT(mesh.get_total_element_count(err) == 4 && !err.errorOn);
+    Mesh::ElementHandle elems[4];
+    mesh.get_all_elements( &elems[0], 4, err );
+    CPPUNIT_ASSERT(!err.errorOn);
+    
+    
+    std::vector<Mesh::VertexHandle> connectivity(4*4);
+    std::vector<Mesh::VertexHandle>::iterator iter = connectivity.begin();
+    for (int i = 0; i < 4; ++i)
+    {
+      Mesh::ElementHandle elem = elems[i];
+      size_t junk1[4], junk2 = 4, junk3[4];
+      mesh.elements_get_attached_vertices( &elem, 1, &*iter, junk2, junk1, junk2, junk3, err );
+      CPPUNIT_ASSERT(!err.errorOn);
+      iter += 4;
+    }
+    
+    check_4quad_block( mesh, connectivity.begin() );
+  }
+  
+    // Check if the 2x2 brick of quads
+    // read from file is as expected.
+  void check_4quad_block( Mesh& mesh, std::vector<Mesh::VertexHandle>::iterator connectivity )
+  {
+    MsqError err;
+    err.printError = true;
+    const int base_corners[]   = { 0, 1, 3, 4 };
+    const int corner_offsets[] = { 0, 1, 4, 3 };
+    for (int quad = 0; quad < 4; ++quad)
+    {
+      for (int node = 0; node < 4; ++node)
+      {
+        const int index = base_corners[quad] + corner_offsets[node];
+        const int x = index % 3;
+        const int y = index / 3;
+        const Vector3D expected_coords( 1.5*x, 1.5*y, 0.0 );
+        MsqVertex actual_coords;
+        Mesh::VertexHandle* conn_ptr = &*connectivity;
+        ++connectivity;
+        mesh.vertices_get_coordinates( conn_ptr, &actual_coords, 1, err );
+        CPPUNIT_ASSERT( !err.errorOn );
+        assert(expected_coords.within_tolerance_box( actual_coords, DBL_EPSILON ));
+        CPPUNIT_ASSERT( expected_coords.within_tolerance_box( actual_coords, DBL_EPSILON ) );
+      }
+    }
+  }
+        
+    
+    // Test reading VTK unstructured mesh
+  void test_read_unstructured()
+  {
+    MeshImpl mesh;
+    MsqError err;
+    err.printError = true;
+    
+    FILE* file = fopen( temp_file_name, "w+" );
+    fputs( mixed_unstructured_data, file );
+    fclose( file );
+    
+    mesh.read_vtk( temp_file_name, err );
+    remove( temp_file_name );
+    CPPUNIT_ASSERT(!err.errorOn);
+    
+    CPPUNIT_ASSERT(mesh.get_total_vertex_count(err) == 35 && !err.errorOn);
+    CPPUNIT_ASSERT(mesh.get_total_element_count(err) == 38 && !err.errorOn);
+    std::vector<Mesh::VertexHandle> verts(35);
+    std::vector<Mesh::ElementHandle> elems(38);
+    mesh.get_all_vertices( &verts[0], verts.size(), err );
+    CPPUNIT_ASSERT(!err.errorOn);
+    mesh.get_all_elements( &elems[0], elems.size(), err );
+    CPPUNIT_ASSERT(!err.errorOn);
+
+    unsigned i;
+    struct meshdata { EntityTopology type; size_t nodes; size_t count; };
+    meshdata list[] = {
+      { Mesquite::HEXAHEDRON,    8,  8 },
+      { Mesquite::QUADRILATERAL, 4,  4 },
+      { Mesquite::PYRAMID,       5,  4 },
+      { Mesquite::TETRAHEDRON,   4,  6 },
+      { Mesquite::TRIANGLE,      3, 14 },
+      { Mesquite::PRISM,         6,  2 }, 
+      { Mesquite::MIXED,         0,  0 } };
+      
+    size_t conn_len = 0;
+    for (i = 0; list[i].nodes; ++i)
+      conn_len += list[i].nodes * list[i].count;
+    std::vector<Mesh::VertexHandle> connectivity(conn_len);
+
+    std::vector<Mesh::VertexHandle>::iterator c_iter = connectivity.begin();
+    std::vector<Mesh::ElementHandle>::iterator e_iter = elems.begin();
+    size_t junk1[8], junk2[8];
+    for (i = 0; list[i].nodes; ++i)
+    {
+      for (unsigned j = 0 ; j < list[i].count; ++j)
+      {
+        CPPUNIT_ASSERT( mesh.element_get_topology( *e_iter, err ) == list[i].type );
+        CPPUNIT_ASSERT( !err.errorOn );
+        CPPUNIT_ASSERT( mesh.element_get_attached_vertex_count( *e_iter, err ) == list[i].nodes );
+        CPPUNIT_ASSERT( !err.errorOn );
+        size_t junk1size = list[1].nodes;
+        size_t junk2size = sizeof(junk2) / sizeof(size_t);
+        mesh.elements_get_attached_vertices( &*e_iter, 1, &*c_iter, list[i].nodes, junk1, junk2size, junk2, err );
+        CPPUNIT_ASSERT( !err.errorOn );
+        c_iter += list[i].nodes;
+        ++e_iter;
+      }
+    }
+
+    check_8hex_block( mesh, connectivity.begin() );
+    c_iter = connectivity.begin();
+    c_iter += 64;
+    check_4quad_block( mesh, c_iter );
+  }
+  
+  
+    // Test reading 2D Vtk structured-points mesh
+  void test_read_structured_2d_points()
+  {
+    MeshImpl mesh;
+    MsqError err;
+     err.printError = true;
+   
+    FILE* file = fopen( temp_file_name, "w+" );
+    fputs( structured_2d_points_data, file );
+    fclose( file );
+    
+    mesh.read_vtk( temp_file_name, err );
+    remove( temp_file_name );
+    CPPUNIT_ASSERT(!err.errorOn);
+    
+    check_4quad_structured( mesh );
+  }
+  
+  
+    // Test reading 3D Vtk structured-points mesh
+  void test_read_structured_3d_points()
+  {
+    MeshImpl mesh;
+    MsqError err;
+    err.printError = true;
+    
+    FILE* file = fopen( temp_file_name, "w+" );
+    fputs( structured_3d_points_data, file );
+    fclose( file );
+    
+    mesh.read_vtk( temp_file_name, err );
+    remove( temp_file_name );
+    CPPUNIT_ASSERT(!err.errorOn);
+    
+    check_8hex_structured( mesh );
+  }
+  
+  
+    // Test reading 3D Vtk structured-grid mesh
+  void test_read_structured_grid()
+  {
+    MeshImpl mesh;
+    MsqError err;
+    err.printError = true;
+    
+    FILE* file = fopen( temp_file_name, "w+" );
+    fputs( structured_grid_data, file );
+    fclose( file );
+    
+    mesh.read_vtk( temp_file_name, err );
+    remove( temp_file_name );
+    CPPUNIT_ASSERT(!err.errorOn);
+    
+    check_8hex_structured( mesh );
+  }
+  
+  
+    // Test reading 3D Vtk rectilinear-grid mesh
+  void test_read_rectilinear_grid()
+  {
+    MeshImpl mesh;
+    MsqError err;
+    err.printError = true;
+    
+    FILE* file = fopen( temp_file_name, "w+" );
+    fputs( rectilinear_grid_data, file );
+    fclose( file );
+    
+    mesh.read_vtk( temp_file_name, err );
+    remove( temp_file_name );
+    CPPUNIT_ASSERT(!err.errorOn);
+    
+    check_8hex_structured( mesh );
+  }
+  
+  
+    // Test reading Vtk simple (one-component) scalar attribute
+  void test_read_simple_scalar_attrib()
+  {
+    MeshImpl mesh;
+    MsqError err;
+    err.printError = true;
+   
+    FILE* file = fopen( temp_file_name, "w+" );
+    fputs( structured_3d_points_data, file );
+    fputs( simple_scalar_attrib, file );
+    fclose( file );
+    
+    mesh.read_vtk( temp_file_name, err );
+    remove( temp_file_name );
+    CPPUNIT_ASSERT(!err.errorOn);
+    
+    CPPUNIT_ASSERT(mesh.get_total_vertex_count(err) == 27 && !err.errorOn);
+    CPPUNIT_ASSERT(mesh.get_total_element_count(err) == 8 && !err.errorOn);
+    
+    void* th = mesh.tag_get_handle( "global_id", err );
+    CPPUNIT_ASSERT( th && !err.errorOn );
+    //int elem_data[8];
+    int tagsize = sizeof(int);
+    void* ptr;
+    mesh.elements_get_tag_data( 8, th, ptr, tagsize, err );
+    int* elem_data = (int*)ptr;
+    CPPUNIT_ASSERT( tagsize == sizeof(int) && !err.errorOn );
+    
+    for (int i = 0; i < 8; ++i)
+      CPPUNIT_ASSERT( elem_data[i] == (1+i) );
+  }
+   
+  
+    // Test reading Vtk vector attribute
+  void test_read_vector_attrib()
+  {
+    MeshImpl mesh;
+    MsqError err;
+    err.printError = true;
+    
+    FILE* file = fopen( temp_file_name, "w+" );
+    fputs( structured_3d_points_data, file );
+    fputs( simple_vector_attrib, file );
+    fclose( file );
+    
+    mesh.read_vtk( temp_file_name, err );
+    remove( temp_file_name );
+    CPPUNIT_ASSERT(!err.errorOn);
+    
+    CPPUNIT_ASSERT(mesh.get_total_vertex_count(err) == 27 && !err.errorOn);
+    CPPUNIT_ASSERT(mesh.get_total_element_count(err) == 8 && !err.errorOn);
+    
+    void* th = mesh.tag_get_handle( "hexvect", err );
+    CPPUNIT_ASSERT( th && !err.errorOn );
+    //double elem_data[24];
+    int tagsize = 3*sizeof(double);
+    void* ptr;
+    mesh.elements_get_tag_data( 8, th, ptr, tagsize, err );
+    double* elem_data = (double*)ptr;
+    CPPUNIT_ASSERT( tagsize == 3*sizeof(double) && !err.errorOn );
+    
+    for (int i = 0; i < 8; ++i)
+      CPPUNIT_ASSERT( Vector3D( elem_data+3*i ) == Vector3D( i+1, i+1, i+1 ) );
+  }
+  
+
+    // Test reading MeshImpl boundary-vertex bit
+    // from Vtk scalar attribute.
+  void test_read_fixed_attrib()
+  {
+    MeshImpl mesh;
+    MsqError err;
+    err.printError = true;
+    
+    FILE* file = fopen( temp_file_name, "w+" );
+    fputs( structured_3d_points_data, file );
+    fputs( fixed_vertex_attrib, file );
+    fclose( file );
+    
+    mesh.read_vtk( temp_file_name, err );
+    remove( temp_file_name );
+    CPPUNIT_ASSERT(!err.errorOn);
+    
+    CPPUNIT_ASSERT(mesh.get_total_vertex_count(err) == 27 && !err.errorOn);
+    CPPUNIT_ASSERT(mesh.get_total_element_count(err) == 8 && !err.errorOn);
+    
+    Mesh::VertexHandle vertices[27];
+    mesh.get_all_vertices( vertices, 27, err );
+    CPPUNIT_ASSERT( !err.errorOn );
+    
+    for (int i = 0; i < 27; ++i)
+    {
+      bool should_be_fixed = (i != 13);
+      bool is_fixed ;
+      mesh.vertices_are_on_boundary( vertices + i, &is_fixed, 1, err );
+      CPPUNIT_ASSERT( !err.errorOn );
+      CPPUNIT_ASSERT( should_be_fixed == is_fixed );
+    }
+  }
+ 
+
+  
   void test_elements()
   {
     Mesquite::MsqError err;
+    MeshImpl* mMesh = new MeshImpl;
+    mMesh->read_vtk("../../meshFiles/2D/VTK/equil_tri2.vtk", err);
+    CPPUNIT_ASSERT(!err.errorOn);
     
       // Add mesh to a MeshSet.
     Mesquite::MeshSet mesh_set;
@@ -242,3 +795,36 @@ public:
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(VtkTest, "VtkTest");
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(VtkTest, "Unit");
+
+#else /* ifndef DEBUG */
+
+int  main()
+{
+  FILE* file;
+  
+  file = fopen( "2d_structured_points.vtk", "w" );
+  fputs( structured_2d_points_data, file );
+  fclose( file );
+  
+  file = fopen( "3d_structured_points.vtk", "w" );
+  fputs( structured_3d_points_data, file );
+  fputs( fixed_vertex_attrib, file );
+  fclose( file );
+  
+  file = fopen( "structured_grid.vtk", "w" );
+  fputs( structured_grid_data, file );
+  fputs( fixed_vertex_attrib, file );
+  fclose( file );
+  
+  file = fopen( "rectilinear_grid.vtk", "w" );
+  fputs( rectilinear_grid_data, file );
+  fputs( fixed_vertex_attrib, file );
+  fclose( file );
+  
+  file = fopen( "mixed_unstructured.vtk", "w" );
+  fputs( mixed_unstructured_data, file );
+  fclose( file );
+  
+  return 0;
+}
+#endif
