@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 12-Nov-02 at 18:05:56
-//  LAST-MOD: 13-Nov-02 at 15:44:35 by Thomas Leurent
+//  LAST-MOD: 13-Nov-02 at 16:48:45 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -20,10 +20,6 @@ Unit testing of various functions in the MsqMeshEntity class.
 // DESCRIP-END.
 //
 
-
-// TODO : get rid off ? 
-#ifndef MsqMeshEntityTest_cpp
-#define MsqMeshEntityTest_cpp
 
 #include "MsqMeshEntity.hpp"
 #include "Vector3D.hpp"
@@ -153,5 +149,3 @@ public:
 
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(MsqMeshEntityTest, "MsqMeshEntityTest");
-
-#endif
