@@ -15,7 +15,11 @@
 
 */
 
+#ifdef USE_C_PREFIX_INCLUDES
 #include <cmath>
+#else
+#include <math.h>
+#endif
 #include "MsqHessian.hpp"
 #include "MsqTimer.hpp"
 

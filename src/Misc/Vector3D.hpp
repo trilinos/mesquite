@@ -79,13 +79,13 @@ namespace Mesquite
                               const Vector3D &rhs); //!< scalar * rhs
     friend const Vector3D operator/(const Vector3D &lhs,
                               const double scalar); //- lhs / scalar
-    friend const double operator%(const Vector3D &v1,
+    friend double operator%(const Vector3D &v1,
                             const Vector3D &v2); //!< dot product
-    friend const double inner(const Vector3D v1[],
+    friend double inner(const Vector3D v1[],
                         const Vector3D v2[], int n); //!< dot product for array
-    friend const double operator%(const double scalar,
+    friend double operator%(const double scalar,
 			    const Vector3D &v2); //!< scalar * sum_i v2[i]
-    friend const double operator%(const Vector3D &v1,
+    friend double operator%(const Vector3D &v1,
                             const double scalar); //!< scalar * sum_i v1[i]
     friend const Vector3D operator*(const Vector3D &v1, 
                               const Vector3D &v2); //!< cross product
@@ -301,7 +301,7 @@ namespace Mesquite
                     lhs.y() / scalar,
                     lhs.z() / scalar);
   }
-  inline const double operator%(const Vector3D &lhs,
+  inline double operator%(const Vector3D &lhs,
                           const Vector3D &rhs) // Dot Product
   {
     return( lhs.mCoords[0] * rhs.mCoords[0] +
@@ -310,7 +310,7 @@ namespace Mesquite
   }
 
   /*! Dot product for arrays of Vector3Ds. see also operator% .*/ 
-  inline const double inner(const Vector3D lhs[],
+  inline double inner(const Vector3D lhs[],
                       const Vector3D rhs[], int n)
   {
     int i;
@@ -322,13 +322,13 @@ namespace Mesquite
     return dot;
   }
 
-  inline const double operator%(const double scalar,
+  inline double operator%(const double scalar,
                           const Vector3D &rhs) // Dot Product
   {
     return( scalar * (rhs.mCoords[0] + rhs.mCoords[1] + rhs.mCoords[2]) );
   }
-  inline const double operator%(const Vector3D &lhs,
-			  const double scalar) // Dot Product
+  inline double operator%(const Vector3D &lhs,
+                          const double scalar) // Dot Product
   {
     return( scalar * (lhs.mCoords[0] + lhs.mCoords[1] + lhs.mCoords[2]) );
   }
