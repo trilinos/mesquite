@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 19-Feb-02 at 10:57:52
-//  LAST-MOD: 30-Oct-02 at 17:58:24 by Thomas Leurent
+//  LAST-MOD: 22-May-03 at 09:07:04 by Michael Brewer
 //
 //
 // DESCRIPTION:
@@ -47,7 +47,7 @@ describe main.cpp here
 #include "MeanRatioQualityMetric.hpp"
 #include "ConditionNumberQualityMetric.hpp"
 #include "UntangleBetaQualityMetric.hpp"
-#include "LPTemplate.hpp"
+#include "LPtoPTemplate.hpp"
 #include "LInfTemplate.hpp"
 #include "SteepestDescent.hpp"
 #include "ConjugateGradient.hpp"
@@ -76,7 +76,7 @@ int main()
     // ... and builds an objective function with it
     //LInfTemplate* obj_func = new LInfTemplate(shape_metric);
   LInfTemplate* obj_func = new LInfTemplate(untangle);
-  LPTemplate* obj_func2 = new LPTemplate(shape_metric, 2, err);
+  LPtoPTemplate* obj_func2 = new LPtoPTemplate(shape_metric, 2, err);
     // creates the steepest descent optimization procedures
   obj_func2->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
   ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );

@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 19-Feb-02 at 10:57:52
-//  LAST-MOD:  3-Dec-02 at 11:44:35 by Thomas Leurent
+//  LAST-MOD: 22-May-03 at 09:05:57 by Michael Brewer
 //
 //
 // DESCRIPTION:
@@ -43,7 +43,6 @@ describe main.cpp here
 // algorythms
 #include "ConditionNumberQualityMetric.hpp"
 #include "MeanRatioQualityMetric.hpp"
-#include "LPTemplate.hpp"
 #include "LInfTemplate.hpp"
 #include "SteepestDescent.hpp"
 #include "LaplacianSmoother.hpp"
