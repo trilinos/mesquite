@@ -236,7 +236,6 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
                                    MsqError &err){
     //PRINT_INFO("\nEntering get_step  f_x = %10.8f   f_y = %10.8f   f_z = %10.8f\n",pGrad[0][0],pGrad[0][1],pGrad[0][2]);
   const int n = pd.num_free_vertices();
-  PRINT_INFO("\ninsinde CG n = %i\n",n);
     //iterator for several for statements
   int m=0;
   MsqVertex* vertices=pd.get_vertex_array(err);
