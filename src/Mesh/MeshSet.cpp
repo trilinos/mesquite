@@ -30,7 +30,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD:  3-Jun-04 at 16:21:44 by Thomas Leurent
+//  LAST-MOD: 18-Jun-04 at 16:15:00 by Thomas Leurent
 //
 /*! \file MeshSet.cpp
 
@@ -240,7 +240,7 @@ bool MeshSet::get_next_patch(PatchData &pd,
           Mesquite::Mesh::VertexHandle vtx;
           vtx = **vertexIterator;
           (*currentMesh)->vertices_are_on_boundary(&vtx, &on_bnd, 1, err);
-          cout << " dbg : vtx " << vtx << "  on_bnd: " << on_bnd << endl;
+          //          cout << " dbg : vtx " << vtx << "  on_bnd: " << on_bnd << endl;
         }
           // Move to next mesh if necessary
         if (vertexIterator->is_at_end())
@@ -389,17 +389,17 @@ bool MeshSet::get_next_patch(PatchData &pd,
       
         // Put the elements into the PatchData
       MsqMeshEntity* pd_elem_array = pd.get_element_array(err);
-//       for (i = 0; i < num_elems; ++i)
-//       {
-//         pd_elem_array[i].set_element_type(elemTopologies[i]);
-//         for (size_t j = vertices_in_topology(elemTopologies[i]); j--; )
-//         {
-//           pd_elem_array[i].set_vertex_index(j, csrData[csrOffsets[i]+j]);
-//         }
-//           // Copy the element's handle to the patch
-//         pd.elementHandlesArray[i] = elemArray[i];
-//       }
-//       pd.numElements = num_elems;
+      for (i = 0; i < num_elems; ++i)
+      {
+        pd_elem_array[i].set_element_type(elemTopologies[i]);
+        for (size_t j = vertices_in_topology(elemTopologies[i]); j--; )
+        {
+          pd_elem_array[i].set_vertex_index(j, csrData[csrOffsets[i]+j]);
+        }
+          // Copy the element's handle to the patch
+        pd.elementHandlesArray[i] = elemArray[i];
+      }
+      pd.numElements = num_elems;
     }
 
     // If a target calculator is set, compute the targets. 

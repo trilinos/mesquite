@@ -29,7 +29,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD: 28-Apr-04 at 16:58:29 by Thomas Leurent
+//  LAST-MOD: 18-Jun-04 at 16:07:03 by Thomas Leurent
 //
 /*! \file MeshImpl.cpp
 
@@ -1033,7 +1033,7 @@ bool Mesquite::MeshImpl::vertex_is_fixed(Mesquite::Mesh::VertexHandle /*vertex*/
   return false;
 }
 
-// Returns true or false, indicating whether the vertex
+// Sets on_bnd[] to true or false, indicating whether the vertex
 // is on the boundary.  Boundary nodes may be treated as
 // a special case by some algorithms or culling methods.
 // Note that this is a read-only
@@ -1045,7 +1045,8 @@ void Mesquite::MeshImpl::vertices_are_on_boundary(
 {
   for (size_t i=0; i<num_vtx; ++i)
   {
-    if ( (onBoundaryBits[i / 8] & ((unsigned char)(1) << i % 8)) != 0 )
+    size_t j = (Vertex*)vert_array[i] - vertexArray;
+    if ( (onBoundaryBits[j / 8] & ((unsigned char)(1) << j % 8)) != 0 )
       on_bnd[i] = true;
     else
       on_bnd[i] = false;
