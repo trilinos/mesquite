@@ -15,8 +15,6 @@ using namespace Mesquite;
 PatchData::PatchData()
   : numVertices(0),
     numElements(0),
-    numFreeVertices(0),
-    numFreeElements(0),
     vertexArray(NULL),
     vertexHandlesArray(NULL),
     elementArray(NULL),
@@ -213,15 +211,23 @@ void PatchData::add_triangle(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
 void PatchData::move_free_vertices(Vector3D dk[], int nb_vtx,
                                    double step_size, MsqError &err)
 {
-  if (nb_vtx != numFreeVertices)
-  {
-    err.set_msg("argument nb_vtx must corresponds to nb of free vertices in PatchData.");
+  if (nb_vtx > numVertices) {
+    err.set_msg("argument nb_vtx is higher than the total nb of vertices.");
     MSQ_CHKERR(err);
     return;
   }
 
-  for (int n=0; n<nb_vtx; ++n) {
-    vertexArray[n] += (step_size * dk[n]);
+  int num_free_vertices=0;
+  for (int n=0; n<numVertices; ++n) {
+    if (vertexArray[n].is_free_vertex()) {
+      vertexArray[n] += (step_size * dk[n]);
+      ++num_free_vertices;
+    }
+  }
+
+  if (num_free_vertices != nb_vtx) {
+    err.set_msg("Argument nb_vtx is not equal to the number of free vertices.");
+    MSQ_CHKERR(err);
   }
 }
 
@@ -296,7 +302,7 @@ void PatchData::update_mesh(MsqError &err)
   TSTT::Entity_Handle vertex;
   TSTT::MeshError tstt_err=0;
 
-  for (int n=0; n<numFreeVertices; ++n) {
+  for (int n=0; n<numVertices; ++n) {
     mh = vertexHandlesArray[n].mesh;
     vertex = vertexHandlesArray[n].entity;
     
@@ -304,6 +310,8 @@ void PatchData::update_mesh(MsqError &err)
     coordsc[1] = vertexArray[n][1];
     coordsc[2] = vertexArray[n][2];
     
+
+    // TODO: creates arrays and pass them in one function call.
     TSTT::Entity_SetVertexCoords( mh, (TSTT::cEntity_Handle*) &vertex,
                                   1, TSTT::INTERLEAVED,
                                   3, coordsc, &tstt_err);

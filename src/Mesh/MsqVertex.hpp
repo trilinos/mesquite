@@ -33,7 +33,8 @@ namespace Mesquite
        {}
      
      void operator=(const Vector3D& rhs)
-       { Vector3D::operator=(rhs); }
+       { Vector3D::operator=(rhs);
+         vertexBitFlags = 0; }
      
        // This allows for 8 flag bits.
        // I don't think we'll want more than that (yet).
@@ -46,6 +47,7 @@ namespace Mesquite
        //!               so they have to be 2-based (2,4,8,16,32, ...)
      enum FlagMaskID
      {
+       MSQ_NO_VTX_FLAG = 0,
        MSQ_ALGO_FLAG0 = 1, //!< vertex is "free"
        MSQ_SOFT_FIXED = 2,  //!< vertex is fixed. This flag can be set on and off. 
        MSQ_HARD_FIXED = 4,  //!< vertex is always fixed. This can only be set on and never off.
@@ -69,6 +71,11 @@ namespace Mesquite
      void set_hard_fixed_flag()
        { vertexBitFlags|=MSQ_HARD_FIXED; }
      
+     void set_vertex_flag(FlagMaskID flag)
+       { vertexBitFlags|=flag; }
+     
+     void remove_vertex_flag(FlagMaskID flag)
+       { vertexBitFlags &= (~flag); }
      
      bool is_flag_set(FlagMaskID flag)
        { return (vertexBitFlags & flag); }

@@ -33,7 +33,7 @@
 
 namespace Mesquite
 {
-  class PatchDataCoordsMemento;
+  class PatchDataVerticesMemento;
   
   /*! \class PatchData
          Contains all the mesh information necessary for
@@ -58,20 +58,15 @@ namespace Mesquite
     void reserve_element_capacity(size_t min_num_elements,
                                   MsqError &err);
     
-    void set_num_free_vertices(int f_v)
-      { numFreeVertices = f_v; }
-    void set_num_free_elements(int f_e)
-      { numFreeElements = f_e; }
-    
     int add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
                    double *vertex_coords,
-                   bool check_redundancy,
-                   MsqError &err);
+                   bool check_redundancy, MsqError &err,
+		   MsqVertex::FlagMaskID flag);
     //! delegates to the other form of add_vertex.
     inline int add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
-                   double x, double y, double z,
-                   bool check_redundancy,
-                   MsqError &err);
+			  double x, double y, double z,
+			  bool check_redundancy, MsqError &err,
+			  MsqVertex::FlagMaskID flag);
     void add_element(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
                      int* vertex_indices,
                      EntityTopology topo,
@@ -86,10 +81,6 @@ namespace Mesquite
       { return numVertices; }
     int num_elements() const
       { return numElements; } 
-    int num_free_vertices() const
-      { return numFreeVertices; }
-    int num_free_elements() const
-      { return numFreeElements; }
     
     //! returns the start of the vertex array
     MsqVertex* get_vertex_array(MsqError &err) const;
@@ -134,11 +125,11 @@ namespace Mesquite
 
     //! Creates a memento that holds the current
     //! state of the PatchData coordinates. 
-    PatchDataCoordsMemento* create_coords_memento(MsqError &err);
+    PatchDataVerticesMemento* create_vertices_memento(MsqError &err);
     
     //! Restore the PatchData coordinates to the state
     //! contained in the memento.
-    void set_to_coords_memento(PatchDataCoordsMemento* memento,
+    void set_to_vertices_memento(PatchDataVerticesMemento* memento,
                                MsqError &err);
     
     //!  Tells MeshSet how to retrieve the mesh entities that will be stored in PatchData.
@@ -192,8 +183,6 @@ namespace Mesquite
       // Member data for the "local" patch
     int numVertices;
     int numElements;
-    int numFreeVertices;
-    int numFreeElements;
     MsqVertex *vertexArray;
     EntityEntry *vertexHandlesArray;
     MsqMeshEntity *elementArray;
@@ -209,22 +198,22 @@ namespace Mesquite
   };
 
 
-  /*! \class PatchDataCoordsMemento
+  /*! \class PatchDataVerticesMemento
       \brief Contains a copy of the coordinates of a PatchData.
 
-      Use PatchDataCoordsMemento when you want to change the coordinates
+      Use PatchDataVerticesMemento when you want to change the coordinates
       of a PatchData object but also have the option to restore them.
-      This class can only be instantiated through PatchData::create_coords_memento().
+      This class can only be instantiated through PatchData::create_vertices_memento().
     */
-  class PatchDataCoordsMemento
+  class PatchDataVerticesMemento
   {
   public:
-    ~PatchDataCoordsMemento()
+    ~PatchDataVerticesMemento()
       { delete[] coords; }
   private:
       // Constructor accessible only to originator (i.e. PatchData)
     friend class PatchData;
-    PatchDataCoordsMemento() 
+    PatchDataVerticesMemento() 
         : originator(0), coords(0), numVertices(0)
       {}
     
@@ -240,8 +229,6 @@ namespace Mesquite
   {
     numVertices = 0;
     numElements = 0;
-    numFreeVertices = 0;
-    numFreeElements = 0;
   }
   
 #undef __FUNC__
@@ -361,21 +348,11 @@ namespace Mesquite
          already inserted. 
   */
   inline int PatchData::add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
-                                   double* vertex_coord, bool check_redundancy,
-                                   MsqError &err)
+                                   double* vertex_coord,
+				   bool check_redundancy,
+                                   MsqError &err, 
+				   MsqVertex::FlagMaskID flag=MsqVertex::MSQ_NO_VTX_FLAG)
   {
-    MsqVertex vertex(vertex_coord[0], vertex_coord[1], vertex_coord[2]);
-    
-      // checks if the vertex is already in an array
-    if ( check_redundancy )
-    {
-      for (int i = 0; i < numVertices; i++)
-      {
-        if (vertex == vertexArray[i]) 
-          return i; // vertex was already in array
-      }
-    }
-    
       // Checks that enough memory is allocated to add a vertex.
     if (numVertices==vertexArraySize)
     {
@@ -384,8 +361,20 @@ namespace Mesquite
       return -1;
     }
     
+      // checks if the vertex is already in an array
+    if ( check_redundancy )
+    {
+      MsqVertex vertex(vertex_coord[0], vertex_coord[1], vertex_coord[2]);
+          for (int i = 0; i < numVertices; i++)
+      {
+        if (vertex == vertexArray[i]) 
+          return i; // vertex was already in array
+      }
+    }
+    
       // if we get here, we add the vertex to the array
-    vertexArray[numVertices] = vertex;
+    vertexArray[numVertices].set(vertex_coord[0], vertex_coord[1], vertex_coord[2]);
+    vertexArray[numVertices].set_vertex_flag(flag);
     vertexHandlesArray[numVertices].mesh = mh;
     vertexHandlesArray[numVertices].entity = eh;
     ++numVertices;
@@ -398,12 +387,12 @@ namespace Mesquite
 #define __FUNC__ "PatchData::add_vertex"
 inline int PatchData::add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
                    double x, double y, double z,
-                   bool check_redundancy,
-                   MsqError &err)
+                   bool check_redundancy, MsqError &err, 
+                   MsqVertex::FlagMaskID flag=MsqVertex::MSQ_NO_VTX_FLAG)
 {
   double coords[3];
   coords[0] = x; coords[1] = y; coords[2] = z;
-  int index = add_vertex(mh, eh, coords, check_redundancy, err); MSQ_CHKERR(err);
+  int index = add_vertex(mh, eh, coords, check_redundancy, err, flag); MSQ_CHKERR(err);
   return index;
 }
   
@@ -513,18 +502,18 @@ inline int PatchData::add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
   }
   
 #undef __FUNC__
-#define __FUNC__ "PatchData::create_coords_memento"
-  /*! \fn PatchData::create_coords_memento(MsqError &err)
-   This function instantiate PatchDataCoordsMemento object and returns a pointer to it.
-   The PatchDataCoordsMemento contains the current state of the PatchData coordinates.
+#define __FUNC__ "PatchData::create_vertices_memento"
+  /*! \fn PatchData::create_vertices_memento(MsqError &err)
+   This function instantiate PatchDataVerticesMemento object and returns a pointer to it.
+   The PatchDataVerticesMemento contains the current state of the PatchData coordinates.
    It can be used to restore the same PatchData object to those coordinates.
 
-   It is the responsibility of the caller to discard the PatchDataCoordsMemento
+   It is the responsibility of the caller to discard the PatchDataVerticesMemento
    when not needed any more.
   */
-  inline PatchDataCoordsMemento* PatchData::create_coords_memento(MsqError &err)
+  inline PatchDataVerticesMemento* PatchData::create_vertices_memento(MsqError &err)
   {
-    PatchDataCoordsMemento* memento = new PatchDataCoordsMemento;
+    PatchDataVerticesMemento* memento = new PatchDataVerticesMemento;
     memento->originator = this;
     if (numVertices)
       memento->coords = new Vector3D[numVertices];
@@ -539,16 +528,16 @@ inline int PatchData::add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
   }
   
 #undef __FUNC__
-#define __FUNC__ "PatchData::set_to_coords_memento"
-  /*! \fn PatchData::set_to_coords_memento(PatchDataCoordsMemento* memento, MsqError &err)
+#define __FUNC__ "PatchData::set_to_vertices_memento"
+  /*! \fn PatchData::set_to_vertices_memento(PatchDataVerticesMemento* memento, MsqError &err)
    This function restores a PatchData object coordinates to a previous state hold in
-   a PatchDataCoordsMemento object (see create_coords_memento() ).
+   a PatchDataVerticesMemento object (see create_vertices_memento() ).
 
    The function checks whether the memento originates from this particular PatchData object.
    The function does not destroy the memento object: this is the caller responsibility.
   */
-  inline void PatchData::set_to_coords_memento(
-    PatchDataCoordsMemento* memento,
+  inline void PatchData::set_to_vertices_memento(
+    PatchDataVerticesMemento* memento,
     MsqError &err)
   {
     if (memento->originator != this)
