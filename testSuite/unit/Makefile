@@ -30,7 +30,7 @@ TEST_SRCS = msq_test_main.cpp \
     AomdVtkTest.cpp \
     Matrix3DTest.cpp \
     MsqMeshEntityTest.cpp \
-    sample_test.cpp \
+    Vector3DTest.cpp \
     InstructionQueueTest.cpp \
     PatchDataTest.cpp \
     QualityMetricTest.cpp \
