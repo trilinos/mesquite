@@ -65,7 +65,7 @@ int main()
   TSTT::Mesh_Handle mesh;
   TSTT::MeshError tstt_err;
   TSTT::Mesh_Create(&mesh, &tstt_err);
-  strcpy(file_name, "../../meshFiles/3D/VTK/cube_hex_2.vtk");
+  strcpy(file_name, "../../meshFiles/2D/VTK/square_quad_2.vtk");
   TSTT::Mesh_Load(mesh, file_name, &tstt_err);
 #else
   Mesh_Handle mesh;
@@ -102,8 +102,9 @@ int main()
  lapl1->add_culling_method(QualityImprover::NO_BOUNDARY_VTX);
 
   // adds 1 pass of pass1 to mesh_set1
-//  queue1.add_preconditioner(pass1, err); MSQ_CHKERR(err);
-  queue1.set_master_quality_improver(lapl1, err); MSQ_CHKERR(err);
+ queue1.add_quality_assessor(&stop_qa,err); MSQ_CHKERR(err);
+ queue1.set_master_quality_improver(lapl1, err); MSQ_CHKERR(err);
+ queue1.add_quality_assessor(&stop_qa,err); MSQ_CHKERR(err);
   // adds 1 passes of pass2 to mesh_set1
 //  mesh_set1.add_quality_pass(pass2);
 
