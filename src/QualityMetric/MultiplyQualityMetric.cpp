@@ -48,30 +48,44 @@ MultiplyQualityMetric::MultiplyQualityMetric(QualityMetric* qm1, QualityMetric* 
 
 /*! Returns qMetric1->evaluate_element(element, err) multiplied by
   qMetric2-evaluate_element(element, err)*/
-double MultiplyQualityMetric::evaluate_element(PatchData& pd,
-                                               MsqMeshEntity *element,
-                                               MsqError &err)
+bool MultiplyQualityMetric::evaluate_element(PatchData& pd,
+                                             MsqMeshEntity *element,
+                                             double &value,
+                                             MsqError &err)
 {
-  double metric1, metric2, total_metric;  
-  get_qmetric1()->evaluate_element(pd, element, metric1, err);
-  get_qmetric2()->evaluate_element(pd, element, metric2, err); 
-  total_metric = metric1*metric2;
-  return total_metric;
+  bool valid_flag;
+  double metric1, metric2;  
+  valid_flag=get_qmetric1()->evaluate_element(pd, element, metric1, err);
+  if(!valid_flag)
+    return false;
+  valid_flag=get_qmetric2()->evaluate_element(pd, element, metric2, err); 
+  value = metric1*metric2;
+    //if the first metric was invalid we have already returned
+    //so we return whatever the flag was on the second metric.
+  return
+    valid_flag;
 }
 
 #undef __FUNC__
 #define __FUNC__ "MultiplyQualityMetric::evaluate_vertex"
 /*! Returns qMetric1->evaluate_vertex(...) multiplied by
   qMetric2-evaluate_vertex(...)*/
-double MultiplyQualityMetric::evaluate_vertex(PatchData& pd,
-                                              MsqVertex* vert,
-                                              MsqError& err)
+bool MultiplyQualityMetric::evaluate_vertex(PatchData& pd,
+                                            MsqVertex* vert,
+                                            double &value,
+                                            MsqError& err)
 {
-  double metric1, metric2, total_metric;  
-  get_qmetric1()->evaluate_vertex(pd, vert, metric1, err);
-  get_qmetric2()->evaluate_vertex(pd, vert, metric2, err);
-  total_metric = metric1*metric2;
-  return total_metric;
+  bool valid_flag;
+  double metric1, metric2;  
+  valid_flag=get_qmetric1()->evaluate_vertex(pd, vert, metric1, err);
+  if(!valid_flag)
+    return false;
+  valid_flag=get_qmetric2()->evaluate_vertex(pd, vert, metric2, err);
+  value = metric1*metric2;
+    //if the first metric was invalid we have already returned
+    //so we return whatever the flag was on the second metric.
+  return
+    valid_flag;
 }
 
 

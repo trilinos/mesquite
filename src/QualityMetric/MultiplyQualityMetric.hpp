@@ -56,9 +56,9 @@ namespace Mesquite
        set_qmetric1(qm1);
      }
 
-     double evaluate_element(PatchData& pd, MsqMeshEntity *element,
+     bool evaluate_element(PatchData& pd, MsqMeshEntity *element,double &value,
                              MsqError &err);
-     double evaluate_vertex(PatchData& pd, MsqVertex *vertex,
+     bool evaluate_vertex(PatchData& pd, MsqVertex *vertex, double &value,
                             MsqError &err);
      
   protected:
