@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 19-Feb-02 at 10:57:52
-//  LAST-MOD:  3-Dec-02 at 11:29:33 by Thomas Leurent
+//  LAST-MOD: 22-May-03 at 09:08:52 by Michael Brewer
 //
 //
 // DESCRIPTION:
@@ -44,7 +44,7 @@ describe main.cpp here
 // algorythms
 #include "MeanRatioQualityMetric.hpp"
 #include "ConditionNumberQualityMetric.hpp"
-#include "LPTemplate.hpp"
+#include "LPtoPTemplate.hpp"
 #include "LInfTemplate.hpp"
 #include "SteepestDescent.hpp"
 
@@ -78,7 +78,7 @@ int main()
   
     // ... and builds an objective function with it
     //LInfTemplate* obj_func = new LInfTemplate(mean_ratio);
-  LPTemplate* obj_func = new LPTemplate(mean_ratio, 2, err);
+  LPtoPTemplate* obj_func = new LPtoPTemplate(mean_ratio, 2, err);
 //   obj_func->set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
   obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
    // creates the steepest descent optimization procedures
