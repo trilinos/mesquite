@@ -86,8 +86,9 @@ void usage()
 
 int main(int argc, char* argv[])
 {
-  Mesquite::MsqError err;
-  const char* file_name = "../../meshFiles/3D/VTK/large_box_hex_1000.vtk";
+  MsqPrintError err(cout);
+
+  const char* file_name = "../../meshFiles/2D/VTK/tfi_horse10x4-14.vtk";
   double OF_value = 0.;
   
   // command line arguments
