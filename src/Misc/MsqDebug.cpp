@@ -23,7 +23,6 @@
   ***************************************************************** */
 
 #include "MsqDebug.hpp"
-#include "mesquite_config.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -40,10 +39,10 @@ msq_std::vector<bool> MsqDebug::flags;
 #ifdef MSQ_ENABLE_DEBUG
 MsqDebug::InitializeFlags::InitializeFlags( )
 {
-  const unsigned flag_array[] = { MSQ_ENABLE_DEBUG };
-  size_t length = sizeof(flag_array) / sizeof(unsigned);
+  const unsigned flag_array[] = { MSQ_ENABLE_DEBUG, 0 };
+  size_t length = sizeof(flag_array) / sizeof(unsigned) - 1;
   while (length > 0)
-    MsqDebug::set( length--, true );
+    MsqDebug::set( flag_array[--length], true );
 }
 #else
 MsqDebug::InitializeFlags::InitializeFlags( ) {}

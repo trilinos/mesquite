@@ -79,17 +79,7 @@ namespace Mesquite
   {
   protected:
     double v_[9];                  
-    double* row_[3];
 
-    // internal helper function to create the array
-    // of row pointers
-
-    void initialize()
-    {
-      row_[0] = v_;
-      row_[1] = v_+3;
-      row_[2] = v_+6;
-    }
    
     void copy(const double*  v)
     { memcpy(v_, v, 9*sizeof(double)); }
@@ -111,30 +101,21 @@ namespace Mesquite
     
   public:
 
-    // This casting operator makes the operator[] below
-    // ambiguous - breaks VisualC++ v6 compile.
-    //operator double**(){ return  row_; }
-
-    size_t size() const { return 9; }
-
     // constructors
     //! Default constructor sets all entries to 0. 
     Matrix3D()
     {
-      initialize();
       zero();
     }
     
     Matrix3D(const Matrix3D &A)
     {
-      initialize();
       copy(A.v_);
     }
 
     //! sets all entries of the matrix to value.
     Matrix3D(const double& value)
     {
-      initialize();
       set(value);
     }
 
@@ -142,7 +123,6 @@ namespace Mesquite
     //! \param v is an array of 9 doubles. 
     Matrix3D(const double* v)
     {
-      initialize();
       copy(v);
     }
 
@@ -150,7 +130,6 @@ namespace Mesquite
     //! \code Matrix3D A("3 2 1  4 5 6  9 8 7"); \endcode
     Matrix3D(const char *s)
     {
-      initialize();
       set_values(s);
     }
 
@@ -186,7 +165,6 @@ namespace Mesquite
       v_[0]=0.;  v_[1]=0.;  v_[2]=0.;
       v_[3]=0.;  v_[4]=0.;  v_[5]=0.;
       v_[6]=0.;  v_[7]=0.;  v_[8]=0.;
-//      memset(v_, 0, 9*sizeof(double));
     }
      
     //! Sets column j (0, 1 or 2) to Vector3D c.
@@ -246,17 +224,17 @@ namespace Mesquite
     size_t num_cols() const { return 3; }
 
     //! returns a pointer to a row.
-    inline double* operator[](int i)
+    inline double* operator[](unsigned i)
     {
-//      assert(0<=i); assert(i < 3);
-      return row_[i];
+      assert(i < (unsigned)3);
+      return v_ + 3*i;
     }
 
     //! returns a pointer to a row.
-    inline const double* operator[](int i) const
+    inline const double* operator[](unsigned i) const
     {
-//      assert(0<=i); assert(i < 3);
-      return row_[i];
+      assert(i < (unsigned)3);
+      return v_ + 3*i;
     }
 
   };
