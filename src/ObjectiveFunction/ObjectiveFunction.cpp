@@ -40,12 +40,6 @@
 #include "MsqFreeVertexIndexIterator.hpp"
 
 using namespace Mesquite;
-//using std::cout;
-//using std::endl;
-//using std::cerr;
-MSQ_USE(cout);
-MSQ_USE(endl);
-MSQ_USE(cerr);
 
 #undef __FUNC__
 #define __FUNC__ "ObjectiveFunction::compute_numerical_gradient"

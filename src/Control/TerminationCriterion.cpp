@@ -42,16 +42,7 @@
 #include "MsqVertex.hpp"
 using namespace Mesquite;
 
-#ifdef USE_STD_INCLUDES
-#include <iostream>
-#else
-#include <iostream.h>
-#endif
-
 #include "MesquiteInterrupt.hpp"
-
-MSQ_USE(cout);
-MSQ_USE(endl);
 
 #undef __FUNC__
 #define  __FUNC__ "TerminationCriterion::TerminationCriterion"

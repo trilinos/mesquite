@@ -41,10 +41,7 @@
 #include "MsqMessage.hpp"
 #include "MsqTimer.hpp"
 using namespace Mesquite;  
-//using namespace std;
 MSQ_USE(cout);
-MSQ_USE(cerr);
-MSQ_USE(endl);
 
 #undef __FUNC__
 #define __FUNC__ "PatchData::PatchData"
@@ -603,8 +600,8 @@ void PatchData::set_free_vertices_constrained(PatchDataVerticesMemento* memento,
 {
   if (nb_vtx != memento->numVertices)
   {
-    cout << "nb_vtx: "<< nb_vtx << "   mem num vtx; "
-              <<  memento->numVertices << endl;
+    Message::print_error( "nb_vtx: %d   men num vtx: %d\n",
+                             (int)nb_vtx, (int)memento->numVertices );
     err.set_msg("The directional vector must be the same length as"
                 "the number of vertices in the patch.");
     MSQ_CHKERR(err);
@@ -1166,16 +1163,15 @@ void PatchData::set_mesh_set(MeshSet* ms)
 #define __FUNC__ "PatchData::print"
 void PatchData::print()
 {
-   cerr << " Vertices coordinates \n"; 
-   for (size_t i=0; i<numVertices; ++i)
-     {
-	cerr << i << "\t" << vertexArray[i];
-     }
-   
-   cerr << "Element Connectivity \n";
-   for (size_t i=0; i<numElements; ++i)
-     {
-	cerr << i << "\t" << elementArray[i];
-     }
-   
+   Message::print_info( "Vertex coordinates: ");
+   for (size_t i = 0; i < numVertices; ++i)
+      Message::print_info("\n\t(%lf,%lf,%lf)\n", 
+        vertexArray[i].x(), vertexArray[i].y(), vertexArray[i].z());
+   for (size_t i = 0; i < numElements; ++i)
+   {
+      Message::print_info("\n\t");
+      for (size_t j = 0; j < elementArray[i].vertex_count(); ++j)
+        Message::print_info("%d, ", elementArray[i].get_vertex_index_array()[j] );
+   }
+   Message::print_info("\n"); 
 }

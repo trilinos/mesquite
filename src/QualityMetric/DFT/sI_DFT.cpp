@@ -37,9 +37,6 @@
 
 using namespace Mesquite;
 
-MSQ_USE(cout);
-MSQ_USE(endl);
-
 
 bool sI_DFT::evaluate_element(PatchData& pd,
                               MsqMeshEntity* element,

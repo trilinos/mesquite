@@ -41,8 +41,6 @@
 #include "MsqTimer.hpp"
 
 using namespace Mesquite;
-MSQ_USE(cout);
-MSQ_USE(endl);
 
 #undef __FUNC__
 #define __FUNC__ "InverseMeanRatioQualityMetric::evaluate_element" 
@@ -150,8 +148,9 @@ bool InverseMeanRatioQualityMetric::compute_element_analytical_gradient(PatchDat
 
   if (((topo == QUADRILATERAL) || (topo == HEXAHEDRON)) && 
       ((avgMethod == MINIMUM) || (avgMethod == MAXIMUM))) {
-    cout << "Minimum and maximum not continuously differentiable." << endl;
-    cout << "Element of subdifferential will be returned." << endl;
+    Message::print_warning(
+      "Minimum and maximum not continuously differentiable.\n"
+      "Element of subdifferential will be returned.\n");
   }
 
   MsqVertex *vertices = pd.get_vertex_array(err);
@@ -570,9 +569,10 @@ bool InverseMeanRatioQualityMetric::compute_element_analytical_hessian(PatchData
 
   if (((topo == QUADRILATERAL) || (topo == HEXAHEDRON)) && 
       ((avgMethod == MINIMUM) || (avgMethod == MAXIMUM))) {
-    cout << "Minimum and maximum not continuously differentiable." << endl;
-    cout << "Element of subdifferential will be returned." << endl;
-    cout << "Who knows what the Hessian is?" << endl;
+    Message::print_warning(
+      "Minimum and maximum not continuously differentiable.\n"
+      "Element of subdifferential will be returned.\n"
+      "Who knows what the Hessian is?\n" );
   }
 
   MsqVertex *vertices = pd.get_vertex_array(err);

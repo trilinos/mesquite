@@ -42,9 +42,6 @@
 
 using namespace Mesquite;
 
-MSQ_USE(cout);
-MSQ_USE(endl);
-MSQ_USE(cerr);
 MSQ_USE(vector);
 
 #undef __FUNC__

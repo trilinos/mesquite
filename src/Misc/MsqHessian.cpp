@@ -51,9 +51,6 @@
 
 using namespace Mesquite;
 
-MSQ_USE(cout);
-MSQ_USE(endl);
-
 MsqHessian::MsqHessian() :
   origin_pd(0), mEntries(0), mRowStart(0), mColIndex(0), 
   mAccumulation(0), mAccumElemStart(0), mSize(0), 
@@ -484,7 +481,6 @@ void MsqHessian::cg_solver(Vector3D x[], Vector3D b[], MsqError &err)
       
     alpha_ = inner(mP,mW,mSize); // alpha_ = p_k^T A p_k
     if (alpha_ <= 0.0) {
-      cout << "Direction of Negative Curvature\n";
       if (1 == cg_iter) {
         for (i=0; i<mSize; ++i)  x[i] += mP[i]; // x_{k+1} = x_k + p_{k+1} 
       }

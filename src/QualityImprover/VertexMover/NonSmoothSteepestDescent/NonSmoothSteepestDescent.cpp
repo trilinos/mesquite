@@ -42,9 +42,6 @@
 
 using namespace Mesquite;
 
-//using cout;
-//using endl;
-
 #undef __FUNC__
 #define __FUNC__ "NonSmoothSteepestDescent::NonSmoothSteepestDescent" 
 NonSmoothSteepestDescent::NonSmoothSteepestDescent(ObjectiveFunction* of)

@@ -37,9 +37,6 @@
 
 using namespace Mesquite;
 
-MSQ_USE(cout);
-MSQ_USE(endl);
-
 
 /*****
       Functions for:

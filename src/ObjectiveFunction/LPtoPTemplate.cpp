@@ -43,13 +43,6 @@
 
 using  namespace Mesquite;  
 
-MSQ_USE(cout);
-MSQ_USE(endl);
-MSQ_USE(vector);
-
-//using std::cout;
-//using std::endl;
-
 #undef __FUNC__
 #define __FUNC__ "LPtoPTemplate::LPtoPTemplate"
 

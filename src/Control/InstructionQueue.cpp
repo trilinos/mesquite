@@ -36,10 +36,8 @@ Member functions of the Mesquite::InstructionQueue class
 
 #ifdef USE_STD_INCLUDES
 #include <string>
-#include <iostream>
 #else
 #include <string.h>
-#include <iostream.h>
 #endif
 
 #include "InstructionQueue.hpp"
@@ -52,7 +50,6 @@ using namespace Mesquite;
 
 MSQ_USE(advance);
 MSQ_USE(string);
-MSQ_USE(cout);
 
 InstructionQueue::InstructionQueue() :
   autoQualAssess(true),
@@ -232,8 +229,9 @@ void InstructionQueue::set_master_quality_improver(QualityImprover* instr,
                                                  MsqError &err)
 {
   if (isMasterSet) {
-    cout << "WARNING: InstructionQueue::set_master_quality_improver():\n"
-         << "\tOverwriting previously specified master quality improver.\n";
+    Message::print_warning(
+         "InstructionQueue::set_master_quality_improver():\n"
+         "\tOverwriting previously specified master quality improver.\n" );
     // if master is already set, clears it and insert the new one at the same position.
     list<PatchDataUser*>::iterator master_pos;
     master_pos = this->clear_master(err); MSQ_CHKERR(err);

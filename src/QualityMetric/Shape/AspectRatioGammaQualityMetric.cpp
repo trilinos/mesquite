@@ -42,7 +42,6 @@
 #include "PatchData.hpp"
 using namespace Mesquite;
 MSQ_USE(vector);
-MSQ_USE(cout);
 
 
 #undef __FUNC__
@@ -119,7 +118,7 @@ bool AspectRatioGammaQualityMetric::evaluate_element(PatchData &pd,
       break;
     default:
       fval=MSQ_MAX_CAP;
-      cout<<"\nEntity type: "<<entity<<" not valid for Aspect Ratio Gamma\n";
+      Message::print_error("Entity type %d is not valid for Aspect Ratio Gamma\n", (int)entity);
       return_val = false;
       break;
   };

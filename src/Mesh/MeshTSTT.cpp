@@ -43,10 +43,6 @@
 
 #include "MsqTimer.hpp"
 
-using std::cout;
-using std::cerr;
-using std::endl;
-
 namespace // unnamed namespace (scope is the file only)
 {
 

@@ -53,9 +53,6 @@
 
 using namespace Mesquite;
 
-MSQ_USE(cout);
-MSQ_USE(endl);
-
 #undef __FUNC__
 #define __FUNC__ "FeasibleNewton::FeasibleNewton" 
 FeasibleNewton::FeasibleNewton(ObjectiveFunction* of) :
