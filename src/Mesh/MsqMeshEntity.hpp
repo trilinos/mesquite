@@ -49,6 +49,12 @@ namespace Mesquite
     ~MsqMeshEntity()
       {}
     
+    MsqMeshEntity& operator=(const MsqMeshEntity& rhs) { 
+      mType = rhs.mType;
+      memmove(vertexIndices, rhs.vertexIndices, MSQ_MAX_NUM_VERT_PER_ENT*sizeof(size_t));
+      return *this;
+    }
+
       //! Returns element type
     inline EntityTopology get_element_type()
       { return mType; }

@@ -39,13 +39,15 @@ namespace Mesquite
          : Vector3D(0,0,0), vertexBitFlags(0)
        {}
 
-     void operator=(const Vector3D& rhs)
+     MsqVertex& operator=(const Vector3D& rhs)
        { Vector3D::operator=(rhs);
-         vertexBitFlags = 0; }
+         vertexBitFlags = 0; 
+	 return *this; }
      
-     void operator=(const MsqVertex& rhs)
+     MsqVertex& operator=(const MsqVertex& rhs)
        { Vector3D::operator=(rhs);
-         vertexBitFlags = rhs.vertexBitFlags; }
+         vertexBitFlags = rhs.vertexBitFlags; 
+	 return *this; }
      
        // This allows for 8 flag bits.
        // I don't think we'll want more than that (yet).

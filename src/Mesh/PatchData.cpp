@@ -117,6 +117,7 @@ void PatchData::reorder()
     sta[i] = toc;
     toc += j;
   }
+
   vte = new size_t[toc];
 
   // Step 3:  Finish constructing the vertex to element list.
@@ -223,7 +224,7 @@ void PatchData::reorder()
 
   pel = new size_t[nume];
   for (i = 0; i < nume; ++i) {
-    pel[i] = numv;
+    pel[i] = nume;
   }
 
   toc = 0;
@@ -236,7 +237,7 @@ void PatchData::reorder()
     en = sta[loc+1];
     while (st < en) {
       loc = vte[st++];
-      if (numv == pel[loc]) {
+      if (nume == pel[loc]) {
         pel[loc] = toc++;
       }
     }
