@@ -599,10 +599,10 @@ bool TerminationCriterion::cull_vertices(PatchData &pd,
   };
     //Now actually have patch data cull vertices
   if(cull_bool){
-    pd.set_all_vertices_soft_free(err);
+    pd.set_free_vertices_soft_fixed(err);
   }
   else{
-    pd.set_free_vertices_soft_fixed(err);
+    pd.set_all_vertices_soft_free(err); 
   }
   MSQ_CHKERR(err);
   return cull_bool;
