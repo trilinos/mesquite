@@ -368,7 +368,7 @@ void MeshImpl::read_exodus(const char* in_filename , MsqError &err)
   
   
     // Get block list
-  msq_std::vector<int> block_ids;
+  msq_std::vector<int> block_ids(block_count);
   exo_err = ex_get_elem_blk_ids(file_id, &block_ids[0]);
   if (exo_err < 0)
   {
@@ -437,7 +437,7 @@ void MeshImpl::read_exodus(const char* in_filename , MsqError &err)
     {
       for (msq_std::vector<size_t>::iterator iter = vertices.begin();
            iter != vertices.end(); ++iter, ++conn_iter)
-        *iter = *conn_iter;
+        *iter = *conn_iter - 1;
         
       myMesh->reset_element( index, vertices, elem_type, err ); MSQ_CHKERR(err);
     }
@@ -692,7 +692,7 @@ void Mesquite::MeshImpl::write_exodus(const char* out_filename,
              citer != elem_conn.end(); ++citer, ++iter)
         {
           assert(iter != conn.end());
-          *iter = *citer;
+          *iter = *citer + 1;
         }
       }
 
