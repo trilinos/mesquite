@@ -21,8 +21,6 @@ correct metric return values.
 // DESCRIP-END.
 //
 
-
-
 #include "Mesquite.hpp"
 #include "PatchData.hpp"
 #include "QualityMetric.hpp"
@@ -51,6 +49,8 @@ private:
   CPPUNIT_TEST (test_aspect_ratio_gamma);
     //Test composite multiply
   CPPUNIT_TEST (test_composite_multiply);
+    //Test averaging methods
+  CPPUNIT_TEST (test_averaging_method);
   
   
   CPPUNIT_TEST_SUITE_END();
@@ -409,7 +409,51 @@ public:
      val = met->evaluate_element(hexPatch,&elems[0],err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
    }
-  
+void test_averaging_method()
+   {
+       //USE QUAD's
+     MsqError err;
+     double val;
+     MsqMeshEntity* elems;
+     MsqVertex* verts = quadPatch.get_vertex_array(err);
+     elems=quadPatch.get_element_array(err);
+     MSQ_CHKERR(err);
+     ShapeQualityMetric *met = MeanRatioQualityMetric::create_new();
+       //Check mean ratio of ideal quad
+     val = met->evaluate_element(quadPatch,&elems[0],err);MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+     met->set_averaging_method(QualityMetric::GEOMETRIC, err);
+       //Check mean ratio of ideal quad GEOMETRIC
+     val = met->evaluate_element(quadPatch,&elems[0],err);MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+     met->set_averaging_method(QualityMetric::HARMONIC, err);
+       //Check mean ratio of ideal quad HARMONIC
+     val = met->evaluate_element(quadPatch,&elems[0],err);MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+     met->set_averaging_method(QualityMetric::LINEAR, err);
+       //Check mean ratio of ideal quad LINEAR
+     val = met->evaluate_element(quadPatch,&elems[0],err);MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+     met->set_averaging_method(QualityMetric::MAXIMUM, err);
+       //Check mean ratio of ideal quad MAXIMUM
+     val = met->evaluate_element(quadPatch,&elems[0],err);MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+     met->set_averaging_method(QualityMetric::MINIMUM, err);
+       //Check mean ratio of ideal quad MINIMUM
+     val = met->evaluate_element(quadPatch,&elems[0],err);MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+     met->set_averaging_method(QualityMetric::RMS, err);
+       //Check mean ratio of ideal quad RMS
+     val = met->evaluate_element(quadPatch,&elems[0],err);MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+     met->set_averaging_method(QualityMetric::SUM, err);
+       //Check mean ratio of ideal SUM (NOTICE:: should be 4.0)
+     val = met->evaluate_element(quadPatch,&elems[0],err);MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(fabs(val-4.0)<qualTol);
+     
+
+   }
+
    
 };
 
