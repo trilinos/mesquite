@@ -1084,7 +1084,7 @@ void MeshImpl::element_get_connectivity( ElementHandle elem,
     MSQ_SETERR(err)("Insufficient array size", MsqError::INVALID_ARG);
     return;
   }
-  memcpy( vert_array, &conn[0], conn.size() );
+  memcpy( vert_array, &conn[0], conn.size() * sizeof(VertexHandle) );
 }
 
 

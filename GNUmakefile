@@ -66,6 +66,7 @@ TESTNAMES := test_1\
              Guides843 \
              deforming \
              rezone \
+             convert \
              unit
 ###             random_test\
 ###             convert\

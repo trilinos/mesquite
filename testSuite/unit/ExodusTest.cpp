@@ -34,6 +34,7 @@ static bool create_exodus_file( const char* filename );
 
 #include "Mesquite.hpp"
 #include "MeshImpl.hpp"
+#include "MsqVertex.hpp"
 
 #include "cppunit/extensions/HelperMacros.h"
 
@@ -71,7 +72,7 @@ public:
   {
     Mesquite::MeshImpl *mMesh;
     Mesquite::MsqPrintError err(msq_stdio::cout);
-    
+    int i;
     const unsigned NUM_HEXES = 115;
     const unsigned NUM_QUADS = 0;
     const unsigned NUM_NODES = 216;
@@ -124,7 +125,7 @@ public:
     
       // Print counts
     printf( "TYPE   COUNT\n-----  -----\n");
-    for (int i = 0; i < Mesquite::MIXED; ++i)
+    for (i = 0; i < Mesquite::MIXED; ++i)
       if (counts[i])
         printf("%5s  %5d\n", names[i], counts[i]);
         
@@ -134,8 +135,56 @@ public:
     CPPUNIT_ASSERT( counts[Mesquite::TETRAHEDRON] == 0 );
     CPPUNIT_ASSERT( counts[Mesquite::HEXAHEDRON] = NUM_HEXES );
     CPPUNIT_ASSERT( counts[Mesquite::PRISM] == 0 );
-    CPPUNIT_ASSERT( counts[Mesquite::PYRAMID] == 0 );   
+    CPPUNIT_ASSERT( counts[Mesquite::PYRAMID] == 0 );
     
+      // Check a few hexes and nodes for correctness
+    const unsigned num_to_check = 6;
+    unsigned j;
+    char buffer[64];
+    
+      // Check connectivity of first six hexes
+    static const unsigned expected_hex_connectivity[num_to_check][8] = {
+      { 64,  63, 168, 167, 4,  5, 28, 27 },
+      { 63,  62, 132, 133, 5,  6, 24, 25 },
+      { 62, 169, 131, 132, 6, 29, 23, 24 },
+      { 62,  46, 170, 169, 6,  1, 30, 29 },
+      { 46, 152, 153, 170, 1, 10, 11, 30 },
+      { 46,  66, 171, 152, 1,  2, 31, 10 } };
+    Mesquite::Mesh::VertexHandle conn[8];    
+    for (j = 0; j < num_to_check; ++j)
+    {
+      sprintf(buffer, "bad hex: %d\n", j);
+      mMesh->element_get_connectivity( (Mesquite::Mesh::ElementHandle)j, conn, 8, err );
+      CPPUNIT_ASSERT( !err );
+      for (i = 0; i < 8; ++i)
+      {
+        size_t mesh = (size_t)conn[i] + 1;
+        size_t exp  = expected_hex_connectivity[j][i];
+        CPPUNIT_ASSERT_MESSAGE( buffer, mesh == exp );
+      }
+    }
+    
+      // Check locations of first six vertices
+    static const double expected_node_coords[num_to_check][3] = {
+      {  2.000000,     0.000000,     5.000000 },
+      {  1.000000,    -1.732051,     5.000000 },
+      { -1.000000,    -1.732051,     5.000000 },
+      { -2.000000,    -0.000000,     5.000000 },
+      { -1.000000,     1.732051,     5.000000 },
+      {  1.000000,     1.732051,     5.000000 } };
+    Mesquite::MsqVertex vert;
+    for (j = 0; j < num_to_check; ++j)
+    {
+      sprintf(buffer, "bad node: %d\n", j);
+      mMesh->vertices_get_coordinates( (const Mesquite::Mesh::VertexHandle*)&j, &vert, 1, err );
+      CPPUNIT_ASSERT( !err );
+      for (i = 0; i < 3; ++i)
+      {
+        CPPUNIT_ASSERT_MESSAGE( buffer,
+          fabs( expected_node_coords[j][i] - vert[i] ) < 1e-6 );
+      }
+    }
+          
   }
 };
 
@@ -171,7 +220,7 @@ bool create_exodus_file( const char* filename )
     //  CUBIT> mesh volume 1
     //  CUBIT> export mesh 'mesh.g'
     // To extract this data into a file for debugging, do
-    //  $ cc -DDEBUG ExodusTest.cpp -o exodump
+    //  $ CC -DDEBUG ExodusTest.cpp -o exodump
     //  $ ./exodump mesh.g
   static const unsigned char binary_data[] = { 
   0x43, 0x44, 0x46, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0a, 0x00,

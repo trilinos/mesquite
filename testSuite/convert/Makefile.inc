@@ -13,7 +13,7 @@ all_tests: $(CONVV2EEXEC)
 
 $(CONVV2EEXEC): $(CONVV2ESRC) $(locallibdir)/libmesquite.a
 	@echo "Linking Mesquite driver application ($@)..."
-	${LINKER} $(CXXFLAGS) ${LDFLAGS} $(CONFIG_CFLAGS) $\
+	${LINKER} $(CXXFLAGS) ${LDFLAGS} $(CONFIG_CFLAGS) \
 	-o $@ ${CONVV2ESRC} -L$(locallibdir) -lmesquite \
         $(CONFIG_LDFLAGS) -lm
 $(CONVE2VEXEC): $(CONVE2VSRC) $(locallibdir)/libmesquite.a
