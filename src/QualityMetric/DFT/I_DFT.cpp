@@ -1410,6 +1410,7 @@ bool I_DFT::evaluate_element(PatchData& pd,
 {
   // Only works with the weighted average
 
+  MsqError  mErr;
   MsqVertex *vertices = pd.get_vertex_array(err);
 
   EntityTopology topo = e->get_element_type();
@@ -1441,13 +1442,18 @@ bool I_DFT::evaluate_element(PatchData& pd,
   case TRIANGLE:
     assert(3 == nv);
 
-    pd.get_domain_normal_at_element(e, mNormal, err); MSQ_CHKERR(err);
-    mNormal.normalize();	// Need unit normal
-
     for (i = 0; i < 3; ++i) {
       for (j = 0; j < 3; ++j) {
 	mCoords[j] = vertices[v_i[tetInd[i][j]]];
       }
+
+      pd.get_domain_normal_at_vertex(v_i[tetInd[i][0]], true, mNormal, mErr);
+      if (mErr.errorOn || mNormal.length() == 0) {
+        mNormal = (v_i[tetInd[i][1]] - v_i[tetInd[i][0]]) *
+		  (v_i[tetInd[i][2]] - v_i[tetInd[i][0]]);
+        mNormal.normalize();
+      }
+      mNormal *= pow(2./MSQ_SQRT_THREE, 1./3.);
 
       inv(invW, W[i]);
 
@@ -1462,12 +1468,16 @@ bool I_DFT::evaluate_element(PatchData& pd,
   case QUADRILATERAL:
     assert(4 == nv);
 
-    pd.get_domain_normal_at_element(e, mNormal, err); MSQ_CHKERR(err);
-    mNormal.normalize();	// Need unit normal
-
     for (i = 0; i < 4; ++i) {
       for (j = 0; j < 3; ++j) {
 	mCoords[j] = vertices[v_i[hexInd[i][j]]];
+      }
+
+      pd.get_domain_normal_at_vertex(v_i[hexInd[i][0]], true, mNormal, mErr);
+      if (mErr.errorOn || mNormal.length() == 0) {
+        mNormal = (v_i[tetInd[i][1]] - v_i[tetInd[i][0]]) *
+                  (v_i[tetInd[i][2]] - v_i[tetInd[i][0]]);
+        mNormal.normalize();
       }
 
       inv(invW, W[i]);
@@ -1567,8 +1577,14 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
   case TRIANGLE:
     assert(3 == nv);
 
-    pd.get_domain_normal_at_element(e, mNormal, err); MSQ_CHKERR(err);
-    mNormal.normalize();	// Need unit normal
+#ifndef ANALYTIC
+    return compute_element_numerical_gradient(pd, e, fv, g, nfv, m, err);
+#else
+
+    // The following analytic calculation only works correctly if the
+    // normal is constant.  If the normal is not constaint, you need
+    // to get the gradient of the normal with respect to the vertex
+    // positions to obtain the correct values.
 
     for (i = 0; i < 3; ++i) {
       mAccGrads[i] = 0.0;
@@ -1579,6 +1595,10 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	mCoords[j] = vertices[v_i[tetInd[i][j]]];
       }
       
+      pd.get_domain_normal_at_vertex(v_i[tetInd[i][0]], true, mNormal, err);
+      MSQ_CHKERR(err);
+      mNormal *= pow(2./MSQ_SQRT_THREE, 1./3.)
+
       inv(invW, W[i]);
 
       mValid = g_fcn_idft2(mMetric, mGrads, mCoords, mNormal,
@@ -1607,13 +1627,21 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
         }
       }
     }
+#endif
+
     break;
 
   case QUADRILATERAL:
     assert(4 == nv);
 
-    pd.get_domain_normal_at_element(e, mNormal, err); MSQ_CHKERR(err);
-    mNormal.normalize();	// Need unit normal
+#ifndef ANALYTIC
+    return compute_element_numerical_gradient(pd, e, fv, g, nfv, m, err);
+#else
+
+    // The following analytic calculation only works correctly if the
+    // normal is constant.  If the normal is not constaint, you need
+    // to get the gradient of the normal with respect to the vertex
+    // positions to obtain the correct values.
 
     for (i = 0; i < 4; ++i) {
       mAccGrads[i] = 0.0;
@@ -1623,6 +1651,9 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
       for (j = 0; j < 3; ++j) {
 	mCoords[j] = vertices[v_i[hexInd[i][j]]];
       }
+
+      pd.get_domain_normal_at_vertex(v_i[hexInd[i][0]], true, mNormal, err);
+      MSQ_CHKERR(err);
 
       inv(invW, W[i]);
 
@@ -1652,6 +1683,8 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
         }
       }
     }
+#endif
+
     break;
 
   case TETRAHEDRON:
@@ -1789,8 +1822,14 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
   case TRIANGLE:
     assert(3 == nv);
 
-    pd.get_domain_normal_at_element(e, mNormal, err); MSQ_CHKERR(err);
-    mNormal.normalize();	// Need unit normal
+#ifndef ANALYTIC
+    return compute_element_numerical_gradient(pd, e, fv, g, nfv, m, err);
+#else
+
+    // The following analytic calculation only works correctly if the
+    // normal is constant.  If the normal is not constaint, you need
+    // to get the gradient of the normal with respect to the vertex
+    // positions to obtain the correct values.
 
     // Zero out the hessian and gradient vector
     for (i = 0; i < 3; ++i) {
@@ -1806,6 +1845,10 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
       for (j = 0; j < 3; ++j) {
 	mCoords[j] = vertices[v_i[tetInd[i][j]]];
       }
+
+      pd.get_domain_normal_at_vertex(v_i[tetInd[i][0]], true, mNormal, err);
+      MSQ_CHKERR(err);
+      mNormal *= pow(2./MSQ_SQRT_THREE, 1./3.)
 
       inv(invW, W[i]);
 
@@ -1873,13 +1916,21 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
         }
       }
     }
+#endif
+
     break;
 
   case QUADRILATERAL:
     assert(4 == nv);
 
-    pd.get_domain_normal_at_element(e, mNormal, err); MSQ_CHKERR(err);
-    mNormal.normalize();	// Need unit normal
+#ifndef ANALYTIC
+    return compute_element_numerical_gradient(pd, e, fv, g, nfv, m, err);
+#else
+
+    // The following analytic calculation only works correctly if the
+    // normal is constant.  If the normal is not constaint, you need
+    // to get the gradient of the normal with respect to the vertex
+    // positions to obtain the correct values.
 
     // Zero out the hessian and gradient vector
     for (i = 0; i < 4; ++i) {
@@ -1895,6 +1946,9 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
       for (j = 0; j < 3; ++j) {
 	mCoords[j] = vertices[v_i[hexInd[i][j]]];
       }
+
+      pd.get_domain_normal_at_vertex(v_i[hexInd[i][0]], true, mNormal, err);
+      MSQ_CHKERR(err);
 
       inv(invW, W[i]);
 
@@ -1966,6 +2020,8 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
         }
       }
     }
+#endif
+
     break;
 
   case TETRAHEDRON:
