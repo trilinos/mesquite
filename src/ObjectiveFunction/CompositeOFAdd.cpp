@@ -77,7 +77,7 @@ std::list<QualityMetric*> CompositeOFAdd::get_quality_metric_list()
 double CompositeOFAdd::concrete_evaluate(PatchData &patch, MsqError &err){
   //Total value of objective function
   double total_value=objFunc1->evaluate(patch, err);
-  total_value*=objFunc2->evaluate(patch, err);
+  total_value+=objFunc2->evaluate(patch, err);
     //total_value+=alpha;
   return total_value;
 }
