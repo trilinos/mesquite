@@ -76,6 +76,15 @@ private:
   Mesquite::MsqError mErr;
   
 public:
+
+  MeshInterfaceTest() 
+    : mMesh(0),
+      mVertices(0),
+      mElements(0),
+      nbVert(0),
+      nbElem(0) 
+    {}
+
    /* Automatically called by CppUnit before each test function. */
   void setUp()
   {
@@ -112,8 +121,6 @@ public:
   }
   
 public:
-  MeshInterfaceTest()
-    {}
   
   void test_get_geometric_dimension()
   {
