@@ -74,7 +74,7 @@ namespace Mesquite
     void accumulate_entries(PatchData &pd, size_t elem_index,
                             Matrix3D mat3d_array[], MsqError &err);
     void compute_preconditionner(MsqError &err);
-    void apply_preconditionner(Vector3D z[], Vector3D r[], MsqError &err);
+    void apply_preconditionner(Vector3D zloc[], Vector3D rloc[], MsqError &err);
     void cg_solver(Vector3D x[], Vector3D b[], MsqError &err);
     //! Hessian - vector product, summed with a second vector (optional).
     friend void axpy(Vector3D res[], int size_r,
@@ -143,12 +143,14 @@ namespace Mesquite
 #undef __FUNC__
 #define __FUNC__ "MsqHessian::apply_preconditionner"
   /*! Computes \f$ z=M^{-1}r \f$ . */
-  inline void MsqHessian::apply_preconditionner(Vector3D z[], Vector3D r[], MsqError& /*err*/)
+  inline void MsqHessian::apply_preconditionner(Vector3D zloc[],
+                                                Vector3D rloc[],
+                                                MsqError& /*err*/)
   {
     int m;
     // preconditionner is identity matrix for now.
     for (m=0; m<mSize; ++m) {
-      z[m] = mPreconditionner[m] * r[m]; 
+      zloc[m] = mPreconditionner[m] * rloc[m]; 
     }
   }
 
