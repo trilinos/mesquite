@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 12-Nov-02 at 18:05:56
-//  LAST-MOD: 13-Dec-02 at 08:15:58 by Thomas Leurent
+//  LAST-MOD: 16-Dec-02 at 16:45:12 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -214,7 +214,7 @@ namespace Mesquite {
    
 
    /*! \fn create_six_quads_patch(PatchData &four_quads, MsqError &err)
-     our 2D set up: 4 quads, center vertex outcentered by (0,-0.5)
+     our 2D set up: 6 quads, 1 center vertex outcentered by (0,-0.5), the other centered
       7____6____5___11
       |    |    |    |
       | 2  |  3 | 5  |
@@ -253,6 +253,77 @@ namespace Mesquite {
       pd.add_element(NULL, NULL, ind, QUADRILATERAL, err); MSQ_CHKERR(err);
       ind[0] = 4; ind[1]=10; ind[2]=11; ind[3]=5;
       pd.add_element(NULL, NULL, ind, QUADRILATERAL, err); MSQ_CHKERR(err);
+   }
+
+
+   /*! \fn create_twelve_hex_patch(PatchData &pd, MsqError &err)
+     3D set up: 12 quads, one center vertex outcentered by (0,-0.5),
+     the other centered. Vertex 1 is at (0,0,-1). Vertex 35 is at (3,2,1).
+     
+      7____6____5___11     19___18____17__23     31___30___29___35
+      |    |    |    |      |    |    |    |      |    |    |    |
+      | 2  |  3 | 5  |      |    |    |    |      | 8  |  9 | 11 |
+      8----0----4---10     20-_  |  _16---22     32---24---28---34       
+      |    |    |    |      |  -12_-  |    |      |    |    |    |       
+      | 0  |  1 | 4  |      |    |    |    |      | 6  |  7 | 10 |
+      1----2----3----9     13---14---15---21     25---26---27---33
+   */
+   inline void create_six_quads_patch(PatchData &pd, MsqError &err) 
+   {
+      pd.reserve_vertex_capacity(36, err); MSQ_CHKERR(err);
+      pd.add_vertex(NULL, NULL, 1, 0, -1, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 0, 0, -1, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 1, 0, -1, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 2, 0, -1, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 2, 1, -1, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 2, 2, -1, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 1, 2, -1, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 0, 2, -1, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 0, 1, -1, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 3, 0, -1, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 3, 1, -1, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 3, 2, -1, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      
+      pd.add_vertex(NULL, NULL, 1,.5, 0, true, err, MsqVertex::MSQ_NO_VTX_FLAG); 
+      pd.add_vertex(NULL, NULL, 0, 0, 0, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 1, 0, 0, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 2, 0, 0, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 2, 1, 0, true, err, MsqVertex::MSQ_NO_VTX_FLAG); 
+      pd.add_vertex(NULL, NULL, 2, 2, 0, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 1, 2, 0, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 0, 2, 0, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 0, 1, 0, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 3, 0, 0, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 3, 1, 0, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 3, 2, 0, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      
+      pd.add_vertex(NULL, NULL, 1,.5, 1, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 0, 0, 1, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 1, 0, 1, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 2, 0, 1, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 2, 1, 1, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 2, 2, 1, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 1, 2, 1, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 0, 2, 1, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 0, 1, 1, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 3, 0, 1, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 3, 1, 1, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 3, 2, 1, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      
+      size_t ind[8];
+      pd.reserve_element_capacity(12, err); MSQ_CHKERR(err);
+      ind[0] = 1; ind[1]=2; ind[2]=0; ind[3]=8; ind[4] = 1; ind[5]=2; ind[6]=0; ind[7]=8;
+      pd.add_element(NULL, NULL, ind, HEXAHEDRON, err); MSQ_CHKERR(err);
+      ind[0] = 2; ind[1]=3; ind[2]=4; ind[3]=0;
+      pd.add_element(NULL, NULL, ind, HEXAHEDRON, err); MSQ_CHKERR(err);
+      ind[0] = 8; ind[1]=0; ind[2]=6; ind[3]=7;
+      pd.add_element(NULL, NULL, ind, HEXAHEDRON, err); MSQ_CHKERR(err);
+      ind[0] = 0; ind[1]=4; ind[2]=5; ind[3]=6;
+      pd.add_element(NULL, NULL, ind, HEXAHEDRON, err); MSQ_CHKERR(err);
+      ind[0] = 3; ind[1]=9; ind[2]=10; ind[3]=4;
+      pd.add_element(NULL, NULL, ind, HEXAHEDRON, err); MSQ_CHKERR(err);
+      ind[0] = 4; ind[1]=10; ind[2]=11; ind[3]=5;
+      pd.add_element(NULL, NULL, ind, HEXAHEDRON, err); MSQ_CHKERR(err);
    }
 
 
