@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 13-Nov-02 at 18:05:56
-//  LAST-MOD: 19-Jun-03 at 18:04:45 by Thomas Leurent
+//  LAST-MOD: 27-Jan-04 at 19:23:30 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -33,15 +33,15 @@ using namespace Mesquite;
 class PatchDataTest : public CppUnit::TestFixture
 {
 private:
-   CPPUNIT_TEST_SUITE(PatchDataTest);
-   CPPUNIT_TEST (test_get_element_vertex_indices);
-   CPPUNIT_TEST (test_get_vertex_element_indices);
-   CPPUNIT_TEST (test_get_element_vertex_coordinates);
-   CPPUNIT_TEST (test_move_free_vertices_constrained);
+  CPPUNIT_TEST_SUITE(PatchDataTest);
+  CPPUNIT_TEST (test_get_element_vertex_indices);
+  CPPUNIT_TEST (test_get_vertex_element_indices);
+  CPPUNIT_TEST (test_get_element_vertex_coordinates);
+  CPPUNIT_TEST (test_move_free_vertices_constrained);
   CPPUNIT_TEST (test_movement_function);
   CPPUNIT_TEST (test_get_adj_elems_2d);
-  
-   CPPUNIT_TEST_SUITE_END();
+  CPPUNIT_TEST (test_get_max_element_area);
+  CPPUNIT_TEST_SUITE_END();
    
 private:
 
@@ -274,9 +274,17 @@ public:
      MSQ_CHKERR(err);
      CPPUNIT_ASSERT(elems_3.size() == 0);
    }
+
   
-     
-        
+#undef __FUNC__
+#define __FUNC__ "PatchDataTest::test_get_max_element_area" 
+   void test_get_max_element_area()
+   {
+     MsqError err;
+     double max = mPatch2D.get_max_element_area(err); MSQ_CHKERR(err);
+
+     CPPUNIT_ASSERT_DOUBLES_EQUAL( max, 1.0, 0.0001 );
+   }        
      
    
 };
