@@ -65,7 +65,8 @@ namespace Mesquite
                            double &fval,MsqError &err);
      
    protected:
-     inline void untangle_function_2d(Vector3D temp_vec[],size_t v_ind,
+     inline void untangle_function_2d(Vector3D temp_vec[],size_t e_ind,
+                                      size_t v_ind,
                                       PatchData &pd, double &fval,
                                       MsqError &err);
      
@@ -78,10 +79,10 @@ namespace Mesquite
    };
      //************BEGIN INLINE FUNCTIONS**************************
    
-   inline void UntangleBetaQualityMetric::untangle_function_2d(Vector3D temp_vec[],size_t v_ind,PatchData &pd, double &fval, MsqError &err)
+   inline void UntangleBetaQualityMetric::untangle_function_2d(Vector3D temp_vec[],size_t e_ind, size_t v_ind,PatchData &pd, double &fval, MsqError &err)
    {
      Vector3D surface_normal;
-     pd.get_domain_normal_at_vertex(v_ind,surface_normal,err);
+     pd.get_domain_normal_at_element(e_ind,surface_normal,err);
      Vector3D cross_vec=temp_vec[0]*temp_vec[1];
        //std::cout<<"\nsurface_normal "<<surface_normal;
        //std::cout<<"\cross_vec "<<cross_vec;
@@ -91,8 +92,10 @@ namespace Mesquite
      }
      temp_var -= mBeta;
        //std::cout<<"temp_var == "<<temp_var;
-     
-     fval=fabs(temp_var)-temp_var;
+     fval=0.0;
+     if(temp_var<0.0){
+        fval=fabs(temp_var)-temp_var;
+     }
        //  std::cout<<"\nfval == "<<fval<<"  v_ind "<<v_ind;
    }
    
@@ -100,7 +103,10 @@ namespace Mesquite
    {
      double temp_var=temp_vec[0]%(temp_vec[1]*temp_vec[2]);
      temp_var-=mBeta;
-     fval=fabs(temp_var)-temp_var;
+     fval=0.0;
+     if(temp_var<0.0){
+       fval=fabs(temp_var)-temp_var;
+     }
    }
    
 } //namespace

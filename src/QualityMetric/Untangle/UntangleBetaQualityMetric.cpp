@@ -45,6 +45,7 @@ bool UntangleBetaQualityMetric::evaluate_element(PatchData &pd,
   double met_vals[MSQ_MAX_NUM_VERT_PER_ENT];
   fval=MSQ_MAX_CAP;
   const size_t* v_i = element->get_vertex_index_array();
+  size_t e_ind = pd.get_element_index(element);
     //only 3 temp_vec will be sent to untangle calculator, but the
     //additional vector3Ds may be needed during the calculations
   Vector3D temp_vec[6];
@@ -55,24 +56,24 @@ bool UntangleBetaQualityMetric::evaluate_element(PatchData &pd,
       temp_vec[2]=vertices[v_i[2]]-vertices[v_i[0]];
         //make relative to equilateral
       temp_vec[1]=((2*temp_vec[2])-temp_vec[0])*MSQ_SQRT_THREE_INV;
-      untangle_function_2d(temp_vec,v_i[0],pd,fval,err);
+      untangle_function_2d(temp_vec,e_ind, v_i[0],pd,fval,err);
       return true;
     case QUADRILATERAL:
       temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
       temp_vec[1]=vertices[v_i[3]]-vertices[v_i[0]];
-      untangle_function_2d(temp_vec,v_i[0],pd,met_vals[0],err);
+      untangle_function_2d(temp_vec,e_ind, v_i[0],pd,met_vals[0],err);
       
       temp_vec[0]=vertices[v_i[2]]-vertices[v_i[1]];
       temp_vec[1]=vertices[v_i[0]]-vertices[v_i[1]];
-      untangle_function_2d(temp_vec,v_i[1],pd,met_vals[1],err);
+      untangle_function_2d(temp_vec,e_ind, v_i[1],pd,met_vals[1],err);
       
       temp_vec[0]=vertices[v_i[3]]-vertices[v_i[2]];
       temp_vec[1]=vertices[v_i[1]]-vertices[v_i[2]];
-      untangle_function_2d(temp_vec,v_i[2],pd,met_vals[2],err);
+      untangle_function_2d(temp_vec,e_ind, v_i[2],pd,met_vals[2],err);
       
       temp_vec[0]=vertices[v_i[0]]-vertices[v_i[3]];
       temp_vec[1]=vertices[v_i[2]]-vertices[v_i[3]];
-      untangle_function_2d(temp_vec,v_i[3],pd,met_vals[3],err);
+      untangle_function_2d(temp_vec,e_ind, v_i[3],pd,met_vals[3],err);
       fval=average_metrics(met_vals, 4, err);
   return true;
     case TETRAHEDRON:
