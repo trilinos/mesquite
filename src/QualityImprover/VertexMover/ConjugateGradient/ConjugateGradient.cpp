@@ -118,7 +118,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
                                                 MsqError &err){
   // pd.reorder();
 
-  FunctionTimer ft( "ConjugateGradient::optimize_vertex_positions" );
+  MSQ_FUNCTION_TIMER( "ConjugateGradient::optimize_vertex_positions" );
 
   Timer c_timer;
   int num_vert=pd.num_vertices();

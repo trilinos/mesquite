@@ -175,7 +175,7 @@ bool MeshSet::get_next_patch(PatchData &pd,
                              PatchDataParameters &pd_params,
                              MsqError &err )
 {
-  FunctionTimer ft("MeshSet::get_next_patch");
+  MSQ_FUNCTION_TIMER( "MeshSet::get_next_patch" );
 
     // get rid of previous Patch information (but keep memory allocated).
   pd.clear();
@@ -534,7 +534,7 @@ bool MeshSet::get_next_patch(PatchData &pd,
 // coordinates and flags.  Connectivity changes aren't supported yet.
 void Mesquite::MeshSet::update_mesh(const PatchData &pd, MsqError &err)
 {
-  FunctionTimer ft( "MeshSet::update_mesh" );
+  MSQ_FUNCTION_TIMER( "MeshSet::update_mesh" );
   if (pd.numVertices == 0)
     return;
   

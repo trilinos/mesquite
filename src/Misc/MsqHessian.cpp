@@ -90,7 +90,7 @@ MsqHessian::~MsqHessian()
   Only the upper triangular part of the Hessian is stored. */
 void MsqHessian::initialize(PatchData &pd, MsqError &err)
 {
-  FunctionTimer ft("MsqHession::initialize");
+  MSQ_FUNCTION_TIMER( "MsqHession::initialize" );
   delete[] mEntries;
   delete[] mRowStart;
   delete[] mColIndex;
@@ -439,7 +439,7 @@ void MsqHessian::compute_preconditioner(MsqError &/*err*/)
 */
 void MsqHessian::cg_solver(Vector3D x[], Vector3D b[], MsqError &err)
 {
-  FunctionTimer ft("MsqHessian::cg_solver");
+  MSQ_FUNCTION_TIMER( "MsqHessian::cg_solver" );
   
   // reallocates arrays if size of the Hessian has changed too much.
   if (mSize > cgArraySizes || mSize < cgArraySizes/10 ) {

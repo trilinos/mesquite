@@ -48,7 +48,7 @@ using namespace Mesquite;
     the base classes. */
 void LVQDTargetCalculator::compute_target_matrices(PatchData &pd, MsqError &err)
 {
-  FunctionTimer ft( "LVQDTargetCalculator::compute_target_matrices" );
+  MSQ_FUNCTION_TIMER( "LVQDTargetCalculator::compute_target_matrices" );
 
   // Gets from the reference mesh a patch ref_pd equivalent to the patch pd of the main mesh.
   PatchData ref_pd;

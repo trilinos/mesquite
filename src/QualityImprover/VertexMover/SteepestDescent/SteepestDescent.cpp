@@ -64,7 +64,7 @@ void SteepestDescent::initialize_mesh_iteration(PatchData &/*pd*/, MsqError &/*e
 void SteepestDescent::optimize_vertex_positions(PatchData &pd, 
                                                 MsqError &err)
 {
-  FunctionTimer("SteepestDescent::optimize_vertex_positions");
+  MSQ_FUNCTION_TIMER( "SteepestDescent::optimize_vertex_positions" );
     //PRINT_INFO("\no  Performing Steepest Descent optimization.\n");
   // Get the array of vertices of the patch. Free vertices are first.
   int num_vertices = pd.num_vertices();

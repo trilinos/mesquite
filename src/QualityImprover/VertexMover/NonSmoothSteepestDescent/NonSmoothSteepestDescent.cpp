@@ -89,7 +89,7 @@ void NonSmoothSteepestDescent::initialize_mesh_iteration(PatchData &/*pd*/,
 void NonSmoothSteepestDescent::optimize_vertex_positions(PatchData &pd, 
                                                 MsqError &err)
 {
-  FunctionTimer ft("NonSmoothSteepestDescent");
+  MSQ_FUNCTION_TIMER( "NonSmoothSteepestDescent" );
 
   //  cout << "- Executing NonSmoothSteepestDescent::optimize_node_positions()\n";
   /* perform the min max smoothing algorithm */
@@ -421,7 +421,7 @@ void NonSmoothSteepestDescent::search_direction(PatchData &/*pd*/,
    // on the element geometry here... try it and see if it works.
    // if not, try taking all of the gradients in the active set
    // and let the search direction be the average of those.
-//   FunctionTimer ft("Search Direction");
+//   MSQ_FUNCTION_TIMER( "Search Direction" );
 
    MSQ_PRINT(2)("\nIn Search Direction\n");
    this->print_active_set(mActive, mFunction, err);  MSQ_ERRRTN(err);
@@ -548,7 +548,7 @@ void NonSmoothSteepestDescent::search_direction(PatchData &/*pd*/,
 void NonSmoothSteepestDescent::minmax_opt(PatchData &pd, MsqError &err)
 {
 //      int valid;
-      FunctionTimer ft("Minmax Opt");
+      MSQ_FUNCTION_TIMER( "Minmax Opt" );
       MSQ_PRINT(2)("In minmax_opt\n");
 
       MSQ_COPY_VECTOR(mFunction,originalFunction,numFunctionValues);
@@ -679,7 +679,7 @@ void NonSmoothSteepestDescent::step_acceptance(PatchData &pd, MsqError &err)
   double     current_percent_diff = 1E300;
   double     original_point[3];
 
-//  FunctionTimer ft("Step Acceptance");
+//  MSQ_FUNCTION_TIMER( "Step Acceptance" );
   num_values = numFunctionValues;
 
   step_status = MSQ_STEP_NOT_DONE;

@@ -131,7 +131,7 @@ bool CompositeOFMultiply::compute_analytical_gradient(PatchData &patch,
 						      MsqError &err,
 						      size_t array_size)
 {
-  FunctionTimer ft( "CompositeOFMultiply::compute_analytical_gradient" );
+  MSQ_FUNCTION_TIMER( "CompositeOFMultiply::compute_analytical_gradient" );
   
   double obj_2_val=0.0;
   //get the first gradient and objective function value

@@ -195,26 +195,26 @@ namespace Mesquite
 class FunctionTimer
 {
   public:
-#ifndef MSQ_USE_FUNCTION_TIMERS  
-    inline FunctionTimer( const char* ) {}
-#else
-    inline FunctionTimer( const char* name )
-    {
-      mKey = GlobalStopWatches.add( name, false );
-      GlobalStopWatches.start( mKey );
-    }
-    inline ~FunctionTimer()
-    {
-      GlobalStopWatches.stop( mKey );
-    }
+    inline FunctionTimer( StopWatchCollection::Key key ) : mKey( key ) {}
+    inline void start()      { GlobalStopWatches.start( mKey ); }
+    inline ~FunctionTimer()  { GlobalStopWatches.stop( mKey ); }
   private:
     StopWatchCollection::Key mKey;
-#endif
     // Don't allow any of this stuff (make them private)
     void* operator new(size_t size);
     FunctionTimer( const FunctionTimer& );
     FunctionTimer& operator=( const FunctionTimer& );
 };
+
+#ifdef MSQ_USE_FUNCTION_TIMERS
+  #define MSQ_FUNCTION_TIMER( NAME ) \
+    static Mesquite::StopWatchCollection::Key _mesquite_timer_key = \
+      Mesquite::GlobalStopWatches.add( NAME, false );               \
+    FunctionTimer _mesquite_timer( _mesquite_timer_key );           \
+    _mesquite_timer.start()
+#else
+  #define MSQ_FUNCTION_TIMER( NAME )
+#endif 
 
 }  // namespace Mesquite
 

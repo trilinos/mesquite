@@ -141,7 +141,7 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &pd,
                                               double &OF_val,
                                               MsqError &err, size_t array_size)
 {
-  FunctionTimer ft( "LPtoPTemplate::compute_analytical_gradient" );
+  MSQ_FUNCTION_TIMER( "LPtoPTemplate::compute_analytical_gradient" );
   
     //initialize the scaling value
   double scaling_value=1.0;
@@ -373,7 +373,7 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
 {
   double scaling_value=1.0;
   
-  FunctionTimer ft( "LPtoPTemplate::compute_analytical_hessian" );
+  MSQ_FUNCTION_TIMER( "LPtoPTemplate::compute_analytical_hessian" );
 
   MsqMeshEntity* elements = pd.get_element_array(err); MSQ_ERRZERO(err);
   MsqVertex* vertices = pd.get_vertex_array(err); MSQ_ERRZERO(err);

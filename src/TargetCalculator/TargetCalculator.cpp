@@ -52,7 +52,7 @@ void TargetCalculator::reset_reference_meshset(MsqError &err)
 
 void TargetCalculator::compute_target_matrices_and_check_det(PatchData &pd, MsqError &err)
 {
-  FunctionTimer ft( "TargetCalculator::compute_target_matrices_and_check_det" );
+  MSQ_FUNCTION_TIMER( "TargetCalculator::compute_target_matrices_and_check_det" );
 
   // Compute the target matrices
   compute_target_matrices(pd, err); MSQ_ERRRTN(err);
@@ -78,7 +78,7 @@ void TargetCalculator::compute_target_matrices_and_check_det(PatchData &pd, MsqE
 void TargetCalculator::compute_default_target_matrices(PatchData &pd,
                                                        MsqError &err)
 {
-  FunctionTimer ft("TargetCalculator::compute_default_target_matrices");
+  MSQ_FUNCTION_TIMER( "TargetCalculator::compute_default_target_matrices" );
     
   // set on each element in the patch a tag containing an array of corner matrices
   // (the size of the array is adequate for each element, e.g. 4 for a quad).
@@ -136,7 +136,7 @@ void TargetCalculator::compute_default_target_matrices(PatchData &pd,
 void TargetCalculator::compute_reference_corner_matrices(PatchData &pd,
                                                          MsqError &err)
 {
-  FunctionTimer ft( "TargetCalculator::compute_reference_corner_matrices" );
+  MSQ_FUNCTION_TIMER( "TargetCalculator::compute_reference_corner_matrices" );
 
   if (refMesh == 0) {
     MSQ_SETERR(err)( "Reference mesh has not been set. If the target "

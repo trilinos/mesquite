@@ -128,7 +128,7 @@ bool CompositeOFAdd::compute_analytical_gradient(PatchData &patch,
                                                  MsqError &err,
                                                  size_t array_size)
 {
-  FunctionTimer ft( "CompositeOFAdd::compute_analytical_gradient" );
+  MSQ_FUNCTION_TIMER( "CompositeOFAdd::compute_analytical_gradient" );
   double second_val=0.0;//store the second objective function val
   OF_val=0.0;
     //get first objective function's gradient

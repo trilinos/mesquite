@@ -102,7 +102,7 @@ bool CompositeOFScalarAdd::compute_analytical_gradient(PatchData &patch,
                                                        MsqError &err,
                                                        size_t array_size)
 {
-  FunctionTimer ft( "CompositeOFScalarAdd::compute_analytical_gradient" );
+  MSQ_FUNCTION_TIMER( "CompositeOFScalarAdd::compute_analytical_gradient" );
   bool rval=objFunc->compute_gradient(patch, grad, OF_val,err, array_size); MSQ_ERRZERO(err);
   OF_val+=mAlpha;
   return rval;

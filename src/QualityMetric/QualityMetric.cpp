@@ -265,7 +265,7 @@ bool QualityMetric::compute_element_numerical_gradient(PatchData &pd,
                                              int num_free_vtx, double &metric_value,
                                              MsqError &err)
 {
-  FunctionTimer ft( "QualityMetric::compute_element_numerical_gradient" );
+  MSQ_FUNCTION_TIMER( "QualityMetric::compute_element_numerical_gradient" );
     /*!TODO: (MICHAEL)  Try to inline this function (currenlty conflicts
       with MsqVertex.hpp).*/    
   MSQ_PRINT(3)("Computing Numerical Gradient\n");
@@ -341,7 +341,7 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
                                              int num_free_vtx, double &metric_value,
                                              MsqError &err)
 {
-  FunctionTimer ft( "QualityMetric::compute_element_numerical_hessian" );
+  MSQ_FUNCTION_TIMER( "QualityMetric::compute_element_numerical_hessian" );
   MSQ_PRINT(3)("Computing Numerical Hessian\n");
   
   bool valid=this->compute_element_gradient_expanded(pd, element, free_vtces, grad_vec,

@@ -114,7 +114,7 @@ bool CompositeOFScalarMultiply::compute_analytical_gradient(PatchData &patch,
                                                             MsqError &err,
                                                             size_t array_size)
 {
-  FunctionTimer ft( "CompositeOFScalarMultiply::compute_analytical_gradient" );
+  MSQ_FUNCTION_TIMER( "CompositeOFScalarMultiply::compute_analytical_gradient" );
   
   double scale_factor=(get_negate_flag()*mAlpha);
   bool rval=objFunc->compute_gradient(patch, grad, OF_val, err, array_size); MSQ_ERRZERO(err);

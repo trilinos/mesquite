@@ -924,7 +924,7 @@ void PatchData::update_mesh(MsqError &err)
 
 void PatchData::generate_vertex_to_element_data(size_t num_vertex_uses)
 {
-  FunctionTimer ft("PatchData::generate_vertex_to_element_data");
+  MSQ_FUNCTION_TIMER( "PatchData::generate_vertex_to_element_data" );
   
     // Skip if data already exists
   if (v2eValid && v2E && v2eOffset)

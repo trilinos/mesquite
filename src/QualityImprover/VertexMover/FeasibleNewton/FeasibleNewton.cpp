@@ -88,7 +88,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
 {
   pd.reorder();
 
-  FunctionTimer ft( "FeasibleNewton::optimize_vertex_positions" );
+  MSQ_FUNCTION_TIMER( "FeasibleNewton::optimize_vertex_positions" );
   MSQ_DBGOUT(1) << "\no  Performing Feasible Newton optimization.\n";
 
   const double sigma   = 1e-4;

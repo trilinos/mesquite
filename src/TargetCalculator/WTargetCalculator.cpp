@@ -47,7 +47,7 @@ using namespace Mesquite;
     the base classes. */
 void WTargetCalculator::compute_target_matrices(PatchData &pd, MsqError &err)
 {
-  FunctionTimer ft( "WTargetCalculator::compute_target_matrice" );
+  MSQ_FUNCTION_TIMER( "WTargetCalculator::compute_target_matrice" );
 
   size_t num_elements=pd.num_elements();
   
