@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 12-Nov-02 at 18:05:56
-//  LAST-MOD: 16-Dec-02 at 16:45:12 by Thomas Leurent
+//  LAST-MOD: 16-Dec-02 at 17:08:54 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -268,10 +268,10 @@ namespace Mesquite {
       | 0  |  1 | 4  |      |    |    |    |      | 6  |  7 | 10 |
       1----2----3----9     13---14---15---21     25---26---27---33
    */
-   inline void create_six_quads_patch(PatchData &pd, MsqError &err) 
+   inline void create_twelve_hex_patch(PatchData &pd, MsqError &err) 
    {
       pd.reserve_vertex_capacity(36, err); MSQ_CHKERR(err);
-      pd.add_vertex(NULL, NULL, 1, 0, -1, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 1, 1, -1, true, err, MsqVertex::MSQ_HARD_FIXED); 
       pd.add_vertex(NULL, NULL, 0, 0, -1, true, err, MsqVertex::MSQ_HARD_FIXED); 
       pd.add_vertex(NULL, NULL, 1, 0, -1, true, err, MsqVertex::MSQ_HARD_FIXED); 
       pd.add_vertex(NULL, NULL, 2, 0, -1, true, err, MsqVertex::MSQ_HARD_FIXED); 
@@ -297,7 +297,7 @@ namespace Mesquite {
       pd.add_vertex(NULL, NULL, 3, 1, 0, true, err, MsqVertex::MSQ_HARD_FIXED); 
       pd.add_vertex(NULL, NULL, 3, 2, 0, true, err, MsqVertex::MSQ_HARD_FIXED); 
       
-      pd.add_vertex(NULL, NULL, 1,.5, 1, true, err, MsqVertex::MSQ_HARD_FIXED); 
+      pd.add_vertex(NULL, NULL, 1, 1, 1, true, err, MsqVertex::MSQ_HARD_FIXED); 
       pd.add_vertex(NULL, NULL, 0, 0, 1, true, err, MsqVertex::MSQ_HARD_FIXED); 
       pd.add_vertex(NULL, NULL, 1, 0, 1, true, err, MsqVertex::MSQ_HARD_FIXED); 
       pd.add_vertex(NULL, NULL, 2, 0, 1, true, err, MsqVertex::MSQ_HARD_FIXED); 
@@ -312,17 +312,29 @@ namespace Mesquite {
       
       size_t ind[8];
       pd.reserve_element_capacity(12, err); MSQ_CHKERR(err);
-      ind[0] = 1; ind[1]=2; ind[2]=0; ind[3]=8; ind[4] = 1; ind[5]=2; ind[6]=0; ind[7]=8;
+      ind[0]=1; ind[1]=2; ind[2]=0; ind[3]=8; ind[4]=13; ind[5]=14; ind[6]=12; ind[7]=20; // 0
       pd.add_element(NULL, NULL, ind, HEXAHEDRON, err); MSQ_CHKERR(err);
-      ind[0] = 2; ind[1]=3; ind[2]=4; ind[3]=0;
+      ind[0]=2; ind[1]=3; ind[2]=4; ind[3]=0; ind[4]=14; ind[5]=15; ind[6]=16; ind[7]=12; // 1
       pd.add_element(NULL, NULL, ind, HEXAHEDRON, err); MSQ_CHKERR(err);
-      ind[0] = 8; ind[1]=0; ind[2]=6; ind[3]=7;
+      ind[0]=8; ind[1]=0; ind[2]=6; ind[3]=7; ind[4]=20; ind[5]=12; ind[6]=18; ind[7]=19; // 2
       pd.add_element(NULL, NULL, ind, HEXAHEDRON, err); MSQ_CHKERR(err);
-      ind[0] = 0; ind[1]=4; ind[2]=5; ind[3]=6;
+      ind[0]=0; ind[1]=4; ind[2]=5; ind[3]=6; ind[4]=12; ind[5]=16; ind[6]=17; ind[7]=18; // 3
       pd.add_element(NULL, NULL, ind, HEXAHEDRON, err); MSQ_CHKERR(err);
-      ind[0] = 3; ind[1]=9; ind[2]=10; ind[3]=4;
+      ind[0]=3; ind[1]=9; ind[2]=10; ind[3]=4; ind[4]=15; ind[5]=21; ind[6]=22; ind[7]=16; // 4
       pd.add_element(NULL, NULL, ind, HEXAHEDRON, err); MSQ_CHKERR(err);
-      ind[0] = 4; ind[1]=10; ind[2]=11; ind[3]=5;
+      ind[0]=4; ind[1]=10; ind[2]=11; ind[3]=5; ind[4]=16; ind[5]=22; ind[6]=23; ind[7]=17; // 5
+      pd.add_element(NULL, NULL, ind, HEXAHEDRON, err); MSQ_CHKERR(err);
+      ind[0]=13; ind[1]=14; ind[2]=12; ind[3]=20; ind[4]=25; ind[5]=26; ind[6]=24; ind[7]=32; // 6
+      pd.add_element(NULL, NULL, ind, HEXAHEDRON, err); MSQ_CHKERR(err);
+      ind[0]=14; ind[1]=15; ind[2]=16; ind[3]=12; ind[4]=26; ind[5]=27; ind[6]=28; ind[7]=24; // 7
+      pd.add_element(NULL, NULL, ind, HEXAHEDRON, err); MSQ_CHKERR(err);
+      ind[0]=20; ind[1]=12; ind[2]=18; ind[3]=19; ind[4]=32; ind[5]=24; ind[6]=30; ind[7]=31; // 8
+      pd.add_element(NULL, NULL, ind, HEXAHEDRON, err); MSQ_CHKERR(err);
+      ind[0]=12; ind[1]=16; ind[2]=17; ind[3]=18; ind[4]=24; ind[5]=28; ind[6]=29; ind[7]=30; // 9
+      pd.add_element(NULL, NULL, ind, HEXAHEDRON, err); MSQ_CHKERR(err);
+      ind[0]=15; ind[1]=21; ind[2]=22; ind[3]=16; ind[4]=27; ind[5]=33; ind[6]=34; ind[7]=28; // 10
+      pd.add_element(NULL, NULL, ind, HEXAHEDRON, err); MSQ_CHKERR(err);
+      ind[0]=16; ind[1]=22; ind[2]=23; ind[3]=17; ind[4]=28; ind[5]=34; ind[6]=35; ind[7]=29; // 11
       pd.add_element(NULL, NULL, ind, HEXAHEDRON, err); MSQ_CHKERR(err);
    }
 
