@@ -260,7 +260,7 @@ void Mesquite::StopWatchCollection::get_keys_sorted_by_time(
       //Add the key associated with index_to_max and any subsequent
       //keys which are associated with a StopWatch that has a total
       //time equal to current_max;
-    for(i=index_to_max;i<=num_watches;++i){
+    for(i=index_to_max;i<num_watches;++i){
       if(mEntries[i].second.total_time()>=current_max && sorted_indices[i]==0)
       {
         counter++;
