@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 12-Nov-02 at 18:05:56
-//  LAST-MOD: 23-Jan-03 at 15:05:37 by Thomas Leurent
+//  LAST-MOD: 26-Mar-03 at 14:43:12 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -46,6 +46,7 @@ private:
   CPPUNIT_TEST (test_plus_equal);
   CPPUNIT_TEST (test_plus_transpose);
   CPPUNIT_TEST (test_plus_transpose_equal);
+  CPPUNIT_TEST (test_outer_product);
   CPPUNIT_TEST (test_fill_lower_triangle);
   CPPUNIT_TEST (test_times);
   CPPUNIT_TEST (test_mult_element);
@@ -161,6 +162,18 @@ public:
     CPPUNIT_ASSERT( mMat1==mMat1plus2trans );
   }
    
+    void test_outer_product()
+  {
+    Matrix3D mat;
+    Vector3D vec(2, 7, 3);
+    mat.outer_product(vec);
+    Matrix3D correct(" 4    14     6 "
+                     " 14    49    21 "
+                     " 6    21     9 ");
+     
+    CPPUNIT_ASSERT( mat == correct );
+  }
+
   void test_fill_lower_triangle()
   {
     mMat1.fill_lower_triangle();
