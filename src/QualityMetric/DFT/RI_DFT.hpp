@@ -59,20 +59,51 @@ namespace Mesquite
       set_metric_type(ELEMENT_BASED);
       set_gradient_type(NUMERICAL_GRADIENT);
       set_hessian_type(NUMERICAL_HESSIAN);
+
+      a = pow(2.0, MSQ_ONE_THIRD);
+      b = 1.0;
+      c = -4.0/3.0;
     }
     
     //! virtual destructor ensures use of polymorphism during destruction
     virtual ~RI_DFT()
        {};
 
-    virtual bool evaluate_element(PatchData& pd,
-                            MsqMeshEntity* element,
-                            double& value, MsqError &err);
+    bool evaluate_element(PatchData &pd,
+			  MsqMeshEntity *e,
+			  double &m, MsqError &err);
     
+    bool compute_element_analytical_gradient(PatchData &pd,
+					     MsqMeshEntity *e,
+					     MsqVertex *fv[], 
+					     Vector3D g[],
+					     int nfv, 
+					     double &m,
+					     MsqError &err);
+
+    bool compute_element_analytical_hessian(PatchData &pd,
+					    MsqMeshEntity *e,
+					    MsqVertex *fv[], 
+					    Vector3D g[],
+					    Matrix3D h[],
+					    int nfv, 
+					    double &m,
+					    MsqError &err);
+
   protected:
  
   private:
-    
+    // variables used in the definition of the metric (2d and 3d)
+    double a;
+    double b;
+    double c;
+
+    // variables used during the analytic gradient calculations
+    Vector3D mCoords[4]; 	// Vertex coordinates
+    Vector3D mGrads[4];		// Gradients for element
+    Vector3D mAccGrads[8];	// Accumulated gradients
+    Matrix3D mHessians[10];	// Hessian values for element
+    Matrix3D invW;		// Inverse matrix
   };
 
   
