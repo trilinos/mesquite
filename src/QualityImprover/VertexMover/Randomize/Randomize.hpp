@@ -31,6 +31,8 @@ namespace Mesquite
       //!Constructor allowing user to set mPercent
     Randomize(double percent);
 
+    virtual ~Randomize() { }
+    
   protected:
     virtual void initialize(PatchData &pd, MsqError &err);
     virtual void optimize_vertex_positions(PatchData &pd,
