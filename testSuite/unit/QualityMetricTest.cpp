@@ -37,6 +37,8 @@ correct metric return values.
 #include "cppunit/SignalException.h"
 #include "ASMQualityMetric.hpp"
 #include "SmoothnessQualityMetric.hpp"
+#include "LocalSizeQualityMetric.hpp"
+#include "CornerJacobianQualityMetric.hpp"
 #include <math.h>
 
 using namespace Mesquite;
@@ -62,7 +64,11 @@ private:
   CPPUNIT_TEST (test_mean_ratio_tet_hessian);
   CPPUNIT_TEST (test_mean_ratio_hex_hessian);
     //Test ASM (area smoothness quality metric)
-  CPPUNIT_TEST (test_asm);  
+  CPPUNIT_TEST (test_asm);
+    //Test corner jacobian metric
+  CPPUNIT_TEST (test_corner_jacobian_metric);
+    //Test local size metric
+  CPPUNIT_TEST (test_local_size_metric);
   
   CPPUNIT_TEST_SUITE_END();
   
@@ -79,7 +85,7 @@ public:
   void setUp()
   {
       //pF=1;//PRINT_FLAG IS ON
-      pF=0;//PRINT_FLAG IS OFF
+    pF=0;//PRINT_FLAG IS OFF
     MsqError err;
     
     qualTol = MSQ_MIN;
@@ -397,9 +403,84 @@ public:
        CPPUNIT_ASSERT(third_val>0.0);
        CPPUNIT_ASSERT(third_val<1.0);
        CPPUNIT_ASSERT(third_bool==true);
-
-       
      }
+  
+  void test_corner_jacobian_metric()
+     {
+       QualityMetric *met = CornerJacobianQualityMetric::create_new();
+       MsqError err;
+         //Test the metric on a single elemnt patch
+       PatchData p1;
+       create_one_tri_patch(p1, err);
+       MsqMeshEntity* elem1=p1.get_element_array(err);
+       double first_val;
+       bool first_bool=met->evaluate_element(p1,&elem1[0],first_val,err);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(first_val, sqrt(3.0)/4.0, MSQ_MIN);
+       CPPUNIT_ASSERT(first_bool==true);
+         //Test on a patch with two ideal tris
+       PatchData p2;
+       create_two_tri_patch(p2, err);
+       MsqMeshEntity* elem2=p2.get_element_array(err);
+       double second_val;
+       bool second_bool=met->evaluate_element(p2,&elem2[0],second_val,err);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(second_val, sqrt(3.0)/4.0, MSQ_MIN);
+       CPPUNIT_ASSERT(second_bool==true);
+
+        //Test on a patch with two tris one not ideal
+       PatchData p3;
+       create_qm_two_tri_patch(p3, err);
+       MsqMeshEntity* elem3=p3.get_element_array(err);
+       double third_val;
+       bool third_bool=met->evaluate_element(p3,&elem3[0],third_val,err);
+       CPPUNIT_ASSERT(third_val>0.0);
+       CPPUNIT_ASSERT(third_val<1.0);
+       CPPUNIT_ASSERT(third_bool==true);
+     }
+  
+  void test_local_size_metric()
+     {
+       VolumeQualityMetric *met = LocalSizeQualityMetric::create_new();
+       MsqError err;
+         //Test the metric on a single elemnt patch
+       PatchData p1;
+       create_one_tri_patch(p1, err);
+       MsqVertex* vert1=p1.get_vertex_array(err);
+       double first_val=-1;
+       bool first_bool=met->evaluate_vertex(p1,&vert1[0],first_val,err);
+       if(pF)
+         PRINT_INFO("\nEdge Length Metric ideal tri %f", first_val);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(first_val, 1.0, MSQ_MIN);
+       CPPUNIT_ASSERT(first_bool==true);
+       first_bool=met->evaluate_vertex(p1,&vert1[1],first_val,err);
+       if(pF)
+         PRINT_INFO("\nEdge Length Metric ideal tri %f", first_val);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(first_val, 1.0, MSQ_MIN);
+       CPPUNIT_ASSERT(first_bool==true);
+         //Test on a patch with two ideal tris
+       PatchData p2;
+       create_two_tri_patch(p2, err);
+       MsqVertex* vert2=p2.get_vertex_array(err);
+       double second_val;
+       bool second_bool=met->evaluate_vertex(p2,&vert2[0],second_val,err);
+         //Two neighboring tris with equal area should have local size of 1.0
+       if(pF)
+         PRINT_INFO("\nEdge Length Metric two ideal tris %f", second_val);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(second_val, 1.0, MSQ_MIN);
+       CPPUNIT_ASSERT(second_bool==true);
+         /*
+        //Test on a patch with two tris one not ideal
+       PatchData p3;
+       create_qm_two_tri_patch(p3, err);
+       MsqMeshEntity* elem3=p3.get_element_array(err);
+       double third_val;
+       bool third_bool=met->evaluate_element(p3,&elem3[0],third_val,err);
+         //Two neighboring tris with equal area should have asm of 0.0
+       CPPUNIT_ASSERT(third_val>0.0);
+       CPPUNIT_ASSERT(third_val<1.0);
+       CPPUNIT_ASSERT(third_bool==true);
+         */
+     }
+  
   
   void test_averaging_method()
      {
