@@ -308,9 +308,9 @@ void PatchData::update_mesh(MsqError &err)
     mh = vertexHandlesArray[n].mesh;
     vertex = vertexHandlesArray[n].entity;
     
-    coordsc[0] = vertexArray[0][0];
-    coordsc[1] = vertexArray[0][1];
-    coordsc[2] = vertexArray[0][2];
+    coordsc[0] = vertexArray[n][0];
+    coordsc[1] = vertexArray[n][1];
+    coordsc[2] = vertexArray[n][2];
     
     TSTT::Entity_SetVertexCoords( mh, (TSTT::cEntity_Handle*) &vertex,
                                   1, TSTT::INTERLEAVED,
