@@ -5,7 +5,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 18-Dec-02 at 11:08:22
-//  LAST-MOD: 23-Jan-03 at 10:32:42 by Thomas Leurent
+//  LAST-MOD: 23-Jan-03 at 11:51:03 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -289,7 +289,7 @@ namespace Mesquite
 
   inline void Matrix3D::fill_lower_triangle()
   {
-    v_[4] = v_[1];
+    v_[3] = v_[1];
     v_[6] = v_[2];
     v_[7] = v_[5];
   } 
