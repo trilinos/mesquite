@@ -23,6 +23,7 @@ namespace Mesquite
   class StoppingCriterion;
   
   /*! \class QualityImprover
+    Base class for all quality improvers.
 
   */ 
   class QualityImprover{

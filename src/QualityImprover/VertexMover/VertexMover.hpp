@@ -21,7 +21,9 @@
 namespace Mesquite
 {
 
-  /*   */ 
+  /*! \class VertexMover
+    Base class for all Vertex Movers.
+   */  
   class VertexMover : public QualityImprover 
   {
   public:

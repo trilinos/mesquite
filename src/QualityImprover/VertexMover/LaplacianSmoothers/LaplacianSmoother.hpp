@@ -20,7 +20,9 @@
 namespace Mesquite
 {
 
-  /*   */ 
+  /*! \class LaplacianSmoother
+    Moves free center vertex to the average of the neighboring vertices.
+   */  
   class LaplacianSmoother : public VertexMover 
   {
   public:
