@@ -321,24 +321,37 @@ namespace Mesquite
   inline Matrix3D Matrix3D::plus_transpose(const Matrix3D &B) const
   {
     Matrix3D tmp;
-    size_t i;
-    for (i=0; i<3; ++i) {
-      tmp[i][0] = v_[3*i+0] + B[0][i];
-      tmp[i][1] = v_[3*i+1] + B[1][i];
-      tmp[i][2] = v_[3*i+2] + B[2][i];
-    }
+
+    tmp.v_[0] = v_[0] + B.v_[0];
+    tmp.v_[1] = v_[1] + B.v_[3];
+    tmp.v_[2] = v_[2] + B.v_[6];
+    
+    tmp.v_[3] = v_[3] + B.v_[1];
+    tmp.v_[4] = v_[4] + B.v_[4];
+    tmp.v_[5] = v_[5] + B.v_[7];
+    
+    tmp.v_[6] = v_[6] + B.v_[2];
+    tmp.v_[7] = v_[7] + B.v_[5];
+    tmp.v_[8] = v_[8] + B.v_[8];
+
     return tmp;
   }
 
   //! \f$ += B^T  \f$
   inline Matrix3D& Matrix3D::plus_transpose_equal(const Matrix3D &B)
   {
-    size_t i;
-    for (i=0; i<3; ++i) {
-      (*this)[i][0] = v_[3*i+0] + B[0][i];
-      (*this)[i][1] = v_[3*i+1] + B[1][i];
-      (*this)[i][2] = v_[3*i+2] + B[2][i];
-    }
+    v_[0] += B.v_[0];
+    v_[1] += B.v_[3];
+    v_[2] += B.v_[6];
+    
+    v_[3] += B.v_[1];
+    v_[4] += B.v_[4];
+    v_[5] += B.v_[7];
+    
+    v_[6] += B.v_[2];
+    v_[7] += B.v_[5];
+    v_[8] += B.v_[8];
+
     return *this;
   }
 
@@ -416,15 +429,11 @@ namespace Mesquite
   /*! \brief Computes \f$ A v \f$ . */
   inline Vector3D operator*(const Matrix3D  &A, const Vector3D &x)
   {
-    Vector3D tmp;
-    double sum;
+    Vector3D tmp; // initializes to 0
     for (size_t i=0; i<3; ++i)
       {
-        sum = 0;
         const double* rowi = A[i];
-        for (size_t j=0; j<3; ++j)
-          sum = sum +  rowi[j] * x[j];
-        tmp[i] = sum; 
+        tmp[i] = rowi[0]*x[0] + rowi[1]*x[1] + rowi[2]*x[2];
       }
     return tmp;
   }
