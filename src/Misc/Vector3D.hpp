@@ -34,8 +34,8 @@ namespace Mesquite
     Vector3D(const double xyz[3]);
     Vector3D(const Vector3D& to_copy);
 
-    // Virtual destructor ensures polymorphism
-    virtual ~Vector3D() { }
+    // *** virtual destructor *** Do not use for Vector3D, we need to keep
+    // the deallocation of those objects very fast
     
     // Functions to get the coordinates
     double x() const;
