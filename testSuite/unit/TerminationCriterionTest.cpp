@@ -213,7 +213,7 @@ public:
     {
       MsqError err;
       TerminationCriterion t1;
-      t1.add_criterion_type_with_double(TerminationCriterion::QUALITY_IMPROVEMENT_ABSOLUTE,11.95, err);
+      t1.add_criterion_type_with_double(TerminationCriterion::QUALITY_IMPROVEMENT_ABSOLUTE,143.0, err);
       if(pF)
         std::cout<<"\nTEST_QUALITY_IMPROVEMENT_ABSOLUTE\n";
       test_outer_criterion(&t1,err);
