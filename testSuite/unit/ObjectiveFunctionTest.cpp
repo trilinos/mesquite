@@ -56,7 +56,9 @@ private:
   CPPUNIT_TEST (test_max_templates);
   CPPUNIT_TEST (test_compute_gradient_3D_LPtoPTemplate_L1_hex);
   CPPUNIT_TEST (test_compute_gradient_3D_LPtoPTemplate_L2_hex);
+  CPPUNIT_TEST (test_compute_gradient_3D_LPtoPTemplate_L2_hex_scaled);
   CPPUNIT_TEST (test_compute_ana_hessian_tet);
+  CPPUNIT_TEST (test_compute_ana_hessian_tet_scaled);
   CPPUNIT_TEST (test_compute_gradient3D_composite);
   CPPUNIT_TEST (test_OFval_from_evaluate_and_gradient_LPtoP);
   CPPUNIT_TEST (test_grad_from_gradient_and_hessian_LPtoP);
@@ -321,7 +323,23 @@ public:
     compare_numerical_analytical_gradient(&LP2, m12Hex);
     delete mean_ratio;
   }
-
+  
+  void test_compute_gradient_3D_LPtoPTemplate_L2_hex_scaled()
+  {
+    MsqError err;
+    
+    // creates a mean ratio quality metric ...
+    ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
+    mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
+    
+    // ... and builds an objective function with it
+    LPtoPTemplate LP2(mean_ratio, 2, err);
+    LP2.set_dividing_by_n(true);
+    mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+      //    mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
+    compare_numerical_analytical_gradient(&LP2, m12Hex);
+    delete mean_ratio;
+  }
   void test_compute_gradient3D_composite()
      {
        MsqError err;
@@ -395,7 +413,55 @@ public:
 
     delete mean_ratio;
   }
+  
+  void test_compute_ana_hessian_tet_scaled()
+  {
+    MsqError err;
+    
+    // creates a mean ratio quality metric ...
+    ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
+    mean_ratio->set_averaging_method(QualityMetric::SUM, err);
+    
+    // ... and builds an objective function with it
+    LPtoPTemplate LP2(mean_ratio, 2, err);
+    LP2.set_dividing_by_n(true);
+    mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+    mean_ratio->set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
+    
+    MsqHessian H;
+    Vector3D* g = new Vector3D[tetPatch.num_vertices()];
+    double dummy;
+    H.initialize(tetPatch, err); MSQ_CHKERR(err);
+    LP2.compute_hessian(tetPatch, H, g, dummy, err); MSQ_CHKERR(err);
 
+    Matrix3D mat00(" 2.44444  0.2566   0.181444 "
+		   " 0.2566   2.14815  0.104757 "
+		   " 0.181444 0.104757 2.07407 ");
+
+    mat00*=.5;
+    
+    Matrix3D mat13(" 5.47514 3.16659    9.83479 "
+		   " -1.11704 -5.29718 -3.67406 "
+		   " 10.3635 -13.5358  -15.5638 ");
+
+    mat13*=.5;
+    
+    Matrix3D* mat; 
+
+    mat = H.get_block(0,0);
+    for (int i=0; i<3; ++i)
+      for (int j=0; j<3; ++j)
+        CPPUNIT_ASSERT_DOUBLES_EQUAL((*mat)[i][j], mat00[i][j], 1e-4);
+    
+    mat = H.get_block(1,3);
+    for (int i=0; i<3; ++i)
+      for (int j=0; j<3; ++j)
+        CPPUNIT_ASSERT_DOUBLES_EQUAL((*mat)[i][j], mat13[i][j], 1e-4);
+    
+//    cout << H <<endl;
+
+    delete mean_ratio;
+  }
   //! Tests that the Objective function value returned from evaluate() is the
   //! same as the one returned from the gradient.
   void test_OFval_from_evaluate_and_gradient(ObjectiveFunction* OF,
@@ -441,6 +507,12 @@ public:
 
     test_OFval_from_evaluate_and_gradient(&LP5, m12Hex);
 
+      //now test with scaling by N
+    LP4.set_dividing_by_n(true);
+    LP5.set_dividing_by_n(true);
+    test_OFval_from_evaluate_and_gradient(&LP4, m12Hex);
+    test_OFval_from_evaluate_and_gradient(&LP5, m12Hex);
+    
     delete edge;
     delete mean_ratio;
     
@@ -504,6 +576,11 @@ public:
     LPtoPTemplate LP1(mean_ratio, 1, err);
     test_grad_from_gradient_and_hessian(&LP1, m12Hex);
 
+      //test scaled versions
+    LP4.set_dividing_by_n(true);
+    LP1.set_dividing_by_n(true);
+    test_grad_from_gradient_and_hessian(&LP4, m12Hex);
+    test_grad_from_gradient_and_hessian(&LP1, m12Hex);
     delete mean_ratio;
   }
   
