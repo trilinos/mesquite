@@ -1,0 +1,190 @@
+\documentstyle[psfig]{article}
+
+\pagestyle{empty}
+
+\title{ {\LARGE\bf Mesquite User's Guide}}
+
+\author{Patrick Knupp, Lori Freitag, Darryl Melander, Mike Brewer \\
+The Sandia National Laboratories \\
+Albuquerque NM USA \\
+and \\
+Thomas Leurent \\
+Argonne National Laboratory \\
+Argonne, IL 60490 USA}
+
+\date{}
+
+
+\begin{document}
+
+\maketitle
+\begin{abstract} 
+MESQUITE is a software library for improving mesh quality. 
+\end{abstract}
+
+\tableofcontents
+
+\listoffigures
+
+\listoftables
+
+\section{Introduction to Mesh Quality Improvement} 
+
+\subsection{General Overview}
+What do we mean by mesh quality. Why is it important? A priori vs. a posteriori
+quality control.
+
+Goals:
+\begin{itemize}
+\item To provide a vision for Mesquite (what it is and what it will become),
+\item To cover both noice and expert users. The novice should know what to
+do after reading a small percentage of the guide (perhaps a third); more 
+advanced concepts are also included but are done later in the text.
+\item To provide practical instructions on using Mesquite API, compiling,
+linking, TSTT interface,
+\item To provide insight into the optimization algorithms
+\end{itemize}
+
+\subsection{Mesquite Philosophy}
+The hippocratic oath: we will do no harm (can we do an undo or should the 
+user keep track of the original mesh?).  What are the boundaries of Mesquite?
+What it is not going to do. What do we mean by a mesh quality improvement 
+algorithm. Including the best known algorithms for a particular goal (not 
+just a collection of hacked tools). Provides both a useful tool that is easy
+to use for application scientists and is extensible to provide a platform for
+mesh quality improvment research. Give an example API file (script for 
+Laplace smoothing - novice). Show the expert view of the world. Readers can
+use script to build from. Use example to help explain our philosophy.
+
+\subsection{The Mesquite Vision}
+Comprehensive, robust, flexible, efficient. In core to applications, not 
+just a preprocessign step.
+
+\section{Mesh Improvement Goals}
+Why have different mesh improvement goals? What are they (shape, untangle, 
+alignment, morph, etc.). Improvement goals currently supported (shape, untangle).
+
+\section{Methods - Theory and Algorithms}
+
+\subsection{Vertex Movement Schemes}
+Why use an optimization-based approach. Posing mesh quality as an optimization
+problem (metrics, objective function templates and goals, L1, L2, Linf).
+Optimization Algorithms (brief description, enough to have the API discussion 
+make sense): variational, discrete, solvers (CG, active set), local vs. global,
+fitting Laplacian and other common smoothers into this framework.
+
+\subsection{Topology Modifiers}
+Swapping algorithms.
+
+\section{Basic Mesquite Usage}
+
+\subsection{Telling Mesquite About Your Mesh}
+TSTT and Mesquite interface overview. Particular interfaces needed. 
+Testing your TSTT interface implementation.
+
+\subsection{Wrapper Classes}
+Provides sophisticated functionality via simple interface. List the ones
+provided (goal, stopping criterion, customization options).
+
+\subsection{Compilling and Linking Mesquite}
+Software dependencies, compiling AOMD, TSTT interfaces (need the .h file),
+other (gmake, makedepend)?  Makefiles (examples that link Mesquite to an 
+application code). Compiler flags and options (debugging, profiling). 
+Platforms supported. Optional functionalities (debugging, profiling, 
+error handling). 
+
+\subsection{Hints for Performance Profiling}
+Compiler options, aggregation.
+
+\section{Software Design}
+
+\subsection{Overview}
+Why did we choose C++ (extensibility)? Achieving performance in the 
+numerical kernals.
+
+\subsection{Mesquite Classes}
+QualityMetric, Objective Function Templates, Vertex Movers, Instruction Queue,
+Stopping Criterion, MeshSet and PatchData
+
+\subsection{Directory Structure}
+
+\subsection{Example Programs}
+
+\subsection{Testing Philosophy}
+
+\section{Advanced Use of Mesquite}
+
+\subsection{Creating a Quality Metric}
+Give a list of the individual metrics we support.
+
+\subsection{Creating an Objective Function}
+List of all the templates.
+
+\subsection{Creating a Vertex Mover}
+List solvers and appropriate templates. List options.
+
+\subsection{Creating a Topology Modifier}
+
+\subsection{Termination Criteria}
+List, along with uses.
+
+\subsection{Quality Assessment}
+
+\subsection{The Instruction Queue}
+Setting the master quality improver, setting up and using preconditioners,
+using quality assessors, running the instruction queue.
+
+\subsection{Composite Metrics}
+
+\subsection{Composite Objective Functions}
+
+\subsection{Running in Parallel}
+
+\section{Extending Mesquite}
+Adding a new quality metric, adding a new template, adding a new vertex 
+mover.
+
+\section{Troubleshooting}
+
+\section{Caveats, Limitations, and Disclaimers}
+
+\section{User Support}
+Mailing lists, web site, examples, tutorials (pointer to slides?), 
+instructions on downloading the software (open source, preparing 
+derivative works), referencing Mesquite.
+
+\section{The Mesquite Team}
+Development team, external contributors.
+
+\section{The Mesquite Development Plan}
+Timeline for proposed additions to the software.
+
+\section{Acknowledgements}
+Funding sources (DOE SciDAC Program, Chuck Romine), Related activities 
+(TSTT, Cubit, Opt-MS), helpful folks (RPI for AOMD, TSTT for MDB, 
+LLNL for Overture tests, etc.
+
+\begin{thebibliography}{999}
+\bibitem{Hawaii}
+L. Freitag, P. Knupp, T. Leurent, and D. Melander, {\it MESQUITE Design: Issues in the Development of a Mesh Quality Improvement Toolkit}, p159-168, Proceedings of the 8th Intl. Conference on Numerical Grid Generation in Computational Field Simulations, Honolulu 2002.
+
+\bibitem{unt}
+P. Knupp, {\it Hexahedral and Tetrahedral Mesh Untangling}, Engineering with Computers, Vol. 17, No. 3, pp261-268, 2001.
+
+\bibitem{Nocedal}
+J. Nocedal and S. Wright, {\it Numerical Optimization}, Springer, New York, 1999.
+
+\end{thebibliography}
+
+\newpage
+\appendix{\large {\bf Appendix A: The Conjugate Gradient Algorithm }} \newline
+\label{append_A}
+\newpage
+\appendix{\large {\bf Appendix B: The Feasible Newton Algorithm }} \newline
+\label{append_B}
+\newpage
+\appendix{\large {\bf Appendix C: The Active Set Method }} \newline
+\label{append_C}
+
+\end{document}
+
