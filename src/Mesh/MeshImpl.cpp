@@ -128,7 +128,7 @@ void MeshImpl::write_vtk(const char* out_filebase, MsqError &err)
     {
       Vector3D coords = myMesh->get_vertex_coords( i, err ); MSQ_ERRRTN(err);
       file << coords[0] << ' ' << coords[1] << ' ' << coords[2] << '\n';
-      vertex_indices[i] = ++count;
+      vertex_indices[i] = count++;
     }
     else
     {
