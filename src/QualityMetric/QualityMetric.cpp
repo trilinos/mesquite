@@ -122,7 +122,7 @@ bool QualityMetric::compute_element_gradient_expanded(PatchData &pd,
 {
   int i;
   bool ret;
-  Vector3D grad_vec_nz[num_vtx];
+  Vector3D* grad_vec_nz = new Vector3D[num_vtx];
   ret = compute_element_gradient(pd, el, vertices, grad_vec_nz,
                                  num_vtx, metric_value, err);
   MSQ_CHKERR(err);
@@ -156,6 +156,7 @@ bool QualityMetric::compute_element_gradient_expanded(PatchData &pd,
     else
       grad_vec[*ev] = 0;
   }
+  delete []grad_vec_nz;
   return ret;
 }
    
