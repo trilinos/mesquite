@@ -67,7 +67,8 @@ TESTNAMES := test_1\
              deforming \
              rezone \
              convert \
-             unit
+	     transform \
+             unit 
 ###             random_test\
 ###             convert\
 ###             shape_wrapper_test
@@ -132,6 +133,7 @@ endif
 ifdef TSTT_CLIENT_DIR
 include $(TSTT_CLIENT_DIR)/babel.make
 endif
+
 TSTT_CLIENT_OBJS = $(STUBSRCS:%.cc=$(TSTT_CLIENT_DIR)/%.o) \
                    $(IORSRCS:%.c=$(TSTT_CLIENT_DIR)/%.o)
 
