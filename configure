@@ -1547,6 +1547,7 @@ echo "$as_me: WARNING: Needs makedepend to generate dependencies for your instal
 echo "$as_me: WARNING: Please try to use --with-makedepend='/PATH/makedepend'." >&2;}
 fi
 
+touch make.dependencies
 # ----------------------------------------------------------------
 
 

@@ -355,6 +355,7 @@ if test "$MAKEDEPEND" = nomakedepend ; then
    AC_MSG_WARN([Please try to use --with-makedepend='/PATH/makedepend'.])
 fi
 AC_SUBST(MAKEDEPEND)
+touch make.dependencies
 # ----------------------------------------------------------------
 
 
