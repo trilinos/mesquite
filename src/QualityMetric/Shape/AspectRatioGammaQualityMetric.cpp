@@ -11,11 +11,7 @@
 #include "Vector3D.hpp"
 #include <list>
 
-#ifdef MESQUITE_USES_TSTT
 #include "TSTT_Base.h"
-#else
-#include "TSTT_C.h"
-#endif
 
 #include "MsqMeshEntity.hpp"
 #include "PatchData.hpp"
