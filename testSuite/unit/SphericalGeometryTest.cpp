@@ -41,7 +41,6 @@ SimplifiedGeometryEngine.
 #include "LPTemplate.hpp"
 #include "ASMQualityMetric.hpp"
 #include "EdgeLengthQualityMetric.hpp"
-#include "LPtoPTemplate.hpp"
 #include "LaplacianSmoother.hpp"
 #include "LInfTemplate.hpp"
 #include "SteepestDescent.hpp"
