@@ -138,6 +138,18 @@ namespace Mesquite
       //! Computes the \f$ R \f$ matrix when it is element-based ( \f$ R_k \f$ ).
     void compute_Rk(enum R_type l_type, PatchData &ref_pd, size_t elem_ind, Matrix3D R_k[], int num, MsqError &err);
     
+      //! chooses the calculation for the \f$ R_k \f$ matrix.
+    enum W_type {
+      W00, //!< W matrices are set to the corners of the reference mesh.
+      W11, //!<
+      W21, //!<
+      W31, //!<
+      W41, //!<
+      W42  //!<
+    };
+      //! Computes the \f$ W \f$ matrix when it is element-based ( \f$ W_k \f$ ).
+    void compute_Wk(enum W_type l_type, PatchData &ref_pd, size_t elem_ind, Matrix3D W_k[], int num, MsqError &err);
+    
       //! Compute the default "isotropic" target matrices that are often used in the computation
       //! of reference-based target matrices.
       //! The resulting corner matrices are stored in tags on the elements of the PatchData.
@@ -152,12 +164,12 @@ namespace Mesquite
     //! is positive.
     void compute_target_matrices_and_check_det(PatchData& pd, MsqError& err);
     
-    /*! \brief This function must provide the corner matrices for all elements on the Patch.
+    /*! \brief This function provides the corner matrices for all elements on the Patch.
 
          Useful functionality includes: MsqMeshEntity::set_tag, MsqTag::target_matrix,
          MsqTag::scalar .
     */
-    virtual void compute_target_matrices(PatchData& pd, MsqError& err)=0;
+    void compute_target_matrices(PatchData& pd, MsqError& err);
 
     void set_originator(PatchDataParameters* pdm, MsqError &err)
     { if (originator != 0)
@@ -166,10 +178,16 @@ namespace Mesquite
 
   protected:
     MeshSet* refMesh;
-    PatchData refPatch;
+//    PatchData refPatch;
+
+    enum lambda_type mLambda; 
+    enum D_type mD;
+    enum R_type mR;
+    enum W_type mW;
     
   private:
     PatchDataParameters* originator; //! This is the object the TargetCalculator is attached to.
+
   };
 
   
