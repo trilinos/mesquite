@@ -13,10 +13,10 @@ using namespace Mesquite;
 //! this element was retrieved.
 //! The order of the vertices is the canonical order for this
 //! element's type.
-void Mesquite::MsqMeshEntity::get_vertex_indices(std::vector<size_t> &vertex_list)
+void Mesquite::MsqMeshEntity::get_vertex_indices(std::vector<size_t> &vertices)
 {
-  vertex_list.clear();
-  vertex_list.insert(vertex_list.end(),
+  vertices.clear();
+  vertices.insert(vertices.end(),
                    vertexIndices,
                    vertexIndices + vertex_count());
 }
