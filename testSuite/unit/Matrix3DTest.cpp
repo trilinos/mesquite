@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 12-Nov-02 at 18:05:56
-//  LAST-MOD: 18-Dec-02 at 18:08:10 by Thomas Leurent
+//  LAST-MOD: 19-Dec-02 at 10:08:18 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -45,8 +45,9 @@ private:
   CPPUNIT_TEST (test_transpose);
   CPPUNIT_TEST (test_plus_transpose);
   CPPUNIT_TEST (test_times);
-  CPPUNIT_TEST (test_times_vector);
   CPPUNIT_TEST (test_mult_element);
+  CPPUNIT_TEST (test_times_vector);
+  CPPUNIT_TEST (test_vector_times);
   CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -149,13 +150,6 @@ public:
     CPPUNIT_ASSERT( mult==mMat1 );
   }
 
-  void test_times_vector()
-  {
-    Vector3D vec = mMat1*e1;
-    Vector3D correct(1, 5.2, 1);
-    CPPUNIT_ASSERT( vec==correct);
-  }
-
   void test_mult_element()
   {
     Matrix3D mat = mult_element(mMat1, mIdentity);
@@ -163,6 +157,25 @@ public:
                       0 3 0
                       0 0 0.4");
     CPPUNIT_ASSERT( mat==correct );
+  }
+
+  void test_times_vector()
+  {
+    Vector3D vec = mMat1*e1;
+    Vector3D correct(1, 5.2, 1);
+    CPPUNIT_ASSERT( vec==correct);
+  }
+
+  void test_vector_times()
+  {
+    Vector3D vec = e1*mMat1;
+    Vector3D correct(1, 4.2, 2);
+    CPPUNIT_ASSERT( vec==correct );
+    
+    Vector3D vec2(2.1, 3, 8);
+    vec = vec2*mMat1;
+    correct.set(25.7, 73.82, 19.4);
+    CPPUNIT_ASSERT( vec==correct );
   }
 
 };
