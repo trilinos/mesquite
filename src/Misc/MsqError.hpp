@@ -59,8 +59,7 @@ namespace Mesquite
  * file/line onto the stack trace if the error flag is true.  Returns
  * false otherwise.  
  */
-#define MSQ_CHKERR(err)  (err.error() && err.push(\
-                          Mesquite::MsqError::Trace(MSQ_FUNCTION,__FILE__,__LINE__)))
+#define MSQ_CHKERR(err)  (err.error() && err.push(MSQ_FUNCTION,__FILE__,__LINE__))
 
 /**\brief If passed error is true, return from a void function.
  *
@@ -82,7 +81,7 @@ namespace Mesquite
  *  - MSQ_SETERR( err )( MsqError::INVALID_ARG, "foo = %d", foo );
 */
 #define MSQ_SETERR(err) \
-Mesquite::MsqError::setter(err, Mesquite::MsqError::Trace(MSQ_FUNCTION,__FILE__,__LINE__)).set
+Mesquite::MsqError::setter(err, MSQ_FUNCTION,__FILE__,__LINE__).set
 
 /**
  *\class MsqError
@@ -183,7 +182,7 @@ public:
   
   //! Add to back-trace of call stack.  Called by MSQ_CHKERR.
   //! Must always return true.
-  virtual bool push( const Trace& trace );
+  virtual bool push( const char* function, const char* file, int line );
   
   //! Initialize the error object with the passed data.
   virtual bool set_error( ErrorCode num, const char* msg = 0 );
@@ -193,7 +192,8 @@ public:
   //! in Mesquite.
   class Setter {
     public:
-      Setter(MsqError& err, const Trace& trace) : mErr(err), mTrace(trace) {}
+      Setter(MsqError& err, const char* function, const char* file, int line) 
+        : mErr(err), functionName(function), fileName(file), lineNumber(line) {}
       
       bool set( ErrorCode num );
       bool set( const char* message, ErrorCode num );
@@ -205,11 +205,13 @@ public:
         ; // ending semicolon for set( ErrorCode num, const char* format, ... )
     private:
       MsqError& mErr;
-      const Trace& mTrace;
+      const char* functionName;
+      const char* fileName;
+      int lineNumber;
   };
 
-  static inline Setter setter( MsqError& err, const Trace& trace )
-  { return Setter( err, trace ); }
+  static inline Setter setter( MsqError& err, const char* function, const char* file, int line )
+  { return Setter( err, function, file, line ); }
 
 private:
 

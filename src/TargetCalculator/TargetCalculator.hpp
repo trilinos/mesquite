@@ -44,6 +44,10 @@
 #include "Matrix3D.hpp"
 #include "PatchData.hpp"
 
+#ifdef HAVE_IEEEFP_H
+#  include <ieeefp.h>
+#endif
+
 namespace Mesquite
 {
   class PatchDataParameters;
@@ -180,37 +184,6 @@ namespace Mesquite
   }
 
   
-  //!
-  inline  Matrix3D TargetCalculator::compute_V_3D(const Matrix3D &A, MsqError &err)
-  {
-    Vector3D a1(A[0][0], A[1][0], A[2][0]); 
-    Vector3D a2(A[0][1], A[1][1], A[2][1]); 
-    Vector3D a3(A[0][2], A[1][2], A[2][2]); 
-
-    double a1_norm = A.column_length(0); 
-    Vector3D a1_x_a2 = a1 * a2;
-    double a1_x_a2_norm = a1_x_a2.length(); 
-    
-    Matrix3D V;
-    Vector3D v1, v2, v3;
-    
-    double a1_norm_inv = 1./a1_norm;
-    double a1_x_a2_norm_inv = 1./a1_x_a2_norm;
-    if (!finite(a1_norm_inv) || !finite(a1_x_a2_norm_inv)) {
-      MSQ_SETERR(err)("Numerical error", MsqError::INVALID_STATE);
-    }
-    
-    // note : % is the dot product
-    v1 = a1_norm_inv * a1;
-    v2 = ((-(a1%a2) * a1) + (a1_norm*a1_norm)*a2) * a1_norm_inv * a1_x_a2_norm_inv;
-    v3 = a1_x_a2_norm_inv * a1_x_a2;
-
-    V.set_column(0, v1);
-    V.set_column(1, v2);
-    V.set_column(2, v3);
-
-    return V;
-  }
   
   //!
   inline  Matrix3D TargetCalculator::compute_Q_3D(const Matrix3D &A, MsqError &err)

@@ -36,13 +36,8 @@
 #  include <ostream>
 #endif
 
-#ifdef MSQ_USE_OLD_C_HEADERS
-#  include <stdarg.h>
-#  include <assert.h>
-#else
-#  include <cstdarg>
-#  include <cassert>
-#endif
+#include <stdarg.h>
+#include <assert.h>
 
 namespace Mesquite {
 
@@ -87,17 +82,20 @@ MsqError::~MsqError() {}
 
 bool MsqError::Setter::set( const msq_std::string& msg, ErrorCode num )
 {
-  return mErr.set_error( num, msg.c_str() ) && mErr.push( mTrace );
+  return mErr.set_error( num, msg.c_str() ) 
+      && mErr.push( functionName, fileName, lineNumber );
 }
 
 bool MsqError::Setter::set( const char* msg, ErrorCode num )
 {
-  return mErr.set_error( num, msg ) && mErr.push( mTrace );
+  return mErr.set_error( num, msg )
+      && mErr.push( functionName, fileName, lineNumber );
 }
 
 bool MsqError::Setter::set( ErrorCode num )
 {
-  return mErr.set_error( num ) && mErr.push( mTrace );
+  return mErr.set_error( num )
+      && mErr.push( functionName, fileName, lineNumber );
 }
 
 bool MsqError::Setter::set( ErrorCode num, const char* format, ... )
@@ -105,26 +103,27 @@ bool MsqError::Setter::set( ErrorCode num, const char* format, ... )
   char buffer[1024];
   
 #if defined(HAVE_VSNPRINTF) && HAVE_VSNPRINTF == 1
-  msq_stdc::va_list args;
+  va_list args;
   va_start( args, format );
-  msq_stdc::vsnprintf( buffer, sizeof(buffer), format, args );
+  vsnprintf( buffer, sizeof(buffer), format, args );
   va_end( args );
 #elif defined(HAVE_VSPRINTF) && HAVE_VSPRINTF == 1
-  msq_stdc::va_list args;
+  va_list args;
   va_start( args, format );
-  msq_stdc::vsprintf( buffer, format, args );
+  vsprintf( buffer, format, args );
   va_end( args );
 #else
-  msq_stdc::strncpy( buffer, format, sizeof(buffer) );
+  strncpy( buffer, format, sizeof(buffer) );
   buffer[sizeof(buffer)-1] = '\0';
 #endif
 
-  return mErr.set_error( num, buffer ) && mErr.push( mTrace );
+  return mErr.set_error( num, buffer )
+      && mErr.push( functionName, fileName, lineNumber );
 }
 
-bool MsqError::push( const Trace& trace )
+bool MsqError::push( const char* function, const char* file, int line )
 {
-  stackTrace.push_back( trace );
+  stackTrace.push_back( Trace(function, file, line) );
   return true;
 }
 

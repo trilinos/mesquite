@@ -35,6 +35,10 @@
 
 #include <math.h>
 
+#ifdef HAVE_IEEEFP_H
+#  include <ieeefp.h>
+#endif
+
 namespace Mesquite {
 
 msq_stdio::ostream& operator<<(msq_stdio::ostream &s, const Mesquite::Vector3D &v)

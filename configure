@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS MSQ_ROOT MSQ_INSTALL_ROOT MAKEDEPEND CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXX CXXFLAGS ac_ct_CXX CXXCPP CFLAGS_WARNING CXX_TEMPLATES build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os CPP EGREP LN_S SET_MAKE RANLIB ac_ct_RANLIB AOMD_LIB AOMD_ROOT AOMD_FLAG DOXYGEN_PATH MSQ_FUNC_DEFS CXX_ARCHIVER AR LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS MSQ_ROOT MSQ_INSTALL_ROOT MAKEDEPEND CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXX CXXFLAGS ac_ct_CXX CXXCPP CFLAGS_WARNING CXX_TEMPLATES build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os CPP EGREP LN_S SET_MAKE RANLIB ac_ct_RANLIB AOMD_LIB AOMD_ROOT AOMD_FLAG DOXYGEN_PATH MSQ_FUNC_DEFS HAVE_IEEEFP_H  CXX_ARCHIVER AR LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -4936,6 +4936,149 @@ fi
 done
 
 
+HAVE_IEEEFP_H=
+if test "${ac_cv_header_ieeefp_h+set}" = set; then
+  echo "$as_me:$LINENO: checking for ieeefp.h" >&5
+echo $ECHO_N "checking for ieeefp.h... $ECHO_C" >&6
+if test "${ac_cv_header_ieeefp_h+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+fi
+echo "$as_me:$LINENO: result: $ac_cv_header_ieeefp_h" >&5
+echo "${ECHO_T}$ac_cv_header_ieeefp_h" >&6
+else
+  # Is the header compilable?
+echo "$as_me:$LINENO: checking ieeefp.h usability" >&5
+echo $ECHO_N "checking ieeefp.h usability... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+$ac_includes_default
+#include <ieeefp.h>
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_header_compiler=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_header_compiler=no
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
+echo "${ECHO_T}$ac_header_compiler" >&6
+
+# Is the header present?
+echo "$as_me:$LINENO: checking ieeefp.h presence" >&5
+echo $ECHO_N "checking ieeefp.h presence... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <ieeefp.h>
+_ACEOF
+if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
+  (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } >/dev/null; then
+  if test -s conftest.err; then
+    ac_cpp_err=$ac_c_preproc_warn_flag
+    ac_cpp_err=$ac_cpp_err$ac_c_werror_flag
+  else
+    ac_cpp_err=
+  fi
+else
+  ac_cpp_err=yes
+fi
+if test -z "$ac_cpp_err"; then
+  ac_header_preproc=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+  ac_header_preproc=no
+fi
+rm -f conftest.err conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
+echo "${ECHO_T}$ac_header_preproc" >&6
+
+# So?  What about this header?
+case $ac_header_compiler:$ac_header_preproc:$ac_c_preproc_warn_flag in
+  yes:no: )
+    { echo "$as_me:$LINENO: WARNING: ieeefp.h: accepted by the compiler, rejected by the preprocessor!" >&5
+echo "$as_me: WARNING: ieeefp.h: accepted by the compiler, rejected by the preprocessor!" >&2;}
+    { echo "$as_me:$LINENO: WARNING: ieeefp.h: proceeding with the compiler's result" >&5
+echo "$as_me: WARNING: ieeefp.h: proceeding with the compiler's result" >&2;}
+    ac_header_preproc=yes
+    ;;
+  no:yes:* )
+    { echo "$as_me:$LINENO: WARNING: ieeefp.h: present but cannot be compiled" >&5
+echo "$as_me: WARNING: ieeefp.h: present but cannot be compiled" >&2;}
+    { echo "$as_me:$LINENO: WARNING: ieeefp.h:     check for missing prerequisite headers?" >&5
+echo "$as_me: WARNING: ieeefp.h:     check for missing prerequisite headers?" >&2;}
+    { echo "$as_me:$LINENO: WARNING: ieeefp.h: see the Autoconf documentation" >&5
+echo "$as_me: WARNING: ieeefp.h: see the Autoconf documentation" >&2;}
+    { echo "$as_me:$LINENO: WARNING: ieeefp.h:     section \"Present But Cannot Be Compiled\"" >&5
+echo "$as_me: WARNING: ieeefp.h:     section \"Present But Cannot Be Compiled\"" >&2;}
+    { echo "$as_me:$LINENO: WARNING: ieeefp.h: proceeding with the preprocessor's result" >&5
+echo "$as_me: WARNING: ieeefp.h: proceeding with the preprocessor's result" >&2;}
+    { echo "$as_me:$LINENO: WARNING: ieeefp.h: in the future, the compiler will take precedence" >&5
+echo "$as_me: WARNING: ieeefp.h: in the future, the compiler will take precedence" >&2;}
+    (
+      cat <<\_ASBOX
+## ------------------------------------------ ##
+## Report this to the AC_PACKAGE_NAME lists.  ##
+## ------------------------------------------ ##
+_ASBOX
+    ) |
+      sed "s/^/$as_me: WARNING:     /" >&2
+    ;;
+esac
+echo "$as_me:$LINENO: checking for ieeefp.h" >&5
+echo $ECHO_N "checking for ieeefp.h... $ECHO_C" >&6
+if test "${ac_cv_header_ieeefp_h+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_cv_header_ieeefp_h=$ac_header_preproc
+fi
+echo "$as_me:$LINENO: result: $ac_cv_header_ieeefp_h" >&5
+echo "${ECHO_T}$ac_cv_header_ieeefp_h" >&6
+
+fi
+if test $ac_cv_header_ieeefp_h = yes; then
+  HAVE_IEEEFP_H=-DHAVE_IEEEFP_H
+fi
+
+
+
 
 if test -z "$with_archiver"; then
 
@@ -5611,6 +5754,7 @@ s,@AOMD_ROOT@,$AOMD_ROOT,;t t
 s,@AOMD_FLAG@,$AOMD_FLAG,;t t
 s,@DOXYGEN_PATH@,$DOXYGEN_PATH,;t t
 s,@MSQ_FUNC_DEFS@,$MSQ_FUNC_DEFS,;t t
+s,@HAVE_IEEEFP_H@,$HAVE_IEEEFP_H,;t t
 s,@CXX_ARCHIVER@,$CXX_ARCHIVER,;t t
 s,@AR@,$AR,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t
