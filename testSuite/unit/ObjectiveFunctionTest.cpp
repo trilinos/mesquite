@@ -350,7 +350,7 @@ public:
 
     // Compute numerical hessian.
     L_1.set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
-    L_1.set_hessian_type(ObjectiveFunction::NUMERICAL_HESSIAN);
+      //L_1.set_hessian_type(ObjectiveFunction::NUMERICAL_HESSIAN);
     L_1.compute_hessian(pd, OF_hessian_num, err); MSQ_CHKERR(err);
 
     cout << "Numerical OF Hessian:\n";
@@ -358,7 +358,7 @@ public:
 
     // Compute analytical hessian
     L_1.set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
-    L_1.set_hessian_type(ObjectiveFunction::ANALYTICAL_HESSIAN);
+      //L_1.set_hessian_type(ObjectiveFunction::ANALYTICAL_HESSIAN);
     L_1.compute_hessian(pd, OF_hessian_ana, err); MSQ_CHKERR(err);
 
     cout << "Analytical OF Hessian:\n";
