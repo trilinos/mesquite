@@ -1274,7 +1274,7 @@ void Mesquite::MeshImpl::element_get_attached_vertex_indices(
 // Returns the topology of the given entity.
 Mesquite::EntityTopology Mesquite::MeshImpl::element_get_topology(
   Mesquite::Mesh::ElementHandle entity_handle,
-  MsqError &/*err*/)
+  MsqError &/*err*/) const 
 {
   return reinterpret_cast<MeshImpl::Element*>(entity_handle)->mType;
 }
