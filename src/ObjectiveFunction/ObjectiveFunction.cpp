@@ -10,7 +10,11 @@
 #include "MsqVertex.hpp"
 #include "MsqMessage.hpp"
 #include "MsqFreeVertexIndexIterator.hpp"
+
 using namespace Mesquite;
+using std::cout;
+using std::endl;
+using std::cerr;
 
 #undef __FUNC__
 #define __FUNC__ "ObjectiveFunction::compute_numerical_gradient"
@@ -39,6 +43,8 @@ bool ObjectiveFunction::compute_numerical_gradient(Mesquite::PatchData &pd,
                                                    MsqError &err,
                                                    int array_size)
 {
+//  cout << " Entering ObjectiveFunction::compute_numerical_gradient\n";//dbg
+
   int num_vtx=pd.num_vertices();
   if(num_vtx!=array_size && array_size>0)
     PRINT_ERROR("\nArray size not equal to the number of vertices.\n");
@@ -58,6 +64,7 @@ bool ObjectiveFunction::compute_numerical_gradient(Mesquite::PatchData &pd,
           //If sub_patch is not in the feasible region, do not
           //calculate anything.  Just return false.
         if(! evaluate(sub_patch,flocal,err)) {
+//	  cout << "evaluate failed.\n";//dbg
           return false;
         }
         MSQ_CHKERR(err);
@@ -142,7 +149,7 @@ double ObjectiveFunction::get_eps(PatchData &pd, double &local_val,
     (*vertex)[k]=tmp_var;
   }//end while looking for feasible eps
  return eps;
-}//end funciton get_eps
+}//end function get_eps
 
 
 #undef __FUNC__
@@ -160,6 +167,7 @@ bool ObjectiveFunction::compute_numerical_hessian(Mesquite::PatchData &pd,
   Vector3D* grad = new Vector3D[num_vtx];
   Vector3D* grad_fd = new Vector3D[num_vtx];
   Vector3D zero(0., 0., 0.);
+  Matrix3D* block;
   
   this->compute_gradient(pd, grad, err); MSQ_CHKERR(err);
   
@@ -167,26 +175,40 @@ bool ObjectiveFunction::compute_numerical_hessian(Mesquite::PatchData &pd,
   double flocal=0;
   double flocald=0;
   double eps=0;
+  double tmp_coords;
   int m, v, j;
+  bool grad_success;
   
   // loop over all vertices in the patch,
   for (m=0; m<num_vtx; ++m) {
     //loop over the three coords x,y,z
     for(j=0;j<3;++j){
       if (vertices[m].is_free_vertex()) {
-        eps=get_eps(pd, flocald, j, (&vertices[m]), err);
+//        eps=get_eps(pd, flocald, j, (&vertices[m]), err);
+	eps = 10e-6;
+	tmp_coords = vertices[m][j];
+	vertices[m][j] += eps/4;
         //If pd is not in the feasible region, do not calculate anything.
         //Just return false.
-        if( ! this->compute_gradient(pd, grad_fd, err) ) {
+	if(eps==0)
+	  err.set_msg("Dividing by zero in Objective Function numerical hessian");
+	grad_success = this->compute_gradient(pd, grad_fd, err); MSQ_CHKERR(err);
+	vertices[m][j] = tmp_coords;
+        if( !grad_success ) {
+//	  cout << "invalid compute_gradient m=" << m << " j=" << j <<endl;//dbg
           delete[] grad;
           delete[] grad_fd;
           return false;
-        } MSQ_CHKERR(err);
+        }
         for (v=0; v<m; ++v) {
           grad_fd[v] = (grad_fd[v]-grad[v])/eps;
-          hessian.get_block(v,m)->set_column(j, grad_fd[v]);
+//	  cout << "grad_fd["<<v<<"] = "<<grad_fd[v]<<endl;//dbg
+          block = hessian.get_block(v,m);
+	  if ( block!=NULL )
+	    block->set_column(j, grad_fd[v]);
         }
       } else {
+//	cout << "vertices["<<m<<"] is fixed.\n";//dbg
         for (v=m; v<num_vtx; ++v) {
           hessian.get_block(v,m)->set_column(j, zero);
         }
