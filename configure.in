@@ -243,7 +243,7 @@ elif test -n "$EXODUS_ARG" -a "$EXODUS_ARG" != "no"; then
 
   EXODUS_DIR="$EXODUS_ARG" 
   AC_CHECK_FILE( [${EXODUS_DIR}/include/exodusII.h], 
-                 [EXODUS_CFLAGS='-I$(EXODUS_DIR)/include'], 
+                 [EXODUS_CFLAGS='-I$(EXODUS_DIR)/include -DMSQ_USING_EXODUS'], 
                  [AC_MSG_ERROR("${EXODUS_DIR}/include/exodusII.h does not exist")] )
   AC_CHECK_FILE( [${EXODUS_DIR}/lib/libexoIIv2c.a], 
                  [EXODUS_LDFLAGS='-L$(EXODUS_DIR)/lib -lexoIIv2c'], 

@@ -5698,7 +5698,7 @@ fi
 echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_File'}'`" >&5
 echo "${ECHO_T}`eval echo '${'$as_ac_File'}'`" >&6
 if test `eval echo '${'$as_ac_File'}'` = yes; then
-  EXODUS_CFLAGS='-I$(EXODUS_DIR)/include'
+  EXODUS_CFLAGS='-I$(EXODUS_DIR)/include -DMSQ_USING_EXODUS'
 else
   { { echo "$as_me:$LINENO: error: \"${EXODUS_DIR}/include/exodusII.h does not exist\"" >&5
 echo "$as_me: error: \"${EXODUS_DIR}/include/exodusII.h does not exist\"" >&2;}
