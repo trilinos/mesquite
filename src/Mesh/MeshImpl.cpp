@@ -39,12 +39,6 @@ namespace Mesquite
         ++mIndex;
       }
     
-      // iterator++
-    virtual void operator++(int)
-      {
-        mIndex++;
-      }
-    
       // Returns false until the iterator has
       // been advanced PAST the last entity.
       // Once is_at_end() returns true, *iterator
@@ -586,29 +580,35 @@ void Mesquite::MeshImpl::read_exodus(const char*
 }
     
 // Returns whether this mesh lies in a 2D or 3D coordinate system.
-int Mesquite::MeshImpl::get_geometric_dimension() const
+int Mesquite::MeshImpl::get_geometric_dimension(MsqError &/*err*/) const
 {
   return numCoords;
 }
     
 // Returns the number of entities of the indicated type.
-size_t Mesquite::MeshImpl::get_total_vertex_count() const
+size_t Mesquite::MeshImpl::get_total_vertex_count(MsqError &/*err*/) const
 {
   return vertexCount;
 }
-size_t Mesquite::MeshImpl::get_total_element_count() const
+size_t Mesquite::MeshImpl::get_total_element_count(MsqError &/*err*/) const
 {
   return elementCount;
 }
     
 // Fills array with handles to all vertices in the mesh.
+#undef __FUNC__
+#define __FUNC__ "MeshImpl::get_all_vertices"
 void Mesquite::MeshImpl::get_all_vertices(
   Mesquite::Mesh::VertexHandle *vert_array,
-  size_t array_size)
+  size_t array_size, MsqError &err)
 {
   if (array_size > vertexCount)
     array_size = vertexCount;
-  
+  if (array_size < vertexCount) {
+    err.set_msg("Array of insufficient size. "
+                "Returning incomplete vertex list");
+  }
+
   for (size_t i = 0; i < array_size; i++)
     vert_array[i] = vertexArray + i;
 }
@@ -616,7 +616,7 @@ void Mesquite::MeshImpl::get_all_vertices(
 // Fills array with handles to all elements in the mesh.
 void Mesquite::MeshImpl::get_all_elements(
   Mesquite::Mesh::ElementHandle *elem_array,
-  size_t array_size)
+  size_t array_size, MsqError &/*err*/)
 {
   if (array_size > elementCount)
     array_size = elementCount;
@@ -630,7 +630,7 @@ void Mesquite::MeshImpl::get_all_elements(
 // delete the returned iterator when it is finished with it.
 // If vertices are added or removed from the Mesh after obtaining
 // an iterator, the behavior of that iterator is undefined.
-Mesquite::VertexIterator* Mesquite::MeshImpl::vertex_iterator()
+Mesquite::VertexIterator* Mesquite::MeshImpl::vertex_iterator(MsqError &/*err*/)
 {
   return new Mesquite::MeshImpl_EntityIterator<Mesquite::MeshImpl::Vertex>(vertexArray, vertexCount);
 }
@@ -640,7 +640,7 @@ Mesquite::VertexIterator* Mesquite::MeshImpl::vertex_iterator()
 // delete the returned iterator when it is finished with it.
 // If elements are added or removed from the Mesh after obtaining
 // an iterator, the behavior of that iterator is undefined.
-Mesquite::ElementIterator* Mesquite::MeshImpl::element_iterator()
+Mesquite::ElementIterator* Mesquite::MeshImpl::element_iterator(MsqError &/*err*/)
 {
   return new Mesquite::MeshImpl_EntityIterator<Mesquite::MeshImpl::Element>(elementArray, elementCount);
 }
@@ -651,7 +651,8 @@ Mesquite::ElementIterator* Mesquite::MeshImpl::element_iterator()
 // is fixed and cannot be moved.  Note that this is a read-only
 // property; this flag can't be modified by users of the
 // Mesquite::Mesh interface.
-bool Mesquite::MeshImpl::vertex_is_fixed(Mesquite::Mesh::VertexHandle /*vertex*/)
+bool Mesquite::MeshImpl::vertex_is_fixed(Mesquite::Mesh::VertexHandle /*vertex*/,
+                                         MsqError &/*err*/)
 {
   return false;
 }
@@ -663,7 +664,7 @@ bool Mesquite::MeshImpl::vertex_is_fixed(Mesquite::Mesh::VertexHandle /*vertex*/
 // property; this flag can't be modified by users of the
 // Mesquite::Mesh interface.
 bool Mesquite::MeshImpl::vertex_is_on_boundary(
-  Mesquite::Mesh::VertexHandle vertex)
+  Mesquite::Mesh::VertexHandle vertex, MsqError &/*err*/)
 {
   size_t index = reinterpret_cast<MeshImpl::Vertex*>(vertex) - vertexArray;
   return (onBoundaryBits[index / 8] & ((unsigned char)(1) << index % 8)) != 0;
@@ -672,14 +673,16 @@ bool Mesquite::MeshImpl::vertex_is_on_boundary(
 // Get/set location of a vertex
 void Mesquite::MeshImpl::vertex_get_coordinates(
   Mesquite::Mesh::VertexHandle vertex,
-  Vector3D &coordinates)
+  Vector3D &coordinates,
+  MsqError &/*err*/)
 {
   coordinates.set(reinterpret_cast<double*>(vertex));
 }
 
 void Mesquite::MeshImpl::vertex_set_coordinates(
   Mesquite::Mesh::VertexHandle vertex,
-  const Vector3D &coordinates)
+  const Vector3D &coordinates,
+  MsqError &/*err*/)
 {
   coordinates.get_coordinates(reinterpret_cast<Vertex*>(vertex)->coords);
 }
@@ -690,7 +693,8 @@ void Mesquite::MeshImpl::vertex_set_coordinates(
 // Until a vertex's byte has been explicitly set, its value is 0.
 void Mesquite::MeshImpl::vertex_set_byte (
   Mesquite::Mesh::VertexHandle vertex,
-  unsigned char byte)
+  unsigned char byte,
+  MsqError &/*err*/)
 {
   size_t index = reinterpret_cast<Vertex*>(vertex) - vertexArray;
   vertexMesquiteByte[index] = byte;
@@ -699,7 +703,8 @@ void Mesquite::MeshImpl::vertex_set_byte (
 void Mesquite::MeshImpl::vertices_set_byte (
   Mesquite::Mesh::VertexHandle *vert_array,
   unsigned char *byte_array,
-  size_t array_size)
+  size_t array_size,
+  MsqError &/*err*/)
 {
   for (size_t i = 0; i < array_size; i++)
   {
@@ -713,7 +718,8 @@ void Mesquite::MeshImpl::vertices_set_byte (
 // *_set_byte() functions.
 void Mesquite::MeshImpl::vertex_get_byte(
   Mesquite::Mesh::VertexHandle vertex,
-  unsigned char *byte)
+  unsigned char *byte,
+  MsqError &/*err*/)
 {
   size_t index = reinterpret_cast<Vertex*>(vertex) - vertexArray;
   *byte = vertexMesquiteByte[index];
@@ -722,7 +728,8 @@ void Mesquite::MeshImpl::vertex_get_byte(
 void Mesquite::MeshImpl::vertices_get_byte(
   Mesquite::Mesh::VertexHandle *vertex,
   unsigned char *byte_array,
-  size_t array_size)
+  size_t array_size,
+  MsqError &/*err*/)
 {
   for (size_t i = 0; i < array_size; i++)
   {
@@ -733,7 +740,7 @@ void Mesquite::MeshImpl::vertices_get_byte(
 
 //**************** Vertex Topology *****************
 
-void Mesquite::MeshImpl::create_vertex_to_element_data()
+void Mesquite::MeshImpl::create_vertex_to_element_data(MsqError &/*err*/)
 {
   if (v2E)
     return;
@@ -794,9 +801,11 @@ void Mesquite::MeshImpl::create_vertex_to_element_data()
 // Useful to determine how large the "elem_array" parameter
 // of the vertex_get_attached_elements() function must be.
 size_t Mesquite::MeshImpl::vertex_get_attached_element_count(
-  Mesquite::Mesh::VertexHandle vertex) const
+  Mesquite::Mesh::VertexHandle vertex,
+  MsqError &err) const
 {
-  const_cast<Mesquite::MeshImpl*>(this)->create_vertex_to_element_data();
+  const_cast<Mesquite::MeshImpl*>(this)->create_vertex_to_element_data(err);
+  MSQ_CHKERR(err);
   
   size_t i = reinterpret_cast<MeshImpl::Vertex*>(vertex) - vertexArray;
   return v2eOffset[i+1] - v2eOffset[i];
@@ -806,9 +815,10 @@ size_t Mesquite::MeshImpl::vertex_get_attached_element_count(
 void Mesquite::MeshImpl::vertex_get_attached_elements(
   Mesquite::Mesh::VertexHandle vertex,
   Mesquite::Mesh::ElementHandle* elem_array,
-  size_t sizeof_elem_array)
+  size_t sizeof_elem_array,
+  MsqError &err)
 {
-  create_vertex_to_element_data();
+  create_vertex_to_element_data(err); MSQ_CHKERR(err);
   
   size_t index = reinterpret_cast<MeshImpl::Vertex*>(vertex) - vertexArray;
   
@@ -822,34 +832,14 @@ void Mesquite::MeshImpl::vertex_get_attached_elements(
   }
 }
 
-// Identifies the elements attached to this vertex by returning
-// each element's global index.  The element's global index indicates
-// where that element can be found in the array returned by
-// Mesh::get_all_elements.
-void Mesquite::MeshImpl::vertex_get_attached_element_indices(
-  Mesquite::Mesh::VertexHandle vertex,
-  size_t *index_array,
-  size_t sizeof_index_array)
-{
-  create_vertex_to_element_data();
-  
-  size_t index = reinterpret_cast<MeshImpl::Vertex*>(vertex) - vertexArray;
-  if (sizeof_index_array > v2eOffset[index+1] - v2eOffset[index])
-    sizeof_index_array = v2eOffset[index+1] - v2eOffset[index];
-  
-  for ( ; sizeof_index_array--; )
-  {
-    index_array[sizeof_index_array] =
-      v2E[v2eOffset[index] + sizeof_index_array];
-  }
-}
 
 // Gets the number of vertices in this element.
 // This data can also be found by querying the
 // element's topology and getting the number
 // of vertices per element for that topology type.
 size_t Mesquite::MeshImpl::element_get_attached_vertex_count(
-  Mesquite::Mesh::ElementHandle elem) const
+  Mesquite::Mesh::ElementHandle elem,
+  MsqError &/*err*/) const
 {
   return Mesquite::vertices_in_topology(reinterpret_cast<MeshImpl::Element*>(elem)->mType);
 }
@@ -894,7 +884,8 @@ void Mesquite::MeshImpl::elements_get_attached_vertices(
   size_t &sizeof_vert_handles,
   size_t *csr_data,
   size_t &sizeof_csr_data,
-  size_t *csr_offsets)
+  size_t *csr_offsets,
+  MsqError &/*err*/)
 {
   if (num_elems == 0)
     return;
@@ -953,7 +944,8 @@ void Mesquite::MeshImpl::elements_get_attached_vertices(
 void Mesquite::MeshImpl::element_get_attached_vertex_indices(
   Mesquite::Mesh::ElementHandle element,
   size_t *index_array,
-  size_t array_size)
+  size_t array_size,
+  MsqError &/*err*/)
 {
   Mesquite::MeshImpl::Element* elem =
     reinterpret_cast<Mesquite::MeshImpl::Element*>(element);
@@ -970,7 +962,8 @@ void Mesquite::MeshImpl::element_get_attached_vertex_indices(
 
 // Returns the topology of the given entity.
 Mesquite::EntityTopology Mesquite::MeshImpl::element_get_topology(
-  Mesquite::Mesh::ElementHandle entity_handle)
+  Mesquite::Mesh::ElementHandle entity_handle,
+  MsqError &/*err*/)
 {
   return reinterpret_cast<MeshImpl::Element*>(entity_handle)->mType;
 }
@@ -980,7 +973,8 @@ Mesquite::EntityTopology Mesquite::MeshImpl::element_get_topology(
 void Mesquite::MeshImpl::elements_get_topologies(
   Mesquite::Mesh::ElementHandle *element_handle_array,
   Mesquite::EntityTopology *element_topologies,
-  size_t num_elements)
+  size_t num_elements,
+  MsqError &/*err*/)
 {
   for (size_t i = 0; i < num_elements; i++)
   {
@@ -994,7 +988,8 @@ void Mesquite::MeshImpl::elements_get_topologies(
 // entity handle.  
 void Mesquite::MeshImpl::release_entity_handles(
   Mesquite::Mesh::EntityHandle */*handle_array*/,
-  size_t /*num_handles*/)
+  size_t /*num_handles*/,
+  MsqError &/*err*/)
 {
     // Do nothing
 }

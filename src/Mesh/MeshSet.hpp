@@ -99,7 +99,7 @@ namespace Mesquite
 
       //! Updates the coordinates in the underlying mesh
       //! with the coordinates stored in PatchData
-    void update_mesh(const PatchData &pd);
+    void update_mesh(const PatchData &pd, MsqError &err);
 
       //! Sets the cullFlag.  This flag is used to dermine
       //! which vertices should be culled.  For local schemes,

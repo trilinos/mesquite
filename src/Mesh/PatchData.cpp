@@ -790,12 +790,12 @@ void PatchData::get_adjacent_entities_via_n_dim(int n, size_t ent_ind,
 */
 #undef __FUNC__
 #define __FUNC__ "PatchData::update_mesh" 
-void PatchData::update_mesh(MsqError &/*err*/)
+void PatchData::update_mesh(MsqError &err)
 {
   if (!meshSet)
     return;
 
-  meshSet->update_mesh(*this);
+  meshSet->update_mesh(*this, err);
 }
 
 #undef __FUNC__

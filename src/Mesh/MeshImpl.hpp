@@ -33,32 +33,32 @@ namespace Mesquite
     
 //********* Functions that ARE inherited ************
       // Returns whether this mesh lies in a 2D or 3D coordinate system.
-    virtual int get_geometric_dimension() const;
+    virtual int get_geometric_dimension(MsqError &err) const;
     
       // Returns the number of entities of the indicated type.
-    virtual size_t get_total_vertex_count() const;
-    virtual size_t get_total_element_count() const;
+    virtual size_t get_total_vertex_count(MsqError &err) const;
+    virtual size_t get_total_element_count(MsqError &err) const;
     
       // Fills array with handles to all vertices/elements
       // in the mesh.
     virtual void get_all_vertices(VertexHandle *vert_array,
-                                  size_t array_size);
+                                  size_t array_size, MsqError &err);
     virtual void get_all_elements(ElementHandle *elem_array,
-                                  size_t array_size);
+                                  size_t array_size, MsqError &err);
     
       // Returns a pointer to an iterator that iterates over the
       // set of all vertices in this mesh.  The calling code should
       // delete the returned iterator when it is finished with it.
       // If vertices are added or removed from the Mesh after obtaining
       // an iterator, the behavior of that iterator is undefined.
-    virtual VertexIterator* vertex_iterator();
+    virtual VertexIterator* vertex_iterator(MsqError &err);
     
       // Returns a pointer to an iterator that iterates over the
       // set of all top-level elements in this mesh.  The calling code should
       // delete the returned iterator when it is finished with it.
       // If elements are added or removed from the Mesh after obtaining
       // an iterator, the behavior of that iterator is undefined.
-    virtual ElementIterator* element_iterator();
+    virtual ElementIterator* element_iterator(MsqError &err);
 
 //************ Vertex Properties ********************
       // Returns true or false, indicating whether the vertex
@@ -66,7 +66,7 @@ namespace Mesquite
       // is fixed and cannot be moved.  Note that this is a read-only
       // property; this flag can't be modified by users of the
       // Mesquite::Mesh interface.
-    virtual bool vertex_is_fixed(VertexHandle vertex);
+    virtual bool vertex_is_fixed(VertexHandle vertex, MsqError &err);
 
       // Returns true or false, indicating whether the vertex
       // is on the boundary.  Boundary nodes may be treated as
@@ -74,52 +74,52 @@ namespace Mesquite
       // Note that this is a read-only
       // property; this flag can't be modified by users of the
       // Mesquite::Mesh interface.
-    virtual bool vertex_is_on_boundary(VertexHandle vertex);
+    virtual bool vertex_is_on_boundary(VertexHandle vertex, MsqError &err);
     
       // Get/set location of a vertex
     virtual void vertex_get_coordinates(VertexHandle vertex,
-                                        Vector3D &coordinates);
+                                        Vector3D &coordinates,
+                                        MsqError &err);
     virtual void vertex_set_coordinates(VertexHandle vertex,
-                                        const Vector3D &coordinates);
+                                        const Vector3D &coordinates,
+                                        MsqError &err);
     
       // Each vertex has a byte-sized flag that can be used to store
       // flags.  This byte's value is neither set nor used by the mesh
       // implementation.  It is intended to be used by Mesquite algorithms.
       // Until a vertex's byte has been explicitly set, its value is 0.
     virtual void vertex_set_byte (VertexHandle vertex,
-                                  unsigned char byte);
+                                  unsigned char byte,
+                                  MsqError &err);
     virtual void vertices_set_byte (VertexHandle *vert_array,
                                     unsigned char *byte_array,
-                                    size_t array_size);
+                                    size_t array_size,
+                                    MsqError &err);
     
       // Retrieve the byte value for the specified vertex or vertices.
       // The byte value is 0 if it has not yet been set via one of the
       // *_set_byte() functions.
     virtual void vertex_get_byte(VertexHandle vertex,
-                                 unsigned char *byte);
+                                 unsigned char *byte,
+                                 MsqError &err);
     virtual void vertices_get_byte(VertexHandle *vertex,
                                    unsigned char *byte_array,
-                                   size_t array_size);
+                                   size_t array_size,
+                                   MsqError &err);
     
 //**************** Vertex Topology *****************    
       // Gets the number of elements attached to this vertex.
       // Useful to determine how large the "elem_array" parameter
       // of the vertex_get_attached_elements() function must be.
-    virtual size_t vertex_get_attached_element_count(VertexHandle vertex) const;
+    virtual size_t vertex_get_attached_element_count(VertexHandle vertex,
+                                                     MsqError &err) const;
     
       // Gets the elements attached to this vertex.
     virtual void vertex_get_attached_elements(VertexHandle vertex,
                                               ElementHandle* elem_array,
-                                              size_t sizeof_elem_array);
+                                              size_t sizeof_elem_array,
+                                              MsqError &err);
     
-      // Identifies the elements attached to this vertex by returning
-      // each element's global index.  The element's global index indicates
-      // where that element can be found in the array returned by
-      // Mesh::get_all_elements.
-    virtual void vertex_get_attached_element_indices(
-      VertexHandle vertex,
-      size_t *index_array,
-      size_t sizeof_index_array);
     
 //*************** Element Topology *************
     
@@ -127,7 +127,8 @@ namespace Mesquite
       // This data can also be found by querying the
       // element's topology and getting the number
       // of vertices per element for that topology type.
-    virtual size_t element_get_attached_vertex_count(ElementHandle elem) const;
+    virtual size_t element_get_attached_vertex_count(ElementHandle elem,
+                                                     MsqError &err) const;
     
 // Returns the vertices that are part of the topological definition of each
 // element in the "elem_handles" array.  When this function is called, the
@@ -168,7 +169,8 @@ namespace Mesquite
                                                 size_t &sizeof_vert_handles,
                                                 size_t *csr_data,
                                                 size_t &sizeof_csr_data,
-                                                size_t *csr_offsets);
+                                                size_t *csr_offsets,
+                                                MsqError &err);
     
       // Identifies the vertices attached to this element by returning
       // each vertex's global index.  The vertex's global index indicates
@@ -176,21 +178,25 @@ namespace Mesquite
       // Mesh::get_all_vertices.
     virtual void element_get_attached_vertex_indices(ElementHandle element,
                                                      size_t *index_array,
-                                                     size_t array_size);
+                                                     size_t array_size,
+                                                     MsqError &err);
     
       // Returns the topology of the given entity.
-    virtual EntityTopology element_get_topology(ElementHandle entity_handle);
+    virtual EntityTopology element_get_topology(ElementHandle entity_handle,
+                                                MsqError &err);
       // Returns the topologies of the given entities.  The "entity_topologies"
       // array must be at least "num_elements" in size.
     virtual void elements_get_topologies(ElementHandle *element_handle_array,
                                          EntityTopology *element_topologies,
-                                         size_t num_elements);
+                                         size_t num_elements,
+                                         MsqError &err);
     
 //**************** Memory Management ****************
       // Tells the mesh that the client is finished with a given
       // entity handle.  
     virtual void release_entity_handles(EntityHandle *handle_array,
-                                        size_t num_handles);
+                                        size_t num_handles,
+                                        MsqError &err);
     
       // Instead of deleting a Mesh when you think you are done,
       // call release().  In simple cases, the implementation could
@@ -230,7 +236,7 @@ namespace Mesquite
       size_t vertexIndices[8];
     };
 
-    void create_vertex_to_element_data();
+    void create_vertex_to_element_data(MsqError &err);
   };
 }
 

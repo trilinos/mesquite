@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD:  5-May-03 at 12:28:40 by Thomas Leurent
+//  LAST-MOD: 10-Jul-03 at 11:36:25 by Thomas Leurent
 //
 /*! \file MeshSet.cpp
 
@@ -72,7 +72,7 @@ MeshSet::~MeshSet()
 void MeshSet::add_mesh(Mesquite::Mesh* mesh, MsqError &err)
 {
     // sets MeshSet::SpaceDim
-  int dim = mesh->get_geometric_dimension();
+  int dim = mesh->get_geometric_dimension(err); MSQ_CHKERR(err);
   if (spaceDim == 0) 
     spaceDim = dim;
   else if (dim != spaceDim)
@@ -93,7 +93,7 @@ void MeshSet::add_mesh(Mesquite::Mesh* mesh, MsqError &err)
   */
 #undef __FUNC__
 #define __FUNC__ "MeshSet::reset"
-void MeshSet::reset(MsqError& /*err*/)
+void MeshSet::reset(MsqError& err)
 {
     // If we have at least one mesh...
   if (meshSet.size())
@@ -103,7 +103,7 @@ void MeshSet::reset(MsqError& /*err*/)
     {
       currentMesh = meshSet.begin();
       delete vertexIterator;
-      vertexIterator = (*currentMesh)->vertex_iterator();
+      vertexIterator = (*currentMesh)->vertex_iterator(err); MSQ_CHKERR(err);
     }
     else // We ARE on the first mesh...
     {
@@ -187,24 +187,24 @@ bool MeshSet::get_next_patch(PatchData &pd,
             vertexIterator = NULL;
             return false;
           }
-          vertexIterator = (*currentMesh)->vertex_iterator();
+          vertexIterator = (*currentMesh)->vertex_iterator(err); MSQ_CHKERR(err);
         }
           //if this is a 'boundary' fixed flag, skip it now
         else if ((culling_method_bits & PatchData::NO_BOUNDARY_VTX) &&
-                 (*currentMesh)->vertex_is_on_boundary(**vertexIterator))
+                 (*currentMesh)->vertex_is_on_boundary(**vertexIterator, err))
         {
-          (*vertexIterator)++;
+          ++(*vertexIterator);
         }
           //otherwise we check to see if this vertex has been culled
         else{
             //get the fixed_bit_flag for the center vertex
-          (*currentMesh)->vertex_get_byte(**vertexIterator,&center_fixed_byte);
+          (*currentMesh)->vertex_get_byte(**vertexIterator,&center_fixed_byte, err);
             //remove the hard fixed flag if it has been set
           center_fixed_byte &= ~(MsqVertex::MSQ_HARD_FIXED);
             //if it is culled, skip it
           if(center_fixed_byte & cullFlag)
           {
-            (*vertexIterator)++;
+            ++(*vertexIterator);
           }
           else
           {
@@ -214,11 +214,12 @@ bool MeshSet::get_next_patch(PatchData &pd,
         }//end else (iterator was not at the end and vertex was not boundary)  
       }//end while (!next_vertex_identified)
       Mesh::VertexHandle vertex = **vertexIterator;
-      (*vertexIterator)++;
+      ++(*vertexIterator);
       
         // Get the number of elements in this vertex
       size_t num_elems =
-        (*currentMesh)->vertex_get_attached_element_count(vertex);
+        (*currentMesh)->vertex_get_attached_element_count(vertex, err);
+      MSQ_CHKERR(err);
       
         // Get the elements attached to this vertex
       if (elemArraySize < num_elems)
@@ -230,7 +231,8 @@ bool MeshSet::get_next_patch(PatchData &pd,
       
       (*currentMesh)->vertex_get_attached_elements(vertex,
                                                    elemArray,
-                                                   num_elems);
+                                                   num_elems, err);
+      MSQ_CHKERR(err);
       
         // Get the topologies of those elements
       if (elemTopologiesSize < num_elems)
@@ -239,7 +241,8 @@ bool MeshSet::get_next_patch(PatchData &pd,
         elemTopologies = new EntityTopology[num_elems];
         (*currentMesh)->elements_get_topologies(elemArray,
                                                 elemTopologies,
-                                                num_elems);
+                                                num_elems, err);
+        MSQ_CHKERR(err);
         elemTopologiesSize = num_elems;
       }
       
@@ -278,7 +281,8 @@ bool MeshSet::get_next_patch(PatchData &pd,
                                                      num_verts,
                                                      csrData,
                                                      num_vert_uses,
-                                                     csrOffsets);
+                                                     csrOffsets,
+                                                     err); MSQ_CHKERR(err);
       
         // Allocate the space for the vertices in the PatchData
       pd.reserve_vertex_capacity(num_verts, err); MSQ_CHKERR(err);
@@ -289,14 +293,16 @@ bool MeshSet::get_next_patch(PatchData &pd,
       {
           //get the coordinates
         (*currentMesh)->vertex_get_coordinates(vertArray[i],
-                                               pd_vert_array[i]);
+                                               pd_vert_array[i],
+                                               err); MSQ_CHKERR(err);
         
           // If it's not the center vertex, mark it as hard fixed
         if (vertArray[i] != vertex)
         {
             // Get its flags
           (*currentMesh)->vertex_get_byte(vertArray[i],
-                                          &(pd_vert_array[i].vertexBitFlags));
+                                          &(pd_vert_array[i].vertexBitFlags),
+                                          err); MSQ_CHKERR(err);
           pd_vert_array[i].vertexBitFlags |= MsqVertex::MSQ_HARD_FIXED;
         }
           //else it is the center vertex.  We therefore already have
@@ -346,14 +352,16 @@ bool MeshSet::get_next_patch(PatchData &pd,
       size_t i;
       
         // Get all vertices
-      size_t num_verts = (*currentMesh)->get_total_vertex_count();
+      size_t num_verts = (*currentMesh)->get_total_vertex_count(err);
+      MSQ_CHKERR(err);
       if (vertArraySize < num_verts)
       {
         delete [] vertArray;
         vertArray = new Mesh::VertexHandle[num_verts];
         vertArraySize = num_verts;
       }
-      (*currentMesh)->get_all_vertices(vertArray, num_verts);
+      (*currentMesh)->get_all_vertices(vertArray, num_verts,
+                                       err); MSQ_CHKERR(err);
       
         // Put them into the patch
       pd.reserve_vertex_capacity(num_verts, err); MSQ_CHKERR(err);
@@ -361,13 +369,15 @@ bool MeshSet::get_next_patch(PatchData &pd,
       for (i = 0; i < num_verts; i++)
       {
         (*currentMesh)->vertex_get_coordinates(vertArray[i],
-                                               pd_vert_array[i]);
+                                               pd_vert_array[i],
+                                               err); MSQ_CHKERR(err);
           // Get its flags
         (*currentMesh)->vertex_get_byte(vertArray[i],
-                                        &(pd_vert_array[i].vertexBitFlags));
+                                        &(pd_vert_array[i].vertexBitFlags),
+                                        err); MSQ_CHKERR(err);
           // Set its hard-fixed flag
-        if ((*currentMesh)->vertex_is_fixed(vertArray[i]) ||
-            (*currentMesh)->vertex_is_on_boundary(vertArray[i]))
+        if ((*currentMesh)->vertex_is_fixed(vertArray[i], err) ||
+            (*currentMesh)->vertex_is_on_boundary(vertArray[i], err))
         {
           pd_vert_array[i].vertexBitFlags |= MsqVertex::MSQ_HARD_FIXED;
         }
@@ -375,20 +385,22 @@ bool MeshSet::get_next_patch(PatchData &pd,
         {
           pd_vert_array[i].vertexBitFlags &= ~(MsqVertex::MSQ_HARD_FIXED);
         }
+        MSQ_CHKERR(err);
           // Add its handle to the patch data
         pd.vertexHandlesArray[i] = vertArray[i];
       }
       pd.numVertices = num_verts;
       
         // Get all elements
-      size_t num_elems = (*currentMesh)->get_total_element_count();
+      size_t num_elems = (*currentMesh)->get_total_element_count(err);
+      MSQ_CHKERR(err);
       if (elemArraySize < num_elems)
       {
         delete [] elemArray;
         elemArray = new Mesh::ElementHandle[num_elems];
         elemArraySize = num_elems;
       }
-      (*currentMesh)->get_all_elements(elemArray, num_elems);
+      (*currentMesh)->get_all_elements(elemArray, num_elems, err); MSQ_CHKERR(err);
       
         // Put them into the patch
       pd.reserve_element_capacity(num_elems, err); MSQ_CHKERR(err);
@@ -396,11 +408,12 @@ bool MeshSet::get_next_patch(PatchData &pd,
       for (i = 0; i < num_elems; i++)
       {
         pd_elem_array[i].set_element_type(
-          (*currentMesh)->element_get_topology(elemArray[i]));
+          (*currentMesh)->element_get_topology(elemArray[i], err));
         (*currentMesh)->element_get_attached_vertex_indices(
           elemArray[i],
           pd_elem_array[i].get_modifiable_vertex_index_array(),
-          MSQ_MAX_NUM_VERT_PER_ENT);
+          MSQ_MAX_NUM_VERT_PER_ENT,
+          err); MSQ_CHKERR(err);
         pd.elementHandlesArray[i] = elemArray[i];
       }
       pd.numElements = num_elems;
@@ -414,7 +427,7 @@ bool MeshSet::get_next_patch(PatchData &pd,
 
 // Currently, the only thing supported is updating each vertices
 // coordinates and flags.  Connectivity changes aren't supported yet.
-void Mesquite::MeshSet::update_mesh(const PatchData &pd)
+void Mesquite::MeshSet::update_mesh(const PatchData &pd, MsqError &err)
 {
   if (pd.numVertices == 0)
     return;
@@ -431,9 +444,11 @@ void Mesquite::MeshSet::update_mesh(const PatchData &pd)
       for (i = 0; i < pd.numVertices; i++)
       {
         (*currentMesh)->vertex_set_coordinates(pd.vertexHandlesArray[i],
-                                               pd.vertexArray[i]);
+                                               pd.vertexArray[i],
+                                               err); MSQ_CHKERR(err);
         (*currentMesh)->vertex_set_byte(pd.vertexHandlesArray[i],
-                                        pd.vertexArray[i].vertexBitFlags);
+                                        pd.vertexArray[i].vertexBitFlags,
+                                        err); MSQ_CHKERR(err);
       }
       break;
       
@@ -444,7 +459,7 @@ void Mesquite::MeshSet::update_mesh(const PatchData &pd)
     {
       std::list<Mesquite::Mesh*>::iterator mesh_itr = meshSet.begin();
       Mesquite::Mesh* cur_mesh = *mesh_itr;
-      Mesquite::VertexIterator *vert_itr = cur_mesh->vertex_iterator();
+      Mesquite::VertexIterator *vert_itr = cur_mesh->vertex_iterator(err);
       for (i = 0; i < pd.numVertices; i++)
       {
         if (vert_itr->is_at_end())
@@ -452,12 +467,14 @@ void Mesquite::MeshSet::update_mesh(const PatchData &pd)
           mesh_itr++;
           cur_mesh = *mesh_itr;
           delete vert_itr;
-          vert_itr = cur_mesh->vertex_iterator();
+          vert_itr = cur_mesh->vertex_iterator(err); MSQ_CHKERR(err);
         }
         cur_mesh->vertex_set_coordinates(pd.vertexHandlesArray[i],
-                                         pd.vertexArray[i]);
+                                         pd.vertexArray[i],
+                                         err); MSQ_CHKERR(err);
         cur_mesh->vertex_set_byte(pd.vertexHandlesArray[i],
-                                  pd.vertexArray[i].vertexBitFlags);
+                                  pd.vertexArray[i].vertexBitFlags,
+                                  err); MSQ_CHKERR(err);
       }
       delete vert_itr;
     }
@@ -493,16 +510,17 @@ bool MeshSet::clear_all_soft_fixed_flags(MsqError &err)
         finished_with_vertices=true;
       }
       if(!finished_with_vertices){
-        vertexIterator = (*currentMesh)->vertex_iterator();
+        vertexIterator = (*currentMesh)->vertex_iterator(err); MSQ_CHKERR(err);
       }
     }
       //otherwise we check to see if this vertex has been culled
     else{
         //get the fixed_bit_flag 
-      (*currentMesh)->vertex_get_byte(**vertexIterator,&fixed_byte);
+      (*currentMesh)->vertex_get_byte(**vertexIterator,&fixed_byte, err);
       fixed_byte &= (~MsqVertex::MSQ_SOFT_FIXED);
-      (*currentMesh)->vertex_set_byte(**vertexIterator,fixed_byte);
-      (*vertexIterator)++;
+      (*currentMesh)->vertex_set_byte(**vertexIterator,fixed_byte, err);
+      ++(*vertexIterator);
+      MSQ_CHKERR(err);
     }
   }
   return true;
