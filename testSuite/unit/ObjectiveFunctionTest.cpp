@@ -428,8 +428,6 @@ public:
     SmoothnessQualityMetric* edge = EdgeLengthQualityMetric::create_new();
     LPtoPTemplate LP5(edge, 1, err);
 
-    //TODO Re-add this test
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     test_OFval_from_evaluate_and_gradient(&LP5, m12Hex);
 
     delete edge;
