@@ -37,7 +37,7 @@ fi
 # or if Makefile.$platform doesn't exist,
 # use a default Makefile
 if [ -z "$platform" -o ! -f "Makefile.$platform" ]; then
-  echo "  ***  Warning ***
+  echo "  ***  Warning ***"
   echo "  Unable to determine which makefile template is appropriate "
   echo "  for your system. Copying Makefile.any to Makefile.customize."
   rm -f Makefile.customize
