@@ -1,5 +1,8 @@
 List of two-dimensional meshes.
 
+equil_tri2.vtk:  10 triangles in the z=0 plane.  When optimized the
+  elements are equilateral.  Two free vertices.
+
 four_more_quad.vtk:
 
 half_circ.vtk:  640 quad elements; planer mesh; (z=-5 plane)  Mesh is
@@ -29,6 +32,9 @@ square_quad_2.vtk:  A two-by-two grid of quad elements with the
   free vertex randomly perturbed.  (z = 5 plane)
 
 square_tri_2.vtk:  Triangular mesh (z=5 plane) on a square.  One free vertex.
+
+tangled_tri.vtk:  58 triangles in the z=5 plane on a square.  Contains
+  inverted elements.
 
 tri_20258.vtk:  Triangular mesh with 20258 elements on a square
   (z=5 plane).
