@@ -31,6 +31,8 @@ correct metric return values.
 #include "MeanRatioQualityMetric.hpp"
 #include "InverseMeanRatioQualityMetric.hpp"
 #include "AspectRatioGammaQualityMetric.hpp"
+#include "MultiplyQualityMetric.hpp"
+
 #include "cppunit/extensions/HelperMacros.h"
 #include "cppunit/SignalException.h"
 #include <math.h>
@@ -47,6 +49,9 @@ private:
   CPPUNIT_TEST (test_mean_ratio);
     //Test apect ratio gamma (Tri's and Tet's only)
   CPPUNIT_TEST (test_aspect_ratio_gamma);
+    //Test composite multiply
+  CPPUNIT_TEST (test_composite_multiply);
+  
   
   CPPUNIT_TEST_SUITE_END();
   
@@ -341,7 +346,7 @@ public:
      val = imet->evaluate_element(hexPatch,&elems[0],err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
    }
-
+  
   void test_aspect_ratio_gamma()
    {
        //START WITH TRI's
@@ -363,6 +368,46 @@ public:
      val = met->evaluate_element(tetPatch,&elems[0],err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
 
+   }
+
+  void test_composite_multiply()
+   {
+       //START WITH TRI's
+     MsqError err;
+     double val;
+     MsqMeshEntity* elems;
+     MsqVertex* verts = triPatch.get_vertex_array(err);
+     elems=triPatch.get_element_array(err);
+     MSQ_CHKERR(err);
+     ShapeQualityMetric *mmet = MeanRatioQualityMetric::create_new();
+     ShapeQualityMetric *cmet = ConditionNumberQualityMetric::create_new();
+     CompositeQualityMetric *met = MultiplyQualityMetric::create_new(mmet,
+                                                                     cmet,
+                                                                     err);
+       //Check ideal tri
+     val = met->evaluate_element(triPatch,&elems[0],err);MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+
+       //SECOND: QUAD's
+     verts = quadPatch.get_vertex_array(err);
+     elems = quadPatch.get_element_array(err);
+       //Check ideal quad
+     val = met->evaluate_element(quadPatch,&elems[0],err);MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+
+       //THIRD TET's
+     verts = tetPatch.get_vertex_array(err);
+     elems = tetPatch.get_element_array(err);
+       //Check ideal tet
+     val = met->evaluate_element(tetPatch,&elems[0],err);MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+
+       //FOURTH HEX's
+     verts = hexPatch.get_vertex_array(err);
+     elems = hexPatch.get_element_array(err);
+       //Check ideal hex
+     val = met->evaluate_element(hexPatch,&elems[0],err);MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
    }
   
    
