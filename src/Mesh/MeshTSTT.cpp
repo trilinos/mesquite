@@ -41,6 +41,7 @@
 #include "MsqVertex.hpp"
 #include "MsqError.hpp"
 #include "MeshInterface.hpp"
+#include "TSTTUtil.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 # include <map.h>
@@ -54,51 +55,6 @@
 #define OPAQUE_TYPE_UCHAR         3
 #define OPAQUE_TYPE_BYTE          UCHAR
 #define TSTT_OPAQUE_TAG_TYPE OPAQUE_PADDED
-
-static inline msq_std::string process_tstt_error( TSTT::Error &tstt_err )
-{
-  msq_std::string str;
-  msq_std::string result("TSTT ERROR: ");
-  result += tstt_err.getNote();
-  MSQ_DBGOUT(1) << "TSTT Error:" << msq_std::endl;
-  MSQ_DBGOUT(1) << tstt_err.getNote() << msq_std::endl;
-  tstt_err.getDescription(str);
-  MSQ_DBGOUT(1) << str << msq_std::endl;
-  MSQ_DBGOUT(1) << tstt_err.getTrace() << msq_std::endl;
-  return result;
-}
-
-template <class T> static inline sidl::array<T> alloc_sidl_vector( size_t size )
-{
-  int32_t lower = 0;
-  int32_t upper = size - 1;
-  return sidl::array<T>::createCol( 1, &lower, &upper );
-}
-
-template <class T> static inline sidl::array<T> alloc_sidl_vector( size_t size, T init )
-{
-  sidl::array<T> result = alloc_sidl_vector<T>(size);
-  for (int32_t i = 0; i < (int32_t)size; ++i)
-    result.set( i, init );
-  return result;
-}
-
-template <class S, class T> static inline void copy_from_sidl( sidl::array<S>& source,
-                                                        T* target )
-{
-  typename sidl::array<S>::iterator i = source.begin();
-  for (; i != source.end(); ++i, ++target)
-    *target = (T)*i;
-}
-
-template <class T> static inline 
-sidl::array<T> convert_to_sidl_vector( T* array, size_t size )
-{
-  sidl::array<T> result;
-  int32_t lower = 0, upper = size - 1, stride = 1;
-  result.borrow( array, 1, &lower, &upper, &stride );
-  return result;
-}
 
 
 namespace Mesquite
@@ -1343,30 +1299,13 @@ void MeshTSTTImpl::vertex_get_attached_elements(
   try {
     sidl::array<void*> elem_wrapper;
     int face_size = 0, region_size = 0;
+
+    elem_wrapper = convert_to_sidl_vector( elem_array, sizeof_elem_array );
     entIFace.getEntAdj( vertex, TSTTM::EntityType_FACE, elem_wrapper, face_size );
+
+    elem_wrapper = convert_to_sidl_vector( elem_array + face_size,
+                                           sizeof_elem_array - face_size );
     entIFace.getEntAdj( vertex, TSTTM::EntityType_REGION, elem_wrapper, region_size );
-    
-    if (sizeof_elem_array < (size_t)(face_size + region_size))
-    {
-      MSQ_SETERR(err)("Insufficient space in array", MsqError::OUT_OF_MEMORY);
-      return;
-    }
-    
-    int32_t lower = 0, upper, stride = 1;
-    
-    if (face_size)
-    {
-      upper = face_size - 1;
-      elem_wrapper.borrow( elem_array, 1, &lower, &upper, &stride );
-      entIFace.getEntAdj( vertex, TSTTM::EntityType_FACE, elem_wrapper, face_size );
-    }
-    
-    if (region_size)
-    {
-      upper = region_size - 1;
-      elem_wrapper.borrow( elem_array + face_size, 1, &lower, &upper, &stride );
-      entIFace.getEntAdj( vertex, TSTTM::EntityType_REGION, elem_wrapper, region_size );
-    }
   }
   catch(::TSTT::Error &tstt_err) {
     MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
@@ -1766,45 +1705,39 @@ void MeshTSTTImpl::tag_set_data( TagHandle tag,
 {
   try {
     size_t len, size = tagIFace.getTagSize( tag );
-    int32_t lower = 0, upper = num_elems - 1, stride = 1, count = num_elems;
-    sidl::array<void*> handles;
-    handles.borrow( const_cast<void**>(array), 1, &lower, &upper, &stride );
+    int count;
+    sidl::array<void*> handles( convert_to_sidl_vector( (void**)array, num_elems ) );
     switch (tagIFace.getTagType( tag ))
     {
       case TSTT::TagValueType_ENTITY_HANDLE:
       {
-        sidl::array<void*> sdata;
         len = size / sizeof(void*);
-        upper = len * num_elems - 1;
-        sdata.borrow( reinterpret_cast<void**>(const_cast<void*>(data)), 1, &lower, &upper, &stride );
+        sidl::array<void*> sdata( convert_to_sidl_vector( (void**)data, len*num_elems ));
         arrTagIFace.setEHArrData( handles, num_elems, tag, sdata, count );
       }
       break;
       
       case TSTT::TagValueType_DOUBLE:
       {
-        sidl::array<double> sdata;
-        sdata.borrow( reinterpret_cast<double*>(const_cast<void*>(data)), 1, &lower, &upper, &stride );
+        len = size / sizeof(double);
+        sidl::array<double> sdata( convert_to_sidl_vector( (double*)data, len*num_elems ));
         arrTagIFace.setDblArrData( handles, num_elems, tag, sdata, count );
       }
       
       case TSTT::TagValueType_INTEGER:
       {
-        sidl::array<int> sdata;
-        len = size / sizeof(double*);
-        upper = len * num_elems - 1;
-        sdata.borrow( reinterpret_cast<int*>(const_cast<void*>(data)), 1, &lower, &upper, &stride );
+        len = size / sizeof(int);
+        sidl::array<int> sdata( convert_to_sidl_vector( (int*)data, len*num_elems ));
         arrTagIFace.setIntArrData( handles, num_elems, tag, sdata, count );
       }
 
       default:
       {
 #if TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_OPAQUE_PACKED
-        upper = num_elems / sizeof(void*);
-        if ((num_elems % sizeof(void*)) == 0)
-          --upper;
-        sidl::array<void*> sdata;
-        sdata.borrow( const_cast<void*>(data), 1, &lower, &upper, &stride );
+        len = num_elems / sizeof(void*);
+        if (num_elems % sizeof(void*))
+          ++len;
+        sidl::array<void*> sdata( convert_to_sidl_vector( (void**)data, len ) );
 #elif TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_OPAQUE_PADDED
         assert( size <= sizeof(void*) );
         sidl::array<void*> sdata( alloc_sidl_vector<void*>(num_elems) );
@@ -1812,14 +1745,12 @@ void MeshTSTTImpl::tag_set_data( TagHandle tag,
         for (size_t i = 0; i < num_elems; ++i)
           sdata.set( i, reinterpret_cast<void*>(*(ptr + i*size)) );
 #elif TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_CHAR
-        upper = (size * num_elems)-1;
-        sidl::array<char*> sdata;
-        sdata.borrow( const_cast<char*>(data), 1, &lower, &upper, &stride );
+        len = size * num_elems;
+        sidl::array<char> sdata( convert_to_sidl_vector( (char*)data, len ) );
 #elif TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_UCHAR \
    || TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_BYTE
-        upper = (size * num_elems)-1;
-        sidl::array<unsigned char*> sdata;
-        sdata.borrow( const_cast<unsigned char*>(data), 1, &lower, &upper, &stride );
+        len = size * num_elems;
+        sidl::array<unsigned char> sdata( alloc_sidl_vector( (unsigned char*)data, len ) );
 #else
 #error
 #endif
@@ -1866,50 +1797,43 @@ void MeshTSTTImpl::tag_get_data( TagHandle tag,
     {
       case TSTT::TagValueType_ENTITY_HANDLE:
       {
-        sidl::array<void*> sdata;
         len = size / sizeof(void*);
-        upper = len * num_elems - 1;
-        sdata.borrow( reinterpret_cast<void**>(const_cast<void*>(data)), 1, &lower, &upper, &stride );
+        sidl::array<void*> sdata( convert_to_sidl_vector( (void**)data, len*num_elems ));
         arrTagIFace.getEHArrData( handles, num_elems, tag, sdata, count );
       }
       break;
       
       case TSTT::TagValueType_DOUBLE:
       {
-        sidl::array<double> sdata;
-        sdata.borrow( reinterpret_cast<double*>(data), 1, &lower, &upper, &stride );
+        len = size / sizeof(double);
+        sidl::array<double> sdata( convert_to_sidl_vector( (double*)data, len*num_elems ));
         arrTagIFace.getDblArrData( handles, num_elems, tag, sdata, count );
       }
       
       case TSTT::TagValueType_INTEGER:
       {
-        sidl::array<int> sdata;
-        len = size / sizeof(double*);
-        upper = len * num_elems - 1;
-        sdata.borrow( reinterpret_cast<int*>(data), 1, &lower, &upper, &stride );
+        len = size / sizeof(int);
+        sidl::array<int> sdata( convert_to_sidl_vector( (int*)data, len*num_elems ));
         arrTagIFace.getIntArrData( handles, num_elems, tag, sdata, count );
       }
 
       default:
       {
 #if TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_OPAQUE_PACKED
-        upper = num_elems / sizeof(void*);
-        if ((num_elems % sizeof(void*)) == 0)
-          --upper;
-        sidl::array<void*> sdata;
-        sdata.borrow( const_cast<void*>(data), 1, &lower, &upper, &stride );
+        len = num_elems / sizeof(void*);
+        if (num_elems % sizeof(void*))
+          ++len;
+        sidl::array<void*> sdata( convert_to_sidl_vector( (void**)data, len ) );
 #elif TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_OPAQUE_PADDED
         assert( size <= sizeof(void*) );
         sidl::array<void*> sdata( alloc_sidl_vector<void*>(num_elems) );
 #elif TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_CHAR
-        upper = (size * num_elems)-1;
-        sidl::array<char*> sdata;
-        sdata.borrow( const_cast<char*>(data), 1, &lower, &upper, &stride );
+        len = size * num_elems;
+        sidl::array<char> sdata( convert_to_sidl_vector( (char*)data, len ) );
 #elif TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_UCHAR \
    || TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_BYTE
-        upper = (size * num_elems)-1;
-        sidl::array<unsigned char*> sdata;
-        sdata.borrow( const_cast<unsigned char*>(data), 1, &lower, &upper, &stride );
+        len = size * num_elems;
+        sidl::array<unsigned char> sdata( alloc_sidl_vector( (unsigned char*)data, len ) );
 #else
 #error
 #endif
