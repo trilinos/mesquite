@@ -16,6 +16,7 @@ MsqError::MsqError(bool e, enum Error_Codes ec, std::string m)
   errorCode = ec;
   if (m!="")
     msg = m;
+  printError=true;
 }
 
 MsqError::MsqError(Error_Codes ec, std::string m)
@@ -24,6 +25,7 @@ MsqError::MsqError(Error_Codes ec, std::string m)
   errorCode = ec;
   if (m != std::string(""))
     msg = m;
+  printError=true;
 }
 
 /*! 
@@ -35,11 +37,12 @@ should always be passed by reference.
 MsqError::MsqError(const MsqError &A)
 {
   std::cerr << "WARNING: the MsqError() copy constructor has been used\n"
-       << "         MsqError objects should always be passed by reference";
+            << "         MsqError objects should always be passed by reference";
   errorOn = A.errorOn;
   errorCode = A.errorCode;
   if (A.msg!="")
     msg = A.msg;
+  printError=A.printError;
 }
 
 
@@ -60,6 +63,7 @@ void MsqError::reset()
   errorOn = false;
   errorCode = MSQ_NO_ERROR;
   msg = "";
+  printError=true;
 }
 
 /*! \fn MsqError::handler(int line, const char *func,const char* file, const char *dir)
@@ -73,52 +77,58 @@ void MsqError::reset()
 void MsqError::handler(int line, const char *func,
                        const char* file, const char *dir)
 {
-  if (msg!="" && errorCode!=MSQ_PRINT_STACK) {
-    std::cerr << "MESQUITE ERROR: " << msg << std::endl;
-  }
-
-  switch(errorCode){
-  case MSQ_MEM_ERR:
-    std::cerr << "MESQUITE ERROR:  Out of memory. \n";
-    break;
-  case MSQ_NULL_ERR:
-    std::cerr << "MESQUITE ERROR:  Null pointer. \n";
-    break;
-  case MSQ_INIT_ERR:
-    std::cerr << "MESQUITE ERROR:  Data Structure Not Initialized. \n";
-    break;
-  case MSQ_INPUT_ERR:
-    std::cerr << "MESQUITE ERROR:  Incorrect Input \n";
-    break;
-  case MSQ_FILE_OPEN_ERR:
-    std::cerr << "MESQUITE ERROR:  File open error \n";
-    break;
-  case MSQ_FREE_ERR:
-    std::cerr << "MESQUITE ERROR:  Error freeing memory \n";
-    break;
-  case MSQ_INVALID_MESH_ERR:
-    std::cerr << "MESQUITE ERROR:  Invalid Mesh; use SMuntangle to create a valid mesh prior to smoothing \n";
-    break;
-  case MSQ_DIVIDE_BY_ZERO_ERR:
-    std::cerr << "MESQUITE ERROR:  Division by zero \n";
-    break;
-  case MSQ_DATA_ERR:
-    std::cerr << "MESQUITE ERROR:  Incorrect data \n";
-    break;
-   case MSQ_NO_PD_STORAGE_MODE:
-     std::cerr << "MESQUITE ERROR: no storage mode set in PatchData object.\n";
-     break;
-  case MSQ_NO_ERROR:
-    break;
-  default:
-    break;
-      
-  }
   
-  errorCode = MSQ_PRINT_STACK; /* set it to print the stack */
+  if(printError){
+    if (msg!="" && errorCode!=MSQ_PRINT_STACK) {
+      std::cerr << "MESQUITE ERROR: " << msg << std::endl;
+    }
+    switch(errorCode){
+      case MSQ_MEM_ERR:
+        std::cerr << "MESQUITE ERROR:  Out of memory. \n";
+        break;
+      case MSQ_NULL_ERR:
+        std::cerr << "MESQUITE ERROR:  Null pointer. \n";
+        break;
+      case MSQ_INIT_ERR:
+        std::cerr << "MESQUITE ERROR:  Data Structure Not Initialized. \n";
+        break;
+      case MSQ_INPUT_ERR:
+        std::cerr << "MESQUITE ERROR:  Incorrect Input \n";
+        break;
+      case MSQ_FILE_OPEN_ERR:
+        std::cerr << "MESQUITE ERROR:  File open error \n";
+        break;
+      case MSQ_FREE_ERR:
+        std::cerr << "MESQUITE ERROR:  Error freeing memory \n";
+        break;
+      case MSQ_INVALID_MESH_ERR:
+        std::cerr << "MESQUITE ERROR:  Invalid Mesh; use SMuntangle to create a valid mesh prior to smoothing \n";
+        break;
+      case MSQ_DIVIDE_BY_ZERO_ERR:
+        std::cerr << "MESQUITE ERROR:  Division by zero \n";
+        break;
+      case MSQ_DATA_ERR:
+        std::cerr << "MESQUITE ERROR:  Incorrect data \n";
+        break;
+      case MSQ_NO_PD_STORAGE_MODE:
+        std::cerr << "MESQUITE ERROR: no storage mode set in PatchData object.\n";
+        break;
+      case MSQ_NO_ERROR:
+        break;
+      default:
+        break;
+        
+    }
+    std::cerr << "MESQUITE ERROR: " << func << "()  line " << line
+              << " in " << dir <<"/"<< file << std::endl;
   
-  std::cerr << "MESQUITE ERROR: " << func << "()  line " << line
-            << " in " << dir <<"/"<< file << std::endl;
+#ifdef MESQUITE_PRINT_ERROR_STACK
+    errorCode = MSQ_PRINT_STACK; /* set it to print the stack */
+#else
+    errorCode = MSQ_DO_NOT_PRINT;
+    printError=false;
+#endif
+  }
   
   return ;
 }

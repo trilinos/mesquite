@@ -59,6 +59,7 @@ namespace Mesquite
 enum Error_Codes {
   MSQ_NO_ERROR           =  0,
   MSQ_PRINT_STACK        = -1,
+  MSQ_DO_NOT_PRINT       = -2,
   MSQ_MEM_ERR            = 55,   /* unable to allocate the requested memory */
   MSQ_NULL_ERR           = 56,   /* null data pointer */
   MSQ_INPUT_ERR          = 57,   /* something is wrong with input to function */
@@ -88,7 +89,7 @@ enum Error_Codes {
 class MsqError {
 public:
   // Constructors
-  MsqError() : errorOn(false), errorCode(MSQ_NO_ERROR), msg("") {} // No error by default
+  MsqError() : errorOn(false), errorCode(MSQ_NO_ERROR), msg(""), printError(true) {} // No error by default
   //! Maybe this constructor isn't useful.
 
   MsqError(bool , enum Error_Codes, std::string = "");
@@ -110,6 +111,16 @@ public:
   
   // data member with direct access
   bool errorOn;
+
+    /*! If printError is true, then the next time the error object is
+      checked and an error is on, we print an error message.  If printError
+      is false, we do not print the message.
+      If MESQUITE_PRINT_ERROR_STACK is defined then printError
+      is always true.  Otherwise, printError is only true if no error
+      messages have been printed from this object (at least since the
+      last time the object was reset).
+    */
+  bool printError;
 
 protected:
     //! Copy constructor -- protected access
