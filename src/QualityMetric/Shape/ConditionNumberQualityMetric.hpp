@@ -51,79 +51,13 @@ namespace Mesquite
                            MsqError &err); 
           
   protected:
-     bool condition_number_2d(Vector3D temp_vec[],size_t v_ind, PatchData &pd,
-                              double &fval, MsqError &err);
-     bool condition_number_3d(Vector3D temp_vec[],double &fval, MsqError &err);
+     
   private:
      
      ConditionNumberQualityMetric();
     
   };
-     //BEGIN INLINE FUNCITONS
-   inline bool ConditionNumberQualityMetric::condition_number_2d(Vector3D
-                                                                 temp_vec[],
-                                                                 size_t v_ind,
-                                                                 PatchData &pd,
-                                                                 double &fval,
-                                                                 MsqError
-                                                                 &err)
-   {
-       
-     Vector3D cross_vec=(temp_vec[0]*temp_vec[1]);
-     //NOTE:: the equal below is ONLY to get the code to work
-         //when no normal is available.
-     Vector3D surf_norm=cross_vec;
-     pd.get_surface_normal(v_ind,surf_norm,err);MSQ_CHKERR(err);
-       //if invalid 
-     if(surf_norm%cross_vec < 0.0){
-       return false;
-     }
-     
-     double temp_val=cross_vec.length()*2.0;
-     fval=MSQ_MAX_CAP;
-     if(temp_val>MSQ_MIN){
-       fval=(temp_vec[0].length_squared()+temp_vec[1].length_squared())/
-          temp_val;
-     }
-       //returning true always until surf_normal is avail.
-     return true;
-   }
-
-   inline bool ConditionNumberQualityMetric::condition_number_3d(Vector3D
-                                                                 temp_vec[],
-                                                                 double &fval,
-                                                                 MsqError
-                                                                 &/*err*/)
-   {   
-     double term1=temp_vec[0]%temp_vec[0]+
-        temp_vec[1]%temp_vec[1]+
-        temp_vec[2]%temp_vec[2];
-       //norm squared of adjoint of J
-     double term2=(temp_vec[0]*temp_vec[1])%
-        (temp_vec[0]*temp_vec[1])+
-        (temp_vec[1]*temp_vec[2])%
-        (temp_vec[1]*temp_vec[2])+
-        (temp_vec[2]*temp_vec[0])%
-        (temp_vec[2]*temp_vec[0]);
-       //det of J
-     double temp_var=temp_vec[0]%(temp_vec[1]*temp_vec[2]);
-       //if invalid
-     if(temp_var<=0.0){
-       fval=MSQ_MAX_CAP;
-       return false;
-     }
-     
-     fval=sqrt(term1*term2);
-     if(fval>MSQ_MIN){
-         //if not degenerate
-       fval/=(3*temp_var);
-     }
-     else
-       fval=MSQ_MAX_CAP;
-       //return true
-     return true;
-   }
-   
+    
    
 
 } //namespace

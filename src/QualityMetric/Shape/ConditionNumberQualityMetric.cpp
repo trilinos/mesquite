@@ -79,7 +79,6 @@ bool ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
         (MSQ_SQRT_THREE*MSQ_SQRT_TWO);
       return_flag=condition_number_3d(temp_vec,fval,err);
       return return_flag;
-      break;
         /*
     case PYRAMID:
         //We compute the pyramid's "condition number" by averaging
