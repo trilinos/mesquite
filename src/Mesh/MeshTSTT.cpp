@@ -322,7 +322,7 @@ Mesquite::MeshTSTT::~MeshTSTT()
 #define __FUNC__ "MeshTSTT::get_geometric_dimension" 
 int Mesquite::MeshTSTT::get_geometric_dimension(Mesquite::MsqError &/*err*/) const
 {
-  int32_t d;
+  int32_t d=0;
   try {
     //kkc 040203    d = tsttMesh.getGeometricDimension();
     d = tsttCoreQuery.getGeometricDimension();
@@ -1009,7 +1009,7 @@ void Mesquite::MeshTSTT::elements_get_attached_vertex_indices(
 Mesquite::EntityTopology Mesquite::MeshTSTT::element_get_topology(
   Mesquite::Mesh::ElementHandle element, Mesquite::MsqError &err) const
 {
-  Mesquite::EntityTopology topo_msq;
+  Mesquite::EntityTopology topo_msq=MIXED;
   try {
     oneEntity.set(0, element);
     //kkc 040203    tsttMesh.entityGetTopology(oneEntity, oneInt);

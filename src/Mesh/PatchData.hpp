@@ -132,17 +132,23 @@ namespace Mesquite
     */
     void reserve_element_capacity(size_t min_num_elements,
                                   MsqError &err);
+      //! number of vertices in the patch. 
     size_t num_vertices() const
       { return numVertices;}
+      //! number of elements in the Patch.
     size_t num_elements() const
       { return numElements; }
-      /*! Sets the number of vertices/elements to "new_size", allocating
+      //! number of elements corners in the Patch. 
+    size_t num_corners() const;
+
+      /*! Sets the number of vertices to "new_size", allocating
           space for those entities if necessary.  If "new_size" increases
-          the number of vertices/elements, the data for the additional
-          elements is NOT initialized, so be sure to fill the patch with
+          the number of vertices, the data for the additional
+          vertices is NOT initialized, so be sure to fill the patch with
           valid data after calling these functions.
-      */
+        */
     void set_num_vertices (size_t new_size);
+      //! idem set_num_vertices for elements.  
     void set_num_elements(size_t new_size);
     
       //! Returns the number of elements in the current patch who are
@@ -285,6 +291,14 @@ namespace Mesquite
     void set_all_vertices_soft_fixed(MsqError &err);
       //!Add a soft_fixed flag to all free vertices in the patch.
     void set_free_vertices_soft_fixed(MsqError &err);
+
+      //! This function allocates an array of Tags and an array of TargetMatrix s.
+      //! It then sets the TargetMatrices on the tags and sets the tags
+      //! on the PatchData MsqMeshEntity s.
+      //! This is the most efficient function to use from a memory allocation
+      //! speed point of vue. It works for hybrid meshes. 
+    void allocate_corner_matrices(MsqError &err);
+    
       //! Fills a PatchData with the elements attached to a center vertex.
       //! Note that all entities in the sub-patch are copies of the entities
       //! in 'this' patch.  As such, moving a vertex in the sub-patch
@@ -722,6 +736,20 @@ namespace Mesquite
     memcpy(vertexArray, memento->vertices, numVertices*sizeof(MsqVertex) );
   }
 
+    /*! For example, a mesh composed of 3 quads has 12 corners,
+         however the quads are positionned.
+         This function works for hybrid meshes (like all Mesquite functions should). */
+  inline size_t PatchData::num_corners() const
+  {
+    size_t num_corners =0;
+    for (size_t i=0; i<numElements; ++i)
+    {
+      num_corners += elementArray[i].vertex_count();
+    }
+    return num_corners;
+  }
+
+  
   inline void PatchData::set_num_vertices (size_t new_size)
   {
     Mesquite::MsqError err;
@@ -729,6 +757,12 @@ namespace Mesquite
     numVertices = new_size;
   }
   
+  /*! Sets the number of elements to "new_size", allocating
+      space for those entities if necessary.  If "new_size" increases
+      the number of elements, the data for the additional
+      elements is NOT initialized, so be sure to fill the patch with
+      valid data after calling these functions.
+  */
   inline void PatchData::set_num_elements(size_t new_size)
   {
     Mesquite::MsqError err;

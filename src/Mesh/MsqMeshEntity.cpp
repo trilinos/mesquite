@@ -24,10 +24,9 @@
     pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov      
    
   ***************************************************************** */
-// -*- Mode : c++; tab-width: 2; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD:  7-May-03 at 16:19:02 by Thomas Leurent
+//  LAST-MOD:  2-Apr-04 at 15:42:54 by Thomas Leurent
 //
 /*! \file MsqMeshEntity.cpp
 
@@ -738,4 +737,174 @@ void Mesquite::MsqMeshEntity::get_connected_vertices(size_t vertex_index,
   }
 }
 
+
+#undef __FUNC__
+#define __FUNC__ "MsqMeshEntity::compute_corner_matrices"
+/*!  \param pd  The PatchData the element belongs to. It contains the vertices coords.
+     \param c_m3d An array of Matrix3D objects. There should be one matrix per element corner
+            (4 for a tet, 8 for an hex). Each column of the matrix will contain a vector
+            corresponding to a corner edge. 
+     \param num_m3d The number of matrices in the c_m3d array. The function will check this number
+            corresponds to the number of corner in the element. If not, an error is set. 
+  */
+void MsqMeshEntity::compute_corner_matrices(PatchData &pd, Matrix3D A[], const int num_m3d, MsqError &err )
+{
+  MsqVertex* vertices = pd.get_vertex_array(err); MSQ_CHKERR(err); 
+  const size_t* v_i = vertexIndices;
+  switch(get_element_type()){
+    
+  case TRIANGLE:
+    if (num_m3d != 3) {err.set_msg("num_m3d incompatible with element type."); return;}
+
+    A[0].set_column(0, vertices[v_i[1]]-vertices[v_i[0]]);
+    A[0].set_column(1, vertices[v_i[2]]-vertices[v_i[0]]);
+    A[0].set_column(2, 0);
+    
+    A[1].set_column(0, vertices[v_i[2]]-vertices[v_i[1]]);
+    A[1].set_column(1, vertices[v_i[0]]-vertices[v_i[1]]);
+    A[1].set_column(2, 0);
+
+    A[2].set_column(0, vertices[v_i[0]]-vertices[v_i[2]]);
+    A[2].set_column(1, vertices[v_i[1]]-vertices[v_i[2]]);
+    A[2].set_column(2, 0);
+
+    break;
+    
+  case QUADRILATERAL:
+    if (num_m3d != 4) {err.set_msg("num_m3d incompatible with element type."); return;}
+
+    A[0].set_column(0, vertices[v_i[1]]-vertices[v_i[0]]);
+    A[0].set_column(1, vertices[v_i[3]]-vertices[v_i[0]]);
+    A[0].set_column(2, 0);
+    
+    A[1].set_column(0, vertices[v_i[2]]-vertices[v_i[1]]);
+    A[1].set_column(1, vertices[v_i[0]]-vertices[v_i[1]]);
+    A[1].set_column(2, 0);
+
+    A[2].set_column(0, vertices[v_i[3]]-vertices[v_i[2]]);
+    A[2].set_column(1, vertices[v_i[1]]-vertices[v_i[2]]);
+    A[2].set_column(2, 0);
+
+    A[3].set_column(0, vertices[v_i[0]]-vertices[v_i[3]]);
+    A[3].set_column(1, vertices[v_i[2]]-vertices[v_i[3]]);
+    A[3].set_column(2, 0);
+
+    break;
+    
+  case TETRAHEDRON:
+    if (num_m3d != 4) {err.set_msg("num_m3d incompatible with element type."); return;}
+
+    A[0].set_column(0, vertices[v_i[1]]-vertices[v_i[0]]);
+    A[0].set_column(1, vertices[v_i[2]]-vertices[v_i[0]]);
+    A[0].set_column(2, vertices[v_i[3]]-vertices[v_i[0]]);
+    
+    A[1].set_column(0, vertices[v_i[0]]-vertices[v_i[1]]);
+    A[1].set_column(1, vertices[v_i[3]]-vertices[v_i[1]]);
+    A[1].set_column(2, vertices[v_i[2]]-vertices[v_i[1]]);
+
+    A[2].set_column(0, vertices[v_i[3]]-vertices[v_i[2]]);
+    A[2].set_column(1, vertices[v_i[0]]-vertices[v_i[2]]);
+    A[2].set_column(2, vertices[v_i[1]]-vertices[v_i[2]]);
+
+    A[3].set_column(0, vertices[v_i[2]]-vertices[v_i[3]]);
+    A[3].set_column(1, vertices[v_i[1]]-vertices[v_i[3]]);
+    A[3].set_column(2, vertices[v_i[0]]-vertices[v_i[3]]);
+
+    break;
+    
+  /*
+   case PYRAMID:
+      //We compute the pyramid's "condition number" by averaging
+      //the 4 tet's condition numbers, where the tets are created
+      //by removing one of the four base vertices from the pyramid.
+      //transform to origina v_i[0]
+      temp_vec[3]=vertices[v_i[1]]-vertices[v_i[0]];
+      temp_vec[4]=vertices[v_i[3]]-vertices[v_i[0]];
+      temp_vec[5]=vertices[v_i[4]]-vertices[v_i[0]];
+      //find AW_inverse
+      temp_vec[0]=temp_vec[3];
+      temp_vec[1]=temp_vec[4]-temp_vec[3];
+      temp_vec[2]=MSQ_SQRT_TWO*(temp_vec[5]-(temp_vec[4]/2.0));
+      return_flag=condition_number_3d(temp_vec,pd,met_vals[0],err);
+      if(!return_flag)
+      return return_flag;
+      //transform to origina v_i[1]
+      temp_vec[3]=vertices[v_i[2]]-vertices[v_i[1]];
+      temp_vec[4]=vertices[v_i[3]]-vertices[v_i[1]];
+      temp_vec[5]=vertices[v_i[4]]-vertices[v_i[1]];
+      //find AW_inverse
+      temp_vec[0]=temp_vec[3]-temp_vec[4];
+      temp_vec[1]=temp_vec[3];
+      temp_vec[2]=MSQ_SQRT_TWO*(temp_vec[5]-(temp_vec[4]/2.0));
+      return_flag=condition_number_3d(temp_vec,pd,met_vals[1],err);
+      if(!return_flag)
+      return return_flag;
+      //transform to origina v_i[1]     
+      temp_vec[3]=vertices[v_i[3]]-vertices[v_i[2]];
+      temp_vec[4]=vertices[v_i[0]]-vertices[v_i[2]];
+      temp_vec[5]=vertices[v_i[4]]-vertices[v_i[2]];
+      //find AW_inverse
+      temp_vec[0]=-temp_vec[3];
+      temp_vec[1]=temp_vec[3]-temp_vec[4];
+      temp_vec[2]=MSQ_SQRT_TWO*(temp_vec[5]-(temp_vec[4]/2.0));
+      return_flag=condition_number_3d(temp_vec,pd,met_vals[2],err);
+      if(!return_flag)
+      return return_flag;
+      //transform to origina v_i[1]     
+      temp_vec[3]=vertices[v_i[0]]-vertices[v_i[3]];
+      temp_vec[4]=vertices[v_i[1]]-vertices[v_i[3]];
+      temp_vec[5]=vertices[v_i[4]]-vertices[v_i[3]];
+      //find AW_inverse
+      temp_vec[0]=temp_vec[4]-temp_vec[3];
+      temp_vec[1]=-temp_vec[3];
+      temp_vec[2]=MSQ_SQRT_TWO*(temp_vec[5]-(temp_vec[4]/2.0));
+      return_flag=condition_number_3d(temp_vec,pd,met_vals[3],err);
+      fval=average_metrics(met_vals, 4, err);
+      if(!return_flag)
+      return return_flag;
+      break;
+    */
+    
+  case HEXAHEDRON:
+    if (num_m3d != 8) {err.set_msg("num_m3d incompatible with element type."); return;}
+
+    A[0].set_column(0, vertices[v_i[1]]-vertices[v_i[0]]);
+    A[0].set_column(1, vertices[v_i[3]]-vertices[v_i[0]]);
+    A[0].set_column(2, vertices[v_i[4]]-vertices[v_i[0]]);
+
+    A[1].set_column(0, vertices[v_i[2]]-vertices[v_i[1]]);
+    A[1].set_column(1, vertices[v_i[0]]-vertices[v_i[1]]);
+    A[1].set_column(2, vertices[v_i[5]]-vertices[v_i[1]]);
+
+    A[2].set_column(0, vertices[v_i[3]]-vertices[v_i[2]]);
+    A[2].set_column(1, vertices[v_i[1]]-vertices[v_i[2]]);
+    A[2].set_column(2, vertices[v_i[6]]-vertices[v_i[2]]);
+    
+    A[3].set_column(0, vertices[v_i[0]]-vertices[v_i[3]]);
+    A[3].set_column(1, vertices[v_i[2]]-vertices[v_i[3]]);
+    A[3].set_column(2, vertices[v_i[7]]-vertices[v_i[3]]);
+
+    A[4].set_column(0, vertices[v_i[7]]-vertices[v_i[4]]);
+    A[4].set_column(1, vertices[v_i[5]]-vertices[v_i[4]]);
+    A[4].set_column(2, vertices[v_i[0]]-vertices[v_i[4]]);
+    
+    A[5].set_column(0, vertices[v_i[4]]-vertices[v_i[5]]);
+    A[5].set_column(1, vertices[v_i[6]]-vertices[v_i[5]]);
+    A[5].set_column(2, vertices[v_i[1]]-vertices[v_i[5]]);
+    
+    A[6].set_column(0, vertices[v_i[5]]-vertices[v_i[6]]);
+    A[6].set_column(1, vertices[v_i[7]]-vertices[v_i[6]]);
+    A[6].set_column(2, vertices[v_i[2]]-vertices[v_i[6]]);
+    
+    A[7].set_column(0, vertices[v_i[6]]-vertices[v_i[7]]);
+    A[7].set_column(1, vertices[v_i[4]]-vertices[v_i[7]]);
+    A[7].set_column(2, vertices[v_i[3]]-vertices[v_i[7]]);
+
+    break;
+    
+  default:
+    err.set_msg("element type not implemented.");
+    return;
+  }// end switch over element type
+}
 

@@ -24,13 +24,12 @@
     pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov      
    
   ***************************************************************** */
-// -*- Mode : c++; tab-width: 2; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 
 /*! \file MsqMeshEntity.hpp
 
+\author Darryl Melander
 \author Thomas Leurent
 \author Michael Brewer
-\author Darryl Melander
 
 */
 
@@ -49,38 +48,48 @@
 #include "Mesquite.hpp"
 #include "MesquiteError.hpp"
 #include "QualityMetric.hpp"
+#include "MsqTag.hpp"
 
 MSQ_USE(vector);
 MSQ_USE(ostream);
 
 namespace Mesquite
 {
+  class PatchData;
+
   /*!
       \class MsqMeshEntity
       \brief MsqMeshEntity is the Mesquite object that stores information about
-      the elements in the mesh.*/
-  class PatchData;
+      the elements in the mesh.
+
+      
+  */
   class MsqMeshEntity
   {
   public:
     
     MsqMeshEntity(EntityTopology type,
                   size_t vertex_indices[])
-        : mType(type)
+      : mType(type), mTag(0)
       {
         memcpy(vertexIndices,
                vertex_indices,
                sizeof(size_t)*vertex_count(type));
       }
-    MsqMeshEntity()
-        : mType(MIXED)
-      {}
-    ~MsqMeshEntity()
-      {}
     
+    MsqMeshEntity()
+      : mType(MIXED), mTag(0)
+      {}
+
+      //! Destructor also deletes associated tag data. 
+    ~MsqMeshEntity()
+      { delete mTag; }
+
+     //! This operator= makes a deep copy of the tag data. 
     MsqMeshEntity& operator=(const MsqMeshEntity& rhs) { 
       mType = rhs.mType;
       memmove(vertexIndices, rhs.vertexIndices, MSQ_MAX_NUM_VERT_PER_ENT*sizeof(size_t));
+      mTag = new MsqTag(*(rhs.mTag));
       return *this;
     }
 
@@ -155,6 +164,15 @@ namespace Mesquite
     void compute_minmax_signed_corner_det3d(PatchData &pd, 
                 double &dmin, double &dmax, MsqError &err );
 
+      //! Compute matrices which column are the vectors issued from a corner.
+      //! Stores those corner matrices in the mTag data member.  
+    void compute_corner_matrices(PatchData &pd, Matrix3D A[], int num_m3d, MsqError &err );
+
+      //! Sets the element tag. This will overwritte an existing tag. 
+    void set_tag(MsqTag* tag) {mTag = tag;}
+      //! Gets the element tag.
+    MsqTag* get_tag() {return mTag;}
+    
   private:
     static void get_linear_quad_jac(Vector3D *sp,
                                     Vector3D &coord0, Vector3D &coord1,
@@ -163,6 +181,11 @@ namespace Mesquite
     
     EntityTopology mType;
     size_t vertexIndices[MSQ_MAX_NUM_VERT_PER_ENT];
+    MsqTag* mTag; //!< The mTag data member is a pointer, so that the memory 
+                  //!< footprint stays small when no tag is used (mTag=0).
+                  //!< But when a tag is pointed to by this data member, the tag
+                  //!< in fact leaves with the MsqMeshEntity, i.e. copies are 
+                  //!< deep and the tag is deleted when the MsqMeshEntity is.
     
       // output operator for debugging.
     friend ostream& operator<<(ostream &s, const MsqMeshEntity &E);

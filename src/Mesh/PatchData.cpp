@@ -998,6 +998,24 @@ void PatchData::generate_vertex_to_element_data(size_t num_vertex_uses)
   FUNCTION_TIMER_END();
 }
 
+#undef __FUNC__
+#define __FUNC__ "PatchData::allocate_corner_matrices" 
+void PatchData::allocate_corner_matrices(MsqError &err)
+{
+  // allocates arrays of tags and TargetMatrices.
+  MsqTag* tags = new MsqTag[numElements];
+  size_t num_corners = this->num_corners();
+  TargetMatrix* W_mats = new TargetMatrix[num_corners];
+
+  size_t n=0;
+  for (size_t i=0; i<numElements; ++i)
+  {
+    size_t c = elementArray[i].vertex_count();
+    tags[i].set_targets( W_mats+n ,c,err); MSQ_CHKERR(err); 
+    n+=c;
+    elementArray[i].set_tag(tags+i);
+  }
+}
 
 #undef __FUNC__
 #define __FUNC__ "PatchData::get_subpatch" 

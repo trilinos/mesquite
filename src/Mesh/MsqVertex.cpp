@@ -37,3 +37,19 @@ describe MsqVertex.cpp here
 
 using namespace Mesquite;
 
+
+
+//! This operator= makes a deep copy, including the tag data. 
+MsqVertex& MsqVertex::operator=(const MsqVertex& rhs)
+{
+  Vector3D::operator=(rhs);
+  vertexBitFlags = rhs.vertexBitFlags; 
+  mTag = new MsqTag(*(rhs.mTag));
+  return *this;
+}
+
+MsqVertex::~MsqVertex()
+{
+  delete mTag;
+}
+ 

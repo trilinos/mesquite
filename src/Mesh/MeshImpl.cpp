@@ -29,7 +29,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD:  5-Feb-04 at 22:27:18 by Thomas Leurent
+//  LAST-MOD: 16-Mar-04 at 11:59:07 by Thomas Leurent
 //
 /*! \file MeshImpl.cpp
 

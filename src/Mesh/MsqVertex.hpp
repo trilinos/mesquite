@@ -24,10 +24,12 @@
     pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov      
    
   ***************************************************************** */
-// -*- Mode : c++; tab-width: 2; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 
 /*! \file MsqVertex.hpp
   \brief Mesquite's vertex object.
+
+  \author Darryl Melander
+  \author Thomas Leurent
 */
 #ifndef MSQVERTEX_HPP
 #define MSQVERTEX_HPP
@@ -35,10 +37,12 @@
 #include "Mesquite.hpp"
 #include "MesquiteError.hpp"
 #include "Vector3D.hpp"
+#include "MsqTag.hpp"
 
 namespace Mesquite
 {
   class MeshSet;
+  class MsqTag;
   
     /*!
       \class MsqVertex
@@ -54,26 +58,32 @@ namespace Mesquite
    public:
        //!Construct vertex using three doubles.
      MsqVertex(double x, double y, double z) 
-         : Vector3D(x, y, z), vertexBitFlags(0)
+       : Vector3D(x, y, z), vertexBitFlags(0), mTag(0)
        {}
+     
        //!Construct vertex using Vector3D.
      MsqVertex(const Vector3D &vec) 
-         : Vector3D(vec), vertexBitFlags(0)
+       : Vector3D(vec), vertexBitFlags(0), mTag(0)
        {}
+     
        //!Construct default vertex with coordinates (0.0,0.0,0.0)
      MsqVertex() 
-         : Vector3D(0,0,0), vertexBitFlags(0)
+       : Vector3D(0,0,0), vertexBitFlags(0), mTag(0)
        {}
 
+       //! Initializes with coordinates. Sets tag data/pointer to 0.
      MsqVertex& operator=(const Vector3D& rhs)
        { Vector3D::operator=(rhs);
-         vertexBitFlags = 0; 
-	 return *this; }
-     
-     MsqVertex& operator=(const MsqVertex& rhs)
-       { Vector3D::operator=(rhs);
-         vertexBitFlags = rhs.vertexBitFlags; 
-	 return *this; }
+         vertexBitFlags = 0;
+         mTag = 0;
+         return *this; }
+
+       //! This operator= makes a deep copy, including the tag data. 
+     MsqVertex& operator=(const MsqVertex& rhs);
+
+       //! The MsqVertex destructor is not virtual, for performance issues.
+       //! Therefore, one should not delete a Vector3D* pointing to a MsqVertex.
+     ~MsqVertex();
      
        // This allows for 8 flag bits.
        // I don't think we'll want more than that (yet).
@@ -120,11 +130,16 @@ namespace Mesquite
      
    private:
      FlagMask vertexBitFlags;
+     MsqTag* mTag; //!< The mTag data member is a pointer, so that the memory 
+                   //!< footprint stays small when no tag is used (mTag=0).
+                   //!< But when a tag is pointed to by this data member, the
+                   //!< tag in fact leaves with the MsqVertex, i.e. MsqVertex copies 
+                   //!< are deep and the tag is deleted when the MsqVertex is.
 
      friend class Mesquite::MeshSet;
    };
-  
-} //namespace
 
+} //namespace
+  
 
 #endif // MsqVertex_hpp
