@@ -143,7 +143,9 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
     err.set_msg("Conjugate Gradient not able to get valid gradient on intial patch.");
   }
   double grad_norm=MSQ_MAX_CAP;
+  
   if(conjGradDebug>0){
+    PRINT_INFO("\nCG's DEGUB LEVEL = %i \n",conjGradDebug);
     grad_norm=infinity_norm(fGrad,num_vert,err);
     PRINT_INFO("\nCG's FIRST VALUE = %f,grad_norm = %f",f,grad_norm);
     PRINT_INFO("\n   TIME %f",c_timer.since_birth());
@@ -212,8 +214,8 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
         err.set_msg("Error inside Conjugate Gradient, vertices moved making gradient invalid.");
       }
       
-      grad_norm=infinity_norm(fNewGrad,num_vert,err);
       if(conjGradDebug>0){
+        grad_norm=infinity_norm(fNewGrad,num_vert,err);
         PRINT_INFO("\nCG's VALUE = %f,  iter. = %i,  grad_norm = %f,  alp = %f",f,i,grad_norm,alp);
         PRINT_INFO("\n   TIME %f",c_timer.since_birth());
       }
