@@ -244,7 +244,7 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &pd,
     //position in vertex array
     size_t vert_pos=0;
     //loop over the free vertex indices to find the gradient...
-    int vfv_array_length=10;//holds the current legth of vert_free_vtces
+    size_t vfv_array_length=10;//holds the current legth of vert_free_vtces
     MsqVertex** vert_free_vtces = new MsqVertex*[vfv_array_length];
     Vector3D* grad_vec = new Vector3D[vfv_array_length];
     for(vert_count=0; vert_count<num_vertices; ++vert_count){
@@ -419,6 +419,14 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
     // **** Computes Hessian ****
     double QM_pow=1.;
     if (pVal == 1) {
+      n=0;
+      for (i=0; i<nve; ++i) {
+        for (j=i; j<nve; ++j) {
+            //negate if necessary
+          elem_hessian[n] *= get_negate_flag();
+          ++n;
+        }
+      }
       hessian.accumulate_entries(pd, e, elem_hessian, err);
       fac1 = 1;
     }
@@ -434,8 +442,8 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
       QM_pow *= QM_val;
       fac1 = pVal * QM_pow;
 
-      fac1 *= get_negate_flag();
-      fac2 *= get_negate_flag();
+        //fac1 *= get_negate_flag();
+        //fac2 *= get_negate_flag();
 
       n=0;
       for (i=0; i<nve; ++i) {
@@ -453,7 +461,7 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
             elem_hessian[n] *= fac1;
           }
             //scale the hessian by the scaling factor
-          elem_hessian[n] *= scaling_value;
+          elem_hessian[n] *= (scaling_value * get_negate_flag());
           ++n;
         }
       }
@@ -472,7 +480,7 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
     for (i=0; i<nve; ++i) {
       if ( vertices[vtx_indices[i]].is_free_vertex() ) {
         // ... computes p*q^{p-1}*grad(q) ...
-        grad_vec[i] *= fac1;
+        grad_vec[i] *= fac1*get_negate_flag();
         // ... and accumulates it in the objective function gradient.
           //also scale the gradient by the scaling factor
         grad[vtx_indices[i]] += (scaling_value * grad_vec[i]);
