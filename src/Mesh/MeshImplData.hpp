@@ -77,7 +77,7 @@ class MeshImplData {
     
     /** Check if passed vertex index is valid */
     inline bool is_vertex_valid( size_t index ) const
-      { return index < vertexList.size() && vertexList[index].valid; }
+    {return index < vertexList.size() && vertexList[index].valid; }
     
     /** Check if passed element index is valid */
     inline bool is_element_valid( size_t index ) const
@@ -194,6 +194,10 @@ class MeshImplData {
     struct Element {
       msq_std::vector<size_t> connectivity; /**< list of vertex indices */
       EntityTopology topology;             /**< element type */
+      Element()
+          : topology(MIXED)
+        {}
+      
     };
     
     

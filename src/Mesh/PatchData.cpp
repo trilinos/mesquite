@@ -151,7 +151,11 @@ double PatchData::get_barrier_delta(MsqError &err)
       MSQ_SETERR(err)("Sigma_max is not positive.", MsqError::INVALID_MESH);
       return 0;
     }
-
+      //We set delta to zero if everything in the initial mesh is valid.
+      //  This causes metrics with a barrier between valid and inverted
+      //  meshes to retain that barrier.  If there is a negative jacobian
+      //  corner in the mesh, we set delta to a small fraction of the
+      //  maximum jacobian in the mesh.
     double delta=0;
     if (min<=MSQ_MIN) delta=0.001 * max;
     computedInfos.insert(std::pair<const ComputedInfo, double>(MINMAX_SIGNED_DET3D,delta));

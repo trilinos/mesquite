@@ -82,7 +82,8 @@ namespace Mesquite
 
 
 MeshImpl::MeshImpl() 
-    : myMesh( new MeshImplData ),
+    : numCoords(0),
+      myMesh( new MeshImplData ),
       myTags( new MeshImplTags )
 {}
 
@@ -846,9 +847,9 @@ void MeshImpl::vertices_are_on_boundary(
 
 // Get/set location of a vertex
 void MeshImpl::vertices_get_coordinates(
- const VertexHandle vert_array[],
+ const Mesh::VertexHandle vert_array[],
  MsqVertex* coordinates,
- size_t num_vtx,
+  size_t num_vtx,
  MsqError& err)
 {
   for (size_t i=0; i<num_vtx; ++i) {
@@ -856,6 +857,8 @@ void MeshImpl::vertices_get_coordinates(
     MSQ_ERRRTN(err);
   }
 }
+
+
 
 void MeshImpl::vertex_set_coordinates(
   VertexHandle vertex,

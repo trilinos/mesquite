@@ -145,10 +145,10 @@ namespace Mesquite
                                   size_t num_vtx, MsqError &err);
     
       // Get/set location of a vertex
-    virtual void vertices_get_coordinates(const VertexHandle vert_array[],
-                                  Mesquite::MsqVertex* coordinates,
-                                  size_t num_vtx,
-                                  MsqError &err);
+    virtual void vertices_get_coordinates(const Mesh::VertexHandle vert_array[],
+                                          Mesquite::MsqVertex* coordinates,
+                                          size_t num_vtx,
+                                          MsqError &err);
     virtual void vertex_set_coordinates(VertexHandle vertex,
                                         const Vector3D &coordinates,
                                         MsqError &err);
