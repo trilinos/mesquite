@@ -16,5 +16,3 @@ This file explains how to build the Mesquite library
    compile all source files and create mesquite.a.  If
    the build is not successful, you may need to make
    additional modifications to Makefile.customize.
-
-
