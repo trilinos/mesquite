@@ -16,6 +16,7 @@
 #include "Mesquite.hpp"
 #include "VertexMover.hpp"
 #include "ObjectiveFunction.hpp"
+#include "MsqFreeVertexIndexIterator.hpp"
 
 namespace Mesquite
 {
@@ -130,48 +131,42 @@ namespace Mesquite
     
       /* local copy of patch data */
       //    PatchData patch_data;
-    int dimension;
+    int mDimension;
     int numVertices;
     int numElements;
-    MsqVertex* coords;
-    MsqMeshEntity* connectivity;
+    MsqVertex* mCoords;
+    MsqMeshEntity* mConnectivity;
+    int numFree;
+    int freeVertexIndex;
     
       /* smoothing parameters */
-    int max_iterations;
-    double conv_eps;
-    double active_epsilon;
-    double min_acceptable_improvement;
-    double min_step_size;
+    double activeEpsilon;
+    double minAcceptableImprovement;
+    double minStepSize;
     
       /* optimization data */
-    double original_value;
-    int iter_count;
-    int opt_iter_count;
-    int num_function_values;
-    double *function;
-    double *test_function;
-    double *original_function;
-    double **gradient;
-    int patch_validity;
-    int opt_status;
-    int equilibrium_pt;
-    int step_too_small;
-    int step_accepted;
-    int max_iter;
-    int steepest;
-    double search[3];
-    double alpha;
-    double max_alpha;
-    double *gs;
-    double *prev_active_values;
-    double **G;
-    double **PDG;
-    int PDG_ind[3];
-    int num_LI;
-    ActiveSet *active;
-    ActiveSet *test_active;
-    ActiveSet *original_active;
-    double current_active_value;
+    double originalValue;
+    int iterCount;
+    int optIterCount;
+    int numFunctionValues;
+    double *mFunction;
+    double *testFunction;
+    double *originalFunction;
+    double **mGradient;
+    int optStatus;
+    int equilibriumPt;
+    int mSteepest;
+    double mSearch[3];
+    double mAlpha;
+    double maxAlpha;
+    double *mGS;
+    double *prevActiveValues;
+    double **mG;
+    double **mPDG;
+    int pdgInd[3];
+    ActiveSet *mActive;
+    ActiveSet *testActive;
+    ActiveSet *originalActive;
     
       /* functions */
     void init_opt(MsqError &err);
