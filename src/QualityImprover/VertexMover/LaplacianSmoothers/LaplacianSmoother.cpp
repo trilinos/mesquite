@@ -55,34 +55,34 @@ void LaplacianSmoother::initialize_mesh_iteration(PatchData &/*pd*/,
 }
 
 #undef __FUNC__
-#define __FUNC__ "LaplacianSmoother::optimize_vertex_position" 
+#define __FUNC__ "LaplacianSmoother::optimize_vertex_position"
+/*! \todo Michael:  optimize_vertex_position is probably not implemented
+  in an optimal way.  We used to use all of the vertices in
+  the patch as 'adjacent' vertices.  Now we call get_adjacent_vertex_indices.
+  We could use a VERTICES_ON_VERTEX type of patch or a global patch?
+*/
 void LaplacianSmoother::optimize_vertex_positions(PatchData &pd, 
                                                 MsqError &err)
 {
-    //std::cout << "- Executing LaplacianSmoother::optimize_vertex_position()\n";
-    //if(pd.num_free_vertices(err)!=1){
-    //PRINT_INFO("\nNum free vertices equals %i\n",pd.num_free_vertices(err));
-    //}
-  
-  int num_local_vertices = pd.num_vertices();
     //default the laplacian smoother to 3 even for 2-d elements.
     //int dim = get_mesh_set()->space_dim();
   size_t dim = 3;
   
   
-  
-  // gets the array of coordinates for the patch and print it 
-  MsqVertex *patch_coords = pd.get_vertex_array(err); MSQ_CHKERR(err);
-    //for (size_t i=0; i<num_local_vertices; i++) 
-      //cout << "vertex " << i << " : " << patch_coords[i];
-  // does the dumb Laplacian smoothing
+  // does the Laplacian smoothing
   MsqFreeVertexIndexIterator free_iter(&pd, err);
   free_iter.reset();
   free_iter.next();
-    //find the free vertex.
+    //m is the free vertex.
   size_t m=free_iter.value();
-  centroid_smooth_mesh(pd, num_local_vertices, &patch_coords[0],
+  std::vector<size_t> vert_indices;
+  vert_indices.reserve(25);
+    //get vertices adjacent to vertex m
+  pd.get_adjacent_vertex_indices(m,vert_indices,err);
+    //move vertex m
+  centroid_smooth_mesh(pd, vert_indices.size(), vert_indices,
                        m, dim, err); MSQ_CHKERR(err);
+    //snap vertex m to domain
   pd.snap_vertex_to_domain(m,err);
   
 }

@@ -15,6 +15,7 @@
 #include "Mesquite.hpp"
 #include "VertexMover.hpp"
 #include "MsqFreeVertexIndexIterator.hpp"
+#include <vector>
 namespace Mesquite
 {
 
@@ -42,28 +43,32 @@ namespace Mesquite
   
 #undef __FUNC__
 #define __FUNC__ "centroid_smooth_mesh" 
-  inline void centroid_smooth_mesh(PatchData &pd, size_t num_vtx,
-                                   MsqVertex *vtx_array,
+  inline void centroid_smooth_mesh(PatchData &pd, size_t num_adj_vtx,
+                                   std::vector<size_t> adj_vtx_ind,
                                    size_t free_ind,
                                    size_t dimension, MsqError &err)
   {
-    size_t i,j;
+    MsqVertex* verts=pd.get_vertex_array(err);
+    std::vector<size_t>::iterator iter;
+    
+    size_t j;
     double scale_val=1.0;
-    if (num_vtx<=1) 
-      err.set_msg("WARNING: Number of incident vertex is zero\n");
+    if (num_adj_vtx==0) 
+      err.set_msg("Number of incident vertices is zero\n");
     else
-      scale_val=1.0/((double) num_vtx -1.0);
+      scale_val=1.0/((double) num_adj_vtx);
     double avg[3];
-    for (j=0;j<dimension;++j) {
+      //loop over the two or three dimensions
+    for(j=0;j<dimension;++j) {
+        //set the iterator to the beginning ob adj_vtx_ind
+      iter=adj_vtx_ind.begin();
       avg[j] = 0.;
-      for (i=0;i<num_vtx;++i){
-          //if we are at the free vertex, skip it
-        if(i!=free_ind){
-          avg[j]+=vtx_array[i][j];
-        }
-        
+      while(iter != adj_vtx_ind.end()){
+        avg[j]+=verts[*iter][j];
+        ++iter;
       }
-      vtx_array[free_ind][j] = avg[j]*scale_val;
+        //divide the average by the number of adj. verts
+      verts[free_ind][j] = avg[j]*scale_val;
     }
 
     return;
