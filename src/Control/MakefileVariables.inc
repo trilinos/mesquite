@@ -1,8 +1,7 @@
 CONTROLDIR = $(srcdir)/Control
 
 CONTROLSRC = $(CONTROLDIR)/InstructionQueue.cpp \
-	     $(CONTROLDIR)/TerminationCriterion.cpp \
-#	     $(CONTROLDIR)/StoppingCriterion.cpp 
+	     $(CONTROLDIR)/TerminationCriterion.cpp 
 
 CONTROLHEADERS = \
 	$(patsubst $(CONTROLDIR)/%,$(localincludedir)/%,\
