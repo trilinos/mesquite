@@ -488,7 +488,7 @@ namespace Mesquite
                                                 int num_values, MsqError &err)
    {
        //MSQ_MAX needs to be made global?
-     double MSQ_MAX=1e10;
+     //double MSQ_MAX=1e10;
      double total_value=0.0;
      double temp_value=0.0;
      int i=0;
