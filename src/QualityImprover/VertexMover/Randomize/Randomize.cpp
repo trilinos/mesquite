@@ -65,6 +65,7 @@ void Randomize::optimize_vertex_positions(PatchData &pd,
   int m=free_iter.value();
   randomize_vertex(pd, num_local_vertices,
                    patch_coords[m], dim, err); MSQ_CHKERR(err);
+  pd.snap_vertex_to_domain(m,err);
 }
   
 #undef __FUNC__
