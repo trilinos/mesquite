@@ -434,7 +434,7 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
     double grad_L2_norm=10e6;
     if (terminationCriterionFlag & (GRADIENT_L2_NORM_ABSOLUTE | GRADIENT_L2_NORM_RELATIVE)) {
       grad_L2_norm = length(mGrad, num_vertices); // get the L2 norm
-      MSQ_DEBUG_ACTION(1, {cout << "  o TermCrit -- gradient L2 norm: " << grad_L2_norm << endl;});
+      MSQ_DEBUG_ACTION(1, {std::cout << "  o TermCrit -- gradient L2 norm: " << grad_L2_norm << std::endl;});
     }
     double grad_inf_norm=10e6;
     if (terminationCriterionFlag & (GRADIENT_INF_NORM_ABSOLUTE | GRADIENT_INF_NORM_RELATIVE)) {
