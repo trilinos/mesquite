@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 12-Nov-02 at 18:05:56
-//  LAST-MOD: 19-Jun-03 at 18:00:50 by Thomas Leurent
+//  LAST-MOD: 29-Jan-04 at 17:59:17 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -196,13 +196,20 @@ namespace Mesquite
             2
            / \      creates a Patch containing an ideal triangle
           /   \
-         0-----1 
+         0-----1
+         This Patch also has the normal information. 
      */
    inline void create_one_tri_patch(PatchData &one_tri_patch, MsqError &err)
    {
+       /* ************** Creates normal info ******************* */
+     MeshSet* mesh_set1 = new MeshSet;;
+     Vector3D pnt(0,0,0);
+     Vector3D s_norm(0,0,3);
+     PlanarDomain* msq_geom = new PlanarDomain(s_norm, pnt, NULL);
+     mesh_set1->set_domain_constraint(msq_geom);
+     one_tri_patch.set_mesh_set(mesh_set1);
 
        /* *********************FILL tri************************* */
-       // creates empty Patch
      one_tri_patch.set_num_vertices(3);
      one_tri_patch.set_num_elements(1);
      
@@ -267,9 +274,18 @@ namespace Mesquite
           \ 1 /
            \ /
             3
+         This Patch also has the normal information. 
    */
    inline void create_two_tri_patch(PatchData &pd, MsqError &err)
    {
+       /* ************** Creates normal info ******************* */
+     MeshSet* mesh_set1 = new MeshSet;;
+     Vector3D pnt(0,0,1);
+     Vector3D s_norm(0,0,3);
+     PlanarDomain* msq_geom = new PlanarDomain(s_norm, pnt, NULL);
+     mesh_set1->set_domain_constraint(msq_geom);
+     pd.set_mesh_set(mesh_set1);
+
        // **********************FILL tri*************************
        // creates empty Patch
      pd.set_num_vertices(4);
