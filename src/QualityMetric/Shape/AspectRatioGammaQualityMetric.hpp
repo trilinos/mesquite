@@ -55,6 +55,7 @@ namespace Mesquite
           twelveDivRootTwo=12.0/sqrt(2.0);
           feasible=0;
           evalMode=QualityMetric::ELEMENT_VERTICES;
+          set_metric_type(QualityMetric::ELEMENT_BASED);
           set_name("Aspect Ratio Gamma");
         }
        //!Returns the aspect ratio gamma of element.  If element

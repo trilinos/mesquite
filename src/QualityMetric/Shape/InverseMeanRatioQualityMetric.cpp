@@ -23,6 +23,7 @@ InverseMeanRatioQualityMetric::InverseMeanRatioQualityMetric()
   avgMethod=QualityMetric::HARMONIC;
   feasible=1;
   evalMode=QualityMetric::ELEMENT_VERTICES;
+  set_metric_type(QualityMetric::ELEMENT_BASED);
   set_name("Inverse Mean Ratio");
 }
 
