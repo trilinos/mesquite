@@ -118,8 +118,10 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
     while (new_value > original_value
            && nb_iter < 10 ) {
       nb_iter++;
-      // change vertices coordinates in PatchData according to descent direction.
-      pd.move_vertices(dk, num_vertices, step_size, err); MSQ_CHKERR(err);
+        // change vertices coordinates in PatchData according to descent
+        //direction.
+      pd.move_free_vertices_constrained(dk, num_vertices, step_size, err);
+      MSQ_CHKERR(err);
       // and evaluate the objective function with the new node positions.
       sd_bool=objFunc->evaluate(pd, new_value, err); MSQ_CHKERR(err);
       if(!sd_bool){
