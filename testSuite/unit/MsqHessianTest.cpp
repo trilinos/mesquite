@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 13-Jan-03 at 09:05:56
-//  LAST-MOD: 14-Jan-03 at 13:32:28 by Thomas Leurent
+//  LAST-MOD: 17-Jan-03 at 11:46:27 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -68,46 +68,21 @@ public:
     MsqError err;
     
     MsqHessian::initialize(twoTriangles, err); MSQ_CHKERR(err);
-    
-    CPPUNIT_ASSERT( mRowStart[0]  == 0 );
-    CPPUNIT_ASSERT( mRowStart[1]  == 4 );
-    CPPUNIT_ASSERT( mRowStart[2]  == 8 );
-    CPPUNIT_ASSERT( mRowStart[3]  == 11 );
-    CPPUNIT_ASSERT( mRowStart[4]  == 14 );
 
-    CPPUNIT_ASSERT( mColIndex[0]  == 0 );
-    CPPUNIT_ASSERT( mColIndex[1]  == 1 );
-    CPPUNIT_ASSERT( mColIndex[2]  == 2 );
-    CPPUNIT_ASSERT( mColIndex[3]  == 3 );
-    CPPUNIT_ASSERT( mColIndex[4]  == 0 );
-    CPPUNIT_ASSERT( mColIndex[5]  == 1 );
-    CPPUNIT_ASSERT( mColIndex[6]  == 2 );
-    CPPUNIT_ASSERT( mColIndex[7]  == 3 );
-    CPPUNIT_ASSERT( mColIndex[8]  == 0 );
-    CPPUNIT_ASSERT( mColIndex[9]  == 1 );
-    CPPUNIT_ASSERT( mColIndex[10] == 2 );
-    CPPUNIT_ASSERT( mColIndex[11] == 0 );
-    CPPUNIT_ASSERT( mColIndex[12] == 1 );
-    CPPUNIT_ASSERT( mColIndex[13] == 3 );
+    // Checks values of mRowStart are correct.
+    int row_start[] = {0, 4, 8, 11, 14};
+    for (int i=0; i<5; ++i) 
+      CPPUNIT_ASSERT( mRowStart[i]  == row_start[i] );
 
-    CPPUNIT_ASSERT( mColInstr[0]  == 0 );
-    CPPUNIT_ASSERT( mColInstr[1]  == 1 );
-    CPPUNIT_ASSERT( mColInstr[2]  == 2 );
-    CPPUNIT_ASSERT( mColInstr[3]  == 4 );
-    CPPUNIT_ASSERT( mColInstr[4]  == 5 );
-    CPPUNIT_ASSERT( mColInstr[5]  == 6 );
-    CPPUNIT_ASSERT( mColInstr[6]  == 8 );
-    CPPUNIT_ASSERT( mColInstr[7]  == 9 );
-    CPPUNIT_ASSERT( mColInstr[8]  == 10 );
-    CPPUNIT_ASSERT( mColInstr[9]  == 0 );
-    CPPUNIT_ASSERT( mColInstr[10] == 3 );
-    CPPUNIT_ASSERT( mColInstr[11] == 1 );
-    CPPUNIT_ASSERT( mColInstr[12] == 11 );
-    CPPUNIT_ASSERT( mColInstr[13] == 13 );
-    CPPUNIT_ASSERT( mColInstr[14] == 12 );
-    CPPUNIT_ASSERT( mColInstr[15] == 4 );
-    CPPUNIT_ASSERT( mColInstr[16] == 7 );
-    CPPUNIT_ASSERT( mColInstr[17] == 5 );
+    // Checks values of mColIndex are correct.
+    int col_index[] = {0,1,2,3,0,1,2,3,0,1,2,0,1,3};
+    for (int i=0; i<14; ++i) 
+      CPPUNIT_ASSERT( mColIndex[i]  == col_index[i] );
+
+    // Checks values of mColInstr are correct. 
+    int col_instr[] = {0,1,2,4,5,6,8,9,10,0,3,1,11,13,12,4,7,5};
+    for (int i=0; i<18; ++i)
+      CPPUNIT_ASSERT( mColInstr[i]  == col_instr[i] );
 
   }
 
