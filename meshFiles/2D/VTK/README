@@ -46,5 +46,8 @@ tri_20258.vtk:  Triangular mesh with 20258 elements on a square
   (z=5 plane).
 
 tri_5_not_xy.vtk:  Triangular mesh with 50 elements on a square.
-  Not in the xy plane.
+  Not in the xy plane.  (point in plane (-4.084936,-6.830127,3.415064),
+  plane normal (.5, 0, .866025))
 
+tri_5_xz.vtk:  Graded triangular mesh with 130 tri's.  In the y=-5
+  plane with normal (0,-1,0).
