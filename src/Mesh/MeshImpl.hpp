@@ -12,7 +12,7 @@ namespace Mesquite
     MeshImpl();
     ~MeshImpl();
     void read_vtk(const char* file_name, Mesquite::MsqError &err);
-    void read_exodus(const char* file_name);
+    void read_exodus(const char* file_name, Mesquite::MsqError &err);
     
 //********* Functions that ARE inherited ************
       // Returns whether this mesh lies in a 2D or 3D coordinate system.
@@ -197,6 +197,8 @@ namespace Mesquite
     size_t *v2eOffset;  // When created, size vertexCount + 1
     size_t totalVertexUses; // Number of vertices in all elements
     size_t *v2E; // When created, size totalVertexUses
+
+    unsigned char numCoords;
     
     class Vertex
     {

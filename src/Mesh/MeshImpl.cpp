@@ -71,7 +71,8 @@ Mesquite::MeshImpl::MeshImpl()
       newVertIndices(NULL),
       v2eOffset(NULL),
       totalVertexUses(0),
-      v2E(NULL)
+      v2E(NULL),
+      numCoords(3)
 {}
 
 Mesquite::MeshImpl::~MeshImpl() 
@@ -121,7 +122,7 @@ void Mesquite::MeshImpl::read_vtk(const char* file_name,
   
     // Create an array big enough for all the vertices
   vertexArray = new Mesquite::MeshImpl::Vertex[vertexCount];
-
+  
     // Also create a cache for elements_get_attached_vertices().
   newVertIndices = new size_t[vertexCount];
   memset(newVertIndices, 0, vertexCount*sizeof(size_t));
@@ -242,6 +243,7 @@ void Mesquite::MeshImpl::read_vtk(const char* file_name,
         break;
     }
   }
+  delete [] connectivity_table;
   
     // Create a set of bits to store whether it's on the boundary or not
   size_t num_bitset_bytes = (vertexCount / 8);
@@ -281,10 +283,19 @@ void Mesquite::MeshImpl::read_vtk(const char* file_name,
   ifs.close();
 }
 
-#ifdef MSQ_USING_EXODUS
 void Mesquite::MeshImpl::read_exodus(const char* file_name,
                                      Mesquite::MsqError &err)
 {
+#ifndef MSQ_USING_EXODUS
+  err.set_msg("Exodus not enabled in this build of Mesquite");
+  return;
+#else
+  if (vertexArray != NULL)
+  {
+    err.set_msg("Attempting to read second file into a MeshImpl");
+    return;
+  }
+  
   int app_float_size = sizeof(double);
   int file_float_size = 0;
   float exo_version = 0;
@@ -315,21 +326,182 @@ void Mesquite::MeshImpl::read_exodus(const char* file_name,
     // get info about the file
   exo_err = ex_get_init(file_id, title, &dim, &vert_count,
                         &elem_count, &block_count, &ns_count, &ss_count);
-
+  if (exo_err < 0)
+  {
+    err.set_msg("Unable to get entity counts from file.");
+    return;
+  }
+  
   vertexCount = vert_count;
   elementCount = elem_count;
   
-    // get the number of vertices
+    // Now that we know how big our arrays have to be, allocate...
+    // ...vertices
+  vertexArray = new Mesquite::MeshImpl::Vertex[vertexCount];
+    // ...cache for elements_get_attached_vertices()
+  newVertIndices = new size_t[vertexCount];
+  memset(newVertIndices, 0, vertexCount*sizeof(size_t));
+    // ...elements
+  elementArray = new MeshImpl::Element[elementCount];
+    // ...bits indicating what's on the boundary
+  size_t num_bitset_bytes = (vertexCount / 8);
+  num_bitset_bytes += (vertexCount % 8) ? 1 : 0;
+  onBoundaryBits = new unsigned char[num_bitset_bytes];
+  memset(onBoundaryBits, 0, sizeof(unsigned char)*num_bitset_bytes);
+    // ...a "Mesquite" byte for each vertex
+  vertexMesquiteByte = new unsigned char[vertexCount];
+  memset(vertexMesquiteByte, 0, sizeof(unsigned char)*vertexCount);
   
-    // get the number of elements by getting the number of
-    // blocks, and the number of elements in each block
-}
+    // Now fill in the data
+  
+    // Get the vertex coordinates
+  double* temp_doubles;
+  if (dim == 2)
+  {
+    numCoords = 2;
+    temp_doubles = new double[vertexCount*2];
+    exo_err = ex_get_coord(file_id,
+                           reinterpret_cast<void*>(temp_doubles),
+                           reinterpret_cast<void*>(temp_doubles + vertexCount),
+                           NULL);
+  }
+  else
+  {
+    numCoords = 3;
+    temp_doubles = new double[vertexCount*3];
+    exo_err = ex_get_coord(file_id,
+                           reinterpret_cast<void*>(temp_doubles),
+                           reinterpret_cast<void*>(temp_doubles + vertexCount),
+                           reinterpret_cast<void*>(temp_doubles +
+                                                   vertexCount + vertexCount));
+  }
+    // Make sure it worked
+  if (exo_err < 0)
+  {
+    err.set_msg("Unable to retrieve vertex coordinates from file.");
+    return;
+  }
+    // Stuff coordinates into vertexArray
+  double *cur_coord = temp_doubles;
+  size_t i, j, k;
+  for (i = 0; i < 2; i++)
+  {
+    for (j = 0; j < vertexCount; j++)
+    {
+      vertexArray[j].coords[i] = *cur_coord;
+      cur_coord++;
+    }
+  }
+  if (dim == 2)
+  {
+    for (j = 0; j < vertexCount; j++)
+      vertexArray[j].coords[2] = 0.0;
+  }
+  else
+  {
+    for (j = 0; j < vertexCount; j++)
+    {
+      vertexArray[j].coords[2] = *cur_coord;
+      cur_coord++;
+    }
+  }
+  delete [] temp_doubles;
+
+    // Process elements block by block
+  int *block_ids = new int[block_count];
+  exo_err = ex_get_elem_blk_ids(file_id, block_ids);
+  if (exo_err < 0)
+  {
+    err.set_msg("Unable to read block IDs from file.");
+    delete [] block_ids;
+    return;
+  }
+  size_t conn_table_size = 0;
+  int *connectivity_table = NULL;
+  MeshImpl::Element *cur_elem = elementArray;
+  for (i = 0; i < block_count; i++)
+  {
+      // Get info about this block's elements
+    char elem_type_str[MAX_STR_LENGTH];
+    int num_block_elems, verts_per_elem, num_atts;
+    exo_err = ex_get_elem_block(file_id, block_ids[i], elem_type_str,
+                                &num_block_elems, &verts_per_elem,
+                                &num_atts);
+    if (exo_err < 0)
+    {
+      err.set_msg("Unable to read parameters for block.");
+      delete [] block_ids;
+      return;
+    }
+    
+      // Figure out which type of element we're working with
+    Mesquite::EntityTopology elem_type;
+    for (j = 0; j < 3; j++)
+      elem_type_str[j] = toupper(elem_type_str[j]);
+    if (!strncmp(elem_type_str, "TRI", 3))
+    {
+      elem_type = Mesquite::TRIANGLE;
+    }
+    else if (!strncmp(elem_type_str, "QUA", 3) ||
+             !strncmp(elem_type_str, "SHE", 3))
+    {
+      elem_type = Mesquite::QUADRILATERAL;
+    }
+    else if (!strncmp(elem_type_str, "HEX", 3))
+    {
+      elem_type = Mesquite::HEXAHEDRON;
+    }
+    else if (!strncmp(elem_type_str, "TET", 3))
+    {
+      elem_type = Mesquite::TETRAHEDRON;
+    }
+    else
+    {
+      err.set_msg("Unrecognized element type in block");
+      continue;
+    }
+    
+      // Get the connectivity
+    if (conn_table_size < num_block_elems*verts_per_elem)
+    {
+      conn_table_size = num_block_elems*verts_per_elem;
+      delete [] connectivity_table;
+      connectivity_table = new int[conn_table_size];
+    }
+    exo_err = ex_get_elem_conn(file_id, block_ids[i], connectivity_table);
+    if (exo_err < 0)
+    {
+      err.set_msg("Unable to read element block connectivity.");
+      delete [] block_ids;
+      delete [] connectivity_table;
+      return;
+    }
+
+      // Put the connectivity into the elementArray
+    int *cur_entry = connectivity_table;
+    for (j = 0; j < num_block_elems; j++)
+    {
+      cur_elem->mType = elem_type;
+      for (k = 0; k < verts_per_elem; k++)
+      {
+        cur_elem->vertexIndices[k] = *cur_entry;
+        cur_entry++;
+      }
+      cur_elem++;
+    }
+  }
+  delete [] block_ids;
+  delete [] connectivity_table;
+  
+    // Finally, mark boundary nodes
+  
 #endif
+}
     
 // Returns whether this mesh lies in a 2D or 3D coordinate system.
 int Mesquite::MeshImpl::get_geometric_dimension() const
 {
-  return 3;
+  return numCoords;
 }
     
 // Returns the number of entities of the indicated type.
