@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 21-Aug-02 at 16:04:29
-//  LAST-MOD: 30-Oct-02 at 17:39:37 by Thomas Leurent
+//  LAST-MOD: 31-Oct-02 at 13:05:35 by Thomas Leurent
 //
 // RCS Infos:
 // ==========
@@ -194,6 +194,28 @@ void Mesquite::writeVtkMesh(const char filebase[128], TSTT::cMesh_Handle mesh_h,
     fprintf(vtk_fp, "%d\n", vtk_type);
   }
   
+  // writes which points are fixed
+  fprintf(vtk_fp, "POINT_DATA %d\n", num_vertices);
+  fprintf(vtk_fp, "SCALARS fixed float\n");
+  fprintf(vtk_fp, "LOOKUP_TABLE default\n");
+
+  // retrieves value of tag "fixed" .
+  char bnd_tag_name[6];
+  strcpy(bnd_tag_name, "fixed");
+  void* bnd_tag_handle;
+  TSTT::Mesh_tagGetHandle (bnd_tag_name, &bnd_tag_handle, &tstt_err);
+  assert(!tstt_err);
+  for (int i=0; i<num_vertices; ++i) {
+    int* on_boundary;
+    int tag_size;
+    TSTT::Mesh_GetTag_Entity(mesh_h,
+                             (TSTT::cEntity_Handle) vtx[i],
+                             bnd_tag_handle, (void**)&on_boundary, &tag_size, &tstt_err);
+    assert(!tstt_err);
+    fprintf(vtk_fp, "%d\n", *on_boundary);
+  }
+  
+
   delete id_1;
   delete id_2;
   delete[] vtx_coords;
