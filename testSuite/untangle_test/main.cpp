@@ -116,6 +116,7 @@ int main()
   LPtoPTemplate* obj_func2 = new LPtoPTemplate(shape_metric, 2, err);
   if (err) return 1;
     // creates the steepest descent optimization procedures
+  obj_func->set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
   obj_func2->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
   ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
   if (err) return 1;
