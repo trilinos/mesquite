@@ -138,6 +138,22 @@ string QualityAssessor::get_QAFunction_name(
   };
 }
 
+double QualityAssessor::Assessor::get_average() const
+{
+  return count ? sum/count : 0;
+}
+
+double QualityAssessor::Assessor::get_rms() const 
+{
+  return count ? sqrt(sqrSum/count) : 0;
+}
+
+double QualityAssessor::Assessor::get_stddev() const
+{
+  double sqr = sqrSum/count - sum*sum/((double)count*count);
+  return sqr < 0 ? 0 : sqrt(sqr);
+}
+
 
 /*!
     Several QualityMetric objects can be added to a single QualityAssessor
@@ -730,6 +746,9 @@ void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream ) co
     if (histogram[i] > max_interval)
       max_interval = histogram[i];
   
+  if (0 == max_interval)
+    return; // no data 
+  
     // Calculate width of field containing counts for 
     // histogram intervals (log10(max_interval)).
   int num_width = 1;
@@ -744,10 +763,14 @@ void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream ) co
     // Do log plot if standard deviation is less that 1.5
     // histogram intervals.
   bool log_plot = false;
-  if (get_stddev() < 2.0*step)
+  double stddev = get_stddev();
+  if (stddev > 0 && stddev < 2.0*step)
   {
-    log_plot = true;
-    max_interval = (int)(log10((double)(1+max_interval)));
+    int new_interval = (int)(log10((double)(1+max_interval)));
+    if (new_interval > 0) {
+      log_plot = true;
+      max_interval = new_interval;
+    }
   }
 
   

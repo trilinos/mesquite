@@ -199,12 +199,11 @@ namespace Mesquite
       
         Assessor( QualityMetric* metric );
         
-        double get_average() const { return sum/count;          }
-        double get_maximum() const { return maximum;            }
-        double get_minimum() const { return minimum;            }
-        double get_rms()     const { return sqrt(sqrSum/count); }
-        double get_stddev()  const 
-          { return sqrt(sqrSum/count - sum*sum/((double)count*count)); }
+        double get_average() const ;
+        double get_maximum() const { return maximum; }
+        double get_minimum() const { return minimum; }
+        double get_rms()     const ;
+        double get_stddev()  const ;
         int get_count() const { return count; }
         
         int get_invalid_element_count() const { return numInvalid; }
