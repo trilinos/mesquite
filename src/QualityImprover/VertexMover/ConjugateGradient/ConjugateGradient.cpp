@@ -171,6 +171,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
     //     && !inner_criterion){
   while(!inner_criterion){
     ++i;
+      //std::cout<<"\Michael delete i = "<<i;
     int k=0;
     alp=get_step(pd,f,k,err);
     j+=k;

@@ -87,7 +87,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   Vector3D* d = new Vector3D[nv];
   bool fn_bool=true;// bool used for determining validity of patch
 
-  int i;//,n;
+    //int i,n;
   
   // 1.  Allocate a hessian and calculate the sparsity pattern.
   mHessian.initialize(pd, err); MSQ_CHKERR(err);

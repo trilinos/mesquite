@@ -62,7 +62,10 @@ void VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
   this->initialize(patch_data, err); MSQ_CHKERR(err);
     //reset the stopping criterion's loop counter
   std::cout<<"\n";
-  outer_crit->reset(ms,objFunc,err);
+  bool inner_skip=false;
+  bool outer_skip=outer_crit->reset(ms,objFunc,err);
+  if(!outer_skip){
+    
   while ( !stop_met ) {
       //Status bar
     std::cout<<".";
@@ -84,9 +87,10 @@ void VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
      
       if (next_patch == true ) {
         if(inner_crit!=NULL){
-          inner_crit->reset(patch_data,objFunc,err);
+          inner_skip=inner_crit->reset(patch_data,objFunc,err);
         }
-        this->optimize_vertex_positions(patch_data, err); MSQ_CHKERR(err);
+        if(!inner_skip)
+          this->optimize_vertex_positions(patch_data, err); MSQ_CHKERR(err);
         if(inner_crit!=NULL){
           inner_crit->cull_vertices(patch_data,objFunc,err);
         }
@@ -105,6 +109,8 @@ void VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
       stop_met=outer_crit->terminate(ms,objFunc,err);
     MSQ_CHKERR(err);
   }
+  }
+  
   std::cout<<"\n";
   outer_crit->cleanup(ms,err);
   if(inner_crit!=NULL){ 
