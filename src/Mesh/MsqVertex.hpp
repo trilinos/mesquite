@@ -102,7 +102,7 @@ namespace Mesquite
        MSQ_FLAG_3 =     1<<4,
        MSQ_FLAG_4 =     1<<5,
        MSQ_ALGO_FLAG1 = 1<<6, //!< free bit, to be used by algorithm if needed.
-       MSQ_ALGO_FLAG2 = 1<<7, //!< free bit, to be used by algorithm if needed. 
+       MSQ_ALGO_FLAG2 = 1<<7 //!< free bit, to be used by algorithm if needed. 
      };
        //!Returns true if vertex is ``free''.
      bool is_free_vertex() const

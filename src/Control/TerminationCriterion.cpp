@@ -489,7 +489,7 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
     double grad_L2_norm=10e6;
     if (terminationCriterionFlag & (GRADIENT_L2_NORM_ABSOLUTE | GRADIENT_L2_NORM_RELATIVE)) {
       grad_L2_norm = length(mGrad, num_vertices); // get the L2 norm
-      MSQ_DBGOUT(1) << "  o TermCrit -- gradient L2 norm: " << grad_L2_norm << msq_stdio::endl;
+      MSQ_DBGOUT(2) << "  o TermCrit -- gradient L2 norm: " << grad_L2_norm << msq_stdio::endl;
     }
     double grad_inf_norm=10e6;
     if (terminationCriterionFlag & (GRADIENT_INF_NORM_ABSOLUTE | GRADIENT_INF_NORM_RELATIVE)) {
@@ -653,7 +653,7 @@ bool TerminationCriterion::terminate(MeshSet &ms, ObjectiveFunction* obj_ptr,
 bool TerminationCriterion::terminate_with_function_and_gradient(PatchData &pd, ObjectiveFunction* obj_ptr, double func_val, Vector3D* sup_grad, MsqError &err)
 {
   // outputs OF value.
-  MSQ_DBGOUT(1) << "  o TermCrit -- OF value: " << func_val << msq_stdio::endl;
+  MSQ_DBGOUT(2) << "  o TermCrit -- OF value: " << func_val << msq_stdio::endl;
 
   //set functionSupplied and gradientSupplied booleans to true
   functionSupplied=true;

@@ -89,7 +89,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   pd.reorder();
 
   MSQ_FUNCTION_TIMER( "FeasibleNewton::optimize_vertex_positions" );
-  MSQ_DBGOUT(1) << "\no  Performing Feasible Newton optimization.\n";
+  MSQ_DBGOUT(2) << "\no  Performing Feasible Newton optimization.\n";
 
   const double sigma   = 1e-4;
   const double beta0   = 0.25;
@@ -113,7 +113,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   //     (a) if not defined at current point, stop and throw an error
   fn_bool = objFunc->compute_hessian(pd, mHessian, grad,
                              original_value, err); MSQ_ERRRTN(err);
-    //PRINT_INFO("\n--Objective Function value %f\n",original_value);
+  MSQ_DBGOUT(2)<<"\n--Objective Function value "<< original_value<<"\n";
   if (!fn_bool) {
     MSQ_SETERR(err)("invalid patch for hessian calculation", MsqError::INTERNAL_ERROR);
     return; }
@@ -262,7 +262,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
         //PRINT_INFO("  Objective Function value %f\n",original_value);
     }
   }
-  MSQ_PRINT(1)("FINISHED\n");
+  MSQ_PRINT(2)("FINISHED\n");
 }
 
 

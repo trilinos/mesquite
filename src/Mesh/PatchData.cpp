@@ -992,11 +992,18 @@ void PatchData::allocate_target_matrices(MsqError &err, bool alloc_inv)
 {
   for (size_t i=0; i<num_elements(); ++i)
   {
-    MsqTag* tag = new MsqTag;
+    MsqTag* temp_tag = elementArray[i].get_tag();
     size_t c = elementArray[i].vertex_count();
-    tag->allocate_targets(c, err, alloc_inv);
-    MSQ_ERRRTN(err);
-    elementArray[i].set_tag(tag);
+    if(temp_tag){
+      temp_tag->reallocate_targets(c, err, alloc_inv);
+    }
+    else{
+      MsqTag* tag = new MsqTag;
+      tag->allocate_targets(c, err, alloc_inv);
+      MSQ_ERRRTN(err);
+      elementArray[i].set_tag(tag);
+    }
+    
   }
 }
 

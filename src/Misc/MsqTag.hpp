@@ -53,7 +53,8 @@ namespace Mesquite
   public:
       //! Constructor initializes all pointers to 0.
     MsqTag() : targets(0), inverseTargets(0), scalars(0),
-               numTargets(0), numScalars(0) {}
+               numTargets(0), maxNumTargets(0), numScalars(0),
+               maxNumScalars(0) {}
 
       //! copy constructor does a deep copy of all the tag data. 
     MsqTag(const MsqTag& A) { copy(A); }
@@ -66,10 +67,12 @@ namespace Mesquite
     void copy(const MsqTag& A) 
     { numScalars = A.numScalars;
       numTargets = A.numTargets;
-      targets = new TargetMatrix[numTargets];
-      scalars = new double[numScalars];
+      maxNumTargets = A.maxNumTargets;
+      maxNumScalars = A.maxNumScalars;
+      targets = new TargetMatrix[maxNumTargets];
+      scalars = new double[maxNumScalars];
       short i;
-	  for (i=0; i<numTargets; ++i)
+      for (i=0; i<numTargets; ++i)
         targets[i] = A.targets[i];
       for (i=0; i<numScalars; ++i)
         scalars[i] = A.scalars[i]; }
@@ -94,6 +97,7 @@ namespace Mesquite
 
       targets = Ws_pt;
       numTargets = num_targets;
+      maxNumTargets = num_targets;
     }
 
       //! This function allocates target matrices within the tag.
@@ -110,9 +114,26 @@ namespace Mesquite
       targets = new TargetMatrix[num_targets];
       if (alloc_inv) inverseTargets = new TargetMatrix[num_targets];
       numTargets = num_targets;
+      maxNumTargets = num_targets;
     }
-
-      //!
+      //!This function can be called when a new tag is being re-used.
+      //!  The space needed for targets is reallocated if needed.
+    void reallocate_targets(short int num_targets, MsqError &err,
+                             bool alloc_inv=false)
+    {
+      if (num_targets > maxNumTargets) {
+        delete[] targets;
+        targets = new TargetMatrix[num_targets];      
+        if (alloc_inv){
+          delete [] inverseTargets;
+          inverseTargets = new TargetMatrix[num_targets];
+        }
+        maxNumTargets = num_targets;
+      }
+      numTargets = num_targets;
+    }
+      //! This function can be called when a new tag is created to allocate
+      //!  the space needed for scalars.
     void allocate_scalars(short int num_scalars, MsqError &err)
     {
       if (scalars != 0) {
@@ -122,6 +143,18 @@ namespace Mesquite
       }
 
       scalars = new double[num_scalars];
+      numScalars = num_scalars;
+      maxNumScalars = num_scalars;
+    }
+      //!This function can be called when a new tag is being re-used.
+      //!  The space needed for scalars is reallocated if needed.
+    void reallocate_scalars(short int num_scalars, MsqError &err)
+    {
+      if (num_scalars > maxNumScalars) {
+        delete [] scalars;
+        scalars = new double[num_scalars];
+        maxNumScalars = num_scalars;
+      }
       numScalars = num_scalars;
     }
     
@@ -147,11 +180,16 @@ namespace Mesquite
   private:
     TargetMatrix* targets;
     TargetMatrix* inverseTargets;
-    double* scalars; 
+    double* scalars;
+      //!number of targets we can access
     short int numTargets;
+      //!maximum number of targets for which we have allocated space
+    short int maxNumTargets;
+      //!number of scalars we can access
     short int numScalars;
+      //!maximum number of scalars for which we have allocated space
+    short int maxNumScalars;
   };
-
 } //namespace
 
 
