@@ -29,7 +29,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 13-Apr-04 at 10:57:52
-//  LAST-MOD:  9-Jun-04 at 15:33:59 by Thomas Leurent
+//  LAST-MOD: 18-Oct-04 by J.Kraftcheck
 //
 //
 // DESCRIPTION:
@@ -45,6 +45,7 @@ describe main.cpp here
 #ifndef MSQ_USE_OLD_IO_HEADERS
 #include <iostream>
 using std::cout;
+using std::cerr;
 using std::endl;
 #else
 #include <iostream.h>
@@ -66,7 +67,7 @@ using std::endl;
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
 
-// algorythms
+// algorithms
 #include "I_DFT.hpp"
 #include "sI_DFT.hpp"
 #include "RI_DFT.hpp"
@@ -77,23 +78,38 @@ using std::endl;
 #include "ConjugateGradient.hpp"
 using namespace Mesquite;
 
+void usage()
+{
+  cerr << "Usage: main [filename] [objective function val]" << endl;
+  exit(1);
+}
+
 int main(int argc, char* argv[])
 {
   Mesquite::MsqError err;
-  char file_name[256];
+  const char* file_name = "../../meshFiles/3D/VTK/large_box_hex_1000.vtk";
   double OF_value = 0.;
   
   // command line arguments
-  if (argc==1 || argc>3)
-    cout << "meshfile name needed as argument.\n"
-      "objective function value optional as 2nd argument.\n" << endl;
-  else if (argc==2) {
-    cout << " given 1 command line argument.\n";
-    strcpy(file_name, argv[1]);
-  } else if (argc==3) {
-    cout << " given 2 command line arguments.\n";
-    strcpy(file_name, argv[1]);
-    OF_value = atof(argv[2]);
+  if (argc == 1)
+  {
+    cerr << "Warning: No file specified, using default: " << file_name << endl;
+  }
+  
+  if (argc > 1)
+  {
+    file_name = argv[1];
+  }
+  if (argc > 2)
+  {
+    char* end_ptr;
+    OF_value = strtod( argv[2], &end_ptr );
+    if (!*argv[2] || *end_ptr)
+      usage();
+  }
+  if (argc > 3)
+  {
+    usage();
   }
   
   Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
