@@ -262,9 +262,13 @@ if test -z "$NETCDF_ARG"; then
   AC_CHECK_LIB( [netcdf], 
                 [nc_open],
                 [NETCDF_LNK=-lnetcdf] )
+  AC_LANG_PUSH(C++)
   AC_CHECK_LIB( [netcdf_c++], 
                 [main],
-                [NETCDF_CXX_LNK=-lnetcdf_c++] )
+                [NETCDF_CXX_LNK=-lnetcdf_c++],
+                [],
+                [-lnetcdf] )
+  AC_LANG_POP(C++)
 elif test "$NETCDF_ARG" != "no"; then
   NETCDF_DIR="$NETCDF_ARG"
   AC_CHECK_FILE( [${NETCDF_DIR}/inc/netcdf.h],
