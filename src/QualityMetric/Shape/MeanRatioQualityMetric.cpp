@@ -38,8 +38,8 @@ bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
   bool return_flag;
   std::vector<size_t> v_i;
   element->get_vertex_indices(v_i);
-    //only 3 temp_vec will be sent to mean ratio calculator, but the
-    //additional vector3D may be needed during the calculations
+  //only 3 temp_vec will be sent to mean ratio calculator, but the
+  //additional vector3D may be needed during the calculations
   Vector3D temp_vec[5];
   MsqVertex *vertices=pd.get_vertex_array(err);
   switch(element->get_element_type()){
@@ -80,9 +80,9 @@ bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
       temp_vec[3]=vertices[v_i[2]]-vertices[v_i[0]];
       temp_vec[4]=vertices[v_i[3]]-vertices[v_i[0]];
         //transform to equilateral tet
-      temp_vec[1]=((2*temp_vec[3])-temp_vec[0])/MSQ_SQRT_THREE;
-      temp_vec[2]=((3*temp_vec[4])-temp_vec[0]-temp_vec[3])/
-        (MSQ_SQRT_THREE*MSQ_SQRT_TWO);
+      temp_vec[1]=((2*temp_vec[3])-temp_vec[0])*MSQ_SQRT_THREE_INV;
+      temp_vec[2]=((3*temp_vec[4])-temp_vec[0]-temp_vec[3])*
+        (MSQ_SQRT_THREE_INV*MSQ_SQRT_TWO_INV);
       return_flag=mean_ratio_3d(temp_vec,fval,err);
       break;
     case HEXAHEDRON:
@@ -142,5 +142,4 @@ bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
   }// end switch over element type
   return true;
 }
-
 
