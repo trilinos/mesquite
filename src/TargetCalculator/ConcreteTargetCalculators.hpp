@@ -105,8 +105,247 @@ namespace Mesquite
       {};
   };
   
+  // New Section
 
-  
+  /*! \class ShapeGuides811
+    \brief Shape Improvement with Unit Aspect Ratio. Use with sR-DFT
+  */
+  class ShapeGuides811 : public WTargetCalculator
+  {
+  public:
+    ShapeGuides811()
+    {
+      guideMatrix = Ad;
+    }      
+
+    //! virtual destructor ensures use of polymorphism during destruction
+    virtual ~ShapeGuides811()
+      {};
+  };
+
+  /*! \class ShapeGuides812
+    \brief  Shape Improvement with non-Unit Aspect Ratio. Use with sR-DFT.
+  */
+  class ShapeGuides812 : public LVQDTargetCalculator
+  {
+  public:
+    ShapeGuides812(MeshSet* ref_mesh)
+    {
+      refMesh = ref_mesh;
+      lambdaBase = REGULAR; 
+      guideLambda = Ad;
+      guideV = Ad;
+      guideQ = Ad;
+      guideDelta = A0;
+    }
+    
+      //! virtual destructor ensures use of polymorphism during destruction
+    virtual ~ShapeGuides812()
+      {};
+  };
+
+
+  /*! \class ShapeSizeGuides821
+    \brief  Shape and Size Improvement with Unit Aspect Ratio and Equidistributed Size. Use with R-DFT.
+  */
+  class ShapeSizeGuides821 : public LVQDTargetCalculator
+  {
+  public:
+    ShapeSizeGuides821(MeshSet* ref_mesh)
+    {
+      refMesh = ref_mesh;
+      lambdaBase = AVERAGE; 
+      guideLambda = A0;
+      guideV = Ad;
+      guideQ = Ad;
+      guideDelta = Ad;
+    }
+    
+      //! virtual destructor ensures use of polymorphism during destruction
+    virtual ~ShapeSizeGuides821()
+      {};
+  };
+
+
+  /*! \class ShapeSizeGuides822
+    \brief  Shape and Size Improvement with Unit Aspect Ratio and Preserved Size. Use with R-DFT.
+  */
+  class ShapeSizeGuides822 : public LVQDTargetCalculator
+  {
+  public:
+    ShapeSizeGuides822(MeshSet* ref_mesh)
+    {
+      refMesh = ref_mesh;
+      lambdaBase = REGULAR; 
+      guideLambda = A0;
+      guideV = Ad;
+      guideQ = Ad;
+      guideDelta = Ad;
+    }
+    
+      //! virtual destructor ensures use of polymorphism during destruction
+    virtual ~ShapeSizeGuides822()
+      {};
+  };
+
+  /*! \class ShapeSizeGuides823
+    \brief  Shape and Size Improvement with non-Unit Aspect Ratio and Equidistributed Size. Use with R-DFT.
+  */
+  class ShapeSizeGuides823 : public LVQDTargetCalculator
+  {
+  public:
+    ShapeSizeGuides823(MeshSet* ref_mesh)
+    {
+      refMesh = ref_mesh;
+      lambdaBase = AVERAGE; 
+      guideLambda = A0;
+      guideV = Ad;
+      guideQ = Ad;
+      guideDelta = A0;
+    }
+    
+      //! virtual destructor ensures use of polymorphism during destruction
+    virtual ~ShapeSizeGuides823()
+      {};
+  };
+
+
+  /*! \class ShapeSizeGuides824
+    \brief  Shape and Size Improvement with non-Unit Aspect Ratio and Preserved Size. Use with R-DFT.
+  */
+  class ShapeSizeGuides824 : public LVQDTargetCalculator
+  {
+  public:
+    ShapeSizeGuides824(MeshSet* ref_mesh)
+    {
+      refMesh = ref_mesh;
+      lambdaBase = REGULAR; 
+      guideLambda = A0;
+      guideV = Ad;
+      guideQ = Ad;
+      guideDelta = A0;
+    }
+    
+      //! virtual destructor ensures use of polymorphism during destruction
+    virtual ~ShapeSizeGuides824()
+      {};
+  };
+
+
+  /*! \class RezoneGuides831 */
+
+  /*! \class RezoneGuides832
+    \brief  Rezone with Angle Improvement. Use with I-DFT.
+  */
+  class RezoneGuides832 : public LVQDTargetCalculator
+  {
+  public:
+    RezoneGuides832(MeshSet* ref_mesh)
+    {
+      refMesh = ref_mesh;
+      lambdaBase = REGULAR; 
+      guideLambda = A0;
+      guideV = A0;
+      guideQ = Ad;
+      guideDelta = A0;
+    }
+    
+      //! virtual destructor ensures use of polymorphism during destruction
+    virtual ~RezoneGuides832()
+      {};
+  };
+
+  /*! \class RezoneGuides833 */
+
+  /*! \class RezoneGuides834 */
+
+  /*! \class DeformingDomainGuides841
+    \brief Deforming Domain Mesh Tracking. Use with I-DFT or R-DFT
+  */
+  class DeformingDomainGuides841 : public WTargetCalculator
+  {
+  public:
+    DeformingDomainGuides841(MeshSet* ref_mesh)
+    {
+      refMesh = ref_mesh;
+      guideMatrix = Ar;
+    }      
+
+    //! virtual destructor ensures use of polymorphism during destruction
+    virtual ~DeformingDomainGuides841()
+      {};
+  };
+
+  /*! \class DeformingGeometryGuides842 */
+
+  /*! \class DeformingGeometryGuides843
+    \brief  Deforming Geometry with Angle Improvement. Use with I-DFT or R-DFT.
+  */
+  class DeformingGeometryGuides843 : public LVQDTargetCalculator
+  {
+  public:
+    DeformingGeometryGuides843(MeshSet* ref_mesh)
+    {
+      refMesh = ref_mesh;
+      lambdaBase = REGULAR; 
+      guideLambda = Ar;
+      guideV = Ar;
+      guideQ = Ad;
+      guideDelta = Ar;
+    }
+    
+      //! virtual destructor ensures use of polymorphism during destruction
+    virtual ~DeformingGeometryGuides843()
+      {};
+  };
+
+
+  /*! \class DeformingGeometryGuides844
+    \brief  Deforming Geometry with Angle Improvement, non-Unit AR. 
+            Use with R-DFT.
+  */
+  class DeformingGeometryGuides844 : public LVQDTargetCalculator
+  {
+  public:
+    DeformingGeometryGuides844(MeshSet* ref_mesh)
+    {
+      refMesh = ref_mesh;
+      lambdaBase = REGULAR; 
+      guideLambda = Ar;
+      guideV = Ar;
+      guideQ = Ad;
+      guideDelta = A0;
+    }
+    
+      //! virtual destructor ensures use of polymorphism during destruction
+    virtual ~DeformingGeometryGuides844()
+      {};
+  };
+  /*! \class MorphGuides851 */
+
+  /*! \class MorphGuides852 */
+
+  /*! \class GeometricCurvatureGuides861 */
+
+  /*! \class GeometricCurvatureGuides862 */
+
+  /*! \class GeometricCurvatureGuides863 */
+
+  /*! \class SolutionErrorGuides871 */
+
+  /*! \class SolutionErrorGuides872 */
+
+  /*! \class SolutionErrorGuides873 */
+
+  /*! \class SolutionFeatureGuides881 */
+
+  /*! \class SolutionFeatureGuides882 */
+
+  /*! \class SolutionAlignGuides891 */
+
+
+
+ 
 } //namespace
 
 
