@@ -56,6 +56,8 @@ TESTNAMES := test_1\
              analytical_grad_3D\
              algorithm_test\
              ActiveSetTest\
+             simple_hybrid_test\
+###             shape_wrapper_test\
 ###             random_test\
 ###             exo_convert
 
