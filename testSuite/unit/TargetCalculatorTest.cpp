@@ -30,7 +30,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 13-Nov-02 at 18:05:56
-//  LAST-MOD:  4-Jun-04 at 15:30:08 by Thomas Leurent
+//  LAST-MOD: 15-Jun-04 at 15:54:59 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -44,8 +44,12 @@ Unit testing of various TargetCalculator concrete classes.
 
 
 #include "Mesquite.hpp"
+#include "FeasibleNewton.hpp"
 #include "TargetCalculator.hpp"
 #include "ConcreteTargetCalculators.hpp"
+#include "LPtoPTemplate.hpp"
+#include "sRI_DFT.hpp"
+#include "MeshImpl.hpp"
 
 #include "PatchDataInstances.hpp"
 
@@ -61,7 +65,7 @@ using std::endl;
 using std::cerr;
 
 class TargetCalculatorTest : public CppUnit::TestFixture,
-                       public Mesquite::WTargetCalculator
+                             public Mesquite::WTargetCalculator
 {
 private:
   CPPUNIT_TEST_SUITE(TargetCalculatorTest);
@@ -70,6 +74,10 @@ private:
   CPPUNIT_TEST (test_compute_V);
   CPPUNIT_TEST (test_compute_Q);
   CPPUNIT_TEST (test_compute_Delta);
+  CPPUNIT_TEST (test_optimize_vertex_positions_tets);  
+  CPPUNIT_TEST (test_optimize_vertex_positions_hexes);  
+  CPPUNIT_TEST (test_optimize_vertex_positions_triangles);  
+  CPPUNIT_TEST (test_optimize_vertex_positions_quads);  
   CPPUNIT_TEST_SUITE_END();
    
 private:
@@ -158,7 +166,7 @@ public:
     MsqError err;
 
     // Creates calculator and compute isotropic target corner matrices.
-    DefaultTargetCalculator iso_calc;
+    ShapeGuides811 iso_calc;
     iso_calc.compute_target_matrices(triPatch, err); MSQ_CHKERR(err);
 
     MsqMeshEntity* elems = triPatch.get_element_array(err); MSQ_CHKERR(err);
@@ -167,7 +175,7 @@ public:
 
     // checks corner matrices for first triangle, first corner.
     W = elems[0].get_tag()->target_matrix(0);
-    double fac = pow(2./sqrt(3.), 1./3.);
+    double fac = pow(2./sqrt(3.), 1./2.);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(W[0][0], fac*1., 1e-6);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(W[0][1], fac*.5, 1e-6);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(W[0][2], 0, 1e-6);
@@ -176,7 +184,7 @@ public:
     CPPUNIT_ASSERT_DOUBLES_EQUAL(W[1][2], 0, 1e-6);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(W[2][0], 0, 1e-6);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(W[2][1], 0, 1e-6);
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(W[2][2], fac*1., 1e-6);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(W[2][2], 1., 1e-6);
 
     // checks corner matrices for second triangle, third corner.
     W = elems[1].get_tag()->target_matrix(2);
@@ -188,7 +196,7 @@ public:
     CPPUNIT_ASSERT_DOUBLES_EQUAL(W[1][2], 0, 1e-6);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(W[2][0], 0, 1e-6);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(W[2][1], 0, 1e-6);
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(W[2][2], fac*1., 1e-6);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(W[2][2], 1., 1e-6);
 
     // checks there isn't a 4th corner matrix available
     // (normally commented out, since the embedded assert will stop the code). 
@@ -242,18 +250,80 @@ public:
     Matrix3D Delta = compute_Delta_3D(mG, err); MSQ_CHKERR(err);
 
     Matrix3D result = "  1.348   0.  0. "
-                      "  0.      1.  0. "
+                      "  0.      0.5503  0. "
                       "  0.      0.  1.348 ";
 
-    cout << Delta << endl;
-    cout << result << endl;
-    
     for (int i=0; i<3; ++i)
       for (int j=0; j<3; ++j)
         CPPUNIT_ASSERT_DOUBLES_EQUAL(result[i][j], Delta[i][j], .0001);
   }
 
 
+  void test_optimize_vertex_positions(const char* file_name, size_t vtx_index, Vector3D res,
+                              Vector3D* normal=0, Vector3D* point=0)
+  {
+    MsqError err;
+
+    Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
+    mesh->read_vtk(file_name, err); MSQ_CHKERR(err);
+    MeshSet mesh_set;
+    mesh_set.add_mesh(mesh, err); MSQ_CHKERR(err);
+    if (normal) {
+      PlanarDomain* domain = new PlanarDomain(*normal, *point, mesh);
+      mesh_set.set_domain_constraint(domain, err); MSQ_CHKERR(err);
+    }
+    
+    sRI_DFT dft;
+    LPtoPTemplate obj_func(&dft, 1, err); MSQ_CHKERR(err);
+    FeasibleNewton improver(&obj_func);
+    improver.set_patch_type(PatchData::GLOBAL_PATCH, err); MSQ_CHKERR(err);
+    ShapeGuides811 targ_calc;
+    improver.set_target_calculator(&targ_calc, err); MSQ_CHKERR(err);
+        
+    improver.loop_over_mesh(mesh_set, err); MSQ_CHKERR(err);
+
+    PatchData pd;
+    mesh_set.get_next_patch(pd, &improver, err); MSQ_CHKERR(err);
+    MsqVertex* vtx = pd.get_vertex_array(err); MSQ_CHKERR(err);
+    int good = vtx[vtx_index].within_tolerance_box(res, 1e-4);
+    cout << "vtx[]: " << vtx[vtx_index] << endl;
+    CPPUNIT_ASSERT( good==1 );
+  }
+
+  void test_optimize_vertex_positions_tets()
+  {
+    Vector3D res(0,0,0);
+    size_t vtx_index=0;
+    test_optimize_vertex_positions("../../meshFiles/3D/VTK/two_tets_shape.vtk",
+                                   vtx_index, res);
+  }
+  
+  void test_optimize_vertex_positions_hexes()
+  {
+    Vector3D res(0,0,0);
+    size_t vtx_index=26;
+    test_optimize_vertex_positions("../../meshFiles/3D/VTK/hex_2_with_bound.vtk",
+                                   vtx_index, res);
+  }
+  
+  void test_optimize_vertex_positions_triangles()
+  {
+    Vector3D res(0,0,0);
+    size_t vtx_index=8;
+    Vector3D normal (0,0,1);
+    Vector3D point (0,0,5);
+    test_optimize_vertex_positions("../../meshFiles/2D/VTK/square_tri_2.vtk",
+                                   vtx_index, res, &normal, &point);
+  }
+  
+  void test_optimize_vertex_positions_quads()
+  {
+    Vector3D res(0,0,0);
+    size_t vtx_index=8;
+    test_optimize_vertex_positions("../../meshFiles/2D/VTK/square_quad_2.vtk",
+                                   vtx_index, res);
+  }
+  
 };
 
 

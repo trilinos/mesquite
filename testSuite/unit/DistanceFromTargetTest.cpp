@@ -40,7 +40,10 @@ Unit testing of various DistanceFromTarget (base *and* concrete classes) functio
 
 #include "ConcreteTargetCalculators.hpp"
 #include "DistanceFromTarget.hpp"
+#include "I_DFT.hpp"
 #include "sI_DFT.hpp"
+#include "RI_DFT.hpp"
+#include "sRI_DFT.hpp"
 
 #include "cppunit/extensions/HelperMacros.h"
 #include "cppunit/SignalException.h"
@@ -57,11 +60,15 @@ class DistanceFromTargetTest : public CppUnit::TestFixture, Mesquite::DistanceFr
 {
 private:
   CPPUNIT_TEST_SUITE(DistanceFromTargetTest);
+  CPPUNIT_TEST (test_tri_with_default_target_matrix);
+  CPPUNIT_TEST (test_quad_with_default_target_matrix);
+  CPPUNIT_TEST (test_tet_with_default_target_matrix);
   CPPUNIT_TEST (test_compute_T_matrices);
   CPPUNIT_TEST_SUITE_END();
   
 private:
-  
+
+  PatchData oneTri;
   PatchData triPatch;
   PatchData quadPatch;
   PatchData tetPatch;
@@ -94,11 +101,7 @@ public:
      */
     create_qm_two_quad_patch_with_domain(quadPatch,err);MSQ_CHKERR(err);
     
-     /* Our tet patch is made of two tets.  tet_1 is a perfect
-        equilateral (the ideal for most metrics).  tet_2 is an arbitrary
-        tet.
-     */
-    create_qm_two_tet_patch(tetPatch,err);MSQ_CHKERR(err);
+    create_one_tet_patch(tetPatch,err);MSQ_CHKERR(err);
     
      /* Our hex patch is made of two hexes.  hex_1 is a perfect
         unit cube (the ideal for most metrics).  hex_2 is an arbitrary
@@ -112,6 +115,25 @@ public:
      create_one_tri_patch(idealTri, err);MSQ_CHKERR(err);
        //ideal tet
      create_one_tet_patch(idealTet, err);MSQ_CHKERR(err);
+
+     // Creates a patch of one triangle, with specific coordinates, without domain.
+     oneTri.set_num_vertices(3);
+     oneTri.set_num_elements(1);
+     double coords[3];
+     MsqVertex* vert_array = oneTri.get_vertex_array(err);
+     coords[0] = 1; coords[1] = -1; coords[2] = -1;
+     vert_array[0] = coords;
+     coords[0] = 3; coords[1] = 0; coords[2] = -2;
+     vert_array[1] = coords;
+     coords[0] = 2; coords[1] = -3; coords[2] = 0;
+     vert_array[2] = coords;
+     size_t indices[3] = { 0, 1, 2 };
+     MsqMeshEntity& tri = oneTri.element_by_index(0);
+     tri.set_element_type(Mesquite::TRIANGLE);
+     memcpy(tri.get_modifiable_vertex_index_array(),
+            indices,
+            3*sizeof(size_t));
+
   }
 
   void tearDown()
@@ -125,25 +147,185 @@ public:
     {}
 
 #undef __FUNC__
+#define __FUNC__ "DistanceFromTargetTest::test_tri_with_default_target_matrix"
+   void test_tri_with_default_target_matrix()
+   {
+     MsqError err;
+     Matrix3D tri_m3d, quad_m3d, tet_m3d, hex_m3d; 
+        
+     TargetCalculator::initialize_default_target_matrices(tri_m3d, quad_m3d, tet_m3d, hex_m3d);
+
+     idealTri.allocate_corner_matrices(err); MSQ_CHKERR(err);
+     MsqMeshEntity* elem = idealTri.get_element_array(err);
+     MsqTag* tag = elem[0].get_tag();
+     tag->target_matrix(0) = tri_m3d;
+     tag->target_matrix(1) = tri_m3d;
+     tag->target_matrix(2) = tri_m3d;
+
+     double coords[3];
+     MsqVertex* vert_array = idealTri.get_vertex_array(err);
+     double fac = pow(2./sqrt(3.), 1./2.);
+     coords[0] = 0; coords[1] = 0; coords[2] = 0;
+     vert_array[0] = coords;
+     coords[0] = fac; coords[1] = 0; coords[2] = 0;
+     vert_array[1] = coords;
+     coords[0] = fac*1./2.; coords[1] = fac*sqrt(3.)/2.; coords[2] = 0;
+     vert_array[2] = coords;
+
+     Matrix3D T[MSQ_MAX_NUM_VERT_PER_ENT];
+     double c_k[MSQ_MAX_NUM_VERT_PER_ENT];
+     this->compute_T_matrices(elem[0], idealTri, T, 3, c_k, err); MSQ_CHKERR(err);
+
+//    cout << T[0] << endl;
+
+     Matrix3D Id = " 1 0 0 "
+                   " 0 1 0 "
+                   " 0 0 1 ";
+
+     for (int i=0; i<3; ++i)
+       for (int j=0; j<3; ++j) 
+         CPPUNIT_ASSERT_DOUBLES_EQUAL(Id[i][j], T[0][i][j], 1e-10);
+         
+   }
+
+#undef __FUNC__
+#define __FUNC__ "DistanceFromTargetTest::test_quad_with_default_target_matrix"
+   void test_quad_with_default_target_matrix()
+   {
+     MsqError err;
+     Matrix3D tri_m3d, quad_m3d, tet_m3d, hex_m3d; 
+        
+     TargetCalculator::initialize_default_target_matrices(tri_m3d, quad_m3d, tet_m3d, hex_m3d);
+
+     quadPatch.allocate_corner_matrices(err); MSQ_CHKERR(err);
+     MsqMeshEntity* elem = quadPatch.get_element_array(err);
+     MsqTag* tag = elem[0].get_tag();
+     tag->target_matrix(0) = quad_m3d;
+     tag->target_matrix(1) = quad_m3d;
+     tag->target_matrix(2) = quad_m3d;
+     tag->target_matrix(3) = quad_m3d;
+
+     Matrix3D T[MSQ_MAX_NUM_VERT_PER_ENT];
+     double c_k[MSQ_MAX_NUM_VERT_PER_ENT];
+     this->compute_T_matrices(elem[0], quadPatch, T, 4, c_k, err); MSQ_CHKERR(err);
+
+//     cout << T[0] << endl;
+
+     Matrix3D Id = " 1 0 0 "
+                   " 0 1 0 "
+                   " 0 0 1 ";
+
+     for (int i=0; i<3; ++i)
+       for (int j=0; j<3; ++j) 
+         CPPUNIT_ASSERT_DOUBLES_EQUAL(Id[i][j], T[0][i][j], 1e-10);
+         
+   }
+  
+#undef __FUNC__
+#define __FUNC__ "DistanceFromTargetTest::test_tet_with_default_target_matrix"
+   void test_tet_with_default_target_matrix()
+   {
+     MsqError err;
+     Matrix3D tri_m3d, quad_m3d, tet_m3d, hex_m3d; 
+        
+     TargetCalculator::initialize_default_target_matrices(tri_m3d, quad_m3d, tet_m3d, hex_m3d);
+
+     tetPatch.allocate_corner_matrices(err); MSQ_CHKERR(err);
+     MsqMeshEntity* elem = tetPatch.get_element_array(err);
+     MsqTag* tag = elem[0].get_tag();
+     tag->target_matrix(0) = tet_m3d;
+     tag->target_matrix(1) = tet_m3d;
+     tag->target_matrix(2) = tet_m3d;
+     tag->target_matrix(3) = tet_m3d;
+
+     double coords[3];
+     MsqVertex* vert_array = tetPatch.get_vertex_array(err);
+     double fac = pow(sqrt(2.), 1./3.);
+     coords[0] = 0; coords[1] = 0; coords[2] = 0;
+     vert_array[0] = coords;
+     coords[0] = fac; coords[1] = 0; coords[2] = 0;
+     vert_array[1] = coords;
+     coords[0] = fac*.5; coords[1] = fac*sqrt(3.)/2.; coords[2] = 0;
+     vert_array[2] = coords;
+     coords[0] = fac*1./2.; coords[1] = fac*sqrt(3.)/6.; coords[2] = fac*sqrt(2.)/sqrt(3.);
+     vert_array[3] = coords;
+
+     Matrix3D T[MSQ_MAX_NUM_VERT_PER_ENT];
+     double c_k[MSQ_MAX_NUM_VERT_PER_ENT];
+     this->compute_T_matrices(elem[0], tetPatch, T, 4, c_k, err); MSQ_CHKERR(err);
+
+//     cout << T[0] << endl;
+
+     Matrix3D Id = " 1 0 0 "
+                   " 0 1 0 "
+                   " 0 0 1 ";
+
+     for (int i=0; i<3; ++i)
+       for (int j=0; j<3; ++j) 
+         CPPUNIT_ASSERT_DOUBLES_EQUAL(Id[i][j], T[0][i][j], 1e-10);
+         
+   }
+
+#undef __FUNC__
 #define __FUNC__ "DistanceFromTargetTest::test_compute_T_matrices"
    void test_compute_T_matrices()
    {
      MsqError err;
-     DefaultTargetCalculator target_calc;
+     ShapeGuides811 target_calc;
      Matrix3D T[MSQ_MAX_NUM_VERT_PER_ENT];
      double c_k[MSQ_MAX_NUM_VERT_PER_ENT];
 
+     
+     
      // W is a singular matrix in 2D ... code needs fixing.
-     MsqMeshEntity* tri_elems = idealTri.get_element_array(err); MSQ_CHKERR(err);
-     target_calc.compute_target_matrices(idealTri, err); MSQ_CHKERR(err);
-     this->compute_T_matrices(tri_elems[0], idealTri, T, 3, c_k, err); MSQ_CHKERR(err);
+     MsqMeshEntity* elem = oneTri.get_element_array(err); MSQ_CHKERR(err);
+     target_calc.compute_target_matrices(oneTri, err); MSQ_CHKERR(err);
+     this->compute_T_matrices(elem[0], oneTri, T, 3, c_k, err); MSQ_CHKERR(err);
+     
+     Matrix3D T_check[3];
 
-     MsqMeshEntity* elems = idealTet.get_element_array(err); MSQ_CHKERR(err);
-     target_calc.compute_target_matrices(idealTet, err); MSQ_CHKERR(err);
-     this->compute_T_matrices(elems[0], idealTet, T, 4, c_k, err); MSQ_CHKERR(err);
+     T_check[0] = "  1.86121    0        -0.169031 "
+                  "  0.930605  -2.68642  -0.507093 "
+                  " -0.930605   1.61185  -0.845154 ";
 
-     for (int i=0; i<4; ++i)
-       cout << "T["<<i<<"]:\n" << T[i] << endl;
+     T_check[1] = " -0.930605 -1.61185  -0.169031 "
+                  " -2.79181   0.537285 -0.507093 "
+                  "  1.86121   0        -0.845154 ";
+
+     T_check[2] = " -0.930605  1.61185  -0.169031 "
+                  "  1.86121   2.14914  -0.507093 "
+                  " -0.930605 -1.61185  -0.845154 ";
+
+//      oneTri.print();
+//      cout << T[0] << endl << T[1] << endl << T[2] << endl;
+     
+     for (int t=0; t<3; ++t) 
+       for (int i=0; i<3; ++i)
+         for (int j=0; j<3; ++j) {
+//            cout << t << " " << i << " " << j << " " << T_check[t][i][j] << " " << T[t][i][j] << endl;
+           CPPUNIT_ASSERT_DOUBLES_EQUAL(T_check[t][i][j], T[t][i][j], .00001);
+         }
+
+     double value1;     
+     I_DFT mu1;
+     mu1.evaluate_element(oneTri, &elem[0], value1, err);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(3.16432, value1, .00001);
+     
+     double value2;     
+     sI_DFT mu2;
+     mu2.evaluate_element(oneTri, &elem[0], value2, err);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(4.41468, value2, .00001);
+     
+     double value3;     
+     RI_DFT mu3;
+     mu3.evaluate_element(oneTri, &elem[0], value3, err);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(5.94919, value3, .00001);
+     
+     double value4;
+     sRI_DFT mu4;
+     mu4.evaluate_element(oneTri, &elem[0], value4, err);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(3.91061, value4, .00001);
+
    }
 };
 
