@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 12-Nov-02 at 18:05:56
-//  LAST-MOD:  5-May-03 at 15:48:30 by Thomas Leurent
+//  LAST-MOD:  6-May-03 at 10:44:51 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -542,8 +542,8 @@ namespace Mesquite
       Our triangular patch is made of two tris.  tri_1 is a perfect
       equilateral (the ideal for most metrics).  tri_2 is an arbitrary
       triangle.
-       Memory allocated in this function must be deallocated with
-       destroy_patch_with_domain().
+      Memory allocated in this function must be deallocated with
+      destroy_patch_with_domain().
    */
    inline void create_qm_two_tri_patch_with_domain(PatchData &triPatch, MsqError &err) 
    {
@@ -558,7 +558,7 @@ namespace Mesquite
      triPatch.vertex_by_index(0).set(0.0, 0.0, 0.0);
      triPatch.vertex_by_index(1).set(1.0, 0.0, 0.0);
      triPatch.vertex_by_index(2).set(.5, sqrt(3.0)/2.0, 0.0);
-     triPatch.vertex_by_index(3).set(2.0, 2.0, 2.0);
+     triPatch.vertex_by_index(3).set(2.0, -4.0, 2.0);
      
      triPatch.set_num_elements(2);
      
