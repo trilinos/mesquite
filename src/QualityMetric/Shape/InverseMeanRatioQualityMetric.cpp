@@ -581,8 +581,6 @@ bool InverseMeanRatioQualityMetric::compute_element_analytical_hessian(PatchData
 
   Vector3D n;			// Surface normal for 2D objects
 
-  double   nm;
-
   // Hex element descriptions
   static const int locs_hex[8][4] = {{0, 1, 3, 4},  
 				     {1, 2, 0, 5},
