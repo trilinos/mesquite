@@ -5,7 +5,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 18-Dec-02 at 11:08:22
-//  LAST-MOD: 22-Jan-03 at 17:31:19 by Thomas Leurent
+//  LAST-MOD: 23-Jan-03 at 10:32:42 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -152,12 +152,13 @@ namespace Mesquite
     friend Vector3D operator*(const Vector3D &x, const Matrix3D  &A);
     Matrix3D& operator+=(const Matrix3D &rhs);
     Matrix3D plus_transpose(const Matrix3D &B);
-
+    void fill_lower_triangle();
+    
     size_t num_rows() const { return 3; }
     size_t num_cols() const { return 3; }
 
     //! returns a pointer to a row.
-    inline double* operator[](size_t i)
+    inline double* operator[](int i)
     {
 #ifdef MSQ_DEBUG
       assert(0<=i);
@@ -167,7 +168,7 @@ namespace Mesquite
     }
 
     //! returns a pointer to a row.
-    inline const double* operator[](size_t i) const
+    inline const double* operator[](int i) const
     {
 #ifdef MSQ_DEBUG
       assert(0<=i);
@@ -285,6 +286,13 @@ namespace Mesquite
     }
     return tmp;
   }
+
+  inline void Matrix3D::fill_lower_triangle()
+  {
+    v_[4] = v_[1];
+    v_[6] = v_[2];
+    v_[7] = v_[5];
+  } 
 
   inline Matrix3D operator*(const Matrix3D  &A, 
                             const Matrix3D &B)
