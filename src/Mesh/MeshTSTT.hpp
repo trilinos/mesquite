@@ -31,6 +31,17 @@
           Provide interface to TSTT mesh database and iterators
           for a subset of the database's  mesh.
 
+          Usage of Mesquite-provided TSTT glue code:
+          
+            1) Create an entity set in the TSTTM implementation containing
+               the set of mesh elements Mesquite is to improve.
+            2) Optionally create an integer tag with the name defined in
+               VERTEX_FIXED_TAG_NAME and set the tag value to either
+               0 or 1 to indiciate if a vertex is free or fixed, respectively.
+            3) Call Mesquite::MeshTSTT::create, passing in the TSTTM 
+               implementation and the entity set from 1).
+            4) Use the TSTTM::Mesh from 3) in constructing an instruction 
+               queue.
 
   \author Jason Kraftcheck
   \date   2004-10-22
@@ -47,6 +58,21 @@ namespace TSTTM {
 
 namespace Mesquite
 {
+  /** The name of the tag (integer) that Mesquite will use
+   *  to store internal data
+   */
+  const char* const VERTEX_BYTE_TAG_NAME  = "MesquiteVertexByte";
+  
+  /** The name of the tag (integer) Mesquite expects to be non-zero
+   *  for vertices which are not to be moved by Mesquite
+   */
+  const char* const VERTEX_FIXED_TAG_NAME = "MesquiteVertexFixed";
+
+  /** The name of the tag (integer) used internally by MeshTSTT
+   *  to eliminate duplicate vertices.
+   */
+  //const char* const VERTEX_INDEX_TAG_NAME = "MesquiteVertexIndex";
+
   /*!  \class MeshTSTT
 
   \brief  Provide interface to TSTT mesh database
@@ -67,6 +93,8 @@ namespace Mesquite
      * Create instance of MeshTSTT.  
      * If \ref set_active_set is not called on resulting object,
      * will default to the ENTIRE mesh.
+     * \param mesh     The TSTTM mesh instance
+     * \param meshset  The mesh to improve (elements and vertices)
      */
     static MeshTSTT* create( TSTTM::Mesh& mesh, void* meshset, MsqError& err );
     
@@ -74,20 +102,15 @@ namespace Mesquite
     
       /** \brief set mesh to be smoothed.
        *
-       * Set the mesh which Mesquite is to smooth.  Optionally
-       * specify fixed vertices.
+       * Set the mesh which Mesquite is to smooth.  
        * NOTE: If an active set is not specified, the default
        *       is to use the global set (the ENTIRE mesh.)
        *
        *\param element_set TSTT entity set handle for set containing
-       *                  mesh elements for which quality is to be improved.
-       *                  Any non-element entities in the set will be
-       *                  ignored.
-       *\param fixed_vertices TSTT entity set handle containing list of 
-       *                  vertices which are not to be moved.  If NULL,
-       *                  it is assumed that all vertices may be moved.
+       *                  mesh elements and vertices for which quality 
+       *                  is to be improved.
        */
-    virtual void set_active_set( void* element_set,  void* fixed_vertices, MsqError&  ) = 0;
+    virtual void set_active_set( void* element_set,  MsqError&  ) = 0;
   };
 }
 

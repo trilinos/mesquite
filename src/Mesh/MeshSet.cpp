@@ -200,7 +200,7 @@ bool MeshSet::get_next_patch(PatchData &pd,
       result = false;
       break;
   }
-  
+
   return !MSQ_CHKERR(err) && result;
 }
 

@@ -33,20 +33,29 @@
   \date   2004-10-26
 */
 
+#include <sidl_cxx.hh>
+#include "TSTT.hh"
+#include "TSTTM.hh"
 #include "MeshTSTT.hpp"
 #include "MsqDebug.hpp"
 #include "MsqVertex.hpp"
-#include "TSTTM.hh"
-#include "TSTTM_EntityTopology.hh"
-#include "sidl_cxx.hh"
+#include "MsqError.hpp"
+#include "MeshInterface.hpp"
 
-namespace Mesquite
-{
+#ifdef MSQ_USE_OLD_STD_HEADERS
+# include <map.h>
+#else
+# include <map>
+#endif
 
-const char* const VERTEX_BYTE_TAG_NAME  = "MesquiteVertexByte";
-const char* const VERTEX_FIXED_TAG_NAME = "MesquiteVertexFixed";
+#define OPAQUE_TYPE_OPAQUE_PADDED 0
+#define OPAQUE_TYPE_OPAQUE_PACKED 1
+#define OPAQUE_TYPE_CHAR          2
+#define OPAQUE_TYPE_UCHAR         3
+#define OPAQUE_TYPE_BYTE          UCHAR
+#define TSTT_OPAQUE_TAG_TYPE OPAQUE_PADDED
 
-static msq_std::string process_tstt_error( TSTT::Error &tstt_err )
+static inline msq_std::string process_tstt_error( TSTT::Error &tstt_err )
 {
   msq_std::string str;
   msq_std::string result("TSTT ERROR: ");
@@ -59,22 +68,22 @@ static msq_std::string process_tstt_error( TSTT::Error &tstt_err )
   return result;
 }
 
-template <class T> static sidl::array<T> alloc_sidl_vector( size_t size )
+template <class T> static inline sidl::array<T> alloc_sidl_vector( size_t size )
 {
   int32_t lower = 0;
   int32_t upper = size - 1;
-  return sidl::array<T>::createRow( 1, &lower, &upper );
+  return sidl::array<T>::createCol( 1, &lower, &upper );
 }
 
-template <class T> static sidl::array<T> alloc_sidl_vector( size_t size, T init )
+template <class T> static inline sidl::array<T> alloc_sidl_vector( size_t size, T init )
 {
-  sidl::array<T> result = alloc_sidl_vector(size);
+  sidl::array<T> result = alloc_sidl_vector<T>(size);
   for (int32_t i = 0; i < (int32_t)size; ++i)
     result.set( i, init );
   return result;
 }
 
-template <class S, class T> static void copy_from_sidl( sidl::array<S>& source,
+template <class S, class T> static inline void copy_from_sidl( sidl::array<S>& source,
                                                         T* target )
 {
   typename sidl::array<S>::iterator i = source.begin();
@@ -82,11 +91,29 @@ template <class S, class T> static void copy_from_sidl( sidl::array<S>& source,
     *target = (T)*i;
 }
 
+template <class T> static inline 
+sidl::array<T> convert_to_sidl_vector( T* array, size_t size )
+{
+  sidl::array<T> result;
+  int32_t lower = 0, upper = size - 1, stride = 1;
+  result.borrow( array, 1, &lower, &upper, &stride );
+  return result;
+}
+
+
+namespace Mesquite
+{
+
+
+
 /*************************************************************************
- *                          Iterator Definition
+ *                          Iterator Definitions
+ *
+ * This file contains three alternate iterator implementations.  After
+ * some performance testing, two should be removed.
  ************************************************************************/
 
-/** \brief Wrapper around TSTT interator interface */
+/** \brief Wrapper around single-entity TSTT interator */
 class TSTTIterator : public EntityIterator
 {
   private:
@@ -209,6 +236,107 @@ class SIDLIterator : public EntityIterator
     virtual void operator++()                    { ++iter; }
 };
 
+/** \brief TSTT iterator using array-iterator interface and buffer of handles */
+class TSTTArrIter : public EntityIterator
+{
+  private:
+  
+    sidl::array<void*> handleArray;
+    void* tsttIter;
+    int index, count;
+    bool notAtEnd;
+    TSTTM::Arr& myMesh;
+    
+    inline void get_next_array() 
+    {
+      index = count = 0;
+      notAtEnd = myMesh.getEntArrNextIter( tsttIter, handleArray, count ) && count;
+    }
+    
+  public:
+  
+    TSTTArrIter( TSTTM::Arr& mesh, 
+                 void* meshset, 
+                 TSTTM::EntityType type,
+                 TSTTM::EntityTopology topo,
+                 unsigned buffer_count = 1024 );
+    
+      /**\brief reset iterator */
+    virtual void restart();
+      /**\brief get current entity handle */
+    virtual Mesh::EntityHandle operator*() const;
+      /**\brief check if any remaining entity handles */
+    virtual bool is_at_end() const;
+      /**\biref step */
+    virtual void operator++();
+    
+    virtual ~TSTTArrIter();
+};
+
+TSTTArrIter::TSTTArrIter( TSTTM::Arr& mesh, 
+                          void* meshset, 
+                          TSTTM::EntityType type,
+                          TSTTM::EntityTopology topo,
+                          unsigned buffer_count )
+                        : handleArray( alloc_sidl_vector<void*>(buffer_count) ),
+                          tsttIter(0),
+                          index(0),
+                          count(0),
+                          notAtEnd(false),
+                          myMesh( mesh )
+{
+  mesh.initEntArrIter( meshset, type, topo, buffer_count, tsttIter );
+  get_next_array();
+}
+
+TSTTArrIter::~TSTTArrIter() 
+{
+  try {
+    if (tsttIter)
+      myMesh.endEntArrIter( tsttIter );
+  }
+  catch (TSTT::Error& tstt_err) {
+    process_tstt_error( tstt_err );
+    throw;
+  }
+}
+
+void TSTTArrIter::restart()
+{
+  try {
+    myMesh.resetEntArrIter( tsttIter );
+    get_next_array();
+  }
+  catch (TSTT::Error& tstt_err) {
+    process_tstt_error( tstt_err );
+    throw;
+  }
+}
+
+Mesh::EntityHandle TSTTArrIter::operator*() const
+{
+  return handleArray.get(index);
+}
+
+bool TSTTArrIter::is_at_end() const
+{
+  return index == count && !notAtEnd;
+}
+
+void TSTTArrIter::operator++()
+{
+  try {
+    ++index;
+    if (index == count && notAtEnd)
+      get_next_array();
+  }                        
+  catch (TSTT::Error& tstt_err) {
+    process_tstt_error( tstt_err );
+    throw;
+  }
+}
+     
+      
 
 
 
@@ -233,14 +361,10 @@ class SIDLIterator : public EntityIterator
        *       is to use the global set (the ENTIRE mesh.)
        *
        *\param element_set TSTT entity set handle for set containing
-       *                  mesh elements for which quality is to be improved.
-       *                  Any non-element entities in the set will be
-       *                  ignored.
-       *\param vertex_set TSTT entity set handle containing list of 
-       *                  vertices which are not to be moved.  If NULL,
-       *                  it is assumed that all vertices may be moved.
+       *                  mesh elements and vertices for which quality 
+       *                  is to be improved.
        */
-    virtual void set_active_set( void* element_set, void* vertex_set, MsqError& );
+    virtual void set_active_set( void* element_set, MsqError& );
     
 
       /**\brief Get dimension of vertex coordinates (2D vs. 3D). */
@@ -299,9 +423,9 @@ class SIDLIterator : public EntityIterator
                                  size_t num_vtx, MsqError &err);
     
       /**\brief Get vertex coordinates */
-    virtual void vertices_get_coordinates(VertexHandle vert_array[],
-                                  MsqVertex* const &coordinates,
-                                  const size_t &num_vtx, MsqError &err);
+    virtual void vertices_get_coordinates(const VertexHandle vert_array[],
+                                  MsqVertex* coordinates,
+                                  size_t num_vtx, MsqError &err);
       /**\brief Set vertex coordinates */
     virtual void vertex_set_coordinates(VertexHandle vertex,
                                  const Vector3D &coordinates, MsqError &err);
@@ -334,6 +458,10 @@ class SIDLIterator : public EntityIterator
       /**\biref Get length of connectivity list */
     virtual size_t element_get_attached_vertex_count(ElementHandle elem,
                                                   MsqError &err);
+    
+    virtual size_t get_vertex_use_count( ElementHandle* array,
+                                         size_t length, 
+                                         MsqError& err );
     
 /**\brief Get element connectivity in overly-complex CSR rep.
  *
@@ -508,6 +636,11 @@ class SIDLIterator : public EntityIterator
                                        const VertexHandle* node_array,
                                        void* tag_data,
                                        MsqError& err );
+                                       
+  protected:
+        
+    void set_int_tag( void* tag, void* meshset, int value, MsqError& err );
+
   private:
       /** \brief Set tag values */
     void tag_set_data ( TagHandle handle,
@@ -526,18 +659,20 @@ class SIDLIterator : public EntityIterator
     /** TSTT basic mesh interface instance */
     TSTTM::Mesh meshIFace;
     /** TSTT interface for per-entity queries */
-    TSTTM::EntTag entIFace;
+    TSTTM::Entity entIFace;
+    TSTT::EntTag tagIFace;
     /** TSTT interface for multi-entity (array) queries */
-    TSTTM::ArrTag arrIFace;
+    TSTTM::Arr arrIFace;
+    TSTT::ArrTag arrTagIFace;
     /** TSTT interface for modifying mesh */
     TSTTM::Modify modIFace;
     /** TSTT interface for entity set operations */
-    TSTTM::EntSet setIFace;
+    TSTT::EntSet setIFace;
     
-    /** TSTTM entity set handle for fixed vertices */
-    void* fixedVertices;
     /** TSTTM entity set handle for elements to improve */
-    void* activeSet;
+    void* elementSet;
+    /** TSTTM entity set handle for nodes to move */
+    void* nodeSet;
     
     /** Handle for tag used to hold vertex byte */
     TagHandle byteTag; 
@@ -547,9 +682,13 @@ class SIDLIterator : public EntityIterator
     TagHandle fixedTag;
     /** Fixed tag was created in constructor */
     bool createdFixedTag;
+    /** Handle for the tag used internally to remove duplicates from lists */
+//    TagHandle vertexIndexTag;
+    /** vertexIndexTag was created in constructor */
+//    bool createdVertexIndexTag;
     
     /** Map TSTTM::EntityTopology to Mesquite::EntityTopology */
-    EntityTopology topologyMap[TSTTM::EntityTopology_ALL_TOPOLOGIES];
+    EntityTopology topologyMap[TSTTM::EntityTopology_ALL_TOPOLOGIES+1];
  };
 
 /*************************************************************************
@@ -564,7 +703,7 @@ MeshTSTT* MeshTSTT::create( TSTTM::Mesh& mesh, void* meshset, MsqError& err )
     delete result;
     result = 0;
   }
-  result->set_active_set( meshset, 0, err );
+  result->set_active_set( meshset, err );
   if (MSQ_CHKERR(err))
   {
     delete result;
@@ -578,9 +717,10 @@ MeshTSTT::~MeshTSTT() {}
 
 MeshTSTTImpl::MeshTSTTImpl(TSTTM::Mesh& tstt_mesh, Mesquite::MsqError& err) 
   : meshIFace(tstt_mesh), 
-    fixedVertices(0), activeSet(0), 
+    elementSet(0), nodeSet(0), 
     byteTag(0), createdByteTag(false),
     fixedTag(0), createdFixedTag(false)
+//    ,vertexIndexTag(0), createdVertexIndexTag(false)
 {
     // Initialize topology map 
   
@@ -635,71 +775,116 @@ MeshTSTTImpl::MeshTSTTImpl(TSTTM::Mesh& tstt_mesh, Mesquite::MsqError& err)
                        MsqError::INVALID_STATE );
       return;
     }
-    
-      // Get/create tag for fixed flag
-    try {
-      bool def = false;
-      entIFace.createTag( VERTEX_FIXED_TAG_NAME, 1, TSTT::TagValueType_BOOLEAN, &def, fixedTag );
-      if (fixedTag)
-        createdFixedTag = true;
-    } 
-    catch (TSTT::Error& tstt_err) {
-      fixedTag = entIFace.getTagHandle( VERTEX_FIXED_TAG_NAME );
-      if (!fixedTag)
-        throw;
-    }  
-      // Double-check types incase tag already existed
-    if (entIFace.getTagSize(fixedTag) != 1 || 
-        entIFace.getTagSize(fixedTag) != TSTT::TagValueType_BOOLEAN)
+      // Get tag interface
+    tagIFace = tstt_mesh;
+    if (!tagIFace)
     {
-      MSQ_SETERR(err)( MsqError::INVALID_STATE, 
-                       "Tag \"%s\" exists with invalid type/size", 
-                       VERTEX_FIXED_TAG_NAME );
+      MSQ_SETERR(err)( "TSTTM::Mesh does not implement TSTT::EntTag",
+                       MsqError::INVALID_STATE );
       return;
+    }
+      // Get tag interface
+    arrTagIFace = tstt_mesh;
+    if (!arrTagIFace)
+    {
+      MSQ_SETERR(err)( "TSTTM::Mesh does not implement TSTT::ArrTag",
+                       MsqError::INVALID_STATE );
+      return;
+    }
+    
+      // Get tag for fixed flag
+    try {
+      fixedTag = tagIFace.getTagHandle( VERTEX_FIXED_TAG_NAME );
+
+        // Double-check types incase tag already existed
+      if (tagIFace.getTagSize(fixedTag) != sizeof(int) || 
+          tagIFace.getTagType(fixedTag) != TSTT::TagValueType_INTEGER)
+      {
+        MSQ_SETERR(err)( MsqError::INVALID_STATE, 
+                         "Tag \"%s\" exists with invalid type/size", 
+                         VERTEX_FIXED_TAG_NAME );
+        return;
+      }
+    } catch (...) { 
+      fixedTag = 0;
     }
     
       // Get/create tag for vertex byte
-    try {
-      char def = '\0';
-      entIFace.createTag( VERTEX_BYTE_TAG_NAME, 1, TSTT::TagValueType_OPAQUE, &def, byteTag );
-      if (byteTag)
-        createdByteTag = true;
+    //try {
+    //  byteTag = tagIFace.getTagHandle( VERTEX_BYTE_TAG_NAME );
+    //} catch (...) {}
+
+    if (!byteTag) {
+      tagIFace.createTag( VERTEX_BYTE_TAG_NAME, sizeof(int), TSTT::TagValueType_INTEGER, byteTag );
+      createdByteTag = true;
     } 
-    catch (TSTT::Error& tstt_err) {
-      fixedTag = entIFace.getTagHandle( VERTEX_FIXED_TAG_NAME );
-      if (!fixedTag)
-        throw;
-    }  
       // Double-check types incase tag already existed
-    if (entIFace.getTagSize(fixedTag) != 1 || 
-        entIFace.getTagType(fixedTag) != TSTT::TagValueType_OPAQUE)
+    if (tagIFace.getTagSize(byteTag) != sizeof(int) || 
+        tagIFace.getTagType(byteTag) != TSTT::TagValueType_INTEGER)
     {
       MSQ_SETERR(err)( MsqError::INVALID_STATE, 
                        "Tag \"%s\" exists with invalid type/size", 
-                       VERTEX_FIXED_TAG_NAME );
+                       VERTEX_BYTE_TAG_NAME );
       return;
     }
+    
+      // Clear vertex byte tag
+    set_int_tag( byteTag, nodeSet, 0, err );
+    if (err)
+      return;
+    
+      // Get/create tag for vertex index
+/*
+    //try {
+    //  vertexIndexTag = tagIFace.getTagHandle( VERTEX_INDEX_TAG_NAME );
+    //} catch (...) {}
 
+    if (!vertexIndexTag) {
+      tagIFace.createTag( VERTEX_INDEX_TAG_NAME, sizeof(int), TSTT::TagValueType_INTEGER, byteTag );
+      createdVertexIndexTag = true;
+    } 
+      // Double-check types incase tag already existed
+    if (tagIFace.getTagSize(vertexIndexTag) != sizeof(int) || 
+        tagIFace.getTagType(vertexIndexTag) != TSTT::TagValueType_INTEGER)
+    {
+      MSQ_SETERR(err)( MsqError::INVALID_STATE, 
+                       "Tag \"%s\" exists with invalid type/size", 
+                       VERTEX_INDEX_TAG_NAME );
+      return;
+    }
+*/
   }
   catch (TSTT::Error &tstt_err) {
     MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
     try {
       if (createdFixedTag)
-        entIFace.destroyTag( fixedTag, false );
+        tagIFace.destroyTag( fixedTag, false );
       if (createdByteTag)
-        entIFace.destroyTag( byteTag, false );
+        tagIFace.destroyTag( byteTag, false );
+//      if (createdVertexIndexTag)
+//        tagIFace.destroyTag( vertexIndexTag, false );
     } 
     catch (...) {}
+  }
+  catch(...) {
+    MSQ_SETERR(err)("Uknown exception",MsqError::INTERNAL_ERROR);
   }
 }
 
 Mesquite::MeshTSTTImpl::~MeshTSTTImpl() 
 {
   try {
+    if (elementSet) 
+      setIFace.destroyEntSet( elementSet );
+    if (nodeSet)
+      setIFace.destroyEntSet( nodeSet );
+      
     if (createdFixedTag)
-      entIFace.destroyTag( fixedTag, false );
+      tagIFace.destroyTag( fixedTag, false );
     if (createdByteTag)
-      entIFace.destroyTag( byteTag, false );
+      tagIFace.destroyTag( byteTag, false );
+//    if (createdVertexIndexTag)
+//      tagIFace.destroyTag( vertexIndexTag, false );
   } 
   catch (TSTT::Error& tstt_err ) {
     process_tstt_error(tstt_err);
@@ -708,52 +893,133 @@ Mesquite::MeshTSTTImpl::~MeshTSTTImpl()
 }
 
 
-void MeshTSTTImpl::set_active_set( void* elem_set, void* fixed_verts, MsqError& err )
+void MeshTSTTImpl::set_int_tag( void* tag,
+                                void* elem_set, 
+                                int value, 
+                                MsqError& err )
 {
+  const unsigned BUFFER_COUNT = 1024;
+  
+  sidl::array<int> value_array( alloc_sidl_vector<int>( BUFFER_COUNT, value ) );
+  
+  sidl::array<void*> handle_array( alloc_sidl_vector<void*>( BUFFER_COUNT ) );
+  int count;
+  void* iter = 0;
+  bool more;
+  
   try {
-    void* iter;
-    void* handle;
-  
-      // Make sure elem_set contains only faces and regions
-    entIFace.initEntIter( elem_set, TSTTM::EntityType_ALL_TYPES, TSTTM::EntityTopology_ALL_TOPOLOGIES, iter );
-    while (entIFace.getNextEntIter( iter, handle ))
-    {
-      TSTTM::EntityType type = entIFace.getEntType( handle );
-      if (type != TSTTM::EntityType_FACE && type != TSTTM::EntityType_REGION)
-      {
-        MSQ_SETERR(err)("Active set must contain only FACEs and/or REGIONs",
-                        MsqError::INVALID_ARG);
-        return;
-      }
-    }
-  
-  
-      // Clear old fixed flags
-    if (fixedVertices)
-    {
-      entIFace.initEntIter( fixedVertices, TSTTM::EntityType_VERTEX, TSTTM::EntityTopology_POINT, iter );
-      while (entIFace.getNextEntIter( iter, handle ))
-        entIFace.setBoolData( handle, fixedTag, false );
-      entIFace.endEntIter( iter );
-    }
     
-    fixedVertices = fixed_verts;
+    arrIFace.initEntArrIter( elem_set, 
+                             TSTTM::EntityType_VERTEX, 
+                             TSTTM::EntityTopology_POINT, 
+                             BUFFER_COUNT, iter );
+                             
+    do {
+      more = arrIFace.getEntArrNextIter( iter, handle_array, count );
+      if (count > 0)
+        arrTagIFace.setIntArrData( handle_array, count, tag, value_array, count );
+    } while (more);
     
-      // Set new fixed flags
-    if (fixedVertices)
-    {
-      entIFace.initEntIter( fixedVertices, TSTTM::EntityType_VERTEX, TSTTM::EntityTopology_POINT, iter );
-      while (entIFace.getNextEntIter( iter, handle ))
-        entIFace.setBoolData( handle, fixedTag, false );
-      entIFace.endEntIter( iter );
-    }
-    
-    activeSet = elem_set;
+    arrIFace.endEntArrIter( iter );
   }
+  
   catch (TSTT::Error &tstt_err) {
+    if( iter ) try {  arrIFace.endEntArrIter( iter ); } catch (...) {}
     MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
   }
-}    
+}
+
+
+void MeshTSTTImpl::set_active_set( void* elem_set, MsqError& err )
+{
+  const int ELEM_BUFFER_SIZE = 1024;
+  const int NODE_BUFFER_SIZE = 27 * ELEM_BUFFER_SIZE; 
+  sidl::array<void*> elements( alloc_sidl_vector<void*>( ELEM_BUFFER_SIZE ) );
+  sidl::array<void*>    nodes( alloc_sidl_vector<void*>( NODE_BUFFER_SIZE ) );
+  sidl::array<int>    offsets( alloc_sidl_vector<int  >( ELEM_BUFFER_SIZE ) );
+  void* iter = 0;
+ 
+  try {
+    
+      // Create new sets for nodes and elements
+    if (elementSet)
+    {
+      setIFace.destroyEntSet( elementSet );
+      elementSet = 0;
+    }
+    if (nodeSet)
+    {
+      setIFace.destroyEntSet( nodeSet );
+      nodeSet = 0;
+    }
+    setIFace.createEntSet( false, elementSet );
+    setIFace.createEntSet( false, nodeSet );
+    
+      // Iterate over set twice, once for FACEs and once for REGIONs
+    for (int i = 0; i < 2; ++i)
+    {
+      TSTTM::EntityType type = i ? TSTTM::EntityType_REGION : 
+                                   TSTTM::EntityType_FACE;
+                                   
+      arrIFace.initEntArrIter( elem_set, 
+                               type, 
+                               TSTTM::EntityTopology_ALL_TOPOLOGIES,
+                               ELEM_BUFFER_SIZE, 
+                               iter );
+      
+      int count = 0;
+      bool more = false;
+      do {
+          // Add elements to element set
+        more = arrIFace.getEntArrNextIter( iter, elements, count );
+        if (!count) break;
+        setIFace.addEntArrToSet( elements, count, elementSet );
+        
+          // Add nodes to node set
+        int num_nodes, num_offsets;
+        arrIFace.getEntArrAdj( elements, count, TSTTM::EntityType_VERTEX,
+                               nodes, num_nodes, offsets, num_offsets );
+        setIFace.addEntArrToSet( nodes, num_nodes, nodeSet );
+      
+      } while (more);
+        
+      arrIFace.endEntArrIter( iter );
+      iter = 0;
+      
+    } // for (type)
+    
+    //set_fixed_tag( nodeSet, false, err ); MSQ_ERRRTN(err);
+  }
+  catch (TSTT::Error &tstt_err) {
+      // If an error occured, try to clean up anything created above
+
+    try {
+      if (iter) {
+        arrIFace.endEntArrIter( iter );
+        iter = 0;
+      }
+    }
+    catch( ... ) {}
+    
+    try {
+      if (elementSet) {
+        setIFace.destroyEntSet( elementSet );
+        elementSet = 0;
+      }
+    }
+    catch( ... ) {}
+    
+    try {
+      if (nodeSet) {
+        setIFace.destroyEntSet( nodeSet );
+        nodeSet = 0;
+      }
+    }
+    catch( ... ) {}
+    
+    MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
+  }
+}
       
   
 
@@ -778,31 +1044,10 @@ int MeshTSTTImpl::get_geometric_dimension(Mesquite::MsqError &err)
 VertexIterator* MeshTSTTImpl::vertex_iterator(MsqError& err)
 {
   try {
-  
-    sidl::array<void*> handles;
-    sidl::array<int> offsets, indices;
-    int num_handles, num_offsets, num_indices;
-    meshIFace.getAdjEntities( activeSet, 
-                              TSTTM::EntityType_ALL_TYPES,
-                              TSTTM::EntityTopology_ALL_TOPOLOGIES,
-                              TSTTM::EntityType_VERTEX,
-                              handles, num_handles,
-                              offsets, num_offsets,
-                              indices, num_indices );
-                              
-    handles = alloc_sidl_vector<void*>(num_handles);
-    offsets = alloc_sidl_vector<int>(num_offsets);
-    indices = alloc_sidl_vector<int>(num_indices);
-    meshIFace.getAdjEntities( activeSet, 
-                              TSTTM::EntityType_ALL_TYPES,
-                              TSTTM::EntityTopology_ALL_TOPOLOGIES,
-                              TSTTM::EntityType_VERTEX,
-                              handles, num_handles,
-                              offsets, num_offsets,
-                              indices, num_indices );
-    
-    return new SIDLIterator( handles );
-    
+    return new TSTTArrIter( arrIFace, 
+                            nodeSet, 
+                            TSTTM::EntityType_ALL_TYPES,
+                            TSTTM::EntityTopology_ALL_TOPOLOGIES );
   }
   catch (TSTT::Error &tstt_err) {
     MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
@@ -817,31 +1062,11 @@ VertexIterator* MeshTSTTImpl::vertex_iterator(MsqError& err)
 // an iterator, the behavior of that iterator is undefined.
 ElementIterator* MeshTSTTImpl::element_iterator(MsqError &err)
 {
-  // Use array instead of TSTT iterator for efficiency
-  //
-  //ElementIterator* result = new TSTTIterator( entIFace, 
-  //                                            activeSet,
-  //                                            TSTTM::EntityType_ALL_TYPES,
-  //                                            TSTTM::EntityTopology_ALL_TOPOLOGIES,
-  //                                            err );
-  //if (MSQ_CHKERR(err))
-  //{
-  //  delete result;
-  //  return 0;
-  //}
-  //return result;
-  
   try {
-    int size_out, size = meshIFace.getNumOfType( activeSet, TSTTM::EntityType_ALL_TYPES );
-    sidl::array<void*> handles = alloc_sidl_vector<void*>(size);
-    meshIFace.getEntities( activeSet, 
-                           TSTTM::EntityType_ALL_TYPES, TSTTM::EntityTopology_ALL_TOPOLOGIES,
-                           handles, size_out );
-    if (size_out != size) {
-      MSQ_SETERR(err)(MsqError::INTERNAL_ERROR);
-      return 0;
-    }
-    return new SIDLIterator( handles );
+    return new TSTTArrIter( arrIFace, 
+                            elementSet, 
+                            TSTTM::EntityType_ALL_TYPES, 
+                            TSTTM::EntityTopology_ALL_TOPOLOGIES );
   }
   catch (TSTT::Error &tstt_err) {
     MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
@@ -857,8 +1082,12 @@ ElementIterator* MeshTSTTImpl::element_iterator(MsqError &err)
 // Mesquite::Mesh interface.
 bool MeshTSTTImpl::vertex_is_fixed( VertexHandle vertex, MsqError &err )
 {
+    // If mesh does not contain a fixed tag, assume no vertices are fixed
+  if (!fixedTag) 
+    return false;
+    
   try {
-    return entIFace.getBoolData( vertex, fixedTag );
+    return (bool)tagIFace.getIntData( vertex, fixedTag );
   }
   catch( TSTT::Error& tstt_err ) {
     MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
@@ -873,36 +1102,28 @@ bool MeshTSTTImpl::vertex_is_fixed( VertexHandle vertex, MsqError &err )
 // property; this flag can't be modified by users of the
 // Mesquite::Mesh interface.
 void MeshTSTTImpl::vertices_are_on_boundary(
-  VertexHandle vert_array[], bool bool_array[],
+  VertexHandle vert_array[], 
+  bool bool_array[],
   size_t num_vtx, MsqError &err)
 {
+    // If mesh does not contain a fixed tag, assume no vertices are fixed
+  if (!fixedTag) {
+    memset( bool_array, 0, num_vtx * sizeof(bool) );
+    return;
+  }
+  
+    // Get per-vertex flags from fixedTag
   try {
-    int32_t lower=0, upper=num_vtx-1, stride=1;
+    sidl::array<void*> vert_wrapper( convert_to_sidl_vector( vert_array, num_vtx ) );
+    sidl::array<int> bools = alloc_sidl_vector<int>(num_vtx);
     
-    sidl::array<void*> vert_wrapper;
-    vert_wrapper.borrow( vert_array, 1, &lower, &upper, &stride );
-    
-    /* SIDL's internal representation for an array<bool> is an 
-       array of integers. Cannot use the input array directly
-       (with array.borrow(..)), need to make a copy instead.
+    int num_bools = num_vtx;
+    arrTagIFace.getIntArrData( vert_wrapper, num_vtx, fixedTag, bools, num_bools );
+    if (num_vtx != (unsigned)num_bools)
+      MSQ_SETERR(err)(MsqError::INTERNAL_ERROR);
 
-    sidl::array<bool> bool_wrapper;
-    bool_wrapper.borrow( bool_array, 1, &lower, &upper, &stride );
-    
-    int num_bools = num_vtx;
-    arrIFace.getBoolArrData( vert_wrapper, num_vtx, fixedTag, bool_array, num_bools );
-    if (num_vtx != (unsigned)num_bools)
-      MSQ_SETERR(err)(MsqError::INTERNAL_ERROR);
-    */
-    
-    sidl::array<bool> bools = alloc_sidl_vector<bool>(num_vtx);
     for (size_t i = 0; i < num_vtx; ++i)
-      bools.set( i, bool_array[i] );
-    
-    int num_bools = num_vtx;
-    arrIFace.getBoolArrData( vert_wrapper, num_vtx, fixedTag, bools, num_bools );
-    if (num_vtx != (unsigned)num_bools)
-      MSQ_SETERR(err)(MsqError::INTERNAL_ERROR);
+      bool_array[i] = bools.get(i);
   }
   catch(::TSTT::Error &tstt_err) {
     MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
@@ -911,8 +1132,10 @@ void MeshTSTTImpl::vertices_are_on_boundary(
 
 // Get vertex coordinates 
 void MeshTSTTImpl::vertices_get_coordinates(
-  Mesquite::Mesh::VertexHandle vert_array[],
-  MsqVertex* const &coordinates, const size_t &num_vtx, MsqError &err)
+  const Mesquite::Mesh::VertexHandle vert_array[],
+  MsqVertex* coordinates, 
+  size_t num_vtx, 
+  MsqError &err)
 {
   double* dbl_array = 0;
   
@@ -920,15 +1143,12 @@ void MeshTSTTImpl::vertices_get_coordinates(
     int dim = meshIFace.getGeometricDim();
     int dbl_len = dim * num_vtx;
 
-    int32_t lower=0, upper=num_vtx-1, stride=1;
-    sidl::array<void*> vertex_wrapper;
-    vertex_wrapper.borrow( vert_array, 1, &lower, &upper, &stride );
+    sidl::array<void*> vertex_wrapper( 
+      convert_to_sidl_vector( const_cast<void**>(vert_array), num_vtx ) );
     dbl_array = new double[dbl_len];
-    sidl::array<double> dbl_wrapper;
-    upper = dbl_len = 1;
-    dbl_wrapper.borrow( dbl_array, 1, &lower, &upper, &stride );
+    sidl::array<double> dbl_wrapper( convert_to_sidl_vector( dbl_array, dbl_len ));
     
-    TSTTM::StorageOrder order = meshIFace.getDfltStorage();
+    TSTTM::StorageOrder order = TSTTM::StorageOrder_UNDETERMINED;
     meshIFace.getVtxArrCoords( vertex_wrapper, num_vtx, order, dbl_wrapper, dbl_len );
     if ((unsigned)dbl_len != dim*num_vtx) {
       MSQ_SETERR(err)(MsqError::INTERNAL_ERROR);
@@ -1004,11 +1224,9 @@ void MeshTSTTImpl::vertex_set_coordinates(
   const Vector3D &coordinates, MsqError &err)
 {
   try {
-    int32_t lower = 0, upper = 2, stride = 1;
-    sidl::array<double> coords;
-    coords.borrow( const_cast<double*>(coordinates.to_array()), 
-                   1, &lower, &upper, &stride );
-    modIFace.setVtxCoords( vertex, coords );
+    sidl::array<double> coords( 
+      convert_to_sidl_vector( const_cast<double*>(coordinates.to_array()), 3 ) );
+    modIFace.setVtxCoords( vertex, coords, 1 );
   }
   catch(::TSTT::Error &tstt_err) {
     MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
@@ -1024,7 +1242,8 @@ void MeshTSTTImpl::vertex_set_byte (
   unsigned char byte, MsqError &err)
 {
   try {
-    entIFace.setData( vertex, byteTag, &byte, 1 );
+    int value = byte;
+    tagIFace.setIntData( vertex, byteTag, value );
   }
   catch(::TSTT::Error &tstt_err) {
     MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
@@ -1042,9 +1261,12 @@ void MeshTSTTImpl::vertices_set_byte (
     // used a TSTT-defined type for the data, rather than
     // a single byte.
   try {
-    VertexHandle *const end = vert_array + array_size;
-    for ( ; vert_array != end; ++vert_array, ++byte_array)
-      entIFace.setData( *vert_array, byteTag, byte_array, 1 );
+    sidl::array<void*> handles( convert_to_sidl_vector( vert_array, array_size ));
+    sidl::array<int> data(alloc_sidl_vector<int>(array_size));
+    for (size_t i = 0; i < array_size; ++i)
+      data.set( i, byte_array[i] );
+    size_t junk;
+    arrTagIFace.setIntArrData( handles, array_size, byteTag, data, junk );
   }
   catch(::TSTT::Error &tstt_err) {
     MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
@@ -1059,8 +1281,7 @@ void MeshTSTTImpl::vertex_get_byte(
   unsigned char *byte, MsqError &err)
 {
   try {
-    int size;
-    entIFace.getData( vertex, byteTag, (void*)byte, size );
+    *byte = (unsigned char)tagIFace.getIntData( vertex, byteTag );
   }
   catch(::TSTT::Error &tstt_err) {
     MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
@@ -1078,10 +1299,13 @@ void MeshTSTTImpl::vertices_get_byte(
     // used a TSTT-defined type for the data, rather than
     // a single byte.
   try {
-    VertexHandle *const end = vert_array + array_size;
-    int size;
-    for ( ; vert_array != end; ++vert_array, ++byte_array)
-      entIFace.getData( *vert_array, byteTag, (void*)byte_array, size );
+    sidl::array<void*> handles( convert_to_sidl_vector( vert_array, array_size ));
+    sidl::array<int> data( alloc_sidl_vector<int>(array_size) );
+    int32_t junk;
+    arrTagIFace.getIntArrData( handles, array_size, byteTag, data, junk );
+
+    for (size_t i = 0; i< array_size; ++i )
+      byte_array[i] = (unsigned char)data.get(i);
   }
   catch(::TSTT::Error &tstt_err) {
     MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
@@ -1099,10 +1323,10 @@ size_t MeshTSTTImpl::vertex_get_attached_element_count(
   VertexHandle vertex, MsqError &err)
 {
   try {
-    sidl::array<void*> junk;
+    sidl::array<void*> junk1, junk2;
     int face_size = 0, region_size = 0;
-    entIFace.getEntAdj( vertex, TSTTM::EntityType_FACE, junk, face_size );
-    entIFace.getEntAdj( vertex, TSTTM::EntityType_REGION, junk, region_size );
+    entIFace.getEntAdj( vertex, TSTTM::EntityType_FACE, junk1, face_size );
+    entIFace.getEntAdj( vertex, TSTTM::EntityType_REGION, junk2, region_size );
     return face_size + region_size;
   }
   catch(::TSTT::Error &tstt_err) {
@@ -1171,6 +1395,24 @@ size_t MeshTSTTImpl::element_get_attached_vertex_count(
   }
 }
 
+size_t MeshTSTTImpl::get_vertex_use_count( ElementHandle* array,
+                                           size_t length, 
+                                           MsqError& err )
+{
+  try {
+    sidl::array<void*> handles( convert_to_sidl_vector( array, length ) ); 
+    sidl::array<void*> adj;
+    sidl::array<int> offsets;
+    int32_t adj_size, off_size;
+    arrIFace.getEntArrAdj( handles, length, TSTTM::EntityType_VERTEX, adj, adj_size, offsets, off_size );
+    return adj_size;
+  }
+  catch(::TSTT::Error &tstt_err) {
+    MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
+    return 0;
+  }
+}
+
 /** Get connectivity
  *\param elements - Array of length num_elems containing elements
  *                  handles of elements for which connectivity is to
@@ -1193,81 +1435,81 @@ void MeshTSTTImpl::elements_get_attached_vertices(
     return;
 
   try {
-    int32_t lower = 0, upper, stride = 1;
-    
-    int vert_count = vert_len;
-    int index_count = indices_len;
-    int off_count = num_elems;
-    sidl::array<void*> vert_wrapper;
-    sidl::array<int> index_wrapper, offset_wrapper;
-    upper = vert_len - 1;
-    vert_wrapper.borrow( vertices, 1, &lower, &upper, &stride );
-    
-    // If sizeof(size_t) == sizeof(int), can avoid copying
+      // Constuct arguments to TSTT
+    int vert_count, off_count;
+    sidl::array<void*> elem_arr( convert_to_sidl_vector( elements, num_elems ) );
+    sidl::array<void*> vert_arr( convert_to_sidl_vector( (void**)indices, indices_len ) );
+    sidl::array<int> off_arr;
     if (sizeof(size_t) == sizeof(int))
-    {
-      upper = indices_len - 1;
-      index_wrapper.borrow( (int*)indices, 1, &lower, &upper, &stride );
-      upper = num_elems - 1;
-      offset_wrapper.borrow( (int*)offsets, 1, &lower, &upper, &stride );
-    }
+      off_arr = convert_to_sidl_vector( (int*)offsets, num_elems + 1 );
     else
-    {
-      index_wrapper = alloc_sidl_vector<int>(indices_len);
-      offset_wrapper = alloc_sidl_vector<int>(num_elems);
-    } 
-
-    // The only TSTT API that I can find that gives the data in the
-    // format Mesquite wants takes an entity set as input.  Create
-    // entity set from handle array.
-    void* set;
-    setIFace.createEntSet( true, set );
-    sidl::array<void*> elem_wrapper;
-    upper = num_elems-1;
-    elem_wrapper.borrow( elements, 1, &lower, &upper, &stride );
-    setIFace.addEntArrToSet( set, elem_wrapper, num_elems );
+      off_arr = alloc_sidl_vector<int>( num_elems + 1 );
     
-    // Get the data.  
-    meshIFace.getAdjEntities( set, 
-                              TSTTM::EntityType_ALL_TYPES, 
-                              TSTTM::EntityTopology_ALL_TOPOLOGIES,
-                              TSTTM::EntityType_VERTEX,
-                              vert_wrapper, vert_count,
-                              offset_wrapper, off_count,
-                              index_wrapper, index_count );
-    
-    // Destroy the temporary entity set
-    setIFace.destroyEntSet( set );
-    
-    // Check sizes that were passed back from TSTT database
-    if ((size_t)off_count != num_elems)
-    {
-      MSQ_SETERR(err)(MsqError::INTERNAL_ERROR);
-      return;
-    }
-    if ((size_t)vert_count > vert_len || (size_t)index_count > indices_len)
-    {
-      // Pass required sizes back
-      vert_len = vert_count;
-      indices_len = index_count;
-      MSQ_SETERR(err)("Insufficient space in array", MsqError::OUT_OF_MEMORY) ;
-      return;
-    }
-    
-    // Pass back the actual length of the data
-    vert_len = vert_count;
-    indices_len = index_count;
-    
-    // if sizes not same, need to cast/copy data.
+      // Query TSTT for element connectivity
+    arrIFace.getEntArrAdj( elem_arr, num_elems,
+                           TSTTM::EntityType_VERTEX,
+                           vert_arr, vert_count,
+                           off_arr,  off_count );
+  
+    indices_len = vert_count;
+      // If couldn't do array borrow, copy offsets into output array
     if (sizeof(size_t) != sizeof(int))
-    {
-      copy_from_sidl( index_wrapper, indices );
-      copy_from_sidl( offset_wrapper, offsets );
-    }
+      copy_from_sidl( off_arr, offsets );
+      
+      // Mesquite expects index array length as last value in offset array.
+      // If TSTT mesh doesn't return it, then add it.
+    if ((unsigned)off_count == num_elems)
+      offsets[num_elems] = vert_count;
+    else
+      assert( (unsigned)off_count == num_elems+1 );
   }
   catch(::TSTT::Error &tstt_err) {
     MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
+    return;
   }
+    
+    // Construct unique list of vertex handles
+  vert_len = 0;
+  msq_std::map<VertexHandle,size_t> index_map;
+  const size_t* end = indices + indices_len;
+  /*
+  for (size_t* iter = indices; iter != end; ++iter)
+  {
+    VertexHandle vertex = *(VertexHandle*)iter;
+    msq_std::map<VertexHandle,size_t>::iterator pos = index_map.find( vertex );
+    size_t index;
+    if (pos == index_map.end())
+      index_map[vertex] = index = vert_len++;
+    else
+      index = pos->second;
+    
+    vertices[index] = vertex;
+    *iter = index;
+  }
+  */
+    // Rather than the above simple code, do the following more complicated 
+    // code so the resulting list of vertices are sorted (easier to debug)
+  for (size_t* iter = indices; iter != end; ++iter)
+  {
+    VertexHandle vertex = *(VertexHandle*)iter;
+    msq_std::map<VertexHandle,size_t>::iterator pos = index_map.find( vertex );
+    if (pos == index_map.end())
+      index_map[vertex] = 0;
+  }
+  for (msq_std::map<VertexHandle,size_t>::iterator m_iter = index_map.begin();
+       m_iter != index_map.end(); ++m_iter)
+  {
+    vertices[vert_len] = m_iter->first;
+    m_iter->second = vert_len++;
+  }
+  for (size_t* iter = indices; iter != end; ++iter)
+  {
+    VertexHandle vertex = *(VertexHandle*)iter;
+    msq_std::map<VertexHandle,size_t>::iterator pos = index_map.find( vertex );
+    *iter = pos->second;
+  }      
+  
+  
 }
 
 void MeshTSTTImpl::get_all_sizes( size_t& vertex_count,
@@ -1277,27 +1519,36 @@ void MeshTSTTImpl::get_all_sizes( size_t& vertex_count,
 {
   try {
     
-    sidl::array<void*> handles;
-    sidl::array<int> offsets;
-    sidl::array<int> indices;
-    int num_handles, num_offsets, num_indices;
+      // Get number of vertices
+    vertex_count   = meshIFace.getNumOfType( nodeSet,    TSTTM::EntityType_VERTEX );
     
-    meshIFace.getAdjEntities( activeSet, 
-                              TSTTM::EntityType_ALL_TYPES,
+      // Get number of elements
+    element_count  = meshIFace.getNumOfType( elementSet, TSTTM::EntityType_FACE );
+    element_count += meshIFace.getNumOfType( elementSet, TSTTM::EntityType_REGION );
+    
+      // Get number of vertex uses
+    sidl::array<void*> handles1, handles2;
+    sidl::array<int> offsets1, offsets2;
+    sidl::array<int> flags1, flags2;
+    int num_handles, num_offsets, num_flags;
+      // Face elements
+    meshIFace.getAdjEntities( elementSet, 
+                              TSTTM::EntityType_FACE,
                               TSTTM::EntityTopology_ALL_TOPOLOGIES,
                               TSTTM::EntityType_VERTEX,
-                              handles, num_handles,
-                              offsets, num_offsets,
-                              indices, num_indices );
-    
-    vertex_count = num_handles;
-    element_count = num_offsets-1;
-    vertex_use_count = num_indices;
-    
-    if (element_count != (size_t)meshIFace.getNumOfType(activeSet, TSTTM::EntityType_ALL_TYPES))
-    {
-      MSQ_SETERR(err)( MsqError::INTERNAL_ERROR );
-    }
+                              handles1, num_handles,
+                              offsets1, num_offsets,
+                              flags1  , num_flags );
+    vertex_use_count = num_handles;
+      // Region elements
+    meshIFace.getAdjEntities( elementSet, 
+                              TSTTM::EntityType_REGION,
+                              TSTTM::EntityTopology_ALL_TOPOLOGIES,
+                              TSTTM::EntityType_VERTEX,
+                              handles2, num_handles,
+                              offsets2, num_offsets,
+                              flags2  , num_flags );
+    vertex_use_count += num_handles;
   }
   catch(::TSTT::Error &tstt_err) {
     MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
@@ -1310,69 +1561,35 @@ void MeshTSTTImpl::get_all_mesh( VertexHandle* vert_array,  size_t vert_len,
                                  size_t* conn_array,        size_t conn_len ,
                                  MsqError& err )
 {
+  int num_elem;
   try {
-    int32_t lower = 0, upper, stride = 1;
-    sidl::array<void*> vertices;
-    sidl::array<void*> elements;
-    sidl::array<int>   offsets;
-    sidl::array<int>   indices;
-    
-    upper = vert_len;
-    vertices.borrow( vert_array, 1, &lower, &upper, &stride );
-    upper = elem_len;
-    elements.borrow( elem_array, 1, &lower, &upper, &stride );
-    
-    int num_elem_out;
-    meshIFace.getEntities( activeSet, 
+    sidl::array<void*> elements( convert_to_sidl_vector( elem_array, elem_len ) );
+    meshIFace.getEntities( elementSet, 
                            TSTTM::EntityType_ALL_TYPES,
                            TSTTM::EntityTopology_ALL_TOPOLOGIES,
                            elements,
-                           num_elem_out );
-    if ((unsigned)num_elem_out > elem_len)
+                           num_elem );
+    if ((unsigned)num_elem > elem_len)
     {
       MSQ_SETERR(err)("Insufficient space in array", MsqError::OUT_OF_MEMORY);
       return;
-    }
-    
-    if (sizeof(int) == sizeof(size_t))
-    {
-      upper = offset_len;
-      offsets.borrow( (int*)offset_array, 1, &lower, &upper, &stride );
-      upper = conn_len;
-      indices.borrow( (int*)conn_array, 1, &lower, &upper, &stride );
-    }
-    else
-    {
-      offsets = alloc_sidl_vector<int>(offset_len);
-      indices = alloc_sidl_vector<int>(conn_len);
-    }
-    
-    int num_vert_out, num_uses_out;
-    meshIFace.getAdjEntities( activeSet,
-                              TSTTM::EntityType_ALL_TYPES,
-                              TSTTM::EntityTopology_ALL_TOPOLOGIES,
-                              TSTTM::EntityType_VERTEX,
-                              vertices, num_vert_out,
-                              offsets,  num_elem_out,
-                              indices,  num_uses_out );
-    
-    if ((unsigned)num_vert_out > vert_len ||
-        (unsigned)num_elem_out > offset_len ||
-        (unsigned)num_uses_out > conn_len) 
-    {
-      MSQ_SETERR(err)("Insufficient space in array", MsqError::OUT_OF_MEMORY);
-      return;
-    }
-    
-    if (sizeof(int) != sizeof(size_t))
-    {
-      copy_from_sidl( offsets, offset_array );
-      copy_from_sidl( indices, conn_array );
     }
   }
   catch(::TSTT::Error &tstt_err) {
     MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
+    return;
   }
+  
+  if (offset_len <= (unsigned)num_elem)
+  {
+    MSQ_SETERR(err)("Insufficient space in array", MsqError::OUT_OF_MEMORY);
+    return;
+  }
+  
+  elements_get_attached_vertices( elem_array, num_elem,
+                                  vert_array, vert_len,
+                                  conn_array, conn_len,
+                                  offset_array, err );
 }
       
 
@@ -1398,14 +1615,9 @@ void MeshTSTTImpl::elements_get_topologies(
   size_t num_elements, MsqError &err)
 {
   try {
-    assert(sizeof(EntityTopology) == sizeof(TSTTM_EntityTopology__enum));
     
-    int32_t lower = 0, upper = num_elements, stride = 1;
-    sidl::array<TSTTM::EntityTopology> topologies;
-    sidl::array<void*> handles;
-    handles.borrow( element_handle_array, 1, &lower, &upper, &stride );
-    topologies.borrow( reinterpret_cast<TSTTM_EntityTopology__enum*>(element_topologies), 
-                       1, &lower, &upper, &stride );
+    sidl::array<TSTTM::EntityTopology> topologies( alloc_sidl_vector<TSTTM::EntityTopology>( num_elements ) );
+    sidl::array<void*> handles( convert_to_sidl_vector( element_handle_array, num_elements ) );
     int topo_len_out;
     arrIFace.getEntArrTopo( handles, num_elements, topologies, topo_len_out );
     if ((size_t)topo_len_out != num_elements) {
@@ -1413,10 +1625,8 @@ void MeshTSTTImpl::elements_get_topologies(
       return;
     }
     
-    EntityTopology *iter = element_topologies, 
-              *const end = element_topologies + num_elements;
-    for (; iter != end; ++iter)
-      *iter = topologyMap[*iter];
+    for (unsigned i = 0; i < num_elements; ++i)
+      element_topologies[i] = topologyMap[topologies.get(i)];
   }
   catch(::TSTT::Error &tstt_err) {
     MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
@@ -1451,11 +1661,10 @@ TagHandle MeshTSTTImpl::tag_create( const msq_std::string& name,
   TSTT::TagValueType tstt_type;
   size_t size = 0;
   switch (type) {
-    case BYTE:   size = sizeof(char  ); tstt_type = TSTT::TagValueType_OPAQUE;        break;
-    case BOOL:   size = sizeof(bool  ); tstt_type = TSTT::TagValueType_BOOLEAN;       break;
-    case INT:    size = sizeof(int   ); tstt_type = TSTT::TagValueType_INTEGER;       break;
-    case DOUBLE: size = sizeof(double); tstt_type = TSTT::TagValueType_DOUBLE;        break;
-    case HANDLE: size = sizeof(void* ); tstt_type = TSTT::TagValueType_ENTITY_HANDLE; break;
+    case Mesquite::Mesh::BYTE:   size = sizeof(char  ); tstt_type = TSTT::TagValueType_OPAQUE;        break;
+    case Mesquite::Mesh::INT:    size = sizeof(int   ); tstt_type = TSTT::TagValueType_INTEGER;       break;
+    case Mesquite::Mesh::DOUBLE: size = sizeof(double); tstt_type = TSTT::TagValueType_DOUBLE;        break;
+    case Mesquite::Mesh::HANDLE: size = sizeof(void* ); tstt_type = TSTT::TagValueType_ENTITY_HANDLE; break;
     default:
       MSQ_SETERR(err)("Invalid tag type", MsqError::INVALID_ARG );
       return 0;
@@ -1464,7 +1673,7 @@ TagHandle MeshTSTTImpl::tag_create( const msq_std::string& name,
   
   try {
     void* handle = 0;
-    entIFace.createTag( name, size, tstt_type, const_cast<void*>(default_val), handle );
+    tagIFace.createTag( name, size, tstt_type, handle );
     return handle;
   } 
   catch(::TSTT::Error &tstt_err) {
@@ -1476,7 +1685,7 @@ TagHandle MeshTSTTImpl::tag_create( const msq_std::string& name,
 void MeshTSTTImpl::tag_delete( TagHandle handle, MsqError& err )
 {
   try {
-    entIFace.destroyTag( handle, true );
+    tagIFace.destroyTag( handle, true );
   } 
   catch(::TSTT::Error &tstt_err) {
     MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
@@ -1486,7 +1695,7 @@ void MeshTSTTImpl::tag_delete( TagHandle handle, MsqError& err )
 TagHandle MeshTSTTImpl::tag_get( const msq_std::string& name, MsqError& err )
 {
   try {
-    return entIFace.getTagHandle( name );
+    return tagIFace.getTagHandle( name );
   } 
   catch(::TSTT::Error &tstt_err) {
     MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
@@ -1503,9 +1712,9 @@ void MeshTSTTImpl::tag_properties( TagHandle handle,
   size_t size;
   TSTT::TagValueType type;
   try {
-    name = entIFace.getTagName( handle );
-    size = entIFace.getTagSize( handle );
-    type = entIFace.getTagType( handle );
+    name = tagIFace.getTagName( handle );
+    size = tagIFace.getTagSize( handle );
+    type = tagIFace.getTagType( handle );
   }
   catch(::TSTT::Error &tstt_err) {
     MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
@@ -1514,11 +1723,10 @@ void MeshTSTTImpl::tag_properties( TagHandle handle,
   
   size_t tsize;
   switch (type) {
-    case TSTT::TagValueType_OPAQUE       : tsize = sizeof(char  ); type_out = BYTE  ; break;
-    case TSTT::TagValueType_BOOLEAN      : tsize = sizeof(bool  ); type_out = BOOL  ; break;
-    case TSTT::TagValueType_INTEGER      : tsize = sizeof(int   ); type_out = INT   ; break;
-    case TSTT::TagValueType_DOUBLE       : tsize = sizeof(double); type_out = DOUBLE; break;
-    case TSTT::TagValueType_ENTITY_HANDLE: tsize = sizeof(void* ); type_out = HANDLE; break;
+    case TSTT::TagValueType_OPAQUE       : tsize = sizeof(char  ); type_out = Mesquite::Mesh::BYTE  ; break;
+    case TSTT::TagValueType_INTEGER      : tsize = sizeof(int   ); type_out = Mesquite::Mesh::INT   ; break;
+    case TSTT::TagValueType_DOUBLE       : tsize = sizeof(double); type_out = Mesquite::Mesh::DOUBLE; break;
+    case TSTT::TagValueType_ENTITY_HANDLE: tsize = sizeof(void* ); type_out = Mesquite::Mesh::HANDLE; break;
     default:
       MSQ_SETERR(err)("Unsupported TSTT tag type", MsqError::NOT_IMPLEMENTED );
       return;
@@ -1558,17 +1766,67 @@ void MeshTSTTImpl::tag_set_data( TagHandle tag,
                                  MsqError& err )
 {
   try {
-    size_t size = entIFace.getTagSize( tag );
-    sidl::array<void*> values = alloc_sidl_vector<void*>(num_elems);
-    const char* ptr = (const char*)data;
-    for (size_t i = 0; i < num_elems; ++i, ptr += size)
-      values.set( i, (void*)ptr );
-    
-    int32_t lower = 0, upper = num_elems - 1, stride = 1;
+    size_t len, size = tagIFace.getTagSize( tag );
+    int32_t lower = 0, upper = num_elems - 1, stride = 1, count = num_elems;
     sidl::array<void*> handles;
     handles.borrow( const_cast<void**>(array), 1, &lower, &upper, &stride );
-    
-    arrIFace.setArrData( handles, num_elems, tag, values, num_elems, size );
+    switch (tagIFace.getTagType( tag ))
+    {
+      case TSTT::TagValueType_ENTITY_HANDLE:
+      {
+        sidl::array<void*> sdata;
+        len = size / sizeof(void*);
+        upper = len * num_elems - 1;
+        sdata.borrow( reinterpret_cast<void**>(const_cast<void*>(data)), 1, &lower, &upper, &stride );
+        arrTagIFace.setEHArrData( handles, num_elems, tag, sdata, count );
+      }
+      break;
+      
+      case TSTT::TagValueType_DOUBLE:
+      {
+        sidl::array<double> sdata;
+        sdata.borrow( reinterpret_cast<double*>(const_cast<void*>(data)), 1, &lower, &upper, &stride );
+        arrTagIFace.setDblArrData( handles, num_elems, tag, sdata, count );
+      }
+      
+      case TSTT::TagValueType_INTEGER:
+      {
+        sidl::array<int> sdata;
+        len = size / sizeof(double*);
+        upper = len * num_elems - 1;
+        sdata.borrow( reinterpret_cast<int*>(const_cast<void*>(data)), 1, &lower, &upper, &stride );
+        arrTagIFace.setIntArrData( handles, num_elems, tag, sdata, count );
+      }
+
+      default:
+      {
+#if TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_OPAQUE_PACKED
+        upper = num_elems / sizeof(void*);
+        if ((num_elems % sizeof(void*)) == 0)
+          --upper;
+        sidl::array<void*> sdata;
+        sdata.borrow( const_cast<void*>(data), 1, &lower, &upper, &stride );
+#elif TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_OPAQUE_PADDED
+        assert( size <= sizeof(void*) );
+        sidl::array<void*> sdata( alloc_sidl_vector<void*>(num_elems) );
+        const char* ptr = reinterpret_cast<const char*>(data);
+        for (size_t i = 0; i < num_elems; ++i)
+          sdata.set( i, reinterpret_cast<void*>(*(ptr + i*size)) );
+#elif TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_CHAR
+        upper = (size * num_elems)-1;
+        sidl::array<char*> sdata;
+        sdata.borrow( const_cast<char*>(data), 1, &lower, &upper, &stride );
+#elif TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_UCHAR \
+   || TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_BYTE
+        upper = (size * num_elems)-1;
+        sidl::array<unsigned char*> sdata;
+        sdata.borrow( const_cast<unsigned char*>(data), 1, &lower, &upper, &stride );
+#else
+#error
+#endif
+        arrTagIFace.setArrData( handles, num_elems, tag, sdata, count, size );
+      }
+    }
   }
   catch(::TSTT::Error &tstt_err) {
     MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
@@ -1601,21 +1859,70 @@ void MeshTSTTImpl::tag_get_data( TagHandle tag,
                                  MsqError& err )
 {
   try {
-    size_t size = entIFace.getTagSize( tag );
-    sidl::array<void*> values = alloc_sidl_vector<void*>(num_elems);
-    char* ptr = reinterpret_cast<char*>(data);
-    for (size_t i = 0; i < num_elems; ++i, ptr += size)
-      values.set( i, (void*)ptr );
-    
-    int32_t lower = 0, upper = num_elems - 1, stride = 1;
+    size_t len, size = tagIFace.getTagSize( tag );
+    int32_t lower = 0, upper = num_elems - 1, stride = 1, count = num_elems;
     sidl::array<void*> handles;
     handles.borrow( const_cast<void**>(array), 1, &lower, &upper, &stride );
-    
-    int num_vals, size_out;
-    arrIFace.getArrData( handles, num_elems, tag, values, num_vals, size_out );
-    if ((size_t)num_vals != num_elems || size != (size_t)size_out)
+    switch (tagIFace.getTagType( tag ))
     {
-      MSQ_SETERR(err)(MsqError::INTERNAL_ERROR);
+      case TSTT::TagValueType_ENTITY_HANDLE:
+      {
+        sidl::array<void*> sdata;
+        len = size / sizeof(void*);
+        upper = len * num_elems - 1;
+        sdata.borrow( reinterpret_cast<void**>(const_cast<void*>(data)), 1, &lower, &upper, &stride );
+        arrTagIFace.getEHArrData( handles, num_elems, tag, sdata, count );
+      }
+      break;
+      
+      case TSTT::TagValueType_DOUBLE:
+      {
+        sidl::array<double> sdata;
+        sdata.borrow( reinterpret_cast<double*>(data), 1, &lower, &upper, &stride );
+        arrTagIFace.getDblArrData( handles, num_elems, tag, sdata, count );
+      }
+      
+      case TSTT::TagValueType_INTEGER:
+      {
+        sidl::array<int> sdata;
+        len = size / sizeof(double*);
+        upper = len * num_elems - 1;
+        sdata.borrow( reinterpret_cast<int*>(data), 1, &lower, &upper, &stride );
+        arrTagIFace.getIntArrData( handles, num_elems, tag, sdata, count );
+      }
+
+      default:
+      {
+#if TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_OPAQUE_PACKED
+        upper = num_elems / sizeof(void*);
+        if ((num_elems % sizeof(void*)) == 0)
+          --upper;
+        sidl::array<void*> sdata;
+        sdata.borrow( const_cast<void*>(data), 1, &lower, &upper, &stride );
+#elif TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_OPAQUE_PADDED
+        assert( size <= sizeof(void*) );
+        sidl::array<void*> sdata( alloc_sidl_vector<void*>(num_elems) );
+#elif TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_CHAR
+        upper = (size * num_elems)-1;
+        sidl::array<char*> sdata;
+        sdata.borrow( const_cast<char*>(data), 1, &lower, &upper, &stride );
+#elif TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_UCHAR \
+   || TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_BYTE
+        upper = (size * num_elems)-1;
+        sidl::array<unsigned char*> sdata;
+        sdata.borrow( const_cast<unsigned char*>(data), 1, &lower, &upper, &stride );
+#else
+#error
+#endif
+        int32_t junk;
+        arrTagIFace.getArrData( handles, num_elems, tag, sdata, count, junk );
+        
+#if TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_OPAQUE_PADDED
+        const char* ptr = reinterpret_cast<const char*>(data);
+        for (size_t i = 0; i < num_elems; ++i)
+          sdata.set( i, reinterpret_cast<void*>(*(ptr + i*size)) );
+#endif
+      }
     }
   }
   catch(::TSTT::Error &tstt_err) {
