@@ -86,15 +86,15 @@ Mesquite::MeshImpl::~MeshImpl()
   delete [] v2E;
 }
 
-void Mesquite::MeshImpl::read_vtk(const char* file_name,
+void Mesquite::MeshImpl::read_vtk(const char* in_filename,
                                   Mesquite::MsqError &err)
 {
     // Open the file
-  std::ifstream ifs(file_name);
+  std::ifstream ifs(in_filename);
   if (!ifs)
   {
     std::string err_msg("file ");
-    err_msg += file_name;
+    err_msg += in_filename;
     err_msg += " not found";
     err.set_msg(err_msg);
     return;
@@ -283,7 +283,88 @@ void Mesquite::MeshImpl::read_vtk(const char* file_name,
   ifs.close();
 }
 
-void Mesquite::MeshImpl::read_exodus(const char* file_name,
+void Mesquite::MeshImpl::write_vtk(const char* out_filebase,
+                                   Mesquite::MsqError &err)
+{
+    // Open the file
+  std::string out_filename = out_filebase;
+  out_filename += ".vtk";
+  std::ofstream file(out_filename.c_str());
+  if (!file)
+  {
+    err.set_msg("Unable to open file");
+    return;
+  }
+  
+    // Write a header
+  file << "# vtk DataFile Version 2.0\n";
+  file << "Mesquite Mesh " << out_filebase << " .\n";
+  file << "ASCII\n";
+  file << "DATASET UNSTRUCTURED_GRID\n";
+  
+    // Write vertex coordinates
+  file << "POINTS " << vertexCount << " float\n";
+  size_t i;
+  for (i = 0; i < vertexCount; i++)
+  {
+    file << vertexArray[i].coords[0] << ' '
+         << vertexArray[i].coords[1] << ' '
+         << vertexArray[i].coords[2] << '\n';
+  }
+  
+    // Write out the connectivity table
+  size_t connectivity_size = elementCount + totalVertexUses;
+  file << "CELLS " << elementCount << ' ' << connectivity_size << '\n';
+  for (i = 0; i < elementCount; i++)
+  {
+    size_t verts_this_elem = vertices_in_topology(elementArray[i].mType);
+    file << verts_this_elem;
+    for (size_t j = 0; j < verts_this_elem; j++)
+    {
+      file << ' ' << elementArray[i].vertexIndices[j];
+    }
+    file << '\n';
+  }
+  
+    // Write out the element types
+  file << "CELL_TYPES " << elementCount << '\n';
+  for (i = 0; i < elementCount; i++)
+  {
+    unsigned char type_id = 0;
+    switch (elementArray[i].mType)
+    {
+      case Mesquite::TRIANGLE:
+        type_id = 5;
+        break;
+      case Mesquite::QUADRILATERAL:
+        type_id = 9;
+        break;
+      case Mesquite::TETRAHEDRON:
+        type_id = 10;
+        break;
+      case Mesquite::HEXAHEDRON:
+        type_id = 12;
+        break;
+    }
+    file << (int)type_id << '\n';
+  }
+  
+    // Write out which points are fixed.
+  file << "POINT_DATA " << vertexCount
+       << "\nSCALARS fixed float\nLOOKUP_TABLE default\n";
+  for (i = 0; i < vertexCount; i++)
+  {
+    if (onBoundaryBits[i/8] & ((unsigned char)(1) << i % 8))
+      file << "1\n";
+    else
+      file << "0\n";
+  }
+  
+    // Close the file
+  file.close();
+}
+
+void Mesquite::MeshImpl::read_exodus(const char* in_filename,
                                      Mesquite::MsqError &err)
 {
 #ifndef MSQ_USING_EXODUS
@@ -302,7 +383,7 @@ void Mesquite::MeshImpl::read_exodus(const char* file_name,
   int exo_err = 0;
   
     // Open the file
-  int file_id = ex_open(file_name, EX_READ, &app_float_size,
+  int file_id = ex_open(in_filename, EX_READ, &app_float_size,
                     &file_float_size, &exo_version);
 
     // Make sure we opened the file correctly
