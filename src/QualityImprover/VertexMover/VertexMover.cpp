@@ -125,7 +125,7 @@ double VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
         // Probably want to pass the MeshSet.  
       this->initialize_mesh_iteration(*patch_data, err);MSQ_CHKERR(err); 
 
-      
+        // if there is no global patch previously available
       if (get_global_patch()==0) {
         // propagates information from QualityImprover to MeshSet
         //try to get the first patch, if no patches can be created
@@ -140,14 +140,15 @@ double VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
           //call terminate() anyway, even though we must terminate
         outer_crit->terminate(ms,objFunc,err);
       }
-        //otherwise at least one patch can be created
+        //otherwise one patch has been created and more could be created later.
       else{
+
           //loop over these patches
         while( next_patch )
         {
           MSQ_CHKERR(err); 
           if (next_patch == true ) {
-            
+
             inner_skip=inner_crit->reset(*patch_data,objFunc,err);
               //if inner criteria are initially satisfied, skip opt.
               //otherwise:
@@ -159,9 +160,10 @@ double VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
             patch_data->update_mesh(err);// TSTT mesh update !!
             MSQ_CHKERR(err); 
           }
-            //if patch is global, don't try to get the next patch
+            // if patch is global, don't try to get the next patch
           if (get_patch_type() == PatchData::GLOBAL_PATCH) {
             next_patch = false; }
+            // if patch is local, try to get the next one 
           else{
             next_patch =  ms.get_next_patch(*patch_data, this, err);
           }

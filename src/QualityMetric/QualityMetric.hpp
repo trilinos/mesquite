@@ -24,7 +24,6 @@
     pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov      
    
   ***************************************************************** */
-// -*- Mode : c++; tab-width: 2; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 
 /*! \file QualityMetric.hpp
     \brief
@@ -302,7 +301,7 @@ namespace Mesquite
      void set_metric_type(MetricType t) { mType = t; }
      
      /*! average_metrics takes an array of length num_values and averages the
-         contents using averaging method 'avgMethod'.
+          contents using averaging method data member avgMethod .
        */
      double average_metrics(double* metric_values, int num_values,
                             MsqError &err);
