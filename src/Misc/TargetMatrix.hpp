@@ -49,10 +49,6 @@ namespace Mesquite
   class TargetMatrix : public Matrix3D
   {
   public:
-    
-    //! virtual destructor ensures use of polymorphism during destruction
-    virtual ~TargetMatrix()
-       {};
 
     TargetMatrix() : Matrix3D()
     {

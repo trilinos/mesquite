@@ -40,6 +40,7 @@ mesquite a measure of the perfect mesh.
 #include "PatchDataUser.hpp"
 #include "MeshSet.hpp"
 #include "MsqTimer.hpp"
+#include "TargetMatrix.hpp"
 
 using namespace Mesquite;
 
@@ -62,10 +63,11 @@ void TargetCalculator::compute_target_matrices_and_check_det(PatchData &pd, MsqE
   MsqMeshEntity* elems=pd.get_element_array(err); MSQ_ERRRTN(err);
   size_t num_elements=pd.num_elements();
   for (size_t i=0; i<num_elements; ++i) {
-    MsqTag* tag = elems[i].get_tag();
+    TargetMatrix* matrices = pd.targetMatrices.get_element_corner_tags(&pd, i, err);
+    MSQ_ERRRTN(err);
     size_t num_corners = elems[i].vertex_count();
     for (size_t j=0; j<num_corners; ++j) {    
-      if ( det(tag->target_matrix(j)) <= 0 ) {
+      if ( det(matrices[j]) <= 0 ) {
         MSQ_SETERR(err)("A Target matrix has a non-positive determinant. "
                         "Please review your target calculator.",
                         MsqError::INVALID_STATE);
@@ -83,7 +85,7 @@ void TargetCalculator::compute_default_target_matrices(PatchData &pd,
     
   // set on each element in the patch a tag containing an array of corner matrices
   // (the size of the array is adequate for each element, e.g. 4 for a quad).
-  pd.allocate_target_matrices(err); MSQ_ERRRTN(err);
+  pd.targetMatrices.allocate_new_tags( &pd, err ); MSQ_ERRRTN(err);
     
   MsqMeshEntity* elems=pd.get_element_array(err); MSQ_ERRRTN(err);
   size_t num_elements=pd.num_elements();
@@ -94,43 +96,46 @@ void TargetCalculator::compute_default_target_matrices(PatchData &pd,
   // set the corner matrices to the correct value for each tag.
   for (size_t i=0; i<num_elements; ++i) {
 
-    MsqTag* tag = elems[i].get_tag(); 
+    TargetMatrix* matrices = pd.targetMatrices.get_element_corner_tags(&pd, i, err);
+    MSQ_ERRRTN(err);
       
     EntityTopology type = elems[i].get_element_type();
     switch (type)
       {
       case TRIANGLE:
-        tag->target_matrix(0) = tmp_tri; 
-        tag->target_matrix(1) = tmp_tri; 
-        tag->target_matrix(2) = tmp_tri; 
+        matrices[0] = tmp_tri; 
+        matrices[1] = tmp_tri; 
+        matrices[2] = tmp_tri; 
         break;
       case QUADRILATERAL:
-        tag->target_matrix(0) = tmp_quad; 
-        tag->target_matrix(1) = tmp_quad; 
-        tag->target_matrix(2) = tmp_quad; 
-        tag->target_matrix(3) = tmp_quad; 
+        matrices[0] = tmp_quad; 
+        matrices[1] = tmp_quad; 
+        matrices[2] = tmp_quad; 
+        matrices[3] = tmp_quad; 
         break;
       case TETRAHEDRON:
-        tag->target_matrix(0) = tmp_tet; 
-        tag->target_matrix(1) = tmp_tet; 
-        tag->target_matrix(2) = tmp_tet; 
-        tag->target_matrix(3) = tmp_tet; 
+        matrices[0] = tmp_tet; 
+        matrices[1] = tmp_tet; 
+        matrices[2] = tmp_tet; 
+        matrices[3] = tmp_tet; 
         break;
       case HEXAHEDRON:
-        tag->target_matrix(0) = tmp_hex; 
-        tag->target_matrix(1) = tmp_hex; 
-        tag->target_matrix(2) = tmp_hex; 
-        tag->target_matrix(3) = tmp_hex; 
-        tag->target_matrix(4) = tmp_hex; 
-        tag->target_matrix(5) = tmp_hex; 
-        tag->target_matrix(6) = tmp_hex; 
-        tag->target_matrix(7) = tmp_hex; 
+        matrices[0] = tmp_hex; 
+        matrices[1] = tmp_hex; 
+        matrices[2] = tmp_hex; 
+        matrices[3] = tmp_hex; 
+        matrices[4] = tmp_hex; 
+        matrices[5] = tmp_hex; 
+        matrices[6] = tmp_hex; 
+        matrices[7] = tmp_hex; 
         break;
       default:
         MSQ_SETERR(err)("Type not implemented.",MsqError::NOT_IMPLEMENTED);
         return;
       } //end switch
   } // end loop
+  
+  pd.targetMatrices.save_tag_data( &pd, err ); MSQ_ERRRTN(err);
 }
 
   
@@ -141,9 +146,9 @@ void TargetCalculator::compute_reference_corner_matrices(PatchData &pd,
 
   PatchData ref_pd;
   if (refMesh)
-    refMesh->get_next_patch(ref_pd, *originator, err); 
+    refMesh->get_next_patch(ref_pd, this->get_all_parameters(), err); 
   else 
-    pd.get_reference_mesh( ref_pd, err );
+    MSQ_SETERR(err)("No reference mesh", MsqError::INVALID_STATE);
   MSQ_ERRRTN(err);
   
   // Make sure topology of ref_pd and pd are equal
@@ -156,16 +161,19 @@ void TargetCalculator::compute_reference_corner_matrices(PatchData &pd,
   MsqMeshEntity* elems = pd.get_element_array(err);
   MsqMeshEntity* elems_ref = ref_pd.get_element_array(err); MSQ_ERRRTN(err);
   TargetMatrix A[MSQ_MAX_NUM_VERT_PER_ENT];
-  pd.allocate_target_matrices(err); MSQ_ERRRTN(err);
+  pd.targetMatrices.allocate_new_tags( &pd, err ); MSQ_ERRRTN(err);
   for (size_t i=0; i<num_elements; ++i) {
-    MsqTag* tag = elems[i].get_tag();
+    TargetMatrix* matrices = pd.targetMatrices.get_element_corner_tags(&pd, i, err);
+    MSQ_ERRRTN(err);
     int nve = elems[i].vertex_count();
     assert( nve = elems_ref[i].vertex_count() );
     elems_ref[i].compute_corner_matrices(ref_pd, A, nve, err); MSQ_ERRRTN(err);
     for (int j=0; j<nve; ++j) {
-      tag->target_matrix(j) = A[j];
+      matrices[j] = A[j];
     }
   }
+  
+  pd.targetMatrices.save_tag_data( &pd, err ); MSQ_ERRRTN(err);
 }
 
 
@@ -213,7 +221,7 @@ void TargetCalculator::compute_reference_corner_matrices(PatchData &pd,
       MSQ_SETERR(err)("Element type not implemented.",MsqError::NOT_IMPLEMENTED);
       return;
     }
-    
+
   }
 
   //!
@@ -247,3 +255,29 @@ void TargetCalculator::compute_reference_corner_matrices(PatchData &pd,
 
     return V;
   }
+  
+  msq_std::string TargetCalculator::get_name()
+    { return "Target Calculator"; }
+  
+  PatchDataUser::AlgorithmType TargetCalculator::get_algorithm_type()
+    { return PatchDataUser::TARGET_CALCULATOR; }
+  
+  double TargetCalculator::loop_over_mesh( MeshSet& ms, MsqError& err )
+  {
+      // Currently, target calculators only work with global patches.
+      // The constructor for TargetCalculator sets the patch type
+      // to global, so if we don't have a global patch here something is
+      // really messed up.
+    PatchData* pd = get_global_patch();
+    if (get_patch_type() != PatchData::GLOBAL_PATCH || NULL == pd)
+    {
+      MSQ_SETERR(err)(MsqError::INVALID_STATE);
+      return 0.0;
+    }
+    
+      // Compute the target matrices.
+    compute_target_matrices_and_check_det( *pd, err );
+    return MSQ_CHKERR(err);
+  }
+  
+  

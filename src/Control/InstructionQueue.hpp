@@ -54,6 +54,7 @@ namespace Mesquite {
   class MeshSet;
   class PatchDataUser;
   class PatchData;
+  class TargetCalculator;
 
   /*! \class InstructionQueue
     \brief An InstructionQueue object gathers Mesquite Instructions and ensures
@@ -76,6 +77,8 @@ namespace Mesquite {
     InstructionQueue();
 
     virtual ~InstructionQueue() {};
+    
+    void add_target_calculator( TargetCalculator* tc, MsqError& err );
     
     void add_preconditioner(QualityImprover* instr, MsqError &err);
     void remove_preconditioner(size_t index, MsqError &err);

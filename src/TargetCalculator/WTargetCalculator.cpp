@@ -51,42 +51,42 @@ void WTargetCalculator::compute_target_matrices(PatchData &pd, MsqError &err)
 
   size_t num_elements=pd.num_elements();
   
-  PatchData ref_pd;
+  PatchData ref_pd, *ref_pd_ptr;
   if ( refMesh != 0 ) {
     // If there is a reference mesh, gets a patch ref_pd equivalent to the patch pd of the main mesh.
-    PatchDataParameters ref_pd_params(*originator);
-    ref_pd_params.no_target_calculator();
+    PatchDataParameters ref_pd_params(this->get_all_parameters());
     refMesh->get_next_patch(ref_pd, ref_pd_params, err); MSQ_ERRRTN(err);
     // Make sure topology of ref_pd and pd are equal
     assert( num_elements == ref_pd.num_elements() );
     size_t num_vertices=pd.num_vertices();
     assert( num_vertices == ref_pd.num_vertices() );
+    ref_pd_ptr = &ref_pd;
   }
   else {
-    // try to get reference mesh from tag data
-    pd.get_reference_mesh( ref_pd, err ); MSQ_ERRRTN(err);
-    
     // the reference patch is the same as the working patch if there is no reference mesh.
-    //ref_pd = &pd;
+    ref_pd_ptr = &pd;
   }
   
   MsqMeshEntity* elems = pd.get_element_array(err); MSQ_ERRRTN(err);
-  MsqMeshEntity* elems_ref = ref_pd.get_element_array(err); MSQ_ERRRTN(err);
-  pd.allocate_target_matrices(err); MSQ_ERRRTN(err);
+  MsqMeshEntity* elems_ref = ref_pd_ptr->get_element_array(err); MSQ_ERRRTN(err);
+  pd.targetMatrices.allocate_new_tags( &pd, err ); MSQ_ERRRTN(err);
 
   Matrix3D W_guides[MSQ_MAX_NUM_VERT_PER_ENT];
   
   for (size_t i=0; i<num_elements; ++i) {
-    MsqTag* tag = elems[i].get_tag();
+    TargetMatrix* matrices = pd.targetMatrices.get_element_corner_tags(&pd, i, err);
+    MSQ_ERRRTN(err);
     int nve = elems[i].vertex_count();
     assert( nve = elems_ref[i].vertex_count() );
 
-    compute_guide_matrices(guideMatrix, ref_pd, i, W_guides, nve, err); MSQ_ERRRTN(err);
+    compute_guide_matrices(guideMatrix, *ref_pd_ptr, i, W_guides, nve, err); MSQ_ERRRTN(err);
 
     for (int c=0; c<nve; ++c) {
-      tag->target_matrix(c) = W_guides[c];
+      matrices[c] = W_guides[c];
     }
   }
+  
+  pd.targetMatrices.save_tag_data(&pd, err); MSQ_ERRRTN(err);
 
   //if ( refMesh != 0 ) delete ref_pd;
 }

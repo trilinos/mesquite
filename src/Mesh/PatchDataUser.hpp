@@ -38,7 +38,6 @@
 #include "Mesquite.hpp"
 #include "MsqError.hpp"
 #include "PatchData.hpp"
-#include "TargetCalculator.hpp"
 
 #ifndef MSQ_USE_OLD_C_HEADERS
 #include <cstddef>
@@ -64,8 +63,7 @@ namespace Mesquite
       mParam1(0),
       mParam2(0),
       cullingMethodBits(0),
-      globalPatch(0),
-      mTarget(0)
+      globalPatch(0)
     {}
 
     PatchDataParameters(const PatchDataParameters &A) {
@@ -74,7 +72,6 @@ namespace Mesquite
       mParam2 = A.mParam2;
       cullingMethodBits = A.cullingMethodBits;
       globalPatch = A.globalPatch;
-      mTarget = A.mTarget;
     }
 
     friend class PatchDataUser;
@@ -93,6 +90,9 @@ namespace Mesquite
     //! Returns numbers of layers for local patch. This might not always be a valid measure,
     //! depending on the partition algorythm.
     inline int get_nb_layers(MsqError &err);
+    
+    inline void set_global_patch_type();
+    inline void set_element_on_vertex_patch_type( unsigned num_layers );
 
     //! Sets on a culling criterion.
     inline void add_culling_method(enum PatchData::culling_method cm);
@@ -117,14 +117,6 @@ namespace Mesquite
     void no_global_patch()
     { globalPatch=0; }
 
-    //! Sets the target calculator used in conjunction with DFT metrics 'DistanceFromTarget'.
-    void set_target_calculator(TargetCalculator* target, MsqError &err);
-    //! Sets the target calculator to the NULL pointer.
-    void no_target_calculator() {mTarget =0;}
-    //! Gets the TargetCalculator set on this QualityImprover
-    //! Returns 0 if no target calculator has been set.
-    TargetCalculator* get_target_calculator() { return mTarget; }
-
 
 
   private:
@@ -133,7 +125,6 @@ namespace Mesquite
     long unsigned int cullingMethodBits; //!< type of cullings are contained in this bitset.
     PatchData* globalPatch; //!< Allows storage of global patch through
                             //!< successive PatchDataUsers.
-    TargetCalculator* mTarget;
 
   };
 
@@ -205,24 +196,13 @@ namespace Mesquite
     void no_global_patch()
     { mParams.no_global_patch(); }
 
-    //! Sets the target calculator used in conjunction with DFT metrics 'DistanceFromTarget'.
-    void set_target_calculator(TargetCalculator* target, MsqError &err)
-    { mParams.set_target_calculator(target, err); }
-    //! Sets the target calculator to the NULL pointer.
-    void no_target_calculator()
-    { mParams.no_target_calculator(); }
-    //! Gets the TargetCalculator set on this QualityImprover
-    //! Returns 0 if no target calculator has been set.
-    TargetCalculator* get_target_calculator()
-    { return mParams.get_target_calculator(); }
-
 
     // *** functions related to the algorithms, no to the patch parameters *** 
     //! This is the "run" function of PatchDataUser. It can do anything really. 
     virtual double loop_over_mesh(MeshSet &ms, MsqError &err) = 0;
     //! Returns the algorithm name
     virtual msq_std::string get_name() = 0;
-    enum AlgorithmType { QUALITY_IMPROVER, QUALITY_ASSESSOR, MESH_TRANSFORM};
+    enum AlgorithmType { QUALITY_IMPROVER, QUALITY_ASSESSOR, MESH_TRANSFORM, TARGET_CALCULATOR };
     //! Return the algorithm type (to avoid RTTI use). 
     virtual enum AlgorithmType get_algorithm_type() = 0;
 
@@ -265,6 +245,17 @@ namespace Mesquite
     mParam2 = patch_param2;
     
     return;
+  }
+  
+  inline void PatchDataParameters::set_global_patch_type()
+  {
+    mType = PatchData::GLOBAL_PATCH;
+  }
+  
+  inline void PatchDataParameters::set_element_on_vertex_patch_type( unsigned num_layers )
+  {
+    mType = PatchData::ELEMENTS_ON_VERTEX_PATCH;
+    mParam1 = num_layers;
   }
   
   
@@ -313,18 +304,6 @@ namespace Mesquite
   }
 
 
-  inline void PatchDataParameters::set_target_calculator(TargetCalculator* target, MsqError &err)
-  {
-    if (target == 0) {
-      MSQ_SETERR(err)("Use PatchDataParameters::no_target_calculator.",
-                      MsqError::INVALID_STATE);
-      return;
-    }
-    mTarget = target;
-    target->set_originator(this, err);
-    MSQ_CHKERR(err);
-  }
- 
 } // namespace
 
 #endif //  PatchDataUser_hpp

@@ -38,7 +38,6 @@
 
 #include "Mesquite.hpp"
 #include "QualityMetric.hpp"
-#include "MsqTag.hpp"
 #include "TopologyInfo.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
@@ -72,32 +71,8 @@ namespace Mesquite
   public:
     
     MsqMeshEntity()
-      : mType(MIXED), vertexIndices(0), numVertexIndices(0), mTag(0)
+      : mType(MIXED), vertexIndices(0), numVertexIndices(0)
       {}
-
-    MsqMeshEntity( const MsqMeshEntity& rhs )
-      : mType( rhs.mType ),
-        vertexIndices( rhs.vertexIndices ),
-        numVertexIndices( rhs.numVertexIndices ),
-        mTag( rhs.mTag ? new MsqTag(*rhs.mTag) : 0 )
-      {}
-
-      //! Destructor also deletes associated tag data. 
-    ~MsqMeshEntity()
-      { delete mTag; mTag=0; }
-
-     //! This operator= makes a deep copy of the tag data. 
-    MsqMeshEntity& operator=(const MsqMeshEntity& rhs) { 
-      delete mTag;
-      mTag = 0;
-      
-      mType = rhs.mType;
-      vertexIndices = rhs.vertexIndices;
-      numVertexIndices = rhs.numVertexIndices;
-      if (rhs.mTag != 0)
-        mTag = new MsqTag(*(rhs.mTag));
-      return *this;
-    }
 
       //! Returns element type
     inline EntityTopology get_element_type() const
@@ -136,13 +111,6 @@ namespace Mesquite
     void set_connectivity( msq_stdc::size_t *indices, size_t num_vertices);
 
     msq_stdc::size_t get_vertex_index(msq_stdc::size_t vertex_in_element) const;
-    
-      //! Sets the element tag. This will overwritte an existing tag. 
-    void set_tag(MsqTag* tag) {
-      mTag = tag;
-    }
-      //! Gets the element tag.
-    MsqTag* get_tag() {return mTag;}
     
       //fills array of Vector3D's with the jacobian vectors and the 
       //number of jacobian vectors
@@ -189,10 +157,6 @@ namespace Mesquite
       //! Stores those corner matrices in the mTag data member.  
     void compute_corner_matrices(PatchData &pd, Matrix3D A[], int num_m3d, MsqError &err );
 
-      //! This returns a pointer to the target matrices.
-      //! An error is set if they are not available. 
-    TargetMatrix* get_target_matrices(size_t &num_targets, MsqError &err);
-
   private:
     static void get_linear_quad_jac(Vector3D *sp,
                                     Vector3D &coord0, Vector3D &coord1,
@@ -207,11 +171,6 @@ namespace Mesquite
      */
     size_t* vertexIndices;  
     size_t numVertexIndices;
-    MsqTag* mTag; //!< The mTag data member is a pointer, so that the memory 
-                  //!< footprint stays small when no tag is used (mTag=0).
-                  //!< But when a tag is pointed to by this data member, the tag
-                  //!< in fact lives with the MsqMeshEntity, i.e. copies are 
-                  //!< deep and the tag is deleted when the MsqMeshEntity is.
     
       // output operator for debugging.
     friend msq_stdio::ostream& operator<<(msq_stdio::ostream &stream, 

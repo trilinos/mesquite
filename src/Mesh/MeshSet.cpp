@@ -251,11 +251,6 @@ bool MeshSet::get_next_elem_on_vert_patch( PatchData& pd,
       if (currentMesh == meshSet.end())
       {
         vertexIterator = NULL;
-            // If a target calculator is set, compute the targets. 
-        if (pd_params.get_target_calculator() != 0) {
-          pd_params.get_target_calculator()->reset_reference_meshset(err);
-          if (MSQ_CHKERR(err)) return false;
-        }
         return false;
       }
       vertexIterator = (*currentMesh)->vertex_iterator(err); MSQ_CHKERR(err);
@@ -419,12 +414,6 @@ bool MeshSet::get_next_elem_on_vert_patch( PatchData& pd,
       pd_vert_array[i].vertexBitFlags = (center_fixed_byte);
     }
   }
-  
-  // If a target calculator is set, compute the targets. 
-  if (pd_params.get_target_calculator() != 0) {
-    pd_params.get_target_calculator()->compute_target_matrices_and_check_det(pd, err);
-    if (MSQ_CHKERR(err)) return false;
-  }
 
   return true;
 }
@@ -519,12 +508,6 @@ bool MeshSet::get_next_global_patch( PatchData& pd,
     {
       pd_vert_array[i].vertexBitFlags &= ~(MsqVertex::MSQ_HARD_FIXED);
     }
-  }
-
-  // If a target calculator is set, compute the targets. 
-  if (pd_params.get_target_calculator() != 0) {
-    pd_params.get_target_calculator()->compute_target_matrices_and_check_det(pd, err);
-    if (MSQ_CHKERR(err)) return false;
   }
 
   return true;

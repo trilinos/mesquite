@@ -1,6 +1,7 @@
 MESHDIR = $(srcdir)/Mesh
 
-MESHSRCFILES = MeshSet.cpp \
+MESHSRCFILES = CornerTag.cpp \
+               MeshSet.cpp \
                MsqMeshEntity.cpp \
                MsqVertex.cpp \
                PatchData.cpp \

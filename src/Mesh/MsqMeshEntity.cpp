@@ -864,19 +864,6 @@ void MsqMeshEntity::compute_corner_matrices(PatchData &pd, Matrix3D A[], int num
   }// end switch over element type
 }
 
-TargetMatrix* MsqMeshEntity::get_target_matrices( size_t& num_targets,
-                                                  MsqError& err )
-{
-  if (mTag == 0)
-  {
-    MSQ_SETERR(err)( "No target matrix", MsqError::INVALID_STATE );
-    return 0;
-  }
-  
-  num_targets = vertex_count();
-  return mTag->get_targets( num_targets );
-}
-
 ostream& operator<<( ostream& stream, const MsqMeshEntity& entity )
 {
   size_t num_vert = entity.vertex_count();

@@ -109,6 +109,8 @@ int main()
   ref_mesh_set.set_domain_constraint(msq_geom, err);
   if (err) return 1;
   DeformingDomainGuides843 target(&ref_mesh_set);
+  queue1.add_target_calculator( &target, err );
+  if (err) return 1;
  
   // ... and builds an objective function with it
   LPtoPTemplate* obj_func = new LPtoPTemplate(&mu, 1, err);
@@ -116,8 +118,6 @@ int main()
 
   // creates the steepest descentfeas newt optimization procedures
   FeasibleNewton* pass1 = new FeasibleNewton( obj_func );
-  pass1->set_target_calculator(&target, err); 
-  if (err) return 1;
   pass1->set_patch_type(PatchData::GLOBAL_PATCH, err);
 
   // **************Set stopping criterion****************

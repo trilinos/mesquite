@@ -52,12 +52,11 @@ void LVQDTargetCalculator::compute_target_matrices(PatchData &pd, MsqError &err)
 
   // Gets from the reference mesh a patch ref_pd equivalent to the patch pd of the main mesh.
   PatchData ref_pd;
-  PatchDataParameters ref_pd_params(*originator);
-  ref_pd_params.no_target_calculator();
+  PatchDataParameters ref_pd_params(this->get_all_parameters());
   if (refMesh)
     refMesh->get_next_patch(ref_pd, ref_pd_params, err); 
   else
-    pd.get_reference_mesh( ref_pd, err );
+    MSQ_SETERR(err)("No reference mesh", MsqError::INVALID_STATE);
   MSQ_ERRRTN(err);
   compute_target_matrices(pd, ref_pd, err);
 }
@@ -76,7 +75,7 @@ void LVQDTargetCalculator::compute_target_matrices(PatchData &pd,
   
   MsqMeshEntity* elems = pd.get_element_array(err); MSQ_ERRRTN(err);
   MsqMeshEntity* elems_ref = ref_pd.get_element_array(err); MSQ_ERRRTN(err);
-  pd.allocate_target_matrices(err); MSQ_ERRRTN(err);
+  pd.targetMatrices.allocate_new_tags( &pd, err ); MSQ_ERRRTN(err);
 
   Matrix3D L_guides[MSQ_MAX_NUM_VERT_PER_ENT];
   Matrix3D V_guides[MSQ_MAX_NUM_VERT_PER_ENT];
@@ -91,7 +90,8 @@ void LVQDTargetCalculator::compute_target_matrices(PatchData &pd,
     Lambda = ref_pd.get_average_Lambda_3d(err); MSQ_ERRRTN(err);
   
   for (size_t i=0; i<num_elements; ++i) {
-    MsqTag* tag = elems[i].get_tag();
+    TargetMatrix* matrices = pd.targetMatrices.get_element_corner_tags(&pd, i, err);
+    MSQ_ERRRTN(err);
     unsigned nve = elems[i].vertex_count();
     if (nve != elems_ref[i].vertex_count())
     {
@@ -111,8 +111,10 @@ void LVQDTargetCalculator::compute_target_matrices(PatchData &pd,
       V = compute_V_3D(V_guides[c], err); MSQ_ERRRTN(err);
       Q = compute_Q_3D(Q_guides[c], err); MSQ_ERRRTN(err);
       Delta = compute_Delta_3D(D_guides[c], err); MSQ_ERRRTN(err);
-      tag->target_matrix(c) = Lambda * V * Q * Delta;
+      matrices[c] = Lambda * V * Q * Delta;
     }
   }
+  
+  pd.targetMatrices.save_tag_data(&pd, err); MSQ_ERRRTN(err);
 }
 

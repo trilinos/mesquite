@@ -41,7 +41,7 @@ Header file for the Mesquite::DistanceFromTarget class
 #include "MsqError.hpp"
 #include "PatchData.hpp"
 #include "QualityMetric.hpp"
-#include "MsqMeshEntity.hpp"
+#include "TargetMatrix.hpp"
 
 namespace Mesquite
 {
@@ -80,12 +80,8 @@ namespace Mesquite
 //     for (size_t i=0; i<num_T; ++i)
 //       std::cout << "A["<<i<<"]:\n" << T[i] << std::endl;
 
-    size_t num_targets=0;
-    TargetMatrix* W = elem.get_target_matrices(num_targets, err); MSQ_ERRRTN(err);
-    if( num_T != num_targets ) {
-      MSQ_SETERR(err)(MsqError::INTERNAL_ERROR);
-      return;
-    }
+    int elem_idx = pd.get_element_index(&elem);
+    TargetMatrix* W = pd.targetMatrices.get_element_corner_tags(&pd, elem_idx, err );
     
 //     for (size_t i=0; i<num_T; ++i)
 //       std::cout << "W["<<i<<"]:\n" << W[i] << std::endl;

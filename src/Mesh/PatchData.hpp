@@ -46,6 +46,8 @@
 #include "MsqVertex.hpp"
 #include "MeshInterface.hpp"
 #include "PatchDataMem.hpp"
+#include "CornerTag.hpp"
+#include "TargetMatrix.hpp"
 
 
 #ifndef MSQ_USE_OLD_C_HEADERS
@@ -75,6 +77,7 @@ namespace Mesquite
 {
   class PatchDataVerticesMemento;
   class MeshSet;
+  class TargetMatrix;
 //   class SimplifiedGeometryEngine;
   
   /*! \class PatchData
@@ -97,18 +100,6 @@ namespace Mesquite
     PatchData& operator=(const PatchData &pd);
     
   public:
-  
-    
-      /** Used by target calculators
-       *
-       * Used by target calculators to construct a reference mesh
-       * when none is provided.  Copies this PatchData, except
-       * that vertex coordinates are extracted from a tag on the
-       * vertices which is expected to contain the corresponding
-       * positions in the reference mesh.
-       */
-    void get_reference_mesh( PatchData& output, MsqError& err );
-    
 
     enum ComputedInfo {
       MIN_UNSIGNED_AREA = 0, //!< minimum volume or area out of all elements in the patch
@@ -188,11 +179,17 @@ namespace Mesquite
     size_t num_elements() const
       { return elementArray.size(); }
       //! number of elements corners in the Patch. 
-      //!(Seems to return number of vertex-uses -J.K.)
-    size_t num_corners() const;
+    size_t num_corners() ;
       /** Get number of nodes (vertex + higher-order nodes) */
     size_t num_nodes() const
       { return vertexArray.size(); }
+
+      /** Get the sum of the number of element corners for
+        * all elements in patch up to, but not including
+        * the passed element.  Used by CornerTag code to
+        * determine offset in array of tag data.
+        */
+    size_t get_element_corner_offset( int element_index );
 
       //! Returns the number of elements in the current patch who are
       //! free to move.  This is a costly function, since we have to check
@@ -210,6 +207,9 @@ namespace Mesquite
     
     size_t* get_connectivity_array( )
       { return &elemConnectivityArray[0]; }
+      
+    const Mesh::ElementHandle* get_element_handles_array( ) const
+      { return &elementHandlesArray[0]; }
     
       //! Returns the start of the vertex->element array.
       //! For each vertex in the patch, this array holds
@@ -357,14 +357,6 @@ namespace Mesquite
     void set_all_vertices_soft_fixed(MsqError &err);
       //!Add a soft_fixed flag to all free vertices in the patch.
     void set_free_vertices_soft_fixed(MsqError &err);
-
-      //! This function allocates an array of Tags and an array of TargetMatrix s.
-      //! It then sets the TargetMatrices on the tags and sets the tags
-      //! on the PatchData MsqMeshEntity s.
-      //! This is the most efficient function to use from a memory allocation
-      //! speed point of vue. It works for hybrid meshes.
-      //! \param alloc_inv if true, also allocates space for the inverse of the target matrices.
-    void allocate_target_matrices(MsqError &err, bool alloc_inv=false);
     
       //! Fills a PatchData with the elements attached to a center vertex.
       //! Note that all entities in the sub-patch are copies of the entities
@@ -431,6 +423,11 @@ namespace Mesquite
     MeshSet* get_mesh_set()
       { return meshSet; }
     
+    //! Target matrix data
+    CornerTag<TargetMatrix> targetMatrices;
+    void clear_tag_data();
+    
+    
     //! Display the coordinates and connectivity information
     friend msq_stdio::ostream& operator<<( msq_stdio::ostream&, const PatchData& );
    
@@ -453,10 +450,16 @@ namespace Mesquite
     PatchDataMem<size_t> vertAdjacencyArray;
     PatchDataMem<size_t> vertAdjacencyOffsets;
     size_t numCornerVertices;
+    
+      // Cache corner offsets for use in tag code
+    PatchDataMem<size_t> elementCornerOffsets;
+      // Generate elementCornerOffsets
+    void get_element_corner_offsets();
 
       // Patch Computed Information (maxs, mins, etc ... )
     double computedInfos[MAX_COMPUTED_INFO_ENUM];
     unsigned haveComputedInfos;
+
   };
   
   
@@ -690,17 +693,22 @@ namespace Mesquite
     /*! For example, a mesh composed of 3 quads has 12 corners,
          however the quads are positionned.
          This function works for hybrid meshes (like all Mesquite functions should). */
-  inline size_t PatchData::num_corners() const
+  inline size_t PatchData::num_corners() 
   {
-    size_t num_corners =0;
-    for (size_t i=0; i<elementArray.size(); ++i)
-    {
-      num_corners += elementArray[i].vertex_count();
-    }
-    return num_corners;
+    if (elementCornerOffsets.empty())
+      get_element_corner_offsets();
+    return elementCornerOffsets[num_elements()-1];
   }
 
-  
+  inline size_t PatchData::get_element_corner_offset( int elem_index )
+  {
+    if (elem_index == 0)
+      return 0;
+    if (elementCornerOffsets.empty())
+      get_element_corner_offsets();
+    return elementCornerOffsets[elem_index-1];
+  }
+      
 } // namespace
 
 

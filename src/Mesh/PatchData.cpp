@@ -38,6 +38,8 @@
 #include "MeshSet.hpp"
 #include "MsqTimer.hpp"
 #include "MsqDebug.hpp"
+#include "TargetMatrix.hpp"
+#include "TargetCalculator.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 #  include <list.h>
@@ -63,11 +65,13 @@
 namespace Mesquite {
 
 PatchData::PatchData()
-  : meshSet(0),
+  : targetMatrices( "MSQ_TARGET_MATRIX", Mesh::DOUBLE ),
+    meshSet(0),
     domainSet(false),
     mType(UNDEFINED_PATCH_TYPE),
     numCornerVertices(0),
     haveComputedInfos(0)
+    
 {
 }
 
@@ -150,7 +154,7 @@ double PatchData::get_barrier_delta(MsqError &err)
 }
 
 
-double PatchData::get_average_Lambda_3d(MsqError &err)
+double PatchData::get_average_Lambda_3d( MsqError &err)
 {
   double avg;
   if (have_computed_info(AVERAGE_DET3D))
@@ -223,6 +227,9 @@ void PatchData::reorder()
   size_t i, j;
   size_t q1l, q2l, q;
   size_t st, en;
+
+  // Step -1: Clear any data that will be invalidated by this
+  clear_tag_data();
 
   // Step 0:  Make sure patch data is valid.
 
@@ -988,25 +995,6 @@ void PatchData::generate_vertex_to_element_data()
   vertAdjacencyOffsets[num_nodes()] = num_vert_uses;
 }
 
-void PatchData::allocate_target_matrices(MsqError &err, bool alloc_inv)
-{
-  for (size_t i=0; i<num_elements(); ++i)
-  {
-    MsqTag* temp_tag = elementArray[i].get_tag();
-    size_t c = elementArray[i].vertex_count();
-    if(temp_tag){
-      temp_tag->reallocate_targets(c, err, alloc_inv);
-    }
-    else{
-      MsqTag* tag = new MsqTag;
-      tag->allocate_targets(c, err, alloc_inv);
-      MSQ_ERRRTN(err);
-      elementArray[i].set_tag(tag);
-    }
-    
-  }
-}
-
 void PatchData::get_subpatch(size_t center_vertex_index,
                              PatchData &subpatch,
                              MsqError &err)
@@ -1017,7 +1005,7 @@ void PatchData::get_subpatch(size_t center_vertex_index,
     MSQ_SETERR(err)("Invalid index for center vertex",MsqError::INVALID_ARG);
     return;
   }
-  
+
     // Map vertex indices from this patch data to indices in new patch data
   msq_std::map<size_t, size_t> vertex_index_map;
   
@@ -1255,6 +1243,9 @@ void PatchData::initialize_data( size_t* elem_offset_array, MsqError& err )
     return;
   }
   
+    // Clear out data specific to patch
+  clear_tag_data();
+  
     // Clear any vertex->element adjacency data.  It
     // is probably invalid, and certainly will be by the time
     // this function completes if the mesh contains higher-order
@@ -1369,81 +1360,24 @@ void PatchData::allocate_storage( size_t vertex_count,
   elementArray.resize( element_count );
   elementHandlesArray.resize( element_count );
   elemConnectivityArray.resize( vertex_use_count );
+  clear_tag_data();
   numCornerVertices = 0;
 }
 
-
-void PatchData::get_reference_mesh( PatchData& output, MsqError& err )
+void PatchData::clear_tag_data()
 {
-    // Copy all data
-  output.meshSet               = this->meshSet;
-  output.domainSet             = this->domainSet;
-  output.mType                 = this->mType;
-  output.vertexArray           = this->vertexArray;
-  output.vertexHandlesArray    = this->vertexHandlesArray;
-  output.elementArray          = this->elementArray;
-  output.elementHandlesArray   = this->elementHandlesArray;
-  output.elemConnectivityArray = this->elemConnectivityArray;
-  output.vertAdjacencyArray    = this->vertAdjacencyArray;
-  output.vertAdjacencyOffsets  = this->vertAdjacencyOffsets;
-  output.numCornerVertices     = this->numCornerVertices;
-  memcpy( output.computedInfos,  this->computedInfos, sizeof(computedInfos) );
-  output.haveComputedInfos     = this->haveComputedInfos;
-
-    // Fix element connectivity array pointers
-  for (PatchDataMem<MsqMeshEntity>::iterator elem = output.elementArray.begin();
-       elem != output.elementArray.end(); ++elem)
-  {
-    size_t* old_ptr = elem->get_vertex_index_array();
-    size_t offset = old_ptr - &elemConnectivityArray[0];
-    size_t* new_ptr = &output.elemConnectivityArray[0] + offset;
-    elem->set_connectivity( new_ptr, elem->node_count() );
-  }
-
-     // Get vertex coordinates from tag
- 
-    // Get Mesh from MeshSet
-  msq_std::list<Mesh*> meshlist;
-  meshSet->get_meshes( meshlist );
-  if (meshlist.size() != 1) {
-    MSQ_SETERR(err)(MsqError::INVALID_STATE,
-      "MeshSet must contain exactly 1 Mesh for construction of "
-      "reference mesh.  MeshSet contains %d meshes.\n", meshlist.size());
-    return;
-  }
-  Mesh* mesh = *meshlist.begin();
-  
-    // Get tag from mesh
-  const char* tagname = "MESH_VERTEX_COORDS";
-  TagHandle tag = mesh->tag_get( tagname, err ); MSQ_ERRRTN(err);
-  msq_std::string name2;
-  Mesh::TagType type;
-  unsigned length;
-  mesh->tag_properties( tag, name2, type, length, err ); MSQ_ERRRTN(err);
-  if (type != Mesh::DOUBLE || length != 3) {
-    MSQ_SETERR(err)(
-      "Tag \"%s\" is not a tuple of three doubles (a point).\n", 
-      MsqError::INVALID_STATE );
-    return;
-  }
-  
-    // Get ref mesh coords from tag
-  msq_std::vector<double> coords( 3*num_nodes() );
-  mesh->tag_get_vertex_data( tag, num_nodes(), 
-                             &vertexHandlesArray[0],
-                             &coords[0], err ); MSQ_ERRRTN(err);
-  
-    // Set vertex coordinates in output patchdata to the tag values
-  PatchDataMem<MsqVertex>::iterator vert_iter = output.vertexArray.begin();
-  msq_std::vector<double>::iterator coord_iter = coords.begin();
-  while (vert_iter != output.vertexArray.end())
-  {
-    vert_iter->x( *coord_iter ); ++coord_iter;
-    vert_iter->y( *coord_iter ); ++coord_iter;
-    vert_iter->z( *coord_iter ); ++coord_iter;
-    ++vert_iter;
-  }
+  elementCornerOffsets.clear();
+  targetMatrices.clear();
 }
+
+void PatchData::get_element_corner_offsets()
+{
+  elementCornerOffsets.resize( elementArray.size() );
+  size_t count = 0;
+  for (unsigned i = 0; i < elementArray.size(); ++i)
+    elementCornerOffsets[i] = (count += elementArray[i].vertex_count());
+}
+
 
 
 } // namespace Mesquite

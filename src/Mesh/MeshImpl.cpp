@@ -1296,9 +1296,8 @@ void MeshImpl::read_vtk( const char* filename, MsqError &err )
   numCoords = 3;
 
     // Convert tag data for fixed nodes to internal bitmap
-  MsqError tmperr;
-  TagHandle handle = tag_get( "fixed", tmperr );
-  if (tmperr) return;
+  TagHandle handle = tag_get( "fixed", err );
+  if (!handle || MSQ_CHKERR(err)) return;
   
   const TagDescription& tag_desc = myTags->properties( (size_t)handle, err ); MSQ_ERRRTN(err);
   bool havedata = myTags->tag_has_vertex_data( (size_t)handle, err ); MSQ_ERRRTN(err);
@@ -1874,9 +1873,12 @@ void MeshImpl::vtk_read_point_data( FileTokenizer& tokens,
   void* data = vtk_read_attrib_data( tokens, myMesh->num_vertices(), tag, err );
   MSQ_ERRRTN(err);
   
-  MsqError tmperr;
-  size_t tag_handle = myTags->handle( tag.name, tmperr );
-  if (tmperr)
+  size_t tag_handle = myTags->handle( tag.name, err ); 
+  if (MSQ_CHKERR(err)) {
+    free( data );
+    return;
+  }
+  if (!tag_handle)
   {
     tag_handle = myTags->create( tag, err ); 
     if (MSQ_CHKERR(err)) {
@@ -2224,15 +2226,9 @@ void MeshImpl::vtk_write_attrib_data( msq_stdio::ostream& file,
   {
     switch ( vlen )
     {
-      case 1: 
-      case 2: 
-      case 4: vtk_type = TagDescription::SCALAR; break;
+      default: vtk_type = TagDescription::SCALAR; break;
       case 3: vtk_type = TagDescription::VECTOR; break;
       case 9: vtk_type = TagDescription::TENSOR; break;
-      default:
-        MSQ_SETERR(err)(MsqError::FILE_FORMAT,
-          "Cannot map vector tag \"%s\" with length %u to a VTK attribute type.",
-          desc.name.c_str(), vlen );
         return;
     }
   }

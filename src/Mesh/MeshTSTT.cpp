@@ -56,7 +56,7 @@
 #define OPAQUE_TYPE_CHAR          2
 #define OPAQUE_TYPE_UCHAR         3
 #define OPAQUE_TYPE_BYTE          UCHAR
-#define TSTT_OPAQUE_TAG_TYPE OPAQUE_PADDED
+#define TSTT_OPAQUE_TAG_TYPE OPAQUE_PACKED
 
 
 namespace Mesquite
@@ -1769,7 +1769,9 @@ TagHandle MeshTSTTImpl::tag_get( const msq_std::string& name, MsqError& err )
     return tagIFace.getTagHandle( name );
   } 
   catch(::TSTT::Error &tstt_err) {
-    MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
+    if (tstt_err.getErrorType() != TSTT::ErrorType_TAG_NOT_FOUND) {
+      MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
+    }
     return 0;
   }
 }

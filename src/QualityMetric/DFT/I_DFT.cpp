@@ -35,6 +35,7 @@
 
 #include "I_DFT.hpp"
 #include "I_DFTFamilyFunctions.hpp"
+#include "TargetMatrix.hpp"
 
 using namespace Mesquite;
    
@@ -54,9 +55,9 @@ bool I_DFT::evaluate_element(PatchData& pd,
   const size_t nv = e->vertex_count();
   const size_t *v_i = e->get_vertex_index_array();
 
-  size_t nt = 0;		// Number of target matrices
-  TargetMatrix *W = e->get_target_matrices(nt, err); MSQ_ERRZERO(err);
-  assert(nv == nt);
+  size_t idx = pd.get_element_index(e);
+  TargetMatrix *W = pd.targetMatrices.get_element_corner_tags(&pd, idx, err );
+  MSQ_ERRZERO(err);
 
   // Initialize constants for the metric
   const double delta = useBarrierDelta ? pd.get_barrier_delta(err) : 0;
@@ -183,9 +184,9 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
   const size_t nv = e->vertex_count();
   const size_t *v_i = e->get_vertex_index_array();
 
-  size_t nt = 0;		// Number of target matrices
-  TargetMatrix *W = e->get_target_matrices(nt, err); MSQ_ERRZERO(err);
-  assert(nv == nt);
+  size_t idx = pd.get_element_index(e);
+  TargetMatrix *W = pd.targetMatrices.get_element_corner_tags(&pd, idx, err );
+  MSQ_ERRZERO(err);
 
   // Initialize constants for the metric
   
@@ -672,9 +673,9 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
   const size_t nv = e->vertex_count();
   const size_t *v_i = e->get_vertex_index_array();
 
-  size_t nt = 0;		// Number of target matrices
-  TargetMatrix *W = e->get_target_matrices(nt, err); MSQ_ERRZERO(err);
-  assert(nv == nt);
+  size_t idx = pd.get_element_index(e);
+  TargetMatrix *W = pd.targetMatrices.get_element_corner_tags(&pd, idx, err );
+  MSQ_ERRZERO(err);
 
   // Initialize constants for the metric
   

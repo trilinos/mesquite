@@ -52,6 +52,7 @@ Member functions of the Mesquite::InstructionQueue class
 #include "MsqDebug.hpp"
 #include "MeanMidNodeMover.hpp"
 #include "MsqFPE.hpp"
+#include "TargetCalculator.hpp"
 
 using namespace Mesquite;
 
@@ -71,6 +72,12 @@ InstructionQueue::InstructionQueue() :
   globalPatch(0),
   trapFPE(IQ_TRAP_FPE_DEFAULT)
 {
+}
+
+
+void InstructionQueue::add_target_calculator( TargetCalculator* tc, MsqError& )
+{
+  instructions.push_back( tc );
 }
 
 /*! \fn InstructionQueue::add_preconditioner(QualityImprover* instr, MsqError &err)
@@ -269,7 +276,6 @@ void InstructionQueue::run_instructions(MeshSet &ms, MsqError &err)
   MsqFPE( this->trapFPE );
   
   msq_std::list<PatchDataUser*>::const_iterator instr_iter;
-  PatchDataUser* prev_global = 0;
   
   if (autoAdjMidNodes)
     instructions.push_back( new MeanMidNodeMover );
@@ -285,20 +291,9 @@ void InstructionQueue::run_instructions(MeshSet &ms, MsqError &err)
         ms.get_next_patch(*globalPatch, (*instr_iter)->get_all_parameters(), err);
         MSQ_ERRRTN(err);
       } 
-      else if ((*instr_iter)->get_all_parameters().get_target_calculator() &&
-               prev_global &&
-               (*instr_iter)->get_all_parameters().get_target_calculator() !=
-                 prev_global->get_all_parameters().get_target_calculator())
-      {
-        (*instr_iter)->get_all_parameters().get_target_calculator()->
-          compute_target_matrices_and_check_det(*globalPatch, err);
-          MSQ_ERRRTN(err);
-      }
         
                
       (*instr_iter)->set_global_patch(globalPatch, err); MSQ_ERRRTN(err);
-      
-      prev_global = *instr_iter;
     }
     // If instruction does not use a Global Patch, make sure we discard any existing patch.
     else {

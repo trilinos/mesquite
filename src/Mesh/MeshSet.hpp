@@ -143,6 +143,9 @@ namespace Mesquite
     
     void write_gnuplot(const char* out_filebase, MsqError &err);
     
+    Mesh* get_current_mesh()
+      { return *currentMesh; }
+    
   private:
   
     bool get_next_elem_on_vert_patch( PatchData&, PatchDataParameters&, MsqError& );

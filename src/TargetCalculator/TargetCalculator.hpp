@@ -43,6 +43,7 @@
 #include "MsqError.hpp"
 #include "Matrix3D.hpp"
 #include "PatchData.hpp"
+#include "PatchDataUser.hpp"
 
 #ifdef HAVE_IEEEFP
 #  include <ieeefp.h>
@@ -70,11 +71,12 @@ namespace Mesquite
     corresponds to many corners.) with a TargetMatrix through an MsqTag mechanism 
     available in the MsqMeshEntity class.
    */
-  class TargetCalculator 
+  class TargetCalculator : public PatchDataUser
   {
   public:
 
-    TargetCalculator() : refMesh(0), originator(0) { }
+    TargetCalculator() : refMesh(0) 
+      { get_all_parameters().set_global_patch_type(); }
     
       //! virtual destructor ensures use of polymorphism during destruction
     virtual ~TargetCalculator()
@@ -137,16 +139,14 @@ namespace Mesquite
     */
     virtual void compute_target_matrices(PatchData& pd, MsqError& err) =0;
 
-    void set_originator(PatchDataParameters* pdm, MsqError &err)
-    { if (originator != 0)
-        MSQ_SETERR(err)("Each TargetCalculator can be set on one object only.",
-                        MsqError::INVALID_STATE);
-      else originator = pdm; }
+    virtual double loop_over_mesh( MeshSet& ms, MsqError& err );
+    
+    virtual msq_std::string get_name();
+    
+    virtual AlgorithmType get_algorithm_type();
 
   protected:
     MeshSet* refMesh;
-    PatchDataParameters* originator; //! This is the object the TargetCalculator is attached to.
-
   };
 
   

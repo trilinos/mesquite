@@ -143,15 +143,8 @@ int main(int argc, char* argv[])
   if (err) return 1;
   //  DesignOpt3TargetCalculator target(&ref_mesh_set);
   DeformingDomainGuides843 target(&ref_mesh_set);
-
-  Mesquite::MeshImpl *ref_mesh2 = new Mesquite::MeshImpl;
-  ref_mesh2->read_vtk("../../meshFiles/2D/VTK/tfi_horse10x4-12.vtk", err);
+  queue1.add_target_calculator( &target, err );
   if (err) return 1;
-  MeshSet ref_mesh2_set;
-  ref_mesh2_set.add_mesh(ref_mesh2, err); 
-  if (err) return 1;
-  // DesignOpt3TargetCalculator assessor_target(&ref_mesh2_set);
-  DeformingDomainGuides843 assessor_target(&ref_mesh2_set);
 
   // ... and builds an objective function with it
   LPtoPTemplate* obj_func = new LPtoPTemplate(&mean_ratio, 1, err);
@@ -161,14 +154,10 @@ int main(int argc, char* argv[])
   // creates the steepest descentfeas newt optimization procedures
 //  ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
   FeasibleNewton* pass1 = new FeasibleNewton( obj_func );
-  pass1->set_target_calculator(&target, err); 
-  if (err) return 1;
   pass1->set_patch_type(PatchData::GLOBAL_PATCH, err);
   if (err) return 1;
   
   QualityAssessor stop_qa(&mean_ratio,QualityAssessor::AVERAGE, err);
-  if (err) return 1;
-  stop_qa.set_target_calculator(&assessor_target, err); 
   if (err) return 1;
   
   // **************Set stopping criterion****************

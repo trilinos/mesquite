@@ -195,7 +195,7 @@ class MeshImplTags {
   {
     public:
       TagIterator( MeshImplTags* d, size_t i ) : tags(d), index(i) {}
-      const size_t& operator*() const  { return index; }
+      size_t operator*() const  { return index+1; }
       TagIterator operator++();
       TagIterator operator--();
       TagIterator operator++(int);

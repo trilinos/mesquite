@@ -297,7 +297,13 @@ namespace Mesquite
     virtual void tag_delete( TagHandle handle, MsqError& err ) = 0;
     
     
-      /** \brief Get handle for existing tag, by name. */
+      /** \brief Get handle for existing tag, by name. 
+        *
+        * Check for the existance of a tag given it's name and
+        * if it exists return a handle for it.  If the specified
+        * tag does not exist, zero should be returned WITHOUT 
+        * flagging an error.
+        */
     virtual TagHandle tag_get( const msq_std::string& name, 
                                MsqError& err ) = 0;
      
