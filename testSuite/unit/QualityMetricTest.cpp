@@ -146,6 +146,8 @@ private:
     //I_DFT
   CPPUNIT_TEST (test_i_dft_tet_gradient);
   CPPUNIT_TEST (test_i_dft_hex_gradient);
+  CPPUNIT_TEST (test_i_dft_tri_gradient);
+  CPPUNIT_TEST (test_i_dft_quad_gradient);
   CPPUNIT_TEST (test_i_dft_imr_tet_gradient);
   CPPUNIT_TEST (test_i_dft_imr_hex_gradient);
   CPPUNIT_TEST (test_i_dft_weak_barrier_tet_gradient);
@@ -156,6 +158,8 @@ private:
   CPPUNIT_TEST (test_i_dft_strong_barrier_hex_gradient);
   CPPUNIT_TEST (test_i_dft_tet_hessian);
   CPPUNIT_TEST (test_i_dft_hex_hessian);
+  CPPUNIT_TEST (test_i_dft_tri_hessian);
+  CPPUNIT_TEST (test_i_dft_quad_hessian);
   CPPUNIT_TEST (test_i_dft_weak_barrier_tet_hessian);
   CPPUNIT_TEST (test_i_dft_weak_barrier_hex_hessian);
   CPPUNIT_TEST (test_i_dft_nobarrier_tet_hessian);
@@ -165,6 +169,8 @@ private:
   CPPUNIT_TEST (test_i_dft_imr_tet_hessian);
   CPPUNIT_TEST (test_i_dft_imr_hex_hessian);
   CPPUNIT_TEST (test_i_dft_tet_grad_from_hessian);
+  CPPUNIT_TEST (test_i_dft_quad_grad_from_hessian);
+  CPPUNIT_TEST (test_i_dft_tri_grad_from_hessian);
   CPPUNIT_TEST (test_i_dft_hex_grad_from_hessian);
   CPPUNIT_TEST (test_i_dft_imr_tet_grad_from_hessian);
   CPPUNIT_TEST (test_i_dft_imr_hex_grad_from_hessian);
@@ -388,8 +394,204 @@ public:
      delete met;
      delete gmet;
    }
+    //******************** utility functions ***********************      
 
 
+     // this function will change the number of free vertices so that
+     // different parts of the i_dft compuation gets exercised
+     // if which_case == 1, compare numerical and analytical gradients
+     // if which_case == 2, compare numerical and analytical hessians
+     // if which_case == 3, compare the anaylical gradients from the
+     //                     gradient call and the Hessian call.
+  void test_i_dft_fix_vertices(PatchData &this_patch, int which_case)
+  {
+    MsqError err;
+    I_DFT i_dft_metric;
+    if(which_case == 1)
+      test_i_dft_gradient(this_patch, &i_dft_metric);
+    else if(which_case ==2)
+      test_metric_hessian(this_patch, &i_dft_metric);
+    else{
+      i_dft_metric.set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+      i_dft_metric.set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);      
+      test_metric_grad_from_hessian(quadPatch,&i_dft_metric,err);
+    }
+      //now do some things to test a single free vertex case
+    
+    MsqVertex* vertices=this_patch.get_vertex_array(err);
+    size_t num_verts = this_patch.num_vertices();
+    bool* flags = new bool[num_verts];
+    CPPUNIT_ASSERT(!err);
+    int i;
+    for(i=0; i<num_verts; ++i){
+      if(vertices[i].is_free_vertex()){
+        vertices[i].set_hard_fixed_flag();
+        flags[i] = true;
+      }
+      else
+        flags[i] =false;
+    }
+      //change each vertex to free... one at a time
+    for(i=0; i<num_verts; ++i){
+      vertices[i].remove_vertex_flag(MsqVertex::MSQ_HARD_FIXED);
+      if(which_case == 1)
+        test_i_dft_gradient(this_patch, &i_dft_metric);
+      else if (which_case == 2)
+        test_metric_hessian(this_patch, &i_dft_metric);
+      else
+        test_metric_grad_from_hessian(quadPatch,&i_dft_metric,err);
+      vertices[i].set_hard_fixed_flag();
+    }
+    for(i=0; i<num_verts; ++i){
+      if(flags[i]){
+        vertices[i].remove_vertex_flag(MsqVertex::MSQ_HARD_FIXED);
+      }
+    }   
+      
+    delete [] flags;
+      
+      
+  }
+  
+    /*!       
+      \param pd: this PatchData must have at least two elements.
+  */
+  void test_metric_grad_from_hessian(PatchData &pd, QualityMetric* this_metric,
+                                     MsqError &err )
+  {
+    int max_nve = MSQ_MAX_NUM_VERT_PER_ENT;
+    Vector3D* grad1 = new Vector3D[max_nve];
+    Vector3D* grad2 = new Vector3D[max_nve];
+    Matrix3D* hessian = new Matrix3D[max_nve*(max_nve+1)/2];
+    double QM_val1, QM_val2;
+    bool valid;
+    
+    MsqMeshEntity* elems = pd.get_element_array(err);CPPUNIT_ASSERT(!err);
+    MsqVertex* vertices =  pd.get_vertex_array(err);CPPUNIT_ASSERT(!err);
+
+    std::vector<size_t> elem_vtx_indices;
+    elems[1].get_vertex_indices(elem_vtx_indices);
+    int nve = elem_vtx_indices.size(); // number of vertices in element.
+    MsqVertex** all_vtces = new MsqVertex*[nve];
+    for (int i=0; i<nve; ++i) {
+      all_vtces[i] = &vertices[elem_vtx_indices[i]];
+    }
+
+    // 1 **** test with all vertices free
+    // creates a mean ratio quality metric ...
+    
+    valid = this_metric->compute_element_gradient (pd, &elems[1],
+                                                   all_vtces, grad1,
+                                                   nve, QM_val1, err);
+    CPPUNIT_ASSERT(!err); CPPUNIT_ASSERT(valid);
+
+    
+    valid = this_metric->compute_element_hessian(pd, &elems[1], all_vtces,
+                                                 grad2, hessian,
+                                                 nve, QM_val2,
+                                                 err); CPPUNIT_ASSERT(!err);
+    CPPUNIT_ASSERT(valid);
+
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(QM_val1, QM_val2, 1e-12);
+    if(pF){
+      std::cout << "Gradient from compute_gradient()\n";
+      for (int i=0; i<nve; ++i)
+        std::cout << grad1[i];
+
+      std::cout << "\nGradient from compute_hessian()\n";
+      for (int i=0; i<nve; ++i)
+        std::cout << grad2[i];
+    }
+    
+    
+    // test gradients
+    for (int i=0; i<nve; ++i)
+      for (int j=0; j<3; ++j)
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(grad1[i][j], grad2[i][j], 1e-12);
+    delete []grad1;
+    delete []grad2;
+    delete []hessian;
+    delete []all_vtces;
+  }
+      //for I_DFT test to make sure the numerical and analytical gradients
+    // are equivalent
+void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
+  {
+    MsqPrintError err(cout); 
+    Vector3D* grad_num = new Vector3D[2];
+    Vector3D* grad_ana = new Vector3D[2];
+    double metric_value;
+    bool valid;
+    size_t nfv = pd.num_free_vertices(err);
+    if(nfv > 2)
+       nfv =2;
+    MsqMeshEntity* elems = pd.get_element_array(err);CPPUNIT_ASSERT(!err);
+    MsqVertex* vertices =  pd.get_vertex_array(err);CPPUNIT_ASSERT(!err);
+
+    std::vector<size_t> bad_elem_vertex_indices;
+    elems[1].get_vertex_indices(bad_elem_vertex_indices);
+    MsqVertex* two_vtces[2];
+    two_vtces[0] = &vertices[bad_elem_vertex_indices[0]];
+    two_vtces[1] = &vertices[bad_elem_vertex_indices[2]];
+    
+    // creates an I_DFT quality metric ...
+    //QualityMetric* i_dft_metric = new I_DFT();
+    CPPUNIT_ASSERT(!err);
+    this_metric->set_averaging_method(QualityMetric::SUM, err);
+    CPPUNIT_ASSERT(!err);
+
+    this_metric->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
+    valid = this_metric->compute_element_gradient (pd, &elems[1], two_vtces,
+                                                    grad_num, nfv, metric_value,
+                                                    err); CPPUNIT_ASSERT(!err);
+    CPPUNIT_ASSERT(valid);
+    if(pF){
+      std::cout<<"\nI_DFT gradient test.\n";
+      std::cout << "NUMERICAL GRADIENT\n";
+      for (int i=0; i<2; ++i)
+        for (int j=0; j<3; ++j)
+          std::cout << grad_num[i][j] << std::endl;
+    }
+
+    this_metric->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+    valid = this_metric->compute_element_gradient (pd, &elems[1], two_vtces,
+                                                    grad_ana, nfv, metric_value,
+                                                    err); CPPUNIT_ASSERT(!err);
+    CPPUNIT_ASSERT(valid);
+    if(pF){
+      std::cout << "ANALYTICAL GRADIENT\n";
+      for (int i=0; i<2; ++i)
+        for (int j=0; j<3; ++j)
+          std::cout << grad_ana[i][j] << std::endl;
+    }
+    for (int i=0; i<2; ++i)
+      for (int j=0; j<3; ++j)
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(grad_num[i][j], grad_ana[i][j], 0.001);
+    
+
+    // same test, but free vertices order differ from vertices order in element. 
+    two_vtces[0] = &vertices[bad_elem_vertex_indices[2]];
+    two_vtces[1] = &vertices[bad_elem_vertex_indices[0]];
+    this_metric->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
+    valid = this_metric->compute_element_gradient (pd, &elems[1], two_vtces,
+                                                    grad_num, 2, metric_value,
+                                                    err); CPPUNIT_ASSERT(!err);
+    CPPUNIT_ASSERT(valid);
+
+    this_metric->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+    valid = this_metric->compute_element_gradient (pd, &elems[1], two_vtces,
+                                                    grad_ana, 2, metric_value,
+                                                    err); CPPUNIT_ASSERT(!err);
+    CPPUNIT_ASSERT(valid);
+
+    for (int i=0; i<2; ++i)
+      for (int j=0; j<3; ++j)
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(grad_num[i][j], grad_ana[i][j], 0.001);
+      //delete i_dft_metric;
+    delete []grad_num;
+    delete []grad_ana;
+  }
+    //***************** end utility functions ************************
    void test_mean_ratio()
    {
        //START WITH TRI's
@@ -907,82 +1109,7 @@ public:
     delete []grad_ana;
   }
 
-    //for I_DFT test to make sure the numerical and analytical gradients
-    // are equivalent
-void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
-  {
-    MsqPrintError err(cout); 
-    Vector3D* grad_num = new Vector3D[2];
-    Vector3D* grad_ana = new Vector3D[2];
-    double metric_value;
-    bool valid;
 
-    MsqMeshEntity* elems = pd.get_element_array(err);CPPUNIT_ASSERT(!err);
-    MsqVertex* vertices =  pd.get_vertex_array(err);CPPUNIT_ASSERT(!err);
-
-    std::vector<size_t> bad_elem_vertex_indices;
-    elems[1].get_vertex_indices(bad_elem_vertex_indices);
-    MsqVertex* two_vtces[2];
-    two_vtces[0] = &vertices[bad_elem_vertex_indices[0]];
-    two_vtces[1] = &vertices[bad_elem_vertex_indices[2]];
-    
-    // creates an I_DFT quality metric ...
-    //QualityMetric* i_dft_metric = new I_DFT();
-    CPPUNIT_ASSERT(!err);
-    this_metric->set_averaging_method(QualityMetric::SUM, err);
-    CPPUNIT_ASSERT(!err);
-
-    this_metric->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
-    valid = this_metric->compute_element_gradient (pd, &elems[1], two_vtces,
-                                                    grad_num, 2, metric_value,
-                                                    err); CPPUNIT_ASSERT(!err);
-    CPPUNIT_ASSERT(valid);
-    if(pF){
-      std::cout<<"\nI_DFT gradient test.\n";
-      std::cout << "NUMERICAL GRADIENT\n";
-      for (int i=0; i<2; ++i)
-        for (int j=0; j<3; ++j)
-          std::cout << grad_num[i][j] << std::endl;
-    }
-
-    this_metric->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
-    valid = this_metric->compute_element_gradient (pd, &elems[1], two_vtces,
-                                                    grad_ana, 2, metric_value,
-                                                    err); CPPUNIT_ASSERT(!err);
-    CPPUNIT_ASSERT(valid);
-    if(pF){
-      std::cout << "ANALYTICAL GRADIENT\n";
-      for (int i=0; i<2; ++i)
-        for (int j=0; j<3; ++j)
-          std::cout << grad_ana[i][j] << std::endl;
-    }
-    for (int i=0; i<2; ++i)
-      for (int j=0; j<3; ++j)
-        CPPUNIT_ASSERT_DOUBLES_EQUAL(grad_num[i][j], grad_ana[i][j], 0.001);
-    
-
-    // same test, but free vertices order differ from vertices order in element. 
-    two_vtces[0] = &vertices[bad_elem_vertex_indices[2]];
-    two_vtces[1] = &vertices[bad_elem_vertex_indices[0]];
-    this_metric->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
-    valid = this_metric->compute_element_gradient (pd, &elems[1], two_vtces,
-                                                    grad_num, 2, metric_value,
-                                                    err); CPPUNIT_ASSERT(!err);
-    CPPUNIT_ASSERT(valid);
-
-    this_metric->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
-    valid = this_metric->compute_element_gradient (pd, &elems[1], two_vtces,
-                                                    grad_ana, 2, metric_value,
-                                                    err); CPPUNIT_ASSERT(!err);
-    CPPUNIT_ASSERT(valid);
-
-    for (int i=0; i<2; ++i)
-      for (int j=0; j<3; ++j)
-        CPPUNIT_ASSERT_DOUBLES_EQUAL(grad_num[i][j], grad_ana[i][j], 0.001);
-      //delete i_dft_metric;
-    delete []grad_num;
-    delete []grad_ana;
-  }
   
   void test_mean_ratio_tri_gradient_planar()
   {
@@ -1016,16 +1143,26 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
     test_mean_ratio_gradient(tetPatch);
   }
   
-  void test_i_dft_hex_gradient()
+  void test_i_dft_tri_gradient()
   {
     I_DFT i_dft_metric;
-    test_i_dft_gradient(hexPatch, &i_dft_metric);
-  }           
+    test_i_dft_fix_vertices(triPatch, 1);
+  }
+  void test_i_dft_quad_gradient()
+  {
+    I_DFT i_dft_metric;
+    test_i_dft_fix_vertices(quadPatch, 1);
+  }  
   void test_i_dft_tet_gradient()
   {
     I_DFT i_dft_metric;
-    test_i_dft_gradient(tetPatch, &i_dft_metric);
-  }
+    test_i_dft_fix_vertices(tetPatch, 1);
+  }     
+  void test_i_dft_hex_gradient()
+  {
+    I_DFT i_dft_metric;
+    test_i_dft_fix_vertices(hexPatch, 1);
+  }        
   
   void test_i_dft_imr_hex_gradient()
   {
@@ -1397,26 +1534,33 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
       if(pF)
         std::cout<<"\nTesting hex Hessian for I_DFT.\n";
       MsqPrintError err(cout); 
- 
-      I_DFT i_dft_metric;
-      CPPUNIT_ASSERT(!err);
-      i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
-      CPPUNIT_ASSERT(!err);
-     
-      test_metric_hessian(hexPatch, &i_dft_metric);
+
+      test_i_dft_fix_vertices(hexPatch, 2);
     }
   void test_i_dft_tet_hessian()
     {
       if(pF)
         std::cout<<"\nTesting tet Hessian for I_DFT.\n";
       MsqPrintError err(cout); 
- 
-      I_DFT i_dft_metric;
-      CPPUNIT_ASSERT(!err);
-      i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
-      CPPUNIT_ASSERT(!err);
-      test_metric_hessian(tetPatch, &i_dft_metric);
-    }  
+      test_i_dft_fix_vertices(tetPatch, 2);
+    }
+  void test_i_dft_quad_hessian()
+    {
+      if(pF)
+        std::cout<<"\nTesting quad Hessian for I_DFT.\n";
+      MsqPrintError err(cout); 
+      
+      test_i_dft_fix_vertices(quadPatch, 2);
+    }
+  void test_i_dft_tri_hessian()
+    {
+      if(pF)
+        std::cout<<"\nTesting tri Hessian for I_DFT.\n";
+      MsqPrintError err(cout); 
+      
+      test_i_dft_fix_vertices(triPatch, 2);
+    }
+
   void test_i_dft_weak_barrier_hex_hessian()
     {
       if(pF)
@@ -1555,66 +1699,8 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
       test_metric_hessian(hexPatch, mean_rat);
       delete mean_rat;
     }
-    /*!       
-      \param pd: this PatchData must have at least two elements.
-  */
-  void test_metric_grad_from_hessian(PatchData &pd, QualityMetric* this_metric,
-                                     MsqError &err )
-  {
-    int max_nve = MSQ_MAX_NUM_VERT_PER_ENT;
-    Vector3D* grad1 = new Vector3D[max_nve];
-    Vector3D* grad2 = new Vector3D[max_nve];
-    Matrix3D* hessian = new Matrix3D[max_nve*(max_nve+1)/2];
-    double QM_val1, QM_val2;
-    bool valid;
-    
-    MsqMeshEntity* elems = pd.get_element_array(err);CPPUNIT_ASSERT(!err);
-    MsqVertex* vertices =  pd.get_vertex_array(err);CPPUNIT_ASSERT(!err);
 
-    std::vector<size_t> elem_vtx_indices;
-    elems[1].get_vertex_indices(elem_vtx_indices);
-    int nve = elem_vtx_indices.size(); // number of vertices in element.
-    MsqVertex** all_vtces = new MsqVertex*[nve];
-    for (int i=0; i<nve; ++i) {
-      all_vtces[i] = &vertices[elem_vtx_indices[i]];
-    }
 
-    // 1 **** test with all vertices free
-    // creates a mean ratio quality metric ...
-    
-    valid = this_metric->compute_element_gradient (pd, &elems[1],
-                                                   all_vtces, grad1,
-                                                   nve, QM_val1, err);
-    CPPUNIT_ASSERT(!err); CPPUNIT_ASSERT(valid);
-
-    
-    valid = this_metric->compute_element_hessian(pd, &elems[1], all_vtces,
-                                                 grad2, hessian,
-                                                 nve, QM_val2,
-                                                 err); CPPUNIT_ASSERT(!err);
-    CPPUNIT_ASSERT(valid);
-
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(QM_val1, QM_val2, 1e-12);
-    if(pF){
-      std::cout << "Gradient from compute_gradient()\n";
-      for (int i=0; i<nve; ++i)
-        std::cout << grad1[i];
-
-      std::cout << "\nGradient from compute_hessian()\n";
-      for (int i=0; i<nve; ++i)
-        std::cout << grad2[i];
-    }
-    
-    
-    // test gradients
-    for (int i=0; i<nve; ++i)
-      for (int j=0; j<3; ++j)
-        CPPUNIT_ASSERT_DOUBLES_EQUAL(grad1[i][j], grad2[i][j], 1e-12);
-    delete []grad1;
-    delete []grad2;
-    delete []hessian;
-    delete []all_vtces;
-  }
 
   void test_mean_ratio_tri_grad_from_hessian()
   {
@@ -1676,13 +1762,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
     if(pF)
       std::cout<<"\nTesting I_DFT metrics.\n";
     MsqPrintError err(cout);
-    I_DFT i_dft_metric;
-    CPPUNIT_ASSERT(!err);
-    i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
-    CPPUNIT_ASSERT(!err);
-    i_dft_metric.set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
-    i_dft_metric.set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
-    test_metric_grad_from_hessian(tetPatch,&i_dft_metric,err);
+    test_i_dft_fix_vertices(tetPatch, 3);
   }
 
   void test_i_dft_hex_grad_from_hessian()
@@ -1690,13 +1770,23 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
     if(pF)
       std::cout<<"\nTesting I_DFT metrics.\n";
     MsqPrintError err(cout);
-    I_DFT i_dft_metric;
-    CPPUNIT_ASSERT(!err);
-    i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
-    CPPUNIT_ASSERT(!err);
-    i_dft_metric.set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
-    i_dft_metric.set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
-    test_metric_grad_from_hessian(hexPatch,&i_dft_metric,err);
+    test_i_dft_fix_vertices(hexPatch, 3);
+  }
+    
+  void test_i_dft_tri_grad_from_hessian()
+  {
+    if(pF)
+      std::cout<<"\nTesting I_DFT metrics.\n";
+    MsqPrintError err(cout);
+    test_i_dft_fix_vertices(triPatch, 3);
+  }
+
+  void test_i_dft_quad_grad_from_hessian()
+  {
+    if(pF)
+      std::cout<<"\nTesting I_DFT metrics.\n";
+    MsqPrintError err(cout);
+    test_i_dft_fix_vertices(quadPatch, 3);
   }
   
   void test_i_dft_strong_barrier_tet_grad_from_hessian()
