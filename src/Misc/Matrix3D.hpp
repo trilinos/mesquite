@@ -183,6 +183,8 @@ namespace Mesquite
     friend int matmult(Matrix3D& C, const Matrix3D  &A, const Matrix3D &B);
     friend const Vector3D operator*(const Matrix3D  &A, const Vector3D &x);
     friend const Vector3D operator*(const Vector3D &x, const Matrix3D  &A);
+    const Matrix3D operator*(const double &s) const;
+    friend const Matrix3D operator*(const double &s, const Matrix3D &A);    
     void operator+=(const Matrix3D &rhs);
     void operator-=(const Matrix3D &rhs);
     void operator*=(const double &s);
@@ -414,7 +416,24 @@ namespace Mesquite
         }
     return tmp;
   }
-
+   
+   //! multiplies each entry by the scalar s
+  inline const Matrix3D Matrix3D::operator*(const double &s) const
+  {
+    Matrix3D temp;
+    temp[0][0]=v_[0] * s; temp[0][1]=v_[1] * s; temp[0][2]=v_[2] * s;
+    temp[1][0]=v_[3] * s; temp[1][1]=v_[4] * s; temp[1][2]=v_[5] * s;
+    temp[2][0]=v_[6] * s; temp[2][1]=v_[7] * s; temp[2][2]=v_[8] * s;
+    return temp;
+  }
+     //!friend function to allow for commutatative property of
+     //! scalar mulitplication.
+   inline const Matrix3D operator*(const double &s, const Matrix3D &A)
+   {
+     return (A.operator*(s));
+   }
+   
+   
   //! \f$ C = A \times B \f$
   inline int matmult(Matrix3D& C, const Matrix3D  &A, 
                      const Matrix3D &B)
