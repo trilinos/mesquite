@@ -26,7 +26,8 @@ using std::cerr;
 
   \param el: this is the element for which the Hessian will be returned.
   
-  \param free_vtces: those are the free vertices within the element.
+  \param free_vtces: base address of an array of pointers to the element
+  vertices which are considered free for purposes of computing the hessian.
   The vertices within this array must be ordered in the same order
   as the vertices within the element, el. 
   Only the Hessian entries corresponding to a pair of free vertices
@@ -40,10 +41,10 @@ using std::cerr;
   of entries in the upper triangular part of a nve*nve matrix.
 
   \param num_free_vtx: is the number df free vertices in the element.
-  Essentially, this gives the size of free_vtces[].
+  Essentially, this gives the size of free_vtces[].  The gradient array has
+  the size of the number of vertices in the element, regardless.
 
-  \param metric_value: this is the value of the quality metric, this parameter
-  is set during the computation of the Hessian.
+  \param metric_value: Since the metric is computed, we return it.
   
   \return true if the element is valid, false otherwise. 
 */
@@ -104,7 +105,7 @@ bool QualityMetric::compute_element_hessian(PatchData &pd,
 */
 bool QualityMetric::compute_vertex_analytical_gradient(PatchData &pd,
                                                        MsqVertex &vertex,
-                                                       MsqVertex* vertices[],
+                                                       MsqVertex* free_vtces[],
                                                        Vector3D grad_vec[],
                                                        int num_vtx,
                                                        double &metric_value,
@@ -113,7 +114,7 @@ bool QualityMetric::compute_vertex_analytical_gradient(PatchData &pd,
   PRINT_WARNING("QualityMetric has no analytical gradient defined. ",
                 "Defaulting to numerical gradient.\n");
   set_gradient_type(NUMERICAL_GRADIENT);
-  return compute_vertex_numerical_gradient(pd, vertex, vertices, grad_vec,
+  return compute_vertex_numerical_gradient(pd, vertex, free_vtces, grad_vec,
                                            num_vtx, metric_value, err);
 }
 
@@ -139,35 +140,51 @@ void QualityMetric::change_metric_type(MetricType /*t*/, MsqError &err)
 */
 bool QualityMetric::compute_element_analytical_gradient(PatchData &pd,
                                              MsqMeshEntity* element,
-                                             MsqVertex* vertices[], Vector3D grad_vec[],
+                                             MsqVertex* free_vtces[], Vector3D grad_vec[],
                                              int num_vtx, double &metric_value,
                                              MsqError &err)
 {
   PRINT_WARNING("QualityMetric has no analytical gradient defined. ",
                 "Defaulting to numerical gradient.\n");
   set_gradient_type(NUMERICAL_GRADIENT);
-  return compute_element_numerical_gradient(pd, element, vertices, grad_vec, num_vtx, metric_value, err);
+  return compute_element_numerical_gradient(pd, element, free_vtces, grad_vec, num_vtx, metric_value, err);
 }
 
 
 #undef __FUNC__
 #define __FUNC__ "QualityMetric::compute_element_analytical_hessian"
 /*! If that function is not over-riden in the concrete class, the base
-    class function makes it default to a numerical hessian.
-    \param vertices base address of an array of pointers to the element vertices which
-    are considered free for purposes of computing the hessian. The quality metric
-    gradient relatice to each of those vertices is computed and stored in grad_vec.
-    \param grad_vec base address of an array of Vector3D where the gradient is stored.
-    \param hessian base address of an array of Matrix3D where the upper part of the
-    hessian is stored.
-    \param num_vtx This is the size of the vertices arrays. The gradient array has
-    the size of the number of vertices in the element, regardless.  
-    \param metric_value Since the metric is computed, we return it. 
-    \return true if the element is valid, false otherwise.
+  class function makes it default to a numerical hessian.
+
+  \param pd: PatchData that contains the element which Hessian we want.
+
+  \param el: this is the element for which the Hessian will be returned.
+  
+  \param free_vtces: base address of an array of pointers to the element
+  vertices which are considered free for purposes of computing the hessian.
+  The vertices within this array must be ordered in the same order
+  as the vertices within the element, el. 
+  Only the Hessian entries corresponding to a pair of free vertices
+  will be non-zero.
+
+  \param grad_vec: this is an array of nve Vector3D, where nve is the total
+  number of vertices in the element.
+
+  \param hessian: this is a 1D array of Matrix3D that will contain the upper
+  triangular part of the Hessian. It has size nve*(nve+1)/2, i.e. the number
+  of entries in the upper triangular part of a nve*nve matrix.
+
+  \param num_free_vtx: is the number df free vertices in the element.
+  Essentially, this gives the size of free_vtces[].  The gradient array has
+  the size of the number of vertices in the element, regardless.
+
+  \param metric_value: Since the metric is computed, we return it.
+  
+  \return true if the element is valid, false otherwise. 
 */
 bool QualityMetric::compute_element_analytical_hessian(PatchData &pd,
                                              MsqMeshEntity* element,
-                                             MsqVertex* vertices[], Vector3D grad_vec[],
+                                             MsqVertex* free_vtces[], Vector3D grad_vec[],
                                              Matrix3D hessian[],
                                              int num_vtx, double &metric_value,
                                              MsqError &err)
@@ -175,7 +192,7 @@ bool QualityMetric::compute_element_analytical_hessian(PatchData &pd,
   PRINT_WARNING("QualityMetric has no analytical hessian defined. ",
                 "Defaulting to numerical hessian.\n");
   set_hessian_type(NUMERICAL_HESSIAN);
-  return compute_element_numerical_hessian(pd, element, vertices, grad_vec,
+  return compute_element_numerical_hessian(pd, element, free_vtces, grad_vec,
                                            hessian, num_vtx, metric_value, err);
 }
 
@@ -188,7 +205,7 @@ bool QualityMetric::compute_element_analytical_hessian(PatchData &pd,
 */
 bool QualityMetric::compute_element_gradient_expanded(PatchData &pd,
                                                       MsqMeshEntity* el,
-                                                      MsqVertex* vertices[],
+                                                      MsqVertex* free_vtces[],
                                                       Vector3D grad_vec[],
                                                       int num_vtx,
                                                       double &metric_value,
@@ -197,7 +214,7 @@ bool QualityMetric::compute_element_gradient_expanded(PatchData &pd,
   int i, g, e;
   bool ret;
   Vector3D* grad_vec_nz = new Vector3D[num_vtx];
-  ret = compute_element_gradient(pd, el, vertices, grad_vec_nz,
+  ret = compute_element_gradient(pd, el, free_vtces, grad_vec_nz,
                                  num_vtx, metric_value, err);
   MSQ_CHKERR(err);
 
@@ -205,7 +222,7 @@ bool QualityMetric::compute_element_gradient_expanded(PatchData &pd,
   gv_i.reserve(num_vtx);
   i=0;
   for (i=0; i<num_vtx; ++i) {
-    gv_i.push_back( pd.get_vertex_index(vertices[i]) );
+    gv_i.push_back( pd.get_vertex_index(free_vtces[i]) );
   }
      
   std::vector<size_t> ev_i;
@@ -251,7 +268,7 @@ bool QualityMetric::compute_element_gradient_expanded(PatchData &pd,
 */
 bool QualityMetric::compute_element_numerical_gradient(PatchData &pd,
                                              MsqMeshEntity* element,
-                                             MsqVertex* vertices[],
+                                             MsqVertex* free_vtces[],
                                                        Vector3D grad_vec[],
                                              int num_vtx, double &metric_value,
                                              MsqError &err)
@@ -283,14 +300,14 @@ bool QualityMetric::compute_element_numerical_gradient(PatchData &pd,
       while(!valid && counter<10){
           // perturb the coordinates of the free vertex in the j direction
           // by delta       
-        (*vertices[v])[j]+=delta;
+        (*free_vtces[v])[j]+=delta;
           //compute the function at the perturbed point location
         valid=this->evaluate_element(pd, element,  metric_value1, err);
         MSQ_CHKERR(err);
           //compute the numerical gradient
         grad_vec[v][j]=(metric_value1-metric_value)/delta;
           // put the coordinates back where they belong
-        (*vertices[v])[j] -= delta;
+        (*free_vtces[v])[j] -= delta;
         ++counter;
         delta/=10.0;
       }
@@ -311,6 +328,32 @@ bool QualityMetric::compute_element_numerical_gradient(PatchData &pd,
   Note that for this function, grad_vec should be an array of size the
   number of vertices in el, not of size num_vtx. Entries that do not correspond
   with the vertices argument array will be null.
+
+  \param pd: PatchData that contains the element which Hessian we want.
+
+  \param el: this is the element for which the Hessian will be returned.
+  
+  \param free_vtces: base address of an array of pointers to the element
+  vertices which are considered free for purposes of computing the hessian.
+  The vertices within this array must be ordered in the same order
+  as the vertices within the element, el. 
+  Only the Hessian entries corresponding to a pair of free vertices
+  will be non-zero.
+
+  \param grad_vec: this is an array of nve Vector3D, where nve is the total
+  number of vertices in the element.
+
+  \param hessian: this is a 1D array of Matrix3D that will contain the upper
+  triangular part of the Hessian. It has size nve*(nve+1)/2, i.e. the number
+  of entries in the upper triangular part of a nve*nve matrix.
+
+  \param num_free_vtx: is the number df free vertices in the element.
+  Essentially, this gives the size of free_vtces[].  The gradient array has
+  the size of the number of vertices in the element, regardless.
+
+  \param metric_value: Since the metric is computed, we return it.
+  
+  \return true if the element is valid, false otherwise. 
 */
 bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
                                              MsqMeshEntity* element,
@@ -408,7 +451,7 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
 */
 bool QualityMetric::compute_vertex_numerical_gradient(PatchData &pd,
                                                       MsqVertex &vertex,
-                                                      MsqVertex* vertices[],
+                                                      MsqVertex* free_vtces[],
                                                       Vector3D grad_vec[],
                                                       int num_vtx,
                                                       double &metric_value,
@@ -432,13 +475,13 @@ bool QualityMetric::compute_vertex_numerical_gradient(PatchData &pd,
     for (int j=0;j<3;++j) 
     {
       // perturb the coordinates of the free vertex in the j direction by delta
-      (*vertices[v])[j]+=delta;
+      (*free_vtces[v])[j]+=delta;
       //compute the function at the perturbed point location
       this->evaluate_vertex(pd, &(vertex),  metric_value1, err); MSQ_CHKERR(err);
       //compute the numerical gradient
       grad_vec[v][j]=(metric_value1-metric_value)/delta;
       // put the coordinates back where they belong
-      (*vertices[v])[j] -= delta;
+      (*free_vtces[v])[j] -= delta;
     }
   }
   return true;  
