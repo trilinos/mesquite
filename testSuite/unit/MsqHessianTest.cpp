@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 13-Jan-03 at 09:05:56
-//  LAST-MOD:  9-Apr-03 at 10:06:52 by Thomas Leurent
+//  LAST-MOD:  9-Apr-03 at 17:17:26 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -44,6 +44,7 @@ private:
   CPPUNIT_TEST (test_initialize);
   CPPUNIT_TEST (test_axpy);
   CPPUNIT_TEST (test_cg_solver);
+  CPPUNIT_TEST (test_cholesky_preconditioner);
   CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -106,7 +107,7 @@ public:
     Vector3D* y = new Vector3D[hs];
     Vector3D* ans = new Vector3D[hs];
 
-    Matrix3D blocks[6]; // 6 blocks correspond to a triangular element (n+!)n/2 .
+    Matrix3D blocks[6]; // 6 blocks correspond to a triangular element (n+1)n/2 .
 
     blocks[0] = "4 4 7   4 5 7   7 7 3 ";
     blocks[1] = "4 8 7   3 5 7   1 2 3 ";
@@ -221,6 +222,42 @@ public:
     delete[] y;
     delete[] ans;    
           
+  }
+
+    void test_cholesky_preconditioner()
+  {
+    MsqError err;
+
+    MsqHessian::initialize(twoTriangles, err); MSQ_CHKERR(err);
+    MsqHessian::zero_out();
+
+    Matrix3D blocks[6]; // 6 blocks correspond to a triangular element (n+1)n/2 .
+
+    blocks[0] = " 2  1    1 "
+                " 1  2.5  0.5 "
+                " 1  0.5  2.5 ";
+    blocks[1] = "0 0 0   0 0 0   0 0 0 ";
+    blocks[2] = "0 0 0   0 0 0   0 0 0 ";
+    blocks[3] = "0 0 0   0 0 0   0 0 0 ";
+    blocks[4] = "0 0 0   0 0 0   0 0 0 ";
+    blocks[5] = "0 0 0   0 0 0   0 0 0 ";
+
+    accumulate_entries(twoTriangles, 0, blocks, err); MSQ_CHKERR(err);
+
+    MsqHessian::compute_preconditioner(err); MSQ_CHKERR(err);
+    Matrix3D block_0 = mPreconditioner[0];
+
+    Matrix3D correct(" 0.5  0.5  0.5 "
+                     " 0    0.5  0  "
+                     " 0    0    0.5 ");
+
+    for (short i=0; i<3; ++i)
+      for (short j=0; j<3; ++j)
+        CPPUNIT_ASSERT_DOUBLES_EQUAL( block_0[i][j], correct[i][j], 10e-10);
+
+//     cout << "block 0: \n" << block_0 << endl;
+//     cout << "correct: \n" << correct << endl;
+    
   }
   
 };
