@@ -65,6 +65,18 @@ namespace Mesquite
     MIXED
   };
 
+    /*!Enumeration telling where the geometry can be found.
+      NONE: No geometry is known.
+      TSTT_DEFINED:  The geometry is defined through the TSTT interface.
+      MSQ_DEFINED:  The geometry is stored in a SimplifiedGeometryEngine.
+      */
+  enum GeometryEngine
+  {
+    NONE,
+    TSTT_DEFINED,
+    MSQ_DEFINED
+  };
+  
   inline TSTT::EntityTopology mesquite_to_tstt(EntityTopology type)
   {
     switch (type)
