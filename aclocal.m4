@@ -25,7 +25,7 @@ for i in __PRETTY_FUNCTION__ __FUNCDNAME__ __func__ __FUNCTION__ __function__ __
 done
 
   # If none was found...
-if test -z $msq_cpp_func; then
+if test -z "$msq_cpp_func"; then
   AC_MSG_RESULT(none)
   AC_MSG_WARN([MSQ_FUNCTION will be defined as an empty string.]);
   AC_DEFINE(MSQ_FUNCTION, [""], [Define to c++ preprocessor macro for function name])
