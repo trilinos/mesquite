@@ -109,6 +109,7 @@ bool LPTemplate::concrete_evaluate(PatchData &patch, double &fval,
   }
   fval=compute_function(metric_values, total_num, err);
   fval=pow(fval, 1/((double) pVal));
+  
   delete[] metric_values;
   FUNCTION_TIMER_END();
   return true;   
@@ -123,7 +124,7 @@ bool LPTemplate::concrete_evaluate(PatchData &patch, double &fval,
            of vertices in the patch.
     \param array_size is the size of the grad Vector3D[] array and
     must correspond to the number of vertices in the patch.
-*/
+*/ /*Michael:: TODO, should we not use pop() functions below?*/
 bool LPTemplate::compute_analytical_gradient(PatchData &patch,
                                               Vector3D *const &grad,
                                               MsqError &err, int array_size)
@@ -195,12 +196,17 @@ bool LPTemplate::compute_analytical_gradient(PatchData &patch,
     }
   }
   big_f=compute_function(metric_values, total_num, err);
-  if(big_f<0.0){
-    err.set_msg("In LPTemplate, normed value is negative.");
+    //if big_f is zero, then (since lp is a norm) big_f is
+    //necessarily minimized.  Thus, leave big_f = zero.  
+  if(big_f<=0.0){
+    if(big_f<0.0){
+      err.set_msg("In LPTemplate, normed value is negative.");
+    }
   }
-  big_f=pow(big_f,((1/ (double) pVal)-1));
-  big_f*=get_negate_flag(); //if function negated for minimization, so is gradient.
-  
+  else{//big_f is a positive number
+    big_f=pow(big_f,((1/ (double) pVal)-1.0));
+    big_f*=get_negate_flag(); //if function negated for minimization, so is gradient.
+  }
   double dummy;
   //position in elem array
   size_t elem_pos=0;
