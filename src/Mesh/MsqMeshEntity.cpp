@@ -26,7 +26,7 @@
   ***************************************************************** */
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD:  8-Apr-04 at 13:51:34 by Thomas Leurent
+//  LAST-MOD:  2-Jun-04 at 16:43:20 by Thomas Leurent
 //
 /*! \file MsqMeshEntity.cpp
 
@@ -43,6 +43,7 @@ functionality is implemented in this file.
 #include "MsqMeshEntity.hpp"
 #include "MsqVertex.hpp"
 #include "PatchData.hpp"
+#include "MeshSet.hpp"
 
 using namespace Mesquite;
 MSQ_USE(vector);
@@ -737,6 +738,29 @@ void Mesquite::MsqMeshEntity::get_connected_vertices(size_t vertex_index,
   }
 }
 
+#undef __FUNC__
+#define __FUNC__ "MsqMeshEntity::compute_corner_normal"
+/*! Gives the normal at the surface point corner_pt ... but if not available,
+    gives the normalized cross product of corner_vec1 and corner_vec2. 
+  */
+void MsqMeshEntity::compute_corner_normal(const size_t corner,
+                                 const Vector3D &corner_vec1,
+                                 const Vector3D &corner_vec2,
+                                 Vector3D &normal,
+                                 PatchData &pd, MsqError &err)
+{
+  if ( get_element_type()==TRIANGLE || get_element_type()==QUADRILATERAL ) {
+    MsqError tmp_err;
+    pd.get_domain_normal_at_vertex(vertexIndices[corner],
+                                   true, normal, tmp_err);
+    if ( tmp_err.errorOn || normal.length()==0 ) {
+      normal = corner_vec1*corner_vec2;
+      normal.normalize();
+    }
+  }
+  else
+    err.set_msg("Should only be used for faces (tri, quads, ...).");
+}
 
 #undef __FUNC__
 #define __FUNC__ "MsqMeshEntity::compute_corner_matrices"
@@ -749,47 +773,70 @@ void Mesquite::MsqMeshEntity::get_connected_vertices(size_t vertex_index,
   */
 void MsqMeshEntity::compute_corner_matrices(PatchData &pd, Matrix3D A[], const int num_m3d, MsqError &err )
 {
+
   MsqVertex* vertices = pd.get_vertex_array(err); MSQ_CHKERR(err); 
   const size_t* v_i = vertexIndices;
-  Vector3D zeros(0,0,0);
+
+  // If 2D element, we will get the surface normal 
+  Vector3D normal, vec1, vec2, vec3, vec4;
+
+  
   switch(get_element_type()){
     
   case TRIANGLE:
     if (num_m3d != 3) {err.set_msg("num_m3d incompatible with element type."); return;}
 
-    A[0].set_column(0, vertices[v_i[1]]-vertices[v_i[0]]);
-    A[0].set_column(1, vertices[v_i[2]]-vertices[v_i[0]]);
-    A[0].set_column(2, zeros);
+    vec1 = vertices[v_i[1]]-vertices[v_i[0]];
+    vec2 = vertices[v_i[2]]-vertices[v_i[0]];
+    vec3 = vertices[v_i[2]]-vertices[v_i[1]];
     
-    A[1].set_column(0, vertices[v_i[2]]-vertices[v_i[1]]);
-    A[1].set_column(1, vertices[v_i[0]]-vertices[v_i[1]]);
-    A[1].set_column(2, zeros);
+    A[0].set_column(0, vec1);
+    A[0].set_column(1, vec2);
+    compute_corner_normal(0, vec1, vec2, normal, pd, err); 
+    A[0].set_column(2, normal);
+    
+    A[1].set_column(0, vec3);
+    A[1].set_column(1, -vec1);
+    compute_corner_normal(1, vec3, -vec1, normal, pd, err); 
+    A[1].set_column(2, normal);
 
-    A[2].set_column(0, vertices[v_i[0]]-vertices[v_i[2]]);
-    A[2].set_column(1, vertices[v_i[1]]-vertices[v_i[2]]);
-    A[2].set_column(2, zeros);
+    A[2].set_column(0, -vec2);
+    A[2].set_column(1, -vec3);
+    compute_corner_normal(2, -vec2, -vec3, normal, pd, err); 
+    A[2].set_column(2, normal);
 
+    MSQ_CHKERR(err);
     break;
     
   case QUADRILATERAL:
     if (num_m3d != 4) {err.set_msg("num_m3d incompatible with element type."); return;}
 
-    A[0].set_column(0, vertices[v_i[1]]-vertices[v_i[0]]);
-    A[0].set_column(1, vertices[v_i[3]]-vertices[v_i[0]]);
-    A[0].set_column(2, zeros);
+    vec1 = vertices[v_i[1]]-vertices[v_i[0]];
+    vec2 = vertices[v_i[3]]-vertices[v_i[0]];
+    vec3 = vertices[v_i[2]]-vertices[v_i[1]];
+    vec4 = vertices[v_i[3]]-vertices[v_i[2]];
+
+    A[0].set_column(0, vec1);
+    A[0].set_column(1, vec2);
+    compute_corner_normal(0, vec1, vec2, normal, pd, err); 
+    A[0].set_column(2, normal);
     
-    A[1].set_column(0, vertices[v_i[2]]-vertices[v_i[1]]);
-    A[1].set_column(1, vertices[v_i[0]]-vertices[v_i[1]]);
-    A[1].set_column(2, zeros);
+    A[1].set_column(0, vec3);
+    A[1].set_column(1, -vec1);
+    compute_corner_normal(1, vec3, -vec1, normal, pd, err); 
+    A[1].set_column(2, normal);
 
-    A[2].set_column(0, vertices[v_i[3]]-vertices[v_i[2]]);
-    A[2].set_column(1, vertices[v_i[1]]-vertices[v_i[2]]);
-    A[2].set_column(2, zeros);
+    A[2].set_column(0, vec4);
+    A[2].set_column(1, -vec3);
+    compute_corner_normal(2, -vec4, -vec3, normal, pd, err); 
+    A[2].set_column(2, normal);
 
-    A[3].set_column(0, vertices[v_i[0]]-vertices[v_i[3]]);
-    A[3].set_column(1, vertices[v_i[2]]-vertices[v_i[3]]);
-    A[3].set_column(2, zeros);
+    A[3].set_column(0, -vec2);
+    A[3].set_column(1, -vec4);
+    compute_corner_normal(3, -vec2, -vec4, normal, pd, err); 
+    A[3].set_column(2, normal);
 
+    MSQ_CHKERR(err);
     break;
     
   case TETRAHEDRON:

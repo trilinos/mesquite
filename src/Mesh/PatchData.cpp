@@ -1141,7 +1141,7 @@ void PatchData::snap_vertex_to_domain(size_t vertex_index, MsqError &/*err*/)
 #undef __FUNC__
 #define __FUNC__ "PatchData::get_domain_normal_at_vertex"
 void PatchData::get_domain_normal_at_vertex(size_t vertex_index,
-					    bool normalize,
+                                   bool normalize,
                                    Vector3D &surf_norm,
                                    MsqError &err) const
 {

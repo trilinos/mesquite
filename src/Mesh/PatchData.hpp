@@ -364,7 +364,6 @@ namespace Mesquite
     void set_mesh_set(MeshSet* ms);
     
     //! Returns the originating meshSet.
-    //! This function is only for tests purposes. 
     MeshSet* get_mesh_set()
       { return meshSet; }
     

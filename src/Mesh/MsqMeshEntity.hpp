@@ -172,6 +172,11 @@ namespace Mesquite
     void compute_minmax_signed_corner_det3d(PatchData &pd, 
                 double &dmin, double &dmax, MsqError &err );
 
+      //! Uses a MeshDomain call-back function to compute the normal at the corner.
+    void compute_corner_normal(const size_t corner_pt, const Vector3D &corner_vec1,
+                         const Vector3D &corner_vec2, Vector3D &normal,
+                         PatchData &pd, MsqError &err);
+
       //! Compute matrices which column are the vectors issued from a corner.
       //! Stores those corner matrices in the mTag data member.  
     void compute_corner_matrices(PatchData &pd, Matrix3D A[], int num_m3d, MsqError &err );
