@@ -1,8 +1,8 @@
 #include "MeshImpl.hpp"
-
+#include "MsqMessage.hpp"
 #include <fstream>
 #include <string>
-
+#include <iomanip>
 #ifdef MSQ_USING_EXODUS
 #include "exodusII.h"
 #endif
@@ -301,9 +301,9 @@ void Mesquite::MeshImpl::write_vtk(const char* out_filebase,
   size_t i;
   for (i = 0; i < vertexCount; i++)
   {
-    file << vertexArray[i].coords[0] << ' '
-         << vertexArray[i].coords[1] << ' '
-         << vertexArray[i].coords[2] << '\n';
+    file <<std::setprecision(15)<< vertexArray[i].coords[0] << ' '
+         <<std::setprecision(15)<< vertexArray[i].coords[1] << ' '
+         <<std::setprecision(15)<< vertexArray[i].coords[2] << '\n';
   }
   
     // Write out the connectivity table
@@ -577,7 +577,36 @@ void Mesquite::MeshImpl::read_exodus(const char*
   delete [] connectivity_table;
   
     // Finally, mark boundary nodes
+  int num_fixed_nodes=0;
+  int num_dist_in_set=0;
+  if(ns_count>0){
+    exo_err=ex_get_node_set_param(file_id,111,&num_fixed_nodes,
+                                  &num_dist_in_set);
+    if(exo_err<0){
+      PRINT_WARNING("\nError opening nodeset 111, no boundary nodes marked.");
+      num_fixed_nodes=0;
+    }
+  }
+  int *fixed_nodes =NULL;
+  if(num_fixed_nodes>0)
+    fixed_nodes = new int[num_fixed_nodes];
+  exo_err = ex_get_node_set(file_id, 111, fixed_nodes);
+  if(exo_err<0){
+    err.set_msg("Error retrieving fixed nodes.");
+  }
   
+    // See if this vertex is marked as a boundary vertex
+  for (i=0; i < num_fixed_nodes; ++i)
+  {
+    fixed_nodes[i]-=1;
+    unsigned char bit_flag = 1 << (fixed_nodes[i]%8);
+    onBoundaryBits[fixed_nodes[i] / 8] |= bit_flag;  
+  }
+  if(fixed_nodes!=NULL)
+    delete [] fixed_nodes;
+  exo_err=ex_close(file_id);
+  if(exo_err<0)
+    err.set_msg("Error closing Exodus file.");
 #endif
 }
 //!Writes an exodus file of the mesh.
@@ -640,6 +669,13 @@ void Mesquite::MeshImpl::write_exodus(const char*
   if(block_count<1){
     err.set_msg("Too few element types in file");
   }
+    //figure out if we have fixed nodes, if so, we need a nodeset
+  int num_fixed_nodes=0;
+  for (i = 0; i < vertexCount; i++)
+  {
+    if (onBoundaryBits[i/8] & ((unsigned char)(1) << i % 8))
+      ++num_fixed_nodes; 
+  }
     //write doubles instead of floats
   int app_float_size = sizeof(double);
   int file_float_size = sizeof(double);
@@ -662,6 +698,8 @@ void Mesquite::MeshImpl::write_exodus(const char*
   int elem_count=get_total_element_count(err);
   
   int ns_count=0;
+  if(num_fixed_nodes>0)
+    ns_count=1;
   int ss_count=0;
   
     // put the initial info about the file
@@ -701,6 +739,15 @@ void Mesquite::MeshImpl::write_exodus(const char*
     return;
   } 
   delete [] temp_doubles;
+    //put the names of the coordinates
+  char *coord_names[3];
+  char x_co[2]="x";
+  char y_co[2]="y";
+  char z_co[2]="z";
+  coord_names[0]=x_co;
+  coord_names[1]=y_co;
+  coord_names[2]=z_co;
+  exo_err = ex_put_coord_names(file_id, coord_names);
   
     // Process elements in a block
   int block_ids[4];
@@ -816,6 +863,28 @@ void Mesquite::MeshImpl::write_exodus(const char*
   delete [] hex_connectivity;
   
     // Finally, mark boundary nodes
+  
+  if(num_fixed_nodes>0){
+    exo_err=ex_put_node_set_param(file_id, 111, num_fixed_nodes, 0);
+    if(exo_err<0)
+      err.set_msg("Error while initializing node set.");
+    int *fixed_nodes= new int[num_fixed_nodes];
+    int fixed_node_counter=0;
+    for (i = 0; i < vertexCount; i++)
+    {
+      if (onBoundaryBits[i/8] & ((unsigned char)(1) << i % 8)){
+        fixed_nodes[fixed_node_counter]=i+1;
+        ++fixed_node_counter;
+      }
+      
+    }
+    exo_err=ex_put_node_set(file_id, 111, fixed_nodes);
+    if(exo_err<0)
+      err.set_msg("Error while writing node set.");
+  }
+  exo_err=ex_close(file_id);
+  if(exo_err<0)
+    err.set_msg("Error closing Exodus file.");
   
 #endif
 }   
