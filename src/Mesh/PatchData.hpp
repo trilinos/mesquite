@@ -59,18 +59,18 @@ namespace Mesquite
                                   MsqError &err);
     
     int add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
-                   double *vertex_coords,
+                   const double vertex_coords[3],
                    bool check_redundancy, MsqError &err,
-		   MsqVertex::FlagMaskID flag);
+                   MsqVertex::FlagMaskID flag);
     //! delegates to the other form of add_vertex.
     inline int add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
-			  double x, double y, double z,
-			  bool check_redundancy, MsqError &err,
-			  MsqVertex::FlagMaskID flag);
+                          double x, double y, double z,
+                          bool check_redundancy, MsqError &err,
+                          MsqVertex::FlagMaskID flag);
     int add_element(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
-                     int* vertex_indices,
-                     EntityTopology topo,
-                     MsqError &err);
+                    size_t* vertex_indices,
+                    EntityTopology topo,
+                    MsqError &err);
     void add_triangle(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
                       size_t index_vertex1,
                       size_t index_vertex2,
@@ -126,9 +126,19 @@ namespace Mesquite
     void move_free_vertices(Vector3D dk[], int nb_vtx,
                              double step_size, MsqError &err);
     
-    // Updates the TSTT mesh with any changes made to the PatchData
+    //! Updates the TSTT mesh with any changes made to the PatchData
     void update_mesh(MsqError &err);
 
+      //! Fills a PatchData with the elements attached to a center vertex.
+      //! Note that all entities in the sub-patch are copies of the entities
+      //! in 'this' patch.  As such, moving a vertex in the sub-patch
+      //! won't move the corresponding vertex in the source patch.  Also,
+      //! calling 'update_mesh()' on the sub-patch WILL modify the TSTT
+      //! mesh, but the source patch won't see the changes.
+    void get_subpatch(size_t center_vertex_index,
+                      PatchData &pd_to_fill,
+                      MsqError &err);
+    
     //! Creates a memento that holds the current
     //! state of the PatchData coordinates. 
     PatchDataVerticesMemento* create_vertices_memento(MsqError &err);
@@ -354,7 +364,7 @@ namespace Mesquite
          already inserted. 
   */
   inline int PatchData::add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
-                                   double* vertex_coord,
+                                   const double vertex_coord[3],
                                    bool check_redundancy,
                                    MsqError &err, 
                                    MsqVertex::FlagMaskID flag=MsqVertex::MSQ_NO_VTX_FLAG)
@@ -362,7 +372,8 @@ namespace Mesquite
       // checks if the vertex is already in array
     if ( check_redundancy )
     {
-      MsqVertex vertex(vertex_coord[0], vertex_coord[1], vertex_coord[2]);
+//       MsqVertex vertex(vertex_coord[0], vertex_coord[1], vertex_coord[2]);
+      Vector3D vertex(vertex_coord[0], vertex_coord[1], vertex_coord[2]);
           for (int i = 0; i < numVertices; i++)
       {
         if (vertex == vertexArray[i]) 

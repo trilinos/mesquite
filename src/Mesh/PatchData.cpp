@@ -145,8 +145,8 @@ the element's vertices in the PatchData arrays -- see output
 of the add_vertex function.
 */
 int PatchData::add_element(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
-                            int* vertex_indices, EntityTopology topo,
-                            MsqError &err)
+                           size_t* vertex_indices, EntityTopology topo,
+                           MsqError &err)
 {
   int num_verts = MsqMeshEntity::vertex_count(topo);
   if (!num_verts)
@@ -163,7 +163,7 @@ int PatchData::add_element(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
     for (int n=0; n<num_verts; ++n)
     {
         // Make sure it's a valid index
-      if ( vertex_indices[n]>=numVertices || vertex_indices[n]<0 )
+      if (vertex_indices[n]>=numVertices)
         err.set_msg("invalid vertex indices");
         // Set the element's vertex indices
       elementArray[numElements].set_vertex_index(n, vertex_indices[n]);
@@ -324,7 +324,8 @@ void PatchData::update_mesh(MsqError &err)
   TSTT::Entity_Handle vertex;
   TSTT::MeshError tstt_err=0;
 
-  for (int n=0; n<numVertices; ++n) {
+  for (int n=0; n<numVertices; ++n)
+  {
     mh = vertexHandlesArray[n].mesh;
     vertex = vertexHandlesArray[n].entity;
     
@@ -386,4 +387,85 @@ void PatchData::generate_vertex_to_element_data()
   
     // Cleanup
   delete [] element_indices;
+}
+
+void PatchData::get_subpatch(size_t center_vertex_index,
+                             PatchData &pd_to_fill,
+                             MsqError &err)
+{
+    // Make sure we're in range
+  if (center_vertex_index >= numVertices)
+  {
+    err.set_msg("Invalid index for center vertex");
+    return;
+  }
+  
+    // Make sure we've got the vertex-to-element connectivity
+  generate_vertex_to_element_data();
+  
+    // Get a few things ready before we look at the connected elements...
+  size_t *vert_to_elem_iter =
+    elemsInVertex + vertexToElemOffset[center_vertex_index];
+    // old_to_new_vertex_id[new_id] = old_id...
+  std::vector<size_t> old_to_new_vertex_id;
+  size_t *new_vert_indices = NULL;
+  size_t new_vert_indices_size = 0;
+  
+    // For each element attached to the center vertex...
+  for (size_t elems_left = *(vert_to_elem_iter++);
+       elems_left--;
+       vert_to_elem_iter++)
+  {
+    MsqMeshEntity &elem = elementArray[*vert_to_elem_iter];
+    
+      // Make sure we've got space to store new vertex indices
+    if (new_vert_indices_size < elem.vertex_count())
+    {
+      new_vert_indices_size = elem.vertex_count();
+      delete [] new_vert_indices;
+      new_vert_indices = new size_t[new_vert_indices_size];
+    }
+    
+      // For each node in that element
+    for (short nodes_left = 0;
+         nodes_left < elem.vertex_count();
+         nodes_left++)
+    {
+      size_t new_id = 0;
+      size_t old_id = elem.get_vertex_index(nodes_left);
+      
+        // See what this node's new ID is
+      for (new_id = 0; new_id < old_to_new_vertex_id.size(); new_id++)
+      {
+        if (old_to_new_vertex_id[new_id] == old_id)
+          break;
+      }
+      
+        // If this node hasn't been added to the sub-patch yet...
+      if (new_id == old_to_new_vertex_id.size())
+      {
+          // Put the old_id into the vector
+        old_to_new_vertex_id.push_back(old_id);
+        
+          // Add it to the patch
+        double coords[3];
+        vertexArray[old_id].get_coordinates(coords);
+        pd_to_fill.add_vertex(vertexHandlesArray[old_id].mesh,
+                              vertexHandlesArray[old_id].entity,
+                              coords,
+                              false, err);
+      }
+      
+        // Add the new ID to the list of indices
+      new_vert_indices[nodes_left] = new_id;
+    }
+    
+      // Add the element to the patch
+    pd_to_fill.add_element(elementHandlesArray[*vert_to_elem_iter].mesh,
+                           elementHandlesArray[*vert_to_elem_iter].entity,
+                           new_vert_indices,
+                           elem.get_element_type(), err);
+  }
+  
+  delete [] new_vert_indices;
 }

@@ -372,7 +372,7 @@ bool MeshSet::get_next_patch(PatchData &pd, PatchDataParameters &pd_params, MsqE
                                    &tstt_err);
       assert(!tstt_err);
         // ... enters the coordinates of those vertices in PatchData ...
-      int vtx_ind[MAX_NUM_VERTICES_PER_ELEM];
+      size_t vtx_ind[MAX_NUM_VERTICES_PER_ELEM];
       for (int n=0; n<num_element_vtx; ++n)
       {
         vtx_ind[n] = pd.add_vertex(currentVertex->mesh, vertices[n],
@@ -528,7 +528,7 @@ bool MeshSet::get_next_patch(PatchData &pd, PatchDataParameters &pd_params, MsqE
          assert(!tstt_err);
 
          // ... enters the coordinates of those vertices in PatchData ...
-         int vtx_ind[MAX_NUM_VERTICES_PER_ELEM];
+         size_t vtx_ind[MAX_NUM_VERTICES_PER_ELEM];
          for (int n=0; n<num_element_vtx; ++n) {
             // retrieves the fixed tag value
             int* on_boundary = NULL;
@@ -550,27 +550,27 @@ bool MeshSet::get_next_patch(PatchData &pd, PatchDataParameters &pd_params, MsqE
 
          // ... and adds the element to PatchData.
          pd.add_element(*currentMesh, current_mesh_elements[e],
-                           vtx_ind, tstt_to_mesquite(element_topologies[e]), err);
+                        vtx_ind, tstt_to_mesquite(element_topologies[e]), err);
          MSQ_CHKERR(err);
       }
       
       delete[] element_topologies;
       delete[] elem_vtx;
       delete[] elem_vtx_coords;
-  
-      //cout << "numVertices for local patch: " << pd.num_vertices() << endl;
-  
-      // TODO : provide patch for several layers of adjacencies.
-  
-      // free entities allocated in TSTT::Entity_GetAdjacencies()
+      
+        //cout << "numVertices for local patch: " << pd.num_vertices() << endl;
+      
+        // TODO : provide patch for several layers of adjacencies.
+      
+        // free entities allocated in TSTT::Entity_GetAdjacencies()
       TSTT::Mesh_FreeEntityHandles(*currentMesh, current_mesh_elements, &tstt_err);
     }
-  
+    
     return true;
   }  
-
+  
   
   err.set_msg("no implementation for specified patch type.");
   return false;
-
+  
 }
