@@ -64,12 +64,12 @@ namespace Mesquite
 
     /*! The default constructor initialises a few member variables
         to default values.
-        This can be reused by concrete class constructor. */
+        This can be reused by concrete class constructor. */    
     QualityImprover() : mMeshSet(0), qualityImproverName("noname")
       {
           //Temporary solution to not having an err object
         MsqError temp_err;
-        defaultOuterCriterion.add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,1,temp_err);
+        defaultOuterCriterion.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,temp_err);
         outerTerminationCriterion = & defaultOuterCriterion;
         innerTerminationCriterion = & defaultInnerCriterion;
       }

@@ -45,7 +45,7 @@ ConjugateGradient::ConjugateGradient(ObjectiveFunction* objective,
     err.set_msg("QualityImprover did not create a default inner termination criterion.");
   }
   else{
-    default_crit->add_criterion_type_with_int(TerminationCriterion::ITERATION_BOUND,5,err);
+    default_crit->add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,5,err);
   }
   
 }  
