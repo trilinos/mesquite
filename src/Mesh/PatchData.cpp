@@ -401,7 +401,7 @@ void PatchData::get_adjacent_entities_via_n_dim(int n, size_t ent_ind,
         //get candidate element
       this_ent=elem_on_vert[i][j];
         //if we haven't already consider this ent
-      if(this_ent!=-1){
+      if(this_ent!=ent_ind){
           //if this_ent occurred earlier we would have already considered it
           //so start at i and j+1
         int k1=i;
@@ -414,8 +414,9 @@ void PatchData::get_adjacent_entities_via_n_dim(int n, size_t ent_ind,
           while(k2<length_elem_on_vert[k1]){
               //if it matches this_ent
             if(elem_on_vert[k1][k2]==this_ent){
-                //mark it as 'seen'
-              elem_on_vert[k1][k2]=-1;
+                //mark it as 'seen', by making it the same as ent_ind
+                //i.e., the entity  passed to us.
+              elem_on_vert[k1][k2]=ent_ind;
               ++counter;
                 //do not look at remaining elems in this vector
               k2+=length_elem_on_vert[k1];
