@@ -89,7 +89,7 @@ double ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
     ++iter;
     ++i;
       // compute weighted jacobian
-       element->compute_weighted_jacobian(pd, &(*iter),
+       element->compute_weighted_jacobian(pd, (*iter),
                                        jacobian_vectors,
                                        num_jacobian_vectors, err);
       // evaluate condition number at ith sample point

@@ -59,7 +59,7 @@ double MeanRatioQualityMetric::evaluate_element(PatchData &pd,
   for(i=0;i<num_sample_points;++i)
   {
       // compute weighted jacobian
-    element->compute_weighted_jacobian(pd, &(*iter), jacobian_vectors,
+    element->compute_weighted_jacobian(pd, (*iter), jacobian_vectors,
                                        num_jacobian_vectors, err);
       // evaluate mean ratio at ith sample point
       //if 2 jacobian vectors (2D elem)    
