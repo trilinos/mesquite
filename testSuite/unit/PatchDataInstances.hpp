@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 12-Nov-02 at 18:05:56
-//  LAST-MOD: 16-Dec-02 at 17:08:54 by Thomas Leurent
+//  LAST-MOD: 14-Jan-03 at 11:34:05 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -176,6 +176,49 @@ namespace Mesquite {
       one_tri_patch.add_element(NULL, NULL, indices_tri, TRIANGLE, err);
       MSQ_CHKERR(err);
    }
+
+  
+   /*! \fn create_two_tri_patch(PatchData &one_tri_patch, MsqError &err)
+            2
+           / \      creates a Patch containing two ideal triangles
+          / 0 \
+         0-----1
+          \ 1 /
+           \ /
+            3
+   */
+   inline void create_two_tri_patch(PatchData &pd, MsqError &err) {
+      //**********************FILL tri*************************
+      // creates empty Patch
+      pd.reserve_vertex_capacity (4, err); MSQ_CHKERR(err);
+      pd.reserve_element_capacity (2, err); MSQ_CHKERR(err);
+    
+      // Fills up with vertices for ideal triangles
+      double coords[3];
+      int index;
+      coords[0] = 1; coords[1] = 1; coords[2] = 1;
+      index = pd.add_vertex(NULL, NULL, coords, false, err);
+      MSQ_CHKERR(err);
+      coords[0] = 2; coords[1] = 1; coords[2] = 1;
+      index = pd.add_vertex(NULL, NULL, coords, false, err);
+      MSQ_CHKERR(err);
+      coords[0] = 1.5; coords[1] = 1+sqrt(3.0)/2.0; coords[2] = 1;
+      index = pd.add_vertex(NULL, NULL, coords, false, err);
+      MSQ_CHKERR(err);
+      coords[0] = -1.5; coords[1] = 1+sqrt(3.0)/2.0; coords[2] = 1;
+      index = pd.add_vertex(NULL, NULL, coords, false, err);
+      MSQ_CHKERR(err);
+    
+      // patch has only one element: an ideal tri
+      size_t indices_tri[3];
+      indices_tri[0] = 0; indices_tri[1] = 1; indices_tri[2] = 2;
+      pd.add_element(NULL, NULL, indices_tri, TRIANGLE, err);
+      MSQ_CHKERR(err);
+      indices_tri[0] = 0; indices_tri[1] = 3; indices_tri[2] = 1;
+      pd.add_element(NULL, NULL, indices_tri, TRIANGLE, err);
+      MSQ_CHKERR(err);
+   }
+  
 
    /*! \fn create_four_quads_patch(PatchData &four_quads, MsqError &err)
      our 2D set up: 4 quads, center vertex outcentered by (0,-0.5)
