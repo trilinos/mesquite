@@ -20,21 +20,6 @@ using namespace Mesquite;
 using std::cout;
 using std::endl;
 
-#undef __FUNC__
-#define __FUNC__ "MeanRatioQualityMetric::MeanRatioQualityMetric"
-
-MeanRatioQualityMetric::MeanRatioQualityMetric() :
-  ShapeQualityMetric()
-{
-  MsqError err;
-  set_metric_type(ELEMENT_BASED);
-  set_element_evaluation_mode(ELEMENT_VERTICES, err); MSQ_CHKERR(err);
-  set_negate_flag(1);
-  set_gradient_type(ANALYTICAL_GRADIENT);
-  avgMethod=QualityMetric::LINEAR;
-  feasible=1;
-  set_name("Mean Ratio");
-}
 
 /*****************************************************************************/
 /* Not all compilers substitute out constants (especially the square root).  */

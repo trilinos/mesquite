@@ -30,8 +30,23 @@ namespace Mesquite
    */
    class MeanRatioQualityMetric : public ShapeQualityMetric
    {
-   public:
+   private:
  
+     MeanRatioQualityMetric() :
+       ShapeQualityMetric()
+     {
+       MsqError err;
+       set_metric_type(ELEMENT_BASED);
+       set_element_evaluation_mode(ELEMENT_VERTICES, err); MSQ_CHKERR(err);
+       set_negate_flag(1);
+       set_gradient_type(ANALYTICAL_GRADIENT);
+       set_hessian_type(ANALYTICAL_HESSIAN);
+       avgMethod=QualityMetric::LINEAR;
+       feasible=1;
+       set_name("Mean Ratio");
+     }
+
+   public:
       /*!Returns a pointer to a ShapeQualityMetric.  The metric
         does not use the sample point functionality or the
         compute_weighted_jacobian.  It evaluates the metric at
@@ -68,9 +83,6 @@ namespace Mesquite
                                               int nv, 
                                               double &m,
                                               MsqError &err);
-   private:
-     
-      MeanRatioQualityMetric();
    };
 } //namespace
 
