@@ -90,6 +90,8 @@ namespace Mesquite
     friend Vector3D operator*(const Vector3D &v1, 
                               const Vector3D &v2); //- cross product
  
+    //! \f$ v = A*x \f$
+    friend void eqAx(Vector3D& v, const Matrix3D& A, const Vector3D& x);
     //! \f$ v += A*x \f$
     friend void plusEqAx(Vector3D& v, const Matrix3D& A, const Vector3D& x);
     //! \f$ v += A^T*x \f$

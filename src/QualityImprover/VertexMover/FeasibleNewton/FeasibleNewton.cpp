@@ -173,7 +173,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
     pd.move_vertices(d, nv, beta, err); MSQ_CHKERR(err);
     fn_bool = objFunc->compute_gradient(pd, grad, new_value, err); MSQ_CHKERR(err);
     if ((fn_bool && (original_value - new_value >= -alpha*beta - epsilon)) ||
-        (fn_bool && (length(grad, nv) < convTol))) {
+        (fn_bool && (length(grad, nv) < 100*convTol))) {
       // Armijo linesearch rules passed.
     }
     else {

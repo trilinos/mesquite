@@ -191,11 +191,16 @@ namespace Mesquite
     Matrix3D& outer_product(const Vector3D &v1, const Vector3D &v2);
     void fill_lower_triangle();
 
+    //! \f$ v = A*x \f$
+    friend void eqAx(Vector3D& v, const Matrix3D& A, const Vector3D& x);
     //! \f$ v += A*x \f$
     friend void plusEqAx(Vector3D& v, const Matrix3D& A, const Vector3D& x);
     //! \f$ v += A^T*x \f$
     friend void plusEqTransAx(Vector3D& v, const Matrix3D& A, const Vector3D& x);
      
+    //! \f$ B += a*A \f$
+    friend void plusEqaA(Matrix3D& B, const double a, const Matrix3D &A);
+
     size_t num_rows() const { return 3; }
     size_t num_cols() const { return 3; }
 
@@ -467,6 +472,13 @@ namespace Mesquite
     return res;
   }
    
+  inline void eqAx(Vector3D& v, const Matrix3D& A, const Vector3D& x)
+  {
+     v.mCoords[0] = A.v_[0]*x[0] + A.v_[1]*x.mCoords[1] + A.v_[2]*x.mCoords[2];
+     v.mCoords[1] = A.v_[3]*x[0] + A.v_[4]*x.mCoords[1] + A.v_[5]*x.mCoords[2];
+     v.mCoords[2] = A.v_[6]*x[0] + A.v_[7]*x.mCoords[1] + A.v_[8]*x.mCoords[2];
+  }
+   
   inline void plusEqAx(Vector3D& v, const Matrix3D& A, const Vector3D& x)
   {
      v.mCoords[0] += A.v_[0]*x[0] + A.v_[1]*x.mCoords[1] + A.v_[2]*x.mCoords[2];
@@ -481,6 +493,12 @@ namespace Mesquite
      v.mCoords[2] += A.v_[2]*x.mCoords[0] + A.v_[5]*x.mCoords[1] + A.v_[8]*x.mCoords[2];
   }
    
+  inline void plusEqaA(Matrix3D& B, const double a, const Matrix3D &A) {
+    B.v_[0] += a*A.v_[0]; B.v_[1] += a*A.v_[1]; B.v_[2] += a*A.v_[2]; 
+    B.v_[3] += a*A.v_[3]; B.v_[4] += a*A.v_[4]; B.v_[5] += a*A.v_[5];
+    B.v_[6] += a*A.v_[6]; B.v_[7] += a*A.v_[7]; B.v_[8] += a*A.v_[8];
+  }
+
 } // namespace Mesquite
 
 #endif // Matrix3D_hpp

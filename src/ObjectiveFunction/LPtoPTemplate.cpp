@@ -163,6 +163,7 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &pd,
   // Computes objective function gradient for an element based metric
   if(qm_type==QualityMetric::ELEMENT_BASED){
 
+    Vector3D grad_vec[MSQ_MAX_NUM_VERT_PER_ENT];
     size_t e, ve, fve;
     size_t nfve; // num free vtx in element
     size_t nve; // num vtx in element
@@ -184,7 +185,6 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &pd,
       }
 
       // Computes q and grad(q)
-      Vector3D grad_vec[MSQ_MAX_NUM_VERT_PER_ENT];
       qm_bool = currentQM->compute_element_gradient(
                                      pd, &elems[e],
                                      ele_free_vtces,
@@ -210,9 +210,8 @@ bool LPtoPTemplate::compute_analytical_gradient(PatchData &pd,
       // For each free vertex in the element ... 
       for (i=0; i<nfve; ++i) {
         // ... computes p*q^{p-1}*grad(q) ...
-        grad_vec[i] *= factor;
         // ... and accumulates it in the objective function gradient.
-        grad[pd.get_vertex_index(ele_free_vtces[i])] += grad_vec[i];
+        grad[pd.get_vertex_index(ele_free_vtces[i])] += factor*grad_vec[i];
       }
     }
   }
@@ -346,7 +345,7 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
   Matrix3D elem_outer_product;
   Vector3D grad_vec[MSQ_MAX_NUM_VERT_PER_ENT];
   double QM_val;
-  double fac1, fac2;
+  double fac1, fac2, fac12;
   Matrix3D grad_outprod;
   bool qm_bool;
   QualityMetric* currentQM = get_quality_metric();
@@ -405,6 +404,7 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
 
       fac1 *= get_negate_flag();
       fac2 *= get_negate_flag();
+      fac12 = fac1*fac2;
 
       n=0;
       for (i=0; i<nve; ++i) {
@@ -413,10 +413,7 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
                vertices[vtx_indices[j]].is_free_vertex() ) {
             // Computes \nabla Q(e) [\nabla Q(e)]^T 
             elem_outer_product.outer_product(grad_vec[i], grad_vec[j]);
-
-	    elem_outer_product *= fac2;
-	    elem_hessian[n] *= fac1;
-	    elem_hessian[n] += elem_outer_product;
+	    plusEqaA(elem_hessian[n], fac12, elem_outer_product);
           } else {
             // elem_outer_product is nul 
             elem_hessian[n] *= fac1;
@@ -439,9 +436,8 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
     for (i=0; i<nve; ++i) {
       if ( vertices[vtx_indices[i]].is_free_vertex() ) {
         // ... computes p*q^{p-1}*grad(q) ...
-        grad_vec[i] *= fac1;
         // ... and accumulates it in the objective function gradient.
-        grad[vtx_indices[i]] += grad_vec[i];
+        grad[vtx_indices[i]] += fac1*grad_vec[i];
       }
     }
     
