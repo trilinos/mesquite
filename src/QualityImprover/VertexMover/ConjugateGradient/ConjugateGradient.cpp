@@ -49,7 +49,7 @@ ConjugateGradient::ConjugateGradient(ObjectiveFunction* objective)
 #define __FUNC__ "ConjugateGradient::initialize" 
 void ConjugateGradient::initialize(PatchData &pd, MsqError &err)
 {
-  PRINT_INFO("\no  Performing Conjugate Gradient optimization.\n");
+  PRINT_INFO("\no   Performing Conjugate Gradient optimization.\n");
   arraySize=5;
   fGrad = new Vector3D[ arraySize ];
   pGrad = new Vector3D[ arraySize ];
@@ -142,7 +142,9 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
   int m=0;
   int grad_pos=0;
   double alp=MSQ_MAX_CAP;
-  bool inner_criterion=inner_criterion_met(*vertex_mover_mesh,err);
+    //we know inner_criterion is false because it was checked in
+    //loop_over_mesh before being sent here.
+  bool inner_criterion=false;//inner_criterion_met(*vertex_mover_mesh,err);
   
   double grad_norm=MSQ_MAX_CAP;
   while ((i<maxIteration && alp>stepBound && grad_norm>normGradientBound)
@@ -210,6 +212,8 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
         
       }
     }//end if on alp == 0
+      //Update mesh before checking criterion
+    pd.update_mesh(err);
     inner_criterion=inner_criterion_met(*vertex_mover_mesh,err);MSQ_CHKERR(err);
   }//end while
     //PRINT_INFO("\n2y %f\n",vertices[0][1]);
