@@ -65,7 +65,7 @@ int main()
   TSTT::Mesh_Handle mesh;
   TSTT::MeshError tstt_err;
   TSTT::Mesh_Create(&mesh, &tstt_err);
-  strcpy(file_name, "../MeshFiles/CUBIT/2D/square_tri_2.vtk");
+  strcpy(file_name, "../../meshFiles/2D/VTK/square_tri_2.vtk");
   TSTT::Mesh_Load(mesh, file_name, &tstt_err);
 #else
   Mesh_Handle mesh;
@@ -101,7 +101,7 @@ int main()
 
    //**************Set stopping criterion****************
 // StoppingCriterion sc1(&stop_qa,1.0,1.8);
- StoppingCriterion sc2(StoppingCriterion::NUMBER_OF_PASSES,3);
+ StoppingCriterion sc2(StoppingCriterion::NUMBER_OF_PASSES,10);
 // CompositeAndStoppingCriterion sc(&sc1,&sc2);
  pass1->set_stopping_criterion(&sc2);
  // sets a culling method on the first QualityImprover
