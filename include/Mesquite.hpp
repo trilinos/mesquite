@@ -123,6 +123,15 @@ const int MSQ_INT_MIN = -2147483647;
 #endif    
   const double MSQ_MAX = DBL_MAX;
   const double MSQ_MAX_CAP = 1.e6;
+
+    //macro to return the min/max of a set of arguements.  The integer
+    // (e.g., '2') tells how many arguements should be passed for comparison.
+#ifndef MSQ_MIN_2 
+#define MSQ_MIN_2(a,b)     ( (a) < (b) ? (a) : (b) )
+#endif
+#ifndef MSQ_MAX_2           
+#define MSQ_MAX_2(a,b)     ( (a) > (b) ? (a) : (b) )
+#endif
 }
 
 //#ifndef USE_FUNCTION_TIMERS
