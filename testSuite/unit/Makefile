@@ -41,7 +41,8 @@ TEST_SRCS = msq_test_main.cpp \
     MsqHessianTest.cpp \
     SphericalGeometryTest.cpp \
     PlanarGeometryTest.cpp \
-    TerminationCriterionTest.cpp 
+    TerminationCriterionTest.cpp \
+    ExodusTest.cpp
 
 TEST_OBJS = ${TEST_SRCS:.cpp=.o}
 
