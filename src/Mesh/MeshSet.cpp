@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD: 15-Jan-03 at 16:17:22 by Thomas Leurent
+//  LAST-MOD:  5-May-03 at 12:28:40 by Thomas Leurent
 //
 /*! \file MeshSet.cpp
 
@@ -139,7 +139,8 @@ bool MeshSet::get_next_patch(PatchData &pd,
 
     // Mark this MeshSet as the originator
   pd.meshSet = this;
-  
+  if (mDomain != NULL)  pd.domainSet = true;
+  else                  pd.domainSet = false;
     // Get the patch parameters.
   PatchData::PatchType patch_type = pd_params.get_patch_type();
   long unsigned int culling_method_bits = pd_params.get_culling_method_bits();

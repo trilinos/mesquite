@@ -56,6 +56,8 @@ namespace Mesquite
     void set_domain_constraint(MeshDomain* domain)
       { mDomain = domain; }
 
+    //! Returns the domain associated with the MeshSet from which the Patch originates.
+    //! NULL if no domain is defined.
     Mesquite::MeshDomain* get_domain_constraint()
       { return mDomain; }
     

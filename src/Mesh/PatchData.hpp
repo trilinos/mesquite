@@ -155,11 +155,18 @@ namespace Mesquite
           is managed by the MeshSet's MeshDomain object.
       */
     void snap_vertex_to_domain(size_t vertex_index, MsqError &err);
+
+    /*! Returns whether a domain is associated with the MeshSet from which
+        the Patch originates.
+        If false, you cannot ask for a surface normal. */
+    bool domain_set()
+    { return domainSet; }
     
       /*! Get the normal of the surface for a given vertex.
           Normal is returned in Vector3D &surf_norm.  If the normal cannot
           be determined, or if the underlying domain is not a surface,
           the normal will be set to (0,0,0)
+          Check PatchData::domain_set() is not false first.
       */
     void get_surface_normal(size_t vertex_index, Vector3D &surf_norm,
                             MsqError &err);
@@ -278,6 +285,7 @@ namespace Mesquite
     friend class MeshSet;
 
     MeshSet* meshSet;
+    bool domainSet;
     PatchType mType;
     
       // Member data for the "local" patch

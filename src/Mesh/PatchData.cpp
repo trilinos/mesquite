@@ -20,6 +20,7 @@ using namespace std;
 #define __FUNC__ "PatchData::PatchData"
 PatchData::PatchData()
   : meshSet(NULL),
+    domainSet(false),
     mType(UNDEFINED_PATCH_TYPE),
     numVertices(0),
     numElements(0),
