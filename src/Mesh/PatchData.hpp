@@ -67,8 +67,8 @@ namespace Mesquite
       MAX_UNSIGNED_AREA, //!< maximum volume or area out of all elements in the patch
       MIN_EDGE_LENGTH, //!< minimum edge length in the patch
       MAX_EDGE_LENGTH, //!< maximum edge length in the patch
-      MIN_CORNER_VOLUME, //!< minimum corner volume or area out of all elements in the patch
-      MAX_CORNER_VOLUME, //!< maximum corner volume or area out of all elements in the patch
+      MINMAX_SIGNED_DET2D, //!< minimum and maximum corner area out of all elements in the patch
+      MINMAX_SIGNED_DET3D, //!< minimum and maximum corner volume out of all elements in the patch
     };
 
     //! This function clears the patch information such as maximum volume, etc ... 
@@ -79,6 +79,16 @@ namespace Mesquite
     //! when used properly. See also PatchData::clear_computed_info() .
     double get_max_element_area(MsqError &err);
     
+    //! Returns delta based the minimum and maximum det2d over all elements in the patch
+    //! This information is stored in the patch and should not decrease performance
+    //! when used properly. See also PatchData::clear_computed_info() .
+    double get_barrier_delta_2d(MsqError &err);
+
+    //! Returns delta based on the minimum and maximum det3d over all elements in the patch
+    //! This information is stored in the patch and should not decrease performance
+    //! when used properly. See also PatchData::clear_computed_info() .
+    double get_barrier_delta_3d(MsqError &err); 
+
       //! Removes all data, but capacity is unchanged.
     void clear();
       //! Removes data, frees memory used by patch

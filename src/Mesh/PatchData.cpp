@@ -78,6 +78,56 @@ double PatchData::get_max_element_area(MsqError &err)
   }
 }
 
+double PatchData::get_barrier_delta_2d(MsqError &err)
+{
+  std::map<ComputedInfo, double>::iterator delta_it;
+  delta_it = computedInfos.find(MINMAX_SIGNED_DET2D);
+  if ( delta_it != computedInfos.end() ) { // if a delta is already there
+    return delta_it->second;
+  }
+  else { // if there is no delta available.
+    double min= MSQ_DBL_MAX;
+    double max=-MSQ_DBL_MAX;
+    for (size_t i=0; i<numElements; ++i) {
+      double mindet2d, maxdet2d;
+      elementArray[i].compute_minmax_signed_corner_det2d(*this, mindet2d, maxdet2d, err);
+      MSQ_CHKERR(err);
+      min = mindet2d < min ? mindet2d : min;
+      max = maxdet2d > max ? maxdet2d : max;
+    }
+
+    double delta=0;
+    if (min<=MSQ_MIN) delta=0.001 * max;
+    computedInfos.insert(std::pair<const ComputedInfo, double>(MINMAX_SIGNED_DET2D,delta));
+    return delta;
+  }
+}
+
+double PatchData::get_barrier_delta_3d(MsqError &err)
+{
+  std::map<ComputedInfo, double>::iterator delta_it;
+  delta_it = computedInfos.find(MINMAX_SIGNED_DET3D);
+  if ( delta_it != computedInfos.end() ) { // if a delta is already there
+    return delta_it->second;
+  }
+  else { // if there is no delta available.
+    double min= MSQ_DBL_MAX;
+    double max=-MSQ_DBL_MAX;
+    for (size_t i=0; i<numElements; ++i) {
+      double mindet3d, maxdet3d;
+      elementArray[i].compute_minmax_signed_corner_det3d(*this, mindet3d, maxdet3d, err);
+      MSQ_CHKERR(err);
+      min = mindet3d < min ? mindet3d : min;
+      max = maxdet3d > max ? maxdet3d : max;
+    }
+
+    double delta=0;
+    if (min<=MSQ_MIN) delta=0.001 * max;
+    computedInfos.insert(std::pair<const ComputedInfo, double>(MINMAX_SIGNED_DET3D,delta));
+    return delta;
+  }
+}
+
 
 
 /*! \fn PatchData::reorder()
