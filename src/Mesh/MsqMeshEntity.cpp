@@ -56,8 +56,8 @@ void Mesquite::MsqMeshEntity::append_vertex_indices(std::vector<size_t> &vertex_
 
 #undef __FUNC__
 #define __FUNC__ "MsqMeshEntity::compute_weighted_jacobian"
-//fills array of Vector3D's with the jacobian vectors and the 
-//number of jacobian vecotors
+/*!fills array of Vector3D's with the jacobian vectors and the 
+  number of jacobian vecotors.*/
 void Mesquite::MsqMeshEntity::compute_weighted_jacobian(PatchData &pd,
                                                         Vector3D &sample_point,
                                                         Vector3D jacobian_vectors[],
@@ -67,13 +67,13 @@ void Mesquite::MsqMeshEntity::compute_weighted_jacobian(PatchData &pd,
     // v_v is just an alias for vertexIndices
   size_t (&v_v)[MSQ_MAX_NUM_VERT_PER_ENT] = vertexIndices;
   
-//   std::vector<size_t> v_v;
-//   get_vertex_indices(v_v);
+    //   std::vector<size_t> v_v;
+    //   get_vertex_indices(v_v);
   MsqVertex *vertices=pd.get_vertex_array(err);
-//   Vector3D ideal_coords[8];
-//   Vector3D ideal_jac[3];
-//   Vector3D phys_jac[3];
-//  double deter;
+    //   Vector3D ideal_coords[8];
+    //   Vector3D ideal_jac[3];
+    //   Vector3D phys_jac[3];
+    //  double deter;
   switch (mType)
   {
       //Note:: For the linear tri case we do not use sample pt.
@@ -85,27 +85,6 @@ void Mesquite::MsqMeshEntity::compute_weighted_jacobian(PatchData &pd,
       break;
       
     case QUADRILATERAL:
-        /*
-      ideal_coords[0].set(0,0,0);
-      ideal_coords[1].set(1,0,0);
-      ideal_coords[2].set(1,1,0);
-      ideal_coords[3].set(0,1,0);
-      get_linear_quad_jac(sample_point,ideal_coords[0],ideal_coords[1],
-                          ideal_coords[2],ideal_coords[3],ideal_jac);
-      get_linear_quad_jac(sample_point,vertices[v_v[0]],vertices[v_v[1]],
-                          vertices[v_v[2]],vertices[v_v[3]],phys_jac);
-      deter=ideal_jac[1][1]*ideal_jac[0][0]-ideal_jac[1][0]*ideal_jac[0][1];
-        //cout<<"\nideal 1:: "<<ideal_jac[0];
-        //cout<<"\nideal 2:: "<<ideal_jac[1];
-      jacobian_vectors[0]=(phys_jac[0]*ideal_jac[1][1]-
-        phys_jac[1]*ideal_jac[0][1])/deter;
-      jacobian_vectors[1]=(phys_jac[1]*ideal_jac[0][0]-
-        phys_jac[0]*ideal_jac[1][0])/deter;
-      
-      
-        */          
-      
-      
       jacobian_vectors[0]=(vertices[v_v[1]]-vertices[v_v[0]]+sample_point[1]*
                            (vertices[v_v[2]]+vertices[v_v[0]]-vertices[v_v[3]]-
                             vertices[v_v[1]]));
@@ -321,9 +300,8 @@ double MsqMeshEntity::compute_unsigned_area(PatchData &pd, MsqError &err) {
   {
    
     case TRIANGLE:
-      tem =  fabs(((verts[vertexIndices[1]]-verts[vertexIndices[0]])*
-                   (verts[vertexIndices[2]]-verts[vertexIndices[0]])).length()
-                  /2.0);
+      tem =  ((verts[vertexIndices[1]]-verts[vertexIndices[0]])*
+              (verts[vertexIndices[2]]-verts[vertexIndices[0]])).length()/2.0;
       return tem;
       
     case QUADRILATERAL:
@@ -331,7 +309,7 @@ double MsqMeshEntity::compute_unsigned_area(PatchData &pd, MsqError &err) {
              (verts[vertexIndices[3]]-verts[vertexIndices[0]])).length();
       tem += ((verts[vertexIndices[3]]-verts[vertexIndices[2]])*
               (verts[vertexIndices[1]]-verts[vertexIndices[2]])).length();
-      return fabs(tem)/2.0;
+      return (tem/2.0);
       
     default:
       err.set_msg("Invalid type of element passed to compute unsigned area.");
@@ -369,9 +347,94 @@ double MsqMeshEntity::compute_unsigned_volume(PatchData &pd, MsqError &err) {
   }
   return 0;
 }
-                                              
-    
 
+
+#undef __FUNC__
+#define __FUNC__ "MsqMeshEntity::compute_signed_area"
+/*!
+  \brief Computes the area of the given element.  Returned value can be
+  negative.  If the entity passed is not a two-dimensional element, an
+  error is set.*/
+double MsqMeshEntity::compute_signed_area(PatchData &pd, MsqError &err) {
+  MsqVertex* verts=pd.get_vertex_array(err);MSQ_CHKERR(err);
+  double tem=0.0;
+  double tem2=0.0;
+  Vector3D surface_normal;
+  Vector3D cross_vec;
+  switch (mType)
+  {
+    
+    case TRIANGLE:
+      cross_vec=((verts[vertexIndices[1]]-verts[vertexIndices[0]])*
+      (verts[vertexIndices[2]]-verts[vertexIndices[0]]));
+      pd.get_surface_normal(vertexIndices[0],surface_normal,err);
+      tem =  (cross_vec.length()/2.0);
+        //if normals do not point in same general direction, negate area
+      if(cross_vec%surface_normal<0){ 
+        tem *= -1;
+      }
+      
+      return tem;
+      
+    case QUADRILATERAL:
+      cross_vec=((verts[vertexIndices[1]]-verts[vertexIndices[0]])*
+                 (verts[vertexIndices[3]]-verts[vertexIndices[0]]));
+      pd.get_surface_normal(vertexIndices[0],surface_normal,err);
+      tem =  (cross_vec.length()/2.0);
+        //if normals do not point in same general direction, negate area
+      if(cross_vec%surface_normal<0){ 
+        tem *= -1;
+      }
+      cross_vec=((verts[vertexIndices[3]]-verts[vertexIndices[2]])*
+                 (verts[vertexIndices[1]]-verts[vertexIndices[2]]));
+      pd.get_surface_normal(vertexIndices[2],surface_normal,err);
+      tem2 =  (cross_vec.length()/2.0);
+        //if normals do not point in same general direction, negate area
+      if(cross_vec%surface_normal<0){ 
+        tem2 *= -1;
+          //test to make sure surface normal existed
+          //if(surface_normal.length_squared()<.5){
+          //err.set_msg("compute_signed_area called without surface_normal available.");
+          //}  
+      }
+      return (tem + tem2);
+      
+    default:
+      err.set_msg("Invalid type of element passed to compute signed area.");
+  };
+  
+}
+    
+#undef __FUNC__
+#define __FUNC__ "MsqMeshEntity::compute_signed_volume"
+/*!
+  \brief Computes the volume of the given element.  Returned value can be
+  negative.  If the entity passed is not a three-dimensional element,
+  an error is set.*/
+double MsqMeshEntity::compute_signed_volume(PatchData &pd, MsqError &err) {
+  Vector3D sample_point(.5,.5,.5);
+  Vector3D jac_vecs[3];
+  short num_jacobian_vectors=-1;
+  double tem=0;
+  MsqVertex *verts = pd.get_vertex_array(err);MSQ_CHKERR(err);
+  switch (mType)
+  {
+    case TETRAHEDRON:
+      tem = (verts[vertexIndices[3]]-verts[vertexIndices[0]])%
+        ((verts[vertexIndices[1]]-verts[vertexIndices[0]])*
+         (verts[vertexIndices[2]]-verts[vertexIndices[0]]))/6.0;
+      return tem;
+      
+    case HEXAHEDRON:
+      compute_weighted_jacobian(pd,sample_point,jac_vecs,
+                                num_jacobian_vectors, err );
+      return (jac_vecs[2]%(jac_vecs[0]*jac_vecs[1]));
+      
+    default:
+      err.set_msg("Invalid type of element passed to compute signed volume.");
+      return 0.0;
+  };
+}
   
 
 #undef __FUNC__

@@ -74,7 +74,7 @@ namespace Mesquite
                                    short &num_jacobian_vectors,
                                    MsqError &err );
     
-      //Returns a list of sample points given an evaluationmode 
+      //!Returns a list of sample points given an evaluationmode 
     void get_sample_points(QualityMetric::ElementEvaluationMode mode,
                            std::vector<Vector3D> &coords,
                            MsqError &err);
@@ -92,6 +92,12 @@ namespace Mesquite
       //!Computes the volume of the element.
       //!The returned value is always non-negative.
     double compute_unsigned_volume(PatchData &pd, MsqError &err );
+    
+      //!Computes the signed area of the element.
+    double compute_signed_area(PatchData &pd, MsqError &err );
+
+      //!Computes the signed volume of the element.
+    double compute_signed_volume(PatchData &pd, MsqError &err );
     
   private:
     static void get_linear_quad_jac(Vector3D *sp,
