@@ -297,8 +297,9 @@ namespace Mesquite
       //! It then sets the TargetMatrices on the tags and sets the tags
       //! on the PatchData MsqMeshEntity s.
       //! This is the most efficient function to use from a memory allocation
-      //! speed point of vue. It works for hybrid meshes. 
-    void allocate_corner_matrices(MsqError &err);
+      //! speed point of vue. It works for hybrid meshes.
+      //! \param alloc_inv if true, also allocates space for the inverse of the target matrices.
+    void allocate_target_matrices(MsqError &err, bool alloc_inv=false);
     
       //! Fills a PatchData with the elements attached to a center vertex.
       //! Note that all entities in the sub-patch are copies of the entities

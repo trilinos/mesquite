@@ -66,7 +66,7 @@ void LVQDTargetCalculator::compute_target_matrices(PatchData &pd, MsqError &err)
   
   MsqMeshEntity* elems = pd.get_element_array(err);
   MsqMeshEntity* elems_ref = ref_pd.get_element_array(err);
-  pd.allocate_corner_matrices(err); MSQ_CHKERR(err);
+  pd.allocate_target_matrices(err); MSQ_CHKERR(err);
 
   Matrix3D L_guides[MSQ_MAX_NUM_VERT_PER_ENT];
   Matrix3D V_guides[MSQ_MAX_NUM_VERT_PER_ENT];

@@ -26,7 +26,7 @@
   ***************************************************************** */
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD:  9-Jun-04 at 14:55:42 by Thomas Leurent
+//  LAST-MOD: 16-Jun-04 at 11:56:07 by Thomas Leurent
 //
 /*! \file MsqMeshEntity.cpp
 
@@ -645,17 +645,17 @@ void MsqMeshEntity::compute_corner_matrices(PatchData &pd, Matrix3D A[], const i
     A[0].set_column(0, vec1);
     A[0].set_column(1, vec2);
     compute_corner_normal(0, vec1, vec2, normal, pd, err); 
-    A[0].set_column(2, normal);
+    A[0].set_column(2, normal*pow(2./MSQ_SQRT_THREE, 1./3.));
     
     A[1].set_column(0, vec3);
     A[1].set_column(1, -vec1);
     compute_corner_normal(1, vec3, -vec1, normal, pd, err); 
-    A[1].set_column(2, normal);
+    A[1].set_column(2, normal*pow(2./MSQ_SQRT_THREE, 1./3.));
 
     A[2].set_column(0, -vec2);
     A[2].set_column(1, -vec3);
     compute_corner_normal(2, -vec2, -vec3, normal, pd, err); 
-    A[2].set_column(2, normal);
+    A[2].set_column(2, normal*pow(2./MSQ_SQRT_THREE, 1./3.));
 
     MSQ_CHKERR(err);
     break;

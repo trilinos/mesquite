@@ -53,7 +53,8 @@ namespace Mesquite
   {
   public:
       //! Constructor initializes all pointers to 0.
-    MsqTag() : targets(0), scalars(0), numTargets(0), numScalars(0) {}
+    MsqTag() : targets(0), inverseTargets(0), scalars(0),
+               numTargets(0), numScalars(0) {}
 
       //! copy constructor does a deep copy of all the tag data. 
     MsqTag(const MsqTag& A) { copy(A); }
@@ -81,6 +82,8 @@ namespace Mesquite
       delete [] scalars;
     }
 
+#undef __FUNC__
+#define __FUNC__ "MsqTag::set_targets"
       //! This sets the targets to an existing array of TargetMatrix s. No allocation is made
       //! by this function.
     void set_targets(TargetMatrix Ws_pt[], short int num_targets, MsqError &err)
@@ -96,8 +99,10 @@ namespace Mesquite
 
 #undef __FUNC__
 #define __FUNC__ "MsqTag::allocate_targets"
-      //!
-    void allocate_targets(short int num_targets, MsqError &err)
+      //! This function allocates target matrices within the tag.
+      //! \param num_targets is the number of target matrices to be allocated.
+      //! \param alloc_inv if true, allocates space also for the inverse matrices. 
+    void allocate_targets(short int num_targets, MsqError &err, bool alloc_inv=false)
     {
       if (targets != 0) {
         err.set_msg("Targets already allocated. Why are you reallocating ?");
@@ -105,9 +110,12 @@ namespace Mesquite
       }
 
       targets = new TargetMatrix[num_targets];
+      if (alloc_inv) inverseTargets = new TargetMatrix[num_targets];
       numTargets = num_targets;
     }
 
+#undef __FUNC__
+#define __FUNC__ "MsqTag::allocate_scalars"
       //!
     void allocate_scalars(short int num_scalars, MsqError &err)
     {
@@ -125,14 +133,23 @@ namespace Mesquite
       { assert(num_targets==numTargets); return targets; }
 
       //!
+    TargetMatrix* get_inverse_targets(const short int &num_targets)
+      { assert(num_targets==numTargets); return inverseTargets; }
+
+      //!
     TargetMatrix& target_matrix(const short int &i)
       { assert(i<numTargets); return targets[i]; }
+
+      //!
+    TargetMatrix& inverse_target_matrix(const short int &i)
+      { assert(i<numTargets); return inverseTargets[i]; }
 
       //!
     double& scalar(const short int &i) { assert(i<numScalars); return scalars[i]; }
 
   private:
     TargetMatrix* targets;
+    TargetMatrix* inverseTargets;
     double* scalars; 
     short int numTargets;
     short int numScalars;

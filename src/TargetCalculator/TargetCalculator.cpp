@@ -79,7 +79,7 @@ void TargetCalculator::compute_default_target_matrices(PatchData &pd,
     
   // set on each element in the patch a tag containing an array of corner matrices
   // (the size of the array is adequate for each element, e.g. 4 for a quad).
-  pd.allocate_corner_matrices(err); MSQ_CHKERR(err);
+  pd.allocate_target_matrices(err); MSQ_CHKERR(err);
     
   MsqMeshEntity* elems=pd.get_element_array(err);
   size_t num_elements=pd.num_elements();
@@ -157,7 +157,7 @@ void TargetCalculator::compute_reference_corner_matrices(PatchData &pd,
   MsqMeshEntity* elems = pd.get_element_array(err);
   MsqMeshEntity* elems_ref = ref_pd.get_element_array(err);
   TargetMatrix A[MSQ_MAX_NUM_VERT_PER_ENT];
-  pd.allocate_corner_matrices(err); MSQ_CHKERR(err);
+  pd.allocate_target_matrices(err); MSQ_CHKERR(err);
   for (size_t i=0; i<num_elements; ++i) {
     MsqTag* tag = elems[i].get_tag();
     int nve = elems[i].vertex_count();
