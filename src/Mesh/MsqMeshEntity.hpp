@@ -88,7 +88,7 @@ namespace Mesquite
                            MsqError &err);
 
     //! Returns the centroid of the element.
-    void get_centroid(Vector3D& centroid, PatchData &pd, MsqError &err) const;
+    void get_centroid(Vector3D& centroid, const PatchData &pd, MsqError &err) const;
     
       //!Fills a std::vector<size_t> with vertices connected to the given
       //!vertex through the edges of this MsqMeshEntity.

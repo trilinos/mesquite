@@ -169,7 +169,7 @@ namespace Mesquite
           Check PatchData::domain_set() is not false first.
       */
     void get_domain_normal_at_vertex(size_t vertex_index, Vector3D &surf_norm,
-                                     MsqError &err);
+                                     MsqError &err) const;
     
       /*! Get the normal to the domain at the centroid (projected to the
           domain) of a given element.
@@ -179,7 +179,12 @@ namespace Mesquite
           Check PatchData::domain_set() is not false first.
       */
     void get_domain_normal_at_element(size_t elem_index, Vector3D &surf_norm,
-                                      MsqError &err);
+                                      MsqError &err) const;
+
+      //! Alternative signature. Same functionality.
+    void get_domain_normal_at_element(MsqMeshEntity* elem_ptr,
+                                      Vector3D &surf_norm, MsqError &err) const 
+    { get_domain_normal_at_element(size_t(elem_ptr-elementArray), surf_norm, err); }
     
       //! moves all vertices at once according to a set of directions.
       /*! \param delta_array An array of directions, ordered like the vertices in the PatchData.
@@ -273,17 +278,6 @@ namespace Mesquite
       CULL_METHOD_4 = 8
     };
 
-//     //set the geometry information (i.e, simplifiedEngine and mGeom)
-//     void set_geometry_information(GeometryEngine ge,
-//                                   SimplifiedGeometryEngine* msq_geom)
-//     {
-//       mGeom=ge;
-//       simplifiedEngine=msq_geom;
-//     }
-//     GeometryEngine get_geometry_engine_type()
-//     {
-//       return mGeom;
-//     }
 
     PatchType type() const
       { return mType; }
@@ -474,76 +468,6 @@ namespace Mesquite
       elemArraySize = min_num_elements;
     }
   }
-
-  
-// #undef __FUNC__
-// #define __FUNC__ "PatchData::add_vertex"
-//   /*! \fn PatchData::add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh, double* vertex_coord, bool check_redundancy, MsqError &err)
-
-//   \brief adds a vertex to the PatchData object.
-
-//   add_vertex() returns the index of the vertex position in the vertices array.
-//   If the vertex was already in the array, the return value will be the index
-//   at which the vertex was already present. The function sets an error flag if
-//   not enough memory is allocated in PatchData to add a vertex.
-
-//   \param double* vertex_coords: an array of two or three double. This must be consistent
-//   with the spaceDim data member.
-//   \param bool check_redundancy: set to true to check if the vertex is redundant
-//   in the array. If it is redundant, the vertex will not be added and
-//   the function return value will be the index at which the vertex was
-//   already inserted. 
-//   */
-//   inline int PatchData::add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
-//                                    const double vertex_coord[3],
-//                                    bool check_redundancy,
-//                                    MsqError &err, 
-//                                    MsqVertex::FlagMaskID flag=MsqVertex::MSQ_NO_VTX_FLAG)
-//   {
-//     // checks if the vertex is already in array
-//     if ( check_redundancy )
-//       {
-//         //       MsqVertex vertex(vertex_coord[0], vertex_coord[1], vertex_coord[2]);
-//         Vector3D vertex(vertex_coord[0], vertex_coord[1], vertex_coord[2]);
-//         for (int i = 0; i < numVertices; i++)
-//           {
-//             if (vertex == vertexArray[i]) 
-//               return i; // vertex was already in array
-//           }
-//       }
-    
-//     // Checks that enough memory is allocated to add a vertex.
-//     if (numVertices==vertexArraySize)
-//       {
-//         // Shouldn't we just re-allocate?
-//         err.set_msg("Vertices array is already full.");
-//         return -1;
-//       }
-    
-//     // if we get here, we add the vertex to the array
-//     vertexArray[numVertices].set(vertex_coord[0], vertex_coord[1], vertex_coord[2]);
-//     vertexArray[numVertices].set_vertex_flag(flag);
-//     vertexHandlesArray[numVertices].mesh = mh;
-//     vertexHandlesArray[numVertices].entity = eh;
-//     ++numVertices;
-    
-//     return (numVertices-1); // index of added vertex in 0-based arrays 
-//   }
-  
-  
-// #undef __FUNC__
-// #define __FUNC__ "PatchData::add_vertex"
-//   inline int PatchData::add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
-//                                    double x, double y, double z,
-//                                    bool check_redundancy, MsqError &err, 
-//                                    MsqVertex::FlagMaskID flag=MsqVertex::MSQ_NO_VTX_FLAG)
-//   {
-//     double coords[3];
-//     coords[0] = x; coords[1] = y; coords[2] = z;
-//     int index = add_vertex(mh, eh, coords, check_redundancy, err, flag); MSQ_CHKERR(err);
-//     return index;
-//   }
-  
 
 #undef __FUNC__
 #define __FUNC__ "PatchData::get_coords_array"

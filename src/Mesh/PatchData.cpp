@@ -769,7 +769,7 @@ void PatchData::snap_vertex_to_domain(size_t vertex_index, MsqError &err)
 #define __FUNC__ "PatchData::get_domain_normal_at_vertex"
 void PatchData::get_domain_normal_at_vertex(size_t vertex_index,
                                    Vector3D &surf_norm,
-                                   MsqError &err)
+                                   MsqError &err) const
 {
   if (meshSet && meshSet->get_domain_constraint())
   {
@@ -787,7 +787,7 @@ void PatchData::get_domain_normal_at_vertex(size_t vertex_index,
 #define __FUNC__ "PatchData::get_domain_normal_at_element"
 void PatchData::get_domain_normal_at_element(size_t elem_index,
                                              Vector3D &surf_norm,
-                                             MsqError &err)
+                                             MsqError &err) const
 {
   if (meshSet && meshSet->get_domain_constraint())
   {

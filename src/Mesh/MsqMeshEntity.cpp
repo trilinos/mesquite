@@ -1,7 +1,7 @@
 // -*- Mode : c++; tab-width: 2; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 //
 // ORIG-DATE: 16-May-02 at 10:26:21
-//  LAST-MOD:  7-May-03 at 15:30:48 by Thomas Leurent
+//  LAST-MOD:  7-May-03 at 16:19:02 by Thomas Leurent
 //
 /*! \file MsqMeshEntity.cpp
 
@@ -61,7 +61,7 @@ void Mesquite::MsqMeshEntity::append_vertex_indices(std::vector<size_t> &vertex_
   \f[ \b{x} = \frac{ \sum_{i=1}^{n} \b{x}_i }{ n }  \f]
   where \f$ \b{x}_i  ,\, i=1,...,n\f$ are the vertices coordinates.
 */
-void MsqMeshEntity::get_centroid(Vector3D &centroid, PatchData &pd, MsqError &err) const
+void MsqMeshEntity::get_centroid(Vector3D &centroid, const PatchData &pd, MsqError &err) const
 {
   MsqVertex* vtces = pd.get_vertex_array(err); MSQ_CHKERR(err);
   size_t nve = vertex_count();
