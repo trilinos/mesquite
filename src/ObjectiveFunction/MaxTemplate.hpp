@@ -1,16 +1,16 @@
 // -*- Mode : c++; tab-width: 3; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 3 -*-
 
-/*! \file MinTemplate.hpp
+/*! \file MaxTemplate.hpp
 
-Header file for the Mesquite::MinTemplate class
+Header file for the Mesquite::MaxTemplate class
 
   \author Lori Freitag
   \date   2002-07-18
  */
 
 
-#ifndef MinTemplate_hpp
-#define MinTemplate_hpp
+#ifndef MaxTemplate_hpp
+#define MaxTemplate_hpp
 
 #include "Mesquite.hpp"
 #include "MesquiteError.hpp"
@@ -21,11 +21,11 @@ Header file for the Mesquite::MinTemplate class
 namespace Mesquite
 {
    class PatchData;
-   class MinTemplate :public ObjectiveFunction
+   class MaxTemplate :public ObjectiveFunction
    {
    public:
-     MinTemplate(QualityMetric *);
-     virtual ~MinTemplate();
+     MaxTemplate(QualityMetric *);
+     virtual ~MaxTemplate();
      virtual bool concrete_evaluate(PatchData &patch, double &fval,
                                     MsqError &err);
    protected:
@@ -33,4 +33,4 @@ namespace Mesquite
 	  
    };
 }//namespace
-#endif // MinTemplate_hpp
+#endif // MaxTemplate_hpp

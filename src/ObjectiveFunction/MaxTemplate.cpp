@@ -1,35 +1,36 @@
 /*!
-  \file   MinTemplate.cpp
+  \file   MaxTemplate.cpp
   \brief  
 
-  This Objective Function is the minimum of the quality metrics
-  total=min (x)
+  This Objective Function is the maximum of the quality metrics
+  total = max(x)
   \author Lori Freitag
   \date   2002-07-18
 */
 #include <math.h>
-#include "MinTemplate.hpp"
+#include "MaxTemplate.hpp"
 using  namespace Mesquite;  
 
 #undef __FUNC__
-#define __FUNC__ "MinTemplate::MinTemplate"
+#define __FUNC__ "MaxTemplate::MaxTemplate"
 
-MinTemplate::MinTemplate(QualityMetric *qualitymetric){
+MaxTemplate::MaxTemplate(QualityMetric *qualitymetric){
    set_quality_metric(qualitymetric);
+   set_negate_flag(qualitymetric->get_negate_flag());
 }
 
 #undef __FUNC__
-#define __FUNC__ "MinTemplate::~MinTemplate"
+#define __FUNC__ "MaxTemplate::~MaxTemplate"
 
 //Lori:  need to clean up here
-MinTemplate::~MinTemplate(){
+MaxTemplate::~MaxTemplate(){
 
 }
 
 #undef __FUNC__
-#define __FUNC__ "MinTemplate::concrete_evaluate"
+#define __FUNC__ "MaxTemplate::concrete_evaluate"
 
-bool MinTemplate::concrete_evaluate(PatchData &patch, double &fval,
+bool MaxTemplate::concrete_evaluate(PatchData &patch, double &fval,
                                     MsqError &err){
 
   //Total value of objective function
@@ -56,7 +57,7 @@ bool MinTemplate::concrete_evaluate(PatchData &patch, double &fval,
         return false;
       }
 
-      if(temp_value<fval )
+      if(temp_value>fval )
         fval=temp_value;
 
     }//end loop over elements
@@ -78,7 +79,7 @@ bool MinTemplate::concrete_evaluate(PatchData &patch, double &fval,
         fval = 0.0;
         return false;
       }
-      if(temp_value<fval)
+      if(temp_value>fval)
         fval=temp_value;
 
     }//end loop over vertices
