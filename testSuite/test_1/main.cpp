@@ -4,7 +4,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 19-Feb-02 at 10:57:52
-//  LAST-MOD: 25-Apr-03 at 13:38:11 by Thomas Leurent
+//  LAST-MOD: 29-Apr-03 at 09:12:51 by Thomas Leurent
 //
 //
 // DESCRIPTION:
@@ -54,8 +54,8 @@ using std::endl;
 int main(int argc, char* argv[])
 {
   Mesquite::MsqError err;
-  char file_name[128];
-  double OF_value = 100;
+  char file_name[256];
+  double OF_value = 1.;
   
   // command line arguments
   if (argc==1 || argc>3)
@@ -84,6 +84,7 @@ int main(int argc, char* argv[])
   ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
   mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
   mean_ratio->set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
+  mean_ratio->set_averaging_method(QualityMetric::SUM, err); MSQ_CHKERR(err);
   
   // ... and builds an objective function with it
   LPtoPTemplate* obj_func = new LPtoPTemplate(mean_ratio, 2, err);
