@@ -1771,13 +1771,6 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
       }
     }
 
-    //dbg
-    cout << "vertices + v_i[0...3]" <<endl;
-    for (i=0; i<4; ++i) cout << vertices + v_i[i] <<endl;
-    cout << "v[0..."<<nv<<"]"<<endl;
-    for (i=0; i<nv; ++i) cout << v[i] <<endl;
-    cout << endl;
-    
     // Makes sure we give null entries to the blocks corresponding to fixed vertices. 
     for(i=0; i<4; ++i) {
       for (j=i; j<4; ++j) {
@@ -1788,14 +1781,12 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
         bool nul_hessian = true; 
         for (k=0; k<nv; ++k) 
           for (l=0; l<nv; ++l) 
-            if ( (vertices + v_i[i] == v[k]) || (vertices + v_i[j] == v[l]) )
+            if ( (vertices + v_i[i] == v[k]) && (vertices + v_i[j] == v[l]) )
               nul_hessian = false;
 
         if (nul_hessian == false)
           h[ind] = hessians[ind];
         else {
-          cout << "nul Hessian " << ind << " for i, j, k, l = " << i << ", "
-               << j << ", " << k << ", " << l << ", " <<endl; //dbg
           h[ind] = 0.;
         }   
       }
