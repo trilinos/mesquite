@@ -63,8 +63,9 @@ describe main.cpp here
 #include "MeshSet.hpp"
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
+#include "PlanarDomain.hpp"
 
-// algorythms
+// algorithms
 #include "I_DFT.hpp"
 #include "sI_DFT.hpp"
 #include "RI_DFT.hpp"
@@ -81,31 +82,22 @@ using std::endl;
 
 #undef __FUNC__
 #define __FUNC__ "main"
-int main(int argc, char* argv[])
+int main()
 {
   Mesquite::MsqError err;
-  char file_name[256];
-  double OF_value = 0.;
-  
-  // command line arguments
-  if (argc==1 || argc>3)
-    cout << "meshfile name needed as argument.\n"
-      "objective function value optional as 2nd argument.\n" << endl;
-  else if (argc==2) {
-    cout << " given 1 command line argument.\n";
-    strcpy(file_name, argv[1]);
-  } else if (argc==3) {
-    cout << " given 2 command line arguments.\n";
-    strcpy(file_name, argv[1]);
-    OF_value = atof(argv[2]);
-  }
-  
+
   Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
-  mesh->read_vtk(file_name, err);
+  mesh->read_vtk("../../meshFiles/2D/VTK/tfi_horse10x4-14.vtk", err);
   
   // initialises a MeshSet object
   MeshSet mesh_set1;
   mesh_set1.add_mesh(mesh, err); 
+  if (err.errorOn) return 1;
+
+  Vector3D pnt(0,0,0);
+  Vector3D s_norm(0,0,1);
+  PlanarDomain* msq_geom = new PlanarDomain(s_norm, pnt, mesh);
+  mesh_set1.set_domain_constraint(msq_geom, err); 
   if (err.errorOn) return 1;
 
   // creates an intruction queue
@@ -122,16 +114,20 @@ int main(int argc, char* argv[])
 //  DefaultTargetCalculator target;
 
   Mesquite::MeshImpl *ref_mesh = new Mesquite::MeshImpl;
-  ref_mesh->read_vtk("../../meshFiles/2D/VTK/DFT/tfi_horse10x4-12.vtk", err);
+  ref_mesh->read_vtk("../../meshFiles/2D/VTK/tfi_horse10x4-12.vtk", err);
   MeshSet ref_mesh_set;
   ref_mesh_set.add_mesh(ref_mesh, err); 
+  if (err.errorOn) return 1;
+  ref_mesh_set.set_domain_constraint(msq_geom, err);
   if (err.errorOn) return 1;
   DeformingDomainGuides843 target(&ref_mesh_set);
 
   Mesquite::MeshImpl *ref_mesh2 = new Mesquite::MeshImpl;
-  ref_mesh2->read_vtk("../../meshFiles/2D/VTK/DFT/tfi_horse10x4-12.vtk", err);
+  ref_mesh2->read_vtk("../../meshFiles/2D/VTK/tfi_horse10x4-12.vtk", err);
   MeshSet ref_mesh2_set;
   ref_mesh2_set.add_mesh(ref_mesh2, err); 
+  if (err.errorOn) return 1;
+  ref_mesh2_set.set_domain_constraint(msq_geom, err);
   if (err.errorOn) return 1;
   DeformingDomainGuides843 assessor_target(&ref_mesh2_set);
 
@@ -152,11 +148,9 @@ int main(int argc, char* argv[])
   
   // **************Set stopping criterion****************
   TerminationCriterion tc_inner;
-  if (OF_value!=0) {
-    tc_inner.add_criterion_type_with_double(
-           TerminationCriterion::QUALITY_IMPROVEMENT_ABSOLUTE, OF_value, err);
-    pass1->set_inner_termination_criterion(&tc_inner);
-  }
+  tc_inner.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,10,err);
+  pass1->set_inner_termination_criterion(&tc_inner);
+   
   TerminationCriterion tc_outer;
   tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
   pass1->set_outer_termination_criterion(&tc_outer);
@@ -184,6 +178,8 @@ int main(int argc, char* argv[])
   queue1.run_instructions(mesh_set1, err); 
   if (err.errorOn) return 1;
   
+  mesh->write_vtk("smo_mesh",err);
+  if (err.errorOn) return 1;
   mesh_set1.write_gnuplot("smo_mesh", err); 
   if (err.errorOn) return 1;
 
