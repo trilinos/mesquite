@@ -27,7 +27,9 @@ PatchData::PatchData()
     vertexArraySize(0),
     elemArraySize(0),
     elemsInVertex(NULL),
-    vertexToElemOffset(NULL)
+    vertexToElemOffset(NULL),
+    mGeom(NONE),
+    simplifiedEngine(NULL)
 {}
 
 
