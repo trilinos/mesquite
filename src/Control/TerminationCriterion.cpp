@@ -267,7 +267,7 @@ void TerminationCriterion::reset(PatchData &pd, ObjectiveFunction* obj_ptr,
       }
         //get the norm of the gradient
       initialGradNorm = compute_gradient_norm(mGrad, num_vertices, err);
-      std::cout<<"\nInitial gradient norm = "<<initialGradNorm;
+        //std::cout<<"\nInitial gradient norm = "<<initialGradNorm;
     }
   }   
   
@@ -296,7 +296,7 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
   }
     //if terminating on inner cpu time
   if(terminationCriterionFlag & CPU_TIME){
-    std::cout<<"\nCHECKED CPU time value = "<<mTimer.since_birth();
+      //std::cout<<"\nCHECKED CPU time value = "<<mTimer.since_birth();
     if(mTimer.since_birth()>=timeBound){
       return true;
     }
@@ -336,8 +336,8 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
       err.set_msg("Invalid patch passed to TerminationCriterion.");
       MSQ_CHKERR(err);
     }
-    std::cout<<"\nOF current "<<obj_val;
-    std::cout<<"\nOF previous - current "<<previousOFValue-obj_val;
+      //std::cout<<"\nOF current "<<obj_val;
+      //std::cout<<"\nOF previous - current "<<previousOFValue-obj_val;
       // if termination on quality improvement absolute
     if(terminationCriterionFlag & QUALITY_IMPROVEMENT_ABSOLUTE){
         //if the improvement was enough
@@ -386,7 +386,7 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
     }
       //get the norm of the gradient
     double grad_norm = compute_gradient_norm(mGrad, num_vertices, err);
-    std::cout<<"\n Gradient norm = "<<grad_norm;
+      //std::cout<<"\n Gradient norm = "<<grad_norm;
       //if stopping on norm of the gradient absolute
     if(terminationCriterionFlag & GRADIENT_NORM_ABSOLUTE){
       if(grad_norm <= gradNormAbsoluteEps){
@@ -397,8 +397,8 @@ bool TerminationCriterion::terminate(PatchData &pd, ObjectiveFunction* obj_ptr,
     if(terminationCriterionFlag & GRADIENT_NORM_RELATIVE){
       if(grad_norm <= (gradNormRelativeEps*initialGradNorm))
       {
-        std::cout<<"\nALKSJF eps ="<<gradNormRelativeEps;
-        std::cout<<"\nALKSJ init ="<<initialGradNorm;;
+          //std::cout<<"\nALKSJF eps ="<<gradNormRelativeEps;
+          //std::cout<<"\nALKSJ init ="<<initialGradNorm;;
         return true;
       }
     }
