@@ -68,6 +68,9 @@ double GeneralizedConditionNumberQualityMetric::evaluate_element(PatchData *pd, 
   }
 }
 */
+
+#undef __FUNC__
+#define __FUNC__ "GeneralizedConditionNumberQualityMetric::evaluate_element"
 bool GeneralizedConditionNumberQualityMetric::evaluate_element(PatchData &pd,
                                                       MsqMeshEntity *element,
                                                                double &fval,

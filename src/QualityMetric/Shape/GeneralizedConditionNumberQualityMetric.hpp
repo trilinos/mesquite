@@ -79,13 +79,15 @@ namespace Mesquite
      if(num_jacobian_vectors==2){
        size_t vert=element->get_vertex_index(0);
        Vector3D cross_vec=jacobian_vectors[0]*jacobian_vectors[1];
-         //NOTE:: the equal below is ONLY to get the code to work
-         //when no normal is available.
-       Vector3D norm_vec=cross_vec;
-       pd.get_surface_normal(vert,norm_vec,err);MSQ_CHKERR(err);
-       if(cross_vec%norm_vec<0.0){
-         return false;
+
+       if ( pd.domain_set() ) {
+         Vector3D norm_vec;
+         pd.get_surface_normal(vert,norm_vec,err);MSQ_CHKERR(err);
+         if(cross_vec%norm_vec<0.0){
+           return false;
+         }
        }
+       
        temp_var=fabs((cross_vec).length());
        fval=jacobian_vectors[0].length_squared();
        fval+=jacobian_vectors[1].length_squared();
