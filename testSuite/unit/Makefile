@@ -13,6 +13,8 @@ CPPUNIT_LINK = -L${CPPUNIT_DIR}/src/cppunit/.libs -lcppunit
 MESQUITE_LINK = -L../../lib -lmesquite ${TSTT_LINK}
 TEST_LINK = ${CPPUNIT_LINK} ${MESQUITE_LINK} -lm
 
+PREFIX = @
+
 include ../../Makefile.customize
 
 MSQ_BASE_DIR = ../..
@@ -34,7 +36,7 @@ TEST_OBJS = ${TEST_SRCS:.cpp=.o}
 
 sample_test : ${TEST_OBJS}
 	@echo "Linking $@"
-	@${LINKER} ${LDFLAGS} ${TEST_OBJS} ${TEST_LINK} -o $@
+	${PREFIX}${LINKER} ${LDFLAGS} ${TEST_OBJS} ${TEST_LINK} -o $@
 
 clean:
 	@rm -f *.o sample_test
@@ -45,4 +47,4 @@ clean:
 
 .cpp.o:
 	@echo "Compiling $<"
-	@${CXX} -c ${CXXFLAGS} ${TEST_INCLUDE} -o $@ $<
+	${PREFIX}${CXX} -c ${CXXFLAGS} ${TEST_INCLUDE} -o $@ $<
