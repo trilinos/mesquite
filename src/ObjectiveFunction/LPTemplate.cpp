@@ -114,11 +114,9 @@ bool LPTemplate::concrete_evaluate(PatchData &patch, double &fval,
     \param patch The PatchData object for which the objective function
            gradient is computed.
     \param grad An array of Vector3D, at least the size of the number
-           of free vertices in the patch.
+           of vertices in the patch.
     \param array_size is the size of the grad Vector3D[] array and
-    must correspond to the number of free vertices in the patch.
-    This argument will be used to perform a costly check (counting
-    the number of free vertices) is MSQ_DBG1 or higher is defined.
+    must correspond to the number of vertices in the patch.
 */
 bool LPTemplate::compute_analytical_gradient(PatchData &patch,
                                               Vector3D *const &grad,
@@ -132,14 +130,12 @@ bool LPTemplate::compute_analytical_gradient(PatchData &patch,
   MsqMeshEntity* elems=patch.get_element_array(err);
   MsqVertex* vertices=patch.get_vertex_array(err);
   bool lp_bool=true;
-  // If MSQ_DBG1 is defined, check to make sure that num_free_vert == array_size.
-  MSQ_DEBUG_ACTION(1,{
-    int num_free_vert=patch.num_free_vertices(err); // costly function !
-    if(num_free_vert!=array_size){
-      err.set_msg("Analytical Gradient passed arrays of incorrect size.");
-      MSQ_CHKERR(err); }
-  });
-    
+  int num_elements=patch.num_elements();
+  int num_vertices=patch.num_vertices(); 
+  if(num_vertices!=array_size){
+    err.set_msg("Analytical Gradient passed arrays of incorrect size.");
+    MSQ_CHKERR(err); }
+
   double big_f=0;
   double temp_value=0;
   int index=0;
@@ -149,8 +145,6 @@ bool LPTemplate::compute_analytical_gradient(PatchData &patch,
   if(currentQM==NULL)
     err.set_msg("LPTemplate has NULL QualityMetric pointer.");
   enum QualityMetric::MetricType qm_type=currentQM->get_metric_type();
-  int num_elements=patch.num_elements();
-  int num_vertices=patch.num_vertices();
   int total_num=0;
   if (qm_type==QualityMetric::ELEMENT_BASED)
     total_num=num_elements;
@@ -198,12 +192,6 @@ bool LPTemplate::compute_analytical_gradient(PatchData &patch,
   big_f=pow(big_f,((1/ (double) pVal)-1));
   big_f*=get_negate_flag(); //if function negated for minimization, so is gradient.
   
-  MsqFreeVertexIndexIterator free_ind(&patch, err);
-  free_ind.reset();
-  //position in patch's vertex array
-  int vert_count=0;
-  //corresponding position in grad array
-  int grad_pos=0;
   double dummy;
   //position in elem array
   size_t elem_pos=0;
@@ -211,77 +199,77 @@ bool LPTemplate::compute_analytical_gradient(PatchData &patch,
   
   Vector3D grad_vec;
   // Loops over free vertices
-  while(free_ind.next()){
-    vert_count=free_ind.value();
-    grad[grad_pos].set(0.0,0.0,0.0);
+  for (int m=0; m<num_vertices; ++m) {
+    grad[m].set(0.,0.,0.);
     temp_value=0;
-    if(qm_type==QualityMetric::ELEMENT_BASED){
+    if (vertices[m].is_free_vertex()) {
+      if(qm_type==QualityMetric::ELEMENT_BASED){
  
-      patch.get_vertex_element_indices(vert_count, elem_on_vert_ind,err);
-      size_t ele_num_vtces = elem_on_vert_ind.size();
-      MsqVertex** ele_free_vtces = new MsqVertex*[ele_num_vtces];
-      elem_pos=0;
-      //while(elem_pos<num_elements){
-      while(!elem_on_vert_ind.empty()){
-        elem_pos=(elem_on_vert_ind.back());
-        elem_on_vert_ind.pop_back();
-        ele_free_vtces[0] = &vertices[vert_count];
-        currentQM->compute_element_gradient(patch, &elems[elem_pos],
-                                            ele_free_vtces,
-                                            &grad_vec, 1, dummy, err);
-        temp_value=1;
-        for(index=0;index<pVal-1;++index){
-          temp_value*=metric_values[elem_pos];
+        patch.get_vertex_element_indices(m, elem_on_vert_ind,err);
+        size_t ele_num_vtces = elem_on_vert_ind.size();
+        MsqVertex** ele_free_vtces = new MsqVertex*[ele_num_vtces];
+        elem_pos=0;
+        //while(elem_pos<num_elements){
+        while(!elem_on_vert_ind.empty()){
+          elem_pos=(elem_on_vert_ind.back());
+          elem_on_vert_ind.pop_back();
+          ele_free_vtces[0] = &vertices[m];
+          currentQM->compute_element_gradient(patch, &elems[elem_pos],
+                                              ele_free_vtces,
+                                              &grad_vec, 1, dummy, err);
+          temp_value=1;
+          for(index=0;index<pVal-1;++index){
+            temp_value*=metric_values[elem_pos];
+          }
+          //if pval is odd and met val is negative
+          if(metric_values[elem_pos]<0  && pVal%2 ){
+            temp_value*=(-1);
+          }          
+          grad[m] += temp_value*grad_vec;
+          //elem_pos++;
         }
-        //if pval is odd and met val is negative
-        if(metric_values[elem_pos]<0  && pVal%2 ){
-          temp_value*=(-1);
-        }          
-        grad[grad_pos] += temp_value*grad_vec;
-        //elem_pos++;
+        delete []ele_free_vtces;     
       }
-      delete []ele_free_vtces;     
-    }
-    else{
+      else{
       
-      patch.get_adjacent_vertex_indices(vert_count, vert_on_vert_ind,err);
+        patch.get_adjacent_vertex_indices(m, vert_on_vert_ind,err);
         //For now we compute the metric for attached vertices and this
         //vertex, the above line gives us the attached vertices.  Now,
         //we must add this vertex.
-      vert_on_vert_ind.push_back(vert_count);
-      size_t vert_num_vtces = vert_on_vert_ind.size();
-      MsqVertex** vert_free_vtces = new MsqVertex*[vert_num_vtces];
-      vert_pos=0;
-      while(!vert_on_vert_ind.empty()){
-        vert_pos=(vert_on_vert_ind.back());
-        vert_on_vert_ind.pop_back();
-        vert_free_vtces[0] = &vertices[vert_count];
-        currentQM->compute_vertex_gradient(patch, vertices[vert_pos],
-                                            vert_free_vtces,
-                                            &grad_vec, 1, dummy, err);
-        temp_value=1;
-        for(index=0;index<pVal-1;++index){
-          temp_value*=metric_values[vert_pos];
+        vert_on_vert_ind.push_back(m);
+        size_t vert_num_vtces = vert_on_vert_ind.size();
+        MsqVertex** vert_free_vtces = new MsqVertex*[vert_num_vtces];
+        vert_pos=0;
+        while(!vert_on_vert_ind.empty()){
+          vert_pos=(vert_on_vert_ind.back());
+          vert_on_vert_ind.pop_back();
+          vert_free_vtces[0] = &vertices[m];
+          currentQM->compute_vertex_gradient(patch, vertices[vert_pos],
+                                             vert_free_vtces,
+                                             &grad_vec, 1, dummy, err);
+          temp_value=1;
+          for(index=0;index<pVal-1;++index){
+            temp_value*=metric_values[vert_pos];
+          }
+          //if pval is odd and met val is negative
+          if(metric_values[vert_pos]<0  && pVal%2 ){
+            temp_value*=(-1);
+          }          
+          grad[m] += temp_value*grad_vec;
         }
-        //if pval is odd and met val is negative
-        if(metric_values[vert_pos]<0  && pVal%2 ){
-          temp_value*=(-1);
-        }          
-        grad[grad_pos] += temp_value*grad_vec;
-      }
-      delete []vert_free_vtces;     
+        delete []vert_free_vtces;     
       
+      }
+      grad[m]*=big_f;
+      //PRINT_INFO("  gradx = %f, grady = %f, gradz = %f\n",grad[m][0],grad[m][1],grad[m][2]);
+    
     }
-    grad[grad_pos]*=big_f;
-    //PRINT_INFO("  gradx = %f, grady = %f, gradz = %f\n",grad[grad_pos][0],grad[grad_pos][1],grad[grad_pos][2]);
-    
-    ++grad_pos;
-    
   }
+  
   delete metric_values;
   return true;
 }
 
-    //
+
   
 	
