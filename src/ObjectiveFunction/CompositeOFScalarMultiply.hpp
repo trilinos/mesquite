@@ -33,11 +33,14 @@ namespace Mesquite
 	  virtual bool concrete_evaluate(PatchData &patch, double &fval,
                                     MsqError &err);
      virtual std::list<QualityMetric*> get_quality_metric_list();
-	protected:
-     
+       
+    protected:
+       //!Implement the scalar multiply analytic gradient
+     bool compute_analytical_gradient(PatchData &patch,Vector3D *const &grad,
+                                      MsqError &err,int array_size);
 	private:
      ObjectiveFunction* objFunc;
-     double alpha;
+     double mAlpha;
    };
 }//namespace
 #endif //  CompositeOFScalarMultiply_hpp

@@ -34,7 +34,9 @@ namespace Mesquite
                                     MsqError &err);
      virtual std::list<QualityMetric*> get_quality_metric_list();
 	protected:
-     
+      //!Implement the scalar multiply analytic gradient
+     bool compute_analytical_gradient(PatchData &patch,Vector3D *const &grad,
+                                      MsqError &err,int array_size);
 	private:
      ObjectiveFunction* objFunc1;
      ObjectiveFunction* objFunc2;

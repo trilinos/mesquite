@@ -21,7 +21,7 @@ the QualityMetric pointer to NULL.  If Obj1 or Obj2 requires a feasible
 region, then so does the new CompositeOFAdd ObjectiveFunction.  The new
 ObjectiveFunction's negateFlag is always set to one, because the values
 produced by obj1 and obj2 have already been multiplied by negative one
-if it was needed.
+if it was needed.  Defaults to the analytical gradient.
   \param Obj1 (ObjectiveFunction*)
   \param Obj2 (ObjectiveFunction*)
  */
@@ -39,7 +39,8 @@ CompositeOFAdd::CompositeOFAdd(ObjectiveFunction* Obj1,
     set_feasible(Obj2->get_feasible_constraint());
   objFunc1=Obj1;
   objFunc2=Obj2;
-  set_negate_flag(1); 
+  set_negate_flag(1);
+  set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
 }
 
 #undef __FUNC__
@@ -94,3 +95,46 @@ bool CompositeOFAdd::concrete_evaluate(PatchData &patch, double &fval,
 }
 	
 	
+#undef __FUNC__
+#define __FUNC__ "CompositeOFAdd::compute_analytical_gradient"
+/*! Analytically computes the composite objective function's gradient
+  by scaling the gradient returned objFunc->compute_gradient().
+    \param patch The PatchData object for which the objective function
+           gradient is computed.
+    \param grad An array of Vector3D, at least the size of the number
+           of vertices in the patch.
+    \param array_size is the size of the grad Vector3D[] array and
+    must correspond to the number of vertices in the patch.
+*/
+bool CompositeOFAdd::compute_analytical_gradient(PatchData &patch,
+                                                 Vector3D *const &grad,
+                                                 MsqError &err,
+                                                 int array_size)
+{
+#ifdef USE_FUNCTION_TIMERS          
+  StopWatchCollection::Key this_key = GlobalStopWatches.add(__FUNC__,false);
+  GlobalStopWatches.start(this_key);
+#endif
+    //get first objective function's gradient
+  bool rval=objFunc1->compute_gradient(patch, grad, err, array_size);
+  if(rval){
+    int num_vert=patch.num_vertices();
+    Vector3D* second_grad = new Vector3D[num_vert];
+      //get second objective function's gradient
+    rval=objFunc2->compute_gradient(patch, second_grad, err, num_vert);
+      //if both objective functions were successfully computed, add them
+    if(rval){
+      int i=0;
+      for(i=0;i<num_vert;++i){
+        grad[i]+=second_grad[i];
+      }
+        //delete the dynamically allocated space for the second gradient
+      delete []second_grad;
+    }
+  }
+#ifdef USE_FUNCTION_TIMERS          
+  GlobalStopWatches.stop(this_key);
+#endif
+    //true if both of the above compute gradient's were successful.
+  return rval;
+}

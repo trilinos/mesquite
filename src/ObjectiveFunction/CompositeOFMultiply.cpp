@@ -24,7 +24,7 @@ Obj2's negateFlag are negative one (because obj1 and obj2's evaluate function
 multiply their return values by negative one if their respective
 function needs to be maximized.  If both of these functions needed to
 be maximized, then the negative ones will have cancelled out).  Otherwise,
-the negateFlag is set to one.
+the negateFlag is set to one.  Defaults to the analytical gradient.
   \param Obj1 (ObjectiveFunction*)
   \param Obj2 (ObjectiveFunction*)
  */
@@ -45,6 +45,7 @@ CompositeOFMultiply::CompositeOFMultiply(ObjectiveFunction* Obj1, ObjectiveFunct
     set_negate_flag(-1);
   else
     set_negate_flag(1);
+  set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
 }
 
 #undef __FUNC__
@@ -96,6 +97,66 @@ bool CompositeOFMultiply::concrete_evaluate(PatchData &patch, double &fval,
   }
   fval*=second_val;
   return true;
+}
+
+#undef __FUNC__
+#define __FUNC__ "CompositeOFMultiply::compute_analytical_gradient"
+/*! Analytically computes the composite objective function's gradient,
+  using the multiplication rule.
+  by scaling the gradient returned objFunc->compute_gradient().
+    \param patch The PatchData object for which the objective function
+           gradient is computed.
+    \param grad An array of Vector3D, at least the size of the number
+           of vertices in the patch.
+    \param array_size is the size of the grad Vector3D[] array and
+    must correspond to the number of vertices in the patch.
+*/
+bool CompositeOFMultiply::compute_analytical_gradient(PatchData &patch,
+                                                 Vector3D *const &grad,
+                                                 MsqError &err,
+                                                 int array_size)
+{
+#ifdef USE_FUNCTION_TIMERS          
+  StopWatchCollection::Key this_key = GlobalStopWatches.add(__FUNC__,false);
+  GlobalStopWatches.start(this_key);
+#endif
+  double obj_1_val=0.0;
+  double obj_2_val=0.0;
+    //get first obj function's value
+  bool rval=objFunc1->evaluate(patch, obj_1_val, err);
+  if(rval){
+      //if the first value was valid, get the second
+    rval=objFunc2->evaluate(patch, obj_2_val, err);
+  }
+    
+  if(rval){
+      //if both obj function values were valid, get first gradient
+    rval=objFunc1->compute_gradient(patch, grad, err, array_size);
+      //if all of the above were valid, get the second gradient
+    if(rval){
+      int num_vert=patch.num_vertices();
+      Vector3D* second_grad = new Vector3D[num_vert];
+        //get second objective function's gradient
+      rval=objFunc2->compute_gradient(patch, second_grad, err, num_vert);
+        //if both objective functions were successfully computed, and
+        //both evaluates were successful, use the multiplaction rule
+        //to get the complete gradient.
+      if(rval){
+        int i=0;
+        for(i=0;i<num_vert;++i){
+          grad[i]*=obj_2_val;
+          grad[i]+=(second_grad[i]*obj_1_val);
+        }
+      }
+        //delete the dynamically allocated space for the second gradient
+      delete []second_grad;
+    }
+  }
+#ifdef USE_FUNCTION_TIMERS          
+  GlobalStopWatches.stop(this_key);
+#endif
+    //true if both gradient and both evaluate were successful.
+  return rval;
 }
 	
 	
