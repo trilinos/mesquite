@@ -1,16 +1,16 @@
 // -*- Mode : c++; tab-width: 3; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 3 -*-
 
-/*! \file MeanRatioQualityMetric.hpp
+/*! \file InverseMeanRatioQualityMetric.hpp
 
-Header file for the Mesquite::MeanRatioQualityMetric class
+Header file for the Mesquite::InverseMeanRatioQualityMetric class
 
   \author Michael Brewer
-  \date   2002-06-19
+  \date   2002-11-11
  */
 
 
-#ifndef MeanRatioQualityMetric_hpp
-#define MeanRatioQualityMetric_hpp
+#ifndef InverseMeanRatioQualityMetric_hpp
+#define InverseMeanRatioQualityMetric_hpp
 #include "MsqMeshEntity.hpp"
 #include "Mesquite.hpp"
 #include "MesquiteError.hpp"
@@ -22,11 +22,12 @@ Header file for the Mesquite::MeanRatioQualityMetric class
 
 namespace Mesquite
 {
-     /*! \class MeanRatioQualityMetric
-       \brief Computes the mean ratio of given element.
+     /*! \class InverseMeanRatioQualityMetric
+       \brief Computes the inverse mean ratio quality metric
+       of given element.
        
      */
-   class MeanRatioQualityMetric : public ShapeQualityMetric
+   class InverseMeanRatioQualityMetric : public ShapeQualityMetric
    {
   public:
  
@@ -35,16 +36,16 @@ namespace Mesquite
          compute_weighted_jacobian.  It evaluates the metric at
          the element vertices, and uses the isotropic ideal element.
          It does require a feasible region, and the metric needs
-         to be minimized.
+         to be maximized.
        */
      static ShapeQualityMetric* create_new(){
        
-       ShapeQualityMetric* m = new MeanRatioQualityMetric();
+       ShapeQualityMetric* m = new InverseMeanRatioQualityMetric();
        return m;
      }
      
        //! virtual destructor ensures use of polymorphism during destruction
-     virtual ~MeanRatioQualityMetric()
+     virtual ~InverseMeanRatioQualityMetric()
         {}
      
        //! evaluate using mesquite objects 
@@ -52,32 +53,36 @@ namespace Mesquite
                              MsqError &err); 
           
   protected:     
-     double mean_ratio_2d(Vector3D temp_vec[],MsqError &err);
-     double mean_ratio_3d(Vector3D temp_vec[],MsqError &err);
+     double inverse_mean_ratio_2d(Vector3D temp_vec[],MsqError &err);
+     double inverse_mean_ratio_3d(Vector3D temp_vec[],MsqError &err);
   private:
      
-     MeanRatioQualityMetric();
+     InverseMeanRatioQualityMetric();
     
   };
      //BEGIN INLINE FUNCITONS
-   inline double MeanRatioQualityMetric::mean_ratio_2d(Vector3D temp_vec[],
-                                                       MsqError &err)
+   inline double InverseMeanRatioQualityMetric::inverse_mean_ratio_2d(Vector3D
+                                                                   temp_vec[],
+                                                                   MsqError
+                                                                   &err)
    {
        //NOTE:  We take absolute value here
      double area_val=fabs((temp_vec[0]*temp_vec[1]).length()*2.0);
      double return_val=(temp_vec[0].length_squared()+
                         temp_vec[1].length_squared());
-     if(area_val>MSQ_MIN){
-       return_val/=area_val;
+     if(return_val>MSQ_MIN){
+       return_val=area_val/return_val;
      }
      else{
-       return_val=MSQ_MAX_CAP;
+       return_val=0.0;
      }
      return return_val;
    }
 
-   inline double MeanRatioQualityMetric::mean_ratio_3d(Vector3D temp_vec[],
-                                                       MsqError &err)
+   inline double InverseMeanRatioQualityMetric::inverse_mean_ratio_3d(Vector3D
+                                                                   temp_vec[],
+                                                                   MsqError
+                                                                   &err)
    {   
      double term1=temp_vec[0]%temp_vec[0]+
         temp_vec[1]%temp_vec[1]+
@@ -85,10 +90,10 @@ namespace Mesquite
        //det of J
      double temp_vol_sqr=temp_vec[0]%(temp_vec[1]*temp_vec[2]);
      temp_vol_sqr*=temp_vol_sqr;
-     double return_val=MSQ_MAX_CAP;
-     if(temp_vol_sqr>MSQ_MIN){
+     double return_val=0.0;
+     if(term1>MSQ_MIN){
          //if not degenerate or inverted???
-       return_val=term1/(3*(pow(temp_vol_sqr,(1.0/3.0))));
+       return_val=3*(pow(temp_vol_sqr,(1.0/3.0)))/term1;
      }
      return return_val;
    }
@@ -98,6 +103,6 @@ namespace Mesquite
 } //namespace
 
 
-#endif // MeanRatioQualityMetric_hpp
+#endif // InverseMeanRatioQualityMetric_hpp
 
 

@@ -1,7 +1,8 @@
 /*!
   \file   AspectRatioGammaQualityMetric.cpp
-  \brief  
-
+   
+  \brief Evaluates the Aspect Ratio Gamma metric for two- and
+  three-diminsional simplicial elements.
   \author Michael Brewer
   \date   2002-05-09
 */
@@ -21,14 +22,7 @@ using namespace Mesquite;
 #undef __FUNC__
 #define __FUNC__ "AspectRatioGammaQualityMetric::evaluate_element"
 //note that we can define this metric for other element types?
-
-/*!File AspectRatioGammaQualityMetric.cpp
-  \brief evaluates the Aspect Ratio Gamma metric for two- and
-  three-diminsional 
-  elements
-*/
-
-
+//!Evaluate aspect ratio gamma on ``element''
 double AspectRatioGammaQualityMetric::evaluate_element(PatchData &pd,
                                                        MsqMeshEntity* element,
                                                        MsqError &err)

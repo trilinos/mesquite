@@ -1,7 +1,7 @@
 // -*- Mode : c++; tab-width: 3; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 3 -*-
 
 /*! \file AspectRatioGammaQualityMetric.hpp
-
+  \brief
   Header file for the Mesquite::AspectRatioGammaQualityMetric class
 
   \author Michael Brewer
@@ -19,18 +19,22 @@
 
 namespace Mesquite
 {
-   class MsqMeshEntity;
+     /*! \class AspectRatioGammaQualityMetric
+       \brief Object for computing the aspect ratio gamma of
+       simplicial elements.
+     */
    class AspectRatioGammaQualityMetric : public ShapeQualityMetric
    {
    public:
-       // The function create_new is used to create a shape quality metric
+       /*! The function create_new is used to create a shape quality metric.
+        */
      static ShapeQualityMetric* create_new()
         {
           ShapeQualityMetric* m = new AspectRatioGammaQualityMetric();
           return m;
         }
      
-       // virtual destructor ensures use of polymorphism during destruction
+       //! virtual destructor ensures use of polymorphism during destruction
      virtual ~AspectRatioGammaQualityMetric()
         {}
      
@@ -45,7 +49,8 @@ namespace Mesquite
           evalMode=QualityMetric::ELEMENT_VERTICES;
           set_name("Aspect Ratio Gamma");
         }
-     
+       //!Returns the aspect ratio gamma of element.  If element
+       //!is not a tetrahedron or triangle, sets an error.
      double evaluate_element(PatchData& pd,
                              MsqMeshEntity* element,
                              MsqError &err);

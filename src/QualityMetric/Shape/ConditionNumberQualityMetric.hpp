@@ -17,8 +17,7 @@ Header file for the Mesquite::ConditionNumberQualityMetric class
 #include "ShapeQualityMetric.hpp"
 #include "Vector3D.hpp"
 #include "PatchData.hpp"
-//Michael delete
-#include "MsqMessage.hpp"
+
 
 namespace Mesquite
 {
@@ -30,7 +29,7 @@ namespace Mesquite
    {
   public:
  
-       /*!Returns a poitner to a ShapeQualityMetric.  The metric
+       /*!Returns a pointer to a ShapeQualityMetric.  The metric
          does not use the sample point functionality or the
          compute_weighted_jacobian.  It evaluates the metric at
          the element vertices, and uses the isotropic ideal element.
