@@ -166,9 +166,9 @@ void NonSmoothSteepestDescent::compute_function(PatchData *patch_data, double *f
   }
   
   for (int i=0;i<numElements;i++) {
-    func[i] = currentQM->evaluate_element(*patch_data,
-                                          &(patch_data->element_by_index(i)),
-                                          err); MSQ_CHKERR(err);
+    currentQM->evaluate_element(*patch_data,
+                                &(patch_data->element_by_index(i)),
+                                func[i], err); MSQ_CHKERR(err);
     func[i] = 1.0/func[i];
     //    MSQ_DEBUG_ACTION(3,{fprintf(stdout,"  Function value[%d]=%g\n",i,func[i]);});
   }

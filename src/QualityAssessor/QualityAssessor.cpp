@@ -367,7 +367,7 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError &err)
               //if first pass or if two passes are required
             if(!num_pass||assessor_array[metric_counter]->maxHist>MSQ_MAX_CAP){
               
-              temp_val=assessor_array[metric_counter]->metric->evaluate_element(elem_group,&elems[element_counter],err);
+              assessor_array[metric_counter]->metric->evaluate_element(elem_group,&elems[element_counter], temp_val, err);
               
                 //if we are on the first loop over the mesh, calculate
                 //everything we can.  That is accumlate for
