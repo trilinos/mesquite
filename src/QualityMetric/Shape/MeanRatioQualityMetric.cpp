@@ -1485,20 +1485,20 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
   std::vector<size_t> v_i;
   e->get_vertex_indices(v_i);
 
-  static Vector3D coords[4];		// Vertex coordinates for the (decomposed) elements
-  static Vector3D gradients[32];	// Gradient of metric with respect to the coords
-  static Vector3D grad[8];		// Accumulated gradients (composed merit function)
-  static double   metrics[8];		// Metric values for the (decomposed) elements
+  Vector3D coords[4];		// Vertex coordinates for the (decomposed) elements
+  Vector3D gradients[32];	// Gradient of metric with respect to the coords
+  Vector3D grad[8];		// Accumulated gradients (composed merit function)
+  double   metrics[8];		// Metric values for the (decomposed) elements
   double   nm, t;
 
-  static int locs_hex[8][4] = {{0, 1, 3, 4},	// Hex element descriptions
-                               {1, 2, 0, 5},
-                               {2, 3, 1, 6},
-                               {3, 0, 2, 7},
-                               {4, 7, 5, 0},
-                               {5, 4, 6, 1},
-                               {6, 5, 7, 2},
-                               {7, 6, 4, 3}};
+  int locs_hex[8][4] = {{0, 1, 3, 4},	// Hex element descriptions
+                        {1, 2, 0, 5},
+                        {2, 3, 1, 6},
+                        {3, 0, 2, 7},
+                        {4, 7, 5, 0},
+                        {5, 4, 6, 1},
+                        {6, 5, 7, 2},
+                        {7, 6, 4, 3}};
   int i, j;
 
   m = 0.0;
@@ -1518,10 +1518,11 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 
     // This is not very efficient, but is one way to select correct gradients.
     // For gradients, info is returned only for free vertices, in the order of v[].
-    j = 0;
     for (i = 0; i < 4; ++i) {
-      if (vertices + v_i[i] == v[j]) {
-        g[j++] = grad[i];
+      for (j = 0; j < nv; ++j) {
+        if (vertices + v_i[i] == v[j]) {
+          g[j] = grad[i];
+        }
       }
     }
     break;
@@ -1706,20 +1707,20 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
   std::vector<size_t> v_i;
   e->get_vertex_indices(v_i);
 
-  static Vector3D coords[4];		// Vertex coordinates for the (decomposed) elements
-  static Vector3D gradients[32];	// Gradient of metric with respect to the coords
-  static Matrix3D hessians[80];	// Hessian of matrix with respect to the coords
-  static double   metrics[8];		// Metric values for the (decomposed) elements
+  Vector3D coords[4];		// Vertex coordinates for the (decomposed) elements
+  Vector3D gradients[32];	// Gradient of metric with respect to the coords
+  Matrix3D hessians[80];	// Hessian of matrix with respect to the coords
+  double   metrics[8];		// Metric values for the (decomposed) elements
   double   nm, t;
 
-  static int locs_hex[8][4] = {{0, 1, 3, 4},	// Hex element descriptions
-		               {1, 2, 0, 5},
-		               {2, 3, 1, 6},
-		               {3, 0, 2, 7},
-		               {4, 7, 5, 0},
-		               {5, 4, 6, 1},
-		               {6, 5, 7, 2},
-		               {7, 6, 4, 3}};
+  int locs_hex[8][4] = {{0, 1, 3, 4},	// Hex element descriptions
+                        {1, 2, 0, 5},
+                        {2, 3, 1, 6},
+                        {3, 0, 2, 7},
+                        {4, 7, 5, 0},
+                        {5, 4, 6, 1},
+                        {6, 5, 7, 2},
+                        {7, 6, 4, 3}};
   int i, j, k, l, ind;
   int r, c, loc;
 
@@ -1748,33 +1749,33 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
       else {
         g[i] = 0.;
 
-	switch(i) {
+        switch(i) {
         case 0:
-          h[0] = 0.0;
-	  h[1] = 0.0;
-	  h[2] = 0.0;
-	  h[3] = 0.0;
+          h[0] = 0.;
+          h[1] = 0.;
+          h[2] = 0.;
+          h[3] = 0.;
           break;
 
         case 1:
-	  h[1] = 0.0;
-	  h[4] = 0.0;
-	  h[5] = 0.0;
-	  h[6] = 0.0;
-	  break;
-
-	case 2:
-	  h[2] = 0.0;
-	  h[5] = 0.0;
-	  h[7] = 0.0;
-	  h[8] = 0.0;
+          h[1] = 0.;
+          h[4] = 0.;
+          h[5] = 0.;
+          h[6] = 0.;
           break;
 
-	case 3:
-	  h[3] = 0.0;
-	  h[6] = 0.0;
-          h[8] = 0.0;
-	  h[9] = 0.0;
+        case 2:
+          h[2] = 0.;
+          h[5] = 0.;
+          h[7] = 0.;
+          h[8] = 0.;
+          break;
+
+        case 3:
+          h[3] = 0.;
+          h[6] = 0.;
+          h[8] = 0.;
+          h[9] = 0.;
           break;
         }
       }
@@ -1937,15 +1938,57 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
       break;
     }
 
-    // zero out fixed elements of g
+    // zero out fixed elements of gradient and Hessian
     ind = 0;
     for (i=0; i<8; ++i) {
       // if free vertex, see next
       if ( vertices+v_i[i] == fv[ind] )
         ++ind;
-      // else zero gradient entry
-      else
+      // else zero gradient entry and hessian entries.
+      else {
         g[i] = 0.;
+        switch(i) {
+        case 0:
+          h[0]=0.;   h[1]=0.;   h[2]=0.;   h[3]=0.;
+          h[4]=0.;   h[5]=0.;   h[6]=0.;   h[7]=0.;
+          break;
+          
+        case 1:
+          h[1]=0.;   h[8]=0.;   h[9]=0.;   h[10]=0.;
+          h[11]=0.;  h[12]=0.;  h[13]=0.;  h[14]=0.;
+          break;
+          
+        case 2:
+          h[2]=0.;   h[9]=0.;   h[15]=0.;  h[16]=0.;
+          h[17]=0.;  h[18]=0.;  h[19]=0.;  h[20]=0.;
+          break;
+          
+        case 3:
+          h[3]=0.;   h[10]=0.;  h[16]=0.;  h[21]=0.;
+          h[22]=0.;  h[23]=0.;  h[24]=0.;  h[25]=0.;
+          break;
+          
+        case 4:
+          h[4]=0.;   h[11]=0.;  h[17]=0.;  h[22]=0.;
+          h[26]=0.;  h[27]=0.;  h[28]=0.;  h[29]=0.;
+          break;
+          
+        case 5:
+          h[5]=0.;   h[12]=0.;  h[18]=0.;  h[23]=0.;
+          h[27]=0.;  h[30]=0.;  h[31]=0.;  h[32]=0.;
+          break;
+          
+        case 6:
+          h[6]=0.;   h[13]=0.;  h[19]=0.;  h[24]=0.;
+          h[28]=0.;  h[31]=0.;  h[33]=0.;  h[34]=0.;
+          break;
+          
+        case 7:
+          h[7]=0.;   h[14]=0.;  h[20]=0.;  h[25]=0.;
+          h[29]=0.;  h[32]=0.;  h[34]=0.;  h[35]=0.;
+          break;
+        }
+      }
     }
 
     // Makes sure we zero the hessian blocks corresponding to fixed vertices. 
