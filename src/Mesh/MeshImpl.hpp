@@ -483,11 +483,12 @@ namespace Mesquite
       ~TagData();
     };
 
+    static size_t size_from_tag_type( TagType type );
+
     protected:
 
     std::vector<TagData*> tagList;
     TagData* tag_from_handle( TagHandle handle, MsqError& err );
-    static size_t size_from_tag_type( TagType type );
    
     class Vertex
     {
