@@ -111,8 +111,12 @@ namespace Mesquite
     for (size_t i=0; i<num_elements; ++i) {
       MsqTag* tag = elems[i].get_tag();
       size_t num_corners = elems[i].vertex_count();
-      for (size_t j=0; j<num_corners; ++j)     
-        assert( det(tag->target_matrix(0)) > 0 ); 
+      for (size_t j=0; j<num_corners; ++j) {    
+        if ( det(tag->target_matrix(j)) <= 0 ) {
+          err.set_msg("A Target matrix has a non-positive determinant. Please review your target calculator.");
+          return;
+        }
+      }
     }
     
     FUNCTION_TIMER_END();
