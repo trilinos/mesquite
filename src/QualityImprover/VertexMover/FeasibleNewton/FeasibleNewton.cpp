@@ -68,6 +68,8 @@ void FeasibleNewton::initialize_mesh_iteration(PatchData &/*pd*/, MsqError &/*er
 void FeasibleNewton::optimize_vertex_positions(PatchData &pd, 
                                                MsqError &err)
 {
+  pd.reorder();
+
   FUNCTION_TIMER_START(__FUNC__);
   PRINT_INFO("\no  Performing Feasible Newton optimization.\n");
 
@@ -79,8 +81,6 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   double original_value, new_value;
   double beta;
   
-  pd.reorder();
-
   int nv = pd.num_vertices();
   Vector3D* grad = new Vector3D[nv];
   Vector3D* d = new Vector3D[nv];
