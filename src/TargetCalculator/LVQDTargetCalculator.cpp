@@ -93,7 +93,7 @@ void LVQDTargetCalculator::compute_target_matrices(PatchData &pd, MsqError &err)
     compute_guide_matrices(guideDelta, ref_pd, i, D_guides, nve, err); MSQ_CHKERR(err);
 
     for (int c=0; c<nve; ++c) {
-      if (lambdaBase == REGULAR) Lambda = pow(fabs(det(L_guides[c])), 1/3);
+      if (lambdaBase == REGULAR) Lambda = compute_Lambda(L_guides[c], err);
       V = compute_V_3D(V_guides[c], err); MSQ_CHKERR(err);
       Q = compute_Q_3D(Q_guides[c], err); MSQ_CHKERR(err);
       Delta = compute_Delta_3D(D_guides[c], err); MSQ_CHKERR(err);

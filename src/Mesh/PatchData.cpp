@@ -189,7 +189,7 @@ double PatchData::get_average_Lambda_3d(MsqError &err)
       elementArray[i].compute_corner_matrices(*this, A, nve, err); MSQ_CHKERR(err);
       total_num_corners += nve;
       for (int c=0; c<nve; ++c)
-        avg += pow(fabs(det(A[c])), 1/3);
+        avg += TargetCalculator::compute_Lambda(A[c], err);
     }
 
     avg = avg / total_num_corners;

@@ -110,6 +110,7 @@ namespace Mesquite
     void compute_guide_matrices(enum guide_type type, PatchData &ref_pd, size_t elem_ind,
                                            Matrix3D A[], int num, MsqError &err);
 
+    static double compute_Lambda(const Matrix3D &A, MsqError &err);
     Matrix3D compute_V_3D(const Matrix3D &A, MsqError &err);
     Matrix3D compute_Q_3D(const Matrix3D &A, MsqError &err);
     Matrix3D compute_Delta_3D(const Matrix3D &A, MsqError &err);
@@ -171,9 +172,19 @@ namespace Mesquite
     hex_M3D = m4;
   }
 
-  //!
+
+#undef __FUNC__
+#define __FUNC__ "TargetCalculator::compute_Lambda"
+  //! Note that this function is static, i.e. it can be used independently of an object.
+  inline double TargetCalculator::compute_Lambda(const Matrix3D &A, MsqError &err)
+  {
+    return pow(fabs(det(A)), 1./3.);
+  }
+
+  
 #undef __FUNC__
 #define __FUNC__ "TargetCalculator::compute_V_3D"
+  //!
   inline  Matrix3D TargetCalculator::compute_V_3D(const Matrix3D &A, MsqError &err)
   {
     Vector3D a1(A[0][0], A[1][0], A[2][0]); 
@@ -199,9 +210,9 @@ namespace Mesquite
     return V;
   }
   
-  //!
 #undef __FUNC__
 #define __FUNC__ "TargetCalculator::compute_Q_3D"
+  //!
   inline  Matrix3D TargetCalculator::compute_Q_3D(const Matrix3D &A, MsqError &err)
   {
     Vector3D a1(A[0][0], A[1][0], A[2][0]); 
@@ -232,9 +243,9 @@ namespace Mesquite
     return Q;
   }
 
-  //!
 #undef __FUNC__
 #define __FUNC__ "TargetCalculator::compute_Delta_3D"
+  //!
   inline  Matrix3D TargetCalculator::compute_Delta_3D(const Matrix3D &A, MsqError &err)
   {
     double a1_norm = A.column_length(0); MSQ_CHECK_NULL(a1_norm);
