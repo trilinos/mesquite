@@ -88,7 +88,7 @@ double LPTemplate::concrete_evaluate(PatchData &patch, MsqError &err){
     }
   }
   double obj_val=compute_function(metric_values, total_num, err);
-  delete metric_values;
+  delete[] metric_values;
   return obj_val;
 }
 
