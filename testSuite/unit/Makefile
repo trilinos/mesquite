@@ -34,7 +34,8 @@ TEST_SRCS = sample_main.cpp \
     MsqVertexTest.cpp \
     MsqFreeVertexIndexIteratorTest.cpp \
     MsqHessianTest.cpp \
-    SphericalGeometryTest.cpp
+    SphericalGeometryTest.cpp \
+    PlanarGeometryTest.cpp
 
 TEST_OBJS = ${TEST_SRCS:.cpp=.o}
 
