@@ -368,7 +368,7 @@ inline bool g_fcn_3e(double &obj, Vector3D g_obj[4], const Vector3D x[4])
   g_obj[1][2] = adj_m[6] - loc3;
   g_obj[2][2] = 2.0*loc1 - loc2;
   g_obj[3][2] = 3.0*loc2;
-  return 0;
+  return true;
 }
 
 /*****************************************************************************/
@@ -1529,13 +1529,13 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
     coords[2] = vertices[v_i[2]];
     coords[3] = vertices[v_i[3]];
     if (!g_fcn_3e(m, gradients, coords)) return false;
-
+    
     // This is not very efficient, but is one way to select correct gradients
     for (i = 0; i < 4; ++i) {
       for (j = 0; j < nv; ++j) {
-	if (vertices + v_i[i] == v[j]) {
-	  g[j] = gradients[i];
-	}
+        if (vertices + v_i[i] == v[j]) {
+          g[j] = gradients[i];
+        }
       }
     }
     break;
@@ -1689,9 +1689,9 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
     // This is not very efficient, but is one way to select correct gradients
     for (i = 0; i < 8; ++i) {
       for (j = 0; j < nv; ++j) {
-	if (vertices + v_i[i] == v[j]) {
-	  g[j] = grad[i];
-	}
+        if (vertices + v_i[i] == v[j]) {
+          g[j] = grad[i];
+        }
       }
     }
     break;
@@ -1749,7 +1749,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
   switch(topo) {
   case TRIANGLE:
   case QUADRILATERAL:
-    std::cout << "Gradients in 2D not implemented yet.\n" << std::endl;
+    std::cout << "Hessians in 2D not implemented yet.\n" << std::endl;
     return false;
 
   case TETRAHEDRON:
@@ -1762,11 +1762,11 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     // This is not very efficient, but is one way to select correct gradients
     for (i = 0; i < 4; ++i) {
       for (j = 0; j < nv; ++j) {
-	if (vertices + v_i[i] == v[j]) {
-	  g[j] = gradients[i];
-
-	  // Do something with the hessians
-	}
+        if (vertices + v_i[i] == v[j]) {
+          g[j] = gradients[i];
+          
+          // Do something with the hessians
+        }
       }
     }
     break;
@@ -1775,7 +1775,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     // Hessians for hexes are not done yet.  Need to changes to fcn_3i, and
     // do the accumulation and calculation correctly.
 
-    err.set_msg("Hessian for hexes not done yet!  Talk to Tom.\n");
+    err.set_msg("Hessian for hexes not done yet!  Talk to Tom.\n"); return false;
     for (i = 0; i < 8; ++i) {
       grad[i] = 0.0;
 
