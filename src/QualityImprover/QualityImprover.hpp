@@ -18,7 +18,7 @@
 #include "StoppingCriterion.hpp"
 #include "PatchData.hpp"
 #include "MeshSet.hpp"
-
+#include "MsqMessage.hpp"
 namespace Mesquite
 {
 
@@ -98,8 +98,10 @@ namespace Mesquite
       err.set_msg("Stopping Criterion pointer is Null");
       return true;
     }
-    if(this->get_patch_type()==PatchData::GLOBAL_PATCH)
+    if(this->get_patch_type()==PatchData::GLOBAL_PATCH){
+      PRINT_INFO("_");
       inner_criterion_met=crit->stop(ms,err);
+    }
     else
       inner_criterion_met=0;
     return inner_criterion_met;
