@@ -42,7 +42,6 @@ Header file for the Mesquite::LVQDTargetCalculator class
 
 namespace Mesquite
 {
-  
   /*! \class LVQDTargetCalculator
     \brief This is an intermediary class.
     Concrete classes will simply instantiate the various guide enums in their constructor. 
@@ -61,6 +60,14 @@ namespace Mesquite
       {};
 
     virtual void compute_target_matrices(PatchData& pd, MsqError& err);
+      //! Function called by
+      //! compute_target_matrices(PatchData& pd, MsqError& err) to compute
+      //! the matrices after the reference PatchData has been created.
+      //! \todo Michael:  this function should be protected, but it is used in
+      //!  QualityMetricTest to avoid creating the MeshSet in the unit tests.
+    void compute_target_matrices(PatchData& pd, PatchData& ref_pd,
+                                 MsqError& err);
+
 
   protected:
     enum Lambda_type lambdaBase; 

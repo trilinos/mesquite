@@ -95,13 +95,14 @@ bool QualityMetric::compute_element_hessian(PatchData &pd,
   int i;
   v=elem_vtx_indices.begin();
   for (i=0; i<num_free_vtx; ++i) {
-    while ( *v != pd.get_vertex_index(free_vtces[i]) ) {
-      if ( v==elem_vtx_indices.end() ) {
-        MSQ_SETERR(err)("free vertices cannot be given in a different"
-                        "order than the element's.", MsqError::INTERNAL_ERROR);
-        return false;
-      }
-      else  ++v;
+    while ( v!=elem_vtx_indices.end() &&
+            *v != pd.get_vertex_index(free_vtces[i]) ) {
+      ++v;
+    }
+    if ( v==elem_vtx_indices.end() ) {
+      MSQ_SETERR(err)("free vertices cannot be given in a different"
+                      "order than the element's.", MsqError::INTERNAL_ERROR);
+      return false;
     }
   }
     

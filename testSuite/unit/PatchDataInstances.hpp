@@ -65,8 +65,12 @@ namespace Mesquite
   //! must be called in sync with create_...._patch_with_domain
   inline void destroy_patch_with_domain(PatchData &pd)
   {
-    delete pd.get_mesh_set()->get_domain_constraint();
-    delete pd.get_mesh_set();
+    if(pd.get_mesh_set()){
+      if( pd.get_mesh_set()->get_domain_constraint() )
+        delete pd.get_mesh_set()->get_domain_constraint();
+      delete pd.get_mesh_set();
+    }
+    
   }
   
   inline void create_patch_mesh( PatchData& pd,

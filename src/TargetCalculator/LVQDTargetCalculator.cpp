@@ -55,7 +55,11 @@ void LVQDTargetCalculator::compute_target_matrices(PatchData &pd, MsqError &err)
   PatchDataParameters ref_pd_params(*originator);
   ref_pd_params.no_target_calculator();
   refMesh->get_next_patch(ref_pd, ref_pd_params, err); MSQ_ERRRTN(err);
-  
+  compute_target_matrices(pd, ref_pd, err);
+}
+void LVQDTargetCalculator::compute_target_matrices(PatchData &pd,
+                                                   PatchData &ref_pd, MsqError &err)
+{
   // Make sure topology of ref_pd and pd are equal
   size_t num_elements=pd.num_elements();
   size_t num_vertices=pd.num_vertices();
