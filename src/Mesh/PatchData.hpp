@@ -355,8 +355,8 @@ namespace Mesquite
     */
     enum culling_method {
       NO_BOUNDARY_VTX = 1, /*!< removes vertices on the boundary. (i.e. with a TSTT tag "boundary"). */
-      CULL_METHOD_2 = 2,   /*!< no other culling method yet. */
-      CULL_METHOD_3 = 4,
+      NO_INTERIOR_VTX = 2,   /*!< removes vertices that are not on the boundary */
+      CULL_METHOD_3 = 4,/*!< no other culling method yet. */
       CULL_METHOD_4 = 8
     };
 

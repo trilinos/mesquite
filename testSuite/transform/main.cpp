@@ -93,7 +93,10 @@ int main(int argc, char* argv[])
   Matrix3D my_mat(array_entries);
   Vector3D my_vec(0, 0 , 10);
   MeshTransform my_transform(my_mat, my_vec, err);
+    //my_transform.add_culling_method(PatchData::NO_INTERIOR_VTX);
+    //my_transform.add_culling_method(PatchData::NO_BOUNDARY_VTX);
   if (err) return 1;
+    //mesh->write_exodus("original_mesh.exo", err);
   my_transform.loop_over_mesh(mesh_set1, err);
     //mesh->write_exodus("transformed_mesh.exo", err);
   mesh->write_vtk("transformed_mesh.vtk", err);

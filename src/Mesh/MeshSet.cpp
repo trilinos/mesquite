@@ -256,6 +256,11 @@ bool MeshSet::get_next_patch(PatchData &pd,
         {
             ++(*vertexIterator);
         }
+        else if ((culling_method_bits & PatchData::NO_INTERIOR_VTX)
+                 && (on_bnd==false))
+        {
+            ++(*vertexIterator);
+        }
           //otherwise we check to see if this vertex has been culled
         else{
             //get the fixed_bit_flag for the center vertex
@@ -295,9 +300,8 @@ bool MeshSet::get_next_patch(PatchData &pd,
         pd.numVertices = 1;
         pd.vertexHandlesArray[0]=vertex;
         pd.numElements = 0;
-        break;
+        return true;
       }
-      
           // Get the number of elements in this vertex
       size_t num_elems =
         (*currentMesh)->vertex_get_attached_element_count(vertex, err);
