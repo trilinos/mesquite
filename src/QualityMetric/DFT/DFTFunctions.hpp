@@ -312,8 +312,8 @@ namespace Mesquite
     /* Calculate the derivative of the objective function. */
     t4 = 1 + t1 / t3;
 
-    f = b * obj / f * 2.0;                /* Constant on nabla f */
-    g = c * obj / g * (1 + t1 / t2);      /* Constant on nabla g */
+    f = b * obj / f * 2.0;              /* Constant on nabla f */
+    g = c * obj / g * t4;		/* Constant on nabla g */
 
     dg[3] = matr[2]*matr[7] - matr[1]*matr[8];
     dg[4] = matr[0]*matr[8] - matr[2]*matr[6];
@@ -410,7 +410,7 @@ namespace Mesquite
     cross = f * c / loc4 * t4;		/* Constant on nabla g nabla f */
     f = f * (b - 1) / loc3 * 2.0;	/* Constant on nabla f nabla f */
     g = g *((c - 1) * t4 + delta*delta / t2) / loc4;
-                                       /* Constant on nabla g nabla g */
+                                     	/* Constant on nabla g nabla g */
 
     /* First block of rows */
     loc3 = matd[0]*f + dg[0]*cross;
@@ -1102,7 +1102,7 @@ namespace Mesquite
     t4 = 1 + t1 / t3;
 
     f = b * obj / f * 4.0;                /* Constant on nabla f */
-    g = c * obj / g * (1 + t1 / t2);      /* Constant on nabla g */
+    g = c * obj / g * t4;                 /* Constant on nabla g */
 
     df[0] = fmat[0]*matr[0] + fmat[1]*matr[3] + fmat[2]*matr[6];
     df[1] = fmat[0]*matr[1] + fmat[1]*matr[4] + fmat[2]*matr[7];
