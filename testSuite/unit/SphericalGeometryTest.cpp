@@ -125,18 +125,19 @@ public:
    void test_cg_mesh_cond_sphere()
    {
      Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
-     Mesquite::MsqPrintError err(cout); err;
+     Mesquite::MsqPrintError err(cout);
      mesh->read_vtk("../../meshFiles/2D/VTK/quads_on_sphere_529.vtk", err);
+     CPPUNIT_ASSERT(!err);
      
        // initialises a MeshSet object
      MeshSet mesh_set1;
-     mesh_set1.add_mesh(mesh, err); CPPUNIT_ASSERT(!err);
+     mesh_set1.add_mesh(mesh, err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
      
        //create geometry: sphere, center (2,2,0), radius 3
      Vector3D center(2,2,0);
-     SphericalDomain msq_geom(center, 3.0, mesh);
+     SphericalDomain msq_geom(center, 3.0);
      mesh_set1.set_domain_constraint(&msq_geom, err); CPPUNIT_ASSERT(!err);
      
        // creates an intruction queue
@@ -195,18 +196,18 @@ public:
    void test_smart_lapl_sphere()
      {
        Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
-       Mesquite::MsqPrintError err(cout); err;
+       Mesquite::MsqPrintError err(cout); 
        mesh->read_vtk("../../meshFiles/2D/VTK/quads_on_sphere_529.vtk", err);
         
          // initialises a MeshSet object
        MeshSet mesh_set1;
-       mesh_set1.add_mesh(mesh, err); CPPUNIT_ASSERT(!err);
+       mesh_set1.add_mesh(mesh, err); 
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
        
          //create geometry sphere:  ratius 1, centered at (0,0,0)
        Vector3D center(0,0,0);
-       Mesquite::SphericalDomain msq_geom(center, 1.0, mesh);
+       Mesquite::SphericalDomain msq_geom(center, 1.0);
         //Make sure no errors
        CPPUNIT_ASSERT(!err);
        mesh_set1.set_domain_constraint(&msq_geom, err); CPPUNIT_ASSERT(!err);
@@ -258,7 +259,7 @@ public:
   void test_lapl_geo_sphere()
      {
        Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
-       Mesquite::MsqPrintError err(cout); err;
+       Mesquite::MsqPrintError err(cout);
        
        mesh->read_vtk("../../meshFiles/2D/VTK/Mesquite_geo_10242.vtk", err);
        
@@ -270,7 +271,7 @@ public:
        
          //create geometry sphere:  ratius 1, centered at (0,0,0)
        Vector3D center(0,0,0);
-       Mesquite::SphericalDomain msq_geom(center, 1.0, mesh);
+       Mesquite::SphericalDomain msq_geom(center, 1.0);
         //Make sure no errors
        CPPUNIT_ASSERT(!err);
        mesh_set1.set_domain_constraint(&msq_geom, err); CPPUNIT_ASSERT(!err);
@@ -298,7 +299,7 @@ public:
          // sets a culling method on the laplacian quality improver
        lapl->add_culling_method(PatchData::NO_BOUNDARY_VTX);  
          //qa, qi, qa
-       queue1.set_master_quality_improver(lapl, err); CPPUNIT_ASSERT(!err);
+       queue1.set_master_quality_improver(lapl, err); 
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
          // launches optimization on mesh_set1

@@ -83,7 +83,7 @@ int main()
     //create geometry: plane z=0, normal (0,0,1)
   Vector3D pnt(0,0,0);
   Vector3D s_norm(0,0,1);
-  Mesquite::PlanarDomain msq_geom(s_norm, pnt, mesh);
+  Mesquite::PlanarDomain msq_geom(s_norm, pnt);
      
     //mesh->read_vtk("../../meshFiles/2D/VTK/cube-clip-corner.vtk", err);
   mesh->read_vtk("../../meshFiles/2D/VTK/hybrid_3quad_1tri.vtk", err);

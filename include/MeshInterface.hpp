@@ -442,7 +442,7 @@ namespace Mesquite
       //! The handle determines the domain.  The coordinate
       //! is the proposed new position on that domain.
     virtual void snap_to(Mesh::EntityHandle entity_handle,
-                         Vector3D &coordinate) = 0;
+                         Vector3D &coordinate) const = 0;
     
       //! Returns the normal of the domain to which
       //! "entity_handle" is constrained.  For non-planar surfaces,
@@ -458,7 +458,7 @@ namespace Mesquite
       //! User should see also PatchData::get_domain_normal_at_vertex and
       //! PatchData::get_domain_normal_at_element .
     virtual void normal_at(Mesh::EntityHandle entity_handle,
-                           Vector3D &coordinate) = 0;
+                           Vector3D &coordinate) const = 0;
   };
 }
 

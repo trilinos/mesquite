@@ -26,24 +26,25 @@
   ***************************************************************** */
 #include "PlanarDomain.hpp"
 
-void Mesquite::PlanarDomain::snap_to(Mesquite::Mesh::EntityHandle
-                                       /*entity_handle*/,
-                                     Vector3D &coordinate)
+void Mesquite::PlanarDomain::set_plane( const Mesquite::Vector3D& normal, 
+                                        const Mesquite::Vector3D& point)
 {
-  if (!mMesh)
-    return;
-  
-    //translate plane/point to pass through origin
-  coordinate -= mPoint;
-  
-  double len=(coordinate%mNormal);
-  coordinate += mPoint-(len*mNormal);
+  mNormal = normal;
+  mNormal.normalize();
+  mCoeff = -(mNormal % point);
+}
+
+void Mesquite::PlanarDomain::snap_to(Mesquite::Mesh::EntityHandle
+                                       entity_handle,
+                                     Vector3D &coordinate) const
+{
+  coordinate -= mNormal * ( mNormal % coordinate + mCoeff );
 }
 
 
 void Mesquite::PlanarDomain::normal_at(
   Mesquite::Mesh::EntityHandle /*entity_handle*/,
-  Vector3D &coordinate)
+  Mesquite::Vector3D &coordinate) const
 {
   coordinate = mNormal;
 }

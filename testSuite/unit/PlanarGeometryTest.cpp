@@ -120,7 +120,7 @@ public:
   
    void test_plane_tri_tangled()
    {
-     Mesquite::MsqPrintError err(cout); err;
+     Mesquite::MsqPrintError err(cout); 
      Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
      
      mesh->read_vtk("../../meshFiles/2D/VTK/tangled_tri.vtk", err);
@@ -135,7 +135,7 @@ public:
        //create geometry: plane z=5, normal (0,0,1)
      Vector3D pnt(0,0,5);
      Vector3D s_norm(0,0,1);
-     Mesquite::PlanarDomain msq_geom(s_norm, pnt, mesh);
+     Mesquite::PlanarDomain msq_geom(s_norm, pnt);
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
      mesh_set1.set_domain_constraint(&msq_geom, err); CPPUNIT_ASSERT(!err);
@@ -234,7 +234,7 @@ public:
   void test_plane_quad_tangled()
      {
        Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
-       MsqPrintError err(cout); err;
+       MsqPrintError err(cout); 
        mesh->read_vtk("../../meshFiles/2D/VTK/tangled_quad.vtk", err);
        
          // initialises a MeshSet object
@@ -245,7 +245,7 @@ public:
          //create geometry: plane z=5, normal (0,0,1)
        Vector3D pnt(0,0,5);
        Vector3D s_norm(0,0,1);
-       Mesquite::PlanarDomain msq_geom(s_norm, pnt, mesh);
+       Mesquite::PlanarDomain msq_geom(s_norm, pnt);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
        mesh_set1.set_domain_constraint(&msq_geom, err); CPPUNIT_ASSERT(!err);
@@ -343,7 +343,7 @@ public:
   
   void test_plane_tri_xz()
      {
-       MsqPrintError err(cout); err;
+       MsqPrintError err(cout); 
        Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
        mesh->read_vtk("../../meshFiles/2D/VTK/tri_5_xz.vtk", err);
        
@@ -355,7 +355,7 @@ public:
          //create geometry: plane y=5, normal (0,1,0)
        Vector3D pnt(0,-5,0);
        Vector3D s_norm(0,-1,0);
-       Mesquite::PlanarDomain msq_geom(s_norm, pnt, mesh);
+       Mesquite::PlanarDomain msq_geom(s_norm, pnt);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
        mesh_set1.set_domain_constraint(&msq_geom, err); CPPUNIT_ASSERT(!err);

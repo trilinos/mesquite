@@ -133,7 +133,7 @@ public:
       
       Vector3D pnt(0,-5,0);
       Vector3D s_norm(0, -1,0);
-      Mesquite::PlanarDomain msq_geom(s_norm, pnt, mesh);
+      Mesquite::PlanarDomain msq_geom(s_norm, pnt);
       mesh_set1.set_domain_constraint(&msq_geom, err); CPPUNIT_ASSERT(!err);
       
         // create an intruction queue        

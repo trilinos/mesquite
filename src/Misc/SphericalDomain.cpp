@@ -28,51 +28,37 @@
 #include "SphericalDomain.hpp"
 #include "Vector3D.hpp"
 
-// Currently only works if "entity_handle" refers to a vertex
+#ifdef HAVE_IEEEFP
+#  include <ieeefp.h>
+#endif
+
 void Mesquite::SphericalDomain::snap_to(Mesh::EntityHandle /*entity_handle*/,
-                                        Vector3D &coordinate)
+                                        Vector3D &coordinate) const
 {
-  if (!mMesh)
-  {
-    return;
-  }
-  
-    //translate sphere to origin
+    // Get vector center to coordinate, store in coordinate.
   coordinate -= mCenter;
-  
-    // Move point to the sphere surface
+    // Get distance from center of sphere
   double len = coordinate.length();
-  
-    // If it's not right at the center...
-  if (len > MSQ_MIN)
-    coordinate *= (mRadius / len);
-  
-    // Move it back off of the origin
+    // Scale vector to have length of radius
+  coordinate *= mRadius / len;
+    // If was at center, return arbitrary position on sphere
+    // (all possitions are equally close)
+  if (!finite(coordinate.x()))
+    coordinate.set( mRadius, 0.0, 0.0 );
+    // Get position from vector
   coordinate += mCenter;
 }
 
 void Mesquite::SphericalDomain::normal_at(Mesh::EntityHandle /*entity_handle*/,
-                                          Vector3D &coordinate)
+                                          Vector3D &coordinate) const
 {
-  if (!mMesh)
-  {
-    coordinate.set(0, 0, 0);
-    return;
-  }
-  
-    //translate sphere to origin
+    // normal is vector from center to input position
   coordinate -= mCenter;
-  
-    // See how far it is from the center of the sphere.
-  double len=coordinate.length();
-  if(len<MSQ_MIN)
-  {
-      // If it's right at the center...
-    coordinate.set(0, 0, 0);
-  }
-  else
-  {
-      // Otherwise normalize...
-    coordinate /= len;
-  }
+    // make it a unit vector
+  double length = coordinate.length();
+  coordinate /= length;
+    // if input position was at center, choose same position
+    // on sphere as snap_to.
+  if (!finite(coordinate.x()))
+    coordinate.set( 1.0, 0.0, 0.0 );
 }

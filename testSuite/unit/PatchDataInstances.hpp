@@ -227,7 +227,7 @@ namespace Mesquite
      MeshSet* mesh_set1 = new MeshSet;;
      Vector3D pnt(0,0,0);
      Vector3D s_norm(0,0,3);
-     PlanarDomain* msq_geom = new PlanarDomain(s_norm, pnt, NULL);
+     PlanarDomain* msq_geom = new PlanarDomain(s_norm, pnt);
      mesh_set1->set_domain_constraint(msq_geom, err); MSQ_CHKERR(err);
      one_tri_patch.set_mesh_set(mesh_set1);
 
@@ -304,7 +304,7 @@ namespace Mesquite
      MeshSet* mesh_set1 = new MeshSet;;
      Vector3D pnt(0,0,1);
      Vector3D s_norm(0,0,3);
-     PlanarDomain* msq_geom = new PlanarDomain(s_norm, pnt, NULL);
+     PlanarDomain* msq_geom = new PlanarDomain(s_norm, pnt);
      mesh_set1->set_domain_constraint(msq_geom, err); MSQ_CHKERR(err);
      pd.set_mesh_set(mesh_set1);
 
@@ -436,7 +436,7 @@ namespace Mesquite
      MeshSet* mesh_set1 = new MeshSet;;
      Vector3D pnt(0,0,0);
      Vector3D s_norm(0,0,3);
-     PlanarDomain* msq_geom = new PlanarDomain(s_norm, pnt, NULL);
+     PlanarDomain* msq_geom = new PlanarDomain(s_norm, pnt);
      mesh_set1->set_domain_constraint(msq_geom, err); MSQ_CHKERR(err);
      pd.set_mesh_set(mesh_set1);
 
@@ -691,7 +691,7 @@ namespace Mesquite
      MeshSet* mesh_set1 = new MeshSet;;
      Vector3D pnt(0,0,0);
      Vector3D s_norm(0,0,3);
-     PlanarDomain* msq_geom = new PlanarDomain(s_norm, pnt, NULL);
+     PlanarDomain* msq_geom = new PlanarDomain(s_norm, pnt);
      mesh_set1->set_domain_constraint(msq_geom, err); MSQ_CHKERR(err);
      triPatch.set_mesh_set(mesh_set1);
 
@@ -728,7 +728,7 @@ namespace Mesquite
      MeshSet* mesh_set1 = new MeshSet;;
      Vector3D pnt(0,0,0);
      Vector3D s_norm(0,0,3);
-     PlanarDomain* msq_geom = new PlanarDomain(s_norm, pnt, NULL);
+     PlanarDomain* msq_geom = new PlanarDomain(s_norm, pnt);
      mesh_set1->set_domain_constraint(msq_geom, err); MSQ_CHKERR(err);
      quadPatch.set_mesh_set(mesh_set1);
 

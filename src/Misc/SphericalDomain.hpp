@@ -39,8 +39,6 @@
 
 namespace Mesquite
 {
-  class Mesh;
-
   /*! \class SphericalDomain
        This is a template for a spherical domain.
        It will provide the normal information necessary for surface mesh optimization.
@@ -48,12 +46,8 @@ namespace Mesquite
   class SphericalDomain : public Mesquite::MeshDomain
   {
   public:
-    SphericalDomain(const Vector3D& center,
-                    double radius,
-                    Mesquite::Mesh* mesh)
-        : mCenter(center),
-          mRadius(radius),
-          mMesh(mesh)
+    SphericalDomain(const Vector3D& center, double radius )
+        : mCenter(center), mRadius(radius)
       {}
 
     virtual ~SphericalDomain() { }
@@ -63,22 +57,16 @@ namespace Mesquite
         mCenter = center;
         mRadius = radius;
       }
-
-    void set_mesh(Mesquite::Mesh* mesh)
-      {
-        mMesh = mesh;
-      }
     
     virtual void snap_to(Mesh::EntityHandle entity_handle,
-                         Vector3D &coordinate);
+                         Vector3D &coordinate) const;
     
     virtual void normal_at(Mesh::EntityHandle entity_handle,
-                           Vector3D &coordinate);
+                           Vector3D &coordinate) const;
 
   private:
     Vector3D mCenter;
     double mRadius;
-    Mesquite::Mesh* mMesh;
   };
 }
 

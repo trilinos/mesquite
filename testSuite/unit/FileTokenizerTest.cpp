@@ -178,7 +178,6 @@ public:
   {
     MsqPrintError err(cout);
     const char* const* t_iter = tokens;
-    bool b;
     
     FileTokenizer ft( make_file() );
     
