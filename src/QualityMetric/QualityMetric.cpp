@@ -3,6 +3,7 @@
   \brief  
 
   \author Michael Brewer
+  \author Thomas Leurent
   \date   2002-05-14
 */
 

@@ -5,6 +5,7 @@
 Header file for the Mesquite::QualityMetric class
 
   \author Thomas Leurent
+  \author Michael Brewer
   \date   2002-05-01
  */
 
