@@ -685,9 +685,7 @@ void PatchData::get_vertex_element_indices(size_t vertex_index,
     // Make sure we've got the data
   if (!v2eValid || !v2eOffset)
   {
-    err.set_msg("Vertex to element connectivity requested before "
-                "connectivity data was generated.");
-    return;
+    generate_vertex_to_element_data();
   }
   
     // Find the starting point for this vertex's data
