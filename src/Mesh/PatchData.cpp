@@ -84,6 +84,8 @@ PatchData::~PatchData()
 }
 
 
+#undef __FUNC__
+#define __FUNC__ "PatchData::get_minmax_element_unsigned_area" 
 void PatchData::get_minmax_element_unsigned_area(double& min, double& max, MsqError &err)
 {
   std::map<ComputedInfo, double>::iterator max_it;
@@ -114,36 +116,9 @@ void PatchData::get_minmax_element_unsigned_area(double& min, double& max, MsqEr
   return;
 }
 
-double PatchData::get_barrier_delta_2d(MsqError &err)
-{
-  std::map<ComputedInfo, double>::iterator delta_it;
-  delta_it = computedInfos.find(MINMAX_SIGNED_DET2D);
-  if ( delta_it != computedInfos.end() ) { // if a delta is already there
-    return delta_it->second;
-  }
-  else { // if there is no delta available.
-    double min= MSQ_DBL_MAX;
-    double max=-MSQ_DBL_MAX;
-    for (size_t i=0; i<numElements; ++i) {
-      double mindet2d, maxdet2d;
-      elementArray[i].compute_minmax_signed_corner_det2d(*this, mindet2d, maxdet2d, err);
-      MSQ_CHKERR(err);
-      min = mindet2d < min ? mindet2d : min;
-      max = maxdet2d > max ? maxdet2d : max;
-    }
-
-    if (max <= 0) {
-      err.set_msg("Sigma_max is not positive. Pathological Mesh.");
-    }
-
-    double delta=0;
-    if (min<=MSQ_MIN) delta=0.001 * max;
-    computedInfos.insert(std::pair<const ComputedInfo, double>(MINMAX_SIGNED_DET2D,delta));
-    return delta;
-  }
-}
-
-double PatchData::get_barrier_delta_3d(MsqError &err)
+#undef __FUNC__
+#define __FUNC__ "PatchData::get_barrier_delta" 
+double PatchData::get_barrier_delta(MsqError &err)
 {
   std::map<ComputedInfo, double>::iterator delta_it;
   delta_it = computedInfos.find(MINMAX_SIGNED_DET3D);
@@ -154,11 +129,14 @@ double PatchData::get_barrier_delta_3d(MsqError &err)
     double min= MSQ_DBL_MAX;
     double max=-MSQ_DBL_MAX;
     for (size_t i=0; i<numElements; ++i) {
-      double mindet3d, maxdet3d;
-      elementArray[i].compute_minmax_signed_corner_det3d(*this, mindet3d, maxdet3d, err);
+      Matrix3D A[MSQ_MAX_NUM_VERT_PER_ENT];
+      size_t nve = elementArray[i].vertex_count();
+      elementArray[i].compute_corner_matrices(*this, A, nve, err);
+      for (size_t j=0; j<nve; ++j) {
+        min = det(A[j]) < min ? det(A[j]) : min;
+        max = det(A[j]) > max ? det(A[j]) : max;
+      }
       MSQ_CHKERR(err);
-      min = mindet3d < min ? mindet3d : min;
-      max = maxdet3d > max ? maxdet3d : max;
     }
 
     if (max <= 0) {
@@ -173,6 +151,8 @@ double PatchData::get_barrier_delta_3d(MsqError &err)
 }
 
 
+#undef __FUNC__
+#define __FUNC__ "PatchData::get_average_Lambda_3d" 
 double PatchData::get_average_Lambda_3d(MsqError &err)
 {
   std::map<ComputedInfo, double>::iterator avg_it;

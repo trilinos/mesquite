@@ -106,15 +106,10 @@ namespace Mesquite
     //! when used properly. See also PatchData::clear_computed_info() .
     void get_minmax_element_unsigned_area(double& min, double& max, MsqError &err);
     
-    //! Returns delta based the minimum and maximum det2d over all elements in the patch
+    //! Returns delta based on the minimum and maximum corner determinant over all elements in the patch
     //! This information is stored in the patch and should not decrease performance
     //! when used properly. See also PatchData::clear_computed_info() .
-    double get_barrier_delta_2d(MsqError &err);
-
-    //! Returns delta based on the minimum and maximum det3d over all elements in the patch
-    //! This information is stored in the patch and should not decrease performance
-    //! when used properly. See also PatchData::clear_computed_info() .
-    double get_barrier_delta_3d(MsqError &err); 
+    double get_barrier_delta(MsqError &err); 
 
     //! Returns average corner determinant over all corners in the patch
     //! This information is stored in the patch and should not decrease performance

@@ -164,14 +164,6 @@ namespace Mesquite
       //!Computes the signed volume of the element.
     double compute_signed_volume(PatchData &pd, MsqError &err );
     
-      //!Computes the min and max signed corner determinants of a 2d element
-    void compute_minmax_signed_corner_det2d(PatchData &pd, 
-                double &dmin, double &dmax, MsqError &err );
-
-      //!Computes the min and max signed corner determinants of a 3d element
-    void compute_minmax_signed_corner_det3d(PatchData &pd, 
-                double &dmin, double &dmax, MsqError &err );
-
       //! Uses a MeshDomain call-back function to compute the normal at the corner.
     void compute_corner_normal(const size_t corner_pt, const Vector3D &corner_vec1,
                          const Vector3D &corner_vec2, Vector3D &normal,

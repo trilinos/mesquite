@@ -71,6 +71,9 @@ namespace Mesquite
     
   };
 
+  
+#undef __FUNC__
+#define __FUNC__ "DistanceFromTarget::compute_T_matrices" 
   inline void DistanceFromTarget::compute_T_matrices(MsqMeshEntity &elem, PatchData& pd,
                         Matrix3D T[], size_t num_T, double c_k[], MsqError &err)
   {    
@@ -96,10 +99,12 @@ namespace Mesquite
 
   /*! Returns the 
    */
+#undef __FUNC__
+#define __FUNC__ "DistanceFromTarget::get_barrier_function" 
   inline bool DistanceFromTarget::get_barrier_function(PatchData& pd, const double &tau, double &h, MsqError &err)
   { 
 
-     double delta=pd.get_barrier_delta_3d(err); 
+     double delta=pd.get_barrier_delta(err); 
      MSQ_CHKERR(err);
 
      // Note: technically, we want delta=eta*tau-max

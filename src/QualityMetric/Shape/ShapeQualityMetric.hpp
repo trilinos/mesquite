@@ -130,7 +130,7 @@ namespace Mesquite
      double temp_var=unit_surf_norm%(temp_vec[0]*temp_vec[1]);
 
      double h;
-     double delta=pd.get_barrier_delta_2d(err); 
+     double delta=pd.get_barrier_delta(err); 
      MSQ_CHKERR(err);
 
      // Note: technically, we want delta=eta*tau-max
@@ -207,7 +207,7 @@ namespace Mesquite
      double temp_var=temp_vec[0]%(temp_vec[1]*temp_vec[2]);
 
      double h;
-     double delta=pd.get_barrier_delta_3d(err); 
+     double delta=pd.get_barrier_delta(err); 
      MSQ_CHKERR(err);
 
      // Note: technically, we want delta=eta*tau-max
