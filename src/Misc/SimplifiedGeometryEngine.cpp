@@ -18,8 +18,8 @@ SimplifiedGeometryEngine::SimplifiedGeometryEngine()
 }
 
 
-//!Set the SimplifiedGeometryEngine to be a plane with surface normal
-//!'norm' and containing the point 'point'.
+/*!Set the SimplifiedGeometryEngine to be a plane with surface normal
+  'norm' and containing the point 'point'.*/
 void SimplifiedGeometryEngine::set_geometry_to_plane(Vector3D norm,
                                                      Vector3D point,
                                                      MsqError &err)
@@ -29,8 +29,8 @@ void SimplifiedGeometryEngine::set_geometry_to_plane(Vector3D norm,
   geomVec=norm;
 }
 
-//!Set the SimplifiedGeoemtryEngine to be a sperhe with radius 'rad' and
-//!center 'center'.
+/*!Set the SimplifiedGeoemtryEngine to be a sphere with radius 'rad' and
+  center 'center'.*/
 void SimplifiedGeometryEngine::set_geometry_to_sphere(Vector3D center,
                                                       double rad,
                                                       MsqError &err)

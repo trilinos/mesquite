@@ -49,10 +49,10 @@ void Mesquite::Message::print_timing_diagnostics()
   Mesquite::GlobalStopWatches.get_keys_sorted_by_time(sorted_keys);
   int number_of_keys=sorted_keys.size();
   int i =0;
-  std::cout<<"\nTIME     | NUM. STARTS | TIMER NAME ("<<number_of_keys<<" timers)\n";
+  std::cout<<"\nTIME        | NUM. STARTS | TIMER NAME ("<<number_of_keys<<" timers)\n";
   for(i=0;i<number_of_keys;++i){
     std::cout<<std::setiosflags(std::ios::left)
-             <<std::setw(10)
+             <<std::setw(13)
              <<Mesquite::GlobalStopWatches.total_time(sorted_keys[i])
              <<" "
              <<std::setw(13)
