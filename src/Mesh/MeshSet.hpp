@@ -144,7 +144,7 @@ namespace Mesquite
     void write_gnuplot(const char* out_filebase, MsqError &err);
     
     Mesh* get_current_mesh()
-      { return *currentMesh; }
+      { return meshSet.empty() ? 0 : *currentMesh; }
     
   private:
   

@@ -43,7 +43,7 @@ size_t CornerTagHandles::size( Mesh::TagType type )
 
 Mesh* CornerTagHandles::get_current_mesh( PatchData* pd )
 {
-  return pd->get_mesh_set()->get_current_mesh();
+  return pd->get_mesh_set() ? pd->get_mesh_set()->get_current_mesh() : 0;
 }
 
 TagHandle CornerTagHandles::get_handle( Mesh* mesh, unsigned corners, MsqError& err )
@@ -111,18 +111,24 @@ void CornerTagHandles::save_load_tags( bool load, PatchData* pd, void* data, siz
       // elements in [start,i) are the same type
     
       // Find the tag handle
-    TagHandle tag = get_handle( mesh, num_corners, err ); MSQ_ERRRTN(err);
+    TagHandle tag = mesh ? get_handle( mesh, num_corners, err ) : 0; MSQ_ERRRTN(err);
    
       // Read/write the data
     const unsigned count = i - start;
     const unsigned offset = pd->get_element_corner_offset(start);
     char* byte_ptr = reinterpret_cast<char*>(data) + offset * bytes;
     const Mesh::ElementHandle* handles = pd->get_element_handles_array() + start;
-    if (load)
-      mesh->tag_get_element_data( tag, count, handles, byte_ptr, err );
-    else
-      mesh->tag_set_element_data( tag, count, handles, byte_ptr, err );
-    MSQ_ERRRTN(err);
+
+      // Need to support local cached values w/out a mesh to store
+      // the tags on.  If there is no mesh, skip the save/load step.
+    if (mesh)
+    {
+      if (load)
+        mesh->tag_get_element_data( tag, count, handles, byte_ptr, err );
+      else
+        mesh->tag_set_element_data( tag, count, handles, byte_ptr, err );
+      MSQ_ERRRTN(err);
+    }
   }
 }
 
