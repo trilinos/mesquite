@@ -61,7 +61,7 @@ private:
     //run cg on the quad sphere mesh with condition number L2
   CPPUNIT_TEST (test_cg_mesh_cond_sphere);
     //run laplacian smoothing on the geo tri mesh
-  CPPUNIT_TEST (test_lapl_quad_shpere);
+  CPPUNIT_TEST (test_lapl_geo_sphere);
   
   CPPUNIT_TEST_SUITE_END();
   
@@ -157,7 +157,7 @@ public:
      CPPUNIT_ASSERT( (fin_qa_val-orig_qa_val) <= 0.0 );
    }
   
-  void test_lapl_quad_shpere()
+  void test_lapl_geo_sphere()
      {
        char file_name[128];
          /* Reads a TSTT Mesh file */
