@@ -23,6 +23,7 @@ LPTemplate::LPTemplate(QualityMetric *qualitymetric, int Pinput, MsqError &err){
     err.set_msg("P_VALUE must be greater than 1.");
   }
   set_feasible(qualitymetric->get_feasible_constraint());
+    //making LPTemplate default to Analytical_gradient
   set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
   set_negate_flag(qualitymetric->get_negate_flag());
 }
