@@ -40,7 +40,11 @@ class MsqVertexTest : public CppUnit::TestFixture
 
 private:
   CPPUNIT_TEST_SUITE(MsqVertexTest);
-  CPPUNIT_TEST (test_);
+  CPPUNIT_TEST (test_flags);
+  CPPUNIT_TEST (test_compute_weigted_jacobian_ideal_tri);
+  CPPUNIT_TEST (test_compute_weigted_jacobian_ideal_quad);
+  CPPUNIT_TEST (test_compute_weigted_jacobian_ideal_tet);
+  CPPUNIT_TEST (test_compute_weigted_jacobian_ideal_hex);
   CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -233,7 +237,7 @@ public:
     MsqError err;
     //determinate of jacobs
     double deter;
-    MsqVertex* hex = one_hex_patch.get_element_array(err); MSQ_CHKERR(err);
+    MsqMeshEntity* hex = one_hex_patch.get_element_array(err); MSQ_CHKERR(err);
     // get the ideal tets sample points 
     std::vector<Vector3D> sample_points;
     hex->get_sample_points(QualityMetric::ELEMENT_VERTICES, sample_points, err); MSQ_CHKERR(err);
@@ -271,7 +275,7 @@ public:
     MsqError err;
       //determinate of jacobs
     double deter;
-    MsqVertex* tet = one_tet_patch.get_element_array(err); MSQ_CHKERR(err);
+    MsqMeshEntity* tet = one_tet_patch.get_element_array(err); MSQ_CHKERR(err);
       // get the ideal tets sample points 
     std::vector<Vector3D> sample_points;
     tet->get_sample_points(QualityMetric::ELEMENT_VERTICES, sample_points, err); MSQ_CHKERR(err);
@@ -307,7 +311,7 @@ void test_compute_weigted_jacobian_ideal_quad()
     MsqError err;
       //determinate of jacobs
     double deter;
-    MsqVertex* quad = one_qua_patch.get_element_array(err); MSQ_CHKERR(err);
+    MsqMeshEntity* quad = one_qua_patch.get_element_array(err); MSQ_CHKERR(err);
     // get the ideal quads sample points 
     std::vector<Vector3D> sample_points;
     quad->get_sample_points(QualityMetric::ELEMENT_VERTICES, sample_points, err); MSQ_CHKERR(err);
@@ -341,7 +345,7 @@ void test_compute_weigted_jacobian_ideal_tri()
     MsqError err;
       //determinate of jacobs
     double deter;
-    MsqVertex* tri = one_tri_patch.get_element_array(err); MSQ_CHKERR(err);
+    MsqMeshEntity* tri = one_tri_patch.get_element_array(err); MSQ_CHKERR(err);
     // get the ideal tris sample points 
     std::vector<Vector3D> sample_points;
     tri->get_sample_points(QualityMetric::ELEMENT_VERTICES, sample_points, err); MSQ_CHKERR(err);
@@ -367,8 +371,14 @@ void test_compute_weigted_jacobian_ideal_tri()
       ++counter;
     }
     CPPUNIT_ASSERT(counter==3);
-    
   }
+
+   void test_flags()
+   {
+      MsqVertex vtx(1,2,3);
+      vtx.set_hard_fixed_flag();
+      CPPUNIT_ASSERT( vtx.is_flag_set(MsqVertex::MSQ_HARD_FIXED)==true );
+   }
 };
 
 

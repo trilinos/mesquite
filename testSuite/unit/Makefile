@@ -26,6 +26,7 @@ TEST_SRCS = sample_main.cpp \
     QualityMetricTest.cpp \
     ObjectiveFunctionTest.cpp \
     MeshSetTest.cpp \
+    MsqVertexTest.cpp \
     MsqFreeVertexIndexIteratorTest.cpp
 
 TEST_OBJS = ${TEST_SRCS:.cpp=.o}
