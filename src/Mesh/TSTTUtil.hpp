@@ -51,6 +51,10 @@ sidl::array<T> convert_to_sidl_vector( T* array, size_t size )
   return result;
 }
 
+template <class T> static inline
+T* convert_from_sidl_vector( sidl::array<T>& array )
+{  return reinterpret_cast<T*>(array._get_ior()->d_firstElement); }
+
 } // namespace Mesquite
 
 #endif

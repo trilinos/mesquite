@@ -94,7 +94,7 @@ namespace Mesquite
      * If \ref set_active_set is not called on resulting object,
      * will default to the ENTIRE mesh.
      * \param mesh     The TSTTM mesh instance
-     * \param meshset  The mesh to improve (elements and vertices)
+     * \param meshset  The mesh to improve (elements).
      */
     static MeshTSTT* create( TSTTM::Mesh& mesh, void* meshset, MsqError& err );
     
@@ -113,7 +113,7 @@ namespace Mesquite
        *       is to use the global set (the ENTIRE mesh.)
        *
        *\param element_set TSTT entity set handle for set containing
-       *                  mesh elements and vertices for which quality 
+       *                  mesh elementsfor which quality 
        *                  is to be improved.
        */
     virtual void set_active_set( void* element_set,  MsqError&  ) = 0;

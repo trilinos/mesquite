@@ -45,8 +45,10 @@
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 # include <map.h>
+# include <set.h>
 #else
 # include <map>
+# include <set>
 #endif
 
 #define OPAQUE_TYPE_OPAQUE_PADDED 0
@@ -597,6 +599,9 @@ void TSTTArrIter::operator++()
         
     void set_int_tag( void* tag, void* meshset, int value, MsqError& err );
 
+    /** Populate \ref inputElements from \ref elemetnSet */
+    void popupate_input_elements( ) throw( TSTT::Error );
+
   private:
       /** \brief Set tag values */
     void tag_set_data ( TagHandle handle,
@@ -631,6 +636,19 @@ void TSTTArrIter::operator++()
     void* elementSet;
     /** TSTTM entity set handle for nodes to move */
     void* nodeSet;
+    /** std::set containing elements in elementSet, used
+     *  to constrain vertex->element adjaceny queries to
+     *  only those elements that are in the input element set.
+     */
+    msq_std::set<void*> inputElements;
+    
+    /** The type of elements contained in the input element set.
+     * Should be one of:
+     * - TSTTM::EntityType_REGION    - volume elements
+     * - TSTTM::EntityType_FACE      - face/2d elements
+     * - TSTTM::EntityType_ALL_TYPES - mixed volume and face elements
+     */
+    TSTTM::EntityType inputSetType;
     
     /** Handle for tag used to hold vertex byte */
     TagHandle byteTag; 
@@ -647,6 +665,15 @@ void TSTTArrIter::operator++()
     
     /** Map TSTTM::EntityTopology to Mesquite::EntityTopology */
     EntityTopology topologyMap[TSTTM::EntityTopology_ALL_TOPOLOGIES+1];
+    
+    /** Cached result for vertex->element query */
+    sidl::array<void*> vertexAdjElements;
+    /** Number of valid entries \ref vertexAdjElements */
+    int vertexAdjElementSize;
+    /** Vertex for which \ref vertexAdjElements is cached */
+    void* cachedAdjVertex;
+    /** Get elements adjacent to vertex and store in \ref vertexAdjElements */
+    void cache_adjacent_elements( void* vertex_handle, MsqError& err );
  };
 
 /*************************************************************************
@@ -687,8 +714,10 @@ MeshTSTT::~MeshTSTT() {}
 MeshTSTTImpl::MeshTSTTImpl(TSTTM::Mesh& tstt_mesh, Mesquite::MsqError& err) 
   : meshIFace(tstt_mesh), 
     elementSet(0), nodeSet(0), 
+    inputSetType( TSTTM::EntityType_ALL_TYPES ),
     byteTag(0), createdByteTag(false),
-    fixedTag(0), createdFixedTag(false)
+    fixedTag(0), createdFixedTag(false),
+    vertexAdjElementSize(0), cachedAdjVertex(0)
 //    ,vertexIndexTag(0), createdVertexIndexTag(false)
 {
     // Initialize topology map 
@@ -925,10 +954,12 @@ void MeshTSTTImpl::set_active_set( void* elem_set, MsqError& err )
     setIFace.createEntSet( false, nodeSet );
     
       // Iterate over set twice, once for FACEs and once for REGIONs
+    bool have_faces = false, have_regions = false;
     for (int i = 0; i < 2; ++i)
     {
       TSTTM::EntityType type = i ? TSTTM::EntityType_REGION : 
                                    TSTTM::EntityType_FACE;
+      bool& have_some = i ? have_regions : have_faces;
                                    
       arrIFace.initEntArrIter( elem_set, 
                                type, 
@@ -949,13 +980,21 @@ void MeshTSTTImpl::set_active_set( void* elem_set, MsqError& err )
         arrIFace.getEntArrAdj( elements, count, TSTTM::EntityType_VERTEX,
                                nodes, num_nodes, offsets, num_offsets );
         setIFace.addEntArrToSet( nodes, num_nodes, nodeSet );
-      
+        
+        have_some = true;
       } while (more);
         
       arrIFace.endEntArrIter( iter );
       iter = 0;
       
     } // for (type)
+    
+    if (!have_faces)
+      inputSetType = TSTTM::EntityType_REGION;
+    else if (!have_regions)
+      inputSetType = TSTTM::EntityType_FACE;
+    else
+      inputSetType = TSTTM::EntityType_ALL_TYPES;
     
     //set_fixed_tag( nodeSet, false, err ); MSQ_ERRRTN(err);
   }
@@ -989,7 +1028,39 @@ void MeshTSTTImpl::set_active_set( void* elem_set, MsqError& err )
     MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
   }
 }
+
+void MeshTSTTImpl::popupate_input_elements( ) throw( TSTT::Error )
+{
+  const int ELEM_BUFFER_SIZE = 1024;
+  void* handle_array[ELEM_BUFFER_SIZE];
+  sidl::array<void*> handles = convert_to_sidl_vector( handle_array, ELEM_BUFFER_SIZE );
+  void* iter;
+ 
+  inputElements.clear();
+ 
+  arrIFace.initEntArrIter( elementSet, 
+                           TSTTM::EntityType_ALL_TYPES, 
+                           TSTTM::EntityTopology_ALL_TOPOLOGIES,
+                           ELEM_BUFFER_SIZE, 
+                           iter );
       
+  int count = 0;
+  bool more = false;
+  do {
+      // Add elements to element set
+    more = arrIFace.getEntArrNextIter( iter, handles, count );
+    if (!count) break;
+    setIFace.addEntArrToSet( handles, count, elementSet );
+
+    void** const end_ptr = handle_array + count;
+    for (void** ptr = handle_array; ptr != end_ptr; ++ptr)
+      inputElements.insert( *ptr );
+
+  } while (more);
+
+  arrIFace.endEntArrIter( iter );
+} 
+
   
 
 // Returns whether this mesh lies in a 2D or 3D coordinate system.
@@ -1283,6 +1354,64 @@ void MeshTSTTImpl::vertices_get_byte(
 
 //**************** Vertex Topology *****************
 
+void MeshTSTTImpl::cache_adjacent_elements( void* vtx, MsqError& err )
+{
+    // If already have data cached for this vertex, just return
+  if (vtx == cachedAdjVertex)
+    return;
+  
+    // make sure to clear this so that if we fail in the middle,
+    // we don't end up with invlaid cache data for the prev vertex.
+  cachedAdjVertex = 0;
+  vertexAdjElementSize = 0;
+  
+  try {
+      // First try using current array size
+    bool success;
+    try {
+      entIFace.getEntAdj( vtx, inputSetType, vertexAdjElements, vertexAdjElementSize );
+      success = true;
+    } 
+    catch( ... ) {
+      success = false;
+    }
+  
+    // If failed, try again and let implementation allocate storage
+    if (!success) {
+      vertexAdjElements = sidl::array<void*>();
+      entIFace.getEntAdj( vtx, inputSetType, vertexAdjElements, vertexAdjElementSize );
+    }
+    
+      // Store which vertex we have cached adj data for
+    cachedAdjVertex = vtx;
+
+      // We need to use inputElements.  Fill it if it hasn't
+      // been filled yet.
+    if (inputElements.empty())
+      popupate_input_elements();
+  }
+  catch(::TSTT::Error &tstt_err) {
+    MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
+    return;
+  }
+  
+    // Remove from list any elements not in the input set
+  void** write_ptr = convert_from_sidl_vector( vertexAdjElements );
+  void** const end_ptr = write_ptr + vertexAdjElementSize;
+  for (void** read_ptr = write_ptr; read_ptr != end_ptr; ++read_ptr)
+  {
+    if (inputElements.find( *read_ptr ) != inputElements.end())
+    {
+      *write_ptr = *read_ptr;
+      ++write_ptr;
+    }
+  }
+  
+  vertexAdjElementSize = write_ptr - convert_from_sidl_vector( vertexAdjElements );
+}
+    
+    
+
 
 // Gets the number of elements attached to this vertex.
 // Useful to determine how large the "elem_array" parameter
@@ -1290,17 +1419,8 @@ void MeshTSTTImpl::vertices_get_byte(
 size_t MeshTSTTImpl::vertex_get_attached_element_count(
   VertexHandle vertex, MsqError &err)
 {
-  try {
-    sidl::array<void*> junk1, junk2;
-    int face_size = 0, region_size = 0;
-    entIFace.getEntAdj( vertex, TSTTM::EntityType_FACE, junk1, face_size );
-    entIFace.getEntAdj( vertex, TSTTM::EntityType_REGION, junk2, region_size );
-    return face_size + region_size;
-  }
-  catch(::TSTT::Error &tstt_err) {
-    MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
-    return 0;
-  }
+  cache_adjacent_elements( vertex, err ); MSQ_ERRZERO(err);
+  return vertexAdjElementSize;
 }
 
 // Gets the elements attached to this vertex.
@@ -1309,22 +1429,15 @@ void MeshTSTTImpl::vertex_get_attached_elements(
   ElementHandle* elem_array,
   size_t sizeof_elem_array, MsqError &err)
 {
-  try {
-    sidl::array<void*> elem_wrapper;
-    int face_size = 0, region_size = 0;
-
-    elem_wrapper = convert_to_sidl_vector( elem_array, sizeof_elem_array );
-    entIFace.getEntAdj( vertex, TSTTM::EntityType_FACE, elem_wrapper, face_size );
-    
-    if (sizeof_elem_array - face_size > 0) {
-      elem_wrapper = convert_to_sidl_vector( elem_array + face_size,
-                                             sizeof_elem_array - face_size );
-      entIFace.getEntAdj( vertex, TSTTM::EntityType_REGION, elem_wrapper, region_size );
-    }
+  cache_adjacent_elements( vertex, err ); MSQ_ERRRTN(err);
+  if (sizeof_elem_array < (unsigned)vertexAdjElementSize) {
+    MSQ_SETERR(err)("Insufficient space in array.", MsqError::INVALID_ARG);
+    return;
   }
-  catch(::TSTT::Error &tstt_err) {
-    MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
-  }
+  
+  assert( sizeof(ElementHandle) == sizeof(void*) );
+  void** array = convert_from_sidl_vector( vertexAdjElements );
+  memcpy( elem_array, array, vertexAdjElementSize * sizeof(void*) );
 }
 
 
