@@ -53,8 +53,38 @@ AC_SUBST(SET_MAKE)
 AC_PROG_RANLIB
 AC_SUBST(RANLIB)
 
-AC_PROG_MAKEDEPEND
+# Checks for Makedepend (can be passed in as option).
+AC_ARG_WITH(makedepend,
+    [Location of alternative makedepend program:
+  --with-makedepend=EXECUTABLE
+                          The location of makedepend.
+                          Give the full path:
+                              --with-makedepend='/usr/local/bin/makedepend' ],
+    , [with_makedepend=yes])
+
+case "$with_makedepend" in
+    no)
+	# no check for makedepend
+	AC_MSG_WARN([No makedepend given. Will not generate Makefile dependencies for your installation ... or please use --with-makedepend=[path] option.])
+        ;;
+    yes)
+        # search for it ourselves
+	AC_CHECK_PROG(MAKEDEPEND, makedepend, makedepend, nomakedepend, $PATH, :)dnl
+        ;;
+    *)
+	# Checks path given by user. 
+        MAKEDEPEND="$with_makedepend"
+	AC_CHECK_PROG(MAKEDEPEND, "$with_makedepend", "$with_makedepend", nomakedepend, :)dnl
+        ;;
+esac
+
+#  print a warning if none found.
+if test "$MAKEDEPEND" = nomakedepend ; then
+   AC_MSG_WARN([Needs makedepend to generate dependencies for your installation.])
+   AC_MSG_ERROR([Must use --with-makedepend='/PATH/makedepend'.])
+fi
 AC_SUBST(MAKEDEPEND)
+
 
 # source tree vars
 CURRDIR=`pwd`
@@ -222,7 +252,7 @@ AC_ARG_WITH(aomd,
 case "$with_aomd" in
     no)
         # lUser input error
-        with_aomd=_no
+        with_aomd=no
         ;;
     yes)
         #  User didn't give the option or didn't give useful
@@ -248,9 +278,8 @@ if test "$with_aomd" = _searching ; then
     AC_MSG_RESULT([Cannot find AOMD root directory.])
     AC_MSG_ERROR([Please install it and/or use --with-aomd=AOMD_ROOT.])
 fi
-if test ! "$with_aomd" = _no ; then
+if test ! "$with_aomd" = no ; then
   AC_MSG_CHECKING([for AOMD])
-  break
   if test ! -f "$with_aomd/Trellis/AOMD/include/AOMD.h" ; then
       AC_MSG_RESULT([No Trellis/AOMD/include/AOMD.h in $with_aomd.])
       AC_MSG_ERROR([Please install a correct AOMD directory.])
