@@ -51,7 +51,7 @@ void LaplacianSmoother::optimize_vertex_positions(PatchData &pd,
   
   // gets the array of coordinates for the patch and print it 
   MsqVertex *patch_coords = pd.get_vertex_array(err); MSQ_CHKERR(err);
-  for (size_t i=0; i<num_local_vertices; i++) 
+    //for (size_t i=0; i<num_local_vertices; i++) 
       //cout << "vertex " << i << " : " << patch_coords[i];
   // does the dumb Laplacian smoothing
   centroid_smooth_mesh(num_local_vertices-1, &patch_coords[1],
