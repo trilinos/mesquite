@@ -5,7 +5,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 18-Dec-02 at 11:08:22
-//  LAST-MOD: 23-Jan-03 at 11:51:03 by Thomas Leurent
+//  LAST-MOD: 23-Jan-03 at 14:57:44 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -151,7 +151,8 @@ namespace Mesquite
     friend Vector3D operator*(const Matrix3D  &A, const Vector3D &x);
     friend Vector3D operator*(const Vector3D &x, const Matrix3D  &A);
     Matrix3D& operator+=(const Matrix3D &rhs);
-    Matrix3D plus_transpose(const Matrix3D &B);
+    Matrix3D plus_transpose(const Matrix3D &B) const;
+    Matrix3D& plus_transpose_equal(const Matrix3D &B);
     void fill_lower_triangle();
     
     size_t num_rows() const { return 3; }
@@ -275,7 +276,7 @@ namespace Mesquite
       return *this;
   }
 
-  inline Matrix3D Matrix3D::plus_transpose(const Matrix3D &B)
+  inline Matrix3D Matrix3D::plus_transpose(const Matrix3D &B) const
   {
     Matrix3D tmp;
     size_t i;
@@ -285,6 +286,17 @@ namespace Mesquite
       tmp[i][2] = v_[3*i+2] + B[2][i];
     }
     return tmp;
+  }
+
+  inline Matrix3D& Matrix3D::plus_transpose_equal(const Matrix3D &B)
+  {
+    size_t i;
+    for (i=0; i<3; ++i) {
+      (*this)[i][0] = v_[3*i+0] + B[0][i];
+      (*this)[i][1] = v_[3*i+1] + B[1][i];
+      (*this)[i][2] = v_[3*i+2] + B[2][i];
+    }
+    return *this;
   }
 
   inline void Matrix3D::fill_lower_triangle()

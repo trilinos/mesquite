@@ -5,7 +5,7 @@
 //    E-MAIL: tmunson@mcs.anl.gov
 //
 // ORIG-DATE:  2-Jan-03 at 11:02:19 bu Thomas Leurent
-//  LAST-MOD: 22-Jan-03 at 17:55:18 by Thomas Leurent
+//  LAST-MOD: 23-Jan-03 at 16:21:09 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -98,20 +98,21 @@ namespace Mesquite
       res[i] = y[i];
    
     for (i = 0; i < nn; ++i) {
-      rl = H.mRowStart[i+1] - H.mRowStart[i]; 
+      rl = H.mRowStart[i+1] - H.mRowStart[i];
       e = H.mRowStart[i];
       if (rl) {
        
         // Diagonal entry
-        res[i] += H.mEntries[e++]*x[i];
-        assert(*col == i); // dbg
+        res[i] += H.mEntries[e]*x[i]; 
+        ++e;
+        assert(*col == i);
 
         //Non-diagonal entries
         for (j = 1; j < rl; ++j) {
           c = *(++col);
-         
           res[i] += H.mEntries[e] * x[c];
           res[c] += transpose(H.mEntries[e]) * x[i];
+          ++e;
         }
         ++col;
       }

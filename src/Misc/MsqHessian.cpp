@@ -5,7 +5,7 @@
 //    E-MAIL: tmunson@mcs.anl.gov
 //
 // ORIG-DATE:  2-Jan-03 at 11:02:19 by Thomas Leurent
-//  LAST-MOD: 22-Jan-03 at 17:56:42 by Thomas Leurent
+//  LAST-MOD: 23-Jan-03 at 15:13:30 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -46,7 +46,7 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
   size_t num_vertices = pd.num_vertices();
   size_t num_elements = pd.num_elements();
   std::vector<size_t> vtx_list;
-  size_t e, r, rs, re, c, cs, ce, nz, nnz, nv, nve, i, j;
+  size_t e, r, rs, re, c, cs, ce, nz, nnz, nve, i, j;
   MsqMeshEntity* element_array = pd.get_element_array(err); MSQ_CHKERR(err);
 
   if (num_vertices == 0) {
@@ -62,7 +62,6 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
   size_t* col_start = new size_t[num_vertices + 1];
   mAccumElemStart = new size_t[num_elements+1];
   mAccumElemStart[0] = 0;
-  nv = 0;
   
   for (i = 0; i < num_vertices; ++i) {
     col_start[i] = 0;
@@ -71,8 +70,7 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
   for (e = 0; e < num_elements; ++e) {
     nve = element_array[e].vertex_count();
     element_array[e].get_vertex_indices(vtx_list);
-    nv+=nve;
-    mAccumElemStart[e+1] = nv;
+    mAccumElemStart[e+1] = mAccumElemStart[e] + (nve+1)*nve/2;
     
     for (i = 0; i < nve; ++i) {
       r = vtx_list[i];
@@ -98,11 +96,6 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
   }
   col_start[i] = nz;
 
-  cout << "col_start: ";
-  for (int t=0; t<num_vertices+1; ++t)
-    cout << col_start[t] << " ";
-  cout << endl;
-  
   // Finished putting matrix into CSC representation
 
   int* row_instr = new int[5*nz];
@@ -141,18 +134,18 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
   col_start[1] = col_start[0];
   col_start[0] = 0;
 
-  cout << "col_start: ";
-  for (int t=0; t<num_vertices+1; ++t)
-    cout << col_start[t] << " ";
-  cout << endl;
-  cout << "row_index: ";
-  for (int t=0; t<nz; ++t)
-    cout << row_index[t] << " ";
-  cout << endl;
-  cout << "row_instr: ";
-  for (int t=0; t<nz; ++t)
-    cout << row_instr[t] << " ";
-  cout << endl;
+//   cout << "col_start: ";
+//   for (int t=0; t<num_vertices+1; ++t)
+//     cout << col_start[t] << " ";
+//   cout << endl;
+//   cout << "row_index: ";
+//   for (int t=0; t<nz; ++t)
+//     cout << row_index[t] << " ";
+//   cout << endl;
+//   cout << "row_instr: ";
+//   for (int t=0; t<nz; ++t)
+//     cout << row_instr[t] << " ";
+//   cout << endl;
   
   
   // Convert CSC to CSR
@@ -281,7 +274,10 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
   delete [] row_start;
   delete [] col_index;
 
-  mEntries = new Matrix3D[nnz];
+  mEntries = new Matrix3D[nnz](0.);
+
+  origin_pd = &pd;
+  
   return;
 }
 
@@ -329,10 +325,10 @@ void MsqHessian::get_diagonal_blocks(std::vector<Matrix3D> &diag, MsqError &err)
 
   int e = mAccumElemStart[elem_index];
   for (i=0; i<nb_mat3d; ++i) {
-    if (mEntries[e] >= 0)
-      mEntries[e] += mat3d_array[i];
+    if (mAccumulation[e] >= 0)
+      mEntries[mAccumulation[e]] += mat3d_array[i];
     else
-      mEntries[e].plus_transpose(mat3d_array[i]);
+      mEntries[-mAccumulation[e]].plus_transpose_equal(mat3d_array[i]);
     ++e;
   }
 
