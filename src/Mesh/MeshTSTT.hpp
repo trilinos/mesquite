@@ -117,15 +117,6 @@ namespace Mesquite
                                               ElementHandle* elem_array,
                                               size_t sizeof_elem_array);
     
-      // Identifies the elements attached to this vertex by returning
-      // each element's global index.  The element's global index indicates
-      // where that element can be found in the array returned by
-      // Mesh::get_all_elements.
-    virtual void vertex_get_attached_element_indices(
-      VertexHandle vertex,
-      size_t *index_array,
-      size_t sizeof_index_array);
-    
 //*************** Element Topology *************
     
       // Gets the number of vertices in this element.
@@ -205,22 +196,28 @@ namespace Mesquite
     virtual void release();
 
   private:
-    TSTT::TSTT_ModifiableType1Mesh* tsttMesh;
+    ::TSTT::TSTT_ModifiableType1Mesh* tsttMesh;
     size_t nbVertices;
     size_t nbElements;
 
-    TSTT::EntityType elementType; //!< Whether the mesh elements are
+    ::TSTT::EntityType elementType; //!< Whether the mesh elements are
                                    //!< regions (3D) or faces (2D)
     
     TagHandle fixedVertexTag;
     TagHandle boundaryVertexTag;
     TagHandle vertexByteTag;
     
-    SIDL::array<void*> oneEntity; // array has one entry only for now.
-    SIDL::array<void*> oneTagValue; // array has one entry only for now.
-    SIDL::array<double> threeDoubles; // array has one entry only for now.
-    
-  };
+    ::SIDL::array<EntityHandle> oneEntity; //!< array has one entry only.
+    ::SIDL::array<TagHandle> oneTagValue; //!< array has one entry only.
+    ::SIDL::array<int32_t> oneInt; //!< array has one entry only.
+    ::SIDL::array<double> threeDoubles; //!< array has 3 entries only..
+
+    //! This array usually has size 0 when passed to TSTT functions with size 0. 
+    ::SIDL::array<EntityHandle> cachedAdjEntArray;
+    ::SIDL::array<int32_t> adjCsrPt;
+    ::SIDL::array<int32_t> adjCsrDat;
+    EntityHandle cachedVertex;
+ };
 }
 
 #endif

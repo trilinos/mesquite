@@ -72,6 +72,34 @@ namespace
                                      // set to NULL if the end of the mesh is reached. 
   };
 
+  
+#undef __FUNC__
+#define __FUNC__ "::mesquite_equivalent_topology"
+  inline Mesquite::EntityTopology mesquite_equivalent_topology(
+                                     const TSTT::EntityTopology &topo,
+                                     MsqError &err)
+  {
+    switch(topo) {
+    case TSTT::TRIANGLE:
+      return Mesquite::TRIANGLE;
+    case TSTT::QUADRILATERAL:
+      return Mesquite::QUADRILATERAL;
+    case TSTT::TETRAHEDRON:
+      return Mesquite::TETRAHEDRON;
+    case TSTT::HEXAHEDRON:
+      return Mesquite::HEXAHEDRON;
+    case TSTT::PRISM:
+      return Mesquite::PRISM;
+    case TSTT::PYRAMID:
+      return Mesquite::PYRAMID;
+    default:
+      err.set_msg("Topology unsufficiently defined. "
+                  "Cannot convert to a Mesquite Topology");
+    }
+    return nve; 
+  }
+
+  
 #define PRINT_TSTT_ERROR(tstt_err) { \
     PRINT_INFO("TSTT interface error"); \
     PRINT_INFO(tstt_err.getNote()); \
@@ -83,7 +111,9 @@ namespace
 Mesquite::MeshTSTT::MeshTSTT(TSTT::TSTT_ModifiableType1Mesh* tstt_mesh,
                        MsqError& err) 
   : tsttMesh(tstt_mesh),
-    elementType(TSTT::ALL_TYPES)
+    elementType(TSTT::ALL_TYPES),
+    cachedVertex(NULL)
+  
 {
   try {
     std::string fixed_tag("fixed");
@@ -92,6 +122,7 @@ Mesquite::MeshTSTT::MeshTSTT(TSTT::TSTT_ModifiableType1Mesh* tstt_mesh,
     boundaryVertexTag = tstt_mesh->TSTT::tagGetHandle(boundary_tag);
     oneEntity.create1d(1);
     oneTagValue.create1d(1);
+    oneInt.create1d(1);
     threeDoubles.create1d(3);
 
     // Associates a vertex byte flag to all vertices in the mesh.
@@ -133,6 +164,8 @@ int Mesquite::MeshTSTT::get_geometric_dimension() const
 }
     
 // Returns the number of vertices.
+#undef __FUNC__
+#define __FUNC__ "MeshTSTT::get_total_vertex_count" 
 size_t Mesquite::MeshTSTT::get_total_vertex_count(MsqError &/*err*/) const
 {
   int32_t nv=0;
@@ -148,6 +181,8 @@ size_t Mesquite::MeshTSTT::get_total_vertex_count(MsqError &/*err*/) const
 }
 
 //! Returns the number of regions or number of faces if there are no regions.
+#undef __FUNC__
+#define __FUNC__ "MeshTSTT::get_total_element_count" 
 size_t Mesquite::MeshTSTT::get_total_element_count(MsqError &err) const
 {
   int32_t ne=0;
@@ -501,62 +536,63 @@ void Mesquite::MeshTSTT::vertices_get_byte(
 size_t Mesquite::MeshTSTT::vertex_get_attached_element_count(
   Mesquite::Mesh::VertexHandle vertex) const
 {
-  const_cast<Mesquite::MeshTSTT*>(this)->create_vertex_to_element_data();
-  
-  size_t i = reinterpret_cast<MeshTSTT::Vertex*>(vertex) - vertexArray;
-  return v2eOffset[i+1] - v2eOffset[i];
+  try {
+    oneEntity.set(0, vertex);
+    adj_ent_array.create1d(0);
+    tsttMesh->TSTT::entityGetAdjacencies(oneEntity, elementType,
+                                         adjEntArray,
+                                         adjCsrPt, adjCsrDat);
+    cachedVertex = vertex;
+  }
+  catch(::TSTT::Error &tstt_err) {
+    PRINT_TSTT_ERROR(tstt_err);
+  }
+
+  return static_cast<size_t>(adjEntArray.size());
 }
 
 // Gets the elements attached to this vertex.
+#undef __FUNC__
+#define __FUNC__ "MeshTSTT::vertex_get_attached_elements" 
 void Mesquite::MeshTSTT::vertex_get_attached_elements(
   Mesquite::Mesh::VertexHandle vertex,
   Mesquite::Mesh::ElementHandle* elem_array,
-  size_t sizeof_elem_array)
+  size_t sizeof_elem_array, MsqError &err)
 {
-  create_vertex_to_element_data();
-  
-  size_t index = reinterpret_cast<MeshTSTT::Vertex*>(vertex) - vertexArray;
-  
-  if (sizeof_elem_array > v2eOffset[index+1] - v2eOffset[index])
-    sizeof_elem_array = v2eOffset[index+1] - v2eOffset[index];
-  
-  for ( ; sizeof_elem_array--; )
-  {
-    elem_array[sizeof_elem_array] =
-      elementArray + v2E[v2eOffset[index] + sizeof_elem_array];
+  // check that adjacencies are cached
+  if (vertex != cachedVertex) {
+    err.set_msg("argument vertex different from latest call to "
+                "vertex_get_attached_element_count. "
+                "Cannot use cached data.");
+    return;
+  }
+  // Checks that cached array will fit.
+  if (sizeof_elem_array != static_cast<size_t>(adjEntArray.size())) {
+    err.set_msg("elem_array is not the right size. "
+                "Use vertex_get_attached_element_count first.");
+    return;
+  }
+
+  // fills up array from previously cached array. 
+  for (size_t i=0; i<sizeof_elem_array; ++i) {
+    elem_array[i] = cachedAdjEntArray.get(i);
   }
 }
 
-// Identifies the elements attached to this vertex by returning
-// each element's global index.  The element's global index indicates
-// where that element can be found in the array returned by
-// Mesh::get_all_elements.
-void Mesquite::MeshTSTT::vertex_get_attached_element_indices(
-  Mesquite::Mesh::VertexHandle vertex,
-  size_t *index_array,
-  size_t sizeof_index_array)
-{
-  create_vertex_to_element_data();
-  
-  size_t index = reinterpret_cast<MeshTSTT::Vertex*>(vertex) - vertexArray;
-  if (sizeof_index_array > v2eOffset[index+1] - v2eOffset[index])
-    sizeof_index_array = v2eOffset[index+1] - v2eOffset[index];
-  
-  for ( ; sizeof_index_array--; )
-  {
-    index_array[sizeof_index_array] =
-      v2E[v2eOffset[index] + sizeof_index_array];
-  }
-}
 
 // Gets the number of vertices in this element.
 // This data can also be found by querying the
 // element's topology and getting the number
 // of vertices per element for that topology type.
+#undef __FUNC__
+#define __FUNC__ "MeshTSTT::element_get_attached_vertex_count" 
 size_t Mesquite::MeshTSTT::element_get_attached_vertex_count(
-  Mesquite::Mesh::ElementHandle elem) const
+  Mesquite::Mesh::ElementHandle elem,
+  MsqError &err) const
 {
-  return Mesquite::vertices_in_topology(reinterpret_cast<MeshTSTT::Element*>(elem)->mType);
+  Mesquite::EntityTopology topo_msq;
+  this->element_get_topology(elem, err); MSQ_CHKERR(err);
+  return vertex_count(topo_msq);
 }
 
 // Returns the vertices that are part of the topological definition of each
@@ -599,56 +635,38 @@ void Mesquite::MeshTSTT::elements_get_attached_vertices(
   size_t &sizeof_vert_handles,
   size_t *csr_data,
   size_t &sizeof_csr_data,
-  size_t *csr_offsets)
+  size_t *csr_offsets,
+  MsqError &err)
 {
   if (num_elems == 0)
     return;
-  
-  size_t total_verts = 0;
-  csr_offsets[0] = 0;
-  
-    // for each element
-  for (size_t i = 0; i < num_elems; i++)
-  {
-    MeshTSTT::Element* elem =
-      reinterpret_cast<MeshTSTT::Element*>(elem_handles[i]);
-    size_t verts_in_elem = Mesquite::vertices_in_topology(elem->mType);
-    csr_offsets[i+1] = csr_offsets[i] + verts_in_elem;
 
-      // Make sure we've got enough room in csr_data
-    if (sizeof_csr_data < csr_offsets[i+1])
-        // Error!!!
-      return;
-    
-      // for each vertex in this element
-    for (size_t j = 0; j < verts_in_elem; j++)
-    {
-        // Get the index for this vertex
-      size_t vert_index = elem->vertexIndices[j];
-      size_t new_vert_index = newVertIndices[vert_index];
-      if (new_vert_index == 0)
-      {
-        new_vert_index = newVertIndices[vert_index] = ++total_verts;
-        if (total_verts > sizeof_vert_handles) // ERROR!!!
-          return;
-        vert_handles[total_verts-1] =
-          reinterpret_cast<Mesquite::Mesh::VertexHandle>(vertexArray+vert_index);
-      }
-      
-        // Place that vertex into the csr_data array
-      csr_data[csr_offsets[i] + j] = new_vert_index-1;
-    }
+  try {
+    // Creating borrowed SIDL arrays with arrays passed as arguments.
+    int32_t lower= 0;
+    int32_t stride = 1;
+    int32_t upper = num_elems-1;
+    ::SIDL::array<void*> elem_handles_b;
+    elem_handles_b.borrow(elem_handles, 1, &lower, &upper, &stride);
+    upper = sizeof_vert_handles-1;
+    ::SIDL::array<void*> vert_handles_b;
+    vert_handles_b.borrow(vert_handles, 1, &lower, &upper, &stride);
+    upper = sizeof_csr_data-1;
+    ::SIDL::array<int32_t> csr_data_b;
+    csr_data_b.borrow(csr_data, 1, &lower, &upper, &stride);
+    upper = num_elems;
+    ::SIDL::array<int32_t> elem_handles_b;
+    csr_offsets_b.borrow(csr_offsets, 1, &lower, &upper, &stride);
+
+    tsttMesh->TSTT::entityGetAdjacencies(elem_handles_b, ::TSTT::VERTEX,
+                                         vert_handles_b, csr_offsets_b,
+                                         csr_data_b);
+  }
+  catch(::TSTT::Error &tstt_err) {
+    PRINT_TSTT_ERROR(tstt_err);
   }
   
-    // Set the amount of data we are returning
-  sizeof_csr_data = csr_offsets[num_elems];
-  sizeof_vert_handles = total_verts;
   
-    // Set newVertIndices back to 0
-  for ( ; total_verts--; )
-  {
-    newVertIndices[reinterpret_cast<Mesquite::MeshTSTT::Vertex*>(vert_handles[total_verts]) - vertexArray] = 0;
-  }
 }
 
 // Identifies the vertices attached to this element by returning
@@ -675,9 +693,19 @@ void Mesquite::MeshTSTT::element_get_attached_vertex_indices(
 
 // Returns the topology of the given entity.
 Mesquite::EntityTopology Mesquite::MeshTSTT::element_get_topology(
-  Mesquite::Mesh::ElementHandle entity_handle)
+  Mesquite::Mesh::ElementHandle entity_handle, MsqError &err)
 {
-  return reinterpret_cast<MeshTSTT::Element*>(entity_handle)->mType;
+  Mesquite::EntityTopology topo_msq;
+  try {
+    oneEntity.set(0, elem);
+    tsttMesh->TSTT::entityGetTopology(oneEntity, oneInt);
+    TSTT::EntityTopology topo_tstt = oneInt.get(0);
+    topo_msq = mesquite_equivalent_topology(topo_tstt, err); MSQ_CHKERR(err);
+  }
+  catch(::TSTT::Error &tstt_err) {
+    PRINT_TSTT_ERROR(tstt_err);
+  }
+  return topo_msq;
 }
 
 // Returns the topologies of the given entities.  The "entity_topologies"
