@@ -8,7 +8,7 @@
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 13-Jan-03 at 09:05:56
-//  LAST-MOD: 23-Jan-03 at 16:13:56 by Thomas Leurent
+//  LAST-MOD: 19-Feb-03 at 15:33:43 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -43,6 +43,7 @@ private:
   CPPUNIT_TEST_SUITE(MsqHessianTest);
   CPPUNIT_TEST (test_initialize);
   CPPUNIT_TEST (test_axpy);
+  CPPUNIT_TEST (test_cg_solver);
   CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -103,6 +104,7 @@ public:
     Vector3D* res = new Vector3D[hs];
     Vector3D* x = new Vector3D[hs];
     Vector3D* y = new Vector3D[hs];
+    Vector3D* ans = new Vector3D[hs];
 
     Matrix3D blocks[6]; // 6 blocks correspond to a triangular element (n+!)n/2 .
 
@@ -135,7 +137,6 @@ public:
 
     axpy(res, hs, *this, x, hs, y, hs, err); MSQ_CHKERR(err);
 
-    Vector3D* ans = new Vector3D[hs];
     ans[0].set(636, 635, 453);
     ans[1].set(365, 460, 461);
     ans[2].set(150, 199, 220);
@@ -159,8 +160,69 @@ public:
 
     for (int i=0; i<hs; ++i)
       CPPUNIT_ASSERT( res[i] == ans[i] );
+
+    delete[] res;
+    delete[] x;
+    delete[] y;
+    delete[] ans;
   }
 
+  
+  void test_cg_solver()
+  {
+    MsqError err;
+    
+    MsqHessian::initialize(twoTriangles, err); MSQ_CHKERR(err);
+
+    int hs = MsqHessian::size();
+
+    Vector3D* res = new Vector3D[hs];
+    Vector3D* x = new Vector3D[hs];
+    Vector3D* y = new Vector3D[hs];
+    Vector3D* ans = new Vector3D[hs];
+
+    Matrix3D blocks[6]; // 6 blocks correspond to a triangular element (n+!)n/2 .
+
+    blocks[0] = "14 4 7   4 15 7   7 7 13 ";
+    blocks[1] = "4 8 7   3 5 7   1 2 3 ";
+    blocks[2] = "4 4 7   6 5 9   1 8 5 ";
+    blocks[3] = "14 4 2   4 15 3   2 3 13 ";
+    blocks[4] = "2 4 7   3 2 7   1 4 3 ";
+    blocks[5] = "18 4 9   4 15 7   9 7 13 ";
+
+    accumulate_entries(twoTriangles, 0, blocks, err); MSQ_CHKERR(err);
+
+    blocks[2] -= blocks[5];
+    blocks[5] = blocks[3];
+    
+    accumulate_entries(twoTriangles, 1, blocks, err); MSQ_CHKERR(err);
+        
+    y[0].set(3, 2, 6);
+    y[1].set(1, 2, 4);
+    y[2].set(3, 6, 9);
+    y[3].set(2, 4, 4);
+
+    cg_solver(x, y, err); MSQ_CHKERR(err);
+
+//     for (int i=0; i<4; ++i) 
+//       cout << x[i];
+    
+    ans[0].set(3.2338, 7.6431, -7.0735);
+    ans[1].set(-1.0068, 4.5520, -4.6628);
+    ans[2].set(-0.4361, 4.7640, -8.1006);
+    ans[3].set(-0.1218, -0.8817, -4.5571);
+
+    for (int i=0; i<hs; ++i)
+      for (int j=0; j<3; ++j)
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(x[i][j], ans[i][j], 10e-1);
+
+    delete[] res;
+    delete[] x;
+    delete[] y;
+    delete[] ans;    
+          
+  }
+  
 };
 
 
