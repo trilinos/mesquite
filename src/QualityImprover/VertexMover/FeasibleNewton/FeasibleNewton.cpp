@@ -197,11 +197,14 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
       }
     });
 
-    // checks stopping criterion (recomputes the gradient at current position)
-    // TODO : get gradient from hessian computation.
-    fn_bool = objFunc->compute_hessian(pd, mHessian, err); MSQ_CHKERR(err);    
+    // checks stopping criterion 
+    // (gradient has been recomputed at current position in line search)
     inner_criterion=term_crit->terminate_with_function_and_gradient(pd,
                                objFunc, new_value, grad, err);  MSQ_CHKERR(err);
+
+    // if more Newton steps ahead, recomputes the Hessian.
+    if (!inner_criterion)
+      objFunc->compute_hessian(pd, mHessian, err); MSQ_CHKERR(err);
   }
 
   delete[] grad;
