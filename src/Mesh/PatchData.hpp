@@ -26,7 +26,7 @@
 #include "MsqVertex.hpp"
 #include "MsqMeshEntity.hpp"
 #include "MesquiteError.hpp"
-
+#include "SimplifiedGeometryEngine.hpp"
 // this has to be down here or it screws up MeshSet.hpp
 #ifndef MESQUITE_PATCHDATA_HPP
 #define MESQUITE_PATCHDATA_HPP
@@ -213,6 +213,20 @@ namespace Mesquite
       CULL_METHOD_4 = 8
     };
 
+      //set the geometry information (i.e, simplifiedEngine and mGeom)
+    void set_geometry_information(GeometryEngine ge,
+                                  SimplifiedGeometryEngine* msq_geom)
+      {
+        
+        mGeom=ge;
+        simplifiedEngine=msq_geom;
+      }
+    GeometryEngine get_geometry_engine_type()
+      {
+        return mGeom;
+      }
+    
+    
   private:
 
     struct EntityEntry
@@ -249,6 +263,10 @@ namespace Mesquite
       // Links from vertices to elements
     size_t *elemsInVertex;
     size_t *vertexToElemOffset;
+
+      //geometry information
+    GeometryEngine mGeom;
+    SimplifiedGeometryEngine* simplifiedEngine;
   };
 
 

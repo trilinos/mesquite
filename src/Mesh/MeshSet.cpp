@@ -29,7 +29,9 @@ using namespace Mesquite;
 
 MeshSet::MeshSet() :
   spaceDim(0),
-  fixedVertexTagName("fixed")
+  fixedVertexTagName("fixed"),
+  mGeom(NONE),
+  simplifiedEngine(NULL)
 {
   currentMesh = meshSet.begin();
   currentVertex = verticesSet.begin();
@@ -83,6 +85,15 @@ void MeshSet::reset(MsqError& /*err*/)
 }
 
 
+#undef __FUNC__
+#define __FUNC__ "MeshSet::set_simplified_geometry_engine"
+void MeshSet::set_simplified_geometry_engine(SimplifiedGeometryEngine* eng)
+{
+  mGeom = MSQ_DEFINED;
+  simplifiedEngine = eng;
+}
+
+  
 /*! \fn MeshSet::get_next_vertices_set(MsqError &err)
 
     This function is usually called by MeshSet::get_next_patch().
@@ -169,7 +180,10 @@ bool MeshSet::get_next_patch(PatchData &pd, PatchDataParameters &pd_params, MsqE
   TSTT::MeshError tstt_err=0;
   PatchData::PatchType patch_type = pd_params.get_patch_type();
   long unsigned int culling_method_bits = pd_params.get_culling_method_bits();
-
+    //pass the geometry information needed
+  pd.set_geometry_information(mGeom,simplifiedEngine);
+  
+  
   // *************************************************
   // get the next vertices set from the TSTT interface.
   // This could also be replaced by a TSTT iterator.

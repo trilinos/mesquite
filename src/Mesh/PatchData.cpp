@@ -29,6 +29,7 @@ PatchData::PatchData()
     vertexToElemOffset(NULL)
 {}
 
+
 // // copy function used in copy constructor and assignement
 // #undef __FUNC__
 // #define __FUNC__ "PatchData::copy" 
@@ -673,33 +674,42 @@ void PatchData::get_subpatch(size_t center_vertex_index,
 //! Adjust the position of the specified vertex so that it
 //! lies on its constraining domain.  The actual domain constraint
 //! is managed by the TSTT mesh implementation
-void PatchData::snap_vertex_to_domain(size_t /*vertex_index*/, MsqError &/*err*/)
+void PatchData::snap_vertex_to_domain(size_t vertex_index, MsqError &err)
 {
-    //geometry for Mesquite_geo grids
-    /*
-  double len = vertexArray[vertex_index].length();
-  vertexArray[vertex_index][0]/=len;
-  vertexArray[vertex_index][1]/=len;
-  vertexArray[vertex_index][2]/=len;
-    */
-    //geometry for z = 5 plane
-    //vertexArray[vertex_index][2]=5.0;
+  switch (mGeom){
+    case TSTT_DEFINED:
+      err.set_msg("TSTT interface for geometry has not be defined.");
+      break;
+    case MSQ_DEFINED:
+      simplifiedEngine->snap_vertex_to_domain(&vertexArray[vertex_index],err);
+      break;
+    case NONE:
+      break;
+    default:
+      err.set_msg("Unrecognized GeometryEngine in snap_vertex_to_domain.");
+  };
 }
 
 /*! Gives the normal to the surface which 'owns'  the vertex given by
   vertex_index*/
-void PatchData::get_surface_normal(size_t /*vertex_index*/,
-                                   Vector3D &/*surf_norm*/,
-                                   MsqError &/*err*/){
-    //normal for z= const
-    //surf_norm.set(0.0,0.0,1.0);
-    //Normal for unit sphere
-    /*
-  double len = vertexArray[vertex_index].length();
-  surf_norm[0]=vertexArray[vertex_index][0]/len;
-  surf_norm[1]=vertexArray[vertex_index][1]/len;
-  surf_norm[2]=vertexArray[vertex_index][2]/len;
-    */
+void PatchData::get_surface_normal(size_t vertex_index,
+                                   Vector3D &surf_norm,
+                                   MsqError &err){
+
+  switch (mGeom){
+    case TSTT_DEFINED:
+      err.set_msg("TSTT interface for geometry has not be defined.");
+      break;
+    case MSQ_DEFINED:
+      simplifiedEngine->get_surface_normal(&vertexArray[vertex_index],
+                                           surf_norm,
+                                           err);
+      break;
+    case NONE:
+      break;
+    default:
+      err.set_msg("Unrecognized GeometryEngine in get_surface_normal");
+  };
 }
 
   

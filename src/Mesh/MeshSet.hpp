@@ -27,6 +27,8 @@
 #include "PatchData.hpp"
 #include "PatchDataUser.hpp"
 
+#include "SimplifiedGeometryEngine.hpp"
+
 #include "TSTT_Base.h"
 
 
@@ -85,7 +87,10 @@ namespace Mesquite
     bool get_next_patch(PatchData &pd, PatchDataParameters &pd_params, MsqError &err);
 
     //! Resets MeshSet object, but keeps the mesh handles added with add_mesh().
-    void reset(MsqError &err);
+    void reset(MsqError &err);   
+    
+    void set_simplified_geometry_engine(SimplifiedGeometryEngine* eng);
+    
     
     struct EntityEntry
     {
@@ -109,6 +114,11 @@ namespace Mesquite
     //! TSTT::FACE or TSTT::REGION.
     //! Must be the same for all meshes added with add_mesh().
     enum TSTT::EntityType elementType;
+      //!GeometryEngine defines where (if any place) the geometry is stored
+    GeometryEngine mGeom;
+      //!IF geom is a SimplifiedGeometryEngine, store a pointer to it.
+    SimplifiedGeometryEngine *simplifiedEngine;
+    
   };
 
 
