@@ -31,7 +31,7 @@ describe main.cpp here
 
 
 #include "Mesquite.hpp"
-#include "TSTT_Base.h"
+#include "MeshImpl.hpp"
 #include "MesquiteUtilities.hpp" //  for writeShowMeMesh()
 #include "MesquiteError.hpp"
 #include "Vector3D.hpp"
@@ -51,30 +51,26 @@ using namespace Mesquite;
 
 int main()
 {     
-  /* Reads a Mesh file */
-  char file_name[128];
-  TSTT::Mesh_Handle mesh;
-  TSTT::MeshError tstt_err;
-  TSTT::Mesh_Create(&mesh, &tstt_err);
-  strcpy(file_name, "../../meshFiles/2D/VTK/equil_tri2.vtk");
-  strcpy(file_name, "../../meshFiles/2D/VTK/bad_circle_tri_rhr.vtk");
-  strcpy(file_name, "../../meshFiles/2D/VTK/tri_20258.vtk");
-  strcpy(file_name, "../../meshFiles/3D/VTK/tet_1.vtk");
-  strcpy(file_name, "../../meshFiles/3D/VTK/cube_tet_2.vtk");
-  strcpy(file_name, "../../meshFiles/3D/VTK/tire.vtk");
+    /* Reads a Mesh file */
+  const char *file_name = 
+//      "../../meshFiles/2D/VTK/equil_tri2.vtk";
+//      "../../meshFiles/2D/VTK/bad_circle_tri_rhr.vtk";
+//      "../../meshFiles/2D/VTK/tri_20258.vtk";
+//      "../../meshFiles/3D/VTK/tet_1.vtk";
+//      "../../meshFiles/3D/VTK/cube_tet_2.vtk";
+     "../../meshFiles/3D/VTK/tire.vtk";
   printf("Loading mesh set 1\n");
-  TSTT::Mesh_Load(mesh, file_name, &tstt_err);
-  
-  // Mesquite error object
   MsqError err;
+  Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
+  mesh->read_vtk(file_name, err);
   
-  // initialises a MeshSet object
+    // initialises a MeshSet object
   MeshSet mesh_set1;
-  //  printf("Creating mesh set 1\n");
+    //  printf("Creating mesh set 1\n");
   mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
-
-  // Creates an intruction queue
-  //  printf("Creating instruction queue\n");
+  
+    // Creates an intruction queue
+    //  printf("Creating instruction queue\n");
   InstructionQueue queue1;
 
   // Creates a condition number quality metric 
@@ -119,7 +115,7 @@ int main()
 
   // write out the original mesh
   //  printf("Writing out the original mesh\n");
-  writeVtkMesh("original_mesh", mesh, err); MSQ_CHKERR(err);
+  mesh->write_vtk("original_mesh", err); MSQ_CHKERR(err);
 
   // launches optimization on mesh_set1
   //  printf("Running the instruction queue\n");
@@ -127,6 +123,6 @@ int main()
 
   // write out the smoothed mesh
   //  printf("Writing out the final mesh\n");
-  writeVtkMesh("smoothed_mesh", mesh, err); MSQ_CHKERR(err);
+  mesh->write_vtk("smoothed_mesh", err); MSQ_CHKERR(err);
 
 }

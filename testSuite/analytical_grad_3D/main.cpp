@@ -31,7 +31,7 @@ describe main.cpp here
 
 
 #include "Mesquite.hpp"
-#include "TSTT_Base.h"
+#include "MeshImpl.hpp"
 #include "MesquiteUtilities.hpp" //  for writeShowMeMesh()
 #include "MesquiteError.hpp"
 #include "Vector3D.hpp"
@@ -54,72 +54,64 @@ using namespace Mesquite;
 #undef __FUNC__
 #define __FUNC__ "main"
 int main()
-{     
-  char file_name[128];
-  /* Reads a TSTT Mesh file */
-  TSTT::Mesh_Handle mesh;
-  TSTT::MeshError tstt_err;
-  TSTT::Mesh_Create(&mesh, &tstt_err);
-  strcpy(file_name, "../../meshFiles/3D/VTK/hexes_4by2by2.vtk");
-  TSTT::Mesh_Load(mesh, file_name, &tstt_err);
-  
-  // Mesquite error object
+{
   MsqError err;
+  Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
+  mesh->read_vtk("../../meshFiles/3D/VTK/hexes_4by2by2.vtk", err);
   
-  // initialises a MeshSet object
+    // initialises a MeshSet object
   MeshSet mesh_set1;
   mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
-
-  // dbg
-   std::cout << " TSTT mesh handle: " << mesh << std::endl;
   
-  // creates an intruction queue
+    // dbg
+  std::cout << " TSTT mesh handle: " << mesh << std::endl;
+  
+    // creates an intruction queue
   InstructionQueue queue1;
-
-  // creates a mean ratio quality metric ...
+  
+    // creates a mean ratio quality metric ...
   ShapeQualityMetric* mean_ratio = MeanRatioQualityMetric::create_new();
   ShapeQualityMetric* cond_num = ConditionNumberQualityMetric::create_new();
   mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
   mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
 //  mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
-   
-  // ... and builds an objective function with it
+  
+    // ... and builds an objective function with it
     //LInfTemplate* obj_func = new LInfTemplate(mean_ratio);
   LPTemplate* obj_func = new LPTemplate(mean_ratio, 2, err);
 //   obj_func->set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
-   obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
+  obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
    // creates the steepest descent optimization procedures
   SteepestDescent* pass1 = new SteepestDescent( obj_func );
   pass1->set_patch_type(PatchData::GLOBAL_PATCH, err);
   pass1->set_maximum_iteration(6);
-
+  
   QualityAssessor stop_qa=QualityAssessor(mean_ratio,QualityAssessor::MAXIMUM);
   stop_qa.add_quality_assessment(cond_num, QualityAssessor::MAXIMUM,err);
   
-
+  
    //**************Set stopping criterion****************
 // StoppingCriterion sc1(&stop_qa,1.0,1.8);
     //StoppingCriterion sc2(StoppingCriterion::NUMBER_OF_PASSES,1);
   TerminationCriterion tc2;
   tc2.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
 // CompositeAndStoppingCriterion sc(&sc1,&sc2);
- pass1->set_inner_termination_criterion(&tc2);
+  pass1->set_inner_termination_criterion(&tc2);
  // sets a culling method on the first QualityImprover
- pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
+  pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
 
   // adds 1 pass of pass1 to mesh_set1
 //  queue1.add_preconditioner(pass1, err); MSQ_CHKERR(err);
- queue1.add_quality_assessor(&stop_qa,err);
+  queue1.add_quality_assessor(&stop_qa,err);
   queue1.set_master_quality_improver(pass1, err); MSQ_CHKERR(err);
   queue1.add_quality_assessor(&stop_qa,err);
   // adds 1 passes of pass2 to mesh_set1
 //  mesh_set1.add_quality_pass(pass2);
 
-  writeVtkMesh("original_mesh", mesh, err); MSQ_CHKERR(err);
+  mesh->write_vtk("original_mesh", err); MSQ_CHKERR(err);
   
-  // launches optimization on mesh_set1
+    // launches optimization on mesh_set1
   queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
   
-  writeVtkMesh("smoothed_mesh", mesh, err); MSQ_CHKERR(err);
-
+  mesh->write_vtk("smoothed_mesh", err); MSQ_CHKERR(err);
 }

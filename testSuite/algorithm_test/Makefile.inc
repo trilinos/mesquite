@@ -8,4 +8,4 @@ all_tests: $(ALGTESTEXEC)
 
 $(ALGTESTEXEC): $(ALGTESTSRC) $(locallibdir)/libmesquite.a
 	@echo "Linking Mesquite driver application ($@)..."
-	${LINKER} $(CXXFLAGS) ${LDFLAGS} -o $@ ${ALGTESTSRC} -L$(locallibdir) -lmesquite -Lexternal/AOMD/lib/ -lAOMD -lm
+	${LINKER} $(CXXFLAGS) ${LDFLAGS} -o $@ ${ALGTESTSRC} -L$(locallibdir) -lmesquite ${TSTT_LINK} -lm

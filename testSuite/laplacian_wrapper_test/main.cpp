@@ -30,8 +30,7 @@ describe main.cpp here
 #endif
 
 #include "Mesquite.hpp"
-#include "TSTT_Base.h"
-#include "MesquiteUtilities.hpp" //  for writeVtkMesh()
+#include "MeshImpl.hpp"
 #include "MesquiteError.hpp"
 #include "MeshSet.hpp"
 
@@ -45,32 +44,22 @@ using namespace Mesquite;
 #undef __FUNC__
 #define __FUNC__ "main"
 int main()
-{     
-  char file_name[128];
-  /* Reads a TSTT Mesh file */
-  TSTT::Mesh_Handle mesh;
-  TSTT::MeshError tstt_err;
-  TSTT::Mesh_Create(&mesh, &tstt_err);
-  strcpy(file_name, "../../meshFiles/2D/VTK/square_quad_2.vtk");
-  TSTT::Mesh_Load(mesh, file_name, &tstt_err);
-  
-  // Mesquite error object
+{
+  Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
   MsqError err;
+  mesh->read_vtk("../../meshFiles/2D/VTK/square_quad_2.vtk", err);
   
-  // initialises a MeshSet object
+    // initialises a MeshSet object
   MeshSet mesh_set1;
   mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
   
-  // creates an intruction queue
+    // creates an intruction queue
   LaplacianIQ laplacian_smoother;
-
   
-
-  writeVtkMesh("original_mesh", mesh, err); MSQ_CHKERR(err);
+  mesh->write_vtk("original_mesh", err); MSQ_CHKERR(err);
   
-  // launches optimization on mesh_set1
+    // launches optimization on mesh_set1
   laplacian_smoother.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
   
-  writeVtkMesh("smoothed_mesh", mesh, err); MSQ_CHKERR(err);
-
+  mesh->write_vtk("smoothed_mesh", err); MSQ_CHKERR(err);
 }
