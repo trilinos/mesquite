@@ -54,7 +54,7 @@ void FeasibleNewton::initialize(PatchData &pd, MsqError &err)
 
 #undef __FUNC__
 #define __FUNC__ "FeasibleNewton::initialize_mesh_iteration" 
-void FeasibleNewton::initialize_mesh_iteration(PatchData &pd, MsqError &err)
+void FeasibleNewton::initialize_mesh_iteration(PatchData &/*pd*/, MsqError &/*err*/)
 {
   // Cannot do anything.  Variable sizes with maximum size dependent
   // upon the entire MeshSet.
@@ -84,7 +84,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   /* Computes the value of the stopping criterion*/
   MeshSet *mesh=get_mesh_set();
   bool inner_criterion=inner_criterion_met(*mesh,err);
-  int n, i;
+  int i;//,n;
   
   // 1.  Allocate a hessian and calculate the sparsity pattern.
   mHessian.initialize(pd, err); MSQ_CHKERR(err);
@@ -199,7 +199,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
       }
     });
 
-    bool inner_criterion=inner_criterion_met(*mesh,err);
+    inner_criterion=inner_criterion_met(*mesh,err);
   }
 
   delete[] grad;
@@ -210,8 +210,10 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
 
 #undef __FUNC__
 #define __FUNC__ "FeasibleNewton::terminate_mesh_iteration" 
-void FeasibleNewton::terminate_mesh_iteration(PatchData &pd, MsqError &err)
+void FeasibleNewton::terminate_mesh_iteration(PatchData &/*pd*/, MsqError &/*err*/)
 {
+
+    //Michael::  Should the vertices memento be delete here???
   //  std::cout << "- Executing FeasibleNewton::iteration_complete()\n";
 }
   
