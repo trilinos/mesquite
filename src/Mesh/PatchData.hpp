@@ -90,9 +90,9 @@ namespace Mesquite
                       MsqError &err);
     
     int num_vertices() const
-    { return numVertices; }
+      { return numVertices;}
     int num_elements() const
-    { return numElements; } 
+      { return numElements; } 
 
     //! This is a costly function, since we have to check the flags of all vertices !
     int num_free_vertices(MsqError &err);
@@ -185,6 +185,11 @@ namespace Mesquite
     void set_free_vertices_constrained(PatchDataVerticesMemento* memento, 
                                        Vector3D dk[], int nb_vtx,
                                        double step_size, MsqError &err);
+
+      //!Calculates the distance each vertex has moved from its original
+      //!position as defined by the PatchDataVerticesMememnto.
+    double get_max_vertex_movement_squared(PatchDataVerticesMemento* memento,
+                                           MsqError &err);
     
     //! Updates the TSTT mesh with any changes made to the PatchData
     void update_mesh(MsqError &err);
@@ -549,8 +554,7 @@ namespace Mesquite
 #undef __FUNC__
 #define __FUNC__ "PatchData::get_vertex_to_elem_offset" 
   /*! \fn PatchData::get_vertex_to_elem_offset(MsqError &err) const 
-   */
-  inline size_t* PatchData::get_vertex_to_elem_offset(MsqError &err) const
+   */  inline size_t* PatchData::get_vertex_to_elem_offset(MsqError &err) const
   {
     if (vertexToElemOffset==NULL) 
       err.set_msg("\nWARNING: no vertex to element data available.\n");

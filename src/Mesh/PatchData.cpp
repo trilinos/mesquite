@@ -11,7 +11,7 @@
 
 #include <list>
 #include "MsqMessage.hpp"
-
+#include "MsqTimer.hpp"
 using namespace Mesquite;  
 using namespace std;
 
@@ -253,8 +253,10 @@ position stored in the PatchData Vertex array.
    \param step_size will multiply the moving direction given in dk
    for each vertex.
   */
-void PatchData::set_free_vertices_constrained(PatchDataVerticesMemento* memento, Vector3D dk[], int nb_vtx,
-                                               double step_size, MsqError &err)
+void PatchData::set_free_vertices_constrained(PatchDataVerticesMemento*
+                                              memento, Vector3D dk[],
+                                              int nb_vtx, double step_size,
+                                              MsqError &err)
 {
   if (nb_vtx != memento->numVertices) {
     std::cout << "nb_vtx: "<< nb_vtx << "   mem num vtx; " <<  memento->numVertices << std::endl;
@@ -286,7 +288,38 @@ void PatchData::set_free_vertices_constrained(PatchDataVerticesMemento* memento,
   });
       
 }
-
+#undef __FUNC__
+#define __FUNC__ "PatchData::get_max_vertex_movement_squared"
+/*! Finds the maximum movement (in the distance norm) of the vertices in a
+  patch.  The previous vertex positions are givena as a
+  PatchDataVerticesMemento (memento).  The distance squared which each
+  vertex has moved is then calculated, and the largest of those distances
+  is returned.  This function only considers the movement of vertices
+  that are currently 'free'.
+  \param memento  a memento of this patch's vertex position at some
+  (prior) time in the optimization.  
+      */
+double PatchData::get_max_vertex_movement_squared(PatchDataVerticesMemento*
+                                                  memento,
+                                                  MsqError &err)
+{
+  int m=0;
+  Vector3D temp_vec;
+  double temp_dist=0.0;
+  double max_dist=0.0;
+  MsqFreeVertexIndexIterator free_iter(this, err);
+  free_iter.reset();
+  while (free_iter.next()) {
+    m=free_iter.value();
+    temp_vec=vertexArray[m] - memento->vertices[m];
+    temp_dist=temp_vec.length_squared();
+    if(temp_dist>max_dist){
+      max_dist=temp_dist;
+    }
+    MSQ_CHKERR(err);
+  }
+  return max_dist;
+}
 
 
 /*! \fn PatchData::get_element_vertex_coordinates(size_t elem_index, std::vector<Vector3D> &coords, MsqError &err)
@@ -333,8 +366,9 @@ void PatchData::get_vertex_element_indices(size_t vertex_index,
                                            MsqError &err) 
 {
     // Check index
-  if (vertex_index >= numVertices)
+  if (vertex_index >= numVertices){
     return;
+  }
   
     // Make sure we've got the data
   if (!vertexToElemOffset){
@@ -517,9 +551,13 @@ void PatchData::update_mesh(MsqError &/*err*/)
 #define __FUNC__ "PatchData::generate_vertex_to_element_data" 
 void PatchData::generate_vertex_to_element_data()
 {
+  FUNCTION_TIMER_START(__FUNC__);
+
     // Skip if data already exists
-  if (elemsInVertex || vertexToElemOffset)
+  if (elemsInVertex || vertexToElemOffset){
+    FUNCTION_TIMER_END();
     return;
+  }
   
     // Create an array of linked lists, one list per vertex
     // The lists hold element indices.
@@ -561,6 +599,7 @@ void PatchData::generate_vertex_to_element_data()
   
     // Cleanup
   delete [] element_indices;
+  FUNCTION_TIMER_END();
 }
 
 
