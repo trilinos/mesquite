@@ -586,8 +586,6 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 
   Vector3D n;			// Surface normal for 2D objects
   Matrix3D outer;
-  double   outer_factor;
-
   double   nm, t=0;
 
   // Hex element descriptions
