@@ -1414,8 +1414,8 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 
   if (((topo == QUADRILATERAL) || (topo == HEXAHEDRON)) && 
       ((avgMethod == MINIMUM) || (avgMethod != MAXIMUM))) {
-    cout << "Minimum and maximum not continuously differentiable." << endl;
-    cout << "Element of subdifferential will be returned." << endl;
+    std::cout << "Minimum and maximum not continuously differentiable." << std::endl;
+    std::cout << "Element of subdifferential will be returned." << std::endl;
   }
 
   MsqVertex *vertices = pd.get_vertex_array(err);
@@ -1435,7 +1435,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
   switch(topo) {
   case TRIANGLE:
   case QUADRILATERAL:
-    cout << "Gradients in 2D not implemented yet.\n" << endl;
+    std::cout << "Gradients in 2D not implemented yet.\n" << std::endl;
     return false;
     break;
 
