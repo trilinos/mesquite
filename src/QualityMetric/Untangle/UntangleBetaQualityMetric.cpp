@@ -12,7 +12,8 @@
 #include "Vector3D.hpp"
 #include "QualityMetric.hpp"
 #include "MsqMeshEntity.hpp"
-
+#include "PatchData.hpp"
+#include "MsqMessage.hpp"
 using namespace Mesquite;
 
 #undef __FUNC__
@@ -56,6 +57,9 @@ bool UntangleBetaQualityMetric::evaluate_element(PatchData &pd,
   num_sample_points=sample_points.size();
   double *metric_values=new double[num_sample_points];
   double temp_var;
+    //vars used for 2d
+  Vector3D surface_normal, cross_vec;
+  size_t vertex1;
   std::vector<Vector3D>::iterator iter=sample_points.begin();
   for(i=0;i<num_sample_points;++i)
   {
@@ -66,7 +70,19 @@ bool UntangleBetaQualityMetric::evaluate_element(PatchData &pd,
       //if 2 jacobian vectors (2D elem)    
     if(num_jacobian_vectors==2)
     {
-      err.set_msg("Untangle Beta currenlty only defined for 3D entities.");
+      vertex1=element->get_vertex_index(0);
+      pd.get_surface_normal(vertex1,surface_normal,err);
+      cross_vec=jacobian_vectors[0]*jacobian_vectors[1];
+        //std::cout<<"\nsurface_normal "<<surface_normal;
+        //std::cout<<"\cross_vec "<<cross_vec;
+      temp_var=cross_vec.length();
+      if(cross_vec%surface_normal<0.0){
+        temp_var*=-1;
+      }
+      temp_var -= mBeta;
+        //std::cout<<"temp_var == "<<temp_var;
+      
+      metric_values[i]=fabs(temp_var)-temp_var;
     }
       //if three jacobian vectors (3D elem)
     else if(num_jacobian_vectors==3)
