@@ -48,7 +48,7 @@ namespace Mesquite
   */
   class MsqHessian
     {
-    private:
+    protected:  // data accessed directly in tests. 
       PatchData* origin_pd;
       MsqMeshEntity* patchElemArray; //!< stored once during initialization for
       //!< fast access.
