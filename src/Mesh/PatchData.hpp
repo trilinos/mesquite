@@ -67,6 +67,11 @@ namespace Mesquite
                    double *vertex_coords,
                    bool check_redundancy,
                    MsqError &err);
+    //! delegates to the other form of add_vertex.
+    inline int add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
+                   double x, double y, double z,
+                   bool check_redundancy,
+                   MsqError &err);
     void add_element(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
                      int* vertex_indices,
                      EntityTopology topo,
@@ -308,6 +313,7 @@ namespace Mesquite
     }
   }
 
+  
 #undef __FUNC__
 #define __FUNC__ "PatchData::add_vertex"
   /*! \fn PatchData::add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh, double* vertex_coord, bool check_redundancy, MsqError &err)
@@ -361,6 +367,20 @@ namespace Mesquite
   
   
 #undef __FUNC__
+#define __FUNC__ "PatchData::add_vertex"
+inline int PatchData::add_vertex(TSTT::Mesh_Handle mh, TSTT::Entity_Handle eh,
+                   double x, double y, double z,
+                   bool check_redundancy,
+                   MsqError &err)
+{
+  double coords[3];
+  coords[0] = x; coords[1] = y; coords[2] = z;
+  int index = add_vertex(mh, eh, coords, check_redundancy, err); MSQ_CHKERR(err);
+  return index;
+}
+  
+
+#undef __FUNC__
 #define __FUNC__ "PatchData::get_coords_array"
   /*! \fn PatchData::get_vertex_array(MsqError &err) const 
 
@@ -375,6 +395,7 @@ namespace Mesquite
       err.set_msg("\nWARNING: no coordinates array defined.\n");
     return vertexArray;
   }
+
   
 #undef __FUNC__
 #define __FUNC__ "PatchData::set_vertex_coordinates"
