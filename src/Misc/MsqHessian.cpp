@@ -460,9 +460,7 @@ void MsqHessian::cg_solver(Vector3D x[], Vector3D b[], MsqError &err)
     alpha_ = inner(mP,mW,mSize); // alpha_ = p_k^T A p_k
     if (alpha_ <= 0.0) {
       cout << "Direction of Negative Curvature\n";
-      if (cg_iter == 1) { // makes sure not to send back x=0 . 
-        for (i=0; i<mSize; ++i)  x[i] = -b[i]; 
-      }        
+      for (i=0; i<mSize; ++i)  x[i] += mP[i]; // x_{k+1} = x_k + p_{k+1} 
       break; // Newton goes on with this direction of negative curvature 
     }
       
