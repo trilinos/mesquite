@@ -47,6 +47,8 @@ bool I_DFT::evaluate_element(PatchData& pd,
 {
   Matrix3D T[MSQ_MAX_NUM_VERT_PER_ENT];
   double dft[MSQ_MAX_NUM_VERT_PER_ENT];
+  bool return_flag;
+  double h, tau;
     
   size_t num_T = element->vertex_count();
   compute_T_matrices(*element, pd, T, num_T, err); MSQ_CHKERR(err);
@@ -54,13 +56,16 @@ bool I_DFT::evaluate_element(PatchData& pd,
   const double id[] = {1, 0, 0,  0, 1, 0,  0, 0, 1};
   const Matrix3D I(id);
   for (size_t i=0; i<num_T; ++i) {
+    tau = det(T[i]);
     T[i] -= I; 
     dft[i] = .5 * Frobenius_2(T[i]);
+    return_flag = get_barrier_function(pd, tau, h, err);
+    dft[i] /= pow(h, 2/3);
   }
     
   value = average_metrics(dft, num_T, err); MSQ_CHKERR(err);
     
-  return true;
+  return return_flag;
 }
 
 

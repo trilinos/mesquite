@@ -40,6 +40,7 @@ Header file for the Mesquite::DistanceFromTarget class
 #include "Mesquite.hpp"
 #include "MesquiteError.hpp"
 #include "MsqMessage.hpp"
+#include "PatchData.hpp"
 #include "QualityMetric.hpp"
 #include "MsqMeshEntity.hpp"
 
@@ -64,6 +65,8 @@ namespace Mesquite
     void compute_T_matrices(MsqMeshEntity &elem, PatchData& pd,
                             Matrix3D T[], size_t num_T, MsqError &err);
  
+    bool get_barrier_function(PatchData& pd, double tau, double &h, MsqError &err);
+
   private:
     
   };
@@ -88,7 +91,54 @@ namespace Mesquite
       timesInvA(T[i], W[i]);
   }
 
-  
+  inline bool DistanceFromTarget::get_barrier_function(PatchData& pd, double tau, double &h, MsqError &err)
+  { 
+
+     double delta=pd.get_barrier_delta_3d(err); 
+     MSQ_CHKERR(err);
+
+     // Note: technically, we want delta=eta*tau-max
+     //       whereas the function above gives delta=eta*alpha-max
+     //      
+     //       Because the only requirement on eta is eta << 1,
+     //       and because tau-max = alpha-max/0.707 we can
+     //       ignore the discrepancy
+
+     if (delta==0) { 
+        if (tau < MSQ_DBL_MIN ) {
+           return false;
+        }
+        else {
+           h=tau;
+        }
+
+     // Note: when delta=0, the vertex_barrier_function
+     //       formally gives h=tau as well.
+     //       We just do it this way to avoid any 
+     //       roundoff issues.
+     // Also: when delta=0, this metric is identical
+     //       to the original condition number with
+     //       the barrier at tau=0
+
+     }
+     else {
+        h = 0.5*(tau+sqrt(tau*tau+4*delta*delta));
+
+        if (h<MSQ_DBL_MIN && fabs(tau) > MSQ_DBL_MIN ) { 
+          h = delta*delta/fabs(tau); }
+ 
+        // Note: Analytically, h is strictly positive, but
+        //       it can be zero numerically if tau
+        //       is a large negative number 
+        //       In the h=0 case, we use a different analytic
+        //       approximation to compute h.
+     }
+     if (h<MSQ_DBL_MIN) {
+       err.set_msg("Barrier function is zero due to excessively large negative area compared to delta. /n Try to untangle mesh another way. ");
+       return false;
+     }
+     return true;
+  }  
   
 } //namespace
 
