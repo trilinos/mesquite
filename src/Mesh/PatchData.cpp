@@ -27,14 +27,14 @@ PatchData::PatchData()
     vertexHandlesArray(NULL),
     elementArray(NULL),
     elementHandlesArray(NULL),
+    v2E(NULL),
+    v2eOffset(NULL),
+    subpatchIndexArray(NULL),
     vertexArraySize(0),
     elemArraySize(0),
-    subpatchIndexArray(NULL),
-    subpatchIndexSize(0),
-    v2E(NULL),
     v2eSize(0),
-    v2eOffset(NULL),
-    v2eOffsetSize(0)
+    v2eOffsetSize(0),
+    subpatchIndexSize(0)
 {}
 
 
@@ -176,7 +176,7 @@ void PatchData::move_vertices(Vector3D dk[],
 
     // This will move ALL vertices, only checking for fixed flags after
     // we are done...shouldn't we check for the fixed flag before moving it?
-  int m=0;
+  size_t m=0;
   for (m=0; m<numVertices; ++m)
   {
     vertexArray[m] += (scale * dk[m]);
@@ -218,7 +218,7 @@ void PatchData::move_vertices(Vector3D dk[],
    \param step_size will multiply the moving direction given in dk
    for each vertex.
   */
-void PatchData::move_free_vertices_constrained(Vector3D dk[], int nb_vtx,
+void PatchData::move_free_vertices_constrained(Vector3D dk[], size_t nb_vtx,
                                                double step_size, MsqError &err)
 {
   if (nb_vtx != numVertices)
@@ -238,7 +238,7 @@ void PatchData::move_free_vertices_constrained(Vector3D dk[], int nb_vtx,
   }
   
     // Checks that moving direction is zero for fixed vertices.
-  MSQ_DEBUG_ACTION(1,{ for (int m=0; m<numVertices; ++m) {
+  MSQ_DEBUG_ACTION(1,{ for (size_t m=0; m<numVertices; ++m) {
     Vector3D zero_3d(0.,0.,0.);
     if (   ! vertexArray[m].is_free_vertex()
            && ( dk[m] != zero_3d && dk[m] != -zero_3d)  ) 
@@ -270,7 +270,7 @@ in the PatchData; the PatchDataVerticesMemento is unchanged.
   */
 void PatchData::set_free_vertices_constrained(PatchDataVerticesMemento* memento,
                                               Vector3D dk[],
-                                              int nb_vtx,
+                                              size_t nb_vtx,
                                               double step_size,
                                               MsqError &err)
 {
@@ -284,7 +284,7 @@ void PatchData::set_free_vertices_constrained(PatchDataVerticesMemento* memento,
     return;
   }
   
-  int m=0;
+  size_t m=0;
   MsqFreeVertexIndexIterator free_iter(this, err);
   free_iter.reset();
   while (free_iter.next())
@@ -352,7 +352,7 @@ double PatchData::get_max_vertex_movement_squared(PatchDataVerticesMemento*
  */
 void PatchData::set_all_vertices_soft_fixed(MsqError &err)
 {
-  for(int i=0;i<numVertices;++i)
+  for(size_t i=0;i<numVertices;++i)
     vertexArray[i].set_soft_fixed_flag();
 }
 
@@ -362,7 +362,7 @@ void PatchData::set_all_vertices_soft_fixed(MsqError &err)
  */
 void PatchData::set_all_vertices_soft_free(MsqError &/*err*/)
   {
-    for(int i=0;i<numVertices;++i)
+    for(size_t i=0;i<numVertices;++i)
       vertexArray[i].remove_soft_fixed_flag();
   }
   
@@ -387,7 +387,7 @@ void PatchData::get_element_vertex_coordinates(
     // Get the coords for each indicated vertex
   size_t num_verts = elementArray[elem_index].vertex_count();
   coords.reserve(coords.size() + num_verts);
-  for (int i = 0; i < num_verts; i++)
+  for (size_t i = 0; i < num_verts; i++)
     coords.push_back(Vector3D(vertexArray[vertex_indices[i]]));
 }
 
@@ -605,7 +605,7 @@ void PatchData::generate_vertex_to_element_data(size_t num_vertex_uses)
   memset(v2eOffset, 0, num_vertices()*sizeof(size_t));
   
     // Find out how many vertex uses we've got...
-  int elem_num, vert_num;
+  size_t elem_num, vert_num;
   const size_t* vert_array;
   if (num_vertex_uses == 0)
   {

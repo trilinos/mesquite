@@ -102,7 +102,7 @@ void Mesquite::MeshImpl::read_vtk(const char* file_name,
   
     // Skip the first 4 lines
   char line[256];
-  int i;
+  size_t i;
   for (i = 0; i < 4; ++i)
     ifs.getline(line,256);
   
@@ -144,7 +144,7 @@ void Mesquite::MeshImpl::read_vtk(const char* file_name,
     err.set_msg(err_msg);
   }
   
-  int table_size;
+  size_t table_size;
   ifs >> elementCount >> table_size;
   
     // Read the connectivity table
@@ -522,7 +522,7 @@ void Mesquite::MeshImpl::get_all_vertices(
   if (array_size > vertexCount)
     array_size = vertexCount;
   
-  for (int i = 0; i < array_size; i++)
+  for (size_t i = 0; i < array_size; i++)
     vert_array[i] = vertexArray + i;
 }
 
@@ -534,7 +534,7 @@ void Mesquite::MeshImpl::get_all_elements(
   if (array_size > elementCount)
     array_size = elementCount;
   
-  for (int i = 0; i < array_size; i++)
+  for (size_t i = 0; i < array_size; i++)
     elem_array[i] = elementArray + i;
 }
 

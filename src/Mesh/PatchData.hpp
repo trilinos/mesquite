@@ -178,7 +178,7 @@ namespace Mesquite
         \param nb_vtx number of vertices.
         \param step_size a scalar that multiplies the vectors given in dk.
       */
-    void move_free_vertices_constrained(Vector3D dk[], int nb_vtx,
+    void move_free_vertices_constrained(Vector3D dk[], size_t nb_vtx,
                                         double step_size, MsqError &err);
     
     /*! Moves free vertices from a memento position along a certain direction 
@@ -189,7 +189,7 @@ namespace Mesquite
       \param step_size a scalar that multiplies the vectors given in dk.
     */
     void set_free_vertices_constrained(PatchDataVerticesMemento* memento, 
-                                       Vector3D dk[], int nb_vtx,
+                                       Vector3D dk[], size_t nb_vtx,
                                        double step_size, MsqError &err);
 
       //!Calculates the distance each vertex has moved from its original
@@ -323,13 +323,13 @@ namespace Mesquite
     // Constructor accessible only to originator (i.e. PatchData)
     friend class PatchData;
     PatchDataVerticesMemento() 
-      : originator(0), vertices(0), numVertices(0)
+      : originator(0), vertices(0), numVertices(0), arraySize(0)
     {}
     
     PatchData* originator; //!< PatchData whose state is kept
     MsqVertex *vertices; //!< array of vertices
-    int numVertices;
-    int arraySize;
+    size_t numVertices;
+    size_t arraySize;
   };
 
 

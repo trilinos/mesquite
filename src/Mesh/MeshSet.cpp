@@ -26,8 +26,8 @@ using namespace Mesquite;
 
 
 MeshSet::MeshSet() :
-  spaceDim(0),
   vertexIterator(NULL),
+  spaceDim(0),
   csrOffsets(0),
   csrData(0),
   vertArray(NULL),
@@ -228,7 +228,7 @@ bool MeshSet::get_next_patch(PatchData &pd,
       
         // Figure out how many vertices we need to allocate
       size_t num_vert_uses = 1;
-      int i;
+      size_t i;
       for (i = 0; i < num_elems; ++i)
       {
         num_vert_uses += vertices_in_topology(elemTopologies[i]);
@@ -319,7 +319,7 @@ bool MeshSet::get_next_patch(PatchData &pd,
         // for a global patch, we always reset to start of the mesh.
       reset(err);
       
-      int i;
+      size_t i;
       
         // Get all vertices
       size_t num_verts = (*currentMesh)->get_total_vertex_count();
@@ -400,8 +400,8 @@ void Mesquite::MeshSet::update_mesh(const PatchData &pd)
   {
     // If the patch type is marked as local,
     // all handles belong to the currentMesh.
-    case PatchData::ELEMENTS_ON_VERTEX_PATCH:
-        // For each vertex, update the coordinates
+  case PatchData::ELEMENTS_ON_VERTEX_PATCH:
+      // For each vertex, update the coordinates
         // and the "mesquite byte".
       for (i = 0; i < pd.numVertices; i++)
       {
@@ -415,7 +415,7 @@ void Mesquite::MeshSet::update_mesh(const PatchData &pd)
     // If the patch type is marked as global,
     // the handles may belong to more than
     // one Mesh.
-    case PatchData::GLOBAL_PATCH:
+  case PatchData::GLOBAL_PATCH:
     {
       std::list<Mesquite::Mesh*>::iterator mesh_itr = meshSet.begin();
       Mesquite::Mesh* cur_mesh = *mesh_itr;
@@ -437,5 +437,11 @@ void Mesquite::MeshSet::update_mesh(const PatchData &pd)
       delete vert_itr;
     }
     break;
+  default:
+    {
+      MsqError err;
+      err.set_msg("PatchData Type not accepted yet."); MSQ_CHKERR(err);
+      break;
+    }
   }
 }
