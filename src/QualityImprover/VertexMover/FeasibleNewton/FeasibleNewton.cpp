@@ -34,6 +34,7 @@ using namespace Mesquite;
 FeasibleNewton::FeasibleNewton(ObjectiveFunction* of) :
   VertexMover()
 {
+  coordsMem=NULL;
   objFunc=of;
   MsqError err;
   convTol=1e-6;
