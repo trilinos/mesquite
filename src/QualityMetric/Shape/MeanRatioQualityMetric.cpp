@@ -23,12 +23,14 @@ using std::endl;
 #undef __FUNC__
 #define __FUNC__ "MeanRatioQualityMetric::MeanRatioQualityMetric"
 
-MeanRatioQualityMetric::MeanRatioQualityMetric()
+MeanRatioQualityMetric::MeanRatioQualityMetric() :
+  ShapeQualityMetric()
 {
   MsqError err;
   set_metric_type(ELEMENT_BASED);
   set_element_evaluation_mode(ELEMENT_VERTICES, err); MSQ_CHKERR(err);
   set_negate_flag(1);
+  set_gradient_type(ANALYTICAL_GRADIENT);
   avgMethod=QualityMetric::LINEAR;
   feasible=1;
   set_name("Mean Ratio");
@@ -219,7 +221,7 @@ inline bool h_fcn_2e(double &obj, Vector3D g_obj[3], Matrix3D h_obj[6],
   f = 2.0 * loc1;
   g = b2 * obj / g;
 
-  dg[3] = matr[5]*matr[6] - matr[3]*matr[8];
+  dg[1] = matr[5]*matr[6] - matr[3]*matr[8];
   dg[4] = matr[0]*matr[8] - matr[2]*matr[6];
   dg[7] = matr[2]*matr[3] - matr[0]*matr[5];
 
@@ -625,7 +627,7 @@ inline bool h_fcn_2i(double &obj, Vector3D g_obj[3], Matrix3D h_obj[6],
   f = 2.0 * loc1;
   g = b2 * obj / g;
 
-  dg[3] = matr[5]*matr[6] - matr[3]*matr[8];
+  dg[1] = matr[5]*matr[6] - matr[3]*matr[8];
   dg[4] = matr[0]*matr[8] - matr[2]*matr[6];
   dg[7] = matr[2]*matr[3] - matr[0]*matr[5];
 
@@ -2181,7 +2183,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 								 Vector3D g[],
 								 int nv, 
 								 double &m,
-                                                                 MsqError &err)
+                         MsqError &err)
 {
 //  FUNCTION_TIMER_START(__FUNC__);
   
@@ -2639,7 +2641,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
       // if free vertex, see next
       if (vertices + v_i[i] == fv[j] )
         ++j;
-      // else zero gradient entry
+      // else zero gradient and Hessian entries
       else {
         g[i] = 0.;
 
