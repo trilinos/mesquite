@@ -29,7 +29,7 @@
 //     USAGE:
 //
 // ORIG-DATE: 13-Apr-04 at 10:57:52
-//  LAST-MOD: 15-Apr-04 at 16:02:14 by Thomas Leurent
+//  LAST-MOD: 21-May-04 at 13:45:21 by Thomas Leurent
 //
 //
 // DESCRIPTION:
@@ -69,7 +69,7 @@ describe main.cpp here
 #include "sI_DFT.hpp"
 #include "RI_DFT.hpp"
 #include "sRI_DFT.hpp"
-#include "DefaultTargetCalculator.hpp"
+#include "ConcreteTargetCalculators.hpp"
 #include "LPtoPTemplate.hpp"
 #include "FeasibleNewton.hpp"
 #include "ConjugateGradient.hpp"
@@ -117,8 +117,20 @@ int main(int argc, char* argv[])
    mean_ratio.set_averaging_method(QualityMetric::LINEAR, err); MSQ_CHKERR(err);
 
   // creates a target calculator
-  DefaultTargetCalculator target;
-  
+//  DefaultTargetCalculator target;
+
+  Mesquite::MeshImpl *ref_mesh = new Mesquite::MeshImpl;
+  ref_mesh->read_vtk("../../meshFiles/3D/VTK/cube_hex_rm.vtk", err);
+  MeshSet ref_mesh_set;
+  ref_mesh_set.add_mesh(ref_mesh, err); MSQ_CHKERR(err);
+  ReferenceMeshTargetCalculator target(&ref_mesh_set);
+
+  Mesquite::MeshImpl *ref_mesh2 = new Mesquite::MeshImpl;
+  ref_mesh2->read_vtk("../../meshFiles/3D/VTK/cube_hex_rm.vtk", err);
+  MeshSet ref_mesh2_set;
+  ref_mesh2_set.add_mesh(ref_mesh2, err); MSQ_CHKERR(err);
+  ReferenceMeshTargetCalculator assessor_target(&ref_mesh2_set);
+   
   // ... and builds an objective function with it
   LPtoPTemplate* obj_func = new LPtoPTemplate(&mean_ratio, 1, err);
   obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
@@ -126,11 +138,11 @@ int main(int argc, char* argv[])
   // creates the steepest descentfeas newt optimization procedures
 //  ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
   FeasibleNewton* pass1 = new FeasibleNewton( obj_func );
-  pass1->set_target_calculator(&target);
+  pass1->set_target_calculator(&target, err); MSQ_CHKERR(err);
   pass1->set_patch_type(PatchData::GLOBAL_PATCH, err);
   
   QualityAssessor stop_qa(&mean_ratio,QualityAssessor::AVERAGE);
-  stop_qa.set_target_calculator(&target);
+  stop_qa.set_target_calculator(&assessor_target, err); MSQ_CHKERR(err);
   
   // **************Set stopping criterion****************
   TerminationCriterion tc_inner;
@@ -154,7 +166,7 @@ int main(int argc, char* argv[])
 mesh->write_vtk("original_mesh",err); MSQ_CHKERR(err);
   
   // launches optimization on mesh_set1
-  queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
+ queue1.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
   
 mesh->write_vtk("smoothed_mesh", err); MSQ_CHKERR(err);
   PRINT_TIMING_DIAGNOSTICS();
