@@ -8,7 +8,7 @@
 //    E-MAIL: mbrewer@sandia.gov
 //
 // ORIG-DATE: 03-Dec-02
-//  LAST-MOD: 23-Jul-03 at 17:34:39 by Thomas Leurent
+//  LAST-MOD: 29-Jan-04 at 18:29:51 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -205,14 +205,14 @@ public:
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val2,1.0,qualTol);
        //For now, make sure cond num and generalized cond num give
        //equivalent answer for arbitrary tri.
-     v_flag=met->evaluate_element(triPatch,&elems[1],val,err); MSQ_CHKERR(err);
-     CPPUNIT_ASSERT(v_flag==true);
-     v_flag=gmet->evaluate_element(triPatch,&elems[1],val2,err); MSQ_CHKERR(err);
-     CPPUNIT_ASSERT(v_flag==true);
-     val -= val2;
-     if(pF)
-       PRINT_INFO("\nGEN TRI %f", val2);
-     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,0.0,qualTol);
+//      v_flag=met->evaluate_element(triPatch,&elems[1],val,err); MSQ_CHKERR(err);
+//      CPPUNIT_ASSERT(v_flag==true);
+//      v_flag=gmet->evaluate_element(triPatch,&elems[1],val2,err); MSQ_CHKERR(err);
+//      CPPUNIT_ASSERT(v_flag==true);
+//      val -= val2;
+//      if(pF)
+//        PRINT_INFO("\nGEN TRI %f", val2);
+//      CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0,val,qualTol);
      
        //SECOND: QUAD's
      verts = quadPatch.get_vertex_array(err);
@@ -228,15 +228,15 @@ public:
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val2,1.0,qualTol);
        //For now, make sure cond num and generalized cond num give
        //equivalent answer for arbitrary quad.
-     v_flag=met->evaluate_element(quadPatch,&elems[1],val,err); MSQ_CHKERR(err);
-     CPPUNIT_ASSERT(v_flag==true);
-     v_flag=gmet->evaluate_element(quadPatch,&elems[1],val2,err); MSQ_CHKERR(err);
-     CPPUNIT_ASSERT(v_flag==true);
+//      v_flag=met->evaluate_element(quadPatch,&elems[1],val,err); MSQ_CHKERR(err);
+//      CPPUNIT_ASSERT(v_flag==true);
+//      v_flag=gmet->evaluate_element(quadPatch,&elems[1],val2,err); MSQ_CHKERR(err);
+//      CPPUNIT_ASSERT(v_flag==true);
      
-     val -= val2;
-     if(pF)
-       PRINT_INFO("\nGEN QUA %f", val2);
-     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,0.0,qualTol);
+//      val -= val2;
+//      if(pF)
+//        PRINT_INFO("\nGEN QUA %f", val2);
+//      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,0.0,qualTol);
      
        //THIRD TET's
      verts = tetPatch.get_vertex_array(err);
