@@ -37,6 +37,7 @@ mesquite a measure of the perfect mesh.
 
 
 #include "TargetCalculator.hpp"
+#include "PatchDataUser.hpp"
 #include "MeshSet.hpp"
 
 using namespace Mesquite;
@@ -546,7 +547,9 @@ void TargetCalculator::compute_target_matrices(PatchData &pd, MsqError &err)
   }
 
   PatchData ref_pd;
-  refMesh->get_next_patch(ref_pd, *originator, err); MSQ_CHKERR(err);
+  PatchDataParameters ref_pd_params = *originator;
+  ref_pd_params.no_target_calculator();
+  refMesh->get_next_patch(ref_pd, ref_pd_params, err); MSQ_CHKERR(err);
   
   // Make sure topology of ref_pd and pd are equal
   size_t num_elements=pd.num_elements();
@@ -560,7 +563,7 @@ void TargetCalculator::compute_target_matrices(PatchData &pd, MsqError &err)
   
   MsqMeshEntity* elems = pd.get_element_array(err);
   MsqMeshEntity* elems_ref = ref_pd.get_element_array(err);
-  TargetMatrix W[MSQ_MAX_NUM_VERT_PER_ENT];
+  Matrix3D Wk[MSQ_MAX_NUM_VERT_PER_ENT];
   pd.allocate_corner_matrices(err); MSQ_CHKERR(err);
   double L = compute_L(mLambda, err); MSQ_CHKERR(err);
   Matrix3D D = compute_D(mD, err); MSQ_CHKERR(err);
@@ -569,7 +572,7 @@ void TargetCalculator::compute_target_matrices(PatchData &pd, MsqError &err)
     MsqTag* tag = elems[i].get_tag();
     int nve = elems[i].vertex_count();
     assert( nve = elems_ref[i].vertex_count() );
-    elems_ref[i].compute_corner_matrices(ref_pd, W, nve, err);
+    elems_ref[i].compute_corner_matrices(ref_pd, Wk, nve, err);
     double Lk[MSQ_MAX_NUM_VERT_PER_ENT];
     Matrix3D Dk[MSQ_MAX_NUM_VERT_PER_ENT];
     Matrix3D Rk[MSQ_MAX_NUM_VERT_PER_ENT];
@@ -577,7 +580,7 @@ void TargetCalculator::compute_target_matrices(PatchData &pd, MsqError &err)
     compute_Dk(mD, ref_pd, i, Dk, nve, err); MSQ_CHKERR(err);
     compute_Rk(mR, ref_pd, i, Rk, nve, err); MSQ_CHKERR(err);
     for (int i=0; i<nve; ++i) {
-      tag->target_matrix(i) = L * D * R * Lk[i] * Rk[i] * Dk[i] * W[i];
+      tag->target_matrix(i) = ( L * Lk[i] ) * ( R * Rk[i] ) * Wk[i] * ( D * Dk[i] );
     }
   }
     
