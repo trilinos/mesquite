@@ -191,9 +191,9 @@ namespace Mesquite
         Function returns 'false' if the patch is not within a required
         feasible regeion.  Otherwise, it returns 'true'.
       */
-    virtual bool compute_analytical_hessian(PatchData &patch,
-                                            MsqHessian &hessian,
-                                            MsqError &err) {
+    virtual bool compute_analytical_hessian(PatchData &/*patch*/,
+                                            MsqHessian &/*hessian*/,
+                                            MsqError &/*err*/) {
       PRINT_WARNING("Analytic hessian not implemented for this Objective ",
                     "Function. Feasible Newton algorythm cannot be used.\n");
       return false;
