@@ -58,7 +58,8 @@ public:
       // Read a VTK file -- 1 triangle flanked by 1 quad on each side (1 tri + 3 quads)
     TSTT::LocalTSTTMesh tstt_mesh=TSTT::LocalTSTTMesh::_create();
     tstt_mesh.load("../../meshFiles/2D/VTK/hybrid_3quad_1tri.vtk");
-    mesh = new Mesquite::MeshTSTT(&tstt_mesh, mErr); MSQ_CHKERR(mErr);
+    mesh = new Mesquite::MeshTSTT(tstt_mesh, mErr); MSQ_CHKERR(mErr);
+
     // Gets an array of vertices handles
     nbVert = mesh->get_total_vertex_count(mErr); MSQ_CHKERR(mErr);
     mVertices = new Mesquite::Mesh::VertexHandle[nbVert];
@@ -86,10 +87,12 @@ public:
   MeshInterfaceTestTSTT()
     {}
   
+#undef __FUNC__
+#define __FUNC__ "MeshInterfaceTestTSTT::test_get_geometric_dimension"
   void test_get_geometric_dimension()
   {
     int d = mesh->get_geometric_dimension(mErr);
-    CPPUNIT_ASSERT_EQUAL(d,3);
+    CPPUNIT_ASSERT_EQUAL(d,2);
   }
 
   
@@ -111,12 +114,16 @@ public:
     correct_coords[7].set(-1.732,2.732,0);
     correct_coords[8].set(-2.732,1,0);
 
+    // test Mesquite::Mesh::vertex_get_coordinates
     for (size_t i=0; i<nbVert; ++i) {
       mesh->vertex_get_coordinates(mVertices[i], coords, mErr); MSQ_CHKERR(mErr);
-      for (int j=0; j<3; ++j)
+      for (int j=0; j<3; ++j) {
+//        cout << "coords[j], correct_coords[i][j]: " << coords[j] <<" "<< correct_coords[i][j] << endl;
         CPPUNIT_ASSERT_DOUBLES_EQUAL(coords[j], correct_coords[i][j], .01);
+      }
     }
 
+    // test Mesquite::Mesh::vertex_set_coordinates
     coords.set(2.,3.,4.);
     mesh->vertex_set_coordinates(mVertices[3], coords, mErr); MSQ_CHKERR(mErr);
     Mesquite::Vector3D coords_2;
@@ -158,22 +165,28 @@ public:
     mesh->vertices_get_byte(mVertices, bytes, nbVert, mErr); MSQ_CHKERR(mErr);
 
     // Asserts all vertex bytes are initialised to 0. 
-    for (size_t i=0; i<nbVert; ++i)
+    for (size_t i=0; i<nbVert; ++i) {
       CPPUNIT_ASSERT(bytes[i] == 0);
+    }
 
     // Test various vertex byte read / write routines.
-    bytes[3] |= 4;
-    mesh->vertices_set_byte(mVertices, bytes, nbVert, mErr); MSQ_CHKERR(mErr);
-    mesh->vertex_set_byte(mVertices[5], 8, mErr); MSQ_CHKERR(mErr);
     unsigned char byte;
+    mesh->vertex_set_byte(mVertices[5], 8, mErr); MSQ_CHKERR(mErr);
+    mesh->vertex_get_byte(mVertices[5], &byte, mErr); MSQ_CHKERR(mErr);
+    CPPUNIT_ASSERT(byte == 8);
+    
+    bytes[3] |= 4;
+    bytes[6] |= 7;
+    mesh->vertices_set_byte(mVertices, bytes, nbVert, mErr); MSQ_CHKERR(mErr);
     mesh->vertex_get_byte(mVertices[3], &byte, mErr); MSQ_CHKERR(mErr);
     CPPUNIT_ASSERT(byte == 4);
+    
     mesh->vertices_get_byte(mVertices, bytes, nbVert, mErr); MSQ_CHKERR(mErr);
     for (size_t i=0; i<nbVert; ++i) {
       if (i==3)
         CPPUNIT_ASSERT(bytes[i] == 4);
-      else if (i==5)
-        CPPUNIT_ASSERT(bytes[i] == 8);
+      else if (i==6)
+        CPPUNIT_ASSERT(bytes[i] == 7);
       else
         CPPUNIT_ASSERT(bytes[i] == 0);
     }
@@ -198,8 +211,11 @@ public:
         ++n1;
       else if (nev==3)
         ++n3;
-      else // failure. 
+      else {// failure.
+        cout << "Incorrect number of elements attached to vertex: "
+             << nev << endl;
         CPPUNIT_ASSERT(false);
+      }
     }
     CPPUNIT_ASSERT(n1==6);
     CPPUNIT_ASSERT(n3==3);
@@ -209,14 +225,16 @@ public:
     size_t i=nbVert-1;
     while (!one_corner_vertex_index) {
       size_t nev = mesh->vertex_get_attached_element_count(mVertices[i], mErr);
-      if (nev==1)
+      if (nev==1) {
         one_corner_vertex_index=i;
+        break;
+      }
       --i;
     }
 
     // retrieve the attached element.
     Mesquite::Mesh::ElementHandle elem=0;
-    mesh->vertex_get_attached_elements(mVertices[2], &elem, 1, mErr);
+    mesh->vertex_get_attached_elements(mVertices[one_corner_vertex_index], &elem, 1, mErr);
     MSQ_CHKERR(mErr);
     CPPUNIT_ASSERT(elem!=0);
 
@@ -266,23 +284,23 @@ public:
                                           csr_data, sizeof_csr_data,
                                           csr_offsets,
                                           mErr); MSQ_CHKERR(mErr);
-
-//     cout << "nbElem " << nbElem << endl;
-//     for (size_t i=0; i<nbElem; ++i) {
-//       cout << "mElements["<<i<<"]: " << mElements[i] << endl;
-//     }
-//     cout << "sizeof_vert_handles " << sizeof_vert_handles << endl;
-//     for (size_t i=0; i< sizeof_vert_handles ; ++i) {
-//       cout << "vert_handles["<<i<<"]: " << vert_handles[i] << endl;
-//     }
-//     cout << "sizeof_csr_data " << sizeof_csr_data << endl;
-//     for (size_t i=0; i< sizeof_csr_data ; ++i) {
-//       cout << "csr_data["<<i<<"]: " << csr_data[i] << endl;
-//     }
-//     for (size_t i=0; i< nbElem+1 ; ++i) {
-//       cout << "csr_offsets["<<i<<"]: " << csr_offsets[i] << endl;
-//     }
-
+/*
+    cout << "nbElem " << nbElem << endl;
+    for (size_t i=0; i<nbElem; ++i) {
+      cout << "mElements["<<i<<"]: " << mElements[i] << endl;
+    }
+    cout << "sizeof_vert_handles " << sizeof_vert_handles << endl;
+    for (size_t i=0; i< sizeof_vert_handles ; ++i) {
+      cout << "vert_handles["<<i<<"]: " << vert_handles[i] << endl;
+    }
+    cout << "sizeof_csr_data " << sizeof_csr_data << endl;
+    for (size_t i=0; i< sizeof_csr_data ; ++i) {
+      cout << "csr_data["<<i<<"]: " << csr_data[i] << endl;
+    }
+    for (size_t i=0; i< nbElem+1 ; ++i) {
+      cout << "csr_offsets["<<i<<"]: " << csr_offsets[i] << endl;
+    }
+*/
     // Make sure a handle is returned for each vertex.
     for (int i=0; i<9; ++i) {
       CPPUNIT_ASSERT( vert_handles[i] != 0 );
@@ -300,9 +318,9 @@ public:
 
     // Makes sure CSR offsets are valid
     CPPUNIT_ASSERT( csr_offsets[0] == 0 );
-    CPPUNIT_ASSERT( csr_offsets[1] >=3 && csr_offsets[1]<=12 );
-    CPPUNIT_ASSERT( csr_offsets[2] >=3 && csr_offsets[2]<=12 );
-    CPPUNIT_ASSERT( csr_offsets[3] >=3 && csr_offsets[3]<=12 );
+    CPPUNIT_ASSERT( csr_offsets[1] >=3 && csr_offsets[1]<=4 );
+    CPPUNIT_ASSERT( csr_offsets[2] >=7 && csr_offsets[2]<=8 );
+    CPPUNIT_ASSERT( csr_offsets[3] >=11 && csr_offsets[3]<=12 );
     CPPUNIT_ASSERT( csr_offsets[4] == 15 );
     
     // When sizeof_csr_data is insufficient, makes sure an error is set 
@@ -433,4 +451,4 @@ public:
 
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(MeshInterfaceTestTSTT, "MeshInterfaceTestTSTT");
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(MeshInterfaceTestTSTT, "Unit");
+//CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(MeshInterfaceTestTSTT, "Unit");
