@@ -95,6 +95,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   const double beta0   = 0.25;
   const double beta1   = 0.80;
   const double tol1    = 1e-8;
+  const double tol2    = 1e-12;
   const double epsilon = 1e-10;
   double original_value, new_value;
   double beta;
@@ -105,8 +106,14 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   Vector3D* d = &d_vect[0];
   bool fn_bool=true;// bool used for determining validity of patch
 
-    //int i,n;
-  
+  int i;
+
+  // TODD -- Don't blame the code for bad things happening when using a
+  //         bad termination test or requesting more accuracy than is
+  //	     possible.
+  //
+  //         Also, 
+
   // 1.  Allocate a hessian and calculate the sparsity pattern.
   mHessian.initialize(pd, err); MSQ_ERRRTN(err);
   // 2.  Calculate the gradient and Hessian for the patch
@@ -156,16 +163,20 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
     //         step if the direction from the conjugate gradient solver
     //         is not a descent direction for the objective function.  We
     //         SHOULD always get a descent direction from the conjugate
-    //         method though.
+    //         method though, unless the preconditioner is not positive
+    //         definite.
     // If direction is positive, does a gradient (steepest descent) step.
-    // if (alpha>0) {
-    //  PRINT_INFO("Taking a gradient step.");
-    //  alpha = 0;
-    //  for (i=0; i<nv; ++i) {
-    //    d[i] = -grad[i]; 
-    //    alpha += grad[i]%d[i]; // recomputes alpha.
-    //  }
-    // }
+
+    if (alpha > epsilon) {
+      MSQ_PRINT(1)("Newton direction not descent; switching to gradient.  Ensure preconditioner is positive definite.");
+      alpha = inner(grad, grad, nv); 	// compute norm squared of gradient
+      if (alpha < 1) alpha = 1;	        // take max with constant
+      for (i = 0; i < nv; ++i) {
+        d[i] = -grad[i] / alpha; 	// compute scaled gradient
+      }
+      alpha = inner(grad, d, nv);  	// recompute alpha
+					// equal to one for large gradient
+    }
     
     alpha *= sigma;
     beta = 1.0;
@@ -189,6 +200,11 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
     //         high accuracy and have a large mesh, talk with Todd about
     //         the numerical issues so that we can fix it.
 
+    // TODD -- the Armijo linesearch here is only good for differentiable
+    //         functions.  When projections are involved, you should change
+    //	       to a form of the linesearch meant for nondifferentiable
+    //         functions.
+
     pd.move_free_vertices_constrained(d, nv, beta, err); MSQ_ERRRTN(err);
     fn_bool = objFunc->compute_gradient(pd, grad, new_value, err); MSQ_ERRRTN(err);
     if ((fn_bool && (original_value - new_value >= -alpha*beta - epsilon)) ||
@@ -206,7 +222,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
         beta *= beta1;
       }
       pd.set_to_vertices_memento(coordsMem, err); MSQ_ERRRTN(err);
-
+      
       // Standard Armijo linesearch rules
  
       while (beta >= tol1) {
@@ -231,10 +247,73 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
         pd.set_to_vertices_memento(coordsMem, err); MSQ_ERRRTN(err);
       } 
 
-      // Make sure we did not hit the lower limit on beta
       if (beta < tol1) {
-        MSQ_PRINT(1)("Newton step not good.");
-        return;
+	// assert(pd.set_to_vertices_memento called last)
+
+        // TODD -- Lower limit on steplength reached.  Direction does not 
+	//         appear to make sufficient progress decreasing the 
+	//         objective function.  This can happen when you are 
+        //         very near a solution due to numerical errors in 
+	//         computing the objective function.  It can also happen 
+        //         when the direction is not a descent direction and when
+	//         you are projecting the iterates onto a surface.
+	//
+	// 	   The latter cases require the use of a linesearch on
+	//         a gradient step.  If this linesearch terminate with
+	//         insufficient decrease, then you are at a critical 
+	//         point and should stop!
+	//
+	//	   The numerical errors with the objective function cannot
+	//	   be overcome.  Eventually, the gradient step will
+	//	   fail to compute a new direction and you will stop.
+
+        MSQ_PRINT(1)("Sufficient decrease not obtained in linesearch; switching to gradient.");
+
+	alpha = inner(grad, grad, nv); 	// compute norm squared of gradient
+	if (alpha < 1) alpha = 1;	// take max with constant
+	for (i = 0; i < nv; ++i) {
+	  d[i] = -grad[i] / alpha; 	// compute scaled gradient
+	}
+	alpha = inner(grad, d, nv);  	// recompute alpha
+	alpha *= sigma;                 // equal to one for large gradient
+	beta = 1.0;
+
+	// Standard Armijo linesearch rules
+	while (beta >= tol2) {
+	  // 6. Search along the direction
+	  //    (a) trial = x + beta*d
+	  pd.move_free_vertices_constrained(d, nv, beta, err); MSQ_ERRRTN(err);
+	  //    (b) function evaluation
+	  fn_bool = objFunc->evaluate(pd, new_value, err);  MSQ_ERRRTN(err);
+	  //    (c) check for sufficient decrease and stop
+	  if (!fn_bool) { 
+	    // function not defined at trial point
+	    beta *= beta0;
+	  }
+	  else if (original_value - new_value >= -alpha*beta - epsilon ) {
+	    // iterate is acceptable.
+	    break; 
+	  }
+	  else {
+	    // iterate is not acceptable -- shrink beta
+	    beta *= beta1;
+	  }
+	  pd.set_to_vertices_memento(coordsMem, err); MSQ_ERRRTN(err);
+	} 
+
+	if (beta < tol2) {
+	  // assert(pd.set_to_vertices_memento called last)
+	  
+	  // TODD -- Lower limit on steplength reached.  Gradient does not 
+	  //         appear to make sufficient progress decreasing the 
+	  //         objective function.  This can happen when you are 
+	  //         very near a solution due to numerical errors in 
+	  //         computing the objective function.  Most likely you
+	  //         are at a critical point for the problem.
+
+	  MSQ_PRINT(1)("Sufficient decrease not obtained with gradient; critical point likely found.");
+	  break;
+	}
       }
 
       // Compute the gradient at the new point -- needed by termination check
@@ -259,7 +338,6 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
     // if more Newton steps ahead, recomputes the Hessian.
     if (!inner_criterion) {
       objFunc->compute_hessian(pd, mHessian, grad, original_value, err);MSQ_ERRRTN(err);
-        //PRINT_INFO("  Objective Function value %f\n",original_value);
     }
   }
   MSQ_PRINT(2)("FINISHED\n");
