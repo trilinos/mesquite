@@ -28,6 +28,8 @@ namespace Mesquite
   {
   public:
     ConjugateGradient(ObjectiveFunction* objective, MsqError &err);
+
+    virtual ~ConjugateGradient();
     
       //!Set the patch type
     virtual void set_patch_type(PatchData::PatchType type, MsqError &err, 
@@ -63,7 +65,6 @@ namespace Mesquite
 private:
     Vector3D* fGrad;
     Vector3D* pGrad;
-    //Vector3D* mCoord;
     PatchDataVerticesMemento* pMemento;
     Vector3D* fNewGrad;
     int arraySize;

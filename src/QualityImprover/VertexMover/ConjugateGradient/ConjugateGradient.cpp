@@ -21,7 +21,11 @@ using namespace Mesquite;
 #define __FUNC__ "ConjugateGradient::ConjugateGradient" 
 ConjugateGradient::ConjugateGradient(ObjectiveFunction* objective,
                                      MsqError &err) :
-  VertexMover()
+  VertexMover(),
+  fGrad(NULL),
+  pGrad(NULL),
+  pMemento(NULL),
+  fNewGrad(NULL)
 {
   this->set_name("ConjugateGradient");
   this->set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err, 1); MSQ_CHKERR(err);
@@ -38,7 +42,18 @@ ConjugateGradient::ConjugateGradient(ObjectiveFunction* objective,
   }
   
 }  
-  
+
+
+#undef __FUNC__
+#define __FUNC__ "ConjugateGradient::~ConjugateGradient" 
+ConjugateGradient::~ConjugateGradient()
+{
+  // Checks that cleanup() has been called. 
+  assert(fGrad==NULL);
+  assert(pGrad==NULL);
+  assert(pMemento==NULL);
+  assert(fNewGrad==NULL);
+}
   
 #undef __FUNC__
 #define __FUNC__ "ConjugateGradient::initialize" 
@@ -132,7 +147,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
   
   if(conjGradDebug>0){
     PRINT_INFO("\nCG's DEGUB LEVEL = %i \n",conjGradDebug);
-    grad_norm=infinity_norm(fGrad,num_vert,err);
+    grad_norm=Linf(fGrad,num_vert);
     PRINT_INFO("\nCG's FIRST VALUE = %f,grad_norm = %f",f,grad_norm);
     PRINT_INFO("\n   TIME %f",c_timer.since_birth());
     grad_norm=MSQ_MAX_CAP;
@@ -201,7 +216,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
       }
       
       if(conjGradDebug>0){
-        grad_norm=infinity_norm(fNewGrad,num_vert,err);
+        grad_norm=Linf(fNewGrad,num_vert);
         PRINT_INFO("\nCG's VALUE = %f,  iter. = %i,  grad_norm = %f,  alp = %f",f,i,grad_norm,alp);
         PRINT_INFO("\n   TIME %f",c_timer.since_birth());
       }
@@ -232,7 +247,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
       }
       if(conjGradDebug>2){
         PRINT_INFO(" \nSEARCH DIRECTION INFINITY NORM = %e",
-                   infinity_norm(fNewGrad,num_vert,err));
+                   Linf(fNewGrad,num_vert));
       }
       
     }//end if on alp == 0
@@ -268,10 +283,10 @@ void ConjugateGradient::terminate_mesh_iteration(PatchData &/*pd*/,
 void ConjugateGradient::cleanup()
 {
     //  cout << "- Executing ConjugateGradient::iteration_end()\n";
-  delete []fGrad;
-  delete []pGrad;
-  delete []fNewGrad;
-  pMemento->~PatchDataVerticesMemento();
+  delete []fGrad; fGrad = NULL;
+  delete []pGrad; pGrad = NULL;
+  delete []fNewGrad; fNewGrad = NULL;
+  pMemento->~PatchDataVerticesMemento(); pMemento = NULL;
 }
 
 //!Computes a distance to move vertices given an initial position and search direction (stored in data member pGrad).

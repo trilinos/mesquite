@@ -44,8 +44,6 @@ namespace Mesquite
                                          MsqError &err) = 0;
     virtual void terminate_mesh_iteration(PatchData &, 
                                          MsqError &err) = 0;
-    //!Computes the L_inf norm of an array of Vector3D of length len
-    double infinity_norm(Vector3D * const vec, size_t len, MsqError &err);
 
       //!CHECK FEASIBLE IS NOT YET IMPLEMENTED.
     size_t check_feasible(PatchData &pd, MsqError &err);
@@ -91,29 +89,6 @@ namespace Mesquite
     return 0;
   }
     
-      
-        
-
-      
-#undef __FUNC__
-#define __FUNC__ "VertexMover::infinity_norm"
-/*!
-  Takes an array of Vecort3D, vec, of length len, and
-  and returns the infinity norm of vec.
-*/
-  inline double VertexMover:: infinity_norm(Vector3D * const vec, size_t len,
-                                            MsqError &/*err*/)
-  {
-    double grad_norm=0;
-    for(size_t gi=0;gi<len;++gi){
-      for (short gj=0;gj<3;++gj){
-        if(grad_norm<fabs(vec[gi][gj])){
-          grad_norm=fabs(vec[gi][gj]);
-        }
-      }
-    }
-    return grad_norm;
-  }
 
 } // namespace
 #endif // Mesquite_VertexMover_hpp
