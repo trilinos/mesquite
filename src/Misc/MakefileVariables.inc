@@ -4,7 +4,9 @@ MISCSRC = $(MISCDIR)/MesquiteError.cpp \
 	       $(MISCDIR)/MesquiteUtilities.cpp \
 	       $(MISCDIR)/MsqTimer.cpp \
 	       $(MISCDIR)/MsqMessage.cpp \
-	       $(MISCDIR)/MsqHessian.cpp
+	       $(MISCDIR)/MsqHessian.cpp \
+	       $(MISCDIR)/SimplifiedGeometryEngine.cpp \
+##	       $(MISCDIR)/ExodusConversion.cpp
 
 MISCHEADERS = \
 	$(patsubst $(MISCDIR)/%,$(localincludedir)/%,\
