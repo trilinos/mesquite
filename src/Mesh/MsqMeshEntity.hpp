@@ -120,6 +120,14 @@ namespace Mesquite
       //!Computes the signed volume of the element.
     double compute_signed_volume(PatchData &pd, MsqError &err );
     
+      //!Computes the min and max signed corner determinants of a 2d element
+    void compute_minmax_signed_corner_det2d(PatchData &pd, 
+                double &dmin, double &dmax, MsqError &err );
+
+      //!Computes the min and max signed corner determinants of a 3d element
+    void compute_minmax_signed_corner_det3d(PatchData &pd, 
+                double &dmin, double &dmax, MsqError &err );
+
   private:
     static void get_linear_quad_jac(Vector3D *sp,
                                     Vector3D &coord0, Vector3D &coord1,

@@ -984,6 +984,7 @@ void PatchData::snap_vertex_to_domain(size_t vertex_index, MsqError &/*err*/)
 #undef __FUNC__
 #define __FUNC__ "PatchData::get_domain_normal_at_vertex"
 void PatchData::get_domain_normal_at_vertex(size_t vertex_index,
+					    bool normalize,
                                    Vector3D &surf_norm,
                                    MsqError &err) const
 {
@@ -993,6 +994,7 @@ void PatchData::get_domain_normal_at_vertex(size_t vertex_index,
     meshSet->get_domain_constraint()->normal_at(
       vertexHandlesArray[vertex_index],
       surf_norm);
+    if (normalize) { surf_norm.normalize(); }
   }
   else
     err.set_msg("No domain constraint set.");

@@ -14,6 +14,7 @@ functionality is implemented in this file.
     \date 2002-05-16  
  */
 
+#include "Mesquite.hpp"
 #include "MsqMeshEntity.hpp"
 #include "MsqVertex.hpp"
 #include "PatchData.hpp"
@@ -451,7 +452,155 @@ double MsqMeshEntity::compute_signed_volume(PatchData &pd, MsqError &err) {
   };
   return 0.0;      
 }
+
+#undef __FUNC__
+#define __FUNC__ "MsqMeshEntity::compute_minmax_signed_corner_det2d"
+/*!
+  \brief Computes the signed corner determinants of the given element and 
+  returns the minimum and the maximum determinant. Returned value can be
+  negative.  If the entity passed is not a two-dimensional element,
+  an error is set. Warning: if there is no geometry available an error
+  will be set. */
+  void MsqMeshEntity::compute_minmax_signed_corner_det2d(PatchData &pd, 
+        double &dmin, double & dmax, MsqError &err) {
+
+  bool normalize = true;
+  double tem;
+  Vector3D unit_surface_normal;
+  MsqVertex *verts = pd.get_vertex_array(err);MSQ_CHKERR(err);
+
+  switch (mType)
+  {
+    case TRIANGLE:
+      pd.get_domain_normal_at_vertex(vertexIndices[0],normalize,unit_surface_normal,err);
+      dmin = unit_surface_normal%
+        ((verts[vertexIndices[1]]-verts[vertexIndices[0]])*
+         (verts[vertexIndices[2]]-verts[vertexIndices[0]]));
+      dmax = dmin;
+      break;
+      
+    case QUADRILATERAL:
+ 
+      dmin =  MSQ_DBL_MAX;
+      dmax = -MSQ_DBL_MAX;
+
+      pd.get_domain_normal_at_vertex(vertexIndices[0],normalize,unit_surface_normal,err);
+      tem = unit_surface_normal%
+        ((verts[vertexIndices[1]]-verts[vertexIndices[0]])*
+         (verts[vertexIndices[3]]-verts[vertexIndices[0]]));
+      dmin = MSQ_MIN_2(tem,dmin);
+      dmax = MSQ_MAX_2(tem,dmax);
+
+      pd.get_domain_normal_at_vertex(vertexIndices[1],normalize,unit_surface_normal,err);
+      tem = unit_surface_normal%
+        ((verts[vertexIndices[2]]-verts[vertexIndices[1]])*
+         (verts[vertexIndices[0]]-verts[vertexIndices[1]]));
+      dmin = MSQ_MIN_2(tem,dmin);
+      dmax = MSQ_MAX_2(tem,dmax);
+
+      pd.get_domain_normal_at_vertex(vertexIndices[2],normalize,unit_surface_normal,err);
+      tem = unit_surface_normal%
+        ((verts[vertexIndices[3]]-verts[vertexIndices[2]])*
+         (verts[vertexIndices[1]]-verts[vertexIndices[2]]));
+      dmin = MSQ_MIN_2(tem,dmin);
+      dmax = MSQ_MAX_2(tem,dmax);
+
+      pd.get_domain_normal_at_vertex(vertexIndices[3],normalize,unit_surface_normal,err);
+      tem = unit_surface_normal%
+        ((verts[vertexIndices[0]]-verts[vertexIndices[3]])*
+         (verts[vertexIndices[2]]-verts[vertexIndices[3]]));
+      dmin = MSQ_MIN_2(tem,dmin);
+      dmax = MSQ_MAX_2(tem,dmax);
+
+      break;
+      
+    default:
+      err.set_msg("Invalid type of element passed to compute minmax signed corner det2d.");
+  };  
+}
+
   
+#undef __FUNC__
+#define __FUNC__ "MsqMeshEntity::compute_minmax_signed_corner_det3d"
+/*!
+  \brief Computes the corner determinants of the given element and returns
+  the minimum and the maximum determinant. Returned value can be
+  negative.  If the entity passed is not a three-dimensional element,
+  an error is set.*/
+  void MsqMeshEntity::compute_minmax_signed_corner_det3d(PatchData &pd, 
+        double &dmin, double & dmax, MsqError &err) {
+
+  double tem;
+  MsqVertex *verts = pd.get_vertex_array(err);MSQ_CHKERR(err);
+  switch (mType)
+  {
+    case TETRAHEDRON:
+
+      dmin = (verts[vertexIndices[3]]-verts[vertexIndices[0]])%
+        ((verts[vertexIndices[1]]-verts[vertexIndices[0]])*
+         (verts[vertexIndices[2]]-verts[vertexIndices[0]]));
+      dmax = dmin;
+      break;
+      
+    case HEXAHEDRON:
+ 
+      dmin =  MSQ_DBL_MAX;
+      dmax = -MSQ_DBL_MAX;
+
+      tem = (verts[vertexIndices[4]]-verts[vertexIndices[0]])%
+        ((verts[vertexIndices[1]]-verts[vertexIndices[0]])*
+         (verts[vertexIndices[3]]-verts[vertexIndices[0]]));
+      dmin = MSQ_MIN_2(tem,dmin);
+      dmax = MSQ_MAX_2(tem,dmax);
+
+      tem = (verts[vertexIndices[5]]-verts[vertexIndices[1]])%
+        ((verts[vertexIndices[2]]-verts[vertexIndices[1]])*
+         (verts[vertexIndices[0]]-verts[vertexIndices[1]]));
+      dmin = MSQ_MIN_2(tem,dmin);
+      dmax = MSQ_MAX_2(tem,dmax);
+
+      tem = (verts[vertexIndices[6]]-verts[vertexIndices[2]])%
+        ((verts[vertexIndices[3]]-verts[vertexIndices[2]])*
+         (verts[vertexIndices[1]]-verts[vertexIndices[2]]));
+      dmin = MSQ_MIN_2(tem,dmin);
+      dmax = MSQ_MAX_2(tem,dmax);
+
+      tem = (verts[vertexIndices[7]]-verts[vertexIndices[3]])%
+        ((verts[vertexIndices[0]]-verts[vertexIndices[3]])*
+         (verts[vertexIndices[2]]-verts[vertexIndices[3]]));
+      dmin = MSQ_MIN_2(tem,dmin);
+      dmax = MSQ_MAX_2(tem,dmax);
+
+      tem = (verts[vertexIndices[0]]-verts[vertexIndices[4]])%
+        ((verts[vertexIndices[7]]-verts[vertexIndices[4]])*
+         (verts[vertexIndices[5]]-verts[vertexIndices[4]]));
+      dmin = MSQ_MIN_2(tem,dmin);
+      dmax = MSQ_MAX_2(tem,dmax);
+
+      tem = (verts[vertexIndices[1]]-verts[vertexIndices[5]])%
+        ((verts[vertexIndices[4]]-verts[vertexIndices[5]])*
+         (verts[vertexIndices[6]]-verts[vertexIndices[5]]));
+      dmin = MSQ_MIN_2(tem,dmin);
+      dmax = MSQ_MAX_2(tem,dmax);
+
+      tem = (verts[vertexIndices[2]]-verts[vertexIndices[6]])%
+        ((verts[vertexIndices[5]]-verts[vertexIndices[6]])*
+         (verts[vertexIndices[7]]-verts[vertexIndices[6]]));
+      dmin = MSQ_MIN_2(tem,dmin);
+      dmax = MSQ_MAX_2(tem,dmax);
+
+      tem = (verts[vertexIndices[3]]-verts[vertexIndices[7]])%
+        ((verts[vertexIndices[6]]-verts[vertexIndices[7]])*
+         (verts[vertexIndices[4]]-verts[vertexIndices[7]]));
+      dmin = MSQ_MIN_2(tem,dmin);
+      dmax = MSQ_MAX_2(tem,dmax);
+
+      break;
+      
+    default:
+      err.set_msg("Invalid type of element passed to compute minmax signed corner det3d.");
+  };  
+}
 
 #undef __FUNC__
 #define __FUNC__ "MsqMeshEntity::get_connected_vertices"

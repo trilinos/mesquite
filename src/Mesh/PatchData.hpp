@@ -175,7 +175,8 @@ namespace Mesquite
           the normal will be set to (0,0,0)
           Check PatchData::domain_set() is not false first.
       */
-    void get_domain_normal_at_vertex(size_t vertex_index, Vector3D &surf_norm,
+    void get_domain_normal_at_vertex(size_t vertex_index, bool normalize,
+                                     Vector3D &surf_norm,
                                      MsqError &err) const;
     
       /*! Get the normal to the domain at the centroid (projected to the
