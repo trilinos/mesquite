@@ -40,7 +40,7 @@ double LInfTemplate::concrete_evaluate(PatchData &patch, MsqError &err){
   QualityMetric* currentQM = get_quality_metric();
   if(currentQM==NULL)
     currentQM=get_quality_metric_list().front();
-  if(currentQM->get_evaluation_mode()!=QualityMetric::VERTEX){
+  if(currentQM->get_metric_type()==QualityMetric::ELEMENT_BASED){
     int num_elements=patch.num_elements();
     MsqMeshEntity* elems=patch.get_element_array(err);
       //Michael:  this may not do what we want
