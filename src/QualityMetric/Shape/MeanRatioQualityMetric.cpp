@@ -2086,6 +2086,538 @@ inline bool h_fcn_3i(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
 }
 
 
+inline bool m_fcn_3d(double &obj, const Vector3D x[4], const Vector3D &d)
+{
+  double matr[9], f;
+  double g;
+
+  /* Calculate M = A*inv(W). */
+  matr[0] = d[0]*(x[1][0] - x[0][0]);
+  matr[1] = d[1]*(x[2][0] - x[0][0]);
+  matr[2] = d[2]*(x[3][0] - x[0][0]);
+
+  matr[3] = d[0]*(x[5][1] - x[4][1]);
+  matr[4] = d[1]*(x[6][1] - x[4][1]);
+  matr[5] = d[2]*(x[7][1] - x[4][1]);
+
+  matr[6] = d[0]*(x[9][2] - x[8][2]);
+  matr[7] = d[1]*(x[10][2] - x[8][2]);
+  matr[8] = d[2]*(x[11][2] - x[8][2]);
+
+  /* Calculate det(M). */
+  g = matr[0]*(matr[4]*matr[8] - matr[5]*matr[7]) +
+      matr[1]*(matr[5]*matr[6] - matr[3]*matr[8]) +
+      matr[2]*(matr[3]*matr[7] - matr[4]*matr[6]);
+  if (g < MSQ_MIN) { obj = g; return false; }
+
+  /* Calculate norm(M). */
+  f = matr[0]*matr[0] + matr[1]*matr[1] + matr[2]*matr[2] +
+      matr[3]*matr[3] + matr[4]*matr[4] + matr[5]*matr[5] +
+      matr[6]*matr[6] + matr[7]*matr[7] + matr[8]*matr[8];
+
+  /* Calculate objective function. */
+  obj = a3 * f * pow(g, b3);
+  return true;
+}
+
+/*****************************************************************************/
+/* Optimal derivative calculation courtesy of Paul Hovland (at least we      */
+/* think it is optimal).  The original code provided was modified to         */
+/* reduce the number of flops and intermediate variables, and improve the    */
+/* locality of reference.                                                    */
+/*                                                                           */
+/* This requires 112 flops.  The function only requires 52 flops.            */
+/*****************************************************************************/
+
+inline bool g_fcn_3d(double &obj, Vector3D g_obj[4], 
+		     const Vector3D x[4], const Vector3D &d)
+{
+  double matr[9], f;
+  double adj_m[9], g;
+  double loc1, loc2, loc3, loc4;
+
+  /* Calculate M = A*inv(W). */
+  matr[0] = d[0]*(x[1][0] - x[0][0]);
+  matr[1] = d[1]*(x[2][0] - x[0][0]);
+  matr[2] = d[2]*(x[3][0] - x[0][0]);
+
+  matr[3] = d[0]*(x[5][1] - x[4][1]);
+  matr[4] = d[1]*(x[6][1] - x[4][1]);
+  matr[5] = d[2]*(x[7][1] - x[4][1]);
+
+  matr[6] = d[0]*(x[9][2] - x[8][2]);
+  matr[7] = d[1]*(x[10][2] - x[8][2]);
+  matr[8] = d[2]*(x[11][2] - x[8][2]);
+
+  /* Calculate det(M). */
+  loc1 = matr[4]*matr[8] - matr[5]*matr[7];
+  loc2 = matr[5]*matr[6] - matr[3]*matr[8];
+  loc3 = matr[3]*matr[7] - matr[4]*matr[6];
+  g = matr[0]*loc1 + matr[1]*loc2 + matr[2]*loc3;
+  if (g < MSQ_MIN) { obj = g; return false; }
+
+  /* Calculate norm(M). */
+  f = matr[0]*matr[0] + matr[1]*matr[1] + matr[2]*matr[2] + 
+      matr[3]*matr[3] + matr[4]*matr[4] + matr[5]*matr[5] +
+      matr[6]*matr[6] + matr[7]*matr[7] + matr[8]*matr[8];
+ 
+  /* Calculate objective function. */
+  loc4 = a3 * pow(g, b3);
+  obj = f * loc4;
+
+  /* Calculate the derivative of the objective function. */
+  f = 2.0*loc4;
+  g = b3*obj/g; 
+
+  adj_m[0] = d[0]*(matr[0]*f + loc1*g);
+  adj_m[1] = d[1]*(matr[1]*f + loc2*g);
+  adj_m[2] = d[2]*(matr[2]*f + loc3*g);
+
+  loc1 = matr[0]*g;
+  loc2 = matr[1]*g;
+  loc3 = matr[2]*g;
+
+  adj_m[3] = d[0]*(matr[3]*f + loc3*matr[7] - loc2*matr[8]);
+  adj_m[4] = d[1]*(matr[4]*f + loc1*matr[8] - loc3*matr[6]);
+  adj_m[5] = d[2]*(matr[5]*f + loc2*matr[6] - loc1*matr[7]);
+
+  adj_m[6] = d[0]*(matr[6]*f + loc2*matr[5] - loc3*matr[4]);
+  adj_m[7] = d[1]*(matr[7]*f + loc3*matr[3] - loc1*matr[5]);
+  adj_m[8] = d[2]*(matr[8]*f + loc1*matr[4] - loc2*matr[3]);
+
+  g_obj[0][0] = -adj_m[0] - adj_m[1] - adj_m[2];
+  g_obj[1][0] =  adj_m[0];
+  g_obj[2][0] =  adj_m[1];
+  g_obj[3][0] =  adj_m[2];
+
+  g_obj[0][1] = -adj_m[3] - adj_m[4] - adj_m[5];
+  g_obj[1][1] =  adj_m[3];
+  g_obj[2][1] =  adj_m[4];
+  g_obj[3][1] =  adj_m[5];
+
+  g_obj[0][2] = -adj_m[6] - adj_m[7] - adj_m[8];
+  g_obj[1][2] =  adj_m[6];
+  g_obj[2][2] =  adj_m[7];
+  g_obj[3][2] =  adj_m[8];
+  return true;
+}
+
+/*****************************************************************************/
+/* The Hessian calculation is done by blocks.  Only the upper triangular     */
+/* blocks are stored.  The results in the data is in the following order:    */
+/*    [d1 b1 b2 d2 b3 d3 ]                                                   */
+/* The matrices on the diagonal (d1-d3) each contain 10 elements, while the  */
+/* off-diagonal elements (b1-b3) each contain 16 elements.                   */
+/*                                                                           */
+/* The code requires 433 flops.  The gradient evaluation needs 112 flops     */
+/* and the function requires 52 flops.                                       */
+/*****************************************************************************/
+
+inline int h_fcn_3d(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10], 
+		    const Vector3D x[4], const Vector3D &d)
+{
+  double matr[9], f;
+  double adj_m[9], g;
+  double dg[9], loc0, loc1, loc2, loc3, loc4;
+  double A[3], J_A[6], J_B[9], J_C[9];
+
+  const double scale[6] = {
+    d[0]*d[0], d[0]*d[1], d[0]*d[2],
+               d[1]*d[1], d[1]*d[2],
+                          d[2]*d[2]
+  };
+
+  /* Calculate M = A*inv(W). */
+  matr[0] = d[0]*(x[1][0] - x[0][0]);
+  matr[1] = d[1]*(x[2][0] - x[0][0]);
+  matr[2] = d[2]*(x[3][0] - x[0][0]);
+
+  matr[3] = d[0]*(x[5][1] - x[4][1]);
+  matr[4] = d[1]*(x[6][1] - x[4][1]);
+  matr[5] = d[2]*(x[7][1] - x[4][1]);
+
+  matr[6] = d[0]*(x[9][2] - x[8][2]);
+  matr[7] = d[1]*(x[10][2] - x[8][2]);
+  matr[8] = d[2]*(x[11][2] - x[8][2]);
+
+  /* Calculate det(M). */
+  dg[0] = matr[4]*matr[8] - matr[5]*matr[7];
+  dg[1] = matr[5]*matr[6] - matr[3]*matr[8];
+  dg[2] = matr[3]*matr[7] - matr[4]*matr[6];
+  g = matr[0]*dg[0] + matr[1]*dg[1] + matr[2]*dg[2];
+  if (g < MSQ_MIN) { obj = g; return false; }
+
+  /* Calculate norm(M). */
+  f = matr[0]*matr[0] + matr[1]*matr[1] + matr[2]*matr[2] + 
+      matr[3]*matr[3] + matr[4]*matr[4] + matr[5]*matr[5] +
+      matr[6]*matr[6] + matr[7]*matr[7] + matr[8]*matr[8];
+
+  loc4 = g;
+
+  /* Calculate objective function. */
+  loc1 = a3 * pow(g, b3);
+  obj = f * loc1;
+
+  /* Calculate the derivative of the objective function. */
+  f = 2.0*loc1;
+  g = b3*obj/g; 
+
+  dg[3] = matr[2]*matr[7] - matr[1]*matr[8];
+  dg[4] = matr[0]*matr[8] - matr[2]*matr[6];
+  dg[5] = matr[1]*matr[6] - matr[0]*matr[7];
+  dg[6] = matr[1]*matr[5] - matr[2]*matr[4];
+  dg[7] = matr[2]*matr[3] - matr[0]*matr[5];
+  dg[8] = matr[0]*matr[4] - matr[1]*matr[3];
+
+  adj_m[0] = d[0]*(matr[0]*f + dg[0]*g);
+  adj_m[1] = d[1]*(matr[1]*f + dg[1]*g);
+  adj_m[2] = d[2]*(matr[2]*f + dg[2]*g);
+  adj_m[3] = d[0]*(matr[3]*f + dg[3]*g);
+  adj_m[4] = d[1]*(matr[4]*f + dg[4]*g);
+  adj_m[5] = d[2]*(matr[5]*f + dg[5]*g);
+  adj_m[6] = d[0]*(matr[6]*f + dg[6]*g);
+  adj_m[7] = d[1]*(matr[7]*f + dg[7]*g);
+  adj_m[8] = d[2]*(matr[8]*f + dg[8]*g);
+
+  g_obj[0][0] = -adj_m[0] - adj_m[1] - adj_m[2];
+  g_obj[1][0] =  adj_m[0];
+  g_obj[2][0] =  adj_m[1];
+  g_obj[3][0] =  adj_m[2];
+
+  g_obj[0][1] = -adj_m[3] - adj_m[4] - adj_m[5];
+  g_obj[1][1] =  adj_m[3];
+  g_obj[2][1] =  adj_m[4];
+  g_obj[3][1] =  adj_m[5];
+
+  g_obj[0][2] = -adj_m[6] - adj_m[7] - adj_m[8];
+  g_obj[1][2] =  adj_m[6];
+  g_obj[2][2] =  adj_m[7];
+  g_obj[3][2] =  adj_m[8];
+
+  loc0 = g;
+  loc1 = f;
+  f = f*b3/loc4;
+  g = g*b3m1/loc4;
+
+  /* First block of rows */
+  loc2 = matr[0]*f;
+  loc3 = dg[0]*f;
+  loc4 = dg[0]*g + loc2;
+
+  J_A[0] = loc1 + dg[0]*(loc2 + loc4);
+  J_A[1] = loc3*matr[1] + loc4*dg[1];
+  J_A[2] = loc3*matr[2] + loc4*dg[2];
+  J_B[0] = loc3*matr[3] + loc4*dg[3];
+  J_B[1] = loc3*matr[4] + loc4*dg[4];
+  J_B[2] = loc3*matr[5] + loc4*dg[5];
+  J_C[0] = loc3*matr[6] + loc4*dg[6];
+  J_C[1] = loc3*matr[7] + loc4*dg[7];
+  J_C[2] = loc3*matr[8] + loc4*dg[8];
+
+  loc2 = matr[1]*f;
+  loc3 = dg[1]*f;
+  loc4 = dg[1]*g + loc2;
+
+  J_A[3] = loc1 + dg[1]*(loc2 + loc4);
+  J_A[4] = loc3*matr[2] + loc4*dg[2];
+  J_B[3] = loc3*matr[3] + loc4*dg[3];
+  J_B[4] = loc3*matr[4] + loc4*dg[4];
+  J_B[5] = loc3*matr[5] + loc4*dg[5];
+  J_C[3] = loc3*matr[6] + loc4*dg[6];
+  J_C[4] = loc3*matr[7] + loc4*dg[7];
+  J_C[5] = loc3*matr[8] + loc4*dg[8];
+
+  loc2 = matr[2]*f;
+  loc3 = dg[2]*f;
+  loc4 = dg[2]*g + loc2;
+
+  J_A[5] = loc1 + dg[2]*(loc2 + loc4);
+  J_B[6] = loc3*matr[3] + loc4*dg[3];
+  J_B[7] = loc3*matr[4] + loc4*dg[4];
+  J_B[8] = loc3*matr[5] + loc4*dg[5];
+  J_C[6] = loc3*matr[6] + loc4*dg[6];
+  J_C[7] = loc3*matr[7] + loc4*dg[7];
+  J_C[8] = loc3*matr[8] + loc4*dg[8];
+
+  /* First diagonal block */
+  J_A[0] *= scale[0];
+  J_A[1] *= scale[1];
+  J_A[2] *= scale[2];
+  J_A[3] *= scale[3];
+  J_A[4] *= scale[4];
+  J_A[5] *= scale[5];
+
+  A[0] = -J_A[0] - J_A[1] - J_A[2];
+  A[1] = -J_A[1] - J_A[3] - J_A[4];
+  A[2] = -J_A[2] - J_A[4] - J_A[5];
+
+  h_obj[0][0][0] = -A[0] - A[1] - A[2];
+  h_obj[1][0][0] =  A[0];
+  h_obj[2][0][0] =  A[1];
+  h_obj[3][0][0] =  A[2];
+
+  h_obj[4][0][0] = J_A[0];
+  h_obj[5][0][0] = J_A[1];
+  h_obj[6][0][0] = J_A[2];
+
+  h_obj[7][0][0] = J_A[3];
+  h_obj[8][0][0] = J_A[4];
+
+  h_obj[9][0][0] = J_A[5];
+
+  /* First off-diagonal block */
+  loc2 = matr[8]*loc0;
+  J_B[1] += loc2;
+  J_B[3] -= loc2;
+
+  loc2 = matr[7]*loc0;
+  J_B[2] -= loc2;
+  J_B[6] += loc2;
+
+  loc2 = matr[6]*loc0;
+  J_B[5] += loc2;
+  J_B[7] -= loc2;
+
+  J_B[0] *= scale[0];
+  J_B[1] *= scale[1];
+  J_B[2] *= scale[2];
+  J_B[3] *= scale[1];
+  J_B[4] *= scale[3];
+  J_B[5] *= scale[4];
+  J_B[6] *= scale[2];
+  J_B[7] *= scale[4];
+  J_B[8] *= scale[5];
+
+  A[0] = -J_B[0] - J_B[3] - J_B[6];
+  A[1] = -J_B[1] - J_B[4] - J_B[7];
+  A[2] = -J_B[2] - J_B[5] - J_B[8];
+
+  h_obj[0][0][1] = -A[0] - A[1] - A[2];
+  h_obj[1][0][1] =  A[0];
+  h_obj[2][0][1] =  A[1];
+  h_obj[3][0][1] =  A[2];
+
+  h_obj[1][1][0] = -J_B[0] - J_B[1] - J_B[2];
+  h_obj[4][0][1] =  J_B[0];
+  h_obj[5][0][1] =  J_B[1];
+  h_obj[6][0][1] =  J_B[2];
+
+  h_obj[2][1][0] = -J_B[3] - J_B[4] - J_B[5];
+  h_obj[5][1][0] =  J_B[3];
+  h_obj[7][0][1] =  J_B[4];
+  h_obj[8][0][1] =  J_B[5];
+
+  h_obj[3][1][0] = -J_B[6] - J_B[7] - J_B[8];
+  h_obj[6][1][0] =  J_B[6];
+  h_obj[8][1][0] =  J_B[7];
+  h_obj[9][0][1] =  J_B[8];
+
+  /* Second off-diagonal block */
+  loc2 = matr[5]*loc0;
+  J_C[1] -= loc2;
+  J_C[3] += loc2;
+
+  loc2 = matr[4]*loc0;
+  J_C[2] += loc2;
+  J_C[6] -= loc2;
+
+  loc2 = matr[3]*loc0;
+  J_C[5] -= loc2;
+  J_C[7] += loc2;
+
+  J_C[0] *= scale[0];
+  J_C[1] *= scale[1];
+  J_C[2] *= scale[2];
+  J_C[3] *= scale[1];
+  J_C[4] *= scale[3];
+  J_C[5] *= scale[4];
+  J_C[6] *= scale[2];
+  J_C[7] *= scale[4];
+  J_C[8] *= scale[5];
+
+  A[0] = -J_C[0] - J_C[3] - J_C[6];
+  A[1] = -J_C[1] - J_C[4] - J_C[7];
+  A[2] = -J_C[2] - J_C[5] - J_C[8];
+
+  h_obj[0][0][2] = -A[0] - A[1] - A[2];
+  h_obj[1][0][2] =  A[0];
+  h_obj[2][0][2] =  A[1];
+  h_obj[3][0][2] =  A[2];
+
+  h_obj[1][2][0] = -J_C[0] - J_C[1] - J_C[2];
+  h_obj[4][0][2] =  J_C[0];
+  h_obj[5][0][2] =  J_C[1];
+  h_obj[6][0][2] =  J_C[2];
+
+  h_obj[2][2][0] = -J_C[3] - J_C[4] - J_C[5];
+  h_obj[5][2][0] =  J_C[3];
+  h_obj[7][0][2] =  J_C[4];
+  h_obj[8][0][2] =  J_C[5];
+
+  h_obj[3][2][0] = -J_C[6] - J_C[7] - J_C[8];
+  h_obj[6][2][0] =  J_C[6];
+  h_obj[8][2][0] =  J_C[7];
+  h_obj[9][0][2] =  J_C[8];
+
+  /* Second block of rows */
+  loc2 = matr[3]*f;
+  loc3 = dg[3]*f;
+  loc4 = dg[3]*g + loc2;
+
+  J_A[0] = loc1 + dg[3]*(loc2 + loc4);
+  J_A[1] = loc3*matr[4] + loc4*dg[4];
+  J_A[2] = loc3*matr[5] + loc4*dg[5];
+  J_B[0] = loc3*matr[6] + loc4*dg[6];
+  J_B[1] = loc3*matr[7] + loc4*dg[7];
+  J_B[2] = loc3*matr[8] + loc4*dg[8];
+
+  loc2 = matr[4]*f;
+  loc3 = dg[4]*f;
+  loc4 = dg[4]*g + loc2;
+
+  J_A[3] = loc1 + dg[4]*(loc2 + loc4);
+  J_A[4] = loc3*matr[5] + loc4*dg[5];
+  J_B[3] = loc3*matr[6] + loc4*dg[6];
+  J_B[4] = loc3*matr[7] + loc4*dg[7];
+  J_B[5] = loc3*matr[8] + loc4*dg[8];
+
+  loc2 = matr[5]*f;
+  loc3 = dg[5]*f;
+  loc4 = dg[5]*g + loc2;
+
+  J_A[5] = loc1 + dg[5]*(loc2 + loc4);
+  J_B[6] = loc3*matr[6] + loc4*dg[6];
+  J_B[7] = loc3*matr[7] + loc4*dg[7];
+  J_B[8] = loc3*matr[8] + loc4*dg[8];
+
+  /* Second diagonal block */
+  J_A[0] *= scale[0];
+  J_A[1] *= scale[1];
+  J_A[2] *= scale[2];
+  J_A[3] *= scale[3];
+  J_A[4] *= scale[4];
+  J_A[5] *= scale[5];
+
+  A[0] = -J_A[0] - J_A[1] - J_A[2];
+  A[1] = -J_A[1] - J_A[3] - J_A[4];
+  A[2] = -J_A[2] - J_A[4] - J_A[5];
+
+  h_obj[0][1][1] = -A[0] - A[1] - A[2];
+  h_obj[1][1][1] =  A[0];
+  h_obj[2][1][1] =  A[1];
+  h_obj[3][1][1] =  A[2];
+
+  h_obj[4][1][1] = J_A[0];
+  h_obj[5][1][1] = J_A[1];
+  h_obj[6][1][1] = J_A[2];
+
+  h_obj[7][1][1] = J_A[3];
+  h_obj[8][1][1] = J_A[4];
+
+  h_obj[9][1][1] = J_A[5];
+
+  /* Third off-diagonal block */
+  loc2 = matr[2]*loc0;
+  J_B[1] += loc2;
+  J_B[3] -= loc2;
+
+  loc2 = matr[1]*loc0;
+  J_B[2] -= loc2;
+  J_B[6] += loc2;
+
+  loc2 = matr[0]*loc0;
+  J_B[5] += loc2;
+  J_B[7] -= loc2;
+
+  J_B[0] *= scale[0];
+  J_B[1] *= scale[1];
+  J_B[2] *= scale[2];
+  J_B[3] *= scale[1];
+  J_B[4] *= scale[3];
+  J_B[5] *= scale[4];
+  J_B[6] *= scale[2];
+  J_B[7] *= scale[4];
+  J_B[8] *= scale[5];
+
+  A[0] = -J_B[0] - J_B[3] - J_B[6];
+  A[1] = -J_B[1] - J_B[4] - J_B[7];
+  A[2] = -J_B[2] - J_B[5] - J_B[8];
+
+  h_obj[0][1][2] = -A[0] - A[1] - A[2];
+  h_obj[1][1][2] =  A[0];
+  h_obj[2][1][2] =  A[1];
+  h_obj[3][1][2] =  A[2];
+
+  h_obj[1][2][1] = -J_B[0] - J_B[1] - J_B[2];
+  h_obj[4][1][2] =  J_B[0];
+  h_obj[5][1][2] =  J_B[1];
+  h_obj[6][1][2] =  J_B[2];
+
+  h_obj[2][2][1] = -J_B[3] - J_B[4] - J_B[5];
+  h_obj[5][2][1] =  J_B[3];
+  h_obj[7][1][2] =  J_B[4];
+  h_obj[8][1][2] =  J_B[5];
+
+  h_obj[3][2][1] = -J_B[6] - J_B[7] - J_B[8];
+  h_obj[6][2][1] =  J_B[6];
+  h_obj[8][2][1] =  J_B[7];
+  h_obj[9][1][2] =  J_B[8];
+
+  /* Third block of rows */
+  loc2 = matr[6]*f;
+  loc3 = dg[6]*f;
+  loc4 = dg[6]*g + loc2;
+
+  J_A[0] = loc1 + dg[6]*(loc2 + loc4);
+  J_A[1] = loc3*matr[7] + loc4*dg[7];
+  J_A[2] = loc3*matr[8] + loc4*dg[8];
+
+  loc2 = matr[7]*f;
+  loc3 = dg[7]*f;
+  loc4 = dg[7]*g + loc2;
+
+  J_A[3] = loc1 + dg[7]*(loc2 + loc4);
+  J_A[4] = loc3*matr[8] + loc4*dg[8];
+
+  loc2 = matr[8]*f;
+  loc4 = dg[8]*g + loc2;
+
+  J_A[5] = loc1 + dg[8]*(loc2 + loc4);
+
+  /* Third diagonal block */
+  J_A[0] *= scale[0];
+  J_A[1] *= scale[1];
+  J_A[2] *= scale[2];
+  J_A[3] *= scale[3];
+  J_A[4] *= scale[4];
+  J_A[5] *= scale[5];
+
+  A[0] = -J_A[0] - J_A[1] - J_A[2];
+  A[1] = -J_A[1] - J_A[3] - J_A[4];
+  A[2] = -J_A[2] - J_A[4] - J_A[5];
+
+  h_obj[0][2][2] = -A[0] - A[1] - A[2];
+  h_obj[1][2][2] =  A[0];
+  h_obj[2][2][2] =  A[1];
+  h_obj[3][2][2] =  A[2];
+
+  h_obj[4][2][2] = J_A[0];
+  h_obj[5][2][2] = J_A[1];
+  h_obj[6][2][2] = J_A[2];
+
+  h_obj[7][2][2] = J_A[3];
+  h_obj[8][2][2] = J_A[4];
+
+  h_obj[9][2][2] = J_A[5];
+
+  // completes diagonal blocks.
+  h_obj[0].fill_lower_triangle();
+  h_obj[4].fill_lower_triangle();
+  h_obj[7].fill_lower_triangle();
+  h_obj[9].fill_lower_triangle();
+  return true;
+}
+
 #undef __FUNC__
 #define __FUNC__ "MeanRatioQualityMetric::evaluate_element" 
 bool MeanRatioQualityMetric::evaluate_element(PatchData &pd,
