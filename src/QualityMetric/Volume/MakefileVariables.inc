@@ -1,6 +1,7 @@
 QMVOLUMEDIR = $(srcdir)/QualityMetric/Volume
 
-QMVOLUMESRC = 
+QMVOLUMESRC = $(QMVOLUMEDIR)/CornerJacobianQualityMetric.cpp\
+              $(QMVOLUMEDIR)/LocalSizeQualityMetric.cpp\
 
 QMVOLUMEHEADERS = \
 	$(patsubst $(QMVOLUMEDIR)/%,$(localincludedir)/%,\
