@@ -15,14 +15,6 @@
 #include "MsqTimer.hpp"
 #include "MsqFreeVertexIndexIterator.hpp"
 
-/* TODO  (Michae) Notes
-   What do we do about cull so that it isn't Metric
-   dependent... 
-   Figure out the local vs. global patch problem.  We begin with our
-   large patch... do we create a local patch to use in grad(...)
-   Go through and do clean_up.
-*/
-
 using namespace Mesquite;
 
 #undef __FUNC__
@@ -286,8 +278,9 @@ void ConjugateGradient::cleanup()
 /*!Returns alp, the double which scales the search direction vector
   which when added to the old nodal positions yields the new nodal
   positions.*/
-/*!\TODO Michael NOTE:  int &j is only to remain consisitent with CUBIT for an
-  initial test.  It can be removed.*/
+/*!\todo Michael NOTE:  ConjugateGradient::get_step's int &j is only
+  to remain consisitent with CUBIT for an initial test.  It can be
+  removed.*/
 
 double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
                                    MsqError &err)
@@ -352,11 +345,6 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
       alp=0.0; 
       return alp;
     }
-
-      //Michael: removed following else statement 1-23-03.
-      //else{
-      //return alp;
-      //}
 
     j=0;
       //while shrinking the step improves the objFunc value further,
@@ -537,41 +525,6 @@ double ConjugateGradient::get_step(PatchData &pd,double f0,int &j,
 }
 */
           
-    
-/*!cull_list is culls the list of Vertices such that every vertex
-  which is attatched to an element with a metric value below beta
-  is aded to the list
-*/
-/*
-void ConjugateGradient::cull_list(PatchData &pd,
-				double beta, MsqError &err){
-  std::list<QualityMetric*> metriclist = objFunc->get_quality_metric_list();
-  QualityMetric* qmetric;
-  qmetric=metriclist.front();
-  MsqMeshEntity* elems = pd.get_elements_array(err);
-  int num_elements=pd.num_elements();
-  int ind=0;
-  for(ind=metriclist.size();ind>0;ind--){
-    int jnd=0;
-    for(jnd=0;jnd<num_elements;jnd++){
-      //TODO (Michael) Fix culling
-      //if(qmetric->evaluate_element(elements[jnd],err)<beta){
-        list<MsqVertex*> loc_list;
-        elems[jnd].get_vertices(loc_list);
-        int knd=0;
-        for(knd=loc_list.size();knd>0;knd--){
-          MsqVertex* tem=loc_list.front();
-          loc_list.pop_front();
-          if(tem->is_free_vertex()){
-              //free_vertex_list.push_back(tem);
-          }
-        }
-	//}
-          //free_vertex_list.unique();
-    }
-  }
 
-}
-*/
 
 

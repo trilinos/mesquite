@@ -233,11 +233,6 @@ void QualityAssessor::set_histogram_range(QualityMetric* qm,
  */
 double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError& err)
 {
-    /*! \TODO (Michael) Begin NOTE
-      It does not currently work with vertex_based
-      metrics.  
-    */
-    //
     //tot_num either equals total_num_elements or total_num_vertices
     //depending on whethere the metric is element or vertex_based.
   int tot_num=0;
@@ -622,16 +617,15 @@ double QualityAssessor::assess_mesh_quality(MeshSet &ms, MsqError& err)
     ///////////////////////////////////////////////
     //PRINT TABLE OF VALUES  //////////////////////
     ///////////////////////////////////////////////
-    /*!\TODO (Michael) NOTES: delete div 2  when lose pass=2
-      div 6 is because we use patch instead of group
-      fix the way and format of display*/
+    /*!\TODO (Michael) NOTES: delete div 2  when lose pass=2.
+       Fix the way and format of display*/
   metric_counter=0;
   int column_counter=0;
   if(!printingTurnedOff){
     
     PRINT_INFO("\n************  Quality summary of MeshSet  *****************\n ");
     tot_num=0;
-      //Fo  r each metric, print the data that we have calculated.
+      //For each metric, print the data that we have calculated.
     for(metric_counter=0;metric_counter<num_metrics;metric_counter++){
         //if elem based, print element header
       if(metric_counter<num_elem_based){

@@ -55,7 +55,8 @@ namespace Mesquite
        // virtual destructor ensures use of polymorphism during destruction
      virtual ~UntangleBetaQualityMetric()
         {}
-       /*! \TODO This function needs to be modifies so that it no longer
+       /*!Evaluate the Untangle Beta metric value for an element.
+         \todo This function needs to be modifies so that it no longer
          uses compute_weighted_jacobian.  It also needs to set an error
          whenever sent a 2D element and the surface normal information
          is not available.*/

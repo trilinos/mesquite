@@ -26,8 +26,10 @@ namespace Mesquite
        This metric uses the average of the corner Jacobian determinants
        for the approximation to the volume of hex.
      */
-     /*TODO, this is currently not being done using the corner jacobian
-       method... needs to be modified to do so.*/
+     /*!\todo MB:  CornerJacobianQualityMetric is currently not being
+       evaluated using the corner jacobian method (instead it is using
+       the area functions from MsqMeshEntity... needs to be modified
+       to do so.*/
    class CornerJacobianQualityMetric : public VolumeQualityMetric
    {
   public:
