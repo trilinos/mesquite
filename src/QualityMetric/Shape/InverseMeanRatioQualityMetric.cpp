@@ -1002,6 +1002,7 @@ bool InverseMeanRatioQualityMetric::compute_element_analytical_hessian(PatchData
 // 	break;
       default:
         err.set_msg("averaging method not available.");
+        return false;
         break;
 
       }
