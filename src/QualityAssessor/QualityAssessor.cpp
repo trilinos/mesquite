@@ -258,10 +258,7 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
   
     // Check for any metrics for which a histogram is to be 
     // calculated and for which the user has not specified 
-    // minimum and maximum values.  Enable calculation of
-    // the min/max for these metrics in the first pass so
-    // we have them for calculating the histograms in the
-    // second pass.
+    // minimum and maximum values.  
     // Element-based metrics are first in list, followed
     // by vertex-based metrics.  Find first vertex-based
     // metric also such that element metrics go from
@@ -277,19 +274,13 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
       break;
 
     if (iter->funcFlags&HISTOGRAM && !iter->haveHistRange)
-    {
-      iter->funcFlags |= MINIMUM|MAXIMUM;
       need_second_pass_for_elements = true;
-    }
   }
   elem_end = iter;
   for ( ; iter != assessList.end(); ++iter)
   {
     if (iter->funcFlags&HISTOGRAM && !iter->haveHistRange)
-    {
-      iter->funcFlags |= MINIMUM|MAXIMUM;
       need_second_pass_for_vertices = true;
-    }
   }
   
     // Do element-based metrics
@@ -322,6 +313,7 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
         {
           for (iter = assessList.begin(); iter != elem_end; ++iter)
           {
+              // If first pass, get values for all metrics
             if (first_pass)
             {
               double value;
@@ -330,21 +322,21 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
                                                            value, err );
                                                            MSQ_ERRZERO(err);
               
-              if (valid)
-                iter->add_value(value);
-              else 
+              iter->add_value(value);
+              if (!valid) 
                 iter->add_invalid_value();
             }
+              // If second pass, only do metrics for which the
+              // histogram hasn't been calculated yet.
             else if (iter->funcFlags&HISTOGRAM && !iter->haveHistRange)
             {
               double value;
-              bool valid = iter->get_metric()->evaluate_element( *pd, 
-                                                           &pd->element_by_index(i),
-                                                           value, err );
-                                                           MSQ_ERRZERO(err);
+              iter->get_metric()->evaluate_element( *pd, 
+                                                    &pd->element_by_index(i),
+                                                    value, err );
+                                                    MSQ_ERRZERO(err);
               
-              if (valid)
-                iter->add_hist_value(value);
+              iter->add_hist_value(value);
             }
           }
         }
@@ -392,6 +384,7 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
         {
           for (iter = elem_end; iter != assessList.end(); ++iter)
           {
+              // If first pass, get values for all metrics
             if (first_pass)
             {
               double value;
@@ -405,6 +398,8 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
               else 
                 iter->add_invalid_value();
             }
+              // If second pass, only do metrics for which the
+              // histogram hasn't been calculated yet.
             else if (iter->funcFlags&HISTOGRAM && !iter->haveHistRange)
             {
               double value;
@@ -528,14 +523,16 @@ void QualityAssessor::Assessor::reset_data()
 
 void QualityAssessor::Assessor::add_value( double metric_value )
 {
-  if (funcFlags & (QualityAssessor::AVERAGE|QualityAssessor::STDDEV))
-    sum += metric_value;
-  if (funcFlags & (QualityAssessor::RMS|QualityAssessor::STDDEV))
-    sqrSum += metric_value*metric_value;
-  if (funcFlags & QualityAssessor::MAXIMUM && metric_value > maximum)
+  sum += metric_value;
+  sqrSum += metric_value*metric_value;
+  if (metric_value > maximum)
     maximum = metric_value;
-  if (funcFlags & QualityAssessor::MINIMUM && metric_value < minimum)
+  if (metric_value < minimum)
     minimum = metric_value;
+    // Only add value to histogram data from this function if
+    // the user has specified the range.  If user has not 
+    // specified the range, QualityAssessor will call add_hist_value()
+    // directly once the range has been calculated.
   if (funcFlags & QualityAssessor::HISTOGRAM && haveHistRange)
     add_hist_value( metric_value );
   
@@ -550,34 +547,50 @@ void QualityAssessor::Assessor::add_invalid_value()
 
 void QualityAssessor::Assessor::add_hist_value( double metric_value )
 {
-  double min, max, step;
+    // If the user has specified the range of the histogram, then
+    // haveHistRange == true and the range is [histMin,histMax].
+  double min, max;
   if (haveHistRange) {
     min = histMin;
     max = histMax;
   }
+    // If user has not specified the range, use the calculated
+    // minimum/maximum values for the metric.
   else {
     min = minimum;
     max = maximum;
   }
   
-  step = (max - min) / (histogram.size()-2);
+    // Width of one interval in histogram
+  double step = (max - min) / (histogram.size()-2);
+    
+    // First and last values in array are counts of values
+    // outside the user-specified range of the histogram
+    // (below and above, respectively.)
   if (metric_value < min)
     ++histogram[0];
   else if (metric_value > max)
     ++histogram[histogram.size()-1];
   else
   {
+      // Calculate which interval the value is in.  Add one
+      // because first entry is for values below user-specifed
+      // minimum value for histogram.
     unsigned cell = 1+(unsigned)((metric_value - min) / step);
+      // If value exactly equals maximum value, put in last
+      // valid interval, not the count of values above the
+      // maximum.
     if (cell + 1 == histogram.size())
       --cell;
+      // Add value to interval.
     ++histogram[cell];
   }
 }
 
 void QualityAssessor::print_summary( msq_stdio::ostream& stream ) const
 {
-  const int NAMEW = 19;
-  const int NUMW = 12;
+  const int NAMEW = 19;  // Width of name column in table output
+  const int NUMW = 12;   // Width of value columns in table output
   
     // Print title
   stream << msq_stdio::endl 
@@ -587,47 +600,46 @@ void QualityAssessor::print_summary( msq_stdio::ostream& stream ) const
          << msq_stdio::endl
          << msq_stdio::endl;
          
-    // Get union of function flags
+    // Get union of function flags, and list any metrics with invalid values
   msq_std::list<Assessor>::const_iterator iter;
   unsigned flags = 0;
   for (iter = assessList.begin(); iter != assessList.end(); ++iter)
+  {
+    flags |= iter->funcFlags;
+    
     if (iter->get_invalid_element_count())
-      stream << ">>>" << msq_stdio::setw(NAMEW) << iter->get_metric()->get_name()
-             << " IS INVALID FOR " << iter->get_invalid_element_count()
-             << " OF " << iter->get_count() << " VALUES!" << msq_stdio::endl
-             << msq_stdio::endl;
-    else
-      flags |= iter->funcFlags;
+    {
+      stream << iter->get_invalid_element_count() << " of "
+             << iter->get_count() << " INVALID VALUES reported for " 
+             << iter->get_metric()->get_name() 
+             << msq_stdio::endl << msq_stdio::endl;
+    }
+  }
   
+    // If printing any values
   if (flags) 
   {
+      // Print table header line
     stream << msq_stdio::setw(NAMEW) << "metric";
-    if (flags & AVERAGE)
-      stream << msq_stdio::setw(NUMW) << "average";
     if (flags & MINIMUM)
       stream << msq_stdio::setw(NUMW) << "minimum";
-    if (flags & MAXIMUM)
-      stream << msq_stdio::setw(NUMW) << "maximum";
+    if (flags & AVERAGE)
+      stream << msq_stdio::setw(NUMW) << "average";
     if (flags & RMS)
       stream << msq_stdio::setw(NUMW) << "rms";
+    if (flags & MAXIMUM)
+      stream << msq_stdio::setw(NUMW) << "maximum";
     if (flags & STDDEV)
       stream << msq_stdio::setw(NUMW) << "std.dev.";
     stream << msq_stdio::endl;
 
+      // Print out values for each assessor
     for (iter = assessList.begin(); iter != assessList.end(); ++iter)
     {
-      if (iter->get_invalid_element_count())
-        continue;
-
+        // Name column
       stream << msq_stdio::setw(NAMEW) << iter->get_metric()->get_name();
 
-      if (flags & AVERAGE)
-      {
-        if (iter->funcFlags & AVERAGE)
-          stream << msq_stdio::setw(NUMW) << iter->get_average();
-        else
-          stream << msq_stdio::setw(NUMW) << " ";
-      }
+        // Value columns
       if (flags & MINIMUM)
       {
         if (iter->funcFlags & MINIMUM)
@@ -635,10 +647,10 @@ void QualityAssessor::print_summary( msq_stdio::ostream& stream ) const
         else
           stream << msq_stdio::setw(NUMW) << " ";
       }
-      if (flags & MAXIMUM)
+      if (flags & AVERAGE)
       {
-        if (iter->funcFlags & MAXIMUM)
-          stream << msq_stdio::setw(NUMW) << iter->get_maximum();
+        if (iter->funcFlags & AVERAGE)
+          stream << msq_stdio::setw(NUMW) << iter->get_average();
         else
           stream << msq_stdio::setw(NUMW) << " ";
       }
@@ -646,6 +658,13 @@ void QualityAssessor::print_summary( msq_stdio::ostream& stream ) const
       {
         if (iter->funcFlags & RMS)
           stream << msq_stdio::setw(NUMW) << iter->get_rms();
+        else
+          stream << msq_stdio::setw(NUMW) << " ";
+      }
+      if (flags & MAXIMUM)
+      {
+        if (iter->funcFlags & MAXIMUM)
+          stream << msq_stdio::setw(NUMW) << iter->get_maximum();
         else
           stream << msq_stdio::setw(NUMW) << " ";
       }
@@ -661,21 +680,20 @@ void QualityAssessor::print_summary( msq_stdio::ostream& stream ) const
   } // if (flags)
   
   for (iter = assessList.begin(); iter != assessList.end(); ++iter)
-    if (iter->funcFlags & HISTOGRAM && !iter->get_invalid_element_count())
+    if (iter->funcFlags & HISTOGRAM)
       iter->print_histogram( stream );
 }
 
 
 void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream ) const
 {
-  const char GRAPH_CHAR = '=';
-  const int FLOATW = 12;
-  const int GRAPHW = 50;
+  const char GRAPH_CHAR = '=';  // Character used to create bar graphs
+  const int FLOATW = 12;        // Width of floating-point output
+  const int GRAPHW = 50;        // Width of bar graph
   
-  stream << msq_stdio::endl << "   " << get_metric()->get_name() 
-         << " histogram:" << msq_stdio::endl;
-  
-  double min, max, step;
+    // range is either user-specified (histMin & histMax) or
+    // calculated (minimum & maximum)
+  double min, max;
   if (haveHistRange) {
     min = histMin;
     max = histMax;
@@ -684,44 +702,83 @@ void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream ) co
     min = minimum;
     max = maximum;
   }
-  step = (max - min) / (histogram.size()-2);
+    // Witdh of one interval of histogram
+  double step = (max - min) / (histogram.size()-2);
   
+    // Find maximum value for an interval of the histogram
   unsigned i;
   int max_interval = 1;
   for (i = 0; i < histogram.size(); ++i)
     if (histogram[i] > max_interval)
       max_interval = histogram[i];
   
+    // Calculate width of field containing counts for 
+    // histogram intervals (log10(max_interval)).
   int num_width = 1;
   for (int temp = max_interval; temp > 0; temp /= 10)
     ++num_width;
 
+    // Create an array of bar graph characters for use in output
   char graph_chars[GRAPHW+1];
   memset( graph_chars, GRAPH_CHAR, sizeof(graph_chars) );
   
+    // Check if bar-graph should be linear or log10 plot
+    // Do log plot if standard deviation is less that 1.5
+    // histogram intervals.
+  bool log_plot = false;
+  if (get_stddev() < 1.5*step)
+  {
+    log_plot = true;
+    max_interval = (int)(logf(1+max_interval));
+  }
+
+  
+    // Write title
+  stream << msq_stdio::endl << "   " << get_metric()->get_name() << " histogram:";
+  if (log_plot)
+    stream << " (log10 plot)";
+  stream << msq_stdio::endl;
+
+  
+    // For each interval of histogram
   for (i = 0; i < histogram.size(); ++i)
   {
+      // First value is the count of the number of values that
+      // were below the minimum value of the histogram.
     if (0 == i)
     {
       if (0 == histogram[i])
         continue;
       stream << setw(FLOATW) << "under min";
     }
+      // Last value is the count of the number of values that
+      // were above the maximum value of the histogram.
     else if (i+1 == histogram.size())
     {
       if (0 == histogram[i])
         continue;
       stream << setw(FLOATW) << "over max";
     }
+      // Anything else is a valid interval of the histogram.
+      // Print the lower bound for each interval.
     else
     {
       stream << "   " << setw(FLOATW) << min + (i-1)*step;
     }
     
+      // Print interval count.
     stream << ": " << setw(num_width) << histogram[i] << ": ";
     
-    int num_graph = (GRAPHW * histogram[i]) / max_interval;
+      // Print bar graph
     
+      // First calculate the number of characters to output
+    int num_graph;
+    if (log_plot)
+      num_graph = GRAPHW * (int)logf(1+histogram[i]) / max_interval;
+    else
+      num_graph = GRAPHW * histogram[i] / max_interval;
+      
+      // print num_graph characters using array of fill characters.
     graph_chars[num_graph] = '\0';
     stream << graph_chars << msq_stdio::endl;
     graph_chars[num_graph] = GRAPH_CHAR;
