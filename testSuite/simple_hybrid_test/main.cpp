@@ -64,7 +64,7 @@ int main()
   mesh->read_vtk("../../meshFiles/2D/VTK/hybrid_3quad_1tri.vtk", err);
     // initialises a MeshSet object
   MeshSet mesh_set1;
-  mesh_set1.set_domain_constraint(&msq_geom);
+  mesh_set1.set_domain_constraint(&msq_geom, err);  MSQ_CHKERR(err);
   mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
   
     // creates an intruction queue

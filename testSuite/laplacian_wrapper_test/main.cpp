@@ -54,7 +54,7 @@ int main()
   Mesquite::PlanarDomain msq_geom(s_norm, pnt, mesh);
     // initialises a MeshSet object
   MeshSet mesh_set1;
-  mesh_set1.set_domain_constraint(&msq_geom);
+  mesh_set1.set_domain_constraint(&msq_geom, err); MSQ_CHKERR(err);
   mesh_set1.add_mesh(mesh, err); MSQ_CHKERR(err);
   
     // creates an intruction queue
