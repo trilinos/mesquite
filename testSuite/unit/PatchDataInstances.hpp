@@ -97,7 +97,7 @@ namespace Mesquite
    //! creates a Patch containing an ideal tetrahedra
    inline void create_one_tet_patch(PatchData &one_tet_patch, MsqError &err)
    {
-       //**********************FILL TET*************************
+       /* *********************FILL TET************************ */
        // creates empty Patch
      one_tet_patch.set_num_vertices(4);
      one_tet_patch.set_num_elements(1);
@@ -131,7 +131,7 @@ namespace Mesquite
    inline void create_one_inverted_tet_patch(PatchData &one_tet_patch,
                                              MsqError &err)
    {
-       //**********************FILL TET*************************
+       /* *********************FILL TET************************* */
        // creates empty Patch
      one_tet_patch.set_num_vertices(4);
      one_tet_patch.set_num_elements(1);
@@ -165,7 +165,7 @@ namespace Mesquite
    //! creates a Patch containing an ideal quadrilateral
    inline void create_one_quad_patch(PatchData &one_qua_patch, MsqError &err)
    {
-       //**********************FILL QUAD*************************
+       /* *********************FILL QUAD************************* */
      one_qua_patch.set_num_vertices(4);
      one_qua_patch.set_num_elements(1);
      
@@ -201,7 +201,7 @@ namespace Mesquite
    inline void create_one_tri_patch(PatchData &one_tri_patch, MsqError &err)
    {
 
-     //**********************FILL tri*************************
+       /* *********************FILL tri************************* */
        // creates empty Patch
      one_tri_patch.set_num_vertices(3);
      one_tri_patch.set_num_elements(1);
@@ -227,37 +227,37 @@ namespace Mesquite
             indices,
             3*sizeof(size_t));
    }
-     /*
-    inline void create_one_inverted_tri_patch(PatchData &one_tri_patch, MsqError &err)
-   {
+     
+//     inline void create_one_inverted_tri_patch(PatchData &one_tri_patch, MsqError &err)
+//    {
 
-     //**********************FILL tri*************************
-       // creates empty Patch
-     one_tri_patch.set_num_vertices(3);
-     one_tri_patch.set_num_elements(1);
+//      //**********************FILL tri*************************
+//        // creates empty Patch
+//      one_tri_patch.set_num_vertices(3);
+//      one_tri_patch.set_num_elements(1);
      
-       // Fills up with vertices for ideal tri
-     double coords[3];
-     MsqVertex* vert_array = one_tri_patch.get_vertex_array(err);
+//        // Fills up with vertices for ideal tri
+//      double coords[3];
+//      MsqVertex* vert_array = one_tri_patch.get_vertex_array(err);
      
-     coords[0] = 1; coords[1] = 1; coords[2] = 1;
-     vert_array[0] = coords;
+//      coords[0] = 1; coords[1] = 1; coords[2] = 1;
+//      vert_array[0] = coords;
      
-     coords[0] = 2; coords[1] = 1; coords[2] = 1;
-     vert_array[1] = coords;
+//      coords[0] = 2; coords[1] = 1; coords[2] = 1;
+//      vert_array[1] = coords;
      
-     coords[0] = 1.5; coords[1] = 1-sqrt(3.0)/2.0; coords[2] = 1;
-     vert_array[2] = coords;
+//      coords[0] = 1.5; coords[1] = 1-sqrt(3.0)/2.0; coords[2] = 1;
+//      vert_array[2] = coords;
      
-       // patch has only one element: an ideal tri
-     size_t indices[3] = { 0, 1, 2 };
-     MsqMeshEntity& tri = one_tri_patch.element_by_index(0);
-     tri.set_element_type(Mesquite::TRIANGLE);
-     memcpy(tri.get_modifiable_vertex_index_array(),
-            indices,
-            3*sizeof(size_t));
-   }
-      */
+//        // patch has only one element: an ideal tri
+//      size_t indices[3] = { 0, 1, 2 };
+//      MsqMeshEntity& tri = one_tri_patch.element_by_index(0);
+//      tri.set_element_type(Mesquite::TRIANGLE);
+//      memcpy(tri.get_modifiable_vertex_index_array(),
+//             indices,
+//             3*sizeof(size_t));
+//    }
+      
   
    /*! \fn create_two_tri_patch(PatchData &one_tri_patch, MsqError &err)
             2

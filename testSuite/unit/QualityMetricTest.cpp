@@ -137,7 +137,7 @@ public:
     pF=0;//PRINT_FLAG IS OFF
     MsqError err;
     
-    qualTol = MSQ_MIN;
+    qualTol = 1.e-12;
     
      /* Our triangular patch is made of two tris.  tri_1 is a perfect
         equilateral (the ideal for most metrics).  tri_2 is an arbitrary
@@ -198,11 +198,11 @@ public:
        //Check condition number of ideal tri
      v_flag=met->evaluate_element(triPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(v_flag==true);
-     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
        //Check generalized condition number of ideal tri
      v_flag=gmet->evaluate_element(triPatch,&elems[0],val2,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(v_flag==true);
-     CPPUNIT_ASSERT(fabs(val2-1.0)<qualTol);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val2,1.0,qualTol);
        //For now, make sure cond num and generalized cond num give
        //equivalent answer for arbitrary tri.
      v_flag=met->evaluate_element(triPatch,&elems[1],val,err); MSQ_CHKERR(err);
@@ -212,8 +212,7 @@ public:
      val -= val2;
      if(pF)
        PRINT_INFO("\nGEN TRI %f", val2);
-     
-     CPPUNIT_ASSERT(fabs(val)<qualTol);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,0.0,qualTol);
      
        //SECOND: QUAD's
      verts = quadPatch.get_vertex_array(err);
@@ -221,11 +220,12 @@ public:
        //Check condition number of ideal quad
      v_flag=met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(v_flag==true);
-     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol); 
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
+     
      //Check generalized condition number of ideal quad
      v_flag=gmet->evaluate_element(quadPatch,&elems[0],val2,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(v_flag==true);
-     CPPUNIT_ASSERT(fabs(val2-1.0)<qualTol);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val2,1.0,qualTol);
        //For now, make sure cond num and generalized cond num give
        //equivalent answer for arbitrary quad.
      v_flag=met->evaluate_element(quadPatch,&elems[1],val,err); MSQ_CHKERR(err);
@@ -236,20 +236,19 @@ public:
      val -= val2;
      if(pF)
        PRINT_INFO("\nGEN QUA %f", val2);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,0.0,qualTol);
      
-     CPPUNIT_ASSERT(fabs(val)<qualTol);
-
        //THIRD TET's
      verts = tetPatch.get_vertex_array(err);
      elems = tetPatch.get_element_array(err);
        //Check condition number of ideal tet
      v_flag=met->evaluate_element(tetPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(v_flag==true);
-     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
        //Check generalized condition number of ideal tet
      v_flag=gmet->evaluate_element(tetPatch,&elems[0],val2,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(v_flag==true);
-     CPPUNIT_ASSERT(fabs(val2-1.0)<qualTol);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val2,1.0,qualTol);
        //For now, make sure cond num and generalized cond num give
        //equivalent answer for arbitrary tet.
      v_flag=met->evaluate_element(tetPatch,&elems[1],val,err); MSQ_CHKERR(err);
@@ -269,11 +268,12 @@ public:
        //Check condition number of ideal hex
      v_flag=met->evaluate_element(hexPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(v_flag==true);
-     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
        //Check generalized condition number of ideal hex
      v_flag=gmet->evaluate_element(hexPatch,&elems[0],val2,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(v_flag==true);
-     CPPUNIT_ASSERT(fabs(val2-1.0)<qualTol);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val2,1.0,qualTol);
+     
        //For now, make sure cond num and generalized cond num give
        //equivalent answer for arbitrary tet.
      v_flag=met->evaluate_element(hexPatch,&elems[1],val,err); MSQ_CHKERR(err);
@@ -287,8 +287,7 @@ public:
      val -= val2;
      if(pF)
        PRINT_INFO("\nGEN HEX %f", val2);
-     
-     CPPUNIT_ASSERT(fabs(val)<qualTol);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,0.0,qualTol);
    }
 
 
@@ -308,13 +307,12 @@ public:
      met->evaluate_element(triPatch,&elems[0],val,err);MSQ_CHKERR(err);
      if(pF)
        PRINT_INFO("\nMEAN TRI %f", val);
-     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
        //Check inverse mean ratio of ideal tri (INVERSE)
      imet->evaluate_element(triPatch,&elems[0],val,err);MSQ_CHKERR(err);
      if(pF)
        PRINT_INFO("\nInv MEAN TRI %f", val);
-     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
-     
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
        //SECOND: QUAD's
      verts = quadPatch.get_vertex_array(err);
      elems = quadPatch.get_element_array(err);
@@ -322,12 +320,12 @@ public:
      met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
      if(pF)
        PRINT_INFO("\nMEAN QUAD %f", val);
-     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
        //Check inverse mean ratio of ideal quad (INVERSE)
      imet->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
      if(pF)
        PRINT_INFO("\nInv MEAN QUAD %f", val);
-     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
 
        //THIRD TET's
      verts = tetPatch.get_vertex_array(err);
@@ -336,12 +334,13 @@ public:
      met->evaluate_element(tetPatch,&elems[0],val,err);MSQ_CHKERR(err);
      if(pF)
        PRINT_INFO("\nMEAN TET %f", val);
-     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
-     //Check inverse mean ratio of ideal tet (INVERSE)
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
+
+       //Check inverse mean ratio of ideal tet (INVERSE)
      imet->evaluate_element(tetPatch,&elems[0],val,err); MSQ_CHKERR(err);
      if(pF)
        PRINT_INFO("\nInv MEAN TET %f", val);
-     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
 
        //FOURTH HEX's
      verts = hexPatch.get_vertex_array(err);
@@ -351,13 +350,13 @@ public:
      CPPUNIT_ASSERT(valid==true);
      if(pF)
        PRINT_INFO("\nMEAN HEX %f", val);
-     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
        //Check inverse mean ratio of ideal hex (INVERSE)
      valid = imet->evaluate_element(hexPatch,&elems[0],val,err);MSQ_CHKERR(err);
      CPPUNIT_ASSERT(valid==true);
      if(pF)
        PRINT_INFO("\nInv MEAN HEX %f", val);
-     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
    }
   
   void test_aspect_ratio_gamma()
@@ -365,22 +364,23 @@ public:
        //START WITH TRI's
      MsqError err;
      double val;
+     bool valid=false;
      MsqMeshEntity* elems;
      MsqVertex* verts = triPatch.get_vertex_array(err);
      elems=triPatch.get_element_array(err);
      MSQ_CHKERR(err);
      ShapeQualityMetric *met = AspectRatioGammaQualityMetric::create_new();
        //Check aspect ratio gamma of ideal tri
-     met->evaluate_element(triPatch,&elems[0],val,err);MSQ_CHKERR(err);
-     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
-     
+     valid=met->evaluate_element(triPatch,&elems[0],val,err);MSQ_CHKERR(err);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
+     CPPUNIT_ASSERT(valid==true);
        //THIRD TET's
      verts = tetPatch.get_vertex_array(err);
      elems = tetPatch.get_element_array(err);
        //Check aspect ratio gamma of ideal tet
-     met->evaluate_element(tetPatch,&elems[0],val,err);MSQ_CHKERR(err);
-     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
-
+     valid=met->evaluate_element(tetPatch,&elems[0],val,err);MSQ_CHKERR(err);
+     CPPUNIT_ASSERT(valid==true);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
    }
 
   void test_composite_multiply()
@@ -401,8 +401,7 @@ public:
      met->evaluate_element(triPatch,&elems[0],val,err);MSQ_CHKERR(err);
      if(pF)
        PRINT_INFO("\nMULT TRI %f", val);
-     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
-
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
        //SECOND: QUAD's
      verts = quadPatch.get_vertex_array(err);
      elems = quadPatch.get_element_array(err);
@@ -410,17 +409,24 @@ public:
      met->evaluate_element(quadPatch,&elems[0],val,err);MSQ_CHKERR(err);
      if(pF)
        PRINT_INFO("\nMULT QUAD %f", val);
-     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
-
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
        //THIRD TET's
      verts = tetPatch.get_vertex_array(err);
      elems = tetPatch.get_element_array(err);
        //Check ideal tet
-     met->evaluate_element(tetPatch,&elems[0],val,err);MSQ_CHKERR(err);
-     if(pF)
+     
+     if(!met->evaluate_element(tetPatch,&elems[0],val,err)){
+        PRINT_INFO("\nMULT RETURNING FALSE FOR TET");
+     }
+     if(pF){
        PRINT_INFO("\nMULT TET %f", val);
-     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
-
+       double tetm=0;
+       if(!mmet->evaluate_element(tetPatch,&elems[0],tetm,err))
+          PRINT_INFO("\nMMET TET %f", tetm);
+       if(!cmet->evaluate_element(tetPatch,&elems[0],tetm,err))
+          PRINT_INFO("\nCMET TET %f", tetm);
+     }
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
        //FOURTH HEX's
      verts = hexPatch.get_vertex_array(err);
      elems = hexPatch.get_element_array(err);
@@ -428,7 +434,7 @@ public:
      met->evaluate_element(hexPatch,&elems[0],val,err);MSQ_CHKERR(err);
      if(pF)
        PRINT_INFO("\nMULT HEX %f", val);
-     CPPUNIT_ASSERT(fabs(val-1.0)<qualTol);
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
    }
   void test_other_composites()
      {
@@ -526,7 +532,7 @@ public:
        double first_val;
        bool first_bool=met->evaluate_element(p1,&elem1[0],first_val,err);
          //Any non-connected element should have asm of 0.0
-       CPPUNIT_ASSERT_DOUBLES_EQUAL(first_val, 0.0, MSQ_MIN);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(first_val, 0.0, qualTol);
        CPPUNIT_ASSERT(first_bool==true);
          //Test on a patch with two ideal tris
        PatchData p2;
@@ -535,7 +541,7 @@ public:
        double second_val;
        bool second_bool=met->evaluate_element(p2,&elem2[0],second_val,err);
          //Two neighboring tris with equal area should have asm of 0.0
-       CPPUNIT_ASSERT_DOUBLES_EQUAL(second_val, 0.0, MSQ_MIN);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(second_val, 0.0, qualTol);
        CPPUNIT_ASSERT(second_bool==true);
 
         //Test on a patch with two tris one not ideal
@@ -561,7 +567,7 @@ public:
        MsqMeshEntity* elem1=p1.get_element_array(err);
        double first_val;
        bool first_bool=met->evaluate_element(p1,&elem1[0],first_val,err);
-       CPPUNIT_ASSERT_DOUBLES_EQUAL(first_val, sqrt(3.0)/4.0, MSQ_MIN);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(first_val, sqrt(3.0)/4.0, qualTol);
        CPPUNIT_ASSERT(first_bool==true);
          //Test on a patch with two ideal tris
        PatchData p2;
@@ -569,7 +575,7 @@ public:
        MsqMeshEntity* elem2=p2.get_element_array(err);
        double second_val;
        bool second_bool=met->evaluate_element(p2,&elem2[0],second_val,err);
-       CPPUNIT_ASSERT_DOUBLES_EQUAL(second_val, sqrt(3.0)/4.0, MSQ_MIN);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(second_val, sqrt(3.0)/4.0, qualTol);
        CPPUNIT_ASSERT(second_bool==true);
 
         //Test on a patch with two tris one not ideal
@@ -596,12 +602,12 @@ public:
        bool first_bool=met->evaluate_vertex(p1,&vert1[0],first_val,err);
        if(pF)
          PRINT_INFO("\nLocal size ideal tri %f", first_val);
-       CPPUNIT_ASSERT_DOUBLES_EQUAL(first_val, 1.0, MSQ_MIN);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(first_val, 1.0, qualTol);
        CPPUNIT_ASSERT(first_bool==true);
        first_bool=met->evaluate_vertex(p1,&vert1[1],first_val,err);
        if(pF)
          PRINT_INFO("\nLocal size ideal tri %f", first_val);
-       CPPUNIT_ASSERT_DOUBLES_EQUAL(first_val, 1.0, MSQ_MIN);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(first_val, 1.0, qualTol);
        CPPUNIT_ASSERT(first_bool==true);
          //Test on a patch with two ideal tris
        PatchData p2;
@@ -612,7 +618,7 @@ public:
          //Two neighboring tris with equal area should have local size of 1.0
        if(pF)
          PRINT_INFO("\nLocal Size Metric two ideal tris %f", second_val);
-       CPPUNIT_ASSERT_DOUBLES_EQUAL(second_val, 1.0, MSQ_MIN);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(second_val, 1.0, qualTol);
        CPPUNIT_ASSERT(second_bool==true);
          /*
         //Test on a patch with two tris one not ideal
@@ -639,12 +645,12 @@ public:
        bool first_bool=met->evaluate_vertex(p1,&vert1[0],first_val,err);
        if(pF)
          PRINT_INFO("\nVertex Condition No. Metric ideal tri %f", first_val);
-       CPPUNIT_ASSERT_DOUBLES_EQUAL(first_val, 1.0, MSQ_MIN);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(first_val, 1.0, qualTol);
        CPPUNIT_ASSERT(first_bool==true);
        first_bool=met->evaluate_vertex(p1,&vert1[1],first_val,err);
        if(pF)
          PRINT_INFO("\nVertex Condition No. Metric ideal tri %f", first_val);
-       CPPUNIT_ASSERT_DOUBLES_EQUAL(first_val, 1.0, MSQ_MIN);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(first_val, 1.0, qualTol);
        CPPUNIT_ASSERT(first_bool==true);
          //Test on a patch with two ideal tris
        PatchData p2;
@@ -655,7 +661,7 @@ public:
          //Two neighboring tris with equal area should have local size of 1.0
        if(pF)
          PRINT_INFO("\nVertex Condition No. Metric ideal tris %f", second_val);
-       CPPUNIT_ASSERT_DOUBLES_EQUAL(second_val, 1.0, MSQ_MIN);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(second_val, 1.0, qualTol);
        CPPUNIT_ASSERT(second_bool==true);
      }
   
@@ -667,11 +673,11 @@ public:
          //Test the metric on a single elemnt patch
        MsqMeshEntity* elem1=idealTri.get_element_array(err);
        bool first_bool=met->evaluate_element(idealTri,&elem1[0],val,err);
-       CPPUNIT_ASSERT_DOUBLES_EQUAL(val, 0.0, MSQ_MIN);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(val, 0.0, qualTol);
        CPPUNIT_ASSERT(first_bool==true);
        elem1=idealTet.get_element_array(err);
        first_bool=met->evaluate_element(idealTet,&elem1[0],val,err);
-       CPPUNIT_ASSERT_DOUBLES_EQUAL(val, 0.0, MSQ_MIN);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(val, 0.0, qualTol);
        CPPUNIT_ASSERT(first_bool==true);
          //elem1=invertedTri.get_element_array(err);
          //first_bool=met->evaluate_element(invertedTri,&elem1[0],val,err);
@@ -682,7 +688,7 @@ public:
        first_bool=met->evaluate_element(invertedTet,&elem1[0],val,err);
          //std::cout<<"\nINVERTED TET "<<val<<"\n";
          //Michael:: double check to make sure that 2.0 is correct here.
-       CPPUNIT_ASSERT_DOUBLES_EQUAL(val, 2.0, MSQ_MIN);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(val, 2.0, qualTol);
        CPPUNIT_ASSERT(first_bool==true);
      }  
   
