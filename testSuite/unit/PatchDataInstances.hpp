@@ -68,149 +68,98 @@ namespace Mesquite
     delete pd.get_mesh_set()->get_domain_constraint();
     delete pd.get_mesh_set();
   }
+  
+  inline void create_patch_mesh( PatchData& pd,
+                                 size_t num_verts, 
+                                 const double* coordinates,
+                                 size_t num_elems,
+                                 const size_t* connectivity,
+                                 EntityTopology elem_type,
+                                 MsqError& err )
+  {
+    size_t i;
+    
+    const size_t verts_per_elem = TopologyInfo::corners( elem_type );
+    const size_t num_vert_uses = verts_per_elem * num_elems;
+    pd.allocate_storage( num_verts, num_elems, num_vert_uses, err );
+    MSQ_ERRRTN(err);
+    
+    for (i = 0; i < num_verts; ++i)
+      pd.vertex_by_index(i) = coordinates + 3*i;
+      
+    for (i = 0; i < num_elems; ++i)
+      pd.element_by_index(i).set_element_type( elem_type );
+      
+    memcpy( pd.get_connectivity_array(), connectivity, num_vert_uses * sizeof(size_t) );
+    
+    size_t* offsets = new size_t[num_elems+1];
+    for (i = 0; i <= num_elems; ++i)
+      offsets[i] = i * verts_per_elem;
+    
+    pd.initialize_data( offsets, err ); MSQ_CHKERR(err);
+    delete [] offsets;
+  }
+    
+    
 
 
   /*! creates a patch containing one ideal hexahedra
   */
    inline void create_one_hex_patch(PatchData &one_hex_patch, MsqError &err)
    {
-       // creates empty Patch
-     one_hex_patch.set_num_vertices(8);
+     double coords[] = { 1.0, 1.0, 1.0,
+                         2.0, 1.0, 1.0,
+                         2.0, 2.0, 1.0,
+                         1.0, 2.0, 1.0,
+                         1.0, 1.0, 2.0,
+                         2.0, 1.0, 2.0,
+                         2.0, 2.0, 2.0,
+                         1.0, 2.0, 2.0 };
      
-       // Fills up with vertices for ideal hexahedra.
-     double coords[3];
-     MsqVertex* vert_array = one_hex_patch.get_vertex_array(err);
-     
-     coords[0] = 1.0; coords[1] = 1.0; coords[2] = 1.0;
-     vert_array[0] = coords;
-     
-     coords[0] = 2; coords[1] = 1; coords[2] = 1;
-     vert_array[1] = coords;
-     
-     coords[0] = 2.; coords[1] = 2.; coords[2] = 1;
-     vert_array[2] = coords;
-     
-     coords[0] = 1.; coords[1] = 2.; coords[2] = 1;
-     vert_array[3] = coords;
-     
-     coords[0] = 1.; coords[1] = 1.; coords[2] = 2;
-     vert_array[4] = coords;
-     
-     coords[0] = 2.; coords[1] = 1.; coords[2] = 2;
-     vert_array[5] = coords;
-     
-     coords[0] = 2.; coords[1] = 2.; coords[2] = 2;
-     vert_array[6] = coords;
-     
-     coords[0] = 1.; coords[1] = 2.; coords[2] = 2;
-     vert_array[7] = coords;
-     
-       // patch has only one element: an ideal hex.
-     one_hex_patch.set_num_elements(1);
      size_t indices[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-     MsqMeshEntity& hex = one_hex_patch.element_by_index(0);
-     hex.set_element_type(Mesquite::HEXAHEDRON);
-     memcpy(hex.get_modifiable_vertex_index_array(),
-            indices,
-            8*sizeof(size_t));
+     
+     create_patch_mesh( one_hex_patch, 8, coords, 1, indices, HEXAHEDRON, err );
    }
    
 
    //! creates a Patch containing an ideal tetrahedra
    inline void create_one_tet_patch(PatchData &one_tet_patch, MsqError &err)
    {
-       /* *********************FILL TET************************ */
-       // creates empty Patch
-     one_tet_patch.set_num_vertices(4);
-     one_tet_patch.set_num_elements(1);
-     
-       // Fills up with vertices for ideal tet
-     double coords[3];
-     MsqVertex* vert_array = one_tet_patch.get_vertex_array(err);
-     
-     coords[0] = 1; coords[1] = 1; coords[2] = 1;
-     vert_array[0] = coords;
-     
-     coords[0] = 2; coords[1] = 1; coords[2] = 1;
-     vert_array[1] = coords;
+     double coords[] = { 1.0, 1.0, 1.0,
+                         2.0, 1.0, 1.0,
+                         1.5, 1+sqrt(3.0)/2.0, 1.0,
+                         1.5, 1+sqrt(3.0)/6.0, 1+sqrt(2.0)/sqrt(3.0) };
 
-     coords[0] = 1.5; coords[1] = 1+sqrt(3.0)/2.0; coords[2] = 1;
-     vert_array[2] = coords;
-
-     coords[0] = 1.5; coords[1] = 1+sqrt(3.0)/6.0;
-     coords[2] = 1+sqrt(2.0)/sqrt(3.0);
-     vert_array[3] = coords;
-     
-       // patch has only one element: an ideal tet.
      size_t indices[4] = { 0, 1, 2, 3 };
-     MsqMeshEntity& tet = one_tet_patch.element_by_index(0);
-     tet.set_element_type(Mesquite::TETRAHEDRON);
-     memcpy(tet.get_modifiable_vertex_index_array(),
-            indices,
-            4*sizeof(size_t));
+
+     create_patch_mesh( one_tet_patch, 4, coords, 1, indices, TETRAHEDRON, err );
    }
+
       //! creates a Patch containing an ideal tetrahedra, inverted
    inline void create_one_inverted_tet_patch(PatchData &one_tet_patch,
                                              MsqError &err)
    {
-       /* *********************FILL TET************************* */
-       // creates empty Patch
-     one_tet_patch.set_num_vertices(4);
-     one_tet_patch.set_num_elements(1);
-     
-       // Fills up with vertices for ideal tet
-     double coords[3];
-     MsqVertex* vert_array = one_tet_patch.get_vertex_array(err);
-     
-     coords[0] = 1; coords[1] = 1; coords[2] = 1;
-     vert_array[0] = coords;
-     
-     coords[0] = 2; coords[1] = 1; coords[2] = 1;
-     vert_array[1] = coords;
-
-     coords[0] = 1.5; coords[1] = 1+sqrt(3.0)/2.0; coords[2] = 1;
-     vert_array[2] = coords;
-
-     coords[0] = 1.5; coords[1] = 1+sqrt(3.0)/6.0;
-     coords[2] = 1-sqrt(2.0)/sqrt(3.0);
-     vert_array[3] = coords;
-     
-       // patch has only one element: an ideal tet.
+     double coords[] = { 1, 1, 1,
+                         2, 1, 1,
+                         1.5, 1+sqrt(3.0)/2.0, 1,
+                         1.5, 1+sqrt(3.0)/6.0, 1-sqrt(2.0)/sqrt(3.0), };
+                         
      size_t indices[4] = { 0, 1, 2, 3 };
-     MsqMeshEntity& tet = one_tet_patch.element_by_index(0);
-     tet.set_element_type(Mesquite::TETRAHEDRON);
-     memcpy(tet.get_modifiable_vertex_index_array(),
-            indices,
-            4*sizeof(size_t));
+
+     create_patch_mesh( one_tet_patch, 4, coords, 1, indices, TETRAHEDRON, err );
    }
    
    //! creates a Patch containing an ideal quadrilateral
    inline void create_one_quad_patch(PatchData &one_qua_patch, MsqError &err)
    {
-       /* *********************FILL QUAD************************* */
-     one_qua_patch.set_num_vertices(4);
-     one_qua_patch.set_num_elements(1);
+     double coords[] = { 1, 1, 1,
+                         2, 1, 1,
+                         2, 2, 1,
+                         1, 2 , 1 };
      
-       // Fills up with vertices for ideal quad
-     double coords[3];
-     MsqVertex* vert_array = one_qua_patch.get_vertex_array(err);
-     
-     coords[0] = 1; coords[1] = 1; coords[2] = 1;
-     vert_array[0] = coords;
-     coords[0] = 2; coords[1] = 1; coords[2] = 1;
-     vert_array[1] = coords;
-     coords[0] = 2; coords[1] = 2; coords[2] = 1;
-     vert_array[2] = coords;
-     coords[0] = 1; coords[1] = 2 ; coords[2] = 1;
-     vert_array[3] = coords;
-     
-       // patch has only one element: an ideal quad.
      size_t indices[4] = { 0, 1, 2, 3 };
-     MsqMeshEntity& quad = one_qua_patch.element_by_index(0);
-     quad.set_element_type(Mesquite::QUADRILATERAL);
-     memcpy(quad.get_modifiable_vertex_index_array(),
-            indices,
-            4*sizeof(size_t));
+     
+     create_patch_mesh( one_qua_patch, 4, coords, 1, indices, QUADRILATERAL, err );
    }
    
    
@@ -232,61 +181,14 @@ namespace Mesquite
      one_tri_patch.set_mesh_set(mesh_set1);
 
        /* *********************FILL tri************************* */
-     one_tri_patch.set_num_vertices(3);
-     one_tri_patch.set_num_elements(1);
+     double coords[] = { 1, 1, 1,
+                         2, 1, 1,
+                         1.5, 1+sqrt(3.0)/2.0, 1 };
      
-       // Fills up with vertices for ideal tri
-     double coords[3];
-     MsqVertex* vert_array = one_tri_patch.get_vertex_array(err);
-     
-     coords[0] = 1; coords[1] = 1; coords[2] = 1;
-     vert_array[0] = coords;
-     
-     coords[0] = 2; coords[1] = 1; coords[2] = 1;
-     vert_array[1] = coords;
-     
-     coords[0] = 1.5; coords[1] = 1+sqrt(3.0)/2.0; coords[2] = 1;
-     vert_array[2] = coords;
-     
-       // patch has only one element: an ideal tri
      size_t indices[3] = { 0, 1, 2 };
-     MsqMeshEntity& tri = one_tri_patch.element_by_index(0);
-     tri.set_element_type(Mesquite::TRIANGLE);
-     memcpy(tri.get_modifiable_vertex_index_array(),
-            indices,
-            3*sizeof(size_t));
+     create_patch_mesh( one_tri_patch, 3, coords, 1, indices, TRIANGLE, err );
    }
      
-//     inline void create_one_inverted_tri_patch(PatchData &one_tri_patch, MsqError &err)
-//    {
-
-//      // **********************FILL tri*************************
-//        // creates empty Patch
-//      one_tri_patch.set_num_vertices(3);
-//      one_tri_patch.set_num_elements(1);
-     
-//        // Fills up with vertices for ideal tri
-//      double coords[3];
-//      MsqVertex* vert_array = one_tri_patch.get_vertex_array(err);
-     
-//      coords[0] = 1; coords[1] = 1; coords[2] = 1;
-//      vert_array[0] = coords;
-     
-//      coords[0] = 2; coords[1] = 1; coords[2] = 1;
-//      vert_array[1] = coords;
-     
-//      coords[0] = 1.5; coords[1] = 1-sqrt(3.0)/2.0; coords[2] = 1;
-//      vert_array[2] = coords;
-     
-//        // patch has only one element: an ideal tri
-//      size_t indices[3] = { 0, 1, 2 };
-//      MsqMeshEntity& tri = one_tri_patch.element_by_index(0);
-//      tri.set_element_type(Mesquite::TRIANGLE);
-//      memcpy(tri.get_modifiable_vertex_index_array(),
-//             indices,
-//             3*sizeof(size_t));
-//    }
-      
   
    /*! \fn create_two_tri_patch(PatchData &one_tri_patch, MsqError &err)
             2
@@ -309,40 +211,16 @@ namespace Mesquite
      pd.set_mesh_set(mesh_set1);
 
        // **********************FILL tri*************************
-       // creates empty Patch
-     pd.set_num_vertices(4);
-     pd.set_num_elements(2);
+
+     double coords[] = { 1, 1, 1,
+                         2, 1, 1,
+                         1.5, 1+sqrt(3.0)/2.0, 1,
+                         1.5, 1-sqrt(3.0)/2.0, 1 };
+
+     size_t indices[] = { 0, 1, 2, 0, 3, 1 };
      
-       // Fills up with vertices for ideal triangles
-     double coords[3];
-     MsqVertex* vert_array = pd.get_vertex_array(err);
-     
-     coords[0] = 1; coords[1] = 1; coords[2] = 1;
-     vert_array[0].set(coords);
-     
-     coords[0] = 2; coords[1] = 1; coords[2] = 1;
-     vert_array[1].set(coords);
-     
-     coords[0] = 1.5; coords[1] = 1+sqrt(3.0)/2.0; coords[2] = 1;
-     vert_array[2].set(coords);
-     
-     coords[0] = 1.5; coords[1] = 1-sqrt(3.0)/2.0; coords[2] = 1;
-     vert_array[3].set(coords);
-    
-     size_t indices[3] = { 0, 1, 2 };
-     MsqMeshEntity& tri = pd.element_by_index(0);
-     tri.set_element_type(Mesquite::TRIANGLE);
-     memcpy(tri.get_modifiable_vertex_index_array(),
-            indices,
-            3*sizeof(size_t));
-     
-     indices[0] = 0; indices[1] = 3; indices[2] = 1;
-     MsqMeshEntity& tri2 = pd.element_by_index(1);
-     tri2.set_element_type(Mesquite::TRIANGLE);
-     memcpy(tri2.get_modifiable_vertex_index_array(),
-            indices,
-            3*sizeof(size_t));
-   }
+     create_patch_mesh( pd, 4, coords, 2, indices, TRIANGLE, err );
+  }
    
 
    /*! \fn create_four_quads_patch(PatchData &four_quads, MsqError &err)
@@ -357,64 +235,23 @@ namespace Mesquite
    */
    inline void create_four_quads_patch(PatchData &four_quads, MsqError &err) 
    {
-     four_quads.set_num_vertices(9);
-     four_quads.set_num_elements(4);
+     double coords[] = { 1, .5, 0,
+                         0, 0, 0,
+                         1, 0, 0,
+                         2, 0, 0,
+                         2, 1, 0,
+                         2, 2, 0,
+                         1, 2, 0,
+                         0, 2, 0,
+                         0, 1, 0 };
+
+     size_t indices[] = { 1, 2, 0, 8, 
+                          2, 3, 4, 0,
+                          8, 0, 6, 7,
+                          0, 4, 5, 6 };
+                        
      
-       // Fill up vertices
-     double coords[3];
-     MsqVertex* vert_array = four_quads.get_vertex_array(err);
-     
-     coords[0] = 1; coords[1] = .5, coords[2] = 0;
-     vert_array[0] = coords;
-     
-     coords[0] = 0, coords[1] = 0, coords[2] = 0;
-     vert_array[1] = coords;
-     
-     coords[0] = 1, coords[1] = 0, coords[2] = 0;
-     vert_array[2] = coords;
-     
-     coords[0] = 2, coords[1] = 0, coords[2] = 0;
-     vert_array[3] = coords;
-     
-     coords[0] = 2, coords[1] = 1, coords[2] = 0;
-     vert_array[4] = coords;
-     
-     coords[0] = 2, coords[1] = 2, coords[2] = 0;
-     vert_array[5] = coords;
-     
-     coords[0] = 1, coords[1] = 2, coords[2] = 0;
-     vert_array[6] = coords;
-     
-     coords[0] = 0, coords[1] = 2, coords[2] = 0;
-     vert_array[7] = coords;
-     
-     coords[0] = 0, coords[1] = 1, coords[2] = 0;
-     vert_array[8] = coords;
-      
-     size_t ind[4];
-     ind[0] = 1; ind[1]=2; ind[2]=0; ind[3]=8;
-     four_quads.element_by_index(0).set_element_type(Mesquite::QUADRILATERAL);
-     memcpy(four_quads.element_by_index(0).get_modifiable_vertex_index_array(),
-            ind,
-            4*sizeof(size_t));
-     
-     ind[0] = 2; ind[1]=3; ind[2]=4; ind[3]=0;
-     four_quads.element_by_index(1).set_element_type(Mesquite::QUADRILATERAL);
-     memcpy(four_quads.element_by_index(1).get_modifiable_vertex_index_array(),
-            ind,
-            4*sizeof(size_t));
-     
-     ind[0] = 8; ind[1]=0; ind[2]=6; ind[3]=7;
-     four_quads.element_by_index(2).set_element_type(Mesquite::QUADRILATERAL);
-     memcpy(four_quads.element_by_index(2).get_modifiable_vertex_index_array(),
-            ind,
-            4*sizeof(size_t));
-     
-     ind[0] = 0; ind[1]=4; ind[2]=5; ind[3]=6;
-     four_quads.element_by_index(3).set_element_type(Mesquite::QUADRILATERAL);
-     memcpy(four_quads.element_by_index(3).get_modifiable_vertex_index_array(),
-            ind,
-            4*sizeof(size_t));
+     create_patch_mesh( four_quads, 9, coords, 4, indices, QUADRILATERAL, err );
    }
    
 
@@ -440,49 +277,40 @@ namespace Mesquite
      mesh_set1->set_domain_constraint(msq_geom, err); MSQ_CHKERR(err);
      pd.set_mesh_set(mesh_set1);
 
-     pd.set_num_vertices(12);
+
+     double coords[] = { 1,.5, 0,
+                         0, 0, 0,
+                         1, 0, 0,
+                         2, 0, 0,
+                         2, 1, 0,
+                         2, 2, 0,
+                         1, 2, 0,
+                         0, 2, 0,
+                         0, 1, 0,
+                         3, 0, 0,
+                         3, 1, 0,
+                         3, 2, 0 };
+
+     size_t indices[] = { 1,  2,  0, 8,
+                          2,  3,  4, 0,
+                          8,  0,  6, 7,
+                          0,  4,  5, 6,
+                          3,  9, 10, 4,
+                          4, 10, 11, 5 };
+     
+     create_patch_mesh( pd, 12, coords, 6, indices, QUADRILATERAL, err );
+
      MsqVertex* vert_array = pd.get_vertex_array(err);
-     vert_array[0] = Vector3D(1,.5, 0);
-     vert_array[1] = Vector3D(0, 0, 0);
      vert_array[1].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED);
-     vert_array[2] = Vector3D(1, 0, 0);
      vert_array[2].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED);
-     vert_array[3] = Vector3D(2, 0, 0);
      vert_array[3].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED);
-     vert_array[4] = Vector3D(2, 1, 0);
-     vert_array[5] = Vector3D(2, 2, 0);
      vert_array[5].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED);
-     vert_array[6] = Vector3D(1, 2, 0);
      vert_array[6].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED);
-     vert_array[7] = Vector3D(0, 2, 0);
      vert_array[7].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED);
-     vert_array[8] = Vector3D(0, 1, 0);
      vert_array[8].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED);
-     vert_array[9] = Vector3D(3, 0, 0);
      vert_array[9].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED);
-     vert_array[10] = Vector3D(3, 1, 0);
      vert_array[10].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED);
-     vert_array[11] = Vector3D(3, 2, 0);
      vert_array[11].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED);
-     
-     size_t ind[6][4] =
-     { { 1,  2,  0, 8},
-       { 2,  3,  4, 0},
-       { 8,  0,  6, 7},
-       { 0,  4,  5, 6},
-       { 3,  9, 10, 4},
-       { 4, 10, 11, 5}
-     };
-     
-     pd.set_num_elements(6);
-     for (int i = 0; i < 6; i++)
-     {
-       pd.element_by_index(i).set_element_type(QUADRILATERAL);
-       size_t *ind_array =
-          pd.element_by_index(i).get_modifiable_vertex_index_array();
-       for (int j = 0; j < 4; j++)
-         ind_array[j] = ind[i][j];
-     }
    }
    
 
@@ -525,146 +353,100 @@ namespace Mesquite
    */
    inline void create_twelve_hex_patch(PatchData &pd, MsqError &err) 
    {
-     pd.set_num_vertices(36);
-     MsqVertex* verts = pd.get_vertex_array(err); MSQ_CHKERR(err);
+     double coords[] = { 1, 1, -1,
+                         0, 0, -1,
+                         1, 0, -1,
+                         2, 0, -1,
+                         2, 1, -1,
+                         2, 2, -1,
+                         1, 2, -1,
+                         0, 2, -1,
+                         0, 1, -1,
+                         3, 0, -1,
+                         3, 1, -1,
+                         3, 2, -1,
+
+                         1,.5, 0,
+                         0, 0, 0,
+                         1, 0, 0,
+                         2, 0, 0,
+                         2, 1, 0,
+                         2, 2, 0,
+                         1, 2, 0,
+                         0, 2, 0,
+                         0, 1, 0,
+                         3, 0, 0,
+                         3, 1, 0,
+                         3, 2, 0,
+
+                         1, 1, 1,
+                         0, 0, 1,
+                         1, 0, 1,
+                         2, 0, 1,
+                         2, 1, 1,
+                         2, 2, 1,
+                         1, 2, 1,
+                         0, 2, 1,
+                         0, 1, 1,
+                         3, 0, 1,
+                         3, 1, 1,
+                         3, 2, 1 };
      
-     verts[0].set(1, 1, -1);
+     size_t connectivity[] = { 1, 2, 0, 8, 13, 14, 12, 20, // 0
+                               2, 3, 4, 0, 14, 15, 16, 12, // 1
+                               8, 0, 6, 7, 20, 12, 18, 19, // 2
+                               0, 4, 5, 6, 12, 16, 17, 18, // 3
+                               3, 9, 10, 4, 15, 21, 22, 16, // 4
+                               4, 10, 11, 5, 16, 22, 23, 17, // 5
+                               13, 14, 12, 20, 25, 26, 24, 32, // 6
+                               14, 15, 16, 12, 26, 27, 28, 24, // 7
+                               20, 12, 18, 19, 32, 24, 30, 31, // 8
+                               12, 16, 17, 18, 24, 28, 29, 30, // 9
+                               15, 21, 22, 16, 27, 33, 34, 28, // 10
+                               16, 22, 23, 17, 28, 34, 35, 29 }; // 11
+
+     create_patch_mesh( pd, 36, coords, 12, connectivity, HEXAHEDRON, err );
+     
+     MsqVertex* verts = pd.get_vertex_array(err); MSQ_CHKERR(err);
+
      verts[0].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[1].set(0, 0, -1);
      verts[1].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[2].set(1, 0, -1);
      verts[2].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[3].set(2, 0, -1);
      verts[3].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[4].set(2, 1, -1);
      verts[4].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[5].set(2, 2, -1);
      verts[5].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[6].set(1, 2, -1);
      verts[6].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[7].set(0, 2, -1);
      verts[7].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[8].set(0, 1, -1);
      verts[8].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[9].set(3, 0, -1);
      verts[9].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[10].set(3, 1, -1);
      verts[10].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[11].set(3, 2, -1);
      verts[11].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
       
-     verts[12].set(1,.5, 0);
      verts[12].set_vertex_flag(MsqVertex::MSQ_NO_VTX_FLAG); 
-     verts[13].set(0, 0, 0);
      verts[13].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[14].set(1, 0, 0);
      verts[14].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[15].set(2, 0, 0);
      verts[15].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[16].set(2, 1, 0);
      verts[16].set_vertex_flag(MsqVertex::MSQ_NO_VTX_FLAG); 
-     verts[17].set(2, 2, 0);
      verts[17].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[18].set(1, 2, 0);
      verts[18].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[19].set(0, 2, 0);
      verts[19].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[20].set(0, 1, 0);
      verts[20].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[21].set(3, 0, 0);
      verts[21].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[22].set(3, 1, 0);
      verts[22].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[23].set(3, 2, 0);
      verts[23].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
       
-     verts[24].set(1, 1, 1);
      verts[24].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[25].set(0, 0, 1);
      verts[25].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[26].set(1, 0, 1);
      verts[26].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[27].set(2, 0, 1);
      verts[27].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[28].set(2, 1, 1);
      verts[28].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[29].set(2, 2, 1);
      verts[29].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[30].set(1, 2, 1);
      verts[30].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[31].set(0, 2, 1);
      verts[31].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[32].set(0, 1, 1);
      verts[32].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[33].set(3, 0, 1);
      verts[33].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[34].set(3, 1, 1);
      verts[34].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     verts[35].set(3, 2, 1);
      verts[35].set_vertex_flag(MsqVertex::MSQ_HARD_FIXED); 
-     
-     size_t ind[8];
-     pd.set_num_elements(12);
-     ind[0]=1; ind[1]=2; ind[2]=0; ind[3]=8; ind[4]=13; ind[5]=14; ind[6]=12; ind[7]=20; // 0
-     pd.element_by_index(0).set_element_type(HEXAHEDRON);
-     memcpy(pd.element_by_index(0).get_modifiable_vertex_index_array(),
-            ind,
-            8*sizeof(size_t));
-     ind[0]=2; ind[1]=3; ind[2]=4; ind[3]=0; ind[4]=14; ind[5]=15; ind[6]=16; ind[7]=12; // 1
-     pd.element_by_index(1).set_element_type(HEXAHEDRON);
-     memcpy(pd.element_by_index(1).get_modifiable_vertex_index_array(),
-            ind,
-            8*sizeof(size_t));
-     ind[0]=8; ind[1]=0; ind[2]=6; ind[3]=7; ind[4]=20; ind[5]=12; ind[6]=18; ind[7]=19; // 2
-     pd.element_by_index(2).set_element_type(HEXAHEDRON);
-     memcpy(pd.element_by_index(2).get_modifiable_vertex_index_array(),
-            ind,
-            8*sizeof(size_t));
-     ind[0]=0; ind[1]=4; ind[2]=5; ind[3]=6; ind[4]=12; ind[5]=16; ind[6]=17; ind[7]=18; // 3
-     pd.element_by_index(3).set_element_type(HEXAHEDRON);
-     memcpy(pd.element_by_index(3).get_modifiable_vertex_index_array(),
-            ind,
-            8*sizeof(size_t));
-     ind[0]=3; ind[1]=9; ind[2]=10; ind[3]=4; ind[4]=15; ind[5]=21; ind[6]=22; ind[7]=16; // 4
-     pd.element_by_index(4).set_element_type(HEXAHEDRON);
-     memcpy(pd.element_by_index(4).get_modifiable_vertex_index_array(),
-            ind,
-            8*sizeof(size_t));
-     ind[0]=4; ind[1]=10; ind[2]=11; ind[3]=5; ind[4]=16; ind[5]=22; ind[6]=23; ind[7]=17; // 5
-     pd.element_by_index(5).set_element_type(HEXAHEDRON);
-     memcpy(pd.element_by_index(5).get_modifiable_vertex_index_array(),
-            ind,
-            8*sizeof(size_t));
-     ind[0]=13; ind[1]=14; ind[2]=12; ind[3]=20; ind[4]=25; ind[5]=26; ind[6]=24; ind[7]=32; // 6
-     pd.element_by_index(6).set_element_type(HEXAHEDRON);
-     memcpy(pd.element_by_index(6).get_modifiable_vertex_index_array(),
-            ind,
-            8*sizeof(size_t));
-     ind[0]=14; ind[1]=15; ind[2]=16; ind[3]=12; ind[4]=26; ind[5]=27; ind[6]=28; ind[7]=24; // 7
-     pd.element_by_index(7).set_element_type(HEXAHEDRON);
-     memcpy(pd.element_by_index(7).get_modifiable_vertex_index_array(),
-            ind,
-            8*sizeof(size_t));
-     ind[0]=20; ind[1]=12; ind[2]=18; ind[3]=19; ind[4]=32; ind[5]=24; ind[6]=30; ind[7]=31; // 8
-     pd.element_by_index(8).set_element_type(HEXAHEDRON);
-     memcpy(pd.element_by_index(8).get_modifiable_vertex_index_array(),
-            ind,
-            8*sizeof(size_t));
-     ind[0]=12; ind[1]=16; ind[2]=17; ind[3]=18; ind[4]=24; ind[5]=28; ind[6]=29; ind[7]=30; // 9
-     pd.element_by_index(9).set_element_type(HEXAHEDRON);
-     memcpy(pd.element_by_index(9).get_modifiable_vertex_index_array(),
-            ind,
-            8*sizeof(size_t));
-     ind[0]=15; ind[1]=21; ind[2]=22; ind[3]=16; ind[4]=27; ind[5]=33; ind[6]=34; ind[7]=28; // 10
-     pd.element_by_index(10).set_element_type(HEXAHEDRON);
-     memcpy(pd.element_by_index(10).get_modifiable_vertex_index_array(),
-            ind,
-            8*sizeof(size_t));
-     ind[0]=16; ind[1]=22; ind[2]=23; ind[3]=17; ind[4]=28; ind[5]=34; ind[6]=35; ind[7]=29; // 11
-     pd.element_by_index(11).set_element_type(HEXAHEDRON);
-     memcpy(pd.element_by_index(11).get_modifiable_vertex_index_array(),
-            ind,
-            8*sizeof(size_t));
    }
    
    inline void create_twelve_hex_patch_inverted(PatchData &pd, MsqError &err)
@@ -695,25 +477,15 @@ namespace Mesquite
      mesh_set1->set_domain_constraint(msq_geom, err); MSQ_CHKERR(err);
      triPatch.set_mesh_set(mesh_set1);
 
-     triPatch.set_num_vertices(4);
-     triPatch.vertex_by_index(0).set(0.0, 0.0, 0.0);
-     triPatch.vertex_by_index(1).set(1.0, 0.0, 0.0);
-     triPatch.vertex_by_index(2).set(.5, sqrt(3.0)/2.0, 0.0);
-     triPatch.vertex_by_index(3).set(2.0, -4.0, 2.0);
+     double coords[] = { 0.0, 0.0, 0.0,
+                         1.0, 0.0, 0.0,
+                         0.5, sqrt(3.0)/2.0, 0.0,
+                         2.0, -4.0, 2.0 };
      
-     triPatch.set_num_elements(2);
+
+     const size_t conn[] = { 0, 1, 2, 0, 3, 1 };
      
-       //add ideal equilateral
-     triPatch.element_by_index(0).set_element_type(TRIANGLE);
-     triPatch.element_by_index(0).set_vertex_index(0, 0);
-     triPatch.element_by_index(0).set_vertex_index(1, 1);
-     triPatch.element_by_index(0).set_vertex_index(2, 2);
-     
-       //add "arbitrary" tri
-     triPatch.element_by_index(1).set_element_type(TRIANGLE);
-     triPatch.element_by_index(1).set_vertex_index(0, 0);
-     triPatch.element_by_index(1).set_vertex_index(1, 3);
-     triPatch.element_by_index(1).set_vertex_index(2, 1);
+     create_patch_mesh( triPatch, 4, coords, 2, conn, TRIANGLE, err );
    }
    
      /* Patch used in several quality metric tests.
@@ -732,30 +504,16 @@ namespace Mesquite
      mesh_set1->set_domain_constraint(msq_geom, err); MSQ_CHKERR(err);
      quadPatch.set_mesh_set(mesh_set1);
 
-     // Add vertices
-     quadPatch.set_num_vertices(6);
-     quadPatch.vertex_by_index(0).set(0.0, 0.0, 0.0);
-     quadPatch.vertex_by_index(1).set(1.0, 0.0, 0.0);
-     quadPatch.vertex_by_index(2).set(1.0, 1.0, 0.0);
-     quadPatch.vertex_by_index(3).set(0.0, 1.0, 0.0);
-     quadPatch.vertex_by_index(4).set(2.0, -1.0, .5);
-     quadPatch.vertex_by_index(5).set(1.5, 1.0, 1.0);
+     double coords[] = { 0.0, 0.0, 0.0,
+                         1.0, 0.0, 0.0,
+                         1.0, 1.0, 0.0,
+                         0.0, 1.0, 0.0,
+                         2.0, -1.0, .5,
+                         1.5, 1.0, 1.0 };
      
-     quadPatch.set_num_elements(2);
+     const size_t conn[] = { 0, 1, 2, 3, 1, 4, 5, 2 };
      
-       //add ideal quad
-     quadPatch.element_by_index(0).set_element_type(QUADRILATERAL);
-     quadPatch.element_by_index(0).set_vertex_index(0, 0);
-     quadPatch.element_by_index(0).set_vertex_index(1, 1);
-     quadPatch.element_by_index(0).set_vertex_index(2, 2);
-     quadPatch.element_by_index(0).set_vertex_index(3, 3);
-     
-       //add "arbitrary" quad
-     quadPatch.element_by_index(1).set_element_type(QUADRILATERAL);
-     quadPatch.element_by_index(1).set_vertex_index(0, 1);
-     quadPatch.element_by_index(1).set_vertex_index(1, 4);
-     quadPatch.element_by_index(1).set_vertex_index(2, 5);
-     quadPatch.element_by_index(1).set_vertex_index(3, 2);
+     create_patch_mesh( quadPatch, 6, coords, 2, conn, QUADRILATERAL, err );
    }
   
      /* Patch used in several quality metric tests.
@@ -763,77 +521,43 @@ namespace Mesquite
         equilateral (the ideal for most metrics).  tet_2 is an arbitrary
         tet.
      */
-   inline void create_qm_two_tet_patch(PatchData &tetPatch, MsqError &/*err*/)
+   inline void create_qm_two_tet_patch(PatchData &tetPatch, MsqError &err)
    {
-     tetPatch.set_num_vertices(5);
+     double coords[] = { 0.0, 0.0, 0.0,
+                         1.0, 0.0, 0.0,
+                         0.5, sqrt(3.0)/2.0, 0.0,
+                         0.5, sqrt(3.0)/6.0, sqrt(2.0)/sqrt(3.0),
+                         2.0, 3.0, -.5 };
+     
 
-     tetPatch.vertex_by_index(0).set(0.0, 0.0, 0.0);
-     tetPatch.vertex_by_index(1).set(1.0, 0.0, 0.0);
-     tetPatch.vertex_by_index(2).set(0.5, sqrt(3.0)/2.0, 0.0);
-     tetPatch.vertex_by_index(3).set(.5, sqrt(3.0)/6.0, sqrt(2.0)/sqrt(3.0));
-     tetPatch.vertex_by_index(4).set(2.0, 3.0, -.5);
+     const size_t conn[] = { 0, 1, 2, 3, 1, 4, 2, 3 };
      
-     tetPatch.set_num_elements(2);
-     
-       //add ideal tet
-     tetPatch.element_by_index(0).set_element_type(TETRAHEDRON);
-     tetPatch.element_by_index(0).set_vertex_index(0, 0);
-     tetPatch.element_by_index(0).set_vertex_index(1, 1);
-     tetPatch.element_by_index(0).set_vertex_index(2, 2);
-     tetPatch.element_by_index(0).set_vertex_index(3, 3);
-     
-       //add "arbitrary" tet
-     tetPatch.element_by_index(1).set_element_type(TETRAHEDRON);
-     tetPatch.element_by_index(1).set_vertex_index(0, 1);
-     tetPatch.element_by_index(1).set_vertex_index(1, 4);
-     tetPatch.element_by_index(1).set_vertex_index(2, 2);
-     tetPatch.element_by_index(1).set_vertex_index(3, 3);
+     create_patch_mesh( tetPatch, 5, coords, 2, conn, TETRAHEDRON, err );
    }
    /* Patch used in seveal quality metric tests.
       Our hex patch is made of two hexes.  hex_1 is a perfect
       unit cube (the ideal for most metrics).  hex_2 is an arbitrary
       hex.
    */
-   inline void create_qm_two_hex_patch(PatchData &hexPatch, MsqError &/*err*/)
+   inline void create_qm_two_hex_patch(PatchData &hexPatch, MsqError &err)
    {
-     hexPatch.set_num_vertices(12);
-
-     hexPatch.vertex_by_index(0).set(0.0,0.0,0.0);
-     hexPatch.vertex_by_index(1).set(1.0,0.0,0.0);
-     hexPatch.vertex_by_index(2).set(1.0, 1.0, 0.0);
-     hexPatch.vertex_by_index(3).set(0.0, 1.0, 0.0);
-     hexPatch.vertex_by_index(4).set(0.0,0.0,1.0);
-     hexPatch.vertex_by_index(5).set(1.0,0.0,1.0);
-     hexPatch.vertex_by_index(6).set(1.0, 1.0, 1.0);
-     hexPatch.vertex_by_index(7).set(0.0, 1.0, 1.0);
-     hexPatch.vertex_by_index(8).set(2.0,0.0,0.0);
-     hexPatch.vertex_by_index(9).set(2.0,1.0,0.0);
-     hexPatch.vertex_by_index(10).set(2.0, -1.0, 1.0);
-     hexPatch.vertex_by_index(11).set(3.0, 2.0, 1.0);
+     double coords[] = { 0.0, 0.0, 0.0,
+                         1.0, 0.0, 0.0,
+                         1.0, 1.0, 0.0,
+                         0.0, 1.0, 0.0,
+                         0.0, 0.0, 1.0,
+                         1.0, 0.0, 1.0,
+                         1.0, 1.0, 1.0,
+                         0.0, 1.0, 1.0,
+                         2.0, 0.0, 0.0,
+                         2.0, 1.0, 0.0,
+                         2.0,-1.0, 1.0,
+                         3.0, 2.0, 1.0 };
      
-     hexPatch.set_num_elements(2);
-     
-       //add ideal hex
-     hexPatch.element_by_index(0).set_element_type(HEXAHEDRON);
-     hexPatch.element_by_index(0).set_vertex_index(0, 0);
-     hexPatch.element_by_index(0).set_vertex_index(1, 1);
-     hexPatch.element_by_index(0).set_vertex_index(2, 2);
-     hexPatch.element_by_index(0).set_vertex_index(3, 3);
-     hexPatch.element_by_index(0).set_vertex_index(4, 4);
-     hexPatch.element_by_index(0).set_vertex_index(5, 5);
-     hexPatch.element_by_index(0).set_vertex_index(6, 6);
-     hexPatch.element_by_index(0).set_vertex_index(7, 7);
-     
-       //add "arbitrary" hex
-     hexPatch.element_by_index(1).set_element_type(HEXAHEDRON);
-     hexPatch.element_by_index(1).set_vertex_index(0, 1);
-     hexPatch.element_by_index(1).set_vertex_index(1, 8);
-     hexPatch.element_by_index(1).set_vertex_index(2, 9);
-     hexPatch.element_by_index(1).set_vertex_index(3, 2);
-     hexPatch.element_by_index(1).set_vertex_index(4, 5);
-     hexPatch.element_by_index(1).set_vertex_index(5, 10);
-     hexPatch.element_by_index(1).set_vertex_index(6, 11);
-     hexPatch.element_by_index(1).set_vertex_index(7, 6);
+     const size_t conn[] = { 0, 1, 2, 3, 4, 5, 6, 7,
+                             1, 8, 9, 2, 5, 10, 11, 6 };
+                             
+     create_patch_mesh( hexPatch, 12, coords, 2, conn, HEXAHEDRON, err ); 
    }
    
 } // namespace

@@ -103,8 +103,9 @@ public:
      vtx_1_1.set(1,1,0);
      vtx_2_0.set(2,0,0);
      vtx_2_1.set(2,1,0);
-
-     mPatch2D.set_num_vertices(6);
+     
+     mPatch2D.allocate_storage( 6, 3, 10, err );
+     
      mPatch2D.vertex_by_index(0).set(0,0,0);
      mPatch2D.vertex_by_index(1).set(0,1,0);
      mPatch2D.vertex_by_index(2).set(1,0,0);
@@ -112,17 +113,19 @@ public:
      mPatch2D.vertex_by_index(4).set(2,0,0);
      mPatch2D.vertex_by_index(5).set(2,1,0);
      
-     size_t ind[4];
-     mPatch2D.set_num_elements(3);
+     mPatch2D.element_by_index(0).set_element_type(TRIANGLE);
+     mPatch2D.element_by_index(1).set_element_type(TRIANGLE);
+     mPatch2D.element_by_index(2).set_element_type(QUADRILATERAL);
      
-     ind[0] = 0; ind[1]=2; ind[2]=1;
-     mPatch2D.element_by_index(0).set(TRIANGLE, ind);
+     size_t connectivity[] = { 0, 2, 1,
+                               1, 2, 3,
+                               3, 2, 4, 5 };
      
-     ind[0] = 1; ind[1]=2; ind[2]=3;
-     mPatch2D.element_by_index(1).set(TRIANGLE, ind);
+     memcpy( mPatch2D.get_connectivity_array(), connectivity, 10*sizeof(size_t) );
      
-     ind[0] = 3; ind[1]=2; ind[2]=4; ind[3]=5;
-     mPatch2D.element_by_index(2).set(QUADRILATERAL, ind);
+     size_t offsets[] = { 0, 3, 6, 10 };
+     
+     mPatch2D.initialize_data( offsets, err );
   }
   
   void tearDown()
@@ -175,13 +178,13 @@ public:
      
      // test we get the elements contiguous to vertex 3
      mPatch2D.get_vertex_element_indices(3, elem_ind,err); CPPUNIT_ASSERT(!err);
-     res.push_back(1); res.push_back(2);
+     res.push_back(2); res.push_back(1);
      CPPUNIT_ASSERT(res==elem_ind);
      
      // test we get the elements contiguous to vertex 2
      elem_ind.clear(); res.clear();
      mPatch2D.get_vertex_element_indices(2, elem_ind,err); CPPUNIT_ASSERT(!err);
-     res.push_back(0); res.push_back(1); res.push_back(2);
+     res.push_back(2); res.push_back(1); res.push_back(0);
      CPPUNIT_ASSERT(res==elem_ind);
    }
 

@@ -49,6 +49,7 @@ Unit testing of various functions in the MsqVertex class.
 
 #include "MsqVertex.hpp"
 #include "PatchData.hpp"
+#include "PatchDataInstances.hpp"
 
 #include <math.h>
 #include <iostream>
@@ -91,105 +92,38 @@ public:
     
     MsqPrintError err(cout);
     
-      // create empty Patch
-    one_hex_patch.set_num_vertices(8);
-    one_hex_patch.set_num_elements(1);
     
-      // Fills up with vertices for ideal hexahedra.
-    double coords[3];
+    double hcoords[] = { 1.0, 1.0, 1.0,
+                         2.0, 1.0, 1.0,
+                         2.0, 2.0, 1.0,
+                         1.0, 2.0, 1.0,
+                         1.0, 1.0, 2.0,
+                         2.0, 1.0, 2.0,
+                         2.0, 2.0, 2.0,
+                         1.0, 2.0, 2.0 };
+    size_t hconn[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+    create_patch_mesh( one_hex_patch, 8, hcoords, 1, hconn, HEXAHEDRON, err );
     
-    coords[0] = 1.0; coords[1] = 1.0; coords[2] = 1.0;
-    one_hex_patch.vertex_by_index(0).set(coords);
-    
-    coords[0] = 2; coords[1] = 1; coords[2] = 1;
-    one_hex_patch.vertex_by_index(1).set(coords);
-    
-    coords[0] = 2.; coords[1] = 2.; coords[2] = 1;
-    one_hex_patch.vertex_by_index(2).set(coords);
-    
-    coords[0] = 1.; coords[1] = 2.; coords[2] = 1;
-    one_hex_patch.vertex_by_index(3).set(coords);
 
-    coords[0] = 1.; coords[1] = 1.; coords[2] = 2;
-    one_hex_patch.vertex_by_index(4).set(coords);
+    double tcoords[] = { 1.0, 1.0, 1.0,
+                         2.0, 1.0, 1.0,
+                         1.5, 1+sqrt(3.0)/2.0, 1.0,
+                         1.5, 1+sqrt(3.0)/6.0, 1+sqrt(2.0)/sqrt(3.0) };
+    size_t tconn[] = { 0, 1, 2, 3 };
+    create_patch_mesh( one_tet_patch, 4, tcoords, 1, tconn, TETRAHEDRON, err );
 
-    coords[0] = 2.; coords[1] = 1.; coords[2] = 2;
-    one_hex_patch.vertex_by_index(5).set(coords);
-
-    coords[0] = 2.; coords[1] = 2.; coords[2] = 2;
-    one_hex_patch.vertex_by_index(6).set(coords);
-
-    coords[0] = 1.; coords[1] = 2.; coords[2] = 2;
-    one_hex_patch.vertex_by_index(7).set(coords);
+    double qcoords[] = { 1.0, 1.0, 1.0,
+                         2.0, 1.0, 1.0,
+                         2.0, 2.0, 1.0,
+                         1.0, 2.0, 1.0 };
+    size_t qconn[] = { 0, 1, 2, 3 };
+    create_patch_mesh( one_qua_patch, 4, qcoords, 1, qconn, QUADRILATERAL, err );
     
-      // patch has only one element: an ideal hex.
-    size_t indices[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-    one_hex_patch.element_by_index(0).set(HEXAHEDRON, indices);
-    
-      //**********************FILL TET*************************
-      // creates empty Patch
-    one_tet_patch.set_num_vertices(4);
-    one_tet_patch.set_num_elements(1);
-    
-      // Fills up with vertices for ideal tet
-    coords[0] = 1; coords[1] = 1; coords[2] = 1;
-    one_tet_patch.vertex_by_index(0).set(coords);
-    
-    coords[0] = 2; coords[1] = 1; coords[2] = 1;
-    one_tet_patch.vertex_by_index(1).set(coords);
-
-    coords[0] = 1.5; coords[1] = 1+sqrt(3.0)/2.0; coords[2] = 1;
-    one_tet_patch.vertex_by_index(2).set(coords);
-
-    coords[0] = 1.5; coords[1] = 1+sqrt(3.0)/6.0 ;
-    coords[2] = 1+sqrt(2.0)/sqrt(3.0);
-    one_tet_patch.vertex_by_index(3).set(coords);
-    
-      // patch has only one element: an ideal tet.
-    size_t indices_tet[4] = { 0, 1, 2, 3 };
-    one_tet_patch.element_by_index(0).set(TETRAHEDRON, indices_tet);
-    CPPUNIT_ASSERT(!err);
-    
-      //**********************FILL QUAD*************************
-      // creates empty Patch
-    one_qua_patch.set_num_vertices(4);
-    one_qua_patch.set_num_elements(1);
-    
-      // Fills up with vertices for ideal quad
-    coords[0] = 1; coords[1] = 1; coords[2] = 1;
-    one_qua_patch.vertex_by_index(0).set(coords);
-    
-    coords[0] = 2; coords[1] = 1; coords[2] = 1;
-    one_qua_patch.vertex_by_index(1).set(coords);
-
-    coords[0] = 2; coords[1] = 2; coords[2] = 1;
-    one_qua_patch.vertex_by_index(2).set(coords);
-
-    coords[0] = 1; coords[1] = 2 ; coords[2] = 1;
-    one_qua_patch.vertex_by_index(3).set(coords);
-    
-      // patch has only one element: an ideal quad.
-    size_t indices_qua[4] = { 0, 1, 2, 3 };
-    one_qua_patch.element_by_index(0).set(QUADRILATERAL, indices_qua);
-    
-      //**********************FILL tri*************************
-      // creates empty Patch
-    one_tri_patch.set_num_vertices(3);
-    one_tri_patch.set_num_elements(1);
-    
-      // Fills up with vertices for ideal tri
-    coords[0] = 1; coords[1] = 1; coords[2] = 1;
-    one_tri_patch.vertex_by_index(0).set(coords);
-    
-    coords[0] = 2; coords[1] = 1; coords[2] = 1;
-    one_tri_patch.vertex_by_index(1).set(coords);
-
-    coords[0] = 1.5; coords[1] = 1+sqrt(3.0)/2.0; coords[2] = 1;
-    one_tri_patch.vertex_by_index(2).set(coords);
-    
-      // patch has only one element: an ideal tri
-    size_t indices_tri[3] = { 0, 1, 2 };
-    one_tri_patch.element_by_index(0).set(TRIANGLE, indices_tri);
+    double rcoords[] = { 1.0, 1.0, 1.0,
+                         2.0, 1.0, 1.0,
+                         1.5, 1+sqrt(3.0)/2.0, 1.0 };
+    size_t rconn[] = { 0, 1, 2 };
+    create_patch_mesh( one_tri_patch, 3, rcoords, 1, rconn, TRIANGLE,err );
   }
 
   void tearDown()
