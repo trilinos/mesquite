@@ -388,8 +388,9 @@ public:
     }
 
     size_t index_array[3];
-    mMesh->element_get_attached_vertex_indices(mElements[tri_index],
-                                        index_array, 3, mErr);
+    size_t offsets[2];
+    mMesh->elements_get_attached_vertex_indices(&mElements[tri_index], 1,
+                                        index_array, 3, offsets, mErr);
 
     // creates list with correct vertices coordinates for the triangle
     std::list<Mesquite::Vector3D> correct_coords;

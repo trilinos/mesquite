@@ -32,7 +32,7 @@ private:
   CPPUNIT_TEST_SUITE(MeshInterfaceTestTSTT);
   CPPUNIT_TEST (test_get_geometric_dimension);
   CPPUNIT_TEST (test_vertices);
-  CPPUNIT_TEST (test_vertex_is_on_boundary);
+  CPPUNIT_TEST (test_vertices_are_on_boundary);
   CPPUNIT_WORK_IN_PROGRESS (test_vertex_is_fixed);
   CPPUNIT_TEST (test_vertex_byte);
   CPPUNIT_TEST (test_vertex_get_attached_elements);
@@ -102,7 +102,7 @@ public:
   {
     CPPUNIT_ASSERT_EQUAL(9,(int)nbVert);
 
-    Mesquite::Vector3D coords;
+    Mesquite::MsqVertex coords[9];
     Mesquite::Vector3D* correct_coords = new Mesquite::Vector3D[nbVert];
     correct_coords[0].set(1,0,0);
     correct_coords[1].set(0,1.732,0);
@@ -114,34 +114,31 @@ public:
     correct_coords[7].set(-1.732,2.732,0);
     correct_coords[8].set(-2.732,1,0);
 
-    // test Mesquite::Mesh::vertex_get_coordinates
+    mesh->vertices_get_coordinates(mVertices, coords, nbVert, mErr); MSQ_CHKERR(mErr);
     for (size_t i=0; i<nbVert; ++i) {
-      mesh->vertex_get_coordinates(mVertices[i], coords, mErr); MSQ_CHKERR(mErr);
-      for (int j=0; j<3; ++j) {
-//        cout << "coords[j], correct_coords[i][j]: " << coords[j] <<" "<< correct_coords[i][j] << endl;
-        CPPUNIT_ASSERT_DOUBLES_EQUAL(coords[j], correct_coords[i][j], .01);
-      }
+      for (int j=0; j<3; ++j)
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(coords[i][j], correct_coords[i][j], .01);
     }
 
-    // test Mesquite::Mesh::vertex_set_coordinates
-    coords.set(2.,3.,4.);
-    mesh->vertex_set_coordinates(mVertices[3], coords, mErr); MSQ_CHKERR(mErr);
-    Mesquite::Vector3D coords_2;
-    mesh->vertex_get_coordinates(mVertices[3], coords_2, mErr); MSQ_CHKERR(mErr);
+    coords[3].set(2.,3.,4.);
+    mesh->vertex_set_coordinates(mVertices[3], coords[3], mErr); MSQ_CHKERR(mErr);
+    Mesquite::MsqVertex coords_2;
+    mesh->vertices_get_coordinates(&mVertices[3], &coords_2, 1, mErr); MSQ_CHKERR(mErr);
     for (int j=0; j<3; ++j)
-      CPPUNIT_ASSERT_DOUBLES_EQUAL(coords[j], coords_2[j], 1e-6);
+      CPPUNIT_ASSERT_DOUBLES_EQUAL(coords[3][j], coords_2[j], 1e-6);
     
     delete [] correct_coords;
   }
 
 #undef __FUNC__
-#define __FUNC__ "MeshInterfaceTestTSTT::test_vertex_is_on_boundary"
-  void test_vertex_is_on_boundary()
+#define __FUNC__ "MeshInterfaceTestTSTT::test_vertices_are_on_boundary"
+  void test_vertices_are_on_boundary()
   {
+    bool on_bnd[9];
+    mesh->vertices_are_on_boundary(mVertices, on_bnd, nbVert, mErr); MSQ_CHKERR(mErr);
     bool correct_boundary[9] = {false, false, false, true, true, true, true, true, true};
     for (size_t i=0; i<nbVert; ++i) {
-      bool on_bnd = mesh->vertex_is_on_boundary(mVertices[i], mErr); MSQ_CHKERR(mErr);
-      CPPUNIT_ASSERT(on_bnd == correct_boundary[i]);
+      CPPUNIT_ASSERT(on_bnd[i] == correct_boundary[i]);
     }
   }
 
@@ -405,8 +402,9 @@ public:
     }
 
     size_t index_array[3];
-    mesh->element_get_attached_vertex_indices(mElements[tri_index],
-                                        index_array, 3, mErr);
+    size_t offsets[2];
+    mesh->elements_get_attached_vertex_indices(&mElements[tri_index], 1,
+                                        index_array, 3, offsets, mErr);
 
     // creates list with correct vertices coordinates for the triangle
     std::list<Mesquite::Vector3D> correct_coords;
@@ -416,10 +414,10 @@ public:
 
     // Creates same list from the mesh implementation
     std::list<Mesquite::Vector3D> tri_coords;
-    Mesquite::Vector3D tmp_vec;
+    Mesquite::MsqVertex tmp_vtx;
     for (size_t i=0; i<3; ++i) {
-      mesh->vertex_get_coordinates(mVertices[index_array[i]], tmp_vec, mErr);
-      tri_coords.push_back(tmp_vec);
+      mesh->vertices_get_coordinates(&mVertices[index_array[i]], &tmp_vtx, 1, mErr);
+      tri_coords.push_back(tmp_vtx);
     }
 
     // Makes sure both list contain the same elements (not necessarily in the same order).
