@@ -24,14 +24,13 @@
     pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov      
    
   ***************************************************************** */
-// -*- Mode : c++; tab-width: 3; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 3 -*-
 //
 //    AUTHOR: Thomas Leurent <tleurent@mcs.anl.gov>
 //       ORG: Argonne National Laboratory
 //    E-MAIL: tleurent@mcs.anl.gov
 //
 // ORIG-DATE: 18-Dec-02 at 11:08:22
-//  LAST-MOD: 10-Oct-03 at 13:33:34 by Thomas Leurent
+//  LAST-MOD:  2-Apr-04 at 18:31:20 by Thomas Leurent
 //
 // DESCRIPTION:
 // ============
@@ -235,6 +234,9 @@ namespace Mesquite
      
     //! \f$ B += a*A \f$
     friend void plusEqaA(Matrix3D& B, const double a, const Matrix3D &A);
+
+    //! \f$ B *= A^{-1} \f$
+    friend void timesInvA(Matrix3D& B, const Matrix3D &A);
 
     size_t num_rows() const { return 3; }
     size_t num_cols() const { return 3; }
@@ -545,6 +547,30 @@ namespace Mesquite
     B.v_[0] += a*A.v_[0]; B.v_[1] += a*A.v_[1]; B.v_[2] += a*A.v_[2]; 
     B.v_[3] += a*A.v_[3]; B.v_[4] += a*A.v_[4]; B.v_[5] += a*A.v_[5];
     B.v_[6] += a*A.v_[6]; B.v_[7] += a*A.v_[7]; B.v_[8] += a*A.v_[8];
+  }
+
+  inline void timesInvA(Matrix3D& B, const Matrix3D &A) {
+
+    Matrix3D Ainv;
+
+    double inv_detA = 1 / (
+                   A.v_[0]*(A.v_[4]*A.v_[8]-A.v_[7]*A.v_[5])
+                  -A.v_[1]*(A.v_[3]*A.v_[8]-A.v_[6]*A.v_[5])
+                  +A.v_[2]*(A.v_[3]*A.v_[7]-A.v_[6]*A.v_[4]) );
+
+    Ainv[0][0] = inv_detA*( A.v_[4]*A.v_[8]-A.v_[5]*A.v_[7] );
+    Ainv[0][1] = inv_detA*( A.v_[2]*A.v_[7]-A.v_[8]*A.v_[1] );
+    Ainv[0][2] = inv_detA*( A.v_[1]*A.v_[5]-A.v_[4]*A.v_[2] );
+
+    Ainv[1][0] = inv_detA*( A.v_[5]*A.v_[6]-A.v_[8]*A.v_[3] );
+    Ainv[1][1] = inv_detA*( A.v_[0]*A.v_[8]-A.v_[6]*A.v_[2] );
+    Ainv[1][2] = inv_detA*( A.v_[2]*A.v_[3]-A.v_[5]*A.v_[0] );
+
+    Ainv[2][0] = inv_detA*( A.v_[3]*A.v_[7]-A.v_[6]*A.v_[4] );
+    Ainv[2][1] = inv_detA*( A.v_[1]*A.v_[6]-A.v_[7]*A.v_[0] );
+    Ainv[2][2] = inv_detA*( A.v_[0]*A.v_[4]-A.v_[3]*A.v_[1] );
+
+    B = B*Ainv;
   }
 
 } // namespace Mesquite
