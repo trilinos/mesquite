@@ -31,7 +31,8 @@ TEST_SRCS = sample_main.cpp \
     MeshSetTest.cpp \
     MsqVertexTest.cpp \
     MsqFreeVertexIndexIteratorTest.cpp \
-    MsqHessianTest.cpp
+    MsqHessianTest.cpp \
+    AomdVtkTest.cpp
 
 TEST_OBJS = ${TEST_SRCS:.cpp=.o}
 
