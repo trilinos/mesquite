@@ -151,13 +151,13 @@ namespace Mesquite
                                                       Matrix3D &tet_M3D,
                                                       Matrix3D &hex_M3D)
   {
-//     const double v_tri[] = {1., 0.5, 0., 0., MSQ_SQRT_THREE/2., 0., 0., 0., 1.};
-//     Matrix3D m1(v_tri);
-//     tri_M3D = m1 * pow(2./MSQ_SQRT_THREE, 1./3.);
-
-    const double v_tri[] = {1., 0.5, 0., 0., MSQ_SQRT_THREE/2., 0., 0., 0., sqrt(MSQ_SQRT_THREE/2.)};
+    const double v_tri[] = {1., 0.5, 0., 0., MSQ_SQRT_THREE/2., 0., 0., 0., 1.};
     Matrix3D m1(v_tri);
-    tri_M3D = m1 * sqrt(2./MSQ_SQRT_THREE);
+    tri_M3D = m1 * pow(2./MSQ_SQRT_THREE, 1./3.);
+
+//     const double v_tri[] = {1., 0.5, 0., 0., MSQ_SQRT_THREE/2., 0., 0., 0., sqrt(MSQ_SQRT_THREE/2.)};
+//     Matrix3D m1(v_tri);
+//     tri_M3D = m1 * sqrt(2./MSQ_SQRT_THREE);
 
     const double v_quad[] = {1., 0., 0., 0., 1., 0., 0., 0., 1.};
     Matrix3D m2(v_quad);
