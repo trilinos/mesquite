@@ -116,14 +116,18 @@ void Mesquite::TestRunner::addFailure(const CppUnit::TestFailure &failure)
     *mOut << "***ERROR***\n";
     indent();
     if (failure.thrownException())
+    {
       *mOut << "Unexpected exception : " << failure.thrownException()->what()
             << std::endl;
+    }
     else
+    {
       *mOut << "Unexpected test failure" << std::endl;
+    }
   }
   else
   {
-    *mOut << "Expected exception" << std::endl;
+    *mOut << "Failed assertion : " << std::endl;
   }
   
 }
