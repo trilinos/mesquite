@@ -18,9 +18,10 @@
 
 using namespace Mesquite;
 
-// VertexMover::VertexMover()
-// {
-// }
+VertexMover::VertexMover() :
+  QualityImprover()
+{  
+}
 
 
 /*! \fn VertexMover::loop_over_mesh
@@ -45,12 +46,6 @@ void VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
   crit->reset_all(err);
   bool stop_met=crit->stop(ms,err); MSQ_CHKERR(err);
 
-  int qi_depth=get_patch_depth();
-  int dummy=0;
-  ms.set_patch_type(MeshSet::ELEMENTS_ON_VERTEX_PATCH, qi_depth, dummy);
-//  ms.set_patch_type(MeshSet::GLOBAL_PATCH, dummy, dummy);
-  ms.copy_culling_method_bits( QualityImprover::get_culling_method_bits() );
-  
   // creates a PatchData object at the VertexMover level
     // in order to reduce the number of memory allocations
   PatchData patch_data;
@@ -60,6 +55,14 @@ void VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
   crit->reset_counter();  
   while ( !stop_met ) {
     this->initialize_mesh_iteration(patch_data, err);MSQ_CHKERR(err); 
+
+    // propagates information from QualityImprover to MeshSet
+    int dummy=0;
+    int qi_depth=get_patch_depth();
+    MeshSet::PatchType patch_type = this->get_patch_type();
+    ms.set_patch_type(patch_type, qi_depth, dummy);
+    ms.copy_culling_method_bits( QualityImprover::get_culling_method_bits() );
+  
     next_patch = true;
     while( next_patch ) {
       Timer loop_timer; double aomd_t=0; double msq_t=0;

@@ -26,6 +26,8 @@ namespace Mesquite
    */  
   class VertexMover : public QualityImprover 
   {
+  protected:
+    VertexMover();
   public:
     // virtual destructor ensures use of polymorphism during destruction
     virtual ~VertexMover() { };
@@ -48,11 +50,9 @@ namespace Mesquite
 
       //!CHECK FEASIBLE IS NOT YET IMPLEMENTED.
     int check_feasible(PatchData &pd, MsqError &err);
-    
-    
-
-
   };
+
+  
 #undef __FUNC__
 #define __FUNC__ "VertexMover::check_feasible"
 /*!
@@ -106,8 +106,8 @@ namespace Mesquite
     double grad_norm=0;
     for(int gi=0;gi<len;++gi){
       for (int gj=0;gj<3;++gj){
-        if(grad_norm<abs(vec[gi][gj])){
-          grad_norm=abs(vec[gi][gj]);
+        if(grad_norm<fabs(vec[gi][gj])){
+          grad_norm=fabs(vec[gi][gj]);
         }
       }
     }
