@@ -154,19 +154,19 @@ namespace Mesquite
                                                       Matrix3D &tet_M3D,
                                                       Matrix3D &hex_M3D)
   {
-    const double v_tri[] = {1, 0.5, 0, 0, MSQ_SQRT_THREE/2, 0, 0, 0, 1};
+    const double v_tri[] = {1., 0.5, 0., 0., MSQ_SQRT_THREE/2., 0., 0., 0., 1.};
     Matrix3D m1(v_tri);
-    tri_M3D = pow(2/MSQ_SQRT_THREE, 1/3) * m1;
+    tri_M3D = m1 * pow(2./MSQ_SQRT_THREE, 1./3.);
 
-    const double v_quad[] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
+    const double v_quad[] = {1., 0., 0., 0., 1., 0., 0., 0., 1.};
     Matrix3D m2(v_quad);
     quad_M3D = m2;
     
-    const double v_tet[] = {1, 0.5, 0.5, 0, MSQ_SQRT_THREE/2, MSQ_SQRT_THREE/6, 0, 0, MSQ_SQRT_TWO/MSQ_SQRT_THREE};
+    const double v_tet[] = {1., 0.5, 0.5, 0., MSQ_SQRT_THREE/2., MSQ_SQRT_THREE/6., 0., 0., MSQ_SQRT_TWO/MSQ_SQRT_THREE};
     Matrix3D m3(v_tet);
-    tet_M3D =  pow(MSQ_SQRT_TWO, 1/3) * m3;
+    tet_M3D =  m3 * pow(MSQ_SQRT_TWO, 1./3.);
 
-    const double v_hex[] = {1, 0, 0,  0, 1, 0,  0, 0, 1};
+    const double v_hex[] = {1., 0., 0.,  0., 1., 0.,  0., 0., 1.};
     Matrix3D m4(v_hex);
     hex_M3D = m4;
   }
@@ -216,13 +216,13 @@ namespace Mesquite
     double a1_x_a2_norm = a1_x_a2.length(); MSQ_CHECK_NULL(a1_x_a2_norm);
     Vector3D a1_x_a3 = a1 * a3;
 
-    double nu = pow(a1_norm*a2_norm*a3_norm, 1/3);
+    double nu = pow(a1_norm*a2_norm*a3_norm, 1./3.);
     double det_A = det(A);  MSQ_CHECK_NULL(det_A);
-    double fac = nu / pow(fabs(det_A), 1/3);
+    double fac = nu / pow(fabs(det_A), 1./3.);
     
     Matrix3D Q;
 
-    Q[0][0] = fac * 1;
+    Q[0][0] = fac * 1.;
     Q[0][1] = fac * a1%a2 / (a1_norm*a2_norm);
     Q[0][2] = fac * a1%a3 / (a1_norm*a3_norm);
     Q[1][1] = fac * a1_x_a2_norm / (a1_norm*a2_norm);
@@ -241,8 +241,8 @@ namespace Mesquite
     double a2_norm = A.column_length(1); MSQ_CHECK_NULL(a2_norm);
     double a3_norm = A.column_length(2); MSQ_CHECK_NULL(a3_norm);
     
-    double nu = pow(a1_norm*a2_norm*a3_norm, 1/3);
-    double fac = 1/nu ;
+    double nu = pow(a1_norm*a2_norm*a3_norm, 1./3.);
+    double fac = 1./nu ;
     
     Matrix3D Delta;
 
