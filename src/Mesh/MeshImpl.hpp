@@ -1,3 +1,12 @@
+/*!
+  \file   MeshImpl.hpp
+  \brief  
+
+
+  \author Darryl Melander
+  \date   2003-04-17
+*/
+
 #ifndef MESQUITE_MESH_IMPL_HPP
 #define MESQUITE_MESH_IMPL_HPP
 
@@ -5,6 +14,13 @@
 
 namespace Mesquite
 {
+  /*!  \class MeshImpl
+
+  \brief MeshImpl is a Mesquite implementation of the Mesh interface. 
+  Applications can also provide their own implementation of the interface.
+    
+  MeshImpl can read in mesh files in VTK format and ExodusII format. 
+  */
   class MeshImpl : public Mesquite::Mesh
   {
   public:
@@ -194,9 +210,9 @@ namespace Mesquite
     unsigned char* vertexMesquiteByte;
     size_t *newVertIndices;
 
-    size_t *v2eOffset;  // When created, size vertexCount + 1
-    size_t totalVertexUses; // Number of vertices in all elements
-    size_t *v2E; // When created, size totalVertexUses
+    size_t *v2eOffset;  //!< When created, size vertexCount + 1
+    size_t totalVertexUses; //!< Number of vertices in all elements
+    size_t *v2E; //!< When created, size totalVertexUses
 
     unsigned char numCoords;
     
