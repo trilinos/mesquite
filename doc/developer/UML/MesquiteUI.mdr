@@ -1,4 +1,4 @@
-MagicDrawUML "5.0"
+MagicDrawUML "6.0"
 (RTManager
 	(RTManagerOptions
 		CODE_GENERATION_REVERSE_OPTION 0
@@ -7,7 +7,7 @@ MagicDrawUML "5.0"
 		LAUNCH_WIZARD FALSE
 		MERGE_AFTER_REVERSE FALSE
 		CREATE_ATTRIBUTES TRUE
-		DEFAULT_WORKING_DIRECTORY "/nfs/mcs-homes02/tleurent/MagicDraw/MagicDraw_UML_5.0_SP1"
+		DEFAULT_WORKING_DIRECTORY "/nfs/mcs-homes02/mesquite/magicdraw/MagicDraw_UML_6.0"
 		DEFAULT_LANGUAGE "Java"
 		(JavaLanguageOptions
 			mGenEmptyDoc FALSE
@@ -15,6 +15,7 @@ MagicDrawUML "5.0"
 			mAddSpaces TRUE
 			mCommentStyle 0
 			mUseJavaDoc FALSE
+			mDefaultHeader "@(#) $FILE_NAME"
 			(DocumentationTagManager
 				(CLASSIFIER
 					(DocumentationTagProperty
@@ -47,16 +48,17 @@ MagicDrawUML "5.0"
 					)
 				)
 			)
+			COLLECT_IMPORTS_ON_DEMAND TRUE
 			mUseClassPath TRUE
 			mClassPath "/nfs/mcs-homes07/petsc/software/jdk1.3-linux/jre/lib/rt.jar:/nfs/mcs-homes07/petsc/software/jdk1.3-linux/jre/lib/i18n.jar:/nfs/mcs-homes07/petsc/software/jdk1.3-linux/jre/lib/sunrsasign.jar:/nfs/mcs-homes07/petsc/software/jdk1.3-linux/jre/classes"
 		)
-		COLLECT_IMPORTS_ON_DEMAND TRUE
 		(CppLanguageOptions
 			mGenEmptyDoc FALSE
 			mBracketInNewLine TRUE
 			mAddSpaces TRUE
 			mCommentStyle 0
 			mUseJavaDoc FALSE
+			mDefaultHeader "@(#) $FILE_NAME"
 			mCommentsStyle 0
 			mDocumentationOption FALSE
 			mUseIncludePath FALSE
@@ -70,6 +72,7 @@ MagicDrawUML "5.0"
 			mAddSpaces TRUE
 			mCommentStyle 0
 			mUseJavaDoc FALSE
+			mDefaultHeader "@(#) $FILE_NAME"
 			(DocumentationTagManager
 				(CLASSIFIER
 					(DocumentationTagProperty
@@ -110,11 +113,24 @@ MagicDrawUML "5.0"
 			mAddSpaces TRUE
 			mCommentStyle 0
 			mUseJavaDoc FALSE
+			mDefaultHeader "@(#) $FILE_NAME"
 		)
-		DEFAULT_WORKING_DIRECTORY "/nfs/mcs-homes02/tleurent/MagicDraw/MagicDraw_UML_5.0_SP1"
+		DEFAULT_WORKING_DIRECTORY "/nfs/mcs-homes02/mesquite/magicdraw/MagicDraw_UML_6.0"
+		TEMP_DIRECTORY "Active Directory"
+		(C#LanguageOptions
+			mGenEmptyDoc FALSE
+			mBracketInNewLine TRUE
+			mAddSpaces TRUE
+			mCommentStyle 0
+			mUseJavaDoc FALSE
+			mDefaultHeader "@(#) $FILE_NAME"
+			CSH_COLLECT_USINGS TRUE
+			mDefines( list
+			)
+		)
 	)
 	(RTProjectGroupObject
-		mID "ID0000000001c6"
+		mID "tleurent_1050959445928_105167_531"
 		mName "Code engineering sets"
 	)
 )
