@@ -81,7 +81,7 @@ int main()
   
   LPtoPTemplate* obj_func = new LPtoPTemplate(mean, 1, err);
   obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
-  obj_func->set_hessian_type(ObjectiveFunction::ANALYTICAL_HESSIAN);
+    //obj_func->set_hessian_type(ObjectiveFunction::ANALYTICAL_HESSIAN);
   
   // creates the optimization procedures
 //   ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
