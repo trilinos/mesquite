@@ -339,7 +339,7 @@ are not given in this section.
 At first, we will write a small program using Mesquite's simplified API, or wrappers, in order to show the
 fastest way to get Mesquite running on a mesh. The concept of the wrappers, as well as the different
 wrappers available, are described in section \ref{sec:wrappers}. We will then set up a more customized mesh
-improvement tool through the mesquite low-level API, described in section \ref{sec:}
+improvement tool through the mesquite low-level API, described in section \ref{sec:detailedAPI}.
 
 \subsection{Tutorial File Template}
 \label{sec:tutfile}
@@ -354,6 +354,17 @@ int main(int argc, char* argv[])
 {
   MsqError err;
   
+  char mesh_file_name[256];
+  
+  // command line arguments
+  if (argc==1 || argc>2) {
+    std::cerr << "meshfile name needed as argument.\n";
+    exit(EXIT_FAILURE);
+  }
+  else if (argc==2) {
+    std::cout << "Working with mesh file: "<< mesh_file_name << "\n";
+    strcpy(mesh_file_name, argv[1]);
+  } 
   
 }
 \end{verbatim}
@@ -362,20 +373,23 @@ all Mesquite headers. This is the easiest way to deal with the include directive
 down your Mesquite compilation.
 All Mesquite classes are part of the \texttt{Mesquite} namespace. Be aware that general mesh interfaces
 classes usually have their own namespace. The \texttt{MsqError} class is an error object passed to 
-certain function calls (see section \ref{sec:}), its value is checked after the functions calls with
+certain function calls (see section \ref{sec:MsqError}), its value is checked after the functions calls with
 the macro \texttt{MSQ\_CHKERR(...)}.
 
-Although the code above does not perform any action, we can compile from the main directory
-(\texttt{mesquite/}) it with the command 
+The code above takes a mesh file name as a command line argument and performs no action. 
+We can compile it from the main directory
+(\texttt{mesquite/}) with the command 
 \begin{verbatim}
 gmake testSuite/tutorial/tutorial
 \end{verbatim}
 
 \subsection{Loading a Test Mesh}
-
+\label{sec:tutMesh}
 Here we want to improve one of the test meshes distributed with Mesquite. Those meshes are in
 the very readable but inefficient VTK format. You can open one of the ASCII files in
-\texttt{mesquite/meshFiles/...} and check it out for yourself.
+\texttt{mesquite/meshFiles/...} and check it out for yourself. Details of the VTK unstructured mesh 
+format are given in \cite{VTKbook, VTKuml}. The different options to load a mesh into Mesquite are 
+described in chapter \ref{sec:meshes}, but we only use the simplest option in this tutorial.
 To load a VTK test mesh in Mesquite, instantiate the Mesquite mesh database object,
 \texttt{MeshImpl}\footnote{Note that if you have your own mesh
 database running, you should use the interfaces described in section \ref{sec:meshes}.}, 
@@ -383,7 +397,7 @@ and use the \texttt{read\_vtk} function by adding those lines to the file
 template described in \ref{sec:tutfile}.
 \begin{verbatim}
   Mesquite::MeshImpl *my_mesh = new Mesquite::MeshImpl;
-  my_mesh->read_vtk("../../meshFiles/2D/VTK/square_quad_10_rand.vtk", err); 
+  my_mesh->read_vtk(mesh_file_name, err); 
   MSQ_CHKERR(err);
 \end{verbatim}
 You now need to add the mesh to a MeshSet, an object that can regroup several contiguous meshes to
@@ -415,11 +429,13 @@ object:
 
 
 \subsection{Improving the Mesh with a Wrapper Class}
+\label{sec:tutWrapper}
 The simplest way to launch a Mesquite mesh quality improvement procedure is to use one of the
 wrapper classes described in section \ref{sec:wrappers}. Here, we will instantiate the
 \texttt{ShapeImprovement} and run it over the MeshSet we created earlier. Mesquite
 optimizes the mesh without further input from the user, although wrapper classes also allow the
-users to set some important parameters.
+users to set the most important parameters of the underlying algorithms and metrics (see section
+\ref{sec:wrappers} for details).
 \begin{verbatim}
   Mesquite::ShapeImprovementWrapper algorithm;
   algorithm.run_instructions(mesh_set, err); MSQ_CHKERR(err);
@@ -428,11 +444,17 @@ We then proceed to write the improved mesh in a new file:
 \begin{verbatim}
   my_mesh->write_vtk("smoothed_mesh",err); MSQ_CHKERR(err);
 \end{verbatim}
-Compiling this code and running it will create in the current directory the files original\_mesh.vtk
+Compile this code and run with a mesh file name as a command line argument by 
+typing 
+\begin{verbatim}
+./tutorial ../../meshFiles/2D/VTK/square_quad_10_rand.vtk
+\end{verbatim}
+if you are in the \texttt{mesquite/testSuite/tutorial/} directory.
+The code creates in the current directory the files original\_mesh.vtk
 and improved\_mesh.vtk. 
 
 \subsection{Improving the Mesh with the Low Level API}
-
+\label{sec:tutDetailedAPI}
 If the user requires in-depth control over the mesh quality improvement
 process, the use of the Mesquite classes allow an extensive
 level of flexibility.   In particular, the user can specify the quality
@@ -448,6 +470,9 @@ creates an instruction queue and adds one or more quality improvers
 and quality assessors.  The mesh optimization process is initiated
 with the {\tt run\_instructions} method on the instruction queue
 class.
+
+The details of the low-level API are extensively treated in 
+section \ref{sec:detailedAPI}.
 \begin{verbatim}
     // creates a mean ratio quality metric ...
   MeanRatioQualityMetric mean_ratio;
@@ -490,6 +515,55 @@ class.
     // launches optimization on the mesh_set
   queue1.run_instructions(mesh_set, err); MSQ_CHKERR(err);
 \end{verbatim} 
+
+\subsection{Mesh Improvement Examples}
+
+The picture on the left of figure \ref{fig:hole} shows a mesh that has been 
+degraded due to an evolving geometry with a fixed topology:
+the disc was initially on the right side of the square but has been moved to the left side. 
+The mesh file \texttt{mesquite/meshFiles/2D/VTK/hole\_in\_square.vtk} contains the information for
+that mesh. Note that the normal is now defined in the $(0,0,-1)$ direction, and this must be
+notified to Mesquite, as we did in \ref{sec:tutMesh}, or an error message will be thrown. 
+\begin{verbatim}
+  Vector3D normal(0,0,-1);
+  Vector3D point(0,0,-5);
+  PlanarDomain my_mesh_plan(normal, point, my_mesh);
+  mesh_set.set_domain_constraint(&my_mesh_plan);
+\end{verbatim}
+
+We can now improve the mesh with the wrapper mentionned in \ref{sec:tutWrapper} or the detailed API
+mentionned in \ref{sec:tutDetailedAPI}. The driver code needs to be recompiled, since we changed the
+normal, and the executable is run with the mesh to be improved:
+\begin{verbatim}
+./tutorial ../../meshFiles/2D/VTK/hole_in_square.vtk
+\end{verbatim}
+The smoothed mesh is shown on the right picture of figure
+\ref{fig:hole}. The chosen Mesquite scheme has repositionned the vertices but has not changed the
+mesh topology; nonetheless, the mesh has been tremendously improved, as shown by the onscreen
+quality assessor output: 
+\begin{verbatim}
+************  Quality summary of MeshSet  *****************
+ELEMENT BASED METRIC :: Mean Ratio  (140 elements)
+Average    = 8.583908e+01
+o Executing VertexMover::loop_over_mesh()
+
+o  Performing Feasible Newton optimization.
+  .
+  .
+  .
+
+************  Quality summary of MeshSet  *****************
+ELEMENT BASED METRIC :: Mean Ratio  (140 elements)
+Average    = 1.834787e+00
+\end{verbatim}
+\begin{figure*}[htbp]
+\begin{center}
+    \includegraphics{hole_in_square.ps}
+    \caption{hole\_in\_square.vtk mesh. The original mesh is on the left, the mesh smoothed with
+    Mesquite is shown on the right.}
+    \label{fig:hole}
+\end{center}
+\end{figure*}
 
 
 % alternative names
@@ -833,6 +907,7 @@ termination criterion.
 
 
 \section{Detailed Application Programming Interface}
+\label{sec:detailedAPI}
 
 \subsection{Quality Metric}
 
@@ -1224,9 +1299,16 @@ using quality assessors, running the instruction queue.
 
 
 
+\section{Mesquite Specific Mechanisms}
 
-\section{Hints for Performance Profiling}
-Compiler options, aggregation.
+\subsection{The Error Object -- MsqError}
+\label{sec:MsqError}
+
+\subsection{Hints for Performance Profiling}
+
+\begin{verbatim}
+Use the InstructionQueue. 
+\end{verbatim}
 
 
 \chapter{Extending Mesquite}
