@@ -21,15 +21,18 @@ using namespace Mesquite;
     \return true if the element is valid, false otherwise.
 */
 bool QualityMetric::compute_vertex_analytical_gradient(PatchData &pd,
-                                                     MsqVertex &vertex,
-                                                     Vector3D &grad_vec,
-                                                     double &metric_value,
-                                                     MsqError &err)
+                                                       MsqVertex &vertex,
+                                                       MsqVertex* vertices[],
+                                                       Vector3D grad_vec[],
+                                                       int num_vtx,
+                                                       double &metric_value,
+                                                       MsqError &err)
 {
   PRINT_WARNING("QualityMetric has no analytical gradient defined. ",
                 "Defaulting to numerical gradient.\n");
   set_gradient_type(NUMERICAL_GRADIENT);
-  return compute_vertex_numerical_gradient(pd, vertex, grad_vec, metric_value, err);
+  return compute_vertex_numerical_gradient(pd, vertex, vertices, grad_vec,
+                                           num_vtx, metric_value, err);
 }
 
 #undef __FUNC__
@@ -73,7 +76,8 @@ bool QualityMetric::compute_element_analytical_gradient(PatchData &pd,
 */
 bool QualityMetric::compute_element_numerical_gradient(PatchData &pd,
                                              MsqMeshEntity* element,
-                                             MsqVertex* vertices[], Vector3D grad_vec[],
+                                             MsqVertex* vertices[],
+                                                       Vector3D grad_vec[],
                                              int num_vtx, double &metric_value,
                                              MsqError &err)
 {
@@ -109,16 +113,46 @@ bool QualityMetric::compute_element_numerical_gradient(PatchData &pd,
 
 #undef __FUNC__
 #define __FUNC__ "QualityMetric::compute_vertex_numerical_gradient"
-/*!  Numerically calculates the gradient of a vertex-based QualityMetric value on
-  the given free vertex.
+/*!  Numerically calculates the gradient of a vertex-based QualityMetric
+  value on the given free vertex.  The metric is evaluated at MsqVertex
+  'vertex', and the gradient is calculated with respect to the degrees
+  of freedom associated with MsqVertices in the 'vertices' array.
 */
 bool QualityMetric::compute_vertex_numerical_gradient(PatchData &pd,
-                                                     MsqVertex &vertex,
-                                                     Vector3D &grad_vec,
-                                                     double &metric_value,
-                                                     MsqError &err)
+                                                      MsqVertex &vertex,
+                                                      MsqVertex* vertices[],
+                                                      Vector3D grad_vec[],
+                                                      int num_vtx,
+                                                      double &metric_value,
+                                                      MsqError &err)
 {
-  err.set_msg("Functions not implemented yet."); MSQ_CHKERR(err);
-  return false;
+   /*!TODO: (MICHAEL)  Try to inline this function (currenlty conflicts
+      with MsqVertex.hpp).*/    
+  MSQ_DEBUG_PRINT(2,"Computing Gradient (QualityMetric's numeric, vertex based.\n");
+  
+  bool valid=this->evaluate_vertex(pd, &(vertex), metric_value, err);
+  MSQ_CHKERR(err);
+
+  if (!valid)
+    return false;
+  
+  double delta = 10e-6;
+  double metric_value1=0;
+  for (int v=0; v<num_vtx; ++v) 
+  {
+    /* gradient in the x, y, z direction */
+    for (int j=0;j<3;++j) 
+    {
+      // perturb the coordinates of the free vertex in the j direction by delta
+      (*vertices[v])[j]+=delta;
+      //compute the function at the perturbed point location
+      this->evaluate_vertex(pd, &(vertex),  metric_value1, err); MSQ_CHKERR(err);
+      //compute the numerical gradient
+      grad_vec[v][j]=(metric_value1-metric_value)/delta;
+      // put the coordinates back where they belong
+      (*vertices[v])[j] -= delta;
+    }
+  }
+  return true;  
 }
 

@@ -163,9 +163,10 @@ namespace Mesquite
 
          \return true if the element is valid, false otherwise. 
        */
-     bool compute_vertex_gradient(PatchData &pd,
-                                 MsqVertex &vertex, Vector3D &grad_vec,
-                                 double &metric_value, MsqError &err);
+     bool compute_vertex_gradient(PatchData &pd,MsqVertex &vertex,
+                                  MsqVertex* vertices[],Vector3D grad_vec[],
+                                  int num_vtx, double &metric_value,
+                                  MsqError &err);
      
        /*!For MetricType == ELEMENT_BASED.
          Calls either compute_element_numerical_gradient() or
@@ -217,8 +218,12 @@ namespace Mesquite
          which mType is VERTEX_BASED. 
          \return true if the element is valid, false otherwise. */
      bool compute_vertex_numerical_gradient(PatchData &pd,
-                                            MsqVertex &vertex, Vector3D &grad_vec,
-                                            double &metric_value, MsqError &err);
+                                            MsqVertex &vertex,
+                                            MsqVertex* vertices[],
+                                            Vector3D grad_vec[],
+                                            int num_vtx,
+                                            double &metric_value,
+                                            MsqError &err);
      
      
        /*!Non-virtual function which numerically computes the gradient
@@ -238,7 +243,9 @@ namespace Mesquite
          which mType is VERTEX_BASED. */
      virtual bool compute_vertex_analytical_gradient(PatchData &pd,
                                                      MsqVertex &vertex,
-                                                     Vector3D &grad_vec,
+                                                     MsqVertex* vertices[],
+                                                     Vector3D grad_vec[],
+                                                     int num_vtx,
                                                      double &metric_value,
                                                      MsqError &err);
      
@@ -247,12 +254,14 @@ namespace Mesquite
          analytically.  The base class implementation of this function
          simply prints a warning and calls compute_numerical_gradient
          to calculate the gradient. This is used by metric
-         which mType is VERTEX_BASED. */
+         which mType is ELEMENT_BASED. */
      virtual bool compute_element_analytical_gradient(PatchData &pd,
                                                       MsqMeshEntity* element,
-                                             MsqVertex* vertices[], Vector3D grad_vec[],
-                                             int num_vtx, double &metric_value,
-                                             MsqError &err);
+                                                      MsqVertex* vertices[],
+                                                      Vector3D grad_vec[],
+                                                      int num_vtx,
+                                                      double &metric_value,
+                                                      MsqError &err);
 
      friend class MsqMeshEntity;
 
@@ -325,7 +334,9 @@ namespace Mesquite
 */
    inline bool QualityMetric::compute_vertex_gradient(PatchData &pd,
                                                       MsqVertex &vertex,
-                                                      Vector3D &grad_vec,
+                                                      MsqVertex* vertices[],
+                                                      Vector3D grad_vec[],
+                                                      int num_vtx,
                                                       double &metric_value,
                                                       MsqError &err)
    {
@@ -333,11 +344,15 @@ namespace Mesquite
      switch(gradType)
      {
        case NUMERICAL_GRADIENT:
-          ret = compute_vertex_numerical_gradient(pd, vertex, grad_vec, metric_value, err);
+          ret = compute_vertex_numerical_gradient(pd, vertex, vertices,
+                                                  grad_vec, num_vtx,
+                                                  metric_value, err);
           MSQ_CHKERR(err);
           break;
        case ANALYTICAL_GRADIENT:
-          ret = compute_vertex_analytical_gradient(pd, vertex, grad_vec, metric_value, err);
+          ret = compute_vertex_analytical_gradient(pd, vertex, vertices,
+                                                   grad_vec,num_vtx,
+                                                   metric_value, err);
           MSQ_CHKERR(err);
           break;
      }
