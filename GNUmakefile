@@ -1,6 +1,5 @@
 $$SHELL = /bin/sh
 
-srcdir      = src
 # locallibdir - where the compiled libraries will be linked
 locallibdir = ./lib
 # locallibdir - where all the include files will be (locally) copied.
@@ -9,6 +8,7 @@ localincludedir = ./includeLinks
 localobjdir = ./obj
 # file where to write dependencies - will be included in this Makefile
 dependenciesfile = make.dependencies
+
 
 include Makefile.customize
 
@@ -19,6 +19,7 @@ INCLUDE = -I./include -I$(localincludedir) -I./TSTT-interface
 default: all depend
 
 # List all desired module names explicitly below
+srcdir = src
 MODULENAMES :=  Mesh \
 		Control \
 		Misc \
@@ -38,6 +39,14 @@ MODULENAMES :=  Mesh \
 		QualityMetric/Volume \
 		../lib 
 
+testdir = testSuite
+TESTNAMES := test_1
+
+
+# ************ inclusion of all the modules 
+# ************ MakefileVariables.inc  and
+# ************ MakefileTargets.inc
+
 # Add location to the beginning of each (i.e. './')
 MODULES := $(wildcard $(patsubst %, $(srcdir)/%, $(MODULENAMES)))
 
@@ -54,8 +63,6 @@ MODULEMAKEFILES := $(wildcard $(patsubst %, %/MakefileVariables.inc,\
 # dependancies.
 ALLSRC := $(foreach MODULE, $(MODULES),\
 	 $(wildcard $(MODULE)/*.cpp $(MODULE)/*.cc)) 
-
-ALLOBJ := $(ALLSRC:.cpp=.o)
 
 # now include the module makefiles (if there are any)
 ifdef MODULEMAKEFILES
@@ -74,6 +81,24 @@ MODULETARGETFILES := $(wildcard $(patsubst %, \
 ifdef MODULETARGETFILES
 include $(MODULETARGETFILES)
 endif
+# ************
+
+
+# ************ inclusion of all the tests
+# ************ Makefile.inc
+
+# Add location to the beginning of each (i.e. './')
+TESTS := $(wildcard $(patsubst %, $(testdir)/%, $(TESTNAMES)))
+
+# Generate a list of test makefiles actually present. 
+TESTMAKEFILES := $(wildcard $(patsubst %, %/Makefile.inc,\
+                    $(TESTS)))
+
+# now include the tests makefiles (if there are any)
+ifdef TESTMAKEFILES
+include $(TESTMAKEFILES)
+endif
+# *************
 
 
 all: all_headers all_objects all_libs 
@@ -93,6 +118,8 @@ all_libs: all_objects
 #tags:
 #	$(ETAGS) `find $(srcdir) -name "*.cc" -o -name "*.hh" \
 #		-o -name "*.[chf]"`
+
+
 
 clean mostlyclean: 
 	-rm -f $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.o))
