@@ -937,7 +937,7 @@ inline bool m_fcn_3i(double &obj, const Vector3D x[4])
 
   /* Calculate objective function. */
   obj = a3 * f * pow(g, b3);
-  return 0;
+  return true;
 }
 
 /*****************************************************************************/
@@ -1466,7 +1466,7 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 								 Vector3D g[],
 								 int nv, 
 								 double &m,
-								 MsqError &err)
+                                                                 MsqError &err)
 {
   EntityTopology topo = e->get_element_type();
 
@@ -1482,17 +1482,18 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 
   Vector3D coords[4];		// Vertex coordinates for the (decomposed) elements
   Vector3D gradients[32];	// Gradient of metric with respect to the coords
+  Vector3D grad[8];		// Accumulated gradients (composed merit function)
   double   metrics[8];		// Metric values for the (decomposed) elements
   double   nm, t;
 
   int locs_hex[8][4] = {{0, 1, 3, 4},	// Hex element descriptions
-		        {1, 2, 0, 5},
-		        {2, 3, 1, 6},
-		        {3, 0, 2, 7},
-		        {4, 7, 5, 0},
-		        {5, 4, 6, 1},
-		        {6, 5, 7, 2},
-		        {7, 6, 4, 3}};
+                        {1, 2, 0, 5},
+                        {2, 3, 1, 6},
+                        {3, 0, 2, 7},
+                        {4, 7, 5, 0},
+                        {5, 4, 6, 1},
+                        {6, 5, 7, 2},
+                        {7, 6, 4, 3}};
   int i, j;
 
   m = 0.0;
@@ -1508,14 +1509,22 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
     coords[1] = vertices[v_i[1]];
     coords[2] = vertices[v_i[2]];
     coords[3] = vertices[v_i[3]];
-    if (!g_fcn_3e(m, g, coords)) return false;
+    if (!g_fcn_3e(m, grad, coords)) return false;
 
-    // Tom: zero out fixed elements of g
+    // This is not very efficient, but is one way to select correct gradients.
+    // For gradients, info is returned only for free vertices, in the order of v[].
+    for (i = 0; i < 4; ++i) {
+      for (j = 0; j < nv; ++j) {
+        if (vertices + v_i[i] == v[j]) {
+          g[j] = grad[i];
+        }
+      }
+    }
     break;
 
   case HEXAHEDRON:
     for (i = 0; i < 8; ++i) {
-      g[i] = 0.0;
+      grad[i] = 0.0;
 
       coords[0] = vertices[v_i[locs_hex[i][0]]];
       coords[1] = vertices[v_i[locs_hex[i][1]]];
@@ -1528,127 +1537,135 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
     case MINIMUM:
       m = metrics[0];
       for (i = 1; i < 8; ++i) {
-	if (metrics[i] < m) m = metrics[i];
+        if (metrics[i] < m) m = metrics[i];
       }
 
       nm = 0;
       for (i = 0; i < 8; ++i) {
         if (metrics[i] - m <= MSQ_MIN) {
-	  g[locs_hex[i][0]] += gradients[4*i+0];
-	  g[locs_hex[i][1]] += gradients[4*i+1];
-	  g[locs_hex[i][2]] += gradients[4*i+2];
-	  g[locs_hex[i][3]] += gradients[4*i+3];
-	  ++nm;
+          grad[locs_hex[i][0]] += gradients[4*i+0];
+          grad[locs_hex[i][1]] += gradients[4*i+1];
+          grad[locs_hex[i][2]] += gradients[4*i+2];
+          grad[locs_hex[i][3]] += gradients[4*i+3];
+          ++nm;
         }
       }
 
       for (i = 0; i < 8; ++i) {
-	g[i] /= nm;
+        grad[i] /= nm;
       }
       break;
 
     case MAXIMUM:
       m = metrics[0];
       for (i = 1; i < 8; ++i) {
-	if (metrics[i] > m) m = metrics[i];
+        if (metrics[i] > m) m = metrics[i];
       }
 
       nm = 0;
       for (i = 0; i < 8; ++i) {
         if (m - metrics[i] <= MSQ_MIN) {
-	  g[locs_hex[i][0]] += gradients[4*i+0];
-	  g[locs_hex[i][1]] += gradients[4*i+1];
-	  g[locs_hex[i][2]] += gradients[4*i+2];
-	  g[locs_hex[i][3]] += gradients[4*i+3];
-	  ++nm;
+          grad[locs_hex[i][0]] += gradients[4*i+0];
+          grad[locs_hex[i][1]] += gradients[4*i+1];
+          grad[locs_hex[i][2]] += gradients[4*i+2];
+          grad[locs_hex[i][3]] += gradients[4*i+3];
+          ++nm;
         }
       }
 
       for (i = 0; i < 8; ++i) {
-	g[i] /= nm;
+        grad[i] /= nm;
       }
       break;
 
     case SUM:
       m = 0;
       for (i = 0; i < 8; ++i) {
-	m += metrics[i];
+        m += metrics[i];
       }
 
       for (i = 0; i < 8; ++i) {
-        g[locs_hex[i][0]] += gradients[4*i+0];
-	g[locs_hex[i][1]] += gradients[4*i+1];
-	g[locs_hex[i][2]] += gradients[4*i+2];
-	g[locs_hex[i][3]] += gradients[4*i+3];
+        grad[locs_hex[i][0]] += gradients[4*i+0];
+        grad[locs_hex[i][1]] += gradients[4*i+1];
+        grad[locs_hex[i][2]] += gradients[4*i+2];
+        grad[locs_hex[i][3]] += gradients[4*i+3];
       }
       break;
 
     case GEOMETRIC:
       m = 0.0;
       for (i = 0; i < 8; ++i) {
-	m += log(metrics[i]);
-	metrics[i] = 1.0 / metrics[i];
+        m += log(metrics[i]);
+        metrics[i] = 1.0 / metrics[i];
       }
       m = exp(m / 8.0);
 
       for (i = 0; i < 8; ++i) {
-        g[locs_hex[i][0]] += metrics[i]*gradients[4*i+0];
-	g[locs_hex[i][1]] += metrics[i]*gradients[4*i+1];
-	g[locs_hex[i][2]] += metrics[i]*gradients[4*i+2];
-	g[locs_hex[i][3]] += metrics[i]*gradients[4*i+3];
+        grad[locs_hex[i][0]] += metrics[i]*gradients[4*i+0];
+        grad[locs_hex[i][1]] += metrics[i]*gradients[4*i+1];
+        grad[locs_hex[i][2]] += metrics[i]*gradients[4*i+2];
+        grad[locs_hex[i][3]] += metrics[i]*gradients[4*i+3];
       }
 
       nm = m / 8.0;
       for (i = 0; i < 8; ++i) {
-	g[i] *= nm;
+        grad[i] *= nm;
       }
       break;
 
     default:
       switch(avgMethod) {
       case LINEAR:
-	t = 1.0;
-	break;
+        t = 1.0;
+        break;
 
       case RMS:
-	t = 2.0;
-	break;
+        t = 2.0;
+        break;
 
       case HARMONIC:
-	t = -1.0;
-	break;
+        t = -1.0;
+        break;
 
       case HMS:
-	t = -2.0;
-	break;
+        t = -2.0;
+        break;
       }
 
       m = 0;
       for (i = 0; i < 8; ++i) {
-	nm = pow(metrics[i], t);
-	m += nm;
+        nm = pow(metrics[i], t);
+        m += nm;
 
-	metrics[i] = t*nm/metrics[i];
+        metrics[i] = t*nm/metrics[i];
       }
 
       nm = m / 8.0;
       m = pow(nm, 1.0 / t);
 
       for (i = 0; i < 8; ++i) {
-        g[locs_hex[i][0]] += metrics[i]*gradients[4*i+0];
-	g[locs_hex[i][1]] += metrics[i]*gradients[4*i+1];
-	g[locs_hex[i][2]] += metrics[i]*gradients[4*i+2];
-	g[locs_hex[i][3]] += metrics[i]*gradients[4*i+3];
+        grad[locs_hex[i][0]] += metrics[i]*gradients[4*i+0];
+        grad[locs_hex[i][1]] += metrics[i]*gradients[4*i+1];
+        grad[locs_hex[i][2]] += metrics[i]*gradients[4*i+2];
+        grad[locs_hex[i][3]] += metrics[i]*gradients[4*i+3];
       }
 
       nm = m / (8.0*nm*t);
       for (i = 0; i < 8; ++i) {
-	g[i] *= nm;
+        grad[i] *= nm;
       }
       break;
     }
 
-    // Tom: zero out fixed elements of g
+    // This is not very efficient, but is one way to select correct gradients
+    // For gradients, info is returned only for free vertices, in the order of v[].
+    for (i = 0; i < 8; ++i) {
+      for (j = 0; j < nv; ++j) {
+        if (vertices + v_i[i] == v[j]) {
+          g[j] = grad[i];
+        }
+      }
+    }
     break;
 
   default:
@@ -1660,10 +1677,10 @@ bool MeanRatioQualityMetric::compute_element_analytical_gradient(PatchData &pd,
 
 bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
 								MsqMeshEntity *e,
-								MsqVertex *v[], 
+								MsqVertex *fv[], 
 								Vector3D g[],
 								Matrix3D h[],
-								int nv, 
+								int nfv, 
 								double &m,
 								MsqError &err)
 {
@@ -1712,10 +1729,41 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
     coords[3] = vertices[v_i[3]];
     if (!h_fcn_3e(m, g, h, coords)) return false;
 
-    // Tom: zero out fixed elements of g and h
+    // zero out fixed elements of g
+    ind = 0;
+    for (i=0; i<4; ++i) {
+      // if free vertex, see next
+      if ( vertices+v_i[i] == fv[ind] )
+        ++ind;
+      // else zero gradient entry
+      else
+        g[i] = 0.;
+    }
+
+    // Makes sure we zero the hessian blocks corresponding to fixed vertices. 
+    for(i=0; i<4; ++i) {
+      for (j=i; j<4; ++j) {
+  
+        // for entry i,j in upper right part of 4*4 matrix, index in a 1D array is
+        ind = 4*i- (i*(i+1)/2) +j; // 4*i - \sum_{n=0}^i n +j 
+
+        bool nul_hessian = true; 
+        for (k=0; k<nfv; ++k) 
+          for (l=0; l<nfv; ++l) 
+            if ( (vertices + v_i[i] == fv[k]) && (vertices + v_i[j] == fv[l]) )
+              nul_hessian = false;
+
+        if (nul_hessian == true)
+          h[ind] = 0.;
+      }
+    }      
+    
     break;
 
   case HEXAHEDRON:
+    for (i=0; i<36; ++i)
+      h[i] = 0.;
+
     for (i = 0; i < 8; ++i) {
       g[i] = 0.0;
 
@@ -1868,7 +1916,35 @@ bool MeanRatioQualityMetric::compute_element_analytical_hessian(PatchData &pd,
       break;
     }
 
-    // Tom: zero out fixed elements of g and h
+    // zero out fixed elements of g
+    ind = 0;
+    for (i=0; i<8; ++i) {
+      // if free vertex, see next
+      if ( vertices+v_i[i] == fv[ind] )
+        ++ind;
+      // else zero gradient entry
+      else
+        g[i] = 0.;
+    }
+
+    // Makes sure we zero the hessian blocks corresponding to fixed vertices. 
+    for(i=0; i<8; ++i) {
+      for (j=i; j<8; ++j) {
+  
+        // for entry i,j in upper right part of 8*8 matrix, index in a 1D array is
+        ind = 8*i- (i*(i+1)/2) +j; // 8*i - \sum_{n=0}^i n +j 
+
+        bool nul_hessian = true; 
+        for (k=0; k<nfv; ++k) 
+          for (l=0; l<nfv; ++l) 
+            if ( (vertices + v_i[i] == fv[k]) && (vertices + v_i[j] == fv[l]) )
+              nul_hessian = false;
+
+        if (nul_hessian == true)
+          h[ind] = 0.;
+      }
+    }
+
     break;
 
   default:

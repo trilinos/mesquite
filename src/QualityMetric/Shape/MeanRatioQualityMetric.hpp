@@ -53,7 +53,7 @@ namespace Mesquite
 
       bool compute_element_analytical_gradient(PatchData &pd,
                                                MsqMeshEntity *element,
-                                               MsqVertex *vertices[], 
+                                               MsqVertex *free_vtces[], 
                                                Vector3D grad_vec[],
                                                int num_vtx, 
                                                double &metric_value,
