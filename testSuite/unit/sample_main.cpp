@@ -6,10 +6,14 @@ int main()
     // Create a test runner
   Mesquite::TestRunner runner;
   
-    // Get the test suite we want to run
+    // Get the test suites we want to run
   CppUnit::TestFactoryRegistry &registry =
     CppUnit::TestFactoryRegistry::getRegistry("Misc");
   runner.add_test( registry.makeTest() );
+
+  CppUnit::TestFactoryRegistry &registry2 =
+    CppUnit::TestFactoryRegistry::getRegistry("MsqMeshEntityTest");
+  runner.add_test( registry2.makeTest() );
 
     // Run the tests
   bool wasSucessful = runner.run("Darryl's Test Run");
