@@ -1738,6 +1738,7 @@ void MeshTSTTImpl::tag_set_data( TagHandle tag,
         sidl::array<double> sdata( convert_to_sidl_vector( (double*)data, len*num_elems ));
         arrTagIFace.setDblArrData( handles, num_elems, tag, sdata, count );
       }
+      break;
       
       case TSTT::TagValueType_INTEGER:
       {
@@ -1745,6 +1746,7 @@ void MeshTSTTImpl::tag_set_data( TagHandle tag,
         sidl::array<int> sdata( convert_to_sidl_vector( (int*)data, len*num_elems ));
         arrTagIFace.setIntArrData( handles, num_elems, tag, sdata, count );
       }
+      break;
 
       default:
       {
@@ -1824,6 +1826,7 @@ void MeshTSTTImpl::tag_get_data( TagHandle tag,
         sidl::array<double> sdata( convert_to_sidl_vector( (double*)data, len*num_elems ));
         arrTagIFace.getDblArrData( handles, num_elems, tag, sdata, count );
       }
+      break;
       
       case TSTT::TagValueType_INTEGER:
       {
@@ -1831,6 +1834,7 @@ void MeshTSTTImpl::tag_get_data( TagHandle tag,
         sidl::array<int> sdata( convert_to_sidl_vector( (int*)data, len*num_elems ));
         arrTagIFace.getIntArrData( handles, num_elems, tag, sdata, count );
       }
+      break;
 
       default:
       {

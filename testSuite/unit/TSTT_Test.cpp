@@ -1,3 +1,28 @@
+/* ***************************************************************** 
+    MESQUITE -- The Mesh Quality Improvement Toolkit
+
+    Copyright 2004 Lawrence Livermore National Laboratory.  Under 
+    the terms of Contract B545069 with the University of Wisconsin -- 
+    Madison, Lawrence Livermore National Laboratory retains certain
+    rights in this software.
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License 
+    (lgpl.txt) along with this library; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ 
+    kraftche@cae.wisc.edu    
+   
+  ***************************************************************** */
 
 #ifdef MSQ_USE_OLD_IO_HEADERS
 # include <iostream.h>
@@ -49,7 +74,10 @@
 
 using namespace Mesquite;
 
-/*
+/* This is the mesh defined in the two arrays below.  This test
+ * should work with any mesh composed entirely of triangle
+ * elements.  The mesh used for the test can be changed by modifying
+ * the two arrays below.
  *                                             
  *            3-------------------2            
  *           / \                 / \           
@@ -101,15 +129,13 @@ class TSTT_Test : public CppUnit::TestFixture
   private:
     
     CPPUNIT_TEST_SUITE( TSTT_Test );
-    //CPPUNIT_TEST( matchVertexCoordinates );
-    //CPPUNIT_TEST( matchElementConnectivity );
-    //CPPUNIT_TEST( testVertexIterator );
-    //CPPUNIT_TEST( testVertexByte );
+    CPPUNIT_TEST( testVertexIterator );
+    CPPUNIT_TEST( testVertexByte );
     CPPUNIT_TEST( testVertexAdjacency );
-    //CPPUNIT_TEST( testElementConnectivity );
-    //CPPUNIT_TEST( testElementTopology );
-    //CPPUNIT_TEST( testIntTag );
-    //CPPUNIT_TEST( testDoubleTag );
+    CPPUNIT_TEST( testElementConnectivity );
+    CPPUNIT_TEST( testElementTopology );
+    CPPUNIT_TEST( testIntTag );
+    CPPUNIT_TEST( testDoubleTag );
     CPPUNIT_TEST_SUITE_END();
 
     MeshTSTT* myMesh;
@@ -220,6 +246,9 @@ void TSTT_Test::setUp()
     myMesh = 0;
     return;
   }
+  
+  matchVertexCoordinates();
+  matchElementConnectivity();
 }
 
 void TSTT_Test::tearDown()
@@ -303,7 +332,6 @@ void TSTT_Test::matchElementConnectivity()
   
     // check if initialized properly
   CPPUNIT_ASSERT( myMesh );
-  matchVertexCoordinates();
     // make sure this hasn't been called yet
   CPPUNIT_ASSERT( 0 == triHandleToIndex.size() );
     // initialize data
@@ -362,7 +390,6 @@ void TSTT_Test::testVertexIterator()
   
     // check if initialized properly
   CPPUNIT_ASSERT( myMesh );
-  matchElementConnectivity();
 
     // mark each vertex as it is encountered
   msq_std::vector<int> marks(num_pts);
@@ -396,7 +423,6 @@ void TSTT_Test::testVertexByte()
   
     // check if initialized properly
   CPPUNIT_ASSERT( myMesh );
-  matchElementConnectivity();
 
     // set each one individually
   unsigned char bytes[num_pts];
@@ -435,7 +461,6 @@ void TSTT_Test::testVertexAdjacency()
   
     // check if initialized properly
   CPPUNIT_ASSERT( myMesh );
-  matchElementConnectivity();
 
     // construct adjacency list from input data to compare against
   msq_std::set<int> adjset[num_pts];
@@ -480,7 +505,6 @@ void TSTT_Test::testElementConnectivity()
   
     // check if initialized properly
   CPPUNIT_ASSERT( myMesh );
-  matchElementConnectivity();
 
     // get vertex use count for elements
   size_t num_uses = 
@@ -532,7 +556,6 @@ void TSTT_Test::testElementTopology()
   
     // check if initialized properly
   CPPUNIT_ASSERT( myMesh );
-  matchElementConnectivity();
 
   EntityTopology topo[num_tri];
   myMesh->elements_get_topologies( triIndexToHandle, topo, num_tri, err );
@@ -550,7 +573,6 @@ void TSTT_Test::testIntTag()
   
     // check if initialized properly
   CPPUNIT_ASSERT( myMesh );
-  matchElementConnectivity();
 
     // create a tag
   TagHandle tag = myMesh->tag_create( tagname, Mesh::INT, 2, NULL, err );
@@ -602,7 +624,6 @@ void TSTT_Test::testDoubleTag()
   
     // check if initialized properly
   CPPUNIT_ASSERT( myMesh );
-  matchElementConnectivity();
 
     // create a tag
   TagHandle tag = myMesh->tag_create( tagname, Mesh::DOUBLE, 1, NULL, err );
@@ -624,7 +645,7 @@ void TSTT_Test::testDoubleTag()
   CPPUNIT_ASSERT( length == 1 );
   
     // set the tag on all vertices
-  std::vector<double> data1(2*num_pts), data2(2*num_pts);
+  std::vector<double> data1(num_pts), data2(num_pts);
   std::vector<double>::iterator iter1, iter2;
   for (iter1 = data1.begin(); iter1 != data1.end(); ++iter1)
     *iter1 = sqrt(abs(rand()));
