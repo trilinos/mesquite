@@ -27,6 +27,8 @@ namespace Mesquite
   public:
     SteepestDescent(ObjectiveFunction* of);
 
+    virtual void set_patch_type(MeshSet::PatchType type, MsqError &err);
+
     void set_maximum_iteration(int iter){
         maxIteration=iter;}
 

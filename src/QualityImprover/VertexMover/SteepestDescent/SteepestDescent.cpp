@@ -19,8 +19,9 @@ using namespace Mesquite;
 
 #undef __FUNC__
 #define __FUNC__ "SteepestDescent::SteepestDescent" 
-SteepestDescent::SteepestDescent(ObjectiveFunction* of)
-  : objFunc(of)
+SteepestDescent::SteepestDescent(ObjectiveFunction* of) :
+  VertexMover(),
+  objFunc(of)
 {
   gradientLessThan=.01;
   maxIteration=6;
@@ -28,11 +29,27 @@ SteepestDescent::SteepestDescent(ObjectiveFunction* of)
   set_patch_depth(1);
 }  
   
-  
+#undef __FUNC__
+#define __FUNC__ "SteepestDescent::set_patch_type"
+/*! \fn SteepestDescent::set_patch_type(MeshSet::PatchType type, MsqError &err)
+
+    SteepestDescent supports GLOBAL_PATCH and ELEMENTS_ON_VERTEX_PATCH
+*/
+void SteepestDescent::set_patch_type(MeshSet::PatchType type, MsqError &err)
+{
+  if (type == MeshSet::GLOBAL_PATCH || type == MeshSet::ELEMENTS_ON_VERTEX_PATCH) {
+    patchType = type;
+  } else {
+    err.set_msg("Type not supported by SteepestDescent algorythm.");
+  }
+}
+
+
 #undef __FUNC__
 #define __FUNC__ "SteepestDescent::initialize" 
 void SteepestDescent::initialize(PatchData &pd, MsqError &err)
 {
+  set_patch_type(MeshSet::GLOBAL_PATCH, err); MSQ_CHKERR(err);
   PRINT_INFO("\no  Performing Steepest Descent optimization.\n");
 }
 
