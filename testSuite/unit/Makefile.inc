@@ -23,7 +23,8 @@ TEST_SRCS = msq_test_main.cpp \
     TerminationCriterionTest.cpp \
     VertexCullingRegressionTest.cpp \
     ExodusTest.cpp \
-    MeshInterfaceTest.cpp
+    MeshInterfaceTest.cpp \
+    TopologyInfoTest.cpp
 
 TEST_OBJS = ${TEST_SRCS:.cpp=.o}
 
