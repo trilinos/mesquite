@@ -329,6 +329,8 @@ bool LPtoPTemplate::compute_analytical_hessian(PatchData &pd,
   size_t e;
   int num_vtx;
   int i,j,n;
+
+  hessian.zero_out();
   
   for (e=0; e<num_elems; ++e) {
     int nve = elements[e].vertex_count();
