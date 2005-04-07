@@ -21,7 +21,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  
     diachin2@llnl.gov, djmelan@sandia.gov, mbrewer@sandia.gov, 
-    pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov      
+    pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov,
+    kraftche@cae.wisc.edu   
    
   ***************************************************************** */
 #include "PlanarDomain.hpp"
@@ -47,4 +48,14 @@ void Mesquite::PlanarDomain::normal_at(
   Mesquite::Vector3D &coordinate) const
 {
   coordinate = mNormal;
+}
+
+
+void Mesquite::PlanarDomain::normal_at( Mesquite::Mesh::EntityHandle ,
+                                        Vector3D coords[],
+                                        unsigned count,
+                                        Mesquite::MsqError& ) const
+{
+  for (unsigned i = 0; i < count; ++i)
+    coords[i] = mNormal;
 }

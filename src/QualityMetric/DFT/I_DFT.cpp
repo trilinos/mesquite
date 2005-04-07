@@ -80,17 +80,18 @@ bool I_DFT::evaluate_element(PatchData& pd,
   case TRIANGLE:
     assert(3 == nv);
 
+    e->compute_corner_normals( mNormals, pd, err ); MSQ_ERRZERO(err);
+
     for (i = 0; i < 3; ++i) {
       for (j = 0; j < 3; ++j) {
 	mCoords[j] = vertices[v_i[tetInd[i][j]]];
       }
       
-      e->compute_corner_normal( i, mNormal, pd, err );  MSQ_ERRZERO(err);
-      mNormal *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
+      mNormals[i] *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
 
       QR(mQ, mR, W[i]);
       inv(invR, mR);
-      mValid = m_gdft_2(mMetric, mCoords, mNormal, invR, mQ, 
+      mValid = m_gdft_2(mMetric, mCoords, mNormals[i], invR, mQ, 
 			mAlpha, mGamma, delta, mBeta);
       if (!mValid) return false;
       m += W[i].get_cK() * mMetric;
@@ -102,16 +103,16 @@ bool I_DFT::evaluate_element(PatchData& pd,
   case QUADRILATERAL:
     assert(4 == nv);
 
+    e->compute_corner_normals( mNormals, pd, err ); MSQ_ERRZERO(err);
+
     for (i = 0; i < 4; ++i) {
       for (j = 0; j < 3; ++j) {
 	mCoords[j] = vertices[v_i[hexInd[i][j]]];
       }
 
-      e->compute_corner_normal( i, mNormal, pd, err ); MSQ_ERRZERO(err);
-
       QR(mQ, mR, W[i]);
       inv(invR, mR);
-      mValid = m_gdft_2(mMetric, mCoords, mNormal, invR, mQ, 
+      mValid = m_gdft_2(mMetric, mCoords, mNormals[i], invR, mQ, 
 			mAlpha, mGamma, delta, mBeta);
       if (!mValid) return false;
       m += W[i].get_cK() * mMetric;
@@ -209,6 +210,8 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
   switch(topo) {
   case TRIANGLE:
     assert(3 == nv);
+    
+    e->compute_corner_normals( mNormals, pd, err ); MSQ_ERRZERO(err);
 
     // The following analytic calculation only works correctly if the
     // normal is constant.  If the normal is not constant, you need
@@ -229,25 +232,24 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	}
 
 	if (mVert >= 0) {
-	  e->compute_corner_normal( i, mNormal, pd, err ); MSQ_ERRZERO(err);
-	  mNormal *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
+	  mNormals[i] *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
 	  
 	  QR(mQ, mR, W[i]);
 	  inv(invR, mR);
 
 	  switch(mVert) {
 	  case 0:
-	    mValid = g_gdft_2_v0(mMetric, mGrads[0], mCoords, mNormal,
+	    mValid = g_gdft_2_v0(mMetric, mGrads[0], mCoords, mNormals[i],
 				 invR, mQ, mAlpha, mGamma, delta, mBeta);
 	    break;
 	    
 	  case 1:
-	    mValid = g_gdft_2_v1(mMetric, mGrads[0], mCoords, mNormal,
+	    mValid = g_gdft_2_v1(mMetric, mGrads[0], mCoords, mNormals[i],
 				 invR, mQ, mAlpha, mGamma, delta, mBeta);
 	    break;
 	    
 	  default:
-	    mValid = g_gdft_2_v2(mMetric, mGrads[0], mCoords, mNormal,
+	    mValid = g_gdft_2_v2(mMetric, mGrads[0], mCoords, mNormals[i],
 				 invR, mQ, mAlpha, mGamma, delta, mBeta);
 	    break;
 	  }
@@ -260,13 +262,12 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	  // For triangles, the free vertex must appear in every element.
 	  // Therefore, there these accumulations should not get used.
 
-	  e->compute_corner_normal( i, mNormal, pd, err ); MSQ_ERRZERO(err);
-	  mNormal *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
+	  mNormals[i] *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
 	  
 	  QR(mQ, mR, W[i]);
 	  inv(invR, mR);
 
-	  mValid = m_gdft_2(mMetric, mCoords, mNormal,
+	  mValid = m_gdft_2(mMetric, mCoords, mNormals[i],
 			    invR, mQ, mAlpha, mGamma, delta, mBeta);
 	  if (!mValid) return false;
 	  m += W[i].get_cK() * mMetric;
@@ -286,12 +287,11 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	  mCoords[j] = vertices[v_i[tetInd[i][j]]];
 	}
       
-	e->compute_corner_normal( i, mNormal, pd, err ); MSQ_ERRZERO(err);
-	mNormal *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
+	mNormals[i] *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
       
 	QR(mQ, mR, W[i]);
 	inv(invR, mR);
-	mValid = g_gdft_2(mMetric, mGrads, mCoords, mNormal, invR, mQ, 
+	mValid = g_gdft_2(mMetric, mGrads, mCoords, mNormals[i], invR, mQ, 
 			  mAlpha, mGamma, delta, mBeta);
 
 	if (!mValid) return false;
@@ -322,6 +322,8 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 
   case QUADRILATERAL:
     assert(4 == nv);
+    
+    e->compute_corner_normals( mNormals, pd, err ); MSQ_ERRZERO(err);
 
     // The following analytic calculation only works correctly if the
     // normal is constant.  If the normal is not constant, you need
@@ -342,24 +344,22 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	}
 
 	if (mVert >= 0) {
-	  e->compute_corner_normal( i, mNormal, pd, err ); MSQ_ERRZERO(err);
-	  
 	  QR(mQ, mR, W[i]);
 	  inv(invR, mR);
 
 	  switch(mVert) {
 	  case 0:
-	    mValid = g_gdft_2_v0(mMetric, mGrads[0], mCoords, mNormal,
+	    mValid = g_gdft_2_v0(mMetric, mGrads[0], mCoords, mNormals[i],
 				 invR, mQ, mAlpha, mGamma, delta, mBeta);
 	    break;
 	    
 	  case 1:
-	    mValid = g_gdft_2_v1(mMetric, mGrads[0], mCoords, mNormal,
+	    mValid = g_gdft_2_v1(mMetric, mGrads[0], mCoords, mNormals[i],
 				 invR, mQ, mAlpha, mGamma, delta, mBeta);
 	    break;
 	    
 	  default:
-	    mValid = g_gdft_2_v2(mMetric, mGrads[0], mCoords, mNormal,
+	    mValid = g_gdft_2_v2(mMetric, mGrads[0], mCoords, mNormals[i],
 				 invR, mQ, mAlpha, mGamma, delta, mBeta);
 	    break;
 	  }
@@ -376,13 +376,11 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
           // because you are unable to change the contributions from the 
 	  // elements where the free vertex does not appear.  (If the 
 	  // weight matrices change, then the code needs to be modified.)
-
-	  e->compute_corner_normal( i, mNormal, pd, err ); MSQ_ERRZERO(err);
 	  
 	  QR(mQ, mR, W[i]);
 	  inv(invR, mR);
 
-	  mValid = m_gdft_2(mMetric, mCoords, mNormal,
+	  mValid = m_gdft_2(mMetric, mCoords, mNormals[i],
 			    invR, mQ, mAlpha, mGamma, delta, mBeta);
 	  if (!mValid) return false;
 	  m += W[i].get_cK() * mMetric;
@@ -402,11 +400,9 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	  mCoords[j] = vertices[v_i[hexInd[i][j]]];
 	}
 
-	e->compute_corner_normal( i, mNormal, pd, err ); MSQ_ERRZERO(err);
-
 	QR(mQ, mR, W[i]);
 	inv(invR, mR);
-	mValid = g_gdft_2(mMetric, mGrads, mCoords, mNormal, invR, mQ, 
+	mValid = g_gdft_2(mMetric, mGrads, mCoords, mNormals[i], invR, mQ, 
 			  mAlpha, mGamma, delta, mBeta);
 
 	if (!mValid) return false;
@@ -699,6 +695,7 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
   switch(topo) {
   case TRIANGLE:
     assert(3 == nv);
+    e->compute_corner_normals( mNormals, pd, err ); MSQ_ERRZERO(err);
 
     // The following analytic calculation only works correctly if the
     // normal is constant.  If the normal is not constant, you need
@@ -734,8 +731,7 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	}
 	
 	if (mVert >= 0) {
-	  e->compute_corner_normal( i, mNormal, pd, err ); MSQ_ERRZERO(err);
-	  mNormal *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
+	  mNormals[i] *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
 	  
 	  QR(mQ, mR, W[i]);
 	  inv(invR, mR);
@@ -743,19 +739,19 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	  switch(mVert) {
 	  case 0:
 	    mValid = h_gdft_2_v0(mMetric, mGrads[0], mHessians[0],
-				 mCoords, mNormal,
+				 mCoords, mNormals[i],
 				 invR, mQ, mAlpha, mGamma, delta, mBeta);
 	    break;
 	    
 	  case 1:
 	    mValid = h_gdft_2_v1(mMetric, mGrads[0], mHessians[0],
-				 mCoords, mNormal,
+				 mCoords, mNormals[i],
 				 invR, mQ, mAlpha, mGamma, delta, mBeta);
 	    break;
 	    
 	  default:
 	    mValid = h_gdft_2_v2(mMetric, mGrads[0], mHessians[0],
-				 mCoords, mNormal,
+				 mCoords, mNormals[i],
 				 invR, mQ, mAlpha, mGamma, delta, mBeta);
 	    break;
 	  }
@@ -769,13 +765,12 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	  // For triangles, the free vertex must appear in every element.
 	  // Therefore, there these accumulations should not get used.
 
-	  e->compute_corner_normal( i, mNormal, pd, err ); MSQ_ERRZERO(err);
-	  mNormal *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
+	  mNormals[i] *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
 	  
 	  QR(mQ, mR, W[i]);
 	  inv(invR, mR);
 
-	  mValid = m_gdft_2(mMetric, mCoords, mNormal,
+	  mValid = m_gdft_2(mMetric, mCoords, mNormals[i],
 			    invR, mQ, mAlpha, mGamma, delta, mBeta);
 	  if (!mValid) return false;
 	  m += W[i].get_cK() * mMetric;
@@ -814,12 +809,11 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	  mCoords[j] = vertices[v_i[tetInd[i][j]]];
 	}
 
-	e->compute_corner_normal( i, mNormal, pd, err );  MSQ_ERRZERO(err);
-	mNormal *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
+	mNormals[i] *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
       
 	QR(mQ, mR, W[i]);
 	inv(invR, mR);
-	mValid = h_gdft_2(mMetric, mGrads, mHessians, mCoords, mNormal, 
+	mValid = h_gdft_2(mMetric, mGrads, mHessians, mCoords, mNormals[i], 
 			  invR, mQ, mAlpha, mGamma, delta, mBeta);
 
 	if (!mValid) return false;
@@ -888,6 +882,7 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 
   case QUADRILATERAL:
     assert(4 == nv);
+    e->compute_corner_normals( mNormals, pd, err ); MSQ_ERRZERO(err);
 
     // The following analytic calculation only works correctly if the
     // normal is constant.  If the normal is not constant, you need
@@ -923,7 +918,6 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	}
 	
 	if (mVert >= 0) {
-	  e->compute_corner_normal( i, mNormal, pd, err ); MSQ_ERRZERO(err);
 	  
 	  QR(mQ, mR, W[i]);
 	  inv(invR, mR);
@@ -931,19 +925,19 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	  switch(mVert) {
 	  case 0:
 	    mValid = h_gdft_2_v0(mMetric, mGrads[0], mHessians[0],
-				 mCoords, mNormal,
+				 mCoords, mNormals[i],
 				 invR, mQ, mAlpha, mGamma, delta, mBeta);
 	    break;
 	    
 	  case 1:
 	    mValid = h_gdft_2_v1(mMetric, mGrads[0], mHessians[0],
-				 mCoords, mNormal,
+				 mCoords, mNormals[i],
 				 invR, mQ, mAlpha, mGamma, delta, mBeta);
 	    break;
 	    
 	  default:
 	    mValid = h_gdft_2_v2(mMetric, mGrads[0], mHessians[0],
-				 mCoords, mNormal,
+				 mCoords, mNormals[i],
 				 invR, mQ, mAlpha, mGamma, delta, mBeta);
 	    break;
 	  }
@@ -961,13 +955,11 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
           // because you are unable to change the contributions from the 
 	  // elements where the free vertex does not appear.  (If the 
 	  // weight matrices change, then the code needs to be modified.)
-
-	  e->compute_corner_normal( i, mNormal, pd, err ); MSQ_ERRZERO(err);
 	  
 	  QR(mQ, mR, W[i]);
 	  inv(invR, mR);
 
-	  mValid = m_gdft_2(mMetric, mCoords, mNormal,
+	  mValid = m_gdft_2(mMetric, mCoords, mNormals[i],
 			    invR, mQ, mAlpha, mGamma, delta, mBeta);
 	  if (!mValid) return false;
 	  m += W[i].get_cK() * mMetric;
@@ -1010,11 +1002,9 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	  mCoords[j] = vertices[v_i[hexInd[i][j]]];
 	}
 
-	e->compute_corner_normal( i, mNormal, pd, err ); MSQ_ERRZERO(err);
-
 	QR(mQ, mR, W[i]);
 	inv(invR, mR);
-	mValid = h_gdft_2(mMetric, mGrads, mHessians, mCoords, mNormal, 
+	mValid = h_gdft_2(mMetric, mGrads, mHessians, mCoords, mNormals[i], 
 			  invR, mQ, mAlpha, mGamma, delta, mBeta);
 
 	if (!mValid) return false;

@@ -19,6 +19,10 @@ static inline msq_std::string process_tstt_error( TSTT::Error &tstt_err )
   return result;
 }
 
+template <class T> static inline
+T* convert_from_sidl_vector( sidl::array<T>& array )
+{  return reinterpret_cast<T*>(array._get_ior()->d_firstElement); }
+
 template <class T> static inline sidl::array<T> alloc_sidl_vector( size_t size )
 {
   int32_t lower = 0;
@@ -29,8 +33,9 @@ template <class T> static inline sidl::array<T> alloc_sidl_vector( size_t size )
 template <class T> static inline sidl::array<T> alloc_sidl_vector( size_t size, T init )
 {
   sidl::array<T> result = alloc_sidl_vector<T>(size);
-  for (int32_t i = 0; i < (int32_t)size; ++i)
-    result.set( i, init );
+  T* ptr = convert_from_sidl_vector( result );
+  for ( T* const end = ptr + size; ptr != end; ++ptr)
+    *ptr = init;
   return result;
 }
 
@@ -50,10 +55,6 @@ sidl::array<T> convert_to_sidl_vector( T* array, size_t size )
   result.borrow( array, 1, &lower, &upper, &stride );
   return result;
 }
-
-template <class T> static inline
-T* convert_from_sidl_vector( sidl::array<T>& array )
-{  return reinterpret_cast<T*>(array._get_ior()->d_firstElement); }
 
 } // namespace Mesquite
 

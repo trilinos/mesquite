@@ -1125,7 +1125,7 @@ void PatchData::get_domain_normal_at_element(size_t elem_index,
   else
     MSQ_SETERR(err)( "No domain constraint set.", MsqError::INVALID_STATE );
 }
-
+/*
 void PatchData::get_domain_normal_at_corner( size_t elem_index,
                                              size_t elem_corner,
                                              Vector3D& normal_out,
@@ -1145,7 +1145,32 @@ void PatchData::get_domain_normal_at_corner( size_t elem_index,
     MSQ_SETERR(err)("No domain constraint set.", MsqError::INVALID_STATE );
   }
 }
+*/
+
+void PatchData::get_domain_normals_at_corners( size_t elem_index,
+                                               Vector3D normals_out[],
+                                               MsqError& err ) const
+{
+  if (meshSet && meshSet->get_domain_constraint())
+  {
+    const MsqMeshEntity& elem = elementArray[elem_index];
+    const unsigned count = elem.vertex_count();
+
+    const size_t* const vertex_indices = elem.get_vertex_index_array();
+    for (unsigned i = 0; i < count; ++i)
+      normals_out[i] = vertexArray[ vertex_indices[i] ];
     
+    meshSet->get_domain_constraint()->normal_at( 
+                                        elementHandlesArray[elem_index],
+                                        normals_out, count, err );
+                                        MSQ_CHKERR(err);
+  }
+  else
+  {
+    MSQ_SETERR(err)("No domain constraint set.", MsqError::INVALID_STATE );
+  }
+}  
+  
 
 void PatchData::set_mesh_set(MeshSet* ms)
 { meshSet = ms;

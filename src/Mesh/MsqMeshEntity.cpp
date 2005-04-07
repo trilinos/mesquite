@@ -615,6 +615,7 @@ void Mesquite::MsqMeshEntity::get_connected_vertices(size_t vertex_index,
 /*! Gives the normal at the surface point corner_pt ... but if not available,
     gives the normalized cross product of corner_vec1 and corner_vec2. 
   */
+/*
 void MsqMeshEntity::compute_corner_normal(size_t corner,
                                           Vector3D &normal,
                                           PatchData &pd, 
@@ -664,6 +665,64 @@ void MsqMeshEntity::compute_corner_normal(size_t corner,
     MSQ_SETERR(err)("Should only be used for faces (tri, quads, ...).",
                     MsqError::INVALID_ARG);
 }
+*/
+
+void MsqMeshEntity::compute_corner_normals( Vector3D normals[],
+                                            PatchData &pd, 
+                                            MsqError &err)
+{
+  EntityTopology type = get_element_type();
+  if (type != TRIANGLE && type != QUADRILATERAL && type != POLYGON)
+  {
+      MSQ_SETERR(err)("Should only be used for faces (tri, quads, ...).",
+                    MsqError::INVALID_ARG);
+      return;
+  }
+  
+  
+    // There are two cases where we cannot get a normal from the 
+    // geometry that are not errors:
+    // 1) There is no domain set
+    // 2) The vertex is at a degenerate point on the geometry (e.g. 
+    //     tip of a cone.)
+
+    // Get normal from domain
+  if (pd.domain_set()) 
+  {
+    size_t index = pd.get_element_index(this);
+    pd.get_domain_normals_at_corners( index, normals, err );
+    MSQ_ERRRTN(err);
+  }
+
+    // Check if normals are valid (none are valid if !pd.domain_set())
+  const unsigned count = vertex_count();
+  size_t prev_idx = vertexIndices[count-1];
+  size_t this_idx = vertexIndices[0];
+  size_t next_idx = vertexIndices[1];
+  for (unsigned i = 0; 
+       i < count; 
+       prev_idx = this_idx, 
+       this_idx = next_idx,
+       next_idx = vertexIndices[++i % count])
+  {
+      // If got valid normal from domain, 
+      // make it a unit vector and continue.
+    if (pd.domain_set()) 
+    {
+      double length = normals[i].length();
+      if (length > DBL_EPSILON)
+      {
+        normals[i] /= length;
+        continue;
+      }
+    }
+
+      // Calculate normal using edges adjacent to corner
+    normals[i] = (pd.vertex_by_index(next_idx) - pd.vertex_by_index(this_idx))
+               * (pd.vertex_by_index(prev_idx) - pd.vertex_by_index(this_idx));
+    normals[i].normalize();
+  }
+}
 
 /*!  \param pd  The PatchData the element belongs to. It contains the vertices coords.
      \param c_m3d An array of Matrix3D objects. There should be one matrix per element corner
@@ -679,7 +738,7 @@ void MsqMeshEntity::compute_corner_matrices(PatchData &pd, Matrix3D A[], int num
   const size_t* v_i = &vertexIndices[0];
 
   // If 2D element, we will get the surface normal 
-  Vector3D normal, vec1, vec2, vec3, vec4;
+  Vector3D normals[4], vec1, vec2, vec3, vec4;
 
   
   switch(get_element_type()){
@@ -689,6 +748,8 @@ void MsqMeshEntity::compute_corner_matrices(PatchData &pd, Matrix3D A[], int num
       MSQ_SETERR(err)("num_m3d incompatible with element type.", MsqError::INVALID_ARG); 
       return;
     }
+    
+    compute_corner_normals( normals, pd, err ); MSQ_ERRRTN(err);
 
     vec1 = vertices[v_i[1]]-vertices[v_i[0]];
     vec2 = vertices[v_i[2]]-vertices[v_i[0]];
@@ -696,18 +757,15 @@ void MsqMeshEntity::compute_corner_matrices(PatchData &pd, Matrix3D A[], int num
     
     A[0].set_column(0, vec1);
     A[0].set_column(1, vec2);
-    compute_corner_normal(0, normal, pd, err); MSQ_ERRRTN(err);
-    A[0].set_column(2, normal*pow(2./MSQ_SQRT_THREE, 1./3.));
+    A[0].set_column(2, normals[0]*pow(2./MSQ_SQRT_THREE, 1./3.));
     
     A[1].set_column(0, vec3);
     A[1].set_column(1, -vec1);
-    compute_corner_normal(1, normal, pd, err); MSQ_ERRRTN(err); 
-    A[1].set_column(2, normal*pow(2./MSQ_SQRT_THREE, 1./3.));
+    A[1].set_column(2, normals[1]*pow(2./MSQ_SQRT_THREE, 1./3.));
 
     A[2].set_column(0, -vec2);
     A[2].set_column(1, -vec3);
-    compute_corner_normal(2, normal, pd, err);  MSQ_ERRRTN(err);
-    A[2].set_column(2, normal*pow(2./MSQ_SQRT_THREE, 1./3.));
+    A[2].set_column(2, normals[2]*pow(2./MSQ_SQRT_THREE, 1./3.));
 
     break;
     
@@ -720,26 +778,24 @@ void MsqMeshEntity::compute_corner_matrices(PatchData &pd, Matrix3D A[], int num
     vec2 = vertices[v_i[3]]-vertices[v_i[0]];
     vec3 = vertices[v_i[2]]-vertices[v_i[1]];
     vec4 = vertices[v_i[3]]-vertices[v_i[2]];
+    
+    compute_corner_normals( normals, pd, err ); MSQ_ERRRTN(err);
 
     A[0].set_column(0, vec1);
     A[0].set_column(1, vec2);
-    compute_corner_normal(0, normal, pd, err);   MSQ_ERRRTN(err);
-    A[0].set_column(2, normal);
+    A[0].set_column(2, normals[0]);
     
     A[1].set_column(0, vec3);
     A[1].set_column(1, -vec1);
-    compute_corner_normal(1, normal, pd, err);  MSQ_ERRRTN(err); 
-    A[1].set_column(2, normal);
+    A[1].set_column(2, normals[1]);
 
     A[2].set_column(0, vec4);
     A[2].set_column(1, -vec3);
-    compute_corner_normal(2, normal, pd, err);   MSQ_ERRRTN(err);
-    A[2].set_column(2, normal);
+    A[2].set_column(2, normals[2]);
 
     A[3].set_column(0, -vec2);
     A[3].set_column(1, -vec4);
-    compute_corner_normal(3, normal, pd, err);   MSQ_ERRRTN(err);
-    A[3].set_column(2, normal);
+    A[3].set_column(2, normals[3]);
 
     break;
     

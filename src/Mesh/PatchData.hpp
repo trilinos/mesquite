@@ -311,10 +311,17 @@ namespace Mesquite
        *  domain of an element and the point is the location of 
        *  one of the element corners.
        */
-    void get_domain_normal_at_corner( size_t elem_index,
-                                      size_t elem_corner,
-                                      Vector3D& normal_out,
-                                      MsqError& err ) const;
+    //void get_domain_normal_at_corner( size_t elem_index,
+    //                                  size_t elem_corner,
+    //                                  Vector3D& normal_out,
+    //                                  MsqError& err ) const;
+      /** Get surface normals at element corners.
+       *  normals_out must be of sufficient size to hold
+       *  the normals of all the corners.
+       **/
+    void get_domain_normals_at_corners( size_t element_index,
+                                        Vector3D normals_out[],
+                                        MsqError& err ) const;
                                         
 
       //! Alternative signature. Same functionality.

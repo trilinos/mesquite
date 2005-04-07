@@ -148,10 +148,11 @@ namespace Mesquite
     double compute_signed_volume(PatchData &pd, MsqError &err );
     
       //! Uses a MeshDomain call-back function to compute the normal at the corner.
-    void compute_corner_normal( msq_stdc::size_t corner_pt, 
-                                Vector3D &normal,
-                                PatchData &pd, 
-                                MsqError &err);
+    //void compute_corner_normal( msq_stdc::size_t corner_pt, 
+    //                            Vector3D &normal,
+    //                            PatchData &pd, 
+    //                            MsqError &err);
+    void compute_corner_normals( Vector3D normals[], PatchData& pd, MsqError& err );
 
       //! Compute matrices which column are the vectors issued from a corner.
       //! Stores those corner matrices in the mTag data member.  

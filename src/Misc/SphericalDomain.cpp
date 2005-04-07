@@ -21,7 +21,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  
     diachin2@llnl.gov, djmelan@sandia.gov, mbrewer@sandia.gov, 
-    pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov      
+    pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov,
+    kraftche@cae.wisc.edu         
    
   ***************************************************************** */
 #include "Mesquite.hpp"
@@ -61,4 +62,13 @@ void Mesquite::SphericalDomain::normal_at(Mesh::EntityHandle /*entity_handle*/,
     // on sphere as snap_to.
   if (!finite(coordinate.x()))
     coordinate.set( 1.0, 0.0, 0.0 );
+}
+
+void Mesquite::SphericalDomain::normal_at( Mesquite::Mesh::EntityHandle handle,
+                                           Mesquite::Vector3D coords[],
+                                           unsigned count,
+                                           Mesquite::MsqError& ) const
+{
+  for (unsigned i = 0; i < count; ++i)
+    normal_at( handle, coords[i] );
 }

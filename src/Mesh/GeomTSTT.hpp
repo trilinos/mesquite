@@ -23,6 +23,12 @@
     kraftche@cae.wisc.edu    
    
   ***************************************************************** */
+/*!
+  \file   GeomTSTT.cpp
+  \brief  Mesquite::MeshDomain implemented on TSTT interfaces
+  \author Jason Kraftcheck
+  \date   2005-01-13
+*/
 
 #ifndef GEOM_TSTT_HPP
 #define GEOM_TSTT_HPP
@@ -43,13 +49,45 @@ namespace TSTTM {
 namespace Mesquite
 {
 
+    /**\brief A base class describing a Mesquite::MeshDomain implemented
+     *        on top of the TSTT geometry and classification interfaces.
+     *
+     * A base class for Mesquite::MeshDomain implementations on top
+     * of the TSTT geometry and classification interfaces and static
+     * methods for constructing concrete implementations.  The concrete
+     * implementations are not themselves in a header to avoid the
+     * need to include all TSTT headers if this header is included, for
+     * example indirectly through Mesquite_all_headers.hpp
+     */
   class GeomTSTT : public Mesquite::MeshDomain
   {
     public:
     
+      /**\brief Create MeshDommain from TSTT classification and geometry interfaces
+        *
+        * Create an instance of an implementation of MeshDomain that uses the 
+        * TSTTR/Lasso interface to get a handle for the geometric entity 
+        * associated with a mesh entity and the TSTT geometry interface to
+        * evaluate the geometry.
+        */
     static GeomTSTT* create( TSTTG::Geometry& geom, 
                              TSTTM::Mesh& mesh,
                              TSTTR::Relate& assoc,
+                             MsqError& err );
+    
+      /**\brief Create a MeshDomain for a single geometric entity that uses
+       *        the TSTT geometry interface for geometric evaluation.
+       *
+       * Create a TSTT geometry MeshDomain for a single geometric entity.
+       * This implementation will be faster than the one that uses the
+       * classification interface because it assumes all entities in the
+       * mesh are in the interior of the single geometric entity specified.
+       * This implemenation in intended to be used only in the case where 
+       * the mesh of a single surface is being smoothed and the mesh 
+       * vertices on the boundary of the surface are fixed.
+       */
+    static GeomTSTT* create( TSTTG::Geometry& geom,
+                             void* geom_ent_handle,
                              MsqError& err );
   
     virtual ~GeomTSTT();

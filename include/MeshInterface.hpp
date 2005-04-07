@@ -471,6 +471,23 @@ namespace Mesquite
       //! PatchData::get_domain_normal_at_element .
     virtual void normal_at(Mesh::EntityHandle entity_handle,
                            Vector3D &coordinate) const = 0;
+                           
+      /**\brief evaluate surface normals
+       *
+       * Returns normals for a domain.
+       *
+       *\param entity_handle The domain evaluated is the one in which
+       *                     this mesh entity is constrained.
+       *\param coordinates   As input, a list of positions at which to
+       *                     evaluate the domain.  As output, the resulting
+       *                     domain normals.
+       *\param count         The length of the coordinates array.
+       */
+    virtual void normal_at( Mesh::EntityHandle handle,
+                            Vector3D coordinates[],
+                            unsigned count,
+                            MsqError& err ) const = 0;
+       
   };
 }
 

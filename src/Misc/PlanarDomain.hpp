@@ -21,7 +21,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  
     diachin2@llnl.gov, djmelan@sandia.gov, mbrewer@sandia.gov, 
-    pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov      
+    pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov,
+    kraftche@cae.wisc.edu         
    
   ***************************************************************** */
 /*!
@@ -61,6 +62,12 @@ namespace Mesquite
     
     virtual void normal_at(Mesh::EntityHandle entity_handle,
                            Vector3D &coordinate) const;
+
+    
+    virtual void normal_at(Mesh::EntityHandle handle,
+                           Vector3D coords[],
+                           unsigned count,
+                           MsqError& err) const;
 
   private:
     Vector3D mNormal;

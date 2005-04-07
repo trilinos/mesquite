@@ -47,15 +47,105 @@
 namespace Mesquite
 {
 
-class GeomTSTTImpl : public GeomTSTT
+/**\brief Common code for specific implementations of MeshDomain on TSTT interfaces.
+ *
+ * This class contains the common functionality used by concrete implementations
+ * of MeshDomain on the TSTT geometry interface.
+ */
+class GeomTSTTCommon
 {
 public:
 
-  GeomTSTTImpl( TSTTG::Geometry& geom,
-                TSTTM::Mesh& mesh, 
-                TSTTR::Relate& relate ) throw( TSTT::Error );
+    /**\param geom The TSTT geometry interface implementation to query */
+  GeomTSTTCommon( TSTTG::Geometry& geom ) throw (TSTT::Error );
+  
+  virtual ~GeomTSTTCommon();
 
-  virtual ~GeomTSTTImpl();
+    /** Evaluate the closest point to the input position on the specified
+     *  geometric entity and return the result in the passed position 
+     *  argument (move the passed position onto the geometry.)
+     */
+  void move_to( void* geom_handle, Vector3D& coord ) const throw( TSTT::Error );
+  
+    /** Given a geometric entity and a position, evaluate the normal 
+     *  on the geometric entity at the closest point on that entity
+     *  to the input position, and pass back the result in the input
+     *  coord vector.
+     */
+  void normal ( void* geom_handle, Vector3D& coord ) const throw( TSTT::Error );
+  
+    /** Given a geometric entity and a position, evaluate the normal 
+     *  on the geometric entity at the closest point on that entity
+     *  to the input position, and pass back the result in the input
+     *  coord vector.
+     */
+  void normal ( void* geom_handle, Vector3D coords[], unsigned count ) const 
+    throw( TSTT::Error );
+
+    /** TSTT geometry interface implementation to query */
+  mutable TSTTG::Shape  geomIface;
+  
+    /** Temporary storage for geometry entity handles */
+  mutable sidl::array<void*> geomHandles;
+    /** Temporary storate for input and output vectors */
+  mutable sidl::array<double> vectorsIn, vectorsOut;
+};
+
+
+/* General MeshDomain on TSTT implementation */
+
+class DomainTSTT : public GeomTSTT, protected GeomTSTTCommon
+{
+public:
+
+  DomainTSTT( TSTTG::Geometry& geom,
+              TSTTM::Mesh& mesh, 
+              TSTTR::Relate& relate ) throw( TSTT::Error );
+
+  virtual ~DomainTSTT();
+
+  void snap_to( Mesh::EntityHandle entity_handle,
+                Vector3D& coordinat ) const;
+
+  void normal_at( Mesh::EntityHandle entity_handle,
+                  Vector3D& coordinate ) const;
+  
+  void normal_at( Mesh::EntityHandle handle,
+                  Vector3D coordinates[],
+                  unsigned count,
+                  MsqError& err ) const;
+
+protected:
+
+    /** Get geometric entity owning a mesh entity */
+  void* geom_from_mesh( void* handle ) const throw( TSTT::Error );
+
+private:
+
+    /** TSTT interface implementation used to get dimension of geometric entities */
+  mutable TSTTG::Topology topoIface;
+    /** TSTT interface used to query mesh entity properties */
+  mutable TSTTM::Mesh   meshIface;
+    /** TSTT interface implementation for mesh->geometry association */
+  mutable TSTTR::Relate relateIface;
+  
+    /** Temporary storage for mesh entity handles */
+  mutable sidl::array<void*> oneMeshHandle;
+    /** Temporary storage for geometry entity type */
+  mutable sidl::array<TSTTG::GentityType> oneTypeOut;
+};
+
+
+/* Specialized one-geometry-entity MeshDomain on TSTT implementation */
+
+class GeomEntTSTT : public GeomTSTT, protected GeomTSTTCommon
+{
+public:
+
+  GeomEntTSTT( TSTTG::Geometry& geom,
+               void* geom_ent_handle ) throw( TSTT::Error );
+
+  virtual ~GeomEntTSTT();
 
   void snap_to( Mesh::EntityHandle entity_handle,
                 Vector3D& coordinat ) const;
@@ -63,25 +153,21 @@ public:
   void normal_at( Mesh::EntityHandle entity_handle,
                   Vector3D& coordinate ) const;
 
-protected:
-
-  void* geom_from_mesh( void* handle ) const throw( TSTT::Error );
   
-  void move_to( void* geom_handle, Vector3D& coord ) const throw( TSTT::Error );
-  void normal ( void* geom_handle, Vector3D& coord ) const throw( TSTT::Error );
-
+  void normal_at( Mesh::EntityHandle handle,
+                  Vector3D coordinates[],
+                  unsigned count,
+                  MsqError& err ) const;
 private:
-
-  mutable TSTTG::Shape  geomIface;
-  mutable TSTTG::Topology topoIface;
-  mutable TSTTM::Mesh   meshIface;
-  mutable TSTTR::Relate relateIface;
   
-  mutable sidl::array<void*> oneGeomHandle, oneMeshHandle;
-  mutable sidl::array<double> oneVectorIn, oneVectorOut;
-  mutable sidl::array<TSTTG::GentityType> oneTypeOut;
+    /** A handle for the geometry entity to evaluate */
+  void* geomEntHandle;
 };
 
+
+
+
+/*****************  GeomTSTT base class methods *********************/
 
 GeomTSTT* GeomTSTT::create( TSTTG::Geometry& geom,
                             TSTTM::Mesh& mesh,
@@ -89,7 +175,20 @@ GeomTSTT* GeomTSTT::create( TSTTG::Geometry& geom,
                             MsqError& err )
 {
   try {
-    return new GeomTSTTImpl( geom, mesh, relate );
+    return new DomainTSTT( geom, mesh, relate );
+  }
+  catch (TSTT::Error& tstt_err ) {
+    MSQ_SETERR(err)(process_tstt_error(tstt_err),MsqError::INTERNAL_ERROR);
+  }
+  return 0;
+}
+
+GeomTSTT* GeomTSTT::create( TSTTG::Geometry& geom,
+                            void* geom_ent_handle,
+                            MsqError& err )
+{
+  try {
+    return new GeomEntTSTT( geom, geom_ent_handle );
   }
   catch (TSTT::Error& tstt_err ) {
     MSQ_SETERR(err)(process_tstt_error(tstt_err),MsqError::INTERNAL_ERROR);
@@ -101,26 +200,27 @@ GeomTSTT* GeomTSTT::create( TSTTG::Geometry& geom,
 GeomTSTT::~GeomTSTT() {}
 
 
-GeomTSTTImpl::GeomTSTTImpl( TSTTG::Geometry& geom,
+
+
+/***************** DomainTSTT class methods *********************/
+
+DomainTSTT::DomainTSTT( TSTTG::Geometry& geom,
                             TSTTM::Mesh& mesh,
                             TSTTR::Relate& relate ) 
                             throw ( TSTT::Error )
-  : geomIface( geom ), 
+  : GeomTSTTCommon( geom ), 
     topoIface( geom ),
     meshIface(mesh), 
     relateIface( relate ),
-    oneGeomHandle( alloc_sidl_vector<void*>(1) ),
     oneMeshHandle( alloc_sidl_vector<void*>(1) ),
-    oneVectorIn ( alloc_sidl_vector<double>(3) ),
-    oneVectorOut( alloc_sidl_vector<double>(3) ),
     oneTypeOut( alloc_sidl_vector<TSTTG::GentityType>(1) )
 {
 }
 
-GeomTSTTImpl::~GeomTSTTImpl() {}
+DomainTSTT::~DomainTSTT() {}
 
 
-void GeomTSTTImpl::snap_to( Mesh::EntityHandle handle,
+void DomainTSTT::snap_to( Mesh::EntityHandle handle,
                             Vector3D& coordinate ) const
 {
   try {
@@ -133,7 +233,7 @@ void GeomTSTTImpl::snap_to( Mesh::EntityHandle handle,
   }
 }
 
-void GeomTSTTImpl::normal_at( Mesh::EntityHandle handle,
+void DomainTSTT::normal_at( Mesh::EntityHandle handle,
                               Vector3D& coordinate ) const
 {
   try {
@@ -146,7 +246,26 @@ void GeomTSTTImpl::normal_at( Mesh::EntityHandle handle,
   }
 }
 
-void* GeomTSTTImpl::geom_from_mesh( void* mesh_ent_handle ) const
+void DomainTSTT::normal_at( Mesh::EntityHandle handle,
+                            Vector3D coordinates[],
+                            unsigned count,
+                            MsqError& err ) const
+{
+  try {
+    void* geom = geom_from_mesh( (void*)handle );
+    if (!geom) {
+      MSQ_SETERR(err)(MsqError::INVALID_ARG);
+      return;
+    }
+    
+    normal( geom, coordinates, count );
+  }
+  catch (TSTT::Error& tstt_err ) {
+    MSQ_SETERR(err)(process_tstt_error(tstt_err),MsqError::INTERNAL_ERROR);
+  }
+}
+
+void* DomainTSTT::geom_from_mesh( void* mesh_ent_handle ) const
                                     throw ( TSTT::Error )
 {
   int junk;
@@ -154,51 +273,152 @@ void* GeomTSTTImpl::geom_from_mesh( void* mesh_ent_handle ) const
   relateIface.getMeshRelatedEntities( &geomIface,
                                       &meshIface,
                                       oneMeshHandle, 1,
-                                      oneGeomHandle, junk );
+                                      geomHandles, junk );
   // get dimension
   junk = 1;
-  topoIface.gentityGetType( oneGeomHandle, 1, oneTypeOut, junk );
+  topoIface.gentityGetType( geomHandles, 1, oneTypeOut, junk );
                                       
-  return oneTypeOut[0] == TSTTG::GentityType_GREGION ? 0 : oneGeomHandle.get(0);
+  return oneTypeOut[0] == TSTTG::GentityType_GREGION ? 0 : geomHandles.get(0);
 }
 
-void GeomTSTTImpl::move_to( void* geom, Vector3D& coord ) const
+
+
+
+/***************** GeomEntTSTT class methods *********************/
+
+GeomEntTSTT::GeomEntTSTT( TSTTG::Geometry& geom, void* geom_ent_handle ) 
+                            throw ( TSTT::Error )
+  : GeomTSTTCommon( geom ), 
+    geomEntHandle( geom_ent_handle )
+{
+}
+
+GeomEntTSTT::~GeomEntTSTT() {}
+
+
+void GeomEntTSTT::snap_to( Mesh::EntityHandle handle,
+                            Vector3D& coordinate ) const
+{
+  try {
+    move_to( geomEntHandle, coordinate );
+  }
+  catch (TSTT::Error& tstt_err ) {
+    process_tstt_error(tstt_err);
+  }
+}
+
+void GeomEntTSTT::normal_at( Mesh::EntityHandle handle,
+                              Vector3D& coordinate ) const
+{
+  try {
+    normal( geomEntHandle, coordinate );
+  }
+  catch (TSTT::Error& tstt_err ) {
+    process_tstt_error(tstt_err);
+  }
+}
+
+
+void GeomEntTSTT::normal_at( Mesh::EntityHandle handle,
+                             Vector3D coordinates[],
+                             unsigned count,
+                             MsqError& err ) const
+{
+  try {
+    normal( geomEntHandle, coordinates, count );
+  }
+  catch (TSTT::Error& tstt_err ) {
+    MSQ_SETERR(err)(process_tstt_error(tstt_err),MsqError::INTERNAL_ERROR);
+  }
+}
+
+
+
+
+/***************** GeomTSTTCommon class methods *********************/
+
+GeomTSTTCommon::GeomTSTTCommon( TSTTG::Geometry& geom ) throw ( TSTT::Error )
+  : geomIface( geom ),
+    geomHandles( alloc_sidl_vector<void*>(1) ),
+    vectorsIn ( alloc_sidl_vector<double>(3) ),
+    vectorsOut( alloc_sidl_vector<double>(3) )
+{
+}
+
+GeomTSTTCommon::~GeomTSTTCommon() {}
+
+
+
+void GeomTSTTCommon::move_to( void* geom, Vector3D& coord ) const
                             throw ( TSTT::Error )
 {
-  oneVectorIn.set( 0, coord[0] );
-  oneVectorIn.set( 1, coord[1] );
-  oneVectorIn.set( 2, coord[2] );
-  oneGeomHandle.set( 0, geom );
+    // going to assume this in the following reinterpret_cast, so
+    // check to make sure it is true
+  assert( sizeof(Vector3D) == 3*sizeof(double) );
+  
+  vectorsIn = convert_to_sidl_vector( reinterpret_cast<double*>(&coord), 3 );
+  *convert_from_sidl_vector( geomHandles ) = geom;
 
   int junk = 3;
-  geomIface.gentityClosestPoint( oneGeomHandle, 1,
-                                 oneVectorIn,   3,
-                                 oneVectorOut, junk );
+  geomIface.gentityClosestPoint( geomHandles, 1,
+                                 vectorsIn,   3,
+                                 vectorsOut, junk );
   
-  coord[0] = oneVectorOut.get(0);
-  coord[1] = oneVectorOut.get(1);
-  coord[2] = oneVectorOut.get(2);
+  memcpy( reinterpret_cast<double*>(&coord),
+          convert_from_sidl_vector(vectorsOut),
+          3 * sizeof(double) );
 }
 
  
  
-void GeomTSTTImpl::normal( void* geom, Vector3D& coord ) const
+void GeomTSTTCommon::normal( void* geom, Vector3D& coord ) const
                             throw ( TSTT::Error )
 {
-  oneVectorIn.set( 0, coord[0] );
-  oneVectorIn.set( 1, coord[1] );
-  oneVectorIn.set( 2, coord[2] );
-  oneGeomHandle.set( 0, geom );
+    // going to assume this in the following reinterpret_cast, so
+    // check to make sure it is true
+  assert( sizeof(Vector3D) == 3*sizeof(double) );
+  
+  vectorsIn = convert_to_sidl_vector( reinterpret_cast<double*>(&coord), 3 );
+  *convert_from_sidl_vector( geomHandles ) = geom;
 
   int junk;
-  geomIface.gentityNormal( oneGeomHandle, 1,
-                           oneVectorIn,   3,
-                           oneVectorOut, junk );
+  geomIface.gentityNormal( geomHandles, 1,
+                           vectorsIn,   3,
+                           vectorsOut, junk );
   
-  coord[0] = oneVectorOut.get(0);
-  coord[1] = oneVectorOut.get(1);
-  coord[2] = oneVectorOut.get(2);
+  memcpy( reinterpret_cast<double*>(&coord),
+          convert_from_sidl_vector(vectorsOut),
+          3 * sizeof(double) );
 }
+ 
+void GeomTSTTCommon::normal( void* geom, Vector3D coords[], unsigned count ) const
+                            throw ( TSTT::Error )
+{
+    // going to assume this in the following reinterpret_cast, so
+    // check to make sure it is true
+  assert( sizeof(Vector3D) == 3*sizeof(double) );
+  
+  vectorsIn = convert_to_sidl_vector( reinterpret_cast<double*>(coords), 3*count );
+  if (geomHandles.upper(0)+1 < (int)count)
+    geomHandles = alloc_sidl_vector<void*>( count );
+  void** ptr = convert_from_sidl_vector( geomHandles );
+  for (void** end = ptr + count; ptr != end; ++ptr)
+    *ptr = geom;
+    
+  if (vectorsOut.upper(0)+1 < 3*(int)count)
+    vectorsOut = alloc_sidl_vector<double>( 3*count );
+
+  int junk;
+  geomIface.gentityNormal( geomHandles, count,
+                           vectorsIn,   3*count,
+                           vectorsOut, junk );
+  
+  memcpy( reinterpret_cast<double*>(coords),
+          convert_from_sidl_vector(vectorsOut),
+          3 * count * sizeof(double) );
+}
+
+
 
 } // namespace Mesquite
 
