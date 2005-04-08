@@ -696,14 +696,7 @@ void MsqMeshEntity::compute_corner_normals( Vector3D normals[],
 
     // Check if normals are valid (none are valid if !pd.domain_set())
   const unsigned count = vertex_count();
-  size_t prev_idx = vertexIndices[count-1];
-  size_t this_idx = vertexIndices[0];
-  size_t next_idx = vertexIndices[1];
-  for (unsigned i = 0; 
-       i < count; 
-       prev_idx = this_idx, 
-       this_idx = next_idx,
-       next_idx = vertexIndices[++i % count])
+  for (unsigned i = 0; i < count; ++i)
   {
       // If got valid normal from domain, 
       // make it a unit vector and continue.
@@ -716,6 +709,10 @@ void MsqMeshEntity::compute_corner_normals( Vector3D normals[],
         continue;
       }
     }
+    
+    const size_t prev_idx = vertexIndices[(i + count - 1) % count];
+    const size_t this_idx = vertexIndices[i];
+    const size_t next_idx = vertexIndices[(i + 1) % count];
 
       // Calculate normal using edges adjacent to corner
     normals[i] = (pd.vertex_by_index(next_idx) - pd.vertex_by_index(this_idx))
