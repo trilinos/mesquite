@@ -74,8 +74,8 @@ if useBarrierDelta == true.  Otherwise, delta is zero.
       MsqError err;
       set_averaging_method(LINEAR, err);
       set_metric_type(ELEMENT_BASED);
-      set_gradient_type(NUMERICAL_GRADIENT);
-      set_hessian_type(NUMERICAL_HESSIAN);
+      set_gradient_type(ANALYTICAL_GRADIENT);
+      set_hessian_type(ANALYTICAL_HESSIAN);
       set_name("I_DFT");
       mAlpha = 1/2.0;
       mBeta = 1.0;
