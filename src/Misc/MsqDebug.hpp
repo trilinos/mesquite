@@ -102,6 +102,9 @@ class MsqDebug
     static void set( unsigned flag, bool state );
       /**\brief Check a debug flag */
     static bool get( unsigned flag );
+    
+      /**\brief Disable all debug streams */
+    static void disable_all();
   
       /**\brief Get the output stream to be used for a given debug flag */
     static msq_stdio::ostream& get_stream( unsigned flag );

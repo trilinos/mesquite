@@ -73,6 +73,11 @@ void MsqDebug::set( unsigned flag, bool state )
   }
 }
 
+void MsqDebug::disable_all()
+{
+  flags.clear();
+}
+
 msq_stdio::ostream& MsqDebug::get_stream( unsigned flag )
 {
   if (flag < streams.size())
