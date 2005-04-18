@@ -590,7 +590,12 @@ void QualityAssessor::Assessor::add_hist_value( double metric_value )
       // Calculate which interval the value is in.  Add one
       // because first entry is for values below user-specifed
       // minimum value for histogram.
-    unsigned cell = 1+(unsigned)((metric_value - min) / step);
+    unsigned cell;
+    if (step > DBL_EPSILON)
+      cell = 1+(unsigned)((metric_value - min) / step);
+    else
+      cell = 1;
+      
       // If value exactly equals maximum value, put in last
       // valid interval, not the count of values above the
       // maximum.
