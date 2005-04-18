@@ -189,12 +189,11 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
   double alp=MSQ_MAX_CAP; // alp: scale factor of search direction
     //we know inner_criterion is false because it was checked in
     //loop_over_mesh before being sent here.
-  bool inner_criterion=false;
   TerminationCriterion* term_crit=get_inner_termination_criterion();
   
     //while ((i<maxIteration && alp>stepBound && grad_norm>normGradientBound)
     //     && !inner_criterion){
-  while(!inner_criterion){
+  while(!term_crit->terminate()){
     ++i;
       //std::cout<<"\Michael delete i = "<<i;
     int k=0;
@@ -275,10 +274,8 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
       //be needed with the new version of Termination Criterion.
       //Update mesh before checking criterion
       //pd.update_mesh(err);
-    inner_criterion=term_crit->terminate_with_function_and_gradient(pd,objFunc,
-                                                                    f,fNewGrad,
-                                                                    err);
-    MSQ_ERRRTN(err);
+    term_crit->accumulate_inner( pd, f, fNewGrad, err );  MSQ_ERRRTN(err);
+    term_crit->accumulate_patch( pd, err ); MSQ_ERRRTN(err);
   }//end while
   if(conjGradDebug>0){
     MSQ_PRINT(2)("\nConjugate Gradient complete i=%i ",i);

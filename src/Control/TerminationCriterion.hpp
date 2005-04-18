@@ -45,6 +45,12 @@ Header file for the TerminationCriterion classes.
 
 #include <string>
 
+#ifndef MSQ_USE_OLD_STD_HEADERS
+#  include <vector.h>
+#else
+#  include <vector>
+#endif
+
 namespace Mesquite
 {
    class MeshSet;
@@ -77,6 +83,38 @@ namespace Mesquite
       optimization process will terminate whenever any of the
       criteria have been satisfied.
       
+      The following is a brief description of how TerminationCriterion
+      is used within Mesquite.  Functions called during QualityImprovement
+      can be devided into three groups:
+        reset_*      - Initialize data for an iteration
+        accumulate_* - Update TC for changed data during iteration
+        terminate    - Check if the termination criterion has been met.
+      There are three different forms of the reset_* and accumulate_*
+      functions which are called on the inner, outer, or both 
+      TerminationCriterion classes:
+        *_outer      - Called on outer termination criterion.
+        *_inner      - Called on inner termination criterion.
+        *_patch      - Called on outer termination criterion for
+                       each patch and on inner termination criterion
+                       for each inner iteration.
+      
+      If implementing a new TerminationCriterion, the following rules
+      should be followed.  If the value must be calculated on a global
+      patch for the outer TC, then:
+        o The functionality should be added to *_inner (yes, INNER) 
+        o The *_outer methods should be updated to call the *_inner 
+            with a global patch when your TC is requested.
+        o The internal data for any such TC should be initialized 
+          in the reset_inner method.  
+      If the value for the outer criterion can be calculated from each 
+      local patch when iterating over the mesh with local patches, then:
+        o The functionality should be added to *_patch
+        o Any state values pertaining to the entire iteration must be 
+           initialized in reset_inner(..) and cleared in terminate()
+        o Any patch-specific data should be initialized in reset_patch
+        o Care should be taken that terminate() does not check 
+          uninitialized data if called before the first call to
+          accumulate_patch()
   */
   class TerminationCriterion
   {
@@ -163,34 +201,34 @@ namespace Mesquite
       //! type to be NONE).
     void remove_culling(MsqError &err);
     
-      //Functions usually called from vertex mover (either concrete or base)
-      //!Does preliminary set up for the TerminationCriterion
-    void initialize(MeshSet &ms, PatchData &pd, MsqError &err);
-      //!Does some setup and initialization so the criterion can be used
-      //! (not necessarily for the first time).  When it makes sense,
-      //! the termination criteria are checked.  The return value
-      //! is similar to that of terminate().
-    bool reset(PatchData &pd, ObjectiveFunction* obj_ptr, MsqError &err);
-      //!reset called using a MeshSet object instead of PatchData.
-      //! When it makes sense,
-      //! the termination criteria are checked. 
-    bool reset(MeshSet &ms, ObjectiveFunction* obj_ptr, MsqError &err);
-      
-     //!Returns true if termination criterion is met (for the inner loop). 
-    bool terminate(PatchData &pd, ObjectiveFunction* obj_ptr, MsqError &err);
-      //!Returns true if termination criterion is met (for the outer loop).
-    bool terminate(MeshSet &ms, ObjectiveFunction* obj_ptr, MsqError &err);
-      //!Returns true if termination criterion is met (for the inner loop).
-      //!  Also supplies the function and gradient values for effeciency.
-    bool terminate_with_function_and_gradient(PatchData &pd,
-                                              ObjectiveFunction* obj_ptr,
-                                              double func_val,
-                                              Vector3D* sup_grad,
-                                              MsqError &err);
+      //! Clear any data accumulated during an outer iteration
+    void reset_outer( MeshSet& ms, ObjectiveFunction* of, MsqError& err );
+    
+      //! Clear any data accumulated during an inner iteration
+    void reset_inner( PatchData& pd, ObjectiveFunction* of, MsqError& err );
+    
+      //! Shared inner and outer initialization during inner loop
+    void reset_patch( PatchData& pd, MsqError& err );
+    
+      //! Accumulate data during inner iteration
+    void accumulate_inner( PatchData& pd, MsqError& err );
+    
+      //! Accumulate data during inner iteration
+    void accumulate_inner( PatchData& pd, double of_value, Vector3D* of_grads, 
+                           MsqError& err );
+    
+      //! Common code for both inner and outer termination 
+      //! criteria during inner iteration.                       
+    void accumulate_patch( PatchData& pd, MsqError& err );
+    
+    void accumulate_outer( MeshSet& ms, MsqError& err );
+    
+      //! Check if termination criterion has been met
+    bool terminate();
+    
     
       //!Function which determines whether this patch should be 'culled'
-    bool cull_vertices(PatchData &pd, ObjectiveFunction* obj_ptr,
-                       MsqError &err);
+    bool cull_vertices(PatchData &pd, ObjectiveFunction* obj_ptr, MsqError &err);
       //!Cleans up after the TerminationCriterion is finished.
     void cleanup(MeshSet &ms, MsqError &err);
 
@@ -211,24 +249,26 @@ namespace Mesquite
     //PRIVATE DATA MEMBERS
     long unsigned int terminationCriterionFlag;//!<Bit flag of termination crit
     long unsigned int cullingMethodFlag;/*!<Bit flag of criterion for culling*/
-    long unsigned int totalFlag;/*!<Bit flag for both culling and terminating.*/
       //epsiloon used in culling methods.
     double cullingEps;
+
+      // ObjectiveFunction pointer
+    ObjectiveFunction* OFPtr;
 
       //Data not specific to a single criterion
     double initialOFValue;
     double previousOFValue;
     double currentOFValue;
     double lowerOFBound;
-      //if we need to create a global patch from a meshset.
-    PatchDataParameters globalPatchParams;
+
       //Data specific to termination criterion 1 (gradient bounds)
-    Vector3D* mGrad;
-    int gradSize;
+    msq_std::vector<Vector3D> mGrad;
     double initialGradL2Norm;
+    double currentGradL2Norm;
     double gradL2NormAbsoluteEps;
     double gradL2NormRelativeEps;
     double initialGradInfNorm;
+    double currentGradInfNorm;
     double gradInfNormAbsoluteEps;
     double gradInfNormRelativeEps;
       //Data specific to termination criterion 2 (KKT)
@@ -247,22 +287,15 @@ namespace Mesquite
     PatchDataVerticesMemento* previousVerticesMemento;//if we want relative
     double vertexMovementAbsoluteEps;
     double vertexMovementRelativeEps;
+    double maxSquaredInitialMovement;
+    double maxSquaredMovement;
     
       //Data specific to termination criterion 7 (successive improvement to F)
     double successiveImprovementsAbsoluteEps;
     double successiveImprovementsRelativeEps;
       //crit 8
     double boundedVertexMovementEps;
-
-      //Variables for usr supplied data
-      //true if function was supplied
-    bool functionSupplied;
-      //true if function was supplied
-    bool gradientSupplied;
-      //place holder for supplied function value is stored in currentOFValue
- 
-      //place holder for supplied Gradient
-    Vector3D* suppliedGradientArray;
+    bool vertexMovementExceedsBound;
     
     int debugLevel;
     

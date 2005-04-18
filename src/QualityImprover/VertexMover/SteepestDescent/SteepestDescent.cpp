@@ -73,12 +73,11 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
   double norm=10e6;
   bool sd_bool=true;//bool for OF values
   double smallest_edge = 0.4; // TODO -- update -- used for step_size
-  bool inner_criterion=false;
   TerminationCriterion* term_crit=get_inner_termination_criterion();
   
   // does the steepest descent iteration until stopping is required.
   while ( (nb_iterations<maxIteration &&
-          norm>gradientLessThan ) && !inner_criterion) {
+          norm>gradientLessThan ) && !term_crit->terminate()) {
     
     ++nb_iterations;
     double original_value = 0.0;
@@ -178,10 +177,8 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
     }
     
     delete pd_previous_coords; // user manages the memento.
-    if(term_crit!=NULL){
-      
-      inner_criterion=term_crit->terminate(pd,objFunc,err); MSQ_ERRRTN(err);
-    }
+    
+    term_crit->accumulate_inner( pd, err ); MSQ_ERRRTN(err); 
     
   }
 }

@@ -116,14 +116,6 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
 
   // 1.  Allocate a hessian and calculate the sparsity pattern.
   mHessian.initialize(pd, err); MSQ_ERRRTN(err);
-  // 2.  Calculate the gradient and Hessian for the patch
-  //     (a) if not defined at current point, stop and throw an error
-  fn_bool = objFunc->compute_hessian(pd, mHessian, grad,
-                             original_value, err); MSQ_ERRRTN(err);
-  MSQ_DBGOUT(2)<<"\n--Objective Function value "<< original_value<<"\n";
-  if (!fn_bool) {
-    MSQ_SETERR(err)("invalid patch for hessian calculation", MsqError::INTERNAL_ERROR);
-    return; }
 
   // 3.  Calculate the norm of the gradient for the patch
   MSQ_DBGOUT(3) << "  o  gradient norm: " << length(grad, nv) << msq_stdio::endl;
@@ -132,9 +124,15 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   // Terminate when inner termination criterion signals.
 
   /* Computes the value of the stopping criterion*/
-  bool inner_criterion=false;
   TerminationCriterion* term_crit=get_inner_termination_criterion();
-  while ( !inner_criterion ) {
+  while ( !term_crit->terminate() ) {
+    fn_bool = objFunc->compute_hessian( pd, mHessian, grad, original_value, err );
+    MSQ_ERRRTN(err);
+    if (!fn_bool) {
+      MSQ_SETERR(err)("invalid patch for hessian calculation", MsqError::INTERNAL_ERROR);
+      return; 
+    }
+  
     // Prints out free vertices coordinates. 
     if (MSQ_DBG(3)) {
       MSQ_DBGOUT(3) << "\n  o Free vertices ("<< pd.num_free_vertices(err)
@@ -339,13 +337,8 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
     }
 
     // checks stopping criterion 
-    inner_criterion=term_crit->terminate_with_function_and_gradient(pd,
-                               objFunc, new_value, grad, err);  MSQ_ERRRTN(err);
-
-    // if more Newton steps ahead, recomputes the Hessian.
-    if (!inner_criterion) {
-      objFunc->compute_hessian(pd, mHessian, grad, original_value, err);MSQ_ERRRTN(err);
-    }
+    term_crit->accumulate_inner( pd, new_value, grad, err ); MSQ_ERRRTN(err);
+    term_crit->accumulate_patch( pd, err ); MSQ_ERRRTN(err);
   }
   MSQ_PRINT(2)("FINISHED\n");
 }

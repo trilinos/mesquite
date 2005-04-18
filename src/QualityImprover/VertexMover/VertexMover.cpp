@@ -49,6 +49,64 @@ VertexMover::VertexMover() :
 }
 
 
+/*
+  
+    +-----------+
+    |Reset Outer|
+    |Criterion  |
+    +-----------+
+          |
+          V
+          +
+        /   \
+       /Outer\  YES
++--> <Criterion>-----> DONE
+|      \Done?/
+|       \   /
+|         + 
+|         |NO
+|         V
+|   +-----------+
+1   |Reset Mesh |
+|   | Iteration |
+|   +-----------+
+|         |
+|         V
+|         +
+|       /  \
+|   NO /Next\
++-----<Patch > <-----+
+       \    /        |
+        \  /         |
+          +          |
+       YES|          |
+          V          |
+    +-----------+    |
+    |Reset Inner|    |
+    |Criterion  |    2
+    +-----------+    |
+          |          |
+          V          |  
+          +          |               
+        /   \        |
+       /Inner\  YES  |
++--> <Criterion>-----+    --------------+
+|      \Done?/                          |
+|       \   /                           |
+|         +                             |
+|         |NO                           |
+|         V                          Inside
+3   +-----------+                    Smoother
+|   |   Smooth  |                       |
+|   |   Patch   |                       |
+|   +-----------+                       |
+|         |                             |
+----------+               --------------+
+                      
+*/        
+                      
+
+
 /*! \fn VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
 
     \brief Improves the quality of the MeshSet, calling some
@@ -61,119 +119,111 @@ double VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
 {
   set_mesh_set(&ms);
   
-    // creates a PatchData object at the VertexMover level
-    // in order to reduce the number of memory allocations
+    // Get the patch data to use for the first iteration
+  bool next_patch;
   PatchData local_patch_data;
   PatchData* patch_data=0;
-  bool next_patch=true;
-  // if we have already been provided a Global Patch (from a previous algorithm).
-  
   if (get_global_patch() != 0) {
     if (get_patch_type() != PatchData::GLOBAL_PATCH) {
       MSQ_SETERR(err)("PatchDataUser::globalPatch should be NULL.", MsqError::INVALID_STATE);
       return 0;
     }
     patch_data = get_global_patch();
-    next_patch = true; // same as MeshSet::get_next_patch()
   }
   else {
     patch_data = &local_patch_data;
   }
   
+    // Get termination criteria
   TerminationCriterion* outer_crit=this->get_outer_termination_criterion();
   TerminationCriterion* inner_crit=this->get_inner_termination_criterion();
-    //if outer-criterion is NULL, we wet an error.
   if(outer_crit == 0){
     MSQ_SETERR(err)("Termination Criterion pointer is Null", MsqError::INVALID_STATE);
     return 0.;
   }
-    //if inner-criterion is NULL, we wet an error.
   if(inner_crit == 0){
     MSQ_SETERR(err)("Termination Criterion pointer for inner loop is Null", MsqError::INVALID_STATE);
     return 0.;
   }
-  
-  bool stop_met = false, inner_skip = false, outer_skip = false;
-  
-    //initialize both criterion objects
-  outer_crit->initialize(ms, *patch_data, err);  if (MSQ_CHKERR(err)) goto ERROR;
-  inner_crit->initialize(ms, *patch_data, err);  if (MSQ_CHKERR(err)) goto ERROR;
   
     // If using a local patch, suppress output of inner termination criterion
   if (get_patch_type() != PatchData::GLOBAL_PATCH) {
     inner_crit->set_debug_output_level(3);
   }
   
-  // This should probably pass the MeshSet so that the data requirements
-  // can be calculated exactly.
-  this->initialize(*patch_data, err); if (MSQ_CHKERR(err)) goto ERROR;
-
-    //skip booleans set to false if the initial mesh (or patch) satisfies
-    //the termination criteria.
-  outer_skip=outer_crit->reset(ms,objFunc,err);  
-  if (MSQ_CHKERR(err)) goto ERROR;
-  if(!outer_skip){
+    // Initialize outer loop
     
-    while ( !stop_met ) {
-        //Status bar
-//      Message::print_info(".");
-        // Prior to looping over the patches.
-        // Probably want to pass the MeshSet.  
-      this->initialize_mesh_iteration(*patch_data, err);
+  this->initialize(*patch_data, err);        
+  if (MSQ_CHKERR(err)) goto ERROR;
+  
+  outer_crit->reset_outer(ms, objFunc, err); 
+  if (MSQ_CHKERR(err)) goto ERROR;
+  
+    // Loop until outer termination criterion is met
+  while (!outer_crit->terminate())
+  {
+    if (get_patch_type() != PatchData::GLOBAL_PATCH)
+    {
+      ms.reset( err );
       if (MSQ_CHKERR(err)) goto ERROR;
 
-        // if there is no global patch previously available
-      if (get_global_patch()==0) {
-        // propagates information from QualityImprover to MeshSet
-        //try to get the first patch, if no patches can be created
-        //skip optimization and terminate.
-        next_patch =  ms.get_next_patch(*patch_data, this, err);
-        if (MSQ_CHKERR(err)) goto ERROR;
-      }
+      next_patch = ms.get_next_patch( *patch_data, this, err ); 
+      if (MSQ_CHKERR(err)) goto ERROR;
+    }
+  
+      // Loop over each patch 
+    while (next_patch)
+    {
+        // Initialize for inner iteration
         
-      if(!next_patch){
-        stop_met=true;
-          //PRINT_INFO("\nTerminating due to no more free nodes\n");
-          //call terminate() anyway, even though we must terminate
-        outer_crit->terminate(ms,objFunc,err); 
+      this->initialize_mesh_iteration(*patch_data, err);
+      if (MSQ_CHKERR(err)) goto ERROR;
+      
+      outer_crit->reset_patch( *patch_data, err );
+      if (MSQ_CHKERR(err)) goto ERROR;
+      
+      inner_crit->reset_inner( *patch_data, objFunc, err );
+      if (MSQ_CHKERR(err)) goto ERROR;
+      
+      inner_crit->reset_patch( *patch_data, err );
+      if (MSQ_CHKERR(err)) goto ERROR;
+      
+        // Don't even call optimizer if inner termination 
+        // criterion has already been met.
+      if (!inner_crit->terminate())
+      {
+          // Call optimizer - should loop on inner_crit->terminate()
+        this->optimize_vertex_positions( *patch_data, err );
+        if (MSQ_CHKERR(err)) goto ERROR;
+      
+          // Update for changes during inner iteration 
+          // (during optimizer loop)
+        
+        outer_crit->accumulate_patch( *patch_data, err );
+        if (MSQ_CHKERR(err)) goto ERROR;
+        
+        inner_crit->cull_vertices( *patch_data, objFunc, err );
+        if (MSQ_CHKERR(err)) goto ERROR;
+        
+        patch_data->update_mesh( err );
         if (MSQ_CHKERR(err)) goto ERROR;
       }
-        //otherwise one patch has been created and more could be created later.
-      else{
+      
+        // If a global patch, then we're done with the inner loop.
+      if (get_patch_type() == PatchData::GLOBAL_PATCH)
+        break;
+        
+      next_patch = ms.get_next_patch( *patch_data, this, err );
+      if (MSQ_CHKERR(err)) goto ERROR;
+    }
 
-          //loop over these patches
-        while( next_patch )
-        {
-          if (next_patch == true ) {
-
-            inner_skip=inner_crit->reset(*patch_data,objFunc,err);
-              //if inner criteria are initially satisfied, skip opt.
-              //otherwise:
-            if(!inner_skip){
-              this->optimize_vertex_positions(*patch_data, err);  
-              if (MSQ_CHKERR(err)) goto ERROR;
-            }
-            inner_crit->cull_vertices(*patch_data,objFunc,err);
-            patch_data->update_mesh(err); // TSTT mesh update !!
-            MSQ_ERRZERO(err); 
-          }
-            // if patch is global, don't try to get the next patch
-          if (get_patch_type() == PatchData::GLOBAL_PATCH) {
-            next_patch = false; }
-            // if patch is local, try to get the next one 
-          else{
-            next_patch =  ms.get_next_patch(*patch_data, this, err);  
-            if (MSQ_CHKERR(err)) goto ERROR;
-          }
-        }
-        this->terminate_mesh_iteration(*patch_data, err); 
-        if (MSQ_CHKERR(err)) goto ERROR;
-          //check the criteria on the outer loop
-        stop_met=outer_crit->terminate(ms,objFunc,err); 
-        if (MSQ_CHKERR(err)) goto ERROR;
-      }
-    } 
+    this->terminate_mesh_iteration(*patch_data, err); 
+    if (MSQ_CHKERR(err)) goto ERROR;
+    
+    outer_crit->accumulate_outer( ms, err );
+    if (MSQ_CHKERR(err)) goto ERROR;
   }
+
 
 ERROR:  
     //call the criteria's cleanup funtions.
