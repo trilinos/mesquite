@@ -233,14 +233,12 @@ namespace Mesquite
     //! returns a pointer to a row.
     inline double* operator[](unsigned i)
     {
-      assert(i < (unsigned)3);
       return v_ + 3*i;
     }
 
     //! returns a pointer to a row.
     inline const double* operator[](unsigned i) const
     {
-      assert(i < (unsigned)3);
       return v_ + 3*i;
     }
 
