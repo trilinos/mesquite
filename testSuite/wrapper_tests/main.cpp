@@ -69,7 +69,7 @@ using namespace Mesquite;
 
 int main(int argc, char* argv[])
 {
-  Mesquite::MsqError err;
+  Mesquite::MsqPrintError err(cout);
   char file_name[256];
   
   // command line arguments
