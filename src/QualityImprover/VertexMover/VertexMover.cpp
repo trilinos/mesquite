@@ -120,7 +120,7 @@ double VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
   set_mesh_set(&ms);
   
     // Get the patch data to use for the first iteration
-  bool next_patch;
+  bool next_patch = true;
   PatchData local_patch_data;
   PatchData* patch_data=0;
   if (get_global_patch() != 0) {
@@ -162,11 +162,8 @@ double VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
     // Loop until outer termination criterion is met
   while (!outer_crit->terminate())
   {
-    if (get_patch_type() != PatchData::GLOBAL_PATCH)
+    if (get_global_patch() == 0)
     {
-      ms.reset( err );
-      if (MSQ_CHKERR(err)) goto ERROR;
-
       next_patch = ms.get_next_patch( *patch_data, this, err ); 
       if (MSQ_CHKERR(err)) goto ERROR;
     }
@@ -219,6 +216,12 @@ double VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
 
     this->terminate_mesh_iteration(*patch_data, err); 
     if (MSQ_CHKERR(err)) goto ERROR;
+    
+    if (get_global_patch() == 0)
+    {
+      ms.reset(err);
+      if (MSQ_CHKERR(err)) goto ERROR;
+    }
     
     outer_crit->accumulate_outer( ms, err );
     if (MSQ_CHKERR(err)) goto ERROR;
