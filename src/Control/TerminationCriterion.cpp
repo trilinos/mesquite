@@ -500,7 +500,7 @@ bool TerminationCriterion::terminate( )
   
     //if terminating on numbering of inner iterations
   if (NUMBER_OF_ITERATES & terminationCriterionFlag
-    && iterationCounter++ > iterationBound)
+    && iterationCounter++ >= iterationBound)
   {
     return_flag = true;
     MSQ_DBGOUT(debugLevel) << "  o TermCrit -- Reached " << iterationBound << " iterations." << msq_stdio::endl;
