@@ -116,17 +116,7 @@ bool ObjectiveFunction::compute_numerical_gradient(Mesquite::PatchData &pd,
   else {
     //********************DO NOT useLocalGradient********************
     //if useLocalGradient is turned off, we do inefficient computation
-    MSQ_DBGOUT(2) << "\n";
-    int oldpercent = -1;
     for (m=0; m<num_vtx; ++m) {
-
-      int percent = (1000 * m) / num_vtx;
-      if (percent != oldpercent) {
-        MSQ_DBGOUT(2) << "\rComputing numerical gradient: " << 
-                         (percent / 10) << "." << (percent % 10) << "%";
-        MSQ_DBGOUT(2).flush();
-        oldpercent = percent;
-      }
 
       if (vertices[m].is_free_vertex()) {
         //If pd is not in the feasible region, do not calculate anything.
@@ -154,7 +144,6 @@ bool ObjectiveFunction::compute_numerical_gradient(Mesquite::PatchData &pd,
       }
       //PRINT_INFO("  gradx = %f, grady = %f, gradz = %f\n",grad[m][0],grad[m][1],grad[m][2]);   
     }//end loop over all vertices
-    MSQ_DBGOUT(2) << "\n";
   }
   //*****************END of DO NOT useLocalGradient*****************
                         return true;
