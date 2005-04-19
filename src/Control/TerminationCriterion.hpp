@@ -45,7 +45,7 @@ Header file for the TerminationCriterion classes.
 
 #include <string>
 
-#ifndef MSQ_USE_OLD_STD_HEADERS
+#ifdef MSQ_USE_OLD_STD_HEADERS
 #  include <vector.h>
 #else
 #  include <vector>
