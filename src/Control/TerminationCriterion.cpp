@@ -60,7 +60,8 @@ const unsigned long OF_FLAGS   = TerminationCriterion::QUALITY_IMPROVEMENT_ABSOL
 /*!Constructor initializes all of the data members which are not
   necessarily automatically initialized in their constructors.*/
 TerminationCriterion::TerminationCriterion() 
-  : initialVerticesMemento(0),
+  : mGrad(8),
+    initialVerticesMemento(0),
     previousVerticesMemento(0),
     debugLevel(2)
 {
@@ -268,7 +269,7 @@ void TerminationCriterion::reset_inner(PatchData &pd, ObjectiveFunction* obj_ptr
   OFPtr = obj_ptr;
   
     // clear flag for BOUNDED_VERTEX_MOVEMENT
-  vertexMovementExceedsBound = false;
+  vertexMovementExceedsBound = 0;
   
     // Use -1 to denote that this isn't initialized yet.
     // As all valid values must be >= 0.0, a negative
@@ -300,8 +301,18 @@ void TerminationCriterion::reset_inner(PatchData &pd, ObjectiveFunction* obj_ptr
     } 
 
       //get the gradient norms
-    initialGradInfNorm = Linf(&mGrad[0], num_vertices);
-    initialGradL2Norm = length(&mGrad[0], num_vertices);
+    if (totalFlag & (GRADIENT_INF_NORM_ABSOLUTE|GRADIENT_INF_NORM_RELATIVE))
+    {
+      currentGradInfNorm = initialGradInfNorm = Linf(&mGrad[0], num_vertices);
+      MSQ_DBGOUT(debugLevel) << "  o Initial gradient Inf norm: " 
+        << initialGradInfNorm << msq_stdio::endl;
+    }  
+    if (totalFlag & (GRADIENT_L2_NORM_ABSOLUTE|GRADIENT_L2_NORM_RELATIVE))
+    {
+      currentGradL2Norm = initialGradL2Norm = length(&mGrad[0], num_vertices);
+      MSQ_DBGOUT(debugLevel) << "  o Initial gradient L2 norm: " 
+        << initialGradL2Norm << msq_stdio::endl;
+    }  
       //the OFvalue comes for free, so save it
     previousOFValue=currentOFValue;
     initialOFValue=currentOFValue;
@@ -327,6 +338,9 @@ void TerminationCriterion::reset_inner(PatchData &pd, ObjectiveFunction* obj_ptr
     previousOFValue=currentOFValue;
     initialOFValue=currentOFValue;
   }
+  
+  if (totalFlag & (GRAD_FLAGS|OF_FLAGS))
+    MSQ_DBGOUT(debugLevel) << "  o Initial OF value: " << initialOFValue << msq_stdio::endl;
   
     // Store current vertex locations now, because we'll
     // need them later to compare the current movement with.
@@ -372,9 +386,6 @@ void TerminationCriterion::accumulate_inner( PatchData& pd, MsqError& err )
                       MsqError::INVALID_MESH);
       return;
     }
-    
-    if (!(terminationCriterionFlag & OF_FLAGS))
-      MSQ_DBGOUT(debugLevel) << "  o OF Value: " << of_value << msq_stdio::endl;
   }
   else if (terminationCriterionFlag & OF_FLAGS)
   {
@@ -421,6 +432,8 @@ void TerminationCriterion::accumulate_inner( PatchData& pd,
   currentOFValue = of_value;
   if (terminationCriterionFlag & OF_FLAGS)
     MSQ_DBGOUT(debugLevel) << "  o TermCrit -- OF Value: " << of_value << msq_stdio::endl;
+  else if (grad_array)
+    MSQ_DBGOUT(debugLevel) << "  o OF Value: " << of_value << msq_stdio::endl;
 }
 
 
@@ -462,7 +475,7 @@ void TerminationCriterion::accumulate_patch( PatchData& pd, MsqError& err )
           (vert[i][1]>boundedVertexMovementEps) ||
           (vert[i][2]>boundedVertexMovementEps) )
       {
-        vertexMovementExceedsBound = true;
+        ++vertexMovementExceedsBound;
       }
     }
   }
@@ -487,7 +500,7 @@ bool TerminationCriterion::terminate( )
   
     //if terminating on numbering of inner iterations
   if (NUMBER_OF_ITERATES & terminationCriterionFlag
-    && iterationCounter++ >= iterationBound)
+    && iterationCounter++ > iterationBound)
   {
     return_flag = true;
     MSQ_DBGOUT(debugLevel) << "  o TermCrit -- Reached " << iterationBound << " iterations." << msq_stdio::endl;
@@ -575,10 +588,12 @@ bool TerminationCriterion::terminate( )
   if (BOUNDED_VERTEX_MOVEMENT & terminationCriterionFlag && vertexMovementExceedsBound)
   {
     return_flag = true;
+    MSQ_DBGOUT(debugLevel) << "  o TermCrit -- " << vertexMovementExceedsBound
+                           << " vertices out of bounds." << msq_stdio::endl;
   }
   
     // clear this value at the end of each iteration
-  vertexMovementExceedsBound = false;
+  vertexMovementExceedsBound = 0;
 
     //if none of the criteria were satisfied
   return return_flag;

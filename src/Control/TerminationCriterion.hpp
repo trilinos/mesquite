@@ -295,7 +295,7 @@ namespace Mesquite
     double successiveImprovementsRelativeEps;
       //crit 8
     double boundedVertexMovementEps;
-    bool vertexMovementExceedsBound;
+    int vertexMovementExceedsBound;
     
     int debugLevel;
     
