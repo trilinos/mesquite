@@ -566,7 +566,7 @@ bool TerminationCriterion::terminate( )
   }
   
   if (QUALITY_IMPROVEMENT_RELATIVE & terminationCriterionFlag &&
-      (currentOFValue = lowerOFBound) <= 
+      (currentOFValue - lowerOFBound) <= 
         qualityImprovementRelativeEps * (initialOFValue - lowerOFBound))
   {
     return_flag = true;
