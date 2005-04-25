@@ -70,6 +70,7 @@ TESTNAMES := test_1\
              convert \
              higher_order \
 	     transform \
+	     i_dft_with_culling \
              unit 
 ###             random_test\
 ###             convert\
