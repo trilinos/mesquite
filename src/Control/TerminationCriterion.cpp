@@ -434,6 +434,8 @@ void TerminationCriterion::accumulate_inner( PatchData& pd,
     MSQ_DBGOUT(debugLevel) << "  o TermCrit -- OF Value: " << of_value << msq_stdio::endl;
   else if (grad_array)
     MSQ_DBGOUT(debugLevel) << "  o OF Value: " << of_value << msq_stdio::endl;
+
+  ++iterationCounter;
 }
 
 
@@ -500,7 +502,7 @@ bool TerminationCriterion::terminate( )
   
     //if terminating on numbering of inner iterations
   if (NUMBER_OF_ITERATES & terminationCriterionFlag
-    && iterationCounter++ >= iterationBound)
+    && iterationCounter >= iterationBound)
   {
     return_flag = true;
     MSQ_DBGOUT(debugLevel) << "  o TermCrit -- Reached " << iterationBound << " iterations." << msq_stdio::endl;
