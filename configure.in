@@ -53,10 +53,10 @@ AC_ARG_ENABLE( [trap-fpe], [[
 if test -z "$MSQ_DO_RELEASE"; then
   # do default unless CXXFLAGS or -debug have been specified
   if test -z "$CXXFLAGS" -a "$MSQ_DO_DEBUG" = "no"; then
-    CXXFLAGS="-O2"
+    CXXFLAGS="-O2 -DNDEBUG"
   fi
 elif test "$MSQ_DO_RELEASE" != "no"; then
-  CXXFLAGS="$CXXFLAGS -O2"
+  CXXFLAGS="$CXXFLAGS -O2 -DNDEBUG"
 fi
 
 if test "$MSQ_DO_DEBUG" != "no"; then
