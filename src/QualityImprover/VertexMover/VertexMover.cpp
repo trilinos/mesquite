@@ -167,9 +167,12 @@ double VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
       next_patch = ms.get_next_patch( *patch_data, this, err ); 
       if (MSQ_CHKERR(err)) goto ERROR;
     }
+    
+    if (!next_patch) // all vertices culled
+      break;
   
       // Loop over each patch 
-    while (next_patch)
+    do
     {
         // Initialize for inner iteration
         
@@ -207,12 +210,14 @@ double VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
       }
       
         // If a global patch, then we're done with the inner loop.
-      if (get_patch_type() == PatchData::GLOBAL_PATCH)
-        break;
-        
-      next_patch = ms.get_next_patch( *patch_data, this, err );
-      if (MSQ_CHKERR(err)) goto ERROR;
-    }
+      next_patch = false;
+      if (get_patch_type() != PatchData::GLOBAL_PATCH)
+      {
+        next_patch = ms.get_next_patch( *patch_data, this, err );
+        if (MSQ_CHKERR(err)) goto ERROR;
+      }
+      
+    } while (next_patch);
 
     this->terminate_mesh_iteration(*patch_data, err); 
     if (MSQ_CHKERR(err)) goto ERROR;
