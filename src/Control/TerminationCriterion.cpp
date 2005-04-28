@@ -441,15 +441,17 @@ void TerminationCriterion::accumulate_inner( PatchData& pd,
 
 void TerminationCriterion::accumulate_outer(MeshSet &ms, MsqError &err)
 {
+  PatchData global_patch;
+  
     //if we need to fill out the global patch data object.
-  if (terminationCriterionFlag & (GRAD_FLAGS|OF_FLAGS))
+  if (terminationCriterionFlag & (GRAD_FLAGS|OF_FLAGS|VERTEX_MOVEMENT_RELATIVE))
   {
-    PatchData global_patch;
     PatchDataParameters global_params;
     global_params.set_patch_type( PatchData::GLOBAL_PATCH, err, 0, 0 );MSQ_ERRRTN(err);
     ms.get_next_patch( global_patch, global_params, err );             MSQ_ERRRTN(err);
-    accumulate_inner( global_patch, err );                             MSQ_ERRRTN(err);
   }
+  
+  accumulate_inner( global_patch, err );                             MSQ_ERRRTN(err);
 }
 
 
