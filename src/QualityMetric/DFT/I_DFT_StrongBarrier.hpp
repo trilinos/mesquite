@@ -70,9 +70,9 @@ The default for data members (corresponding to the variables above):\n
       set_name("I_DFT_StrongBarrier");
       p_set_alpha(1.0/2.0);
       p_set_beta(1.0);
-      p_set_gamma(2/3);
-      p_set_use_barrier_delta(false);      
-   }
+      p_set_gamma(2./3.);
+      p_set_use_barrier_delta(true);      
+    }
     
     //! virtual destructor ensures use of polymorphism during destruction
     virtual ~I_DFT_StrongBarrier()

@@ -39,14 +39,14 @@ Header file for the Mesquite::ScalarAddQualityMetric class
 #define ScalarAddQualityMetric_hpp
 
 #include "Mesquite.hpp"
-#include "CompositeQualityMetric.hpp"
+#include "QualityMetric.hpp"
 
 namespace Mesquite
 {
      /*! \class ScalarAddQualityMetric
        \brief Adds a number (a double) to the quality metric value.
      */
-   class ScalarAddQualityMetric : public CompositeQualityMetric
+   class ScalarAddQualityMetric : public QualityMetric
    {
   public:
        /*! Ensures that qm1 is not NULL.  If qm1 is only valid
@@ -65,6 +65,11 @@ namespace Mesquite
                              MsqError &err);
      bool evaluate_vertex(PatchData& pd, MsqVertex *vertex, double &value,
                             MsqError &err);
+ 
+  private:
+  
+    QualityMetric* qualMetric;
+    double offsetValue;
           
    };
    

@@ -43,6 +43,7 @@ Header file for the Mesquite::IdealWeightInverseMeanRatio class
 #include "ShapeQualityMetric.hpp"
 #include "Vector3D.hpp"
 #include "Matrix3D.hpp"
+#include "Exponent.hpp"
 
 namespace Mesquite
 {
@@ -113,12 +114,12 @@ namespace Mesquite
      double   h_factor[8]; // Metric values for the (decomposed) elements
        //variables used in the definition of the metric (2d and 3d)
      double a2Con;
-     double b2Con;
-     double c2Con;
+     Exponent b2Con;
+     Exponent c2Con;
      
      double a3Con;
-     double b3Con;
-     double c3Con;
+     Exponent b3Con;
+     Exponent c3Con;
    };
 } //namespace
 

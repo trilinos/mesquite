@@ -39,7 +39,7 @@ Header file for the Mesquite::MultiplyQualityMetric class
 #define MultiplyQualityMetric_hpp
 
 #include "Mesquite.hpp"
-#include "CompositeQualityMetric.hpp"
+#include "QualityMetric.hpp"
 
 namespace Mesquite
 {
@@ -56,7 +56,7 @@ namespace Mesquite
        be used to combine a node-based metric with an element-based
        metric.  
      */
-   class MultiplyQualityMetric : public CompositeQualityMetric
+   class MultiplyQualityMetric : public QualityMetric
    {
   public:
        /*! Ensures that qm1 and qm2 are not NULL.  If either qm1 or qm2
@@ -74,13 +74,6 @@ namespace Mesquite
      virtual ~MultiplyQualityMetric()
         {  }
      
-     inline void set_multiplication_operands(QualityMetric* qm1,
-                                             QualityMetric* qm2,
-                                             MsqError &/*err*/){
-       set_qmetric2(qm2);
-       set_qmetric1(qm1);
-     }
-
      bool evaluate_element(PatchData& pd, MsqMeshEntity *element,double &value,
                              MsqError &err);
      bool evaluate_vertex(PatchData& pd, MsqVertex *vertex, double &value,
@@ -89,6 +82,9 @@ namespace Mesquite
   protected:
      
   private:
+
+    QualityMetric* qualMetric1;
+    QualityMetric* qualMetric2;
      
      
    };

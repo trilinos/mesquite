@@ -76,7 +76,7 @@ essentially not used with mGamma = 0.0.
         //Note:  it seems as the use barrier delta should be false.  However,
         // since we are doing a calculation like ( pow(f(delta,x), gamma) )
         // having a non-zero f(delta,x) provides numerical stability.
-      p_set_use_barrier_delta(true);      
+      p_set_use_barrier_delta(false);      
    }
     
     //! virtual destructor ensures use of polymorphism during destruction

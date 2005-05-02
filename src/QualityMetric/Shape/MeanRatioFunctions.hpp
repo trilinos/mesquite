@@ -42,6 +42,7 @@ evaluations.
 #include "Mesquite.hpp"
 #include "Vector3D.hpp"
 #include "Matrix3D.hpp"
+#include "Exponent.hpp"
 
 namespace Mesquite 
 {
@@ -128,7 +129,7 @@ namespace Mesquite
 /*   Reductions possible when b == 1 or c == 1                               */
 /*****************************************************************************/
 inline bool m_fcn_2e(double &obj, const Vector3D x[3], const Vector3D &n,
-		     const double a, const double b, const double c)
+		     const double a, const Exponent& b, const Exponent& c)
 {
   double matr[9], f;
   double g;
@@ -168,7 +169,7 @@ inline bool m_fcn_2e(double &obj, const Vector3D x[3], const Vector3D &n,
 /*****************************************************************************/
 inline bool g_fcn_2e(double &obj, Vector3D g_obj[3], 
                      const Vector3D x[3], const Vector3D &n,
-		     const double a, const double b, const double c)
+		     const double a, const Exponent& b, const Exponent& c)
 {
   double matr[9], f;
   double adj_m[9], g;		// adj_m[2,5,8] not used
@@ -242,7 +243,7 @@ inline bool g_fcn_2e(double &obj, Vector3D g_obj[3],
 /*****************************************************************************/
 inline bool h_fcn_2e(double &obj, Vector3D g_obj[3], Matrix3D h_obj[6],
                      const Vector3D x[3], const Vector3D &n,
-		     const double a, const double b, const double c)
+		     const double a, const Exponent& b, const Exponent& c)
 {
   double matr[9], f;
   double adj_m[9], g;		// adj_m[2,5,8] not used
@@ -540,7 +541,7 @@ inline bool h_fcn_2e(double &obj, Vector3D g_obj[3], Matrix3D h_obj[6],
 /*   Reductions possible when b == 1, c == 1, or d == 1                      */
 /*****************************************************************************/
 inline bool m_fcn_2i(double &obj, const Vector3D x[3], const Vector3D &n,
-		     const double a, const double b, const double c,
+		     const double a, const Exponent& b, const Exponent& c,
 		     const Vector3D &d)
 {
   double matr[9];
@@ -582,7 +583,7 @@ inline bool m_fcn_2i(double &obj, const Vector3D x[3], const Vector3D &n,
 /*****************************************************************************/
 inline bool g_fcn_2i(double &obj, Vector3D g_obj[3], 
                      const Vector3D x[3], const Vector3D &n,
-		     const double a, const double b, const double c,
+		     const double a, const Exponent& b, const Exponent& c,
 		     const Vector3D &d)
 {
   double matr[9], f;
@@ -654,7 +655,7 @@ inline bool g_fcn_2i(double &obj, Vector3D g_obj[3],
 /*****************************************************************************/
 inline bool h_fcn_2i(double &obj, Vector3D g_obj[3], Matrix3D h_obj[6],
                      const Vector3D x[3], const Vector3D &n,
-		     const double a, const double b, const double c,
+		     const double a, const Exponent& b, const Exponent& c,
 		     const Vector3D &d)
 {
   double matr[9], f;
@@ -928,7 +929,7 @@ inline bool h_fcn_2i(double &obj, Vector3D g_obj[3], Matrix3D h_obj[6],
 /*   Reductions possible when b == 1 or c == 1                               */
 /*****************************************************************************/
 inline bool m_fcn_3e(double &obj, const Vector3D x[4],
-		     const double a, const double b, const double c)
+		     const double a, const Exponent& b, const Exponent& c)
 {
   double matr[9], f;
   double g;
@@ -970,7 +971,7 @@ inline bool m_fcn_3e(double &obj, const Vector3D x[4],
 /*   Reductions possible when b == 1 or c == 1                               */
 /*****************************************************************************/
 inline bool g_fcn_3e(double &obj, Vector3D g_obj[4], const Vector3D x[4],
-		     const double a, const double b, const double c)
+		     const double a, const Exponent& b, const Exponent& c)
 {
   double matr[9], f;
   double adj_m[9], g;
@@ -1060,7 +1061,7 @@ inline bool g_fcn_3e(double &obj, Vector3D g_obj[4], const Vector3D x[4],
 /*****************************************************************************/
 inline bool h_fcn_3e(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10], 
 		     const Vector3D x[4],
-		     const double a, const double b, const double c)
+		     const double a, const Exponent& b, const Exponent& c)
 {
   double matr[9], f;
   double adj_m[9], g;
@@ -1623,7 +1624,7 @@ inline bool h_fcn_3e(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
 /*****************************************************************************/
 
 inline bool g_fcn_3e_v3(double &obj, Vector3D &g_obj, const Vector3D x[4],
-			const double a, const double b, const double c)
+			const double a, const Exponent& b, const Exponent& c)
 {
   double matr[9], f, g;
   double loc1, loc2, loc3;
@@ -1675,7 +1676,7 @@ inline bool g_fcn_3e_v3(double &obj, Vector3D &g_obj, const Vector3D x[4],
 }
 
 inline bool g_fcn_3e_v0(double &obj, Vector3D &g_obj, const Vector3D x[4],
-			const double a, const double b, const double c)
+			const double a, const Exponent& b, const Exponent& c)
 {
   static Vector3D my_x[4];
 
@@ -1687,7 +1688,7 @@ inline bool g_fcn_3e_v0(double &obj, Vector3D &g_obj, const Vector3D x[4],
 }
 
 inline bool g_fcn_3e_v1(double &obj, Vector3D &g_obj, const Vector3D x[4],
-			const double a, const double b, const double c)
+			const double a, const Exponent& b, const Exponent& c)
 {
   static Vector3D my_x[4];
 
@@ -1699,7 +1700,7 @@ inline bool g_fcn_3e_v1(double &obj, Vector3D &g_obj, const Vector3D x[4],
 }
 
 inline bool g_fcn_3e_v2(double &obj, Vector3D &g_obj, const Vector3D x[4],
-			const double a, const double b, const double c)
+			const double a, const Exponent& b, const Exponent& c)
 {
   static Vector3D my_x[4];
 
@@ -1712,7 +1713,7 @@ inline bool g_fcn_3e_v2(double &obj, Vector3D &g_obj, const Vector3D x[4],
 
 inline bool h_fcn_3e_v3(double &obj, Vector3D &g_obj, Matrix3D &h_obj,
 			const Vector3D x[4],
-			const double a, const double b, const double c)
+			const double a, const Exponent& b, const Exponent& c)
 {
   double matr[9], f, g;
   double dg[9], loc0, loc1, loc3, loc4;
@@ -1800,7 +1801,7 @@ inline bool h_fcn_3e_v3(double &obj, Vector3D &g_obj, Matrix3D &h_obj,
 
 inline bool h_fcn_3e_v0(double &obj, Vector3D &g_obj, Matrix3D &h_obj,
 			const Vector3D x[4],
-			const double a, const double b, const double c)
+			const double a, const Exponent& b, const Exponent& c)
 {
   static Vector3D my_x[4];
 
@@ -1813,7 +1814,7 @@ inline bool h_fcn_3e_v0(double &obj, Vector3D &g_obj, Matrix3D &h_obj,
 
 inline bool h_fcn_3e_v1(double &obj, Vector3D &g_obj, Matrix3D &h_obj,
 			const Vector3D x[4],
-			const double a, const double b, const double c)
+			const double a, const Exponent& b, const Exponent& c)
 {
   static Vector3D my_x[4];
 
@@ -1826,7 +1827,7 @@ inline bool h_fcn_3e_v1(double &obj, Vector3D &g_obj, Matrix3D &h_obj,
 
 inline bool h_fcn_3e_v2(double &obj, Vector3D &g_obj, Matrix3D &h_obj,
 			const Vector3D x[4],
-			const double a, const double b, const double c)
+			const double a, const Exponent& b, const Exponent& c)
 {
   static Vector3D my_x[4];
 
@@ -1849,7 +1850,7 @@ inline bool h_fcn_3e_v2(double &obj, Vector3D &g_obj, Matrix3D &h_obj,
 /*   Reductions possible when b == 1, c == 1, or d == 1                      */
 /*****************************************************************************/
 inline bool m_fcn_3i(double &obj, const Vector3D x[4], 
-		     const double a, const double b, const double c,
+		     const double a, const Exponent& b, const Exponent& c,
 		     const Vector3D &d)
 {
   double matr[9], f;
@@ -1889,7 +1890,7 @@ inline bool m_fcn_3i(double &obj, const Vector3D x[4],
 /*   Reductions possible when b == 1, c == 1, or d == 1                      */
 /*****************************************************************************/
 inline bool g_fcn_3i(double &obj, Vector3D g_obj[4], const Vector3D x[4], 
-		     const double a, const double b, const double c,
+		     const double a, const Exponent& b, const Exponent& c,
 		     const Vector3D &d)
 {
   double matr[9], f;
@@ -1968,7 +1969,7 @@ inline bool g_fcn_3i(double &obj, Vector3D g_obj[4], const Vector3D x[4],
 /*****************************************************************************/
 inline int h_fcn_3i(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10], 
 		    const Vector3D x[4], 
-		    const double a, const double b, const double c,
+		    const double a, const Exponent& b, const Exponent& c,
 		    const Vector3D &d)
 {
   double matr[9], f;

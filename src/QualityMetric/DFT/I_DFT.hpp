@@ -40,6 +40,7 @@ Header file for the Mesquite::I_DFT class
 #include "Mesquite.hpp"
 #include "MsqError.hpp"
 #include "DistanceFromTarget.hpp"
+#include "Exponent.hpp"
 
 namespace Mesquite
 {
@@ -141,7 +142,7 @@ if useBarrierDelta == true.  Otherwise, delta is zero.
     // variables used in the definition of the metric (2d and 3d)
     double mAlpha;
     double mBeta;
-    double mGamma;
+    Exponent mGamma;
     bool useBarrierDelta;
     // variables used during the analytic gradient calculations
     Vector3D mNormals[4];		// Normal vector for merit function

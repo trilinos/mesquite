@@ -149,7 +149,7 @@ namespace Mesquite
 		       const Matrix3D &invR,	/* upper triangular          */
 		       const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
 		       const double alpha = 0.5,/* constant                  */
-		       const double gamma = 1.0,/* planar elements           */
+		       const Exponent& gamma = 1.0,/* planar elements           */
 		       const double delta = 0.0,/* max in denominator        */
 		       const double beta  = 0.0)/* no modification           */
   {
@@ -212,7 +212,7 @@ namespace Mesquite
 		       const Matrix3D &invR,	/* upper triangular          */
 		       const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
 		       const double alpha = 0.5,/* constant                  */
-		       const double gamma = 1.0,/* simplicial elements       */
+		       const Exponent& gamma = 1.0,/* simplicial elements       */
 		       const double delta = 0.0,/* max in denominator        */
 		       const double beta  = 0.0)/* no modification           */
   {
@@ -312,7 +312,7 @@ namespace Mesquite
 		       const Matrix3D &invR,	/* upper triangular          */
 		       const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
 		       const double alpha = 0.5,/* constant                  */
-		       const double gamma = 1.0,/* simplicial elements       */
+		       const Exponent& gamma = 1.0,/* simplicial elements       */
 		       const double delta = 0.0,/* max in denominator        */
 		       const double beta  = 0.0)/* no modification           */
   {
@@ -645,7 +645,7 @@ namespace Mesquite
 		       const Matrix3D &invR,	/* upper triangular          */
 		       const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
 		       const double alpha = 1.0/3.0, /* constant             */
-		       const double gamma = 2.0/3.0, /* simplicial elements  */
+		       const Exponent& gamma = 2.0/3.0, /* simplicial elements  */
 		       const double delta = 0.0,/* max in denominator        */
 		       const double beta  = 0.0)/* no modification           */
   {
@@ -711,7 +711,7 @@ namespace Mesquite
 		       const Matrix3D &invR,	/* upper triangular          */
 		       const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
 		       const double alpha = 1.0/3.0, /* constant             */
-		       const double gamma = 2.0/3.0, /* simplicial elements  */
+		       const Exponent& gamma = 2.0/3.0, /* simplicial elements  */
 		       const double delta = 0.0,/* max in denominator        */
 		       const double beta  = 0.0)/* no modification           */
   {
@@ -817,7 +817,7 @@ namespace Mesquite
 		       const Matrix3D &invR,	/* upper triangular          */
 		       const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
 		       const double alpha = 1.0/3.0, /* constant             */
-		       const double gamma = 2.0/3.0, /* simplicial elements  */
+		       const Exponent& gamma = 2.0/3.0, /* simplicial elements  */
 		       const double delta = 0.0,/* max in denominator        */
 		       const double beta  = 0.0)/* no modification           */
   {
@@ -1218,7 +1218,7 @@ namespace Mesquite
 			  const Matrix3D &invR,	/* upper triangular          */
 			  const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
 			  const double alpha = 0.5,/* constant               */
-			  const double gamma = 1.0,/* simplicial elements    */
+			  const Exponent& gamma = 1.0,/* simplicial elements    */
 			  const double delta = 0.0,/* max in denominator     */
 			  const double beta  = 0.0)/* no modification        */
   {
@@ -1318,7 +1318,7 @@ namespace Mesquite
 			  const Matrix3D &invR,	/* upper triangular          */
 			  const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
 			  const double alpha = 0.5,/* constant               */
-			  const double gamma = 1.0,/* simplicial elements    */
+			  const Exponent& gamma = 1.0,/* simplicial elements    */
 			  const double delta = 0.0,/* max in denominator     */
 			  const double beta  = 0.0)/* no modification        */
   {
@@ -1410,7 +1410,7 @@ namespace Mesquite
 			  const Matrix3D &invR,	/* upper triangular          */
 			  const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
 			  const double alpha = 0.5,/* constant               */
-			  const double gamma = 1.0,/* simplicial elements    */
+			  const Exponent& gamma = 1.0,/* simplicial elements    */
 			  const double delta = 0.0,/* max in denominator     */
 			  const double beta  = 0.0)/* no modification        */
   {
@@ -1499,7 +1499,7 @@ namespace Mesquite
 			  const Matrix3D &invR,	/* upper triangular          */
 			  const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
 			  const double alpha = 0.5,/* constant               */
-			  const double gamma = 1.0,/* simplicial elements    */
+			  const Exponent& gamma = 1.0,/* simplicial elements    */
 			  const double delta = 0.0,/* max in denominator     */
 			  const double beta  = 0.0)/* no modification        */
   {
@@ -1787,7 +1787,7 @@ namespace Mesquite
 			  const Matrix3D &invR,	/* upper triangular          */
 			  const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
 			  const double alpha = 0.5,/* constant               */
-			  const double gamma = 1.0,/* simplicial elements    */
+			  const Exponent& gamma = 1.0,/* simplicial elements    */
 			  const double delta = 0.0,/* max in denominator     */
 			  const double beta  = 0.0)/* no modification        */
   {
@@ -2001,7 +2001,7 @@ namespace Mesquite
 			  const Matrix3D &invR,	/* upper triangular          */
 			  const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
 			  const double alpha = 0.5,/* constant               */
-			  const double gamma = 1.0,/* simplicial elements    */
+			  const Exponent& gamma = 1.0,/* simplicial elements    */
 			  const double delta = 0.0,/* max in denominator     */
 			  const double beta  = 0.0)/* no modification        */
   {
@@ -2175,7 +2175,7 @@ namespace Mesquite
 			  const Matrix3D &invR,	/* upper triangular          */
 			  const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
 			  const double alpha = 1.0/3.0,/* constant           */
-			  const double gamma = 2.0/3.0,/* simplicial elements*/
+			  const Exponent& gamma = 2.0/3.0,/* simplicial elements*/
 			  const double delta = 0.0,/* max in denominator     */
 			  const double beta  = 0.0)/* no modification        */
   {
@@ -2281,7 +2281,7 @@ namespace Mesquite
 			  const Matrix3D &invR,	/* upper triangular          */
 			  const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
 			  const double alpha = 1.0/3.0,/* constant           */
-			  const double gamma = 2.0/3.0,/* simplicial elements*/
+			  const Exponent& gamma = 2.0/3.0,/* simplicial elements*/
 			  const double delta = 0.0,/* max in denominator     */
 			  const double beta  = 0.0)/* no modification        */
   {
@@ -2376,7 +2376,7 @@ namespace Mesquite
 			  const Matrix3D &invR,	/* upper triangular          */
 			  const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
 			  const double alpha = 1.0/3.0,/* constant           */
-			  const double gamma = 2.0/3.0,/* simplicial elements*/
+			  const Exponent& gamma = 2.0/3.0,/* simplicial elements*/
 			  const double delta = 0.0,/* max in denominator     */
 			  const double beta  = 0.0)/* no modification        */
   {
@@ -2468,7 +2468,7 @@ namespace Mesquite
 			  const Matrix3D &invR,	/* upper triangular          */
 			  const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
 			  const double alpha = 1.0/3.0,/* constant           */
-			  const double gamma = 2.0/3.0,/* simplicial elements*/
+			  const Exponent& gamma = 2.0/3.0,/* simplicial elements*/
 			  const double delta = 0.0,/* max in denominator     */
 			  const double beta  = 0.0)/* no modification        */
   {
@@ -2549,7 +2549,7 @@ namespace Mesquite
 			  const Matrix3D &invR,	/* upper triangular          */
 			  const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
 			  const double alpha = 1.0/3.0,/* constant           */
-			  const double gamma = 2.0/3.0,/* simplicial elements*/
+			  const Exponent& gamma = 2.0/3.0,/* simplicial elements*/
 			  const double delta = 0.0,/* max in denominator     */
 			  const double beta  = 0.0)/* no modification        */
   {
@@ -2867,7 +2867,7 @@ namespace Mesquite
 			  const Matrix3D &invR,	/* upper triangular          */
 			  const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
 			  const double alpha = 1.0/3.0,/* constant           */
-			  const double gamma = 2.0/3.0,/* simplicial elements*/
+			  const Exponent& gamma = 2.0/3.0,/* simplicial elements*/
 			  const double delta = 0.0,/* max in denominator     */
 			  const double beta  = 0.0)/* no modification        */
   {
@@ -3084,7 +3084,7 @@ namespace Mesquite
 			  const Matrix3D &invR,	/* upper triangular          */
 			  const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
 			  const double alpha = 1.0/3.0,/* constant           */
-			  const double gamma = 2.0/3.0,/* simplicial elements*/
+			  const Exponent& gamma = 2.0/3.0,/* simplicial elements*/
 			  const double delta = 0.0,/* max in denominator     */
 			  const double beta  = 0.0)/* no modification        */
   {
@@ -3261,7 +3261,7 @@ namespace Mesquite
 			  const Matrix3D &invR,	/* upper triangular          */
 			  const Matrix3D &Q, 	/* orthogonal, det(Q) = 1    */
 			  const double alpha = 1.0/3.0,/* constant           */
-			  const double gamma = 2.0/3.0,/* simplicial elements*/
+			  const Exponent& gamma = 2.0/3.0,/* simplicial elements*/
 			  const double delta = 0.0,/* max in denominator     */
 			  const double beta  = 0.0)/* no modification        */
   {

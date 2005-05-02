@@ -39,7 +39,8 @@ Header file for the Mesquite::PowerQualityMetric class
 #define PowerQualityMetric_hpp
 
 #include "Mesquite.hpp"
-#include "CompositeQualityMetric.hpp"
+#include "QualityMetric.hpp"
+#include "Exponent.hpp"
 
 namespace Mesquite
 {
@@ -51,7 +52,7 @@ namespace Mesquite
        power (a double value, scaleAlpha) for two- and three-diminsional
        elements.  
      */
-   class PowerQualityMetric : public CompositeQualityMetric
+   class PowerQualityMetric : public QualityMetric
    {
   public:
        /*! Ensures that qm1 is not NULL.  If qm1 is only valid
@@ -70,6 +71,11 @@ namespace Mesquite
                              MsqError &err);
      bool evaluate_vertex(PatchData& pd, MsqVertex *vertex, double &value,
                             MsqError &err);
+
+  private:
+  
+    QualityMetric* qualMetric;
+    Mesquite::Exponent mPower;
    };
    
 

@@ -730,7 +730,6 @@ void MsqMeshEntity::compute_corner_normals( Vector3D normals[],
   */
 void MsqMeshEntity::compute_corner_matrices(PatchData &pd, Matrix3D A[], int num_m3d, MsqError &err )
 {
-
   MsqVertex* vertices = pd.get_vertex_array(err); MSQ_ERRRTN(err); 
   const size_t* v_i = &vertexIndices[0];
 
@@ -754,15 +753,15 @@ void MsqMeshEntity::compute_corner_matrices(PatchData &pd, Matrix3D A[], int num
     
     A[0].set_column(0, vec1);
     A[0].set_column(1, vec2);
-    A[0].set_column(2, normals[0]*pow(2./MSQ_SQRT_THREE, 1./3.));
+    A[0].set_column(2, normals[0]*MSQ_3RT_2_OVER_6RT_3);
     
     A[1].set_column(0, vec3);
     A[1].set_column(1, -vec1);
-    A[1].set_column(2, normals[1]*pow(2./MSQ_SQRT_THREE, 1./3.));
+    A[1].set_column(2, normals[1]*MSQ_3RT_2_OVER_6RT_3);
 
     A[2].set_column(0, -vec2);
     A[2].set_column(1, -vec3);
-    A[2].set_column(2, normals[2]*pow(2./MSQ_SQRT_THREE, 1./3.));
+    A[2].set_column(2, normals[2]*MSQ_3RT_2_OVER_6RT_3);
 
     break;
     

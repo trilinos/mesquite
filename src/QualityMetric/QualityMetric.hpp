@@ -294,6 +294,20 @@ namespace Mesquite
      //! contents using averaging method data member avgMethod .
      double average_metrics(const double metric_values[], const int& num_values,
                             MsqError &err);
+                            
+     //! Given a list of metric values, calculate the average metric
+     //! valude according to the current avgMethod and write into
+     //! the passed metric_values array the the value weight/count to
+     //! use when averaging gradient vectors for the metric.
+     //!\param metric_values : As input, a set of quality metric values
+     //!                       to average.  As output, the fraction of
+     //!                       the corresponding gradient vector that
+     //!                       contributes to the average gradient.
+     //!\param num_metric_values The number of values in the passed array.
+     double average_metric_and_weights( double metric_values[],
+                                        int num_metric_values,
+                                        MsqError& err );
+     
      //! takes an array of coefficients and an array of metrics (both of length num_value)
      //! and averages the contents using averaging method 'method'.
      double weighted_average_metrics(const double coef[],

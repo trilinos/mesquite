@@ -71,14 +71,6 @@ bool IdealWeightMeanRatio::evaluate_element(PatchData &pd,
 				     {6, 5, 7, 2},
 				     {7, 6, 4, 3}};
 
-  const double a2_con =  2.0;
-  const double b2_con = -1.0;
-  const double c2_con =  1.0;
-
-  const double a3_con =  3.0;
-  const double b3_con = -1.0;
-  const double c3_con =  2.0 / 3.0;
-
   const Vector3D d_con(1.0, 1.0, 1.0);
 
   int i;
@@ -92,7 +84,7 @@ bool IdealWeightMeanRatio::evaluate_element(PatchData &pd,
     mCoords[0] = vertices[v_i[0]];
     mCoords[1] = vertices[v_i[1]];
     mCoords[2] = vertices[v_i[2]];
-    metric_valid = m_fcn_2e(m, mCoords, n, a2_con, b2_con, c2_con);
+    metric_valid = m_fcn_2e(m, mCoords, n, a2Con, b2Con, c2Con);
     if (!metric_valid) return false;
     break;
     
@@ -104,7 +96,7 @@ bool IdealWeightMeanRatio::evaluate_element(PatchData &pd,
       mCoords[1] = vertices[v_i[locs_hex[i][1]]];
       mCoords[2] = vertices[v_i[locs_hex[i][2]]];
       metric_valid = m_fcn_2i(mMetrics[i], mCoords, n, 
-			      a2_con, b2_con, c2_con, d_con);
+			      a2Con, b2Con, c2Con, d_con);
       if (!metric_valid) return false;
     }
     m = average_metrics(mMetrics, 4, err); MSQ_ERRZERO(err);
@@ -115,7 +107,7 @@ bool IdealWeightMeanRatio::evaluate_element(PatchData &pd,
     mCoords[1] = vertices[v_i[1]];
     mCoords[2] = vertices[v_i[2]];
     mCoords[3] = vertices[v_i[3]];
-    metric_valid = m_fcn_3e(m, mCoords, a3_con, b3_con, c3_con);
+    metric_valid = m_fcn_3e(m, mCoords, a3Con, b3Con, c3Con);
     if (!metric_valid) return false;
     break;
 
@@ -126,7 +118,7 @@ bool IdealWeightMeanRatio::evaluate_element(PatchData &pd,
       mCoords[2] = vertices[v_i[locs_hex[i][2]]];
       mCoords[3] = vertices[v_i[locs_hex[i][3]]];
       metric_valid = m_fcn_3i(mMetrics[i], mCoords, 
-			      a3_con, b3_con, c3_con, d_con);
+			      a3Con, b3Con, c3Con, d_con);
       if (!metric_valid) return false;
     }
     m = average_metrics(mMetrics, 8, err); MSQ_ERRZERO(err);
@@ -161,7 +153,7 @@ bool IdealWeightMeanRatio::compute_element_analytical_gradient(PatchData &pd,
 
   Vector3D n;			// Surface normal for 2D objects
 
-  double   nm, t=0;
+  //double   nm, t=0;
 
   // Hex element descriptions
   static const int locs_hex[8][4] = {{0, 1, 3, 4},
@@ -173,19 +165,12 @@ bool IdealWeightMeanRatio::compute_element_analytical_gradient(PatchData &pd,
 				     {6, 5, 7, 2},
 				     {7, 6, 4, 3}};
 
-  const double a2_con =  2.0;
-  const double b2_con = -1.0;
-  const double c2_con =  1.0;
-
-  const double a3_con =  3.0;
-  const double b3_con = -1.0;
-  const double c3_con =  2.0 / 3.0;
-
   const Vector3D d_con(1.0, 1.0, 1.0);
 
   int i, j;
 
   bool metric_valid = false;
+  int vert_per_elem = 0;
 
   m = 0.0;
 
@@ -196,175 +181,33 @@ bool IdealWeightMeanRatio::compute_element_analytical_gradient(PatchData &pd,
     mCoords[0] = vertices[v_i[0]];
     mCoords[1] = vertices[v_i[1]];
     mCoords[2] = vertices[v_i[2]];
-    if (!g_fcn_2e(m, mAccumGrad, mCoords, n, a2_con, b2_con, c2_con)) return false;
+    if (!g_fcn_2e(m, mAccumGrad, mCoords, n, a2Con, b2Con, c2Con)) return false;
 
-    // This is not very efficient, but is one way to select correct gradients.
-    // For gradients, info is returned only for free vertices, in the 
-    // order of v[].
-    for (i = 0; i < 3; ++i) {
-      for (j = 0; j < nv; ++j) {
-        if (vertices + v_i[i] == v[j]) {
-          g[j] = mAccumGrad[i];
-        }
-      }
-    }
+    vert_per_elem = 3;
     break;
 
   case QUADRILATERAL:
     pd.get_domain_normal_at_element(e, n, err); MSQ_ERRZERO(err);
+    n /= n.length();	// Need unit normal
     for (i = 0; i < 4; ++i) {
       mAccumGrad[i] = 0.0;
 
-      n = n / n.length();	// Need unit normal
       mCoords[0] = vertices[v_i[locs_hex[i][0]]];
       mCoords[1] = vertices[v_i[locs_hex[i][1]]];
       mCoords[2] = vertices[v_i[locs_hex[i][2]]];
       if (!g_fcn_2i(mMetrics[i], mGradients+3*i, mCoords, n,
-		    a2_con, b2_con, c2_con, d_con)) return false;
+		    a2Con, b2Con, c2Con, d_con)) return false;
     }
-
-    switch(avgMethod) {
-    case MINIMUM:
-      m = mMetrics[0];
-      for (i = 1; i < 4; ++i) {
-        if (mMetrics[i] < m) m = mMetrics[i];
-      }
-
-      nm = 0;
-      for (i = 0; i < 4; ++i) {
-        if (mMetrics[i] - m <= MSQ_MIN) {
-          mAccumGrad[locs_hex[i][0]] += mGradients[3*i+0];
-          mAccumGrad[locs_hex[i][1]] += mGradients[3*i+1];
-          mAccumGrad[locs_hex[i][2]] += mGradients[3*i+2];
-          ++nm;
-        }
-      }
-
-      for (i = 0; i < 4; ++i) {
-        mAccumGrad[i] /= nm;
-      }
-      break;
-
-    case MAXIMUM:
-      m = mMetrics[0];
-      for (i = 1; i < 4; ++i) {
-        if (mMetrics[i] > m) m = mMetrics[i];
-      }
-
-      nm = 0;
-      for (i = 0; i < 4; ++i) {
-        if (m - mMetrics[i] <= MSQ_MIN) {
-          mAccumGrad[locs_hex[i][0]] += mGradients[3*i+0];
-          mAccumGrad[locs_hex[i][1]] += mGradients[3*i+1];
-          mAccumGrad[locs_hex[i][2]] += mGradients[3*i+2];
-          ++nm;
-        }
-      }
-
-      for (i = 0; i < 4; ++i) {
-        mAccumGrad[i] /= nm;
-      }
-      break;
-
-    case SUM:
-      m = 0;
-      for (i = 0; i < 4; ++i) {
-        m += mMetrics[i];
-      }
-
-      for (i = 0; i < 4; ++i) {
-        mAccumGrad[locs_hex[i][0]] += mGradients[3*i+0];
-        mAccumGrad[locs_hex[i][1]] += mGradients[3*i+1];
-        mAccumGrad[locs_hex[i][2]] += mGradients[3*i+2];
-      }
-      break;
-
-    case LINEAR:
-      m = 0;
-      for (i = 0; i < 4; ++i) {
-        m += mMetrics[i];
-      }
-      m *= 0.25;
-      
-      for (i = 0; i < 4; ++i) {
-        mAccumGrad[locs_hex[i][0]] += mGradients[3*i+0] *0.25;
-        mAccumGrad[locs_hex[i][1]] += mGradients[3*i+1] *0.25;
-        mAccumGrad[locs_hex[i][2]] += mGradients[3*i+2] *0.25;
-      }
-      break;
-
-    case GEOMETRIC:
-      m = 0.0;
-      for (i = 0; i < 4; ++i) {
-        m += log(mMetrics[i]);
-        mMetrics[i] = 1.0 / mMetrics[i];
-      }
-      m = exp(m / 4.0);
-
-      for (i = 0; i < 4; ++i) {
-        mAccumGrad[locs_hex[i][0]] += mMetrics[i]*mGradients[3*i+0];
-        mAccumGrad[locs_hex[i][1]] += mMetrics[i]*mGradients[3*i+1];
-        mAccumGrad[locs_hex[i][2]] += mMetrics[i]*mGradients[3*i+2];
-      }
-
-      nm = m / 4.0;
-      for (i = 0; i < 4; ++i) {
-        mAccumGrad[i] *= nm;
-      }
-      break;
-
-    default:
-      switch(avgMethod) {
-      case RMS:
-        t = 2.0;
-        break;
-
-      case HARMONIC:
-        t = -1.0;
-        break;
-
-      case HMS:
-        t = -2.0;
-        break;
-      default:
-        MSQ_SETERR(err)("averaging method not available.", MsqError::INVALID_STATE);
-        return false;
-        break;
-      }
-
-      m = 0;
-      for (i = 0; i < 4; ++i) {
-        nm = pow(mMetrics[i], t);
-        m += nm;
-
-        mMetrics[i] = t*nm/mMetrics[i];
-      }
-
-      nm = m / 4.0;
-      m = pow(nm, 1.0 / t);
-
-      for (i = 0; i < 4; ++i) {
-        mAccumGrad[locs_hex[i][0]] += mMetrics[i]*mGradients[3*i+0];
-        mAccumGrad[locs_hex[i][1]] += mMetrics[i]*mGradients[3*i+1];
-        mAccumGrad[locs_hex[i][2]] += mMetrics[i]*mGradients[3*i+2];
-      }
-
-      nm = m / (4.0*nm*t);
-      for (i = 0; i < 4; ++i) {
-        mAccumGrad[i] *= nm;
-      }
-      break;
+    
+    m = average_metric_and_weights( mMetrics, 4, err ); MSQ_ERRZERO(err);
+    for (i  = 0; i < 4; ++i)
+    {
+      mAccumGrad[locs_hex[i][0]] += mMetrics[i] * mGradients[3*i+0];
+      mAccumGrad[locs_hex[i][1]] += mMetrics[i] * mGradients[3*i+1];
+      mAccumGrad[locs_hex[i][2]] += mMetrics[i] * mGradients[3*i+2];
     }
-
-    // This is not very efficient, but is one way to select correct gradients
-    // For gradients, info is returned only for free vertices, in the order of v[].
-    for (i = 0; i < 4; ++i) {
-      for (j = 0; j < nv; ++j) {
-        if (vertices + v_i[i] == v[j]) {
-          g[j] = mAccumGrad[i];
-        }
-      }
-    }
+    
+    vert_per_elem = 4;
     break;
 
   case TETRAHEDRON:
@@ -372,19 +215,10 @@ bool IdealWeightMeanRatio::compute_element_analytical_gradient(PatchData &pd,
     mCoords[1] = vertices[v_i[1]];
     mCoords[2] = vertices[v_i[2]];
     mCoords[3] = vertices[v_i[3]];
-    metric_valid = g_fcn_3e(m, mAccumGrad, mCoords, a3_con, b3_con, c3_con);
+    metric_valid = g_fcn_3e(m, mAccumGrad, mCoords, a3Con, b3Con, c3Con);
     if (!metric_valid) return false;
 
-    // This is not very efficient, but is one way to select correct gradients.
-    // For gradients, info is returned only for free vertices, in the
-    // order of v[].
-    for (i = 0; i < 4; ++i) {
-      for (j = 0; j < nv; ++j) {
-        if (vertices + v_i[i] == v[j]) {
-          g[j] = mAccumGrad[i];
-        }
-      }
-    }
+    vert_per_elem = 4;
     break;
 
   case HEXAHEDRON:
@@ -396,162 +230,32 @@ bool IdealWeightMeanRatio::compute_element_analytical_gradient(PatchData &pd,
       mCoords[2] = vertices[v_i[locs_hex[i][2]]];
       mCoords[3] = vertices[v_i[locs_hex[i][3]]];
       if (!g_fcn_3i(mMetrics[i], mGradients+4*i, mCoords, 
-		    a3_con, b3_con, c3_con, d_con)) return false;
+		    a3Con, b3Con, c3Con, d_con)) return false;
     }
-
-    switch(avgMethod) {
-    case MINIMUM:
-      m = mMetrics[0];
-      for (i = 1; i < 8; ++i) {
-        if (mMetrics[i] < m) m = mMetrics[i];
-      }
-
-      nm = 0;
-      for (i = 0; i < 8; ++i) {
-        if (mMetrics[i] - m <= MSQ_MIN) {
-          mAccumGrad[locs_hex[i][0]] += mGradients[4*i+0];
-          mAccumGrad[locs_hex[i][1]] += mGradients[4*i+1];
-          mAccumGrad[locs_hex[i][2]] += mGradients[4*i+2];
-          mAccumGrad[locs_hex[i][3]] += mGradients[4*i+3];
-          ++nm;
-        }
-      }
-
-      for (i = 0; i < 8; ++i) {
-        mAccumGrad[i] /= nm;
-      }
-      break;
-
-    case MAXIMUM:
-      m = mMetrics[0];
-      for (i = 1; i < 8; ++i) {
-        if (mMetrics[i] > m) m = mMetrics[i];
-      }
-
-      nm = 0;
-      for (i = 0; i < 8; ++i) {
-        if (m - mMetrics[i] <= MSQ_MIN) {
-          mAccumGrad[locs_hex[i][0]] += mGradients[4*i+0];
-          mAccumGrad[locs_hex[i][1]] += mGradients[4*i+1];
-          mAccumGrad[locs_hex[i][2]] += mGradients[4*i+2];
-          mAccumGrad[locs_hex[i][3]] += mGradients[4*i+3];
-          ++nm;
-        }
-      }
-
-      for (i = 0; i < 8; ++i) {
-        mAccumGrad[i] /= nm;
-      }
-      break;
-
-    case SUM:
-      m = 0;
-      for (i = 0; i < 8; ++i) {
-        m += mMetrics[i];
-      }
-
-      for (i = 0; i < 8; ++i) {
-        mAccumGrad[locs_hex[i][0]] += mGradients[4*i+0];
-        mAccumGrad[locs_hex[i][1]] += mGradients[4*i+1];
-        mAccumGrad[locs_hex[i][2]] += mGradients[4*i+2];
-        mAccumGrad[locs_hex[i][3]] += mGradients[4*i+3];
-      }
-      break;
-
-    case LINEAR:
-      m = 0;
-      for (i = 0; i < 8; ++i) {
-        m += mMetrics[i];
-      }
-      m *= 0.125;
-
-      for (i = 0; i < 8; ++i) {
-        mAccumGrad[locs_hex[i][0]] += mGradients[4*i+0] *0.125;
-        mAccumGrad[locs_hex[i][1]] += mGradients[4*i+1] *0.125;
-        mAccumGrad[locs_hex[i][2]] += mGradients[4*i+2] *0.125;
-        mAccumGrad[locs_hex[i][3]] += mGradients[4*i+3] *0.125;
-      }
-      break;
-
-    case GEOMETRIC:
-      m = 0.0;
-      for (i = 0; i < 8; ++i) {
-        m += log(mMetrics[i]);
-        mMetrics[i] = 1.0 / mMetrics[i];
-      }
-      m = exp(m / 8.0);
-
-      for (i = 0; i < 8; ++i) {
-        mAccumGrad[locs_hex[i][0]] += mMetrics[i]*mGradients[4*i+0];
-        mAccumGrad[locs_hex[i][1]] += mMetrics[i]*mGradients[4*i+1];
-        mAccumGrad[locs_hex[i][2]] += mMetrics[i]*mGradients[4*i+2];
-        mAccumGrad[locs_hex[i][3]] += mMetrics[i]*mGradients[4*i+3];
-      }
-
-      nm = m / 8.0;
-      for (i = 0; i < 8; ++i) {
-        mAccumGrad[i] *= nm;
-      }
-      break;
-
-    default:
-      switch(avgMethod) {
-      case RMS:
-        t = 2.0;
-        break;
-
-      case HARMONIC:
-        t = -1.0;
-        break;
-
-      case HMS:
-        t = -2.0;
-        break;
-      default:
-        MSQ_SETERR(err)("averaging method not available.", MsqError::INVALID_STATE);
-        return false;
-        break;
-      }
-
-      m = 0;
-      for (i = 0; i < 8; ++i) {
-        nm = pow(mMetrics[i], t);
-        m += nm;
-
-        mMetrics[i] = t*nm/mMetrics[i];
-      }
-
-      nm = m / 8.0;
-      m = pow(nm, 1.0 / t);
-
-      for (i = 0; i < 8; ++i) {
-        mAccumGrad[locs_hex[i][0]] += mMetrics[i]*mGradients[4*i+0];
-        mAccumGrad[locs_hex[i][1]] += mMetrics[i]*mGradients[4*i+1];
-        mAccumGrad[locs_hex[i][2]] += mMetrics[i]*mGradients[4*i+2];
-        mAccumGrad[locs_hex[i][3]] += mMetrics[i]*mGradients[4*i+3];
-      }
-
-      nm = m / (8.0*nm*t);
-      for (i = 0; i < 8; ++i) {
-        mAccumGrad[i] *= nm;
-      }
-      break;
+    
+    m = average_metric_and_weights( mMetrics, 8, err ); MSQ_ERRZERO(err);
+    for (i = 0; i < 8; ++i) 
+    {
+      mAccumGrad[locs_hex[i][0]] += mMetrics[i]*mGradients[4*i+0];
+      mAccumGrad[locs_hex[i][1]] += mMetrics[i]*mGradients[4*i+1];
+      mAccumGrad[locs_hex[i][2]] += mMetrics[i]*mGradients[4*i+2];
+      mAccumGrad[locs_hex[i][3]] += mMetrics[i]*mGradients[4*i+3];
     }
-
-    // This is not very efficient, but is one way to select correct gradients
-    // For gradients, info is returned only for free vertices, in the order of v[].
-    for (i = 0; i < 8; ++i) {
-      for (j = 0; j < nv; ++j) {
-        if (vertices + v_i[i] == v[j]) {
-          g[j] = mAccumGrad[i];
-        }
-      }
-    }
+    
+    vert_per_elem = 8;
     break;
 
-  default:
-    break;
-  } // end switch over element type
+  }
+  
+  // This is not very efficient, but is one way to select correct gradients
+  // For gradients, info is returned only for free vertices, in the order of v[].
+  for (i = 0; i < vert_per_elem; ++i) {
+    for (j = 0; j < nv; ++j) {
+      if (vertices + v_i[i] == v[j]) {
+        g[j] = mAccumGrad[i];
+      }
+    }
+  }
 
 //  FUNCTION_TIMER_END();
   return true;
@@ -594,14 +298,6 @@ bool IdealWeightMeanRatio::compute_element_analytical_hessian(PatchData &pd,
 				     {6, 5, 7, 2},
 				     {7, 6, 4, 3}};
 
-  const double a2_con =  2.0;
-  const double b2_con = -1.0;
-  const double c2_con =  1.0;
-
-  const double a3_con =  3.0;
-  const double b3_con = -1.0;
-  const double c3_con =  2.0 / 3.0;
-
   const Vector3D d_con(1.0, 1.0, 1.0);
 
   int i, j, k, l, ind;
@@ -618,7 +314,7 @@ bool IdealWeightMeanRatio::compute_element_analytical_hessian(PatchData &pd,
     mCoords[0] = vertices[v_i[0]];
     mCoords[1] = vertices[v_i[1]];
     mCoords[2] = vertices[v_i[2]];
-    if (!h_fcn_2e(m, g, h, mCoords, n, a2_con, b2_con, c2_con)) return false;
+    if (!h_fcn_2e(m, g, h, mCoords, n, a2Con, b2Con, c2Con)) return false;
 
     // zero out fixed elements of g
     j = 0;
@@ -660,7 +356,7 @@ bool IdealWeightMeanRatio::compute_element_analytical_hessian(PatchData &pd,
       mCoords[1] = vertices[v_i[locs_hex[i][1]]];
       mCoords[2] = vertices[v_i[locs_hex[i][2]]];
       if (!h_fcn_2i(mMetrics[i], mGradients+3*i, mHessians+6*i, mCoords, n,
-		    a2_con, b2_con, c2_con, d_con)) return false;
+		    a2Con, b2Con, c2Con, d_con)) return false;
     }
 
     switch(avgMethod) {
@@ -781,7 +477,7 @@ bool IdealWeightMeanRatio::compute_element_analytical_hessian(PatchData &pd,
     mCoords[1] = vertices[v_i[1]];
     mCoords[2] = vertices[v_i[2]];
     mCoords[3] = vertices[v_i[3]];
-    metric_valid = h_fcn_3e(m, g, h, mCoords, a3_con, b3_con, c3_con);
+    metric_valid = h_fcn_3e(m, g, h, mCoords, a3Con, b3Con, c3Con);
     if (!metric_valid) return false;
 
     // zero out fixed elements of g
@@ -827,7 +523,7 @@ bool IdealWeightMeanRatio::compute_element_analytical_hessian(PatchData &pd,
       mCoords[2] = vertices[v_i[locs_hex[i][2]]];
       mCoords[3] = vertices[v_i[locs_hex[i][3]]];
       if (!h_fcn_3i(mMetrics[i], mGradients+4*i, mHessians+10*i, mCoords,
-		    a3_con, b3_con, c3_con, d_con)) return false;
+		    a3Con, b3Con, c3Con, d_con)) return false;
     }
 
     switch(avgMethod) {

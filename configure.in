@@ -120,6 +120,8 @@ AC_CHECK_FUNCS( vsnprintf, [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_VSNPRINTF"] )
 AC_CHECK_FUNCS( vsprintf, [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_VSPRINTF"] )
 AC_CHECK_FUNCS( clock, [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_CLOCK"] )
 AC_CHECK_FUNCS( times, [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_TIMES"] )
+LIBS=-lm
+AC_CHECK_FUNCS( cbrt,  [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_CBRT"] )
 
 # Use C++ compiler because C allows undefined functions, so these
 # checks don't achive much if compiled as C.  Also, if C and C++

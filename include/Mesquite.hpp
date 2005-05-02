@@ -124,6 +124,7 @@ namespace Mesquite
   static const double MSQ_SQRT_TWO_DIV_SQRT_THREE=MSQ_SQRT_TWO/MSQ_SQRT_THREE;
   static const double MSQ_ONE_THIRD = 1.0 / 3.0;
   static const double MSQ_TWO_THIRDS = 2.0 / 3.0;
+  static const double MSQ_3RT_2_OVER_6RT_3 = msq_stdc::pow( 2/MSQ_SQRT_THREE, MSQ_ONE_THIRD );
 
 #ifdef UINT_MAX
   const unsigned MSQ_UINT_MAX = UINT_MAX;
@@ -172,6 +173,27 @@ namespace Mesquite
     // (e.g., '2') tells how many arguements should be passed for comparison.
 template <class T> inline T MSQ_MIN_2(T a, T b) { return a < b ? a : b; }
 template <class T> inline T MSQ_MAX_2(T a, T b) { return a > b ? a : b; }
+
+
+  // Utility functions
+inline double cbrt( double d ) 
+{
+#ifdef HAVE_CBRT
+  return ::cbrt( d );
+#else
+  return msq_stdc::pow( d, MSQ_ONE_THIRD );
+#endif
+}
+
+inline double cbrt_sqr( double d )
+{
+#ifdef HAVE_CBRT
+  return ::cbrt(d*d);
+#else
+  return msq_stdc::pow( d, MSQ_TWO_THIRDS );
+#endif
+}
+  
 }
 
 

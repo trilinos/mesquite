@@ -690,7 +690,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
      CPPUNIT_ASSERT(!err);
      ShapeQualityMetric *mmet = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
      ShapeQualityMetric *cmet = new ConditionNumberQualityMetric;
-     CompositeQualityMetric *met = new MultiplyQualityMetric(mmet,
+     MultiplyQualityMetric *met = new MultiplyQualityMetric(mmet,
                                                             cmet,
                                                             err);
        //Check ideal tri
@@ -743,8 +743,8 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
        CPPUNIT_ASSERT(!err);
          //vertex based
        SmoothnessQualityMetric *m1 = new EdgeLengthQualityMetric;
-       CompositeQualityMetric *pow_m1 = new PowerQualityMetric(m1,2,err); CPPUNIT_ASSERT(!err);
-       CompositeQualityMetric *sa_m1 = new ScalarAddQualityMetric(m1,2,err); CPPUNIT_ASSERT(!err);
+       PowerQualityMetric *pow_m1 = new PowerQualityMetric(m1,2,err); CPPUNIT_ASSERT(!err);
+       ScalarAddQualityMetric *sa_m1 = new ScalarAddQualityMetric(m1,2,err); CPPUNIT_ASSERT(!err);
        m1->evaluate_vertex(triPatch,&verts[2],val,err);CPPUNIT_ASSERT(!err); 
        pow_m1->evaluate_vertex(triPatch,&verts[2],temp_val,err);
        CPPUNIT_ASSERT(!err);
@@ -753,8 +753,8 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
        CPPUNIT_ASSERT_DOUBLES_EQUAL(val+2.0,temp_val,qualTol);
          //element based
        ShapeQualityMetric *m2 = new ConditionNumberQualityMetric;
-       CompositeQualityMetric *pow_m2 = new PowerQualityMetric(m2,2,err); CPPUNIT_ASSERT(!err);
-       CompositeQualityMetric *sa_m2 = new ScalarAddQualityMetric(m2,2,err); CPPUNIT_ASSERT(!err);
+       PowerQualityMetric *pow_m2 = new PowerQualityMetric(m2,2,err); CPPUNIT_ASSERT(!err);
+       ScalarAddQualityMetric *sa_m2 = new ScalarAddQualityMetric(m2,2,err); CPPUNIT_ASSERT(!err);
        m2->evaluate_element(triPatch,&elems[0],val,err);CPPUNIT_ASSERT(!err);
        pow_m2->evaluate_element(triPatch,&elems[0],temp_val,err);
        CPPUNIT_ASSERT(!err);
@@ -762,7 +762,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
        sa_m2->evaluate_element(triPatch,&elems[0],temp_val,err); CPPUNIT_ASSERT(!err);
        CPPUNIT_ASSERT_DOUBLES_EQUAL(val+2.0,temp_val,qualTol);
          //element based with a negative power
-       CompositeQualityMetric *pow_mneg2 = new PowerQualityMetric(m2,-2,err); CPPUNIT_ASSERT(!err);
+       PowerQualityMetric *pow_mneg2 = new PowerQualityMetric(m2,-2,err); CPPUNIT_ASSERT(!err);
        m2->evaluate_element(triPatch,&elems[0],val,err);CPPUNIT_ASSERT(!err);
        pow_mneg2->evaluate_element(triPatch,&elems[0],temp_val,err);
        CPPUNIT_ASSERT(!err);

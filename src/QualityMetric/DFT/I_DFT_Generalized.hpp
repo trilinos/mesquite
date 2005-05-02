@@ -71,7 +71,7 @@ The default for data members (corresponding to the variables above):\n
       set_name("I_DFT_Generalized");
       p_set_alpha(1.0/2.0);
       p_set_beta(1.0);
-      p_set_gamma(2/3);
+      p_set_gamma(2./3.);
       p_set_use_barrier_delta(false);      
    }
     

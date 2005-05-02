@@ -44,6 +44,7 @@ Header file for the Mesquite::IdealWeightMeanRatio class
 #include "ShapeQualityMetric.hpp"
 #include "Vector3D.hpp"
 #include "Matrix3D.hpp"
+#include "Exponent.hpp"
 
 namespace Mesquite
 {
@@ -61,7 +62,14 @@ namespace Mesquite
    {
    public:
  
-     IdealWeightMeanRatio() : ShapeQualityMetric() {
+     IdealWeightMeanRatio()
+      : a2Con(2.0), 
+        b2Con(-1.0), 
+        c2Con(1.0),
+        a3Con(3.0),
+        b3Con(-1.0),
+        c3Con(2.0/3.0)
+     {
        MsqError err;
        set_metric_type(ELEMENT_BASED);
        set_element_evaluation_mode(ELEMENT_VERTICES, err); 
@@ -107,6 +115,14 @@ namespace Mesquite
       Vector3D mAccumGrad[8];  // Accumulated gradients (composed merit)
       Matrix3D mHessians[80]; // Hessian of metric with respect to the coords
       double   mMetrics[8]; // Metric values for the (decomposed) elements
+      
+      const double a2Con;
+      const Exponent b2Con;
+      const Exponent c2Con;
+      
+      const double a3Con;
+      const Exponent b3Con;
+      const Exponent c3Con;
 
    };
 } //namespace

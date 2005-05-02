@@ -40,13 +40,13 @@ using namespace Mesquite;
 
 ScalarAddQualityMetric::ScalarAddQualityMetric(QualityMetric* qm1,
                                        double scalar_double,
-                                       MsqError &err){
+                                       MsqError &err)
+  : qualMetric( qm1 ), offsetValue(scalar_double)
+{
   if(qm1 == NULL){
     MSQ_SETERR(err)("NULL pointer", MsqError::INVALID_ARG);
     return;
   }
-  set_scalealpha(scalar_double);
-  set_qmetric1(qm1);
   feasible=qm1->get_feasible_constraint();
   int n_flag=qm1->get_negate_flag();
   set_negate_flag(n_flag);
@@ -65,10 +65,10 @@ bool ScalarAddQualityMetric::evaluate_element(PatchData& pd,
 {
   bool valid_flag;
   double metric1;
-  valid_flag=get_qmetric1()->evaluate_element(pd, element, metric1, err); MSQ_ERRZERO(err);
+  valid_flag=qualMetric->evaluate_element(pd, element, metric1, err); MSQ_ERRZERO(err);
   if(!valid_flag)
     return false;
-  value = metric1+get_scalealpha();
+  value = metric1+offsetValue;
   return valid_flag;
 }
 
@@ -80,10 +80,10 @@ bool ScalarAddQualityMetric::evaluate_element(PatchData& pd,
 {
   bool valid_flag;
   double metric1;
-  valid_flag=get_qmetric1()->evaluate_vertex(pd, vert, metric1, err); MSQ_ERRZERO(err);
+  valid_flag=qualMetric->evaluate_vertex(pd, vert, metric1, err); MSQ_ERRZERO(err);
   if(!valid_flag)
     return false;
-  value = metric1+get_scalealpha();
+  value = metric1+offsetValue;
   return valid_flag;
 }
 

@@ -490,4 +490,156 @@ bool QualityMetric::evaluate_element(PatchData& /*pd*/,
                           "metric.", MsqError::NOT_IMPLEMENTED);
           return false;
         }
+        
+
+double QualityMetric::average_metric_and_weights( double metrics[],
+                                                  int count, 
+                                                  MsqError& err )
+{
+  double avg = 0.0;
+  int i, tmp_count;
+  double f;
+  
+  switch (avgMethod)
+  {
+  
+  case MINIMUM:
+    avg = metrics[0];
+    for (i = 1; i < count; ++i)
+      if (metrics[i] < avg)
+        avg = metrics[i];
+    
+    tmp_count = 0;
+    for (i = 0; i < count; ++i)
+    {
+      if( metrics[i] - avg <= MSQ_MIN )
+      {
+        metrics[i] = 1.0;
+        ++tmp_count;
+      }
+      else
+      {
+        metrics[i] = 0.0;
+      }
+    }
+    
+    f = 1.0 / tmp_count;
+    for (i = 0; i < count; ++i)
+      metrics[i] *= f;
+      
+    break;
+
+  
+  case MAXIMUM:
+    avg = metrics[0];
+    for (i = 1; i < count; ++i)
+      if (metrics[i] > avg)
+        avg = metrics[i];
+    
+    tmp_count = 0;
+    for (i = 0; i < count; ++i)
+    {
+      if( avg - metrics[i] <= MSQ_MIN )
+      {
+        metrics[i] = 1.0;
+        ++tmp_count;
+      }
+      else
+      {
+        metrics[i] = 0.0;
+      }
+    }
+    
+    f = 1.0 / tmp_count;
+    for (i = 0; i < count; ++i)
+      metrics[i] *= f;
+      
+    break;
+
+  
+  case SUM:
+    for (i = 0; i < count; ++i)
+    {
+      avg += metrics[i];
+      metrics[i] = 1.0;
+    }
+      
+    break;
+
+  
+  case SUM_SQUARED:
+    for (i = 0; i < count; ++i)
+    {
+      avg += (metrics[i]*metrics[i]);
+      metrics[i] *= 2;
+    }
+      
+    break;
+
+  
+  case LINEAR:
+    f = 1.0 / count;
+    for (i = 0; i < count; ++i)
+    {
+      avg += metrics[i];
+      metrics[i] = f;
+    }
+    avg *= f;
+      
+    break;
+
+  
+  case GEOMETRIC:
+    for (i = 0; i < count; ++i)
+      avg += log(metrics[i]);
+    avg = exp( avg/count );
+    
+    f = avg / count;
+    for (i = 0; i < count; ++i)
+      metrics[i] = f / metrics[i];
+      
+    break;
+
+  
+  case RMS:
+    for (i = 0; i < count; ++i)
+      avg += metrics[i] * metrics[i];
+    avg = sqrt( avg / count );
+    
+    f = 1. / (avg*count);
+    for (i = 0; i < count; ++i)
+      metrics[i] *= f;
+      
+    break;
+
+  
+  case HARMONIC:
+    for (i = 0; i < count; ++i)
+      avg += 1.0 / metrics[i];
+    avg = count / avg;
+  
+    for (i = 0; i < count; ++i)
+      metrics[i] = (avg * avg) / (count * metrics[i] * metrics[i]);
+      
+    break;
+
+  
+  case HMS:
+    for (i = 0; i < count; ++i)
+      avg += 1. / (metrics[i] * metrics[i]);
+    avg = sqrt( count / avg );
+    
+    f = avg*avg*avg / count;
+    for (i = 0; i < count; ++i)
+      metrics[i] = f / (metrics[i] * metrics[i] * metrics[i]);
+      
+    break;
+
+  
+  default:
+    MSQ_SETERR(err)("averaging method not available.",MsqError::INVALID_STATE);
+  }
+  
+  return avg;
+}
 

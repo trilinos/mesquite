@@ -41,14 +41,14 @@ using namespace Mesquite;
 
 PowerQualityMetric::PowerQualityMetric(QualityMetric* qm1,
                                        double pow_factor,
-                                       MsqError &err){
+                                       MsqError &err)
+  : qualMetric( qm1 ), mPower( pow_factor )
+{
   if(qm1 == NULL){
     MSQ_SETERR(err)("PowerQualityMetric constructor passed NULL pointer.",
                     MsqError::INVALID_ARG);
     return;
   }
-  set_scalealpha(pow_factor);
-  set_qmetric1(qm1);
   feasible=qm1->get_feasible_constraint();
   int n_flag=qm1->get_negate_flag();
     //If the power is negative, then negate flag needs
@@ -81,10 +81,10 @@ bool PowerQualityMetric::evaluate_element(PatchData& pd,
 {
   bool valid_flag;
   double metric1;
-  valid_flag=get_qmetric1()->evaluate_element(pd, element, metric1, err); MSQ_ERRZERO(err);
+  valid_flag=qualMetric->evaluate_element(pd, element, metric1, err); MSQ_ERRZERO(err);
   if(!valid_flag)
     return false;
-  value = pow(metric1,get_scalealpha());
+  value = pow(metric1,mPower);
   return valid_flag;
 }
 
@@ -97,10 +97,10 @@ bool PowerQualityMetric::evaluate_vertex(PatchData& pd,
 {
   bool valid_flag;
   double metric1;
-  valid_flag=get_qmetric1()->evaluate_vertex(pd, vert, metric1, err); MSQ_ERRZERO(err);
+  valid_flag=qualMetric->evaluate_vertex(pd, vert, metric1, err); MSQ_ERRZERO(err);
   if(!valid_flag)
     return false;
-  value = pow(metric1,get_scalealpha());
+  value = pow(metric1,mPower);
   return valid_flag;
 }
 

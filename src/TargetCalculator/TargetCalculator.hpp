@@ -155,9 +155,11 @@ namespace Mesquite
                                                       Matrix3D &tet_M3D,
                                                       Matrix3D &hex_M3D)
   {
+    static const double SIXTH_ROOT_OF_TWO = msq_stdc::pow(2., 1./6.);
+    
     const double v_tri[] = {1., 0.5, 0., 0., MSQ_SQRT_THREE/2., 0., 0., 0., 1.};
     Matrix3D m1(v_tri);
-    tri_M3D = m1 * pow(2./MSQ_SQRT_THREE, 1./3.);
+    tri_M3D = m1 * MSQ_3RT_2_OVER_6RT_3;
 
 //     const double v_tri[] = {1., 0.5, 0., 0., MSQ_SQRT_THREE/2., 0., 0., 0., sqrt(MSQ_SQRT_THREE/2.)};
 //     Matrix3D m1(v_tri);
@@ -169,7 +171,7 @@ namespace Mesquite
     
     const double v_tet[] = {1., 0.5, 0.5, 0., MSQ_SQRT_THREE/2., MSQ_SQRT_THREE/6., 0., 0., MSQ_SQRT_TWO/MSQ_SQRT_THREE};
     Matrix3D m3(v_tet);
-    tet_M3D =  m3 * pow(MSQ_SQRT_TWO, 1./3.);
+    tet_M3D =  m3 * SIXTH_ROOT_OF_TWO;
 
     const double v_hex[] = {1., 0., 0.,  0., 1., 0.,  0., 0., 1.};
     Matrix3D m4(v_hex);
@@ -180,7 +182,7 @@ namespace Mesquite
   //! Note that this function is static, i.e. it can be used independently of an object.
   inline double TargetCalculator::compute_Lambda(const Matrix3D &A, MsqError& )
   {
-    return pow(fabs(det(A)), 1./3.);
+    return Mesquite::cbrt(fabs(det(A)));
   }
 
   
@@ -200,9 +202,9 @@ namespace Mesquite
     double a1_x_a2_norm = a1_x_a2.length();
     Vector3D a1_x_a3 = a1 * a3;
 
-    double nu = pow(a1_norm*a2_norm*a3_norm, 1./3.);
+    double nu = Mesquite::cbrt(a1_norm*a2_norm*a3_norm);
     double det_A = det(A);
-    double fac = nu / pow(fabs(det_A), 1./3.);
+    double fac = nu / Mesquite::cbrt(fabs(det_A));
     
     Matrix3D Q;
 
@@ -228,7 +230,7 @@ namespace Mesquite
     double a2_norm = A.column_length(1);
     double a3_norm = A.column_length(2);
     
-    double nu = pow(a1_norm*a2_norm*a3_norm, 1./3.);
+    double nu = Mesquite::cbrt(a1_norm*a2_norm*a3_norm);
     double fac = 1./nu ;
     if (!finite(fac)) {
       MSQ_SETERR(err)("Numerical error", MsqError::INVALID_STATE);
