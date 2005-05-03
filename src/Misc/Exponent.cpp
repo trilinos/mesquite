@@ -61,7 +61,7 @@ Exponent::constMemberPtr Exponent::get_func_ptr( double exponent )
     return &Exponent::powThreeHalves;
   else if (exponent == -2.0)
     return &Exponent::invSquare;
-  else if (trunc(exponent) == exponent)
+  else if (floor(exponent) == exponent)
   {
     if (exponent > 0.0)
       return &Exponent::powPositiveInt;
