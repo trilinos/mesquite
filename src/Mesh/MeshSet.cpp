@@ -532,9 +532,13 @@ void Mesquite::MeshSet::update_mesh(const PatchData &pd, MsqError &err)
         // and the "mesquite byte".
       for (i = 0; i < pd.num_nodes(); i++)
       {
-        (*currentMesh)->vertex_set_coordinates(pd.vertexHandlesArray[i],
-                                               pd.vertexArray[i],
-                                               err); MSQ_ERRRTN(err);
+        if(!pd.vertexArray[i].is_flag_set( MsqVertex::MSQ_HARD_FIXED))
+        {
+          (*currentMesh)->vertex_set_coordinates(pd.vertexHandlesArray[i],
+                                                 pd.vertexArray[i],
+                                                 err); MSQ_ERRRTN(err);
+        }
+        
         (*currentMesh)->vertex_set_byte(pd.vertexHandlesArray[i],
                                         pd.vertexArray[i].vertexBitFlags,
                                         err); MSQ_ERRRTN(err);
@@ -562,10 +566,12 @@ void Mesquite::MeshSet::update_mesh(const PatchData &pd, MsqError &err)
           delete vert_itr;
           vert_itr = cur_mesh->vertex_iterator(err); MSQ_ERRRTN(err);
         }
-
-        cur_mesh->vertex_set_coordinates(pd.vertexHandlesArray[i],
-                                         pd.vertexArray[i],
-                                         err); MSQ_ERRRTN(err);
+        if(!pd.vertexArray[i].is_flag_set( MsqVertex::MSQ_HARD_FIXED))
+        {
+          cur_mesh->vertex_set_coordinates(pd.vertexHandlesArray[i],
+                                           pd.vertexArray[i],
+                                           err); MSQ_ERRRTN(err);
+        }
         cur_mesh->vertex_set_byte(pd.vertexHandlesArray[i],
                                   pd.vertexArray[i].vertexBitFlags,
                                   err); MSQ_ERRRTN(err);
