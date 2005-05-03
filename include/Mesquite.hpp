@@ -54,13 +54,16 @@
 
 
 #ifdef MSQ_USE_OLD_C_INCLUDES
-#include <math.h>
-#include <float.h>
-#include <limits.h>
+#  include <math.h>
+#  include <float.h>
+#  include <limits.h>
 #else
-#include <cmath>
-#include <cfloat>
-#include <climits>
+#  include <cmath>
+#  include <cfloat>
+#  include <climits>
+#  ifdef HAVE_CBRT
+#    include <math.h>
+#  endif
 #endif
 
 /*! \file Mesquite.hpp
