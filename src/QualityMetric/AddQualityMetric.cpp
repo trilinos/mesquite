@@ -39,14 +39,15 @@
 
 using namespace Mesquite;
 
-AddQualityMetric::AddQualityMetric(QualityMetric* qm1, QualityMetric* qm2, MsqError &err){
+AddQualityMetric::AddQualityMetric(QualityMetric* qm1, QualityMetric* qm2, MsqError &err)
+  : qualMetric1( qm1 ),
+    qualMetric2( qm2 )
+{
   if(qm1 == NULL || qm2 == NULL){
     MSQ_SETERR(err)("AddQualityMetric constructor passed NULL pointer.",
                      MsqError::INVALID_ARG);
     return;
   }
-  set_qmetric2(qm2);
-  set_qmetric1(qm1);
   feasible=qm1->get_feasible_constraint();
   if(qm2->get_feasible_constraint())
     feasible=qm2->get_feasible_constraint();
@@ -82,10 +83,10 @@ bool AddQualityMetric::evaluate_element(PatchData& pd,
 {
   bool valid_flag;
   double metric1, metric2;  
-  valid_flag=get_qmetric1()->evaluate_element(pd, element, metric1, err); MSQ_ERRZERO(err);
+  valid_flag=qualMetric1->evaluate_element(pd, element, metric1, err); MSQ_ERRZERO(err);
   if(!valid_flag)
     return false;
-  valid_flag=get_qmetric2()->evaluate_element(pd, element, metric2, err); MSQ_ERRZERO(err);
+  valid_flag=qualMetric2->evaluate_element(pd, element, metric2, err); MSQ_ERRZERO(err);
   value = metric1+metric2;
     //if the first metric was invalid we have already returned
     //so we return whatever the flag was on the second metric.
@@ -101,10 +102,10 @@ bool AddQualityMetric::evaluate_vertex(PatchData& pd,
 {
   bool valid_flag;
   double metric1, metric2;  
-  valid_flag=get_qmetric1()->evaluate_vertex(pd, vert, metric1, err); MSQ_ERRZERO(err);
+  valid_flag=qualMetric1->evaluate_vertex(pd, vert, metric1, err); MSQ_ERRZERO(err);
   if(!valid_flag)
     return false;
-  valid_flag=get_qmetric2()->evaluate_vertex(pd, vert, metric2, err); MSQ_ERRZERO(err);
+  valid_flag=qualMetric2->evaluate_vertex(pd, vert, metric2, err); MSQ_ERRZERO(err);
   value = metric1+metric2;
     //if the first metric was invalid we have already returned
     //so we return whatever the flag was on the second metric.
