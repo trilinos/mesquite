@@ -45,7 +45,7 @@ int Mesquite::MsqFPE::get_current_fpe_state()
 void Mesquite::MsqFPE::set_current_fpe_state(int state)
   { fpsetmask( (fp_except)state ); }
 
-int Mesquite::MsqFPE::enable_trap_fpe()
+void Mesquite::MsqFPE::enable_trap_fpe()
   { fpsetmask( fpgetmask()|FP_X_INV|FP_X_OFL|FP_X_DZ ); }
 
 
