@@ -60,7 +60,8 @@ bool I_DFT::evaluate_element(PatchData& pd,
   MSQ_ERRZERO(err);
 
   // Initialize constants for the metric
-  const double delta = useBarrierDelta ? pd.get_barrier_delta(err) : 0;
+  const double delta = useBarrierDelta ? pd.get_barrier_delta(err) :
+    (mGamma ? 0 : 1);
   MSQ_ERRZERO(err);
 
   const int tetInd[4][4] = {{0, 1, 2, 3}, {1, 2, 0, 3},
@@ -95,6 +96,7 @@ bool I_DFT::evaluate_element(PatchData& pd,
 			mAlpha, mGamma, delta, mBeta);
       if (!mValid) return false;
       m += W[i].get_cK() * mMetric;
+      
     }
 
     m *= MSQ_ONE_THIRD;
@@ -190,8 +192,9 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
   MSQ_ERRZERO(err);
 
   // Initialize constants for the metric
-  
-  const double delta = useBarrierDelta ? pd.get_barrier_delta(err) : 0;
+  const double delta = useBarrierDelta ? pd.get_barrier_delta(err) :
+    (mGamma ? 0 : 1);
+    //const double delta = useBarrierDelta ? pd.get_barrier_delta(err) : 0;
   MSQ_ERRZERO(err);
 
   const int tetInd[4][4] = {{0, 1, 2, 3}, {1, 2, 0, 3},
@@ -674,8 +677,9 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
   MSQ_ERRZERO(err);
 
   // Initialize constants for the metric
-  
-  const double delta = useBarrierDelta ? pd.get_barrier_delta(err) : 0;
+  const double delta = useBarrierDelta ? pd.get_barrier_delta(err) :
+    (mGamma ? 0 : 1);  
+    //const double delta = useBarrierDelta ? pd.get_barrier_delta(err) : 0;
   MSQ_ERRZERO(err);
 
   const int tetInd[4][4] = {{0, 1, 2, 3}, {1, 2, 0, 3},
