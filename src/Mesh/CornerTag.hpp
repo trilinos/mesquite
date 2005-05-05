@@ -66,11 +66,13 @@ public:
    */  
   TagHandle get_handle( Mesh* mesh, unsigned num_corners, MsqError& err );
   
-  void save_load_tags( bool load, PatchData* pd, void* data, size_t tag_byes, MsqError& err );
+  void save_load_tags( bool load, PatchData* pd, size_t elem_index, void* data, size_t tag_byes, MsqError& err );
 
   static Mesh* get_current_mesh( PatchData* pd );
   
   static size_t size( Mesh::TagType type );
+  
+  static int num_corners( PatchData* pd, int elem_index );
 
 private:
 
@@ -117,11 +119,7 @@ template <typename T> class CornerTag
        */
     CornerTag( const char* name, Mesh::TagType type = Mesh::BYTE);
     
-      /** Allocate new tags for elements. */
-    inline void allocate_new_tags( PatchData* pd, MsqError& err );
-    
-      /** Save values in tags on Mesh instance */
-    inline void save_tag_data( PatchData* pd, MsqError& err );
+    ~CornerTag();
     
       /** Clear cached data.  Any changes will be lost if
        *  \ref save_tag_data has not been called.
@@ -133,19 +131,16 @@ template <typename T> class CornerTag
        *\param pd       The PatchData
        *\param elem_idx The element, specified as it's index in the PatchData.
        */
-    inline T* get_element_corner_tags( PatchData* pd, int elem_idx, MsqError& err );
+    inline const T* get_element_corner_tags( PatchData* pd, int elem_idx, MsqError& err );
+    
+    inline void set_element_corner_tags( PatchData* pd, int elem_idx, const T* data, MsqError& err );
       
   private:
 
     CornerTagHandles tagHandles;
-    msq_std::vector<T> tagData; //< Cached tag data for all elems of patch
+    msq_std::vector<T*> tagData; //< Cached tag data for all elems of patch
 };
 
-} // namespace Mesquite
-
-#include "PatchData.hpp"
-
-namespace Mesquite {
 
 template <typename T>
 CornerTag<T>::CornerTag( const char* tag_name, Mesh::TagType type )
@@ -157,49 +152,53 @@ CornerTag<T>::CornerTag( const char* tag_name, Mesh::TagType type )
 }
 
 template <typename T>
-void CornerTag<T>::allocate_new_tags( PatchData* pd, MsqError& err )
+CornerTag<T>::~CornerTag()
 {
-  if (!tagData.empty())
-  {
-    MSQ_SETERR(err)(MsqError::INVALID_STATE);
-    return;
-  }
-  tagData.resize( pd->num_corners() );
-}
-
-template <typename T>
-void CornerTag<T>::save_tag_data( PatchData* pd, MsqError& err )
-{
-  tagHandles.save_load_tags( false, pd, &tagData[0], sizeof(T), err );
-  MSQ_CHKERR(err);
+  clear();
 }
 
 template <typename T>
 void CornerTag<T>::clear()
 {
+  for (typename msq_std::vector<T*>::iterator i = tagData.begin(); i != tagData.end(); ++i)
+    delete [] *i;
   tagData.clear();
 }
 
 template <typename T>
-T* CornerTag<T>::get_element_corner_tags( PatchData* pd, 
-                                          int elem_index, 
-                                          MsqError& err )
+const T* CornerTag<T>::get_element_corner_tags( PatchData* pd, 
+                                                int elem_index, 
+                                                MsqError& err )
 {
-    // If no cached data, try to read from Mesh instance tags...
-  if (tagData.empty())
-  {
-    tagData.resize( pd->num_corners() );
-    tagHandles.save_load_tags( true, pd, &tagData[0], sizeof(T), err );
-    if (MSQ_CHKERR(err))
-    {
-      tagData.clear();
-      return 0;
-    }
+  if (tagData.size() <= (unsigned)elem_index)
+    tagData.resize( elem_index+1, 0 );
+  
+  int num_corners = tagHandles.num_corners( pd, elem_index );
+  if (!tagData[elem_index]) {
+    tagData[elem_index] = new T[num_corners];
+    tagHandles.save_load_tags( true, pd, elem_index, tagData[elem_index], sizeof(T), err );
+    MSQ_ERRZERO(err);
   }
   
-  size_t idx = pd->get_element_corner_offset( elem_index );
-  assert( idx < tagData.size() );
-  return &tagData[idx];
+  return tagData[elem_index];
+}
+
+template <typename T>
+void CornerTag<T>::set_element_corner_tags( PatchData* pd, 
+                                            int elem_index, 
+                                            const T* data,
+                                            MsqError& err )
+{
+  if (tagData.size() <= (unsigned)elem_index)
+    tagData.resize( elem_index+1, 0 );
+  
+  int num_corners = tagHandles.num_corners( pd, elem_index );
+  if (!tagData[elem_index]) 
+    tagData[elem_index] = new T[num_corners];
+  memcpy( tagData[elem_index], data, num_corners * sizeof(T) );
+    
+  tagHandles.save_load_tags( false, pd, elem_index, (void*)data, sizeof(T), err );
+  MSQ_CHKERR(err);
 }
   
 

@@ -69,24 +69,19 @@ void WTargetCalculator::compute_target_matrices(PatchData &pd, MsqError &err)
   
   MsqMeshEntity* elems = pd.get_element_array(err); MSQ_ERRRTN(err);
   MsqMeshEntity* elems_ref = ref_pd_ptr->get_element_array(err); MSQ_ERRRTN(err);
-  pd.targetMatrices.allocate_new_tags( &pd, err ); MSQ_ERRRTN(err);
 
   Matrix3D W_guides[MSQ_MAX_NUM_VERT_PER_ENT];
+  TargetMatrix matrices[MSQ_MAX_NUM_VERT_PER_ENT];
   
   for (size_t i=0; i<num_elements; ++i) {
-    TargetMatrix* matrices = pd.targetMatrices.get_element_corner_tags(&pd, i, err);
-    MSQ_ERRRTN(err);
     int nve = elems[i].vertex_count();
     assert( nve = elems_ref[i].vertex_count() );
 
     compute_guide_matrices(guideMatrix, *ref_pd_ptr, i, W_guides, nve, err); MSQ_ERRRTN(err);
-
-    for (int c=0; c<nve; ++c) {
+    for (int c = 0; c < nve; ++c)
       matrices[c] = W_guides[c];
-    }
+    pd.targetMatrices.set_element_corner_tags( &pd, i, matrices, err ); MSQ_ERRRTN(err);
   }
-  
-  pd.targetMatrices.save_tag_data(&pd, err); MSQ_ERRRTN(err);
 
   //if ( refMesh != 0 ) delete ref_pd;
 }

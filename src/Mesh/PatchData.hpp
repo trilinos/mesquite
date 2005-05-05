@@ -184,13 +184,6 @@ namespace Mesquite
     size_t num_nodes() const
       { return vertexArray.size(); }
 
-      /** Get the sum of the number of element corners for
-        * all elements in patch up to, but not including
-        * the passed element.  Used by CornerTag code to
-        * determine offset in array of tag data.
-        */
-    size_t get_element_corner_offset( int element_index );
-
       //! Returns the number of elements in the current patch who are
       //! free to move.  This is a costly function, since we have to check
       //! the flags of all vertices in the patch.
@@ -458,11 +451,6 @@ namespace Mesquite
     PatchDataMem<size_t> vertAdjacencyOffsets;
     size_t numCornerVertices;
     
-      // Cache corner offsets for use in tag code
-    PatchDataMem<size_t> elementCornerOffsets;
-      // Generate elementCornerOffsets
-    void get_element_corner_offsets();
-
       // Patch Computed Information (maxs, mins, etc ... )
     double computedInfos[MAX_COMPUTED_INFO_ENUM];
     unsigned haveComputedInfos;
@@ -695,25 +683,6 @@ namespace Mesquite
     
       // copies the memento array into the PatchData array.
     msq_stdc::memcpy(&vertexArray[0], memento->vertices, memento->numVertices*sizeof(MsqVertex) );
-  }
-
-    /*! For example, a mesh composed of 3 quads has 12 corners,
-         however the quads are positionned.
-         This function works for hybrid meshes (like all Mesquite functions should). */
-  inline size_t PatchData::num_corners() 
-  {
-    if (elementCornerOffsets.empty())
-      get_element_corner_offsets();
-    return elementCornerOffsets[num_elements()-1];
-  }
-
-  inline size_t PatchData::get_element_corner_offset( int elem_index )
-  {
-    if (elem_index == 0)
-      return 0;
-    if (elementCornerOffsets.empty())
-      get_element_corner_offsets();
-    return elementCornerOffsets[elem_index-1];
   }
       
 } // namespace

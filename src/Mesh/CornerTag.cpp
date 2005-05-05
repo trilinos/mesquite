@@ -40,6 +40,12 @@ size_t CornerTagHandles::size( Mesh::TagType type )
     default:           return 0;
   }
 }
+  
+int CornerTagHandles::num_corners( PatchData* pd, int elem_index )
+{
+  return pd->element_by_index(elem_index).vertex_count();
+}
+
 
 Mesh* CornerTagHandles::get_current_mesh( PatchData* pd )
 {
@@ -89,47 +95,23 @@ TagHandle CornerTagHandles::get_handle( Mesh* mesh, unsigned corners, MsqError& 
   return cornerHandles[corners];
 }
 
-void CornerTagHandles::save_load_tags( bool load, PatchData* pd, void* data, size_t bytes, MsqError& err )
+void CornerTagHandles::save_load_tags( bool load, PatchData* pd, 
+                                       size_t elem_index, void* data, 
+                                       size_t bytes, MsqError& err )
 {
-  unsigned i;
   Mesh* mesh = get_current_mesh( pd );
+  if (!mesh) // this happens for some tests in the test suite.
+    return;
     
-    // We want to group the reads into as many elements at
-    // once as we can.  We cannot do all the elements at 
-    // once because different tags must be used for different 
-    // element types.  So group by blocks of the same type of
-    // element.  Typically patches contain only one element type
-    // so most of the time this loop will be run only once.
-  i = 0;
-  MsqMeshEntity* elem_array = pd->get_element_array( err ); MSQ_ERRRTN(err);
-  while (i < pd->num_elements())
-  {
-    unsigned start = i++;
-    unsigned num_corners = elem_array[start].vertex_count();
-    while (i < pd->num_elements() && elem_array[i].vertex_count() == num_corners)
-      ++i;
-      // elements in [start,i) are the same type
-    
-      // Find the tag handle
-    TagHandle tag = mesh ? get_handle( mesh, num_corners, err ) : 0; MSQ_ERRRTN(err);
-   
-      // Read/write the data
-    const unsigned count = i - start;
-    const unsigned offset = pd->get_element_corner_offset(start);
-    char* byte_ptr = reinterpret_cast<char*>(data) + offset * bytes;
-    const Mesh::ElementHandle* handles = pd->get_element_handles_array() + start;
-
-      // Need to support local cached values w/out a mesh to store
-      // the tags on.  If there is no mesh, skip the save/load step.
-    if (mesh)
-    {
-      if (load)
-        mesh->tag_get_element_data( tag, count, handles, byte_ptr, err );
-      else
-        mesh->tag_set_element_data( tag, count, handles, byte_ptr, err );
-      MSQ_ERRRTN(err);
-    }
-  }
+  MsqMeshEntity* elem_array = pd->get_element_array( err ); 
+  unsigned num_corners = elem_array[elem_index].vertex_count();
+  const Mesh::ElementHandle handle = pd->get_element_handles_array()[elem_index];
+  TagHandle tag = get_handle( mesh, num_corners, err ); MSQ_ERRRTN(err);
+  if (load)
+    mesh->tag_get_element_data( tag, 1, &handle, data, err ); 
+  else
+    mesh->tag_set_element_data( tag, 1, &handle, data, err );
+  MSQ_CHKERR(err);
 }
 
 } // namespace Mesquite

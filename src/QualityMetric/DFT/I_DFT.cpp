@@ -56,7 +56,7 @@ bool I_DFT::evaluate_element(PatchData& pd,
   const size_t *v_i = e->get_vertex_index_array();
 
   size_t idx = pd.get_element_index(e);
-  TargetMatrix *W = pd.targetMatrices.get_element_corner_tags(&pd, idx, err );
+  const TargetMatrix *W = pd.targetMatrices.get_element_corner_tags(&pd, idx, err );
   MSQ_ERRZERO(err);
 
   // Initialize constants for the metric
@@ -188,7 +188,7 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
   const size_t *v_i = e->get_vertex_index_array();
 
   size_t idx = pd.get_element_index(e);
-  TargetMatrix *W = pd.targetMatrices.get_element_corner_tags(&pd, idx, err );
+  const TargetMatrix *W = pd.targetMatrices.get_element_corner_tags(&pd, idx, err );
   MSQ_ERRZERO(err);
 
   // Initialize constants for the metric
@@ -673,7 +673,7 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
   const size_t *v_i = e->get_vertex_index_array();
 
   size_t idx = pd.get_element_index(e);
-  TargetMatrix *W = pd.targetMatrices.get_element_corner_tags(&pd, idx, err );
+  const TargetMatrix *W = pd.targetMatrices.get_element_corner_tags(&pd, idx, err );
   MSQ_ERRZERO(err);
 
   // Initialize constants for the metric

@@ -1391,18 +1391,17 @@ void PatchData::allocate_storage( size_t vertex_count,
 
 void PatchData::clear_tag_data()
 {
-  elementCornerOffsets.clear();
   targetMatrices.clear();
 }
 
-void PatchData::get_element_corner_offsets()
-{
-  elementCornerOffsets.resize( elementArray.size() );
-  size_t count = 0;
-  for (unsigned i = 0; i < elementArray.size(); ++i)
-    elementCornerOffsets[i] = (count += elementArray[i].vertex_count());
-}
 
+size_t PatchData::num_corners() 
+{
+  size_t result = 0;
+  for (unsigned i = 0; i < elementArray.size(); ++i)
+    result += elementArray[i].vertex_count();
+  return result;
+}
 
 
 } // namespace Mesquite

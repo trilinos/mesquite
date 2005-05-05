@@ -81,7 +81,7 @@ namespace Mesquite
 //       std::cout << "A["<<i<<"]:\n" << T[i] << std::endl;
 
     int elem_idx = pd.get_element_index(&elem);
-    TargetMatrix* W = pd.targetMatrices.get_element_corner_tags(&pd, elem_idx, err );
+    const TargetMatrix* W = pd.targetMatrices.get_element_corner_tags(&pd, elem_idx, err );
     
 //     for (size_t i=0; i<num_T; ++i)
 //       std::cout << "W["<<i<<"]:\n" << W[i] << std::endl;

@@ -63,7 +63,7 @@ void TargetCalculator::compute_target_matrices_and_check_det(PatchData &pd, MsqE
   MsqMeshEntity* elems=pd.get_element_array(err); MSQ_ERRRTN(err);
   size_t num_elements=pd.num_elements();
   for (size_t i=0; i<num_elements; ++i) {
-    TargetMatrix* matrices = pd.targetMatrices.get_element_corner_tags(&pd, i, err);
+    const TargetMatrix* matrices = pd.targetMatrices.get_element_corner_tags(&pd, i, err);
     MSQ_ERRRTN(err);
     size_t num_corners = elems[i].vertex_count();
     for (size_t j=0; j<num_corners; ++j) {    
@@ -83,22 +83,17 @@ void TargetCalculator::compute_default_target_matrices(PatchData &pd,
 {
   MSQ_FUNCTION_TIMER( "TargetCalculator::compute_default_target_matrices" );
     
-  // set on each element in the patch a tag containing an array of corner matrices
-  // (the size of the array is adequate for each element, e.g. 4 for a quad).
-  pd.targetMatrices.allocate_new_tags( &pd, err ); MSQ_ERRRTN(err);
-    
   MsqMeshEntity* elems=pd.get_element_array(err); MSQ_ERRRTN(err);
   size_t num_elements=pd.num_elements();
 
   Matrix3D tmp_tri, tmp_quad, tmp_tet, tmp_hex;
   initialize_default_target_matrices(tmp_tri, tmp_quad, tmp_tet, tmp_hex);
   
+  TargetMatrix matrices[8];
+  
   // set the corner matrices to the correct value for each tag.
   for (size_t i=0; i<num_elements; ++i) {
 
-    TargetMatrix* matrices = pd.targetMatrices.get_element_corner_tags(&pd, i, err);
-    MSQ_ERRRTN(err);
-      
     EntityTopology type = elems[i].get_element_type();
     switch (type)
       {
@@ -133,9 +128,9 @@ void TargetCalculator::compute_default_target_matrices(PatchData &pd,
         MSQ_SETERR(err)("Type not implemented.",MsqError::NOT_IMPLEMENTED);
         return;
       } //end switch
+      
+    pd.targetMatrices.set_element_corner_tags( &pd, i, matrices, err ); MSQ_ERRRTN(err);
   } // end loop
-  
-  pd.targetMatrices.save_tag_data( &pd, err ); MSQ_ERRRTN(err);
 }
 
   
@@ -161,19 +156,12 @@ void TargetCalculator::compute_reference_corner_matrices(PatchData &pd,
   MsqMeshEntity* elems = pd.get_element_array(err);
   MsqMeshEntity* elems_ref = ref_pd.get_element_array(err); MSQ_ERRRTN(err);
   TargetMatrix A[MSQ_MAX_NUM_VERT_PER_ENT];
-  pd.targetMatrices.allocate_new_tags( &pd, err ); MSQ_ERRRTN(err);
   for (size_t i=0; i<num_elements; ++i) {
-    TargetMatrix* matrices = pd.targetMatrices.get_element_corner_tags(&pd, i, err);
-    MSQ_ERRRTN(err);
     int nve = elems[i].vertex_count();
     assert( nve = elems_ref[i].vertex_count() );
     elems_ref[i].compute_corner_matrices(ref_pd, A, nve, err); MSQ_ERRRTN(err);
-    for (int j=0; j<nve; ++j) {
-      matrices[j] = A[j];
-    }
+    pd.targetMatrices.set_element_corner_tags( &pd, i, A, err ); MSQ_ERRRTN(err);
   }
-  
-  pd.targetMatrices.save_tag_data( &pd, err ); MSQ_ERRRTN(err);
 }
 
 

@@ -76,7 +76,7 @@ namespace Mesquite
       return *this;
     }
 
-    double get_cK() { return cK; }
+    double get_cK() const { return cK; }
     
   protected:
  
