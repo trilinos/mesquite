@@ -3,9 +3,9 @@
 //==========================================================
 
 //
-// Only import TSTT if the TSTTM package appears in a separate sidl file. -TLD
+// Only import TSTTB if the TSTTM package appears in a separate sidl file. -TLD
 //
-import TSTT;
+import TSTTB;
 
 package TSTTM version 0.6
 {
@@ -63,20 +63,20 @@ package TSTTM version 0.6
    interface Mesh {
 
       // input/output
-      void load( in string name) throws TSTT.Error;
-      void save( in string name) throws TSTT.Error;
+      void load( in string name) throws TSTTB.Error;
+      void save( in string name) throws TSTTB.Error;
 
       // global info
-      opaque getRootSet() throws TSTT.Error;
-      int getGeometricDim() throws TSTT.Error;
-      StorageOrder getDfltStorage() throws TSTT.Error;
+      opaque getRootSet() throws TSTTB.Error;
+      int getGeometricDim() throws TSTTB.Error;
+      StorageOrder getDfltStorage() throws TSTTB.Error;
       void getAdjTable( inout array< AdjacencyCost > adjacency_table,
-                        out int adjacency_table_size) throws TSTT.Error;
+                        out int adjacency_table_size) throws TSTTB.Error;
   
       int  getNumOfType( in opaque entity_set_handle, 
-                         in EntityType entity_type) throws TSTT.Error;
+                         in EntityType entity_type) throws TSTTB.Error;
       int  getNumOfTopo( in opaque entity_set_handle,
-                         in EntityTopology entity_topology) throws TSTT.Error;
+                         in EntityTopology entity_topology) throws TSTTB.Error;
 
       // primitive arrays
       void getAllVtxCoords( in opaque entity_set,
@@ -85,7 +85,7 @@ package TSTTM version 0.6
                             inout array<int> in_entity_set,
                             out int in_entity_set_size,
                             inout StorageOrder storage_order) 
-                            throws TSTT.Error;
+                            throws TSTTB.Error;
       void getVtxCoordIndex( in opaque entity_set,
                              in EntityType requested_entity_type, 
                              in EntityTopology requested_entity_topology,
@@ -95,19 +95,19 @@ package TSTTM version 0.6
                              inout array<int> index,
                              out int index_size,
                              inout array<EntityTopology> entity_topologies,
-                             out int entity_topologies_size) throws TSTT.Error;
+                             out int entity_topologies_size) throws TSTTB.Error;
 
       // entity arrays
       void getEntities( in opaque entity_set, 
                         in EntityType entity_type, 
                         in EntityTopology entity_topology,
                         inout array<opaque> entity_handles,
-                        out int entity_handles_size) throws TSTT.Error;
+                        out int entity_handles_size) throws TSTTB.Error;
       void getVtxArrCoords( in array<opaque> vertex_handles, 
                             in int vertex_handles_size,
                             inout StorageOrder storage_order,
                             inout array<double> coords,
-                            out int coords_size) throws TSTT.Error;
+                            out int coords_size) throws TSTTB.Error;
       void getAdjEntities( in opaque entity_set,
                            in EntityType entity_type_requestor, 
                            in EntityTopology entity_topology_requestor,
@@ -117,7 +117,7 @@ package TSTTM version 0.6
                            inout array<int> offset,
                            out int offset_size,
                            inout array<int> in_entity_set,
-                           out int in_entity_set_size) throws TSTT.Error;
+                           out int in_entity_set_size) throws TSTTB.Error;
    };
 
 
@@ -127,24 +127,24 @@ package TSTTM version 0.6
 
    interface Entity extends Mesh {
       // traverse
-      void initEntIter( in opaque entity_set_handle,
+      bool initEntIter( in opaque entity_set_handle,
                         in EntityType requested_entity_type, 
                         in EntityTopology requested_entity_topology,
-                        out opaque entity_iterator ) throws TSTT.Error;
+                        out opaque entity_iterator ) throws TSTTB.Error;
       bool getNextEntIter( in opaque entity_iterator,
-                           out opaque entity_handle ) throws TSTT.Error;
-      void resetEntIter( in opaque entity_iterator) throws TSTT.Error;
-      void endEntIter( in opaque entity_iterator) throws TSTT.Error;
+                           out opaque entity_handle ) throws TSTTB.Error;
+      void resetEntIter( in opaque entity_iterator) throws TSTTB.Error;
+      void endEntIter( in opaque entity_iterator) throws TSTTB.Error;
     
       // query
-      EntityTopology getEntTopo( in opaque entity_handle) throws TSTT.Error;
-      EntityType getEntType( in opaque entity_handle) throws TSTT.Error;
+      EntityTopology getEntTopo( in opaque entity_handle) throws TSTTB.Error;
+      EntityType getEntType( in opaque entity_handle) throws TSTTB.Error;
       void getVtxCoord( in opaque vertex_handle, inout array<double> coords,
-                        out int coords_size) throws TSTT.Error;
+                        out int coords_size) throws TSTTB.Error;
       void getEntAdj( in opaque entity_handle, 
                       in EntityType entity_type_requested, 
                       inout array<opaque> adj_entity_handles, 
-                      out int adj_entity_handles_size) throws TSTT.Error;
+                      out int adj_entity_handles_size) throws TSTTB.Error;
    };
 
 
@@ -156,33 +156,33 @@ package TSTTM version 0.6
 
    interface Arr extends Mesh {
       //traverse
-      void initEntArrIter( in opaque entity_set_handle,
+     bool initEntArrIter( in opaque entity_set_handle,
                            in EntityType requested_entity_type, 
                            in EntityTopology requested_entity_topology,
                            in int requested_array_size,
-                           out opaque entArr_iterator ) throws TSTT.Error;
+                           out opaque entArr_iterator ) throws TSTTB.Error;
       bool getEntArrNextIter( in opaque entArr_iterator,
                               inout array<opaque> entity_handles,
-                              out int entity_handles_size) throws TSTT.Error;
-      void resetEntArrIter( in opaque entArr_iterator) throws TSTT.Error;
-      void endEntArrIter( in opaque entArr_iterator) throws TSTT.Error;
+                              out int entity_handles_size) throws TSTTB.Error;
+      void resetEntArrIter( in opaque entArr_iterator) throws TSTTB.Error;
+      void endEntArrIter( in opaque entArr_iterator) throws TSTTB.Error;
 
       //query 
       void getEntArrTopo( in array<opaque> entity_handles, 
                           in int entity_handles_size,
                           inout array<EntityTopology> topology,
-                          out int topology_size) throws TSTT.Error;
+                          out int topology_size) throws TSTTB.Error;
       void getEntArrType( in array<opaque> entity_handles, 
                           in int entity_handles_size,
                           inout array<EntityType> type,
-                          out int type_size) throws TSTT.Error;
+                          out int type_size) throws TSTTB.Error;
       void getEntArrAdj( in array<opaque> entity_handles, 
                          in int entity_handles_size,
                          in EntityType entity_type_requested, 
                          inout array<opaque> adj_entity_handles, 
                          out int adj_entity_handles_size,
                          inout array<int> offset,
-                         out int offset_size) throws TSTT.Error;
+                         out int offset_size) throws TSTTB.Error;
    };
 
 
@@ -203,16 +203,16 @@ package TSTTM version 0.6
       // single entities
       void setVtxCoords( in opaque vertex_handles, 
                          in array<double> new_coords,
-                         in int new_coords_size) throws TSTT.Error;
+                         in int new_coords_size) throws TSTTB.Error;
       void createVtx( in array<double> new_coords,
                       in int new_coords_size,
-                      out opaque new_vertex_handle) throws TSTT.Error;
+                      out opaque new_vertex_handle) throws TSTTB.Error;
       void createEnt( in EntityTopology new_entity_topology,
                          in array<opaque> lower_order_entity_handles, 
                          in int lower_order_entity_handles_size,
                          out opaque new_entity_handle,
-                         out CreationStatus status) throws TSTT.Error; 
-      void deleteEnt( in opaque entity_handle) throws TSTT.Error;
+                         out CreationStatus status) throws TSTTB.Error; 
+      void deleteEnt( in opaque entity_handle) throws TSTTB.Error;
    };
 
 
@@ -222,23 +222,23 @@ package TSTTM version 0.6
                             in int vertex_handles_size,
                             in StorageOrder storage_order, 
                             in array<double> new_coords, 
-                            in int new_coords_size) throws TSTT.Error;
+                            in int new_coords_size) throws TSTTB.Error;
       void createVtxArr( in int num_verts,
                           in StorageOrder storage_order,
                           in array<double> new_coords,
                          in int new_coords_size,
                           inout array<opaque> new_vertex_handles,
                          inout int new_vertex_handles_size) 
-            throws TSTT.Error;
+            throws TSTTB.Error;
       void createEntArr( in EntityTopology new_entity_topology,
                            in array<opaque> lower_order_entity_handles, 
                            in int lower_order_entity_handles_size,
                            inout array<opaque> new_entity_handles,
                            out int new_entity_handles_size,
                            inout array<CreationStatus> status,
-                           out int status_size) throws TSTT.Error; 
+                           out int status_size) throws TSTTB.Error; 
       void deleteEntArr( in array<opaque> entity_handles,
-                           in int entity_handles_size) throws TSTT.Error;
+                           in int entity_handles_size) throws TSTTB.Error;
    };
 
 } // END TSTTM

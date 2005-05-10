@@ -69,7 +69,7 @@
 # error
 #endif
 
-#include "TSTT.hh"
+#include "TSTTB.hh"
 #include "TSTTM.hh"
 
 using namespace Mesquite;

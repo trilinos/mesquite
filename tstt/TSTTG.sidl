@@ -1,4 +1,4 @@
-import TSTT;
+import TSTTB;
 
 package TSTTG version 0.5.1
 {
@@ -58,7 +58,20 @@ package TSTTG version 0.5.1
  */
     void gLoad(in string name, in array<string> options,
                in int options_size) 
-      throws TSTT.Error;
+      throws TSTTB.Error;
+
+//==========================gSave=============================
+/** 
+ * Save a model to a file specified by name. Which formats are supported and the
+ * specific meaning of this name string (e.g. file name, model name,
+ * etc.) are implementation-dependent.  Options are also implementation-
+ * dependent.
+ * @param name Name of the file to save to
+ * @param options String options 
+ */
+    void gSave(in string name, in array<string> options,
+               in int options_size) 
+      throws TSTTB.Error;
 
   }
 
@@ -80,9 +93,9 @@ package TSTTG version 0.5.1
  */
     void gentitysetGetGentitiesOfType(in opaque set_handle,
                                       in GentityType gentity_type,
-                                      out array<opaque> gentity_handles,
+                                      inout array<opaque> gentity_handles,
                                       out int gentity_handles_size) 
-      throws TSTT.Error;
+      throws TSTTB.Error;
 
 //==========================gentitysetGetNumberGentitiesOfType=================
 /**
@@ -94,7 +107,7 @@ package TSTTG version 0.5.1
  */
     int gentitysetGetNumberGentitiesOfType(in opaque set_handle,
                                            in GentityType gentity_type) 
-      throws TSTT.Error;
+      throws TSTTB.Error;
 
 //==========================gentityGetType=================
 /**
@@ -105,7 +118,7 @@ package TSTTG version 0.5.1
                         in int gentity_handles_size,
                         inout array<GentityType> gtype,
                         inout int gtype_size) 
-      throws TSTT.Error;
+      throws TSTTB.Error;
   
 
 //==========================gentityGetAdjacencies=================
@@ -119,7 +132,7 @@ package TSTTG version 0.5.1
                                in int to_dimension, 
                                inout array<opaque> adj_gentities,
                                inout int adj_gentities_size) 
-      throws TSTT.Error;
+      throws TSTTB.Error;
   
 
 //==========================gentityGet2OAdjacencies=================
@@ -138,9 +151,9 @@ package TSTTG version 0.5.1
     void gentityGet2OAdjacencies(in opaque gentity_handle, 
                                  in int bridge_dimension, 
                                  in int to_dimension, 
-                                 out array<opaque> adjacent_gentities,
+                                 inout array<opaque> adjacent_gentities,
                                  out int adjacent_gentities_size) 
-      throws TSTT.Error;
+      throws TSTTB.Error;
 
 //==========================gentityIsAdjacent=================
 /**
@@ -152,7 +165,7 @@ package TSTTG version 0.5.1
     void gentityIsAdjacent(in opaque gentity_handle1, 
                            in opaque gentity_handle2,
                            out bool are_adjacent) 
-      throws TSTT.Error;
+      throws TSTTB.Error;
   
 
   }
@@ -179,9 +192,9 @@ package TSTTG version 0.5.1
                              in int gentity_handles_size,
                              in array <double> near_coordinates, 
                              in int near_coordinates_size,
-                             out array <double> on_coordinates,
+                             inout array <double> on_coordinates,
                              out int on_coordinates_size) 
-      throws TSTT.Error;
+      throws TSTTB.Error;
    
 //==========================gentityNormal=================
 /**
@@ -196,9 +209,9 @@ package TSTTG version 0.5.1
                        in int gentity_handles_size,
                        in array <double> coordinates, 
                        in int coordinates_size,
-                       out array <double> normals,
+                       inout array <double> normals,
                        out int normals_size) 
-      throws TSTT.Error;
+      throws TSTTB.Error;
    
 //==========================gentityTangent=================
 /**
@@ -213,9 +226,9 @@ package TSTTG version 0.5.1
                         in int gentity_handles_size,
                         in array <double> coordinates, 
                         in int coordinates_size,
-                        out array <double> tangents,
+                        inout array <double> tangents,
                         out int tangents_size) 
-      throws TSTT.Error;
+      throws TSTTB.Error;
    
 // Various Derivatives
 
@@ -229,11 +242,11 @@ package TSTTG version 0.5.1
  */
     void gentityBoundingBox(in array<opaque> gentity_handles, 
                             in int gentity_handles_size,
-                            out array <double> min_corner, 
+                            inout array <double> min_corner, 
                             out int min_corner_size,
-                            out array <double> max_corner,
+                            inout array <double> max_corner,
                             out int max_corner_size) 
-      throws TSTT.Error;
+      throws TSTTB.Error;
    
 //==========================getGvertexCoordinates=================
 /**
@@ -244,9 +257,9 @@ package TSTTG version 0.5.1
  */
     void getGvertexCoordinates(in array<opaque> gentity_handles, 
                                in int gentity_handles_size,
-                               out array <double> coordinates,
+                               inout array <double> coordinates,
                                out int coordinates_size)
-      throws TSTT.Error;
+      throws TSTTB.Error;
    
 //==========================getGnormalSense=================
 /**
@@ -258,7 +271,7 @@ package TSTTG version 0.5.1
  */
     int getGnormalSense(in opaque gface,
                         in opaque gregion) 
-      throws TSTT.Error;
+      throws TSTTB.Error;
    
 //==========================getGtangentSense=================
 /**
@@ -270,7 +283,7 @@ package TSTTG version 0.5.1
  */
     int getGtangentSense(in opaque gedge,
                          in opaque gface)
-      throws TSTT.Error;
+      throws TSTTB.Error;
    
 //==========================getGvertexTangentSense=================
 /**
@@ -286,7 +299,7 @@ package TSTTG version 0.5.1
     int getGvertexTangentSense(in opaque gedge,
                                in opaque gvertex1,
                                in opaque gvertex2)
-      throws TSTT.Error;
+      throws TSTTB.Error;
    
   }
 
@@ -306,7 +319,7 @@ package TSTTG version 0.5.1
  * @param gentity_handle Gentity being queried.
  */
     int gentityIsParametric(in opaque gentity_handle) 
-      throws TSTT.Error;
+      throws TSTTB.Error;
 
 //==========================gentityUvToXyz=================
 /**
@@ -321,9 +334,9 @@ package TSTTG version 0.5.1
                         in int gentity_handles_size,
                         in array <double> uv, 
                         in int uv_size,
-                        out array <double> coordinates,
+                        inout array <double> coordinates,
                         out int coordinates_size) 
-      throws TSTT.Error;
+      throws TSTTB.Error;
    
 //==========================gentityXyzToUv=================
 /**
@@ -338,9 +351,9 @@ package TSTTG version 0.5.1
                         in int gentity_handles_size,
                         in array <double> coordinates,
                         in int coordinates_size,
-                        out array <double> uv,
+                        inout array <double> uv,
                         out int uv_size) 
-      throws TSTT.Error;
+      throws TSTTB.Error;
    
 //==========================gentityUvRange=================
 /**
@@ -351,11 +364,11 @@ package TSTTG version 0.5.1
  */
     void gentityUvRange(in array<opaque> gentity_handles, 
                         in int gentity_handles_size,
-                        out array <double> uv_min, 
+                        inout array <double> uv_min, 
                         out int uv_min_size,
-                        out array <double> uv_max,
+                        inout array <double> uv_max,
                         out int uv_max_size) 
-      throws TSTT.Error;
+      throws TSTTB.Error;
 
 //==========================getAdjacentUv=================
 /**
@@ -378,7 +391,7 @@ package TSTTG version 0.5.1
                             in int trg_gentity_handles_size, 
                             in array<double> trg_uv,
                             in int trg_uv_size) 
-      throws TSTT.Error;
+      throws TSTTB.Error;
 
 //==========================gentityNormalUv=================
 /**
@@ -393,9 +406,9 @@ package TSTTG version 0.5.1
                          in int gface_handles_size, 
                          in array <double> parameters, 
                          in int parameters_size, 
-                         out array <double> normals,
+                         inout array <double> normals,
                          in int normals_size) 
-      throws TSTT.Error;
+      throws TSTTB.Error;
    
 //==========================gentityTangentU=================
 /**
@@ -410,9 +423,9 @@ package TSTTG version 0.5.1
                          in int gedge_handles_size,
                          in array <double> parameters, 
                          in int parameters_size, 
-                         out array <double> tangents,
+                         inout array <double> tangents,
                          out int tangents_size) 
-      throws TSTT.Error;
+      throws TSTTB.Error;
    
   }
 
@@ -435,7 +448,7 @@ package TSTTG version 0.5.1
  */
     void getGtolerance(out double relative_tolerance,
                        out double absolute_tolerance)
-      throws TSTT.Error;
+      throws TSTTB.Error;
    
 //==========================getGentityTolerance=================
 /**
@@ -448,11 +461,11 @@ package TSTTG version 0.5.1
  */
     void getGentityTolerance(in array<opaque> gentity_handles,
                              in int gentity_handles_size,
-                             out array<double> relative_tolerances,
+                             inout array<double> relative_tolerances,
                              out int relative_tolerances_size,
-                             out array<double> absolute_tolerances,
+                             inout array<double> absolute_tolerances,
                              out int absolute_tolerances_size)
-      throws TSTT.Error;
+      throws TSTTB.Error;
 
   }
 
@@ -473,7 +486,7 @@ package TSTTG version 0.5.1
  */
     void gentityIteratorInit(in int gentity_dimension, 
                              out opaque gentity_iterator) 
-      throws TSTT.Error;
+      throws TSTTB.Error;
 
 //==========================gentityIteratorNext=================
 /**
@@ -484,7 +497,7 @@ package TSTTG version 0.5.1
  */
     bool gentityIteratorNext(inout opaque gentity_iterator, 
                              out opaque gentity_handle) 
-      throws TSTT.Error;
+      throws TSTTB.Error;
 
 //==========================gentityIteratorReset=================
 /**
@@ -492,7 +505,7 @@ package TSTTG version 0.5.1
  * @param gentity_iterator Iterator reset by this function
  */
     void gentityIteratorReset (inout opaque gentity_iterator) 
-      throws TSTT.Error;
+      throws TSTTB.Error;
 
 //==========================gentityIteratorDelete=================
 /**
@@ -500,7 +513,7 @@ package TSTTG version 0.5.1
  * @param gentity_iterator Iterator deleted by this function
  */
     void gentityIteratorDelete (in opaque Gentity_dim_iterator) 
-      throws TSTT.Error;
+      throws TSTTB.Error;
 
   }
 
@@ -514,7 +527,8 @@ package TSTTG version 0.5.1
         /* Duplicate the input entity
          */
       void Copy(in opaque geom_entity,
-                out opaque geom_entity2);
+                out opaque geom_entity2) 
+        throws TSTTB.Error;
       
         /* Sweep the entity around axis specified by normal, by angle specified in degrees.
          * Generates a new entity, leaving input entity unchanged.
@@ -525,13 +539,15 @@ package TSTTG version 0.5.1
                           in double axis_normal_x, 
                           in double axis_normal_y, 
                           in double axis_normal_z, 
-                          out opaque geom_entity2);
+                          out opaque geom_entity2) 
+        throws TSTTB.Error;
       
         /* Delete the specified entity.  Deletes any lower-dimensional entities.
          * Result undefined if any higher-dimensional entities still use input
          * entity.
          */
-      void Delete(in opaque geom_entity);
+      void Delete(in opaque geom_entity) 
+        throws TSTTB.Error;
     }
 
   interface Primitives extends Modify
@@ -541,21 +557,24 @@ package TSTTG version 0.5.1
          * Result is undefined if only one dimension is zero.
          */
       void Brick(in double x, in double y, in double z,
-                 out opaque geom_entity);
+                 out opaque geom_entity) 
+        throws TSTTB.Error;
           
         /* Construct a cylinder with specified height and major/minor radii.
          * Major radius is along x axis, minor along y axis, and height along z.
          * If minor radius is zero, a circular cylinder is produced.
          */
       void Cylinder(in double height, in double major_rad, in double minor_rad,
-                    out opaque geom_entity);
+                    out opaque geom_entity) 
+        throws TSTTB.Error;
           
         /* Construct a torus with circular cross-section, with major and minor
          * radii specified.  Torus is aligned with z axis, i.e. the locus of points
          * defined by the cross-section centers lies in the xy plane.
          */
       void Torus(in double major_rad, in double minor_rad,
-                 out opaque geom_entity);
+                 out opaque geom_entity) 
+        throws TSTTB.Error;
     }
   
   interface Transforms extends Modify
@@ -563,7 +582,8 @@ package TSTTG version 0.5.1
         /* Move the specified entity by the specified vector 
          */
       void Move(inout opaque geom_entity,
-                in double x, in double y, in double z);
+                in double x, in double y, in double z) 
+        throws TSTTB.Error;
       
         /* Rotate the specified entity the specified angle (in degrees) about the
          * specified axis; axis_normal is assumed to pass through the origin.
@@ -572,14 +592,16 @@ package TSTTG version 0.5.1
                   in double angle, 
                   in double axis_normal_x,
                   in double axis_normal_y,
-                  in double axis_normal_z);
+                  in double axis_normal_z) 
+        throws TSTTB.Error;
       
         /* Reflect the specified entity through a plane defined by the specified normal
          */
       void Reflect(inout opaque geom_entity,
                    in double plane_normal_x,
                    in double plane_normal_y,
-                   in double plane_normal_z);
+                   in double plane_normal_z) 
+        throws TSTTB.Error;
     }
   
   interface Booleans extends Modify
@@ -589,13 +611,15 @@ package TSTTG version 0.5.1
          */
       void Unite(in array<opaque> geom_entities,
                  in int geom_entities_size,
-                 out opaque geom_entity);
+                 out opaque geom_entity) 
+        throws TSTTB.Error;
       
         /* Subtract the tool from the blank, resulting in a new entity; original
          * entities are unmodified
          */
       void Subtract(in opaque blank, in opaque tool,
-                    out opaque geom_entity);
+                    out opaque geom_entity) 
+        throws TSTTB.Error;
 
         /* Cut the specified entity with a plane containing the origin defined by 
          * the specified normal, discarding anything on the negative side of the
@@ -608,7 +632,8 @@ package TSTTG version 0.5.1
                    in double plane_normal_y,
                    in double plane_normal_z,
                    in double offset, in bool reverse,
-                   out opaque geom_entity2);
+                   out opaque geom_entity2) 
+        throws TSTTB.Error;
     }
 }
 

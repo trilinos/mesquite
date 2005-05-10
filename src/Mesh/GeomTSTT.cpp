@@ -34,7 +34,7 @@
 */
 
 #include <sidl_cxx.hh>
-#include "TSTT.hh"
+#include "TSTTB.hh"
 #include "TSTTM.hh"
 #include "TSTTR.hh"
 #include "TSTTG.hh"
@@ -57,7 +57,7 @@ class GeomTSTTCommon
 public:
 
     /**\param geom The TSTT geometry interface implementation to query */
-  GeomTSTTCommon( TSTTG::Geometry& geom ) throw (TSTT::Error );
+  GeomTSTTCommon( TSTTG::Geometry& geom ) throw (TSTTB::Error );
   
   virtual ~GeomTSTTCommon();
 
@@ -65,14 +65,14 @@ public:
      *  geometric entity and return the result in the passed position 
      *  argument (move the passed position onto the geometry.)
      */
-  void move_to( void* geom_handle, Vector3D& coord ) const throw( TSTT::Error );
+  void move_to( void* geom_handle, Vector3D& coord ) const throw( TSTTB::Error );
   
     /** Given a geometric entity and a position, evaluate the normal 
      *  on the geometric entity at the closest point on that entity
      *  to the input position, and pass back the result in the input
      *  coord vector.
      */
-  void normal ( void* geom_handle, Vector3D& coord ) const throw( TSTT::Error );
+  void normal ( void* geom_handle, Vector3D& coord ) const throw( TSTTB::Error );
   
     /** Given a geometric entity and a position, evaluate the normal 
      *  on the geometric entity at the closest point on that entity
@@ -80,7 +80,7 @@ public:
      *  coord vector.
      */
   void normal ( void* geom_handle, Vector3D coords[], unsigned count ) const 
-    throw( TSTT::Error );
+    throw( TSTTB::Error );
 
     /** TSTT geometry interface implementation to query */
   mutable TSTTG::Shape  geomIface;
@@ -100,7 +100,7 @@ public:
 
   DomainTSTT( TSTTG::Geometry& geom,
               TSTTM::Mesh& mesh, 
-              TSTTR::Relate& relate ) throw( TSTT::Error );
+              TSTTR::Relate& relate ) throw( TSTTB::Error );
 
   virtual ~DomainTSTT();
 
@@ -118,7 +118,7 @@ public:
 protected:
 
     /** Get geometric entity owning a mesh entity */
-  void* geom_from_mesh( void* handle ) const throw( TSTT::Error );
+  void* geom_from_mesh( void* handle ) const throw( TSTTB::Error );
 
 private:
 
@@ -143,7 +143,7 @@ class GeomEntTSTT : public GeomTSTT, protected GeomTSTTCommon
 public:
 
   GeomEntTSTT( TSTTG::Geometry& geom,
-               void* geom_ent_handle ) throw( TSTT::Error );
+               void* geom_ent_handle ) throw( TSTTB::Error );
 
   virtual ~GeomEntTSTT();
 
@@ -177,7 +177,7 @@ GeomTSTT* GeomTSTT::create( TSTTG::Geometry& geom,
   try {
     return new DomainTSTT( geom, mesh, relate );
   }
-  catch (TSTT::Error& tstt_err ) {
+  catch (TSTTB::Error& tstt_err ) {
     MSQ_SETERR(err)(process_tstt_error(tstt_err),MsqError::INTERNAL_ERROR);
   }
   return 0;
@@ -190,7 +190,7 @@ GeomTSTT* GeomTSTT::create( TSTTG::Geometry& geom,
   try {
     return new GeomEntTSTT( geom, geom_ent_handle );
   }
-  catch (TSTT::Error& tstt_err ) {
+  catch (TSTTB::Error& tstt_err ) {
     MSQ_SETERR(err)(process_tstt_error(tstt_err),MsqError::INTERNAL_ERROR);
   }
   return 0;
@@ -207,7 +207,7 @@ GeomTSTT::~GeomTSTT() {}
 DomainTSTT::DomainTSTT( TSTTG::Geometry& geom,
                             TSTTM::Mesh& mesh,
                             TSTTR::Relate& relate ) 
-                            throw ( TSTT::Error )
+                            throw ( TSTTB::Error )
   : GeomTSTTCommon( geom ), 
     topoIface( geom ),
     meshIface(mesh), 
@@ -228,7 +228,7 @@ void DomainTSTT::snap_to( Mesh::EntityHandle handle,
     if (geom)
       move_to( geom, coordinate );
   }
-  catch (TSTT::Error& tstt_err ) {
+  catch (TSTTB::Error& tstt_err ) {
     process_tstt_error(tstt_err);
   }
 }
@@ -241,7 +241,7 @@ void DomainTSTT::normal_at( Mesh::EntityHandle handle,
     if (geom)
       normal( geom, coordinate );
   }
-  catch (TSTT::Error& tstt_err ) {
+  catch (TSTTB::Error& tstt_err ) {
     process_tstt_error(tstt_err);
   }
 }
@@ -260,13 +260,13 @@ void DomainTSTT::normal_at( Mesh::EntityHandle handle,
     
     normal( geom, coordinates, count );
   }
-  catch (TSTT::Error& tstt_err ) {
+  catch (TSTTB::Error& tstt_err ) {
     MSQ_SETERR(err)(process_tstt_error(tstt_err),MsqError::INTERNAL_ERROR);
   }
 }
 
 void* DomainTSTT::geom_from_mesh( void* mesh_ent_handle ) const
-                                    throw ( TSTT::Error )
+                                    throw ( TSTTB::Error )
 {
   int junk;
   oneMeshHandle.set( 0, mesh_ent_handle );
@@ -287,7 +287,7 @@ void* DomainTSTT::geom_from_mesh( void* mesh_ent_handle ) const
 /***************** GeomEntTSTT class methods *********************/
 
 GeomEntTSTT::GeomEntTSTT( TSTTG::Geometry& geom, void* geom_ent_handle ) 
-                            throw ( TSTT::Error )
+                            throw ( TSTTB::Error )
   : GeomTSTTCommon( geom ), 
     geomEntHandle( geom_ent_handle )
 {
@@ -302,7 +302,7 @@ void GeomEntTSTT::snap_to( Mesh::EntityHandle handle,
   try {
     move_to( geomEntHandle, coordinate );
   }
-  catch (TSTT::Error& tstt_err ) {
+  catch (TSTTB::Error& tstt_err ) {
     process_tstt_error(tstt_err);
   }
 }
@@ -313,7 +313,7 @@ void GeomEntTSTT::normal_at( Mesh::EntityHandle handle,
   try {
     normal( geomEntHandle, coordinate );
   }
-  catch (TSTT::Error& tstt_err ) {
+  catch (TSTTB::Error& tstt_err ) {
     process_tstt_error(tstt_err);
   }
 }
@@ -327,7 +327,7 @@ void GeomEntTSTT::normal_at( Mesh::EntityHandle handle,
   try {
     normal( geomEntHandle, coordinates, count );
   }
-  catch (TSTT::Error& tstt_err ) {
+  catch (TSTTB::Error& tstt_err ) {
     MSQ_SETERR(err)(process_tstt_error(tstt_err),MsqError::INTERNAL_ERROR);
   }
 }
@@ -337,7 +337,7 @@ void GeomEntTSTT::normal_at( Mesh::EntityHandle handle,
 
 /***************** GeomTSTTCommon class methods *********************/
 
-GeomTSTTCommon::GeomTSTTCommon( TSTTG::Geometry& geom ) throw ( TSTT::Error )
+GeomTSTTCommon::GeomTSTTCommon( TSTTG::Geometry& geom ) throw ( TSTTB::Error )
   : geomIface( geom ),
     geomHandles( alloc_sidl_vector<void*>(1) ),
     vectorsIn ( alloc_sidl_vector<double>(3) ),
@@ -350,7 +350,7 @@ GeomTSTTCommon::~GeomTSTTCommon() {}
 
 
 void GeomTSTTCommon::move_to( void* geom, Vector3D& coord ) const
-                            throw ( TSTT::Error )
+                            throw ( TSTTB::Error )
 {
     // going to assume this in the following reinterpret_cast, so
     // check to make sure it is true
@@ -372,7 +372,7 @@ void GeomTSTTCommon::move_to( void* geom, Vector3D& coord ) const
  
  
 void GeomTSTTCommon::normal( void* geom, Vector3D& coord ) const
-                            throw ( TSTT::Error )
+                            throw ( TSTTB::Error )
 {
     // going to assume this in the following reinterpret_cast, so
     // check to make sure it is true
@@ -392,7 +392,7 @@ void GeomTSTTCommon::normal( void* geom, Vector3D& coord ) const
 }
  
 void GeomTSTTCommon::normal( void* geom, Vector3D coords[], unsigned count ) const
-                            throw ( TSTT::Error )
+                            throw ( TSTTB::Error )
 {
     // going to assume this in the following reinterpret_cast, so
     // check to make sure it is true

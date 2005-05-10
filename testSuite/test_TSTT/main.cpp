@@ -90,7 +90,7 @@ using std::endl;
 # error
 #endif
 
-#include "TSTT.hh"
+#include "TSTTB.hh"
 #include "TSTTM.hh"
 
 
@@ -339,7 +339,7 @@ Mesh* get_tstt_mesh( const char* file_name )
       }
     fclose( file );
       // Get tag interface
-    TSTT::ArrTag tag_iface = tstt_mesh;
+    TSTTB::ArrTag tag_iface = tstt_mesh;
     if (!tag_iface) {
       fprintf(stderr, "TSTTM impelementation does not provide tag array interface\n");
       exit (2);
@@ -363,7 +363,7 @@ Mesh* get_tstt_mesh( const char* file_name )
       TagHandle tag_handle;
       tag_iface.createTag( VERTEX_FIXED_TAG_NAME, 
                            sizeof(int), 
-                           TSTT::TagValueType_INTEGER, 
+                           TSTTB::TagValueType_INTEGER, 
                            tag_handle );
         // Set tag data on vertices
       sidl::array<int> values;

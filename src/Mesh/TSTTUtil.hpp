@@ -2,11 +2,11 @@
 #define TSTT_UTIL_HPP
 
 #include <sidl_cxx.hh>
-#include "TSTT.hh"
+#include "TSTTB.hh"
 
 namespace Mesquite {
 
-static inline msq_std::string process_tstt_error( TSTT::Error &tstt_err )
+static inline msq_std::string process_tstt_error( TSTTB::Error &tstt_err )
 {
   msq_std::string str;
   msq_std::string result("TSTT ERROR: ");

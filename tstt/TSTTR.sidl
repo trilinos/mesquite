@@ -1,4 +1,4 @@
-import TSTT;
+import TSTTB;
 
 package TSTTR version 001
 {
@@ -10,7 +10,7 @@ package TSTTR version 001
 //  Fundamental interface from which all associate related interfaces inherit.
 //===========================================================================
 /**
- * This serves as a base interface for all the TSTT associate query interfaces.
+ * This serves as a base interface for all the TSTTB associate query interfaces.
  * This interface does not have any methods.
  */
   interface Relate {
@@ -22,7 +22,7 @@ package TSTTR version 001
  */
     void relateAllEntities(in opaque geom,
                            in opaque mesh)
-      throws TSTT.Error;
+      throws TSTTB.Error;
 
 
 //==========================relateGeomEntities====================
@@ -33,7 +33,7 @@ package TSTTR version 001
     void relateGeomEntities(in opaque geom, in opaque mesh,
                             in array<opaque> geom_handles,
                             in int geom_handles_size)
-      throws TSTT.Error;
+      throws TSTTB.Error;
 
 
 //==========================relateMeshEntities====================
@@ -44,7 +44,7 @@ package TSTTR version 001
     void relateMeshEntities(in opaque geom, in opaque mesh,
 	                    in array<opaque> mesh_handles,
                             in int mesh_handles_size)
-      throws TSTT.Error;
+      throws TSTTB.Error;
 
 
 //==========================getGeomRelatedEntities====================
@@ -56,7 +56,7 @@ package TSTTR version 001
                                 in int from_geom_handles_size,
                                 inout array<opaque> to_mesh_handles,
                                 inout int to_mesh_handles_size)
-      throws TSTT.Error;
+      throws TSTTB.Error;
 
 //==========================getGeomOwnedMesh====================
 /**
@@ -67,7 +67,7 @@ package TSTTR version 001
                           in int requested_mesh_entity_dim,
                           inout array<opaque> to_mesh_handles,
                           inout int to_mesh_handles_size)
-      throws TSTT.Error;
+      throws TSTTB.Error;
 
 //==========================getMeshRelatedEntities====================
 /**
@@ -78,7 +78,7 @@ package TSTTR version 001
                                 in int from_mesh_handles_size,
                                 inout array<opaque> to_geom_handles,
                                 inout int to_geom_handles_size)
-      throws TSTT.Error;
+      throws TSTTB.Error;
 
 //==========================getMeshSetRelatedEntities====================
 /**
@@ -89,7 +89,7 @@ package TSTTR version 001
                                    in int from_mesh_handles_size,
                                    inout array<opaque> to_geom_handles,
                                    inout int to_geom_handles_size)
-      throws TSTT.Error;
+      throws TSTTB.Error;
 
 //==========================moveTo====================
 /**
@@ -97,14 +97,14 @@ package TSTTR version 001
  */
     void moveTo(in opaque geom, in opaque mesh,
                 in opaque geom_entity_handle)
-      throws TSTT.Error;
+      throws TSTTB.Error;
 
 //==========================removeRelations====================
 /**
  *   remove relations data between geometry and mesh
  */
     void removeRelations(in opaque geom, in opaque mesh)
-      throws TSTT.Error;
+      throws TSTTB.Error;
   }
 
 }  // end of TSTTR package
