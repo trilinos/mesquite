@@ -1,1 +1,15 @@
-Mesquite Mesh Quality Improvement Toolkit
+To build Mesquite, run the included configure script in this directory
+and then run make.  For example:
+% ./configure 
+% make
+
+For additional options, run:
+% ./configure --help
+
+Mesquite's build implementation does not yet have an "install" target,
+so the configure options related to installation paths have no effect.
+
+The "--enable-tstt" option must be specified to the configure script
+to enable support for accessing mesh and geometry through the TSTT SIDL
+interface.
+

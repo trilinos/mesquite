@@ -27,48 +27,84 @@ AC_CANONICAL_SYSTEM
 # set to a default value.
 #------------------------------------------------------------------------------
 AC_ARG_ENABLE( [release], [[
-  --enable-release                Release build (defualt if other options 
-                                  don't override)]],
+  --enable-release                (default), implies:
+                                  --enable-compile-optimized
+                                  --disable-debug-assertions]],
   [MSQ_DO_RELEASE="$enableval"], [MSQ_DO_RELEASE=""] )
-AC_ARG_ENABLE( [debug], [[
-  --enable-debug                  Debug build]], 
+
+AC_ARG_ENABLE( [debug], 
+[[  --enable-debug                  Developer build, implies:
+                                  --enable-debug-symbols
+                                  --enable-debug-output=1,2
+                                  --enable-trap-fpe]], 
   [MSQ_DO_DEBUG="$enableval"], [MSQ_DO_DEBUG="no"] )
 
-AC_ARG_ENABLE( [debug-output], [[
-  --enable-debug-output[=n,m,...] Enable debug output.  Optionally specify 
+AC_ARG_ENABLE( [compile-optimized], [[
+  --enable-compile-optimized      Compile optimized (-O2)]],
+  [MSQ_DO_OPTIMIZE="$enableval"], [MSQ_DO_OPTIMIZE=""] )
+
+AC_ARG_ENABLE( [debug-symbols], 
+[[  --enable-debug-symbols          Compile with debug symbols (-g) ]],
+  [MSQ_DEBUG_SYMBOLS="$enableval"], [MSQ_DEBUG_SYMBOLS=""] )
+
+AC_ARG_ENABLE( [debug-assertions], 
+[[  --disable-debug-assertions      Compile without asserts (-DNDEBUG) ]],
+  [MSQ_DEBUG_ASSERTS="$enableval"], [MSQ_DEBUG_ASSERTS=""] )
+
+AC_ARG_ENABLE( [debug-output], 
+[[  --enable-debug-output[=n,m,...] Enable debug output.  Optionally specify 
                                   comma-separated list of flags to enable.  
-                                  --enable-debug implies --enable-debug-output=1,2
-  --disable-debug-output          Override default enable implied by --enable-debug]],
+                                  --enable-debug implies --enable-debug-output=1,2 ]],
   [MSQ_DEBUG_OUT="$enableval"], [MSQ_DEBUG_OUT=""] )
 
-AC_ARG_ENABLE( [function-timers], [[  
-  --enable-function-timers        Enable function timers]], 
+AC_ARG_ENABLE( [function-timers], 
+[[    --enable-function-timers        Enable function timers]], 
   [MSQ_DO_TIMERS="$enableval"], [MSQ_DO_TIMERS="no"] )
 
-AC_ARG_ENABLE( [trap-fpe], [[  
-  --enable-trap-fpe               Enable trapping of floating point exceptions.
+AC_ARG_ENABLE( [trap-fpe], 
+[[    --enable-trap-fpe               Enable trapping of floating point exceptions.
                                   Default is no unless --enable-debug.]], 
   [MSQ_TRAP_FPE="$enableval"], [MSQ_TRAP_FPE=""] )
 
-if test -z "$MSQ_DO_RELEASE"; then
-  # do default unless CXXFLAGS or -debug have been specified
-  if test -z "$CXXFLAGS" -a "$MSQ_DO_DEBUG" = "no"; then
-    CXXFLAGS="-O2 -DNDEBUG"
-  fi
-elif test "$MSQ_DO_RELEASE" != "no"; then
-  CXXFLAGS="$CXXFLAGS -O2 -DNDEBUG"
+# If neather debug or release is specified, enable release
+if test -z "$MSQ_DO_RELEASE" -a -z "$MSQ_DO_DEBUG"; then
+  MSQ_DO_RELEASE=yes
 fi
 
-if test "$MSQ_DO_DEBUG" != "no"; then
-  CXXFLAGS="$CXXFLAGS -g"
+# if release, then enable appropriate sub-options
+if test "$MSQ_DO_RELEASE" = yes; then
+  if test -z "$MSQ_DO_OPTIMIZE"; then
+    MSQ_DO_OPTIMIZE=yes
+  fi
+  if test -z "$MSQ_DEBUG_ASSERTS"; then
+    MSQ_DEBUG_ASSERTS=no
+  fi
+fi
+
+# if debug, then enable appropriate sub-options
+if test "$MSQ_DO_DEBUG" = "yes"; then
+  if test -z "$MSQ_DEBUG_SYMBOLS"; then
+    MSQ_DEBUG_SYMBOLS=yes
+  fi
   if test -z "$MSQ_DEBUG_OUT"; then
-    CXXFLAGS="$CXXFLAGS -DMSQ_ENABLE_DEBUG=1,2"
+    MSQ_DEBUG_OUT=yes
   fi
   if test -z "$MSQ_TRAP_FPE"; then
-    MSQ_TRAP_FPE="yes"
+    MSQ_TRAP_FPE=yes
   fi
 fi
 
+# Construct compiler options from above configure options
+CXXFLAGS=
+if test "$MSQ_DO_OPTIMIZE" = "yes"; then
+  CXXFLAGS="$CXXFLAGS -O2"
+fi
+if test "$MSQ_DEBUG_SYMBOLS" = "yes"; then
+  CXXFLAGS="$CXXFLAGS -g"
+fi
+if test "$MSQ_DEBUG_ASSERTS" == "no"; then
+  CXXFLAGS="$CXXFLAGS -DNDEBUG"
+fi
 if test -n "$MSQ_DEBUG_OUT"; then
   if test "$MSQ_DEBUG_OUT" = "yes"; then 
     CXXFLAGS="$CXXFLAGS -DMSQ_ENABLE_DEBUG"
@@ -76,11 +112,9 @@ if test -n "$MSQ_DEBUG_OUT"; then
     CXXFLAGS="$CXXFLAGS -DMSQ_ENABLE_DEBUG=$MSQ_DEBUG_OUT"
   fi
 fi
-
 if test "$MSQ_TRAP_FPE" = "yes"; then
   CXXFLAGS="$CXXFLAGS -DMSQ_TRAP_FPE"
 fi
-
 if test "$MSQ_DO_TIMERS" = "yes"; then
   CXXFLAGS="$CXXFLAGS -DMSQ_USE_FUNCTION_TIMERS"
 fi
@@ -203,17 +237,11 @@ AC_ARG_WITH(babel,
   --without-babel         Disable use of Babel/SIDL]],
   [BABEL_ARG=${withval}],[BABEL_ARG=])
 
-AC_ARG_ENABLE( [tstt-mesh],
-[[  --enable-tstt-mesh      Compile glue code for interfacing with TSTT 
-                          mesh implemenations.
-  --disable-tstt-mesh     Disable TSTT mesh glue code (DEFAULT).]],
-  [ TSTT_MESH_ARG=${enableval}], [TSTT_MESH_ARG=] )
+AC_ARG_ENABLE( [tstt],
+[[  --enable-tstt           Compile glue code for interfacing with TSTT implemenations.
+  --disable-tstt          Disable TSTT mesh glue code (DEFAULT).]],
+  [ TSTT_IFACE_ARG=${enableval}], [TSTT_IFACE_ARG=] )
 
-AC_ARG_ENABLE( [tstt-geom],
-[[  --enable-tstt-geom      Compile glue code for interfacing with TSTT 
-                          geom implemenations.
-  --disable-tstt-geom     Disable TSTT geom glue code (DEFAULT).]],
-  [ TSTT_GEOM_ARG=${enableval}], [TSTT_GEOM_ARG=] )
 
 AC_ARG_WITH(tstt-mesh,
 [[  --with-tstt-mesh=[AOMD|MOAB|OVERTURE] Specify an mesh database implementing 
@@ -224,7 +252,7 @@ AC_ARG_WITH(tstt-mesh,
                           "--with-moab=DIR" or "--with-overture=DIR".  If no
                           parameter is specified, will default to the first
                           option for which the location has been specified.
-  --without-tstt-server   Do not build tests that require TSTT. ]],
+  --without-tstt-mesh   Do not build tests that require TSTT. ]],
 [ WITH_TSTT_MESH_ARG=$withval ], [ WITH_TSTT_MESH_ARG= ] )
 
 AC_ARG_WITH(aomd, 
@@ -251,7 +279,7 @@ AC_ARG_WITH(hdf5,
 AC_ARG_WITH(cppunit,[[
   --with-cppunit[=DIR]    Specify directory where CppUnit is installed.
   --without-cppunit       Disable CppUnit tests]],
-  [CPPUNIT_ARG=${withval}], [CPPUNIT_ARG=no])
+  [CPPUNIT_ARG=${withval}], [CPPUNIT_ARG=])
 
 
 #-------------------------------------------------------------------------------
@@ -418,10 +446,10 @@ fi
 # Assume if a TSTT Mesh implementation was specified for testing
 # that we want TSTT Mesh support enabled.
 if test -n "$TSTT_MESH_IMPL"; then
-  if test "$TSTT_MESH_ARG" == "no"; then
+  if test "$TSTT_IFACE_ARG" == "no"; then
     AC_MSG_ERROR( "Nonsensical specification of TSTT Mesh Implementation with TSTT support explicitly disabled" )
-  elif test -z "$TSTT_MESH_ARG"; then
-    TSTT_MESH_ARG=yes
+  elif test -z "$TSTT_IFACE_ARG"; then
+    TSTT_IFACE_ARG=yes
   fi
 fi
 
@@ -461,22 +489,14 @@ fi
 
 
 # Enable TSTT Mesh support?
-if test "$TSTT_MESH_ARG" == "yes"; then
-  MSQ_TSTT_MESH="$TSTT_MESH_ARG"
+if test "$TSTT_IFACE_ARG" == "yes"; then
+  MSQ_TSTT_MESH="$TSTT_IFACE_ARG"
+  MSQ_TSTT_GEOM="$TSTT_IFACE_ARG"
   if test "$HAVE_SIDL_H" == "no"; then
     AC_MSG_ERROR("Babel is required for TSTT Mesh support.  Try --with-babel=...")
   fi
 else
   MSQ_TSTT_MESH=no
-fi
-
-# Enable TSTT Geometry support?
-if test "$TSTT_GEOM_ARG" == "yes"; then
-  MSQ_TSTT_GEOM="$TSTT_GEOM_ARG"
-  if test "$HAVE_SIDL_H" == "no"; then
-    AC_MSG_ERROR("Babel is required for TSTT Geom support.  Try --with-babel=...")
-  fi
-else
   MSQ_TSTT_GEOM=no
 fi
 

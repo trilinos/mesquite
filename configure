@@ -858,26 +858,25 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
 
-  --enable-release                Release build (defualt if other options
-                                  don't override)
+  --enable-release                (default), implies:
+                                  --enable-compile-optimized
+                                  --disable-debug-assertions
+  --enable-debug                  Developer build, implies:
+                                  --enable-debug-symbols
+                                  --enable-debug-output=1,2
+                                  --enable-trap-fpe
 
-  --enable-debug                  Debug build
-
+  --enable-compile-optimized      Compile optimized (-O2)
+  --enable-debug-symbols          Compile with debug symbols (-g)
+  --disable-debug-assertions      Compile without asserts (-DNDEBUG)
   --enable-debug-output[=n,m,...] Enable debug output.  Optionally specify
                                   comma-separated list of flags to enable.
                                   --enable-debug implies --enable-debug-output=1,2
-  --disable-debug-output          Override default enable implied by --enable-debug
-
-  --enable-function-timers        Enable function timers
-
-  --enable-trap-fpe               Enable trapping of floating point exceptions.
+    --enable-function-timers        Enable function timers
+    --enable-trap-fpe               Enable trapping of floating point exceptions.
                                   Default is no unless --enable-debug.
-  --enable-tstt-mesh      Compile glue code for interfacing with TSTT
-                          mesh implemenations.
-  --disable-tstt-mesh     Disable TSTT mesh glue code (DEFAULT).
-  --enable-tstt-geom      Compile glue code for interfacing with TSTT
-                          geom implemenations.
-  --disable-tstt-geom     Disable TSTT geom glue code (DEFAULT).
+  --enable-tstt           Compile glue code for interfacing with TSTT implemenations.
+  --disable-tstt          Disable TSTT mesh glue code (DEFAULT).
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -908,7 +907,7 @@ Optional Packages:
                           "--with-moab=DIR" or "--with-overture=DIR".  If no
                           parameter is specified, will default to the first
                           option for which the location has been specified.
-  --without-tstt-server   Do not build tests that require TSTT.
+  --without-tstt-mesh   Do not build tests that require TSTT.
   --with-aomd=DIR         Root directory of AOMD installation.  Required
                           for AOMD test, may be used for TSTT test
   --with-moab=DIR         Root directory of MOAB installation.  Required
@@ -1484,12 +1483,37 @@ if test "${enable_release+set}" = set; then
 else
   MSQ_DO_RELEASE=""
 fi;
+
 # Check whether --enable-debug or --disable-debug was given.
 if test "${enable_debug+set}" = set; then
   enableval="$enable_debug"
   MSQ_DO_DEBUG="$enableval"
 else
   MSQ_DO_DEBUG="no"
+fi;
+
+# Check whether --enable-compile-optimized or --disable-compile-optimized was given.
+if test "${enable_compile_optimized+set}" = set; then
+  enableval="$enable_compile_optimized"
+  MSQ_DO_OPTIMIZE="$enableval"
+else
+  MSQ_DO_OPTIMIZE=""
+fi;
+
+# Check whether --enable-debug-symbols or --disable-debug-symbols was given.
+if test "${enable_debug_symbols+set}" = set; then
+  enableval="$enable_debug_symbols"
+  MSQ_DEBUG_SYMBOLS="$enableval"
+else
+  MSQ_DEBUG_SYMBOLS=""
+fi;
+
+# Check whether --enable-debug-assertions or --disable-debug-assertions was given.
+if test "${enable_debug_assertions+set}" = set; then
+  enableval="$enable_debug_assertions"
+  MSQ_DEBUG_ASSERTS="$enableval"
+else
+  MSQ_DEBUG_ASSERTS=""
 fi;
 
 # Check whether --enable-debug-output or --disable-debug-output was given.
@@ -1516,25 +1540,45 @@ else
   MSQ_TRAP_FPE=""
 fi;
 
-if test -z "$MSQ_DO_RELEASE"; then
-  # do default unless CXXFLAGS or -debug have been specified
-  if test -z "$CXXFLAGS" -a "$MSQ_DO_DEBUG" = "no"; then
-    CXXFLAGS="-O2 -DNDEBUG"
-  fi
-elif test "$MSQ_DO_RELEASE" != "no"; then
-  CXXFLAGS="$CXXFLAGS -O2 -DNDEBUG"
+# If neather debug or release is specified, enable release
+if test -z "$MSQ_DO_RELEASE" -a -z "$MSQ_DO_DEBUG"; then
+  MSQ_DO_RELEASE=yes
 fi
 
-if test "$MSQ_DO_DEBUG" != "no"; then
-  CXXFLAGS="$CXXFLAGS -g"
+# if release, then enable appropriate sub-options
+if test "$MSQ_DO_RELEASE" = yes; then
+  if test -z "$MSQ_DO_OPTIMIZE"; then
+    MSQ_DO_OPTIMIZE=yes
+  fi
+  if test -z "$MSQ_DEBUG_ASSERTS"; then
+    MSQ_DEBUG_ASSERTS=no
+  fi
+fi
+
+# if debug, then enable appropriate sub-options
+if test "$MSQ_DO_DEBUG" = "yes"; then
+  if test -z "$MSQ_DEBUG_SYMBOLS"; then
+    MSQ_DEBUG_SYMBOLS=yes
+  fi
   if test -z "$MSQ_DEBUG_OUT"; then
-    CXXFLAGS="$CXXFLAGS -DMSQ_ENABLE_DEBUG=1,2"
+    MSQ_DEBUG_OUT=yes
   fi
   if test -z "$MSQ_TRAP_FPE"; then
-    MSQ_TRAP_FPE="yes"
+    MSQ_TRAP_FPE=yes
   fi
 fi
 
+# Construct compiler options from above configure options
+CXXFLAGS=
+if test "$MSQ_DO_OPTIMIZE" = "yes"; then
+  CXXFLAGS="$CXXFLAGS -O2"
+fi
+if test "$MSQ_DEBUG_SYMBOLS" = "yes"; then
+  CXXFLAGS="$CXXFLAGS -g"
+fi
+if test "$MSQ_DEBUG_ASSERTS" == "no"; then
+  CXXFLAGS="$CXXFLAGS -DNDEBUG"
+fi
 if test -n "$MSQ_DEBUG_OUT"; then
   if test "$MSQ_DEBUG_OUT" = "yes"; then
     CXXFLAGS="$CXXFLAGS -DMSQ_ENABLE_DEBUG"
@@ -1542,11 +1586,9 @@ if test -n "$MSQ_DEBUG_OUT"; then
     CXXFLAGS="$CXXFLAGS -DMSQ_ENABLE_DEBUG=$MSQ_DEBUG_OUT"
   fi
 fi
-
 if test "$MSQ_TRAP_FPE" = "yes"; then
   CXXFLAGS="$CXXFLAGS -DMSQ_TRAP_FPE"
 fi
-
 if test "$MSQ_DO_TIMERS" = "yes"; then
   CXXFLAGS="$CXXFLAGS -DMSQ_USE_FUNCTION_TIMERS"
 fi
@@ -5400,21 +5442,14 @@ else
   BABEL_ARG=
 fi;
 
-# Check whether --enable-tstt-mesh or --disable-tstt-mesh was given.
-if test "${enable_tstt_mesh+set}" = set; then
-  enableval="$enable_tstt_mesh"
-   TSTT_MESH_ARG=${enableval}
+# Check whether --enable-tstt or --disable-tstt was given.
+if test "${enable_tstt+set}" = set; then
+  enableval="$enable_tstt"
+   TSTT_IFACE_ARG=${enableval}
 else
-  TSTT_MESH_ARG=
+  TSTT_IFACE_ARG=
 fi;
 
-# Check whether --enable-tstt-geom or --disable-tstt-geom was given.
-if test "${enable_tstt_geom+set}" = set; then
-  enableval="$enable_tstt_geom"
-   TSTT_GEOM_ARG=${enableval}
-else
-  TSTT_GEOM_ARG=
-fi;
 
 
 # Check whether --with-tstt-mesh or --without-tstt-mesh was given.
@@ -5467,7 +5502,7 @@ if test "${with_cppunit+set}" = set; then
   withval="$with_cppunit"
   CPPUNIT_ARG=${withval}
 else
-  CPPUNIT_ARG=no
+  CPPUNIT_ARG=
 fi;
 
 
@@ -6342,12 +6377,12 @@ fi
 # Assume if a TSTT Mesh implementation was specified for testing
 # that we want TSTT Mesh support enabled.
 if test -n "$TSTT_MESH_IMPL"; then
-  if test "$TSTT_MESH_ARG" == "no"; then
+  if test "$TSTT_IFACE_ARG" == "no"; then
     { { echo "$as_me:$LINENO: error: \"Nonsensical specification of TSTT Mesh Implementation with TSTT support explicitly disabled\" " >&5
 echo "$as_me: error: \"Nonsensical specification of TSTT Mesh Implementation with TSTT support explicitly disabled\" " >&2;}
    { (exit 1); exit 1; }; }
-  elif test -z "$TSTT_MESH_ARG"; then
-    TSTT_MESH_ARG=yes
+  elif test -z "$TSTT_IFACE_ARG"; then
+    TSTT_IFACE_ARG=yes
   fi
 fi
 
@@ -6983,8 +7018,9 @@ fi
 
 
 # Enable TSTT Mesh support?
-if test "$TSTT_MESH_ARG" == "yes"; then
-  MSQ_TSTT_MESH="$TSTT_MESH_ARG"
+if test "$TSTT_IFACE_ARG" == "yes"; then
+  MSQ_TSTT_MESH="$TSTT_IFACE_ARG"
+  MSQ_TSTT_GEOM="$TSTT_IFACE_ARG"
   if test "$HAVE_SIDL_H" == "no"; then
     { { echo "$as_me:$LINENO: error: \"Babel is required for TSTT Mesh support.  Try --with-babel=...\"" >&5
 echo "$as_me: error: \"Babel is required for TSTT Mesh support.  Try --with-babel=...\"" >&2;}
@@ -6992,17 +7028,6 @@ echo "$as_me: error: \"Babel is required for TSTT Mesh support.  Try --with-babe
   fi
 else
   MSQ_TSTT_MESH=no
-fi
-
-# Enable TSTT Geometry support?
-if test "$TSTT_GEOM_ARG" == "yes"; then
-  MSQ_TSTT_GEOM="$TSTT_GEOM_ARG"
-  if test "$HAVE_SIDL_H" == "no"; then
-    { { echo "$as_me:$LINENO: error: \"Babel is required for TSTT Geom support.  Try --with-babel=...\"" >&5
-echo "$as_me: error: \"Babel is required for TSTT Geom support.  Try --with-babel=...\"" >&2;}
-   { (exit 1); exit 1; }; }
-  fi
-else
   MSQ_TSTT_GEOM=no
 fi
 
