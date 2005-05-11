@@ -69,6 +69,12 @@ namespace Mesquite
                            unsigned count,
                            MsqError& err) const;
 
+    virtual void closest_point( Mesh::EntityHandle handle,
+                                const Vector3D& position,
+                                Vector3D& closest,
+                                Vector3D& normal,
+                                MsqError& err ) const;
+
   private:
     Vector3D mNormal;
     double mCoeff;

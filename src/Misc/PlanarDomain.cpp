@@ -59,3 +59,13 @@ void Mesquite::PlanarDomain::normal_at( Mesquite::Mesh::EntityHandle ,
   for (unsigned i = 0; i < count; ++i)
     coords[i] = mNormal;
 }
+
+void Mesquite::PlanarDomain::closest_point( Mesquite::Mesh::EntityHandle ,
+                                            const Mesquite::Vector3D& position,
+                                            Mesquite::Vector3D& closest,
+                                            Mesquite::Vector3D& normal,
+                                            Mesquite::MsqError& ) const
+{
+  normal = mNormal;
+  closest = position - mNormal * (mNormal % position + mCoeff);
+}

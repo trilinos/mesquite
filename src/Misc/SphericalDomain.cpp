@@ -72,3 +72,19 @@ void Mesquite::SphericalDomain::normal_at( Mesquite::Mesh::EntityHandle handle,
   for (unsigned i = 0; i < count; ++i)
     normal_at( handle, coords[i] );
 }
+
+void Mesquite::SphericalDomain::closest_point( Mesquite::Mesh::EntityHandle ,
+                                               const Mesquite::Vector3D& position,
+                                               Mesquite::Vector3D& closest,
+                                               Mesquite::Vector3D& normal,
+                                               Mesquite::MsqError& ) const
+{
+  normal = position - mCenter;
+  normal.normalize();
+  if (!finite(normal.x()))
+    normal.set( 1.0, 0.0, 0.0 );
+  closest = mCenter + mRadius * normal;
+}
+
+
+  

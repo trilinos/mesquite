@@ -81,6 +81,16 @@ public:
      */
   void normal ( void* geom_handle, Vector3D coords[], unsigned count ) const 
     throw( TSTTB::Error );
+    
+    /** Given a geometric entity and a position, get point on 
+     *  the geometric entity closest to the input position, and
+     *  the surface normal at that position.
+     */
+  void closest_and_normal( void* geom_handle,
+                           const Vector3D& position,
+                           Vector3D& closest, 
+                           Vector3D& normal ) const 
+                         throw (TSTTB::Error);
 
     /** TSTT geometry interface implementation to query */
   mutable TSTTG::Shape  geomIface;
@@ -88,7 +98,7 @@ public:
     /** Temporary storage for geometry entity handles */
   mutable sidl::array<void*> geomHandles;
     /** Temporary storate for input and output vectors */
-  mutable sidl::array<double> vectorsIn, vectorsOut;
+  mutable sidl::array<double> positionsIn, positionsOut, normalsOut;
 };
 
 
@@ -115,6 +125,12 @@ public:
                   unsigned count,
                   MsqError& err ) const;
 
+  void closest_point( Mesh::EntityHandle handle,
+                      const Vector3D& position,
+                      Vector3D& closest,
+                      Vector3D& normal,
+                      MsqError& err ) const;
+                      
 protected:
 
     /** Get geometric entity owning a mesh entity */
@@ -158,6 +174,12 @@ public:
                   Vector3D coordinates[],
                   unsigned count,
                   MsqError& err ) const;
+
+  void closest_point( Mesh::EntityHandle handle,
+                      const Vector3D& position,
+                      Vector3D& closest,
+                      Vector3D& normal,
+                      MsqError& err ) const;
 private:
   
     /** A handle for the geometry entity to evaluate */
@@ -265,6 +287,27 @@ void DomainTSTT::normal_at( Mesh::EntityHandle handle,
   }
 }
 
+void DomainTSTT::closest_point( Mesh::EntityHandle handle,
+                                const Vector3D& position,
+                                Vector3D& closest,
+                                Vector3D& normal,
+                                MsqError& err ) const
+{
+  try {
+    void* geom = geom_from_mesh( (void*)handle );
+    if (!geom) {
+      MSQ_SETERR(err)(MsqError::INVALID_ARG);
+      return;
+    }
+    
+    closest_and_normal( geom, position, closest, normal );
+  }
+  catch (TSTTB::Error& tstt_err ) {
+    MSQ_SETERR(err)(process_tstt_error(tstt_err),MsqError::INTERNAL_ERROR);
+  }
+}
+
+
 void* DomainTSTT::geom_from_mesh( void* mesh_ent_handle ) const
                                     throw ( TSTTB::Error )
 {
@@ -332,6 +375,20 @@ void GeomEntTSTT::normal_at( Mesh::EntityHandle handle,
   }
 }
 
+void GeomEntTSTT::closest_point( Mesh::EntityHandle handle,
+                                 const Vector3D& position,
+                                 Vector3D& closest,
+                                 Vector3D& normal,
+                                 MsqError& err ) const
+{
+  try {
+    closest_and_normal( geomEntHandle, position, closest, normal );
+  }
+  catch (TSTTB::Error& tstt_err ) {
+    MSQ_SETERR(err)(process_tstt_error(tstt_err),MsqError::INTERNAL_ERROR);
+  }
+}
+
 
 
 
@@ -340,8 +397,7 @@ void GeomEntTSTT::normal_at( Mesh::EntityHandle handle,
 GeomTSTTCommon::GeomTSTTCommon( TSTTG::Geometry& geom ) throw ( TSTTB::Error )
   : geomIface( geom ),
     geomHandles( alloc_sidl_vector<void*>(1) ),
-    vectorsIn ( alloc_sidl_vector<double>(3) ),
-    vectorsOut( alloc_sidl_vector<double>(3) )
+    positionsIn( alloc_sidl_vector<double>(3) )
 {
 }
 
@@ -356,17 +412,14 @@ void GeomTSTTCommon::move_to( void* geom, Vector3D& coord ) const
     // check to make sure it is true
   assert( sizeof(Vector3D) == 3*sizeof(double) );
   
-  vectorsIn = convert_to_sidl_vector( reinterpret_cast<double*>(&coord), 3 );
+  memcpy( convert_from_sidl_vector(positionsIn), &coord, 3*sizeof(double) );
+  positionsOut = convert_to_sidl_vector( reinterpret_cast<double*>(&coord), 3 );
   *convert_from_sidl_vector( geomHandles ) = geom;
 
   int junk = 3;
-  geomIface.gentityClosestPoint( geomHandles, 1,
-                                 vectorsIn,   3,
-                                 vectorsOut, junk );
-  
-  memcpy( reinterpret_cast<double*>(&coord),
-          convert_from_sidl_vector(vectorsOut),
-          3 * sizeof(double) );
+  geomIface.gentityClosestPoint( geomHandles,  1,
+                                 positionsIn,  3,
+                                 positionsOut, junk );
 }
 
  
@@ -378,17 +431,14 @@ void GeomTSTTCommon::normal( void* geom, Vector3D& coord ) const
     // check to make sure it is true
   assert( sizeof(Vector3D) == 3*sizeof(double) );
   
-  vectorsIn = convert_to_sidl_vector( reinterpret_cast<double*>(&coord), 3 );
+  memcpy( convert_from_sidl_vector(positionsIn), &coord, 3*sizeof(double) );
+  normalsOut = convert_to_sidl_vector( reinterpret_cast<double*>(&coord), 3 );
   *convert_from_sidl_vector( geomHandles ) = geom;
 
   int junk;
   geomIface.gentityNormal( geomHandles, 1,
-                           vectorsIn,   3,
-                           vectorsOut, junk );
-  
-  memcpy( reinterpret_cast<double*>(&coord),
-          convert_from_sidl_vector(vectorsOut),
-          3 * sizeof(double) );
+                           positionsIn, 3,
+                           normalsOut,  junk );
 }
  
 void GeomTSTTCommon::normal( void* geom, Vector3D coords[], unsigned count ) const
@@ -398,27 +448,45 @@ void GeomTSTTCommon::normal( void* geom, Vector3D coords[], unsigned count ) con
     // check to make sure it is true
   assert( sizeof(Vector3D) == 3*sizeof(double) );
   
-  vectorsIn = convert_to_sidl_vector( reinterpret_cast<double*>(coords), 3*count );
+  if (positionsIn.upper(0)+1 < 3*(int)count)
+    positionsIn = positionsIn.create1d( 3*count );
+  memcpy( convert_from_sidl_vector(positionsIn), coords, 3*count*sizeof(double) );
+  
+  normalsOut = convert_to_sidl_vector( reinterpret_cast<double*>(coords), 3*count );
+  
   if (geomHandles.upper(0)+1 < (int)count)
-    geomHandles = alloc_sidl_vector<void*>( count );
+    geomHandles = geomHandles.create1d( count );
   void** ptr = convert_from_sidl_vector( geomHandles );
   for (void** end = ptr + count; ptr != end; ++ptr)
     *ptr = geom;
-    
-  if (vectorsOut.upper(0)+1 < 3*(int)count)
-    vectorsOut = alloc_sidl_vector<double>( 3*count );
 
   int junk;
   geomIface.gentityNormal( geomHandles, count,
-                           vectorsIn,   3*count,
-                           vectorsOut, junk );
-  
-  memcpy( reinterpret_cast<double*>(coords),
-          convert_from_sidl_vector(vectorsOut),
-          3 * count * sizeof(double) );
+                           positionsIn, 3*count,
+                           normalsOut,  junk );
 }
 
-
+void GeomTSTTCommon::closest_and_normal( void* geom, 
+                                         const Vector3D& position,
+                                         Vector3D& closest,
+                                         Vector3D& normal ) const
+                                       throw (TSTTB::Error)
+{
+    // going to assume this in the following reinterpret_cast, so
+    // check to make sure it is true
+  assert( sizeof(Vector3D) == 3*sizeof(double) );
+  
+  memcpy( convert_from_sidl_vector(positionsIn), &position, 3*sizeof(double) );
+  positionsOut = convert_to_sidl_vector( reinterpret_cast<double*>(&closest), 3 );
+  normalsOut = convert_to_sidl_vector( reinterpret_cast<double*>(&normal), 3 );
+  *convert_from_sidl_vector( geomHandles ) = geom;
+  
+  int junk1, junk2;
+  geomIface.gentityClosestPointAndNormal( geomHandles,  1,
+                                          positionsIn,  3,
+                                          positionsOut, junk1,
+                                          normalsOut,   junk2 );
+}
 
 } // namespace Mesquite
 

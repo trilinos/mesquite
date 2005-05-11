@@ -487,6 +487,24 @@ namespace Mesquite
                             Vector3D coordinates[],
                             unsigned count,
                             MsqError& err ) const = 0;
+                            
+      /**\brief evaluate closest point and normal
+       *
+       * Given a position in space, return the closest 
+       * position in the domain and the domain normal
+       * at that point.
+       *
+       *\param entity_handle Evaluate the subset of the domain contianing
+       *                     this entity
+       *\param position      Input position for which to evaluate
+       *\param closest       Closest position in the domain.
+       *\param normal        Domain normal at the location of 'closest'
+       */
+    virtual void closest_point( Mesh::EntityHandle handle,
+                                const Vector3D& position,
+                                Vector3D& closest,
+                                Vector3D& normal,
+                                MsqError& err ) const = 0;
        
   };
 }
