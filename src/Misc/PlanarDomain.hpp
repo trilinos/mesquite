@@ -55,6 +55,8 @@ namespace Mesquite
     
     virtual ~PlanarDomain() { }
 
+    DomainHint hint() const { return PLANAR_DOMAIN; }
+
     void set_plane( const Vector3D& normal, const Vector3D& point);
     
     virtual void snap_to(Mesh::EntityHandle entity_handle,

@@ -68,6 +68,7 @@ PatchData::PatchData()
   : targetMatrices( "MSQ_TARGET_MATRIX", Mesh::DOUBLE ),
     meshSet(0),
     domainSet(false),
+    domainHint(NO_DOMAIN_HINT),
     mType(UNDEFINED_PATCH_TYPE),
     numCornerVertices(0),
     haveComputedInfos(0)
@@ -396,6 +397,15 @@ void PatchData::reorder()
     v2a[loc] = vertexArray[i];
     v2h[loc] = vertexHandlesArray[i];
   }
+  
+  if (!vertexNormals.empty() && domainHint != PLANAR_DOMAIN) {
+    PatchDataMem<Vector3D> v2n(numv);
+    for (i = 0; i < numv; ++i) {
+      loc = per[i];
+      v2n[loc] = vertexNormals[i];
+    }
+    vertexNormals = v2n;
+  } 
 
   //delete[] vertexArray;
   //delete[] vertexHandlesArray;
@@ -1082,12 +1092,24 @@ void PatchData::get_subpatch(size_t center_vertex_index,
 //! Adjust the position of the specified vertex so that it
 //! lies on its constraining domain.  The actual domain constraint
 //! is managed by the TSTT mesh implementation
-void PatchData::snap_vertex_to_domain(size_t vertex_index, MsqError &/*err*/)
+void PatchData::snap_vertex_to_domain(size_t vertex_index, MsqError &err)
 {
   if (meshSet && meshSet->get_domain_constraint())
   {
-    meshSet->get_domain_constraint()->snap_to(vertexHandlesArray[vertex_index],
-                                              vertexArray[vertex_index]);
+    if (domainHint == SMOOTH_DOMAIN && !vertexNormals.empty())
+    {
+      meshSet->get_domain_constraint()->closest_point( 
+                                          vertexHandlesArray[vertex_index],
+                                          Vector3D(vertexArray[vertex_index]),
+                                          vertexArray[vertex_index],
+                                          vertexNormals[vertex_index],
+                                          err ); MSQ_ERRRTN(err);
+    }
+    else
+    {
+      meshSet->get_domain_constraint()->snap_to(vertexHandlesArray[vertex_index],
+                                                vertexArray[vertex_index]);
+    }
   }
 }
 
@@ -1095,18 +1117,67 @@ void PatchData::snap_vertex_to_domain(size_t vertex_index, MsqError &/*err*/)
 void PatchData::get_domain_normal_at_vertex(size_t vertex_index,
                                    bool normalize,
                                    Vector3D &surf_norm,
-                                   MsqError &err) const
+                                   MsqError &err) 
 {
-  if (meshSet && meshSet->get_domain_constraint())
+  if (domainHint != NO_DOMAIN_HINT)
   {
-    surf_norm = vertexArray[vertex_index];
-    meshSet->get_domain_constraint()->normal_at(
-      vertexHandlesArray[vertex_index],
-      surf_norm);
-    if (normalize) { surf_norm.normalize(); }
+    if (vertexNormals.empty())
+    {
+      update_cached_normals( err ); MSQ_ERRRTN(err);
+    }
+    
+    if (domainHint == PLANAR_DOMAIN)
+      vertex_index = 0;
+    surf_norm = vertexNormals[vertex_index];
   }
   else
+  {
+    MeshDomain* domain = meshSet ? meshSet->get_domain_constraint() : 0;
+    if (!domain)
+    {
+      MSQ_SETERR(err)( "No domain constraint set.", MsqError::INVALID_STATE );
+      return;
+    }
+  
+    surf_norm = vertexArray[vertex_index];
+    domain->normal_at( vertexHandlesArray[vertex_index], surf_norm );
+  }
+
+  if (normalize)
+    surf_norm.normalize();
+}
+
+
+void PatchData::update_cached_normals( MsqError& err )
+{
+  MeshDomain* domain = meshSet ? meshSet->get_domain_constraint() : 0;
+  if (!domain)
+  {
     MSQ_SETERR(err)( "No domain constraint set.", MsqError::INVALID_STATE );
+    vertexNormals.clear();
+    return;
+  }
+  
+  if (domainHint == PLANAR_DOMAIN)
+  {
+    vertexNormals.resize(1);
+    vertexNormals[0] = vertex_by_index(0);
+    domain->normal_at( elementHandlesArray[0], vertexNormals[0] );
+  }
+      
+  else
+  {
+    vertexNormals.resize( num_vertices() );
+    for ( unsigned i = 0; i < num_vertices(); ++i)
+    {
+      Vector3D& norm = vertexNormals[i];
+      norm = vertexArray[i];
+      domain->normal_at( vertexHandlesArray[i], norm );
+      //norm.normalize();
+      //if (!finite(norm.x()) || !finite(norm.y()) || !finite(norm.z()))
+      //  norm.set(0,0,0);
+    }
+  }
 }
 
 
@@ -1149,25 +1220,45 @@ void PatchData::get_domain_normal_at_corner( size_t elem_index,
 
 void PatchData::get_domain_normals_at_corners( size_t elem_index,
                                                Vector3D normals_out[],
-                                               MsqError& err ) const
+                                               MsqError& err ) 
 {
-  if (meshSet && meshSet->get_domain_constraint())
-  {
-    const MsqMeshEntity& elem = elementArray[elem_index];
-    const unsigned count = elem.vertex_count();
+  const MsqMeshEntity& elem = elementArray[elem_index];
+  const unsigned count = elem.vertex_count();
+  const size_t* const vertex_indices = elem.get_vertex_index_array();
 
-    const size_t* const vertex_indices = elem.get_vertex_index_array();
-    for (unsigned i = 0; i < count; ++i)
-      normals_out[i] = vertexArray[ vertex_indices[i] ];
+  if (domainHint != NO_DOMAIN_HINT)
+  {
+    if (vertexNormals.empty())
+    {
+      update_cached_normals( err ); MSQ_ERRRTN(err);
+    }
     
-    meshSet->get_domain_constraint()->normal_at( 
-                                        elementHandlesArray[elem_index],
-                                        normals_out, count, err );
-                                        MSQ_CHKERR(err);
+    if (domainHint == PLANAR_DOMAIN)
+    {
+      for (unsigned i = 0; i < count; ++i)
+        normals_out[i] = vertexNormals[0];
+    }
+    else
+    {
+      for (unsigned i = 0; i < count; ++i)
+        normals_out[i] = vertexNormals[vertex_indices[i]];
+    }
   }
   else
   {
-    MSQ_SETERR(err)("No domain constraint set.", MsqError::INVALID_STATE );
+    MeshDomain* domain = meshSet ? meshSet->get_domain_constraint() : 0;
+    if (!domain)
+    {
+      MSQ_SETERR(err)( "No domain constraint set.", MsqError::INVALID_STATE );
+      return;
+    }
+    
+    for (unsigned i = 0; i < count; ++i)
+      normals_out[i] = vertexArray[ vertex_indices[i] ];
+    
+    domain->normal_at( elementHandlesArray[elem_index], 
+                       normals_out, count,
+                       err ); MSQ_CHKERR(err);
   }
 }  
   
@@ -1270,6 +1361,8 @@ void PatchData::initialize_data( size_t* elem_offset_array, MsqError& err )
   
     // Clear out data specific to patch
   clear_tag_data();
+  if (domainHint != PLANAR_DOMAIN)
+    vertexNormals.clear();
   
     // Clear any vertex->element adjacency data.  It
     // is probably invalid, and certainly will be by the time

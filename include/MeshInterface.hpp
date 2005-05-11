@@ -438,6 +438,17 @@ namespace Mesquite
   };
   
 
+    /** A hint on the characteristics of the domain
+      * that Mesquite may use to determine what, if
+      * any, scheme to use to cache characteristics 
+      * of the geometric domain.
+      */ 
+  enum DomainHint {
+    NO_DOMAIN_HINT,     //< Do not make any assumptions about the domain.
+    PLANAR_DOMAIN,      //< Domain is planar
+    LOCAL_PALANAR,      //< Domain is close to planar 
+    SMOOTH_DOMAIN       //< Domain is C1-continuous
+ };
   /*! \class MeshDomain
       The MeshDomain class provides geometrical information concerning the Mesh.
       It is called during surface meshes optimization to figure out the surface normal,
@@ -448,6 +459,13 @@ namespace Mesquite
   public:
     virtual ~MeshDomain()
       {}
+      
+      //! Give a hint about the nature of the domain for
+      //! better performance.  For implementations, if
+      //! unsure, return NO_DOMAIN_HINT.  SMOOTH_DOMAIN is
+      //! a good default choice if the domain is a single
+      //! geometric surface.
+    virtual DomainHint hint() const = 0;
 
       //! Modifies "coordinate" so that it lies on the
       //! domain to which "entity_handle" is constrained.

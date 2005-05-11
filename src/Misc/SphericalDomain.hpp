@@ -53,6 +53,8 @@ namespace Mesquite
       {}
 
     virtual ~SphericalDomain() { }
+
+    DomainHint hint() const { return SMOOTH_DOMAIN; }
     
     void set_sphere(const Vector3D& center, double radius)
       {

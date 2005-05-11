@@ -229,6 +229,9 @@ bool MeshSet::get_next_elem_on_vert_patch( PatchData& pd,
 
     // Set the patch type
   pd.mType = PatchData::ELEMENTS_ON_VERTEX_PATCH;
+  pd.domainHint = NO_DOMAIN_HINT;
+  if (mDomain)
+    pd.domainHint = mDomain->hint();
 
     // If this is our first time through the mesh,
     // initialize everything.
@@ -433,6 +436,9 @@ bool MeshSet::get_next_global_patch( PatchData& pd,
   }
 
   pd.mType = PatchData::GLOBAL_PATCH;
+  pd.domainHint = NO_DOMAIN_HINT;
+  if (mDomain)
+    pd.domainHint = mDomain->hint();
 
     // for a global patch, we always reset to start of the mesh.
   reset(err);

@@ -288,7 +288,7 @@ namespace Mesquite
       */
     void get_domain_normal_at_vertex(size_t vertex_index, bool normalize,
                                      Vector3D &surf_norm,
-                                     MsqError &err) const;
+                                     MsqError &err) ;
     
       /*! Get the normal to the domain at the centroid (projected to the
           domain) of a given element.
@@ -314,7 +314,7 @@ namespace Mesquite
        **/
     void get_domain_normals_at_corners( size_t element_index,
                                         Vector3D normals_out[],
-                                        MsqError& err ) const;
+                                        MsqError& err ) ;
                                         
 
       //! Alternative signature. Same functionality.
@@ -435,11 +435,14 @@ namespace Mesquite
    
     void note_have_info( ComputedInfo info )
       { haveComputedInfos |= (1<<info); }
+      
+    void update_cached_normals( MsqError& );
 
     friend class MeshSet;
 
     MeshSet* meshSet;
     bool domainSet;
+    DomainHint domainHint;
     PatchType mType;
     
     PatchDataMem<MsqVertex> vertexArray;
@@ -449,6 +452,7 @@ namespace Mesquite
     PatchDataMem<size_t> elemConnectivityArray;
     PatchDataMem<size_t> vertAdjacencyArray;
     PatchDataMem<size_t> vertAdjacencyOffsets;
+    PatchDataMem<Vector3D> vertexNormals;
     size_t numCornerVertices;
     
       // Patch Computed Information (maxs, mins, etc ... )
@@ -493,6 +497,7 @@ namespace Mesquite
     elemConnectivityArray.clear();
     vertAdjacencyArray.clear();
     vertAdjacencyOffsets.clear();
+    vertexNormals.clear();
     numCornerVertices = 0;
     haveComputedInfos = 0;
     meshSet = 0;

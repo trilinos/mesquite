@@ -113,6 +113,8 @@ public:
               TSTTR::Relate& relate ) throw( TSTTB::Error );
 
   virtual ~DomainTSTT();
+  
+  DomainHint hint() const;
 
   void snap_to( Mesh::EntityHandle entity_handle,
                 Vector3D& coordinat ) const;
@@ -162,6 +164,8 @@ public:
                void* geom_ent_handle ) throw( TSTTB::Error );
 
   virtual ~GeomEntTSTT();
+  
+  DomainHint hint() const;
 
   void snap_to( Mesh::EntityHandle entity_handle,
                 Vector3D& coordinat ) const;
@@ -241,6 +245,9 @@ DomainTSTT::DomainTSTT( TSTTG::Geometry& geom,
 
 DomainTSTT::~DomainTSTT() {}
 
+
+DomainHint DomainTSTT::hint() const 
+  { return NO_DOMAIN_HINT; }
 
 void DomainTSTT::snap_to( Mesh::EntityHandle handle,
                             Vector3D& coordinate ) const
@@ -337,6 +344,9 @@ GeomEntTSTT::GeomEntTSTT( TSTTG::Geometry& geom, void* geom_ent_handle )
 }
 
 GeomEntTSTT::~GeomEntTSTT() {}
+
+DomainHint GeomEntTSTT::hint() const 
+  { return SMOOTH_DOMAIN; }
 
 
 void GeomEntTSTT::snap_to( Mesh::EntityHandle handle,
