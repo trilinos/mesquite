@@ -35,7 +35,7 @@
 #include <string>
 
 #include "MeshInterface.hpp"
-
+#include "MsqError.hpp"
 
 namespace Mesquite {
 
