@@ -213,6 +213,26 @@ package TSTTG version 0.5.1
                        out int normals_size) 
       throws TSTTB.Error;
    
+//==========================gentityClosestPointAndNormal=================
+/**
+ * Return points and normals on specified entities closest to specified points
+ * in space.  Input coordinates and output points are interleaved in 
+ * the arrays.
+ * @param gentity_handles The gentities being queried
+ * @param near_coordinates Input coordinates
+ * @param on_coordinates Closest point on gentity
+ * @param normals Normals on gentity
+ */
+    void gentityClosestPointAndNormal(in array<opaque> gentity_handles, 
+                                      in int gentity_handles_size,
+                                      in array <double> near_coordinates, 
+                                      in int near_coordinates_size,
+                                      inout array <double> on_coordinates,
+                                      out int on_coordinates_size,
+                                      inout array <double> normals,
+                                      out int normals_size) 
+      throws TSTTB.Error;
+   
 //==========================gentityTangent=================
 /**
  * Return the tangent at point on specified entities.  Returns error
