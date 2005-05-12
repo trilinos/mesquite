@@ -50,11 +50,11 @@ Unit testing of various TargetCalculator concrete classes.
 #include "LPtoPTemplate.hpp"
 #include "sRI_DFT.hpp"
 #include "MeshImpl.hpp"
+#include "InstructionQueue.hpp"
 
 #include "PatchDataInstances.hpp"
 
 #include "cppunit/extensions/HelperMacros.h"
-#include "cppunit/SignalException.h"
 #include "MsqFreeVertexIndexIterator.hpp"
 #include <list>
 #include <iterator>
@@ -169,12 +169,11 @@ public:
     ShapeGuides811 iso_calc;
     iso_calc.compute_target_matrices(triPatch, err); CPPUNIT_ASSERT(!err);
 
-    MsqMeshEntity* elems = triPatch.get_element_array(err); CPPUNIT_ASSERT(!err);
-
     TargetMatrix W;
 
     // checks corner matrices for first triangle, first corner.
-    W = elems[0].get_tag()->target_matrix(0);
+    W = triPatch.targetMatrices.get_element_corner_tags( &triPatch, 0, err )[0];
+    //W = elems[0].get_tag()->target_matrix(0);
     double fac = pow(2./sqrt(3.), 1./3.);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(W[0][0], fac*1., 1e-6);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(W[0][1], fac*.5, 1e-6);
@@ -187,7 +186,8 @@ public:
     CPPUNIT_ASSERT_DOUBLES_EQUAL(W[2][2], fac, 1e-6);
 
     // checks corner matrices for second triangle, third corner.
-    W = elems[1].get_tag()->target_matrix(2);
+    W = triPatch.targetMatrices.get_element_corner_tags( &triPatch, 0, err )[2];
+    //W = elems[1].get_tag()->target_matrix(2);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(W[0][0], fac*1., 1e-6);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(W[0][1], fac*.5, 1e-6);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(W[0][2], 0, 1e-6);
@@ -287,7 +287,7 @@ public:
     MeshSet mesh_set;
     mesh_set.add_mesh(mesh, err); CPPUNIT_ASSERT(!err);
     if (normal) {
-      PlanarDomain* domain = new PlanarDomain(*normal, *point, mesh);
+      PlanarDomain* domain = new PlanarDomain(*normal, *point);
       mesh_set.set_domain_constraint(domain, err); CPPUNIT_ASSERT(!err);
     }
     
@@ -296,9 +296,15 @@ public:
     FeasibleNewton improver(&obj_func);
     improver.set_patch_type(PatchData::GLOBAL_PATCH, err); CPPUNIT_ASSERT(!err);
     ShapeGuides811 targ_calc;
-    improver.set_target_calculator(&targ_calc, err); CPPUNIT_ASSERT(!err);
+
+    InstructionQueue q;
+    q.add_target_calculator( &targ_calc, err ); CPPUNIT_ASSERT(!err);
+    q.set_master_quality_improver( &improver, err ); CPPUNIT_ASSERT(!err);
+    q.run_instructions( mesh_set, err ); CPPUNIT_ASSERT(!err);
+
+    //improver.set_target_calculator(&targ_calc, err); CPPUNIT_ASSERT(!err);
         
-    improver.loop_over_mesh(mesh_set, err); CPPUNIT_ASSERT(!err);
+    //improver.loop_over_mesh(mesh_set, err); CPPUNIT_ASSERT(!err);
 
     PatchData pd;
     mesh_set.get_next_patch(pd, &improver, err); CPPUNIT_ASSERT(!err);

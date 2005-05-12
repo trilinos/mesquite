@@ -46,7 +46,6 @@ Unit testing of various DistanceFromTarget (base *and* concrete classes) functio
 #include "sRI_DFT.hpp"
 
 #include "cppunit/extensions/HelperMacros.h"
-#include "cppunit/SignalException.h"
 
 #include <math.h>
 
@@ -117,23 +116,12 @@ public:
      create_one_tet_patch(idealTet, err);CPPUNIT_ASSERT(!err);
 
      // Creates a patch of one triangle, with specific coordinates, without domain.
-     oneTri.set_num_vertices(3);
-     oneTri.set_num_elements(1);
-     double coords[3];
-     MsqVertex* vert_array = oneTri.get_vertex_array(err);
-     coords[0] = 1; coords[1] = -1; coords[2] = -1;
-     vert_array[0] = coords;
-     coords[0] = 3; coords[1] = 0; coords[2] = -2;
-     vert_array[1] = coords;
-     coords[0] = 2; coords[1] = -3; coords[2] = 0;
-     vert_array[2] = coords;
-     size_t indices[3] = { 0, 1, 2 };
-     MsqMeshEntity& tri = oneTri.element_by_index(0);
-     tri.set_element_type(Mesquite::TRIANGLE);
-     memcpy(tri.get_modifiable_vertex_index_array(),
-            indices,
-            3*sizeof(size_t));
-
+     double coords[] = { 1, -1, -1, 
+                         3,  0, -2,
+                         2, -3,  0 };
+     size_t indices[3] = { 0, 1, 2 }; 
+     create_patch_mesh( oneTri, 3, coords, 1, indices, TRIANGLE, err );
+     CPPUNIT_ASSERT(!err);
   }
 
   void tearDown()
@@ -146,8 +134,6 @@ public:
   DistanceFromTargetTest()
     {}
 
-#undef __FUNC__
-#define __FUNC__ "DistanceFromTargetTest::test_tri_with_default_target_matrix"
    void test_tri_with_default_target_matrix()
    {
      MsqPrintError err(cout);
@@ -155,12 +141,9 @@ public:
         
      TargetCalculator::initialize_default_target_matrices(tri_m3d, quad_m3d, tet_m3d, hex_m3d);
 
-     idealTri.allocate_target_matrices(err); CPPUNIT_ASSERT(!err);
-     MsqMeshEntity* elem = idealTri.get_element_array(err);
-     MsqTag* tag = elem[0].get_tag();
-     tag->target_matrix(0) = tri_m3d;
-     tag->target_matrix(1) = tri_m3d;
-     tag->target_matrix(2) = tri_m3d;
+     TargetMatrix matrices[] = { tri_m3d, tri_m3d, tri_m3d };
+     idealTri.targetMatrices.set_element_corner_tags( &idealTri, 0, matrices, err );
+     CPPUNIT_ASSERT(!err);
 
      double coords[3];
      MsqVertex* vert_array = idealTri.get_vertex_array(err);
@@ -172,6 +155,7 @@ public:
      coords[0] = fac*1./2.; coords[1] = fac*sqrt(3.)/2.; coords[2] = 0;
      vert_array[2] = coords;
 
+     MsqMeshEntity* elem = idealTri.get_element_array(err);
      Matrix3D T[MSQ_MAX_NUM_VERT_PER_ENT];
      double c_k[MSQ_MAX_NUM_VERT_PER_ENT];
      this->compute_T_matrices(elem[0], idealTri, T, 3, c_k, err); CPPUNIT_ASSERT(!err);
@@ -188,8 +172,6 @@ public:
          
    }
 
-#undef __FUNC__
-#define __FUNC__ "DistanceFromTargetTest::test_quad_with_default_target_matrix"
    void test_quad_with_default_target_matrix()
    {
      MsqPrintError err(cout);
@@ -197,14 +179,11 @@ public:
         
      TargetCalculator::initialize_default_target_matrices(tri_m3d, quad_m3d, tet_m3d, hex_m3d);
 
-     quadPatch.allocate_target_matrices(err); CPPUNIT_ASSERT(!err);
-     MsqMeshEntity* elem = quadPatch.get_element_array(err);
-     MsqTag* tag = elem[0].get_tag();
-     tag->target_matrix(0) = quad_m3d;
-     tag->target_matrix(1) = quad_m3d;
-     tag->target_matrix(2) = quad_m3d;
-     tag->target_matrix(3) = quad_m3d;
+     TargetMatrix matrices[] = { quad_m3d, quad_m3d, quad_m3d, quad_m3d };
+     quadPatch.targetMatrices.set_element_corner_tags( &quadPatch, 0, matrices, err );
+     CPPUNIT_ASSERT(!err);
 
+     MsqMeshEntity* elem = quadPatch.get_element_array(err);
      Matrix3D T[MSQ_MAX_NUM_VERT_PER_ENT];
      double c_k[MSQ_MAX_NUM_VERT_PER_ENT];
      this->compute_T_matrices(elem[0], quadPatch, T, 4, c_k, err); CPPUNIT_ASSERT(!err);
@@ -221,8 +200,6 @@ public:
          
    }
   
-#undef __FUNC__
-#define __FUNC__ "DistanceFromTargetTest::test_tet_with_default_target_matrix"
    void test_tet_with_default_target_matrix()
    {
      MsqPrintError err(cout);
@@ -230,13 +207,9 @@ public:
         
      TargetCalculator::initialize_default_target_matrices(tri_m3d, quad_m3d, tet_m3d, hex_m3d);
 
-     tetPatch.allocate_target_matrices(err); CPPUNIT_ASSERT(!err);
-     MsqMeshEntity* elem = tetPatch.get_element_array(err);
-     MsqTag* tag = elem[0].get_tag();
-     tag->target_matrix(0) = tet_m3d;
-     tag->target_matrix(1) = tet_m3d;
-     tag->target_matrix(2) = tet_m3d;
-     tag->target_matrix(3) = tet_m3d;
+     TargetMatrix matrices[] = { tet_m3d, tet_m3d, tet_m3d, tet_m3d };
+     tetPatch.targetMatrices.set_element_corner_tags( &tetPatch, 0, matrices, err );
+     CPPUNIT_ASSERT(!err);
 
      double coords[3];
      MsqVertex* vert_array = tetPatch.get_vertex_array(err);
@@ -250,6 +223,7 @@ public:
      coords[0] = fac*1./2.; coords[1] = fac*sqrt(3.)/6.; coords[2] = fac*sqrt(2.)/sqrt(3.);
      vert_array[3] = coords;
 
+     MsqMeshEntity* elem = tetPatch.get_element_array(err);
      Matrix3D T[MSQ_MAX_NUM_VERT_PER_ENT];
      double c_k[MSQ_MAX_NUM_VERT_PER_ENT];
      this->compute_T_matrices(elem[0], tetPatch, T, 4, c_k, err); CPPUNIT_ASSERT(!err);
@@ -266,8 +240,6 @@ public:
          
    }
 
-#undef __FUNC__
-#define __FUNC__ "DistanceFromTargetTest::test_compute_T_matrices"
    void test_compute_T_matrices()
    {
      MsqPrintError err(cout);

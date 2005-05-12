@@ -5,26 +5,28 @@ MSQ_TEST = $(UNIT_DIR)/msq_test
 all_tests: $(MSQ_TEST)
 
 TEST_SRCS = msq_test_main.cpp \
+    ExodusTest.cpp \
     FileTokenizerTest.cpp \
-    VtkTest.cpp \
-    Matrix3DTest.cpp \
-    MsqMeshEntityTest.cpp \
-    Vector3DTest.cpp \
     InstructionQueueTest.cpp \
-    PatchDataTest.cpp \
-    QualityMetricTest.cpp \
-    ObjectiveFunctionTest.cpp \
+    Matrix3DTest.cpp \
+    MeshInterfaceTest.cpp \
     MeshSetTest.cpp \
-    MsqVertexTest.cpp \
     MsqFreeVertexIndexIteratorTest.cpp \
     MsqHessianTest.cpp \
-    SphericalGeometryTest.cpp \
+    MsqMeshEntityTest.cpp \
+    MsqVertexTest.cpp \
+    ObjectiveFunctionTest.cpp \
+    PatchDataTest.cpp \
     PlanarGeometryTest.cpp \
+    QualityMetricTest.cpp \
+    SphericalGeometryTest.cpp \
     TerminationCriterionTest.cpp \
+    TopologyInfoTest.cpp \
+    Vector3DTest.cpp \
     VertexCullingRegressionTest.cpp \
-    ExodusTest.cpp \
-    MeshInterfaceTest.cpp \
-    TopologyInfoTest.cpp 
+    VtkTest.cpp \
+    DistanceFromTargetTest.cpp \
+    TargetCalculatorTest.cpp 
 
 ifeq ($(MSQ_TSTT_MESH),yes)
     TEST_SRCS += TSTT_Test.cpp
