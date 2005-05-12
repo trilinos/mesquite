@@ -40,6 +40,7 @@ Header file for the Mesquite::RI_DFT class
 #include "Mesquite.hpp"
 #include "MsqError.hpp"
 #include "DistanceFromTarget.hpp"
+#include "Exponent.hpp"
 
 namespace Mesquite
 {
@@ -52,16 +53,13 @@ namespace Mesquite
   public:
 
     RI_DFT()
+      : a(pow(2.0, MSQ_ONE_THIRD)), b(1.0), c(-4.0/3.0)
     {
       MsqError err;
       set_averaging_method(LINEAR, err); MSQ_CHKERR(err);
       set_metric_type(ELEMENT_BASED);
       set_gradient_type(NUMERICAL_GRADIENT);
       set_hessian_type(NUMERICAL_HESSIAN);
-
-      a = pow(2.0, MSQ_ONE_THIRD);
-      b = 1.0;
-      c = -4.0/3.0;
     }
     
     //! virtual destructor ensures use of polymorphism during destruction
@@ -94,8 +92,8 @@ namespace Mesquite
   private:
     // variables used in the definition of the metric (2d and 3d)
     double a;
-    double b;
-    double c;
+    Exponent b;
+    Exponent c;
 
     // variables used during the analytic gradient calculations
     Vector3D mNormal;		// Normal vector for merit function

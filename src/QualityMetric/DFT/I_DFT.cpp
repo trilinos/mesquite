@@ -88,7 +88,7 @@ bool I_DFT::evaluate_element(PatchData& pd,
 	mCoords[j] = vertices[v_i[tetInd[i][j]]];
       }
       
-      mNormals[i] *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
+      mNormals[i] *= MSQ_3RT_2_OVER_6RT_3;
 
       QR(mQ, mR, W[i]);
       inv(invR, mR);
@@ -235,7 +235,7 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	}
 
 	if (mVert >= 0) {
-	  mNormals[i] *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
+	  mNormals[i] *= MSQ_3RT_2_OVER_6RT_3;
 	  
 	  QR(mQ, mR, W[i]);
 	  inv(invR, mR);
@@ -265,7 +265,7 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	  // For triangles, the free vertex must appear in every element.
 	  // Therefore, there these accumulations should not get used.
 
-	  mNormals[i] *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
+	  mNormals[i] *= MSQ_3RT_2_OVER_6RT_3;
 	  
 	  QR(mQ, mR, W[i]);
 	  inv(invR, mR);
@@ -290,7 +290,7 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	  mCoords[j] = vertices[v_i[tetInd[i][j]]];
 	}
       
-	mNormals[i] *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
+	mNormals[i] *= MSQ_3RT_2_OVER_6RT_3;
       
 	QR(mQ, mR, W[i]);
 	inv(invR, mR);
@@ -735,7 +735,7 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	}
 	
 	if (mVert >= 0) {
-	  mNormals[i] *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
+	  mNormals[i] *= MSQ_3RT_2_OVER_6RT_3;
 	  
 	  QR(mQ, mR, W[i]);
 	  inv(invR, mR);
@@ -769,7 +769,7 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	  // For triangles, the free vertex must appear in every element.
 	  // Therefore, there these accumulations should not get used.
 
-	  mNormals[i] *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
+	  mNormals[i] *= MSQ_3RT_2_OVER_6RT_3;
 	  
 	  QR(mQ, mR, W[i]);
 	  inv(invR, mR);
@@ -813,7 +813,7 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	  mCoords[j] = vertices[v_i[tetInd[i][j]]];
 	}
 
-	mNormals[i] *= pow(2./MSQ_SQRT_THREE, MSQ_ONE_THIRD);
+	mNormals[i] *= MSQ_3RT_2_OVER_6RT_3;
       
 	QR(mQ, mR, W[i]);
 	inv(invR, mR);

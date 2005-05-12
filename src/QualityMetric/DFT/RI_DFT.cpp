@@ -58,7 +58,7 @@ using namespace Mesquite;
 inline bool m_fcn_ridft2(double &obj, 
 			 const Vector3D x[3], const Vector3D &n,
 			 const Matrix3D &invW,
-			 const double a, const double b, const double c,
+			 const double a, const Exponent b, const Exponent c,
 			 const double delta)
 {
   static double matr[9], f, t1, t2;
@@ -116,7 +116,7 @@ inline bool m_fcn_ridft2(double &obj,
 inline bool g_fcn_ridft2(double &obj, Vector3D g_obj[3], 
 			 const Vector3D x[3], const Vector3D &n,
 			 const Matrix3D &invW,
-			 const double a, const double b, const double c,
+			 const double a, const Exponent b, const Exponent c,
 			 const double delta)
 {
   static double matr[9], f, t1, t2;
@@ -262,7 +262,7 @@ inline bool g_fcn_ridft2(double &obj, Vector3D g_obj[3],
 inline bool h_fcn_ridft2(double &obj, Vector3D g_obj[3], Matrix3D h_obj[6],
 			 const Vector3D x[3], const Vector3D &n,
 			 const Matrix3D &invW,
-			 const double a, const double b, const double c,
+			 const double a, const Exponent b, const Exponent c,
 			 const double delta)
 {
   static double matr[9], f, t1, t2;
@@ -834,7 +834,7 @@ inline bool h_fcn_ridft2(double &obj, Vector3D g_obj[3], Matrix3D h_obj[6],
 
 inline bool m_fcn_ridft3(double &obj, const Vector3D x[4], 
 			 const Matrix3D &invW,
-			 const double a, const double b, const double c,
+			 const double a, const Exponent b, const Exponent c,
 			 const double delta)
 {
   static double matr[9], f, t1, t2;
@@ -891,7 +891,7 @@ inline bool m_fcn_ridft3(double &obj, const Vector3D x[4],
 
 inline bool g_fcn_ridft3(double &obj, Vector3D g_obj[4], const Vector3D x[4],
 			 const Matrix3D &invW,
-			 const double a, const double b, const double c,
+			 const double a, const Exponent b, const Exponent c,
 			 const double delta)
 {
   static double matr[9], f, t1, t2;
@@ -971,7 +971,7 @@ inline bool g_fcn_ridft3(double &obj, Vector3D g_obj[4], const Vector3D x[4],
     }
   }
   else {
-    printf("b = %5.4e not allowed in RI_DFT\n", b);
+    printf("b = %5.4e not allowed in RI_DFT\n", (double)b);
     exit(-1);
   }
 
@@ -1079,7 +1079,7 @@ inline bool g_fcn_ridft3(double &obj, Vector3D g_obj[4], const Vector3D x[4],
 
 inline bool h_fcn_ridft3(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
 			 const Vector3D x[4], const Matrix3D &invW,
-			 const double a, const double b, const double c,
+			 const double a, const Exponent b, const Exponent c,
 			 const double delta)
 {
   static double matr[9], f, t1, t2;
@@ -1212,7 +1212,7 @@ inline bool h_fcn_ridft3(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
     }
   }
   else {
-    printf("b = %5.4e not allowed in RI_DFT\n", b);
+    printf("b = %5.4e not allowed in RI_DFT\n", (double)b);
     exit(-1);
   }
 
@@ -1856,7 +1856,7 @@ bool RI_DFT::evaluate_element(PatchData& pd,
                   (v_i[tetInd[i][2]] - v_i[tetInd[i][0]]);
         mNormal.normalize();
       }
-      mNormal *= pow(2./MSQ_SQRT_THREE, 1./3.);
+      mNormal *= MSQ_3RT_2_OVER_6RT_3;
 
       inv(invW, W[i]);
 
@@ -1996,7 +1996,7 @@ bool RI_DFT::compute_element_analytical_gradient(PatchData &pd,
       
       pd.get_domain_normal_at_vertex(v_i[tetInd[i][0]], true, mNormal, err);
       MSQ_ERRZERO(err);
-      mNormal *= pow(2./MSQ_SQRT_THREE, 1./3.);
+      mNormal *= MSQ_3RT_2_OVER_6RT_3);
 
       inv(invW, W[i]);
 
@@ -2244,7 +2244,7 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
 
       pd.get_domain_normal_at_vertex(v_i[tetInd[i][0]], true, mNormal, err);
       MSQ_ERRZERO(err);
-      mNormal *= pow(2./MSQ_SQRT_THREE, 1./3.);
+      mNormal *= MSQ_3RT_2_OVER_6RT_3;
 
       inv(invW, W[i]);
 
