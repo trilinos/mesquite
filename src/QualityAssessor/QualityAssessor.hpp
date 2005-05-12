@@ -242,6 +242,11 @@ namespace Mesquite
         /** Note invalid result */
         void add_invalid_value() ;
         
+        /** If range of histogram has not yet been determined,
+          * calculate it from the min/max values.
+          */
+        void calculate_histogram_range();
+        
       private:
       
         friend class QualityAssessor;

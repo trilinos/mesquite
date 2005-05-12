@@ -304,6 +304,8 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
       need_second_pass_for_vertices = true;
   }
   
+  list<Assessor> histogramList;
+  
     // Do element-based metrics
   if (assessList.begin() != elem_end)
   {
@@ -367,6 +369,16 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
           //Remove this when no longer doing global
         more_mesh=false;
       }
+  
+        // Fix up any histogram ranges which were calculated
+      for (iter = assessList.begin(); iter != elem_end; ++iter)
+        if (iter->funcFlags&HISTOGRAM && !iter->haveHistRange)
+          if (first_pass)
+            iter->calculate_histogram_range();
+// Uncomment the following to have the QA keep the first
+// calculated histogram range for all subsequent iterations.
+//          else
+//            iter->haveHistRange = true;
     
     } while (first_pass && need_second_pass_for_elements);
   }
@@ -435,9 +447,20 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
           //Remove this when no longer doing global
         more_mesh=false;
       }
+  
+        // Fix up any histogram ranges which were calculated
+      for (iter = elem_end; iter != assessList.end(); ++iter)
+        if (iter->funcFlags&HISTOGRAM && !iter->haveHistRange)
+          if (first_pass)
+            iter->calculate_histogram_range();
+// Uncomment the following to have the QA keep the first
+// calculated histogram range for all subsequent iterations.
+//          else
+//            iter->haveHistRange = true;
     
     } while (first_pass && need_second_pass_for_vertices);
   }  
+  
   
     // Print results, if requested
   if (printSummary)
@@ -561,29 +584,15 @@ void QualityAssessor::Assessor::add_invalid_value()
 
 void QualityAssessor::Assessor::add_hist_value( double metric_value )
 {
-    // If the user has specified the range of the histogram, then
-    // haveHistRange == true and the range is [histMin,histMax].
-  double min, max;
-  if (haveHistRange) {
-    min = histMin;
-    max = histMax;
-  }
-    // If user has not specified the range, use the calculated
-    // minimum/maximum values for the metric.
-  else {
-    min = minimum;
-    max = maximum;
-  }
-  
     // Width of one interval in histogram
-  double step = (max - min) / (histogram.size()-2);
+  double step = (histMax - histMin) / (histogram.size()-2);
     
     // First and last values in array are counts of values
     // outside the user-specified range of the histogram
     // (below and above, respectively.)
-  if (metric_value < min)
+  if (metric_value < histMin)
     ++histogram[0];
-  else if (metric_value > max)
+  else if (metric_value > histMax)
     ++histogram[histogram.size()-1];
   else
   {
@@ -592,7 +601,7 @@ void QualityAssessor::Assessor::add_hist_value( double metric_value )
       // minimum value for histogram.
     unsigned cell;
     if (step > DBL_EPSILON)
-      cell = 1+(unsigned)((metric_value - min) / step);
+      cell = 1+(unsigned)((metric_value - histMin) / step);
     else
       cell = 1;
       
@@ -605,6 +614,14 @@ void QualityAssessor::Assessor::add_hist_value( double metric_value )
     ++histogram[cell];
   }
 }
+
+void QualityAssessor::Assessor::calculate_histogram_range()
+{
+  double step = (maximum - minimum) / (histogram.size() - 2);
+  double size = pow( 10, ceil(log10(step)) );
+  histMin = size * floor( minimum / size );
+  histMax = size *  ceil( maximum / size );
+}  
 
 void QualityAssessor::print_summary( msq_stdio::ostream& stream ) const
 {
@@ -733,14 +750,14 @@ void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream ) co
     // range is either user-specified (histMin & histMax) or
     // calculated (minimum & maximum)
   double min, max;
-  if (haveHistRange) {
+  //if (haveHistRange) {
     min = histMin;
     max = histMax;
-  }
-  else {
-    min = minimum;
-    max = maximum;
-  }
+  //}
+  //else {
+  //  min = minimum;
+  //  max = maximum;
+  //}
     // Witdh of one interval of histogram
   double step = (max - min) / (histogram.size()-2);
   
