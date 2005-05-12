@@ -2218,7 +2218,7 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
     assert(3 == nv);
 
 #ifndef ANALYTIC
-    mValid = compute_element_numerical_gradient(pd, e, fv, g, nfv, m, err);
+    mValid = compute_element_numerical_hessian(pd, e, fv, g, h, nfv, m, err);
     return !MSQ_CHKERR(err) && mValid;
 #else
 
@@ -2319,7 +2319,7 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
   case QUADRILATERAL:
 
 #ifndef ANALYTIC
-    mValid = compute_element_numerical_gradient(pd, e, fv, g, nfv, m, err);
+    mValid = compute_element_numerical_hessian(pd, e, fv, g, h, nfv, m, err);
     return !MSQ_CHKERR(err) && mValid;
 #else
 
