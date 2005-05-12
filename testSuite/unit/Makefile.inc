@@ -40,12 +40,14 @@ $(MSQ_TEST) : $(TEST_OBJS_P) $(locallibdir)/libmesquite.a
         $(TEST_OBJS_P) \
         -o $@ \
         -L$(locallibdir) -lmesquite \
-        $(CPPUNIT_LNK) $(CONFIG_LDFLAGS) $(TSTT_MESH_LDFLAGS)
+        $(CPPUNIT_LNK) $(CONFIG_LDFLAGS) \
+        $(TSTT_MESH_LDFLAGS) $(TSTT_BASE_LNK) $(TSTT_MESH_LNK)
 
 .SUFFIXES : .cpp .o
 
 .cpp.o:
 	@echo "Compiling $<"
 	$(PREFIX)$(CXX) -c $(CXXFLAGS) $(CONFIG_CFLAGS) \
-        $(MESQUITE_INCLUDE) $(CPPUNIT_INC) $(TSTT_MESH_CFLAGS) \
+        $(MESQUITE_INCLUDE) $(CPPUNIT_INC) \
+        $(TSTT_BASE_INC) $(TSTT_MESH_INC) $(TSTT_MESH_CFLAGS) \
         -c -o $@ $<
