@@ -45,7 +45,9 @@ static bool create_exodus_file( const char* filename );
 # include <iostream>
 #endif
 
-#include "unistd.h"
+#ifndef _MSC_VER
+#  include <unistd.h>
+#endif
 
 class ExodusTest : public CppUnit::TestFixture
 {
@@ -82,10 +84,7 @@ public:
   void ExodusTest::test_read()
   {
       // Create a mesh file to read
-    char filename[] = "MsqExoTestXXXXXX";
-    int fid = mkstemp(filename);
-    CPPUNIT_ASSERT( fid >= 0 );
-    close( fid );
+    char filename[] = "MsqExoTestTemp.g";
     bool havefile = create_exodus_file( filename );
     CPPUNIT_ASSERT(havefile);
     
@@ -98,10 +97,7 @@ public:
     Mesquite::MsqPrintError err(msq_stdio::cout);
 
       // Create a mesh file
-    char filename[] = "MsqExoTestXXXXXX";
-    int fid = mkstemp(filename);
-    CPPUNIT_ASSERT( fid >= 0 );
-    close( fid );
+    char filename[] = "MsqExoTestTemp.g";
     bool havefile = create_exodus_file( filename );
     CPPUNIT_ASSERT(havefile);
     

@@ -10,3 +10,4 @@
 #endif
 
 inline int finite( double d ) { return _finite(d); }
+

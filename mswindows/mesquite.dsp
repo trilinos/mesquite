@@ -44,7 +44,7 @@ F90=df.exe
 # ADD BASE F90 /compile_only /nologo /warn:nofileopt
 # ADD F90 /compile_only /nologo /warn:nofileopt
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /W3 /GX /O2 /I "../TSTT-interface" /I "../include" /I "../src" /I "../src/Control" /I "../src/Control/Wrappers" /I "../src/Mesh" /I "../src/Misc" /I "../src/ObjectiveFunction" /I "../src/QualityAssessor" /I "../src/QualityImprover" /I "../src/QualityImprover/TopologyModifier" /I "../src/QualityImprover/VertexMover" /I "../src/QualityImprover/VertexMover/ConjugateGradient" /I "../src/QualityImprover/VertexMover/LaplacianSmoothers" /I "../src/QualityImprover/VertexMover/NonSmoothSteepestDescent" /I "../src/QualityImprover/VertexMover/Randomize" /I "../src/QualityImprover/VertexMover/SteepestDescent" /I "../src/QualityMetric" /I "../src/QualityMetric/Shape" /I "../src/QualityMetric/Smoothness" /I "../src/QualityMetric/Untangle" /I "../src/QualityMetric/Volume" /D "NDEBUG" /D "WIN32" /D "_MBCS" /D "_LIB" /D "USE_STD_INCLUDES" /YX /FD /c
+# ADD CPP /nologo /W3 /GX /O2 /I "../include" /I "../src" /I "../src/Control" /I "../src/Control/Wrappers" /I "../src/Mesh" /I "../src/Misc" /I "../src/ObjectiveFunction" /I "../src/QualityAssessor" /I "../src/QualityImprover" /I "../src/QualityImprover/TopologyModifier" /I "../src/QualityImprover/VertexMover" /I "../src/QualityImprover/VertexMover/ConjugateGradient" /I "../src/QualityImprover/VertexMover/FeasibleNewton" /I "../src/QualityImprover/VertexMover/LaplacianSmoothers" /I "../src/QualityImprover/VertexMover/NonSmoothSteepestDescent" /I "../src/QualityImprover/VertexMover/Randomize" /I "../src/QualityImprover/VertexMover/SteepestDescent" /I "../src/QualityMetric" /I "../src/QualityMetric/Shape" /I "../src/QualityMetric/Smoothness" /I "../src/QualityMetric/Untangle" /I "../src/QualityMetric/Volume" /I "../src/TargetCalculator" /D "NDEBUG" /D "HAVE_CLOCK" /D "HAVE__VSNPRINTF" /D "WIN32" /D "_MBCS" /D "_LIB" /D "USE_STD_INCLUDES" /YX /FD /I /c
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -70,7 +70,7 @@ F90=df.exe
 # ADD BASE F90 /check:bounds /compile_only /debug:full /nologo /traceback /warn:argument_checking /warn:nofileopt
 # ADD F90 /check:bounds /compile_only /debug:full /nologo /traceback /warn:argument_checking /warn:nofileopt
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I "../TSTT-interface" /I "../include" /I "../src" /I "../src/Control" /I "../src/Control/Wrappers" /I "../src/Mesh" /I "../src/Misc" /I "../src/ObjectiveFunction" /I "../src/QualityAssessor" /I "../src/QualityImprover" /I "../src/QualityImprover/TopologyModifier" /I "../src/QualityImprover/VertexMover" /I "../src/QualityImprover/VertexMover/FeasibleNewton" /I "../src/QualityImprover/VertexMover/ConjugateGradient" /I "../src/QualityImprover/VertexMover/LaplacianSmoothers" /I "../src/QualityImprover/VertexMover/NonSmoothSteepestDescent" /I "../src/QualityImprover/VertexMover/Randomize" /I "../src/QualityImprover/VertexMover/SteepestDescent" /I "../src/QualityMetric" /I "../src/QualityMetric/Shape" /I "../src/QualityMetric/Smoothness" /I "../src/QualityMetric/Untangle" /I "../src/QualityMetric/Volume" /I "../src/TargetCalculator" /D "_DEBUG" /D "WIN32" /D "_MBCS" /D "_LIB" /D "HAVE_CLOCK" /YX /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /I "../src" /I "../src/Control" /I "../src/Control/Wrappers" /I "../src/Mesh" /I "../src/Misc" /I "../src/ObjectiveFunction" /I "../src/QualityAssessor" /I "../src/QualityImprover" /I "../src/QualityImprover/TopologyModifier" /I "../src/QualityImprover/VertexMover" /I "../src/QualityImprover/VertexMover/FeasibleNewton" /I "../src/QualityImprover/VertexMover/ConjugateGradient" /I "../src/QualityImprover/VertexMover/LaplacianSmoothers" /I "../src/QualityImprover/VertexMover/NonSmoothSteepestDescent" /I "../src/QualityImprover/VertexMover/Randomize" /I "../src/QualityImprover/VertexMover/SteepestDescent" /I "../src/QualityMetric" /I "../src/QualityMetric/Shape" /I "../src/QualityMetric/Smoothness" /I "../src/QualityMetric/Untangle" /I "../src/QualityMetric/Volume" /I "../src/TargetCalculator" /D "_DEBUG" /D "WIN32" /D "_MBCS" /D "_LIB" /D "HAVE_CLOCK" /D "HAVE__VSNPRINTF" /D MSQ_ENABLE_DEBUG=1 /D "2" /D "MSQ_TRAP_FPE" /YX /FD /GZ /c
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -89,6 +89,10 @@ LIB32=link.exe -lib
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl;fi;fd"
+# Begin Source File
+
+SOURCE=..\src\QualityMetric\AddQualityMetric.hpp
+# End Source File
 # Begin Source File
 
 SOURCE=..\src\QualityMetric\Smoothness\ASMQualityMetric.hpp
@@ -115,10 +119,6 @@ SOURCE=..\src\ObjectiveFunction\CompositeOFScalarMultiply.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\QualityMetric\CompositeQualityMetric.hpp
-# End Source File
-# Begin Source File
-
 SOURCE=..\src\TargetCalculator\ConcreteTargetCalculators.hpp
 # End Source File
 # Begin Source File
@@ -135,6 +135,10 @@ SOURCE=..\src\QualityMetric\Volume\CornerJacobianQualityMetric.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\Mesh\CornerTag.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\QualityMetric\DFT\DistanceFromTarget.hpp
 # End Source File
 # Begin Source File
@@ -144,6 +148,10 @@ SOURCE=..\src\QualityMetric\Smoothness\EdgeLengthQualityMetric.hpp
 # Begin Source File
 
 SOURCE=..\src\QualityMetric\Smoothness\EdgeLengthRangeQualityMetric.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\Misc\Exponent.hpp
 # End Source File
 # Begin Source File
 
@@ -163,11 +171,39 @@ SOURCE=..\src\QualityMetric\DFT\I_DFT.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\Control\InstructionQueue.hpp
+SOURCE=..\src\QualityMetric\DFT\I_DFT_Generalized.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\QualityMetric\Shape\InverseMeanRatioQualityMetric.hpp
+SOURCE=..\src\QualityMetric\DFT\I_DFT_InverseMeanRatio.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\QualityMetric\DFT\I_DFT_NoBarrier.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\QualityMetric\DFT\I_DFT_StrongBarrier.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\QualityMetric\DFT\I_DFT_WeakBarrier.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\QualityMetric\DFT\I_DFTFamilyFunctions.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\QualityMetric\Shape\IdealWeightInverseMeanRatio.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\QualityMetric\Shape\IdealWeightMeanRatio.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\Control\InstructionQueue.hpp
 # End Source File
 # Begin Source File
 
@@ -203,15 +239,23 @@ SOURCE=..\src\ObjectiveFunction\MaxTemplate.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\QualityImprover\VertexMover\MeanMidNodeMover.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\QualityMetric\Shape\MeanRatioFunctions.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\QualityMetric\Shape\MeanRatioQualityMetric.hpp
+SOURCE=..\src\Mesh\MeshImpl.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\Mesh\MeshImpl.hpp
+SOURCE=..\src\Mesh\MeshImplData.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\Mesh\MeshImplTags.hpp
 # End Source File
 # Begin Source File
 
@@ -220,6 +264,10 @@ SOURCE=..\include\MeshInterface.hpp
 # Begin Source File
 
 SOURCE=..\src\Mesh\MeshSet.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\Misc\MeshTransform.hpp
 # End Source File
 # Begin Source File
 
@@ -236,6 +284,10 @@ SOURCE=..\src\Misc\MsqDebug.hpp
 # Begin Source File
 
 SOURCE=..\src\Misc\MsqError.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\Misc\MsqFPE.hpp
 # End Source File
 # Begin Source File
 
@@ -283,11 +335,11 @@ SOURCE=..\src\ObjectiveFunction\ObjectiveFunction.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\Misc\ParameterSet.hpp
+SOURCE=..\src\Mesh\PatchData.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\Mesh\PatchData.hpp
+SOURCE=..\src\Mesh\PatchDataMem.hpp
 # End Source File
 # Begin Source File
 
@@ -324,6 +376,10 @@ SOURCE=..\src\QualityMetric\DFT\RI_DFT.hpp
 # Begin Source File
 
 SOURCE=..\src\QualityMetric\ScalarAddQualityMetric.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\QualityMetric\ScalarMultiplyQualityMetric.hpp
 # End Source File
 # Begin Source File
 
@@ -368,6 +424,10 @@ SOURCE=..\src\Misc\TargetMatrix.hpp
 # Begin Source File
 
 SOURCE=..\src\Control\TerminationCriterion.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\Mesh\TopologyInfo.hpp
 # End Source File
 # Begin Source File
 
@@ -430,7 +490,19 @@ SOURCE=..\src\Control\TerminationCriterion.cpp
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=..\src\Mesh\CornerTag.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\Mesh\MeshImpl.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\Mesh\MeshImplData.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\Mesh\MeshImplTags.cpp
 # End Source File
 # Begin Source File
 
@@ -448,13 +520,25 @@ SOURCE=..\src\Mesh\MsqVertex.cpp
 
 SOURCE=..\src\Mesh\PatchData.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=..\src\Mesh\TopologyInfo.cpp
+# End Source File
 # End Group
 # Begin Group "Misc"
 
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=..\src\Misc\Exponent.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\Misc\FileTokenizer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\Misc\MeshTransform.cpp
 # End Source File
 # Begin Source File
 
@@ -462,7 +546,24 @@ SOURCE=..\src\Misc\MesquiteVersion.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\Misc\MsqDebug.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\Misc\MsqError.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\Misc\MsqFPE.cpp
+
+!IF  "$(CFG)" == "mesquite - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "mesquite - Win32 Debug"
+
+# ADD CPP /D MSQ_ENABLE_DEBGU=1
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -558,6 +659,10 @@ SOURCE=..\src\QualityImprover\VertexMover\SteepestDescent\SteepestDescent.cpp
 # End Group
 # Begin Source File
 
+SOURCE=..\src\QualityImprover\VertexMover\MeanMidNodeMover.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\QualityImprover\VertexMover\VertexMover.cpp
 # End Source File
 # End Group
@@ -630,11 +735,11 @@ SOURCE=..\src\QualityMetric\Shape\GeneralizedConditionNumberQualityMetric.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\QualityMetric\Shape\InverseMeanRatioQualityMetric.cpp
+SOURCE=..\src\QualityMetric\Shape\IdealWeightInverseMeanRatio.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\QualityMetric\Shape\MeanRatioQualityMetric.cpp
+SOURCE=..\src\QualityMetric\Shape\IdealWeightMeanRatio.cpp
 # End Source File
 # Begin Source File
 
@@ -699,6 +804,10 @@ SOURCE=..\src\QualityMetric\DFT\sRI_DFT.cpp
 # End Group
 # Begin Source File
 
+SOURCE=..\src\QualityMetric\AddQualityMetric.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\QualityMetric\MultiplyQualityMetric.cpp
 # End Source File
 # Begin Source File
@@ -712,6 +821,10 @@ SOURCE=..\src\QualityMetric\QualityMetric.cpp
 # Begin Source File
 
 SOURCE=..\src\QualityMetric\ScalarAddQualityMetric.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\QualityMetric\ScalarMultiplyQualityMetric.cpp
 # End Source File
 # End Group
 # Begin Group "TargetCalculator"

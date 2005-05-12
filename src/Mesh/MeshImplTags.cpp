@@ -200,7 +200,7 @@ void MeshImplTags::set_element_data( size_t tag_index,
     // Store passed tag values
   data = (char*)tag->elementData;
   const char* iter = (const char*)values;
-  for (size_t i = 0; i < num_indices; ++i)
+  for (i = 0; i < num_indices; ++i)
   {
     memcpy( data + index_array[i]*tag->desc.size, iter, tag->desc.size );
     iter += tag->desc.size;
@@ -292,7 +292,7 @@ void MeshImplTags::set_vertex_data( size_t tag_index,
     // Store passed tag values
   data = (char*)tag->vertexData;
   const char* iter = (const char*)values;
-  for (size_t i = 0; i < num_indices; ++i)
+  for (i = 0; i < num_indices; ++i)
   {
     memcpy( data + index_array[i]*tag->desc.size, iter, tag->desc.size );
     iter += tag->desc.size;

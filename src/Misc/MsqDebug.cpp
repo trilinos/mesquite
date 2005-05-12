@@ -106,12 +106,17 @@ void MsqDebug::FormatPrinter::print( const char* format, ... ) const
   
   char buffer[512];
   
-#if defined(HAVE_VSNPRINTF) && HAVE_VSNPRINTF == 1
+#if defined(HAVE_VSNPRINTF)
   va_list args;
   va_start( args, format );
   vsnprintf( buffer, sizeof(buffer), format, args );
   va_end( args );
-#elif defined(HAVE_VSPRINTF) && HAVE_VSPRINTF == 1
+#elif defined(HAVE__VSNPRINTF)
+  va_list args;
+  va_start( args, format );
+  _vsnprintf( buffer, sizeof(buffer), format, args );
+  va_end( args );
+#elif defined(HAVE_VSPRINTF) 
   va_list args;
   va_start( args, format );
   vsprintf( buffer, format, args );

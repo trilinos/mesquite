@@ -197,12 +197,13 @@ public:
 
   void test_vertex_byte()
   {
-    unsigned char* bytes = new unsigned char[nbVert];
+    size_t i;
+	unsigned char* bytes = new unsigned char[nbVert];
     mMesh->vertices_get_byte(mVertices, bytes, nbVert, mErr); 
     CPPUNIT_ASSERT(!mErr);
 
     // Asserts all vertex bytes are initialised to 0. 
-    for (size_t i=0; i<nbVert; ++i)
+    for (i=0; i<nbVert; ++i)
       CPPUNIT_ASSERT(bytes[i] == 0);
 
     // Test various vertex byte read / write routines.
@@ -217,7 +218,7 @@ public:
     CPPUNIT_ASSERT(byte == 4);
     mMesh->vertices_get_byte(mVertices, bytes, nbVert, mErr);
     CPPUNIT_ASSERT(!mErr);
-    for (size_t i=0; i<nbVert; ++i) {
+    for (i=0; i<nbVert; ++i) {
       if (i==3)
         CPPUNIT_ASSERT(bytes[i] == 4);
       else if (i==5)
@@ -232,12 +233,13 @@ public:
   
   void test_vertex_get_attached_elements()
   {
+	size_t i;
 
     // checks we have 6 vertices contained in 1 element only
     // and 3 vertices contained in 3 elements. 
     int n1=0;
     int n3=0;
-    for (size_t i=0; i<nbVert; ++i) {
+    for (i=0; i<nbVert; ++i) {
       size_t nev = mMesh->vertex_get_attached_element_count(mVertices[i], mErr);
       CPPUNIT_ASSERT(!mErr);
       if (nev==1)
@@ -252,7 +254,7 @@ public:
 
     // gets the index of a vertex in a corner
     int one_corner_vertex_index=0;
-    size_t i=nbVert-1;
+    i=nbVert-1;
     while (!one_corner_vertex_index) {
       size_t nev = mMesh->vertex_get_attached_element_count(mVertices[i], mErr);
       CPPUNIT_ASSERT(!mErr);
@@ -283,7 +285,8 @@ public:
     // and 1 element containing 3 vertices. 
     int n3=0;
     int n4=0;
-    for (size_t i=0; i<nbElem; ++i) {
+	size_t i;
+    for (i=0; i<nbElem; ++i) {
       size_t nve = mMesh->element_get_attached_vertex_count(
                                          mElements[i], mErr);
       CPPUNIT_ASSERT(!mErr);
@@ -335,11 +338,11 @@ public:
     
     // Make sure CSR data is valid
     int vtx_repeated_occurence[9] = {0,0,0,0,0,0,0,0,0};
-    for (int i=0; i<15; ++i) {
+    for (i=0; i<15; ++i) {
       CPPUNIT_ASSERT( csr_data[i] >=0 && csr_data[i] <= 8 );
       ++vtx_repeated_occurence[csr_data[i]];
     }
-    for (int i=0; i<9; ++i) {
+    for (i=0; i<9; ++i) {
       CPPUNIT_ASSERT( vtx_repeated_occurence[i] <= 3 );
     }
 

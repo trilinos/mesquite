@@ -416,7 +416,8 @@ public:
 
   void test_compute_ana_hessian_tet()
   {
-    MsqPrintError err(cout);
+    int i;
+	MsqPrintError err(cout);
     
     // creates a mean ratio quality metric ...
     ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
@@ -445,12 +446,12 @@ public:
     Matrix3D* mat; 
 
     mat = H.get_block(0,0);
-    for (int i=0; i<3; ++i)
+    for (i=0; i<3; ++i)
       for (int j=0; j<3; ++j)
 	CPPUNIT_ASSERT_DOUBLES_EQUAL((*mat)[i][j], mat00[i][j], 1e-4);
     
     mat = H.get_block(1,3);
-    for (int i=0; i<3; ++i)
+    for (i=0; i<3; ++i)
       for (int j=0; j<3; ++j)
 	CPPUNIT_ASSERT_DOUBLES_EQUAL((*mat)[i][j], mat13[i][j], 1e-4);
     
@@ -462,7 +463,8 @@ public:
   
   void test_compute_ana_hessian_tet_scaled()
   {
-    MsqPrintError err(cout);
+    int i;
+	MsqPrintError err(cout);
     
     // creates a mean ratio quality metric ...
     ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
@@ -495,12 +497,12 @@ public:
     Matrix3D* mat; 
 
     mat = H.get_block(0,0);
-    for (int i=0; i<3; ++i)
+    for (i=0; i<3; ++i)
       for (int j=0; j<3; ++j)
         CPPUNIT_ASSERT_DOUBLES_EQUAL((*mat)[i][j], mat00[i][j], 1e-4);
     
     mat = H.get_block(1,3);
-    for (int i=0; i<3; ++i)
+    for (i=0; i<3; ++i)
       for (int j=0; j<3; ++j)
         CPPUNIT_ASSERT_DOUBLES_EQUAL((*mat)[i][j], mat13[i][j], 1e-4);
     
@@ -731,7 +733,7 @@ public:
     // the same except for a negative sign.
   void test_LPtoP_negate_flag()
   {
-    size_t i;
+    size_t i, m;
     int j;
     bool valid;
     MsqPrintError err(cout);
@@ -798,7 +800,7 @@ public:
       //std::cout<<"\nHessian size "<< Hneg.size();
       //std::cout<<"Hpos"<<Hpos;
       //std::cout<<"Hneg"<<Hneg;
-    for (size_t m=0; m<Hpos.size(); ++m) {
+    for (m=0; m<Hpos.size(); ++m) {
       for (size_t n=m; n<3; ++n) {
          if(!(m==0 && n==4)){ 
             block_pos = Hpos.get_block(m,n);
@@ -856,7 +858,7 @@ public:
       //std::cout<<"\nHessian size "<< Hneg.size();
       //std::cout<<"Hpos"<<Hpos;
       //std::cout<<"Hneg"<<Hneg;
-    for (size_t m=0; m<Hpos.size(); ++m) {
+    for (m=0; m<Hpos.size(); ++m) {
       for (size_t n=m; n<3; ++n) {
          if(!(m==0 && n==4)){ 
             block_pos = Hpos.get_block(m,n);

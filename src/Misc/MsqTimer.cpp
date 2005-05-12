@@ -317,7 +317,7 @@ msq_stdio::ostream& Mesquite::operator<<( msq_stdio::ostream& str,
   int i =0;
   str<<"\nTIME        | NUM. STARTS | TIMER NAME ("<<number_of_keys<<" timers)\n";
   for(i=0;i<number_of_keys;++i){
-    str<<setiosflags(msq_stdio::ios::left)
+	  str<<msq_stdio::setiosflags(msq_stdio::ios::left)
              <<msq_stdio::setw(13)
              <<Mesquite::GlobalStopWatches.total_time(sorted_keys[i])
              <<" "

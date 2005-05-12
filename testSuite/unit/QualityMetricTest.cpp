@@ -459,7 +459,7 @@ public:
   void test_metric_grad_from_hessian(PatchData &pd, QualityMetric* this_metric,
                                      MsqError &err )
   {
-    int max_nve = MSQ_MAX_NUM_VERT_PER_ENT;
+    int i, max_nve = MSQ_MAX_NUM_VERT_PER_ENT;
     Vector3D* grad1 = new Vector3D[max_nve];
     Vector3D* grad2 = new Vector3D[max_nve];
     Matrix3D* hessian = new Matrix3D[max_nve*(max_nve+1)/2];
@@ -473,7 +473,7 @@ public:
     elems[1].get_vertex_indices(elem_vtx_indices);
     int nve = elem_vtx_indices.size(); // number of vertices in element.
     MsqVertex** all_vtces = new MsqVertex*[nve];
-    for (int i=0; i<nve; ++i) {
+    for (i=0; i<nve; ++i) {
       all_vtces[i] = &vertices[elem_vtx_indices[i]];
     }
 
@@ -495,17 +495,17 @@ public:
     CPPUNIT_ASSERT_DOUBLES_EQUAL(QM_val1, QM_val2, 1e-12);
     if(pF){
       std::cout << "Gradient from compute_gradient()\n";
-      for (int i=0; i<nve; ++i)
+      for (i=0; i<nve; ++i)
         std::cout << grad1[i];
 
       std::cout << "\nGradient from compute_hessian()\n";
-      for (int i=0; i<nve; ++i)
+      for (i=0; i<nve; ++i)
         std::cout << grad2[i];
     }
     
     
     // test gradients
-    for (int i=0; i<nve; ++i)
+    for (i=0; i<nve; ++i)
       for (int j=0; j<3; ++j)
         CPPUNIT_ASSERT_DOUBLES_EQUAL(grad1[i][j], grad2[i][j], 1e-12);
     delete []grad1;
@@ -518,6 +518,7 @@ public:
 void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
   {
     MsqPrintError err(cout); 
+	int i;
     Vector3D* grad_num = new Vector3D[2];
     Vector3D* grad_ana = new Vector3D[2];
     double metric_value;
@@ -548,7 +549,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
     if(pF){
       std::cout<<"\nI_DFT gradient test.\n";
       std::cout << "NUMERICAL GRADIENT\n";
-      for (int i=0; i<2; ++i)
+      for (i=0; i<2; ++i)
         for (int j=0; j<3; ++j)
           std::cout << grad_num[i][j] << std::endl;
     }
@@ -560,11 +561,11 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
     CPPUNIT_ASSERT(valid);
     if(pF){
       std::cout << "ANALYTICAL GRADIENT\n";
-      for (int i=0; i<2; ++i)
+      for (i=0; i<2; ++i)
         for (int j=0; j<3; ++j)
           std::cout << grad_ana[i][j] << std::endl;
     }
-    for (int i=0; i<2; ++i)
+    for (i=0; i<2; ++i)
       for (int j=0; j<3; ++j)
         CPPUNIT_ASSERT_DOUBLES_EQUAL(grad_num[i][j], grad_ana[i][j], 0.001);
     
@@ -584,7 +585,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
                                                     err); CPPUNIT_ASSERT(!err);
     CPPUNIT_ASSERT(valid);
 
-    for (int i=0; i<2; ++i)
+    for (i=0; i<2; ++i)
       for (int j=0; j<3; ++j)
         CPPUNIT_ASSERT_DOUBLES_EQUAL(grad_num[i][j], grad_ana[i][j], 0.001);
       //delete i_dft_metric;
@@ -1049,6 +1050,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
     Vector3D* grad_ana = new Vector3D[2];
     double metric_value;
     bool valid;
+	int i;
 
     MsqMeshEntity* elems = pd.get_element_array(err);CPPUNIT_ASSERT(!err);
     MsqVertex* vertices =  pd.get_vertex_array(err);CPPUNIT_ASSERT(!err);
@@ -1082,7 +1084,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
 //       for (int j=0; j<3; ++j)
 //         std::cout << grad_ana[i][j] << std::endl;
 
-    for (int i=0; i<2; ++i)
+    for (i=0; i<2; ++i)
       for (int j=0; j<3; ++j)
         CPPUNIT_ASSERT_DOUBLES_EQUAL(grad_num[i][j], grad_ana[i][j], 0.001);
     
@@ -1101,7 +1103,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
                                           grad_ana, 2, metric_value, err); CPPUNIT_ASSERT(!err);
     CPPUNIT_ASSERT(valid);
 
-    for (int i=0; i<2; ++i)
+    for (i=0; i<2; ++i)
       for (int j=0; j<3; ++j)
         CPPUNIT_ASSERT_DOUBLES_EQUAL(grad_num[i][j], grad_ana[i][j], 0.001);
     delete mean_ratio;
@@ -1217,7 +1219,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
   void test_metric_hessian(PatchData &pd, QualityMetric *met)
   {
     MsqPrintError err(cout); 
-    int max_nve = MSQ_MAX_NUM_VERT_PER_ENT;
+    int i, m, max_nve = MSQ_MAX_NUM_VERT_PER_ENT;
     Vector3D* grad_num = new Vector3D[max_nve];
     Vector3D* grad_ana = new Vector3D[max_nve];
     Matrix3D* hessian_num = new Matrix3D[max_nve*(max_nve+1)/2];
@@ -1233,7 +1235,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
     elems[1].get_vertex_indices(elem_vtx_indices);
     int nve = elem_vtx_indices.size(); // number of vertices in element.
     MsqVertex** all_vtces = new MsqVertex*[nve];
-    for (int i=0; i<nve; ++i) {
+    for (i=0; i<nve; ++i) {
       all_vtces[i] = &vertices[elem_vtx_indices[i]];
     }
 
@@ -1250,11 +1252,11 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
     if(pF){
       std::cout << "\nNUMERICAL Metric value "<<metric_value<<".\n";
      std::cout << "NUMERICAL GRADIENT for element with two free vertices.\n";
-     for (int i=0; i<4; ++i)
+     for (i=0; i<4; ++i)
        for (int j=0; j<3; ++j)
          std::cout << grad_num[i][j] << std::endl;
      std::cout << "NUMERICAL HESSIAN for element with two free vertices.\n";
-     for (int i=0; i<nve*(nve+1)/2; ++i)
+     for (i=0; i<nve*(nve+1)/2; ++i)
        std::cout << hessian_num[i] << std::endl;
     }
     
@@ -1268,22 +1270,22 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
     if(pF){
       std::cout << "\nANALYTICAL Metric value "<<metric_value<<".\n";
       std::cout << "ANALYTICAL GRADIENT for element with two free vertices.\n";
-      for (int i=0; i<4; ++i)
+      for (i=0; i<4; ++i)
         for (int j=0; j<3; ++j)
           std::cout << grad_ana[i][j] << std::endl;
       std::cout << "ANALYTICAL HESSIAN for element with two free vertices.\n";
-      for (int i=0; i<nve*(nve+1)/2; ++i)
+      for (i=0; i<nve*(nve+1)/2; ++i)
         std::cout << hessian_ana[i] << std::endl;
     }
     
     // test returned gradients
-    for (int m=0; m<nve; ++m)
-      for (int i=0; i<3; ++i)
+    for (m=0; m<nve; ++m)
+      for (i=0; i<3; ++i)
         CPPUNIT_ASSERT_DOUBLES_EQUAL(grad_num[m][i], grad_ana[m][i], 0.001);    
 
     // test returned Hessians
-    for (int m=0; m<nve*(nve+1)/2; ++m)
-      for (int i=0; i<3; ++i)
+    for (m=0; m<nve*(nve+1)/2; ++m)
+      for (i=0; i<3; ++i)
         for (int j=0; j<3; ++j)
           CPPUNIT_ASSERT_DOUBLES_EQUAL(hessian_num[m][i][j], hessian_ana[m][i][j], 0.02);
 
@@ -1308,7 +1310,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
   void test_mean_ratio_hessian(PatchData &pd)
   {
     MsqPrintError err(cout); 
-    int max_nve = MSQ_MAX_NUM_VERT_PER_ENT;
+    int m, max_nve = MSQ_MAX_NUM_VERT_PER_ENT;
     Vector3D* grad_num = new Vector3D[max_nve];
     Vector3D* grad_ana = new Vector3D[max_nve];
     Matrix3D* hessian_num = new Matrix3D[max_nve*(max_nve+1)/2];
@@ -1357,12 +1359,12 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
 //         std::cout << hessian_ana[i] << std::endl;
 
     // test returned gradients
-    for (int m=0; m<nve; ++m)
+    for (m=0; m<nve; ++m)
       for (int i=0; i<3; ++i)
         CPPUNIT_ASSERT_DOUBLES_EQUAL(grad_num[m][i], grad_ana[m][i], 0.001);    
 
     // test returned Hessians
-    for (int m=0; m<nve*(nve+1)/2; ++m)
+    for (m=0; m<nve*(nve+1)/2; ++m)
       for (int i=0; i<3; ++i)
         for (int j=0; j<3; ++j){
             //PRINT_INFO("\nm=%i,i=%i,j=%i",m,i,j);
@@ -1423,12 +1425,12 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
 //         std::cout << hessian_ana[i] << std::endl;
 
     // test returned gradients
-    for (int m=0; m<nve; ++m)
+    for (m=0; m<nve; ++m)
       for (int i=0; i<3; ++i)
         CPPUNIT_ASSERT_DOUBLES_EQUAL(grad_num[m][i], grad_ana[m][i], 0.001);    
 
     // test returned Hessians
-    for (int m=0; m<nve*(nve+1)/2; ++m)
+    for (m=0; m<nve*(nve+1)/2; ++m)
       for (int i=0; i<3; ++i)
         for (int j=0; j<3; ++j)
           CPPUNIT_ASSERT_DOUBLES_EQUAL(hessian_num[m][i][j], hessian_ana[m][i][j], 0.003);

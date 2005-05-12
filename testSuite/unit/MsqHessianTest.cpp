@@ -98,18 +98,18 @@ public:
     MsqHessian::initialize(twoTriangles, err); CPPUNIT_ASSERT(!err);
 
     // Checks values of mRowStart are correct.
-    size_t row_start[] = {0, 4, 7, 8, 9};
-    for (size_t i=0; i<5; ++i) 
+    size_t i, row_start[] = {0, 4, 7, 8, 9};
+    for (i=0; i<5; ++i) 
       CPPUNIT_ASSERT( mRowStart[i] == row_start[i] );
 
     // Checks values of mColIndex are correct.
     size_t col_index[] = {0,1,2,3,1,2,3,2,3};
-    for (size_t i=0; i<9; ++i) 
+    for (i=0; i<9; ++i) 
       CPPUNIT_ASSERT( mColIndex[i] == col_index[i] );
 
     // Checks values of mAccumulation are correct. 
     int accumulation[] = {0,1,2,4,5,7,0,3,1,8,-6,4};
-    for (int i=0; i<12; ++i)
+    for (i=0; i<12; ++i)
       CPPUNIT_ASSERT( mAccumulation[i] == accumulation[i] );
 
   }
@@ -121,7 +121,8 @@ public:
   
   void test_axpy()
   {
-    MsqPrintError err(cout);
+    size_t i;
+	MsqPrintError err(cout);
     
     MsqHessian::initialize(twoTriangles, err); CPPUNIT_ASSERT(!err);
 
@@ -168,7 +169,7 @@ public:
     ans[2].set(150, 199, 220);
     ans[3].set(166, 204, 174);
 
-    for (size_t i=0; i<hs; ++i)
+    for (i=0; i<hs; ++i)
       CPPUNIT_ASSERT( res[i] == ans[i] );
 
     
@@ -184,7 +185,7 @@ public:
 
     axpy(res, hs, *this, x, hs, y, hs, err); CPPUNIT_ASSERT(!err);
 
-    for (size_t i=0; i<hs; ++i)
+    for (i=0; i<hs; ++i)
       CPPUNIT_ASSERT( res[i] == ans[i] );
 
     delete[] res;
@@ -196,6 +197,7 @@ public:
   
   void test_cg_solver()
   {
+    size_t i;
     MsqPrintError err(cout);
     
     MsqHessian::initialize(twoTriangles, err); CPPUNIT_ASSERT(!err);
@@ -238,7 +240,7 @@ public:
     ans[2].set(-0.4361, 4.7640, -8.1006);
     ans[3].set(-0.1218, -0.8817, -4.5571);
 
-    for (size_t i=0; i<hs; ++i)
+    for (i=0; i<hs; ++i)
       for (short j=0; j<3; ++j)
         CPPUNIT_ASSERT_DOUBLES_EQUAL(x[i][j], ans[i][j], 10e-1);
 
