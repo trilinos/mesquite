@@ -1850,10 +1850,11 @@ bool RI_DFT::evaluate_element(PatchData& pd,
 	mCoords[j] = vertices[v_i[tetInd[i][j]]];
       }
 
-      pd.get_domain_normal_at_vertex(v_i[tetInd[i][0]], true, mNormal, mErr); MSQ_ERRZERO(err);
+      pd.get_domain_normal_at_vertex(v_i[tetInd[i][0]], true, mNormal, mErr); 
+
       if (mErr || mNormal.length() == 0) {
-        mNormal = (v_i[tetInd[i][1]] - v_i[tetInd[i][0]]) *
-                  (v_i[tetInd[i][2]] - v_i[tetInd[i][0]]);
+        mNormal = (vertices[v_i[tetInd[i][1]]] - vertices[v_i[tetInd[i][0]]]) *
+                  (vertices[v_i[tetInd[i][2]]] - vertices[v_i[tetInd[i][0]]]);
         mNormal.normalize();
       }
       mNormal *= MSQ_3RT_2_OVER_6RT_3;
@@ -1877,8 +1878,8 @@ bool RI_DFT::evaluate_element(PatchData& pd,
 
       pd.get_domain_normal_at_vertex(v_i[hexInd[i][0]], true, mNormal, mErr);
       if (mErr || mNormal.length() == 0) {
-        mNormal = (v_i[hexInd[i][1]] - v_i[hexInd[i][0]]) *
-                  (v_i[hexInd[i][2]] - v_i[hexInd[i][0]]);
+        mNormal = (vertices[v_i[hexInd[i][1]]] - vertices[v_i[hexInd[i][0]]]) *
+                  (vertices[v_i[hexInd[i][2]]] - vertices[v_i[hexInd[i][0]]]);
         mNormal.normalize();
       }
 
