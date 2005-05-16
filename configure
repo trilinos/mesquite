@@ -1489,7 +1489,7 @@ if test "${enable_debug+set}" = set; then
   enableval="$enable_debug"
   MSQ_DO_DEBUG="$enableval"
 else
-  MSQ_DO_DEBUG="no"
+  MSQ_DO_DEBUG=""
 fi;
 
 # Check whether --enable-compile-optimized or --disable-compile-optimized was given.

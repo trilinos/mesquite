@@ -37,7 +37,7 @@ AC_ARG_ENABLE( [debug],
                                   --enable-debug-symbols
                                   --enable-debug-output=1,2
                                   --enable-trap-fpe]], 
-  [MSQ_DO_DEBUG="$enableval"], [MSQ_DO_DEBUG="no"] )
+  [MSQ_DO_DEBUG="$enableval"], [MSQ_DO_DEBUG=""] )
 
 AC_ARG_ENABLE( [compile-optimized], [[
   --enable-compile-optimized      Compile optimized (-O2)]],
