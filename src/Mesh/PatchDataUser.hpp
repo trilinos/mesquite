@@ -104,7 +104,7 @@ namespace Mesquite
     long unsigned int get_culling_method_bits() { return cullingMethodBits; }
 
     //! Sets the Global Patch, so that it can be use by contiguoug PatchDataUser.
-    void set_global_patch(PatchData* pd, MsqError &err);
+    inline void set_global_patch(PatchData* pd, MsqError &err);
     //! Returns the Global Patch. Will be 0 if not available.
     //! Make sure not to use that function if a local patch algorithm
     //! has been used since the last access to the global patch, making it invalid. 

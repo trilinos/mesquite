@@ -74,7 +74,7 @@ TagHandle CornerTagHandles::get_handle( Mesh* mesh, unsigned corners, MsqError& 
     if (cornerHandles[corners])
     {
       Mesh::TagType type;
-      size_t size;
+      unsigned size;
       mesh->tag_properties( cornerHandles[corners], name, type, size, err );
       MSQ_ERRZERO(err); 
 
