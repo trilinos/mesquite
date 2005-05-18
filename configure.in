@@ -542,7 +542,7 @@ elif test "$CPPUNIT_ARG" != "no"; then
   CPPUNIT_LNK='-L$(CPPUNIT_DIR)/lib -lcppunit'
   
   AC_CHECK_FILE( [${CPPUNIT_ARG}/include/cppunit/Test.h], 
-     [CPPUNIT_INC='-I$(CPPUNIT_DIR)/include/cppunit'], 
+     [CPPUNIT_INC='-I$(CPPUNIT_DIR)/include'], 
      [AC_MSG_ERROR("${CPPUNIT_ARG}/include/cppunit/Test.h does not exist")] )
      
   AC_MSG_CHECKING("Checking if cppunit requires -ldl");

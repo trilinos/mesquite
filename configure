@@ -7632,7 +7632,7 @@ fi
 echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_File'}'`" >&5
 echo "${ECHO_T}`eval echo '${'$as_ac_File'}'`" >&6
 if test `eval echo '${'$as_ac_File'}'` = yes; then
-  CPPUNIT_INC='-I$(CPPUNIT_DIR)/include/cppunit'
+  CPPUNIT_INC='-I$(CPPUNIT_DIR)/include'
 else
   { { echo "$as_me:$LINENO: error: \"${CPPUNIT_ARG}/include/cppunit/Test.h does not exist\"" >&5
 echo "$as_me: error: \"${CPPUNIT_ARG}/include/cppunit/Test.h does not exist\"" >&2;}
