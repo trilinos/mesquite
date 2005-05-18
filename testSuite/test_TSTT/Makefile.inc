@@ -12,5 +12,5 @@ $(TEST_TSTT_EXEC): $(TEST_TSTT_SRC) $(locallibdir)/libmesquite.a \
 	@echo "Linking Mesquite driver application ($@)..."
 	$(LINKER) $(CXXFLAGS) $(CONFIG_CFLAGS) -o $@ $< \
 	$(TSTT_MESH_CFLAGS) $(TSTT_BASE_INC) $(TSTT_MESH_INC) \
-	-L$(locallibdir) -lmesquite $(TSTT_BASE_LNK) $(TSTT_MESH_LNK)\
+	-L$(locallibdir) -lmesquite \
 	$(TSTT_MESH_LDFLAGS) $(CONFIG_LDFLAGS) -lm

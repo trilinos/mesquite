@@ -29,6 +29,7 @@
 #include <cppunit/Outputter.h>
 #include <cppunit/TestResultCollector.h>
 #include <cppunit/TestFailure.h>
+#include <cppunit/Test.h>
 #include <assert.h>
 #include <stdio.h>
 

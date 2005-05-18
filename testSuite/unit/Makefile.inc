@@ -43,7 +43,7 @@ $(MSQ_TEST) : $(TEST_OBJS_P) $(locallibdir)/libmesquite.a
         -o $@ \
         -L$(locallibdir) -lmesquite \
         $(CPPUNIT_LNK) $(CONFIG_LDFLAGS) \
-        $(TSTT_MESH_LDFLAGS) $(TSTT_BASE_LNK) $(TSTT_MESH_LNK)
+        $(TSTT_MESH_LDFLAGS) 
 
 .SUFFIXES : .cpp .o
 
