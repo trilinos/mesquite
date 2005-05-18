@@ -135,7 +135,7 @@ include $(TESTMAKEFILES)
 endif
 # *************
 
-all: all_headers all_objects all_libs 
+all: all_headers all_objects all_libs
 
 settings:
 	@echo "TESTS = $(TESTS)"
@@ -144,10 +144,13 @@ settings:
 depend: 
 	@touch $(dependenciesfile)
 	@echo "Generating dependencies for all Mesquite source files."
-	$(PREFIX) $(MAKEDEPEND)  -f $(dependenciesfile) $(CONFIG_CFLAGS) $(TSTT_INC)\
-	$(ALLSRC) 2> /dev/null
+	$(PREFIX) $(MAKEDEPEND)  -f $(dependenciesfile) $(CONFIG_CFLAGS) \
+	  $(TSTT_INC) $(ALLSRC)  2> /dev/null
 	$(PREFIX) cat $(dependenciesfile) | perl -np -e "s/^.*\/(.*\.o:)/obj\/\1/;" > $(dependenciesfile).tmp
-	$(PREFIX) mv $(dependenciesfile).tmp $(dependenciesfile)
+	$(PREFIX) $(MAKEDEPEND) -f $(dependenciesfile) $(CONFIG_CFLAGS) \
+	  $(TSTT_INC) $(wildcard testSuite/unit/*.cpp) 2> /dev/null
+	$(PREFIX) cat $(dependenciesfile).tmp >> $(dependenciesfile)
+	$(PREFIX) rm -f $(dependenciesfile).tmp
 	@echo " *** Done making depend"
 
 
@@ -185,6 +188,10 @@ distrib: all
 	@cp includeLinks/*.hpp mesquite-1.0/include
 	tar cf mesquite-1.0.tar mesquite-1.0
 	rm -rf mesquite-1.0
+
+test: all_libs
+	$(MAKE) testSuite/unit/msq_test
+	cd testSuite/unit && ./msq_test
 
 #distclean: veryclean
 #	-rm -f GNUmakefile config.status config.cache

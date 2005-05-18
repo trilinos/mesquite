@@ -56,6 +56,8 @@
 #include "GeomTSTT.hpp"
 #include "cppunit/extensions/HelperMacros.h"
 
+#define MSQ_HAVE_TSTT_IMPL
+
 #if   defined( MSQ_TSTT_USE_MOAB )     && MSQ_TSTT_USE_MOAB
 # include "TSTTM_MOAB_MoabMesh.hh"
   typedef TSTTM_MOAB::MoabMesh ImplType;
@@ -66,8 +68,11 @@
 # include "TSTT_LocalTSTTMesh_Impl.hh"
   typedef TSTT::LocalTSTTMesh ImplType;
 #else
-# error
+# undef MSQ_HAVE_TSTT_IMPL
 #endif
+
+
+#ifdef MSQ_HAVE_TSTT_IMPL
 
 #include "TSTTB.hh"
 #include "TSTTM.hh"
@@ -668,3 +673,5 @@ void TSTT_Test::testDoubleTag()
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TSTT_Test, "TSTT_Test");
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TSTT_Test, "Unit");
+
+#endif
