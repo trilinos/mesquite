@@ -63,9 +63,14 @@ bool I_DFT::evaluate_element(PatchData& pd,
   const double delta = useBarrierDelta ? pd.get_barrier_delta(err) :
     (mGamma ? 0 : 1);
   MSQ_ERRZERO(err);
+  
+  const int triInd[4][4] = {{0, 1, 2}, {1, 2, 0}, {2, 0, 1}};
+  
+  const int tetInd[4][4] = {{0, 1, 2, 3}, {1, 0, 3, 2},
+                            {2, 3, 0, 1}, {3, 2, 1, 0}};
 
-  const int tetInd[4][4] = {{0, 1, 2, 3}, {1, 2, 0, 3},
-			    {2, 0, 1, 3}, {3, 2, 1, 0}};
+//  const int tetInd[4][4] = {{0, 1, 2, 3}, {1, 2, 0, 3}, 
+//			    {2, 0, 1, 3}, {3, 2, 1, 0}};
   const int hexInd[8][4] = {{0, 1, 3, 4}, {1, 2, 0, 5},
 			    {2, 3, 1, 6}, {3, 0, 2, 7},
 			    {4, 7, 5, 0}, {5, 4, 6, 1},
@@ -85,7 +90,7 @@ bool I_DFT::evaluate_element(PatchData& pd,
 
     for (i = 0; i < 3; ++i) {
       for (j = 0; j < 3; ++j) {
-	mCoords[j] = vertices[v_i[tetInd[i][j]]];
+	mCoords[j] = vertices[v_i[triInd[i][j]]];
       }
       
       mNormals[i] *= MSQ_3RT_2_OVER_6RT_3;
@@ -118,6 +123,9 @@ bool I_DFT::evaluate_element(PatchData& pd,
 			mAlpha, mGamma, delta, mBeta);
       if (!mValid) return false;
       m += W[i].get_cK() * mMetric;
+      
+      if(fileOut)
+        (*fileOut)<<W[i].get_cK() * mMetric<<",";
     }
 
     m *= 0.25;
@@ -196,9 +204,15 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
     (mGamma ? 0 : 1);
     //const double delta = useBarrierDelta ? pd.get_barrier_delta(err) : 0;
   MSQ_ERRZERO(err);
-
-  const int tetInd[4][4] = {{0, 1, 2, 3}, {1, 2, 0, 3},
-			    {2, 0, 1, 3}, {3, 2, 1, 0}};
+  
+  const int triInd[4][4] = {{0, 1, 2}, {1, 2, 0}, {2, 0, 1}};
+  
+  
+  const int tetInd[4][4] = {{0, 1, 2, 3}, {1, 0, 3, 2},
+                            {2, 3, 0, 1}, {3, 2, 1, 0}};
+  
+//  const int tetInd[4][4] = {{0, 1, 2, 3}, {1, 2, 0, 3},
+//			    {2, 0, 1, 3}, {3, 2, 1, 0}};
   const int hexInd[8][4] = {{0, 1, 3, 4}, {1, 2, 0, 5},
 			    {2, 3, 1, 6}, {3, 0, 2, 7},
 			    {4, 7, 5, 0}, {5, 4, 6, 1},
@@ -228,8 +242,8 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
       for (i = 0; i < 3; ++i) {
 	mVert = -1;
 	for (j = 0; j < 3; ++j) {
-	  mCoords[j] = vertices[v_i[tetInd[i][j]]];
-	  if (vertices + v_i[tetInd[i][j]] == fv[0]) {
+	  mCoords[j] = vertices[v_i[triInd[i][j]]];
+	  if (vertices + v_i[triInd[i][j]] == fv[0]) {
 	    mVert = j;
 	  }
 	}
@@ -287,7 +301,7 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
     
       for (i = 0; i < 3; ++i) {
 	for (j = 0; j < 3; ++j) {
-	  mCoords[j] = vertices[v_i[tetInd[i][j]]];
+	  mCoords[j] = vertices[v_i[triInd[i][j]]];
 	}
       
 	mNormals[i] *= MSQ_3RT_2_OVER_6RT_3;
@@ -300,7 +314,7 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	if (!mValid) return false;
 	m += W[i].get_cK() * mMetric;
 	for (j = 0; j < 3; ++j) {
-	  mAccGrads[tetInd[i][j]] += W[i].get_cK() * mGrads[j];
+	  mAccGrads[triInd[i][j]] += W[i].get_cK() * mGrads[j];
 	}
       }
 
@@ -682,8 +696,13 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
     //const double delta = useBarrierDelta ? pd.get_barrier_delta(err) : 0;
   MSQ_ERRZERO(err);
 
-  const int tetInd[4][4] = {{0, 1, 2, 3}, {1, 2, 0, 3},
-			    {2, 0, 1, 3}, {3, 2, 1, 0}};
+  const int triInd[4][4] = {{0, 1, 2}, {1, 2, 0}, {2, 0, 1}};
+  
+  const int tetInd[4][4] = {{0, 1, 2, 3}, {1, 0, 3, 2},
+                            {2, 3, 0, 1}, {3, 2, 1, 0}};
+  
+//  const int tetInd[4][4] = {{0, 1, 2, 3}, {1, 2, 0, 3},
+//			    {2, 0, 1, 3}, {3, 2, 1, 0}};
   const int hexInd[8][4] = {{0, 1, 3, 4}, {1, 2, 0, 5},
 			    {2, 3, 1, 6}, {3, 0, 2, 7},
 			    {4, 7, 5, 0}, {5, 4, 6, 1},
@@ -728,8 +747,8 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
       for (i = 0; i < 3; ++i) {
 	mVert = -1;
 	for (j = 0; j < 3; ++j) {
-	  mCoords[j] = vertices[v_i[tetInd[i][j]]];
-	  if (vertices + v_i[tetInd[i][j]] == fv[0]) {
+	  mCoords[j] = vertices[v_i[triInd[i][j]]];
+	  if (vertices + v_i[triInd[i][j]] == fv[0]) {
 	    mVert = j;
 	  }
 	}
@@ -810,7 +829,7 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
       // Compute the metric and sum them together
       for (i = 0; i < 3; ++i) {
 	for (j = 0; j < 3; ++j) {
-	  mCoords[j] = vertices[v_i[tetInd[i][j]]];
+	  mCoords[j] = vertices[v_i[triInd[i][j]]];
 	}
 
 	mNormals[i] *= MSQ_3RT_2_OVER_6RT_3;
@@ -824,14 +843,14 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	m += W[i].get_cK() * mMetric;
 
 	for (j = 0; j < 3; ++j) {
-	  g[tetInd[i][j]] += W[i].get_cK() * mGrads[j];
+	  g[triInd[i][j]] += W[i].get_cK() * mGrads[j];
 	}
 
 	l = 0;
 	for (j = 0; j < 3; ++j) {
 	  for (k = j; k < 3; ++k) {
-	    row = tetInd[i][j];
-	    col = tetInd[i][k];
+	    row = triInd[i][j];
+	    col = triInd[i][k];
 
 	    if (row <= col) {
 	      loc = 3*row - (row*(row+1)/2) + col;
