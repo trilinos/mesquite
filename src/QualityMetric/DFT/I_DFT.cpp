@@ -124,8 +124,6 @@ bool I_DFT::evaluate_element(PatchData& pd,
       if (!mValid) return false;
       m += W[i].get_cK() * mMetric;
       
-      if(fileOut)
-        (*fileOut)<<W[i].get_cK() * mMetric<<",";
     }
 
     m *= 0.25;
