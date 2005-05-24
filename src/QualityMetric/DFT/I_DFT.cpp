@@ -64,13 +64,17 @@ bool I_DFT::evaluate_element(PatchData& pd,
     (mGamma ? 0 : 1);
   MSQ_ERRZERO(err);
   
-  const int triInd[4][4] = {{0, 1, 2}, {1, 2, 0}, {2, 0, 1}};
+  const int triInd[3][3] = {{0, 1, 2}, {1, 2, 0}, {2, 0, 1}};
   
   const int tetInd[4][4] = {{0, 1, 2, 3}, {1, 0, 3, 2},
                             {2, 3, 0, 1}, {3, 2, 1, 0}};
 
 //  const int tetInd[4][4] = {{0, 1, 2, 3}, {1, 2, 0, 3}, 
 //			    {2, 0, 1, 3}, {3, 2, 1, 0}};
+//  Modified tetInd to be consistent with ordering used in
+// MsqMeshEntity::compute_corner_matrices().  The ordering 
+// used here to calculate A must be consitent with the ordering
+// used there to calculate W.
   const int hexInd[8][4] = {{0, 1, 3, 4}, {1, 2, 0, 5},
 			    {2, 3, 1, 6}, {3, 0, 2, 7},
 			    {4, 7, 5, 0}, {5, 4, 6, 1},
@@ -203,7 +207,7 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
     //const double delta = useBarrierDelta ? pd.get_barrier_delta(err) : 0;
   MSQ_ERRZERO(err);
   
-  const int triInd[4][4] = {{0, 1, 2}, {1, 2, 0}, {2, 0, 1}};
+  const int triInd[3][3] = {{0, 1, 2}, {1, 2, 0}, {2, 0, 1}};
   
   
   const int tetInd[4][4] = {{0, 1, 2, 3}, {1, 0, 3, 2},
@@ -211,6 +215,10 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
   
 //  const int tetInd[4][4] = {{0, 1, 2, 3}, {1, 2, 0, 3},
 //			    {2, 0, 1, 3}, {3, 2, 1, 0}};
+//  Modified tetInd to be consistent with ordering used in
+// MsqMeshEntity::compute_corner_matrices().  The ordering 
+// used here to calculate A must be consitent with the ordering
+// used there to calculate W.
   const int hexInd[8][4] = {{0, 1, 3, 4}, {1, 2, 0, 5},
 			    {2, 3, 1, 6}, {3, 0, 2, 7},
 			    {4, 7, 5, 0}, {5, 4, 6, 1},
@@ -694,13 +702,17 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
     //const double delta = useBarrierDelta ? pd.get_barrier_delta(err) : 0;
   MSQ_ERRZERO(err);
 
-  const int triInd[4][4] = {{0, 1, 2}, {1, 2, 0}, {2, 0, 1}};
+  const int triInd[3][3] = {{0, 1, 2}, {1, 2, 0}, {2, 0, 1}};
   
   const int tetInd[4][4] = {{0, 1, 2, 3}, {1, 0, 3, 2},
                             {2, 3, 0, 1}, {3, 2, 1, 0}};
   
 //  const int tetInd[4][4] = {{0, 1, 2, 3}, {1, 2, 0, 3},
 //			    {2, 0, 1, 3}, {3, 2, 1, 0}};
+//  Modified tetInd to be consistent with ordering used in
+// MsqMeshEntity::compute_corner_matrices().  The ordering 
+// used here to calculate A must be consitent with the ordering
+// used there to calculate W.
   const int hexInd[8][4] = {{0, 1, 3, 4}, {1, 2, 0, 5},
 			    {2, 3, 1, 6}, {3, 0, 2, 7},
 			    {4, 7, 5, 0}, {5, 4, 6, 1},
