@@ -870,7 +870,26 @@ void MsqMeshEntity::compute_corner_matrices(PatchData &pd, Matrix3D A[], int num
       return return_flag;
       break;
     */
+  
+  case PYRAMID:
+    A[0].set_column(0, vertices[v_i[1]]-vertices[v_i[0]]);
+    A[0].set_column(1, vertices[v_i[3]]-vertices[v_i[0]]);
+    A[0].set_column(2, vertices[v_i[4]]-vertices[v_i[0]]);
+ 
+    A[1].set_column(0, vertices[v_i[2]]-vertices[v_i[1]]);
+    A[1].set_column(1, vertices[v_i[0]]-vertices[v_i[1]]);
+    A[1].set_column(2, vertices[v_i[4]]-vertices[v_i[1]]);
+ 
+    A[2].set_column(0, vertices[v_i[3]]-vertices[v_i[2]]);
+    A[2].set_column(1, vertices[v_i[1]]-vertices[v_i[2]]);
+    A[2].set_column(2, vertices[v_i[4]]-vertices[v_i[2]]);
     
+    A[3].set_column(0, vertices[v_i[0]]-vertices[v_i[3]]);
+    A[3].set_column(1, vertices[v_i[2]]-vertices[v_i[3]]);
+    A[3].set_column(2, vertices[v_i[4]]-vertices[v_i[3]]);
+    
+    break;
+ 
   case HEXAHEDRON:
     if (num_m3d != 8) {
       MSQ_SETERR(err)("num_m3d incompatible with element type.", MsqError::INVALID_ARG); 

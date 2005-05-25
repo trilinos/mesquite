@@ -82,8 +82,11 @@ namespace Mesquite
     virtual ~TargetCalculator()
     {};
 
-    static void initialize_default_target_matrices(Matrix3D &tri_M3D, Matrix3D &quad_M3D,
-                                    Matrix3D &tet_M3D, Matrix3D &hex_M3D);
+    static void initialize_default_target_matrices( Matrix3D &tri_M3D, 
+                                                    Matrix3D &quad_M3D,
+                                                    Matrix3D &tet_M3D, 
+                                                    Matrix3D &hex_M3D,
+                                                    Matrix3D &tet_M3D);
 
       //! \enum chooses whether the calculation is per element or an average
       //! for some cases of the \f$ \lambda_k \f$ coefficient.
@@ -153,7 +156,8 @@ namespace Mesquite
   inline void TargetCalculator::initialize_default_target_matrices(Matrix3D &tri_M3D,
                                                       Matrix3D &quad_M3D,
                                                       Matrix3D &tet_M3D,
-                                                      Matrix3D &hex_M3D)
+                                                      Matrix3D &hex_M3D,
+                                                      Matrix3D &pyr_M3D)
   {
     static const double SIXTH_ROOT_OF_TWO = msq_stdc::pow(2., 1./6.);
     
@@ -176,6 +180,10 @@ namespace Mesquite
     const double v_hex[] = {1., 0., 0.,  0., 1., 0.,  0., 0., 1.};
     Matrix3D m4(v_hex);
     hex_M3D = m4;
+    
+    const double v_pyr[] = { 1.0, 0.0, 0.5, 0.0, 1.0, 0.5, 0.0, 0.0, 1.0 };
+    Matrix3D m5(v_pyr);
+    pyr_M3D = m5;
   }
 
 

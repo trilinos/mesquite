@@ -86,8 +86,8 @@ void TargetCalculator::compute_default_target_matrices(PatchData &pd,
   MsqMeshEntity* elems=pd.get_element_array(err); MSQ_ERRRTN(err);
   size_t num_elements=pd.num_elements();
 
-  Matrix3D tmp_tri, tmp_quad, tmp_tet, tmp_hex;
-  initialize_default_target_matrices(tmp_tri, tmp_quad, tmp_tet, tmp_hex);
+  Matrix3D tmp_tri, tmp_quad, tmp_tet, tmp_hex, tmp_pyr;
+  initialize_default_target_matrices(tmp_tri, tmp_quad, tmp_tet, tmp_hex, tmp_pyr);
   
   TargetMatrix matrices[8];
   
@@ -123,6 +123,12 @@ void TargetCalculator::compute_default_target_matrices(PatchData &pd,
         matrices[5] = tmp_hex; 
         matrices[6] = tmp_hex; 
         matrices[7] = tmp_hex; 
+        break;
+      case PYRAMID:
+        matrices[0] = tmp_pyr; 
+        matrices[1] = tmp_pyr; 
+        matrices[2] = tmp_pyr; 
+        matrices[3] = tmp_pyr; 
         break;
       default:
         MSQ_SETERR(err)("Type not implemented.",MsqError::NOT_IMPLEMENTED);
@@ -177,8 +183,8 @@ void TargetCalculator::compute_reference_corner_matrices(PatchData &pd,
     switch(type) {
     case Ad:
       {
-        Matrix3D tmp_tri, tmp_quad, tmp_tet, tmp_hex;
-        initialize_default_target_matrices(tmp_tri, tmp_quad, tmp_tet, tmp_hex);
+        Matrix3D tmp_tri, tmp_quad, tmp_tet, tmp_hex, tmp_pyr;
+        initialize_default_target_matrices(tmp_tri, tmp_quad, tmp_tet, tmp_hex, tmp_pyr);
         EntityTopology elem_type = elems[elem_ind].get_element_type();
         switch (elem_type) {
         case TRIANGLE:
@@ -192,6 +198,9 @@ void TargetCalculator::compute_reference_corner_matrices(PatchData &pd,
           break;
         case HEXAHEDRON:
           for (i=0; i<8; ++i) W_k[i] = tmp_hex; 
+          break;
+        case PYRAMID:
+          for (i=0; i<4; ++i) W_k[i] = tmp_pyr; 
           break;
         default:
           MSQ_SETERR(err)("Element type not implemented.",MsqError::NOT_IMPLEMENTED);
