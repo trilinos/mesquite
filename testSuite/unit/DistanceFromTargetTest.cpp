@@ -62,6 +62,7 @@ private:
   CPPUNIT_TEST (test_tri_with_default_target_matrix);
   CPPUNIT_TEST (test_quad_with_default_target_matrix);
   CPPUNIT_TEST (test_tet_with_default_target_matrix);
+  CPPUNIT_TEST (test_pyr_with_default_target_matrix);
   CPPUNIT_TEST (test_compute_T_matrices);
   CPPUNIT_TEST_SUITE_END();
   
@@ -72,6 +73,7 @@ private:
   PatchData quadPatch;
   PatchData tetPatch;
   PatchData hexPatch;
+  PatchData pyrPatch;
   PatchData invertedTri;
   PatchData invertedTet;
   PatchData idealTri;
@@ -101,6 +103,8 @@ public:
     create_qm_two_quad_patch_with_domain(quadPatch,err);CPPUNIT_ASSERT(!err);
     
     create_one_tet_patch(tetPatch,err);CPPUNIT_ASSERT(!err);
+    
+    create_one_pyr_patch( pyrPatch, err ); CPPUNIT_ASSERT(!err);
     
      /* Our hex patch is made of two hexes.  hex_1 is a perfect
         unit cube (the ideal for most metrics).  hex_2 is an arbitrary
@@ -137,9 +141,9 @@ public:
    void test_tri_with_default_target_matrix()
    {
      MsqPrintError err(cout);
-     Matrix3D tri_m3d, quad_m3d, tet_m3d, hex_m3d; 
+     Matrix3D tri_m3d, quad_m3d, tet_m3d, hex_m3d, pyr_m3d; 
         
-     TargetCalculator::initialize_default_target_matrices(tri_m3d, quad_m3d, tet_m3d, hex_m3d);
+     TargetCalculator::initialize_default_target_matrices(tri_m3d, quad_m3d, tet_m3d, hex_m3d, pyr_m3d);
 
      TargetMatrix matrices[] = { tri_m3d, tri_m3d, tri_m3d };
      idealTri.targetMatrices.set_element_corner_tags( &idealTri, 0, matrices, err );
@@ -175,9 +179,9 @@ public:
    void test_quad_with_default_target_matrix()
    {
      MsqPrintError err(cout);
-     Matrix3D tri_m3d, quad_m3d, tet_m3d, hex_m3d; 
+     Matrix3D tri_m3d, quad_m3d, tet_m3d, hex_m3d, pyr_m3d; 
         
-     TargetCalculator::initialize_default_target_matrices(tri_m3d, quad_m3d, tet_m3d, hex_m3d);
+     TargetCalculator::initialize_default_target_matrices(tri_m3d, quad_m3d, tet_m3d, hex_m3d, pyr_m3d);
 
      TargetMatrix matrices[] = { quad_m3d, quad_m3d, quad_m3d, quad_m3d };
      quadPatch.targetMatrices.set_element_corner_tags( &quadPatch, 0, matrices, err );
@@ -203,9 +207,9 @@ public:
    void test_tet_with_default_target_matrix()
    {
      MsqPrintError err(cout);
-     Matrix3D tri_m3d, quad_m3d, tet_m3d, hex_m3d; 
+     Matrix3D tri_m3d, quad_m3d, tet_m3d, hex_m3d, pyr_m3d; 
         
-     TargetCalculator::initialize_default_target_matrices(tri_m3d, quad_m3d, tet_m3d, hex_m3d);
+     TargetCalculator::initialize_default_target_matrices(tri_m3d, quad_m3d, tet_m3d, hex_m3d, pyr_m3d);
 
      TargetMatrix matrices[] = { tet_m3d, tet_m3d, tet_m3d, tet_m3d };
      tetPatch.targetMatrices.set_element_corner_tags( &tetPatch, 0, matrices, err );
@@ -227,6 +231,35 @@ public:
      Matrix3D T[MSQ_MAX_NUM_VERT_PER_ENT];
      double c_k[MSQ_MAX_NUM_VERT_PER_ENT];
      this->compute_T_matrices(elem[0], tetPatch, T, 4, c_k, err); CPPUNIT_ASSERT(!err);
+
+//     cout << T[0] << endl;
+
+     Matrix3D Id = " 1 0 0 "
+                   " 0 1 0 "
+                   " 0 0 1 ";
+
+     for (int i=0; i<3; ++i)
+       for (int j=0; j<3; ++j) 
+         CPPUNIT_ASSERT_DOUBLES_EQUAL(Id[i][j], T[0][i][j], 1e-10);
+         
+   }
+
+  
+   void test_pyr_with_default_target_matrix()
+   {
+     MsqPrintError err(cout);
+     Matrix3D tri_m3d, quad_m3d, tet_m3d, hex_m3d, pyr_m3d; 
+        
+     TargetCalculator::initialize_default_target_matrices(tri_m3d, quad_m3d, tet_m3d, hex_m3d, pyr_m3d);
+
+     TargetMatrix matrices[] = { pyr_m3d, pyr_m3d, pyr_m3d, pyr_m3d, pyr_m3d };
+     tetPatch.targetMatrices.set_element_corner_tags( &pyrPatch, 0, matrices, err );
+     CPPUNIT_ASSERT(!err);
+
+     MsqMeshEntity* elem = pyrPatch.get_element_array(err);
+     Matrix3D T[MSQ_MAX_NUM_VERT_PER_ENT];
+     double c_k[MSQ_MAX_NUM_VERT_PER_ENT];
+     this->compute_T_matrices(elem[0], pyrPatch, T, 4, c_k, err); CPPUNIT_ASSERT(!err);
 
 //     cout << T[0] << endl;
 

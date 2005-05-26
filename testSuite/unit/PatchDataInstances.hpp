@@ -138,6 +138,20 @@ namespace Mesquite
 
      create_patch_mesh( one_tet_patch, 4, coords, 1, indices, TETRAHEDRON, err );
    }
+   
+   //! create patch containing one ideal pyramid
+   inline void create_one_pyr_patch( PatchData& one_pyr_patch, MsqError& err )
+   {
+     double coords[] = { 1, -1, 0,
+                         1,  1, 0,
+                        -1,  1, 0,
+                        -1, -1, 0,
+                         0,  0, sqrt(2) };
+     
+     size_t indices[5] = { 0, 1, 2, 3, 4 };
+     
+     create_patch_mesh( one_pyr_patch, 5, coords, 1, indices, PYRAMID, err );
+   } 
 
       //! creates a Patch containing an ideal tetrahedra, inverted
    inline void create_one_inverted_tet_patch(PatchData &one_tet_patch,
