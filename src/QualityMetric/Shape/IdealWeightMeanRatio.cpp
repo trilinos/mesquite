@@ -124,8 +124,20 @@ bool IdealWeightMeanRatio::evaluate_element(PatchData &pd,
     m = average_metrics(mMetrics, 8, err); MSQ_ERRZERO(err);
     break;
 
-  default:
+  case PYRAMID:
+    for (i = 0; i < 4; ++i) {
+      mCoords[0] = vertices[v_i[ i     ]];
+      mCoords[1] = vertices[v_i[(i+1)%4]];
+      mCoords[2] = vertices[v_i[(i+3)%4]];
+      mCoords[3] = vertices[v_i[ 4     ]];
+      metric_valid = m_fcn_3p(mMetrics[i], mCoords, a3Con, b3Con, c3Con);
+      if (!metric_valid) return false;
+    }
+    m = average_metrics(mMetrics, 4, err); MSQ_ERRZERO(err);
     break;
+
+  default:
+    return false;
   } // end switch over element type
   return true;
 }
@@ -141,7 +153,7 @@ bool IdealWeightMeanRatio::compute_element_analytical_gradient(PatchData &pd,
 //  FUNCTION_TIMER_START(__FUNC__);
   EntityTopology topo = e->get_element_type();
 
-  if (((topo == QUADRILATERAL) || (topo == HEXAHEDRON)) && 
+  if (((topo == QUADRILATERAL) || (topo == HEXAHEDRON) || (topo == PYRAMID)) && 
       ((avgMethod == MINIMUM) || (avgMethod == MAXIMUM))) {
     MSQ_PRINT(1)(
       "Minimum and maximum not continuously differentiable.\n"
@@ -245,6 +257,33 @@ bool IdealWeightMeanRatio::compute_element_analytical_gradient(PatchData &pd,
     vert_per_elem = 8;
     break;
 
+
+  case PYRAMID:
+    mAccumGrad[4] = 0.0;
+    for (i = 0; i < 4; ++i) {
+      mAccumGrad[i] = 0.0;
+      mCoords[0] = vertices[v_i[ i     ]];
+      mCoords[1] = vertices[v_i[(i+1)%4]];
+      mCoords[2] = vertices[v_i[(i+3)%4]];
+      mCoords[3] = vertices[v_i[ 4     ]];
+      metric_valid = g_fcn_3p(mMetrics[i], mGradients+4*i, mCoords, a3Con, b3Con, c3Con);
+      if (!metric_valid) return false;
+    }
+    
+    m = average_metric_and_weights( mMetrics, 4, err ); MSQ_ERRZERO(err);
+    for (i = 0; i < 4; ++i) 
+    {
+      mAccumGrad[ i     ] += mMetrics[i]*mGradients[4*i+0];
+      mAccumGrad[(i+1)%4] += mMetrics[i]*mGradients[4*i+1];
+      mAccumGrad[(i+3)%4] += mMetrics[i]*mGradients[4*i+2];
+      mAccumGrad[ 4     ] += mMetrics[i]*mGradients[4*i+3];
+    }
+    
+    vert_per_elem = 5;
+    break;
+    
+  default:
+    return false;
   }
   
   // This is not very efficient, but is one way to select correct gradients
@@ -348,10 +387,10 @@ bool IdealWeightMeanRatio::compute_element_analytical_hessian(PatchData &pd,
     }
     
     pd.get_domain_normal_at_element(e, n, err); MSQ_ERRZERO(err);
+    n = n / n.length();	// Need unit normal
     for (i = 0; i < 4; ++i) {
       g[i] = 0.0;
 
-      n = n / n.length();	// Need unit normal
       mCoords[0] = vertices[v_i[locs_hex[i][0]]];
       mCoords[1] = vertices[v_i[locs_hex[i][1]]];
       mCoords[2] = vertices[v_i[locs_hex[i][2]]];
@@ -665,8 +704,187 @@ bool IdealWeightMeanRatio::compute_element_analytical_hessian(PatchData &pd,
     }
     break;
 
-  default:
+  case PYRAMID:
+    for (i=0; i<15; ++i)
+      h[i].zero();
+
+    mAccumGrad[4] = 0.0;
+    for (i = 0; i < 4; ++i) {
+      mAccumGrad[i] = 0.0;
+      mCoords[0] = vertices[v_i[ i     ]];
+      mCoords[1] = vertices[v_i[(i+1)%4]];
+      mCoords[2] = vertices[v_i[(i+3)%4]];
+      mCoords[3] = vertices[v_i[ 4     ]];
+      metric_valid = h_fcn_3p(mMetrics[i], mGradients+4*i, 
+                              mHessians+10*i, mCoords, a3Con, b3Con, c3Con);
+      if (!metric_valid) return false;
+    }
+
+    switch(avgMethod) {
+    case MINIMUM:
+      MSQ_SETERR(err)("MINIMUM averaging method does not work.",MsqError::NOT_IMPLEMENTED);
+      return false;
+
+    case MAXIMUM:
+      MSQ_SETERR(err)("MAXIMUM averaging method does not work.",MsqError::NOT_IMPLEMENTED);
+      return false;
+
+    case SUM:
+      m = 0;
+      for (i = 0; i < 4; ++i) {
+        m += mMetrics[i];
+      }
+
+      l = 0;
+      for (i = 0; i < 4; ++i) {
+        const int locs_pyr[] = { i, (i+1)%4, (i+3)%4, 4 }; 
+      
+        g[locs_pyr[0]] += mGradients[4*i+0];
+        g[locs_pyr[1]] += mGradients[4*i+1];
+        g[locs_pyr[2]] += mGradients[4*i+2];
+        g[locs_pyr[3]] += mGradients[4*i+3];
+
+        for (j = 0; j < 4; ++j) {
+          for (k = j; k < 4; ++k) {
+            r = locs_pyr[j];
+            c = locs_pyr[k];
+
+            if (r <= c) {
+              loc = 4*r - (r*(r+1)/2) + c;
+              h[loc] += mHessians[l];
+            } 
+            else {
+              loc = 4*c - (c*(c+1)/2) + r;
+              h[loc] += transpose(mHessians[l]);
+            }
+            ++l;
+          }
+        }
+      }
+      break;
+
+ /*
+    case SUM_SQUARED:
+      m = 0;
+      for (i = 0; i < 4; ++i) {
+        m += (mMetrics[i]*mMetrics[i]);
+        mMetrics[i] *= 2.0;
+      }
+
+      l = 0;
+      for (i = 0; i < 4; ++i) {
+        const int locs_pyr[] = { i, (i+1)%4, (i+3)%4, 4 }; 
+
+        g[locs_pyr[0]] += mMetrics[i]*mGradients[4*i+0];
+        g[locs_pyr[1]] += mMetrics[i]*mGradients[4*i+1];
+        g[locs_pyr[2]] += mMetrics[i]*mGradients[4*i+2];
+        g[locs_pyr[3]] += mMetrics[i]*mGradients[4*i+3];
+
+        for (j = 0; j < 4; ++j) {
+          for (k = j; k < 4; ++k) {
+            outer = 2.0*outer.outer_product(mGradients[4*i+j], 
+					    mGradients[4*i+k]);
+
+            r = locs_pyr[j];
+            c = locs_pyr[k];
+
+            if (r <= c) {
+              loc = 8*r - (r*(r+1)/2) + c;
+              h[loc] += mMetrics[i]*mHessians[l] + outer;
+            } 
+            else {
+              loc = 8*c - (c*(c+1)/2) + r;
+              h[loc] += transpose(mMetrics[i]*mHessians[l] + outer);
+            }
+            ++l;
+          }
+        }
+      }
+      break;
+*/
+    case LINEAR:
+      m = 0;
+      for (i = 0; i < 4; ++i) {
+        m += mMetrics[i];
+      }
+      m *= 0.25;
+
+      l = 0;
+      for (i = 0; i < 4; ++i) {
+        const int locs_pyr[] = { i, (i+1)%4, (i+3)%4, 4 }; 
+
+        g[locs_pyr[0]] += 0.25*mGradients[4*i+0];
+        g[locs_pyr[1]] += 0.25*mGradients[4*i+1];
+        g[locs_pyr[2]] += 0.25*mGradients[4*i+2];
+        g[locs_pyr[3]] += 0.25*mGradients[4*i+3];
+
+        for (j = 0; j < 4; ++j) {
+          for (k = j; k < 4; ++k) {
+            r = locs_pyr[j];
+            c = locs_pyr[k];
+
+            if (r <= c) {
+              loc = 8*r - (r*(r+1)/2) + c;
+              h[loc] += mHessians[l];
+            } 
+            else {
+              loc = 8*c - (c*(c+1)/2) + r;
+              h[loc] += transpose(mHessians[l]);
+            }
+            ++l;
+          }
+        }
+      }
+
+      for (i=0; i<15; ++i)
+        h[i] *= 0.25;
+      break;
+
+    case GEOMETRIC:
+      MSQ_SETERR(err)("GEOMETRIC averaging method does not work.",MsqError::NOT_IMPLEMENTED);
+      return false;
+
+    default:
+      MSQ_SETERR(err)("averaging method not available.",MsqError::INVALID_STATE);
+      return false;
+    }
+
+    // zero out fixed elements of gradient and Hessian
+    ind = 0;
+    for (i=0; i<5; ++i) {
+      // if free vertex, see next
+      if ( vertices+v_i[i] == fv[ind] )
+        ++ind;
+      // else zero gradient entry and hessian entries.
+      else {
+        g[i] = 0.;
+        switch(i) {
+        case 0:
+          h[0].zero();   h[1].zero();   h[2].zero();   h[3].zero(); h[4].zero();
+          break;
+          
+        case 1:
+          h[1].zero();   h[5].zero();   h[6].zero();   h[7].zero(); h[8].zero();
+          break;
+          
+        case 2:
+          h[2].zero();   h[6].zero();   h[9].zero();   h[10].zero(); h[11].zero();
+          break;
+          
+        case 3:
+          h[3].zero();   h[7].zero();   h[10].zero();   h[12].zero(); h[13].zero();
+          break;
+          
+        case 4:
+          h[4].zero();   h[8].zero();   h[11].zero();   h[13].zero(); h[14].zero();
+          break;
+        }
+      }
+    }
     break;
+
+  default:
+    return false;
   } // end switch over element type
 
 //  FUNCTION_TIMER_END();

@@ -651,6 +651,23 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
      CPPUNIT_ASSERT(valid==true);
      if(pF) cout << "\nInv MEAN HEX " << val;
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
+
+       //test for pyramids
+     PatchData pyrPatch;
+     create_one_pyr_patch( pyrPatch, err ); CPPUNIT_ASSERT(!err);
+     verts = pyrPatch.get_vertex_array(err); CPPUNIT_ASSERT(!err);
+     elems = pyrPatch.get_element_array(err); CPPUNIT_ASSERT(!err);
+       //Check mean ratio of ideal pyramid
+     valid = met->evaluate_element(pyrPatch,&elems[0],val,err);CPPUNIT_ASSERT(!err);
+     CPPUNIT_ASSERT(valid==true);
+     if(pF) cout << "\nMEAN PYR " << val;
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
+       //Check inverse mean ratio of ideal hex (INVERSE)
+     valid = imet->evaluate_element(pyrPatch,&elems[0],val,err);CPPUNIT_ASSERT(!err);
+     CPPUNIT_ASSERT(valid==true);
+     if(pF) cout << "\nInv MEAN HEX " << val;
+     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
+
      delete met;
      delete imet;
    }
