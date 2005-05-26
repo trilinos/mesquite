@@ -394,7 +394,7 @@ void MeshImpl::read_exodus(const char* in_filename , MsqError &err)
     
       // Figure out which type of element we're working with
     EntityTopology elem_type;
-    for (int j = 0; j < 3; j++)
+    for (int j = 0; *elem_type_str[j]; j++)
       elem_type_str[j] = toupper(elem_type_str[j]);
     if (!strncmp(elem_type_str, "TRI", 3))
     {
@@ -412,6 +412,14 @@ void MeshImpl::read_exodus(const char* in_filename , MsqError &err)
     else if (!strncmp(elem_type_str, "TET", 3))
     {
       elem_type = Mesquite::TETRAHEDRON;
+    }
+    else if (!strncmp(elem_type_str, "PYRAMID", 7))
+    {
+      elem_type = Mesquite::PYRAMID;
+    }
+    else if (!strncmp(elem_type_str, "WEDGE", 5))
+    {
+      elem_type = Mesquite::WEDGE;
     }
     else
     {
@@ -613,8 +621,8 @@ void Mesquite::MeshImpl::write_exodus(const char* out_filename,
   const char* quad_name = "SHELL";
   const char* tet_name = "TETRA";
   const char* hex_name = "HEX";
-  const char* wdg_name = "PRISM";
-  const char* pyr_name = "PYR";
+  const char* wdg_name = "WEDGE";
+  const char* pyr_name = "PYRAMID";
   const char* exo_names[MIXED];
   memset( exo_names, 0, sizeof(exo_names) );
   exo_names[TRIANGLE]      = tri_name;
