@@ -1840,7 +1840,7 @@ void MeshTSTTImpl::tag_set_data( TagHandle tag,
 {
   try {
     size_t len, size = tagIFace.getTagSize( tag );
-    int count;
+    int count = 0;
     sidl::array<void*> handles( convert_to_sidl_vector( (void**)array, num_elems ) );
     switch (tagIFace.getTagType( tag ))
     {
