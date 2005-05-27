@@ -58,7 +58,7 @@ using namespace Mesquite;
   msq_stdio::cout << "Assertion Failed: " << #A << msq_stdio::endl; \
   msq_stdio::cout << "  File: " << __FILE__ << msq_stdio::endl; \
   msq_stdio::cout << "  Line: " << __LINE__ << msq_stdio::endl; \
-  return false; \
+  return true; \
   } } while (false)
 
 // Given a mesh with a single free vertex located at the origin,
@@ -136,14 +136,14 @@ int main()
     // Try smoothing w/out moving the free vertex and verify that
     // the smoother didn't move the vertex
   Vector3D position(0,0,0);
-  for (unsigned i = 0; metrics[1] != NULL; ++i)
-    CPPUNIT_ASSERT( smooth_mesh( mesh, vert_array[apex_index], position, metrics[i] ) );
+  for (unsigned i = 0; metrics[i] != NULL; ++i)
+    CPPUNIT_ASSERT( !smooth_mesh( mesh, vert_array[apex_index], position, metrics[i] ) );
   
     // Now try moving the vertex and see if the smoother moves it back
     // to the origin
   position.set( 0.5, 0.5, 0.5 );
-  for (unsigned i = 0; metrics[1] != NULL; ++i)
-    CPPUNIT_ASSERT( smooth_mesh( mesh, vert_array[apex_index], position, metrics[i] ) );
+  for (unsigned i = 0; metrics[i] != NULL; ++i)
+    CPPUNIT_ASSERT( !smooth_mesh( mesh, vert_array[apex_index], position, metrics[i] ) );
 
   return 0;
 }
@@ -170,6 +170,11 @@ bool smooth_mesh( Mesh* mesh,
   "**************************************************************************" 
   << msq_stdio::endl;
     
+  // Use numeric approx of derivitives until analytic solutions
+  // are working for pyramids
+  //metric->set_gradient_type( QualityMetric::NUMERICAL_GRADIENT );
+  //metric->set_hessian_type( QualityMetric::NUMERICAL_HESSIAN );
+  
   
   // Set free vertex to specified position
   mesh->vertex_set_coordinates( free_vertex_at_origin, 
@@ -237,5 +242,5 @@ bool smooth_mesh( Mesh* mesh,
   << msq_stdio::endl;
   
   CPPUNIT_ASSERT( position.within_tolerance_box( Vector3D(0,0,0), 1e-6 ) );
-  return true;
+  return false;
 }
