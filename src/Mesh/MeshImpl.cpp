@@ -394,7 +394,7 @@ void MeshImpl::read_exodus(const char* in_filename , MsqError &err)
     
       // Figure out which type of element we're working with
     EntityTopology elem_type;
-    for (int j = 0; *elem_type_str[j]; j++)
+    for (int j = 0; elem_type_str[j]; j++)
       elem_type_str[j] = toupper(elem_type_str[j]);
     if (!strncmp(elem_type_str, "TRI", 3))
     {
@@ -419,7 +419,7 @@ void MeshImpl::read_exodus(const char* in_filename , MsqError &err)
     }
     else if (!strncmp(elem_type_str, "WEDGE", 5))
     {
-      elem_type = Mesquite::WEDGE;
+      elem_type = Mesquite::PRISM;
     }
     else
     {
