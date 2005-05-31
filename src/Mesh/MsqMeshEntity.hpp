@@ -89,6 +89,11 @@ namespace Mesquite
       //! gets the vertices of the mesh entity
     void get_vertex_indices(msq_std::vector<msq_stdc::size_t> &vertex_list) const;
     void append_vertex_indices(msq_std::vector<msq_stdc::size_t> &vertex_list) const;
+    size_t get_local_matrix_map_about_vertex(PatchData &pd,
+                                             MsqVertex* vert,
+                                             size_t local_map_size,
+                                             int* local_map,
+                                             MsqError &err) const;
       //! gets the vertices of the mesh entity
     void get_node_indices(msq_std::vector<msq_stdc::size_t> &vertex_list) const;
     void append_node_indices(msq_std::vector<msq_stdc::size_t> &vertex_list) const;

@@ -945,4 +945,105 @@ ostream& operator<<( ostream& stream, const MsqMeshEntity& entity )
   return stream;
 }
 
+
+
+
+/*! Get a array of indices that specifies for the given vertex
+  the correct matrix map.  This is used by the I_DFT point
+  relaxation methods in the laplacian smoothers.
+  
+*/
+size_t Mesquite::MsqMeshEntity::get_local_matrix_map_about_vertex(
+  PatchData &pd, MsqVertex* vert, size_t local_map_size,
+  int* local_map, MsqError &err) const
+{
+    //i iterates through elem's vertices
+  int i=0;
+    //index is set to the index in the vertexIndices corresponding
+    //to vertex_index
+  int index=-1;
+  int return_val=0;
+  MsqVertex* vertex_array = pd.get_vertex_array(err);
+  if(err)
+    return return_val;
+  
+  switch (mType)
+  {
+    case TRIANGLE:
+      MSQ_SETERR(err)("Requested function not yet supported for Triangles.",
+                      MsqError::NOT_IMPLEMENTED);
+      
+      break;
+      
+    case QUADRILATERAL:
+      MSQ_SETERR(err)("Requested function not yet supported for Quadrilaterals.",
+                      MsqError::NOT_IMPLEMENTED);
+       
+      break;
+      
+    case TETRAHEDRON:
+      if(local_map_size<4){
+        MSQ_SETERR(err)("Array of incorrect length sent to function.",
+                        MsqError::INVALID_ARG);
+        return return_val;
+      }
+      return_val = 4;
+      while(i<4)
+      {
+        if(&vertex_array[vertexIndices[i]]==vert)
+        {
+          index=i;
+          break;
+        }
+        ++i;
+      }
+      switch(index){
+        case(0):
+          local_map[0]=0;
+          local_map[1]=1;
+          local_map[2]=2;
+          local_map[3]=3;
+          break;
+        case(1):
+          local_map[0]=1;
+          local_map[1]=0;
+          local_map[2]=3;
+          local_map[3]=2;
+          break;
+        case(2):
+          local_map[0]=2;
+          local_map[1]=3;
+          local_map[2]=0;
+          local_map[3]=1;
+          break;
+        case(3):
+          local_map[0]=3;
+          local_map[1]=2;
+          local_map[2]=1;
+          local_map[3]=0;
+          break;
+        default:
+          local_map[0]=-1;
+          local_map[1]=-1;
+          local_map[2]=-1;
+          local_map[3]=-1;
+      };
+      
+      break;
+      
+    case HEXAHEDRON:
+      MSQ_SETERR(err)("Requested function not yet supported for Hexahedrons.",
+                      MsqError::NOT_IMPLEMENTED);
+      
+      break;
+    default:
+      MSQ_SETERR(err)("Element type not available", MsqError::INVALID_ARG);
+      break;
+  }
+  return return_val;
+  
+}
+
+
+
 } // namespace Mesquite
