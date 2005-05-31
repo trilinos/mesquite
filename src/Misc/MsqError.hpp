@@ -71,6 +71,10 @@ namespace Mesquite
  */
 #define MSQ_ERRZERO(err)  if (MSQ_CHKERR(err)) return 0
 
+/**\brief Return false on error.
+ */
+#define MSQ_ERRFALSE(err)  if (MSQ_CHKERR(err)) return false
+
 /**\brief Macro to set error - use err.clear() to clear.
  *
  * Set the error object to the specified error code and optional error message,

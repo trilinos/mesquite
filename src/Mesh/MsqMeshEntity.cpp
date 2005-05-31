@@ -1037,7 +1037,7 @@ size_t Mesquite::MsqMeshEntity::get_local_matrix_map_about_vertex(
       
       break;
     default:
-      MSQ_SETERR(err)("Element type not available", MsqError::INVALID_ARG);
+      MSQ_SETERR(err)("Element type not available", MsqError::NOT_IMPLEMENTED);
       break;
   }
   return return_val;

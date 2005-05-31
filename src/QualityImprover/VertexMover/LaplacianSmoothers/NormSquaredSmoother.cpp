@@ -124,10 +124,8 @@ namespace Mesquite {
     PatchData &pd, size_t free_index, MsqError &err)
   {
       //get vertex and element arrays
-    MsqVertex* verts=pd.get_vertex_array(err);
-    MsqMeshEntity* elems=pd.get_element_array(err);
-    if(err)
-      return false;
+    MsqVertex* verts=pd.get_vertex_array(err);MSQ_ERRFALSE(err);
+    MsqMeshEntity* elems=pd.get_element_array(err);MSQ_ERRFALSE(err);
     size_t num_elements = pd.num_elements();
       //matrix to store a map for the given corner
       // (element/vertex combination) that maps the
@@ -152,22 +150,20 @@ namespace Mesquite {
         //actually get the map for this corner...
       local_matrix_map_used = elems[i].get_local_matrix_map_about_vertex(
         pd, &verts[free_index],local_matrix_map_length, local_matrix_map,err);
+      MSQ_ERRFALSE(err);
         //get a vector of the vertex indices for this element
       elems[i].get_vertex_indices(elems_verts);
-
-      if(err)
-        return false;
         //get the W array for this elements
       int elem_idx = pd.get_element_index(&elems[i]);
       const TargetMatrix* W = pd.targetMatrices.get_element_corner_tags(
-        &pd, elem_idx, err );
+        &pd, elem_idx, err );MSQ_ERRFALSE(err);
         //initial c_scalars to 0.0 and calculate Y for each vertex in the
         // this corner.
       for(j=0;j<local_matrix_map_used;++j){
         c_scalars[j]=0.0;
         if(local_matrix_map[j] < 0){
           MSQ_SETERR(err)("Invalid index returned from MsqMeshEntity.\n",
-                          MsqError::INVALID_ARG);
+                          MsqError::INVALID_STATE);
           return false;
         }
           //tmp_mat=W[local_matrix_map[j]];
@@ -208,7 +204,7 @@ namespace Mesquite {
     }
     if(scale_value==0.0){
       MSQ_SETERR(err)("Invalid accummulation          .\n",
-                      MsqError::INVALID_ARG);
+                      MsqError::INVALID_STATE);
       return false;
     }
       //divide the new position by the denominator and get the
