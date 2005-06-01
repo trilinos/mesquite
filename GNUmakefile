@@ -71,6 +71,7 @@ TESTNAMES := test_1\
              higher_order \
 	     transform \
 	     i_dft_with_culling \
+	     pyramid \
              unit 
 ###             random_test\
 ###             convert\
