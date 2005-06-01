@@ -34,8 +34,8 @@ Header file for the Mesquite::I_DFT_Generalized class
  */
 
 
-#ifndef I_DFT_STRONG_BARRIER_hpp
-#define I_DFT_STRONG_BARRIER_hpp
+#ifndef I_DFT_GENERALIZED_hpp
+#define I_DFT_GENERALIZED_hpp
 
 #include "I_DFT.hpp"
 
