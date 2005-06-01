@@ -994,11 +994,11 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_hessian(PatchData &
             c = locs_pyr[k];
 
             if (r <= c) {
-              loc = 4*r - (r*(r+1)/2) + c;
+              loc = 5*r - (r*(r+1)/2) + c;
               h[loc] += mHessians[l];
             } 
             else {
-              loc = 4*c - (c*(c+1)/2) + r;
+              loc = 5*c - (c*(c+1)/2) + r;
               h[loc] += transpose(mHessians[l]);
             }
             ++l;
@@ -1032,11 +1032,11 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_hessian(PatchData &
             c = locs_pyr[k];
 
             if (r <= c) {
-              loc = 8*r - (r*(r+1)/2) + c;
+              loc = 5*r - (r*(r+1)/2) + c;
               h[loc] += mMetrics[i]*mHessians[l] + outer;
             } 
             else {
-              loc = 8*c - (c*(c+1)/2) + r;
+              loc = 5*c - (c*(c+1)/2) + r;
               h[loc] += transpose(mMetrics[i]*mHessians[l] + outer);
             }
             ++l;
@@ -1067,11 +1067,11 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_hessian(PatchData &
             c = locs_pyr[k];
 
             if (r <= c) {
-              loc = 8*r - (r*(r+1)/2) + c;
+              loc = 5*r - (r*(r+1)/2) + c;
               h[loc] += mHessians[l];
             } 
             else {
-              loc = 8*c - (c*(c+1)/2) + r;
+              loc = 5*c - (c*(c+1)/2) + r;
               h[loc] += transpose(mHessians[l]);
             }
             ++l;
@@ -1135,11 +1135,11 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_hessian(PatchData &
             c = locs_pyr[k];
 
             if (r <= c) {
-              loc = 8*r - (r*(r+1)/2) + c;
+              loc = 5*r - (r*(r+1)/2) + c;
               h[loc] += g_factor[i]*mHessians[l] + outer;
             } 
             else {
-              loc = 8*c - (c*(c+1)/2) + r;
+              loc = 5*c - (c*(c+1)/2) + r;
               h[loc] += transpose(g_factor[i]*mHessians[l] + outer);
             }
             ++l;
