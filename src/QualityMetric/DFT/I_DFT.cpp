@@ -65,16 +65,10 @@ bool I_DFT::evaluate_element(PatchData& pd,
   MSQ_ERRZERO(err);
   
   const int triInd[3][3] = {{0, 1, 2}, {1, 2, 0}, {2, 0, 1}};
-  
   const int tetInd[4][4] = {{0, 1, 2, 3}, {1, 0, 3, 2},
                             {2, 3, 0, 1}, {3, 2, 1, 0}};
-
-//  const int tetInd[4][4] = {{0, 1, 2, 3}, {1, 2, 0, 3}, 
-//			    {2, 0, 1, 3}, {3, 2, 1, 0}};
-//  Modified tetInd to be consistent with ordering used in
-// MsqMeshEntity::compute_corner_matrices().  The ordering 
-// used here to calculate A must be consitent with the ordering
-// used there to calculate W.
+  const int pyrInd[4][4] = {{0, 1, 3, 4}, {1, 2, 0, 4},
+			    {2, 3, 1, 4}, {3, 0, 2, 4}};
   const int hexInd[8][4] = {{0, 1, 3, 4}, {1, 2, 0, 5},
 			    {2, 3, 1, 6}, {3, 0, 2, 7},
 			    {4, 7, 5, 0}, {5, 4, 6, 1},
@@ -127,7 +121,6 @@ bool I_DFT::evaluate_element(PatchData& pd,
 			mAlpha, mGamma, delta, mBeta);
       if (!mValid) return false;
       m += W[i].get_cK() * mMetric;
-      
     }
 
     m *= 0.25;
@@ -139,6 +132,26 @@ bool I_DFT::evaluate_element(PatchData& pd,
     for (i = 0; i < 4; ++i) {
       for (j = 0; j < 4; ++j) {
 	mCoords[j] = vertices[v_i[tetInd[i][j]]];
+      }
+
+      QR(mQ, mR, W[i]);
+      inv(invR, mR);
+      mValid = m_gdft_3(mMetric, mCoords, invR, mQ, 
+			mAlpha, mGamma, delta, mBeta);
+      
+      if (!mValid) return false;
+      m += W[i].get_cK() * mMetric;
+    }
+
+    m *= 0.25;
+    break;
+
+  case PYRAMID:
+    assert(5 == nv);
+
+    for (i = 0; i < 4; ++i) {
+      for (j = 0; j < 4; ++j) {
+	mCoords[j] = vertices[v_i[pyrInd[i][j]]];
       }
 
       QR(mQ, mR, W[i]);
@@ -204,21 +217,13 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
   // Initialize constants for the metric
   const double delta = useBarrierDelta ? pd.get_barrier_delta(err) :
     (mGamma ? 0 : 1);
-    //const double delta = useBarrierDelta ? pd.get_barrier_delta(err) : 0;
   MSQ_ERRZERO(err);
   
   const int triInd[3][3] = {{0, 1, 2}, {1, 2, 0}, {2, 0, 1}};
-  
-  
   const int tetInd[4][4] = {{0, 1, 2, 3}, {1, 0, 3, 2},
                             {2, 3, 0, 1}, {3, 2, 1, 0}};
-  
-//  const int tetInd[4][4] = {{0, 1, 2, 3}, {1, 2, 0, 3},
-//			    {2, 0, 1, 3}, {3, 2, 1, 0}};
-//  Modified tetInd to be consistent with ordering used in
-// MsqMeshEntity::compute_corner_matrices().  The ordering 
-// used here to calculate A must be consitent with the ordering
-// used there to calculate W.
+  const int pyrInd[4][4] = {{0, 1, 3, 4}, {1, 2, 0, 4},
+			    {2, 3, 1, 4}, {3, 0, 2, 4}};
   const int hexInd[8][4] = {{0, 1, 3, 4}, {1, 2, 0, 5},
 			    {2, 3, 1, 6}, {3, 0, 2, 7},
 			    {4, 7, 5, 0}, {5, 4, 6, 1},
@@ -558,6 +563,110 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
     }
     break;
 
+  case PYRAMID:
+    assert(5 == nv);
+
+    if (1 == nfv) {
+      // One free vertex; use the specialized code for computing the gradient.
+
+      g[0] = 0.0;
+      for (i = 0; i < 4; ++i) {
+	mVert = -1;
+	for (j = 0; j < 4; ++j) {
+	  mCoords[j] = vertices[v_i[pyrInd[i][j]]];
+	  if (vertices + v_i[pyrInd[i][j]] == fv[0]) {
+	    mVert = j;
+	  }
+	}
+	
+	if (mVert >= 0) {
+	  QR(mQ, mR, W[i]);
+	  inv(invR, mR);
+	  
+	  switch(mVert) {
+	  case 0:
+	    mValid = g_gdft_3_v0(mMetric, mGrads[0], mCoords, invR, mQ, 
+				 mAlpha, mGamma, delta, mBeta);
+	    break;
+	    
+	  case 1:
+	    mValid = g_gdft_3_v1(mMetric, mGrads[0], mCoords, invR, mQ, 
+				 mAlpha, mGamma, delta, mBeta);
+	    break;
+	    
+	  case 2:
+	    mValid = g_gdft_3_v2(mMetric, mGrads[0], mCoords, invR, mQ, 
+				 mAlpha, mGamma, delta, mBeta);
+	    break;
+	    
+	  default:
+	    mValid = g_gdft_3_v3(mMetric, mGrads[0], mCoords, invR, mQ, 
+				 mAlpha, mGamma, delta, mBeta);
+	    break;
+	  }
+
+	  if (!mValid) return false;
+	  m += W[i].get_cK() * mMetric;
+	  g[0] += W[i].get_cK() * mGrads[0];
+	}
+	else {
+	  // For pyramids, the free vertex does not appear in every element.
+	  // Therefore, there these accumulations will not get used.
+
+	  QR(mQ, mR, W[i]);
+	  inv(invR, mR);
+	  mValid = m_gdft_3(mMetric, mCoords, invR, mQ, 
+			    mAlpha, mGamma, delta, mBeta);
+	  if (!mValid) return false;
+	  m += W[i].get_cK() * mMetric;
+	}
+      }
+
+      m *= 0.25;
+      g[0] *= 0.25;
+    }
+    else {
+      for (i = 0; i < 5; ++i) {
+	mAccGrads[i] = 0.0;
+      }
+      
+      for (i = 0; i < 4; ++i) {
+	for (j = 0; j < 4; ++j) {
+	  mCoords[j] = vertices[v_i[pyrInd[i][j]]];
+	}
+	
+	QR(mQ, mR, W[i]);
+	inv(invR, mR);
+	mValid = g_gdft_3(mMetric, mGrads, mCoords, invR, mQ, 
+			  mAlpha, mGamma, delta, mBeta);
+	
+	if (!mValid) return false;
+	m += W[i].get_cK() * mMetric;
+	
+	for (j = 0; j < 4; ++j) {
+	  mAccGrads[pyrInd[i][j]] += W[i].get_cK() * mGrads[j];
+	}
+      }
+      
+      m *= 0.25;
+      for (i = 0; i < 5; ++i) {
+	mAccGrads[i] *= 0.25;
+      }
+      
+      // This is not very efficient, but is one way to select correct 
+      // gradients.  For gradients, info is returned only for free vertices, 
+      // in the order of fv[].
+
+      for (i = 0; i < 5; ++i) {
+	for (j = 0; j < nfv; ++j) {
+	  if (vertices + v_i[i] == fv[j]) {
+	    g[j] = mAccGrads[i];
+	  }
+	}
+      }
+    }
+    break;
+
   case HEXAHEDRON:
     assert(8 == nv);
 
@@ -699,20 +808,13 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
   // Initialize constants for the metric
   const double delta = useBarrierDelta ? pd.get_barrier_delta(err) :
     (mGamma ? 0 : 1);  
-    //const double delta = useBarrierDelta ? pd.get_barrier_delta(err) : 0;
   MSQ_ERRZERO(err);
 
   const int triInd[3][3] = {{0, 1, 2}, {1, 2, 0}, {2, 0, 1}};
-  
   const int tetInd[4][4] = {{0, 1, 2, 3}, {1, 0, 3, 2},
                             {2, 3, 0, 1}, {3, 2, 1, 0}};
-  
-//  const int tetInd[4][4] = {{0, 1, 2, 3}, {1, 2, 0, 3},
-//			    {2, 0, 1, 3}, {3, 2, 1, 0}};
-//  Modified tetInd to be consistent with ordering used in
-// MsqMeshEntity::compute_corner_matrices().  The ordering 
-// used here to calculate A must be consitent with the ordering
-// used there to calculate W.
+  const int pyrInd[4][4] = {{0, 1, 3, 4}, {1, 2, 0, 4},
+			    {2, 3, 1, 4}, {3, 0, 2, 4}};
   const int hexInd[8][4] = {{0, 1, 3, 4}, {1, 2, 0, 5},
 			    {2, 3, 1, 6}, {3, 0, 2, 7},
 			    {4, 7, 5, 0}, {5, 4, 6, 1},
@@ -1290,6 +1392,208 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 
 	  case 3:
 	    h[3].zero(); h[6].zero(); h[8].zero(); h[9].zero();
+	    break;
+	  }
+	}
+      }
+    }
+    break;
+
+  case PYRAMID:
+    assert(5 == nv);
+
+    // Zero out the hessian and gradient vector
+    for (i = 0; i < 5; ++i) {
+      g[i] = 0.0;
+    }
+
+    for (i = 0; i < 15; ++i) {
+      h[i].zero();
+    }
+
+    if (1 == nfv) {
+      // One free vertex; use the specialized code for computing the 
+      // gradient and Hessian.
+
+      Vector3D mG;
+      Matrix3D mH;
+
+      mG = 0.0;
+      mH.zero();
+
+      for (i = 0; i < 4; ++i) {
+	mVert = -1;
+	for (j = 0; j < 4; ++j) {
+	  mCoords[j] = vertices[v_i[pyrInd[i][j]]];
+	  if (vertices + v_i[pyrInd[i][j]] == fv[0]) {
+	    mVert = j;
+	  }
+	}
+	
+	if (mVert >= 0) {
+	  QR(mQ, mR, W[i]);
+	  inv(invR, mR);
+	  
+	  switch(mVert) {
+	  case 0:
+	    mValid = h_gdft_3_v0(mMetric, mGrads[0], mHessians[0],
+				 mCoords, invR, mQ, 
+				 mAlpha, mGamma, delta, mBeta);
+	    break;
+	    
+	  case 1:
+	    mValid = h_gdft_3_v1(mMetric, mGrads[0], mHessians[0],
+				 mCoords, invR, mQ, 
+				 mAlpha, mGamma, delta, mBeta);
+	    break;
+	    
+	  case 2:
+	    mValid = h_gdft_3_v2(mMetric, mGrads[0], mHessians[0],
+				 mCoords, invR, mQ, 
+				 mAlpha, mGamma, delta, mBeta);
+	    break;
+	    
+	  default:
+	    mValid = h_gdft_3_v3(mMetric, mGrads[0], mHessians[0],
+				 mCoords, invR, mQ, 
+				 mAlpha, mGamma, delta, mBeta);
+	    break;
+	  }
+
+	  if (!mValid) return false;
+	  m += W[i].get_cK() * mMetric;
+	  mG += W[i].get_cK() * mGrads[0];
+	  mH += W[i].get_cK() * mHessians[0];
+	}
+	else {
+	  // For pyramids, the free vertex does not appear in every element.
+	  // Therefore, there these accumulations will not get used.
+
+	  QR(mQ, mR, W[i]);
+	  inv(invR, mR);
+	  mValid = m_gdft_3(mMetric, mCoords, invR, mQ, 
+			    mAlpha, mGamma, delta, mBeta);
+	  if (!mValid) return false;
+	  m += W[i].get_cK() * mMetric;
+	}
+      }
+
+      m *= 0.25;
+      mG *= 0.25;
+      mH *= 0.25;
+
+      for (i = 0; i < 5; ++i) {
+	if (vertices + v_i[i] == fv[0]) {
+	  // free vertex, see next
+	  g[i] = mG;
+	  switch(i) {
+	  case 0:
+	    h[0] = mH;
+	    break;
+
+	  case 1:
+	    h[5] = mH;
+	    break;
+
+	  case 2:
+	    h[9] = mH;
+	    break;
+
+	  case 3:
+	    h[12] = mH;
+	    break;
+
+	  default:
+	    h[14] = mH;
+	    break;
+	  }
+	  break;
+	}
+      }
+    }
+    else {
+      // Compute the metric and sum them together
+      for (i = 0; i < 4; ++i) {
+	for (j = 0; j < 4; ++j) {
+	  mCoords[j] = vertices[v_i[pyrInd[i][j]]];
+	}
+	
+	QR(mQ, mR, W[i]);
+	inv(invR, mR);
+	mValid = h_gdft_3(mMetric, mGrads, mHessians, mCoords, invR, mQ,
+			  mAlpha, mGamma, delta, mBeta);
+	
+	if (!mValid) return false;
+	
+	m += W[i].get_cK() * mMetric;
+	
+	for (j = 0; j < 4; ++j) {
+	  g[pyrInd[i][j]] += W[i].get_cK() * mGrads[j];
+	}
+	
+	l = 0;
+	for (j = 0; j < 4; ++j) {
+	  for (k = j; k < 4; ++k) {
+	    row = pyrInd[i][j];
+	    col = pyrInd[i][k];
+	    
+	    if (row <= col) {
+	      loc = 5*row - (row*(row+1)/2) + col;
+	      h[loc] += W[i].get_cK() * mHessians[l];
+	    }
+	    else {
+	      loc = 5*col - (col*(col+1)/2) + row;
+	      h[loc] += W[i].get_cK() * transpose(mHessians[l]);
+	    }
+	    ++l;
+	  }
+	}
+      }
+      
+      m *= 0.25;
+      for (i = 0; i < 5; ++i) {
+	g[i] *= 0.25;
+      }
+      
+      for (i = 0; i < 15; ++i) {
+	h[i] *= 0.25;
+      }
+      
+      // zero out fixed elements of g
+      j = 0;
+      for (i = 0; i < 5; ++i) {
+	if (vertices + v_i[i] == fv[j]) {
+	  // if free vertex, see next
+	  ++j;
+	}
+	else {
+	  // else zero gradient entry and hessian entries.
+	  g[i] = 0.;
+	  
+	  switch(i) {
+	  case 0:
+	    h[0].zero(); h[1].zero(); h[2].zero(); 
+	    h[3].zero(); h[4].zero();
+	    break;
+	    
+	  case 1:
+	    h[1].zero(); h[5].zero(); h[6].zero(); 
+	    h[7].zero(); h[8].zero();
+	    break;
+	    
+	  case 2:
+	    h[2].zero(); h[6].zero(); h[9].zero(); 
+	    h[10].zero(); h[11].zero();
+	    break;
+
+	  case 3:
+	    h[3].zero(); h[7].zero(); h[10].zero(); 
+	    h[12].zero(); h[13].zero();
+	    break;
+
+	  case 4:
+	    h[4].zero(); h[8].zero(); h[11].zero(); 
+	    h[13].zero(); h[14].zero();
 	    break;
 	  }
 	}
