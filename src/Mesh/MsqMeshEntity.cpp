@@ -888,6 +888,8 @@ void MsqMeshEntity::compute_corner_matrices(PatchData &pd, Matrix3D A[], int num
     A[3].set_column(1, vertices[v_i[2]]-vertices[v_i[3]]);
     A[3].set_column(2, vertices[v_i[4]]-vertices[v_i[3]]);
     
+    A[4].identity();
+    
     break;
  
   case HEXAHEDRON:

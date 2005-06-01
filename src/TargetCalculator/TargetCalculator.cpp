@@ -66,6 +66,7 @@ void TargetCalculator::compute_target_matrices_and_check_det(PatchData &pd, MsqE
     const TargetMatrix* matrices = pd.targetMatrices.get_element_corner_tags(&pd, i, err);
     MSQ_ERRRTN(err);
     size_t num_corners = elems[i].vertex_count();
+    
     for (size_t j=0; j<num_corners; ++j) {    
       if ( det(matrices[j]) <= 0 ) {
         MSQ_SETERR(err)("A Target matrix has a non-positive determinant. "
@@ -129,6 +130,7 @@ void TargetCalculator::compute_default_target_matrices(PatchData &pd,
         matrices[1] = tmp_pyr; 
         matrices[2] = tmp_pyr; 
         matrices[3] = tmp_pyr; 
+        matrices[4].identity();
         break;
       default:
         MSQ_SETERR(err)("Type not implemented.",MsqError::NOT_IMPLEMENTED);
@@ -201,6 +203,7 @@ void TargetCalculator::compute_reference_corner_matrices(PatchData &pd,
           break;
         case PYRAMID:
           for (i=0; i<4; ++i) W_k[i] = tmp_pyr; 
+          W_k[4].identity();
           break;
         default:
           MSQ_SETERR(err)("Element type not implemented.",MsqError::NOT_IMPLEMENTED);
