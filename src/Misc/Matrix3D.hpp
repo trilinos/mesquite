@@ -170,6 +170,14 @@ namespace Mesquite
       v_[3]=0.;  v_[4]=0.;  v_[5]=0.;
       v_[6]=0.;  v_[7]=0.;  v_[8]=0.;
     }
+    
+    void identity()
+    {
+      v_[0]=1.;  v_[1]=0.;  v_[2]=0.;
+      v_[3]=0.;  v_[4]=1.;  v_[5]=0.;
+      v_[6]=0.;  v_[7]=0.;  v_[8]=1.;
+    }
+      
      
     //! Sets column j (0, 1 or 2) to Vector3D c.
     void set_column(int j, const Vector3D& c)

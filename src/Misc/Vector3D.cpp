@@ -43,7 +43,7 @@ namespace Mesquite {
 
 msq_stdio::ostream& operator<<(msq_stdio::ostream &s, const Mesquite::Vector3D &v)
 {
-    return s << v[0] << ' ' << v[1] << ' ' << v[2] << ' ' << msq_stdio::endl;
+    return s << v[0] << ' ' << v[1] << ' ' << v[2];
 }
 
 double Vector3D::interior_angle(const Vector3D &lhs,
