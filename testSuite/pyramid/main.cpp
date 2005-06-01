@@ -26,6 +26,10 @@
    
   ***************************************************************** */
 
+
+#define TOL 1e-5
+#define TEST_HESSIAN_TYPE ANALYTICAL_HESSIAN
+
 #ifdef MSQ_USE_OLD_IO_HEADERS
 #  include <iostream.h>
 #else
@@ -49,7 +53,13 @@
 // algorithms
 #include "IdealWeightMeanRatio.hpp"
 #include "IdealWeightInverseMeanRatio.hpp"
-#include "ConjugateGradient.hpp"
+#include "I_DFT.hpp"
+#include "I_DFT_InverseMeanRatio.hpp"
+#include "I_DFT_StrongBarrier.hpp"
+#include "I_DFT_WeakBarrier.hpp"
+#include "I_DFT_Generalized.hpp"
+#include "FeasibleNewton.hpp"
+#include "ConcreteTargetCalculators.hpp"
 using namespace Mesquite;
 
 // Use CPPUNIT_ASSERT in code so it's easy to convert to a unit test later.
@@ -61,11 +71,12 @@ using namespace Mesquite;
   return true; \
   } } while (false)
 
+
 // Given a mesh with a single free vertex located at the origin,
 // move the vertex to the specified position, smooth the mesh,
 // and verify that the vertex was moved back to the origin by
 // the smoother.
-bool smooth_mesh( Mesh* mesh,
+bool smooth_mesh( Mesh* mesh, Mesh* ref_mesh,
                   Mesh::VertexHandle free_vertex_at_origin, 
                   Vector3D initial_free_vertex_position,
                   QualityMetric* metric );
@@ -75,11 +86,19 @@ int main()
   Mesquite::MsqPrintError err(cout);
   QualityMetric* metrics[] = { new IdealWeightMeanRatio,
                                new IdealWeightInverseMeanRatio(err),
+                               new I_DFT,
+                               new I_DFT_InverseMeanRatio,
+                               new I_DFT_StrongBarrier,
+                               new I_DFT_WeakBarrier,
+                               new I_DFT_Generalized,
                                0 };
 
     // Read Mesh
   Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
   mesh->read_vtk("../../meshFiles/3D/VTK/12-pyramid-unit-sphere.vtk", err);
+  CPPUNIT_ASSERT(!err);
+  Mesquite::MeshImpl *ideal_mesh = new Mesquite::MeshImpl;
+  ideal_mesh->read_vtk("../../meshFiles/3D/VTK/12-pyramid-unit-sphere.vtk", err);
   CPPUNIT_ASSERT(!err);
 
     // Check that the mesh read correctly, and contains what is
@@ -137,19 +156,25 @@ int main()
     // the smoother didn't move the vertex
   Vector3D position(0,0,0);
   for (unsigned i = 0; metrics[i] != NULL; ++i)
-    CPPUNIT_ASSERT( !smooth_mesh( mesh, vert_array[apex_index], position, metrics[i] ) );
+    CPPUNIT_ASSERT( !smooth_mesh( mesh, ideal_mesh, vert_array[apex_index], position, metrics[i] ) );
   
     // Now try moving the vertex and see if the smoother moves it back
     // to the origin
-  position.set( 0.5, 0.5, 0.5 );
+  position.set( 0.1, 0.1, 0.1 );
   for (unsigned i = 0; metrics[i] != NULL; ++i)
-    CPPUNIT_ASSERT( !smooth_mesh( mesh, vert_array[apex_index], position, metrics[i] ) );
+    CPPUNIT_ASSERT( !smooth_mesh( mesh, ideal_mesh, vert_array[apex_index], position, metrics[i] ) );
+  
+    // Now try moving the vertex further and see if the smoother moves it back
+    // to the origin
+  position.set( 0.3, 0.3, 0.3 );
+  for (unsigned i = 0; metrics[i] != NULL; ++i)
+    CPPUNIT_ASSERT( !smooth_mesh( mesh, ideal_mesh, vert_array[apex_index], position, metrics[i] ) );
 
   return 0;
 }
   
   
-bool smooth_mesh( Mesh* mesh,
+bool smooth_mesh( Mesh* mesh, Mesh* ref_mesh,
                   Mesh::VertexHandle free_vertex_at_origin, 
                   Vector3D initial_free_vertex_position,
                   QualityMetric* metric )
@@ -166,14 +191,14 @@ bool smooth_mesh( Mesh* mesh,
   "* Metric: " << metric->get_name()
   << msq_stdio::endl << 
   "* Apex position: " << initial_free_vertex_position
-  << msq_stdio::endl << 
-  "**************************************************************************" 
+  << msq_stdio::endl //<< 
+  //"**************************************************************************" 
   << msq_stdio::endl;
     
   // Use numeric approx of derivitives until analytic solutions
   // are working for pyramids
-  //metric->set_gradient_type( QualityMetric::NUMERICAL_GRADIENT );
-  //metric->set_hessian_type( QualityMetric::NUMERICAL_HESSIAN );
+  metric->set_gradient_type( QualityMetric::ANALYTICAL_GRADIENT );
+  metric->set_hessian_type( QualityMetric::TEST_HESSIAN_TYPE );
   
   
   // Set free vertex to specified position
@@ -194,7 +219,7 @@ bool smooth_mesh( Mesh* mesh,
   obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
 
   // Create solver
-  VertexMover* solver = new ConjugateGradient( obj_func, err );
+  VertexMover* solver = new FeasibleNewton( obj_func );
   CPPUNIT_ASSERT(!err);
   solver->set_patch_type(PatchData::GLOBAL_PATCH, err);
   CPPUNIT_ASSERT(!err);
@@ -213,6 +238,14 @@ bool smooth_mesh( Mesh* mesh,
 
   // Need to do this too
   solver->add_culling_method(PatchData::NO_BOUNDARY_VTX);
+ 
+  // Create target calculator
+  MeshSet ref_mesh_set;
+  ref_mesh_set.add_mesh( ref_mesh, err );
+  CPPUNIT_ASSERT(!err);
+  DeformingDomainGuides841 target_calc( &ref_mesh_set );
+  Q.add_target_calculator( &target_calc, err );
+  CPPUNIT_ASSERT(!err);
    
   // Add solver to queue
   Q.set_master_quality_improver(solver, err); 
@@ -229,18 +262,18 @@ bool smooth_mesh( Mesh* mesh,
   Vector3D position = vtx;
   
   // print a little output so we know when we died
-  msq_stdio::cout << 
-  "**************************************************************************" 
+  msq_stdio::cout //<< 
+  //"**************************************************************************" 
   << msq_stdio::endl << 
   "* Done Smoothing:"
   << msq_stdio::endl << 
   "* Metric: " << metric->get_name()
   << msq_stdio::endl << 
   "* Apex position: " << position
-  << /*msq_stdio::endl << */ 
+  << msq_stdio::endl <<  
   "**************************************************************************" 
   << msq_stdio::endl;
   
-  CPPUNIT_ASSERT( position.within_tolerance_box( Vector3D(0,0,0), 1e-6 ) );
+  CPPUNIT_ASSERT( position.within_tolerance_box( Vector3D(0,0,0), TOL ) );
   return false;
 }
