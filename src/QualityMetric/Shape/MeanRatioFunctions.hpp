@@ -2376,29 +2376,31 @@ inline int h_fcn_3i(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
  * 3rd vertices is the one longer edge in the reference tetrahedron
  * (the diagonal of the base of the pyramid of which the tetrahedron
  * is one half of).
- *      1  1  1             1/2 -1/2 -1/2
- * W = -1  1  0   inv(W) =  1/2  1/2 -1/2
- *      0  0  1               0    0    1
+ *      1  0  1/2                     1  0 -1/sqrt(2)
+ * W =  0  1  1/2           inv(W) =  0  1 -1/sqrt(2)
+ *      0  0  1/sqrt(2)               0  0  sqrt(2)
  *
  *********************************************************************/
 inline bool m_fcn_3p(double &obj, const Vector3D x[4],
          const double a, const Exponent& b, const Exponent& c)
 {
+  const double h = 0.5;		/* h = 1 / (2*height) */
+
   double matr[9], f;
   double g;
 
   /* Calculate M = A*inv(W). */
-  matr[0] = 0.5*(x[1][0] + x[2][0]) - x[0][0];
-  matr[1] = 0.5*(x[2][0] - x[1][0]);
-  matr[2] = x[3][0] - 0.5*(x[1][0] + x[2][0]);
+  matr[0] = x[1][0] - x[0][0];
+  matr[1] = x[2][0] - x[0][0];
+  matr[2] = (2.0*x[3][0] - x[1][0] - x[2][0])*h;
   
-  matr[3] = 0.5*(x[1][1] + x[2][1]) - x[0][1];
-  matr[4] = 0.5*(x[2][1] - x[1][1]);
-  matr[5] = x[3][1] - 0.5*(x[1][1] + x[2][1]);
+  matr[3] = x[1][1] - x[0][1];
+  matr[4] = x[2][1] - x[0][1];
+  matr[5] = (2.0*x[3][1] - x[1][1] - x[2][1])*h;
   
-  matr[6] = 0.5*(x[1][2] + x[2][2]) - x[0][2];
-  matr[7] = 0.5*(x[2][2] - x[1][2]);
-  matr[8] = x[3][2] - 0.5*(x[1][2] + x[2][2]);
+  matr[6] = x[1][2] - x[0][2];
+  matr[7] = x[2][2] - x[0][2];
+  matr[8] = (2.0*x[3][2] - x[1][2] - x[2][2])*h;
 
   /* Calculate det(M). */
   g = matr[0]*(matr[4]*matr[8] - matr[5]*matr[7]) +
@@ -2419,22 +2421,25 @@ inline bool m_fcn_3p(double &obj, const Vector3D x[4],
 inline bool g_fcn_3p(double &obj, Vector3D g_obj[4], const Vector3D x[4],
          const double a, const Exponent& b, const Exponent& c)
 {
+  const double h  = 0.5;	/* h = 1 / (2*height) */
+  const double th = 1.0;	/* h = 1 / (height)   */
+
   double matr[9], f;
   double adj_m[9], g;
   double loc1, loc2, loc3;
 
   /* Calculate M = A*inv(W). */
-  matr[0] = 0.5*(x[1][0] + x[2][0]) - x[0][0];
-  matr[1] = 0.5*(x[2][0] - x[1][0]);
-  matr[2] = x[3][0] - 0.5*(x[1][0] + x[2][0]);
+  matr[0] = x[1][0] - x[0][0];
+  matr[1] = x[2][0] - x[0][0];
+  matr[2] = (2.0*x[3][0] - x[1][0] - x[2][0])*h;
   
-  matr[3] = 0.5*(x[1][1] + x[2][1]) - x[0][1];
-  matr[4] = 0.5*(x[2][1] - x[1][1]);
-  matr[5] = x[3][1] - 0.5*(x[1][1] + x[2][1]);
+  matr[3] = x[1][1] - x[0][1];
+  matr[4] = x[2][1] - x[0][1];
+  matr[5] = (2.0*x[3][1] - x[1][1] - x[2][1])*h;
   
-  matr[6] = 0.5*(x[1][2] + x[2][2]) - x[0][2];
-  matr[7] = 0.5*(x[2][2] - x[1][2]);
-  matr[8] = x[3][2] - 0.5*(x[1][2] + x[2][2]);
+  matr[6] = x[1][2] - x[0][2];
+  matr[7] = x[2][2] - x[0][2];
+  matr[8] = (2.0*x[3][2] - x[1][2] - x[2][2])*h;
 
   /* Calculate det(M). */
   loc1 = matr[4]*matr[8] - matr[5]*matr[7];
@@ -2472,21 +2477,20 @@ inline bool g_fcn_3p(double &obj, Vector3D g_obj[4], const Vector3D x[4],
   adj_m[7] = matr[7]*f + loc3*matr[3] - loc1*matr[5];
   adj_m[8] = matr[8]*f + loc1*matr[4] - loc2*matr[3];
 
-  g_obj[0][0] =     -adj_m[0]                       ;
-  g_obj[1][0] = 0.5*(adj_m[0] - adj_m[1] - adj_m[2]);
-  g_obj[2][0] = 0.5*(adj_m[0] + adj_m[1] - adj_m[2]);
-  g_obj[3][0] =                            adj_m[2] ;
+  g_obj[0][0] = -adj_m[0] -    adj_m[1];
+  g_obj[1][0] =  adj_m[0] -  h*adj_m[2];
+  g_obj[2][0] =  adj_m[1] -  h*adj_m[2];
+  g_obj[3][0] =             th*adj_m[2];
 
-  g_obj[0][1] =     -adj_m[3]                      ;
-  g_obj[1][1] = 0.5*(adj_m[3] - adj_m[4] - adj_m[5]);
-  g_obj[2][1] = 0.5*(adj_m[3] + adj_m[4] - adj_m[5]);
-  g_obj[3][1] =                            adj_m[5] ;
+  g_obj[0][1] = -adj_m[3] -    adj_m[4];
+  g_obj[1][1] =  adj_m[3] -  h*adj_m[5];
+  g_obj[2][1] =  adj_m[4] -  h*adj_m[5];
+  g_obj[3][1] =             th*adj_m[5];
 
-  g_obj[0][2] =     -adj_m[6]                       ;
-  g_obj[1][2] = 0.5*(adj_m[6] - adj_m[7] - adj_m[8]);
-  g_obj[2][2] = 0.5*(adj_m[6] + adj_m[7] - adj_m[8]);
-  g_obj[3][2] =                            adj_m[8] ;
-
+  g_obj[0][2] = -adj_m[6] -    adj_m[7];
+  g_obj[1][2] =  adj_m[6] -  h*adj_m[8];
+  g_obj[2][2] =  adj_m[7] -  h*adj_m[8];
+  g_obj[3][2] =             th*adj_m[8];
   return true;
 }
 
@@ -2495,23 +2499,26 @@ inline bool h_fcn_3p(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
 		     const Vector3D x[4],
 		     const double a, const Exponent& b, const Exponent& c)
 {
+  const double h  = 0.5;	/* h = 1 / (2*height) */
+  const double th = 1.0;	/* h = 1 / (height)   */
+
   double matr[9], f;
   double adj_m[9], g;
   double dg[9], loc0, loc1, loc2, loc3, loc4;
   double A[12], J_A[6], J_B[9], J_C[9], cross;
 
   /* Calculate M = A*inv(W). */
-  matr[0] = 0.5*(x[1][0] + x[2][0]) - x[0][0];
-  matr[1] = 0.5*(x[2][0] - x[1][0]);
-  matr[2] = x[3][0] - 0.5*(x[1][0] + x[2][0]);
-  
-  matr[3] = 0.5*(x[1][1] + x[2][1]) - x[0][1];
-  matr[4] = 0.5*(x[2][1] - x[1][1]);
-  matr[5] = x[3][1] - 0.5*(x[1][1] + x[2][1]);
-  
-  matr[6] = 0.5*(x[1][2] + x[2][2]) - x[0][2];
-  matr[7] = 0.5*(x[2][2] - x[1][2]);
-  matr[8] = x[3][2] - 0.5*(x[1][2] + x[2][2]);
+  matr[0] = x[1][0] - x[0][0];
+  matr[1] = x[2][0] - x[0][0];
+  matr[2] = (2.0*x[3][0] - x[1][0] - x[2][0])*h;
+
+  matr[3] = x[1][1] - x[0][1];
+  matr[4] = x[2][1] - x[0][1];
+  matr[5] = (2.0*x[3][1] - x[1][1] - x[2][1])*h;
+
+  matr[6] = x[1][2] - x[0][2];
+  matr[7] = x[2][2] - x[0][2];
+  matr[8] = (2.0*x[3][2] - x[1][2] - x[2][2])*h;
 
   /* Calculate det(M). */
   dg[0] = matr[4]*matr[8] - matr[5]*matr[7];
@@ -2553,20 +2560,20 @@ inline bool h_fcn_3p(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   adj_m[7] = matr[7]*f + dg[7]*g;
   adj_m[8] = matr[8]*f + dg[8]*g;
 
-  g_obj[0][0] =     -adj_m[0]                       ;
-  g_obj[1][0] = 0.5*(adj_m[0] - adj_m[1] - adj_m[2]);
-  g_obj[2][0] = 0.5*(adj_m[0] + adj_m[1] - adj_m[2]);
-  g_obj[3][0] =                            adj_m[2] ;
+  g_obj[0][0] = -adj_m[0] -    adj_m[1];
+  g_obj[1][0] =  adj_m[0] -  h*adj_m[2];
+  g_obj[2][0] =  adj_m[1] -  h*adj_m[2];
+  g_obj[3][0] =             th*adj_m[2];
 
-  g_obj[0][1] =     -adj_m[3]                       ;
-  g_obj[1][1] = 0.5*(adj_m[3] - adj_m[4] - adj_m[5]);
-  g_obj[2][1] = 0.5*(adj_m[3] + adj_m[4] - adj_m[5]);
-  g_obj[3][1] =                            adj_m[5] ;
+  g_obj[0][1] = -adj_m[3] -    adj_m[4];
+  g_obj[1][1] =  adj_m[3] -  h*adj_m[5];
+  g_obj[2][1] =  adj_m[4] -  h*adj_m[5];
+  g_obj[3][1] =             th*adj_m[5];
 
-  g_obj[0][2] =     -adj_m[6]                       ;
-  g_obj[1][2] = 0.5*(adj_m[6] - adj_m[7] - adj_m[8]);
-  g_obj[2][2] = 0.5*(adj_m[6] + adj_m[7] - adj_m[8]);
-  g_obj[3][2] =                            adj_m[8] ;
+  g_obj[0][2] = -adj_m[6] -    adj_m[7];
+  g_obj[1][2] =  adj_m[6] -  h*adj_m[8];
+  g_obj[2][2] =  adj_m[7] -  h*adj_m[8];
+  g_obj[3][2] =             th*adj_m[8];
 
   /* Calculate the hessian of the objective.                   */
   loc0 = f;			/* Constant on nabla^2 f       */
@@ -2614,34 +2621,34 @@ inline bool h_fcn_3p(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   J_C[8] = loc3*matr[8] + loc4*dg[8];
 
   /* First diagonal block */
-  A[0] =     -J_A[0]                   ;
-  A[1] = 0.5*(J_A[0] - J_A[1] - J_A[2]);
-  A[2] = 0.5*(J_A[0] + J_A[1] - J_A[2]);
-  A[3] =                        J_A[2] ;
+  A[0] = -J_A[0] -    J_A[1];
+  A[1] =  J_A[0] -  h*J_A[2];
+  A[2] =  J_A[1] -  h*J_A[2];
+  A[3] =           th*J_A[2];
   
-  A[4] =     -J_A[1]                   ;
-  A[5] = 0.5*(J_A[1] - J_A[3] - J_A[4]);
-  A[6] = 0.5*(J_A[1] + J_A[3] - J_A[4]);
-  A[7] =                        J_A[4] ;
+  A[4] = -J_A[3] -    J_A[4];
+  A[5] =  J_A[3] -  h*J_A[5];
+  A[6] =  J_A[4] -  h*J_A[5];
+  A[7] =           th*J_A[5];
+
+  A[8]  = -J_A[6] -    J_A[7];
+  A[9]  =  J_A[6] -  h*J_A[8];
+  A[10] =  J_A[7] -  h*J_A[8];
+  A[11] =           th*J_A[8];
+
+  h_obj[0][0][0] = -A[0] -    A[4];
+  h_obj[1][0][0] =  A[0] -  h*A[8];
+  h_obj[2][0][0] =  A[4] -  h*A[8];
+  h_obj[3][0][0] =         th*A[8];
+
+  h_obj[4][0][0] =  A[1] -  h*A[9];
+  h_obj[5][0][0] =  A[5] -  h*A[9];
+  h_obj[6][0][0] =         th*A[9];
   
-  A[8] =     -J_A[2]                   ;
-  A[9] = 0.5*(J_A[2] - J_A[4] - J_A[5]);
-  A[10]= 0.5*(J_A[2] + J_A[4] - J_A[5]);
-  A[11]=                        J_A[5] ;
+  h_obj[7][0][0] =  A[6] -  h*A[10];
+  h_obj[8][0][0] =         th*A[10];
 
-  h_obj[0][0][0] =     -A[0]               ;
-  h_obj[1][0][0] = 0.5*(A[0] - A[4] - A[8]);
-  h_obj[2][0][0] = 0.5*(A[0] + A[4] - A[8]);
-  h_obj[3][0][0] =                    A[8] ;
-
-  h_obj[4][0][0] = 0.5*(A[1] - A[5] - A[9]);
-  h_obj[5][0][0] = 0.5*(A[1] + A[5] - A[9]);
-  h_obj[6][0][0] =                    A[9] ;
-  
-  h_obj[7][0][0] = 0.5*(A[2] + A[6] - A[10]);
-  h_obj[8][0][0] =                    A[10] ;
-
-  h_obj[9][0][0] =                    A[11];
+  h_obj[9][0][0] =         th*A[11];
 
   /* First off-diagonal block */
   loc2 = matr[8]*loc1;
@@ -2656,40 +2663,40 @@ inline bool h_fcn_3p(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   J_B[5] += loc2;
   J_B[7] -= loc2;
 
-  A[0] =     -J_B[0]                   ;
-  A[1] = 0.5*(J_B[0] - J_B[3] - J_B[6]);
-  A[2] = 0.5*(J_B[0] + J_B[3] - J_B[6]);
-  A[3] =                        J_B[6] ;
+  A[0] = -J_B[0] -    J_B[1];
+  A[1] =  J_B[0] -  h*J_B[2];
+  A[2] =  J_B[1] -  h*J_B[2];
+  A[3] =           th*J_B[2];
   
-  A[4] =     -J_B[1]                   ;
-  A[5] = 0.5*(J_B[1] - J_B[4] - J_B[7]);
-  A[6] = 0.5*(J_B[1] + J_B[4] - J_B[7]);
-  A[7] =                        J_B[7] ;
-  
-  A[8] =     -J_B[2]                   ;
-  A[9] = 0.5*(J_B[2] - J_B[5] - J_B[8]);
-  A[10]= 0.5*(J_B[2] + J_B[5] - J_B[8]);
-  A[11]=                        J_B[8] ;
+  A[4] = -J_B[3] -    J_B[4];
+  A[5] =  J_B[3] -  h*J_B[5];
+  A[6] =  J_B[4] -  h*J_B[5];
+  A[7] =           th*J_B[5];
 
-  h_obj[0][0][1] =     -A[0]               ;
-  h_obj[1][0][1] = 0.5*(A[0] - A[4] - A[8]);
-  h_obj[2][0][1] = 0.5*(A[0] + A[4] - A[8]);
-  h_obj[3][0][1] =                    A[8] ;
+  A[8]  = -J_B[6] -    J_B[7];
+  A[9]  =  J_B[6] -  h*J_B[8];
+  A[10] =  J_B[7] -  h*J_B[8];
+  A[11] =           th*J_B[8];
 
-  h_obj[1][1][0] =     -A[1]               ;
-  h_obj[4][0][1] = 0.5*(A[1] - A[5] - A[9]);
-  h_obj[5][0][1] = 0.5*(A[1] + A[5] - A[9]);
-  h_obj[6][0][1] =                    A[9] ;
+  h_obj[0][0][1] = -A[0] -    A[4];
+  h_obj[1][0][1] =  A[0] -  h*A[8];
+  h_obj[2][0][1] =  A[4] -  h*A[8];
+  h_obj[3][0][1] =         th*A[8];
 
-  h_obj[2][1][0] =     -A[2]                ;
-  h_obj[5][1][0] = 0.5*(A[2] - A[6] - A[10]);
-  h_obj[7][0][1] = 0.5*(A[2] + A[6] - A[10]);
-  h_obj[8][0][1] =                    A[10] ;
+  h_obj[1][1][0] = -A[1] -    A[5];
+  h_obj[4][0][1] =  A[1] -  h*A[9];
+  h_obj[5][0][1] =  A[5] -  h*A[9];
+  h_obj[6][0][1] =         th*A[9];
 
-  h_obj[3][1][0] =     -A[3]                ;
-  h_obj[6][1][0] = 0.5*(A[3] - A[7] - A[11]);
-  h_obj[8][1][0] = 0.5*(A[3] + A[7] - A[11]);
-  h_obj[9][0][1] =                    A[11] ;
+  h_obj[2][1][0] = -A[2] -    A[6];
+  h_obj[5][1][0] =  A[2] -  h*A[10];
+  h_obj[7][0][1] =  A[6] -  h*A[10];
+  h_obj[8][0][1] =         th*A[10];
+
+  h_obj[3][1][0] = -A[3] -    A[7];
+  h_obj[6][1][0] =  A[3] -  h*A[11];
+  h_obj[8][1][0] =  A[7] -  h*A[11];
+  h_obj[9][0][1] =         th*A[11];
 
   /* Second off-diagonal block */
   loc2 = matr[5]*loc1;
@@ -2704,40 +2711,40 @@ inline bool h_fcn_3p(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   J_C[5] -= loc2;
   J_C[7] += loc2;
 
-  A[0] =     -J_C[0]                   ;
-  A[1] = 0.5*(J_C[0] - J_C[3] - J_C[6]);
-  A[2] = 0.5*(J_C[0] + J_C[3] - J_C[6]);
-  A[3] =                        J_C[6] ;
+  A[0] = -J_C[0] -    J_C[1];
+  A[1] =  J_C[0] -  h*J_C[2];
+  A[2] =  J_C[1] -  h*J_C[2];
+  A[3] =           th*J_C[2];
   
-  A[4] =     -J_C[1]                   ;
-  A[5] = 0.5*(J_C[1] - J_C[4] - J_C[7]);
-  A[6] = 0.5*(J_C[1] + J_C[4] - J_C[7]);
-  A[7] =                        J_C[7] ;
-  
-  A[8] =     -J_C[2]                   ;
-  A[9] = 0.5*(J_C[2] - J_C[5] - J_C[8]);
-  A[10]= 0.5*(J_C[2] + J_C[5] - J_C[8]);
-  A[11]=                        J_C[8] ;
+  A[4] = -J_C[3] -    J_C[4];
+  A[5] =  J_C[3] -  h*J_C[5];
+  A[6] =  J_C[4] -  h*J_C[5];
+  A[7] =           th*J_C[5];
 
-  h_obj[0][0][2] =     -A[0]               ;
-  h_obj[1][0][2] = 0.5*(A[0] - A[4] - A[8]);
-  h_obj[2][0][2] = 0.5*(A[0] + A[4] - A[8]);
-  h_obj[3][0][2] =                    A[8] ;
+  A[8]  = -J_C[6] -    J_C[7];
+  A[9]  =  J_C[6] -  h*J_C[8];
+  A[10] =  J_C[7] -  h*J_C[8];
+  A[11] =           th*J_C[8];
 
-  h_obj[1][2][0] =     -A[1]               ;
-  h_obj[4][0][2] = 0.5*(A[1] - A[5] - A[9]);
-  h_obj[5][0][2] = 0.5*(A[1] + A[5] - A[9]);
-  h_obj[6][0][2] =                    A[9] ;
+  h_obj[0][0][2] = -A[0] -    A[4];
+  h_obj[1][0][2] =  A[0] -  h*A[8];
+  h_obj[2][0][2] =  A[4] -  h*A[8];
+  h_obj[3][0][2] =         th*A[8];
 
-  h_obj[2][1][0] =     -A[2]                ;
-  h_obj[5][1][0] = 0.5*(A[2] - A[6] - A[10]);
-  h_obj[7][0][1] = 0.5*(A[2] + A[6] - A[10]);
-  h_obj[8][0][1] =                    A[10] ;
+  h_obj[1][2][0] = -A[1] -    A[5];
+  h_obj[4][0][2] =  A[1] -  h*A[9];
+  h_obj[5][0][2] =  A[5] -  h*A[9];
+  h_obj[6][0][2] =         th*A[9];
 
-  h_obj[3][1][0] =     -A[3]                ;
-  h_obj[6][1][0] = 0.5*(A[3] - A[7] - A[11]);
-  h_obj[8][1][0] = 0.5*(A[3] + A[7] - A[11]);
-  h_obj[9][0][1] =                    A[11] ;
+  h_obj[2][2][0] = -A[2] -    A[6];
+  h_obj[5][2][0] =  A[2] -  h*A[10];
+  h_obj[7][0][2] =  A[6] -  h*A[10];
+  h_obj[8][0][2] =         th*A[10];
+
+  h_obj[3][2][0] = -A[3] -    A[7];
+  h_obj[6][2][0] =  A[3] -  h*A[11];
+  h_obj[8][2][0] =  A[7] -  h*A[11];
+  h_obj[9][0][2] =         th*A[11];
 
   /* Second block of rows */
   loc3 = matr[3]*f + dg[3]*cross;
@@ -2768,34 +2775,34 @@ inline bool h_fcn_3p(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   J_B[8] = loc3*matr[8] + loc4*dg[8];
 
   /* Second diagonal block */
-  A[0] =     -J_A[0]                   ;
-  A[1] = 0.5*(J_A[0] - J_A[1] - J_A[2]);
-  A[2] = 0.5*(J_A[0] + J_A[1] - J_A[2]);
-  A[3] =                        J_A[2] ;
+  A[0] = -J_A[0] -    J_A[1];
+  A[1] =  J_A[0] -  h*J_A[2];
+  A[2] =  J_A[1] -  h*J_A[2];
+  A[3] =           th*J_A[2];
   
-  A[4] =     -J_A[1]                   ;
-  A[5] = 0.5*(J_A[1] - J_A[3] - J_A[4]);
-  A[6] = 0.5*(J_A[1] + J_A[3] - J_A[4]);
-  A[7] =                        J_A[4] ;
+  A[4] = -J_A[3] -    J_A[4];
+  A[5] =  J_A[3] -  h*J_A[5];
+  A[6] =  J_A[4] -  h*J_A[5];
+  A[7] =           th*J_A[5];
+
+  A[8]  = -J_A[6] -    J_A[7];
+  A[9]  =  J_A[6] -  h*J_A[8];
+  A[10] =  J_A[7] -  h*J_A[8];
+  A[11] =           th*J_A[8];
+
+  h_obj[0][1][1] = -A[0] -    A[4];
+  h_obj[1][1][1] =  A[0] -  h*A[8];
+  h_obj[2][1][1] =  A[4] -  h*A[8];
+  h_obj[3][1][1] =         th*A[8];
+
+  h_obj[4][1][1] =  A[1] -  h*A[9];
+  h_obj[5][1][1] =  A[5] -  h*A[9];
+  h_obj[6][1][1] =         th*A[9];
   
-  A[8] =     -J_A[2]                   ;
-  A[9] = 0.5*(J_A[2] - J_A[4] - J_A[5]);
-  A[10]= 0.5*(J_A[2] + J_A[4] - J_A[5]);
-  A[11]=                        J_A[5] ;
+  h_obj[7][1][1] =  A[6] -  h*A[10];
+  h_obj[8][1][1] =         th*A[10];
 
-  h_obj[0][1][1] =     -A[0]               ;
-  h_obj[1][1][1] = 0.5*(A[0] - A[4] - A[8]);
-  h_obj[2][1][1] = 0.5*(A[0] + A[4] - A[8]);
-  h_obj[3][1][1] =                    A[8] ;
-
-  h_obj[4][1][1] = 0.5*(A[1] - A[5] - A[9]);
-  h_obj[5][1][1] = 0.5*(A[1] + A[5] - A[9]);
-  h_obj[6][1][1] =                    A[9] ;
-  
-  h_obj[7][1][1] = 0.5*(A[2] + A[6] - A[10]);
-  h_obj[8][1][1] =                    A[10] ;
-
-  h_obj[9][1][1] =                    A[11];
+  h_obj[9][1][1] =         th*A[11];
 
   /* Third off-diagonal block */
   loc2 = matr[2]*loc1;
@@ -2810,40 +2817,40 @@ inline bool h_fcn_3p(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   J_B[5] += loc2;
   J_B[7] -= loc2;
 
-  A[0] =     -J_B[0]                   ;
-  A[1] = 0.5*(J_B[0] - J_B[3] - J_B[6]);
-  A[2] = 0.5*(J_B[0] + J_B[3] - J_B[6]);
-  A[3] =                        J_B[6] ;
+  A[0] = -J_B[0] -    J_B[1];
+  A[1] =  J_B[0] -  h*J_B[2];
+  A[2] =  J_B[1] -  h*J_B[2];
+  A[3] =           th*J_B[2];
   
-  A[4] =     -J_B[1]                   ;
-  A[5] = 0.5*(J_B[1] - J_B[4] - J_B[7]);
-  A[6] = 0.5*(J_B[1] + J_B[4] - J_B[7]);
-  A[7] =                        J_B[7] ;
-  
-  A[8] =     -J_B[2]                   ;
-  A[9] = 0.5*(J_B[2] - J_B[5] - J_B[8]);
-  A[10]= 0.5*(J_B[2] + J_B[5] - J_B[8]);
-  A[11]=                        J_B[8] ;
+  A[4] = -J_B[3] -    J_B[4];
+  A[5] =  J_B[3] -  h*J_B[5];
+  A[6] =  J_B[4] -  h*J_B[5];
+  A[7] =           th*J_B[5];
 
-  h_obj[0][1][2] =     -A[0]               ;
-  h_obj[1][1][2] = 0.5*(A[0] - A[4] - A[8]);
-  h_obj[2][1][2] = 0.5*(A[0] + A[4] - A[8]);
-  h_obj[3][1][2] =                    A[8] ;
+  A[8]  = -J_B[6] -    J_B[7];
+  A[9]  =  J_B[6] -  h*J_B[8];
+  A[10] =  J_B[7] -  h*J_B[8];
+  A[11] =           th*J_B[8];
 
-  h_obj[1][2][1] =     -A[1]               ;
-  h_obj[4][1][2] = 0.5*(A[1] - A[5] - A[9]);
-  h_obj[5][1][2] = 0.5*(A[1] + A[5] - A[9]);
-  h_obj[6][1][2] =                    A[9] ;
+  h_obj[0][1][2] = -A[0] -    A[4];
+  h_obj[1][1][2] =  A[0] -  h*A[8];
+  h_obj[2][1][2] =  A[4] -  h*A[8];
+  h_obj[3][1][2] =         th*A[8];
 
-  h_obj[2][2][1] =     -A[2]                ;
-  h_obj[5][2][1] = 0.5*(A[2] - A[6] - A[10]);
-  h_obj[7][1][2] = 0.5*(A[2] + A[6] - A[10]);
-  h_obj[8][1][2] =                    A[10] ;
+  h_obj[1][2][1] = -A[1] -    A[5];
+  h_obj[4][1][2] =  A[1] -  h*A[9];
+  h_obj[5][1][2] =  A[5] -  h*A[9];
+  h_obj[6][1][2] =         th*A[9];
 
-  h_obj[3][2][1] =     -A[3]                ;
-  h_obj[6][2][1] = 0.5*(A[3] - A[7] - A[11]);
-  h_obj[8][2][1] = 0.5*(A[3] + A[7] - A[11]);
-  h_obj[9][1][2] =                    A[11] ;
+  h_obj[2][2][1] = -A[2] -    A[6];
+  h_obj[5][2][1] =  A[2] -  h*A[10];
+  h_obj[7][1][2] =  A[6] -  h*A[10];
+  h_obj[8][1][2] =         th*A[10];
+
+  h_obj[3][2][1] = -A[3] -    A[7];
+  h_obj[6][2][1] =  A[3] -  h*A[11];
+  h_obj[8][2][1] =  A[7] -  h*A[11];
+  h_obj[9][1][2] =         th*A[11];
 
   /* Third block of rows */
   loc3 = matr[6]*f + dg[6]*cross;
@@ -2865,34 +2872,34 @@ inline bool h_fcn_3p(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   J_A[5] = loc0 + loc3*matr[8] + loc4*dg[8];
 
   /* Third diagonal block */
-  A[0] =     -J_A[0]                   ;
-  A[1] = 0.5*(J_A[0] - J_A[1] - J_A[2]);
-  A[2] = 0.5*(J_A[0] + J_A[1] - J_A[2]);
-  A[3] =                        J_A[2] ;
+  A[0] = -J_A[0] -    J_A[1];
+  A[1] =  J_A[0] -  h*J_A[2];
+  A[2] =  J_A[1] -  h*J_A[2];
+  A[3] =           th*J_A[2];
   
-  A[4] =     -J_A[1]                   ;
-  A[5] = 0.5*(J_A[1] - J_A[3] - J_A[4]);
-  A[6] = 0.5*(J_A[1] + J_A[3] - J_A[4]);
-  A[7] =                        J_A[4] ;
+  A[4] = -J_A[3] -    J_A[4];
+  A[5] =  J_A[3] -  h*J_A[5];
+  A[6] =  J_A[4] -  h*J_A[5];
+  A[7] =           th*J_A[5];
+
+  A[8]  = -J_A[6] -    J_A[7];
+  A[9]  =  J_A[6] -  h*J_A[8];
+  A[10] =  J_A[7] -  h*J_A[8];
+  A[11] =           th*J_A[8];
+
+  h_obj[0][2][2] = -A[0] -    A[4];
+  h_obj[1][2][2] =  A[0] -  h*A[8];
+  h_obj[2][2][2] =  A[4] -  h*A[8];
+  h_obj[3][2][2] =         th*A[8];
+
+  h_obj[4][2][2] =  A[1] -  h*A[9];
+  h_obj[5][2][2] =  A[5] -  h*A[9];
+  h_obj[6][2][2] =         th*A[9];
   
-  A[8] =     -J_A[2]                   ;
-  A[9] = 0.5*(J_A[2] - J_A[4] - J_A[5]);
-  A[10]= 0.5*(J_A[2] + J_A[4] - J_A[5]);
-  A[11]=                        J_A[5] ;
+  h_obj[7][2][2] =  A[6] -  h*A[10];
+  h_obj[8][2][2] =         th*A[10];
 
-  h_obj[0][2][2] =     -A[0]               ;
-  h_obj[1][2][2] = 0.5*(A[0] - A[4] - A[8]);
-  h_obj[2][2][2] = 0.5*(A[0] + A[4] - A[8]);
-  h_obj[3][2][2] =                    A[8] ;
-
-  h_obj[4][2][2] = 0.5*(A[1] - A[5] - A[9]);
-  h_obj[5][2][2] = 0.5*(A[1] + A[5] - A[9]);
-  h_obj[6][2][2] =                    A[9] ;
-
-  h_obj[7][2][2] = 0.5*(A[2] + A[6] - A[10]);
-  h_obj[8][2][2] =                    A[10] ;
-
-  h_obj[9][2][2] =                    A[11];
+  h_obj[9][2][2] =         th*A[11];
 
   // completes diagonal blocks.
   h_obj[0].fill_lower_triangle();
