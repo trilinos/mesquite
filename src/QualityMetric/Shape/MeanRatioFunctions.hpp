@@ -2527,6 +2527,13 @@ inline bool h_fcn_3p(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   g = matr[0]*dg[0] + matr[1]*dg[1] + matr[2]*dg[2];
   if (g < MSQ_MIN) { obj = g; return false; }
 
+  dg[3] = matr[2]*matr[7] - matr[1]*matr[8];
+  dg[4] = matr[0]*matr[8] - matr[2]*matr[6];
+  dg[5] = matr[1]*matr[6] - matr[0]*matr[7];
+  dg[6] = matr[1]*matr[5] - matr[2]*matr[4];
+  dg[7] = matr[2]*matr[3] - matr[0]*matr[5];
+  dg[8] = matr[0]*matr[4] - matr[1]*matr[3];
+
   /* Calculate norm(M). */
   f = matr[0]*matr[0] + matr[1]*matr[1] + matr[2]*matr[2] + 
       matr[3]*matr[3] + matr[4]*matr[4] + matr[5]*matr[5] +
@@ -2542,13 +2549,6 @@ inline bool h_fcn_3p(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   f = b * obj / f;		/* Constant on nabla f      */
   g = c * obj / g;              /* Constant on nable g      */
   f *= 2.0;                     /* Modification for nabla f */
-
-  dg[3] = matr[2]*matr[7] - matr[1]*matr[8];
-  dg[4] = matr[0]*matr[8] - matr[2]*matr[6];
-  dg[5] = matr[1]*matr[6] - matr[0]*matr[7];
-  dg[6] = matr[1]*matr[5] - matr[2]*matr[4];
-  dg[7] = matr[2]*matr[3] - matr[0]*matr[5];
-  dg[8] = matr[0]*matr[4] - matr[1]*matr[3];
 
   adj_m[0] = matr[0]*f + dg[0]*g;
   adj_m[1] = matr[1]*f + dg[1]*g;
@@ -2626,15 +2626,15 @@ inline bool h_fcn_3p(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   A[2] =  J_A[1] -  h*J_A[2];
   A[3] =           th*J_A[2];
   
-  A[4] = -J_A[3] -    J_A[4];
-  A[5] =  J_A[3] -  h*J_A[5];
-  A[6] =  J_A[4] -  h*J_A[5];
-  A[7] =           th*J_A[5];
+  A[4] = -J_A[1] -    J_A[3];
+  A[5] =  J_A[1] -  h*J_A[4];
+  A[6] =  J_A[3] -  h*J_A[4];
+  A[7] =           th*J_A[4];
 
-  A[8]  = -J_A[6] -    J_A[7];
-  A[9]  =  J_A[6] -  h*J_A[8];
-  A[10] =  J_A[7] -  h*J_A[8];
-  A[11] =           th*J_A[8];
+  A[8]  = -J_A[2] -    J_A[4];
+  A[9]  =  J_A[2] -  h*J_A[5];
+  A[10] =  J_A[4] -  h*J_A[5];
+  A[11] =           th*J_A[5];
 
   h_obj[0][0][0] = -A[0] -    A[4];
   h_obj[1][0][0] =  A[0] -  h*A[8];
@@ -2780,15 +2780,15 @@ inline bool h_fcn_3p(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   A[2] =  J_A[1] -  h*J_A[2];
   A[3] =           th*J_A[2];
   
-  A[4] = -J_A[3] -    J_A[4];
-  A[5] =  J_A[3] -  h*J_A[5];
-  A[6] =  J_A[4] -  h*J_A[5];
-  A[7] =           th*J_A[5];
+  A[4] = -J_A[1] -    J_A[3];
+  A[5] =  J_A[1] -  h*J_A[4];
+  A[6] =  J_A[3] -  h*J_A[4];
+  A[7] =           th*J_A[4];
 
-  A[8]  = -J_A[6] -    J_A[7];
-  A[9]  =  J_A[6] -  h*J_A[8];
-  A[10] =  J_A[7] -  h*J_A[8];
-  A[11] =           th*J_A[8];
+  A[8]  = -J_A[2] -    J_A[4];
+  A[9]  =  J_A[2] -  h*J_A[5];
+  A[10] =  J_A[4] -  h*J_A[5];
+  A[11] =           th*J_A[5];
 
   h_obj[0][1][1] = -A[0] -    A[4];
   h_obj[1][1][1] =  A[0] -  h*A[8];
@@ -2877,15 +2877,15 @@ inline bool h_fcn_3p(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   A[2] =  J_A[1] -  h*J_A[2];
   A[3] =           th*J_A[2];
   
-  A[4] = -J_A[3] -    J_A[4];
-  A[5] =  J_A[3] -  h*J_A[5];
-  A[6] =  J_A[4] -  h*J_A[5];
-  A[7] =           th*J_A[5];
+  A[4] = -J_A[1] -    J_A[3];
+  A[5] =  J_A[1] -  h*J_A[4];
+  A[6] =  J_A[3] -  h*J_A[4];
+  A[7] =           th*J_A[4];
 
-  A[8]  = -J_A[6] -    J_A[7];
-  A[9]  =  J_A[6] -  h*J_A[8];
-  A[10] =  J_A[7] -  h*J_A[8];
-  A[11] =           th*J_A[8];
+  A[8]  = -J_A[2] -    J_A[4];
+  A[9]  =  J_A[2] -  h*J_A[5];
+  A[10] =  J_A[4] -  h*J_A[5];
+  A[11] =           th*J_A[5];
 
   h_obj[0][2][2] = -A[0] -    A[4];
   h_obj[1][2][2] =  A[0] -  h*A[8];
@@ -2900,6 +2900,51 @@ inline bool h_fcn_3p(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   h_obj[8][2][2] =         th*A[10];
 
   h_obj[9][2][2] =         th*A[11];
+
+#if 0
+  int i, j, k, l;
+  double   nobj;
+  Vector3D nx[4];
+  Vector3D ng_obj[4];
+
+  for (i = 0; i < 4; ++i) {
+    nx[i] = x[i];
+    ng_obj[i] = 0.0;
+  }
+
+  m_fcn_3p(obj, x, a, b, c);
+  for (i = 0; i < 4; ++i) {
+    for (j = 0; j < 3; ++j) {
+      nx[i][j] += 1e-6;
+      m_fcn_3p(nobj, nx, a, b, c);
+      nx[i][j] = x[i][j];
+
+      ng_obj[i][j] = (nobj - obj) / 1e-6;
+      std::cout << i << " " << j << " " << g_obj[i][j] << " " << ng_obj[i][j] << std::endl;
+    }
+  }
+  std::cout << std::endl;
+
+  for (i = 0; i < 4; ++i) {
+    for (j = 0; j < 3; ++j) {
+      nx[i][j] += 1e-6;
+      g_fcn_3p(nobj, ng_obj, nx, a, b, c);
+      nx[i][j] = x[i][j];
+
+      printf("%d %d", i, j);
+      for (k = 0; k < 4; ++k) {
+	for (l = 0; l < 3; ++l) {
+	  printf(" % 5.4e", (ng_obj[k][l] - g_obj[k][l]) / 1e-6);
+	}
+      }
+      printf("\n");
+    }
+  }
+
+  for (i = 0; i < 10; ++i) {
+    std::cout << i << std::endl << h_obj[i] << std::endl << std::endl;
+  }
+#endif
 
   // completes diagonal blocks.
   h_obj[0].fill_lower_triangle();

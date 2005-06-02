@@ -708,9 +708,9 @@ bool IdealWeightMeanRatio::compute_element_analytical_hessian(PatchData &pd,
     for (i=0; i<15; ++i)
       h[i].zero();
 
-    mAccumGrad[4] = 0.0;
+    g[4] = 0.0;
     for (i = 0; i < 4; ++i) {
-      mAccumGrad[i] = 0.0;
+      g[i] = 0.0;
       mCoords[0] = vertices[v_i[ i     ]];
       mCoords[1] = vertices[v_i[(i+1)%4]];
       mCoords[2] = vertices[v_i[(i+3)%4]];
