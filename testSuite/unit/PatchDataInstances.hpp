@@ -142,12 +142,20 @@ namespace Mesquite
    //! create patch containing one ideal pyramid
    inline void create_one_pyr_patch( PatchData& one_pyr_patch, MsqError& err )
    {
+     /* Equilateral triangles
      double coords[] = { 1, -1, 0,
                          1,  1, 0,
                         -1,  1, 0,
                         -1, -1, 0,
                          0,  0, sqrt(2) };
-     
+     */
+     /* Unit height */
+     double coords[] = { 1, -1, 0,
+                         1,  1, 0,
+                        -1,  1, 0,
+                        -1, -1, 0,
+                         0,  0, 2 };
+                         
      size_t indices[5] = { 0, 1, 2, 3, 4 };
      
      create_patch_mesh( one_pyr_patch, 5, coords, 1, indices, PYRAMID, err );
