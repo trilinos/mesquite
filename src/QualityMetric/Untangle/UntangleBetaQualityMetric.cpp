@@ -69,6 +69,7 @@ bool UntangleBetaQualityMetric::evaluate_element(PatchData &pd,
                                                  double &fval,
                                                 MsqError &err){
   
+  int i;
   double met_vals[MSQ_MAX_NUM_VERT_PER_ENT];
   fval=MSQ_MAX_CAP;
   const size_t* v_i = element->get_vertex_index_array();
@@ -156,6 +157,18 @@ bool UntangleBetaQualityMetric::evaluate_element(PatchData &pd,
       untangle_function_3d(temp_vec,met_vals[7],err);  MSQ_ERRZERO(err);
       fval=average_metrics(met_vals, 8, err);  MSQ_ERRZERO(err);
       return true;
+
+    case PYRAMID:
+      for (i = 0; i < 4; ++i)
+      {
+        temp_vec[0] = vertices[v_i[(i+1)%4]] - vertices[v_i[i]];
+        temp_vec[1] = vertices[v_i[(i+3)%4]] - vertices[v_i[i]];
+        temp_vec[2] = vertices[v_i[ 4     ]] - vertices[v_i[i]];
+        untangle_function_3d( temp_vec, met_vals[i], err ); MSQ_ERRZERO(err);
+      }
+      fval = average_metrics( met_vals, 4, err );           MSQ_ERRZERO(err);
+      return true;
+
     default:
       MSQ_SETERR(err)("Element of incorrect type sent to "
                       "UntangleBetaQualityMetric",
