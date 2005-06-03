@@ -618,9 +618,16 @@ void QualityAssessor::Assessor::add_hist_value( double metric_value )
 void QualityAssessor::Assessor::calculate_histogram_range()
 {
   double step = (maximum - minimum) / (histogram.size() - 2);
+  if (step == 0)
+    step = 1.0;
   double size = pow( 10, ceil(log10(step)) );
-  histMin = size * floor( minimum / size );
-  histMax = size *  ceil( maximum / size );
+  if (size < 1e-6)
+    size = 1.0;
+  else
+  {
+    histMin = size * floor( minimum / size );
+    histMax = size *  ceil( maximum / size );
+  }
 }  
 
 void QualityAssessor::print_summary( msq_stdio::ostream& stream ) const
