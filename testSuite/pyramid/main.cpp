@@ -49,6 +49,7 @@
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
 #include "LPtoPTemplate.hpp"
+#include "LInfTemplate.hpp"
 
 // algorithms
 #include "IdealWeightMeanRatio.hpp"
@@ -58,8 +59,12 @@
 #include "I_DFT_StrongBarrier.hpp"
 #include "I_DFT_WeakBarrier.hpp"
 #include "I_DFT_Generalized.hpp"
+#include "I_DFT_NoBarrier.hpp"
+#include "sRI_DFT.hpp"
+#include "UntangleBetaQualityMetric.hpp"
 #include "FeasibleNewton.hpp"
 #include "ConcreteTargetCalculators.hpp"
+#include "ConjugateGradient.hpp"
 using namespace Mesquite;
 
 // Use CPPUNIT_ASSERT in code so it's easy to convert to a unit test later.
@@ -80,9 +85,21 @@ bool smooth_mesh( Mesh* mesh, Mesh* ref_mesh,
                   Mesh::VertexHandle free_vertex_at_origin, 
                   Vector3D initial_free_vertex_position,
                   QualityMetric* metric );
+                  
+bool smooth_mixed_mesh( const char* filename );
 
-int main()
+int main( int argc, char* argv[] )
 {
+  const char* input_file = "../../meshFiles/3D/VTK/mixed-hex-pyr-tet.vtk";
+  if (argc == 2)
+    input_file = argv[1];
+  else if (argc != 1)
+  {
+    msq_stdio::cerr << "Invalid arguments.\n";
+    return 2;
+  }
+  
+  
   Mesquite::MsqPrintError err(cout);
   QualityMetric* metrics[] = { new IdealWeightMeanRatio,
                                new IdealWeightInverseMeanRatio(err),
@@ -91,6 +108,8 @@ int main()
                                new I_DFT_StrongBarrier,
                                new I_DFT_WeakBarrier,
                                new I_DFT_Generalized,
+                               new I_DFT_NoBarrier,
+                               new sRI_DFT,
                                0 };
 
     // Read Mesh
@@ -169,6 +188,9 @@ int main()
   position.set( 0.3, 0.3, 0.3 );
   for (unsigned i = 0; metrics[i] != NULL; ++i)
     CPPUNIT_ASSERT( !smooth_mesh( mesh, ideal_mesh, vert_array[apex_index], position, metrics[i] ) );
+
+    // Now try smoothing a real mixed mesh
+  CPPUNIT_ASSERT( !smooth_mixed_mesh( input_file ) );
 
   return 0;
 }
@@ -277,3 +299,107 @@ bool smooth_mesh( Mesh* mesh, Mesh* ref_mesh,
   CPPUNIT_ASSERT( position.within_tolerance_box( Vector3D(0,0,0), TOL ) );
   return false;
 }
+
+
+
+  
+bool smooth_mixed_mesh( const char* filename )
+{
+  Mesquite::MsqPrintError err(cout);
+  
+  // print a little output so we know when we died
+  msq_stdio::cout << 
+  "**************************************************************************" 
+  << msq_stdio::endl << 
+  "* Smoothing: " << filename
+  << msq_stdio::endl  <<
+  "**************************************************************************" 
+  << msq_stdio::endl;
+  
+  // The instruction queue to set up
+  InstructionQueue Q;
+  
+  // Use numeric approx of derivitives until analytic solutions
+  // are working for pyramids
+  IdealWeightInverseMeanRatio mr_metric(err);
+  //sRI_DFT dft_metric;
+  UntangleBetaQualityMetric un_metric(0);
+  CPPUNIT_ASSERT(!err);
+  mr_metric.set_gradient_type( QualityMetric::ANALYTICAL_GRADIENT );
+  mr_metric.set_hessian_type( QualityMetric::TEST_HESSIAN_TYPE );
+  
+    // Create Mesh object
+  Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
+  mesh->read_vtk(filename, err);
+  CPPUNIT_ASSERT(!err);
+
+  // Create a MeshSet object 
+  MeshSet mesh_set;
+  mesh_set.add_mesh(mesh, err); 
+  CPPUNIT_ASSERT(!err);
+
+  // Set up a preconditioner
+  LInfTemplate pre_obj_func( &un_metric );
+  pre_obj_func.set_gradient_type( ObjectiveFunction::NUMERICAL_GRADIENT );
+  ConjugateGradient precond( &pre_obj_func, err ); CPPUNIT_ASSERT(!err);
+  precond.add_culling_method( PatchData::NO_BOUNDARY_VTX );
+  TerminationCriterion pre_term, pre_outer;
+  //pre_term.add_criterion_type_with_double( TerminationCriterion::QUALITY_IMPROVEMENT_RELATIVE, 0.1, err );
+  pre_term .add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, 3, err );
+  pre_outer.add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, 1, err );
+  CPPUNIT_ASSERT(!err);
+  precond.set_inner_termination_criterion( &pre_term );
+  precond.set_outer_termination_criterion( &pre_outer );
+  //precond.set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH,err,1,1); 
+
+  // Set up objective function
+  LPtoPTemplate obj_func(&mr_metric, 1, err);
+  CPPUNIT_ASSERT(!err);
+  obj_func.set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
+
+  // Create solver
+  FeasibleNewton solver( &obj_func );
+  CPPUNIT_ASSERT(!err);
+  solver.set_patch_type(PatchData::GLOBAL_PATCH, err);
+  CPPUNIT_ASSERT(!err);
+
+  // Set stoping criteria for solver
+  TerminationCriterion tc_inner;
+  tc_inner.add_criterion_type_with_double( 
+    TerminationCriterion::QUALITY_IMPROVEMENT_RELATIVE, 0.25, err);
+  CPPUNIT_ASSERT(!err);
+  solver.set_inner_termination_criterion(&tc_inner);
+   
+  TerminationCriterion tc_outer;
+  tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
+  CPPUNIT_ASSERT(!err);
+  solver.set_outer_termination_criterion(&tc_outer);
+
+  // Need to do this too
+  solver.add_culling_method(PatchData::NO_BOUNDARY_VTX);
+ 
+  // Create a QualityAssessor
+  Mesquite::QualityAssessor qa;
+  qa.add_quality_assessment( &mr_metric, Mesquite::QualityAssessor::ALL_MEASURES, err );
+  qa.add_quality_assessment( &un_metric, Mesquite::QualityAssessor::ALL_MEASURES, err );
+  Q.add_quality_assessor( &qa, err ); 
+  CPPUNIT_ASSERT(!err);
+ 
+  // Add untangler to qeueu
+  Q.add_preconditioner( &precond, err ); CPPUNIT_ASSERT(!err);
+  Q.add_quality_assessor( &qa, err ); 
+  CPPUNIT_ASSERT(!err);
+ 
+  // Add solver to queue
+  Q.set_master_quality_improver(&solver, err); 
+  CPPUNIT_ASSERT(!err);
+  Q.add_quality_assessor( &qa, err ); 
+  CPPUNIT_ASSERT(!err);
+ 
+  // And smooth...
+  Q.run_instructions(mesh_set, err); 
+  CPPUNIT_ASSERT(!err);
+
+  return false;
+}
+
