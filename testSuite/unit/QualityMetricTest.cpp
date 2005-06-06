@@ -113,6 +113,7 @@ private:
   CPPUNIT_TEST (test_mean_ratio_quad_gradient_nonplanar);
   CPPUNIT_TEST (test_mean_ratio_tet_gradient);
   CPPUNIT_TEST (test_mean_ratio_hex_gradient);
+  CPPUNIT_TEST (test_mean_ratio_pyr_gradient);
     // test analytical Hessians
   CPPUNIT_TEST (test_mean_ratio_tri_hessian);
   CPPUNIT_TEST (test_mean_ratio_quad_hessian);
@@ -122,6 +123,7 @@ private:
   CPPUNIT_TEST (test_mean_ratio_quad_hessian_harmonic);
   CPPUNIT_TEST (test_mean_ratio_quad_hessian_hms);
   CPPUNIT_TEST (test_mean_ratio_tet_hessian);
+  CPPUNIT_TEST (test_mean_ratio_pyr_hessian);
   CPPUNIT_TEST (test_mean_ratio_hex_hessian);
   CPPUNIT_TEST (test_mean_ratio_hex_hessian_linear);
   CPPUNIT_TEST (test_mean_ratio_hex_hessian_sum_squared);
@@ -141,44 +143,60 @@ private:
   CPPUNIT_TEST (test_mean_ratio_tri_grad_from_hessian);
   CPPUNIT_TEST (test_mean_ratio_quad_grad_from_hessian);
   CPPUNIT_TEST (test_mean_ratio_tet_grad_from_hessian);
+  CPPUNIT_TEST (test_mean_ratio_pyr_grad_from_hessian);
   CPPUNIT_TEST (test_mean_ratio_hex_grad_from_hessian);
 
     //I_DFT
   CPPUNIT_TEST (test_i_dft_tet_gradient);
+  CPPUNIT_TEST (test_i_dft_pyr_gradient);
   CPPUNIT_TEST (test_i_dft_hex_gradient);
   CPPUNIT_TEST (test_i_dft_tri_gradient);
   CPPUNIT_TEST (test_i_dft_quad_gradient);
   CPPUNIT_TEST (test_i_dft_imr_tet_gradient);
+  CPPUNIT_TEST (test_i_dft_imr_pyr_gradient);
   CPPUNIT_TEST (test_i_dft_imr_hex_gradient);
   CPPUNIT_TEST (test_i_dft_weak_barrier_tet_gradient);
+  CPPUNIT_TEST (test_i_dft_weak_barrier_pyr_gradient);
   CPPUNIT_TEST (test_i_dft_weak_barrier_hex_gradient);
   CPPUNIT_TEST (test_i_dft_nobarrier_tet_gradient);
+  CPPUNIT_TEST (test_i_dft_nobarrier_pyr_gradient);
   CPPUNIT_TEST (test_i_dft_nobarrier_hex_gradient);
   CPPUNIT_TEST (test_i_dft_strong_barrier_tet_gradient);
+  CPPUNIT_TEST (test_i_dft_strong_barrier_pyr_gradient);
   CPPUNIT_TEST (test_i_dft_strong_barrier_hex_gradient);
   CPPUNIT_TEST (test_i_dft_tet_hessian);
+  CPPUNIT_TEST (test_i_dft_pyr_hessian);
   CPPUNIT_TEST (test_i_dft_hex_hessian);
   CPPUNIT_TEST (test_i_dft_tri_hessian);
   CPPUNIT_TEST (test_i_dft_quad_hessian);
   CPPUNIT_TEST (test_i_dft_weak_barrier_tet_hessian);
+  CPPUNIT_TEST (test_i_dft_weak_barrier_pyr_hessian);
   CPPUNIT_TEST (test_i_dft_weak_barrier_hex_hessian);
   CPPUNIT_TEST (test_i_dft_nobarrier_tet_hessian);
+  CPPUNIT_TEST (test_i_dft_nobarrier_pyr_hessian);
   CPPUNIT_TEST (test_i_dft_nobarrier_hex_hessian);
   CPPUNIT_TEST (test_i_dft_strong_barrier_tet_hessian);
+  CPPUNIT_TEST (test_i_dft_strong_barrier_pyr_hessian);
   CPPUNIT_TEST (test_i_dft_strong_barrier_hex_hessian);
   CPPUNIT_TEST (test_i_dft_imr_tet_hessian);
+  CPPUNIT_TEST (test_i_dft_imr_pyr_hessian);
   CPPUNIT_TEST (test_i_dft_imr_hex_hessian);
   CPPUNIT_TEST (test_i_dft_tet_grad_from_hessian);
+  CPPUNIT_TEST (test_i_dft_pyr_grad_from_hessian);
   CPPUNIT_TEST (test_i_dft_quad_grad_from_hessian);
   CPPUNIT_TEST (test_i_dft_tri_grad_from_hessian);
   CPPUNIT_TEST (test_i_dft_hex_grad_from_hessian);
   CPPUNIT_TEST (test_i_dft_imr_tet_grad_from_hessian);
+  CPPUNIT_TEST (test_i_dft_imr_pyr_grad_from_hessian);
   CPPUNIT_TEST (test_i_dft_imr_hex_grad_from_hessian);
   CPPUNIT_TEST (test_i_dft_weak_barrier_tet_grad_from_hessian);
+  CPPUNIT_TEST (test_i_dft_weak_barrier_pyr_grad_from_hessian);
   CPPUNIT_TEST (test_i_dft_weak_barrier_hex_grad_from_hessian);
   CPPUNIT_TEST (test_i_dft_strong_barrier_tet_grad_from_hessian);
+  CPPUNIT_TEST (test_i_dft_strong_barrier_pyr_grad_from_hessian);
   CPPUNIT_TEST (test_i_dft_strong_barrier_hex_grad_from_hessian);
   CPPUNIT_TEST (test_i_dft_nobarrier_tet_grad_from_hessian);
+  CPPUNIT_TEST (test_i_dft_nobarrier_pyr_grad_from_hessian);
   CPPUNIT_TEST (test_i_dft_nobarrier_hex_grad_from_hessian);
 
   CPPUNIT_TEST (test_untangle_metric);
@@ -193,12 +211,14 @@ private:
   PatchData quadPatch;
   PatchData refTetPatch;
   PatchData tetPatch;
+  PatchData pyrPatch;
   PatchData hexPatch;
   PatchData refHexPatch;
   PatchData invertedTri;
   PatchData invertedTet;
   PatchData idealTri;
   PatchData idealTet;
+  PatchData idealPyr;
     //Tol used for double comparisons
   double qualTol;
   int pF;//PRINT_FLAG
@@ -245,6 +265,8 @@ public:
     create_qm_two_tet_patch(tetPatch,err);CPPUNIT_ASSERT(!err);
     
     create_qm_two_tet_patch(refTetPatch,err);CPPUNIT_ASSERT(!err);
+    
+    create_qm_two_pyr_patch(pyrPatch, err); CPPUNIT_ASSERT(!err);
 
     guide_843.compute_target_matrices(tetPatch, refTetPatch, err);
     CPPUNIT_ASSERT(!err);
@@ -268,6 +290,8 @@ public:
      create_one_tri_patch(idealTri, err);CPPUNIT_ASSERT(!err);
        //ideal tet
      create_one_tet_patch(idealTet, err);CPPUNIT_ASSERT(!err);
+      // ideal pyramid
+     create_one_pyr_patch(idealPyr, err); CPPUNIT_ASSERT(!err);
   }
 
   void tearDown()
@@ -422,7 +446,7 @@ public:
     size_t num_verts = this_patch.num_vertices();
     bool* flags = new bool[num_verts];
     CPPUNIT_ASSERT(!err);
-    int i;
+    unsigned i;
     for(i=0; i<num_verts; ++i){
       if(vertices[i].is_free_vertex()){
         vertices[i].set_hard_fixed_flag();
@@ -653,8 +677,6 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
 
        //test for pyramids
-     PatchData pyrPatch;
-     create_one_pyr_patch( pyrPatch, err ); CPPUNIT_ASSERT(!err);
      verts = pyrPatch.get_vertex_array(err); CPPUNIT_ASSERT(!err);
      elems = pyrPatch.get_element_array(err); CPPUNIT_ASSERT(!err);
        //Check mean ratio of ideal pyramid
@@ -996,6 +1018,12 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
          //Michael:: double check to make sure that 2.0 is correct here.
        CPPUNIT_ASSERT_DOUBLES_EQUAL(val, 2.0, qualTol);
        CPPUNIT_ASSERT(first_bool==true);
+
+       elem1=idealPyr.get_element_array(err); CPPUNIT_ASSERT(!err);
+       first_bool=met->evaluate_element(idealPyr,&elem1[0],val,err); CPPUNIT_ASSERT(!err);
+       CPPUNIT_ASSERT_DOUBLES_EQUAL(val, 0.0, qualTol);
+       CPPUNIT_ASSERT(first_bool==true);
+
        delete met;
      }  
   
@@ -1161,6 +1189,10 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
   {
     test_mean_ratio_gradient(tetPatch);
   }
+  void test_mean_ratio_pyr_gradient()
+  {
+    test_mean_ratio_gradient(pyrPatch);
+  }
   
   void test_i_dft_tri_gradient()
   {
@@ -1176,6 +1208,11 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
   {
     I_DFT i_dft_metric;
     test_i_dft_fix_vertices(tetPatch, 1);
+  }     
+  void test_i_dft_pyr_gradient()
+  {
+    I_DFT i_dft_metric;
+    test_i_dft_fix_vertices(pyrPatch, 1);
   }     
   void test_i_dft_hex_gradient()
   {
@@ -1193,6 +1230,11 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
     I_DFT_InverseMeanRatio i_dft_metric;
     test_i_dft_gradient(tetPatch, &i_dft_metric);
   }
+  void test_i_dft_imr_pyr_gradient()
+  {
+    I_DFT_InverseMeanRatio i_dft_metric;
+    test_i_dft_gradient(pyrPatch, &i_dft_metric);
+  }
   
   void test_i_dft_strong_barrier_hex_gradient()
   {
@@ -1204,6 +1246,11 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
     I_DFT_StrongBarrier i_dft_metric;
     test_i_dft_gradient(tetPatch, &i_dft_metric);
   } 
+  void test_i_dft_strong_barrier_pyr_gradient()
+  {
+    I_DFT_StrongBarrier i_dft_metric;
+    test_i_dft_gradient(pyrPatch, &i_dft_metric);
+  } 
   void test_i_dft_weak_barrier_hex_gradient()
   {
     I_DFT_WeakBarrier i_dft_metric;
@@ -1214,6 +1261,11 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
     I_DFT_WeakBarrier i_dft_metric;
     test_i_dft_gradient(tetPatch, &i_dft_metric);
   }
+  void test_i_dft_weak_barrier_pyr_gradient()
+  {
+    I_DFT_WeakBarrier i_dft_metric;
+    test_i_dft_gradient(pyrPatch, &i_dft_metric);
+  }
   void test_i_dft_nobarrier_hex_gradient()
   {
     I_DFT_NoBarrier i_dft_metric;
@@ -1223,6 +1275,11 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
   {
     I_DFT_NoBarrier i_dft_metric;
     test_i_dft_gradient(tetPatch, &i_dft_metric);
+  }
+  void test_i_dft_nobarrier_pyr_gradient()
+  {
+    I_DFT_NoBarrier i_dft_metric;
+    test_i_dft_gradient(pyrPatch, &i_dft_metric);
   }
   
   /*! This tests the QualityMetric hessian, comparing analytical
@@ -1528,6 +1585,10 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
   {
     test_mean_ratio_hessian(tetPatch);
   }
+  void test_mean_ratio_pyr_hessian()
+  {
+    test_mean_ratio_hessian(pyrPatch);
+  }
   
   void test_mean_ratio_hex_hessian()
   {
@@ -1562,6 +1623,13 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
         std::cout<<"\nTesting tet Hessian for I_DFT.\n";
       MsqPrintError err(cout); 
       test_i_dft_fix_vertices(tetPatch, 2);
+    }
+  void test_i_dft_pyr_hessian()
+    {
+      if(pF)
+        std::cout<<"\nTesting tet Hessian for I_DFT.\n";
+      MsqPrintError err(cout); 
+      test_i_dft_fix_vertices(pyrPatch, 2);
     }
   void test_i_dft_quad_hessian()
     {
@@ -1605,6 +1673,18 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
       CPPUNIT_ASSERT(!err);
       test_metric_hessian(tetPatch, &i_dft_metric);
     }  
+  void test_i_dft_weak_barrier_pyr_hessian()
+    {
+      if(pF)
+        std::cout<<"\nTesting PYR Hessian for I_DFT.\n";
+      MsqPrintError err(cout); 
+ 
+      I_DFT_WeakBarrier i_dft_metric;
+      CPPUNIT_ASSERT(!err);
+      i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
+      CPPUNIT_ASSERT(!err);
+      test_metric_hessian(pyrPatch, &i_dft_metric);
+    }  
   void test_i_dft_imr_hex_hessian()
     {
       if(pF)
@@ -1629,6 +1709,18 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
       i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
       CPPUNIT_ASSERT(!err);
       test_metric_hessian(tetPatch, &i_dft_metric);
+    }  
+  void test_i_dft_imr_pyr_hessian()
+    {
+      if(pF)
+        std::cout<<"\nTesting tet Hessian for I_DFT.\n";
+      MsqPrintError err(cout); 
+ 
+      I_DFT_InverseMeanRatio i_dft_metric;
+      CPPUNIT_ASSERT(!err);
+      i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
+      CPPUNIT_ASSERT(!err);
+      test_metric_hessian(pyrPatch, &i_dft_metric);
     }  
   void test_i_dft_strong_barrier_hex_hessian()
     {
@@ -1655,7 +1747,19 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
       CPPUNIT_ASSERT(!err);
       test_metric_hessian(tetPatch, &i_dft_metric);
     }
-  void test_i_dft_nobarrier_hex_hessian()
+   void test_i_dft_strong_barrier_pyr_hessian()
+    {
+      if(pF)
+        std::cout<<"\nTesting PYR Hessian for I_DFT.\n";
+      MsqPrintError err(cout); 
+ 
+      I_DFT_StrongBarrier i_dft_metric;
+      CPPUNIT_ASSERT(!err);
+      i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
+      CPPUNIT_ASSERT(!err);
+      test_metric_hessian(pyrPatch, &i_dft_metric);
+    }
+ void test_i_dft_nobarrier_hex_hessian()
     {
       if(pF)
         std::cout<<"\nTesting hex Hessian for I_DFT.\n";
@@ -1679,6 +1783,18 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
       i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
       CPPUNIT_ASSERT(!err);
       test_metric_hessian(tetPatch, &i_dft_metric);
+    }  
+  void test_i_dft_nobarrier_pyr_hessian()
+    {
+      if(pF)
+        std::cout<<"\nTesting PYR Hessian for I_DFT.\n";
+      MsqPrintError err(cout); 
+ 
+      I_DFT_NoBarrier i_dft_metric;
+      CPPUNIT_ASSERT(!err);
+      i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
+      CPPUNIT_ASSERT(!err);
+      test_metric_hessian(pyrPatch, &i_dft_metric);
     }  
 
   void test_mean_ratio_hex_hessian_sum_squared()
@@ -1759,6 +1875,19 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
     test_metric_grad_from_hessian(tetPatch,mean_ratio,err);
     delete mean_ratio;
   }
+
+  void test_mean_ratio_pyr_grad_from_hessian()
+  {
+    MsqPrintError err(cout);
+    ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);
+    CPPUNIT_ASSERT(!err);
+    mean_ratio->set_averaging_method(QualityMetric::SUM, err);
+    CPPUNIT_ASSERT(!err);
+    mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+    mean_ratio->set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
+    test_metric_grad_from_hessian(pyrPatch,mean_ratio,err);
+    delete mean_ratio;
+  }
   
   
   void test_mean_ratio_hex_grad_from_hessian()
@@ -1782,6 +1911,14 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
       std::cout<<"\nTesting I_DFT metrics.\n";
     MsqPrintError err(cout);
     test_i_dft_fix_vertices(tetPatch, 3);
+  }
+  
+  void test_i_dft_pyr_grad_from_hessian()
+  {
+    if(pF)
+      std::cout<<"\nTesting I_DFT metrics.\n";
+    MsqPrintError err(cout);
+    test_i_dft_fix_vertices(pyrPatch, 3);
   }
 
   void test_i_dft_hex_grad_from_hessian()
@@ -1821,6 +1958,20 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
     i_dft_metric.set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
     test_metric_grad_from_hessian(tetPatch,&i_dft_metric,err);
   }
+  
+  void test_i_dft_strong_barrier_pyr_grad_from_hessian()
+  {
+    if(pF)
+      std::cout<<"\nTesting I_DFT metrics.\n";
+    MsqPrintError err(cout);
+    I_DFT_StrongBarrier i_dft_metric;
+    CPPUNIT_ASSERT(!err);
+    i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
+    CPPUNIT_ASSERT(!err);
+    i_dft_metric.set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+    i_dft_metric.set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
+    test_metric_grad_from_hessian(pyrPatch,&i_dft_metric,err);
+  }
 
   void test_i_dft_strong_barrier_hex_grad_from_hessian()
   {
@@ -1849,6 +2000,20 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
     i_dft_metric.set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
     test_metric_grad_from_hessian(tetPatch,&i_dft_metric,err);
   }
+  
+  void test_i_dft_nobarrier_pyr_grad_from_hessian()
+  {
+    if(pF)
+      std::cout<<"\nTesting I_DFT metrics.\n";
+    MsqPrintError err(cout);
+    I_DFT_NoBarrier i_dft_metric;
+    CPPUNIT_ASSERT(!err);
+    i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
+    CPPUNIT_ASSERT(!err);
+    i_dft_metric.set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+    i_dft_metric.set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
+    test_metric_grad_from_hessian(pyrPatch,&i_dft_metric,err);
+  }
 
   void test_i_dft_nobarrier_hex_grad_from_hessian()
   {
@@ -1875,6 +2040,19 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
     i_dft_metric.set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
     i_dft_metric.set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
     test_metric_grad_from_hessian(tetPatch,&i_dft_metric,err);
+  }
+  void test_i_dft_weak_barrier_pyr_grad_from_hessian()
+  {
+    if(pF)
+      std::cout<<"\nTesting I_DFT metrics.\n";
+    MsqPrintError err(cout);
+    I_DFT_WeakBarrier i_dft_metric;
+    CPPUNIT_ASSERT(!err);
+    i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
+    CPPUNIT_ASSERT(!err);
+    i_dft_metric.set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+    i_dft_metric.set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
+    test_metric_grad_from_hessian(pyrPatch,&i_dft_metric,err);
   }
 
   void test_i_dft_weak_barrier_hex_grad_from_hessian()
@@ -1903,6 +2081,20 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
     i_dft_metric.set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
     i_dft_metric.set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
     test_metric_grad_from_hessian(tetPatch,&i_dft_metric,err);
+  }
+  
+  void test_i_dft_imr_pyr_grad_from_hessian()
+  {
+    if(pF)
+      std::cout<<"\nTesting I_DFT metrics.\n";
+    MsqPrintError err(cout);
+    I_DFT_InverseMeanRatio i_dft_metric;
+    CPPUNIT_ASSERT(!err);
+    i_dft_metric.set_averaging_method(QualityMetric::SUM, err);
+    CPPUNIT_ASSERT(!err);
+    i_dft_metric.set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+    i_dft_metric.set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
+    test_metric_grad_from_hessian(pyrPatch,&i_dft_metric,err);
   }
 
   void test_i_dft_imr_hex_grad_from_hessian()

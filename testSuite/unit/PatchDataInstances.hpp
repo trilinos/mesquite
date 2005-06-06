@@ -560,6 +560,46 @@ namespace Mesquite
      
      create_patch_mesh( tetPatch, 5, coords, 2, conn, TETRAHEDRON, err );
    }
+  
+     /* Patch used in several quality metric tests.
+        Our pyr patch is made of two pyramids.  The first is a perfect
+        pyramid (the ideal for most metrics).  The second is an arbitrary
+        pyramid.
+     */
+   inline void create_qm_two_pyr_patch(PatchData &pyrPatch, MsqError &err)
+   {
+     /* Equilateral triangles
+     double coords[] = { 1, -1, 0,
+                         1,  1, 0,
+                        -1,  1, 0,
+                        -1, -1, 0,
+                         0,  0, sqrt(2) };
+     */
+     /* Unit height */
+     double coords[] = { 
+                         /* Equilateral triangles */
+                    /*   1, -1, 0,
+                         1,  1, 0,
+                        -1,  1, 0,
+                        -1, -1, 0,
+                         0,  0, sqrt(2)  */                   
+                         /* Unit height */
+                         1, -1, 0,
+                         1,  1, 0,
+                        -1,  1, 0,
+                        -1, -1, 0,
+                         0,  0, 2,
+                         /* Apex for a squashed pyramid */
+                         0,  0, -1
+                         };
+     
+
+     const size_t conn[] = { 0, 1, 2, 3, 4, 
+                             3, 2, 1, 0, 5 };
+     
+     create_patch_mesh( pyrPatch, 6, coords, 2, conn, PYRAMID, err );
+   }
+
    /* Patch used in seveal quality metric tests.
       Our hex patch is made of two hexes.  hex_1 is a perfect
       unit cube (the ideal for most metrics).  hex_2 is an arbitrary
