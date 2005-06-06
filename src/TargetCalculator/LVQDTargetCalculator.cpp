@@ -90,8 +90,8 @@ void LVQDTargetCalculator::compute_target_matrices(PatchData &pd,
     Lambda = ref_pd.get_average_Lambda_3d(err); MSQ_ERRRTN(err);
   
   for (size_t i=0; i<num_elements; ++i) {
-    unsigned nve = elems[i].vertex_count();
-    if (nve != elems_ref[i].vertex_count())
+    unsigned nve = elems[i].corner_count();
+    if (nve != elems_ref[i].corner_count())
     {
       MSQ_SETERR(err)(MsqError::INVALID_STATE);
       return;

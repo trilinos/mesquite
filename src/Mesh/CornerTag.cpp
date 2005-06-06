@@ -43,7 +43,7 @@ size_t CornerTagHandles::size( Mesh::TagType type )
   
 int CornerTagHandles::num_corners( PatchData* pd, int elem_index )
 {
-  return pd->element_by_index(elem_index).vertex_count();
+  return pd->element_by_index(elem_index).corner_count();
 }
 
 
@@ -104,7 +104,7 @@ void CornerTagHandles::save_load_tags( bool load, PatchData* pd,
     return;
     
   MsqMeshEntity* elem_array = pd->get_element_array( err ); 
-  unsigned num_corners = elem_array[elem_index].vertex_count();
+  unsigned num_corners = elem_array[elem_index].corner_count();
   const Mesh::ElementHandle handle = pd->get_element_handles_array()[elem_index];
   TagHandle tag = get_handle( mesh, num_corners, err ); MSQ_ERRRTN(err);
   if (load)

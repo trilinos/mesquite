@@ -1786,7 +1786,7 @@ bool RI_DFT::evaluate_element(PatchData& pd,
   bool return_flag;
   double h, tau;
     
-  size_t num_T = element->vertex_count();
+  size_t num_T = element->corner_count();
   compute_T_matrices(*element, pd, T, num_T, c_k, err); MSQ_ERRZERO(err);
 
   const double id[] = {1., 0., 0.,  0., 1., 0.,  0., 0., 1.};
@@ -1819,7 +1819,7 @@ bool RI_DFT::evaluate_element(PatchData& pd,
 
   EntityTopology topo = e->get_element_type();
 
-  const size_t nv = e->vertex_count();
+  //const size_t nv = e->corner_count();
   const size_t *v_i = e->get_vertex_index_array();
 
   size_t idx = pd.get_element_index(e);
@@ -1949,7 +1949,7 @@ bool RI_DFT::compute_element_analytical_gradient(PatchData &pd,
 
   EntityTopology topo = e->get_element_type();
 
-  const size_t nv = e->vertex_count();
+  //const size_t nv = e->vertex_count();
   const size_t *v_i = e->get_vertex_index_array();
 
   size_t idx = pd.get_element_index(e);
@@ -1974,7 +1974,7 @@ bool RI_DFT::compute_element_analytical_gradient(PatchData &pd,
   m = 0.0;
   switch(topo) {
   case TRIANGLE:
-    assert(3 == nv);
+    //assert(3 == nv);
 
 #ifndef ANALYTIC
     mValid = compute_element_numerical_gradient(pd, e, fv, g, nfv, m, err);
@@ -2119,7 +2119,7 @@ bool RI_DFT::compute_element_analytical_gradient(PatchData &pd,
     // of fv[].
 
     for (i = 0; i < 4; ++i) {
-      for (size_t k = 0; k < nv; ++k) {
+      for (size_t k = 0; k < 4; ++k) {
         if (vertices + v_i[i] == fv[k]) {
           g[k] = mAccGrads[i];
         }
@@ -2190,7 +2190,7 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
 
   EntityTopology topo = e->get_element_type();
 
-  const size_t nv = e->vertex_count();
+  //const size_t nv = e->vertex_count();
   const size_t *v_i = e->get_vertex_index_array();
 
   size_t idx = pd.get_element_index(e);
@@ -2216,7 +2216,7 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
   m = 0.0;
   switch(topo) {
   case TRIANGLE:
-    assert(3 == nv);
+    //assert(3 == nv);
 
 #ifndef ANALYTIC
     mValid = compute_element_numerical_hessian(pd, e, fv, g, h, nfv, m, err);

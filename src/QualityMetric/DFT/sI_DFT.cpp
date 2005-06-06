@@ -48,7 +48,7 @@ bool sI_DFT::evaluate_element(PatchData& pd,
   bool return_flag = false;
   double h, tau, s;
 
-  size_t num_T = element->vertex_count();
+  size_t num_T = element->corner_count();
   compute_T_matrices(*element, pd, T, num_T, c_k, err); MSQ_ERRZERO(err);
 
   const double id[] = {1, 0, 0,  0, 1, 0,  0, 0, 1};

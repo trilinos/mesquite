@@ -128,7 +128,7 @@ double PatchData::get_barrier_delta(MsqError &err)
     size_t count = num_elements();
     for (size_t i=0; i<count; ++i) {
       Matrix3D A[MSQ_MAX_NUM_VERT_PER_ENT];
-      size_t nve = elementArray[i].vertex_count();
+      size_t nve = elementArray[i].corner_count();
       elementArray[i].compute_corner_matrices(*this, A, nve, err);
       MSQ_ERRZERO(err);
       for (size_t j=0; j<nve; ++j) {
@@ -168,7 +168,7 @@ double PatchData::get_average_Lambda_3d( MsqError &err)
     int total_num_corners =0;
     Matrix3D A[MSQ_MAX_NUM_VERT_PER_ENT];
     for (size_t i=0; i<elementArray.size(); ++i) {
-      int nve = elementArray[i].vertex_count();
+      int nve = elementArray[i].corner_count();
       elementArray[i].compute_corner_matrices(*this, A, nve, err); 
       MSQ_ERRZERO(err);
       total_num_corners += nve;

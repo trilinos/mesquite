@@ -85,6 +85,9 @@ namespace Mesquite
       //! vertices + number of higher-order nodes).
     inline msq_stdc::size_t node_count() const 
       { return numVertexIndices; }
+      //! Returns number of target matrices for this element type
+    inline msq_stdc::size_t corner_count() const
+      { return mType == PYRAMID ? 4 : vertex_count(); }
     
       //! gets the vertices of the mesh entity
     void get_vertex_indices(msq_std::vector<msq_stdc::size_t> &vertex_list) const;

@@ -52,7 +52,7 @@ bool I_DFT::evaluate_element(PatchData& pd,
 
   EntityTopology topo = e->get_element_type();
 
-  const size_t nv = e->vertex_count();
+  //const size_t nv = e->vertex_count();
   const size_t *v_i = e->get_vertex_index_array();
 
   size_t idx = pd.get_element_index(e);
@@ -82,7 +82,7 @@ bool I_DFT::evaluate_element(PatchData& pd,
   m = 0.0;
   switch(topo) {
   case TRIANGLE:
-    assert(3 == nv);
+    //assert(3 == nv);
 
     e->compute_corner_normals( mNormals, pd, err ); MSQ_ERRZERO(err);
 
@@ -106,7 +106,7 @@ bool I_DFT::evaluate_element(PatchData& pd,
     break;
 
   case QUADRILATERAL:
-    assert(4 == nv);
+    //assert(4 == nv);
 
     e->compute_corner_normals( mNormals, pd, err ); MSQ_ERRZERO(err);
 
@@ -127,7 +127,7 @@ bool I_DFT::evaluate_element(PatchData& pd,
     break;
 
   case TETRAHEDRON:
-    assert(4 == nv);
+    //assert(4 == nv);
 
     for (i = 0; i < 4; ++i) {
       for (j = 0; j < 4; ++j) {
@@ -147,7 +147,7 @@ bool I_DFT::evaluate_element(PatchData& pd,
     break;
 
   case PYRAMID:
-    assert(5 == nv);
+    //assert(5 == nv);
 
     for (i = 0; i < 4; ++i) {
       for (j = 0; j < 4; ++j) {
@@ -167,7 +167,7 @@ bool I_DFT::evaluate_element(PatchData& pd,
     break;
 
   case HEXAHEDRON:
-    assert(8 == nv);
+    //assert(8 == nv);
 
     for (i = 0; i < 8; ++i) {
       for (j = 0; j < 4; ++j) {
@@ -207,7 +207,7 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
   MsqVertex *vertices = pd.get_vertex_array(err); MSQ_ERRZERO(err);
   EntityTopology topo = e->get_element_type();
 
-  const size_t nv = e->vertex_count();
+  //const size_t nv = e->vertex_count();
   const size_t *v_i = e->get_vertex_index_array();
 
   size_t idx = pd.get_element_index(e);
@@ -237,7 +237,7 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
   m = 0.0;
   switch(topo) {
   case TRIANGLE:
-    assert(3 == nv);
+    //assert(3 == nv);
     
     e->compute_corner_normals( mNormals, pd, err ); MSQ_ERRZERO(err);
 
@@ -349,7 +349,7 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
     break;
 
   case QUADRILATERAL:
-    assert(4 == nv);
+    //assert(4 == nv);
     
     e->compute_corner_normals( mNormals, pd, err ); MSQ_ERRZERO(err);
 
@@ -460,7 +460,7 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
     break;
 
   case TETRAHEDRON:
-    assert(4 == nv);
+    //assert(4 == nv);
 
     if (1 == nfv) {
       // One free vertex; use the specialized code for computing the gradient.
@@ -564,7 +564,7 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
     break;
 
   case PYRAMID:
-    assert(5 == nv);
+    //assert(5 == nv);
 
     if (1 == nfv) {
       // One free vertex; use the specialized code for computing the gradient.
@@ -668,7 +668,7 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
     break;
 
   case HEXAHEDRON:
-    assert(8 == nv);
+    //assert(8 == nv);
 
     if (1 == nfv) {
       // One free vertex; use the specialized code for computing the gradient.
@@ -798,7 +798,7 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
   MsqVertex *vertices = pd.get_vertex_array(err);  MSQ_ERRZERO(err);
   EntityTopology topo = e->get_element_type();
 
-  const size_t nv = e->vertex_count();
+  //const size_t nv = e->vertex_count();
   const size_t *v_i = e->get_vertex_index_array();
 
   size_t idx = pd.get_element_index(e);
@@ -829,7 +829,7 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
   m = 0.0;
   switch(topo) {
   case TRIANGLE:
-    assert(3 == nv);
+    //assert(3 == nv);
     e->compute_corner_normals( mNormals, pd, err ); MSQ_ERRZERO(err);
 
     // The following analytic calculation only works correctly if the
@@ -1016,7 +1016,7 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
     break;
 
   case QUADRILATERAL:
-    assert(4 == nv);
+    //assert(4 == nv);
     e->compute_corner_normals( mNormals, pd, err ); MSQ_ERRZERO(err);
 
     // The following analytic calculation only works correctly if the
@@ -1211,7 +1211,7 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
     break;
 
   case TETRAHEDRON:
-    assert(4 == nv);
+    //assert(4 == nv);
 
     // Zero out the hessian and gradient vector
     for (i = 0; i < 4; ++i) {
@@ -1400,7 +1400,7 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
     break;
 
   case PYRAMID:
-    assert(5 == nv);
+    //assert(5 == nv);
 
     // Zero out the hessian and gradient vector
     for (i = 0; i < 5; ++i) {
@@ -1602,7 +1602,7 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
     break;
 
   case HEXAHEDRON:
-    assert(8 == nv);
+    //assert(8 == nv);
 
     // Zero out the hessian and gradient vector
     for (i = 0; i < 8; ++i) {

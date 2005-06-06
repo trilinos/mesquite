@@ -74,8 +74,8 @@ void WTargetCalculator::compute_target_matrices(PatchData &pd, MsqError &err)
   TargetMatrix matrices[MSQ_MAX_NUM_VERT_PER_ENT];
   
   for (size_t i=0; i<num_elements; ++i) {
-    int nve = elems[i].vertex_count();
-    assert( nve = elems_ref[i].vertex_count() );
+    int nve = elems[i].corner_count();
+    assert( nve = elems_ref[i].corner_count() );
 
     compute_guide_matrices(guideMatrix, *ref_pd_ptr, i, W_guides, nve, err); MSQ_ERRRTN(err);
     for (int c = 0; c < nve; ++c)

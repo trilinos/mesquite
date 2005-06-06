@@ -65,7 +65,7 @@ void TargetCalculator::compute_target_matrices_and_check_det(PatchData &pd, MsqE
   for (size_t i=0; i<num_elements; ++i) {
     const TargetMatrix* matrices = pd.targetMatrices.get_element_corner_tags(&pd, i, err);
     MSQ_ERRRTN(err);
-    size_t num_corners = elems[i].vertex_count();
+    size_t num_corners = elems[i].corner_count();
     
     for (size_t j=0; j<num_corners; ++j) {    
       if ( det(matrices[j]) <= 0 ) {
@@ -165,8 +165,8 @@ void TargetCalculator::compute_reference_corner_matrices(PatchData &pd,
   MsqMeshEntity* elems_ref = ref_pd.get_element_array(err); MSQ_ERRRTN(err);
   TargetMatrix A[MSQ_MAX_NUM_VERT_PER_ENT];
   for (size_t i=0; i<num_elements; ++i) {
-    int nve = elems[i].vertex_count();
-    assert( nve = elems_ref[i].vertex_count() );
+    int nve = elems[i].corner_count();
+    assert( nve = elems_ref[i].corner_count() );
     elems_ref[i].compute_corner_matrices(ref_pd, A, nve, err); MSQ_ERRRTN(err);
     pd.targetMatrices.set_element_corner_tags( &pd, i, A, err ); MSQ_ERRRTN(err);
   }
@@ -179,7 +179,7 @@ void TargetCalculator::compute_reference_corner_matrices(PatchData &pd,
 
     
     MsqMeshEntity* elems = ref_pd.get_element_array(err); MSQ_ERRRTN(err);
-    size_t nve = elems[elem_ind].vertex_count();
+    size_t nve = elems[elem_ind].corner_count();
     int i;
 
     switch(type) {
