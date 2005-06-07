@@ -1659,7 +1659,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
   {
     if(pF) cout << "\ntest_mean_ratio_hex_hessian()\n";
     test_mean_ratio_hessian(hexPatch);
-     MsqPrintError err(cout);
+    MsqPrintError err(cout);
     QualityMetric* mean_rat = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
     mean_rat->set_averaging_method(QualityMetric::SUM_SQUARED,
                                    err);
@@ -1679,7 +1679,6 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
     {
       if(pF)
         std::cout<<"\nTesting hex Hessian for I_DFT.\n";
-      MsqPrintError err(cout); 
       I_DFT i_dft_metric;
       test_i_dft_fix_vertices(hexPatch, &i_dft_metric,2);
     }
@@ -1687,15 +1686,13 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
     {
       if(pF)
         std::cout<<"\nTesting tet Hessian for I_DFT.\n";
-      MsqPrintError err(cout);
       I_DFT i_dft_metric;
       test_i_dft_fix_vertices(tetPatch, &i_dft_metric,2);
     }
   void test_i_dft_pyr_hessian()
     {
       if(pF)
-        std::cout<<"\nTesting tet Hessian for I_DFT.\n";
-      MsqPrintError err(cout); 
+        std::cout<<"\nTesting pyr Hessian for I_DFT.\n";
       I_DFT i_dft_metric;
       test_i_dft_fix_vertices(pyrPatch, &i_dft_metric, 2);
     }
@@ -1703,7 +1700,6 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
     {
       if(pF)
         std::cout<<"\nTesting quad Hessian for I_DFT.\n";
-      MsqPrintError err(cout); 
       I_DFT i_dft_metric;
       test_i_dft_fix_vertices(quadPatch, &i_dft_metric,2);
     }
@@ -1711,7 +1707,6 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
     {
       if(pF)
         std::cout<<"\nTesting tri Hessian for I_DFT.\n";
-      MsqPrintError err(cout); 
       I_DFT i_dft_metric;
       test_i_dft_fix_vertices(triPatch, &i_dft_metric, 2);
     }
@@ -1719,7 +1714,6 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
     {
       if(pF)
         std::cout<<"\nTesting quad Hessian for I_DFT.\n";
-      MsqPrintError err(cout); 
       I_DFT_NoBarrier i_dft_metric;
       test_i_dft_fix_vertices(quadPatch, &i_dft_metric, 2);
     }
@@ -1727,7 +1721,6 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
     {
       if(pF)
         std::cout<<"\nTesting tri Hessian for I_DFT.\n";
-      MsqPrintError err(cout); 
       I_DFT_NoBarrier i_dft_metric;
       test_i_dft_fix_vertices(triPatch, &i_dft_metric, 2);
     }
