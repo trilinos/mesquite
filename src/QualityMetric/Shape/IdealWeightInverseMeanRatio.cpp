@@ -955,12 +955,14 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_hessian(PatchData &
     g[4] = 0.0;
     for (i = 0; i < 4; ++i) {
       g[i] = 0.0;
+      
       mCoords[0] = vertices[v_i[ i     ]];
       mCoords[1] = vertices[v_i[(i+1)%4]];
       mCoords[2] = vertices[v_i[(i+3)%4]];
       mCoords[3] = vertices[v_i[ 4     ]];
       metric_valid = h_fcn_3p(mMetrics[i], mGradients+4*i, 
                               mHessians+10*i, mCoords, a3Con, b3Con, c3Con);
+
       if (!metric_valid) return false;
     }
 
