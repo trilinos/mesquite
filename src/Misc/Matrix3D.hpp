@@ -343,12 +343,16 @@ namespace Mesquite
   inline Matrix3D transpose(const Matrix3D &A)
   {
     Matrix3D S;
-    size_t i;
-    for (i=0; i<3; ++i) {
-        S[size_t(0)][i] = A[i][0];
-        S[size_t(1)][i] = A[i][1];
-        S[size_t(2)][i] = A[i][2];
-    }
+//     size_t i;
+//     for (i=0; i<3; ++i) {
+//         S[size_t(0)][i] = A[i][0];
+//         S[size_t(1)][i] = A[i][1];
+//         S[size_t(2)][i] = A[i][2];
+//     }
+    S.v_[0]=A.v_[0]; S.v_[1]=A.v_[3]; S.v_[2]=A.v_[6];
+    S.v_[3]=A.v_[1]; S.v_[4]=A.v_[4]; S.v_[5]=A.v_[7];
+    S.v_[6]=A.v_[2]; S.v_[7]=A.v_[5]; S.v_[8]=A.v_[8];
+    
     return S;
   }
 
@@ -478,23 +482,34 @@ namespace Mesquite
   inline int matmult(Matrix3D& C, const Matrix3D  &A, 
                      const Matrix3D &B)
   {
-    double sum;
-    const double* row_i;
-    const double* col_k;
-    for (size_t i=0; i<3; ++i)
-      for (size_t k=0; k<3; ++k)
-        {
-          row_i  = &(A[i][0]);
-          col_k  = &(B[0][k]);
-          sum = 0;
-          for (size_t j=0; j<3; ++j)
-            {
-              sum  += *row_i * *col_k;
-              row_i++;
-              col_k += 3;
-            }
-          C[i][k] = sum; 
-        }
+//     double sum;
+//     const double* row_i;
+//     const double* col_k;
+//     for (size_t i=0; i<3; ++i)
+//       for (size_t k=0; k<3; ++k)
+//         {
+//           row_i  = &(A[i][0]);
+//           col_k  = &(B[0][k]);
+//           sum = 0;
+//           for (size_t j=0; j<3; ++j)
+//             {
+//               sum  += *row_i * *col_k;
+//               row_i++;
+//               col_k += 3;
+//             }
+//           C[i][k] = sum; 
+//         }
+      //multiply A times B and store in C.
+    C.v_[0] = A.v_[0]*B.v_[0]+A.v_[1]*B.v_[3]+A.v_[2]*B.v_[6];
+    C.v_[1] = A.v_[0]*B.v_[1]+A.v_[1]*B.v_[4]+A.v_[2]*B.v_[7];
+    C.v_[2] = A.v_[0]*B.v_[2]+A.v_[1]*B.v_[5]+A.v_[2]*B.v_[8];
+    C.v_[3] = A.v_[3]*B.v_[0]+A.v_[4]*B.v_[3]+A.v_[5]*B.v_[6];
+    C.v_[4] = A.v_[3]*B.v_[1]+A.v_[4]*B.v_[4]+A.v_[5]*B.v_[7];
+    C.v_[5] = A.v_[3]*B.v_[2]+A.v_[4]*B.v_[5]+A.v_[5]*B.v_[8];
+    C.v_[6] = A.v_[6]*B.v_[0]+A.v_[7]*B.v_[3]+A.v_[8]*B.v_[6];
+    C.v_[7] = A.v_[6]*B.v_[1]+A.v_[7]*B.v_[4]+A.v_[8]*B.v_[7];
+    C.v_[8] = A.v_[6]*B.v_[2]+A.v_[7]*B.v_[5]+A.v_[8]*B.v_[8];
+    
     return 0;
   }
 
@@ -562,18 +577,18 @@ namespace Mesquite
 
   inline void inv(Matrix3D &Ainv, const Matrix3D &A) {
     double inv_detA = 1 / (det(A));
-
-    Ainv[0][0] = inv_detA*( A.v_[4]*A.v_[8]-A.v_[5]*A.v_[7] );
-    Ainv[0][1] = inv_detA*( A.v_[2]*A.v_[7]-A.v_[8]*A.v_[1] );
-    Ainv[0][2] = inv_detA*( A.v_[1]*A.v_[5]-A.v_[4]*A.v_[2] );
-
-    Ainv[1][0] = inv_detA*( A.v_[5]*A.v_[6]-A.v_[8]*A.v_[3] );
-    Ainv[1][1] = inv_detA*( A.v_[0]*A.v_[8]-A.v_[6]*A.v_[2] );
-    Ainv[1][2] = inv_detA*( A.v_[2]*A.v_[3]-A.v_[5]*A.v_[0] );
-
-    Ainv[2][0] = inv_detA*( A.v_[3]*A.v_[7]-A.v_[6]*A.v_[4] );
-    Ainv[2][1] = inv_detA*( A.v_[1]*A.v_[6]-A.v_[7]*A.v_[0] );
-    Ainv[2][2] = inv_detA*( A.v_[0]*A.v_[4]-A.v_[3]*A.v_[1] );
+      //First row of Ainv
+    Ainv.v_[0] = inv_detA*( A.v_[4]*A.v_[8]-A.v_[5]*A.v_[7] );
+    Ainv.v_[1] = inv_detA*( A.v_[2]*A.v_[7]-A.v_[8]*A.v_[1] );
+    Ainv.v_[2] = inv_detA*( A.v_[1]*A.v_[5]-A.v_[4]*A.v_[2] );
+      //Second row of Ainv
+    Ainv.v_[3] = inv_detA*( A.v_[5]*A.v_[6]-A.v_[8]*A.v_[3] );
+    Ainv.v_[4] = inv_detA*( A.v_[0]*A.v_[8]-A.v_[6]*A.v_[2] );
+    Ainv.v_[5] = inv_detA*( A.v_[2]*A.v_[3]-A.v_[5]*A.v_[0] );
+      //Third row of Ainv
+    Ainv.v_[6] = inv_detA*( A.v_[3]*A.v_[7]-A.v_[6]*A.v_[4] );
+    Ainv.v_[7] = inv_detA*( A.v_[1]*A.v_[6]-A.v_[7]*A.v_[0] );
+    Ainv.v_[8] = inv_detA*( A.v_[0]*A.v_[4]-A.v_[3]*A.v_[1] );
     return;
   }
 
@@ -607,11 +622,16 @@ namespace Mesquite
     Q = A;
 
     R[0][0] = sqrt(Q[0][0]*Q[0][0] + Q[1][0]*Q[1][0] + Q[2][0]*Q[2][0]);
+    double temp_dbl = 1.0/R[0][0];
     R[1][0] = 0.0L;
     R[2][0] = 0.0L;
-    Q[0][0] /= R[0][0];
-    Q[1][0] /= R[0][0];
-    Q[2][0] /= R[0][0];
+      //Q[0][0] /= R[0][0];
+      //Q[1][0] /= R[0][0];
+      //Q[2][0] /= R[0][0];
+    Q[0][0] *= temp_dbl;
+    Q[1][0] *= temp_dbl;
+    Q[2][0] *= temp_dbl;
+    
 
     R[0][1]  = Q[0][0]*Q[0][1] + Q[1][0]*Q[1][1] + Q[2][0]*Q[2][1];
     Q[0][1] -= Q[0][0]*R[0][1];
@@ -624,20 +644,31 @@ namespace Mesquite
     Q[2][2] -= Q[2][0]*R[0][2];
 
     R[1][1] = sqrt(Q[0][1]*Q[0][1] + Q[1][1]*Q[1][1] + Q[2][1]*Q[2][1]);
+    temp_dbl = 1.0 / R[1][1];
     R[2][1] = 0.0L;
-    Q[0][1] /= R[1][1];
-    Q[1][1] /= R[1][1];
-    Q[2][1] /= R[1][1];
+//     Q[0][1] /= R[1][1];
+//     Q[1][1] /= R[1][1];
+//     Q[2][1] /= R[1][1];
+    Q[0][1] *= temp_dbl;
+    Q[1][1] *= temp_dbl;
+    Q[2][1] *= temp_dbl;
 
+    
     R[1][2]  = Q[0][1]*Q[0][2] + Q[1][1]*Q[1][2] + Q[2][1]*Q[2][2];
     Q[0][2] -= Q[0][1]*R[1][2];
     Q[1][2] -= Q[1][1]*R[1][2];
     Q[2][2] -= Q[2][1]*R[1][2];
   
     R[2][2] = sqrt(Q[0][2]*Q[0][2] + Q[1][2]*Q[1][2] + Q[2][2]*Q[2][2]);
-    Q[0][2] /= R[2][2];
-    Q[1][2] /= R[2][2];
-    Q[2][2] /= R[2][2];
+    temp_dbl = 1.0 / R[2][2];
+    
+//     Q[0][2] /= R[2][2];
+//     Q[1][2] /= R[2][2];
+//     Q[2][2] /= R[2][2];
+    Q[0][2] *= temp_dbl;
+    Q[1][2] *= temp_dbl;
+    Q[2][2] *= temp_dbl;
+    
     return;
   }
 
