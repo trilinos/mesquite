@@ -54,7 +54,7 @@
 #include "CompositeOFMultiply.hpp"
 #include "CompositeOFScalarAdd.hpp"
 #include "CompositeOFScalarMultiply.hpp"
-#include "CompositeQualityMetric.hpp"
+//#include "CompositeQualityMetric.hpp"
 #include "ConditionNumberQualityMetric.hpp"
 #include "ConjugateGradient.hpp"
 #include "CornerJacobianQualityMetric.hpp"
