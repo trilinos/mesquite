@@ -38,8 +38,8 @@ int main(int argc, char* argv[])
     exit(EXIT_FAILURE);
   }
   else if (argc==2) {
-    std::cout << "Working with mesh file: "<< mesh_file_name << "\n";
     strcpy(mesh_file_name, argv[1]);
+    std::cout << "Working with mesh file: "<< mesh_file_name << "\n";
   } 
 
 }
