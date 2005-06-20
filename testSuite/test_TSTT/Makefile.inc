@@ -4,8 +4,11 @@ TEST_TSTT_SRC = $(TEST_TSTT_DIR)/main.cpp
 
 TEST_TSTT_EXEC = $(TEST_TSTT_DIR)/main
 
-all_tests: $(TEST_TSTT_EXEC) 
-
+ifeq ($(MSQ_TSTT_MESH),yes)
+ifneq ($(TSTT_MESH_IMPL),)
+all_tests: $(TEST_TSTT_EXEC)
+endif 
+endif
 
 $(TEST_TSTT_EXEC): $(TEST_TSTT_SRC) $(locallibdir)/libmesquite.a \
 		   $(TSTT_SHAR_CLIENT_LIB) $(TSTT_MESH_CLIENT_LIB)

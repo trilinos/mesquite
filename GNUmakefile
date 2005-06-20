@@ -190,9 +190,7 @@ distrib: all
 	tar cf mesquite-1.0.tar mesquite-1.0
 	rm -rf mesquite-1.0
 
-test: all_libs
-	$(MAKE) testSuite/unit/msq_test
-	cd testSuite/unit && ./msq_test
+test: all_libs $(MSQ_RUN_TEST)
 
 #distclean: veryclean
 #	-rm -f GNUmakefile config.status config.cache

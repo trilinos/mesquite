@@ -1,8 +1,22 @@
 UNIT_DIR = $(testdir)/unit
 
-MSQ_TEST = $(UNIT_DIR)/msq_test
+UNIT_TEST_EXE = msq_test
 
+MSQ_TEST = $(UNIT_DIR)/$(UNIT_TEST_EXE)
+
+MSQ_RUN_TEST = $(UNIT_DIR)/run_target
+.Phoney: $(MSQ_TARGET)
+
+ifeq ($(CPPUNIT_LNK),)
+$(MSQ_RUN_TEST):
+	@echo "====================================================" 
+	@echo "Reconfigure with CPPUnit support to build unit tests" 
+	@echo "====================================================" 
+else
+$(MSQ_RUN_TEST): $(MSQ_TEST)
+	cd $(UNIT_DIR) && ./$(UNIT_TEST_EXE)
 all_tests: $(MSQ_TEST)
+endif
 
 TEST_SRCS = msq_test_main.cpp \
     ExodusTest.cpp \
