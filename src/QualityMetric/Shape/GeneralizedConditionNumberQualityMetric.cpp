@@ -41,7 +41,6 @@
 #  include <vector.h>
 #else
 #  include <vector>
-   using namespace std;
 #endif
 
 
@@ -107,16 +106,16 @@ bool GeneralizedConditionNumberQualityMetric::evaluate_element(PatchData &pd,
 {
   int num_sample_points;
   bool return_flag;
-  vector<Vector3D> sample_points;
+  msq_std::vector<Vector3D> sample_points;
   ElementEvaluationMode eval_mode = get_element_evaluation_mode();
   element->get_sample_points(eval_mode,sample_points,err);  MSQ_ERRZERO(err);
-  vector<Vector3D>::iterator iter=sample_points.begin();
+  msq_std::vector<Vector3D>::iterator iter=sample_points.begin();
     // loop over sample points
   Vector3D jacobian_vectors[3];
   short num_jacobian_vectors;
   int i=0;
   num_sample_points=sample_points.size();
-  std::vector<double> metric_values(num_sample_points);
+  msq_std::vector<double> metric_values(num_sample_points);
     //Vector3D* current_sample_point;
   for(i=0;i<num_sample_points;++i){
       // compute weighted jacobian

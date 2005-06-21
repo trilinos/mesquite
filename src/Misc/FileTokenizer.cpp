@@ -32,7 +32,6 @@
 #else
 #  include <cstring>
 #  include <cctype>
-   using namespace std;
 #endif
 
 namespace Mesquite

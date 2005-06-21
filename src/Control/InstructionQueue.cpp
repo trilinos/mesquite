@@ -40,7 +40,6 @@ Member functions of the Mesquite::InstructionQueue class
 #else
 #  include <string>
 #  include <list>
-   using namespace std;
 #endif
 
 #include "InstructionQueue.hpp"
@@ -131,7 +130,7 @@ void InstructionQueue::remove_preconditioner(size_t index, MsqError &err)
     return;
   }
   
-  string name = (*pos)->get_name();
+  msq_std::string name = (*pos)->get_name();
   instructions.erase(pos);
   nbPreConditionners--;
 }  
@@ -160,7 +159,7 @@ void InstructionQueue::insert_preconditioner(QualityImprover* instr,
   }
 
   // position the instruction iterator
-  list<PatchDataUser*>::iterator pos;
+  msq_std::list<PatchDataUser*>::iterator pos;
   pos = instructions.begin();
   advance(pos, index);
   // adds the preconditioner
@@ -196,7 +195,7 @@ void InstructionQueue::remove_quality_assessor(size_t index, MsqError &err)
   }
   
   // position the instruction iterator over the QualityAssessor to delete
-  list<PatchDataUser*>::iterator pos;
+  msq_std::list<PatchDataUser*>::iterator pos;
   pos = instructions.begin();
   advance(pos, index);
 
@@ -207,7 +206,7 @@ void InstructionQueue::remove_quality_assessor(size_t index, MsqError &err)
     return;
   }
   
-  string name = (*pos)->get_name();
+  msq_std::string name = (*pos)->get_name();
   instructions.erase(pos);
 }  
 
@@ -230,7 +229,7 @@ void InstructionQueue::insert_quality_assessor(QualityAssessor* instr,
   }
 
   // position the instruction iterator
-  list<PatchDataUser*>::iterator pos;
+  msq_std::list<PatchDataUser*>::iterator pos;
   pos = instructions.begin();
   advance(pos, index);
   // adds the QualityAssessor
@@ -245,7 +244,7 @@ void InstructionQueue::set_master_quality_improver(QualityImprover* instr,
     MSQ_DBGOUT(1) << "InstructionQueue::set_master_quality_improver():\n"
         << "\tOverwriting previously specified master quality improver.\n";
     // if master is already set, clears it and insert the new one at the same position.
-    list<PatchDataUser*>::iterator master_pos;
+    msq_std::list<PatchDataUser*>::iterator master_pos;
     master_pos = this->clear_master(err); MSQ_ERRRTN(err);
     instructions.insert(master_pos, instr);
     isMasterSet = true;
@@ -334,7 +333,7 @@ void InstructionQueue::clear()
 }
 
 
-list<PatchDataUser*>::iterator InstructionQueue::clear_master(MsqError &err)
+msq_std::list<PatchDataUser*>::iterator InstructionQueue::clear_master(MsqError &err)
 {
   msq_std::list<PatchDataUser*>::iterator instr_iter;
   msq_std::list<PatchDataUser*>::iterator master_pos;

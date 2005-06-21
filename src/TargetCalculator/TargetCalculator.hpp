@@ -160,20 +160,27 @@ namespace Mesquite
                                                       Matrix3D &pyr_M3D)
   {
     static const double SIXTH_ROOT_OF_TWO = msq_stdc::pow(2., 1./6.);
-    
+      //The #ifndef is to get around what is believed to be a bug in the JANUS
+      //compilers.  
+#ifndef JANUS
     const double v_tri[] = {1., 0.5, 0., 0., MSQ_SQRT_THREE/2., 0., 0., 0., 1.};
+#else    
+    const double v_tri[] = {1., 0.5, 0., 0., 0.8660254037844385965883021 , 0., 0., 0., 1.};
+#endif    
     Matrix3D m1(v_tri);
     tri_M3D = m1 * MSQ_3RT_2_OVER_6RT_3;
-
-//     const double v_tri[] = {1., 0.5, 0., 0., MSQ_SQRT_THREE/2., 0., 0., 0., sqrt(MSQ_SQRT_THREE/2.)};
-//     Matrix3D m1(v_tri);
-//     tri_M3D = m1 * sqrt(2./MSQ_SQRT_THREE);
 
     const double v_quad[] = {1., 0., 0., 0., 1., 0., 0., 0., 1.};
     Matrix3D m2(v_quad);
     quad_M3D = m2;
     
+      //The #ifndef is to get around what is believed to be a bug in the JANUS
+      //compilers.  
+#ifndef JANUS
     const double v_tet[] = {1., 0.5, 0.5, 0., MSQ_SQRT_THREE/2., MSQ_SQRT_THREE/6., 0., 0., MSQ_SQRT_TWO/MSQ_SQRT_THREE};
+#else 
+    const double v_tet[] = {1., 0.5, 0.5, 0.,  0.8660254037844385965883021, 0.2886751345948128655294340, 0., 0., 0.8164965809277261454823815};
+#endif    
     Matrix3D m3(v_tet);
     tet_M3D =  m3 * SIXTH_ROOT_OF_TWO;
 

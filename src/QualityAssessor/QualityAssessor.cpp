@@ -45,7 +45,6 @@
 #else
 #  include <list>
 #  include <vector>
-   using namespace std;
 #endif
 
 #ifdef MSQ_USE_OLD_IO_HEADERS
@@ -54,16 +53,15 @@
 #else
 #  include <iostream>
 #  include <iomanip>
-   using namespace std;
 #endif
 
 namespace Mesquite {
 
 const int DEFAULT_HISTOGRAM_INTERVALS = 10;
 
-QualityAssessor::QualityAssessor(string name) :
+QualityAssessor::QualityAssessor(msq_std::string name) :
   qualityAssessorName(name),
-  outputStream( cout ),
+  outputStream( msq_stdio::cout ),
   printSummary( true ),
   stoppingMetric( assessList.end() ),
   stoppingFunction( NO_FUNCTION )
@@ -72,7 +70,7 @@ QualityAssessor::QualityAssessor(string name) :
   set_patch_type( PatchData::GLOBAL_PATCH, err, 0 );
 }
 
-QualityAssessor::QualityAssessor(ostream& stream, string name) :
+QualityAssessor::QualityAssessor(msq_stdio::ostream& stream, msq_std::string name) :
   qualityAssessorName(name),
   outputStream( stream ),
   printSummary( true ),
@@ -86,9 +84,9 @@ QualityAssessor::QualityAssessor(ostream& stream, string name) :
 QualityAssessor::QualityAssessor( QualityMetric* metric,
                                   QAFunction function,
                                   MsqError& err,
-                                  string name ) :
+                                  msq_std::string name ) :
   qualityAssessorName(name),
-  outputStream( cout ),
+  outputStream( msq_stdio::cout ),
   printSummary( true ),
   stoppingMetric( assessList.end() ),
   stoppingFunction( (QAFunction)0 )
@@ -100,9 +98,9 @@ QualityAssessor::QualityAssessor( QualityMetric* metric,
 
 QualityAssessor::QualityAssessor( QualityMetric* metric,
                                   QAFunction function,
-                                  ostream& stream, 
+                                  msq_stdio::ostream& stream, 
                                   MsqError& err,
-                                  string name ) :
+                                  msq_std::string name ) :
   qualityAssessorName(name),
   outputStream( stream ),
   printSummary( true ),
@@ -117,7 +115,7 @@ QualityAssessor::QualityAssessor( QualityMetric* metric,
 QualityAssessor::~QualityAssessor()
   { }
 
-string QualityAssessor::get_QAFunction_name(
+msq_std::string QualityAssessor::get_QAFunction_name(
                               enum QualityAssessor::QAFunction fun)
 {
   switch(fun){
@@ -176,9 +174,9 @@ void QualityAssessor::add_quality_assessment(QualityMetric* qm,
     iter->histogram.resize(DEFAULT_HISTOGRAM_INTERVALS+2);
 }
 
-list<QualityAssessor::Assessor>::iterator QualityAssessor::find_or_add( QualityMetric* qm )
+msq_std::list<QualityAssessor::Assessor>::iterator QualityAssessor::find_or_add( QualityMetric* qm )
 {
-  list<Assessor>::iterator iter;
+  msq_std::list<Assessor>::iterator iter;
   
     // If metric is already in list, find it
   for (iter = assessList.begin(); iter != assessList.end(); ++iter)
@@ -252,7 +250,7 @@ void QualityAssessor::add_histogram_assessment( QualityMetric* qm,
     return;
   }
   
-  list<Assessor>::iterator assessor = find_or_add( qm );
+  msq_std::list<Assessor>::iterator assessor = find_or_add( qm );
   assessor->funcFlags |= QualityAssessor::HISTOGRAM;
   assessor->histMin = min_val;
   assessor->histMax = max_val;
@@ -285,10 +283,10 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
     // metric also such that element metrics go from
     // assessList.begin() to elem_end and vertex metrics
     // go from elem_end to assessList.end()
-  list<Assessor>::iterator elem_end = assessList.end();
+  msq_std::list<Assessor>::iterator elem_end = assessList.end();
   bool need_second_pass_for_elements = false;
   bool need_second_pass_for_vertices = false;
-  list<Assessor>::iterator iter;
+  msq_std::list<Assessor>::iterator iter;
   for (iter = assessList.begin(); iter != assessList.end(); ++iter)
   {
     if (iter->get_metric()->get_metric_type() == QualityMetric::VERTEX_BASED)
@@ -304,7 +302,7 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
       need_second_pass_for_vertices = true;
   }
   
-  list<Assessor> histogramList;
+  msq_std::list<Assessor> histogramList;
   
     // Do element-based metrics
   if (assessList.begin() != elem_end)
@@ -819,7 +817,7 @@ void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream ) co
     {
       if (0 == histogram[i])
         continue;
-      stream << setw(FLOATW) << "under min";
+      stream << msq_stdio::setw(FLOATW) << "under min";
     }
       // Last value is the count of the number of values that
       // were above the maximum value of the histogram.
@@ -827,17 +825,17 @@ void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream ) co
     {
       if (0 == histogram[i])
         continue;
-      stream << setw(FLOATW) << "over max";
+      stream << msq_stdio::setw(FLOATW) << "over max";
     }
       // Anything else is a valid interval of the histogram.
       // Print the lower bound for each interval.
     else
     {
-      stream << "   " << setw(FLOATW) << min + (i-1)*step;
+      stream << "   " << msq_stdio::setw(FLOATW) << min + (i-1)*step;
     }
     
       // Print interval count.
-    stream << ": " << setw(num_width) << histogram[i] << ": ";
+    stream << ": " << msq_stdio::setw(num_width) << histogram[i] << ": ";
     
       // Print bar graph
     

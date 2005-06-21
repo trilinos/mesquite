@@ -57,7 +57,6 @@ That copy is of course encapsulated in the MeshSet class.
 #include <fstream>
 #include <string>
 #include <iomanip>
-using namespace std;
 #endif
 
 namespace Mesquite {
@@ -85,7 +84,7 @@ MeshSet::~MeshSet()
     // Delete the vertex iterator
   delete vertexIterator;
     // Release all of our meshes
-  list<Mesquite::Mesh*>::iterator it = meshSet.begin();
+  msq_std::list<Mesquite::Mesh*>::iterator it = meshSet.begin();
   while(!(it == meshSet.end()))
     (*it++)->release();
   
@@ -556,7 +555,7 @@ void Mesquite::MeshSet::update_mesh(const PatchData &pd, MsqError &err)
     // one Mesh.
   case PatchData::GLOBAL_PATCH:
     {
-      list<Mesquite::Mesh*>::iterator mesh_itr = meshSet.begin();
+      msq_std::list<Mesquite::Mesh*>::iterator mesh_itr = meshSet.begin();
       assert( mesh_itr != meshSet.end() );
       Mesquite::Mesh* cur_mesh = *mesh_itr;
       Mesquite::VertexIterator *vert_itr = cur_mesh->vertex_iterator(err);
@@ -756,9 +755,9 @@ void MeshSet::write_gnuplot(const char* out_filebase,
                    Mesquite::MsqError &err)
 {
     // Open the file
-  string out_filename = out_filebase;
+  msq_std::string out_filename = out_filebase;
   out_filename += ".gpt";
-  ofstream file(out_filename.c_str());
+  msq_stdio::ofstream file(out_filename.c_str());
   if (!file)
   {
     MSQ_SETERR(err)(MsqError::FILE_ACCESS);

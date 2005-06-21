@@ -122,7 +122,7 @@ void MsqDebug::FormatPrinter::print( const char* format, ... ) const
   vsprintf( buffer, format, args );
   va_end( args );
 #else
-  strncpy( buffer, sizeof(buffer), format );
+  strncpy( buffer, format, sizeof(buffer) );
   buffer[sizeof(buffer)-1] = '\0';
 #endif
 

@@ -46,7 +46,6 @@ using namespace Mesquite;
 #  include <vector.h>
 #else
 #  include <vector>
-   using namespace std;
 #endif
 
 /*!
@@ -89,8 +88,8 @@ bool QualityMetric::compute_element_hessian(PatchData &pd,
 {
   // first, checks that free vertices order is consistent with the
   // element order. 
-  vector<size_t> elem_vtx_indices;
-  vector<size_t>::const_iterator v;
+  msq_std::vector<size_t> elem_vtx_indices;
+  msq_std::vector<size_t>::const_iterator v;
   el->get_vertex_indices(elem_vtx_indices);
   int i;
   v=elem_vtx_indices.begin();
@@ -220,19 +219,19 @@ bool QualityMetric::compute_element_gradient_expanded(PatchData &pd,
     return false;
   }
 
-  vector<size_t> gv_i;
+  msq_std::vector<size_t> gv_i;
   gv_i.reserve(num_free_vtx);
   i=0;
   for (i=0; i<num_free_vtx; ++i) {
     gv_i.push_back( pd.get_vertex_index(free_vtces[i]) );
   }
      
-  vector<size_t> ev_i;
+  msq_std::vector<size_t> ev_i;
   el->get_vertex_indices(ev_i);
 
   bool inc;
-  vector<size_t>::iterator ev;
-  vector<size_t>::iterator gv;
+  msq_std::vector<size_t>::iterator ev;
+  msq_std::vector<size_t>::iterator gv;
   for (ev=ev_i.begin(), e=0; ev!=ev_i.end(); ++ev, ++e) {
     inc = false; g=0;
     gv = gv_i.begin();
@@ -356,7 +355,7 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
   short nve = element->vertex_count();
   Vector3D* grad_vec1 = new Vector3D[nve];
   Vector3D fd;
-  vector<size_t> ev_i;
+  msq_std::vector<size_t> ev_i;
   element->get_vertex_indices(ev_i);
   short w, v, i, j, sum_w, mat_index, k;
 
