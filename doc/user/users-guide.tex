@@ -365,131 +365,176 @@ will generate a dvi file.
 
 \chapter{Basic Mesquite Usage} \label{sec:basics}
 
-\section{Downloading Mesquite}
+\section{Requirements}
 
-\subsection{System Requirements}
-TODO:  List the supported platforms (Lin, SGI, Sun, etc.?), the required
-software (makedepend, gmake, Babel, etc.?), and any related information.
-\subsection{Acquiring the Necessary Code/Libraries}
-TODO:  How and where Mesquite, AOMD, CppUnit, (MDB), etc. can be
-acquired... with appropriate acknowledgments.
+\subsection{Downloading Mesquite}
+The Mesquite distribution (in source form) may be obtained at the following URL:
+\begin{verbatim}
+http://www.cs.sandia.gov/~web9200/
+\end{verbatim}
 
-\section{Compiling and Linking Mesquite}
+\subsection{Supported Platforms and Build Requirements}
+The Mesquite source code will compile in any environment comforming to the ISO/IEC 9899-1999 (C99), ISO/IEC 14882-1998 (C++98) and ISO/IEC 9945:2003 (POSIX) standards.
+It may also compile under many other environments.
+
+Mesquite requires a reasonably standards-conforming C++ compiler and corresponding libraries.  No additional libraries are required to build the core Mesquite library.
+Several optional features have additional requirements.  These are listed in the next section.
+
+Mesquite includes a build system that should work on most Unix-based or Unix-like
+operating systems.  The Unix build system provided for Mesquite requires the GNU implementation of the \texttt{make} utility.  It may be obtained at this URL:
+\begin{verbatim}
+http://ftp.gnu.org/pub/gnu/make/
+\end{verbatim}
+
+Support for building Mesquite with Microsoft Visual Studio (version 6.0 or later) is provided via Visual Studio project and workspace files.
+
+Mesquite is regularly compiled and tested on GNU/Linux with g++ 3.2 or later and Sun with the Sun Forte C++ compiler.  
+
+\subsection{Optional Libraries and Utilities}
+\begin{itemize}
+\item Unit tests:  Mesquite provides a series of unit tests that may be used
+to verify the correct behavior of a build of the Mesquite library.  These tests
+are implemented using CppUnit framework.  The CppUnit framework must be installed
+to compile and run these test.  It is available at this URL:
+\begin{verbatim}
+http://cppunit.sourceforge.net
+\end{verbatim}
+\item TSTT SIDL interface:  A working Babel/SIDL installation (version 0.9.8 or 
+newer) is requred for building the interface objects that allow Mesquite to
+directly access Mesh stored in an implementation providing the TSTT mesh interface.  Babel/SIDL can be obtained at this URL:
+\begin{verbatim}
+http://www.llnl.gov/CASC/components/software.html
+\end{verbatim}
+\item ExodusII support:  To enable support for reading or writing ExodusII files in Mesquite, the header files for the ExodusII library must be available.  To link an application with a Mesquite library supporting ExodusII, the ExodusII library and possibly the NetCDF library must be available.  To obtain the ExodusII library, contact:
+\begin{verbatim}
+Marilyn K. Smith
+Research Programs Department
+Department 9103, MS 0833
+Sandia National Laboratories
+P.O.Box 5800
+Albuquerque, NM 87185-0833
+Phone: (505) 844-3082
+FAX:   (505) 844-8251
+Email: mksmith@sandia.gov
+\end{verbatim}
+The NetCDF library can be obained at the following URL:
+\begin{verbatim}
+http://my.unidata.ucar.edu/content/software/netcdf/index.html
+\end{verbatim}
+\end{itemize}
+
+
+\section{Building Mesquite}
 \label{sec:compiling}
-\begin{verbatim}
-TODO:  Software dependencies, compiling AOMD, TSTT interfaces
-(need the .h file), other (gmake, makedepend)?  
-Makefiles (examples that link Mesquite to an 
-application code). Compiler flags and options (debugging, profiling). 
-Platforms supported. Optional functionalities (debugging, profiling, 
-error handling).
-\end{verbatim}
-
-Having acquired the Mesquite source code, the user can perform the
-following steps which outline the process for compiling the code and
-creating the library, `libmesquite.a'. Here is the fastest way to compile Mesquite:
+After downloading and unpacking the Mesquite source, the next step is to 
+configure and build the Mesquite library (libmesquite.a on Unix-like systems or 
+mesquite.lib on Windows.)
+\subsection{Compiling on Unix-like systems}
+This section presents the steps required to compile Mesquite with the default
+options.  Mesquite requires the GNU implementation of the \texttt{make} utility.
+On some systems the command to invoke GNU make may be \texttt{gmake}.  Substitute
+\texttt{gmake} or whatever the command is on your system for GNU make in place of
+the \texttt{make} command in the instructions below.
 \begin{enumerate}
-\item While in the top level Mesquite directory (typically, .../mesquite/), type
-`./configure'.  This will create the file Makefile.customize with a default configuration
-for your platform.
-\item Type gmake, this will compile the library lib/libmesquite.a
-\item To compile, one of the test, stay in the main directory (mesquite/) and type 
-for example 'gmake testSuite/test\_1/main'. You can also use 'gmake all\_tests' .
+\item Make the working directory of your command shell the top-level Mesquite
+directory (typically \texttt{mesquite/}).
+\item Run the configure script with the command: \texttt{./configure}
+\item Compile Mesquite with the command: \texttt{make} 
+\item Verify that Mesquite compiled correctly with the command: \texttt{make test}
 \end{enumerate}
-If the above worked, you are done. Mesquite compiled successfully. 
+If the configure step failed, please consult the following section describing 
+some of the optional arguments to the \texttt{./configure} script. 
+\subsection{Options for Unix-like systems}
+This section describes the options available for customizing the build
+system and the resulting Mesquite library.  An brief description of these
+and other options is available with the command: \texttt{./configure --help}.
 
-If the above method did not work for your system, you will have to modify the file
-Makefile.customize that contains the platform specific tools and settings to be used 
-while compiling Mesquite. In the remainder of this section, we
-will  list some of the specific variables which
-may need to be modified before Mesquite will compile correctly.
-This can be done in two ways: you can use the configure
-script options (you can access these options and
-others by typing './configure --help'), or you can edit
-Makefile.customize directly.
+\label{mes_vars_and_defs}
+The following values may be specified as environmental variables, as arguments
+to the configure script using the NAME=VALUE syntax, or as arguments to \texttt{make}
+using the NAME=VALUE syntax.  The value of these variables (if set) during the
+configure step will become the default for the compile step.  The value of any
+of these variables will override the the default if specified during the compile
+step.
+\begin{itemize}
+\item \texttt{CXX}       The C++ compiler command
+\item \texttt{CXXFLAGS}  Arguments to the C++ compiler, such as those specifying 
+debug symbols or the optimization level.
+\item \texttt{CC}        The C compiler command
+\item \texttt{CFLAGS}    Command line arguments to be used for the C compiler.
+\end{itemize}
 
-\subsection{Basic Configure Options.}  \label{config_options}
+Most options to the configure script are either of the form \texttt{--with-FEATURE[=ARG]} or
+\texttt{--enable-FEATURE[=ARG]}.  Some options may accept an additional argument following 
+an '=' character.  For each --with-FEATURE option, a there is also a corresponding
+--without-FEATURE option.  Similarly, there is a --disable-FEATURE option 
+corresponding to each --enable-FEATURE option.  The negative forms fo the options 
+(--without-FEATURE and --disable-FEATURE) do not accept an additional argument.  
+Only the positive form of each option is stated in the description below.  
 
-Those options can be given to the configure script through the command line, for example the C headers
-option would be given by typing \texttt{./configure --with-c-headers=yes} in the \texttt{mesquite/} directory.
+\label{config_options}
+The following general build and debug options may be specified during the configure step:
+\begin{itemize}
+\item \texttt{--with-archiver=ARG}  This option may be used to specify the
+system-specific command to generate a static library (archive) from a group
+of compiled object (.o) files.  Use this option if the \texttt{./configure} script fails to correctly detect the archiver command.
+\item \texttt{--enable-debug}  Select a subset of the following options that
+make the most sense for developers of Mesquite.
+\item \texttt{--enable-release}  This is the default behavior unless 
+--enable-debug is specified.  It selects a subset of the following options that
+typically work best for using Mesquite in a production application.
+\item \texttt{--enable-compile-optimized} Compile with the available 
+optimizations that improve performance without any significant drawbacks 
+(the -O2 compiler flag.)
+\item \texttt{--enable-debug-symbols} Include debugging information in
+the compiled Mesquite objects (the -g compiler flag).
+\item \texttt{--enable-debug-assertions}  Include internal consistancy 
+checks that abort when an error is detected.
+\item \texttt{--enable-debug-output[=n,m,...]}  Enable the output of
+debug and status messages to file descriptor 1 (stdout).  An 
+list of integer debug flags for which to enable output may be specified 
+as a comma-separated list of values.  The default is to enable debug
+flags 1 and 2 if this option is specified without any explict debug
+flag values.
+\item \texttt{--enable-function-timers}  Enable time-profiling of
+some portions of Mesquite.
+\item \texttt{--enable-trap-fpe}  Enable generation of a floating-point
+exception signal for arithmatic errors (e.g. division by zero.)  This is
+an option intended for Mesquite developers.  Enabling this will typically cause
+the application using Mesquite to abort when such an error is encountered.
+\end{itemize}
 
-\begin{description}
-\item \texttt{--with-c-headers=yes} Uses the deprecated C style for headers:
-  will use headers like \texttt{<inostream.h>} and \texttt{<math.h>}
-  instead of the new C++ style \texttt{<iostream>} and \texttt{<cmath>}. This might make older
-  compilers find those headers. With newer compilers, you will get a warning for using deprecated headers.
-\item \texttt{--with-makedepend=EXECUTABLE}  Location of alternative makedepend program:
-Give the full path:  --with-makedepend='/usr/local/bin/makedepend'
-\item \texttt{--with-archiver=EXECUTABLE} Location of alternative archiver (default is 'ar ru'):
-Give the full path: --with-archiver='/usr/local/bin/ar' . If options are needed, we advise to
-create a shell script pointed to by that option. The shell script would contain only one line: the
-archiver and its options. 
-\item \texttt{--with-cc=EXECUTABLE}  Location of alternative C compiler:
-Give the full path: --with-cc='/usr/local/gcc/bin/gcc'
-\item \texttt{--with-cPP=EXECUTABLE}  Location of alternative c++ compiler:
-Give the full path:  --with-cPP='/usr/local/gcc/bin/g++'
-\item \texttt{--with-dox=EXECUTABLE}  Location of doxygen:
-Give the full path: --with-dox='/usr/local/bin/doxygen'
-\end{description}
+The following options specify optional Mesquite components and the location 
+of the corresponding dependencies.
+\begin{itemize}
+\item \texttt{--with-doxygen[=PROG]} Specify the location of the Doxygen
+command for generating developer documentation.
+\item \texttt{--with-cppunit=DIR}  The CppUnit library is required to compile
+and run the tests to verify that a particular build of the Mesquite library
+is working correctly.  If the CppUnit library is not installed in a default location
+where the ./configure script can find it, this option may be used to specify
+the location.
+\item \texttt{--with-exodus[=DIR]}  Enable support for reading and writing
+ExodusII files, and optionally specify the location where the ExodusII library
+and headers required for this option are installed.
+\item \texttt{--with-netcdf[=DIR]}  Specify the location of the NetCDF library
+required by the ExodusII library.  The default is to look in the ExodusII
+directory.
+\item \texttt{--enable-tstt}  Enable optional support for accessing mesh
+and geometry data through the TSTT SIDL interfaces.  This option requires
+the Babel utility for processing SIDL files.
+\item \texttt{--with-babel=DIR}  Specify the location where the Babel/SIDL
+package is installed.
+\end{itemize}
 
-For all configure options, type
-\begin{verbatim}
-./configure --help
-\end{verbatim}
-Also, configure options for the TSTT linking are described in section \ref{sec:TSTT}.
-
-
-
-\subsection{Basic Makefile Variables.}  \label{mes_vars_and_defs}
-
-The following is a list of variables used in Mesquite's Makefile
-structure to allow for customization of the compilation process.
-Most of the provided examples come directly from Mesquite's default
-Linux setup. If you decided not to use the configure script and its options (previous paragraph),
-you can edit Makefile.customize directly. Here are the variables and their meaning.
-\begin{enumerate}
-
-\item Tools used by Mesquite:
-  \begin{description}
-  \item[ARCHIVER] defines the command to call the archiver\\
-    	({\it e.g.,} ARCHIVER = ar ru).
-  \item[CXX] defines the command to call the compiler\\
-	({\it e.g.,} CXX = g++).
-  \item [LINKER] defines the command to call the linker\\
-	({\it e.g.,} LINKER = \$\{CXX\}).
-  \item[MAKEDEPEND] defines the command to call makedepend\\
-	({\it e.g.,} MAKEDEPEND = makedepend).
-  \end{description}
-
-\item Compilation flags and variables:
-  \begin{description}
-  \item[CXX\_FLAGS]
-  \item[DEBUG\_FLAG] defines the flags to be used to compile the Mesquite
-	with the desired levels of debug information, optimization, and
-	warning statements\\
-	({\it e.g.,} DEBUG\_FLAG = -g -Wno-deprecated).
-  \item[DEPEND\_FLAGS]
-  \item[LD\_FLAGS]
-  \item[STD\_INCLUDE\_FLAG] defines certain global definitions that
-	tell the compiler which types of header files to include. The configure script has the
-	option \texttt{--with-c-headers} to help set this variable.
- 	Essentially, the two options are USE\_STD\_INCLUDES and
-	USE\_C\_PREFIX\_INCLUDES.  With USE\_STD\_INCLUDES defined
-	Mesquite will include the standard header files.  For example,
-	`list' will be included instead of `list.h'.  With
-	USE\_C\_PREFIX\_INCLUDES defined, Mesquite will include the
-	`c-prefixed' header files.  For example, `cmath' will be
-	included instead of `math.h'.  \\
-	({\it E.g.,} STD\_INCLUDE\_FLAG = -DUSE\_STD\_INCLUDES\\
-	-DUSE\_C\_PREFIX\_INCLUDES).
-  \end{description}
-\item Directories:
-  \begin{description}
-  \item[MSQ\_BASE\_DIR] holds the name of the main Mesquite directory.
-	Generally, the default value for this variable will be correct.\\
-	(The default value is `MSQ\_BASE\_DIR = .').
-  \end{description}
-\end{enumerate}
+\subsection{Compiling on Microsoft Windows}
+The Mesquite source package includes project and workspace files for Microsoft Visual C++ 6.0 or later.  To build Mesquite in Visual C++:
+\begin{itemize}
+\item Open the file: \texttt{mesquite/mswindows/mesquite.dsw}
+\item Select between a debug or release build in the project settings.  
+\item Set the active project to \texttt{mesquite}
+\item Select \texttt{Build mesquite.lib} from the \texttt{Build} menu.
+\end{itemize}
 
 \section{Short Tutorial}
 
