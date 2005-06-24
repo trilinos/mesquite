@@ -1,0 +1,173 @@
+% alternative names
+%\chapter{Telling Mesquite About Your Mesh}
+\chapter{Mesquite Interactions with Your Mesh and Geometry}
+\label{sec:meshes}
+
+Mesquite is responsible for gathering information from the
+application's mesh and geometry.  Because this must be as efficient as
+possible, considerable attention has been given to the interface
+between Mesquite and the application code.  Because Mesquite is
+designed as a library to work on a broad assortment of mesh and
+element types on complex geometrical domains, a general,
+data-structure neutral API is needed.  In general, Mesquite requires
+access to basic information about the mesh such as the number of
+vertices and elements in the mesh, the vertex locations, and the
+element connectivities.  To move the vertex locations, Mesquite needs
+to set the vertex coordinate positions, and eventually, to perform
+swapping operations Mesquite will need to add and delete various mesh
+entities.  In addition, for smoothing meshes on complex surfaces,
+access to operations on the underlying solid model such as normal
+information and closest point information are required to ensure
+vertices are constrained to the surface.
+
+\section{Reading in a Mesh File} \label{sec:meshFiles}
+
+The simplest way to start using mesquite is to read a mesh file in one of the format currently
+supported by mesquite. Currently, mesquite has a class that implements its mesh access interface and
+supports the VTK \cite{VTKbook, VTKuml} and EXODUS formats: \texttt{MeshImpl}, as shown in the tutorial (section
+\ref{sec:tutMesh}). The functions \texttt{MeshImpl::read\_vtk()}
+and \texttt{MeshImpl::read\_exodus()} can be used as template to read instead your own mesh format. This is not
+recommended, since ultimately you want to run mesquite dynamically to interact with your mesh
+database and implementing the Mesquite Mesh Interface (section \ref{sec:msq_mesh}) should require the same amount of work. 
+
+If you plan to link in with the EXODUS proprietary library, you will need to define the following
+compile option in Mesquite's Makefile.customize: 
+
+  [{\bf EXODUS\_LIB\_DIR}] is an optional variable that holds the location of the Exodus II library. 
+({\it E.g.,} EXODUS\_LIB\_DIR = \$\{MSQ\_BASE\_DIR\}/external/exodus/lib).
+
+\section{Implementing the Mesquite Mesh Interface} \label{sec:msq_mesh}
+
+%Most users will want to skip this section and avoid the associated work. There are several manners
+%to give the mesh data to Mesquite, and implementing the Mesquite mesh interface is the one that
+%requires the most coding work. 
+%
+%Let's review the alternative in the first place. For very simple meshes, Mesquite has an integrated
+%mesh database that can read in mesh files in specific format, such as VTK (see section \ref{sec:meshFiles}). 
+%On the other hand, Mesquite is compatible with the TSTT mesh interface: this means that if you are
+%running a code that has implemented the TSTT mesh interface, you can link Mesquite with your code
+%and perform all mesh improvements through the TSTT mesh interface (see section \ref{sec:TSTT}).
+%Implementing the TSTT mesh interface also has the advantage that your code will be compatible with
+%the TSTT mesh interface standard: this is a very good investment. 
+%
+%If you want to implement the specific Mesquite mesh interface, you probably have very specific
+%reasons in mind ... and you know what you are doing. In this section, we will give you the
+%documentation for the abstract classes. This will allow you to implement the interface. 
+
+\subsection{Mesh Interface Concepts}
+
+To expose this information, Mesquite defines a set of interfaces 
+(C++ abstract base classes) that are specifically designed for mesh
+quality improvement needs.  There are four such interfaces: \texttt{Mesh},
+\texttt{VertexIterator}, \texttt{ElementIterator}, and \texttt{MeshDomain}.
+\begin{itemize}
+\item \texttt{Mesh}: The Mesh interface represents the set of mesh
+entities that are to be operated on.  It is through this interface
+that one retrieves information about the mesh and its entities.
+Examples of functionality provided by this interface include:
+retrieving the number of elements in the mesh, determining which
+elements contain a particular vertex, and modifying vertex
+coordinates.
+\item \texttt{VertexIterator}: The VertexIterator provides access to each
+vertex in a mesh.  A VertexIterator is obtained from a Mesh object,
+and is used to iterate through the list of all vertices in the Mesh
+from which it was obtained.
+\item \texttt{ElementIterator}: The ElementIterator provides access to
+each element in a mesh.  Other than the type of entity it exposes, it
+is identical to the VertexIterator.
+\item \texttt{MeshDomain}: The MeshDomain represents the set of geometric
+domains to which the mesh may be constrained. Its implementation is \emph{not} systematically 
+required. See section \ref{sec:geometry} for more details. 
+%The MeshDomain
+%interface enables an application to restrict the locations to which a
+%vertex can be moved, such as constraining a vertex to a surface.
+%Through the MeshDomain interface, Mesquite's algorithms can also
+%obtain a domain's normal vector, which aides validity checking and 
+%decision making during the quality improvement process.
+\end{itemize}
+These interfaces are data-structure neutral and use only primitive
+data types; an application may implement the Mesquite interfaces
+without changing its existing mesh data structures.  Instead of
+representing mesh entities with complex data structures or with typed
+pointers, entities are identified with opaque values called handles.
+Each mesh entity has a unique handle value, but otherwise handles have
+no intrinsic meaning to Mesquite.  
+
+\subsection{Implementation Details}
+
+The implementation details must be looked up in the doxygen documentation located in mesquite/doc/developer.
+
+\subsection{Testing Your Implementation}
+
+The implementation of the Mesquite mesh interface is considerably eased by using the unit testing
+framework. From the mesquite/testSuite/unit directory, change the MeshInterfaceTest.cpp file to
+instantiate your mesh interface implentation (i.e. replace occurences of \texttt{MeshImpl} with your
+class). Run gmake and run the test:
+\begin{verbatim} 
+./msq_test MeshInterfaceTest
+\end{verbatim} 
+This should help you pinpoint the vast majority of implementation errors. 
+
+
+\section{Linking Mesquite with Implementations of the TSTT Mesh Interface} 
+\label{sec:TSTT}
+
+Mesquite can instead use the mesh interfaces currently
+being developed through the TSTT center.  This interface definition
+effort focuses on providing access to information pertaining to low
+level mesh objects such as vertices, edges, faces, and regions through
+both array-based and iterator-based mechanisms.  It is designed to
+support existing packages such as CUBIT, NWGrid, PAOMD, and Overture. 
+The TSTT interface achieves language interoperability
+through use of the SIDL/Babel tools from LLNL \cite{babel}.
+Achieving consensus within a large group of participants is
+paramount (see \cite{Cubit-website}, \cite{overture}, \cite{aomd-imr},
+and \cite{NWGrid-website}).  
+%This interface definition effort is
+%evolving, and the Mesquite team is actively participating to ensure
+%that our needs for mesh quality improvement are adequately and
+%efficiently addressed.  
+A TSTT-based implementation of the Mesquite
+interfaces is available.  As such, any tool that exposes its
+mesh through the TSTT interfaces can be used with Mesquite without
+additional development.
+
+Note that the Mesquite-specific interface described in section \ref{sec:msq_mesh} is fully compatible
+with the current TSTT mesh and geometry interfaces, and in fact,
+Mesquite's approach to data structure neutrality is directly derived
+from the TSTT interfaces.  Although similar in spirit to the TSTT
+interface, the Mesquite-specific interface is not as general, and 
+therefore consist of fewer
+functions and does not require additional tools such as Babel.
+
+\section{The Geometry Engine}
+\label{sec:geometry}
+
+Certain smoothing procedures in Mesquite require some geometry information. The mean ratio quality
+metric for example requires the normal of a 2D element in a surface mesh. Also, boundary
+vertices can be snapped back to the surface they belong to during a smoothing procedure, instead of
+simply fixing the boundary vertices (and therefore lowering the quality of the final mesh). A simple abstract
+class, \texttt{MeshDomain}, must be inherited and implemented by the user in order to provide the
+geometry information to Mesquite.  This class contains only two virtual abstract functions:
+\texttt{MeshDomain::normal\_at} and \texttt{MeshDomain::snap\_to} for which the details are given in
+the doxygen documentation (in the directory mesquite/doc/developer).
+
+Note that MeshDomain does not systematically needs to be implemented. For example it is possible to
+improve a 3D mesh with any metric by fixing the boundary vertices. If the surface mesh is of good
+quality but the volume mesh is poor, Mesquite can generates a high quality mesh without accessing
+any geometry information. 
+
+
+\subsection{The Simplified Geometry Engine}
+
+We provide implementations of the MeshDomain class for basic geometries, such as a plan
+(\texttt{PlanarDomain}) and a sphere (\texttt{SphericalDomain}). Those classes allows the user to use
+Mesquite straight away without any implementation. They are introduced in the tutorial section
+\ref{sec:tutMesh} and are described in details in the doxygen documentation.
+
+\section{Visualizing the Mesh}
+
+\begin{verbatim}
+advices. pointer to VTK doc. 
+pointer to VTK -> Exodus II converter
+\end{verbatim}

@@ -1,0 +1,151 @@
+\chapter{Mesh Interface}
+\label{append_mesh}
+
+\newcommand{\entrylabel}[1]{
+   {\parbox[b]{\labelwidth-4pt}{\makebox[0pt][l]{\textbf{#1}}\\}}}
+\newenvironment{Desc}
+{\begin{list}{}
+  {
+    \settowidth{\labelwidth}{40pt}
+    \setlength{\leftmargin}{\labelwidth}
+    \setlength{\parsep}{0pt}
+    \setlength{\itemsep}{-4pt}
+    \renewcommand{\makelabel}{\entrylabel}
+  }
+}
+{\end{list}}
+
+\section{Detailed Description}
+A Mesquite::Mesh is a collection of mesh elements which are composed of mesh vertices. Intermediate objects are not accessible through this interface (where intermediate objects include things like the faces of a hex, or an element's edges).
+
+\section{Member Function Documentation}
+\index{Mesquite::Mesh@{Mesquite::Mesh}!element_get_attached_vertex_count@{element\_\-get\_\-attached\_\-vertex\_\-count}}
+\index{element_get_attached_vertex_count@{element\_\-get\_\-attached\_\-vertex\_\-count}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsection{\setlength{\rightskip}{0pt plus 5cm}virtual size\_\-t Mesquite::Mesh::element\_\-get\_\-attached\_\-vertex\_\-count (Element\-Handle {\em elem}, {\bf Msq\-Error} \& {\em err}) honest\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a17}
+
+
+Gets the number of vertices in this element. This data can also be found by querying the element's topology and getting the number of vertices per element for that topology type. 
+
+\index{element_get_attached_vertex_indices@{element\_\-get\_\-attached\_\-vertex\_\-indices}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsection{\setlength{\rightskip}{0pt plus 5cm}virtual void Mesquite::Mesh::element\_\-get\_\-attached\_\-vertex\_\-indices (Element\-Handle {\em element}, size\_\-t $\ast$ {\em index\_\-array}, size\_\-t {\em array\_\-size}, {\bf Msq\-Error} \& {\em err})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a19}
+
+
+Identifies the vertices attached to this element by returning each vertex's global index. The vertex's global index indicates where that element can be found in the array returned by {\bf Mesh::get\_\-all\_\-vertices}. 
+
+\index{element_iterator@{element\_\-iterator}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsection{\setlength{\rightskip}{0pt plus 5cm}virtual Element\-Iterator$\ast$ Mesquite::Mesh::element\_\-iterator ({\bf Msq\-Error} \& {\em err})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a6}
+
+
+Returns a pointer to an iterator that iterates over the set of all top-level elements in this mesh. The calling code should delete the returned iterator when it is finished with it. If elements are added or removed from the {\bf Mesh} after obtaining an iterator, the behavior of that iterator is undefined. 
+
+\index{elements_get_attached_vertices@{elements\_\-get\_\-attached\_\-vertices}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsection{\setlength{\rightskip}{0pt plus 5cm}virtual void Mesquite::Mesh::elements\_\-get\_\-attached\_\-vertices (Element\-Handle $\ast$ {\em elem\_\-handles}, size\_\-t {\em num\_\-elems}, Vertex\-Handle $\ast$ {\em vert\_\-handles}, size\_\-t \& {\em sizeof\_\-vert\_\-handles}, size\_\-t $\ast$ {\em csr\_\-data}, size\_\-t \& {\em sizeof\_\-csr\_\-data}, size\_\-t $\ast$ {\em csr\_\-offsets}, {\bf Msq\-Error} \& {\em err})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a18}
+
+
+Returns the vertices that are part of the topological definition of each element in the \char`\"{}elem\_\-handles\char`\"{} array.
+
+When this function is called, the following must be true:\begin{enumerate}
+\item 
+\char`\"{}elem\_\-handles\char`\"{} points at an array of \char`\"{}num\_\-elems\char`\"{} element handles.\item 
+\char`\"{}vert\_\-handles\char`\"{} points at an array of size \char`\"{}sizeof\_\-vert\_\-handles\char`\"{}\item 
+\char`\"{}csr\_\-data\char`\"{} points at an array of size \char`\"{}sizeof\_\-csr\_\-data\char`\"{}\item 
+\char`\"{}csr\_\-offsets\char`\"{} points at an array of size \char`\"{}num\_\-elems+1\char`\"{}\end{enumerate}
+When this function returns, adjacency information will be stored in csr format:\begin{enumerate}
+\item 
+\char`\"{}vert\_\-handles\char`\"{} stores handles to all vertices found in one or more of the elements. Each vertex appears only once in \char`\"{}vert\_\-handles\char`\"{}, even if it is in multiple elements.\item 
+\char`\"{}sizeof\_\-vert\_\-handles\char`\"{} is set to the number of vertex handles placed into \char`\"{}vert\_\-handles\char`\"{}.\item 
+\char`\"{}sizeof\_\-csr\_\-data\char`\"{} is set to the total number of vertex uses (for example, sizeof\_\-csr\_\-data = 6 in the case of 2 TRIANGLES, even if the two triangles share some vertices).\item 
+\char`\"{}csr\_\-offsets\char`\"{} is filled such that csr\_\-offset[i] indicates the location of entity i's first adjacency in \char`\"{}csr\_\-data\char`\"{}. The number of vertices in element i is equal to csr\_\-offsets[i+1] - csr\_\-offsets[i]. For this reason, csr\_\-offsets[num\_\-elems] is set to the new value of \char`\"{}sizeof\_\-csr\_\-data\char`\"{}.\item 
+\char`\"{}csr\_\-data\char`\"{} stores integer offsets which give the location of each adjacency in the \char`\"{}vert\_\-handles\char`\"{} array.\end{enumerate}
+As an example of how to use this data, you can get the handle of the first vertex in element \#3 like this: 
+
+\footnotesize\begin{verbatim}VertexHandle vh = vert_handles[ csr_data[ csr_offsets[3] ] ] 
+\end{verbatim}\normalsize 
+
+
+and the second vertex of element \#3 like this: 
+
+\footnotesize\begin{verbatim}VertexHandle vh = vert_handles[ csr_data[ csr_offsets[3]+1 ] ] 
+\end{verbatim}\normalsize 
+ 
+
+\index{elements_get_topologies@{elements\_\-get\_\-topologies}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsection{\setlength{\rightskip}{0pt plus 5cm}virtual void Mesquite::Mesh::elements\_\-get\_\-topologies (Element\-Handle $\ast$ {\em element\_\-handle\_\-array}, Entity\-Topology $\ast$ {\em element\_\-topologies}, size\_\-t {\em num\_\-elements}, {\bf Msq\-Error} \& {\em err})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a21}
+
+
+Returns the topologies of the given entities. The \char`\"{}entity\_\-topologies\char`\"{} array must be at least \char`\"{}num\_\-elements\char`\"{} in size. 
+
+\index{get_all_elements@{get\_\-all\_\-elements}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsection{\setlength{\rightskip}{0pt plus 5cm}virtual void Mesquite::Mesh::get\_\-all\_\-elements (Element\-Handle $\ast$ {\em elem\_\-array}, size\_\-t {\em array\_\-size}, {\bf Msq\-Error} \& {\em err})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a4}
+
+
+Fills array with handles to all elements in the mesh.
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+array\_\-size}]Must be at least the number of elements. If less than the mesh number of elements, an error is set (and a partial copy is made). \end{description}
+\end{Desc}
+
+
+\index{get_all_vertices@{get\_\-all\_\-vertices}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsection{\setlength{\rightskip}{0pt plus 5cm}virtual void Mesquite::Mesh::get\_\-all\_\-vertices (Vertex\-Handle $\ast$ {\em vert\_\-array}, size\_\-t {\em array\_\-size}, {\bf Msq\-Error} \& {\em err})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a3}
+
+
+Fills array with handles to all vertices in the mesh.
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+array\_\-size}]Must be at least the number of vertices. If less than the mesh number of vertices, an error is set (and a partial copy is made). \end{description}
+\end{Desc}
+
+
+\index{release@{release}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsection{\setlength{\rightskip}{0pt plus 5cm}virtual void Mesquite::Mesh::release ()\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a23}
+
+
+Instead of deleting a {\bf Mesh} when you think you are done, call {\bf release()} {\rm (p.\,\pageref{classMesquite_1_1Mesh_a23})}. In simple cases, the implementation could just call the destructor. More sophisticated implementations may want to keep the {\bf Mesh} object to live longer than {\bf Mesquite} is using it. 
+
+\index{release_entity_handles@{release\_\-entity\_\-handles}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsection{\setlength{\rightskip}{0pt plus 5cm}virtual void Mesquite::Mesh::release\_\-entity\_\-handles ({\bf Entity\-Handle} $\ast$ {\em handle\_\-array}, size\_\-t {\em num\_\-handles}, {\bf Msq\-Error} \& {\em err})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a22}
+
+
+Tells the mesh that the client is finished with a given entity handle. 
+
+\index{vertex_get_attached_element_count@{vertex\_\-get\_\-attached\_\-element\_\-count}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsection{\setlength{\rightskip}{0pt plus 5cm}virtual size\_\-t Mesquite::Mesh::vertex\_\-get\_\-attached\_\-element\_\-count (Vertex\-Handle {\em vertex}, {\bf Msq\-Error} \& {\em err}) const\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a15}
+
+
+Gets the number of elements attached to this vertex. Useful to determine how large the \char`\"{}elem\_\-array\char`\"{} parameter of the {\bf vertex\_\-get\_\-attached\_\-elements()} function must be. 
+
+\index{vertex_get_byte@{vertex\_\-get\_\-byte}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsection{\setlength{\rightskip}{0pt plus 5cm}virtual void Mesquite::Mesh::vertex\_\-get\_\-byte (Vertex\-Handle {\em vertex}, unsigned char $\ast$ {\em byte}, {\bf Msq\-Error} \& {\em err})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a13}
+
+
+Retrieve the byte value for the specified vertex or vertices. The byte value is 0 if it has not yet been set via one of the \_\-set\_\-byte() functions. 
+
+\index{vertex_is_fixed@{vertex\_\-is\_\-fixed}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsection{\setlength{\rightskip}{0pt plus 5cm}virtual bool Mesquite::Mesh::vertex\_\-is\_\-fixed (Vertex\-Handle {\em vertex}, {\bf Msq\-Error} \& {\em err})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a7}
+
+Returns true or false, indicating whether the vertex is allowed to be repositioned. True indicates that the vertex is fixed and cannot be moved. Note that this is a read-only property; this flag can't be modified by users of the Mesquite::Mesh interface. 
+
+\index{vertex_is_on_boundary@{vertex\_\-is\_\-on\_\-boundary}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsection{\setlength{\rightskip}{0pt plus 5cm}virtual bool Mesquite::Mesh::vertex\_\-is\_\-on\_\-boundary (Vertex\-Handle {\em vertex}, {\bf Msq\-Error} \& {\em err})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a8}
+
+
+Returns true or false, indicating whether the vertex is on the boundary. Boundary nodes may be treated as a special case by some algorithms or culling methods. Note that this is a read-only property; this flag can't be modified by users of the Mesquite::Mesh interface. 
+
+\index{vertex_iterator@{vertex\_\-iterator}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsection{\setlength{\rightskip}{0pt plus 5cm}virtual Vertex\-Iterator$\ast$ Mesquite::Mesh::vertex\_\-iterator ({\bf Msq\-Error} \& {\em err})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a5}
+
+
+Returns a pointer to an iterator that iterates over the set of all vertices in this mesh. The calling code should delete the returned iterator when it is finished with it. If vertices are added or removed from the {\bf Mesh} after obtaining an iterator, the behavior of that iterator is undefined. 
+
+\index{vertex_set_byte@{vertex\_\-set\_\-byte}!Mesquite::Mesh@{Mesquite::Mesh}}
+\subsection{\setlength{\rightskip}{0pt plus 5cm}virtual void Mesquite::Mesh::vertex\_\-set\_\-byte (Vertex\-Handle {\em vertex}, unsigned char {\em byte}, {\bf Msq\-Error} \& {\em err})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classMesquite_1_1Mesh_a11}
+
+
+Each vertex has a byte-sized flag that can be used to store flags. This byte's value is neither set nor used by the mesh implementation. It is intended to be used by {\bf Mesquite} algorithms. Until a vertex's byte has been explicitly set, its value is 0. 
