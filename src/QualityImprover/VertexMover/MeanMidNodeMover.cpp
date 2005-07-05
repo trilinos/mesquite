@@ -55,6 +55,9 @@ PatchDataUser::AlgorithmType MeanMidNodeMover::get_algorithm_type()
 
 double MeanMidNodeMover::loop_over_mesh( MeshSet& ms, MsqError& err )
 {
+  const MsqVertex::FlagMaskID FIXED_FLAG = 
+    (MsqVertex::FlagMaskID)(MsqVertex::MSQ_HARD_FIXED|MsqVertex::MSQ_SOFT_FIXED);
+  
   if (get_patch_type() != PatchData::GLOBAL_PATCH) {
     MSQ_SETERR(err)(MsqError::INVALID_STATE);
     return 0;
@@ -70,6 +73,10 @@ double MeanMidNodeMover::loop_over_mesh( MeshSet& ms, MsqError& err )
     // For each higher-order node in the patch
   for (size_t vtx = pd.num_vertices(); vtx < pd.num_nodes(); ++vtx)
   {
+      // Skipped fixed vertices
+    if (pd.vertex_by_index(vtx).is_flag_set(FIXED_FLAG))
+      continue;    
+    
       // Get an adjacent element
     size_t num_elems, *elem_list;
     elem_list = pd.get_vertex_element_adjacencies( vtx, num_elems, err ); MSQ_ERRZERO(err);
