@@ -9,17 +9,17 @@ NAME = users-guide
  # aliases
 pdf: $(NAME).pdf
 
-ps:  $(MAME).ps
+ps:  $(NAME).ps
 
 dvi: $(NAME).dvi
 
 
 
 $(NAME).pdf: $(NAME).dvi
-	$(DVI_TO_PDF) $< $@
+	$(DVI_TO_PDF) $< > $@
 
-$(NAME).ps:
-	$(DVI_TO_PS) $< $@
+$(NAME).ps: $(NAME).dvi
+	$(DVI_TO_PS) $< > $@
 
 $(NAME).dvi: $(NAME).toc $(NAME).tex
 	$(LATEX) $(NAME).tex
