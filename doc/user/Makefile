@@ -14,6 +14,21 @@ ps:  $(NAME).ps
 dvi: $(NAME).dvi
 
 
+COMPONENTS = $(NAME).tex \
+	ack.tex \
+	api.tex \
+	caveats.tex \
+	data.tex \
+	extend.tex \
+	intro.tex \
+	mesh.tex \
+	plan.tex \
+	started.tex \
+	support.tex \
+	team.tex \
+	trouble.tex 
+	
+
 
 $(NAME).pdf: $(NAME).dvi
 	$(DVI_TO_PDF) $< > $@
@@ -21,7 +36,7 @@ $(NAME).pdf: $(NAME).dvi
 $(NAME).ps: $(NAME).dvi
 	$(DVI_TO_PS) $< > $@
 
-$(NAME).dvi: $(NAME).toc $(NAME).tex
+$(NAME).dvi: $(NAME).toc $(COMPONENTS)
 	$(LATEX) $(NAME).tex
 
 # Need to invoke LaTeX twice for correct generation
@@ -29,11 +44,11 @@ $(NAME).dvi: $(NAME).toc $(NAME).tex
 # the first time here to generate the table of contents,
 # removing the .dvi file generated without the correct
 # table of contents.
-$(NAME).toc: $(NAME).tex
+$(NAME).toc: $(COMPONENTS)
 	rm -f $@
-	$(LATEX) $<
+	$(LATEX) $(NAME).tex
 	rm -f $(NAME).dvi
 
 TMPEXT = dvi lof log lot toc
 clean:
-	rm -f *.aux $(TMPEXT:%=$(NAME).%)
+	rm -f $(COMPONENTS:%.tex=%.aux) $(TMPEXT:%=$(NAME).%)
