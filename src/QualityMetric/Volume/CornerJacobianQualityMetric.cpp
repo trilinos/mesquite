@@ -65,12 +65,9 @@ bool CornerJacobianQualityMetric::evaluate_element(PatchData &pd,
     case QUADRILATERAL:
       fval=element->compute_unsigned_area(pd,err);  MSQ_ERRZERO(err);
       break;
-    case TETRAHEDRON:
-    case HEXAHEDRON:
+    default:
       fval=element->compute_unsigned_volume(pd,err);  MSQ_ERRZERO(err);
       break;
-    default:
-      fval=MSQ_MAX_CAP;
   }// end switch over element type
   return true;
 }
