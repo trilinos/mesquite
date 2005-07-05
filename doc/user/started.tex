@@ -200,6 +200,7 @@ This tutorial begins with the file \newline
 which contains the following template:
 \begin{verbatim}
 1.   #include "Mesquite_all_headers.hpp"
+     #include <ostream>
 2.   using namespace Mesquite;
      int main(int argc, char* argv[])
      {
@@ -226,14 +227,15 @@ The lines labeled 1-3 highlight three basic aspects of using Mesquite;
 \item For convenience, Mesquite provides the header file
 \texttt{include/Mesquite\_all\_headers.hpp} which includes all Mesquite
 headers. Although this is the easiest way to handle the include directives,
-it is likely to slow down Mesquite compilation.  
+it may slow down compilation of the application.  
 \item All Mesquite classes are part of the \texttt{Mesquite} namespace. 
-Be aware that general mesh interfaces classes usually have their own
-namespace. 
-\item  The \texttt{MsqError} class is an error object passed to
-certain function calls (see section \ref{sec:MsqError}), its value is
-checked after the functions calls with the macro
-\texttt{MSQ\_CHKERR(...)}.
+
+\item  The \texttt{MsqError} class defines an object type use to communicate
+Mesquite errors to the application.  The calling application must pass
+an instance of the \tt{MsqError} class or an instance of a subclass of
+\tt{MsqError} to many Mesquite functions.  The state of the error object
+may be checked by casting the instance ot a Boolean or using it in a 
+Boolean context.  The state is cleared by calling the \tt{clear} method.
 \item In the sections that follow, we guide the user through the steps
 necessary to smooth a mesh using Mesquite.  All new lines of code to be
 added to the template file start in this position and are added in the order
@@ -244,7 +246,7 @@ The code above takes a mesh file name as a command line argument and
 performs no action. We can compile it from the main directory
 (\texttt{mesquite/}) with the command 
 \begin{verbatim}
-gmake testSuite/tutorial/tutorial
+make testSuite/tutorial/tutorial
 \end{verbatim}
 
 \subsection{Loading a Test Mesh}
@@ -252,37 +254,45 @@ gmake testSuite/tutorial/tutorial
 Our next step is to load one of the test meshes distributed with
 Mesquite.  These meshes are distributed in the VTK unstructured mesh
 format, the details of which are given in \cite{VTKbook, VTKuml}. This
-format was chosen because of its readability and ease of use (although
-some sacrifice of efficiency has been made).  In this tutorial we use
+format was chosen because of its readability and ease of use.
+In this tutorial we use
 the simplest mechanism for loadling a mesh into Mesquite; different
 options are described in chapter \ref{sec:meshes}.  In particular, to
 load a VTK test mesh in Mesquite, instantiate the Mesquite mesh
 database object,
-\texttt{MeshImpl}\footnote{Note that if you have your own mesh
-database running, you should use the interfaces described in section
-\ref{sec:meshes}.}, and use the \texttt{read\_vtk} member function by
+\texttt{MeshImpl}, and use the \texttt{read\_vtk} member function by
 adding the following lines to the file template described in
 \ref{sec:tutfile}.
 \begin{verbatim}
-  Mesquite::MeshImpl *my_mesh = new Mesquite::MeshImpl;
-  my_mesh->read_vtk(mesh_file_name, err); 
-  MSQ_CHKERR(err);
+  Mesquite::MeshImpl my_mesh;
+  my_mesh.read_vtk(mesh_file_name, err); 
+  if (err) 
+  {
+    std::cout << err << std::endl;
+    return 1;
+  }
 \end{verbatim}
 Now that the mesh is loaded, you must add it to a {\tt MeshSet}, which
 is a flexible object that can group several contiguous {\tt LAF: do
 they really have to be contiguous?} meshes to improve them simultaneously:
 \begin{verbatim}
   Mesquite::MeshSet mesh_set;
-  mesh_set.add_mesh(my_mesh, err); MSQ_CHKERR(err);
+  mesh_set.add_mesh(&my_mesh, err); 
+  if (err) 
+  {
+    std::cout << err << std::endl;
+    return 1;
+  }
 \end{verbatim}
 Mesquite deals automatically with all types of supported elements,
 including hybrid meshes, but some meshes require geometry information
-as well.  For example when improving a surface mesh, the user needs to
-indicate to which surface the vertices are constrained.  Also, because
-Mesquite is inherently a 3D code, all 2D meshes must specify some
-geometry constraints.  The MeshSet object tracks this geometrical
+as well.  When improving a surface mesh, Mesquite must be provided information
+about surface(s) the mesh is constrained to lie on and the association between
+mesh entities and entities of the geometric domain (surfaces, curves, etc.)
+Because Mesquite is inherently a 3D code, all 2D meshes must specify some
+geometry constraints.  The MeshSet object tracks this geometric
 domain information, and it should be added at this point.  The details
-for general geometrical surfaces are explained in section
+for general geometric surfaces are explained in section
 \ref{sec:geometry}; in this section,
 we show how to set the geometry of a 2D planar mesh, defined by a
 point and a normal, on the MeshSet:
@@ -296,7 +306,7 @@ point and a normal, on the MeshSet:
 Finally, nnote that Mesquite also provides a function to write a mesh
 file in VTK format, given a \texttt{MeshImpl} object:
 \begin{verbatim}
-  my_mesh->write_vtk("original_mesh",err); MSQ_CHKERR(err);
+  my_mesh->write_vtk("original_mesh",err); 
 \end{verbatim}
 
 
@@ -314,13 +324,13 @@ algorithms and metrics (see section
 \ref{sec:wrappers} for details).
 \begin{verbatim}
   Mesquite::ShapeImprovementWrapper mesh_quality_algorithm;
-  mesh_quality_algorithm.run_instructions(mesh_set, err); MSQ_CHKERR(err);
+  mesh_quality_algorithm.run_instructions(mesh_set, err); 
 \end{verbatim}
 Once the algorithm has been executed using the {\tt run\_instructions} member
 function of the wrapper class, the improved mesh can be written to a new
 file:
 \begin{verbatim}
-  my_mesh->write_vtk("smoothed_mesh",err); MSQ_CHKERR(err);
+  my_mesh.write_vtk("smoothed_mesh.vtk",err); 
 \end{verbatim}
 This completes the code necessary for the simple wrapper example.  Once
 the code has successfully compiled by typing the {\tt gmake} command given in
@@ -379,7 +389,6 @@ treated in section
 
     //performs optimization globally
   f_newton.set_patch_type(PatchData::GLOBAL_PATCH, err); 
-  MSQ_CHKERR(err);
 
     // creates a termination criterion and 
     // add it to the optimization procedure
@@ -388,23 +397,19 @@ treated in section
   TerminationCriterion tc_inner;
   tc_inner.add_criterion_type_with_double(
     TerminationCriterion::GRADIENT_L2_NORM_ABSOLUTE, 1e-4, err); 
-  MSQ_CHKERR(err);
   f_newton.set_inner_termination_criterion(&tc_inner);
 
     // creates a quality assessor
   QualityAssessor m_ratio_qa(&mean_ratio,QualityAssessor::AVERAGE);
 
     // creates an instruction queue
-  InstructionQueue queue1;
-  queue1.add_quality_assessor(&m_ratio_qa, err); 
-  MSQ_CHKERR(err);
-  queue1.set_master_quality_improver(&f_newton, err); 
-  MSQ_CHKERR(err);
-  queue1.add_quality_assessor(&m_ratio_qa, err); 
-  MSQ_CHKERR(err);
+  InstructionQueue queue;
+  queue.add_quality_assessor(&m_ratio_qa, err); 
+  queue.set_master_quality_improver(&f_newton, err); 
+  queue.add_quality_assessor(&m_ratio_qa, err); 
 
-    // launches optimization on the mesh_set
-  queue1.run_instructions(mesh_set, err); MSQ_CHKERR(err);
+    // do optimization of the mesh_set
+  queue1.run_instructions(mesh_set, err); 
 \end{verbatim} 
 
 \subsection{Mesh Improvement Examples}
@@ -426,7 +431,7 @@ thrown.
   mesh_set.set_domain_constraint(&my_mesh_plane);
 \end{verbatim}
 
-We can now improve the mesh with the wrapper mentionned in
+We can now improve the mesh with the wrapper mentioned in
 \ref{sec:tutWrapper} or the detailed API mentioned in
 \ref{sec:tutDetailedAPI}. 
 Because we changed tphe normal, the driver code must be recompiled;
