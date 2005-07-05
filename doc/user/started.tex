@@ -92,13 +92,13 @@ using the NAME=VALUE syntax.  The value of these variables (if set) during the
 configure step will become the default for the compile step.  The value of any
 of these variables will override the the default if specified during the compile
 step.
-\begin{itemize}
-\item \texttt{CXX}       The C++ compiler command
-\item \texttt{CXXFLAGS}  Arguments to the C++ compiler, such as those specifying 
+\begin{description}
+\item[CXX]       The C++ compiler command
+\item[CXXFLAGS]  Arguments to the C++ compiler, such as those specifying 
 debug symbols or the optimization level.
-\item \texttt{CC}        The C compiler command
-\item \texttt{CFLAGS}    Command line arguments to be used for the C compiler.
-\end{itemize}
+\item[CC]        The C compiler command
+\item[CFLAGS]    Command line arguments to be used for the C compiler.
+\end{description}
 
 Most options to the configure script are either of the form \texttt{--with-FEATURE[=ARG]} or
 \texttt{--enable-FEATURE[=ARG]}.  Some options may accept an additional argument following 
@@ -110,58 +110,58 @@ Only the positive form of each option is stated in the description below.
 
 \label{config_options}
 The following general build and debug options may be specified during the configure step:
-\begin{itemize}
-\item \texttt{--with-archiver=ARG}  This option may be used to specify the
+\begin{description}
+\item[--with-archiver=ARG]  This option may be used to specify the
 system-specific command to generate a static library (archive) from a group
 of compiled object (.o) files.  Use this option if the \texttt{./configure} script fails to correctly detect the archiver command.
-\item \texttt{--enable-debug}  Select a subset of the following options that
+\item[--enable-debug]  Select a subset of the following options that
 make the most sense for developers of Mesquite.
-\item \texttt{--enable-release}  This is the default behavior unless 
+\item[--enable-release]  This is the default behavior unless 
 --enable-debug is specified.  It selects a subset of the following options that
 typically work best for using Mesquite in a production application.
-\item \texttt{--enable-compile-optimized} Compile with the available 
+\item[--enable-compile-optimized] Compile with the available 
 optimizations that improve performance without any significant drawbacks 
 (the -O2 compiler flag.)
-\item \texttt{--enable-debug-symbols} Include debugging information in
+\item[--enable-debug-symbols] Include debugging information in
 the compiled Mesquite objects (the -g compiler flag).
-\item \texttt{--enable-debug-assertions}  Include internal consistancy 
+\item[--enable-debug-assertions]  Include internal consistancy 
 checks that abort when an error is detected.
-\item \texttt{--enable-debug-output[=n,m,...]}  Enable the output of
+\item[--enable-debug-output=n,m,...]  Enable the output of
 debug and status messages to file descriptor 1 (stdout).  An 
 list of integer debug flags for which to enable output may be specified 
 as a comma-separated list of values.  The default is to enable debug
 flags 1 and 2 if this option is specified without any explict debug
 flag values.
-\item \texttt{--enable-function-timers}  Enable time-profiling of
+\item[--enable-function-timers]  Enable time-profiling of
 some portions of Mesquite.
-\item \texttt{--enable-trap-fpe}  Enable generation of a floating-point
+\item[--enable-trap-fpe]  Enable generation of a floating-point
 exception signal for arithmatic errors (e.g. division by zero.)  This is
 an option intended for Mesquite developers.  Enabling this will typically cause
 the application using Mesquite to abort when such an error is encountered.
-\end{itemize}
+\end{description}
 
 The following options specify optional Mesquite components and the location 
 of the corresponding dependencies.
-\begin{itemize}
-\item \texttt{--with-doxygen[=PROG]} Specify the location of the Doxygen
+\begin{description}
+\item[--with-doxygen=PROG] Specify the location of the Doxygen
 command for generating developer documentation.
-\item \texttt{--with-cppunit=DIR}  The CppUnit library is required to compile
+\item[--with-cppunit=DIR]  The CppUnit library is required to compile
 and run the tests to verify that a particular build of the Mesquite library
 is working correctly.  If the CppUnit library is not installed in a default location
 where the ./configure script can find it, this option may be used to specify
 the location.
-\item \texttt{--with-exodus[=DIR]}  Enable support for reading and writing
+\item[--with-exodus=DIR]  Enable support for reading and writing
 ExodusII files, and optionally specify the location where the ExodusII library
 and headers required for this option are installed.
-\item \texttt{--with-netcdf[=DIR]}  Specify the location of the NetCDF library
+\item[--with-netcdf=DIR]  Specify the location of the NetCDF library
 required by the ExodusII library.  The default is to look in the ExodusII
 directory.
-\item \texttt{--enable-tstt}  Enable optional support for accessing mesh
+\item[--enable-tstt]  Enable optional support for accessing mesh
 and geometry data through the TSTT SIDL interfaces.  This option requires
 the Babel utility for processing SIDL files.
-\item \texttt{--with-babel=DIR}  Specify the location where the Babel/SIDL
+\item[--with-babel=DIR]  Specify the location where the Babel/SIDL
 package is installed.
-\end{itemize}
+\end{description}
 
 \subsection{Compiling on Microsoft Windows}
 The Mesquite source package includes project and workspace files for Microsoft Visual C++ 6.0 or later.  To build Mesquite in Visual C++:
