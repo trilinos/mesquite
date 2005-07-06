@@ -264,20 +264,31 @@ void TargetCalculator::compute_reference_corner_matrices(PatchData &pd,
   
   double TargetCalculator::loop_over_mesh( MeshSet& ms, MsqError& err )
   {
-      // Currently, target calculators only work with global patches.
-      // The constructor for TargetCalculator sets the patch type
-      // to global, so if we don't have a global patch here something is
-      // really messed up.
-    PatchData* pd = get_global_patch();
-    if (get_patch_type() != PatchData::GLOBAL_PATCH || NULL == pd)
+      // global patch
+    if (get_patch_type() == PatchData::GLOBAL_PATCH)
     {
-      MSQ_SETERR(err)(MsqError::INVALID_STATE);
-      return 0.0;
+      PatchData* pd = get_global_patch();
+      if (NULL == pd)
+      {
+        MSQ_SETERR(err)(MsqError::INVALID_STATE);
+        return 0.0;
+      }
+      
+      compute_target_matrices_and_check_det( *pd, err );
+      return MSQ_CHKERR(err);
     }
     
-      // Compute the target matrices.
-    compute_target_matrices_and_check_det( *pd, err );
-    return MSQ_CHKERR(err);
+      // If this far, then need to use local patches
+    PatchData patch;
+    while (ms.get_next_patch( patch, this, err ))
+    {
+      MSQ_ERRZERO(err);
+      compute_target_matrices_and_check_det( patch, err );
+      MSQ_ERRZERO(err);
+    }
+    MSQ_ERRZERO(err);
+    
+    return 1.0;
   }
   
   
