@@ -618,7 +618,7 @@ void QualityAssessor::Assessor::calculate_histogram_range()
   double step = (maximum - minimum) / (histogram.size() - 2);
   if (step == 0)
     step = 1.0;
-  double size = pow( 10, ceil(log10(step)) );
+  double size = pow( 10.0, ceil(log10(step)) );
   if (size < 1e-6)
     size = 1.0;
   else
