@@ -58,6 +58,7 @@ Unit testing of various TargetCalculator concrete classes.
 #include "MsqFreeVertexIndexIterator.hpp"
 #include <list>
 #include <iterator>
+#include <limits>
 
 using namespace Mesquite;
 using std::cout;
@@ -78,6 +79,7 @@ private:
   CPPUNIT_TEST (test_optimize_vertex_positions_hexes);  
   CPPUNIT_TEST (test_optimize_vertex_positions_triangles);  
   CPPUNIT_TEST (test_optimize_vertex_positions_quads);  
+  CPPUNIT_TEST (test_local_patches);
   CPPUNIT_TEST_SUITE_END();
    
 private:
@@ -161,112 +163,14 @@ public:
   TargetCalculatorTest()
   {}
   
-  void test_DefaultTargetCalculator()
-  {
-    MsqPrintError err(cout);
+  void test_DefaultTargetCalculator();
 
-    // Creates calculator and compute isotropic target corner matrices.
-    ShapeGuides811 iso_calc;
-    iso_calc.compute_target_matrices(triPatch, err); CPPUNIT_ASSERT(!err);
+  void test_compute_Lambda();
 
-    TargetMatrix W;
+  void test_compute_V();
 
-    // checks corner matrices for first triangle, first corner.
-    W = triPatch.targetMatrices.get_element_corner_tags( &triPatch, 0, err )[0];
-    //W = elems[0].get_tag()->target_matrix(0);
-    double fac = pow(2./sqrt(3.), 1./3.);
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(W[0][0], fac*1., 1e-6);
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(W[0][1], fac*.5, 1e-6);
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(W[0][2], 0, 1e-6);
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(W[1][0], 0, 1e-6);
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(W[1][1], fac*sqrt(3.)/2., 1e-6);
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(W[1][2], 0, 1e-6);
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(W[2][0], 0, 1e-6);
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(W[2][1], 0, 1e-6);
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(W[2][2], fac, 1e-6);
-
-    // checks corner matrices for second triangle, third corner.
-    W = triPatch.targetMatrices.get_element_corner_tags( &triPatch, 0, err )[2];
-    //W = elems[1].get_tag()->target_matrix(2);
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(W[0][0], fac*1., 1e-6);
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(W[0][1], fac*.5, 1e-6);
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(W[0][2], 0, 1e-6);
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(W[1][0], 0, 1e-6);
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(W[1][1], fac*sqrt(3.)/2., 1e-6);
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(W[1][2], 0, 1e-6);
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(W[2][0], 0, 1e-6);
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(W[2][1], 0, 1e-6);
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(W[2][2], fac, 1e-6);
-
-    // checks there isn't a 4th corner matrix available
-    // (normally commented out, since the embedded assert will stop the code). 
-    // W = elems[1].get_tag()->target_matrix(3);
-  }
-
-
-  void test_compute_Lambda()
-  {
-    MsqPrintError err(cout);
-    
-    double Lambda = compute_Lambda(mG, err); CPPUNIT_ASSERT(!err);
-
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(1.4422, Lambda, .0001);
-
-    Lambda = m4Quads.get_average_Lambda_3d(err); CPPUNIT_ASSERT(!err);
-
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.984604, Lambda, .0001); // this test result is not 100% checked
-    
-    Lambda = m12Hex.get_average_Lambda_3d(err); CPPUNIT_ASSERT(!err);
-
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.994868, Lambda, .0001); // this test result is not 100% checked
-    
-  }
-
-  void test_compute_V()
-  {
-    MsqPrintError err(cout);
-    
-    Matrix3D V = compute_V_3D(mG, err); CPPUNIT_ASSERT(!err);
-
-    Matrix3D result = "  0.8165   -0.3651   0.4472 "
-                      "  0.4082    0.9129   0.     "
-                      " -0.4082    0.1826   0.8944 ";
-    
-    for (int i=0; i<3; ++i)
-      for (int j=0; j<3; ++j)
-        CPPUNIT_ASSERT_DOUBLES_EQUAL(result[i][j], V[i][j], .0001);
-  }
-
-  void test_compute_Q()
-  {
-    MsqPrintError err(cout);
-    
-    Matrix3D Q = compute_Q_3D(mG, err); CPPUNIT_ASSERT(!err);
-
-    Matrix3D result = "  1.2599    0.5143  -1.0499 "
-                      "  0.        1.1502  -0.0939 "
-                      "  0.        0.       0.6900 ";
-    
-    for (int i=0; i<3; ++i)
-      for (int j=0; j<3; ++j)
-        CPPUNIT_ASSERT_DOUBLES_EQUAL(result[i][j], Q[i][j], .0001);
-  }
-
-  void test_compute_Delta()
-  {
-    MsqPrintError err(cout);
-    
-    Matrix3D Delta = compute_Delta_3D(mG, err); CPPUNIT_ASSERT(!err);
-
-    Matrix3D result = "  1.348   0.  0. "
-                      "  0.      0.5503  0. "
-                      "  0.      0.  1.348 ";
-
-    for (int i=0; i<3; ++i)
-      for (int j=0; j<3; ++j)
-        CPPUNIT_ASSERT_DOUBLES_EQUAL(result[i][j], Delta[i][j], .0001);
-  }
-
+  void test_compute_Q();
+  void test_compute_Delta();
 
   /*! This test optimizes a mesh with one free vertex and makes sure the vertex moves
       to a given position. The default target matrices and sRI DFT (size and rotation free)
@@ -278,79 +182,287 @@ public:
       \param point for a surface mesh, this is a point on the surface.
     */
   void test_optimize_vertex_positions(const char* file_name, size_t vtx_index, Vector3D res,
-                              Vector3D* normal=0, Vector3D* point=0)
-  {
-    MsqPrintError err(cout);
+                              Vector3D* normal=0, Vector3D* point=0);
 
-    Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
-    mesh->read_vtk(file_name, err); CPPUNIT_ASSERT(!err);
-    MeshSet mesh_set;
-    mesh_set.add_mesh(mesh, err); CPPUNIT_ASSERT(!err);
-    if (normal) {
-      PlanarDomain* domain = new PlanarDomain(*normal, *point);
-      mesh_set.set_domain_constraint(domain, err); CPPUNIT_ASSERT(!err);
-    }
-    
-    sRI_DFT dft;
-    LPtoPTemplate obj_func(&dft, 1, err); CPPUNIT_ASSERT(!err);
-    FeasibleNewton improver(&obj_func);
-    improver.set_patch_type(PatchData::GLOBAL_PATCH, err); CPPUNIT_ASSERT(!err);
-    ShapeGuides811 targ_calc;
-
-    InstructionQueue q;
-    q.add_target_calculator( &targ_calc, err ); CPPUNIT_ASSERT(!err);
-    q.set_master_quality_improver( &improver, err ); CPPUNIT_ASSERT(!err);
-    q.run_instructions( mesh_set, err ); CPPUNIT_ASSERT(!err);
-
-    //improver.set_target_calculator(&targ_calc, err); CPPUNIT_ASSERT(!err);
-        
-    //improver.loop_over_mesh(mesh_set, err); CPPUNIT_ASSERT(!err);
-
-    PatchData pd;
-    mesh_set.get_next_patch(pd, &improver, err); CPPUNIT_ASSERT(!err);
-    MsqVertex* vtx = pd.get_vertex_array(err); CPPUNIT_ASSERT(!err);
-    int good = vtx[vtx_index].within_tolerance_box(res, 1e-4);
-    cout << "vtx[]: " << vtx[vtx_index] << endl;
-    CPPUNIT_ASSERT( good==1 );
-  }
-
-  void test_optimize_vertex_positions_tets()
-  {
-    Vector3D res(0,0,0);
-    size_t vtx_index=0;
-    test_optimize_vertex_positions("../../meshFiles/3D/VTK/two_tets_shape.vtk",
-                                   vtx_index, res);
-  }
+  void test_optimize_vertex_positions_tets();
   
-  void test_optimize_vertex_positions_hexes()
-  {
-    Vector3D res(0,0,0);
-    size_t vtx_index=26;
-    test_optimize_vertex_positions("../../meshFiles/3D/VTK/hex_2_with_bound.vtk",
-                                   vtx_index, res);
-  }
+  void test_optimize_vertex_positions_hexes();
   
-  void test_optimize_vertex_positions_triangles()
-  {
-    Vector3D res(0,0,5);
-    size_t vtx_index=8;
-    Vector3D normal (0,0,1);
-    Vector3D point (0,0,5);
-    test_optimize_vertex_positions("../../meshFiles/2D/VTK/square_tri_2.vtk",
-                                   vtx_index, res, &normal, &point);
-  }
+  void test_optimize_vertex_positions_triangles();
   
-  void test_optimize_vertex_positions_quads()
-  {
-    Vector3D res(0,0,5);
-    size_t vtx_index=8;
-    Vector3D normal (0,0,1);
-    Vector3D point (0,0,5);
-    test_optimize_vertex_positions("../../meshFiles/2D/VTK/square_quad_2.vtk",
-                                   vtx_index, res, &normal, &point);
-  }
+  void test_optimize_vertex_positions_quads();
   
+  void test_local_patches();
 };
+
+  
+void TargetCalculatorTest::test_DefaultTargetCalculator()
+{
+  MsqPrintError err(cout);
+
+  // Creates calculator and compute isotropic target corner matrices.
+  ShapeGuides811 iso_calc;
+  iso_calc.compute_target_matrices(triPatch, err); CPPUNIT_ASSERT(!err);
+
+  TargetMatrix W;
+
+  // checks corner matrices for first triangle, first corner.
+  W = triPatch.targetMatrices.get_element_corner_tags( &triPatch, 0, err )[0];
+  //W = elems[0].get_tag()->target_matrix(0);
+  double fac = pow(2./sqrt(3.), 1./3.);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(W[0][0], fac*1., 1e-6);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(W[0][1], fac*.5, 1e-6);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(W[0][2], 0, 1e-6);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(W[1][0], 0, 1e-6);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(W[1][1], fac*sqrt(3.)/2., 1e-6);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(W[1][2], 0, 1e-6);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(W[2][0], 0, 1e-6);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(W[2][1], 0, 1e-6);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(W[2][2], fac, 1e-6);
+
+  // checks corner matrices for second triangle, third corner.
+  W = triPatch.targetMatrices.get_element_corner_tags( &triPatch, 0, err )[2];
+  //W = elems[1].get_tag()->target_matrix(2);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(W[0][0], fac*1., 1e-6);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(W[0][1], fac*.5, 1e-6);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(W[0][2], 0, 1e-6);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(W[1][0], 0, 1e-6);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(W[1][1], fac*sqrt(3.)/2., 1e-6);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(W[1][2], 0, 1e-6);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(W[2][0], 0, 1e-6);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(W[2][1], 0, 1e-6);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(W[2][2], fac, 1e-6);
+
+  // checks there isn't a 4th corner matrix available
+  // (normally commented out, since the embedded assert will stop the code). 
+  // W = elems[1].get_tag()->target_matrix(3);
+}
+
+
+void TargetCalculatorTest::test_compute_Lambda()
+{
+  MsqPrintError err(cout);
+  
+  double Lambda = compute_Lambda(mG, err); CPPUNIT_ASSERT(!err);
+
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(1.4422, Lambda, .0001);
+
+  Lambda = m4Quads.get_average_Lambda_3d(err); CPPUNIT_ASSERT(!err);
+
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(0.984604, Lambda, .0001); // this test result is not 100% checked
+  
+  Lambda = m12Hex.get_average_Lambda_3d(err); CPPUNIT_ASSERT(!err);
+
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(0.994868, Lambda, .0001); // this test result is not 100% checked
+  
+}
+
+void TargetCalculatorTest::test_compute_V()
+{
+  MsqPrintError err(cout);
+  
+  Matrix3D V = compute_V_3D(mG, err); CPPUNIT_ASSERT(!err);
+
+  Matrix3D result = "  0.8165   -0.3651   0.4472 "
+                    "  0.4082    0.9129   0.     "
+                    " -0.4082    0.1826   0.8944 ";
+  
+  for (int i=0; i<3; ++i)
+    for (int j=0; j<3; ++j)
+      CPPUNIT_ASSERT_DOUBLES_EQUAL(result[i][j], V[i][j], .0001);
+}
+
+void TargetCalculatorTest::test_compute_Q()
+{
+  MsqPrintError err(cout);
+  
+  Matrix3D Q = compute_Q_3D(mG, err); CPPUNIT_ASSERT(!err);
+
+  Matrix3D result = "  1.2599    0.5143  -1.0499 "
+                    "  0.        1.1502  -0.0939 "
+                    "  0.        0.       0.6900 ";
+  
+  for (int i=0; i<3; ++i)
+    for (int j=0; j<3; ++j)
+      CPPUNIT_ASSERT_DOUBLES_EQUAL(result[i][j], Q[i][j], .0001);
+}
+
+void TargetCalculatorTest::test_compute_Delta()
+{
+  MsqPrintError err(cout);
+  
+  Matrix3D Delta = compute_Delta_3D(mG, err); CPPUNIT_ASSERT(!err);
+
+  Matrix3D result = "  1.348   0.  0. "
+                    "  0.      0.5503  0. "
+                    "  0.      0.  1.348 ";
+
+  for (int i=0; i<3; ++i)
+    for (int j=0; j<3; ++j)
+      CPPUNIT_ASSERT_DOUBLES_EQUAL(result[i][j], Delta[i][j], .0001);
+}
+
+
+/*! This test optimizes a mesh with one free vertex and makes sure the vertex moves
+    to a given position. The default target matrices and sRI DFT (size and rotation free)
+    are used
+    \param file_name is the name of the VTK file that contains the mesh.
+    \param vtx_index is the index of the vertex that we expect to move.
+    \param res the position we expect the vertex to move to.
+    \param normal for a surface mesh, this is the normal to the mesh.
+    \param point for a surface mesh, this is a point on the surface.
+  */
+void TargetCalculatorTest::test_optimize_vertex_positions(
+                                             const char* file_name, 
+                                             size_t vtx_index, 
+                                             Vector3D res,
+                                             Vector3D* normal, 
+                                             Vector3D* point)
+{
+  MsqPrintError err(cout);
+
+  Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
+  mesh->read_vtk(file_name, err); CPPUNIT_ASSERT(!err);
+  MeshSet mesh_set;
+  mesh_set.add_mesh(mesh, err); CPPUNIT_ASSERT(!err);
+  if (normal) {
+    PlanarDomain* domain = new PlanarDomain(*normal, *point);
+    mesh_set.set_domain_constraint(domain, err); CPPUNIT_ASSERT(!err);
+  }
+  
+  sRI_DFT dft;
+  LPtoPTemplate obj_func(&dft, 1, err); CPPUNIT_ASSERT(!err);
+  FeasibleNewton improver(&obj_func);
+  improver.set_patch_type(PatchData::GLOBAL_PATCH, err); CPPUNIT_ASSERT(!err);
+  ShapeGuides811 targ_calc;
+
+  InstructionQueue q;
+  q.add_target_calculator( &targ_calc, err ); CPPUNIT_ASSERT(!err);
+  q.set_master_quality_improver( &improver, err ); CPPUNIT_ASSERT(!err);
+  q.run_instructions( mesh_set, err ); CPPUNIT_ASSERT(!err);
+
+  //improver.set_target_calculator(&targ_calc, err); CPPUNIT_ASSERT(!err);
+      
+  //improver.loop_over_mesh(mesh_set, err); CPPUNIT_ASSERT(!err);
+
+  PatchData pd;
+  mesh_set.get_next_patch(pd, &improver, err); CPPUNIT_ASSERT(!err);
+  MsqVertex* vtx = pd.get_vertex_array(err); CPPUNIT_ASSERT(!err);
+  int good = vtx[vtx_index].within_tolerance_box(res, 1e-4);
+  cout << "vtx[]: " << vtx[vtx_index] << endl;
+  CPPUNIT_ASSERT( good==1 );
+}
+
+void TargetCalculatorTest::test_optimize_vertex_positions_tets()
+{
+  Vector3D res(0,0,0);
+  size_t vtx_index=0;
+  test_optimize_vertex_positions("../../meshFiles/3D/VTK/two_tets_shape.vtk",
+                                 vtx_index, res);
+}
+
+void TargetCalculatorTest::test_optimize_vertex_positions_hexes()
+{
+  Vector3D res(0,0,0);
+  size_t vtx_index=26;
+  test_optimize_vertex_positions("../../meshFiles/3D/VTK/hex_2_with_bound.vtk",
+                                 vtx_index, res);
+}
+
+void TargetCalculatorTest::test_optimize_vertex_positions_triangles()
+{
+  Vector3D res(0,0,5);
+  size_t vtx_index=8;
+  Vector3D normal (0,0,1);
+  Vector3D point (0,0,5);
+  test_optimize_vertex_positions("../../meshFiles/2D/VTK/square_tri_2.vtk",
+                                 vtx_index, res, &normal, &point);
+}
+
+void TargetCalculatorTest::test_optimize_vertex_positions_quads()
+{
+  Vector3D res(0,0,5);
+  size_t vtx_index=8;
+  Vector3D normal (0,0,1);
+  Vector3D point (0,0,5);
+  test_optimize_vertex_positions("../../meshFiles/2D/VTK/square_quad_2.vtk",
+                                 vtx_index, res, &normal, &point);
+}
+
+void TargetCalculatorTest::test_local_patches()
+{
+  const double EPS = std::numeric_limits<double>::epsilon();
+  
+    // Could use any file...
+  const char* file_name = "../../meshFiles/3D/VTK/large_box_hex_1000.vtk";
+  
+  MsqPrintError err(cout);
+  ShapeGuides811 targ_calc;
+  InstructionQueue q;
+  q.add_target_calculator( &targ_calc, err ); CPPUNIT_ASSERT(!err);
+  
+    // Read two copies of the same mesh
+  Mesquite::MeshImpl mesh1, mesh2;
+  MeshSet set1, set2;
+  mesh1.read_vtk( file_name, err ); CPPUNIT_ASSERT(!err);
+  mesh2.read_vtk( file_name, err ); CPPUNIT_ASSERT(!err);
+  set1.add_mesh( &mesh1, err ); CPPUNIT_ASSERT(!err);
+  set2.add_mesh( &mesh2, err ); CPPUNIT_ASSERT(!err);
+  
+    // Calculate target matrices using global patch for mesh 1
+  targ_calc.set_patch_type( PatchData::GLOBAL_PATCH, err );
+  CPPUNIT_ASSERT(!err);
+  q.run_instructions( set1, err ); 
+  CPPUNIT_ASSERT(!err);
+  
+    // Calulate target matrices using local patch for mesh 2
+  targ_calc.set_patch_type( PatchData::ELEMENTS_ON_VERTEX_PATCH, err, 1 );
+  CPPUNIT_ASSERT(!err);
+  q.run_instructions( set2, err ); 
+  CPPUNIT_ASSERT(!err);
+  
+    // Get global patches for each mesh
+  PatchData patch1, patch2;
+  bool b;
+  targ_calc.set_patch_type( PatchData::GLOBAL_PATCH, err ); CPPUNIT_ASSERT(!err);
+  b = set1.get_next_patch( patch1, &targ_calc, err ); CPPUNIT_ASSERT(b && !err);
+  b = set2.get_next_patch( patch2, &targ_calc, err ); CPPUNIT_ASSERT(b && !err);
+  CPPUNIT_ASSERT( patch1.num_vertices() == patch2.num_vertices() );
+  CPPUNIT_ASSERT( patch1.num_elements() == patch2.num_elements() );
+  CPPUNIT_ASSERT( patch1.num_corners() == patch2.num_corners() );
+  CPPUNIT_ASSERT( patch1.num_vertices() != 0 );
+  CPPUNIT_ASSERT( patch1.num_elements() != 0 );
+  CPPUNIT_ASSERT( patch1.num_corners() != 0 );
+ 
+    // Compare target matrices
+  const TargetMatrix *m1, *m2;
+  unsigned total = 0;
+  for (unsigned i = 0; i < patch1.num_elements(); ++i)  // for each element
+  {
+    m1 = patch1.targetMatrices.get_element_corner_tags( &patch1, i, err );
+    CPPUNIT_ASSERT(!err);
+    m2 = patch1.targetMatrices.get_element_corner_tags( &patch2, i, err );
+    CPPUNIT_ASSERT(!err);
+    size_t n = patch1.element_by_index( i ).corner_count();
+    total += n;
+    for (unsigned j = 0; j < n; ++j)  // for each target matrix in element
+    {
+        // for each matrix element
+      for (unsigned r = 0; r < 3; ++r) 
+        for (unsigned c = 0; c < 3; ++c)
+        {
+          const double d1 = m1[j][r][c];
+          const double d2 = m2[j][r][c];
+          CPPUNIT_ASSERT_DOUBLES_EQUAL( d1, d2, d1 * EPS );
+        }
+        // check cK also
+      const double cK1 = m1[j].get_cK();
+      const double cK2 = m1[j].get_cK();
+      CPPUNIT_ASSERT_DOUBLES_EQUAL( cK1, cK2, cK1 * EPS );
+    } // for (j)
+  } // for(i)
+  std::cout << "Compared " << total << " target matrices" << std::endl;
+}
 
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TargetCalculatorTest, "TargetCalculatorTest");
