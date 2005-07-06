@@ -78,6 +78,41 @@ using std::endl;
 #include "PlanarDomain.hpp"
 using namespace Mesquite;
 
+/* This is the input mesh topology
+     (0)------(16)-----(1)------(17)-----(2)------(18)-----(3)
+      |                 |                 |                 |
+      |                 |                 |                 |
+      |                 |                 |                 |
+      |                 |                 |                 |
+     (19)      0       (20)      1       (21)      2       (22)
+      |                 |                 |                 |
+      |                 |                 |                 |
+      |                 |                 |                 |
+      |                 |                 |                 |
+     (4)------(23)-----(5)------(24)-----(6)------(25)-----(7)
+      |                 |                 |                 |
+      |                 |                 |                 |
+      |                 |                 |                 |
+      |                 |                 |                 |
+     (26)      3       (27)      4       (28)      5       (29)
+      |                 |                 |                 |
+      |                 |                 |                 |
+      |                 |                 |                 |
+      |                 |                 |                 |
+     (8)------(30)-----(9)------(31)-----(10)-----(32)-----(11)
+      |                 |                 |                 |
+      |                 |                 |                 |
+      |                 |                 |                 |
+      |                 |                 |                 |
+     (33)      6       (34)      7       (35)      8       (36)
+      |                 |                 |                 |
+      |                 |                 |                 |
+      |                 |                 |                 |
+      |                 |                 |                 |
+     (12)-----(37)-----(13)-----(38)-----(14)-----(39)-----(15)
+*/
+
+
 const char LINEAR_INPUT_FILE_NAME[]       = "linear_input.vtk";
 const char QUADRATIC_INPUT_FILE_NAME[]    = "quadratic_input.vtk";
 const char EXPECTED_LINAR_FILE_NAME[]     = "expected_linear_output.vtk";
