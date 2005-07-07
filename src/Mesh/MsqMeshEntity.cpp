@@ -395,7 +395,7 @@ double MsqMeshEntity::compute_unsigned_volume(PatchData &pd, MsqError &err) {
     case TETRAHEDRON:
       tem = (verts[vertexIndices[3]]-verts[vertexIndices[0]])%
         ((verts[vertexIndices[1]]-verts[vertexIndices[0]])*
-         (verts[vertexIndices[1]]-verts[vertexIndices[0]]))/6.0;
+         (verts[vertexIndices[2]]-verts[vertexIndices[0]]))/6.0;
       return fabs(tem);
       
     case HEXAHEDRON:
