@@ -155,6 +155,14 @@ namespace Mesquite
       //!Computes the signed volume of the element.
     double compute_signed_volume(PatchData &pd, MsqError &err );
     
+      //!Returns true if the element is inverted (ie, if one of the
+      //!  corners in the element has a non-positive Jacobian determinant).
+      //!  If the orienation of the element can not be determined (eg, the
+      //!  element is a triangle and the normal information is not provided)
+      //!  then the function will return true.
+    bool is_inverted(PatchData &pd, MsqError &err );
+    
+    
       //! Uses a MeshDomain call-back function to compute the normal at the corner.
     //void compute_corner_normal( msq_stdc::size_t corner_pt, 
     //                            Vector3D &normal,

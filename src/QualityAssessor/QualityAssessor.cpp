@@ -61,6 +61,7 @@ const int DEFAULT_HISTOGRAM_INTERVALS = 10;
 
 QualityAssessor::QualityAssessor(msq_std::string name) :
   qualityAssessorName(name),
+  invertedCount(-1),
   outputStream( msq_stdio::cout ),
   printSummary( true ),
   stoppingMetric( assessList.end() ),
@@ -72,6 +73,7 @@ QualityAssessor::QualityAssessor(msq_std::string name) :
 
 QualityAssessor::QualityAssessor(msq_stdio::ostream& stream, msq_std::string name) :
   qualityAssessorName(name),
+  invertedCount(-1),
   outputStream( stream ),
   printSummary( true ),
   stoppingMetric( assessList.end() ),
@@ -86,6 +88,7 @@ QualityAssessor::QualityAssessor( QualityMetric* metric,
                                   MsqError& err,
                                   msq_std::string name ) :
   qualityAssessorName(name),
+  invertedCount(-1),
   outputStream( msq_stdio::cout ),
   printSummary( true ),
   stoppingMetric( assessList.end() ),
@@ -102,6 +105,7 @@ QualityAssessor::QualityAssessor( QualityMetric* metric,
                                   MsqError& err,
                                   msq_std::string name ) :
   qualityAssessorName(name),
+  invertedCount(-1),
   outputStream( stream ),
   printSummary( true ),
   stoppingMetric( assessList.end() ),
@@ -150,6 +154,14 @@ double QualityAssessor::Assessor::get_stddev() const
 {
   double sqr = sqrSum/count - sum*sum/((double)count*count);
   return sqr < 0 ? 0 : sqrt(sqr);
+}
+
+int QualityAssessor::get_inverted_element_count(MsqError &err)
+{
+  if(invertedCount == -1){
+    MSQ_SETERR(err)("Number of inverted elements has not yet been calculated.", MsqError::INVALID_STATE);
+  }
+  return invertedCount;
 }
 
 
@@ -307,6 +319,7 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
     // Do element-based metrics
   if (assessList.begin() != elem_end)
   {
+    invertedCount = 0;
     bool first_pass = false;
     do { // might need to loop twice to calculate histograms
       first_pass = !first_pass;
@@ -330,6 +343,14 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
       {
         for (unsigned i = 0; i < pd->num_elements(); ++i)
         {
+            //first check the metric for whether it is inverted or not
+          if (first_pass){
+             if( pd->element_by_index(i).is_inverted(*pd, err) ){
+               ++invertedCount;
+             }
+             MSQ_ERRZERO(err);
+          }
+          
           for (iter = assessList.begin(); iter != elem_end; ++iter)
           {
               // If first pass, get values for all metrics
@@ -501,6 +522,7 @@ void QualityAssessor::reset_data()
   msq_std::list<Assessor>::iterator iter;
   for (iter = assessList.begin(); iter != assessList.end(); ++iter)
     iter->reset_data();
+  invertedCount = -1;
 }
 
 QualityAssessor::Assessor::Assessor( QualityMetric* metric )
@@ -640,6 +662,22 @@ void QualityAssessor::print_summary( msq_stdio::ostream& stream ) const
          << " Summary **************"
          << msq_stdio::endl
          << msq_stdio::endl;
+  if(invertedCount == 0){
+    stream << "  There were no inverted elements detected. "
+           << msq_stdio::endl;
+  }
+  else if(invertedCount > 0){
+    stream << "THERE ARE "
+           << invertedCount
+           << " ELEMENTS THAT HAVE AN INVERTED OR INDETERMINATE ORIENTATION. "
+           << msq_stdio::endl
+           << msq_stdio::endl;
+  }
+  else{
+    stream << "  There number of inverted elements was not computed. "
+           << msq_stdio::endl;
+  }
+    
          
     // Get union of function flags, and list any metrics with invalid values
   msq_std::list<Assessor>::const_iterator iter;
@@ -655,14 +693,14 @@ void QualityAssessor::print_summary( msq_stdio::ostream& stream ) const
       
       stream << "  " << iter->get_invalid_element_count()
              << " OF " << iter->get_count()
-             << " VALUES ARE INVALID FOR " 
-             << iter->get_metric()->get_name() 
+             << " ENTITIES EVALUATED TO AN UNDEFINED VALUE FOR " 
+             << iter->get_metric()->get_name()
              << msq_stdio::endl << msq_stdio::endl;
     }
   }
   
   if (0 == invalid_count) {
-    stream << "  No invalid values for any metric." 
+    stream << "  No entities had undefined values for any metric." 
            << msq_stdio::endl << msq_stdio::endl;
   }
   

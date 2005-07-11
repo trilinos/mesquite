@@ -1051,5 +1051,117 @@ size_t Mesquite::MsqMeshEntity::get_local_matrix_map_about_vertex(
 }
 
 
+bool MsqMeshEntity::is_inverted(PatchData &pd, MsqError &err)
+{
+
+  MsqVertex *vertices = pd.get_vertex_array(err);  MSQ_ERRZERO(err);
+
+    // Hex element descriptions
+  static const int locs_hex[8][4] = {{0, 1, 3, 4},
+                                     {1, 2, 0, 5},
+                                     {2, 3, 1, 6},
+                                     {3, 0, 2, 7},
+                                     {4, 7, 5, 0},
+                                     {5, 4, 6, 1},
+                                     {6, 5, 7, 2},
+                                     {7, 6, 4, 3}};
+
+  const Vector3D d_con(1.0, 1.0, 1.0);
+
+  int i;
+  Vector3D coord_vectors[3];
+  Vector3D center_vector;
+  
+  switch(mType) {
+    case TRIANGLE:
+      
+      if ( pd.domain_set() ) {
+        pd.get_domain_normal_at_element(this, coord_vectors[2], err); MSQ_ERRZERO(err);
+      }
+      else{
+        return true;
+      }
+      
+      coord_vectors[2] = coord_vectors[2] / coord_vectors[2].length();// Need unit normal
+      center_vector = vertices[vertexIndices[0]];
+      coord_vectors[0] = vertices[vertexIndices[1]]-center_vector;
+      coord_vectors[1] = vertices[vertexIndices[2]]-center_vector;
+        //metric_valid = is_matrix_det_positive(coord_vectors);
+      if( coord_vectors[0]%(coord_vectors[1]*coord_vectors[2] ) <= 0.0)
+      {
+        return true;
+      }
+      break;
+    
+    case QUADRILATERAL:
+      for (i = 0; i < 4; ++i) {
+      
+        if ( pd.domain_set() ) {
+          pd.get_domain_normal_at_element(this, coord_vectors[2], err); MSQ_ERRZERO(err);
+        }
+        else{
+          return true;
+        }
+        coord_vectors[2] = coord_vectors[2] / coord_vectors[2].length();// Need unit normal
+        center_vector = vertices[vertexIndices[locs_hex[i][0]]];
+        coord_vectors[0] = vertices[vertexIndices[locs_hex[i][1]]]-center_vector;
+        coord_vectors[1] = vertices[vertexIndices[locs_hex[i][2]]]-center_vector;
+        if( coord_vectors[0]%(coord_vectors[1]*coord_vectors[2] ) <= 0.0)
+        {
+          return true;
+        }
+          // metric_valid = is_matrix_det_positive(coord_vectors);
+
+      }
+      break;
+
+    case TETRAHEDRON:
+      center_vector = vertices[vertexIndices[0]];
+      coord_vectors[0] = vertices[vertexIndices[1]]-center_vector;
+      coord_vectors[1] = vertices[vertexIndices[2]]-center_vector;
+      coord_vectors[2] = vertices[vertexIndices[3]]-center_vector;
+        //metric_valid = is_matrix_det_positive(coord_vectors);
+      if( coord_vectors[0]%(coord_vectors[1]*coord_vectors[2] ) <= 0.0)
+      {
+        return true;
+      }
+        //if (!metric_valid) return false;
+      break;
+
+    case HEXAHEDRON:
+      for (i = 0; i < 8; ++i) {
+        center_vector = vertices[vertexIndices[locs_hex[i][0]]];
+        coord_vectors[0] = vertices[vertexIndices[locs_hex[i][1]]]-center_vector;
+        coord_vectors[1] = vertices[vertexIndices[locs_hex[i][2]]]-center_vector;
+        coord_vectors[2] = vertices[vertexIndices[locs_hex[i][3]]]-center_vector;
+          //metric_valid = is_matrix_det_positive(coord_vectors);
+        if( coord_vectors[0]%(coord_vectors[1]*coord_vectors[2] ) <= 0.0)
+        {
+          return true;
+        }
+          //if (!metric_valid) return false;
+      }
+      break;
+
+    case PYRAMID:
+      for (i = 0; i < 4; ++i) {
+        center_vector = vertices[vertexIndices[ i     ]];
+        coord_vectors[0] = vertices[vertexIndices[(i+1)%4]]-center_vector;
+        coord_vectors[1] = vertices[vertexIndices[(i+3)%4]]-center_vector;
+        coord_vectors[2] = vertices[vertexIndices[ 4     ]]-center_vector;
+          //metric_valid = is_matrix_det_positive(coord_vectors);
+        if( coord_vectors[0]%(coord_vectors[1]*coord_vectors[2] ) <= 0.0)
+        {
+          return true;
+        }
+          //if (!metric_valid) return false;
+      }
+      break;
+
+    default:
+      return true;
+  } // end switch over element type
+  return false;
+}
 
 } // namespace Mesquite

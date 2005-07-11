@@ -178,7 +178,11 @@ namespace Mesquite
       //! True if any metric evaluated to an invalid value
       //! for any element
     bool invalid_elements() const;
-       
+    
+      //! Returns the number of inverted elements in the mesh.
+      //!  If this count has not been determined yet, returns -1.
+    int get_inverted_element_count(MsqError &err);
+    
       //! Reset calculated data 
     void reset_data();
     
@@ -301,6 +305,9 @@ namespace Mesquite
     
     /** List of quality metrics and corresponding data */
     msq_std::list<Assessor> assessList;
+
+      /** Count of inverted elements. */
+    int invertedCount;
    
     /** Stream to which to write summary of metric data */
     msq_stdio::ostream& outputStream;
