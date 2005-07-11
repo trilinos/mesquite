@@ -15,23 +15,22 @@ follows the abstractions of the optimization problem defined in \ref{sec:concept
 In particular, the core abstract classes needed to
 define a mesh quality improvement algorithm are {\tt QualityMetric},
 {\tt ObjectiveFunction} (which takes a {\tt QualityMetric} as
-input), and {\tt QualityImprover} (which takes an {\tt ObjectiveFunction}
+input), and {\tt QualityImprover} (which may take an {\tt ObjectiveFunction}
 as input).
 
-In addition, a number of other classes have been created to support
-the needs of mesh quality improvement algorithms:
-\begin{itemize}
-\item {\tt QualityAssessor}: to provide an evaluation of mesh
-quality using standard statistical procedures,
-\item {\tt TerminationCriterion}: to customize the stopping criteria
-used with a mesh quality improvement algorithm,
-\item {\tt InstructionQueue}: to compose quality improvers and
+Additional classes of importance include:
+\begin{description}
+\item[QualityAssessor:] to provide information about the
+quality of the mesh before or after smoothing to the user or application,
+\item[TerminationCriterion:] to customize the stopping criteria
+used with a mesh quality improvement algorithm, and
+\item[InstructionQueue:] to compose quality improvers and
 quality assessors together to form efficient mesh quality improvement
-and evaluation methods, and
+and evaluation methods.
 %\item {\tt MeshSet} and {\tt PatchData}: to provide the mechanisms
 %for managing the application mesh and geometry information and the
 %mesh sub-domains used in optimization procedures.
-\end{itemize}
+\end{description}
 
 \subsection{UML Diagram}
 
@@ -58,7 +57,7 @@ following subsections.
 In the following sections, we will use the notations introduced in section \ref{sec:concepts}. 
 
 Improving a mesh with Mesquite consists mainly in selecting three components: the quality metric,
-the objective function template, ans the quality improver (i.e. the optimization algorithm). 
+the objective function template, and the quality improver (i.e. the optimization algorithm). 
 
 The quality metric $q$ describes what the user considers to be a good mesh element as a function of
 its vertices coodinates, and possibly other factors such as its proximity to a boundary or an
@@ -67,17 +66,18 @@ section \ref{sec:QualityMetric} and how to implement a new quality metric is des
 \ref{sec:QualityMetricImpl}.
 
 Now that the element quality has been defined, a template objective function $f$ (section
-\ref{sec:ObjectiveFunction}) must be chosen to formulate the mesh we aim for. Do we want to improve
-the worst elements, or to make the mesh as good as possible in average ? The combination of the
+\ref{sec:ObjectiveFunction}) must be chosen to formulate the mesh we aim for. For example,
+should emphasis be placed on improving the worst elements or to make the mesh
+as good as possible in the average. The combination of the
 quality metric and the template objective function give us the mesh quality objective function $F=f
 \circ q$.
 
-This mesh quality objective function can now be minimized chosing an optimization algorithm
-(\texttt{QualityImprover}), 
-a crucial component of the Mesquite framework.  The two main types of improvement schemes
-designed into Mesquite are {\tt VertexMover} (see section \ref{sec:VertexMover}) and {\tt
-TopologyModifier} (\ref{sec:TopologyModifier}) for vertex relocation or topology modification,
-respectively.  These methods take as input a mesh quality objective function ($F=f \circ q$).
+This mesh quality objective function can now be minimized with an optimization algorithm
+(\texttt{QualityImprover}).  The improvement schemes in Mesquite can be divided
+into two general catagories.  Vertex movers (subclasses of \tt{VertexMover}) 
+change vertex positions to improve the mesh quality.  Topology modifiers (subclasses
+of \tt{TopologyModifier}) modify the mesh topology (for example flipping algorithms).
+These methods take as input a mesh quality objective function ($F=f \circ q$).
 The concrete \texttt{QualityImprover} always acts on an
 \texttt{ObjectiveFunction} pointer to retrieve the function value and
 gradient $\nabla F$, and sometimes the Hessian ${\cal H} F$, for a certain mesh and concrete \texttt{ObjectiveFunction} /
@@ -92,7 +92,8 @@ Mesquite's \texttt{TerminationCriterion} class contains functionality
 to customize the termination of the mesh quality improvement process. 
 Mesquite wrappers (section \ref{sec:wrappers}) already have an embedded default termination
 criterion. The termination criterion provides an automatic mechanism to stop an optimization
-procedure. --- familiar examples  comes to mind such as the objective function gradient norm close
+procedure. An example of a termination criterion is stopping the quality
+improvement when the objective function gradient norm is close
 to zero in a non-linear programming problem. Many other criterions are available in Mesquite (see
 section \ref{sec:TerminationCriterion}). When using the detailed API, termination criterions have to
 be set in order for the quality improver to terminate. 
@@ -192,7 +193,7 @@ that once an \texttt{InstructionQueue} has been defined, it can be used
 for several \texttt{MeshSet} objects.
 
 
-\section{Simplified Application Programming Interface}
+\section{Wrappers}
 \label{sec:wrappers}
 To improve meshes with a minimum of Mesquite function calls, we have 
 provided a set of wrapper classes that encapsulate the 
@@ -241,15 +242,16 @@ In addition to the quality metric function value, the {\tt
 QualityMetric} class also provides the gradient and Hessian
 information needed for many optimization algorithms.  Numerical
 approximations of the gradient and Hessian are automatically provided
-by the \texttt{QualityMetric} base class.  Users can optionally
-implement analytical expressions which are potentially more
-computationally efficient.  For example, in the case of the mean ratio
-quality metric implementation, the analytic calculation is
-approximately twice as fast for the gradient and five times faster for the Hessian
-as the numerical computation although this
-improved efficiency often comes at a higher implementation cost.  The
+by the \texttt{QualityMetric} base class.  QualityMetric implementations
+may can optionally
+implement analytical expressions for the gradient and Hessian, which are 
+typically more computationally efficient.  For example, the mean ratio
+quality metric implementation provides an analytic calculation of the gradient 
+that is approximately twice as fast as the numerical solution, and an analytic
+calculation of the Hessian that is almost five times as fast as the
+numeric approximation.  The
 cost of implementing the analytical gradients and Hessians can often
-be alleviated, however, by the use of automatic differentiation tools
+be alleviated by the use of automatic differentiation tools
 (for example, \cite{bischofadic}).
 
 Mesquite also allows the user to scale metric values or combine
@@ -273,7 +275,7 @@ lists the quality metrics currently available within Mesquite.  For
 detailed definitions of the metrics, see \cite{Kn01}.  We note that
 the implementation of the mean ratio metric has been extensively
 optimized, and analytical gradients and Hessians are available for
-that function.  Other metrics currently use numerical gradients and
+that function.  MAny other metrics currently use numerical gradients and
 Hessians.
 
 The two composite metrics which are currently implemented
@@ -288,17 +290,17 @@ to obtain the inverse of any Mesquite quality metric.
 \hline
 Metric & Group & Mesh Type & Feasibility Region &Entity Type\\
 \hline
-Area Smoothness &Smoothness & Any & No & Elements\\
-Aspect Ratio & Shape &Tri/Tet & No & Elements\\
+Area Smoothness &Smoothness &Tri,Quad,Tet,Hex& No & Elements\\
+Aspect Ratio & Shape &Tri,Quad,Tet,Hex & No & Elements\\
 Composite Mult. & Composite &Any& Yes/No & Either\\
 Composite Power & Composite &Any& Yes/No & Either\\
-Cond. Num.& Shape & Any & Yes & Elements \\
-Corner Jacobian & Volume & Any & No & Elements \\
-Edge Length &Smoothness & Any & No & Vertices \\
-Edge Length Range & Smoothness & Any &No & Vertices\\
-Mean Ratio &Shape & Any & Yes &Elements\\
-Untangle Beta &Untangle &Any&Yes&Elements\\
-Vert. Cond. Num.& Shape & Any & Yes & Vertices\\
+Cond. Num.& Shape & Tri,Quad,Tet,Hex & Yes & Elements \\
+Corner Jacobian & Volume & Tri,Quad,Tet,Hex & No & Elements \\
+Edge Length &Smoothness & Tri,Quad,Tet,Hex & No & Vertices \\
+Edge Length Range & Smoothness & Tri,Quad,Tet,Hex &No & Vertices\\
+Mean Ratio &Shape & Any & Tri,Quad,Tet,Hex,Pyr &Elements\\
+Untangle Beta &Untangle &Tri,Quad,Tet,Hex,Pyr &Yes&Elements\\
+Vert. Cond. Num.& Shape & Tri,Quad,Tet,Hex & Yes & Vertices\\
 \hline
 \end{tabular}
 \label{current-metrics}
@@ -531,8 +533,8 @@ any size; thus it is appropriate for optimizing all node positions
 simultaneously for any combination of $C^1$ objective functions and
 quality metrics (see \cite{FeasNewt} for more details). 
 
-On the performance front, Conjugate gradient is memory efficient but converges slowly.
-On one hand, the conjuguate gradient algorithm is a lot slower than the Feasible Newton algorithm
+Conjugate gradient is memory efficient but converges slowly.
+The conjuguate gradient algorithm is a lot slower than the Feasible Newton algorithm
 when analytical gradient and hessians are available for the quality metrics. On the other hand, the
 memory footprint of the conjugate gradient algorithm is a lot smaller than for the feasible Newton 
 algorithm, since no Hessian has to be stored. A rough estimate would be a memory 
@@ -607,7 +609,7 @@ local and global optimizations always use two termination criterion.
 The outer criteria is set to terminate the optimization process after
 one iteration in the global case.
 
-Note that an interrupt handler (Ctrl-C) is also available, see section \ref{sec:Ctrl-C}. 
+Note that an interrupt handler (SIGINT) is also available, see section \ref{sec:Ctrl-C}. 
 
 \subsubsection{Available Termination Criterions}
 A wide range of cost, quality, 
@@ -697,9 +699,36 @@ advantage of potential synergies.
 Use the InstructionQueue. 
 \end{verbatim}
 
-\subsection{Interrupt Mechanism -- Ctrl-C} \label{sec:Ctrl-C}
+\subsection{Interrupting Mesquite} \label{sec:Ctrl-C}
 
-Mesquite provides an interrupt handler in order to gracefully exit an ongoing optimization. When
-the user hits \texttt{Ctrl-C}, Mesquite will catch the interrupt request, signal so, wait for the
-current iteration to finish, update the user mesh with the improved mesh, and finish executing the
-driver code.  
+When invoked from an \tt{InstructionQueue}, Mesquite may respond to 
+an interrupt signal.  
+The class \tt{MsqInterrupt} has methods for controlling whether or not
+Mesquite will respond to interrupt signals.  The default behavior is
+to respond to interrupt signals only if the calling application is also
+responding to interrupt signals.  
+
+When responding to an interrupt signal,
+Mesquite will first pass the signal to any previously
+registered handler.  Next it will terminate any optimization and
+return control to the caller of \tt{InstructionQueue::run\_instructions}.  
+The \tt{MsqError} object 
+passed back to the caller will indicate that the operation was terminated
+due to an interrupt signal.
+
+In most command line 
+environments or terminal emulators the \tt{Ctrl-C} key combination can
+be used to send an interrupt signal.  An application or other 
+component may also interrupt Mesquite directly from a thread or other
+asynchronous context by calling the \tt{MsqInterrupt::set\_interrupt()}
+method.  If the application has registered an handler for interrupt 
+signals before calling Mesquite, Mesquite will call that handler from
+it's interrupt context.  At this time, the application may force Mesquite
+to ignore the active interrupt signal (and thus continue the currrent
+optimization) by calling the \tt{MsqInterrupt::clear()}
+method.
+
+
+
+
+
