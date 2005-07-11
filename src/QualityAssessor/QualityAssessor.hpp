@@ -180,7 +180,7 @@ namespace Mesquite
     bool invalid_elements() const;
 
       //! Provides the number of inverted elements, inverted_elmes,
-      //!  and the number of elements who's orientation can not be
+      //!  and the number of elements whose orientation can not be
       //!  determined, undefined_elems.
       //! Returns false if this information is not yet available.
       //! Returns true, otherwise.
@@ -314,7 +314,7 @@ namespace Mesquite
       /** Count of inverted elements. */
     int invertedCount;
 
-      /** Count of elements who's orientation can not be determined.*/
+      /** Count of elements whose orientation can not be determined.*/
     int indeterminateCount;
     
    
