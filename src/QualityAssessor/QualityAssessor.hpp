@@ -178,10 +178,15 @@ namespace Mesquite
       //! True if any metric evaluated to an invalid value
       //! for any element
     bool invalid_elements() const;
-    
-      //! Returns the number of inverted elements in the mesh.
-      //!  If this count has not been determined yet, returns -1.
-    int get_inverted_element_count(MsqError &err);
+
+      //! Provides the number of inverted elements, inverted_elmes,
+      //!  and the number of elements who's orientation can not be
+      //!  determined, undefined_elems.
+      //! Returns false if this information is not yet available.
+      //! Returns true, otherwise.
+    bool get_inverted_element_count(int &inverted_elems,
+                                    int &undefined_elems,
+                                    MsqError &err);
     
       //! Reset calculated data 
     void reset_data();
@@ -308,6 +313,10 @@ namespace Mesquite
 
       /** Count of inverted elements. */
     int invertedCount;
+
+      /** Count of elements who's orientation can not be determined.*/
+    int indeterminateCount;
+    
    
     /** Stream to which to write summary of metric data */
     msq_stdio::ostream& outputStream;

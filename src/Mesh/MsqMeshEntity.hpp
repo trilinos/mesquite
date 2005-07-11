@@ -154,13 +154,22 @@ namespace Mesquite
 
       //!Computes the signed volume of the element.
     double compute_signed_volume(PatchData &pd, MsqError &err );
+
+    enum ElementOrientation
+    {
+      UNDEFINED_ORIENTATION,
+      INVERTED_ORIENTATION,
+      VALID_ORIENTATION
+    };
     
-      //!Returns true if the element is inverted (ie, if one of the
-      //!  corners in the element has a non-positive Jacobian determinant).
-      //!  If the orienation of the element can not be determined (eg, the
-      //!  element is a triangle and the normal information is not provided)
-      //!  then the function will return true.
-    bool is_inverted(PatchData &pd, MsqError &err );
+      //!Returns INVERTED_ORIENTATION if the element is inverted (ie,
+      //!  if one of the corners in the element has a non-positive
+      //!  Jacobian determinant).  Returns UNDEFINED_ORIENTATION if
+      //!  the element's orientation can not be determined (eg, if the
+      //!  normal is not available for a quad element).  Otherwise,
+      //!  returns VALID_ORIENTATION.
+    ElementOrientation check_element_orientation(PatchData &pd,
+                                                 MsqError &err );
     
     
       //! Uses a MeshDomain call-back function to compute the normal at the corner.

@@ -1051,10 +1051,13 @@ size_t Mesquite::MsqMeshEntity::get_local_matrix_map_about_vertex(
 }
 
 
-bool MsqMeshEntity::is_inverted(PatchData &pd, MsqError &err)
+MsqMeshEntity::ElementOrientation MsqMeshEntity::check_element_orientation(
+  PatchData &pd, MsqError &err)
 {
 
-  MsqVertex *vertices = pd.get_vertex_array(err);  MSQ_ERRZERO(err);
+  MsqVertex *vertices = pd.get_vertex_array(err);
+  if(MSQ_CHKERR(err))
+    return UNDEFINED_ORIENTATION;
 
     // Hex element descriptions
   static const int locs_hex[8][4] = {{0, 1, 3, 4},
@@ -1076,10 +1079,12 @@ bool MsqMeshEntity::is_inverted(PatchData &pd, MsqError &err)
     case TRIANGLE:
       
       if ( pd.domain_set() ) {
-        pd.get_domain_normal_at_element(this, coord_vectors[2], err); MSQ_ERRZERO(err);
+        pd.get_domain_normal_at_element(this, coord_vectors[2], err);
+        if(MSQ_CHKERR(err))
+          return UNDEFINED_ORIENTATION;
       }
       else{
-        return true;
+        return UNDEFINED_ORIENTATION;
       }
       
       coord_vectors[2] = coord_vectors[2] / coord_vectors[2].length();// Need unit normal
@@ -1089,7 +1094,7 @@ bool MsqMeshEntity::is_inverted(PatchData &pd, MsqError &err)
         //metric_valid = is_matrix_det_positive(coord_vectors);
       if( coord_vectors[0]%(coord_vectors[1]*coord_vectors[2] ) <= 0.0)
       {
-        return true;
+        return INVERTED_ORIENTATION;
       }
       break;
     
@@ -1097,10 +1102,12 @@ bool MsqMeshEntity::is_inverted(PatchData &pd, MsqError &err)
       for (i = 0; i < 4; ++i) {
       
         if ( pd.domain_set() ) {
-          pd.get_domain_normal_at_element(this, coord_vectors[2], err); MSQ_ERRZERO(err);
+          pd.get_domain_normal_at_element(this, coord_vectors[2], err); 
+          if(MSQ_CHKERR(err))
+            return UNDEFINED_ORIENTATION;
         }
         else{
-          return true;
+          return UNDEFINED_ORIENTATION;
         }
         coord_vectors[2] = coord_vectors[2] / coord_vectors[2].length();// Need unit normal
         center_vector = vertices[vertexIndices[locs_hex[i][0]]];
@@ -1108,7 +1115,7 @@ bool MsqMeshEntity::is_inverted(PatchData &pd, MsqError &err)
         coord_vectors[1] = vertices[vertexIndices[locs_hex[i][2]]]-center_vector;
         if( coord_vectors[0]%(coord_vectors[1]*coord_vectors[2] ) <= 0.0)
         {
-          return true;
+          return INVERTED_ORIENTATION;
         }
           // metric_valid = is_matrix_det_positive(coord_vectors);
 
@@ -1123,7 +1130,7 @@ bool MsqMeshEntity::is_inverted(PatchData &pd, MsqError &err)
         //metric_valid = is_matrix_det_positive(coord_vectors);
       if( coord_vectors[0]%(coord_vectors[1]*coord_vectors[2] ) <= 0.0)
       {
-        return true;
+        return INVERTED_ORIENTATION;
       }
         //if (!metric_valid) return false;
       break;
@@ -1137,7 +1144,7 @@ bool MsqMeshEntity::is_inverted(PatchData &pd, MsqError &err)
           //metric_valid = is_matrix_det_positive(coord_vectors);
         if( coord_vectors[0]%(coord_vectors[1]*coord_vectors[2] ) <= 0.0)
         {
-          return true;
+          return INVERTED_ORIENTATION;
         }
           //if (!metric_valid) return false;
       }
@@ -1152,16 +1159,16 @@ bool MsqMeshEntity::is_inverted(PatchData &pd, MsqError &err)
           //metric_valid = is_matrix_det_positive(coord_vectors);
         if( coord_vectors[0]%(coord_vectors[1]*coord_vectors[2] ) <= 0.0)
         {
-          return true;
+          return INVERTED_ORIENTATION;
         }
           //if (!metric_valid) return false;
       }
       break;
 
     default:
-      return true;
+      return INVERTED_ORIENTATION;
   } // end switch over element type
-  return false;
+  return VALID_ORIENTATION;
 }
 
 } // namespace Mesquite
