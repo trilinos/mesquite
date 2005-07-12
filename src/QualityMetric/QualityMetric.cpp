@@ -348,9 +348,12 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
                                     num_free_vtx, metric_value, err); 
   if (MSQ_CHKERR(err) || !valid)
     return false;
-  
-  double delta = 10e-6;
-  double delta_inv = 1./delta;
+  const double delta_C =  10e-6;
+  double delta = delta_C;
+  const double delta_inv_C = 1./delta;
+  double delta_inv = delta_inv_C;
+  const int reduction_limit = 15;
+  int counter;
   double vj_coord;
   short nve = element->vertex_count();
   Vector3D* grad_vec1 = new Vector3D[nve];
@@ -387,13 +390,34 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
     else  {
     // If vertex is free, use finite difference on the gradient to find the Hessian.
       for (j=0;j<3;++j) {
-        // perturb the coordinates of the vertex v in the j direction by delta
-        vj_coord = (*free_vtces[fv_ind])[j];
-        (*free_vtces[fv_ind])[j]+=delta;
-        //compute the gradient at the perturbed point location
-        valid = this->compute_element_gradient_expanded(pd, element, free_vtces,
-                              grad_vec1, num_free_vtx, metric_value, err); MSQ_CHKERR(err);
-        assert(valid);
+        counter=0;
+        double delta = delta_C;
+        double delta_inv = delta_inv_C;
+        valid = false;
+        while (!valid && counter<reduction_limit){
+          ++counter;
+          
+            // perturb the coordinates of the vertex v in the j direction by
+            // delta
+          vj_coord = (*free_vtces[fv_ind])[j];
+          (*free_vtces[fv_ind])[j]+=delta;
+            //compute the gradient at the perturbed point location
+          valid = this->compute_element_gradient_expanded(pd, element, free_vtces,
+                              grad_vec1, num_free_vtx, metric_value, err);
+          if( MSQ_CHKERR(err) )
+            return false;
+          
+          if( !valid){
+              (*free_vtces[fv_ind])[j]-=delta;
+            delta *= 0.1;
+            delta_inv *=10.0;
+          }          
+        }
+        if( !valid){
+          MSQ_SETERR(err)("Algorithm did not successfully compute element's "
+                           "Hessian.\n",MsqError::INTERNAL_ERROR);
+          return false;
+        }
         //compute the numerical Hessian
         for (w=0; w<nve; ++w) {
           if (v>=w) {
