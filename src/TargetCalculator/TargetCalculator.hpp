@@ -162,7 +162,7 @@ namespace Mesquite
     static const double SIXTH_ROOT_OF_TWO = msq_stdc::pow(2., 1./6.);
       //The #ifndef is to get around what is believed to be a bug in the JANUS
       //compilers.  
-#ifndef JANUS
+#ifndef MSQ_JANUS
     const double v_tri[] = {1., 0.5, 0., 0., MSQ_SQRT_THREE/2., 0., 0., 0., 1.};
 #else    
     const double v_tri[] = {1., 0.5, 0., 0., 0.8660254037844385965883021 , 0., 0., 0., 1.};
@@ -176,7 +176,7 @@ namespace Mesquite
     
       //The #ifndef is to get around what is believed to be a bug in the JANUS
       //compilers.  
-#ifndef JANUS
+#ifndef MSQ_JANUS
     const double v_tet[] = {1., 0.5, 0.5, 0., MSQ_SQRT_THREE/2., MSQ_SQRT_THREE/6., 0., 0., MSQ_SQRT_TWO/MSQ_SQRT_THREE};
 #else 
     const double v_tet[] = {1., 0.5, 0.5, 0.,  0.8660254037844385965883021, 0.2886751345948128655294340, 0., 0., 0.8164965809277261454823815};
