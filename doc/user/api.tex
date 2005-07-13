@@ -365,42 +365,6 @@ Scalar Mult.& $q_1 \times s$   & No                & No               \\
 \end{center}
 \end{table}
 
-\begin{table*}[htb]
-\begin{center}
-\begin{tabular}{|l|c|c|c|c|}
-\hline
-Metric & Group & Mesh Type & Feasibility Region &Entity Type\\
-\hline
-Add                & Composite  & Any                  & N/A & Any      \\
-Area Smoothness    & Smoothness & Tri,Quad,Tet,Hex     & No  & Elements \\
-Aspect Ratio       & Shape      & Tri,Tet              & No  & Elements \\
-Cond. Num.         & Shape      & Tri,Quad,Tet,Hex     & Yes & Elements \\
-Corner Jacobian    & Volume     & Tri,Quad,Tet,Hex     & No  & Elements \\
-Edge Length        & Smoothness & Tri,Quad,Tet,Hex     & No  & Vertices \\
-Edge Length Range  & Smoothness & Tri,Quad,Tet,Hex     & No  & Vertices \\
-Gen. Cond. Num.    & Shape      & Tri,Quad,Tet,Hex     & Yes & Elements \\
-Ideal W. Inv. Mean Ratio& Shape & Tri,Quad,Tet,Hex,Pyr & Yes & Elements \\
-Ideal W. Mean Ratio& Shape      & Tri,Quad,Tet,Hex,Pyr & Yes & Elements \\
-Mean Ratio         & Shape      & Tri,Quad,Tet,Hex,Pyr & Yes & Elements \\
-Multiply           & Composite  & Any                  & N/A & Any      \\
-Power              & Composite  & Any                  & N/A & Any      \\
-Scalar Add         & Composite  & Any                  & N/A & Any      \\
-Scalar Multiply    & Composite  & Any                  & N/A & Any      \\
-Untangle Beta      & Untangle   & Tri,Quad,Tet,Hex,Pyr & Yes & Elements \\
-Vert. Cond. Num.   & Shape      & Tri,Quad,Tet,Hex     & Yes & Vertices \\
-\hline
-\end{tabular}
-\label{current-metrics}
-\caption{List of the current Mesquite quality metrics. The table also
-indicates the metric group, the mesh types for which the metric is
-valid, whether the metric is only valid within a feasible
-region, and the type of entity for which the metric is defined (elements
-or vertices).  Note that there may be a feasible region for composite
-metrics depending on whether the underlying metrics require such a
-constraint.}
-\end{center}
-\end{table*}
-
 
 \begin{table}[h]
 \begin{center}
