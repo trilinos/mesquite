@@ -514,102 +514,24 @@ void Mesquite::MsqMeshEntity::get_connected_vertices(size_t vertex_index,
                                                      vector<size_t> &vert_indices,
                                                      MsqError &err)
 {
-    //i iterates through elem's vertices
-  int i=0;
     //index is set to the index in the vertexIndices corresponding
     //to vertex_index
-  int index=-1;
-  
-  switch (mType)
+  int index;
+  for (index = vertex_count() - 1; index >= 0; --index)
+    if (vertexIndices[index] == vertex_index)
+      break;
+  if (index < 0)
   {
-    case TRIANGLE:
-      while(i<3)
-      {
-        if(vertexIndices[i]==vertex_index)
-        {
-          index=i;
-          break;
-        }
-        ++i;
-      }
-      if(index>=0)
-      {
-        vert_indices.push_back(vertexIndices[(index+1)%3]);
-        vert_indices.push_back(vertexIndices[(index+2)%3]);
-      }
-      
-      break;
-      
-    case QUADRILATERAL:
-      while(i<4)
-      {
-        if(vertexIndices[i]==vertex_index)
-        {
-          index=i;
-          break;
-        }
-        ++i;
-      }
-      if(index>=0)
-      {
-        vert_indices.push_back(vertexIndices[(index+1)%4]);
-        vert_indices.push_back(vertexIndices[(index+3)%4]);
-      }
-          
-      break;
-      
-    case TETRAHEDRON:
-      while(i<4)
-      {
-        if(vertexIndices[i]==vertex_index)
-        {
-          index=i;
-          break;
-        }
-        ++i;
-      }
-      if(index>=0)
-      {
-        vert_indices.push_back(vertexIndices[(index+1)%4]);
-        vert_indices.push_back(vertexIndices[(index+2)%4]);
-        vert_indices.push_back(vertexIndices[(index+3)%4]);
-      }
-      
-      break;
-      
-    case HEXAHEDRON:
-      while(i<8)
-      {
-        if(vertexIndices[i]==vertex_index)
-        {
-          index=i;
-          break;
-        }
-        ++i;
-      }
-      
-      if(index>=0)
-      {
-        if (index<4)
-        {
-          vert_indices.push_back(vertexIndices[(index+1)%4]);
-          vert_indices.push_back(vertexIndices[(index+3)%4]);
-          vert_indices.push_back(vertexIndices[(index)+4]);
-        }
-        else
-        {
-          vert_indices.push_back(vertexIndices[(index+3)%4+4]);
-          vert_indices.push_back(vertexIndices[(index+1)%4+4]);
-          vert_indices.push_back(vertexIndices[(index)-4]);
-        }
-      }
-      
-      break;
-      
-  default:
-    MSQ_SETERR(err)("Element type not available", MsqError::INVALID_ARG);
-    break;
+    MSQ_SETERR(err)("Invalid vertex index.", MsqError::INVALID_ARG);
+    return;
   }
+  
+  unsigned n;
+  const unsigned* indices = TopologyInfo::adjacent_vertices( mType, index, n );
+  if (!indices)
+    MSQ_SETERR(err)("Element type not available", MsqError::INVALID_ARG);
+  for (unsigned i = 0; i < n; ++i)
+    vert_indices.push_back( vertexIndices[indices[i]] );
 }
 
 /*! Gives the normal at the surface point corner_pt ... but if not available,

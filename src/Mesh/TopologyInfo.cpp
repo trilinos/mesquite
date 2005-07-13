@@ -41,6 +41,7 @@ TopologyInfo::TopologyInfo()
   memset( adjMap, 0, sizeof(adjMap) );
   memset( edgeMap, 0, sizeof(edgeMap) );
   memset( faceMap, 0, sizeof(faceMap) );
+  memset( vertAdjMap, 0, sizeof(vertAdjMap) );
   
   dimMap[POLYGON ]      = 2;
   dimMap[TRIANGLE]      = 2;
@@ -200,6 +201,73 @@ TopologyInfo::TopologyInfo()
   faceMap[PRISM-FIRST_VOL][4][1] = 3;
   faceMap[PRISM-FIRST_VOL][4][2] = 4;
   faceMap[PRISM-FIRST_VOL][4][3] = 5;
+  
+  int i;
+  for (i = 0; i < 3; ++i)
+  {
+    vertAdjMap[TRIANGLE-FIRST_FACE][i][0] = 2;
+    vertAdjMap[TRIANGLE-FIRST_FACE][i][1] = (i+1)%3;
+    vertAdjMap[TRIANGLE-FIRST_FACE][i][2] = (i+2)%3;
+  }
+  
+  for (i = 0; i < 4; ++i)
+  {
+    vertAdjMap[QUADRILATERAL-FIRST_FACE][i][0] = 2;
+    vertAdjMap[QUADRILATERAL-FIRST_FACE][i][1] = (i+1)%4;
+    vertAdjMap[QUADRILATERAL-FIRST_FACE][i][2] = (i+3)%4;
+  }
+  
+  for (i = 0; i < 3; ++i)
+  {
+    vertAdjMap[TETRAHEDRON-FIRST_FACE][i][0] = 3;
+    vertAdjMap[TETRAHEDRON-FIRST_FACE][i][1] = (i+1)%3;
+    vertAdjMap[TETRAHEDRON-FIRST_FACE][i][2] = (i+2)%3;
+    vertAdjMap[TETRAHEDRON-FIRST_FACE][i][3] = 3;
+  }
+  vertAdjMap[TETRAHEDRON-FIRST_FACE][3][0] = 3;
+  for (i = 0; i < 3; ++i)
+    vertAdjMap[TETRAHEDRON-FIRST_FACE][3][i+1] = 2 - i;
+  
+  for (i = 0; i < 4; ++i)
+  {
+    vertAdjMap[PYRAMID-FIRST_FACE][i][0] = 3;
+    vertAdjMap[PYRAMID-FIRST_FACE][i][1] = (i+1)%4;
+    vertAdjMap[PYRAMID-FIRST_FACE][i][2] = (i+3)%4;
+    vertAdjMap[PYRAMID-FIRST_FACE][i][3] = 4;
+  }
+  vertAdjMap[PYRAMID-FIRST_FACE][4][0] = 4;
+  for (i = 0; i < 4; i++)
+    vertAdjMap[PYRAMID-FIRST_FACE][4][i+1] = 3 - i;
+  
+  for (i = 0; i < 4; ++i)
+  {
+    vertAdjMap[HEXAHEDRON-FIRST_FACE][i][0] = 3;
+    vertAdjMap[HEXAHEDRON-FIRST_FACE][i][1] = (i+1)%4;
+    vertAdjMap[HEXAHEDRON-FIRST_FACE][i][2] = (i+3)%4;
+    vertAdjMap[HEXAHEDRON-FIRST_FACE][i][3] = i+4;
+  }
+  for (i = 4; i < 8; ++i)
+  {
+    vertAdjMap[HEXAHEDRON-FIRST_FACE][i][0] = 3;
+    vertAdjMap[HEXAHEDRON-FIRST_FACE][i][1] = (i+3)%4+4;
+    vertAdjMap[HEXAHEDRON-FIRST_FACE][i][2] = (i+1)%4+4;
+    vertAdjMap[HEXAHEDRON-FIRST_FACE][i][3] = i-4;
+  }
+  
+  for (i = 0; i < 3; ++i)
+  {
+    vertAdjMap[PRISM-FIRST_FACE][i][0] = 3;
+    vertAdjMap[PRISM-FIRST_FACE][i][1] = (i+1)%3;
+    vertAdjMap[PRISM-FIRST_FACE][i][2] = (i+2)%3;
+    vertAdjMap[PRISM-FIRST_FACE][i][3] = i+3;
+  }
+  for (i = 3; i < 6; ++i)
+  {
+    vertAdjMap[PRISM-FIRST_FACE][i][0] = 3;
+    vertAdjMap[PRISM-FIRST_FACE][i][1] = (i+2)%3+3;
+    vertAdjMap[PRISM-FIRST_FACE][i][2] = (i+1)%3+3;
+    vertAdjMap[PRISM-FIRST_FACE][i][3] = i-3;
+  }
 }
 
 void TopologyInfo::higher_order( EntityTopology topo,
@@ -381,6 +449,21 @@ void TopologyInfo::side_number( EntityTopology topo,
   
   
 
+const unsigned* TopologyInfo::adjacent_vertices( EntityTopology topo,
+                                              unsigned index,
+                                              unsigned& num_adj_out )
+{
+  const unsigned count = corners( topo );
+  if (!count || index >= count)
+  {
+    num_adj_out = 0;
+    return 0;
+  }
+  
+  const unsigned* vect = instance.vertAdjMap[topo-FIRST_FACE][index];
+  num_adj_out = vect[0];
+  return vect + 1;
+}
 
 
 

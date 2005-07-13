@@ -87,6 +87,13 @@ private:
    CPPUNIT_TEST (polyhedron);
    
    CPPUNIT_TEST (bad_type);
+   
+   CPPUNIT_TEST (tri_adj_vert);
+   CPPUNIT_TEST (quad_adj_vert);
+   CPPUNIT_TEST (tet_adj_vert);
+   CPPUNIT_TEST (hex_adj_vert);
+   CPPUNIT_TEST (pyr_adj_vert);
+   CPPUNIT_TEST (wdg_adj_vert);
 
    CPPUNIT_TEST_SUITE_END();
 
@@ -162,6 +169,13 @@ public:
 
   void bad_type();
   
+  void tri_adj_vert();
+  void quad_adj_vert();
+  void tet_adj_vert();
+  void hex_adj_vert();
+  void pyr_adj_vert();
+  void wdg_adj_vert();
+  void test_adj( Mesquite::EntityTopology, const unsigned expected[][5] );
 };
 
 
@@ -1132,6 +1146,115 @@ void TopologyInfoTest::bad_type()
   }
 }
 
+
+void TopologyInfoTest::tri_adj_vert()
+{
+  unsigned data[][5] = { { 2, 1, 2, 0, 0 },
+                         { 2, 2, 0, 0, 0 },
+                         { 2, 0, 1, 0, 0 } };
+  test_adj( Mesquite::TRIANGLE, data );
+}
+
+void TopologyInfoTest::quad_adj_vert()
+{
+  unsigned data[][5] = { { 2, 1, 3, 0, 0 },
+                         { 2, 2, 0, 0, 0 },
+                         { 2, 3, 1, 0, 0 },
+                         { 2, 0, 2, 0, 0 } };
+  test_adj( Mesquite::QUADRILATERAL, data );
+}
+
+void TopologyInfoTest::tet_adj_vert()
+{
+  unsigned data[][5] = { { 3, 1, 2, 3, 0 },
+                         { 3, 2, 0, 3, 0 },
+                         { 3, 0, 1, 3, 0 },
+                         { 3, 2, 1, 0, 0 } };
+  test_adj( Mesquite::TETRAHEDRON, data );
+}
+
+void TopologyInfoTest::hex_adj_vert()
+{
+  unsigned data[][5] = { { 3, 1, 3, 4, 0 },
+                         { 3, 2, 0, 5, 0 },
+                         { 3, 3, 1, 6, 0 },
+                         { 3, 0, 2, 7, 0 },
+                         { 3, 7, 5, 0, 0 },
+                         { 3, 4, 6, 1, 0 },
+                         { 3, 5, 7, 2, 0 },
+                         { 3, 6, 4, 3, 0 } };
+  test_adj( Mesquite::HEXAHEDRON, data );
+}
+
+void TopologyInfoTest::pyr_adj_vert()
+{
+  unsigned data[][5] = { { 3, 1, 3, 4, 0 },
+                         { 3, 2, 0, 4, 0 },
+                         { 3, 3, 1, 4, 0 },
+                         { 3, 0, 2, 4, 0 },
+                         { 4, 3, 2, 1, 0 } };
+  test_adj( Mesquite::PYRAMID, data );
+}
+
+void TopologyInfoTest::wdg_adj_vert()
+{
+  unsigned data[][5] = { { 3, 1, 2, 3, 0 },
+                         { 3, 2, 0, 4, 0 },
+                         { 3, 0, 1, 5, 0 },
+                         { 3, 5, 4, 0, 0 },
+                         { 3, 3, 5, 1, 0 },
+                         { 3, 4, 3, 2, 0 } };
+  test_adj( Mesquite::PRISM, data );
+}
+
+void TopologyInfoTest::test_adj( Mesquite::EntityTopology type,
+                                 const unsigned data[][5] )
+{
+    // Get num vertices from type
+  unsigned n = TopologyInfo::corners( type );
+  CPPUNIT_ASSERT( n > 0 );
+  
+  // The first index into data is the vertex.
+  // Each column of "data", indexed by vertex, is a 
+  // vector containing the number of adjacent vertices
+  // followed by the list if adjacent vertex indices.
+  
+    // for each vertex
+  for (unsigned i = 0; i < n; ++i)
+  {
+      // Get the data corresponding to this vertex of the element
+    unsigned const * corner = data[i];
+    unsigned expected_count = corner[0];
+      // Query TopologyInfo for the same data
+    unsigned actual_count;
+    unsigned const* actual_adj = TopologyInfo::adjacent_vertices( type, i, actual_count );
+      // Check result is valid and counts match 
+    CPPUNIT_ASSERT( actual_adj != NULL );
+    CPPUNIT_ASSERT( expected_count == actual_count );
+    
+      // For 3-D elements, returned vertices are expected to be oriented 
+      // such that  a face bounded by the vertices in the counter-clockwise 
+      // order will have a normal pointing away from the input vertex.
+      // So the vertices must be in a certain order, but may begin with
+      // any of the adjacent vertices.
+      
+      // Find the location in the result list at which the first
+      // vertex in the expected list occurs.
+    unsigned j;
+    for (j = 0; j < actual_count; ++j)
+      if (corner[1] == actual_adj[j])
+        break;
+      // Asssert that the first expected vertex was somewhere in 
+      // the result list.
+    CPPUNIT_ASSERT( j < actual_count );
+      // Compare the remaining vertices, enforcing the order.
+    for (unsigned k = 1; k < actual_count; ++k)
+      CPPUNIT_ASSERT( corner[k+1] == actual_adj[(k+j)%actual_count] );
+  }
+}
+
+      
+  
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TopologyInfoTest, "TopologyInfoTest");
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TopologyInfoTest, "Unit");

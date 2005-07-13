@@ -140,12 +140,29 @@ class TopologyInfo
                              unsigned& side_number_out,
                              MsqError& err );
 
+    /**\brief  Get adjacent corner vertices
+     *
+     * Given the index of a vertex in an element, get the list of 
+     * indices corresponding to the adjacent corner vertices.
+     *
+     *\param topo  The element type
+     *\param index The index of a corner vertex
+     *\param num_adj_out The number of adjacent vertices (output)
+     *\return The array of vertex indices
+     */
+    static const unsigned* adjacent_vertices( EntityTopology topo,
+                                              unsigned index,
+                                              unsigned& num_adj_out );
+     
+
   private:
  
     enum {
+      MAX_CORNER = 8,
       MAX_EDGES = 12,
       MAX_FACES = 6,
       MAX_FACE_CONN = 5,
+      MAX_VERT_ADJ = 4,
       FIRST_FACE = TRIANGLE,
       LAST_FACE = QUADRILATERAL,
       FIRST_VOL= TETRAHEDRON,
@@ -158,6 +175,8 @@ class TopologyInfo
     unsigned edgeMap[LAST_VOL-FIRST_FACE+1][MAX_EDGES][2] ;
     /** Vertex indices for element faces */
     unsigned faceMap[LAST_VOL-FIRST_VOL+1][MAX_FACES][MAX_FACE_CONN];
+    /** Vertex-Vertex adjacency map */
+    unsigned vertAdjMap[LAST_VOL-FIRST_FACE+1][MAX_CORNER][MAX_VERT_ADJ+1];
 
     TopologyInfo();
     
