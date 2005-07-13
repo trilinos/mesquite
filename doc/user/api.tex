@@ -284,23 +284,110 @@ together or raise a single metric's value to a given power.
 The latter allows for negative powers and can therefore be used
 to obtain the inverse of any Mesquite quality metric.  
 
+\begin{table}[!hp]
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|c|}
+\hline
+Name               & Group      & Tri/Tet & Quad/Hex & Hybrid & Feasibility & Analytic & Analytic \\
+                   &            &         &          &        & Region      & Gradient & Hessian  \\
+\hline
+Area Smoothness    & Smoothness & Yes     & Yes      & No     & No          & No       & No \\
+Aspect Ratio       & Shape      & Yes     & No       & No     & No          & No       & No \\
+Cond. Num.         & Shape      & Yes     & Yes      & No     & Yes         & No       & No \\
+Corner Jacobian    & Volume     & Yes     & No       & No     & No          & No       & No \\
+Gen. Cond. Num.    & Shape      & Yes     & Yes      & No     & Yes         & No       & No \\
+Ideal W. Inv. Mean & Shape      & Yes     & Yes      & Yes    & Yes         & Yes      & Yes \\
+Ideal W. Mean Ratio& Shape      & Yes     & Yes      & Yes    & Yes         & Yes      & Yes \\
+Mean Ratio         & Shape      & Yes     & Yes      & Yes    & Yes         & Yes      & Yes \\
+Untangle Beta      & Untangle   & Yes     & Yes      & Yes    & Yes         & No       & No \\
+\hline
+\end{tabular}
+\label{Element Metrics}
+\caption{List of the element-based quality metrics provided with Mesquite.}
+\end{center}
+\end{table}
+
+\begin{table}[!hp]
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|c|}
+\hline
+Name               & Group      & Tri/Tet & Quad/Hex & Hybrid & Feasibility & Analytic & Analytic \\
+                   &            &         &          &        & Region      & Gradient & Hessian  \\
+\hline
+Edge Length        & Smoothness & Yes     & Yes      & No     & No          & No       & No       \\
+Edge Length Range  & Smoothness & Yes     & Yes      & No     & No          & No       & No       \\
+Local Size         & Volume     & Yes     & Yes      & No     & No          & Mo       & No       \\
+Vert. Cond. Num.   & Shape      & Yes     & Yes      & No     & Yes         & No       & No       \\
+\hline
+\end{tabular}
+\label{Vertex Metrics}
+\caption{List of the vertex-based quality metrics provided with Mesquite.}
+\end{center}
+\end{table}
+
+\begin{table}[!hp]
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|}
+\hline
+Name                   & Tri/Tet & Quad/Hex & Hybrid & Feasibility & Analytic & Analytic \\
+                       &         &          &        & Region      & Gradient & Hessian  \\
+\hline
+DFT                    & Yes     & Yes      & Yes    & Yes         & Yes      & Yes      \\
+DFT Inverse Mean Ratio & Yes     & Yes      & Yes    & Yes         & Yes      & Yes      \\
+DFT No Barrier         & Yes     & Yes      & Yes    & No          & Yes      & Yes      \\
+DFT Strong Barrier     & Yes     & Yes      & Yes    & Yes         & Yes      & Yes      \\
+DFT Weak Barrier       & Yes     & Yes      & Yes    & Yes         & Yes      & Yes      \\
+RI DFT                 & Yes     & Yes      & No     & Yes         & Yes      & Yes      \\
+sI DFT                 & Yes     & Yes      & No     & Yes         & No       & No       \\
+sRI DFT                & Yes     & Yes      & No     & Yes         & No       & No       \\
+\hline
+\end{tabular}
+\label{Corner Metrics}
+\caption{List of the corner-based quality metrics provided with Mesquite.}
+\end{center}
+\end{table}
+
+\begin{table}[!hp]
+\begin{center}
+\begin{tabular}{|l|c|c|c|}
+\hline
+Name        & Operation        & Analytic Gradient & Analytic Hessian \\
+\hline
+Add         & $q_1 + q_2$      & No                & No               \\
+Mupliply    & $q_1 \times q_2$ & No                & No               \\
+Power       & $q_1^s$          & No                & No               \\
+Scalar Add  & $q_1 + s$        & No                & No               \\
+Scalar Mult.& $q_1 \times s$   & No                & No               \\
+\hline
+\end{tabular}
+\label{Composite Metrics}
+\caption{List of the quality metrics for combining or modifying other quality metrics.}
+\end{center}
+\end{table}
+
 \begin{table*}[htb]
 \begin{center}
 \begin{tabular}{|l|c|c|c|c|}
 \hline
 Metric & Group & Mesh Type & Feasibility Region &Entity Type\\
 \hline
-Area Smoothness &Smoothness &Tri,Quad,Tet,Hex& No & Elements\\
-Aspect Ratio & Shape &Tri,Quad,Tet,Hex & No & Elements\\
-Composite Mult. & Composite &Any& Yes/No & Either\\
-Composite Power & Composite &Any& Yes/No & Either\\
-Cond. Num.& Shape & Tri,Quad,Tet,Hex & Yes & Elements \\
-Corner Jacobian & Volume & Tri,Quad,Tet,Hex & No & Elements \\
-Edge Length &Smoothness & Tri,Quad,Tet,Hex & No & Vertices \\
-Edge Length Range & Smoothness & Tri,Quad,Tet,Hex &No & Vertices\\
-Mean Ratio &Shape & Any & Tri,Quad,Tet,Hex,Pyr &Elements\\
-Untangle Beta &Untangle &Tri,Quad,Tet,Hex,Pyr &Yes&Elements\\
-Vert. Cond. Num.& Shape & Tri,Quad,Tet,Hex & Yes & Vertices\\
+Add                & Composite  & Any                  & N/A & Any      \\
+Area Smoothness    & Smoothness & Tri,Quad,Tet,Hex     & No  & Elements \\
+Aspect Ratio       & Shape      & Tri,Tet              & No  & Elements \\
+Cond. Num.         & Shape      & Tri,Quad,Tet,Hex     & Yes & Elements \\
+Corner Jacobian    & Volume     & Tri,Quad,Tet,Hex     & No  & Elements \\
+Edge Length        & Smoothness & Tri,Quad,Tet,Hex     & No  & Vertices \\
+Edge Length Range  & Smoothness & Tri,Quad,Tet,Hex     & No  & Vertices \\
+Gen. Cond. Num.    & Shape      & Tri,Quad,Tet,Hex     & Yes & Elements \\
+Ideal W. Inv. Mean Ratio& Shape & Tri,Quad,Tet,Hex,Pyr & Yes & Elements \\
+Ideal W. Mean Ratio& Shape      & Tri,Quad,Tet,Hex,Pyr & Yes & Elements \\
+Mean Ratio         & Shape      & Tri,Quad,Tet,Hex,Pyr & Yes & Elements \\
+Multiply           & Composite  & Any                  & N/A & Any      \\
+Power              & Composite  & Any                  & N/A & Any      \\
+Scalar Add         & Composite  & Any                  & N/A & Any      \\
+Scalar Multiply    & Composite  & Any                  & N/A & Any      \\
+Untangle Beta      & Untangle   & Tri,Quad,Tet,Hex,Pyr & Yes & Elements \\
+Vert. Cond. Num.   & Shape      & Tri,Quad,Tet,Hex     & Yes & Vertices \\
 \hline
 \end{tabular}
 \label{current-metrics}
