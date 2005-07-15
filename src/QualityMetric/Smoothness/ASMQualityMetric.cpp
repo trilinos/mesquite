@@ -48,10 +48,7 @@ using namespace Mesquite;
 
 ASMQualityMetric::ASMQualityMetric()
 {
-  MsqError err;
   set_metric_type(ELEMENT_BASED);
-  set_element_evaluation_mode(ELEMENT_VERTICES, err);
-  MSQ_CHKERR(err);
   avgMethod=QualityMetric::MAXIMUM;
   feasible=0;
   set_name("Area Smoothness");

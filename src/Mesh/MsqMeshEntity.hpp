@@ -37,8 +37,8 @@
 #define MSQMESHENTITY_HPP
 
 #include "Mesquite.hpp"
-#include "QualityMetric.hpp"
 #include "TopologyInfo.hpp"
+#include "Vector3D.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 #  include <vector.h>
@@ -58,6 +58,8 @@
 namespace Mesquite
 {
   class PatchData;
+  class MsqVertex;
+  class Matrix3D;
 
   /*!
       \class MsqMeshEntity
@@ -120,6 +122,16 @@ namespace Mesquite
 
     msq_stdc::size_t get_vertex_index(msq_stdc::size_t vertex_in_element) const;
     
+    //! Appends the coordinates of the sample point to 'coords'.
+    /*! Places Vector3Ds holding the sample point for a given EvaluationMode
+      and element type combination into a given vector of Vector3D.
+      \param QualityMetric::EvaluationMode mode Specifies the type of sample
+      points being used.
+      \param vector<Vecotr3D> &coords A vector of Vector3D passed by
+      reference which is used to store the sample points.
+    */
+    void get_sample_points( msq_std::vector<Vector3D> &coords, MsqError &err);
+
       //fills array of Vector3D's with the jacobian vectors and the 
       //number of jacobian vectors
     void compute_weighted_jacobian(PatchData &pd, Vector3D& sample_point,
@@ -127,11 +139,6 @@ namespace Mesquite
                                    short &num_jacobian_vectors,
                                    MsqError &err );
     
-      //!Returns a list of sample points given an evaluationmode 
-    void get_sample_points(QualityMetric::ElementEvaluationMode mode,
-                           msq_std::vector<Vector3D> &coords,
-                           MsqError &err);
-
     //! Returns the centroid of the element.
     void get_centroid(Vector3D& centroid, const PatchData &pd, MsqError &err) const;
     

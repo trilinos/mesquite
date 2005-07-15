@@ -35,6 +35,7 @@
 */
 #include <math.h>
 #include "LInfTemplate.hpp"
+#include "QualityMetric.hpp"
 
 namespace Mesquite {
 

@@ -53,7 +53,6 @@ namespace Mesquite {
 IdealWeightInverseMeanRatio::IdealWeightInverseMeanRatio( MsqError& err, double pow_dbl )
 {
   set_metric_type(ELEMENT_BASED);
-  set_element_evaluation_mode(ELEMENT_VERTICES, err); MSQ_ERRRTN(err);
 
   set_gradient_type(ANALYTICAL_GRADIENT);
   set_hessian_type(ANALYTICAL_HESSIAN);

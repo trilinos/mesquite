@@ -33,6 +33,7 @@
 */
 
 #include "QualityAssessor.hpp"
+#include "QualityMetric.hpp"
 #include "PatchData.hpp"
 #include "MsqMeshEntity.hpp"
 #include "MsqVertex.hpp"

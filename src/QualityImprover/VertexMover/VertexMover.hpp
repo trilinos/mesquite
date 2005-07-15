@@ -91,7 +91,7 @@ namespace Mesquite
     short num_jacobian_vectors;
     size_t i =0;
     for(i=0;i<num_elements;++i){
-      elems[i].get_sample_points(QualityMetric::ELEMENT_VERTICES,sample_points,err);
+      elems[i].get_sample_points(sample_points,err);
       msq_std::vector<Vector3D>::iterator iter=sample_points.begin();
       while(iter!=sample_points.end()){
         elems[i].compute_weighted_jacobian(pd, (*iter),

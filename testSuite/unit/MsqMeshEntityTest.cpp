@@ -176,7 +176,7 @@ public:
     MsqMeshEntity* hex = oneHexPatch.get_element_array(err); CPPUNIT_ASSERT(!err);
     // get the ideal tets sample points 
     std::vector<Vector3D> sample_points;
-    hex->get_sample_points(QualityMetric::ELEMENT_VERTICES, sample_points, err); CPPUNIT_ASSERT(!err);
+    hex->get_sample_points(sample_points, err); CPPUNIT_ASSERT(!err);
       // and get the jacobian vectors (should be the identity matrix).
       //for the first sample point (0,0,0)
     short num_jac_vec;
@@ -214,7 +214,7 @@ public:
     MsqMeshEntity* tet = oneTetPatch.get_element_array(err); CPPUNIT_ASSERT(!err);
       // get the ideal tets sample points 
     std::vector<Vector3D> sample_points;
-    tet->get_sample_points(QualityMetric::ELEMENT_VERTICES, sample_points, err); CPPUNIT_ASSERT(!err);
+    tet->get_sample_points(sample_points, err); CPPUNIT_ASSERT(!err);
     // and get the jacobian vectors (should be the identity matrix).
     short num_jac_vec;
     std::vector<Vector3D>::iterator sp;
@@ -250,7 +250,7 @@ void test_compute_weigted_jacobian_ideal_quad()
     MsqMeshEntity* quad = oneQuadPatch.get_element_array(err); CPPUNIT_ASSERT(!err);
     // get the ideal quads sample points 
     std::vector<Vector3D> sample_points;
-    quad->get_sample_points(QualityMetric::ELEMENT_VERTICES, sample_points, err); CPPUNIT_ASSERT(!err);
+    quad->get_sample_points(sample_points, err); CPPUNIT_ASSERT(!err);
     // and get the jacobian vectors (should be the identity matrix).
     short num_jac_vec;
     std::vector<Vector3D>::iterator sp;
@@ -285,7 +285,7 @@ void test_compute_weigted_jacobian_ideal_tri()
     MsqMeshEntity* tri = oneTriPatch.get_element_array(err); CPPUNIT_ASSERT(!err);
     // get the ideal tris sample points 
     std::vector<Vector3D> sample_points;
-    tri->get_sample_points(QualityMetric::ELEMENT_VERTICES, sample_points, err); CPPUNIT_ASSERT(!err);
+    tri->get_sample_points(sample_points, err); CPPUNIT_ASSERT(!err);
     // and get the jacobian vectors (should be the identity matrix).
     short num_jac_vec;
     std::vector<Vector3D>::iterator sp;

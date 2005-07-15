@@ -58,7 +58,6 @@ SimplifiedGeometryEngine.
 //#include "StoppingCriterion.hpp"
 #include "QualityAssessor.hpp"
 
-#include "GeneralizedConditionNumberQualityMetric.hpp"
 #include "ConditionNumberQualityMetric.hpp"
 #include "LPtoPTemplate.hpp"
 #include "ASMQualityMetric.hpp"

@@ -56,7 +56,7 @@ Unit testing of various functions in the ObjectiveFunction class.
 #include "CompositeOFMultiply.hpp"
 #include "CompositeOFScalarMultiply.hpp"
 #include "CompositeOFScalarAdd.hpp"
-#include "GeneralizedConditionNumberQualityMetric.hpp"
+#include "ConditionNumberQualityMetric.hpp"
 #include "IdealWeightInverseMeanRatio.hpp"
 #include "IdealWeightMeanRatio.hpp"
 #include "EdgeLengthQualityMetric.hpp"
@@ -175,7 +175,7 @@ public:
       
     // instantiates a couple of QualityMetrics
     ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);CPPUNIT_ASSERT(!err);
-    ShapeQualityMetric* condition_nb = new GeneralizedConditionNumberQualityMetric;
+    ShapeQualityMetric* condition_nb = new ConditionNumberQualityMetric;
 
     // and creates a composite objective function.
     LPtoPTemplate* LP2_mean_ratio = new LPtoPTemplate(mean_ratio, 2, err); CPPUNIT_ASSERT(!err);

@@ -55,7 +55,6 @@ correct metric return values.
 #include "QualityMetric.hpp"
 #include "ConditionNumberQualityMetric.hpp"
 #include "VertexConditionNumberQualityMetric.hpp"
-#include "GeneralizedConditionNumberQualityMetric.hpp"
 #include "IdealWeightInverseMeanRatio.hpp"
 #include "IdealWeightMeanRatio.hpp"
 #include "AspectRatioGammaQualityMetric.hpp"
@@ -335,15 +334,10 @@ public:
      elems=triPatch.get_element_array(err);
      CPPUNIT_ASSERT(!err);
      ShapeQualityMetric *met = new ConditionNumberQualityMetric;
-     ShapeQualityMetric *gmet = new GeneralizedConditionNumberQualityMetric;
        //Check condition number of ideal tri
      v_flag=met->evaluate_element(triPatch,&elems[0],val,err);CPPUNIT_ASSERT(!err);
      CPPUNIT_ASSERT(v_flag==true);
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
-       //Check generalized condition number of ideal tri
-     v_flag=gmet->evaluate_element(triPatch,&elems[0],val2,err);CPPUNIT_ASSERT(!err);
-     CPPUNIT_ASSERT(v_flag==true);
-     CPPUNIT_ASSERT_DOUBLES_EQUAL(val2,1.0,qualTol);
        //For now, make sure cond num and generalized cond num give
        //equivalent answer for arbitrary tri.
 //      v_flag=met->evaluate_element(triPatch,&elems[1],val,err); CPPUNIT_ASSERT(!err);
@@ -363,10 +357,6 @@ public:
      CPPUNIT_ASSERT(v_flag==true);
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
      
-     //Check generalized condition number of ideal quad
-     v_flag=gmet->evaluate_element(quadPatch,&elems[0],val2,err);CPPUNIT_ASSERT(!err);
-     CPPUNIT_ASSERT(v_flag==true);
-     CPPUNIT_ASSERT_DOUBLES_EQUAL(val2,1.0,qualTol);
        //For now, make sure cond num and generalized cond num give
        //equivalent answer for arbitrary quad.
 //      v_flag=met->evaluate_element(quadPatch,&elems[1],val,err); CPPUNIT_ASSERT(!err);
@@ -386,15 +376,9 @@ public:
      v_flag=met->evaluate_element(tetPatch,&elems[0],val,err);CPPUNIT_ASSERT(!err);
      CPPUNIT_ASSERT(v_flag==true);
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
-       //Check generalized condition number of ideal tet
-     v_flag=gmet->evaluate_element(tetPatch,&elems[0],val2,err);CPPUNIT_ASSERT(!err);
-     CPPUNIT_ASSERT(v_flag==true);
-     CPPUNIT_ASSERT_DOUBLES_EQUAL(val2,1.0,qualTol);
        //For now, make sure cond num and generalized cond num give
        //equivalent answer for arbitrary tet.
      v_flag=met->evaluate_element(tetPatch,&elems[1],val,err); CPPUNIT_ASSERT(!err);
-     CPPUNIT_ASSERT(v_flag==true);
-     v_flag=gmet->evaluate_element(tetPatch,&elems[1],val2,err); CPPUNIT_ASSERT(!err);
      CPPUNIT_ASSERT(v_flag==true);
      
      val -= val2;
@@ -410,10 +394,6 @@ public:
      v_flag=met->evaluate_element(hexPatch,&elems[0],val,err);CPPUNIT_ASSERT(!err);
      CPPUNIT_ASSERT(v_flag==true);
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
-       //Check generalized condition number of ideal hex
-     v_flag=gmet->evaluate_element(hexPatch,&elems[0],val2,err);CPPUNIT_ASSERT(!err);
-     CPPUNIT_ASSERT(v_flag==true);
-     CPPUNIT_ASSERT_DOUBLES_EQUAL(val2,1.0,qualTol);
      
        //For now, make sure cond num and generalized cond num give
        //equivalent answer for arbitrary tet.
@@ -423,14 +403,7 @@ public:
        cout << "\nCON HEX " << val;
      CPPUNIT_ASSERT(v_flag==true);
      
-     v_flag=gmet->evaluate_element(hexPatch,&elems[1],val2,err); CPPUNIT_ASSERT(!err);
-     CPPUNIT_ASSERT(v_flag==true);
-     val -= val2;
-     if(pF)
-        cout << "\nGEN HEX " << val2;
-     CPPUNIT_ASSERT_DOUBLES_EQUAL(val,0.0,qualTol);
      delete met;
-     delete gmet;
    }
     //******************** utility functions ***********************      
 

@@ -44,6 +44,7 @@
 #include "ObjectiveFunction.hpp"
 #include "MsqFreeVertexIndexIterator.hpp"
 #include "MsqDebug.hpp"
+#include "QualityMetric.hpp"
 
 namespace Mesquite
 {

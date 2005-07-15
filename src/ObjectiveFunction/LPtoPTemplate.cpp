@@ -40,6 +40,7 @@
 #include "MsqTimer.hpp"
 #include "MsqHessian.hpp"
 #include "MsqDebug.hpp"
+#include "QualityMetric.hpp"
 
 using  namespace Mesquite;  
 

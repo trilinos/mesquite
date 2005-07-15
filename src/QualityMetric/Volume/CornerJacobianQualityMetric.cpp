@@ -47,9 +47,7 @@ using namespace Mesquite;
 
 CornerJacobianQualityMetric::CornerJacobianQualityMetric()
 {
-  MsqError err;
   set_metric_type(ELEMENT_BASED);
-  set_element_evaluation_mode(ELEMENT_VERTICES, err); MSQ_CHKERR(err);
   avgMethod=QualityMetric::NONE;
   feasible=0;
   set_name("Corner Jacobian Volume (or Area)");

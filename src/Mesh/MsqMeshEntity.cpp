@@ -219,80 +219,27 @@ void Mesquite::MsqMeshEntity::compute_weighted_jacobian(PatchData &pd,
   \param vector<Vecotr3D> &coords A vector of Vector3D passed by
   reference which is used to store the sample points.
 */
-void Mesquite::MsqMeshEntity::get_sample_points(QualityMetric::ElementEvaluationMode mode,
+void Mesquite::MsqMeshEntity::get_sample_points(
                                       vector<Vector3D> &coords,
                                       MsqError &err){
   switch (mType)
   {
     case TRIANGLE:
-      switch (mode)
-      {
-        case (QualityMetric::ELEMENT_VERTICES):
           coords.reserve(3);
           coords.push_back(Vector3D(0.0, 0.0, 0.0));	
           coords.push_back(Vector3D(1.0, 0.0, 0.0));
           coords.push_back(Vector3D(0.5, MSQ_SQRT_THREE_DIV_TWO, 0.0));
           break;
-          
-            //The following need to be verified
-        case (QualityMetric::LINEAR_GAUSS_POINTS):
-          coords.reserve(1);
-          coords.push_back(Vector3D(0.5, MSQ_SQRT_THREE_DIV_TWO/2.0, 0.0));
-          break;
-          
-        case (QualityMetric::QUADRATIC_GAUSS_POINTS):
-          coords.reserve(3);
-          coords.push_back(Vector3D(0.5, 0.0, 0.0));	
-          coords.push_back(Vector3D(0.75, MSQ_SQRT_THREE_DIV_TWO/2.0, 0.0));
-          coords.push_back(Vector3D(0.25, MSQ_SQRT_THREE_DIV_TWO/2.0, 0.0));
-          break;
-          
-        case (QualityMetric::CUBIC_GAUSS_POINTS):
-          coords.reserve(4);
-          coords.push_back(Vector3D(0.5, MSQ_SQRT_THREE_DIV_TWO/2.0, 0.0));
-          coords.push_back(Vector3D(0.2, 2.0* MSQ_SQRT_THREE_DIV_TWO/15.0,
-                                    0.0));
-          coords.push_back(Vector3D(0.8, 2.0* MSQ_SQRT_THREE_DIV_TWO/15.0,
-                                    0.0));
-          coords.push_back(Vector3D(0.5, 11.0* MSQ_SQRT_THREE_DIV_TWO/15.0,
-                                    0.0));
-          break;
-        default:
-            //return error saying sample points for mode not implem.    
-          MSQ_SETERR(err)("Requested Sample Point Mode not implemented",
-                          MsqError::NOT_IMPLEMENTED);
-          return;
-      }
-      break;
     
     case QUADRILATERAL:
-      switch (mode)
-      {
-        case (QualityMetric::ELEMENT_VERTICES):
           coords.reserve(4);
           coords.push_back(Vector3D(0.0, 0.0, 0.0));	
           coords.push_back(Vector3D(1.0, 0.0, 0.0));
           coords.push_back(Vector3D(1.0, 1.0, 0.0));
           coords.push_back(Vector3D(0.0, 1.0, 0.0));
           break;
-            //THESE NEED TO BE VERIFIED
-        case (QualityMetric::LINEAR_GAUSS_POINTS):
-          coords.push_back(Vector3D(0.5, 0.5, 0.0));
-          break;
-        case (QualityMetric::QUADRATIC_GAUSS_POINTS):
-        case (QualityMetric::CUBIC_GAUSS_POINTS):
-        default:
-            //return error saying sample points for mode not implem.
-          MSQ_SETERR(err)("Requested Sample Point Mode not implemented",
-                          MsqError::NOT_IMPLEMENTED);
-          return;
-      }
-      break;
 
     case TETRAHEDRON:
-      switch (mode)
-      {
-        case (QualityMetric::ELEMENT_VERTICES):
           coords.reserve(4);
           coords.push_back(Vector3D(0.0, 0.0, 0.0));	
           coords.push_back(Vector3D(1.0, 0.0, 0.0));
@@ -300,24 +247,8 @@ void Mesquite::MsqMeshEntity::get_sample_points(QualityMetric::ElementEvaluation
           coords.push_back(Vector3D(0.5, MSQ_SQRT_THREE_DIV_TWO/3.0,
                                     MSQ_SQRT_TWO_DIV_SQRT_THREE));
           break;
-        case (QualityMetric::LINEAR_GAUSS_POINTS):
-
-        case (QualityMetric::QUADRATIC_GAUSS_POINTS):
-
-        case (QualityMetric::CUBIC_GAUSS_POINTS):
-
-        default:
-            //return error saying sample points for mode not implem.    
-          MSQ_SETERR(err)("Requested Sample Point Mode not implemented",
-                          MsqError::NOT_IMPLEMENTED);
-          return;
-      }   
-      break;
 
       case HEXAHEDRON:
-      switch (mode)
-      {
-        case (QualityMetric::ELEMENT_VERTICES):
           coords.reserve(8);
           coords.push_back(Vector3D(0.0, 0.0, 0.0));	
           coords.push_back(Vector3D(1.0, 0.0, 0.0));
@@ -328,19 +259,6 @@ void Mesquite::MsqMeshEntity::get_sample_points(QualityMetric::ElementEvaluation
           coords.push_back(Vector3D(1.0, 1.0, 1.0));
           coords.push_back(Vector3D(0.0, 1.0, 1.0));
           break;
-        case (QualityMetric::LINEAR_GAUSS_POINTS):
-
-        case (QualityMetric::QUADRATIC_GAUSS_POINTS):
-
-        case (QualityMetric::CUBIC_GAUSS_POINTS):
-
-        default:
-            //return error saying sample points for mode not implem.    
-          MSQ_SETERR(err)("Requested Sample Point Mode not implemented",
-                          MsqError::NOT_IMPLEMENTED);
-          return;
-      }   
-      break;
       
     default:
         //return error saying sample points for mode not implem.

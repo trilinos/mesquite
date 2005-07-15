@@ -70,9 +70,7 @@ namespace Mesquite
         b3Con(-1.0),
         c3Con(2.0/3.0)
      {
-       MsqError err;
        set_metric_type(ELEMENT_BASED);
-       set_element_evaluation_mode(ELEMENT_VERTICES, err); 
        set_negate_flag(-1);
        set_gradient_type(ANALYTICAL_GRADIENT);
        set_hessian_type(ANALYTICAL_HESSIAN);

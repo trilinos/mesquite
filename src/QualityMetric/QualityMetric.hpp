@@ -70,7 +70,6 @@ namespace Mesquite
        when appropriate.
        */
      QualityMetric() :
-       evalMode(EEM_UNDEFINED),
        mType(MT_UNDEFINED),
        gradType(NUMERICAL_GRADIENT),
        hessianType(NUMERICAL_HESSIAN),
@@ -104,26 +103,6 @@ namespace Mesquite
      
      MetricType get_metric_type() { return mType; }
 
-     /*!\enum ElementEvaluationMode
-       is for metrics of type ELEMENT_BASED only.
-       It allows you to indicate whether we are evaluating
-       the metric based on element vertices, or element gauss points. */
-     enum ElementEvaluationMode
-     {
-       EEM_UNDEFINED,
-       ELEMENT_VERTICES,
-       LINEAR_GAUSS_POINTS,
-       QUADRATIC_GAUSS_POINTS,
-       CUBIC_GAUSS_POINTS
-     };
-     
-     //!Sets the evaluation mode for the ELEMENT_BASED metrics.
-     void set_element_evaluation_mode(ElementEvaluationMode mode, MsqError &err);
-     
-     //!Returns the evaluation mode for the metric
-     inline ElementEvaluationMode  get_element_evaluation_mode()
-        { return evalMode; }
-     
        /*!AveragingMethod allows you to set how the quality metric values
          attained at each sample point will be averaged together to produce
          a single metric value for an element.
@@ -391,34 +370,11 @@ namespace Mesquite
      int feasible;
      msq_std::string metricName;
   private:
-     ElementEvaluationMode evalMode;
      MetricType mType;
      GRADIENT_TYPE gradType;
      HESSIAN_TYPE hessianType;
      int negateFlag;
    };
-
-  
-  inline void QualityMetric::set_element_evaluation_mode(ElementEvaluationMode mode, MsqError &err)
-  {
-    if (mType == VERTEX_BASED) {
-      MSQ_SETERR(err)("function must only be used for ELEMENT_BASED metrics.", MsqError::INVALID_STATE);
-      return;
-    }
-    
-    switch(mode)
-      {
-      case(ELEMENT_VERTICES):
-      case(LINEAR_GAUSS_POINTS):
-      case(QUADRATIC_GAUSS_POINTS):
-      case(CUBIC_GAUSS_POINTS):
-        evalMode=mode;
-        break;
-      default:
-        MSQ_SETERR(err)("Requested mode not implemented", MsqError::NOT_IMPLEMENTED);
-      }
-    return;
-  }
 
   
   inline void  QualityMetric::set_averaging_method(AveragingMethod method, MsqError &err)
