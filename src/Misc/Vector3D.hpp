@@ -129,6 +129,7 @@ namespace Mesquite
     friend void plusEqAx(Vector3D& v, const Matrix3D& A, const Vector3D& x);
     //! \f$ v += A^T*x \f$
     friend void plusEqTransAx(Vector3D& v, const Matrix3D& A, const Vector3D& x);
+    friend void eqTransAx(Vector3D& v, const Matrix3D& A, const Vector3D& x);
     
     // Comparison functions
     friend bool operator==(const Vector3D &lhs, const Vector3D &rhs);

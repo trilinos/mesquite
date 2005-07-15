@@ -82,26 +82,26 @@ namespace Mesquite
 
    
     void copy(const double*  v)
-    { memcpy(v_, v, 9*sizeof(double)); }
+    { 
+      v_[0] = v[0];
+      v_[1] = v[1];
+      v_[2] = v[2];
+      v_[3] = v[3];
+      v_[4] = v[4];
+      v_[5] = v[5];
+      v_[6] = v[6];
+      v_[7] = v[7];
+      v_[8] = v[8];
+    }
 
-    void set(const double& val)
+    void set(double val)
     {
       v_[0]=val;  v_[1]=val;  v_[2]=val;
       v_[3]=val;  v_[4]=val;  v_[5]=val;
       v_[6]=val;  v_[7]=val;  v_[8]=val;
     }
 
-    void set_values(const char *s)
-    {
-#ifdef MSQ_USE_OLD_IO_HEADERS
-      ::istrstream ins(s);
-#else
-      std::istringstream ins(s);
-#endif
-      ins>>v_[0];  ins>>v_[1];  ins>>v_[2]; 
-      ins>>v_[3];  ins>>v_[4];  ins>>v_[5]; 
-      ins>>v_[6];  ins>>v_[7];  ins>>v_[8]; 
-    }
+    inline void set_values(const char *s);
     
   public:
 
@@ -118,7 +118,7 @@ namespace Mesquite
     }
 
     //! sets all entries of the matrix to value.
-    Matrix3D(const double& value)
+    Matrix3D(double value)
     {
       set(value);
     }
@@ -143,13 +143,11 @@ namespace Mesquite
     // assignments
     Matrix3D& operator=(const Matrix3D &A)
     {
-      if (v_ == A.v_)
-        return *this;
       copy(A.v_);
       return *this;
     }
         
-    Matrix3D& operator=(const double& scalar)
+    Matrix3D& operator=(double scalar)
     { 
       set(scalar); 
       return *this;
@@ -196,20 +194,23 @@ namespace Mesquite
     friend bool operator!=(const Matrix3D &lhs, const Matrix3D &rhs);
     friend double Frobenius_2(const Matrix3D &A);
     friend Matrix3D transpose(const Matrix3D &A);
+    inline Matrix3D& transpose();
     friend const Matrix3D operator+(const Matrix3D &A, const Matrix3D &B);
     friend const Matrix3D operator-(const Matrix3D &A, const Matrix3D &B) ;
     friend const Matrix3D operator*(const Matrix3D &A, const Matrix3D &B);
+    inline Matrix3D& equal_mult_elem( const Matrix3D& A );
     friend const Matrix3D mult_element(const Matrix3D &A, const Matrix3D &B);
-    friend int matmult(Matrix3D& C, const Matrix3D  &A, const Matrix3D &B);
+    inline Matrix3D& assign_product( const Matrix3D& A, const Matrix3D& B );
+    friend void matmult(Matrix3D& C, const Matrix3D  &A, const Matrix3D &B);
     friend const Vector3D operator*(const Matrix3D  &A, const Vector3D &x);
     friend const Vector3D operator*(const Vector3D &x, const Matrix3D  &A);
-    const Matrix3D operator*(const double &s) const;
-    friend const Matrix3D operator*(const double &s, const Matrix3D &A);    
+    const Matrix3D operator*(double s) const;
+    friend const Matrix3D operator*(double s, const Matrix3D &A);    
     void operator+=(const Matrix3D &rhs);
     void operator-=(const Matrix3D &rhs);
-    void operator*=(const double &s);
-    Matrix3D plus_transpose(const Matrix3D &B) const;
-    void plus_transpose_equal(const Matrix3D &B);
+    void operator*=(double s);
+    friend Matrix3D plus_transpose(const Matrix3D& A, const Matrix3D &B);
+    Matrix3D& plus_transpose_equal(const Matrix3D &B);
     Matrix3D& outer_product(const Vector3D &v1, const Vector3D &v2);
     void fill_lower_triangle();
 
@@ -217,6 +218,7 @@ namespace Mesquite
     friend void eqAx(Vector3D& v, const Matrix3D& A, const Vector3D& x);
     //! \f$ v += A*x \f$
     friend void plusEqAx(Vector3D& v, const Matrix3D& A, const Vector3D& x);
+    friend void eqTransAx(Vector3D& v, const Matrix3D& A, const Vector3D& x); 
     //! \f$ v += A^T*x \f$
     friend void plusEqTransAx(Vector3D& v, const Matrix3D& A, const Vector3D& x);
      
@@ -276,29 +278,40 @@ namespace Mesquite
     return s;
   }
 
+  void Matrix3D::set_values(const char *s)
+  {
+#ifdef MSQ_USE_OLD_IO_HEADERS
+    ::istrstream ins(s);
+#else
+    std::istringstream ins(s);
+#endif
+    ins >> *this;
+  }
+
   // *********** matrix operators *******************
 
   // comparison functions
   inline bool operator==(const Matrix3D &lhs, const Matrix3D &rhs)
   {
-    return (memcmp(lhs.v_, rhs.v_, 9*sizeof(double)) == 0);
+    return lhs.v_[0] == rhs.v_[0]
+        && lhs.v_[1] == rhs.v_[1]
+        && lhs.v_[2] == rhs.v_[2]
+        && lhs.v_[3] == rhs.v_[3]
+        && lhs.v_[4] == rhs.v_[4]
+        && lhs.v_[5] == rhs.v_[5]
+        && lhs.v_[6] == rhs.v_[6]
+        && lhs.v_[7] == rhs.v_[7]
+        && lhs.v_[8] == rhs.v_[8];
   }
   inline bool operator!=(const Matrix3D &lhs, const Matrix3D &rhs)
-  {
-    return (memcmp(lhs.v_, rhs.v_, 9*sizeof(double)) != 0);
-  }
+  { return !(lhs == rhs); }
 
   //! \return A+B
   inline const Matrix3D operator+(const Matrix3D &A, 
                             const Matrix3D &B)
   {
-    Matrix3D tmp;
-    size_t i;
-    for (i=0; i<3; ++i) {
-      tmp[i][0] = A[i][0] + B[i][0];
-      tmp[i][1] = A[i][1] + B[i][1];
-      tmp[i][2] = A[i][2] + B[i][2];
-    }
+    Matrix3D tmp(A);
+    tmp += B;
     return tmp;
   }
 
@@ -306,40 +319,57 @@ namespace Mesquite
   inline const Matrix3D operator-(const Matrix3D &A, 
                             const Matrix3D &B)
   {
-    Matrix3D tmp;
-    size_t i;
-    for (i=0; i<3; ++i) {
-      tmp[i][0] = A[i][0] - B[i][0];
-      tmp[i][1] = A[i][1] - B[i][1];
-      tmp[i][2] = A[i][2] - B[i][2];
-    }
+    Matrix3D tmp(A);
+    tmp -= B;
     return tmp;
   }
+  
+  inline Matrix3D& Matrix3D::equal_mult_elem( const Matrix3D& A )
+  {
+  	v_[0] *= A.v_[0];    
+  	v_[1] *= A.v_[1];    
+  	v_[2] *= A.v_[2];    
+  	v_[3] *= A.v_[3];    
+  	v_[4] *= A.v_[4];    
+  	v_[5] *= A.v_[5];    
+  	v_[6] *= A.v_[6];    
+  	v_[7] *= A.v_[7];    
+  	v_[8] *= A.v_[8];
+    return *this;
+  } 
 
     //! Multiplies entry by entry. This is NOT a matrix multiplication. 
   inline const Matrix3D mult_element(const Matrix3D &A, 
                                const Matrix3D &B)
   {
-    Matrix3D tmp;
-    size_t i;
-    for (i=0; i<3; ++i) {
-      tmp[i][0] = A[i][0] * B[i][0];
-      tmp[i][1] = A[i][1] * B[i][1];
-      tmp[i][2] = A[i][2] * B[i][2];
-    }
+    Matrix3D tmp(A);
+    tmp.equal_mult_elem(B);
     return tmp;
   }
 
   //! Return the square of the Frobenius norm of A, i.e. sum (diag (A' * A))
   inline double Frobenius_2(const Matrix3D &A)
   {
-    double fro=0.;
-    for (int i=0; i<3; ++i) {
-        fro += A[0][i]*A[0][i] + A[1][i]*A[1][i] + A[2][i]*A[2][i] ;
-    }
-    return fro;
+    return A.v_[0] * A.v_[0]
+         + A.v_[1] * A.v_[1]
+         + A.v_[2] * A.v_[2]
+         + A.v_[3] * A.v_[3]
+         + A.v_[4] * A.v_[4]
+         + A.v_[5] * A.v_[5]
+         + A.v_[6] * A.v_[6]
+         + A.v_[7] * A.v_[7]
+         + A.v_[8] * A.v_[8];
   }
-
+  
+  inline Matrix3D& Matrix3D::transpose()
+  {
+    double t;
+    t = v_[1]; v_[1] = v_[3]; v_[3] = t;
+    t = v_[2]; v_[2] = v_[6]; v_[6] = t;
+    t = v_[5]; v_[5] = v_[7]; v_[7] = t;
+    return *this;
+  }
+  
   inline Matrix3D transpose(const Matrix3D &A)
   {
     Matrix3D S;
@@ -371,47 +401,36 @@ namespace Mesquite
   }
 
   //! multiplies each entry by the scalar s
-  inline void Matrix3D::operator*=(const double &s)
+  inline void Matrix3D::operator*=(double s)
   {
       v_[0] *= s; v_[1] *= s; v_[2] *= s;
       v_[3] *= s; v_[4] *= s; v_[5] *= s;
       v_[6] *= s; v_[7] *= s; v_[8] *= s;
   }
-
-  //! \f$ + B^T  \f$
-  inline Matrix3D Matrix3D::plus_transpose(const Matrix3D &B) const
+  
+  //! \f$ += B^T  \f$
+  inline Matrix3D& Matrix3D::plus_transpose_equal( const Matrix3D& b )
   {
-    Matrix3D tmp;
-
-    tmp.v_[0] = v_[0] + B.v_[0];
-    tmp.v_[1] = v_[1] + B.v_[3];
-    tmp.v_[2] = v_[2] + B.v_[6];
+    v_[0] += b.v_[0];
+    v_[1] += b.v_[3];
+    v_[2] += b.v_[6];
     
-    tmp.v_[3] = v_[3] + B.v_[1];
-    tmp.v_[4] = v_[4] + B.v_[4];
-    tmp.v_[5] = v_[5] + B.v_[7];
+    v_[3] += b.v_[1];
+    v_[4] += b.v_[4];
+    v_[5] += b.v_[7];
     
-    tmp.v_[6] = v_[6] + B.v_[2];
-    tmp.v_[7] = v_[7] + B.v_[5];
-    tmp.v_[8] = v_[8] + B.v_[8];
-
-    return tmp;
+    v_[6] += b.v_[2];
+    v_[7] += b.v_[5];
+    v_[8] += b.v_[8];
+    return *this;
   }
 
-  //! \f$ += B^T  \f$
-  inline void Matrix3D::plus_transpose_equal(const Matrix3D &B)
+  //! \f$ + B^T  \f$
+  inline Matrix3D plus_transpose(const Matrix3D& A, const Matrix3D &B) 
   {
-    v_[0] += B.v_[0];
-    v_[1] += B.v_[3];
-    v_[2] += B.v_[6];
-    
-    v_[3] += B.v_[1];
-    v_[4] += B.v_[4];
-    v_[5] += B.v_[7];
-    
-    v_[6] += B.v_[2];
-    v_[7] += B.v_[5];
-    v_[8] += B.v_[8];
+    Matrix3D tmp(A);
+    tmp.plus_transpose_equal( B );
+    return tmp;
   }
 
   //! Computes \f$ A = v_1 v_2^T \f$
@@ -449,79 +468,51 @@ namespace Mesquite
                             const Matrix3D &B)
   {
     Matrix3D tmp;
-    double sum;
-    for (size_t i=0; i<3; ++i)
-      for (size_t k=0; k<3; ++k)
-        {
-          sum = 0;
-          for (size_t j=0; j<3; j++)
-            sum = sum +  A[i][j] * B[j][k];
-          tmp[i][k] = sum; 
-        }
+    tmp.assign_product( A, B );
     return tmp;
   }
    
    //! multiplies each entry by the scalar s
-  inline const Matrix3D Matrix3D::operator*(const double &s) const
+  inline const Matrix3D Matrix3D::operator*(double s) const
   {
-    Matrix3D temp;
-    temp[0][0]=v_[0] * s; temp[0][1]=v_[1] * s; temp[0][2]=v_[2] * s;
-    temp[1][0]=v_[3] * s; temp[1][1]=v_[4] * s; temp[1][2]=v_[5] * s;
-    temp[2][0]=v_[6] * s; temp[2][1]=v_[7] * s; temp[2][2]=v_[8] * s;
+    Matrix3D temp(*this);
+    temp *= s;
     return temp;
   }
      //!friend function to allow for commutatative property of
      //! scalar mulitplication.
-   inline const Matrix3D operator*(const double &s, const Matrix3D &A)
+   inline const Matrix3D operator*(double s, const Matrix3D &A)
    {
      return (A.operator*(s));
    }
    
-   
-  //! \f$ C = A \times B \f$
-  inline int matmult(Matrix3D& C, const Matrix3D  &A, 
-                     const Matrix3D &B)
+
+  inline Matrix3D& Matrix3D::assign_product( const Matrix3D& A, const Matrix3D& B)
   {
-//     double sum;
-//     const double* row_i;
-//     const double* col_k;
-//     for (size_t i=0; i<3; ++i)
-//       for (size_t k=0; k<3; ++k)
-//         {
-//           row_i  = &(A[i][0]);
-//           col_k  = &(B[0][k]);
-//           sum = 0;
-//           for (size_t j=0; j<3; ++j)
-//             {
-//               sum  += *row_i * *col_k;
-//               row_i++;
-//               col_k += 3;
-//             }
-//           C[i][k] = sum; 
-//         }
-      //multiply A times B and store in C.
-    C.v_[0] = A.v_[0]*B.v_[0]+A.v_[1]*B.v_[3]+A.v_[2]*B.v_[6];
-    C.v_[1] = A.v_[0]*B.v_[1]+A.v_[1]*B.v_[4]+A.v_[2]*B.v_[7];
-    C.v_[2] = A.v_[0]*B.v_[2]+A.v_[1]*B.v_[5]+A.v_[2]*B.v_[8];
-    C.v_[3] = A.v_[3]*B.v_[0]+A.v_[4]*B.v_[3]+A.v_[5]*B.v_[6];
-    C.v_[4] = A.v_[3]*B.v_[1]+A.v_[4]*B.v_[4]+A.v_[5]*B.v_[7];
-    C.v_[5] = A.v_[3]*B.v_[2]+A.v_[4]*B.v_[5]+A.v_[5]*B.v_[8];
-    C.v_[6] = A.v_[6]*B.v_[0]+A.v_[7]*B.v_[3]+A.v_[8]*B.v_[6];
-    C.v_[7] = A.v_[6]*B.v_[1]+A.v_[7]*B.v_[4]+A.v_[8]*B.v_[7];
-    C.v_[8] = A.v_[6]*B.v_[2]+A.v_[7]*B.v_[5]+A.v_[8]*B.v_[8];
-    
-    return 0;
+    v_[0] = A.v_[0]*B.v_[0] + A.v_[1]*B.v_[3] + A.v_[2]*B.v_[6];
+    v_[1] = A.v_[0]*B.v_[1] + A.v_[1]*B.v_[4] + A.v_[2]*B.v_[7];
+    v_[2] = A.v_[0]*B.v_[2] + A.v_[1]*B.v_[5] + A.v_[2]*B.v_[8];
+    v_[3] = A.v_[3]*B.v_[0] + A.v_[4]*B.v_[3] + A.v_[5]*B.v_[6];
+    v_[4] = A.v_[3]*B.v_[1] + A.v_[4]*B.v_[4] + A.v_[5]*B.v_[7];
+    v_[5] = A.v_[3]*B.v_[2] + A.v_[4]*B.v_[5] + A.v_[5]*B.v_[8];
+    v_[6] = A.v_[6]*B.v_[0] + A.v_[7]*B.v_[3] + A.v_[8]*B.v_[6];
+    v_[7] = A.v_[6]*B.v_[1] + A.v_[7]*B.v_[4] + A.v_[8]*B.v_[7];
+    v_[8] = A.v_[6]*B.v_[2] + A.v_[7]*B.v_[5] + A.v_[8]*B.v_[8];
+    return *this;
+  }
+   
+
+  //! \f$ C = A \times B \f$
+  inline void matmult(Matrix3D& C, const Matrix3D  &A, const Matrix3D &B)
+  {
+    C.assign_product( A, B );
   }
 
   /*! \brief Computes \f$ A v \f$ . */
   inline const Vector3D operator*(const Matrix3D  &A, const Vector3D &x)
   {
-    Vector3D tmp; // initializes to 0
-    for (size_t i=0; i<3; ++i)
-      {
-        const double* rowi = A[i];
-        tmp[i] = rowi[0]*x[0] + rowi[1]*x[1] + rowi[2]*x[2];
-      }
+    Vector3D tmp;
+    eqAx( tmp, A, x );
     return tmp;
   }
 
@@ -532,14 +523,9 @@ namespace Mesquite
       transposed. */
   inline const Vector3D operator*(const Vector3D &x, const Matrix3D  &A)
   {
-    Vector3D res(0., 0., 0.);
-    for (size_t i=0; i<3; ++i)
-      {
-        const double* rowi = A[i];
-        for (size_t j=0; j<3; ++j)
-          res[j] += rowi[j] * x[i];
-      }
-    return res;
+    Vector3D tmp;
+    eqTransAx( tmp, A, x );
+    return tmp;
   }
    
   inline void eqAx(Vector3D& v, const Matrix3D& A, const Vector3D& x)
@@ -555,6 +541,13 @@ namespace Mesquite
      v.mCoords[1] += A.v_[3]*x[0] + A.v_[4]*x.mCoords[1] + A.v_[5]*x.mCoords[2];
      v.mCoords[2] += A.v_[6]*x[0] + A.v_[7]*x.mCoords[1] + A.v_[8]*x.mCoords[2];
   }
+  
+  inline void eqTransAx(Vector3D& v, const Matrix3D& A, const Vector3D& x)
+  {
+     v.mCoords[0] = A.v_[0]*x.mCoords[0] + A.v_[3]*x.mCoords[1] + A.v_[6]*x.mCoords[2];
+     v.mCoords[1] = A.v_[1]*x.mCoords[0] + A.v_[4]*x.mCoords[1] + A.v_[7]*x.mCoords[2];
+     v.mCoords[2] = A.v_[2]*x.mCoords[0] + A.v_[5]*x.mCoords[1] + A.v_[8]*x.mCoords[2];
+  } 
    
   inline void plusEqTransAx(Vector3D& v, const Matrix3D& A, const Vector3D& x)
   {
@@ -576,7 +569,7 @@ namespace Mesquite
   }
 
   inline void inv(Matrix3D &Ainv, const Matrix3D &A) {
-    double inv_detA = 1 / (det(A));
+    double inv_detA = 1.0 / (det(A));
       //First row of Ainv
     Ainv.v_[0] = inv_detA*( A.v_[4]*A.v_[8]-A.v_[5]*A.v_[7] );
     Ainv.v_[1] = inv_detA*( A.v_[2]*A.v_[7]-A.v_[8]*A.v_[1] );
@@ -589,27 +582,12 @@ namespace Mesquite
     Ainv.v_[6] = inv_detA*( A.v_[3]*A.v_[7]-A.v_[6]*A.v_[4] );
     Ainv.v_[7] = inv_detA*( A.v_[1]*A.v_[6]-A.v_[7]*A.v_[0] );
     Ainv.v_[8] = inv_detA*( A.v_[0]*A.v_[4]-A.v_[3]*A.v_[1] );
-    return;
   }
 
   inline void timesInvA(Matrix3D& B, const Matrix3D &A) {
 
     Matrix3D Ainv;
-
-    double inv_detA = 1 / ( det(A) );
-
-    Ainv[0][0] = inv_detA*( A.v_[4]*A.v_[8]-A.v_[5]*A.v_[7] );
-    Ainv[0][1] = inv_detA*( A.v_[2]*A.v_[7]-A.v_[8]*A.v_[1] );
-    Ainv[0][2] = inv_detA*( A.v_[1]*A.v_[5]-A.v_[4]*A.v_[2] );
-
-    Ainv[1][0] = inv_detA*( A.v_[5]*A.v_[6]-A.v_[8]*A.v_[3] );
-    Ainv[1][1] = inv_detA*( A.v_[0]*A.v_[8]-A.v_[6]*A.v_[2] );
-    Ainv[1][2] = inv_detA*( A.v_[2]*A.v_[3]-A.v_[5]*A.v_[0] );
-
-    Ainv[2][0] = inv_detA*( A.v_[3]*A.v_[7]-A.v_[6]*A.v_[4] );
-    Ainv[2][1] = inv_detA*( A.v_[1]*A.v_[6]-A.v_[7]*A.v_[0] );
-    Ainv[2][2] = inv_detA*( A.v_[0]*A.v_[4]-A.v_[3]*A.v_[1] );
-
+    inv( Ainv, A );
     B = B*Ainv;
   }
 

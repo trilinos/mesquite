@@ -138,7 +138,7 @@ public:
                       " 5.838881  -0.699068  -2.203728 ";
 
 
-    tolEps = 1e-14;
+    tolEps = 1e-12;
   }
   
   void tearDown()
@@ -211,7 +211,7 @@ public:
   }
   void test_plus_transpose()
   {
-    Matrix3D plus_trans = mMat1.plus_transpose(mMat2);
+    Matrix3D plus_trans = plus_transpose( mMat1, mMat2 );
     CPPUNIT_ASSERT( plus_trans==mMat1plus2trans );
   }
    
