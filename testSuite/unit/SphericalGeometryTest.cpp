@@ -59,7 +59,6 @@ SimplifiedGeometryEngine.
 //#include "StoppingCriterion.hpp"
 #include "QualityAssessor.hpp"
 
-#include "GeneralizedConditionNumberQualityMetric.hpp"
 #include "IdealWeightInverseMeanRatio.hpp"
 #include "ConditionNumberQualityMetric.hpp"
 #include "LPtoPTemplate.hpp"
