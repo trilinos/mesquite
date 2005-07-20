@@ -102,7 +102,7 @@ debug symbols or the optimization level.
 
 Most options to the configure script are either of the form \texttt{--with-FEATURE[=ARG]} or
 \texttt{--enable-FEATURE[=ARG]}.  Some options may accept an additional argument following 
-an '=' character.  For each --with-FEATURE option, a there is also a corresponding
+an '=' character.  For each --with-FEATURE option, there is also a corresponding
 --without-FEATURE option.  Similarly, there is a --disable-FEATURE option 
 corresponding to each --enable-FEATURE option.  The negative forms fo the options 
 (--without-FEATURE and --disable-FEATURE) do not accept an additional argument.  
@@ -274,8 +274,10 @@ adding the following lines to the file template described in
   }
 \end{verbatim}
 Now that the mesh is loaded, you must add it to a {\tt MeshSet}, which
-is a flexible object that can group several contiguous {\tt LAF: do
-they really have to be contiguous?} meshes to improve them simultaneously:
+is a flexible object that can group several
+%mbrewer: commented out 'contiguous'
+%contiguous {\tt LAF: do they really have to be contiguous?}
+meshes to improve them simultaneously:
 \begin{verbatim}
   Mesquite::MeshSet mesh_set;
   mesh_set.add_mesh(&my_mesh, err); 
@@ -300,14 +302,14 @@ point and a normal, on the MeshSet:
 \begin{verbatim}
   Vector3D normal(0,0,1);
   Vector3D point(0,0,5);
-  PlanarDomain my_mesh_plan(normal, point, my_mesh);
-  mesh_set.set_domain_constraint(&my_mesh_plan);
+  PlanarDomain my_mesh_plan(normal, point);
+  mesh_set.set_domain_constraint(&my_mesh_plan, err);
 \end{verbatim}
 
-Finally, nnote that Mesquite also provides a function to write a mesh
+Finally, note that Mesquite also provides a function to write a mesh
 file in VTK format, given a \texttt{MeshImpl} object:
 \begin{verbatim}
-  my_mesh->write_vtk("original_mesh",err); 
+  my_mesh.write_vtk("original_mesh.vtk",err); 
 \end{verbatim}
 
 
@@ -324,8 +326,16 @@ allow users to set the most important parameters of the underlying
 algorithms and metrics (see section
 \ref{sec:wrappers} for details).
 \begin{verbatim}
-  Mesquite::ShapeImprovementWrapper mesh_quality_algorithm;
-  mesh_quality_algorithm.run_instructions(mesh_set, err); 
+  Mesquite::ShapeImprovementWrapper mesh_quality_algorithm(err);
+  mesh_quality_algorithm.run_instructions(mesh_set, err);
+    //Should check the error object after the instruction is ran
+    // to see whether the instructions were all successful.
+  if (err) 
+  {
+    std::cout << err << std::endl;
+    return 1;
+  }
+
 \end{verbatim}
 Once the algorithm has been executed using the {\tt run\_instructions} member
 function of the wrapper class, the improved mesh can be written to a new
@@ -343,9 +353,46 @@ argument by typing
 ./tutorial ../../meshFiles/2D/VTK/square_quad_10_rand.vtk
 \end{verbatim}
 The code creates the files original\_mesh.vtk
-and improved\_mesh.vtk in the current directory. 
+and improved\_mesh.vtk in the current directory.  These two meshes, the
+original and the optimized, are
+shown in figure \ref{fig:square_rand}.  The text output of the code,
+shown below, reports the inverse mean ratio quality metric statistics for
+the mesh at three stages:  the original mesh, the mesh at an intermediate
+step of the optimization, and the final mesh.  The optimized mesh consists
+of square quadrilaterals which have an inverse mean ratio value of 1.0.
+\begin{verbatim}
+************** QualityAssessor Summary **************
 
-{\tt LAF include the output of running the tutorial code here too}
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+             metric     minimum     average         rms     maximum
+ Inverse Mean Ratio     1.01013     1.16655      1.1738     1.79134
+
+************** QualityAssessor Summary **************
+
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+             metric     minimum     average         rms     maximum
+ Inverse Mean Ratio     1.01013     1.16655      1.1738     1.79134
+
+************** QualityAssessor Summary **************
+
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
+
+             metric     minimum     average         rms     maximum
+ Inverse Mean Ratio           1           1           1           1
+\end{verbatim}
+\begin{figure*}[htbp]
+\begin{center}
+    \includegraphics{square_rand.eps}
+    \caption{square\_quad\_10\_rand.vtk mesh. The original mesh is on the left, the mesh smoothed with the \texttt{ShapeImprovementWrapper} is shown on the right.}
+    \label{fig:square_rand}
+\end{center}
+\end{figure*}
+
 
 \subsection{Improving the Mesh with the Low Level API}
 \label{sec:tutDetailedAPI}
@@ -357,9 +404,11 @@ instantiating particular instances of each.  For each, various options
 such as numerical or analytical gradient and Hessian evaluations or
 the patch size can be selected.  Furthermore, the user can fine tune
 the optimization algorithm performance by creating and setting the parameters 
-of the termination criterion for both inner and outer iterations.
-{\tt LAF have we talked about inner and outer iterations before? perhaps
-too advanced for the tutorial}
+of the termination criteria.
+%for both inner and outer iterations.
+%mbrewer removed reference to inner and outer iterations.
+%{\tt LAF have we talked about inner and outer iterations before? perhaps
+%too advanced for the tutorial}
 
 Once these core objects have been created and customized, the user
 creates an instruction queue and adds one or more quality improvers
@@ -377,12 +426,12 @@ treated in section
 
 \begin{verbatim}
     // creates a mean ratio quality metric ...
-  MeanRatioQualityMetric mean_ratio;
-  mean_ratio.set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
-  mean_ratio.set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
+  IdealWeightInverseMeanRatio inverse_mean_ratio(err);MSQ_CHKERR(err);
+  inverse_mean_ratio.set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
+  inverse_mean_ratio.set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
 
     // sets the objective function template
-  LPtoPTemplate obj_func(&mean_ratio, 2, err); MSQ_CHKERR(err);
+  LPtoPTemplate obj_func(&inverse_mean_ratio, 2, err); MSQ_CHKERR(err);
   obj_func.set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
   
     // creates the optimization procedures
@@ -401,16 +450,16 @@ treated in section
   f_newton.set_inner_termination_criterion(&tc_inner);
 
     // creates a quality assessor
-  QualityAssessor m_ratio_qa(&mean_ratio,QualityAssessor::AVERAGE);
-
+  QualityAssessor m_ratio_qa(&inverse_mean_ratio,QualityAssessor::AVERAGE,err);
+  MSQ_CHKERR(err);
     // creates an instruction queue
   InstructionQueue queue;
-  queue.add_quality_assessor(&m_ratio_qa, err); 
-  queue.set_master_quality_improver(&f_newton, err); 
-  queue.add_quality_assessor(&m_ratio_qa, err); 
+  queue.add_quality_assessor(&m_ratio_qa, err); MSQ_CHKERR(err);
+  queue.set_master_quality_improver(&f_newton, err); MSQ_CHKERR(err);
+  queue.add_quality_assessor(&m_ratio_qa, err); MSQ_CHKERR(err);
 
     // do optimization of the mesh_set
-  queue1.run_instructions(mesh_set, err); 
+  queue.run_instructions(mesh_set, err); 
 \end{verbatim} 
 
 \subsection{Mesh Improvement Examples}
@@ -435,7 +484,7 @@ thrown.
 We can now improve the mesh with the wrapper mentioned in
 \ref{sec:tutWrapper} or the detailed API mentioned in
 \ref{sec:tutDetailedAPI}. 
-Because we changed tphe normal, the driver code must be recompiled;
+Because we changed the normal, the driver code must be recompiled;
 otherwise the code and executable are as before.
 Once the code is recompiled, type 
 \begin{verbatim}
@@ -446,21 +495,24 @@ The smoothed mesh is shown in the right image of figure
 \ref{fig:hole}.
 The vertex locations have been repositioned and significantly improve
 the quality of the mesh, as shown by the onscreen
-quality assessor output: 
+quality assessor output:  
 \begin{verbatim}
-************  Quality summary of MeshSet  *****************
-ELEMENT BASED METRIC :: Mean Ratio  (140 elements)
-Average    = 8.583908e+01
-o Executing VertexMover::loop_over_mesh()
+************** QualityAssessor Summary **************
 
-o  Performing Feasible Newton optimization.
-  .
-  .
-  .
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed metric.
 
-************  Quality summary of MeshSet  *****************
-ELEMENT BASED METRIC :: Mean Ratio  (140 elements)
-Average    = 1.834787e+00
+             metric     average
+ Inverse Mean Ratio     85.8391
+
+************** QualityAssessor Summary **************
+
+  There were no inverted elements detected. 
+  No entities had undefined values for any computed  metric.
+
+             metric     average
+ Inverse Mean Ratio     1.83479
+
 \end{verbatim}
 \begin{figure*}[htbp]
 \begin{center}

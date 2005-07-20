@@ -78,7 +78,7 @@ into two general catagories.  Vertex movers (subclasses of \tt{VertexMover})
 change vertex positions to improve the mesh quality.  Topology modifiers (subclasses
 of \tt{TopologyModifier}) modify the mesh topology (for example flipping algorithms).
 These methods take as input a mesh quality objective function ($F=f \circ q$).
-The concrete \texttt{QualityImprover} always acts on an
+The concrete \texttt{QualityImprover} often acts on an
 \texttt{ObjectiveFunction} pointer to retrieve the function value and
 gradient $\nabla F$, and sometimes the Hessian ${\cal H} F$, for a certain mesh and concrete \texttt{ObjectiveFunction} /
 \texttt{QualityMetric} combination.  Dynamic polymorphism ensures at
@@ -94,9 +94,12 @@ Mesquite wrappers (section \ref{sec:wrappers}) already have an embedded default 
 criterion. The termination criterion provides an automatic mechanism to stop an optimization
 procedure. An example of a termination criterion is stopping the quality
 improvement when the objective function gradient norm is close
-to zero in a non-linear programming problem. Many other criterions are available in Mesquite (see
-section \ref{sec:TerminationCriterion}). When using the detailed API, termination criterions have to
-be set in order for the quality improver to terminate. 
+to zero in a non-linear programming problem. Many other criteria are available in Mesquite (see
+section \ref{sec:TerminationCriterion}).  Generally, when using the
+detailed API, termination criteria have to be set in order for the
+quality improver to terminate, although some \texttt{VertexMover}s
+provide default criteria which are used if the user does not
+explicitly set the \texttt{TerminationCriterion}.
  
 
 \subsection{Quality Assessors}
@@ -223,20 +226,21 @@ mesh quality is assessed and reported again.
 
 \subsection{Quality Metric} \label{sec:QualityMetric}
 
-{\it 
-What is a quality metric? Define full range, acceptable range, what is means 
-if the metric uses a map, nodal-invariance, well-posed metrics, averaging 
-methods, sample points. Give a list of the individual metrics we support. 
-Provide a key to the tables.
-}
+%{\it 
+%What is a quality metric? Define full range, acceptable range, what it means 
+%if the metric uses a map, nodal-invariance, well-posed metrics, averaging 
+%methods, sample points. Give a list of the individual metrics we support. 
+%Provide a key to the tables.
+%}
 
 \subsubsection{Concept}
 
 In Mesquite, the \texttt{QualityMetric} class provides a measure of
 the quality of individual mesh entities.  Quality metrics can evaluate
-either element quality (for example, the mean ratio shape quality
-metric) or vertex quality (for example, the sum of the adjacent edge
-lengths squared can be used as a measure of vertex smoothness).  
+either element quality (for example, the mean ratio quality
+metric provides a measure of element shape quality) or vertex quality
+(for example, the sum of the adjacent edge lengths squared provides a
+measure of vertex smoothness).  
 
 In addition to the quality metric function value, the {\tt
 QualityMetric} class also provides the gradient and Hessian
@@ -245,7 +249,8 @@ approximations of the gradient and Hessian are automatically provided
 by the \texttt{QualityMetric} base class.  QualityMetric implementations
 may can optionally
 implement analytical expressions for the gradient and Hessian, which are 
-typically more computationally efficient.  For example, the mean ratio
+typically more computationally efficient and accurate.  For example, the
+mean ratio
 quality metric implementation provides an analytic calculation of the gradient 
 that is approximately twice as fast as the numerical solution, and an analytic
 calculation of the Hessian that is almost five times as fast as the
@@ -275,7 +280,7 @@ lists the quality metrics currently available within Mesquite.  For
 detailed definitions of the metrics, see \cite{Kn01}.  We note that
 the implementation of the mean ratio metric has been extensively
 optimized, and analytical gradients and Hessians are available for
-that function.  MAny other metrics currently use numerical gradients and
+that function.  Many other metrics currently use numerical gradients and
 Hessians.
 
 The two composite metrics which are currently implemented
@@ -662,7 +667,7 @@ one iteration in the global case.
 
 Note that an interrupt handler (SIGINT) is also available, see section \ref{sec:Ctrl-C}. 
 
-\subsubsection{Available Termination Criterions}
+\subsubsection{Available Termination Criteria}
 A wide range of cost, quality, 
 and progress-centric termination
 criterion types have been studied. These criteria have two basic types - 
@@ -687,7 +692,7 @@ with the \texttt{set\_inner\_termination\_criterion} and the \texttt{set\_outer\
 functions. Note that setting an inner or outer criterion on a \texttt{QualityImprover} overwrites
 the previous inner or outer criterion.
 
-The list of available termination criterions follows; those are the possible value of the
+The list of available termination criteria follows; those are the possible value of the
 \texttt{TCType} enum. Make sure to consult the doxygen documentation
 in mesquite/doc/user/doxygen for a list up to date with your Mesquite release. 
 \begin{description}
