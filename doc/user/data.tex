@@ -21,11 +21,11 @@ information and closest point information are required to ensure
 vertices are constrained to the geometric domain.
 
 Mesquite defines object interfaces for accessing mesh data and quering 
-geometric domains.  These are defined in the \tt{Mesquite::Mesh} and 
-\tt{Mesquite::MeshDomain} classes.  An application will typically provide custom implementations of the \tt{Mesquite::Mesh} and \tt{Mesquite::MeshDomain} interfaces.  However, Mesquite also provides 
-implementations of the \tt{Mesquite::Mesh} interface for accessing 
+geometric domains.  These are defined in the {\tt Mesquite::Mesh} and 
+{\tt Mesquite::MeshDomain} classes.  An application will typically provide custom implementations of the {\tt Mesquite::Mesh} and {\tt Mesquite::MeshDomain} interfaces.  However, Mesquite also provides 
+implementations of the {\tt Mesquite::Mesh} interface for accessing 
 mesh via files (Section \ref{sec:meshFiles}) and for accessing mesh
-through the TSTT mesh interface (section \ref{sec:TSTT}.  Additionally, Mesquite provides a few trivial implementations of \tt{Mesquite::MeshDomain} for working with two-dimensional meshes and for testing.
+through the TSTT mesh interface (section \ref{sec:TSTT}.  Additionally, Mesquite provides a few trivial implementations of {\tt Mesquite::MeshDomain} for working with two-dimensional meshes and for testing.
 
 \section{Mesh Interface Concepts}
 
@@ -62,12 +62,12 @@ These interfaces are data-structure neutral and use only primitive
 data types; an application may implement the Mesquite interfaces
 without changing its existing mesh data structures.  Mesquite uses
 handles to reference individual mesh entities.  Mesquite will treat
-the handles as an opaque value.  It is guaranteed that the \tt{Mesh::EntityHandle} type is at least the size of a pointer. 
+the handles as an opaque value.  It is guaranteed that the {\tt Mesh::EntityHandle} type is at least the size of a pointer. 
 
 \section{Reading in a Mesh File} \label{sec:meshFiles}
 
 The simplest way to start using Mesquite is to import a mesh from a file
-using the \tt{MeshImpl} class in Mesquite.  The \tt{MeshImpl} class supports reading
+using the {\tt MeshImpl} class in Mesquite.  The {\tt MeshImpl} class supports reading
 mesh from VTK version 2.0 \cite{VTKbook, VTKuml} and optionally ExodusII
 files. See Sections \ref{sec:depends} and \ref{sec:compiling} for more 
 information regarding the optional support for ExodusII files.
@@ -94,7 +94,7 @@ and \texttt{MeshImpl::read\_exodus()} are used to read mesh from files.
 
 %\subsection{Implementation Details}
 %
-%The implementation details must be looked up in the doxygen documentation %located in the \tt{doc/user/doxygen} subdirectory.
+%The implementation details must be looked up in the doxygen documentation %located in the {\tt doc/user/doxygen} subdirectory.
 
 %  While Mesquite should provide some testing of Mesh interfaces, using
 %  the unit testing framework as described below will NOT work and 
@@ -108,7 +108,7 @@ and \texttt{MeshImpl::read\_exodus()} are used to read mesh from files.
 %The implementation of the Mesquite mesh interface is considerably eased by using %the unit testing
 %framework. From the mesquite/testSuite/unit directory, change the %MeshInterfaceTest.cpp file to
 %instantiate your mesh interface implentation (i.e. replace occurences of %\texttt{MeshImpl} with your
-%class). Run \tt{make} and run the test:
+%class). Run {\tt make} and run the test:
 %\begin{verbatim} 
 %./msq_test MeshInterfaceTest
 %\end{verbatim} 
@@ -157,12 +157,12 @@ class, \texttt{MeshDomain}, must be inherited and implemented by the user in ord
 geometry information to Mesquite.  
 
 There are cases where the application need not provide an instance of an
-object implementing the \tt{MeshDomain} interface.  For both 2D and 3D meshes,
+object implementing the {\tt MeshDomain} interface.  For both 2D and 3D meshes,
 one of the most important functions of the domain is to constrain the boundary
 of the mesh.  Without such a constraint, the optimzation may not be well-defined.  However, as an alternative to providing a domain for the boundary
 mesh vertices, the application may simply mark all the boundary vertices as 
 fixed.  
 
 As Mesquite works with $\mathbb{R}^{3}$ coordinates, a domain must be provided
-when meshing purely $\mathbb{R}^{2}$ meshes to constrain the mesh to a single plane in $\mathbb{R}^{3}$.  The \tt{PlanarDomain} class provided by Mesquite may be 
+when meshing purely $\mathbb{R}^{2}$ meshes to constrain the mesh to a single plane in $\mathbb{R}^{3}$.  The {\tt PlanarDomain} class provided by Mesquite may be 
 used for this purpose.

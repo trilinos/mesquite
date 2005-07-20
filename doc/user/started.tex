@@ -302,8 +302,8 @@ point and a normal, on the MeshSet:
 \begin{verbatim}
   Vector3D normal(0,0,1);
   Vector3D point(0,0,5);
-  PlanarDomain my_mesh_plan(normal, point);
-  mesh_set.set_domain_constraint(&my_mesh_plan, err);
+  PlanarDomain my_mesh_plane(normal, point);
+  mesh_set.set_domain_constraint(&my_mesh_plane, err);
 \end{verbatim}
 
 Finally, note that Mesquite also provides a function to write a mesh
@@ -420,9 +420,9 @@ In this section, we provide a simple example to highlight the main
 steps needed for this approach.  The code segment given below performs
 the same functionality as the wrapper class highlighted in the
 previous section.  The comment lines provide high level documentation;
-the details of the each class and the low-level API are extensively
-treated in section
-\ref{spec:detailedAPI}.
+the details of each class and the low-level API are extensively
+treated in Section 
+\ref{sec:detailedAPI}.
 
 \begin{verbatim}
     // creates a mean ratio quality metric ...
