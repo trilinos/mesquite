@@ -61,7 +61,6 @@
 #include "EdgeLengthQualityMetric.hpp"
 #include "EdgeLengthRangeQualityMetric.hpp"
 #include "FeasibleNewton.hpp"
-#include "GeneralizedConditionNumberQualityMetric.hpp"
 #include "InstructionQueue.hpp"
 #include "IdealWeightInverseMeanRatio.hpp"
 #include "LaplacianIQ.hpp"

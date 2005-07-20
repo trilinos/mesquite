@@ -562,31 +562,33 @@ bool TerminationCriterion::terminate( )
   {
     return_flag = true;
   }
-  
+    //Quality Improvement and Successive Improvements are below.
+    // The relative forms are only valid after the first iteration.
   if (QUALITY_IMPROVEMENT_ABSOLUTE & terminationCriterionFlag &&
       currentOFValue <= qualityImprovementAbsoluteEps)
   {
     return_flag = true;
   }
   
-  if (QUALITY_IMPROVEMENT_RELATIVE & terminationCriterionFlag &&
-      (currentOFValue - lowerOFBound) <= 
-        qualityImprovementRelativeEps * (initialOFValue - lowerOFBound))
-  {
-    return_flag = true;
-  }
-  
   if (SUCCESSIVE_IMPROVEMENTS_ABSOLUTE & terminationCriterionFlag &&
-     (previousOFValue - currentOFValue) <= successiveImprovementsRelativeEps)
+     (previousOFValue - currentOFValue) <= successiveImprovementsAbsoluteEps)
   {
     return_flag = true;
   }
-  
-  if (SUCCESSIVE_IMPROVEMENTS_RELATIVE & terminationCriterionFlag &&
-      (previousOFValue - currentOFValue) <= 
+    //only valid if an iteration has occurred, see above.
+  if(iterationCounter > 0){
+    if (QUALITY_IMPROVEMENT_RELATIVE & terminationCriterionFlag &&
+        (currentOFValue - lowerOFBound) <= 
+        qualityImprovementRelativeEps * (initialOFValue - lowerOFBound))
+    {
+      return_flag = true;
+    }
+    if (SUCCESSIVE_IMPROVEMENTS_RELATIVE & terminationCriterionFlag &&
+        (previousOFValue - currentOFValue) <= 
         successiveImprovementsRelativeEps * (initialOFValue - currentOFValue))
-  {
-    return_flag = true;
+    {
+      return_flag = true;
+    }
   }
   
   if (BOUNDED_VERTEX_MOVEMENT & terminationCriterionFlag && vertexMovementExceedsBound)

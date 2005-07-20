@@ -728,7 +728,7 @@ void QualityAssessor::print_summary( msq_stdio::ostream& stream ) const
   }
   
   if (0 == invalid_count) {
-    stream << "  No entities had undefined values for any metric." 
+    stream << "  No entities had undefined values for any computed metric." 
            << msq_stdio::endl << msq_stdio::endl;
   }
   

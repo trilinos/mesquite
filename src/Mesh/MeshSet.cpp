@@ -689,7 +689,7 @@ void MeshSet::write_vtk(const char* out_filename,
   file << "CELLS " << pd.num_elements() << ' ' << connectivity_size << '\n';
   for (i = 0; i < pd.num_elements(); i++)
   {
-    std::vector<size_t> vtx_indices;
+    msq_std::vector<size_t> vtx_indices;
     pd.elementArray[i].get_node_indices(vtx_indices);
     file << vtx_indices.size();
     for (msq_stdc::size_t j = 0; j < vtx_indices.size(); ++j)
@@ -776,7 +776,7 @@ void MeshSet::write_gnuplot(const char* out_filebase,
   
   for (size_t i=0; i<pd.num_elements(); ++i)
   {
-    std::vector<size_t> vtx_indices;
+    msq_std::vector<size_t> vtx_indices;
     pd.elementArray[i].get_node_indices(vtx_indices);
     for (size_t j = 0; j < vtx_indices.size(); ++j)
     {
