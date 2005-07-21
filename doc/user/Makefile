@@ -26,15 +26,13 @@ COMPONENTS = $(NAME).tex \
 	started.tex \
 	support.tex \
 	team.tex \
-	trouble.tex 
-	
-
+        trouble.tex 
 
 $(NAME).pdf: $(NAME).dvi
 	$(DVI_TO_PDF) $< > $@
 
 $(NAME).ps: $(NAME).dvi
-	$(DVI_TO_PS) $< > $@
+	$(DVI_TO_PS) $< -o $@
 
 $(NAME).dvi: $(NAME).toc $(COMPONENTS)
 	$(LATEX) $(NAME).tex

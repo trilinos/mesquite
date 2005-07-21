@@ -256,7 +256,7 @@ QualityMetric} class also provides the gradient and Hessian
 information needed for many optimization algorithms.  Numerical
 approximations of the gradient and Hessian are automatically provided
 by the \texttt{QualityMetric} base class.  QualityMetric implementations
-may can optionally
+can optionally
 implement analytical expressions for the gradient and Hessian, which are 
 typically more computationally efficient and accurate.  For example, the
 mean ratio
@@ -284,19 +284,22 @@ and untangle.  Composite metrics which allow the user to combine
 multiple metrics or to scale metrics are given a separate group,
 composite.  Future Mesquite development will include the
 implementation of metrics falling under other group headings such as
-orthogonality, shear, and alignment.  Table \ref{current-metrics}
-lists the quality metrics currently available within Mesquite.  For
+orthogonality, shear, and alignment.  Tables \ref{Element Metrics},
+\ref{Vertex Metrics}, \ref{Corner Metrics}, and \ref{Composite Metrics}
+list the quality metrics currently available within Mesquite.  For
 detailed definitions of the metrics, see \cite{Kn01}.  We note that
 the implementation of the mean ratio metric has been extensively
 optimized, and analytical gradients and Hessians are available for
 that function.  Many other metrics currently use numerical gradients and
 Hessians.
 
-The two composite metrics which are currently implemented
-allow users to either multiply two metrics' values
-together or raise a single metric's value to a given power.
-The latter allows for negative powers and can therefore be used
-to obtain the inverse of any Mesquite quality metric.  
+The composite metrics which are currently implemented are listed
+in Table \ref{Composite Metrics}.  These metrics allow users to
+combine two metrics or scale a single metric value.
+The ``Power'' metric allows the user to raise a single metric's
+value to a given power. This metric allows for negative powers
+and can therefore be used to obtain the inverse of any Mesquite
+quality metric.  
 
 \begin{table}[!hp]
 \begin{center}
@@ -315,8 +318,8 @@ Ideal W. Mean Ratio& Shape      & Yes     & Yes      & Yes         & Yes   \\
 Untangle Beta      & Untangle   & Yes     & Yes      & No          & No    \\
 \hline
 \end{tabular}
-\label{Element Metrics}
 \caption{List of the element-based quality metrics provided with Mesquite.}
+\label{Element Metrics}
 \end{center}
 \end{table}
 
@@ -335,8 +338,8 @@ Local Size         & Volume     & Yes     & Yes       & No          & No        
 Vert. Cond. Num.   & Shape      & Yes     & Yes       & Yes         & No         \\
 \hline
 \end{tabular}
-\label{Vertex Metrics}
 \caption{List of the vertex-based quality metrics provided with Mesquite.}
+\label{Vertex Metrics}
 \end{center}
 \end{table}
 
@@ -353,7 +356,7 @@ Name                   & Tri/Tet & Quad/Hex  & Feasibility & Analytic  \\
 I DFT Generalized      & Yes     & Yes       & Yes or No
 \footnote{The generalized version
 of the I DFT metric contains parameters which can be modified by the user.  For certain
-values of these parameters, the metric will require the corner of the mesh to be within a
+values of these parameters, the metric will require the entities of the mesh to be within a
 feasibility region.  For other values of these parameters, the metric will not have this
 requirement.}
                                                            & Yes       \\
@@ -366,8 +369,8 @@ sI DFT                 & Yes     & Yes       & Yes         & No        \\
 sRI DFT                & Yes     & Yes       & Yes         & No        \\
 \hline
 \end{tabular}
-\label{Corner Metrics}
 \caption{List of the target-based quality metrics provided with Mesquite.}
+\label{Corner Metrics}
 \end{minipage}
 \end{center}
 \end{table}
@@ -385,9 +388,10 @@ Scalar Add  & $q_1 + s$        & No                & No               \\
 Scalar Mult.& $q_1 \times s$   & No                & No               \\
 \hline
 \end{tabular}
-\label{Composite Metrics}
 \caption{List of the quality metrics for combining or modifying other quality metrics.}
+\label{Composite Metrics}
 \end{center}
+
 \end{table}
 
 
@@ -409,8 +413,8 @@ Mean Ratio         & Shape      &$[0,1]$      & 1     & 0           & LINEAR\\
 Condition Number   & Shape      &$[1,\infty]$ & 1     & $\infty$    & LINEAR\\ 
 Untangle  Beta     & Untangle   &$[0,\infty]$ & 0\footnote[3]{The untangle beta metric will
 have a positive value for a degenerate element and for some non-inverted elements with a small
-area or volume.  It will have a value of zero for non-inverted elements, including the ``ideally''
-shaped element, as long as those elements have sufficiently large area or volume.}
+area or volume.  It will have a value of zero for non-inverted elements, including ``ideally''
+shaped elements, as long as those elements have sufficiently large area or volume.}
                                                       & $\alpha : \alpha > 0$ \footnotemark[3]
                                                                     & R.M.S.\\ 
 \hline
@@ -494,11 +498,11 @@ Scalar Add     & Ana./Num.& Not Avail.\\
 Scalar Mult.   & Ana./Num.& Not Avail.\\
 \hline
 \end{tabular}
-\label{current-objfunc}
 \caption{List of the current objective functions available within
 Mesquite.  With each function is a description of the types of
 gradient and Hessian information available (Analytical and/or Numerical
 or Not Available).}
+\label{current-objfunc}
 \end{center}
 \end{table}
 
@@ -572,18 +576,28 @@ level with the \texttt{set\_patch\_type} function.
 
 \begin{table}[h]
 \begin{center}
-\begin{tabular}{|l|c|c|c|c|c|}
+\begin{minipage}[h]{\textwidth}
+\renewcommand{\thempfootnote}{\arabic{mpfootnote}}
+\begin{tabular}{|l|c|c|c|}
 \hline
-Solver Name & Description & Templates & L/G & Num/Anal & Fixed Vertices? \\ \hline
-Steepest Descent & Classical & $\ell_p$ & Both & Both & Yes \\
-Conjugate Gradient & & & & & \\
-Feasible Newton & & & & & \\
-Active Set & & Own & & & \\
-Laplace & & None & & & \\
-Randomize & & None & & & \\
+Solver Name        & Templates          & Local or & Analytic or Numeric   \\
+                   &                    & Global   & gradient / Hessian   \\ 
+\hline 
+Steepest Descent   & $\ell_p^p$         & Either   & Either               \\
+Conjugate Gradient & $\ell_p^p$         & Either   & Either               \\
+Feasible Newton    & $\ell_p^p$         & Either   & Either               \\
+Active Set         & Own \footnote{The Active Set solver is hard-coded to improve the ``worst''
+elements.  Thus, this concrete {\tt QualityImprover} essentially uses the $\ell_\infty$ template.}
+                                        & Local    & N/A                  \\
+Laplace            & None               & Local    & N/A                  \\
+Randomize \footnote{Randomize simply perturbs the position of the free vertices in the mesh
+a pseudo-random distance in a pseudo-random direction.  This
+``{\tt QualityImprover}'' is generally used for testing purposes only.}
+                   & None               & Local    & N/A                  \\
 \hline
 \end{tabular}
 \caption{\label{Solvers} Mesquite Solver Summary}
+\end{minipage}
 \end{center}
 \end{table}
 
