@@ -61,7 +61,6 @@ describe main.cpp here
 #include "MsqError.hpp"
 #include "Vector3D.hpp"
 #include "InstructionQueue.hpp"
-#include "MeshSet.hpp"
 #include "PatchData.hpp"
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
@@ -81,11 +80,6 @@ int main()
   MsqPrintError err(msq_stdio::cout);
   Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
   mesh->read_vtk("../../meshFiles/3D/VTK/hexes_4by2by2.vtk", err);
-  
-    // initialises a MeshSet object
-  MeshSet mesh_set1;
-  mesh_set1.add_mesh(mesh, err); 
-  if (err) return 1;
   
     // dbg
   std::cout << " TSTT mesh handle: " << mesh << std::endl;
@@ -128,8 +122,6 @@ int main()
   if (err) return 1;
 // CompositeAndStoppingCriterion sc(&sc1,&sc2);
   pass1->set_inner_termination_criterion(&tc2);
- // sets a culling method on the first QualityImprover
-  pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
 
   // adds 1 pass of pass1 to mesh_set1
 //  queue1.add_preconditioner(pass1, err); 
@@ -146,7 +138,7 @@ int main()
   if (err) return 1;
   
     // launches optimization on mesh_set1
-  queue1.run_instructions(mesh_set1, err);
+  queue1.run_instructions(mesh, err);
   if (err) return 1;
   
   mesh->write_vtk("smoothed_mesh.vtk", err); 

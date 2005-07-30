@@ -53,7 +53,6 @@ Regression testing using the vertex culling algorithms.
 #include "MsqError.hpp"
 #include "Vector3D.hpp"
 #include "InstructionQueue.hpp"
-#include "MeshSet.hpp"
 #include "PatchData.hpp"
 #include "QualityAssessor.hpp"
 
@@ -105,19 +104,12 @@ public:
       MsqPrintError err(cout);
       Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
       mesh->read_vtk("../../meshFiles/2D/VTK/square_quad_10_rand.vtk", err);
+      CPPUNIT_ASSERT(!err);
       
       Vector3D pnt(0,0,5);
       Vector3D s_norm(0,0,1);
       Mesquite::PlanarDomain msq_geom(s_norm, pnt);
-      
-        //Make sure no errors
-      CPPUNIT_ASSERT(!err);
-        // initialises a MeshSet object
-      MeshSet mesh_set1;
-      mesh_set1.add_mesh(mesh, err); CPPUNIT_ASSERT(!err);
-      
-      mesh_set1.set_domain_constraint(&msq_geom, err); CPPUNIT_ASSERT(!err);
-      
+     
         // creates an intruction queue
       InstructionQueue queue1;
       
@@ -153,9 +145,6 @@ public:
       lapl2->set_outer_termination_criterion(&sc2);
       lapl1->set_inner_termination_criterion(&sc_cull);
       lapl2->set_inner_termination_criterion(&sc_cull_2);
-        // sets a culling method on the first QualityImprover
-      lapl1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
-      lapl2->add_culling_method(PatchData::NO_BOUNDARY_VTX);
         // adds 1 pass of pass1 to mesh_set1
       queue1.add_quality_assessor(&stop_qa,err);
        //Make sure no errors
@@ -169,7 +158,7 @@ public:
       queue1.add_quality_assessor(&stop_qa,err);
         //Make sure no errors
       CPPUNIT_ASSERT(!err);
-      queue1.run_instructions(mesh_set1, err);
+      queue1.run_instructions(mesh, &msq_geom, err);
       CPPUNIT_ASSERT(!err);
       
         //Make sure no errors

@@ -36,7 +36,6 @@ Member functions of the Mesquite::ShapeImprovementWrapper class
 
 #include "InstructionQueue.hpp"
 #include "ShapeImprovementWrapper.hpp"
-#include "MeshSet.hpp"
 #include "MsqTimer.hpp"
 #include "MsqDebug.hpp"
 
@@ -111,16 +110,10 @@ ShapeImprovementWrapper::ShapeImprovementWrapper(MsqError& err,
   termInner->add_criterion_type_with_double(TerminationCriterion::GRADIENT_L2_NORM_ABSOLUTE,grad_norm,err);  MSQ_ERRRTN(err);
   termInner->add_criterion_type_with_double(TerminationCriterion::SUCCESSIVE_IMPROVEMENTS_RELATIVE,successiveEps,err);  MSQ_ERRRTN(err);
   termOuter->add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);  MSQ_ERRRTN(err);
-    // sets a culling method on the first QualityImprover
-  untangleGlobal->add_culling_method(PatchData::NO_BOUNDARY_VTX);
   untangleGlobal->set_inner_termination_criterion(untangleGlobalInner);
   untangleGlobal->set_outer_termination_criterion(untangleGlobalOuter);
-    // sets a culling method on the second QualityImprover
-    //untangleLocal->add_culling_method(PatchData::NO_BOUNDARY_VTX);
     //untangleLocal->set_inner_termination_criterion(untangleLocalInner);
     //untangleLocal->set_outer_termination_criterion(untangleLocalOuter);
-    // sets a culling method on the third QualityImprover
-  feasNewt->add_culling_method(PatchData::NO_BOUNDARY_VTX);
   feasNewt->set_inner_termination_criterion(termInner);
   feasNewt->set_outer_termination_criterion(termOuter);
       
@@ -151,7 +144,9 @@ ShapeImprovementWrapper::~ShapeImprovementWrapper()
   constraint has been exceeded.  If the mesh was successfully
   untangled and there is still time remaining, an inverse mean ratio
   shape improvement is then performed.*/
-void ShapeImprovementWrapper::run_instructions(MeshSet &ms, MsqError &err)
+void ShapeImprovementWrapper::run_instructions( Mesh* mesh,
+                                                MeshDomain* domain, 
+                                                MsqError &err)
 {
     //a timer to keep track of the amount of time spent in this wrapper
   Timer totalTimer;
@@ -159,7 +154,7 @@ void ShapeImprovementWrapper::run_instructions(MeshSet &ms, MsqError &err)
     //wrapper must terminate.  If the wrapper is set to terminate on
     //a time constraint, time_remaining will always be 1.0
   double time_remaining=1.0;
-  mQA->loop_over_mesh(ms, err);  MSQ_ERRRTN(err);
+  mQA->loop_over_mesh(mesh, domain, 0, err);  MSQ_ERRRTN(err);
     //if using a time constraint set the termination criteria.
   if(timerNeeded){
     time_remaining=maxTime;
@@ -167,12 +162,12 @@ void ShapeImprovementWrapper::run_instructions(MeshSet &ms, MsqError &err)
     MSQ_ERRRTN(err);
   }
     //global untangler
-  untangleGlobal->loop_over_mesh(ms, err);  MSQ_ERRRTN(err);
+  untangleGlobal->loop_over_mesh(mesh, domain, 0, err);  MSQ_ERRRTN(err);
   if(timerNeeded)
     time_remaining=maxTime-totalTimer.since_birth();
   double func_val=untangleGlobalInner->get_current_function_value();
 
-  mQA->loop_over_mesh(ms, err);  MSQ_ERRRTN(err);
+  mQA->loop_over_mesh(mesh, domain, 0, err);  MSQ_ERRRTN(err);
   if(timerNeeded)
     time_remaining=maxTime-totalTimer.since_birth();
     //if all the time constraint has been exceeded, notify the user that
@@ -187,8 +182,8 @@ void ShapeImprovementWrapper::run_instructions(MeshSet &ms, MsqError &err)
       termInner->add_criterion_type_with_double(TerminationCriterion::CPU_TIME,time_remaining,err);
       MSQ_ERRRTN(err);
     }
-    feasNewt->loop_over_mesh(ms, err);  MSQ_ERRRTN(err);
-    mQA->loop_over_mesh(ms, err);  MSQ_ERRRTN(err);
+    feasNewt->loop_over_mesh( mesh, domain, 0, err);  MSQ_ERRRTN(err);
+    mQA->loop_over_mesh(mesh, domain, 0, err);  MSQ_ERRRTN(err);
   } 
 }
 

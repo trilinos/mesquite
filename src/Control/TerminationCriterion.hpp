@@ -53,7 +53,6 @@ Header file for the TerminationCriterion classes.
 
 namespace Mesquite
 {
-   class MeshSet;
    class MsqError;
    class ObjectiveFunction;
    
@@ -202,7 +201,7 @@ namespace Mesquite
     void remove_culling(MsqError &err);
     
       //! Clear any data accumulated during an outer iteration
-    void reset_outer( MeshSet& ms, ObjectiveFunction* of, MsqError& err );
+    void reset_outer( Mesh* ms, MeshDomain* dm, ObjectiveFunction* of, MsqError& err );
     
       //! Clear any data accumulated during an inner iteration
     void reset_inner( PatchData& pd, ObjectiveFunction* of, MsqError& err );
@@ -221,7 +220,7 @@ namespace Mesquite
       //! criteria during inner iteration.                       
     void accumulate_patch( PatchData& pd, MsqError& err );
     
-    void accumulate_outer( MeshSet& ms, MsqError& err );
+    void accumulate_outer( Mesh* ms, MeshDomain* dm,  MsqError& err );
     
       //! Check if termination criterion has been met
     bool terminate();
@@ -230,7 +229,7 @@ namespace Mesquite
       //!Function which determines whether this patch should be 'culled'
     bool cull_vertices(PatchData &pd, ObjectiveFunction* obj_ptr, MsqError &err);
       //!Cleans up after the TerminationCriterion is finished.
-    void cleanup(MeshSet &ms, MsqError &err);
+    void cleanup(Mesh* ms, MeshDomain* domain, MsqError &err);
 
       //!This function returns the current function value.
       /*! \todo Michael:  this function is not reliable.  It

@@ -45,7 +45,6 @@
 #include "MsqMeshEntity.hpp"
 #include "MsqVertex.hpp"
 #include "MeshInterface.hpp"
-#include "PatchDataMem.hpp"
 #include "CornerTag.hpp"
 #include "TargetMatrix.hpp"
 
@@ -76,7 +75,7 @@
 namespace Mesquite
 {
   class PatchDataVerticesMemento;
-  class MeshSet;
+  class Mesh;
   class TargetMatrix;
 //   class SimplifiedGeometryEngine;
   
@@ -90,6 +89,107 @@ namespace Mesquite
       // Constructor/Destructor
     PatchData();
     ~PatchData();
+    
+    
+      /**\brief For use by testing code -- create patch explicitly
+       * 
+       * Create a patch containing elements of the same type and
+       * without any higher-order nodes.
+       *
+       *\param num_vertex   Number of vertices in patch
+       *\param vtx_coords   Array of vertex coords.  Length must be 3*num_vertex
+       *\param type         Element type
+       *\param connectivity Element connectivity, specified as a list
+       *                    of vertex numbers, beginning with zero.
+       *\param vertex_fixed_flags Optional array to specify which vertices
+       *                    are to be marked as fixed.  If not specified,
+       *                    no vertices are fixed.     
+       */
+    void fill( size_t num_vertex, const double* vtx_coords,
+               size_t num_elem, EntityTopology type, 
+               const size_t* connectivity,
+               const bool* vertex_fixed_flags,
+               MsqError& err );
+    
+      /**\brief For use by testing code -- create patch explicitly
+       * 
+       * Create a patch containing elements without any higher-order nodes.
+       *
+       *\param num_vertex   Number of vertices in patch
+       *\param vtx_coords   Array of vertex coords.  Length must be 3*num_vertex
+       *\param elem_types   The type of each element
+       *\param connectivity Element connectivity, specified as a list
+       *                    of vertex numbers, beginning with zero.
+       *\param vertex_fixed_flags Optional array to specify which vertices
+       *                    are to be marked as fixed.  If NULL,
+       *                    no vertices are fixed.     
+       */
+    void fill( size_t num_vertex, const double* vtx_coords,
+               size_t num_elem, const EntityTopology* elem_types,
+               const size_t* connectivity,
+               const bool* vertex_fixed_flags,
+               MsqError& err );
+    
+      /**\brief For use by testing code -- create patch explicitly
+       * 
+       * Most general form of fill function.  Works for polygons, 
+       * elements with higher-order nodes, etc.
+       *
+       *\param num_vertex   Number of vertices in patch
+       *\param vtx_coords   Array of vertex coords.  Length must be 3*num_vertex
+       *\param elem_types   The type of each element
+       *\param vertex_per_elem The length of the connectivity list for each element.
+       *\param connectivity Element connectivity, specified as a list
+       *                    of vertex numbers, beginning with zero.
+       *\param vertex_fixed_flags Optional array to specify which vertices
+       *                    are to be marked as fixed.  If NULL,
+       *                    no vertices are fixed.     
+       */
+    void fill( size_t num_vertex, const double* vtx_coords,
+               size_t num_elem, const EntityTopology* elem_types,
+               const size_t* vertex_per_elem,
+               const size_t* elem_connectivity,
+               const bool* vertex_fixed_flags,
+               MsqError& err );
+               
+      /**\brief Create global patch
+       *
+       * Create a global patch - mesh should be initialized first.
+       */
+    void fill_global_patch( MsqError& err );
+    
+      /**\brief Iterate over mesh, creating element-on-vertex patches
+       *
+       * Get patch of elements adjacent to next vertex returned by
+       * internal vertex iterator.  Mesh must be initialized before
+       * calling this method.
+       *\param num_layers Depth of adjacent elements to put in patch.
+       *\param skip_fixed_vertices If true, vertices designated as fixed
+       *         by the application or marked as culled (MSQ_SOFT_FIXED)
+       *         will be skipped when iterating over all vertices.
+       *\param free_vertex_index_out Output.  Index of the non-fixed
+       *                   vertex (the 'current' vertex from the iterator)
+       */
+    bool get_next_vertex_element_patch( int num_layers,
+                                        bool skip_fixed_vertices,
+                                        size_t& free_vertex_index_out,
+                                        MsqError& err );
+    
+      /**\brief Iterate over mesh, creating single-element patches
+       *
+       * Fill patch with next element returned by
+       * internal element iterator.  Mesh must be initialized before
+       * calling this method.
+       */
+    bool get_next_element_patch( MsqError& err );
+   
+     /**\brief Reset internal mesh iterator(s)
+      *
+      * Reset VeretxIterator used by \ref get_next_vertex_element_patch
+      * and ElementIterator used by \ref get_next_element_patch
+      */
+    void reset_iterators();
+
 
   private:
       //! Doesn't allow PatchData to be copied implicitly.
@@ -137,40 +237,6 @@ namespace Mesquite
     void clear();
       //! Reorders the mesh data 
     void reorder();
-
-      /** Used by test code when creating a PatchData directly.
-        * PatchData should be constructed by first calling this
-        * function, then initializing arrays and then calling
-        * initalize_data.
-        */
-      void allocate_storage( size_t vertex_count,
-                             size_t element_count,
-                             size_t vertex_use_count,
-                             MsqError& err );
-
-
-      /** Call after filling vertex handle and connectivity arrays to
-       * finish initializing the PatchData.  Reorders vertex handles array
-       * such that all higher-order nodes are at end of array, updates
-       * element connectivity array appropriately, initalizes numCornerVertices,
-       * and per-element vertex and node counts.
-       *
-       * NOTE:  If the patch contains higher-order elements, this function
-       *        will re-order the nodes in the vertex array. Do *NOT* assume
-       *        vertex indices are the same after calling this function!
-       *
-       * NOTE:  This function expects the following data to be initalized:
-       *         vertexHandlesArray
-       *         elemConnectivityArray
-       *         the topology type for all elements in elementArray
-       *        The function assumes the following data has not been
-       *        initialized and therefore does not need to be updated:
-       *         vertexArray
-       *
-       * \param elem_offset_array Offset into connectivity array for each element
-       */
-    void initialize_data( size_t* elem_offset_array, MsqError& err );
-
 
       //! number of vertices in the patch. 
     size_t num_vertices() const
@@ -277,8 +343,8 @@ namespace Mesquite
     /*! Returns whether a domain is associated with the MeshSet from which
         the Patch originates.
         If false, you cannot ask for a surface normal. */
-    bool domain_set()
-    { return domainSet; }
+    bool domain_set() const
+    { return 0 != myDomain; }
     
       /*! Get the normal of the surface for a given vertex.
           Normal is returned in Vector3D &surf_norm.  If the normal cannot
@@ -395,33 +461,23 @@ namespace Mesquite
                                     through edges to the center vertex. */
         ELEMENTS_ON_VERTEX_PATCH, /*!< fills PatchData with the vertices connected
                                     through elements to the center vertex. */
-        GLOBAL_PATCH              /*!< Fills PatchData with all elements and vertices
+        GLOBAL_PATCH,              /*!< Fills PatchData with all elements and vertices
                                     contained in all the meshes of the MeshSet. */
+        ELEMENT_PATCH //!< fills PatchData with one element at a time.
       };
-
-    /*! \enum culling_method
-      Those are the culling method available to the users.
-      Developpers: The values used in that enum are used by a bitset,
-      so they have to be 2-based (2,4,8,16,32, ...)
-    */
-    enum culling_method {
-      NO_BOUNDARY_VTX = 1<<0, /*!< removes vertices on the boundary. (i.e. with a TSTT tag "boundary"). */
-      NO_INTERIOR_VTX = 1<<1,   /*!< removes vertices that are not on the boundary */
-      CULL_METHOD_3   = 1<<2,/*!< no other culling method yet. */
-      CULL_METHOD_4   = 1<<3
-    };
-
-
-    PatchType type() const
-      { return mType; }
 
     //! Sets the originating meshSet. This is normally done in MeshSet::get_next_patch().
     //! This function is only for tests purposes. 
-    void set_mesh_set(MeshSet* ms);
+    void set_mesh(Mesh* ms);
     
     //! Returns the originating meshSet.
-    MeshSet* get_mesh_set()
-      { return meshSet; }
+    Mesh* get_mesh() const
+      { return myMesh; }
+      
+    void set_domain( MeshDomain* dm );
+    
+    MeshDomain* get_domain() const
+      { return myDomain; }
     
     //! Target matrix data
     CornerTag<TargetMatrix> targetMatrices;
@@ -433,27 +489,89 @@ namespace Mesquite
    
    private:
    
+    VertexIterator* vertex_iterator( MsqError& err );
+    ElementIterator* element_iterator( MsqError& err );
+
+      /** Call after filling vertex handle and connectivity arrays to
+       * finish initializing the PatchData.  Reorders vertex handles array
+       * such that all higher-order nodes are at end of array, updates
+       * element connectivity array appropriately, initalizes numCornerVertices,
+       * and per-element vertex and node counts.
+       *
+       * NOTE:  If the patch contains higher-order elements, this function
+       *        will re-order the nodes in the vertex array. Do *NOT* assume
+       *        vertex indices are the same after calling this function!
+       *
+       * NOTE:  This function expects the following data to be initalized:
+       *         vertexHandlesArray
+       *         elemConnectivityArray
+       *         the topology type for all elements in elementArray
+       *        The function assumes the following data has not been
+       *        initialized and therefore does not need to be updated:
+       *         vertexArray
+       *
+       * \param elem_offset_array Offset into connectivity array for each element
+       */
+    void initialize_data( size_t* elem_offset_array, MsqError& err );
+   
+      /** Code common to misc. methods for populating patch data.
+       *  Calls \ref initialize_data, sets element types and
+       *  sets vertex coordinates using vertexHandlesArray and 
+       *  myMesh.
+       *
+       *  Note: The following data members must be initialized
+       *  BEFORE CALLING THIS METHOD:
+       *  - vertexHandlesArray
+       *  - elemConnectivityArray
+       *  - myMesh
+       */
+    void initialize_patch( EntityTopology* elem_type_array,
+                           size_t* elem_offset_array,
+                           MsqError& err );
+    
+      /** Code common to misc. methods for populating patch data.
+       *  Remove duplicates from an array of handles.
+       *\param handles    The array of handles to uniquify.
+       *\param count      As input, the lenght of the \ref handles
+       *                  array.  As output, the number of unique
+       *                  handles remaining in the array.
+       *\param index_map  If non-null, this must be an array of the
+       *                  same length as the handles array.  If this
+       *                  array is passed, the entry cooresponding
+       *                  to each handle in the input \ref handles array will
+       *                  be set to the index of that handle in the output
+       *                  array.
+       */
+    static void make_handles_unique( Mesh::EntityHandle* handles,
+                                     size_t& count,
+                                     size_t* index_map = 0 );
+                                     
     void note_have_info( ComputedInfo info )
       { haveComputedInfos |= (1<<info); }
       
     void update_cached_normals( MsqError& );
 
-    friend class MeshSet;
-
-    MeshSet* meshSet;
-    bool domainSet;
+    Mesh* myMesh;
+    MeshDomain* myDomain;
     DomainHint domainHint;
-    PatchType mType;
     
-    PatchDataMem<MsqVertex> vertexArray;
-    PatchDataMem<Mesh::VertexHandle> vertexHandlesArray;
-    PatchDataMem<MsqMeshEntity> elementArray;
-    PatchDataMem<Mesh::ElementHandle> elementHandlesArray;
-    PatchDataMem<size_t> elemConnectivityArray;
-    PatchDataMem<size_t> vertAdjacencyArray;
-    PatchDataMem<size_t> vertAdjacencyOffsets;
-    PatchDataMem<Vector3D> vertexNormals;
+    VertexIterator* vertexIterator;
+    ElementIterator* elementIterator;
+    
+    msq_std::vector<MsqVertex> vertexArray;
+    msq_std::vector<Mesh::VertexHandle> vertexHandlesArray;
+    msq_std::vector<MsqMeshEntity> elementArray;
+    msq_std::vector<Mesh::ElementHandle> elementHandlesArray;
+    msq_std::vector<size_t> elemConnectivityArray;
+    msq_std::vector<size_t> vertAdjacencyArray;
+    msq_std::vector<size_t> vertAdjacencyOffsets;
+    msq_std::vector<Vector3D> vertexNormals;
     size_t numCornerVertices;
+    
+      // Arrays in which to store temporary data
+      // (avoids reallocation of temp space)
+    msq_std::vector<size_t> offsetArray;
+    msq_std::vector<unsigned char> byteArray;
     
       // Patch Computed Information (maxs, mins, etc ... )
     double computedInfos[MAX_COMPUTED_INFO_ENUM];
@@ -500,7 +618,12 @@ namespace Mesquite
     vertexNormals.clear();
     numCornerVertices = 0;
     haveComputedInfos = 0;
-    meshSet = 0;
+    myMesh = 0;
+    myDomain = 0;
+    delete vertexIterator;
+    vertexIterator = 0;
+    delete elementIterator;
+    elementIterator = 0;
   }
   
   

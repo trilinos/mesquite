@@ -46,8 +46,6 @@
 
 namespace Mesquite
 {
-
-  class MeshSet;
   
   /*! \class QualityImprover
     \brief Base class for all quality improvers.
@@ -62,8 +60,6 @@ namespace Mesquite
     
      // virtual destructor ensures use of polymorphism during destruction
     virtual ~QualityImprover() { };
-    
-    virtual double loop_over_mesh(MeshSet &ms, MsqError &err) = 0;
 
     //! provides a name to the QualityImprover (use it in constructor).
     void set_name(msq_std::string name)
@@ -93,7 +89,7 @@ namespace Mesquite
     /*! The default constructor initialises a few member variables
         to default values.
         This can be reused by concrete class constructor. */    
-    QualityImprover() : mMeshSet(0), qualityImproverName("noname")
+    QualityImprover() : qualityImproverName("noname")
       {
           //Temporary solution to not having an err object
         MsqError temp_err;
@@ -102,20 +98,6 @@ namespace Mesquite
         innerTerminationCriterion = & defaultInnerCriterion;
       }
     
-    friend class MeshSet;
-      //friend double QualityMetric::evaluate_element(MsqMeshEntity* element, MsqError &err);
-      //friend double QualityMetric::evaluate_node(MsqNode* node, MsqError &err);
-      //will not be needed when we remove stopping criterion
-    const MeshSet* get_mesh_set() const
-      { return mMeshSet; }
-    MeshSet* get_mesh_set()
-      { return mMeshSet; }
-    
-    
-    void set_mesh_set(MeshSet *ms)
-      {
-        mMeshSet=ms;
-      }
       //!return the outer termination criterion pointer 
     TerminationCriterion* get_outer_termination_criterion()
       { return outerTerminationCriterion; }
@@ -124,9 +106,7 @@ namespace Mesquite
       { return innerTerminationCriterion; } 
     
   private:
-    MeshSet* mMeshSet;
     msq_std::string qualityImproverName;
-    int patchDepth;
     
     TerminationCriterion* innerTerminationCriterion;
     TerminationCriterion* outerTerminationCriterion;

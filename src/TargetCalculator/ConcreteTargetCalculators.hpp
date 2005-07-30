@@ -66,9 +66,10 @@ namespace Mesquite
   class ShapeGuides812 : public LVQDTargetCalculator
   {
   public:
-    ShapeGuides812(MeshSet* ref_mesh)
+    ShapeGuides812(Mesh* ref_mesh, MeshDomain* ref_mesh_domain = 0)
     {
       refMesh = ref_mesh;
+      refDomain = ref_mesh_domain;
       lambdaBase = REGULAR; 
       guideLambda = Ad;
       guideV = Ad;
@@ -88,9 +89,10 @@ namespace Mesquite
   class ShapeSizeGuides821 : public LVQDTargetCalculator
   {
   public:
-    ShapeSizeGuides821(MeshSet* ref_mesh)
+    ShapeSizeGuides821(Mesh* ref_mesh, MeshDomain* ref_mesh_domain = 0)
     {
       refMesh = ref_mesh;
+      refDomain = ref_mesh_domain;
       lambdaBase = AVERAGE; 
       guideLambda = A0;
       guideV = Ad;
@@ -110,9 +112,10 @@ namespace Mesquite
   class ShapeSizeGuides822 : public LVQDTargetCalculator
   {
   public:
-    ShapeSizeGuides822(MeshSet* ref_mesh)
+    ShapeSizeGuides822(Mesh* ref_mesh, MeshDomain* ref_mesh_domain = 0)
     {
       refMesh = ref_mesh;
+      refDomain = ref_mesh_domain;
       lambdaBase = REGULAR; 
       guideLambda = A0;
       guideV = Ad;
@@ -131,9 +134,10 @@ namespace Mesquite
   class ShapeSizeGuides823 : public LVQDTargetCalculator
   {
   public:
-    ShapeSizeGuides823(MeshSet* ref_mesh)
+    ShapeSizeGuides823(Mesh* ref_mesh, MeshDomain* ref_mesh_domain = 0)
     {
       refMesh = ref_mesh;
+      refDomain = ref_mesh_domain;
       lambdaBase = AVERAGE; 
       guideLambda = A0;
       guideV = Ad;
@@ -153,9 +157,10 @@ namespace Mesquite
   class ShapeSizeGuides824 : public LVQDTargetCalculator
   {
   public:
-    ShapeSizeGuides824(MeshSet* ref_mesh)
+    ShapeSizeGuides824(Mesh* ref_mesh, MeshDomain* ref_mesh_domain = 0)
     {
       refMesh = ref_mesh;
+      refDomain = ref_mesh_domain;
       lambdaBase = REGULAR; 
       guideLambda = A0;
       guideV = Ad;
@@ -177,9 +182,10 @@ namespace Mesquite
   class RezoneGuides832 : public LVQDTargetCalculator
   {
   public:
-    RezoneGuides832(MeshSet* ref_mesh)
+    RezoneGuides832(Mesh* ref_mesh, MeshDomain* ref_mesh_domain = 0)
     {
       refMesh = ref_mesh;
+      refDomain = ref_mesh_domain;
       lambdaBase = REGULAR; 
       guideLambda = A0;
       guideV = A0;
@@ -202,9 +208,10 @@ namespace Mesquite
   class DeformingDomainGuides841 : public WTargetCalculator
   {
   public:
-    DeformingDomainGuides841(MeshSet* ref_mesh)
+    DeformingDomainGuides841(Mesh* ref_mesh, MeshDomain* ref_mesh_domain = 0)
     {
       refMesh = ref_mesh;
+      refDomain = ref_mesh_domain;
       guideMatrix = Ar;
     }      
 
@@ -221,9 +228,10 @@ namespace Mesquite
   class DeformingDomainGuides843 : public LVQDTargetCalculator
   {
   public:
-    DeformingDomainGuides843(MeshSet* ref_mesh)
+    DeformingDomainGuides843(Mesh* ref_mesh, MeshDomain* ref_mesh_domain = 0)
     {
       refMesh = ref_mesh;
+      refDomain = ref_mesh_domain;
       lambdaBase = REGULAR; 
       guideLambda = Ar;
       guideV = Ar;
@@ -244,9 +252,10 @@ namespace Mesquite
   class DeformingDomainGuides844 : public LVQDTargetCalculator
   {
   public:
-    DeformingDomainGuides844(MeshSet* ref_mesh)
+    DeformingDomainGuides844(Mesh* ref_mesh, MeshDomain* ref_mesh_domain = 0)
     {
       refMesh = ref_mesh;
+      refDomain = ref_mesh_domain;
       lambdaBase = REGULAR; 
       guideLambda = Ar;
       guideV = Ar;

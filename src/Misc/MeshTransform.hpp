@@ -64,7 +64,10 @@ namespace Mesquite
     virtual ~MeshTransform() { };
       //virtual functions from PatchDataUser...
       //!Loop over the mesh and perform the affine transformation
-    virtual double loop_over_mesh(MeshSet &ms, MsqError &err);
+    virtual double loop_over_mesh( Mesh* mesh, 
+                                   MeshDomain* domain, 
+                                   PatchData* global_patch,
+                                   MsqError &err);
       //! Return the name of this PatchDataUser:  Mesh Transform
     virtual msq_std::string get_name() { return "Mesh Transform.";}
       //! Return the AlgorithmType of thsi PatchDataUser:  MESH_TRANSFORM

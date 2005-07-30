@@ -52,7 +52,10 @@ namespace Mesquite
     virtual ~TopologyModifier()
       {};
     
-    virtual double loop_over_mesh(MeshSet &mesh, MsqError &err);
+    virtual double loop_over_mesh( Mesh* mesh,
+                                   MeshDomain* domain,
+                                   PatchData* global_patch, 
+                                   MsqError &err);
 
   protected:
     TopologyModifier();

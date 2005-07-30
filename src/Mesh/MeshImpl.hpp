@@ -74,49 +74,20 @@ namespace Mesquite
       // Returns whether this mesh lies in a 2D or 3D coordinate system.
     virtual int get_geometric_dimension(MsqError &err) ;
     
-    /** \brief get sizes for calling \ref get_all_mesh
-     *
-     * Get counts of entities in mesh.
-     *
-     *\param vertex_count  - Number of vertices connected to active mesh
-     *\param element_count - Number of elements in active mesh
-     *\param vertex_use_count - Number of vertex uses (sum of the length
-     *                          of the connectivity list for all elements
-     *                          in active.)
-     */
-    virtual void get_all_sizes( size_t& vertex_count,
-                                size_t& element_count,
-                                size_t& vertex_use_count,
-                                MsqError& err );
     
-    /** \brief Get entities and connectivity 
+    /** \brief Get all elements in mesh
      *
-     * Get vertex handles, element handles, and connectivty
-     * for active mesh.  Use \ref get_all_sizes to determine
-     * required array sizes.
-     *
-     *\param vert_array        Array to store vertex handles in
-     *\param vert_len          Length of \ref vert_array
-     *\param elem_array        Array to store element handles in
-     *\param elem_len          Length of \ref elem_array
-     *\param elem_conn_offsets Offsets into \ref elem_conn_indices at
-     *                         which the connectivity data for each
-     *                         element begins.  
-     *\param offset_len        Length of \ref elem_conn_offsets.  Should
-     *                         be t\ref elem_len + 1.
-     *\param elem_conn_indices Indices into \ref vert_array
-     *\param index_len         Length of \ref elem_conn_indices.
-     */
-    virtual void get_all_mesh( VertexHandle*  vert_array, size_t vert_len,
-                               ElementHandle* elem_array, size_t elem_len,
-                               size_t* elem_conn_offsets, size_t offset_len,
-                               size_t* elem_conn_indices, size_t index_len,
-                               MsqError& err );
+     * Get the handles of every element in the active mesh.
+     */ 
+    virtual void get_all_elements( msq_std::vector<ElementHandle>& handles,
+                                   MsqError& err );
     
-    /** Get sum of number of vertices in each element */
-    virtual size_t get_vertex_use_count( ElementHandle* elem_array,
-                                         size_t elem_array_length,
-                                         MsqError& err );
+    /** \brief Get all vertices in mesh
+     *
+     * Get the handles of every vertex in the active mesh
+     */
+    virtual void get_all_vertices( msq_std::vector<VertexHandle>& vertices,
+                                   MsqError& err );
     
       // Returns a pointer to an iterator that iterates over the
       // set of all vertices in this mesh.  The calling code should
@@ -133,21 +104,15 @@ namespace Mesquite
     virtual ElementIterator* element_iterator(MsqError &err);
 
 //************ Vertex Properties ********************
-      // Returns true or false, indicating whether the vertex
-      // is allowed to be repositioned.  True indicates that the vertex
-      // is fixed and cannot be moved.  Note that this is a read-only
-      // property; this flag can't be modified by users of the
-      // Mesquite::Mesh interface.
-    virtual bool vertex_is_fixed(VertexHandle vertex, MsqError &err);
-
-      // Returns true or false, indicating whether the vertex
-      // is on the boundary.  Boundary nodes may be treated as
-      // a special case by some algorithms or culling methods.
-      // Note that this is a read-only
-      // property; this flag can't be modified by users of the
-      // Mesquite::Mesh interface.
-    virtual void vertices_are_on_boundary(VertexHandle vert_array[], bool on_bnd[],
-                                  size_t num_vtx, MsqError &err);
+      //! Returns true or false, indicating whether the vertex
+      //! is allowed to be repositioned.  True indicates that the vertex
+      //! is fixed and cannot be moved.  Note that this is a read-only
+      //! property; this flag can't be modified by users of the
+      //! Mesquite::Mesh interface.
+    virtual void vertices_get_fixed_flag( const VertexHandle vert_array[], 
+                                          bool fixed_flag_array[],
+                                          size_t num_vtx, 
+                                          MsqError &err);
     
       // Get/set location of a vertex
     virtual void vertices_get_coordinates(const Mesh::VertexHandle vert_array[],
@@ -165,8 +130,8 @@ namespace Mesquite
     virtual void vertex_set_byte (VertexHandle vertex,
                                   unsigned char byte,
                                   MsqError &err);
-    virtual void vertices_set_byte (VertexHandle *vert_array,
-                                    unsigned char *byte_array,
+    virtual void vertices_set_byte (const VertexHandle *vert_array,
+                                    const unsigned char *byte_array,
                                     size_t array_size,
                                     MsqError &err);
     
@@ -176,87 +141,64 @@ namespace Mesquite
     virtual void vertex_get_byte(VertexHandle vertex,
                                  unsigned char *byte,
                                  MsqError &err);
-    virtual void vertices_get_byte(VertexHandle *vertex,
+    virtual void vertices_get_byte(const VertexHandle *vertex,
                                    unsigned char *byte_array,
                                    size_t array_size,
                                    MsqError &err);
     
 //**************** Vertex Topology *****************    
-      // Gets the number of elements attached to this vertex.
-      // Useful to determine how large the "elem_array" parameter
-      // of the vertex_get_attached_elements() function must be.
-    virtual size_t vertex_get_attached_element_count(VertexHandle vertex,
-                                                     MsqError &err);
-    
-      // Gets the elements attached to this vertex.
-    virtual void vertex_get_attached_elements(VertexHandle vertex,
-                                              ElementHandle* elem_array,
-                                              size_t sizeof_elem_array,
-                                              MsqError &err);
-    
+
+      /** \brief get elements adjacent to vertices
+       *
+       * Get adjacency data for vertices
+       *
+       *\param vertex_array    Array of vertex handles specifying the
+       *                       list of vertices to retrieve adjacency
+       *                       data for.
+       *\param num_vertex      Number of vertex handles in \ref vertex_array
+       *\param elements     The array in which to place the handles of
+       *                       elements adjacent to the input vertices.
+       *\param offsets    For each vertex in \ref vertex_array, the
+       *                       value in the corresponding position in this
+       *                       array is the index into \ref elem_array at
+       *                       which the adjacency list begins for that
+       *                       vertex.
+       */
+    virtual void vertices_get_attached_elements( 
+                         const VertexHandle* vertex_array,
+                         size_t num_vertex,
+                         msq_std::vector<ElementHandle>& elements,
+                         msq_std::vector<size_t>& offsets,
+                         MsqError& err );
     
 //*************** Element Topology *************
     
-      // Gets the number of vertices in this element.
-      // This data can also be found by querying the
-      // element's topology and getting the number
-      // of vertices per element for that topology type.
-    virtual size_t element_get_attached_vertex_count(ElementHandle elem,
-                                                     MsqError &err);
+      /** \brief Get element connectivity
+       *
+       * Get the connectivity (ordered list of vertex handles) for
+       * each element in the input array.
+       *
+       *\param elem_handles  The array of element handles for which to
+       *                     retrieve the connectivity list.
+       *\param num_elems     The length of \ref elem_handles
+       *\param vert_handles  Array in which to place the vertex handles
+       *                     in each elements connectivity.
+       *\param offsets       For each element in \ref elem_handles, the
+       *                     value in the same position in this array
+       *                     is the index into \ref vert_handles at which
+       *                     the connectivity list for that element begins.
+       */
+    virtual void elements_get_attached_vertices(
+                                   const ElementHandle *elem_handles,
+                                   size_t num_elems,
+                                   msq_std::vector<VertexHandle>& vert_handles,
+                                   msq_std::vector<size_t>& offsets, 
+                                   MsqError &err);
+
     
-// Returns the vertices that are part of the topological definition of each
-// element in the "elem_handles" array.  When this function is called, the
-// following must be true:
-//   a) "elem_handles" points at an array of "num_elems" element handles.
-//   b) "vert_handles" points at an array of size "sizeof_vert_handles"
-//   c) "csr_data" points at an array of size "sizeof_csr_data"
-//   d) "csr_offsets" points at an array of size "num_elems+1"
-//      
-// When this function returns, adjacency information will be stored
-// in csr format:
-//    a) "vert_handles" stores handles to all vertices found in one
-//       or more of the elements.  Each vertex appears only
-//       once in "vert_handles", even if it is in multiple elements.
-//    b) "sizeof_vert_handles" is set to the number of vertex
-//       handles placed into "vert_handles".
-//    c) "sizeof_csr_data" is set to the total number of vertex uses (for
-//       example, sizeof_csr_data = 6 in the case of 2 TRIANGLES, even if
-//       the two triangles share some vertices).
-//    c) "csr_offsets" is filled such that csr_offset[i] indicates the location
-//       of entity i's first adjacency in "csr_data".  The number of vertices
-//       in element i is equal to csr_offsets[i+1] - csr_offsets[i].  For this
-//       reason, csr_offsets[num_elems] is set to the new value of
-//       "sizeof_csr_data".
-//    d) "csr_data" stores integer offsets which give the location of
-//       each adjacency in the "vert_handles" array.
-//
-// As an example of how to use this data, you can get the handle of the first
-// vertex in element #3 like this:
-//   VertexHandle vh = vert_handles[ csr_data[ csr_offsets[3] ] ]
-//
-// and the second vertex of element #3 like this:
-//   VertexHandle vh = vert_handles[ csr_data[ csr_offsets[3]+1 ] ]
-// 
-    virtual void elements_get_attached_vertices(ElementHandle *elem_handles,
-                                                size_t num_elems,
-                                                VertexHandle *vert_handles,
-                                                size_t &sizeof_vert_handles,
-                                                size_t *csr_data,
-                                                size_t &sizeof_csr_data,
-                                                size_t *csr_offsets,
-                                                MsqError &err);
-    
-    void element_get_connectivity( ElementHandle element,
-                                   VertexHandle* vert_handles,
-                                   size_t sizeof_vert_handles, 
-                                   MsqError& err );
-    
-      // Returns the topology of the given entity.
-    virtual EntityTopology element_get_topology(ElementHandle entity_handle,
-                                                MsqError &err);
       // Returns the topologies of the given entities.  The "entity_topologies"
       // array must be at least "num_elements" in size.
-    virtual void elements_get_topologies(ElementHandle *element_handle_array,
+    virtual void elements_get_topologies(const ElementHandle *element_handle_array,
                                          EntityTopology *element_topologies,
                                          size_t num_elements,
                                          MsqError &err);
@@ -374,9 +316,9 @@ namespace Mesquite
 //**************** Memory Management ****************
       // Tells the mesh that the client is finished with a given
       // entity handle.  
-    virtual void release_entity_handles(EntityHandle *handle_array,
-                                        size_t num_handles,
-                                        MsqError &err);
+    virtual void release_entity_handles( const EntityHandle *handle_array,
+                                         size_t num_handles,
+                                         MsqError &err );
     
       // Instead of deleting a Mesh when you think you are done,
       // call release().  In simple cases, the implementation could

@@ -34,7 +34,7 @@ namespace Mesquite {
 MeanMidNodeMover::MeanMidNodeMover() 
 {
   MsqError err;
-  PatchDataUser::set_patch_type( PatchData::GLOBAL_PATCH, err );
+  PatchDataUser::set_patch_type( PatchData::ELEMENT_PATCH, err );
   MSQ_CHKERR(err);
 }
 
@@ -51,24 +51,11 @@ msq_std::string MeanMidNodeMover::get_name()
 
 PatchDataUser::AlgorithmType MeanMidNodeMover::get_algorithm_type()
 { return PatchDataUser::QUALITY_IMPROVER; }
-  
 
-double MeanMidNodeMover::loop_over_mesh( MeshSet& ms, MsqError& err )
+void MeanMidNodeMover::fix_mid_nodes( PatchData& pd, MsqError& err )
 {
-  const MsqVertex::FlagMaskID FIXED_FLAG = 
-    (MsqVertex::FlagMaskID)(MsqVertex::MSQ_HARD_FIXED|MsqVertex::MSQ_SOFT_FIXED);
+  const MsqVertex::FlagMaskID FIXED_FLAG = MsqVertex::MSQ_HARD_FIXED;
   
-  if (get_patch_type() != PatchData::GLOBAL_PATCH) {
-    MSQ_SETERR(err)(MsqError::INVALID_STATE);
-    return 0;
-  }
-  
-  if (!get_global_patch()) {
-    MSQ_SETERR(err)("No global patch", MsqError::INVALID_STATE);
-    return 0;
-  }
-  
-  PatchData& pd = *get_global_patch();
   
     // For each higher-order node in the patch
   for (size_t vtx = pd.num_vertices(); vtx < pd.num_nodes(); ++vtx)
@@ -79,7 +66,7 @@ double MeanMidNodeMover::loop_over_mesh( MeshSet& ms, MsqError& err )
     
       // Get an adjacent element
     size_t num_elems, *elem_list;
-    elem_list = pd.get_vertex_element_adjacencies( vtx, num_elems, err ); MSQ_ERRZERO(err);
+    elem_list = pd.get_vertex_element_adjacencies( vtx, num_elems, err ); MSQ_ERRRTN(err);
     if (num_elems < 1) // Mid-node without adjacent elements????
       continue;
     size_t element_index = elem_list[0];
@@ -98,7 +85,7 @@ double MeanMidNodeMover::loop_over_mesh( MeshSet& ms, MsqError& err )
     if (elem_vert_index == num_verts)
     {
       MSQ_SETERR(err)("Inconsistent connectivity/adjacency data.", MsqError::INVALID_MESH );
-      return 0;
+      return;
     }
       // Must be appropriate element type (e.g. can't have higher-order
       // nodes on a polygon)
@@ -109,28 +96,28 @@ double MeanMidNodeMover::loop_over_mesh( MeshSet& ms, MsqError& err )
       MSQ_SETERR(err)( MsqError::INVALID_MESH, 
                        "Element type %d cannot have higher-order nodes.",
                        (int)topo );
-      return 0;
+      return;
     }
       // The current vertex must be one of the higher-order nodes of the element
     if (elem_vert_index < num_corners)
     {
       MSQ_SETERR(err)( "Invalid mid-node flag for mesh (mixed connectivity?)", 
                        MsqError::INVALID_MESH );
-      return 9;
+      return;
     }
   
       // Get the element "side" that the node is a mid-node of.
     unsigned side, dimension;
     TopologyInfo::side_number( topo, element.node_count(), elem_vert_index,
-                               side, dimension, err ); MSQ_ERRZERO(err);
+                               side, dimension, err ); MSQ_ERRRTN(err);
       // Get the indices of the vertices defining the "side"
     unsigned side_size;
     const unsigned* side_indices = 
-      TopologyInfo::side_vertices( topo, side, dimension, side_size, err ); MSQ_ERRZERO(err);
+      TopologyInfo::side_vertices( topo, side, dimension, side_size, err ); MSQ_ERRRTN(err);
     if (!side_size)
     {
       MSQ_SETERR(err)(MsqError::INTERNAL_ERROR);
-      return 0;
+      return;
     }
   
       // Calculate average position of side vertices
@@ -141,15 +128,42 @@ double MeanMidNodeMover::loop_over_mesh( MeshSet& ms, MsqError& err )
     pos /= side_size;
 
       // Set new vertex position
-    pd.set_vertex_coordinates( pos, vtx, err ); MSQ_ERRZERO(err);
-    pd.snap_vertex_to_domain( vtx, err );       MSQ_ERRZERO(err);
+    pd.set_vertex_coordinates( pos, vtx, err ); MSQ_ERRRTN(err);
+    pd.snap_vertex_to_domain( vtx, err );       MSQ_ERRRTN(err);
   }
   
-  pd.update_mesh(err); MSQ_ERRZERO(err);
-  
-  return 0;
+  pd.update_mesh(err); MSQ_ERRRTN(err);
 }
-                       
+  
+
+double MeanMidNodeMover::loop_over_mesh( Mesh* mesh,
+                                         MeshDomain* domain,
+                                         PatchData* global_patch, 
+                                         MsqError& err )
+{
+  if (global_patch)
+  {
+    fix_mid_nodes( *global_patch,err ); 
+    MSQ_CHKERR(err);
+    return 0.;
+  }
+  else
+  {
+    PatchData patch_data;
+    patch_data.set_mesh( mesh );
+    patch_data.set_domain( domain );
+    
+    while ( patch_data.get_next_element_patch( err ) )
+    {
+      MSQ_ERRZERO(err);
+      fix_mid_nodes( patch_data, err ); MSQ_ERRZERO(err);
+    }
+    MSQ_ERRZERO(err);
+  }
+  
+  return 0.0;
+}
+           
   
   
 } // namespace Mesquite

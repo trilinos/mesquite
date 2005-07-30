@@ -65,7 +65,6 @@ namespace Mesquite
 
    class QualityMetric;
    class MsqError;
-   class MeshSet;
 
   /*! \class QualityAssessor
 
@@ -164,7 +163,10 @@ namespace Mesquite
                                    MsqError& err );
     
       //! Does one sweep over the mesh and assess the quality with the metrics previously added.
-    virtual double loop_over_mesh(MeshSet &ms, MsqError &err);
+    virtual double loop_over_mesh( Mesh* mesh,
+                                   MeshDomain* domain,
+                                   PatchData* global_patch,
+                                   MsqError &err);
 
       //! Do not print results of assessment.
     void disable_printing_results()

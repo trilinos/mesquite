@@ -66,12 +66,12 @@ using std::end;
 #include "MsqError.hpp"
 #include "Vector3D.hpp"
 #include "InstructionQueue.hpp"
-#include "MeshSet.hpp"
 #include "PatchData.hpp"
 #include "StoppingCriterion.hpp"
 #include "QualityAssessor.hpp"
+#include "MeshWriter.hpp"
 
-// algorythms
+// algorithms
 #include "ConditionNumberQualityMetric.hpp"
 #include "LPTemplate.hpp"
 #include "LInfTemplate.hpp"
@@ -94,11 +94,6 @@ int main()
   // Mesquite error object
   MsqPrintError err(cout);
   
-  // initialises a MeshSet object
-  MeshSet mesh_set1;
-  mesh_set1.add_mesh(mesh, err); 
-  if (err) return 1;
-  
   // creates an intruction queue
   InstructionQueue queue1;
 
@@ -119,8 +114,6 @@ int main()
    //**************Set stopping criterion****************
  StoppingCriterion sc2(StoppingCriterion::NUMBER_OF_PASSES,500);
  lapl1->set_stopping_criterion(&sc2);
- // sets a culling method on the first QualityImprover
- lapl1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
 
   // adds 1 pass of pass1 to mesh_set1
  queue1.add_quality_assessor(&stop_qa,err); 
@@ -135,10 +128,10 @@ int main()
    //writeVtkMesh("original_mesh", mesh, err); MSQ_CHKERR(err);
   
   // launches optimization on mesh_set1
-  queue1.run_instructions(mesh_set1, err); 
+  queue1.run_instructions(mesh, err); 
   if (err) return 1;
   
-  writeVtkMesh("smoothed_mesh", mesh, err); 
+  MeshWriter::write_vtk( mesh, "smoothed_mesh", err); 
   if (err) return 1;
 
   return 0;

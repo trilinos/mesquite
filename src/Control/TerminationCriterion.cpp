@@ -38,7 +38,6 @@
  */
 
 #include "TerminationCriterion.hpp"
-#include "MeshSet.hpp"
 #include "MsqVertex.hpp"
 #include "MsqInterrupt.hpp"
 #include "ObjectiveFunction.hpp"
@@ -225,7 +224,9 @@ void TerminationCriterion::remove_culling(MsqError &/*err*/)
   it is only called when this criterion is used as the 'outer' termination
   criterion.  
  */
-void TerminationCriterion::reset_outer(MeshSet &ms, ObjectiveFunction* obj_ptr,
+void TerminationCriterion::reset_outer(Mesh* mesh, 
+                                       MeshDomain* domain,
+                                       ObjectiveFunction* obj_ptr,
                                        MsqError &err)
 {
   const unsigned long totalFlag = terminationCriterionFlag | cullingMethodFlag;
@@ -234,11 +235,10 @@ void TerminationCriterion::reset_outer(MeshSet &ms, ObjectiveFunction* obj_ptr,
     //if we need to fill out the global patch data object.
   if (totalFlag & (GRAD_FLAGS | OF_FLAGS | VERTEX_MOVEMENT_RELATIVE))
   {
-    PatchDataParameters global_patch_params;
-    global_patch_params.set_patch_type( PatchData::GLOBAL_PATCH, err, 0, 0 );
-       MSQ_ERRRTN(err);
-    ms.get_next_patch( global_patch, global_patch_params, err ); 
-       MSQ_ERRRTN(err);
+    global_patch.set_mesh( mesh );
+    global_patch.set_domain( domain );
+    global_patch.fill_global_patch( err );
+    MSQ_ERRRTN(err);
   }
 
     //now call the other reset
@@ -439,16 +439,16 @@ void TerminationCriterion::accumulate_inner( PatchData& pd,
 }
 
 
-void TerminationCriterion::accumulate_outer(MeshSet &ms, MsqError &err)
+void TerminationCriterion::accumulate_outer(Mesh* mesh, MeshDomain* domain, MsqError &err)
 {
   PatchData global_patch;
   
     //if we need to fill out the global patch data object.
   if (terminationCriterionFlag & (GRAD_FLAGS|OF_FLAGS|VERTEX_MOVEMENT_RELATIVE))
   {
-    PatchDataParameters global_params;
-    global_params.set_patch_type( PatchData::GLOBAL_PATCH, err, 0, 0 );MSQ_ERRRTN(err);
-    ms.get_next_patch( global_patch, global_params, err );             MSQ_ERRRTN(err);
+    global_patch.set_mesh( mesh );
+    global_patch.set_domain( domain );
+    global_patch.fill_global_patch( err ); MSQ_ERRRTN(err);
   }
   
   accumulate_inner( global_patch, err );                             MSQ_ERRRTN(err);
@@ -706,16 +706,57 @@ bool TerminationCriterion::cull_vertices(PatchData &pd,
   mGrad vector if neccessary.
   When culling, we remove the soft fixed flags from all of the vertices.
  */
-void TerminationCriterion::cleanup(MeshSet &ms, MsqError &err)
+void TerminationCriterion::cleanup(Mesh* mesh, MeshDomain*, MsqError &err)
 {
   delete previousVerticesMemento;
   delete initialVerticesMemento;
   previousVerticesMemento = 0;
   initialVerticesMemento = 0;
-
-  if(cullingMethodFlag){
-    ms.clear_all_soft_fixed_flags(err); MSQ_ERRRTN(err);
+  
+  if (!cullingMethodFlag)
+    return;
+  
+    // Clear soft fixed flag on all vertices
+  
+    // Do BUFFER_SIZE vertices at a time
+  const unsigned BUFFER_SIZE = 128;
+  Mesh::VertexHandle vertex_array[BUFFER_SIZE];
+  unsigned char byte_array[BUFFER_SIZE];
+    
+    // Create a vertex iterator
+  VertexIterator* iterator = 0;
+  iterator = mesh->vertex_iterator(err);
+  if (MSQ_CHKERR(err))
+  {
+    delete iterator;
+    return;
   }
+  
+    // Loop over all vertices
+  while (!iterator->is_at_end())
+  {
+      // Use iterator to get handles of next BUFFER_SIZE vertices
+    unsigned count = 0;
+    while (count < BUFFER_SIZE && !iterator->is_at_end())
+    {
+      vertex_array[count] = iterator->operator*();
+      iterator->operator++();
+      ++count;
+    }
+    
+      // Get the stored vertex byte
+    mesh->vertices_get_byte( vertex_array, byte_array, count, err );
+    if (MSQ_CHKERR(err)) break;
+  
+      // clear the soft fixed flag
+    for (unsigned i = 0; i < count; ++i)
+      byte_array[i] &= ~MsqVertex::MSQ_SOFT_FIXED;
+    
+      // save the vertex byte
+    mesh->vertices_set_byte( vertex_array, byte_array, count, err );
+  }
+  
+  delete iterator;
 }
 
 } //namespace Mesquite

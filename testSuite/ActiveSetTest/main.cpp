@@ -63,7 +63,6 @@ using std::endl;
 #include "MsqError.hpp"
 #include "Vector3D.hpp"
 #include "InstructionQueue.hpp"
-#include "MeshSet.hpp"
 #include "PatchData.hpp"
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
@@ -93,12 +92,6 @@ int main()
   mesh->read_vtk(file_name, err);
   if (err) return 1;
   
-    // initialises a MeshSet object
-  MeshSet mesh_set1;
-    //  printf("Creating mesh set 1\n");
-  mesh_set1.add_mesh(mesh, err); 
-  if (err) return 1;
-  
     // Creates an intruction queue
     //  printf("Creating instruction queue\n");
   InstructionQueue queue1;
@@ -117,9 +110,6 @@ int main()
    
   minmax_method.set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err, 1);
   if (err) return 1;
-
-  // Set a culling method on the first QualityImprover
-  minmax_method.add_culling_method(PatchData::NO_BOUNDARY_VTX);
 
   // Set a termination criterion
   TerminationCriterion tc2;
@@ -154,7 +144,7 @@ int main()
 
   // launches optimization on mesh_set1
   //  printf("Running the instruction queue\n");
-  queue1.run_instructions(mesh_set1, err); 
+  queue1.run_instructions(mesh, err); 
   if (err) return 1;
 
   // write out the smoothed mesh

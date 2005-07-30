@@ -73,7 +73,6 @@
 #include "MeanRatioFunctions.hpp"
 #include "IdealWeightMeanRatio.hpp"
 #include "MeshImpl.hpp"
-#include "MeshSet.hpp"
 #include "MeshTSTT.hpp"
 #include "MsqError.hpp"
 #include "MsqInterrupt.hpp"

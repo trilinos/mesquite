@@ -133,12 +133,23 @@ public:
     CPPUNIT_ASSERT(!err);
     
       // Check overall counts
-    size_t num_vertices, num_elements, num_vtx_uses;
-    mMesh->get_all_sizes( num_vertices, num_elements, num_vtx_uses, err );
+    std::vector<Mesquite::Mesh::ElementHandle> elem_handle_vect;
+    mMesh->get_all_elements( elem_handle_vect, err );
+    CPPUNIT_ASSERT( !err );
+    CPPUNIT_ASSERT( elem_handle_vect.size() == NUM_QUADS + NUM_HEXES );
+    std::vector<Mesquite::Mesh::VertexHandle> vert_handle_vect;
+    std::vector<size_t> offset_vect;
+    mMesh->elements_get_attached_vertices( &elem_handle_vect[0],
+                                           elem_handle_vect.size(),
+                                           vert_handle_vect,
+                                           offset_vect, err );
     CPPUNIT_ASSERT(!err);
-    CPPUNIT_ASSERT(num_vertices == NUM_NODES);
-    CPPUNIT_ASSERT(num_elements == NUM_QUADS + NUM_HEXES );
-    CPPUNIT_ASSERT(num_vtx_uses == 8 * NUM_HEXES + 4 * NUM_QUADS );
+    CPPUNIT_ASSERT(vert_handle_vect.size() == 8 * NUM_HEXES + 4 * NUM_QUADS );
+    msq_std::sort( vert_handle_vect.begin(), vert_handle_vect.end() );
+    std::vector<Mesquite::Mesh::VertexHandle>::iterator new_end = 
+      unique( vert_handle_vect.begin(), vert_handle_vect.end() );
+    vert_handle_vect.resize( new_end - vert_handle_vect.begin() );
+    CPPUNIT_ASSERT(vert_handle_vect.size() == NUM_NODES);
     
       // Array of names of expected element types
     const char* names[Mesquite::MIXED];
@@ -157,7 +168,9 @@ public:
     CPPUNIT_ASSERT(!err);
     while (!iter->is_at_end())
     {
-      Mesquite::EntityTopology type = mMesh->element_get_topology( iter->operator*(), err );
+      Mesquite::EntityTopology type;
+      Mesquite::Mesh::ElementHandle handle = iter->operator*();
+      mMesh->elements_get_topologies( &handle, &type, 1, err );
       CPPUNIT_ASSERT(!err);
       CPPUNIT_ASSERT(type <Mesquite:: MIXED && names[type] != NULL);
       ++counts[type];
@@ -191,15 +204,18 @@ public:
       { 62,  46, 170, 169, 6,  1, 30, 29 },
       { 46, 152, 153, 170, 1, 10, 11, 30 },
       { 46,  66, 171, 152, 1,  2, 31, 10 } };
-    Mesquite::Mesh::VertexHandle conn[8];    
     for (j = 0; j < num_to_check; ++j)
     {
       sprintf(buffer, "bad hex: %d\n", j);
-      mMesh->element_get_connectivity( (Mesquite::Mesh::ElementHandle)j, conn, 8, err );
+      vert_handle_vect.clear();
+      offset_vect.clear();
+      Mesquite::Mesh::ElementHandle handle = (Mesquite::Mesh::ElementHandle)j;
+      mMesh->elements_get_attached_vertices( &handle, 1, vert_handle_vect, offset_vect, err );
       CPPUNIT_ASSERT( !err );
+      CPPUNIT_ASSERT( vert_handle_vect.size() == 8 );
       for (i = 0; i < 8; ++i)
       {
-        size_t mesh = (size_t)conn[i] + 1;
+        size_t mesh = (size_t)vert_handle_vect[i] + 1;
         size_t exp  = expected_hex_connectivity[j][i];
         CPPUNIT_ASSERT_MESSAGE( buffer, mesh == exp );
       }

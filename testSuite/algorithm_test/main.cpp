@@ -62,7 +62,6 @@ using std::endl;
 #include "MsqError.hpp"
 #include "Vector3D.hpp"
 #include "InstructionQueue.hpp"
-#include "MeshSet.hpp"
 #include "PatchData.hpp"
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
@@ -81,11 +80,6 @@ int main()
   MsqPrintError err(cout);
   Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
   mesh->read_vtk("../../meshFiles/3D/VTK/tire.vtk", err);
-  if (err) return 1;
-  
-    // initialises a MeshSet object
-  MeshSet mesh_set1;
-  mesh_set1.add_mesh(mesh, err); 
   if (err) return 1;
   
     // creates an intruction queue
@@ -136,9 +130,6 @@ int main()
   
   pass1->set_inner_termination_criterion(&tc_inner);
   
-    // sets a culling method on the first QualityImprover
-  //This should probably be removed
-  pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
   //used for cg to get some info
 //  pass1->set_debugging_level(2);
   
@@ -153,7 +144,7 @@ int main()
   if (err) return 1;
   
     // launches optimization on mesh_set1
-  queue1.run_instructions(mesh_set1, err); 
+  queue1.run_instructions(mesh, err); 
   if (err) return 1;
   
   mesh->write_vtk("smoothed_mesh.vtk", err); 

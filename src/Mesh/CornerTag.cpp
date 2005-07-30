@@ -25,7 +25,8 @@
   ***************************************************************** */
 
 #include "CornerTag.hpp"
-#include "MeshSet.hpp"
+#include "PatchData.hpp"
+#include "MeshInterface.hpp"
 
 namespace Mesquite {
 
@@ -49,7 +50,7 @@ int CornerTagHandles::num_corners( PatchData* pd, int elem_index )
 
 Mesh* CornerTagHandles::get_current_mesh( PatchData* pd )
 {
-  return pd->get_mesh_set() ? pd->get_mesh_set()->get_current_mesh() : 0;
+  return pd->get_mesh();
 }
 
 TagHandle CornerTagHandles::get_handle( Mesh* mesh, unsigned corners, MsqError& err )

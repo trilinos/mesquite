@@ -57,7 +57,6 @@ describe main.cpp here
 #include "MeshImpl.hpp"
 #include "MsqError.hpp"
 #include "InstructionQueue.hpp"
-#include "MeshSet.hpp"
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
 #include "PlanarDomain.hpp"
@@ -82,16 +81,9 @@ int main()
   Mesquite::MeshImpl *ini_mesh = new Mesquite::MeshImpl;
   ini_mesh->read_vtk("../../meshFiles/2D/VTK/equil_tri2.vtk", err);
 
-  // initialises a MeshSet object
-  MeshSet ini_mesh_set;
-  ini_mesh_set.add_mesh(ini_mesh, err); 
-  if (err) return 1;
-
   Vector3D pnt(0,0,0);
   Vector3D s_norm(0,0,1);
   PlanarDomain* msq_geom = new PlanarDomain(s_norm, pnt);
-  ini_mesh_set.set_domain_constraint(msq_geom, err); 
-  if (err) return 1;
 
   // creates an intruction queue
   InstructionQueue queue1;
@@ -105,12 +97,7 @@ int main()
  
   Mesquite::MeshImpl *ref_mesh = new Mesquite::MeshImpl;
   ref_mesh->read_vtk("../../meshFiles/2D/VTK/equil_tri2.vtk", err);
-  MeshSet ref_mesh_set;
-  ref_mesh_set.add_mesh(ref_mesh, err); 
-  if (err) return 1;
-  ref_mesh_set.set_domain_constraint(msq_geom, err);
-  if (err) return 1;
-  DeformingDomainGuides843 target(&ref_mesh_set);
+  DeformingDomainGuides843 target( ref_mesh, msq_geom );
   queue1.add_target_calculator( &target, err );
   if (err) return 1;
  
@@ -134,24 +121,12 @@ int main()
   tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,50,err);
   pass1->set_outer_termination_criterion(&tc_outer);
 
-  // sets a culling method on the first QualityImprover
-  pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
-   
   // adds 1 pass of pass1 to mesh_set1
   queue1.set_master_quality_improver(pass1, err); 
   if (err) return 1;
 
-    //ref_mesh_set.write_gnuplot("ref_mesh",err); 
-    //if (err) return 1;
-  
-    //ref_mesh->write_exodus("ref_mesh.exo",err); 
-    //if (err) return 1;
-
-    //ini_mesh->write_exodus("ini_mesh.exo",err); 
-    //if (err) return 1;
- 
   // launches optimization on Lagrange mesh
-  queue1.run_instructions(ini_mesh_set, err); 
+  queue1.run_instructions(ini_mesh, msq_geom, err); 
   if (err) return 1;
  
   ini_mesh->write_vtk("smo_mesh.vtk",err);

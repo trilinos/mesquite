@@ -63,9 +63,9 @@ using std::endl;
 //#include "MeshMunson.hpp"
 #include "MsqError.hpp"
 #include "InstructionQueue.hpp"
-#include "MeshSet.hpp"
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
+#include "MeshWriter.hpp"
 
 // algorithms
 #include "I_DFT.hpp"
@@ -117,11 +117,6 @@ int main(int argc, char* argv[])
   mesh->read_vtk(file_name, err);
   if (err) return 1;
   
-  // initialises a MeshSet object
-  MeshSet mesh_set1;
-  mesh_set1.add_mesh(mesh, err); 
-  if (err) return 1;
-
   // creates an intruction queue
   InstructionQueue queue1;
 
@@ -138,11 +133,8 @@ int main(int argc, char* argv[])
   Mesquite::MeshImpl *ref_mesh = new Mesquite::MeshImpl;
   ref_mesh->read_vtk("../../meshFiles/2D/VTK/tfi_horse10x4-12.vtk", err);
   if (err) return 1;
-  MeshSet ref_mesh_set;
-  ref_mesh_set.add_mesh(ref_mesh, err); 
-  if (err) return 1;
-  //  DesignOpt3TargetCalculator target(&ref_mesh_set);
-  DeformingDomainGuides843 target(&ref_mesh_set);
+  //  DesignOpt3TargetCalculator target( ref_mesh );
+  DeformingDomainGuides843 target( ref_mesh );
   queue1.add_target_calculator( &target, err );
   if (err) return 1;
 
@@ -173,9 +165,6 @@ int main(int argc, char* argv[])
   if (err) return 1;
   pass1->set_outer_termination_criterion(&tc_outer);
 
-  // sets a culling method on the first QualityImprover
-  pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
-  
   queue1.add_quality_assessor(&stop_qa, err); 
   if (err) return 1;
    
@@ -186,17 +175,17 @@ int main(int argc, char* argv[])
   queue1.add_quality_assessor(&stop_qa, err); 
   if (err) return 1;
 
-  ref_mesh_set.write_gnuplot("ref_mesh",err); 
+  MeshWriter::write_gnuplot( ref_mesh, "ref_mesh", err );
   if (err) return 1;
 
-  mesh_set1.write_gnuplot("ori_mesh",err); 
+  MeshWriter::write_gnuplot( mesh, "ori_mesh", err );
   if (err) return 1;
   
   // launches optimization on mesh_set1
-  queue1.run_instructions(mesh_set1, err); 
+  queue1.run_instructions( mesh, err ); 
   if (err) return 1;
   
-  mesh_set1.write_gnuplot("smo_mesh", err); 
+  MeshWriter::write_gnuplot( mesh, "smo_mesh", err );
   if (err) return 1;
 
   print_timing_diagnostics( cout );

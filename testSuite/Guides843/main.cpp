@@ -58,10 +58,10 @@ describe main.cpp here
 //#include "MeshMunson.hpp"
 #include "MsqError.hpp"
 #include "InstructionQueue.hpp"
-#include "MeshSet.hpp"
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
 #include "PlanarDomain.hpp"
+#include "MeshWriter.hpp"
 
 // algorithms
 #include "I_DFT.hpp"
@@ -81,16 +81,9 @@ int main()
   Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
   mesh->read_vtk("../../meshFiles/2D/VTK/tfi_horse10x4-14.vtk", err);
   
-  // initialises a MeshSet object
-  MeshSet mesh_set1;
-  mesh_set1.add_mesh(mesh, err); 
-  if (err) return 1;
-
   Vector3D pnt(0,0,0);
   Vector3D s_norm(0,0,1);
   PlanarDomain* msq_geom = new PlanarDomain(s_norm, pnt);
-  mesh_set1.set_domain_constraint(msq_geom, err); 
-  if (err) return 1;
 
   // creates an intruction queue
   InstructionQueue queue1;
@@ -107,19 +100,14 @@ int main()
 
   Mesquite::MeshImpl *ref_mesh = new Mesquite::MeshImpl;
   ref_mesh->read_vtk("../../meshFiles/2D/VTK/tfi_horse10x4-12.vtk", err);
-  MeshSet ref_mesh_set;
-  ref_mesh_set.add_mesh(ref_mesh, err); 
-  if (err) return 1;
-  ref_mesh_set.set_domain_constraint(msq_geom, err);
-  if (err) return 1;
-  DeformingDomainGuides843 target(&ref_mesh_set);
+  DeformingDomainGuides843 target( ref_mesh, msq_geom );
 
   queue1.add_target_calculator( &target, err ); 
   if (err) return 1;
   
   // Run with just target calculator and dump results to
   // see if target matrices are calculated correctly.
-  queue1.run_instructions(mesh_set1, err); 
+  queue1.run_instructions(mesh, msq_geom, err); 
   if (err) return 1;
   mesh->write_vtk( "MeshWithTargetMatrices.vtk", err );
   if (err) return 1;
@@ -146,9 +134,6 @@ int main()
   tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
   pass1->set_outer_termination_criterion(&tc_outer);
 
-  // sets a culling method on the first QualityImprover
-  pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
-  
   queue1.add_quality_assessor(&stop_qa, err); 
   if (err) return 1;
    
@@ -159,19 +144,19 @@ int main()
   queue1.add_quality_assessor(&stop_qa, err); 
   if (err) return 1;
 
-  ref_mesh_set.write_gnuplot("ref_mesh",err); 
+  MeshWriter::write_gnuplot( ref_mesh, "ref_mesh", err );
   if (err) return 1;
 
-  mesh_set1.write_gnuplot("ori_mesh",err); 
+  MeshWriter::write_gnuplot( mesh, "ori_mesh", err );
   if (err) return 1;
   
   // launches optimization on mesh_set1
-  queue1.run_instructions(mesh_set1, err); 
+  queue1.run_instructions(mesh, msq_geom, err); 
   if (err) return 1;
   
   mesh->write_vtk("smo_mesh.vtk",err);
   if (err) return 1;
-  mesh_set1.write_gnuplot("smo_mesh.vtk", err); 
+  MeshWriter::write_gnuplot( mesh, "smo_mesh.vtk", err); 
   if (err) return 1;
 
   print_timing_diagnostics(cout);

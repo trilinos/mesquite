@@ -54,7 +54,6 @@ SimplifiedGeometryEngine.
 #include "MsqError.hpp"
 #include "Vector3D.hpp"
 #include "InstructionQueue.hpp"
-#include "MeshSet.hpp"
 #include "PatchData.hpp"
 //#include "StoppingCriterion.hpp"
 #include "QualityAssessor.hpp"
@@ -127,16 +126,9 @@ public:
      mesh->read_vtk("../../meshFiles/2D/VTK/quads_on_sphere_529.vtk", err);
      CPPUNIT_ASSERT(!err);
      
-       // initialises a MeshSet object
-     MeshSet mesh_set1;
-     mesh_set1.add_mesh(mesh, err);
-       //Make sure no errors
-     CPPUNIT_ASSERT(!err);
-     
        //create geometry: sphere, center (2,2,0), radius 3
      Vector3D center(2,2,0);
      SphericalDomain msq_geom(center, 3.0);
-     mesh_set1.set_domain_constraint(&msq_geom, err); CPPUNIT_ASSERT(!err);
      
        // creates an intruction queue
      InstructionQueue queue1;
@@ -166,8 +158,6 @@ public:
      sc5.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,
                                      5,err);
      pass1->set_inner_termination_criterion(&sc5);
-       // sets a culling method on the first QualityImprover
-     pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
        //CG's debugging print, increase integer to get more print info
      pass1->set_debugging_level(0);
   
@@ -176,13 +166,13 @@ public:
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
        // launches optimization on mesh_set1
-     double orig_qa_val=qa.loop_over_mesh(mesh_set1,err);
+     double orig_qa_val=qa.loop_over_mesh(mesh, &msq_geom, 0, err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
-     queue1.run_instructions(mesh_set1, err); CPPUNIT_ASSERT(!err);
+     queue1.run_instructions(mesh, &msq_geom, err); CPPUNIT_ASSERT(!err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
-     double fin_qa_val=qa.loop_over_mesh(mesh_set1,err);
+     double fin_qa_val=qa.loop_over_mesh(mesh, &msq_geom, 0, err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
        //make sure 'quality' improved
@@ -197,19 +187,10 @@ public:
        Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
        Mesquite::MsqPrintError err(cout); 
        mesh->read_vtk("../../meshFiles/2D/VTK/quads_on_sphere_529.vtk", err);
-        
-         // initialises a MeshSet object
-       MeshSet mesh_set1;
-       mesh_set1.add_mesh(mesh, err); 
-         //Make sure no errors
-       CPPUNIT_ASSERT(!err);
        
          //create geometry sphere:  ratius 1, centered at (0,0,0)
        Vector3D center(0,0,0);
        Mesquite::SphericalDomain msq_geom(center, 1.0);
-        //Make sure no errors
-       CPPUNIT_ASSERT(!err);
-       mesh_set1.set_domain_constraint(&msq_geom, err); CPPUNIT_ASSERT(!err);
   
          // creates an intruction queue
        InstructionQueue queue1;
@@ -228,8 +209,6 @@ public:
        TerminationCriterion sc5;
        sc5.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,5,err);
        s_lapl->set_outer_termination_criterion(&sc5);
-         // sets a culling method on the laplacian quality improver
-       s_lapl->add_culling_method(PatchData::NO_BOUNDARY_VTX);  
          //qa, qi, qa
        queue1.set_master_quality_improver(s_lapl, err); CPPUNIT_ASSERT(!err);
          //Make sure no errors
@@ -238,15 +217,15 @@ public:
        QualityAssessor qa=QualityAssessor(shape_metric,
                                           QualityAssessor::MAXIMUM, err);
        CPPUNIT_ASSERT(!err);
-       double orig_val=qa.loop_over_mesh(mesh_set1,err);
+       double orig_val=qa.loop_over_mesh(mesh, &msq_geom, 0, err);
        
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
-       queue1.run_instructions(mesh_set1, err); CPPUNIT_ASSERT(!err);
+       queue1.run_instructions(mesh, &msq_geom, err); CPPUNIT_ASSERT(!err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
 
-       double final_val= qa.loop_over_mesh(mesh_set1,err);
+       double final_val= qa.loop_over_mesh(mesh, &msq_geom, 0, err);
   
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
@@ -263,18 +242,9 @@ public:
        
        mesh->read_vtk("../../meshFiles/2D/VTK/Mesquite_geo_10242.vtk", err);
        
-         // initialises a MeshSet object
-       MeshSet mesh_set1;
-       mesh_set1.add_mesh(mesh, err); CPPUNIT_ASSERT(!err);
-         //Make sure no errors
-       CPPUNIT_ASSERT(!err);
-       
          //create geometry sphere:  ratius 1, centered at (0,0,0)
        Vector3D center(0,0,0);
        Mesquite::SphericalDomain msq_geom(center, 1.0);
-        //Make sure no errors
-       CPPUNIT_ASSERT(!err);
-       mesh_set1.set_domain_constraint(&msq_geom, err); CPPUNIT_ASSERT(!err);
   
          // creates an intruction queue
        InstructionQueue queue1;
@@ -297,20 +267,18 @@ public:
        TerminationCriterion sc10;
        sc10.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,10,err);
        lapl->set_outer_termination_criterion(&sc10);
-         // sets a culling method on the laplacian quality improver
-       lapl->add_culling_method(PatchData::NO_BOUNDARY_VTX);  
          //qa, qi, qa
        queue1.set_master_quality_improver(lapl, err); 
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
          // launches optimization on mesh_set1
-       double orig_qa_val=qa.loop_over_mesh(mesh_set1,err);
+       double orig_qa_val=qa.loop_over_mesh(mesh, &msq_geom, 0, err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
-       queue1.run_instructions(mesh_set1, err); CPPUNIT_ASSERT(!err);
+       queue1.run_instructions(mesh, &msq_geom, err); CPPUNIT_ASSERT(!err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
-       double fin_qa_val=qa.loop_over_mesh(mesh_set1,err);
+       double fin_qa_val=qa.loop_over_mesh(mesh, &msq_geom, 0, err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
          //make sure 'quality' improved

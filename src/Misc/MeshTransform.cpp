@@ -36,7 +36,6 @@
 
 
 #include "MeshTransform.hpp"
-#include "MeshSet.hpp"
 #include "MsqTimer.hpp"
 #include "MsqDebug.hpp"
 
@@ -52,7 +51,6 @@ namespace Mesquite {
     mMat = in_mat;
     mVec = in_vec;
     set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH ,err, 0, 1);
-    no_culling_method();
   }
   void MeshTransform::set_patch_type(PatchData::PatchType patch_type, MsqError &err,
                                      int param1=0, int param2=0) {
@@ -62,6 +60,7 @@ namespace Mesquite {
     }
     PatchDataUser::set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH ,err,
                                   0, param2);
+    MSQ_CHKERR(err);
   }
   
 /*! \fn MeshTransform::loop_over_mesh(MeshSet &ms, MsqError &err)
@@ -69,44 +68,38 @@ namespace Mesquite {
     \param const MeshSet &: this MeshSet is looped over. Only the
     mutable data members are changed (such as currentVertexInd).
   */
-  double MeshTransform::loop_over_mesh(MeshSet &ms, MsqError &err)
+  double MeshTransform::loop_over_mesh( Mesh* mesh,
+                                        MeshDomain* domain,
+                                        PatchData* ,
+                                        MsqError &err )
   {
-      //This shouldn't be an issue, but make sure the patch type is still
-      //correct.
-    if(get_patch_type() != PatchData::ELEMENTS_ON_VERTEX_PATCH){
-      MSQ_SETERR(err)("Incorrect patch type being used.\n",
-                      MsqError::INVALID_STATE );
-      return 1.;
-    }
       //get the first patch
     PatchData patch_data;
-    bool next_patch=ms.get_next_patch(patch_data, this, err);
-    if(err)
-      return 1.0;
+    patch_data.set_mesh( mesh );
+    patch_data.set_domain( domain );
+    size_t junk;
       //loop over the patches (ie, loop over the vertices.
-    while( next_patch )
+    while( patch_data.get_next_vertex_element_patch( 0, false, junk, err) )
     {
+      if (MSQ_CHKERR(err))
+        return 1.0;
+      
         //make sure we have a vertex.
-      if(patch_data.num_vertices()!=1){
-        MSQ_SETERR(err)( "Incorrect patch depth being used.",
-                         MsqError::INVALID_STATE ); 
-        return 1.;
-      }
+      assert(patch_data.num_vertices()==1);
+      
       MsqVertex* vert_array = patch_data.get_vertex_array(err);
-      if(err)
+      if(MSQ_CHKERR(err))
         return 1.0;
         //perform the affine transormation
       Vector3D temp_vec = vert_array[0];
       vert_array[0]=mMat*temp_vec+mVec;
         //update the vertex postion
       patch_data.update_mesh(err);
-        //get the next patch
-      next_patch =  ms.get_next_patch(patch_data, this, err);
-      if(err)
+      if (MSQ_CHKERR(err))
         return 1.0;
     }
       //return
-    return 0.;
+    return MSQ_CHKERR(err);
   }
   
 } // namespace Mesquite

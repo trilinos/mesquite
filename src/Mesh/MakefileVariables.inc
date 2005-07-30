@@ -1,14 +1,14 @@
 MESHDIR = $(srcdir)/Mesh
 
 MESHSRCFILES = CornerTag.cpp \
-               MeshSet.cpp \
                MsqMeshEntity.cpp \
                MsqVertex.cpp \
                PatchData.cpp \
                MeshImpl.cpp \
                MeshImplData.cpp \
                MeshImplTags.cpp \
-               TopologyInfo.cpp
+               TopologyInfo.cpp \
+               MeshWriter.cpp
 
 ifeq ($(MSQ_TSTT_MESH),yes)
   MESHSRCFILES += MeshTSTT.cpp

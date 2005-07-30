@@ -124,7 +124,7 @@ public:
                          3,  0, -2,
                          2, -3,  0 };
      size_t indices[3] = { 0, 1, 2 }; 
-     create_patch_mesh( oneTri, 3, coords, 1, indices, TRIANGLE, err );
+     oneTri.fill( 3, coords, 1, TRIANGLE, indices, 0, err );
      CPPUNIT_ASSERT(!err);
   }
 
@@ -284,7 +284,7 @@ public:
      
      // W is a singular matrix in 2D ... code needs fixing.
      MsqMeshEntity* elem = oneTri.get_element_array(err); CPPUNIT_ASSERT(!err);
-     target_calc.compute_target_matrices(oneTri, err); CPPUNIT_ASSERT(!err);
+     target_calc.compute_target_matrices(oneTri, oneTri, err); CPPUNIT_ASSERT(!err);
      this->compute_T_matrices(elem[0], oneTri, T, 3, c_k, err); CPPUNIT_ASSERT(!err);
      
      Matrix3D T_check[3];

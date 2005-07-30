@@ -104,28 +104,25 @@ public:
      vtx_2_0.set(2,0,0);
      vtx_2_1.set(2,1,0);
      
-     mPatch2D.allocate_storage( 6, 3, 10, err );
+     double coords[] = { 0,0,0,
+                         0,1,0,
+                         1,0,0,
+                         1,1,0,
+                         2,0,0,
+                         2,1,0 };
      
-     mPatch2D.vertex_by_index(0).set(0,0,0);
-     mPatch2D.vertex_by_index(1).set(0,1,0);
-     mPatch2D.vertex_by_index(2).set(1,0,0);
-     mPatch2D.vertex_by_index(3).set(1,1,0);
-     mPatch2D.vertex_by_index(4).set(2,0,0);
-     mPatch2D.vertex_by_index(5).set(2,1,0);
-     
-     mPatch2D.element_by_index(0).set_element_type(TRIANGLE);
-     mPatch2D.element_by_index(1).set_element_type(TRIANGLE);
-     mPatch2D.element_by_index(2).set_element_type(QUADRILATERAL);
+     EntityTopology types[] = { TRIANGLE, TRIANGLE, QUADRILATERAL };
      
      size_t connectivity[] = { 0, 2, 1,
                                1, 2, 3,
                                3, 2, 4, 5 };
      
-     memcpy( mPatch2D.get_connectivity_array(), connectivity, 10*sizeof(size_t) );
+     size_t counts[] = { 3, 3, 4 };
      
-     size_t offsets[] = { 0, 3, 6, 10 };
-     
-     mPatch2D.initialize_data( offsets, err );
+     mPatch2D.fill( 6, coords,
+                    3, types,
+                    counts, connectivity,
+                    0, err );
   }
   
   void tearDown()

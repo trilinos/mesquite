@@ -53,12 +53,18 @@ public:
   virtual void set_patch_type(PatchData::PatchType patch_type, MsqError &err,
                               int param1=0, int param2=0) ;
                               
-  virtual double loop_over_mesh(MeshSet &ms, MsqError &err);
+  virtual double loop_over_mesh( Mesh* mesh, 
+                                 MeshDomain* domain,
+                                 PatchData* global_patch,
+                                 MsqError &err);
 
   virtual msq_std::string get_name();
   
   virtual PatchDataUser::AlgorithmType get_algorithm_type();
 
+private:
+
+  void fix_mid_nodes( PatchData& pd, MsqError& err );
   
 };
 

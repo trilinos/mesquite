@@ -81,8 +81,6 @@ namespace Mesquite {
          mTerm->add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,10,err);
  
             lapl1->set_outer_termination_criterion(mTerm);
-            // sets a culling method on the first QualityImprover
-            lapl1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
       
             // adds 1 pass of pass1 
             this->add_quality_assessor(mQA,err); MSQ_CHKERR(err);

@@ -39,8 +39,6 @@
 
 namespace Mesquite
 {
-  class MeshSet;
-  
     /*!
       \class MsqVertex
       \brief MsqVertex is the Mesquite object that stores information about
@@ -121,11 +119,15 @@ namespace Mesquite
      
      bool is_flag_set(FlagMaskID flag) const
        { return (vertexBitFlags & flag) != 0; }
+    
+     FlagMask get_flags() const
+      { return vertexBitFlags; }
+    
+     void set_flags( FlagMask flags )
+      { vertexBitFlags = flags; }
      
    private:
      FlagMask vertexBitFlags;
-
-     friend class Mesquite::MeshSet;
    };
 
 } //namespace

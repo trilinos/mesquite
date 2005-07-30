@@ -49,7 +49,6 @@ describe main.cpp here
 #include "MsqError.hpp"
 #include "Vector3D.hpp"
 #include "InstructionQueue.hpp"
-#include "MeshSet.hpp"
 #include "PatchData.hpp"
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
@@ -90,17 +89,10 @@ int main()
   mesh->read_vtk("../../meshFiles/2D/VTK/tangled_quad.vtk", err);
   if (err) return 1;
   
-    // initialises a MeshSet object
-  MeshSet mesh_set1;
-  mesh_set1.add_mesh(mesh, err); 
-  if (err) return 1;
-
   // Set Domain Constraint
   Vector3D pnt(0,0,0);
   Vector3D s_norm(0,0,1);
   PlanarDomain* msq_geom = new PlanarDomain(s_norm, pnt);
-  mesh_set1.set_domain_constraint(msq_geom, err);
-  if (err) return 1;
                                                                               
     // creates an intruction queue
   InstructionQueue queue1;
@@ -162,10 +154,6 @@ int main()
   pass1->set_outer_termination_criterion(&sc1);
   pass2->set_inner_termination_criterion(&sc3);
   
-    // sets a culling method on the first QualityImprover
-  pass0->add_culling_method(PatchData::NO_BOUNDARY_VTX);
-  pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
-  pass2->add_culling_method(PatchData::NO_BOUNDARY_VTX);
     // adds 1 pass of pass1 to mesh_set1
   queue1.add_quality_assessor(&stop_qa,err); 
   if (err) return 1;
@@ -180,7 +168,7 @@ int main()
   if (err) return 1;
   
     // launches optimization on mesh_set1
-  queue1.run_instructions(mesh_set1, err);
+  queue1.run_instructions(mesh, msq_geom, err);
   if (err) return 1;
   
   mesh->write_vtk("smoothed_mesh.vtk", err); 

@@ -102,7 +102,7 @@ public:
                          2.0, 2.0, 2.0,
                          1.0, 2.0, 2.0 };
     size_t hconn[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-    create_patch_mesh( one_hex_patch, 8, hcoords, 1, hconn, HEXAHEDRON, err );
+    one_hex_patch.fill( 8, hcoords, 1, HEXAHEDRON, hconn, 0, err );
     
 
     double tcoords[] = { 1.0, 1.0, 1.0,
@@ -110,20 +110,20 @@ public:
                          1.5, 1+sqrt(3.0)/2.0, 1.0,
                          1.5, 1+sqrt(3.0)/6.0, 1+sqrt(2.0)/sqrt(3.0) };
     size_t tconn[] = { 0, 1, 2, 3 };
-    create_patch_mesh( one_tet_patch, 4, tcoords, 1, tconn, TETRAHEDRON, err );
+    one_tet_patch.fill( 4, tcoords, 1, TETRAHEDRON, tconn, 0, err );
 
     double qcoords[] = { 1.0, 1.0, 1.0,
                          2.0, 1.0, 1.0,
                          2.0, 2.0, 1.0,
                          1.0, 2.0, 1.0 };
     size_t qconn[] = { 0, 1, 2, 3 };
-    create_patch_mesh( one_qua_patch, 4, qcoords, 1, qconn, QUADRILATERAL, err );
+    one_qua_patch.fill( 4, qcoords, 1, QUADRILATERAL, qconn, 0, err );
     
     double rcoords[] = { 1.0, 1.0, 1.0,
                          2.0, 1.0, 1.0,
                          1.5, 1+sqrt(3.0)/2.0, 1.0 };
     size_t rconn[] = { 0, 1, 2 };
-    create_patch_mesh( one_tri_patch, 3, rcoords, 1, rconn, TRIANGLE,err );
+    one_tri_patch.fill( 3, rcoords, 1, TRIANGLE, rconn, 0, err );
   }
 
   void tearDown()

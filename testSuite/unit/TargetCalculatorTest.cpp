@@ -202,7 +202,7 @@ void TargetCalculatorTest::test_DefaultTargetCalculator()
 
   // Creates calculator and compute isotropic target corner matrices.
   ShapeGuides811 iso_calc;
-  iso_calc.compute_target_matrices(triPatch, err); CPPUNIT_ASSERT(!err);
+  iso_calc.compute_target_matrices(triPatch, triPatch, err); CPPUNIT_ASSERT(!err);
 
   TargetMatrix W;
 
@@ -323,11 +323,9 @@ void TargetCalculatorTest::test_optimize_vertex_positions(
 
   Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
   mesh->read_vtk(file_name, err); CPPUNIT_ASSERT(!err);
-  MeshSet mesh_set;
-  mesh_set.add_mesh(mesh, err); CPPUNIT_ASSERT(!err);
+  PlanarDomain* domain = 0;
   if (normal) {
-    PlanarDomain* domain = new PlanarDomain(*normal, *point);
-    mesh_set.set_domain_constraint(domain, err); CPPUNIT_ASSERT(!err);
+    domain = new PlanarDomain(*normal, *point);
   }
   
   sRI_DFT dft;
@@ -339,14 +337,15 @@ void TargetCalculatorTest::test_optimize_vertex_positions(
   InstructionQueue q;
   q.add_target_calculator( &targ_calc, err ); CPPUNIT_ASSERT(!err);
   q.set_master_quality_improver( &improver, err ); CPPUNIT_ASSERT(!err);
-  q.run_instructions( mesh_set, err ); CPPUNIT_ASSERT(!err);
+  q.run_instructions( mesh, domain, err ); CPPUNIT_ASSERT(!err);
 
   //improver.set_target_calculator(&targ_calc, err); CPPUNIT_ASSERT(!err);
       
   //improver.loop_over_mesh(mesh_set, err); CPPUNIT_ASSERT(!err);
 
   PatchData pd;
-  mesh_set.get_next_patch(pd, &improver, err); CPPUNIT_ASSERT(!err);
+  pd.set_mesh( mesh );
+  pd.fill_global_patch( err ); CPPUNIT_ASSERT(!err);
   MsqVertex* vtx = pd.get_vertex_array(err); CPPUNIT_ASSERT(!err);
   int good = vtx[vtx_index].within_tolerance_box(res, 1e-4);
   cout << "vtx[]: " << vtx[vtx_index] << endl;
@@ -403,30 +402,29 @@ void TargetCalculatorTest::test_local_patches()
   
     // Read two copies of the same mesh
   Mesquite::MeshImpl mesh1, mesh2;
-  MeshSet set1, set2;
   mesh1.read_vtk( file_name, err ); CPPUNIT_ASSERT(!err);
   mesh2.read_vtk( file_name, err ); CPPUNIT_ASSERT(!err);
-  set1.add_mesh( &mesh1, err ); CPPUNIT_ASSERT(!err);
-  set2.add_mesh( &mesh2, err ); CPPUNIT_ASSERT(!err);
   
     // Calculate target matrices using global patch for mesh 1
   targ_calc.set_patch_type( PatchData::GLOBAL_PATCH, err );
   CPPUNIT_ASSERT(!err);
-  q.run_instructions( set1, err ); 
+  q.run_instructions( &mesh1, err ); 
   CPPUNIT_ASSERT(!err);
   
     // Calulate target matrices using local patch for mesh 2
   targ_calc.set_patch_type( PatchData::ELEMENTS_ON_VERTEX_PATCH, err, 1 );
   CPPUNIT_ASSERT(!err);
-  q.run_instructions( set2, err ); 
+  q.run_instructions( &mesh2, err ); 
   CPPUNIT_ASSERT(!err);
   
     // Get global patches for each mesh
   PatchData patch1, patch2;
-  bool b;
+  patch1.set_mesh( &mesh1 );
+  patch2.set_mesh( &mesh2 );
+  bool b; size_t junk;
   targ_calc.set_patch_type( PatchData::GLOBAL_PATCH, err ); CPPUNIT_ASSERT(!err);
-  b = set1.get_next_patch( patch1, &targ_calc, err ); CPPUNIT_ASSERT(b && !err);
-  b = set2.get_next_patch( patch2, &targ_calc, err ); CPPUNIT_ASSERT(b && !err);
+  b = patch1.get_next_vertex_element_patch( 1, false, junk, err ); CPPUNIT_ASSERT(b && !err);
+  b = patch2.get_next_vertex_element_patch( 1, false, junk, err ); CPPUNIT_ASSERT(b && !err);
   CPPUNIT_ASSERT( patch1.num_vertices() == patch2.num_vertices() );
   CPPUNIT_ASSERT( patch1.num_elements() == patch2.num_elements() );
   CPPUNIT_ASSERT( patch1.num_corners() == patch2.num_corners() );

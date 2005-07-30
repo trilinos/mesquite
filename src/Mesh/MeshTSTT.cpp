@@ -44,12 +44,11 @@
 #include "TSTTUtil.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
-# include <map.h>
-# include <set.h>
+# include <algorithm.h>
 #else
-# include <map>
-# include <set>
+# include <algorithm>
 #endif
+
 
 #define OPAQUE_TYPE_OPAQUE_PADDED 0
 #define OPAQUE_TYPE_OPAQUE_PACKED 1
@@ -328,44 +327,13 @@ void TSTTArrIter::operator++()
       /**\brief Get dimension of vertex coordinates (2D vs. 3D). */
     virtual int get_geometric_dimension(Mesquite::MsqError &/*err*/);
     
-    /** \brief get sizes for calling \ref get_all_mesh
-     *
-     * Get counts of entities in mesh.
-     *
-     *\param vertex_count  - Number of vertices connected to active mesh
-     *\param element_count - Number of elements in active mesh
-     *\param vertex_use_count - Number of vertex uses (sum of the length
-     *                          of the connectivity list for all elements
-     *                          in active.)
-     */
-    virtual void get_all_sizes( size_t& vertex_count,
-                                size_t& element_count,
-                                size_t& vertex_use_count,
-                                MsqError& err );
+    /** \brief Get handles for all elemnents */
+    virtual void get_all_elements( msq_std::vector<ElementHandle>& elements, 
+                                   MsqError& err );
     
-    /** \brief Get entities and connectivity 
-     *
-     * Get vertex handles, element handles, and connectivty
-     * for active mesh.  Use \ref get_all_sizes to determine
-     * required array sizes.
-     *
-     *\param vert_array        Array to store vertex handles in
-     *\param vert_len          Length of \ref vert_array
-     *\param elem_array        Array to store element handles in
-     *\param elem_len          Length of \ref elem_array
-     *\param elem_conn_offsets Offsets into \ref elem_conn_indices at
-     *                         which the connectivity data for each
-     *                         element begins.  
-     *\param offset_len        Length of \ref elem_conn_offsets.  Should
-     *                         be \ref elem_len + 1.
-     *\param elem_conn_indices Indices into \ref vert_array
-     *\param index_len         Length of \ref elem_conn_indices.
-     */
-    virtual void get_all_mesh( VertexHandle*  vert_array, size_t vert_len,
-                               ElementHandle* elem_array, size_t elem_len,
-                               size_t* elem_conn_offsets, size_t offset_len,
-                               size_t* elem_conn_indices, size_t index_len,
-                               MsqError& err );
+    /** \brief Get handles for all vertices */
+    virtual void get_all_vertices( msq_std::vector<VertexHandle>& vertices, 
+                                   MsqError& err );
     
       /**\brief Create iterator for vertices in active set */
     virtual VertexIterator* vertex_iterator(MsqError &err);
@@ -374,110 +342,67 @@ void TSTTArrIter::operator++()
     virtual ElementIterator* element_iterator(MsqError &err);
 
       /**\brief Query "fixed" flag for a vertex */
-    virtual bool vertex_is_fixed(VertexHandle vertex, MsqError &err);
-
-      /**\brief Query "boundary" flag for an array of vertices */
-    virtual void vertices_are_on_boundary(VertexHandle vert_array[], bool on_bnd[],
-                                 size_t num_vtx, MsqError &err);
-    
+    virtual void vertices_get_fixed_flag( const VertexHandle vert_array[], 
+                                          bool fixed_flag_array[],
+                                          size_t num_vtx, 
+                                          MsqError &err);
+ 
       /**\brief Get vertex coordinates */
-    virtual void vertices_get_coordinates(const VertexHandle vert_array[],
-                                  MsqVertex* coordinates,
-                                  size_t num_vtx, MsqError &err);
+    virtual void vertices_get_coordinates( const VertexHandle vert_array[],
+                                           MsqVertex* coordinates,
+                                           size_t num_vtx, 
+                                           MsqError &err);
       /**\brief Set vertex coordinates */
-    virtual void vertex_set_coordinates(VertexHandle vertex,
-                                 const Vector3D &coordinates, MsqError &err);
+    virtual void vertex_set_coordinates( VertexHandle vertex,
+                                         const Vector3D &coordinates, 
+                                         MsqError &err);
     
       /**\brief Set vertex mark */
-    virtual void vertex_set_byte (VertexHandle vertex,
-                            unsigned char byte, MsqError &err);
+    virtual void vertex_set_byte( VertexHandle vertex,
+                                  unsigned char byte, 
+                                  MsqError &err);
       /**\brief Set vertex mark */
-    virtual void vertices_set_byte (VertexHandle *vert_array,
-                              unsigned char *byte_array,
-                              size_t array_size, MsqError &err);
+    virtual void vertices_set_byte( const VertexHandle *vert_array,
+                                    const unsigned char *byte_array,
+                                    size_t array_size, 
+                                    MsqError &err);
     
       /**\brief Get vertex mark */
-    virtual void vertex_get_byte(VertexHandle vertex,
-                                 unsigned char *byte, MsqError &err);
+    virtual void vertex_get_byte( VertexHandle vertex,
+                                  unsigned char *byte, 
+                                  MsqError &err);
       /**\brief Get vertex mark */
-    virtual void vertices_get_byte(VertexHandle *vert_array,
-                                   unsigned char *byte_array,
-                                   size_t array_size, MsqError &err);
+    virtual void vertices_get_byte( const VertexHandle *vert_array,
+                                    unsigned char *byte_array,
+                                    size_t array_size, 
+                                    MsqError &err);
     
-      /**\brief Get vertex adjacencies */
-    virtual size_t vertex_get_attached_element_count(VertexHandle vertex, MsqError &err);
+      /**\brief Get vertex-to-element adjacencies */
+    virtual void vertices_get_attached_elements( const VertexHandle* vertex_array,
+                                                 size_t num_vertices,
+                                                 msq_std::vector<ElementHandle>& elements,
+                                                 msq_std::vector<size_t>& offsets,
+                                                 MsqError& err );
     
-      /**\brief Get vertex adjacencies */
-    virtual void vertex_get_attached_elements(VertexHandle vertex,
-                                              ElementHandle* elem_array,
-                                              size_t sizeof_elem_array,
-                                              MsqError &err);
-    
-      /**\biref Get length of connectivity list */
-    virtual size_t element_get_attached_vertex_count(ElementHandle elem,
-                                                  MsqError &err);
-    
-    virtual size_t get_vertex_use_count( ElementHandle* array,
-                                         size_t length, 
-                                         MsqError& err );
-    
-/**\brief Get element connectivity in overly-complex CSR rep.
- *
- * Returns the vertices that are part of the topological definition of each
- * element in the "elem_handles" array.  When this function is called, the
- * following must be true:
- *   a) "elem_handles" points at an array of "num_elems" element handles.
- *   b) "vert_handles" points at an array of size "sizeof_vert_handles"
- *   c) "csr_data" points at an array of size "sizeof_csr_data"
- *   d) "csr_offsets" points at an array of size "num_elems+1"
- *      
- * When this function returns, adjacency information will be stored
- * in csr format:
- *    a) "vert_handles" stores handles to all vertices found in one
- *       or more of the elements.  Each vertex appears only
- *       once in "vert_handles", even if it is in multiple elements.
- *    b) "sizeof_vert_handles" is set to the number of vertex
- *       handles placed into "vert_handles".
- *    c) "sizeof_csr_data" is set to the total number of vertex uses (for
- *       example, sizeof_csr_data = 6 in the case of 2 TRIANGLES, even if
- *       the two triangles share some vertices).
- *    c) "csr_offsets" is filled such that csr_offset[i] indicates the location
- *       of entity i's first adjacency in "csr_data".  The number of vertices
- *       in element i is equal to csr_offsets[i+1] - csr_offsets[i].  For this
- *       reason, csr_offsets[num_elems] is set to the new value of
- *       "sizeof_csr_data".
- *    d) "csr_data" stores integer offsets which give the location of
- *       each adjacency in the "vert_handles" array.
- *
- * As an example of how to use this data, you can get the handle of the first
- * vertex in element #3 like this:
- *   VertexHandle vh = vert_handles[ csr_data[ csr_offsets[3] ] ]
- *
- * and the second vertex of element #3 like this:
- *   VertexHandle vh = vert_handles[ csr_data[ csr_offsets[3]+1 ] ]
- */ 
-    virtual void elements_get_attached_vertices(ElementHandle *elem_handles,
-                                                size_t num_elems,
-                                                VertexHandle *vert_handles,
-                                                size_t &sizeof_vert_handles,
-                                                size_t *csr_data,
-                                                size_t &sizeof_csr_data,
-                                                size_t *csr_offsets,
-                                                MsqError &err);
+      /**\brief Get element connectivity */
+    virtual void elements_get_attached_vertices( const ElementHandle *elem_handles,
+                                                 size_t num_elems,
+                                                 msq_std::vector<VertexHandle>& vertices,
+                                                 msq_std::vector<size_t>& offsets,
+                                                 MsqError& err );
     
   
-      /**\brief Return topology type enum for specified element */
-    virtual EntityTopology element_get_topology(ElementHandle entity_handle,
-                                           MsqError &err);
       /**\brief Return topology type enum for an array of elements */
-    virtual void elements_get_topologies(ElementHandle *element_handle_array,
-                                         EntityTopology *element_topologies,
-                                         size_t num_elements, MsqError &err);
+    virtual void elements_get_topologies( const ElementHandle *element_handle_array,
+                                          EntityTopology *element_topologies,
+                                          size_t num_elements, 
+                                          MsqError &err );
     
 //**************** Memory Management ****************
       /**\brief no-op */ 
-    virtual void release_entity_handles(EntityHandle *handle_array,
-                                        size_t num_handles, MsqError &err);
+    virtual void release_entity_handles( const EntityHandle *handle_array,
+                                         size_t num_handles, 
+                                         MsqError &err );
     
       // Instead of deleting a Mesh when you think you are done,
       // call release().  In simple cases, the implementation could
@@ -599,8 +524,28 @@ void TSTTArrIter::operator++()
         
     void set_int_tag( void* tag, void* meshset, int value, MsqError& err );
 
-    /** Populate \ref inputElements from \ref elemetnSet */
-    void popupate_input_elements( ) throw( TSTTB::Error );
+    /** Populate \ref inputElements from \ref elementSet */
+    void populate_input_elements( MsqError& err );
+
+      /** \brief  Call TSTTM::Arr::getEntArrAdj
+       *
+       * Common code for \ref vertices_get_attached_elements and 
+       * \ref elements_get_attached_vertices
+       *
+       *\param source      Array of handles of source entities to query from
+       *\param num_source  The length of \ref source
+       *\param target_type The type of entity to query for
+       *\param target      The output list of adjacent entities
+       *\param offsets     For each entity in \ref source, the offset in 
+       *                   \ref target at which the corresponding adjacent
+       *                   entities are stored. (output)
+       */
+    void get_adjacent_entities( void* const* source,
+                                size_t num_source,
+                                TSTTM::EntityType target_type,
+                                msq_std::vector<void*>& target,
+                                msq_std::vector<size_t>& offsets,
+                                MsqError& err );
 
   private:
       /** \brief Set tag values */
@@ -640,7 +585,7 @@ void TSTTArrIter::operator++()
      *  to constrain vertex->element adjaceny queries to
      *  only those elements that are in the input element set.
      */
-    msq_std::set<void*> inputElements;
+    msq_std::vector<void*> inputElements;
     
     /** The type of elements contained in the input element set.
      * Should be one of:
@@ -665,16 +610,7 @@ void TSTTArrIter::operator++()
     
     /** Map TSTTM::EntityTopology to Mesquite::EntityTopology */
     EntityTopology topologyMap[TSTTM::EntityTopology_ALL_TOPOLOGIES+1];
-    
-    /** Cached result for vertex->element query */
-    sidl::array<void*> vertexAdjElements;
-    /** Number of valid entries \ref vertexAdjElements */
-    int vertexAdjElementSize;
-    /** Vertex for which \ref vertexAdjElements is cached */
-    void* cachedAdjVertex;
-    /** Get elements adjacent to vertex and store in \ref vertexAdjElements */
-    void cache_adjacent_elements( void* vertex_handle, MsqError& err );
- };
+};
 
 /*************************************************************************
  *                          Mesh Definition
@@ -716,9 +652,7 @@ MeshTSTTImpl::MeshTSTTImpl(TSTTM::Mesh& tstt_mesh, Mesquite::MsqError& err)
     elementSet(0), nodeSet(0), 
     inputSetType( TSTTM::EntityType_ALL_TYPES ),
     byteTag(0), createdByteTag(false),
-    fixedTag(0), createdFixedTag(false),
-    vertexAdjElementSize(0), cachedAdjVertex(0)
-//    ,vertexIndexTag(0), createdVertexIndexTag(false)
+    fixedTag(0), createdFixedTag(false)
 {
     // Initialize topology map 
   
@@ -1030,40 +964,19 @@ void MeshTSTTImpl::set_active_set( void* elem_set, MsqError& err )
   
     // clear cached data
   inputElements.clear();
-  vertexAdjElementSize = 0;
-  cachedAdjVertex = 0;
 }
 
-void MeshTSTTImpl::popupate_input_elements( ) throw( TSTTB::Error )
+void MeshTSTTImpl::populate_input_elements( MsqError& err ) 
 {
-  const int ELEM_BUFFER_SIZE = 1024;
-  void* handle_array[ELEM_BUFFER_SIZE];
-  sidl::array<void*> handles = convert_to_sidl_vector( handle_array, ELEM_BUFFER_SIZE );
-  void* iter;
- 
   inputElements.clear();
- 
-  arrIFace.initEntArrIter( elementSet, 
-                           TSTTM::EntityType_ALL_TYPES, 
-                           TSTTM::EntityTopology_ALL_TOPOLOGIES,
-                           ELEM_BUFFER_SIZE, 
-                           iter );
-      
-  int count = 0;
-  bool more = false;
-  do {
-      // Add elements to element set
-    more = arrIFace.getEntArrNextIter( iter, handles, count );
-    if (!count) break;
-    setIFace.addEntArrToSet( handles, count, elementSet );
-
-    void** const end_ptr = handle_array + count;
-    for (void** ptr = handle_array; ptr != end_ptr; ++ptr)
-      inputElements.insert( *ptr );
-
-  } while (more);
-
-  arrIFace.endEntArrIter( iter );
+  get_all_elements( inputElements, err );
+  if (MSQ_CHKERR(err))
+  {
+    inputElements.clear();
+    return;
+  }
+  
+  msq_std::sort( inputElements.begin(), inputElements.end() );
 } 
 
   
@@ -1125,29 +1038,8 @@ ElementIterator* MeshTSTTImpl::element_iterator(MsqError &err)
 // is fixed and cannot be moved.  Note that this is a read-only
 // property; this flag can't be modified by users of the
 // Mesquite::Mesh interface.
-bool MeshTSTTImpl::vertex_is_fixed( VertexHandle vertex, MsqError &err )
-{
-    // If mesh does not contain a fixed tag, assume no vertices are fixed
-  if (!fixedTag) 
-    return false;
-    
-  try {
-    return (bool)tagIFace.getIntData( vertex, fixedTag );
-  }
-  catch( TSTTB::Error& tstt_err ) {
-    MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
-    return true;
-  }
-}
-
-// Returns true or false, indicating whether the vertex
-// is on the boundary.  Boundary nodes may be treated as
-// a special case by some algorithms or culling methods.
-// Note that this is a read-only
-// property; this flag can't be modified by users of the
-// Mesquite::Mesh interface.
-void MeshTSTTImpl::vertices_are_on_boundary(
-  VertexHandle vert_array[], 
+void MeshTSTTImpl::vertices_get_fixed_flag(
+  const VertexHandle vert_array[], 
   bool bool_array[],
   size_t num_vtx, MsqError &err)
 {
@@ -1159,16 +1051,24 @@ void MeshTSTTImpl::vertices_are_on_boundary(
   
     // Get per-vertex flags from fixedTag
   try {
-    sidl::array<void*> vert_wrapper( convert_to_sidl_vector( vert_array, num_vtx ) );
-    sidl::array<int> bools = alloc_sidl_vector<int>(num_vtx);
     
-    int num_bools = num_vtx;
-    arrTagIFace.getIntArrData( vert_wrapper, num_vtx, fixedTag, bools, num_bools );
-    if (num_vtx != (unsigned)num_bools)
-      MSQ_SETERR(err)(MsqError::INTERNAL_ERROR);
+    if (num_vtx == 1)
+    {
+      bool_array[0] = (bool)tagIFace.getIntData( vert_array[0], fixedTag );
+    }
+    else
+    {
+      sidl::array<void*> vert_wrapper( convert_to_sidl_vector( const_cast<void**>(vert_array), num_vtx ) );
+      sidl::array<int> bools = alloc_sidl_vector<int>(num_vtx);
+    
+      int num_bools = num_vtx;
+      arrTagIFace.getIntArrData( vert_wrapper, num_vtx, fixedTag, bools, num_bools );
+      if (num_vtx != (unsigned)num_bools)
+        MSQ_SETERR(err)(MsqError::INTERNAL_ERROR);
 
-    for (size_t i = 0; i < num_vtx; ++i)
-      bool_array[i] = bools.get(i);
+      for (size_t i = 0; i < num_vtx; ++i)
+        bool_array[i] = bools.get(i);
+    }
   }
   catch(::TSTTB::Error &tstt_err) {
     MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
@@ -1296,8 +1196,8 @@ void MeshTSTTImpl::vertex_set_byte (
 }
 
 void MeshTSTTImpl::vertices_set_byte (
-  VertexHandle *vert_array,
-  unsigned char *byte_array,
+  const VertexHandle *vert_array,
+  const unsigned char *byte_array,
   size_t array_size, MsqError &err)
 {
     // TSTT implementations seem to be inconsistant with
@@ -1306,7 +1206,7 @@ void MeshTSTTImpl::vertices_set_byte (
     // used a TSTT-defined type for the data, rather than
     // a single byte.
   try {
-    sidl::array<void*> handles( convert_to_sidl_vector( vert_array, array_size ));
+    sidl::array<void*> handles( convert_to_sidl_vector( const_cast<void**>(vert_array), array_size ) );
     sidl::array<int> data(alloc_sidl_vector<int>(array_size));
     for (size_t i = 0; i < array_size; ++i)
       data.set( i, byte_array[i] );
@@ -1333,7 +1233,7 @@ void MeshTSTTImpl::vertex_get_byte(
 }
 
 void MeshTSTTImpl::vertices_get_byte(
-  VertexHandle *vert_array,
+  const VertexHandle *vert_array,
   unsigned char *byte_array,
   size_t array_size, MsqError &err)
 {
@@ -1343,7 +1243,7 @@ void MeshTSTTImpl::vertices_get_byte(
     // used a TSTT-defined type for the data, rather than
     // a single byte.
   try {
-    sidl::array<void*> handles( convert_to_sidl_vector( vert_array, array_size ));
+    sidl::array<void*> handles( convert_to_sidl_vector( const_cast<void**>(vert_array), array_size ));
     sidl::array<int> data( alloc_sidl_vector<int>(array_size) );
     int32_t junk;
     arrTagIFace.getIntArrData( handles, array_size, byteTag, data, junk );
@@ -1357,338 +1257,201 @@ void MeshTSTTImpl::vertices_get_byte(
 }
 
 
-//**************** Vertex Topology *****************
+//**************** Topology *****************
 
-void MeshTSTTImpl::cache_adjacent_elements( void* vtx, MsqError& err )
+void MeshTSTTImpl::get_adjacent_entities( void* const* source,
+                                          size_t num_source,
+                                          TSTTM::EntityType target_type,
+                                          msq_std::vector<void*>& target,
+                                          msq_std::vector<size_t>& offsets,
+                                          MsqError& err )
 {
-    // If already have data cached for this vertex, just return
-  if (vtx == cachedAdjVertex)
+  if (num_source == 0)
     return;
   
-    // make sure to clear this so that if we fail in the middle,
-    // we don't end up with invlaid cache data for the prev vertex.
-  cachedAdjVertex = 0;
-  vertexAdjElementSize = 0;
+  int num_adj = 0, num_offset;
+  sidl::array<int> sidl_offsets;
   
-  try {
-      // First try using current array size
-    bool success;
-    try {
-      entIFace.getEntAdj( vtx, inputSetType, vertexAdjElements, vertexAdjElementSize );
-      success = true;
-    } 
-    catch( ... ) {
-      success = false;
-    }
+  sidl::array<void*> sidl_source = convert_to_sidl_vector( const_cast<void**>(source), num_source );
+  offsets.resize( num_source + 1 );
+  if (sizeof(size_t) == sizeof(int)) // avoid copy if possible
+    sidl_offsets = convert_to_sidl_vector( reinterpret_cast<int*>(&offsets[0]), offsets.size() );
   
-    // If failed, try again and let implementation allocate storage
-    if (!success) {
-      vertexAdjElements = sidl::array<void*>();
-      entIFace.getEntAdj( vtx, inputSetType, vertexAdjElements, vertexAdjElementSize );
-    }
-    
-      // Store which vertex we have cached adj data for
-    cachedAdjVertex = vtx;
-
-      // We need to use inputElements.  Fill it if it hasn't
-      // been filled yet.
-    if (inputElements.empty())
-      popupate_input_elements();
-  }
-  catch(::TSTTB::Error &tstt_err) {
-    MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
-    return;
-  }
-  
-    // Remove from list any elements not in the input set
-  void** write_ptr = convert_from_sidl_vector( vertexAdjElements );
-  void** const end_ptr = write_ptr + vertexAdjElementSize;
-  for (void** read_ptr = write_ptr; read_ptr != end_ptr; ++read_ptr)
+  bool have_adj = false;
+    // If passed vector has allocated storage, try to use existing space
+  if (target.capacity() >= num_source)
   {
-    if (inputElements.find( *read_ptr ) != inputElements.end())
-    {
-      *write_ptr = *read_ptr;
-      ++write_ptr;
+    target.resize( target.capacity() );
+    sidl::array<void*> sidl_target = convert_to_sidl_vector( &target[0], target.size() );
+
+    try {
+      arrIFace.getEntArrAdj( sidl_source, num_source,
+                             target_type,
+                             sidl_target, num_adj,
+                             sidl_offsets, num_offset );
+      assert( (unsigned)num_adj <= target.size() );
+      target.resize( num_adj );
+      have_adj = true;
+    } catch (...) { }
+  }
+  
+    // If implementation passed back a size, try that
+  if (!have_adj && num_adj && (unsigned)num_adj > target.capacity())
+  {
+    target.resize( target.capacity() );
+    sidl::array<void*> sidl_target = convert_to_sidl_vector( &target[0], target.size() );
+
+    try {
+      arrIFace.getEntArrAdj( sidl_source, num_source,
+                             target_type,
+                             sidl_target, num_adj,
+                             sidl_offsets, num_offset );
+      assert( (unsigned)num_adj <= target.size() );
+      target.resize( num_adj );
+      have_adj = true;
+    } catch (...) { }
+  }
+
+    // Try with empty sidl array, and copy into elements vector
+  if (!have_adj)
+  {
+    try {
+      sidl::array<void*> sidl_target;
+      arrIFace.getEntArrAdj( sidl_source, num_source,
+                             target_type,
+                             sidl_target, num_adj,
+                             sidl_offsets, num_offset );
+
+      target.resize( num_adj );
+      copy_from_sidl( sidl_target, &target[0] );
+    }
+    catch(::TSTTB::Error &tstt_err) {
+      MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
+      return;
     }
   }
   
-  vertexAdjElementSize = write_ptr - convert_from_sidl_vector( vertexAdjElements );
-}
-    
-    
-
-
-// Gets the number of elements attached to this vertex.
-// Useful to determine how large the "elem_array" parameter
-// of the vertex_get_attached_elements() function must be.
-size_t MeshTSTTImpl::vertex_get_attached_element_count(
-  VertexHandle vertex, MsqError &err)
-{
-  cache_adjacent_elements( vertex, err ); MSQ_ERRZERO(err);
-  return vertexAdjElementSize;
+  // TSTT implementations seem to be inconsistent with regard to 
+  // placing the last value on this list.
+  if (offsets.size() - num_offset == 1)
+  {
+    offsets[num_offset++] = num_adj;
+  }
+  assert( (unsigned)num_offset == offsets.size() );
+  
+  if (sizeof(size_t) != sizeof(int))  // do copy if could not be avoided
+    copy_from_sidl( sidl_offsets, &offsets[0] );
 }
 
-// Gets the elements attached to this vertex.
-void MeshTSTTImpl::vertex_get_attached_elements(
-  VertexHandle vertex,
-  ElementHandle* elem_array,
-  size_t sizeof_elem_array, MsqError &err)
+
+void MeshTSTTImpl::vertices_get_attached_elements( 
+                                     const VertexHandle* vertices,
+                                     size_t num_vertex,
+                                     msq_std::vector<ElementHandle>& elements,
+                                     msq_std::vector<size_t>& offsets,
+                                     MsqError& err )
 {
-  cache_adjacent_elements( vertex, err ); MSQ_ERRRTN(err);
-  if (sizeof_elem_array < (unsigned)vertexAdjElementSize) {
-    MSQ_SETERR(err)("Insufficient space in array.", MsqError::INVALID_ARG);
-    return;
+  get_adjacent_entities( vertices, num_vertex, inputSetType, elements, offsets, err ); 
+  MSQ_ERRRTN(err);
+  
+    // We need to use inputElements.  Fill it if it hasn't been filled yet.
+  if (inputElements.empty())
+  {
+    populate_input_elements(err);
+    MSQ_ERRRTN(err);
   }
   
-  assert( sizeof(ElementHandle) == sizeof(void*) );
-  void** array = convert_from_sidl_vector( vertexAdjElements );
-  memcpy( elem_array, array, vertexAdjElementSize * sizeof(void*) );
+    // Remove all elements not in inputElements
+  msq_std::vector<size_t>::iterator offset_iter = offsets.begin();
+  size_t read_idx, write_idx;
+  for (read_idx = write_idx = 0; read_idx < elements.size(); ++read_idx)
+  {
+    if (*offset_iter == read_idx)
+    {
+      *offset_iter = write_idx;
+      ++offset_iter;
+    }
+
+    if (msq_std::binary_search( inputElements.begin(), inputElements.end(), elements[read_idx] ))
+      elements[write_idx++] = elements[read_idx];
+  }
+  assert( offset_iter + 1 == offsets.end() && *offset_iter == read_idx );
+  *offset_iter = write_idx;
 }
 
 
-// Gets the number of vertices in this element.
-// This data can also be found by querying the
-// element's topology and getting the number
-// of vertices per element for that topology type.
-size_t MeshTSTTImpl::element_get_attached_vertex_count(
-  ElementHandle elem,
-  MsqError &err)
-{
-  try {
-    sidl::array<void*> junk;
-    int result = 0;
-    entIFace.getEntAdj( elem, TSTTM::EntityType_VERTEX, junk, result );
-    return result;
-  }
-  catch(::TSTTB::Error &tstt_err) {
-    MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
-    return 0;
-  }
-}
+//**************** Element Topology *****************
 
-size_t MeshTSTTImpl::get_vertex_use_count( ElementHandle* array,
-                                           size_t length, 
-                                           MsqError& err )
-{
-  try {
-    sidl::array<void*> handles( convert_to_sidl_vector( array, length ) ); 
-    sidl::array<void*> adj;
-    sidl::array<int> offsets;
-    int32_t adj_size, off_size;
-    arrIFace.getEntArrAdj( handles, length, TSTTM::EntityType_VERTEX, adj, adj_size, offsets, off_size );
-    return adj_size;
-  }
-  catch(::TSTTB::Error &tstt_err) {
-    MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
-    return 0;
-  }
-}
 
 /** Get connectivity
  *\param elements - Array of length num_elems containing elements
  *                  handles of elements for which connectivity is to
  *                  be queried.
  *\param vertices - Array of vertex handles in connectivity list.
- *\param offsets  - Indices into \ref indices array, one per element.
- *\param indices  - Indices into \ref vertex_handles
+ *\param offsets  - Indices into \ref vertex_handles, one per element
  */
 void MeshTSTTImpl::elements_get_attached_vertices(
-  ElementHandle *elements,
+  const ElementHandle *elements,
   size_t num_elems,
-  VertexHandle *vertices,
-  size_t &vert_len,
-  size_t *indices,
-  size_t &indices_len,
-  size_t *offsets,
+  msq_std::vector<VertexHandle>& vertices,
+  msq_std::vector<size_t>& offsets,
   Mesquite::MsqError &err)
 {
-  if (num_elems == 0)
-    return;
-
-  try {
-      // Constuct arguments to TSTT
-    int vert_count, off_count;
-    sidl::array<void*> elem_arr( convert_to_sidl_vector( elements, num_elems ) );
-    sidl::array<void*> vert_arr( convert_to_sidl_vector( (void**)indices, indices_len ) );
-    sidl::array<int> off_arr;
-    if (sizeof(size_t) == sizeof(int))
-      off_arr = convert_to_sidl_vector( (int*)offsets, num_elems + 1 );
-    else
-      off_arr = alloc_sidl_vector<int>( num_elems + 1 );
-    
-      // Query TSTT for element connectivity
-    arrIFace.getEntArrAdj( elem_arr, num_elems,
-                           TSTTM::EntityType_VERTEX,
-                           vert_arr, vert_count,
-                           off_arr,  off_count );
-  
-    indices_len = vert_count;
-      // If couldn't do array borrow, copy offsets into output array
-    if (sizeof(size_t) != sizeof(int))
-      copy_from_sidl( off_arr, offsets );
-      
-      // Mesquite expects index array length as last value in offset array.
-      // If TSTT mesh doesn't return it, then add it.
-    if ((unsigned)off_count == num_elems)
-      offsets[num_elems] = vert_count;
-    else
-      assert( (unsigned)off_count == num_elems+1 );
-  }
-  catch(::TSTTB::Error &tstt_err) {
-    MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
-    return;
-  }
-    
-    // Construct unique list of vertex handles
-  vert_len = 0;
-  msq_std::map<VertexHandle,size_t> index_map;
-  const size_t* end = indices + indices_len;
-  /*
-  for (size_t* iter = indices; iter != end; ++iter)
-  {
-    VertexHandle vertex = *(VertexHandle*)iter;
-    msq_std::map<VertexHandle,size_t>::iterator pos = index_map.find( vertex );
-    size_t index;
-    if (pos == index_map.end())
-      index_map[vertex] = index = vert_len++;
-    else
-      index = pos->second;
-    
-    vertices[index] = vertex;
-    *iter = index;
-  }
-  */
-    // Rather than the above simple code, do the following more complicated 
-    // code so the resulting list of vertices are sorted (easier to debug)
-  for (size_t* iter = indices; iter != end; ++iter)
-  {
-    VertexHandle vertex = *(VertexHandle*)iter;
-    msq_std::map<VertexHandle,size_t>::iterator pos = index_map.find( vertex );
-    if (pos == index_map.end())
-      index_map[vertex] = 0;
-  }
-  for (msq_std::map<VertexHandle,size_t>::iterator m_iter = index_map.begin();
-       m_iter != index_map.end(); ++m_iter)
-  {
-    vertices[vert_len] = m_iter->first;
-    m_iter->second = vert_len++;
-  }
-  for (size_t* iter = indices; iter != end; ++iter)
-  {
-    VertexHandle vertex = *(VertexHandle*)iter;
-    msq_std::map<VertexHandle,size_t>::iterator pos = index_map.find( vertex );
-    *iter = pos->second;
-  }      
-  
-  
+  get_adjacent_entities( elements, num_elems, TSTTM::EntityType_VERTEX, vertices, offsets, err );
+  MSQ_CHKERR(err);
 }
 
-void MeshTSTTImpl::get_all_sizes( size_t& vertex_count,
-                                  size_t& element_count,
-                                  size_t& vertex_use_count,
-                                  MsqError& err )
-{
-  try {
-    
-      // Get number of vertices
-    vertex_count   = meshIFace.getNumOfType( nodeSet,    TSTTM::EntityType_VERTEX );
-    
-      // Get number of elements
-    element_count  = meshIFace.getNumOfType( elementSet, TSTTM::EntityType_FACE );
-    element_count += meshIFace.getNumOfType( elementSet, TSTTM::EntityType_REGION );
-    
-      // Get number of vertex uses
-    sidl::array<void*> handles1, handles2;
-    sidl::array<int> offsets1, offsets2;
-    sidl::array<int> flags1, flags2;
-    int num_handles, num_offsets, num_flags;
-      // Face elements
-    meshIFace.getAdjEntities( elementSet, 
-                              TSTTM::EntityType_FACE,
-                              TSTTM::EntityTopology_ALL_TOPOLOGIES,
-                              TSTTM::EntityType_VERTEX,
-                              handles1, num_handles,
-                              offsets1, num_offsets,
-                              flags1  , num_flags );
-    vertex_use_count = num_handles;
-      // Region elements
-    meshIFace.getAdjEntities( elementSet, 
-                              TSTTM::EntityType_REGION,
-                              TSTTM::EntityTopology_ALL_TOPOLOGIES,
-                              TSTTM::EntityType_VERTEX,
-                              handles2, num_handles,
-                              offsets2, num_offsets,
-                              flags2  , num_flags );
-    vertex_use_count += num_handles;
-  }
-  catch(::TSTTB::Error &tstt_err) {
-    MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
-  }
-}
 
-void MeshTSTTImpl::get_all_mesh( VertexHandle* vert_array,  size_t vert_len,
-                                 ElementHandle* elem_array, size_t elem_len,
-                                 size_t* offset_array,      size_t offset_len,
-                                 size_t* conn_array,        size_t conn_len ,
-                                 MsqError& err )
+void MeshTSTTImpl::get_all_elements( msq_std::vector<ElementHandle>& elements,
+                                     MsqError& err )
 {
-  int num_elem;
   try {
-    sidl::array<void*> elements( convert_to_sidl_vector( elem_array, elem_len ) );
+    int count = meshIFace.getNumOfType( elementSet, TSTTM::EntityType_ALL_TYPES );
+    elements.resize( count );
+    sidl::array<void*> handles( convert_to_sidl_vector( &elements[0], count ) );
     meshIFace.getEntities( elementSet, 
-                           TSTTM::EntityType_ALL_TYPES,
+                           TSTTM::EntityType_ALL_TYPES, 
                            TSTTM::EntityTopology_ALL_TOPOLOGIES,
-                           elements,
-                           num_elem );
-    if ((unsigned)num_elem > elem_len)
-    {
-      MSQ_SETERR(err)("Insufficient space in array", MsqError::OUT_OF_MEMORY);
-      return;
-    }
-  }
+                           handles, count );
+    assert( (unsigned)count == elements.size() );
+  } 
   catch(::TSTTB::Error &tstt_err) {
     MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
     return;
   }
-  
-  if (offset_len <= (unsigned)num_elem)
-  {
-    MSQ_SETERR(err)("Insufficient space in array", MsqError::OUT_OF_MEMORY);
-    return;
-  }
-  
-  elements_get_attached_vertices( elem_array, num_elem,
-                                  vert_array, vert_len,
-                                  conn_array, conn_len,
-                                  offset_array, err );
 }
-      
 
-// Returns the topology of the given entity.
-EntityTopology MeshTSTTImpl::element_get_topology(
-  ElementHandle element, MsqError &err)
+void MeshTSTTImpl::get_all_vertices( msq_std::vector<VertexHandle>& vertices,
+                                     MsqError& err )
 {
   try {
-    TSTTM::EntityTopology topo = entIFace.getEntTopo( element );
-    return topologyMap[topo];
-  }
+    int count = meshIFace.getNumOfType( nodeSet, TSTTM::EntityType_ALL_TYPES );
+    vertices.resize( count );
+    sidl::array<void*> handles( convert_to_sidl_vector( &vertices[0], count ) );
+    meshIFace.getEntities( nodeSet, 
+                           TSTTM::EntityType_ALL_TYPES, 
+                           TSTTM::EntityTopology_ALL_TOPOLOGIES,
+                           handles, count );
+    assert( (unsigned)count == vertices.size() );
+  } 
   catch(::TSTTB::Error &tstt_err) {
     MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
-    return MIXED;
+    return;
   }
 }
+      
 
 // Returns the topologies of the given entities.  The "entity_topologies"
 // array must be at least "num_elements" in size.
 void MeshTSTTImpl::elements_get_topologies(
-  ElementHandle *element_handle_array,
+  const ElementHandle *element_handle_array,
   EntityTopology *element_topologies,
   size_t num_elements, MsqError &err)
 {
   try {
     
     sidl::array<TSTTM::EntityTopology> topologies( alloc_sidl_vector<TSTTM::EntityTopology>( num_elements ) );
-    sidl::array<void*> handles( convert_to_sidl_vector( element_handle_array, num_elements ) );
+    sidl::array<void*> handles( convert_to_sidl_vector( const_cast<void**>(element_handle_array), num_elements ) );
     int topo_len_out;
     arrIFace.getEntArrTopo( handles, num_elements, topologies, topo_len_out );
     if ((size_t)topo_len_out != num_elements) {
@@ -1708,7 +1471,7 @@ void MeshTSTTImpl::elements_get_topologies(
 // Tells the mesh that the client is finished with a given
 // entity handle.  
 void MeshTSTTImpl::release_entity_handles(
-  Mesquite::Mesh::EntityHandle */*handle_array*/,
+  const Mesquite::Mesh::EntityHandle */*handle_array*/,
   size_t /*num_handles*/, MsqError &/*err*/)
 {
     // Do nothing
@@ -1841,7 +1604,7 @@ void MeshTSTTImpl::tag_set_data( TagHandle tag,
   try {
     size_t len, size = tagIFace.getTagSize( tag );
     int count = 0;
-    sidl::array<void*> handles( convert_to_sidl_vector( (void**)array, num_elems ) );
+    sidl::array<void*> handles( convert_to_sidl_vector( const_cast<void**>(array), num_elems ) );
     switch (tagIFace.getTagType( tag ))
     {
       case TSTTB::TagValueType_ENTITY_HANDLE:

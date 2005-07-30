@@ -50,7 +50,6 @@ describe main.cpp here
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
 #include "MsqError.hpp"
-#include "MeshSet.hpp"
 #include "ShapeImprovementWrapper.hpp"
 // algorythms
 #include "IdealWeightInverseMeanRatio.hpp"
@@ -87,12 +86,6 @@ int main()
      
     //mesh->read_vtk("../../meshFiles/2D/VTK/cube-clip-corner.vtk", err);
   mesh->read_vtk("../../meshFiles/2D/VTK/hybrid_3quad_1tri.vtk", err);
-  if (err) return 1;
-    // initialises a MeshSet object
-  MeshSet mesh_set1;
-  mesh_set1.set_domain_constraint(&msq_geom, err);  
-  if (err) return 1;
-  mesh_set1.add_mesh(mesh, err); 
   if (err) return 1;
   
     // creates an intruction queue
@@ -136,10 +129,6 @@ int main()
   pass1.set_inner_termination_criterion(&tc_inner);
   pass1.set_outer_termination_criterion(&tc_outer);
 
-    // sets a culling method on the first QualityImprover
-    //This is an old command that still needs to be there.  It has
-    //nothing to do with 'culling methods' described in TerminationCriterion.
-  pass1.add_culling_method(PatchData::NO_BOUNDARY_VTX);
   queue1.add_quality_assessor(&qa,err); 
   if (err) return 1;
     // adds 1 pass of pass1 to mesh_set1
@@ -150,7 +139,7 @@ int main()
   mesh->write_vtk("original_mesh.vtk",err); 
   if (err) return 1;
   
-  queue1.run_instructions(mesh_set1, err); 
+  queue1.run_instructions(mesh, &msq_geom, err); 
   if (err) return 1;
   mesh->write_vtk("smoothed_mesh.vtk",err); 
   if (err) return 1;

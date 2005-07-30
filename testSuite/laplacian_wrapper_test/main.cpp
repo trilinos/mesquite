@@ -46,7 +46,6 @@ describe main.cpp here
 #include "Mesquite.hpp"
 #include "MeshImpl.hpp"
 #include "MsqError.hpp"
-#include "MeshSet.hpp"
 #include "PlanarDomain.hpp"
 // algorythms
 #include "LaplacianIQ.hpp"
@@ -80,12 +79,6 @@ int main()
   Vector3D pnt(0,0,5);
   Vector3D s_norm(0,0,1);
   Mesquite::PlanarDomain msq_geom(s_norm, pnt);
-    // initialises a MeshSet object
-  MeshSet mesh_set1;
-  mesh_set1.set_domain_constraint(&msq_geom, err);
-  if (err) return 1;
-  mesh_set1.add_mesh(mesh, err);
-  if (err) return 1;
   
     // creates an intruction queue
   LaplacianIQ laplacian_smoother;
@@ -94,7 +87,7 @@ int main()
   if (err) return 1;
   
     // launches optimization on mesh_set1
-  laplacian_smoother.run_instructions(mesh_set1, err); 
+  laplacian_smoother.run_instructions(mesh, &msq_geom, err); 
   if (err) return 1;
  
   mesh->write_vtk("smoothed_mesh.vtk", err); 

@@ -61,7 +61,6 @@ using std::endl;
 #include "Mesquite.hpp"
 #include "MeshImpl.hpp"
 #include "MsqError.hpp"
-#include "MeshSet.hpp"
 #include "TerminationCriterion.hpp"
 
 // algorithms
@@ -71,19 +70,25 @@ using std::endl;
 
 using namespace Mesquite;
 
+const double EPSILON = 1e-6;
 
 int main(int argc, char* argv[])
 {
   Mesquite::MsqPrintError err(cout);
 
-  Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
+  Mesquite::MeshImpl mesh;
     //mesh->read_exodus("transformed_mesh.exo", err);
-  mesh->read_vtk("../../meshFiles/2D/VTK/tfi_horse10x4-12.vtk", err);
+  mesh.read_vtk("../../meshFiles/2D/VTK/tfi_horse10x4-12.vtk", err);
   if (err) return 1;
   
-  MeshSet mesh_set1;
-  mesh_set1.add_mesh(mesh, err);
+    // Get all vertex coordinates from mesh
+  std::vector<Mesquite::Mesh::VertexHandle> handles;
+  mesh.get_all_vertices( handles, err ); 
   if (err) return 1;
+  std::vector<Mesquite::MsqVertex> coords( handles.size() );
+  mesh.vertices_get_coordinates( &handles[0], &coords[0], handles.size(), err );
+  if (err) return 1;
+  
     //create the matrix for affine transformation
   double array_entries[9];
   array_entries[0]=0; array_entries[1]=1; array_entries[2]=0;
@@ -93,11 +98,34 @@ int main(int argc, char* argv[])
   Matrix3D my_mat(array_entries);
   Vector3D my_vec(0, 0 , 10);
   MeshTransform my_transform(my_mat, my_vec, err);
-    //my_transform.add_culling_method(PatchData::NO_INTERIOR_VTX);
-    //my_transform.add_culling_method(PatchData::NO_BOUNDARY_VTX);
   if (err) return 1;
     //mesh->write_exodus("original_mesh.exo", err);
-  my_transform.loop_over_mesh(mesh_set1, err);
+  my_transform.loop_over_mesh(&mesh, 0, 0, err);
+  if (err) return 1;
     //mesh->write_exodus("transformed_mesh.exo", err);
-  mesh->write_vtk("transformed_mesh.vtk", err);
+  mesh.write_vtk("transformed_mesh.vtk", err);
+  if (err) return 1;
+  
+    // Get transformed coordinates
+  std::vector<Mesquite::MsqVertex> coords2( handles.size() );
+  mesh.vertices_get_coordinates( &handles[0], &coords2[0], handles.size(), err );
+  if (err) return 1;
+ 
+    // Compare vertex coordinates
+  size_t invalid = 0;
+  std::vector<Mesquite::MsqVertex>::iterator iter, iter2;
+  iter = coords.begin();
+  iter2 = coords2.begin();
+  for ( ; iter != coords.end(); ++iter, ++iter2 )
+  {
+    Mesquite::Vector3D xform = my_mat * *iter + my_vec;
+    double d = (xform - *iter2).length();
+    if (d > EPSILON)
+      ++invalid;
+  }
+  
+  msq_stdio::cerr << invalid << " vertices not within " << EPSILON 
+                  << " of expected location" << msq_stdio::endl;
+  
+  return (invalid != 0);
 }

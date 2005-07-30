@@ -37,13 +37,14 @@ Member functions of the Mesquite::InstructionQueue class
 #ifdef MSQ_USE_OLD_STD_HEADERS
 #  include <string.h>
 #  include <list.h>
+#  include <memory.h>
 #else
 #  include <string>
 #  include <list>
+#  include <memory>
 #endif
 
 #include "InstructionQueue.hpp"
-#include "MeshSet.hpp"
 #include "MsqInterrupt.hpp"
 #include "QualityImprover.hpp"
 #include "QualityAssessor.hpp"
@@ -68,7 +69,6 @@ InstructionQueue::InstructionQueue() :
   nbPreConditionners(0),
   isMasterSet(false),
   masterInstrIndex(0),
-  globalPatch(0),
   trapFPE(IQ_TRAP_FPE_DEFAULT)
 {
 }
@@ -256,7 +256,9 @@ void InstructionQueue::set_master_quality_improver(QualityImprover* instr,
   }
 }
 
-void InstructionQueue::run_instructions(MeshSet &ms, MsqError &err)
+void InstructionQueue::run_instructions( Mesh* mesh, 
+                                         MeshDomain* domain,
+                                         MsqError &err)
 { 
   MSQ_DBGOUT(1) << version_string(false) << "\n";
 
@@ -274,51 +276,47 @@ void InstructionQueue::run_instructions(MeshSet &ms, MsqError &err)
     // Generate SIGFPE on floating point errors
   MsqFPE( this->trapFPE );
   
-  msq_std::list<PatchDataUser*>::const_iterator instr_iter;
+  msq_std::list<PatchDataUser*>::const_iterator instr;
   
-  if (autoAdjMidNodes)
-    instructions.push_back( new MeanMidNodeMover );
+    // Create a global patch if anything in the instruction queue
+    // requires it.
+  PatchData global_patch;
+  PatchData* global_patch_ptr = 0;
+  global_patch.set_mesh( mesh );
+  global_patch.set_domain( domain );
   
-  // For each instruction in the list
-  for (instr_iter = instructions.begin();
-       !(instr_iter == instructions.end()); ++instr_iter) {
+    // Run each instruction
+  for (instr = instructions.begin(); instr != instructions.end(); ++instr) 
+  {
+    if (MsqInterrupt::interrupt())
+    {
+      MSQ_SETERR(err)(MsqError::INTERRUPTED);
+      return;
+    }
     
-    // If instruction uses a global patch, creates one or reuse the existing one.
-    if ((*instr_iter)->get_patch_type() == PatchData::GLOBAL_PATCH) {
-      if (globalPatch == 0) {
-        globalPatch = new PatchData;
-        ms.get_next_patch(*globalPatch, (*instr_iter)->get_all_parameters(), err);
+    if ((*instr)->get_patch_type() == PatchData::GLOBAL_PATCH)
+    {
+      if (!global_patch_ptr)
+      {
+        global_patch.fill_global_patch( err );
         MSQ_ERRRTN(err);
-      } 
-        
-               
-      (*instr_iter)->set_global_patch(globalPatch, err); MSQ_ERRRTN(err);
+        global_patch_ptr = &global_patch;
+      }
     }
-    // If instruction does not use a Global Patch, make sure we discard any existing patch.
-    else {
-      delete globalPatch;
-      globalPatch = 0;
-      (*instr_iter)->no_global_patch();
+    else if (global_patch_ptr)
+    {
+      global_patch_ptr = 0;
     }
     
-    // applies the QualityImprover/QualityAssessor to the MeshSet
-      (*instr_iter)->loop_over_mesh(ms, err); MSQ_ERRRTN(err);
-
-    // If this same instruction is reused in this queue, we can't assume the
-    // global patch will still be valid. 
-    (*instr_iter)->no_global_patch();
+    (*instr)->loop_over_mesh( mesh, domain, global_patch_ptr, err ); 
+    MSQ_ERRRTN(err);
   }
   
   if (autoAdjMidNodes)
   {
-    delete *instructions.rbegin();
-    instructions.pop_back( );
-  }  
- 
-  if (globalPatch != 0)
-  {
-    delete globalPatch; // clean up once all instructions are executed.
-    globalPatch = 0;
+    MeanMidNodeMover tool;
+    tool.loop_over_mesh( mesh, domain, global_patch_ptr, err );
+    MSQ_ERRRTN(err);
   }
 }
 

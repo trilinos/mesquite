@@ -38,26 +38,19 @@ mesquite a measure of the perfect mesh.
 
 #include "TargetCalculator.hpp"
 #include "PatchDataUser.hpp"
-#include "MeshSet.hpp"
 #include "MsqTimer.hpp"
 #include "TargetMatrix.hpp"
 
 using namespace Mesquite;
 
-void TargetCalculator::reset_reference_meshset(MsqError &err)
-{
-  if (refMesh)
-    refMesh->reset(err);
-  MSQ_CHKERR(err);
-} 
-
-
-void TargetCalculator::compute_target_matrices_and_check_det(PatchData &pd, MsqError &err)
+void TargetCalculator::compute_target_matrices_and_check_det( PatchData &pd, 
+                                                              PatchData& ref_pd,
+                                                              MsqError &err)
 {
   MSQ_FUNCTION_TIMER( "TargetCalculator::compute_target_matrices_and_check_det" );
 
   // Compute the target matrices
-  compute_target_matrices(pd, err); MSQ_ERRRTN(err);
+  compute_target_matrices(pd, ref_pd, err); MSQ_ERRRTN(err);
 
   //checks that the determinant of each target matrix is positive.
   MsqMeshEntity* elems=pd.get_element_array(err); MSQ_ERRRTN(err);
@@ -141,7 +134,7 @@ void TargetCalculator::compute_default_target_matrices(PatchData &pd,
   } // end loop
 }
 
-  
+/*  
 void TargetCalculator::compute_reference_corner_matrices(PatchData &pd,
                                                          MsqError &err)
 {
@@ -171,7 +164,7 @@ void TargetCalculator::compute_reference_corner_matrices(PatchData &pd,
     pd.targetMatrices.set_element_corner_tags( &pd, i, A, err ); MSQ_ERRRTN(err);
   }
 }
-
+*/
 
  void TargetCalculator::compute_guide_matrices(enum guide_type type, PatchData &ref_pd, size_t elem_ind,
                                            Matrix3D W_k[], int num, MsqError &err)
@@ -262,33 +255,72 @@ void TargetCalculator::compute_reference_corner_matrices(PatchData &pd,
   PatchDataUser::AlgorithmType TargetCalculator::get_algorithm_type()
     { return PatchDataUser::TARGET_CALCULATOR; }
   
-  double TargetCalculator::loop_over_mesh( MeshSet& ms, MsqError& err )
+  double TargetCalculator::loop_over_mesh( Mesh* mesh,
+                                           MeshDomain* domain,
+                                           PatchData* global_patch,
+                                           MsqError& err )
   {
-      // global patch
-    if (get_patch_type() == PatchData::GLOBAL_PATCH)
+    PatchData patch, ref_patch;
+    patch.set_mesh( mesh );
+    patch.set_domain( domain );
+    ref_patch.set_mesh( refMesh );
+    ref_patch.set_domain( refDomain );
+    const bool have_ref_mesh = refMesh && (refMesh == mesh || refDomain == domain);
+    
+    
+    if (get_patch_type() == PatchData::GLOBAL_PATCH || global_patch)
     {
-      PatchData* pd = get_global_patch();
-      if (NULL == pd)
+      if (!global_patch)
       {
-        MSQ_SETERR(err)(MsqError::INVALID_STATE);
-        return 0.0;
+        patch.fill_global_patch( err ); MSQ_ERRZERO(err);
+        global_patch = &patch;
       }
       
-      compute_target_matrices_and_check_det( *pd, err );
-      return MSQ_CHKERR(err);
+      PatchData* ref_patch_ptr;
+      if (!have_ref_mesh)
+      {
+        ref_patch_ptr = global_patch;
+      }
+      else
+      {
+        ref_patch.fill_global_patch( err ); MSQ_ERRZERO(err);
+        ref_patch_ptr = &ref_patch;
+      }
+      
+      compute_target_matrices_and_check_det( *global_patch,
+                                             *ref_patch_ptr,
+                                             err ); MSQ_CHKERR(err);
+    }
+        
+    else if (!have_ref_mesh)
+    {
+      while (patch.get_next_element_patch( err ))
+      {
+        MSQ_ERRZERO(err);
+        compute_target_matrices_and_check_det( patch, patch, err ); MSQ_ERRZERO(err);
+      }
+      MSQ_CHKERR(err);
     }
     
-      // If this far, then need to use local patches
-    PatchData patch;
-    while (ms.get_next_patch( patch, this, err ))
+    else
     {
-      MSQ_ERRZERO(err);
-      compute_target_matrices_and_check_det( patch, err );
-      MSQ_ERRZERO(err);
+      while (patch.get_next_element_patch( err ))
+      {
+        MSQ_ERRZERO(err);
+        if (!ref_patch.get_next_element_patch(err))
+        {
+          MSQ_SETERR(err)("Target mesh and reference mesh are not consistant.\n",
+                          MsqError::INVALID_STATE);
+          return 0;
+        }
+        MSQ_ERRZERO(err);
+        
+        compute_target_matrices_and_check_det( patch, ref_patch, err ); MSQ_ERRZERO(err);
+      }
+      MSQ_CHKERR(err);
     }
-    MSQ_ERRZERO(err);
     
     return 1.0;
-  }
+  }  
   
   

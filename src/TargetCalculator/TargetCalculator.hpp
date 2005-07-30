@@ -75,7 +75,7 @@ namespace Mesquite
   {
   public:
 
-    TargetCalculator() : refMesh(0) 
+    TargetCalculator() : refMesh(0), refDomain(0) 
       { get_all_parameters().set_global_patch_type(); }
     
       //! virtual destructor ensures use of polymorphism during destruction
@@ -126,30 +126,31 @@ namespace Mesquite
       //! Compute the corner matrices for the reference mesh refMesh.
       //! The refMesh data member is set by the constructors of a concrete TargetCalculator
       //! that requires a reference mesh.
-    void compute_reference_corner_matrices(PatchData &pd, MsqError &err);
+    //void compute_reference_corner_matrices(PatchData &pd, MsqError &err);
 
     //! This function wraps compute_target_matrices and checks that the determinant of each target
     //! is positive.
-    void compute_target_matrices_and_check_det(PatchData& pd, MsqError& err);
+    void compute_target_matrices_and_check_det(PatchData& pd, PatchData& ref, MsqError& err);
 
-    //! Reset the reference mesh so it starts from the first vertex again. 
-    void reset_reference_meshset(MsqError &err);
-    
     /*! \brief This function provides the corner matrices for all elements on the Patch.
 
          Useful functionality includes: MsqMeshEntity::set_tag, MsqTag::target_matrix,
          MsqTag::scalar .
     */
-    virtual void compute_target_matrices(PatchData& pd, MsqError& err) =0;
+    virtual void compute_target_matrices(PatchData& pd, PatchData& ref_pd, MsqError& err) = 0;
 
-    virtual double loop_over_mesh( MeshSet& ms, MsqError& err );
+    virtual double loop_over_mesh( Mesh* mesh,
+                                   MeshDomain* domain,
+                                   PatchData* global_patch,
+                                   MsqError& err );
     
     virtual msq_std::string get_name();
     
     virtual AlgorithmType get_algorithm_type();
 
   protected:
-    MeshSet* refMesh;
+    Mesh* refMesh;
+    MeshDomain* refDomain;
   };
 
   

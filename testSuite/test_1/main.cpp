@@ -62,7 +62,6 @@ using std::endl;
 #include "MeshImpl.hpp"
 #include "MsqError.hpp"
 #include "InstructionQueue.hpp"
-#include "MeshSet.hpp"
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
 
@@ -113,11 +112,6 @@ int main(int argc, char* argv[])
   mesh->read_vtk(file_name, err);
   if (err) return 1;
   
-  // initialises a MeshSet object
-  MeshSet mesh_set1;
-  mesh_set1.add_mesh(mesh, err); 
-  if (err) return 1;
-
   // creates an intruction queue
   InstructionQueue queue1;
 
@@ -157,9 +151,6 @@ int main(int argc, char* argv[])
   if (err) return 1;
   pass1->set_outer_termination_criterion(&tc_outer);
 
-  // sets a culling method on the first QualityImprover
-  pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
-  
   queue1.add_quality_assessor(&stop_qa, err); 
   if (err) return 1;
    
@@ -173,7 +164,7 @@ int main(int argc, char* argv[])
 //mesh->write_vtk("original_mesh",err); MSQ_CHKERR(err);
   
   // launches optimization on mesh_set1
-  queue1.run_instructions(mesh_set1, err); 
+  queue1.run_instructions(mesh, err); 
   if (err) return 1;
   
 //mesh->write_vtk("smoothed_mesh", err); MSQ_CHKERR(err);

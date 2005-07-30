@@ -274,27 +274,17 @@ void TSTT_Test::matchVertexCoordinates()
     // initialize data
   memset( vtxIndexToHandle, 0, sizeof(vtxIndexToHandle) );
   
-    // Get mesh topology
-  size_t vertex_count, element_count, vertex_use_count;
-  myMesh->get_all_sizes( vertex_count, element_count, vertex_use_count, err );
+    // Get vertex handles
+  vector<Mesh::VertexHandle> vertices;
+  myMesh->get_all_vertices( vertices, err ); 
   CPPUNIT_ASSERT( !err );
-  CPPUNIT_ASSERT( vertex_count == num_pts );
-  
-  vector<Mesh::VertexHandle> vertices( vertex_count );
-  vector<Mesh::ElementHandle> elements( element_count );
-  vector<size_t> offsets(element_count+1), indices(vertex_use_count);
-  myMesh->get_all_mesh( &vertices[0], vertices.size(),
-                        &elements[0], elements.size(),
-                        &offsets [0], offsets .size(),
-                        &indices [0], indices .size(),
-                        err );
-  CPPUNIT_ASSERT( !err );
+  CPPUNIT_ASSERT( vertices.size() == num_pts );
   
     // get vertex coordinates
-  vector<MsqVertex> coordinates( vertex_count );
+  vector<MsqVertex> coordinates( num_pts );
   myMesh->vertices_get_coordinates( &vertices[0],
                                     &coordinates[0],
-                                    vertex_count,
+                                    num_pts,
                                     err );
   CPPUNIT_ASSERT( !err );
   
@@ -303,7 +293,7 @@ void TSTT_Test::matchVertexCoordinates()
   {
     Mesquite::Vector3D coord( vertexCoords[3*i], vertexCoords[3*i+1], vertexCoords[3*i+2] );
     size_t j;
-    for (j = 0; j < vertex_count; ++j)
+    for (j = 0; j < vertices.size(); ++j)
     {
       if (((coordinates[j]) - coord).length() < DBL_EPSILON)
       {
@@ -314,7 +304,7 @@ void TSTT_Test::matchVertexCoordinates()
       }
     }
     
-    CPPUNIT_ASSERT(j < vertex_count); // found a match
+    CPPUNIT_ASSERT(j < vertices.size()); // found a match
   }
 }
 
@@ -342,37 +332,34 @@ void TSTT_Test::matchElementConnectivity()
     // initialize data
   memset( triIndexToHandle, 0, sizeof(triIndexToHandle) );
   
-    // get mesh topology
-  size_t vertex_count, element_count, vertex_use_count;
-  myMesh->get_all_sizes( vertex_count, element_count, vertex_use_count, err );
-  CPPUNIT_ASSERT( !err );
-  CPPUNIT_ASSERT( element_count == num_tri );
-  
-  vector<Mesh::VertexHandle> vertices( vertex_count );
-  vector<Mesh::ElementHandle> elements( element_count );
-  vector<size_t> offsets(element_count+1), indices(vertex_use_count);
-  myMesh->get_all_mesh( &vertices[0], vertices.size(),
-                        &elements[0], elements.size(),
-                        &offsets [0], offsets .size(),
-                        &indices [0], indices .size(),
-                        err );
-  CPPUNIT_ASSERT( !err );
-  
+  vector<Mesh::VertexHandle> vertices;
+  vector<Mesh::ElementHandle> elements;
+  vector<size_t> offsets;
+  myMesh->get_all_elements( elements, err );
+  CPPUNIT_ASSERT(!err);
+  CPPUNIT_ASSERT( elements.size() == num_tri );
+  myMesh->elements_get_attached_vertices( &elements[0],
+                                          elements.size(),
+                                          vertices,
+                                          offsets,
+                                          err );
+  CPPUNIT_ASSERT(!err);
+                                          
     // Make sure all are triangles
   size_t i;
-  for (i = 0; i < element_count; ++i)
+  for (i = 0; i < elements.size(); ++i)
     CPPUNIT_ASSERT( offsets[i] + 3 == offsets[i+1] );
   
     // Match triangles
   for (size_t i = 0; i < num_tri; ++i)
   {
     size_t j;
-    for (j = 0; j < element_count; ++j)
+    for (j = 0; j < elements.size(); ++j)
     {
       Mesh::VertexHandle verts[3] = {
-        vertices[indices[offsets[j]  ]],
-        vertices[indices[offsets[j]+1]],
-        vertices[indices[offsets[j]+2]] };
+        vertices[offsets[j]  ],
+        vertices[offsets[j]+1],
+        vertices[offsets[j]+2] };
       
       if (match_triangles( triangleConnectivity + 3*i, verts ))
       {
@@ -383,7 +370,7 @@ void TSTT_Test::matchElementConnectivity()
       }
     }
     
-    CPPUNIT_ASSERT(j < element_count); // found a match
+    CPPUNIT_ASSERT(j < elements.size()); // found a match
   }
 }
 
@@ -474,16 +461,20 @@ void TSTT_Test::testVertexAdjacency()
     for (size_t j = 3*i; j < 3*i+3; ++j)
       adjset[triangleConnectivity[j]].insert(i);
   
-    // get connectivity for each vertex and compare
+  msq_std::vector<Mesh::ElementHandle> elements;
+  msq_std::vector<size_t> offsets;
+  myMesh->vertices_get_attached_elements( vtxIndexToHandle, num_pts,
+                                          elements, offsets, err );
+  CPPUNIT_ASSERT(!err);
+  CPPUNIT_ASSERT(offsets.size() == num_pts + 1);
+  
+    // compare connectivity for each vertex
   for (i = 0; i < num_pts; ++i)
   {
-    size_t count = myMesh->vertex_get_attached_element_count( vtxIndexToHandle[i], err );
-    CPPUNIT_ASSERT(!err);
+    size_t count = offsets[i+1] - offsets[i];
     CPPUNIT_ASSERT(adjset[i].size() == count);
+    Mesh::ElementHandle* elems = &elements[offsets[i]];
     
-    msq_std::vector<Mesh::ElementHandle> elems(count);
-    myMesh->vertex_get_attached_elements( vtxIndexToHandle[i], &elems[0], count, err );
-    CPPUNIT_ASSERT(!err);
     for (size_t j = 0; j < count; ++j)
     {
         // Get element index from handle
@@ -505,31 +496,20 @@ void TSTT_Test::testVertexAdjacency()
 void TSTT_Test::testElementConnectivity()
 {
   MsqPrintError err(cout);
-  const size_t num_pts = sizeof(vertexCoords) / (3*sizeof(double));
+  //const size_t num_pts = sizeof(vertexCoords) / (3*sizeof(double));
   const size_t num_tri = sizeof(triangleConnectivity) / (3*sizeof(int));
   
     // check if initialized properly
   CPPUNIT_ASSERT( myMesh );
 
-    // get vertex use count for elements
-  size_t num_uses = 
-    myMesh->get_vertex_use_count( triIndexToHandle, num_tri, err );
-  CPPUNIT_ASSERT(!err);
-  CPPUNIT_ASSERT(num_uses = 3*num_tri);
-  
     // get element connectivity list
-  Mesh::VertexHandle vertices[num_pts];
-  size_t indices[3*num_tri];
-  size_t offsets[num_tri+1];
-  size_t num_pts_out = num_pts;
-  size_t num_idx_out = 3*num_tri;
+  msq_std::vector<Mesh::VertexHandle> vertices;
+  msq_std::vector<size_t> offsets;
   myMesh->elements_get_attached_vertices( triIndexToHandle, num_tri,
-                                          vertices, num_pts_out,
-                                          indices,  num_idx_out,
-                                          offsets, err );
+                                          vertices, offsets, err );
   CPPUNIT_ASSERT(!err);
-  CPPUNIT_ASSERT(num_pts_out == num_pts);
-  CPPUNIT_ASSERT(num_idx_out == num_uses);
+  CPPUNIT_ASSERT(offsets.size() == num_tri + 1);
+  CPPUNIT_ASSERT(vertices.size() == 3*num_tri);
   
     // check each element's connectivity
   Mesh::VertexHandle elem_vertices[3];
@@ -542,10 +522,8 @@ void TSTT_Test::testElementConnectivity()
     for (size_t j = 0; j < 3; j++)
     {
       size_t offset = offsets[i] + j;
-      CPPUNIT_ASSERT( offset < num_uses );
-      size_t index = indices[offset];
-      CPPUNIT_ASSERT( index < num_pts );
-      elem_vertices[j] = vertices[index];
+      CPPUNIT_ASSERT( offset < vertices.size() );
+      elem_vertices[j] = vertices[offset];
     }
     
       // compare connectivity

@@ -77,9 +77,13 @@ namespace Mesquite {
     virtual ~ShapeImprovementWrapper();
     
       //! run_instructions runs the wrapper on the given MeshSet.
-    virtual void run_instructions(MeshSet &ms, MsqError &err);
+    virtual void run_instructions( Mesh* mesh,
+                                   MeshDomain* domain,
+                                   MsqError &err );
     
-    
+    inline void run_instructions( Mesh* mesh, MsqError& err )
+      { this->run_instructions( mesh, 0, err ); }
+      
   private:
     UntangleQualityMetric* untangleMetric;
     LPtoPTemplate* untangleFunc;

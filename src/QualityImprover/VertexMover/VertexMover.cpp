@@ -36,7 +36,6 @@
 
 
 #include "VertexMover.hpp"
-#include "MeshSet.hpp"
 #include "MsqTimer.hpp"
 #include "MsqDebug.hpp"
 
@@ -107,31 +106,50 @@ VertexMover::VertexMover() :
                       
 
 
-/*! \fn VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
-
-    \brief Improves the quality of the MeshSet, calling some
+/*! \brief Improves the quality of the MeshSet, calling some
     methods specified in a class derived from VertexMover
 
     \param const MeshSet &: this MeshSet is looped over. Only the
     mutable data members are changed (such as currentVertexInd).
   */
-double VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
+double VertexMover::loop_over_mesh( Mesh* mesh,
+                                    MeshDomain* domain,
+                                    PatchData* global_patch,
+                                    MsqError& err )
 {
-  set_mesh_set(&ms);
-  
     // Get the patch data to use for the first iteration
   bool next_patch = true;
   PatchData local_patch_data;
-  PatchData* patch_data=0;
-  if (get_global_patch() != 0) {
-    if (get_patch_type() != PatchData::GLOBAL_PATCH) {
-      MSQ_SETERR(err)("PatchDataUser::globalPatch should be NULL.", MsqError::INVALID_STATE);
+  PatchData* patch_data = 0;
+  const PatchData::PatchType patch_type = get_patch_type();
+  
+  switch( patch_type )
+  {
+    default:
+      MSQ_SETERR(err)( MsqError::INVALID_ARG,
+                       "Invalid patch type for VertexMover (%d).\n", 
+                       (int)get_patch_type() );
       return 0;
-    }
-    patch_data = get_global_patch();
-  }
-  else {
-    patch_data = &local_patch_data;
+    
+    case PatchData::GLOBAL_PATCH:
+      if (global_patch)
+      {
+        patch_data = global_patch;
+      }
+      else
+      {
+        local_patch_data.set_mesh( mesh );
+        local_patch_data.set_domain( domain );
+        local_patch_data.fill_global_patch( err ); MSQ_ERRZERO(err);
+        patch_data = &local_patch_data;
+      }
+      break;
+    
+    case PatchData::ELEMENTS_ON_VERTEX_PATCH:
+      local_patch_data.set_mesh( mesh );
+      local_patch_data.set_domain( domain );
+      patch_data = &local_patch_data;
+      break;
   }
   
     // Get termination criteria
@@ -156,15 +174,17 @@ double VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
   this->initialize(*patch_data, err);        
   if (MSQ_CHKERR(err)) goto ERROR;
   
-  outer_crit->reset_outer(ms, objFunc, err); 
+  outer_crit->reset_outer(mesh, domain, objFunc, err); 
   if (MSQ_CHKERR(err)) goto ERROR;
   
     // Loop until outer termination criterion is met
   while (!outer_crit->terminate())
   {
-    if (get_global_patch() == 0)
+    if (patch_type == PatchData::ELEMENTS_ON_VERTEX_PATCH)
     {
-      next_patch = ms.get_next_patch( *patch_data, this, err ); 
+      size_t free_vtx;
+      next_patch = patch_data
+        ->get_next_vertex_element_patch( get_nb_layers(), true, free_vtx, err );
       if (MSQ_CHKERR(err)) goto ERROR;
     }
     
@@ -211,9 +231,11 @@ double VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
       
         // If a global patch, then we're done with the inner loop.
       next_patch = false;
-      if (get_patch_type() != PatchData::GLOBAL_PATCH)
+      if (patch_type != PatchData::GLOBAL_PATCH)
       {
-        next_patch = ms.get_next_patch( *patch_data, this, err );
+        size_t free_vtx;
+        next_patch = patch_data
+          ->get_next_vertex_element_patch( get_nb_layers(), true, free_vtx, err );
         if (MSQ_CHKERR(err)) goto ERROR;
       }
       
@@ -222,21 +244,18 @@ double VertexMover::loop_over_mesh(MeshSet &ms, MsqError &err)
     this->terminate_mesh_iteration(*patch_data, err); 
     if (MSQ_CHKERR(err)) goto ERROR;
     
-    if (get_global_patch() == 0)
-    {
-      ms.reset(err);
-      if (MSQ_CHKERR(err)) goto ERROR;
-    }
+    if (patch_type != PatchData::GLOBAL_PATCH)
+      patch_data->reset_iterators();
     
-    outer_crit->accumulate_outer( ms, err );
+    outer_crit->accumulate_outer( mesh, domain, err );
     if (MSQ_CHKERR(err)) goto ERROR;
   }
 
 
 ERROR:  
     //call the criteria's cleanup funtions.
-  outer_crit->cleanup(ms,err);
-  inner_crit->cleanup(ms,err);
+  outer_crit->cleanup(mesh,domain,err);
+  inner_crit->cleanup(mesh,domain,err);
     //call the optimization cleanup function.
   this->cleanup();
 

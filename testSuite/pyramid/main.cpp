@@ -45,7 +45,6 @@
 #include "MeshImpl.hpp"
 #include "MsqError.hpp"
 #include "InstructionQueue.hpp"
-#include "MeshSet.hpp"
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
 #include "LPtoPTemplate.hpp"
@@ -123,24 +122,25 @@ int main( int argc, char* argv[] )
     // Check that the mesh read correctly, and contains what is
     // expected later.
 
+    // Get mesh data
     // Expecting file to contain 12 pyramid elements constructed
     // from 15 vertices.
-  size_t num_vtx, num_pyr, conn_len;
-  mesh->get_all_sizes( num_vtx, num_pyr, conn_len, err ); 
+  std::vector<Mesh::VertexHandle> vert_array;
+  std::vector<Mesh::ElementHandle> elem_array;
+  std::vector<size_t> conn_offsets;
+  mesh->get_all_elements( elem_array, err ); 
   CPPUNIT_ASSERT(!err);
-  CPPUNIT_ASSERT(num_vtx == 15);
-  CPPUNIT_ASSERT(num_pyr == 12);
-  CPPUNIT_ASSERT(conn_len == 60);
-  
-    // Get mesh data
-  Mesh::VertexHandle vert_array[15];
-  Mesh::ElementHandle elem_array[12];
-  size_t conn_offsets[13], conn_indices[60];
+  CPPUNIT_ASSERT( elem_array.size() == 12 );
+  mesh->elements_get_attached_vertices( &elem_array[0],
+                                        elem_array.size(),
+                                        vert_array,
+                                        conn_offsets,
+                                        err );
+  CPPUNIT_ASSERT(!err);
+  CPPUNIT_ASSERT(vert_array.size() == 60);
+  CPPUNIT_ASSERT(conn_offsets.size() == 13);
   EntityTopology type_array[12];
-  mesh->get_all_mesh( vert_array, 15, elem_array, 12, 
-                      conn_offsets, 13, conn_indices, 60, err );
-  CPPUNIT_ASSERT(!err);
-  mesh->elements_get_topologies( elem_array, type_array, 12, err );
+  mesh->elements_get_topologies( &elem_array[0], type_array, 12, err );
   CPPUNIT_ASSERT(!err);
   
     // Verify element types and number of vertices
@@ -152,20 +152,20 @@ int main( int argc, char* argv[] )
   
     // All pyramids should share a common apex, at the
     // center of the sphere
-  size_t apex_index = conn_indices[4];
+  Mesh::VertexHandle apex_handle = vert_array[4];
   for (unsigned i = 1; i < 12; ++i)
   {
-    CPPUNIT_ASSERT( conn_indices[5*i+4] == apex_index );
+    CPPUNIT_ASSERT( vert_array[5*i+4] == apex_handle );
   }
   
     // Verify that apex is at origin and all other vertices are
     // on unit sphere
-  MsqVertex vertices[15];
-  mesh->vertices_get_coordinates( vert_array, vertices, 15, err );
+  MsqVertex vertices[60];
+  mesh->vertices_get_coordinates( &vert_array[0], vertices, 60, err );
   CPPUNIT_ASSERT(!err);
-  for (unsigned i = 0; i < 15; ++i)
+  for (unsigned i = 0; i < 60; ++i)
   {
-    if (i == apex_index)
+    if (vert_array[i] == apex_handle)
       CPPUNIT_ASSERT( vertices[i].within_tolerance_box( Vector3D(0,0,0), 1e-6 ) );
     else
       CPPUNIT_ASSERT( fabs(1.0 - vertices[i].length()) < 1e-6 );
@@ -175,19 +175,19 @@ int main( int argc, char* argv[] )
     // the smoother didn't move the vertex
   Vector3D position(0,0,0);
   for (unsigned i = 0; metrics[i] != NULL; ++i)
-    CPPUNIT_ASSERT( !smooth_mesh( mesh, ideal_mesh, vert_array[apex_index], position, metrics[i] ) );
+    CPPUNIT_ASSERT( !smooth_mesh( mesh, ideal_mesh, apex_handle, position, metrics[i] ) );
   
     // Now try moving the vertex and see if the smoother moves it back
     // to the origin
   position.set( 0.1, 0.1, 0.1 );
   for (unsigned i = 0; metrics[i] != NULL; ++i)
-    CPPUNIT_ASSERT( !smooth_mesh( mesh, ideal_mesh, vert_array[apex_index], position, metrics[i] ) );
+    CPPUNIT_ASSERT( !smooth_mesh( mesh, ideal_mesh, apex_handle, position, metrics[i] ) );
   
     // Now try moving the vertex further and see if the smoother moves it back
     // to the origin
   position.set( 0.3, 0.3, 0.3 );
   for (unsigned i = 0; metrics[i] != NULL; ++i)
-    CPPUNIT_ASSERT( !smooth_mesh( mesh, ideal_mesh, vert_array[apex_index], position, metrics[i] ) );
+    CPPUNIT_ASSERT( !smooth_mesh( mesh, ideal_mesh, apex_handle, position, metrics[i] ) );
 
     // Now try smoothing a real mixed mesh
   CPPUNIT_ASSERT( !smooth_mixed_mesh( input_file ) );
@@ -229,10 +229,7 @@ bool smooth_mesh( Mesh* mesh, Mesh* ref_mesh,
                                 err );
   CPPUNIT_ASSERT(!err);
 
-  // Create a MeshSet object and InstructionQueue
-  MeshSet mesh_set;
-  mesh_set.add_mesh(mesh, err); 
-  CPPUNIT_ASSERT(!err);
+  // Create an InstructionQueue
   InstructionQueue Q;
 
   // Set up objective function
@@ -258,14 +255,8 @@ bool smooth_mesh( Mesh* mesh, Mesh* ref_mesh,
   CPPUNIT_ASSERT(!err);
   solver->set_outer_termination_criterion(&tc_outer);
 
-  // Need to do this too
-  solver->add_culling_method(PatchData::NO_BOUNDARY_VTX);
- 
   // Create target calculator
-  MeshSet ref_mesh_set;
-  ref_mesh_set.add_mesh( ref_mesh, err );
-  CPPUNIT_ASSERT(!err);
-  DeformingDomainGuides841 target_calc( &ref_mesh_set );
+  DeformingDomainGuides841 target_calc( ref_mesh );
   Q.add_target_calculator( &target_calc, err );
   CPPUNIT_ASSERT(!err);
    
@@ -274,7 +265,7 @@ bool smooth_mesh( Mesh* mesh, Mesh* ref_mesh,
   CPPUNIT_ASSERT(!err);
  
   // And smooth...
-  Q.run_instructions(mesh_set, err); 
+  Q.run_instructions(mesh, err); 
   CPPUNIT_ASSERT(!err);
   
   // Verify that vertex was moved back to origin
@@ -333,16 +324,10 @@ bool smooth_mixed_mesh( const char* filename )
   mesh->read_vtk(filename, err);
   CPPUNIT_ASSERT(!err);
 
-  // Create a MeshSet object 
-  MeshSet mesh_set;
-  mesh_set.add_mesh(mesh, err); 
-  CPPUNIT_ASSERT(!err);
-
   // Set up a preconditioner
   LInfTemplate pre_obj_func( &un_metric );
   pre_obj_func.set_gradient_type( ObjectiveFunction::NUMERICAL_GRADIENT );
   ConjugateGradient precond( &pre_obj_func, err ); CPPUNIT_ASSERT(!err);
-  precond.add_culling_method( PatchData::NO_BOUNDARY_VTX );
   TerminationCriterion pre_term, pre_outer;
   //pre_term.add_criterion_type_with_double( TerminationCriterion::QUALITY_IMPROVEMENT_RELATIVE, 0.1, err );
   pre_term .add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, 3, err );
@@ -375,9 +360,6 @@ bool smooth_mixed_mesh( const char* filename )
   CPPUNIT_ASSERT(!err);
   solver.set_outer_termination_criterion(&tc_outer);
 
-  // Need to do this too
-  solver.add_culling_method(PatchData::NO_BOUNDARY_VTX);
- 
   // Create a QualityAssessor
   Mesquite::QualityAssessor qa;
   qa.add_quality_assessment( &mr_metric, Mesquite::QualityAssessor::ALL_MEASURES, err );
@@ -385,7 +367,7 @@ bool smooth_mixed_mesh( const char* filename )
   Q.add_quality_assessor( &qa, err ); 
   CPPUNIT_ASSERT(!err);
  
-  // Add untangler to qeueu
+  // Add untangler to queue
   Q.add_preconditioner( &precond, err ); CPPUNIT_ASSERT(!err);
   Q.add_quality_assessor( &qa, err ); 
   CPPUNIT_ASSERT(!err);
@@ -397,7 +379,7 @@ bool smooth_mixed_mesh( const char* filename )
   CPPUNIT_ASSERT(!err);
  
   // And smooth...
-  Q.run_instructions(mesh_set, err); 
+  Q.run_instructions(mesh, err); 
   CPPUNIT_ASSERT(!err);
 
   return false;

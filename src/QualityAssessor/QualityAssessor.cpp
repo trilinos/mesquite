@@ -38,7 +38,7 @@
 #include "MsqMeshEntity.hpp"
 #include "MsqVertex.hpp"
 #include "MsqDebug.hpp"
-#include "MeshSet.hpp"
+#include "MeshInterface.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 #  include <list.h>
@@ -70,7 +70,7 @@ QualityAssessor::QualityAssessor(msq_std::string name) :
   stoppingFunction( NO_FUNCTION )
 { 
   MsqError err;
-  set_patch_type( PatchData::GLOBAL_PATCH, err, 0 );
+  set_patch_type( PatchData::ELEMENT_PATCH, err, 0 );
 }
 
 QualityAssessor::QualityAssessor(msq_stdio::ostream& stream, msq_std::string name) :
@@ -83,7 +83,7 @@ QualityAssessor::QualityAssessor(msq_stdio::ostream& stream, msq_std::string nam
   stoppingFunction( NO_FUNCTION )
 { 
   MsqError err;
-  set_patch_type( PatchData::GLOBAL_PATCH, err, 0 );
+  set_patch_type( PatchData::ELEMENT_PATCH, err, 0 );
 }
 
 QualityAssessor::QualityAssessor( QualityMetric* metric,
@@ -292,10 +292,16 @@ void QualityAssessor::add_histogram_assessment( QualityMetric* qm,
   set_stopping_assessemnt().
   \param ms (const MeshSet &) MeshSet used for quality assessment.
  */
-double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
+double QualityAssessor::loop_over_mesh( Mesh* mesh,
+                                        MeshDomain* domain,
+                                        PatchData* global_patch, 
+                                        MsqError& err)
 {
     // Clear out any previous data
   reset_data();
+  PatchData local_patch;
+  local_patch.set_mesh( mesh );
+  local_patch.set_domain( domain );
   
     // Check for any metrics for which a histogram is to be 
     // calculated and for which the user has not specified 
@@ -336,15 +342,15 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
       first_pass = !first_pass;
      
       PatchData* pd;
-      PatchData local_patch;
-      no_culling_method();
-      bool more_mesh = true;
-      if (get_global_patch() == 0) {
+      bool more_mesh;
+      if (!global_patch) {
         pd = &local_patch;
-        more_mesh=ms.get_next_patch(*pd, this, err);  MSQ_ERRZERO(err);
+        local_patch.reset_iterators();
+        more_mesh = local_patch.get_next_element_patch( err ); MSQ_ERRZERO(err);
       }
       else {
-        pd = get_global_patch();
+        pd = global_patch;
+        more_mesh = true;
       }
       
         //until there are no more patches
@@ -399,11 +405,12 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
         }
         
            // If dealing with local patches, get next element group (PatchData object)
-        if (get_patch_type() != PatchData::GLOBAL_PATCH)
-          more_mesh = ms.get_next_patch(*pd,this, err); MSQ_ERRZERO(err);
-          //Michael:: Since we are doing global right now:
-          //Remove this when no longer doing global
         more_mesh=false;
+        if (!global_patch)
+        {
+          more_mesh = pd->get_next_element_patch( err );; 
+          MSQ_ERRZERO(err);
+        }
       }
   
         // Fix up any histogram ranges which were calculated
@@ -429,15 +436,19 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
      
         //construct the patch we will send to get_next_patch
       PatchData* pd;
-      PatchData local_patch;
-      no_culling_method();
-      bool more_mesh = true;
-      if (get_global_patch() == 0) {
+      bool more_mesh;
+      size_t start_vtx, end_vtx;
+      if (!global_patch) {
         pd = &local_patch; 
-        more_mesh=ms.get_next_patch(*pd, this, err);  MSQ_ERRZERO(err);
+        local_patch.reset_iterators();
+        more_mesh = local_patch.get_next_vertex_element_patch( 1, false, start_vtx, err ); MSQ_ERRZERO(err);
+        end_vtx = start_vtx + 1;
       }
       else {
-        pd = get_global_patch();
+        pd = global_patch;
+        more_mesh = true;
+        start_vtx = 0;
+        end_vtx = pd->num_vertices();
       }
       
         //until there are no more patches
@@ -445,7 +456,7 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
         //the end of this loop
       while (more_mesh)
       {
-        for (unsigned i = 0; i < pd->num_vertices(); ++i)
+        for (unsigned i = start_vtx; i < end_vtx; ++i)
         {
           for (iter = elem_end; iter != assessList.end(); ++iter)
           {
@@ -477,11 +488,12 @@ double QualityAssessor::loop_over_mesh(MeshSet &ms, MsqError& err)
           }
         }
         
-        if (get_patch_type() != PatchData::GLOBAL_PATCH)
-          more_mesh = ms.get_next_patch(*pd,this, err); MSQ_ERRZERO(err);
-          //Michael:: Since we are doing global right now:
-          //Remove this when no longer doing global
         more_mesh=false;
+        if (!global_patch)
+        {
+          more_mesh = pd->get_next_vertex_element_patch( 1, false, start_vtx, err ); MSQ_ERRZERO(err);
+          end_vtx = start_vtx + 1;
+        }  
       }
   
         // Fix up any histogram ranges which were calculated

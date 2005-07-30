@@ -48,10 +48,10 @@ describe main.cpp here
 #include "MeshImpl.hpp"
 #include "MsqError.hpp"
 #include "InstructionQueue.hpp"
-#include "MeshSet.hpp"
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
 #include "PlanarDomain.hpp"
+#include "MeshWriter.hpp"
 
 // algorithms
 #include "IdealWeightInverseMeanRatio.hpp"
@@ -114,10 +114,10 @@ Mesh* get_tstt_mesh( const char* file_name );
 Mesh* get_native_mesh( const char* file_name );
 
   // Run FeasibleNewton solver
-int run_global_smoother( MeshSet& mesh, MsqError& err );
+int run_global_smoother( Mesh* mesh, MsqError& err );
 
   // Run SmoothLaplacian solver
-int run_local_smoother( MeshSet& mesh, MsqError& err );
+int run_local_smoother( Mesh* mesh, MsqError& err );
 
 int main(int argc, char* argv[])
 {
@@ -152,30 +152,24 @@ int main(int argc, char* argv[])
   Mesh* mesh = use_native ? 
                get_native_mesh(file_name) : 
                get_tstt_mesh(file_name);
-  MeshSet mesh_set1;
-  mesh_set1.add_mesh(mesh, err); 
-  if (err) return 1;
-  mesh_set1.write_vtk("original.vtk", err); 
+  MeshWriter::write_vtk(mesh, "original.vtk", err); 
   if (err) return 1;
   cout << "Wrote \"original.vtk\"" << endl;
-  run_global_smoother( mesh_set1, err );
+  run_global_smoother( mesh, err );
   if (err) return 1;
   
     // Try running a local smoother on the mesh
   mesh = use_native ? 
          get_native_mesh(file_name) : 
          get_tstt_mesh(file_name);
-  MeshSet mesh_set2;
-  mesh_set2.add_mesh(mesh, err); 
-  if (err) return 1;
-  run_local_smoother( mesh_set2, err );
+  run_local_smoother( mesh, err );
   if (err) return 1;
   
   return 0;
 }
 
 
-int run_global_smoother( MeshSet& mesh_set, MsqError& err )
+int run_global_smoother( Mesh* mesh, MsqError& err )
 {
   double OF_value = 0.0001;
 
@@ -212,9 +206,6 @@ int run_global_smoother( MeshSet& mesh_set, MsqError& err )
   pass1->set_inner_termination_criterion(&tc_inner);
   pass1->set_outer_termination_criterion(&tc_outer);
 
-  // sets a culling method on the first QualityImprover
-  pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
-  
   queue1.add_quality_assessor(&stop_qa, err);
   if (err) return 1;
    
@@ -226,10 +217,10 @@ int run_global_smoother( MeshSet& mesh_set, MsqError& err )
   if (err) return 1;
 
   // launches optimization on mesh_set
-  queue1.run_instructions(mesh_set, err);
+  queue1.run_instructions(mesh, err);
   if (err) return 1;
 
-  mesh_set.write_vtk("feasible-newton-result.vtk", err); 
+  MeshWriter::write_vtk(mesh, "feasible-newton-result.vtk", err); 
   if (err) return 1;
   cout << "Wrote \"feasible-newton-result.vtk\"" << endl;
 
@@ -237,7 +228,7 @@ int run_global_smoother( MeshSet& mesh_set, MsqError& err )
   return 0;
 }
 
-int run_local_smoother( MeshSet& mesh_set, MsqError& err )
+int run_local_smoother( Mesh* mesh, MsqError& err )
 {
   double OF_value = 0.0001;
 
@@ -273,9 +264,6 @@ int run_local_smoother( MeshSet& mesh_set, MsqError& err )
   pass1->set_inner_termination_criterion(&tc_inner);
   pass1->set_outer_termination_criterion(&tc_outer);
 
-  // sets a culling method on the first QualityImprover
-  pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
-  
   queue1.add_quality_assessor(&stop_qa, err);
   if (err) return 1;
    
@@ -287,10 +275,10 @@ int run_local_smoother( MeshSet& mesh_set, MsqError& err )
   if (err) return 1;
 
   // launches optimization on mesh_set
-  queue1.run_instructions(mesh_set, err);
+  queue1.run_instructions(mesh, err);
   if (err) return 1;
 
-  mesh_set.write_vtk("smart-laplacian-result.vtk", err); 
+  MeshWriter::write_vtk(mesh, "smart-laplacian-result.vtk", err); 
   if (err) return 1;
   cout << "Wrote \"smart-laplacian-result.vtk\"" << endl;
 

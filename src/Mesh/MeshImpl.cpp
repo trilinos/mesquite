@@ -55,9 +55,13 @@ to run mesquite by default.
 #ifdef MSQ_USE_OLD_STD_HEADERS
 #  include <string.h>
 #  include <vector.h>
+#  include <algorithm.h>
+#  include <functional.h>
 #else
 #  include <string>
 #  include <vector>
+#  include <algorithm>
+#  include <functional>
    using std::string;
    using std::vector;
 #endif
@@ -118,7 +122,7 @@ void MeshImpl::write_vtk(const char* out_filename, MsqError &err)
   
     // Write vertex coordinates
   file << "POINTS " << myMesh->num_vertices() << " float\n";
-  
+
   std::vector<size_t> vertex_indices( myMesh->max_vertex_index() );
   size_t i, count = 0;
   for (i = 0; i < myMesh->max_vertex_index(); ++i)
@@ -138,17 +142,13 @@ void MeshImpl::write_vtk(const char* out_filename, MsqError &err)
     // Write out the connectivity table
   size_t connectivity_size = myMesh->num_elements() + myMesh->num_vertex_uses();
   file << "CELLS " << myMesh->num_elements() << ' ' << connectivity_size << '\n';
-  ElementIterator* e_iter = element_iterator(err); MSQ_ERRRTN(err);
-  msq_std::vector<VertexHandle> conn;
-  while (!e_iter->is_at_end())
+  for (size_t elem_idx = 0; elem_idx < myMesh->max_element_index(); ++elem_idx)
   {
-    ElementHandle elem = **e_iter;
-    count = element_get_attached_vertex_count( elem, err ); MSQ_ERRRTN(err);
-    if (count > conn.size())
-      conn.resize(count);
-      
-    element_get_connectivity( elem, &conn[0], conn.size(), err ); MSQ_ERRRTN(err);
-    EntityTopology topo = element_get_topology( **e_iter, err ); MSQ_ERRRTN(err);
+    if (!myMesh->is_element_valid(elem_idx))
+      continue;
+    
+    msq_std::vector<size_t> conn = myMesh->element_connectivity( elem_idx, err ); MSQ_ERRRTN(err);
+    EntityTopology topo = myMesh->element_topology( elem_idx, err ); MSQ_ERRRTN(err);
    
       // If necessary, convert from Exodus to VTK node-ordering.
     if (topo == PRISM)  // VTK Wedge
@@ -156,7 +156,7 @@ void MeshImpl::write_vtk(const char* out_filename, MsqError &err)
       msq_std::swap( conn[1], conn[2] );
       msq_std::swap( conn[4], conn[5] );
     }
-    else if (topo == HEXAHEDRON && count == 20)  // VTK Quadratic Hex
+    else if (topo == HEXAHEDRON && conn.size() == 20)  // VTK Quadratic Hex
     {
       msq_std::swap( conn[12], conn[16] );
       msq_std::swap( conn[13], conn[17] );
@@ -164,21 +164,21 @@ void MeshImpl::write_vtk(const char* out_filename, MsqError &err)
       msq_std::swap( conn[15], conn[19] );
     }
     
-    file << count;
-    for (i = 0; i < count; ++i)
+    file << conn.size();
+    for (i = 0; i < conn.size(); ++i)
       file << ' ' << vertex_indices[(size_t)conn[i]];
     file << '\n';
-    
-    ++*e_iter;
   }
   
     // Write out the element types
   file << "CELL_TYPES " << myMesh->num_elements() << '\n';
-  e_iter->restart();
-  while (!e_iter->is_at_end())
+  for (size_t elem_idx = 0; elem_idx < myMesh->max_element_index(); ++elem_idx)
   {
-    EntityTopology topo = element_get_topology( **e_iter, err ); MSQ_ERRRTN(err);
-    count = element_get_attached_vertex_count( **e_iter, err ); MSQ_ERRRTN(err);
+    if (!myMesh->is_element_valid(elem_idx))
+      continue;
+    
+    EntityTopology topo = myMesh->element_topology( elem_idx, err ); MSQ_ERRRTN(err);
+    count = myMesh->element_connectivity( elem_idx, err ).size(); MSQ_ERRRTN(err);
     int type;
     switch (topo) {
       case POLYGON:       type =                     7; break;
@@ -192,14 +192,11 @@ void MeshImpl::write_vtk(const char* out_filename, MsqError &err)
         MSQ_SETERR(err)( MsqError::NOT_IMPLEMENTED ,
                         "Cannot write element type %d to a VTK file\n",
                         (int)topo );
-        delete e_iter;
         return;
     }
       
     file << type << '\n';
-    e_iter->operator++();
   }
-  delete e_iter;
   
     // Write out which points are fixed.
   file << "POINT_DATA " << myMesh->num_vertices()
@@ -557,10 +554,8 @@ void Mesquite::MeshImpl::write_exodus(const char* out_filename,
   
   char title[MAX_LINE_LENGTH]="Mesquite Export";
   
-  size_t vert_count=0;
-  size_t elem_count=0;
-  size_t temp_var=0;
-  get_all_sizes(vert_count, elem_count, temp_var, err);
+  size_t vert_count = myMesh->num_vertices();
+  size_t elem_count = myMesh->num_elements();
   
   int ns_count=0;
   if(num_fixed_nodes>0)
@@ -775,48 +770,25 @@ int MeshImpl::get_geometric_dimension(MsqError &/*err*/)
 }
 
 
-void MeshImpl::get_all_sizes( size_t& vertex_count,
-                              size_t& element_count,
-                              size_t& vertex_use_count,
-                              MsqError& )
+void MeshImpl::get_all_elements( msq_std::vector<ElementHandle>& elems,
+                                 MsqError& err )
 {
-  vertex_count = myMesh->num_vertices();
-  element_count = myMesh->num_elements();
-  vertex_use_count = myMesh->num_vertex_uses();
+  assert( sizeof(ElementHandle) == sizeof(size_t) );
+  msq_std::vector<size_t> temp;
+  myMesh->all_elements( temp, err ); MSQ_ERRRTN(err);
+  elems.resize( temp.size() );
+  memcpy( &elems[0], &temp[0], sizeof(size_t)*temp.size() );
 }
 
-void MeshImpl::get_all_mesh(   VertexHandle*  vert_array, size_t vert_len,
-                               ElementHandle* elem_array, size_t elem_len,
-                               size_t* elem_conn_offsets, size_t offset_len,
-                               size_t* elem_conn_indices, size_t index_len,
-                               MsqError& err )
+void MeshImpl::get_all_vertices( msq_std::vector<VertexHandle>& verts,
+                                 MsqError& err )
 {
-  if (vert_len < myMesh->num_vertices() ||
-      elem_len < myMesh->num_elements() ||
-      offset_len < myMesh->num_elements()+1 ||
-      index_len < myMesh->num_vertex_uses()) {
-    MSQ_SETERR(err)("Insufficient space in array", MsqError::INVALID_ARG );
-    return;
-  }
-  
-  myMesh->copy_mesh( (size_t*)vert_array, 
-                     (size_t*)elem_array, 
-                     elem_conn_offsets, 
-                     elem_conn_indices );
+  assert( sizeof(VertexHandle) == sizeof(size_t) );
+  msq_std::vector<size_t> temp;
+  myMesh->all_vertices( temp, err ); MSQ_ERRRTN(err);
+  verts.resize( temp.size() );
+  memcpy( &verts[0], &temp[0], sizeof(size_t)*temp.size() );
 }
-
-size_t MeshImpl::get_vertex_use_count( ElementHandle* elem_array,
-                                       size_t count, MsqError& err )
-{
-  size_t result = 0;
-  for (size_t i = 0; i < count; ++i)
-  {
-    result += myMesh->element_connectivity( (size_t)(elem_array[i]), err ).size();
-    MSQ_ERRZERO(err);
-  }
-  return result;
-}
-
 
 // Returns a pointer to an iterator that iterates over the
 // set of all vertices in this mesh.  The calling code should
@@ -844,19 +816,8 @@ ElementIterator* MeshImpl::element_iterator(MsqError &/*err*/)
 // is fixed and cannot be moved.  Note that this is a read-only
 // property; this flag can't be modified by users of the
 // Mesquite::Mesh interface.
-bool MeshImpl::vertex_is_fixed(Mesh::VertexHandle, MsqError &/*err*/)
-{
-  return false;
-}
-
-// Sets on_bnd[] to true or false, indicating whether the vertex
-// is on the boundary.  Boundary nodes may be treated as
-// a special case by some algorithms or culling methods.
-// Note that this is a read-only
-// property; this flag can't be modified by users of the
-// Mesquite::Mesh interface.
-void MeshImpl::vertices_are_on_boundary(
- VertexHandle vert_array[], bool on_bnd[],
+void MeshImpl::vertices_get_fixed_flag(
+ const VertexHandle vert_array[], bool on_bnd[],
  size_t num_vtx, MsqError& err)
 {
   for (size_t i=0; i<num_vtx; ++i)
@@ -900,7 +861,7 @@ void Mesquite::MeshImpl::vertex_set_byte ( VertexHandle vertex,
   vertices_set_byte( &vertex, &byte, 1, err ); MSQ_CHKERR(err);
 }
 
-void MeshImpl::vertices_get_byte ( VertexHandle *vert_array,
+void MeshImpl::vertices_get_byte ( const VertexHandle *vert_array,
                                    unsigned char *byte_array,
                                    size_t array_size,
                                    MsqError& err)
@@ -922,8 +883,8 @@ void MeshImpl::vertex_get_byte( VertexHandle vertex,
   vertices_get_byte( &vertex, byte, 1, err ); MSQ_CHKERR(err);
 }
 
-void MeshImpl::vertices_set_byte( VertexHandle *vertex,
-                                  unsigned char *byte_array,
+void MeshImpl::vertices_set_byte( const VertexHandle *vertex,
+                                  const unsigned char *byte_array,
                                   size_t array_size,
                                   MsqError& err)
 {
@@ -934,192 +895,62 @@ void MeshImpl::vertices_set_byte( VertexHandle *vertex,
   }
 }
 
+template <typename T> struct cast_handle : public msq_std::unary_function<size_t, T>
+{ T operator()( size_t idx ) const { return reinterpret_cast<T>(idx); } };
 
-// Gets the number of elements attached to this vertex.
-// Useful to determine how large the "elem_array" parameter
-// of the vertex_get_attached_elements() function must be.
-size_t MeshImpl::vertex_get_attached_element_count( VertexHandle vertex,
-                                                    MsqError &err) 
-{
-  size_t result = myMesh->vertex_adjacencies( (size_t)vertex, err ).size();
-  MSQ_CHKERR(err);
-  return result;
-}
-
-// Gets the elements attached to this vertex.
-void MeshImpl::vertex_get_attached_elements( VertexHandle vertex,
-                                             ElementHandle* elem_array,
-                                             size_t sizeof_elem_array,
-                                             MsqError& err )
-{
-  const msq_std::vector<size_t>& elems 
-    = myMesh->vertex_adjacencies( (size_t)vertex, err ); MSQ_ERRRTN(err);
-  
-  if (sizeof_elem_array < elems.size())
-  {
-    MSQ_SETERR(err)("Insufficient space in array", MsqError::INVALID_ARG );
-    return;
-  }
-  
-  memcpy( elem_array, &elems[0], elems.size() * sizeof(size_t) );
-}
-
-
-// Gets the number of vertices in this element.
-// This data can also be found by querying the
-// element's topology and getting the number
-// of vertices per element for that topology type.
-size_t MeshImpl::element_get_attached_vertex_count( ElementHandle elem,
-                                                    MsqError& err )
-{
-  size_t result = myMesh->element_connectivity( (size_t)elem, err ).size();
-  MSQ_CHKERR(err);
-  return result;
-}
-
-// Returns the vertices that are part of the topological definition of each
-// element in the "elem_handles" array.  When this function is called, the
-// following must be true:
-//   a) "elem_handles" points at an array of "num_elems" element handles.
-//   b) "vert_handles" points at an array of size "sizeof_vert_handles"
-//   c) "csr_data" points at an array of size "sizeof_csr_data"
-//   d) "csr_offsets" points at an array of size "num_elems+1"
-//      
-// When this function returns, adjacency information will be stored
-// in csr format:
-//    a) "vert_handles" stores handles to all vertices found in one
-//       or more of the elements.  Each vertex appears only
-//       once in "vert_handles", even if it is in multiple elements.
-//    b) "sizeof_vert_handles" is set to the number of vertex
-//       handles placed into "vert_handles".
-//    c) "sizeof_csr_data" is set to the total number of vertex uses (for
-//       example, sizeof_csr_data = 6 in the case of 2 TRIANGLES, even if
-//       the two triangles share some vertices).
-//    c) "csr_offsets" is filled such that csr_offset[i] indicates the location
-//       of entity i's first adjacency in "csr_data".  The number of vertices
-//       in element i is equal to csr_offsets[i+1] - csr_offsets[i].  For this
-//       reason, csr_offsets[num_elems] is set to the new value of
-//       "sizeof_csr_data".
-//    d) "csr_data" stores integer offsets which give the location of
-//       each adjacency in the "vert_handles" array.
-//
-// As an example of how to use this data, you can get the handle of the first
-// vertex in element #3 like this:
-//   VertexHandle vh = vert_handles[ csr_data[ csr_offsets[3] ] ]
-//
-// and the second vertex of element #3 like this:
-//   VertexHandle vh = vert_handles[ csr_data[ csr_offsets[3]+1 ] ]
-// 
-void MeshImpl::elements_get_attached_vertices( ElementHandle* elem_handles,
-                                               size_t num_elems,
-                                               VertexHandle* vert_handles,
-                                               size_t& sizeof_vert_handles,
-                                               size_t* csr_data,
-                                               size_t& sizeof_csr_data,
-                                               size_t* csr_offsets,
+void MeshImpl::vertices_get_attached_elements( const VertexHandle* vertices,
+                                               size_t num_vertices,
+                                               msq_std::vector<ElementHandle>& elements,
+                                               msq_std::vector<size_t>& offsets,
                                                MsqError& err )
 {
-  if (num_elems == 0)
-    return;
-  
-  if (num_elems == 1)
-  {
-    size_t elem = (size_t)elem_handles[0];
-    const msq_std::vector<size_t>& conn 
-      = myMesh->element_connectivity( elem, err );
+  elements.clear();
+  offsets.clear();
+  size_t prev_offset = 0;
+  offsets.reserve( num_vertices + 1 );
+  offsets.push_back( prev_offset );
+  const VertexHandle *const vtx_end = vertices + num_vertices;
+  for (; vertices < vtx_end; ++vertices) {
+    const msq_std::vector<size_t>& adj 
+      = myMesh->vertex_adjacencies( (size_t)*vertices, err );
     MSQ_ERRRTN(err);
     
-    if (conn.size() > sizeof_vert_handles ||
-        conn.size() > sizeof_csr_data )
-    {
-      sizeof_vert_handles = sizeof_csr_data = conn.size();
-      MSQ_SETERR(err)("Insufficient space in array.", MsqError::INVALID_ARG );
-      return;
-    }
+    prev_offset = prev_offset + adj.size();
+    offsets.push_back( prev_offset );
     
-    memcpy( vert_handles, &conn[0], sizeof(size_t)*conn.size() );
-    csr_offsets[0] = 0;
-    csr_offsets[1] = conn.size();
-    for (size_t j = 0; j < conn.size(); ++j)
-      csr_data[j] = j;
-  
-    return;
+    msq_std::transform( adj.begin(), adj.end(), msq_std::back_inserter( elements ), cast_handle<ElementHandle>() );
   }
-    
-  
-  size_t vtx_count = 0;
-  size_t use_count = 0;
-  
-  msq_std::map<size_t, size_t> index_map;
-  for (size_t i = 0; i < num_elems; ++i)
-  {
-    size_t elem = (size_t)elem_handles[i];
-    const msq_std::vector<size_t>& conn 
-      = myMesh->element_connectivity( elem, err );
-    MSQ_ERRRTN(err);
-    csr_offsets[i] = use_count;
-  
-    for (size_t j = 0; j < conn.size(); ++j)
-    {
-      size_t idx;
-      size_t vert = conn[j];
-      msq_std::map<size_t, size_t>::const_iterator iter = index_map.find( vert );
-      if (iter == index_map.end())
-      {
-        idx = vtx_count++;
-        if (idx < sizeof_vert_handles)
-          vert_handles[idx] = (VertexHandle)vert;
-        index_map[vert] = idx;
-      }
-      else
-      {
-        idx = iter->second;
-      }
-      
-      if (use_count < sizeof_csr_data)
-        csr_data[use_count] = idx;
-      ++use_count;
-    }
-  }
-  csr_offsets[num_elems] = use_count;
-  
-  if (vtx_count > sizeof_vert_handles ||
-      use_count > sizeof_csr_data )
-  {
-    MSQ_SETERR(err)("Insufficient space in array.", MsqError::INVALID_ARG );
-  }
-
-  sizeof_vert_handles = vtx_count;
-  sizeof_csr_data     = use_count;
-}
-
-void MeshImpl::element_get_connectivity( ElementHandle elem,
-                                         VertexHandle* vert_array,
-                                         size_t array_size,
-                                         MsqError& err )
-{
-  const msq_std::vector<size_t>& conn 
-    = myMesh->element_connectivity( (size_t)elem, err ); MSQ_ERRRTN(err);
-  if (conn.size() > array_size)
-  {
-    MSQ_SETERR(err)("Insufficient array size", MsqError::INVALID_ARG);
-    return;
-  }
-  memcpy( vert_array, &conn[0], conn.size() * sizeof(VertexHandle) );
 }
 
 
-// Returns the topology of the given entity.
-EntityTopology MeshImpl::element_get_topology( ElementHandle entity_handle, MsqError& err ) 
+
+void MeshImpl::elements_get_attached_vertices( const ElementHandle *elements,
+                                               size_t num_elems,
+                                               msq_std::vector<VertexHandle>& vertices,
+                                               msq_std::vector<size_t>& offsets,
+                                               MsqError &err) 
 {
-  EntityTopology result;
-  elements_get_topologies( &entity_handle, &result, 1, err ); MSQ_CHKERR(err);
-  return result;
+  vertices.clear();
+  offsets.clear();
+  size_t prev_offset = 0;
+  offsets.reserve( num_elems + 1 );
+  offsets.push_back( prev_offset );
+  const ElementHandle *const elem_end = elements + num_elems;
+  for (; elements < elem_end; ++elements) {
+    const msq_std::vector<size_t>& conn 
+      = myMesh->element_connectivity( (size_t)*elements, err );
+    MSQ_ERRRTN(err);
+    
+    prev_offset = prev_offset + conn.size();
+    offsets.push_back( prev_offset );
+    
+    msq_std::transform( conn.begin(), conn.end(), msq_std::back_inserter( vertices ), cast_handle<VertexHandle>() );
+  }
 }
 
 // Returns the topologies of the given entities.  The "entity_topologies"
 // array must be at least "num_elements" in size.
-void MeshImpl::elements_get_topologies( ElementHandle element_handle_array[],
+void MeshImpl::elements_get_topologies( const ElementHandle element_handle_array[],
                                         EntityTopology element_topologies[],
                                         size_t num_elements,
                                         MsqError& err)
@@ -1140,7 +971,7 @@ void MeshImpl::elements_get_topologies( ElementHandle element_handle_array[],
 // Tells the mesh that the client is finished with a given
 // entity handle.  
 void Mesquite::MeshImpl::release_entity_handles(
-  Mesquite::Mesh::EntityHandle* /*handle_array*/,
+  const Mesquite::Mesh::EntityHandle* /*handle_array*/,
   size_t /*num_handles*/,
   MsqError &/*err*/)
 {

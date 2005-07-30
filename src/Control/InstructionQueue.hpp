@@ -51,7 +51,8 @@ namespace Mesquite {
   class MsqError;
   class QualityImprover;
   class QualityAssessor;
-  class MeshSet;
+  class Mesh;
+  class MeshDomain;
   class PatchDataUser;
   class PatchData;
   class TargetCalculator;
@@ -100,9 +101,20 @@ namespace Mesquite {
     void enable_automatic_midnode_adjustment()
        { autoAdjMidNodes = true; }
 
-      //!This function is virtual so that it may be redefined in the
-      //! wraper classes.
-    virtual void run_instructions(MeshSet &msc, MsqError &err);
+      /**\brief Exectute the instruction queue.
+       *
+       * Execute all operations in the instruction queue.
+       *
+       *\param mesh   The mesh to run each instruction on.
+       *\param domain The domain of the mesh -- may be NULL if no domain.
+       */
+    virtual void run_instructions( Mesh* mesh,
+                                   MeshDomain* domain,
+                                   MsqError &err);
+    
+    inline void run_instructions( Mesh* mesh, MsqError& err )
+      { this->run_instructions( mesh, 0, err ); }
+    
     void clear();
 
       /**\brief Generate SIGFPE whenever a floating point exception occurs
@@ -145,9 +157,6 @@ namespace Mesquite {
     size_t masterInstrIndex; //!< 0-based. Keeping an index instead of an iterator
                              //!< in case list is reallocated
 
-    PatchData* globalPatch; //!< Used to prevent reallocating a global patch
-                            //!< for successive global algorithms.    
-                            
     bool trapFPE;
   };
 

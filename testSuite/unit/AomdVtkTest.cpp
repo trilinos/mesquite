@@ -123,7 +123,6 @@ public:
       PatchData pd;
       PatchDataParameters pd_params;
       pd_params.set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err, 1, 0);
-      pd_params.add_culling_method(PatchData::NO_BOUNDARY_VTX);
       
       mesh_set.get_next_patch(pd, pd_params, err); CPPUNIT_ASSERT(!err);
 

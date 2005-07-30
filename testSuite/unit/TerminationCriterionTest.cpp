@@ -63,7 +63,6 @@ using std::endl;
 #include "MsqError.hpp"
 #include "Vector3D.hpp"
 #include "InstructionQueue.hpp"
-#include "MeshSet.hpp"
 #include "PatchData.hpp"
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
@@ -128,13 +127,10 @@ public:
     {
       Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
       mesh->read_vtk("../../meshFiles/2D/VTK/tri_5_xz.vtk", err);
-      MeshSet mesh_set1;
-      mesh_set1.add_mesh(mesh, err); CPPUNIT_ASSERT(!err);
       
       Vector3D pnt(0,-5,0);
       Vector3D s_norm(0, -1,0);
       Mesquite::PlanarDomain msq_geom(s_norm, pnt);
-      mesh_set1.set_domain_constraint(&msq_geom, err); CPPUNIT_ASSERT(!err);
       
         // create an intruction queue        
       InstructionQueue queue1;
@@ -147,7 +143,6 @@ public:
       ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
       CPPUNIT_ASSERT(!err);
       pass1->set_outer_termination_criterion(tc_outer);
-      pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
       
       pass1->set_debugging_level(0);
       QualityAssessor all_qa=QualityAssessor(cond_num,
@@ -156,7 +151,7 @@ public:
       queue1.add_quality_assessor(&all_qa,err); CPPUNIT_ASSERT(!err);
       queue1.set_master_quality_improver(pass1, err); CPPUNIT_ASSERT(!err);
         //queue1.add_quality_assessor(&all_qa,err); CPPUNIT_ASSERT(!err);
-      queue1.run_instructions(mesh_set1, err); CPPUNIT_ASSERT(!err);
+      queue1.run_instructions(mesh, &msq_geom, err); CPPUNIT_ASSERT(!err);
       delete pass1;
       delete obj_func;
       delete cond_num;

@@ -58,7 +58,9 @@ namespace Mesquite
     virtual ~WTargetCalculator()
       {};
 
-    virtual void compute_target_matrices(PatchData& pd, MsqError& err);
+    virtual void compute_target_matrices( PatchData& pd, 
+                                          PatchData& ref_pd,
+                                          MsqError& err);
 
   protected:
     enum guide_type guideMatrix;

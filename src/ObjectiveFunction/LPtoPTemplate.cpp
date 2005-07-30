@@ -65,7 +65,7 @@ LPtoPTemplate::~LPtoPTemplate(){
 bool LPtoPTemplate::concrete_evaluate(PatchData &pd, double &fval,
                                       MsqError &err){
   size_t index=0;
-  MsqMeshEntity* elems=pd.get_element_array(err);
+  MsqMeshEntity* elems=pd.get_element_array(err); MSQ_CHKERR(err);
   bool obj_bool=true;
     //double check for pVal=0;
   if(pVal==0){

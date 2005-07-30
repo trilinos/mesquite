@@ -64,7 +64,6 @@ using std::endl;
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
 #include "MsqError.hpp"
-#include "MeshSet.hpp"
 #include "ShapeImprovementWrapper.hpp"
 // algorythms
 #include "ConditionNumberQualityMetric.hpp"
@@ -93,11 +92,6 @@ int main()
  mesh->read_vtk("../../meshFiles/2D/VTK/horseshoe.vtk", err);
  if (err) return 1;
 
-    // initializes a MeshSet object
-    MeshSet mesh_set1;
-    mesh_set1.set_domain_constraint(&msq_geom, err);
-    if (err) return 1;
-
   // End 2D Section
 
   // If want 3D test use this section (and comment out former)
@@ -109,9 +103,6 @@ int main()
     //MeshSet mesh_set1;
 
  // End 3D Section
-
-  mesh_set1.add_mesh(mesh, err);
-  if (err) return 1;
   
     // creates an intruction queue
   InstructionQueue queue1;
@@ -145,10 +136,6 @@ int main()
   pass1.set_inner_termination_criterion(&tc_inner);
   pass1.set_outer_termination_criterion(&tc_outer);
 
-    // sets a culling method on the first QualityImprover
-    //This is an old command that still needs to be there.  It has
-    //nothing to do with 'culling methods' described in TerminationCriterion.
-  pass1.add_culling_method(PatchData::NO_BOUNDARY_VTX);
   queue1.add_quality_assessor(&qa,err); 
   if (err) return 1;
     // adds 1 pass of pass1 to mesh_set1
@@ -159,7 +146,7 @@ int main()
   mesh->write_vtk("original_mesh.vtk",err); 
   if (err) return 1;
   
-  queue1.run_instructions(mesh_set1, err); 
+  queue1.run_instructions(mesh, &msq_geom, err); 
   if (err) return 1;
   mesh->write_vtk("smoothed_mesh.vtk",err); 
   if (err) return 1;

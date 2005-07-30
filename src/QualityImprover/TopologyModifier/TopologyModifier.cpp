@@ -40,8 +40,10 @@
 
 using namespace Mesquite;
 
-double TopologyModifier::loop_over_mesh(MeshSet& /*mesh*/,
-                                      MsqError &/*err*/)
+double TopologyModifier::loop_over_mesh( Mesh* /*mesh*/,
+                                         MeshDomain* /*domain*/,
+                                         PatchData* /*global_patch*/,
+                                         MsqError &/*err*/)
 {
   // TODO: for all vertices
 //  cout << "o Executing TopologyModifier::loop_over_mesh()\n"

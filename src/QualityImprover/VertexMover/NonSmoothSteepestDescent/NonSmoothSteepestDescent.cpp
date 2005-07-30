@@ -37,7 +37,6 @@
 #include <stdio.h>
 #include <vector>
 #include "NonSmoothSteepestDescent.hpp"
-#include "MeshSet.hpp"
 #include "MsqTimer.hpp"
 
 using namespace Mesquite;
@@ -100,7 +99,7 @@ void NonSmoothSteepestDescent::optimize_vertex_positions(PatchData &pd,
   numElements = pd.num_elements();
   MSQ_PRINT(3)("Number of Elements: %d\n",numElements);
     //Michael: Note: is this a reliable way to get the dimension?
-  mDimension = get_mesh_set()->space_dim();
+  mDimension = pd.get_mesh()->get_geometric_dimension(err); MSQ_ERRRTN(err);
   MSQ_PRINT(3)("Spatial Dimension: %d\n",mDimension);
 
   numFree=pd.num_free_vertices(err); MSQ_ERRRTN(err);

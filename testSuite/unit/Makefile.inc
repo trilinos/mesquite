@@ -24,7 +24,6 @@ TEST_SRCS = msq_test_main.cpp \
     InstructionQueueTest.cpp \
     Matrix3DTest.cpp \
     MeshInterfaceTest.cpp \
-    MeshSetTest.cpp \
     MsqFreeVertexIndexIteratorTest.cpp \
     MsqHessianTest.cpp \
     MsqMeshEntityTest.cpp \

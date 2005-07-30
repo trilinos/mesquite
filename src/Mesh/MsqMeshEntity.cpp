@@ -43,7 +43,6 @@ functionality is implemented in this file.
 #include "MsqMeshEntity.hpp"
 #include "MsqVertex.hpp"
 #include "PatchData.hpp"
-#include "MeshSet.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 #  include <vector.h>

@@ -46,7 +46,6 @@ Calls the Mesquite wrappers. First command line argument is the mesh file.
 #include "Mesquite.hpp"
 #include "MeshImpl.hpp"
 #include "MsqError.hpp"
-#include "MeshSet.hpp"
 
 #ifndef MSQ_USE_OLD_IO_HEADERS
 #include <iostream>
@@ -89,18 +88,13 @@ int main(int argc, char* argv[])
   Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
   mesh->read_vtk(file_name, err);
   
-  // initialises a MeshSet object
-  MeshSet mesh_set1;
-  mesh_set1.add_mesh(mesh, err); 
-  if (err) return 1;
-
   // creates a wrapper
   ShapeImprovementWrapper wrapper(err); if (err) return 1;
 
 //  mesh->write_vtk("original_mesh",err); MSQ_CHKERR(err);
   
   // launches optimization on mesh_set1
-  wrapper.run_instructions(mesh_set1, err); 
+  wrapper.run_instructions(mesh, err); 
   if (err) return 1;
   
 //  mesh->write_vtk("smoothed_mesh", err); MSQ_CHKERR(err);

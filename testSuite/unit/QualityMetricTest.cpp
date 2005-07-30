@@ -75,7 +75,6 @@ correct metric return values.
 #include "PowerQualityMetric.hpp"
 #include "ScalarAddQualityMetric.hpp"
 #include "MeshImpl.hpp"
-#include "MeshSet.hpp"
 #include "PlanarDomain.hpp"
 #include "ConcreteTargetCalculators.hpp"
 #include <math.h>

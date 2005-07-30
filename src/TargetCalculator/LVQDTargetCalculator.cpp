@@ -37,31 +37,15 @@ file for the Mesquite::LVQDTargetCalculator class
 #include "LVQDTargetCalculator.hpp"
 #include "PatchDataUser.hpp"
 #include "PatchData.hpp"
-#include "MeshSet.hpp"
 #include "MsqTimer.hpp"
 
 using namespace Mesquite;
 
 
 
-/*! The type of targets computed by this function is selected by the constructor of
-    the base classes. */
-void LVQDTargetCalculator::compute_target_matrices(PatchData &pd, MsqError &err)
-{
-  MSQ_FUNCTION_TIMER( "LVQDTargetCalculator::compute_target_matrices" );
-
-  // Gets from the reference mesh a patch ref_pd equivalent to the patch pd of the main mesh.
-  PatchData ref_pd;
-  PatchDataParameters ref_pd_params(this->get_all_parameters());
-  if (refMesh)
-    refMesh->get_next_patch(ref_pd, ref_pd_params, err); 
-  else
-    MSQ_SETERR(err)("No reference mesh", MsqError::INVALID_STATE);
-  MSQ_ERRRTN(err);
-  compute_target_matrices(pd, ref_pd, err);
-}
 void LVQDTargetCalculator::compute_target_matrices(PatchData &pd,
-                                                   PatchData &ref_pd, MsqError &err)
+                                                   PatchData &ref_pd, 
+                                                   MsqError &err)
 {
   // Make sure topology of ref_pd and pd are equal
   size_t num_elements=pd.num_elements();

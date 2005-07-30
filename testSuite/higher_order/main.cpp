@@ -62,7 +62,6 @@ using std::endl;
 #include "MsqError.hpp"
 #include "Vector3D.hpp"
 #include "InstructionQueue.hpp"
-#include "MeshSet.hpp"
 #include "PatchData.hpp"
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
@@ -249,10 +248,6 @@ InstructionQueue* create_instruction_queue(MsqError& err)
   tc_inner->add_criterion_type_with_double(TerminationCriterion::VERTEX_MOVEMENT_ABSOLUTE, 1e-6, err); MSQ_ERRZERO(err);
   pass1->set_inner_termination_criterion(tc_inner);
   
-    // sets a culling method on the first QualityImprover
-  //This should probably be removed
-  pass1->add_culling_method(PatchData::NO_BOUNDARY_VTX);
-  
   // adds 1 pass of pass1 to mesh_set1
   //queue1->add_quality_assessor(mean_qa,err); MSQ_ERRZERO(err);
   queue1->set_master_quality_improver(pass1, err); MSQ_ERRZERO(err);
@@ -261,21 +256,13 @@ InstructionQueue* create_instruction_queue(MsqError& err)
   return queue1;
 }
 
-MeshSet* create_mesh_set( Mesh* mesh, MsqError& err )
-{
-  Vector3D z(0,0,1), o(0,0,0);
-  MeshSet* result = new MeshSet;
-  result->add_mesh( mesh, err );
-  if (MSQ_CHKERR(err)) return 0;
-  result->set_domain_constraint( new PlanarDomain(z,o), err );
-  if (MSQ_CHKERR(err)) return 0;
-  return result;
-}
-
-
 int main()
 {     
   MsqPrintError err(cout);
+  
+    // Create geometry
+  Vector3D z(0,0,1), o(0,0,0);
+  PlanarDomain geom(z,o);  
   
     // Read in linear input mesh
   cout << "Reading " << LINEAR_INPUT_FILE_NAME << endl;
@@ -312,24 +299,19 @@ int main()
   cout << "Smoothing linear elements" << endl;
   InstructionQueue* q1 = create_instruction_queue( err );
   if (MSQ_CHKERR(err)) return 1;
-  MeshSet* ms1 = create_mesh_set( linear_in, err );
-  if (MSQ_CHKERR(err)) return 1;
-  q1->run_instructions( *ms1, err ); 
+  q1->run_instructions( linear_in, &geom, err ); 
   if (MSQ_CHKERR(err)) return 1;
   cout << "Checking results" << endl;
   compare_nodes( 0, NUM_CORNER_VERTICES, linear_in, linear_ex, err );
   if (MSQ_CHKERR(err)) return 1;
-  delete ms1;
   delete q1;
   
     // Smooth only corner vertices of quadratic mesh and check results
   cout << "Smoothing quadratic elements as linear elements" << endl;
   InstructionQueue* q2 = create_instruction_queue( err );
   if (MSQ_CHKERR(err)) return 1;
-  MeshSet* ms2 = create_mesh_set( quadratic_in_1, err );
-  if (MSQ_CHKERR(err)) return 1;
   q2->disable_automatic_midnode_adjustment();
-  q2->run_instructions( *ms2, err ); 
+  q2->run_instructions( quadratic_in_1, &geom, err ); 
   if (MSQ_CHKERR(err)) return 1;
     // Make sure corner vertices are the same as in the linear case
   cout << "Checking results" << endl;
@@ -339,17 +321,14 @@ int main()
   compare_nodes( NUM_CORNER_VERTICES, NUM_CORNER_VERTICES + NUM_MID_NODES,
                 quadratic_in_1, quadratic_in_2, err );
   if (MSQ_CHKERR(err)) return 1;
-  delete ms2;
   delete q2;
   
     // Smooth corner vertices and adjust mid-side nodes
   cout << "Smoothing quadratic elements" << endl;
   InstructionQueue* q3 = create_instruction_queue( err );
   if (MSQ_CHKERR(err)) return 1;
-  MeshSet* ms3 = create_mesh_set( quadratic_in_2, err );
-  if (MSQ_CHKERR(err)) return 1;
   q3->enable_automatic_midnode_adjustment();
-  q3->run_instructions( *ms3, err ); 
+  q3->run_instructions( quadratic_in_2, &geom, err ); 
   if (MSQ_CHKERR(err)) return 1;
     // Make sure corner vertices are the same as in the linear case
   cout << "Checking results" << endl;
@@ -359,7 +338,6 @@ int main()
   compare_nodes( NUM_CORNER_VERTICES, NUM_CORNER_VERTICES + NUM_MID_NODES,
                 quadratic_in_2, quadratic_ex, err );
   if (MSQ_CHKERR(err)) return 1;
-  delete ms3;
   delete q3;
   
   quadratic_ex->write_vtk("smoothed_mesh.vtk", err); 

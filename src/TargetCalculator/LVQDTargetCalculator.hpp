@@ -59,7 +59,6 @@ namespace Mesquite
     virtual ~LVQDTargetCalculator()
       {};
 
-    virtual void compute_target_matrices(PatchData& pd, MsqError& err);
       //! Function called by
       //! compute_target_matrices(PatchData& pd, MsqError& err) to compute
       //! the matrices after the reference PatchData has been created.

@@ -69,7 +69,6 @@ int main(int argc, char* argv[])
   Mesquite::MsqPrintError err(cout);
   char in_file_name[256];
   char out_file_name[256];
-  double OF_value = 1.;
   
   // command line arguments
   if (argc!=3){
