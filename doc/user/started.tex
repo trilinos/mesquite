@@ -273,37 +273,21 @@ adding the following lines to the file template described in
     return 1;
   }
 \end{verbatim}
-Now that the mesh is loaded, you must add it to a {\tt MeshSet}, which
-is a flexible object that can group several
-%mbrewer: commented out 'contiguous'
-%contiguous {\tt LAF: do they really have to be contiguous?}
-meshes to improve them simultaneously:
-\begin{verbatim}
-  Mesquite::MeshSet mesh_set;
-  mesh_set.add_mesh(&my_mesh, err); 
-  if (err) 
-  {
-    std::cout << err << std::endl;
-    return 1;
-  }
-\end{verbatim}
 Mesquite deals automatically with all types of supported elements,
 including hybrid meshes, but some meshes require geometry information
 as well.  When improving a surface mesh, Mesquite must be provided information
 about surface(s) the mesh is constrained to lie on and the association between
 mesh entities and entities of the geometric domain (surfaces, curves, etc.)
 Because Mesquite is inherently a 3D code, all 2D meshes must specify some
-geometry constraints.  The MeshSet object tracks this geometric
-domain information, and it should be added at this point.  The details
+geometry constraints.  The details
 for general geometric surfaces are explained in section
 \ref{sec:geometry}; in this section,
-we show how to set the geometry of a 2D planar mesh, defined by a
-point and a normal, on the MeshSet:
+we show how to define the geometry of a 2D planar mesh, specified by a
+point and a normal:
 \begin{verbatim}
   Vector3D normal(0,0,1);
   Vector3D point(0,0,5);
   PlanarDomain my_mesh_plane(normal, point);
-  mesh_set.set_domain_constraint(&my_mesh_plane, err);
 \end{verbatim}
 
 Finally, note that Mesquite also provides a function to write a mesh
@@ -319,7 +303,7 @@ The simplest way to use a Mesquite mesh quality improvement
 procedure is to instantiate one of the wrapper classes described in section
 \ref{sec:wrappers}. Here, we will instantiate the
 \texttt{ShapeImprovement} wrapper and use it to improve 
-the MeshSet we created earlier.  Mesquite can optimize the mesh
+the Mesh we created earlier.  Mesquite can optimize the mesh
 without further input from the user by utilizing preset, default
 values.  If some customization is desired, the wrapper classes also
 allow users to set the most important parameters of the underlying
@@ -327,7 +311,7 @@ algorithms and metrics (see section
 \ref{sec:wrappers} for details).
 \begin{verbatim}
   Mesquite::ShapeImprovementWrapper mesh_quality_algorithm(err);
-  mesh_quality_algorithm.run_instructions(mesh_set, err);
+  mesh_quality_algorithm.run_instructions( &my_mesh, &my_mesh_plane, err);
     //Should check the error object after the instruction is ran
     // to see whether the instructions were all successful.
   if (err) 
@@ -459,7 +443,7 @@ treated in Section
   queue.add_quality_assessor(&m_ratio_qa, err); MSQ_CHKERR(err);
 
     // do optimization of the mesh_set
-  queue.run_instructions(mesh_set, err); 
+  queue.run_instructions(&my_mesh, &my_mesh_plane, err); 
 \end{verbatim} 
 
 \subsection{Mesh Improvement Examples}
@@ -477,8 +461,7 @@ thrown.
 \begin{verbatim}
   Vector3D normal(0,0,-1);
   Vector3D point(0,0,-5);
-  PlanarDomain my_mesh_plane(normal, point, my_mesh);
-  mesh_set.set_domain_constraint(&my_mesh_plane);
+  PlanarDomain my_mesh_plane(normal, point);
 \end{verbatim}
 
 We can now improve the mesh with the wrapper mentioned in

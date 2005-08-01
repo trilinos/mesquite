@@ -171,7 +171,7 @@ of those values.
 
 The \texttt{InstructionQueue} class allows a sequence of operations
 such as quality assessment and quality improvement to be performed on
-a \texttt{MeshSet} object. The \texttt{InstructionQueue} 
+a \texttt{Mesh} object. The \texttt{InstructionQueue} 
 provides a convenient framework to shield the user
 from the algorithm syntax and to ensure a consistent use of the
 Mesquite capabilities.  One or more quality improvers can be
@@ -187,7 +187,7 @@ mesh untangler and/or Laplacian smoothing.  Once an
 InstructionQueue has been defined, a single call to \texttt{run\_instructions} 
 will perform all the contained operations.  We note
 that once an \texttt{InstructionQueue} has been defined, it can be used
-for several \texttt{MeshSet} objects.
+for several \texttt{Mesh} objects.
 
 
 Some predefined \texttt{InstructionQueue} objects, called \emph
@@ -209,7 +209,7 @@ most commonly used combination of quality metrics, improvement
 algorithms and stopping criterion. Essentially, the wrappers are
 inherited from the InstructionQueue, setting in their constructors
 which algorithms to call. Using these wrappers, only
-two lines of code are required to improve a \texttt{MeshSet}.
+two lines of code are required to improve a \texttt{Mesh}.
 
 Wrappers do not generally provide access to low-level features such
 as setting a specific termination criterion.  While some wrappers do allow

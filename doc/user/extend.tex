@@ -239,9 +239,8 @@ criterion to stop iterating over mesh subsets (see section
 \ref{termination_section}) and updates the application mesh after
 optimizing a patch.
 
-The
-gathering of the mesh information into the patch is
-carried out by the \texttt{MeshSet} and \texttt{PatchData} classes, so that the
+The gathering of the mesh information from a \texttt{Mesh} into the patch is
+carried out by the \texttt{PatchData} class, so that the
 optimization algorithm receives the appropriate patch to improve
 simply by inheriting from \texttt{QualityImprover}.  If needed, one can 
 override the \texttt{set\_patch\_type} function to accept only specific
