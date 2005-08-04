@@ -253,14 +253,14 @@ public:
 
     // gets the index of a vertex in a corner
     int one_corner_vertex_index=0;
-    i=nbVert-1;
-    while (!one_corner_vertex_index) {
-      CPPUNIT_ASSERT( i >= 0 );
-      const size_t nev = offsets[i+i] - offsets[i];
-      if (nev==1)
-        one_corner_vertex_index=i;
-      --i;
+    for (i = 0; i < nbVert; ++i)
+    {
+      const size_t nev = offsets[i+1] - offsets[i];
+      if (1 == nev)
+        break;
     }
+    CPPUNIT_ASSERT( i < nbVert );
+    one_corner_vertex_index = i;
 
     // retrieve the attached element.
     // This is a poor test.  We allow an element handle of zero,
