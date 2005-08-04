@@ -27,6 +27,12 @@
   ***************************************************************** */
 #include "PlanarDomain.hpp"
 
+#ifdef MSQ_USE_OLD_STD_HEADERS
+# include <algorithm.h>
+#else
+# include <algorithm>
+#endif
+
 void Mesquite::PlanarDomain::set_plane( const Mesquite::Vector3D& normal, 
                                         const Mesquite::Vector3D& point)
 {
@@ -51,7 +57,7 @@ void Mesquite::PlanarDomain::normal_at(
 }
 
 
-void Mesquite::PlanarDomain::normal_at( Mesquite::Mesh::EntityHandle ,
+void Mesquite::PlanarDomain::normal_at( const Mesquite::Mesh::EntityHandle* ,
                                         Vector3D coords[],
                                         unsigned count,
                                         Mesquite::MsqError& ) const
@@ -69,3 +75,12 @@ void Mesquite::PlanarDomain::closest_point( Mesquite::Mesh::EntityHandle ,
   normal = mNormal;
   closest = position - mNormal * (mNormal % position + mCoeff);
 }
+
+void Mesquite::PlanarDomain::domain_DoF( const Mesh::EntityHandle* ,
+                                         unsigned short* dof_array,
+                                         size_t num_vertices,
+                                         MsqError&  ) const
+{
+  msq_std::fill( dof_array, dof_array + num_vertices, 2 );
+}
+

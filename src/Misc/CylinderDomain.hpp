@@ -1,9 +1,9 @@
 /* ***************************************************************** 
     MESQUITE -- The Mesh Quality Improvement Toolkit
 
-    Copyright 2004 Sandia Corporation and Argonne National
-    Laboratory.  Under the terms of Contract DE-AC04-94AL85000 
-    with Sandia Corporation, the U.S. Government retains certain 
+    Copyright 2005 Lawrence Livermore National Laboratory.  Under 
+    the terms of Contract B545069 with the University of Wisconsin -- 
+    Madison, Lawrence Livermore National Laboratory retains certain
     rights in this software.
 
     This library is free software; you can redistribute it and/or
@@ -19,44 +19,42 @@
     You should have received a copy of the GNU Lesser General Public License 
     (lgpl.txt) along with this library; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- 
-    diachin2@llnl.gov, djmelan@sandia.gov, mbrewer@sandia.gov, 
-    pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov,
-    kraftche@cae.wisc.edu         
-   
+
+    kraftche@cae.wisc.edu    
+
   ***************************************************************** */
-/*!
-  \file   PlanarDomain.hpp
-  \brief  
+
+#ifndef MSQ_CYLINDER_DOMAIN_HPP
+#define MSQ_CYLINDER_DOMAIN_HPP
 
 
-  \author Thomas Leurent
-  \date   2002-01-17
-*/
-
-
-#ifndef MSQ_PLANAR_DOMAIN_HPP
-#define MSQ_PLANAR_DOMAIN_HPP
-
+#include "Mesquite.hpp"
 #include "MeshInterface.hpp"
 #include "Vector3D.hpp"
 
 namespace Mesquite
 {
-  /*! \class PlanarDomain
-       This is a template for a planar domain.
-       It will provide the normal information necessary for surface mesh optimization.
+  /*! \class CylinderDomain
+       Define the geometry of an unbounded cylinder.
     */
-  class PlanarDomain : public Mesquite::MeshDomain
+  class CylinderDomain : public Mesquite::MeshDomain
   {
   public:
-    inline PlanarDomain(const Vector3D& normal, const Vector3D& point)
-      { set_plane( normal, point ); }
+      /**
+       *\param radius         - Radius of the cylinder
+       *\param axis_direction - Vector defining the direction of the axis
+       *\param axis_point     - A point through which the axis passes.
+       */
+    inline CylinderDomain( double radius,
+                           Vector3D axis_direction = Vector3D(0,0,1), 
+                           Vector3D axis_point = Vector3D(0,0,0) )
+      : mAxis( axis_direction / axis_direction.length() ),
+        mCenter( axis_point ),
+        mRadius( radius ) 
+      { }
     
-    virtual ~PlanarDomain() { }
+    virtual ~CylinderDomain() { }
 
-    void set_plane( const Vector3D& normal, const Vector3D& point);
-    
     virtual void snap_to(Mesh::EntityHandle entity_handle,
                          Vector3D &coordinate) const;
     
@@ -77,13 +75,29 @@ namespace Mesquite
 
     virtual void domain_DoF( const Mesh::EntityHandle* handle_array,
                              unsigned short* dof_array,
-                             size_t num_vertices,
+                             size_t count,
                              MsqError& err ) const;
 
+
+    const Vector3D& axis() const { return mAxis; }
+    const Vector3D& center() const { return mCenter; }
+    double radius() const { return mRadius; }
+    
+  protected:
+    
+    virtual void evaluate( Mesh::EntityHandle handle,
+                           const Vector3D& point,
+                           Vector3D& closest,
+                           Vector3D& normal ) const;
+    
   private:
-    Vector3D mNormal;
-    double mCoeff;
+  
+    Vector3D mAxis;
+    Vector3D mCenter;
+    double mRadius;
   };
-}
+
+
+} // namespace Mesquite
 
 #endif

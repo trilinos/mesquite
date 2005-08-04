@@ -393,17 +393,6 @@ namespace Mesquite
   };
   
 
-    /** A hint on the characteristics of the domain
-      * that Mesquite may use to determine what, if
-      * any, scheme to use to cache characteristics 
-      * of the geometric domain.
-      */ 
-  enum DomainHint {
-    NO_DOMAIN_HINT,     //< Do not make any assumptions about the domain.
-    PLANAR_DOMAIN,      //< Domain is planar
-    LOCAL_PALANAR,      //< Domain is close to planar 
-    SMOOTH_DOMAIN       //< Domain is C1-continuous
- };
   /*! \class MeshDomain
       The MeshDomain class provides geometrical information concerning the Mesh.
       It is called during surface meshes optimization to figure out the surface normal,
@@ -415,13 +404,6 @@ namespace Mesquite
     virtual ~MeshDomain()
       {}
       
-      //! Give a hint about the nature of the domain for
-      //! better performance.  For implementations, if
-      //! unsure, return NO_DOMAIN_HINT.  SMOOTH_DOMAIN is
-      //! a good default choice if the domain is a single
-      //! geometric surface.
-    virtual DomainHint hint() const = 0;
-
       //! Modifies "coordinate" so that it lies on the
       //! domain to which "entity_handle" is constrained.
       //! The handle determines the domain.  The coordinate
@@ -449,14 +431,14 @@ namespace Mesquite
        *
        * Returns normals for a domain.
        *
-       *\param entity_handle The domain evaluated is the one in which
+       *\param handles       The domain evaluated is the one in which
        *                     this mesh entity is constrained.
        *\param coordinates   As input, a list of positions at which to
        *                     evaluate the domain.  As output, the resulting
        *                     domain normals.
        *\param count         The length of the coordinates array.
        */
-    virtual void normal_at( Mesh::EntityHandle handle,
+    virtual void normal_at( const Mesh::EntityHandle* handles,
                             Vector3D coordinates[],
                             unsigned count,
                             MsqError& err ) const = 0;
@@ -478,6 +460,22 @@ namespace Mesquite
                                 Vector3D& closest,
                                 Vector3D& normal,
                                 MsqError& err ) const = 0;
+                                
+      /**\brief Get degrees of freedom in vertex movement.
+       *
+       * Given a vertex, return how the domain constrains the
+       * location of that vertex as the number of degrees of
+       * freedom in the motion of the vertex.  If the domain
+       * is a geometric domain, the degrees of freedom for a
+       * vertex is the dimension of the geometric entity the
+       * vertex is constrained to lie on (e.g. point = 0, curve = 1,
+       * surface = 2, volume = 3.)
+       */
+    virtual void domain_DoF( const Mesh::EntityHandle* handle_array,
+                             unsigned short* dof_array,
+                             size_t num_handles,
+                             MsqError& err ) const = 0;
+                             
        
   };
 }

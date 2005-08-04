@@ -267,8 +267,11 @@ namespace Mesquite
     size_t* get_connectivity_array( )
       { return &elemConnectivityArray[0]; }
       
-    const Mesh::ElementHandle* get_element_handles_array( ) const
+    Mesh::ElementHandle* get_element_handles_array( )
       { return &elementHandlesArray[0]; }
+    
+    Mesh::VertexHandle* get_vertex_handles_array()
+      { return &vertexHandlesArray[0]; }
     
       //! Returns the start of the vertex->element array.
       //! For each vertex in the patch, this array holds
@@ -301,6 +304,13 @@ namespace Mesquite
     void get_vertex_element_indices(size_t vertex_index,
                                     msq_std::vector<size_t> &elem_indices,
                                     MsqError &err);
+    
+      /** Get the indices of elements adjacent to the specified vertex,
+       *  and having the specified dimension */
+    void get_vertex_element_indices( size_t vertex_index,
+                                     unsigned element_dimension,
+                                     msq_std::vector<size_t>& elem_indices,
+                                     MsqError& err );
     
       /*! Get indices of elements attached to specified vertex */
     size_t* get_vertex_element_adjacencies( size_t vertex_index,
@@ -545,28 +555,71 @@ namespace Mesquite
     static void make_handles_unique( Mesh::EntityHandle* handles,
                                      size_t& count,
                                      size_t* index_map = 0 );
-                                     
+    
+      /*\brief Note that the passed info has been calculated and stored */
     void note_have_info( ComputedInfo info )
       { haveComputedInfos |= (1<<info); }
       
+      /*\brief Update cached domain normal data */
     void update_cached_normals( MsqError& );
 
-    Mesh* myMesh;
-    MeshDomain* myDomain;
-    DomainHint domainHint;
+    Mesh* myMesh;              //!< The Mesh used to fill this PatchData [may be NULL]
+    MeshDomain* myDomain;      //!< The geometric domain of the mesh [may be NULL]
     
-    VertexIterator* vertexIterator;
-    ElementIterator* elementIterator;
+    VertexIterator* vertexIterator;   //!< Current vertex in Mesh [may be NULL]
+    ElementIterator* elementIterator; //!< Current element in Mesh [may be NULL]
     
+      //! Cached data for vertices in \ref vertexHandlesArray,
+      //! or vertex data for a temporary patch.
     msq_std::vector<MsqVertex> vertexArray;
+      //! The list of handles for the vertices in this patch
+      //! May be empty if \ref myMesh is NULL
     msq_std::vector<Mesh::VertexHandle> vertexHandlesArray;
-    msq_std::vector<MsqMeshEntity> elementArray;
-    msq_std::vector<Mesh::ElementHandle> elementHandlesArray;
-    msq_std::vector<size_t> elemConnectivityArray;
-    msq_std::vector<size_t> vertAdjacencyArray;
-    msq_std::vector<size_t> vertAdjacencyOffsets;
-    msq_std::vector<Vector3D> vertexNormals;
+      //! The number of vertices in \ref vertexArray that are
+      //! corner vertices (not mid-nodes.)  This is the offset 
+      //! in \ref vertexArray beginning at which the mid-side
+      //! nodes are stored.
     size_t numCornerVertices;
+      //! Cached data for elements in \ref elementHandlesArray
+      //! or element data for a temporary patch.
+    msq_std::vector<MsqMeshEntity> elementArray;
+      //! The hist of handles for elements in this patch.
+      //! May be empty if \ref myMesh is NULL
+    msq_std::vector<Mesh::ElementHandle> elementHandlesArray;
+      //! Element connectivity data.  The concatenation of the 
+      //! connectivity list of each element in \ref elementArray.
+      //! Each element in \ref elementArray has a pointer into
+      //! this array at the correct offset for that element's connectivity data.
+    msq_std::vector<size_t> elemConnectivityArray;
+      //! The concatenation of the adjacency lists of all the vertices
+      //! in \ref vertexArray.  Each value in the array is an index into 
+      //! \ref elementArray indicating that the corresponding element uses
+      //! the vertex.  May be empty if vertex adjacency data has not been
+      //! requested.
+    msq_std::vector<size_t> vertAdjacencyArray;
+      //! This array is indexed by vertex indices and specifies the
+      //! offset in \vertAdjacencyArray at which the adjacency list
+      //! for the corresponding vertex begins.  May be empty if vertex 
+      //! adjacency data has not been requested.
+    msq_std::vector<size_t> vertAdjacencyOffsets;
+      //! This array is indexed with vertex indices and contains a 
+      //! pointer into \ref normalData at which the cached domain normal
+      //! data for the vertex begins.  If the DOF in the domain is 2
+      //! for the vertex, then the vertex has a single normal.  If
+      //! the DOF is other than 2, the vertex has a normal for each
+      //! attached two-dimensional element.  If normalData is not empty
+      //! but this array is, then it is assumed that all vertices have a
+      //! DOF of two and the single vertex normal is at an offset of the
+      //! vertex index into the normalData array.
+    msq_std::vector<Vector3D*> vertexNormalPointers;
+      //! Storage space for cached domain normal data.  Pointers in
+      //! \ref vertexNormalPointers point into this list.
+    msq_std::vector<Vector3D> normalData;
+      //! Storage space for cached domain DOF for vertices.  IF
+      //! a domain exists and \ref normalData is not empty, but
+      //! this array is, it may be assumed that all vertices have
+      //! have a DOF == 2.
+    msq_std::vector<unsigned short> vertexDomainDOF;
     
       // Arrays in which to store temporary data
       // (avoids reallocation of temp space)
@@ -575,6 +628,8 @@ namespace Mesquite
     
       // Patch Computed Information (maxs, mins, etc ... )
     double computedInfos[MAX_COMPUTED_INFO_ENUM];
+      // Bit map indicating which values in \ref computedInfos
+      // are valud (which values have been calculated.)
     unsigned haveComputedInfos;
 
   };
@@ -615,7 +670,9 @@ namespace Mesquite
     elemConnectivityArray.clear();
     vertAdjacencyArray.clear();
     vertAdjacencyOffsets.clear();
-    vertexNormals.clear();
+    vertexNormalPointers.clear();
+    normalData.clear();
+    vertexDomainDOF.clear();
     numCornerVertices = 0;
     haveComputedInfos = 0;
     myMesh = 0;

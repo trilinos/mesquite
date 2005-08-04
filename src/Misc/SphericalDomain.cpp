@@ -33,6 +33,12 @@
 #  include <ieeefp.h>
 #endif
 
+#ifdef MSQ_USE_OLD_STD_HEADERS
+# include <algorithm.h>
+#else
+# include <algorithm>
+#endif
+
 void Mesquite::SphericalDomain::snap_to(Mesh::EntityHandle /*entity_handle*/,
                                         Vector3D &coordinate) const
 {
@@ -64,13 +70,13 @@ void Mesquite::SphericalDomain::normal_at(Mesh::EntityHandle /*entity_handle*/,
     coordinate.set( 1.0, 0.0, 0.0 );
 }
 
-void Mesquite::SphericalDomain::normal_at( Mesquite::Mesh::EntityHandle handle,
+void Mesquite::SphericalDomain::normal_at( const Mesquite::Mesh::EntityHandle* handle,
                                            Mesquite::Vector3D coords[],
                                            unsigned count,
                                            Mesquite::MsqError& ) const
 {
   for (unsigned i = 0; i < count; ++i)
-    normal_at( handle, coords[i] );
+    normal_at( handle[i], coords[i] );
 }
 
 void Mesquite::SphericalDomain::closest_point( Mesquite::Mesh::EntityHandle ,
@@ -86,5 +92,13 @@ void Mesquite::SphericalDomain::closest_point( Mesquite::Mesh::EntityHandle ,
   closest = mCenter + mRadius * normal;
 }
 
+
+void Mesquite::SphericalDomain::domain_DoF( const Mesh::EntityHandle* ,
+                                            unsigned short* dof_array,
+                                            size_t num_vertices,
+                                            MsqError&  ) const
+{
+  msq_std::fill( dof_array, dof_array + num_vertices, 2 );
+}
 
   

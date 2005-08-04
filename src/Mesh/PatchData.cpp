@@ -76,7 +76,6 @@ PatchData::PatchData()
   : targetMatrices( "MSQ_TARGET_MATRIX", Mesh::DOUBLE ),
     myMesh(0),
     myDomain(0),
-    domainHint(NO_DOMAIN_HINT),
     vertexIterator(0),
     elementIterator(0),
     numCornerVertices(0),
@@ -241,6 +240,9 @@ void PatchData::reorder()
 
   // Step -1: Clear any data that will be invalidated by this
   clear_tag_data();
+  vertexNormalPointers.clear();
+  normalData.clear();
+  vertexDomainDOF.clear();
 
   // Step 0:  Make sure patch data is valid.
 
@@ -408,20 +410,13 @@ void PatchData::reorder()
     v2h[loc] = vertexHandlesArray[i];
   }
   
-  if (!vertexNormals.empty() && domainHint != PLANAR_DOMAIN) {
-    msq_std::vector<Vector3D> v2n(numv);
-    for (i = 0; i < numv; ++i) {
-      loc = per[i];
-      v2n[loc] = vertexNormals[i];
-    }
-    vertexNormals = v2n;
-  } 
-
   //delete[] vertexArray;
   //delete[] vertexHandlesArray;
 
-  vertexArray = v2a;
-  vertexHandlesArray = v2h;
+  //vertexArray = v2a;
+  vertexArray.swap(v2a);
+  //vertexHandlesArray = v2h;
+  vertexHandlesArray.swap(v2h);
 
   // Step 8: Permute the elements and vertex indices for the elements
 
@@ -444,8 +439,10 @@ void PatchData::reorder()
   //delete[] elementArray;
   //delete[] elementHandlesArray;
 
-  elementArray = e2a;
-  elementHandlesArray = e2h;
+  //elementArray = e2a;
+  //elementHandlesArray = e2h;
+  elementArray.swap( e2a );
+  elementHandlesArray.swap( e2h );
 
   // Step 9: Finish by deleting allocated memory
 
@@ -785,6 +782,23 @@ void PatchData::get_vertex_element_indices(size_t vertex_index,
   memcpy( &elem_indices[0], ptr, count * sizeof(size_t) );
 }
 
+void PatchData::get_vertex_element_indices(size_t vertex_index,
+                                           unsigned element_dimension,
+                                           vector<size_t> &elem_indices,
+                                           MsqError &err) 
+{
+  elem_indices.clear();
+  size_t count, *ptr;
+  ptr = get_vertex_element_adjacencies( vertex_index, count, err );
+  for (size_t* const end = ptr + count; ptr != end; ++ptr)
+  {
+    const EntityTopology type = elementArray[*ptr].get_element_type();
+    const unsigned dim = TopologyInfo::dimension( type );
+    if (dim == element_dimension) 
+      elem_indices.push_back( *ptr );
+  }
+}
+
 size_t* PatchData::get_vertex_element_adjacencies( size_t vertex_index,
                                                    size_t& array_len_out,
                                                    MsqError& err )
@@ -1118,18 +1132,54 @@ void PatchData::snap_vertex_to_domain(size_t vertex_index, MsqError &err)
 {
   if (domain_set())
   {
-    if (domainHint == SMOOTH_DOMAIN && !vertexNormals.empty())
+      // if not doing normal caching
+    if (normalData.empty())
+    {
+      get_domain()->snap_to( vertexHandlesArray[vertex_index],
+                             vertexArray[vertex_index] );
+    }
+      // entire domain is 2-D (all vertices have a single normal)
+    else if (vertexNormalPointers.empty())
     {
       get_domain()->closest_point( vertexHandlesArray[vertex_index],
                                    Vector3D(vertexArray[vertex_index]),
                                    vertexArray[vertex_index],
-                                   vertexNormals[vertex_index],
+                                   normalData[vertex_index],
                                    err ); MSQ_ERRRTN(err);
     }
+      // vertex has a singel normal
+    else if (2 == vertexDomainDOF[vertex_index])
+    {
+      get_domain()->closest_point( vertexHandlesArray[vertex_index],
+                                   Vector3D(vertexArray[vertex_index]),
+                                   vertexArray[vertex_index],
+                                   *vertexNormalPointers[vertex_index],
+                                   err ); MSQ_ERRRTN(err);
+    }
+      // vertex as multiple normals cached, one per 2-D element
     else
     {
+        // get closest point
       get_domain()->snap_to( vertexHandlesArray[vertex_index],
                              vertexArray[vertex_index] );
+
+        // update per-element normal values
+      offsetArray.clear(); // use this array for tmp storage 
+      get_vertex_element_indices( vertex_index, 2, offsetArray, err );
+      MSQ_ERRRTN(err);
+      if (offsetArray.size())
+      {
+        for (size_t i = 0; i < offsetArray.size(); ++i)
+        {
+          vertexNormalPointers[vertex_index][i] = vertexArray[vertex_index];
+          offsetArray[i] = (size_t)(elementHandlesArray[offsetArray[i]]);
+        }
+        assert( sizeof(size_t) == sizeof(Mesh::ElementHandle) );
+        get_domain()->normal_at( (Mesh::ElementHandle*)(&offsetArray[0]), 
+                                 vertexNormalPointers[vertex_index],
+                                 offsetArray.size(), err );
+        MSQ_ERRRTN(err);
+      }
     }
   }
 }
@@ -1140,27 +1190,30 @@ void PatchData::get_domain_normal_at_vertex(size_t vertex_index,
                                    Vector3D &surf_norm,
                                    MsqError &err) 
 {
-  if (domainHint != NO_DOMAIN_HINT)
+  if (!domain_set())
   {
-    if (vertexNormals.empty())
-    {
-      update_cached_normals( err ); MSQ_ERRRTN(err);
-    }
-    
-    if (domainHint == PLANAR_DOMAIN)
-      vertex_index = 0;
-    surf_norm = vertexNormals[vertex_index];
+    MSQ_SETERR(err)( "No domain constraint set.", MsqError::INVALID_STATE );
+    return;
+  }
+  
+  if (normalData.empty())
+  {
+    update_cached_normals( err ); MSQ_ERRRTN(err);
+  }
+  
+  if (vertexNormalPointers.empty())
+  {
+    surf_norm = normalData[vertex_index];
+  }
+  else if (vertexDomainDOF[vertex_index] == 2)
+  {
+    surf_norm = *vertexNormalPointers[vertex_index];
   }
   else
   {
-    if (!domain_set())
-    {
-      MSQ_SETERR(err)( "No domain constraint set.", MsqError::INVALID_STATE );
-      return;
-    }
-  
-    surf_norm = vertexArray[vertex_index];
-    get_domain()->normal_at( vertexHandlesArray[vertex_index], surf_norm );
+    MSQ_SETERR(err)( "Invalid normal request:  Vertex domain is not 2-DOF.",
+                     MsqError::INVALID_ARG);
+    return;
   }
 
   if (normalize)
@@ -1170,34 +1223,83 @@ void PatchData::get_domain_normal_at_vertex(size_t vertex_index,
 
 void PatchData::update_cached_normals( MsqError& err )
 {
+  size_t i;
+  
   MeshDomain* domain = get_domain();
   if (!domain)
   {
     MSQ_SETERR(err)( "No domain constraint set.", MsqError::INVALID_STATE );
-    vertexNormals.clear();
     return;
   }
   
-  if (domainHint == PLANAR_DOMAIN)
+    // Determine which vertices lie on surfaces
+  vertexDomainDOF.resize( num_nodes() );
+  domain->domain_DoF( &vertexHandlesArray[0], &vertexDomainDOF[0], num_nodes(), err );
+  MSQ_ERRRTN(err);
+  
+    // Count how many vertices have a single normal
+  size_t count = msq_std::count( vertexDomainDOF.begin(), vertexDomainDOF.end(), 2 );
+  
+    // If all vertices are on a surface, pass in the existing handles array
+    // and store a single normal per vertex.
+  if (count == num_nodes())
   {
-    vertexNormals.resize(1);
-    vertexNormals[0] = vertex_by_index(0);
-    domain->normal_at( elementHandlesArray[0], vertexNormals[0] );
+    normalData.resize( count );
+    msq_std::copy( vertexArray.begin(), vertexArray.end(), normalData.begin() );
+    domain->normal_at( &vertexHandlesArray[0], &normalData[0], num_nodes(), err );
+    vertexNormalPointers.clear();
+    MSQ_ERRRTN(err);
+//NOTE: stop here if all vertices are on a surface
+    return;
   }
-      
-  else
+    
+    // count how many per-element vertex normals need to be stored
+  msq_std::vector<size_t> vertex_elements;
+  const size_t nn = num_nodes();
+  size_t num_normals = count;
+  for (i = 0; i < nn; ++i)
   {
-    vertexNormals.resize( num_vertices() );
-    for ( unsigned i = 0; i < num_vertices(); ++i)
+    if (vertexDomainDOF[i] != 2)
     {
-      Vector3D& norm = vertexNormals[i];
-      norm = vertexArray[i];
-      domain->normal_at( vertexHandlesArray[i], norm );
-      //norm.normalize();
-      //if (!finite(norm.x()) || !finite(norm.y()) || !finite(norm.z()))
-      //  norm.set(0,0,0);
+      get_vertex_element_indices( i, 2, vertex_elements, err ); MSQ_ERRRTN(err);
+      num_normals += vertex_elements.size();
     }
   }
+  normalData.resize( num_normals );
+  vertexNormalPointers.reserve( num_nodes() );
+  msq_std::vector<Vector3D>::iterator norm_iter = normalData.begin();
+  
+    // Fill a temporary handle array with entity handles and
+    // the normalData array with the corresponding vertex coordinates
+    // for a call to get the normals.  Also, populate vertexNormalPointers
+    // array with offsets into normalData.
+  msq_std::vector<Mesh::EntityHandle> handles;
+  handles.reserve( num_normals );
+  for (i = 0; i < nn; ++i)
+  {
+    vertexNormalPointers.push_back( &*norm_iter );
+    if (vertexDomainDOF[i] == 2)
+    {
+      *norm_iter = vertexArray[i];
+      handles.push_back( vertexHandlesArray[i] );
+      ++norm_iter;
+    }
+    else
+    {
+      get_vertex_element_indices( i, 2, vertex_elements, err ); MSQ_ERRRTN(err);
+      for (msq_std::vector<size_t>::iterator j = vertex_elements.begin();
+           j != vertex_elements.end(); ++j)
+      {
+        handles.push_back( elementHandlesArray[*j] );
+        *norm_iter = vertexArray[i];
+        ++norm_iter;
+      }
+    }
+  }
+  assert( norm_iter == normalData.end() );
+  
+    // Get the actual normals
+  domain->normal_at( &handles[0], &normalData[0], num_normals, err ); MSQ_ERRRTN(err);
 }
 
 
@@ -1213,69 +1315,57 @@ void PatchData::get_domain_normal_at_element(size_t elem_index,
   else
     MSQ_SETERR(err)( "No domain constraint set.", MsqError::INVALID_STATE );
 }
-/*
-void PatchData::get_domain_normal_at_corner( size_t elem_index,
-                                             size_t elem_corner,
-                                             Vector3D& normal_out,
-                                             MsqError& err ) const
-{
-  size_t vert_index;
-  
-  if (meshSet && meshSet->get_domain_constraint())
-  {
-    vert_index = elementArray[elem_index].get_vertex_index_array()[elem_corner];
-    normal_out = vertexArray[ vert_index ];
-    meshSet->get_domain_constraint()->normal_at( elementHandlesArray[elem_index],
-                                                 normal_out );
-  }
-  else
-  {
-    MSQ_SETERR(err)("No domain constraint set.", MsqError::INVALID_STATE );
-  }
-}
-*/
 
 void PatchData::get_domain_normals_at_corners( size_t elem_index,
                                                Vector3D normals_out[],
                                                MsqError& err ) 
 {
-  const MsqMeshEntity& elem = elementArray[elem_index];
+  if (!domain_set())
+  {
+    MSQ_SETERR(err)( "No domain constraint set.", MsqError::INVALID_STATE );
+    return;
+  }
+  
+  if (2 != TopologyInfo::dimension( elementArray[elem_index].get_element_type() ))
+  {
+    MSQ_SETERR(err)( "Attempt to get corners of non-surface element", MsqError::INVALID_ARG );
+    return;
+  }
+  
+  if (normalData.empty())
+  {
+    update_cached_normals( err ); MSQ_ERRRTN(err);
+  }
+  
+  MsqMeshEntity& elem = elementArray[elem_index];
   const unsigned count = elem.vertex_count();
   const size_t* const vertex_indices = elem.get_vertex_index_array();
-
-  if (domainHint != NO_DOMAIN_HINT)
+  for (size_t i = 0; i < count; ++i)
   {
-    if (vertexNormals.empty())
+    const size_t v = vertex_indices[i];
+    if (vertexNormalPointers.empty())
     {
-      update_cached_normals( err ); MSQ_ERRRTN(err);
+      normals_out[i] = normalData[v];
     }
-    
-    if (domainHint == PLANAR_DOMAIN)
+    else if(vertexDomainDOF[v] == 2)
     {
-      for (unsigned i = 0; i < count; ++i)
-        normals_out[i] = vertexNormals[0];
+      normals_out[i] = *vertexNormalPointers[v];
     }
     else
     {
-      for (unsigned i = 0; i < count; ++i)
-        normals_out[i] = vertexNormals[vertex_indices[i]];
+      offsetArray.clear();  // use this temp array instead of allocating a new one.
+      get_vertex_element_indices( v, 2, offsetArray, err ); MSQ_ERRRTN(err);
+      
+      msq_std::vector<size_t>::iterator iter;
+      iter = msq_std::find( offsetArray.begin(), offsetArray.end(), elem_index );
+      if (iter == offsetArray.end())
+      {
+        MSQ_SETERR(err)("Invalid element handle (not 2D?)", MsqError::INVALID_ARG );
+        return;
+      }
+      normals_out[i] = vertexNormalPointers[v][iter - offsetArray.begin()];
+      offsetArray.clear();
     }
-  }
-  else
-  {
-    MeshDomain* domain = get_domain();
-    if (!domain)
-    {
-      MSQ_SETERR(err)( "No domain constraint set.", MsqError::INVALID_STATE );
-      return;
-    }
-    
-    for (unsigned i = 0; i < count; ++i)
-      normals_out[i] = vertexArray[ vertex_indices[i] ];
-    
-    domain->normal_at( elementHandlesArray[elem_index], 
-                       normals_out, count,
-                       err ); MSQ_CHKERR(err);
   }
 }  
   
@@ -1290,7 +1380,14 @@ void PatchData::set_mesh(Mesh* ms)
 }
 
 void PatchData::set_domain(MeshDomain* d) 
-  { myDomain = d; }
+{ 
+  myDomain = d;
+  
+    // clear all cached data from the previous domain
+  vertexNormalPointers.clear();
+  normalData.clear();
+  vertexDomainDOF.clear();
+}
 
 ostream& operator<<( ostream& stream, const PatchData& pd )
 {
@@ -1396,8 +1493,9 @@ void PatchData::initialize_data( size_t* elem_offset_array, MsqError& err )
 {
     // Clear out data specific to patch
   clear_tag_data();
-  if (domainHint != PLANAR_DOMAIN)
-    vertexNormals.clear();
+  vertexNormalPointers.clear();
+  normalData.clear();
+  vertexDomainDOF.clear();
   
     // Clear any vertex->element adjacency data.  It
     // is probably invalid, and certainly will be by the time

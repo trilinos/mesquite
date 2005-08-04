@@ -54,8 +54,6 @@ namespace Mesquite
 
     virtual ~SphericalDomain() { }
 
-    DomainHint hint() const { return SMOOTH_DOMAIN; }
-    
     void set_sphere(const Vector3D& center, double radius)
       {
         mCenter = center;
@@ -68,7 +66,7 @@ namespace Mesquite
     virtual void normal_at(Mesh::EntityHandle entity_handle,
                            Vector3D &coordinate) const;
     
-    virtual void normal_at(Mesh::EntityHandle handle,
+    virtual void normal_at(const Mesh::EntityHandle* handle,
                            Vector3D coords[],
                            unsigned count,
                            MsqError& err) const;
@@ -79,6 +77,10 @@ namespace Mesquite
                                 Vector3D& normal,
                                 MsqError& err ) const;
 
+    virtual void domain_DoF( const Mesh::EntityHandle* handle_array,
+                             unsigned short* dof_array,
+                             size_t num_vertices,
+                             MsqError& err ) const;
   private:
     Vector3D mCenter;
     double mRadius;

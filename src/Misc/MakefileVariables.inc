@@ -1,6 +1,8 @@
 MISCDIR = $(srcdir)/Misc
 
-MISCSRCFILES = Exponent.cpp \
+MISCSRCFILES = BoundedCylinderDomain.cpp \
+               CylinderDomain.cpp \
+               Exponent.cpp \
                FileTokenizer.cpp \
                MeshTransform.cpp \
                MesquiteVersion.cpp \
