@@ -19,6 +19,8 @@ all_tests: $(MSQ_TEST)
 endif
 
 TEST_SRCS = msq_test_main.cpp \
+    BoundedCylinderDomainTest.cpp \
+    CylinderDomainTest.cpp \
     ExodusTest.cpp \
     FileTokenizerTest.cpp \
     InstructionQueueTest.cpp \
@@ -30,6 +32,7 @@ TEST_SRCS = msq_test_main.cpp \
     MsqVertexTest.cpp \
     ObjectiveFunctionTest.cpp \
     PatchDataTest.cpp \
+    PatchDataTestNormals.cpp \
     PlanarGeometryTest.cpp \
     QualityMetricTest.cpp \
     SphericalGeometryTest.cpp \
