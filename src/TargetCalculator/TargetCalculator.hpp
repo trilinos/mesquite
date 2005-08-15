@@ -82,11 +82,7 @@ namespace Mesquite
     virtual ~TargetCalculator()
     {};
 
-    static void initialize_default_target_matrices( Matrix3D &tri_M3D, 
-                                                    Matrix3D &quad_M3D,
-                                                    Matrix3D &tet_M3D, 
-                                                    Matrix3D &hex_M3D,
-                                                    Matrix3D &pyr_M3D);
+    static Matrix3D get_default_target_matrix( EntityTopology type, MsqError& );
 
       //! \enum chooses whether the calculation is per element or an average
       //! for some cases of the \f$ \lambda_k \f$ coefficient.
@@ -152,47 +148,7 @@ namespace Mesquite
     Mesh* refMesh;
     MeshDomain* refDomain;
   };
-
-  
-  inline void TargetCalculator::initialize_default_target_matrices(Matrix3D &tri_M3D,
-                                                      Matrix3D &quad_M3D,
-                                                      Matrix3D &tet_M3D,
-                                                      Matrix3D &hex_M3D,
-                                                      Matrix3D &pyr_M3D)
-  {
-    static const double SIXTH_ROOT_OF_TWO = msq_stdc::pow(2., 1./6.);
-      //The #ifndef is to get around what is believed to be a bug in the JANUS
-      //compilers.  
-#ifndef MSQ_JANUS
-    const double v_tri[] = {1., 0.5, 0., 0., MSQ_SQRT_THREE/2., 0., 0., 0., 1.};
-#else    
-    const double v_tri[] = {1., 0.5, 0., 0., 0.8660254037844385965883021 , 0., 0., 0., 1.};
-#endif    
-    Matrix3D m1(v_tri);
-    tri_M3D = m1 * MSQ_3RT_2_OVER_6RT_3;
-
-    const double v_quad[] = {1., 0., 0., 0., 1., 0., 0., 0., 1.};
-    Matrix3D m2(v_quad);
-    quad_M3D = m2;
-    
-      //The #ifndef is to get around what is believed to be a bug in the JANUS
-      //compilers.  
-#ifndef MSQ_JANUS
-    const double v_tet[] = {1., 0.5, 0.5, 0., MSQ_SQRT_THREE/2., MSQ_SQRT_THREE/6., 0., 0., MSQ_SQRT_TWO/MSQ_SQRT_THREE};
-#else 
-    const double v_tet[] = {1., 0.5, 0.5, 0.,  0.8660254037844385965883021, 0.2886751345948128655294340, 0., 0., 0.8164965809277261454823815};
-#endif    
-    Matrix3D m3(v_tet);
-    tet_M3D =  m3 * SIXTH_ROOT_OF_TWO;
-
-    const double v_hex[] = {1., 0., 0.,  0., 1., 0.,  0., 0., 1.};
-    Matrix3D m4(v_hex);
-    hex_M3D = m4;
-    
-    const double v_pyr[] = { 1.0, 0.0, 0.5, 0.0, 1.0, 0.5, 0.0, 0.0, 1.0 };
-    Matrix3D m5(v_pyr);
-    pyr_M3D = m5;
-  }
+      
 
 
   //! Note that this function is static, i.e. it can be used independently of an object.

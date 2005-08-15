@@ -141,9 +141,8 @@ public:
    void test_tri_with_default_target_matrix()
    {
      MsqPrintError err(cout);
-     Matrix3D tri_m3d, quad_m3d, tet_m3d, hex_m3d, pyr_m3d; 
-        
-     TargetCalculator::initialize_default_target_matrices(tri_m3d, quad_m3d, tet_m3d, hex_m3d, pyr_m3d);
+     Matrix3D tri_m3d = TargetCalculator::get_default_target_matrix( TRIANGLE, err );
+     CPPUNIT_ASSERT(!err); 
 
      TargetMatrix matrices[] = { tri_m3d, tri_m3d, tri_m3d };
      idealTri.targetMatrices.set_element_corner_tags( &idealTri, 0, matrices, err );
@@ -179,9 +178,8 @@ public:
    void test_quad_with_default_target_matrix()
    {
      MsqPrintError err(cout);
-     Matrix3D tri_m3d, quad_m3d, tet_m3d, hex_m3d, pyr_m3d; 
-        
-     TargetCalculator::initialize_default_target_matrices(tri_m3d, quad_m3d, tet_m3d, hex_m3d, pyr_m3d);
+     Matrix3D quad_m3d = TargetCalculator::get_default_target_matrix( QUADRILATERAL, err );
+     CPPUNIT_ASSERT(!err);
 
      TargetMatrix matrices[] = { quad_m3d, quad_m3d, quad_m3d, quad_m3d };
      quadPatch.targetMatrices.set_element_corner_tags( &quadPatch, 0, matrices, err );
@@ -207,9 +205,8 @@ public:
    void test_tet_with_default_target_matrix()
    {
      MsqPrintError err(cout);
-     Matrix3D tri_m3d, quad_m3d, tet_m3d, hex_m3d, pyr_m3d; 
-        
-     TargetCalculator::initialize_default_target_matrices(tri_m3d, quad_m3d, tet_m3d, hex_m3d, pyr_m3d);
+     Matrix3D tet_m3d = TargetCalculator::get_default_target_matrix( TETRAHEDRON, err );
+     CPPUNIT_ASSERT(!err);
 
      TargetMatrix matrices[] = { tet_m3d, tet_m3d, tet_m3d, tet_m3d };
      tetPatch.targetMatrices.set_element_corner_tags( &tetPatch, 0, matrices, err );
@@ -248,9 +245,8 @@ public:
    void test_pyr_with_default_target_matrix()
    {
      MsqPrintError err(cout);
-     Matrix3D tri_m3d, quad_m3d, tet_m3d, hex_m3d, pyr_m3d; 
-        
-     TargetCalculator::initialize_default_target_matrices(tri_m3d, quad_m3d, tet_m3d, hex_m3d, pyr_m3d);
+     Matrix3D pyr_m3d = TargetCalculator::get_default_target_matrix( PYRAMID, err );
+     CPPUNIT_ASSERT(!err);
 
      TargetMatrix matrices[] = { pyr_m3d, pyr_m3d, pyr_m3d, pyr_m3d, pyr_m3d };
      tetPatch.targetMatrices.set_element_corner_tags( &pyrPatch, 0, matrices, err );
