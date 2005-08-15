@@ -50,7 +50,7 @@ void LVQDTargetCalculator::compute_target_matrices(PatchData &pd,
   // Make sure topology of ref_pd and pd are equal
   size_t num_elements=pd.num_elements();
   size_t num_vertices=pd.num_vertices();
-  if (num_elements != pd.num_elements() || num_vertices != pd.num_vertices())
+  if (num_elements != ref_pd.num_elements() || num_vertices != ref_pd.num_vertices())
   {
     MSQ_SETERR(err)(MsqError::INVALID_STATE);
     return;
