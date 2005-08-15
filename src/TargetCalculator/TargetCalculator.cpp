@@ -43,6 +43,73 @@ mesquite a measure of the perfect mesh.
 
 using namespace Mesquite;
 
+
+Matrix3D TargetCalculator::get_default_target_matrix( EntityTopology type,
+                                                      MsqError& err )
+{
+  static const double SIXTH_ROOT_OF_TWO = msq_stdc::pow(2., 1./6.);
+  Matrix3D result;
+  switch( type )
+  {
+    case TRIANGLE:
+    {
+#ifndef MSQ_JANUS
+      const double v_tri[] = {1., 0.5, 0., 0., MSQ_SQRT_THREE/2., 0., 0., 0., 1.};
+#else    
+      const double v_tri[] = {1., 0.5, 0., 0., 0.8660254037844385965883021 , 0., 0., 0., 1.};
+#endif    
+      Matrix3D m1(v_tri);
+      m1 *= MSQ_3RT_2_OVER_6RT_3;
+      return m1;
+    }
+
+    case QUADRILATERAL:
+    case HEXAHEDRON:
+    {
+      const double ident[] = { 1.0, 0.0, 0.0, 
+                               0.0, 1.0, 0.0, 
+                               0.0, 0.0, 1.0 };
+      return Matrix3D(ident);
+    }
+
+    case TETRAHEDRON:
+    {
+#ifndef MSQ_JANUS
+      const double v_tet[] = {1., 0.5, 0.5, 0., MSQ_SQRT_THREE/2., MSQ_SQRT_THREE/6., 0., 0., MSQ_SQRT_TWO/MSQ_SQRT_THREE};
+#else 
+      const double v_tet[] = {1., 0.5, 0.5, 0.,  0.8660254037844385965883021, 0.2886751345948128655294340, 0., 0., 0.8164965809277261454823815};
+#endif    
+      Matrix3D m3(v_tet);
+      m3 *= SIXTH_ROOT_OF_TWO;
+      return m3;
+    }
+
+    case PYRAMID:
+    {
+      const double v_pyr[] = { 1.0, 0.0, 0.5, 
+                               0.0, 1.0, 0.5, 
+                               0.0, 0.0, 1.0 };
+      return Matrix3D(v_pyr);
+    }
+
+    case PRISM:
+    {
+      const double s = MSQ_3RT_2_OVER_6RT_3;
+      const double h = MSQ_3RT_2_OVER_6RT_3 * MSQ_SQRT_THREE_DIV_TWO;
+      const double v_wdg[] = {  s, 0.5*s, 0,  
+                                0,  h,    0,
+                                0,  0,    s };
+      return Matrix3D(v_wdg);
+    } 
+
+    default:
+      MSQ_SETERR(err)( MsqError::INVALID_ARG,
+                "Unsupported element type (%d)\n",
+                (int)type);
+      return Matrix3D();
+  }
+}
+
 void TargetCalculator::compute_target_matrices_and_check_det( PatchData &pd, 
                                                               PatchData& ref_pd,
                                                               MsqError &err)
@@ -79,56 +146,14 @@ void TargetCalculator::compute_default_target_matrices(PatchData &pd,
     
   MsqMeshEntity* elems=pd.get_element_array(err); MSQ_ERRRTN(err);
   size_t num_elements=pd.num_elements();
-
-  Matrix3D tmp_tri, tmp_quad, tmp_tet, tmp_hex, tmp_pyr;
-  initialize_default_target_matrices(tmp_tri, tmp_quad, tmp_tet, tmp_hex, tmp_pyr);
-  
   TargetMatrix matrices[8];
   
   // set the corner matrices to the correct value for each tag.
   for (size_t i=0; i<num_elements; ++i) {
-
     EntityTopology type = elems[i].get_element_type();
-    switch (type)
-      {
-      case TRIANGLE:
-        matrices[0] = tmp_tri; 
-        matrices[1] = tmp_tri; 
-        matrices[2] = tmp_tri; 
-        break;
-      case QUADRILATERAL:
-        matrices[0] = tmp_quad; 
-        matrices[1] = tmp_quad; 
-        matrices[2] = tmp_quad; 
-        matrices[3] = tmp_quad; 
-        break;
-      case TETRAHEDRON:
-        matrices[0] = tmp_tet; 
-        matrices[1] = tmp_tet; 
-        matrices[2] = tmp_tet; 
-        matrices[3] = tmp_tet; 
-        break;
-      case HEXAHEDRON:
-        matrices[0] = tmp_hex; 
-        matrices[1] = tmp_hex; 
-        matrices[2] = tmp_hex; 
-        matrices[3] = tmp_hex; 
-        matrices[4] = tmp_hex; 
-        matrices[5] = tmp_hex; 
-        matrices[6] = tmp_hex; 
-        matrices[7] = tmp_hex; 
-        break;
-      case PYRAMID:
-        matrices[0] = tmp_pyr; 
-        matrices[1] = tmp_pyr; 
-        matrices[2] = tmp_pyr; 
-        matrices[3] = tmp_pyr; 
-        matrices[4].identity();
-        break;
-      default:
-        MSQ_SETERR(err)("Type not implemented.",MsqError::NOT_IMPLEMENTED);
-        return;
-      } //end switch
+    Matrix3D tmp = get_default_target_matrix( type, err ); MSQ_ERRRTN(err);
+    for (size_t j = 0; j < elems[i].corner_count(); ++j)
+      matrices[j]= tmp;
       
     pd.targetMatrices.set_element_corner_tags( &pd, i, matrices, err ); MSQ_ERRRTN(err);
   } // end loop
@@ -173,35 +198,14 @@ void TargetCalculator::compute_reference_corner_matrices(PatchData &pd,
     
     MsqMeshEntity* elems = ref_pd.get_element_array(err); MSQ_ERRRTN(err);
     size_t nve = elems[elem_ind].corner_count();
-    int i;
-
+ 
     switch(type) {
     case Ad:
       {
-        Matrix3D tmp_tri, tmp_quad, tmp_tet, tmp_hex, tmp_pyr;
-        initialize_default_target_matrices(tmp_tri, tmp_quad, tmp_tet, tmp_hex, tmp_pyr);
         EntityTopology elem_type = elems[elem_ind].get_element_type();
-        switch (elem_type) {
-        case TRIANGLE:
-          for (i=0; i<3; ++i) W_k[i] = tmp_tri; 
-          break;
-        case QUADRILATERAL:
-          for (i=0; i<4; ++i) W_k[i] = tmp_quad; 
-          break;
-        case TETRAHEDRON:
-          for (i=0; i<4; ++i) W_k[i] = tmp_tet; 
-          break;
-        case HEXAHEDRON:
-          for (i=0; i<8; ++i) W_k[i] = tmp_hex; 
-          break;
-        case PYRAMID:
-          for (i=0; i<4; ++i) W_k[i] = tmp_pyr; 
-          W_k[4].identity();
-          break;
-        default:
-          MSQ_SETERR(err)("Element type not implemented.",MsqError::NOT_IMPLEMENTED);
-          return;
-        }
+        Matrix3D tmp = get_default_target_matrix( elem_type, err ); MSQ_ERRRTN(err);
+        for (unsigned i = 0; i < elems[elem_ind].corner_count(); ++i)
+          W_k[i] = tmp;
       }
       return;
     case A0:
