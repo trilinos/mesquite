@@ -67,7 +67,6 @@ bool UntangleBetaQualityMetric::evaluate_element(PatchData &pd,
                                                  double &fval,
                                                 MsqError &err){
   
-  int i;
   double met_vals[MSQ_MAX_NUM_VERT_PER_ENT];
   fval=MSQ_MAX_CAP;
   const size_t* v_i = element->get_vertex_index_array();
@@ -76,7 +75,8 @@ bool UntangleBetaQualityMetric::evaluate_element(PatchData &pd,
     //additional vector3Ds may be needed during the calculations
   Vector3D temp_vec[6];
   MsqVertex *vertices=pd.get_vertex_array(err);  MSQ_ERRZERO(err);
-  switch(element->get_element_type()){
+  EntityTopology type = element->get_element_type();
+  switch(type){
     case TRIANGLE:
       temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
       temp_vec[2]=vertices[v_i[2]]-vertices[v_i[0]];
@@ -156,22 +156,32 @@ bool UntangleBetaQualityMetric::evaluate_element(PatchData &pd,
       fval=average_metrics(met_vals, 8, err);  MSQ_ERRZERO(err);
       return true;
 
-    case PYRAMID:
-      for (i = 0; i < 4; ++i)
-      {
-        temp_vec[0] = vertices[v_i[(i+1)%4]] - vertices[v_i[i]];
-        temp_vec[1] = vertices[v_i[(i+3)%4]] - vertices[v_i[i]];
-        temp_vec[2] = vertices[v_i[ 4     ]] - vertices[v_i[i]];
-        untangle_function_3d( temp_vec, met_vals[i], err ); MSQ_ERRZERO(err);
-      }
-      fval = average_metrics( met_vals, 4, err );           MSQ_ERRZERO(err);
-      return true;
-
+      // PYRAMID and PRISM (actually, this code should work for
+      // all hexes also)
     default:
-      MSQ_SETERR(err)("Element of incorrect type sent to "
-                      "UntangleBetaQualityMetric",
-                      MsqError::NOT_IMPLEMENTED);
-      return false;
+    {
+      size_t num_corners = element->corner_count();
+      unsigned num_adj;
+      const unsigned* adj_idx;
+      for (unsigned j = 0; j < num_corners; ++j)
+      {
+        adj_idx = TopologyInfo::adjacent_vertices( type, j, num_adj );
+        if (num_adj != 3) 
+        {
+          MSQ_SETERR(err)("Unsupported element type for Untangle quality metric.",
+                    MsqError::INVALID_ARG);
+          fval=MSQ_MAX_CAP;
+          return false;
+        }
+        
+        temp_vec[0] = vertices[v_i[adj_idx[0]]] - vertices[v_i[j]];
+        temp_vec[1] = vertices[v_i[adj_idx[1]]] - vertices[v_i[j]];
+        temp_vec[2] = vertices[v_i[adj_idx[2]]] - vertices[v_i[j]];
+        untangle_function_3d( temp_vec, met_vals[j], err ); MSQ_ERRZERO(err);
+      }
+      fval = average_metrics( met_vals, num_corners, err );           MSQ_ERRZERO(err);
+      return true;
+    }
   }// end switch over element type
 
   

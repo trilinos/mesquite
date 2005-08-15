@@ -657,84 +657,6 @@ void MsqMeshEntity::compute_corner_matrices(PatchData &pd, Matrix3D A[], int num
 
     break;
     
-  /*
-   case PYRAMID:
-      //We compute the pyramid's "condition number" by averaging
-      //the 4 tet's condition numbers, where the tets are created
-      //by removing one of the four base vertices from the pyramid.
-      //transform to origina v_i[0]
-      temp_vec[3]=vertices[v_i[1]]-vertices[v_i[0]];
-      temp_vec[4]=vertices[v_i[3]]-vertices[v_i[0]];
-      temp_vec[5]=vertices[v_i[4]]-vertices[v_i[0]];
-      //find AW_inverse
-      temp_vec[0]=temp_vec[3];
-      temp_vec[1]=temp_vec[4]-temp_vec[3];
-      temp_vec[2]=MSQ_SQRT_TWO*(temp_vec[5]-(temp_vec[4]/2.0));
-      return_flag=condition_number_3d(temp_vec,pd,met_vals[0],err);
-      if(!return_flag)
-      return return_flag;
-      //transform to origina v_i[1]
-      temp_vec[3]=vertices[v_i[2]]-vertices[v_i[1]];
-      temp_vec[4]=vertices[v_i[3]]-vertices[v_i[1]];
-      temp_vec[5]=vertices[v_i[4]]-vertices[v_i[1]];
-      //find AW_inverse
-      temp_vec[0]=temp_vec[3]-temp_vec[4];
-      temp_vec[1]=temp_vec[3];
-      temp_vec[2]=MSQ_SQRT_TWO*(temp_vec[5]-(temp_vec[4]/2.0));
-      return_flag=condition_number_3d(temp_vec,pd,met_vals[1],err);
-      if(!return_flag)
-      return return_flag;
-      //transform to origina v_i[1]     
-      temp_vec[3]=vertices[v_i[3]]-vertices[v_i[2]];
-      temp_vec[4]=vertices[v_i[0]]-vertices[v_i[2]];
-      temp_vec[5]=vertices[v_i[4]]-vertices[v_i[2]];
-      //find AW_inverse
-      temp_vec[0]=-temp_vec[3];
-      temp_vec[1]=temp_vec[3]-temp_vec[4];
-      temp_vec[2]=MSQ_SQRT_TWO*(temp_vec[5]-(temp_vec[4]/2.0));
-      return_flag=condition_number_3d(temp_vec,pd,met_vals[2],err);
-      if(!return_flag)
-      return return_flag;
-      //transform to origina v_i[1]     
-      temp_vec[3]=vertices[v_i[0]]-vertices[v_i[3]];
-      temp_vec[4]=vertices[v_i[1]]-vertices[v_i[3]];
-      temp_vec[5]=vertices[v_i[4]]-vertices[v_i[3]];
-      //find AW_inverse
-      temp_vec[0]=temp_vec[4]-temp_vec[3];
-      temp_vec[1]=-temp_vec[3];
-      temp_vec[2]=MSQ_SQRT_TWO*(temp_vec[5]-(temp_vec[4]/2.0));
-      return_flag=condition_number_3d(temp_vec,pd,met_vals[3],err);
-      fval=average_metrics(met_vals, 4, err);
-      if(!return_flag)
-      return return_flag;
-      break;
-    */
-  
-  case PYRAMID:
-    if (num_m3d != 4) {
-      MSQ_SETERR(err)("num_m3d incompatible with element type.", MsqError::INVALID_ARG); 
-      return;
-    }
-    A[0].set_column(0, vertices[v_i[1]]-vertices[v_i[0]]);
-    A[0].set_column(1, vertices[v_i[3]]-vertices[v_i[0]]);
-    A[0].set_column(2, vertices[v_i[4]]-vertices[v_i[0]]);
- 
-    A[1].set_column(0, vertices[v_i[2]]-vertices[v_i[1]]);
-    A[1].set_column(1, vertices[v_i[0]]-vertices[v_i[1]]);
-    A[1].set_column(2, vertices[v_i[4]]-vertices[v_i[1]]);
- 
-    A[2].set_column(0, vertices[v_i[3]]-vertices[v_i[2]]);
-    A[2].set_column(1, vertices[v_i[1]]-vertices[v_i[2]]);
-    A[2].set_column(2, vertices[v_i[4]]-vertices[v_i[2]]);
-    
-    A[3].set_column(0, vertices[v_i[0]]-vertices[v_i[3]]);
-    A[3].set_column(1, vertices[v_i[2]]-vertices[v_i[3]]);
-    A[3].set_column(2, vertices[v_i[4]]-vertices[v_i[3]]);
-    
-    //A[4].identity();
-    
-    break;
- 
   case HEXAHEDRON:
     if (num_m3d != 8) {
       MSQ_SETERR(err)("num_m3d incompatible with element type.", MsqError::INVALID_ARG); 
@@ -773,10 +695,28 @@ void MsqMeshEntity::compute_corner_matrices(PatchData &pd, Matrix3D A[], int num
     A[7].set_column(2, vertices[v_i[3]]-vertices[v_i[7]]);
 
     break;
+  
+  default: // generic code for any 3D element
+  {
+    const unsigned num_corners = corner_count();
+    unsigned num_adj;
+    const unsigned* adj_idx;
     
-  default:
-    MSQ_SETERR(err)("element type not implemented.", MsqError::NOT_IMPLEMENTED);
-    return;
+    for (unsigned i = 0; i < num_corners; ++i)
+    {
+      adj_idx = TopologyInfo::adjacent_vertices( mType, i, num_adj );
+      if (num_adj != 3) {
+        MSQ_SETERR(err)("element type not implemented.", MsqError::NOT_IMPLEMENTED);
+        return;
+      }
+      
+      A[i].set_column( 0, vertices[v_i[adj_idx[0]]] - vertices[v_i[i]] );
+      A[i].set_column( 1, vertices[v_i[adj_idx[1]]] - vertices[v_i[i]] );
+      A[i].set_column( 2, vertices[v_i[adj_idx[2]]] - vertices[v_i[i]] );
+    }
+    
+    break;
+  }      
   }// end switch over element type
 }
 
@@ -989,23 +929,32 @@ MsqMeshEntity::ElementOrientation MsqMeshEntity::check_element_orientation(
       }
       break;
 
-    case PYRAMID:
-      for (i = 0; i < 4; ++i) {
-        center_vector = vertices[vertexIndices[ i     ]];
-        coord_vectors[0] = vertices[vertexIndices[(i+1)%4]]-center_vector;
-        coord_vectors[1] = vertices[vertexIndices[(i+3)%4]]-center_vector;
-        coord_vectors[2] = vertices[vertexIndices[ 4     ]]-center_vector;
+    default: // generic code for 3D elements
+    {
+      size_t num_corners = corner_count();
+      unsigned num_adj;
+      const unsigned* adj_idx;
+      for (unsigned j = 0; j < num_corners; ++j)
+      {
+        adj_idx = TopologyInfo::adjacent_vertices( mType, j, num_adj );
+        if (3 != num_adj)
+        {
+          MSQ_SETERR(err)("Unsupported element type.", MsqError::INVALID_ARG);
+          return UNDEFINED_ORIENTATION;
+        }
+        
+        center_vector = vertices[vertexIndices[j]];
+        coord_vectors[0] = vertices[vertexIndices[adj_idx[0]]] - center_vector;
+        coord_vectors[1] = vertices[vertexIndices[adj_idx[1]]] - center_vector;
+        coord_vectors[2] = vertices[vertexIndices[adj_idx[2]]] - center_vector;
           //metric_valid = is_matrix_det_positive(coord_vectors);
         if( coord_vectors[0]%(coord_vectors[1]*coord_vectors[2] ) <= 0.0)
         {
           return INVERTED_ORIENTATION;
         }
-          //if (!metric_valid) return false;
       }
       break;
-
-    default:
-      return INVERTED_ORIENTATION;
+    }
   } // end switch over element type
   return VALID_ORIENTATION;
 }

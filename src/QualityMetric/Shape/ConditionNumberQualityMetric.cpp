@@ -62,7 +62,8 @@ bool ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
     //additional vector3Ds may be needed during the calculations
   Vector3D temp_vec[6];
   MsqVertex *vertices=pd.get_vertex_array(err);
-  switch(element->get_element_type()){
+  EntityTopology type = element->get_element_type();
+  switch(type){
     case TRIANGLE:
       temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
       temp_vec[2]=vertices[v_i[2]]-vertices[v_i[0]];
@@ -101,58 +102,7 @@ bool ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
         (MSQ_SQRT_THREE*MSQ_SQRT_TWO);
       return_flag=condition_number_3d(temp_vec,pd,fval,err);  MSQ_ERRZERO(err);
       return return_flag;
-        /*
-    case PYRAMID:
-        //We compute the pyramid's "condition number" by averaging
-        //the 4 tet's condition numbers, where the tets are created
-        //by removing one of the four base vertices from the pyramid.
-        //transform to origina v_i[0]
-      temp_vec[3]=vertices[v_i[1]]-vertices[v_i[0]];
-      temp_vec[4]=vertices[v_i[3]]-vertices[v_i[0]];
-      temp_vec[5]=vertices[v_i[4]]-vertices[v_i[0]];
-        //find AW_inverse
-      temp_vec[0]=temp_vec[3];
-      temp_vec[1]=temp_vec[4]-temp_vec[3];
-      temp_vec[2]=MSQ_SQRT_TWO*(temp_vec[5]-(temp_vec[4]/2.0));
-      return_flag=condition_number_3d(temp_vec,pd,met_vals[0],err);
-      if(!return_flag)
-        return return_flag;
-        //transform to origina v_i[1]
-      temp_vec[3]=vertices[v_i[2]]-vertices[v_i[1]];
-      temp_vec[4]=vertices[v_i[3]]-vertices[v_i[1]];
-      temp_vec[5]=vertices[v_i[4]]-vertices[v_i[1]];
-        //find AW_inverse
-      temp_vec[0]=temp_vec[3]-temp_vec[4];
-      temp_vec[1]=temp_vec[3];
-      temp_vec[2]=MSQ_SQRT_TWO*(temp_vec[5]-(temp_vec[4]/2.0));
-      return_flag=condition_number_3d(temp_vec,pd,met_vals[1],err);
-      if(!return_flag)
-        return return_flag;
-        //transform to origina v_i[1]     
-      temp_vec[3]=vertices[v_i[3]]-vertices[v_i[2]];
-      temp_vec[4]=vertices[v_i[0]]-vertices[v_i[2]];
-      temp_vec[5]=vertices[v_i[4]]-vertices[v_i[2]];
-        //find AW_inverse
-      temp_vec[0]=-temp_vec[3];
-      temp_vec[1]=temp_vec[3]-temp_vec[4];
-      temp_vec[2]=MSQ_SQRT_TWO*(temp_vec[5]-(temp_vec[4]/2.0));
-      return_flag=condition_number_3d(temp_vec,pd,met_vals[2],err);
-      if(!return_flag)
-        return return_flag;
-        //transform to origina v_i[1]     
-      temp_vec[3]=vertices[v_i[0]]-vertices[v_i[3]];
-      temp_vec[4]=vertices[v_i[1]]-vertices[v_i[3]];
-      temp_vec[5]=vertices[v_i[4]]-vertices[v_i[3]];
-        //find AW_inverse
-      temp_vec[0]=temp_vec[4]-temp_vec[3];
-      temp_vec[1]=-temp_vec[3];
-      temp_vec[2]=MSQ_SQRT_TWO*(temp_vec[5]-(temp_vec[4]/2.0));
-      return_flag=condition_number_3d(temp_vec,pd,met_vals[3],err);
-      fval=average_metrics(met_vals, 4, err);
-      if(!return_flag)
-        return return_flag;
-      break;
-        */
+
     case HEXAHEDRON:
         //transform to v_i[0]
       temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
@@ -203,10 +153,34 @@ bool ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
       return_flag=condition_number_3d(temp_vec,pd,met_vals[7],err);  MSQ_ERRZERO(err);
       fval=average_metrics(met_vals, 8, err);  MSQ_ERRZERO(err);
       return return_flag;
+
+      // PYRAMID and PRISM (actually, this code should work HEXAHEDRA also)
     default:
-      MSQ_SETERR(err)("Unsupported element type for Condition Number quality metric.",
-                      MsqError::INVALID_ARG);
-      fval=MSQ_MAX_CAP;
+    {
+      size_t num_corners = element->corner_count();
+      unsigned num_adj;
+      const unsigned* adj_idx;
+      for (size_t j = 0; j < num_corners; ++j)
+      {
+        adj_idx = TopologyInfo::adjacent_vertices( type, j, num_adj );
+        if (num_adj != 3) 
+        {
+          MSQ_SETERR(err)("Unsupported element type for Condition Number quality metric.",
+                    MsqError::INVALID_ARG);
+          fval=MSQ_MAX_CAP;
+          return false;
+        }
+        
+        temp_vec[0] = vertices[v_i[adj_idx[0]]] - vertices[v_i[j]];
+        temp_vec[1] = vertices[v_i[adj_idx[1]]] - vertices[v_i[j]];
+        temp_vec[2] = vertices[v_i[adj_idx[2]]] - vertices[v_i[j]];
+        return_flag = condition_number_3d( temp_vec, pd, met_vals[j], err );
+        if (MSQ_CHKERR(err) || !return_flag)
+          return false;
+      }
+      fval = average_metrics( met_vals, num_corners, err );           MSQ_ERRZERO(err);
+      return true;
+    }
   }// end switch over element type
   return false;
 }
