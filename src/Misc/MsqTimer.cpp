@@ -68,7 +68,7 @@ Mesquite::StopWatchCollection Mesquite::GlobalStopWatches;
 #    include <time.h>
 #  else
 #    include <ctime>
-#endif
+#  endif
    static inline double now()
    {
      return (double)msq_stdc::clock() / CLOCKS_PER_SEC; 
