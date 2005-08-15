@@ -217,16 +217,17 @@ TopologyInfo::TopologyInfo()
     vertAdjMap[QUADRILATERAL-FIRST_FACE][i][2] = (i+3)%4;
   }
   
-  for (i = 0; i < 3; ++i)
+  
+  unsigned tet_corner_data[] = { 1, 2, 3, 
+                                 0, 3, 2,
+                                 3, 0, 1,
+                                 2, 1, 0 };
+  for (i = 0; i < 4; ++i)
   {
     vertAdjMap[TETRAHEDRON-FIRST_FACE][i][0] = 3;
-    vertAdjMap[TETRAHEDRON-FIRST_FACE][i][1] = (i+1)%3;
-    vertAdjMap[TETRAHEDRON-FIRST_FACE][i][2] = (i+2)%3;
-    vertAdjMap[TETRAHEDRON-FIRST_FACE][i][3] = 3;
+    for (unsigned j = 0; j < 3; ++j)
+      vertAdjMap[TETRAHEDRON-FIRST_FACE][i][j+1] = tet_corner_data[3*i+j];
   }
-  vertAdjMap[TETRAHEDRON-FIRST_FACE][3][0] = 3;
-  for (i = 0; i < 3; ++i)
-    vertAdjMap[TETRAHEDRON-FIRST_FACE][3][i+1] = 2 - i;
   
   for (i = 0; i < 4; ++i)
   {
