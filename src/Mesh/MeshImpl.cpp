@@ -51,6 +51,7 @@ to run mesquite by default.
 #include "MeshImplTags.hpp"
 #include "MsqDebug.hpp"
 #include "MsqError.hpp"
+#include "VtkTypeInfo.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 #  include <string.h>
@@ -151,18 +152,8 @@ void MeshImpl::write_vtk(const char* out_filename, MsqError &err)
     EntityTopology topo = myMesh->element_topology( elem_idx, err ); MSQ_ERRRTN(err);
    
       // If necessary, convert from Exodus to VTK node-ordering.
-    if (topo == PRISM)  // VTK Wedge
-    {
-      msq_std::swap( conn[1], conn[2] );
-      msq_std::swap( conn[4], conn[5] );
-    }
-    else if (topo == HEXAHEDRON && conn.size() == 20)  // VTK Quadratic Hex
-    {
-      msq_std::swap( conn[12], conn[16] );
-      msq_std::swap( conn[13], conn[17] );
-      msq_std::swap( conn[14], conn[18] );
-      msq_std::swap( conn[15], conn[19] );
-    }
+    const VtkTypeInfo* info = VtkTypeInfo::find_type( topo, conn.size(), err ); MSQ_ERRRTN(err);
+    info->mesquiteToVtkOrder( conn );
     
     file << conn.size();
     for (i = 0; i < conn.size(); ++i)
@@ -179,23 +170,8 @@ void MeshImpl::write_vtk(const char* out_filename, MsqError &err)
     
     EntityTopology topo = myMesh->element_topology( elem_idx, err ); MSQ_ERRRTN(err);
     count = myMesh->element_connectivity( elem_idx, err ).size(); MSQ_ERRRTN(err);
-    int type;
-    switch (topo) {
-      case POLYGON:       type =                     7; break;
-      case TRIANGLE:      type = count ==  6 ? 22 :  5; break;
-      case QUADRILATERAL: type = count ==  8 ? 23 :  9; break;
-      case TETRAHEDRON:   type = count == 10 ? 24 : 10; break;
-      case HEXAHEDRON:    type = count == 20 ? 25 : 12; break;
-      case PRISM:         type =                    13; break;
-      case PYRAMID:       type =                    14; break;
-      default:
-        MSQ_SETERR(err)( MsqError::UNSUPPORTED_ELEMENT ,
-                        "Cannot write element type %d to a VTK file\n",
-                        (int)topo );
-        return;
-    }
-      
-    file << type << '\n';
+    const VtkTypeInfo* info = VtkTypeInfo::find_type( topo, count, err ); MSQ_ERRRTN(err); 
+    file << info->vtkType << '\n';
   }
   
     // Write out which points are fixed.
@@ -1476,44 +1452,6 @@ void MeshImpl::vtk_read_unstructured_grid( FileTokenizer& tokens, MsqError& err 
     return;
   }
   
-    /* Map VTK types to Mesquite Types */
-  const int pixel_swap[] = { 2, 3, -1 };
-  const int voxel_swap[] = { 2, 3, 6, 7, -1 };
-  const int wedge_swap[] = { 1, 2, 4, 5, -1 };
-  const int qhex_swap[] = { 12, 16, 13, 17, 14, 18, 15, 19, -1 };
-  const struct { const char* name;       // name for type from vtk documentation
-                 EntityTopology topo;    // Mesquite element topology type
-                 unsigned size;          // Expected connectivity length
-                 const int* swap;        // Index pairs to swap for vtk->exodus ordering
-    } vtk_cell_types[] = { 
-      { 0,                MIXED,         0, 0 },
-      { "vertex",         MIXED,         1, 0 },
-      { "polyvertex",     MIXED,         0, 0 },
-      { "line",           MIXED,         2, 0 },
-      { "polyline",       MIXED,         0, 0 },
-      { "triangle",       TRIANGLE,      3, 0 },
-      { "triangle strip", MIXED,         0, 0 },
-      { "polygon",        POLYGON,       0, 0 },
-      { "pixel",          QUADRILATERAL, 4, pixel_swap },
-      { "quadrilateral",  QUADRILATERAL, 4, 0 }, 
-      { "tetrahedron",    TETRAHEDRON,   4, 0 }, 
-      { "voxel",          HEXAHEDRON,    8, voxel_swap }, 
-      { "hexahedron",     HEXAHEDRON,    8, 0 }, 
-      { "wedge",          PRISM,         6, wedge_swap }, 
-      { "pyramid",        PYRAMID,       5, 0 },
-      { 0,                MIXED,         0, 0 },
-      { 0,                MIXED,         0, 0 },
-      { 0,                MIXED,         0, 0 },
-      { 0,                MIXED,         0, 0 },
-      { 0,                MIXED,         0, 0 },
-      { 0,                MIXED,         0, 0 },
-      { 0,                MIXED,         0, 0 },
-      { "quadratic tri",  TRIANGLE,      6, 0 },
-      { "quadratic quad", QUADRILATERAL, 8, 0 },
-      { "quadratic tet",  TETRAHEDRON,  10, 0 },
-      { "quadratic hex",  HEXAHEDRON,   20, qhex_swap } 
-    };
-  
   msq_std::vector<size_t> tconn;
   for (i = 0; i < num_elems[0]; ++i)
   {
@@ -1522,7 +1460,8 @@ void MeshImpl::vtk_read_unstructured_grid( FileTokenizer& tokens, MsqError& err 
     tokens.get_long_ints( 1, &type, err );                      MSQ_ERRRTN(err);
 
       // Check if type is a valid value
-    if ((unsigned long)type > 25 || !vtk_cell_types[type].name)
+    const VtkTypeInfo* info = VtkTypeInfo::find_type( type, err );   
+    if (err || !info || !info->numNodes)
     {
       MSQ_SETERR(err)( MsqError::PARSE_ERROR,
                        "Invalid cell type %ld at line %d.",
@@ -1530,36 +1469,39 @@ void MeshImpl::vtk_read_unstructured_grid( FileTokenizer& tokens, MsqError& err 
       return;
     }
       // Check if Mesquite supports the type
-    if (vtk_cell_types[type].topo == MIXED)
+    if (info->msqType == MIXED)
     {
       MSQ_SETERR(err)( MsqError::UNSUPPORTED_ELEMENT,
                        "Unsupported cell type %ld (%s) at line %d.",
-                       type, vtk_cell_types[type].name, tokens.line_number() );
+                       type, info->name, tokens.line_number() );
       return;
     }
     
       // If node-ordering is not the same as exodus...
-    if (vtk_cell_types[type].swap)
+    if (info->vtkConnOrder)
     {
       size = myMesh->element_connectivity( i, err ).size();     MSQ_ERRRTN(err);
-      if (vtk_cell_types[type].size != size)
+      if (info->numNodes != size)
       {
         MSQ_SETERR(err)(MsqError::UNSUPPORTED_ELEMENT,
           "Cell type %ld (%s) for element with %d nodes at Line %d",
-          type, vtk_cell_types[type].name, (int)size, tokens.line_number() ); 
+          type, info->name, (int)size, tokens.line_number() ); 
         return;
       }
       
-      tconn = myMesh->element_connectivity(i, err );            MSQ_ERRRTN(err);
-      for (const int* iter = vtk_cell_types[type].swap; *iter > 0; iter += 2)
-        msq_std::swap( tconn[iter[0]], tconn[iter[1]] );
+      tconn.resize( size );
+      const std::vector<size_t>& conn = myMesh->element_connectivity( i, err ); MSQ_ERRRTN(err);
+      for (size_t j = 0; j < size; ++j)
+      {
+        tconn[j] = conn[info->vtkConnOrder[j]];
+      }
         
-      myMesh->reset_element( i, tconn, vtk_cell_types[type].topo, err );MSQ_ERRRTN(err);
+      myMesh->reset_element( i, tconn, info->msqType, err );MSQ_ERRRTN(err);
     }
       // Othewise (if node ordering is the same), just set the type.
     else
     {
-      myMesh->element_topology( i, vtk_cell_types[type].topo, err );MSQ_ERRRTN(err);
+      myMesh->element_topology( i, info->msqType, err );MSQ_ERRRTN(err);
     }
   } // for(i)
 }

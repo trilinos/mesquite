@@ -33,6 +33,7 @@
 #include "MsqError.hpp"
 #include "PatchData.hpp"
 #include "PlanarDomain.hpp"
+#include "VtkTypeInfo.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 #include <memory.h>
@@ -241,6 +242,13 @@ void write_vtk( Mesh* mesh, const char* out_filename, MsqError &err)
   {
     msq_std::vector<size_t> vtx_indices;
     pd.element_by_index(i).get_node_indices(vtx_indices);
+    
+      // Convert native to VTK node order, if not the same
+    const VtkTypeInfo* info = VtkTypeInfo::find_type( pd.element_by_index(i).get_element_type(),
+                                                      vtx_indices.size(),
+                                                      err ); MSQ_ERRRTN(err);
+    info->mesquiteToVtkOrder( vtx_indices );
+     
     file << vtx_indices.size();
     for (msq_stdc::size_t j = 0; j < vtx_indices.size(); ++j)
     {
@@ -253,26 +261,11 @@ void write_vtk( Mesh* mesh, const char* out_filename, MsqError &err)
   file << "CELL_TYPES " << pd.num_elements() << '\n';
   for (i = 0; i < pd.num_elements(); i++)
   {
-    unsigned char type_id = 0;
-    switch (pd.element_by_index(i).get_element_type())
-    {
-      case Mesquite::TRIANGLE:
-        type_id = 5;
-        break;
-      case Mesquite::QUADRILATERAL:
-        type_id = 9;
-        break;
-      case Mesquite::TETRAHEDRON:
-        type_id = 10;
-        break;
-      case Mesquite::HEXAHEDRON:
-        type_id = 12;
-        break;
-    default:
-      MSQ_SETERR(err)("element type not implemented",MsqError::UNSUPPORTED_ELEMENT);
-      break;
-    }
-    file << (int)type_id << '\n';
+    const VtkTypeInfo* info = VtkTypeInfo::find_type( 
+                               pd.element_by_index(i).get_element_type(),
+                               pd.element_by_index(i).node_count(),
+                               err ); MSQ_ERRRTN(err);
+    file << info->vtkType << '\n';
   }
   
     // Write out which points are fixed.

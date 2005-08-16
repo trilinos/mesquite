@@ -14,7 +14,8 @@ MISCSRCFILES = BoundedCylinderDomain.cpp \
                MsqTimer.cpp \
                PlanarDomain.cpp \
                SphericalDomain.cpp \
-               Vector3D.cpp
+               Vector3D.cpp \
+               VtkTypeInfo.cpp 
 
 MISCSRC = $(MISCSRCFILES:%=$(MISCDIR)/%)
 
