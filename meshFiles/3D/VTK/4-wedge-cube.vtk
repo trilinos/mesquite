@@ -1,0 +1,45 @@
+# vtk DataFile Version 2.0
+Mesquite
+ASCII
+DATASET UNSTRUCTURED_GRID
+POINTS 10 double
+0 0 0
+2 0 0
+2 2 0
+0 2 0
+
+0 0 2
+2 0 2
+2 2 2
+0 2 2
+
+1 0 1
+1 2 1
+
+CELLS 4 28
+6 0 1 8 3 2 9
+6 1 5 8 2 6 9
+6 5 4 8 6 7 9
+6 4 0 8 7 3 9
+
+CELL_TYPES 4
+13
+13
+13
+13
+
+POINT_DATA 10
+SCALARS fixed int 1
+LOOKUP_TABLE default
+1 
+1 
+1 
+1
+
+1 
+1 
+1 
+1
+
+0 
+0
