@@ -117,7 +117,7 @@ namespace Mesquite
       //! Compute the default "isotropic" target matrices that are often used in the computation
       //! of reference-based target matrices.
       //! The resulting corner matrices are stored in tags on the elements of the PatchData.
-    void compute_default_target_matrices(PatchData &pd, MsqError &err);
+    static void compute_default_target_matrices(PatchData &pd, MsqError &err);
 
       //! Compute the corner matrices for the reference mesh refMesh.
       //! The refMesh data member is set by the constructors of a concrete TargetCalculator
