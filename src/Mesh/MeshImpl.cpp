@@ -189,7 +189,7 @@ void MeshImpl::write_vtk(const char* out_filename, MsqError &err)
       case PRISM:         type =                    13; break;
       case PYRAMID:       type =                    14; break;
       default:
-        MSQ_SETERR(err)( MsqError::NOT_IMPLEMENTED ,
+        MSQ_SETERR(err)( MsqError::UNSUPPORTED_ELEMENT ,
                         "Cannot write element type %d to a VTK file\n",
                         (int)topo );
         return;
@@ -421,7 +421,7 @@ void MeshImpl::read_exodus(const char* in_filename , MsqError &err)
     else
     {
       MSQ_SETERR(err)("Unrecognized element type in block",
-                      MsqError::PARSE_ERROR);
+                      MsqError::UNSUPPORTED_ELEMENT);
       continue;
     }
     
@@ -1532,7 +1532,7 @@ void MeshImpl::vtk_read_unstructured_grid( FileTokenizer& tokens, MsqError& err 
       // Check if Mesquite supports the type
     if (vtk_cell_types[type].topo == MIXED)
     {
-      MSQ_SETERR(err)( MsqError::NOT_IMPLEMENTED,
+      MSQ_SETERR(err)( MsqError::UNSUPPORTED_ELEMENT,
                        "Unsupported cell type %ld (%s) at line %d.",
                        type, vtk_cell_types[type].name, tokens.line_number() );
       return;
@@ -1544,7 +1544,7 @@ void MeshImpl::vtk_read_unstructured_grid( FileTokenizer& tokens, MsqError& err 
       size = myMesh->element_connectivity( i, err ).size();     MSQ_ERRRTN(err);
       if (vtk_cell_types[type].size != size)
       {
-        MSQ_SETERR(err)(MsqError::PARSE_ERROR,
+        MSQ_SETERR(err)(MsqError::UNSUPPORTED_ELEMENT,
           "Cell type %ld (%s) for element with %d nodes at Line %d",
           type, vtk_cell_types[type].name, (int)size, tokens.line_number() ); 
         return;

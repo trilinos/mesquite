@@ -201,7 +201,7 @@ bool ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
         
     default:
       MSQ_SETERR(err)("Unsupported element type for Condition Number quality metric.",
-                    MsqError::INVALID_ARG);
+                    MsqError::UNSUPPORTED_ELEMENT);
      fval=MSQ_MAX_CAP;
      return false;
   }// end switch over element type

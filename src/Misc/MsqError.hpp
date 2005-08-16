@@ -134,6 +134,7 @@ public:
     INTERRUPTED,           /**< Application or user interrupted operation */
     TAG_ALREADY_EXISTS,    /**< Attempt to create tag that already exists */
     TAG_NOT_FOUND,         /**< Specified tag does not exist */
+    UNSUPPORTED_ELEMENT,   /**< the element type is not supported. */
     LAST_ERROR_CODE
   };
   

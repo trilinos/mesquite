@@ -187,7 +187,7 @@ bool I_DFT::evaluate_element(PatchData& pd,
     break;
 
   default:
-    MSQ_SETERR(err)("element type not implemented.",MsqError::NOT_IMPLEMENTED);
+    MSQ_SETERR(err)("element type not implemented.",MsqError::UNSUPPORTED_ELEMENT);
     return false;
   }
 
@@ -777,7 +777,7 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
     break;
 
   default:
-    MSQ_SETERR(err)("element type not implemented.",MsqError::NOT_IMPLEMENTED);
+    MSQ_SETERR(err)("element type not implemented.",MsqError::UNSUPPORTED_ELEMENT);
     return false;
   }
 
@@ -1836,7 +1836,7 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
     break;
 
   default:
-    MSQ_SETERR(err)("element type not implemented.",MsqError::NOT_IMPLEMENTED);
+    MSQ_SETERR(err)("element type not implemented.",MsqError::UNSUPPORTED_ELEMENT);
     return false;
   }
   return true;

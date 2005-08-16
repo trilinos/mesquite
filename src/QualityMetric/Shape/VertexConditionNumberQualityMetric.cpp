@@ -141,6 +141,9 @@ bool VertexConditionNumberQualityMetric::evaluate_vertex(PatchData &pd,
           return return_flag;
         break;
       default:
+        MSQ_SETERR(err)(MsqError::UNSUPPORTED_ELEMENT,
+          "Element type (%d) not uspported in VertexConditionNumberQM.\n",
+          (int)(elems[v_to_e_array[i]].get_element_type()));
         fval=MSQ_MAX_CAP;
         return false;
         

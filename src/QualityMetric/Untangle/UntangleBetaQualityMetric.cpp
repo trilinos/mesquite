@@ -169,7 +169,7 @@ bool UntangleBetaQualityMetric::evaluate_element(PatchData &pd,
         if (num_adj != 3) 
         {
           MSQ_SETERR(err)("Unsupported element type for Untangle quality metric.",
-                    MsqError::INVALID_ARG);
+                    MsqError::UNSUPPORTED_ELEMENT);
           fval=MSQ_MAX_CAP;
           return false;
         }

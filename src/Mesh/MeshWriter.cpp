@@ -269,7 +269,7 @@ void write_vtk( Mesh* mesh, const char* out_filename, MsqError &err)
         type_id = 12;
         break;
     default:
-      MSQ_SETERR(err)("element type not implemented",MsqError::NOT_IMPLEMENTED);
+      MSQ_SETERR(err)("element type not implemented",MsqError::UNSUPPORTED_ELEMENT);
       break;
     }
     file << (int)type_id << '\n';

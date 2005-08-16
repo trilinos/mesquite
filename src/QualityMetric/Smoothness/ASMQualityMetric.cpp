@@ -75,7 +75,7 @@ bool ASMQualityMetric::evaluate_element(PatchData &pd,
       break;
     default:
       MSQ_SETERR(err)("ASM quality metric not implemented for this "
-                      "element type.", MsqError::NOT_IMPLEMENTED);
+                      "element type.", MsqError::UNSUPPORTED_ELEMENT);
       return false;
   };
   int num_samp=adj_elems.size();
@@ -117,7 +117,7 @@ bool ASMQualityMetric::evaluate_element(PatchData &pd,
         break;
       default:
       MSQ_SETERR(err)("ASM quality metric not implemented for this "
-                      "element type.", MsqError::NOT_IMPLEMENTED);
+                      "element type.", MsqError::UNSUPPORTED_ELEMENT);
       return false;
     };
     fval=average_metrics(met_vals,num_samp,err);  MSQ_ERRZERO(err);

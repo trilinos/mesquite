@@ -103,7 +103,7 @@ Matrix3D TargetCalculator::get_default_target_matrix( EntityTopology type,
     } 
 
     default:
-      MSQ_SETERR(err)( MsqError::INVALID_ARG,
+      MSQ_SETERR(err)( MsqError::UNSUPPORTED_ELEMENT,
                 "Unsupported element type (%d)\n",
                 (int)type);
       return Matrix3D();

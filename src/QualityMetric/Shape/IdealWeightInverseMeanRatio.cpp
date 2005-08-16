@@ -171,6 +171,9 @@ bool IdealWeightInverseMeanRatio::evaluate_element(PatchData &pd,
     break;
 
   default:
+    MSQ_SETERR(err)(MsqError::UNSUPPORTED_ELEMENT,
+                    "Element type (%d) not supported in IdealWeightInverseMeanRatio",
+                    (int)topo);
     return false;
   } // end switch over element type
   return true;
@@ -312,6 +315,9 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_gradient(PatchData 
 
 
   default:
+    MSQ_SETERR(err)(MsqError::UNSUPPORTED_ELEMENT,
+                    "Element type (%d) not supported in IdealWeightInverseMeanRatio",
+                    (int)topo);
     return false;
   } // end switch over element type
 
@@ -1199,6 +1205,9 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_hessian(PatchData &
     break;
 
   default:
+    MSQ_SETERR(err)(MsqError::UNSUPPORTED_ELEMENT,
+                    "Element type (%d) not supported in IdealWeightInverseMeanRatio",
+                    (int)topo);
     return false;
   } // end switch over element type
 

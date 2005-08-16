@@ -121,7 +121,7 @@ bool AspectRatioGammaQualityMetric::evaluate_element(PatchData &pd,
       break;
     default:
       fval=MSQ_MAX_CAP;
-      MSQ_SETERR(err)(MsqError::INVALID_ARG, 
+      MSQ_SETERR(err)(MsqError::UNSUPPORTED_ELEMENT, 
                      "Entity type %d is not valid for Aspect Ratio Gamma\n", 
                      (int)entity);
       return_val = false;

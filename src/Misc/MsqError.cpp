@@ -62,6 +62,7 @@ const char* MsqError::error_message() const
    "Interrupted",
    "Duplicate tag name",
    "Tag not found",
+   "Unsupported element type",
    "Invalid Error Code"
   };
   

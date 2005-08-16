@@ -205,7 +205,7 @@ void Mesquite::MsqMeshEntity::compute_weighted_jacobian(PatchData &pd,
     default:
       MSQ_SETERR(err)(
         "Compute_weighted_jacobian not yet defined for this entity.",
-        MsqError::NOT_IMPLEMENTED);
+        MsqError::UNSUPPORTED_ELEMENT);
   } 
   
 }
@@ -261,8 +261,8 @@ void Mesquite::MsqMeshEntity::get_sample_points(
       
     default:
         //return error saying sample points for mode not implem.
-          MSQ_SETERR(err)("Requested Sample Point Mode not implemented",
-                          MsqError::NOT_IMPLEMENTED);
+          MSQ_SETERR(err)("Sample Point Mode not implemented for element type",
+                          MsqError::UNSUPPORTED_ELEMENT);
           return;
   }
 }
@@ -291,7 +291,7 @@ double MsqMeshEntity::compute_unsigned_area(PatchData &pd, MsqError &err) {
       
     default:
       MSQ_SETERR(err)("Invalid type of element passed to compute unsigned area.",
-                      MsqError::INVALID_ARG);
+                      MsqError::UNSUPPORTED_ELEMENT);
       return 0;
   }
   return 0;
@@ -322,7 +322,7 @@ double MsqMeshEntity::compute_unsigned_volume(PatchData &pd, MsqError &err) {
       
     default:
       MSQ_SETERR(err)("Invalid type of element passed to compute unsigned volume.",
-                       MsqError::INVALID_ARG);
+                       MsqError::UNSUPPORTED_ELEMENT);
      return 0;
   }
   return 0;
@@ -382,7 +382,7 @@ double MsqMeshEntity::compute_signed_area(PatchData &pd, MsqError &err) {
       
     default:
       MSQ_SETERR(err)("Invalid type of element passed to compute unsigned area.",
-                       MsqError::INVALID_ARG);
+                       MsqError::UNSUPPORTED_ELEMENT);
       return 0;
   };
   return 0.0;
@@ -414,7 +414,7 @@ double MsqMeshEntity::compute_signed_volume(PatchData &pd, MsqError &err) {
       
     default:
       MSQ_SETERR(err)("Invalid type of element passed to compute signed volume.",
-                       MsqError::INVALID_ARG);
+                       MsqError::UNSUPPORTED_ELEMENT);
       return 0;
   };
   return 0.0;      
@@ -822,7 +822,7 @@ size_t Mesquite::MsqMeshEntity::get_local_matrix_map_about_vertex(
       
       break;
     default:
-      MSQ_SETERR(err)("Element type not available", MsqError::NOT_IMPLEMENTED);
+      MSQ_SETERR(err)("Element type not available", MsqError::UNSUPPORTED_ELEMENT);
       break;
   }
   return return_val;
