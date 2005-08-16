@@ -154,33 +154,56 @@ bool ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
       fval=average_metrics(met_vals, 8, err);  MSQ_ERRZERO(err);
       return return_flag;
 
-      // PYRAMID and PRISM (actually, this code should work HEXAHEDRA also)
-    default:
+    case PYRAMID:
     {
-      size_t num_corners = element->corner_count();
       unsigned num_adj;
       const unsigned* adj_idx;
-      for (size_t j = 0; j < num_corners; ++j)
+      for (size_t j = 0; j < 4; ++j) // skip fifth vertex (apex)
       {
         adj_idx = TopologyInfo::adjacent_vertices( type, j, num_adj );
-        if (num_adj != 3) 
-        {
-          MSQ_SETERR(err)("Unsupported element type for Condition Number quality metric.",
-                    MsqError::INVALID_ARG);
-          fval=MSQ_MAX_CAP;
-          return false;
-        }
+        assert( num_adj == 3 );
+        
+        temp_vec[0] = vertices[v_i[adj_idx[0]]] - vertices[v_i[j]];
+        temp_vec[1] = vertices[v_i[adj_idx[1]]] - vertices[v_i[j]];
+          // calculate last vect map to right tetrahedron
+        temp_vec[3] = vertices[v_i[adj_idx[2]]] - vertices[v_i[adj_idx[0]]];
+        temp_vec[4] = vertices[v_i[adj_idx[2]]] - vertices[v_i[adj_idx[1]]];
+        temp_vec[2] = 0.5 * (temp_vec[3] + temp_vec[4]);
+        
+        return_flag = return_flag && condition_number_3d( temp_vec, pd, met_vals[j], err );
+      }
+      fval = average_metrics( met_vals, 4, err ); MSQ_ERRZERO(err);
+      return return_flag;
+    }
+    
+    case PRISM:
+    {
+      unsigned num_adj;
+      const unsigned* adj_idx;
+      for (size_t j = 0; j < 6; ++j) 
+      {
+        adj_idx = TopologyInfo::adjacent_vertices( type, j, num_adj );
+        assert( num_adj == 3 );
         
         temp_vec[0] = vertices[v_i[adj_idx[0]]] - vertices[v_i[j]];
         temp_vec[1] = vertices[v_i[adj_idx[1]]] - vertices[v_i[j]];
         temp_vec[2] = vertices[v_i[adj_idx[2]]] - vertices[v_i[j]];
-        return_flag = condition_number_3d( temp_vec, pd, met_vals[j], err );
-        if (MSQ_CHKERR(err) || !return_flag)
-          return false;
+          // map to right tetrahedron
+        temp_vec[1] += vertices[v_i[adj_idx[1]]];
+        temp_vec[1] -= vertices[v_i[adj_idx[0]]];
+        temp_vec[1] *= MSQ_SQRT_THREE_INV;
+        
+        return_flag = return_flag && condition_number_3d( temp_vec, pd, met_vals[j], err );
       }
-      fval = average_metrics( met_vals, num_corners, err );           MSQ_ERRZERO(err);
-      return true;
+      fval = average_metrics( met_vals, 6, err ); MSQ_ERRZERO(err);
+      return return_flag;
     }
+        
+    default:
+      MSQ_SETERR(err)("Unsupported element type for Condition Number quality metric.",
+                    MsqError::INVALID_ARG);
+     fval=MSQ_MAX_CAP;
+     return false;
   }// end switch over element type
   return false;
 }
