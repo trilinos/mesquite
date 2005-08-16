@@ -126,6 +126,22 @@ namespace Mesquite
      
      one_pyr_patch.fill( 5, coords, 1, PYRAMID, indices, 0, err );
    } 
+   
+   //! create patch containing one ideal wedge
+   inline void create_one_wdg_patch( PatchData& one_wdg_patch, MsqError& err )
+   {
+     double hgt = 0.5 * MSQ_SQRT_THREE;
+     double coords[] = { 0.0, 0.0, 0.0,
+                         1.0, 0.0, 0.0,
+                         0.5, hgt, 0.0,
+                         0.0, 0.0, 1.0,
+                         1.0, 0.0, 1.0,
+                         0.5, hgt, 1.0 };
+                         
+     size_t indices[6] = { 0, 1, 2, 3, 4, 5 };
+     
+     one_wdg_patch.fill( 6, coords, 1, PRISM, indices, 0, err );
+   } 
 
       //! creates a Patch containing an ideal tetrahedra, inverted
    inline void create_one_inverted_tet_patch(PatchData &one_tet_patch,
@@ -506,6 +522,31 @@ namespace Mesquite
                              3, 2, 1, 0, 5 };
      
      pyrPatch.fill( 6, coords, 2, PYRAMID, conn, 0, err );
+   }
+  
+     /* Patch used in several quality metric tests.
+        Our prism patch is made of two prisms.  The first is a perfect
+        prism (the ideal for most metrics).  The second is an arbitrary
+        wedge.
+     */
+   inline void create_qm_two_wdg_patch(PatchData &wdgPatch, MsqError &err)
+   {
+     double hgt = 0.5 * MSQ_SQRT_THREE;
+     double coords[] = {  // ideal prism vertices
+                         0.0, 0.0, 0.0,
+                         1.0, 0.0, 0.0,
+                         0.5, hgt, 0.0,
+                         0.0, 0.0, 1.0,
+                         1.0, 0.0, 1.0,
+                         0.5, hgt, 1.0,
+                          // top vertices for stretched wedge
+                         0.5,-3.0, 0.0,
+                         0.5,-4.0, 1.0 };
+
+     const size_t conn[] = { 0, 1, 2, 3, 4, 5,
+                             1, 0, 6, 4, 3, 7 };
+     
+     wdgPatch.fill( 8, coords, 2, PRISM, conn, 0, err );
    }
 
    /* Patch used in seveal quality metric tests.
