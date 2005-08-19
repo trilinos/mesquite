@@ -69,6 +69,9 @@ bool I_DFT::evaluate_element(PatchData& pd,
                             {2, 3, 0, 1}, {3, 2, 1, 0}};
   const int pyrInd[4][4] = {{0, 1, 3, 4}, {1, 2, 0, 4},
 			    {2, 3, 1, 4}, {3, 0, 2, 4}};
+  const int priInd[6][4] = {{0, 1, 2, 3}, {1, 2, 0, 4},
+			    {2, 0, 1, 5}, {3, 5, 4, 0},
+			    {4, 3, 5, 1}, {5, 4, 3, 2}};
   const int hexInd[8][4] = {{0, 1, 3, 4}, {1, 2, 0, 5},
 			    {2, 3, 1, 6}, {3, 0, 2, 7},
 			    {4, 7, 5, 0}, {5, 4, 6, 1},
@@ -166,6 +169,26 @@ bool I_DFT::evaluate_element(PatchData& pd,
     m *= 0.25;
     break;
 
+  case PRISM:
+    //assert(6 == nv);
+
+    for (i = 0; i < 6; ++i) {
+      for (j = 0; j < 4; ++j) {
+	mCoords[j] = vertices[v_i[priInd[i][j]]];
+      }
+
+      QR(mQ, mR, W[i]);
+      inv(invR, mR);
+      mValid = m_gdft_3(mMetric, mCoords, invR, mQ, 
+			mAlpha, mGamma, delta, mBeta);
+      
+      if (!mValid) return false;
+      m += W[i].get_cK() * mMetric;
+    }
+
+    m *= 1.0 / 6.0;
+    break;
+
   case HEXAHEDRON:
     //assert(8 == nv);
 
@@ -224,6 +247,9 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
                             {2, 3, 0, 1}, {3, 2, 1, 0}};
   const int pyrInd[4][4] = {{0, 1, 3, 4}, {1, 2, 0, 4},
 			    {2, 3, 1, 4}, {3, 0, 2, 4}};
+  const int priInd[6][4] = {{0, 1, 2, 3}, {1, 2, 0, 4},
+			    {2, 0, 1, 5}, {3, 5, 4, 0},
+			    {4, 3, 5, 1}, {5, 4, 3, 2}};
   const int hexInd[8][4] = {{0, 1, 3, 4}, {1, 2, 0, 5},
 			    {2, 3, 1, 6}, {3, 0, 2, 7},
 			    {4, 7, 5, 0}, {5, 4, 6, 1},
@@ -667,6 +693,115 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
     }
     break;
 
+  case PRISM:
+    //assert(6 == nv);
+
+    if (1 == nfv) {
+      // One free vertex; use the specialized code for computing the gradient.
+
+      g[0] = 0.0;
+      for (i = 0; i < 6; ++i) {
+	mVert = -1;
+	for (j = 0; j < 4; ++j) {
+	  mCoords[j] = vertices[v_i[priInd[i][j]]];
+	  if (vertices + v_i[priInd[i][j]] == fv[0]) {
+	    mVert = j;
+	  }
+	}
+
+	if (mVert >= 0) {
+	  QR(mQ, mR, W[i]);
+	  inv(invR, mR);
+	  
+	  switch(mVert) {
+	  case 0:
+	    mValid = g_gdft_3_v0(mMetric, mGrads[0], mCoords, invR, mQ, 
+				 mAlpha, mGamma, delta, mBeta);
+	    break;
+	    
+	  case 1:
+	    mValid = g_gdft_3_v1(mMetric, mGrads[0], mCoords, invR, mQ, 
+				 mAlpha, mGamma, delta, mBeta);
+	    break;
+	    
+	  case 2:
+	    mValid = g_gdft_3_v2(mMetric, mGrads[0], mCoords, invR, mQ, 
+				 mAlpha, mGamma, delta, mBeta);
+	    break;
+	    
+	  default:
+	    mValid = g_gdft_3_v3(mMetric, mGrads[0], mCoords, invR, mQ, 
+				 mAlpha, mGamma, delta, mBeta);
+	    break;
+	  }
+	  
+	  if (!mValid) return false;
+	  m += W[i].get_cK() * mMetric;
+	  g[0] += W[i].get_cK() * mGrads[0];
+	}
+	else {
+	  // For prisms, the free vertex only appears in four elements.
+	  // Therefore, there these accumulations are needed to get the
+	  // true local objective function.  Note: this code can be commented 
+	  // out for local codes to improve performance because you are 
+	  // unable to change the contributions from the elements where the 
+	  // free vertex does not appear.  (If the weight matrices change, 
+	  // then the code needs to be modified.)
+
+	  QR(mQ, mR, W[i]);
+	  inv(invR, mR);
+	  mValid = m_gdft_3(mMetric, mCoords, invR, mQ, 
+			    mAlpha, mGamma, delta, mBeta);
+	  if (!mValid) return false;
+	  m += W[i].get_cK() * mMetric;
+	}
+      }
+      
+      m *= 1.0 / 6.0;
+      g[0] *= 1.0 / 6.0;
+    }
+    else {
+      for (i = 0; i < 6; ++i) {
+	mAccGrads[i] = 0.0;
+      }
+      
+      for (i = 0; i < 6; ++i) {
+	for (j = 0; j < 4; ++j) {
+	  mCoords[j] = vertices[v_i[priInd[i][j]]];
+	}
+	
+	QR(mQ, mR, W[i]);
+	inv(invR, mR);
+	mValid = g_gdft_3(mMetric, mGrads, mCoords, invR, mQ, 
+			  mAlpha, mGamma, delta, mBeta);
+	
+	if (!mValid) return false;
+	m += W[i].get_cK() * mMetric;
+	
+	for (j = 0; j < 4; ++j) {
+	  mAccGrads[priInd[i][j]] += W[i].get_cK() * mGrads[j];
+	}
+      }
+      
+      m *= 1.0 / 6.0;
+      for (i = 0; i < 6; ++i) {
+	mAccGrads[i] *= 1.0 / 6.0;
+      }
+      
+      // This is not very efficient, but is one way to select correct 
+      // gradients.  For gradients, info is returned only for free 
+      // vertices, in the order of fv[].
+      
+      for (i = 0; i < 6; ++i) {
+	for (j = 0; j < nfv; ++j) {
+	  if (vertices + v_i[i] == fv[j]) {
+	    g[j] = mAccGrads[i];
+	  }
+	}
+      }
+    }
+    break;
+
   case HEXAHEDRON:
     //assert(8 == nv);
 
@@ -815,6 +950,9 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
                             {2, 3, 0, 1}, {3, 2, 1, 0}};
   const int pyrInd[4][4] = {{0, 1, 3, 4}, {1, 2, 0, 4},
 			    {2, 3, 1, 4}, {3, 0, 2, 4}};
+  const int priInd[6][4] = {{0, 1, 2, 3}, {1, 2, 0, 4},
+			    {2, 0, 1, 5}, {3, 5, 4, 0},
+			    {4, 3, 5, 1}, {5, 4, 3, 2}};
   const int hexInd[8][4] = {{0, 1, 3, 4}, {1, 2, 0, 5},
 			    {2, 3, 1, 6}, {3, 0, 2, 7},
 			    {4, 7, 5, 0}, {5, 4, 6, 1},
@@ -1595,6 +1733,223 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	    h[4].zero(); h[8].zero(); h[11].zero(); 
 	    h[13].zero(); h[14].zero();
 	    break;
+	  }
+	}
+      }
+    }
+    break;
+
+  case PRISM:
+    //assert(6 == nv);
+
+    // Zero out the hessian and gradient vector
+    for (i = 0; i < 6; ++i) {
+      g[i] = 0.0;
+    }
+
+    for (i = 0; i < 21; ++i) {
+      h[i].zero();
+    }
+
+    if (1 == nfv) {
+      // One free vertex; use the specialized code for computing the 
+      // gradient and Hessian.
+
+      Vector3D mG;
+      Matrix3D mH;
+
+      mG = 0.0;
+      mH.zero();
+
+      for (i = 0; i < 6; ++i) {
+	mVert = -1;
+	for (j = 0; j < 4; ++j) {
+	  mCoords[j] = vertices[v_i[priInd[i][j]]];
+	  if (vertices + v_i[priInd[i][j]] == fv[0]) {
+	    mVert = j;
+	  }
+	}
+	
+	if (mVert >= 0) {
+	  QR(mQ, mR, W[i]);
+	  inv(invR, mR);
+	  
+	  switch(mVert) {
+	  case 0:
+	    mValid = h_gdft_3_v0(mMetric, mGrads[0], mHessians[0],
+				 mCoords, invR, mQ, 
+				 mAlpha, mGamma, delta, mBeta);
+	    break;
+	    
+	  case 1:
+	    mValid = h_gdft_3_v1(mMetric, mGrads[0], mHessians[0],
+				 mCoords, invR, mQ, 
+				 mAlpha, mGamma, delta, mBeta);
+	    break;
+	    
+	  case 2:
+	    mValid = h_gdft_3_v2(mMetric, mGrads[0], mHessians[0],
+				 mCoords, invR, mQ, 
+				 mAlpha, mGamma, delta, mBeta);
+	    break;
+	    
+	  default:
+	    mValid = h_gdft_3_v3(mMetric, mGrads[0], mHessians[0],
+				 mCoords, invR, mQ, 
+				 mAlpha, mGamma, delta, mBeta);
+	    break;
+	  }
+
+	  if (!mValid) return false;
+	  m += W[i].get_cK() * mMetric;
+	  mG += W[i].get_cK() * mGrads[0];
+	  mH += W[i].get_cK() * mHessians[0];
+	}
+	else {
+	  // For prisms, the free vertex only appears in four elements.
+	  // Therefore, there these accumulations are needed to get the
+	  // true local objective function.  Note: this code can be commented 
+	  // out for local codes to improve performance because you are 
+	  // unable to change the contributions from the elements where the 
+	  // free vertex does not appear.  (If the weight matrices change, 
+	  // then the code needs to be modified.)
+
+	  QR(mQ, mR, W[i]);
+	  inv(invR, mR);
+	  mValid = m_gdft_3(mMetric, mCoords, invR, mQ, 
+			    mAlpha, mGamma, delta, mBeta);
+	  if (!mValid) return false;
+	  m += W[i].get_cK() * mMetric;
+	}
+      }
+
+      m *= 1.0 / 6.0;
+      mG *= 1.0 / 6.0;
+      mH *= 1.0 / 6.0;
+
+      for (i = 0; i < 6; ++i) {
+	if (vertices + v_i[i] == fv[0]) {
+	  // free vertex, see next
+	  g[i] = mG;
+	  switch(i) {
+	  case 0:
+	    h[0] = mH;
+	    break;
+
+	  case 1:
+	    h[6] = mH;
+	    break;
+
+	  case 2:
+	    h[11] = mH;
+	    break;
+
+	  case 3:
+	    h[15] = mH;
+	    break;
+
+	  case 4:
+	    h[18] = mH;
+	    break;
+
+	  case 5:
+	    h[20] = mH;
+	    break;
+	  }
+	  break;
+	}
+      }
+    }
+    else {
+      // Compute the metric and sum them together
+      for (i = 0; i < 6; ++i) {
+	for (j = 0; j < 4; ++j) {
+	  mCoords[j] = vertices[v_i[priInd[i][j]]];
+	}
+
+	QR(mQ, mR, W[i]);
+	inv(invR, mR);
+	mValid = h_gdft_3(mMetric, mGrads, mHessians, mCoords, invR, mQ,
+			  mAlpha, mGamma, delta, mBeta);
+      
+	if (!mValid) return false;
+
+	m += W[i].get_cK() * mMetric;
+
+	for (j = 0; j < 4; ++j) {
+	  g[priInd[i][j]] += W[i].get_cK() * mGrads[j];
+	}
+
+	l = 0;
+	for (j = 0; j < 4; ++j) {
+	  for (k = j; k < 4; ++k) {
+	    row = priInd[i][j];
+	    col = priInd[i][k];
+
+	    if (row <= col) {
+	      loc = 6*row - (row*(row+1)/2) + col;
+	      h[loc] += W[i].get_cK() * mHessians[l];
+	    }
+	    else {
+	      loc = 6*col - (col*(col+1)/2) + row;
+	      h[loc] += W[i].get_cK() * transpose(mHessians[l]);
+	    }
+	    ++l;
+	  }
+	}
+      }
+
+      m *= 1.0 / 6.0;
+      for (i = 0; i < 6; ++i) {
+	g[i] *= 1.0 / 6.0;
+      }
+
+      for (i = 0; i < 21; ++i) {
+	h[i] *= 1.0 / 6.0;
+      }
+
+      // zero out fixed elements of gradient and Hessian
+      j = 0;
+      for (i = 0; i < 6; ++i) {
+	if (vertices + v_i[i] == fv[j]) {
+	  // if free vertex, see next
+	  ++j;
+	}
+	else {
+	  // else zero gradient entry and hessian entries.
+	  g[i] = 0.;
+
+	  switch(i) {
+	  case 0:
+	    h[0].zero();   h[1].zero();   h[2].zero();   h[3].zero();
+	    h[4].zero();   h[5].zero();
+	    break;
+          
+	  case 1:
+	    h[1].zero();   h[6].zero();   h[7].zero();   h[8].zero();
+	    h[9].zero();   h[10].zero();
+	    break;
+          
+	  case 2:
+	    h[2].zero();   h[7].zero();   h[11].zero();  h[12].zero();
+	    h[13].zero();  h[14].zero();
+	    break;
+          
+	  case 3:
+	    h[3].zero();   h[8].zero();  h[12].zero();  h[15].zero();
+	    h[16].zero();  h[17].zero();
+	    break;
+          
+	  case 4:
+	    h[4].zero();   h[9].zero();  h[13].zero();  h[16].zero();
+	    h[18].zero();  h[19].zero();
+	    break;
+          
+	  case 5:
+	    h[5].zero();   h[10].zero();  h[14].zero();  h[17].zero();
+	    h[19].zero();  h[20].zero();
+	    break;
+          
 	  }
 	}
       }
