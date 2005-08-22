@@ -600,7 +600,7 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_hessian(PatchData &
 
       default:
         MSQ_SETERR(err)("averaging method not available.",MsqError::NOT_IMPLEMENTED);
-        break;
+        return false;
       }
 
       m = 0;
@@ -883,7 +883,7 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_hessian(PatchData &
 
       default:
         MSQ_SETERR(err)("averaging method not available.",MsqError::NOT_IMPLEMENTED);
-        break;
+        return false;
       }
 
       m = 0;
@@ -1125,7 +1125,7 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_hessian(PatchData &
 
       default:
         MSQ_SETERR(err)("averaging method not available.",MsqError::NOT_IMPLEMENTED);
-        break;
+        return false;
       }
 
       m = 0;
@@ -1375,7 +1375,7 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_hessian(PatchData &
 
       default:
         MSQ_SETERR(err)("averaging method not available.",MsqError::NOT_IMPLEMENTED);
-        break;
+        return false;
       }
 
       m = 0;
