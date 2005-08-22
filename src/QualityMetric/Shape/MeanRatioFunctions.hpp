@@ -2954,36 +2954,43 @@ inline bool h_fcn_3p(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   return true;
 }
 
+
 /********************************************************************* 
- * Reference tetrahedral elements to parts of an ideal wedge.
- *      1  1/2       0               1 -1/sqrt(3) 0
- * W =  0  sqrt(3)/2 0     inv(W) =  0  2/sqrt(3) 0
- *      0  0         1               0  0         1
+ * Reference tetrahedral elements to corners of an ideal wedge element.
+ * Vertices should be ordered such that the first three vertices form
+ * the ideally-equaliteral face of the tetrahedron (the end of the
+ * wedge) and the first and fourth vertices form the tetrahedral edge
+ * orthogonal to the ideally-equaliteral face (the lateral edge of the
+ * edge.)
+ *      1  1/2        0                     1  -1/sqrt(3)  0
+ * W =  0  sqrt(3)/2  0           inv(W) =  0   2/sqrt(3)  0
+ *      0  0          1                     0   0          1
  *
  *********************************************************************/
 inline bool m_fcn_3w(double &obj, const Vector3D x[4],
-		     const double a, const Exponent& b, const Exponent& c)
+         const double a, const Exponent& b, const Exponent& c)
 {
-  double matr[9], f;
-  double g;
+  double matr[9], f, g;
+  double loc1, loc2, loc3;
 
   /* Calculate M = A*inv(W). */
   matr[0] = x[1][0] - x[0][0];
-  matr[1] = (2.0*x[2][0] - x[0][0] - x[1][0])*isqrt3;
+  matr[1] = isqrt3 * (2 * x[2][0] - x[1][0] - x[0][0]);
   matr[2] = x[3][0] - x[0][0];
-
+  
   matr[3] = x[1][1] - x[0][1];
-  matr[4] = (2.0*x[2][1] - x[0][1] - x[1][1])*isqrt3;
+  matr[4] = isqrt3 * (2 * x[2][1] - x[1][1] - x[0][1]);
   matr[5] = x[3][1] - x[0][1];
-
+  
   matr[6] = x[1][2] - x[0][2];
-  matr[7] = (2.0*x[2][2] - x[0][2] - x[1][2])*isqrt3;
+  matr[7] = isqrt3 * (2 * x[2][2] - x[1][2] - x[0][2]);
   matr[8] = x[3][2] - x[0][2];
 
   /* Calculate det(M). */
-  g = matr[0]*(matr[4]*matr[8] - matr[5]*matr[7]) +
-      matr[1]*(matr[5]*matr[6] - matr[3]*matr[8]) +
-      matr[2]*(matr[3]*matr[7] - matr[4]*matr[6]);
+  loc1 = matr[4]*matr[8] - matr[5]*matr[7];
+  loc2 = matr[5]*matr[6] - matr[3]*matr[8];
+  loc3 = matr[3]*matr[7] - matr[4]*matr[6];
+  g = matr[0]*loc1 + matr[1]*loc2 + matr[2]*loc3;
   if (g < MSQ_MIN) { obj = g; return false; }
 
   /* Calculate norm(M). */
@@ -2992,12 +2999,13 @@ inline bool m_fcn_3w(double &obj, const Vector3D x[4],
       matr[6]*matr[6] + matr[7]*matr[7] + matr[8]*matr[8];
 
   /* Calculate objective function. */
-  obj = a * pow(f, b) * pow(g, c);
+  obj  = a * pow(f, b) * pow(g, c);
   return true;
 }
 
+
 inline bool g_fcn_3w(double &obj, Vector3D g_obj[4], const Vector3D x[4],
-		     const double a, const Exponent& b, const Exponent& c)
+         const double a, const Exponent& b, const Exponent& c)
 {
   double matr[9], f;
   double adj_m[9], g;
@@ -3005,15 +3013,15 @@ inline bool g_fcn_3w(double &obj, Vector3D g_obj[4], const Vector3D x[4],
 
   /* Calculate M = A*inv(W). */
   matr[0] = x[1][0] - x[0][0];
-  matr[1] = (2.0*x[2][0] - x[0][0] - x[1][0])*isqrt3;
+  matr[1] = isqrt3 * (2 * x[2][0] - x[1][0] - x[0][0]);
   matr[2] = x[3][0] - x[0][0];
-
+  
   matr[3] = x[1][1] - x[0][1];
-  matr[4] = (2.0*x[2][1] - x[0][1] - x[1][1])*isqrt3;
+  matr[4] = isqrt3 * (2 * x[2][1] - x[1][1] - x[0][1]);
   matr[5] = x[3][1] - x[0][1];
-
+  
   matr[6] = x[1][2] - x[0][2];
-  matr[7] = (2.0*x[2][2] - x[0][2] - x[1][2])*isqrt3;
+  matr[7] = isqrt3 * (2 * x[2][2] - x[1][2] - x[0][2]);
   matr[8] = x[3][2] - x[0][2];
 
   /* Calculate det(M). */
@@ -3032,9 +3040,9 @@ inline bool g_fcn_3w(double &obj, Vector3D g_obj[4], const Vector3D x[4],
   obj  = a * pow(f, b) * pow(g, c);
 
   /* Calculate the derivative of the objective function.    */
-  f = b * obj / f;		/* Constant on nabla f      */
-  g = c * obj / g;              /* Constant on nable g      */
-  f *= 2.0;                     /* Modification for nabla f */
+  f = b * obj / f;    /* Constant on nabla f      */
+  g = c * obj / g;    /* Constant on nable g      */
+  f *= 2.0;           /* Modification for nabla f */
 
   adj_m[0] = matr[0]*f + loc1*g;
   adj_m[1] = matr[1]*f + loc2*g;
@@ -3052,25 +3060,24 @@ inline bool g_fcn_3w(double &obj, Vector3D g_obj[4], const Vector3D x[4],
   adj_m[7] = matr[7]*f + loc3*matr[3] - loc1*matr[5];
   adj_m[8] = matr[8]*f + loc1*matr[4] - loc2*matr[3];
 
-  loc1 = isqrt3*adj_m[1];
-  g_obj[0][0] = -adj_m[0] - loc1 - adj_m[2];
-  g_obj[1][0] =  adj_m[0] - loc1;
-  g_obj[2][0] = 2.0*loc1;
-  g_obj[3][0] =  adj_m[2];
+  g_obj[0][0] = -adj_m[0] - isqrt3*adj_m[1] - adj_m[2];
+  g_obj[1][0] =  adj_m[0] - isqrt3*adj_m[1]           ;
+  g_obj[2][0] =            tisqrt3*adj_m[1]           ;
+  g_obj[3][0] =                               adj_m[2];
 
-  loc1 = isqrt3*adj_m[4];
-  g_obj[0][1] = -adj_m[3] - loc1 - adj_m[5];
-  g_obj[1][1] =  adj_m[3] - loc1;
-  g_obj[2][1] = 2.0*loc1;
-  g_obj[3][1] =  adj_m[5];
+  g_obj[0][1] = -adj_m[3] - isqrt3*adj_m[4] - adj_m[5];
+  g_obj[1][1] =  adj_m[3] - isqrt3*adj_m[4]           ;
+  g_obj[2][1] =            tisqrt3*adj_m[4]           ;
+  g_obj[3][1] =                               adj_m[5];
 
-  loc1 = isqrt3*adj_m[7];
-  g_obj[0][2] = -adj_m[6] - loc1 - adj_m[8];
-  g_obj[1][2] =  adj_m[6] - loc1;
-  g_obj[2][2] = 2.0*loc1;
-  g_obj[3][2] =  adj_m[8];
+  g_obj[0][2] = -adj_m[6] - isqrt3*adj_m[7] - adj_m[8];
+  g_obj[1][2] =  adj_m[6] - isqrt3*adj_m[7]           ;
+  g_obj[2][2] =            tisqrt3*adj_m[7]           ;
+  g_obj[3][2] =                               adj_m[8];
+
   return true;
 }
+
 
 inline bool h_fcn_3w(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10], 
 		     const Vector3D x[4],
@@ -3083,15 +3090,15 @@ inline bool h_fcn_3w(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
 
   /* Calculate M = A*inv(W). */
   matr[0] = x[1][0] - x[0][0];
-  matr[1] = (2.0*x[2][0] - x[0][0] - x[1][0])*isqrt3;
+  matr[1] = isqrt3 * (2 * x[2][0] - x[1][0] - x[0][0]);
   matr[2] = x[3][0] - x[0][0];
-
+  
   matr[3] = x[1][1] - x[0][1];
-  matr[4] = (2.0*x[2][1] - x[0][1] - x[1][1])*isqrt3;
+  matr[4] = isqrt3 * (2 * x[2][1] - x[1][1] - x[0][1]);
   matr[5] = x[3][1] - x[0][1];
-
+  
   matr[6] = x[1][2] - x[0][2];
-  matr[7] = (2.0*x[2][2] - x[0][2] - x[1][2])*isqrt3;
+  matr[7] = isqrt3 * (2 * x[2][2] - x[1][2] - x[0][2]);
   matr[8] = x[3][2] - x[0][2];
 
   /* Calculate det(M). */
@@ -3100,6 +3107,13 @@ inline bool h_fcn_3w(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   dg[2] = matr[3]*matr[7] - matr[4]*matr[6];
   g = matr[0]*dg[0] + matr[1]*dg[1] + matr[2]*dg[2];
   if (g < MSQ_MIN) { obj = g; return false; }
+
+  dg[3] = matr[2]*matr[7] - matr[1]*matr[8];
+  dg[4] = matr[0]*matr[8] - matr[2]*matr[6];
+  dg[5] = matr[1]*matr[6] - matr[0]*matr[7];
+  dg[6] = matr[1]*matr[5] - matr[2]*matr[4];
+  dg[7] = matr[2]*matr[3] - matr[0]*matr[5];
+  dg[8] = matr[0]*matr[4] - matr[1]*matr[3];
 
   /* Calculate norm(M). */
   f = matr[0]*matr[0] + matr[1]*matr[1] + matr[2]*matr[2] + 
@@ -3117,13 +3131,6 @@ inline bool h_fcn_3w(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   g = c * obj / g;              /* Constant on nable g      */
   f *= 2.0;                     /* Modification for nabla f */
 
-  dg[3] = matr[2]*matr[7] - matr[1]*matr[8];
-  dg[4] = matr[0]*matr[8] - matr[2]*matr[6];
-  dg[5] = matr[1]*matr[6] - matr[0]*matr[7];
-  dg[6] = matr[1]*matr[5] - matr[2]*matr[4];
-  dg[7] = matr[2]*matr[3] - matr[0]*matr[5];
-  dg[8] = matr[0]*matr[4] - matr[1]*matr[3];
-
   adj_m[0] = matr[0]*f + dg[0]*g;
   adj_m[1] = matr[1]*f + dg[1]*g;
   adj_m[2] = matr[2]*f + dg[2]*g;
@@ -3134,23 +3141,20 @@ inline bool h_fcn_3w(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   adj_m[7] = matr[7]*f + dg[7]*g;
   adj_m[8] = matr[8]*f + dg[8]*g;
 
-  loc0 = isqrt3*adj_m[1];
-  g_obj[0][0] = -adj_m[0] - loc0 - adj_m[2];
-  g_obj[1][0] =  adj_m[0] - loc0;
-  g_obj[2][0] = 2.0*loc0;
-  g_obj[3][0] =  adj_m[2];
+  g_obj[0][0] = -adj_m[0] - isqrt3*adj_m[1] - adj_m[2];
+  g_obj[1][0] =  adj_m[0] - isqrt3*adj_m[1]           ;
+  g_obj[2][0] =            tisqrt3*adj_m[1]           ;
+  g_obj[3][0] =                               adj_m[2];
 
-  loc0 = isqrt3*adj_m[4];
-  g_obj[0][1] = -adj_m[3] - loc0 - adj_m[5];
-  g_obj[1][1] =  adj_m[3] - loc0;
-  g_obj[2][1] = 2.0*loc0;
-  g_obj[3][1] =  adj_m[5];
+  g_obj[0][1] = -adj_m[3] - isqrt3*adj_m[4] - adj_m[5];
+  g_obj[1][1] =  adj_m[3] - isqrt3*adj_m[4]           ;
+  g_obj[2][1] =            tisqrt3*adj_m[4]           ;
+  g_obj[3][1] =                               adj_m[5];
 
-  loc0 = isqrt3*adj_m[7];
-  g_obj[0][2] = -adj_m[6] - loc0 - adj_m[8];
-  g_obj[1][2] =  adj_m[6] - loc0;
-  g_obj[2][2] = 2.0*loc0;
-  g_obj[3][2] =  adj_m[8];
+  g_obj[0][2] = -adj_m[6] - isqrt3*adj_m[7] - adj_m[8];
+  g_obj[1][2] =  adj_m[6] - isqrt3*adj_m[7]           ;
+  g_obj[2][2] =            tisqrt3*adj_m[7]           ;
+  g_obj[3][2] =                               adj_m[8];
 
   /* Calculate the hessian of the objective.                   */
   loc0 = f;			/* Constant on nabla^2 f       */
@@ -3198,36 +3202,34 @@ inline bool h_fcn_3w(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   J_C[8] = loc3*matr[8] + loc4*dg[8];
 
   /* First diagonal block */
-  loc2 = isqrt3*J_A[1];
-  A[0] = -J_A[0] - loc2 - J_A[2];
-  A[1] =  J_A[0] - loc2;
+  A[0]  = -J_A[0] - isqrt3*J_A[1] - J_A[2];
+  A[1]  =  J_A[0] - isqrt3*J_A[1];
+//A[2]  =          tisqrt3*J_A[1];
+//A[3]  =                           J_A[2];
+  
+  A[4]  = -J_A[1] - isqrt3*J_A[3] - J_A[4];
+  A[5]  =  J_A[1] - isqrt3*J_A[3];
+  A[6]  =          tisqrt3*J_A[3];
+//A[7]  =                           J_A[4];
 
-  loc2 = isqrt3*J_A[3];
-  A[4] = -J_A[1] - loc2 - J_A[4];
-  A[5] =  J_A[1] - loc2;
-  A[6] = 2.0*loc2;
+  A[8]  = -J_A[2] - isqrt3*J_A[4] - J_A[5];
+  A[9]  =  J_A[2] - isqrt3*J_A[4];
+  A[10] =          tisqrt3*J_A[4];
+  A[11] =                           J_A[5];
 
-  loc2 = isqrt3*J_A[4];
-  A[8] = -J_A[2] - loc2 - J_A[5];
-  A[9] =  J_A[2] - loc2;
-  A[10] = 2.0*loc2;
-  A[11] = J_A[5];
+  h_obj[0][0][0] = -A[0] - isqrt3*A[4] - A[8];
+  h_obj[1][0][0] =  A[0] - isqrt3*A[4];
+  h_obj[2][0][0] =        tisqrt3*A[4];
+  h_obj[3][0][0] =                       A[8];
 
-  loc2 = isqrt3*A[4];
-  h_obj[0][0][0] = -A[0] - loc2 - A[8];
-  h_obj[1][0][0] =  A[0] - loc2;
-  h_obj[2][0][0] = 2.0*loc2;
-  h_obj[3][0][0] =  A[8];
+  h_obj[4][0][0] =  A[1] - isqrt3*A[5];
+  h_obj[5][0][0] =        tisqrt3*A[5];
+  h_obj[6][0][0] =                       A[9];
+  
+  h_obj[7][0][0] =        tisqrt3*A[6];
+  h_obj[8][0][0] =                       A[10];
 
-  loc2 = isqrt3*A[5];
-  h_obj[4][0][0] = A[1] - loc2;
-  h_obj[5][0][0] = 2.0*loc2;
-  h_obj[6][0][0] =  A[9];
-
-  h_obj[7][0][0] = tisqrt3*A[6];
-  h_obj[8][0][0] = A[10];
-
-  h_obj[9][0][0] = A[11];
+  h_obj[9][0][0] =                       A[11];
 
   /* First off-diagonal block */
   loc2 = matr[8]*loc1;
@@ -3242,47 +3244,40 @@ inline bool h_fcn_3w(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   J_B[5] += loc2;
   J_B[7] -= loc2;
 
-  loc2 = isqrt3*J_B[3];
-  A[0] = -J_B[0] - loc2 - J_B[6];
-  A[1] =  J_B[0] - loc2;
-  A[2] =  2.0*loc2;
-  A[3] =  J_B[6];
+  A[0]  = -J_B[0] - isqrt3*J_B[1] - J_B[2];
+  A[1]  =  J_B[0] - isqrt3*J_B[1];
+  A[2]  =          tisqrt3*J_B[1];
+  A[3]  =                           J_B[2];
+  
+  A[4]  = -J_B[3] - isqrt3*J_B[4] - J_B[5];
+  A[5]  =  J_B[3] - isqrt3*J_B[4];
+  A[6]  =          tisqrt3*J_B[4];
+  A[7]  =                           J_B[5];
 
-  loc2 = isqrt3*J_B[4];
-  A[4] = -J_B[1] - loc2 - J_B[7];
-  A[5] =  J_B[1] - loc2;
-  A[6] =  2.0*loc2;
-  A[7] =  J_B[7];
+  A[8]  = -J_B[6] - isqrt3*J_B[7] - J_B[8];
+  A[9]  =  J_B[6] - isqrt3*J_B[7];
+  A[10] =          tisqrt3*J_B[7];
+  A[11] =                           J_B[8];
 
-  loc2 = isqrt3*J_B[5];
-  A[8] = -J_B[2] - loc2 - J_B[8];
-  A[9] =  J_B[2] - loc2;
-  A[10] = 2.0*loc2;
-  A[11] = J_B[8];
+  h_obj[0][0][1] = -A[0] - isqrt3*A[4] - A[8];
+  h_obj[1][1][0] =  A[0] - isqrt3*A[4];
+  h_obj[2][1][0] =        tisqrt3*A[4];
+  h_obj[3][1][0] =                       A[8];
 
-  loc2 = isqrt3*A[4];
-  h_obj[0][0][1] = -A[0] - loc2 - A[8];
-  h_obj[1][0][1] =  A[0] - loc2;
-  h_obj[2][0][1] =  2.0*loc2;
-  h_obj[3][0][1] =  A[8];
+  h_obj[1][0][1] = -A[1] - isqrt3*A[5] - A[9];
+  h_obj[4][0][1] =  A[1] - isqrt3*A[5];
+  h_obj[5][1][0] =        tisqrt3*A[5];
+  h_obj[6][1][0] =                       A[9];
 
-  loc2 = isqrt3*A[5];
-  h_obj[1][1][0] = -A[1] - loc2 - A[9];
-  h_obj[4][0][1] =  A[1] - loc2;
-  h_obj[5][0][1] =  2.0*loc2;
-  h_obj[6][0][1] =  A[9];
+  h_obj[2][0][1] = -A[2] - isqrt3*A[6] - A[10];
+  h_obj[5][0][1] =  A[2] - isqrt3*A[6];
+  h_obj[7][0][1] =        tisqrt3*A[6];
+  h_obj[8][1][0] =                       A[10];
 
-  loc2 = isqrt3*A[6];
-  h_obj[2][1][0] = -A[2] - loc2 - A[10];
-  h_obj[5][1][0] =  A[2] - loc2;
-  h_obj[7][0][1] =  2.0*loc2;
-  h_obj[8][0][1] =  A[10];
-
-  loc2 = isqrt3*A[7];
-  h_obj[3][1][0] = -A[3] - loc2 - A[11];
-  h_obj[6][1][0] =  A[3] - loc2;
-  h_obj[8][1][0] =  2.0*loc2;
-  h_obj[9][0][1] =  A[11];
+  h_obj[3][0][1] = -A[3] - isqrt3*A[7] - A[11];
+  h_obj[6][0][1] =  A[3] - isqrt3*A[7];
+  h_obj[8][0][1] =        tisqrt3*A[7];
+  h_obj[9][0][1] =                       A[11];
 
   /* Second off-diagonal block */
   loc2 = matr[5]*loc1;
@@ -3297,47 +3292,40 @@ inline bool h_fcn_3w(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   J_C[5] -= loc2;
   J_C[7] += loc2;
 
-  loc2 = isqrt3*J_C[3];
-  A[0] = -J_C[0] - loc2 - J_C[6];
-  A[1] =  J_C[0] - loc2;
-  A[2] =  2.0*loc2;
-  A[3] =  J_C[6];
+  A[0]  = -J_C[0] - isqrt3*J_C[1] - J_C[2];
+  A[1]  =  J_C[0] - isqrt3*J_C[1];
+  A[2]  =          tisqrt3*J_C[1];
+  A[3]  =                           J_C[2];
+  
+  A[4]  = -J_C[3] - isqrt3*J_C[4] - J_C[5];
+  A[5]  =  J_C[3] - isqrt3*J_C[4];
+  A[6]  =          tisqrt3*J_C[4];
+  A[7]  =                           J_C[5];
 
-  loc2 = isqrt3*J_C[4];
-  A[4] = -J_C[1] - loc2 - J_C[7];
-  A[5] =  J_C[1] - loc2;
-  A[6] =  2.0*loc2;
-  A[7] =  J_C[7];
+  A[8]  = -J_C[6] - isqrt3*J_C[7] - J_C[8];
+  A[9]  =  J_C[6] - isqrt3*J_C[7];
+  A[10] =          tisqrt3*J_C[7];
+  A[11] =                           J_C[8];
 
-  loc2 = isqrt3*J_C[5];
-  A[8] = -J_C[2] - loc2 - J_C[8];
-  A[9] =  J_C[2] - loc2;
-  A[10] = 2.0*loc2;
-  A[11] = J_C[8];
+  h_obj[0][0][2] = -A[0] - isqrt3*A[4] - A[8];
+  h_obj[1][2][0] =  A[0] - isqrt3*A[4];
+  h_obj[2][2][0] =        tisqrt3*A[4];
+  h_obj[3][2][0] =                       A[8];
 
-  loc2 = isqrt3*A[4];
-  h_obj[0][0][2] = -A[0] - loc2 - A[8];
-  h_obj[1][0][2] =  A[0] - loc2;
-  h_obj[2][0][2] =  2.0*loc2;
-  h_obj[3][0][2] =  A[8];
+  h_obj[1][0][2] = -A[1] - isqrt3*A[5] - A[9];
+  h_obj[4][0][2] =  A[1] - isqrt3*A[5];
+  h_obj[5][2][0] =        tisqrt3*A[5];
+  h_obj[6][2][0] =                       A[9];
 
-  loc2 = isqrt3*A[5];
-  h_obj[1][2][0] = -A[1] - loc2 - A[9];
-  h_obj[4][0][2] =  A[1] - loc2;
-  h_obj[5][0][2] =  2.0*loc2;
-  h_obj[6][0][2] =  A[9];
+  h_obj[2][0][2] = -A[2] - isqrt3*A[6] - A[10];
+  h_obj[5][0][2] =  A[2] - isqrt3*A[6];
+  h_obj[7][0][2] =        tisqrt3*A[6];
+  h_obj[8][2][0] =                       A[10];
 
-  loc2 = isqrt3*A[6];
-  h_obj[2][2][0] = -A[2] - loc2 - A[10];
-  h_obj[5][2][0] =  A[2] - loc2;
-  h_obj[7][0][2] =  2.0*loc2;
-  h_obj[8][0][2] =  A[10];
-
-  loc2 = isqrt3*A[7];
-  h_obj[3][2][0] = -A[3] - loc2 - A[11];
-  h_obj[6][2][0] =  A[3] - loc2;
-  h_obj[8][2][0] =  2.0*loc2;
-  h_obj[9][0][2] =  A[11];
+  h_obj[3][0][2] = -A[3] - isqrt3*A[7] - A[11];
+  h_obj[6][0][2] =  A[3] - isqrt3*A[7];
+  h_obj[8][0][2] =        tisqrt3*A[7];
+  h_obj[9][0][2] =                       A[11];
 
   /* Second block of rows */
   loc3 = matr[3]*f + dg[3]*cross;
@@ -3368,36 +3356,34 @@ inline bool h_fcn_3w(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   J_B[8] = loc3*matr[8] + loc4*dg[8];
 
   /* Second diagonal block */
-  loc2 = isqrt3*J_A[1];
-  A[0] = -J_A[0] - loc2 - J_A[2];
-  A[1] =  J_A[0] - loc2;
+  A[0]  = -J_A[0] - isqrt3*J_A[1] - J_A[2];
+  A[1]  =  J_A[0] - isqrt3*J_A[1];
+//A[2]  =          tisqrt3*J_A[1];
+//A[3]  =                           J_A[2];
+  
+  A[4]  = -J_A[1] - isqrt3*J_A[3] - J_A[4];
+  A[5]  =  J_A[1] - isqrt3*J_A[3];
+  A[6]  =          tisqrt3*J_A[3];
+//A[7]  =                           J_A[4];
 
-  loc2 = isqrt3*J_A[3];
-  A[4] = -J_A[1] - loc2 - J_A[4];
-  A[5] =  J_A[1] - loc2;
-  A[6] = 2.0*loc2;
+  A[8]  = -J_A[2] - isqrt3*J_A[4] - J_A[5];
+  A[9]  =  J_A[2] - isqrt3*J_A[4];
+  A[10] =          tisqrt3*J_A[4];
+  A[11] =                           J_A[5];
 
-  loc2 = isqrt3*J_A[4];
-  A[8] = -J_A[2] - loc2 - J_A[5];
-  A[9] =  J_A[2] - loc2;
-  A[10] = 2.0*loc2;
-  A[11] = J_A[5];
+  h_obj[0][1][1] =  -A[0] - isqrt3*A[4] - A[8];
+  h_obj[1][1][1] =   A[0] - isqrt3*A[4];
+  h_obj[2][1][1] =         tisqrt3*A[4];
+  h_obj[3][1][1] =                        A[8];
 
-  loc2 = isqrt3*A[4];
-  h_obj[0][1][1] = -A[0] - loc2 - A[8];
-  h_obj[1][1][1] =  A[0] - loc2;
-  h_obj[2][1][1] = 2.0*loc2;
-  h_obj[3][1][1] =  A[8];
+  h_obj[4][1][1] =   A[1] - isqrt3*A[5];
+  h_obj[5][1][1] =         tisqrt3*A[5];
+  h_obj[6][1][1] =                        A[9];
+  
+  h_obj[7][1][1] =         tisqrt3*A[6];
+  h_obj[8][1][1] =                        A[10];
 
-  loc2 = isqrt3*A[5];
-  h_obj[4][1][1] = A[1] - loc2;
-  h_obj[5][1][1] = 2.0*loc2;
-  h_obj[6][1][1] =  A[9];
-
-  h_obj[7][1][1] = tisqrt3*A[6];
-  h_obj[8][1][1] = A[10];
-
-  h_obj[9][1][1] = A[11];
+  h_obj[9][1][1] =                        A[11];
 
   /* Third off-diagonal block */
   loc2 = matr[2]*loc1;
@@ -3412,47 +3398,40 @@ inline bool h_fcn_3w(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   J_B[5] += loc2;
   J_B[7] -= loc2;
 
-  loc2 = isqrt3*J_B[3];
-  A[0] = -J_B[0] - loc2 - J_B[6];
-  A[1] =  J_B[0] - loc2;
-  A[2] =  2.0*loc2;
-  A[3] =  J_B[6];
+  A[0]  = -J_B[0] - isqrt3*J_B[1] - J_B[2];
+  A[1]  =  J_B[0] - isqrt3*J_B[1];
+  A[2]  =          tisqrt3*J_B[1];
+  A[3]  =                           J_B[2];
+  
+  A[4]  = -J_B[3] - isqrt3*J_B[4] - J_B[5];
+  A[5]  =  J_B[3] - isqrt3*J_B[4];
+  A[6]  =          tisqrt3*J_B[4];
+  A[7]  =                           J_B[5];
 
-  loc2 = isqrt3*J_B[4];
-  A[4] = -J_B[1] - loc2 - J_B[7];
-  A[5] =  J_B[1] - loc2;
-  A[6] =  2.0*loc2;
-  A[7] =  J_B[7];
+  A[8]  = -J_B[6] - isqrt3*J_B[7] - J_B[8];
+  A[9]  =  J_B[6] - isqrt3*J_B[7];
+  A[10] =          tisqrt3*J_B[7];
+  A[11] =                           J_B[8];
 
-  loc2 = isqrt3*J_B[5];
-  A[8] = -J_B[2] - loc2 - J_B[8];
-  A[9] =  J_B[2] - loc2;
-  A[10] = 2.0*loc2;
-  A[11] = J_B[8];
+  h_obj[0][1][2] = -A[0] - isqrt3*A[4] - A[8];
+  h_obj[1][2][1] =  A[0] - isqrt3*A[4];
+  h_obj[2][2][1] =        tisqrt3*A[4];
+  h_obj[3][2][1] =                       A[8];
 
-  loc2 = isqrt3*A[4];
-  h_obj[0][1][2] = -A[0] - loc2 - A[8];
-  h_obj[1][1][2] =  A[0] - loc2;
-  h_obj[2][1][2] =  2.0*loc2;
-  h_obj[3][1][2] =  A[8];
+  h_obj[1][1][2] = -A[1] - isqrt3*A[5] - A[9];
+  h_obj[4][1][2] =  A[1] - isqrt3*A[5];
+  h_obj[5][2][1] =        tisqrt3*A[5];
+  h_obj[6][2][1] =                       A[9];
 
-  loc2 = isqrt3*A[5];
-  h_obj[1][2][1] = -A[1] - loc2 - A[9];
-  h_obj[4][1][2] =  A[1] - loc2;
-  h_obj[5][1][2] =  2.0*loc2;
-  h_obj[6][1][2] =  A[9];
+  h_obj[2][1][2] = -A[2] - isqrt3*A[6] - A[10];
+  h_obj[5][1][2] =  A[2] - isqrt3*A[6];
+  h_obj[7][1][2] =        tisqrt3*A[6];
+  h_obj[8][2][1] =                       A[10];
 
-  loc2 = isqrt3*A[6];
-  h_obj[2][2][1] = -A[2] - loc2 - A[10];
-  h_obj[5][2][1] =  A[2] - loc2;
-  h_obj[7][1][2] =  2.0*loc2;
-  h_obj[8][1][2] =  A[10];
-
-  loc2 = isqrt3*A[7];
-  h_obj[3][2][1] = -A[3] - loc2 - A[11];
-  h_obj[6][2][1] =  A[3] - loc2;
-  h_obj[8][2][1] =  2.0*loc2;
-  h_obj[9][1][2] =  A[10];
+  h_obj[3][1][2] = -A[3] - isqrt3*A[7] - A[11];
+  h_obj[6][1][2] =  A[3] - isqrt3*A[7];
+  h_obj[8][1][2] =        tisqrt3*A[7];
+  h_obj[9][1][2] =                       A[11];
 
   /* Third block of rows */
   loc3 = matr[6]*f + dg[6]*cross;
@@ -3474,45 +3453,44 @@ inline bool h_fcn_3w(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   J_A[5] = loc0 + loc3*matr[8] + loc4*dg[8];
 
   /* Third diagonal block */
-  loc2 = isqrt3*J_A[1];
-  A[0] = -J_A[0] - loc2 - J_A[2];
-  A[1] =  J_A[0] - loc2;
+  A[0]  = -J_A[0] - isqrt3*J_A[1] - J_A[2];
+  A[1]  =  J_A[0] - isqrt3*J_A[1];
+//A[2]  =          tisqrt3*J_A[1];
+//A[3]  =                           J_A[2];
+  
+  A[4]  = -J_A[1] - isqrt3*J_A[3] - J_A[4];
+  A[5]  =  J_A[1] - isqrt3*J_A[3];
+  A[6]  =          tisqrt3*J_A[3];
+//A[7]  =                           J_A[4];
 
-  loc2 = isqrt3*J_A[3];
-  A[4] = -J_A[1] - loc2 - J_A[4];
-  A[5] =  J_A[1] - loc2;
-  A[6] = 2.0*loc2;
+  A[8]  = -J_A[2] - isqrt3*J_A[4] - J_A[5];
+  A[9]  =  J_A[2] - isqrt3*J_A[4];
+  A[10] =          tisqrt3*J_A[4];
+  A[11] =                           J_A[5];
 
-  loc2 = isqrt3*J_A[4];
-  A[8] = -J_A[2] - loc2 - J_A[5];
-  A[9] =  J_A[2] - loc2;
-  A[10] = 2.0*loc2;
-  A[11] = J_A[5];
+  h_obj[0][2][2] = -A[0] - isqrt3*A[4] - A[8];
+  h_obj[1][2][2] =  A[0] - isqrt3*A[4];
+  h_obj[2][2][2] =        tisqrt3*A[4];
+  h_obj[3][2][2] =                       A[8];
 
-  loc2 = isqrt3*A[4];
-  h_obj[0][2][2] = -A[0] - loc2 - A[8];
-  h_obj[1][2][2] =  A[0] - loc2;
-  h_obj[2][2][2] = 2.0*loc2;
-  h_obj[3][2][2] =  A[8];
+  h_obj[4][2][2] =  A[1] - isqrt3*A[5];
+  h_obj[5][2][2] =        tisqrt3*A[5];
+  h_obj[6][2][2] =                       A[9];
+  
+  h_obj[7][2][2] =        tisqrt3*A[6];
+  h_obj[8][2][2] =                       A[10];
 
-  loc2 = isqrt3*A[5];
-  h_obj[4][2][2] = A[1] - loc2;
-  h_obj[5][2][2] = 2.0*loc2;
-  h_obj[6][2][2] =  A[9];
-
-  h_obj[7][2][2] = tisqrt3*A[6];
-  h_obj[8][2][2] = A[10];
-
-  h_obj[9][2][2] = A[11];
+  h_obj[9][2][2] =                       A[11];
 
   // completes diagonal blocks.
   h_obj[0].fill_lower_triangle();
   h_obj[4].fill_lower_triangle();
   h_obj[7].fill_lower_triangle();
   h_obj[9].fill_lower_triangle();
+  
   return true;
 }
 
-}
+} // namespace Mesquite
 
 #endif
