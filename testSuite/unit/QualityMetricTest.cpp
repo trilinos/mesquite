@@ -378,7 +378,7 @@ public:
      bool v_flag;
        //START WITH TRI's
      MsqPrintError err(cout);
-     double val, val2;
+     double val;
      MsqMeshEntity* elems;
      MsqVertex* verts = triPatch.get_vertex_array(err); CPPUNIT_ASSERT(!err);
      elems=triPatch.get_element_array(err);
@@ -388,16 +388,6 @@ public:
      v_flag=met->evaluate_element(triPatch,&elems[0],val,err);CPPUNIT_ASSERT(!err);
      CPPUNIT_ASSERT(v_flag==true);
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
-       //For now, make sure cond num and generalized cond num give
-       //equivalent answer for arbitrary tri.
-//      v_flag=met->evaluate_element(triPatch,&elems[1],val,err); CPPUNIT_ASSERT(!err);
-//      CPPUNIT_ASSERT(v_flag==true);
-//      v_flag=gmet->evaluate_element(triPatch,&elems[1],val2,err); CPPUNIT_ASSERT(!err);
-//      CPPUNIT_ASSERT(v_flag==true);
-//      val -= val2;
-//      if(pF)
-//        PRINT_INFO("\nGEN TRI %f", val2);
-//      CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0,val,qualTol);
      
        //SECOND: QUAD's
      verts = quadPatch.get_vertex_array(err); CPPUNIT_ASSERT(!err);
@@ -407,18 +397,6 @@ public:
      CPPUNIT_ASSERT(v_flag==true);
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
      
-       //For now, make sure cond num and generalized cond num give
-       //equivalent answer for arbitrary quad.
-//      v_flag=met->evaluate_element(quadPatch,&elems[1],val,err); CPPUNIT_ASSERT(!err);
-//      CPPUNIT_ASSERT(v_flag==true);
-//      v_flag=gmet->evaluate_element(quadPatch,&elems[1],val2,err); CPPUNIT_ASSERT(!err);
-//      CPPUNIT_ASSERT(v_flag==true);
-     
-//      val -= val2;
-//      if(pF)
-//        PRINT_INFO("\nGEN QUA %f", val2);
-//      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,0.0,qualTol);
-     
        //THIRD TET's
      verts = tetPatch.get_vertex_array(err); CPPUNIT_ASSERT(!err);
      elems = tetPatch.get_element_array(err); CPPUNIT_ASSERT(!err);
@@ -426,16 +404,6 @@ public:
      v_flag=met->evaluate_element(tetPatch,&elems[0],val,err);CPPUNIT_ASSERT(!err);
      CPPUNIT_ASSERT(v_flag==true);
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val,1.0,qualTol);
-       //For now, make sure cond num and generalized cond num give
-       //equivalent answer for arbitrary tet.
-     v_flag=met->evaluate_element(tetPatch,&elems[1],val,err); CPPUNIT_ASSERT(!err);
-     CPPUNIT_ASSERT(v_flag==true);
-     
-     val -= val2;
-     if(pF)
-       cout << "\nGEN TET " << val2;
-     
-       //CPPUNIT_ASSERT(fabs(val)<qualTol);
 
        //FOURTH HEX's
      verts = hexPatch.get_vertex_array(err); CPPUNIT_ASSERT(!err);
@@ -462,16 +430,7 @@ public:
      CPPUNIT_ASSERT(!err);
      CPPUNIT_ASSERT(v_flag == true);
      CPPUNIT_ASSERT_DOUBLES_EQUAL(val, 1.0, qualTol);
-     
-       //For now, make sure cond num and generalized cond num give
-       //equivalent answer for arbitrary tet.
-     elems = hexPatch.get_element_array(err); CPPUNIT_ASSERT(!err);
-     v_flag=met->evaluate_element(hexPatch,&elems[1],val,err); CPPUNIT_ASSERT(!err);
-     CPPUNIT_ASSERT(v_flag==true);
-     if(pF)
-       cout << "\nCON HEX " << val;
-     CPPUNIT_ASSERT(v_flag==true);
-     
+
      delete met;
    }
     //******************** utility functions ***********************      
