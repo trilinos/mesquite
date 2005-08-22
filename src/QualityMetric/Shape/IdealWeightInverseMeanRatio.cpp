@@ -74,10 +74,10 @@ void IdealWeightInverseMeanRatio::set_metric_power(double pow_dbl, MsqError& err
     set_negate_flag(-1);
   else
     set_negate_flag(1);
-  a2Con=pow(.5,pow_dbl);
+  a2Con=::pow(.5,pow_dbl);
   b2Con=pow_dbl;
   c2Con=-pow_dbl;
-  a3Con=pow(1.0/3.0,pow_dbl);
+  a3Con=::pow(1.0/3.0,pow_dbl);
   b3Con=pow_dbl;
   c3Con=-2.0*pow_dbl/3.0;
 }
@@ -605,7 +605,7 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_hessian(PatchData &
 
       m = 0;
       for (i = 0; i < 4; ++i) {
-	nm = pow(mMetrics[i], t);
+	nm = ::pow(mMetrics[i], t);
 	m += nm;
 
 	g_factor[i] = 0.25*t*nm / mMetrics[i];
@@ -641,7 +641,7 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_hessian(PatchData &
         }
       }
 
-      m = pow(nm, 1.0 / t);
+      m = ::pow(nm, 1.0 / t);
       g_factor[0] = m / (t*nm);
       h_factor[0] = (1.0 / t - 1)*g_factor[0] / nm;
 
@@ -888,7 +888,7 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_hessian(PatchData &
 
       m = 0;
       for (i = 0; i < 4; ++i) {
-        nm = pow(mMetrics[i], t);
+        nm = ::pow(mMetrics[i], t);
         m += nm;
 
         g_factor[i] = 0.125*t*nm / mMetrics[i];
@@ -927,7 +927,7 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_hessian(PatchData &
         }
       }
 
-      m = pow(nm, 1.0 / t);
+      m = ::pow(nm, 1.0 / t);
       g_factor[0] = m / (t*nm);
       h_factor[0] = (1.0 / t - 1)*g_factor[0] / nm;
 
@@ -1130,7 +1130,7 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_hessian(PatchData &
 
       m = 0;
       for (i = 0; i < 6; ++i) {
-	nm = pow(mMetrics[i], t);
+	nm = ::pow(mMetrics[i], t);
 	m += nm;
 
 	g_factor[i] = t*nm / mMetrics[i] / 6.0;
@@ -1167,7 +1167,7 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_hessian(PatchData &
         }
       }
 
-      m = pow(nm, 1.0 / t);
+      m = ::pow(nm, 1.0 / t);
       g_factor[0] = m / (t*nm);
       h_factor[0] = (1.0 / t - 1)*g_factor[0] / nm;
 
@@ -1380,7 +1380,7 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_hessian(PatchData &
 
       m = 0;
       for (i = 0; i < 8; ++i) {
-	nm = pow(mMetrics[i], t);
+	nm = ::pow(mMetrics[i], t);
 	m += nm;
 
 	g_factor[i] = 0.125*t*nm / mMetrics[i];
@@ -1417,7 +1417,7 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_hessian(PatchData &
         }
       }
 
-      m = pow(nm, 1.0 / t);
+      m = ::pow(nm, 1.0 / t);
       g_factor[0] = m / (t*nm);
       h_factor[0] = (1.0 / t - 1)*g_factor[0] / nm;
 

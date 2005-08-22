@@ -50,7 +50,7 @@ class Exponent
     Exponent( ) : funcPointer( 0 ) 
       {}
   
-    Exponent( double exponent ) 
+    explicit Exponent( double exponent ) 
       : mExponent(exponent), 
         funcPointer( get_func_ptr( exponent ) )
       {}
