@@ -158,6 +158,7 @@ bool ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
     {
       unsigned num_adj;
       const unsigned* adj_idx;
+      return_flag = true;
       for (size_t j = 0; j < 4; ++j) // skip fifth vertex (apex)
       {
         adj_idx = TopologyInfo::adjacent_vertices( type, j, num_adj );
@@ -180,6 +181,7 @@ bool ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
     {
       unsigned num_adj;
       const unsigned* adj_idx;
+      return_flag = true;
       for (size_t j = 0; j < 6; ++j) 
       {
         adj_idx = TopologyInfo::adjacent_vertices( type, j, num_adj );
