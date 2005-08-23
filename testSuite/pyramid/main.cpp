@@ -64,6 +64,7 @@
 #include "FeasibleNewton.hpp"
 #include "ConcreteTargetCalculators.hpp"
 #include "ConjugateGradient.hpp"
+#include "ConditionNumberQualityMetric.hpp"
 using namespace Mesquite;
 
 // Use CPPUNIT_ASSERT in code so it's easy to convert to a unit test later.
@@ -109,6 +110,7 @@ int main( int argc, char* argv[] )
                                new I_DFT_Generalized,
                                new I_DFT_NoBarrier,
                                new sRI_DFT,
+                               new ConditionNumberQualityMetric,
                                0 };
 
     // Read Mesh
