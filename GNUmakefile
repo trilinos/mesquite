@@ -72,6 +72,7 @@ TESTNAMES := test_1\
 	     transform \
 	     i_dft_with_culling \
 	     pyramid \
+	     wedge \
              unit 
 ###             random_test\
 ###             convert\
