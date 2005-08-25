@@ -2,6 +2,7 @@
 LATEX      = latex
 DVI_TO_PDF = dvipdf
 DVI_TO_PS  = dvips
+BIBTEX     = bibtex
 
  # Input/output file basename
 NAME = users-guide
@@ -13,6 +14,7 @@ ps:  $(NAME).ps
 
 dvi: $(NAME).dvi
 
+BIBLIOGRAPHY = mesquite.bib 
 
 COMPONENTS = $(NAME).tex \
 	ack.tex \
@@ -29,24 +31,20 @@ COMPONENTS = $(NAME).tex \
         trouble.tex 
 
 $(NAME).pdf: $(NAME).dvi
-	$(DVI_TO_PDF) $< > $@
+	$(DVI_TO_PDF) $< $@
 
 $(NAME).ps: $(NAME).dvi
 	$(DVI_TO_PS) $< -o $@
 
-$(NAME).dvi: $(NAME).toc $(COMPONENTS)
+$(NAME).dvi: $(COMPONENTS) $(BIBLIOGRAPHY)
+	$(LATEX) $(NAME).tex
+	$(BIBTEX) $(NAME).aux
+	$(LATEX) $(NAME).tex
 	$(LATEX) $(NAME).tex
 
-# Need to invoke LaTeX twice for correct generation
-# of table of contents in final document.  Invoke
-# the first time here to generate the table of contents,
-# removing the .dvi file generated without the correct
-# table of contents.
-$(NAME).toc: $(COMPONENTS)
-	rm -f $@
-	$(LATEX) $(NAME).tex
-	rm -f $(NAME).dvi
-
-TMPEXT = dvi lof log lot toc
+TMPEXT = dvi lof log lot toc bbl
 clean:
 	rm -f $(COMPONENTS:%.tex=%.aux) $(TMPEXT:%=$(NAME).%)
+
+dist-clean: clean
+	rm -f $(NAME).ps $(NAME).pdf
