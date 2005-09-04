@@ -94,6 +94,13 @@ private:
    CPPUNIT_TEST (hex_adj_vert);
    CPPUNIT_TEST (pyr_adj_vert);
    CPPUNIT_TEST (wdg_adj_vert);
+   
+   CPPUNIT_TEST (tri_rev_adj_vert);
+   CPPUNIT_TEST (quad_rev_adj_vert);
+   CPPUNIT_TEST (tet_rev_adj_vert);
+   CPPUNIT_TEST (hex_rev_adj_vert);
+   CPPUNIT_TEST (pyr_rev_adj_vert);
+   CPPUNIT_TEST (wdg_rev_adj_vert);
 
    CPPUNIT_TEST_SUITE_END();
 
@@ -176,6 +183,14 @@ public:
   void pyr_adj_vert();
   void wdg_adj_vert();
   void test_adj( Mesquite::EntityTopology, const unsigned expected[][5] );
+  
+  void tri_rev_adj_vert()  { test_rev_adj( Mesquite::TRIANGLE      ); }
+  void quad_rev_adj_vert() { test_rev_adj( Mesquite::QUADRILATERAL ); }
+  void tet_rev_adj_vert()  { test_rev_adj( Mesquite::TETRAHEDRON   ); }
+  void hex_rev_adj_vert()  { test_rev_adj( Mesquite::HEXAHEDRON    ); }
+  void pyr_rev_adj_vert()  { test_rev_adj( Mesquite::PYRAMID       ); }
+  void wdg_rev_adj_vert()  { test_rev_adj( Mesquite::PRISM         ); }
+  void test_rev_adj( Mesquite::EntityTopology type );
 };
 
 
@@ -1250,6 +1265,49 @@ void TopologyInfoTest::test_adj( Mesquite::EntityTopology type,
       // Compare the remaining vertices, enforcing the order.
     for (unsigned k = 1; k < actual_count; ++k)
       CPPUNIT_ASSERT( corner[k+1] == actual_adj[(k+j)%actual_count] );
+  }
+}
+
+void TopologyInfoTest::test_rev_adj( Mesquite::EntityTopology type )
+{
+    // Get num vertices from type
+  unsigned n = TopologyInfo::corners( type );
+  CPPUNIT_ASSERT( n > 0 );
+  
+    // for each vertex
+  for (unsigned i = 0; i < n; ++i)
+  {
+      // get adjacent vertex list
+    unsigned num_adj_idx;
+    unsigned const* adj_idx = TopologyInfo::adjacent_vertices( type, i, num_adj_idx );
+    CPPUNIT_ASSERT( adj_idx != NULL );
+    CPPUNIT_ASSERT( num_adj_idx > 1 );
+    
+      // make sure adjacent vertex list is unique
+    msq_std::vector<unsigned> adj_idx_copy( num_adj_idx );
+    msq_std::copy( adj_idx, adj_idx+num_adj_idx, adj_idx_copy.begin() );
+    msq_std::sort( adj_idx_copy.begin(), adj_idx_copy.end() );
+    msq_std::vector<unsigned>::iterator iter;
+    iter = msq_std::unique( adj_idx_copy.begin(), adj_idx_copy.end() );
+    CPPUNIT_ASSERT( iter == adj_idx_copy.end() );
+    
+      // Get reverse mapping indices
+    unsigned num_rev_idx;
+    unsigned const* rev_idx
+     = TopologyInfo::reverse_vertex_adjacency_offsets( type, i, num_rev_idx );
+    CPPUNIT_ASSERT( rev_idx != NULL );
+    CPPUNIT_ASSERT( num_rev_idx == num_adj_idx );
+    
+      // for each adjacent vertex, test reverse mapping 
+    for (unsigned j = 0; j < num_adj_idx; ++j)
+    {
+      unsigned num_adj_adj_idx;
+      unsigned const* adj_adj_idx 
+        = TopologyInfo::adjacent_vertices( type, adj_idx[j], num_adj_adj_idx );
+      
+      CPPUNIT_ASSERT( rev_idx[j] < num_adj_adj_idx );
+      CPPUNIT_ASSERT( adj_adj_idx[rev_idx[j]] == i );
+    }
   }
 }
 

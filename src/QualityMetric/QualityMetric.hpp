@@ -51,6 +51,8 @@ Header file for the Mesquite::QualityMetric class
 #include "Vector3D.hpp"
 #include "Matrix3D.hpp"
 
+#include <stdint.h>
+
 namespace Mesquite
 {
    
@@ -286,6 +288,86 @@ namespace Mesquite
      double average_metric_and_weights( double metric_values[],
                                         int num_metric_values,
                                         MsqError& err );
+     
+     /** \brief Average metric values and gradients for per-corner evaluation
+      *
+      *\param element_type   The element type
+      *\param num_corners    The number of corners (e.g. pass 4 for a pyramid
+      *                      if the metric couldn't be evaluated for the apex)
+      *\param corner_values  An array of metric values, one per element corner
+      *\param corner_grads   The corner gradients, 4 for each corner
+      *\param vertex_grads   Output.  Gradient at each vertex.
+      *\return average metric value for element
+      */
+     double average_corner_gradients( EntityTopology element_type,
+                                  uint32_t fixed_vertices,
+                                  unsigned num_corners,
+                                  double corner_values[],
+                                  const Vector3D corner_grads[],
+                                  Vector3D vertex_grads[],
+                                  MsqError& err );
+     
+     /** \brief Average metric values, gradients, an hessians for per-corner evaluation
+      *
+      *\param element_type   The element type
+      *\param num_corners    The number of corners (e.g. pass 4 for a pyramid
+      *                      if the metric couldn't be evaluated for the apex)
+      *\param corner_values  An array of metric values, one per element corner
+      *\param corner_grads   The corner gradients, 4 for each corner
+      *\param corner_hessians The hessians, 10 for each corner
+      *\param vertex_grads   Output.  Gradient at each vertex.
+      *\param vertex_hessians Output.  Hessians.  Length must be (n*(n+1))/2,
+      *                       where n is the number of vertices in the element.
+      *\return average metric value for element
+      */
+     double average_corner_hessians( EntityTopology element_type,
+                                     uint32_t fixed_vertices,
+                                     unsigned num_corners,
+                                     const double corner_values[],
+                                     const Vector3D corner_grads[],
+                                     const Matrix3D corner_hessians[],
+                                     Vector3D vertex_grads[],
+                                     Matrix3D vertex_hessians[],
+                                     MsqError& err );
+
+      /** \brief Set gradient values to zero for fixed vertices.
+       *
+       * Zero gradients for fixed vertices.
+       *\param type            Element type
+       *\param fixed_vertices  Bit flags, one per vertex, 1 if
+       *                       vertex is fixed.
+       *\param gradients       Array of gradients
+       */
+     static void zero_fixed_gradients( EntityTopology type, 
+                                       uint32_t fixed_vertices, 
+                                       Vector3D* gradients );
+
+      /** \brief Set Hessian values to zero for fixed vertices.
+       *
+       * Zero Hessians for fixed vertices.
+       *\param type            Element type
+       *\param fixed_vertices  Bit flags, one per vertex, 1 if
+       *                       vertex is fixed.
+       *\param gradients       Array of gradients
+       */
+     static void zero_fixed_hessians ( EntityTopology type, 
+                                       uint32_t fixed_vertices, 
+                                       Matrix3D* hessians );
+     
+     /** \brief Convert fixed vertex format from list to bit flags
+      *
+      * Given list of pointers to fixed vertices as passed to
+      * evaluation functions, convert to bit flag format used
+      * for many utility functions in this class.  Bits correspond
+      * to vertices in the canonical vertex order, beginning with
+      * the least-significant bit.  The bit is cleared for free
+      * vertices and set (1) for fixed vertices.
+      */
+     static uint32_t fixed_vertex_bitmap( PatchData& pd, 
+                                          MsqMeshEntity* elem,
+                                          MsqVertex* free_list[],
+                                          unsigned num_free );
+      
      
      //! takes an array of coefficients and an array of metrics (both of length num_value)
      //! and averages the contents using averaging method 'method'.

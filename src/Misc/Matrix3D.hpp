@@ -122,6 +122,24 @@ namespace Mesquite
     {
       set(value);
     }
+    
+    Matrix3D( double a00, double a01, double a02,
+              double a10, double a11, double a12,
+              double a20, double a21, double a22 )
+    {
+      v_[0] = a00; v_[1] = a01; v_[2] = a02;
+      v_[3] = a10; v_[4] = a11; v_[5] = a12;
+      v_[6] = a20; v_[7] = a21; v_[8] = a22;
+    }
+    
+    Matrix3D( const Vector3D& col1,
+              const Vector3D& col2,
+              const Vector3D& col3 )
+    {
+      set_column( 0, col1 );
+      set_column( 1, col2 );
+      set_column( 2, col3 );
+    }
 
     //! sets matrix entries to values in array.
     //! \param v is an array of 9 doubles. 
@@ -189,6 +207,16 @@ namespace Mesquite
     double column_length(int i) const 
     { return sqrt( v_[0+i]*v_[0+i] + v_[3+i]*v_[3+i] + v_[6+i]*v_[6+i] ); }
 
+
+    double sub_det( int r, int c ) const
+    {
+      int r1 = 3 * ((r + 1) % 3);
+      int r2 = 3 * ((r + 2) % 3);
+      int c1 =     ((c + 1) % 3);
+      int c2 =     ((c + 2) % 3);
+      return v_[r1+c1] * v_[r2+c2] - v_[r2+c1] * v_[r1+c2];
+    }
+    
     // Matrix Operators
     friend bool operator==(const Matrix3D &lhs, const Matrix3D &rhs);
     friend bool operator!=(const Matrix3D &lhs, const Matrix3D &rhs);
@@ -250,6 +278,16 @@ namespace Mesquite
     inline const double* operator[](unsigned i) const
     {
       return v_ + 3*i;
+    }
+    
+    inline Vector3D row(unsigned r) const
+    {
+      return Vector3D( v_ + 3*r );
+    }
+    
+    inline Vector3D column( unsigned c ) const
+    {
+      return Vector3D( v_[c], v_[c+3], v_[c+6] );
     }
 
   };

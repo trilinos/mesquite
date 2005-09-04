@@ -82,7 +82,7 @@ class TopologyInfo
       /** \brief Check which mid-nodes a higher-order element has.
        *
        * Assuming at most one mid-node per sub-entity per dimension
-       * (i.e. at most one mid-edge node, at most one mid-face node, etc.)
+       * (i.e. at most one mid-node per edge, at most one mid-node per face, etc.)
        * determine which mid-nodes are present given the topology
        * and total number of nodes.
        */
@@ -90,12 +90,23 @@ class TopologyInfo
                               bool& midedge, bool& midface, bool& midvol,
                               MsqError &err );
     
-      /**\brief Get indices of edge ends in element connectivity array */
+      /**\brief Get indices of edge ends in element connectivity array 
+       *
+       * Given an edge number in (0,edges(type)], return which positions
+       * in the connectivity list for the element type correspond to the
+       * end vertices of that edge.
+       */
     static const unsigned* edge_vertices( EntityTopology topo,
                                           unsigned edge_number,
                                           MsqError& err );
     
-     /**\brief Get face corner indices in element connectivity array */
+     /**\brief Get face corner indices in element connectivity array 
+       *
+       * Given an face number in (0,faces(type)], return which positions
+       * in the connectivity list for the element type correspond to the
+       * vertices of that face, ordered in a counter-clockwise cycle
+       * around a vector pointing out of the element for an ideal element.
+       */
     static const unsigned* face_vertices( EntityTopology topo,
                                           unsigned face_number,
                                           unsigned& num_vertices_out,
@@ -104,8 +115,11 @@ class TopologyInfo
     /**\brief Get corner indices of side 
      *
      * Get the indices into element connectivity list for the 
-     * corners/ends of the specified side of the element.  If
-     * the passed dimension equals that of the specified topology,
+     * corners/ends of the specified side of the element.  
+     * \ref edge_vertices and \ref face_vertices are special cases
+     * of this method.  
+     *
+     * If the passed dimension equals that of the specified topology,
      * the side number is ignored and all the corners of the 
      * element are returned.  Fails if side dimension
      * greater than the dimension of the specified topology type.
@@ -121,7 +135,7 @@ class TopologyInfo
       /**\brief Return which side the specified mid-node lies on 
        *
        * Given an non-linear element type (specified by the
-       * topology and lenght of the connectiivty array) and the 
+       * topology and length of the connectiivty array) and the 
        * index of a node in the element's connectivity array,
        * return the lower-dimension entity (side) of the element
        * the mid-node lies on.
@@ -145,6 +159,19 @@ class TopologyInfo
      * Given the index of a vertex in an element, get the list of 
      * indices corresponding to the adjacent corner vertices.
      *
+     * Adjcent corner vertex indices are returned in the proper
+     * order for constructing the active matrix for the corner.
+     *
+     * Given the array v of all vertices in the patch, the array v_i
+     * containing the connectivity list for an element as
+     * indices into v, and adj as the result of this function for some
+     * corner of the element, the corresponding active matrix A for
+     * that corner can be constructed as:
+     *  Matrix3D A;
+     *  A.set_column( 0, v[v_i[adj[0]]] - v[v_i[0]] );
+     *  A.set_column( 0, v[v_i[adj[1]]] - v[v_i[1]] );
+     *  A.set_column( 0, v[v_i[adj[2]]] - v[v_i[2]] );
+     *
      *\param topo  The element type
      *\param index The index of a corner vertex
      *\param num_adj_out The number of adjacent vertices (output)
@@ -154,6 +181,32 @@ class TopologyInfo
                                               unsigned index,
                                               unsigned& num_adj_out );
      
+    /**\brief  Get reverse adjacency offsets
+     *
+     * Get reverse mapping of results from \ref adjacent_vertices.
+     *
+     * Let i be the input vertex index.  For each vertex index j
+     * for which the result of \ref adjacent_vertices contains i, return
+     * the offset into that result at which i would occur.  The
+     * results are returned in the same order as each j is returned
+     * in the results of adjacent_vertices(...,i,...).  Thus the
+     * combination of the results of adjacent_vertices(...,i,...)
+     * and this method provide a reverse mapping of the results of
+     * adjacent_vertices(...,j,...) for i in all j.
+     * 
+     * Given:
+     *   const unsigned *a, *b, *r;
+     *   unsigned n, nn, c = corners(type);
+     *   a = adjacent_vertices( type, i, n );            // for any i < c
+     *   r = reverse_vertex_adjacency_offsets( type, i, n );
+     *   b = adjacent_vertices( type, a[k], nn );        // for any k < n
+     * Then:
+     *   b[r[k]] == i
+     */
+    static const unsigned* reverse_vertex_adjacency_offsets( 
+                                              EntityTopology topo,
+                                              unsigned index,
+                                              unsigned& num_idx_out );
 
   private:
  
@@ -177,6 +230,8 @@ class TopologyInfo
     unsigned faceMap[LAST_VOL-FIRST_VOL+1][MAX_FACES][MAX_FACE_CONN];
     /** Vertex-Vertex adjacency map */
     unsigned vertAdjMap[LAST_VOL-FIRST_FACE+1][MAX_CORNER][MAX_VERT_ADJ+1];
+    /** Reverse Vertex-Vertex adjacency index map */
+    unsigned revVertAdjIdx[LAST_VOL-FIRST_FACE+1][MAX_CORNER][MAX_VERT_ADJ+1];
 
     TopologyInfo();
     

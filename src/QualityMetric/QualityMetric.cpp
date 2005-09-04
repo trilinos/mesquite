@@ -514,6 +514,551 @@ bool QualityMetric::evaluate_element(PatchData& /*pd*/,
           return false;
         }
         
+double QualityMetric::average_corner_gradients( EntityTopology type,
+                                  uint32_t fixed_vertices,
+                                  unsigned num_corner,
+                                  double corner_values[],
+                                  const Vector3D corner_grads[],
+                                  Vector3D vertex_grads[],
+                                  MsqError& err )
+{
+  const unsigned num_vertex = TopologyInfo::corners( type );
+  const unsigned dim = TopologyInfo::dimension(type);
+  const unsigned per_vertex = dim+1;
+  
+  unsigned i, j, num_adj;
+  const unsigned *adj_idx, *rev_idx;
+  
+    // NOTE: This function changes the corner_values array such that
+    //       it contains the gradient coefficients.
+  double avg = average_metric_and_weights( corner_values, num_corner, err );
+  MSQ_ERRZERO(err);
+
+  for (i = 0; i < num_vertex; ++i)
+  {
+    if (fixed_vertices & (1<<i))  // skip fixed vertices
+    {
+      vertex_grads[i] = 0;
+      continue;
+    }
+    
+    adj_idx = TopologyInfo::adjacent_vertices( type, i, num_adj );
+    rev_idx = TopologyInfo::reverse_vertex_adjacency_offsets( type, i, num_adj );
+    if (i < num_corner) // not all vertices are corners (e.g. pyramid)
+      vertex_grads[i] = corner_values[i] * corner_grads[per_vertex*i];
+    else
+      vertex_grads[i] = 0;
+    for (j = 0; j < num_adj; ++j)
+    {
+      const unsigned v = adj_idx[j], c = rev_idx[j]+1;
+      if (v >= num_corner) // if less corners than vertices (e.g. pyramid apex)
+        continue;
+      vertex_grads[i] += corner_values[v] * corner_grads[per_vertex*v+c];
+    }
+  }
+
+  return avg;
+}
+
+uint32_t QualityMetric::fixed_vertex_bitmap( PatchData& pd,
+                                             MsqMeshEntity* elem,
+                                             MsqVertex* free_list[],
+                                             unsigned num_free )
+{
+  uint32_t result = ~(uint32_t)0;
+  unsigned num_vtx = elem->vertex_count();
+  const size_t* vertices = elem->get_vertex_index_array();
+  for (unsigned i = num_vtx - 1; i >= 0 && num_free; --i)
+  {
+    if (&pd.vertex_by_index(vertices[i]) == free_list[num_free-1])
+    {
+      result &= ~(uint32_t)(1<<i);
+      --num_free;
+    }
+  }
+  return result;
+}
+  
+
+void QualityMetric::zero_fixed_gradients( EntityTopology elem_type,
+                                          uint32_t fixed_vertices,
+                                          Vector3D grads[] )
+{
+  const unsigned num_vertex = TopologyInfo::corners( elem_type );
+  for (unsigned i = 0; i < num_vertex; ++i)
+    if (fixed_vertices & (1 << i))
+      grads[i] = 0;
+}
+
+void QualityMetric::zero_fixed_hessians( EntityTopology elem_type,
+                                         uint32_t fixed,
+                                         Matrix3D hessians[] )
+{
+  const unsigned num_vertex = TopologyInfo::corners( elem_type );
+  for (unsigned i = 0; i < num_vertex; ++i)
+    for (unsigned j = i; j < num_vertex; ++j)
+      if (fixed & ((1<<i)|(1<<j)))
+        hessians[num_vertex*i - i*(i+1)/2 + j].zero();
+}      
+
+double inverse( double d ) { return 1.0 / d; }
+double square( double d ) { return d * d ; };
+double invsqr( double d ) { return 1.0 / (d*d); }
+double invsqrt( double d ) { return 1.0 / ::sqrt(d); }
+typedef double (*fptr)(double);
+
+double QualityMetric::average_corner_hessians( EntityTopology type,
+                                     uint32_t fixed_vertices,
+                                     unsigned num_corner,
+                                     const double corner_values[],
+                                     const Vector3D corner_grads[],
+                                     const Matrix3D corner_hessians[],
+                                     Vector3D vertex_grads[],
+                                     Matrix3D vertex_hessians[],
+                                     MsqError& err )
+{
+  const unsigned num_vertex = TopologyInfo::corners( type );
+  const unsigned num_hess = num_vertex * (num_vertex+1) / 2;
+  const unsigned dim = TopologyInfo::dimension(type);
+  const unsigned g_per_v = dim+1;
+  const unsigned h_per_v = g_per_v * (g_per_v + 1) / 2;
+  Matrix3D outer;
+  
+  unsigned i, j, k, l, num_adj, num_adj2;
+  const unsigned *adj_idx, *rev_idx, *adj_idx2, *rev_idx2;
+  double avg = 0.0;  // the output average metric value
+  const double inv = 1.0 / num_corner;
+  
+  
+    // Initialize all hessians to zero
+  for (i = 0; i < num_hess; ++i)
+    vertex_hessians[i].zero();
+  
+  switch (avgMethod)
+  {
+  case SUM:
+
+    for (i = 0; i < num_corner; ++i)
+      avg += corner_values[i];
+
+    for (i = 0; i < num_vertex; ++i)
+    {
+      if (fixed_vertices & (1<<i))  // skip fixed vertices
+      {
+        vertex_grads[i] = 0;
+        continue;
+      }
+
+      adj_idx = TopologyInfo::adjacent_vertices( type, i, num_adj );
+      rev_idx = TopologyInfo::reverse_vertex_adjacency_offsets( type, i, num_adj );
+      if (i < num_corner) // not all vertices are corners (e.g. pyramid)
+        vertex_grads[i] = corner_grads[g_per_v*i];
+      else
+        vertex_grads[i] = 0;
+      for (j = 0; j < num_adj; ++j)
+      {
+        unsigned v = adj_idx[j], c = rev_idx[j]+1;
+        if (v >= num_corner)
+          continue; // not all vertices are corners (e.g. pyramid)
+        vertex_grads[i] += corner_grads[g_per_v*v+c];
+      }
+    
+        // For each column of the hessians matrix (i->row)
+      for (j = i; j < num_vertex; ++j)
+      {
+        if (fixed_vertices & (1<<j))  // skip fixed vertices
+          continue;
+       
+          // vertices adjacent to adjacent vertex
+        adj_idx2 = TopologyInfo::adjacent_vertices( type, j, num_adj2 );
+        rev_idx2 = TopologyInfo::reverse_vertex_adjacency_offsets( type, j, num_adj2 );
+
+          // The index of the hessian calculated in this iteration.
+        unsigned loc = num_vertex*i - i*(i+1)/2 + j;
+
+          // For this vertex and each adjacent vertex
+        for (k = 0; k <= num_adj; k++)
+        {
+          unsigned v, r, c;  // vertex, and row and column in vertex hessians
+          if (k == 0) // for k = 0, this vertex
+          {
+            v = i;
+            r = 0;
+          }
+          else        // otherwise k-1-th adjacent vertex
+          {
+            v = adj_idx[k-1];
+            r = rev_idx[k-1] + 1;
+          }
+          
+          if (v >= num_corner) // not all vertices are corners (e.g. pyramid)
+            continue; 
+          else if (j == v) // for this vertex
+            c = 0;
+          else        // otherwise find offset of shared adjacent vertex
+          {
+            for (l = 0; l < num_adj2 && adj_idx2[l] != v; ++l);
+            if (l == num_adj2)
+              continue;
+            
+            c = rev_idx2[l] + 1;
+          }
+          
+          if (r <= c)
+          {
+            unsigned h = h_per_v*v + g_per_v*r - r*(r+1)/2 + c;
+            vertex_hessians[loc] += corner_hessians[h];
+          }
+          else
+          {
+            unsigned h = h_per_v*v + g_per_v*c - c*(c+1)/2 + r;
+            vertex_hessians[loc].plus_transpose_equal( corner_hessians[h] );
+          }
+        } // for (k = adjacent_vertex)
+      } // for(j = column)
+    } // for (i = vertex)
+    
+    break;
+
+  
+  case SUM_SQUARED:
+
+    for (i = 0; i < num_corner; ++i)
+      avg += corner_values[i] * corner_values[i];
+
+    for (i = 0; i < num_vertex; ++i)
+    {
+      if (fixed_vertices & (1<<i))  // skip fixed vertices
+      {
+        vertex_grads[i] = 0;
+        continue;
+      }
+
+      adj_idx = TopologyInfo::adjacent_vertices( type, i, num_adj );
+      rev_idx = TopologyInfo::reverse_vertex_adjacency_offsets( type, i, num_adj );
+      if (i < num_corner) // not all vertices are corners (e.g. pyramid)
+        vertex_grads[i] = 2.0 * corner_values[i] * corner_grads[g_per_v*i];
+      else
+        vertex_grads[i] = 0;
+      for (j = 0; j < num_adj; ++j)
+      {
+        unsigned v = adj_idx[j], c = rev_idx[j]+1;
+        if (v >= num_corner)
+          continue; // not all vertices are corners (e.g. pyramid)
+        vertex_grads[i] += 2.0 * corner_values[v] * corner_grads[g_per_v*v+c];
+      }
+    
+        // For each column of the hessians matrix (i->row)
+      for (j = i; j < num_vertex; ++j)
+      {
+        if (fixed_vertices & (1<<j))  // skip fixed vertices
+          continue;
+       
+          // vertices adjacent to adjacent vertex
+        adj_idx2 = TopologyInfo::adjacent_vertices( type, j, num_adj2 );
+        rev_idx2 = TopologyInfo::reverse_vertex_adjacency_offsets( type, j, num_adj2 );
+
+          // The index of the hessian calculated in this iteration.
+        unsigned loc = num_vertex*i - i*(i+1)/2 + j;
+        
+          // For this vertex and each adjacent vertex
+        for (k = 0; k <= num_adj; k++)
+        {
+          unsigned v, r, c;  // vertex, and row and column in vertex hessians
+          if (k == 0) // for k = 0, this vertex
+          {
+            v = i;
+            r = 0;
+          }
+          else        // otherwise k-1-th adjacent vertex
+          {
+            v = adj_idx[k-1];
+            r = rev_idx[k-1] + 1;
+          }
+          
+          if (v >= num_corner) // not all vertices are corners (e.g. pyramid)
+            continue; 
+          else if (j == v) // for this vertex
+            c = 0;
+          else        // otherwise find offset of shared adjacent vertex
+          {
+            for (l = 0; l < num_adj2 && adj_idx2[l] != v; ++l);
+            if (l == num_adj2)
+              continue;
+            
+            c = rev_idx2[l] + 1;
+          }
+          
+          outer.outer_product( corner_grads[g_per_v*v+r], corner_grads[g_per_v*v+c] );
+          if (r <= c)
+          {
+            unsigned h = h_per_v*v + g_per_v*r - r*(r+1)/2 + c;
+            outer += corner_values[v]*corner_hessians[h];
+          }
+          else
+          {
+            unsigned h = h_per_v*v + g_per_v*c - c*(c+1)/2 + r;
+            outer.plus_transpose_equal( corner_values[v]*corner_hessians[h] );
+          }
+          outer *= 2.0;
+          vertex_hessians[loc] += outer;
+        } // for (k = adjacent_vertex)
+      } // for(j = column)
+    } // for (i = vertex)
+    
+    break;
+
+  
+  case LINEAR:
+
+    for (i = 0; i < num_corner; ++i)
+      avg += corner_values[i];
+    avg *= inv;
+    
+    for (i = 0; i < num_vertex; ++i)
+    {
+      if (fixed_vertices & (1<<i))  // skip fixed vertices
+      {
+        vertex_grads[i] = 0;
+        continue;
+      }
+
+      adj_idx = TopologyInfo::adjacent_vertices( type, i, num_adj );
+      rev_idx = TopologyInfo::reverse_vertex_adjacency_offsets( type, i, num_adj );
+      if (i < num_corner) // not all vertices are corners (e.g. pyramid)
+        vertex_grads[i] = corner_grads[g_per_v*i];
+      else
+        vertex_grads[i] = 0;
+      for (j = 0; j < num_adj; ++j)
+      {
+        unsigned v = adj_idx[j], c = rev_idx[j]+1;
+        if (v >= num_corner)
+          continue; // not all vertices are corners (e.g. pyramid)
+        vertex_grads[i] += corner_grads[g_per_v*v+c];
+      }
+      vertex_grads[i] *= inv;
+    
+        // For each column of the hessians matrix (i->row)
+      for (j = i; j < num_vertex; ++j)
+      {
+        if (fixed_vertices & (1<<j))  // skip fixed vertices
+          continue;
+       
+          // vertices adjacent to adjacent vertex
+        adj_idx2 = TopologyInfo::adjacent_vertices( type, j, num_adj2 );
+        rev_idx2 = TopologyInfo::reverse_vertex_adjacency_offsets( type, j, num_adj2 );
+
+          // The index of the hessian calculated in this iteration.
+        unsigned loc = num_vertex*i - i*(i+1)/2 + j;
+        
+          // For this vertex and each adjacent vertex
+        for (k = 0; k <= num_adj; k++)
+        {
+          unsigned v, r, c;  // vertex, and row and column in vertex hessians
+          if (k == 0) // for k = 0, this vertex
+          {
+            v = i;
+            r = 0;
+          }
+          else        // otherwise k-1-th adjacent vertex
+          {
+            v = adj_idx[k-1];
+            r = rev_idx[k-1] + 1;
+          }
+          
+          if (v >= num_corner) // not all vertices are corners (e.g. pyramid)
+            continue; 
+          else if (j == v) // for this vertex
+            c = 0;
+          else        // otherwise find offset of shared adjacent vertex
+          {
+            for (l = 0; l < num_adj2 && adj_idx2[l] != v; ++l);
+            if (l == num_adj2)
+              continue;
+            
+            c = rev_idx2[l] + 1;
+          }
+          
+          if (r <= c)
+          {
+            unsigned h = h_per_v*v + g_per_v*r - r*(r+1)/2 + c;
+            vertex_hessians[loc] += corner_hessians[h];
+          }
+          else
+          {
+            unsigned h = h_per_v*v + g_per_v*c - c*(c+1)/2 + r;
+            vertex_hessians[loc].plus_transpose_equal( corner_hessians[h] );
+          }
+        } // for (k = adjacent_vertex)
+          
+        vertex_hessians[loc] *= inv;
+      } // for(j = column)
+    } // for (i = vertex)
+    
+    break;
+
+
+  default: // common case for RMS, Harmonic, & HMS - handle error case here too.
+  {
+    double p, t;
+    double g_factor[8], h_factor[8];
+
+      // calculate average metric value and fill g_factor and h_factor
+    switch( avgMethod )
+    {
+      case RMS:
+        p = 2.0;
+        t = 2.0 * inv;
+        for (i = 0; i < num_corner; ++i)
+        {
+          avg += corner_values[i] * corner_values[i];
+          g_factor[i] = t * corner_values[i];
+          h_factor[i] = t;
+        }
+        t = inv * avg;
+        avg = msq_stdc::sqrt( t );
+        break;
+
+      case HARMONIC:
+        p = -1.0;
+        for (i = 0; i < num_corner; ++i)
+        {
+          t = 1.0 / corner_values[i];
+          avg += t;
+          g_factor[i] = -inv * t * t;
+          h_factor[i] = -2.0 * g_factor[i] * t;
+        }
+        t = inv * avg;
+        avg = 1.0 / t;
+        break;
+
+      case HMS:
+        p = -2.0;
+        for (i = 0; i < num_corner; ++i)
+        {
+          t = 1.0 / corner_values[i];
+          avg += t * t;
+	        g_factor[i] = -2.0 * inv * t * t * t;
+	        h_factor[i] = -3.0 * g_factor[i] * t;
+        }
+        t = inv * avg;
+        avg = 1.0 / msq_stdc::sqrt( t );
+        break;
+
+      default:
+        MSQ_SETERR(err)("averaging method not available.",MsqError::INVALID_STATE);
+        return 0.0;
+    }
+    
+      // average gradients
+    for (i = 0; i < num_vertex; ++i)
+    {
+      if (fixed_vertices & (1<<i))  // skip fixed vertices
+      {
+        vertex_grads[i] = 0;
+        continue;
+      }
+
+      adj_idx = TopologyInfo::adjacent_vertices( type, i, num_adj );
+      rev_idx = TopologyInfo::reverse_vertex_adjacency_offsets( type, i, num_adj );
+      if (i < num_corner) // not all vertices are corners (e.g. pyramid)
+        vertex_grads[i] = g_factor[i] * corner_grads[g_per_v*i];
+      else
+        vertex_grads[i] = 0;
+      for (j = 0; j < num_adj; ++j)
+      {
+        unsigned v = adj_idx[j], c = rev_idx[j]+1;
+        if (v >= num_corner)
+          continue; // not all vertices are corners (e.g. pyramid)
+        vertex_grads[i] += g_factor[v] * corner_grads[g_per_v*v+c];
+      }
+    }
+    
+      // average Hessians
+    const double f1 = avg / ( p * t );
+    const double f2 = (1.0 / p - 1) * f1 / t;
+    for (i = 0; i < num_vertex; ++i)
+    {
+      if (fixed_vertices & (1<<i))  // skip fixed vertices
+        continue;
+
+      adj_idx = TopologyInfo::adjacent_vertices( type, i, num_adj );
+      rev_idx = TopologyInfo::reverse_vertex_adjacency_offsets( type, i, num_adj );
+    
+        // For each column of the hessians matrix (i->row)
+      for (j = i; j < num_vertex; ++j)
+      {
+        if (fixed_vertices & (1<<j))  // skip fixed vertices
+          continue;
+       
+          // vertices adjacent to adjacent vertex
+        adj_idx2 = TopologyInfo::adjacent_vertices( type, j, num_adj2 );
+        rev_idx2 = TopologyInfo::reverse_vertex_adjacency_offsets( type, j, num_adj2 );
+
+          // The index of the hessian calculated in this iteration.
+        unsigned loc = num_vertex*i - i*(i+1)/2 + j;
+        
+          // For this vertex and each adjacent vertex
+        for (k = 0; k <= num_adj; k++)
+        {
+          unsigned v, r, c;  // vertex, and row and column in vertex hessians
+          if (k == 0) // for k = 0, this vertex
+          {
+            v = i;
+            r = 0;
+          }
+          else        // otherwise k-1-th adjacent vertex
+          {
+            v = adj_idx[k-1];
+            r = rev_idx[k-1] + 1;
+          }
+          
+          if (v >= num_corner) // not all vertices are corners (e.g. pyramid)
+            continue; 
+          else if (j == v) // for this vertex
+            c = 0;
+          else        // otherwise find offset of shared adjacent vertex
+          {
+            for (l = 0; l < num_adj2 && adj_idx2[l] != v; ++l);
+            if (l == num_adj2)
+              continue;
+            
+            c = rev_idx2[l] + 1;
+          }
+          
+          outer.outer_product( corner_grads[g_per_v*v+r], corner_grads[g_per_v*v+c] );
+          outer *= h_factor[v];
+          if (r <= c)
+          {
+            unsigned h = h_per_v*v + g_per_v*r - r*(r+1)/2 + c;
+            outer += g_factor[v]*corner_hessians[h];
+          }
+          else
+          {
+            unsigned h = h_per_v*v + g_per_v*c - c*(c+1)/2 + r;
+            outer.plus_transpose_equal( g_factor[v]*corner_hessians[h] );
+          }
+          vertex_hessians[loc] += outer;
+          
+        } // for (k = adjacent_vertex)
+        
+        vertex_hessians[loc] *= f1;
+        outer.outer_product( vertex_grads[i], vertex_grads[j] );
+        outer *= f2;
+        vertex_hessians[loc] += outer;
+        
+      } // for(j = column)
+      
+      vertex_grads[i] *= f1;
+    } // for (i = vertex)
+  } // block for "default" case
+  break;
+  
+  } // outer switch
+  
+  return avg;
+}
+
 
 double QualityMetric::average_metric_and_weights( double metrics[],
                                                   int count, 

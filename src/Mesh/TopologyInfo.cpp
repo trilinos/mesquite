@@ -269,6 +269,35 @@ TopologyInfo::TopologyInfo()
     vertAdjMap[PRISM-FIRST_FACE][i][2] = (i+1)%3+3;
     vertAdjMap[PRISM-FIRST_FACE][i][3] = i-3;
   }
+  
+    // Build reverse vertex-vertex adjacency index map
+  const EntityTopology types[] = { TRIANGLE, 
+                                   QUADRILATERAL, 
+                                   TETRAHEDRON,
+                                   PYRAMID,
+                                   PRISM, 
+                                   HEXAHEDRON };
+  const int num_types = sizeof(types)/sizeof(types[0]);
+  for (i = 0; i < num_types; ++i)
+  {
+    const unsigned num_vert = corners( types[i] );
+    for (unsigned v = 0; v < num_vert; ++v)
+    {
+      unsigned num_v_adj;
+      const unsigned* v_adj = adjacent_vertices( types[i], v, num_v_adj );
+      unsigned* reverse = revVertAdjIdx[types[i]-FIRST_FACE][v];
+      reverse[0] = num_v_adj;
+      
+      for (unsigned j = 0; j < num_v_adj; ++j)
+      {
+        unsigned num_j_adj, k;
+        const unsigned* j_adj = adjacent_vertices( types[i], v_adj[j], num_j_adj );
+        for (k = 0; k < num_j_adj && j_adj[k] != v; ++k);
+        assert( k < num_j_adj ); // If this fails, vertAdjMap is corrupt!
+        reverse[j+1] = k;
+      }
+    }
+  }
 }
 
 void TopologyInfo::higher_order( EntityTopology topo,
@@ -462,6 +491,23 @@ const unsigned* TopologyInfo::adjacent_vertices( EntityTopology topo,
   }
   
   const unsigned* vect = instance.vertAdjMap[topo-FIRST_FACE][index];
+  num_adj_out = vect[0];
+  return vect + 1;
+}
+
+const unsigned* TopologyInfo::reverse_vertex_adjacency_offsets(
+                                              EntityTopology topo,
+                                              unsigned index,
+                                              unsigned& num_adj_out )
+{
+  const unsigned count = corners( topo );
+  if (!count || index >= count)
+  {
+    num_adj_out = 0;
+    return 0;
+  }
+  
+  const unsigned* vect = instance.revVertAdjIdx[topo-FIRST_FACE][index];
   num_adj_out = vect[0];
   return vect + 1;
 }
