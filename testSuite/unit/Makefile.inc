@@ -18,7 +18,7 @@ $(MSQ_RUN_TEST): $(MSQ_TEST)
 all_tests: $(MSQ_TEST)
 endif
 
-TEST_SRCS = msq_test_main.cpp \
+TEST_SRCS = \
     BoundedCylinderDomainTest.cpp \
     CylinderDomainTest.cpp \
     ExodusTest.cpp \
@@ -52,16 +52,32 @@ TEST_OBJS = ${TEST_SRCS:.cpp=.o}
 
 TEST_OBJS_P = $(TEST_OBJS:%=$(UNIT_DIR)/%)
 
-$(MSQ_TEST) : $(TEST_OBJS_P) $(locallibdir)/libmesquite.a
+$(MSQ_TEST) : $(TEST_OBJS_P) testSuite/unit/msq_test_main.o $(locallibdir)/libmesquite.a
 	@echo "Linking $@"
 	$(PREFIX)$(LINKER) $(LDFLAGS) \
-        $(TEST_OBJS_P) \
-        -o $@ \
-        -L$(locallibdir) -lmesquite \
-        $(CPPUNIT_LNK) $(CONFIG_LDFLAGS) \
-        $(TSTT_MESH_LDFLAGS) 
+	$(TEST_OBJS_P) testSuite/unit/msq_test_main.o \
+	-o $@ \
+	-L$(locallibdir) -lmesquite \
+	$(CPPUNIT_LNK) $(CONFIG_LDFLAGS) \
+	$(TSTT_MESH_LDFLAGS) 
+
+testSuite/unit/qt_test : $(TEST_OBJS_P) testSuite/unit/qt_test_main.o $(locallibdir)/libmesquite.a
+	@echo "Linking $@"
+	$(PREFIX)$(LINKER) $(LDFLAGS) \
+	$(TEST_OBJS_P) testSuite/unit/qt_test_main.o \
+	-o $@ \
+	-L$(locallibdir) -lmesquite \
+	$(CPPUNIT_LNK) $(CONFIG_LDFLAGS) \
+	-lqttestrunner -L$(QTDIR)/lib -lqt-mt \
+	$(TSTT_MESH_LDFLAGS) 
 
 .SUFFIXES : .cpp .o
+
+qt_test_main.o: qt_test_main.cpp
+	$(PREFIX) $(CXX) -c $(CXXFLAGS) $(CONFIG_CFLAGS) \
+        $(MESQUITE_INCLUDE) $(CPPUNIT_INC) -I$(QTDIR)/include \
+        $(TSTT_BASE_INC) $(TSTT_MESH_INC) $(TSTT_MESH_CFLAGS) \
+        -c -o $@ $<
 
 .cpp.o:
 	@echo "Compiling $<"

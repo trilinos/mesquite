@@ -19,13 +19,22 @@ include $(MSQ_BASE_DIR)/Makefile.customize
 include Makefile.inc
 MSQ_BASE_DIR = ../..
 
-msq_test : $(TEST_OBJS) $(MSQ_BASE_DIR)/lib/libmesquite.a
+msq_test : $(TEST_OBJS) msq_test_main.o $(MSQ_BASE_DIR)/lib/libmesquite.a
 	@echo "Linking $@"
 	$(PREFIX)$(LINKER) $(LDFLAGS) \
-        $(TEST_OBJS) \
+        $(TEST_OBJS) msq_test_main.o \
         -o $@ \
         -L$(MSQ_BASE_DIR)/lib -lmesquite \
          $(CONFIG_LDFLAGS) $(CPPUNIT_LNK) $(TSTT_MESH_LDFLAGS)
+
+qt_test: $(TEST_OBJS) qt_test_main.o $(MSQ_BASE_DIR)/lib/libmesquite.a
+	$(PREFIX)$(LINKER) $(LDFLAGS) \
+	$(TEST_OBJS) qt_test_main.o \
+	-o $@ \
+        -L$(MSQ_BASE_DIR)/lib -lmesquite \
+         $(CONFIG_LDFLAGS) $(CPPUNIT_LNK) \
+	-lqttestrunner -L$(QTDIR)/lib -lqt-mt \
+	$(TSTT_MESH_LDFLAGS)
 
 clean:
 	@rm -f *.o msq_test
