@@ -1192,8 +1192,8 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
       for (int j=0; j<3; ++j)
         CPPUNIT_ASSERT_DOUBLES_EQUAL(grad_num[i][j], grad_ana[i][j], 0.001);
     
-
     // same test, but free vertices order differ from vertices order in element. 
+/* Don't allow this anymore - require vertices in order.
     two_vtces[0] = &vertices[bad_elem_vertex_indices[2]];
     two_vtces[1] = &vertices[bad_elem_vertex_indices[0]];
     
@@ -1210,6 +1210,7 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
     for (i=0; i<2; ++i)
       for (int j=0; j<3; ++j)
         CPPUNIT_ASSERT_DOUBLES_EQUAL(grad_num[i][j], grad_ana[i][j], 0.001);
+*/
     delete mean_ratio;
     delete []grad_num;
     delete []grad_ana;
