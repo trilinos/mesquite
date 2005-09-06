@@ -110,7 +110,6 @@ namespace Mesquite
       // This gives a big computation speed increase.
       Vector3D mCoords[4]; // Vertex coordinates for the (decomposed) elements
       Vector3D mGradients[32]; // Gradient of metric with respect to the coords
-      Vector3D mAccumGrad[8];  // Accumulated gradients (composed merit)
       Matrix3D mHessians[80]; // Hessian of metric with respect to the coords
       double   mMetrics[8]; // Metric values for the (decomposed) elements
       
