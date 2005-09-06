@@ -341,6 +341,15 @@ namespace Mesquite
      static void zero_fixed_gradients( EntityTopology type, 
                                        uint32_t fixed_vertices, 
                                        Vector3D* gradients );
+                                       
+      /**\brief Copy only gradients for free vertices from one list
+       *        to the other.
+       *
+       */
+     static void copy_free_gradients( EntityTopology type,
+                                      uint32_t fixed_vertices,
+                                      const Vector3D* src_gradients,
+                                      Vector3D* tgt_gradients ); 
 
       /** \brief Set Hessian values to zero for fixed vertices.
        *

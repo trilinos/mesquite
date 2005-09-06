@@ -519,7 +519,7 @@ double QualityMetric::average_corner_gradients( EntityTopology type,
                                   unsigned num_corner,
                                   double corner_values[],
                                   const Vector3D corner_grads[],
-                                  Vector3D vertex_grads[],
+                                  Vector3D* vertex_grads,
                                   MsqError& err )
 {
   const unsigned num_vertex = TopologyInfo::corners( type );
@@ -537,24 +537,22 @@ double QualityMetric::average_corner_gradients( EntityTopology type,
   for (i = 0; i < num_vertex; ++i)
   {
     if (fixed_vertices & (1<<i))  // skip fixed vertices
-    {
-      vertex_grads[i] = 0;
       continue;
-    }
     
     adj_idx = TopologyInfo::adjacent_vertices( type, i, num_adj );
     rev_idx = TopologyInfo::reverse_vertex_adjacency_offsets( type, i, num_adj );
     if (i < num_corner) // not all vertices are corners (e.g. pyramid)
-      vertex_grads[i] = corner_values[i] * corner_grads[per_vertex*i];
+      *vertex_grads = corner_values[i] * corner_grads[per_vertex*i];
     else
-      vertex_grads[i] = 0;
+      *vertex_grads = 0;
     for (j = 0; j < num_adj; ++j)
     {
       const unsigned v = adj_idx[j], c = rev_idx[j]+1;
       if (v >= num_corner) // if less corners than vertices (e.g. pyramid apex)
         continue;
-      vertex_grads[i] += corner_values[v] * corner_grads[per_vertex*v+c];
+      *vertex_grads += corner_values[v] * corner_grads[per_vertex*v+c];
     }
+    ++vertex_grads;
   }
 
   return avg;
@@ -588,6 +586,20 @@ void QualityMetric::zero_fixed_gradients( EntityTopology elem_type,
   for (unsigned i = 0; i < num_vertex; ++i)
     if (fixed_vertices & (1 << i))
       grads[i] = 0;
+}
+
+void QualityMetric::copy_free_gradients( EntityTopology type,
+                                      uint32_t fixed_vertices,
+                                      const Vector3D* src_gradients,
+                                      Vector3D* tgt_gradients )
+{
+  const unsigned num_vertex = TopologyInfo::corners( type );
+  for (unsigned i = 0; i < num_vertex; ++i)
+    if (!(fixed_vertices & (1 << i)))
+    {
+      *tgt_gradients = src_gradients[i];
+      ++tgt_gradients;
+    }
 }
 
 void QualityMetric::zero_fixed_hessians( EntityTopology elem_type,

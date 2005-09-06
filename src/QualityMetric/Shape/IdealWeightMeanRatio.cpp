@@ -207,9 +207,9 @@ bool IdealWeightMeanRatio::compute_element_analytical_gradient(PatchData &pd,
     mCoords[0] = vertices[v_i[0]];
     mCoords[1] = vertices[v_i[1]];
     mCoords[2] = vertices[v_i[2]];
-    if (!g_fcn_2e(m, mAccumGrad, mCoords, n, a2Con, b2Con, c2Con)) return false;
+    if (!g_fcn_2e(m, mGradients, mCoords, n, a2Con, b2Con, c2Con)) return false;
 
-    zero_fixed_gradients( TRIANGLE, fm, g );
+    copy_free_gradients( TRIANGLE, fm, mGradients, g );
     break;
 
   case QUADRILATERAL:
@@ -233,10 +233,10 @@ bool IdealWeightMeanRatio::compute_element_analytical_gradient(PatchData &pd,
     mCoords[1] = vertices[v_i[1]];
     mCoords[2] = vertices[v_i[2]];
     mCoords[3] = vertices[v_i[3]];
-    metric_valid = g_fcn_3e(m, mAccumGrad, mCoords, a3Con, b3Con, c3Con);
+    metric_valid = g_fcn_3e(m, mGradients, mCoords, a3Con, b3Con, c3Con);
     if (!metric_valid) return false;
 
-    zero_fixed_gradients( TETRAHEDRON, fm, g );
+     copy_free_gradients( TETRAHEDRON, fm, mGradients, g );
     break;
 
   case PYRAMID:
