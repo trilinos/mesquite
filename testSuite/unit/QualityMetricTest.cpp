@@ -62,10 +62,8 @@ correct metric return values.
 #include "EdgeLengthQualityMetric.hpp"
 #include "UntangleBetaQualityMetric.hpp"
 #include "cppunit/extensions/HelperMacros.h"
-#include "ASMQualityMetric.hpp"
 #include "SmoothnessQualityMetric.hpp"
 #include "LocalSizeQualityMetric.hpp"
-#include "CornerJacobianQualityMetric.hpp"
 #include "I_DFT.hpp"
 #include "I_DFT_WeakBarrier.hpp"
 #include "I_DFT_NoBarrier.hpp"
@@ -130,10 +128,6 @@ private:
   CPPUNIT_TEST (test_mean_ratio_hex_hessian_rms);
   CPPUNIT_TEST (test_mean_ratio_hex_hessian_harmonic);
   CPPUNIT_TEST (test_mean_ratio_hex_hessian_hms);
-    //Test ASM (area smoothness quality metric)
-  CPPUNIT_TEST (test_asm);
-    //Test corner jacobian metric
-  CPPUNIT_TEST (test_corner_jacobian_metric);
     //Test local size metric
   CPPUNIT_TEST (test_local_size_metric);
     //Test local size metric
@@ -900,77 +894,6 @@ void test_i_dft_gradient(PatchData &pd, QualityMetric* this_metric)
      delete met;
        //delete lam_met;
    }
-  
-  void test_asm()
-     {
-       QualityMetric *met = new ASMQualityMetric;
-       MsqPrintError err(cout); 
-         //Test the metric on a single elemnt patch
-       PatchData p1;
-       create_one_tri_patch(p1, err);
-       MsqMeshEntity* elem1=p1.get_element_array(err); CPPUNIT_ASSERT(!err);
-       double first_val;
-       bool first_bool=met->evaluate_element(p1,&elem1[0],first_val,err); CPPUNIT_ASSERT(!err);
-         //Any non-connected element should have asm of 0.0
-       CPPUNIT_ASSERT_DOUBLES_EQUAL(first_val, 0.0, qualTol);
-       CPPUNIT_ASSERT(first_bool==true);
-         //Test on a patch with two ideal tris
-       PatchData p2;
-       create_two_tri_patch(p2, err); CPPUNIT_ASSERT(!err);
-       MsqMeshEntity* elem2=p2.get_element_array(err); CPPUNIT_ASSERT(!err);
-       double second_val;
-       bool second_bool=met->evaluate_element(p2,&elem2[0],second_val,err); CPPUNIT_ASSERT(!err);
-         //Two neighboring tris with equal area should have asm of 0.0
-       CPPUNIT_ASSERT_DOUBLES_EQUAL(second_val, 0.0, qualTol);
-       CPPUNIT_ASSERT(second_bool==true);
-
-        //Test on a patch with two tris one not ideal
-       PatchData p3;
-       create_qm_two_tri_patch_with_domain(p3, err); CPPUNIT_ASSERT(!err);
-       MsqMeshEntity* elem3=p3.get_element_array(err); CPPUNIT_ASSERT(!err);
-       double third_val;
-       bool third_bool=met->evaluate_element(p3,&elem3[0],third_val,err); CPPUNIT_ASSERT(!err);
-         //Two neighboring tris with equal area should have asm of 0.0
-       CPPUNIT_ASSERT(third_val>0.0);
-       CPPUNIT_ASSERT(third_val<1.0);
-       CPPUNIT_ASSERT(third_bool==true);
-       destroy_patch_with_domain(p3);
-       delete met;
-     }
-  
-  void test_corner_jacobian_metric()
-     {
-       QualityMetric *met = new CornerJacobianQualityMetric;
-       MsqPrintError err(cout);
-         //Test the metric on a single elemnt patch
-       PatchData p1;
-       create_one_tri_patch(p1, err);
-       MsqMeshEntity* elem1=p1.get_element_array(err);
-       double first_val;
-       bool first_bool=met->evaluate_element(p1,&elem1[0],first_val,err); CPPUNIT_ASSERT(!err);
-       CPPUNIT_ASSERT_DOUBLES_EQUAL(first_val, sqrt(3.0)/4.0, qualTol);
-       CPPUNIT_ASSERT(first_bool==true);
-         //Test on a patch with two ideal tris
-       PatchData p2;
-       create_two_tri_patch(p2, err);
-       MsqMeshEntity* elem2=p2.get_element_array(err);
-       double second_val;
-       bool second_bool=met->evaluate_element(p2,&elem2[0],second_val,err); CPPUNIT_ASSERT(!err);
-       CPPUNIT_ASSERT_DOUBLES_EQUAL(second_val, sqrt(3.0)/4.0, qualTol);
-       CPPUNIT_ASSERT(second_bool==true);
-
-        //Test on a patch with two tris one not ideal
-       PatchData p3;
-       create_qm_two_tri_patch_with_domain(p3, err); CPPUNIT_ASSERT(!err);
-       MsqMeshEntity* elem3=p3.get_element_array(err); CPPUNIT_ASSERT(!err);
-       double third_val;
-       bool third_bool=met->evaluate_element(p3,&elem3[0],third_val,err); CPPUNIT_ASSERT(!err);
-       CPPUNIT_ASSERT(third_val>0.0);
-       CPPUNIT_ASSERT(third_val<1.0);
-       CPPUNIT_ASSERT(third_bool==true);
-       destroy_patch_with_domain(p3);
-       delete met;
-     }
   
   void test_local_size_metric()
      {

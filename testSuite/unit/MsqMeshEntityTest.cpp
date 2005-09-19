@@ -71,10 +71,6 @@ private:
   CPPUNIT_TEST (test_centroid_tri);
   CPPUNIT_TEST (test_centroid_quad);
   CPPUNIT_TEST (test_centroid_hex);
-  CPPUNIT_TEST (test_compute_weigted_jacobian_ideal_hex);
-  CPPUNIT_TEST (test_compute_weigted_jacobian_ideal_tet);
-  CPPUNIT_TEST (test_compute_weigted_jacobian_ideal_quad);
-  CPPUNIT_TEST (test_compute_weigted_jacobian_ideal_tri);
   CPPUNIT_TEST (test_unsigned_area);
   CPPUNIT_TEST_SUITE_END();
 
@@ -168,148 +164,6 @@ public:
     test_centroid(oneHexPatch, correct);
   }
 
-  void test_compute_weigted_jacobian_ideal_hex()
-  {
-    MsqPrintError err(cout);
-    //determinate of jacobs
-    double deter;
-    MsqMeshEntity* hex = oneHexPatch.get_element_array(err); CPPUNIT_ASSERT(!err);
-    // get the ideal tets sample points 
-    std::vector<Vector3D> sample_points;
-    hex->get_sample_points(sample_points, err); CPPUNIT_ASSERT(!err);
-      // and get the jacobian vectors (should be the identity matrix).
-      //for the first sample point (0,0,0)
-    short num_jac_vec;
-    std::vector<Vector3D>::iterator sp;
-    sp=sample_points.begin();
-    Vector3D jacobian_vectors[3];
-    hex->compute_weighted_jacobian(oneHexPatch, *sp, jacobian_vectors,
-                                   num_jac_vec , err); CPPUNIT_ASSERT(!err);
-      //Make sure we have the identity
-    CPPUNIT_ASSERT((jacobian_vectors[0]-e1).length()<tolEps);
-    CPPUNIT_ASSERT((jacobian_vectors[1]-e2).length()<tolEps);
-    CPPUNIT_ASSERT((jacobian_vectors[2]-e3).length()<tolEps);
-    int counter=0;
-    while(sp!=sample_points.end()){
-        //get next sample point
-      hex->compute_weighted_jacobian(oneHexPatch, *sp, jacobian_vectors,
-                                     num_jac_vec , err); CPPUNIT_ASSERT(!err);
-        //make sure that our jacobian has determinat one
-      deter=jacobian_vectors[0]%(jacobian_vectors[1]*jacobian_vectors[2]);
-        //<<"\n\nInside test tet c_weighted_j deter = "<< deter <<"\n";
-      CPPUNIT_ASSERT(fabs(deter-1.0)<tolEps);
-      ++sp;
-      ++counter;
-    }
-      //make sure that we had eight sample points.
-    CPPUNIT_ASSERT(counter==8);
-  }
-
-       
-  void test_compute_weigted_jacobian_ideal_tet()
-  {
-    MsqPrintError err(cout);
-      //determinate of jacobs
-    double deter;
-    MsqMeshEntity* tet = oneTetPatch.get_element_array(err); CPPUNIT_ASSERT(!err);
-      // get the ideal tets sample points 
-    std::vector<Vector3D> sample_points;
-    tet->get_sample_points(sample_points, err); CPPUNIT_ASSERT(!err);
-    // and get the jacobian vectors (should be the identity matrix).
-    short num_jac_vec;
-    std::vector<Vector3D>::iterator sp;
-    sp=sample_points.begin();
-    Vector3D jacobian_vectors[3];
-    tet->compute_weighted_jacobian(oneTetPatch, *sp, jacobian_vectors,
-                                   num_jac_vec , err); CPPUNIT_ASSERT(!err);
-
-    CPPUNIT_ASSERT((jacobian_vectors[0]-e1).length()<tolEps);
-    CPPUNIT_ASSERT((jacobian_vectors[1]-e2).length()<tolEps);
-    CPPUNIT_ASSERT((jacobian_vectors[2]-e3).length()<tolEps);
-      //loop over sample points
-    int counter=0;
-    while(sp!=sample_points.end()){
-        //get next sample point
-      
-      tet->compute_weighted_jacobian(oneTetPatch, *sp, jacobian_vectors,
-                                     num_jac_vec , err); CPPUNIT_ASSERT(!err);
-      deter=jacobian_vectors[0]%(jacobian_vectors[1]*jacobian_vectors[2]);
-        //<<"\n\nInside test tet c_weighted_j deter = "<< deter <<"\n";
-      CPPUNIT_ASSERT(fabs(deter-1.0)<tolEps);
-      ++sp;
-      ++counter;
-    }
-    CPPUNIT_ASSERT(counter==4);
-    
-  }
-void test_compute_weigted_jacobian_ideal_quad()
-  {
-    MsqPrintError err(cout);
-      //determinate of jacobs
-    double deter;
-    MsqMeshEntity* quad = oneQuadPatch.get_element_array(err); CPPUNIT_ASSERT(!err);
-    // get the ideal quads sample points 
-    std::vector<Vector3D> sample_points;
-    quad->get_sample_points(sample_points, err); CPPUNIT_ASSERT(!err);
-    // and get the jacobian vectors (should be the identity matrix).
-    short num_jac_vec;
-    std::vector<Vector3D>::iterator sp;
-    sp=sample_points.begin();
-    Vector3D jacobian_vectors[3];
-    quad->compute_weighted_jacobian(oneQuadPatch, *sp, jacobian_vectors,
-                                   num_jac_vec , err); CPPUNIT_ASSERT(!err);
-    CPPUNIT_ASSERT((jacobian_vectors[0]-e1).length()<tolEps);
-    CPPUNIT_ASSERT((jacobian_vectors[1]-e2).length()<tolEps);
-      //loop over sample points
-    int counter=0;
-    while(sp!=sample_points.end()){
-        //get next sample point
-      
-      quad->compute_weighted_jacobian(oneQuadPatch, *sp, jacobian_vectors,
-                                     num_jac_vec , err); CPPUNIT_ASSERT(!err);
-        //deter is not the determinant in quad case
-      deter=(jacobian_vectors[0]*jacobian_vectors[1]).length();
-      CPPUNIT_ASSERT(fabs(deter-1.0)<tolEps);
-      ++sp;
-      ++counter;
-    }
-    CPPUNIT_ASSERT(counter==4);
-    
-  }
-  
-void test_compute_weigted_jacobian_ideal_tri()
-  {
-    MsqPrintError err(cout);
-      //determinate of jacobs
-    double deter;
-    MsqMeshEntity* tri = oneTriPatch.get_element_array(err); CPPUNIT_ASSERT(!err);
-    // get the ideal tris sample points 
-    std::vector<Vector3D> sample_points;
-    tri->get_sample_points(sample_points, err); CPPUNIT_ASSERT(!err);
-    // and get the jacobian vectors (should be the identity matrix).
-    short num_jac_vec;
-    std::vector<Vector3D>::iterator sp;
-    sp=sample_points.begin();
-    Vector3D jacobian_vectors[3];
-    tri->compute_weighted_jacobian(oneTriPatch, *sp, jacobian_vectors,
-                                   num_jac_vec , err); CPPUNIT_ASSERT(!err);
-    CPPUNIT_ASSERT((jacobian_vectors[0]-e1).length()<tolEps);
-    CPPUNIT_ASSERT((jacobian_vectors[1]-e2).length()<tolEps);
-      //loop over sample points
-    int counter=0;
-    while(sp!=sample_points.end()){
-        //get next sample point
-      
-      tri->compute_weighted_jacobian(oneTriPatch, *sp, jacobian_vectors,
-                                     num_jac_vec , err); CPPUNIT_ASSERT(!err);
-      deter=(jacobian_vectors[0]*jacobian_vectors[1]).length();
-      CPPUNIT_ASSERT(fabs(deter-1.0)<tolEps);
-      ++sp;
-      ++counter;
-    }
-    CPPUNIT_ASSERT(counter==3);
-    
-  }
 
   void test_unsigned_area()
      {
@@ -321,11 +175,6 @@ void test_compute_weigted_jacobian_ideal_tri()
        MsqMeshEntity* quad = oneQuadPatch.get_element_array(err);
        CPPUNIT_ASSERT(!err);
        CPPUNIT_ASSERT(fabs(quad->compute_unsigned_area(oneQuadPatch,err)
-                           -1.0) < tolEps);
-       MsqMeshEntity* hex = oneHexPatch.get_element_array(err);
-       CPPUNIT_ASSERT(!err);
-         //PRINT_INFO("\nHEX _ _ _ %f\n",hex->compute_unsigned_volume(oneHexPatch,err));
-       CPPUNIT_ASSERT(fabs(hex->compute_unsigned_volume(oneHexPatch,err)
                            -1.0) < tolEps);
      }
   

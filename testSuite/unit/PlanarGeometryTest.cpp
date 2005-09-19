@@ -59,7 +59,6 @@ SimplifiedGeometryEngine.
 
 #include "ConditionNumberQualityMetric.hpp"
 #include "LPtoPTemplate.hpp"
-#include "ASMQualityMetric.hpp"
 #include "EdgeLengthQualityMetric.hpp"
 #include "LaplacianSmoother.hpp"
 #include "LInfTemplate.hpp"
@@ -337,7 +336,7 @@ public:
        InstructionQueue queue1;
        
          //creates a asm quality metric ...
-       SmoothnessQualityMetric* smooth = new ASMQualityMetric;
+       QualityMetric* smooth = new ConditionNumberQualityMetric;
        
          // ... and builds an objective function with it (untangle)
        LPtoPTemplate* smooth_func = new LPtoPTemplate(smooth,1,err);

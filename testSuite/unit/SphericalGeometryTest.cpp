@@ -61,7 +61,6 @@ SimplifiedGeometryEngine.
 #include "IdealWeightInverseMeanRatio.hpp"
 #include "ConditionNumberQualityMetric.hpp"
 #include "LPtoPTemplate.hpp"
-#include "ASMQualityMetric.hpp"
 #include "EdgeLengthQualityMetric.hpp"
 #include "LaplacianSmoother.hpp"
 #include "SmartLaplacianSmoother.hpp"
