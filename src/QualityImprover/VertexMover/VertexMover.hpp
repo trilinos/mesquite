@@ -74,48 +74,9 @@ namespace Mesquite
     virtual void terminate_mesh_iteration(PatchData &, 
                                          MsqError &err) = 0;
 
-      //!CHECK FEASIBLE IS NOT YET IMPLEMENTED.
-    size_t check_feasible(PatchData &pd, MsqError &err);
-    
     ObjectiveFunction* objFunc;
   };
 
   
-/*!
-  Takes a PatchData object (by reference) and returns whether the
-  patch is within the feasible region, 0, or outside the region, 1.
-*/
-  inline size_t VertexMover::check_feasible(PatchData &pd, MsqError &err)
-  {
-    MsqMeshEntity* elems=pd.get_element_array(err);
-    size_t num_elements=pd.num_elements();
-    msq_std::vector<Vector3D> sample_points;
-    Vector3D jacobian_vectors[3];
-    short num_jacobian_vectors;
-    size_t i =0;
-    for(i=0;i<num_elements;++i){
-      elems[i].get_sample_points(sample_points,err);
-      msq_std::vector<Vector3D>::iterator iter=sample_points.begin();
-      while(iter!=sample_points.end()){
-        elems[i].compute_weighted_jacobian(pd, (*iter),
-                                           jacobian_vectors,
-                                           num_jacobian_vectors, err);
-        if(num_jacobian_vectors==2){
-            //2-d not yet implemented
-        }
-        else if(num_jacobian_vectors==3){
-          if(jacobian_vectors[0]%(jacobian_vectors[1]*
-                                   jacobian_vectors[2])<=0.0){
-            return 1;
-          }
-        }
-        ++iter;
-      }
-    }
-    
-    return 0;
-  }
-    
-
 } // namespace
 #endif // Mesquite_VertexMover_hpp

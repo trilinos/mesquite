@@ -122,23 +122,6 @@ namespace Mesquite
 
     msq_stdc::size_t get_vertex_index(msq_stdc::size_t vertex_in_element) const;
     
-    //! Appends the coordinates of the sample point to 'coords'.
-    /*! Places Vector3Ds holding the sample point for a given EvaluationMode
-      and element type combination into a given vector of Vector3D.
-      \param QualityMetric::EvaluationMode mode Specifies the type of sample
-      points being used.
-      \param vector<Vecotr3D> &coords A vector of Vector3D passed by
-      reference which is used to store the sample points.
-    */
-    void get_sample_points( msq_std::vector<Vector3D> &coords, MsqError &err);
-
-      //fills array of Vector3D's with the jacobian vectors and the 
-      //number of jacobian vectors
-    void compute_weighted_jacobian(PatchData &pd, Vector3D& sample_point,
-                                   Vector3D jacobian_vectors[],
-                                   short &num_jacobian_vectors,
-                                   MsqError &err );
-    
     //! Returns the centroid of the element.
     void get_centroid(Vector3D& centroid, const PatchData &pd, MsqError &err) const;
     
@@ -152,15 +135,8 @@ namespace Mesquite
       //!The returned value is always non-negative.
     double compute_unsigned_area(PatchData &pd, MsqError &err );
     
-      //!Computes the volume of the element.
-      //!The returned value is always non-negative.
-    double compute_unsigned_volume(PatchData &pd, MsqError &err );
-    
       //!Computes the signed area of the element.
     double compute_signed_area(PatchData &pd, MsqError &err );
-
-      //!Computes the signed volume of the element.
-    double compute_signed_volume(PatchData &pd, MsqError &err );
 
     enum ElementOrientation
     {
@@ -191,10 +167,6 @@ namespace Mesquite
     void compute_corner_matrices(PatchData &pd, Matrix3D A[], int num_m3d, MsqError &err );
 
   private:
-    static void get_linear_quad_jac(Vector3D *sp,
-                                    Vector3D &coord0, Vector3D &coord1,
-                                    Vector3D &coord2, Vector3D &coord3,
-                                    Vector3D* jac);
     
     EntityTopology mType;
     /** Pointer to connectivity array.
@@ -238,17 +210,6 @@ namespace Mesquite
     assert(vertex_in_element < vertex_count());
       // Return the index
     return vertexIndices[vertex_in_element];
-  }
-
-  inline void MsqMeshEntity::get_linear_quad_jac(Vector3D *sp,
-                                                 Vector3D &coord0,
-                                                 Vector3D &coord1,
-                                                 Vector3D &coord2,
-                                                 Vector3D &coord3,
-                                                 Vector3D* jac)
-  {
-    jac[0]=coord1-coord0+(*sp)[1]*(coord2+coord0-coord3-coord1);
-    jac[1]=coord3-coord0+(*sp)[0]*(coord2+coord0-coord3-coord1);
   }
 } //namespace
 

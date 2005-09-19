@@ -1,9 +1,7 @@
 QMSMOOTHNESSDIR = $(srcdir)/QualityMetric/Smoothness
 
 QMSMOOTHNESSSRC = $(QMSMOOTHNESSDIR)/EdgeLengthQualityMetric.cpp \
-                  $(QMSMOOTHNESSDIR)/EdgeLengthRangeQualityMetric.cpp \
-                  $(QMSMOOTHNESSDIR)/ASMQualityMetric.cpp \
-
+                  $(QMSMOOTHNESSDIR)/EdgeLengthRangeQualityMetric.cpp
 
 QMSMOOTHNESSHEADERS = \
 	$(patsubst $(QMSMOOTHNESSDIR)/%,$(localincludedir)/%,\
