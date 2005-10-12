@@ -121,7 +121,7 @@ void InstructionQueue::remove_preconditioner(size_t index, MsqError &err)
   // position the instruction iterator over the preconditionner to delete
   msq_std::list<PatchDataUser*>::iterator pos;
   pos = instructions.begin();
-  advance(pos, index);
+  msq_std::advance(pos, index);
 
   if ( (*pos)->get_algorithm_type() != PatchDataUser::QUALITY_IMPROVER ) 
   {
@@ -161,7 +161,7 @@ void InstructionQueue::insert_preconditioner(QualityImprover* instr,
   // position the instruction iterator
   msq_std::list<PatchDataUser*>::iterator pos;
   pos = instructions.begin();
-  advance(pos, index);
+  msq_std::advance(pos, index);
   // adds the preconditioner
   instructions.insert(pos,instr);
   nbPreConditionners++;
@@ -197,7 +197,7 @@ void InstructionQueue::remove_quality_assessor(size_t index, MsqError &err)
   // position the instruction iterator over the QualityAssessor to delete
   msq_std::list<PatchDataUser*>::iterator pos;
   pos = instructions.begin();
-  advance(pos, index);
+  msq_std::advance(pos, index);
 
   if ( (*pos)->get_algorithm_type() != PatchDataUser::QUALITY_ASSESSOR ) 
   {
@@ -231,7 +231,7 @@ void InstructionQueue::insert_quality_assessor(QualityAssessor* instr,
   // position the instruction iterator
   msq_std::list<PatchDataUser*>::iterator pos;
   pos = instructions.begin();
-  advance(pos, index);
+  msq_std::advance(pos, index);
   // adds the QualityAssessor
   instructions.insert(pos,instr);
 }
@@ -343,7 +343,7 @@ msq_std::list<PatchDataUser*>::iterator InstructionQueue::clear_master(MsqError 
   
     // position the instruction iterator over the master quality improver
   master_pos = instructions.begin();
-  advance(master_pos, masterInstrIndex);
+  msq_std::advance(master_pos, masterInstrIndex);
   
     // erases the master quality improver
   instr_iter = instructions.erase(master_pos);

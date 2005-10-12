@@ -141,9 +141,10 @@ void MeshImpl::write_vtk(const char* out_filename, MsqError &err)
   }
   
     // Write out the connectivity table
+  size_t elem_idx;
   size_t connectivity_size = myMesh->num_elements() + myMesh->num_vertex_uses();
   file << "CELLS " << myMesh->num_elements() << ' ' << connectivity_size << '\n';
-  for (size_t elem_idx = 0; elem_idx < myMesh->max_element_index(); ++elem_idx)
+  for (elem_idx = 0; elem_idx < myMesh->max_element_index(); ++elem_idx)
   {
     if (!myMesh->is_element_valid(elem_idx))
       continue;
@@ -163,7 +164,7 @@ void MeshImpl::write_vtk(const char* out_filename, MsqError &err)
   
     // Write out the element types
   file << "CELL_TYPES " << myMesh->num_elements() << '\n';
-  for (size_t elem_idx = 0; elem_idx < myMesh->max_element_index(); ++elem_idx)
+  for (elem_idx = 0; elem_idx < myMesh->max_element_index(); ++elem_idx)
   {
     if (!myMesh->is_element_valid(elem_idx))
       continue;

@@ -95,10 +95,6 @@ SOURCE=..\src\QualityMetric\AddQualityMetric.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\QualityMetric\Smoothness\ASMQualityMetric.hpp
-# End Source File
-# Begin Source File
-
 SOURCE=..\src\QualityMetric\Shape\AspectRatioGammaQualityMetric.hpp
 # End Source File
 # Begin Source File
@@ -131,10 +127,6 @@ SOURCE=..\src\QualityImprover\VertexMover\ConjugateGradient\ConjugateGradient.hp
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\QualityMetric\Volume\CornerJacobianQualityMetric.hpp
-# End Source File
-# Begin Source File
-
 SOURCE=..\src\Mesh\CornerTag.hpp
 # End Source File
 # Begin Source File
@@ -160,10 +152,6 @@ SOURCE=..\src\QualityImprover\VertexMover\FeasibleNewton\FeasibleNewton.hpp
 # Begin Source File
 
 SOURCE=..\src\Misc\FileTokenizer.hpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\QualityMetric\Shape\GeneralizedConditionNumberQualityMetric.hpp
 # End Source File
 # Begin Source File
 
@@ -260,10 +248,6 @@ SOURCE=..\src\Mesh\MeshImplTags.hpp
 # Begin Source File
 
 SOURCE=..\include\MeshInterface.hpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\Mesh\MeshSet.hpp
 # End Source File
 # Begin Source File
 
@@ -506,10 +490,6 @@ SOURCE=..\src\Mesh\MeshImplTags.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\Mesh\MeshSet.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=..\src\Mesh\MsqMeshEntity.cpp
 # End Source File
 # Begin Source File
@@ -731,10 +711,6 @@ SOURCE=..\src\QualityMetric\Shape\ConditionNumberQualityMetric.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\QualityMetric\Shape\GeneralizedConditionNumberQualityMetric.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=..\src\QualityMetric\Shape\IdealWeightInverseMeanRatio.cpp
 # End Source File
 # Begin Source File
@@ -749,10 +725,6 @@ SOURCE=..\src\QualityMetric\Shape\VertexConditionNumberQualityMetric.cpp
 # Begin Group "Smoothness"
 
 # PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=..\src\QualityMetric\Smoothness\ASMQualityMetric.cpp
-# End Source File
 # Begin Source File
 
 SOURCE=..\src\QualityMetric\Smoothness\EdgeLengthQualityMetric.cpp
@@ -773,10 +745,6 @@ SOURCE=..\src\QualityMetric\Untangle\UntangleBetaQualityMetric.cpp
 # Begin Group "Volume"
 
 # PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=..\src\QualityMetric\Volume\CornerJacobianQualityMetric.cpp
-# End Source File
 # Begin Source File
 
 SOURCE=..\src\QualityMetric\Volume\LocalSizeQualityMetric.cpp

@@ -1780,6 +1780,7 @@ void PatchData::fill_global_patch( MsqError& err )
     // (and it is probably better to ensure that the vertices are always 
     // in *some* consistent order).
   
+  size_t i;
   if (MSQ_CHKERR(err)) return;  // check error from PatchData constructor
   
     // Get elements and vertices
@@ -1789,7 +1790,7 @@ void PatchData::fill_global_patch( MsqError& err )
     // Build sorted array to use in constructing CSR rep of element connectivty.
   typedef msq_std::vector< msq_std::pair<Mesh::VertexHandle,size_t> > MapList;
   MapList map( vertexHandlesArray.size() );
-  for (size_t i = 0; i < vertexHandlesArray.size(); ++i)
+  for (i = 0; i < vertexHandlesArray.size(); ++i)
   {
     map[i].first = vertexHandlesArray[i];
     map[i].second = i;
@@ -1840,7 +1841,7 @@ void PatchData::fill_global_patch( MsqError& err )
   if (MSQ_CHKERR(err))
     { delete [] fixed_flag_array; return; }                          
 
-  for (size_t i = 0; i < vertexHandlesArray.size(); i++)
+  for (i = 0; i < vertexHandlesArray.size(); i++)
     if (fixed_flag_array[i])
       this->vertexArray[i].set_hard_fixed_flag();
     else
@@ -2012,7 +2013,7 @@ bool PatchData::get_next_element_patch( MsqError& err )
                                         num_verts,
                                         err ); MSQ_ERRZERO(err);
 
-  for (size_t i = 0; i < num_verts; i++)
+  for (i = 0; i < num_verts; i++)
     if (fixed_flag_array[i])
       this->vertexArray[i].set_hard_fixed_flag();
     else

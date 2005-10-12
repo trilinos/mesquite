@@ -51,7 +51,11 @@ Header file for the Mesquite::QualityMetric class
 #include "Vector3D.hpp"
 #include "Matrix3D.hpp"
 
-#include <stdint.h>
+#ifdef _MSC_VER
+   typedef unsigned uint32_t;
+#else
+#  include <stdint.h>
+#endif
 
 namespace Mesquite
 {
