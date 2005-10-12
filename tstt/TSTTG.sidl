@@ -622,6 +622,14 @@ package TSTTG version 0.5.1
                    in double plane_normal_y,
                    in double plane_normal_z) 
         throws TSTTB.Error;
+
+        /* scale the specified entity 
+         */
+      void Scale(inout opaque geom_entity,
+                 in double scale_x,
+                 in double scale_y,
+                 in double scale_z) 
+        throws TSTTB.Error;
     }
   
   interface Booleans extends Modify
@@ -653,6 +661,19 @@ package TSTTG version 0.5.1
                    in double plane_normal_z,
                    in double offset, in bool reverse,
                    out opaque geom_entity2) 
+        throws TSTTB.Error;
+
+        /* Imprint the entities in the input list together.
+         */
+      void Imprint(in array<opaque> geom_entities,
+                   in int geom_entities_size) 
+        throws TSTTB.Error;
+
+        /* Merge coincident topology in the entities in the input list.
+         */
+      void Merge(in array<opaque> geom_entities,
+                 in int geom_entities_size,
+                 in double tolerance) 
         throws TSTTB.Error;
     }
 }
