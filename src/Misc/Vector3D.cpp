@@ -35,7 +35,7 @@
 
 #include <math.h>
 
-#ifdef HAVE_IEEEFP
+#ifdef HAVE_IEEEFP_H
 #  include <ieeefp.h>
 #endif
 

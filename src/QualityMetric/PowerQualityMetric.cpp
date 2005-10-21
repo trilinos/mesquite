@@ -84,7 +84,7 @@ bool PowerQualityMetric::evaluate_element(PatchData& pd,
   valid_flag=qualMetric->evaluate_element(pd, element, metric1, err); MSQ_ERRZERO(err);
   if(!valid_flag)
     return false;
-  value = pow(metric1,mPower);
+  value = mPower.raise(metric1);
   return valid_flag;
 }
 
@@ -100,7 +100,7 @@ bool PowerQualityMetric::evaluate_vertex(PatchData& pd,
   valid_flag=qualMetric->evaluate_vertex(pd, vert, metric1, err); MSQ_ERRZERO(err);
   if(!valid_flag)
     return false;
-  value = pow(metric1,mPower);
+  value = mPower.raise(metric1);
   return valid_flag;
 }
 

@@ -53,8 +53,10 @@ Header file for the Mesquite::QualityMetric class
 
 #ifdef _MSC_VER
    typedef unsigned uint32_t;
-#else
+#elif defined(HAVE_STDINT_H)
 #  include <stdint.h>
+#elif defined(HAVE_INTTYPE_H)
+#  include <inttype.h>
 #endif
 
 namespace Mesquite

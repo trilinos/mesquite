@@ -63,7 +63,9 @@ class Exponent
     inline Exponent& operator=( double d )
       { set_exponent(d); return *this; }
     
-    inline operator double () const
+    //inline operator double () const
+    //  { return mExponent; }
+    inline double value() const
       { return mExponent; }
     
     double pow0( double x ) const;
@@ -85,9 +87,6 @@ class Exponent
     double mExponent;
     constMemberPtr funcPointer;
 };
-
-inline double pow( double value, const Exponent& exp )
-  { return exp.raise( value ); }
 
 } // namespace Mesquite
 

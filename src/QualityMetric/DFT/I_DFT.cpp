@@ -61,7 +61,7 @@ bool I_DFT::evaluate_element(PatchData& pd,
 
   // Initialize constants for the metric
   const double delta = useBarrierDelta ? pd.get_barrier_delta(err) :
-    (mGamma ? 0 : 1);
+    (mGamma.value() ? 0 : 1);
   MSQ_ERRZERO(err);
   
   const int triInd[3][3] = {{0, 1, 2}, {1, 2, 0}, {2, 0, 1}};
@@ -239,7 +239,7 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 
   // Initialize constants for the metric
   const double delta = useBarrierDelta ? pd.get_barrier_delta(err) :
-    (mGamma ? 0 : 1);
+    (mGamma.value() ? 0 : 1);
   MSQ_ERRZERO(err);
   
   const int triInd[3][3] = {{0, 1, 2}, {1, 2, 0}, {2, 0, 1}};
@@ -942,7 +942,7 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 
   // Initialize constants for the metric
   const double delta = useBarrierDelta ? pd.get_barrier_delta(err) :
-    (mGamma ? 0 : 1);  
+    (mGamma.value() ? 0 : 1);  
   MSQ_ERRZERO(err);
 
   const int triInd[3][3] = {{0, 1, 2}, {1, 2, 0}, {2, 0, 1}};

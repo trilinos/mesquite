@@ -11,3 +11,11 @@
 /* Define to c++ preprocessor macro for function name */
 #undef MSQ_FUNCTION
 
+/* System has ieeefp.h */
+#undef HAVE_IEEEFP_H
+
+/* System has stdint.h */
+#undef HAVE_STDINT_H
+
+/* System has inttype.h */
+#undef HAVE_INTTYPE_H

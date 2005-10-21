@@ -1,7 +1,7 @@
 #
 # Allow an required program to be specified on the command line.
 # If it is not specified or no value is specified for it, attempt
-# to detech it.  If it cannt be found, set to /bin/true and warn.
+# to detech it.  
 # Usage:
 #   MSQ_CHK_PROG_WITH( varname, progname, none-val, description, [extra_path] )
 #     varname     - The name of the variable in which to store the result

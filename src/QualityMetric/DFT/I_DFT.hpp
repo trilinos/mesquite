@@ -129,7 +129,7 @@ if useBarrierDelta == true.  Otherwise, delta is zero.
       {mGamma = gamma;}
       //! access function to get mGamma  
     double p_get_gamma()
-      {return mGamma;}
+      {return mGamma.value();}
       //! access function to set useBarrierDelta
     void p_set_use_barrier_delta(bool use_delta)
       {useBarrierDelta = use_delta;}
