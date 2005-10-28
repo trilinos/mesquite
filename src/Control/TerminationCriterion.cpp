@@ -570,13 +570,13 @@ bool TerminationCriterion::terminate( )
     return_flag = true;
   }
   
-  if (SUCCESSIVE_IMPROVEMENTS_ABSOLUTE & terminationCriterionFlag &&
-     (previousOFValue - currentOFValue) <= successiveImprovementsAbsoluteEps)
-  {
-    return_flag = true;
-  }
     //only valid if an iteration has occurred, see above.
   if(iterationCounter > 0){
+    if (SUCCESSIVE_IMPROVEMENTS_ABSOLUTE & terminationCriterionFlag &&
+        (previousOFValue - currentOFValue) <= successiveImprovementsAbsoluteEps)
+    {  
+      return_flag = true;
+    }
     if (QUALITY_IMPROVEMENT_RELATIVE & terminationCriterionFlag &&
         (currentOFValue - lowerOFBound) <= 
         qualityImprovementRelativeEps * (initialOFValue - lowerOFBound))
