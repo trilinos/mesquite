@@ -103,7 +103,10 @@ void Mesquite::MsqFPE::set_current_fpe_state(int state)
   { _controlfp( state, _MCW_EM ); }
 
 void Mesquite::MsqFPE::enable_trap_fpe()
-  { _controlfp( _EM_ZERODIVIDE|_EM_INVALID|_EM_OVERFLOW, _MCW_EM ); }
+{ 
+  const int flags = _EM_ZERODIVIDE|_EM_INVALID|_EM_OVERFLOW;
+  _controlfp( ~flags, _MCW_EM );
+}
 
 
 
