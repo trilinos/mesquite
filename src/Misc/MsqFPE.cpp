@@ -97,16 +97,13 @@ bool Mesquite::MsqFPE::fpe_trap_supported()
   { return true; }
 
 int Mesquite::MsqFPE::get_current_fpe_state()
-  { return _MCW_EM & ~_controlfp(0,0); }
+  { return _controlfp(0,0); }
 
 void Mesquite::MsqFPE::set_current_fpe_state(int state)
   { _controlfp( state, _MCW_EM ); }
 
 void Mesquite::MsqFPE::enable_trap_fpe()
-{ 
-  const int flags = _EM_ZERODIVIDE|_EM_INVALID|_EM_OVERFLOW;
-  _controlfp( _controlfp(0,0) & ~flags, _MCW_EM );
-}
+  { _controlfp( _EM_ZERODIVIDE|_EM_INVALID|_EM_OVERFLOW, _MCW_EM ); }
 
 
 
