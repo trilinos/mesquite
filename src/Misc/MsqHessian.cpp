@@ -173,7 +173,9 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
         }
         else {
           row_index[col_start[r]] = c;
-          row_instr[col_start[r]] = -nz;
+          //can't use -nz, but can negate row_instr[col_start[r]]
+          row_instr[col_start[r]] = nz;
+          row_instr[col_start[r]] = -row_instr[col_start[r]];
           ++col_start[r];
         }
         

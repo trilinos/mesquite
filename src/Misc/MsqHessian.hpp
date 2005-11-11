@@ -72,7 +72,7 @@ namespace Mesquite
     \brief Vector3D is the object that effeciently stores the objective function
     Hessian each entry is a Matrix3D object (i.e. a vertex Hessian). 
   */
-  class MsqHessian
+  class MESQUITE_EXPORT MsqHessian
     {
     protected:  // data accessed directly in tests. 
       PatchData* origin_pd;

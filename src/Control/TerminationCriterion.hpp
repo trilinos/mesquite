@@ -178,27 +178,27 @@ namespace Mesquite
     };
 
       //!Constructor which does not take any arguements
-    TerminationCriterion();
+    MESQUITE_EXPORT TerminationCriterion();
     
       //!Destructor
-    ~TerminationCriterion(){};
+    MESQUITE_EXPORT ~TerminationCriterion(){};
 
       //Functions with which the user can specify the criteria to be used
       //!Sets the criterion by specifing the TCType and the eps value
-    void add_criterion_type_with_double(TCType tc_type, double eps,
+    MESQUITE_EXPORT void add_criterion_type_with_double(TCType tc_type, double eps,
                                         MsqError &err);
       //!Sets the criterion by specifing the TCType and the integer value
-    void add_criterion_type_with_int(TCType tc_type, int bound,
+    MESQUITE_EXPORT void add_criterion_type_with_int(TCType tc_type, int bound,
                                      MsqError &err);
       //!Removes the criterion by specifing just the TCType.
-    void remove_criterion_type(TCType tc_type, MsqError &err);
+    MESQUITE_EXPORT void remove_criterion_type(TCType tc_type, MsqError &err);
     
       //!Sets the type of criterion that the user would like to
       //! use for culling purposes (along with the associated tolerance.
-    void set_culling_type(TCType tc_type, double eps, MsqError &err);
+    MESQUITE_EXPORT void set_culling_type(TCType tc_type, double eps, MsqError &err);
       //!Removes any previously set culling types (sets the culling
       //! type to be NONE).
-    void remove_culling(MsqError &err);
+    MESQUITE_EXPORT void remove_culling(MsqError &err);
     
       //! Clear any data accumulated during an outer iteration
     void reset_outer( Mesh* ms, MeshDomain* dm, ObjectiveFunction* of, MsqError& err );
@@ -223,7 +223,7 @@ namespace Mesquite
     void accumulate_outer( Mesh* ms, MeshDomain* dm,  MsqError& err );
     
       //! Check if termination criterion has been met
-    bool terminate();
+    MESQUITE_EXPORT bool terminate();
     
     
       //!Function which determines whether this patch should be 'culled'
@@ -236,10 +236,10 @@ namespace Mesquite
         needs to be more robust.  How do we know whether
         currentOFValue got updated or not?  We may want to
         make sure that all the criteria get checked.*/
-    double get_current_function_value()
+    MESQUITE_EXPORT double get_current_function_value()
        {return currentOFValue;}
        
-    void set_debug_output_level( int i )
+    MESQUITE_EXPORT void set_debug_output_level( int i )
       { debugLevel = i; }
     
  protected:

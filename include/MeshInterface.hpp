@@ -76,7 +76,7 @@ namespace Mesquite
      through this interface (where intermediate objects include things
      like the faces of a hex, or an element's edges).
   */
-  class Mesh
+  class MESQUITE_EXPORT Mesh
   {
   public:
 //************ Type Definitions **************

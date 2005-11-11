@@ -34,6 +34,22 @@
 #  include "mesquite_config.h"
 #endif
 
+#ifdef _MSC_VER  //if vc
+  #ifdef MESQUITE_DLL_EXPORTS //if we are exporting as dll
+    #define MESQUITE_EXPORT  __declspec(dllexport)
+  #else                      //else we aren't exporting as dll
+    #ifdef MESQUITE_STATIC_LIB //are we compiling a static lib?
+
+      #define MESQUITE_EXPORT
+    #else                      //Calling codes need to do nothing if
+                           // they are calling as a dll
+      #define MESQUITE_EXPORT __declspec(dllimport)
+    #endif
+  #endif
+#else                    //else not vc
+  #define MESQUITE_EXPORT
+#endif
+
 #ifdef MSQ_USE_OLD_C_HEADERS
 #  define msq_stdc 
 #else
@@ -104,17 +120,17 @@ namespace Mesquite
   };
 
     // Version information
-  const char* version_string(bool include_build_number = false);
-  unsigned int major_version_number();
-  unsigned int minor_version_number();
-  unsigned int build_number();
+   MESQUITE_EXPORT const char* version_string(bool include_build_number = false);
+   MESQUITE_EXPORT unsigned int major_version_number();
+   MESQUITE_EXPORT unsigned int minor_version_number();
+   MESQUITE_EXPORT unsigned int build_number();
   enum ReleaseType
   {
     STABLE_RELEASE,
     BETA,
     ALPHA
   };
-  Mesquite::ReleaseType release_type();
+   MESQUITE_EXPORT Mesquite::ReleaseType release_type();
   
     //GLOBAL variables
   const int MSQ_MAX_NUM_VERT_PER_ENT=8;

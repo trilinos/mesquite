@@ -354,7 +354,7 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
   double delta_inv = delta_inv_C;
   const int reduction_limit = 15;
   int counter;
-  double vj_coord;
+  double vj_coord=0.0;
   short nve = element->vertex_count();
   Vector3D* grad_vec1 = new Vector3D[nve];
   Vector3D fd;
@@ -392,7 +392,7 @@ bool QualityMetric::compute_element_numerical_hessian(PatchData &pd,
       for (j=0;j<3;++j) {
         counter=0;
         double delta = delta_C;
-        double delta_inv = delta_inv_C;
+        delta_inv = delta_inv_C;
         valid = false;
         while (!valid && counter<reduction_limit){
           ++counter;

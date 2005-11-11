@@ -87,8 +87,8 @@ namespace Mesquite
   {
   public:    
       // Constructor/Destructor
-    PatchData();
-    ~PatchData();
+    MESQUITE_EXPORT PatchData();
+    MESQUITE_EXPORT ~PatchData();
     
     
       /**\brief For use by testing code -- create patch explicitly

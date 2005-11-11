@@ -68,7 +68,7 @@ namespace Mesquite
 
       
   */
-  class MsqMeshEntity
+  class MESQUITE_EXPORT MsqMeshEntity
   {
   public:
     

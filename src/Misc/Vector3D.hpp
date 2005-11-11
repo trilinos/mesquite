@@ -61,7 +61,7 @@ namespace Mesquite
       \brief Vector3D is the object that effeciently stores information about
       about three-deminsional vectors.  It is also the parent class of
       MsqVertex.      */
-  class Vector3D
+  class MESQUITE_EXPORT Vector3D
   {
   public:
     // Constructors

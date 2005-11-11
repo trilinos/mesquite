@@ -60,7 +60,7 @@ namespace Mesquite
     
   MeshImpl can read in mesh files in VTK format and ExodusII format. 
   */
-  class MeshImpl : public Mesquite::Mesh
+  class MESQUITE_EXPORT MeshImpl : public Mesquite::Mesh
   {
   public:
 //********* Functions that are NOT inherited ************

@@ -75,30 +75,30 @@ namespace Mesquite {
   {
 
   public:
-    InstructionQueue();
+    MESQUITE_EXPORT InstructionQueue();
 
-    virtual ~InstructionQueue() {};
+    MESQUITE_EXPORT virtual ~InstructionQueue() {};
     
-    void add_target_calculator( TargetCalculator* tc, MsqError& err );
+    MESQUITE_EXPORT void add_target_calculator( TargetCalculator* tc, MsqError& err );
     
-    void add_preconditioner(QualityImprover* instr, MsqError &err);
-    void remove_preconditioner(size_t index, MsqError &err);
-    void insert_preconditioner(QualityImprover* instr, size_t index, MsqError &err);
+    MESQUITE_EXPORT void add_preconditioner(QualityImprover* instr, MsqError &err);
+    MESQUITE_EXPORT void remove_preconditioner(size_t index, MsqError &err);
+    MESQUITE_EXPORT void insert_preconditioner(QualityImprover* instr, size_t index, MsqError &err);
     
-    void add_quality_assessor(QualityAssessor* instr, MsqError &err);
-    void remove_quality_assessor(size_t index, MsqError &err);
-    void insert_quality_assessor(QualityAssessor* instr, size_t index, MsqError &err);
+    MESQUITE_EXPORT void add_quality_assessor(QualityAssessor* instr, MsqError &err);
+    MESQUITE_EXPORT void remove_quality_assessor(size_t index, MsqError &err);
+    MESQUITE_EXPORT void insert_quality_assessor(QualityAssessor* instr, size_t index, MsqError &err);
     
-    void set_master_quality_improver(QualityImprover* instr, MsqError &err);
+    MESQUITE_EXPORT void set_master_quality_improver(QualityImprover* instr, MsqError &err);
     
-    void disable_automatic_quality_assessment()
+    MESQUITE_EXPORT void disable_automatic_quality_assessment()
        { autoQualAssess = false; }
-    void enable_automatic_quality_assessment()
+    MESQUITE_EXPORT void enable_automatic_quality_assessment()
        { autoQualAssess = true; }
     
-    void disable_automatic_midnode_adjustment()
+    MESQUITE_EXPORT void disable_automatic_midnode_adjustment()
        { autoAdjMidNodes = false; }
-    void enable_automatic_midnode_adjustment()
+    MESQUITE_EXPORT void enable_automatic_midnode_adjustment()
        { autoAdjMidNodes = true; }
 
       /**\brief Exectute the instruction queue.
@@ -108,14 +108,14 @@ namespace Mesquite {
        *\param mesh   The mesh to run each instruction on.
        *\param domain The domain of the mesh -- may be NULL if no domain.
        */
-    virtual void run_instructions( Mesh* mesh,
+    MESQUITE_EXPORT virtual void run_instructions( Mesh* mesh,
                                    MeshDomain* domain,
                                    MsqError &err);
     
     inline void run_instructions( Mesh* mesh, MsqError& err )
       { this->run_instructions( mesh, 0, err ); }
     
-    void clear();
+    MESQUITE_EXPORT void clear();
 
       /**\brief Generate SIGFPE whenever a floating point exception occurs
        *
@@ -136,9 +136,9 @@ namespace Mesquite {
        * This functionality may not be supported on all platforms.  If
        * it is not supported, this option has no effect.
        */
-    void trap_floating_point_exception( bool enable )
+    MESQUITE_EXPORT void trap_floating_point_exception( bool enable )
       { trapFPE = enable; }
-    bool trap_floating_point_exception() const
+    MESQUITE_EXPORT bool trap_floating_point_exception() const
       { return trapFPE; }
   
     

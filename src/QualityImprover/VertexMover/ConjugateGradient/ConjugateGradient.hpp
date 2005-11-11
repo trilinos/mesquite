@@ -53,16 +53,16 @@ namespace Mesquite
   class ConjugateGradient : public VertexMover 
   {
   public:
-    ConjugateGradient(ObjectiveFunction* objective, MsqError &err);
+    MESQUITE_EXPORT ConjugateGradient(ObjectiveFunction* objective, MsqError &err);
 
-    virtual ~ConjugateGradient();
+    MESQUITE_EXPORT virtual ~ConjugateGradient();
     
       //!Set the patch type
-    virtual void set_patch_type(PatchData::PatchType type, MsqError &err, 
+    MESQUITE_EXPORT virtual void set_patch_type(PatchData::PatchType type, MsqError &err, 
                                 int patch_param1=0, int patch_param2=0);
       //!Just for debugging purposes or for obtaining more data
       //! during the optimization process.
-    void set_debugging_level(int new_lev)
+    MESQUITE_EXPORT void set_debugging_level(int new_lev)
       {
         conjGradDebug=new_lev;
       }

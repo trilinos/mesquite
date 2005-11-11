@@ -35,7 +35,7 @@ namespace Mesquite
 class MsqError;
 
 /** \brief Information about different element topologies */
-class TopologyInfo
+class MESQUITE_EXPORT TopologyInfo
 {
   public:
     

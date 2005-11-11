@@ -64,7 +64,7 @@ namespace Mesquite
        QualityMetrics), then the QualityMetric pointer is set
        to NULL..
       */
-  class ObjectiveFunction
+  class MESQUITE_EXPORT ObjectiveFunction
   {
    public:
     ObjectiveFunction ():

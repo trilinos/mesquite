@@ -93,14 +93,14 @@ namespace Mesquite
   class FeasibleNewton : public VertexMover 
   {
   public:
-    FeasibleNewton(ObjectiveFunction* of);
+    MESQUITE_EXPORT FeasibleNewton(ObjectiveFunction* of);
 
-    virtual ~FeasibleNewton()
+    MESQUITE_EXPORT virtual ~FeasibleNewton()
     { delete coordsMem; }
 
     /*! Sets a minimum value for the gradient. If the gradient is below that value,
       we stop iterating. */  
-    void set_lower_gradient_bound(double gradc){
+    MESQUITE_EXPORT void set_lower_gradient_bound(double gradc){
         convTol=gradc;}
     
     
