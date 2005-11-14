@@ -207,9 +207,10 @@ testSuite/env: testSuite/env.in config.status
 
 config.status: configure
 	if [ -f config.status ]; then \
-		./config.status --recheck \
+		./config.status --recheck; \
 	else \
-		./configure
+		./configure; \
+	fi
 	
 
 #distclean: veryclean
