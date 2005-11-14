@@ -4350,11 +4350,7 @@ echo "${ECHO_T}$ac_cv_header_ieeefp_h" >&6
 
 fi
 if test $ac_cv_header_ieeefp_h = yes; then
-
-cat >>confdefs.h <<\_ACEOF
-#define HAVE_IEEEFP_H 1
-_ACEOF
-
+  A C_DEFINE(HAVE_IEEEFP_H, 1, System has ieeefp.h  )
 fi
 
 
@@ -4503,18 +4499,18 @@ _ACEOF
 fi
 
 
-if test "${ac_cv_header_inttype_h+set}" = set; then
-  echo "$as_me:$LINENO: checking for inttype.h" >&5
-echo $ECHO_N "checking for inttype.h... $ECHO_C" >&6
-if test "${ac_cv_header_inttype_h+set}" = set; then
+if test "${ac_cv_header_inttypes_h+set}" = set; then
+  echo "$as_me:$LINENO: checking for inttypes.h" >&5
+echo $ECHO_N "checking for inttypes.h... $ECHO_C" >&6
+if test "${ac_cv_header_inttypes_h+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 fi
-echo "$as_me:$LINENO: result: $ac_cv_header_inttype_h" >&5
-echo "${ECHO_T}$ac_cv_header_inttype_h" >&6
+echo "$as_me:$LINENO: result: $ac_cv_header_inttypes_h" >&5
+echo "${ECHO_T}$ac_cv_header_inttypes_h" >&6
 else
   # Is the header compilable?
-echo "$as_me:$LINENO: checking inttype.h usability" >&5
-echo $ECHO_N "checking inttype.h usability... $ECHO_C" >&6
+echo "$as_me:$LINENO: checking inttypes.h usability" >&5
+echo $ECHO_N "checking inttypes.h usability... $ECHO_C" >&6
 cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
@@ -4522,7 +4518,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 $ac_includes_default
-#include <inttype.h>
+#include <inttypes.h>
 _ACEOF
 rm -f conftest.$ac_objext
 if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
@@ -4557,15 +4553,15 @@ echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
 echo "${ECHO_T}$ac_header_compiler" >&6
 
 # Is the header present?
-echo "$as_me:$LINENO: checking inttype.h presence" >&5
-echo $ECHO_N "checking inttype.h presence... $ECHO_C" >&6
+echo "$as_me:$LINENO: checking inttypes.h presence" >&5
+echo $ECHO_N "checking inttypes.h presence... $ECHO_C" >&6
 cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-#include <inttype.h>
+#include <inttypes.h>
 _ACEOF
 if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
   (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
@@ -4599,25 +4595,25 @@ echo "${ECHO_T}$ac_header_preproc" >&6
 # So?  What about this header?
 case $ac_header_compiler:$ac_header_preproc:$ac_c_preproc_warn_flag in
   yes:no: )
-    { echo "$as_me:$LINENO: WARNING: inttype.h: accepted by the compiler, rejected by the preprocessor!" >&5
-echo "$as_me: WARNING: inttype.h: accepted by the compiler, rejected by the preprocessor!" >&2;}
-    { echo "$as_me:$LINENO: WARNING: inttype.h: proceeding with the compiler's result" >&5
-echo "$as_me: WARNING: inttype.h: proceeding with the compiler's result" >&2;}
+    { echo "$as_me:$LINENO: WARNING: inttypes.h: accepted by the compiler, rejected by the preprocessor!" >&5
+echo "$as_me: WARNING: inttypes.h: accepted by the compiler, rejected by the preprocessor!" >&2;}
+    { echo "$as_me:$LINENO: WARNING: inttypes.h: proceeding with the compiler's result" >&5
+echo "$as_me: WARNING: inttypes.h: proceeding with the compiler's result" >&2;}
     ac_header_preproc=yes
     ;;
   no:yes:* )
-    { echo "$as_me:$LINENO: WARNING: inttype.h: present but cannot be compiled" >&5
-echo "$as_me: WARNING: inttype.h: present but cannot be compiled" >&2;}
-    { echo "$as_me:$LINENO: WARNING: inttype.h:     check for missing prerequisite headers?" >&5
-echo "$as_me: WARNING: inttype.h:     check for missing prerequisite headers?" >&2;}
-    { echo "$as_me:$LINENO: WARNING: inttype.h: see the Autoconf documentation" >&5
-echo "$as_me: WARNING: inttype.h: see the Autoconf documentation" >&2;}
-    { echo "$as_me:$LINENO: WARNING: inttype.h:     section \"Present But Cannot Be Compiled\"" >&5
-echo "$as_me: WARNING: inttype.h:     section \"Present But Cannot Be Compiled\"" >&2;}
-    { echo "$as_me:$LINENO: WARNING: inttype.h: proceeding with the preprocessor's result" >&5
-echo "$as_me: WARNING: inttype.h: proceeding with the preprocessor's result" >&2;}
-    { echo "$as_me:$LINENO: WARNING: inttype.h: in the future, the compiler will take precedence" >&5
-echo "$as_me: WARNING: inttype.h: in the future, the compiler will take precedence" >&2;}
+    { echo "$as_me:$LINENO: WARNING: inttypes.h: present but cannot be compiled" >&5
+echo "$as_me: WARNING: inttypes.h: present but cannot be compiled" >&2;}
+    { echo "$as_me:$LINENO: WARNING: inttypes.h:     check for missing prerequisite headers?" >&5
+echo "$as_me: WARNING: inttypes.h:     check for missing prerequisite headers?" >&2;}
+    { echo "$as_me:$LINENO: WARNING: inttypes.h: see the Autoconf documentation" >&5
+echo "$as_me: WARNING: inttypes.h: see the Autoconf documentation" >&2;}
+    { echo "$as_me:$LINENO: WARNING: inttypes.h:     section \"Present But Cannot Be Compiled\"" >&5
+echo "$as_me: WARNING: inttypes.h:     section \"Present But Cannot Be Compiled\"" >&2;}
+    { echo "$as_me:$LINENO: WARNING: inttypes.h: proceeding with the preprocessor's result" >&5
+echo "$as_me: WARNING: inttypes.h: proceeding with the preprocessor's result" >&2;}
+    { echo "$as_me:$LINENO: WARNING: inttypes.h: in the future, the compiler will take precedence" >&5
+echo "$as_me: WARNING: inttypes.h: in the future, the compiler will take precedence" >&2;}
     (
       cat <<\_ASBOX
 ## ------------------------------------------ ##
@@ -4628,21 +4624,21 @@ _ASBOX
       sed "s/^/$as_me: WARNING:     /" >&2
     ;;
 esac
-echo "$as_me:$LINENO: checking for inttype.h" >&5
-echo $ECHO_N "checking for inttype.h... $ECHO_C" >&6
-if test "${ac_cv_header_inttype_h+set}" = set; then
+echo "$as_me:$LINENO: checking for inttypes.h" >&5
+echo $ECHO_N "checking for inttypes.h... $ECHO_C" >&6
+if test "${ac_cv_header_inttypes_h+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
-  ac_cv_header_inttype_h=$ac_header_preproc
+  ac_cv_header_inttypes_h=$ac_header_preproc
 fi
-echo "$as_me:$LINENO: result: $ac_cv_header_inttype_h" >&5
-echo "${ECHO_T}$ac_cv_header_inttype_h" >&6
+echo "$as_me:$LINENO: result: $ac_cv_header_inttypes_h" >&5
+echo "${ECHO_T}$ac_cv_header_inttypes_h" >&6
 
 fi
-if test $ac_cv_header_inttype_h = yes; then
+if test $ac_cv_header_inttypes_h = yes; then
 
 cat >>confdefs.h <<\_ACEOF
-#define HAVE_INTTYPE_H 1
+#define HAVE_INTTYPES_H 1
 _ACEOF
 
 fi
@@ -5644,11 +5640,11 @@ fi;
 #------------------------------------------------------------------------------
 # Some GCC-specific stuff
 #------------------------------------------------------------------------------
-if test "${GCC}" = "yes" ; then
+if test "${GXX}" = "yes" ; then
     CXXFLAGS="$CXXFLAGS -Wall -Wconversion"
 fi
 if test -z "$no_pipe"; then
-if test -n "$GCC"; then
+if test -n "$GXX"; then
   echo "$as_me:$LINENO: checking if c++ compiler understands -pipe" >&5
 echo $ECHO_N "checking if c++ compiler understands -pipe... $ECHO_C" >&6
   OLDCXX="$CXX"

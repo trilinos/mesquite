@@ -143,9 +143,9 @@ MSQ_CHK_PROG_WITH(DOXYGEN, doxygen, no, [[
 #-----------------------------------------------------------------------------
 AC_HEADER_STDC
 AC_CHECK_HEADERS(fcntl.h strings.h sys/file.h sys/time.h unistd.h)
-AC_CHECK_HEADER(  ieeefp.h, AC_DEFINE(HAVE_IEEEFP_H, [1], [System has ieeefp.h] ))
-AC_CHECK_HEADER(  stdint.h, AC_DEFINE(HAVE_STDINT_H, [1], [System has stdint.h] ))
-AC_CHECK_HEADER( inttype.h, AC_DEFINE(HAVE_INTTYPE_H,[1], [System has inttype.h]))
+AC_CHECK_HEADER(   ieeefp.h, A C_DEFINE(HAVE_IEEEFP_H, [1], [System has ieeefp.h]  ))
+AC_CHECK_HEADER(   stdint.h,  AC_DEFINE(HAVE_STDINT_H, [1], [System has stdint.h]  ))
+AC_CHECK_HEADER( inttypes.h, AC_DEFINE(HAVE_INTTYPES_H,[1], [System has inttypes.h]))
 
 #-----------------------------------------------------------------------------
 # Check for required functions
@@ -201,11 +201,11 @@ AC_SUBST(CXX_ARCHIVER)
 #------------------------------------------------------------------------------
 # Some GCC-specific stuff
 #------------------------------------------------------------------------------
-if test "${GCC}" = "yes" ; then
+if test "${GXX}" = "yes" ; then
     CXXFLAGS="$CXXFLAGS -Wall -Wconversion"
 fi
 if test -z "$no_pipe"; then
-if test -n "$GCC"; then
+if test -n "$GXX"; then
   AC_MSG_CHECKING([if c++ compiler understands -pipe])
   OLDCXX="$CXX"
   CXX="$CXX -pipe"

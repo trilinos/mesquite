@@ -17,5 +17,5 @@
 /* System has stdint.h */
 #undef HAVE_STDINT_H
 
-/* System has inttype.h */
-#undef HAVE_INTTYPE_H
+/* System has inttypes.h */
+#undef HAVE_INTTYPES_H
