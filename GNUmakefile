@@ -73,7 +73,8 @@ TESTNAMES := test_1\
 	     i_dft_with_culling \
 	     pyramid \
 	     wedge \
-             unit 
+             unit \
+	     headers
 ###             random_test\
 ###             convert\
 ###             shape_wrapper_test
