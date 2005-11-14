@@ -206,9 +206,9 @@ testSuite/env: testSuite/env.in config.status
 	./config.status testSuite/env
 
 config.status: configure
-	if [ -f config.status ]; then
-		./config.status --recheck
-	else
+	if [ -f config.status ]; then \
+		./config.status --recheck \
+	else \
 		./configure
 	
 
