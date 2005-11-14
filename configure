@@ -4350,7 +4350,11 @@ echo "${ECHO_T}$ac_cv_header_ieeefp_h" >&6
 
 fi
 if test $ac_cv_header_ieeefp_h = yes; then
-  A C_DEFINE(HAVE_IEEEFP_H, 1, System has ieeefp.h  )
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_IEEEFP_H 1
+_ACEOF
+
 fi
 
 

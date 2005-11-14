@@ -143,8 +143,8 @@ MSQ_CHK_PROG_WITH(DOXYGEN, doxygen, no, [[
 #-----------------------------------------------------------------------------
 AC_HEADER_STDC
 AC_CHECK_HEADERS(fcntl.h strings.h sys/file.h sys/time.h unistd.h)
-AC_CHECK_HEADER(   ieeefp.h, A C_DEFINE(HAVE_IEEEFP_H, [1], [System has ieeefp.h]  ))
-AC_CHECK_HEADER(   stdint.h,  AC_DEFINE(HAVE_STDINT_H, [1], [System has stdint.h]  ))
+AC_CHECK_HEADER(   ieeefp.h, AC_DEFINE(HAVE_IEEEFP_H,  [1], [System has ieeefp.h]  ))
+AC_CHECK_HEADER(   stdint.h, AC_DEFINE(HAVE_STDINT_H,  [1], [System has stdint.h]  ))
 AC_CHECK_HEADER( inttypes.h, AC_DEFINE(HAVE_INTTYPES_H,[1], [System has inttypes.h]))
 
 #-----------------------------------------------------------------------------
