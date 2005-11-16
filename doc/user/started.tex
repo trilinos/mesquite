@@ -164,12 +164,12 @@ package is installed.
 \end{description}
 
 \subsection{Compiling on Microsoft Windows}
-The Mesquite source package includes project and workspace files for Microsoft Visual C++ 6.0 or later.  To build Mesquite in Visual C++:
+The Mesquite source package includes project and workspace files for Microsoft Visual C++ 6.0 or later.  To build Mesquite with Visual C++ 6.0:
 \begin{itemize}
-\item Open the file: \texttt{mesquite/mswindows/mesquite.dsw}
+\item Open the Workspace file: \texttt{mesquite/mswindows/mesquite.dsw}.
+\item Set the active project to \texttt{mesquite\_lib} to create a static library or \texttt{mesquite\_dll} to build Mesquite as a DLL.
 \item Select between a debug or release build in the project settings.  
-\item Set the active project to \texttt{mesquite}
-\item Select \texttt{Build mesquite.lib} from the \texttt{Build} menu.
+\item Select \texttt{Build mesquite.lib} (or \texttt{Build mesquite.dll}) from the \texttt{Build} menu.
 \end{itemize}
 
 \section{Short Tutorial}
