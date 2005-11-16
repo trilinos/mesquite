@@ -135,7 +135,8 @@ int main( int argc, char* argv[] )
   }
   
   const char* meshfile = "../../meshFiles/3D/VTK/6-wedge-prism.vtk";
-  
+  unsigned i;
+
   Mesquite::MsqPrintError err(cout);
   QualityMetric* metrics[] = { new IdealWeightMeanRatio,
                                new IdealWeightInverseMeanRatio(err),
@@ -182,7 +183,7 @@ int main( int argc, char* argv[] )
   CPPUNIT_ASSERT(!err);
   
     // Verify element types and number of vertices
-  for (unsigned i = 0; i < NUM_ELEM; ++i)
+  for (i = 0; i < NUM_ELEM; ++i)
   {
     CPPUNIT_ASSERT_EQUAL( type_array[i] , PRISM );
     CPPUNIT_ASSERT_EQUAL( conn_offsets[i] , VERT_PER_ELEM*i );
@@ -192,7 +193,7 @@ int main( int argc, char* argv[] )
   const unsigned INDEX_8 = 1, INDEX_9 = 4;
   Mesh::VertexHandle handle8 = vert_array[INDEX_8];
   Mesh::VertexHandle handle9 = vert_array[INDEX_9];
-  for (unsigned i = 1; i < NUM_ELEM; ++i)
+  for (i = 1; i < NUM_ELEM; ++i)
   {
     CPPUNIT_ASSERT_EQUAL( vert_array[VERT_PER_ELEM*i+INDEX_8] , handle8 );
     CPPUNIT_ASSERT_EQUAL( vert_array[VERT_PER_ELEM*i+INDEX_9] , handle9 );
@@ -205,7 +206,7 @@ int main( int argc, char* argv[] )
   MsqVertex vertices[NUM_ELEM*VERT_PER_ELEM];
   mesh->vertices_get_coordinates( &vert_array[0], vertices, NUM_ELEM*VERT_PER_ELEM, err );
   CPPUNIT_ASSERT(!err);
-  for (unsigned i = 0; i < NUM_ELEM*VERT_PER_ELEM; ++i)
+  for (i = 0; i < NUM_ELEM*VERT_PER_ELEM; ++i)
   {
     if (vert_array[i] == handle8 || vert_array[i] == handle9)
     {
@@ -223,19 +224,19 @@ int main( int argc, char* argv[] )
     // Try smoothing w/out moving the free vertices and verify that
     // the smoother didn't move the vertex
   Vector3D delta(0,0,0);
-  for (unsigned i = 0; metrics[i] != NULL; ++i)
+  for (i = 0; metrics[i] != NULL; ++i)
     CPPUNIT_ASSERT( !smooth_mesh( mesh, ideal_mesh, handle8, handle9, delta, metrics[i] ) );
   
     // Now try moving the vertex and see if the smoother moves it back
     // to the origin
   delta.set( 0.1, 0.0, 0.1 );
-  for (unsigned i = 0; metrics[i] != NULL; ++i)
+  for (i = 0; metrics[i] != NULL; ++i)
     CPPUNIT_ASSERT( !smooth_mesh( mesh, ideal_mesh, handle8, handle9, delta, metrics[i] ) );
   
     // Now try moving the vertex further and see if the smoother moves it back
     // to the origin
   delta.set( 1.0, 0.0, 1.0 );
-  for (unsigned i = 0; metrics[i] != NULL; ++i)
+  for (i = 0; metrics[i] != NULL; ++i)
     CPPUNIT_ASSERT( !smooth_mesh( mesh, ideal_mesh, handle8, handle9, delta, metrics[i] ) );
 
   return 0;
