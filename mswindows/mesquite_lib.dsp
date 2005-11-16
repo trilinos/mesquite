@@ -1,24 +1,24 @@
-# Microsoft Developer Studio Project File - Name="mesquite" - Package Owner=<4>
+# Microsoft Developer Studio Project File - Name="mesquite_lib" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) Static Library" 0x0104
 
-CFG=mesquite - Win32 Debug
+CFG=mesquite_lib - Win32 Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
-!MESSAGE NMAKE /f "mesquite.mak".
+!MESSAGE NMAKE /f "mesquite_lib.mak".
 !MESSAGE 
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "mesquite.mak" CFG="mesquite - Win32 Debug"
+!MESSAGE NMAKE /f "mesquite_lib.mak" CFG="mesquite_lib - Win32 Debug"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "mesquite - Win32 Release" (based on "Win32 (x86) Static Library")
-!MESSAGE "mesquite - Win32 Debug" (based on "Win32 (x86) Static Library")
+!MESSAGE "mesquite_lib - Win32 Release" (based on "Win32 (x86) Static Library")
+!MESSAGE "mesquite_lib - Win32 Debug" (based on "Win32 (x86) Static Library")
 !MESSAGE 
 
 # Begin Project
@@ -28,24 +28,21 @@ CFG=mesquite - Win32 Debug
 CPP=cl.exe
 RSC=rc.exe
 
-!IF  "$(CFG)" == "mesquite - Win32 Release"
+!IF  "$(CFG)" == "mesquite_lib - Win32 Release"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "Release"
-# PROP BASE Intermediate_Dir "Release"
+# PROP BASE Output_Dir "mesquite_lib___Win32_Release"
+# PROP BASE Intermediate_Dir "mesquite_lib___Win32_Release"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "Release"
-# PROP Intermediate_Dir "Release"
+# PROP Output_Dir "Release_Lib"
+# PROP Intermediate_Dir "Release_Lib"
 # PROP Target_Dir ""
 F90=df.exe
-# ADD BASE F90 /compile_only /nologo /warn:nofileopt
-# ADD F90 /compile_only /nologo /warn:nofileopt
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /W3 /GR /GX /O2 /I "../include" /I "../src" /I "../src/Control" /I "../src/Control/Wrappers" /I "../src/Mesh" /I "../src/Misc" /I "../src/ObjectiveFunction" /I "../src/QualityAssessor" /I "../src/QualityImprover" /I "../src/QualityImprover/TopologyModifier" /I "../src/QualityImprover/VertexMover" /I "../src/QualityImprover/VertexMover/ConjugateGradient" /I "../src/QualityImprover/VertexMover/FeasibleNewton" /I "../src/QualityImprover/VertexMover/LaplacianSmoothers" /I "../src/QualityImprover/VertexMover/NonSmoothSteepestDescent" /I "../src/QualityImprover/VertexMover/Randomize" /I "../src/QualityImprover/VertexMover/SteepestDescent" /I "../src/QualityMetric" /I "../src/QualityMetric/Shape" /I "../src/QualityMetric/Smoothness" /I "../src/QualityMetric/Untangle" /I "../src/QualityMetric/Volume" /I "../src/TargetCalculator" /D "NDEBUG" /D "USE_STD_INCLUDES" /D "WIN32" /D "_MBCS" /D "_LIB" /D "HAVE_CLOCK" /D "HAVE__VSNPRINTF" /D "MESQUITE_STATIC_LIB" /YX /FD /I /c
-# SUBTRACT CPP /Fr
+# ADD CPP /nologo /W3 /GX /O2 /I "../include" /I "../src" /I "../src/Control" /I "../src/Control/Wrappers" /I "../src/Mesh" /I "../src/Misc" /I "../src/ObjectiveFunction" /I "../src/QualityAssessor" /I "../src/QualityImprover" /I "../src/QualityImprover/TopologyModifier" /I "../src/QualityImprover/VertexMover" /I "../src/QualityImprover/VertexMover/FeasibleNewton" /I "../src/QualityImprover/VertexMover/ConjugateGradient" /I "../src/QualityImprover/VertexMover/LaplacianSmoothers" /I "../src/QualityImprover/VertexMover/NonSmoothSteepestDescent" /I "../src/QualityImprover/VertexMover/Randomize" /I "../src/QualityImprover/VertexMover/SteepestDescent" /I "../src/QualityMetric" /I "../src/QualityMetric/Shape" /I "../src/QualityMetric/Smoothness" /I "../src/QualityMetric/Untangle" /I "../src/QualityMetric/Volume" /I "../src/TargetCalculator" /D "NDEBUG" /D "WIN32" /D "_MBCS" /D "_LIB" /D "HAVE_CLOCK" /D "HAVE__VSNPRINTF" /D "MESQUITE_STATIC_LIB" /YX /FD /c
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -53,26 +50,23 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo
+# ADD LIB32 /nologo /out:"Release_Lib\mesquite.lib"
 
-!ELSEIF  "$(CFG)" == "mesquite - Win32 Debug"
+!ELSEIF  "$(CFG)" == "mesquite_lib - Win32 Debug"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "Debug"
-# PROP BASE Intermediate_Dir "Debug"
+# PROP BASE Output_Dir "mesquite_lib___Win32_Debug"
+# PROP BASE Intermediate_Dir "mesquite_lib___Win32_Debug"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "Debug"
-# PROP Intermediate_Dir "Debug"
+# PROP Output_Dir "Debug_Lib"
+# PROP Intermediate_Dir "Debug_Lib"
 # PROP Target_Dir ""
 F90=df.exe
-# ADD BASE F90 /check:bounds /compile_only /debug:full /nologo /traceback /warn:argument_checking /warn:nofileopt
-# ADD F90 /check:bounds /compile_only /debug:full /nologo /traceback /warn:argument_checking /warn:nofileopt
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /I "../src" /I "../src/Control" /I "../src/Control/Wrappers" /I "../src/Mesh" /I "../src/Misc" /I "../src/ObjectiveFunction" /I "../src/QualityAssessor" /I "../src/QualityImprover" /I "../src/QualityImprover/TopologyModifier" /I "../src/QualityImprover/VertexMover" /I "../src/QualityImprover/VertexMover/FeasibleNewton" /I "../src/QualityImprover/VertexMover/ConjugateGradient" /I "../src/QualityImprover/VertexMover/LaplacianSmoothers" /I "../src/QualityImprover/VertexMover/NonSmoothSteepestDescent" /I "../src/QualityImprover/VertexMover/Randomize" /I "../src/QualityImprover/VertexMover/SteepestDescent" /I "../src/QualityMetric" /I "../src/QualityMetric/Shape" /I "../src/QualityMetric/Smoothness" /I "../src/QualityMetric/Untangle" /I "../src/QualityMetric/Volume" /I "../src/TargetCalculator" /D "_DEBUG" /D MSQ_ENABLE_DEBUG=1 /D "2" /D "MSQ_TRAP_FPE" /D "MESQUITE_STATIC_LIB" /D "WIN32" /D "_MBCS" /D "_LIB" /D "HAVE_CLOCK" /D "HAVE__VSNPRINTF" /YX /FD /GZ /c
-# SUBTRACT CPP /Fr
+# ADD CPP /nologo /W3 /Gm /GR /GX /ZI /Od /I "../include" /I "../src" /I "../src/Control" /I "../src/Control/Wrappers" /I "../src/Mesh" /I "../src/Misc" /I "../src/ObjectiveFunction" /I "../src/QualityAssessor" /I "../src/QualityImprover" /I "../src/QualityImprover/TopologyModifier" /I "../src/QualityImprover/VertexMover" /I "../src/QualityImprover/VertexMover/FeasibleNewton" /I "../src/QualityImprover/VertexMover/ConjugateGradient" /I "../src/QualityImprover/VertexMover/LaplacianSmoothers" /I "../src/QualityImprover/VertexMover/NonSmoothSteepestDescent" /I "../src/QualityImprover/VertexMover/Randomize" /I "../src/QualityImprover/VertexMover/SteepestDescent" /I "../src/QualityMetric" /I "../src/QualityMetric/Shape" /I "../src/QualityMetric/Smoothness" /I "../src/QualityMetric/Untangle" /I "../src/QualityMetric/Volume" /I "../src/TargetCalculator" /D "_DEBUG" /D "WIN32" /D "_MBCS" /D "_LIB" /D "HAVE_CLOCK" /D "HAVE__VSNPRINTF" /D "MESQUITE_STATIC_LIB" /D "MSQ_TRAP_FPE" /D MSQ_ENABLE_DEBUG="1,2" /YX /FD /GZ /c
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -80,14 +74,14 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo
+# ADD LIB32 /nologo /out:"Debug_Lib\mesquite.lib"
 
 !ENDIF 
 
 # Begin Target
 
-# Name "mesquite - Win32 Release"
-# Name "mesquite - Win32 Debug"
+# Name "mesquite_lib - Win32 Release"
+# Name "mesquite_lib - Win32 Debug"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
@@ -206,6 +200,10 @@ SOURCE=..\src\Mesh\MeshImplTags.cpp
 # Begin Source File
 
 SOURCE=..\src\Misc\MeshTransform.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\Mesh\MeshWriter.cpp
 # End Source File
 # Begin Source File
 
@@ -362,7 +360,7 @@ SOURCE=..\src\TargetCalculator\WTargetCalculator.cpp
 # End Group
 # Begin Group "Header Files"
 
-# PROP Default_Filter "h;hpp;hxx;hm;inl;fi;fd"
+# PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
 SOURCE=..\src\QualityMetric\AddQualityMetric.hpp
@@ -526,6 +524,10 @@ SOURCE=..\include\MeshInterface.hpp
 # Begin Source File
 
 SOURCE=..\src\Misc\MeshTransform.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\Mesh\MeshWriter.hpp
 # End Source File
 # Begin Source File
 

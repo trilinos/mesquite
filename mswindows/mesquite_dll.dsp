@@ -208,6 +208,10 @@ SOURCE=..\src\Misc\MeshTransform.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\Mesh\MeshWriter.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\Misc\MesquiteVersion.cpp
 # End Source File
 # Begin Source File
@@ -525,6 +529,10 @@ SOURCE=..\include\MeshInterface.hpp
 # Begin Source File
 
 SOURCE=..\src\Misc\MeshTransform.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\Mesh\MeshWriter.hpp
 # End Source File
 # Begin Source File
 
