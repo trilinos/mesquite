@@ -16,6 +16,9 @@ half_circ.vtk:  640 quad elements; planer mesh; (z=-5 plane)  Mesh is
 hole_in_square.vtk:  140 quad elements; planar mesh; (z=-5, normal (0,0,-1))
   barely valid mesh.
 
+hole_scheme.vtk:  72 quad elements; planar mesh; (z = 0.0, normal (0,0,1)),
+  structured.
+
 Mesquite_geo_10242:  20480 triangular elements (10242 vertices) on a
   unit sphere geometry.  Fixed vertices are the twelve 5 valence vertices.
   All are vertices are 6 valence.
