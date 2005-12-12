@@ -130,7 +130,7 @@ AC_PROG_CC( [cc gcc cl egcs] )
 AC_PROG_CXXCPP
 AC_PROG_CXX( [CC aCC g++ c++ gpp cxx cc++ cl FCC KCC RCC xlC_r xlC] )
 MSQ_CHK_PROG_WITH(MAKEDEPEND, makedepend, /bin/true, [[
-  --with-makedpend=PROG   Full path to C/C++ dependency generator
+  --with-makedepend=PROG  Full path to C/C++ dependency generator
   --without-makedepend    Do not generate dependency information during build]], 
  [/usr/bin/X11:/usr/openwin/bin])
 MSQ_CHK_PROG_WITH(DOXYGEN, doxygen, no, [[
