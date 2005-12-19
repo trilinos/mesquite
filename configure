@@ -1576,7 +1576,7 @@ fi
 if test "$MSQ_DEBUG_SYMBOLS" = "yes"; then
   CXXFLAGS="$CXXFLAGS -g"
 fi
-if test "$MSQ_DEBUG_ASSERTS" == "no"; then
+if test "$MSQ_DEBUG_ASSERTS" = "no"; then
   CXXFLAGS="$CXXFLAGS -DNDEBUG"
 fi
 if test -n "$MSQ_DEBUG_OUT"; then
@@ -5806,7 +5806,7 @@ fi;
 EXODUS_DIR=
 EXODUS_CFLAGS=
 EXODUS_LDFLAGS=
-if test "$EXODUS_ARG" == "yes"; then
+if test "$EXODUS_ARG" = "yes"; then
 
  if test "${ac_cv_header_exodusII_h+set}" = set; then
   echo "$as_me:$LINENO: checking for exodusII.h" >&5
@@ -6448,7 +6448,7 @@ fi
 # HDF5 Configuration
 HDF5_DIR=
 HDF5_LNK=
-if test -z "$HDF5_ARG" -o "$HDF5_ARG" == "yes"; then
+if test -z "$HDF5_ARG" -o "$HDF5_ARG" = "yes"; then
   echo "$as_me:$LINENO: checking for H5Fopen in -lhdf5" >&5
 echo $ECHO_N "checking for H5Fopen in -lhdf5... $ECHO_C" >&6
 if test "${ac_cv_lib_hdf5_H5Fopen+set}" = set; then
@@ -6516,7 +6516,7 @@ if test $ac_cv_lib_hdf5_H5Fopen = yes; then
   HDF5_LNK=-lhdf5
 fi
 
-  if test "$HDF5_ARG" == "yes" -a -z "$HDF5_LNK"; then
+  if test "$HDF5_ARG" = "yes" -a -z "$HDF5_LNK"; then
     { { echo "$as_me:$LINENO: error: \"HDF5 library not found.\"" >&5
 echo "$as_me: error: \"HDF5 library not found.\"" >&2;}
    { (exit 1); exit 1; }; }
@@ -6582,7 +6582,7 @@ TSTT_MESH_IMPL=
 OVERTURE_DIR=
 OVERTURE_LNK=
 OVERTURE_INC=
-if test "$OVERTURE_ARG" == "yes"; then
+if test "$OVERTURE_ARG" = "yes"; then
   { { echo "$as_me:$LINENO: error: \"Argument required for --with-overture\" " >&5
 echo "$as_me: error: \"Argument required for --with-overture\" " >&2;}
    { (exit 1); exit 1; }; }
@@ -6596,7 +6596,7 @@ fi
 MOAB_DIR=
 MOAB_LNK=
 MOAB_INC=
-if test "$MOAB_ARG" == "yes"; then
+if test "$MOAB_ARG" = "yes"; then
   { { echo "$as_me:$LINENO: error: \"Argument required for --with-moab\" " >&5
 echo "$as_me: error: \"Argument required for --with-moab\" " >&2;}
    { (exit 1); exit 1; }; }
@@ -6632,9 +6632,9 @@ elif test -n "$AOMD_ARG" -a "$AOMD_ARG" != "no"; then
 fi
 
 
-if test "$WITH_TSTT_MESH_ARG" == "no"; then
+if test "$WITH_TSTT_MESH_ARG" = "no"; then
   TSTT_MESH_IMPL=
-elif test "$WITH_TSTT_MESH_ARG" == "yes"; then
+elif test "$WITH_TSTT_MESH_ARG" = "yes"; then
   if test -z "$TSTT_MESH_IMPL"; then
      { { echo "$as_me:$LINENO: error: \"Server location not specified for TSTT mesh server\"" >&5
 echo "$as_me: error: \"Server location not specified for TSTT mesh server\"" >&2;}
@@ -6669,7 +6669,7 @@ fi
 # Assume if a TSTT Mesh implementation was specified for testing
 # that we want TSTT Mesh support enabled.
 if test -n "$TSTT_MESH_IMPL"; then
-  if test "$TSTT_IFACE_ARG" == "no"; then
+  if test "$TSTT_IFACE_ARG" = "no"; then
     { { echo "$as_me:$LINENO: error: \"Nonsensical specification of TSTT Mesh Implementation with TSTT support explicitly disabled\" " >&5
 echo "$as_me: error: \"Nonsensical specification of TSTT Mesh Implementation with TSTT support explicitly disabled\" " >&2;}
    { (exit 1); exit 1; }; }
@@ -6931,7 +6931,7 @@ else
 echo "${ECHO_T}no" >&6
 fi
 
-elif test "$BABEL_ARG" == "yes"; then
+elif test "$BABEL_ARG" = "yes"; then
   if test "${ac_cv_header_sidl_h+set}" = set; then
   echo "$as_me:$LINENO: checking for sidl.h" >&5
 echo $ECHO_N "checking for sidl.h... $ECHO_C" >&6
@@ -7310,10 +7310,10 @@ fi
 
 
 # Enable TSTT Mesh support?
-if test "$TSTT_IFACE_ARG" == "yes"; then
+if test "$TSTT_IFACE_ARG" = "yes"; then
   MSQ_TSTT_MESH="$TSTT_IFACE_ARG"
   MSQ_TSTT_GEOM="$TSTT_IFACE_ARG"
-  if test "$HAVE_SIDL_H" == "no"; then
+  if test "$HAVE_SIDL_H" = "no"; then
     { { echo "$as_me:$LINENO: error: \"Babel is required for TSTT Mesh support.  Try --with-babel=...\"" >&5
 echo "$as_me: error: \"Babel is required for TSTT Mesh support.  Try --with-babel=...\"" >&2;}
    { (exit 1); exit 1; }; }
@@ -7619,7 +7619,7 @@ fi
 echo "$as_me: WARNING: \"CppUnit not found\"" >&2;}
   fi
 
-elif test "$CPPUNIT_ARG" == "yes"; then
+elif test "$CPPUNIT_ARG" = "yes"; then
 
   WITH_CPPUNIT=yes
   if test "${ac_cv_header_cppunit_Test_h+set}" = set; then
