@@ -1,29 +1,31 @@
 //========================================================
-// TSTTB UTITLIES COMMON ACROSS INTERFACES
+// TSTTB PACKAGE --
+// TSTT UTITLIES COMMON ACROSS INTERFACES
 //   ERRORS, TAGS
 //========================================================
 
-package TSTTB version 0.6
+package TSTTB version 0.7
 {
+   //====================================================
+   //  ERROR FUNCTIONALITY
+   //====================================================
 
    enum ErrorActions {
-      SILENT,
-      WARN_ONLY,		 
-      ABORT_ON_ERROR,
-      PRINT_AND_THROW_ERROR, 
-      THROW_ERROR		 
+      SILENT,                 // does nothing, not recommended
+      WARN_ONLY,	      // prints something, but nothing else
+      THROW_ERROR             // throws an exception
    };
 
 
    enum ErrorType {
       SUCCESS,	
-      MESH_ALREADY_LOADED,	
-      NO_MESH_DATA,	
+      DATA_ALREADY_LOADED,	
+      NO_DATA,	
       FILE_NOT_FOUND,	
-      FILE_WRITE_ERROR,	
-      NIL_ARRAY,	
+      FILE_ACCESS_ERROR,	
+      NIL_ARRAY,	     // array was supposed to be initialized and have data
       BAD_ARRAY_SIZE,	
-      BAD_ARRAY_DIMENSION,	
+      BAD_ARRAY_DIMENSION,   // all tstt arrays should be 1D
       INVALID_ENTITY_HANDLE,	
       INVALID_ENTITY_COUNT,	
       INVALID_ENTITY_TYPE,	
@@ -37,6 +39,7 @@ package TSTTB version 0.6
       INVALID_ENTITYSET_HANDLE,	
       INVALID_ITERATOR_HANDLE,	
       INVALID_ARGUMENT,	
+      ARGUMENT_OUT_OF_RANGE,
       MEMORY_ALLOCATION_FAILED,
       NOT_SUPPORTED,	
       FAILURE	
@@ -47,29 +50,40 @@ package TSTTB version 0.6
       void set(in ErrorType error, in string description);
       ErrorType getErrorType();
       void get(out ErrorType err, out string description);
-      void getDescription(out string description);
-      void echo(in string label);
+      string getDescription();
+      void echo(in string label);   // prints label and then description string to stderr 
    };
 
+
+   //====================================================
+   // TAGS
+   //====================================================
 
    enum TagValueType {
       INTEGER,
       DOUBLE,
       ENTITY_HANDLE,
-      OPAQUE 
+      BYTES
    };
 
 
    //====================================================
-   //  BASCI TAG FUNCTIONALITY
+   //  BASIC TAG FUNCTIONALITY
    //====================================================
+
+   // be careful about size arguments 
+   // createTag takes number of values of type tag_type
+
    interface Tag {
-      void createTag(in string tag_name, in int tag_size,
+      void createTag(in string tag_name, in int number_of_values,
                      in TagValueType tag_type,
                      out opaque tag_handle) throws TSTTB.Error;
       void destroyTag(in opaque tag_handle, in bool forced) throws TSTTB.Error;
       string getTagName(in opaque tag_handle) throws TSTTB.Error;
-      int getTagSize(in opaque tag_handle) throws TSTTB.Error;
+
+      int getTagSizeValues(in opaque tag_handle) throws TSTTB.Error;    // number of values
+      int getTagSizeBytes(in opaque tag_handle) throws TSTTB.Error;     // total number of bytes
+
       opaque getTagHandle(in string tag_name) throws TSTTB.Error;
       TagValueType getTagType(in opaque tag_handle) throws TSTTB.Error;
    };
@@ -82,8 +96,7 @@ package TSTTB version 0.6
       void getData( in opaque entity_handle, 
                     in opaque tag_handle,
                     inout array<char> tag_value,
-                    out int tag_value_size,
-                    out int tag_size) throws TSTTB.Error;
+                    out int tag_value_size) throws TSTTB.Error; // in bytes - number of things in the array
       int getIntData( in opaque entity_handle, 
                       in opaque tag_handle) throws TSTTB.Error;
       double getDblData( in opaque entity_handle, 
@@ -91,8 +104,7 @@ package TSTTB version 0.6
       opaque getEHData( in opaque entity_handle, 
                         in opaque tag_handle) throws TSTTB.Error;
       void setData( in opaque entity_handle, in opaque tag_handle, 
-                    in array<char> tag_value, in int tag_value_size,
-                    in int tag_size) throws TSTTB.Error; 
+                    in array<char> tag_value, in int tag_value_size) throws TSTTB.Error; 
       void setIntData( in opaque entity_handle, in opaque tag_handle, 
                        in int tag_value) throws TSTTB.Error; 
       void setDblData( in opaque entity_handle, in opaque tag_handle, 
@@ -109,49 +121,58 @@ package TSTTB version 0.6
    //====================================================
    //  ENTITY ARRAY TAGS
    //====================================================
+
+   // the value_array_size is the total number of characters 
+   //  value_array_size = number of entity_handles*size of each tag's value in bytes
+   //                   = entity_handles_size * tag value size
+   // in units of elements in the array - value_array_size
+   // on array tags - if you request an int tag on 100 entities and not all of them
+   //    have the tag - the behavior is: throw an error; array contents are undefined
+   //                   error is TAG_NOT_FOUND
+   // on removing tags on array of entities - if the entity doesn't have the tag
+   // just skip over it - do not throw an error and delete tags on the rest of the ents
+
    interface ArrTag extends Tag {
       void getArrData( in array<opaque> entity_handles, 
                         in int entity_handles_size,
                         in opaque tag_handle,
-                        inout array<char> tag_value,
-                        out int tag_value_size,
-                        out int tag_size) throws TSTTB.Error;
+                        inout array<char> value_array,
+                        out int value_array_size) throws TSTTB.Error;
       void getIntArrData( in array<opaque> entity_handles, 
                           in int entity_handles_size,
                           in opaque tag_handle,
-                          inout array<int> tag_value,
-                          out int tag_value_size) throws TSTTB.Error;
+                          inout array<int> value_array,
+                          out int value_array_size) throws TSTTB.Error;
       void getDblArrData( in array<opaque> entity_handles, 
                           in int entity_handles_size,
                           in opaque tag_handle,
-                          inout array<double> tag_value,
-                          out int tag_value_size) throws TSTTB.Error;
+                          inout array<double> value_array,
+                          out int value_array_size) throws TSTTB.Error;
       void getEHArrData( in array<opaque> entity_handles,
                          in int entity_handles_size, 
                          in opaque tag_handle,
-                         inout array<opaque> tag_value,
-                         out int tag_value_size) throws TSTTB.Error;
+                         inout array<opaque> value_array,
+                         out int value_array_size) throws TSTTB.Error;
       void setArrData( in array<opaque> entity_handles, 
                        in int entity_handles_size,
                        in opaque tag_handle, 
-                       in array<char> tag_values, 
-                       in int tag_values_size,
-                       in int tag_size) throws TSTTB.Error;
+                       in array<char> value_array, 
+                       in int value_array_size) throws TSTTB.Error;
       void setIntArrData( in array<opaque> entity_handles, 
                           in int entity_handles_size,
                           in opaque tag_handle, 
-                          in array<int> tag_values, 
-                          in int tag_values_size) throws TSTTB.Error;
+                          in array<int> value_array, 
+                          in int value_array_size) throws TSTTB.Error;
       void setDblArrData( in array<opaque> entity_handles, 
                           in int entity_handles_size,
                           in opaque tag_handle, 
-                          in array<double> tag_values, 
-                          in int tag_values_size) throws TSTTB.Error;
+                          in array<double> value_array, 
+                          in int value_array_size) throws TSTTB.Error;
       void setEHArrData( in array<opaque> entity_handles,
                          in int entity_handles_size, 
                          in opaque tag_handle,
-                         in array<opaque> tag_values, 
-                         in int tag_values_size) throws TSTTB.Error;
+                         in array<opaque> value_array, 
+                         in int value_array_size) throws TSTTB.Error;
       void rmvArrTag( in array<opaque> entity_handles,
                       in int entity_handles_size,
                       in opaque tag_handle) throws TSTTB.Error;
@@ -164,10 +185,9 @@ package TSTTB version 0.6
 
    interface SetTag extends Tag {
       //tags 
-      void setEntSetData( in opaque entity_set,
-                          in opaque tag_handle, in array<char> tag_value, 
-                          in int tag_value_size,
-                          in int tag_size) throws TSTTB.Error;
+        void setEntSetData( in opaque entity_set,
+                            in opaque tag_handle, inout array<char> tag_value, 
+                            in int tag_value_size) throws TSTTB.Error;
       void setEntSetIntData( in opaque entity_set,
                              in opaque tag_handle, in int tag_value)
             throws TSTTB.Error;
@@ -178,10 +198,8 @@ package TSTTB version 0.6
                             in opaque tag_handle, in opaque tag_value) 
             throws TSTTB.Error;
       void getEntSetData( in opaque entity_set,
-                          in opaque tag_handle, 
-                          inout array<char> tag_value, 
-                          inout int tag_value_size,
-                          out int tag_size) throws TSTTB.Error;
+                          in opaque tag_handle, inout array<char> tag_value, 
+                          out int tag_value_size) throws TSTTB.Error;
       int getEntSetIntData( in opaque entity_set, 
                             in opaque tag_handle) throws TSTTB.Error;
       double getEntSetDblData( in opaque entity_set, 
@@ -209,17 +227,20 @@ package TSTTB version 0.6
       bool isList(in opaque entity_set) throws TSTTB.Error;
 
       // get the entity sets
+      // num_hops of >=0 is recurse down that many levels (=0 is that ESet only)
+      // num_hops < 0 is recurse forever
       int getNumEntSets( in opaque entity_set, 
                          in int num_hops) throws TSTTB.Error;
 
       void getEntSets ( in opaque entity_set, in int num_hops,
-                        inout array<opaque> contained_entity_set_handles,
-                        out int contained_entity_set_handles_size) throws TSTTB.Error;
+                        inout array<opaque> contained_entset_handles,
+                        out int contained_entset_handles_size) throws TSTTB.Error;
 
       // add and remove entities 
       void addEntToSet(in opaque entity_handle,
                        inout opaque entity_set) throws TSTTB.Error;
 
+      // if the entity isn't in the set, don't throw an error
       void rmvEntFromSet( in opaque entity_handle,
                           inout opaque entity_set) throws TSTTB.Error;
 
@@ -227,22 +248,29 @@ package TSTTB version 0.6
                            in int entity_handles_size,
                            inout opaque entity_set) throws TSTTB.Error;
 
+      // if the entity isn't in the set, don't throw an error
       void rmvEntArrFromSet( in array<opaque> entity_handles,
                              in int entity_handles_size,
                              inout opaque entity_set) throws TSTTB.Error;
+
+      // all entity sets are contained in root set
+      // root set is contained in no other sets
+      // root set cannot be removed - throw an error
+      // can't remove anthing from root set - throw an error - use destroy 
 
       // add/remove entity sets
       void addEntSet( in opaque entity_set_to_add, 
                       inout opaque entity_set_handle) 
                       throws TSTTB.Error;
 
+      // if the entity set isn't in the set, don't throw an error
       void rmvEntSet( in opaque entity_set_to_remove, 
                       inout opaque entity_set_handle) 
                       throws TSTTB.Error;
 
-      // check whether an entity set is contained in another
+      // check whether an entity is contained in the entity set
       bool isEntContained(in opaque containing_entity_set,
-                          in opaque contained_entity) throws TSTTB.Error;
+                          in opaque entity_handle) throws TSTTB.Error;
 
       // check whether an entity set is contained in another
       bool isEntSetContained(in opaque containing_entity_set,
@@ -252,27 +280,39 @@ package TSTTB version 0.6
 
 
    interface SetRelation extends EntSet {
+
+      // Root set cannot be a child or parent
+
+      // don't throw error if parent/child already exists
       void addPrntChld( inout opaque parent_entity_set, 
 			inout opaque child_entity_set) throws TSTTB.Error;
+
+      // don't throw error if parent/child link doesn't exist
       void rmvPrntChld( inout opaque parent_entity_set, 
 			inout opaque child_entity_set) throws TSTTB.Error;
 
       bool isChildOf( in opaque parent_entity_set, 
 		      in opaque child_entity_set) throws TSTTB.Error;
 
-      int  getNumChld( in opaque entity_set, in int num_hops) throws TSTTB.Error;
-      int  getNumPrnt( in opaque entity_set, in int num_hops) throws TSTTB.Error;
+      int  getNumChld( in opaque entity_set, in int num_hops) 
+        throws TSTTB.Error;
+      int  getNumPrnt( in opaque entity_set, in int num_hops) 
+        throws TSTTB.Error;
 
       void getChldn( in opaque from_entity_set, in int num_hops, 
-                     inout array<opaque> entity_set_handles,
-                     out int entity_set_handles_size) throws TSTTB.Error;
+                     inout array<opaque> child_handles,
+                     out int child_handles_size) throws TSTTB.Error;
       void getPrnts( in opaque from_entity_set, in int num_hops, 
-                     inout array<opaque> entity_set_handles,
-                     out int entity_set_handles_size) throws TSTTB.Error;
+                     inout array<opaque> parent_handles,
+                     out int parent_handles_size) throws TSTTB.Error;
    };
 
 
    interface SetBoolOps extends EntSet {
+      // Having root set as entity_set_1 gives the complement of entity_set_2
+      // behavior for contained sets 
+      // explicitly lay out what happens when there are multiple copies of something
+
       void subtract( in opaque entity_set_1, 
                      in opaque entity_set_2,
                      out opaque result_entity_set) throws TSTTB.Error;
@@ -286,4 +326,4 @@ package TSTTB version 0.6
                   out opaque result_entity_set) throws TSTTB.Error;
    };
 
-}  // END TSTT
+}  // END TSTTB

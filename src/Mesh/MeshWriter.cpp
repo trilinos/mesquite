@@ -162,7 +162,7 @@ void EdgeIterator::get_adjacent_vertices( MsqError& err )
       // For each edge
     for (size_t d = 0; d < num_edges; ++d)
     {
-      const size_t* edge = TopologyInfo::edge_vertices( type, d, err );
+      const unsigned* edge = TopologyInfo::edge_vertices( type, d, err );
       MSQ_ERRRTN(err);
       size_t vert1 = elem.get_vertex_index( edge[0] );
       size_t vert2 = elem.get_vertex_index( edge[1] );

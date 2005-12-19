@@ -55,8 +55,8 @@ namespace Mesquite
   class SmartLaplacianSmoother : public VertexMover 
   {
   public:
-    SmartLaplacianSmoother(ObjectiveFunction *obj_func, MsqError &err);
-    ~SmartLaplacianSmoother();
+    MESQUITE_EXPORT SmartLaplacianSmoother(ObjectiveFunction *obj_func, MsqError &err);
+    MESQUITE_EXPORT ~SmartLaplacianSmoother();
   protected:
     virtual void initialize(PatchData &pd, MsqError &err);
     virtual void optimize_vertex_positions(PatchData &pd,

@@ -159,7 +159,7 @@ inline bool m_fcn_2e(double &obj, const Vector3D x[3], const Vector3D &n,
       matr[6]*matr[6] + matr[7]*matr[7];
 
   /* Calculate objective function. */
-  obj = a * pow(f, b) * pow(g, c);
+  obj = a * b.raise(f) * c.raise(g);
   return true;
 }
 
@@ -201,11 +201,11 @@ inline bool g_fcn_2e(double &obj, Vector3D g_obj[3],
       matr[6]*matr[6] + matr[7]*matr[7];
 
   /* Calculate objective function. */
-  obj  = a * pow(f, b) * pow(g, c);
+  obj  = a * b.raise(f) * c.raise(g);
 
   /* Calculate the derivative of the objective function.    */
-  f = b * obj / f;		/* Constant on nabla f      */
-  g = c * obj / g;              /* Constant on nable g      */
+  f = b.value() * obj / f;		/* Constant on nabla f      */
+  g = c.value() * obj / g;              /* Constant on nable g      */
   f *= 2.0;                     /* Modification for nabla f */
 
   adj_m[0] = matr[0]*f + loc1*g;
@@ -280,11 +280,11 @@ inline bool h_fcn_2e(double &obj, Vector3D g_obj[3], Matrix3D h_obj[6],
   loc4 = g;
 
   /* Calculate objective function. */
-  obj  = a * pow(f, b) * pow(g, c);
+  obj  = a * b.raise(f) * c.raise(g);
 
   /* Calculate the derivative of the objective function.    */
-  f = b * obj / f;		/* Constant on nabla f      */
-  g = c * obj / g;              /* Constant on nable g      */
+  f = b.value() * obj / f;		/* Constant on nabla f      */
+  g = c.value() * obj / g;              /* Constant on nable g      */
   f *= 2.0;                     /* Modification for nabla f */
 
   dg[1] = matr[5]*matr[6] - matr[3]*matr[8];
@@ -316,9 +316,9 @@ inline bool h_fcn_2e(double &obj, Vector3D g_obj[3], Matrix3D h_obj[6],
   /* Calculate the hessian of the objective.                   */
   loc0 = f;			/* Constant on nabla^2 f       */
   loc1 = g;			/* Constant on nabla^2 g       */
-  cross = f * c / loc4;		/* Constant on nabla g nabla f */
-  f = f * (b-1) / loc3;		/* Constant on nabla f nabla f */
-  g = g * (c-1) / loc4;		/* Constant on nabla g nabla g */
+  cross = f * c.value() / loc4;		/* Constant on nabla g nabla f */
+  f = f * (b.value()-1) / loc3;		/* Constant on nabla f nabla f */
+  g = g * (c.value()-1) / loc4;		/* Constant on nabla g nabla g */
   f *= 2.0;                     /* Modification for nabla f    */
 
   /* First block of rows */
@@ -573,7 +573,7 @@ inline bool m_fcn_2i(double &obj, const Vector3D x[3], const Vector3D &n,
       matr[6]*matr[6] + matr[7]*matr[7];
 
   /* Calculate objective function. */
-  obj = a * pow(f, b) * pow(g, c);
+  obj = a * b.raise(f) * c.raise(g);
   return true;
 }
 
@@ -616,11 +616,11 @@ inline bool g_fcn_2i(double &obj, Vector3D g_obj[3],
       matr[6]*matr[6] + matr[7]*matr[7];
 
   /* Calculate objective function. */
-  obj  = a * pow(f, b) * pow(g, c);
+  obj  = a * b.raise(f) * c.raise(g);
 
   /* Calculate the derivative of the objective function.    */
-  f = b * obj / f;		/* Constant on nabla f      */
-  g = c * obj / g;              /* Constant on nable g      */
+  f = b.value() * obj / f;		/* Constant on nabla f      */
+  g = c.value() * obj / g;              /* Constant on nable g      */
   f *= 2.0;                     /* Modification for nabla f */
 
   adj_m[0] = d[0]*(matr[0]*f + loc1*g);
@@ -698,11 +698,11 @@ inline bool h_fcn_2i(double &obj, Vector3D g_obj[3], Matrix3D h_obj[6],
   loc4 = g;
 
   /* Calculate objective function. */
-  obj  = a * pow(f, b) * pow(g, c);
+  obj  = a * b.raise(f) * c.raise(g);
 
   /* Calculate the derivative of the objective function.    */
-  f = b * obj / f;		/* Constant on nabla f      */
-  g = c * obj / g;              /* Constant on nable g      */
+  f = b.value() * obj / f;		/* Constant on nabla f      */
+  g = c.value() * obj / g;              /* Constant on nable g      */
   f *= 2.0;                     /* Modification for nabla f */
 
   dg[1] = matr[5]*matr[6] - matr[3]*matr[8];
@@ -731,9 +731,9 @@ inline bool h_fcn_2i(double &obj, Vector3D g_obj[3], Matrix3D h_obj[6],
   /* Calculate the hessian of the objective.                   */
   loc0 = f;			/* Constant on nabla^2 f       */
   loc1 = g;			/* Constant on nabla^2 g       */
-  cross = f * c / loc4;		/* Constant on nabla g nabla f */
-  f = f * (b-1) / loc3;		/* Constant on nabla f nabla f */
-  g = g * (c-1) / loc4;		/* Constant on nabla g nabla g */
+  cross = f * c.value() / loc4;		/* Constant on nabla g nabla f */
+  f = f * (b.value()-1) / loc3;		/* Constant on nabla f nabla f */
+  g = g * (c.value()-1) / loc4;		/* Constant on nabla g nabla g */
   f *= 2.0;                     /* Modification for nabla f    */
 
   /* First block of rows */
@@ -962,7 +962,7 @@ inline bool m_fcn_3e(double &obj, const Vector3D x[4],
       matr[6]*matr[6] + matr[7]*matr[7] + matr[8]*matr[8];
 
   /* Calculate objective function. */
-  obj = a * pow(f, b) * pow(g, c);
+  obj = a * b.raise(f) * c.raise(g);
   return true;
 }
 
@@ -1006,11 +1006,11 @@ inline bool g_fcn_3e(double &obj, Vector3D g_obj[4], const Vector3D x[4],
       matr[6]*matr[6] + matr[7]*matr[7] + matr[8]*matr[8];
 
   /* Calculate objective function. */
-  obj  = a * pow(f, b) * pow(g, c);
+  obj  = a * b.raise(f) * c.raise(g);
 
   /* Calculate the derivative of the objective function.    */
-  f = b * obj / f;		/* Constant on nabla f      */
-  g = c * obj / g;              /* Constant on nable g      */
+  f = b.value() * obj / f;		/* Constant on nabla f      */
+  g = c.value() * obj / g;              /* Constant on nable g      */
   f *= 2.0;                     /* Modification for nabla f */
 
   adj_m[0] = matr[0]*f + loc1*g;
@@ -1100,11 +1100,11 @@ inline bool h_fcn_3e(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   loc4 = g;
 
   /* Calculate objective function. */
-  obj  = a * pow(f, b) * pow(g, c);
+  obj  = a * b.raise(f) * c.raise(g);
 
   /* Calculate the derivative of the objective function.    */
-  f = b * obj / f;		/* Constant on nabla f      */
-  g = c * obj / g;              /* Constant on nable g      */
+  f = b.value() * obj / f;		/* Constant on nabla f      */
+  g = c.value() * obj / g;              /* Constant on nable g      */
   f *= 2.0;                     /* Modification for nabla f */
 
   dg[3] = matr[2]*matr[7] - matr[1]*matr[8];
@@ -1151,9 +1151,9 @@ inline bool h_fcn_3e(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   /* Calculate the hessian of the objective.                   */
   loc0 = f;			/* Constant on nabla^2 f       */
   loc1 = g;			/* Constant on nabla^2 g       */
-  cross = f * c / loc4;		/* Constant on nabla g nabla f */
-  f = f * (b-1) / loc3;		/* Constant on nabla f nabla f */
-  g = g * (c-1) / loc4;		/* Constant on nabla g nabla g */
+  cross = f * c.value() / loc4;		/* Constant on nabla g nabla f */
+  f = f * (b.value()-1) / loc3;		/* Constant on nabla f nabla f */
+  g = g * (c.value()-1) / loc4;		/* Constant on nabla g nabla g */
   f *= 2.0;                     /* Modification for nabla f    */
 
   /* First block of rows */
@@ -1658,11 +1658,11 @@ inline bool g_fcn_3e_v3(double &obj, Vector3D &g_obj, const Vector3D x[4],
       matr[6]*matr[6] + matr[7]*matr[7] + matr[8]*matr[8];
 
   /* Calculate objective function. */
-  obj  = a * pow(f, b) * pow(g, c);
+  obj  = a * b.raise(f) * c.raise(g);
 
   /* Calculate the derivative of the objective function.    */
-  f = b * obj / f;		/* Constant on nabla f      */
-  g = c * obj / g;              /* Constant on nable g      */
+  f = b.value() * obj / f;		/* Constant on nabla f      */
+  g = c.value() * obj / g;              /* Constant on nable g      */
   f *= 2.0;                     /* Modification for nabla f */
 
   g_obj[0] = tisqrt6*(matr[2]*f + loc3*g);
@@ -1751,11 +1751,11 @@ inline bool h_fcn_3e_v3(double &obj, Vector3D &g_obj, Matrix3D &h_obj,
   loc4 = g;
 
   /* Calculate objective function. */
-  obj  = a * pow(f, b) * pow(g, c);
+  obj  = a * b.raise(f) * c.raise(g);
 
   /* Calculate the derivative of the objective function.    */
-  f = b * obj / f;		/* Constant on nabla f      */
-  g = c * obj / g;              /* Constant on nable g      */
+  f = b.value() * obj / f;		/* Constant on nabla f      */
+  g = c.value() * obj / g;              /* Constant on nable g      */
   f *= 2.0;                     /* Modification for nabla f */
 
   dg[5] = matr[1]*matr[6] - matr[0]*matr[7];
@@ -1768,9 +1768,9 @@ inline bool h_fcn_3e_v3(double &obj, Vector3D &g_obj, Matrix3D &h_obj,
   /* Calculate the hessian of the objective.                   */
   loc0 = f;			/* Constant on nabla^2 f       */
   loc1 = g;			/* Constant on nabla^2 g       */
-  cross = f * c / loc4;		/* Constant on nabla g nabla f */
-  f = f * (b-1) / loc3;		/* Constant on nabla f nabla f */
-  g = g * (c-1) / loc4;		/* Constant on nabla g nabla g */
+  cross = f * c.value() / loc4;		/* Constant on nabla g nabla f */
+  f = f * (b.value()-1) / loc3;		/* Constant on nabla f nabla f */
+  g = g * (c.value()-1) / loc4;		/* Constant on nabla g nabla g */
   f *= 2.0;                     /* Modification for nabla f    */
 
   /* First block of rows */
@@ -1881,7 +1881,7 @@ inline bool m_fcn_3i(double &obj, const Vector3D x[4],
       matr[6]*matr[6] + matr[7]*matr[7] + matr[8]*matr[8];
 
   /* Calculate objective function. */
-  obj = a * pow(f, b) * pow(g, c);
+  obj = a * b.raise(f) * c.raise(g);
   return true;
 }
 
@@ -1923,11 +1923,11 @@ inline bool g_fcn_3i(double &obj, Vector3D g_obj[4], const Vector3D x[4],
       matr[6]*matr[6] + matr[7]*matr[7] + matr[8]*matr[8];
  
   /* Calculate objective function. */
-  obj  = a * pow(f, b) * pow(g, c);
+  obj  = a * b.raise(f) * c.raise(g);
 
   /* Calculate the derivative of the objective function.    */
-  f = b * obj / f;		/* Constant on nabla f      */
-  g = c * obj / g;              /* Constant on nable g      */
+  f = b.value() * obj / f;		/* Constant on nabla f      */
+  g = c.value() * obj / g;              /* Constant on nable g      */
   f *= 2.0;                     /* Modification for nabla f */
 
   adj_m[0] = d[0]*(matr[0]*f + loc1*g);
@@ -2012,11 +2012,11 @@ inline int h_fcn_3i(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   loc4 = g;
 
   /* Calculate objective function. */
-  obj  = a * pow(f, b) * pow(g, c);
+  obj  = a * b.raise(f) * c.raise(g);
 
   /* Calculate the derivative of the objective function.    */
-  f = b * obj / f;		/* Constant on nabla f      */
-  g = c * obj / g;              /* Constant on nable g      */
+  f = b.value() * obj / f;		/* Constant on nabla f      */
+  g = c.value() * obj / g;              /* Constant on nable g      */
   f *= 2.0;                     /* Modification for nabla f */
 
   dg[3] = matr[2]*matr[7] - matr[1]*matr[8];
@@ -2054,9 +2054,9 @@ inline int h_fcn_3i(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   /* Calculate the hessian of the objective.                   */
   loc0 = f;			/* Constant on nabla^2 f       */
   loc1 = g;			/* Constant on nabla^2 g       */
-  cross = f * c / loc4;		/* Constant on nabla g nabla f */
-  f = f * (b-1) / loc3;		/* Constant on nabla f nabla f */
-  g = g * (c-1) / loc4;		/* Constant on nabla g nabla g */
+  cross = f * c.value() / loc4;		/* Constant on nabla g nabla f */
+  f = f * (b.value()-1) / loc3;		/* Constant on nabla f nabla f */
+  g = g * (c.value()-1) / loc4;		/* Constant on nabla g nabla g */
   f *= 2.0;                     /* Modification for nabla f    */
 
   /* First block of rows */
@@ -2414,7 +2414,7 @@ inline bool m_fcn_3p(double &obj, const Vector3D x[4],
       matr[6]*matr[6] + matr[7]*matr[7] + matr[8]*matr[8];
 
   /* Calculate objective function. */
-  obj = a * pow(f, b) * pow(g, c);
+  obj = a * b.raise(f) * c.raise(g);
   return true;
 }
 
@@ -2454,11 +2454,11 @@ inline bool g_fcn_3p(double &obj, Vector3D g_obj[4], const Vector3D x[4],
       matr[6]*matr[6] + matr[7]*matr[7] + matr[8]*matr[8];
 
   /* Calculate objective function. */
-  obj  = a * pow(f, b) * pow(g, c);
+  obj  = a * b.raise(f) * c.raise(g);
 
   /* Calculate the derivative of the objective function.    */
-  f = b * obj / f;    /* Constant on nabla f      */
-  g = c * obj / g;    /* Constant on nable g      */
+  f = b.value() * obj / f;    /* Constant on nabla f      */
+  g = c.value() * obj / g;    /* Constant on nable g      */
   f *= 2.0;           /* Modification for nabla f */
 
   adj_m[0] = matr[0]*f + loc1*g;
@@ -2543,11 +2543,11 @@ inline bool h_fcn_3p(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   loc4 = g;
 
   /* Calculate objective function. */
-  obj  = a * pow(f, b) * pow(g, c);
+  obj  = a * b.raise(f) * c.raise(g);
 
   /* Calculate the derivative of the objective function.    */
-  f = b * obj / f;		/* Constant on nabla f      */
-  g = c * obj / g;              /* Constant on nable g      */
+  f = b.value() * obj / f;		/* Constant on nabla f      */
+  g = c.value() * obj / g;              /* Constant on nable g      */
   f *= 2.0;                     /* Modification for nabla f */
 
   adj_m[0] = matr[0]*f + dg[0]*g;
@@ -2578,9 +2578,9 @@ inline bool h_fcn_3p(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   /* Calculate the hessian of the objective.                   */
   loc0 = f;			/* Constant on nabla^2 f       */
   loc1 = g;			/* Constant on nabla^2 g       */
-  cross = f * c / loc4;		/* Constant on nabla g nabla f */
-  f = f * (b-1) / loc3;		/* Constant on nabla f nabla f */
-  g = g * (c-1) / loc4;		/* Constant on nabla g nabla g */
+  cross = f * c.value() / loc4;		/* Constant on nabla g nabla f */
+  f = f * (b.value()-1) / loc3;		/* Constant on nabla f nabla f */
+  g = g * (c.value()-1) / loc4;		/* Constant on nabla g nabla g */
   f *= 2.0;                     /* Modification for nabla f    */
 
   /* First block of rows */
@@ -2999,7 +2999,7 @@ inline bool m_fcn_3w(double &obj, const Vector3D x[4],
       matr[6]*matr[6] + matr[7]*matr[7] + matr[8]*matr[8];
 
   /* Calculate objective function. */
-  obj  = a * pow(f, b) * pow(g, c);
+  obj  = a * b.raise(f) * c.raise(g);
   return true;
 }
 
@@ -3037,11 +3037,11 @@ inline bool g_fcn_3w(double &obj, Vector3D g_obj[4], const Vector3D x[4],
       matr[6]*matr[6] + matr[7]*matr[7] + matr[8]*matr[8];
 
   /* Calculate objective function. */
-  obj  = a * pow(f, b) * pow(g, c);
+  obj  = a * b.raise(f) * c.raise(g);
 
   /* Calculate the derivative of the objective function.    */
-  f = b * obj / f;    /* Constant on nabla f      */
-  g = c * obj / g;    /* Constant on nable g      */
+  f = b.value() * obj / f;    /* Constant on nabla f      */
+  g = c.value() * obj / g;    /* Constant on nable g      */
   f *= 2.0;           /* Modification for nabla f */
 
   adj_m[0] = matr[0]*f + loc1*g;
@@ -3124,11 +3124,11 @@ inline bool h_fcn_3w(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   loc4 = g;
 
   /* Calculate objective function. */
-  obj  = a * pow(f, b) * pow(g, c);
+  obj  = a * b.raise(f) * c.raise(g);
 
   /* Calculate the derivative of the objective function.    */
-  f = b * obj / f;		/* Constant on nabla f      */
-  g = c * obj / g;              /* Constant on nable g      */
+  f = b.value() * obj / f;		/* Constant on nabla f      */
+  g = c.value() * obj / g;              /* Constant on nable g      */
   f *= 2.0;                     /* Modification for nabla f */
 
   adj_m[0] = matr[0]*f + dg[0]*g;
@@ -3159,9 +3159,9 @@ inline bool h_fcn_3w(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   /* Calculate the hessian of the objective.                   */
   loc0 = f;			/* Constant on nabla^2 f       */
   loc1 = g;			/* Constant on nabla^2 g       */
-  cross = f * c / loc4;		/* Constant on nabla g nabla f */
-  f = f * (b-1) / loc3;		/* Constant on nabla f nabla f */
-  g = g * (c-1) / loc4;		/* Constant on nabla g nabla g */
+  cross = f * c.value() / loc4;		/* Constant on nabla g nabla f */
+  f = f * (b.value()-1) / loc3;		/* Constant on nabla f nabla f */
+  g = g * (c.value()-1) / loc4;		/* Constant on nabla g nabla g */
   f *= 2.0;                     /* Modification for nabla f    */
 
   /* First block of rows */

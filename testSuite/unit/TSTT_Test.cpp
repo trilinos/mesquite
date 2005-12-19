@@ -234,7 +234,7 @@ void TSTT_Test::setUp()
       return;
     }
   
-    myTSTTMesh.load( TMP_FILE_NAME );
+    myTSTTMesh.load( 0, TMP_FILE_NAME );
     root_set = myTSTTMesh.getRootSet();
   } 
   catch (...) {

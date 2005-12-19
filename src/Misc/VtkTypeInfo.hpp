@@ -41,7 +41,7 @@ class MsqError;
 
 /** A struct describing a mapping between a Mesquite type/node_count
  *  combination an a VTK element type.*/
-struct VtkTypeInfo {
+struct MESQUITE_EXPORT VtkTypeInfo {
   
   const char* name;
   

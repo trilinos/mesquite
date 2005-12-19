@@ -853,7 +853,7 @@ void MeshImpl::vertices_get_byte ( const VertexHandle *vert_array,
 // Retrieve the byte value for the specified vertex or vertices.
 // The byte value is 0 if it has not yet been set via one of the
 // *_set_byte() functions.
-void MeshImpl::vertex_get_byte( VertexHandle vertex,
+void MeshImpl::vertex_get_byte( const VertexHandle vertex,
                                 unsigned char *byte,
                                 MsqError &err )
 {

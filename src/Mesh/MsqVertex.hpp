@@ -48,7 +48,7 @@ namespace Mesquite
       !!! Make sure NOT to delete a MsqVertex object from a pointer
           to Vector3D !!!
     */
-  class MsqVertex : public Vector3D
+  class MESQUITE_EXPORT MsqVertex : public Vector3D
    {
    public:
        //!Construct vertex using three doubles.

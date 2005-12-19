@@ -203,7 +203,7 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    obj = alpha * pow(2.0, gamma) * f / pow(g, gamma);
+    obj = alpha * gamma.raise(2.0) * f / gamma.raise(g);
     return true;
   }
 
@@ -268,12 +268,12 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    loc4 = alpha * pow(2.0, gamma) / pow(g, gamma);
+    loc4 = alpha * gamma.raise(2.0) / gamma.raise(g);
     obj = f * loc4;
 
     /* Calculate the derivative of the objective function. */
     f = 2.0 * loc4;
-    g = -gamma * obj / t2;
+    g = -gamma.value() * obj / t2;
 
     /* Calculate adjoint matrix */
     adjm[0] = f*matd[0] + g*loc1;
@@ -378,15 +378,15 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    loc1 = alpha * pow(2.0, gamma) / pow(g, gamma);
+    loc1 = alpha * gamma.raise(2.0) / gamma.raise(g);
     obj = f * loc1;
 
     /* Calculate the derivative of the objective function. */
     t3 = 1.0 / t3;
     dobj_df = 2.0 * loc1;
-    dobj_dg = -gamma * obj * t3;
-    dobj_dfdg = -gamma * dobj_df * t3;
-    dobj_dgdg = dobj_dg * ((-gamma - 1.0)*t3 + 4.0*delta*delta/(t2*g));
+    dobj_dg = -gamma.value() * obj * t3;
+    dobj_dfdg = -gamma.value() * dobj_df * t3;
+    dobj_dgdg = dobj_dg * ((-gamma.value() - 1.0)*t3 + 4.0*delta*delta/(t2*g));
 
     /* Calculate adjoint matrix */
     adjm[0] = dobj_df*matd[0] + dobj_dg*dg[0];
@@ -702,7 +702,7 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    obj = alpha * pow(2.0, gamma) * f / pow(g, gamma);
+    obj = alpha * gamma.raise(2.0) * f / gamma.raise(g);
     return true;
   }
 
@@ -770,12 +770,12 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    loc4 = alpha * pow(2.0, gamma) / pow(g, gamma);
+    loc4 = alpha * gamma.raise(2.0) / gamma.raise(g);
     obj = f * loc4;
 
     /* Calculate the derivative of the objective function. */
     f = 2.0 * loc4;
-    g = -gamma * obj / t2;
+    g = -gamma.value() * obj / t2;
 
     /* Calculate adjoint matrix */
     adjm[0] = f*matd[0] + g*loc1;
@@ -886,15 +886,15 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    loc1 = alpha * pow(2.0, gamma) / pow(g, gamma);
+    loc1 = alpha * gamma.raise(2.0) / gamma.raise(g);
     obj = f * loc1;
 
     /* Calculate the derivative of the objective function. */
     t3 = 1.0 / t3;
     dobj_df = 2.0 * loc1;
-    dobj_dg = -gamma * obj * t3;
-    dobj_dfdg = -gamma * dobj_df * t3;
-    dobj_dgdg = dobj_dg * ((-gamma - 1.0)*t3 + 4.0*delta*delta/(t2*g));
+    dobj_dg = -gamma.value() * obj * t3;
+    dobj_dfdg = -gamma.value() * dobj_df * t3;
+    dobj_dgdg = dobj_dg * ((-gamma.value() - 1.0)*t3 + 4.0*delta*delta/(t2*g));
 
     /* Calculate adjoint matrix */
     adjm[0] = dobj_df*matd[0] + dobj_dg*dg[0];
@@ -1274,12 +1274,12 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    loc4 = alpha * pow(2.0, gamma) / pow(g, gamma);
+    loc4 = alpha * gamma.raise(2.0) / gamma.raise(g);
     obj = f * loc4;
 
     /* Calculate the derivative of the objective function. */
     f = 2.0 * loc4;
-    g = -gamma * obj / t2;
+    g = -gamma.value() * obj / t2;
 
     /* Calculate adjoint matrix */
     adjm[0] = f*matd[0] + g*loc1;
@@ -1374,12 +1374,12 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    loc4 = alpha * pow(2.0, gamma) / pow(g, gamma);
+    loc4 = alpha * gamma.raise(2.0) / gamma.raise(g);
     obj = f * loc4;
 
     /* Calculate the derivative of the objective function. */
     f = 2.0 * loc4;
-    g = -gamma * obj / t2;
+    g = -gamma.value() * obj / t2;
 
     /* Calculate adjoint matrix */
     adjm[0] = f*matd[0] + g*loc1;
@@ -1466,12 +1466,12 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    loc4 = alpha * pow(2.0, gamma) / pow(g, gamma);
+    loc4 = alpha * gamma.raise(2.0) / gamma.raise(g);
     obj = f * loc4;
 
     /* Calculate the derivative of the objective function. */
     f = 2.0 * loc4;
-    g = -gamma * obj / t2;
+    g = -gamma.value() * obj / t2;
 
     /* Calculate adjoint matrix */
     adjm[0] = f*matd[1] + g*loc2;
@@ -1565,15 +1565,15 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    loc1 = alpha * pow(2.0, gamma) / pow(g, gamma);
+    loc1 = alpha * gamma.raise(2.0) / gamma.raise(g);
     obj = f * loc1;
 
     /* Calculate the derivative of the objective function. */
     t3 = 1.0 / t3;
     dobj_df = 2.0 * loc1;
-    dobj_dg = -gamma * obj * t3;
-    dobj_dfdg = -gamma * dobj_df * t3;
-    dobj_dgdg = dobj_dg * ((-gamma - 1.0)*t3 + 4.0*delta*delta/(t2*g));
+    dobj_dg = -gamma.value() * obj * t3;
+    dobj_dfdg = -gamma.value() * dobj_df * t3;
+    dobj_dgdg = dobj_dg * ((-gamma.value() - 1.0)*t3 + 4.0*delta*delta/(t2*g));
 
     /* Calculate adjoint matrix */
     adjm[0] = dobj_df*matd[0] + dobj_dg*dg[0];
@@ -1853,15 +1853,15 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    loc1 = alpha * pow(2.0, gamma) / pow(g, gamma);
+    loc1 = alpha * gamma.raise(2.0) / gamma.raise(g);
     obj = f * loc1;
 
     /* Calculate the derivative of the objective function. */
     t3 = 1.0 / t3;
     dobj_df = 2.0 * loc1;
-    dobj_dg = -gamma * obj * t3;
-    dobj_dfdg = -gamma * dobj_df * t3;
-    dobj_dgdg = dobj_dg * ((-gamma - 1.0)*t3 + 4.0*delta*delta/(t2*g));
+    dobj_dg = -gamma.value() * obj * t3;
+    dobj_dfdg = -gamma.value() * dobj_df * t3;
+    dobj_dgdg = dobj_dg * ((-gamma.value() - 1.0)*t3 + 4.0*delta*delta/(t2*g));
 
     /* Calculate adjoint matrix */
     adjm[0] = dobj_df*matd[0] + dobj_dg*dg[0];
@@ -2065,15 +2065,15 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    loc1 = alpha * pow(2.0, gamma) / pow(g, gamma);
+    loc1 = alpha * gamma.raise(2.0) / gamma.raise(g);
     obj = f * loc1;
 
     /* Calculate the derivative of the objective function. */
     t3 = 1.0 / t3;
     dobj_df = 2.0 * loc1;
-    dobj_dg = -gamma * obj * t3;
-    dobj_dfdg = -gamma * dobj_df * t3;
-    dobj_dgdg = dobj_dg * ((-gamma - 1.0)*t3 + 4.0*delta*delta/(t2*g));
+    dobj_dg = -gamma.value() * obj * t3;
+    dobj_dfdg = -gamma.value() * dobj_df * t3;
+    dobj_dgdg = dobj_dg * ((-gamma.value() - 1.0)*t3 + 4.0*delta*delta/(t2*g));
 
     /* Calculate adjoint matrix */
     adjm[0] = dobj_df*matd[1] + dobj_dg*dg[1];
@@ -2234,12 +2234,12 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    loc4 = alpha * pow(2.0, gamma) / pow(g, gamma);
+    loc4 = alpha * gamma.raise(2.0) / gamma.raise(g);
     obj = f * loc4;
 
     /* Calculate the derivative of the objective function. */
     f = 2.0 * loc4;
-    g = -gamma * obj / t2;
+    g = -gamma.value() * obj / t2;
 
     /* Calculate adjoint matrix */
     adjm[0] = f*matd[0] + g*loc1;
@@ -2340,12 +2340,12 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    loc4 = alpha * pow(2.0, gamma) / pow(g, gamma);
+    loc4 = alpha * gamma.raise(2.0) / gamma.raise(g);
     obj = f * loc4;
 
     /* Calculate the derivative of the objective function. */
     f = 2.0 * loc4;
-    g = -gamma * obj / t2;
+    g = -gamma.value() * obj / t2;
 
     /* Calculate adjoint matrix */
     adjm[0] = f*matd[0] + g*loc1;
@@ -2435,12 +2435,12 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    loc4 = alpha * pow(2.0, gamma) / pow(g, gamma);
+    loc4 = alpha * gamma.raise(2.0) / gamma.raise(g);
     obj = f * loc4;
 
     /* Calculate the derivative of the objective function. */
     f = 2.0 * loc4;
-    g = -gamma * obj / t2;
+    g = -gamma.value() * obj / t2;
 
     /* Calculate adjoint matrix */
     adjm[0] = f*matd[1] + g*loc2;
@@ -2527,12 +2527,12 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    loc4 = alpha * pow(2.0, gamma) / pow(g, gamma);
+    loc4 = alpha * gamma.raise(2.0) / gamma.raise(g);
     obj = f * loc4;
 
     /* Calculate the derivative of the objective function. */
     f = 2.0 * loc4;
-    g = -gamma * obj / t2;
+    g = -gamma.value() * obj / t2;
 
     /* Construct gradients */
     loc1 = g*matr[0];
@@ -2618,15 +2618,15 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    loc1 = alpha * pow(2.0, gamma) / pow(g, gamma);
+    loc1 = alpha * gamma.raise(2.0) / gamma.raise(g);
     obj = f * loc1;
 
     /* Calculate the derivative of the objective function. */
     t3 = 1.0 / t3;
     dobj_df = 2.0 * loc1;
-    dobj_dg = -gamma * obj * t3;
-    dobj_dfdg = -gamma * dobj_df * t3;
-    dobj_dgdg = dobj_dg * ((-gamma - 1.0)*t3 + 4.0*delta*delta/(t2*g));
+    dobj_dg = -gamma.value() * obj * t3;
+    dobj_dfdg = -gamma.value() * dobj_df * t3;
+    dobj_dgdg = dobj_dg * ((-gamma.value() - 1.0)*t3 + 4.0*delta*delta/(t2*g));
 
     /* Calculate adjoint matrix */
     adjm[0] = dobj_df*matd[0] + dobj_dg*dg[0];
@@ -2936,15 +2936,15 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    loc1 = alpha * pow(2.0, gamma) / pow(g, gamma);
+    loc1 = alpha * gamma.raise(2.0) / gamma.raise(g);
     obj = f * loc1;
 
     /* Calculate the derivative of the objective function. */
     t3 = 1.0 / t3;
     dobj_df = 2.0 * loc1;
-    dobj_dg = -gamma * obj * t3;
-    dobj_dfdg = -gamma * dobj_df * t3;
-    dobj_dgdg = dobj_dg * ((-gamma - 1.0)*t3 + 4.0*delta*delta/(t2*g));
+    dobj_dg = -gamma.value() * obj * t3;
+    dobj_dfdg = -gamma.value() * dobj_df * t3;
+    dobj_dgdg = dobj_dg * ((-gamma.value() - 1.0)*t3 + 4.0*delta*delta/(t2*g));
 
     /* Calculate adjoint matrix */
     adjm[0] = dobj_df*matd[0] + dobj_dg*dg[0];
@@ -3151,15 +3151,15 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    loc1 = alpha * pow(2.0, gamma) / pow(g, gamma);
+    loc1 = alpha * gamma.raise(2.0) / gamma.raise(g);
     obj = f * loc1;
 
     /* Calculate the derivative of the objective function. */
     t3 = 1.0 / t3;
     dobj_df = 2.0 * loc1;
-    dobj_dg = -gamma * obj * t3;
-    dobj_dfdg = -gamma * dobj_df * t3;
-    dobj_dgdg = dobj_dg * ((-gamma - 1.0)*t3 + 4.0*delta*delta/(t2*g));
+    dobj_dg = -gamma.value() * obj * t3;
+    dobj_dfdg = -gamma.value() * dobj_df * t3;
+    dobj_dgdg = dobj_dg * ((-gamma.value() - 1.0)*t3 + 4.0*delta*delta/(t2*g));
 
     /* Calculate adjoint matrix */
     adjm[0] = dobj_df*matd[1] + dobj_dg*dg[1];
@@ -3324,15 +3324,15 @@ namespace Mesquite
         matd[6]*matd[6] + matd[7]*matd[7] + matd[8]*matd[8];
 
     /* Calculate objective function. */
-    loc1 = alpha * pow(2.0, gamma) / pow(g, gamma);
+    loc1 = alpha * gamma.raise(2.0) / gamma.raise(g);
     obj = f * loc1;
 
     /* Calculate the derivative of the objective function. */
     t3 = 1.0 / t3;
     dobj_df = 2.0 * loc1;
-    dobj_dg = -gamma * obj * t3;
-    dobj_dfdg = -gamma * dobj_df * t3;
-    dobj_dgdg = dobj_dg * ((-gamma - 1.0)*t3 + 4.0*delta*delta/(t2*g));
+    dobj_dg = -gamma.value() * obj * t3;
+    dobj_dfdg = -gamma.value() * dobj_df * t3;
+    dobj_dgdg = dobj_dg * ((-gamma.value() - 1.0)*t3 + 4.0*delta*delta/(t2*g));
 
     /* Construct gradients */
     g_obj[0] = invR[2][2]*(dobj_df*matd[2] + dobj_dg*dg[2]);

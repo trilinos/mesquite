@@ -61,33 +61,33 @@ namespace Mesquite
    {
    public:
      
-     UntangleBetaQualityMetric(double bet=0.05);
+     MESQUITE_EXPORT UntangleBetaQualityMetric(double bet=0.05);
 
        // virtual destructor ensures use of polymorphism during destruction
-     virtual ~UntangleBetaQualityMetric()
+     MESQUITE_EXPORT virtual ~UntangleBetaQualityMetric()
         {}
        /*!Evaluate the Untangle Beta metric value for an element.
          \todo This function needs to be modified so that it no longer
          uses compute_weighted_jacobian.  It also needs to set an error
          whenever sent a 2D element and the surface normal information
          is not available.*/
-     bool evaluate_element(PatchData &pd,MsqMeshEntity* element,
+     MESQUITE_EXPORT bool evaluate_element(PatchData &pd,MsqMeshEntity* element,
                            double &fval,MsqError &err);
      
        /*!Function to allow users to set the beta value after the
          metric has already been created. */
-     void set_beta(double beta_in)
+     MESQUITE_EXPORT void set_beta(double beta_in)
        {mBeta = beta_in;}
        /*!Function to allow the user to check the value of beta.*/
-     double get_beta()
+     MESQUITE_EXPORT double get_beta()
        {return mBeta;}
      
    protected:
-     inline void untangle_function_2d(Vector3D temp_vec[],size_t e_ind,
+     MESQUITE_EXPORT inline void untangle_function_2d(Vector3D temp_vec[],size_t e_ind,
                                       PatchData &pd, double &fval,
                                       MsqError &err);
      
-     inline void untangle_function_3d(Vector3D temp_vec[],double &fval,
+     MESQUITE_EXPORT inline void untangle_function_3d(Vector3D temp_vec[],double &fval,
                                       MsqError &err);
      
    private:

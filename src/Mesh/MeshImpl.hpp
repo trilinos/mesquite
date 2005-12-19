@@ -60,7 +60,7 @@ namespace Mesquite
     
   MeshImpl can read in mesh files in VTK format and ExodusII format. 
   */
-  class MeshImpl : public Mesquite::Mesh
+  class MESQUITE_EXPORT MeshImpl : public Mesquite::Mesh
   {
   public:
 //********* Functions that are NOT inherited ************
@@ -138,7 +138,7 @@ namespace Mesquite
       // Retrieve the byte value for the specified vertex or vertices.
       // The byte value is 0 if it has not yet been set via one of the
       // *_set_byte() functions.
-    virtual void vertex_get_byte(VertexHandle vertex,
+    virtual void vertex_get_byte(const VertexHandle vertex,
                                  unsigned char *byte,
                                  MsqError &err);
     virtual void vertices_get_byte(const VertexHandle *vertex,

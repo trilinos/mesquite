@@ -114,49 +114,49 @@ namespace Mesquite
     static msq_std::string get_QAFunction_name(enum QualityAssessor::QAFunction);
     
     //! Constructor - output to std::cout
-    QualityAssessor( msq_std::string name = "QualityAssessor" );
+    MESQUITE_EXPORT QualityAssessor( msq_std::string name = "QualityAssessor" );
     
     //! Constructor - specified output stream 
-    QualityAssessor( msq_stdio::ostream& output_stream,
+    MESQUITE_EXPORT QualityAssessor( msq_stdio::ostream& output_stream,
                      msq_std::string name = "QualityAssessor" );
                      
     //! Constructor - initial stopping assessement and specified output stream
-    QualityAssessor( QualityMetric* metric, QAFunction function,
+    MESQUITE_EXPORT QualityAssessor( QualityMetric* metric, QAFunction function,
                      msq_stdio::ostream& output_stream,
                      MsqError& err,
                      msq_std::string name = "QualityAssessor" );
 
                      
     //! Constructor - initial stopping assessement
-    QualityAssessor( QualityMetric* metric, QAFunction function,
+    MESQUITE_EXPORT QualityAssessor( QualityMetric* metric, QAFunction function,
                      MsqError& err,
                      msq_std::string name = "QualityAssessor" );
 
       //!Destructor
-    ~QualityAssessor();
+    MESQUITE_EXPORT ~QualityAssessor();
     
       //! Provides a name to the QualityAssessor (use it for default name in constructor).
-    void set_name(msq_std::string name) { qualityAssessorName = name; };
+    MESQUITE_EXPORT void set_name(msq_std::string name) { qualityAssessorName = name; };
       //! Retrieves the QualityAssessor name. A default name should be set in the constructor.
-    virtual msq_std::string get_name()  { return qualityAssessorName; }
+    MESQUITE_EXPORT virtual msq_std::string get_name()  { return qualityAssessorName; }
 
-    virtual AlgorithmType get_algorithm_type() { return QUALITY_ASSESSOR; }
+    MESQUITE_EXPORT virtual AlgorithmType get_algorithm_type() { return QUALITY_ASSESSOR; }
     
       //! Adds a quality metric and a wrapper function (min, max, ...).
-    void add_quality_assessment( QualityMetric* qm, 
+    MESQUITE_EXPORT void add_quality_assessment( QualityMetric* qm, 
                                  int function_flags, 
                                  MsqError &err);
 
       /*!Sets the QualityMetric and QAFunction combination that will
         be returned when loop_over_mesh is called.
       */
-    void set_stopping_assessment( QualityMetric* qm, 
+    MESQUITE_EXPORT void set_stopping_assessment( QualityMetric* qm, 
                                   QAFunction func,
                                   MsqError &err );
 
       //! Add a quality metric for which the histogram is to 
       //! be calculated, and set histogram parameters.
-    void add_histogram_assessment( QualityMetric* qm, 
+    MESQUITE_EXPORT void add_histogram_assessment( QualityMetric* qm, 
                                    double min, 
                                    double max,
                                    int intervals,
@@ -169,29 +169,29 @@ namespace Mesquite
                                    MsqError &err);
 
       //! Do not print results of assessment.
-    void disable_printing_results()
+    MESQUITE_EXPORT void disable_printing_results()
        {
          printSummary = false;
        }
       
       //! Print accumulated summary data to specified stream. 
-    void print_summary( msq_stdio::ostream& stream ) const;
+    MESQUITE_EXPORT void print_summary( msq_stdio::ostream& stream ) const;
     
       //! True if any metric evaluated to an invalid value
       //! for any element
-    bool invalid_elements() const;
+    MESQUITE_EXPORT bool invalid_elements() const;
 
       //! Provides the number of inverted elements, inverted_elmes,
       //!  and the number of elements whose orientation can not be
       //!  determined, undefined_elems.
       //! Returns false if this information is not yet available.
       //! Returns true, otherwise.
-    bool get_inverted_element_count(int &inverted_elems,
+    MESQUITE_EXPORT bool get_inverted_element_count(int &inverted_elems,
                                     int &undefined_elems,
                                     MsqError &err);
     
       //! Reset calculated data 
-    void reset_data();
+    MESQUITE_EXPORT void reset_data();
     
     /** \brief Per-metric QualityAssessor data
      *

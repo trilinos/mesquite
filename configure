@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os LN_S SET_MAKE RANLIB ac_ct_RANLIB CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXX CXXFLAGS ac_ct_CXX CXXCPP MAKEDEPEND DOXYGEN CPP EGREP HAVE_IEEEFP MSQ_FUNC_DEFS CXX_ARCHIVER BABEL MSQ_BASE_DIR AOMD_DIR AOMD_INC AOMD_LNK CPPUNIT_DIR CPPUNIT_INC CPPUNIT_LNK EXODUS_CFLAGS EXODUS_DIR EXODUS_LDFLAGS HDF5_DIR HDF5_LNK NETCDF_CXX_LNK NETCDF_DIR NETCDF_INC NETCDF_LNK MOAB_DIR MOAB_INC MOAB_LNK MSQ_TSTT_GEOM MSQ_TSTT_MESH TSTT_MESH_IMPL OVERTURE_DIR OVERTURE_INC OVERTURE_LNK SIDL_DIR SIDL_INC SIDL_LNK LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os LN_S SET_MAKE RANLIB ac_ct_RANLIB CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXX CXXFLAGS ac_ct_CXX CXXCPP MAKEDEPEND DOXYGEN CPP EGREP MSQ_FUNC_DEFS CXX_ARCHIVER BABEL MSQ_BASE_DIR AOMD_DIR AOMD_INC AOMD_LNK CPPUNIT_DIR CPPUNIT_INC CPPUNIT_LNK EXODUS_CFLAGS EXODUS_DIR EXODUS_LDFLAGS HDF5_DIR HDF5_LNK NETCDF_CXX_LNK NETCDF_DIR NETCDF_INC NETCDF_LNK MOAB_DIR MOAB_INC MOAB_LNK MSQ_TSTT_GEOM MSQ_TSTT_MESH TSTT_MESH_IMPL OVERTURE_DIR OVERTURE_INC OVERTURE_LNK SIDL_DIR SIDL_INC SIDL_LNK LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -882,7 +882,7 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
 
-  --with-makedpend=PROG   Full path to C/C++ dependency generator
+  --with-makedepend=PROG  Full path to C/C++ dependency generator
   --without-makedepend    Do not generate dependency information during build
 
   --with-doxygen[=PROG]   Optionally specify doxygen program.
@@ -1576,7 +1576,7 @@ fi
 if test "$MSQ_DEBUG_SYMBOLS" = "yes"; then
   CXXFLAGS="$CXXFLAGS -g"
 fi
-if test "$MSQ_DEBUG_ASSERTS" == "no"; then
+if test "$MSQ_DEBUG_ASSERTS" = "no"; then
   CXXFLAGS="$CXXFLAGS -DNDEBUG"
 fi
 if test -n "$MSQ_DEBUG_OUT"; then
@@ -4213,7 +4213,6 @@ fi
 
 done
 
-HAVE_IEEEFP=
 if test "${ac_cv_header_ieeefp_h+set}" = set; then
   echo "$as_me:$LINENO: checking for ieeefp.h" >&5
 echo $ECHO_N "checking for ieeefp.h... $ECHO_C" >&6
@@ -4351,9 +4350,302 @@ echo "${ECHO_T}$ac_cv_header_ieeefp_h" >&6
 
 fi
 if test $ac_cv_header_ieeefp_h = yes; then
-  HAVE_IEEEFP=-DHAVE_IEEEFP
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_IEEEFP_H 1
+_ACEOF
+
 fi
 
+
+if test "${ac_cv_header_stdint_h+set}" = set; then
+  echo "$as_me:$LINENO: checking for stdint.h" >&5
+echo $ECHO_N "checking for stdint.h... $ECHO_C" >&6
+if test "${ac_cv_header_stdint_h+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+fi
+echo "$as_me:$LINENO: result: $ac_cv_header_stdint_h" >&5
+echo "${ECHO_T}$ac_cv_header_stdint_h" >&6
+else
+  # Is the header compilable?
+echo "$as_me:$LINENO: checking stdint.h usability" >&5
+echo $ECHO_N "checking stdint.h usability... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+$ac_includes_default
+#include <stdint.h>
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_header_compiler=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_header_compiler=no
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
+echo "${ECHO_T}$ac_header_compiler" >&6
+
+# Is the header present?
+echo "$as_me:$LINENO: checking stdint.h presence" >&5
+echo $ECHO_N "checking stdint.h presence... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <stdint.h>
+_ACEOF
+if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
+  (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } >/dev/null; then
+  if test -s conftest.err; then
+    ac_cpp_err=$ac_c_preproc_warn_flag
+    ac_cpp_err=$ac_cpp_err$ac_c_werror_flag
+  else
+    ac_cpp_err=
+  fi
+else
+  ac_cpp_err=yes
+fi
+if test -z "$ac_cpp_err"; then
+  ac_header_preproc=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+  ac_header_preproc=no
+fi
+rm -f conftest.err conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
+echo "${ECHO_T}$ac_header_preproc" >&6
+
+# So?  What about this header?
+case $ac_header_compiler:$ac_header_preproc:$ac_c_preproc_warn_flag in
+  yes:no: )
+    { echo "$as_me:$LINENO: WARNING: stdint.h: accepted by the compiler, rejected by the preprocessor!" >&5
+echo "$as_me: WARNING: stdint.h: accepted by the compiler, rejected by the preprocessor!" >&2;}
+    { echo "$as_me:$LINENO: WARNING: stdint.h: proceeding with the compiler's result" >&5
+echo "$as_me: WARNING: stdint.h: proceeding with the compiler's result" >&2;}
+    ac_header_preproc=yes
+    ;;
+  no:yes:* )
+    { echo "$as_me:$LINENO: WARNING: stdint.h: present but cannot be compiled" >&5
+echo "$as_me: WARNING: stdint.h: present but cannot be compiled" >&2;}
+    { echo "$as_me:$LINENO: WARNING: stdint.h:     check for missing prerequisite headers?" >&5
+echo "$as_me: WARNING: stdint.h:     check for missing prerequisite headers?" >&2;}
+    { echo "$as_me:$LINENO: WARNING: stdint.h: see the Autoconf documentation" >&5
+echo "$as_me: WARNING: stdint.h: see the Autoconf documentation" >&2;}
+    { echo "$as_me:$LINENO: WARNING: stdint.h:     section \"Present But Cannot Be Compiled\"" >&5
+echo "$as_me: WARNING: stdint.h:     section \"Present But Cannot Be Compiled\"" >&2;}
+    { echo "$as_me:$LINENO: WARNING: stdint.h: proceeding with the preprocessor's result" >&5
+echo "$as_me: WARNING: stdint.h: proceeding with the preprocessor's result" >&2;}
+    { echo "$as_me:$LINENO: WARNING: stdint.h: in the future, the compiler will take precedence" >&5
+echo "$as_me: WARNING: stdint.h: in the future, the compiler will take precedence" >&2;}
+    (
+      cat <<\_ASBOX
+## ------------------------------------------ ##
+## Report this to the AC_PACKAGE_NAME lists.  ##
+## ------------------------------------------ ##
+_ASBOX
+    ) |
+      sed "s/^/$as_me: WARNING:     /" >&2
+    ;;
+esac
+echo "$as_me:$LINENO: checking for stdint.h" >&5
+echo $ECHO_N "checking for stdint.h... $ECHO_C" >&6
+if test "${ac_cv_header_stdint_h+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_cv_header_stdint_h=$ac_header_preproc
+fi
+echo "$as_me:$LINENO: result: $ac_cv_header_stdint_h" >&5
+echo "${ECHO_T}$ac_cv_header_stdint_h" >&6
+
+fi
+if test $ac_cv_header_stdint_h = yes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_STDINT_H 1
+_ACEOF
+
+fi
+
+
+if test "${ac_cv_header_inttypes_h+set}" = set; then
+  echo "$as_me:$LINENO: checking for inttypes.h" >&5
+echo $ECHO_N "checking for inttypes.h... $ECHO_C" >&6
+if test "${ac_cv_header_inttypes_h+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+fi
+echo "$as_me:$LINENO: result: $ac_cv_header_inttypes_h" >&5
+echo "${ECHO_T}$ac_cv_header_inttypes_h" >&6
+else
+  # Is the header compilable?
+echo "$as_me:$LINENO: checking inttypes.h usability" >&5
+echo $ECHO_N "checking inttypes.h usability... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+$ac_includes_default
+#include <inttypes.h>
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_header_compiler=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_header_compiler=no
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
+echo "${ECHO_T}$ac_header_compiler" >&6
+
+# Is the header present?
+echo "$as_me:$LINENO: checking inttypes.h presence" >&5
+echo $ECHO_N "checking inttypes.h presence... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <inttypes.h>
+_ACEOF
+if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
+  (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } >/dev/null; then
+  if test -s conftest.err; then
+    ac_cpp_err=$ac_c_preproc_warn_flag
+    ac_cpp_err=$ac_cpp_err$ac_c_werror_flag
+  else
+    ac_cpp_err=
+  fi
+else
+  ac_cpp_err=yes
+fi
+if test -z "$ac_cpp_err"; then
+  ac_header_preproc=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+  ac_header_preproc=no
+fi
+rm -f conftest.err conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
+echo "${ECHO_T}$ac_header_preproc" >&6
+
+# So?  What about this header?
+case $ac_header_compiler:$ac_header_preproc:$ac_c_preproc_warn_flag in
+  yes:no: )
+    { echo "$as_me:$LINENO: WARNING: inttypes.h: accepted by the compiler, rejected by the preprocessor!" >&5
+echo "$as_me: WARNING: inttypes.h: accepted by the compiler, rejected by the preprocessor!" >&2;}
+    { echo "$as_me:$LINENO: WARNING: inttypes.h: proceeding with the compiler's result" >&5
+echo "$as_me: WARNING: inttypes.h: proceeding with the compiler's result" >&2;}
+    ac_header_preproc=yes
+    ;;
+  no:yes:* )
+    { echo "$as_me:$LINENO: WARNING: inttypes.h: present but cannot be compiled" >&5
+echo "$as_me: WARNING: inttypes.h: present but cannot be compiled" >&2;}
+    { echo "$as_me:$LINENO: WARNING: inttypes.h:     check for missing prerequisite headers?" >&5
+echo "$as_me: WARNING: inttypes.h:     check for missing prerequisite headers?" >&2;}
+    { echo "$as_me:$LINENO: WARNING: inttypes.h: see the Autoconf documentation" >&5
+echo "$as_me: WARNING: inttypes.h: see the Autoconf documentation" >&2;}
+    { echo "$as_me:$LINENO: WARNING: inttypes.h:     section \"Present But Cannot Be Compiled\"" >&5
+echo "$as_me: WARNING: inttypes.h:     section \"Present But Cannot Be Compiled\"" >&2;}
+    { echo "$as_me:$LINENO: WARNING: inttypes.h: proceeding with the preprocessor's result" >&5
+echo "$as_me: WARNING: inttypes.h: proceeding with the preprocessor's result" >&2;}
+    { echo "$as_me:$LINENO: WARNING: inttypes.h: in the future, the compiler will take precedence" >&5
+echo "$as_me: WARNING: inttypes.h: in the future, the compiler will take precedence" >&2;}
+    (
+      cat <<\_ASBOX
+## ------------------------------------------ ##
+## Report this to the AC_PACKAGE_NAME lists.  ##
+## ------------------------------------------ ##
+_ASBOX
+    ) |
+      sed "s/^/$as_me: WARNING:     /" >&2
+    ;;
+esac
+echo "$as_me:$LINENO: checking for inttypes.h" >&5
+echo $ECHO_N "checking for inttypes.h... $ECHO_C" >&6
+if test "${ac_cv_header_inttypes_h+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_cv_header_inttypes_h=$ac_header_preproc
+fi
+echo "$as_me:$LINENO: result: $ac_cv_header_inttypes_h" >&5
+echo "${ECHO_T}$ac_cv_header_inttypes_h" >&6
+
+fi
+if test $ac_cv_header_inttypes_h = yes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_INTTYPES_H 1
+_ACEOF
+
+fi
 
 
 
@@ -5352,11 +5644,11 @@ fi;
 #------------------------------------------------------------------------------
 # Some GCC-specific stuff
 #------------------------------------------------------------------------------
-if test "${GCC}" = "yes" ; then
+if test "${GXX}" = "yes" ; then
     CXXFLAGS="$CXXFLAGS -Wall -Wconversion"
 fi
 if test -z "$no_pipe"; then
-if test -n "$GCC"; then
+if test -n "$GXX"; then
   echo "$as_me:$LINENO: checking if c++ compiler understands -pipe" >&5
 echo $ECHO_N "checking if c++ compiler understands -pipe... $ECHO_C" >&6
   OLDCXX="$CXX"
@@ -5514,7 +5806,7 @@ fi;
 EXODUS_DIR=
 EXODUS_CFLAGS=
 EXODUS_LDFLAGS=
-if test "$EXODUS_ARG" == "yes"; then
+if test "$EXODUS_ARG" = "yes"; then
 
  if test "${ac_cv_header_exodusII_h+set}" = set; then
   echo "$as_me:$LINENO: checking for exodusII.h" >&5
@@ -6156,7 +6448,7 @@ fi
 # HDF5 Configuration
 HDF5_DIR=
 HDF5_LNK=
-if test -z "$HDF5_ARG" -o "$HDF5_ARG" == "yes"; then
+if test -z "$HDF5_ARG" -o "$HDF5_ARG" = "yes"; then
   echo "$as_me:$LINENO: checking for H5Fopen in -lhdf5" >&5
 echo $ECHO_N "checking for H5Fopen in -lhdf5... $ECHO_C" >&6
 if test "${ac_cv_lib_hdf5_H5Fopen+set}" = set; then
@@ -6224,7 +6516,7 @@ if test $ac_cv_lib_hdf5_H5Fopen = yes; then
   HDF5_LNK=-lhdf5
 fi
 
-  if test "$HDF5_ARG" == "yes" -a -z "$HDF5_LNK"; then
+  if test "$HDF5_ARG" = "yes" -a -z "$HDF5_LNK"; then
     { { echo "$as_me:$LINENO: error: \"HDF5 library not found.\"" >&5
 echo "$as_me: error: \"HDF5 library not found.\"" >&2;}
    { (exit 1); exit 1; }; }
@@ -6290,7 +6582,7 @@ TSTT_MESH_IMPL=
 OVERTURE_DIR=
 OVERTURE_LNK=
 OVERTURE_INC=
-if test "$OVERTURE_ARG" == "yes"; then
+if test "$OVERTURE_ARG" = "yes"; then
   { { echo "$as_me:$LINENO: error: \"Argument required for --with-overture\" " >&5
 echo "$as_me: error: \"Argument required for --with-overture\" " >&2;}
    { (exit 1); exit 1; }; }
@@ -6304,7 +6596,7 @@ fi
 MOAB_DIR=
 MOAB_LNK=
 MOAB_INC=
-if test "$MOAB_ARG" == "yes"; then
+if test "$MOAB_ARG" = "yes"; then
   { { echo "$as_me:$LINENO: error: \"Argument required for --with-moab\" " >&5
 echo "$as_me: error: \"Argument required for --with-moab\" " >&2;}
    { (exit 1); exit 1; }; }
@@ -6340,9 +6632,9 @@ elif test -n "$AOMD_ARG" -a "$AOMD_ARG" != "no"; then
 fi
 
 
-if test "$WITH_TSTT_MESH_ARG" == "no"; then
+if test "$WITH_TSTT_MESH_ARG" = "no"; then
   TSTT_MESH_IMPL=
-elif test "$WITH_TSTT_MESH_ARG" == "yes"; then
+elif test "$WITH_TSTT_MESH_ARG" = "yes"; then
   if test -z "$TSTT_MESH_IMPL"; then
      { { echo "$as_me:$LINENO: error: \"Server location not specified for TSTT mesh server\"" >&5
 echo "$as_me: error: \"Server location not specified for TSTT mesh server\"" >&2;}
@@ -6377,7 +6669,7 @@ fi
 # Assume if a TSTT Mesh implementation was specified for testing
 # that we want TSTT Mesh support enabled.
 if test -n "$TSTT_MESH_IMPL"; then
-  if test "$TSTT_IFACE_ARG" == "no"; then
+  if test "$TSTT_IFACE_ARG" = "no"; then
     { { echo "$as_me:$LINENO: error: \"Nonsensical specification of TSTT Mesh Implementation with TSTT support explicitly disabled\" " >&5
 echo "$as_me: error: \"Nonsensical specification of TSTT Mesh Implementation with TSTT support explicitly disabled\" " >&2;}
    { (exit 1); exit 1; }; }
@@ -6639,7 +6931,7 @@ else
 echo "${ECHO_T}no" >&6
 fi
 
-elif test "$BABEL_ARG" == "yes"; then
+elif test "$BABEL_ARG" = "yes"; then
   if test "${ac_cv_header_sidl_h+set}" = set; then
   echo "$as_me:$LINENO: checking for sidl.h" >&5
 echo $ECHO_N "checking for sidl.h... $ECHO_C" >&6
@@ -7018,10 +7310,10 @@ fi
 
 
 # Enable TSTT Mesh support?
-if test "$TSTT_IFACE_ARG" == "yes"; then
+if test "$TSTT_IFACE_ARG" = "yes"; then
   MSQ_TSTT_MESH="$TSTT_IFACE_ARG"
   MSQ_TSTT_GEOM="$TSTT_IFACE_ARG"
-  if test "$HAVE_SIDL_H" == "no"; then
+  if test "$HAVE_SIDL_H" = "no"; then
     { { echo "$as_me:$LINENO: error: \"Babel is required for TSTT Mesh support.  Try --with-babel=...\"" >&5
 echo "$as_me: error: \"Babel is required for TSTT Mesh support.  Try --with-babel=...\"" >&2;}
    { (exit 1); exit 1; }; }
@@ -7327,7 +7619,7 @@ fi
 echo "$as_me: WARNING: \"CppUnit not found\"" >&2;}
   fi
 
-elif test "$CPPUNIT_ARG" == "yes"; then
+elif test "$CPPUNIT_ARG" = "yes"; then
 
   WITH_CPPUNIT=yes
   if test "${ac_cv_header_cppunit_Test_h+set}" = set; then
@@ -8388,7 +8680,6 @@ s,@MAKEDEPEND@,$MAKEDEPEND,;t t
 s,@DOXYGEN@,$DOXYGEN,;t t
 s,@CPP@,$CPP,;t t
 s,@EGREP@,$EGREP,;t t
-s,@HAVE_IEEEFP@,$HAVE_IEEEFP,;t t
 s,@MSQ_FUNC_DEFS@,$MSQ_FUNC_DEFS,;t t
 s,@CXX_ARCHIVER@,$CXX_ARCHIVER,;t t
 s,@BABEL@,$BABEL,;t t
@@ -9499,7 +9790,6 @@ s,@MAKEDEPEND@,$MAKEDEPEND,;t t
 s,@DOXYGEN@,$DOXYGEN,;t t
 s,@CPP@,$CPP,;t t
 s,@EGREP@,$EGREP,;t t
-s,@HAVE_IEEEFP@,$HAVE_IEEEFP,;t t
 s,@MSQ_FUNC_DEFS@,$MSQ_FUNC_DEFS,;t t
 s,@CXX_ARCHIVER@,$CXX_ARCHIVER,;t t
 s,@BABEL@,$BABEL,;t t

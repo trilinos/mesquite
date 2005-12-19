@@ -71,17 +71,17 @@ namespace Mesquite
    class IdealWeightInverseMeanRatio : public ShapeQualityMetric
    {
    public:
-      IdealWeightInverseMeanRatio(MsqError& err, double pow_dbl = 1.0);
+      MESQUITE_EXPORT IdealWeightInverseMeanRatio(MsqError& err, double pow_dbl = 1.0);
 
       //! virtual destructor ensures use of polymorphism during destruction
-      virtual ~IdealWeightInverseMeanRatio() {
+      MESQUITE_EXPORT virtual ~IdealWeightInverseMeanRatio() {
       }
      
       //! evaluate using mesquite objects 
-      bool evaluate_element(PatchData &pd, MsqMeshEntity *element, 
+      MESQUITE_EXPORT bool evaluate_element(PatchData &pd, MsqMeshEntity *element, 
                             double &fval, MsqError &err); 
 
-      bool compute_element_analytical_gradient(PatchData &pd,
+      MESQUITE_EXPORT bool compute_element_analytical_gradient(PatchData &pd,
                                                MsqMeshEntity *element,
                                                MsqVertex *free_vtces[], 
                                                Vector3D grad_vec[],
@@ -89,7 +89,7 @@ namespace Mesquite
                                                double &metric_value,
                                                MsqError &err);
 
-      bool compute_element_analytical_hessian(PatchData &pd,
+      MESQUITE_EXPORT bool compute_element_analytical_hessian(PatchData &pd,
                                               MsqMeshEntity *e,
                                               MsqVertex *v[], 
                                               Vector3D g[],

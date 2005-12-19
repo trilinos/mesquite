@@ -172,7 +172,7 @@ namespace Mesquite
     
       //Gets the number of stop watches in the collection
     int number_of_stop_watches(){
-      return mEntries.size();}
+      return (int) mEntries.size();}
 
     void get_keys_sorted_by_time(msq_std::vector<Key> &sorted_keys);
     

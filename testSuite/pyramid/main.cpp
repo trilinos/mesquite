@@ -90,6 +90,7 @@ bool smooth_mixed_mesh( const char* filename );
 
 int main( int argc, char* argv[] )
 {
+  unsigned i;
   const char* input_file = "../../meshFiles/3D/VTK/mixed-hex-pyr-tet.vtk";
   if (argc == 2)
     input_file = argv[1];
@@ -146,7 +147,7 @@ int main( int argc, char* argv[] )
   CPPUNIT_ASSERT(!err);
   
     // Verify element types and number of vertices
-  for (unsigned i = 0; i < 12; ++i)
+  for (i = 0; i < 12; ++i)
   {
     CPPUNIT_ASSERT( type_array[i] == PYRAMID );
     CPPUNIT_ASSERT( conn_offsets[i] == 5*i );
@@ -155,7 +156,7 @@ int main( int argc, char* argv[] )
     // All pyramids should share a common apex, at the
     // center of the sphere
   Mesh::VertexHandle apex_handle = vert_array[4];
-  for (unsigned i = 1; i < 12; ++i)
+  for (i = 1; i < 12; ++i)
   {
     CPPUNIT_ASSERT( vert_array[5*i+4] == apex_handle );
   }
@@ -165,7 +166,7 @@ int main( int argc, char* argv[] )
   MsqVertex vertices[60];
   mesh->vertices_get_coordinates( &vert_array[0], vertices, 60, err );
   CPPUNIT_ASSERT(!err);
-  for (unsigned i = 0; i < 60; ++i)
+  for (i = 0; i < 60; ++i)
   {
     if (vert_array[i] == apex_handle)
       CPPUNIT_ASSERT( vertices[i].within_tolerance_box( Vector3D(0,0,0), 1e-6 ) );
@@ -176,19 +177,19 @@ int main( int argc, char* argv[] )
     // Try smoothing w/out moving the free vertex and verify that
     // the smoother didn't move the vertex
   Vector3D position(0,0,0);
-  for (unsigned i = 0; metrics[i] != NULL; ++i)
+  for (i = 0; metrics[i] != NULL; ++i)
     CPPUNIT_ASSERT( !smooth_mesh( mesh, ideal_mesh, apex_handle, position, metrics[i] ) );
   
     // Now try moving the vertex and see if the smoother moves it back
     // to the origin
   position.set( 0.1, 0.1, 0.1 );
-  for (unsigned i = 0; metrics[i] != NULL; ++i)
+  for (i = 0; metrics[i] != NULL; ++i)
     CPPUNIT_ASSERT( !smooth_mesh( mesh, ideal_mesh, apex_handle, position, metrics[i] ) );
   
     // Now try moving the vertex further and see if the smoother moves it back
     // to the origin
   position.set( 0.3, 0.3, 0.3 );
-  for (unsigned i = 0; metrics[i] != NULL; ++i)
+  for (i = 0; metrics[i] != NULL; ++i)
     CPPUNIT_ASSERT( !smooth_mesh( mesh, ideal_mesh, apex_handle, position, metrics[i] ) );
 
     // Now try smoothing a real mixed mesh

@@ -65,7 +65,7 @@ namespace Mesquite
      */
    class PatchData;
    class MsqMeshEntity;
-   class LPtoPTemplate :public ObjectiveFunction
+   class MESQUITE_EXPORT LPtoPTemplate :public ObjectiveFunction
    {
    public:
      LPtoPTemplate(QualityMetric *, short, MsqError &);

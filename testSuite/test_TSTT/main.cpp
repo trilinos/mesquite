@@ -294,7 +294,7 @@ Mesh* get_tstt_mesh( const char* file_name )
   ImplType mesh_instance = ImplType::_create();
   TSTTM::Mesh tstt_mesh = mesh_instance;
 
-  tstt_mesh.load(file_name);
+  tstt_mesh.load(0, file_name);
   
   // **************************************************************
   // THIS IS A HACK -- READ FIXED FLAG FROM INPUT FILE DIRECTLY
@@ -350,7 +350,7 @@ Mesh* get_tstt_mesh( const char* file_name )
         // Create tag
       TagHandle tag_handle;
       tag_iface.createTag( VERTEX_FIXED_TAG_NAME, 
-                           sizeof(int), 
+                           1, 
                            TSTTB::TagValueType_INTEGER, 
                            tag_handle );
         // Set tag data on vertices

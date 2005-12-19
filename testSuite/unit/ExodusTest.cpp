@@ -147,7 +147,7 @@ public:
     CPPUNIT_ASSERT(vert_handle_vect.size() == 8 * NUM_HEXES + 4 * NUM_QUADS );
     msq_std::sort( vert_handle_vect.begin(), vert_handle_vect.end() );
     std::vector<Mesquite::Mesh::VertexHandle>::iterator new_end = 
-      unique( vert_handle_vect.begin(), vert_handle_vect.end() );
+      std::unique( vert_handle_vect.begin(), vert_handle_vect.end() );
     vert_handle_vect.resize( new_end - vert_handle_vect.begin() );
     CPPUNIT_ASSERT(vert_handle_vect.size() == NUM_NODES);
     

@@ -62,7 +62,7 @@ namespace Mesquite
    {
    public:
  
-     IdealWeightMeanRatio()
+     MESQUITE_EXPORT IdealWeightMeanRatio()
       : a2Con(2.0), 
         b2Con(-1.0), 
         c2Con(1.0),
@@ -80,14 +80,14 @@ namespace Mesquite
      }
      
      //! virtual destructor ensures use of polymorphism during destruction
-     virtual ~IdealWeightMeanRatio() {
+     MESQUITE_EXPORT virtual ~IdealWeightMeanRatio() {
      }
      
      //! evaluate using mesquite objects 
-     bool evaluate_element(PatchData &pd, MsqMeshEntity *element,
+     MESQUITE_EXPORT bool evaluate_element(PatchData &pd, MsqMeshEntity *element,
                            double &fval, MsqError &err); 
           
-     bool compute_element_analytical_gradient(PatchData &pd,
+     MESQUITE_EXPORT bool compute_element_analytical_gradient(PatchData &pd,
                                                MsqMeshEntity *element,
                                                MsqVertex *free_vtces[], 
                                                Vector3D grad_vec[],
@@ -95,7 +95,7 @@ namespace Mesquite
                                                double &metric_value,
                                                MsqError &err);
 
-     bool compute_element_analytical_hessian(PatchData &pd,
+     MESQUITE_EXPORT bool compute_element_analytical_hessian(PatchData &pd,
                                               MsqMeshEntity *e,
                                               MsqVertex *v[], 
                                               Vector3D g[],

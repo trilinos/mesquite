@@ -8,13 +8,11 @@ namespace Mesquite {
 
 static inline msq_std::string process_tstt_error( TSTTB::Error &tstt_err )
 {
-  msq_std::string str;
   msq_std::string result("TSTT ERROR: ");
   result += tstt_err.getNote();
   MSQ_DBGOUT(1) << "TSTT Error:" << msq_std::endl;
   MSQ_DBGOUT(1) << tstt_err.getNote() << msq_std::endl;
-  tstt_err.getDescription(str);
-  MSQ_DBGOUT(1) << str << msq_std::endl;
+  MSQ_DBGOUT(1) << tstt_err.getDescription() << msq_std::endl;
   MSQ_DBGOUT(1) << tstt_err.getTrace() << msq_std::endl;
   return result;
 }

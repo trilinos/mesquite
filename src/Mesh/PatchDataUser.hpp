@@ -55,7 +55,7 @@ namespace Mesquite
 
   /*! \class PatchDataParameters
    contains all information necessary to fill up a PatchData instance. */
-  class PatchDataParameters
+  class MESQUITE_EXPORT PatchDataParameters
   {
   public:
     PatchDataParameters() :
@@ -102,7 +102,7 @@ namespace Mesquite
     Alternatively, a PatchDataParameters object can be copied directly (see
     set_all_parameters).
   */
-  class PatchDataUser
+  class MESQUITE_EXPORT PatchDataUser
   {
   protected:
     PatchDataUser() : mParams()

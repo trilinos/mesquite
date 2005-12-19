@@ -73,7 +73,8 @@ TESTNAMES := test_1\
 	     i_dft_with_culling \
 	     pyramid \
 	     wedge \
-             unit 
+             unit \
+	     headers
 ###             random_test\
 ###             convert\
 ###             shape_wrapper_test
@@ -137,7 +138,7 @@ include $(TESTMAKEFILES)
 endif
 # *************
 
-all: all_headers all_objects all_libs
+all: all_headers all_objects all_libs all_config
 
 settings:
 	@echo "TESTS = $(TESTS)"
@@ -156,7 +157,7 @@ depend:
 	@echo " *** Done making depend"
 
 
-all_headers:
+all_headers: all_config
 all_objects: all_headers
 all_libs: all_objects
 
@@ -192,6 +193,26 @@ distrib: all
 	rm -rf mesquite-1.0
 
 test: all_libs $(MSQ_RUN_TEST)
+
+
+all_config: Makefile.customize include/mesquite_config.h testSuite/env
+
+Makefile.customize: Makefile.customize.in config.status
+	./config.status Makefile.customize
+
+include/mesquite_config.h: include/mesquite_config.h.in config.status
+	./config.status include/mesquite_config.h
+
+testSuite/env: testSuite/env.in config.status
+	./config.status testSuite/env
+
+config.status: configure
+	if [ -f config.status ]; then \
+		./config.status --recheck; \
+	else \
+		./configure; \
+	fi
+	
 
 #distclean: veryclean
 #	-rm -f GNUmakefile config.status config.cache

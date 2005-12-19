@@ -74,10 +74,10 @@ void IdealWeightInverseMeanRatio::set_metric_power(double pow_dbl, MsqError& err
     set_negate_flag(-1);
   else
     set_negate_flag(1);
-  a2Con=::pow(.5,pow_dbl);
+  a2Con=pow(.5,pow_dbl);
   b2Con=pow_dbl;
   c2Con=-pow_dbl;
-  a3Con=::pow(1.0/3.0,pow_dbl);
+  a3Con=pow(1.0/3.0,pow_dbl);
   b3Con=pow_dbl;
   c3Con=-2.0*pow_dbl/3.0;
 }

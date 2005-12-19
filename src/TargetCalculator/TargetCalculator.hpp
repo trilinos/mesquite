@@ -45,7 +45,7 @@
 #include "PatchData.hpp"
 #include "PatchDataUser.hpp"
 
-#ifdef HAVE_IEEEFP
+#ifdef HAVE_IEEEFP_H
 #  include <ieeefp.h>
 #endif
 

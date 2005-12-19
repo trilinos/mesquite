@@ -1,6 +1,6 @@
 import TSTTB;
 
-package TSTTR version 001
+package TSTTR version 0.01
 {
 
 //This file shows the high level organization of the methods into

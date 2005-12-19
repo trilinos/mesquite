@@ -109,7 +109,7 @@ inline bool m_fcn_ridft2(double &obj,
                                                   fmat[5]*fmat[5];
 
   /* Calculate objective function. */
-  obj = a * pow(f, b) * pow(g, c);
+  obj = a * b.raise(f) * c.raise(g);
   return true;
 }
 
@@ -169,11 +169,11 @@ inline bool g_fcn_ridft2(double &obj, Vector3D g_obj[3],
                                                   fmat[5]*fmat[5];
 
   /* Calculate objective function. */
-  obj = a * pow(f, b) * pow(g, c);
+  obj = a * b.raise(f) * c.raise(g);
 
   /* Calculate the derivative of the objective function. */
-  f = b * obj / f * 4.0;              /* Constant on nabla f */
-  g = c * obj / g * (1 + t1 / t2);    /* Constant on nabla g */
+  f = b.value() * obj / f * 4.0;              /* Constant on nabla f */
+  g = c.value() * obj / g * (1 + t1 / t2);    /* Constant on nabla g */
 
   df[0] = fmat[0]*matr[0] + fmat[1]*matr[3] + fmat[2]*matr[6];
   df[1] = fmat[0]*matr[1] + fmat[1]*matr[4] + fmat[2]*matr[7];
@@ -367,13 +367,13 @@ inline bool h_fcn_ridft2(double &obj, Vector3D g_obj[3], Matrix3D h_obj[6],
   loc4 = g;
 
   /* Calculate objective function. */
-  obj  = a * pow(f, b) * pow(g, c);
+  obj  = a * b.raise(f) * c.raise(g);
 
   /* Calculate the derivative of the objective function. */
   t4 = 1 + t1 / t3;
 
-  f = b * obj / f * 4.0;                /* Constant on nabla f */
-  g = c * obj / g * t4;                 /* Constant on nabla g */
+  f = b.value() * obj / f * 4.0;                /* Constant on nabla f */
+  g = c.value() * obj / g * t4;                 /* Constant on nabla g */
 
   df[0] = fmat[0]*matr[0] + fmat[1]*matr[3] + fmat[2]*matr[6];
   df[1] = fmat[0]*matr[1] + fmat[1]*matr[4] + fmat[2]*matr[7];
@@ -472,9 +472,9 @@ inline bool h_fcn_ridft2(double &obj, Vector3D g_obj[3], Matrix3D h_obj[6],
 
   loc0 = f;                           /* Constant on nabla^2 f */
   loc1 = g;                           /* Constant on nabla^2 g */
-  cross = f * c / loc4 * t4;          /* Constant on nabla g nabla f */
-  f = f * (b - 1) / loc3 * 4.0;       /* Constant on nabla f nabla f */
-  g = g *((c - 1) * t4 + 4.0*delta*delta / t2) / loc4;
+  cross = f * c.value() / loc4 * t4;          /* Constant on nabla g nabla f */
+  f = f * (b.value() - 1) / loc3 * 4.0;       /* Constant on nabla f nabla f */
+  g = g *((c.value() - 1) * t4 + 4.0*delta*delta / t2) / loc4;
   /* Constant on nabla g nabla g */
 
   /* First block of rows */
@@ -885,7 +885,7 @@ inline bool m_fcn_ridft3(double &obj, const Vector3D x[4],
                                                   fmat[5]*fmat[5];
 
   /* Calculate objective function. */
-  obj = a * pow(f, b) * pow(g, c);
+  obj = a * b.raise(f) * c.raise(g);
   return true;
 }
 
@@ -948,30 +948,30 @@ inline bool g_fcn_ridft3(double &obj, Vector3D g_obj[4], const Vector3D x[4],
   /* or $b > 2$ in the computations becasue other values do    */
   /* not have defined Hessians when  $f = 0$.                  */
   
-  if (1 == b) { 
-    obj = a * f * pow(g, c);
-    f = a * pow(g, c) * 2.0;            /* Constant on nabla f */
-    g = c * obj / g * (1 + t1 / t2);    /* Constant on nabla g */
+  if (1 == b.value()) { 
+    obj = a * f * c.raise(g);
+    f = a * c.raise(g) * 2.0;            /* Constant on nabla f */
+    g = c.value() * obj / g * (1 + t1 / t2);    /* Constant on nabla g */
   }
-  else if (2 == b) {
-    obj = a * f * f * pow(g, c);
-    f = a * f * pow(g, c) * 4.0;        /* Constant on nabla f */
-    g = c * obj / g * (1 + t1 / t2);    /* Constant on nabla g */
+  else if (2 == b.value()) {
+    obj = a * f * f * c.raise(g);
+    f = a * f * c.raise(g) * 4.0;        /* Constant on nabla f */
+    g = c.value() * obj / g * (1 + t1 / t2);    /* Constant on nabla g */
   }
-  else if (2 < b) {
+  else if (2 < b.value()) {
     if (0 == f) {
       obj = 0;
       f = 0;
       g = 0;
     }
     else {
-      obj = a * pow(f, b) * pow(g, c);
-      f = b * obj / f * 2.0;            /* Constant on nabla f */
-      g = c * obj / g * (1 + t1 / t2);  /* Constant on nabla g */
+      obj = a * b.raise(f) * c.raise(g);
+      f = b.value() * obj / f * 2.0;            /* Constant on nabla f */
+      g = c.value() * obj / g * (1 + t1 / t2);  /* Constant on nabla g */
     }
   }
   else {
-    printf("b = %5.4e not allowed in RI_DFT\n", (double)b);
+    printf("b = %5.4e not allowed in RI_DFT\n", (double)b.value());
     exit(-1);
   }
 
@@ -1189,30 +1189,30 @@ inline bool h_fcn_ridft3(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   /* not have defined Hessians when  $f = 0$.                  */
 
   t4 = 1 + t1 / t3;
-  if (1 == b) {
-    obj = a * f * pow(g, c);
-    f = a * pow(g, c) * 2.0;            /* Constant on nabla f */
-    g = c * obj / g * t4;               /* Constant on nabla g */
+  if (1 == b.value()) {
+    obj = a * f * c.raise(g);
+    f = a * c.raise(g) * 2.0;            /* Constant on nabla f */
+    g = c.value() * obj / g * t4;               /* Constant on nabla g */
   }
-  else if (2 == b) {
-    obj = a * f * f * pow(g, c);
-    f = a * f * pow(g, c) * 4.0;        /* Constant on nabla f */
-    g = c * obj / g * t4;               /* Constant on nabla g */
+  else if (2 == b.value()) {
+    obj = a * f * f * c.raise(g);
+    f = a * f * c.raise(g) * 4.0;        /* Constant on nabla f */
+    g = c.value() * obj / g * t4;               /* Constant on nabla g */
   }
-  else if (2 < b) {
+  else if (2 < b.value()) {
     if (0 == f) {
       obj = 0;
       f = 0;
       g = 0;
     }
     else {
-      obj = a * pow(f, b) * pow(g, c);
-      f = b * obj / f * 2.0;            /* Constant on nabla f */
-      g = c * obj / g * t4;             /* Constant on nabla g */
+      obj = a * b.raise(f) * c.raise(g);
+      f = b.value() * obj / f * 2.0;            /* Constant on nabla f */
+      g = c.value() * obj / g * t4;             /* Constant on nabla g */
     }
   }
   else {
-    printf("b = %5.4e not allowed in RI_DFT\n", (double)b);
+    printf("b = %5.4e not allowed in RI_DFT\n", (double)b.value());
     exit(-1);
   }
 
@@ -1331,28 +1331,28 @@ inline bool h_fcn_ridft3(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
 
   loc0 = f;                           /* Constant on nabla^2 f */
   loc1 = g;                           /* Constant on nabla^2 g */
-  if (1 == b) {
-    cross = f * c / loc4 * t4;          /* Constant on nabla g nabla f */
+  if (1 == b.value()) {
+    cross = f * c.value() / loc4 * t4;          /* Constant on nabla g nabla f */
     f = 0;                              /* Constant on nabla f nabla f */
-    g = g *((c - 1) * t4 + 4.0*delta*delta / t2) / loc4;
+    g = g *((c.value() - 1) * t4 + 4.0*delta*delta / t2) / loc4;
                                         /* Constant on nabla g nabla g */
   }
-  else if (2 == b) {
-    cross = f * c / loc4 * t4;          /* Constant on nabla g nabla f */
-    f = a * pow(loc4, c) * 8.0;         /* Constant on nabla f nabla f */
-    g = g *((c - 1) * t4 + 4.0*delta*delta / t2) / loc4;
+  else if (2 == b.value()) {
+    cross = f * c.value() / loc4 * t4;          /* Constant on nabla g nabla f */
+    f = a * pow(loc4, c.value()) * 8.0;         /* Constant on nabla f nabla f */
+    g = g *((c.value() - 1) * t4 + 4.0*delta*delta / t2) / loc4;
                                         /* Constant on nabla g nabla g */
   }
-  else if (2 < b) {
+  else if (2 < b.value()) {
     if (0 ==loc3) {
       cross = 0;
       f = 0;
       g = 0;
     }
     else {
-      cross = f * c / loc4 * t4;        /* Constant on nabla g nabla f */
-      f = f * (b - 1) / loc3 * 2.0;     /* Constant on nabla f nabla f */
-      g = g *((c - 1) * t4 + 4.0*delta*delta / t2) / loc4;
+      cross = f * c.value() / loc4 * t4;        /* Constant on nabla g nabla f */
+      f = f * (b.value() - 1) / loc3 * 2.0;     /* Constant on nabla f nabla f */
+      g = g *((c.value() - 1) * t4 + 4.0*delta*delta / t2) / loc4;
                                         /* Constant on nabla g nabla g */
     }
   }

@@ -1238,13 +1238,19 @@ void PatchData::update_cached_normals( MsqError& err )
   MSQ_ERRRTN(err);
   
     // Count how many vertices have a single normal
-  size_t count = msq_std::count( vertexDomainDOF.begin(), vertexDomainDOF.end(), 2 );
+  // Sun doesn't support partial template specialization, so can't use std::count
+  //size_t n = msq_std::count( vertexDomainDOF.begin(), vertexDomainDOF.end(), 2 );
+  size_t n = 0;
+  msq_std::vector<unsigned short>::iterator k;
+  for ( k = vertexDomainDOF.begin(); k != vertexDomainDOF.end(); ++k)
+    if (*k == 2)
+      ++n;
   
     // If all vertices are on a surface, pass in the existing handles array
     // and store a single normal per vertex.
-  if (count == num_nodes())
+  if (n == num_nodes())
   {
-    normalData.resize( count );
+    normalData.resize( n );
     msq_std::copy( vertexArray.begin(), vertexArray.end(), normalData.begin() );
     domain->normal_at( &vertexHandlesArray[0], &normalData[0], num_nodes(), err );
     vertexNormalPointers.clear();
@@ -1256,7 +1262,7 @@ void PatchData::update_cached_normals( MsqError& err )
     // count how many per-element vertex normals need to be stored
   msq_std::vector<size_t> vertex_elements;
   const size_t nn = num_nodes();
-  size_t num_normals = count;
+  size_t num_normals = n;
   for (i = 0; i < nn; ++i)
   {
     if (vertexDomainDOF[i] != 2)

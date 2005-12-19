@@ -54,7 +54,7 @@ namespace Mesquite
    public:
     
       //! virtual destructor ensures use of polymorphism during destruction
-    virtual ~ShapeQualityMetric()
+    MESQUITE_EXPORT virtual ~ShapeQualityMetric()
        {};
 
    protected:

@@ -53,7 +53,7 @@ namespace Mesquite
   public:
 
     RI_DFT()
-      : a(::pow(2.0, MSQ_ONE_THIRD)), b(Exponent(1.0)), c(Exponent(-4.0/3.0))
+      : a(pow(2.0, MSQ_ONE_THIRD)), b(Exponent(1.0)), c(Exponent(-4.0/3.0))
     {
       MsqError err;
       set_averaging_method(LINEAR, err); MSQ_CHKERR(err);

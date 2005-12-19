@@ -207,7 +207,7 @@ class TSTTArrIter : public EntityIterator
     inline void get_next_array() 
     {
       index = count = 0;
-      notAtEnd = myMesh.getEntArrNextIter( tsttIter, handleArray, count ) && count;
+      notAtEnd = myMesh.getNextEntArrIter( tsttIter, handleArray, count ) && count;
     }
     
   public:
@@ -729,7 +729,7 @@ MeshTSTTImpl::MeshTSTTImpl(TSTTM::Mesh& tstt_mesh, Mesquite::MsqError& err)
       fixedTag = tagIFace.getTagHandle( VERTEX_FIXED_TAG_NAME );
 
         // Double-check types incase tag already existed
-      if (tagIFace.getTagSize(fixedTag) != sizeof(int) || 
+      if (tagIFace.getTagSizeBytes(fixedTag) != sizeof(int) || 
           tagIFace.getTagType(fixedTag) != TSTTB::TagValueType_INTEGER)
       {
         MSQ_SETERR(err)( MsqError::INVALID_STATE, 
@@ -747,11 +747,11 @@ MeshTSTTImpl::MeshTSTTImpl(TSTTM::Mesh& tstt_mesh, Mesquite::MsqError& err)
     } catch (...) {}
 
     if (!byteTag) {
-      tagIFace.createTag( VERTEX_BYTE_TAG_NAME, sizeof(int), TSTTB::TagValueType_INTEGER, byteTag );
+      tagIFace.createTag( VERTEX_BYTE_TAG_NAME, 1, TSTTB::TagValueType_INTEGER, byteTag );
       createdByteTag = true;
     } 
       // Double-check types incase tag already existed
-    if (tagIFace.getTagSize(byteTag) != sizeof(int) || 
+    if (tagIFace.getTagSizeBytes(byteTag) != sizeof(int) || 
         tagIFace.getTagType(byteTag) != TSTTB::TagValueType_INTEGER)
     {
       MSQ_SETERR(err)( MsqError::INVALID_STATE, 
@@ -847,7 +847,7 @@ void MeshTSTTImpl::set_int_tag( void* tag,
                              BUFFER_COUNT, iter );
                              
     do {
-      more = arrIFace.getEntArrNextIter( iter, handle_array, count );
+      more = arrIFace.getNextEntArrIter( iter, handle_array, count );
       if (count > 0)
         arrTagIFace.setIntArrData( handle_array, count, tag, value_array, count );
     } while (more);
@@ -905,7 +905,7 @@ void MeshTSTTImpl::set_active_set( void* elem_set, MsqError& err )
       bool more = false;
       do {
           // Add elements to element set
-        more = arrIFace.getEntArrNextIter( iter, elements, count );
+        more = arrIFace.getNextEntArrIter( iter, elements, count );
         if (!count) break;
         setIFace.addEntArrToSet( elements, count, elementSet );
         
@@ -1166,12 +1166,10 @@ void MeshTSTTImpl::vertices_get_coordinates(
 
 void MeshTSTTImpl::vertex_set_coordinates(
   Mesquite::Mesh::VertexHandle vertex,
-  const Vector3D &coordinates, MsqError &err)
+  const Vector3D &coords, MsqError &err)
 {
   try {
-    sidl::array<double> coords( 
-      convert_to_sidl_vector( const_cast<double*>(coordinates.to_array()), 3 ) );
-    modIFace.setVtxCoords( vertex, coords, 1 );
+    modIFace.setVtxCoords( vertex, coords[0], coords[1], coords[2] );
   }
   catch(::TSTTB::Error &tstt_err) {
     MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
@@ -1493,21 +1491,19 @@ TagHandle MeshTSTTImpl::tag_create( const msq_std::string& name,
                                     MsqError& err )
 {
   TSTTB::TagValueType tstt_type;
-  size_t size = 0;
   switch (type) {
-    case Mesquite::Mesh::BYTE:   size = sizeof(char  ); tstt_type = TSTTB::TagValueType_OPAQUE;        break;
-    case Mesquite::Mesh::INT:    size = sizeof(int   ); tstt_type = TSTTB::TagValueType_INTEGER;       break;
-    case Mesquite::Mesh::DOUBLE: size = sizeof(double); tstt_type = TSTTB::TagValueType_DOUBLE;        break;
-    case Mesquite::Mesh::HANDLE: size = sizeof(void* ); tstt_type = TSTTB::TagValueType_ENTITY_HANDLE; break;
+    case Mesquite::Mesh::BYTE:   tstt_type = TSTTB::TagValueType_BYTES;         break;
+    case Mesquite::Mesh::INT:    tstt_type = TSTTB::TagValueType_INTEGER;       break;
+    case Mesquite::Mesh::DOUBLE: tstt_type = TSTTB::TagValueType_DOUBLE;        break;
+    case Mesquite::Mesh::HANDLE: tstt_type = TSTTB::TagValueType_ENTITY_HANDLE; break;
     default:
       MSQ_SETERR(err)("Invalid tag type", MsqError::INVALID_ARG );
       return 0;
   }
-  size *= length;
   
   try {
     void* handle = 0;
-    tagIFace.createTag( name, size, tstt_type, handle );
+    tagIFace.createTag( name, length, tstt_type, handle );
     return handle;
   } 
   catch(::TSTTB::Error &tstt_err) {
@@ -1549,7 +1545,7 @@ void MeshTSTTImpl::tag_properties( TagHandle handle,
   TSTTB::TagValueType type;
   try {
     name = tagIFace.getTagName( handle );
-    size = tagIFace.getTagSize( handle );
+    size = tagIFace.getTagSizeBytes( handle );
     type = tagIFace.getTagType( handle );
   }
   catch(::TSTTB::Error &tstt_err) {
@@ -1559,7 +1555,7 @@ void MeshTSTTImpl::tag_properties( TagHandle handle,
   
   size_t tsize;
   switch (type) {
-    case TSTTB::TagValueType_OPAQUE       : tsize = sizeof(char  ); type_out = Mesquite::Mesh::BYTE  ; break;
+    case TSTTB::TagValueType_BYTES        : tsize = sizeof(char  ); type_out = Mesquite::Mesh::BYTE  ; break;
     case TSTTB::TagValueType_INTEGER      : tsize = sizeof(int   ); type_out = Mesquite::Mesh::INT   ; break;
     case TSTTB::TagValueType_DOUBLE       : tsize = sizeof(double); type_out = Mesquite::Mesh::DOUBLE; break;
     case TSTTB::TagValueType_ENTITY_HANDLE: tsize = sizeof(void* ); type_out = Mesquite::Mesh::HANDLE; break;
@@ -1602,7 +1598,7 @@ void MeshTSTTImpl::tag_set_data( TagHandle tag,
                                  MsqError& err )
 {
   try {
-    size_t len, size = tagIFace.getTagSize( tag );
+    size_t len, size = tagIFace.getTagSizeBytes( tag );
     int count = 0;
     sidl::array<void*> handles( convert_to_sidl_vector( const_cast<void**>(array), num_elems ) );
     switch (tagIFace.getTagType( tag ))
@@ -1633,28 +1629,9 @@ void MeshTSTTImpl::tag_set_data( TagHandle tag,
 
       default:
       {
-#if TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_OPAQUE_PACKED
-        len = num_elems / sizeof(void*);
-        if (num_elems % sizeof(void*))
-          ++len;
-        sidl::array<void*> sdata( convert_to_sidl_vector( (void**)data, len ) );
-#elif TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_OPAQUE_PADDED
-        assert( size <= sizeof(void*) );
-        sidl::array<void*> sdata( alloc_sidl_vector<void*>(num_elems) );
-        const char* ptr = reinterpret_cast<const char*>(data);
-        for (size_t i = 0; i < num_elems; ++i)
-          sdata.set( i, reinterpret_cast<void*>(*(ptr + i*size)) );
-#elif TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_CHAR
         len = size * num_elems;
         sidl::array<char> sdata( convert_to_sidl_vector( (char*)data, len ) );
-#elif TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_UCHAR \
-   || TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_BYTE
-        len = size * num_elems;
-        sidl::array<unsigned char> sdata( alloc_sidl_vector( (unsigned char*)data, len ) );
-#else
-#error
-#endif
-        arrTagIFace.setArrData( handles, num_elems, tag, sdata, count, size );
+        arrTagIFace.setArrData( handles, num_elems, tag, sdata, count );
       }
     }
   }
@@ -1689,10 +1666,9 @@ void MeshTSTTImpl::tag_get_data( TagHandle tag,
                                  MsqError& err )
 {
   try {
-    size_t len, size = tagIFace.getTagSize( tag );
-    int32_t lower = 0, upper = num_elems - 1, stride = 1, count = num_elems;
-    sidl::array<void*> handles;
-    handles.borrow( const_cast<void**>(array), 1, &lower, &upper, &stride );
+    int count;
+    size_t len, size = tagIFace.getTagSizeBytes( tag );
+    sidl::array<void*> handles = convert_to_sidl_vector( (void**)array, num_elems );
     switch (tagIFace.getTagType( tag ))
     {
       case TSTTB::TagValueType_ENTITY_HANDLE:
@@ -1721,32 +1697,9 @@ void MeshTSTTImpl::tag_get_data( TagHandle tag,
 
       default:
       {
-#if TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_OPAQUE_PACKED
-        len = num_elems / sizeof(void*);
-        if (num_elems % sizeof(void*))
-          ++len;
-        sidl::array<void*> sdata( convert_to_sidl_vector( (void**)data, len ) );
-#elif TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_OPAQUE_PADDED
-        assert( size <= sizeof(void*) );
-        sidl::array<void*> sdata( alloc_sidl_vector<void*>(num_elems) );
-#elif TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_CHAR
         len = size * num_elems;
-        sidl::array<char> sdata( convert_to_sidl_vector( (char*)data, len ) );
-#elif TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_UCHAR \
-   || TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_BYTE
-        len = size * num_elems;
-        sidl::array<unsigned char> sdata( alloc_sidl_vector( (unsigned char*)data, len ) );
-#else
-#error
-#endif
-        int32_t junk;
-        arrTagIFace.getArrData( handles, num_elems, tag, sdata, count, junk );
-        
-#if TSTT_OPAQUE_TAG_TYPE == OPAQUE_TYPE_OPAQUE_PADDED
-        const char* ptr = reinterpret_cast<const char*>(data);
-        for (size_t i = 0; i < num_elems; ++i)
-          sdata.set( i, reinterpret_cast<void*>(*(ptr + i*size)) );
-#endif
+        sidl::array<char> sdata = convert_to_sidl_vector( (char*)data, len );
+        arrTagIFace.getArrData( handles, num_elems, tag, sdata, count );
       }
     }
   }
