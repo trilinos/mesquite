@@ -102,7 +102,7 @@ fi
 if test "$MSQ_DEBUG_SYMBOLS" = "yes"; then
   CXXFLAGS="$CXXFLAGS -g"
 fi
-if test "$MSQ_DEBUG_ASSERTS" == "no"; then
+if test "$MSQ_DEBUG_ASSERTS" = "no"; then
   CXXFLAGS="$CXXFLAGS -DNDEBUG"
 fi
 if test -n "$MSQ_DEBUG_OUT"; then
@@ -290,7 +290,7 @@ AC_ARG_WITH(cppunit,[[
 EXODUS_DIR=
 EXODUS_CFLAGS=
 EXODUS_LDFLAGS=
-if test "$EXODUS_ARG" == "yes"; then
+if test "$EXODUS_ARG" = "yes"; then
 
  AC_CHECK_HEADER( [exodusII.h], 
                   [EXODUS_CFLAGS="-DMSQ_USING_EXODUS"]
@@ -347,9 +347,9 @@ fi
 # HDF5 Configuration
 HDF5_DIR=
 HDF5_LNK=
-if test -z "$HDF5_ARG" -o "$HDF5_ARG" == "yes"; then
+if test -z "$HDF5_ARG" -o "$HDF5_ARG" = "yes"; then
   AC_CHECK_LIB( [hdf5], H5Fopen, [HDF5_LNK=-lhdf5] )
-  if test "$HDF5_ARG" == "yes" -a -z "$HDF5_LNK"; then
+  if test "$HDF5_ARG" = "yes" -a -z "$HDF5_LNK"; then
     AC_MSG_ERROR("HDF5 library not found.")
   fi
 elif test "$HDF5_ARG" != "no"; then
@@ -371,7 +371,7 @@ TSTT_MESH_IMPL=
 OVERTURE_DIR=
 OVERTURE_LNK=
 OVERTURE_INC=
-if test "$OVERTURE_ARG" == "yes"; then
+if test "$OVERTURE_ARG" = "yes"; then
   AC_MSG_ERROR( "Argument required for --with-overture" )
 elif test -n "$OVERTURE_ARG" -a  "$OVERTURE_ARG" != "yes"; then
   OVERTURE_DIR="$OVERTURE_ARG"
@@ -383,7 +383,7 @@ fi
 MOAB_DIR=
 MOAB_LNK=
 MOAB_INC=
-if test "$MOAB_ARG" == "yes"; then
+if test "$MOAB_ARG" = "yes"; then
   AC_MSG_ERROR( "Argument required for --with-moab" )
 elif test -n "$MOAB_ARG" -a  "$MOAB_ARG" != "no"; then
   MOAB_DIR="$MOAB_ARG"
@@ -413,9 +413,9 @@ elif test -n "$AOMD_ARG" -a "$AOMD_ARG" != "no"; then
 fi
 
 
-if test "$WITH_TSTT_MESH_ARG" == "no"; then
+if test "$WITH_TSTT_MESH_ARG" = "no"; then
   TSTT_MESH_IMPL=
-elif test "$WITH_TSTT_MESH_ARG" == "yes"; then
+elif test "$WITH_TSTT_MESH_ARG" = "yes"; then
   if test -z "$TSTT_MESH_IMPL"; then
      AC_MSG_ERROR("Server location not specified for TSTT mesh server");
   fi 
@@ -446,7 +446,7 @@ fi
 # Assume if a TSTT Mesh implementation was specified for testing
 # that we want TSTT Mesh support enabled.
 if test -n "$TSTT_MESH_IMPL"; then
-  if test "$TSTT_IFACE_ARG" == "no"; then
+  if test "$TSTT_IFACE_ARG" = "no"; then
     AC_MSG_ERROR( "Nonsensical specification of TSTT Mesh Implementation with TSTT support explicitly disabled" )
   elif test -z "$TSTT_IFACE_ARG"; then
     TSTT_IFACE_ARG=yes
@@ -464,7 +464,7 @@ if test -z "$BABEL_ARG"; then
   AC_CHECK_HEADER( [sidl.h], [HAVE_SIDL_H=yes], [HAVE_SIDL_H=no] )
   AC_CHECK_LIB( [sidl], [sidl_long__array_copy], [SIDL_LNK="-lsidl"])
   AC_CHECK_PROG( [BABEL], [babel], [babel] )
-elif test "$BABEL_ARG" == "yes"; then
+elif test "$BABEL_ARG" = "yes"; then
   AC_CHECK_HEADER( [sidl.h], [HAVE_SIDL_H=yes], [AC_MSG_ERROR("sidl.h not found")])
   AC_CHECK_LIB( [sidl], [sidl_long__array_copy], [SIDL_LNK="-lsidl"], [AC_MSG_ERROR("No SIDL library")])
   AC_CHECK_PROG( [BABEL], [babel], [babel], [] )
@@ -489,10 +489,10 @@ fi
 
 
 # Enable TSTT Mesh support?
-if test "$TSTT_IFACE_ARG" == "yes"; then
+if test "$TSTT_IFACE_ARG" = "yes"; then
   MSQ_TSTT_MESH="$TSTT_IFACE_ARG"
   MSQ_TSTT_GEOM="$TSTT_IFACE_ARG"
-  if test "$HAVE_SIDL_H" == "no"; then
+  if test "$HAVE_SIDL_H" = "no"; then
     AC_MSG_ERROR("Babel is required for TSTT Mesh support.  Try --with-babel=...")
   fi
 else
@@ -525,7 +525,7 @@ if test -z "$CPPUNIT_ARG"; then
     AC_MSG_WARN("CppUnit not found")
   fi  
 
-elif test "$CPPUNIT_ARG" == "yes"; then
+elif test "$CPPUNIT_ARG" = "yes"; then
 
   WITH_CPPUNIT=yes
   AC_CHECK_HEADER( [cppunit/Test.h], [], [AC_MSG_ERROR("cppunit/Test.h not found")])
