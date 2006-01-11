@@ -95,7 +95,6 @@ if test "$MSQ_DO_DEBUG" = "yes"; then
 fi
 
 # Construct compiler options from above configure options
-CXXFLAGS=
 if test "$MSQ_DO_OPTIMIZE" = "yes"; then
   CXXFLAGS="$CXXFLAGS -O2"
 fi
