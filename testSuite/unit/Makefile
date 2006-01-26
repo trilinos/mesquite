@@ -11,7 +11,6 @@ MESQUITE_INCLUDE = ${TSTT_INCLUDE} -I$(MSQ_BASE_DIR)/include -I$(MSQ_BASE_DIR)/i
 MESQUITE_LINK = -L$(MSQ_BASE_DIR)/lib -lmesquite ${TSTT_LINK}
 
 PREFIX = @
-PREFIX = 
 
 default: msq_test
 
@@ -25,7 +24,9 @@ msq_test : $(TEST_OBJS) msq_test_main.o $(MSQ_BASE_DIR)/lib/libmesquite.a
         $(TEST_OBJS) msq_test_main.o \
         -o $@ \
         -L$(MSQ_BASE_DIR)/lib -lmesquite \
-         $(CONFIG_LDFLAGS) $(CPPUNIT_LNK) $(TSTT_MESH_LDFLAGS)
+         $(CONFIG_LDFLAGS) $(CPPUNIT_LNK) \
+	$(TSTT_MESH_LNK) $(TSTT_BASE_LNK) \
+        $(TSTTM_SERVER_LIBS) $(TSTTB_SERVER_LIBS)
 
 qt_test: $(TEST_OBJS) qt_test_main.o $(MSQ_BASE_DIR)/lib/libmesquite.a
 	$(PREFIX)$(LINKER) $(LDFLAGS) \
@@ -34,7 +35,8 @@ qt_test: $(TEST_OBJS) qt_test_main.o $(MSQ_BASE_DIR)/lib/libmesquite.a
         -L$(MSQ_BASE_DIR)/lib -lmesquite \
          $(CONFIG_LDFLAGS) $(CPPUNIT_LNK) \
 	-lqttestrunner -L$(QTDIR)/lib -lqt-mt \
-	$(TSTT_MESH_LDFLAGS)
+	$(TSTT_MESH_LNK) $(TSTT_BASE_LNK) \
+        $(TSTTM_SERVER_LIBS) $(TSTTB_SERVER_LIBS)
 
 clean:
 	@rm -f *.o msq_test

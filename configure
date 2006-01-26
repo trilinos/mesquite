@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os LN_S SET_MAKE RANLIB ac_ct_RANLIB CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXX CXXFLAGS ac_ct_CXX CXXCPP MAKEDEPEND DOXYGEN CPP EGREP MSQ_FUNC_DEFS CXX_ARCHIVER BABEL MSQ_BASE_DIR AOMD_DIR AOMD_INC AOMD_LNK CPPUNIT_DIR CPPUNIT_INC CPPUNIT_LNK EXODUS_CFLAGS EXODUS_DIR EXODUS_LDFLAGS HDF5_DIR HDF5_LNK NETCDF_CXX_LNK NETCDF_DIR NETCDF_INC NETCDF_LNK MOAB_DIR MOAB_INC MOAB_LNK MSQ_TSTT_GEOM MSQ_TSTT_MESH TSTT_MESH_IMPL OVERTURE_DIR OVERTURE_INC OVERTURE_LNK SIDL_DIR SIDL_INC SIDL_LNK LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os LN_S SET_MAKE RANLIB ac_ct_RANLIB CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXX CXXFLAGS ac_ct_CXX CXXCPP MAKEDEPEND DOXYGEN CPP EGREP MSQ_FUNC_DEFS CXX_ARCHIVER BABEL MSQ_BASE_DIR CPPUNIT_DIR CPPUNIT_INC CPPUNIT_LNK EXODUS_CFLAGS EXODUS_DIR EXODUS_LDFLAGS NETCDF_DIR NETCDF_INC NETCDF_LNK MSQ_TSTT_GEOM MSQ_TSTT_MESH MSQ_TSTT_BASE_IMPL MSQ_TSTT_MESH_IMPL MSQ_TSTT_BASE_DEFS MSQ_TSTT_MESH_DEFS SIDL_DIR SIDL_INC SIDL_LNK LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -899,24 +899,10 @@ Optional Packages:
   --with-babel[=DIR]      Specify directory where Babel exectuable and
                           SIDL headers/libs are installed.
   --without-babel         Disable use of Babel/SIDL
-  --with-tstt-mesh=[AOMD|MOAB|OVERTURE] Specify an mesh database implementing
-                          the TSTT interface for use in testing.  This is not
-                          required for building Mesquite.  It is also necessary
-                          to specify the location of the corresponding TSTT
-                          server with one of "--with-aomd=DIR",
-                          "--with-moab=DIR" or "--with-overture=DIR".  If no
-                          parameter is specified, will default to the first
-                          option for which the location has been specified.
-  --without-tstt-mesh   Do not build tests that require TSTT.
-  --with-aomd=DIR         Root directory of AOMD installation.  Required
-                          for AOMD test, may be used for TSTT test
-  --with-moab=DIR         Root directory of MOAB installation.  Required
-                          for MDB test, may be used for TSTT test
-
-  --with-overture=DIR     Root directory of Overture installation.  Required
-                          for OVERTURE test, may be used for TSTT test
-  --with-hdf5=[DIR]       Specify path where HDF5 is installed.  libhdf5 may
-                          be required by MOAB.
+  --with-tstt-mesh=DIR  Specify directory containing TSTT mesh implementation
+                          to use for testing.
+  --with-tstt-base=DIR  Specify directory containing TSTT core implementation
+                          for testing (default is tstt-mesh dir.)
 
   --with-cppunit[=DIR]    Specify directory where CppUnit is installed.
   --without-cppunit       Disable CppUnit tests
@@ -1024,7 +1010,7 @@ esac
     else
       echo "$as_me: WARNING: no configuration information is in $ac_dir" >&2
     fi
-    cd $ac_popdir
+    cd "$ac_popdir"
   done
 fi
 
@@ -2067,8 +2053,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -2126,8 +2111,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -2243,8 +2227,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -2298,8 +2281,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -2344,8 +2326,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -2389,8 +2370,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -2574,8 +2554,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -2633,8 +2612,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -2705,8 +2683,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -2750,8 +2727,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -3159,8 +3135,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -3218,8 +3193,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -3290,8 +3264,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -3335,8 +3308,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -3870,8 +3842,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -4041,8 +4012,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -4113,8 +4083,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -4259,8 +4228,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -4405,8 +4373,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -4551,8 +4518,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -4740,8 +4706,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -4842,8 +4807,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -4944,8 +4908,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -5046,8 +5009,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -5149,8 +5111,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -5220,8 +5181,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -5271,8 +5231,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -5345,8 +5304,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -5438,8 +5396,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -5497,8 +5454,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -5552,8 +5508,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -5707,8 +5662,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -5774,49 +5728,21 @@ else
 fi;
 
 
-
 # Check whether --with-tstt-mesh or --without-tstt-mesh was given.
 if test "${with_tstt_mesh+set}" = set; then
   withval="$with_tstt_mesh"
-   WITH_TSTT_MESH_ARG=$withval
+  WITH_TSTT_MESH_ARG=$withval
 else
-   WITH_TSTT_MESH_ARG=
+  WITH_TSTT_MESH_ARG=no
 fi;
 
 
-# Check whether --with-aomd or --without-aomd was given.
-if test "${with_aomd+set}" = set; then
-  withval="$with_aomd"
-  AOMD_ARG=${withval}
+# Check whether --with-tstt-base or --without-tstt-base was given.
+if test "${with_tstt_base+set}" = set; then
+  withval="$with_tstt_base"
+  WITH_TSTT_BASE_ARG=$withval
 else
-  AOMD_ARG=
-fi;
-
-
-# Check whether --with-moab or --without-moab was given.
-if test "${with_moab+set}" = set; then
-  withval="$with_moab"
-  MOAB_ARG=${withval}
-else
-  MOAB_ARG=
-fi;
-
-
-# Check whether --with-overture or --without-overture was given.
-if test "${with_overture+set}" = set; then
-  withval="$with_overture"
-  OVERTURE_ARG=${withval}
-else
-  OVERTURE_ARG=
-fi;
-
-
-# Check whether --with-hdf5 or --without-hdf5 was given.
-if test "${with_hdf5+set}" = set; then
-  withval="$with_hdf5"
-  HDF5_ARG=${withval}
-else
-  HDF5_ARG=
+  WITH_TSTT_BASE_ARG="$WITH_TSTT_MESH_ARG"
 fi;
 
 
@@ -5869,8 +5795,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -6023,8 +5948,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -6152,8 +6076,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -6304,8 +6227,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -6333,80 +6255,6 @@ echo "${ECHO_T}$ac_cv_lib_netcdf_nc_open" >&6
 if test $ac_cv_lib_netcdf_nc_open = yes; then
   NETCDF_LNK=-lnetcdf
 fi
-
-  ac_ext=cc
-ac_cpp='$CXXCPP $CPPFLAGS'
-ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
-
-  echo "$as_me:$LINENO: checking for main in -lnetcdf_c++" >&5
-echo $ECHO_N "checking for main in -lnetcdf_c++... $ECHO_C" >&6
-if test "${ac_cv_lib_netcdf_cpp_main+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lnetcdf_c++ -lnetcdf  $LIBS"
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-
-int
-main ()
-{
-main ();
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  ac_cv_lib_netcdf_cpp_main=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-ac_cv_lib_netcdf_cpp_main=no
-fi
-rm -f conftest.err conftest.$ac_objext \
-      conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-echo "$as_me:$LINENO: result: $ac_cv_lib_netcdf_cpp_main" >&5
-echo "${ECHO_T}$ac_cv_lib_netcdf_cpp_main" >&6
-if test $ac_cv_lib_netcdf_cpp_main = yes; then
-  NETCDF_CXX_LNK=-lnetcdf_c++
-fi
-
-  ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 elif test "$NETCDF_ARG" != "no"; then
   NETCDF_DIR="$NETCDF_ARG"
@@ -6456,263 +6304,6 @@ if test `eval echo '${'$as_ac_File'}'` = yes; then
   NETCDF_LNK='-L$(NETCDF_DIR) -lnetcdf'
 fi
 
-  as_ac_File=`echo "ac_cv_file_${NETCDF_DIR}/libnetcdf_c++.a" | $as_tr_sh`
-echo "$as_me:$LINENO: checking for ${NETCDF_DIR}/libnetcdf_c++.a" >&5
-echo $ECHO_N "checking for ${NETCDF_DIR}/libnetcdf_c++.a... $ECHO_C" >&6
-if eval "test \"\${$as_ac_File+set}\" = set"; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  test "$cross_compiling" = yes &&
-  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
-echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
-   { (exit 1); exit 1; }; }
-if test -r "${NETCDF_DIR}/libnetcdf_c++.a"; then
-  eval "$as_ac_File=yes"
-else
-  eval "$as_ac_File=no"
-fi
-fi
-echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_File'}'`" >&5
-echo "${ECHO_T}`eval echo '${'$as_ac_File'}'`" >&6
-if test `eval echo '${'$as_ac_File'}'` = yes; then
-  NETCDF_CXX_LNK='-L$(NETCDF_DIR) -lnetcdf_c++ -lnetcdf'
-fi
-
-fi
-
-
-# HDF5 Configuration
-HDF5_DIR=
-HDF5_LNK=
-if test -z "$HDF5_ARG" -o "$HDF5_ARG" = "yes"; then
-  echo "$as_me:$LINENO: checking for H5Fopen in -lhdf5" >&5
-echo $ECHO_N "checking for H5Fopen in -lhdf5... $ECHO_C" >&6
-if test "${ac_cv_lib_hdf5_H5Fopen+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lhdf5  $LIBS"
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-/* Override any gcc2 internal prototype to avoid an error.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-/* We use char because int might match the return type of a gcc2
-   builtin and then its argument prototype would still apply.  */
-char H5Fopen ();
-int
-main ()
-{
-H5Fopen ();
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  ac_cv_lib_hdf5_H5Fopen=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-ac_cv_lib_hdf5_H5Fopen=no
-fi
-rm -f conftest.err conftest.$ac_objext \
-      conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-echo "$as_me:$LINENO: result: $ac_cv_lib_hdf5_H5Fopen" >&5
-echo "${ECHO_T}$ac_cv_lib_hdf5_H5Fopen" >&6
-if test $ac_cv_lib_hdf5_H5Fopen = yes; then
-  HDF5_LNK=-lhdf5
-fi
-
-  if test "$HDF5_ARG" = "yes" -a -z "$HDF5_LNK"; then
-    { { echo "$as_me:$LINENO: error: \"HDF5 library not found.\"" >&5
-echo "$as_me: error: \"HDF5 library not found.\"" >&2;}
-   { (exit 1); exit 1; }; }
-  fi
-elif test "$HDF5_ARG" != "no"; then
-  HDF5_DIR="$HDF5_ARG"
-  as_ac_File=`echo "ac_cv_file_${HDF5_DIR}/lib/libhdf5.so" | $as_tr_sh`
-echo "$as_me:$LINENO: checking for ${HDF5_DIR}/lib/libhdf5.so" >&5
-echo $ECHO_N "checking for ${HDF5_DIR}/lib/libhdf5.so... $ECHO_C" >&6
-if eval "test \"\${$as_ac_File+set}\" = set"; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  test "$cross_compiling" = yes &&
-  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
-echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
-   { (exit 1); exit 1; }; }
-if test -r "${HDF5_DIR}/lib/libhdf5.so"; then
-  eval "$as_ac_File=yes"
-else
-  eval "$as_ac_File=no"
-fi
-fi
-echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_File'}'`" >&5
-echo "${ECHO_T}`eval echo '${'$as_ac_File'}'`" >&6
-if test `eval echo '${'$as_ac_File'}'` = yes; then
-  HDF5_LNK='-L$(HDF5_DIR)/lib -lhdf5'
-fi
-
-  as_ac_File=`echo "ac_cv_file_${HDF5_DIR}/lib/libhdf5.a" | $as_tr_sh`
-echo "$as_me:$LINENO: checking for ${HDF5_DIR}/lib/libhdf5.a" >&5
-echo $ECHO_N "checking for ${HDF5_DIR}/lib/libhdf5.a... $ECHO_C" >&6
-if eval "test \"\${$as_ac_File+set}\" = set"; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  test "$cross_compiling" = yes &&
-  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
-echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
-   { (exit 1); exit 1; }; }
-if test -r "${HDF5_DIR}/lib/libhdf5.a"; then
-  eval "$as_ac_File=yes"
-else
-  eval "$as_ac_File=no"
-fi
-fi
-echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_File'}'`" >&5
-echo "${ECHO_T}`eval echo '${'$as_ac_File'}'`" >&6
-if test `eval echo '${'$as_ac_File'}'` = yes; then
-  HDF5_LNK='-L$(HDF5_DIR)/lib -lhdf5'
-fi
-
-  if test -z "$HDF5_LNK"; then
-    { { echo "$as_me:$LINENO: error: \"HDF5 library not found.\"" >&5
-echo "$as_me: error: \"HDF5 library not found.\"" >&2;}
-   { (exit 1); exit 1; }; }
-  fi
-fi
-
-
-# Begin TSTT Mesh Implementations
-
-TSTT_MESH_IMPL=
-
-OVERTURE_DIR=
-OVERTURE_LNK=
-OVERTURE_INC=
-if test "$OVERTURE_ARG" = "yes"; then
-  { { echo "$as_me:$LINENO: error: \"Argument required for --with-overture\" " >&5
-echo "$as_me: error: \"Argument required for --with-overture\" " >&2;}
-   { (exit 1); exit 1; }; }
-elif test -n "$OVERTURE_ARG" -a  "$OVERTURE_ARG" != "yes"; then
-  OVERTURE_DIR="$OVERTURE_ARG"
-  OVERTURE_LNK='-L${OVERTURE_DIR) -loverture'
-  OVERTURE_INC='-I${OVERTURE_DIR)'
-  TSTT_MESH_IMPL=OVERTURE
-fi
-
-MOAB_DIR=
-MOAB_LNK=
-MOAB_INC=
-if test "$MOAB_ARG" = "yes"; then
-  { { echo "$as_me:$LINENO: error: \"Argument required for --with-moab\" " >&5
-echo "$as_me: error: \"Argument required for --with-moab\" " >&2;}
-   { (exit 1); exit 1; }; }
-elif test -n "$MOAB_ARG" -a  "$MOAB_ARG" != "no"; then
-  MOAB_DIR="$MOAB_ARG"
-  MOAB_INC='-I$(MOAB_DIR) -I$(MOAB_DIR)/TSTT -I$(MOAB_DIR)/TSTT/server'
-  MOAB_LNK='-L$(MOAB_DIR) -lMOAB -L$(MOAB_DIR)/TSTT -lMOABserver -lTSTTBserver $(NETCDF_CXX_LNK) $(HDF5_LNK)'
-  TSTT_MESH_IMPL=MOAB
-
-  if test -z "NETCDF_CXX_LNK"; then
-    { echo "$as_me:$LINENO: WARNING: \"MOAB may require NETCDF.  Try --with-netcdf\"" >&5
-echo "$as_me: WARNING: \"MOAB may require NETCDF.  Try --with-netcdf\"" >&2;}
-  fi
-
-  if test -z "HDF5_LNK"; then
-    { echo "$as_me:$LINENO: WARNING: \"MOAB may require HDF5.  Try --with-hdf5\"" >&5
-echo "$as_me: WARNING: \"MOAB may require HDF5.  Try --with-hdf5\"" >&2;}
-  fi
-fi
-
-AOMD_DIR=
-AOMD_LNK=
-AOMD_INC=
-if test "$AOMD_ARG" = "yes"; then
-  { { echo "$as_me:$LINENO: error: \"Argument required for --with-aomd\" " >&5
-echo "$as_me: error: \"Argument required for --with-aomd\" " >&2;}
-   { (exit 1); exit 1; }; }
-elif test -n "$AOMD_ARG" -a "$AOMD_ARG" != "no"; then
-  AOMD_DIR="$AOMD_ARG"
-  AOMD_LNK='-L$(AOMD_DIR)/lib -laomd'
-  AOMD_INC='-I$(AOMD_DIR)/include'
-  TSTT_MESH_IMPL=AOMD
-fi
-
-
-if test "$WITH_TSTT_MESH_ARG" = "no"; then
-  TSTT_MESH_IMPL=
-elif test "$WITH_TSTT_MESH_ARG" = "yes"; then
-  if test -z "$TSTT_MESH_IMPL"; then
-     { { echo "$as_me:$LINENO: error: \"Server location not specified for TSTT mesh server\"" >&5
-echo "$as_me: error: \"Server location not specified for TSTT mesh server\"" >&2;}
-   { (exit 1); exit 1; }; };
-  fi
-elif test -n "$WITH_TSTT_MESH_ARG"; then
-  TSTT_MESH_IMPL="$WITH_TSTT_MESH_ARG"
-
-  TSTT_DIR_TMP=
-  case "$WITH_TSTT_MESH_ARG" in
-    MOAB|moab)
-      TSTT_MESH_IMPL=MOAB
-      TSTT_DIR_TMP=${MOAB_DIR}
-      ;;
-    AOMD|aomd)
-      TSTT_MESH_IMPL=AOMD
-      TSTT_DIR_TMP=${AOMD_DIR}
-      ;;
-    OVERTURE|overture)
-      TSTT_MESH_IMPL=OVERTURE
-      TSTT_DIR_TMP=${OVERTURE_DIR}
-      ;;
-  esac
-
-  if test -z "${TSTT_DIR_TMP}"; then
-    { { echo "$as_me:$LINENO: error: \"Server location not specified for $WITH_TSTT_MESH_ARG TSTT mesh server\"" >&5
-echo "$as_me: error: \"Server location not specified for $WITH_TSTT_MESH_ARG TSTT mesh server\"" >&2;}
-   { (exit 1); exit 1; }; };
-  fi
-fi
-
-# Assume if a TSTT Mesh implementation was specified for testing
-# that we want TSTT Mesh support enabled.
-if test -n "$TSTT_MESH_IMPL"; then
-  if test "$TSTT_IFACE_ARG" = "no"; then
-    { { echo "$as_me:$LINENO: error: \"Nonsensical specification of TSTT Mesh Implementation with TSTT support explicitly disabled\" " >&5
-echo "$as_me: error: \"Nonsensical specification of TSTT Mesh Implementation with TSTT support explicitly disabled\" " >&2;}
-   { (exit 1); exit 1; }; }
-  elif test -z "$TSTT_IFACE_ARG"; then
-    TSTT_IFACE_ARG=yes
-  fi
 fi
 
 
@@ -6753,8 +6344,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -6905,8 +6495,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -7001,8 +6590,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -7155,8 +6743,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -7350,18 +6937,103 @@ echo "$as_me: error: \"Babel not found\"" >&2;}
 fi
 
 
-# Enable TSTT Mesh support?
+# Begin TSTT Mesh Implementations
+
+MSQ_TSTT_BASE_IMPL=no
+MSQ_TSTT_BASE_DEFS=
+if test "$WITH_TSTT_BASE_ARG" = "yes"; then
+  { { echo "$as_me:$LINENO: error: \"Server location not specified for TSTT core (base) server\"" >&5
+echo "$as_me: error: \"Server location not specified for TSTT core (base) server\"" >&2;}
+   { (exit 1); exit 1; }; };
+elif test "$WITH_TSTT_BASE_ARG" != "no"; then
+  MSQ_TSTT_BASE_DEFS="${WITH_TSTT_BASE_ARG}/TSTTB-Defs.inc"
+  as_ac_File=`echo "ac_cv_file_"$MSQ_TSTT_BASE_DEFS"" | $as_tr_sh`
+echo "$as_me:$LINENO: checking for \"$MSQ_TSTT_BASE_DEFS\"" >&5
+echo $ECHO_N "checking for \"$MSQ_TSTT_BASE_DEFS\"... $ECHO_C" >&6
+if eval "test \"\${$as_ac_File+set}\" = set"; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r ""$MSQ_TSTT_BASE_DEFS""; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_File'}'`" >&5
+echo "${ECHO_T}`eval echo '${'$as_ac_File'}'`" >&6
+if test `eval echo '${'$as_ac_File'}'` = yes; then
+  MSQ_TSTT_BASE_IMPL=yes
+else
+  { { echo "$as_me:$LINENO: error: Invalid TSTTB implementation spec." >&5
+echo "$as_me: error: Invalid TSTTB implementation spec." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+
+fi
+
+MSQ_TSTT_MESH_IMPL=no
+MSQ_TSTT_MESH_DEFS=
+if test "$WITH_TSTT_MESH_ARG" = "yes"; then
+  { { echo "$as_me:$LINENO: error: \"Server location not specified for TSTT mesh server\"" >&5
+echo "$as_me: error: \"Server location not specified for TSTT mesh server\"" >&2;}
+   { (exit 1); exit 1; }; };
+elif test "$WITH_TSTT_MESH_ARG" != "no"; then
+  if test $MSQ_TSTT_BASE_IMPL != yes; then
+    { { echo "$as_me:$LINENO: error: Cannot test TSTT mesh implementation without TSTT core (base) implementation.  Try --with-tstt-base" >&5
+echo "$as_me: error: Cannot test TSTT mesh implementation without TSTT core (base) implementation.  Try --with-tstt-base" >&2;}
+   { (exit 1); exit 1; }; }
+  fi
+  MSQ_TSTT_MESH_DEFS="${WITH_TSTT_MESH_ARG}/TSTTM-Defs.inc"
+  as_ac_File=`echo "ac_cv_file_"$MSQ_TSTT_MESH_DEFS"" | $as_tr_sh`
+echo "$as_me:$LINENO: checking for \"$MSQ_TSTT_MESH_DEFS\"" >&5
+echo $ECHO_N "checking for \"$MSQ_TSTT_MESH_DEFS\"... $ECHO_C" >&6
+if eval "test \"\${$as_ac_File+set}\" = set"; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r ""$MSQ_TSTT_MESH_DEFS""; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_File'}'`" >&5
+echo "${ECHO_T}`eval echo '${'$as_ac_File'}'`" >&6
+if test `eval echo '${'$as_ac_File'}'` = yes; then
+  MSQ_TSTT_MESH_IMPL=yes
+else
+  { { echo "$as_me:$LINENO: error: Invalid TSTTM implementation spec." >&5
+echo "$as_me: error: Invalid TSTTM implementation spec." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+
+  # If enabling TSTT Mesh testing, automatically enable TSTT Mesh support
+  MSQ_TSTT_MESH=yes
+fi
+
+# Enable TSTT support?
 if test "$TSTT_IFACE_ARG" = "yes"; then
-  MSQ_TSTT_MESH="$TSTT_IFACE_ARG"
-  MSQ_TSTT_GEOM="$TSTT_IFACE_ARG"
+  MSQ_TSTT_MESH=yes
+  MSQ_TSTT_GEOM=yes
+else
+  MSQ_TSTT_MESH=no
+  MSQ_TSTT_GEOM=no
+fi
+
+# TSTT support requires babel
+if test $MSQ_TSTT_MESH = yes -o $MSQ_TSTT_GEOM = yes; then
   if test "$HAVE_SIDL_H" = "no"; then
     { { echo "$as_me:$LINENO: error: \"Babel is required for TSTT Mesh support.  Try --with-babel=...\"" >&5
 echo "$as_me: error: \"Babel is required for TSTT Mesh support.  Try --with-babel=...\"" >&2;}
    { (exit 1); exit 1; }; }
   fi
-else
-  MSQ_TSTT_MESH=no
-  MSQ_TSTT_GEOM=no
 fi
 
 
@@ -7415,8 +7087,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -7561,8 +7232,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -7627,8 +7297,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -7696,8 +7365,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -7844,8 +7512,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -7907,8 +7574,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -8006,8 +7672,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -8050,8 +7715,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -8108,15 +7772,6 @@ done
 #------------------------------------------------------------------------------
 # The End
 #------------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
 
 
 
@@ -8733,30 +8388,21 @@ s,@MSQ_FUNC_DEFS@,$MSQ_FUNC_DEFS,;t t
 s,@CXX_ARCHIVER@,$CXX_ARCHIVER,;t t
 s,@BABEL@,$BABEL,;t t
 s,@MSQ_BASE_DIR@,$MSQ_BASE_DIR,;t t
-s,@AOMD_DIR@,$AOMD_DIR,;t t
-s,@AOMD_INC@,$AOMD_INC,;t t
-s,@AOMD_LNK@,$AOMD_LNK,;t t
 s,@CPPUNIT_DIR@,$CPPUNIT_DIR,;t t
 s,@CPPUNIT_INC@,$CPPUNIT_INC,;t t
 s,@CPPUNIT_LNK@,$CPPUNIT_LNK,;t t
 s,@EXODUS_CFLAGS@,$EXODUS_CFLAGS,;t t
 s,@EXODUS_DIR@,$EXODUS_DIR,;t t
 s,@EXODUS_LDFLAGS@,$EXODUS_LDFLAGS,;t t
-s,@HDF5_DIR@,$HDF5_DIR,;t t
-s,@HDF5_LNK@,$HDF5_LNK,;t t
-s,@NETCDF_CXX_LNK@,$NETCDF_CXX_LNK,;t t
 s,@NETCDF_DIR@,$NETCDF_DIR,;t t
 s,@NETCDF_INC@,$NETCDF_INC,;t t
 s,@NETCDF_LNK@,$NETCDF_LNK,;t t
-s,@MOAB_DIR@,$MOAB_DIR,;t t
-s,@MOAB_INC@,$MOAB_INC,;t t
-s,@MOAB_LNK@,$MOAB_LNK,;t t
 s,@MSQ_TSTT_GEOM@,$MSQ_TSTT_GEOM,;t t
 s,@MSQ_TSTT_MESH@,$MSQ_TSTT_MESH,;t t
-s,@TSTT_MESH_IMPL@,$TSTT_MESH_IMPL,;t t
-s,@OVERTURE_DIR@,$OVERTURE_DIR,;t t
-s,@OVERTURE_INC@,$OVERTURE_INC,;t t
-s,@OVERTURE_LNK@,$OVERTURE_LNK,;t t
+s,@MSQ_TSTT_BASE_IMPL@,$MSQ_TSTT_BASE_IMPL,;t t
+s,@MSQ_TSTT_MESH_IMPL@,$MSQ_TSTT_MESH_IMPL,;t t
+s,@MSQ_TSTT_BASE_DEFS@,$MSQ_TSTT_BASE_DEFS,;t t
+s,@MSQ_TSTT_MESH_DEFS@,$MSQ_TSTT_MESH_DEFS,;t t
 s,@SIDL_DIR@,$SIDL_DIR,;t t
 s,@SIDL_INC@,$SIDL_INC,;t t
 s,@SIDL_LNK@,$SIDL_LNK,;t t
@@ -8924,11 +8570,6 @@ esac
 
 
 
-  if test x"$ac_file" != x-; then
-    { echo "$as_me:$LINENO: creating $ac_file" >&5
-echo "$as_me: creating $ac_file" >&6;}
-    rm -f "$ac_file"
-  fi
   # Let's still pretend it is `configure' which instantiates (i.e., don't
   # use $as_me), people would be surprised to read:
   #    /* config.h.  Generated by config.status.  */
@@ -8967,6 +8608,12 @@ echo "$as_me: error: cannot find input file: $f" >&2;}
 	 fi;;
       esac
     done` || { (exit 1); exit 1; }
+
+  if test x"$ac_file" != x-; then
+    { echo "$as_me:$LINENO: creating $ac_file" >&5
+echo "$as_me: creating $ac_file" >&6;}
+    rm -f "$ac_file"
+  fi
 _ACEOF
 cat >>$CONFIG_STATUS <<_ACEOF
   sed "$ac_vpsub
@@ -9842,30 +9489,21 @@ s,@MSQ_FUNC_DEFS@,$MSQ_FUNC_DEFS,;t t
 s,@CXX_ARCHIVER@,$CXX_ARCHIVER,;t t
 s,@BABEL@,$BABEL,;t t
 s,@MSQ_BASE_DIR@,$MSQ_BASE_DIR,;t t
-s,@AOMD_DIR@,$AOMD_DIR,;t t
-s,@AOMD_INC@,$AOMD_INC,;t t
-s,@AOMD_LNK@,$AOMD_LNK,;t t
 s,@CPPUNIT_DIR@,$CPPUNIT_DIR,;t t
 s,@CPPUNIT_INC@,$CPPUNIT_INC,;t t
 s,@CPPUNIT_LNK@,$CPPUNIT_LNK,;t t
 s,@EXODUS_CFLAGS@,$EXODUS_CFLAGS,;t t
 s,@EXODUS_DIR@,$EXODUS_DIR,;t t
 s,@EXODUS_LDFLAGS@,$EXODUS_LDFLAGS,;t t
-s,@HDF5_DIR@,$HDF5_DIR,;t t
-s,@HDF5_LNK@,$HDF5_LNK,;t t
-s,@NETCDF_CXX_LNK@,$NETCDF_CXX_LNK,;t t
 s,@NETCDF_DIR@,$NETCDF_DIR,;t t
 s,@NETCDF_INC@,$NETCDF_INC,;t t
 s,@NETCDF_LNK@,$NETCDF_LNK,;t t
-s,@MOAB_DIR@,$MOAB_DIR,;t t
-s,@MOAB_INC@,$MOAB_INC,;t t
-s,@MOAB_LNK@,$MOAB_LNK,;t t
 s,@MSQ_TSTT_GEOM@,$MSQ_TSTT_GEOM,;t t
 s,@MSQ_TSTT_MESH@,$MSQ_TSTT_MESH,;t t
-s,@TSTT_MESH_IMPL@,$TSTT_MESH_IMPL,;t t
-s,@OVERTURE_DIR@,$OVERTURE_DIR,;t t
-s,@OVERTURE_INC@,$OVERTURE_INC,;t t
-s,@OVERTURE_LNK@,$OVERTURE_LNK,;t t
+s,@MSQ_TSTT_BASE_IMPL@,$MSQ_TSTT_BASE_IMPL,;t t
+s,@MSQ_TSTT_MESH_IMPL@,$MSQ_TSTT_MESH_IMPL,;t t
+s,@MSQ_TSTT_BASE_DEFS@,$MSQ_TSTT_BASE_DEFS,;t t
+s,@MSQ_TSTT_MESH_DEFS@,$MSQ_TSTT_MESH_DEFS,;t t
 s,@SIDL_DIR@,$SIDL_DIR,;t t
 s,@SIDL_INC@,$SIDL_INC,;t t
 s,@SIDL_LNK@,$SIDL_LNK,;t t
@@ -10033,11 +9671,6 @@ esac
 
 
 
-  if test x"$ac_file" != x-; then
-    { echo "$as_me:$LINENO: creating $ac_file" >&5
-echo "$as_me: creating $ac_file" >&6;}
-    rm -f "$ac_file"
-  fi
   # Let's still pretend it is `configure' which instantiates (i.e., don't
   # use $as_me), people would be surprised to read:
   #    /* config.h.  Generated by config.status.  */
@@ -10076,6 +9709,12 @@ echo "$as_me: error: cannot find input file: $f" >&2;}
 	 fi;;
       esac
     done` || { (exit 1); exit 1; }
+
+  if test x"$ac_file" != x-; then
+    { echo "$as_me:$LINENO: creating $ac_file" >&5
+echo "$as_me: creating $ac_file" >&6;}
+    rm -f "$ac_file"
+  fi
 _ACEOF
 cat >>$CONFIG_STATUS <<_ACEOF
   sed "$ac_vpsub

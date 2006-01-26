@@ -241,39 +241,15 @@ AC_ARG_ENABLE( [tstt],
   --disable-tstt          Disable TSTT mesh glue code (DEFAULT).]],
   [ TSTT_IFACE_ARG=${enableval}], [TSTT_IFACE_ARG=] )
 
-
 AC_ARG_WITH(tstt-mesh,
-[[  --with-tstt-mesh=[AOMD|MOAB|OVERTURE] Specify an mesh database implementing 
-                          the TSTT interface for use in testing.  This is not
-                          required for building Mesquite.  It is also necessary
-                          to specify the location of the corresponding TSTT 
-                          server with one of "--with-aomd=DIR", 
-                          "--with-moab=DIR" or "--with-overture=DIR".  If no
-                          parameter is specified, will default to the first
-                          option for which the location has been specified.
-  --without-tstt-mesh   Do not build tests that require TSTT. ]],
-[ WITH_TSTT_MESH_ARG=$withval ], [ WITH_TSTT_MESH_ARG= ] )
-
-AC_ARG_WITH(aomd, 
-[[  --with-aomd=DIR         Root directory of AOMD installation.  Required
-                          for AOMD test, may be used for TSTT test ]] ,
-  [AOMD_ARG=${withval}],[AOMD_ARG=])
-  
-AC_ARG_WITH(moab, 
-[[  --with-moab=DIR         Root directory of MOAB installation.  Required
-                          for MDB test, may be used for TSTT test ]] ,
-  [MOAB_ARG=${withval}],[MOAB_ARG=])
-
-AC_ARG_WITH(overture, 
-[[  
-  --with-overture=DIR     Root directory of Overture installation.  Required
-                          for OVERTURE test, may be used for TSTT test ]] ,
-  [OVERTURE_ARG=${withval}],[OVERTURE_ARG=])
-
-AC_ARG_WITH(hdf5,
-[[  --with-hdf5=[DIR]       Specify path where HDF5 is installed.  libhdf5 may
-                          be required by MOAB. ]],
-  [HDF5_ARG=${withval}],[HDF5_ARG=])
+ [AC_HELP_STRING([[--with-tstt-mesh=DIR]],
+ [Specify directory containing TSTT mesh implementation to use for testing.])],
+ [WITH_TSTT_MESH_ARG=$withval],[WITH_TSTT_MESH_ARG=no])
+ 
+AC_ARG_WITH(tstt-base,
+ [AC_HELP_STRING([[--with-tstt-base=DIR]],
+ [Specify directory containing TSTT core implementation for testing (default is tstt-mesh dir.)])],
+ [WITH_TSTT_BASE_ARG=$withval],[WITH_TSTT_BASE_ARG="$WITH_TSTT_MESH_ARG"])
 
 AC_ARG_WITH(cppunit,[[
   --with-cppunit[=DIR]    Specify directory where CppUnit is installed.
@@ -324,13 +300,6 @@ if test -z "$NETCDF_ARG"; then
   AC_CHECK_LIB( [netcdf], 
                 [nc_open],
                 [NETCDF_LNK=-lnetcdf] )
-  AC_LANG_PUSH(C++)
-  AC_CHECK_LIB( [netcdf_c++], 
-                [main],
-                [NETCDF_CXX_LNK=-lnetcdf_c++],
-                [],
-                [-lnetcdf] )
-  AC_LANG_POP(C++)
 elif test "$NETCDF_ARG" != "no"; then
   NETCDF_DIR="$NETCDF_ARG"
   AC_CHECK_FILE( [${NETCDF_DIR}/inc/netcdf.h],
@@ -338,118 +307,6 @@ elif test "$NETCDF_ARG" != "no"; then
                  [HAVE_NETCDF_H=no] )
   AC_CHECK_FILE( [${NETCDF_DIR}/libnetcdf.a],
                  [NETCDF_LNK='-L$(NETCDF_DIR) -lnetcdf'] )
-  AC_CHECK_FILE( [${NETCDF_DIR}/libnetcdf_c++.a],
-                 [NETCDF_CXX_LNK='-L$(NETCDF_DIR) -lnetcdf_c++ -lnetcdf'] )
-fi
-
-
-# HDF5 Configuration
-HDF5_DIR=
-HDF5_LNK=
-if test -z "$HDF5_ARG" -o "$HDF5_ARG" = "yes"; then
-  AC_CHECK_LIB( [hdf5], H5Fopen, [HDF5_LNK=-lhdf5] )
-  if test "$HDF5_ARG" = "yes" -a -z "$HDF5_LNK"; then
-    AC_MSG_ERROR("HDF5 library not found.")
-  fi
-elif test "$HDF5_ARG" != "no"; then
-  HDF5_DIR="$HDF5_ARG"
-  AC_CHECK_FILE( [${HDF5_DIR}/lib/libhdf5.so],
-                 [HDF5_LNK='-L$(HDF5_DIR)/lib -lhdf5'] )
-  AC_CHECK_FILE( [${HDF5_DIR}/lib/libhdf5.a],
-                 [HDF5_LNK='-L$(HDF5_DIR)/lib -lhdf5'] )
-  if test -z "$HDF5_LNK"; then
-    AC_MSG_ERROR("HDF5 library not found.")
-  fi
-fi
-
-
-# Begin TSTT Mesh Implementations
-
-TSTT_MESH_IMPL=
-
-OVERTURE_DIR=
-OVERTURE_LNK=
-OVERTURE_INC=
-if test "$OVERTURE_ARG" = "yes"; then
-  AC_MSG_ERROR( "Argument required for --with-overture" )
-elif test -n "$OVERTURE_ARG" -a  "$OVERTURE_ARG" != "yes"; then
-  OVERTURE_DIR="$OVERTURE_ARG"
-  OVERTURE_LNK='-L${OVERTURE_DIR) -loverture'
-  OVERTURE_INC='-I${OVERTURE_DIR)'
-  TSTT_MESH_IMPL=OVERTURE
-fi
-
-MOAB_DIR=
-MOAB_LNK=
-MOAB_INC=
-if test "$MOAB_ARG" = "yes"; then
-  AC_MSG_ERROR( "Argument required for --with-moab" )
-elif test -n "$MOAB_ARG" -a  "$MOAB_ARG" != "no"; then
-  MOAB_DIR="$MOAB_ARG"
-  MOAB_INC='-I$(MOAB_DIR) -I$(MOAB_DIR)/TSTT -I$(MOAB_DIR)/TSTT/server'
-  MOAB_LNK='-L$(MOAB_DIR) -lMOAB -L$(MOAB_DIR)/TSTT -lMOABserver -lTSTTBserver $(NETCDF_CXX_LNK) $(HDF5_LNK)'
-  TSTT_MESH_IMPL=MOAB
-  
-  if test -z "NETCDF_CXX_LNK"; then
-    AC_MSG_WARN("MOAB may require NETCDF.  Try --with-netcdf")
-  fi
-  
-  if test -z "HDF5_LNK"; then
-    AC_MSG_WARN("MOAB may require HDF5.  Try --with-hdf5")
-  fi
-fi
-
-AOMD_DIR=
-AOMD_LNK=
-AOMD_INC=
-if test "$AOMD_ARG" = "yes"; then
-  AC_MSG_ERROR( "Argument required for --with-aomd" )
-elif test -n "$AOMD_ARG" -a "$AOMD_ARG" != "no"; then
-  AOMD_DIR="$AOMD_ARG"
-  AOMD_LNK='-L$(AOMD_DIR)/lib -laomd'
-  AOMD_INC='-I$(AOMD_DIR)/include'
-  TSTT_MESH_IMPL=AOMD
-fi
-
-
-if test "$WITH_TSTT_MESH_ARG" = "no"; then
-  TSTT_MESH_IMPL=
-elif test "$WITH_TSTT_MESH_ARG" = "yes"; then
-  if test -z "$TSTT_MESH_IMPL"; then
-     AC_MSG_ERROR("Server location not specified for TSTT mesh server");
-  fi 
-elif test -n "$WITH_TSTT_MESH_ARG"; then
-  TSTT_MESH_IMPL="$WITH_TSTT_MESH_ARG"
-
-  TSTT_DIR_TMP=
-  case "$WITH_TSTT_MESH_ARG" in
-    MOAB|moab)
-      TSTT_MESH_IMPL=MOAB
-      TSTT_DIR_TMP=${MOAB_DIR}
-      ;;
-    AOMD|aomd)
-      TSTT_MESH_IMPL=AOMD
-      TSTT_DIR_TMP=${AOMD_DIR}
-      ;;
-    OVERTURE|overture)
-      TSTT_MESH_IMPL=OVERTURE
-      TSTT_DIR_TMP=${OVERTURE_DIR}
-      ;;
-  esac
-
-  if test -z "${TSTT_DIR_TMP}"; then
-    AC_MSG_ERROR("Server location not specified for $WITH_TSTT_MESH_ARG TSTT mesh server");
-  fi
-fi
-
-# Assume if a TSTT Mesh implementation was specified for testing
-# that we want TSTT Mesh support enabled.
-if test -n "$TSTT_MESH_IMPL"; then
-  if test "$TSTT_IFACE_ARG" = "no"; then
-    AC_MSG_ERROR( "Nonsensical specification of TSTT Mesh Implementation with TSTT support explicitly disabled" )
-  elif test -z "$TSTT_IFACE_ARG"; then
-    TSTT_IFACE_ARG=yes
-  fi
 fi
 
 
@@ -487,17 +344,50 @@ elif test "$BABEL_ARG" != "no"; then
 fi
 
 
-# Enable TSTT Mesh support?
-if test "$TSTT_IFACE_ARG" = "yes"; then
-  MSQ_TSTT_MESH="$TSTT_IFACE_ARG"
-  MSQ_TSTT_GEOM="$TSTT_IFACE_ARG"
-  if test "$HAVE_SIDL_H" = "no"; then
-    AC_MSG_ERROR("Babel is required for TSTT Mesh support.  Try --with-babel=...")
+# Begin TSTT Mesh Implementations
+
+MSQ_TSTT_BASE_IMPL=no
+MSQ_TSTT_BASE_DEFS=
+if test "$WITH_TSTT_BASE_ARG" = "yes"; then
+  AC_MSG_ERROR("Server location not specified for TSTT core (base) server");
+elif test "$WITH_TSTT_BASE_ARG" != "no"; then
+  MSQ_TSTT_BASE_DEFS="${WITH_TSTT_BASE_ARG}/TSTTB-Defs.inc"
+  AC_CHECK_FILE( ["$MSQ_TSTT_BASE_DEFS"],
+                 [MSQ_TSTT_BASE_IMPL=yes],
+                 [AC_MSG_ERROR([Invalid TSTTB implementation spec.])] )
+fi
+
+MSQ_TSTT_MESH_IMPL=no
+MSQ_TSTT_MESH_DEFS=
+if test "$WITH_TSTT_MESH_ARG" = "yes"; then
+  AC_MSG_ERROR("Server location not specified for TSTT mesh server");
+elif test "$WITH_TSTT_MESH_ARG" != "no"; then
+  if test $MSQ_TSTT_BASE_IMPL != yes; then
+    AC_MSG_ERROR([Cannot test TSTT mesh implementation without TSTT core (base) implementation.  Try --with-tstt-base])
   fi
+  MSQ_TSTT_MESH_DEFS="${WITH_TSTT_MESH_ARG}/TSTTM-Defs.inc"
+  AC_CHECK_FILE( ["$MSQ_TSTT_MESH_DEFS"],
+                 [MSQ_TSTT_MESH_IMPL=yes],
+                 [AC_MSG_ERROR([Invalid TSTTM implementation spec.])] )
+  # If enabling TSTT Mesh testing, automatically enable TSTT Mesh support
+  MSQ_TSTT_MESH=yes
+fi
+
+# Enable TSTT support?
+if test "$TSTT_IFACE_ARG" = "yes"; then
+  MSQ_TSTT_MESH=yes
+  MSQ_TSTT_GEOM=yes
 else
   MSQ_TSTT_MESH=no
   MSQ_TSTT_GEOM=no
 fi
+
+# TSTT support requires babel
+if test $MSQ_TSTT_MESH = yes -o $MSQ_TSTT_GEOM = yes; then
+  if test "$HAVE_SIDL_H" = "no"; then
+    AC_MSG_ERROR("Babel is required for TSTT Mesh support.  Try --with-babel=...")
+  fi
+fi  
 
 
 # TSTT testing code requires SIDL library
@@ -576,9 +466,6 @@ done
 # The End
 #------------------------------------------------------------------------------
 
-AC_SUBST(AOMD_DIR)
-AC_SUBST(AOMD_INC)
-AC_SUBST(AOMD_LNK)
 AC_SUBST(BABEL)
 AC_SUBST(CPPUNIT_DIR)
 AC_SUBST(CPPUNIT_INC)
@@ -586,21 +473,15 @@ AC_SUBST(CPPUNIT_LNK)
 AC_SUBST(EXODUS_CFLAGS)
 AC_SUBST(EXODUS_DIR)
 AC_SUBST(EXODUS_LDFLAGS)
-AC_SUBST(HDF5_DIR)
-AC_SUBST(HDF5_LNK)
-AC_SUBST(NETCDF_CXX_LNK)
 AC_SUBST(NETCDF_DIR)
 AC_SUBST(NETCDF_INC)
 AC_SUBST(NETCDF_LNK)
-AC_SUBST(MOAB_DIR)
-AC_SUBST(MOAB_INC)
-AC_SUBST(MOAB_LNK)
 AC_SUBST(MSQ_TSTT_GEOM)
 AC_SUBST(MSQ_TSTT_MESH)
-AC_SUBST(TSTT_MESH_IMPL)
-AC_SUBST(OVERTURE_DIR)
-AC_SUBST(OVERTURE_INC)
-AC_SUBST(OVERTURE_LNK)
+AC_SUBST(MSQ_TSTT_BASE_IMPL)
+AC_SUBST(MSQ_TSTT_MESH_IMPL)
+AC_SUBST(MSQ_TSTT_BASE_DEFS)
+AC_SUBST(MSQ_TSTT_MESH_DEFS)
 AC_SUBST(SIDL_DIR)
 AC_SUBST(SIDL_INC)
 AC_SUBST(SIDL_LNK)

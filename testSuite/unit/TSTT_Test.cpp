@@ -56,23 +56,6 @@
 #include "GeomTSTT.hpp"
 #include "cppunit/extensions/HelperMacros.h"
 
-#define MSQ_HAVE_TSTT_IMPL
-
-#if   defined( MSQ_TSTT_USE_MOAB )     && MSQ_TSTT_USE_MOAB
-# include "TSTTM_MOAB_MoabMesh.hh"
-  typedef TSTTM_MOAB::MoabMesh ImplType;
-#elif defined( MSQ_TSTT_USE_OVERTURE ) && MSQ_TSTT_USE_OVERTURE
-# include "TSTT_Overture_Mesh.hh"
-  typedef TSTT_Overture::Mesh ImplType;
-#elif defined( MSQ_TSTT_USE_AOMD )     && MSQ_TSTT_USE_AOMD
-# include "TSTT_LocalTSTTMesh_Impl.hh"
-  typedef TSTT::LocalTSTTMesh ImplType;
-#else
-# undef MSQ_HAVE_TSTT_IMPL
-#endif
-
-
-#ifdef MSQ_HAVE_TSTT_IMPL
 
 #include "TSTTB.hh"
 #include "TSTTM.hh"
@@ -228,7 +211,8 @@ void TSTT_Test::setUp()
   }
   
   try {
-    myTSTTMesh = ImplType::_create();
+    TSTTM::Factory factory = TSTTM::Factory::_create();
+    myTSTTMesh = factory.newMesh("");
     if (!myTSTTMesh) {
       cout << "Cannot access TSTT mesh implementation." << endl;
       return;
@@ -651,5 +635,3 @@ void TSTT_Test::testDoubleTag()
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TSTT_Test, "TSTT_Test");
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TSTT_Test, "Unit");
-
-#endif

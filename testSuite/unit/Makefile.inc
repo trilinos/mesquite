@@ -59,7 +59,8 @@ $(MSQ_TEST) : $(TEST_OBJS_P) testSuite/unit/msq_test_main.o $(locallibdir)/libme
 	-o $@ \
 	-L$(locallibdir) -lmesquite \
 	$(CPPUNIT_LNK) $(CONFIG_LDFLAGS) \
-	$(TSTT_MESH_LDFLAGS) 
+	$(TSTT_MESH_LNK) $(TSTT_BASE_LNK) \
+        $(TSTTM_SERVER_LIBS) $(TSTTB_SERVER_LIBS)
 
 testSuite/unit/qt_test : $(TEST_OBJS_P) testSuite/unit/qt_test_main.o $(locallibdir)/libmesquite.a
 	@echo "Linking $@"
@@ -69,19 +70,20 @@ testSuite/unit/qt_test : $(TEST_OBJS_P) testSuite/unit/qt_test_main.o $(locallib
 	-L$(locallibdir) -lmesquite \
 	$(CPPUNIT_LNK) $(CONFIG_LDFLAGS) \
 	-lqttestrunner -L$(QTDIR)/lib -lqt-mt \
-	$(TSTT_MESH_LDFLAGS) 
+	$(TSTT_MESH_LNK) $(TSTT_BASE_LNK) \
+        $(TSTTM_SERVER_LIBS) $(TSTTB_SERVER_LIBS)
 
 .SUFFIXES : .cpp .o
 
 qt_test_main.o: qt_test_main.cpp
 	$(PREFIX) $(CXX) -c $(CXXFLAGS) $(CONFIG_CFLAGS) \
         $(MESQUITE_INCLUDE) $(CPPUNIT_INC) -I$(QTDIR)/include \
-        $(TSTT_BASE_INC) $(TSTT_MESH_INC) $(TSTT_MESH_CFLAGS) \
+        $(TSTT_BASE_INC) $(TSTT_MESH_INC) \
         -c -o $@ $<
 
 .cpp.o:
 	@echo "Compiling $<"
 	$(PREFIX)$(CXX) -c $(CXXFLAGS) $(CONFIG_CFLAGS) \
         $(MESQUITE_INCLUDE) $(CPPUNIT_INC) \
-        $(TSTT_BASE_INC) $(TSTT_MESH_INC) $(TSTT_MESH_CFLAGS) \
+        $(TSTT_BASE_INC) $(TSTT_MESH_INC) \
         -c -o $@ $<

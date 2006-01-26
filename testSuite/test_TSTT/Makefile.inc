@@ -5,15 +5,14 @@ TEST_TSTT_SRC = $(TEST_TSTT_DIR)/main.cpp
 TEST_TSTT_EXEC = $(TEST_TSTT_DIR)/main
 
 ifeq ($(MSQ_TSTT_MESH),yes)
-ifneq ($(TSTT_MESH_IMPL),)
 all_tests: $(TEST_TSTT_EXEC)
-endif 
 endif
 
 $(TEST_TSTT_EXEC): $(TEST_TSTT_SRC) $(locallibdir)/libmesquite.a \
 		   $(TSTT_SHAR_CLIENT_LIB) $(TSTT_MESH_CLIENT_LIB)
 	@echo "Linking Mesquite driver application ($@)..."
-	$(LINKER) $(CXXFLAGS) $(CONFIG_CFLAGS) -o $@ $< \
-	$(TSTT_MESH_CFLAGS) $(TSTT_BASE_INC) $(TSTT_MESH_INC) \
+	$(LINKER) $(CXXFLAGS) $(CONFIG_CFLAGS) \
+        $(TSTT_BASE_INC) $(TSTT_MESH_INC) -o $@ $< \
 	-L$(locallibdir) -lmesquite \
-	$(TSTT_MESH_LDFLAGS) $(CONFIG_LDFLAGS) -lm
+        $(TSTT_MESH_LNK) $(TSTT_BASE_LNK) \
+	$(TSTTM_SERVER_LIBS) $(TSTTB_SERVER_LIBS) $(CONFIG_LDFLAGS) -lm

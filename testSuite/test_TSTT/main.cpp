@@ -77,19 +77,6 @@ using std::endl;
 #endif
 
 
-#if   defined( MSQ_TSTT_USE_MOAB )     && MSQ_TSTT_USE_MOAB
-# include "TSTTM_MOAB_MoabMesh.hh"
-  typedef TSTTM_MOAB::MoabMesh ImplType;
-#elif defined( MSQ_TSTT_USE_OVERTURE ) && MSQ_TSTT_USE_OVERTURE
-# include "TSTT_Overture_Mesh.hh"
-  typedef TSTT_Overture::Mesh ImplType;
-#elif defined( MSQ_TSTT_USE_AOMD )     && MSQ_TSTT_USE_AOMD
-# include "TSTT_LocalTSTTMesh_Impl.hh"
-  typedef TSTT::LocalTSTTMesh ImplType;
-#else
-# error
-#endif
-
 #include "TSTTB.hh"
 #include "TSTTM.hh"
 
@@ -290,9 +277,8 @@ int run_local_smoother( Mesh* mesh, MsqError& err )
 
 Mesh* get_tstt_mesh( const char* file_name )
 {
-  
-  ImplType mesh_instance = ImplType::_create();
-  TSTTM::Mesh tstt_mesh = mesh_instance;
+  TSTTM::Factory factory = TSTTM::Factory::_create();
+  TSTTM::Mesh tstt_mesh = factory.newMesh("");
 
   tstt_mesh.load(0, file_name);
   
