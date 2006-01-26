@@ -857,25 +857,25 @@ if test -n "$ac_init_help"; then
 Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
-
-  --enable-release                (default), implies:
-                                  --enable-compile-optimized
-                                  --disable-debug-assertions
-  --enable-debug                  Developer build, implies:
-                                  --enable-debug-symbols
-                                  --enable-debug-output=1,2
-                                  --enable-trap-fpe
-
-  --enable-compile-optimized      Compile optimized (-O2)
-  --enable-debug-symbols          Compile with debug symbols (-g)
-  --disable-debug-assertions      Compile without asserts (-DNDEBUG)
-  --enable-debug-output[=n,m,...] Enable debug output.  Optionally specify
-                                  comma-separated list of flags to enable.
-                                  --enable-debug implies --enable-debug-output=1,2
-    --enable-function-timers        Enable function timers
-    --enable-trap-fpe               Enable trapping of floating point exceptions.
-                                  Default is no unless --enable-debug.
-  --enable-tstt           Compile glue code for interfacing with TSTT implemenations.
+  --enable-release        (default), implies: --enable-compile-optimized
+                          --disable-debug-assertions
+  --enable-debug          Developer build, implies: --enable-debug-symbols
+                          --enable-debug-output=1,2 --enable-trap-fpe
+  --enable-compile-optimized
+                          Compile optimized (-O2)
+  --enable-debug-symbols  Compile with debug symbols (-g)
+  --disable-debug-assertions
+                          Compile without asserts (-DNDEBUG)
+  --enable-debug-output(=n,m,...)
+                          Enable debug output. Optionally specify
+                          comma-separated list of flags to enable.
+                          --enable-debug implies --enable-debug-output=1,2
+  --enable-function-timers
+                          Enable function timers
+  --enable-trap-fpe       Enable trapping of floating point exceptions.
+                          Default is no unless --enable-debug.
+  --enable-tstt           Compile glue code for interfacing with TSTT
+                          implemenations.
   --disable-tstt          Disable TSTT mesh glue code (DEFAULT).
 
 Optional Packages:
@@ -887,24 +887,21 @@ Optional Packages:
 
   --with-doxygen[=PROG]   Optionally specify doxygen program.
   --without-doxygen       Disable generation of documentation
-
   --with-archiver=ARG     Specify tool for creating static libraries
-
-  --with-exodus[=DIR]     Enable exodusII support and specifiy directory
+  --with-exodus(=DIR)     Enable exodusII support and specifiy directory
   --without-exodus        Disable exodusII support (default)
-
-  --with-netcdf[=DIR]     ExodusII requires NetCDF - defaults to values for
+  --with-netcdf(=DIR)     ExodusII requires NetCDF - defaults to values for
                           --with-exodus
   --without-netcdf        Skip NetCDF check
-  --with-babel[=DIR]      Specify directory where Babel exectuable and
-                          SIDL headers/libs are installed.
+  --with-babel(=DIR)      Specify directory where Babel exectuable and SIDL
+                          headers/libs are installed.
   --without-babel         Disable use of Babel/SIDL
-  --with-tstt-mesh=DIR  Specify directory containing TSTT mesh implementation
-                          to use for testing.
-  --with-tstt-base=DIR  Specify directory containing TSTT core implementation
-                          for testing (default is tstt-mesh dir.)
-
-  --with-cppunit[=DIR]    Specify directory where CppUnit is installed.
+  --with-tstt-mesh=DIR    Specify directory containing TSTT mesh
+                          implementation to use for testing.
+  --with-tstt-base=DIR    Specify directory containing TSTT core
+                          implementation for testing (default is tstt-mesh
+                          dir.)
+  --with-cppunit(=DIR)    Specify directory where CppUnit is installed.
   --without-cppunit       Disable CppUnit tests
 
 Some influential environment variables:
