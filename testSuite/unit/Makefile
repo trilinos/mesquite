@@ -25,7 +25,6 @@ msq_test : $(TEST_OBJS) msq_test_main.o $(MSQ_BASE_DIR)/lib/libmesquite.a
         -o $@ \
         -L$(MSQ_BASE_DIR)/lib -lmesquite \
          $(CONFIG_LDFLAGS) $(CPPUNIT_LNK) \
-	$(TSTT_MESH_LNK) $(TSTT_BASE_LNK) \
         $(TSTTM_SERVER_LIBS) $(TSTTB_SERVER_LIBS)
 
 qt_test: $(TEST_OBJS) qt_test_main.o $(MSQ_BASE_DIR)/lib/libmesquite.a
@@ -35,7 +34,6 @@ qt_test: $(TEST_OBJS) qt_test_main.o $(MSQ_BASE_DIR)/lib/libmesquite.a
         -L$(MSQ_BASE_DIR)/lib -lmesquite \
          $(CONFIG_LDFLAGS) $(CPPUNIT_LNK) \
 	-lqttestrunner -L$(QTDIR)/lib -lqt-mt \
-	$(TSTT_MESH_LNK) $(TSTT_BASE_LNK) \
         $(TSTTM_SERVER_LIBS) $(TSTTB_SERVER_LIBS)
 
 clean:

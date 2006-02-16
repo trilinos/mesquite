@@ -59,7 +59,6 @@ $(MSQ_TEST) : $(TEST_OBJS_P) testSuite/unit/msq_test_main.o $(locallibdir)/libme
 	-o $@ \
 	-L$(locallibdir) -lmesquite \
 	$(CPPUNIT_LNK) $(CONFIG_LDFLAGS) \
-	$(TSTT_MESH_LNK) $(TSTT_BASE_LNK) \
         $(TSTTM_SERVER_LIBS) $(TSTTB_SERVER_LIBS)
 
 testSuite/unit/qt_test : $(TEST_OBJS_P) testSuite/unit/qt_test_main.o $(locallibdir)/libmesquite.a
@@ -70,7 +69,6 @@ testSuite/unit/qt_test : $(TEST_OBJS_P) testSuite/unit/qt_test_main.o $(locallib
 	-L$(locallibdir) -lmesquite \
 	$(CPPUNIT_LNK) $(CONFIG_LDFLAGS) \
 	-lqttestrunner -L$(QTDIR)/lib -lqt-mt \
-	$(TSTT_MESH_LNK) $(TSTT_BASE_LNK) \
         $(TSTTM_SERVER_LIBS) $(TSTTB_SERVER_LIBS)
 
 .SUFFIXES : .cpp .o
