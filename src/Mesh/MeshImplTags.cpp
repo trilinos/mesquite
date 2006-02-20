@@ -377,7 +377,7 @@ MeshImplTags::TagIterator MeshImplTags::tag_begin()
 MeshImplTags::TagIterator MeshImplTags::TagIterator::operator++()
 {
   ++index;
-  while (index < tags->tagList.size() || NULL == tags->tagList[index])
+  while (index < tags->tagList.size() && NULL == tags->tagList[index])
     ++index;
   return TagIterator( tags, index );
 }
@@ -385,7 +385,7 @@ MeshImplTags::TagIterator MeshImplTags::TagIterator::operator++()
 MeshImplTags::TagIterator MeshImplTags::TagIterator::operator--()
 {
   --index;
-  while (index < tags->tagList.size() || NULL == tags->tagList[index])
+  while (index < tags->tagList.size() && NULL == tags->tagList[index])
     --index;
   return TagIterator( tags, index );
 }
@@ -394,7 +394,7 @@ MeshImplTags::TagIterator MeshImplTags::TagIterator::operator++(int)
 {
   size_t old = index;
   ++index;
-  while (index < tags->tagList.size() || NULL == tags->tagList[index])
+  while (index < tags->tagList.size() && NULL == tags->tagList[index])
     ++index;
   return TagIterator( tags, old );
 }
@@ -403,7 +403,7 @@ MeshImplTags::TagIterator MeshImplTags::TagIterator::operator--(int)
 {
   size_t old = index;
   --index;
-  while (index < tags->tagList.size() || NULL == tags->tagList[index])
+  while (index < tags->tagList.size() && NULL == tags->tagList[index])
     --index;
   return TagIterator( tags, old );
 }
