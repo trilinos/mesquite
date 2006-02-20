@@ -186,10 +186,10 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
       next_patch = patch_data
         ->get_next_vertex_element_patch( get_nb_layers(), true, free_vtx, err );
       if (MSQ_CHKERR(err)) goto ERROR;
-    }
     
-    if (!next_patch) // all vertices culled
-      break;
+      if (!next_patch) // all vertices culled
+        break;
+    }
   
       // Loop over each patch 
     do
