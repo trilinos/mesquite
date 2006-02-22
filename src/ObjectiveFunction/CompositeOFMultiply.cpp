@@ -53,7 +53,9 @@ the negateFlag is set to one.  Defaults to the analytical gradient.
   \param Obj1 (ObjectiveFunction*)
   \param Obj2 (ObjectiveFunction*)
  */
-CompositeOFMultiply::CompositeOFMultiply(ObjectiveFunction* Obj1, ObjectiveFunction* Obj2){
+CompositeOFMultiply::CompositeOFMultiply( ObjectiveFunction* Obj1, 
+                                          ObjectiveFunction* Obj2,
+                                          MsqError& err ) {
   if(Obj1->get_quality_metric()==Obj2->get_quality_metric()){
     set_quality_metric(Obj1->get_quality_metric());
   }
@@ -62,10 +64,14 @@ CompositeOFMultiply::CompositeOFMultiply(ObjectiveFunction* Obj1, ObjectiveFunct
   objFunc1=Obj1;
   objFunc2=Obj2;
     //if both obj1 and ob2 have been negated
-  if(Obj1->get_negate_flag()-Obj2->get_negate_flag()==-2)
-    set_negate_flag(-1);
-  else
-    set_negate_flag(1);
+  if (Obj1->get_negate_flag() == Obj2->get_negate_flag()) {
+    set_negate_flag( Obj1->get_negate_flag() );
+  }
+  else {
+    MSQ_SETERR(err)("Product of objective functions is not valid for optimization.",
+                    MsqError::INVALID_ARG);
+    return;
+  }
   set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
 }
 

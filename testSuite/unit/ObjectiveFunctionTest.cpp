@@ -399,7 +399,7 @@ public:
        CompositeOFScalarAdd csa_of(2,&LP2);
        CompositeOFScalarMultiply csm_of(20,&LP2);
        CompositeOFAdd ca_of(&LP3,&LP2);
-       CompositeOFMultiply cm_of(&LP3,&LP2);
+       CompositeOFMultiply cm_of(&LP3,&LP2, err); CPPUNIT_ASSERT(!err);
        
          //test scalar add
        compare_numerical_analytical_gradient(&csa_of, m12Hex);

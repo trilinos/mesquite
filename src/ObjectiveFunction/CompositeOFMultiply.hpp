@@ -51,7 +51,7 @@ namespace Mesquite
    class CompositeOFMultiply : public ObjectiveFunction
    {
    public:
-     CompositeOFMultiply(ObjectiveFunction*, ObjectiveFunction*);
+     CompositeOFMultiply(ObjectiveFunction*, ObjectiveFunction*, MsqError& );
      virtual ~CompositeOFMultiply();
      virtual bool concrete_evaluate(PatchData &patch, double &fval,
                                     MsqError &err);
