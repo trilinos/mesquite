@@ -60,6 +60,7 @@ namespace Mesquite
       set_metric_type(ELEMENT_BASED);
       set_gradient_type(NUMERICAL_GRADIENT);
       set_hessian_type(NUMERICAL_HESSIAN);
+      set_name("RI_DFT");
     }
     
     //! virtual destructor ensures use of polymorphism during destruction
