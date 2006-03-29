@@ -124,7 +124,7 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
     }
     MSQ_DBGOUT(3) << "  o  original_value: " << original_value << msq_stdio::endl;
     
-    double new_value = original_value+1;
+    double new_value = 0.0;
     // reduces the step size until we get an improvement
     int nb_iter = 0;
 
@@ -134,8 +134,9 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
     if (MSQ_CHKERR(err)) { delete pd_previous_coords; return; }
     // Loop to find a step size that improves quality
     double step_size = smallest_edge;
-    while (new_value > original_value
-           && nb_iter < 10 ) {
+      //continue while the new value is greater than the old
+    bool should_continue = true;
+    while (should_continue) {
       nb_iter++;
         // change vertices coordinates in PatchData according to descent
         //direction.
@@ -144,23 +145,24 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
       // and evaluate the objective function with the new node positions.
       sd_bool=objFunc->evaluate(pd, new_value, err);  
       if (MSQ_CHKERR(err)) { delete pd_previous_coords; return; }
-      if(!sd_bool){
-        MSQ_SETERR(err)("SteepestDescent created invalid patch.",
-                        MsqError::INVALID_MESH);
-        delete pd_previous_coords;
-        return;
-      }
-      MSQ_DBGOUT(3) << "    o  step_size: " << step_size << msq_stdio::endl; 
+
+      MSQ_DBGOUT(3) << "    o  step_size: " << step_size << msq_stdio::endl;
       MSQ_DBGOUT(3) << "    o  new_value: " << new_value << msq_stdio::endl;
       
-      // if no improvement
-      if (new_value > original_value) {
+      // if no improvement or the mesh entered the invisible region...
+      if (!sd_bool || new_value > original_value ) {
         // undoes node movement
         pd.set_to_vertices_memento( pd_previous_coords, err );  
         if (MSQ_CHKERR(err)) { delete pd_previous_coords; return; }
         // and reduces step size to try again.
         step_size /= 2;
+        if(nb_iter >= 10)//if we have done too many iterations, stop the loop
+          should_continue = false;
       }
+      else{//otherwise stop the loop[
+        should_continue = false;
+      }
+      
     }
 
     // Prints out free vertices coordinates. 
