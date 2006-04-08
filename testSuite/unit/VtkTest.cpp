@@ -241,6 +241,25 @@ extern const char simple_vector_attrib[] =
 "7 7 7\n"
 "8 8 8\n";
 
+extern const char simple_field_attrib[] = 
+"CELL_DATA 8\n"
+"FIELD test_field 2\n"
+"elem_ids 1 8 int\n"
+"1 2 3 4 5 6 7 8\n"
+"elem_vects 3 8 float\n"
+"1 1 1\n"
+"2 2 2\n"
+"3 3 3\n"
+"4 4 4\n"
+"5 5 5\n"
+"6 6 6\n"
+"7 7 7\n"
+"8 8 8\n"
+"FIELD field1 1\n"
+"values 1 8 int\n"
+"8 7 6 5 4 3 2 1\n";
+
+
   // A scalar VTK attribute with the name and datatype
   // expected by MeshImpl for specifying boundary vertices.
   // May be appended to any of the above 3D structured
@@ -271,6 +290,8 @@ private:
    CPPUNIT_TEST (test_read_rectilinear_grid);
    CPPUNIT_TEST (test_read_simple_scalar_attrib);
    CPPUNIT_TEST (test_read_vector_attrib);
+   CPPUNIT_TEST (test_read_field_attrib);
+   CPPUNIT_TEST (test_write_field_attrib);
    CPPUNIT_TEST (test_read_fixed_attrib);
    CPPUNIT_TEST (test_read_quadratic);
    CPPUNIT_TEST (test_write_quadratic);
@@ -341,6 +362,11 @@ public:
     // Test reading Vtk vector attribute
   void test_read_vector_attrib();
   
+
+    // Test reading VTK FIELD attribute data
+  void test_read_field_attrib();
+  void test_write_field_attrib();
+  void check_field_attrib( const char* file );
 
     // Test reading MeshImpl boundary-vertex bit
     // from Vtk scalar attribute.
@@ -665,6 +691,104 @@ public:
       CPPUNIT_ASSERT( Vector3D( elem_data+3*i ) == Vector3D( i+1, i+1, i+1 ) );
   }
   
+  
+    // Test reading Vtk field attribute
+  void VtkTest::test_read_field_attrib()
+  {
+    FILE* file = fopen( temp_file_name, "w+" );
+    fputs( structured_3d_points_data, file );
+    fputs( simple_field_attrib, file );
+    fclose( file );
+    check_field_attrib( temp_file_name );
+  }
+  
+  void VtkTest::check_field_attrib( const char* temp_file_name )
+  {
+    MeshImpl mesh;
+    MsqPrintError err(cout);
+    
+    mesh.read_vtk( temp_file_name, err );
+    remove( temp_file_name );
+    CPPUNIT_ASSERT(!err);
+    
+    msq_std::vector<Mesh::ElementHandle> elems;
+    mesh.get_all_elements( elems, err );
+    CPPUNIT_ASSERT( !err );
+    CPPUNIT_ASSERT_EQUAL( elems.size(), (size_t)8 );
+   
+    msq_std::string name;
+    Mesh::TagType type;
+    unsigned tagsize;
+
+
+    void* th = mesh.tag_get( "test_field elem_vects", err );
+    CPPUNIT_ASSERT( !err );
+
+    mesh.tag_properties( th, name, type, tagsize, err );
+    CPPUNIT_ASSERT( !err && type == Mesh::DOUBLE && tagsize == 3 );
+    
+    double elem_data[24];
+    mesh.tag_get_element_data( th, 8, &elems[0], elem_data, err );
+    CPPUNIT_ASSERT( !err );
+    
+    for (int i = 0; i < 8; ++i)
+      CPPUNIT_ASSERT( Vector3D( elem_data+3*i ) == Vector3D( i+1, i+1, i+1 ) );
+   
+    
+    th = mesh.tag_get( "test_field elem_ids", err );
+    CPPUNIT_ASSERT( !err );
+
+    mesh.tag_properties( th, name, type, tagsize, err );
+    CPPUNIT_ASSERT( !err && type == Mesh::INT && tagsize == 1 );
+    
+    int elem_ids[8];
+    mesh.tag_get_element_data( th, 8, &elems[0], elem_ids, err );
+    CPPUNIT_ASSERT( !err );
+    
+    for (int i = 0; i < 8; ++i)
+      CPPUNIT_ASSERT( elem_ids[i] == i+1 );
+   
+    
+    th = mesh.tag_get( "field1", err );
+    CPPUNIT_ASSERT( !err );
+
+    mesh.tag_properties( th, name, type, tagsize, err );
+    CPPUNIT_ASSERT( !err && type == Mesh::INT && tagsize == 1 );
+    
+    int values[8];
+    mesh.tag_get_element_data( th, 8, &elems[0], values, err );
+    CPPUNIT_ASSERT( !err );
+    
+    for (int i = 0; i < 8; ++i)
+      CPPUNIT_ASSERT( values[i] == 8-i );
+  }
+
+    
+    // Test writing quadtratic elements
+  void VtkTest::test_write_field_attrib()
+  {
+    MeshImpl mesh;
+    MsqPrintError err(cout);
+    
+      // Create file containing unstructured mesh test case
+    FILE* file = fopen( temp_file_name, "w+" );
+    fputs( structured_3d_points_data, file );
+    fputs( simple_field_attrib, file );
+    fclose( file );
+    
+      // Read unstructured mesh file
+    mesh.read_vtk( temp_file_name, err );
+    remove(temp_file_name);
+    CPPUNIT_ASSERT(!err);
+    
+      // Write unstructured mesh file back out
+    mesh.write_vtk( temp_file_name, err );
+    if (err)  remove( temp_file_name );
+    CPPUNIT_ASSERT(!err);
+    
+      // Check if file contained expected mesh
+    check_field_attrib( temp_file_name );
+  }
 
     // Test reading MeshImpl boundary-vertex bit
     // from Vtk scalar attribute.

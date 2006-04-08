@@ -45,13 +45,18 @@ namespace Mesquite {
       // about it.
     enum VtkType { NONE = 0, SCALAR, COLOR, VECTOR, NORMAL, TEXTURE, TENSOR, FIELD };
 
-    msq_std::string name; //!< Tag name 
-    Mesh::TagType type;   //!< Tag data type
-    VtkType vtkType;      //!< Attribute type from VTK file
-    size_t size;          //!< Size of tag data (sizeof(type)*array_length)
+    msq_std::string name;   //!< Tag name 
+    Mesh::TagType type;     //!< Tag data type
+    VtkType vtkType;        //!< Attribute type from VTK file
+    size_t size;            //!< Size of tag data (sizeof(type)*array_length)
+    msq_std::string member; //!< Field member name for 1-member fields.
 
-    inline TagDescription( msq_std::string n, Mesh::TagType t, VtkType v, size_t s )
-      : name(n), type(t), vtkType(v), size(s) {}
+    inline TagDescription( msq_std::string n, 
+                           Mesh::TagType t, 
+                           VtkType v, 
+                           size_t s,
+                           msq_std::string m )
+      : name(n), type(t), vtkType(v), size(s), member(m) {}
 
     inline TagDescription( )
       : type(Mesh::BYTE), vtkType(NONE), size(0) {}
@@ -107,8 +112,9 @@ class MeshImplTags {
     inline TagData( const msq_std::string& name, 
              Mesh::TagType type, unsigned length,
              void* default_val = 0,
-             TagDescription::VtkType vtk_type = TagDescription::NONE )
-      : desc(name, type, vtk_type, length*size_from_tag_type(type)),
+             TagDescription::VtkType vtk_type = TagDescription::NONE,
+             const msq_std::string& field_member = "")
+      : desc(name, type, vtk_type, length*size_from_tag_type(type), field_member),
         elementData(0), elementCount(0),
         vertexData(0), vertexCount(0), 
         defaultValue(default_val) {}
@@ -194,6 +200,7 @@ class MeshImplTags {
   class TagIterator 
   {
     public:
+      TagIterator() : tags(0), index(0) {}
       TagIterator( MeshImplTags* d, size_t i ) : tags(d), index(i) {}
       size_t operator*() const  { return index+1; }
       TagIterator operator++();

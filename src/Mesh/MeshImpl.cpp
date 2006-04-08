@@ -58,11 +58,13 @@ to run mesquite by default.
 #  include <vector.h>
 #  include <algorithm.h>
 #  include <functional.h>
+#  include <map.h>
 #else
 #  include <string>
 #  include <vector>
 #  include <algorithm>
 #  include <functional>
+#  include <map>
    using std::string;
    using std::vector;
 #endif
@@ -87,6 +89,8 @@ namespace Mesquite
 {
 
 
+const char* MESQUITE_FIELD_TAG = "MesquiteTags";
+
 MeshImpl::MeshImpl() 
     : numCoords(0),
       myMesh( new MeshImplData ),
@@ -103,6 +107,53 @@ void MeshImpl::clear()
 {
   myMesh->clear();
   myTags->clear();
+}
+
+static void get_field_names( const TagDescription& tag,
+                             msq_std::string& field_out,
+                             msq_std::string& member_out,
+                             MsqError& err )
+{
+  msq_std::string::size_type idx;
+  
+  if (tag.vtkType != TagDescription::FIELD)
+  {
+    field_out = tag.name;
+    member_out = "";
+  }
+  else if (!tag.member.empty())
+  {
+    field_out = tag.name;
+    member_out = tag.member;
+  }
+    // If field is a struct, then the Mesquite tag name is a contcatenation
+    // of the field name and the struct member name.  Extract them.
+  else 
+  {
+    idx = tag.name.find(" ");
+    if (idx == msq_std::string::npos)
+    {
+      field_out = tag.name;
+      member_out = MESQUITE_FIELD_TAG;
+    }
+    else
+    {
+      field_out = tag.name.substr(0, idx);
+      member_out= tag.name.substr(idx+1);
+    }
+  }
+  
+  idx = field_out.find(" ");
+  if (idx != msq_std::string::npos)
+    MSQ_SETERR(err)(MsqError::FILE_FORMAT,
+       "Cannot write tag name \"%s\" containing spaces to VTK file.",
+       field_out.c_str());
+  
+  idx = member_out.find(" ");
+  if (idx != msq_std::string::npos)
+    MSQ_SETERR(err)(MsqError::FILE_FORMAT,
+       "Cannot write field member name \"%s\" containing spaces to VTK file.",
+       member_out.c_str());
 }
 
 
@@ -181,78 +232,135 @@ void MeshImpl::write_vtk(const char* out_filename, MsqError &err)
   for (i = 0; i < myMesh->max_vertex_index(); ++i)
     if (myMesh->is_vertex_valid( i ))
       file <<( myMesh->vertex_is_fixed( i, err ) ? "1" : "0") << "\n";
-  
-    // Write vertex tag data to vtk attributes
-  MeshImplTags::TagIterator tagiter = myTags->tag_begin();
-  for (tagiter = myTags->tag_begin(); tagiter != myTags->tag_end(); ++tagiter)
-  {
-    bool havevert = myTags->tag_has_vertex_data( *tagiter, err ); MSQ_ERRRTN(err);
-    if (!havevert)
-      continue;
-    
-    const TagDescription& desc = myTags->properties( *tagiter, err );
-    MSQ_ERRRTN(err);
-    
-    std::vector<char> tagdata( myMesh->num_vertices() * desc.size );
-    std::vector<char>::iterator iter = tagdata.begin();
-    for (i = 0; i < myMesh->max_vertex_index(); ++i)
-    {
-      if (myMesh->is_vertex_valid(i))
-      {
-        myTags->get_vertex_data( *tagiter, 1, &i, &*iter, err );
-        MSQ_ERRRTN(err);
-        iter += desc.size;
-      }
-    }
-    
-    vtk_write_attrib_data( file, 
-                           desc, 
-                           &tagdata[0],
-                           myMesh->num_vertices(),
-                           err );
-    MSQ_ERRRTN(err);
-  }
 
-    // If there are any element attributes, write them
+    // Make pass over the list of tags to:
+    // - Check if there are any tags on elements.
+    // - Get the list of field names by which to group tag data.
+    // - Assign VTK types for tags that have an unknown VTK type.
+  MeshImplTags::TagIterator tagiter;
+  msq_std::multimap<msq_std::string,size_t> fields;
+  bool have_elem_data = false;
   for (tagiter = myTags->tag_begin(); tagiter != myTags->tag_end(); ++tagiter)
   {
     bool haveelem = myTags->tag_has_element_data( *tagiter, err ); MSQ_ERRRTN(err);
-    if (haveelem)
-    {
-      file << "\nCELL_DATA " << myMesh->num_elements() << "\n";
-      break;
-    }
-  }
-  for (tagiter = myTags->tag_begin(); tagiter != myTags->tag_end(); ++tagiter)
-  {
-    bool haveelem = myTags->tag_has_element_data( *tagiter, err ); MSQ_ERRRTN(err);
-    if (!haveelem)
-      continue;
-    
+    if (haveelem) 
+      have_elem_data = true;
     
     const TagDescription& desc = myTags->properties( *tagiter, err );
-    MSQ_ERRRTN(err);
+    std::string field, member;
+    get_field_names( desc, field, member, err ); MSQ_ERRRTN(err);
+    fields.insert( msq_std::multimap<msq_std::string,size_t>::value_type( field, *tagiter ) );
+  }
+  
+    // Write vertex tag data to vtk attributes, group by field.
+    // We already wrote the header line for the POINT_DATA block
+    // with the fixed flag, so just write the rest of the tags now.
+  msq_std::multimap<msq_std::string,size_t>::iterator f, e;
+  f = fields.begin();
+  while (f != fields.end())
+  {
+    if (!myTags->tag_has_vertex_data( f->second, err ))
+      { ++f; continue; }
     
-    std::vector<char> tagdata( myMesh->num_elements() * desc.size );
-    std::vector<char>::iterator iter = tagdata.begin();
-    for (i = 0; i < myMesh->max_element_index(); ++i)
+    int count = 0;
+    for (e = f; e != fields.end() && e->first == f->first; ++e)
+      if (myTags->tag_has_vertex_data( e->second, err ))
+        ++count;
+    if (!count)
+      continue;
+    
+    if (myTags->properties(f->second, err).vtkType == TagDescription::FIELD)
+      file << "FIELD " << f->first << " " << count << msq_std::endl;
+    else if (count > 1)
     {
-      if (myMesh->is_element_valid(i))
-      {
-        myTags->get_element_data( *tagiter, 1, &i, &*iter, err );
-        MSQ_ERRRTN(err);
-        iter += desc.size;
-      }
+      MSQ_SETERR(err)(MsqError::INTERNAL_ERROR,
+        "Tag name \"%s\" conflicts with VTK field name in tag \"%s\"\n",
+        f->first.c_str(), myTags->properties((++f)->second,err).name.c_str());
+      return;
     }
     
-    vtk_write_attrib_data( file, 
-                           desc, 
-                           &tagdata[0],
-                           myMesh->num_elements(),
-                           err );
-    MSQ_ERRRTN(err);
+    for (; f != e; ++f)
+    {
+      if (!myTags->tag_has_vertex_data(f->second, err))
+        continue;
+      
+      const TagDescription& desc = myTags->properties(f->second,err); MSQ_ERRRTN(err);
+      std::vector<char> tagdata( myMesh->num_vertices() * desc.size );
+      std::vector<char>::iterator iter = tagdata.begin();
+      for (i = 0; i < myMesh->max_vertex_index(); ++i)
+      {
+        if (myMesh->is_vertex_valid(i))
+        {
+          myTags->get_vertex_data( f->second, 1, &i, &*iter, err );
+          MSQ_ERRRTN(err);
+          iter += desc.size;
+        }  
+      }
+      vtk_write_attrib_data( file, 
+                             desc, 
+                             &tagdata[0],
+                             myMesh->num_vertices(),
+                             err ); MSQ_ERRRTN(err);
+    }
   }
+  
+    // If no element tags, then done
+  if (!have_elem_data) 
+  {
+    file.close();
+    return;
+  }
+  
+    // Begin element data section
+  file << "\nCELL_DATA " << myMesh->num_elements() << "\n";
+    // Write element tag data to vtk attributes, group by field.
+  f = fields.begin();
+  while (f != fields.end())
+  {
+    if (!myTags->tag_has_element_data( f->second, err ))
+      { ++f; continue; }
     
+    int count = 0;
+    for (e = f; e != fields.end() && e->first == f->first; ++e)
+      if (myTags->tag_has_element_data( e->second, err ))
+        ++count;
+    if (!count)
+      continue;
+    
+    if (myTags->properties( f->second, err ).vtkType == TagDescription::FIELD)
+      file << "FIELD " << f->first << " " << count << msq_std::endl;
+    else if (count > 1)
+    {
+      MSQ_SETERR(err)(MsqError::INTERNAL_ERROR,
+        "Tag name \"%s\" conflicts with VTK field name in tag \"%s\"\n",
+        f->first.c_str(), myTags->properties((++f)->second,err).name.c_str());
+      return;
+    }
+    
+    for (; f != e; ++f)
+    {
+      if (!myTags->tag_has_element_data(f->second, err))
+        continue;
+      
+      const TagDescription& desc = myTags->properties(f->second,err); MSQ_ERRRTN(err);
+      std::vector<char> tagdata( myMesh->num_elements() * desc.size );
+      std::vector<char>::iterator iter = tagdata.begin();
+      for (i = 0; i < myMesh->max_element_index(); ++i)
+      {
+        if (myMesh->is_element_valid(i))
+        {
+          myTags->get_element_data( f->second, 1, &i, &*iter, err );
+          MSQ_ERRRTN(err);
+          iter += desc.size;
+        }  
+      }
+      vtk_write_attrib_data( file, 
+                             desc, 
+                             &tagdata[0],
+                             myMesh->num_elements(),
+                             err ); MSQ_ERRRTN(err);
+    }
+  }
   
     // Close the file
   file.close();
@@ -1041,71 +1149,40 @@ void MeshImpl::read_vtk( const char* filename, MsqError &err )
     // Clear any existing data
   this->clear();
 
+  const char* outer_block_names[] = { "DATASET", "FIELD", 0 };
     // Read the mesh
-  tokens.match_token( "DATASET", err ); MSQ_ERRRTN(err);
-  vtk_read_dataset( tokens, err ); MSQ_ERRRTN(err);
+    // VTK docs are inconsistant with regard to whether or not 
+    // a field block should be specified as "FIELD" or "DATASET FIELD",
+    // so allow both.
+  while (!tokens.eof()) 
+  {
+    int blocktype = tokens.match_token( outer_block_names, err ); 
+    if (MSQ_CHKERR(err)) 
+    {
+      if (tokens.eof())
+      {
+        err.clear();
+        break;
+      }
+      else
+        return;
+    }
+    
+    if (blocktype == 1)
+    {
+      vtk_read_dataset( tokens, err ); MSQ_ERRRTN(err);
+    }
+    else
+    {
+      vtk_read_field( tokens, err ); MSQ_ERRRTN(err);
+    }
+  }
   
     // Make sure file actually contained some mesh
   if (myMesh->num_elements() == 0)
   {
     MSQ_SETERR(err)("File contained no mesh.", MsqError::PARSE_ERROR);
     return;
-  }
-  
-    // Read attribute data until end of file.
-  const char* const block_type_names[] = { "POINT_DATA", "CELL_DATA", 0 };
-  int blocktype = 0;
-  while (!tokens.eof())
-  {
-      // get POINT_DATA or CELL_DATA
-    int new_block_type = tokens.match_token( block_type_names, err );
-    if (tokens.eof())
-    {
-      err.clear();
-      break;
-    }
-    if (err)
-    {
-        // If next token was neither POINT_DATA nor CELL_DATA,
-        // then there's another attribute under the current one.
-      if (blocktype)
-      {
-        tokens.unget_token();
-        err.clear();
-      }
-      else
-      {
-        MSQ_ERRRTN(err);
-      }
-    }
-    else
-    {
-      blocktype = new_block_type;
-      long count;
-      tokens.get_long_ints( 1, &count, err); MSQ_ERRRTN(err);
-      
-      if (blocktype == 1 && (unsigned long)count != myMesh->num_vertices())
-      {
-        MSQ_SETERR(err)( MsqError::PARSE_ERROR,
-                         "Count inconsistent with number of vertices" 
-                         " at line %d.", tokens.line_number());
-        return;
-      }
-      else if (blocktype == 2 && (unsigned long)count != myMesh->num_elements())
-      {
-         MSQ_SETERR(err)( MsqError::PARSE_ERROR,
-                         "Count inconsistent with number of elements" 
-                         " at line %d.", tokens.line_number());
-        return;
-      }
-    }
-      
-   
-    if (blocktype == 1)
-      vtk_read_point_data( tokens, err );
-    else
-      vtk_read_cell_data ( tokens, err );
-    MSQ_ERRRTN(err);
   }
   
     // There is no option for a 2-D mesh in VTK files.  Always 3
@@ -1183,6 +1260,25 @@ void MeshImpl::vtk_read_dataset( FileTokenizer& tokens, MsqError& err )
                                           "FIELD",
                                           0 };
   int datatype = tokens.match_token( data_type_names, err ); MSQ_ERRRTN(err);
+  
+  
+    // Ignore FIELD data at beginning of DATASET. As far as I (J.Kraftcheck)
+    // understand the VTK documentation, there should never be a FIELD block
+    // inside a dataset, except in attribute data.  However, some app somewhere
+    // writes them this way, so try to handle them.
+  for (;;)
+  {
+    tokens.match_token( "FIELD", err );
+    if (err) 
+    {
+      tokens.unget_token();
+      err.clear();
+      break;
+    }
+    vtk_read_field( tokens, err ); MSQ_ERRRTN(err);
+  }
+    
+  
   switch( datatype )
   {
     case 1: vtk_read_structured_points( tokens, err ); break;
@@ -1191,6 +1287,69 @@ void MeshImpl::vtk_read_dataset( FileTokenizer& tokens, MsqError& err )
     case 4: vtk_read_polydata         ( tokens, err ); break;
     case 5: vtk_read_rectilinear_grid ( tokens, err ); break;
     case 6: vtk_read_field            ( tokens, err ); break;
+  }
+
+  
+    // Read attribute data 
+  const char* const block_type_names[] = { "POINT_DATA", "CELL_DATA", "DATASET", 0 };
+  int blocktype = 0;
+  while (!tokens.eof())
+  {
+      // get POINT_DATA or CELL_DATA
+    int new_block_type = tokens.match_token( block_type_names, err );
+    if (new_block_type == 3) // done reading attributes
+    {
+      tokens.unget_token();
+      return;
+    }
+    
+    if (err)
+    {
+      if (tokens.eof())
+      {
+        err.clear();
+        break;
+      }
+        // If next token was neither POINT_DATA nor CELL_DATA,
+        // then there's another attribute under the current one.
+      if (blocktype)
+      {
+        tokens.unget_token();
+        err.clear();
+      }
+      else
+      {
+        MSQ_ERRRTN(err);
+      }
+    }
+    else
+    {
+      blocktype = new_block_type;
+      long count;
+      tokens.get_long_ints( 1, &count, err); MSQ_ERRRTN(err);
+      
+      if (blocktype == 1 && (unsigned long)count != myMesh->num_vertices())
+      {
+        MSQ_SETERR(err)( MsqError::PARSE_ERROR,
+                         "Count inconsistent with number of vertices" 
+                         " at line %d.", tokens.line_number());
+        return;
+      }
+      else if (blocktype == 2 && (unsigned long)count != myMesh->num_elements())
+      {
+         MSQ_SETERR(err)( MsqError::PARSE_ERROR,
+                         "Count inconsistent with number of elements" 
+                         " at line %d.", tokens.line_number());
+        return;
+      }
+    }
+      
+   
+    if (blocktype == 1)
+      vtk_read_point_data( tokens, err );
+    else
+      vtk_read_cell_data ( tokens, err );
+    MSQ_ERRRTN(err);
   }
 }
 
@@ -1565,37 +1724,75 @@ void MeshImpl::vtk_create_structured_elems( const long* dims,
       }
 }
 
+void* MeshImpl::vtk_read_field_data( FileTokenizer& tokens, 
+                                     size_t count, 
+                                     size_t num_fields,
+                                     const msq_std::string& field_name,
+                                     TagDescription& tag, 
+                                     MsqError& err )
+{
+  tag.member = tokens.get_string(err);                  MSQ_ERRZERO(err);
+    // If field is a struct containing multiple members, make
+    // tag name the concatentation of the field name and member
+    // name.
+  if (num_fields > 1)
+  {
+    tag.name = field_name;
+    tag.name += " ";
+    tag.name += tag.member;
+    tag.member.clear();
+  }
+    // If field contains only one member, then make the tag
+    // name be the field name, and store the member name to 
+    // preserve it for subsequent writes.
+  else
+  {
+    tag.name = field_name;
+  }
+
+    // Get tuple size and count from the file.
+  long sizes[2];
+  tokens.get_long_ints( 2, sizes, err );                MSQ_ERRZERO(err);
+  if (sizes[0] < 1) {
+    MSQ_SETERR(err)( MsqError::PARSE_ERROR,
+                     "Invalid tuple size (%ld) for field data %s at line %d\n",
+                     sizes[0], tag.name.c_str(),
+                     tokens.line_number() );
+    return 0;
+  }
+  if (sizes[1] < 0 || (count && (size_t)sizes[1] != count)) {
+    MSQ_SETERR(err)( MsqError::PARSE_ERROR,
+                     "Invalid field data length at line %d.  "
+                     "Cannot map %lu tuples to  %ld entities.\n", 
+                     tokens.line_number(),
+                     (unsigned long)count, sizes[1] );
+    return 0;
+  }
+  
+  int type = tokens.match_token( vtk_type_names, err ); MSQ_ERRZERO(err);
+  void* result = vtk_read_typed_data( tokens, type, sizes[0], sizes[1], tag, err );
+  MSQ_CHKERR(err);
+  return result;
+}
+
 void MeshImpl::vtk_read_field( FileTokenizer& tokens, MsqError& err )
 {
     // This is not supported yet.
     // Parse the data but throw it away because
     // Mesquite has no internal representation for it.
   
-    // Could save this in tags, but the only useful thing that
-    // could be done with the data is to write it back out
-    // with the modified mesh.  As there's no way to save the
-    // type of a tag in Mesquite, it cannot be written back
-    // out correctly either.
-    // FIXME: Don't know what to do with this data.
-    // For now, read it and throw it out.
-
-  long num_arrays;
-  tokens.get_long_ints( 1, &num_arrays, err );              MSQ_ERRRTN(err);
+  msq_std::string name = tokens.get_string(err); MSQ_ERRRTN(err);
+  int count;
+  tokens.get_integers( 1, &count, err ); MSQ_ERRRTN(err);
   
-  for (long i = 0; i < num_arrays; ++i)
+  for (int i = 0; i < count; i++)
   {
-    /*const char* name =*/ tokens.get_string( err );        MSQ_ERRRTN(err);
-    
-    long dims[2];
-    tokens.get_long_ints( 2, dims, err );                   MSQ_ERRRTN(err);
-    tokens.match_token( vtk_type_names, err );              MSQ_ERRRTN(err);
-    
-    long num_vals = dims[0] * dims[1];
-    
-    for (long j = 0; j < num_vals; j++)
+    TagDescription tag;
+    void* ptr = vtk_read_field_data( tokens, 0, 1, "", tag, err );
+    if (!MSQ_CHKERR(err))
     {
-      double junk;
-      tokens.get_doubles( 1, &junk, err );                  MSQ_ERRRTN(err);
+      free( ptr );
+      return;
     }
   }
 }
@@ -1612,10 +1809,23 @@ void* MeshImpl::vtk_read_attrib_data( FileTokenizer& tokens,
                                      "TEXTURE_COORDINATES",
                                      "TENSORS",
                                      "FIELD",
+  // Some buggy VTK files have empty CELL_DATA/POINT_DATA blocks
+  // Try to allow them by checking for possible other tokens
+  // indicating the end of the block
+                                     "POINT_DATA",
+                                     "CELL_DATA",
+                                     "DATASET",
                                      0 };
 
-  int type = tokens.match_token( type_names, err );
-  const char* name = tokens.get_string( err ); MSQ_ERRZERO(err);
+  int type = tokens.match_token( type_names, err );  MSQ_ERRZERO(err);
+  if (type > 7) // empty CELL_DATA/POINT_DATA block.
+  {
+    tag.vtkType = TagDescription::NONE;
+    tokens.unget_token();  
+    return 0;
+  }
+  
+  const char* name = tokens.get_string( err );       MSQ_ERRZERO(err);
   tag.name = name;
   
   void* data = 0;
@@ -1639,10 +1849,9 @@ void* MeshImpl::vtk_read_attrib_data( FileTokenizer& tokens,
     case 6: data = vtk_read_tensor_attrib ( tokens, count, tag, err ); 
             tag.vtkType = TagDescription::TENSOR;
             break;
-    case 7: // Can't handle field data yet.
-      MSQ_SETERR(err)( MsqError::NOT_IMPLEMENTED,
-                       "Cannot read field data (line %d).",
-                       tokens.line_number());
+    case 7: data = 0;
+            tag.vtkType = TagDescription::FIELD;
+            break;
   }
 
   return data;
@@ -1653,52 +1862,56 @@ void MeshImpl::vtk_read_point_data( FileTokenizer& tokens,
 {
   TagDescription tag;
   void* data = vtk_read_attrib_data( tokens, myMesh->num_vertices(), tag, err );
-  MSQ_ERRRTN(err);
-  
-  size_t tag_handle = myTags->handle( tag.name, err ); 
-  if (MSQ_CHKERR(err)) {
-    free( data );
-    return;
+  if (data) // normal attribute
+  {
+    vtk_store_point_data( data, tag, err );
+    free(data);
+    MSQ_CHKERR(err);
+    return;;
   }
+  else if (tag.vtkType == TagDescription::FIELD)
+  {
+    msq_std::string field = tag.name;
+    int field_count;
+    tokens.get_integers( 1, &field_count, err ); MSQ_ERRRTN(err);
+    for (int i = 0; i < field_count; ++i)
+    {
+      data = vtk_read_field_data( tokens, myMesh->num_vertices(), field_count, field, tag, err );
+      MSQ_ERRRTN(err);
+      vtk_store_point_data( data, tag, err );
+      free( data );
+      MSQ_ERRRTN(err);
+    }
+  }
+}
+  
+void MeshImpl::vtk_store_point_data( const void* data, TagDescription& tag, MsqError& err )
+{  
+  size_t tag_handle = myTags->handle( tag.name, err ); MSQ_ERRRTN(err);
   if (!tag_handle)
   {
-    tag_handle = myTags->create( tag, err ); 
-    if (MSQ_CHKERR(err)) {
-      free( data );
-      return;
-    }
+    tag_handle = myTags->create( tag, err ); MSQ_ERRRTN(err);
   }
   else 
   {
-    const TagDescription& desc = myTags->properties( tag_handle, err ); 
-    if (MSQ_CHKERR(err)) {
-      free( data );
-      return;
-    }
+    const TagDescription& desc = myTags->properties( tag_handle, err );  MSQ_ERRRTN(err);
     if (desc != tag)
     {
       MSQ_SETERR(err)( MsqError::PARSE_ERROR,
                        "Inconsistent types between element "
-                       "and vertex attributes of same name "
-                       "at line %d", tokens.line_number() );
-      free( data );
+                       "and vertex attributes named \"%s\"\n",
+                       tag.name.c_str() );
       return;
     }
   }
   
   msq_std::vector<size_t> vertex_handles;
-  myMesh->all_vertices( vertex_handles, err );
-  if (MSQ_CHKERR(err)) {
-    free( data );
-    return;
-  }
+  myMesh->all_vertices( vertex_handles, err ); MSQ_ERRRTN(err);
   myTags->set_vertex_data( tag_handle, 
                            vertex_handles.size(),
                            &vertex_handles[0],
                            data,
-                           err ); MSQ_CHKERR(err);
-  free( data );
-  
+                           err );  MSQ_ERRRTN(err);
 }
 
 
@@ -1707,52 +1920,56 @@ void MeshImpl::vtk_read_cell_data( FileTokenizer& tokens,
 {
   TagDescription tag;
   void* data = vtk_read_attrib_data( tokens, myMesh->num_elements(), tag, err );
-  MSQ_ERRRTN(err);
-  
-  size_t tag_handle = myTags->handle( tag.name, err );  
-  if (MSQ_CHKERR(err)) {
-    free( data );
-    return;
+  if (data) // normal attribute
+  {
+    vtk_store_cell_data( data, tag, err );
+    free(data);
+    MSQ_CHKERR(err);
+    return;;
   }
+  else if (tag.vtkType == TagDescription::FIELD)
+  {
+    msq_std::string field = tag.name;
+    int field_count;
+    tokens.get_integers( 1, &field_count, err ); MSQ_ERRRTN(err);
+    for (int i = 0; i < field_count; ++i)
+    {
+      data = vtk_read_field_data( tokens, myMesh->num_elements(), field_count, field, tag, err );
+      MSQ_ERRRTN(err);
+      vtk_store_cell_data( data, tag, err );
+      free( data );
+      MSQ_ERRRTN(err);
+    }
+  }
+}
+
+void MeshImpl::vtk_store_cell_data( const void* data, TagDescription& tag, MsqError& err )
+{  
+  size_t tag_handle = myTags->handle( tag.name, err );  MSQ_ERRRTN(err);
   if (!tag_handle)
   {
-    tag_handle = myTags->create( tag, err ); 
-    if (MSQ_CHKERR(err)) {
-      free( data );
-      return;
-    }
+    tag_handle = myTags->create( tag, err ); MSQ_ERRRTN(err);
   }
   else 
   {
-    const TagDescription& desc = myTags->properties( tag_handle, err ); 
-    if (MSQ_CHKERR(err)) {
-      free( data );
-      return;
-    }
+    const TagDescription& desc = myTags->properties( tag_handle, err ); MSQ_ERRRTN(err);
     if (desc != tag)
     {
       MSQ_SETERR(err)( MsqError::PARSE_ERROR,
                        "Inconsistent types between element "
-                       "and vertex attributes of same name "
-                       "at line %d", tokens.line_number() );
-      free( data );
+                       "and vertex attributes named \"%s\"\n",
+                       tag.name.c_str() );
       return;
     }
   }
   
   msq_std::vector<size_t> element_handles;
-  myMesh->all_elements( element_handles, err );
-  if (MSQ_CHKERR(err)) {
-    free( data );
-    return;
-  }
+  myMesh->all_elements( element_handles, err ); MSQ_ERRRTN(err);
   myTags->set_element_data( tag_handle, 
                             element_handles.size(),
                             &element_handles[0],
                             data,
-                            err ); MSQ_CHKERR(err);
-  free( data );
-  
+                            err ); MSQ_ERRRTN(err);
 }
 
 void* MeshImpl::vtk_read_typed_data( FileTokenizer& tokens, 
@@ -1991,6 +2208,7 @@ void* MeshImpl::vtk_read_tensor_attrib( FileTokenizer& tokens,
   return result;
 }  
 
+
 void MeshImpl::vtk_write_attrib_data( msq_stdio::ostream& file,
                                       const TagDescription& desc,
                                       const void* data, size_t count,
@@ -2019,6 +2237,7 @@ void MeshImpl::vtk_write_attrib_data( msq_stdio::ostream& file,
   }
   
   const char* const typenames[] = { "unsigned_char", "bit", "int", "double" };
+  msq_std::string field, member;
   
   int num_per_line;
   switch (vtk_type)
@@ -2067,6 +2286,11 @@ void MeshImpl::vtk_write_attrib_data( msq_stdio::ostream& file,
         return;
       }
       file << "TENSORS " << desc.name << " " << typenames[desc.type] << "\n";
+      break;
+    case TagDescription::FIELD:
+      num_per_line = vlen;
+      get_field_names( desc, field, member, err ); MSQ_ERRRTN(err);
+      file << member << " " << vlen << " " << count << " " << typenames[desc.type] << "\n";
       break;
     default:
       MSQ_SETERR(err)("Unknown VTK attribute type for tag.", MsqError::INTERNAL_ERROR );
@@ -2121,7 +2345,26 @@ TagHandle MeshImpl::tag_create( const string& name,
                                 const void* defval,
                                 MsqError& err )
 {
-  size_t index = myTags->create( name, type, length, defval, err ); MSQ_ERRZERO(err);
+  TagDescription::VtkType vtype;
+  msq_std::string field;
+  switch( length ) 
+  {
+    case 1:  vtype = TagDescription::SCALAR; break;
+    case 3:  vtype = TagDescription::VECTOR; break;
+    case 9:  vtype = TagDescription::TENSOR; break;
+    default: vtype = TagDescription::FIELD;
+             field = MESQUITE_FIELD_TAG;     break;
+  }
+  
+    // If tag name contains a space, assume the tag name
+    // is a concatenation of the VTK field and member names.
+  if (vtype != TagDescription::FIELD &&
+      name.find(" ") != msq_std::string::npos)
+    vtype = TagDescription::FIELD;
+  
+  size_t size = MeshImplTags::size_from_tag_type( type );
+  TagDescription desc( name, type, vtype, length*size, field );
+  size_t index = myTags->create( desc, err ); MSQ_ERRZERO(err);
   return (TagHandle)index;
 }
 

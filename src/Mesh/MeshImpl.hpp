@@ -366,8 +366,14 @@ namespace Mesquite
     void vtk_read_point_data( FileTokenizer& file, MsqError& err );
       /** Read attribute data for elements */
     void vtk_read_cell_data ( FileTokenizer& file, MsqError& err );
+      /** Store data read in vtk_read_point_data into mesh tags */
+    void vtk_store_point_data( const void* data, TagDescription& desc, MsqError& );
+      /** Store data read in vtk_read_cell_data into mesh tags */
+    void vtk_store_cell_data( const void* data, TagDescription& desc, MsqError& );
       /** Read actual data for both \ref vtk_read_point_data and \ref vtk_read_cell_data 
-       *  Initializes all fields of passed TagDescription */
+       *  Initializes all fields of passed TagDescription
+       *\return NULL if field data, otherwise pointer to malloc'd data.
+       */
     void* vtk_read_attrib_data( FileTokenizer& file, 
                                 long num_data_to_read, 
                                 TagDescription& tag_out,
@@ -378,7 +384,15 @@ namespace Mesquite
                                size_t per_elem, size_t num_elem,
                                TagDescription& tag_out,
                                MsqError& err );
-                             
+      /** Read field data 
+       *\param count expected number of tuples, or zero if not known
+       */
+    void* vtk_read_field_data( FileTokenizer& file, size_t count,
+                               size_t field_count,
+                               const msq_std::string& field_name, 
+                               TagDescription& tag, 
+                               MsqError& err );
+    
       /** Read scalar attribute data  
        *  Initializes size and type fields of passed TagDescroption */
     void* vtk_read_scalar_attrib ( FileTokenizer& file, long count, 
