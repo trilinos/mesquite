@@ -2297,7 +2297,7 @@ void MeshImpl::vtk_write_attrib_data( msq_stdio::ostream& file,
       return;
   }
   
-  size_t i = 0, total = count*vlen;
+  size_t i, total = count*vlen;
   char* space = new char[num_per_line];
   memset( space, ' ', num_per_line );
   space[0] = '\n';
@@ -2308,20 +2308,20 @@ void MeshImpl::vtk_write_attrib_data( msq_stdio::ostream& file,
   switch ( desc.type )
   {
     case BYTE:
-      while (i < total)
-        file << (unsigned int)odata[i++] << space[i%num_per_line];
+      for (i = 0 ; i < total; ++i)
+        file << (unsigned int)odata[i] << space[i%num_per_line];
       break;
     case BOOL:
-      while (i < total)
-        file << (bdata[i++] ? '1' : '0') << space[i%num_per_line];
+      for (i = 0 ; i < total; ++i)
+        file << (bdata[i] ? '1' : '0') << space[i%num_per_line];
       break;
     case INT:
-      while (i < total)
-        file << idata[i++] << space[i%num_per_line];
+      for (i = 0 ; i < total; ++i)
+        file << idata[i] << space[i%num_per_line];
       break;
     case DOUBLE:
-      while (i < total)
-        file << ddata[i++] << space[i%num_per_line];
+      for (i = 0 ; i < total; ++i)
+        file << ddata[i] << space[i%num_per_line];
       break;
     default:
       MSQ_SETERR(err)("Unknown tag type.", MsqError::INTERNAL_ERROR);
