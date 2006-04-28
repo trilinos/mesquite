@@ -22,20 +22,20 @@
 #  kraftche@cae.wisc.edu    
 
 # This directory
-TSTT_DIR = tstt
+MESQUITE_TSTT_DIR = tstt
 
 # Subdirectories to create
-TSTT_REPO_DIR = $(TSTT_DIR)/repo
-TSTT_BASE_DIR = $(TSTT_DIR)/base
-TSTT_MESH_DIR = $(TSTT_DIR)/mesh
-TSTT_GEOM_DIR = $(TSTT_DIR)/geom
-TSTT_ASSO_DIR = $(TSTT_DIR)/assoc
+TSTT_REPO_DIR = $(MESQUITE_TSTT_DIR)/repo
+TSTT_BASE_DIR = $(MESQUITE_TSTT_DIR)/base
+TSTT_MESH_DIR = $(MESQUITE_TSTT_DIR)/mesh
+TSTT_GEOM_DIR = $(MESQUITE_TSTT_DIR)/geom
+TSTT_ASSO_DIR = $(MESQUITE_TSTT_DIR)/assoc
 
 # Input files for Babel
-TSTT_BASE_SIDL = $(TSTT_DIR)/TSTTB.sidl
-TSTT_MESH_SIDL = $(TSTT_DIR)/TSTTM.sidl
-TSTT_GEOM_SIDL = $(TSTT_DIR)/TSTTG.sidl
-TSTT_ASSO_SIDL = $(TSTT_DIR)/TSTTR.sidl
+TSTT_BASE_SIDL = $(MESQUITE_TSTT_DIR)/TSTTB.sidl
+TSTT_MESH_SIDL = $(MESQUITE_TSTT_DIR)/TSTTM.sidl
+TSTT_GEOM_SIDL = $(MESQUITE_TSTT_DIR)/TSTTG.sidl
+TSTT_ASSO_SIDL = $(MESQUITE_TSTT_DIR)/TSTTR.sidl
 
 
 # Include defines for compiling TSTT-related code
