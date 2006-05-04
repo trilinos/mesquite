@@ -868,7 +868,7 @@ void MeshTSTTImpl::set_active_set( void* elem_set, MsqError& err )
   const int NODE_BUFFER_SIZE = 27 * ELEM_BUFFER_SIZE; 
   sidl::array<void*> elements( alloc_sidl_vector<void*>( ELEM_BUFFER_SIZE ) );
   sidl::array<void*>    nodes( alloc_sidl_vector<void*>( NODE_BUFFER_SIZE ) );
-  sidl::array<int>    offsets( alloc_sidl_vector<int  >( ELEM_BUFFER_SIZE ) );
+  sidl::array<int>    offsets( alloc_sidl_vector<int  >( ELEM_BUFFER_SIZE+1 ) );
   void* iter = 0;
  
   try {
