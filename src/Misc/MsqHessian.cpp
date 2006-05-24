@@ -394,14 +394,54 @@ void MsqHessian::compute_preconditioner(MsqError &/*err*/)
     //           [0         pre[1][1] 0        ]
     //           [0         0         pre[2][2]]
 
+    //If the first method of calculating a preconditioner fails,
+    // use the diagonal method.
+    bool use_diag = false;
+    
     if ((*diag_block)[0][0] == 0.0) {
-      // Either this is a fixed vertex or the diagonal block is not
-      // invertible.  Switch to the diagonal preconditioner in this
-      // case.
+      use_diag = true;
+    }
+    else {
+      mPreconditioner[m][0][0] = 1.0 / (*diag_block)[0][0];
+      mPreconditioner[m][0][1] = (*diag_block)[0][1] *
+          mPreconditioner[m][0][0];
+      mPreconditioner[m][0][2] = (*diag_block)[0][2] *
+          mPreconditioner[m][0][0];
+      sum = ((*diag_block)[1][1] -
+             (*diag_block)[0][1] * mPreconditioner[m][0][1]);
+      if(fabs(sum)<=MSQ_DBL_MIN)
+        use_diag = true;
+      else{
+        mPreconditioner[m][1][1] = 1.0 / sum;
+        
+        tmp = (*diag_block)[1][2] - 
+            (*diag_block)[0][2] * mPreconditioner[m][0][1];
+
+        mPreconditioner[m][1][2] = mPreconditioner[m][1][1] * tmp;
+
+        sum =  ((*diag_block)[2][2] - 
+                (*diag_block)[0][2]*mPreconditioner[m][0][2] - 
+                mPreconditioner[m][1][2]*tmp);
+
+        if(fabs(sum)<= MSQ_DBL_MIN)
+          use_diag = true;
+        else
+          mPreconditioner[m][2][2] = 1.0 / sum;
+      
+      }
+      
+    }
+    if(use_diag){
+    
+        // Either this is a fixed vertex or the diagonal block is not
+        // invertible.  Switch to the diagonal preconditioner in this
+        // case.
 
       sum = (*diag_block)[0][0] + (*diag_block)[1][1] + (*diag_block)[2][2];
-      if (sum != 0.0) 
+      if (fabs(sum) > MSQ_DBL_MIN) 
         sum = 1 / sum;
+      else
+        sum = 0.0;
       
       mPreconditioner[m][0][0] = sum;
       mPreconditioner[m][0][1] = 0.0;
@@ -410,25 +450,7 @@ void MsqHessian::compute_preconditioner(MsqError &/*err*/)
       mPreconditioner[m][1][2] = 0.0;
       mPreconditioner[m][2][2] = sum;
     }
-    else {
-      mPreconditioner[m][0][0] = 1.0 / (*diag_block)[0][0];
-      mPreconditioner[m][0][1] = (*diag_block)[0][1] * mPreconditioner[m][0][0];
-      mPreconditioner[m][0][2] = (*diag_block)[0][2] * mPreconditioner[m][0][0];
-
-      mPreconditioner[m][1][1] = 
-        1.0 / ((*diag_block)[1][1] - 
-               (*diag_block)[0][1] * mPreconditioner[m][0][1]);
-     
-      tmp = (*diag_block)[1][2] - 
-            (*diag_block)[0][2] * mPreconditioner[m][0][1];
-
-      mPreconditioner[m][1][2] = mPreconditioner[m][1][1] * tmp;
-
-      mPreconditioner[m][2][2] = 
-        1.0 / ((*diag_block)[2][2] - 
-               (*diag_block)[0][2]*mPreconditioner[m][0][2] - 
-               mPreconditioner[m][1][2]*tmp);
-    }
+    
 #endif
   }
 }
