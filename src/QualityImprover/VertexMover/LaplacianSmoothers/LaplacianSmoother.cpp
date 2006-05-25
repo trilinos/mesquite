@@ -91,7 +91,8 @@ void LaplacianSmoother::optimize_vertex_positions(PatchData &pd,
   // does the Laplacian smoothing
   MsqFreeVertexIndexIterator free_iter(&pd, err);  MSQ_ERRRTN(err);
   free_iter.reset();
-  free_iter.next();
+  if (!free_iter.next())
+    return; // no free vertices !!!!
     //m is the free vertex.
   size_t m=free_iter.value();
   msq_std::vector<size_t> vert_indices;
