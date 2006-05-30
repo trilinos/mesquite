@@ -138,6 +138,7 @@ size_t MeshImplTags::handle( const msq_std::string& name, MsqError& err ) const
     if (tagList[i] && tagList[i]->desc.name == name)
       return i+1;
       
+  MSQ_SETERR(err)( MsqError::TAG_NOT_FOUND );
   return 0;
 }
 

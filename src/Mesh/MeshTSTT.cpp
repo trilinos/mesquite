@@ -1530,6 +1530,9 @@ TagHandle MeshTSTTImpl::tag_get( const msq_std::string& name, MsqError& err )
   catch(::TSTTB::Error &tstt_err) {
     if (tstt_err.getErrorType() != TSTTB::ErrorType_TAG_NOT_FOUND) {
       MSQ_SETERR(err)( process_tstt_error(tstt_err), MsqError::INTERNAL_ERROR );
+    } 
+    else {
+      MSQ_SETERR(err)( name, MsqError::TAG_NOT_FOUND );
     }
     return 0;
   }

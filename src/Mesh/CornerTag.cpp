@@ -70,9 +70,17 @@ TagHandle CornerTagHandles::get_handle( Mesh* mesh, unsigned corners, MsqError& 
     msq_std::string name = tagName + numbuf;
 
       // Try to get existing handle
-    cornerHandles[corners] = mesh->tag_get( name, err );  MSQ_ERRZERO(err);
+    cornerHandles[corners] = mesh->tag_get( name, err );  
+    if (err.error_code() == MsqError::TAG_NOT_FOUND) {
+      err.clear();
+      cornerHandles[corners] = mesh->tag_create( name, tagType, tagLen * corners, 0, err );
+      MSQ_ERRZERO(err);
+    } 
+    else if (MSQ_CHKERR(err)) {
+      return 0;
+    }
       // If got handle, make sure type is correct
-    if (cornerHandles[corners])
+    else if (cornerHandles[corners])
     {
       Mesh::TagType type;
       unsigned size;
@@ -84,12 +92,6 @@ TagHandle CornerTagHandles::get_handle( Mesh* mesh, unsigned corners, MsqError& 
         MSQ_SETERR(err)("Invalid tag type", MsqError::INVALID_ARG );
         return 0;
       }
-    }
-      // If didn't get handle, try to create it
-    else 
-    {
-      cornerHandles[corners] = mesh->tag_create( name, tagType, tagLen * corners, 0, err );
-      MSQ_ERRZERO(err);
     }
   }
   
