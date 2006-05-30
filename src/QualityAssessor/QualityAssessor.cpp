@@ -161,7 +161,7 @@ double QualityAssessor::Assessor::get_rms() const
 
 double QualityAssessor::Assessor::get_stddev() const
 {
-  double sqr = sqrSum/count - sum*sum/((double)count*count);
+  double sqr = count ? sqrSum/count - sum*sum/((double)count*count) : 0;
   return sqr < 0 ? 0 : sqrt(sqr);
 }
 
