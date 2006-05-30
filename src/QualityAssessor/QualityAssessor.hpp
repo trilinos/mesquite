@@ -102,13 +102,15 @@ namespace Mesquite
       type of function used in conjunction with QualityMetric to compute mesh quality */ 
     enum QAFunction {
        NO_FUNCTION = 0,
-       AVERAGE=1,
-       HISTOGRAM=2,
-       MAXIMUM=4, 
-       MINIMUM=8,
-       RMS=16,
-       STDDEV=32,
-       ALL_MEASURES=255
+       AVERAGE=1,        /**< Include average metric value in summary report. */
+       HISTOGRAM=2,      /**< Include histogram of metric values in summary report. */
+       MAXIMUM=4,        /**< Include minimum metric value in summary report. */
+       MINIMUM=8,        /**< Include maximum metric value in summary report. */
+       RMS=16,           /**< Include root-mean-squared of metric values in summary report. */
+       STDDEV=32,        /**< Include standard deviation of metric values in summary report. */
+       ALL_MEASURES=255, /**< Include all statistics in summary report. */
+       TAG_DATA=256      /**< Store metric values in element/vertex tags for visualization
+                              with an external tool */
     };
     
     static msq_std::string get_QAFunction_name(enum QualityAssessor::QAFunction);
@@ -193,6 +195,13 @@ namespace Mesquite
       //! Reset calculated data 
     MESQUITE_EXPORT void reset_data();
     
+    MESQUITE_EXPORT void tag_inverted_elements( Mesh* mesh, MsqError& err );
+    MESQUITE_EXPORT void tag_inverted_elements( Mesh* mesh, msq_std::string tagname, MsqError& err );
+    MESQUITE_EXPORT void dont_tag_inverted_elements()
+      { tagInverted = false; }
+    MESQUITE_EXPORT bool tagging_inverted_elements() const
+      { return tagInverted; }
+    
     /** \brief Per-metric QualityAssessor data
      *
      * The Assessor class holds QualityAssessor data for
@@ -258,6 +267,9 @@ namespace Mesquite
           */
         void calculate_histogram_range();
         
+        TagHandle get_tag_handle( Mesh* mesh, MsqError& err );
+        bool write_to_tag() const { return 0 != (funcFlags & TAG_DATA); }
+        
       private:
       
         friend class QualityAssessor;
@@ -282,6 +294,10 @@ namespace Mesquite
         double histMin;   //< Lower bound of histogram
         double histMax;   //< Upper bound of histogram
         msq_std::vector<int> histogram;
+        
+        /** Cached tag handle */
+        TagHandle tagHandle;
+        bool haveTagHandle;
     };    
         
     /** \brief Request summary data for a specific QualityMetric 
@@ -329,6 +345,9 @@ namespace Mesquite
     msq_std::list<Assessor>::iterator stoppingMetric;
       /** Value to use as return value for loop_over_mesh */
     QAFunction stoppingFunction;
+    
+    bool tagInverted;
+    TagHandle invertedTag;
   };
 
   

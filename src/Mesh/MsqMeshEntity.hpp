@@ -140,9 +140,9 @@ namespace Mesquite
 
     enum ElementOrientation
     {
-      UNDEFINED_ORIENTATION,
-      INVERTED_ORIENTATION,
-      VALID_ORIENTATION
+      UNDEFINED_ORIENTATION = 1,
+      INVERTED_ORIENTATION = 2,
+      VALID_ORIENTATION = 0
     };
     
       //!Returns INVERTED_ORIENTATION if the element is inverted (ie,

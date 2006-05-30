@@ -67,7 +67,8 @@ QualityAssessor::QualityAssessor(msq_std::string name) :
   outputStream( msq_stdio::cout ),
   printSummary( true ),
   stoppingMetric( assessList.end() ),
-  stoppingFunction( NO_FUNCTION )
+  stoppingFunction( NO_FUNCTION ),
+  tagInverted(false)
 { 
   MsqError err;
   set_patch_type( PatchData::ELEMENT_PATCH, err, 0 );
@@ -80,7 +81,8 @@ QualityAssessor::QualityAssessor(msq_stdio::ostream& stream, msq_std::string nam
   outputStream( stream ),
   printSummary( true ),
   stoppingMetric( assessList.end() ),
-  stoppingFunction( NO_FUNCTION )
+  stoppingFunction( NO_FUNCTION ),
+  tagInverted(false)
 { 
   MsqError err;
   set_patch_type( PatchData::ELEMENT_PATCH, err, 0 );
@@ -96,7 +98,8 @@ QualityAssessor::QualityAssessor( QualityMetric* metric,
   outputStream( msq_stdio::cout ),
   printSummary( true ),
   stoppingMetric( assessList.end() ),
-  stoppingFunction( (QAFunction)0 )
+  stoppingFunction( (QAFunction)0 ),
+  tagInverted(false)
 { 
   set_patch_type( PatchData::GLOBAL_PATCH, err, 0 );
   add_quality_assessment( metric, function, err );
@@ -114,7 +117,8 @@ QualityAssessor::QualityAssessor( QualityMetric* metric,
   outputStream( stream ),
   printSummary( true ),
   stoppingMetric( assessList.end() ),
-  stoppingFunction( (QAFunction)0 )
+  stoppingFunction( (QAFunction)0 ),
+  tagInverted(false)
 { 
   set_patch_type( PatchData::GLOBAL_PATCH, err, 0 );
   add_quality_assessment( metric, function, err );
@@ -279,6 +283,32 @@ void QualityAssessor::add_histogram_assessment( QualityMetric* qm,
   assessor->histogram.resize( intervals + 2 );
 } 
 
+void QualityAssessor::tag_inverted_elements( Mesh* mesh, MsqError& err )
+  {  tag_inverted_elements( mesh, "inverted", err ); }
+
+void QualityAssessor::tag_inverted_elements( Mesh* mesh, msq_std::string name, MsqError& err )
+{
+  tagInverted = false;
+  invertedTag = mesh->tag_get( name, err );
+  if (err.error_code() == MsqError::TAG_NOT_FOUND) {
+    err.clear();
+    invertedTag = mesh->tag_create( name, Mesh::INT, 1, 0, err );
+  }
+  MSQ_ERRRTN(err);
+  
+  Mesh::TagType type;
+  msq_std::string junk;
+  unsigned tag_len;
+  mesh->tag_properties( invertedTag, junk, type, tag_len, err ); MSQ_ERRRTN(err);
+  if (type != Mesh::INT || tag_len != 1) {
+     MSQ_SETERR(err)( MsqError:: TAG_ALREADY_EXISTS,
+     "Tag \"%s\" exists with incorrect type or length.",
+     name.c_str());
+    return;
+  }
+  
+  tagInverted = true;
+}
 
 
 /*! 
@@ -302,7 +332,7 @@ double QualityAssessor::loop_over_mesh( Mesh* mesh,
   PatchData local_patch;
   local_patch.set_mesh( mesh );
   local_patch.set_domain( domain );
-  
+ 
     // Check for any metrics for which a histogram is to be 
     // calculated and for which the user has not specified 
     // minimum and maximum values.  
@@ -372,6 +402,13 @@ double QualityAssessor::loop_over_mesh( Mesh* mesh,
               ++indeterminateCount;
             }
             MSQ_ERRZERO(err);
+            
+            if (tagInverted) {
+              Mesh::ElementHandle h = pd->get_element_handles_array()[i];
+              int val = elem_orientation;
+              mesh->tag_set_element_data( invertedTag, 1, &h, &val, err );
+              MSQ_ERRZERO(err);
+            }
           }
           
           for (iter = assessList.begin(); iter != elem_end; ++iter)
@@ -388,6 +425,12 @@ double QualityAssessor::loop_over_mesh( Mesh* mesh,
               iter->add_value(value);
               if (!valid) 
                 iter->add_invalid_value();
+                
+              if (iter->write_to_tag()) {
+                Mesh::ElementHandle h = pd->get_element_handles_array()[i];
+                TagHandle t = iter->get_tag_handle( mesh, err ); MSQ_ERRZERO(err);
+                mesh->tag_set_element_data( t, 1, &h, &value, err ); MSQ_ERRZERO(err);
+              }
             }
               // If second pass, only do metrics for which the
               // histogram hasn't been calculated yet.
@@ -472,6 +515,12 @@ double QualityAssessor::loop_over_mesh( Mesh* mesh,
               iter->add_value(value);
               if (!valid)
                 iter->add_invalid_value();
+                
+              if (iter->write_to_tag()) {
+                Mesh::VertexHandle h = pd->get_vertex_handles_array()[i];
+                TagHandle t = iter->get_tag_handle( mesh, err ); MSQ_ERRZERO(err);
+                mesh->tag_set_vertex_data( t, 1, &h, &value, err ); MSQ_ERRZERO(err);
+              }
             }
               // If second pass, only do metrics for which the
               // histogram hasn't been calculated yet.
@@ -560,7 +609,8 @@ QualityAssessor::Assessor::Assessor( QualityMetric* metric )
     funcFlags(0),
     haveHistRange(false),
     histMin(1.0),
-    histMax(0.0)
+    histMax(0.0),
+    haveTagHandle(false)
 {
   reset_data();
 }
@@ -933,6 +983,44 @@ void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream ) co
   stream << msq_stdio::endl;
 }
  
+TagHandle QualityAssessor::Assessor::get_tag_handle( Mesh* mesh, MsqError& err )
+{
+  if (!haveTagHandle) {
+    msq_std::string name = qualMetric->get_name();
+      // remove spaces from name
+    msq_std::string::size_type idx = 0;
+    while ((idx = name.find( " ", idx)) != name.npos)
+      name.erase( idx, 1 );
+      // try to get the tag handle
+    tagHandle = mesh->tag_get( name, err );
+      // if doesn't exist, create it
+    if (err.error_code() == MsqError::TAG_NOT_FOUND) {
+      err.clear();
+      tagHandle = mesh->tag_create( name, Mesh::DOUBLE, 1, 0, err );
+    }
+    if (MSQ_CHKERR(err))
+      return tagHandle;
+    
+      // check that tag is correct data type
+    Mesh::TagType type;
+    unsigned length;
+    msq_std::string junk;
+    mesh->tag_properties( tagHandle, junk, type, length, err );
+    if (MSQ_CHKERR(err))
+      return tagHandle;
+
+    if (type != Mesh::DOUBLE || length != 1) {
+      MSQ_SETERR(err)( MsqError:: TAG_ALREADY_EXISTS,
+       "Tag \"%s\" exists with incorrect type or length.",
+       name.c_str());
+      return tagHandle;
+    }
+    
+    haveTagHandle = true;
+  }
+  
+  return tagHandle;
+}   
 
 
 } //namespace Mesquite
