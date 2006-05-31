@@ -106,6 +106,7 @@ size_t MeshImplTags::create( const TagDescription& desc,
     return 0;
   }
   
+  err.clear();
   if (desc.size == 0 || (desc.size % size_from_tag_type(desc.type)) != 0)
   {
     MSQ_SETERR(err)(MsqError::INVALID_ARG);
@@ -138,7 +139,6 @@ size_t MeshImplTags::handle( const msq_std::string& name, MsqError& err ) const
     if (tagList[i] && tagList[i]->desc.name == name)
       return i+1;
       
-  MSQ_SETERR(err)( MsqError::TAG_NOT_FOUND );
   return 0;
 }
 

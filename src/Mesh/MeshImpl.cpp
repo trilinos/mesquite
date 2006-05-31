@@ -1190,7 +1190,10 @@ void MeshImpl::read_vtk( const char* filename, MsqError &err )
 
     // Convert tag data for fixed nodes to internal bitmap
   TagHandle handle = tag_get( "fixed", err );
-  if (!handle || MSQ_CHKERR(err)) return;
+  if (!handle || MSQ_CHKERR(err)) {
+    err.clear();
+    return;
+  }
   
   const TagDescription& tag_desc = myTags->properties( (size_t)handle, err ); MSQ_ERRRTN(err);
   bool havedata = myTags->tag_has_vertex_data( (size_t)handle, err ); MSQ_ERRRTN(err);
@@ -2376,6 +2379,8 @@ void MeshImpl::tag_delete( TagHandle handle, MsqError& err )
 TagHandle MeshImpl::tag_get( const msq_std::string& name, MsqError& err )
 {
   size_t index = myTags->handle( name, err ); MSQ_ERRZERO(err);
+  if (!index) 
+    MSQ_SETERR(err)( MsqError::TAG_NOT_FOUND, "could not find tag \"%s\"", name.c_str() );
   return (TagHandle)index;
 }
 
