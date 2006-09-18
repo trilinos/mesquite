@@ -1,3 +1,14 @@
+/**
+ * Copyright 2006 Sandia Corporation.  Under the terms of Contract
+ * DE-AC04-94AL85000 with Sandia Coroporation, the U.S. Government
+ * retains certain rights in this software.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ */
 //========================================================
 // TSTTB PACKAGE --
 // TSTT UTITLIES COMMON ACROSS INTERFACES
@@ -52,6 +63,12 @@ package TSTTB version 0.7
       void get(out ErrorType err, out string description);
       string getDescription();
       void echo(in string label);   // prints label and then description string to stderr 
+   };
+
+   enum StorageOrder {
+      BLOCKED,
+      INTERLEAVED,
+      UNDETERMINED
    };
 
 

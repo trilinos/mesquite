@@ -1,3 +1,14 @@
+/**
+ * Copyright 2006 Sandia Corporation.  Under the terms of Contract
+ * DE-AC04-94AL85000 with Sandia Coroporation, the U.S. Government
+ * retains certain rights in this software.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ */
 import TSTTB;
 
 package TSTTR version 0.01
@@ -105,8 +116,32 @@ package TSTTR version 0.01
  */
     void removeRelations(in opaque geom, in opaque mesh)
       throws TSTTB.Error;
+
+//==========================setClassification====================
+/**
+ *   add relation data between geometry and mesh
+ */
+    void setClassification(in opaque geom, in opaque mesh,
+                           in opaque geom_entity, in opaque mesh_set,
+                           in bool tag_individual_entities)
+      throws TSTTB.Error;
+
+//==========================setMeshClassification====================
+/**
+ *   add relation data between geometry and mesh entities, building sets
+ *   too, if necessary
+ */
+    void setMeshClassification(in opaque geom, in opaque mesh,
+                               in opaque geom_entity, 
+                               in array<opaque> mesh_entities,
+                               in int mesh_entities_size,
+                               in bool tag_individual_entities)
+      throws TSTTB.Error;
   }
 
+   class Factory {
+     static Relate newRelate(in string option) throws TSTTB.Error;
+   };
 }  // end of TSTTR package
 
 
