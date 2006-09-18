@@ -358,10 +358,9 @@ void* DomainTSTT::geom_from_mesh( void* mesh_ent_handle ) const
                                       oneMeshHandle, 1,
                                       geomHandles, junk );
   // get dimension
-  junk = 1;
-  topoIface.gentityGetType( geomHandles, 1, oneTypeOut, junk );
-                                      
-  return oneTypeOut[0] == TSTTG::GentityType_GREGION ? 0 : geomHandles.get(0);
+  void* geom_handle = geomHandles.get(0);
+  TSTTG::GentityType type = topoIface.getEntType( geom_handle );
+  return type == TSTTG::GentityType_GREGION ? 0 : geom_handle;
 }
 
 void DomainTSTT::geom_from_mesh( void* const* handles,
@@ -480,18 +479,9 @@ GeomTSTTCommon::~GeomTSTTCommon() {}
 void GeomTSTTCommon::move_to( void* geom, Vector3D& coord ) const
                             throw ( TSTTB::Error )
 {
-    // going to assume this in the following reinterpret_cast, so
-    // check to make sure it is true
-  assert( sizeof(Vector3D) == 3*sizeof(double) );
-  
-  memcpy( convert_from_sidl_vector(positionsIn), &coord, 3*sizeof(double) );
-  positionsOut = convert_to_sidl_vector( reinterpret_cast<double*>(&coord), 3 );
-  *convert_from_sidl_vector( geomHandles ) = geom;
-
-  int junk = 3;
-  geomIface.gentityClosestPoint( geomHandles,  1,
-                                 positionsIn,  3,
-                                 positionsOut, junk );
+  double x, y, z;
+  geomIface.getEntClosestPt( geom, coord[0], coord[1], coord[2], x, y, z );
+  coord.set( x, y, z );
 }
 
  
@@ -499,18 +489,9 @@ void GeomTSTTCommon::move_to( void* geom, Vector3D& coord ) const
 void GeomTSTTCommon::normal( void* geom, Vector3D& coord ) const
                             throw ( TSTTB::Error )
 {
-    // going to assume this in the following reinterpret_cast, so
-    // check to make sure it is true
-  assert( sizeof(Vector3D) == 3*sizeof(double) );
-  
-  memcpy( convert_from_sidl_vector(positionsIn), &coord, 3*sizeof(double) );
-  normalsOut = convert_to_sidl_vector( reinterpret_cast<double*>(&coord), 3 );
-  *convert_from_sidl_vector( geomHandles ) = geom;
-
-  int junk;
-  geomIface.gentityNormal( geomHandles, 1,
-                           positionsIn, 3,
-                           normalsOut,  junk );
+  double i, j, k;
+  geomIface.getEntNrmlXYZ( geom, coord[0], coord[1], coord[2], i, j, k );
+  coord.set( i, j, k );
 }
  
 void GeomTSTTCommon::normal( void* geom, Vector3D coords[], unsigned count ) const
@@ -541,7 +522,8 @@ void GeomTSTTCommon::normal( sidl::array<void*>& geom_handles,
   normalsOut = convert_to_sidl_vector( reinterpret_cast<double*>(coords), 3*count );
   
   int junk;
-  geomIface.gentityNormal( geom_handles, count,
+  geomIface.getArrNrmlXYZ( geom_handles, count,
+                           TSTTB::StorageOrder_INTERLEAVED,
                            positionsIn, 3*count,
                            normalsOut,  junk );
 }
@@ -552,20 +534,10 @@ void GeomTSTTCommon::closest_and_normal( void* geom,
                                          Vector3D& normal ) const
                                        throw (TSTTB::Error)
 {
-    // going to assume this in the following reinterpret_cast, so
-    // check to make sure it is true
-  assert( sizeof(Vector3D) == 3*sizeof(double) );
-  
-  memcpy( convert_from_sidl_vector(positionsIn), &position, 3*sizeof(double) );
-  positionsOut = convert_to_sidl_vector( reinterpret_cast<double*>(&closest), 3 );
-  normalsOut = convert_to_sidl_vector( reinterpret_cast<double*>(&normal), 3 );
-  *convert_from_sidl_vector( geomHandles ) = geom;
-  
-  int junk1, junk2;
-  geomIface.gentityClosestPointAndNormal( geomHandles,  1,
-                                          positionsIn,  3,
-                                          positionsOut, junk1,
-                                          normalsOut,   junk2 );
+  double x, y, z, i, j, k;
+  geomIface.getEntNrmlPlXYZ( geom, position[0], position[1], position[2], x, y, z, i, j, k );
+  closest.set( x, y, z );
+  normal.set( i, j, k );
 }
 
                          
@@ -583,7 +555,7 @@ void GeomTSTTCommon::get_dimension( sidl::array<void*>& geom_handle,
 {
   sidl::array<TSTTG::GentityType> types = types.create1d( count );
   int junk = count;
-  topoIface.gentityGetType( geom_handle, count, types, junk );
+  topoIface.getArrType( geom_handle, count, types, junk );
   for (unsigned i = 0; i < count; ++i)
     dof_out[i] = types.get(i);
 }    
