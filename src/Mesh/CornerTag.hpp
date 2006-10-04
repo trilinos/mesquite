@@ -33,6 +33,7 @@
 #  include <vector>
 #endif
 #include <string>
+#include <assert.h>
 
 #include "MeshInterface.hpp"
 #include "MsqError.hpp"
