@@ -19,3 +19,9 @@
 
 /* System has inttypes.h */
 #undef HAVE_INTTYPES_H
+
+/* System has finite */
+#undef HAVE_FINITE
+
+/* System has _Isfinite */
+#undef HAVE__ISFINITE
