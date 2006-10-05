@@ -29,10 +29,20 @@
 
 #include <cppunit/TestListener.h>
 #include <cppunit/TestSuite.h>
+#include "Mesquite.hpp"
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#include <string.h>
+#include <stack.h>
+#include <vector.h>
+#else
 #include <string>
 #include <stack>
 #include <vector>
+#ifdef MSQ_USE_OLD_IO_HEADERS
+#include <iostream.h>
+#else
 #include <iostream>
+#endif
 
 namespace Mesquite
 {
@@ -78,12 +88,12 @@ namespace Mesquite
     inline Mesquite::Timer* pop_timer();
     
   private:
-    std::vector<CppUnit::Test*> mTests;
-    std::stack<Mesquite::Timer*> mTimers;
-    std::stack<int> failureCounters;
-    std::vector<CppUnit::TestSuite::Key> completedSuites;
-    std::vector<std::string> failedTestNames;
-    std::ostream* mOut;
+    msq_std::vector<CppUnit::Test*> mTests;
+    msq_std::stack<Mesquite::Timer*> mTimers;
+    msq_std::stack<int> failureCounters;
+    msq_std::vector<CppUnit::TestSuite::Key> completedSuites;
+    msq_std::vector<msq_std::string> failedTestNames;
+    msq_stdio::ostream* mOut;
     CppUnit::TestResult* myResult;
     unsigned int indentLevel;
     unsigned int numSuccesses;

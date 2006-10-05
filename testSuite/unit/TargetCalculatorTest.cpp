@@ -56,14 +56,27 @@ Unit testing of various TargetCalculator concrete classes.
 
 #include "cppunit/extensions/HelperMacros.h"
 #include "MsqFreeVertexIndexIterator.hpp"
+
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#include <list.h>
+#include <iterator.h>
+#include <limits.h>
+#else
 #include <list>
 #include <iterator>
 #include <limits>
+#endif
 
 using namespace Mesquite;
+
+#ifdef MSQ_USE_OLD_IO_HEADERS
+#include <iostream.h>
+#else
+#include <iostream>
 using std::cout;
 using std::endl;
 using std::cerr;
+#endif
 
 class TargetCalculatorTest : public CppUnit::TestFixture,
                              public Mesquite::WTargetCalculator
@@ -390,7 +403,7 @@ void TargetCalculatorTest::test_optimize_vertex_positions_quads()
 
 void TargetCalculatorTest::test_local_patches()
 {
-  const double EPS = std::numeric_limits<double>::epsilon();
+  const double EPS = msq_std::numeric_limits<double>::epsilon();
   
     // Could use any file...
   const char* file_name = "../../meshFiles/3D/VTK/large_box_hex_1000.vtk";

@@ -31,7 +31,6 @@
   \author Michael Brewer
   \date   2002-06-9
 */
-#include <vector>
 #include "ConditionNumberQualityMetric.hpp"
 #include <math.h>
 #include "Vector3D.hpp"

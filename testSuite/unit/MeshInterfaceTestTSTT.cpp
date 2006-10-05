@@ -45,17 +45,19 @@
 #include "cppunit/extensions/HelperMacros.h"
 #include "cppunit/SignalException.h"
 
+#ifdef MSQ_USE_OLD_IO_HEADERS
+#include <iostream.h>
+#else
 #include <iostream>
-
+using std::cout;
+using std::cerr;
+using std::endl;
+#endif
 
 //kkc 040203 Add a compile time switch to determine the TSTT implementation to use
 #ifdef MSQ_USE_TSTT_OVERTURE_IMPL
 #include "TSTT_Overture_Mesh.hh"
 #endif
-
-using std::cout;
-using std::cerr;
-using std::endl;
 
 class MeshInterfaceTestTSTT : public CppUnit::TestFixture
 {

@@ -55,7 +55,6 @@ Patches must be allocated and dealocated by the caller.
 #include "PlanarDomain.hpp"
 
 #include <math.h>
-#include <iostream>
 
 #include "cppunit/extensions/HelperMacros.h"
 

@@ -66,13 +66,25 @@ Unit testing of various functions in the ObjectiveFunction class.
 
 #include "cppunit/extensions/HelperMacros.h"
 #include "MsqFreeVertexIndexIterator.hpp"
+
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#include <list.h>
+#include <iterator.h>
+#else
 #include <list>
 #include <iterator>
+#endif
 
-using namespace Mesquite;
+#ifdef MSQ_USE_OLD_IO_HEADERS
+#include <iostream.h>
+#else
+#include <iostream>
 using std::cout;
 using std::endl;
 using std::cerr;
+#endif
+
+using namespace Mesquite;
 
 class ObjectiveFunctionTest : public CppUnit::TestFixture
 {

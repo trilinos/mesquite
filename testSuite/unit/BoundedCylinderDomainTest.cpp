@@ -3,11 +3,22 @@
 #include "MeshImpl.hpp"
 #include "MsqVertex.hpp"
 #include <cppunit/extensions/HelperMacros.h>
-#include <vector>
-#include <algorithm>
 #include <stdlib.h>
 #include <stdio.h>
+
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#  include <vector.h>
+#  include <algorithm.h>
+#else
+#  include <vector>
+#  include <algorithm>
+#endif
+
+#ifdef MSQ_USE_OLD_IO_HEADERS
+#include <iostream.h>
+#else
 #include <iostream>
+#endif
 
 const double EPSILON = 1e-6;
 #define ASSERT_VECTORS_EQUAL( A, B ) \
@@ -213,7 +224,7 @@ void BoundedCylinderDomainTest::test_create_curve_from_mesh()
   fclose( file );
   
     // read the file into a Mesh object
-  MsqPrintError err(std::cout);
+  MsqPrintError err(msq_stdio::cout);
   MeshImpl mesh;
   mesh.read_vtk( filename, err );
   remove( filename );

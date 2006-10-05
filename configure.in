@@ -26,44 +26,46 @@ AC_CANONICAL_SYSTEM
 # otherwise cannot tell if user has CXXFLAGS defined already or if config
 # set to a default value.
 #------------------------------------------------------------------------------
-AC_ARG_ENABLE( [release], [[
-  --enable-release                (default), implies:
+AC_ARG_ENABLE( [release], 
+  [AC_HELP_STRING([--enable-release],[(default), implies:
                                   --enable-compile-optimized
-                                  --disable-debug-assertions]],
+                                  --disable-debug-assertions])],
   [MSQ_DO_RELEASE="$enableval"], [MSQ_DO_RELEASE=""] )
 
 AC_ARG_ENABLE( [debug], 
-[[  --enable-debug                  Developer build, implies:
-                                  --enable-debug-symbols
-                                  --enable-debug-output=1,2
-                                  --enable-trap-fpe]], 
+  [AC_HELP_STRING([--enable-debug],[Developer build, implies:
+                                 --enable-debug-symbols
+                                 --enable-debug-output=1,2
+                                 --enable-trap-fpe])], 
   [MSQ_DO_DEBUG="$enableval"], [MSQ_DO_DEBUG=""] )
 
-AC_ARG_ENABLE( [compile-optimized], [[
-  --enable-compile-optimized      Compile optimized (-O2)]],
+AC_ARG_ENABLE( [compile-optimized],
+  [AC_HELP_STRING([--enable-compile-optimized],[Compile optimized (-O2)])],
   [MSQ_DO_OPTIMIZE="$enableval"], [MSQ_DO_OPTIMIZE=""] )
 
 AC_ARG_ENABLE( [debug-symbols], 
-[[  --enable-debug-symbols          Compile with debug symbols (-g) ]],
+  [AC_HELP_STRING([--enable-debug-symbols],[Compile with debug symbols (-g)])],
   [MSQ_DEBUG_SYMBOLS="$enableval"], [MSQ_DEBUG_SYMBOLS=""] )
 
 AC_ARG_ENABLE( [debug-assertions], 
-[[  --disable-debug-assertions      Compile without asserts (-DNDEBUG) ]],
+  [AC_HELP_STRING([--disable-debug-assertions],[Compile without asserts (-DNDEBUG)])],
   [MSQ_DEBUG_ASSERTS="$enableval"], [MSQ_DEBUG_ASSERTS=""] )
 
 AC_ARG_ENABLE( [debug-output], 
-[[  --enable-debug-output[=n,m,...] Enable debug output.  Optionally specify 
-                                  comma-separated list of flags to enable.  
-                                  --enable-debug implies --enable-debug-output=1,2 ]],
+  [AC_HELP_STRING([--enable-debug-output(=n,m,...)],
+                  [Enable debug output.  Optionally specify comma-separated 
+                   list of flags to enable.  --enable-debug implies 
+                   --enable-debug-output=1,2])],
   [MSQ_DEBUG_OUT="$enableval"], [MSQ_DEBUG_OUT=""] )
 
 AC_ARG_ENABLE( [function-timers], 
-[[    --enable-function-timers        Enable function timers]], 
+  [AC_HELP_STRING([--enable-function-timers],[Enable function timers])], 
   [MSQ_DO_TIMERS="$enableval"], [MSQ_DO_TIMERS="no"] )
 
 AC_ARG_ENABLE( [trap-fpe], 
-[[    --enable-trap-fpe               Enable trapping of floating point exceptions.
-                                  Default is no unless --enable-debug.]], 
+  [AC_HELP_STRING([--enable-trap-fpe],
+                  [Enable trapping of floating point exceptions.
+                   Default is no unless --enable-debug.])], 
   [MSQ_TRAP_FPE="$enableval"], [MSQ_TRAP_FPE=""] )
 
 # If neather debug or release is specified, enable release
@@ -95,7 +97,6 @@ if test "$MSQ_DO_DEBUG" = "yes"; then
 fi
 
 # Construct compiler options from above configure options
-CXXFLAGS=
 if test "$MSQ_DO_OPTIMIZE" = "yes"; then
   CXXFLAGS="$CXXFLAGS -O2"
 fi
@@ -156,6 +157,8 @@ AC_CHECK_FUNCS( clock, [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_CLOCK"] )
 AC_CHECK_FUNCS( times, [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_TIMES"] )
 LIBS=-lm
 AC_CHECK_FUNCS( cbrt,  [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_CBRT"] )
+AC_CHECK_FUNCS( finite, AC_DEFINE(HAVE_FINITE, [1], [System has finite]) )
+AC_CHECK_FUNCS( _Isfinite, AC_DEFINE(HAVE__ISFINITE, [1], [System has _Isfinite]) )
 
 # Use C++ compiler because C allows undefined functions, so these
 # checks don't achive much if compiled as C.  Also, if C and C++
@@ -187,8 +190,8 @@ MSQ_CPLUSPLUS_HEADERS
 # Try to find an archiver that correctly handles C++ templates
 #-----------------------------------------------------------------------------
 CXX_ARCHIVER=
-AC_ARG_WITH( archiver, [
-  --with-archiver=ARG     Specify tool for creating static libraries], 
+AC_ARG_WITH( archiver, 
+ [AC_HELP_STRING([--with-archiver=ARG],[Specify tool for creating static libraries])], 
  [
  MSQ_TEST_ARCHIVER( [$withval], 
   [ CXX_ARCHIVER=$withval; AC_SUBST(CXX_ARCHIVER) ],
@@ -220,65 +223,45 @@ fi
 # Other build options
 #------------------------------------------------------------------------------
 
-AC_ARG_WITH(exodus,[[
-  --with-exodus[=DIR]     Enable exodusII support and specifiy directory
-  --without-exodus        Disable exodusII support (default)]],
+AC_ARG_WITH(exodus,
+  [AC_HELP_STRING([--with-exodus(=DIR)],
+                   [Enable exodusII support and specifiy directory])
+AC_HELP_STRING([--without-exodus],[Disable exodusII support (default)])],
   [EXODUS_ARG=${withval}],[EXODUS_ARG=no])
 
-AC_ARG_WITH(netcdf,[[
-  --with-netcdf[=DIR]     ExodusII requires NetCDF - defaults to values for 
-                          --with-exodus
-  --without-netcdf        Skip NetCDF check]],
-  [NETCDF_ARG=$withval], [NETCDF_ARG=])
+AC_ARG_WITH(netcdf,
+  [AC_HELP_STRING([--with-netcdf(=DIR)],
+                  [ExodusII requires NetCDF - defaults to values for --with-exodus])
+AC_HELP_STRING([--without-netcdf],[Skip NetCDF check])],
+  [NETCDF_ARG=$withval], 
+  [if test "xno" != "x$EXODUS_ARG"; then NETCDF_ARG=yes; else NETCDF_ARG=no; fi])
 
 AC_ARG_WITH(babel,
-[[  --with-babel[=DIR]      Specify directory where Babel exectuable and 
-                          SIDL headers/libs are installed.
-  --without-babel         Disable use of Babel/SIDL]],
+  [AC_HELP_STRING([--with-babel(=DIR)],
+                  [Specify directory where Babel exectuable and 
+                    SIDL headers/libs are installed.])
+AC_HELP_STRING([--without-babel],[Disable use of Babel/SIDL])],
   [BABEL_ARG=${withval}],[BABEL_ARG=])
 
 AC_ARG_ENABLE( [tstt],
-[[  --enable-tstt           Compile glue code for interfacing with TSTT implemenations.
-  --disable-tstt          Disable TSTT mesh glue code (DEFAULT).]],
+  [AC_HELP_STRING([--enable-tstt],
+                  [Compile glue code for interfacing with TSTT implemenations.])
+AC_HELP_STRING([--disable-tstt],[Disable TSTT mesh glue code (DEFAULT).])],
   [ TSTT_IFACE_ARG=${enableval}], [TSTT_IFACE_ARG=] )
 
-
 AC_ARG_WITH(tstt-mesh,
-[[  --with-tstt-mesh=[AOMD|MOAB|OVERTURE] Specify an mesh database implementing 
-                          the TSTT interface for use in testing.  This is not
-                          required for building Mesquite.  It is also necessary
-                          to specify the location of the corresponding TSTT 
-                          server with one of "--with-aomd=DIR", 
-                          "--with-moab=DIR" or "--with-overture=DIR".  If no
-                          parameter is specified, will default to the first
-                          option for which the location has been specified.
-  --without-tstt-mesh   Do not build tests that require TSTT. ]],
-[ WITH_TSTT_MESH_ARG=$withval ], [ WITH_TSTT_MESH_ARG= ] )
+ [AC_HELP_STRING([--with-tstt-mesh=DIR],
+ [Specify directory containing TSTT mesh implementation to use for testing.])],
+ [WITH_TSTT_MESH_ARG=$withval],[WITH_TSTT_MESH_ARG=no])
+ 
+AC_ARG_WITH(tstt-base,
+ [AC_HELP_STRING([--with-tstt-base=DIR],
+ [Specify directory containing TSTT core implementation for testing (default is tstt-mesh dir.)])],
+ [WITH_TSTT_BASE_ARG=$withval],[WITH_TSTT_BASE_ARG="$WITH_TSTT_MESH_ARG"])
 
-AC_ARG_WITH(aomd, 
-[[  --with-aomd=DIR         Root directory of AOMD installation.  Required
-                          for AOMD test, may be used for TSTT test ]] ,
-  [AOMD_ARG=${withval}],[AOMD_ARG=])
-  
-AC_ARG_WITH(moab, 
-[[  --with-moab=DIR         Root directory of MOAB installation.  Required
-                          for MDB test, may be used for TSTT test ]] ,
-  [MOAB_ARG=${withval}],[MOAB_ARG=])
-
-AC_ARG_WITH(overture, 
-[[  
-  --with-overture=DIR     Root directory of Overture installation.  Required
-                          for OVERTURE test, may be used for TSTT test ]] ,
-  [OVERTURE_ARG=${withval}],[OVERTURE_ARG=])
-
-AC_ARG_WITH(hdf5,
-[[  --with-hdf5=[DIR]       Specify path where HDF5 is installed.  libhdf5 may
-                          be required by MOAB. ]],
-  [HDF5_ARG=${withval}],[HDF5_ARG=])
-
-AC_ARG_WITH(cppunit,[[
-  --with-cppunit[=DIR]    Specify directory where CppUnit is installed.
-  --without-cppunit       Disable CppUnit tests]],
+AC_ARG_WITH(cppunit,
+  [AC_HELP_STRING([--with-cppunit(=DIR)],[Specify directory where CppUnit is installed.])
+AC_HELP_STRING([--without-cppunit],   [Disable CppUnit tests])],
   [CPPUNIT_ARG=${withval}], [CPPUNIT_ARG=])
 
 
@@ -286,173 +269,78 @@ AC_ARG_WITH(cppunit,[[
 # Configure different options
 #-------------------------------------------------------------------------------
 
-# Exodus configuration
-EXODUS_DIR=
-EXODUS_CFLAGS=
-EXODUS_LDFLAGS=
-if test "$EXODUS_ARG" = "yes"; then
-
- AC_CHECK_HEADER( [exodusII.h], 
-                  [EXODUS_CFLAGS="-DMSQ_USING_EXODUS"]
-                  [AC_MSG_ERROR("exodusII.h not found")]
-                )
- AC_CHECK_LIB( [exoIIv2c], 
-               [ex_open],
-               [EXODUS_LDFLAGS="-lexoIIv2c"],
-               [AC_MSG_WARN("No ExodusII library")]
-             )
-  
-elif test -n "$EXODUS_ARG" -a "$EXODUS_ARG" != "no"; then
-
-  EXODUS_DIR="$EXODUS_ARG" 
-  AC_CHECK_FILE( [${EXODUS_DIR}/include/exodusII.h], 
-                 [EXODUS_CFLAGS='-I$(EXODUS_DIR)/include -DMSQ_USING_EXODUS'], 
-                 [AC_MSG_ERROR("${EXODUS_DIR}/include/exodusII.h does not exist")] )
-  AC_CHECK_FILE( [${EXODUS_DIR}/lib/libexoIIv2c.a], 
-                 [EXODUS_LDFLAGS='-L$(EXODUS_DIR)/lib -lexoIIv2c'], 
-                 [AC_MSG_WARN("${EXODUS_DIR}/lib/libexoIIv2c.a does not exist")] )
-                 
-fi
 
 # NetCDF configuration
 NETCDF_DIR=
 NETCDF_INC=
 NETCDF_LNK=
-NETCDF_CXX_LNK=
 HAVE_NETCDF_H=no
-if test -z "$NETCDF_ARG"; then
+if test "xno" != "$NETCDF_ARG"; then
+  if test "xyes" != "$NETCDF_ARG"; then
+    NETCDF_DIR="$NETCDF_ARG"
+    if test -d "$NETCDF_DIR/include"; then
+      NETCDF_INC="-I$NETCDF_DIR/include"
+    elif test -d "$NETCDF_DIR/inc"; then
+      NETCDF_INC="-I$NETCDF_DIR/inc"
+    else
+      NETCDF_INC="-I$NETCDF_DIR"
+    fi
+    if test -d "$NETCDF_DIR/lib"; then
+      NETCDF_LNK="-L$NETCDF_DIR/lib"
+    else
+      NETCDF_LNK="-L$NETCDF_DIR"
+    fi
+  fi
+  
+  old_CPPFLAGS="$CPPFLAGS"
+  CPPFLAGS="$CPPFLAGS $NETCDF_INC"
   AC_CHECK_HEADER( [netcdf.h], [HAVE_NETCDF_H=yes], [HAVE_NETCDF_H=no] )
-  AC_CHECK_LIB( [netcdf], 
-                [nc_open],
-                [NETCDF_LNK=-lnetcdf] )
-  AC_LANG_PUSH(C++)
-  AC_CHECK_LIB( [netcdf_c++], 
-                [main],
-                [NETCDF_CXX_LNK=-lnetcdf_c++],
-                [],
-                [-lnetcdf] )
-  AC_LANG_POP(C++)
-elif test "$NETCDF_ARG" != "no"; then
-  NETCDF_DIR="$NETCDF_ARG"
-  AC_CHECK_FILE( [${NETCDF_DIR}/inc/netcdf.h],
-                 [NETCDF_INC='-I$(NETCDF_DIR)/inc'; HAVE_NETCDF_H=yes],
-                 [HAVE_NETCDF_H=no] )
-  AC_CHECK_FILE( [${NETCDF_DIR}/libnetcdf.a],
-                 [NETCDF_LNK='-L$(NETCDF_DIR) -lnetcdf'] )
-  AC_CHECK_FILE( [${NETCDF_DIR}/libnetcdf_c++.a],
-                 [NETCDF_CXX_LNK='-L$(NETCDF_DIR) -lnetcdf_c++ -lnetcdf'] )
+  CPPFLAGS="$old_CPPFLAGS"
+                 
+  old_LIBS="$LIBS"
+  LIBS="$LIBS $NETCDF_LNK"
+  AC_CHECK_LIB( [netcdf], [nc_open], [NETCDF_LNK="$NETCDF_LNK -lnetcdf"] )
+  LIBS="$old_LIBS"
 fi
 
-
-# HDF5 Configuration
-HDF5_DIR=
-HDF5_LNK=
-if test -z "$HDF5_ARG" -o "$HDF5_ARG" = "yes"; then
-  AC_CHECK_LIB( [hdf5], H5Fopen, [HDF5_LNK=-lhdf5] )
-  if test "$HDF5_ARG" = "yes" -a -z "$HDF5_LNK"; then
-    AC_MSG_ERROR("HDF5 library not found.")
-  fi
-elif test "$HDF5_ARG" != "no"; then
-  HDF5_DIR="$HDF5_ARG"
-  AC_CHECK_FILE( [${HDF5_DIR}/lib/libhdf5.so],
-                 [HDF5_LNK='-L$(HDF5_DIR)/lib -lhdf5'] )
-  AC_CHECK_FILE( [${HDF5_DIR}/lib/libhdf5.a],
-                 [HDF5_LNK='-L$(HDF5_DIR)/lib -lhdf5'] )
-  if test -z "$HDF5_LNK"; then
-    AC_MSG_ERROR("HDF5 library not found.")
-  fi
-fi
-
-
-# Begin TSTT Mesh Implementations
-
-TSTT_MESH_IMPL=
-
-OVERTURE_DIR=
-OVERTURE_LNK=
-OVERTURE_INC=
-if test "$OVERTURE_ARG" = "yes"; then
-  AC_MSG_ERROR( "Argument required for --with-overture" )
-elif test -n "$OVERTURE_ARG" -a  "$OVERTURE_ARG" != "yes"; then
-  OVERTURE_DIR="$OVERTURE_ARG"
-  OVERTURE_LNK='-L${OVERTURE_DIR) -loverture'
-  OVERTURE_INC='-I${OVERTURE_DIR)'
-  TSTT_MESH_IMPL=OVERTURE
-fi
-
-MOAB_DIR=
-MOAB_LNK=
-MOAB_INC=
-if test "$MOAB_ARG" = "yes"; then
-  AC_MSG_ERROR( "Argument required for --with-moab" )
-elif test -n "$MOAB_ARG" -a  "$MOAB_ARG" != "no"; then
-  MOAB_DIR="$MOAB_ARG"
-  MOAB_INC='-I$(MOAB_DIR) -I$(MOAB_DIR)/TSTT -I$(MOAB_DIR)/TSTT/server'
-  MOAB_LNK='-L$(MOAB_DIR) -lMOAB -L$(MOAB_DIR)/TSTT -lMOABserver -lTSTTBserver $(NETCDF_CXX_LNK) $(HDF5_LNK)'
-  TSTT_MESH_IMPL=MOAB
-  
-  if test -z "NETCDF_CXX_LNK"; then
-    AC_MSG_WARN("MOAB may require NETCDF.  Try --with-netcdf")
+# Exodus configuration
+EXODUS_DIR=
+EXODUS_CFLAGS=
+EXODUS_LDFLAGS=
+if test "$EXODUS_ARG" != "no"; then
+  if test "$EXODUS_ARG" != "yes"; then
+    EXODUS_DIR="$EXODUS_ARG"
+    if test -d "$EXODUS_DIR/include"; then
+      EXODUS_CFLAGS="-I$EXODUS_DIR/include"
+    elif test -d "$EXODUS_DIR/inc"; then
+      EXODUS_CFLAGS="-I$EXODUS_DIR/inc"
+    else
+      EXODUS_CFLAGS="-I$EXODUS_DIR"
+    fi
+    if test -d "$EXODUS_DIR/lib"; then
+      EXODUS_LDFLAGS="-L$EXODUS_DIR/lib"
+    else
+      EXODUS_LDFLAGS="-L$EXODUS_DIR"
+    fi
   fi
   
-  if test -z "HDF5_LNK"; then
-    AC_MSG_WARN("MOAB may require HDF5.  Try --with-hdf5")
-  fi
+  old_CPPFLAGS="$CPPFLAGS"
+  CPPFLAGS="$CPPFLAGS $EXODUS_CFLAGS"
+  AC_CHECK_HEADER( [exodusII.h], 
+                   [EXODUS_CFLAGS="$EXODUS_CFLAGS -DMSQ_USING_EXODUS"],
+                   [AC_MSG_ERROR("exodusII.h not found")]
+                 )
+  CPPFLAGS="$old_CPPFLAGS"
+                 
+  old_LIBS="$LIBS"
+  LIBS="$LIBS $EXODUS_LDFLAGS $NETCDF_LNK"
+  AC_CHECK_LIB( [exoIIv2c], 
+                [ex_open],
+                [EXODUS_LDFLAGS="$EXODUS_LDFLAGS -lexoIIv2c"],
+                [AC_MSG_WARN("No ExodusII library")]
+              )
+  LIBS="$old_LIBS"
 fi
-
-AOMD_DIR=
-AOMD_LNK=
-AOMD_INC=
-if test "$AOMD_ARG" = "yes"; then
-  AC_MSG_ERROR( "Argument required for --with-aomd" )
-elif test -n "$AOMD_ARG" -a "$AOMD_ARG" != "no"; then
-  AOMD_DIR="$AOMD_ARG"
-  AOMD_LNK='-L$(AOMD_DIR)/lib -laomd'
-  AOMD_INC='-I$(AOMD_DIR)/include'
-  TSTT_MESH_IMPL=AOMD
-fi
-
-
-if test "$WITH_TSTT_MESH_ARG" = "no"; then
-  TSTT_MESH_IMPL=
-elif test "$WITH_TSTT_MESH_ARG" = "yes"; then
-  if test -z "$TSTT_MESH_IMPL"; then
-     AC_MSG_ERROR("Server location not specified for TSTT mesh server");
-  fi 
-elif test -n "$WITH_TSTT_MESH_ARG"; then
-  TSTT_MESH_IMPL="$WITH_TSTT_MESH_ARG"
-
-  TSTT_DIR_TMP=
-  case "$WITH_TSTT_MESH_ARG" in
-    MOAB|moab)
-      TSTT_MESH_IMPL=MOAB
-      TSTT_DIR_TMP=${MOAB_DIR}
-      ;;
-    AOMD|aomd)
-      TSTT_MESH_IMPL=AOMD
-      TSTT_DIR_TMP=${AOMD_DIR}
-      ;;
-    OVERTURE|overture)
-      TSTT_MESH_IMPL=OVERTURE
-      TSTT_DIR_TMP=${OVERTURE_DIR}
-      ;;
-  esac
-
-  if test -z "${TSTT_DIR_TMP}"; then
-    AC_MSG_ERROR("Server location not specified for $WITH_TSTT_MESH_ARG TSTT mesh server");
-  fi
-fi
-
-# Assume if a TSTT Mesh implementation was specified for testing
-# that we want TSTT Mesh support enabled.
-if test -n "$TSTT_MESH_IMPL"; then
-  if test "$TSTT_IFACE_ARG" = "no"; then
-    AC_MSG_ERROR( "Nonsensical specification of TSTT Mesh Implementation with TSTT support explicitly disabled" )
-  elif test -z "$TSTT_IFACE_ARG"; then
-    TSTT_IFACE_ARG=yes
-  fi
-fi
-
 
 # Configure babel
 BABEL=
@@ -488,17 +376,50 @@ elif test "$BABEL_ARG" != "no"; then
 fi
 
 
-# Enable TSTT Mesh support?
-if test "$TSTT_IFACE_ARG" = "yes"; then
-  MSQ_TSTT_MESH="$TSTT_IFACE_ARG"
-  MSQ_TSTT_GEOM="$TSTT_IFACE_ARG"
-  if test "$HAVE_SIDL_H" = "no"; then
-    AC_MSG_ERROR("Babel is required for TSTT Mesh support.  Try --with-babel=...")
+# Begin TSTT Mesh Implementations
+
+MSQ_TSTT_BASE_IMPL=no
+MSQ_TSTT_BASE_DEFS=
+if test "$WITH_TSTT_BASE_ARG" = "yes"; then
+  AC_MSG_ERROR("Server location not specified for TSTT core (base) server");
+elif test "$WITH_TSTT_BASE_ARG" != "no"; then
+  MSQ_TSTT_BASE_DEFS="${WITH_TSTT_BASE_ARG}/TSTTB-Defs.inc"
+  AC_CHECK_FILE( ["$MSQ_TSTT_BASE_DEFS"],
+                 [MSQ_TSTT_BASE_IMPL=yes],
+                 [AC_MSG_ERROR([Invalid TSTTB implementation spec.])] )
+fi
+
+MSQ_TSTT_MESH_IMPL=no
+MSQ_TSTT_MESH_DEFS=
+if test "$WITH_TSTT_MESH_ARG" = "yes"; then
+  AC_MSG_ERROR("Server location not specified for TSTT mesh server");
+elif test "$WITH_TSTT_MESH_ARG" != "no"; then
+  if test $MSQ_TSTT_BASE_IMPL != yes; then
+    AC_MSG_ERROR([Cannot test TSTT mesh implementation without TSTT core (base) implementation.  Try --with-tstt-base])
   fi
+  MSQ_TSTT_MESH_DEFS="${WITH_TSTT_MESH_ARG}/TSTTM-Defs.inc"
+  AC_CHECK_FILE( ["$MSQ_TSTT_MESH_DEFS"],
+                 [MSQ_TSTT_MESH_IMPL=yes],
+                 [AC_MSG_ERROR([Invalid TSTTM implementation spec.])] )
+  # If enabling TSTT Mesh testing, automatically enable TSTT Mesh support
+  MSQ_TSTT_MESH=yes
+fi
+
+# Enable TSTT support?
+if test "$TSTT_IFACE_ARG" = "yes"; then
+  MSQ_TSTT_MESH=yes
+  MSQ_TSTT_GEOM=yes
 else
   MSQ_TSTT_MESH=no
   MSQ_TSTT_GEOM=no
 fi
+
+# TSTT support requires babel
+if test $MSQ_TSTT_MESH = yes -o $MSQ_TSTT_GEOM = yes; then
+  if test "$HAVE_SIDL_H" = "no"; then
+    AC_MSG_ERROR("Babel is required for TSTT Mesh support.  Try --with-babel=...")
+  fi
+fi  
 
 
 # TSTT testing code requires SIDL library
@@ -577,9 +498,6 @@ done
 # The End
 #------------------------------------------------------------------------------
 
-AC_SUBST(AOMD_DIR)
-AC_SUBST(AOMD_INC)
-AC_SUBST(AOMD_LNK)
 AC_SUBST(BABEL)
 AC_SUBST(CPPUNIT_DIR)
 AC_SUBST(CPPUNIT_INC)
@@ -587,21 +505,15 @@ AC_SUBST(CPPUNIT_LNK)
 AC_SUBST(EXODUS_CFLAGS)
 AC_SUBST(EXODUS_DIR)
 AC_SUBST(EXODUS_LDFLAGS)
-AC_SUBST(HDF5_DIR)
-AC_SUBST(HDF5_LNK)
-AC_SUBST(NETCDF_CXX_LNK)
 AC_SUBST(NETCDF_DIR)
 AC_SUBST(NETCDF_INC)
 AC_SUBST(NETCDF_LNK)
-AC_SUBST(MOAB_DIR)
-AC_SUBST(MOAB_INC)
-AC_SUBST(MOAB_LNK)
 AC_SUBST(MSQ_TSTT_GEOM)
 AC_SUBST(MSQ_TSTT_MESH)
-AC_SUBST(TSTT_MESH_IMPL)
-AC_SUBST(OVERTURE_DIR)
-AC_SUBST(OVERTURE_INC)
-AC_SUBST(OVERTURE_LNK)
+AC_SUBST(MSQ_TSTT_BASE_IMPL)
+AC_SUBST(MSQ_TSTT_MESH_IMPL)
+AC_SUBST(MSQ_TSTT_BASE_DEFS)
+AC_SUBST(MSQ_TSTT_MESH_DEFS)
 AC_SUBST(SIDL_DIR)
 AC_SUBST(SIDL_INC)
 AC_SUBST(SIDL_LNK)

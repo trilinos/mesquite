@@ -5,17 +5,18 @@
 #include "SphericalDomain.hpp"
 #include "BoundedCylinderDomain.hpp"
 #include <cppunit/extensions/HelperMacros.h>
+
+#ifdef MSQ_USE_OLD_IO_HEADERS
+#include <iostream.h>
+#else
 #include <iostream>
+#endif
 
 const double EPSILON = 1e-6;
 #define ASSERT_VECTORS_EQUAL( A, B ) \
   CPPUNIT_ASSERT( ((A)-(B)).length() < EPSILON )
 
 using namespace Mesquite;
-
-using std::cout;
-using std::cerr;
-using std::endl;
 
 class PatchDataTestNormals : public CppUnit::TestFixture
 {
@@ -56,7 +57,7 @@ public:
 
 void PatchDataTestNormals::setUp()
 {
-  MsqPrintError err(cout);
+  MsqPrintError err(msq_stdio::cout);
   
     // Define a mesh on the unit sphere
     // Make six quads corresponding to the six faces
@@ -135,7 +136,7 @@ void PatchDataTestNormals::setUp()
 
 void PatchDataTestNormals::test_get_vertex_normals_infinite_domain()
 {
-  MsqPrintError err(cout);
+  MsqPrintError err(msq_stdio::cout);
   
   for (size_t i = 0; i < unboundedMesh.num_vertices(); ++i)
   {
@@ -151,7 +152,7 @@ void PatchDataTestNormals::test_get_vertex_normals_infinite_domain()
 
 void PatchDataTestNormals::test_get_vertex_normals_bounded_domain()
 {
-  MsqPrintError err(cout);
+  MsqPrintError err(msq_stdio::cout);
   Vector3D norm;
   
     // Vertices 0 to 3 and 8 to 11 should lie on the end
@@ -183,7 +184,7 @@ void PatchDataTestNormals::test_get_vertex_normals_bounded_domain()
     
 void PatchDataTestNormals::test_get_corner_normals_infinite_domain()
 {
-  MsqPrintError err(cout);
+  MsqPrintError err(msq_stdio::cout);
   
     // Element 0 is a quad parallel to and below the Z plane.
     // All corners of the element lie on the unit sphere and
@@ -205,7 +206,7 @@ void PatchDataTestNormals::test_get_corner_normals_infinite_domain()
 
 void PatchDataTestNormals::test_get_corner_normals_bounded_domain()
 {
-  MsqPrintError err(cout);
+  MsqPrintError err(msq_stdio::cout);
   msq_std::vector<Vector3D> coords;
   Vector3D normals[4];
   
@@ -229,7 +230,7 @@ void PatchDataTestNormals::test_get_corner_normals_bounded_domain()
 
 void PatchDataTestNormals::test_get_element_normals_infinite_domain()
 {
-  MsqPrintError err(cout);
+  MsqPrintError err(msq_stdio::cout);
   Vector3D expected_normals[] = { Vector3D(  0,  0, -1),
                                   Vector3D(  0,  0,  1),
                                   Vector3D(  1,  0,  0),
@@ -249,7 +250,7 @@ void PatchDataTestNormals::test_get_element_normals_infinite_domain()
 
 void PatchDataTestNormals::test_get_element_normals_bounded_domain()
 {
-  MsqPrintError err(cout);
+  MsqPrintError err(msq_stdio::cout);
   Vector3D expected_normals[] = { Vector3D(  1,  0,  0),
                                   Vector3D(  0,  1,  0),
                                   Vector3D( -1,  0,  0),

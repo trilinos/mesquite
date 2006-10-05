@@ -213,7 +213,13 @@ inline double cbrt_sqr( double d )
 #endif
 }
   
-}
+} // namespace Mesquite
+
+#ifndef HAVE_FINITE
+#  ifdef HAVE__ISFINITE
+inline int finite( double x ) { return _Isfinite(x); }
+#  endif
+#endif
 
 
 #endif
