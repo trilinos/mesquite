@@ -46,6 +46,12 @@
 #include <map>
 #endif
 
+#ifdef MSQ_USE_OLD_IO_HEADERS
+class ostream;
+#else
+#include <iosfwd>
+#endif
+
 namespace Mesquite
 {
   class FileTokenizer;
