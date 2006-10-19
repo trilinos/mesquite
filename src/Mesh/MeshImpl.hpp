@@ -47,9 +47,9 @@
 #endif
 
 #ifdef MSQ_USE_OLD_IO_HEADERS
-#include <iosfwd>
-#else
 class ostream;
+#else
+#include <iosfwd>
 #endif
 
 namespace Mesquite
