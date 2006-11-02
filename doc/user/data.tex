@@ -3,166 +3,206 @@
 \chapter{Accessing Mesh and Geometry}
 \label{sec:meshes}
 
-Mesquite is responsible for gathering information from the
-application's mesh and geometry.  Because this must be as efficient as
-possible, considerable attention has been given to the interface
-between Mesquite and the application code.  Because Mesquite is
-designed as a library to work on a broad assortment of mesh and
-element types on complex geometrical domains, a general,
-data-structure neutral API is needed.  In general, Mesquite requires
-access to basic information about the mesh such as the number of
-vertices and elements in the mesh, the vertex locations, and the
-element connectivities.  To move the vertex locations, Mesquite needs
-to set the vertex coordinate positions, and eventually, to perform
-swapping operations Mesquite will need to add and delete various mesh
-entities.  In addition, for smoothing meshes on complex surfaces,
-evaluations of the associated geometric or CAD model such as normal
-information and closest point information are required to ensure
-vertices are constrained to the geometric domain.
-
-Mesquite defines object interfaces for accessing mesh data and quering 
-geometric domains.  These are defined in the {\tt Mesquite::Mesh} and 
-{\tt Mesquite::MeshDomain} classes.  An application will typically provide custom implementations of the {\tt Mesquite::Mesh} and {\tt Mesquite::MeshDomain} interfaces.  However, Mesquite also provides 
-implementations of the {\tt Mesquite::Mesh} interface for accessing 
-mesh via files (Section \ref{sec:meshFiles}) and for accessing mesh
-through the TSTT mesh interface (section \ref{sec:TSTT}.  Additionally, Mesquite provides a few trivial implementations of {\tt Mesquite::MeshDomain} for working with two-dimensional meshes and for testing.
-
-\section{Mesh Interface Concepts}
-
-To expose this information, Mesquite defines a set of interfaces 
-(C++ abstract base classes) that are specifically designed for mesh
-quality improvement needs.  There are four such interfaces: \texttt{Mesh},
-\texttt{VertexIterator}, \texttt{ElementIterator}, and \texttt{MeshDomain}.
+The application must provide Mesquite with data on which to operate.  The two
+fundamental classes of information Mesquite requires are:
 \begin{itemize}
-\item \texttt{Mesh}: The Mesh interface represents the set of mesh
-entities that are to be operated on.  It is through this interface
-that Mesquite retrieves information about the mesh and its entities.
-Examples of functionality provided by this interface include:
-retrieving the number of elements in the mesh, determining which
-elements contain a particular vertex, and modifying vertex
-coordinates.
-\item \texttt{VertexIterator}: The VertexIterator provides access to each
-vertex in a mesh.  A VertexIterator is obtained from a Mesh object,
-and is used to iterate through the list of all vertices in the Mesh
-from which it was obtained.
-\item \texttt{ElementIterator}: The ElementIterator provides access to
-each element in a mesh.  Other than the type of entity it exposes, it
-is identical to the VertexIterator.
-\item \texttt{MeshDomain}: The MeshDomain represents the set of geometric
-domains to which the mesh may be constrained. Its implementation is \emph{not} systematically 
-required. See section \ref{sec:geometry} for more details. 
-%The MeshDomain
-%interface enables an application to restrict the locations to which a
-%vertex can be moved, such as constraining a vertex to a surface.
-%Through the MeshDomain interface, Mesquite's algorithms can also
-%obtain a domain's normal vector, which aides validity checking and 
-%decision making during the quality improvement process.
+\item Mesh vertex coordinates and element connectivity, and
+\item Constraints on vertex movement.
 \end{itemize}
-These interfaces are data-structure neutral and use only primitive
-data types; an application may implement the Mesquite interfaces
-without changing its existing mesh data structures.  Mesquite uses
-handles to reference individual mesh entities.  Mesquite will treat
-the handles as an opaque value.  It is guaranteed that the {\tt Mesh::EntityHandle} type is at least the size of a pointer. 
+For some types of optimization algorithms, Mesquite may also require the ability 
+to associate arbitrary data (tags) with mesh entities.
 
-\section{Reading in a Mesh File} \label{sec:meshFiles}
+The interfaces Mesquite uses to access this data are \texttt{Mesquite::Mesh}
+and \texttt{Mesquite::MeshDomain}.  They are abstract classes defined in
+\texttt{include/MeshInterface.hpp}.  An instance of the \texttt{Mesquite::Mesh}
+interface is required, while providing a \texttt{Mesquite::MeshDomain}
+implementation is optional.
 
-The simplest way to start using Mesquite is to import a mesh from a file
-using the {\tt MeshImpl} class in Mesquite.  The {\tt MeshImpl} class supports reading
-mesh from VTK version 2.0 \cite{VTKbook, VTKuml} and optionally ExodusII
-files. See Sections \ref{sec:depends} and \ref{sec:compiling} for more 
+\section{Mesh Data} \label{sec:MeshData}
+
+All methods for accessing mesh data are declared in the \texttt{Mesquite::Mesh}
+interface.  It is expected that most applications will provide a custom
+implementation of this interface, composed of call-backs to the application
+allowing Mesquite direct in-memory access to application mesh data.  However,
+Mesquite includes several alternate methods of accessing mesh data that will be
+described later in this chapter.
+
+Mesquite accesses mesh data using `handles'.  There must be a unique handle
+space for all vertices, and a separate unique handle space for all elements. 
+That is, there must be a one-to-one mapping between handle values and vertices,
+and a one-to-one mapping between handle values and elements.  The storage type of
+the handles is specified by \texttt{Mesquite::Mesh::VertexHandle} and
+\texttt{Mesquite::Mesh::ElementHandle}.  The handle types are of sufficient size
+to hold either a pointer or an index, allowing the underlying implementation of
+the \texttt{Mesquite::Mesh} interface to be either pointer-based or index-based. 
+All mesh entities are referenced using handles.  For example, the
+\texttt{Mesquite::Mesh} interface declares a method to retrieve the list of all
+vertices as an array of handles and a method to update the coordinates of a
+vertex where the vertex is specified as a handle.
+
+An implementation of the \texttt{Mesquite::Mesh} interface must also provide
+implementations of the \texttt{Mesquite::ElementIterator} and
+\texttt{Mesquite::VertexIterator} interfaces.  Mesquite uses these interfaces
+to avoid the need for allocating very large arrays of handles when performing
+Nash-game optimizations on very large meshes.  It is recommended that
+implementations of the \texttt{Mesquite::Mesh} interface provide implementations
+of these iterator interfaces.  However, if the storage of large arrays of handles
+is not deemed to be important, an implementation of the \texttt{Mesquite::Mesh}
+interface may use the implementations defined in \texttt{ArrayIterator.hpp}. 
+These default implementations use the methods in the \texttt{Mesquite::Mesh}
+interface to retrieve a list of all vertex (or element) handles and iterate over
+the resulting array.
+
+Mesquite does not utilize or understand 1D (edge or bar) elements.  Thus
+implementations of the \texttt{Mesquite::Mesh} interface are expected to return
+only surface (triangle, quadrilateral, etc.) or volume (tetrahedron, hexahedron,
+etc.) elements from all queries for elements.
+
+In addition to providing methods to query mesh data, the \texttt{Mesquite::Mesh}
+interface is expected to implicitly define the active mesh that Mesquite is to
+optimize.  If Mesquite is expected to optimize a subset of the mesh (e.g. the
+mesh in one of several geometric volumes), the methods in the interface that
+implement queries of global mesh properties are expected to limit their results
+to the active subset of the mesh.  Such queries include:
+\begin{itemize}
+\item get all elements in the mesh
+\item get all vertices in the mesh
+\item iterate over all vertices in the mesh
+\item iterate over all elements in the mesh
+\item get elements adjacent to a vertex.
+\end{itemize}
+
+It is recommended that the application invoke the Mesquite optimizer for subsets
+of the mesh rather than the entire mesh whenever it makes sense to do so.  For
+example, if a mesh of two geometric volumes is to be optimized and all mesh
+vertices lying on geometric surfaces are constrained to be fixed (such vertices
+will not be moved during the optimization) then optimizing each volume separately
+will produce the same result as optimizing both together.  
+
+\section{Vertex Constraints and Geometric Domains} \label{sec:geom}
+
+Vertex locations can be constrained via one of two mechanisms.  Vertices can
+either be designated as `fixed' or constrained to a geometric domain.  The
+`fixed' designation supersedes any associated geometric domain.  For an
+optimization problem to be well defined, it is expected that any vertices on the
+boundary of a mesh be constrained via one of these mechanisms.  Mesquite is 
+implemented using $\mathbb{R}^{3}$ vertex coordinates.  A planar geometric domain
+is typically used to define an $\mathbb{R}^{2}$ optimization in Mesquite 
+(see Section \ref{sec:MsqGeom}).
+
+The location of a `fixed' vertex is never modified by Mesquite.  Typically, the 
+vertices on the boundary of the active mesh are designated as `fixed'.  The fixed
+designation for vertices is communicated to Mesquite using the
+\texttt{vertices\_get\_fixed\_flag} method in the \texttt{Mesquite::Mesh} interface.
+
+Vertex positions may be constrained to a geometric domain by providing Mesquite
+with an optional instance of the \texttt{Mesquite::MeshDomain} interface.  This
+interface provides two fundamental capabilities: mesh-geometry classification,
+and interrogation of local geometric properties.  The methods defined in the 
+\texttt{Mesquite::MeshDomain} interface combine both queries into single
+operation.  Queries are passed a mesh entity handle (see Section \ref{sec:MeshData}),
+and are expected to interrogate the geometric domain that the specified mesh
+entity is classified to.
+
+If Mesquite is used to optimize the mesh of a B-Rep solid model (the typical CAD
+system data model), then the domain is composed of geometric vertices,
+curves, surfaces, and volumes.  Curves are bounded by end vertices, surfaces are
+bounded by loops (closed chains) of curves, and volumes are bounded by groups of
+surfaces.  Mesquite expects each surface element (triangle, quadrilateral, etc.)
+to be associated with a 2D domain (surface).  Vertices may be associated with
+a geometric entity that either contains adjacent mesh elements or bounds the
+geometric entity containing the adjacent elements. Mesquite does not use 
+geometric volumes.  A query for the closest location on the domain for a vertex 
+or element whose classification is a geometric volume should simply return the 
+input position.  
+
+It is possible to define an optimization problem such that mesh classification
+data need not be provided in a \texttt{Mesquite::MeshDomain} implementation. 
+This is done by optimizing the mesh associated with each simple geometric
+component of the domain separately, with the boundary vertices flagged as fixed.
+The following pseudo-code illustrates such an approach for a B-Rep type geometric
+domain:
+\begin{verbatim}
+  for each geometric vertex
+    make associated vertex as fixed
+  end-for
+  for each curve
+    do any application-specific optimization of curve node placement
+    mark associated mesh vertices as fixed
+  end-for
+  for each surface
+    define Mesquite::MeshDomain for surface geometry
+    invoke Mesquite to optimize surface mesh
+    mark all associated mesh vertices as fixed
+  end-for
+  for each volume
+    invoke Mesquite to optimize volume mesh w/ no Mesquite::MeshDomain
+  end-for
+\end{verbatim}
+
+\section{Extra Data Associated With Mesh} \label{tags}
+
+Mesquite contains several tools capable of querying and storing other
+data that is associated with individual mesh entities.  For example, Mesquite
+can pre-calculate and store target matrices for use in target-based local
+metrics.  This is accomplished
+using a `tag' model similar to that defined by the TSTT\cite{tstt} interfaces.
+A tag is identified by a tuple composed of a tag handle and an entity handle. 
+The tag handle corresponds to a definition including a name, data type, and size.
+ The entity handle specifies which mesh entity the tag value is associated with. 
+ 
+Methods for interacting with tag data are declared in the \texttt{Mesquite::Mesh}
+interface.  If the optimization algorithm used does not require this
+functionality, the implementation of the \texttt{Mesquite::Mesh} interface
+need not provide useful implementations of these methods.
+ 
+\section{Reading Mesh From Files} \label{sec:meshFiles}
+
+Mesquite provides a concrete implementation of the \texttt{Mesquite::Mesh} named
+\texttt{Mesquite::MeshImpl}.  This implementation is capable of reading mesh from
+VTK\cite{VTKbook, VTKuml} and optionally ExodusII files. See Sections 
+\ref{sec:depends} and \ref{sec:compiling} for more 
 information regarding the optional support for ExodusII files.
-The functions \texttt{MeshImpl::read\_vtk()}
-and \texttt{MeshImpl::read\_exodus()} are used to read mesh from files.
 
-\section{Implementing the Mesquite Mesh Interface} \label{sec:msq_mesh}
+The `fixed' flag for vertices is can be specified in VTK files by defining a
+SCALAR POINT\_DATA attribute with values of 0 or 1, where 1 indicates that the
+corresponding vertex is fixed.  The \texttt{Mesquite::MeshImpl} class is capable
+of reading and storing tag data (see Section \ref{tags}) using VTK attributes and
+field data.  The current implementation writes version 3.0 of the VTK file format
+and is capable of reading any version of the file format up to 3.0.  
 
-%Most users will want to skip this section and avoid the associated work. There are several manners
-%to give the mesh data to Mesquite, and implementing the Mesquite mesh interface is the one that
-%requires the most coding work. 
-%
-%Let's review the alternative in the first place. For very simple meshes, Mesquite has an integrated
-%mesh database that can read in mesh files in specific format, such as VTK (see section \ref{sec:meshFiles}). 
-%On the other hand, Mesquite is compatible with the TSTT mesh interface: this means that if you are
-%running a code that has implemented the TSTT mesh interface, you can link Mesquite with your code
-%and perform all mesh improvements through the TSTT mesh interface (see section \ref{sec:TSTT}).
-%Implementing the TSTT mesh interface also has the advantage that your code will be compatible with
-%the TSTT mesh interface standard: this is a very good investment. 
-%
-%If you want to implement the specific Mesquite mesh interface, you probably have very specific
-%reasons in mind ... and you know what you are doing. In this section, we will give you the
-%documentation for the abstract classes. This will allow you to implement the interface. 
+\section{The TSTT Interfaces} \label{sec:TSTT}
 
-%\subsection{Implementation Details}
-%
-%The implementation details must be looked up in the doxygen documentation %located in the {\tt doc/user/doxygen} subdirectory.
+Mesquite can access mesh and domain data using the TSTT \cite{tstt} interfaces 
+defined by the SciDAC ISICs.  The TSTT interfaces are language-interoperable 
+interfaces defined using SIDL, the Scientific Interface Definition Language
+\cite{babel}.  See \texttt{http://www.tstt-scidac.org/software/} for more
+about the TSTT interfaces.
 
-%  While Mesquite should provide some testing of Mesh interfaces, using
-%  the unit testing framework as described below will NOT work and 
-%  probably isn't a good idea.  It is preferable that the users
-%  not customize Mesquite to the extend that the discussion below assumes.
-%  (App-specific Mesh interface added as part of mesquite rather than
-%  the app, changes to source files in mesquite's unit tests, modifications
-%  to the build system, etc.)
-%\subsection{Testing Your Implementation}
+Mesquite provides the \texttt{Mesquite::MeshTSTT} implementation of the 
+\texttt{Mesquite::Mesh} interface as an adapter for using the TSTT Mesh
+interface.  The \texttt{Mesquite::GeomTSTT} class is a
+\texttt{Mesquite::MeshDomain} adapter for the TSTT geometry and relation
+interfaces.  If mesh-geometry classification is not required (see Section
+\ref{sec:geom}), an instance of the \texttt{Mesquite::GeomTSTT} class can be
+created that relies only on the TSTT geometry interface.  
 
-%The implementation of the Mesquite mesh interface is considerably eased by using %the unit testing
-%framework. From the mesquite/testSuite/unit directory, change the %MeshInterfaceTest.cpp file to
-%instantiate your mesh interface implentation (i.e. replace occurences of %\texttt{MeshImpl} with your
-%class). Run {\tt make} and run the test:
-%\begin{verbatim} 
-%./msq_test MeshInterfaceTest
-%\end{verbatim} 
-%This should help you pinpoint the vast majority of implementation errors. 
+The \texttt{Mesquite::MeshTSTT} adapter expects a single-integer tag named 
+``MesquiteVertexFixed'' with a value of 1 for all fixed vertices.
 
+\section{Simple Geometric Domains} \label{sec:MsqGeom}
 
-\section{The TSTT Mesh Interface} 
-\label{sec:TSTT}
-
-Mesquite can instead use the mesh interfaces currently
-being developed through the TSTT center.  This interface definition
-effort focuses on providing access to information pertaining to low
-level mesh objects such as vertices, edges, faces, and regions through
-both array-based and iterator-based mechanisms.  It is designed to
-support existing packages such as MAOB, NWGrid, PAOMD, and Overture. 
-The TSTT interface achieves language interoperability
-through use of the SIDL/Babel tools from LLNL \cite{babel}.
-%Achieving consensus within a large group of participants is
-%paramount (see \cite{Cubit-website}, \cite{overture}, \cite{aomd-imr},
-%and \cite{NWGrid-website}).  
-%This interface definition effort is
-%evolving, and the Mesquite team is actively participating to ensure
-%that our needs for mesh quality improvement are adequately and
-%efficiently addressed.  
-A TSTT-based implementation of the Mesquite
-interfaces is available.  As such, any tool that exposes its
-mesh through the TSTT interfaces can be used with Mesquite without
-additional development.
-
-Note that the Mesquite-specific interface described in section \ref{sec:msq_mesh} is fully compatible
-with the current TSTT mesh and geometry interfaces, and in fact,
-Mesquite's approach to data structure neutrality is directly derived
-from the TSTT interfaces.  Although similar in spirit to the TSTT
-interface, the Mesquite-specific interface is not as general, and 
-therefore consist of fewer
-functions and does not require additional tools such as Babel.
-
-\section{The Geometric Domain}
-\label{sec:geometry}
-
-Certain smoothing procedures in Mesquite require some geometry information. The mean ratio quality
-metric for example requires the normal of a 2D element in a surface mesh. Also, boundary
-vertices can be snapped back to the surface they belong to during a smoothing procedure, instead of
-simply fixing the boundary vertices (and therefore lowering the quality of the final mesh). A simple abstract
-class, \texttt{MeshDomain}, must be inherited and implemented by the user in order to provide the
-geometry information to Mesquite.  
-
-There are cases where the application need not provide an instance of an
-object implementing the {\tt MeshDomain} interface.  For both 2D and 3D meshes,
-one of the most important functions of the domain is to constrain the boundary
-of the mesh.  Without such a constraint, the optimzation may not be well-defined.  However, as an alternative to providing a domain for the boundary
-mesh vertices, the application may simply mark all the boundary vertices as 
-fixed.  
-
-As Mesquite works with $\mathbb{R}^{3}$ coordinates, a domain must be provided
-when meshing purely $\mathbb{R}^{2}$ meshes to constrain the mesh to a single plane in $\mathbb{R}^{3}$.  The {\tt PlanarDomain} class provided by Mesquite may be 
-used for this purpose.
+Mesquite provides several implementations of the
+\texttt{Mesquite::MeshDomain} interface for simple geometric primitives.  These
+include
+\begin{itemize}
+\item \texttt{PlanarDomain}: An unbounded planar domain.
+\item \texttt{SphericalDomain}: A closed spherical domain.
+\item \texttt{CylindarDomain}: An unbounded cylindrical domain.
+\item \texttt{BoundedCylindarDomain}: A bounded cylindrical domain.
+\end{itemize}
+The \texttt{PlanarDomain} is often used to map $\mathbb{R}^{2}$ optimization
+problems to $\mathbb{R}^{3}$.  The others are used primarily for testing
+purposes.  The \texttt{BoundedCylindarDomain} provides some simplistic
+mesh-geometry classification capabilities.  The others do not provide any
+classification functionality.  
