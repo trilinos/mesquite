@@ -33,7 +33,7 @@
 #define MSQ_MAJOR_VERSION 1
 #define MSQ_MINOR_VERSION 1
 #define MSQ_BUILD_NUMBER 0
-#define MSQ_VERSION_STRING "Mesquite 1.1.6"
+#define MSQ_VERSION_STRING "Mesquite 1.1.7"
 #define MSQ_BUILD_STRING "Build Number 0"
 
 const char* Mesquite::version_string(bool include_build_number)
