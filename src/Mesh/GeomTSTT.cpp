@@ -173,7 +173,7 @@ private:
     /** Temporary storage for mesh entity handles */
   mutable sidl::array<void*> oneMeshHandle;
     /** Temporary storage for geometry entity type */
-  mutable sidl::array<TSTTG::GentityType> oneTypeOut;
+  mutable sidl::array<TSTTG::EntityType> oneTypeOut;
 };
 
 
@@ -264,7 +264,7 @@ DomainTSTT::DomainTSTT( TSTTG::Geometry& geom,
     meshIface(mesh), 
     relateIface( relate ),
     oneMeshHandle( alloc_sidl_vector<void*>(1) ),
-    oneTypeOut( alloc_sidl_vector<TSTTG::GentityType>(1) )
+    oneTypeOut( alloc_sidl_vector<TSTTG::EntityType>(1) )
 {
 }
 
@@ -359,8 +359,8 @@ void* DomainTSTT::geom_from_mesh( void* mesh_ent_handle ) const
                                       geomHandles, junk );
   // get dimension
   void* geom_handle = geomHandles.get(0);
-  TSTTG::GentityType type = topoIface.getEntType( geom_handle );
-  return type == TSTTG::GentityType_GREGION ? 0 : geom_handle;
+  TSTTG::EntityType type = topoIface.getEntType( geom_handle );
+  return type == TSTTG::EntityType_REGION ? 0 : geom_handle;
 }
 
 void DomainTSTT::geom_from_mesh( void* const* handles,
@@ -553,7 +553,7 @@ void GeomTSTTCommon::get_dimension( sidl::array<void*>& geom_handle,
                                     unsigned short* dof_out,
                                     size_t count ) const throw (TSTTB::Error)
 {
-  sidl::array<TSTTG::GentityType> types = types.create1d( count );
+  sidl::array<TSTTG::EntityType> types = types.create1d( count );
   int junk = count;
   topoIface.getArrType( geom_handle, count, types, junk );
   for (unsigned i = 0; i < count; ++i)

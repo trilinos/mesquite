@@ -17,28 +17,28 @@ package TSTTG version 0.6.99
 //interface groupings and classes
 
 //====================================================================
-// Enumerator GEntityType
+// Enumerator EntityType
 //====================================================================
 
 /**
  * TSTT supports zero-, one-, two-, and three-dimensional entities associated 
  * with a mesh infrastructure, we allow users to access these dimensional 
  * entities using the enumerated type EntityType which contains
- *   @param GVERTEX a zero-dimensional entity (value=0)
- *   @param GEDGE a one-dimensional entity  (value=1)
- *   @param GFACE a two-dimensional entity  (value=2)
- *   @param GREGION a three-dimensional entity  (value=3)
- *   @param GNUMBER_OF_ENTITY_TYPES the number of entities (value=4)
- *   @param GALL_TYPES allows the user to request information about all
+ *   @param VERTEX a zero-dimensional entity (value=0)
+ *   @param EDGE a one-dimensional entity  (value=1)
+ *   @param FACE a two-dimensional entity  (value=2)
+ *   @param REGION a three-dimensional entity  (value=3)
+ *   @param NUMBER_OF_ENTITY_TYPES the number of entities (value=4)
+ *   @param ALL_TYPES allows the user to request information about all
  *                    entity types (value=5) 
  */ 
 
-  enum GentityType {
-    GVERTEX, 
-    GEDGE, 
-    GFACE, 
-    GREGION,
-    GALL_TYPES
+  enum EntityType {
+    VERTEX, 
+    EDGE, 
+    FACE, 
+    REGION,
+    ALL_TYPES
   }
 
 //===========================================================================
@@ -102,7 +102,7 @@ package TSTTG version 0.6.99
  * @param gentity_handles Gentity handles
  */
     void getEntities( in opaque set_handle,
-                      in GentityType gentity_type,
+                      in EntityType gentity_type,
                       inout array<opaque> gentity_handles,
                       inout int gentity_handles_size) 
       throws TSTTB.Error;
@@ -115,10 +115,10 @@ package TSTTG version 0.6.99
  * @param gentity_dimension Dimension of entities being queried
  * @return Number of entities
  */
-    int getNumOfType(in opaque set_handle, in GentityType gentity_type) 
+    int getNumOfType(in opaque set_handle, in EntityType gentity_type) 
       throws TSTTB.Error;
 
-    GentityType getEntType( in opaque handle ) throws TSTTB.Error;
+    EntityType getEntType( in opaque handle ) throws TSTTB.Error;
 
 //==========================gentityGetType=================
 /**
@@ -127,7 +127,7 @@ package TSTTG version 0.6.99
  */
     void getArrType(in array<opaque> gentity_handles,
                     in int gentity_handles_size,
-                    inout array<GentityType> gtype,
+                    inout array<EntityType> gtype,
                     inout int gtype_size) 
       throws TSTTB.Error;
   
@@ -140,14 +140,14 @@ package TSTTG version 0.6.99
  * @param adj_gentities List returned with adjacent entities
  */
     void getEntAdj(in opaque gentity_handle, 
-                   in GentityType to_dimension, 
+                   in EntityType to_dimension, 
                    inout array<opaque> adj_gentities,
                    inout int adj_gentities_size) 
       throws TSTTB.Error;
   
     void getArrAdj( in array<opaque> entity_handles,
                     in int entity_handles_size,
-                    in GentityType requested_entity_type,
+                    in EntityType requested_entity_type,
                     inout array<opaque> adj_entity_handles,
                     inout int adj_entity_handles_size,
                     inout array<int> offset, 
@@ -168,16 +168,16 @@ package TSTTG version 0.6.99
  * @param adj_gentities List returned with 2nd order adjacent entities
  */
     void getEnt2ndAdj(in opaque gentity_handle, 
-                      in GentityType bridge_dimension, 
-                      in GentityType to_dimension, 
+                      in EntityType bridge_dimension, 
+                      in EntityType to_dimension, 
                       inout array<opaque> adjacent_gentities,
                       inout int adjacent_gentities_size) 
       throws TSTTB.Error;
 
     void getArr2ndAdj( in array<opaque> entity_handles,
                        in int entity_handles_size,
-                       in GentityType order_adjacent_key,
-                       in GentityType requested_entity_type,
+                       in EntityType order_adjacent_key,
+                       in EntityType requested_entity_type,
                        inout array<opaque> adj_entity_handles,
                        inout int adj_entity_handles_size,
                        inout array<int> offset, 
@@ -550,7 +550,7 @@ package TSTTG version 0.6.99
  * Return whether a given gentity is parametric or not.  If a gentity
  * is not parametric, all of the following functions will return an error
  * when called on that entity.
- * @param gentity_handle Gentity being queried.
+ * @param gentity_handle Entity being queried.
  */
     int isEntParametric(in opaque gentity_handle) 
       throws TSTTB.Error;
@@ -841,7 +841,7 @@ package TSTTG version 0.6.99
                       out double tolerance)
       throws TSTTB.Error;
    
-//==========================getGentityTolerance=================
+//==========================getEntityTolerance=================
     double getEntTolerance( in opaque entity_handle) throws TSTTB.Error;
 /**
  * Return the relative and absolute tolerances for specified gentities.  If
@@ -878,7 +878,7 @@ package TSTTG version 0.6.99
                      out opaque gentity_iterator) 
       throws TSTTB.Error;
     bool initEntArrIter( in opaque entity_set_handle,
-                         in GentityType requested_entity_type,
+                         in EntityType requested_entity_type,
                          in int requested_array_size,
                          out opaque entArr_iterator
                        ) throws TSTTB.Error;
@@ -913,7 +913,7 @@ package TSTTG version 0.6.99
  * Delete an iterator
  * @param gentity_iterator Iterator deleted by this function
  */
-    void endEntIter (in opaque Gentity_dim_iterator) 
+    void endEntIter (in opaque Entity_dim_iterator) 
       throws TSTTB.Error;
 
     void endEntArrIter( in opaque entArr_iterator) throws TSTTB.Error;
