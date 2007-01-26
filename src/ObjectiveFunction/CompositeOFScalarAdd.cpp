@@ -47,64 +47,74 @@ gradient which essentially just calls Obj1's gradient function.
   \param alp (double)
   \param Obj1 (ObjectiveFunction*)
  */
-CompositeOFScalarAdd::CompositeOFScalarAdd(double alp, ObjectiveFunction* Obj1){
-  set_quality_metric(Obj1->get_quality_metric());
+CompositeOFScalarAdd::CompositeOFScalarAdd( double alp, 
+                                            ObjectiveFunction* Obj1,
+                                            bool delete_OF)
+  : deleteObjFunc(delete_OF)
+{
   objFunc=Obj1;
   mAlpha=alp;
-  set_negate_flag(1);
-  set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
 }
 
 
 //Michael:  need to clean up here
 CompositeOFScalarAdd::~CompositeOFScalarAdd(){
-
+  if (deleteObjFunc)
+    delete objFunc;
 }
 
-/*!Computes fval= mAlpha+objFunc->evaluate(patch,err).  Note that since Obj's
-  evaluate() function is called (as opposed to its concrete_evaluate) the
-  returned value has been multiplied by objFunc's negateFlag (that is,
-  if objFunc needed to be maximized then the value has been multiplied
-  by negative one so that it may be minimized instead.)
-  Functions returns `false' if and only if objFunc->evaluate() returns
-  `false'.
-*/
-bool CompositeOFScalarAdd::concrete_evaluate(PatchData &patch, double &fval,
-                                             MsqError &err){
-    //if invalid return false without calculating fval.
-  bool b = objFunc->evaluate(patch, fval, err);
-  if( MSQ_CHKERR(err) || !b ){
-    fval = 0.0;
-    return false;
-  }
+ObjectiveFunction* CompositeOFScalarAdd::clone() const
+  { return new CompositeOFScalarAdd( mAlpha, objFunc->clone(), true ); }
   
-  fval+=mAlpha;
-  return true;
-}
-
-//!Returns the QualityMetric list assossiated with objFunc.
-msq_std::list<QualityMetric*> CompositeOFScalarAdd::get_quality_metric_list(){
-  return objFunc->get_quality_metric_list();
-}
-
-/*! Analytically computes the composite objective function's gradient
-  by scaling the gradient returned objFunc->compute_gradient().
-    \param patch The PatchData object for which the objective function
-           gradient is computed.
-    \param grad An array of Vector3D, at least the size of the number
-           of vertices in the patch.
-    \param array_size is the size of the grad Vector3D[] array and
-    must correspond to the number of vertices in the patch.
-*/
-bool CompositeOFScalarAdd::compute_analytical_gradient(PatchData &patch,
-                                                       Vector3D *const &grad,
-                                                       double &OF_val,
-                                                       MsqError &err,
-                                                       size_t array_size)
+void CompositeOFScalarAdd::clear()
 {
-  MSQ_FUNCTION_TIMER( "CompositeOFScalarAdd::compute_analytical_gradient" );
-  bool rval=objFunc->compute_gradient(patch, grad, OF_val,err, array_size); MSQ_ERRZERO(err);
-  OF_val+=mAlpha;
-  return rval;
+  objFunc->clear();
 }
 
+bool CompositeOFScalarAdd::initialize_block_coordinate_descent( 
+                                                       Mesh* mesh, 
+                                                       MeshDomain* domain,
+                                                       MappingFunctionSet* maps,
+                                                       PatchSet* user_set,
+                                                       MsqError& err )
+{
+  bool rval = objFunc->initialize_block_coordinate_descent( mesh, domain, maps, user_set, err );
+  return !MSQ_CHKERR(err) && rval;
+}
+
+bool CompositeOFScalarAdd::evaluate( EvalType type, 
+                                     PatchData& pd,
+                                     double& value_out,
+                                     bool free,
+                                     MsqError& err )
+{
+  bool ok = objFunc->evaluate( type, pd, value_out, free, err );
+  value_out += mAlpha;
+  return !MSQ_CHKERR(err) && ok;
+}
+
+bool CompositeOFScalarAdd::evaluate_with_gradient( EvalType type, 
+                                             PatchData& pd,
+                                             double& value_out,
+                                             msq_std::vector<Vector3D>& grad_out,
+                                             MsqError& err )
+{
+  bool ok = objFunc->evaluate_with_gradient( type, pd, value_out, grad_out, err );
+  value_out += mAlpha;
+  return !MSQ_CHKERR(err) && ok;
+}
+
+bool CompositeOFScalarAdd::evaluate_with_Hessian( EvalType type, 
+                                            PatchData& pd,
+                                            double& value_out,
+                                            msq_std::vector<Vector3D>& grad_out,
+                                            MsqHessian& Hessian_out,
+                                            MsqError& err )
+{
+  bool ok = objFunc->evaluate_with_Hessian( type, pd, value_out, grad_out, Hessian_out, err );
+  value_out += mAlpha;
+  return !MSQ_CHKERR(err) && ok;
+}
+
+int CompositeOFScalarAdd::min_patch_layers() const
+  { return objFunc->min_patch_layers(); }

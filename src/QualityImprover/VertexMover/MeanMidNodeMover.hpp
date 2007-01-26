@@ -33,15 +33,17 @@
  */
 
 #include "Mesquite.hpp"
-#include "PatchDataUser.hpp"
+#include "Instruction.hpp"
 
 namespace Mesquite {
+
+class PatchData;
 
 /**\brief Class to adjust positions of higher-order nodes.
  *
  *Move all higher-order nodes to average position of adjacent nodes.
  */
-class MeanMidNodeMover : public PatchDataUser
+class MeanMidNodeMover : public Instruction
 {
 public:
 
@@ -49,18 +51,11 @@ public:
   
   virtual ~MeanMidNodeMover();
 
-    //! Sets the Patch Type. 
-  virtual void set_patch_type(PatchData::PatchType patch_type, MsqError &err,
-                              int param1=0, int param2=0) ;
-                              
   virtual double loop_over_mesh( Mesh* mesh, 
                                  MeshDomain* domain,
-                                 PatchData* global_patch,
                                  MsqError &err);
 
-  virtual msq_std::string get_name();
-  
-  virtual PatchDataUser::AlgorithmType get_algorithm_type();
+  virtual msq_std::string get_name() const;
 
 private:
 

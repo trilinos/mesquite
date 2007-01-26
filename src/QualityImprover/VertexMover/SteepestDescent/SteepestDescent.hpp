@@ -41,21 +41,21 @@
 
 #include "Mesquite.hpp"
 #include "VertexMover.hpp"
-#include "ObjectiveFunction.hpp"
-
+#include "PatchSetUser.hpp"
 
 namespace Mesquite
 {
+  class ObjectiveFunction;
 
   /*! \class SteepestDescent
 
       This is a very basic implementation of the steepest descent optimization algorythm.
       It works on patches of any size but the step size is hard-wired.
       Obvisouly, this is for testing purposed only. */ 
-  class SteepestDescent : public VertexMover 
+  class SteepestDescent : public VertexMover, public PatchSetUser
   {
   public:
-    SteepestDescent(ObjectiveFunction* of);
+    SteepestDescent(ObjectiveFunction* of, bool Nash = true);
 
     virtual ~SteepestDescent() { }
 
@@ -70,6 +70,9 @@ namespace Mesquite
     void set_lower_gradient_bound(double gradc){
         gradientLessThan=gradc;}
     
+    virtual msq_std::string get_name() const;
+    
+    virtual PatchSet* get_patch_set();
     
   protected:
     virtual void initialize(PatchData &pd, MsqError &err);

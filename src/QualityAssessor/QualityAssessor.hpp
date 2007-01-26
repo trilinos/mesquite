@@ -22,6 +22,8 @@
  
     diachin2@llnl.gov, djmelan@sandia.gov, mbrewer@sandia.gov, 
     pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov      
+
+    (2006) kraftche@cae.wisc.edu    
    
   ***************************************************************** */
 // -*- Mode : c++; tab-width: 3; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 3 -*-
@@ -43,14 +45,17 @@ Header file for the Mesquite::QualityAssessor class
 #include <math.h>
 
 #include "Mesquite.hpp"
-#include "PatchDataUser.hpp"
+#include "Instruction.hpp"
+#include "MeshInterface.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 #  include <list.h>
 #  include <string.h>
+#  include <vector.h>
 #else
 #  include <list>
 #  include <string>
+#  include <vector>
 #endif
 
 #ifdef MSQ_USE_OLD_IO_HEADERS
@@ -69,8 +74,8 @@ namespace Mesquite
   /*! \class QualityAssessor
 
       \brief A QualityAssessor instance can be inserted into an 
-      \ref InstructionQueue to calculate and summarize registered
-      \ref QualityMetrics for the mesh.
+      InstructionQueue to calculate and summarize registered
+      QualityMetric or QualityMetrics for the mesh.
 
       The relevant quality assessments are set by the user or
       automatically (default) by Mesquite when an InstructionQueue
@@ -78,8 +83,8 @@ namespace Mesquite
       it is often useful to reuse the same QualityAssessor object
       to reassess the mesh quality.
       
-      The \ref QAFunction flags passed for each metric control the output
-      for that metric.  If no \ref QAFuction flags are passed, no results
+      The QAFunction flags passed for each metric control the output
+      for that metric.  If no QAFuction flags are passed, no results
       are printed for the metric except the count of invalid 
       vertices/elements reported by that metric, if any.
       
@@ -89,11 +94,11 @@ namespace Mesquite
       
       All summary data except the histogram is accumulated for all
       registered metrics, and can be accessed by the calling application.
-      Histogram data is accumulated only if the \ref HISTOGRAM 
-      \ref QUFunction output is requested for the metric (which is 
-      impled by calling \ref add_histogram_assessment.
+      Histogram data is accumulated only if the HISTOGRAM 
+      QUFunction output is requested for the metric (which is 
+      impled by calling add_histogram_assessment().
   */
-  class QualityAssessor : public PatchDataUser
+  class QualityAssessor : public Instruction
   {
   public:
     
@@ -135,14 +140,12 @@ namespace Mesquite
                      msq_std::string name = "QualityAssessor" );
 
       //!Destructor
-    MESQUITE_EXPORT ~QualityAssessor();
+    MESQUITE_EXPORT virtual ~QualityAssessor();
     
       //! Provides a name to the QualityAssessor (use it for default name in constructor).
     MESQUITE_EXPORT void set_name(msq_std::string name) { qualityAssessorName = name; };
       //! Retrieves the QualityAssessor name. A default name should be set in the constructor.
-    MESQUITE_EXPORT virtual msq_std::string get_name()  { return qualityAssessorName; }
-
-    MESQUITE_EXPORT virtual AlgorithmType get_algorithm_type() { return QUALITY_ASSESSOR; }
+    MESQUITE_EXPORT virtual msq_std::string get_name() const { return qualityAssessorName; }
     
       //! Adds a quality metric and a wrapper function (min, max, ...).
     MESQUITE_EXPORT void add_quality_assessment( QualityMetric* qm, 
@@ -167,7 +170,7 @@ namespace Mesquite
       //! Does one sweep over the mesh and assess the quality with the metrics previously added.
     virtual double loop_over_mesh( Mesh* mesh,
                                    MeshDomain* domain,
-                                   PatchData* global_patch,
+                                   MappingFunctionSet* map_func,
                                    MsqError &err);
 
       //! Do not print results of assessment.
@@ -206,10 +209,10 @@ namespace Mesquite
      *
      * The Assessor class holds QualityAssessor data for
      * each metric added by the calling application, including
-     * a pointer to the metric instance, \ref QAFunction flags
+     * a pointer to the metric instance, QAFunction flags
      * dictating what is to be calculated and output, histogram
      * parameters, and the variables used to accumulate results as
-     * the \ref QualityAssessor is running.  It also provides 
+     * the QualityAssessor is running.  It also provides 
      * methods to access the calculated data once the QualityAssessor
      * pass is completed.
      */
@@ -341,9 +344,9 @@ namespace Mesquite
     /** Disable printing */
     bool printSummary;
     
-      /** Metric in \ref assessList to use as return value for loop_over_mesh */
+      /** Metric in #assessList to use as return value for loop_over_mesh() */
     msq_std::list<Assessor>::iterator stoppingMetric;
-      /** Value to use as return value for loop_over_mesh */
+      /** Value to use as return value for loop_over_mesh() */
     QAFunction stoppingFunction;
     
     bool tagInverted;

@@ -1077,7 +1077,7 @@ void MeshTSTTImpl::vertices_get_fixed_flag(
 
 // Get vertex coordinates 
 void MeshTSTTImpl::vertices_get_coordinates(
-  const Mesquite::Mesh::VertexHandle vert_array[],
+  const VertexHandle vert_array[],
   MsqVertex* coordinates, 
   size_t num_vtx, 
   MsqError &err)
@@ -1165,7 +1165,7 @@ void MeshTSTTImpl::vertices_get_coordinates(
 }
 
 void MeshTSTTImpl::vertex_set_coordinates(
-  Mesquite::Mesh::VertexHandle vertex,
+  VertexHandle vertex,
   const Vector3D &coords, MsqError &err)
 {
   try {
@@ -1181,7 +1181,7 @@ void MeshTSTTImpl::vertex_set_coordinates(
 // implementation.  It is intended to be used by Mesquite algorithms.
 // Until a vertex's byte has been explicitly set, its value is 0.
 void MeshTSTTImpl::vertex_set_byte (
-  Mesquite::Mesh::VertexHandle vertex,
+  VertexHandle vertex,
   unsigned char byte, MsqError &err)
 {
   try {
@@ -1219,7 +1219,7 @@ void MeshTSTTImpl::vertices_set_byte (
 // The byte value is 0 if it has not yet been set via one of the
 // *_set_byte() functions.
 void MeshTSTTImpl::vertex_get_byte(
-  Mesquite::Mesh::VertexHandle vertex,
+  VertexHandle vertex,
   unsigned char *byte, MsqError &err)
 {
   try {
@@ -1469,7 +1469,7 @@ void MeshTSTTImpl::elements_get_topologies(
 // Tells the mesh that the client is finished with a given
 // entity handle.  
 void MeshTSTTImpl::release_entity_handles(
-  const Mesquite::Mesh::EntityHandle */*handle_array*/,
+  const EntityHandle */*handle_array*/,
   size_t /*num_handles*/, MsqError &/*err*/)
 {
     // Do nothing

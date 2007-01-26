@@ -40,6 +40,7 @@ Header file for the Mesquite:: CompositeOFAdd class
 
 #include "Mesquite.hpp"
 #include "ObjectiveFunction.hpp"
+#include "MsqHessian.hpp"
 
 namespace Mesquite
 {
@@ -49,23 +50,55 @@ namespace Mesquite
    class MsqMeshEntity;
    class PatchData;
    class MsqError;
+   class Vector3D;
    
    class CompositeOFAdd : public ObjectiveFunction
    {
    public:
-     CompositeOFAdd(ObjectiveFunction*, ObjectiveFunction*);
+     CompositeOFAdd(ObjectiveFunction*, ObjectiveFunction*, bool delete_OFs = false);
+ 
      virtual ~CompositeOFAdd();
-     virtual bool concrete_evaluate(PatchData &patch, double &fval,
-                                    MsqError &err);
-     virtual msq_std::list<QualityMetric*> get_quality_metric_list();
+
+     virtual bool initialize_block_coordinate_descent( Mesh* mesh, 
+                                                       MeshDomain* domain,
+                                                       MappingFunctionSet* maps,
+                                                       PatchSet* user_set,
+                                                       MsqError& err );
+
+     virtual bool evaluate( EvalType type, 
+                            PatchData& pd,
+                            double& value_out,
+                            bool free,
+                            MsqError& err ); 
+
+     virtual bool evaluate_with_gradient( EvalType type, 
+                                          PatchData& pd,
+                                          double& value_out,
+                                          msq_std::vector<Vector3D>& grad_out,
+                                          MsqError& err ); 
+
+     virtual bool evaluate_with_Hessian( EvalType type, 
+                                         PatchData& pd,
+                                         double& value_out,
+                                         msq_std::vector<Vector3D>& grad_out,
+                                         MsqHessian& Hessian_out,
+                                         MsqError& err ); 
+
+     virtual ObjectiveFunction* clone() const;
+
+     virtual void clear();
      
-	protected:
-     bool compute_analytical_gradient(PatchData &patch,Vector3D *const &grad,
-                                      double &OF_val,  MsqError &err,
-                                      size_t array_size);
+     virtual int min_patch_layers() const;
+     
 	private:
+     /** Temporary storage for gradient */
+     mutable msq_std::vector<Vector3D> mGradient;
+      /** Temporary storage for Hessian */
+     mutable MsqHessian mHessian;
+     
      ObjectiveFunction* objFunc1;
      ObjectiveFunction* objFunc2;
+     bool deleteObjFuncs;
    };
 }//namespace
 #endif //  CompositeOFAdd_hpp

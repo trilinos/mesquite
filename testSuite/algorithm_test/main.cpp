@@ -42,6 +42,8 @@ describe main.cpp here
  */
 // DESCRIP-END.
 //
+#include "meshfiles.h"
+
 #ifndef MSQ_USE_OLD_IO_HEADERS
 #include <iostream>
 using std::cout;
@@ -79,31 +81,25 @@ int main()
 {     
   MsqPrintError err(cout);
   Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
-  mesh->read_vtk("../../meshFiles/3D/VTK/tire.vtk", err);
+  mesh->read_vtk(MESH_FILES_DIR "3D/VTK/tire.vtk", err);
   if (err) return 1;
   
     // creates an intruction queue
   InstructionQueue queue1;
 
   // creates a mean ratio quality metric ...
-  ShapeQualityMetric* mean = new IdealWeightInverseMeanRatio(err);
+  IdealWeightInverseMeanRatio* mean = new IdealWeightInverseMeanRatio(err);
   if (err) return 1;
-//   mean->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
-//   mean->set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
-  mean->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
-  mean->set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
   
   LPtoPTemplate* obj_func = new LPtoPTemplate(mean, 1, err);
   if (err) return 1;
-  obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
-    //obj_func->set_hessian_type(ObjectiveFunction::ANALYTICAL_HESSIAN);
   
   // creates the optimization procedures
 //   ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
-  FeasibleNewton* pass1 = new FeasibleNewton( obj_func );
+  FeasibleNewton* pass1 = new FeasibleNewton( obj_func, true );
 
   //perform optimization globally
-  pass1->set_patch_type(PatchData::GLOBAL_PATCH, err,1 ,1);
+  pass1->use_global_patch();
   if (err) return 1;
   
   QualityAssessor mean_qa=QualityAssessor(mean,QualityAssessor::AVERAGE, err);

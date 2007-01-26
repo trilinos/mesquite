@@ -207,20 +207,20 @@ class FileTokenizer
   
   private:
   
-      /** Internal implementation of \ref get_doubles */
+      /** Internal implementation of get_doubles() */
     bool get_double_internal( double& result, MsqError& err );
-      /** Internal implementation of \ref get_long_ints */
+      /** Internal implementation of get_long_ints() */
     bool get_long_int_internal( long& result, MsqError& err );
-      /** Internal implementation of \ref get_Booleans */
+      /** Internal implementation of get_Booleans() */
     bool get_boolean_internal( bool& result, MsqError& err );
   
-      /** Internal implementation of \ref get_floats */
+      /** Internal implementation of get_floats() */
     bool get_float_internal( float& result, MsqError& err );
-      /** Internal implementation of \ref get_integers */
+      /** Internal implementation of get_integers() */
     bool get_integer_internal( int& result, MsqError& err );
-      /** Internal implementation of \ref get_short_ints */
+      /** Internal implementation of get_short_ints() */
     bool get_short_int_internal( short& result, MsqError& err );
-      /** Internal implementation of \ref get_bytes */
+      /** Internal implementation of get_bytes() */
     bool get_byte_internal( unsigned char& result, MsqError& err );
   
       /** Pointer to standard C FILE struct */

@@ -41,15 +41,18 @@
 
 namespace Mesquite {
 
-SteepestDescent::SteepestDescent(ObjectiveFunction* of) :
-  VertexMover()
+msq_std::string SteepestDescent::get_name() const
+  { return "SteepestDescent"; }
+  
+PatchSet* SteepestDescent::get_patch_set()
+  { return PatchSetUser::get_patch_set(); }
+
+SteepestDescent::SteepestDescent(ObjectiveFunction* of, bool Nash) 
+  : VertexMover(of, Nash),
+    PatchSetUser(true),
+    gradientLessThan(0.01),
+    maxIteration(6)
 {
-  objFunc=of;
-  MsqError err;
-  gradientLessThan=.01;
-  maxIteration=6;
-  this->set_name("SteepestDescent");
-  set_patch_type(PatchData::GLOBAL_PATCH, err);
 }  
   
 
@@ -67,30 +70,31 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
   MSQ_FUNCTION_TIMER( "SteepestDescent::optimize_vertex_positions" );
     //PRINT_INFO("\no  Performing Steepest Descent optimization.\n");
   // Get the array of vertices of the patch. Free vertices are first.
-  int num_vertices = pd.num_vertices();
+  int num_vertices = pd.num_free_vertices();
   msq_std::vector<Vector3D> gradient(num_vertices), dk(num_vertices);
   int nb_iterations = 0;
   double norm=10e6;
   bool sd_bool=true;//bool for OF values
   double smallest_edge = 0.4; // TODO -- update -- used for step_size
   TerminationCriterion* term_crit=get_inner_termination_criterion();
+  OFEvaluator& obj_func = get_objective_function_evaluator();
+
+    //get intial objective function value, original_value, and gradient
+  double original_value = 0.0;
+  obj_func.update(pd, original_value, gradient, err ); MSQ_ERRRTN(err);
   
   // does the steepest descent iteration until stopping is required.
   while ( (nb_iterations<maxIteration &&
           norm>gradientLessThan ) && !term_crit->terminate()) {
     
     ++nb_iterations;
-    double original_value = 0.0;
-      //get intial objective function value, original_value, and gradient
-    objFunc->compute_gradient(pd, &gradient[0], original_value, 
-			      err, gradient.size()); MSQ_ERRRTN(err);
     
     // Prints out free vertices coordinates. 
     if (MSQ_DBG(3)) {
-      int num_free_vertices = pd.num_free_vertices(err); MSQ_ERRRTN(err);
+      int num_free_vertices = pd.num_free_vertices(); 
       MSQ_DBGOUT(3) << "\n  o Free vertices ("<< num_free_vertices <<")original coordinates:\n ";
       MsqVertex* toto1 = pd.get_vertex_array(err); MSQ_ERRRTN(err);
-      MsqFreeVertexIndexIterator ind1(&pd, err); MSQ_ERRRTN(err);
+      MsqFreeVertexIndexIterator ind1(pd, err); MSQ_ERRRTN(err);
       ind1.reset();
       while (ind1.next()) {
         MSQ_DBGOUT(3) << "\t\t\t" << toto1[ind1.value()];
@@ -143,7 +147,7 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
       pd.move_free_vertices_constrained(&dk[0], dk.size(), step_size, err);
       if (MSQ_CHKERR(err)) { delete pd_previous_coords; return; }      
       // and evaluate the objective function with the new node positions.
-      sd_bool=objFunc->evaluate(pd, new_value, err);  
+      sd_bool=obj_func.evaluate(pd, new_value, err);  
       if (MSQ_CHKERR(err)) { delete pd_previous_coords; return; }
 
       MSQ_DBGOUT(3) << "    o  step_size: " << step_size << msq_stdio::endl;
@@ -170,7 +174,7 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
       MSQ_DBGOUT(3) << "  o Free vertices new coordinates: \n";
       MsqVertex* toto1 = pd.get_vertex_array(err);  
       if (MSQ_CHKERR(err)) { delete pd_previous_coords; return; }
-      MsqFreeVertexIndexIterator ind(&pd, err);  
+      MsqFreeVertexIndexIterator ind(pd, err);  
       if (MSQ_CHKERR(err)) { delete pd_previous_coords; return; }
       ind.reset();
       while (ind.next()) {
@@ -180,8 +184,9 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
     
     delete pd_previous_coords; // user manages the memento.
     
-    term_crit->accumulate_inner( pd, err ); MSQ_ERRRTN(err); 
-    
+    obj_func.update(pd, original_value, gradient, err ); MSQ_ERRRTN(err);
+    term_crit->accumulate_inner( pd, original_value, &gradient[0], err ); MSQ_ERRRTN(err); 
+    term_crit->accumulate_patch( pd, err );  MSQ_ERRRTN(err);
   }
 }
 

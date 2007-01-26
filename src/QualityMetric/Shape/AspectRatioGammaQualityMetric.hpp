@@ -40,40 +40,30 @@
 
 #include "Mesquite.hpp"
 #include "MsqError.hpp"
-#include "ShapeQualityMetric.hpp"
+#include "ElementQM.hpp"
 namespace Mesquite
 {
      /*! \class AspectRatioGammaQualityMetric
        \brief Object for computing the aspect ratio gamma of
        simplicial elements.
      */
-   class AspectRatioGammaQualityMetric : public ShapeQualityMetric
+   class AspectRatioGammaQualityMetric : public ElementQM
    {
    public:     
-     AspectRatioGammaQualityMetric()
-        {
-          set_metric_type(ELEMENT_BASED);
-          fourDivRootThree=4.0/sqrt(3.0);
-          twelveDivRootTwo=12.0/sqrt(2.0);
-          feasible=0;
-          set_name("Aspect Ratio Gamma");
-        }
+     AspectRatioGammaQualityMetric() {}
+     
        //! virtual destructor ensures use of polymorphism during destruction
      virtual ~AspectRatioGammaQualityMetric()
         {}
      
-   protected:
+     virtual msq_std::string get_name() const;
      
+     int get_negate_flag() const;
      
-   private:
-       //constants used in metric calculations
-     double fourDivRootThree;
-     double twelveDivRootTwo;
-       //!Computes the aspect ratio gamma of element.  If element
-       //!is not a tetrahedron or triangle, sets an error.
-     bool evaluate_element(PatchData& pd,
-                           MsqMeshEntity* element, double &fval,
-                           MsqError &err);
+     bool evaluate( PatchData& pd, 
+                    size_t handle, 
+                    double& value, 
+                    MsqError& err );
    };
    
    

@@ -38,11 +38,12 @@
 #define LPtoPTemplate_hpp
 
 #include "Mesquite.hpp"
-#include "MsqError.hpp"
-#include "ObjectiveFunction.hpp"
+#include "ObjectiveFunctionTemplate.hpp"
 
 namespace Mesquite
 {
+  class Matrix3D;
+
      /*! \class LPtoPTemplate
        \brief Calculates the L_p objective function raised to the pth
        power.  That is, sums the p_th powers of (the absolute value of)
@@ -63,15 +64,37 @@ namespace Mesquite
        d)  The malloc in the concrete_eval routine should be removed.
 
      */
-   class PatchData;
-   class MsqMeshEntity;
-   class MESQUITE_EXPORT LPtoPTemplate :public ObjectiveFunction
+   class MESQUITE_EXPORT LPtoPTemplate :public ObjectiveFunctionTemplate
    {
    public:
      LPtoPTemplate(QualityMetric *, short, MsqError &);
+     LPtoPTemplate( short, QualityMetric* );
+     
      virtual ~LPtoPTemplate();
-     virtual bool concrete_evaluate(PatchData &patch, double &fval,
-                                    MsqError &err);
+    
+    virtual void clear();
+    
+    virtual bool evaluate( EvalType type, 
+                           PatchData& pd,
+                           double& value_out,
+                           bool free,
+                           MsqError& err ); 
+     
+    virtual bool evaluate_with_gradient( EvalType type, 
+                                         PatchData& pd,
+                                         double& value_out,
+                                         msq_std::vector<Vector3D>& grad_out,
+                                         MsqError& err ); 
+
+    virtual bool evaluate_with_Hessian( EvalType type, 
+                                        PatchData& pd,
+                                        double& value_out,
+                                        msq_std::vector<Vector3D>& grad_out,
+                                        MsqHessian& Hessian_out,
+                                        MsqError& err ); 
+
+    virtual ObjectiveFunction* clone() const;
+
        /*!Use set_dividing_by_n to control whether this objective
          function divides it's final value by the number of
          metric values used to compute the objective function
@@ -84,55 +107,30 @@ namespace Mesquite
          value will not be scaled.*/
      void set_dividing_by_n(bool d_bool){dividingByN=d_bool;}
      
-   protected:
-     virtual bool compute_analytical_gradient(PatchData &patch,
-					      Vector3D *const &grad,
-					      double &OF_val,
-					      MsqError &err, 
-					      size_t array_size);
-     
-     virtual bool  compute_analytical_hessian(PatchData &patch,
-					      MsqHessian &hessian, 
-					      Vector3D *const &grad,
-					      double &OF_val,
-					      MsqError &err);
-     
    private:
-     double compute_function(double metric_values[], size_t total_num,
-                             MsqError &err);
+     double get_value( double power_sum, size_t count, EvalType type, size_t& global_count );
+     
        //! The metric value entries are raised to the pVal power
      short pVal;
        //! dividingByN is true if we are dividing the objective function
        //! by the number of metric values.
      bool dividingByN;
+     
+     
+     size_t mCount;    /**< The number of accumulated entires */
+     double mPowSum;   /**< The accumulated sum of values */
+     size_t saveCount; /**< Saved count from previous patch */
+     double savePowSum;/**< Saved sum from previous patch */
+     
+     /** Temporary storage for qm sample handles */
+     mutable msq_std::vector<size_t> qmHandles;
+     /** Temporary storage for qm vertex indices */
+     mutable msq_std::vector<size_t> mIndices;
+     /** Temporary storage for qm gradient */
+     mutable msq_std::vector<Vector3D> mGradient;
+      /** Temporary storage for qm Hessian */
+     mutable msq_std::vector<Matrix3D> mHessian;
    };
-   
-   inline double LPtoPTemplate::compute_function(double metric_values[],
-                                                 size_t total_num,
-                                                 MsqError &err)
-   {
-     double scale_factor=1.0;
-       //if scaling, divide by total_num
-     if(dividingByN){
-       if(total_num<=0) {
-         MSQ_SETERR(err)(MsqError::INVALID_ARG);
-         return 0.0;
-       }
-       scale_factor/=total_num;
-     }
-     size_t ind=0;
-     short jnd=0;
-     double temp_value=1;
-     double total_value=0;
-     for(ind=0;ind<total_num;++ind){
-       temp_value=1;
-       for(jnd=0;jnd<pVal;++jnd){
-         temp_value*=metric_values[ind];
-       }
-       total_value+=(scale_factor*temp_value);
-     }
-     return total_value;
-   }
    
 }//namespace
 

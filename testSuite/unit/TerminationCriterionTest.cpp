@@ -43,6 +43,9 @@
 Tests for the TerminationCriterion class.. 
 
 */
+
+#include "meshfiles.h"
+
 //
 #ifndef MSQ_USE_OLD_IO_HEADERS
 #include <iostream>
@@ -126,7 +129,7 @@ public:
   void test_outer_criterion(TerminationCriterion* tc_outer, MsqError &err)
     {
       Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
-      mesh->read_vtk("../../meshFiles/2D/VTK/tri_5_xz.vtk", err);
+      mesh->read_vtk(MESH_FILES_DIR "2D/VTK/tri_5_xz.vtk", err);
       
       Vector3D pnt(0,-5,0);
       Vector3D s_norm(0, -1,0);
@@ -136,10 +139,9 @@ public:
       InstructionQueue queue1;
       
         // create a mean ratio quality metric ...
-      ShapeQualityMetric* cond_num= new ConditionNumberQualityMetric;
+      ConditionNumberQualityMetric* cond_num= new ConditionNumberQualityMetric;
       LPtoPTemplate* obj_func = new LPtoPTemplate(cond_num, 2, err);
       CPPUNIT_ASSERT(!err);
-      obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
       ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
       CPPUNIT_ASSERT(!err);
       pass1->set_outer_termination_criterion(tc_outer);

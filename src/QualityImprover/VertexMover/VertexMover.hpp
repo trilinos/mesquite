@@ -40,11 +40,13 @@
 
 #include "Mesquite.hpp"
 #include "QualityImprover.hpp"
-#include "PatchData.hpp"
-#include "ObjectiveFunction.hpp"
+#include "OFEvaluator.hpp"
 
 namespace Mesquite
 {
+  class ObjectiveFunction;
+  class PatchData;
+
 
   /*! \class VertexMover
     Base class for all Vertex Movers.
@@ -52,14 +54,15 @@ namespace Mesquite
   class VertexMover : public QualityImprover 
   {
   protected:
-    VertexMover();
+    VertexMover( ObjectiveFunction* OF = NULL, bool Nash = true );
+    
   public:
     // virtual destructor ensures use of polymorphism during destruction
     virtual ~VertexMover() { };
     
     virtual double loop_over_mesh( Mesh* mesh, 
                                    MeshDomain* domain,
-                                   PatchData* global_patch,
+                                   MappingFunctionSet* map_func,
                                    MsqError &err);
 
   protected:
@@ -74,7 +77,12 @@ namespace Mesquite
     virtual void terminate_mesh_iteration(PatchData &, 
                                          MsqError &err) = 0;
 
-    ObjectiveFunction* objFunc;
+  
+    OFEvaluator& get_objective_function_evaluator()
+      { return objFuncEval; }
+  
+  private:
+    OFEvaluator objFuncEval;
   };
 
   

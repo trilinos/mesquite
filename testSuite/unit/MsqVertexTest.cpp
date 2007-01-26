@@ -136,7 +136,7 @@ public:
     MsqPrintError err(cout);
     // prints out the vertices.
     MsqVertex* ideal_vertices = one_hex_patch.get_vertex_array(err); CPPUNIT_ASSERT(!err);
-    int num_vtx = one_hex_patch.num_vertices();
+    int num_vtx = one_hex_patch.num_nodes();
     CPPUNIT_ASSERT_EQUAL(8, num_vtx);
     
     MsqVertex vtx;

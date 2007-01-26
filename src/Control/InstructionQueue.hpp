@@ -53,9 +53,9 @@ namespace Mesquite {
   class QualityAssessor;
   class Mesh;
   class MeshDomain;
-  class PatchDataUser;
-  class PatchData;
-  class TargetCalculator;
+  class Instruction;
+  class MappingFunctionSet;
+  class TargetWriter;
 
   /*! \class InstructionQueue
     \brief An InstructionQueue object gathers Mesquite Instructions and ensures
@@ -79,7 +79,7 @@ namespace Mesquite {
 
     MESQUITE_EXPORT virtual ~InstructionQueue() {};
     
-    MESQUITE_EXPORT void add_target_calculator( TargetCalculator* tc, MsqError& err );
+    MESQUITE_EXPORT void add_target_calculator( TargetWriter* tc, MsqError& err );
     
     MESQUITE_EXPORT void add_preconditioner(QualityImprover* instr, MsqError &err);
     MESQUITE_EXPORT void remove_preconditioner(size_t index, MsqError &err);
@@ -95,11 +95,6 @@ namespace Mesquite {
        { autoQualAssess = false; }
     MESQUITE_EXPORT void enable_automatic_quality_assessment()
        { autoQualAssess = true; }
-    
-    MESQUITE_EXPORT void disable_automatic_midnode_adjustment()
-       { autoAdjMidNodes = false; }
-    MESQUITE_EXPORT void enable_automatic_midnode_adjustment()
-       { autoAdjMidNodes = true; }
 
       /**\brief Exectute the instruction queue.
        *
@@ -110,10 +105,14 @@ namespace Mesquite {
        */
     MESQUITE_EXPORT virtual void run_instructions( Mesh* mesh,
                                    MeshDomain* domain,
+                                   MappingFunctionSet* map_func,
                                    MsqError &err);
     
     inline void run_instructions( Mesh* mesh, MsqError& err )
-      { this->run_instructions( mesh, 0, err ); }
+      { this->run_instructions( mesh, 0, 0, err ); }
+    
+    inline void run_instructions( Mesh* mesh, MeshDomain* dom, MsqError& err )
+      { this->run_instructions( mesh, dom, 0, err ); }
     
     MESQUITE_EXPORT void clear();
 
@@ -145,12 +144,11 @@ namespace Mesquite {
   protected:
     
   private:
-    msq_std::list<PatchDataUser*>::iterator clear_master(MsqError &err);
+    msq_std::list<Instruction*>::iterator clear_master(MsqError &err);
 
-    msq_std::list<PatchDataUser*> instructions;
+    msq_std::list<Instruction*> instructions;
 
     bool autoQualAssess;
-    bool autoAdjMidNodes;
     
     size_t nbPreConditionners;
     bool isMasterSet;

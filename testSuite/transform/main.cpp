@@ -42,6 +42,8 @@ describe main.cpp here
 // DESCRIP-END.
 //
 
+#include "meshfiles.h"
+
 #ifndef MSQ_USE_OLD_IO_HEADERS
 #include <iostream>
 using std::cout;
@@ -67,6 +69,7 @@ using std::endl;
 #include "MeshTransform.hpp"
 #include "Matrix3D.hpp"
 #include "Vector3D.hpp"
+#include "MsqVertex.hpp"
 
 using namespace Mesquite;
 
@@ -78,7 +81,7 @@ int main(int argc, char* argv[])
 
   Mesquite::MeshImpl mesh;
     //mesh->read_exodus("transformed_mesh.exo", err);
-  mesh.read_vtk("../../meshFiles/2D/VTK/tfi_horse10x4-12.vtk", err);
+  mesh.read_vtk(MESH_FILES_DIR "2D/VTK/tfi_horse10x4-12.vtk", err);
   if (err) return 1;
   
     // Get all vertex coordinates from mesh
@@ -97,8 +100,7 @@ int main(int argc, char* argv[])
     //create the translation vector
   Matrix3D my_mat(array_entries);
   Vector3D my_vec(0, 0 , 10);
-  MeshTransform my_transform(my_mat, my_vec, err);
-  if (err) return 1;
+  MeshTransform my_transform(my_mat, my_vec);
     //mesh->write_exodus("original_mesh.exo", err);
   my_transform.loop_over_mesh(&mesh, 0, 0, err);
   if (err) return 1;

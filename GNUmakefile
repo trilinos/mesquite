@@ -28,7 +28,10 @@ default: depend all
 srcdir = src
 MODULENAMES :=  Mesh \
 		Control \
-		Control/Wrappers \
+ 		Control/Wrappers \
+		MappingFunction \
+		MappingFunction/Lagrange \
+		MappingFunction/Linear \
 		Misc \
                 ObjectiveFunction \
 		QualityAssessor \
@@ -36,45 +39,48 @@ MODULENAMES :=  Mesh \
 		QualityImprover/TopologyModifier \
 		QualityImprover/VertexMover \
 		QualityImprover/VertexMover/ConjugateGradient \
-		QualityImprover/VertexMover/LaplacianSmoothers \
-		QualityImprover/VertexMover/NonSmoothSteepestDescent \
+ 		QualityImprover/VertexMover/LaplacianSmoothers \
 		QualityImprover/VertexMover/SteepestDescent \
+		QualityImprover/VertexMover/NonSmoothSteepestDescent \
 		QualityImprover/VertexMover/FeasibleNewton \
 		QualityImprover/VertexMover/Randomize \
 		QualityMetric \
-		QualityMetric/Shape \
-		QualityMetric/Smoothness \
-		QualityMetric/Untangle \
-		QualityMetric/Volume \
 		QualityMetric/DFT \
+		QualityMetric/Shape \
+  		QualityMetric/Smoothness \
+		QualityMetric/jacobian \
+		QualityMetric/jacobian/2D \
+		QualityMetric/jacobian/3D \
+ 		QualityMetric/Untangle \
+  		QualityMetric/Volume \
                 TargetCalculator \
 		../lib 
 
 testdir = testSuite
 TESTNAMES := test_1\
+             ActiveSetTest \
              laplacian_test\
              laplacian_wrapper_test\
              untangle_test\
              analytical_grad_3D\
              algorithm_test\
-             ActiveSetTest\
              simple_hybrid_test\
              wrapper_tests\
              tutorial\
-             test_DFT \
              test_TSTT \
-             escobar \
-             Guides843 \
-             deforming \
-             rezone \
              convert \
-             higher_order \
 	     transform \
-	     i_dft_with_culling \
 	     pyramid \
 	     wedge \
+	     Guides843 \
+             deforming \
+	     rezone \
+             i_dft_with_culling \
+             test_DFT \
              unit \
-	     headers
+	     headers \
+	     2d_target \
+	     2d_metrics
 ###             random_test\
 ###             convert\
 ###             shape_wrapper_test

@@ -55,122 +55,114 @@ the negateFlag is set to one.  Defaults to the analytical gradient.
  */
 CompositeOFMultiply::CompositeOFMultiply( ObjectiveFunction* Obj1, 
                                           ObjectiveFunction* Obj2,
-                                          MsqError& err ) {
-  if(Obj1->get_quality_metric()==Obj2->get_quality_metric()){
-    set_quality_metric(Obj1->get_quality_metric());
-  }
-  else
-    set_quality_metric(NULL);
+                                          bool delete_OFs)
+  : deleteObjFuncs(delete_OFs)
+{
   objFunc1=Obj1;
   objFunc2=Obj2;
-    //if both obj1 and ob2 have been negated
-  if (Obj1->get_negate_flag() == Obj2->get_negate_flag()) {
-    set_negate_flag( Obj1->get_negate_flag() );
-  }
-  else {
-    MSQ_SETERR(err)("Product of objective functions is not valid for optimization.",
-                    MsqError::INVALID_ARG);
-    return;
-  }
-  set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
 }
 
 //Michael:  need to clean up here
 CompositeOFMultiply::~CompositeOFMultiply(){
-
-}
-
-/*! Returns the QualityMetric list associated with objFunc1 merged
-  with the QualityMetric list associated with objFunc2.  The entries
-  in this merged list may not be unique.
-*/
-msq_std::list<QualityMetric*> CompositeOFMultiply::get_quality_metric_list()
-{
-  msq_std::list<QualityMetric*> temp_list=objFunc1->get_quality_metric_list();
-  msq_std::list<QualityMetric*> temp_list2=objFunc2->get_quality_metric_list();
-  temp_list.merge(temp_list2);
-  return temp_list;
-}
-
-
-/*!Computes fval= objFunc1->evaluate(patch,err)*objFunc2->evaluate(patch,err).
-  Note that since objFunc1 and objFunc2's evaluate() functions are called
-  (as opposed to their concrete_evaluates) the returned values have
-  already been multiplied by the respective negateFlag (that is,
-  if objFunc1 (or objFunc2) needed to be maximized then the value has
-  been multiplied by negative one so that it may be minimized instead.)
-  Function returns `false' if either objFunc1->evaluate() or
-  objFunc2->evaluate() returns `false'; otherwise function returns `true'.
-*/
-bool CompositeOFMultiply::concrete_evaluate(PatchData &patch, double &fval,
-                                            MsqError &err){
-  double second_val;
-    //if invalid, return false without calculating fval.
-  bool b = objFunc1->evaluate(patch, fval, err); 
-  if(MSQ_CHKERR(err) || !b){
-    fval=0.0;
-    return false;
+  if (deleteObjFuncs) {
+    delete objFunc1;
+    delete objFunc2;
   }
+}
+
+
+ObjectiveFunction* CompositeOFMultiply::clone() const
+  { return new CompositeOFMultiply( objFunc1->clone(), objFunc2->clone(), true ); }
   
-  b = objFunc2->evaluate(patch, second_val, err); 
-  if(MSQ_CHKERR(err) || !b){
-    fval=0.0;
-    return false;
-  }
-  fval*=second_val;
+void CompositeOFMultiply::clear()
+{
+  objFunc1->clear();
+  objFunc2->clear();
+}
+
+bool CompositeOFMultiply::initialize_block_coordinate_descent( 
+                                                       Mesh* mesh, 
+                                                       MeshDomain* domain,
+                                                       MappingFunctionSet* maps,
+                                                       PatchSet* user_set,
+                                                       MsqError& err )
+{
+  bool rval1, rval2;
+  rval1 = objFunc1->initialize_block_coordinate_descent( mesh, domain, maps, user_set, err );
+  MSQ_ERRZERO(err);
+  rval2 = objFunc2->initialize_block_coordinate_descent( mesh, domain, maps, user_set, err );
+  return !MSQ_CHKERR(err) && rval1 && rval2;
+}
+
+bool CompositeOFMultiply::evaluate( EvalType type, 
+                                    PatchData& pd,
+                                    double& value_out,
+                                    bool free,
+                                    MsqError& err )
+{
+  double value_2;
+  bool ok;
+  
+  ok = objFunc1->evaluate( type, pd, value_out, free, err );
+  if (MSQ_CHKERR(err) || !ok) return false;
+  ok = objFunc2->evaluate( type, pd, value_2, free, err );
+  if (MSQ_CHKERR(err) || !ok) return false;
+  
+  value_out *= value_2;
   return true;
 }
 
-/*! Analytically computes the composite objective function's gradient,
-  using the multiplication rule.
-  by scaling the gradient returned objFunc->compute_gradient().
-    \param patch The PatchData object for which the objective function
-           gradient is computed.
-    \param grad An array of Vector3D, at least the size of the number
-           of vertices in the patch.
-    \param array_size is the size of the grad Vector3D[] array and
-    must correspond to the number of vertices in the patch.
-*/
-bool CompositeOFMultiply::compute_analytical_gradient(PatchData &patch,
-						      Vector3D *const &grad,
-						      double &OF_val,
-						      MsqError &err,
-						      size_t array_size)
+bool CompositeOFMultiply::evaluate_with_gradient( EvalType type, 
+                                             PatchData& pd,
+                                             double& value_out,
+                                             msq_std::vector<Vector3D>& grad_out,
+                                             MsqError& err )
 {
-  MSQ_FUNCTION_TIMER( "CompositeOFMultiply::compute_analytical_gradient" );
+  double value_2;
+  bool ok;
   
-  double obj_2_val=0.0;
-  //get the first gradient and objective function value
-  bool rval=objFunc1->compute_gradient(patch, grad, OF_val,  err, array_size); MSQ_ERRZERO(err);
-  //if the above is valid, get the second gradient
-  if(rval){
-    int num_vert=patch.num_vertices();
-    Vector3D* second_grad = new Vector3D[num_vert];
-    //get second objective function's gradient
-    rval=objFunc2->compute_gradient(patch, second_grad,obj_2_val, 
-				    err, num_vert);
-    //if both objective functions gradients were successfully computed, 
-    //use the multiplaction rule to get the complete gradient.
-    if(rval){
-      int i=0;
-      for(i=0;i<num_vert;++i){
-        grad[i]*=obj_2_val;
-        grad[i]+=(second_grad[i]*OF_val);
-      }
-    }
-    //delete the dynamically allocated space for the second gradient
-    delete []second_grad;
+  ok = objFunc1->evaluate_with_gradient( type, pd, value_out, grad_out, err );
+  if (MSQ_CHKERR(err) || !ok) return false;
+  ok = objFunc2->evaluate_with_gradient( type, pd, value_2, mGradient, err );
+  if (MSQ_CHKERR(err) || !ok) return false;
+  
+  assert( grad_out.size() == pd.num_free_vertices() );
+  assert( mGradient.size() == pd.num_free_vertices() );
+  
+  msq_std::vector<Vector3D>::iterator i = grad_out.begin(), j = mGradient.begin();
+  while (i != grad_out.end()) {
+    *i *= value_2;
+    *j *= value_out;
+    *i += *j;
+    ++i;
+    ++j;
   }
-  
-    //true if both gradient and both evaluate were successful.
-  //compute the objective function value by mulitiplying
-  //OF_val and obj_2_val
-  if(rval)
-    OF_val*=obj_2_val;
-  else
-    OF_val=0.0;
-  return rval;
+  value_out *= value_2;
+  return true;
+}
+
+bool CompositeOFMultiply::evaluate_with_Hessian( EvalType , 
+                                            PatchData& ,
+                                            double& ,
+                                            msq_std::vector<Vector3D>& ,
+                                            MsqHessian& ,
+                                            MsqError& err )
+{
+  MSQ_SETERR(err)("Mesquite is not capable of representing the non-sparse "
+                  "Hessian of the product of two objective fuctions. "
+                  "Either choose a solver that does not require the "
+                  "Hessian of the objective function, or do not use the "
+                  "CompositeOFMultiple objective function .",
+                  MsqError::INVALID_STATE );
+  return false;
 }
 	
+
+int CompositeOFMultiply::min_patch_layers() const
+{
+  const int v1 = objFunc1->min_patch_layers();
+  const int v2 = objFunc2->min_patch_layers();
+  return v1 > v2 ? v1 : v2;
+}
 	
 } // namespace Mesquite

@@ -40,6 +40,7 @@
 #include "NormSquaredSmoother.hpp"
 #include "LPtoPTemplate.hpp"
 #include "EdgeLengthQualityMetric.hpp"
+#include "MsqFreeVertexIndexIterator.hpp"
 #ifdef MSQ_USE_OLD_STD_HEADERS
 #  include <vector.h>
 #else
@@ -50,24 +51,15 @@ using std::vector;
 
 namespace Mesquite {
 
+  msq_std::string NormSquaredSmoother::get_name() const
+    { return "NormSquaredSmoother"; }
 
-  NormSquaredSmoother::NormSquaredSmoother(MsqError &err) 
+  NormSquaredSmoother::NormSquaredSmoother() 
   {
-    this->set_name("NormSquaredSmoother");
-  
-    set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err,1,1);MSQ_ERRRTN(err);
-
-//     edgeQM = new EdgeLengthQualityMetric;
-//     edgeQM->set_averaging_method(QualityMetric::RMS,err);MSQ_ERRRTN(err);
-//     objFunc = new LPtoPTemplate(edgeQM, 2, err);MSQ_ERRRTN(err);
-    objFunc = NULL;
-    
   }  
 
   NormSquaredSmoother::~NormSquaredSmoother() 
   {
-//     delete edgeQM;
-//     delete objFunc;
   }    
   
 
@@ -97,7 +89,7 @@ namespace Mesquite {
 
   
       // does the Norm squared of T smoothing
-    MsqFreeVertexIndexIterator free_iter(&pd, err);  MSQ_ERRRTN(err);
+    MsqFreeVertexIndexIterator free_iter(pd, err);  MSQ_ERRRTN(err);
     free_iter.reset();
     free_iter.next();
       //m is the free vertex.

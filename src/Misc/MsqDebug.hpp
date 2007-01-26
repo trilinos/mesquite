@@ -80,7 +80,7 @@ namespace Mesquite {
  *
  *Wrap static functions for managing debug flags and associated
  *output streams.  Output is expected do be done using the 
- *provided macros \ref MSQ_DBGOUT, \ref MSQ_PRINT, and \ref MSQ_DBG.
+ *provided macros MSQ_DBGOUT(), MSQ_PRINT(), and MSQ_DBG().
  *
  *The default output stream for all flags is cout.
  */

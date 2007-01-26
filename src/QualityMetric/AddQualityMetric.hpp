@@ -1,9 +1,9 @@
 /* ***************************************************************** 
     MESQUITE -- The Mesh Quality Improvement Toolkit
 
-    Copyright 2004 Sandia Corporation and Argonne National
-    Laboratory.  Under the terms of Contract DE-AC04-94AL85000 
-    with Sandia Corporation, the U.S. Government retains certain 
+    Copyright 2006 Lawrence Livermore National Laboratory.  Under 
+    the terms of Contract B545069 with the University of Wisconsin -- 
+    Madison, Lawrence Livermore National Laboratory retains certain
     rights in this software.
 
     This library is free software; you can redistribute it and/or
@@ -19,83 +19,93 @@
     You should have received a copy of the GNU Lesser General Public License 
     (lgpl.txt) along with this library; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- 
-    diachin2@llnl.gov, djmelan@sandia.gov, mbrewer@sandia.gov, 
-    pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov      
-   
+
+    (2006) kraftche@cae.wisc.edu    
+
   ***************************************************************** */
-// -*- Mode : c++; tab-width: 3; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 3 -*-
 
-/*! \file AddQualityMetric.hpp
-\brief
-Header file for the Mesquite::AddQualityMetric class
 
-  \author Todd Munson
-  \date   2004-12-21
+/** \file AddQualityMetric.hpp
+ *  \brief 
+ *  \author Jason Kraftcheck 
  */
 
-
-#ifndef AddQualityMetric_hpp
-#define AddQualityMetric_hpp
+#ifndef MSQ_ADD_QUALITY_METRIC_HPP
+#define MSQ_ADD_QUALITY_METRIC_HPP
 
 #include "Mesquite.hpp"
 #include "QualityMetric.hpp"
 
-namespace Mesquite
+namespace Mesquite {
+
+class AddQualityMetric : public QualityMetric
 {
-   class Vector3D;
-   class MsqError;
-   class PatchData;
-   class MsqMeshEntity;
-   class MsqVertex;
-   
-     /*! \class AddQualityMetric
-       \brief Combines two quality metrics (qMetric1 and qMetric2 defined
-       in the parent class CompositeQualityMetric) by addition for two-
-       and three-diminsional elements.  Note:  This function should not
-       be used to combine a node-based metric with an element-based
-       metric.  
-     */
-   class AddQualityMetric : public QualityMetric
-   {
-  public:
-       /*! Ensures that qm1 and qm2 are not NULL.  If either qm1 or qm2
-         are valid only on a feasible region, then the composite
-         metric's feasibility flag is set to one.  If qm1 and qm2 have
-         different negateFlags, then a warning is printed, and the composite
-         metric's negate flag is set to one.  Otherwise, the composite
-         metric's negateFlag is set to qm1's negateFlag (and, thus, qm2's
-         negateFlag).  
-       */
-     AddQualityMetric(QualityMetric* qm1, QualityMetric* qm2, MsqError &err);
-     
-       // virtual destructor ensures use of polymorphism during destruction
-     virtual ~AddQualityMetric()
-        {  }
-     
-     inline void set_addition_operands(QualityMetric* qm1,
-                                       QualityMetric* qm2,
-                                       MsqError &/*err*/){
-       qualMetric1 = qm1;
-       qualMetric2 = qm2;
-     }
+public:
+  
+  AddQualityMetric( QualityMetric* qm1, QualityMetric* qm2, MsqError& err );
+  
+  ~AddQualityMetric();
+  
+  MetricType get_metric_type() const;
+  
+  msq_std::string get_name() const;
+  
+  int get_negate_flag() const;
+  
+  QualityMetric* get_first_metric() const { return &metric1; }
+  QualityMetric* get_second_metric() const { return &metric2; }
+  
+  virtual
+  void get_evaluations( PatchData& pd, 
+                        msq_std::vector<size_t>& handles, 
+                        bool free_vertices_only,
+                        MsqError& err );
 
-     bool evaluate_element(PatchData& pd, MsqMeshEntity *element,double &value,
-                           MsqError &err);
-     bool evaluate_vertex(PatchData& pd, MsqVertex *vertex, double &value,
-                          MsqError &err);
-     
-  protected:
-     
-  private:
-     
-     QualityMetric* qualMetric1;
-     QualityMetric* qualMetric2;
-     
-   };
-   
+  virtual
+  bool evaluate( PatchData& pd, 
+                 size_t handle, 
+                 double& value, 
+                 MsqError& err );
 
-} //namespace
 
-#endif // AddQualityMetric_hpp
+  virtual
+  bool evaluate_with_indices( PatchData& pd,
+                 size_t handle,
+                 double& value,
+                 msq_std::vector<size_t>& indices,
+                 MsqError& err );
 
+
+  virtual
+  bool evaluate_with_gradient( PatchData& pd,
+                 size_t handle,
+                 double& value,
+                 msq_std::vector<size_t>& indices,
+                 msq_std::vector<Vector3D>& gradient,
+                 MsqError& err );
+
+
+  virtual
+  bool evaluate_with_Hessian( PatchData& pd,
+                 size_t handle,
+                 double& value,
+                 msq_std::vector<size_t>& indices,
+                 msq_std::vector<Vector3D>& gradient,
+                 msq_std::vector<Matrix3D>& Hessian,
+                 MsqError& err );
+                 
+private:
+  QualityMetric &metric1, &metric2;
+  mutable msq_std::vector<size_t> mHandles;
+  mutable msq_std::vector<size_t> indices1, indices2;
+  mutable msq_std::vector<Vector3D> grad1, grad2;
+  mutable msq_std::vector<Matrix3D> Hess1, Hess2;
+  
+};
+
+
+
+
+} // namespace Mesquite
+
+#endif

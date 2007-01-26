@@ -55,8 +55,8 @@ class Projection {
     Projection( PlanarDomain* domain );
       /** Project into plane with specified normal - choice of up direction is arbitrary */
     Projection( const Vector3D& view );
-      /** Project points into plane normal to \ref view vector.  Orient
-       *  projection such that the projection of the \ref up vector into
+      /** Project points into plane normal to #view vector.  Orient
+       *  projection such that the projection of the #up vector into
        *  the plane is parallel with the vertical direction in the output.
        */
     Projection( const Vector3D& view, const Vector3D& up ); 

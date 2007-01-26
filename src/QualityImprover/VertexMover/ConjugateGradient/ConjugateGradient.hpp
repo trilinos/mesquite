@@ -38,28 +38,32 @@
 #define Mesquite_ConjugateGradient_hpp
 #include "Mesquite.hpp"
 #include "VertexMover.hpp"
-#include "ObjectiveFunction.hpp"
-#include "MsqMeshEntity.hpp"
 #include "PatchData.hpp"
-#include "QualityImprover.hpp"
+#include "PatchSetUser.hpp"
 
 
 namespace Mesquite
 {
+  class ObjectiveFunction;
+
 
   /*! \class ConjugateGradient
     \brief Optimizes the objective function using the Polack-Ribiere scheme.
    */ 
-  class ConjugateGradient : public VertexMover 
+  class ConjugateGradient : public VertexMover, public PatchSetUser
   {
   public:
-    MESQUITE_EXPORT ConjugateGradient(ObjectiveFunction* objective, MsqError &err);
+    MESQUITE_EXPORT ConjugateGradient(ObjectiveFunction* objective, 
+                                      bool Nash = true);
+    MESQUITE_EXPORT ConjugateGradient(ObjectiveFunction* objective, 
+                                      MsqError &err);
 
     MESQUITE_EXPORT virtual ~ConjugateGradient();
     
-      //!Set the patch type
-    MESQUITE_EXPORT virtual void set_patch_type(PatchData::PatchType type, MsqError &err, 
-                                int patch_param1=0, int patch_param2=0);
+    MESQUITE_EXPORT virtual msq_std::string get_name() const;
+    
+    virtual PatchSet* get_patch_set();
+    
       //!Just for debugging purposes or for obtaining more data
       //! during the optimization process.
     MESQUITE_EXPORT void set_debugging_level(int new_lev)
@@ -89,11 +93,8 @@ namespace Mesquite
     
      
 private:
-    Vector3D* fGrad;
-    Vector3D* pGrad;
+    msq_std::vector<Vector3D> fGrad, pGrad, fNewGrad;
     PatchDataVerticesMemento* pMemento;
-    Vector3D* fNewGrad;
-    int arraySize;
       //just for debugging
     int conjGradDebug;
   };

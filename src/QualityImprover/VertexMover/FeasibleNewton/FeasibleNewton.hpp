@@ -55,11 +55,13 @@
 
 #include "Mesquite.hpp"
 #include "VertexMover.hpp"
-#include "ObjectiveFunction.hpp"
 #include "MsqHessian.hpp"
+#include "PatchSetUser.hpp"
 
 namespace Mesquite
 {
+  class ObjectiveFunction;
+
 
   /*! \class FeasibleNewton
 
@@ -90,10 +92,10 @@ namespace Mesquite
       a direction of negative curvature, the Hessian was not positive definite and we take
       a step in that direction of negative curvature, which is a descent direction. 
   */ 
-  class FeasibleNewton : public VertexMover 
+  class FeasibleNewton : public VertexMover, public PatchSetUser
   {
   public:
-    MESQUITE_EXPORT FeasibleNewton(ObjectiveFunction* of);
+    MESQUITE_EXPORT FeasibleNewton(ObjectiveFunction* of, bool Nash = true);
 
     MESQUITE_EXPORT virtual ~FeasibleNewton()
     { delete coordsMem; }
@@ -103,6 +105,9 @@ namespace Mesquite
     MESQUITE_EXPORT void set_lower_gradient_bound(double gradc){
         convTol=gradc;}
     
+    PatchSet* get_patch_set();
+    
+    MESQUITE_EXPORT msq_std::string get_name() const;
     
   protected:
     virtual void initialize(PatchData &pd, MsqError &err);

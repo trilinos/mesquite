@@ -73,6 +73,25 @@ namespace Mesquite
     //delete mesh;
   }
   
+  inline void move_vertex( PatchData& pd, 
+                           const Vector3D& position,
+                           const Vector3D& delta,
+                           MsqError& err )
+  {
+    MsqVertex* array = pd.get_vertex_array( err ); 
+    if (err) return;
+    
+    int idx = 0, cnt = 0;
+    for (size_t i = 0; i < pd.num_nodes(); ++i)
+      if ((array[i] - position).length_squared() < DBL_EPSILON) 
+        { idx = i; ++cnt; }
+    
+    CPPUNIT_ASSERT_EQUAL( cnt, 1 );
+    
+    array[idx] += delta;
+  }
+        
+  
   /*! creates a patch containing one ideal hexahedra
   */
    inline void create_one_hex_patch(PatchData &one_hex_patch, MsqError &err)
@@ -408,12 +427,7 @@ namespace Mesquite
    inline void create_twelve_hex_patch_inverted(PatchData &pd, MsqError &err)
    {
      create_twelve_hex_patch(pd,err); MSQ_CHKERR(err); 
-
-     MsqVertex* vtx = pd.get_vertex_array(err); 
-
-     Vector3D displacement(0,0,1.5);
-     
-     vtx[16] += displacement;
+     move_vertex( pd, Vector3D(2,1,0), Vector3D(0,0,1.5), err ); MSQ_CHKERR(err);
    }
      
      

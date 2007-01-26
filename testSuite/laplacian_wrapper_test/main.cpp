@@ -43,6 +43,8 @@ describe main.cpp here
 // DESCRIP-END.
 //
 
+#include "meshfiles.h"
+
 #include "Mesquite.hpp"
 #include "MeshImpl.hpp"
 #include "MsqError.hpp"
@@ -72,7 +74,7 @@ int main()
 {
   Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
   MsqPrintError err(cout);
-  mesh->read_vtk("../../meshFiles/2D/VTK/square_quad_2.vtk", err);
+  mesh->read_vtk(MESH_FILES_DIR "2D/VTK/square_quad_2.vtk", err);
   if (err) return 1;
   
      //create geometry: plane z=0, normal (0,0,1)

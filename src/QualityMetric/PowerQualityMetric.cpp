@@ -33,76 +33,100 @@
 */
 
 #include "PowerQualityMetric.hpp"
-#include "QualityMetric.hpp"
-#include "Vector3D.hpp"
-#include "MsqDebug.hpp"
+#include "MsqError.hpp"
 
 using namespace Mesquite;
 
-PowerQualityMetric::PowerQualityMetric(QualityMetric* qm1,
-                                       double pow_factor,
-                                       MsqError &err)
-  : qualMetric( qm1 ), mPower( pow_factor )
+PowerQualityMetric::PowerQualityMetric(QualityMetric* qm,
+                                       double pow_factor )
+  : mMetric(*qm), mPower( pow_factor )
+{}
+
+PowerQualityMetric::~PowerQualityMetric() {}
+
+msq_std::string PowerQualityMetric::get_name() const
 {
-  if(qm1 == NULL){
-    MSQ_SETERR(err)("PowerQualityMetric constructor passed NULL pointer.",
-                    MsqError::INVALID_ARG);
-    return;
-  }
-  feasible=qm1->get_feasible_constraint();
-  int n_flag=qm1->get_negate_flag();
-    //If the power is negative, then negate flag needs
-    //to be (-n_flag).  If the power is very, very small
-    //then we just set an error.
-  if(fabs(pow_factor)<MSQ_MIN)
-  {
-    MSQ_SETERR(err)("PowerQualityMetric passed a double smaller than "
-                    "Mesquite's minimum.", MsqError::INVALID_ARG);
-    return;
-  }
-  else if(pow_factor<0)
-  {
-    n_flag=(-n_flag);
-  }
-    
-  set_negate_flag(n_flag);
+  return msq_std::string("pow(") + mMetric.get_name() + ")";
+}
+
+int PowerQualityMetric::get_negate_flag() const
+{
+  return mPower.value() < 0 ? mMetric.get_negate_flag() : -mMetric.get_negate_flag();
+}
+
+void PowerQualityMetric::get_evaluations( PatchData& pd,
+                                        msq_std::vector<size_t>& handles,
+                                        bool free_only,
+                                        MsqError& err )
+{
+  mMetric.get_evaluations( pd, handles, free_only, err ); MSQ_CHKERR(err);
+}
+
+bool PowerQualityMetric::evaluate( PatchData& pd,
+                                   size_t handle,
+                                   double& value,
+                                   MsqError& err )
+{
+  bool rval = mMetric.evaluate( pd, handle, value, err );
+  value = mPower.raise(value);
+  return !MSQ_CHKERR(err) && rval;
+}
+
+bool PowerQualityMetric::evaluate_with_indices( PatchData& pd,
+                                                size_t handle,
+                                                double& value,
+                                                msq_std::vector<size_t>& indices,
+                                                MsqError& err )
+{
+  bool rval = mMetric.evaluate_with_indices( pd, handle, value, indices, err );
+  value = mPower.raise(value);
+  return !MSQ_CHKERR(err) && rval;
+}
+
+
+bool PowerQualityMetric::evaluate_with_gradient( PatchData& pd,
+                                                 size_t handle,
+                                                 double& value,
+                                                 msq_std::vector<size_t>& indices,
+                                                 msq_std::vector<Vector3D>& gradient,
+                                                 MsqError& err )
+{
+  bool rval = mMetric.evaluate_with_gradient( pd, handle, value, indices, gradient, err );
+  const double v = mPower.raise(value);
+  const double g = fabs(value) > DBL_EPSILON ? mPower.value() * v / value : 0;
+  value = v;
+  for (msq_std::vector<Vector3D>::iterator i = gradient.begin(); i != gradient.end(); ++i)
+    *i *= g;
+  return !MSQ_CHKERR(err) && rval;
+}
   
-  set_metric_type(qm1->get_metric_type());
   
-  set_name("Composite Power");
-}
-
-/*! Returns qMetric1->evaluate_element(element, err) raised to the
- scaleAlpha power.  This function uses the math function pow(...).*/
-bool PowerQualityMetric::evaluate_element(PatchData& pd,
-                                          MsqMeshEntity *element,
-                                          double &value,
-                                          MsqError &err)
+bool PowerQualityMetric::evaluate_with_Hessian( PatchData& pd,
+                                                size_t handle,
+                                                double& value,
+                                                msq_std::vector<size_t>& indices,
+                                                msq_std::vector<Vector3D>& gradient,
+                                                msq_std::vector<Matrix3D>& Hessian,
+                                                MsqError& err )
 {
-  bool valid_flag;
-  double metric1;
-  valid_flag=qualMetric->evaluate_element(pd, element, metric1, err); MSQ_ERRZERO(err);
-  if(!valid_flag)
-    return false;
-  value = mPower.raise(metric1);
-  return valid_flag;
+  indices.clear();
+  bool rval = mMetric.evaluate_with_Hessian( pd, handle, value, indices, gradient, Hessian, err );
+  const double v = mPower.raise(value);
+  const double g = fabs(value) > DBL_EPSILON ? mPower.value() * v / value : 0.0;
+  const double h = fabs(value) > DBL_EPSILON ? g * (mPower.value() - 1) / value : 0.0;
+  value = v;
+  Matrix3D op;
+  unsigned idx = 0;
+  unsigned n = indices.size();
+  for (unsigned r = 0; r < n; ++r) {
+    for (unsigned c = r; c < n; ++c) {
+      Hessian[idx] *= g;
+      op.outer_product( gradient[r], gradient[c] );
+      op *= h;
+      Hessian[idx] += op;
+      ++idx;
+    }
+    gradient[r] *= g;
+  }
+  return !MSQ_CHKERR(err) && rval;
 }
-
-/*! Returns qMetric1->evaluate_vertex(...) raised to the scaleAlpha power.
-  This function uses the math function pow(...).*/
-bool PowerQualityMetric::evaluate_vertex(PatchData& pd,
-                                            MsqVertex* vert,
-                                            double &value,
-                                            MsqError& err)
-{
-  bool valid_flag;
-  double metric1;
-  valid_flag=qualMetric->evaluate_vertex(pd, vert, metric1, err); MSQ_ERRZERO(err);
-  if(!valid_flag)
-    return false;
-  value = mPower.raise(metric1);
-  return valid_flag;
-}
-
-
-

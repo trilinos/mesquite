@@ -91,6 +91,11 @@ public:
   MsqHessianTest()
   {}
 
+  void accumulate_entries( const PatchData &pd, 
+                           size_t elem_index,
+                           const Matrix3D* mat3d_array, 
+                           MsqError &err );
+
   void test_initialize()
   {
     MsqPrintError err(cout);
@@ -106,19 +111,8 @@ public:
     size_t col_index[] = {0,1,2,3,1,2,3,2,3};
     for (i=0; i<9; ++i) 
       CPPUNIT_ASSERT( mColIndex[i] == col_index[i] );
-
-    // Checks values of mAccumulation are correct. 
-    int accumulation[] = {0,1,2,4,5,7,0,3,1,8,-6,4};
-    for (i=0; i<12; ++i)
-      CPPUNIT_ASSERT( mAccumulation[i] == accumulation[i] );
-
   }
 
-  void test_accumulate_entries()
-  {
-    
-  }
-  
   void test_axpy()
   {
     size_t i;
@@ -288,6 +282,23 @@ public:
   }
   
 };
+
+void MsqHessianTest::accumulate_entries( const PatchData &pd, 
+                                         size_t elem_index,
+                                         const Matrix3D* mat3d_array, 
+                                         MsqError &err )
+{
+  const MsqMeshEntity& elem = pd.element_by_index( elem_index );
+  const size_t nv = elem.vertex_count();
+  const size_t* v = elem.get_vertex_index_array();
+  for (size_t r = 0; r < nv; ++r) {
+    for (size_t c = r; c < nv; ++c) {
+      add( v[r], v[c], *mat3d_array, err );
+      CPPUNIT_ASSERT(!err);
+      ++mat3d_array;
+    }
+  }
+}
 
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(MsqHessianTest, "MsqHessianTest");

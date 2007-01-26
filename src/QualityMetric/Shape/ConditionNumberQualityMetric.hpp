@@ -40,7 +40,8 @@ Header file for the Mesquite::ConditionNumberQualityMetric class
 
 
 #include "Mesquite.hpp"
-#include "ShapeQualityMetric.hpp"
+#include "ElementQM.hpp"
+#include "AveragingQM.hpp"
 
 
 namespace Mesquite
@@ -54,7 +55,7 @@ namespace Mesquite
        It does require a feasible region, and the metric needs
        to be minimized.
      */
-   class ConditionNumberQualityMetric : public ShapeQualityMetric
+   class ConditionNumberQualityMetric : public ElementQM, public AveragingQM
    {
   public:
      ConditionNumberQualityMetric();
@@ -63,14 +64,16 @@ namespace Mesquite
      virtual ~ConditionNumberQualityMetric()
         {}
      
-       //! evaluate using mesquite objects 
-     bool evaluate_element(PatchData &pd, MsqMeshEntity *element,double &fval,
-                           MsqError &err); 
-          
-  protected:
-     
-  private:
-    
+     virtual msq_std::string get_name() const;
+
+      //! 1 if metric should be minimized, -1 if metric should be maximized.
+     virtual int get_negate_flag() const;
+
+     virtual
+     bool evaluate( PatchData& pd, 
+                    size_t handle, 
+                    double& value, 
+                    MsqError& err );
   };
     
    

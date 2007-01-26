@@ -34,21 +34,48 @@
 
 
 #include "LocalSizeQualityMetric.hpp"
-#include "Vector3D.hpp"
-#include "QualityMetric.hpp"
-#include "MsqVertex.hpp"
 #include "PatchData.hpp"
-#include "MsqMeshEntity.hpp"
-
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <vector.h>
-#else
-#  include <vector>
-   using std::vector;
-#endif
-
 
 using namespace Mesquite;
+
+   //!Calculate the area of the triangle formed by the three vertices.
+static inline double compute_corner_area( PatchData &pd,
+                                          size_t vert_1,
+                                          size_t vert_2,
+                                          size_t vert_3,
+                                          MsqError &err)
+{
+  MsqVertex* verts = pd.get_vertex_array(err);
+  Vector3D vec_1=verts[vert_2]-verts[vert_1];
+  Vector3D vec_2=verts[vert_3]-verts[vert_1];
+  Vector3D cross_vec=vec_1*vec_2;
+  return (cross_vec.length()/2.0);
+}
+   
+   //!Calculate the volume of the tetrahedron formed by the four vertices.
+static inline double compute_corner_volume( PatchData &pd,
+                                            size_t vert_1,
+                                            size_t vert_2,
+                                            size_t vert_3,
+                                            size_t vert_4,
+                                            MsqError &err)
+{
+  MsqVertex* verts = pd.get_vertex_array(err);
+  Vector3D vec_1=verts[vert_2]-verts[vert_1];
+  Vector3D vec_2=verts[vert_3]-verts[vert_1];
+  Vector3D vec_3=verts[vert_4]-verts[vert_1];
+  return fabs((vec_3%(vec_1*vec_2))/6.0);
+
+}  
+
+LocalSizeQualityMetric::~LocalSizeQualityMetric()
+  {}
+  
+msq_std::string LocalSizeQualityMetric::get_name() const
+  { return "Local Size"; }
+
+int LocalSizeQualityMetric::get_negate_flag() const
+  { return 1; }
 
 /*!For the given vertex, vert, with connected elements, e_i for i=1...K,
   the LocalSizeQualityMetric computes the corner volumes (or areas) of
@@ -58,14 +85,12 @@ using namespace Mesquite;
   volume of all the element corners connected to this vertex.  For
   vertices attached to pyramid elements, this metric is undefined.
 */
-bool LocalSizeQualityMetric::evaluate_vertex(PatchData &pd, MsqVertex* vert,
-                                             double &fval, MsqError &err)
+bool LocalSizeQualityMetric::evaluate( PatchData &pd, size_t this_vert,
+                                       double &fval, MsqError &err )
 {
   fval=0.0;
     //get the element array
   MsqMeshEntity* elems = pd.get_element_array(err);  MSQ_ERRZERO(err);
-    //conver the MsqVertex pointer into an index
-  size_t this_vert = pd.get_vertex_index(vert);
     //get the vertex to element array and the offset array
   //const size_t* elem_offset = pd.get_vertex_to_elem_offset(err);  MSQ_ERRZERO(err);
   //const size_t* v_to_e_array = pd.get_vertex_to_elem_array(err);  MSQ_ERRZERO(err);
@@ -87,7 +112,7 @@ bool LocalSizeQualityMetric::evaluate_vertex(PatchData &pd, MsqVertex* vert,
     //Can we remove this dynamic allocatio?
   double* met_vals = new double[num_elems];
     //vector to hold the other verts which form a corner.
-  vector<size_t> other_vertices;
+  msq_std::vector<size_t> other_vertices;
   other_vertices.reserve(4);
   double total_val=0.0;
   size_t i=0;
@@ -119,7 +144,8 @@ bool LocalSizeQualityMetric::evaluate_vertex(PatchData &pd, MsqVertex* vert,
           //connected to this vertex (possibly a pyramid element).
         met_vals[i]=0.0;
         MSQ_SETERR(err)("Incorrect number of vertices returned from "
-                        "get_connected_vertices.", MsqError::INTERNAL_ERROR);
+                        "get_connected_vertices.", MsqError::UNSUPPORTED_ELEMENT);
+        return false;
     };
       //keep track of total so that we can compute the linear average
     total_val+=met_vals[i];
@@ -150,3 +176,27 @@ bool LocalSizeQualityMetric::evaluate_vertex(PatchData &pd, MsqVertex* vert,
   
 }
 
+     
+bool LocalSizeQualityMetric::evaluate_with_indices( PatchData& pd,
+                                                    size_t vertex,
+                                                    double& value,
+                                                    msq_std::vector<size_t>& indices,
+                                                    MsqError& err )
+{
+  indices.clear();
+  pd.get_adjacent_vertex_indices( vertex, indices, err ); MSQ_ERRZERO(err);
+  
+  msq_std::vector<size_t>::iterator r, w;
+  for (r = w = indices.begin(); r != indices.end(); ++r) {
+    if (*r < pd.num_free_vertices()) {
+      *w = *r;
+      ++w;
+    }
+  }
+  indices.erase( w, indices.end() );
+  if (vertex < pd.num_free_vertices())
+    indices.push_back( vertex );
+  
+  bool rval = evaluate( pd, vertex, value, err );
+  return !MSQ_CHKERR(err) && rval;
+}

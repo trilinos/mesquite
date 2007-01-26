@@ -42,6 +42,7 @@ Calls the Mesquite wrappers. First command line argument is the mesh file.
  */
 // DESCRIP-END.
 //
+#include "meshfiles.h"
 
 #include "Mesquite.hpp"
 #include "MeshImpl.hpp"
@@ -75,8 +76,8 @@ int main(int argc, char* argv[])
   if (argc==1) {
 	
      cout << "No command line argument given for mesh file.\n"
-          << "Defaulting to ../../meshFiles/3D/VTK/tire.vtk\n";
-     strcpy(file_name,"../../meshFiles/3D/VTK/tire.vtk");
+          << "Defaulting to " MESH_FILES_DIR "3D/VTK/tire.vtk\n";
+     strcpy(file_name,MESH_FILES_DIR "3D/VTK/tire.vtk");
   } 
   else if (argc>2) 
     cout << "Too many command line arguments.\n" << endl;

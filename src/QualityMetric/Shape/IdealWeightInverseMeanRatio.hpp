@@ -40,7 +40,8 @@ Header file for the Mesquite::IdealWeightInverseMeanRatio class
 #define IdealWeightInverseMeanRatio_hpp
 
 #include "Mesquite.hpp"
-#include "ShapeQualityMetric.hpp"
+#include "ElementQM.hpp"
+#include "AveragingQM.hpp"
 #include "Vector3D.hpp"
 #include "Matrix3D.hpp"
 #include "Exponent.hpp"
@@ -68,36 +69,45 @@ namespace Mesquite
      if pow_dbl is greater than zero and maximized if pow_dbl
      is less than zero.  pow_dbl being equal to zero is invalid.
    */
-   class IdealWeightInverseMeanRatio : public ShapeQualityMetric
+   class IdealWeightInverseMeanRatio : public ElementQM, public AveragingQM
    {
    public:
-      MESQUITE_EXPORT IdealWeightInverseMeanRatio(MsqError& err, double pow_dbl = 1.0);
+      MESQUITE_EXPORT IdealWeightInverseMeanRatio(MsqError& err, double power = 1.0);
+      MESQUITE_EXPORT IdealWeightInverseMeanRatio();
 
       //! virtual destructor ensures use of polymorphism during destruction
       MESQUITE_EXPORT virtual ~IdealWeightInverseMeanRatio() {
       }
      
-      //! evaluate using mesquite objects 
-      MESQUITE_EXPORT bool evaluate_element(PatchData &pd, MsqMeshEntity *element, 
-                            double &fval, MsqError &err); 
+     
+     virtual msq_std::string get_name() const;
 
-      MESQUITE_EXPORT bool compute_element_analytical_gradient(PatchData &pd,
-                                               MsqMeshEntity *element,
-                                               MsqVertex *free_vtces[], 
-                                               Vector3D grad_vec[],
-                                               int num_vtx, 
-                                               double &metric_value,
-                                               MsqError &err);
+      //! 1 if metric should be minimized, -1 if metric should be maximized.
+     virtual int get_negate_flag() const;
 
-      MESQUITE_EXPORT bool compute_element_analytical_hessian(PatchData &pd,
-                                              MsqMeshEntity *e,
-                                              MsqVertex *v[], 
-                                              Vector3D g[],
-                                              Matrix3D h[],
-                                              int nv, 
-                                              double &m,
-                                              MsqError &err);
+     virtual
+     bool evaluate( PatchData& pd, 
+                    size_t handle, 
+                    double& value, 
+                    MsqError& err );
       
+     virtual
+     bool evaluate_with_gradient( PatchData& pd,
+                    size_t handle,
+                    double& value,
+                    msq_std::vector<size_t>& indices,
+                    msq_std::vector<Vector3D>& gradient,
+                    MsqError& err );
+
+     virtual
+     bool evaluate_with_Hessian( PatchData& pd,
+                    size_t handle,
+                    double& value,
+                    msq_std::vector<size_t>& indices,
+                    msq_std::vector<Vector3D>& gradient,
+                    msq_std::vector<Matrix3D>& Hessian,
+                    MsqError& err );
+
     private:
        //! Sets the power value in the metric computation.
      void set_metric_power(double pow_dbl, MsqError& err);

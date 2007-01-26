@@ -95,7 +95,7 @@ Mesquite::MsqError::setter(err, MSQ_FUNCTION,__FILE__,__LINE__).set
  *
  * Used to hold error state and related information.
  * Internal Mesquite code should access this object via
- * the \ref MSQ_SETERR and \ref MSQ_CHKERR macros. 
+ * the MSQ_SETERR() and MSQ_CHKERR() macros. 
  *
  * For applications, the cast-to-bool operator and << operator
  * are provided for convenient, if simple access to this data.
@@ -104,7 +104,7 @@ Mesquite::MsqError::setter(err, MSQ_FUNCTION,__FILE__,__LINE__).set
  * There are two options for an application to gain more detailed
  * access to the error data.  The application may either access
  * the data stored in this class via the provided methods or
- * subclass MsqError, overriding \ref set_error and \ref push
+ * subclass MsqError, overriding set_error() and push()
  * to handle the error data as it is generated.
 */
 class MsqError {
@@ -174,7 +174,7 @@ public:
   MESQUITE_EXPORT const char* error_message() const;
   
   //! Container type used to store stack trace.
-  //! Return type for \ref stack
+  //! Return type for stack()
   typedef msq_std::list<Trace> StackTrace;
 
   //! Get stack trace
@@ -228,7 +228,7 @@ private:
 
   //! Print message and stack trace
 msq_stdio::ostream& operator<<( msq_stdio::ostream&, const MsqError& );
-  //! Print \ref MsqError::Trace
+  //! Print MsqError::Trace
 msq_stdio::ostream& operator<<( msq_stdio::ostream&, const MsqError::Trace& );
 
 /**

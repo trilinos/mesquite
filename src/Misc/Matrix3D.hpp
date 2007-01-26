@@ -140,6 +140,24 @@ namespace Mesquite
       set_column( 1, col2 );
       set_column( 2, col3 );
     }
+    
+    Matrix3D( double radians, const Vector3D& axis )
+    {
+      Vector3D v(axis);
+      v.normalize();
+      const double c = msq_stdc::cos( radians );
+      const double s = msq_stdc::sin( radians );
+      v_[0] =  c      + (1.0 - c) * v[0]*v[0];
+      v_[1] = -v[2]*s + (1.0 - c) * v[0]*v[1];
+      v_[2] =  v[1]*s + (1.0 - c) * v[0]*v[2];
+      v_[3] =  v[2]*s + (1.0 - c) * v[0]*v[1];
+      v_[4] =  c      + (1.0 - c) * v[1]*v[1];
+      v_[5] = -v[0]*s + (1.0 - c) * v[1]*v[2];
+      v_[6] = -v[1]*s + (1.0 - c) * v[0]*v[2];
+      v_[7] =  v[0]*s + (1.0 - c) * v[1]*v[2];
+      v_[8] =  c      + (1.0 - c) * v[2]*v[2];
+    }
+      
 
     //! sets matrix entries to values in array.
     //! \param v is an array of 9 doubles. 
@@ -220,6 +238,7 @@ namespace Mesquite
     // Matrix Operators
     friend bool operator==(const Matrix3D &lhs, const Matrix3D &rhs);
     friend bool operator!=(const Matrix3D &lhs, const Matrix3D &rhs);
+    friend Matrix3D operator-( const Matrix3D& A );
     friend double Frobenius_2(const Matrix3D &A);
     friend Matrix3D transpose(const Matrix3D &A);
     inline Matrix3D& transpose();
@@ -290,6 +309,7 @@ namespace Mesquite
       return Vector3D( v_[c], v_[c+3], v_[c+6] );
     }
 
+    inline bool positive_definite() const;
   };
 
 
@@ -344,6 +364,19 @@ namespace Mesquite
   inline bool operator!=(const Matrix3D &lhs, const Matrix3D &rhs)
   { return !(lhs == rhs); }
 
+  inline Matrix3D operator-( const Matrix3D& A )
+  {
+    return Matrix3D( -A.v_[0],
+                     -A.v_[1],
+                     -A.v_[2],
+                     -A.v_[3],
+                     -A.v_[4],
+                     -A.v_[5],
+                     -A.v_[6],
+                     -A.v_[7],
+                     -A.v_[8] );
+  }
+                     
   //! \return A+B
   inline const Matrix3D operator+(const Matrix3D &A, 
                             const Matrix3D &B)
@@ -449,17 +482,30 @@ namespace Mesquite
   //! \f$ += B^T  \f$
   inline Matrix3D& Matrix3D::plus_transpose_equal( const Matrix3D& b )
   {
-    v_[0] += b.v_[0];
-    v_[1] += b.v_[3];
-    v_[2] += b.v_[6];
-    
-    v_[3] += b.v_[1];
-    v_[4] += b.v_[4];
-    v_[5] += b.v_[7];
-    
-    v_[6] += b.v_[2];
-    v_[7] += b.v_[5];
-    v_[8] += b.v_[8];
+    if (&b == this) {
+      v_[0] *= 2.0;
+      v_[1] += v_[3];
+      v_[2] += v_[6];
+      v_[3]  = v_[1];
+      v_[4] *= 2.0;
+      v_[5] += v_[7];
+      v_[6]  = v_[2];
+      v_[7]  = v_[5];
+      v_[8] *= 2.0;
+    }
+    else {
+      v_[0] += b.v_[0];
+      v_[1] += b.v_[3];
+      v_[2] += b.v_[6];
+
+      v_[3] += b.v_[1];
+      v_[4] += b.v_[4];
+      v_[5] += b.v_[7];
+
+      v_[6] += b.v_[2];
+      v_[7] += b.v_[5];
+      v_[8] += b.v_[8];
+    }
     return *this;
   }
 
@@ -687,6 +733,22 @@ namespace Mesquite
     
     return;
   }
+  
+inline bool Matrix3D::positive_definite() const
+{
+  // A = B + C
+ //where
+ // B = (A + transpose(A))/2
+ // C = (A - transpose(A))/2
+ // B is always a symmetric matrix and 
+ // A is positive definite iff B is positive definite.
+ Matrix3D B(*this);
+ B.plus_transpose_equal( *this );
+ B *= 0.5;
+ 
+ // Sylvester's Criterion for positive definite symmetric matrix
+ return (B[0][0] > 0.0) && (B.sub_det(2,2) > 0.0) && (det(B) > 0.0);
+}
 
 } // namespace Mesquite
 

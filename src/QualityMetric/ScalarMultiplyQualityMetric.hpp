@@ -46,33 +46,58 @@ namespace Mesquite
      /*! \class ScalarMultiplyQualityMetric
        \brief Multiplies quality metric value by a number (a double).
      */
-   class ScalarMultiplyQualityMetric : public QualityMetric
-   {
-  public:
-       /*! Ensures that qm1 is not NULL.  If qm1 is only valid
-         on a certain feasible, then the composite metric has the same
-         constraint.  The composite metric also has the same negate flag
-         as qm1.
-       */
-     ScalarMultiplyQualityMetric(QualityMetric* qm1, double scalar_double,
-                                 MsqError &err);
-     
-       // virtual destructor ensures use of polymorphism during destruction
-     virtual ~ScalarMultiplyQualityMetric()
-        {  }
-     
-     bool evaluate_element(PatchData& pd, MsqMeshEntity *element,double &value,
-                           MsqError &err);
-     bool evaluate_vertex(PatchData& pd, MsqVertex *vertex, double &value,
-                          MsqError &err);
+class ScalarMultiplyQualityMetric : public QualityMetric
+{
+public:
 
-  private:
-    
-    QualityMetric* qualMetric;
-    double scaleFactor;
-          
-   };
-   
+  ScalarMultiplyQualityMetric( QualityMetric* metric, double scale )
+    : mMetric(metric), 
+      mScale( scale ) 
+    {}
+  
+  ~ScalarMultiplyQualityMetric() {}
+  
+  MetricType get_metric_type() const
+    { return mMetric->get_metric_type(); }
+  
+  msq_std::string get_name() const;
+  
+  int get_negate_flag() const
+    { return mMetric->get_negate_flag(); }
+  
+  void get_evaluations( PatchData& pd, 
+                        msq_std::vector<size_t>& handles, 
+                        bool free_vertices_only,
+                        MsqError& err );
+  
+  bool evaluate( PatchData& pd, size_t handle, double& value, MsqError& err );
+  
+  bool evaluate_with_indices( PatchData& pd,
+                              size_t handle,
+                              double& value,
+                              msq_std::vector<size_t>& indices,
+                              MsqError& err );
+  
+  bool evaluate_with_gradient( PatchData& pd,
+                               size_t handle,
+                               double& value,
+                               msq_std::vector<size_t>& indices,
+                               msq_std::vector<Vector3D>& gradient,
+                               MsqError& err );
+  
+  bool evaluate_with_Hessian( PatchData& pd,
+                              size_t handle,
+                              double& value,
+                              msq_std::vector<size_t>& indices,
+                              msq_std::vector<Vector3D>& gradient,
+                              msq_std::vector<Matrix3D>& Hessian,
+                              MsqError& err );
+
+private:
+  
+  QualityMetric* mMetric;
+  double mScale;
+};
 
 } //namespace
 

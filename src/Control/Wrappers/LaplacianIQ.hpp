@@ -59,7 +59,7 @@ namespace Mesquite {
 
    class LaplacianIQ : public InstructionQueue {
    private:
-      ShapeQualityMetric* inverseMeanRatio;
+      IdealWeightInverseMeanRatio* inverseMeanRatio;
       LaplacianSmoother* lapl1;
       QualityAssessor* mQA;
       TerminationCriterion* mTerm;

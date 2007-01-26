@@ -54,15 +54,18 @@
 
 using namespace Mesquite;
 
-FeasibleNewton::FeasibleNewton(ObjectiveFunction* of) :
-  VertexMover()
+msq_std::string FeasibleNewton::get_name() const { return "FeasibleNewton"; }
+  
+PatchSet* FeasibleNewton::get_patch_set()
+  { return PatchSetUser::get_patch_set(); }
+
+FeasibleNewton::FeasibleNewton(ObjectiveFunction* of, bool Nash)
+  : VertexMover(of, Nash), 
+    PatchSetUser(true),
+    convTol(1e-6),
+    coordsMem(0)
 {
-  coordsMem=NULL;
-  objFunc=of;
   MsqError err;
-  convTol=1e-6;
-  this->set_name("FeasibleNewton");
-  set_patch_type(PatchData::GLOBAL_PATCH, err);
   TerminationCriterion* default_crit=get_inner_termination_criterion();
   default_crit->add_criterion_type_with_double(
                     TerminationCriterion::GRADIENT_L2_NORM_ABSOLUTE, 5e-5, err);
@@ -97,11 +100,11 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   double original_value, new_value;
   double beta;
   
-  int nv = pd.num_vertices();
-  msq_std::vector<Vector3D> grad_vect(nv), d_vect(nv);
-  Vector3D* grad = &grad_vect[0];
-  Vector3D* d = &d_vect[0];
+  int nv = pd.num_free_vertices();
+  msq_std::vector<Vector3D> grad(nv), d(nv);
   bool fn_bool=true;// bool used for determining validity of patch
+  
+  OFEvaluator& objFunc = get_objective_function_evaluator();
 
   int i;
 
@@ -115,7 +118,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   mHessian.initialize(pd, err); MSQ_ERRRTN(err);
 
   // 3.  Calculate the norm of the gradient for the patch
-  MSQ_DBGOUT(3) << "  o  gradient norm: " << length(grad, nv) << msq_stdio::endl;
+  MSQ_DBGOUT(3) << "  o  gradient norm: " << length(&grad[0], nv) << msq_stdio::endl;
   
   // does the Feasible Newton iteration until stopping is required.
   // Terminate when inner termination criterion signals.
@@ -123,7 +126,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   /* Computes the value of the stopping criterion*/
   TerminationCriterion* term_crit=get_inner_termination_criterion();
   while ( !term_crit->terminate() ) {
-    fn_bool = objFunc->compute_hessian( pd, mHessian, grad, original_value, err );
+    fn_bool = objFunc.update( pd, original_value, grad, mHessian,  err );
     MSQ_ERRRTN(err);
     if (!fn_bool) {
       MSQ_SETERR(err)("invalid patch for hessian calculation", MsqError::INTERNAL_ERROR);
@@ -132,11 +135,11 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   
     // Prints out free vertices coordinates. 
     if (MSQ_DBG(3)) {
-      MSQ_DBGOUT(3) << "\n  o Free vertices ("<< pd.num_free_vertices(err)
+      MSQ_DBGOUT(3) << "\n  o Free vertices ("<< pd.num_free_vertices()
                 <<")original coordinates:\n ";
       MSQ_ERRRTN(err);
       MsqVertex* toto1 = pd.get_vertex_array(err); MSQ_ERRRTN(err);
-      MsqFreeVertexIndexIterator ind1(&pd, err); MSQ_ERRRTN(err);
+      MsqFreeVertexIndexIterator ind1(pd, err); MSQ_ERRRTN(err);
       ind1.reset();
       while (ind1.next()) {
         MSQ_DBGOUT(3) << "\t\t\t" << toto1[ind1.value()];
@@ -149,11 +152,11 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
     //    (b) stop if relative residual is small
     //    (c) stop if direction of negative curvature is obtained
 
-    mHessian.cg_solver(d, grad, err); MSQ_ERRRTN(err);
+    mHessian.cg_solver(&d[0], &grad[0], err); MSQ_ERRRTN(err);
 
     // 5. Check for descent direction (inner produce of gradient and
     //    direction is negative.
-    double alpha = inner(grad, d, nv);
+    double alpha = inner(&grad[0], &d[0], nv);
     // TODD -- Add back in if you encounter problems -- do a gradient
     //         step if the direction from the conjugate gradient solver
     //         is not a descent direction for the objective function.  We
@@ -207,10 +210,10 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
     //	       to a form of the linesearch meant for nondifferentiable
     //         functions.
 
-    pd.move_free_vertices_constrained(d, nv, beta, err); MSQ_ERRRTN(err);
-    fn_bool = objFunc->compute_gradient(pd, grad, new_value, err); MSQ_ERRRTN(err);
+    pd.move_free_vertices_constrained(&d[0], nv, beta, err); MSQ_ERRRTN(err);
+    fn_bool = objFunc.evaluate(pd, new_value, grad, err); MSQ_ERRRTN(err);
     if ((fn_bool && (original_value - new_value >= -alpha*beta - epsilon)) ||
-        (fn_bool && (length(grad, nv) < 100*convTol))) {
+        (fn_bool && (length(&grad[0], nv) < 100*convTol))) {
       // Armijo linesearch rules passed.
     }
     else {
@@ -230,9 +233,9 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
       while (beta >= tol1) {
         // 6. Search along the direction
         //    (a) trial = x + beta*d
-        pd.move_free_vertices_constrained(d, nv, beta, err); MSQ_ERRRTN(err);
+        pd.move_free_vertices_constrained(&d[0], nv, beta, err); MSQ_ERRRTN(err);
         //    (b) function evaluation
-        fn_bool = objFunc->evaluate(pd, new_value, err);  MSQ_ERRRTN(err);
+        fn_bool = objFunc.evaluate(pd, new_value, err);  MSQ_ERRRTN(err);
         //    (c) check for sufficient decrease and stop
         if (!fn_bool) { 
 	  // function not defined at trial point
@@ -271,12 +274,12 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
 
         MSQ_PRINT(1)("Sufficient decrease not obtained in linesearch; switching to gradient.\n");
 
-	alpha = inner(grad, grad, nv); 	// compute norm squared of gradient
+	alpha = inner(&grad[0], &grad[0], nv); 	// compute norm squared of gradient
 	if (alpha < 1) alpha = 1;	// take max with constant
 	for (i = 0; i < nv; ++i) {
 	  d[i] = -grad[i] / alpha; 	// compute scaled gradient
 	}
-	alpha = inner(grad, d, nv);  	// recompute alpha
+	alpha = inner(&grad[0], &d[0], nv);  	// recompute alpha
 	alpha *= sigma;                 // equal to one for large gradient
 	beta = 1.0;
 
@@ -284,9 +287,9 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
 	while (beta >= tol2) {
 	  // 6. Search along the direction
 	  //    (a) trial = x + beta*d
-	  pd.move_free_vertices_constrained(d, nv, beta, err); MSQ_ERRRTN(err);
+	  pd.move_free_vertices_constrained(&d[0], nv, beta, err); MSQ_ERRRTN(err);
 	  //    (b) function evaluation
-	  fn_bool = objFunc->evaluate(pd, new_value, err);  MSQ_ERRRTN(err);
+	  fn_bool = objFunc.evaluate(pd, new_value, err);  MSQ_ERRRTN(err);
 	  //    (c) check for sufficient decrease and stop
 	  if (!fn_bool) { 
 	    // function not defined at trial point
@@ -319,14 +322,14 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
       }
 
       // Compute the gradient at the new point -- needed by termination check
-      fn_bool = objFunc->compute_gradient(pd, grad, new_value, err); MSQ_ERRRTN(err);
+      fn_bool = objFunc.update(pd, new_value, grad, err); MSQ_ERRRTN(err);
     }
 
     // Prints out free vertices coordinates. 
     if (MSQ_DBG(3)) {
       MSQ_DBGOUT(3) << "  o Free vertices new coordinates: \n";
       MsqVertex* toto1 = pd.get_vertex_array(err); MSQ_ERRRTN(err);
-      MsqFreeVertexIndexIterator ind(&pd, err); MSQ_ERRRTN(err);
+      MsqFreeVertexIndexIterator ind(pd, err); MSQ_ERRRTN(err);
       ind.reset();
       while (ind.next()) {
         MSQ_DBGOUT(3) << "\t\t\t" << toto1[ind.value()];
@@ -334,7 +337,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
     }
 
     // checks stopping criterion 
-    term_crit->accumulate_inner( pd, new_value, grad, err ); MSQ_ERRRTN(err);
+    term_crit->accumulate_inner( pd, new_value, &grad[0], err ); MSQ_ERRRTN(err);
     term_crit->accumulate_patch( pd, err ); MSQ_ERRRTN(err);
   }
   MSQ_PRINT(2)("FINISHED\n");

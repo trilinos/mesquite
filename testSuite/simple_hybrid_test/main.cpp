@@ -43,6 +43,8 @@ describe main.cpp here
 // DESCRIP-END.
 //
 
+#include "meshfiles.h"
+
 #include "Mesquite.hpp"
 #include "MeshImpl.hpp"
 #include "PlanarDomain.hpp"
@@ -84,15 +86,15 @@ int main()
   Vector3D s_norm(0,0,1);
   Mesquite::PlanarDomain msq_geom(s_norm, pnt);
      
-    //mesh->read_vtk("../../meshFiles/2D/VTK/cube-clip-corner.vtk", err);
-  mesh->read_vtk("../../meshFiles/2D/VTK/hybrid_3quad_1tri.vtk", err);
+    //mesh->read_vtk(MESH_FILES_DIR "2D/VTK/cube-clip-corner.vtk", err);
+  mesh->read_vtk(MESH_FILES_DIR "2D/VTK/hybrid_3quad_1tri.vtk", err);
   if (err) return 1;
   
     // creates an intruction queue
   InstructionQueue queue1;
   
     // creates a mean ratio quality metric ...
-  ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);
+  IdealWeightInverseMeanRatio* mean_ratio = new IdealWeightInverseMeanRatio(err);
   if (err) return 1;
     //   mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
     //   mean_ratio->set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
@@ -102,12 +104,11 @@ int main()
     // ... and builds an objective function with it
   LPtoPTemplate obj_func(mean_ratio, 2, err);
   if (err) return 1;;
-  obj_func.set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
   
     // creates the steepest descent, feas newt optimization procedures
     //ConjugateGradient* pass1 = new ConjugateGradient( &obj_func, err );
-  FeasibleNewton pass1( &obj_func );
-  pass1.set_patch_type(PatchData::GLOBAL_PATCH, err);
+  FeasibleNewton pass1( &obj_func, true );
+  pass1.use_global_patch();
   if (err) return 1;;
   
   QualityAssessor qa=QualityAssessor(mean_ratio,QualityAssessor::ALL_MEASURES, err);

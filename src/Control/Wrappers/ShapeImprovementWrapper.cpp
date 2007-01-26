@@ -79,9 +79,8 @@ ShapeImprovementWrapper::ShapeImprovementWrapper(MsqError& err,
   
   untangleMetric = new UntangleBetaQualityMetric(untBeta);
   untangleFunc =  new LPtoPTemplate(untangleMetric, 2, err);  MSQ_ERRRTN(err);
-  untangleFunc->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
   untangleGlobal = new ConjugateGradient(untangleFunc,err);  MSQ_ERRRTN(err);
-  untangleGlobal->set_patch_type(PatchData::GLOBAL_PATCH, err,1 ,1);  MSQ_ERRRTN(err);
+  untangleGlobal->use_global_patch();
   
   untangleGlobalInner = new TerminationCriterion();
   untangleGlobalOuter = new TerminationCriterion();
@@ -91,15 +90,12 @@ ShapeImprovementWrapper::ShapeImprovementWrapper(MsqError& err,
   untangleGlobalOuter->add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);  MSQ_ERRRTN(err);
   
   inverseMeanRatio = new IdealWeightInverseMeanRatio(err); MSQ_ERRRTN(err);
-  inverseMeanRatio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
-  inverseMeanRatio->set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
-  inverseMeanRatio->set_averaging_method(QualityMetric::LINEAR,err);  MSQ_ERRRTN(err);
+  inverseMeanRatio->set_averaging_method(QualityMetric::LINEAR); 
     // creates the l_2 squared objective function
   objFunc = new LPtoPTemplate(inverseMeanRatio, 2, err);  MSQ_ERRRTN(err);
-  objFunc->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
     //creates a FeasibleNewtone improver
-  feasNewt = new FeasibleNewton(objFunc);
-  feasNewt->set_patch_type(PatchData::GLOBAL_PATCH, err,1 ,1);  MSQ_ERRRTN(err);
+  feasNewt = new FeasibleNewton(objFunc,true);
+  feasNewt->use_global_patch();
   mQA = new QualityAssessor(inverseMeanRatio,QualityAssessor::MAXIMUM, err); MSQ_ERRRTN(err);
   mQA->add_quality_assessment(inverseMeanRatio, QualityAssessor::MINIMUM,err);  MSQ_ERRRTN(err);
   mQA->add_quality_assessment(inverseMeanRatio, QualityAssessor::AVERAGE,err);  MSQ_ERRRTN(err);

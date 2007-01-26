@@ -1,0 +1,21 @@
+SRC_MAPPINGFUNCTION_LINEAR_DIR = src/MappingFunction/Linear
+MSQ_INCLUDES += -I$(top_srcdir)/$(SRC_MAPPINGFUNCTION_LINEAR_DIR)
+
+MSQ_SRCS += \
+	$(SRC_MAPPINGFUNCTION_LINEAR_DIR)/LinearFunctionSet.cpp \
+	$(SRC_MAPPINGFUNCTION_LINEAR_DIR)/LinearHexahedron.cpp \
+	$(SRC_MAPPINGFUNCTION_LINEAR_DIR)/LinearPrism.cpp \
+	$(SRC_MAPPINGFUNCTION_LINEAR_DIR)/LinearPyramid.cpp \
+	$(SRC_MAPPINGFUNCTION_LINEAR_DIR)/LinearQuadrilateral.cpp \
+	$(SRC_MAPPINGFUNCTION_LINEAR_DIR)/LinearTetrahedron.cpp \
+	$(SRC_MAPPINGFUNCTION_LINEAR_DIR)/LinearTriangle.cpp 
+
+MSQ_HDRS += \
+	$(SRC_MAPPINGFUNCTION_LINEAR_DIR)/LinearFunctionSet.hpp \
+	$(SRC_MAPPINGFUNCTION_LINEAR_DIR)/LinearHexahedron.hpp \
+	$(SRC_MAPPINGFUNCTION_LINEAR_DIR)/LinearPrism.hpp \
+	$(SRC_MAPPINGFUNCTION_LINEAR_DIR)/LinearPyramid.hpp \
+	$(SRC_MAPPINGFUNCTION_LINEAR_DIR)/LinearQuadrilateral.hpp \
+	$(SRC_MAPPINGFUNCTION_LINEAR_DIR)/LinearTetrahedron.hpp \
+	$(SRC_MAPPINGFUNCTION_LINEAR_DIR)/LinearTriangle.hpp 
+

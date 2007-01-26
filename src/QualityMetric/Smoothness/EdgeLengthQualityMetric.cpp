@@ -37,43 +37,66 @@
 #include "QualityMetric.hpp"
 #include "MsqVertex.hpp"
 #include "PatchData.hpp"
+#include "MsqError.hpp"
 
 #include <math.h>
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <vector.h>
-#else
-#  include <vector>
-   using std::vector;
-#endif
 
 using namespace Mesquite;
 
-bool EdgeLengthQualityMetric::evaluate_vertex(PatchData &pd, MsqVertex* vert,
-                                             double &fval, MsqError &err)
+msq_std::string EdgeLengthQualityMetric::get_name() const
+  { return "Edge Length"; }
+
+int EdgeLengthQualityMetric::get_negate_flag() const
+  { return 1; }
+
+bool EdgeLengthQualityMetric::evaluate_common(PatchData &pd, 
+                                              size_t this_vert,
+                                              double &fval, 
+                                              msq_std::vector<size_t>& adj_verts,
+                                              MsqError &err)
 {
   fval=0.0;
-  size_t this_vert = pd.get_vertex_index(vert);
-  size_t other_vert;
-  vector<size_t> adj_verts;
-  Vector3D edg;
   pd.get_adjacent_vertex_indices(this_vert,adj_verts,err);  MSQ_ERRZERO(err);
-  int num_sample_points=adj_verts.size();
+  const unsigned num_sample_points=adj_verts.size();
   double *metric_values=new double[num_sample_points];
   MsqVertex* verts = pd.get_vertex_array(err);  MSQ_ERRZERO(err);
-  int point_counter=0;
-  while(!adj_verts.empty()){
-    other_vert=adj_verts.back();
-    adj_verts.pop_back();
-    edg[0]=verts[this_vert][0]-verts[other_vert][0];
-    edg[1]=verts[this_vert][1]-verts[other_vert][1];
-    edg[2]=verts[this_vert][2]-verts[other_vert][2];    
-    metric_values[point_counter]=edg.length();
-    ++point_counter;
-  }
-  fval=average_metrics(metric_values,num_sample_points,err);  MSQ_ERRZERO(err);
+  for (unsigned i = 0; i < num_sample_points; ++i) 
+    metric_values[i] = (verts[this_vert] - verts[adj_verts[i]]).length();
+  fval=average_metrics(metric_values,num_sample_points,err);  
   delete[] metric_values;
-  
-  return true;
+  return !MSQ_CHKERR(err);
   
 }
 
+bool EdgeLengthQualityMetric::evaluate( PatchData& pd, 
+                                        size_t vertex, 
+                                        double& value, 
+                                        MsqError& err )
+{
+  msq_std::vector<size_t> verts;
+  bool rval = evaluate_common( pd, vertex, value, verts, err );
+  return !MSQ_CHKERR(err) && rval;
+}
+
+bool EdgeLengthQualityMetric::evaluate_with_indices( PatchData& pd,
+                                                     size_t vertex,
+                                                     double& value,
+                                                     msq_std::vector<size_t>& indices,
+                                                     MsqError& err )
+{
+  indices.clear();
+  bool rval = evaluate_common( pd, vertex, value, indices, err );
+  
+  msq_std::vector<size_t>::iterator r, w;
+  for (r = w = indices.begin(); r != indices.end(); ++r) {
+    if (*r < pd.num_free_vertices()) {
+      *w = *r;
+      ++w;
+    }
+  }
+  indices.erase( w, indices.end() );
+  if (vertex < pd.num_free_vertices())
+    indices.push_back( vertex );
+  
+  return !MSQ_CHKERR(err) && rval;
+}

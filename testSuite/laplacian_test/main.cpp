@@ -43,6 +43,8 @@ describe main.cpp here
 // DESCRIP-END.
 //
 
+#include "meshfiles.h"
+
 #ifndef MSQ_USE_OLD_IO_HEADERS
 #include <iostream>
 using std::cout;
@@ -66,6 +68,7 @@ using std::endl;
 #include "PatchData.hpp"
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
+#include "PlanarDomain.hpp"
 
 // algorythms
 #include "ConditionNumberQualityMetric.hpp"
@@ -81,17 +84,16 @@ int main()
     /* Read a VTK Mesh file */
   MsqPrintError err(cout);
   Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
-  mesh->read_vtk("../../meshFiles/2D/VTK/square_quad_2.vtk", err);
+  mesh->read_vtk(MESH_FILES_DIR "2D/VTK/square_quad_2.vtk", err);
   if (err) return 1;
   
     // creates an intruction queue
   InstructionQueue queue1;
   
     // creates a mean ratio quality metric ...
-  ShapeQualityMetric* shape_metric = new ConditionNumberQualityMetric;
-  SmoothnessQualityMetric* lapl_met = new EdgeLengthQualityMetric;
-  lapl_met->set_averaging_method(QualityMetric::RMS,err);
-   if (err) return 1;
+  ConditionNumberQualityMetric* shape_metric = new ConditionNumberQualityMetric;
+  EdgeLengthQualityMetric* lapl_met = new EdgeLengthQualityMetric;
+  lapl_met->set_averaging_method(QualityMetric::RMS);
  
     // creates the laplacian smoother  procedures
   LaplacianSmoother lapl1(err);
@@ -119,8 +121,10 @@ int main()
   
     //writeVtkMesh("original_mesh", mesh, err); MSQ_CHKERR(err);
   
+  PlanarDomain plane(Vector3D(0,0,1), Vector3D(0,0,5));
+  
     // launches optimization on mesh_set1
-  queue1.run_instructions(mesh, err); 
+  queue1.run_instructions(mesh, &plane, err); 
   if (err) return 1;
   
   mesh->write_vtk("smoothed_mesh.vtk", err); 

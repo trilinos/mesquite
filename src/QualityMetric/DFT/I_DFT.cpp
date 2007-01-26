@@ -40,14 +40,14 @@
 using namespace Mesquite;
    
 
-bool I_DFT::evaluate_element(PatchData& pd,
-			     MsqMeshEntity* e,
+bool I_DFT::evaluate(PatchData& pd,
+			     size_t idx,
 			     double& m, 
 			     MsqError &err)
 {
   // Only works with the weighted average
 
-  MsqError  mErr;
+  MsqMeshEntity* e = &pd.element_by_index( idx );
   MsqVertex *vertices = pd.get_vertex_array(err); MSQ_ERRZERO(err);
 
   EntityTopology topo = e->get_element_type();
@@ -55,8 +55,7 @@ bool I_DFT::evaluate_element(PatchData& pd,
   //const size_t nv = e->vertex_count();
   const size_t *v_i = e->get_vertex_index_array();
 
-  size_t idx = pd.get_element_index(e);
-  const TargetMatrix *W = pd.targetMatrices.get_element_corner_tags(&pd, idx, err );
+  get_W_matrices( idx, pd, W, 8, mCk, err );
   MSQ_ERRZERO(err);
 
   // Initialize constants for the metric
@@ -101,7 +100,7 @@ bool I_DFT::evaluate_element(PatchData& pd,
       mValid = m_gdft_2(mMetric, mCoords, mNormals[i], invR, mQ, 
 			mAlpha, mGamma, delta, mBeta);
       if (!mValid) return false;
-      m += W[i].get_cK() * mMetric;
+      m += mCk[i] * mMetric;
       
     }
 
@@ -123,7 +122,7 @@ bool I_DFT::evaluate_element(PatchData& pd,
       mValid = m_gdft_2(mMetric, mCoords, mNormals[i], invR, mQ, 
 			mAlpha, mGamma, delta, mBeta);
       if (!mValid) return false;
-      m += W[i].get_cK() * mMetric;
+      m += mCk[i] * mMetric;
     }
 
     m *= 0.25;
@@ -143,7 +142,7 @@ bool I_DFT::evaluate_element(PatchData& pd,
 			mAlpha, mGamma, delta, mBeta);
       
       if (!mValid) return false;
-      m += W[i].get_cK() * mMetric;
+      m += mCk[i] * mMetric;
     }
 
     m *= 0.25;
@@ -163,7 +162,7 @@ bool I_DFT::evaluate_element(PatchData& pd,
 			mAlpha, mGamma, delta, mBeta);
       
       if (!mValid) return false;
-      m += W[i].get_cK() * mMetric;
+      m += mCk[i] * mMetric;
     }
 
     m *= 0.25;
@@ -183,7 +182,7 @@ bool I_DFT::evaluate_element(PatchData& pd,
 			mAlpha, mGamma, delta, mBeta);
       
       if (!mValid) return false;
-      m += W[i].get_cK() * mMetric;
+      m += mCk[i] * mMetric;
     }
 
     m *= 1.0 / 6.0;
@@ -203,7 +202,7 @@ bool I_DFT::evaluate_element(PatchData& pd,
 			mAlpha, mGamma, delta, mBeta);
       
       if (!mValid) return false;
-      m += W[i].get_cK() * mMetric;
+      m += mCk[i] * mMetric;
     }
 
     m *= 0.125;
@@ -217,25 +216,36 @@ bool I_DFT::evaluate_element(PatchData& pd,
   return true;
 }
 
-bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
-						MsqMeshEntity *e,
-						MsqVertex *fv[], 
-						Vector3D g[],
-						int nfv, 
-						double &m,
-						MsqError &err)
+bool I_DFT::evaluate_with_gradient( PatchData& pd,
+                                    size_t idx,
+                                    double& m,
+                                    msq_std::vector<size_t>& fv,
+                                    msq_std::vector<Vector3D>& g,
+                                    MsqError& err )
 {
   // Only works with the weighted average
 
+  MsqMeshEntity* e = &pd.element_by_index( idx );
   MsqVertex *vertices = pd.get_vertex_array(err); MSQ_ERRZERO(err);
+
   EntityTopology topo = e->get_element_type();
 
   //const size_t nv = e->vertex_count();
   const size_t *v_i = e->get_vertex_index_array();
 
-  size_t idx = pd.get_element_index(e);
-  const TargetMatrix *W = pd.targetMatrices.get_element_corner_tags(&pd, idx, err );
+  get_W_matrices( idx, pd, W, 8, mCk, err );
   MSQ_ERRZERO(err);
+  
+  const int nv = e->vertex_count();
+  unsigned mFree[8];
+  fv.clear();
+  int nfv = 0;
+  for (int ii = 0; ii < nv; ++ii) 
+    if (v_i[ii] < pd.num_free_vertices()) {
+      fv.push_back(v_i[ii]);
+      mFree[nfv++] = ii;
+    }
+  g.resize(nfv);
 
   // Initialize constants for the metric
   const double delta = useBarrierDelta ? pd.get_barrier_delta(err) :
@@ -259,6 +269,8 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
   double   mMetric;		// Metric value
   bool     mValid;		// Validity of the metric
   int      i, j, mVert;
+  
+  
 
   m = 0.0;
   switch(topo) {
@@ -274,13 +286,12 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
     
     if (1 == nfv) {
       // One free vertex; use the specialized code for computing the gradient.
-
       g[0] = 0.0;
       for (i = 0; i < 3; ++i) {
 	mVert = -1;
 	for (j = 0; j < 3; ++j) {
 	  mCoords[j] = vertices[v_i[triInd[i][j]]];
-	  if (vertices + v_i[triInd[i][j]] == fv[0]) {
+	  if (v_i[triInd[i][j]] == fv[0]) {
 	    mVert = j;
 	  }
 	}
@@ -309,8 +320,8 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	  }
 
 	  if (!mValid) return false;
-	  m += W[i].get_cK() * mMetric;
-	  g[0] += W[i].get_cK() * mGrads[0];
+	  m += mCk[i] * mMetric;
+	  g[0] += mCk[i] * mGrads[0];
 	}
 	else {
 	  // For triangles, the free vertex must appear in every element.
@@ -324,7 +335,7 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	  mValid = m_gdft_2(mMetric, mCoords, mNormals[i],
 			    invR, mQ, mAlpha, mGamma, delta, mBeta);
 	  if (!mValid) return false;
-	  m += W[i].get_cK() * mMetric;
+	  m += mCk[i] * mMetric;
 	}
       }
 
@@ -349,9 +360,9 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 			  mAlpha, mGamma, delta, mBeta);
 
 	if (!mValid) return false;
-	m += W[i].get_cK() * mMetric;
+	m += mCk[i] * mMetric;
 	for (j = 0; j < 3; ++j) {
-	  mAccGrads[triInd[i][j]] += W[i].get_cK() * mGrads[j];
+	  mAccGrads[triInd[i][j]] += mCk[i] * mGrads[j];
 	}
       }
 
@@ -363,14 +374,8 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
       // This is not very efficient, but is one way to select correct 
       // gradients.  For gradients, info is returned only for free 
       // vertices, in the order of fv[].
-
-      for (i = 0; i < 3; ++i) {
-	for (j = 0; j < nfv; ++j) {
-	  if (vertices + v_i[i] == fv[j]) {
-	    g[j] = mAccGrads[i];
-	  }
-	}
-      }
+      for (i = 0; i < nfv; ++i)
+        g[i] = mAccGrads[mFree[i]];
     }
     break;
 
@@ -392,7 +397,7 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	mVert = -1;
 	for (j = 0; j < 3; ++j) {
 	  mCoords[j] = vertices[v_i[hexInd[i][j]]];
-	  if (vertices + v_i[hexInd[i][j]] == fv[0]) {
+	  if (v_i[hexInd[i][j]] == fv[0]) {
 	    mVert = j;
 	  }
 	}
@@ -419,8 +424,8 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	  }
 
 	  if (!mValid) return false;
-	  m += W[i].get_cK() * mMetric;
-	  g[0] += W[i].get_cK() * mGrads[0];
+	  m += mCk[i] * mMetric;
+	  g[0] += mCk[i] * mGrads[0];
 	}
 	else {
 	  // For quadrilaterals, the free vertex only appears in three 
@@ -437,7 +442,7 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	  mValid = m_gdft_2(mMetric, mCoords, mNormals[i],
 			    invR, mQ, mAlpha, mGamma, delta, mBeta);
 	  if (!mValid) return false;
-	  m += W[i].get_cK() * mMetric;
+	  m += mCk[i] * mMetric;
 	}
       }
 
@@ -460,9 +465,9 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 			  mAlpha, mGamma, delta, mBeta);
 
 	if (!mValid) return false;
-	m += W[i].get_cK() * mMetric;
+	m += mCk[i] * mMetric;
 	for (j = 0; j < 3; ++j) {
-	  mAccGrads[hexInd[i][j]] += W[i].get_cK() * mGrads[j];
+	  mAccGrads[hexInd[i][j]] += mCk[i] * mGrads[j];
 	}
       }
     
@@ -474,14 +479,8 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
       // This is not very efficient, but is one way to select correct gradients
       // For gradients, info is returned only for free vertices, in the order 
       // of fv[].
-
-      for (i = 0; i < 4; ++i) {
-	for (j = 0; j < nfv; ++j) {
-	  if (vertices + v_i[i] == fv[j]) {
-	    g[j] = mAccGrads[i];
-	  }
-	}
-      }
+      for (i = 0; i < nfv; ++i)
+        g[i] = mAccGrads[mFree[i]];
     }
     break;
 
@@ -496,7 +495,7 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	mVert = -1;
 	for (j = 0; j < 4; ++j) {
 	  mCoords[j] = vertices[v_i[tetInd[i][j]]];
-	  if (vertices + v_i[tetInd[i][j]] == fv[0]) {
+	  if (v_i[tetInd[i][j]] == fv[0]) {
 	    mVert = j;
 	  }
 	}
@@ -528,8 +527,8 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	  }
 
 	  if (!mValid) return false;
-	  m += W[i].get_cK() * mMetric;
-	  g[0] += W[i].get_cK() * mGrads[0];
+	  m += mCk[i] * mMetric;
+	  g[0] += mCk[i] * mGrads[0];
 	}
 	else {
 	  // For tetrahedrons, the free vertex must appear in every element.
@@ -540,7 +539,7 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	  mValid = m_gdft_3(mMetric, mCoords, invR, mQ, 
 			    mAlpha, mGamma, delta, mBeta);
 	  if (!mValid) return false;
-	  m += W[i].get_cK() * mMetric;
+	  m += mCk[i] * mMetric;
 	}
       }
 
@@ -563,10 +562,10 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 			  mAlpha, mGamma, delta, mBeta);
 	
 	if (!mValid) return false;
-	m += W[i].get_cK() * mMetric;
+	m += mCk[i] * mMetric;
 	
 	for (j = 0; j < 4; ++j) {
-	  mAccGrads[tetInd[i][j]] += W[i].get_cK() * mGrads[j];
+	  mAccGrads[tetInd[i][j]] += mCk[i] * mGrads[j];
 	}
       }
       
@@ -578,14 +577,8 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
       // This is not very efficient, but is one way to select correct 
       // gradients.  For gradients, info is returned only for free vertices, 
       // in the order of fv[].
-
-      for (i = 0; i < 4; ++i) {
-	for (j = 0; j < nfv; ++j) {
-	  if (vertices + v_i[i] == fv[j]) {
-	    g[j] = mAccGrads[i];
-	  }
-	}
-      }
+      for (i = 0; i < nfv; ++i)
+        g[i] = mAccGrads[mFree[i]];
     }
     break;
 
@@ -600,7 +593,7 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	mVert = -1;
 	for (j = 0; j < 4; ++j) {
 	  mCoords[j] = vertices[v_i[pyrInd[i][j]]];
-	  if (vertices + v_i[pyrInd[i][j]] == fv[0]) {
+	  if (v_i[pyrInd[i][j]] == fv[0]) {
 	    mVert = j;
 	  }
 	}
@@ -632,8 +625,8 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	  }
 
 	  if (!mValid) return false;
-	  m += W[i].get_cK() * mMetric;
-	  g[0] += W[i].get_cK() * mGrads[0];
+	  m += mCk[i] * mMetric;
+	  g[0] += mCk[i] * mGrads[0];
 	}
 	else {
 	  // For pyramids, the free vertex does not appear in every element.
@@ -644,7 +637,7 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	  mValid = m_gdft_3(mMetric, mCoords, invR, mQ, 
 			    mAlpha, mGamma, delta, mBeta);
 	  if (!mValid) return false;
-	  m += W[i].get_cK() * mMetric;
+	  m += mCk[i] * mMetric;
 	}
       }
 
@@ -667,10 +660,10 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 			  mAlpha, mGamma, delta, mBeta);
 	
 	if (!mValid) return false;
-	m += W[i].get_cK() * mMetric;
+	m += mCk[i] * mMetric;
 	
 	for (j = 0; j < 4; ++j) {
-	  mAccGrads[pyrInd[i][j]] += W[i].get_cK() * mGrads[j];
+	  mAccGrads[pyrInd[i][j]] += mCk[i] * mGrads[j];
 	}
       }
       
@@ -683,13 +676,8 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
       // gradients.  For gradients, info is returned only for free vertices, 
       // in the order of fv[].
 
-      for (i = 0; i < 5; ++i) {
-	for (j = 0; j < nfv; ++j) {
-	  if (vertices + v_i[i] == fv[j]) {
-	    g[j] = mAccGrads[i];
-	  }
-	}
-      }
+      for (i = 0; i < nfv; ++i)
+        g[i] = mAccGrads[mFree[i]];
     }
     break;
 
@@ -704,7 +692,7 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	mVert = -1;
 	for (j = 0; j < 4; ++j) {
 	  mCoords[j] = vertices[v_i[priInd[i][j]]];
-	  if (vertices + v_i[priInd[i][j]] == fv[0]) {
+	  if (v_i[priInd[i][j]] == fv[0]) {
 	    mVert = j;
 	  }
 	}
@@ -736,8 +724,8 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	  }
 	  
 	  if (!mValid) return false;
-	  m += W[i].get_cK() * mMetric;
-	  g[0] += W[i].get_cK() * mGrads[0];
+	  m += mCk[i] * mMetric;
+	  g[0] += mCk[i] * mGrads[0];
 	}
 	else {
 	  // For prisms, the free vertex only appears in four elements.
@@ -753,7 +741,7 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	  mValid = m_gdft_3(mMetric, mCoords, invR, mQ, 
 			    mAlpha, mGamma, delta, mBeta);
 	  if (!mValid) return false;
-	  m += W[i].get_cK() * mMetric;
+	  m += mCk[i] * mMetric;
 	}
       }
       
@@ -776,10 +764,10 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 			  mAlpha, mGamma, delta, mBeta);
 	
 	if (!mValid) return false;
-	m += W[i].get_cK() * mMetric;
+	m += mCk[i] * mMetric;
 	
 	for (j = 0; j < 4; ++j) {
-	  mAccGrads[priInd[i][j]] += W[i].get_cK() * mGrads[j];
+	  mAccGrads[priInd[i][j]] += mCk[i] * mGrads[j];
 	}
       }
       
@@ -792,13 +780,8 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
       // gradients.  For gradients, info is returned only for free 
       // vertices, in the order of fv[].
       
-      for (i = 0; i < 6; ++i) {
-	for (j = 0; j < nfv; ++j) {
-	  if (vertices + v_i[i] == fv[j]) {
-	    g[j] = mAccGrads[i];
-	  }
-	}
-      }
+      for (i = 0; i < nfv; ++i)
+        g[i] = mAccGrads[mFree[i]];
     }
     break;
 
@@ -813,7 +796,7 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	mVert = -1;
 	for (j = 0; j < 4; ++j) {
 	  mCoords[j] = vertices[v_i[hexInd[i][j]]];
-	  if (vertices + v_i[hexInd[i][j]] == fv[0]) {
+	  if (v_i[hexInd[i][j]] == fv[0]) {
 	    mVert = j;
 	  }
 	}
@@ -845,8 +828,8 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	  }
 	  
 	  if (!mValid) return false;
-	  m += W[i].get_cK() * mMetric;
-	  g[0] += W[i].get_cK() * mGrads[0];
+	  m += mCk[i] * mMetric;
+	  g[0] += mCk[i] * mGrads[0];
 	}
 	else {
 	  // For hexahedrons, the free vertex only appears in four elements.
@@ -862,7 +845,7 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 	  mValid = m_gdft_3(mMetric, mCoords, invR, mQ, 
 			    mAlpha, mGamma, delta, mBeta);
 	  if (!mValid) return false;
-	  m += W[i].get_cK() * mMetric;
+	  m += mCk[i] * mMetric;
 	}
       }
       
@@ -885,10 +868,10 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
 			  mAlpha, mGamma, delta, mBeta);
 	
 	if (!mValid) return false;
-	m += W[i].get_cK() * mMetric;
+	m += mCk[i] * mMetric;
 	
 	for (j = 0; j < 4; ++j) {
-	  mAccGrads[hexInd[i][j]] += W[i].get_cK() * mGrads[j];
+	  mAccGrads[hexInd[i][j]] += mCk[i] * mGrads[j];
 	}
       }
       
@@ -901,13 +884,8 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
       // gradients.  For gradients, info is returned only for free 
       // vertices, in the order of fv[].
       
-      for (i = 0; i < 8; ++i) {
-	for (j = 0; j < nfv; ++j) {
-	  if (vertices + v_i[i] == fv[j]) {
-	    g[j] = mAccGrads[i];
-	  }
-	}
-      }
+      for (i = 0; i < nfv; ++i)
+        g[i] = mAccGrads[mFree[i]];
     }
     break;
 
@@ -919,26 +897,36 @@ bool I_DFT::compute_element_analytical_gradient(PatchData &pd,
   return true;
 }
 
-bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
-					       MsqMeshEntity *e,
-					       MsqVertex *fv[], 
-					       Vector3D g[],
-					       Matrix3D h[],
-					       int nfv, 
-					       double &m,
-					       MsqError &err)
+bool I_DFT::evaluate_with_Hessian( PatchData& pd,
+                                   size_t idx,
+                                   double& m,
+                                   msq_std::vector<size_t>& fv,
+                                   msq_std::vector<Vector3D>& g,
+                                   msq_std::vector<Matrix3D>& h,
+                                   MsqError& err )
 {
   // Only works with the weighted average
 
-  MsqVertex *vertices = pd.get_vertex_array(err);  MSQ_ERRZERO(err);
+  MsqMeshEntity* e = &pd.element_by_index( idx );
+  MsqVertex *vertices = pd.get_vertex_array(err); MSQ_ERRZERO(err);
+
   EntityTopology topo = e->get_element_type();
 
   //const size_t nv = e->vertex_count();
   const size_t *v_i = e->get_vertex_index_array();
 
-  size_t idx = pd.get_element_index(e);
-  const TargetMatrix *W = pd.targetMatrices.get_element_corner_tags(&pd, idx, err );
+  get_W_matrices( idx, pd, W, 8, mCk, err );
   MSQ_ERRZERO(err);
+  
+  fv.clear();
+  uint32_t fixed_bits = fixed_vertex_bitmap( pd, e, fv );
+  const int nfv = fv.size();
+
+  const int nv = e->vertex_count();
+  g.clear();
+  g.resize(nv, Vector3D(0.0));
+  h.clear();
+  h.resize(nv*(nv+1)/2, Matrix3D(0.0));
 
   // Initialize constants for the metric
   const double delta = useBarrierDelta ? pd.get_barrier_delta(err) :
@@ -975,15 +963,6 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
     // to get the gradient of the normal with respect to the vertex
     // positions to obtain the correct values.
 
-    // Zero out the hessian and gradient vector
-    for (i = 0; i < 3; ++i) {
-      g[i] = 0.0;
-    }
-
-    for (i = 0; i < 6; ++i) {
-      h[i].zero();
-    }
-
     if (1 == nfv) {
       // One free vertex; use the specialized code for computing the 
       // gradient and Hessian.
@@ -998,7 +977,7 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	mVert = -1;
 	for (j = 0; j < 3; ++j) {
 	  mCoords[j] = vertices[v_i[triInd[i][j]]];
-	  if (vertices + v_i[triInd[i][j]] == fv[0]) {
+	  if (v_i[triInd[i][j]] == fv[0]) {
 	    mVert = j;
 	  }
 	}
@@ -1030,9 +1009,9 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	  }
 
 	  if (!mValid) return false;
-	  m += W[i].get_cK() * mMetric;
-	  mG += W[i].get_cK() * mGrads[0];
-	  mH += W[i].get_cK() * mHessians[0];
+	  m += mCk[i] * mMetric;
+	  mG += mCk[i] * mGrads[0];
+	  mH += mCk[i] * mHessians[0];
 	}
 	else {
 	  // For triangles, the free vertex must appear in every element.
@@ -1046,34 +1025,17 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	  mValid = m_gdft_2(mMetric, mCoords, mNormals[i],
 			    invR, mQ, mAlpha, mGamma, delta, mBeta);
 	  if (!mValid) return false;
-	  m += W[i].get_cK() * mMetric;
+	  m += mCk[i] * mMetric;
 	}
       }
 
       m *= MSQ_ONE_THIRD;
       mG *= MSQ_ONE_THIRD;
       mH *= MSQ_ONE_THIRD;
-
-      for (i = 0; i < 3; ++i) {
-	if (vertices + v_i[i] == fv[0]) {
-	  // free vertex, see next
-	  g[i] = mG;
-	  switch(i) {
-	  case 0:
-	    h[0] = mH;
-	    break;
-
-	  case 1:
-	    h[3] = mH;
-	    break;
-
-	  default:
-	    h[5] = mH;
-	    break;
-	  }
-	  break;
-	}
-      }
+      g.resize(1);
+      g[0] = mG;
+      h.resize(1);
+      h[0] = mH;
     }
     else {
       // Compute the metric and sum them together
@@ -1090,10 +1052,10 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 			  invR, mQ, mAlpha, mGamma, delta, mBeta);
 
 	if (!mValid) return false;
-	m += W[i].get_cK() * mMetric;
+	m += mCk[i] * mMetric;
 
 	for (j = 0; j < 3; ++j) {
-	  g[triInd[i][j]] += W[i].get_cK() * mGrads[j];
+	  g[triInd[i][j]] += mCk[i] * mGrads[j];
 	}
 
 	l = 0;
@@ -1104,11 +1066,11 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 
 	    if (row <= col) {
 	      loc = 3*row - (row*(row+1)/2) + col;
-	      h[loc] += W[i].get_cK() * mHessians[l];
+	      h[loc] += mCk[i] * mHessians[l];
 	    }
 	    else {
 	      loc = 3*col - (col*(col+1)/2) + row;
-	      h[loc] += W[i].get_cK() * transpose(mHessians[l]);
+	      h[loc] += mCk[i] * transpose(mHessians[l]);
 	    }
 	    ++l;
 	  }
@@ -1123,32 +1085,10 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
       for (i = 0; i < 6; ++i) {
 	h[i] *= MSQ_ONE_THIRD;
       }
-
-      // zero out fixed elements of g
-      j = 0;
-      for (i = 0; i < 3; ++i) {
-	if (vertices + v_i[i] == fv[j]) {
-	  // if free vertex, see next
-	  ++j;
-	}
-	else {
-	  // else zero gradient entry and hessian entries.
-	  g[i] = 0.;
-
-	  switch(i) {
-	  case 0:
-	    h[0].zero(); h[1].zero(); h[2].zero();
-	    break;
-	  
-	  case 1:
-	    h[1].zero(); h[3].zero(); h[4].zero();
-	    break;
-	  
-	  case 2:
-	    h[2].zero(); h[4].zero(); h[5].zero();
-	    break;
-	  }
-	}
+      
+      if (fixed_bits) {
+        remove_fixed_gradients( TRIANGLE, fixed_bits, g );
+        remove_fixed_hessians( TRIANGLE, fixed_bits, h );
       }
     }
     break;
@@ -1161,15 +1101,6 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
     // normal is constant.  If the normal is not constant, you need
     // to get the gradient of the normal with respect to the vertex
     // positions to obtain the correct values.
-
-    // Zero out the hessian and gradient vector
-    for (i = 0; i < 4; ++i) {
-      g[i] = 0.0;
-    }
-
-    for (i = 0; i < 10; ++i) {
-      h[i].zero();
-    }
 
     if (1 == nfv) {
       // One free vertex; use the specialized code for computing the 
@@ -1185,7 +1116,7 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	mVert = -1;
 	for (j = 0; j < 3; ++j) {
 	  mCoords[j] = vertices[v_i[hexInd[i][j]]];
-	  if (vertices + v_i[hexInd[i][j]] == fv[0]) {
+	  if (v_i[hexInd[i][j]] == fv[0]) {
 	    mVert = j;
 	  }
 	}
@@ -1216,9 +1147,9 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	  }
 
 	  if (!mValid) return false;
-	  m += W[i].get_cK() * mMetric;
-	  mG += W[i].get_cK() * mGrads[0];
-	  mH += W[i].get_cK() * mHessians[0];
+	  m += mCk[i] * mMetric;
+	  mG += mCk[i] * mGrads[0];
+	  mH += mCk[i] * mHessians[0];
 	}
 	else {
 	  // For quadrilaterals, the free vertex only appears in three 
@@ -1235,38 +1166,17 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	  mValid = m_gdft_2(mMetric, mCoords, mNormals[i],
 			    invR, mQ, mAlpha, mGamma, delta, mBeta);
 	  if (!mValid) return false;
-	  m += W[i].get_cK() * mMetric;
+	  m += mCk[i] * mMetric;
 	}
       }
 
       m *= 0.25;
       mG *= 0.25;
       mH *= 0.25;
-
-      for (i = 0; i < 4; ++i) {
-	if (vertices + v_i[i] == fv[0]) {
-	  // free vertex, see next
-	  g[i] = mG;
-	  switch(i) {
-	  case 0:
-	    h[0] = mH;
-	    break;
-
-	  case 1:
-	    h[4] = mH;
-	    break;
-
-	  case 2:
-	    h[7] = mH;
-	    break;
-
-	  default:
-	    h[9] = mH;
-	    break;
-	  }
-	  break;
-	}
-      }
+      g.resize(1);
+      g[0] = mG;
+      h.resize(1);
+      h[0] = mH;
     }
     else {
       // Compute the metric and sum them together
@@ -1281,10 +1191,10 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 			  invR, mQ, mAlpha, mGamma, delta, mBeta);
 
 	if (!mValid) return false;
-	m += W[i].get_cK() * mMetric;
+	m += mCk[i] * mMetric;
 
 	for (j = 0; j < 3; ++j) {
-	  g[hexInd[i][j]] += W[i].get_cK() * mGrads[j];
+	  g[hexInd[i][j]] += mCk[i] * mGrads[j];
 	}
 
 	l = 0;
@@ -1295,11 +1205,11 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 
 	    if (row <= col) {
 	      loc = 4*row - (row*(row+1)/2) + col;
-	      h[loc] += W[i].get_cK() * mHessians[l];
+	      h[loc] += mCk[i] * mHessians[l];
 	    }
 	    else {
 	      loc = 4*col - (col*(col+1)/2) + row;
-	      h[loc] += W[i].get_cK() * transpose(mHessians[l]);
+	      h[loc] += mCk[i] * transpose(mHessians[l]);
 	    }
 	    ++l;
 	  }
@@ -1315,50 +1225,15 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	h[i] *= 0.25;
       }
 
-      // zero out fixed elements of gradient and Hessian
-      j = 0;
-      for (i = 0; i < 4; ++i) {
-	if (vertices + v_i[i] == fv[j]) {
-	  // if free vertex, see next
-	  ++j;
-	}
-	else {
-	  // else zero gradient entry and hessian entries.
-	  g[i] = 0.;
-
-	  switch(i) {
-	  case 0:
-	    h[0].zero();   h[1].zero();   h[2].zero();   h[3].zero();
-	    break;
-          
-	  case 1:
-	    h[1].zero();   h[4].zero();   h[5].zero();   h[6].zero();
-	    break;
-          
-	  case 2:
-	    h[2].zero();   h[5].zero();   h[7].zero();  h[8].zero();
-	    break;
-          
-	  case 3:
-	    h[3].zero();   h[6].zero();   h[8].zero();  h[9].zero();
-	    break;
-	  }
-	}
+      if (fixed_bits) {
+        remove_fixed_gradients( QUADRILATERAL, fixed_bits, g );
+        remove_fixed_hessians( QUADRILATERAL, fixed_bits, h );
       }
     }
     break;
 
   case TETRAHEDRON:
     //assert(4 == nv);
-
-    // Zero out the hessian and gradient vector
-    for (i = 0; i < 4; ++i) {
-      g[i] = 0.0;
-    }
-
-    for (i = 0; i < 10; ++i) {
-      h[i].zero();
-    }
 
     if (1 == nfv) {
       // One free vertex; use the specialized code for computing the 
@@ -1374,7 +1249,7 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	mVert = -1;
 	for (j = 0; j < 4; ++j) {
 	  mCoords[j] = vertices[v_i[tetInd[i][j]]];
-	  if (vertices + v_i[tetInd[i][j]] == fv[0]) {
+	  if (v_i[tetInd[i][j]] == fv[0]) {
 	    mVert = j;
 	  }
 	}
@@ -1410,9 +1285,9 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	  }
 
 	  if (!mValid) return false;
-	  m += W[i].get_cK() * mMetric;
-	  mG += W[i].get_cK() * mGrads[0];
-	  mH += W[i].get_cK() * mHessians[0];
+	  m += mCk[i] * mMetric;
+	  mG += mCk[i] * mGrads[0];
+	  mH += mCk[i] * mHessians[0];
 	}
 	else {
 	  // For tetrahedrons, the free vertex must appear in every element.
@@ -1423,38 +1298,17 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	  mValid = m_gdft_3(mMetric, mCoords, invR, mQ, 
 			    mAlpha, mGamma, delta, mBeta);
 	  if (!mValid) return false;
-	  m += W[i].get_cK() * mMetric;
+	  m += mCk[i] * mMetric;
 	}
       }
 
       m *= 0.25;
       mG *= 0.25;
       mH *= 0.25;
-
-      for (i = 0; i < 4; ++i) {
-	if (vertices + v_i[i] == fv[0]) {
-	  // free vertex, see next
-	  g[i] = mG;
-	  switch(i) {
-	  case 0:
-	    h[0] = mH;
-	    break;
-
-	  case 1:
-	    h[4] = mH;
-	    break;
-
-	  case 2:
-	    h[7] = mH;
-	    break;
-
-	  default:
-	    h[9] = mH;
-	    break;
-	  }
-	  break;
-	}
-      }
+      g.resize(1);
+      g[0] = mG;
+      h.resize(1);
+      h[0] = mH;
     }
     else {
       // Compute the metric and sum them together
@@ -1470,10 +1324,10 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	
 	if (!mValid) return false;
 	
-	m += W[i].get_cK() * mMetric;
+	m += mCk[i] * mMetric;
 	
 	for (j = 0; j < 4; ++j) {
-	  g[tetInd[i][j]] += W[i].get_cK() * mGrads[j];
+	  g[tetInd[i][j]] += mCk[i] * mGrads[j];
 	}
 	
 	l = 0;
@@ -1484,11 +1338,11 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	    
 	    if (row <= col) {
 	      loc = 4*row - (row*(row+1)/2) + col;
-	      h[loc] += W[i].get_cK() * mHessians[l];
+	      h[loc] += mCk[i] * mHessians[l];
 	    }
 	    else {
 	      loc = 4*col - (col*(col+1)/2) + row;
-	      h[loc] += W[i].get_cK() * transpose(mHessians[l]);
+	      h[loc] += mCk[i] * transpose(mHessians[l]);
 	    }
 	    ++l;
 	  }
@@ -1504,50 +1358,15 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	h[i] *= 0.25;
       }
       
-      // zero out fixed elements of g
-      j = 0;
-      for (i = 0; i < 4; ++i) {
-	if (vertices + v_i[i] == fv[j]) {
-	  // if free vertex, see next
-	  ++j;
-	}
-	else {
-	  // else zero gradient entry and hessian entries.
-	  g[i] = 0.;
-	  
-	  switch(i) {
-	  case 0:
-	    h[0].zero(); h[1].zero(); h[2].zero(); h[3].zero();
-	    break;
-	    
-	  case 1:
-	    h[1].zero(); h[4].zero(); h[5].zero(); h[6].zero();
-	    break;
-	    
-	  case 2:
-	    h[2].zero(); h[5].zero(); h[7].zero(); h[8].zero();
-	    break;
-
-	  case 3:
-	    h[3].zero(); h[6].zero(); h[8].zero(); h[9].zero();
-	    break;
-	  }
-	}
+      if (fixed_bits) {
+        remove_fixed_gradients( TETRAHEDRON, fixed_bits, g );
+        remove_fixed_hessians( TETRAHEDRON, fixed_bits, h );
       }
     }
     break;
 
   case PYRAMID:
     //assert(5 == nv);
-
-    // Zero out the hessian and gradient vector
-    for (i = 0; i < 5; ++i) {
-      g[i] = 0.0;
-    }
-
-    for (i = 0; i < 15; ++i) {
-      h[i].zero();
-    }
 
     if (1 == nfv) {
       // One free vertex; use the specialized code for computing the 
@@ -1563,7 +1382,7 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	mVert = -1;
 	for (j = 0; j < 4; ++j) {
 	  mCoords[j] = vertices[v_i[pyrInd[i][j]]];
-	  if (vertices + v_i[pyrInd[i][j]] == fv[0]) {
+	  if (v_i[pyrInd[i][j]] == fv[0]) {
 	    mVert = j;
 	  }
 	}
@@ -1599,9 +1418,9 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	  }
 
 	  if (!mValid) return false;
-	  m += W[i].get_cK() * mMetric;
-	  mG += W[i].get_cK() * mGrads[0];
-	  mH += W[i].get_cK() * mHessians[0];
+	  m += mCk[i] * mMetric;
+	  mG += mCk[i] * mGrads[0];
+	  mH += mCk[i] * mHessians[0];
 	}
 	else {
 	  // For pyramids, the free vertex does not appear in every element.
@@ -1612,42 +1431,17 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	  mValid = m_gdft_3(mMetric, mCoords, invR, mQ, 
 			    mAlpha, mGamma, delta, mBeta);
 	  if (!mValid) return false;
-	  m += W[i].get_cK() * mMetric;
+	  m += mCk[i] * mMetric;
 	}
       }
 
       m *= 0.25;
       mG *= 0.25;
       mH *= 0.25;
-
-      for (i = 0; i < 5; ++i) {
-	if (vertices + v_i[i] == fv[0]) {
-	  // free vertex, see next
-	  g[i] = mG;
-	  switch(i) {
-	  case 0:
-	    h[0] = mH;
-	    break;
-
-	  case 1:
-	    h[5] = mH;
-	    break;
-
-	  case 2:
-	    h[9] = mH;
-	    break;
-
-	  case 3:
-	    h[12] = mH;
-	    break;
-
-	  default:
-	    h[14] = mH;
-	    break;
-	  }
-	  break;
-	}
-      }
+      g.resize(1);
+      g[0] = mG;
+      h.resize(1);
+      h[0] = mH;
     }
     else {
       // Compute the metric and sum them together
@@ -1663,10 +1457,10 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	
 	if (!mValid) return false;
 	
-	m += W[i].get_cK() * mMetric;
+	m += mCk[i] * mMetric;
 	
 	for (j = 0; j < 4; ++j) {
-	  g[pyrInd[i][j]] += W[i].get_cK() * mGrads[j];
+	  g[pyrInd[i][j]] += mCk[i] * mGrads[j];
 	}
 	
 	l = 0;
@@ -1677,11 +1471,11 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	    
 	    if (row <= col) {
 	      loc = 5*row - (row*(row+1)/2) + col;
-	      h[loc] += W[i].get_cK() * mHessians[l];
+	      h[loc] += mCk[i] * mHessians[l];
 	    }
 	    else {
 	      loc = 5*col - (col*(col+1)/2) + row;
-	      h[loc] += W[i].get_cK() * transpose(mHessians[l]);
+	      h[loc] += mCk[i] * transpose(mHessians[l]);
 	    }
 	    ++l;
 	  }
@@ -1697,59 +1491,15 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	h[i] *= 0.25;
       }
       
-      // zero out fixed elements of g
-      j = 0;
-      for (i = 0; i < 5; ++i) {
-	if (vertices + v_i[i] == fv[j]) {
-	  // if free vertex, see next
-	  ++j;
-	}
-	else {
-	  // else zero gradient entry and hessian entries.
-	  g[i] = 0.;
-	  
-	  switch(i) {
-	  case 0:
-	    h[0].zero(); h[1].zero(); h[2].zero(); 
-	    h[3].zero(); h[4].zero();
-	    break;
-	    
-	  case 1:
-	    h[1].zero(); h[5].zero(); h[6].zero(); 
-	    h[7].zero(); h[8].zero();
-	    break;
-	    
-	  case 2:
-	    h[2].zero(); h[6].zero(); h[9].zero(); 
-	    h[10].zero(); h[11].zero();
-	    break;
-
-	  case 3:
-	    h[3].zero(); h[7].zero(); h[10].zero(); 
-	    h[12].zero(); h[13].zero();
-	    break;
-
-	  case 4:
-	    h[4].zero(); h[8].zero(); h[11].zero(); 
-	    h[13].zero(); h[14].zero();
-	    break;
-	  }
-	}
+      if (fixed_bits) {
+        remove_fixed_gradients( PYRAMID, fixed_bits, g );
+        remove_fixed_hessians( PYRAMID, fixed_bits, h );
       }
     }
     break;
 
   case PRISM:
     //assert(6 == nv);
-
-    // Zero out the hessian and gradient vector
-    for (i = 0; i < 6; ++i) {
-      g[i] = 0.0;
-    }
-
-    for (i = 0; i < 21; ++i) {
-      h[i].zero();
-    }
 
     if (1 == nfv) {
       // One free vertex; use the specialized code for computing the 
@@ -1765,7 +1515,7 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	mVert = -1;
 	for (j = 0; j < 4; ++j) {
 	  mCoords[j] = vertices[v_i[priInd[i][j]]];
-	  if (vertices + v_i[priInd[i][j]] == fv[0]) {
+	  if (v_i[priInd[i][j]] == fv[0]) {
 	    mVert = j;
 	  }
 	}
@@ -1801,9 +1551,9 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	  }
 
 	  if (!mValid) return false;
-	  m += W[i].get_cK() * mMetric;
-	  mG += W[i].get_cK() * mGrads[0];
-	  mH += W[i].get_cK() * mHessians[0];
+	  m += mCk[i] * mMetric;
+	  mG += mCk[i] * mGrads[0];
+	  mH += mCk[i] * mHessians[0];
 	}
 	else {
 	  // For prisms, the free vertex only appears in four elements.
@@ -1819,46 +1569,17 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	  mValid = m_gdft_3(mMetric, mCoords, invR, mQ, 
 			    mAlpha, mGamma, delta, mBeta);
 	  if (!mValid) return false;
-	  m += W[i].get_cK() * mMetric;
+	  m += mCk[i] * mMetric;
 	}
       }
 
       m *= 1.0 / 6.0;
       mG *= 1.0 / 6.0;
       mH *= 1.0 / 6.0;
-
-      for (i = 0; i < 6; ++i) {
-	if (vertices + v_i[i] == fv[0]) {
-	  // free vertex, see next
-	  g[i] = mG;
-	  switch(i) {
-	  case 0:
-	    h[0] = mH;
-	    break;
-
-	  case 1:
-	    h[6] = mH;
-	    break;
-
-	  case 2:
-	    h[11] = mH;
-	    break;
-
-	  case 3:
-	    h[15] = mH;
-	    break;
-
-	  case 4:
-	    h[18] = mH;
-	    break;
-
-	  case 5:
-	    h[20] = mH;
-	    break;
-	  }
-	  break;
-	}
-      }
+      g.resize(1);
+      g[0] = mG;
+      h.resize(1);
+      h[0] = mH;
     }
     else {
       // Compute the metric and sum them together
@@ -1874,10 +1595,10 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
       
 	if (!mValid) return false;
 
-	m += W[i].get_cK() * mMetric;
+	m += mCk[i] * mMetric;
 
 	for (j = 0; j < 4; ++j) {
-	  g[priInd[i][j]] += W[i].get_cK() * mGrads[j];
+	  g[priInd[i][j]] += mCk[i] * mGrads[j];
 	}
 
 	l = 0;
@@ -1888,11 +1609,11 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 
 	    if (row <= col) {
 	      loc = 6*row - (row*(row+1)/2) + col;
-	      h[loc] += W[i].get_cK() * mHessians[l];
+	      h[loc] += mCk[i] * mHessians[l];
 	    }
 	    else {
 	      loc = 6*col - (col*(col+1)/2) + row;
-	      h[loc] += W[i].get_cK() * transpose(mHessians[l]);
+	      h[loc] += mCk[i] * transpose(mHessians[l]);
 	    }
 	    ++l;
 	  }
@@ -1908,65 +1629,15 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	h[i] *= 1.0 / 6.0;
       }
 
-      // zero out fixed elements of gradient and Hessian
-      j = 0;
-      for (i = 0; i < 6; ++i) {
-	if (vertices + v_i[i] == fv[j]) {
-	  // if free vertex, see next
-	  ++j;
-	}
-	else {
-	  // else zero gradient entry and hessian entries.
-	  g[i] = 0.;
-
-	  switch(i) {
-	  case 0:
-	    h[0].zero();   h[1].zero();   h[2].zero();   h[3].zero();
-	    h[4].zero();   h[5].zero();
-	    break;
-          
-	  case 1:
-	    h[1].zero();   h[6].zero();   h[7].zero();   h[8].zero();
-	    h[9].zero();   h[10].zero();
-	    break;
-          
-	  case 2:
-	    h[2].zero();   h[7].zero();   h[11].zero();  h[12].zero();
-	    h[13].zero();  h[14].zero();
-	    break;
-          
-	  case 3:
-	    h[3].zero();   h[8].zero();  h[12].zero();  h[15].zero();
-	    h[16].zero();  h[17].zero();
-	    break;
-          
-	  case 4:
-	    h[4].zero();   h[9].zero();  h[13].zero();  h[16].zero();
-	    h[18].zero();  h[19].zero();
-	    break;
-          
-	  case 5:
-	    h[5].zero();   h[10].zero();  h[14].zero();  h[17].zero();
-	    h[19].zero();  h[20].zero();
-	    break;
-          
-	  }
-	}
+      if (fixed_bits) {
+        remove_fixed_gradients( PRISM, fixed_bits, g );
+        remove_fixed_hessians( PRISM, fixed_bits, h );
       }
     }
     break;
 
   case HEXAHEDRON:
     //assert(8 == nv);
-
-    // Zero out the hessian and gradient vector
-    for (i = 0; i < 8; ++i) {
-      g[i] = 0.0;
-    }
-
-    for (i = 0; i < 36; ++i) {
-      h[i].zero();
-    }
 
     if (1 == nfv) {
       // One free vertex; use the specialized code for computing the 
@@ -1982,7 +1653,7 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	mVert = -1;
 	for (j = 0; j < 4; ++j) {
 	  mCoords[j] = vertices[v_i[hexInd[i][j]]];
-	  if (vertices + v_i[hexInd[i][j]] == fv[0]) {
+	  if (v_i[hexInd[i][j]] == fv[0]) {
 	    mVert = j;
 	  }
 	}
@@ -2018,9 +1689,9 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	  }
 
 	  if (!mValid) return false;
-	  m += W[i].get_cK() * mMetric;
-	  mG += W[i].get_cK() * mGrads[0];
-	  mH += W[i].get_cK() * mHessians[0];
+	  m += mCk[i] * mMetric;
+	  mG += mCk[i] * mGrads[0];
+	  mH += mCk[i] * mHessians[0];
 	}
 	else {
 	  // For hexahedrons, the free vertex only appears in four elements.
@@ -2036,54 +1707,17 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	  mValid = m_gdft_3(mMetric, mCoords, invR, mQ, 
 			    mAlpha, mGamma, delta, mBeta);
 	  if (!mValid) return false;
-	  m += W[i].get_cK() * mMetric;
+	  m += mCk[i] * mMetric;
 	}
       }
 
       m *= 0.125;
       mG *= 0.125;
       mH *= 0.125;
-
-      for (i = 0; i < 8; ++i) {
-	if (vertices + v_i[i] == fv[0]) {
-	  // free vertex, see next
-	  g[i] = mG;
-	  switch(i) {
-	  case 0:
-	    h[0] = mH;
-	    break;
-
-	  case 1:
-	    h[8] = mH;
-	    break;
-
-	  case 2:
-	    h[15] = mH;
-	    break;
-
-	  case 3:
-	    h[21] = mH;
-	    break;
-
-	  case 4:
-	    h[26] = mH;
-	    break;
-
-	  case 5:
-	    h[30] = mH;
-	    break;
-
-	  case 6:
-	    h[33] = mH;
-	    break;
-
-	  default:
-	    h[35] = mH;
-	    break;
-	  }
-	  break;
-	}
-      }
+      g.resize(1);
+      g[0] = mG;
+      h.resize(1);
+      h[0] = mH;
     }
     else {
       // Compute the metric and sum them together
@@ -2099,10 +1733,10 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
       
 	if (!mValid) return false;
 
-	m += W[i].get_cK() * mMetric;
+	m += mCk[i] * mMetric;
 
 	for (j = 0; j < 4; ++j) {
-	  g[hexInd[i][j]] += W[i].get_cK() * mGrads[j];
+	  g[hexInd[i][j]] += mCk[i] * mGrads[j];
 	}
 
 	l = 0;
@@ -2113,11 +1747,11 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 
 	    if (row <= col) {
 	      loc = 8*row - (row*(row+1)/2) + col;
-	      h[loc] += W[i].get_cK() * mHessians[l];
+	      h[loc] += mCk[i] * mHessians[l];
 	    }
 	    else {
 	      loc = 8*col - (col*(col+1)/2) + row;
-	      h[loc] += W[i].get_cK() * transpose(mHessians[l]);
+	      h[loc] += mCk[i] * transpose(mHessians[l]);
 	    }
 	    ++l;
 	  }
@@ -2133,59 +1767,9 @@ bool I_DFT::compute_element_analytical_hessian(PatchData &pd,
 	h[i] *= 0.125;
       }
 
-      // zero out fixed elements of gradient and Hessian
-      j = 0;
-      for (i = 0; i < 8; ++i) {
-	if (vertices + v_i[i] == fv[j]) {
-	  // if free vertex, see next
-	  ++j;
-	}
-	else {
-	  // else zero gradient entry and hessian entries.
-	  g[i] = 0.;
-
-	  switch(i) {
-	  case 0:
-	    h[0].zero();   h[1].zero();   h[2].zero();   h[3].zero();
-	    h[4].zero();   h[5].zero();   h[6].zero();   h[7].zero();
-	    break;
-          
-	  case 1:
-	    h[1].zero();   h[8].zero();   h[9].zero();   h[10].zero();
-	    h[11].zero();  h[12].zero();  h[13].zero();  h[14].zero();
-	    break;
-          
-	  case 2:
-	    h[2].zero();   h[9].zero();   h[15].zero();  h[16].zero();
-	    h[17].zero();  h[18].zero();  h[19].zero();  h[20].zero();
-	    break;
-          
-	  case 3:
-	    h[3].zero();   h[10].zero();  h[16].zero();  h[21].zero();
-	    h[22].zero();  h[23].zero();  h[24].zero();  h[25].zero();
-	    break;
-          
-	  case 4:
-	    h[4].zero();   h[11].zero();  h[17].zero();  h[22].zero();
-	    h[26].zero();  h[27].zero();  h[28].zero();  h[29].zero();
-	    break;
-          
-	  case 5:
-	    h[5].zero();   h[12].zero();  h[18].zero();  h[23].zero();
-	    h[27].zero();  h[30].zero();  h[31].zero();  h[32].zero();
-	    break;
-          
-	  case 6:
-	    h[6].zero();   h[13].zero();  h[19].zero();  h[24].zero();
-	    h[28].zero();  h[31].zero();  h[33].zero();  h[34].zero();
-	    break;
-          
-	  case 7:
-	    h[7].zero();   h[14].zero();  h[20].zero();  h[25].zero();
-	    h[29].zero();  h[32].zero();  h[34].zero();  h[35].zero();
-	    break;
-	  }
-	}
+      if (fixed_bits) {
+        remove_fixed_gradients( HEXAHEDRON, fixed_bits, g );
+        remove_fixed_hessians( HEXAHEDRON, fixed_bits, h );
       }
     }
     break;

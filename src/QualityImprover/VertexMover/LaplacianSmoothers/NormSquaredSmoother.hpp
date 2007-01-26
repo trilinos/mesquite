@@ -39,8 +39,7 @@
 #define Mesquite_NormSquaredSmoother_hpp
 
 #include "Mesquite.hpp"
-#include "VertexMover.hpp"
-#include "MsqFreeVertexIndexIterator.hpp"
+#include "LaplacianCommon.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 #  include <vector.h>
@@ -56,11 +55,12 @@ namespace Mesquite
     
     NOTE (IMPORTANT):  This smoother currently only works for tet elements.
    */  
-  class NormSquaredSmoother : public VertexMover 
+  class NormSquaredSmoother : public LaplacianCommon 
   {
   public:
-    NormSquaredSmoother(MsqError &err);
-    ~NormSquaredSmoother();
+    NormSquaredSmoother();
+    virtual ~NormSquaredSmoother();
+    virtual msq_std::string get_name() const;
   protected:
     virtual void initialize(PatchData &pd, MsqError &err);
     virtual void optimize_vertex_positions(PatchData &pd,

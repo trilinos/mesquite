@@ -1,0 +1,7 @@
+SRC_QUALITYMETRIC_VOLUME_DIR = src/QualityMetric/Volume
+MSQ_INCLUDES += -I$(top_srcdir)/$(SRC_QUALITYMETRIC_VOLUME_DIR)
+
+MSQ_SRCS += $(SRC_QUALITYMETRIC_VOLUME_DIR)/LocalSizeQualityMetric.cpp 
+
+MSQ_HDRS += $(SRC_QUALITYMETRIC_VOLUME_DIR)/LocalSizeQualityMetric.hpp 
+

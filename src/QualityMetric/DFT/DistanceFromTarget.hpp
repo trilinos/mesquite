@@ -40,55 +40,102 @@ Header file for the Mesquite::DistanceFromTarget class
 #include "Mesquite.hpp"
 #include "MsqError.hpp"
 #include "PatchData.hpp"
-#include "QualityMetric.hpp"
-#include "TargetMatrix.hpp"
+#include "ElementQM.hpp"
+#include "MsqMatrix.hpp"
+#include "TargetCalculator.hpp"
+#include "WeightCalculator.hpp"
 
 namespace Mesquite
 {
-  
   /*! \class DistanceFromTarget
     \brief Base class for the computation of the distance from target between
            the target matrices W and the actual corner matrices A. 
   */
-  class DistanceFromTarget : public QualityMetric
+  class DistanceFromTarget : public ElementQM
   {
   public:
+  
+    DistanceFromTarget( TargetCalculator* tc,
+                        WeightCalculator* wc );
     
       //! virtual destructor ensures use of polymorphism during destruction
-    virtual ~DistanceFromTarget()
-       {};
+    virtual ~DistanceFromTarget();
+
+    static const SamplePoints* get_dft_sample_pts();
+    
+    virtual msq_std::string get_name() const;
+    void set_name( const msq_std::string& s ) { mName = s; }
+    virtual int get_negate_flag() const;
 
   protected:
+    void get_W_matrices( size_t elem_index, PatchData& pd,
+                         Matrix3D T[], size_t num_T,
+                         double c_k[], MsqError& err );
+                                             
       //! For a given element, compute each corner matrix A, and given a target
       //! corner matrix W, returns \f$ T=AW^{-1} \f$ for each corner.    
-    void compute_T_matrices(MsqMeshEntity &elem, PatchData& pd,
+    void compute_T_matrices( size_t elem_index, PatchData& pd,
                            Matrix3D T[], size_t num_T, double c_k[], MsqError &err);
  
     bool get_barrier_function(PatchData& pd, const double &tau, double &h, MsqError &err);
 
   private:
     
+    TargetCalculator* targetCalc;
+    WeightCalculator* weightCalc;
+    msq_std::string mName;
   };
-
   
-  inline void DistanceFromTarget::compute_T_matrices(MsqMeshEntity &elem, PatchData& pd,
+  inline DistanceFromTarget::DistanceFromTarget( TargetCalculator* tc,
+                                                 WeightCalculator* wc )
+    : targetCalc(tc), weightCalc(wc)
+    {}
+
+  inline void DistanceFromTarget::get_W_matrices( size_t elem_index,
+                                                  PatchData& pd,
+                                                  Matrix3D T[], 
+                                                  size_t num_T,
+                                                  double c_k[],
+                                                  MsqError& err )
+  {
+    const unsigned num_corner = pd.element_by_index(elem_index).corner_count();
+    if (num_corner > num_T) {
+      MSQ_SETERR(err)("Insufficient array length", MsqError::INVALID_ARG);
+      return;
+    }
+    const SamplePoints* pts = get_dft_sample_pts();
+    
+    for (unsigned i = 0; i < num_corner; ++i)
+    {
+      targetCalc->get_3D_target( pd, elem_index, pts, i, 
+                                 *reinterpret_cast<MsqMatrix<3,3>*>(T+i), 
+                                 err );
+      MSQ_ERRRTN(err);
+      
+      c_k[i] = weightCalc->get_weight( pd, elem_index, pts, i, err );
+      MSQ_ERRRTN(err);
+    }
+  }
+    
+  
+  
+  inline void DistanceFromTarget::compute_T_matrices(size_t elem_index, PatchData& pd,
                         Matrix3D T[], size_t num_T, double c_k[], MsqError &err)
   {    
-      // Gets the element corner matrices.
-    elem.compute_corner_matrices(pd, T, num_T, err);
-
-//     for (size_t i=0; i<num_T; ++i)
-//       std::cout << "A["<<i<<"]:\n" << T[i] << std::endl;
-
-    int elem_idx = pd.get_element_index(&elem);
-    const TargetMatrix* W = pd.targetMatrices.get_element_corner_tags(&pd, elem_idx, err );
+    const unsigned num_corner = pd.element_by_index(elem_index).corner_count();
+    pd.element_by_index(elem_index).compute_corner_matrices( pd, T, num_T, err );
+    MSQ_ERRRTN(err);
+    const SamplePoints* pts = get_dft_sample_pts();
     
-//     for (size_t i=0; i<num_T; ++i)
-//       std::cout << "W["<<i<<"]:\n" << W[i] << std::endl;
-
-    for (size_t i=0; i<num_T; ++i) {
-      timesInvA(T[i], W[i]);
-      c_k[i] = W[i].get_cK();
+    MsqMatrix<3,3> W;
+    for (unsigned i = 0; i < num_corner; ++i)
+    {
+      targetCalc->get_3D_target( pd, elem_index, pts, i, W, err );
+      MSQ_ERRRTN(err);
+      timesInvA( T[i], *reinterpret_cast<Matrix3D*>(&W) );
+      
+      c_k[i] = weightCalc->get_weight( pd, elem_index, pts, i, err );
+      MSQ_ERRRTN(err);
     }
   }
 

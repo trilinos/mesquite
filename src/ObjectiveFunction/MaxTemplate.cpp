@@ -36,94 +36,59 @@
 #include <math.h>
 #include "MaxTemplate.hpp"
 #include "QualityMetric.hpp"
-#include "PatchData.hpp"
+#include "MsqError.hpp"
 
 namespace Mesquite {
 
-MaxTemplate::MaxTemplate(QualityMetric *qualitymetric){
-   set_quality_metric(qualitymetric);
-   set_negate_flag(qualitymetric->get_negate_flag());
-   set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
-}
+MaxTemplate::MaxTemplate(QualityMetric *qualitymetric) 
+   : ObjectiveFunctionTemplate(qualitymetric) {}
 
 //Lori:  need to clean up here
 MaxTemplate::~MaxTemplate(){
 
 }
 
-bool MaxTemplate::concrete_evaluate(PatchData &patch, double &fval,
-                                    MsqError &err){
+ObjectiveFunction* MaxTemplate::clone() const
+  { return new MaxTemplate(get_quality_metric()); }
+  
+void MaxTemplate::clear()
+  { }
 
-  //Total value of objective function
-  fval = 0.0;
-  double temp_value=0;
-  bool obj_bool = true;
-  //For elements in Patch
-  int index;
-  QualityMetric* currentQM = get_quality_metric();
-  if(currentQM->get_metric_type()==QualityMetric::ELEMENT_BASED){
-    
-    int num_elements=patch.num_elements();
-    MsqMeshEntity* elems=patch.get_element_array(err);  MSQ_ERRZERO(err);
- 
-    for (index=0; index<num_elements; index++){
-
-      //evaluate metric for this elem
-      obj_bool = currentQM->evaluate_element(patch, &elems[index],
-                                             temp_value, err);
-        //if invalid patch
-      if(MSQ_CHKERR(err) || !obj_bool ){
-        fval = 0.0;
-        return false;
-      }
-
-      if(temp_value>fval )
-        fval=temp_value;
-
-    }//end loop over elements
-  }//end if not VERTEX
-
-  else if (currentQM->get_metric_type()==QualityMetric::VERTEX_BASED) {
-
-    int num_vertices=patch.num_vertices();
-    MsqVertex* vertices=patch.get_vertex_array(err);  MSQ_ERRZERO(err);
- 
-    for (index=0; index<num_vertices;index++){
-
-      //evaluate metric for this vertex
-      obj_bool=currentQM->evaluate_vertex(patch, &vertices[index],
-                                          temp_value, err);
-      //if invalid patch
-      if(MSQ_CHKERR(err) || !obj_bool ){
-        fval = 0.0;
-        return false;
-      }
-      if(temp_value>fval)
-        fval=temp_value;
-
-    }//end loop over vertices
-  }//end else VERTEX
-  else {
-    MSQ_SETERR(err)("Make sure MetricType is initialised in concrete "
-                    "QualityMetric constructor.", MsqError::INVALID_STATE);
+bool MaxTemplate::evaluate( EvalType type, 
+                            PatchData& pd,
+                            double& value_out,
+                            bool free,
+                            MsqError& err )
+{
+  if (type != ObjectiveFunction::CALCULATE) {
+    MSQ_SETERR(err)(
+      "MaxTemplate does not support block coodinate descent algoritms",
+      MsqError::INVALID_STATE );
     return false;
+  }
+
+  QualityMetric* qm = get_quality_metric();
+  qm->get_evaluations( pd, qmHandles, free, err );  MSQ_ERRFALSE(err);
+  const double sign = qm->get_negate_flag();
+  
+    // calculate OF value for just the patch
+  msq_std::vector<size_t>::const_iterator i;
+  double value;
+  value_out = -HUGE_VAL;
+  for (i = qmHandles.begin(); i != qmHandles.end(); ++i)
+  {
+    bool result = qm->evaluate( pd, *i, value, err );
+    if (MSQ_CHKERR(err) || !result)
+      return false;
+      
+    value *= sign;
+    if (value > value_out)
+      value_out = value;
   }
   
   return true;
 }
 
-  bool MaxTemplate::compute_analytical_gradient(PatchData &patch,
-                                                Vector3D *const &grad,
-                                                double &OF_val,
-                                                MsqError &err, 
-                                                size_t array_size)
-  {
-    MSQ_SETERR(err)("The MaxTemplate is not sufficient for methods requiring\n"
-                    "  gradient information.  If you neeed to try this anyway, \n"
-                    "  set the gradient type to numerical.\n",
-                    MsqError::INVALID_STATE);
-    return false;
-  }
 } // namespace Mesquite
 
 	

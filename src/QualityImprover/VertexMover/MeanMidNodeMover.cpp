@@ -28,37 +28,30 @@
 #include "MsqError.hpp"
 #include "MsqFreeVertexIndexIterator.hpp"
 #include "TopologyInfo.hpp"
+#include "ElementPatches.hpp"
+#include "PatchData.hpp"
+#include "PatchIterator.hpp"
 
 namespace Mesquite {
 
 MeanMidNodeMover::MeanMidNodeMover() 
 {
-  MsqError err;
-  PatchDataUser::set_patch_type( PatchData::ELEMENT_PATCH, err );
-  MSQ_CHKERR(err);
+  
 }
 
 MeanMidNodeMover::~MeanMidNodeMover() {}
 
-void MeanMidNodeMover::set_patch_type( PatchData::PatchType, MsqError &err, int , int )
-{
-  MSQ_SETERR(err)("Patch type cannot be changed for MeanMidNodeMover.",MsqError::INVALID_ARG);
-  return;
-}
-
-msq_std::string MeanMidNodeMover::get_name()
+msq_std::string MeanMidNodeMover::get_name() const
 { return "MeanMidNodeMover"; }
-
-PatchDataUser::AlgorithmType MeanMidNodeMover::get_algorithm_type()
-{ return PatchDataUser::QUALITY_IMPROVER; }
 
 void MeanMidNodeMover::fix_mid_nodes( PatchData& pd, MsqError& err )
 {
   const MsqVertex::FlagMaskID FIXED_FLAG = MsqVertex::MSQ_HARD_FIXED;
-  
+  const size_t begin = pd.num_free_vertices();
+  const size_t end = begin + pd.num_slave_vertices();  
   
     // For each higher-order node in the patch
-  for (size_t vtx = pd.num_vertices(); vtx < pd.num_nodes(); ++vtx)
+  for (size_t vtx = begin; vtx <end; ++vtx)
   {
       // Skipped fixed vertices
     if (pd.vertex_by_index(vtx).is_flag_set(FIXED_FLAG))
@@ -138,28 +131,21 @@ void MeanMidNodeMover::fix_mid_nodes( PatchData& pd, MsqError& err )
 
 double MeanMidNodeMover::loop_over_mesh( Mesh* mesh,
                                          MeshDomain* domain,
-                                         PatchData* global_patch, 
                                          MsqError& err )
 {
-  if (global_patch)
+  PatchData patch_data;
+  patch_data.set_mesh( mesh );
+  patch_data.set_domain( domain );
+
+  ElementPatches patch_set;
+  patch_set.set_mesh( mesh );
+  PatchIterator patches( &patch_set );
+  
+  while (patches.get_next_patch( patch_data, err ) && !MSQ_CHKERR(err))
   {
-    fix_mid_nodes( *global_patch,err ); 
-    MSQ_CHKERR(err);
-    return 0.;
+    fix_mid_nodes( patch_data, err ); MSQ_ERRZERO(err);
   }
-  else
-  {
-    PatchData patch_data;
-    patch_data.set_mesh( mesh );
-    patch_data.set_domain( domain );
-    
-    while ( patch_data.get_next_element_patch( err ) )
-    {
-      MSQ_ERRZERO(err);
-      fix_mid_nodes( patch_data, err ); MSQ_ERRZERO(err);
-    }
-    MSQ_ERRZERO(err);
-  }
+  MSQ_CHKERR(err);
   
   return 0.0;
 }

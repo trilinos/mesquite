@@ -38,8 +38,7 @@
 */
 
 #include "I_DFT_NoBarrierSmoother.hpp"
-#include "LPtoPTemplate.hpp"
-#include "EdgeLengthQualityMetric.hpp"
+#include "MsqFreeVertexIndexIterator.hpp"
 #ifdef MSQ_USE_OLD_STD_HEADERS
 #  include <vector.h>
 #else
@@ -50,27 +49,15 @@ using std::vector;
 
 namespace Mesquite {
 
+  msq_std::string I_DFT_NoBarrierSmoother::get_name() const 
+    { return "I_DFT_NoBarrierSmoother"; }
+
     /*!
       I_DFT_NoBarrierSmoother constructor.  
     */
-  I_DFT_NoBarrierSmoother::I_DFT_NoBarrierSmoother(MsqError &err) 
-  {
-    this->set_name("I_DFT_NoBarrierSmoother");
-  
-    set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err,1,1);
-    MSQ_ERRRTN(err);
+  I_DFT_NoBarrierSmoother::I_DFT_NoBarrierSmoother() {}
 
-//     edgeQM = new EdgeLengthQualityMetric;
-//     edgeQM->set_averaging_method(QualityMetric::RMS,err);MSQ_ERRRTN(err);
-//    objFunc = new LPtoPTemplate(edgeQM, 2, err);MSQ_ERRRTN(err);
-    objFunc = NULL;
-  }  
-
-  I_DFT_NoBarrierSmoother::~I_DFT_NoBarrierSmoother() 
-  {
-//     delete edgeQM;
-//    delete objFunc;
-  }    
+  I_DFT_NoBarrierSmoother::~I_DFT_NoBarrierSmoother() {}
   
 
   void I_DFT_NoBarrierSmoother::initialize(PatchData& /*pd*/,
@@ -95,7 +82,7 @@ namespace Mesquite {
     MSQ_FUNCTION_TIMER( "I_DFT_NoBarrierSmoother::optimize_vertex_positions" );
     
       // does the I_DFT_NoBarrier smoothing
-    MsqFreeVertexIndexIterator free_iter(&pd, err);  MSQ_ERRRTN(err);
+    MsqFreeVertexIndexIterator free_iter(pd, err);  MSQ_ERRRTN(err);
     free_iter.reset();
     free_iter.next();
       //m is the free vertex.

@@ -75,16 +75,10 @@ namespace Mesquite
   class MESQUITE_EXPORT MsqHessian
     {
     protected:  // data accessed directly in tests. 
-      PatchData* origin_pd;
-      MsqMeshEntity* patchElemArray; //!< stored once during initialization for
-      //!< fast access.
      
       Matrix3D* mEntries;        //!< CSR block entries. size: nb of nonzero blocks, i.e. mRowStart[mSize] . 
       size_t* mRowStart;        //!< start of each row in mEntries. size: nb of vertices (mSize).
       size_t* mColIndex;  //!< CSR block structure: column indexes of the row entries. 
-
-      int* mAccumulation;           //!< accumulation pattern instructions
-      size_t* mAccumElemStart;  //!< Starting index in mAccumulation for element i, i=1,...
 
       size_t mSize; //!< number of rows (or number of columns, this is a square matrix).
     
@@ -103,13 +97,15 @@ namespace Mesquite
       ~MsqHessian();
     
       void initialize(PatchData &pd, MsqError &err);
+      void initialize( const MsqHessian& other );
+      
       inline void zero_out();
       size_t size() {return mSize;}
       //! returns the diagonal blocks, memory must be allocated before call.
       void get_diagonal_blocks(msq_std::vector<Matrix3D> &diag, MsqError &err);
       Matrix3D* get_block(size_t i, size_t j);
-      inline void accumulate_entries(PatchData &pd, const size_t &elem_index,
-                                     Matrix3D* const &mat3d_array, MsqError &err);
+      //inline void accumulate_entries(PatchData &pd, const size_t &elem_index,
+      //                               Matrix3D* const &mat3d_array, MsqError &err);
       void compute_preconditioner(MsqError &err);
       
       void apply_preconditioner(Vector3D zloc[], Vector3D rloc[], MsqError &err);
@@ -120,6 +116,16 @@ namespace Mesquite
                        const Vector3D y[], size_t size_y, MsqError &err);
       friend class ObjectiveFunction;
       friend msq_stdio::ostream& operator<<( msq_stdio::ostream&, const MsqHessian& );
+   
+      inline void add( size_t row, size_t col, const Matrix3D& m, MsqError& err );
+    
+      inline void scale( double value );
+      
+      void add( const MsqHessian& other ); 
+      
+    private:
+      MsqHessian& operator=( const MsqHessian& h );
+      MsqHessian( const MsqHessian& copy ); 
     };
 
 
@@ -134,6 +140,12 @@ namespace Mesquite
       for (i=0; i<mRowStart[mSize]; ++i) {
         mEntries[i].zero();
       }
+    }
+    
+  inline void MsqHessian::scale( double value )
+    {
+      for (size_t i = 0; i < mRowStart[mSize]; ++i) 
+        mEntries[i] *= value;
     }
 
   
@@ -150,31 +162,59 @@ namespace Mesquite
     \param nb_mat3d. The size of the mat3d_array: (n+1)n/2, where n is
     the number of nodes in the element.
   */
-  inline void MsqHessian::accumulate_entries(PatchData &pd, const size_t &elem_index,
-                                             Matrix3D* const &mat3d_array, MsqError &err)
-    {
-      if (&pd != origin_pd) {
-        MSQ_SETERR(err)( 
-                    "Cannot accumulate elements from a different patch. "
-                    "Use MsqHessian::initialize first.",
-                    MsqError::INVALID_ARG ); 
-        return;
-      }
-
-      size_t nve = pd.get_element_array(err)[elem_index].vertex_count(); 
-      const size_t nb_mat3d = (nve+1)*nve/2;
-    
-      size_t e = mAccumElemStart[elem_index];
-      size_t i;
-      int j;
-      for (i = 0; i < nb_mat3d; ++i) {
-        j = mAccumulation[e++];
-        if (j >= 0)
-          mEntries[j] += mat3d_array[i];
-        else
-          mEntries[-j].plus_transpose_equal(mat3d_array[i]);
-      }
+//  inline void MsqHessian::accumulate_entries(PatchData &pd, const size_t &elem_index,
+//                                             Matrix3D* const &mat3d_array, MsqError &err)
+//    {
+//      if (&pd != origin_pd) {
+//        MSQ_SETERR(err)( 
+//                    "Cannot accumulate elements from a different patch. "
+//                    "Use MsqHessian::initialize first.",
+//                    MsqError::INVALID_ARG ); 
+//        return;
+//      }
+//
+//      size_t nve = pd.get_element_array(err)[elem_index].vertex_count(); 
+//      size_t* ve = pd.get_element_array(err)[elem_index].get_vertex_index_array();
+//      size_t e = mAccumElemStart[elem_index];
+//      size_t i, j, c = 0;
+//      for (i = 0; i < nve; ++i)
+//      {
+//        for (j = i; j < nve; ++j)
+//        {
+//          if (ve[i] < mSize && ve[j] < mSize)
+//          {
+//            int k = mAccumulation[e++];
+//            if (k >= 0)
+//              mEntries[k] += mat3d_array[c];
+//            else
+//              mEntries[-k].plus_transpose_equal( mat3d_array[c] );
+//          }
+//          ++c;
+//        }
+//      }
+//    }
+   
+  inline void MsqHessian::add( size_t row, size_t col, const Matrix3D& m, MsqError& err )
+  {
+    if (row <= col) {
+      for (size_t i = mRowStart[row]; i != mRowStart[row+1]; ++i)
+        if (mColIndex[i] == col) {
+          mEntries[i] += m;
+          return;
+        }
     }
+    else {
+      for (size_t i = mRowStart[col]; i != mRowStart[col+1]; ++i)
+        if (mColIndex[i] == row) {
+          mEntries[i].plus_transpose_equal( m );
+          return;
+        }
+    }
+    
+    MSQ_SETERR(err)(MsqError::INVALID_ARG, 
+                   "Hessian entry (%lu,%lu) does not exist.",
+                   (unsigned long)row, (unsigned long)col);
+  }
    
   /*!
     \param res: array of Vector3D in which the result is stored.

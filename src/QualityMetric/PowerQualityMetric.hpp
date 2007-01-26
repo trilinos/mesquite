@@ -60,21 +60,62 @@ namespace Mesquite
          constraint.  The composite metric also has the same negate flag
          as qm1.
        */
-     PowerQualityMetric(QualityMetric* qm1, double pow_double,MsqError &err);
+     PowerQualityMetric(QualityMetric* qm1, double pow_double );
      
      
        // virtual destructor ensures use of polymorphism during destruction
-     virtual ~PowerQualityMetric()
-        {  }
+     virtual ~PowerQualityMetric();
      
-     bool evaluate_element(PatchData& pd, MsqMeshEntity *element,double &value,
-                             MsqError &err);
-     bool evaluate_vertex(PatchData& pd, MsqVertex *vertex, double &value,
-                            MsqError &err);
+    MetricType get_metric_type() const
+      { return mMetric.get_metric_type(); }
+
+     msq_std::string get_name() const;
+
+     int get_negate_flag() const;
+
+     QualityMetric* get_metric() const { return &mMetric; }
+
+     virtual
+     void get_evaluations( PatchData& pd, 
+                           msq_std::vector<size_t>& handles, 
+                           bool free_vertices_only,
+                           MsqError& err );
+
+     virtual
+     bool evaluate( PatchData& pd, 
+                    size_t handle, 
+                    double& value, 
+                    MsqError& err );
+
+
+     virtual
+     bool evaluate_with_indices( PatchData& pd,
+                    size_t handle,
+                    double& value,
+                    msq_std::vector<size_t>& indices,
+                    MsqError& err );
+
+     virtual
+     bool evaluate_with_gradient( PatchData& pd,
+                    size_t handle,
+                    double& value,
+                    msq_std::vector<size_t>& indices,
+                    msq_std::vector<Vector3D>& gradient,
+                    MsqError& err );
+
+
+     virtual
+     bool evaluate_with_Hessian( PatchData& pd,
+                    size_t handle,
+                    double& value,
+                    msq_std::vector<size_t>& indices,
+                    msq_std::vector<Vector3D>& gradient,
+                    msq_std::vector<Matrix3D>& Hessian,
+                    MsqError& err );
 
   private:
   
-    QualityMetric* qualMetric;
+    QualityMetric& mMetric;
     Mesquite::Exponent mPower;
    };
    

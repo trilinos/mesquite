@@ -36,70 +36,51 @@
 
 
 #include "MeshTransform.hpp"
-#include "MsqTimer.hpp"
-#include "MsqDebug.hpp"
+#include "MeshInterface.hpp"
+#include "MsqVertex.hpp"
+#include "MsqError.hpp"
 
 namespace Mesquite {
-/*! Constructor sets the matrix and the vector for the affine transformation.
-  It also sets the patch type and culling method.  My default the patches
-  are just created such that a patch is created around each vertex but
-  no elements are added to the patch (each patch consists of a single vertex,
-  ELEMENTS_ON_VERTEX_PATCH with a layer depth of 1).
+/*! Constructor
+\param in_mat Matrix component of transform.  Specifies rotation,
+              scaling, and reflection.
+\param in_vec Vector component of transform.  Specifies translation.
 */
-  MeshTransform::MeshTransform(Matrix3D &in_mat, Vector3D &in_vec, MsqError &err)
+  MeshTransform::MeshTransform(Matrix3D &in_mat, Vector3D &in_vec)
   {
     mMat = in_mat;
     mVec = in_vec;
-    set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH ,err, 0, 1);
-  }
-  void MeshTransform::set_patch_type(PatchData::PatchType patch_type, MsqError &err,
-                                     int param1=0, int param2=0) {
-    if(patch_type != PatchData::ELEMENTS_ON_VERTEX_PATCH ||
-       param1 != 0){
-      MSQ_SETERR(err)("Patch type must be ELEMENTS_ON_VERTEX_PATCH, depth 1.\n", MsqError::INVALID_ARG);
-    }
-    PatchDataUser::set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH ,err,
-                                  0, param2);
-    MSQ_CHKERR(err);
   }
   
-/*! \fn MeshTransform::loop_over_mesh(MeshSet &ms, MsqError &err)
+/*! 
   Actually apply the affine transformation
-    \param const MeshSet &: this MeshSet is looped over. Only the
-    mutable data members are changed (such as currentVertexInd).
   */
   double MeshTransform::loop_over_mesh( Mesh* mesh,
-                                        MeshDomain* domain,
-                                        PatchData* ,
+                                        MeshDomain* ,
+                                        MappingFunctionSet*,
                                         MsqError &err )
   {
-      //get the first patch
-    PatchData patch_data;
-    patch_data.set_mesh( mesh );
-    patch_data.set_domain( domain );
-    size_t junk;
-      //loop over the patches (ie, loop over the vertices.
-    while( patch_data.get_next_vertex_element_patch( 0, false, junk, err) )
+    msq_std::vector<Mesh::VertexHandle> handle_list;
+    mesh->get_all_vertices( handle_list, err );
+    if (MSQ_CHKERR(err))
+      return 1.0;
+    
+    MsqVertex vertex;
+    msq_std::vector<Mesh::VertexHandle>::const_iterator iter;
+    for (iter = handle_list.begin(); iter != handle_list.end(); ++iter)
     {
+      mesh->vertices_get_coordinates( &*iter, &vertex, 1, err );
       if (MSQ_CHKERR(err))
         return 1.0;
       
-        //make sure we have a vertex.
-      assert(patch_data.num_vertices()==1);
+      vertex = mMat * vertex + mVec;
       
-      MsqVertex* vert_array = patch_data.get_vertex_array(err);
-      if(MSQ_CHKERR(err))
-        return 1.0;
-        //perform the affine transormation
-      Vector3D temp_vec = vert_array[0];
-      vert_array[0]=mMat*temp_vec+mVec;
-        //update the vertex postion
-      patch_data.update_mesh(err);
+      mesh->vertex_set_coordinates( *iter, vertex, err );
       if (MSQ_CHKERR(err))
         return 1.0;
     }
-      //return
-    return MSQ_CHKERR(err);
+
+    return 0.0;
   }
   
 } // namespace Mesquite

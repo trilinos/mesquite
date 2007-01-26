@@ -1,0 +1,11 @@
+SRC_QUALITYMETRIC_SMOOTHNESS_DIR = src/QualityMetric/Smoothness
+MSQ_INCLUDES += -I$(top_srcdir)/$(SRC_QUALITYMETRIC_SMOOTHNESS_DIR)
+
+MSQ_SRCS += \
+	$(SRC_QUALITYMETRIC_SMOOTHNESS_DIR)/EdgeLengthQualityMetric.cpp \
+	$(SRC_QUALITYMETRIC_SMOOTHNESS_DIR)/EdgeLengthRangeQualityMetric.cpp 
+
+MSQ_HDRS += \
+	$(SRC_QUALITYMETRIC_SMOOTHNESS_DIR)/EdgeLengthQualityMetric.hpp \
+	$(SRC_QUALITYMETRIC_SMOOTHNESS_DIR)/EdgeLengthRangeQualityMetric.hpp 
+

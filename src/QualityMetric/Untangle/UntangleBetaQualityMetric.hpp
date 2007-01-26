@@ -38,8 +38,8 @@ Header file for the Mesquite::UntangleBetaQualityMetric class
 #define UNTANGLE_BETA_QUALITY_METRIC_HPP
 
 #include "Mesquite.hpp"
-#include "UntangleQualityMetric.hpp"
-#include "PatchData.hpp"
+#include "ElementQM.hpp"
+#include "AveragingQM.hpp"
 namespace Mesquite
 {
      /*! \class UntangleBetaQualityMetric
@@ -57,7 +57,7 @@ namespace Mesquite
        .05.
      */
    
-   class UntangleBetaQualityMetric : public UntangleQualityMetric
+   class UntangleBetaQualityMetric : public ElementQM, public AveragingQM
    {
    public:
      
@@ -66,13 +66,6 @@ namespace Mesquite
        // virtual destructor ensures use of polymorphism during destruction
      MESQUITE_EXPORT virtual ~UntangleBetaQualityMetric()
         {}
-       /*!Evaluate the Untangle Beta metric value for an element.
-         \todo This function needs to be modified so that it no longer
-         uses compute_weighted_jacobian.  It also needs to set an error
-         whenever sent a 2D element and the surface normal information
-         is not available.*/
-     MESQUITE_EXPORT bool evaluate_element(PatchData &pd,MsqMeshEntity* element,
-                           double &fval,MsqError &err);
      
        /*!Function to allow users to set the beta value after the
          metric has already been created. */
@@ -81,49 +74,22 @@ namespace Mesquite
        /*!Function to allow the user to check the value of beta.*/
      MESQUITE_EXPORT double get_beta()
        {return mBeta;}
+       
+     MESQUITE_EXPORT virtual
+     msq_std::string get_name() const;
      
-   protected:
-     MESQUITE_EXPORT inline void untangle_function_2d(Vector3D temp_vec[],size_t e_ind,
-                                      PatchData &pd, double &fval,
-                                      MsqError &err);
+     MESQUITE_EXPORT virtual
+     int get_negate_flag() const;
      
-     MESQUITE_EXPORT inline void untangle_function_3d(Vector3D temp_vec[],double &fval,
-                                      MsqError &err);
-     
+     MESQUITE_EXPORT virtual
+     bool evaluate( PatchData& pd, 
+                    size_t handle, 
+                    double& value, 
+                    MsqError& err );
+
    private:
      double mBeta;
    };
-     //************BEGIN INLINE FUNCTIONS**************************
-   
-   inline void UntangleBetaQualityMetric::untangle_function_2d(Vector3D temp_vec[],size_t e_ind,PatchData &pd, double &fval, MsqError &err)
-   {
-     Vector3D surface_normal;
-     pd.get_domain_normal_at_element(e_ind,surface_normal,err); MSQ_ERRRTN(err);
-     Vector3D cross_vec=temp_vec[0]*temp_vec[1];
-       //cout<<"\nsurface_normal "<<surface_normal;
-       //cout<<"\cross_vec "<<cross_vec;
-     double temp_var=cross_vec.length();
-     if(cross_vec%surface_normal<0.0){
-       temp_var*=-1;
-     }
-     temp_var -= mBeta;
-       //cout<<"temp_var == "<<temp_var;
-     fval=0.0;
-     if(temp_var<0.0){
-        fval=fabs(temp_var)-temp_var;
-     }
-       //  cout<<"\nfval == "<<fval<<"  e_ind "<<e_ind;
-   }
-   
-   inline void UntangleBetaQualityMetric::untangle_function_3d(Vector3D temp_vec[],double &fval, MsqError &/*err*/)
-   {
-     double temp_var=temp_vec[0]%(temp_vec[1]*temp_vec[2]);
-     temp_var-=mBeta;
-     fval=0.0;
-     if(temp_var<0.0){
-       fval=fabs(temp_var)-temp_var;
-     }
-   }
    
 } //namespace
 

@@ -22,7 +22,9 @@
  
     diachin2@llnl.gov, djmelan@sandia.gov, mbrewer@sandia.gov, 
     pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov      
-   
+
+    (2006) kraftche@cae.wisc.edu    
+  
   ***************************************************************** */
 // -*- Mode : c++; tab-width: 3; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 3 -*-
 
@@ -33,6 +35,8 @@ Header file for the Mesquite::ObjectiveFunction class
   \author Michael Brewer
   \author Thomas Leurent
   \date   2002-05-23
+  \author Jason Kraftcheck
+  \date   2006-04
  */
 
 
@@ -40,13 +44,13 @@ Header file for the Mesquite::ObjectiveFunction class
 #define OBJECTIVE_FUNCTION_HPP
 
 #include "Mesquite.hpp"
-#include "MsqError.hpp"
-#include "MsqVertex.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 #  include <list.h>
+#  include <vector.h>
 #else
 #  include <list>
+#  include <vector>
 #endif
 
 namespace Mesquite
@@ -54,6 +58,13 @@ namespace Mesquite
    class PatchData;
    class MsqHessian;
    class QualityMetric;
+   class MsqVertex;
+   class MsqError;
+   class Vector3D;
+   class Mesh;
+   class MeshDomain;
+   class PatchSet;
+   class MappingFunctionSet;
    
   /*! \class ObjectiveFunction
        \brief Base class for concrete Objective Functions
@@ -67,260 +78,214 @@ namespace Mesquite
   class MESQUITE_EXPORT ObjectiveFunction
   {
    public:
-    ObjectiveFunction ():
-        useLocalGradient(false)
-       {}
+
+    enum EvalType {
+      /** Do not modify or use any accumulated value in the
+       *  calculation of the objective function value.  
+       *  Evaluate the objective function only over the passed 
+       *  patch.  Used for NASH-type solutions.
+       */
+      CALCULATE,
+      /** Incorporate the evaluation of the passed patch into
+       *  the accumulated global objective function value.  This
+       *  EvalType is used by the default initialize implemenation,
+       *  and need not be considered by ObjectiveFunction 
+       *  implementations that provide their own implementation of
+       *  the initialize method.
+       */
+      ACCUMULATE,
+      /** Save the evaluation over the passed patch such that it
+       *  can later be removed from the accumulated global objective
+       *  function value.  Assume that the current accumulated 
+       *  value already includes the evaluation of this patch. Do
+       *  *not* modify any accumulated, global value.
+       */
+      SAVE,
+      /** Assume that the patch passed to this call is a modified
+       *  version of the patch previously passed with either the
+       *  SAVE or UPDATE EvalType specified.  Update the accumulated
+       *  global value accordingly (remove previously saved local
+       *  data from accumulated value, and incorporate evaluation
+       *  over this patch into the accumulated value.)  Save the
+       *  necessary data such that the results of incorporaring
+       *  the evaluation of this patch into the accumulated global
+       *  value can be removed upon a subsequent call with this
+       *  EvalType.
+       */
+      UPDATE,
+      /** For this EvalType, the passed back results should be the
+       *  same as for the UPDATE EvalType, but any accumulated data
+       *  or data corresponding to the previous local values should
+       *  *not* be modified.
+       */
+      TEMPORARY
+    };
+
+    ObjectiveFunction () {}
     
     
       // virtual destructor ensures use of polymorphism during destruction
-    virtual ~ObjectiveFunction()
-       {};
+    virtual ~ObjectiveFunction() {}
     
-      /*! 
-        Evaluate the objective function on a given patch.
-      */
-    virtual bool concrete_evaluate(PatchData &patch, double &fval,
-                                   MsqError &err)=0;
-
-      /*!
-        Computes the value of the objective funciton as fval*negateFlag,
-        where fval is computed in concrete_evaluate(patch, fval, err)
-        and negateFlag is either 1 or -1 depending on whether the
-        function needs to be minimized or maximized, respectively.
-        Returns the bool given as a return value from concrete_evaluate.
-        If the bool is 'false', then the patch is not within the feasible
-        region required by the associated QualityMetric(s).
-      */
-    bool evaluate(PatchData &patch, double &fval, MsqError &err)
-       {
-         bool return_bool = concrete_evaluate(patch, fval, err);
-         fval *= negateFlag;
-         return return_bool;
-       }
+      /**\brief Initial accumulated value for block coordinate descent algorithms
+       *
+       * Set accumulated value of objective function to the value for the
+       * entire, unmodified mesh.  This is the initial state for a block
+       * coordinate descent algorithm.  The ObjectiveFunction will asked
+       * to add or remove values for a specific patch of the mesh during
+       * the optimization.
+       *\param mesh  The Mesh
+       *\param domain The MeshDomain
+       *\param user_set User-defined patch set - not relevant for most OF templates.
+       */
+    virtual bool initialize_block_coordinate_descent( Mesh* mesh, 
+                                                      MeshDomain* domain, 
+                                                      MappingFunctionSet* maps,
+                                                      PatchSet* user_set,
+                                                      MsqError& err ) = 0;
     
-    //! \enum GRADIENT_TYPE 
-    enum GRADIENT_TYPE
-    {
-       NUMERICAL_GRADIENT,  //!< can be very slow. Should be for tests only. 
-       ANALYTICAL_GRADIENT  //!< every differentiable function should have
-                            //!< an analytical gradient implemented.
-    };
-
-    //! Set gradType to either NUMERICAL_GRADIENT or ANALYTICAL_GRADIENT.
-    void set_gradient_type(GRADIENT_TYPE grad)
-    { gradType = grad; }
-
-
-      /*!\brief
-        Calls either compute_numerical_gradient or compute_analytical_gradient
-        depending on the value of gradType.
-        Function returns 'false' if the patch is not within a required
-        feasible regeion.  Otherwise, it returns 'true'.
-      */
-    bool compute_gradient(PatchData &patch, Vector3D *const &grad,
-                          double &OF_val, MsqError &err, size_t array_size=0);          
-              
-      /*!\brief
-        Calls compute_analytical_hessian. 
-        Function returns 'false' if the patch is not within a required
-        feasible regeion.  Otherwise, it returns 'true'.
-      */
-    bool compute_hessian(PatchData &patch, MsqHessian &hessian,
-                         Vector3D *const &grad,
-                         double &OF_val,
-                         MsqError &err);          
-              
-  /*! 
-        Return the quality metric associated with this objective function.
-        Returns null for composite functions which have multiple associated
-        quality metrics.  Use get_quality_metric_list() to retrieve all
-        metrics.
-      */
-    QualityMetric*  get_quality_metric(){
-         return qMetric;
-       }
+      /**\brief Evaluate objective function for specified patch.
+       *
+       * Either evaluate the objective function over the passed patch
+       * or update the accumulated, global objective function value for
+       * changes in the passed patch, depending on the value of the
+       * EvalType.
+       *\param type  Evaluation type.
+       *\param pd    The patch.
+       *\param value_out  The passed-back value of the objective fuction. 
+       *\param free  If true, incorporate the quality metric values only
+       *             for those metric evaluations that depend on at least
+       *             one free vertex
+       *\return false if any QualityMetric evaluation returned false,
+       *        true otherwise.
+       */
+    virtual bool evaluate( EvalType type, 
+                           PatchData& pd,
+                           double& value_out,
+                           bool free,
+                           MsqError& err ) = 0; 
     
-      /*! 
-        returns a list of all associated metrics;
-      */
-    virtual msq_std::list<QualityMetric*> get_quality_metric_list()
-       {
-         msq_std::list<QualityMetric*> temp_list;
-         temp_list.push_front(qMetric);
-         return temp_list;
-       }
-
-      //!Set the value of qMetric.
-    void set_quality_metric(QualityMetric* qm)
-       {
-         qMetric=qm;
-       }
     
-      /*! 
-        \brief Set the value of ObjectiveFunction's negateFlag.  Unless
-        composite, concrete ObjectiveFunctions should set this flag to
-        to the value of the associated QualityMetric's negateFLag.
-      */
-    void set_negate_flag(int neg)
-       {
-         negateFlag=neg;
-       }
+      /**\brief Evaluate objective function and gradient for specified patch.
+       *
+       * Either evaluate the objective function over the passed patch
+       * or update the accumulated, global objective function value for
+       * changes in the passed patch, depending on the value of the
+       * EvalType.  
+       *
+       * The default implementation of this function will
+       * use the value-only variation of the evaluate method and numerical
+       * approximation to calculate gradients.  Whenever possible, objective
+       * function implementations should provide more efficient analyical
+       * gradient calculations.
+       * 
+       *\param type  Evaluation type.
+       *\param pd    The patch.
+       *\param value_out  The passed-back value of the objective fuction. 
+       *\param grad_out The gradient of the OF wrt the coordinates of
+       *             each *free* vertex in the patch.
+       *\return false if any QualityMetric evaluation returned false,
+       *        true otherwise.
+       */
+    virtual bool evaluate_with_gradient( EvalType type, 
+                                         PatchData& pd,
+                                         double& value_out,
+                                         msq_std::vector<Vector3D>& grad_out,
+                                         MsqError& err ); 
+    
+    
+      /**\brief Evaluate objective function and Hessian for specified patch.
+       *
+       * Either evaluate the objective function over the passed patch
+       * or update the accumulated, global objective function value for
+       * changes in the passed patch, depending on the value of the
+       * EvalType.  
+       *
+       * The default implementation of this function will
+       * use the value-only variation of the evaluate method and numerical
+       * approximation to calculate Hessians.  Whenever possible, objective
+       * function implementations should provide more efficient analyical
+       * Hessian calculations.
+       * 
+       *\param type  Evaluation type.
+       *\param pd    The patch.
+       *\param value_out  The passed-back value of the objective fuction. 
+       *\param grad_out The gradient of the OF wrt the coordinates of
+       *             each *free* vertex in the patch.
+       *\param Hessian_out The Hessian of the OF wrt the coordinates of
+       *             each *free* vertex in the patch.
+       *\return false if any QualityMetric evaluation returned false,
+       *        true otherwise.
+       */
+    virtual bool evaluate_with_Hessian( EvalType type, 
+                                        PatchData& pd,
+                                        double& value_out,
+                                        msq_std::vector<Vector3D>& grad_out,
+                                        MsqHessian& Hessian_out,
+                                        MsqError& err ); 
 
-      //!Returns negateFlag
-    int get_negate_flag()
-       {
-         return negateFlag;
-       }
+      /**\brief Create copy with same state
+       *
+       * Create a new instance of the objective function that
+       * is a copy of the callee with the same accumulated
+       * values, parameters, etc.
+       */
+    virtual ObjectiveFunction* clone() const = 0;
+    
+      /** Clear any values accumulated for BCD-related eval calls */       
+    virtual void clear() = 0;
+    
+      /** Get the minimum number of layers of adjacent elements required
+       *  in a patch to evaluate the objective function for a single 
+       *  free vertex.  
+       */
+    virtual int min_patch_layers() const = 0;
     
    protected:
-
-      /*! \brief Non-virtual function which numerically computes
-        the gradient of the Objective Function.
-         Function returns 'false' if the patch is not within a required
-        feasible regeion.  Otherwise, it returns 'true'.
-      */
-    bool compute_numerical_gradient(PatchData &patch, Vector3D *const &grad,
-                                    double &OF_val,
-                                    MsqError &err, size_t array_size);
-
-     /*! 
-        Fills an array of Vector3D, grad, with the gradient of
-        the objective function computed using the gradient of the
-        quality metric.  If the function has not been over-riden
-        in the concrete Objective Function, the base class implementation
-        prints a warning and then defaults to numerical gradient.
-        Function returns 'false' if the patch is not within a required
-        feasible regeion.  Otherwise, it returns 'true'.
-
-        \param patch The PatchData object for which the objective function
-        gradient is computed.
-        \param grad An array of Vector3D, at least the size of the number
-        of vertices in the patch.
-        \param OF_val is set to the value of the objective function.
-        \param array_size is the size of the grad Vector3D[] array and
-        must correspond to the number of vertices in the patch.
-     */
-    virtual bool compute_analytical_gradient(PatchData &patch,
-                                             Vector3D *const &grad,
-                                             double &OF_val,
-                                             MsqError &err, size_t array_size);
     
-     /*! 
-        Fills a MsqHessian object with the Hessian of
-        the objective function computed using the hessian of the
-        quality metric.  If the function has not been over-riden
-        in the concrete Objective Function, the base class implementation
-        prints a warning and returns false.
-        Function returns 'false' if the patch is not within a required
-        feasible regeion.  Otherwise, it returns 'true'.
-      */
-    virtual bool compute_analytical_hessian(PatchData &/*patch*/,
-                                            MsqHessian &/*hessian*/,
-                                            Vector3D *const &/*grad*/,
-                                            double &/*OF_val*/,
-                                            MsqError &/*err*/);
-    
-      //!Returns eps used in the numerical gradient calculation.
-    inline double get_eps(PatchData &pd, double &local_val,
-                          int k,MsqVertex* vertex, MsqError &err);
-    
-      //!Sets useLocalGradient
-      //!This variable determines whether compute_numercial_gradient
-      //!can use the most efficient gradient calculation.
-    void set_use_local_gradient(bool new_bool)
-       {
-         useLocalGradient=new_bool;
-       }
-       
+      /**\brief Returns eps used in the numerical gradient calculation.
+       *
+       * Returns an appropiate value (eps) to use as a delta step for
+       * MsqVertex vertex in dimension k (i.e. k=0 -> x, k=1 -> y, k=2 -> z).
+       * The objective function value at the perturbed vertex position is given
+       * in local_val.
+       */
+    double get_eps(PatchData &pd, EvalType eval_type, double &local_val,
+                   int k, MsqVertex* vertex, MsqError &err);
     
  private:
+ 
+      /**\brief Compute numerical approx. of gradient for 1 vertex's coordinates.
+       *
+       * Compute the numerical approximation of the gradient of the objective
+       * function for the coordinates of a single vertex given a patch for 
+       * which that vertex is the only free vertex.
+       *\param type   Evaluation type.
+       *\param pd     A patch containing a single free vertex and the 
+       *              adjacent elements necessary for complete evaluation
+       *              of the dependence of the objective fuction on the
+       *              coordinates of the free vertex.
+       *\param flocal The objective function value for the unmodified
+       *              subpatch.  (Output.)
+       *\param grad   The gradient of the OF with respect to the coordinates
+       *              of the free veretx.  (Output.)
+       *\return       The result of calling the ObjectiveFunction::evaluate
+       *              method.
+       */
+    bool compute_subpatch_numerical_gradient( EvalType type,
+                                              EvalType get_eps_eval_type,
+                                              PatchData& pd,
+                                              double& flocal,
+                                              Vector3D& grad,
+                                              MsqError& err );
       
-    enum GRADIENT_TYPE gradType;//!Flag for numerical or analytical gradient.
-      
-    QualityMetric* qMetric;//!Pointer to associated QualityMetric.
-      
-    int negateFlag; /*!Equals one if ObjectiveFunction needs to
-        be minimized; equals negative one if ObjectiveFunction needs
-        to be maximized.*/
-    bool useLocalGradient;/*!Set to true if we should use the more efficient
-                            sub-patch method of computing the numerical
-                            gradient.  Otherwise, it is set to false.*/
-    
+    bool compute_patch_numerical_gradient( EvalType type,
+                                           EvalType get_eps_eval_type,
+                                           PatchData& pd,
+                                           double& flocal,
+                                           msq_std::vector<Vector3D>& grad,
+                                           MsqError& err );
   };
-
-//BEGIN INLINE
-
-     /*!  
-       Calls either compute_numerical_gradient or compute_analytical_gradient
-       depending on the value of gradType.           
-      */
-   inline bool ObjectiveFunction::compute_gradient(PatchData &patch,
-                                                   Vector3D *const &grad,
-                                                   double &OF_val,
-                                                   MsqError &err,
-                                                   size_t array_size)
-   {
-     bool obj_bool = false;
-     switch(gradType){
-       case NUMERICAL_GRADIENT:
-          obj_bool=compute_numerical_gradient(patch, grad, OF_val,
-                                              err, array_size);
-          break;
-       case ANALYTICAL_GRADIENT:
-          obj_bool=compute_analytical_gradient(patch, grad, OF_val,
-                                               err, array_size);
-          break;
-     }
-     return !MSQ_CHKERR(err) && obj_bool;
-   }
-
-
-     /*!  
-       Calls compute_analytical_hessian.
-       Numerical objective function hessians are only used for test purposes. 
-     */
-   inline bool ObjectiveFunction::compute_hessian(PatchData &patch,
-                                                  MsqHessian &hessian,
-                                                  Vector3D *const &grad,
-                                                  double &OF_val,
-                                                  MsqError &err)
-   {
-     bool result = compute_analytical_hessian(patch, hessian,
-                                       grad, OF_val, err);
-     return !MSQ_CHKERR(err) && result;
-   }
-
-
-  /*!Returns an appropiate value (eps) to use as a delta step for
-    MsqVertex vertex in dimension k (i.e. k=0 -> x, k=1 -> y, k=2 -> z).
-    The objective function value at the perturbed vertex position is given
-    in local_val.
-  */
-  inline double ObjectiveFunction::get_eps(PatchData &pd, double &local_val,
-                                           int k,MsqVertex* vertex, MsqError& err)
-  {
-    double eps = 1.e-07;
-    //  double rho=.5;
-    int imax=20;
-    int i=0;
-    bool feasible=false;
-    double tmp_var=0.0;
-    while (i<imax && !feasible)
-      {
-        i++;
-        //perturb kth coord val and check feas if needed
-        tmp_var=(*vertex)[k];
-        (*vertex)[k]+=eps;
-        feasible = evaluate(pd,local_val,err); MSQ_ERRZERO(err);
-        //if step was too big, shorten it         
-        if(!feasible)
-          eps*=0.5;
-        //revert kth coord val
-        (*vertex)[k]=tmp_var;
-      }//end while looking for feasible eps
-    return eps;
-  }//end function get_eps
-
   
 } //namespace
 

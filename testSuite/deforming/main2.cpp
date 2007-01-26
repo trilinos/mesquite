@@ -117,7 +117,7 @@ int main()
   FeasibleNewton* pass1 = new FeasibleNewton( obj_func );
   pass1->set_target_calculator(&target, err); 
   if (err) return 1;
-  pass1->set_patch_type(PatchData::GLOBAL_PATCH, err);
+  pass1->use_global_patch();
   
   QualityAssessor stop_qa(&mu,QualityAssessor::AVERAGE);
   stop_qa.set_target_calculator(&assessor_target, err); 

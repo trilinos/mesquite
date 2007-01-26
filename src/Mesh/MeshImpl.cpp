@@ -1035,8 +1035,8 @@ void MeshImpl::elements_get_attached_vertices( const ElementHandle *elements,
 
 // Returns the topologies of the given entities.  The "entity_topologies"
 // array must be at least "num_elements" in size.
-void MeshImpl::elements_get_topologies( const ElementHandle element_handle_array[],
-                                        EntityTopology element_topologies[],
+void MeshImpl::elements_get_topologies( const ElementHandle *element_handle_array,
+                                        EntityTopology *element_topologies,
                                         size_t num_elements,
                                         MsqError& err)
 {
@@ -1055,8 +1055,8 @@ void MeshImpl::elements_get_topologies( const ElementHandle element_handle_array
 //**************** Memory Management ****************
 // Tells the mesh that the client is finished with a given
 // entity handle.  
-void Mesquite::MeshImpl::release_entity_handles(
-  const Mesquite::Mesh::EntityHandle* /*handle_array*/,
+void MeshImpl::release_entity_handles(
+  const EntityHandle* /*handle_array*/,
   size_t /*num_handles*/,
   MsqError &/*err*/)
 {
@@ -2303,7 +2303,7 @@ void MeshImpl::vtk_write_attrib_data( msq_stdio::ostream& file,
   size_t i, total = count*vlen;
   char* space = new char[num_per_line];
   memset( space, ' ', num_per_line );
-  space[0] = '\n';
+  space[num_per_line-1] = '\n';
   const unsigned char* odata = (const unsigned char*)data;
   const bool* bdata = (const bool*)data;
   const int* idata = (const int*)data;
@@ -2342,7 +2342,7 @@ void MeshImpl::vtk_write_attrib_data( msq_stdio::ostream& file,
  **************************************************************************/
 
 
-TagHandle MeshImpl::tag_create( const string& name,
+TagHandle MeshImpl::tag_create( const msq_std::string& name,
                                 TagType type,
                                 unsigned length,
                                 const void* defval,

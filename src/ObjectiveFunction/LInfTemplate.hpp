@@ -39,36 +39,30 @@ Header file for the Mesquite::LInfTemplate class
 #define LInfTemplate_hpp
 
 #include "Mesquite.hpp"
-#include "ObjectiveFunction.hpp"
-#include "PatchData.hpp"
+#include "ObjectiveFunctionTemplate.hpp"
 
 namespace Mesquite
 {
-   class PatchData;
-   class MsqError;
-   
   /*! \class LInfTemplate
     \brief Computes the L_infinity objective function for a given patch,
     i.e., LInfTemplate::concrete_evaluate returns the maximum absolute value of
     the quality metric values  on 'patch'.
   */
-   class LInfTemplate :public ObjectiveFunction
+   class LInfTemplate :public ObjectiveFunctionTemplate
    {
    public:
      LInfTemplate(QualityMetric *);
      virtual ~LInfTemplate();
-     virtual bool concrete_evaluate(PatchData &patch, double &fval,
-                                    MsqError &err);
-   protected:
-     
-     virtual bool compute_analytical_gradient(PatchData &patch,
-					      Vector3D *const &grad,
-					      double &OF_val,
-					      MsqError &err, 
-					      size_t array_size);
-     
+     virtual bool evaluate( EvalType type, 
+                            PatchData& pd,
+                            double& value_out,
+                            bool free,
+                            MsqError& err ); 
+     virtual ObjectiveFunction* clone() const;
+     virtual void clear();
    private:
-     
+     /** Temporary storage for qm sample handles */
+     mutable msq_std::vector<size_t> qmHandles;
    };
 }//namespace
 #endif // LInfTemplate_hpp

@@ -85,15 +85,15 @@ namespace Mesquite {
       { this->run_instructions( mesh, 0, err ); }
       
   private:
-    UntangleQualityMetric* untangleMetric;
+    UntangleBetaQualityMetric* untangleMetric;
     LPtoPTemplate* untangleFunc;
     
-    VertexMover* untangleGlobal;
+    ConjugateGradient* untangleGlobal;
     
     TerminationCriterion* untangleGlobalOuter; 
     TerminationCriterion* untangleGlobalInner;
 
-    ShapeQualityMetric* inverseMeanRatio; 
+    IdealWeightInverseMeanRatio* inverseMeanRatio; 
     LPtoPTemplate* objFunc;
     FeasibleNewton* feasNewt;
     QualityAssessor* mQA;

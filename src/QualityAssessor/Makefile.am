@@ -1,0 +1,7 @@
+SRC_QUALITYASSESSOR_DIR = src/QualityAssessor
+MSQ_INCLUDES += -I$(top_srcdir)/$(SRC_QUALITYASSESSOR_DIR)
+
+MSQ_SRCS += $(SRC_QUALITYASSESSOR_DIR)/QualityAssessor.cpp 
+
+MSQ_HDRS += $(SRC_QUALITYASSESSOR_DIR)/QualityAssessor.hpp 
+

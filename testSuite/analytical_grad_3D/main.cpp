@@ -43,6 +43,8 @@ describe main.cpp here
 // DESCRIP-END.
 //
 
+#include "meshfiles.h"
+
 #ifndef MSQ_USE_OLD_IO_HEADERS
 #include <iostream>
 #else
@@ -79,7 +81,7 @@ int main()
 {
   MsqPrintError err(msq_stdio::cout);
   Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
-  mesh->read_vtk("../../meshFiles/3D/VTK/hexes_4by2by2.vtk", err);
+  mesh->read_vtk(MESH_FILES_DIR "3D/VTK/hexes_4by2by2.vtk", err);
   
     // dbg
   std::cout << " TSTT mesh handle: " << mesh << std::endl;
@@ -88,23 +90,18 @@ int main()
   InstructionQueue queue1;
   
     // creates a mean ratio quality metric ...
-  ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);
+  IdealWeightInverseMeanRatio* mean_ratio = new IdealWeightInverseMeanRatio(err);
   if (err) return 1;
-  ShapeQualityMetric* cond_num = new ConditionNumberQualityMetric;
-  mean_ratio->set_averaging_method(QualityMetric::LINEAR, err);
-  if (err) return 1;
-  mean_ratio->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
-//  mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
+  ConditionNumberQualityMetric* cond_num = new ConditionNumberQualityMetric;
+  mean_ratio->set_averaging_method(QualityMetric::LINEAR);
   
     // ... and builds an objective function with it
     //LInfTemplate* obj_func = new LInfTemplate(mean_ratio);
   LPtoPTemplate* obj_func = new LPtoPTemplate(mean_ratio, 2, err);
   if (err) return 1;
-//   obj_func->set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
-  obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
    // creates the steepest descent optimization procedures
-  SteepestDescent* pass1 = new SteepestDescent( obj_func );
-  pass1->set_patch_type(PatchData::GLOBAL_PATCH, err);
+  SteepestDescent* pass1 = new SteepestDescent( obj_func, true );
+  pass1->use_global_patch();
   if (err) return 1;
   pass1->set_maximum_iteration(6);
   

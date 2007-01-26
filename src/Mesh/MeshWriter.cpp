@@ -119,7 +119,7 @@ EdgeIterator::EdgeIterator( PatchData* p, MsqError& err )
 
 bool EdgeIterator::is_at_end() const
 {
-  return vertIdx >= patchPtr->num_vertices() || 
+  return vertIdx >= patchPtr->num_free_vertices() || 
          adjIter == adjList.end();
 }
 
@@ -136,7 +136,7 @@ void EdgeIterator::step( MsqError& err )
     ++adjIter;
   }
   
-  while (adjIter == adjList.end() && ++vertIdx < patchPtr->num_vertices())
+  while (adjIter == adjList.end() && ++vertIdx < patchPtr->num_free_vertices())
   {
     get_adjacent_vertices( err );  MSQ_ERRRTN(err);
   }
@@ -192,7 +192,7 @@ void EdgeIterator::get_adjacent_vertices( MsqError& err )
 }
 
 
-/**\brief Write VTK file
+/* Write VTK file
  *
  * Copied from src/Mesh/MeshSet.cpp and adapted for removal of 
  * MeshSet class by J.Kraftcheck on 2005-7-28.
@@ -285,7 +285,7 @@ void write_vtk( Mesh* mesh, const char* out_filename, MsqError &err)
 
 
 
-/** Writes a gnuplot file directly from the MeshSet.
+/*  Writes a gnuplot file directly from the MeshSet.
  *  This means that any mesh imported successfully into Mesquite
  *  can be outputed in gnuplot format.
  *

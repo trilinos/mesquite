@@ -38,6 +38,8 @@
 #include "MeanRatioFunctions.hpp"
 #include "MsqTimer.hpp"
 #include "MsqDebug.hpp"
+#include "MsqError.hpp"
+#include "PatchData.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 #  include <vector.h>
@@ -50,18 +52,25 @@
 
 namespace Mesquite {
 
-IdealWeightInverseMeanRatio::IdealWeightInverseMeanRatio( MsqError& err, double pow_dbl )
+IdealWeightInverseMeanRatio::IdealWeightInverseMeanRatio(MsqError& err, double pow_dbl)
+  : AveragingQM(QualityMetric::LINEAR)
 {
-  set_metric_type(ELEMENT_BASED);
-
-  set_gradient_type(ANALYTICAL_GRADIENT);
-  set_hessian_type(ANALYTICAL_HESSIAN);
-  avgMethod=QualityMetric::LINEAR;
-  feasible=1;
-  set_name("Inverse Mean Ratio");
-
   set_metric_power(pow_dbl, err);  MSQ_ERRRTN(err);
 }
+
+IdealWeightInverseMeanRatio::IdealWeightInverseMeanRatio( )
+  : AveragingQM(QualityMetric::LINEAR)
+{
+  MsqError err;
+  set_metric_power(1.0, err);
+  assert(!err);
+}
+
+msq_std::string IdealWeightInverseMeanRatio::get_name() const
+  { return "Inverse Mean Ratio"; }
+
+int IdealWeightInverseMeanRatio::get_negate_flag() const
+  { return b2Con.value() < 0 ? -1 : 1; }
 
        //! Sets the power value in the metric computation.
 void IdealWeightInverseMeanRatio::set_metric_power(double pow_dbl, MsqError& err)
@@ -70,10 +79,6 @@ void IdealWeightInverseMeanRatio::set_metric_power(double pow_dbl, MsqError& err
     MSQ_SETERR(err)(MsqError::INVALID_ARG);
     return;
   }
-  if(pow_dbl<0)
-    set_negate_flag(-1);
-  else
-    set_negate_flag(1);
   a2Con=pow(.5,pow_dbl);
   b2Con=pow_dbl;
   c2Con=-pow_dbl;
@@ -82,12 +87,12 @@ void IdealWeightInverseMeanRatio::set_metric_power(double pow_dbl, MsqError& err
   c3Con=-2.0*pow_dbl/3.0;
 }
 
-
-bool IdealWeightInverseMeanRatio::evaluate_element(PatchData &pd,
-                                              MsqMeshEntity *e,
-                                              double &m,
-                                              MsqError &err)
+bool IdealWeightInverseMeanRatio::evaluate( PatchData& pd, 
+                                     size_t handle, 
+                                     double& m, 
+                                     MsqError& err )
 {
+  const MsqMeshEntity* e = &pd.element_by_index(handle);
   EntityTopology topo = e->get_element_type();
 
   MsqVertex *vertices = pd.get_vertex_array(err);  MSQ_ERRZERO(err);
@@ -190,22 +195,27 @@ bool IdealWeightInverseMeanRatio::evaluate_element(PatchData &pd,
   return true;
 }
 
-bool IdealWeightInverseMeanRatio::compute_element_analytical_gradient(PatchData &pd,
-								 MsqMeshEntity *e,
-								 MsqVertex *v[], 
-								 Vector3D g[],
-								 int nv, 
-								 double &m,
-                         MsqError &err)
+bool IdealWeightInverseMeanRatio::evaluate_with_gradient( PatchData& pd,
+                    size_t handle,
+                    double& m,
+                    msq_std::vector<size_t>& indices,
+                    msq_std::vector<Vector3D>& g,
+                    MsqError& err )
 {
+  const MsqMeshEntity* e = &pd.element_by_index(handle);
   EntityTopology topo = e->get_element_type();
 
-  if (((topo == QUADRILATERAL) || (topo == HEXAHEDRON) || 
-       (topo == PYRAMID) || (topo == PRISM)) && 
-      ((avgMethod == MINIMUM) || (avgMethod == MAXIMUM))) {
-    MSQ_DBGOUT(1) <<
-      "Minimum and maximum not continuously differentiable.\n"
-      "Element of subdifferential will be returned.\n";
+  if (!analytical_average_gradient() &&
+      topo != TRIANGLE &&
+      topo != TETRAHEDRON) {
+    static bool print = true;
+    if (print) {
+      MSQ_DBGOUT(1) << "Analyical gradient not available for selected averaging scheme. "
+                    << "Using (possibly much slower) numerical approximation of gradient"
+                    << " of quality metric. " << msq_stdio::endl;
+      print = false;
+    }
+    return QualityMetric::evaluate_with_gradient( pd, handle, m, indices, g, err );
   }
 
   MsqVertex *vertices = pd.get_vertex_array(err);  MSQ_ERRZERO(err);
@@ -227,7 +237,7 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_gradient(PatchData 
   int i;
 
   bool metric_valid = false;
-  const uint32_t fm = fixed_vertex_bitmap( pd, e, v, nv );
+  const uint32_t fm = fixed_vertex_bitmap( pd, e, indices );
 
   m = 0.0;
 
@@ -238,9 +248,8 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_gradient(PatchData 
     mCoords[0] = vertices[v_i[0]];
     mCoords[1] = vertices[v_i[1]];
     mCoords[2] = vertices[v_i[2]];
-    if (!g_fcn_2e(m, mGradients, mCoords, n, a2Con, b2Con, c2Con)) return false;
-
-    copy_free_gradients( TRIANGLE, fm, mGradients, g );
+    g.resize(3);
+    if (!g_fcn_2e(m, &g[0], mCoords, n, a2Con, b2Con, c2Con)) return false;
     break;
 
   case QUADRILATERAL:
@@ -254,9 +263,10 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_gradient(PatchData 
 		    a2Con, b2Con, c2Con, d_con)) return false;
     }
 
+    g.resize(4);
     m = average_corner_gradients( QUADRILATERAL, fm, 4,
                                   mMetrics, mGradients,
-                                  g, err ); MSQ_ERRZERO(err);
+                                  &g[0], err ); MSQ_ERRZERO(err);
     break;
 
   case TETRAHEDRON:
@@ -264,10 +274,9 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_gradient(PatchData 
     mCoords[1] = vertices[v_i[1]];
     mCoords[2] = vertices[v_i[2]];
     mCoords[3] = vertices[v_i[3]];
-    metric_valid = g_fcn_3e(m, mGradients, mCoords, a3Con, b3Con, c3Con);
+    g.resize(4);
+    metric_valid = g_fcn_3e(m, &g[0], mCoords, a3Con, b3Con, c3Con);
     if (!metric_valid) return false;
-
-    copy_free_gradients( TETRAHEDRON, fm, mGradients, g );
     break;
 
   case PYRAMID:
@@ -280,9 +289,10 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_gradient(PatchData 
       if (!metric_valid) return false;
     }
 
+    g.resize(5);
     m = average_corner_gradients( PYRAMID, fm, 4,
                                   mMetrics, mGradients,
-                                  g, err ); MSQ_ERRZERO(err);
+                                  &g[0], err ); MSQ_ERRZERO(err);
     break;
 
   case PRISM:
@@ -295,9 +305,10 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_gradient(PatchData 
 		    a3Con, b3Con, c3Con)) return false;
     }
     
+    g.resize(6);
     m = average_corner_gradients( PRISM, fm, 6,
                                   mMetrics, mGradients,
-                                  g, err ); MSQ_ERRZERO(err);
+                                  &g[0], err ); MSQ_ERRZERO(err);
     break;
 
   case HEXAHEDRON:
@@ -310,9 +321,10 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_gradient(PatchData 
 		    a3Con, b3Con, c3Con, d_con)) return false;
     }
 
+    g.resize(8);
     m = average_corner_gradients( HEXAHEDRON, fm, 8,
                                   mMetrics, mGradients,
-                                  g, err ); MSQ_ERRZERO(err);
+                                  &g[0], err ); MSQ_ERRZERO(err);
     break;
 
   default:
@@ -322,28 +334,33 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_gradient(PatchData 
     return false;
   } // end switch over element type
 
+  remove_fixed_gradients( topo, fm, g );
   return true;
 }
 
 
-bool IdealWeightInverseMeanRatio::compute_element_analytical_hessian(PatchData &pd,
-								MsqMeshEntity *e,
-								MsqVertex *fv[], 
-								Vector3D g[],
-								Matrix3D h[],
-                int nfv, 
-								double &m,
-								MsqError &err)
+bool IdealWeightInverseMeanRatio::evaluate_with_Hessian( PatchData& pd,
+                    size_t handle,
+                    double& m,
+                    msq_std::vector<size_t>& indices,
+                    msq_std::vector<Vector3D>& g,
+                    msq_std::vector<Matrix3D>& h,
+                    MsqError& err )
 {
+  const MsqMeshEntity* e = &pd.element_by_index(handle);
   EntityTopology topo = e->get_element_type();
 
-  if (((topo == QUADRILATERAL) || (topo == HEXAHEDRON) || 
-       (topo == PYRAMID) || (topo == PRISM)) && 
-      ((avgMethod == MINIMUM) || (avgMethod == MAXIMUM))) {
-    MSQ_DBGOUT(1) <<
-      "Minimum and maximum not continuously differentiable.\n"
-      "Element of subdifferential will be returned.\n"
-      "Who knows what the Hessian is?\n" ;
+  if (!analytical_average_hessian() &&
+      topo != TRIANGLE &&
+      topo != TETRAHEDRON) {
+    static bool print = true;
+    if (print) {
+      MSQ_DBGOUT(1) << "Analyical gradient not available for selected averaging scheme. "
+                    << "Using (possibly much slower) numerical approximation of gradient"
+                    << " of quality metric. " << msq_stdio::endl;
+      print = false;
+    }
+    return QualityMetric::evaluate_with_Hessian( pd, handle, m, indices, g, h, err );
   }
 
   MsqVertex *vertices = pd.get_vertex_array(err);  MSQ_ERRZERO(err);
@@ -366,7 +383,7 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_hessian(PatchData &
   int i;
 
   bool metric_valid = false;
-  const uint32_t fm = fixed_vertex_bitmap( pd, e, fv, nfv );
+  const uint32_t fm = fixed_vertex_bitmap( pd, e, indices );
 
   m = 0.0;
 
@@ -377,10 +394,8 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_hessian(PatchData &
     mCoords[0] = vertices[v_i[0]];
     mCoords[1] = vertices[v_i[1]];
     mCoords[2] = vertices[v_i[2]];
-    if (!h_fcn_2e(m, g, h, mCoords, n, a2Con, b2Con, c2Con)) return false;
-
-    zero_fixed_gradients( TRIANGLE, fm, g );
-    zero_fixed_hessians( TRIANGLE, fm, h );
+    g.resize(3); h.resize(6);
+    if (!h_fcn_2e(m, &g[0], &h[0], mCoords, n, a2Con, b2Con, c2Con)) return false;
     break;
 
   case QUADRILATERAL:
@@ -394,9 +409,10 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_hessian(PatchData &
 		    a2Con, b2Con, c2Con, d_con)) return false;
     }
 
+    g.resize(4); h.resize(10);
     m = average_corner_hessians( QUADRILATERAL, fm, 4,
                                  mMetrics, mGradients, mHessians,
-                                 g, h, err );
+                                 &g[0], &h[0], err );
     MSQ_ERRZERO( err );
     break;
 
@@ -405,11 +421,9 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_hessian(PatchData &
     mCoords[1] = vertices[v_i[1]];
     mCoords[2] = vertices[v_i[2]];
     mCoords[3] = vertices[v_i[3]];
-    metric_valid = h_fcn_3e(m, g, h, mCoords, a3Con, b3Con, c3Con);
+    g.resize(4); h.resize(10);
+    metric_valid = h_fcn_3e(m, &g[0], &h[0], mCoords, a3Con, b3Con, c3Con);
     if (!metric_valid) return false;
-
-    zero_fixed_gradients( TETRAHEDRON, fm, g );
-    zero_fixed_hessians( TETRAHEDRON, fm, h );
     break;
 
   case PYRAMID:
@@ -424,9 +438,10 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_hessian(PatchData &
       if (!metric_valid) return false;
     }
 
+    g.resize(5); h.resize(15);
     m = average_corner_hessians( PYRAMID, fm, 4,
                                  mMetrics, mGradients, mHessians,
-                                 g, h, err );
+                                 &g[0], &h[0], err );
     MSQ_ERRZERO( err );
     break;
 
@@ -440,9 +455,10 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_hessian(PatchData &
 		    a3Con, b3Con, c3Con)) return false;
     }
 
+    g.resize(6); h.resize(21);
     m = average_corner_hessians( PRISM, fm, 6,
                                  mMetrics, mGradients, mHessians,
-                                 g, h, err );
+                                 &g[0], &h[0], err );
     MSQ_ERRZERO( err );
     break;
 
@@ -456,9 +472,10 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_hessian(PatchData &
 		    a3Con, b3Con, c3Con, d_con)) return false;
     }
 
+    g.resize(8); h.resize(36);
     m = average_corner_hessians( HEXAHEDRON, fm, 8,
                                  mMetrics, mGradients, mHessians,
-                                 g, h, err );
+                                 &g[0], &h[0], err );
     MSQ_ERRZERO( err );
     break;
 
@@ -469,6 +486,8 @@ bool IdealWeightInverseMeanRatio::compute_element_analytical_hessian(PatchData &
     return false;
   } // end switch over element type
 
+  remove_fixed_gradients( topo, fm, g );
+  remove_fixed_hessians( topo, fm, h );
   return true;
 }
 

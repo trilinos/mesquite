@@ -66,7 +66,8 @@ namespace Mesquite
   public:
     // Constructors
     Vector3D();
-    Vector3D(const double& x, const double& y, const double& z);
+    Vector3D( double xyz );
+    Vector3D( double x, double y, double z);
     Vector3D(const double xyz[3]);
     Vector3D(const Vector3D& to_copy);
 
@@ -175,9 +176,15 @@ namespace Mesquite
     mCoords[1] = 0;
     mCoords[2] = 0;
   }
-  inline Vector3D::Vector3D(const double &x,
-                            const double &y,
-                            const double &z) 
+  inline Vector3D::Vector3D( double x )
+  {
+    mCoords[0] = x;
+    mCoords[1] = x;
+    mCoords[2] = x;
+  }
+  inline Vector3D::Vector3D( double x,
+                             double y,
+                             double z) 
   {
     mCoords[0] = x;
     mCoords[1] = y;

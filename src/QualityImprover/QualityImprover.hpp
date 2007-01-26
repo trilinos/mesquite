@@ -42,17 +42,19 @@
 #include "Mesquite.hpp"
 #include "MsqError.hpp"
 #include "TerminationCriterion.hpp"
-#include "PatchDataUser.hpp"
+#include "Instruction.hpp"
 
 namespace Mesquite
 {
+  class PatchSet;
+
   
   /*! \class QualityImprover
     \brief Base class for all quality improvers.
     Mote that the PatchData settings are inherited from the PathDataUser class. 
 
   */ 
-  class QualityImprover : public PatchDataUser
+  class QualityImprover : public Instruction
   {
   public:
 
@@ -60,16 +62,6 @@ namespace Mesquite
     
      // virtual destructor ensures use of polymorphism during destruction
     virtual ~QualityImprover() { };
-
-    //! provides a name to the QualityImprover (use it in constructor).
-    void set_name(msq_std::string name)
-      {
-        qualityImproverName = name;
-      };
-    
-    //! retrieves the QualityImprover name. A default name should be set in the constructor.
-    virtual msq_std::string get_name() { return qualityImproverName; }
-    virtual AlgorithmType get_algorithm_type() { return QUALITY_IMPROVER; }
 
       //!Sets in the termination criterion for the concrete solver's
       //! optimization.
@@ -83,13 +75,16 @@ namespace Mesquite
       {
         outerTerminationCriterion=crit;
       }
+      
+    virtual PatchSet* get_patch_set() = 0;
+    
 
   protected:
 
     /*! The default constructor initialises a few member variables
         to default values.
         This can be reused by concrete class constructor. */    
-    QualityImprover() : qualityImproverName("noname")
+    QualityImprover()
       {
           //Temporary solution to not having an err object
         MsqError temp_err;
@@ -106,8 +101,7 @@ namespace Mesquite
       { return innerTerminationCriterion; } 
     
   private:
-    msq_std::string qualityImproverName;
-    
+  
     TerminationCriterion* innerTerminationCriterion;
     TerminationCriterion* outerTerminationCriterion;
       //default TerminationCriterion for outer loop will be set in constructor

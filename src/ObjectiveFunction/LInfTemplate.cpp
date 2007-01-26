@@ -36,15 +36,13 @@
 #include <math.h>
 #include "LInfTemplate.hpp"
 #include "QualityMetric.hpp"
+#include "MsqError.hpp"
 
 namespace Mesquite {
 
 
-LInfTemplate::LInfTemplate(QualityMetric *qualitymetric){
-   set_quality_metric(qualitymetric);
-   set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
-   set_negate_flag(qualitymetric->get_negate_flag());
-}
+LInfTemplate::LInfTemplate(QualityMetric *qualitymetric)
+  : ObjectiveFunctionTemplate(qualitymetric) {}
 
 
 //Michael:  need to clean up here
@@ -52,69 +50,46 @@ LInfTemplate::~LInfTemplate(){
 
 }
 
-bool LInfTemplate::concrete_evaluate(PatchData &patch, double &fval,
-                                     MsqError &err){
-    //Total value of objective function
-  double temp_value=0;
-  fval=0.0;
-  bool obj_bool=true;
-    //For elements in Patch
-  int index;
-  QualityMetric* currentQM = get_quality_metric();
-  if(currentQM==NULL)
-    currentQM=get_quality_metric_list().front();
-  if(currentQM->get_metric_type()==QualityMetric::ELEMENT_BASED){
-    int num_elements=patch.num_elements();
-    MsqMeshEntity* elems=patch.get_element_array(err);  MSQ_ERRZERO(err);
-      //Michael:  this may not do what we want
-      //Set currentQM to be the first quality metric* in the list 
-    for (index=0; index<num_elements;index++){
-        //evaluate metric for this elem
-      obj_bool=currentQM->evaluate_element(patch, &elems[index], temp_value,
-                                           err);  MSQ_ERRZERO(err);
-        //if invalid patch
-      if(!obj_bool){
-        return false;
-      }
-      temp_value = fabs(temp_value);
-      if(temp_value>fval)
-        fval=temp_value;
-    }//end loop over elements
-  }//end if not VERTEX
-  else {//VERTEX
-    int num_vertices=patch.num_vertices();
-    MsqVertex* vertices=patch.get_vertex_array(err);  MSQ_ERRZERO(err);
-      //Michael:  this may not do what we want
-      //Set currentQM to be the first quality metric* in the list
- 
-    for (index=0; index<num_vertices;index++){
-        //evaluate metric for this vertex
-      obj_bool=currentQM->evaluate_vertex(patch,&vertices[index],
-                                          temp_value, err);  MSQ_ERRZERO(err);
-        //if invalid patch
-      if(!obj_bool){
-        return false;
-      }
-      temp_value = fabs(temp_value);
-      if(temp_value>fval)
-        fval=temp_value;
-    }//end loop over vertices
-  }//end elseVERTEX
-  return true;
-}
+ObjectiveFunction* LInfTemplate::clone() const
+  { return new LInfTemplate(get_quality_metric()); }
+  
+void LInfTemplate::clear()
+  { }
 
-  bool LInfTemplate::compute_analytical_gradient(PatchData &patch,
-                                                         Vector3D *const &grad,
-                                                         double &OF_val,
-                                                         MsqError &err, 
-                                                         size_t array_size)
-  {
-    MSQ_SETERR(err)("The LInfTemplate is not sufficient for methods requiring\n"
-                    "  gradient information.  If you neeed to try this anyway, \n"
-                    "  set the gradient type to numerical.\n",
-                    MsqError::INVALID_STATE);
+bool LInfTemplate::evaluate( EvalType type, 
+                             PatchData& pd,
+                             double& value_out,
+                             bool free,
+                             MsqError& err )
+{
+  if (type != ObjectiveFunction::CALCULATE) {
+    MSQ_SETERR(err)(
+      "LInfTemplate does not support block coodinate descent algoritms",
+      MsqError::INVALID_STATE );
     return false;
   }
+
+  QualityMetric* qm = get_quality_metric();
+  qm->get_evaluations( pd, qmHandles, free, err );  MSQ_ERRFALSE(err);
+  const double negate = qm->get_negate_flag();
+  
+    // calculate OF value for just the patch
+  msq_std::vector<size_t>::const_iterator i;
+  double value;
+  value_out = -HUGE_VAL;
+  for (i = qmHandles.begin(); i != qmHandles.end(); ++i)
+  {
+    bool result = qm->evaluate( pd, *i, value, err );
+    if (MSQ_CHKERR(err) || !result)
+      return false;
+
+    value = negate * fabs(value);
+    if (value > value_out)
+      value_out = value;
+  }
+  
+  return true;
+}
  
 
 } // namespace Mesquite

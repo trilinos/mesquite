@@ -26,7 +26,7 @@
   ***************************************************************** */
 // -*- Mode : c++; tab-width: 3; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 3 -*-
 
-/*! \file MeanFunction.hpp
+/*! \file MeanRatioFunctions.hpp
 
 Header that defines generalized Mean Ratio function, gradient, and hessian
 evaluations.

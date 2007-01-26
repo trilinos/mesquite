@@ -46,6 +46,7 @@
 #include "Mesquite.hpp"
 #include "MsqVertex.hpp"
 #include "PatchData.hpp"
+#include "MsqVertex.hpp"
 
 namespace Mesquite
 {
@@ -65,41 +66,37 @@ namespace Mesquite
     }  .*/
   class MsqFreeVertexIndexIterator {
   public:
-    MsqFreeVertexIndexIterator(PatchData *pd, MsqError &err) :
-      iterOriginator(pd), iterCurrentIndex(0), initialState(true)
-    { iterVertexArray = pd->get_vertex_array(err); }
+    MsqFreeVertexIndexIterator(const PatchData& pd, MsqError &err) :
+      iterOriginator(pd), iterCurrentIndex((size_t)-1)
+      {}
     //! Resets the iterator. 
     //! The next call to next() will set the iterator on the first free vertex. 
-    void reset() { initialState=true; iterCurrentIndex=0; }
+    void reset() { iterCurrentIndex=(size_t)-1; }
     //! Increments the iterator. returns false if there is no more free vertex.
     inline bool next();
     //! Returns an index corresponding to a free vertex.
-    size_t value() {return iterCurrentIndex;}
+    msq_stdc::size_t value() {return iterCurrentIndex;}
   private:
-    PatchData* iterOriginator;
-    size_t iterCurrentIndex;
-    MsqVertex* iterVertexArray;
-    bool initialState;
+    const PatchData& iterOriginator;
+    msq_stdc::size_t iterCurrentIndex;
   };
   
 
-  /*! \fn inline bool MsqFreeVertexIndexIterator::next() */
+  /** \brief Advance iterator 
+   * 
+   * Advance iterator to next free vertex 
+   *\return false if at end, true otherwise 
+   */
   inline bool MsqFreeVertexIndexIterator::next()
   {
-    bool fixed=true;
-    while ( fixed ) 
-      {
-        if ( initialState==true )  initialState=false;
-        else  ++iterCurrentIndex;
-        
-        if ( iterCurrentIndex == iterOriginator->num_vertices() ) {
-          return false; 
-        }
-        fixed = iterVertexArray[iterCurrentIndex].is_flag_set(MsqVertex::MSQ_SOFT_FIXED) ||
-        iterVertexArray[iterCurrentIndex].is_flag_set(MsqVertex::MSQ_HARD_FIXED) ;
-          //fixed = !(iterVertexArray[iterCurrentIndex].is_free_vertex());
-      }
-    return true;
+    ++iterCurrentIndex;
+    while (iterCurrentIndex < iterOriginator.num_free_vertices())
+    {
+      if (!iterOriginator.vertex_by_index(iterCurrentIndex).is_flag_set(MsqVertex::MSQ_SOFT_FIXED))
+        return true;
+      ++iterCurrentIndex;
+    }
+    return false;
   }
   
 

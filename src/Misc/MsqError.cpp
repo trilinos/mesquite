@@ -22,6 +22,7 @@
    
   ***************************************************************** */
 /*!
+  \file   MsqError.cpp
   \brief  Used to hold the error state and return it to the application.
   \author Jason Kraftcheck
   \date   2004-09-17

@@ -39,7 +39,7 @@
 #define Mesquite_LaplacianSmoother_hpp
 
 #include "Mesquite.hpp"
-#include "VertexMover.hpp"
+#include "LaplacianCommon.hpp"
 #include "MsqFreeVertexIndexIterator.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
@@ -50,15 +50,18 @@
 
 namespace Mesquite
 {
+  class EdgeLengthQualityMetric;
+  class ObjectiveFunction;
 
   /*! \class LaplacianSmoother
     Moves free center vertex to the average of the neighboring vertices.
    */  
-  class LaplacianSmoother : public VertexMover 
+  class LaplacianSmoother : public LaplacianCommon 
   {
   public:
     LaplacianSmoother(MsqError &err);
-    ~LaplacianSmoother();
+    virtual ~LaplacianSmoother();
+    virtual msq_std::string get_name() const;
   protected:
     virtual void initialize(PatchData &pd, MsqError &err);
     virtual void optimize_vertex_positions(PatchData &pd,
@@ -68,8 +71,8 @@ namespace Mesquite
     virtual void cleanup();
 
   private:
-    QualityMetric* edgeQM;
-
+    EdgeLengthQualityMetric* edgeQM;
+    ObjectiveFunction* objFunc;
   };
 
   

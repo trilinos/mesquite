@@ -27,7 +27,7 @@ REMOTE=$1
 
 
   # The CppUnit testing application to build -- path relative to mesquite root dir
-UNITTESTER=testSuite/unit/msq_test
+UNITTESTER=msq_test
 
  # Run all this stuff in a sub-shell so the output
  # can be redirected to a file.
@@ -131,7 +131,7 @@ for test in testSuite/*; do
 
       # try to compile it
     rm -f ${test}/main
-    if $MAKE ${test}/main && test -x ${test}/main; then
+    if (cd $test && $MAKE main) && test -x ${test}/main; then
         # and run it
       if (cd ${test} && ./main); then
           # test completed successfully
@@ -155,14 +155,11 @@ echo "                  make ${UNITTESTER}"
 echo "********************************************************"
 echo
 
-  # compile CppUnit tests
-rm -f "$UNITTESTER"
-$MAKE "$UNITTESTER" || exit 1
-test -x "$UNITTESTER" || exit 1
-
-  # run CppUnit tests
-dir=`dirname "$UNITTESTER"`
-exe=`basename "$UNITTESTER"`
+(
+  cd testSuite/unit
+  $MAKE $UNITTESTER || exit 1
+  test -x $UNITTESTER || exit 1
+} || exit 1
 
 echo
 echo "********************************************************"
@@ -170,7 +167,7 @@ echo "                  CppUnit Unit tests"
 echo "********************************************************"
 echo
 
-(cd $dir && ./$exe -s ${pwd}/${RESULTS}.unit Unit)
+(cd testSuite/unit && ./$UNITTESTER -s ${pwd}/${RESULTS}.unit Unit)
 
 echo
 echo "********************************************************"
@@ -178,7 +175,7 @@ echo "                CppUnit Regression tests"
 echo "********************************************************"
 echo
 
-(cd $dir && ./$exe -s ${pwd}/${RESULTS}.regress Regression)
+(cd testSuite/unit && ./$UNITTESTER -s ${pwd}/${RESULTS}.regress Regression)
 
 exit 0
  

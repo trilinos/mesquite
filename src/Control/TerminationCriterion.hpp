@@ -40,8 +40,8 @@ Header file for the TerminationCriterion classes.
 #define TerminationCriterion_hpp
 
 #include "Mesquite.hpp"
-#include "PatchDataUser.hpp"
 #include "MsqTimer.hpp"
+#include "Vector3D.hpp"
 
 #include <string>
 
@@ -54,7 +54,11 @@ Header file for the TerminationCriterion classes.
 namespace Mesquite
 {
    class MsqError;
-   class ObjectiveFunction;
+   class OFEvaluator;
+   class PatchData;
+   class PatchDataVerticesMemento;
+   class Mesh;
+   class MeshDomain;
    
   /*! \class TerminationCriterion
 
@@ -201,16 +205,16 @@ namespace Mesquite
     MESQUITE_EXPORT void remove_culling(MsqError &err);
     
       //! Clear any data accumulated during an outer iteration
-    void reset_outer( Mesh* ms, MeshDomain* dm, ObjectiveFunction* of, MsqError& err );
+    void reset_outer( Mesh* ms, MeshDomain* dm, OFEvaluator& of, MsqError& err );
     
       //! Clear any data accumulated during an inner iteration
-    void reset_inner( PatchData& pd, ObjectiveFunction* of, MsqError& err );
+    void reset_inner( PatchData& pd, OFEvaluator& of, MsqError& err );
     
       //! Shared inner and outer initialization during inner loop
     void reset_patch( PatchData& pd, MsqError& err );
     
       //! Accumulate data during inner iteration
-    void accumulate_inner( PatchData& pd, MsqError& err );
+    void accumulate_inner( PatchData& pd, OFEvaluator& eval, MsqError& err );
     
       //! Accumulate data during inner iteration
     void accumulate_inner( PatchData& pd, double of_value, Vector3D* of_grads, 
@@ -220,14 +224,14 @@ namespace Mesquite
       //! criteria during inner iteration.                       
     void accumulate_patch( PatchData& pd, MsqError& err );
     
-    void accumulate_outer( Mesh* ms, MeshDomain* dm,  MsqError& err );
+    void accumulate_outer( Mesh* ms, MeshDomain* dm, OFEvaluator& eval, MsqError& err );
     
       //! Check if termination criterion has been met
     MESQUITE_EXPORT bool terminate();
     
     
       //!Function which determines whether this patch should be 'culled'
-    bool cull_vertices(PatchData &pd, ObjectiveFunction* obj_ptr, MsqError &err);
+    bool cull_vertices(PatchData &pd, OFEvaluator& obj_ptr, MsqError &err);
       //!Cleans up after the TerminationCriterion is finished.
     void cleanup(Mesh* ms, MeshDomain* domain, MsqError &err);
 
@@ -250,9 +254,6 @@ namespace Mesquite
     long unsigned int cullingMethodFlag;/*!<Bit flag of criterion for culling*/
       //epsiloon used in culling methods.
     double cullingEps;
-
-      // ObjectiveFunction pointer
-    ObjectiveFunction* OFPtr;
 
       //Data not specific to a single criterion
     double initialOFValue;

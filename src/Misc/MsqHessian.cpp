@@ -60,8 +60,8 @@
 namespace Mesquite {
 
 MsqHessian::MsqHessian() :
-  origin_pd(0), mEntries(0), mRowStart(0), mColIndex(0), 
-  mAccumulation(0), mAccumElemStart(0), mSize(0), 
+  mEntries(0), mRowStart(0), mColIndex(0), 
+  mSize(0), 
   mPreconditioner(0), precondArraySize(0),
   mR(0), mZ(0), mP(0), mW(0), cgArraySizes(0), maxCGiter(50)
 { }
@@ -72,9 +72,6 @@ MsqHessian::~MsqHessian()
   delete[] mEntries;	
   delete[] mRowStart;	
   delete[] mColIndex; 
-
-  delete[] mAccumulation;
-  delete[] mAccumElemStart;
 
   delete[] mPreconditioner;
 
@@ -94,14 +91,12 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
   delete[] mEntries;
   delete[] mRowStart;
   delete[] mColIndex;
-  delete[] mAccumulation;
-  delete[] mAccumElemStart;
   
-  size_t num_vertices = pd.num_vertices();
+  size_t num_vertices = pd.num_free_vertices();
   size_t num_elements = pd.num_elements();
   size_t const * vtx_list;
   size_t e, r, rs, re, c, cs, ce, nz, nnz, nve, i, j;
-  patchElemArray = pd.get_element_array(err); MSQ_CHKERR(err);
+  MsqMeshEntity* patchElemArray = pd.get_element_array(err); MSQ_CHKERR(err);
 
   if (num_vertices == 0) {
     MSQ_SETERR( err )( "No vertices in PatchData", MsqError::INVALID_ARG);
@@ -114,8 +109,8 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
   // pattern.
 
   size_t* col_start = new size_t[num_vertices + 1];
-  mAccumElemStart = new size_t[num_elements+1];
-  mAccumElemStart[0] = 0;
+  //mAccumElemStart = new size_t[num_elements+1];
+  //mAccumElemStart[0] = 0;
   
   for (i = 0; i < num_vertices; ++i) {
     col_start[i] = 0;
@@ -124,22 +119,27 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
   for (e = 0; e < num_elements; ++e) {
     nve = patchElemArray[e].vertex_count();
     vtx_list = patchElemArray[e].get_vertex_index_array();
-    mAccumElemStart[e+1] = mAccumElemStart[e] + (nve+1)*nve/2;
+    int nfe = 0;
     
     for (i = 0; i < nve; ++i) {
       r = vtx_list[i];
+      if (r < num_vertices)
+        ++nfe;
       
       for (j = i; j < nve; ++j) {
         c = vtx_list[j];
 
         if (r <= c) {
-          col_start[c]++;
+          if (c < num_vertices)
+            ++col_start[c];
         }
         else {
-          col_start[r]++;
+          if (r < num_vertices)
+            ++col_start[r];
         }
       }
     }
+    //mAccumElemStart[e+1] = mAccumElemStart[e] + (nfe+1)*nfe/2;
   }
 
   nz = 0;
@@ -167,19 +167,21 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
         c = vtx_list[j];
 
         if (r <= c) {
-          row_index[col_start[c]] = r;
-          row_instr[col_start[c]] = nz;
-          ++col_start[c];
+          if (c < num_vertices) {
+            row_index[col_start[c]] = r;
+            row_instr[col_start[c]] = nz++;
+            ++col_start[c];
+          }
         }
         else {
-          row_index[col_start[r]] = c;
-          //can't use -nz, but can negate row_instr[col_start[r]]
-          row_instr[col_start[r]] = nz;
-          row_instr[col_start[r]] = -row_instr[col_start[r]];
-          ++col_start[r];
+          if (r < num_vertices) {
+            row_index[col_start[r]] = c;
+            //can't use -nz, but can negate row_instr[col_start[r]]
+            row_instr[col_start[r]] = nz++;
+            row_instr[col_start[r]] = -row_instr[col_start[r]];
+            ++col_start[r];
+          }
         }
-        
-        ++nz;
       }
     }
   }
@@ -258,7 +260,8 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
 
   // Compaction -- count the number of nonzeros
   mRowStart = col_start;   // don't need to reallocate
-  mAccumulation = row_instr;   // don't need to reallocate
+  //mAccumulation = row_instr;   // don't need to reallocate
+  delete [] row_instr;
 
   for (i = 0; i <= num_vertices; ++i) {
     mRowStart[i] = 0;
@@ -279,12 +282,12 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
         ++nnz;
       }
 
-      if (col_instr[rs] >= 0) {
-        mAccumulation[col_instr[rs]] = nnz - 1;
-      }
-      else {
-        mAccumulation[-col_instr[rs]] = 1 - nnz;
-      }
+      //if (col_instr[rs] >= 0) {
+      //  mAccumulation[col_instr[rs]] = nnz - 1;
+      //}
+      //else {
+      //  mAccumulation[-col_instr[rs]] = 1 - nnz;
+      //}
       
       ++rs;
     }
@@ -333,11 +336,52 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
   mEntries = new Matrix3D[nnz]; // On Solaris, no initializer allowed for new of an array 
   for (i=0;i<nnz;++i) mEntries[i] = 0.; // so we initialize all entries manually. 
 
-  origin_pd = &pd;
+  //origin_pd = &pd;
 
   return;
 }
 
+void MsqHessian::initialize( const MsqHessian& other )
+{
+  if (!other.mSize) 
+  {
+    delete[] mEntries;
+    delete[] mRowStart;
+    delete[] mColIndex;
+    mEntries = 0;
+    mRowStart = 0;
+    mColIndex = 0;
+    mSize = 0;
+    return;
+  }
+    
+  if (mSize != other.mSize || mRowStart[mSize] != other.mRowStart[mSize])
+  {
+    delete[] mEntries;
+    delete[] mRowStart;
+    delete[] mColIndex;
+    
+    mSize = other.mSize;
+    
+    mRowStart = new size_t[mSize + 1];
+    mEntries = new Matrix3D[other.mRowStart[mSize]];
+    mColIndex = new size_t[other.mRowStart[mSize]];
+  }
+    
+  memcpy( mRowStart, other.mRowStart, sizeof(size_t)*(mSize+1) );
+  memcpy( mColIndex, other.mColIndex, sizeof(size_t)*mRowStart[mSize] );
+}
+
+
+void MsqHessian::add( const MsqHessian& other )
+{
+  assert( mSize == other.mSize );
+  assert( !memcmp( mRowStart, other.mRowStart, sizeof(size_t)*(mSize+1) ) );
+  assert( !memcmp( mColIndex, other.mColIndex, sizeof(size_t)*mRowStart[mSize] ) );
+  for (unsigned i = 0; i < mRowStart[mSize]; ++i)
+    mEntries[i] += other.mEntries[i];
+}
+  
 
 /*! \param diag is an STL vector of size MsqHessian::size() . */
 void MsqHessian::get_diagonal_blocks(msq_std::vector<Matrix3D> &diag,

@@ -78,7 +78,7 @@ void CylinderDomain::normal_at( Mesh::EntityHandle h, Vector3D& v ) const
 }
 
 void CylinderDomain::normal_at( const Mesh::EntityHandle* h,
-                                Vector3D* coords,
+                                Vector3D coords[],
                                 unsigned count, 
                                 MsqError& ) const
 {

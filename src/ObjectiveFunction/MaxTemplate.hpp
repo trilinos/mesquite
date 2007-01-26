@@ -39,37 +39,31 @@ Header file for the Mesquite::MaxTemplate class
 #define MaxTemplate_hpp
 
 #include "Mesquite.hpp"
-#include "ObjectiveFunction.hpp"
+#include "ObjectiveFunctionTemplate.hpp"
 
 namespace Mesquite
 {
-   class PatchData;
-   class MsqError;
-   class QualityMetric;
-   
    /*! \class MaxTemplate
     \brief Computes the maximum quality metric value.
 
     This function is the same as the LInfTemplate except that no
     absolute values are used.
   */
-   class MaxTemplate :public ObjectiveFunction
+   class MaxTemplate :public ObjectiveFunctionTemplate
    {
    public:
      MaxTemplate(QualityMetric *);
      virtual ~MaxTemplate();
-     virtual bool concrete_evaluate(PatchData &patch, double &fval,
-                                    MsqError &err);
-   protected:
-     
-     virtual bool compute_analytical_gradient(PatchData &patch,
-                                              Vector3D *const &grad,
-                                              double &OF_val,
-                                              MsqError &err, 
-                                              size_t array_size);
-     
+     virtual bool evaluate( EvalType type, 
+                            PatchData& pd,
+                            double& value_out,
+                            bool free,
+                            MsqError& err ); 
+     virtual ObjectiveFunction* clone() const;
+     virtual void clear();
    private:
-	  
+     /** Temporary storage for qm sample handles */
+     mutable msq_std::vector<size_t> qmHandles;
    };
 }//namespace
 #endif // MaxTemplate_hpp

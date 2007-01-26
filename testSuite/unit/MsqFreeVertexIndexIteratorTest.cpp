@@ -102,7 +102,7 @@ public:
      MsqPrintError err(cout);
      int indices[10];
      int i=0;
-     MsqFreeVertexIndexIterator ind(&pd, err);
+     MsqFreeVertexIndexIterator ind(pd, err);
      ind.reset();
      while (ind.next()) {
         indices[i] = ind.value();
@@ -110,9 +110,9 @@ public:
         ++i;
      } 
 
-     CPPUNIT_ASSERT(indices[0]==0);
-     CPPUNIT_ASSERT(indices[1]==4);
      CPPUNIT_ASSERT(i==2); // number of free vertices.
+     CPPUNIT_ASSERT(pd.vertex_by_index(indices[0]).is_free_vertex());
+     CPPUNIT_ASSERT(pd.vertex_by_index(indices[1]).is_free_vertex());
   }
 
   void test_soft_fixed_flags()
@@ -123,15 +123,15 @@ public:
 
      int indices[10];
      int i=0;
-     MsqFreeVertexIndexIterator ind(&pd, err);
+     MsqFreeVertexIndexIterator ind(pd, err);
      ind.reset();
      while (ind.next()) {
         indices[i] = ind.value();
         ++i;
      } 
 
-     CPPUNIT_ASSERT(indices[0]==4);
      CPPUNIT_ASSERT(i==1); // number of free vertices.
+     CPPUNIT_ASSERT(pd.vertex_by_index(indices[0]).is_free_vertex());
   }
 
 

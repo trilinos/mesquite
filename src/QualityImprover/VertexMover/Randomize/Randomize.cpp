@@ -37,48 +37,90 @@
 
 
 #include "Randomize.hpp"
+#include "MsqFreeVertexIndexIterator.hpp"
+#include "MsqDebug.hpp"
+#include <math.h>
 
 using namespace Mesquite;
 
+msq_std::string Randomize::get_name() const { return "Randomize"; }
 
-Randomize::Randomize() 
-{
-  this->set_name("Randomize");
-  mPercent=.05;
-}  
+PatchSet* Randomize::get_patch_set() { return &patchSet; }
 
-Randomize::Randomize(double percent) 
-{
-  this->set_name("Randomize");
-  mPercent=percent;
-}  
+Randomize::Randomize() : mPercent(0.5), patchSet( 1, true )
+  { }
+
+Randomize::Randomize(double percent) : mPercent(percent), patchSet( 1, true )
+  { }
   
-void Randomize::initialize(PatchData &/*pd*/, MsqError &err)
-{
-  this->set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err, 1);
-}
+void Randomize::initialize(PatchData &/*pd*/, MsqError &)
+{ }
 
 void Randomize::initialize_mesh_iteration(PatchData &/*pd*/, MsqError &/*err*/)
 {
   //  cout << "- Executing Randomize::iteration_complete()\n";
 }
 
+  
+      /*!Function calculates a scale factor for the patch, then moves
+        the incident vertex randomly in each of the three coordinate
+        directions (relative to the scale factor multiplied by mPercent).
+      */
+static inline void randomize_vertex(PatchData &pd,
+                                    MsqVertex &free_vtx,\
+                                    double percent,
+                                    MsqError &err)
+{
+  size_t i;
+  short j;
+  MsqVertex* verts = pd.get_vertex_array(err);  MSQ_ERRRTN(err);
+  const size_t num_vtx = pd.num_nodes();
+    //a scale w.r.t. the patch size
+  double scale_factor=0.0;
+    //a "random" number between -1 and 1
+  double rand_double=0.0;
+    //a "random" int
+  int rand_int=0;
+  if (num_vtx<=1){
+    MSQ_PRINT(1)("WARNING: Number of incident vertex is zero.  Returning.\n");
+    return;
+  }
+
+  size_t free_ind = pd.get_vertex_index(&(free_vtx));
+
+
+  for (i=0;i<num_vtx;++i){
+    if(i != free_ind)
+      scale_factor+=(verts[i]-free_vtx).length();
+  }
+  scale_factor/=( (double) num_vtx - 1.0 );    
+  for (j=0;j<3;++j){
+    rand_int = rand();
+      //number between 0 and 1000
+    rand_int = rand_int%1000;
+      //number between -1 and 1
+    rand_double = (((double) rand_int)/500.0)-1.0;
+    free_vtx[j] += scale_factor*rand_double*percent;
+  }
+
+  return;
+}
+
+
 void Randomize::optimize_vertex_positions(PatchData &pd, 
                                                 MsqError &err)
 {
     //cout << "- Executing Randomize::optimize_vertex_position()\n";
 
-  int num_local_vertices = pd.num_vertices();
   // gets the array of coordinates for the patch and print it 
   MsqVertex *patch_coords = pd.get_vertex_array(err); MSQ_ERRRTN(err);
   // does the randomize smooth
-  MsqFreeVertexIndexIterator free_iter(&pd, err); MSQ_ERRRTN(err);
+  MsqFreeVertexIndexIterator free_iter(pd, err); MSQ_ERRRTN(err);
   free_iter.reset();
   free_iter.next();
     //find the free vertex.
   int m=free_iter.value();
-  randomize_vertex(pd, num_local_vertices,
-                   patch_coords[m], err);  MSQ_ERRRTN(err);
+  randomize_vertex(pd, patch_coords[m], mPercent, err);  MSQ_ERRRTN(err);
   pd.snap_vertex_to_domain(m,err); MSQ_ERRRTN(err);
 }
   

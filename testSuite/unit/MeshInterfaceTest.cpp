@@ -34,6 +34,8 @@
   \date   2003-04-17
 */
 
+#include "meshfiles.h"
+
 #include "Mesquite.hpp"
 #include "MsqError.hpp"
 #include "PatchData.hpp"
@@ -86,7 +88,7 @@ public:
   {
       // Read a VTK file -- 1 triangle flanked by 1 quad on each side (1 tri + 3 quads)
     mMesh = new Mesquite::MeshImpl;
-    mMesh->read_vtk("../../meshFiles/2D/VTK/hybrid_3quad_1tri.vtk", mErr);
+    mMesh->read_vtk(MESH_FILES_DIR "2D/VTK/hybrid_3quad_1tri.vtk", mErr);
     CPPUNIT_ASSERT(!mErr);
 
       // Get mesh data

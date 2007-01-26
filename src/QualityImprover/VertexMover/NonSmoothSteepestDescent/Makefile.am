@@ -1,0 +1,6 @@
+SRC_NONSMOOTHSTEEPESTDESCENT_DIR = src/QualityImprover/VertexMover/NonSmoothSteepestDescent
+MSQ_INCLUDES += -I$(top_srcdir)/$(SRC_NONSMOOTHSTEEPESTDESCENT_DIR)
+
+MSQ_SRCS += $(SRC_NONSMOOTHSTEEPESTDESCENT_DIR)/NonSmoothSteepestDescent.cpp 
+MSQ_HDRS += $(SRC_NONSMOOTHSTEEPESTDESCENT_DIR)/NonSmoothSteepestDescent.hpp
+

@@ -31,9 +31,9 @@
 // When changing version number/type, change these #defines, as well
 // as what is returned from Mesquite::release_type().
 #define MSQ_MAJOR_VERSION 1
-#define MSQ_MINOR_VERSION 0
+#define MSQ_MINOR_VERSION 99
 #define MSQ_BUILD_NUMBER 0
-#define MSQ_VERSION_STRING "Mesquite 1.* Alpha"
+#define MSQ_VERSION_STRING "Mesquite 2.* Alpha"
 #define MSQ_BUILD_STRING "Build Number 0"
 
 const char* Mesquite::version_string(bool include_build_number)

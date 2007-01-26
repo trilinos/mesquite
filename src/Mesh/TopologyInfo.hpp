@@ -116,7 +116,7 @@ class MESQUITE_EXPORT TopologyInfo
      *
      * Get the indices into element connectivity list for the 
      * corners/ends of the specified side of the element.  
-     * \ref edge_vertices and \ref face_vertices are special cases
+     * edge_vertices() and face_vertices() are special cases
      * of this method.  
      *
      * If the passed dimension equals that of the specified topology,
@@ -169,8 +169,8 @@ class MESQUITE_EXPORT TopologyInfo
      * that corner can be constructed as:
      *  Matrix3D A;
      *  A.set_column( 0, v[v_i[adj[0]]] - v[v_i[0]] );
-     *  A.set_column( 0, v[v_i[adj[1]]] - v[v_i[1]] );
-     *  A.set_column( 0, v[v_i[adj[2]]] - v[v_i[2]] );
+     *  A.set_column( 1, v[v_i[adj[1]]] - v[v_i[0]] );
+     *  A.set_column( 2, v[v_i[adj[2]]] - v[v_i[0]] );
      *
      *\param topo  The element type
      *\param index The index of a corner vertex
@@ -183,10 +183,10 @@ class MESQUITE_EXPORT TopologyInfo
      
     /**\brief  Get reverse adjacency offsets
      *
-     * Get reverse mapping of results from \ref adjacent_vertices.
+     * Get reverse mapping of results from adjacent_vertices().
      *
      * Let i be the input vertex index.  For each vertex index j
-     * for which the result of \ref adjacent_vertices contains i, return
+     * for which the result of adjacent_vertices() contains i, return
      * the offset into that result at which i would occur.  The
      * results are returned in the same order as each j is returned
      * in the results of adjacent_vertices(...,i,...).  Thus the

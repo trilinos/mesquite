@@ -91,7 +91,7 @@ namespace Mesquite
     /** \brief factory method 
      *
      * Create instance of MeshTSTT.  
-     * If \ref set_active_set is not called on resulting object,
+     * If set_active_set() is not called on resulting object,
      * will default to the ENTIRE mesh.
      * \param mesh     The TSTTM mesh instance
      * \param meshset  The mesh to improve (elements).

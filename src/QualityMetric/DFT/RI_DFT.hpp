@@ -52,41 +52,31 @@ namespace Mesquite
   {
   public:
 
-    RI_DFT()
-      : a(pow(2.0, MSQ_ONE_THIRD)), b(Exponent(1.0)), c(Exponent(-4.0/3.0))
-    {
-      MsqError err;
-      set_averaging_method(LINEAR, err); MSQ_CHKERR(err);
-      set_metric_type(ELEMENT_BASED);
-      set_gradient_type(NUMERICAL_GRADIENT);
-      set_hessian_type(NUMERICAL_HESSIAN);
-      set_name("RI_DFT");
-    }
+    RI_DFT( TargetCalculator* tc, WeightCalculator* wc )
+      : DistanceFromTarget( tc, wc ),
+        a(pow(2.0, MSQ_ONE_THIRD)), b(Exponent(1.0)), c(Exponent(-4.0/3.0))
+    { }
     
     //! virtual destructor ensures use of polymorphism during destruction
     virtual ~RI_DFT()
        {};
 
-    bool evaluate_element(PatchData &pd,
-			  MsqMeshEntity *e,
-			  double &m, MsqError &err);
+    bool evaluate( PatchData& pd, size_t elem, double& m, MsqError& err );
     
-    bool compute_element_analytical_gradient(PatchData &pd,
-					     MsqMeshEntity *e,
-					     MsqVertex *fv[], 
-					     Vector3D g[],
-					     int nfv, 
-					     double &m,
-					     MsqError &err);
-
-    bool compute_element_analytical_hessian(PatchData &pd,
-					    MsqMeshEntity *e,
-					    MsqVertex *fv[], 
-					    Vector3D g[],
-					    Matrix3D h[],
-					    int nfv, 
-					    double &m,
-					    MsqError &err);
+    bool evaluate_with_gradient( PatchData& pd,
+                                 size_t elem,
+                                 double &m,
+                                 msq_std::vector<size_t>& indices,
+                                 msq_std::vector<Vector3D>& g,
+                                 MsqError& err );
+    
+    bool evaluate_with_Hessian( PatchData& pd,
+                                 size_t elem,
+                                 double &m,
+                                 msq_std::vector<size_t>& indices,
+                                 msq_std::vector<Vector3D>& g,
+                                 msq_std::vector<Matrix3D>& h,
+                                 MsqError& err );
 
   protected:
  
@@ -100,9 +90,10 @@ namespace Mesquite
     Vector3D mNormal;		// Normal vector for merit function
     Vector3D mCoords[4]; 	// Vertex coordinates
     Vector3D mGrads[4];		// Gradients for element
-    Vector3D mAccGrads[8];	// Accumulated gradients
     Matrix3D mHessians[10];	// Hessian values for element
     Matrix3D invW;		// Inverse matrix
+    Matrix3D W[8];
+    double mCk[8];
   };
 
   

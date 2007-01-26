@@ -88,15 +88,9 @@ namespace Mesquite
        //!               so they have to be 2-based (2,4,8,16,32, ...)
      enum FlagMaskID
      {
-       MSQ_NO_VTX_FLAG = 0,
-       MSQ_ALGO_FLAG0 = 1<<0, //!< vertex is "free"
-       MSQ_SOFT_FIXED = 1<<1, //!< vertex is fixed. This flag can be set on and off. 
-       MSQ_HARD_FIXED = 1<<2, //!< vertex is always fixed. This can only be set on and never off.
-       MSQ_COORDS_CHANGED = 1<<3,
-       MSQ_FLAG_3 =     1<<4,
-       MSQ_FLAG_4 =     1<<5,
-       MSQ_ALGO_FLAG1 = 1<<6, //!< free bit, to be used by algorithm if needed.
-       MSQ_ALGO_FLAG2 = 1<<7 //!< free bit, to be used by algorithm if needed. 
+       MSQ_HARD_FIXED = 1<<0, //!< vertex is always fixed. This can only be set on and never off.
+       MSQ_DEPENDENT  = 1<<1, //!< higher-order node w/ position determined by mapping function
+       MSQ_SOFT_FIXED = 1<<2  //!< vertex is fixed. This flag can be set on and off. 
      };
        //!Returns true if vertex is ``free''.
      bool is_free_vertex() const

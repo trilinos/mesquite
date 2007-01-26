@@ -1,9 +1,9 @@
 /* ***************************************************************** 
     MESQUITE -- The Mesh Quality Improvement Toolkit
 
-    Copyright 2004 Sandia Corporation and Argonne National
-    Laboratory.  Under the terms of Contract DE-AC04-94AL85000 
-    with Sandia Corporation, the U.S. Government retains certain 
+    Copyright 2006 Lawrence Livermore National Laboratory.  Under 
+    the terms of Contract B545069 with the University of Wisconsin -- 
+    Madison, Lawrence Livermore National Laboratory retains certain
     rights in this software.
 
     This library is free software; you can redistribute it and/or
@@ -19,69 +19,80 @@
     You should have received a copy of the GNU Lesser General Public License 
     (lgpl.txt) along with this library; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- 
-    diachin2@llnl.gov, djmelan@sandia.gov, mbrewer@sandia.gov, 
-    pknupp@sandia.gov, tleurent@mcs.anl.gov, tmunson@mcs.anl.gov      
-   
+
+    (2006) kraftche@cae.wisc.edu    
+
   ***************************************************************** */
-// -*- Mode : c++; tab-width: 3; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 3 -*-
 
-/*! \file ScalarAddQualityMetric.hpp
-\brief
-Header file for the Mesquite::ScalarAddQualityMetric class
 
-  \author Michael Brewer
-  \date   April 14, 2003
+/** \file ScalarAddQualityMetric.hpp
+ *  \brief 
+ *  \author Jason Kraftcheck 
  */
 
-
-#ifndef ScalarAddQualityMetric_hpp
-#define ScalarAddQualityMetric_hpp
+#ifndef MSQ_SCALAR_ADD_QUALITY_METRIC_HPP
+#define MSQ_SCALAR_ADD_QUALITY_METRIC_HPP
 
 #include "Mesquite.hpp"
 #include "QualityMetric.hpp"
 
-namespace Mesquite
+namespace Mesquite {
+
+/**\brief Offset a quality metric by a scalar value */
+class ScalarAddQualityMetric : public QualityMetric
 {
-     /*! \class ScalarAddQualityMetric
-       \brief Adds a number (a double) to the quality metric value.
-     */
-   class ScalarAddQualityMetric : public QualityMetric
-   {
-  public:
-       /*! Ensures that qm1 is not NULL.  If qm1 is only valid
-         on a certain feasible, then the composite metric has the same
-         constraint.  The composite metric also has the same negate flag
-         as qm1.
-       */
-     ScalarAddQualityMetric(QualityMetric* qm1, double scalar_double,
-                            MsqError &err);
-     
-       // virtual destructor ensures use of polymorphism during destruction
-     virtual ~ScalarAddQualityMetric()
-        {  }
-     
-     bool evaluate_element(PatchData& pd, MsqMeshEntity *element,double &value,
-                             MsqError &err);
-     bool evaluate_vertex(PatchData& pd, MsqVertex *vertex, double &value,
-                            MsqError &err);
- 
-  private:
+public:
+
+  ScalarAddQualityMetric( QualityMetric* metric, double offset )
+    : mMetric(metric), 
+      mOffset( offset ) 
+    {}
   
-    QualityMetric* qualMetric;
-    double offsetValue;
-          
-   };
-   
+  ~ScalarAddQualityMetric() {}
+  
+  MetricType get_metric_type() const
+    { return mMetric->get_metric_type(); }
+  
+  msq_std::string get_name() const;
+  
+  int get_negate_flag() const
+    { return mMetric->get_negate_flag(); }
+  
+  void get_evaluations( PatchData& pd, 
+                        msq_std::vector<size_t>& handles, 
+                        bool free_vertices_only,
+                        MsqError& err );
+  
+  bool evaluate( PatchData& pd, size_t handle, double& value, MsqError& err );
+  
+  bool evaluate_with_indices( PatchData& pd,
+                              size_t handle,
+                              double& value,
+                              msq_std::vector<size_t>& indices,
+                              MsqError& err );
+  
+  bool evaluate_with_gradient( PatchData& pd,
+                               size_t handle,
+                               double& value,
+                               msq_std::vector<size_t>& indices,
+                               msq_std::vector<Vector3D>& gradient,
+                               MsqError& err );
+  
+  bool evaluate_with_Hessian( PatchData& pd,
+                              size_t handle,
+                              double& value,
+                              msq_std::vector<size_t>& indices,
+                              msq_std::vector<Vector3D>& gradient,
+                              msq_std::vector<Matrix3D>& Hessian,
+                              MsqError& err );
 
-} //namespace
+private:
+  
+  QualityMetric* mMetric;
+  double mOffset;
+};
 
 
-#endif // ScalarAddQualityMetric_hpp
+} // namespace Mesquite
 
-
-
-
-
-
-
+#endif

@@ -40,9 +40,10 @@
 #include "TerminationCriterion.hpp"
 #include "MsqVertex.hpp"
 #include "MsqInterrupt.hpp"
-#include "ObjectiveFunction.hpp"
+#include "OFEvaluator.hpp"
 #include "MsqError.hpp"
 #include "MsqDebug.hpp"
+#include "PatchData.hpp"
 
 namespace Mesquite {
 
@@ -226,7 +227,7 @@ void TerminationCriterion::remove_culling(MsqError &/*err*/)
  */
 void TerminationCriterion::reset_outer(Mesh* mesh, 
                                        MeshDomain* domain,
-                                       ObjectiveFunction* obj_ptr,
+                                       OFEvaluator& obj_eval,
                                        MsqError &err)
 {
   const unsigned long totalFlag = terminationCriterionFlag | cullingMethodFlag;
@@ -242,7 +243,7 @@ void TerminationCriterion::reset_outer(Mesh* mesh,
   }
 
     //now call the other reset
-  reset_inner( global_patch, obj_ptr, err ); MSQ_ERRRTN(err);
+  reset_inner( global_patch, obj_eval, err ); MSQ_ERRRTN(err);
 }
     
 /*!Reset function using using a PatchData object.  This function is
@@ -262,11 +263,10 @@ void TerminationCriterion::reset_outer(Mesh* mesh,
   allows the QualityImprover to skip the entire optimization if
   the initial mesh satisfies the appropriate conditions.
  */
-void TerminationCriterion::reset_inner(PatchData &pd, ObjectiveFunction* obj_ptr,
+void TerminationCriterion::reset_inner(PatchData &pd, OFEvaluator& obj_eval,
                                     MsqError &err)
 {
   const unsigned long totalFlag = terminationCriterionFlag | cullingMethodFlag;
-  OFPtr = obj_ptr;
   
     // clear flag for BOUNDED_VERTEX_MOVEMENT
   vertexMovementExceedsBound = 0;
@@ -288,12 +288,17 @@ void TerminationCriterion::reset_inner(PatchData &pd, ObjectiveFunction* obj_ptr
     //GRADIENT
   if(totalFlag & GRAD_FLAGS)
   {
-    int num_vertices=pd.num_vertices();
+    if (!obj_eval.have_objective_function()) {
+      MSQ_SETERR(err)("Error termination criteria set which uses objective "
+                      "functions, but no objective function is available.",
+                      MsqError::INVALID_STATE);   
+      return;
+    } 
+    int num_vertices=pd.num_free_vertices();
     mGrad.resize( num_vertices );
 
       //get gradient and make sure it is valid
-    bool b = obj_ptr->compute_gradient(pd, &mGrad[0] , currentOFValue, 
-                                       err, num_vertices); MSQ_ERRRTN(err);
+    bool b = obj_eval.evaluate(pd, currentOFValue, mGrad, err); MSQ_ERRRTN(err);
     if (!b) {
       MSQ_SETERR(err)("Initial patch is invalid for gradient computation.", 
                       MsqError::INVALID_STATE);
@@ -322,14 +327,14 @@ void TerminationCriterion::reset_inner(PatchData &pd, ObjectiveFunction* obj_ptr
   else if (totalFlag & OF_FLAGS)
   {
       //ensure the obj_ptr is not null
-    if(obj_ptr==NULL){
+    if(!obj_eval.have_objective_function()){
       MSQ_SETERR(err)("Error termination criteria set which uses objective "
                       "functions, but no objective function is available.",
                       MsqError::INVALID_STATE);
       return;
     }
     
-    bool b = obj_ptr->evaluate(pd, currentOFValue, err); MSQ_ERRRTN(err);
+    bool b = obj_eval.evaluate(pd, currentOFValue, err); MSQ_ERRRTN(err);
     if (!b){
       MSQ_SETERR(err)("Initial patch is invalid for evaluation.",MsqError::INVALID_STATE);
       return;
@@ -372,14 +377,16 @@ void TerminationCriterion::reset_patch(PatchData &pd, MsqError &err)
   }
 }
 
-void TerminationCriterion::accumulate_inner( PatchData& pd, MsqError& err )
+void TerminationCriterion::accumulate_inner( PatchData& pd, 
+                                             OFEvaluator& of_eval,
+                                             MsqError& err )
 {
   double of_value = 0;
   
   if (terminationCriterionFlag & GRAD_FLAGS)
   {
-    mGrad.resize( pd.num_vertices() );
-    bool b = OFPtr->compute_gradient(pd, &mGrad[0], of_value, err, pd.num_vertices());
+    mGrad.resize( pd.num_free_vertices() );
+    bool b = of_eval.evaluate(pd, of_value, mGrad, err);
     MSQ_ERRRTN(err);
     if (!b) {
       MSQ_SETERR(err)("Initial patch is invalid for gradient compuation.",
@@ -389,7 +396,7 @@ void TerminationCriterion::accumulate_inner( PatchData& pd, MsqError& err )
   }
   else if (terminationCriterionFlag & OF_FLAGS)
   {
-    bool b = OFPtr->evaluate(pd, of_value, err); MSQ_ERRRTN(err);
+    bool b = of_eval.evaluate(pd, of_value, err); MSQ_ERRRTN(err);
     if (!b) {
       MSQ_SETERR(err)("Invalid patch passed to TerminationCriterion.",
                       MsqError::INVALID_MESH);
@@ -410,14 +417,14 @@ void TerminationCriterion::accumulate_inner( PatchData& pd,
   currentGradL2Norm = 10e6;
   if (terminationCriterionFlag & (GRADIENT_L2_NORM_ABSOLUTE | GRADIENT_L2_NORM_RELATIVE)) 
   {
-    currentGradL2Norm = length(grad_array, pd.num_vertices()); // get the L2 norm
+    currentGradL2Norm = length(grad_array, pd.num_free_vertices()); // get the L2 norm
     MSQ_DBGOUT(debugLevel) << "  o TermCrit -- gradient L2 norm: " 
       << currentGradL2Norm << msq_stdio::endl;
   }
   currentGradInfNorm = 10e6;
   if (terminationCriterionFlag & (GRADIENT_INF_NORM_ABSOLUTE | GRADIENT_INF_NORM_RELATIVE)) 
   {
-    currentGradInfNorm = length(grad_array, pd.num_vertices()); // get the Linf norm
+    currentGradInfNorm = length(grad_array, pd.num_free_vertices()); // get the Linf norm
     MSQ_DBGOUT(debugLevel) << "  o TermCrit -- gradient Inf norm: " 
       << currentGradInfNorm << msq_stdio::endl;
   } 
@@ -439,7 +446,10 @@ void TerminationCriterion::accumulate_inner( PatchData& pd,
 }
 
 
-void TerminationCriterion::accumulate_outer(Mesh* mesh, MeshDomain* domain, MsqError &err)
+void TerminationCriterion::accumulate_outer(Mesh* mesh, 
+                                            MeshDomain* domain, 
+                                            OFEvaluator& of_eval,
+                                            MsqError &err)
 {
   PatchData global_patch;
   
@@ -451,7 +461,7 @@ void TerminationCriterion::accumulate_outer(Mesh* mesh, MeshDomain* domain, MsqE
     global_patch.fill_global_patch( err ); MSQ_ERRRTN(err);
   }
   
-  accumulate_inner( global_patch, err );                             MSQ_ERRRTN(err);
+  accumulate_inner( global_patch, of_eval, err ); MSQ_ERRRTN(err);
 }
 
 
@@ -469,7 +479,7 @@ void TerminationCriterion::accumulate_patch( PatchData& pd, MsqError& err )
   if(terminationCriterionFlag & BOUNDED_VERTEX_MOVEMENT)
   {
     MsqVertex* vert = pd.get_vertex_array(err);
-    int num_vert = pd.num_vertices();
+    int num_vert = pd.num_free_vertices();
     int i=0;
       //for each vertex
     for(i=0;i<num_vert;++i)
@@ -618,7 +628,7 @@ bool TerminationCriterion::terminate( )
   function returns true.  Otherwise, the function returns false.
  */
 bool TerminationCriterion::cull_vertices(PatchData &pd,
-                                      ObjectiveFunction* obj_ptr,
+                                      OFEvaluator& of_eval,
                                       MsqError &err)
 {
     //PRINT_INFO("CULLING_METHOD FLAG = %i",cullingMethodFlag);
@@ -633,7 +643,7 @@ bool TerminationCriterion::cull_vertices(PatchData &pd,
          //if culling on quality improvement absolute
     case QUALITY_IMPROVEMENT_ABSOLUTE:
          //get objective function value
-       b = obj_ptr->evaluate(pd, currentOFValue, err);
+       b = of_eval.evaluate(pd, currentOFValue, err);
        if (MSQ_CHKERR(err)) return false;
        if (!b) {
          MSQ_SETERR(err)(MsqError::INVALID_MESH);
@@ -650,7 +660,7 @@ bool TerminationCriterion::cull_vertices(PatchData &pd,
          //if culing on quality improvement relative
     case QUALITY_IMPROVEMENT_RELATIVE:
          //get objective function value
-       b = obj_ptr->evaluate(pd, currentOFValue, err);
+       b = of_eval.evaluate(pd, currentOFValue, err);
        if (MSQ_CHKERR(err)) return false;
        if(!b){
          MSQ_SETERR(err)(MsqError::INVALID_MESH);

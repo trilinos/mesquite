@@ -43,6 +43,8 @@ describe main.cpp here
 // DESCRIP-END.
 //
 
+#include "meshfiles.h"
+
 #include "MeshImpl.hpp"
 #include "MsqTimer.hpp"
 #include "Mesquite.hpp"
@@ -86,7 +88,7 @@ int main()
 {
   Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
   MsqPrintError err(cout);
-  mesh->read_vtk("../../meshFiles/2D/VTK/tangled_quad.vtk", err);
+  mesh->read_vtk(MESH_FILES_DIR "2D/VTK/tangled_quad.vtk", err);
   if (err) return 1;
   
   // Set Domain Constraint
@@ -98,8 +100,8 @@ int main()
   InstructionQueue queue1;
   
     // creates a mean ratio quality metric ...
-  ShapeQualityMetric* shape_metric = new ConditionNumberQualityMetric;
-  UntangleQualityMetric* untangle = new UntangleBetaQualityMetric(2);
+  ConditionNumberQualityMetric* shape_metric = new ConditionNumberQualityMetric;
+  UntangleBetaQualityMetric* untangle = new UntangleBetaQualityMetric(2);
   Randomize* pass0 = new Randomize(.05);
     // ... and builds an objective function with it
     //LInfTemplate* obj_func = new LInfTemplate(shape_metric);
@@ -107,17 +109,15 @@ int main()
   LPtoPTemplate* obj_func2 = new LPtoPTemplate(shape_metric, 2, err);
   if (err) return 1;
     // creates the steepest descent optimization procedures
-  obj_func->set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
-  obj_func2->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
   ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
   if (err) return 1;
   
     //SteepestDescent* pass2 = new SteepestDescent( obj_func2 );
   ConjugateGradient* pass2 = new ConjugateGradient( obj_func2, err );
   if (err) return 1;
-  pass2->set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH,err,1,1);
+  pass2->use_element_on_vertex_patch();
   if (err) return 1;
-  pass2->set_patch_type(PatchData::GLOBAL_PATCH,err);
+  pass2->use_global_patch();
   if (err) return 1;
   QualityAssessor stop_qa=QualityAssessor(shape_metric,QualityAssessor::MAXIMUM, err);
   if (err) return 1;

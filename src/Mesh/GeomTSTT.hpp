@@ -24,7 +24,7 @@
    
   ***************************************************************** */
 /*!
-  \file   GeomTSTT.cpp
+  \file   GeomTSTT.hpp
   \brief  Mesquite::MeshDomain implemented on TSTT interfaces
   \author Jason Kraftcheck
   \date   2005-01-13

@@ -41,11 +41,9 @@
 
 using namespace Mesquite;
 
-NonSmoothSteepestDescent::NonSmoothSteepestDescent(ObjectiveFunction* of)
+NonSmoothSteepestDescent::NonSmoothSteepestDescent(ElementQM* qm)
+  : currentQM(qm)
 {
-  objFunc=of;
-  this->set_name("NonSmoothSteepestDescent");
-  
   mFunction = (double *)malloc(sizeof(double)*150);
   testFunction = (double *)malloc(sizeof(double)*150);
   originalFunction = (double *)malloc(sizeof(double)*150);
@@ -67,12 +65,15 @@ NonSmoothSteepestDescent::NonSmoothSteepestDescent(ObjectiveFunction* of)
   originalActive = (ActiveSet *)malloc(sizeof(ActiveSet));
   MSQ_DBGOUT(1) << "- Executed NonSmoothSteepestDescent::NonSmoothSteepestDescent()\n";
 }  
-  
+
+msq_std::string NonSmoothSteepestDescent::get_name() const
+  { return "NonSmoothSteepestDescent"; }
+
+PatchSet* NonSmoothSteepestDescent::get_patch_set()
+  { return &patchSet; }
   
 void NonSmoothSteepestDescent::initialize(PatchData &/*pd*/, MsqError &err)
 {
-  this->set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err, 1);
-  
   // local parameter initialization
   activeEpsilon = .00003;
   //  activeEpsilon = .000000003;
@@ -94,7 +95,7 @@ void NonSmoothSteepestDescent::optimize_vertex_positions(PatchData &pd,
   /* perform the min max smoothing algorithm */
   MSQ_PRINT(2)("\nInitializing the patch iteration\n");
 
-  numVertices = pd.num_vertices();
+  numVertices = pd.num_nodes();
   MSQ_PRINT(3)("Number of Vertices: %d\n",numVertices);
   numElements = pd.num_elements();
   MSQ_PRINT(3)("Number of Elements: %d\n",numElements);
@@ -102,10 +103,10 @@ void NonSmoothSteepestDescent::optimize_vertex_positions(PatchData &pd,
   mDimension = pd.get_mesh()->get_geometric_dimension(err); MSQ_ERRRTN(err);
   MSQ_PRINT(3)("Spatial Dimension: %d\n",mDimension);
 
-  numFree=pd.num_free_vertices(err); MSQ_ERRRTN(err);
+  numFree=pd.num_free_vertices();
   MSQ_PRINT(3)("Num Free = %d\n",numFree);
 
-  MsqFreeVertexIndexIterator free_iter(&pd, err); MSQ_ERRRTN(err);
+  MsqFreeVertexIndexIterator free_iter(pd, err); MSQ_ERRRTN(err);
   free_iter.reset();
   free_iter.next(); 
   freeVertexIndex = free_iter.value();

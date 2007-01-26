@@ -66,7 +66,8 @@ delta, above, is not used.
   {
   public:
     
-    I_DFT_InverseMeanRatio()
+    I_DFT_InverseMeanRatio( TargetCalculator* tc, WeightCalculator* wc )
+      : I_DFT( tc, wc )
     {
       set_name("I_DFT_InverseMeanRatio");
       p_set_alpha(1.0/3.0);

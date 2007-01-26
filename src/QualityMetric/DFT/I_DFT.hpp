@@ -70,13 +70,9 @@ if useBarrierDelta == true.  Otherwise, delta is zero.
   {
   public:
     
-    I_DFT()
+    I_DFT( TargetCalculator* tc, WeightCalculator* wc )
+      : DistanceFromTarget( tc, wc )
     {
-      MsqError err;
-      set_averaging_method(LINEAR, err);
-      set_metric_type(ELEMENT_BASED);
-      set_gradient_type(ANALYTICAL_GRADIENT);
-      set_hessian_type(ANALYTICAL_HESSIAN);
       set_name("I_DFT");
       mAlpha = 1/2.0;
       mBeta = 1.0;
@@ -88,27 +84,22 @@ if useBarrierDelta == true.  Otherwise, delta is zero.
     virtual ~I_DFT()
        {};
 
-    bool evaluate_element(PatchData &pd,
-			  MsqMeshEntity *e,
-			  double &m, MsqError &err);
+    bool evaluate( PatchData& pd, size_t elem, double& m, MsqError& err );
     
-    bool compute_element_analytical_gradient(PatchData &pd,
-					     MsqMeshEntity *e,
-					     MsqVertex *fv[], 
-					     Vector3D g[],
-					     int nfv, 
-					     double &m,
-					     MsqError &err);
-
-    bool compute_element_analytical_hessian(PatchData &pd,
-					    MsqMeshEntity *e,
-					    MsqVertex *fv[], 
-					    Vector3D g[],
-					    Matrix3D h[],
-					    int nfv, 
-					    double &m,
-					    MsqError &err);
-
+    bool evaluate_with_gradient( PatchData& pd,
+                                 size_t elem,
+                                 double &m,
+                                 msq_std::vector<size_t>& indices,
+                                 msq_std::vector<Vector3D>& g,
+                                 MsqError& err );
+    
+    bool evaluate_with_Hessian( PatchData& pd,
+                                 size_t elem,
+                                 double &m,
+                                 msq_std::vector<size_t>& indices,
+                                 msq_std::vector<Vector3D>& g,
+                                 msq_std::vector<Matrix3D>& h,
+                                 MsqError& err );
 
   protected:
     
@@ -153,6 +144,8 @@ if useBarrierDelta == true.  Otherwise, delta is zero.
     Matrix3D mR;		// R (in QR factorization of W)
     Matrix3D invR;		// Inverse matrix of R (in QR factorization)
     Matrix3D mQ;		// Q (in QR factorization of W)
+    Matrix3D W[8];
+    double mCk[8];
   };
   
 } //namespace

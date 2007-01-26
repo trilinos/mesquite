@@ -51,23 +51,18 @@ namespace Mesquite
   {
   public:
 
-    sRI_DFT()
-    {
-      MsqError err;
-      set_averaging_method(LINEAR, err); MSQ_CHKERR(err);
-      set_metric_type(ELEMENT_BASED);
-      set_gradient_type(NUMERICAL_GRADIENT);
-      set_hessian_type(NUMERICAL_HESSIAN);
-      set_name("sRI_DFT");
-    }
+    sRI_DFT( TargetCalculator* tc, WeightCalculator* wc )
+      : DistanceFromTarget( tc, wc )
+    {}
     
     //! virtual destructor ensures use of polymorphism during destruction
     virtual ~sRI_DFT()
        {};
 
-    virtual bool evaluate_element(PatchData& pd,
-                            MsqMeshEntity* element,
-                            double& value, MsqError &err);
+    virtual bool evaluate( PatchData& pd,
+                           size_t elem,
+                           double& value, 
+                           MsqError &err);
     
   protected:
  

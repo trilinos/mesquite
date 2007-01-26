@@ -27,6 +27,8 @@
 // -*- Mode : c++; tab-width: 2; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 //
 
+#include "meshfiles.h"
+
 #ifdef MSQ_USE_OLD_IO_HEADERS
 #include <iostream.h>
 #else
@@ -38,6 +40,8 @@ using std::cout;
 #  include "Mesquite.hpp"
 #  include "PatchData.hpp"
 #  include "MeshImpl.hpp"
+#  include "VertexPatches.hpp"
+#  include "PatchIterator.hpp"
 #  include "cppunit/extensions/HelperMacros.h"
    using Mesquite::Mesh;
    using Mesquite::MeshImpl;
@@ -45,6 +49,8 @@ using std::cout;
    using Mesquite::MsqVertex;
    using Mesquite::MsqPrintError;
    using Mesquite::EntityTopology;
+   using Mesquite::VertexPatches;
+   using Mesquite::PatchIterator;
 #else
 #  include <stdio.h>
 #endif
@@ -1019,20 +1025,21 @@ public:
 
   void VtkTest::test_elements()
   {
-    size_t junk;
-    
     Mesquite::MsqPrintError err(cout);
     MeshImpl* mMesh = new MeshImpl;
-    mMesh->read_vtk("../../meshFiles/2D/VTK/equil_tri2.vtk", err);
+    mMesh->read_vtk(MESH_FILES_DIR "2D/VTK/equil_tri2.vtk", err);
     CPPUNIT_ASSERT(!err);
     
       // Retrieve a patch
     Mesquite::PatchData pd;
     pd.set_mesh( mMesh );
-    pd.get_next_vertex_element_patch( 1, true, junk, err );
+    VertexPatches patch_set;
+    patch_set.set_mesh( mMesh );
+    PatchIterator patches( &patch_set );
+    patches.get_next_patch( pd, err );
     CPPUNIT_ASSERT(!err);
     
-    int free_vtx = pd.num_free_vertices(err); CPPUNIT_ASSERT(!err);
+    int free_vtx = pd.num_free_vertices(); 
 //    std::cout << "nb of free vertices: " << free_vtx << std::endl;
     CPPUNIT_ASSERT( free_vtx == 1 );
     
@@ -1041,19 +1048,19 @@ public:
     CPPUNIT_ASSERT( num_elements == 6 );
     
     Mesquite::MsqVertex* vtx_array = pd.get_vertex_array(err); CPPUNIT_ASSERT(!err);
-    size_t num_vertices = pd.num_vertices();
+    size_t num_vertices = pd.num_nodes();
     CPPUNIT_ASSERT( num_vertices == 7 );
     
     CPPUNIT_ASSERT( tri_check_validity(element_array, num_elements, vtx_array, num_vertices) == 1 );
     
-    pd.get_next_vertex_element_patch( 1, true, junk, err ); CPPUNIT_ASSERT(!err);
+    patches.get_next_patch( pd, err ); CPPUNIT_ASSERT(!err);
     
     element_array =  pd.get_element_array(err); CPPUNIT_ASSERT(!err);
     num_elements = pd.num_elements();
     CPPUNIT_ASSERT( num_elements == 6 );
     
     vtx_array = pd.get_vertex_array(err); CPPUNIT_ASSERT(!err);
-    num_vertices = pd.num_vertices();
+    num_vertices = pd.num_nodes();
     CPPUNIT_ASSERT( num_vertices == 7 );
     
     CPPUNIT_ASSERT( tri_check_validity(element_array, num_elements, vtx_array, num_vertices) == 1 );

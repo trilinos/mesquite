@@ -65,7 +65,8 @@ The default for data members (corresponding to the variables above):\n
   {
   public:
     
-    I_DFT_StrongBarrier()
+    I_DFT_StrongBarrier( TargetCalculator* tc, WeightCalculator* wc )
+      : I_DFT( tc, wc )
     {
       set_name("I_DFT_StrongBarrier");
       p_set_alpha(1.0/2.0);

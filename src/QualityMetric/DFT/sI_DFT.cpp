@@ -38,9 +38,9 @@
 using namespace Mesquite;
 
 
-bool sI_DFT::evaluate_element(PatchData& pd,
-                              MsqMeshEntity* element,
-                              double& value, MsqError &err)
+bool sI_DFT::evaluate( PatchData& pd,
+                       size_t element,
+                       double& value, MsqError &err)
 {
   Matrix3D T[MSQ_MAX_NUM_VERT_PER_ENT];
   double c_k[MSQ_MAX_NUM_VERT_PER_ENT];
@@ -48,8 +48,8 @@ bool sI_DFT::evaluate_element(PatchData& pd,
   bool return_flag = false;
   double h, tau, s;
 
-  size_t num_T = element->corner_count();
-  compute_T_matrices(*element, pd, T, num_T, c_k, err); MSQ_ERRZERO(err);
+  size_t num_T = pd.element_by_index(element).corner_count();
+  compute_T_matrices(element, pd, T, num_T, c_k, err); MSQ_ERRZERO(err);
 
   const double id[] = {1, 0, 0,  0, 1, 0,  0, 0, 1};
   const Matrix3D I(id);

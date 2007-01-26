@@ -52,110 +52,123 @@ if it was needed.  Defaults to the analytical gradient.
   \param Obj2 (ObjectiveFunction*)
  */
 CompositeOFAdd::CompositeOFAdd(ObjectiveFunction* Obj1,
-                               ObjectiveFunction* Obj2){
-  if(Obj1->get_quality_metric()==Obj2->get_quality_metric()){
-    set_quality_metric(Obj1->get_quality_metric());
-  }
-  else
-    set_quality_metric(NULL);
+                               ObjectiveFunction* Obj2,
+                               bool delete_OFs)
+  : deleteObjFuncs(delete_OFs)
+{
   objFunc1=Obj1;
   objFunc2=Obj2;
-  set_negate_flag(1);
-  set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
+}
+
+ObjectiveFunction* CompositeOFAdd::clone() const
+  { return new CompositeOFAdd( objFunc1->clone(), objFunc2->clone(), true ); }
+  
+void CompositeOFAdd::clear()
+{
+  objFunc1->clear();
+  objFunc2->clear();
 }
 
 //Michael:  need to clean up here
 CompositeOFAdd::~CompositeOFAdd(){
-
+  if (deleteObjFuncs) {
+    delete objFunc1;
+    delete objFunc2;
+  }
 }
 
-/*! Returns the QualityMetric list associated with objFunc1 merged
-  with the QualityMetric list associated with objFunc2.  The entries
-  in this merged list may not be unique.
-*/
-msq_std::list<QualityMetric*> CompositeOFAdd::get_quality_metric_list()
+bool CompositeOFAdd::initialize_block_coordinate_descent( 
+                                                       Mesh* mesh, 
+                                                       MeshDomain* domain, 
+                                                       MappingFunctionSet* maps,
+                                                       PatchSet* user_set,
+                                                       MsqError& err )
 {
-  msq_std::list<QualityMetric*> temp_list=objFunc1->get_quality_metric_list();
-  msq_std::list<QualityMetric*> temp_list2=objFunc2->get_quality_metric_list();
-  temp_list.merge(temp_list2);
-  return temp_list;
-    
+  bool rval1, rval2;
+  rval1 = objFunc1->initialize_block_coordinate_descent( mesh, domain, maps, user_set, err );
+  MSQ_ERRZERO(err);
+  rval2 = objFunc2->initialize_block_coordinate_descent( mesh, domain, maps, user_set, err );
+  return !MSQ_CHKERR(err) && rval1 && rval2;
 }
 
-/*!Compute fval= objFunc1->evaluate(patch,err)+objFunc2->evaluate(patch,err).
-  Note that since objFunc1 and objFunc2's evaluate() functions are called
-  (as opposed to their concrete_evaluates) the returned values have
-  already been multiplied by the respective negateFlag (that is,
-  if objFunc1 (or objFunc2) needed to be maximized then the value has
-  been multiplied by negative one so that it may be minimized instead.)
-  Function returns `false' if  either objFunc1->concrete_evaluate() or
-  objFunc2->concrete_evaluate() returns `false'; otherwise, function
-  returns `true'.
-*/
-bool CompositeOFAdd::concrete_evaluate(PatchData &patch, double &fval,
-                                       MsqError &err){
-  double second_val=0.0;
-    //If patch is invalid
-  bool b = objFunc1->evaluate( patch, fval, err );
-  if (MSQ_CHKERR(err) || !b) { 
-    fval=0.0;
-    return false;
-  }
-  b = objFunc2->evaluate(patch, second_val, err);
-  if (MSQ_CHKERR(err) || !b) {
-    fval=0.0;
-    return false;
-  }
-  fval+=second_val;
+bool CompositeOFAdd::evaluate( EvalType type, 
+                               PatchData& pd,
+                               double& value_out,
+                               bool free,
+                               MsqError& err )
+{
+  double value_2;
+  bool ok;
+  
+  ok = objFunc1->evaluate( type, pd, value_out, free, err );
+  if (MSQ_CHKERR(err) || !ok) return false;
+  ok = objFunc2->evaluate( type, pd, value_2, free, err );
+  if (MSQ_CHKERR(err) || !ok) return false;
+  
+  value_out += value_2;
   return true;
 }
-	
-	
-/*! Analytically computes the composite objective function's gradient
-  by combining the gradients returned from 
-  objFunc2->compute_gradient() and objFunc2->compute_gradient().
-    \param patch The PatchData object for which the objective function
-           gradient is computed.
-    \param grad An array of Vector3D, at least the size of the number
-           of vertices in the patch.
-    \param OF_val The objective function value.
-    \param array_size is the size of the grad Vector3D[] array and
-    must correspond to the number of vertices in the patch.
-*/
-bool CompositeOFAdd::compute_analytical_gradient(PatchData &patch,
-                                                 Vector3D *const &grad,
-                                                 double &OF_val,
-                                                 MsqError &err,
-                                                 size_t array_size)
+
+bool CompositeOFAdd::evaluate_with_gradient( EvalType type, 
+                                             PatchData& pd,
+                                             double& value_out,
+                                             msq_std::vector<Vector3D>& grad_out,
+                                             MsqError& err )
 {
-  MSQ_FUNCTION_TIMER( "CompositeOFAdd::compute_analytical_gradient" );
-  double second_val=0.0;//store the second objective function val
-  OF_val=0.0;
-    //get first objective function's gradient
-  bool rval=objFunc1->compute_gradient(patch, grad, OF_val, 
-				       err, array_size);  MSQ_ERRZERO(err);
-  if(rval){
-    int num_vert=patch.num_vertices();
-    Vector3D* second_grad = new Vector3D[num_vert];
-      //get second objective function's gradient
-    rval=objFunc2->compute_gradient(patch, second_grad, second_val,
-				    err, num_vert);
-      //if both objective functions were successfully computed, add them
-    if(rval){
-      //add the two objective function values.
-      OF_val+=second_val;
-      int i=0;
-      for(i=0;i<num_vert;++i){
-        grad[i]+=second_grad[i];
-      }
-        //delete the dynamically allocated space for the second gradient
-      delete []second_grad;
-    }
+  double value_2;
+  bool ok;
+  
+  ok = objFunc1->evaluate_with_gradient( type, pd, value_out, grad_out, err );
+  if (MSQ_CHKERR(err) || !ok) return false;
+  ok = objFunc2->evaluate_with_gradient( type, pd, value_2, mGradient, err );
+  if (MSQ_CHKERR(err) || !ok) return false;
+  
+  assert( grad_out.size() == pd.num_free_vertices() );
+  assert( mGradient.size() == pd.num_free_vertices() );
+  
+  msq_std::vector<Vector3D>::iterator i = grad_out.begin(), j = mGradient.begin();
+  while (i != grad_out.end()) {
+    *i += *j;
+    ++i;
+    ++j;
   }
-    //true if both of the above compute gradient's were successful.
-  if(!rval)
-    OF_val=0.0;
-  return rval;
+  value_out += value_2;
+  return true;
+}
+
+bool CompositeOFAdd::evaluate_with_Hessian( EvalType type, 
+                                            PatchData& pd,
+                                            double& value_out,
+                                            msq_std::vector<Vector3D>& grad_out,
+                                            MsqHessian& Hessian_out,
+                                            MsqError& err )
+{
+  double value_2;
+  bool ok;
+  
+  mHessian.initialize( Hessian_out );
+  
+  ok = objFunc1->evaluate_with_Hessian( type, pd, value_out, grad_out, Hessian_out, err );
+  if (MSQ_CHKERR(err) || !ok) return false;
+  ok = objFunc2->evaluate_with_Hessian( type, pd, value_2, mGradient, mHessian, err );
+  if (MSQ_CHKERR(err) || !ok) return false;
+  
+  value_out += value_2;
+  
+  assert( grad_out.size() == pd.num_free_vertices() );
+  assert( mGradient.size() == pd.num_free_vertices() );
+  
+  for (size_t i = 0; i < pd.num_free_vertices(); ++i) 
+    grad_out[i] += mGradient[i];
+  Hessian_out.add( mHessian );
+  return true;
+}
+
+int CompositeOFAdd::min_patch_layers() const
+{
+  const int v1 = objFunc1->min_patch_layers();
+  const int v2 = objFunc2->min_patch_layers();
+  return v1 > v2 ? v1 : v2;
 }
 
 } //namespace Mesquite

@@ -33,85 +33,221 @@
 */
 
 #include "MultiplyQualityMetric.hpp"
-#include "QualityMetric.hpp"
 #include "Vector3D.hpp"
-#include "MsqDebug.hpp"
+#include "Matrix3D.hpp"
+#include "MsqError.hpp"
 
 using namespace Mesquite;
 
 MultiplyQualityMetric::MultiplyQualityMetric(QualityMetric* qm1, QualityMetric* qm2, MsqError &err)
-  : qualMetric1(qm1), qualMetric2(qm2)
+  : metric1(*qm1), metric2(*qm2)
 {
-  if(qm1 == NULL || qm2 == NULL){
-    MSQ_SETERR(err)("MultiplyQualityMetric constructor passed NULL pointer.",
-                     MsqError::INVALID_ARG);
-    return;
+  if (qm1->get_metric_type() != qm2->get_metric_type() ||
+      qm1->get_negate_flag() != qm2->get_negate_flag())
+  {
+    MSQ_SETERR(err)("Incompatible metrics", MsqError::INVALID_ARG);
   }
-  feasible=qm1->get_feasible_constraint();
-  if(qm2->get_feasible_constraint())
-    feasible=qm2->get_feasible_constraint();
-  int n_flag=qm1->get_negate_flag();
-  if(n_flag!=qm2->get_negate_flag()){
-    MSQ_DBGOUT(1) << "MultiplyQualityMetric is being used to compose a metric "
-                  << "that should be minimized\n with a metric that should be "
-                  << "maximized.";
-    set_negate_flag(1);
-  }
-  else{
-    set_negate_flag(n_flag);
-  }
+}
 
-  // Checks that metrics are of the same type 
-  if ( qm1->get_metric_type() != qm2->get_metric_type() ) {
-    MSQ_SETERR(err)("Cannot multiply a vertex-based QM with an element-based QM.",
-                    MsqError::INVALID_STATE);
-    return;
-  } else {
-    set_metric_type(qm1->get_metric_type());
+MultiplyQualityMetric::~MultiplyQualityMetric() {}
+
+QualityMetric::MetricType MultiplyQualityMetric::get_metric_type() const
+{
+  return metric1.get_metric_type();
+}
+
+msq_std::string MultiplyQualityMetric::get_name() const
+{
+  return metric1.get_name() + "*" + metric2.get_name();
+}
+
+int MultiplyQualityMetric::get_negate_flag() const
+{
+  return metric1.get_negate_flag();
+}
+
+void MultiplyQualityMetric::get_evaluations( PatchData& pd,
+                                        msq_std::vector<size_t>& handles,
+                                        bool free_only,
+                                        MsqError& err )
+{
+  metric1.get_evaluations( pd, handles, free_only, err );
+  MSQ_ERRRTN(err);
+  metric2.get_evaluations( pd, mHandles, free_only, err );
+  MSQ_ERRRTN(err);
+  if (handles != mHandles) {
+    MSQ_SETERR(err)("Incompatible metrics", MsqError::INVALID_STATE);
+  }
+}
+
+bool MultiplyQualityMetric::evaluate( PatchData& pd,
+                                 size_t handle,
+                                 double& value,
+                                 MsqError& err )
+{
+  double val1, val2;
+  bool rval1, rval2;
+  rval1 = metric1.evaluate( pd, handle, val1, err ); MSQ_ERRZERO(err);
+  rval2 = metric2.evaluate( pd, handle, val2, err ); MSQ_ERRZERO(err);
+  value = val1 * val2;
+  return rval1 && rval2;
+}
+
+bool MultiplyQualityMetric::evaluate_with_indices( PatchData& pd,
+                                              size_t handle,
+                                              double& value,
+                                              msq_std::vector<size_t>& indices,
+                                              MsqError& err )
+{
+  double val1, val2;
+  bool rval1, rval2;
+  rval1 = metric1.evaluate_with_indices( pd, handle, val1, indices1, err ); MSQ_ERRZERO(err);
+  rval2 = metric2.evaluate_with_indices( pd, handle, val2, indices2, err ); MSQ_ERRZERO(err);
+  
+  indices.clear();
+  msq_std::sort( indices1.begin(), indices1.end() );
+  msq_std::sort( indices2.begin(), indices2.end() );
+  msq_std::set_union( indices1.begin(), indices1.end(),
+                  indices2.begin(), indices2.end(),
+                  msq_std::back_inserter( indices ) );
+  
+  value = val1 * val2;
+  return rval1 && rval2;
+}
+
+bool MultiplyQualityMetric::evaluate_with_gradient( PatchData& pd,
+                                               size_t handle,
+                                               double& value,
+                                               msq_std::vector<size_t>& indices,
+                                               msq_std::vector<Vector3D>& gradient,
+                                               MsqError& err )
+{
+  msq_std::vector<size_t>::iterator i;
+  size_t j;
+  double val1, val2;
+  bool rval1, rval2;
+  rval1 = metric1.evaluate_with_gradient( pd, handle, val1, indices1, grad1, err ); MSQ_ERRZERO(err);
+  rval2 = metric2.evaluate_with_gradient( pd, handle, val2, indices2, grad2, err ); MSQ_ERRZERO(err);
+  
+  indices.resize( indices1.size() + indices2.size() );
+  i = msq_std::copy( indices1.begin(), indices1.end(), indices.begin() );
+  msq_std::copy( indices2.begin(), indices2.end(), i );
+  msq_std::sort( indices.begin(), indices.end() );
+  indices.erase( msq_std::unique( indices.begin(), indices.end() ), indices.end() );
+  
+  gradient.clear();
+  gradient.resize( indices.size(), Vector3D(0.0) );
+  for (j = 0; j < indices1.size(); ++j)
+  {
+    i = msq_std::lower_bound( indices.begin(), indices.end(), indices1[j] );
+    size_t k = i - indices.begin();
+    gradient[k] += val2 * grad1[j];
+  }
+  for (j = 0; j < indices2.size(); ++j)
+  {
+    i = msq_std::lower_bound( indices.begin(), indices.end(), indices2[j] );
+    size_t k = i - indices.begin();
+    gradient[k] += val1 * grad2[j];
   }
   
-  set_name("Composite Multiply");
+  value = val1 * val2;
+  return rval1 && rval2;
 }
 
-/*! Returns qMetric1->evaluate_element(element, err) multiplied by
-  qMetric2-evaluate_element(element, err)*/
-bool MultiplyQualityMetric::evaluate_element(PatchData& pd,
-                                             MsqMeshEntity *element,
-                                             double &value,
-                                             MsqError &err)
+bool MultiplyQualityMetric::evaluate_with_Hessian( PatchData& pd,
+                                              size_t handle,
+                                              double& value,
+                                              msq_std::vector<size_t>& indices,
+                                              msq_std::vector<Vector3D>& gradient,
+                                              msq_std::vector<Matrix3D>& Hessian,
+                                              MsqError& err )
 {
-  bool valid_flag;
-  double metric1, metric2;  
-  valid_flag=qualMetric1->evaluate_element(pd, element, metric1, err); MSQ_ERRZERO(err);
-  if(!valid_flag)
-    return false;
-  valid_flag=qualMetric2->evaluate_element(pd, element, metric2, err); MSQ_ERRZERO(err);
-  value = metric1*metric2;
-    //if the first metric was invalid we have already returned
-    //so we return whatever the flag was on the second metric.
-  return
-    valid_flag;
+  msq_std::vector<size_t>::iterator i;
+  size_t j, r, c, n, h;
+  double val1, val2;
+  bool rval1, rval2;
+  rval1 = metric1.evaluate_with_Hessian( pd, handle, val1, indices1, grad1, Hess1, err ); MSQ_ERRZERO(err);
+  rval2 = metric2.evaluate_with_Hessian( pd, handle, val2, indices2, grad2, Hess2, err ); MSQ_ERRZERO(err);
+    // merge index lists
+  indices.resize( indices1.size() + indices2.size() );
+  i = msq_std::copy( indices1.begin(), indices1.end(), indices.begin() );
+  msq_std::copy( indices2.begin(), indices2.end(), i );
+  msq_std::sort( indices.begin(), indices.end() );
+  indices.erase( msq_std::unique( indices.begin(), indices.end() ), indices.end() );
+    // calculate grads and convert index lists to indices into output list
+  gradient.clear();
+  gradient.resize( indices.size(), Vector3D(0.0) );
+  for (j = 0; j < indices1.size(); ++j)
+  {
+    i = msq_std::lower_bound( indices.begin(), indices.end(), indices1[j] );
+    indices1[j] = i - indices.begin();
+    gradient[indices1[j]] += val2 * grad1[j];
+  }
+  for (j = 0; j < indices2.size(); ++j)
+  {
+    i = msq_std::lower_bound( indices.begin(), indices.end(), indices2[j] );
+    indices2[j] = i - indices.begin();
+    gradient[indices2[j]] += val1 * grad2[j];
+  }
+    // allocate space for hessians, and zero it
+  const size_t N = indices.size();
+  Hessian.clear();
+  Hessian.resize( N * (N+1) / 2, Matrix3D(0.0) );
+    // add hessian terms from first metric
+  n = indices1.size();
+  h = 0; 
+  for (r = 0; r < n; ++r) 
+  {
+    const size_t nr = indices1[r];
+    for (c = r; c < n; ++c)
+    {
+      const size_t nc = indices1[c];
+      Hess1[h] *= val2;
+      if (nr <= nc)
+        Hessian[N*nr - nr*(nr+1)/2 + nc] += Hess1[h];
+      else
+        Hessian[N*nc - nc*(nc+1)/2 + nr].plus_transpose_equal( Hess1[h] );
+      ++h;
+    }
+  }
+    // add hessian terms from second metric
+  n = indices2.size();
+  h = 0; 
+  for (r = 0; r < n; ++r) 
+  {
+    const size_t nr = indices2[r];
+    for (c = r; c < n; ++c)
+    {
+      const size_t nc = indices2[c];
+      Hess2[h] *= val1;
+      if (nr <= nc)
+        Hessian[N*nr - nr*(nr+1)/2 + nc] += Hess2[h];
+      else
+        Hessian[N*nc - nc*(nc+1)/2 + nr].plus_transpose_equal( Hess2[h] );
+      ++h;
+    }
+  }
+    // add gradient outer products
+  n = indices1.size();
+  size_t m = indices2.size();
+  Matrix3D outer;
+  for (r = 0; r < n; ++r)
+  {
+    const size_t nr = indices1[r];
+    for (c = 0; c < m; ++c)
+    {
+      const size_t nc = indices2[c];
+      outer.outer_product( grad1[r], grad2[c] );
+      if (nr == nc) 
+        Hessian[N*nr - nr*(nr+1)/2 + nc] += outer.plus_transpose_equal(outer);
+      else if (nr < nc)
+        Hessian[N*nr - nr*(nr+1)/2 + nc] += outer;
+      else
+        Hessian[N*nc - nc*(nc+1)/2 + nr].plus_transpose_equal(outer);
+    }
+  }
+  
+  value = val1 * val2;
+  return rval1 && rval2;
 }
-
-/*! Returns qMetric1->evaluate_vertex(...) multiplied by
-  qMetric2-evaluate_vertex(...)*/
-bool MultiplyQualityMetric::evaluate_vertex(PatchData& pd,
-                                            MsqVertex* vert,
-                                            double &value,
-                                            MsqError& err)
-{
-  bool valid_flag;
-  double metric1, metric2;  
-  valid_flag=qualMetric1->evaluate_vertex(pd, vert, metric1, err); MSQ_ERRZERO(err);
-  if(!valid_flag)
-    return false;
-  valid_flag=qualMetric2->evaluate_vertex(pd, vert, metric2, err); MSQ_ERRZERO(err);
-  value = metric1*metric2;
-    //if the first metric was invalid we have already returned
-    //so we return whatever the flag was on the second metric.
-  return
-    valid_flag;
-}
-
-
 

@@ -46,6 +46,8 @@ SimplifiedGeometryEngine.
 // DESCRIP-END.
 //
 
+#include "meshfiles.h"
+
 #include "PatchDataInstances.hpp"
 #include "cppunit/extensions/HelperMacros.h"
 #include <math.h>
@@ -122,7 +124,7 @@ public:
    {
      Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
      Mesquite::MsqPrintError err(cout);
-     mesh->read_vtk("../../meshFiles/2D/VTK/quads_on_sphere_529.vtk", err);
+     mesh->read_vtk(MESH_FILES_DIR "2D/VTK/quads_on_sphere_529.vtk", err);
      CPPUNIT_ASSERT(!err);
      
        //create geometry: sphere, center (2,2,0), radius 3
@@ -133,18 +135,17 @@ public:
      InstructionQueue queue1;
      
        // creates a mean ratio quality metric ...
-     ShapeQualityMetric* shape = new ConditionNumberQualityMetric;
-     UntangleQualityMetric* untan = new UntangleBetaQualityMetric;
+     ConditionNumberQualityMetric* shape = new ConditionNumberQualityMetric;
+     UntangleBetaQualityMetric* untan = new UntangleBetaQualityMetric;
      
        // ... and builds an objective function with it
      LPtoPTemplate* obj_func = new LPtoPTemplate(shape, 2, err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
-     obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
        // creates the steepest descent optimization procedures
      ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
        //SteepestDescent* pass2 = new SteepestDescent( obj_func );
-     pass1->set_patch_type(PatchData::GLOBAL_PATCH, err,1 ,1);
+     pass1->use_global_patch();
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
      QualityAssessor qa=QualityAssessor(shape,QualityAssessor::MAXIMUM, err);
@@ -185,7 +186,7 @@ public:
      {
        Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
        Mesquite::MsqPrintError err(cout); 
-       mesh->read_vtk("../../meshFiles/2D/VTK/quads_on_sphere_529.vtk", err);
+       mesh->read_vtk(MESH_FILES_DIR "2D/VTK/quads_on_sphere_529.vtk", err);
        
          //create geometry sphere:  ratius 1, centered at (0,0,0)
        Vector3D center(0,0,0);
@@ -195,7 +196,7 @@ public:
        InstructionQueue queue1;
 
          // creates an edge length metric ...
-       ShapeQualityMetric* shape_metric= new IdealWeightInverseMeanRatio(err);
+       IdealWeightInverseMeanRatio* shape_metric= new IdealWeightInverseMeanRatio(err);
        LInfTemplate shape_func(shape_metric);
        
          //create the smart laplacian smoother
@@ -239,7 +240,7 @@ public:
        Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
        Mesquite::MsqPrintError err(cout);
        
-       mesh->read_vtk("../../meshFiles/2D/VTK/Mesquite_geo_10242.vtk", err);
+       mesh->read_vtk(MESH_FILES_DIR "2D/VTK/Mesquite_geo_10242.vtk", err);
        
          //create geometry sphere:  ratius 1, centered at (0,0,0)
        Vector3D center(0,0,0);
@@ -249,7 +250,7 @@ public:
        InstructionQueue queue1;
 
          // creates an edge length metric ...
-       SmoothnessQualityMetric* edg_len= new EdgeLengthQualityMetric;
+       EdgeLengthQualityMetric* edg_len= new EdgeLengthQualityMetric;
       
          //create the laplacian smoother
        LaplacianSmoother* lapl = new LaplacianSmoother(err);

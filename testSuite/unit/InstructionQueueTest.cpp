@@ -52,7 +52,6 @@ Unit testing of various functions in the InstructionQueue class.
 #include "InstructionQueue.hpp"
 #include "QualityAssessor.hpp"
 #include "QualityImprover.hpp"
-#include "ShapeQualityMetric.hpp"
 #include "IdealWeightInverseMeanRatio.hpp"
 #include "LPtoPTemplate.hpp"
 #include "SteepestDescent.hpp"
@@ -86,7 +85,7 @@ private:
 private:
    QualityAssessor* mQA;
    QualityImprover* mQI;
-   ShapeQualityMetric* mQM;
+   QualityMetric* mQM;
    ObjectiveFunction* mOF;
    InstructionQueue mQueue;
 
@@ -99,7 +98,7 @@ public:
      CPPUNIT_ASSERT(!err);
      mOF = new LPtoPTemplate(mQM, 2, err);
      CPPUNIT_ASSERT(!err);
-     mQI = new SteepestDescent( mOF );
+     mQI = new SteepestDescent( mOF, true );
      mQA = new QualityAssessor();
      mQA->set_stopping_assessment( mQM, QualityAssessor::MAXIMUM, err );
      CPPUNIT_ASSERT(!err);

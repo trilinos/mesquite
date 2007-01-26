@@ -39,8 +39,7 @@
 #define Mesquite_I_DFT_NoBarrierSmoother_hpp
 
 #include "Mesquite.hpp"
-#include "VertexMover.hpp"
-#include "MsqFreeVertexIndexIterator.hpp"
+#include "LaplacianCommon.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 #  include <vector.h>
@@ -56,11 +55,12 @@ namespace Mesquite
     
     NOTE (IMPORTANT):  This smoother currently only works for tet elements.
    */  
-  class I_DFT_NoBarrierSmoother : public VertexMover 
+  class I_DFT_NoBarrierSmoother : public LaplacianCommon 
   {
   public:
-    I_DFT_NoBarrierSmoother(MsqError &err);
-    ~I_DFT_NoBarrierSmoother();
+    I_DFT_NoBarrierSmoother();
+    virtual ~I_DFT_NoBarrierSmoother();
+    virtual msq_std::string get_name() const;
   protected:
     virtual void initialize(PatchData &pd, MsqError &err);
     virtual void optimize_vertex_positions(PatchData &pd,

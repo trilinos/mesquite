@@ -117,7 +117,7 @@ namespace Mesquite
       //! releasing the memory for the passed index array after
       //! the MsqMeshEntity is destroyed.  The intention is that
       //! this is a pointer to a portion of a larger connectivity array
-      //! managed by the owning \ref PatchData.
+      //! managed by the owning PatchData.
     void set_connectivity( msq_stdc::size_t *indices, size_t num_vertices);
 
     msq_stdc::size_t get_vertex_index(msq_stdc::size_t vertex_in_element) const;

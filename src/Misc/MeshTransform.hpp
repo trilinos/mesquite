@@ -39,11 +39,9 @@
 
 
 #include "Mesquite.hpp"
-#include "QualityImprover.hpp"
-#include "PatchData.hpp"
-#include "ObjectiveFunction.hpp"
 #include "Vector3D.hpp"
 #include "Matrix3D.hpp"
+#include "Instruction.hpp"
 
 namespace Mesquite
 {
@@ -55,10 +53,10 @@ namespace Mesquite
     v_new = (mMat * v_old) + mVec,
     where mMat is a constant matrix and mVec is a constant vector.
    */  
-  class MeshTransform : public PatchDataUser 
+  class MeshTransform : public Instruction 
   {
   public:
-    MeshTransform(Matrix3D &in_mat, Vector3D &in_vec, MsqError &err);
+    MeshTransform(Matrix3D &in_mat, Vector3D &in_vec);
 
       // virtual destructor ensures use of polymorphism during destruction
     virtual ~MeshTransform() { };
@@ -66,17 +64,10 @@ namespace Mesquite
       //!Loop over the mesh and perform the affine transformation
     virtual double loop_over_mesh( Mesh* mesh, 
                                    MeshDomain* domain, 
-                                   PatchData* global_patch,
+                                   MappingFunctionSet* mfs,
                                    MsqError &err);
       //! Return the name of this PatchDataUser:  Mesh Transform
-    virtual msq_std::string get_name() { return "Mesh Transform.";}
-      //! Return the AlgorithmType of thsi PatchDataUser:  MESH_TRANSFORM
-    virtual AlgorithmType get_algorithm_type() { return MESH_TRANSFORM; }
-      //! MeshTransform is built to use ELEMETNS_ON_VERTEX_PATCH with a depth
-      //! one.  We implement set_patch_type to ensure this is the patch that
-      //! is used.
-    virtual void set_patch_type(PatchData::PatchType patch_type, MsqError &err,
-                                int param1, int param2);
+    virtual msq_std::string get_name() const { return "Mesh Transform";}
     
   private:
     Matrix3D mMat;//!Matrix for the affine transformation

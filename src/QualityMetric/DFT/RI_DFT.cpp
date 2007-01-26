@@ -1808,22 +1808,21 @@ bool RI_DFT::evaluate_element(PatchData& pd,
 }
 #endif
 
-bool RI_DFT::evaluate_element(PatchData& pd,
-			      MsqMeshEntity* e,
+bool RI_DFT::evaluate(PatchData& pd,
+			      size_t idx,
 			      double& m, 
 			      MsqError &err)
 {
   // Only works with the weighted average
-  MsqError   mErr;
   MsqVertex *vertices = pd.get_vertex_array(err); MSQ_ERRZERO(err);
 
-  EntityTopology topo = e->get_element_type();
+  MsqMeshEntity& e = pd.element_by_index(idx);
+  EntityTopology topo = e.get_element_type();
 
   //const size_t nv = e->corner_count();
-  const size_t *v_i = e->get_vertex_index_array();
+  const size_t *v_i = e.get_vertex_index_array();
 
-  size_t idx = pd.get_element_index(e);
-  const TargetMatrix *W = pd.targetMatrices.get_element_corner_tags(&pd, idx, err );
+  get_W_matrices( idx, pd, W, 8, mCk, err );
   MSQ_ERRZERO(err);
 
   // Initialize constants for the metric
@@ -1850,20 +1849,22 @@ bool RI_DFT::evaluate_element(PatchData& pd,
 	mCoords[j] = vertices[v_i[tetInd[i][j]]];
       }
 
-      pd.get_domain_normal_at_vertex(v_i[tetInd[i][0]], true, mNormal, mErr); 
-
-      if (mErr || mNormal.length() == 0) {
+      if (pd.domain_set()) {
+        pd.get_domain_normal_at_corner(idx, tetInd[i][0], mNormal, err); 
+        MSQ_ERRZERO(err);
+      }
+      else {
         mNormal = (vertices[v_i[tetInd[i][1]]] - vertices[v_i[tetInd[i][0]]]) *
                   (vertices[v_i[tetInd[i][2]]] - vertices[v_i[tetInd[i][0]]]);
-        mNormal.normalize();
       }
+      mNormal.normalize();
       mNormal *= MSQ_3RT_2_OVER_6RT_3;
 
       inv(invW, W[i]);
 
       mValid = m_fcn_ridft2(mMetric, mCoords, mNormal, invW, a, b, c, delta);
       if (!mValid) return false;
-      m += W[i].get_cK() * mMetric;
+      m += mCk[i] * mMetric;
     }
 
     m *= MSQ_ONE_THIRD;
@@ -1876,18 +1877,20 @@ bool RI_DFT::evaluate_element(PatchData& pd,
 	mCoords[j] = vertices[v_i[hexInd[i][j]]];
       }
 
-      pd.get_domain_normal_at_vertex(v_i[hexInd[i][0]], true, mNormal, mErr);
-      if (mErr || mNormal.length() == 0) {
+      if (pd.domain_set()) {
+        pd.get_domain_normal_at_corner(idx, hexInd[i][0], mNormal, err); 
+        MSQ_ERRZERO(err);
+      }
+      else {
         mNormal = (vertices[v_i[hexInd[i][1]]] - vertices[v_i[hexInd[i][0]]]) *
                   (vertices[v_i[hexInd[i][2]]] - vertices[v_i[hexInd[i][0]]]);
-        mNormal.normalize();
       }
 
       inv(invW, W[i]);
 
       mValid = m_fcn_ridft2(mMetric, mCoords, mNormal, invW, a, b, c, delta);
       if (!mValid) return false;
-      m += W[i].get_cK() * mMetric;
+      m += mCk[i] * mMetric;
     }
 
     m *= 0.25;
@@ -1904,7 +1907,7 @@ bool RI_DFT::evaluate_element(PatchData& pd,
 
       mValid = m_fcn_ridft3(mMetric, mCoords, invW, a, b, c, delta);
       if (!mValid) return false;
-      m += W[i].get_cK() * mMetric;
+      m += mCk[i] * mMetric;
     }
 
     m *= 0.25;
@@ -1921,7 +1924,7 @@ bool RI_DFT::evaluate_element(PatchData& pd,
 
       mValid = m_fcn_ridft3(mMetric, mCoords, invW, a, b, c, delta);
       if (!mValid) return false;
-      m += W[i].get_cK() * mMetric;
+      m += mCk[i] * mMetric;
     }
 
     m *= 0.125;
@@ -1935,26 +1938,32 @@ bool RI_DFT::evaluate_element(PatchData& pd,
   return true;
 }
 
-bool RI_DFT::compute_element_analytical_gradient(PatchData &pd,
-						 MsqMeshEntity *e,
-						 MsqVertex *fv[], 
-						 Vector3D g[],
-						 int nfv, 
-						 double &m,
+bool RI_DFT::evaluate_with_gradient(PatchData &pd,
+						 size_t idx,
+             double& m,
+             msq_std::vector<size_t>& fv,
+             msq_std::vector<Vector3D>& g,
 						 MsqError &err)
 {
   // Only works with the weighted average
 
   MsqVertex *vertices = pd.get_vertex_array(err); MSQ_ERRZERO(err);
 
-  EntityTopology topo = e->get_element_type();
+  MsqMeshEntity& e = pd.element_by_index(idx);
+  EntityTopology topo = e.get_element_type();
 
-  //const size_t nv = e->vertex_count();
-  const size_t *v_i = e->get_vertex_index_array();
+  //const size_t nv = e->corner_count();
+  const size_t *v_i = e.get_vertex_index_array();
 
-  size_t idx = pd.get_element_index(e);
-  const TargetMatrix *W = pd.targetMatrices.get_element_corner_tags(&pd, idx, err );
+  get_W_matrices( idx, pd, W, 8, mCk, err );
   MSQ_ERRZERO(err);
+
+  fv.clear();
+  uint32_t fixed_bits = fixed_vertex_bitmap( pd, &e, fv );
+
+  const int nv = e.vertex_count();
+  g.clear();
+  g.resize(nv, Vector3D(0.0));
 
   // Initialize constants for the metric
   const double delta = pd.get_barrier_delta(err); MSQ_ERRZERO(err);
@@ -1977,7 +1986,7 @@ bool RI_DFT::compute_element_analytical_gradient(PatchData &pd,
     //assert(3 == nv);
 
 #ifndef ANALYTIC
-    mValid = compute_element_numerical_gradient(pd, e, fv, g, nfv, m, err);
+    mValid = this->QualityMetric::evaluate_with_gradient(pd, idx, m, fv, g, err);
     return !MSQ_CHKERR(err) && mValid;
 #else
 
@@ -1987,16 +1996,13 @@ bool RI_DFT::compute_element_analytical_gradient(PatchData &pd,
     // positions to obtain the correct values.
 
     for (i = 0; i < 3; ++i) {
-      mAccGrads[i] = 0.0;
-    }
-
-    for (i = 0; i < 3; ++i) {
       for (j = 0; j < 3; ++j) {
 	mCoords[j] = vertices[v_i[tetInd[i][j]]];
       }
       
-      pd.get_domain_normal_at_vertex(v_i[tetInd[i][0]], true, mNormal, err);
+      pd.get_domain_normal_at_corner(idx, tetInd[i][0], mNormal, err);
       MSQ_ERRZERO(err);
+      mNormal.normalize();
       mNormal *= MSQ_3RT_2_OVER_6RT_3);
 
       inv(invW, W[i]);
@@ -2004,28 +2010,16 @@ bool RI_DFT::compute_element_analytical_gradient(PatchData &pd,
       mValid = g_fcn_ridft2(mMetric, mGrads, mCoords, mNormal,
 			    invW, a, b, c, delta);
       if (!mValid) return false;
-      m += W[i].get_cK() * mMetric;
+      m += mCk[i] * mMetric;
 
       for (j = 0; j < 3; ++j) {
-	mAccGrads[tetInd[i][j]] += W[i].get_cK() * mGrads[j];
+	g[tetInd[i][j]] += mCk[i] * mGrads[j];
       }
     }
 
     m *= MSQ_ONE_THIRD;
     for (i = 0; i < 3; ++i) {
-      mAccGrads[i] *= MSQ_ONE_THIRD;
-    }
-
-    // This is not very efficient, but is one way to select correct gradients.
-    // For gradients, info is returned only for free vertices, in the order
-    // of fv[].
-
-    for (i = 0; i < 3; ++i) {
-      for (j = 0; j < nfv; ++j) {
-        if (vertices + v_i[i] == fv[j]) {
-          g[j] = mAccGrads[i];
-        }
-      }
+      g[i] *= MSQ_ONE_THIRD;
     }
 #endif
 
@@ -2034,7 +2028,7 @@ bool RI_DFT::compute_element_analytical_gradient(PatchData &pd,
   case QUADRILATERAL:
 
 #ifndef ANALYTIC
-    mValid = compute_element_numerical_gradient(pd, e, fv, g, nfv, m, err);
+    mValid = this->QualityMetric::evaluate_with_gradient(pd, idx, m, fv, g, err);
     return !MSQ_CHKERR(err) && mValid;
 #else
 
@@ -2044,54 +2038,35 @@ bool RI_DFT::compute_element_analytical_gradient(PatchData &pd,
     // positions to obtain the correct values.
 
     for (i = 0; i < 4; ++i) {
-      mAccGrads[i] = 0.0;
-    }
-
-    for (i = 0; i < 4; ++i) {
       for (j = 0; j < 3; ++j) {
 	mCoords[j] = vertices[v_i[hexInd[i][j]]];
       }
 
-      pd.get_domain_normal_at_vertex(v_i[hexInd[i][0]], true, mNormal, err);
+      pd.get_domain_normal_at_corner( idx, hexInd[i][0], mNormal, err);
       MSQ_ERRZERO(err);
+      mNormal.normalize();
 
       inv(invW, W[i]);
 
       mValid = g_fcn_ridft2(mMetric, mGrads, mCoords, mNormal,
 			    invW, a, b, c, delta);
       if (!mValid) return false;
-      m += W[i].get_cK() * mMetric;
+      m += mCk[i] * mMetric;
 
       for (j = 0; j < 3; ++j) {
-	mAccGrads[hexInd[i][j]] += W[i].get_cK() * mGrads[j];
+	g[hexInd[i][j]] += mCk[i] * mGrads[j];
       }
     }
 
     m *= 0.25;
     for (i = 0; i < 4; ++i) {
-      mAccGrads[i] *= 0.25;
-    }
-
-    // This is not very efficient, but is one way to select correct gradients
-    // For gradients, info is returned only for free vertices, in the order 
-    // of fv[].
-
-    for (i = 0; i < 4; ++i) {
-      for (j = 0; j < nfv; ++j) {
-        if (vertices + v_i[i] == fv[j]) {
-          g[j] = mAccGrads[i];
-        }
-      }
+      g[i] *= 0.25;
     }
 #endif
 
     break;
 
   case TETRAHEDRON:
-
-    for (i = 0; i < 4; ++i) {
-      mAccGrads[i] = 0.0;
-    }
 
     for (i = 0; i < 4; ++i) {
       for (j = 0; j < 4; ++j) {
@@ -2102,36 +2077,21 @@ bool RI_DFT::compute_element_analytical_gradient(PatchData &pd,
 
       mValid = g_fcn_ridft3(mMetric, mGrads, mCoords, invW, a, b, c, delta);
       if (!mValid) return false;
-      m += W[i].get_cK() * mMetric;
+      m += mCk[i] * mMetric;
 
       for (j = 0; j < 4; ++j) {
-	mAccGrads[tetInd[i][j]] += W[i].get_cK() * mGrads[j];
+	g[tetInd[i][j]] += mCk[i] * mGrads[j];
       }
     }
 
     m *= 0.25;
     for (i = 0; i < 4; ++i) {
-      mAccGrads[i] *= 0.25;
+      g[i] *= 0.25;
     }
 
-    // This is not very efficient, but is one way to select correct gradients.
-    // For gradients, info is returned only for free vertices, in the order
-    // of fv[].
-
-    for (i = 0; i < 4; ++i) {
-      for (size_t k = 0; k < 4; ++k) {
-        if (vertices + v_i[i] == fv[k]) {
-          g[k] = mAccGrads[i];
-        }
-      }
-    }
     break;
 
   case HEXAHEDRON:
-
-    for (i = 0; i < 8; ++i) {
-      mAccGrads[i] = 0.0;
-    }
 
     for (i = 0; i < 8; ++i) {
       for (j = 0; j < 4; ++j) {
@@ -2142,29 +2102,18 @@ bool RI_DFT::compute_element_analytical_gradient(PatchData &pd,
 
       mValid = g_fcn_ridft3(mMetric, mGrads, mCoords, invW, a, b, c, delta);
       if (!mValid) return false;
-      m += W[i].get_cK() * mMetric;
+      m += mCk[i] * mMetric;
 
       for (j = 0; j < 4; ++j) {
-	mAccGrads[hexInd[i][j]] += W[i].get_cK() * mGrads[j];
+	g[hexInd[i][j]] += mCk[i] * mGrads[j];
       }
     }
 
     m *= 0.125;
     for (i = 0; i < 8; ++i) {
-      mAccGrads[i] *= 0.125;
+      g[i] *= 0.125;
     }
 
-    // This is not very efficient, but is one way to select correct gradients
-    // For gradients, info is returned only for free vertices, in the order 
-    // of fv[].
-
-    for (i = 0; i < 8; ++i) {
-      for (j = 0; j < nfv; ++j) {
-        if (vertices + v_i[i] == fv[j]) {
-          g[j] = mAccGrads[i];
-        }
-      }
-    }
     break;
 
   default:
@@ -2172,30 +2121,40 @@ bool RI_DFT::compute_element_analytical_gradient(PatchData &pd,
     return false;
   }
 
+  if (fixed_bits)
+    remove_fixed_gradients( topo, fixed_bits, g );
   return true;
 }
 
-bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
-						MsqMeshEntity *e,
-						MsqVertex *fv[], 
-						Vector3D g[],
-						Matrix3D h[],
-						int nfv, 
+bool RI_DFT::evaluate_with_Hessian(PatchData &pd,
+						size_t idx,
 						double &m,
+						msq_std::vector<size_t>& fv, 
+						msq_std::vector<Vector3D>& g,
+						msq_std::vector<Matrix3D>& h,
 						MsqError &err)
 {
   // Only works with the weighted average
 
-  MsqVertex *vertices = pd.get_vertex_array(err);  MSQ_ERRZERO(err);
+  MsqVertex *vertices = pd.get_vertex_array(err); MSQ_ERRZERO(err);
 
-  EntityTopology topo = e->get_element_type();
+  MsqMeshEntity& e = pd.element_by_index(idx);
+  EntityTopology topo = e.get_element_type();
 
-  //const size_t nv = e->vertex_count();
-  const size_t *v_i = e->get_vertex_index_array();
+  //const size_t nv = e->corner_count();
+  const size_t *v_i = e.get_vertex_index_array();
 
-  size_t idx = pd.get_element_index(e);
-  const TargetMatrix *W = pd.targetMatrices.get_element_corner_tags(&pd, idx, err );
+  get_W_matrices( idx, pd, W, 8, mCk, err );
   MSQ_ERRZERO(err);
+
+  fv.clear();
+  uint32_t fixed_bits = fixed_vertex_bitmap( pd, &e, fv );
+
+  const int nv = e.vertex_count();
+  g.clear();
+  g.resize(nv, Vector3D(0.0));
+  h.clear();
+  h.resize(nv*(nv+1)/2, Matrix3D(0.0));
 
   // Initialize constants for the metric
   const double delta = pd.get_barrier_delta(err); MSQ_ERRZERO(err);
@@ -2219,7 +2178,7 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
     //assert(3 == nv);
 
 #ifndef ANALYTIC
-    mValid = compute_element_numerical_hessian(pd, e, fv, g, h, nfv, m, err);
+    mValid = this->QualityMetric::evaluate_with_Hessian(pd, idx, m, fv, g, h, err);
     return !MSQ_CHKERR(err) && mValid;
 #else
 
@@ -2228,23 +2187,15 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
     // to get the gradient of the normal with respect to the vertex
     // positions to obtain the correct values.
 
-    // Zero out the hessian and gradient vector
-    for (i = 0; i < 3; ++i) {
-      g[i] = 0.0;
-    }
-
-    for (i = 0; i < 6; ++i) {
-      h[i].zero();
-    }
-
     // Compute the metric and sum them together
     for (i = 0; i < 3; ++i) {
       for (j = 0; j < 3; ++j) {
 	mCoords[j] = vertices[v_i[tetInd[i][j]]];
       }
 
-      pd.get_domain_normal_at_vertex(v_i[tetInd[i][0]], true, mNormal, err);
+      pd.get_domain_normal_at_corner(idx, tetInd[i][0], mNormal, err);
       MSQ_ERRZERO(err);
+      mNormal.normalize();
       mNormal *= MSQ_3RT_2_OVER_6RT_3;
 
       inv(invW, W[i]);
@@ -2253,10 +2204,10 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
 			    invW, a, b, c, delta);
       if (!mValid) return false;
 
-      m += W[i].get_cK() * mMetric;
+      m += mCk[i] * mMetric;
 
       for (j = 0; j < 3; ++j) {
-	g[tetInd[i][j]] += W[i].get_cK() * mGrads[j];
+	g[tetInd[i][j]] += mCk[i] * mGrads[j];
       }
 
       l = 0;
@@ -2267,11 +2218,11 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
 
 	  if (row <= col) {
 	    loc = 3*row - (row*(row+1)/2) + col;
-	    h[loc] += W[i].get_cK() * mHessians[l];
+	    h[loc] += mCk[i] * mHessians[l];
 	  }
 	  else {
 	    loc = 3*col - (col*(col+1)/2) + row;
-	    h[loc] += W[i].get_cK() * transpose(mHessians[l]);
+	    h[loc] += mCk[i] * transpose(mHessians[l]);
 	  }
 	  ++l;
 	}
@@ -2286,33 +2237,6 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
     for (i = 0; i < 6; ++i) {
       h[i] *= MSQ_ONE_THIRD;
     }
-
-    // zero out fixed elements of g
-    j = 0;
-    for (i = 0; i < 3; ++i) {
-      if (vertices + v_i[i] == fv[j]) {
-	// if free vertex, see next
-        ++j;
-      }
-      else {
-	// else zero gradient entry and hessian entries.
-        g[i] = 0.;
-
-        switch(i) {
-        case 0:
-          h[0].zero(); h[1].zero(); h[2].zero();
-          break;
-	  
-        case 1:
-          h[1].zero(); h[3].zero(); h[4].zero();
-          break;
-	  
-        case 2:
-          h[2].zero(); h[4].zero(); h[5].zero();
-          break;
-        }
-      }
-    }
 #endif
 
     break;
@@ -2320,7 +2244,7 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
   case QUADRILATERAL:
 
 #ifndef ANALYTIC
-    mValid = compute_element_numerical_hessian(pd, e, fv, g, h, nfv, m, err);
+    mValid = this->QualityMetric::evaluate_with_Hessian(pd, idx, m, fv, g, h, err);
     return !MSQ_CHKERR(err) && mValid;
 #else
 
@@ -2329,23 +2253,15 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
     // to get the gradient of the normal with respect to the vertex
     // positions to obtain the correct values.
 
-    // Zero out the hessian and gradient vector
-    for (i = 0; i < 4; ++i) {
-      g[i] = 0.0;
-    }
-
-    for (i = 0; i < 10; ++i) {
-      h[i].zero();
-    }
-
     // Compute the metric and sum them together
     for (i = 0; i < 4; ++i) {
       for (j = 0; j < 3; ++j) {
 	mCoords[j] = vertices[v_i[hexInd[i][j]]];
       }
 
-      pd.get_domain_normal_at_vertex(v_i[hexInd[i][0]], true, mNormal, err);
+      pd.get_domain_normal_at_corner( idx, hexInd[i][0], mNormal, err);
       MSQ_ERRZERO(err);
+      mNormal.normalize();
 
       inv(invW, W[i]);
 
@@ -2353,10 +2269,10 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
 			    invW, a, b, c, delta);
       if (!mValid) return false;
 
-      m += W[i].get_cK() * mMetric;
+      m += mCk[i] * mMetric;
 
       for (j = 0; j < 3; ++j) {
-	g[hexInd[i][j]] += W[i].get_cK() * mGrads[j];
+	g[hexInd[i][j]] += mCk[i] * mGrads[j];
       }
 
       l = 0;
@@ -2367,11 +2283,11 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
 
 	  if (row <= col) {
 	    loc = 4*row - (row*(row+1)/2) + col;
-	    h[loc] += W[i].get_cK() * mHessians[l];
+	    h[loc] += mCk[i] * mHessians[l];
 	  }
 	  else {
 	    loc = 4*col - (col*(col+1)/2) + row;
-	    h[loc] += W[i].get_cK() * transpose(mHessians[l]);
+	    h[loc] += mCk[i] * transpose(mHessians[l]);
 	  }
 	  ++l;
 	}
@@ -2386,51 +2302,11 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
     for (i = 0; i < 10; ++i) {
       h[i] *= 0.25;
     }
-
-    // zero out fixed elements of gradient and Hessian
-    j = 0;
-    for (i = 0; i < 4; ++i) {
-      if (vertices + v_i[i] == fv[j]) {
-	// if free vertex, see next
-        ++j;
-      }
-      else {
-	// else zero gradient entry and hessian entries.
-        g[i] = 0.;
-
-        switch(i) {
-        case 0:
-          h[0].zero();   h[1].zero();   h[2].zero();   h[3].zero();
-          break;
-          
-        case 1:
-          h[1].zero();   h[4].zero();   h[5].zero();   h[6].zero();
-          break;
-          
-        case 2:
-          h[2].zero();   h[5].zero();   h[7].zero();  h[8].zero();
-          break;
-          
-        case 3:
-          h[3].zero();   h[6].zero();   h[8].zero();  h[9].zero();
-          break;
-        }
-      }
-    }
 #endif
 
     break;
 
   case TETRAHEDRON:
-
-    // Zero out the hessian and gradient vector
-    for (i = 0; i < 4; ++i) {
-      g[i] = 0.0;
-    }
-
-    for (i = 0; i < 10; ++i) {
-      h[i].zero();
-    }
 
     // Compute the metric and sum them together
     for (i = 0; i < 4; ++i) {
@@ -2444,10 +2320,10 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
 			   invW, a, b, c, delta);
       if (!mValid) return false;
 
-      m += W[i].get_cK() * mMetric;
+      m += mCk[i] * mMetric;
 
       for (j = 0; j < 4; ++j) {
-	g[tetInd[i][j]] += W[i].get_cK() * mGrads[j];
+	g[tetInd[i][j]] += mCk[i] * mGrads[j];
       }
 
       l = 0;
@@ -2458,11 +2334,11 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
 
 	  if (row <= col) {
 	    loc = 4*row - (row*(row+1)/2) + col;
-	    h[loc] += W[i].get_cK() * mHessians[l];
+	    h[loc] += mCk[i] * mHessians[l];
 	  }
 	  else {
 	    loc = 4*col - (col*(col+1)/2) + row;
-	    h[loc] += W[i].get_cK() * transpose(mHessians[l]);
+	    h[loc] += mCk[i] * transpose(mHessians[l]);
 	  }
 	  ++l;
 	}
@@ -2478,48 +2354,9 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
       h[i] *= 0.25;
     }
 
-    // zero out fixed elements of g
-    j = 0;
-    for (i = 0; i < 4; ++i) {
-      if (vertices + v_i[i] == fv[j]) {
-	// if free vertex, see next
-        ++j;
-      }
-      else {
-	// else zero gradient entry and hessian entries.
-        g[i] = 0.;
-
-        switch(i) {
-        case 0:
-          h[0].zero(); h[1].zero(); h[2].zero(); h[3].zero();
-          break;
-	  
-        case 1:
-          h[1].zero(); h[4].zero(); h[5].zero(); h[6].zero();
-          break;
-	  
-        case 2:
-          h[2].zero(); h[5].zero(); h[7].zero(); h[8].zero();
-          break;
-
-        case 3:
-          h[3].zero(); h[6].zero(); h[8].zero(); h[9].zero();
-          break;
-        }
-      }
-    }
     break;
 
   case HEXAHEDRON:
-
-    // Zero out the hessian and gradient vector
-    for (i = 0; i < 8; ++i) {
-      g[i] = 0.0;
-    }
-
-    for (i = 0; i < 36; ++i) {
-      h[i].zero();
-    }
 
     // Compute the metric and sum them together
     for (i = 0; i < 8; ++i) {
@@ -2533,10 +2370,10 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
 			   invW, a, b, c, delta);
       if (!mValid) return false;
 
-      m += W[i].get_cK() * mMetric;
+      m += mCk[i] * mMetric;
 
       for (j = 0; j < 4; ++j) {
-	g[hexInd[i][j]] += W[i].get_cK() * mGrads[j];
+	g[hexInd[i][j]] += mCk[i] * mGrads[j];
       }
 
       l = 0;
@@ -2547,11 +2384,11 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
 
 	  if (row <= col) {
 	    loc = 8*row - (row*(row+1)/2) + col;
-	    h[loc] += W[i].get_cK() * mHessians[l];
+	    h[loc] += mCk[i] * mHessians[l];
 	  }
 	  else {
 	    loc = 8*col - (col*(col+1)/2) + row;
-	    h[loc] += W[i].get_cK() * transpose(mHessians[l]);
+	    h[loc] += mCk[i] * transpose(mHessians[l]);
 	  }
 	  ++l;
 	}
@@ -2567,65 +2404,16 @@ bool RI_DFT::compute_element_analytical_hessian(PatchData &pd,
       h[i] *= 0.125;
     }
 
-    // zero out fixed elements of gradient and Hessian
-    j = 0;
-    for (i = 0; i < 8; ++i) {
-      if (vertices + v_i[i] == fv[j]) {
-	// if free vertex, see next
-        ++j;
-      }
-      else {
-	// else zero gradient entry and hessian entries.
-        g[i] = 0.;
-
-        switch(i) {
-        case 0:
-          h[0].zero();   h[1].zero();   h[2].zero();   h[3].zero();
-          h[4].zero();   h[5].zero();   h[6].zero();   h[7].zero();
-          break;
-          
-        case 1:
-          h[1].zero();   h[8].zero();   h[9].zero();   h[10].zero();
-          h[11].zero();  h[12].zero();  h[13].zero();  h[14].zero();
-          break;
-          
-        case 2:
-          h[2].zero();   h[9].zero();   h[15].zero();  h[16].zero();
-          h[17].zero();  h[18].zero();  h[19].zero();  h[20].zero();
-          break;
-          
-        case 3:
-          h[3].zero();   h[10].zero();  h[16].zero();  h[21].zero();
-          h[22].zero();  h[23].zero();  h[24].zero();  h[25].zero();
-          break;
-          
-        case 4:
-          h[4].zero();   h[11].zero();  h[17].zero();  h[22].zero();
-          h[26].zero();  h[27].zero();  h[28].zero();  h[29].zero();
-          break;
-          
-        case 5:
-          h[5].zero();   h[12].zero();  h[18].zero();  h[23].zero();
-          h[27].zero();  h[30].zero();  h[31].zero();  h[32].zero();
-          break;
-          
-        case 6:
-          h[6].zero();   h[13].zero();  h[19].zero();  h[24].zero();
-          h[28].zero();  h[31].zero();  h[33].zero();  h[34].zero();
-          break;
-          
-        case 7:
-          h[7].zero();   h[14].zero();  h[20].zero();  h[25].zero();
-          h[29].zero();  h[32].zero();  h[34].zero();  h[35].zero();
-          break;
-        }
-      }
-    }
     break;
 
   default:
     MSQ_SETERR(err)("element type not implemented.",MsqError::UNSUPPORTED_ELEMENT);
     return false;
+  }
+
+  if (fixed_bits) {
+    remove_fixed_gradients( topo, fixed_bits, g );
+    remove_fixed_hessians( topo, fixed_bits, h );
   }
 
   return true;

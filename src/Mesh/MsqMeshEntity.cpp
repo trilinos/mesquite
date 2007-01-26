@@ -66,7 +66,7 @@ namespace Mesquite {
 //! this element was retrieved.
 //! The order of the vertices is the canonical order for this
 //! element's type.
-void Mesquite::MsqMeshEntity::get_vertex_indices(vector<size_t> &vertices) const
+void MsqMeshEntity::get_vertex_indices(msq_std::vector<msq_stdc::size_t> &vertices) const
 {
   vertices.resize( vertex_count() );
   memcpy( &vertices[0], vertexIndices, vertex_count() * sizeof(size_t) );
@@ -79,20 +79,20 @@ void Mesquite::MsqMeshEntity::get_vertex_indices(vector<size_t> &vertices) const
 //! element's type.
 //! The indices are placed appended to the end of the list.
 //! The list is not cleared before appending this entity's vertices.
-void Mesquite::MsqMeshEntity::append_vertex_indices(vector<size_t> &vertex_list) const
+void MsqMeshEntity::append_vertex_indices(msq_std::vector<msq_stdc::size_t> &vertex_list) const
 {
   vertex_list.insert(vertex_list.end(),
                      vertexIndices,
                      vertexIndices + vertex_count());
 }
 
-void MsqMeshEntity::get_node_indices( vector<size_t>& indices ) const
+void MsqMeshEntity::get_node_indices( msq_std::vector<msq_stdc::size_t>& indices ) const
 {
   indices.resize( node_count() );
   memcpy( &indices[0], vertexIndices, node_count() * sizeof( size_t ) );
 }
 
-void MsqMeshEntity::append_node_indices( vector<size_t>& indices ) const
+void MsqMeshEntity::append_node_indices( msq_std::vector<msq_stdc::size_t>& indices ) const
 {
   indices.insert( indices.end(), vertexIndices, vertexIndices + node_count() );
 }
@@ -207,9 +207,10 @@ double MsqMeshEntity::compute_signed_area(PatchData &pd, MsqError &err) {
   entity.
   
 */
-void Mesquite::MsqMeshEntity::get_connected_vertices(size_t vertex_index,
-                                                     vector<size_t> &vert_indices,
-                                                     MsqError &err)
+void MsqMeshEntity::get_connected_vertices( 
+                                    msq_stdc::size_t vertex_index,
+                                    msq_std::vector<msq_stdc::size_t> &vert_indices,
+                                    MsqError &err)
 {
     //index is set to the index in the vertexIndices corresponding
     //to vertex_index
@@ -518,7 +519,7 @@ ostream& operator<<( ostream& stream, const MsqMeshEntity& entity )
   relaxation methods in the laplacian smoothers.
   
 */
-size_t Mesquite::MsqMeshEntity::get_local_matrix_map_about_vertex(
+size_t MsqMeshEntity::get_local_matrix_map_about_vertex(
   PatchData &pd, MsqVertex* vert, size_t local_map_size,
   int* local_map, MsqError &err) const
 {

@@ -39,6 +39,8 @@
 #include "MsqVertex.hpp"
 #include "MsqDebug.hpp"
 #include "MeshInterface.hpp"
+#include "VertexPatches.hpp"
+#include "ElementPatches.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 #  include <list.h>
@@ -69,10 +71,7 @@ QualityAssessor::QualityAssessor(msq_std::string name) :
   stoppingMetric( assessList.end() ),
   stoppingFunction( NO_FUNCTION ),
   tagInverted(false)
-{ 
-  MsqError err;
-  set_patch_type( PatchData::ELEMENT_PATCH, err, 0 );
-}
+{ }
 
 QualityAssessor::QualityAssessor(msq_stdio::ostream& stream, msq_std::string name) :
   qualityAssessorName(name),
@@ -83,10 +82,7 @@ QualityAssessor::QualityAssessor(msq_stdio::ostream& stream, msq_std::string nam
   stoppingMetric( assessList.end() ),
   stoppingFunction( NO_FUNCTION ),
   tagInverted(false)
-{ 
-  MsqError err;
-  set_patch_type( PatchData::ELEMENT_PATCH, err, 0 );
-}
+{ }
 
 QualityAssessor::QualityAssessor( QualityMetric* metric,
                                   QAFunction function,
@@ -101,7 +97,6 @@ QualityAssessor::QualityAssessor( QualityMetric* metric,
   stoppingFunction( (QAFunction)0 ),
   tagInverted(false)
 { 
-  set_patch_type( PatchData::GLOBAL_PATCH, err, 0 );
   add_quality_assessment( metric, function, err );
   set_stopping_assessment( metric, function, err );
 }
@@ -120,7 +115,6 @@ QualityAssessor::QualityAssessor( QualityMetric* metric,
   stoppingFunction( (QAFunction)0 ),
   tagInverted(false)
 { 
-  set_patch_type( PatchData::GLOBAL_PATCH, err, 0 );
   add_quality_assessment( metric, function, err );
   set_stopping_assessment( metric, function, err );
 }
@@ -324,15 +318,28 @@ void QualityAssessor::tag_inverted_elements( Mesh* mesh, msq_std::string name, M
  */
 double QualityAssessor::loop_over_mesh( Mesh* mesh,
                                         MeshDomain* domain,
-                                        PatchData* global_patch, 
+                                        MappingFunctionSet* map_func,
                                         MsqError& err)
 {
     // Clear out any previous data
   reset_data();
-  PatchData local_patch;
-  local_patch.set_mesh( mesh );
-  local_patch.set_domain( domain );
- 
+
+  PatchData patch;
+  patch.set_mesh( mesh );
+  patch.set_domain( domain );
+  patch.set_mapping_functions( map_func );
+  
+  ElementPatches elem_patches;
+  elem_patches.set_mesh( mesh );
+  VertexPatches vert_patches(1,false);
+  vert_patches.set_mesh( mesh );
+  
+  msq_std::vector<PatchSet::PatchHandle> patches;
+  msq_std::vector<PatchSet::PatchHandle>::iterator p;
+  msq_std::vector<Mesh::VertexHandle> patch_verts;
+  msq_std::vector<Mesh::ElementHandle> patch_elems;
+  msq_std::vector<size_t> metric_handles;
+  
     // Check for any metrics for which a histogram is to be 
     // calculated and for which the user has not specified 
     // minimum and maximum values.  
@@ -363,187 +370,157 @@ double QualityAssessor::loop_over_mesh( Mesh* mesh,
   msq_std::list<Assessor> histogramList;
   
     // Do element-based metrics
-  if (assessList.begin() != elem_end)
-  {
-    invertedCount = 0;
-    indeterminateCount = 0;
-    bool first_pass = false;
-    do { // might need to loop twice to calculate histograms
-      first_pass = !first_pass;
-     
-      PatchData* pd;
-      bool more_mesh;
-      if (!global_patch) {
-        pd = &local_patch;
-        local_patch.reset_iterators();
-        more_mesh = local_patch.get_next_element_patch( err ); MSQ_ERRZERO(err);
-      }
-      else {
-        pd = global_patch;
-        more_mesh = true;
-      }
-      
-        //until there are no more patches
-        //there is another get_next_patch at
-        //the end of this loop
-      while (more_mesh)
-      {
-        for (unsigned i = 0; i < pd->num_elements(); ++i)
-        {
-            //first check the metric for whether it is inverted or not
-          if (first_pass){
-            MsqMeshEntity::ElementOrientation elem_orientation =
-              pd->element_by_index(i).check_element_orientation(*pd, err);
-            
-            if( elem_orientation == MsqMeshEntity::INVERTED_ORIENTATION){
-              ++invertedCount;
-            }
-            else if(elem_orientation == MsqMeshEntity::UNDEFINED_ORIENTATION){
-              ++indeterminateCount;
-            }
-            MSQ_ERRZERO(err);
-            
-            if (tagInverted) {
-              Mesh::ElementHandle h = pd->get_element_handles_array()[i];
-              int val = elem_orientation;
-              mesh->tag_set_element_data( invertedTag, 1, &h, &val, err );
-              MSQ_ERRZERO(err);
-            }
+  elem_patches.get_patch_handles( patches, err ); MSQ_ERRZERO(err);
+
+  invertedCount = 0;
+  indeterminateCount = 0;
+  bool first_pass = false;
+  do { // might need to loop twice to calculate histograms
+    first_pass = !first_pass;
+
+      //until there are no more patches
+      //there is another get_next_patch at
+      //the end of this loop
+    for (p = patches.begin(); p != patches.end(); ++p) {
+        elem_patches.get_patch( *p, patch_elems, patch_verts, err ); MSQ_ERRZERO(err);
+        patch.set_mesh_entities( patch_elems, patch_verts, err ); MSQ_ERRZERO(err);
+
+         //first check the metric for whether it is inverted or not
+        if (first_pass){
+          MsqMeshEntity::ElementOrientation elem_orientation =
+            patch.element_by_index(0).check_element_orientation(patch, err);
+
+          if( elem_orientation == MsqMeshEntity::INVERTED_ORIENTATION){
+            ++invertedCount;
           }
-          
-          for (iter = assessList.begin(); iter != elem_end; ++iter)
+          else if(elem_orientation == MsqMeshEntity::UNDEFINED_ORIENTATION){
+            ++indeterminateCount;
+          }
+          MSQ_ERRZERO(err);
+            
+          if (tagInverted) {
+            Mesh::ElementHandle h = patch.get_element_handles_array()[0];
+            int val = elem_orientation;
+            mesh->tag_set_element_data( invertedTag, 1, &h, &val, err );
+            MSQ_ERRZERO(err);
+          }
+        }
+
+        for (iter = assessList.begin(); iter != elem_end; ++iter)
+        {
+            // If first pass, get values for all metrics
+          if (first_pass)
           {
-              // If first pass, get values for all metrics
-            if (first_pass)
+            metric_handles.clear();
+            QualityMetric* qm = iter->get_metric();
+            qm->get_evaluations( patch, metric_handles, false, err ); MSQ_ERRZERO(err);
+            for (msq_std::vector<size_t>::iterator j = metric_handles.begin(); 
+                 j != metric_handles.end(); ++j) 
             {
               double value;
-              bool valid = iter->get_metric()->evaluate_element( *pd, 
-                                                           &pd->element_by_index(i),
-                                                           value, err );
-                                                           MSQ_ERRZERO(err);
-              
+              bool valid = iter->get_metric()->evaluate( patch, *j, value, err ); MSQ_ERRZERO(err);
               iter->add_value(value);
               if (!valid) 
                 iter->add_invalid_value();
                 
               if (iter->write_to_tag()) {
-                Mesh::ElementHandle h = pd->get_element_handles_array()[i];
+                Mesh::ElementHandle h = patch.get_element_handles_array()[0];
                 TagHandle t = iter->get_tag_handle( mesh, err ); MSQ_ERRZERO(err);
                 mesh->tag_set_element_data( t, 1, &h, &value, err ); MSQ_ERRZERO(err);
               }
             }
-              // If second pass, only do metrics for which the
-              // histogram hasn't been calculated yet.
-            else if (iter->funcFlags&HISTOGRAM && !iter->haveHistRange)
+          }
+            // If second pass, only do metrics for which the
+            // histogram hasn't been calculated yet.
+          else if (iter->funcFlags&HISTOGRAM && !iter->haveHistRange)
+          {
+            metric_handles.clear();
+            QualityMetric* qm = iter->get_metric();
+            qm->get_evaluations( patch, metric_handles, false, err ); MSQ_ERRZERO(err);
+            for (msq_std::vector<size_t>::iterator j = metric_handles.begin(); 
+                 j != metric_handles.end(); ++j) 
             {
               double value;
-              iter->get_metric()->evaluate_element( *pd, 
-                                                    &pd->element_by_index(i),
-                                                    value, err );
-                                                    MSQ_ERRZERO(err);
-              
+              iter->get_metric()->evaluate( patch, *j, value, err ); MSQ_ERRZERO(err);
               iter->add_hist_value(value);
             }
           }
         }
-        
-           // If dealing with local patches, get next element group (PatchData object)
-        more_mesh=false;
-        if (!global_patch)
-        {
-          more_mesh = pd->get_next_element_patch( err );; 
-          MSQ_ERRZERO(err);
-        }
-      }
-  
-        // Fix up any histogram ranges which were calculated
-      for (iter = assessList.begin(); iter != elem_end; ++iter)
-        if (iter->funcFlags&HISTOGRAM && !iter->haveHistRange)
-          if (first_pass)
-            iter->calculate_histogram_range();
+    }
+    if (MSQ_CHKERR(err)) return 0.0;
+
+      // Fix up any histogram ranges which were calculated
+    for (iter = assessList.begin(); iter != elem_end; ++iter)
+      if (iter->funcFlags&HISTOGRAM && !iter->haveHistRange)
+        if (first_pass)
+          iter->calculate_histogram_range();
 // Uncomment the following to have the QA keep the first
 // calculated histogram range for all subsequent iterations.
 //          else
 //            iter->haveHistRange = true;
-    
-    } while (first_pass && need_second_pass_for_elements);
-  }
+
+  } while (first_pass && need_second_pass_for_elements);
       
     
       // Do vertex-based metrics
   if (assessList.end() != elem_end)
   {
+    vert_patches.get_patch_handles( patches, err ); MSQ_ERRZERO(err);
+    
     bool first_pass = false;
     do { // might need to loop twice to calculate histograms
       first_pass = !first_pass;
      
-        //construct the patch we will send to get_next_patch
-      PatchData* pd;
-      bool more_mesh;
-      size_t start_vtx, end_vtx;
-      if (!global_patch) {
-        pd = &local_patch; 
-        local_patch.reset_iterators();
-        more_mesh = local_patch.get_next_vertex_element_patch( 1, false, start_vtx, err ); MSQ_ERRZERO(err);
-        end_vtx = start_vtx + 1;
-      }
-      else {
-        pd = global_patch;
-        more_mesh = true;
-        start_vtx = 0;
-        end_vtx = pd->num_vertices();
-      }
-      
         //until there are no more patches
         //there is another get_next_patch at
         //the end of this loop
-      while (more_mesh)
-      {
-        for (unsigned i = start_vtx; i < end_vtx; ++i)
-        {
+      for (p = patches.begin(); p != patches.end(); ++p) {
+          vert_patches.get_patch( *p, patch_elems, patch_verts, err ); MSQ_ERRZERO(err);
+          patch.set_mesh_entities( patch_elems, patch_verts, err ); MSQ_ERRZERO(err);
+          Mesh::VertexHandle vert_handle = reinterpret_cast<Mesh::VertexHandle>(*p);
+          MsqVertex* start_vtx = 0;
+          for (unsigned i = 0; i < patch.num_nodes(); ++i)
+            if (patch.get_vertex_handles_array()[i] == vert_handle) {
+              start_vtx = &patch.vertex_by_index(i);
+              break;
+            }
+
           for (iter = elem_end; iter != assessList.end(); ++iter)
           {
               // If first pass, get values for all metrics
             if (first_pass)
             {
-              double value;
-              bool valid = iter->get_metric()->evaluate_vertex( *pd, 
-                                                           &pd->vertex_by_index(i),
-                                                           value, err );
-                                                           MSQ_ERRZERO(err);
-              
-              iter->add_value(value);
-              if (!valid)
-                iter->add_invalid_value();
-                
-              if (iter->write_to_tag()) {
-                Mesh::VertexHandle h = pd->get_vertex_handles_array()[i];
-                TagHandle t = iter->get_tag_handle( mesh, err ); MSQ_ERRZERO(err);
-                mesh->tag_set_vertex_data( t, 1, &h, &value, err ); MSQ_ERRZERO(err);
+              metric_handles.clear();
+              QualityMetric* qm = iter->get_metric();
+              qm->get_evaluations( patch, metric_handles, false, err ); MSQ_ERRZERO(err);
+              for (msq_std::vector<size_t>::iterator j = metric_handles.begin(); 
+                   j != metric_handles.end(); ++j) 
+              {
+                double value;
+                bool valid = iter->get_metric()->evaluate( patch, *j, value, err ); MSQ_ERRZERO(err);
+                iter->add_value(value);
+                if (!valid) 
+                  iter->add_invalid_value();
               }
             }
               // If second pass, only do metrics for which the
               // histogram hasn't been calculated yet.
             else if (iter->funcFlags&HISTOGRAM && !iter->haveHistRange)
             {
-              double value;
-              iter->get_metric()->evaluate_vertex( *pd, 
-                                                   &pd->vertex_by_index(i),
-                                                   value, err );
-                                                   MSQ_ERRZERO(err);
-              
-              iter->add_hist_value(value);
+              metric_handles.clear();
+              QualityMetric* qm = iter->get_metric();
+              qm->get_evaluations( patch, metric_handles, false, err ); MSQ_ERRZERO(err);
+              for (msq_std::vector<size_t>::iterator j = metric_handles.begin(); 
+                   j != metric_handles.end(); ++j) 
+              {
+                double value;
+                iter->get_metric()->evaluate( patch, *j, value, err ); MSQ_ERRZERO(err);
+                iter->add_hist_value(value);
+              }
             }
           }
-        }
-        
-        more_mesh=false;
-        if (!global_patch)
-        {
-          more_mesh = pd->get_next_vertex_element_patch( 1, false, start_vtx, err ); MSQ_ERRZERO(err);
-          end_vtx = start_vtx + 1;
-        }  
       }
+      if (MSQ_CHKERR(err)) return 0.0;
   
         // Fix up any histogram ranges which were calculated
       for (iter = elem_end; iter != assessList.end(); ++iter)

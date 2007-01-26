@@ -39,7 +39,8 @@ Header file for the Mesquite::EdgeLengthQualityMetric class
 #define EdgeLengthQualityMetric_hpp
 
 #include "Mesquite.hpp"
-#include "SmoothnessQualityMetric.hpp"
+#include "AveragingQM.hpp"
+#include "VertexQM.hpp"
 
 namespace Mesquite
 {
@@ -51,32 +52,42 @@ namespace Mesquite
         averages those together, using the specified averaging method
         The metric uses SUM as the default averaging method.
      */
-   class MsqMeshEntity;
-   class MsqVertex;
-   class MsqError;
-   class PatchData;
-   
-  class EdgeLengthQualityMetric : public SmoothnessQualityMetric
+  class EdgeLengthQualityMetric : public VertexQM, public AveragingQM
   {
    public:
     
-    EdgeLengthQualityMetric()
-       {
-         avgMethod=SUM;
-         feasible=0;
-         set_metric_type(QualityMetric::VERTEX_BASED);
-         set_name("Edge Length Metric");
-       }
+    EdgeLengthQualityMetric() : AveragingQM(SUM)
+      {}
     
       // virtual destructor ensures use of polymorphism during destruction
     virtual ~EdgeLengthQualityMetric()
        {}
+      
+    virtual msq_std::string get_name() const;
+    
+    virtual int get_negate_flag() const;
 
+
+    virtual
+    bool evaluate( PatchData& pd, 
+                   size_t vertex, 
+                   double& value, 
+                   MsqError& err );
+
+    virtual
+    bool evaluate_with_indices( PatchData& pd,
+                   size_t vertex,
+                   double& value,
+                   msq_std::vector<size_t>& indices,
+                   MsqError& err );
   
-   protected:
+   private:
    
-    bool evaluate_vertex(PatchData &pd, MsqVertex *vert, double &fval,
-                         MsqError &err);
+    bool evaluate_common( PatchData& pd, 
+                          size_t vertex, 
+                          double& value, 
+                          msq_std::vector<size_t>& vertices,
+                          MsqError& err );
   };
 
 

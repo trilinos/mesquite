@@ -37,8 +37,8 @@ Header file for the Mesquite::VertexConditionNumberQualityMetric class
 #define VertexConditionNumberQualityMetric_hpp
 
 #include "Mesquite.hpp"
-#include "ShapeQualityMetric.hpp"
-
+#include "VertexQM.hpp"
+#include "AveragingQM.hpp"
 
 namespace Mesquite
 {
@@ -51,7 +51,7 @@ namespace Mesquite
        element.  This metric does require a feasible region, and
        the metric needs to be minimized.
      */
-   class VertexConditionNumberQualityMetric : public ShapeQualityMetric
+   class VertexConditionNumberQualityMetric : public VertexQM, public AveragingQM
    {
   public:
      VertexConditionNumberQualityMetric();
@@ -60,10 +60,24 @@ namespace Mesquite
      virtual ~VertexConditionNumberQualityMetric()
         {}
      
-       //! evaluate using mesquite objects 
-     bool evaluate_vertex(PatchData &pd, MsqVertex *vert, double &fval,
-                           MsqError &err); 
-          
+     
+     virtual msq_std::string get_name() const;
+
+      //! 1 if metric should be minimized, -1 if metric should be maximized.
+     virtual int get_negate_flag() const;
+
+     virtual
+     bool evaluate( PatchData& pd, 
+                    size_t handle, 
+                    double& value, 
+                    MsqError& err );
+     
+     virtual
+     bool evaluate_with_indices( PatchData& pd,
+                    size_t handle,
+                    double& value,
+                    msq_std::vector<size_t>& indices,
+                    MsqError& err );
   };
     
    

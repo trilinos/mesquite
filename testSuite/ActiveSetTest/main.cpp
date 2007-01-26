@@ -43,6 +43,8 @@ describe main.cpp here
 // DESCRIP-END.
 //
 
+#include "meshfiles.h"
+
 #ifndef MSQ_USE_OLD_STD_HEADERS
 #include <iostream>
 using std::cout;
@@ -69,7 +71,6 @@ using std::endl;
 
 // algorithms
 #include "ConditionNumberQualityMetric.hpp"
-#include "MaxTemplate.hpp"
 #include "NonSmoothSteepestDescent.hpp"
 
 #include "MeshImpl.hpp"
@@ -80,12 +81,12 @@ int main()
 {     
     /* Reads a Mesh file */
   const char *file_name = 
-//      "../../meshFiles/2D/VTK/equil_tri2.vtk";
-//      "../../meshFiles/2D/VTK/bad_circle_tri_rhr.vtk";
-//      "../../meshFiles/2D/VTK/tri_20258.vtk";
-//      "../../meshFiles/3D/VTK/tet_1.vtk";
-//      "../../meshFiles/3D/VTK/cube_tet_2.vtk";
-     "../../meshFiles/3D/VTK/tire.vtk";
+//      MESH_FILES_DIR "2D/VTK/equil_tri2.vtk";
+//      MESH_FILES_DIR "2D/VTK/bad_circle_tri_rhr.vtk";
+//      MESH_FILES_DIR "2D/VTK/tri_20258.vtk";
+//      MESH_FILES_DIR "3D/VTK/tet_1.vtk";
+//      MESH_FILES_DIR "3D/VTK/cube_tet_2.vtk";
+     MESH_FILES_DIR "3D/VTK/tire.vtk";
   printf("Loading mesh set 1\n");
   MsqPrintError err( cout );
   Mesquite::MeshImpl* mesh = new Mesquite::MeshImpl;
@@ -98,18 +99,11 @@ int main()
 
   // Creates a condition number quality metric 
   //  printf("Creating quality metric\n");
-  ShapeQualityMetric* cond_no = new ConditionNumberQualityMetric;
-
-  // Build an objective function with the quality metric
-  //  printf("min template\n");
-  MaxTemplate obj_func_min(cond_no);
+  ConditionNumberQualityMetric* cond_no = new ConditionNumberQualityMetric;
   
   // Create the NonSmooth Steepest Descent procedures
   //  printf("creating optimizer\n");
-  NonSmoothSteepestDescent minmax_method( &obj_func_min );
-   
-  minmax_method.set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err, 1);
-  if (err) return 1;
+  NonSmoothSteepestDescent minmax_method( cond_no );
 
   // Set a termination criterion
   TerminationCriterion tc2;

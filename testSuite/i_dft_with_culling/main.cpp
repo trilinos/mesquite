@@ -42,6 +42,8 @@ describe main.cpp here
 // DESCRIP-END.
 //
 
+#include "meshfiles.h"
+
 #ifdef MSQ_USE_OLD_IO_HEADERS
 #  include <iostream.h>
 #else
@@ -60,14 +62,15 @@ describe main.cpp here
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
 #include "PlanarDomain.hpp"
+#include "TargetReader.hpp"
+#include "TargetWriter.hpp"
+#include "ReferenceMesh.hpp"
+#include "UnitWeight.hpp"
 
 // algorithms
 #include "I_DFT.hpp"
 #include "I_DFT_NoBarrier.hpp"
 
-#include "sI_DFT.hpp"
-#include "RI_DFT.hpp"
-#include "sRI_DFT.hpp"
 #include "ConcreteTargetCalculators.hpp"
 #include "LPtoPTemplate.hpp"
 #include "FeasibleNewton.hpp"
@@ -78,58 +81,57 @@ int main()
 {
   Mesquite::MsqPrintError err(cout);
 
-  Mesquite::MeshImpl *ini_mesh = new Mesquite::MeshImpl;
-  ini_mesh->read_vtk("../../meshFiles/2D/VTK/equil_tri2.vtk", err);
+  Mesquite::MeshImpl ini_mesh;
+  ini_mesh.read_vtk(MESH_FILES_DIR "2D/VTK/equil_tri2.vtk", err);
 
   Vector3D pnt(0,0,0);
   Vector3D s_norm(0,0,1);
-  PlanarDomain* msq_geom = new PlanarDomain(s_norm, pnt);
+  PlanarDomain msq_geom(s_norm, pnt);
 
   // creates an intruction queue
   InstructionQueue queue1;
 
   // creates a DFT measure ...
-  I_DFT mu;
-//  mu.set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
-//   mu.set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
-   mu.set_averaging_method(QualityMetric::LINEAR, err); 
-  if (err) return 1;
+  TargetReader reader(true);
+  UnitWeight weights;
+  I_DFT mu( &reader, &weights );
  
-  Mesquite::MeshImpl *ref_mesh = new Mesquite::MeshImpl;
-  ref_mesh->read_vtk("../../meshFiles/2D/VTK/equil_tri2.vtk", err);
-  DeformingDomainGuides843 target( ref_mesh, msq_geom );
-  queue1.add_target_calculator( &target, err );
+  Mesquite::MeshImpl ref_mesh;
+  ref_mesh.read_vtk(MESH_FILES_DIR "2D/VTK/equil_tri2.vtk", err);
+  Mesquite::ReferenceMesh rm(&ref_mesh);
+  DeformingDomainGuides843 target( &rm );
+  TargetWriter writer( DistanceFromTarget::get_dft_sample_pts(), &target );
+  queue1.add_target_calculator( &writer, err );
   if (err) return 1;
  
   // ... and builds an objective function with it
-  LPtoPTemplate* obj_func = new LPtoPTemplate(&mu, 1, err);
-  obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
+  LPtoPTemplate obj_func(&mu, 1, err);
 
   // creates the steepest descentfeas newt optimization procedures
   //FeasibleNewton* pass1 = new FeasibleNewton( obj_func );
-  ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
-  pass1->set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err,1,1);
+  ConjugateGradient pass1( &obj_func, err );
+  pass1.use_element_on_vertex_patch();
 
   // **************Set stopping criterion****************
   TerminationCriterion tc_inner;
   tc_inner.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
     //tc_inner.add_criterion_type_with_double(TerminationCriterion::VERTEX_MOVEMENT_ABSOLUTE,.001,err);
   tc_inner.set_culling_type(TerminationCriterion::VERTEX_MOVEMENT_ABSOLUTE,1,err);
-  pass1->set_inner_termination_criterion(&tc_inner);
+  pass1.set_inner_termination_criterion(&tc_inner);
    
   TerminationCriterion tc_outer;
   tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,50,err);
-  pass1->set_outer_termination_criterion(&tc_outer);
+  pass1.set_outer_termination_criterion(&tc_outer);
 
   // adds 1 pass of pass1 to mesh_set1
-  queue1.set_master_quality_improver(pass1, err); 
+  queue1.set_master_quality_improver(&pass1, err); 
   if (err) return 1;
 
   // launches optimization on Lagrange mesh
-  queue1.run_instructions(ini_mesh, msq_geom, err); 
+  queue1.run_instructions(&ini_mesh, &msq_geom, err); 
   if (err) return 1;
  
-  ini_mesh->write_vtk("smo_mesh.vtk",err);
+  ini_mesh.write_vtk("smo_mesh.vtk",err);
   if (err) return 1;
     //ini_mesh->write_exodus("smo_mesh.exo", err); 
     //if (err) return 1;

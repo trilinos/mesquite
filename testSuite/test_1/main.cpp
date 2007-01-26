@@ -42,6 +42,8 @@ describe main.cpp here
 // DESCRIP-END.
 //
 
+#include "meshfiles.h"
+
 #ifndef MSQ_USE_OLD_IO_HEADERS
 #include <iostream>
 using std::cout;
@@ -83,7 +85,7 @@ void usage()
 int main(int argc, char* argv[])
 {
   Mesquite::MsqPrintError err(cout);
-  const char* file_name = "../../meshFiles/3D/VTK/large_box_hex_1000.vtk";
+  const char* file_name = MESH_FILES_DIR "3D/VTK/large_box_hex_1000.vtk";
   double OF_value = 0.;
   
   
@@ -117,22 +119,20 @@ int main(int argc, char* argv[])
 
   // creates a mean ratio quality metric ...
 //   SmoothnessQualityMetric* mean_ratio = new EdgeLengthQualityMetric;
-  ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);
+  IdealWeightInverseMeanRatio* mean_ratio = new IdealWeightInverseMeanRatio(err);
   if (err) return 1;
 //  mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
 //   mean_ratio->set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
-  mean_ratio->set_averaging_method(QualityMetric::SUM, err); 
-  if (err) return 1;
+  mean_ratio->set_averaging_method(QualityMetric::SUM); 
   
   // ... and builds an objective function with it
   LPtoPTemplate* obj_func = new LPtoPTemplate(mean_ratio, 1, err);
     if (err) return 1;
-  obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
   
   // creates the steepest descentfeas newt optimization procedures
 //  ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
-  FeasibleNewton* pass1 = new FeasibleNewton( obj_func );
-  pass1->set_patch_type(PatchData::GLOBAL_PATCH, err);
+  FeasibleNewton* pass1 = new FeasibleNewton( obj_func, true );
+  pass1->use_global_patch();
     if (err) return 1;
   
   QualityAssessor stop_qa=QualityAssessor(mean_ratio,QualityAssessor::AVERAGE, err);

@@ -41,7 +41,8 @@ Header file for the Mesquite::IdealWeightMeanRatio class
 
 #include "Mesquite.hpp"
 #include "MsqError.hpp"
-#include "ShapeQualityMetric.hpp"
+#include "ElementQM.hpp"
+#include "AveragingQM.hpp"
 #include "Vector3D.hpp"
 #include "Matrix3D.hpp"
 #include "Exponent.hpp"
@@ -58,51 +59,52 @@ namespace Mesquite
      It does require a feasible region, and the metric needs
      to be maximized.
    */
-   class IdealWeightMeanRatio : public ShapeQualityMetric
+   class IdealWeightMeanRatio : public ElementQM, public AveragingQM
    {
    public:
  
      MESQUITE_EXPORT IdealWeightMeanRatio()
-      : a2Con(2.0), 
+      : AveragingQM( QualityMetric::LINEAR ),
+        a2Con(2.0), 
         b2Con(-1.0), 
         c2Con(1.0),
         a3Con(3.0),
         b3Con(-1.0),
         c3Con(2.0/3.0)
-     {
-       set_metric_type(ELEMENT_BASED);
-       set_negate_flag(-1);
-       set_gradient_type(ANALYTICAL_GRADIENT);
-       set_hessian_type(ANALYTICAL_HESSIAN);
-       avgMethod=QualityMetric::LINEAR;
-       feasible=1;
-       set_name("Mean Ratio");
-     }
+      { }
      
      //! virtual destructor ensures use of polymorphism during destruction
      MESQUITE_EXPORT virtual ~IdealWeightMeanRatio() {
      }
      
-     //! evaluate using mesquite objects 
-     MESQUITE_EXPORT bool evaluate_element(PatchData &pd, MsqMeshEntity *element,
-                           double &fval, MsqError &err); 
-          
-     MESQUITE_EXPORT bool compute_element_analytical_gradient(PatchData &pd,
-                                               MsqMeshEntity *element,
-                                               MsqVertex *free_vtces[], 
-                                               Vector3D grad_vec[],
-                                               int num_vtx, 
-                                               double &metric_value,
-                                               MsqError &err);
+     
+     virtual msq_std::string get_name() const;
 
-     MESQUITE_EXPORT bool compute_element_analytical_hessian(PatchData &pd,
-                                              MsqMeshEntity *e,
-                                              MsqVertex *v[], 
-                                              Vector3D g[],
-                                              Matrix3D h[],
-                                              int nv, 
-                                              double &m,
-                                              MsqError &err);
+      //! 1 if metric should be minimized, -1 if metric should be maximized.
+     virtual int get_negate_flag() const;
+
+     virtual
+     bool evaluate( PatchData& pd, 
+                    size_t handle, 
+                    double& value, 
+                    MsqError& err );
+      
+     virtual
+     bool evaluate_with_gradient( PatchData& pd,
+                    size_t handle,
+                    double& value,
+                    msq_std::vector<size_t>& indices,
+                    msq_std::vector<Vector3D>& gradient,
+                    MsqError& err );
+
+     virtual
+     bool evaluate_with_Hessian( PatchData& pd,
+                    size_t handle,
+                    double& value,
+                    msq_std::vector<size_t>& indices,
+                    msq_std::vector<Vector3D>& gradient,
+                    msq_std::vector<Matrix3D>& Hessian,
+                    MsqError& err );
 
     private:
       // arrays used in Hessian computations 
@@ -120,7 +122,6 @@ namespace Mesquite
       const double a3Con;
       const Exponent b3Con;
       const Exponent c3Con;
-
    };
 } //namespace
 

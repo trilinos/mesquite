@@ -40,11 +40,8 @@ Header file for the Mesquite::LocalSizeQualityMetric class
 
 
 #include "Mesquite.hpp"
-#include "VolumeQualityMetric.hpp"
-#include "Vector3D.hpp"
-#include "PatchData.hpp"
-#include "MsqMeshEntity.hpp"
-
+#include "VertexQM.hpp"
+#include "AveragingQM.hpp"
 
 namespace Mesquite
 {
@@ -56,73 +53,32 @@ namespace Mesquite
         to a given element.  Then these volumes (or areas) are averaged
         together.  The default averaging method is QualityMetric::RMS.
      */
-   class MsqVertex;
-   
-   class LocalSizeQualityMetric : public VolumeQualityMetric
+   class LocalSizeQualityMetric : public VertexQM, public AveragingQM
    {
   public:
         //Default constructor. 
-      LocalSizeQualityMetric()
-       {
-         avgMethod=RMS;
-         feasible=0;
-         set_metric_type(QualityMetric::VERTEX_BASED);
-         set_name("Local Size Quality Metric");
-       }
+      LocalSizeQualityMetric() : AveragingQM(RMS) {}
 
        // virtual destructor ensures use of polymorphism during destruction
-     virtual ~LocalSizeQualityMetric()
-        {}
+     virtual ~LocalSizeQualityMetric();
      
+     virtual msq_std::string get_name() const;
      
-  protected:
-       //!For the given vertex, vert, calculate the local size metric value.
-     bool evaluate_vertex(PatchData &pd, MsqVertex *vert, double &fval,
-                          MsqError &err);
-
-  private:
-       //!Calculate the area of the triangle formed by the three vertices.
-     inline double compute_corner_area(PatchData &pd, size_t vert_1,
-                                       size_t vert_2, size_t vert_3,
-                                       MsqError &err);
+     virtual int get_negate_flag() const;
      
-       //!Calculate the volume of the tetrahedron formed by the four vertices.
-     inline double compute_corner_volume(PatchData &pd, size_t vert_1,
-                                         size_t vert_2, size_t vert_3,
-                                         size_t vert_4, MsqError &err);
-         
+     virtual
+     bool evaluate( PatchData& pd, 
+                    size_t handle, 
+                    double& value, 
+                    MsqError& err );
+     
+     virtual
+     bool evaluate_with_indices( PatchData& pd,
+                                 size_t handle,
+                                 double& value,
+                                 msq_std::vector<size_t>& indices,
+                                 MsqError& err );
   };
-
-   //!Calculate the area of the triangle formed by the three vertices.
-   inline double LocalSizeQualityMetric::compute_corner_area(PatchData &pd,
-                                                             size_t vert_1,
-                                                             size_t vert_2,
-                                                             size_t vert_3,
-                                                             MsqError &err)
-   {
-     MsqVertex* verts = pd.get_vertex_array(err);
-     Vector3D vec_1=verts[vert_2]-verts[vert_1];
-     Vector3D vec_2=verts[vert_3]-verts[vert_1];
-     Vector3D cross_vec=vec_1*vec_2;
-     return (cross_vec.length()/2.0);
-   }
-   
-   //!Calculate the volume of the tetrahedron formed by the four vertices.
-   inline double LocalSizeQualityMetric::compute_corner_volume(PatchData &pd,
-                                                               size_t vert_1,
-                                                               size_t vert_2,
-                                                               size_t vert_3,
-                                                               size_t vert_4,
-                                                               MsqError &err)
-   {
-     MsqVertex* verts = pd.get_vertex_array(err);
-     Vector3D vec_1=verts[vert_2]-verts[vert_1];
-     Vector3D vec_2=verts[vert_3]-verts[vert_1];
-     Vector3D vec_3=verts[vert_4]-verts[vert_1];
-     return fabs((vec_3%(vec_1*vec_2))/6.0);
-     
-   }  
-
 
 } //namespace
 

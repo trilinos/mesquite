@@ -42,17 +42,12 @@
 
 namespace Mesquite {
 
+msq_std::string LaplacianSmoother::get_name() const { return "LaplacianSmoother"; }
 
 LaplacianSmoother::LaplacianSmoother(MsqError &err) 
+ : LaplacianCommon( objFunc = new LPtoPTemplate(edgeQM = new EdgeLengthQualityMetric, 2, err) )
 {
-  this->set_name("LaplacianSmoother");
-  
-  set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err,1,1);MSQ_ERRRTN(err);
-
-  edgeQM = new EdgeLengthQualityMetric;
-  edgeQM->set_averaging_method(QualityMetric::RMS,err);MSQ_ERRRTN(err);
-  objFunc = new LPtoPTemplate(edgeQM, 2, err);MSQ_ERRRTN(err);
-  
+  edgeQM->set_averaging_method(QualityMetric::RMS);
 }  
 
 LaplacianSmoother::~LaplacianSmoother() 
@@ -89,7 +84,7 @@ void LaplacianSmoother::optimize_vertex_positions(PatchData &pd,
   
   
   // does the Laplacian smoothing
-  MsqFreeVertexIndexIterator free_iter(&pd, err);  MSQ_ERRRTN(err);
+  MsqFreeVertexIndexIterator free_iter(pd, err);  MSQ_ERRRTN(err);
   free_iter.reset();
   if (!free_iter.next())
     return; // no free vertices !!!!

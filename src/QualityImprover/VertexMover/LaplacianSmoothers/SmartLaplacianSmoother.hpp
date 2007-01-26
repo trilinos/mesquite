@@ -40,23 +40,26 @@
 #define Mesquite_SmartLaplacianSmoother_hpp
 
 #include "Mesquite.hpp"
-#include "VertexMover.hpp"
+#include "LaplacianCommon.hpp"
 
 namespace Mesquite
 {
   class MsqError;
   class PatchData;
   class ObjectiveFunction;
+  class QualityMetric;
 
   /*! \class SmartLaplacianSmoother
     Moves free center vertex to the average of the neighboring vertices if
     that move does not decrease the given objective function value.
    */  
-  class SmartLaplacianSmoother : public VertexMover 
+  class SmartLaplacianSmoother : public LaplacianCommon 
   {
   public:
-    MESQUITE_EXPORT SmartLaplacianSmoother(ObjectiveFunction *obj_func, MsqError &err);
+    MESQUITE_EXPORT SmartLaplacianSmoother(ObjectiveFunction *obj_func, 
+                                           MsqError &err);
     MESQUITE_EXPORT ~SmartLaplacianSmoother();
+    virtual msq_std::string get_name() const;
   protected:
     virtual void initialize(PatchData &pd, MsqError &err);
     virtual void optimize_vertex_positions(PatchData &pd,

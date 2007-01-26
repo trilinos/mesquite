@@ -38,46 +38,45 @@ Header file for the Mesquite::ConcreteTargetCalculator class
 #define ConcreteTargetCalculators_hpp
 
 #include "Mesquite.hpp"
-#include "TargetCalculator.hpp"
+#include "RefMeshCornerTarget.hpp"
+#include "DefaultCornerTarget.hpp"
 #include "LVQDTargetCalculator.hpp"
-#include "WTargetCalculator.hpp"
 
 namespace Mesquite
 {
+    // Use base class to force initialization of RefMeshCornerTarget
+    // before LVQD.
+  struct RefMeshConcreteCornerCalculator 
+  {
+      RefMeshConcreteCornerCalculator( ReferenceMeshInterface* ref_mesh )
+        : refTarget( ref_mesh ) {}
+      RefMeshCornerTarget refTarget;
+  };
+
+    // Use base class to force initialization of DefaultCornerTarget
+    // before LVQD.
+  struct DefaultConcreteCornerCalculator 
+  {
+      DefaultCornerTarget defTarget;
+  };
+      
   /*! \class ShapeGuides811
     \brief Shape Improvement with Unit Aspect Ratio. Use with sR-DFT
   */
-  class ShapeGuides811 : public WTargetCalculator
-  {
-  public:
-    ShapeGuides811()
-    {
-      guideMatrix = Ad;
-    }      
-
-    //! virtual destructor ensures use of polymorphism during destruction
-    virtual ~ShapeGuides811()
-      {};
-  };
+  typedef DefaultCornerTarget ShapeGuides811;
 
   /*! \class ShapeGuides812
     \brief  Shape Improvement with non-Unit Aspect Ratio. Use with sR-DFT.
   */
-  class ShapeGuides812 : public LVQDTargetCalculator
+  class ShapeGuides812 : private DefaultConcreteCornerCalculator,
+                         private RefMeshConcreteCornerCalculator,
+                         public LVQDTargetCalculator
   {
   public:
-    ShapeGuides812(Mesh* ref_mesh, MeshDomain* ref_mesh_domain = 0)
-    {
-      refMesh = ref_mesh;
-      refDomain = ref_mesh_domain;
-      lambdaBase = REGULAR; 
-      guideLambda = Ad;
-      guideV = Ad;
-      guideQ = Ad;
-      guideDelta = A0;
-    }
-    
-      //! virtual destructor ensures use of polymorphism during destruction
+    ShapeGuides812( ReferenceMeshInterface* ref_mesh )
+      : RefMeshConcreteCornerCalculator( ref_mesh ),
+        LVQDTargetCalculator( &defTarget, &defTarget, &defTarget, &refTarget )
+      {}
     virtual ~ShapeGuides812()
       {};
   };
@@ -86,7 +85,7 @@ namespace Mesquite
   /*! \class ShapeSizeGuides821
     \brief  Shape and Size Improvement with Unit Aspect Ratio and Equidistributed Size. Use with R-DFT.
   */
-  class ShapeSizeGuides821 : public LVQDTargetCalculator
+/*  class ShapeSizeGuides821 : public LVQDTargetCalculator
   {
   public:
     ShapeSizeGuides821(Mesh* ref_mesh, MeshDomain* ref_mesh_domain = 0)
@@ -104,26 +103,21 @@ namespace Mesquite
     virtual ~ShapeSizeGuides821()
       {};
   };
+*/
 
 
   /*! \class ShapeSizeGuides822
     \brief  Shape and Size Improvement with Unit Aspect Ratio and Preserved Size. Use with R-DFT.
   */
-  class ShapeSizeGuides822 : public LVQDTargetCalculator
+  class ShapeSizeGuides822 : private DefaultConcreteCornerCalculator,
+                             private RefMeshConcreteCornerCalculator,
+                             public LVQDTargetCalculator
   {
   public:
-    ShapeSizeGuides822(Mesh* ref_mesh, MeshDomain* ref_mesh_domain = 0)
-    {
-      refMesh = ref_mesh;
-      refDomain = ref_mesh_domain;
-      lambdaBase = REGULAR; 
-      guideLambda = A0;
-      guideV = Ad;
-      guideQ = Ad;
-      guideDelta = Ad;
-    }
-    
-      //! virtual destructor ensures use of polymorphism during destruction
+    ShapeSizeGuides822( ReferenceMeshInterface* ref_mesh )
+      : RefMeshConcreteCornerCalculator( ref_mesh ),
+        LVQDTargetCalculator( &refTarget, &defTarget, &defTarget, &defTarget )
+      {}
     virtual ~ShapeSizeGuides822()
       {};
   };
@@ -131,7 +125,7 @@ namespace Mesquite
   /*! \class ShapeSizeGuides823
     \brief  Shape and Size Improvement with non-Unit Aspect Ratio and Equidistributed Size. Use with R-DFT.
   */
-  class ShapeSizeGuides823 : public LVQDTargetCalculator
+/*  class ShapeSizeGuides823 : public LVQDTargetCalculator
   {
   public:
     ShapeSizeGuides823(Mesh* ref_mesh, MeshDomain* ref_mesh_domain = 0)
@@ -149,26 +143,20 @@ namespace Mesquite
     virtual ~ShapeSizeGuides823()
       {};
   };
-
+*/
 
   /*! \class ShapeSizeGuides824
     \brief  Shape and Size Improvement with non-Unit Aspect Ratio and Preserved Size. Use with R-DFT.
   */
-  class ShapeSizeGuides824 : public LVQDTargetCalculator
+  class ShapeSizeGuides824 : private DefaultConcreteCornerCalculator,
+                             private RefMeshConcreteCornerCalculator,
+                             public LVQDTargetCalculator
   {
   public:
-    ShapeSizeGuides824(Mesh* ref_mesh, MeshDomain* ref_mesh_domain = 0)
-    {
-      refMesh = ref_mesh;
-      refDomain = ref_mesh_domain;
-      lambdaBase = REGULAR; 
-      guideLambda = A0;
-      guideV = Ad;
-      guideQ = Ad;
-      guideDelta = A0;
-    }
-    
-      //! virtual destructor ensures use of polymorphism during destruction
+    ShapeSizeGuides824( ReferenceMeshInterface* ref_mesh )
+      : RefMeshConcreteCornerCalculator( ref_mesh ),
+        LVQDTargetCalculator( &refTarget, &defTarget, &defTarget, &refTarget )
+      {}
     virtual ~ShapeSizeGuides824()
       {};
   };
@@ -179,21 +167,15 @@ namespace Mesquite
   /*! \class RezoneGuides832
     \brief  Rezone with Angle Improvement. Use with I-DFT.
   */
-  class RezoneGuides832 : public LVQDTargetCalculator
+  class RezoneGuides832 : private DefaultConcreteCornerCalculator,
+                          private RefMeshConcreteCornerCalculator,
+                          public LVQDTargetCalculator
   {
   public:
-    RezoneGuides832(Mesh* ref_mesh, MeshDomain* ref_mesh_domain = 0)
-    {
-      refMesh = ref_mesh;
-      refDomain = ref_mesh_domain;
-      lambdaBase = REGULAR; 
-      guideLambda = A0;
-      guideV = A0;
-      guideQ = Ad;
-      guideDelta = A0;
-    }
-    
-      //! virtual destructor ensures use of polymorphism during destruction
+    RezoneGuides832( ReferenceMeshInterface* ref_mesh )
+      : RefMeshConcreteCornerCalculator( ref_mesh ),
+        LVQDTargetCalculator( &refTarget, &refTarget, &defTarget, &defTarget )
+      {}
     virtual ~RezoneGuides832()
       {};
   };
@@ -205,41 +187,22 @@ namespace Mesquite
   /*! \class DeformingDomainGuides841
     \brief Deforming Domain Mesh Tracking. Use with I-DFT or R-DFT
   */
-  class DeformingDomainGuides841 : public WTargetCalculator
-  {
-  public:
-    DeformingDomainGuides841(Mesh* ref_mesh, MeshDomain* ref_mesh_domain = 0)
-    {
-      refMesh = ref_mesh;
-      refDomain = ref_mesh_domain;
-      guideMatrix = Ar;
-    }      
-
-    //! virtual destructor ensures use of polymorphism during destruction
-    virtual ~DeformingDomainGuides841()
-      {};
-  };
+  typedef RefMeshCornerTarget DeformingDomainGuides841;
 
   /*! \class DeformingDomainGuides842 */
 
   /*! \class DeformingDomainGuides843
     \brief  Deforming Domain with Angle Improvement. Use with I-DFT or R-DFT.
   */
-  class DeformingDomainGuides843 : public LVQDTargetCalculator
+  class DeformingDomainGuides843 : private DefaultConcreteCornerCalculator,
+                                   private RefMeshConcreteCornerCalculator,
+                                   public LVQDTargetCalculator
   {
   public:
-    DeformingDomainGuides843(Mesh* ref_mesh, MeshDomain* ref_mesh_domain = 0)
-    {
-      refMesh = ref_mesh;
-      refDomain = ref_mesh_domain;
-      lambdaBase = REGULAR; 
-      guideLambda = Ar;
-      guideV = Ar;
-      guideQ = Ad;
-      guideDelta = Ar;
-    }
-    
-      //! virtual destructor ensures use of polymorphism during destruction
+    DeformingDomainGuides843( ReferenceMeshInterface* ref_mesh )
+      : RefMeshConcreteCornerCalculator( ref_mesh ),
+        LVQDTargetCalculator( &refTarget, &refTarget, &defTarget, &refTarget )
+      { }
     virtual ~DeformingDomainGuides843()
       {};
   };
@@ -249,7 +212,7 @@ namespace Mesquite
     \brief  Deforming Domain with Angle Improvement, non-Unit AR. 
             Use with R-DFT.
   */
-  class DeformingDomainGuides844 : public LVQDTargetCalculator
+/*  class DeformingDomainGuides844 : public LVQDTargetCalculator
   {
   public:
     DeformingDomainGuides844(Mesh* ref_mesh, MeshDomain* ref_mesh_domain = 0)
@@ -266,7 +229,8 @@ namespace Mesquite
       //! virtual destructor ensures use of polymorphism during destruction
     virtual ~DeformingDomainGuides844()
       {};
-  };
+  }; 
+*/
   /*! \class MorphGuides851 */
 
   /*! \class MorphGuides852 */

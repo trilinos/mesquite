@@ -37,7 +37,7 @@
 namespace Mesquite
 {
 
-FileTokenizer::FileTokenizer( FILE* file_ptr )
+FileTokenizer::FileTokenizer( msq_stdc::FILE* file_ptr )
   : filePtr( file_ptr ),
     nextToken( buffer ),
     bufferEnd( buffer ),

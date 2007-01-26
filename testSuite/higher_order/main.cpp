@@ -42,6 +42,7 @@ describe main.cpp here
  */
 // DESCRIP-END.
 //
+
 #ifndef MSQ_USE_OLD_IO_HEADERS
 #include <iostream>
 using std::cout;
@@ -112,10 +113,10 @@ using namespace Mesquite;
 */
 
 
-const char LINEAR_INPUT_FILE_NAME[]       = "linear_input.vtk";
-const char QUADRATIC_INPUT_FILE_NAME[]    = "quadratic_input.vtk";
-const char EXPECTED_LINAR_FILE_NAME[]     = "expected_linear_output.vtk";
-const char EXPECTED_QUADRATIC_FILE_NAME[] = "expected_quadratic_output.vtk";
+const char LINEAR_INPUT_FILE_NAME[]       = SRCDIR "linear_input.vtk";
+const char QUADRATIC_INPUT_FILE_NAME[]    = SRCDIR "quadratic_input.vtk";
+const char EXPECTED_LINAR_FILE_NAME[]     = SRCDIR "expected_linear_output.vtk";
+const char EXPECTED_QUADRATIC_FILE_NAME[] = SRCDIR "expected_quadratic_output.vtk";
 const char OUTPUT_FILE_NAME[]             = "smoothed_qudratic_mesh.vtk";
 const unsigned NUM_CORNER_VERTICES = 16;
 const unsigned NUM_MID_NODES = 24;
@@ -226,10 +227,10 @@ InstructionQueue* create_instruction_queue(MsqError& err)
   
   // creates the optimization procedures
 //   ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
-  FeasibleNewton* pass1 = new FeasibleNewton( obj_func );
+  FeasibleNewton* pass1 = new FeasibleNewton( obj_func, true );
 
   //perform optimization globally
-  pass1->set_patch_type(PatchData::GLOBAL_PATCH, err,1 ,1); MSQ_ERRZERO(err);
+  pass1->use_global_patch();
   
   //QualityAssessor* mean_qa = new QualityAssessor(mean,QualityAssessor::AVERAGE);
 
@@ -238,7 +239,7 @@ InstructionQueue* create_instruction_queue(MsqError& err)
   //perform 1 pass of the outer loop (this line isn't essential as it is
   //the default behavior).
   TerminationCriterion* tc_outer = new TerminationCriterion;
-  tc_outer->add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES, 1000, err);  MSQ_ERRZERO(err);
+  tc_outer->add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES, 1, err);  MSQ_ERRZERO(err);
   pass1->set_outer_termination_criterion(tc_outer);
   
   //perform the inner loop until a certain objective function value is
@@ -303,7 +304,11 @@ int main()
   if (MSQ_CHKERR(err)) return 1;
   cout << "Checking results" << endl;
   compare_nodes( 0, NUM_CORNER_VERTICES, linear_in, linear_ex, err );
-  if (MSQ_CHKERR(err)) return 1;
+  if (MSQ_CHKERR(err)) {
+    MsqError tmperr;
+    quadratic_ex->write_vtk("bad_mesh.vtk", tmperr);
+    return 1;
+  }
   delete q1;
   
     // Smooth only corner vertices of quadratic mesh and check results
@@ -320,7 +325,11 @@ int main()
     // Make sure mid-side vertices are unchanged.
   compare_nodes( NUM_CORNER_VERTICES, NUM_CORNER_VERTICES + NUM_MID_NODES,
                 quadratic_in_1, quadratic_in_2, err );
-  if (MSQ_CHKERR(err)) return 1;
+  if (MSQ_CHKERR(err)) {
+    MsqError tmperr;
+    quadratic_ex->write_vtk("bad_mesh.vtk", tmperr);
+    return 1;
+  }
   delete q2;
   
     // Smooth corner vertices and adjust mid-side nodes
@@ -337,10 +346,13 @@ int main()
     // Make sure mid-side vertices are updated correctly
   compare_nodes( NUM_CORNER_VERTICES, NUM_CORNER_VERTICES + NUM_MID_NODES,
                 quadratic_in_2, quadratic_ex, err );
-  if (MSQ_CHKERR(err)) return 1;
+  if (MSQ_CHKERR(err)) {
+    MsqError tmperr;
+    quadratic_ex->write_vtk("bad_mesh.vtk", tmperr);
+    return 1;
+  }
   delete q3;
   
-  quadratic_ex->write_vtk("smoothed_mesh.vtk", err); 
   if (MSQ_CHKERR(err)) return 1;
   return 0;
 }

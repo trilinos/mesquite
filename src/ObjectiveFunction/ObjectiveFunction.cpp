@@ -37,9 +37,113 @@
 #include "ObjectiveFunction.hpp"
 #include "MsqVertex.hpp"
 #include "MsqDebug.hpp"
-#include "MsqFreeVertexIndexIterator.hpp"
+#include "PatchData.hpp"
+#include "MsqError.hpp"
 
 namespace Mesquite {
+
+
+
+/*!Returns an appropiate value (eps) to use as a delta step for
+  MsqVertex vertex in dimension k (i.e. k=0 -> x, k=1 -> y, k=2 -> z).
+  The objective function value at the perturbed vertex position is given
+  in local_val.
+*/
+double ObjectiveFunction::get_eps( PatchData &pd, 
+                                   EvalType type,
+                                   double &local_val,
+                                   int dim,
+                                   MsqVertex* vertex, 
+                                   MsqError& err)
+{
+  double eps = 1.e-07;
+  const double rho = 0.5;
+  const int imax = 20;
+  bool feasible = false;
+  double tmp_var = 0.0;
+  for (int i = 0; i < imax; ++i)
+  {
+    //perturb kth coord val and check feas if needed
+    tmp_var=(*vertex)[dim];
+    (*vertex)[dim]+=eps;
+    feasible = evaluate( type, pd, local_val, OF_FREE_EVALS_ONLY, err ); MSQ_ERRZERO(err);
+    //revert kth coord val
+    (*vertex)[dim]=tmp_var;
+    //if step was too big, shorten it and go again
+    if (feasible)
+      return eps;
+    else
+      eps *= rho;
+  }//end while looking for feasible eps
+  return 0.0;
+}//end function get_eps
+
+bool ObjectiveFunction::compute_subpatch_numerical_gradient(
+                                 EvalType type,
+                                 EvalType subtype,
+                                 PatchData& pd,
+                                 double& flocal,
+                                 Vector3D& grad,
+                                 MsqError& err )
+{
+  assert( pd.num_free_vertices() == 1 );
+  
+  MsqVertex& vertex = pd.vertex_by_index(0);
+  double flocald=0;
+  double eps=0;
+  
+  bool b = evaluate( type, pd, flocal, OF_FREE_EVALS_ONLY, err );
+  if(MSQ_CHKERR(err) || !b) {
+    return false;
+  }
+
+    //loop over the three coords x,y,z
+  for(int j=0; j<3; ++j) {
+    eps = get_eps( pd, subtype, flocald, j, &vertex, err ); MSQ_ERRZERO(err);
+    if (eps==0) {
+      MSQ_SETERR(err)("Dividing by zero in Objective Functions numerical grad",
+                      MsqError::INVALID_STATE);
+      return false;
+    }
+    grad[j]=(flocald-flocal)/eps;
+  }
+  return true;
+}
+
+bool ObjectiveFunction::compute_patch_numerical_gradient(  EvalType type,
+                                                           EvalType subtype,
+                                                           PatchData& pd,
+                                                           double& flocal,
+                                                           msq_std::vector<Vector3D>& grad,
+                                                           MsqError& err )
+{
+  double flocald=0;
+  double eps=0;
+  
+  bool b = evaluate( type, pd, flocal, OF_FREE_EVALS_ONLY, err );
+  if(MSQ_CHKERR(err) || !b) {
+    return false;
+  }
+
+  for (size_t i = 0; i < pd.num_free_vertices(); ++i) {
+    MsqVertex& vertex = pd.vertex_by_index(i);
+
+      //loop over the three coords x,y,z
+    for(int j=0; j<3; ++j) {
+      eps = get_eps( pd, subtype, flocald, j, &vertex, err ); MSQ_ERRZERO(err);
+      if (eps==0) {
+        MSQ_SETERR(err)("Dividing by zero in Objective Functions numerical grad",
+                        MsqError::INVALID_STATE);
+        return false;
+      }
+      grad[i][j]=(flocald-flocal)/eps;
+    }
+  }
+  
+  return true;
+}
+  
+
 
 /*! 
   Numerically Calculates the gradient of the ObjectiveFunction for the
@@ -60,114 +164,79 @@ namespace Mesquite {
   \param pd  PatchData on which the gradient is taken.
   \param grad  Array of Vector3D of length the number of vertices used to store gradient.
   \param OF_val will be set to the objective function value.
-  \param array_size Either the length of grad or 0.
  */
-bool ObjectiveFunction::compute_numerical_gradient(Mesquite::PatchData &pd,
-                                                   Vector3D *const &grad,
-                                                   double &OF_val,
-                                                   MsqError &err,
-                                                   size_t array_size)
+bool ObjectiveFunction::evaluate_with_gradient( EvalType eval_type,
+                                                PatchData &pd,
+                                                double& OF_val,
+                                                msq_std::vector<Vector3D>& grad,
+                                                MsqError &err )
 {
-  size_t num_vtx=pd.num_vertices();
-  if(num_vtx!=array_size && array_size>0)
-    MSQ_DBGOUT(1) << "\nArray size not equal to the number of vertices.\n";
-
-  OF_val = 0.; // in case of return false. 
-  MsqVertex* vertices=pd.get_vertex_array(err);
-  double flocal=0;
-  double flocald=0;
-  double eps=0;
-  size_t m=0;
-  short j;
+  bool b;
+  grad.resize( pd.num_free_vertices() );
   
-  if(useLocalGradient){
-    //********************useLocalGradient***************************
-    //if useLocalGradient is turned on, do more efficient computation
-    PatchData sub_patch;
-    for (m=0; m<num_vtx; ++m) {
-      if (vertices[m].is_free_vertex()) {
-        pd.get_subpatch(m, sub_patch, err); MSQ_ERRZERO(err);
-        //If sub_patch is not in the feasible region, do not
-        //calculate anything.  Just return false.
-        bool b = evaluate(sub_patch,flocal,err);
-        if(MSQ_CHKERR(err) || !b) {
-          return false;
-        }
-
-        //loop over the three coords x,y,z
-        for(j=0;j<3;++j){
-          eps=get_eps(sub_patch, flocald, j, (&vertices[m]), err); MSQ_ERRZERO(err);
-          //PRINT_INFO("\nin obj num grad j=%i, eps=%20.19f",j,eps);
-          if(eps==0){
-            MSQ_SETERR(err)("Dividing by zero in Objective Functions numerical grad",
-                            MsqError::INVALID_STATE);
-            return false;
-          }
-          grad[m][j]=(flocald-flocal)/eps;
-        }
-      }
-      else {
-        for(j=0;j<3;++j)
-          grad[m][j] = 0.0;
-      }
-    }
-    evaluate(pd, OF_val, err);  MSQ_ERRZERO(err);
+    // Fast path for single-free-vertex patch
+  if (pd.num_free_vertices() == 1) {
+    const EvalType sub_type = (eval_type == CALCULATE) ? CALCULATE : TEMPORARY;
+    b = compute_subpatch_numerical_gradient( eval_type, sub_type, pd, OF_val, grad[0], err );
+    return !MSQ_CHKERR(err) && b;
   }
+  
+  ObjectiveFunction* of = this;
+  msq_std::auto_ptr<ObjectiveFunction> deleter;
+  if (eval_type == CALCULATE) {
+    of->clear();
+    b = of->evaluate( ACCUMULATE, pd, OF_val, OF_FREE_EVALS_ONLY, err );
+    if (err) { // OF doesn't support BCD type evals, try slow method
+      err.clear();
+      of->clear();
+      b = compute_patch_numerical_gradient( CALCULATE, CALCULATE, pd, OF_val, grad, err );
+      return !MSQ_CHKERR(err) && b;
+    }
+    else if (!b)
+      return b;
+  } 
   else {
-    //********************DO NOT useLocalGradient********************
-    //if useLocalGradient is turned off, we do inefficient computation
-    for (m=0; m<num_vtx; ++m) {
-
-      if (vertices[m].is_free_vertex()) {
-        //If pd is not in the feasible region, do not calculate anything.
-        //Just return false.
-        bool b = evaluate(pd,flocal,err);
-        if(MSQ_CHKERR(err) || !b) {
-          return false;
-        }
-        OF_val = flocal;
-        //loop over the three coords x,y,z
-        for(j=0;j<3;++j){
-          eps=get_eps(pd, flocald, j, (&vertices[m]), err); MSQ_ERRZERO(err);
-          //PRINT_INFO("\nin obj num grad j=%i, eps=%20.19f",j,eps);
-          if(eps==0){
-            MSQ_SETERR(err)("Dividing by zero in Objective Functions numerical grad",
-                            MsqError::INVALID_STATE);
-            return false;
-          }
-          grad[m][j]=(flocald-flocal)/eps;
-        }
-      }
-      else {
-        for(j=0;j<3;++j)
-          grad[m][j] = 0.0;
-      }
-      //PRINT_INFO("  gradx = %f, grady = %f, gradz = %f\n",grad[m][0],grad[m][1],grad[m][2]);   
-    }//end loop over all vertices
+    b = this->evaluate( eval_type, pd, OF_val, OF_FREE_EVALS_ONLY, err );
+    if (MSQ_CHKERR(err) || !b)
+      return false;
+    of = this->clone();
+    deleter = msq_std::auto_ptr<ObjectiveFunction>(of);
   }
-  //*****************END of DO NOT useLocalGradient*****************
-                        return true;
-}
 
-bool ObjectiveFunction::compute_analytical_gradient(PatchData &patch,
-                                             Vector3D *const &grad,
-                                             double &OF_val,
-                                             MsqError &err, size_t array_size){
-      set_gradient_type(NUMERICAL_GRADIENT);
-      bool result = compute_numerical_gradient(patch, grad, OF_val, err, array_size);
-      return !MSQ_CHKERR(err) && result;
-    }
-
-bool ObjectiveFunction::compute_analytical_hessian(PatchData &/*patch*/,
-                                            MsqHessian &/*hessian*/,
-                                            Vector3D *const &/*grad*/,
-                                            double &/*OF_val*/,
-                                            MsqError &err) {
-      MSQ_SETERR(err)("Analytic hessian not implemented for this Objective "
-                    "Function. Feasible Newton algorythm cannot be used.\n",
-                    MsqError::INVALID_STATE);
+    // Determine number of layers of adjacent elements based on metric type.
+  unsigned layers = min_patch_layers();
+  
+    // Create a subpatch for each free vertex and use it to evaluate the
+    // gradient for that vertex.
+  double flocal;
+  PatchData subpatch;
+  for (size_t i = 0; i < pd.num_free_vertices(); ++i)
+  {
+    pd.get_subpatch( i, layers, subpatch, err ); MSQ_ERRZERO(err);
+    b = of->compute_subpatch_numerical_gradient( SAVE, TEMPORARY, subpatch, flocal, grad[i], err );
+    if (MSQ_CHKERR(err) || !b) {
+      of->clear();
       return false;
     }
+  }
+  
+  of->clear();
+  return true;
+}
+
+bool ObjectiveFunction::evaluate_with_Hessian( EvalType type, 
+                                               PatchData& pd,
+                                               double& value_out,
+                                               msq_std::vector<Vector3D>& grad_out,
+                                               MsqHessian& Hessian_out,
+                                               MsqError& err ) 
+{
+      MSQ_SETERR(err)("No Hessian available for this objective function.\n"
+                      "Choose either a different objective function or a "
+                      "different solver.\n",
+                    MsqError::INVALID_STATE);
+      return false;
+}
 
 
 

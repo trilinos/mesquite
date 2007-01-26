@@ -42,6 +42,8 @@ describe main.cpp here
 // DESCRIP-END.
 //
 
+#include "meshfiles.h"
+
 #ifndef MSQ_USE_OLD_IO_HEADERS
 #include <iostream>
 using std::cout;
@@ -66,12 +68,13 @@ using std::endl;
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
 #include "MeshWriter.hpp"
+#include "TargetReader.hpp"
+#include "TargetWriter.hpp"
+#include "ReferenceMesh.hpp"
+#include "UnitWeight.hpp"
 
 // algorithms
 #include "I_DFT.hpp"
-#include "sI_DFT.hpp"
-#include "RI_DFT.hpp"
-#include "sRI_DFT.hpp"
 #include "ConcreteTargetCalculators.hpp"
 #include "LPtoPTemplate.hpp"
 #include "FeasibleNewton.hpp"
@@ -88,7 +91,7 @@ int main(int argc, char* argv[])
 {
   MsqPrintError err(cout);
 
-  const char* file_name = "../../meshFiles/2D/VTK/tfi_horse10x4-14.vtk";
+  const char* file_name = MESH_FILES_DIR "2D/VTK/tfi_horse10x4-14.vtk";
   double OF_value = 0.;
   
   // command line arguments
@@ -113,41 +116,35 @@ int main(int argc, char* argv[])
     usage();
   }
   
-  Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
-  mesh->read_vtk(file_name, err);
+  Mesquite::MeshImpl mesh;
+  mesh.read_vtk(file_name, err);
   if (err) return 1;
   
   // creates an intruction queue
   InstructionQueue queue1;
 
   // creates a mean ratio quality metric ...
-  I_DFT mean_ratio;
-//  mean_ratio.set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
-//   mean_ratio.set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
-   mean_ratio.set_averaging_method(QualityMetric::LINEAR, err); 
-  if (err) return 1;
+  TargetReader reader(true);
+  UnitWeight weights;
+  I_DFT mean_ratio( &reader, &weights );
 
-  // creates a target calculator
-//  DefaultTargetCalculator target;
-
-  Mesquite::MeshImpl *ref_mesh = new Mesquite::MeshImpl;
-  ref_mesh->read_vtk("../../meshFiles/2D/VTK/tfi_horse10x4-12.vtk", err);
+  Mesquite::MeshImpl ref_mesh;
+  ref_mesh.read_vtk(MESH_FILES_DIR "2D/VTK/tfi_horse10x4-12.vtk", err);
   if (err) return 1;
-  //  DesignOpt3TargetCalculator target( ref_mesh );
-  DeformingDomainGuides843 target( ref_mesh );
-  queue1.add_target_calculator( &target, err );
+  Mesquite::ReferenceMesh rm(&ref_mesh);
+  DeformingDomainGuides843 target( &rm );
+  TargetWriter writer( DistanceFromTarget::get_dft_sample_pts(), &target );
+  queue1.add_target_calculator( &writer, err ); 
   if (err) return 1;
 
   // ... and builds an objective function with it
-  LPtoPTemplate* obj_func = new LPtoPTemplate(&mean_ratio, 1, err);
+  LPtoPTemplate obj_func(&mean_ratio, 1, err);
   if (err) return 1;
-  obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
   
   // creates the steepest descentfeas newt optimization procedures
 //  ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
-  FeasibleNewton* pass1 = new FeasibleNewton( obj_func );
-  pass1->set_patch_type(PatchData::GLOBAL_PATCH, err);
-  if (err) return 1;
+  FeasibleNewton pass1( &obj_func, true );
+  pass1.use_global_patch();
   
   QualityAssessor stop_qa(&mean_ratio,QualityAssessor::AVERAGE, err);
   if (err) return 1;
@@ -158,34 +155,34 @@ int main(int argc, char* argv[])
     tc_inner.add_criterion_type_with_double(
            TerminationCriterion::QUALITY_IMPROVEMENT_ABSOLUTE, OF_value, err);
     if (err) return 1;
-    pass1->set_inner_termination_criterion(&tc_inner);
+    pass1.set_inner_termination_criterion(&tc_inner);
   }
   TerminationCriterion tc_outer;
   tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
   if (err) return 1;
-  pass1->set_outer_termination_criterion(&tc_outer);
+  pass1.set_outer_termination_criterion(&tc_outer);
 
   queue1.add_quality_assessor(&stop_qa, err); 
   if (err) return 1;
    
   // adds 1 pass of pass1 to mesh_set1
-  queue1.set_master_quality_improver(pass1, err); 
+  queue1.set_master_quality_improver(&pass1, err); 
   if (err) return 1;
   
   queue1.add_quality_assessor(&stop_qa, err); 
   if (err) return 1;
 
-  MeshWriter::write_gnuplot( ref_mesh, "ref_mesh", err );
+  MeshWriter::write_gnuplot( &ref_mesh, "ref_mesh", err );
   if (err) return 1;
 
-  MeshWriter::write_gnuplot( mesh, "ori_mesh", err );
+  MeshWriter::write_gnuplot( &mesh, "ori_mesh", err );
   if (err) return 1;
   
   // launches optimization on mesh_set1
-  queue1.run_instructions( mesh, err ); 
+  queue1.run_instructions( &mesh, err ); 
   if (err) return 1;
   
-  MeshWriter::write_gnuplot( mesh, "smo_mesh", err );
+  MeshWriter::write_gnuplot( &mesh, "smo_mesh", err );
   if (err) return 1;
 
   print_timing_diagnostics( cout );

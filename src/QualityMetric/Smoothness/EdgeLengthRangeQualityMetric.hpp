@@ -39,8 +39,8 @@ Header file for the Mesquite::EdgeLengthRangeQualityMetric class
 #define EdgeLengthRangeQualityMetric_hpp
 
 #include "Mesquite.hpp"
-#include "MsqError.hpp"
-#include "SmoothnessQualityMetric.hpp"
+#include "AveragingQM.hpp"
+#include "VertexQM.hpp"
 
 namespace Mesquite
 {
@@ -57,51 +57,39 @@ namespace Mesquite
         value is the average (where the default average type is SUM) of
         u_j = ( | l_j - A | - (l_j - A) )^2 + ( | B - l_j | - (B - l_j) )^2.
      */
-   class MsqMeshEntity;
-   class MsqVertex;
-   
-   class EdgeLengthRangeQualityMetric : public SmoothnessQualityMetric
+  class EdgeLengthRangeQualityMetric : public VertexQM, public AveragingQM
   {
    public:
     
-      //This is the form of the constructor that should beused.
-    EdgeLengthRangeQualityMetric(double low_a, double high_a, MsqError &err)
-       {
-         if(low_a>high_a){
-           MSQ_SETERR(err)("Edge Length Range values given in descending order.",
-                           MsqError::INVALID_ARG);
-         }
-         lowVal=low_a;
-         highVal=high_a;
-         avgMethod=SUM;
-         feasible=0;
-         set_metric_type(QualityMetric::VERTEX_BASED);
-         set_name("Edge Length Range Metric");
-       }
+    EdgeLengthRangeQualityMetric(double low_a, double high_a);
 
-      // virtual destructor ensures use of polymorphism during destruction
-    virtual ~EdgeLengthRangeQualityMetric()
-       {}
+    virtual ~EdgeLengthRangeQualityMetric();
+      
+    virtual msq_std::string get_name() const;
+    
+    virtual int get_negate_flag() const;
 
+    virtual
+    bool evaluate( PatchData& pd, 
+                   size_t vertex, 
+                   double& value, 
+                   MsqError& err );
+
+    virtual
+    bool evaluate_with_indices( PatchData& pd,
+                   size_t vertex,
+                   double& value,
+                   msq_std::vector<size_t>& indices,
+                   MsqError& err );
   
-   protected:
-   
-    bool evaluate_vertex(PatchData &pd, MsqVertex *vert, double &fval,
-                         MsqError &err);
-
    private:
-    
-      //Generally, this constructor should not be used.
-    EdgeLengthRangeQualityMetric()
-       {
-         lowVal=0;
-         highVal=0;
-         avgMethod=SUM;
-         feasible=0;
-         set_metric_type(QualityMetric::VERTEX_BASED);
-         set_name("Edge Length Range Metric Default Constructor");
-       }
-    
+   
+    bool evaluate_common( PatchData& pd, 
+                          size_t vertex, 
+                          double& value, 
+                          msq_std::vector<size_t>& vertices,
+                          MsqError& err );
+
     double highVal;
     double lowVal;
     

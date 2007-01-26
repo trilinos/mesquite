@@ -50,12 +50,28 @@ namespace Mesquite
   class PlanarDomain : public Mesquite::MeshDomain
   {
   public:
+    enum Plane{ XY = 2, XZ = 1, YZ = 0 };
+  
+    inline PlanarDomain( Plane orient, double offset = 0.0 )
+    {
+      Vector3D normal(0,0,0), point(0,0,0);
+      normal[orient] = 1.0;
+      point[orient] = offset;
+      set_plane( normal, point );
+    }
+  
     inline PlanarDomain(const Vector3D& normal, const Vector3D& point)
       { set_plane( normal, point ); }
     
     virtual ~PlanarDomain() { }
 
-    void set_plane( const Vector3D& normal, const Vector3D& point);
+    void set_plane( const Vector3D& normal, const Vector3D& point );
+
+    const Vector3D& get_normal() const { return mNormal; }
+    
+    double get_coeff() { return mCoeff; }
+    
+    Vector3D get_origin() const { return -mCoeff * mNormal; }
     
     virtual void snap_to(Mesh::EntityHandle entity_handle,
                          Vector3D &coordinate) const;

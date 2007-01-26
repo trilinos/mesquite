@@ -44,7 +44,8 @@
 #include "ObjectiveFunction.hpp"
 #include "MsqFreeVertexIndexIterator.hpp"
 #include "MsqDebug.hpp"
-#include "QualityMetric.hpp"
+#include "ElementQM.hpp"
+#include "VertexPatches.hpp"
 
 namespace Mesquite
 {
@@ -146,9 +147,12 @@ namespace Mesquite
   class NonSmoothSteepestDescent : public VertexMover 
   {
   public:
-    NonSmoothSteepestDescent(ObjectiveFunction* of);
+    NonSmoothSteepestDescent(ElementQM* qm);
 
     virtual ~NonSmoothSteepestDescent() { }
+    
+    virtual msq_std::string get_name() const;
+    virtual PatchSet* get_patch_set();
     
   protected:
     virtual void initialize(PatchData &pd, MsqError &err);
@@ -175,6 +179,8 @@ namespace Mesquite
     double minStepSize;
     
       /* optimization data */
+    VertexPatches patchSet;
+    ElementQM* currentQM;
     double originalValue;
     int iterCount;
     int optIterCount;
@@ -260,15 +266,10 @@ inline bool NonSmoothSteepestDescent::compute_function(PatchData *patch_data, do
   bool valid_bool=true;
 
   for (i=0;i<numElements;i++) func[i]=0.0;
-  QualityMetric* currentQM=objFunc->get_quality_metric();
-  if(currentQM==NULL){
-    currentQM = objFunc->get_quality_metric_list().front();
-  }
   
   for (i=0;i<numElements;i++) {
-    valid_bool = currentQM->evaluate_element(*patch_data,
-                                &(patch_data->element_by_index(i)),
-                                func[i], err); MSQ_ERRZERO(err);
+    valid_bool = valid_bool &&
+         currentQM->evaluate(*patch_data, i, func[i], err); MSQ_ERRZERO(err);
     //    MSQ_DEBUG_ACTION(3,{fprintf(stdout,"  Function value[%d]=%g\n",i,func[i]);});
   }
 //  FUNCTION_TIMER_END();
@@ -287,9 +288,6 @@ inline double** NonSmoothSteepestDescent::compute_gradient(PatchData *patch_data
   for (int i=0;i<numElements;i++) {
     for (int j=0;j<3;j++) mGradient[i][j] = 0.0;
   }
-  QualityMetric* currentQM=objFunc->get_quality_metric();
-  if(currentQM==NULL)
-    currentQM = objFunc->get_quality_metric_list().front();
 
   double *func, *fdelta;
   func = (double *)malloc(sizeof(double)*150);

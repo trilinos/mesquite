@@ -161,12 +161,12 @@ namespace Mesquite
        *\param vertex_array    Array of vertex handles specifying the
        *                       list of vertices to retrieve adjacency
        *                       data for.
-       *\param num_vertex      Number of vertex handles in \ref vertex_array
+       *\param num_vertex      Number of vertex handles in #vertex_array
        *\param elements     The array in which to place the handles of
        *                       elements adjacent to the input vertices.
-       *\param offsets    For each vertex in \ref vertex_array, the
+       *\param offsets    For each vertex in #vertex_array, the
        *                       value in the corresponding position in this
-       *                       array is the index into \ref elem_array at
+       *                       array is the index into #elem_array at
        *                       which the adjacency list begins for that
        *                       vertex.
        */
@@ -186,12 +186,12 @@ namespace Mesquite
        *
        *\param elem_handles  The array of element handles for which to
        *                     retrieve the connectivity list.
-       *\param num_elems     The length of \ref elem_handles
+       *\param num_elems     The length of #elem_handles
        *\param vert_handles  Array in which to place the vertex handles
        *                     in each elements connectivity.
-       *\param offsets       For each element in \ref elem_handles, the
+       *\param offsets       For each element in #elem_handles, the
        *                     value in the same position in this array
-       *                     is the index into \ref vert_handles at which
+       *                     is the index into #vert_handles at which
        *                     the connectivity list for that element begins.
        */
     virtual void elements_get_attached_vertices(
@@ -363,7 +363,7 @@ namespace Mesquite
       /** Read file-level field data */
     void vtk_read_field            ( FileTokenizer& file, MsqError& err );
     
-      /** Helper function for \ref vtk_read_polydata - reads polygon subsection */
+      /** Helper function for vtk_read_polydata() - reads polygon subsection */
     void vtk_read_polygons( FileTokenizer& file, MsqError& err );
       /** Helper function for readers of structured mesh - create elements */
     void vtk_create_structured_elems( const long* dims, MsqError& err );
@@ -376,7 +376,7 @@ namespace Mesquite
     void vtk_store_point_data( const void* data, TagDescription& desc, MsqError& );
       /** Store data read in vtk_read_cell_data into mesh tags */
     void vtk_store_cell_data( const void* data, TagDescription& desc, MsqError& );
-      /** Read actual data for both \ref vtk_read_point_data and \ref vtk_read_cell_data 
+      /** Read actual data for both vtk_read_point_data() and vtk_read_cell_data() 
        *  Initializes all fields of passed TagDescription
        *\return NULL if field data, otherwise pointer to malloc'd data.
        */

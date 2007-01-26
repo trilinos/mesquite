@@ -29,15 +29,9 @@
 
 #define TOL 1e-5
 
-//#define DO_QUALITY_ASSESSOR
+#include "meshfiles.h"
 
-#if 1
-#  define TEST_HESSIAN_TYPE ANALYTICAL_HESSIAN
-#  define TEST_GRADIENT_TYPE ANALYTICAL_GRADIENT
-#else
-#  define TEST_HESSIAN_TYPE NUMERICAL_HESSIAN
-#  define TEST_GRADIENT_TYPE NUMERICAL_GRADIENT
-#endif
+//#define DO_QUALITY_ASSESSOR
 
 #ifdef MSQ_USE_OLD_IO_HEADERS
 #  include <iostream.h>
@@ -62,16 +56,8 @@
 // algorithms
 #include "IdealWeightMeanRatio.hpp"
 #include "IdealWeightInverseMeanRatio.hpp"
-#include "I_DFT.hpp"
-#include "I_DFT_InverseMeanRatio.hpp"
-#include "I_DFT_StrongBarrier.hpp"
-#include "I_DFT_WeakBarrier.hpp"
-#include "I_DFT_Generalized.hpp"
-#include "I_DFT_NoBarrier.hpp"
-#include "sRI_DFT.hpp"
 #include "UntangleBetaQualityMetric.hpp"
 #include "FeasibleNewton.hpp"
-#include "ConcreteTargetCalculators.hpp"
 #include "ConditionNumberQualityMetric.hpp"
 using namespace Mesquite;
 
@@ -134,19 +120,12 @@ int main( int argc, char* argv[] )
     return 2;
   }
   
-  const char* meshfile = "../../meshFiles/3D/VTK/6-wedge-prism.vtk";
+  const char* meshfile = MESH_FILES_DIR "3D/VTK/6-wedge-prism.vtk";
   unsigned i;
 
   Mesquite::MsqPrintError err(cout);
   QualityMetric* metrics[] = { new IdealWeightMeanRatio,
                                new IdealWeightInverseMeanRatio(err),
-                               new I_DFT,
-                               new I_DFT_InverseMeanRatio,
-                               new I_DFT_StrongBarrier,
-                               new I_DFT_WeakBarrier,
-                               new I_DFT_Generalized,
-                               new I_DFT_NoBarrier,
-                               new sRI_DFT,
                                new ConditionNumberQualityMetric,
                                0 };
 
@@ -264,11 +243,6 @@ bool smooth_mesh( MeshImpl* mesh, Mesh* ref_mesh,
   << msq_stdio::endl //<< 
   //"**************************************************************************" 
   << msq_stdio::endl;
-    
-  // Use numeric approx of derivitives until analytic solutions
-  // are working for pyramids
-  metric->set_gradient_type( QualityMetric::TEST_GRADIENT_TYPE );
-  metric->set_hessian_type( QualityMetric::TEST_HESSIAN_TYPE );
   
   
   // Set free vertices to specified position
@@ -287,12 +261,11 @@ bool smooth_mesh( MeshImpl* mesh, Mesh* ref_mesh,
   // Set up objective function
   LPtoPTemplate* obj_func = new LPtoPTemplate(metric, 1, err);
   CPPUNIT_ASSERT(!err);
-  obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
 
   // Create solver
-  VertexMover* solver = new FeasibleNewton( obj_func );
+  FeasibleNewton* solver = new FeasibleNewton( obj_func, true );
   CPPUNIT_ASSERT(!err);
-  solver->set_patch_type(PatchData::GLOBAL_PATCH, err);
+  solver->use_global_patch();
   CPPUNIT_ASSERT(!err);
 
   // Set stoping criteria for solver
@@ -306,11 +279,6 @@ bool smooth_mesh( MeshImpl* mesh, Mesh* ref_mesh,
   tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
   CPPUNIT_ASSERT(!err);
   solver->set_outer_termination_criterion(&tc_outer);
-
-  // Create target calculator
-  DeformingDomainGuides841 target_calc( ref_mesh );
-  Q.add_target_calculator( &target_calc, err );
-  CPPUNIT_ASSERT(!err);
 
 #ifdef DO_QUALITY_ASSESSOR
   QualityAssessor qa( metric, QualityAssessor::ALL_MEASURES, err ); CPPUNIT_ASSERT(!err);

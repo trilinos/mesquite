@@ -53,19 +53,44 @@ namespace Mesquite
    class CompositeOFScalarAdd : public ObjectiveFunction
    {
 	public:
-      CompositeOFScalarAdd(double, ObjectiveFunction*);
+      CompositeOFScalarAdd(double, ObjectiveFunction*, bool delete_OF = false);
      virtual ~CompositeOFScalarAdd();
-     virtual bool concrete_evaluate(PatchData &patch, double &fval,
-                                    MsqError &err);
-     virtual msq_std::list<QualityMetric*> get_quality_metric_list();
+
+     virtual bool initialize_block_coordinate_descent( Mesh* mesh, 
+                                                       MeshDomain* domain,
+                                                       MappingFunctionSet* maps,
+                                                       PatchSet* user_set,
+                                                       MsqError& err );
+
+     virtual bool evaluate( EvalType type, 
+                            PatchData& pd,
+                            double& value_out,
+                            bool free,
+                            MsqError& err ); 
+
+     virtual bool evaluate_with_gradient( EvalType type, 
+                                          PatchData& pd,
+                                          double& value_out,
+                                          msq_std::vector<Vector3D>& grad_out,
+                                          MsqError& err ); 
+
+     virtual bool evaluate_with_Hessian( EvalType type, 
+                                         PatchData& pd,
+                                         double& value_out,
+                                         msq_std::vector<Vector3D>& grad_out,
+                                         MsqHessian& Hessian_out,
+                                         MsqError& err ); 
+
+     virtual ObjectiveFunction* clone() const;
+
+     virtual void clear();
      
-   protected:
-     bool compute_analytical_gradient(PatchData &patch,Vector3D *const &grad,
-				      double &OF_val,
-                                      MsqError &err,size_t array_size);
+     virtual int min_patch_layers() const;
+     
    private:
      double mAlpha;
      ObjectiveFunction* objFunc;
+     bool deleteObjFunc;
    };
 }//namespace
 #endif //  CompositeOFScalarAdd_hpp

@@ -28,7 +28,8 @@
 
 
 #define TOL 1e-5
-#define TEST_HESSIAN_TYPE ANALYTICAL_HESSIAN
+
+#include "meshfiles.h"
 
 #ifdef MSQ_USE_OLD_IO_HEADERS
 #  include <iostream.h>
@@ -53,16 +54,8 @@
 // algorithms
 #include "IdealWeightMeanRatio.hpp"
 #include "IdealWeightInverseMeanRatio.hpp"
-#include "I_DFT.hpp"
-#include "I_DFT_InverseMeanRatio.hpp"
-#include "I_DFT_StrongBarrier.hpp"
-#include "I_DFT_WeakBarrier.hpp"
-#include "I_DFT_Generalized.hpp"
-#include "I_DFT_NoBarrier.hpp"
-#include "sRI_DFT.hpp"
 #include "UntangleBetaQualityMetric.hpp"
 #include "FeasibleNewton.hpp"
-#include "ConcreteTargetCalculators.hpp"
 #include "ConjugateGradient.hpp"
 #include "ConditionNumberQualityMetric.hpp"
 using namespace Mesquite;
@@ -91,7 +84,7 @@ bool smooth_mixed_mesh( const char* filename );
 int main( int argc, char* argv[] )
 {
   unsigned i;
-  const char* input_file = "../../meshFiles/3D/VTK/mixed-hex-pyr-tet.vtk";
+  const char* input_file = MESH_FILES_DIR "3D/VTK/mixed-hex-pyr-tet.vtk";
   if (argc == 2)
     input_file = argv[1];
   else if (argc != 1)
@@ -104,22 +97,15 @@ int main( int argc, char* argv[] )
   Mesquite::MsqPrintError err(cout);
   QualityMetric* metrics[] = { new IdealWeightMeanRatio,
                                new IdealWeightInverseMeanRatio(err),
-                               new I_DFT,
-                               new I_DFT_InverseMeanRatio,
-                               new I_DFT_StrongBarrier,
-                               new I_DFT_WeakBarrier,
-                               new I_DFT_Generalized,
-                               new I_DFT_NoBarrier,
-                               new sRI_DFT,
                                new ConditionNumberQualityMetric,
                                0 };
 
     // Read Mesh
   Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
-  mesh->read_vtk("../../meshFiles/3D/VTK/12-pyramid-unit-sphere.vtk", err);
+  mesh->read_vtk(MESH_FILES_DIR "3D/VTK/12-pyramid-unit-sphere.vtk", err);
   CPPUNIT_ASSERT(!err);
   Mesquite::MeshImpl *ideal_mesh = new Mesquite::MeshImpl;
-  ideal_mesh->read_vtk("../../meshFiles/3D/VTK/12-pyramid-unit-sphere.vtk", err);
+  ideal_mesh->read_vtk(MESH_FILES_DIR "3D/VTK/12-pyramid-unit-sphere.vtk", err);
   CPPUNIT_ASSERT(!err);
 
     // Check that the mesh read correctly, and contains what is
@@ -219,12 +205,7 @@ bool smooth_mesh( Mesh* mesh, Mesh* ref_mesh,
   << msq_stdio::endl //<< 
   //"**************************************************************************" 
   << msq_stdio::endl;
-    
-  // Use numeric approx of derivitives until analytic solutions
-  // are working for pyramids
-  metric->set_gradient_type( QualityMetric::ANALYTICAL_GRADIENT );
-  metric->set_hessian_type( QualityMetric::TEST_HESSIAN_TYPE );
-  
+
   
   // Set free vertex to specified position
   mesh->vertex_set_coordinates( free_vertex_at_origin, 
@@ -238,12 +219,11 @@ bool smooth_mesh( Mesh* mesh, Mesh* ref_mesh,
   // Set up objective function
   LPtoPTemplate* obj_func = new LPtoPTemplate(metric, 1, err);
   CPPUNIT_ASSERT(!err);
-  obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
 
   // Create solver
-  VertexMover* solver = new FeasibleNewton( obj_func );
+  FeasibleNewton* solver = new FeasibleNewton( obj_func, true );
   CPPUNIT_ASSERT(!err);
-  solver->set_patch_type(PatchData::GLOBAL_PATCH, err);
+  solver->use_global_patch();
   CPPUNIT_ASSERT(!err);
 
   // Set stoping criteria for solver
@@ -257,11 +237,6 @@ bool smooth_mesh( Mesh* mesh, Mesh* ref_mesh,
   tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
   CPPUNIT_ASSERT(!err);
   solver->set_outer_termination_criterion(&tc_outer);
-
-  // Create target calculator
-  DeformingDomainGuides841 target_calc( ref_mesh );
-  Q.add_target_calculator( &target_calc, err );
-  CPPUNIT_ASSERT(!err);
    
   // Add solver to queue
   Q.set_master_quality_improver(solver, err); 
@@ -319,8 +294,6 @@ bool smooth_mixed_mesh( const char* filename )
   //sRI_DFT dft_metric;
   UntangleBetaQualityMetric un_metric(0);
   CPPUNIT_ASSERT(!err);
-  mr_metric.set_gradient_type( QualityMetric::ANALYTICAL_GRADIENT );
-  mr_metric.set_hessian_type( QualityMetric::TEST_HESSIAN_TYPE );
   
     // Create Mesh object
   Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
@@ -329,7 +302,6 @@ bool smooth_mixed_mesh( const char* filename )
 
   // Set up a preconditioner
   LInfTemplate pre_obj_func( &un_metric );
-  pre_obj_func.set_gradient_type( ObjectiveFunction::NUMERICAL_GRADIENT );
   ConjugateGradient precond( &pre_obj_func, err ); CPPUNIT_ASSERT(!err);
   TerminationCriterion pre_term, pre_outer;
   //pre_term.add_criterion_type_with_double( TerminationCriterion::QUALITY_IMPROVEMENT_RELATIVE, 0.1, err );
@@ -338,17 +310,16 @@ bool smooth_mixed_mesh( const char* filename )
   CPPUNIT_ASSERT(!err);
   precond.set_inner_termination_criterion( &pre_term );
   precond.set_outer_termination_criterion( &pre_outer );
-  //precond.set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH,err,1,1); 
+  //precond.use_element_on_vertex_patch();
 
   // Set up objective function
   LPtoPTemplate obj_func(&mr_metric, 1, err);
   CPPUNIT_ASSERT(!err);
-  obj_func.set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
 
   // Create solver
-  FeasibleNewton solver( &obj_func );
+  FeasibleNewton solver( &obj_func, true );
   CPPUNIT_ASSERT(!err);
-  solver.set_patch_type(PatchData::GLOBAL_PATCH, err);
+  solver.use_global_patch();
   CPPUNIT_ASSERT(!err);
 
   // Set stoping criteria for solver

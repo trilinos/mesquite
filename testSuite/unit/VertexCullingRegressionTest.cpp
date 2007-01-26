@@ -45,6 +45,8 @@ Regression testing using the vertex culling algorithms.
 // DESCRIP-END.
 //
 
+#include "meshfiles.h"
+
 #include "PatchDataInstances.hpp"
 #include "cppunit/extensions/HelperMacros.h"
 #include <math.h>
@@ -103,7 +105,7 @@ public:
         /* Read a VTK Mesh file */
       MsqPrintError err(cout);
       Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
-      mesh->read_vtk("../../meshFiles/2D/VTK/square_quad_10_rand.vtk", err);
+      mesh->read_vtk(MESH_FILES_DIR "2D/VTK/square_quad_10_rand.vtk", err);
       CPPUNIT_ASSERT(!err);
       
       Vector3D pnt(0,0,5);
@@ -114,9 +116,9 @@ public:
       InstructionQueue queue1;
       
         // creates a mean ratio quality metric ...
-      ShapeQualityMetric* shape_metric = new ConditionNumberQualityMetric;
-      SmoothnessQualityMetric* lapl_met = new EdgeLengthQualityMetric;
-      lapl_met->set_averaging_method(QualityMetric::RMS,err); CPPUNIT_ASSERT(!err);
+      ConditionNumberQualityMetric* shape_metric = new ConditionNumberQualityMetric;
+      EdgeLengthQualityMetric* lapl_met = new EdgeLengthQualityMetric;
+      lapl_met->set_averaging_method(QualityMetric::RMS);
       
         // creates the laplacian smoother  procedures
       LaplacianSmoother* lapl1 = new LaplacianSmoother(err); CPPUNIT_ASSERT(!err);

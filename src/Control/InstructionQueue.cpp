@@ -48,11 +48,10 @@ Member functions of the Mesquite::InstructionQueue class
 #include "MsqInterrupt.hpp"
 #include "QualityImprover.hpp"
 #include "QualityAssessor.hpp"
+#include "TargetWriter.hpp"
 #include "MsqError.hpp"
 #include "MsqDebug.hpp"
-#include "MeanMidNodeMover.hpp"
 #include "MsqFPE.hpp"
-#include "TargetCalculator.hpp"
 
 using namespace Mesquite;
 
@@ -65,7 +64,6 @@ const bool IQ_TRAP_FPE_DEFAULT = false;
 
 InstructionQueue::InstructionQueue() :
   autoQualAssess(true),
-  autoAdjMidNodes(true),
   nbPreConditionners(0),
   isMasterSet(false),
   masterInstrIndex(0),
@@ -74,7 +72,7 @@ InstructionQueue::InstructionQueue() :
 }
 
 
-void InstructionQueue::add_target_calculator( TargetCalculator* tc, MsqError& )
+void InstructionQueue::add_target_calculator( TargetWriter* tc, MsqError& )
 {
   instructions.push_back( tc );
 }
@@ -119,11 +117,11 @@ void InstructionQueue::remove_preconditioner(size_t index, MsqError &err)
   }
   
   // position the instruction iterator over the preconditionner to delete
-  msq_std::list<PatchDataUser*>::iterator pos;
+  msq_std::list<Instruction*>::iterator pos;
   pos = instructions.begin();
   msq_std::advance(pos, index);
 
-  if ( (*pos)->get_algorithm_type() != PatchDataUser::QUALITY_IMPROVER ) 
+  if (!dynamic_cast<QualityImprover*>(*pos)) 
   {
     MSQ_SETERR(err)("Index does not point to a QualityImprover.",
                     MsqError::INVALID_ARG);
@@ -159,7 +157,7 @@ void InstructionQueue::insert_preconditioner(QualityImprover* instr,
   }
 
   // position the instruction iterator
-  msq_std::list<PatchDataUser*>::iterator pos;
+  msq_std::list<Instruction*>::iterator pos;
   pos = instructions.begin();
   msq_std::advance(pos, index);
   // adds the preconditioner
@@ -195,11 +193,11 @@ void InstructionQueue::remove_quality_assessor(size_t index, MsqError &err)
   }
   
   // position the instruction iterator over the QualityAssessor to delete
-  msq_std::list<PatchDataUser*>::iterator pos;
+  msq_std::list<Instruction*>::iterator pos;
   pos = instructions.begin();
   msq_std::advance(pos, index);
 
-  if ( (*pos)->get_algorithm_type() != PatchDataUser::QUALITY_ASSESSOR ) 
+  if ( !dynamic_cast<QualityAssessor*>(*pos) ) 
   {
     MSQ_SETERR(err)("Index does not point to a QualityImprover.",
                     MsqError::INVALID_ARG);
@@ -229,7 +227,7 @@ void InstructionQueue::insert_quality_assessor(QualityAssessor* instr,
   }
 
   // position the instruction iterator
-  msq_std::list<PatchDataUser*>::iterator pos;
+  msq_std::list<Instruction*>::iterator pos;
   pos = instructions.begin();
   msq_std::advance(pos, index);
   // adds the QualityAssessor
@@ -244,7 +242,7 @@ void InstructionQueue::set_master_quality_improver(QualityImprover* instr,
     MSQ_DBGOUT(1) << "InstructionQueue::set_master_quality_improver():\n"
         << "\tOverwriting previously specified master quality improver.\n";
     // if master is already set, clears it and insert the new one at the same position.
-    msq_std::list<PatchDataUser*>::iterator master_pos;
+    msq_std::list<Instruction*>::iterator master_pos;
     master_pos = this->clear_master(err); MSQ_ERRRTN(err);
     instructions.insert(master_pos, instr);
     isMasterSet = true;
@@ -258,6 +256,7 @@ void InstructionQueue::set_master_quality_improver(QualityImprover* instr,
 
 void InstructionQueue::run_instructions( Mesh* mesh, 
                                          MeshDomain* domain,
+                                         MappingFunctionSet* map_func,
                                          MsqError &err)
 { 
   MSQ_DBGOUT(1) << version_string(false) << "\n";
@@ -276,14 +275,7 @@ void InstructionQueue::run_instructions( Mesh* mesh,
     // Generate SIGFPE on floating point errors
   MsqFPE( this->trapFPE );
   
-  msq_std::list<PatchDataUser*>::const_iterator instr;
-  
-    // Create a global patch if anything in the instruction queue
-    // requires it.
-  PatchData global_patch;
-  PatchData* global_patch_ptr = 0;
-  global_patch.set_mesh( mesh );
-  global_patch.set_domain( domain );
+  msq_std::list<Instruction*>::const_iterator instr;
   
     // Run each instruction
   for (instr = instructions.begin(); instr != instructions.end(); ++instr) 
@@ -294,28 +286,8 @@ void InstructionQueue::run_instructions( Mesh* mesh,
       return;
     }
     
-    if ((*instr)->get_patch_type() == PatchData::GLOBAL_PATCH)
-    {
-      if (!global_patch_ptr)
-      {
-        global_patch.fill_global_patch( err );
-        MSQ_ERRRTN(err);
-        global_patch_ptr = &global_patch;
-      }
-    }
-    else if (global_patch_ptr)
-    {
-      global_patch_ptr = 0;
-    }
     
-    (*instr)->loop_over_mesh( mesh, domain, global_patch_ptr, err ); 
-    MSQ_ERRRTN(err);
-  }
-  
-  if (autoAdjMidNodes)
-  {
-    MeanMidNodeMover tool;
-    tool.loop_over_mesh( mesh, domain, global_patch_ptr, err );
+    (*instr)->loop_over_mesh( mesh, domain, map_func, err ); 
     MSQ_ERRRTN(err);
   }
 }
@@ -325,16 +297,15 @@ void InstructionQueue::clear()
 {
   instructions.clear();
   autoQualAssess = true;
-  autoAdjMidNodes = false;
   isMasterSet = false;
   masterInstrIndex = 0;
 }
 
 
-msq_std::list<PatchDataUser*>::iterator InstructionQueue::clear_master(MsqError &err)
+msq_std::list<Instruction*>::iterator InstructionQueue::clear_master(MsqError &err)
 {
-  msq_std::list<PatchDataUser*>::iterator instr_iter;
-  msq_std::list<PatchDataUser*>::iterator master_pos;
+  msq_std::list<Instruction*>::iterator instr_iter;
+  msq_std::list<Instruction*>::iterator master_pos;
   
   if (!isMasterSet) {
     MSQ_SETERR(err)("No master quality improver to clear.", MsqError::INVALID_STATE);

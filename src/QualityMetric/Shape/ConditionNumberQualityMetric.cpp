@@ -35,25 +35,26 @@
 #include "ConditionNumberQualityMetric.hpp"
 #include <math.h>
 #include "Vector3D.hpp"
-#include "ShapeQualityMetric.hpp"
-#include "QualityMetric.hpp"
+#include "ConditionNumberFunctions.hpp"
 
 using namespace Mesquite;
 
 ConditionNumberQualityMetric::ConditionNumberQualityMetric()
-{
-  set_metric_type(ELEMENT_BASED);
-  avgMethod=QualityMetric::LINEAR;
-  feasible=1;
-  set_name("Condition Number");
-}
+  : AveragingQM(QualityMetric::LINEAR)
+  { }
 
+msq_std::string ConditionNumberQualityMetric::get_name() const
+  { return "Condition Number"; }
 
-bool ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
-                                                    MsqMeshEntity *element,
-                                                    double &fval,
-                                                    MsqError &err)
+int ConditionNumberQualityMetric::get_negate_flag() const
+  { return 1; }
+
+bool ConditionNumberQualityMetric::evaluate( PatchData& pd, 
+                                     size_t handle, 
+                                     double& fval, 
+                                     MsqError& err )
 {
+  const MsqMeshEntity *const element = &pd.element_by_index(handle);
   bool return_flag;
   double met_vals[MSQ_MAX_NUM_VERT_PER_ENT];
   fval=MSQ_MAX_CAP;
@@ -69,27 +70,27 @@ bool ConditionNumberQualityMetric::evaluate_element(PatchData &pd,
       temp_vec[2]=vertices[v_i[2]]-vertices[v_i[0]];
         //make relative to equilateral
       temp_vec[1]=((2*temp_vec[2])-temp_vec[0])*MSQ_SQRT_THREE_INV;
-      return_flag=condition_number_2d(temp_vec,v_i[0],pd,fval,err); MSQ_ERRZERO(err);
+      return_flag=condition_number_2d(temp_vec,handle,pd,fval,err); MSQ_ERRZERO(err);
       return return_flag;
     case QUADRILATERAL:
       temp_vec[0]=vertices[v_i[1]]-vertices[v_i[0]];
       temp_vec[1]=vertices[v_i[3]]-vertices[v_i[0]];
-      return_flag=condition_number_2d(temp_vec,v_i[0],pd,met_vals[0],err);  MSQ_ERRZERO(err);
+      return_flag=condition_number_2d(temp_vec,handle,pd,met_vals[0],err);  MSQ_ERRZERO(err);
       if(!return_flag)
         return return_flag;
       temp_vec[0]=vertices[v_i[2]]-vertices[v_i[1]];
       temp_vec[1]=vertices[v_i[0]]-vertices[v_i[1]];
-      return_flag=condition_number_2d(temp_vec,v_i[1],pd,met_vals[1],err);  MSQ_ERRZERO(err);
+      return_flag=condition_number_2d(temp_vec,handle,pd,met_vals[1],err);  MSQ_ERRZERO(err);
       if(!return_flag)
         return return_flag;
       temp_vec[0]=vertices[v_i[3]]-vertices[v_i[2]];
       temp_vec[1]=vertices[v_i[1]]-vertices[v_i[2]];
-      return_flag=condition_number_2d(temp_vec,v_i[2],pd,met_vals[2],err);  MSQ_ERRZERO(err);
+      return_flag=condition_number_2d(temp_vec,handle,pd,met_vals[2],err);  MSQ_ERRZERO(err);
       if(!return_flag)
         return return_flag;
       temp_vec[0]=vertices[v_i[0]]-vertices[v_i[3]];
       temp_vec[1]=vertices[v_i[2]]-vertices[v_i[3]];
-      return_flag=condition_number_2d(temp_vec,v_i[3],pd,met_vals[3],err);  MSQ_ERRZERO(err);
+      return_flag=condition_number_2d(temp_vec,handle,pd,met_vals[3],err);  MSQ_ERRZERO(err);
       fval = average_metrics(met_vals, 4, err);
       return return_flag;
     case TETRAHEDRON:

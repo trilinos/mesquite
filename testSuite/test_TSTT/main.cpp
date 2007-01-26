@@ -43,6 +43,8 @@ describe main.cpp here
 // DESCRIP-END.
 //
 
+#include "meshfiles.h"
+
 #include "Mesquite.hpp"
 #include "MeshTSTT.hpp"
 #include "MeshImpl.hpp"
@@ -83,7 +85,7 @@ using std::endl;
 
 using namespace Mesquite;
 
-const char* const default_file_name = "../../meshFiles/3D/VTK/large_box_hex_1000.vtk";
+const char* const default_file_name = MESH_FILES_DIR "3D/VTK/large_box_hex_1000.vtk";
 
 void usage()
 {
@@ -164,7 +166,7 @@ int run_global_smoother( Mesh* mesh, MsqError& err )
   InstructionQueue queue1;
 
   // creates a mean ratio quality metric ...
-  ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);
+  IdealWeightInverseMeanRatio* mean_ratio = new IdealWeightInverseMeanRatio(err);
   if (err) return 1;
   mean_ratio->set_averaging_method(QualityMetric::SUM, err); 
   if (err) return 1;
@@ -172,11 +174,10 @@ int run_global_smoother( Mesh* mesh, MsqError& err )
   // ... and builds an objective function with it
   LPtoPTemplate* obj_func = new LPtoPTemplate(mean_ratio, 1, err);
   if (err) return 1;
-  obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
   
   // creates the feas newt optimization procedures
-  FeasibleNewton* pass1 = new FeasibleNewton( obj_func );
-  pass1->set_patch_type(PatchData::GLOBAL_PATCH, err);
+  FeasibleNewton* pass1 = new FeasibleNewton( obj_func, true );
+  pass1->use_global_patch();
   if (err) return 1;
   
   QualityAssessor stop_qa=QualityAssessor(mean_ratio,QualityAssessor::AVERAGE, err);
@@ -223,7 +224,7 @@ int run_local_smoother( Mesh* mesh, MsqError& err )
   InstructionQueue queue1;
 
   // creates a mean ratio quality metric ...
-  ShapeQualityMetric* mean_ratio = new IdealWeightInverseMeanRatio(err);
+  IdealWeightInverseMeanRatio* mean_ratio = new IdealWeightInverseMeanRatio(err);
   if (err) return 1;
   mean_ratio->set_averaging_method(QualityMetric::SUM, err); 
   if (err) return 1;
@@ -231,7 +232,6 @@ int run_local_smoother( Mesh* mesh, MsqError& err )
   // ... and builds an objective function with it
   LPtoPTemplate* obj_func = new LPtoPTemplate(mean_ratio, 1, err);
   if (err) return 1;
-  obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
   
   // creates the smart laplacian optimization procedures
   SmartLaplacianSmoother* pass1 = new SmartLaplacianSmoother( obj_func, err );

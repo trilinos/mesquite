@@ -45,9 +45,8 @@
 #include "MsqMeshEntity.hpp"
 #include "MsqVertex.hpp"
 #include "MeshInterface.hpp"
-#include "CornerTag.hpp"
 #include "TargetMatrix.hpp"
-
+#include "MsqError.hpp"
 
 #ifndef MSQ_USE_OLD_C_HEADERS
 #  include <cstddef>
@@ -74,16 +73,17 @@
 
 namespace Mesquite
 {
+  class ExtraData;
   class PatchDataVerticesMemento;
   class Mesh;
-  class TargetMatrix;
-//   class SimplifiedGeometryEngine;
+  class MappingFunctionSet;
+  class MappingFunction;
   
-  /*! \class PatchData
+  /*!
     Contains all the mesh information necessary for
     one iteration of the optimization algorithms over a
     local mesh patch. */
-  class PatchData
+  class PatchData 
   {
   public:    
       // Constructor/Destructor
@@ -158,39 +158,12 @@ namespace Mesquite
        */
     void fill_global_patch( MsqError& err );
     
-      /**\brief Iterate over mesh, creating element-on-vertex patches
-       *
-       * Get patch of elements adjacent to next vertex returned by
-       * internal vertex iterator.  Mesh must be initialized before
-       * calling this method.
-       *\param num_layers Depth of adjacent elements to put in patch.
-       *\param skip_fixed_vertices If true, vertices designated as fixed
-       *         by the application or marked as culled (MSQ_SOFT_FIXED)
-       *         will be skipped when iterating over all vertices.
-       *\param free_vertex_index_out Output.  Index of the non-fixed
-       *                   vertex (the 'current' vertex from the iterator)
-       */
-    bool get_next_vertex_element_patch( int num_layers,
-                                        bool skip_fixed_vertices,
-                                        size_t& free_vertex_index_out,
-                                        MsqError& err );
     
-      /**\brief Iterate over mesh, creating single-element patches
-       *
-       * Fill patch with next element returned by
-       * internal element iterator.  Mesh must be initialized before
-       * calling this method.
-       */
-    bool get_next_element_patch( MsqError& err );
-   
-     /**\brief Reset internal mesh iterator(s)
-      *
-      * Reset VeretxIterator used by \ref get_next_vertex_element_patch
-      * and ElementIterator used by \ref get_next_element_patch
-      */
-    void reset_iterators();
-
-
+    void set_mesh_entities( 
+                   msq_std::vector<Mesh::ElementHandle>& patch_elems,
+                   msq_std::vector<Mesh::VertexHandle>& free_vertices,
+                   MsqError& err );
+    
   private:
       //! Doesn't allow PatchData to be copied implicitly.
       //! Mementos such as PatchDataVerticesMemento should be used when necessary. 
@@ -231,7 +204,7 @@ namespace Mesquite
     //! Returns average corner determinant over all corners in the patch
     //! This information is stored in the patch and should not decrease performance
     //! when used properly. See also PatchData::clear_computed_info() .
-    double get_average_Lambda_3d(MsqError &err); 
+//    double get_average_Lambda_3d(MsqError &err); 
 
       //! Removes data
     void clear();
@@ -239,22 +212,20 @@ namespace Mesquite
     void reorder();
 
       //! number of vertices in the patch. 
-    size_t num_vertices() const
-      { return numCornerVertices;}
+    size_t num_nodes() const
+      { return vertexArray.size();}
+    size_t num_free_vertices() const
+      { return numFreeVertices; }
+    size_t num_slave_vertices() const
+      { return numSlaveVertices; }
+    size_t num_fixed_vertices() const
+      { return num_nodes() - num_free_vertices() - num_slave_vertices(); }
       //! number of elements in the Patch.
     size_t num_elements() const
       { return elementArray.size(); }
-      //! number of elements corners in the Patch. 
-    size_t num_corners() ;
-      /** Get number of nodes (vertex + higher-order nodes) */
-    size_t num_nodes() const
-      { return vertexArray.size(); }
-
-      //! Returns the number of elements in the current patch who are
-      //! free to move.  This is a costly function, since we have to check
-      //! the flags of all vertices in the patch.
-    int num_free_vertices(MsqError &err) const;
-    unsigned num_free_nodes( MsqError& err ) const;
+      
+      //! number of element corners (number of vertex uses) in patch
+    size_t num_corners() const;
     
       //! Returns a pointer to the start of the vertex array.
     const MsqVertex* get_vertex_array( MsqError& err ) const;
@@ -288,7 +259,9 @@ namespace Mesquite
     //const size_t* get_vertex_to_elem_offset(MsqError &err);
     
     MsqVertex& vertex_by_index(size_t index);
+    const MsqVertex& vertex_by_index(size_t index) const;
     MsqMeshEntity& element_by_index(size_t index);
+    const MsqMeshEntity& element_by_index(size_t index) const;
     size_t get_vertex_index(MsqVertex* vertex);
     size_t get_element_index(MsqMeshEntity* element);
     
@@ -356,16 +329,6 @@ namespace Mesquite
     bool domain_set() const
     { return 0 != myDomain; }
     
-      /*! Get the normal of the surface for a given vertex.
-          Normal is returned in Vector3D &surf_norm.  If the normal cannot
-          be determined, or if the underlying domain is not a surface,
-          the normal will be set to (0,0,0).
-          Check PatchData::domain_set() is not false first.
-      */
-    void get_domain_normal_at_vertex(size_t vertex_index, bool normalize,
-                                     Vector3D &surf_norm,
-                                     MsqError &err) ;
-    
       /*! Get the normal to the domain at the centroid (projected to the
           domain) of a given element.
           Normal is returned in Vector3D &surf_norm.  If the normal cannot
@@ -392,9 +355,18 @@ namespace Mesquite
                                         Vector3D normals_out[],
                                         MsqError& err ) ;
                                         
+    void get_domain_normal_at_corner( size_t elemen_index,
+                                      unsigned corner,
+                                      Vector3D& normal,
+                                      MsqError& err );
+    
+    void get_domain_normal_at_mid_edge( size_t element_index,
+                                        unsigned edge_number,
+                                        Vector3D& normal,
+                                        MsqError& err ) const;
 
       //! Alternative signature. Same functionality.
-    void get_domain_normal_at_element(MsqMeshEntity* elem_ptr,
+    void get_domain_normal_at_element(const MsqMeshEntity* elem_ptr,
                                       Vector3D &surf_norm, MsqError &err) const 
     { get_domain_normal_at_element(size_t(elem_ptr-&(elementArray[0])), surf_norm, err); }
     
@@ -441,6 +413,7 @@ namespace Mesquite
       //! calling 'update_mesh()' on the sub-patch WILL modify the TSTT
       //! mesh, but the source patch won't see the changes.
     void get_subpatch(size_t center_vertex_index,
+                      unsigned num_adj_elem_layers,
                       PatchData &pd_to_fill,
                       MsqError &err);
     
@@ -489,18 +462,48 @@ namespace Mesquite
     MeshDomain* get_domain() const
       { return myDomain; }
     
-    //! Target matrix data
-    CornerTag<TargetMatrix> targetMatrices;
-    void clear_tag_data();
     
+    void set_mapping_functions( MappingFunctionSet* mfs );
+    MappingFunctionSet* get_mapping_functions() const;
+    const MappingFunction* get_mapping_function( EntityTopology type ) const;
+    
+    void get_sample_location( size_t element_index,
+                              unsigned sample_dim,
+                              unsigned sample_num,
+                              Vector3D& result,
+                              MsqError& err ) const;  
+                              
+    unsigned higher_order_node_bits( size_t elem_idx ) const;  
     
     //! Display the coordinates and connectivity information
     friend msq_stdio::ostream& operator<<( msq_stdio::ostream&, const PatchData& );
    
    private:
    
-    VertexIterator* vertex_iterator( MsqError& err );
-    ElementIterator* element_iterator( MsqError& err );
+    /* allow access to the following to functions */
+    friend class Mesquite::ExtraData;    
+    /**\brief Attach an ExtraData object to this PatchData */
+    bool attach_extra_data( ExtraData* data );
+    /**\brief Remove an ExtraData object from this PatchData */
+    bool remove_extra_data( ExtraData* data );
+
+    /**\brief notify all attached ExtraData instances that patch contents have changed */
+    void notify_new_patch( );
+    /**\brief notify all attached ExtraData instances that a subpatch is being initalized 
+     *\param sub_patch  The new, already populated subpatch
+     *\param vertex_index_map For the i-th vertex in the subpatch, the
+     *                  i-th entry in this list is the corresponding index in 
+     *                  this patch.
+     *\param element_index_map For the i-th element in the subpatch, the
+     *                  i-th entry in this list is the corresponding index in 
+     *                  this patch.
+     */
+    void notify_sub_patch( PatchData& sub_patch, 
+                           const size_t* vertex_index_map,
+                           const size_t* element_index_map,
+                           MsqError& err );
+    /**\brief notify all attached ExtraData instances that this patch is being destroyed */
+    void notify_patch_destroyed();
 
       /** Call after filling vertex handle and connectivity arrays to
        * finish initializing the PatchData.  Reorders vertex handles array
@@ -522,10 +525,10 @@ namespace Mesquite
        *
        * \param elem_offset_array Offset into connectivity array for each element
        */
-    void initialize_data( size_t* elem_offset_array, MsqError& err );
+    void initialize_data( size_t* elem_offset_array, const bool* fixed_flags, MsqError& err );
    
       /** Code common to misc. methods for populating patch data.
-       *  Calls \ref initialize_data, sets element types and
+       *  Calls initialize_data(), sets element types and
        *  sets vertex coordinates using vertexHandlesArray and 
        *  myMesh.
        *
@@ -537,18 +540,19 @@ namespace Mesquite
        */
     void initialize_patch( EntityTopology* elem_type_array,
                            size_t* elem_offset_array,
+                           const bool* fixed_flags,
                            MsqError& err );
     
       /** Code common to misc. methods for populating patch data.
        *  Remove duplicates from an array of handles.
        *\param handles    The array of handles to uniquify.
-       *\param count      As input, the lenght of the \ref handles
+       *\param count      As input, the lenght of the #handles
        *                  array.  As output, the number of unique
        *                  handles remaining in the array.
        *\param index_map  If non-null, this must be an array of the
        *                  same length as the handles array.  If this
        *                  array is passed, the entry cooresponding
-       *                  to each handle in the input \ref handles array will
+       *                  to each handle in the input #handles array will
        *                  be set to the index of that handle in the output
        *                  array.
        */
@@ -566,34 +570,37 @@ namespace Mesquite
     Mesh* myMesh;              //!< The Mesh used to fill this PatchData [may be NULL]
     MeshDomain* myDomain;      //!< The geometric domain of the mesh [may be NULL]
     
-    VertexIterator* vertexIterator;   //!< Current vertex in Mesh [may be NULL]
-    ElementIterator* elementIterator; //!< Current element in Mesh [may be NULL]
-    
-      //! Cached data for vertices in \ref vertexHandlesArray,
+      //! Cached data for vertices in PatchData::vertexHandlesArray,
       //! or vertex data for a temporary patch.
     msq_std::vector<MsqVertex> vertexArray;
       //! The list of handles for the vertices in this patch
-      //! May be empty if \ref myMesh is NULL
+      //! May be empty if PatchData::myMesh is NULL
     msq_std::vector<Mesh::VertexHandle> vertexHandlesArray;
-      //! The number of vertices in \ref vertexArray that are
-      //! corner vertices (not mid-nodes.)  This is the offset 
-      //! in \ref vertexArray beginning at which the mid-side
-      //! nodes are stored.
-    size_t numCornerVertices;
-      //! Cached data for elements in \ref elementHandlesArray
+      //! The number of vertices in PatchData::vertexArray that are
+      //! free vertices.  The vertex array is sorted such that
+      //! free vertices are first in the array.  This value
+      //! is therefore the offset at which slave vertices begin
+      //! in the array.
+    size_t numFreeVertices;
+      //! The number of slave vertices in vertexArray.  The
+      //! vertices are ordered such that all fixed vertices occur
+      //! after the slave vertices.  Therefore the offset at which
+      //! the fixed vertices begin is numFreeVertices+numSlaveVertices
+    size_t numSlaveVertices;
+      //! Cached data for elements in PatchData::elementHandlesArray
       //! or element data for a temporary patch.
     msq_std::vector<MsqMeshEntity> elementArray;
       //! The hist of handles for elements in this patch.
-      //! May be empty if \ref myMesh is NULL
+      //! May be empty if PatchData::myMesh is NULL
     msq_std::vector<Mesh::ElementHandle> elementHandlesArray;
       //! Element connectivity data.  The concatenation of the 
-      //! connectivity list of each element in \ref elementArray.
-      //! Each element in \ref elementArray has a pointer into
+      //! connectivity list of each element in PatchData::elementArray.
+      //! Each element in PatchData::elementArray has a pointer into
       //! this array at the correct offset for that element's connectivity data.
     msq_std::vector<size_t> elemConnectivityArray;
       //! The concatenation of the adjacency lists of all the vertices
-      //! in \ref vertexArray.  Each value in the array is an index into 
-      //! \ref elementArray indicating that the corresponding element uses
+      //! in PatchData::vertexArray.  Each value in the array is an index into 
+      //! PatchData::elementArray indicating that the corresponding element uses
       //! the vertex.  May be empty if vertex adjacency data has not been
       //! requested.
     msq_std::vector<size_t> vertAdjacencyArray;
@@ -603,7 +610,7 @@ namespace Mesquite
       //! adjacency data has not been requested.
     msq_std::vector<size_t> vertAdjacencyOffsets;
       //! This array is indexed with vertex indices and contains a 
-      //! pointer into \ref normalData at which the cached domain normal
+      //! pointer into PatchData::normalData at which the cached domain normal
       //! data for the vertex begins.  If the DOF in the domain is 2
       //! for the vertex, then the vertex has a single normal.  If
       //! the DOF is other than 2, the vertex has a normal for each
@@ -613,10 +620,10 @@ namespace Mesquite
       //! vertex index into the normalData array.
     msq_std::vector<Vector3D*> vertexNormalPointers;
       //! Storage space for cached domain normal data.  Pointers in
-      //! \ref vertexNormalPointers point into this list.
+      //! PatchData::vertexNormalPointers point into this list.
     msq_std::vector<Vector3D> normalData;
       //! Storage space for cached domain DOF for vertices.  IF
-      //! a domain exists and \ref normalData is not empty, but
+      //! a domain exists and PatchData::normalData is not empty, but
       //! this array is, it may be assumed that all vertices have
       //! have a DOF == 2.
     msq_std::vector<unsigned short> vertexDomainDOF;
@@ -628,15 +635,20 @@ namespace Mesquite
     
       // Patch Computed Information (maxs, mins, etc ... )
     double computedInfos[MAX_COMPUTED_INFO_ENUM];
-      // Bit map indicating which values in \ref computedInfos
+      // Bit map indicating which values in PatchData::computedInfos
       // are valud (which values have been calculated.)
     unsigned haveComputedInfos;
+    
+    ExtraData* dataList;
+    
+    MappingFunctionSet* mappingFuncs;
 
   };
   
+  void print_patch_data( const PatchData& pd );
   
-  /*! \class PatchDataVerticesMemento
-    \brief Contains a copy of the coordinates of a PatchData.
+  
+  /*! \brief Contains a copy of the coordinates of a PatchData.
 
     Use PatchDataVerticesMemento when you want to change the coordinates
     of a PatchData object but also have the option to restore them.
@@ -647,6 +659,14 @@ namespace Mesquite
   public:
     ~PatchDataVerticesMemento()
     { delete[] vertices; }
+    
+    void clear()
+    {
+      delete [] vertices;
+      vertices = 0;
+      originator = 0;
+      numVertices = arraySize = 0;
+    }
   private:
     // Constructor accessible only to originator (i.e. PatchData)
     friend class PatchData;
@@ -660,7 +680,6 @@ namespace Mesquite
     size_t arraySize;
   };
 
-
   inline void PatchData::clear()
   {
     vertexArray.clear();
@@ -673,22 +692,17 @@ namespace Mesquite
     vertexNormalPointers.clear();
     normalData.clear();
     vertexDomainDOF.clear();
-    numCornerVertices = 0;
+    numFreeVertices = 0;
+    numSlaveVertices = 0;
     haveComputedInfos = 0;
     myMesh = 0;
     myDomain = 0;
-    delete vertexIterator;
-    vertexIterator = 0;
-    delete elementIterator;
-    elementIterator = 0;
   }
   
   
   
 
-  /*! \fn PatchData::get_vertex_array(MsqError &err) const 
-
-  \brief Returns an array of all vertices in the PatchData.
+  /*! \brief Returns an array of all vertices in the PatchData.
   */
   inline const MsqVertex* PatchData::get_vertex_array(MsqError &err) const 
   {
@@ -703,9 +717,7 @@ namespace Mesquite
     return &vertexArray[0];
   }
   
-  /*! \fn PatchData::get_element_array(MsqError &err) const 
-
-  \brief Returns the PatchData element array.
+  /*! \brief Returns the PatchData element array.
   */
   inline const MsqMeshEntity* PatchData::get_element_array(MsqError &err) const
   {
@@ -720,9 +732,7 @@ namespace Mesquite
     return &elementArray[0];
   }
   
-  /*! \fn PatchData::set_vertex_coordinates(const Vector3D &coords, size_t index, MsqError &err)
-
-  \brief set the coordinates of a vertex in the raw array
+  /*! \brief set the coordinates of a vertex in the raw array
   */
   inline void PatchData::set_vertex_coordinates(const Vector3D &coords,
                                                 size_t index,
@@ -736,40 +746,21 @@ namespace Mesquite
     vertexArray[index] = coords;
   }
   
-  
-  /*! \fn PatchData::get_vertex_to_elem_offset(MsqError &err) const 
-   */  
-  //inline const size_t* PatchData::get_vertex_to_elem_offset(MsqError &/*err*/)
-  //{
-  //    // Make sure we've got the data
-  //  if (vertAdjacencyOffsets.empty())
-  //  {
-  //    generate_vertex_to_element_data();
-  //  }
-  //  return &vertAdjacencyOffsets[0];
-  //}
-  
-  /*! \fn PatchData::get_vertex_to_elem_array(MsqError &err) const 
-   */
-  //inline const size_t* PatchData::get_vertex_to_elem_array(MsqError &/*err*/) 
-  //{
-  //    // Make sure we've got the data
-  //  if (vertAdjacencyArray.empty())
-  //  {
-  //    generate_vertex_to_element_data();
-  //  }
-  //  return &vertAdjacencyArray[0];
-  //}
-  
   inline MsqVertex& PatchData::vertex_by_index(size_t index)
   {
     return vertexArray[index];
   }
   
+  inline const MsqVertex& PatchData::vertex_by_index( size_t index ) const
+    { return vertexArray[index]; }
+  
   inline MsqMeshEntity& PatchData::element_by_index(size_t index)
   {
     return elementArray[index];
   }
+  
+  inline const MsqMeshEntity& PatchData::element_by_index( size_t index ) const
+    { return elementArray[index]; }
   
   /*! gets the index of a vertex in the PatchData vertex array,
     given a pointer to the vertex. */
@@ -784,7 +775,7 @@ namespace Mesquite
   }
 
   
-  /*! \fn PatchData::create_vertices_memento(MsqError &err)
+  /*! 
     This function instantiate PatchDataVerticesMemento object and returns a pointer to it.
     The PatchDataVerticesMemento contains the current state of the PatchData coordinates.
     It can be used to restore the same PatchData object to those coordinates.
@@ -792,24 +783,19 @@ namespace Mesquite
     It is the responsibility of the caller to discard the PatchDataVerticesMemento
     when not needed any more.
   */
-  inline PatchDataVerticesMemento* PatchData::create_vertices_memento(MsqError& /*err*/,
+  inline PatchDataVerticesMemento* PatchData::create_vertices_memento(MsqError& err,
                                                                       bool include_higher_order)
   {
-    size_t num_verts = include_higher_order ? num_nodes() : num_vertices();
     PatchDataVerticesMemento* memento = new PatchDataVerticesMemento;
-    memento->originator = this;
-    if (num_verts)
-      memento->vertices = new MsqVertex[num_verts];
-    memento->numVertices = num_verts;
-    memento->arraySize = num_verts;
-     
-      // Copy the coordinates
-    msq_stdc::memcpy(memento->vertices, &vertexArray[0], num_verts*sizeof(MsqVertex) );
-    
+    recreate_vertices_memento( memento, err, include_higher_order );
+    if (MSQ_CHKERR(err)) {
+      delete memento;
+      return 0;
+    }
     return memento;
   }
   
-  /*! \fn PatchData::recreate_vertices_memento(MsqError &err)
+  /*! 
     This function reuses an existing PatchDataVerticesMemento object.
     The PatchDataVerticesMemento contains the current state of the PatchData coordinates.
     It can be used to restore the same PatchData object to those coordinates.
@@ -821,7 +807,9 @@ namespace Mesquite
                                                    MsqError& /*err*/,
                                                    bool include_higher_order)
   {
-    size_t num_verts = include_higher_order ? num_nodes() : num_vertices();
+    size_t num_verts = num_free_vertices();
+    if (include_higher_order)
+      num_verts += num_slave_vertices();
     memento->originator = this;
     
     if ( num_verts > memento->arraySize
@@ -839,7 +827,7 @@ namespace Mesquite
     memento->numVertices = num_verts;
   }
   
-  /*! \fn PatchData::set_to_vertices_memento(PatchDataVerticesMemento* memento, MsqError &err)
+  /*! 
     This function restores a PatchData object coordinates to a previous state hold in
     a PatchDataVerticesMemento object (see create_vertices_memento() ).
 
@@ -857,8 +845,8 @@ namespace Mesquite
       return;
     }
     
-    if (memento->numVertices != num_vertices() &&
-        memento->numVertices != num_nodes())
+    if (memento->numVertices != num_free_vertices() &&
+        memento->numVertices != num_free_vertices()+num_slave_vertices())
     {
       MSQ_SETERR(err)("Unable to restore patch coordinates.  Number of "
                       "vertices in PatchData has changed.",

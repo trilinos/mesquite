@@ -40,9 +40,12 @@
 
 #include "Mesquite.hpp"
 #include "VertexMover.hpp"
-#include "MsqFreeVertexIndexIterator.hpp"
-#include "MsqDebug.hpp"
-#include <math.h>
+#include "VertexPatches.hpp"
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#  include <vector.h>
+#else
+#  include <vector>
+#endif
 namespace Mesquite
 {
 
@@ -59,6 +62,10 @@ namespace Mesquite
 
     virtual ~Randomize() { }
     
+    virtual msq_std::string get_name() const;
+
+    virtual PatchSet* get_patch_set();
+    
   protected:
     virtual void initialize(PatchData &pd, MsqError &err);
     virtual void optimize_vertex_positions(PatchData &pd,
@@ -69,54 +76,10 @@ namespace Mesquite
   private:
       //! \param The percentage of the scale factor each vertex will be moved.
     double mPercent;
-      /*!Function calculates a scale factor for the patch, then moves
-        the incident vertex randomly in each of the three coordinate
-        directions (relative to the scale factor multiplied by mPercent).
-      */
-    inline void randomize_vertex(PatchData &pd,size_t num_vtx,
-                                 MsqVertex &free_vtx,
-                                 MsqError &err);
+    msq_std::vector<size_t> adjVtxList;
+    VertexPatches patchSet;
   };
 
-  
-    //!Perturbs the free vertex randomly.
-  inline void Randomize::randomize_vertex(PatchData &pd, size_t num_vtx,
-                                          MsqVertex &free_vtx,
-                                          MsqError &err)
-  {
-    size_t i;
-    short j;
-    MsqVertex* verts = pd.get_vertex_array(err);  MSQ_ERRRTN(err);
-      //a scale w.r.t. the patch size
-    double scale_factor=0.0;
-      //a "random" number between -1 and 1
-    double rand_double=0.0;
-      //a "random" int
-    int rand_int=0;
-    if (num_vtx<=1){
-      MSQ_PRINT(1)("WARNING: Number of incident vertex is zero.  Returning.\n");
-      return;
-    }
-
-    size_t free_ind = pd.get_vertex_index(&(free_vtx));
-    
-    
-    for (i=0;i<num_vtx;++i){
-      if(i != free_ind)
-        scale_factor+=(verts[i]-free_vtx).length();
-    }
-    scale_factor/=( (double) num_vtx - 1.0 );    
-    for (j=0;j<3;++j){
-      rand_int = rand();
-        //number between 0 and 1000
-      rand_int = rand_int%1000;
-        //number between -1 and 1
-      rand_double = (((double) rand_int)/500.0)-1.0;
-      free_vtx[j] += scale_factor*rand_double*mPercent;
-    }
-    
-    return;
-  }
 
   
 }

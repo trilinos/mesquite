@@ -46,6 +46,8 @@ SimplifiedGeometryEngine.
 // DESCRIP-END.
 //
 
+#include "meshfiles.h"
+
 #include "PatchDataInstances.hpp"
 #include "cppunit/extensions/HelperMacros.h"
 #include <math.h>
@@ -118,7 +120,7 @@ public:
      Mesquite::MsqPrintError err(cout); 
      Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
      
-     mesh->read_vtk("../../meshFiles/2D/VTK/tangled_tri.vtk", err);
+     mesh->read_vtk(MESH_FILES_DIR "2D/VTK/tangled_tri.vtk", err);
      CPPUNIT_ASSERT(!err);
      
        //create geometry: plane z=5, normal (0,0,1)
@@ -130,21 +132,19 @@ public:
      InstructionQueue queue1, queue2;
      
        // creates a mean ratio quality metric ...
-     ShapeQualityMetric* shape = new ConditionNumberQualityMetric;
-     UntangleQualityMetric* untan = new UntangleBetaQualityMetric(.1);
+     ConditionNumberQualityMetric* shape = new ConditionNumberQualityMetric;
+     UntangleBetaQualityMetric* untan = new UntangleBetaQualityMetric(.1);
      
        // ... and builds an objective function with it (untangle)
      LInfTemplate* untan_func = new LInfTemplate(untan);
-     untan_func->set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
      LPtoPTemplate* shape_func = new LPtoPTemplate(shape,2,err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
-     shape_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
        // creates the steepest descent optimization procedures
-     SteepestDescent* pass1 = new SteepestDescent( untan_func );
-     SteepestDescent* pass2 = new SteepestDescent( shape_func );
-     pass1->set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err,1 ,1);
-     pass2->set_patch_type(PatchData::GLOBAL_PATCH, err,1 ,1);
+     SteepestDescent* pass1 = new SteepestDescent( untan_func, true );
+     SteepestDescent* pass2 = new SteepestDescent( shape_func, true );
+     pass1->use_element_on_vertex_patch();
+     pass2->use_global_patch();
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
      QualityAssessor stop_qa=QualityAssessor(untan,QualityAssessor::MAXIMUM, err);
@@ -197,7 +197,7 @@ public:
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
        // launches optimization on mesh_set1
-     orig_qa_val=qa.loop_over_mesh(mesh, &msq_geom, 0,err);
+     orig_qa_val=qa.loop_over_mesh(mesh, &msq_geom, 0, err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
      queue2.run_instructions(mesh, &msq_geom, err); CPPUNIT_ASSERT(!err);
@@ -221,7 +221,7 @@ public:
      {
        Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
        MsqPrintError err(cout); 
-       mesh->read_vtk("../../meshFiles/2D/VTK/tangled_quad.vtk", err);
+       mesh->read_vtk(MESH_FILES_DIR "2D/VTK/tangled_quad.vtk", err);
        CPPUNIT_ASSERT(!err);
 
          //create geometry: plane z=5, normal (0,0,1)
@@ -233,21 +233,19 @@ public:
        InstructionQueue queue1, queue2;
 
          //creates a mean ratio quality metric ...
-       ShapeQualityMetric* shape = new ConditionNumberQualityMetric();
-       UntangleQualityMetric* untan= new UntangleBetaQualityMetric(.1);
+       ConditionNumberQualityMetric* shape = new ConditionNumberQualityMetric();
+       UntangleBetaQualityMetric* untan= new UntangleBetaQualityMetric(.1);
   
          // ... and builds an objective function with it (untangle)
        LInfTemplate* untan_func = new LInfTemplate(untan);
-       untan_func->set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
        LPtoPTemplate* shape_func = new LPtoPTemplate(shape,2,err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
-       shape_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
          // creates the cg optimization procedures
        ConjugateGradient* pass1 = new ConjugateGradient( untan_func, err );
        ConjugateGradient* pass2 = new ConjugateGradient( shape_func, err );
-       pass1->set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err,1 ,1);
-       pass2->set_patch_type(PatchData::GLOBAL_PATCH, err,1 ,1);
+       pass1->use_element_on_vertex_patch();
+       pass2->use_global_patch();
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
        QualityAssessor stop_qa=QualityAssessor(untan,QualityAssessor::MAXIMUM, err);
@@ -324,7 +322,7 @@ public:
      {
        MsqPrintError err(cout); 
        Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
-       mesh->read_vtk("../../meshFiles/2D/VTK/tri_5_xz.vtk", err);
+       mesh->read_vtk(MESH_FILES_DIR "2D/VTK/tri_5_xz.vtk", err);
        CPPUNIT_ASSERT(!err);
 
          //create geometry: plane y=5, normal (0,1,0)
@@ -342,11 +340,10 @@ public:
        LPtoPTemplate* smooth_func = new LPtoPTemplate(smooth,1,err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
-       smooth_func->set_gradient_type(ObjectiveFunction::NUMERICAL_GRADIENT);
          // creates the cg optimization procedures
        ConjugateGradient* pass1 = new ConjugateGradient( smooth_func, err );
          //pass1->set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err,1 ,1);
-       pass1->set_patch_type(PatchData::GLOBAL_PATCH, err,1 ,1);
+       pass1->use_global_patch();
        pass1->set_debugging_level(1);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);

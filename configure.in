@@ -1,25 +1,25 @@
-dnl Process this file with autoconf 2.50 to produce a configure script
+dnl Process this file with autoconf 2.60 to produce a configure script
 dnl for the CCA tutorial software installation.
 
-#--------------------------------------------------------------------
-#       Disable caching since it seems to get in the way
-#       more times than it helps us.
-#--------------------------------------------------------------------
-define([AC_CACHE_LOAD], )dnl
-define([AC_CACHE_SAVE], )dnl
-
-# Make sure we're us.
-AC_INIT(include/Mesquite.hpp)
-
-#------------------------------------------------------------------------------
-# Directory where we keep the autoconf stuff and some HPC environment folklore.
-#------------------------------------------------------------------------------
+AC_INIT(MESQUITE, 1.99)
 AC_CONFIG_AUX_DIR(./config_aux)
+AC_CONFIG_SRCDIR(include/Mesquite.hpp)
+AC_CANONICAL_SYSTEM
+dnl AM_INIT_AUTOMAKE([subdir-objects])
+AM_INIT_AUTOMAKE
+
+if test "x$CXXFLAGS" = "x"; then
+  have_user_CXXFLAGS=no
+else
+  have_user_CXXFLAGS=yes
+fi
 
 #------------------------------------------------------------------------------
 # Standard stuff
 #------------------------------------------------------------------------------
-AC_CANONICAL_SYSTEM
+AC_PROG_MAKE_SET
+AM_DISABLE_SHARED
+LIBS="-lm"
 
 #------------------------------------------------------------------------------
 # Compile flag options -- need to do this *before* detecting the compiler
@@ -36,7 +36,8 @@ AC_ARG_ENABLE( [debug],
   [AC_HELP_STRING([--enable-debug],[Developer build, implies:
                                  --enable-debug-symbols
                                  --enable-debug-output=1,2
-                                 --enable-trap-fpe])], 
+                                 --enable-trap-fpe
+                                 --enable-quite-make])], 
   [MSQ_DO_DEBUG="$enableval"], [MSQ_DO_DEBUG=""] )
 
 AC_ARG_ENABLE( [compile-optimized],
@@ -68,9 +69,25 @@ AC_ARG_ENABLE( [trap-fpe],
                    Default is no unless --enable-debug.])], 
   [MSQ_TRAP_FPE="$enableval"], [MSQ_TRAP_FPE=""] )
 
+AC_ARG_ENABLE( [quite-make], 
+  [AC_HELP_STRING([--enable-quite-make],
+                  [Much less verbose output during build.
+                   Default is no unless --enable-debug.])], 
+  [MSQ_QUITE_MAKE="$enableval"], [MSQ_QUITE_MAKE=""] )
+
+AC_ARG_ENABLE( [32bit],
+  [AC_HELP_STRING([--enable-32bit], [Force 32bit object code])],
+  [MSQ_DO_32BIT=yes],[MSQ_DO_32BIT=no] )
+
+AC_ARG_ENABLE( [64bit],
+  [AC_HELP_STRING([--enable-64bit], [Force 64bit object code])],
+  [MSQ_DO_64BIT=yes],[MSQ_DO_64BIT=no] )
+
 # If neather debug or release is specified, enable release
 if test -z "$MSQ_DO_RELEASE" -a -z "$MSQ_DO_DEBUG"; then
-  MSQ_DO_RELEASE=yes
+  if test "x$have_user_CXXFLAGS" = "xno"; then
+    MSQ_DO_RELEASE=yes
+  fi
 fi
 
 # if release, then enable appropriate sub-options
@@ -85,6 +102,9 @@ fi
 
 # if debug, then enable appropriate sub-options
 if test "$MSQ_DO_DEBUG" = "yes"; then
+  if test "x$enable_dependency_tracking" = "x"; then
+    enable_dependency_tracking=yes
+  fi
   if test -z "$MSQ_DEBUG_SYMBOLS"; then
     MSQ_DEBUG_SYMBOLS=yes
   fi
@@ -94,50 +114,251 @@ if test "$MSQ_DO_DEBUG" = "yes"; then
   if test -z "$MSQ_TRAP_FPE"; then
     MSQ_TRAP_FPE=yes
   fi
+  if test -z "$MSQ_QUITE_MAKE"; then
+    MSQ_QUITE_MAKE=yes
+  fi
 fi
 
 # Construct compiler options from above configure options
+AC_PROG_CC( [cc gcc cl egcs] )
+AC_PROG_CXX( [CC aCC g++ c++ gpp cxx cc++ cl FCC KCC RCC xlC_r xlC] )
+# get rid of annoying autoconf default CXXFLAGS
+if test "x$have_user_CXXFLAGS" = "xno"; then
+  CXXFLAGS=
+fi
+SNL_DETECT_CXX
+SNL_REQUIRED_CXX_FLAGS
 if test "$MSQ_DO_OPTIMIZE" = "yes"; then
-  CXXFLAGS="$CXXFLAGS -O2"
+  SNL_CXX_COMPILE_OPTIMIZED
 fi
 if test "$MSQ_DEBUG_SYMBOLS" = "yes"; then
-  CXXFLAGS="$CXXFLAGS -g"
+  SNL_CXX_DEBUG_SYMBOLS
 fi
 if test "$MSQ_DEBUG_ASSERTS" = "no"; then
-  CXXFLAGS="$CXXFLAGS -DNDEBUG"
+  AM_CPPFLAGS="$AM_CPPFLAGS -DNDEBUG"
 fi
 if test -n "$MSQ_DEBUG_OUT"; then
   if test "$MSQ_DEBUG_OUT" = "yes"; then 
-    CXXFLAGS="$CXXFLAGS -DMSQ_ENABLE_DEBUG"
+    AM_CPPFLAGS="$AM_CPPFLAGS -DMSQ_ENABLE_DEBUG"
   elif test "$MSQ_DEBUG_OUT" != "no"; then
-    CXXFLAGS="$CXXFLAGS -DMSQ_ENABLE_DEBUG=$MSQ_DEBUG_OUT"
+    AM_CPPFLAGS="$AM_CPPFLAGS -DMSQ_ENABLE_DEBUG=$MSQ_DEBUG_OUT"
   fi
 fi
 if test "$MSQ_TRAP_FPE" = "yes"; then
-  CXXFLAGS="$CXXFLAGS -DMSQ_TRAP_FPE"
+  AM_CPPFLAGS="$AM_CPPFLAGS -DMSQ_TRAP_FPE"
 fi
 if test "$MSQ_DO_TIMERS" = "yes"; then
-  CXXFLAGS="$CXXFLAGS -DMSQ_USE_FUNCTION_TIMERS"
+  AM_CPPFLAGS="$AM_CPPFLAGS -DMSQ_USE_FUNCTION_TIMERS"
 fi
-  
+if test "x$MSQ_QUITE_MAKE" = "xyes"; then
+  MSQ_LIBTOOL_PREFIX='@echo "building $@...";'
+  MSQ_LIBTOOL_FLAGS='--silent'
+else
+  MSQ_LIBTOOL_PREFIX=
+  MSQ_LIBTOOL_FLAGS=
+fi
+
+if test "x$MSQ_DO_32BIT" = "xyes"; then
+  SNL_CXX_COMPILE_32BIT
+fi
+if test "x$MSQ_DO_64BIT" = "xyes"; then
+  if test "x$MSQ_DO_32BIT" = "xyes"; then
+    AC_MSG_ERROR([--enable-32bit and --enable-64bit are mutually exclusive.])
+  fi
+  SNL_CXX_COMPILE_64BIT
+fi
+
 
 #------------------------------------------------------------------------------
-# Check for required executables
+# LIBTOOL
 #------------------------------------------------------------------------------
-AC_PROG_LN_S
-AC_PROG_MAKE_SET
-AC_PROG_RANLIB
-AC_PROG_CC( [cc gcc cl egcs] )
-AC_PROG_CXXCPP
-AC_PROG_CXX( [CC aCC g++ c++ gpp cxx cc++ cl FCC KCC RCC xlC_r xlC] )
-MSQ_CHK_PROG_WITH(MAKEDEPEND, makedepend, /bin/true, [[
-  --with-makedepend=PROG  Full path to C/C++ dependency generator
-  --without-makedepend    Do not generate dependency information during build]], 
- [/usr/bin/X11:/usr/openwin/bin])
-MSQ_CHK_PROG_WITH(DOXYGEN, doxygen, no, [[
-  --with-doxygen[=PROG]   Optionally specify doxygen program.
-  --without-doxygen       Disable generation of documentation]])
-  
+# Don't set up libtool until we're done messing with the compiler flags
+# so we're sure libtool is set up correctly for the flags we want.
+# Mostly need to make sure ar and nm are correct on IBM AIX, and that's
+# handled inside our compiler detection code.
+
+# We never use a fortran compiler, so skip testing for it
+m4_undefine([AC_PROG_F77])
+m4_defun([AC_PROG_F77],[])
+
+# C++ compiler should already be set up, don't reconfigure
+# with different settings
+m4_undefine([AC_PROG_CXX])
+m4_defun([AC_PROG_CXX],[])
+
+AM_PROG_LIBTOOL
+
+
+#------------------------------------------------------------------------------
+# Documentation
+#------------------------------------------------------------------------------
+
+# If old version of autoconf (automake?), these won't be defined for us
+if test "x$htmldir" = "x"; then
+  htmldir="$docdir"
+  AC_SUBST(htmldir)
+fi
+if test "x$pdfdir" = "x"; then
+  pdfdir="$docdir"
+  AC_SUBST(pdfdir)
+fi
+if test "x$psdir" = "x"; then
+  psdir="$docdir"
+  AC_SUBST(psdir)
+fi
+
+AC_ARG_VAR([DOXYGEN],[command to generate Doxygen docs])
+AC_PATH_PROG([DOXYGEN], [doxygen], [no])
+AC_SUBST([DOXYGEN])
+
+AC_ARG_VAR([LATEX],[command to generate latex documentation])
+AC_PATH_PROG([LATEX], [latex], [no])  
+AC_SUBST([LATEX])
+
+AC_ARG_VAR([BIBTEX],[command to generate latex bibliography])
+AC_PATH_PROG([BIBTEX], [bibtex], [no])  
+AC_SUBST([BIBTEX])
+
+AC_ARG_VAR([PS2PDF],[command to generate PDF from PostScript])
+AC_PATH_PROG([PS2PDF], [ps2pdf], [no])  
+AC_SUBST([PS2PDF])
+
+AC_ARG_VAR([DVIPS],[command to generate PostScript from latex output])
+AC_PATH_PROG([DVIPS], [dvips], [no])  
+AC_SUBST([DVIPS])
+
+AC_ARG_ENABLE([api-doc],[AC_HELP_STRING([--enable-api-doc=FORMATLIST],
+  [Generate Doxygen docs for API.
+   Available formats are HTML,PDF,PS,ALL. Default is no docs.
+   Multiple values must be separated by commas.])],
+  [ARG_ENABLE_DOX=${enableval}],[ARG_ENABLE_DOX=no])
+   
+AC_ARG_ENABLE([user-guide],[AC_HELP_STRING([--enable-user-guide=FORMATLIST],
+  [Generate Mesquite User's Guide
+   Available formats are PDF,PS,ALL. Default is no docs.
+   Multiple values must be separated by commas.])],
+  [ARG_ENABLE_GUIDE=${enableval}],[ARG_ENABLE_GUIDE=no])
+
+DOXYGEN_HTML=no
+DOXYGEN_PDF=no
+DOXYGEN_PS=no
+USER_GUIDE_PDF=no
+USER_GUIDE_PS=no
+
+# If user didn't explicitly request API dox
+if test "x$ARG_ENABLE_DOX" = "x"; then
+  # check which formats we can do
+  if test "x$DOXYGEN" != "xno"; then
+    if test "x$LATEX" != "xno"; then
+      DOXYGEN_HTML=yes
+    fi
+  fi
+# If user did reqest API docs explicitly
+elif test "x$ARG_ENABLE_DOX" != "xno"; then
+  # make sure we can do the requested formats
+  if test "x$DOXYGEN" = "xno"; then
+    AC_MSG_ERROR("doxygen not found.  Cannot generate API docs.")
+  fi
+  if test "x$LATEX" = "xno"; then
+    AC_MSG_ERROR("latex not found.  Cannot generate API docs.")
+  fi
+  if test "x$ARG_ENABLE_DOX" == "xyes"; then
+    if test "x$LATEX" != "xno"; then
+      DOXYGEN_HTML=yes
+    fi
+  else
+    list=`echo $ARG_ENABLE_DOX | tr :, ' '`
+    for type in $list; do
+      case $type in
+        HTML|Html|html)
+          DOXYGEN_HTML=yes
+          ;;
+        PDF|Pdf|pdf)
+          DOXYGEN_PDF=yes
+          if test "x$DVIS" = "xno"; then AC_MSG_ERROR("Doxygen PDF requires dvips"); fi
+          if test "x$PS2PDF" = "xno"; then AC_MSG_ERROR("Doxygen PDF requires ps2pdf"); fi
+          ;;
+        PS|Ps|ps)
+          DOXYGEN_PS=yes
+          if test "x$DVIPS" = "xno"; then AC_MSG_ERROR("Doxygen PostScript requires dvips"); fi
+          ;;
+        ALL|All|all)
+          DOXYGEN_HTML=yes
+          if test "x$DVIPS" != "xno"; then 
+            DOXYGEN_PS=yes
+            if test "x$PS2PDF" != "xno"; then DOXYGEN_PDF=yes; fi
+          fi
+          ;;
+        *)
+          AC_MSG_ERROR("Invalid API doc format: $type")
+          ;;
+      esac
+    done
+  fi
+fi
+
+
+# If user didn't explicitly request user's guide
+if test "x$ARG_ENABLE_GUIDE" = "x"; then
+  # check which formats we can do
+  if test "x$LATEX" != "xno" -o "x$BIBTEX" != "xno" -o "x$DVIPS" != "xno"; then
+    if test "x$PS2PDF" != "xno"; then
+      USER_GUIDE_PDF=yes
+    else
+      USER_GUIDE_PS=yes
+    fi
+  fi
+# If user did reqest user's guide explicitly
+elif test "x$ARG_ENABLE_GUIDE" != "xno"; then
+  # make sure we can do the requested formats
+  if test "x$LATEX" = "xno"; then
+    AC_MSG_ERROR("latex not found.  Cannot generate User's Guide.")
+  fi
+  if test "x$BIBTEX" = "xno"; then
+    AC_MSG_ERROR("bibtex not found.  Cannot generate User's Guide.")
+  fi
+  if test "x$DVIPS" = "xno"; then
+    AC_MSG_ERROR("dvips not found.  Cannot generate User's Guide.")
+  fi
+  if test "x$ARG_ENABLE_GUIDE" == "xyes"; then
+    if test "x$PS2PDF" != "xno"; then
+      USER_GUIDE_PDF=yes
+    else
+      USER_GUIDE_PS=yes
+    fi
+  else
+    list=`echo $ARG_ENABLE_GUIDE | tr :, ' '`
+    for type in $list; do
+      case $type in
+        PDF|Pdf|pdf)
+          USER_GUIDE_PDF=yes
+          if test "x$PS2PDF" = "xno"; then AC_MSG_ERROR("PDF User's Guide requires ps2pdf"); fi
+          ;;
+        PS|Ps|ps)
+          USER_GUIDE_PS=yes
+          ;;
+        ALL|All|all)
+          USER_GUIDE_PS=yes
+          if test "x$PS2PDF" != "xno"; then USER_GUIDE_PDF=yes; fi
+          ;;
+        *)
+          AC_MSG_ERROR("Invalid User's Guide format: $type")
+          ;;
+      esac
+    done
+  fi
+fi
+
+AM_CONDITIONAL([WITH_DOXYGEN_HTML],  [test "x$DOXYGEN_HTML"   = "xyes"])
+AM_CONDITIONAL([WITH_DOXYGEN_PDF],   [test "x$DOXYGEN_PDF"    = "xyes"])
+AM_CONDITIONAL([WITH_DOXYGEN_PS],    [test "x$DOXYGEN_PS"     = "xyes"])
+AM_CONDITIONAL([WITH_USER_GUIDE_PDF],[test "x$USER_GUIDE_PDF" = "xyes"])
+AM_CONDITIONAL([WITH_USER_GUIDE_PS], [test "x$USER_GUIDE_PS"  = "xyes"])
+AC_SUBST(DOXYGEN_HTML)
+AC_SUBST(DOXYGEN_PDF)
+AC_SUBST(DOXYGEN_PS)
+AC_SUBST(USER_GUIDE_PDF)
+AC_SUBST(USER_GUIDE_PS)
 
 #-----------------------------------------------------------------------------
 # Check for required headers
@@ -155,10 +376,7 @@ AC_CHECK_FUNCS( vsnprintf, [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_VSNPRINTF"] )
 AC_CHECK_FUNCS( vsprintf, [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_VSPRINTF"] )
 AC_CHECK_FUNCS( clock, [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_CLOCK"] )
 AC_CHECK_FUNCS( times, [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_TIMES"] )
-LIBS=-lm
 AC_CHECK_FUNCS( cbrt,  [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_CBRT"] )
-AC_CHECK_FUNCS( finite, AC_DEFINE(HAVE_FINITE, [1], [System has finite]) )
-AC_CHECK_FUNCS( _Isfinite, AC_DEFINE(HAVE__ISFINITE, [1], [System has _Isfinite]) )
 
 # Use C++ compiler because C allows undefined functions, so these
 # checks don't achive much if compiled as C.  Also, if C and C++
@@ -186,39 +404,6 @@ AC_SUBST(MSQ_FUNC_DEFS)
 MSQ_CPLUSPLUS_FUNC
 MSQ_CPLUSPLUS_HEADERS
 
-#-----------------------------------------------------------------------------
-# Try to find an archiver that correctly handles C++ templates
-#-----------------------------------------------------------------------------
-CXX_ARCHIVER=
-AC_ARG_WITH( archiver, 
- [AC_HELP_STRING([--with-archiver=ARG],[Specify tool for creating static libraries])], 
- [
- MSQ_TEST_ARCHIVER( [$withval], 
-  [ CXX_ARCHIVER=$withval; AC_SUBST(CXX_ARCHIVER) ],
-  [AC_MSG_ERROR(["$with_archiver" : not a valid archiver.])]
-  ) ],
-  [MSQ_CPLUSPLUS_ARCHIVER ]
-)
-AC_SUBST(CXX_ARCHIVER)
-
-#------------------------------------------------------------------------------
-# Some GCC-specific stuff
-#------------------------------------------------------------------------------
-if test "${GXX}" = "yes" ; then
-    CXXFLAGS="$CXXFLAGS -Wall -Wconversion"
-fi
-if test -z "$no_pipe"; then
-if test -n "$GXX"; then
-  AC_MSG_CHECKING([if c++ compiler understands -pipe])
-  OLDCXX="$CXX"
-  CXX="$CXX -pipe"
-  AC_TRY_COMPILE(,,
-    AC_MSG_RESULT(yes),
-    CXX="$OLDCXX"
-    AC_MSG_RESULT(no))
-fi
-fi
-
 #------------------------------------------------------------------------------
 # Other build options
 #------------------------------------------------------------------------------
@@ -233,8 +418,7 @@ AC_ARG_WITH(netcdf,
   [AC_HELP_STRING([--with-netcdf(=DIR)],
                   [ExodusII requires NetCDF - defaults to values for --with-exodus])
 AC_HELP_STRING([--without-netcdf],[Skip NetCDF check])],
-  [NETCDF_ARG=$withval], 
-  [if test "xno" != "x$EXODUS_ARG"; then NETCDF_ARG=yes; else NETCDF_ARG=no; fi])
+  [NETCDF_ARG=$withval], [NETCDF_ARG=])
 
 AC_ARG_WITH(babel,
   [AC_HELP_STRING([--with-babel(=DIR)],
@@ -269,255 +453,211 @@ AC_HELP_STRING([--without-cppunit],   [Disable CppUnit tests])],
 # Configure different options
 #-------------------------------------------------------------------------------
 
-# NetCDF configuration
-NETCDF_DIR=
-NETCDF_INC=
-NETCDF_LNK=
-HAVE_NETCDF_H=no
-if test "xno" != "$NETCDF_ARG"; then
-  if test "xyes" != "$NETCDF_ARG"; then
-    NETCDF_DIR="$NETCDF_ARG"
-    if test -d "$NETCDF_DIR/include"; then
-      NETCDF_INC="-I$NETCDF_DIR/include"
-    elif test -d "$NETCDF_DIR/inc"; then
-      NETCDF_INC="-I$NETCDF_DIR/inc"
-    else
-      NETCDF_INC="-I$NETCDF_DIR"
+# Configure Exodus and NetCDF
+AM_CONDITIONAL([WITH_EXODUS],[test "x$EXODUS_ARG" != "xno"])
+if test "x$EXODUS_ARG" != "xno"; then
+  old_CPPFLAGS="$CPPFLAGS"
+  old_LDFLAGS="$LDFLAGS"
+  old_LIBS="$LIBS"
+  AM_CPPFLAGS="$AM_CPPFLAGS -DMSQ_USING_EXODUS"
+  
+    # If user specified path for Exodus, add to appropriate vars
+  if test "x$EXODUS_ARG" != "xyes"; then
+    EXODUS_INC="-I${EXODUS_ARG}/include"
+    EXODUS_LNK="-L${EXODUS_ARG}/lib"
+    CPPFLAGS="$CPPFLAGS $EXODUS_INC"
+    LDFLAGS="$LDFLAGS $EXODUS_LNK"
+    AM_CPPFLAGS="$AM_CPPFLAGS $EXODUS_INC"
+    AM_LDFLAGS="$AM_LDFLAGS $EXODUS_LNK"
+  fi
+  AM_LDFLAGS="$AM_LDFLAGS -lexoIIv2c"
+    
+    # Check for netcdf unless user explicitly said --without-netcdf
+  if test "x$NETCDF_ARG" != "xno"; then
+      # If user specified path for NetCDF, add to appropriate vars
+    if test "x$NETCDF_ARG" != "xyes" -a "x$NETCDF_ARG" != "x" ; then
+      NETCDF_INC="-I${NETCDF_ARG}/inc -I${NETCDF_ARG}/include"
+      NETCDF_LNK="-L${NETCDF_ARG}/lib"
+      CPPFLAGS="$CPPFLAGS $NETCDF_INC"
+      LDFLAGS="$LDFLAGS $NETCDF_LNK"
+      AM_CPPFLAGS="$AM_CPPFLAGS $NETCDF_INC"
+      AM_LDFLAGS="$AM_LDFLAGS $NETCDF_LNK"
     fi
-    if test -d "$NETCDF_DIR/lib"; then
-      NETCDF_LNK="-L$NETCDF_DIR/lib"
-    else
-      NETCDF_LNK="-L$NETCDF_DIR"
-    fi
+      # Check for NetCDF, but don't fail configure unless user
+      # explicitly specified that netcdf should be included
+    AC_CHECK_LIB( [netcdf], [nc_open], 
+      [LIBS="$LIBS -lnetcdf"; AM_LDFLAGS="$AM_LDFLAGS -lnetcdf"],
+      [if test "x$NETCDF_ARG" != "x"; then AC_MSG_ERROR([NetCDF library not found]); fi])
+    AC_CHECK_HEADER( [netcdf.h], [], 
+      [if test "x$NETCDF_ARG" != "x"; then AC_MSG_ERROR([netcdf.h not found]); fi ])
   fi
   
-  old_CPPFLAGS="$CPPFLAGS"
-  CPPFLAGS="$CPPFLAGS $NETCDF_INC"
-  AC_CHECK_HEADER( [netcdf.h], [HAVE_NETCDF_H=yes], [HAVE_NETCDF_H=no] )
+    # Check for ExodusII
+  AC_CHECK_LIB( [exoIIv2c], [ex_open], [], [AC_MSG_ERROR([ExodusII library not found])] )
+  AC_CHECK_HEADER( [exodusII.h], [], [AC_MSG_ERROR([exodusII.h not found])] )
   CPPFLAGS="$old_CPPFLAGS"
-                 
-  old_LIBS="$LIBS"
-  LIBS="$LIBS $NETCDF_LNK"
-  AC_CHECK_LIB( [netcdf], [nc_open], [NETCDF_LNK="$NETCDF_LNK -lnetcdf"] )
+  LDFLAGS="$old_LDFLAGS"
   LIBS="$old_LIBS"
 fi
 
-# Exodus configuration
-EXODUS_DIR=
-EXODUS_CFLAGS=
-EXODUS_LDFLAGS=
-if test "$EXODUS_ARG" != "no"; then
-  if test "$EXODUS_ARG" != "yes"; then
-    EXODUS_DIR="$EXODUS_ARG"
-    if test -d "$EXODUS_DIR/include"; then
-      EXODUS_CFLAGS="-I$EXODUS_DIR/include"
-    elif test -d "$EXODUS_DIR/inc"; then
-      EXODUS_CFLAGS="-I$EXODUS_DIR/inc"
-    else
-      EXODUS_CFLAGS="-I$EXODUS_DIR"
-    fi
-    if test -d "$EXODUS_DIR/lib"; then
-      EXODUS_LDFLAGS="-L$EXODUS_DIR/lib"
-    else
-      EXODUS_LDFLAGS="-L$EXODUS_DIR"
-    fi
+# Configure TSTT/SIDL/BABEL
+if test "x$WITH_TSTT_BASE_ARG" != "xno"; then TSTT_IFACE_ARG=yes; fi
+if test "x$WITH_TSTT_MESH_ARG" != "xno"; then TSTT_IFACE_ARG=yes; fi
+AM_CONDITIONAL( [WITH_TSTT], [test "x$TSTT_IFACE_ARG" = "xyes"] )
+if test "x$TSTT_IFACE_ARG" = "xyes"; then
+  old_CPPFLAGS="$CPPFLAGS"
+  old_LDFLAGS="$LDFLAGS"
+
+  if test "x$BABEL_ARG" = "xno"; then
+    AC_MSG_ERROR([--enable-tstt and --without-babel are mutually exclusing: TSTT requires babal])
+  fi
+  if test "x$BABEL_ARG" = "x"; then
+    BABEL_ARG=yes
+  fi
+
+  if test "x$BABEL_ARG" != "xyes"; then
+    SIDL_INC="-I${BABEL_ARG}/include -I${BABEL_ARG}/include/cxx"
+    SIDL_LNK="-L${BABEL_ARG}/lib"
+    CPPFLAGS="$CPPFLAGS $SIDL_INC"
+    LDFLAGS="$LDFLAGS $SIDL_LNK"
+    AM_CPPFLAGS="$AM_CPPFLAGS $SIDL_INC"
+    AM_LDFLAGS="$AM_LDFLAGS $SIDL_LNK -lsidl"
+    AC_CHECK_PROG( [BABEL], [babel], [${BABEL_ARG}/bin/babel], [no], [${BABEL_ARG}/bin] )
+  else
+    AC_CHECK_PROG( [BABEL], [babel], [babel], [no] )
+  fi
+  if test "x$BABEL" = "xno"; then
+    AC_MSG_ERROR([cannot find 'babel' required for --enable-tstt])
   fi
   
-  old_CPPFLAGS="$CPPFLAGS"
-  CPPFLAGS="$CPPFLAGS $EXODUS_CFLAGS"
-  AC_CHECK_HEADER( [exodusII.h], 
-                   [EXODUS_CFLAGS="$EXODUS_CFLAGS -DMSQ_USING_EXODUS"],
-                   [AC_MSG_ERROR("exodusII.h not found")]
-                 )
+  AC_CHECK_HEADER( [sidl.h], [], [AC_MSG_ERROR("sidl.h not found")] )
+  AC_CHECK_LIB( [sidl], [sidl_long__array_copy], 
+                [MESQUITE_LIBS="$MESQUITE_LIBS -lsidl"],
+                [AC_MSG_ERROR("No SIDL library found")] )
+                
   CPPFLAGS="$old_CPPFLAGS"
-                 
-  old_LIBS="$LIBS"
-  LIBS="$LIBS $EXODUS_LDFLAGS $NETCDF_LNK"
-  AC_CHECK_LIB( [exoIIv2c], 
-                [ex_open],
-                [EXODUS_LDFLAGS="$EXODUS_LDFLAGS -lexoIIv2c"],
-                [AC_MSG_WARN("No ExodusII library")]
-              )
-  LIBS="$old_LIBS"
+  LDFLAGS="$old_LDFLAGS"
 fi
 
-# Configure babel
-BABEL=
-SIDL_DIR=
-SIDL_INC=
-SIDL_LNK=
-HAVE_SIDL_H=no
-if test -z "$BABEL_ARG"; then
-  AC_CHECK_HEADER( [sidl.h], [HAVE_SIDL_H=yes], [HAVE_SIDL_H=no] )
-  AC_CHECK_LIB( [sidl], [sidl_long__array_copy], [SIDL_LNK="-lsidl"])
-  AC_CHECK_PROG( [BABEL], [babel], [babel] )
-elif test "$BABEL_ARG" = "yes"; then
-  AC_CHECK_HEADER( [sidl.h], [HAVE_SIDL_H=yes], [AC_MSG_ERROR("sidl.h not found")])
-  AC_CHECK_LIB( [sidl], [sidl_long__array_copy], [SIDL_LNK="-lsidl"], [AC_MSG_ERROR("No SIDL library")])
-  AC_CHECK_PROG( [BABEL], [babel], [babel], [] )
-  if test -z "$BABEL"; then
-    AC_MSG_ERROR("Babel not found")
+# configure TSTT server for use in tests
+AC_ARG_VAR([BABEL],[SIDL compiler])
+AM_CONDITIONAL( [WITH_TSTT_MESH], [test "x$WITH_TSTT_MESH_ARG" != "xno"] )
+if test "x$WITH_TSTT_MESH_ARG" != "xno"; then
+  if test "x$WITH_TSTT_BASE_ARG" = "xno"; then
+    WITH_TSTT_BASE_ARG="$WITH_TSTT_MESH_ARG"
   fi
-elif test "$BABEL_ARG" != "no"; then
-  SIDL_DIR="$BABEL_ARG"
-  AC_CHECK_FILE( [$SIDL_DIR/include/sidl.h], 
-     [SIDL_INC='-I$(SIDL_DIR)/include'; HAVE_SIDL_H=yes], 
-     [AC_MSG_ERROR("$BABEL_ARG/include/sidl.h does not exist")] )
-  AC_CHECK_FILE( [$SIDL_DIR/lib/libsidl.so], 
-     [SIDL_LNK='-L$(SIDL_DIR)/lib -lsidl'], 
-     [AC_CHECK_FILE( [$SIDL_DIR/lib/libsidl.a], 
-        [SIDL_LNK='-L$(SIDL_DIR)/lib -lsidl'], 
-        [AC_MSG_ERROR("SIDL library not found")] )])
-  AC_CHECK_PROG( BABEL, babel, [$SIDL_DIR/bin/babel], [], [$SIDL_DIR/bin] )
-  if test -z "$BABEL"; then
-    AC_MSG_ERROR("Babel not found")
+  if test "x$WITH_TSTT_MESH_ARG" = "xyes"; then
+    AC_MSG_ERROR([Location not specified for TSTT mesh server])
   fi
-fi
-
-
-# Begin TSTT Mesh Implementations
-
-MSQ_TSTT_BASE_IMPL=no
-MSQ_TSTT_BASE_DEFS=
-if test "$WITH_TSTT_BASE_ARG" = "yes"; then
-  AC_MSG_ERROR("Server location not specified for TSTT core (base) server");
-elif test "$WITH_TSTT_BASE_ARG" != "no"; then
-  MSQ_TSTT_BASE_DEFS="${WITH_TSTT_BASE_ARG}/TSTTB-Defs.inc"
-  AC_CHECK_FILE( ["$MSQ_TSTT_BASE_DEFS"],
-                 [MSQ_TSTT_BASE_IMPL=yes],
+  if test "x$WITH_TSTT_BASE_ARG" = "xyes"; then
+    AC_MSG_ERROR([Location not specified for TSTT base server])
+  fi
+   
+  AC_CHECK_FILE( [${WITH_TSTT_BASE_ARG}/TSTTB-Defs.inc], [],
                  [AC_MSG_ERROR([Invalid TSTTB implementation spec.])] )
-fi
-
-MSQ_TSTT_MESH_IMPL=no
-MSQ_TSTT_MESH_DEFS=
-if test "$WITH_TSTT_MESH_ARG" = "yes"; then
-  AC_MSG_ERROR("Server location not specified for TSTT mesh server");
-elif test "$WITH_TSTT_MESH_ARG" != "no"; then
-  if test $MSQ_TSTT_BASE_IMPL != yes; then
-    AC_MSG_ERROR([Cannot test TSTT mesh implementation without TSTT core (base) implementation.  Try --with-tstt-base])
-  fi
-  MSQ_TSTT_MESH_DEFS="${WITH_TSTT_MESH_ARG}/TSTTM-Defs.inc"
-  AC_CHECK_FILE( ["$MSQ_TSTT_MESH_DEFS"],
-                 [MSQ_TSTT_MESH_IMPL=yes],
+  AC_CHECK_FILE( [${WITH_TSTT_MESH_ARG}/TSTTM-Defs.inc], [],
                  [AC_MSG_ERROR([Invalid TSTTM implementation spec.])] )
-  # If enabling TSTT Mesh testing, automatically enable TSTT Mesh support
-  MSQ_TSTT_MESH=yes
+  MESQUITE_TSTTB_MAKE_INCLUDE="include ${WITH_TSTT_BASE_ARG}/TSTTB-Defs.inc"
+  MESQUITE_TSTTM_MAKE_INCLUDE="include ${WITH_TSTT_MESH_ARG}/TSTTM-Defs.inc"
 fi
-
-# Enable TSTT support?
-if test "$TSTT_IFACE_ARG" = "yes"; then
-  MSQ_TSTT_MESH=yes
-  MSQ_TSTT_GEOM=yes
-else
-  MSQ_TSTT_MESH=no
-  MSQ_TSTT_GEOM=no
-fi
-
-# TSTT support requires babel
-if test $MSQ_TSTT_MESH = yes -o $MSQ_TSTT_GEOM = yes; then
-  if test "$HAVE_SIDL_H" = "no"; then
-    AC_MSG_ERROR("Babel is required for TSTT Mesh support.  Try --with-babel=...")
-  fi
-fi  
-
-
-# TSTT testing code requires SIDL library
-# if test -n "$TSTT_MESH_IMPL" -a -z "$SIDL_LNK"; then
-#   AC_MSG_ERROR("TSTT testing requires SIDL library.  Try --with-babel=...")
-# fi
 
 
 # CPPUnit
-CPPUNIT_DIR=
-CPPUNIT_INC=
-CPPUNIT_LNK=
-WITH_CPPUNIT=no
-AC_LANG_PUSH(C++)
-if test -z "$CPPUNIT_ARG"; then
-
-  AC_CHECK_HEADER( [cppunit/Test.h], [WITH_CPPUNIT=yes], [WITH_CPPUNIT=no])
-  AC_CHECK_LIB( [cppunit], [main], [WITH_CPPUNIT=yes; CPPUNIT_LNK="-lcppunit"], [WITH_CPPUNIT=no] )
-  if test "$HAVE_CPPUNIT" != "yes"; then
-    unset ac_cv_lib_cppunit_main
-    AC_CHECK_LIB( [cppunit], [main], [WITH_CPPUNIT=yes; CPPUNIT_LNK="-lcppunit -ldl"], [], [-ldl] )
+CPPUNIT_CPPFLAGS=
+CPPUNIT_LDFLAGS=
+if test "x$CPPUNIT_ARG" = "xno"; then
+  HAVE_CPPUNIT=no
+else
+    # Incorporate user-specified search paths
+  old_CPPFLAGS="$CPPFLAGS"
+  old_LDFLAGS="$LDFLAGS"
+  old_LIBS="$LIBS"
+  if test "x$CPPUNIT_ARG" != "x"; then
+    if test "x$CPPUNIT_ARG" == "xyes"; then
+      CPPUNIT_CPPFLAGS="-I$CPPUNIT_ARG/include"
+      CPPUNIT_LDFLAGS="-L$CPPUNIT_ARG/lib"
+      CPPFLAGS="$CPPFLAGS $CPPUNIT_CPPFLAGS"
+      LDFLAGS="$CPPFLAGS $CPPUNIT_LDFLAGS"
+    fi
   fi
-  if test "$WITH_CPPUNIT" != "yes"; then
-    AC_MSG_WARN("CppUnit not found")
-  fi  
-
-elif test "$CPPUNIT_ARG" = "yes"; then
-
-  WITH_CPPUNIT=yes
-  AC_CHECK_HEADER( [cppunit/Test.h], [], [AC_MSG_ERROR("cppunit/Test.h not found")])
-  AC_CHECK_LIB( [cppunit], [main], [CPPUNIT_LNK=-lcppunit], [
-    unset ac_cv_lib_cppunit_main
-    AC_CHECK_LIB( [cppunit], [main], [CPPUNIT_LNK="-lcppunit -ldl"], [AC_MSG_ERROR("No libcppunit")], [-ldl])
-  ])
-
-elif test "$CPPUNIT_ARG" != "no"; then
-  
-  WITH_CPPUNIT=yes
-  CPPUNIT_DIR="$CPPUNIT_ARG"
-  
-  CPPUNIT_LNK='-L$(CPPUNIT_DIR)/lib -lcppunit'
-  
-  AC_CHECK_FILE( [${CPPUNIT_ARG}/include/cppunit/Test.h], 
-     [CPPUNIT_INC='-I$(CPPUNIT_DIR)/include'], 
-     [AC_MSG_ERROR("${CPPUNIT_ARG}/include/cppunit/Test.h does not exist")] )
-     
-  AC_MSG_CHECKING("Checking if cppunit requires -ldl");
-  LIBS="-L${CPPUNIT_ARG}/lib -lcppunit"
-  AC_TRY_LINK( [], [], [CPPUNIT_LNK='-L$(CPPUNIT_DIR)/lib -lcppunit'], [
-    LIBS="-L${CPPUNIT_ARG}/lib -lcppunit -ldl"
-    AC_TRY_LINK( [], [], [CPPUNIT_LNK='-L$(CPPUNIT_DIR)/lib -lcppunit -ldl' ], 
-     [AC_MSG_ERROR("Cannot link cppunit")] 
-    )
-  ])
-  AC_MSG_RESULT("done")
-
+    # Set some variables 
+  HAVE_CPPUNIT=yes
+  CPPUNIT_LDFLAGS="$CPPUNIT_LDFLAGS -lcppunit"
+    # Check that CppUnit exists
+  AC_CHECK_LIB( [dl], [dlopen], 
+    [LDFLAGS="$LDFLAGS -ldl"; CPPUNIT_LDFLAGS="$CPPUNIT_LDFLAGS -ldl"] )
+  AC_LANG_PUSH(C++)
+  AC_CHECK_HEADER( [cppunit/Test.h], [], [HAVE_CPPUNIT=no] )
+  AC_CHECK_LIB( [cppunit], [main], [], [HAVE_CPPUNIT=no] )
+  AC_LANG_POP(C++)
+    # If user explicitly specified --with-cppunit, fail if it was not found
+  if test "x$CPPUNIT_ARG" != "x"; then
+    if test "x$HAVE_CPPUNIT" == "xno"; then
+      AC_MSG_ERROR([CppUnit not found])
+    fi
+  fi
+    # restore some modified state
+  CPPFLAGS="$old_CPPFLAGS"
+  LDFLAGS="$old_LDFLAGS"
+  LIBS="$old_LIBS"
 fi
-AC_LANG_POP(C++)
-
-
-
-#------------------------------------------------------------------------------
-# Set up source directory
-#------------------------------------------------------------------------------
-MSQ_BASE_DIR=`pwd`
-AC_SUBST(MSQ_BASE_DIR)
-touch make.dependencies
-for dir in includeLinks obj lib; do
-  if test ! -d $dir; then
-    mkdir $dir
-  fi
-done
+AM_CONDITIONAL( [WITH_CPPUNIT], [test "x$HAVE_CPPUNIT" = "xyes"] )
 
 
 #------------------------------------------------------------------------------
 # The End
 #------------------------------------------------------------------------------
-
+MESQUITE_LIBS="$MESQUITE_LIBS -lm"
+AC_SUBST(SED)
 AC_SUBST(BABEL)
-AC_SUBST(CPPUNIT_DIR)
-AC_SUBST(CPPUNIT_INC)
-AC_SUBST(CPPUNIT_LNK)
-AC_SUBST(EXODUS_CFLAGS)
-AC_SUBST(EXODUS_DIR)
-AC_SUBST(EXODUS_LDFLAGS)
-AC_SUBST(NETCDF_DIR)
-AC_SUBST(NETCDF_INC)
-AC_SUBST(NETCDF_LNK)
-AC_SUBST(MSQ_TSTT_GEOM)
-AC_SUBST(MSQ_TSTT_MESH)
-AC_SUBST(MSQ_TSTT_BASE_IMPL)
-AC_SUBST(MSQ_TSTT_MESH_IMPL)
-AC_SUBST(MSQ_TSTT_BASE_DEFS)
-AC_SUBST(MSQ_TSTT_MESH_DEFS)
-AC_SUBST(SIDL_DIR)
-AC_SUBST(SIDL_INC)
-AC_SUBST(SIDL_LNK)
+AC_SUBST(DOXYGEN)
+AC_SUBST(AM_CXXFLAGS)
+AC_SUBST(AM_CPPFLAGS)
+AC_SUBST(AM_LDFLAGS)
+AC_SUBST(MESQUITE_LIBS)
+AC_SUBST(MSQ_LIBTOOL_PREFIX)
+AC_SUBST(MSQ_LIBTOOL_FLAGS)
+AC_SUBST(CPPUNIT_CPPFLAGS)
+AC_SUBST(CPPUNIT_LDFLAGS)
+AC_SUBST(MESQUITE_TSTTB_MAKE_INCLUDE)
+AC_SUBST(MESQUITE_TSTTM_MAKE_INCLUDE)
+
+TEST_MAKE_INCLUDE="include ../cppflags.make"
+AC_SUBST(TEST_MAKE_INCLUDE)
 
 AC_CONFIG_HEADERS(include/mesquite_config.h)
-AC_OUTPUT(Makefile.customize)
-AC_OUTPUT(testSuite/env)
+AC_CONFIG_FILES([Makefile
+                 meshFiles/Makefile
+                 testSuite/Makefile
+                 testSuite/meshfiles.h
+                 testSuite/ActiveSetTest/Makefile
+                 testSuite/algorithm_test/Makefile
+                 testSuite/analytical_grad_3D/Makefile
+                 testSuite/convert/Makefile
+                 testSuite/deforming/Makefile
+                 testSuite/Guides843/Makefile
+                 testSuite/headers/Makefile
+                 testSuite/i_dft_with_culling/Makefile
+                 testSuite/laplacian_test/Makefile
+                 testSuite/laplacian_wrapper_test/Makefile
+                 testSuite/pyramid/Makefile
+                 testSuite/rezone/Makefile
+                 testSuite/simple_hybrid_test/Makefile
+                 testSuite/test_DFT/Makefile
+                 testSuite/test_TSTT/Makefile
+                 testSuite/test_1/Makefile
+                 testSuite/transform/Makefile
+                 testSuite/tutorial/Makefile
+                 testSuite/unit/Makefile
+                 testSuite/untangle_test/Makefile
+                 testSuite/wedge/Makefile
+                 testSuite/wrapper_tests/Makefile
+                 testSuite/2d_target/Makefile
+                 testSuite/2d_metrics/Makefile
+                 doc/Makefile
+                 doc/user/Makefile
+                 doc/user/doxygen/Makefile
+                 ])
+AC_OUTPUT
 
+echo "CXXFLAGS = $CXXFLAGS"

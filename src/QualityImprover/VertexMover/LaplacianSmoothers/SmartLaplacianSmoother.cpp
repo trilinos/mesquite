@@ -52,24 +52,19 @@
 
 namespace Mesquite {
 
+msq_std::string SmartLaplacianSmoother::get_name() const
+  { return "SmartLaplacianSmoother"; }
 
 SmartLaplacianSmoother::SmartLaplacianSmoother(ObjectiveFunction* obj_func,
                                                MsqError &err) 
-  : edgeQM(0), defaultObjFunc(0)
+  : LaplacianCommon( obj_func ? obj_func : 
+                    (defaultObjFunc = new LInfTemplate(
+                     (edgeQM = new IdealWeightInverseMeanRatio(err))))) 
 {
-  this->set_name("SmartLaplacianSmoother");
-  
-  set_patch_type(PatchData::ELEMENTS_ON_VERTEX_PATCH, err,1,1);MSQ_ERRRTN(err);
-  if(obj_func==NULL){
-    edgeQM = new IdealWeightInverseMeanRatio(err);  MSQ_ERRRTN(err);
-    defaultObjFunc = new LInfTemplate(edgeQM);
-    objFunc=defaultObjFunc;
+  if (obj_func) {
+    edgeQM = 0;
+    defaultObjFunc = 0;
   }
-  else{
-    objFunc=obj_func;
-    defaultObjFunc=NULL;
-  }
-  
 }  
 
 SmartLaplacianSmoother::~SmartLaplacianSmoother() 
@@ -101,13 +96,15 @@ void SmartLaplacianSmoother::optimize_vertex_positions(PatchData &pd,
     //int dim = get_mesh_set()->space_dim();
   size_t dim = 3;
   MsqVertex* verts=pd.get_vertex_array(err);  MSQ_ERRRTN(err);
+    //the objective function evaluator
+  OFEvaluator& obj_func = get_objective_function_evaluator();
     //variables for the function values.
   double orig_val=0;
   double mod_val=0;
     //compute the original function value and check validity
-  bool valid_flag = objFunc->evaluate(pd,orig_val,err);  MSQ_ERRRTN(err);
+  bool valid_flag = obj_func.evaluate(pd,orig_val,err);  MSQ_ERRRTN(err);
   // does the Laplacian smoothing
-  MsqFreeVertexIndexIterator free_iter(&pd, err);  MSQ_ERRRTN(err);
+  MsqFreeVertexIndexIterator free_iter(pd, err);  MSQ_ERRRTN(err);
   free_iter.reset();
   free_iter.next();
     //m is the free vertex.
@@ -128,7 +125,7 @@ void SmartLaplacianSmoother::optimize_vertex_positions(PatchData &pd,
     //But, if it wasn valid, we need to decide.
   if(valid_flag){
       //compute the new value
-    valid_flag = objFunc->evaluate(pd,mod_val,err);  MSQ_ERRRTN(err);
+    valid_flag = obj_func.evaluate(pd,mod_val,err);  MSQ_ERRRTN(err);
       //if the new value is worse the original OR if the new value is not
       //valid (we already know the original value was valid by above) then
       //we don't allow the move.

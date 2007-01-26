@@ -1,0 +1,7 @@
+SRC_QUALITYMETRIC_UNTANGLE_DIR = src/QualityMetric/Untangle
+MSQ_INCLUDES += -I$(top_srcdir)/$(SRC_QUALITYMETRIC_UNTANGLE_DIR)
+
+MSQ_SRCS += $(SRC_QUALITYMETRIC_UNTANGLE_DIR)/UntangleBetaQualityMetric.cpp 
+
+MSQ_HDRS += $(SRC_QUALITYMETRIC_UNTANGLE_DIR)/UntangleBetaQualityMetric.hpp 
+

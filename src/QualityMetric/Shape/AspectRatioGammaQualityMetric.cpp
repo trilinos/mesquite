@@ -48,22 +48,31 @@
 
 using namespace Mesquite;
 
+const double fourDivRootThree = 4.0/sqrt(3.0);
+const double twelveDivRootTwo = 12.0/sqrt(2.0);
+
+
+msq_std::string AspectRatioGammaQualityMetric::get_name() const
+  { return "AspectRatioGamma"; }
+  
+int AspectRatioGammaQualityMetric::get_negate_flag() const
+  { return 1; }
 
 //note that we can define this metric for other element types?
 //!Evaluate aspect ratio gamma on ``element''
-bool AspectRatioGammaQualityMetric::evaluate_element(PatchData &pd,
-                                                     MsqMeshEntity* element,
-                                                     double &fval,
-                                                     MsqError &err)
+bool AspectRatioGammaQualityMetric::evaluate(PatchData &pd,
+                                             size_t elem_index,
+                                             double &fval,
+                                             MsqError &err)
 {
-  EntityTopology entity = element->get_element_type();
+  MsqMeshEntity& element = pd.element_by_index( elem_index );
+  EntityTopology entity = element.get_element_type();
   double vol=0;
   Vector3D temp_vec(0,0,0);
   bool return_val = true;
   
     //get element's nodes
   vector<Vector3D> vert;
-  size_t elem_index = pd.get_element_index(element);
   pd.get_element_vertex_coordinates(elem_index, vert, err);  MSQ_ERRZERO(err);
   
   switch(entity)
@@ -93,6 +102,7 @@ bool AspectRatioGammaQualityMetric::evaluate_element(PatchData &pd,
       break;
     case TETRAHEDRON:
       vol=(vert[1]-vert[0])%((vert[2]-vert[0])*(vert[3]-vert[0]))/6.0;
+      vol = fabs(vol);
         //sum of edges squared
       if(fabs(vol)<MSQ_MIN){
         fval=MSQ_MAX_CAP;
@@ -112,9 +122,7 @@ bool AspectRatioGammaQualityMetric::evaluate_element(PatchData &pd,
         fval+=temp_vec.length_squared();
           //average sum of edges squared
         fval/=6.0;
-        fval=sqrt(fval);
-        fval*=(fval);
-        fval*=(fval);
+        fval*=sqrt(fval);
           //normalize to equil. and div by area
         fval/=(vol*twelveDivRootTwo);
       }
