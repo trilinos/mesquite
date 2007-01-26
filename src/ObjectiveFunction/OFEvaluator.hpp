@@ -79,6 +79,7 @@ public:
    *
    *\param mesh The active mesh
    */
+  MESQUITE_EXPORT
   bool initialize( Mesh* mesh, 
                    MeshDomain* domain,
                    MappingFunctionSet* maps,
@@ -166,10 +167,6 @@ public:
   MESQUITE_EXPORT
   bool is_Nash() const { return tempType == ObjectiveFunction::CALCULATE; }
   
-  /**\brief Get accumulated value for block coordinate descent OF */
-  MESQUITE_EXPORT
-  bool get_value( double& value ) const { return 0.0; }
-  
   /**\brief Evaluate the objective function without changing any 
    *        accumulated values.
    *
@@ -240,6 +237,7 @@ public:
    * updated for the correct behavior of the first call to
    * the update() method for block coordinate descent algorithms.
    */
+  MESQUITE_EXPORT
   bool reset();
   
   /**\brief Get ObjectiveFunction pointer */
@@ -263,7 +261,7 @@ private:
   /** The ObjectiveFunction to evaluate */
   ObjectiveFunction *const OF;
   
-  /** True for Nash-type solution, false for block coordinate descent */
+  /** Nash vs. BCD and state of BCD data */
   ObjectiveFunction::EvalType tempType, firstType, updateType, currUpdateType;
 };
 
