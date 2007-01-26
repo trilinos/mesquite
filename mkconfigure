@@ -1,7 +1,6 @@
 #!/bin/sh -e
 
 aclocal -I m4 
-libtoolize -c -f 
-automake -a -c 
-automake -i 
+libtoolize -f 
+automake -a -f
 autoconf -f
