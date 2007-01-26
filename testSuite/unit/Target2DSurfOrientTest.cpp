@@ -35,7 +35,7 @@
 #include "TargetSurfaceOrientation.hpp"
 #include "JacobianMetric.hpp"
 #include "InstructionQueue.hpp"
-#include "PowerMeanP.hpp"
+#include "PMeanPTemplate.hpp"
 #include "CompositeOFScalarMultiply.hpp"
 #include "CompositeOFAdd.hpp"
 #include "ConjugateGradient.hpp"
@@ -423,11 +423,11 @@ void Target2DSurfOrientTest::smooth( int metric_3D, bool ref_mesh, MeshDomain* d
   DomainSurfaceOrientation ometric2(&pts, &weight);
   
   QualityMetric* ometric = metric_3D == 2 ? (QualityMetric*)&ometric2 : (QualityMetric*)&ometric1;
-  PowerMeanP pmean_3D( METRIC_3D_ORIENT_P, ometric );
+  PMeanPTemplate pmean_3D( METRIC_3D_ORIENT_P, ometric );
   CompositeOFScalarMultiply scale_3D( METRIC_3D_ORIENT_FACTOR, &pmean_3D );
   ObjectiveFunction* OF_3D = METRIC_3D_ORIENT_FACTOR == 1.0 ? (ObjectiveFunction*)&pmean_3D : (ObjectiveFunction*)&scale_3D;
 
-  PowerMeanP pmean_2D( METRIC_2D_PLANE_P, &qmetric );
+  PMeanPTemplate pmean_2D( METRIC_2D_PLANE_P, &qmetric );
   CompositeOFAdd sum_OF( OF_3D, &pmean_2D );
   ObjectiveFunction* OF = metric_3D ? (ObjectiveFunction*)&sum_OF : (ObjectiveFunction*)&pmean_2D;
   

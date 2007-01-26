@@ -51,7 +51,7 @@ using std::ostream;
 #include "InstructionQueue.hpp"
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
-#include "PowerMeanP.hpp"
+#include "PMeanPTemplate.hpp"
 #include "PatchPowerMeanP.hpp"
 #include "ConjugateGradient.hpp"
 #include "PlanarDomain.hpp"
@@ -166,7 +166,7 @@ static int do_smoother( const char* input_file,
   inner.add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, 100, err );
   if (MSQ_CHKERR(err)) return 1;
   
-  PowerMeanP obj1( of_power, metric );
+  PMeanPTemplate obj1( of_power, metric );
   PatchPowerMeanP obj2( of_power, metric );
   ObjectiveFunction& objective = *((avg_scheme == PATCH) ? (ObjectiveFunction*)&obj2 : (ObjectiveFunction*)&obj1);
   

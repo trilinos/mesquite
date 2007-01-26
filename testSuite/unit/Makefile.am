@@ -78,7 +78,7 @@ msq_test_SOURCES = msq_test_main.cpp \
 	PatchSetTest.cpp \
 	PlanarGeometryTest.cpp \
 	PMeanPMetricTest.cpp \
-	PowerMeanPTest.cpp \
+	PMeanPTemplateTest.cpp \
 	QuadLagrangeShapeTest.cpp \
 	QualityMetricTest.cpp \
 	SamplePointsTest.cpp \

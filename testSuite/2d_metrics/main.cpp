@@ -33,7 +33,7 @@
 #include "MeshImpl.hpp"
 #include "MsqError.hpp"
 #include "MsqVertex.hpp"
-#include "PowerMeanP.hpp"
+#include "PMeanPTemplate.hpp"
 #include "ConjugateGradient.hpp"
 #include "FeasibleNewton.hpp"
 #include "PlanarDomain.hpp"
@@ -464,7 +464,7 @@ bool run_smoother( mesh_reader_t input_mesh,
     CHKERR(err)
   }
   
-  PowerMeanP of( P, &metric );
+  PMeanPTemplate of( P, &metric );
   ConjugateGradient cg( &of );
   FeasibleNewton fn( &of );
   if (LOCAL_PATCHES) {

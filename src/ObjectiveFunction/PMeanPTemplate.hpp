@@ -25,13 +25,13 @@
   ***************************************************************** */
 
 
-/** \file PowerMeanP.hpp
- *  \brief 
+/** \file PMeanPTemplate.hpp
+ *  \brief previous name: PowerMeanP.hpp
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_POWER_MEAN_P_HPP
-#define MSQ_POWER_MEAN_P_HPP
+#ifndef MSQ_P_MEAN_P_TEMPLATE_HPP
+#define MSQ_P_MEAN_P_TEMPLATE_HPP
 
 #include "Mesquite.hpp"
 #include "ObjectiveFunctionTemplate.hpp"
@@ -48,7 +48,7 @@ namespace Mesquite {
  * raised to a power, divided by the totoal number of quality metric
  * values.
  */
-class MESQUITE_EXPORT PowerMeanP : public ObjectiveFunctionTemplate
+class MESQUITE_EXPORT PMeanPTemplate : public ObjectiveFunctionTemplate
 {
   public:
   
@@ -56,7 +56,7 @@ class MESQUITE_EXPORT PowerMeanP : public ObjectiveFunctionTemplate
        *\param power   The exponent to use for the power-mean
        *\param qm      The quality metric.
        */
-    PowerMeanP( double power, QualityMetric* qm = 0 ) 
+    PMeanPTemplate( double power, QualityMetric* qm = 0 ) 
       : ObjectiveFunctionTemplate(qm)
     { 
       clear(); 
@@ -69,7 +69,7 @@ class MESQUITE_EXPORT PowerMeanP : public ObjectiveFunctionTemplate
        * default one would also copy the temporary arrays, which
        * would be a waste of time.
        */
-    PowerMeanP( const PowerMeanP& copy )
+    PMeanPTemplate( const PMeanPTemplate& copy )
       : ObjectiveFunctionTemplate( copy ),
         mPower( copy.mPower ),
         mCount( copy.mCount ),
@@ -78,7 +78,7 @@ class MESQUITE_EXPORT PowerMeanP : public ObjectiveFunctionTemplate
         savePowSum( copy.savePowSum )
       {}
     
-    virtual ~PowerMeanP() 
+    virtual ~PMeanPTemplate() 
       {}
     
     double get_power() const 

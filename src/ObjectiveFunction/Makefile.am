@@ -13,7 +13,7 @@ MSQ_SRCS += \
 	$(SRC_OBJECTIVEFUNCTION_DIR)/ObjectiveFunction.cpp \
 	$(SRC_OBJECTIVEFUNCTION_DIR)/ObjectiveFunctionTemplate.cpp \
 	$(SRC_OBJECTIVEFUNCTION_DIR)/PatchPowerMeanP.cpp \
-	$(SRC_OBJECTIVEFUNCTION_DIR)/PowerMeanP.cpp \
+	$(SRC_OBJECTIVEFUNCTION_DIR)/PMeanPTemplate.cpp \
 	$(SRC_OBJECTIVEFUNCTION_DIR)/SqrStdDevTemplate.cpp \
 	$(SRC_OBJECTIVEFUNCTION_DIR)/StdDevTemplate.cpp 
 
@@ -29,7 +29,7 @@ MSQ_HDRS += \
 	$(SRC_OBJECTIVEFUNCTION_DIR)/ObjectiveFunction.hpp \
 	$(SRC_OBJECTIVEFUNCTION_DIR)/ObjectiveFunctionTemplate.hpp \
 	$(SRC_OBJECTIVEFUNCTION_DIR)/PatchPowerMeanP.hpp \
-	$(SRC_OBJECTIVEFUNCTION_DIR)/PowerMeanP.hpp \
+	$(SRC_OBJECTIVEFUNCTION_DIR)/PMeanPTemplate.hpp \
 	$(SRC_OBJECTIVEFUNCTION_DIR)/SqrStdDevTemplate.hpp \
 	$(SRC_OBJECTIVEFUNCTION_DIR)/StdDevTemplate.hpp 
 

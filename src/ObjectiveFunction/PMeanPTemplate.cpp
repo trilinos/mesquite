@@ -25,13 +25,13 @@
   ***************************************************************** */
 
 
-/** \file PowerMeanP.cpp
- *  \brief 
+/** \file PMeanPTemplate.cpp
+ *  \brief previous name: PowerMeanP.cpp
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "PowerMeanP.hpp"
+#include "PMeanPTemplate.hpp"
 #include "QualityMetric.hpp"
 #include "MsqError.hpp"
 #include "MsqHessian.hpp"
@@ -39,10 +39,10 @@
 
 namespace Mesquite {
 
-ObjectiveFunction* PowerMeanP::clone() const
-  { return new PowerMeanP(*this); }
+ObjectiveFunction* PMeanPTemplate::clone() const
+  { return new PMeanPTemplate(*this); }
   
-void PowerMeanP::clear()
+void PMeanPTemplate::clear()
 {
   mCount = 0;
   mPowSum = 0;
@@ -50,7 +50,7 @@ void PowerMeanP::clear()
   savePowSum = 0;
 }
 
-double PowerMeanP::get_value( double power_sum, 
+double PMeanPTemplate::get_value( double power_sum, 
                               size_t count, 
                               EvalType type,
                               size_t& global_count )
@@ -97,7 +97,7 @@ double PowerMeanP::get_value( double power_sum,
   return result/global_count;
 }
 
-bool PowerMeanP::evaluate( EvalType type, 
+bool PMeanPTemplate::evaluate( EvalType type, 
                            PatchData& pd,
                            double& value_out,
                            bool free,
@@ -125,7 +125,7 @@ bool PowerMeanP::evaluate( EvalType type,
   return true;
 }
 
-bool PowerMeanP::evaluate_with_gradient( EvalType type, 
+bool PMeanPTemplate::evaluate_with_gradient( EvalType type, 
                                          PatchData& pd,
                                          double& value_out,
                                          msq_std::vector<Vector3D>& grad_out,
@@ -171,7 +171,7 @@ bool PowerMeanP::evaluate_with_gradient( EvalType type,
   return true;
 }
 
-bool PowerMeanP::evaluate_with_Hessian( EvalType type, 
+bool PMeanPTemplate::evaluate_with_Hessian( EvalType type, 
                                         PatchData& pd,
                                         double& value_out,
                                         msq_std::vector<Vector3D>& grad_out,

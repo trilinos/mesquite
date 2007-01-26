@@ -34,7 +34,7 @@
 #define MSQ_PATCH_POWER_MEAN_P_HPP
 
 #include "Mesquite.hpp"
-#include "PowerMeanP.hpp"
+#include "PMeanPTemplate.hpp"
 #include "Exponent.hpp"
 #include "Matrix3D.hpp"
 
@@ -42,7 +42,7 @@ namespace Mesquite {
 
 /**\brief Objective function: p-mean^p of p-mean^p of patch metric values
  */
-class PatchPowerMeanP : public PowerMeanP
+class PatchPowerMeanP : public PMeanPTemplate
 {
   public:
   
@@ -51,7 +51,7 @@ class PatchPowerMeanP : public PowerMeanP
        *\param qm      The quality metric.
        */
     PatchPowerMeanP( double power, QualityMetric* qm = 0 ) 
-      : PowerMeanP(power, qm) {}
+      : PMeanPTemplate(power, qm) {}
     
       /**\brief copy constructor 
        *
@@ -60,7 +60,7 @@ class PatchPowerMeanP : public PowerMeanP
        * would be a waste of time.
        */
     PatchPowerMeanP( const PatchPowerMeanP& copy )
-      : PowerMeanP( copy ) {}
+      : PMeanPTemplate( copy ) {}
     
     virtual ~PatchPowerMeanP() 
       {}

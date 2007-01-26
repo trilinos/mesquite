@@ -32,7 +32,7 @@
 
 #include "Mesquite.hpp"
 #include "LPtoPTemplate.hpp"
-#include "PowerMeanP.hpp"
+#include "PMeanPTemplate.hpp"
 #include "IdealWeightInverseMeanRatio.hpp"
 #include "InstructionQueue.hpp"
 #include "FeasibleNewton.hpp"
@@ -79,7 +79,7 @@ public:
   }
   
   void test_p_mean_p_hex() {
-    PowerMeanP OF( 1.0, &mMetric );
+    PMeanPTemplate OF( 1.0, &mMetric );
     compare_bcd( &OF, "PMeanP-hex", HEX_MESH );
   }
 
@@ -89,7 +89,7 @@ public:
   }
   
   void test_p_mean_p_tet() {
-    PowerMeanP OF( 1.0, &mMetric );
+    PMeanPTemplate OF( 1.0, &mMetric );
     compare_bcd( &OF, "PMeanP-tet", TET_MESH );
   }
   

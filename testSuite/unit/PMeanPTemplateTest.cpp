@@ -25,13 +25,13 @@
   ***************************************************************** */
 
 
-/** \file PowerMeanPTest.cpp
- *  \brief 
+/** \file PMeanPTemplateTest.cpp
+ *  \brief previous name: PowerMeanPTest.cpp
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "PowerMeanP.hpp"
+#include "PMeanPTemplate.hpp"
 #include "MsqError.hpp"
 #include "PatchData.hpp"
 #include "UnitUtil.hpp"
@@ -46,7 +46,7 @@ using namespace std;
 
 const double EPSILON = 1e-4;
 
-class PowerMeanPTest : public CppUnit::TestFixture
+class PMeanPTemplateTest : public CppUnit::TestFixture
 {
 private:
   void test_eval_type( OFTestMode eval_func, ObjectiveFunction::EvalType type );
@@ -57,7 +57,7 @@ private:
   void check_result( PatchData& pd, double power, double value, 
                      Vector3D* gradient = 0, Matrix3D* Hessian = 0 );
 
-  CPPUNIT_TEST_SUITE( PowerMeanPTest );
+  CPPUNIT_TEST_SUITE( PMeanPTemplateTest );
 
   CPPUNIT_TEST( test_eval_calc );
   CPPUNIT_TEST( test_eval_accum );
@@ -127,21 +127,21 @@ public:
   void test_Hess_update() { test_eval_type( HESS, ObjectiveFunction::UPDATE ); }
   void test_Hess_temp()   { test_eval_type( HESS, ObjectiveFunction::TEMPORARY ); }
 
-  void test_clone() { PowerMeanP of( 1, NULL ); ::test_clone(&of); }
+  void test_clone() { PMeanPTemplate of( 1, NULL ); ::test_clone(&of); }
   
   void test_failed_metric_in_eval() 
-    { PowerMeanP of( 1, NULL ); test_handles_qm_error( EVAL, &of); }
+    { PMeanPTemplate of( 1, NULL ); test_handles_qm_error( EVAL, &of); }
   void test_failed_metric_in_grad() 
-    { PowerMeanP of( 1, NULL ); test_handles_qm_error( GRAD, &of); }
+    { PMeanPTemplate of( 1, NULL ); test_handles_qm_error( GRAD, &of); }
   void test_failed_metric_in_Hess() 
-    { PowerMeanP of( 1, NULL ); test_handles_qm_error( HESS, &of); }
+    { PMeanPTemplate of( 1, NULL ); test_handles_qm_error( HESS, &of); }
   
   void test_false_metric_in_eval() 
-    { PowerMeanP of( 1, NULL ); test_handles_invalid_qm( EVAL, &of); }
+    { PMeanPTemplate of( 1, NULL ); test_handles_invalid_qm( EVAL, &of); }
   void test_false_metric_in_grad() 
-    { PowerMeanP of( 1, NULL ); test_handles_invalid_qm( GRAD, &of); }
+    { PMeanPTemplate of( 1, NULL ); test_handles_invalid_qm( GRAD, &of); }
   void test_false_metric_in_Hess() 
-    { PowerMeanP of( 1, NULL ); test_handles_invalid_qm( HESS, &of); }
+    { PMeanPTemplate of( 1, NULL ); test_handles_invalid_qm( HESS, &of); }
   
   void test_evaluate_arithmatic() { test_evaluate( 1 ); }
   void test_evaluate_rms()        { test_evaluate( 2 ); }
@@ -153,27 +153,27 @@ public:
   void test_Hessian_rms()         { test_Hessian( 2 ); }
   
   void compare_gradient_arithmatic() 
-    { PowerMeanP of( 1, NULL ); compare_numerical_gradient( &of ); }
+    { PMeanPTemplate of( 1, NULL ); compare_numerical_gradient( &of ); }
   void compare_gradient_rms()
-    { PowerMeanP of( 2, NULL ); compare_numerical_gradient( &of ); }
+    { PMeanPTemplate of( 2, NULL ); compare_numerical_gradient( &of ); }
   
   void compare_hessian_gradient_arithmatic() 
-    { PowerMeanP of( 1, NULL ); compare_hessian_gradient( &of ); }
+    { PMeanPTemplate of( 1, NULL ); compare_hessian_gradient( &of ); }
   void compare_hessian_gradient_rms()
-    { PowerMeanP of( 2, NULL ); compare_hessian_gradient( &of ); }
+    { PMeanPTemplate of( 2, NULL ); compare_hessian_gradient( &of ); }
     
   void test_negate_eval()
-    { PowerMeanP of( 2, NULL ); test_negate_flag( EVAL, &of ); }
+    { PMeanPTemplate of( 2, NULL ); test_negate_flag( EVAL, &of ); }
   void test_negate_grad()
-    { PowerMeanP of( 2, NULL ); test_negate_flag( GRAD, &of ); }
+    { PMeanPTemplate of( 2, NULL ); test_negate_flag( GRAD, &of ); }
   void test_negate_hess()
-    { PowerMeanP of( 2, NULL ); test_negate_flag( HESS, &of ); }
+    { PMeanPTemplate of( 2, NULL ); test_negate_flag( HESS, &of ); }
 };
 
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(PowerMeanPTest, "PowerMeanPTest");
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(PowerMeanPTest, "Unit");
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(PMeanPTemplateTest, "PMeanPTemplateTest");
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(PMeanPTemplateTest, "Unit");
 
-void PowerMeanPTest::setUp()
+void PMeanPTemplateTest::setUp()
 {
   MsqPrintError err(std::cout);
   
@@ -252,21 +252,21 @@ bool DistTestMetric::evaluate_with_indices( PatchData& pd, size_t vtx_idx,
 }
 
 
-void PowerMeanPTest::test_eval_type( OFTestMode eval_func, ObjectiveFunction::EvalType type )
+void PMeanPTemplateTest::test_eval_type( OFTestMode eval_func, ObjectiveFunction::EvalType type )
 {
-  PowerMeanP func( 1, NULL );
+  PMeanPTemplate func( 1, NULL );
   ::test_eval_type( type, eval_func, &func );
 }
 
 
-void PowerMeanPTest::test_evaluate( double power )
+void PMeanPTemplateTest::test_evaluate( double power )
 {
   MsqPrintError err(cout);
   double value;
   bool rval;
   
   DistTestMetric metric;
-  PowerMeanP func( power, &metric );
+  PMeanPTemplate func( power, &metric );
   rval = func.evaluate( ObjectiveFunction::CALCULATE, mPatch, value, OF_FREE_EVALS_ONLY, err );
   CPPUNIT_ASSERT(!MSQ_CHKERR(err));
   CPPUNIT_ASSERT(rval);
@@ -274,7 +274,7 @@ void PowerMeanPTest::test_evaluate( double power )
   check_result( mPatch, power, value );
 }
 
-void PowerMeanPTest::test_gradient( double power )
+void PMeanPTemplateTest::test_gradient( double power )
 {
   MsqPrintError err(cout);
   double value;
@@ -282,7 +282,7 @@ void PowerMeanPTest::test_gradient( double power )
   vector<Vector3D> grad;
   
   DistTestMetric metric;
-  PowerMeanP func( power, &metric );
+  PMeanPTemplate func( power, &metric );
   rval = func.evaluate_with_gradient( ObjectiveFunction::CALCULATE, mPatch, value, grad, err );
   CPPUNIT_ASSERT(!MSQ_CHKERR(err));
   CPPUNIT_ASSERT(rval);
@@ -292,7 +292,7 @@ void PowerMeanPTest::test_gradient( double power )
 }
 
 
-void PowerMeanPTest::test_Hessian( double power )
+void PMeanPTemplateTest::test_Hessian( double power )
 {
   MsqPrintError err(cout);
   double value;
@@ -303,7 +303,7 @@ void PowerMeanPTest::test_Hessian( double power )
   CPPUNIT_ASSERT(!MSQ_CHKERR(err));
   
   DistTestMetric metric;
-  PowerMeanP func( power, &metric );
+  PMeanPTemplate func( power, &metric );
   rval = func.evaluate_with_Hessian( ObjectiveFunction::CALCULATE, mPatch, value, grad, Hess, err );
   CPPUNIT_ASSERT(!MSQ_CHKERR(err));
   CPPUNIT_ASSERT(rval);
@@ -328,7 +328,7 @@ void PowerMeanPTest::test_Hessian( double power )
   check_result( mPatch, power, value, &grad[0], &Hessians[0] );
 }
 
-void PowerMeanPTest::check_result( PatchData& pd, double power, double value, 
+void PMeanPTemplateTest::check_result( PatchData& pd, double power, double value, 
                                    Vector3D* gradient, Matrix3D* Hessian )
 {
   MsqPrintError err(cout);
