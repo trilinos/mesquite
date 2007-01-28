@@ -159,7 +159,7 @@ echo
   cd testSuite/unit
   $MAKE $UNITTESTER || exit 1
   test -x $UNITTESTER || exit 1
-} || exit 1
+) || exit 1
 
 echo
 echo "********************************************************"
