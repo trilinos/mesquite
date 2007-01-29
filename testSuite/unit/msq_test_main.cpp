@@ -33,6 +33,10 @@
 #include <assert.h>
 #include <stdio.h>
 
+#include <vector>
+#include <iostream>
+using namespace std;
+
 class CPPUNIT_API SummaryOutput : public CppUnit::Outputter 
 {
   public:
@@ -47,10 +51,13 @@ class CPPUNIT_API SummaryOutput : public CppUnit::Outputter
 
 int main(int argc, char **argv)
 {
+  vector<CppUnit::Test*> test_list;
   CppUnit::TextUi::TestRunner runner;
   int firsttest = 1;
+  bool list = false;
 
-  if (argc > 1 && !strcmp(argv[1],"-s"))
+    // Check for command line arguments
+  if (argc > 2 && !strcmp(argv[1],"-s"))
   {
     FILE* file = fopen(argv[2],"w");
     if (!file) 
@@ -61,7 +68,12 @@ int main(int argc, char **argv)
     runner.setOutputter( new SummaryOutput( file, &runner.result() ) );
     firsttest += 2;
   }
-
+  else if (argc > 1 && !strcmp(argv[1],"-l"))
+  {
+    ++firsttest;
+    list = true;
+  }
+  
     // If the user requested a specific test...
   if (argc > firsttest)
   {
@@ -70,21 +82,45 @@ int main(int argc, char **argv)
       argc--;
       CppUnit::TestFactoryRegistry &registry =
         CppUnit::TestFactoryRegistry::getRegistry(argv[argc]);
-      runner.addTest( registry.makeTest() );
+      test_list.push_back( registry.makeTest() );
     }
     
   }
+    // Otherwise do Unit and Regression suites
   else
   {
      CppUnit::Test* test;
      test = CppUnit::TestFactoryRegistry::getRegistry("Unit").makeTest();
-     runner.addTest( test );
+     test_list.push_back( test );
      test = CppUnit::TestFactoryRegistry::getRegistry("Regression").makeTest();
-     runner.addTest( test );
+     test_list.push_back( test );
+  }
+  
+    // If user just wants list of tests
+  if (list) {
+    for (vector<CppUnit::Test*>::iterator i = test_list.begin();
+         i != test_list.end(); ++i) {
+      CppUnit::TestSuite* suite = dynamic_cast<CppUnit::TestSuite*>(*i);
+      if (!suite) {
+        cout << (*i)->getName() << endl;
+        continue;
+      }
+      const vector<CppUnit::Test*>& list = suite->getTests();
+      for (vector<CppUnit::Test*>::const_iterator j = list.begin();
+         j != list.end(); ++j) 
+        cout << (*j)->getName() << endl;
+    }
+  }
+    // Otherwise run the tests
+  else {
+    for (vector<CppUnit::Test*>::iterator i = test_list.begin();
+         i != test_list.end(); ++i) 
+      runner.addTest( *i );
+    return !runner.run();
   }
   
     // Return 0 if there were no errors
-  return !runner.run( );
+  return 0;
 }
 
 void SummaryOutput::write()
