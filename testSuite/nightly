@@ -39,20 +39,7 @@ pwd=`pwd`
   # Get rid of old output files
 rm -f ${RESULTS}.tests ${RESULTS}.unit ${RESULTS}.regress
 
-  # Look for a make implementation to use
-if [ -z "$MAKE" ]; then
-  echo "********** Looking for gmake... **********"
-  if gmake -v; then
-    MAKE=gmake
-  elif make -v; then
-    MAKE=make
-  else
-    echo "ERROR - COULD NOT FIND gmake!"
-    exit 1
-  fi
-fi
-export MAKE
-
+MAKE=make
 
   # Echo all commands
 set -v
@@ -84,18 +71,12 @@ cvs update || exit 1
 
 echo
 echo "********************************************************"
-echo "                      make clean" 
-echo "********************************************************"
-echo
-
-$MAKE veryclean
-
-echo
-echo "********************************************************"
 echo "                      configure" 
 echo "********************************************************"
 echo
 
+# Generate configure script
+./mkconfigure
 # Check for configure options
 confopt=
 #confopt="--with-exodus --with-tstt"
@@ -107,13 +88,19 @@ fi
 
 echo
 echo "********************************************************"
+echo "                      make clean" 
+echo "********************************************************"
+echo
+
+$MAKE veryclean
+
+echo
+echo "********************************************************"
 echo "                          make" 
 echo "********************************************************"
 echo
 
 
-mkdir includeLinks
-mkdir obj
 $MAKE || exit 1
 test -f lib/libmesquite.a || exit 1
 
