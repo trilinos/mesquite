@@ -180,8 +180,7 @@ echo
 rm -f ${RESULTS}.regress
 list=`testSuite/unit/$UNITTESTER -l Regression`
 for test in $list; do
-  (cd testSuite/unit && ./$UNITTESTER $test)
-  if $?; then
+  if (cd testSuite/unit && ./$UNITTESTER $test) ; then
     result="succeeded"
   else
     result="failed"
