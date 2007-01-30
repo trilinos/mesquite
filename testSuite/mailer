@@ -60,7 +60,7 @@ sub stand_alone_read
       # Read file
    while ($line = <HANDLE>)
    {
-      return 0 unless $line =~ /^(\w+)\s*:\s*(succeeded|failed|broken)/;
+      return 0 unless $line =~ /^([^:]+)\s*:\s*(succeeded|failed|broken)/;
       my $name = $1;
       my $result = $2;
       if ($result eq "succeeded")
@@ -172,9 +172,9 @@ foreach $file ( <*> )
       if ($type eq "tests") {
          $stand{$name} = stand_alone_read($file);
       } elsif ($type eq "regress") {
-         $regress{$name} = cpp_unit_read($file);
+         $regress{$name} = stand_alone_read($file);
       } else {
-         $unit{$name} = cpp_unit_read($file);
+         $unit{$name} = stand_alone_read($file);
       }
    }
 }

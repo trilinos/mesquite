@@ -25,6 +25,12 @@ LOGFILE=log
   # host and path. ([username@]hostname:path).
 REMOTE=$1
 
+  # Name to use to describe this platform
+shift
+PLATFORM_NAME=$1
+if [ "x" = "x$PLATFORM_NAME" ]; then
+  PLATFORM_NAME=`uname`
+fi
 
   # The CppUnit testing application to build -- path relative to mesquite root dir
 UNITTESTER=msq_test
@@ -92,7 +98,7 @@ echo "                      make clean"
 echo "********************************************************"
 echo
 
-$MAKE veryclean
+#$MAKE veryclean
 
 echo
 echo "********************************************************"
@@ -102,7 +108,7 @@ echo
 
 
 $MAKE || exit 1
-test -f lib/libmesquite.a || exit 1
+#test -f .libs/libmesquite.a || exit 1
 
   # for each subdirectory
 for test in testSuite/*; do
@@ -154,7 +160,17 @@ echo "                  CppUnit Unit tests"
 echo "********************************************************"
 echo
 
-(cd testSuite/unit && ./$UNITTESTER -s ${pwd}/${RESULTS}.unit Unit)
+rm -f ${RESULTS}.unit
+list=`testSuite/unit/$UNITTESTER -l Unit`
+for test in $list; do
+  (cd testSuite/unit && ./$UNITTESTER $test)
+  if $?; then
+    result="succeeded"
+  else
+    result="failed"
+  fi
+  echo "$test : $result" >> ${RESULTS}.unit
+done
 
 echo
 echo "********************************************************"
@@ -162,11 +178,23 @@ echo "                CppUnit Regression tests"
 echo "********************************************************"
 echo
 
-(cd testSuite/unit && ./$UNITTESTER -s ${pwd}/${RESULTS}.regress Regression)
+rm -f ${RESULTS}.regress
+list=`testSuite/unit/$UNITTESTER -l Regression`
+for test in $list; do
+  (cd testSuite/unit && ./$UNITTESTER $test)
+  if $?; then
+    result="succeeded"
+  else
+    result="failed"
+  fi
+  echo "$test : $result" >> ${RESULTS}.regress
+done
 
-exit 0
- 
+
+
+
   # End of subshell - redirect all output to a file
+exit 0
 ) > ${LOGFILE} 2>&1
 
   # Copy files to central machine
@@ -174,8 +202,8 @@ uname=`uname`
 for file in ${LOGFILE} ${RESULTS}.tests ${RESULTS}.unit ${RESULTS}.regress; do
   if [ -f $file -a "x$REMOTE" != "x" ]; then
       # Try twice.  Don't redirect the output on the second attempt.
-    scp $file ${REMOTE}/${uname}.${file} > /dev/null 2>&1 || \
-    scp $file ${REMOTE}/${uname}.${file}
+    scp $file ${REMOTE}/${PLATFORM_NAME}.${file} > /dev/null 2>&1 || \
+    scp $file ${REMOTE}/${PLATFORM_NAME}.${file}
   fi
 done
 
