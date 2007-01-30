@@ -51,6 +51,11 @@ public:
           activePatchSet = &myVertexPatches; 
       }
     
+    PatchSetUser( PatchSet* my_patch_set ) :
+      myVertexPatches( 1, true ),
+      activePatchSet( my_patch_set )
+      {}
+    
     virtual ~PatchSetUser() {}
       
       /**\brief Use a single patch representing the entire mesh */
@@ -83,6 +88,9 @@ public:
       
     virtual PatchSet* get_patch_set()
       { return activePatchSet; }
+      
+    void use_patch_set( PatchSet* patch_set )
+      { activePatchSet = patch_set; }
 
 private:
 
