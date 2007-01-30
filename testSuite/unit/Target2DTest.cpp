@@ -125,9 +125,9 @@ public:
 #include "Target2DShapeSizeOrientBarrierAlt2.hpp"
 
 #define REGISTER_TARGET2D_TEST( M, A, B, C, D ) \
-class Target2DTest_ ## M : public Target2DTest<M> { public: \
-  Target2DTest_ ## M () : Target2DTest<M>( (A), (B), (C), (D) ) {} \
-  CPPUNIT_TEST_SUITE( Target2DTest_ ## M ); \
+class Test_ ## M : public Target2DTest<M> { public: \
+  Test_ ## M () : Target2DTest<M>( (A), (B), (C), (D) ) {} \
+  CPPUNIT_TEST_SUITE( Test_ ## M ); \
   CPPUNIT_TEST (test_ideal_element_eval); \
   CPPUNIT_TEST (test_ideal_element_gradient); \
   CPPUNIT_TEST (test_inverted_element_eval); \
@@ -137,7 +137,8 @@ class Target2DTest_ ## M : public Target2DTest<M> { public: \
   CPPUNIT_TEST (test_orient); \
   CPPUNIT_TEST_SUITE_END(); \
 }; \
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(Target2DTest_ ## M, "Unit"); 
+CPPUNIT_NS::AutoRegisterSuite< Test_ ## M > M ## _UnitRegister ("Unit"); \
+CPPUNIT_NS::AutoRegisterSuite< Test_ ## M > M ## _BaseRegister ( "Test_" #M )
 
 REGISTER_TARGET2D_TEST( Target2DShape,                      true,  true, false, 0.0 );
 REGISTER_TARGET2D_TEST( Target2DShapeBarrier,               true,  true,  true, 1.0 );
