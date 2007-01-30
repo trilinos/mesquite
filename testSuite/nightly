@@ -163,8 +163,7 @@ echo
 rm -f ${RESULTS}.unit
 list=`testSuite/unit/$UNITTESTER -l Unit`
 for test in $list; do
-  (cd testSuite/unit && ./$UNITTESTER $test)
-  if $?; then
+  if (cd testSuite/unit && ./$UNITTESTER $test) ; then
     result="succeeded"
   else
     result="failed"
