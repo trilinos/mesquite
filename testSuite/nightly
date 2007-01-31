@@ -160,7 +160,6 @@ echo "                  CppUnit Unit tests"
 echo "********************************************************"
 echo
 
-rm -f ${RESULTS}.unit
 list=`testSuite/unit/$UNITTESTER -l Unit`
 for test in $list; do
   if (cd testSuite/unit && ./$UNITTESTER "$test") ; then
@@ -168,7 +167,7 @@ for test in $list; do
   else
     result="failed"
   fi
-  echo "$test : $result" >> ${RESULTS}.unit
+  echo "$test : $result" >> ${pwd}/${RESULTS}.unit
 done
 
 echo
@@ -177,7 +176,6 @@ echo "                CppUnit Regression tests"
 echo "********************************************************"
 echo
 
-rm -f ${RESULTS}.regress
 list=`testSuite/unit/$UNITTESTER -l Regression`
 for test in $list; do
   if (cd testSuite/unit && ./$UNITTESTER "$test") ; then
@@ -185,7 +183,7 @@ for test in $list; do
   else
     result="failed"
   fi
-  echo "$test : $result" >> ${RESULTS}.regress
+  echo "$test : $result" >> ${pwd}/${RESULTS}.regress
 done
 
 
