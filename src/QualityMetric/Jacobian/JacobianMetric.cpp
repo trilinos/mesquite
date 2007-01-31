@@ -43,6 +43,7 @@
 #include "TargetCalculator.hpp"
 #include "TargetMetric2D.hpp"
 #include "TargetMetric3D.hpp"
+#include "TargetMetricUtil.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 # include <functional.h>
@@ -64,16 +65,7 @@ void JacobianMetric::get_evaluations( PatchData& pd,
                                       bool free,
                                       MsqError& err )
 {
-  handles.clear();
-  msq_std::vector<size_t> elems;
-  ElementQM::get_element_evaluations( pd, elems, free, err ); MSQ_ERRRTN(err);
-  for (msq_std::vector<size_t>::iterator i = elems.begin(); i != elems.end(); ++i)
-  {
-    EntityTopology type = pd.element_by_index( *i ).get_element_type();
-    int num_samples = samplePts->num_sample_points( type );
-    for (int j = 0; j < num_samples; ++j)
-      handles.push_back( handle(j, *i) );
-  }
+  get_sample_pt_evaluations( pd, samplePts, handles, free, err );
 }
 
 void JacobianMetric::get_element_evaluations( PatchData& pd,
@@ -81,11 +73,7 @@ void JacobianMetric::get_element_evaluations( PatchData& pd,
                                               msq_std::vector<size_t>& handles,
                                               MsqError& err )
 {
-  EntityTopology type = pd.element_by_index( elem ).get_element_type();
-  int num_samples = samplePts->num_sample_points( type );
-  handles.resize( num_samples );
-  for (int j = 0; j < num_samples; ++j)
-    handles[j] = handle(j, elem);
+  get_elem_sample_points( pd, samplePts, elem, handles, err );
 }
 
 bool JacobianMetric::evaluate( PatchData& pd, size_t handle, double& value, MsqError& err )
@@ -180,35 +168,9 @@ bool JacobianMetric::evaluate_with_indices( PatchData& pd,
     
     MsqMatrix<3,2> Wp;
     targetCalc->get_2D_target( pd, e, samplePts, s, Wp, err ); MSQ_ERRZERO(err);
-    MsqMatrix<3,1> Wp1 = Wp.column(0);
-    MsqMatrix<3,1> Wp2 = Wp.column(1);
-    MsqMatrix<3,1> nwp = Wp1 * Wp2;
-    nwp *= 1.0/length(nwp);
     
-    MsqMatrix<3,1> z[2];
-    z[0] = Wp1 * (1.0 / length( Wp1 ));
-    z[1] = nwp * z[0];
-    MsqMatrix<3,2> Z(z);
-    MsqMatrix<2,2> W = transpose(Z) * Wp;
-    
-    MsqMatrix<3,1> npp = App.column(0) * App.column(1);
-    npp *= 1.0 / length(npp);
-    double dot = npp % nwp;
-    MsqMatrix<3,1> nr = (dot >= 0.0) ? nwp : -nwp;
-    MsqMatrix<3,1> v = nr * npp;
-    double vlen = length(v);
-    MsqMatrix<2,2> A;
-    if (vlen > DBL_EPSILON) {
-      v *= 1.0 / length(v);
-      MsqMatrix<3,1> r1[3] = { v, npp, v * npp }, r2[3] = { v, nr, v * nr };
-      MsqMatrix<3,3> R1( r1 ), R2( r2 );
-      MsqMatrix<3,3> RT = R2 * transpose(R1);
-      MsqMatrix<3,2> Ap = RT * App;
-      A = transpose(Z) * Ap;
-    }
-    else {
-      A = transpose(Z) * App;
-    }
+    MsqMatrix<2,2> A, W;
+    surface_to_2d( App, Wp, A, W );
     rval = metric2D->evaluate( A, W, value, err ); MSQ_ERRZERO(err);
   }
   

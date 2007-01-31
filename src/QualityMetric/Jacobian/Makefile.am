@@ -1,7 +1,11 @@
 SRC_QUALITYMETRIC_JACOBIAN_DIR = src/QualityMetric/Jacobian
 MSQ_INCLUDES += -I$(top_srcdir)/$(SRC_QUALITYMETRIC_JACOBIAN_DIR)
 
-MSQ_SRCS += $(SRC_QUALITYMETRIC_JACOBIAN_DIR)/JacobianMetric.cpp 
+MSQ_SRCS += $(SRC_QUALITYMETRIC_JACOBIAN_DIR)/JacobianMetric.cpp \
+            $(SRC_QUALITYMETRIC_JACOBIAN_DIR)/AffineMapMetric.cpp \
+            $(SRC_QUALITYMETRIC_JACOBIAN_DIR)/TargetMetricUtil.cpp \
+            $(SRC_QUALITYMETRIC_JACOBIAN_DIR)/TargetMetricUtil.hpp 
 
-MSQ_HDRS += $(SRC_QUALITYMETRIC_JACOBIAN_DIR)/JacobianMetric.hpp 
+MSQ_HDRS += $(SRC_QUALITYMETRIC_JACOBIAN_DIR)/JacobianMetric.hpp \
+            $(SRC_QUALITYMETRIC_JACOBIAN_DIR)/AffineMapMetric.hpp
 
