@@ -187,7 +187,7 @@ $standnames = keylist \%stand;
 
 # Get width for platform column
 my $plen = maxlen(@platforms);
-$plen = 6 if ($plen lt 6);
+$plen = 6 if ($plen < 6);
 
 # Create temporary file
 my $file = IO::File->new_tmpfile;
