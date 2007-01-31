@@ -167,7 +167,7 @@ void MeshImpl::write_vtk(const char* out_filename, MsqError &err)
   }
   
     // Write a header
-  file << "# vtk DataFile Version 2.0\n";
+  file << "# vtk DataFile Version 3.0\n";
   file << "Mesquite Mesh\n";
   file << "ASCII\n";
   file << "DATASET UNSTRUCTURED_GRID\n";
@@ -2248,6 +2248,7 @@ void MeshImpl::vtk_write_attrib_data( msq_stdio::ostream& file,
     case TagDescription::SCALAR: 
       num_per_line = vlen; 
       file << "SCALARS " << desc.name << " " << typenames[desc.type] << " " << vlen << "\n";
+      file << "LOOKUP_TABLE default\n";
       break;
     case TagDescription::COLOR : 
       num_per_line = vlen;
