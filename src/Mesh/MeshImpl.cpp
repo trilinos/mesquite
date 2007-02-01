@@ -292,7 +292,12 @@ void MeshImpl::write_vtk(const char* out_filename, MsqError &err)
         if (myMesh->is_vertex_valid(i))
         {
           myTags->get_vertex_data( f->second, 1, &i, &*iter, err );
-          MSQ_ERRRTN(err);
+          if (err.error_code() == MsqError::TAG_NOT_FOUND) {
+            memset( &*iter, 0, desc.size );
+            err.clear();
+          }
+          else if (MSQ_CHKERR(err))
+            return;
           iter += desc.size;
         }  
       }
@@ -350,7 +355,12 @@ void MeshImpl::write_vtk(const char* out_filename, MsqError &err)
         if (myMesh->is_element_valid(i))
         {
           myTags->get_element_data( f->second, 1, &i, &*iter, err );
-          MSQ_ERRRTN(err);
+          if (err.error_code() == MsqError::TAG_NOT_FOUND) {
+            memset( &*iter, 0, desc.size );
+            err.clear();
+          }
+          else if (MSQ_CHKERR(err))
+            return;
           iter += desc.size;
         }  
       }
