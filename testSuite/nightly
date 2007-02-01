@@ -201,7 +201,7 @@ for file in log results.tests results.unit results.regress; do
       # Try twice.  Don't redirect the output on the second attempt.
     scp ${BASENAME}.$file ${REMOTE}/${PLATFORM_NAME}.$file > /dev/null 2>&1 || \
     scp ${BASENAME}.$file ${REMOTE}/${PLATFORM_NAME}.$file
-    rm ${BASENAME).$file
+    rm ${BASENAME}.$file
   fi
 done
 
