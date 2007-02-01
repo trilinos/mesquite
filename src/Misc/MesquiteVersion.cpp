@@ -27,39 +27,40 @@
 // -*- Mode : c++; tab-width: 2; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 
 #include "Mesquite.hpp"
+#include "mesquite_version.h"
 
-// When changing version number/type, change these #defines, as well
-// as what is returned from Mesquite::release_type().
-#define MSQ_MAJOR_VERSION 1
-#define MSQ_MINOR_VERSION 99
-#define MSQ_BUILD_NUMBER 0
-#define MSQ_VERSION_STRING "Mesquite 2.* Alpha"
-#define MSQ_BUILD_STRING "Build Number 0"
-
-const char* Mesquite::version_string(bool include_build_number)
+const char* Mesquite::version_string(bool)
 {
-  if (include_build_number)
-    return MSQ_VERSION_STRING MSQ_BUILD_STRING;
   return MSQ_VERSION_STRING;
 }
 
 unsigned int Mesquite::major_version_number()
 {
-  return MSQ_MAJOR_VERSION;
+  return MSQ_VERSION_MAJOR;
 }
 
 unsigned int Mesquite::minor_version_number()
 {
-  return MSQ_MINOR_VERSION;
+  return MSQ_VERSION_MINOR;
 }
 
-unsigned int Mesquite::build_number()
+unsigned int Mesquite::patch_version_number()
 {
-  return MSQ_BUILD_NUMBER;
+#ifdef MSQ_VERSION_PATCH
+  return MSQ_VERSION_PATCH;
+#else
+  return 0;
+#endif
 }
 
 Mesquite::ReleaseType Mesquite::release_type()
 {  
+#if MSQ_VERSION_MINOR == 99
   return Mesquite::ALPHA;
+#elif defined(MSQ_VERSION_PATCH)
+  return Mesquite::RELEASE;
+#else
+  return Mesquite::BETA;
+#endif
 }
 

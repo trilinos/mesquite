@@ -48,6 +48,7 @@ libmesquite_la_SOURCES = $(MSQ_SRCS)
 libmesquite_la_include_HEADERS = include/Mesquite.hpp \
                                  include/Mesquite_all_headers.hpp \
                                  $(top_builddir)/include/mesquite_config.h \
+				 $(top_builddir)/include/mesquite_version.h \
                                  include/MeshInterface.hpp \
                                  $(MSQ_HDRS)
 libmesquite_la_LIBADD = $(MESQUITE_LIBS)

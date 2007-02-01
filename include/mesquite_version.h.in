@@ -1,0 +1,15 @@
+
+/* Mesquite Version */
+#undef MSQ_VERSION
+
+/* Mesquite Major Version */
+#undef MSQ_VERSION_MAJOR
+
+/* Mesquite Minor Version */
+#undef MSQ_VERSION_MINOR
+
+/* Mesquite Patch Level */
+#undef MSQ_VERSION_PATCH
+
+/* Mesquite Version String */
+#undef MSQ_VERSION_STRING

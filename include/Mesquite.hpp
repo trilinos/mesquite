@@ -120,13 +120,13 @@ namespace Mesquite
   };
 
     // Version information
-   MESQUITE_EXPORT const char* version_string(bool include_build_number = false);
+   MESQUITE_EXPORT const char* version_string(bool);
    MESQUITE_EXPORT unsigned int major_version_number();
    MESQUITE_EXPORT unsigned int minor_version_number();
-   MESQUITE_EXPORT unsigned int build_number();
+   MESQUITE_EXPORT unsigned int patch_version_number();
   enum ReleaseType
   {
-    STABLE_RELEASE,
+    RELEASE,
     BETA,
     ALPHA
   };
