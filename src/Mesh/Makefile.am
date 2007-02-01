@@ -47,7 +47,3 @@ MSQ_HDRS += \
 	$(SRC_MESH_DIR)/TagVertexMesh.hpp \
 	$(SRC_MESH_DIR)/TopologyInfo.hpp \
 	$(SRC_MESH_DIR)/VertexPatches.hpp 
-
-#MeshTSTT.lo: $(TSTT_HDRS)
-#GeomTSTT.lo: $(TSTT_HDRS)
-

@@ -6,6 +6,7 @@ SUBDIRS = . doc testSuite
 DIST_SUBDIRS = $(SUBDIRS) meshFiles
 EXTRA_DIST = lgpl.txt mkconfigure
 
+BUILT_SOURCES = include/Mesquite_all_headers.hpp
 MSQ_SRCS=
 MSQ_HDRS=
 MSQ_INCLUDES =

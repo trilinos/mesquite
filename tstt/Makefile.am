@@ -6,21 +6,23 @@ EXTRA_DIST += \
 	$(TSTT_DIR)/TSTTR.sidl 
 
 TSTT_BDIR = $(top_builddir)/tstt
-TSTT_HDRS = \
-    $(TSTT_BDIR)/base/TSTTB.hh \
-    $(TSTT_BDIR)/geom/TSTTG.hh \
-    $(TSTT_BDIR)/mesh/TSTTM.hh \
-    $(TSTT_BDIR)/assoc/TSTTR.hh 
 if WITH_TSTT
-  MSQ_TSTT_INCLUDES = -I$(TSTT_BDIR)/base \
-                      -I$(TSTT_BDIR)/mesh \
-                      -I$(TSTT_BDIR)/geom \
-                      -I$(TSTT_BDIR)/assoc 
+  TSTT_INCLUDES = -I$(TSTT_BDIR)/base \
+                  -I$(TSTT_BDIR)/mesh \
+                  -I$(TSTT_BDIR)/geom \
+                  -I$(TSTT_BDIR)/assoc 
   libmesquite_la_DEPENDENCIES += $(TSTT_HDRS)
+  TSTT_HDRS = \
+      $(TSTT_BDIR)/base/TSTTB.hh \
+      $(TSTT_BDIR)/geom/TSTTG.hh \
+      $(TSTT_BDIR)/mesh/TSTTM.hh \
+      $(TSTT_BDIR)/assoc/TSTTR.hh 
 else
-  MSQ_TSTT_INCLUDES =
+  TSTT_INCLUDES =
+  TSTT_HDRS =
 endif
-MSQ_INCLUDES += $(MSQ_TSTT_INCLUDES)
+MSQ_INCLUDES += $(TSTT_INCLUDES)
+BUILT_SOURCES += $(TSTT_HDRS)
 
 $(TSTT_BDIR)/assoc/TSTTR.hh : $(TSTT_DIR)/TSTTR.sidl 
 	$(BABEL) -cC++ -E -R$(TSTT_BDIR)/repo -o$(TSTT_BDIR)/assoc $<
