@@ -112,6 +112,16 @@ public:
   MESQUITE_EXPORT 
   const SamplePoints* get_sample_points() const 
     { return samplePts; }
+    
+  void set_target_calculator( TargetCalculator* tc ) { targetCalc = tc; }
+  void set_weight_calculator( WeightCalculator* wc ) { weightCalc = wc; }
+  TargetCalculator* get_target_calculator() const { return targetCalc; }
+  WeightCalculator* get_weight_calculator() const { return weightCalc; }
+  
+  TargetMetric2D* get_2d_metric() const { return metric2D; }
+  TargetMetric3D* get_3d_metric() const { return metric3D; }
+  void set_2d_metric( TargetMetric2D* m ) { metric2D = m; }
+  void set_3d_metric( TargetMetric3D* m ) { metric3D = m; }
   
 private:
   const SamplePoints* samplePts;

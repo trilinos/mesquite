@@ -7,8 +7,10 @@ MSQ_SRCS += \
 	$(SRC_TARGETCALCULATOR_DIR)/IdealCornerTarget.cpp \
 	$(SRC_TARGETCALCULATOR_DIR)/IdealTargetCalculator.cpp \
 	$(SRC_TARGETCALCULATOR_DIR)/IdentityTarget.cpp \
+	$(SRC_TARGETCALCULATOR_DIR)/InverseMetricWeight.cpp \
 	$(SRC_TARGETCALCULATOR_DIR)/JacobianCalculator.cpp \
 	$(SRC_TARGETCALCULATOR_DIR)/LVQDTargetCalculator.cpp \
+	$(SRC_TARGETCALCULATOR_DIR)/MetricWeight.cpp \
 	$(SRC_TARGETCALCULATOR_DIR)/RefMeshCornerTarget.cpp \
 	$(SRC_TARGETCALCULATOR_DIR)/RefMeshTargetCalculator.cpp \
 	$(SRC_TARGETCALCULATOR_DIR)/ReferenceMesh.cpp \
@@ -23,8 +25,10 @@ MSQ_HDRS += \
 	$(SRC_TARGETCALCULATOR_DIR)/IdealCornerTarget.hpp \
 	$(SRC_TARGETCALCULATOR_DIR)/IdealTargetCalculator.hpp \
 	$(SRC_TARGETCALCULATOR_DIR)/IdentityTarget.hpp \
+	$(SRC_TARGETCALCULATOR_DIR)/InverseMetricWeight.hpp \
 	$(SRC_TARGETCALCULATOR_DIR)/JacobianCalculator.hpp \
 	$(SRC_TARGETCALCULATOR_DIR)/LVQDTargetCalculator.hpp \
+	$(SRC_TARGETCALCULATOR_DIR)/MetricWeight.hpp \
 	$(SRC_TARGETCALCULATOR_DIR)/RefMeshCornerTarget.hpp \
 	$(SRC_TARGETCALCULATOR_DIR)/RefMeshTargetCalculator.hpp \
 	$(SRC_TARGETCALCULATOR_DIR)/ReferenceMesh.hpp \

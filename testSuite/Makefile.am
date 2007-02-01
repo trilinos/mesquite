@@ -37,4 +37,5 @@ SUBDIRS = test_1 \
 	  headers \
 	  2d_target \
 	  2d_metrics\
+	  2d_formulation \
 	  $(TSTT_TEST) $(EXO_TEST) $(UNIT_TEST)
