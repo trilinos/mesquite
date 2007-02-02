@@ -12,6 +12,13 @@ MSQ_HDRS=
 MSQ_INCLUDES =
 lib_LTLIBRARIES = libmesquite.la
 libmesquite_la_DEPENDENCIES=
+# Tell libtool that there are no undefined symbols when linking 
+# the library.  This means that either the symbol is defined in
+# the library or we include a -lname argument to specify which 
+# other library provides the symbol.  Libtool requires this 
+# guarantee to generate libraries on platforms for which shared
+# libs cannot have any unmet depenendencies (windows, and maybe AIX)
+libmesquite_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined
 
 include src/Mesh/Makefile.am
 include src/Control/Makefile.am

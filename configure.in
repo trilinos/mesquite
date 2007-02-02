@@ -199,6 +199,7 @@ m4_defun([AC_PROG_F77],[])
 m4_undefine([AC_PROG_CXX])
 m4_defun([AC_PROG_CXX],[])
 
+AC_LIBTOOL_WIN32_DLL
 AM_PROG_LIBTOOL
 
 
