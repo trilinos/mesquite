@@ -111,6 +111,7 @@ $MAKE || exit 1
 #test -f .libs/libmesquite.a || exit 1
 
   # for each subdirectory
+ofile="${pwd}/${RESULTS}.tests"
 for test in testSuite/*; do
     # if it looks like a test
   if [ -f ${test}/main.cpp ]; then 
@@ -124,21 +125,23 @@ for test in testSuite/*; do
 
       # try to compile it
     rm -f ${test}/main
-    if (cd $test && $MAKE main) && test -x ${test}/main; then
-        # and run it
-      if (cd ${test} && ./main); then
-          # test completed successfully
-      	result=succeeded
-      else
-          # test failed
-        result=failed
+    if (cd $test && $MAKE main); then
+      if test -x ${test}/main; then
+          # and run it
+        if (cd ${test} && ./main); then
+            # test completed successfully
+          echo "${name} : succeeded" >> $ofile
+        else
+            # test failed
+          echo "${name} : failed" >> $ofile
+        fi
       fi
+        # do nothing if make succeeded but no "main"
+        # indicates test not configured
     else
         # test failed to build or some other unexpected problem
-      result=broken 
+      echo "${name} : broken" >> $ofile
     fi
-    
-    echo "${name} : ${result}" >> ${pwd}/${RESULTS}.tests
   fi
 done
 
