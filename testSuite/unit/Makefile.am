@@ -6,7 +6,7 @@ AM_LDFLAGS = @AM_LDFLAGS@
 if WITH_CPPUNIT
   check_PROGRAMS = msq_test
   msq_test_DEPENDENCIES = $(top_builddir)/libmesquite.la
-  TESTS = msq_test
+  TESTS = $(check_PROGRAMS)
   AM_CPPFLAGS += @CPPUNIT_CPPFLAGS@
   AM_LDFLAGS += @CPPUNIT_LDFLAGS@
 else

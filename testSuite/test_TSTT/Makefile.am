@@ -3,7 +3,7 @@ LDADD = $(top_builddir)/libmesquite.la
 check_PROGRAMS = main
 main_SOURCES = main.cpp
 main_DEPENDENCIES = $(LDADD)
-TESTS = main
+TESTS = $(check_PROGRAMS)
 
 if WITH_TSTT
   @MESQUITE_TSTTB_MAKE_INCLUDE@

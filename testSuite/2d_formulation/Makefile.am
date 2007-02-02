@@ -4,7 +4,7 @@ AM_CPPFLAGS += '-DSRCDIR="$(srcdir)/"'
 check_PROGRAMS = main 
 main_SOURCES = main.cpp
 main_DEPENDENCIES = $(LDADD)
-TESTS = main
+TESTS = $(check_PROGRAMS)
 
 EXTRA_DIST = initial.vtk 
 MOSTLYCLEANFILES = 1-1.results.vtk \
