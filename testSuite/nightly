@@ -128,7 +128,7 @@ for test in testSuite/*; do
     if (cd $test && $MAKE main); then
       if test -x ${test}/main; then
           # and run it
-        if (cd ${test} && ./main); then
+        if (cd ${test} && ${TESTS_ENVIRONMENT} ./main); then
             # test completed successfully
           echo "${name} : succeeded" >> $ofile
         else
@@ -165,7 +165,7 @@ echo
 
 list=`testSuite/unit/$UNITTESTER -l Unit`
 for test in $list; do
-  if (cd testSuite/unit && ./$UNITTESTER "$test") ; then
+  if (cd testSuite/unit && ${TESTS_ENVIRONMENT} ./$UNITTESTER "$test") ; then
     result="succeeded"
   else
     result="failed"
@@ -181,7 +181,7 @@ echo
 
 list=`testSuite/unit/$UNITTESTER -l Regression`
 for test in $list; do
-  if (cd testSuite/unit && ./$UNITTESTER "$test") ; then
+  if (cd testSuite/unit && ${TESTS_ENVIRONMENT} ./$UNITTESTER "$test") ; then
     result="succeeded"
   else
     result="failed"
