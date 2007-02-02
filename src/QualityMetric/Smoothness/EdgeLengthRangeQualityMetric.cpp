@@ -59,6 +59,9 @@ EdgeLengthRangeQualityMetric::EdgeLengthRangeQualityMetric( double low_a, double
     msq_std::swap( lowVal, highVal );
 }
 
+EdgeLengthRangeQualityMetric::~EdgeLengthRangeQualityMetric()
+{}
+
 msq_std::string EdgeLengthRangeQualityMetric::get_name() const
   { return "Edge Length Range Metric"; }
   
