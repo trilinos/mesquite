@@ -639,8 +639,8 @@ AC_SUBST(MESQUITE_TSTTM_MAKE_INCLUDE)
 TEST_MAKE_INCLUDE="include ../cppflags.make"
 AC_SUBST(TEST_MAKE_INCLUDE)
 
-AC_CONFIG_HEADERS([include/mesquite_config.h
-                   include/mesquite_version.h])
+AC_CONFIG_HEADERS(include/mesquite_config.h)
+AC_CONFIG_HEADERS(include/mesquite_version.h)
 AC_CONFIG_FILES([Makefile
                  meshFiles/Makefile
                  testSuite/Makefile
