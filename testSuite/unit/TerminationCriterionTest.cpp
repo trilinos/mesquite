@@ -128,8 +128,8 @@ public:
     //This function is called by several of the tests in this suite.
   void test_outer_criterion(TerminationCriterion* tc_outer, MsqError &err)
     {
-      Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
-      mesh->read_vtk(MESH_FILES_DIR "2D/VTK/tri_5_xz.vtk", err);
+      Mesquite::MeshImpl mesh;
+      mesh.read_vtk(MESH_FILES_DIR "2D/VTK/tri_5_xz.vtk", err);
       
       Vector3D pnt(0,-5,0);
       Vector3D s_norm(0, -1,0);
@@ -139,24 +139,21 @@ public:
       InstructionQueue queue1;
       
         // create a mean ratio quality metric ...
-      ConditionNumberQualityMetric* cond_num= new ConditionNumberQualityMetric;
-      LPtoPTemplate* obj_func = new LPtoPTemplate(cond_num, 2, err);
+      ConditionNumberQualityMetric cond_num;
+      LPtoPTemplate obj_func(&cond_num, 2, err);
       CPPUNIT_ASSERT(!err);
-      ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
+      ConjugateGradient pass1( &obj_func, err );
       CPPUNIT_ASSERT(!err);
-      pass1->set_outer_termination_criterion(tc_outer);
+      pass1.set_outer_termination_criterion(tc_outer);
       
-      pass1->set_debugging_level(0);
-      QualityAssessor all_qa=QualityAssessor(cond_num,
+      pass1.set_debugging_level(0);
+      QualityAssessor all_qa=QualityAssessor(&cond_num,
                                              QualityAssessor::ALL_MEASURES,
                                              err); CPPUNIT_ASSERT(!err);
       queue1.add_quality_assessor(&all_qa,err); CPPUNIT_ASSERT(!err);
-      queue1.set_master_quality_improver(pass1, err); CPPUNIT_ASSERT(!err);
+      queue1.set_master_quality_improver(&pass1, err); CPPUNIT_ASSERT(!err);
         //queue1.add_quality_assessor(&all_qa,err); CPPUNIT_ASSERT(!err);
-      queue1.run_instructions(mesh, &msq_geom, err); CPPUNIT_ASSERT(!err);
-      delete pass1;
-      delete obj_func;
-      delete cond_num;
+      queue1.run_instructions(&mesh, &msq_geom, err); CPPUNIT_ASSERT(!err);
     }
   
     //NUMBER OF ITERATES

@@ -89,8 +89,8 @@ int main()
      MESH_FILES_DIR "3D/VTK/tire.vtk";
   printf("Loading mesh set 1\n");
   MsqPrintError err( cout );
-  Mesquite::MeshImpl* mesh = new Mesquite::MeshImpl;
-  mesh->read_vtk(file_name, err);
+  Mesquite::MeshImpl mesh;
+  mesh.read_vtk(file_name, err);
   if (err) return 1;
   
     // Creates an intruction queue
@@ -99,11 +99,11 @@ int main()
 
   // Creates a condition number quality metric 
   //  printf("Creating quality metric\n");
-  ConditionNumberQualityMetric* cond_no = new ConditionNumberQualityMetric;
+  ConditionNumberQualityMetric cond_no;
   
   // Create the NonSmooth Steepest Descent procedures
   //  printf("creating optimizer\n");
-  NonSmoothSteepestDescent minmax_method( cond_no );
+  NonSmoothSteepestDescent minmax_method( &cond_no );
 
   // Set a termination criterion
   TerminationCriterion tc2;
@@ -112,11 +112,11 @@ int main()
   minmax_method.set_outer_termination_criterion(&tc2);
   // Set up the quality assessor
   //  printf("Setting up the quality assessor\n");
-  QualityAssessor quality_assessor=QualityAssessor(cond_no,QualityAssessor::MAXIMUM, err);
+  QualityAssessor quality_assessor=QualityAssessor(&cond_no,QualityAssessor::MAXIMUM, err);
   if (err) return 1;
-  quality_assessor.add_quality_assessment(cond_no,QualityAssessor::MINIMUM, err); 
+  quality_assessor.add_quality_assessment(&cond_no,QualityAssessor::MINIMUM, err); 
   if (err) return 1;
-  quality_assessor.add_quality_assessment(cond_no,QualityAssessor::AVERAGE, err);
+  quality_assessor.add_quality_assessment(&cond_no,QualityAssessor::AVERAGE, err);
   if (err) return 1;
 
   // assess the quality of the initial mesh
@@ -133,19 +133,18 @@ int main()
 
   // write out the original mesh
   //  printf("Writing out the original mesh\n");
-  mesh->write_vtk("original_mesh.vtk", err); 
+  mesh.write_vtk("original_mesh.vtk", err); 
   if (err) return 1;
 
   // launches optimization on mesh_set1
   //  printf("Running the instruction queue\n");
-  queue1.run_instructions(mesh, err); 
+  queue1.run_instructions(&mesh, err); 
   if (err) return 1;
 
   // write out the smoothed mesh
   //  printf("Writing out the final mesh\n");
-  mesh->write_vtk("smoothed_mesh.vtk", err); 
+  mesh.write_vtk("smoothed_mesh.vtk", err); 
   if (err) return 1;
   
-  delete cond_no;
   return 0;
 }

@@ -85,7 +85,7 @@ bool VertexConditionNumberQualityMetric::evaluate( PatchData& pd,
   
     //create an array to store the local metric values before averaging
     //Can we remove this dynamic allocatio?
-  double* met_vals = new double[num_elems];
+  msq_std::vector<double> met_vals(num_elems);
     //vector to hold the other verts which form a corner.
   vector<size_t> other_vertices;
   other_vertices.reserve(4);
@@ -151,8 +151,7 @@ bool VertexConditionNumberQualityMetric::evaluate( PatchData& pd,
     }// end switch over element type
     other_vertices.clear();
   }//end loop over elements
-  fval = average_metrics(met_vals, num_elems, err);  MSQ_ERRZERO(err);
-  delete []met_vals;
+  fval = average_metrics(&met_vals[0], num_elems, err);  MSQ_ERRZERO(err);
   return true;
 }
 

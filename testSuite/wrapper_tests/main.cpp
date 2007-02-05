@@ -86,8 +86,8 @@ int main(int argc, char* argv[])
     strcpy(file_name, argv[1]);
   }
   
-  Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
-  mesh->read_vtk(file_name, err);
+  Mesquite::MeshImpl mesh;
+  mesh.read_vtk(file_name, err);
   
   // creates a wrapper
   ShapeImprovementWrapper wrapper(err); if (err) return 1;
@@ -95,7 +95,7 @@ int main(int argc, char* argv[])
 //  mesh->write_vtk("original_mesh",err); MSQ_CHKERR(err);
   
   // launches optimization on mesh_set1
-  wrapper.run_instructions(mesh, err); 
+  wrapper.run_instructions(&mesh, err); 
   if (err) return 1;
   
 //  mesh->write_vtk("smoothed_mesh", err); MSQ_CHKERR(err);

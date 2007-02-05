@@ -1026,15 +1026,15 @@ public:
   void VtkTest::test_elements()
   {
     Mesquite::MsqPrintError err(cout);
-    MeshImpl* mMesh = new MeshImpl;
-    mMesh->read_vtk(MESH_FILES_DIR "2D/VTK/equil_tri2.vtk", err);
+    MeshImpl mMesh;
+    mMesh.read_vtk(MESH_FILES_DIR "2D/VTK/equil_tri2.vtk", err);
     CPPUNIT_ASSERT(!err);
     
       // Retrieve a patch
     Mesquite::PatchData pd;
-    pd.set_mesh( mMesh );
+    pd.set_mesh( &mMesh );
     VertexPatches patch_set;
-    patch_set.set_mesh( mMesh );
+    patch_set.set_mesh( &mMesh );
     PatchIterator patches( &patch_set );
     patches.get_next_patch( pd, err );
     CPPUNIT_ASSERT(!err);

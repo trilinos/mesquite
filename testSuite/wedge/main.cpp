@@ -124,17 +124,17 @@ int main( int argc, char* argv[] )
   unsigned i;
 
   Mesquite::MsqPrintError err(cout);
-  QualityMetric* metrics[] = { new IdealWeightMeanRatio,
-                               new IdealWeightInverseMeanRatio(err),
-                               new ConditionNumberQualityMetric,
-                               0 };
+  IdealWeightMeanRatio m1;
+  IdealWeightInverseMeanRatio m2(err);
+  ConditionNumberQualityMetric m3;
+  QualityMetric* metrics[] = { &m1, &m2, &m3, 0 };
 
     // Read Mesh
-  Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
-  mesh->read_vtk( meshfile, err);
+  Mesquite::MeshImpl mesh;
+  mesh.read_vtk( meshfile, err);
   CPPUNIT_ASSERT(!err);
-  Mesquite::MeshImpl *ideal_mesh = new Mesquite::MeshImpl;
-  ideal_mesh->read_vtk( meshfile, err);
+  Mesquite::MeshImpl ideal_mesh;
+  ideal_mesh.read_vtk( meshfile, err);
   CPPUNIT_ASSERT(!err);
 
     // Check that the mesh read correctly, and contains what is
@@ -146,10 +146,10 @@ int main( int argc, char* argv[] )
   std::vector<Mesh::VertexHandle> vert_array;
   std::vector<Mesh::ElementHandle> elem_array;
   std::vector<size_t> conn_offsets;
-  mesh->get_all_elements( elem_array, err ); 
+  mesh.get_all_elements( elem_array, err ); 
   CPPUNIT_ASSERT(!err);
   CPPUNIT_ASSERT_EQUAL( elem_array.size(), NUM_ELEM );
-  mesh->elements_get_attached_vertices( &elem_array[0],
+  mesh.elements_get_attached_vertices( &elem_array[0],
                                         elem_array.size(),
                                         vert_array,
                                         conn_offsets,
@@ -158,7 +158,7 @@ int main( int argc, char* argv[] )
   CPPUNIT_ASSERT_EQUAL(vert_array.size() , VERT_PER_ELEM*NUM_ELEM);
   CPPUNIT_ASSERT_EQUAL(conn_offsets.size() , NUM_ELEM+1);
   EntityTopology type_array[NUM_ELEM];
-  mesh->elements_get_topologies( &elem_array[0], type_array, NUM_ELEM, err );
+  mesh.elements_get_topologies( &elem_array[0], type_array, NUM_ELEM, err );
   CPPUNIT_ASSERT(!err);
   
     // Verify element types and number of vertices
@@ -183,7 +183,7 @@ int main( int argc, char* argv[] )
     // boundary and all wedges share a single edge which is the axis
     // of the prism.
   MsqVertex vertices[NUM_ELEM*VERT_PER_ELEM];
-  mesh->vertices_get_coordinates( &vert_array[0], vertices, NUM_ELEM*VERT_PER_ELEM, err );
+  mesh.vertices_get_coordinates( &vert_array[0], vertices, NUM_ELEM*VERT_PER_ELEM, err );
   CPPUNIT_ASSERT(!err);
   for (i = 0; i < NUM_ELEM*VERT_PER_ELEM; ++i)
   {
@@ -204,19 +204,19 @@ int main( int argc, char* argv[] )
     // the smoother didn't move the vertex
   Vector3D delta(0,0,0);
   for (i = 0; metrics[i] != NULL; ++i)
-    CPPUNIT_ASSERT( !smooth_mesh( mesh, ideal_mesh, handle8, handle9, delta, metrics[i] ) );
+    CPPUNIT_ASSERT( !smooth_mesh( &mesh, &ideal_mesh, handle8, handle9, delta, metrics[i] ) );
   
     // Now try moving the vertex and see if the smoother moves it back
     // to the origin
   delta.set( 0.1, 0.0, 0.1 );
   for (i = 0; metrics[i] != NULL; ++i)
-    CPPUNIT_ASSERT( !smooth_mesh( mesh, ideal_mesh, handle8, handle9, delta, metrics[i] ) );
+    CPPUNIT_ASSERT( !smooth_mesh( &mesh, &ideal_mesh, handle8, handle9, delta, metrics[i] ) );
   
     // Now try moving the vertex further and see if the smoother moves it back
     // to the origin
   delta.set( 1.0, 0.0, 1.0 );
   for (i = 0; metrics[i] != NULL; ++i)
-    CPPUNIT_ASSERT( !smooth_mesh( mesh, ideal_mesh, handle8, handle9, delta, metrics[i] ) );
+    CPPUNIT_ASSERT( !smooth_mesh( &mesh, &ideal_mesh, handle8, handle9, delta, metrics[i] ) );
 
   return 0;
 }
@@ -259,26 +259,25 @@ bool smooth_mesh( MeshImpl* mesh, Mesh* ref_mesh,
   InstructionQueue Q;
 
   // Set up objective function
-  LPtoPTemplate* obj_func = new LPtoPTemplate(metric, 1, err);
+  LPtoPTemplate obj_func(metric, 1, err);
   CPPUNIT_ASSERT(!err);
 
   // Create solver
-  FeasibleNewton* solver = new FeasibleNewton( obj_func, true );
+  FeasibleNewton solver( &obj_func, true );
   CPPUNIT_ASSERT(!err);
-  solver->use_global_patch();
-  CPPUNIT_ASSERT(!err);
+  solver.use_global_patch();
 
   // Set stoping criteria for solver
   TerminationCriterion tc_inner;
   tc_inner.add_criterion_type_with_double( 
     TerminationCriterion::VERTEX_MOVEMENT_ABSOLUTE, 1e-7, err);
   CPPUNIT_ASSERT(!err);
-  solver->set_inner_termination_criterion(&tc_inner);
+  solver.set_inner_termination_criterion(&tc_inner);
    
   TerminationCriterion tc_outer;
   tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
   CPPUNIT_ASSERT(!err);
-  solver->set_outer_termination_criterion(&tc_outer);
+  solver.set_outer_termination_criterion(&tc_outer);
 
 #ifdef DO_QUALITY_ASSESSOR
   QualityAssessor qa( metric, QualityAssessor::ALL_MEASURES, err ); CPPUNIT_ASSERT(!err);
@@ -286,7 +285,7 @@ bool smooth_mesh( MeshImpl* mesh, Mesh* ref_mesh,
 #endif
    
   // Add solver to queue
-  Q.set_master_quality_improver(solver, err); 
+  Q.set_master_quality_improver(&solver, err); 
   CPPUNIT_ASSERT(!err);
 
 #ifdef DO_QUALITY_ASSESSOR

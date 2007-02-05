@@ -195,6 +195,11 @@ void MeshImplTags::set_element_data( size_t tag_index,
         data += tag->desc.size;
       }
     }
+    else
+    {
+      memset( (char*)tag->elementData + tag->elementCount * tag->desc.size, 0, 
+              (total - tag->elementCount) * tag->desc.size );
+    }
     tag->elementCount = total;
   }
   
@@ -286,6 +291,11 @@ void MeshImplTags::set_vertex_data( size_t tag_index,
         memcpy( data, tag->defaultValue, tag->desc.size );
         data += tag->desc.size;
       }
+    }
+    else
+    {
+      memset( (char*)tag->vertexData + tag->vertexCount * tag->desc.size, 0, 
+              (total - tag->vertexCount) * tag->desc.size );
     }
     tag->vertexCount = total;
   }

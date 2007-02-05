@@ -79,7 +79,7 @@ using namespace Mesquite;
 
 int main()
 {
-  Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
+  Mesquite::MeshImpl mesh;
   MsqPrintError err(cout);
     //create geometry: plane z=0, normal (0,0,1)
   Vector3D pnt(0,0,0);
@@ -87,14 +87,14 @@ int main()
   Mesquite::PlanarDomain msq_geom(s_norm, pnt);
      
     //mesh->read_vtk(MESH_FILES_DIR "2D/VTK/cube-clip-corner.vtk", err);
-  mesh->read_vtk(MESH_FILES_DIR "2D/VTK/hybrid_3quad_1tri.vtk", err);
+  mesh.read_vtk(MESH_FILES_DIR "2D/VTK/hybrid_3quad_1tri.vtk", err);
   if (err) return 1;
   
     // creates an intruction queue
   InstructionQueue queue1;
   
     // creates a mean ratio quality metric ...
-  IdealWeightInverseMeanRatio* mean_ratio = new IdealWeightInverseMeanRatio(err);
+  IdealWeightInverseMeanRatio mean_ratio(err);
   if (err) return 1;
     //   mean_ratio->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
     //   mean_ratio->set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
@@ -102,7 +102,7 @@ int main()
     //MSQ_CHKERR(err);
   
     // ... and builds an objective function with it
-  LPtoPTemplate obj_func(mean_ratio, 2, err);
+  LPtoPTemplate obj_func(&mean_ratio, 2, err);
   if (err) return 1;;
   
     // creates the steepest descent, feas newt optimization procedures
@@ -111,7 +111,7 @@ int main()
   pass1.use_global_patch();
   if (err) return 1;;
   
-  QualityAssessor qa=QualityAssessor(mean_ratio,QualityAssessor::ALL_MEASURES, err);
+  QualityAssessor qa=QualityAssessor(&mean_ratio,QualityAssessor::ALL_MEASURES, err);
   if (err) return 1;;
   
     // **************Set termination criterion****************
@@ -137,17 +137,16 @@ int main()
   if (err) return 1;
   queue1.add_quality_assessor(&qa,err); 
   if (err) return 1;
-  mesh->write_vtk("original_mesh.vtk",err); 
+  mesh.write_vtk("original_mesh.vtk",err); 
   if (err) return 1;
   
-  queue1.run_instructions(mesh, &msq_geom, err); 
+  queue1.run_instructions(&mesh, &msq_geom, err); 
   if (err) return 1;
-  mesh->write_vtk("smoothed_mesh.vtk",err); 
+  mesh.write_vtk("smoothed_mesh.vtk",err); 
   if (err) return 1;
     //std::cout<<"\n\nNow running the shape wrapper.\n=n";
     //ShapeImprovementWrapper wrap(100);
     //wrap.run_instructions(mesh_set1, err); MSQ_CHKERR(err);
-  delete mean_ratio;
   print_timing_diagnostics(cout);
   return 0;
 }

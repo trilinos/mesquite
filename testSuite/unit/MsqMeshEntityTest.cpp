@@ -102,7 +102,8 @@ public:
 
   void tearDown()
   {
-
+    destroy_patch_with_domain( oneTriPatch );
+    destroy_patch_with_domain( oneQuadPatch );
   }
   
 public:

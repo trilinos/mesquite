@@ -122,9 +122,9 @@ public:
   
    void test_cg_mesh_cond_sphere()
    {
-     Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
+     Mesquite::MeshImpl mesh;
      Mesquite::MsqPrintError err(cout);
-     mesh->read_vtk(MESH_FILES_DIR "2D/VTK/quads_on_sphere_529.vtk", err);
+     mesh.read_vtk(MESH_FILES_DIR "2D/VTK/quads_on_sphere_529.vtk", err);
      CPPUNIT_ASSERT(!err);
      
        //create geometry: sphere, center (2,2,0), radius 3
@@ -135,20 +135,20 @@ public:
      InstructionQueue queue1;
      
        // creates a mean ratio quality metric ...
-     ConditionNumberQualityMetric* shape = new ConditionNumberQualityMetric;
-     UntangleBetaQualityMetric* untan = new UntangleBetaQualityMetric;
+     ConditionNumberQualityMetric shape;
+     UntangleBetaQualityMetric untan;
      
        // ... and builds an objective function with it
-     LPtoPTemplate* obj_func = new LPtoPTemplate(shape, 2, err);
+     LPtoPTemplate obj_func(&shape, 2, err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
        // creates the steepest descent optimization procedures
-     ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
+     ConjugateGradient pass1( &obj_func, err );
        //SteepestDescent* pass2 = new SteepestDescent( obj_func );
-     pass1->use_global_patch();
+     pass1.use_global_patch();
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
-     QualityAssessor qa=QualityAssessor(shape,QualityAssessor::MAXIMUM, err);
+     QualityAssessor qa=QualityAssessor(&shape,QualityAssessor::MAXIMUM, err);
      CPPUNIT_ASSERT(!err);
      
        //**********Set stopping criterion  5 iterates ****************
@@ -157,36 +157,32 @@ public:
      TerminationCriterion sc5;
      sc5.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,
                                      5,err);
-     pass1->set_inner_termination_criterion(&sc5);
+     pass1.set_inner_termination_criterion(&sc5);
        //CG's debugging print, increase integer to get more print info
-     pass1->set_debugging_level(0);
+     pass1.set_debugging_level(0);
   
        //  queue1.add_preconditioner(pass2, err); CPPUNIT_ASSERT(!err);
-     queue1.set_master_quality_improver(pass1, err); CPPUNIT_ASSERT(!err);
+     queue1.set_master_quality_improver(&pass1, err); CPPUNIT_ASSERT(!err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
        // launches optimization on mesh_set1
-     double orig_qa_val=qa.loop_over_mesh(mesh, &msq_geom, 0, err);
+     double orig_qa_val=qa.loop_over_mesh(&mesh, &msq_geom, 0, err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
-     queue1.run_instructions(mesh, &msq_geom, err); CPPUNIT_ASSERT(!err);
+     queue1.run_instructions(&mesh, &msq_geom, err); CPPUNIT_ASSERT(!err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
-     double fin_qa_val=qa.loop_over_mesh(mesh, &msq_geom, 0, err);
+     double fin_qa_val=qa.loop_over_mesh(&mesh, &msq_geom, 0, err);
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
        //make sure 'quality' improved
      CPPUNIT_ASSERT( (fin_qa_val-orig_qa_val) <= 0.0 );
-     delete pass1;
-     delete obj_func;
-     delete shape;
-     delete untan;
    }
    void test_smart_lapl_sphere()
      {
-       Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
+       Mesquite::MeshImpl mesh;
        Mesquite::MsqPrintError err(cout); 
-       mesh->read_vtk(MESH_FILES_DIR "2D/VTK/quads_on_sphere_529.vtk", err);
+       mesh.read_vtk(MESH_FILES_DIR "2D/VTK/quads_on_sphere_529.vtk", err);
        
          //create geometry sphere:  ratius 1, centered at (0,0,0)
        Vector3D center(0,0,0);
@@ -196,51 +192,48 @@ public:
        InstructionQueue queue1;
 
          // creates an edge length metric ...
-       IdealWeightInverseMeanRatio* shape_metric= new IdealWeightInverseMeanRatio(err);
-       LInfTemplate shape_func(shape_metric);
+       IdealWeightInverseMeanRatio shape_metric(err);
+       LInfTemplate shape_func(&shape_metric);
        
          //create the smart laplacian smoother
-       SmartLaplacianSmoother* s_lapl = new SmartLaplacianSmoother(&shape_func,
-                                                                   err);
+       SmartLaplacianSmoother s_lapl(&shape_func, err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
 
          //*******Set stopping criterion 5 iterates  ***********
        TerminationCriterion sc5;
        sc5.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,5,err);
-       s_lapl->set_outer_termination_criterion(&sc5);
+       s_lapl.set_outer_termination_criterion(&sc5);
          //qa, qi, qa
-       queue1.set_master_quality_improver(s_lapl, err); CPPUNIT_ASSERT(!err);
+       queue1.set_master_quality_improver(&s_lapl, err); CPPUNIT_ASSERT(!err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
          // launches optimization on mesh_set1
-       QualityAssessor qa=QualityAssessor(shape_metric,
+       QualityAssessor qa=QualityAssessor(&shape_metric,
                                           QualityAssessor::MAXIMUM, err);
        CPPUNIT_ASSERT(!err);
-       double orig_val=qa.loop_over_mesh(mesh, &msq_geom, 0, err);
+       double orig_val=qa.loop_over_mesh(&mesh, &msq_geom, 0, err);
        
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
-       queue1.run_instructions(mesh, &msq_geom, err); CPPUNIT_ASSERT(!err);
+       queue1.run_instructions(&mesh, &msq_geom, err); CPPUNIT_ASSERT(!err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
 
-       double final_val= qa.loop_over_mesh(mesh, &msq_geom, 0, err);
+       double final_val= qa.loop_over_mesh(&mesh, &msq_geom, 0, err);
   
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
          //make sure 'quality' improved
        CPPUNIT_ASSERT( (final_val-orig_val) <= 0.0 );
-       delete shape_metric;
-       delete s_lapl;
      }
   
   void test_lapl_geo_sphere()
      {
-       Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
+       Mesquite::MeshImpl mesh;
        Mesquite::MsqPrintError err(cout);
        
-       mesh->read_vtk(MESH_FILES_DIR "2D/VTK/Mesquite_geo_10242.vtk", err);
+       mesh.read_vtk(MESH_FILES_DIR "2D/VTK/Mesquite_geo_10242.vtk", err);
        
          //create geometry sphere:  ratius 1, centered at (0,0,0)
        Vector3D center(0,0,0);
@@ -250,15 +243,15 @@ public:
        InstructionQueue queue1;
 
          // creates an edge length metric ...
-       EdgeLengthQualityMetric* edg_len= new EdgeLengthQualityMetric;
+       EdgeLengthQualityMetric edg_len;
       
          //create the laplacian smoother
-       LaplacianSmoother* lapl = new LaplacianSmoother(err);
+       LaplacianSmoother lapl(err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
 
          //create a quality assessor
-       QualityAssessor qa=QualityAssessor(edg_len,QualityAssessor::RMS, err);
+       QualityAssessor qa=QualityAssessor(&edg_len,QualityAssessor::RMS, err);
        CPPUNIT_ASSERT(!err);
 
          //*******Set stopping criterion 10 iterates  ***********
@@ -266,25 +259,23 @@ public:
          //lapl->set_stopping_criterion(&sc10);
        TerminationCriterion sc10;
        sc10.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,10,err);
-       lapl->set_outer_termination_criterion(&sc10);
+       lapl.set_outer_termination_criterion(&sc10);
          //qa, qi, qa
-       queue1.set_master_quality_improver(lapl, err); 
+       queue1.set_master_quality_improver(&lapl, err); 
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
          // launches optimization on mesh_set1
-       double orig_qa_val=qa.loop_over_mesh(mesh, &msq_geom, 0, err);
+       double orig_qa_val=qa.loop_over_mesh(&mesh, &msq_geom, 0, err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
-       queue1.run_instructions(mesh, &msq_geom, err); CPPUNIT_ASSERT(!err);
+       queue1.run_instructions(&mesh, &msq_geom, err); CPPUNIT_ASSERT(!err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
-       double fin_qa_val=qa.loop_over_mesh(mesh, &msq_geom, 0, err);
+       double fin_qa_val=qa.loop_over_mesh(&mesh, &msq_geom, 0, err);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
          //make sure 'quality' improved
        CPPUNIT_ASSERT( (fin_qa_val-orig_qa_val) <= 0.0 );
-       delete edg_len;
-       delete lapl;
      }
   
    

@@ -72,9 +72,9 @@ using namespace Mesquite;
 
 int main()
 {
-  Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
+  Mesquite::MeshImpl mesh;
   MsqPrintError err(cout);
-  mesh->read_vtk(MESH_FILES_DIR "2D/VTK/square_quad_2.vtk", err);
+  mesh.read_vtk(MESH_FILES_DIR "2D/VTK/square_quad_2.vtk", err);
   if (err) return 1;
   
      //create geometry: plane z=0, normal (0,0,1)
@@ -85,13 +85,13 @@ int main()
     // creates an intruction queue
   LaplacianIQ laplacian_smoother;
   
-  mesh->write_vtk("original_mesh.vtk", err); 
+  mesh.write_vtk("original_mesh.vtk", err); 
   if (err) return 1;
   
     // launches optimization on mesh_set1
-  laplacian_smoother.run_instructions(mesh, &msq_geom, err); 
+  laplacian_smoother.run_instructions(&mesh, &msq_geom, err); 
   if (err) return 1;
  
-  mesh->write_vtk("smoothed_mesh.vtk", err); 
+  mesh.write_vtk("smoothed_mesh.vtk", err); 
   if (err) return 1;
 }

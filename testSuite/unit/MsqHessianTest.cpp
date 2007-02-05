@@ -85,8 +85,9 @@ public:
 
   void tearDown()
   {
+    destroy_patch_with_domain( twoTriangles );
   }
-  
+
 public:
   MsqHessianTest()
   {}

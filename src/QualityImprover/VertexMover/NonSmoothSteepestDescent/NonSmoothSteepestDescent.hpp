@@ -728,6 +728,10 @@ inline void NonSmoothSteepestDescent::check_equilibrium(int *equil, int *status,
        *equil = this->convex_hull_test(dir,num_active,err);
        if (*equil == 1) *status = MSQ_EQUILIBRIUM;
     }
+    
+    for (i = 0; i < num_active; ++i)
+      free( dir[i] );
+    free(dir);
 }
 
 
@@ -1170,7 +1174,7 @@ inline void NonSmoothSteepestDescent::init_opt(MsqError &err)
 
 inline void NonSmoothSteepestDescent::init_max_step_length(MsqError &err)
 {
-  int i, j, k;
+  int i, j;
   double max_diff = 0;
   double diff=0;
 
@@ -1187,12 +1191,9 @@ inline void NonSmoothSteepestDescent::init_max_step_length(MsqError &err)
   }
 
   /* find the maximum distance between two incident vertex locations */
-  for (i=1;i<numVertices;i++) {
-    for (j=i;j<numVertices+1;j++) {
-      diff=0;
-      for (k=0;k<mDimension;k++) {
-        diff += (mCoords[i][k]-mCoords[j][k])*(mCoords[i][k]-mCoords[j][k]);
-      }
+  for (i=0;i<numVertices-1;i++) {
+    for (j=i;j<numVertices;j++) {
+      diff = (mCoords[i]-mCoords[j]).length_squared();
       if (max_diff < diff) max_diff=diff;
     } 
   }

@@ -80,29 +80,29 @@ using namespace Mesquite;
 int main()
 {     
   MsqPrintError err(cout);
-  Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
-  mesh->read_vtk(MESH_FILES_DIR "3D/VTK/tire.vtk", err);
+  Mesquite::MeshImpl mesh;
+  mesh.read_vtk(MESH_FILES_DIR "3D/VTK/tire.vtk", err);
   if (err) return 1;
   
     // creates an intruction queue
   InstructionQueue queue1;
 
   // creates a mean ratio quality metric ...
-  IdealWeightInverseMeanRatio* mean = new IdealWeightInverseMeanRatio(err);
+  IdealWeightInverseMeanRatio mean(err);
   if (err) return 1;
   
-  LPtoPTemplate* obj_func = new LPtoPTemplate(mean, 1, err);
+  LPtoPTemplate obj_func(&mean, 1, err);
   if (err) return 1;
   
   // creates the optimization procedures
 //   ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
-  FeasibleNewton* pass1 = new FeasibleNewton( obj_func, true );
+  FeasibleNewton pass1( &obj_func, true );
 
   //perform optimization globally
-  pass1->use_global_patch();
+  pass1.use_global_patch();
   if (err) return 1;
   
-  QualityAssessor mean_qa=QualityAssessor(mean,QualityAssessor::AVERAGE, err);
+  QualityAssessor mean_qa=QualityAssessor(&mean,QualityAssessor::AVERAGE, err);
   if (err) return 1;
 
     //**************Set termination criterion****************
@@ -112,7 +112,7 @@ int main()
   TerminationCriterion tc_outer;
   tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES, 1, err); 
   if (err) return 1;
-  pass1->set_outer_termination_criterion(&tc_outer);
+  pass1.set_outer_termination_criterion(&tc_outer);
   
   //perform the inner loop until a certain objective function value is
   //reached.  The exact value needs to be determined (about 18095).
@@ -124,7 +124,7 @@ int main()
   tc_inner.add_criterion_type_with_double(TerminationCriterion::CPU_TIME, 1800, err); 
   if (err) return 1;
   
-  pass1->set_inner_termination_criterion(&tc_inner);
+  pass1.set_inner_termination_criterion(&tc_inner);
   
   //used for cg to get some info
 //  pass1->set_debugging_level(2);
@@ -132,18 +132,18 @@ int main()
   // adds 1 pass of pass1 to mesh_set1
   queue1.add_quality_assessor(&mean_qa,err);
   if (err) return 1;
-  queue1.set_master_quality_improver(pass1, err); 
+  queue1.set_master_quality_improver(&pass1, err); 
   if (err) return 1;
   queue1.add_quality_assessor(&mean_qa,err);
   if (err) return 1;
-  mesh->write_vtk("original_mesh.vtk", err); 
+  mesh.write_vtk("original_mesh.vtk", err); 
   if (err) return 1;
   
     // launches optimization on mesh_set1
-  queue1.run_instructions(mesh, err); 
+  queue1.run_instructions(&mesh, err); 
   if (err) return 1;
   
-  mesh->write_vtk("smoothed_mesh.vtk", err); 
+  mesh.write_vtk("smoothed_mesh.vtk", err); 
   if (err) return 1;
   print_timing_diagnostics( cout );
   return 0;

@@ -83,24 +83,24 @@ int main()
 {     
     /* Read a VTK Mesh file */
   MsqPrintError err(cout);
-  Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
-  mesh->read_vtk(MESH_FILES_DIR "2D/VTK/square_quad_2.vtk", err);
+  Mesquite::MeshImpl mesh;
+  mesh.read_vtk(MESH_FILES_DIR "2D/VTK/square_quad_2.vtk", err);
   if (err) return 1;
   
     // creates an intruction queue
   InstructionQueue queue1;
   
     // creates a mean ratio quality metric ...
-  ConditionNumberQualityMetric* shape_metric = new ConditionNumberQualityMetric;
-  EdgeLengthQualityMetric* lapl_met = new EdgeLengthQualityMetric;
-  lapl_met->set_averaging_method(QualityMetric::RMS);
+  ConditionNumberQualityMetric shape_metric;
+  EdgeLengthQualityMetric lapl_met;
+  lapl_met.set_averaging_method(QualityMetric::RMS);
  
     // creates the laplacian smoother  procedures
   LaplacianSmoother lapl1(err);
   if (err) return 1;
-  QualityAssessor stop_qa=QualityAssessor(shape_metric,QualityAssessor::MAXIMUM, err);
+  QualityAssessor stop_qa=QualityAssessor(&shape_metric,QualityAssessor::MAXIMUM, err);
   if (err) return 1;
-  stop_qa.add_quality_assessment(lapl_met,QualityAssessor::ALL_MEASURES,err);
+  stop_qa.add_quality_assessment(&lapl_met,QualityAssessor::ALL_MEASURES,err);
   if (err) return 1;
   
     //**************Set stopping criterion****************
@@ -124,10 +124,10 @@ int main()
   PlanarDomain plane(Vector3D(0,0,1), Vector3D(0,0,5));
   
     // launches optimization on mesh_set1
-  queue1.run_instructions(mesh, &plane, err); 
+  queue1.run_instructions(&mesh, &plane, err); 
   if (err) return 1;
   
-  mesh->write_vtk("smoothed_mesh.vtk", err); 
+  mesh.write_vtk("smoothed_mesh.vtk", err); 
   if (err) return 1;
   
   return 0;

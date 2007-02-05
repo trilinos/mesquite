@@ -86,49 +86,49 @@ using namespace Mesquite;
 
 int main()
 {
-  Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
+  Mesquite::MeshImpl mesh;
   MsqPrintError err(cout);
-  mesh->read_vtk(MESH_FILES_DIR "2D/VTK/tangled_quad.vtk", err);
+  mesh.read_vtk(MESH_FILES_DIR "2D/VTK/tangled_quad.vtk", err);
   if (err) return 1;
   
   // Set Domain Constraint
   Vector3D pnt(0,0,0);
   Vector3D s_norm(0,0,1);
-  PlanarDomain* msq_geom = new PlanarDomain(s_norm, pnt);
+  PlanarDomain msq_geom(s_norm, pnt);
                                                                               
     // creates an intruction queue
   InstructionQueue queue1;
   
     // creates a mean ratio quality metric ...
-  ConditionNumberQualityMetric* shape_metric = new ConditionNumberQualityMetric;
-  UntangleBetaQualityMetric* untangle = new UntangleBetaQualityMetric(2);
-  Randomize* pass0 = new Randomize(.05);
+  ConditionNumberQualityMetric shape_metric;
+  UntangleBetaQualityMetric untangle(2);
+  Randomize pass0(.05);
     // ... and builds an objective function with it
     //LInfTemplate* obj_func = new LInfTemplate(shape_metric);
-  LInfTemplate* obj_func = new LInfTemplate(untangle);
-  LPtoPTemplate* obj_func2 = new LPtoPTemplate(shape_metric, 2, err);
+  LInfTemplate obj_func(&untangle);
+  LPtoPTemplate obj_func2(&shape_metric, 2, err);
   if (err) return 1;
     // creates the steepest descent optimization procedures
-  ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
+  ConjugateGradient pass1( &obj_func, err );
   if (err) return 1;
   
     //SteepestDescent* pass2 = new SteepestDescent( obj_func2 );
-  ConjugateGradient* pass2 = new ConjugateGradient( obj_func2, err );
+  ConjugateGradient pass2( &obj_func2, err );
   if (err) return 1;
-  pass2->use_element_on_vertex_patch();
+  pass2.use_element_on_vertex_patch();
   if (err) return 1;
-  pass2->use_global_patch();
+  pass2.use_global_patch();
   if (err) return 1;
-  QualityAssessor stop_qa=QualityAssessor(shape_metric,QualityAssessor::MAXIMUM, err);
+  QualityAssessor stop_qa=QualityAssessor(&shape_metric,QualityAssessor::MAXIMUM, err);
   if (err) return 1;
-  QualityAssessor stop_qa2=QualityAssessor(shape_metric,QualityAssessor::MAXIMUM, err);
+  QualityAssessor stop_qa2=QualityAssessor(&shape_metric,QualityAssessor::MAXIMUM, err);
   if (err) return 1;
-  stop_qa2.add_quality_assessment(shape_metric,QualityAssessor::AVERAGE,err);
+  stop_qa2.add_quality_assessment(&shape_metric,QualityAssessor::AVERAGE,err);
   if (err) return 1;
   
-  stop_qa.add_quality_assessment(untangle,QualityAssessor::ALL_MEASURES,err);
+  stop_qa.add_quality_assessment(&untangle,QualityAssessor::ALL_MEASURES,err);
   if (err) return 1;
-  stop_qa.set_stopping_assessment(untangle,QualityAssessor::MAXIMUM,err);
+  stop_qa.set_stopping_assessment(&untangle,QualityAssessor::MAXIMUM,err);
   if (err) return 1;
     // **************Set stopping criterion**************
     //untangle beta should be 0 when untangled
@@ -150,9 +150,9 @@ int main()
     //StoppingCriterion sc2(StoppingCriterion::NUMBER_OF_PASSES,10);
     //StoppingCriterion sc_rand(StoppingCriterion::NUMBER_OF_PASSES,1);
     //either until untangled or 10 iterations
-  pass0->set_outer_termination_criterion(&sc_rand);
-  pass1->set_outer_termination_criterion(&sc1);
-  pass2->set_inner_termination_criterion(&sc3);
+  pass0.set_outer_termination_criterion(&sc_rand);
+  pass1.set_outer_termination_criterion(&sc1);
+  pass2.set_inner_termination_criterion(&sc3);
   
     // adds 1 pass of pass1 to mesh_set1
   queue1.add_quality_assessor(&stop_qa,err); 
@@ -160,18 +160,18 @@ int main()
     //queue1.add_preconditioner(pass0,err);MSQ_CHKERR(err);
     //queue1.add_preconditioner(pass1,err);MSQ_CHKERR(err);
     //queue1.set_master_quality_improver(pass2, err); MSQ_CHKERR(err);
-  queue1.set_master_quality_improver(pass1, err);
+  queue1.set_master_quality_improver(&pass1, err);
   if (err) return 1;
   queue1.add_quality_assessor(&stop_qa2,err);
   if (err) return 1;
-  mesh->write_vtk("original_mesh.vtk", err);
+  mesh.write_vtk("original_mesh.vtk", err);
   if (err) return 1;
   
     // launches optimization on mesh_set1
-  queue1.run_instructions(mesh, msq_geom, err);
+  queue1.run_instructions(&mesh, &msq_geom, err);
   if (err) return 1;
   
-  mesh->write_vtk("smoothed_mesh.vtk", err); 
+  mesh.write_vtk("smoothed_mesh.vtk", err); 
   if (err) return 1;
   
   print_timing_diagnostics(cout);

@@ -104,8 +104,8 @@ public:
     {
         /* Read a VTK Mesh file */
       MsqPrintError err(cout);
-      Mesquite::MeshImpl *mesh = new Mesquite::MeshImpl;
-      mesh->read_vtk(MESH_FILES_DIR "2D/VTK/square_quad_10_rand.vtk", err);
+      Mesquite::MeshImpl mesh;
+      mesh.read_vtk(MESH_FILES_DIR "2D/VTK/square_quad_10_rand.vtk", err);
       CPPUNIT_ASSERT(!err);
       
       Vector3D pnt(0,0,5);
@@ -116,15 +116,15 @@ public:
       InstructionQueue queue1;
       
         // creates a mean ratio quality metric ...
-      ConditionNumberQualityMetric* shape_metric = new ConditionNumberQualityMetric;
-      EdgeLengthQualityMetric* lapl_met = new EdgeLengthQualityMetric;
-      lapl_met->set_averaging_method(QualityMetric::RMS);
+      ConditionNumberQualityMetric shape_metric;
+      EdgeLengthQualityMetric lapl_met;
+      lapl_met.set_averaging_method(QualityMetric::RMS);
       
         // creates the laplacian smoother  procedures
-      LaplacianSmoother* lapl1 = new LaplacianSmoother(err); CPPUNIT_ASSERT(!err);
-      LaplacianSmoother* lapl2 = new LaplacianSmoother(err); CPPUNIT_ASSERT(!err);
-      QualityAssessor stop_qa=QualityAssessor(shape_metric,QualityAssessor::MAXIMUM, err); CPPUNIT_ASSERT(!err);
-      stop_qa.add_quality_assessment(lapl_met,QualityAssessor::ALL_MEASURES,err); CPPUNIT_ASSERT(!err);
+      LaplacianSmoother lapl1(err); CPPUNIT_ASSERT(!err);
+      LaplacianSmoother lapl2(err); CPPUNIT_ASSERT(!err);
+      QualityAssessor stop_qa=QualityAssessor(&shape_metric,QualityAssessor::MAXIMUM, err); CPPUNIT_ASSERT(!err);
+      stop_qa.add_quality_assessment(&lapl_met,QualityAssessor::ALL_MEASURES,err); CPPUNIT_ASSERT(!err);
       
         //**************Set termination criterion****************
       TerminationCriterion sc2;
@@ -143,32 +143,25 @@ public:
       CPPUNIT_ASSERT(!err);
         //Make sure no errors
       CPPUNIT_ASSERT(!err);
-      lapl1->set_outer_termination_criterion(&sc2);
-      lapl2->set_outer_termination_criterion(&sc2);
-      lapl1->set_inner_termination_criterion(&sc_cull);
-      lapl2->set_inner_termination_criterion(&sc_cull_2);
+      lapl1.set_outer_termination_criterion(&sc2);
+      lapl2.set_outer_termination_criterion(&sc2);
+      lapl1.set_inner_termination_criterion(&sc_cull);
+      lapl2.set_inner_termination_criterion(&sc_cull_2);
         // adds 1 pass of pass1 to mesh_set1
       queue1.add_quality_assessor(&stop_qa,err);
        //Make sure no errors
       CPPUNIT_ASSERT(!err);
-      queue1.add_preconditioner(lapl1,err);
+      queue1.add_preconditioner(&lapl1,err);
         //Make sure no errors
       CPPUNIT_ASSERT(!err);
-      queue1.set_master_quality_improver(lapl2, err);
+      queue1.set_master_quality_improver(&lapl2, err);
        //Make sure no errors
       CPPUNIT_ASSERT(!err);
       queue1.add_quality_assessor(&stop_qa,err);
         //Make sure no errors
       CPPUNIT_ASSERT(!err);
-      queue1.run_instructions(mesh, &msq_geom, err);
+      queue1.run_instructions(&mesh, &msq_geom, err);
       CPPUNIT_ASSERT(!err);
-      
-        //Make sure no errors
-      CPPUNIT_ASSERT(!err);
-      delete shape_metric;
-      delete lapl1;
-      delete lapl2;
-      delete lapl_met;
     }
   
 };

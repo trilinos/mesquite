@@ -114,7 +114,7 @@ public:
   void tearDown()
   {
 
-    mMesh->release();
+    delete mMesh;
     if(mErr) cout << mErr << endl;
     mErr.clear();
   }
