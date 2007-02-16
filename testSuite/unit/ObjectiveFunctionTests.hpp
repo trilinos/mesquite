@@ -387,7 +387,7 @@ static void test_eval_type( ObjectiveFunction::EvalType type,
       break;
       
     default:
-      CPPUNIT_ASSERT_MESSAGE(false, "No test for specified evaluation type");
+      CPPUNIT_ASSERT_MESSAGE("No test for specified evaluation type", false);
       break;
   }
 }

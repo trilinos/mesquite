@@ -41,7 +41,7 @@
 #include "TopologyInfo.hpp"
 #include "MsqError.hpp"
 
-#include <cppunit/extensions/HelperMacros.h>
+#include "UnitUtil.hpp"
 
 #include <vector>
 
@@ -894,7 +894,7 @@ void LinearMappingFunctionTest::do_coeff_test( MappingFunction& mf,
       message.addDetail( string("Xi:             ") + xi_str );
       message.addDetail( string("Expected value: ") + dtostr( comp[j] ) );
       message.addDetail( string("Actual value:   ") + dtostr( coeff[j] ) );
-      CPPUNIT_ASSERT_MESSAGE( message, fabs(comp[j]-coeff[j]) < DBL_EPSILON );
+      ASSERT_MESSAGE( message, fabs(comp[j]-coeff[j]) < DBL_EPSILON );
     }
   }
 }
@@ -951,7 +951,7 @@ void LinearMappingFunctionTest::do_deriv_test( MappingFunction& mf,
         message.addDetail( string("Axis:           ") + itostr( k ) );
         message.addDetail( string("Expected value: ") + dtostr( comp[d*verts[j]+k] ) );
         message.addDetail( string("Actual value:   ") + dtostr( coeff[d*j+k] ) );
-        CPPUNIT_ASSERT_MESSAGE( message, fabs(comp[d*verts[j]+k]-coeff[d*j+k]) < DBL_EPSILON );
+        ASSERT_MESSAGE( message, fabs(comp[d*verts[j]+k]-coeff[d*j+k]) < DBL_EPSILON );
         if (fabs(coeff[d*j+k]) > DBL_EPSILON)
           all_zero = false;
       }
@@ -972,7 +972,7 @@ void LinearMappingFunctionTest::do_deriv_test( MappingFunction& mf,
           message.addDetail( string("Coefficient number:  ") + itostr( j ) );
           message.addDetail( string("Axis:                ") + itostr( k ) );
           message.addDetail( string("Expected derivative: ") + dtostr( comp[d*j+k] ) );
-          CPPUNIT_ASSERT_MESSAGE( message, fabs(comp[d*j+k]) < DBL_EPSILON );
+          ASSERT_MESSAGE( message, fabs(comp[d*j+k]) < DBL_EPSILON );
         }
   }
 }
@@ -1006,7 +1006,7 @@ void LinearMappingFunctionTest::do_coeff_test_mid( MappingFunction& mf,
     message.addDetail( string("Coefficient number: ") + itostr( j ) );
     message.addDetail( string("Expected value: ") + dtostr( comp[j] ) );
     message.addDetail( string("Actual value:   ") + dtostr( coeff[j] ) );
-    CPPUNIT_ASSERT_MESSAGE( message, fabs(comp[j]-coeff[j]) < DBL_EPSILON );
+    ASSERT_MESSAGE( message, fabs(comp[j]-coeff[j]) < DBL_EPSILON );
   }
 }
 
@@ -1051,7 +1051,7 @@ void LinearMappingFunctionTest::do_deriv_test_mid( MappingFunction& mf,
       message.addDetail( string("Axis:               ") + itostr( k ) );
       message.addDetail( string("Expected value: ") + dtostr( comp[d*verts[j]+k] ) );
       message.addDetail( string("Actual value:   ") + dtostr( coeff[d*j+k] ) );
-      CPPUNIT_ASSERT_MESSAGE( message, fabs(comp[d*verts[j]+k]-coeff[d*j+k]) < DBL_EPSILON );
+      ASSERT_MESSAGE( message, fabs(comp[d*verts[j]+k]-coeff[d*j+k]) < DBL_EPSILON );
       if (fabs(coeff[d*j+k]) > DBL_EPSILON)
         all_zero = false;
     }
@@ -1071,7 +1071,7 @@ void LinearMappingFunctionTest::do_deriv_test_mid( MappingFunction& mf,
         message.addDetail( string("Coefficient number:  ") + itostr( j ) );
         message.addDetail( string("Axis:                ") + itostr( k ) );
         message.addDetail( string("Expected derivative: ") + dtostr( comp[d*j+k] ) );
-        CPPUNIT_ASSERT_MESSAGE( message, fabs(comp[d*j+k]) < DBL_EPSILON );
+        ASSERT_MESSAGE( message, fabs(comp[d*j+k]) < DBL_EPSILON );
       }
   
     // for linear elements, the derivative at the center should

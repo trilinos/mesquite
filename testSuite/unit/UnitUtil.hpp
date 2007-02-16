@@ -44,9 +44,12 @@
 
 #include "cppunit/extensions/HelperMacros.h"
 
+#define ASSERT_MESSAGE( MSG, COND ) \
+  CPPUNIT_NS::Asserter::failIf( !(COND), (MSG), CPPUNIT_SOURCELINE() )
+
 /** Assert that Mesquite API has not flagged an error */
 #define ASSERT_NO_ERROR( A ) \
-  CPPUNIT_ASSERT_MESSAGE( (A).error_message(), ! MSQ_CHKERR( (A) ) )
+  ASSERT_MESSAGE( (A).error_message(), ! MSQ_CHKERR( (A) ) )
 
 /**\brief compare two vectors (Vector3D)
  *
@@ -54,7 +57,7 @@
  * expected vector \a v1 .  
  */
 #define CPPUNIT_ASSERT_VECTORS_EQUAL( v1, v2, eps ) \
-  CPPUNIT_ASSERT_MESSAGE( utest_vect_message((v1),(v2)), \
+  ASSERT_MESSAGE( utest_vect_message((v1),(v2)), \
                           utest_vect_equal((v1),(v2),(eps)) )
 
 /**\brief compare two matrices (Matrix3D)
@@ -63,21 +66,21 @@
  * expected matrix \a m1
  */
 #define CPPUNIT_ASSERT_MATRICES_EQUAL( m1, m2, eps ) \
-  CPPUNIT_ASSERT_MESSAGE( utest_mat_message((m1),(m2)), \
+  ASSERT_MESSAGE( utest_mat_message((m1),(m2)), \
                           utest_mat_equal((m1),(m2),(eps)) )
 
 
 /** compare matrix (MsqMatrix) with the identity matrix  */
 #define ASSERT_IDENTITY_MATRIX( M ) \
-  CPPUNIT_ASSERT_MESSAGE( ident_check_msg(M), ident_check(M) )
+  ASSERT_MESSAGE( ident_check_msg(M), ident_check(M) )
 
 /** compare two matrices (MsqMatrix) */
 #define ASSERT_MATRICES_EQUAL( A, B, E ) \
-  CPPUNIT_ASSERT_MESSAGE( mat_equal_check_msg( A, B), mat_equal_check(A,B,E) )
+  ASSERT_MESSAGE( mat_equal_check_msg( A, B), mat_equal_check(A,B,E) )
 
 /** compare two matrices (MsqMatrix) */
 #define ASSERT_MATRICES_DIFFERENT( A, B, E ) \
-  CPPUNIT_ASSERT_MESSAGE( mat_not_equal_check_msg(A, B), !mat_equal_check(A,B,E) )
+  ASSERT_MESSAGE( mat_not_equal_check_msg(A, B), !mat_equal_check(A,B,E) )
 
 
 /** make string representation of cartesian vector */

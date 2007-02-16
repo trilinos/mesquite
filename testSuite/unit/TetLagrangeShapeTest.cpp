@@ -36,7 +36,7 @@
 #include "MsqError.hpp"
 #include <math.h>
 
-#include <cppunit/extensions/HelperMacros.h>
+#include "UnitUtil.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 # include <vector.h>
@@ -55,7 +55,7 @@ using namespace std;
 
 const double epsilon = 1e-6;
 #define ASSERT_VALUES_EQUAL( v1, v2, location, bits ) \
-  CPPUNIT_ASSERT_MESSAGE( value_message( (location), (bits), (v1), (v2) ), \
+  ASSERT_MESSAGE( value_message( (location), (bits), (v1), (v2) ), \
                           (fabs((v1) - (v2)) < epsilon) )
 
 inline const char* bintostr( unsigned bits )
