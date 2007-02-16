@@ -165,6 +165,11 @@ echo
 
 list=`testSuite/unit/$UNITTESTER -l Unit`
 for test in $list; do
+  echo
+  echo "********************************************************"
+  echo "                          ${test}" 
+  echo "********************************************************"
+  echo
   if (cd testSuite/unit && ${TESTS_ENVIRONMENT} ./$UNITTESTER "$test") ; then
     result="succeeded"
   else
@@ -181,6 +186,11 @@ echo
 
 list=`testSuite/unit/$UNITTESTER -l Regression`
 for test in $list; do
+  echo
+  echo "********************************************************"
+  echo "                          ${test}" 
+  echo "********************************************************"
+  echo
   if (cd testSuite/unit && ${TESTS_ENVIRONMENT} ./$UNITTESTER "$test") ; then
     result="succeeded"
   else
