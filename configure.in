@@ -180,7 +180,7 @@ if test "x$MSQ_DO_64BIT" = "xyes"; then
   fi
   SNL_CXX_COMPILE_64BIT
 fi
-
+AC_LANG_CPLUSPLUS
 
 #------------------------------------------------------------------------------
 # LIBTOOL
@@ -587,7 +587,7 @@ else
   old_LDFLAGS="$LDFLAGS"
   old_LIBS="$LIBS"
   if test "x$CPPUNIT_ARG" != "x"; then
-    if test "x$CPPUNIT_ARG" == "xyes"; then
+    if test "x$CPPUNIT_ARG" != "xyes"; then
       CPPUNIT_CPPFLAGS="-I$CPPUNIT_ARG/include"
       CPPUNIT_LDFLAGS="-L$CPPUNIT_ARG/lib"
       CPPFLAGS="$CPPFLAGS $CPPUNIT_CPPFLAGS"
@@ -635,6 +635,14 @@ AC_SUBST(CPPUNIT_CPPFLAGS)
 AC_SUBST(CPPUNIT_LDFLAGS)
 AC_SUBST(MESQUITE_TSTTB_MAKE_INCLUDE)
 AC_SUBST(MESQUITE_TSTTM_MAKE_INCLUDE)
+
+# We don't want to automatically generate mesquite_config.h.in
+# automatically using autoheader.  It puts #defines in the file
+# that are not appropriate for a library (will conflict with app's
+# #defines).  Try to disable it
+#AUTOHEADER="touch \$@"
+AUTOHEADER=":"
+AC_SUBST(AUTOHEADER)
 
 TEST_MAKE_INCLUDE="include ../cppflags.make"
 AC_SUBST(TEST_MAKE_INCLUDE)

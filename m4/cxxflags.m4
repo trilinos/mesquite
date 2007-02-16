@@ -186,7 +186,7 @@ AC_DEFUN([SNL_ADD_CXX_FLAGS], [
   SNL_TMP_CXX_FLAGS=
   if test "xone" = "x$4"; then
     SNL_CXX_FLAGS_ERROR=yes
-    SNL_ADD_CXX_FLAG( [${$1}], [SNL_TMP_CXX_FLAGS="$SNL_TMP_CXX_FLAGS ${$1}}"] )
+    SNL_ADD_CXX_FLAG( [${$1}], [SNL_TMP_CXX_FLAGS="$SNL_TMP_CXX_FLAGS ${$1}"] )
   else
     for flag in ${$1}; do
       SNL_ADD_CXX_FLAG( [$flag], [SNL_TMP_CXX_FLAGS="$SNL_TMP_CXX_FLAGS $flag"] )
