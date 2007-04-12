@@ -12,6 +12,7 @@ if WITH_TSTT
 endif
 
 MSQ_SRCS += \
+	$(SRC_MESH_DIR)/ArrayMesh.cpp \
 	$(SRC_MESH_DIR)/ElementPatches.cpp \
 	$(SRC_MESH_DIR)/ExtraData.cpp \
 	$(SRC_MESH_DIR)/GlobalPatch.cpp \
@@ -29,6 +30,7 @@ MSQ_SRCS += \
 	$(SRC_MESH_DIR)/VertexPatches.cpp 
 
 MSQ_HDRS += \
+	$(SRC_MESH_DIR)/ArrayMesh.hpp \
 	$(SRC_MESH_DIR)/ElementPatches.hpp \
 	$(SRC_MESH_DIR)/ExtraData.hpp \
 	$(SRC_MESH_DIR)/ExtraDataUser.hpp \

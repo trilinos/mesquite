@@ -43,6 +43,7 @@ msq_test_SOURCES = msq_test_main.cpp \
 	PatchDataInstances.hpp \
 	QualityMetricTester.hpp \
 	UnitUtil.hpp \
+	ArrayMeshTest.cpp \
 	AspectRatioGammaTest.cpp \
 	AveragingQMTest.cpp \
 	BoundedCylinderDomainTest.cpp \
