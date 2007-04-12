@@ -42,6 +42,30 @@ class ArrayMesh : public Mesh
 {
   public:
   
+      /** Create a Mesquite::Mesh instance that wraps application-provided
+       *  arrays.  
+       *
+       * Note:  An instance of this class will reference the passed in 
+       *        arrays.  It will not copy them.  
+       *
+       *\param coords_per_vertex Dimension of the mesh (2 or 3)
+       *\param num_vertices      Number of vertices in the mesh
+       *\param interleaved_vertex_coords Vertex coordinates.  Ordered as
+       *                         [x1, y1, z1, x2, y2, z2, ...]
+       *\param vertex_fixed_flags One value per vertex.  Zero if vertex is
+       *                         free, one if the poistion is fixed.
+       *\param num_elements      Number of elements in the mesh
+       *\param element_type      The type of the elements
+       *\param element_connectivity_array Element connectivity, specified
+       *                         as vertex indices such that the location
+       *                         of the vertex coordinates in vertex_coords
+       *                         is at 3 times the value in this array.
+       *\param one_based_conn_indices Use one-based (Fortran) array indexing.
+       *\param nodes_per_element Number of nodes in each element.  If not
+       *                         specified, number of nodes in a linear
+       *                         element with the type 'element_type' is
+       *                         assumed.
+       */
     ArrayMesh( int coords_per_vertex,
                unsigned long num_vertices,
                double* interleaved_vertex_coords,
