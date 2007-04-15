@@ -171,6 +171,90 @@ of reading and storing tag data (see Section \ref{tags}) using VTK attributes an
 field data.  The current implementation writes version 3.0 of the VTK file format
 and is capable of reading any version of the file format up to 3.0.  
 
+\section{Accessing Mesh In Arrays} \label{sec::ArrayMesh}
+
+One common representation of mesh in applications is composed of simple 
+coordinate and index arrays.  Mesquite provides the \texttt{ArrayMesh} implementation of the \texttt{Mesquite::Mesh} interface to allow Mesquite
+to access such array-based mesh definitions directly.  The mesh must be
+defined as follows:
+\begin{itemize}
+\item Vertex coordinates must be stored in an array of double-precision
+      floating-point values.  The coordinate values must be interleaved,
+      meaning that the x, y, and z coordinate values for a single vertex
+      are contiguous in memory.
+\item The mesh must be composed of a single element type.
+\item The element connectivity (vertices in each element) must be stored
+      in an interleaved format as an array of long integers.  The vertices
+      in each element are specified by an integer \texttt{i}, where the location       of the coordinates of the corresponding vertex is located at position
+      \texttt{3*i} in the vertex coordinates array.
+\item The fixed/boundary state of the vertices must be stored in an array
+      of integer values, where a value of 1 indicates a fixed vertex and a 
+      value of 0 indicates a free vertex.  The values in this array must
+      be in the same order as the corresponding vertex coordinates in the
+      coordinate array.
+\end{itemize}
+
+The following is a simple example of using the ArrayMesh object to pass
+Mesquite a mesh containing four quadrilateral elements.
+\begin{verbatim}
+  /*** define some mesh ***/
+    /* vertex coordinates */
+  double coords[] = { 0, 0, 0,
+                      1, 0, 0,
+                      2, 0, 0,
+                      0, 1, 0,
+                     .5,.5, 0,
+                      2, 1, 0,
+                      0, 2, 0,
+                      1, 2, 0,
+                      2, 2, 0 };
+    /* quadrileratal element connectivity (vertices) */
+  long quads[] = { 0, 1, 4, 3,
+                   1, 2, 5, 4,
+                   3, 4, 7, 6,
+                   4, 5, 8, 7 };
+    /* all vertices except the center on are fixed */
+  int fixed[] = { 1, 1, 1,
+                  1, 0, 1,
+                  1, 1, 1 };
+  
+  /*** create an ArrayMesh to pass the above mesh into Mesquite ***/
+  
+  ArrayMesh mesh( 3,            /* 3D mesh (three coord values per vertex) */
+                  9,            /* nine vertices */
+                  coords,       /* the vertex coordinates */ 
+                  fixed,        /* the vertex fixed flags */
+                  4,            /* four elements */
+                  QUADRILATERAL,/* elements are quadrilaterals */
+                  quads );      /* element connectivity */
+  
+  /*** smooth the mesh ***/
+  
+    /* Need surface to constrain 2D elements to */
+  PlanarDomain domain( PlanarDomain::XY );
+
+  MsqError err;
+  ShapeImprovementWrapper shape_wrapper( err );
+  if (err) {
+    std::cout << err << std::endl;
+    exit (2);
+  }
+  
+  shape_wrapper.run_instructions( &mesh, &domain, err );
+  if (err) {
+    std::cout << "Error smoothing mesh:" << std::endl
+              << err << std::endl;
+  }
+  
+  /*** Output the new location of the center vertex ***/
+  std::cout << "New vertex location: ( "
+            << coords[12] << ", " << coords[13] << ", " << coords[14]
+            << " )" << std::endl;
+\end{verbatim}
+
+NOTE:  When using the \texttt{ArrayMesh} interface, the application is responsible for managing the storate of the mesh data.  The \texttt{ArrayMesh}
+ does NOT copy the input mesh.  
+
 \section{The TSTT Interfaces} \label{sec:TSTT}
 
 Mesquite can access mesh and domain data using the TSTT \cite{tstt} interfaces 
