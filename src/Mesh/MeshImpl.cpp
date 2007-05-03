@@ -991,7 +991,13 @@ void MeshImpl::vertices_set_byte( const VertexHandle *vertex,
 }
 
 template <typename T> struct cast_handle : public msq_std::unary_function<size_t, T>
-{ T operator()( size_t idx ) const { return reinterpret_cast<T>(idx); } };
+{ 
+T operator()( size_t idx ) const 
+{ 
+  return reinterpret_cast<T>(idx); 
+} 
+
+};
 
 void MeshImpl::vertices_get_attached_elements( const VertexHandle* vertices,
                                                size_t num_vertices,
