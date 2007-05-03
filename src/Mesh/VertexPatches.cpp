@@ -37,6 +37,12 @@
 #include "MeshInterface.hpp"
 #include "MsqVertex.hpp"
 
+#ifdef MSQ_USE_OLD_STD_HEADERS
+# include <algorithm.h>
+#else
+# include <algorithm>
+#endif
+
 namespace Mesquite {
 
 void VertexPatches::get_patch_handles( msq_std::vector<PatchHandle>& patch_handles_out,

@@ -47,8 +47,10 @@ Header file for the Mesquite::QualityMetric class
 
 #ifndef MSQ_USE_OLD_STD_HEADERS
 #  include <vector>
+#  include <algorithm>
 #else
 #  include <vector.h>
+#  include <algorithm.h>
 #endif 
 
 #include "Mesquite.hpp"
