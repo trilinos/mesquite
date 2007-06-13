@@ -183,6 +183,15 @@ fi
 AC_LANG_CPLUSPLUS
 
 #------------------------------------------------------------------------------
+# Fortran stuff for ITAPS
+#------------------------------------------------------------------------------
+AC_PROG_FC
+AC_ARG_VAR([FC], [FORTRAN compiler command])
+if test "x$FC" != "x"; then
+  AC_FC_WRAPPERS
+fi
+
+#------------------------------------------------------------------------------
 # LIBTOOL
 #------------------------------------------------------------------------------
 # Don't set up libtool until we're done messing with the compiler flags
@@ -457,6 +466,11 @@ AC_ARG_WITH(tstt-base,
  [Specify directory containing TSTT core implementation for testing (default is tstt-mesh dir.)])],
  [WITH_TSTT_BASE_ARG=$withval],[WITH_TSTT_BASE_ARG="$WITH_TSTT_MESH_ARG"])
 
+AC_ARG_WITH(iMesh,
+ [AC_HELP_STRING([--with-iMesh=DIR],
+ [Specify directory containing ITAPS mesh interface implementation to use for testing.])],
+ [WITH_IMESH_ARG=$withval],[WITH_IMESH_ARG=no])
+
 AC_ARG_WITH(cppunit,
   [AC_HELP_STRING([--with-cppunit(=DIR)],[Specify directory where CppUnit is installed.])
 AC_HELP_STRING([--without-cppunit],   [Disable CppUnit tests])],
@@ -576,6 +590,18 @@ if test "x$WITH_TSTT_MESH_ARG" != "xno"; then
 fi
 
 
+# configure ITAPS server for use in tests
+AM_CONDITIONAL( [WITH_TEST_IMESH], [test "x$WITH_IMESH_ARG" != "xno"] )
+if test "x$WITH_IMESH_ARG" != "xno"; then 
+  MSQ_IMESH_DEFS="${WITH_IMESH_ARG}/iMesh-Defs.inc"
+  AC_CHECK_FILE( ["$MSQ_IMESH_DEFS"],
+                 [MSQ_IMESH_IMPL=yes],
+                 [AC_MSG_ERROR([Invalid iMesh implementation spec.])] )
+  MESQUITE_IMESH_MAKE_INCLUDE="include ${MSQ_IMESH_DEFS}"
+fi
+
+
+
 # CPPUnit
 CPPUNIT_CPPFLAGS=
 CPPUNIT_LDFLAGS=
@@ -635,6 +661,7 @@ AC_SUBST(CPPUNIT_CPPFLAGS)
 AC_SUBST(CPPUNIT_LDFLAGS)
 AC_SUBST(MESQUITE_TSTTB_MAKE_INCLUDE)
 AC_SUBST(MESQUITE_TSTTM_MAKE_INCLUDE)
+AC_SUBST(MESQUITE_IMESH_MAKE_INCLUDE)
 
 # We don't want to automatically generate mesquite_config.h.in
 # automatically using autoheader.  It puts #defines in the file
@@ -647,8 +674,9 @@ AC_SUBST(AUTOHEADER)
 TEST_MAKE_INCLUDE="include ../cppflags.make"
 AC_SUBST(TEST_MAKE_INCLUDE)
 
-AC_CONFIG_HEADERS(include/mesquite_config.h)
-AC_CONFIG_HEADERS(include/mesquite_version.h)
+AC_CONFIG_HEADERS([include/mesquite_config.h
+                   include/mesquite_version.h
+                   itaps/iMesh_FCDefs.h])
 AC_CONFIG_FILES([Makefile
                  meshFiles/Makefile
                  testSuite/Makefile

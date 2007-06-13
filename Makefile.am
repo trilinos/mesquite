@@ -57,9 +57,16 @@ libmesquite_la_include_HEADERS = include/Mesquite.hpp \
                                  $(top_builddir)/include/mesquite_config.h \
 				 $(top_builddir)/include/mesquite_version.h \
                                  include/MeshInterface.hpp \
+				 itaps/iBase.h \
+				 itaps/iMesh.h \
+				 itaps/iMesh_FCDefs.h \
+				 itaps/iMesh_protos.h \
                                  $(MSQ_HDRS)
 libmesquite_la_LIBADD = $(MESQUITE_LIBS)
-AM_CPPFLAGS += -Iinclude -I$(top_srcdir)/include $(MSQ_INCLUDES)
+AM_CPPFLAGS += -Iinclude -Iitaps \
+               -I$(top_srcdir)/include \
+               -I$(top_srcdir)/itaps \
+               $(MSQ_INCLUDES)
 
 include/Mesquite_all_headers.hpp: $(MSQ_HDRS)
 	@echo "Generating $@..."

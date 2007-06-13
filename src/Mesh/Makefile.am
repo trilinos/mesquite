@@ -21,6 +21,7 @@ MSQ_SRCS += \
 	$(SRC_MESH_DIR)/MeshImplData.cpp \
 	$(SRC_MESH_DIR)/MeshImplTags.cpp \
 	$(SRC_MESH_DIR)/MeshWriter.cpp \
+	$(SRC_MESH_DIR)/MsqIMesh.cpp \
 	$(SRC_MESH_DIR)/MsqMeshEntity.cpp \
 	$(SRC_MESH_DIR)/MsqVertex.cpp \
 	$(SRC_MESH_DIR)/PatchData.cpp \
@@ -41,6 +42,7 @@ MSQ_HDRS += \
 	$(SRC_MESH_DIR)/MeshImplTags.hpp \
 	$(SRC_MESH_DIR)/MeshWriter.hpp \
 	$(SRC_MESH_DIR)/MsqFreeVertexIndexIterator.hpp \
+	$(SRC_MESH_DIR)/MsqIMesh.hpp \
 	$(SRC_MESH_DIR)/MsqMeshEntity.hpp \
 	$(SRC_MESH_DIR)/MsqVertex.hpp \
 	$(SRC_MESH_DIR)/PatchData.hpp \
