@@ -2,6 +2,7 @@ MESHDIR = $(srcdir)/Mesh
 
 MESHSRCFILES = ArrayIterator.cpp \
                CornerTag.cpp \
+               MsqIMesh.cpp \
                MsqMeshEntity.cpp \
                MsqVertex.cpp \
                PatchData.cpp \

@@ -15,7 +15,7 @@ template_dir =
 include Makefile.customize
 
 OUTPUT_OPTION = -o $@ # Use the -o option when generating .o files.
-INCLUDE = ${SYSTEM_INCLUDE} -I./include -I$(localincludedir)
+INCLUDE = ${SYSTEM_INCLUDE} -I./include -I./itaps -I$(localincludedir)
 
 # Add to this in each subdirectory.  It's the list of files
 # that get added to the mesquite library.

@@ -48,6 +48,11 @@ ifeq ($(MSQ_TSTT_MESH),yes)
     TEST_SRCS += TSTT_Test.cpp
 endif
 
+ifeq ($(MSQ_IMESH_IMPL),yes)
+    TEST_SRCS += iMeshTest.cpp
+    include $(MSQ_IMESH_DEFS)
+endif
+
 TEST_OBJS = ${TEST_SRCS:.cpp=.o}
 
 TEST_OBJS_P = $(TEST_OBJS:%=$(UNIT_DIR)/%)
@@ -59,7 +64,8 @@ $(MSQ_TEST) : $(TEST_OBJS_P) testSuite/unit/msq_test_main.o $(locallibdir)/libme
 	-o $@ \
 	-L$(locallibdir) -lmesquite \
 	$(CPPUNIT_LNK) $(CONFIG_LDFLAGS) \
-        $(TSTTM_SERVER_LIBS) $(TSTTB_SERVER_LIBS)
+        $(TSTTM_SERVER_LIBS) $(TSTTB_SERVER_LIBS) \
+        $(IMESH_CBIND_LIBS_LINK)
 
 testSuite/unit/qt_test : $(TEST_OBJS_P) testSuite/unit/qt_test_main.cpp $(locallibdir)/libmesquite.a
 	@echo "Linking $@"
@@ -72,6 +78,7 @@ testSuite/unit/qt_test : $(TEST_OBJS_P) testSuite/unit/qt_test_main.cpp $(locall
 	$(CPPUNIT_LNK) $(CONFIG_LDFLAGS) \
 	-lqttestrunner -L$(QTDIR)/lib -lqt-mt \
         $(TSTTM_SERVER_LIBS) $(TSTTB_SERVER_LIBS) \
+        $(IMESH_CBIND_LIBS_LINK) \
 	 -o $@
 
 .SUFFIXES : .cpp .o
