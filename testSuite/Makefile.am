@@ -4,6 +4,12 @@ else
   TSTT_TEST = 
 endif
 
+if WITH_TEST_IMESH
+  IMESH_TEST = imesh
+else
+  IMESH_TEST =
+endif
+
 if WITH_EXODUS
   EXO_TEST = convert 
 else
@@ -38,4 +44,4 @@ SUBDIRS = test_1 \
 	  2d_target \
 	  2d_metrics\
 	  2d_formulation \
-	  $(TSTT_TEST) $(EXO_TEST) $(UNIT_TEST)
+	  $(TSTT_TEST) $(IMESH_TEST) $(EXO_TEST) $(UNIT_TEST)
