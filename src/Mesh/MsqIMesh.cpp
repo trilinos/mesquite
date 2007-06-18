@@ -157,7 +157,9 @@ class MsqIMeshImpl : public MsqIMesh
 {
   public:
 
-    MsqIMeshImpl(iMesh_Instance mesh, MsqError &err);
+    MsqIMeshImpl(iMesh_Instance mesh, 
+                 const char* fixed_tag_name,
+                 MsqError &err);
     virtual ~MsqIMeshImpl();
     
       /** \brief set mesh to be smoothed.
@@ -458,9 +460,10 @@ class MsqIMeshImpl : public MsqIMesh
 
 MsqIMesh* MsqIMesh::create( iMesh_Instance mesh, 
                             iBase_EntitySetHandle meshset, 
-                            MsqError& err )
+                            MsqError& err,
+                            const char* fixed_tag_name )
 {
-  MsqIMesh* result = new MsqIMeshImpl( mesh, err );
+  MsqIMesh* result = new MsqIMeshImpl( mesh, fixed_tag_name, err );
   if (MSQ_CHKERR(err))
   {
     delete result;
@@ -475,9 +478,10 @@ MsqIMesh* MsqIMesh::create( iMesh_Instance mesh,
   return result;
 }
 
-MsqIMesh* MsqIMesh::create( iMesh_Instance mesh, MsqError& err )
+MsqIMesh* MsqIMesh::create( iMesh_Instance mesh, MsqError& err,
+                            const char* fixed_tag_name )
 {
-  MsqIMesh* result = new MsqIMeshImpl( mesh, err );
+  MsqIMesh* result = new MsqIMeshImpl( mesh, fixed_tag_name, err );
   if (MSQ_CHKERR(err))
   {
     delete result;
@@ -489,7 +493,9 @@ MsqIMesh* MsqIMesh::create( iMesh_Instance mesh, MsqError& err )
 MsqIMesh::~MsqIMesh() {}
 
 
-MsqIMeshImpl::MsqIMeshImpl( iMesh_Instance itaps_mesh, Mesquite::MsqError& err ) 
+MsqIMeshImpl::MsqIMeshImpl( iMesh_Instance itaps_mesh, 
+                            const char* fixed_tag_name,
+                            Mesquite::MsqError& err ) 
   : meshInstance(itaps_mesh), 
     elementSet(0), nodeSet(0), 
     inputSetType( iBase_ALL_TYPES ),
@@ -517,9 +523,11 @@ MsqIMeshImpl::MsqIMeshImpl( iMesh_Instance itaps_mesh, Mesquite::MsqError& err )
   topologyMap[iMesh_PYRAMID      ] = Mesquite::PYRAMID;
   
       // Get tag for fixed flag
+  if (fixed_tag_name == 0)
+    fixed_tag_name = VERTEX_FIXED_TAG_NAME;
   int ierr;
-  iMesh_getTagHandle( meshInstance, VERTEX_FIXED_TAG_NAME, 
-                      strlen(VERTEX_FIXED_TAG_NAME),
+  iMesh_getTagHandle( meshInstance, fixed_tag_name, 
+                      strlen(fixed_tag_name),
                       &fixedTag, &ierr );
   if (iBase_SUCCESS == ierr) {
     int size, type;
@@ -527,14 +535,14 @@ MsqIMeshImpl::MsqIMeshImpl( iMesh_Instance itaps_mesh, Mesquite::MsqError& err )
     if (iBase_SUCCESS != ierr || size != sizeof(int)) {
       MSQ_SETERR(err)( MsqError::INVALID_STATE,
                        "Tag \"%s\" exists with invalid size", 
-                       VERTEX_FIXED_TAG_NAME );
+                       fixed_tag_name );
       return;
     }
     iMesh_getTagType( meshInstance, fixedTag, &type, &ierr );
     if (iBase_SUCCESS != ierr || type != iBase_INTEGER) {
       MSQ_SETERR(err)( MsqError::INVALID_STATE,
                        "Tag \"%s\" exists with invalid type", 
-                       VERTEX_FIXED_TAG_NAME );
+                       fixed_tag_name );
       return;
     }
   }
