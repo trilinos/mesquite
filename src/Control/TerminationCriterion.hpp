@@ -59,6 +59,7 @@ namespace Mesquite
    class PatchDataVerticesMemento;
    class Mesh;
    class MeshDomain;
+   class MappingFunctionSet;
    
   /*! \class TerminationCriterion
 
@@ -205,7 +206,7 @@ namespace Mesquite
     MESQUITE_EXPORT void remove_culling(MsqError &err);
     
       //! Clear any data accumulated during an outer iteration
-    void reset_outer( Mesh* ms, MeshDomain* dm, OFEvaluator& of, MsqError& err );
+    void reset_outer( Mesh* ms, MeshDomain* dm, OFEvaluator& of, MappingFunctionSet* mfs, MsqError& err );
     
       //! Clear any data accumulated during an inner iteration
     void reset_inner( PatchData& pd, OFEvaluator& of, MsqError& err );
@@ -224,7 +225,7 @@ namespace Mesquite
       //! criteria during inner iteration.                       
     void accumulate_patch( PatchData& pd, MsqError& err );
     
-    void accumulate_outer( Mesh* ms, MeshDomain* dm, OFEvaluator& eval, MsqError& err );
+    void accumulate_outer( Mesh* ms, MeshDomain* dm, OFEvaluator& eval, MappingFunctionSet* mfs, MsqError& err );
     
       //! Check if termination criterion has been met
     MESQUITE_EXPORT bool terminate();

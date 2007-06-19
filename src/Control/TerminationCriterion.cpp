@@ -228,10 +228,12 @@ void TerminationCriterion::remove_culling(MsqError &/*err*/)
 void TerminationCriterion::reset_outer(Mesh* mesh, 
                                        MeshDomain* domain,
                                        OFEvaluator& obj_eval,
+                                       MappingFunctionSet* map_func,
                                        MsqError &err)
 {
   const unsigned long totalFlag = terminationCriterionFlag | cullingMethodFlag;
   PatchData global_patch;
+  global_patch.set_mapping_functions( map_func );
   
     //if we need to fill out the global patch data object.
   if (totalFlag & (GRAD_FLAGS | OF_FLAGS | VERTEX_MOVEMENT_RELATIVE))
@@ -449,9 +451,11 @@ void TerminationCriterion::accumulate_inner( PatchData& pd,
 void TerminationCriterion::accumulate_outer(Mesh* mesh, 
                                             MeshDomain* domain, 
                                             OFEvaluator& of_eval,
+                                            MappingFunctionSet* mfs,
                                             MsqError &err)
 {
   PatchData global_patch;
+  global_patch.set_mapping_functions( mfs );
   
     //if we need to fill out the global patch data object.
   if (terminationCriterionFlag & (GRAD_FLAGS|OF_FLAGS|VERTEX_MOVEMENT_RELATIVE))

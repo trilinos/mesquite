@@ -125,7 +125,7 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
   patch.set_mesh( mesh );
   patch.set_domain( domain );
   patch.set_mapping_functions( map_func );
-  bool one_patch = false;
+  bool one_patch = false, did_some;
   msq_std::vector<Mesh::VertexHandle> patch_vertices;
   msq_std::vector<Mesh::ElementHandle> patch_elements;
   
@@ -165,7 +165,7 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
   obj_func.initialize( mesh, domain, map_func, patch_set, err ); 
   if (MSQ_CHKERR(err)) goto ERROR;
   
-  outer_crit->reset_outer(mesh, domain, obj_func, err); 
+  outer_crit->reset_outer(mesh, domain, obj_func, map_func, err); 
   if (MSQ_CHKERR(err)) goto ERROR;
   
  
@@ -178,8 +178,17 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
   }
   
    // Loop until outer termination criterion is met
+  did_some = true;
   while (!outer_crit->terminate())
   {
+    if (!did_some) {
+      MSQ_SETERR(err)("Inner termiation criterion satisfied for all patches "
+                      "without meeting outer termination criterion.  This is "
+                      "an infinite loop.  Aborting.", MsqError::INVALID_STATE);
+      break;
+    }
+    did_some = false;
+
       // Loop over each patch
     msq_std::vector<PatchSet::PatchHandle>::iterator p_iter = patch_list.begin();
     while( p_iter != patch_list.end() )
@@ -222,6 +231,8 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
         // criterion has already been met.
       if (!inner_crit->terminate())
       {
+        did_some = true;
+        
           // Call optimizer - should loop on inner_crit->terminate()
         this->optimize_vertex_positions( patch, err );
         if (MSQ_CHKERR(err)) goto ERROR;
@@ -243,7 +254,7 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
     this->terminate_mesh_iteration(patch, err); 
     if (MSQ_CHKERR(err)) goto ERROR;
     
-    outer_crit->accumulate_outer( mesh, domain, obj_func, err );
+    outer_crit->accumulate_outer( mesh, domain, obj_func, map_func, err );
     if (MSQ_CHKERR(err)) goto ERROR;
   }
 
