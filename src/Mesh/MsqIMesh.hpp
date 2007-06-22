@@ -35,7 +35,6 @@
 
 #include "MeshInterface.hpp"
 #include "iMesh.h"
-#include "MeshTSTT.hpp" // for tag name constants
 
 namespace Mesquite {
 
