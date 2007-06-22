@@ -36,6 +36,7 @@
 #include "MsqDebug.hpp"
 #include "MsqVertex.hpp"
 #include <assert.h>
+#include "MeshTSTT.hpp" // for tag name constants
 
 static inline msq_std::string process_itaps_error( int ierr )
 {
@@ -157,7 +158,9 @@ class MsqIMeshImpl : public MsqIMesh
 {
   public:
 
-    MsqIMeshImpl(iMesh_Instance mesh, MsqError &err);
+    MsqIMeshImpl(iMesh_Instance mesh, 
+                 const char* fixed_tag_name,
+                 MsqError &err);
     virtual ~MsqIMeshImpl();
     
       /** \brief set mesh to be smoothed.
@@ -458,9 +461,10 @@ class MsqIMeshImpl : public MsqIMesh
 
 MsqIMesh* MsqIMesh::create( iMesh_Instance mesh, 
                             iBase_EntitySetHandle meshset, 
-                            MsqError& err )
+                            MsqError& err,
+                            const char* fixed_tag_name )
 {
-  MsqIMesh* result = new MsqIMeshImpl( mesh, err );
+  MsqIMesh* result = new MsqIMeshImpl( mesh, fixed_tag_name, err );
   if (MSQ_CHKERR(err))
   {
     delete result;
@@ -475,9 +479,10 @@ MsqIMesh* MsqIMesh::create( iMesh_Instance mesh,
   return result;
 }
 
-MsqIMesh* MsqIMesh::create( iMesh_Instance mesh, MsqError& err )
+MsqIMesh* MsqIMesh::create( iMesh_Instance mesh, MsqError& err,
+                            const char* fixed_tag_name )
 {
-  MsqIMesh* result = new MsqIMeshImpl( mesh, err );
+  MsqIMesh* result = new MsqIMeshImpl( mesh, fixed_tag_name, err );
   if (MSQ_CHKERR(err))
   {
     delete result;
@@ -489,7 +494,9 @@ MsqIMesh* MsqIMesh::create( iMesh_Instance mesh, MsqError& err )
 MsqIMesh::~MsqIMesh() {}
 
 
-MsqIMeshImpl::MsqIMeshImpl( iMesh_Instance itaps_mesh, Mesquite::MsqError& err ) 
+MsqIMeshImpl::MsqIMeshImpl( iMesh_Instance itaps_mesh, 
+                            const char* fixed_tag_name,
+                            Mesquite::MsqError& err ) 
   : meshInstance(itaps_mesh), 
     elementSet(0), nodeSet(0), 
     inputSetType( iBase_ALL_TYPES ),
@@ -517,24 +524,26 @@ MsqIMeshImpl::MsqIMeshImpl( iMesh_Instance itaps_mesh, Mesquite::MsqError& err )
   topologyMap[iMesh_PYRAMID      ] = Mesquite::PYRAMID;
   
       // Get tag for fixed flag
+  if (fixed_tag_name == 0)
+    fixed_tag_name = VERTEX_FIXED_TAG_NAME;
   int ierr;
-  iMesh_getTagHandle( meshInstance, VERTEX_FIXED_TAG_NAME, 
-                      strlen(VERTEX_FIXED_TAG_NAME),
-                      &fixedTag, &ierr );
+  iMesh_getTagHandle( meshInstance, fixed_tag_name, 
+                      &fixedTag, &ierr,
+                      strlen(fixed_tag_name) );
   if (iBase_SUCCESS == ierr) {
     int size, type;
     iMesh_getTagSizeBytes( meshInstance, fixedTag, &size, &ierr );
     if (iBase_SUCCESS != ierr || size != sizeof(int)) {
       MSQ_SETERR(err)( MsqError::INVALID_STATE,
                        "Tag \"%s\" exists with invalid size", 
-                       VERTEX_FIXED_TAG_NAME );
+                       fixed_tag_name );
       return;
     }
     iMesh_getTagType( meshInstance, fixedTag, &type, &ierr );
     if (iBase_SUCCESS != ierr || type != iBase_INTEGER) {
       MSQ_SETERR(err)( MsqError::INVALID_STATE,
                        "Tag \"%s\" exists with invalid type", 
-                       VERTEX_FIXED_TAG_NAME );
+                       fixed_tag_name );
       return;
     }
   }
@@ -545,14 +554,14 @@ MsqIMeshImpl::MsqIMeshImpl( iMesh_Instance itaps_mesh, Mesquite::MsqError& err )
     // Get/create tag for vertex byte
   iMesh_getTagHandle( meshInstance, 
                       VERTEX_BYTE_TAG_NAME,
-                      strlen(VERTEX_BYTE_TAG_NAME),
-                      &byteTag, &ierr );
+                      &byteTag, &ierr,
+                      strlen(VERTEX_BYTE_TAG_NAME) );
   if (iBase_SUCCESS != ierr) {
     iMesh_createTag( meshInstance, 
                      VERTEX_BYTE_TAG_NAME,
-                     strlen(VERTEX_BYTE_TAG_NAME),
                      1, iBase_INTEGER,
-                     &byteTag, &ierr );
+                     &byteTag, &ierr,
+                     strlen(VERTEX_BYTE_TAG_NAME) );
     if (iBase_SUCCESS != ierr) {
       MSQ_SETERR(err)( MsqError::INVALID_STATE, 
                        "Tag \"%s\" could not be created", 
@@ -1250,9 +1259,10 @@ TagHandle MsqIMeshImpl::tag_create( const msq_std::string& name,
   int ierr;
   TagHandle result;
   iMesh_createTag( meshInstance, 
-                   name.c_str(), name.size(), 
+                   name.c_str(), 
                    length, itaps_type,
-                   &result, &ierr );
+                   &result, &ierr,
+                   name.size() );
   if (iBase_SUCCESS != ierr) {
     MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
     return 0;
@@ -1275,7 +1285,7 @@ TagHandle MsqIMeshImpl::tag_get( const msq_std::string& name, MsqError& err )
 {
   TagHandle handle = 0;
   int ierr;
-  iMesh_getTagHandle( meshInstance, name.c_str(), name.length(), &handle, &ierr );
+  iMesh_getTagHandle( meshInstance, name.c_str(), &handle, &ierr, name.length() );
   if (iBase_TAG_NOT_FOUND == ierr) {
     MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::TAG_NOT_FOUND );
     return 0;
@@ -1297,7 +1307,7 @@ void MsqIMeshImpl::tag_properties( TagHandle handle,
   char buffer[256];
   int ierr1, ierr2, ierr3, itype;
   
-  iMesh_getTagName( meshInstance, handle, buffer, sizeof(buffer), &ierr1 );
+  iMesh_getTagName( meshInstance, handle, buffer, &ierr1, sizeof(buffer) );
   iMesh_getTagSizeValues( meshInstance, handle, (int*)&length_out, &ierr2 );
   iMesh_getTagType( meshInstance, handle, &itype, &ierr3 );
   

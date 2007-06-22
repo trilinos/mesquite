@@ -35,7 +35,6 @@
 
 #include "MeshInterface.hpp"
 #include "iMesh.h"
-#include "MeshTSTT.hpp" // for tag name constants
 
 namespace Mesquite {
 
@@ -55,14 +54,17 @@ public:
    */
   static MsqIMesh* create( iMesh_Instance imesh, 
                            iBase_EntitySetHandle meshset,
-                           MsqError& err );
+                           MsqError& err,
+                           const char* fixed_tag_name = 0 );
   
   /**\brief factory method
    *
    * Create an MsqIMesh instance with no initial mesh.
    * Call set_active_set to complete initialization.
    */
-  static MsqIMesh* create( iMesh_Instance imesh, MsqError& err );
+  static MsqIMesh* create( iMesh_Instance imesh, 
+                           MsqError& err,
+                           const char* fixed_tag_name = 0 );
   
   virtual void set_active_set( iBase_EntitySetHandle, MsqError& err ) = 0;
   
