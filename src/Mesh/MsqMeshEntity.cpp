@@ -104,6 +104,7 @@ void MsqMeshEntity::append_node_indices( msq_std::vector<msq_stdc::size_t>& indi
 */
 void MsqMeshEntity::get_centroid(Vector3D &centroid, const PatchData &pd, MsqError &err) const
 {
+  centroid = 0.0;
   const MsqVertex* vtces = pd.get_vertex_array(err); MSQ_ERRRTN(err);
   size_t nve = vertex_count();
   for (size_t i=0; i<nve; ++i)
