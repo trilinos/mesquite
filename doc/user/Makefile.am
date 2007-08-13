@@ -41,4 +41,9 @@ users-guide.dvi: $(UG_SRCS)
 	$(LATEX) users-guide.tex
 	$(LATEX) users-guide.tex
 
+pdf: users-guide.pdf
+
+ps: users-guide.ps
+
+
 MOSTLYCLEANFILES = *.aux *.bbl *.blg *.lof *.log *.lot *.toc
