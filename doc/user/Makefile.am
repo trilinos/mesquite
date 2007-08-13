@@ -33,7 +33,7 @@ SUFFIXES = .dvi .pdf .ps
 	$(PS2PDF) $< $@
 
 .dvi.ps:
-	$(DVIPS) $<
+	$(DVIPS) $< -o $@
 
 users-guide.dvi: $(UG_SRCS) 
 	$(LATEX) users-guide.tex
