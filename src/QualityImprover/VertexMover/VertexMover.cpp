@@ -125,7 +125,7 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
   patch.set_mesh( mesh );
   patch.set_domain( domain );
   patch.set_mapping_functions( map_func );
-  bool one_patch = false, did_some;
+  bool one_patch = false, did_some, all_culled;
   msq_std::vector<Mesh::VertexHandle> patch_vertices;
   msq_std::vector<Mesh::ElementHandle> patch_elements;
   
@@ -188,6 +188,7 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
       break;
     }
     did_some = false;
+    all_culled = true;
 
       // Loop over each patch
     msq_std::vector<PatchSet::PatchHandle>::iterator p_iter = patch_list.begin();
@@ -202,13 +203,16 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
           ++p_iter;
         } while (patch_elements.empty() && p_iter != patch_list.end()) ;
         
-        if (patch_elements.empty()) // no more non-culled vertices
+        if (patch_elements.empty()) { // no more non-culled vertices
           break;
+        }
       
+        all_culled = false;
         patch.set_mesh_entities( patch_elements, patch_vertices, err );
         if (MSQ_CHKERR(err)) goto ERROR;
       } else {
         ++p_iter;
+        all_culled = false;
       }
         
         // Initialize for inner iteration
@@ -256,6 +260,9 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
     
     outer_crit->accumulate_outer( mesh, domain, obj_func, map_func, err );
     if (MSQ_CHKERR(err)) goto ERROR;
+    
+    if (all_culled)
+      break;
   }
 
 
