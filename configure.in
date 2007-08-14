@@ -676,7 +676,7 @@ AC_SUBST(TEST_MAKE_INCLUDE)
 
 AC_CONFIG_HEADERS([include/mesquite_config.h
                    include/mesquite_version.h
-                   itaps/iMesh_FCDefs.h])
+                   itaps/iBase_FCDefs.h])
 AC_CONFIG_FILES([Makefile
                  meshFiles/Makefile
                  testSuite/Makefile

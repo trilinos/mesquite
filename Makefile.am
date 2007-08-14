@@ -51,16 +51,20 @@ include src/TargetCalculator/Makefile.am
 include tstt/Makefile.am
 
 libmesquite_la_includedir = $(includedir)
-libmesquite_la_SOURCES = $(MSQ_SRCS)
+libmesquite_la_SOURCES = $(MSQ_SRCS) \
+			 itaps/iBase.h \
+			 itaps/iMesh.h \
+			 itaps/iGeom.h \
+			 itaps/iRel.h \
+			 itaps/iBase_FCDefs.h \
+			 itaps/iMesh_protos.h \
+			 itaps/iGeom_protos.h \
+			 itaps/iRel_protos.h 
 libmesquite_la_include_HEADERS = include/Mesquite.hpp \
                                  include/Mesquite_all_headers.hpp \
                                  $(top_builddir)/include/mesquite_config.h \
 				 $(top_builddir)/include/mesquite_version.h \
                                  include/MeshInterface.hpp \
-				 itaps/iBase.h \
-				 itaps/iMesh.h \
-				 itaps/iMesh_FCDefs.h \
-				 itaps/iMesh_protos.h \
                                  $(MSQ_HDRS)
 libmesquite_la_LIBADD = $(MESQUITE_LIBS)
 AM_CPPFLAGS += -Iinclude -Iitaps \
