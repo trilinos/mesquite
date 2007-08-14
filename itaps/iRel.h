@@ -84,6 +84,9 @@
 extern "C" 
 {
 #endif
+  
+  typedef void* iBase_Instance;
+
 
     /**\brief  Type used to store iRel interface handle
      *
