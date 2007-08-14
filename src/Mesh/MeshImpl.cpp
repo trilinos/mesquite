@@ -922,6 +922,17 @@ void MeshImpl::vertices_get_fixed_flag(
   }
 }
 
+void MeshImpl::vertices_set_fixed_flag(
+ const VertexHandle vert_array[], const bool on_bnd[],
+ size_t num_vtx, MsqError& err)
+{
+  for (size_t i=0; i<num_vtx; ++i)
+  {
+    myMesh->fix_vertex( (size_t)vert_array[i], on_bnd[i],  err ); 
+    MSQ_ERRRTN(err);
+  }
+}
+
 // Get/set location of a vertex
 void MeshImpl::vertices_get_coordinates(
  const Mesh::VertexHandle vert_array[],

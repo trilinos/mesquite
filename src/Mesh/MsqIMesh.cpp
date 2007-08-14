@@ -37,38 +37,7 @@
 #include "MsqVertex.hpp"
 #include <assert.h>
 #include "MeshTSTT.hpp" // for tag name constants
-
-static inline msq_std::string process_itaps_error( int ierr )
-{
-  msq_std::string result( "ITAPS ERROR: " );
-  switch (ierr) {
-    case iBase_MESH_ALREADY_LOADED:      result += "File Already Loaded";   break;
-    case iBase_NO_MESH_DATA:             result += "No Mesh";               break;
-    case iBase_FILE_NOT_FOUND:           result += "File Not Found";        break;
-    case iBase_FILE_WRITE_ERROR:         result += "File Write Error";      break;
-    case iBase_NIL_ARRAY:                result += "NULL Array";            break;
-    case iBase_BAD_ARRAY_SIZE:           result += "Bad Array Size";        break;
-    case iBase_BAD_ARRAY_DIMENSION:      result += "Bad Array Dimension";   break;
-    case iBase_INVALID_ENTITY_HANDLE:    result += "Invalid Handle";        break;
-    case iBase_INVALID_ENTITY_COUNT:     result += "Invalid Count";         break;
-    case iBase_INVALID_ENTITY_TYPE:      result += "Invalid Type";          break;
-    case iBase_INVALID_ENTITY_TOPOLOGY:  result += "Invalid Topology";      break;
-    case iBase_BAD_TYPE_AND_TOPO:        result += "Invalid Type";          break;
-    case iBase_ENTITY_CREATION_ERROR:    result += "Creation Failed";       break;
-    case iBase_INVALID_TAG_HANDLE:       result += "Invalid Tag";           break;
-    case iBase_TAG_NOT_FOUND:            result += "Tag Not Found";         break;
-    case iBase_TAG_ALREADY_EXISTS:       result += "Tag Exists";            break;
-    case iBase_TAG_IN_USE:               result += "Tag In Use";            break;
-    case iBase_INVALID_ENTITYSET_HANDLE: result += "Invalid Handle";        break;
-    case iBase_INVALID_ITERATOR_HANDLE:  result += "Invalid Iterator";      break;
-    case iBase_INVALID_ARGUMENT:         result += "Invalid Argument";      break;
-    case iBase_MEMORY_ALLOCATION_FAILED: result += "Out of Memory";         break;
-    case iBase_NOT_SUPPORTED:            result += "Not Supported";         break;
-    default:                             result += "Uknown/Internal Error"; break;
-  }
-  MSQ_DBGOUT(1) << result << msq_stdio::endl;
-  return result;
-}
+#include "MsqIBase.hpp"
 
 namespace Mesquite {
 

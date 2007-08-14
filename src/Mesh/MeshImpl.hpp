@@ -119,6 +119,11 @@ namespace Mesquite
                                           bool fixed_flag_array[],
                                           size_t num_vtx, 
                                           MsqError &err);
+
+    void vertices_set_fixed_flag( const VertexHandle vert_array[], 
+                                  const bool fixed_flag_array[],
+                                  size_t num_vtx, 
+                                  MsqError &err);
     
       // Get/set location of a vertex
     virtual void vertices_get_coordinates(const Mesh::VertexHandle vert_array[],
