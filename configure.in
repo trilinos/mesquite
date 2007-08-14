@@ -443,29 +443,6 @@ AC_ARG_WITH(netcdf,
 AC_HELP_STRING([--without-netcdf],[Skip NetCDF check])],
   [NETCDF_ARG=$withval], [NETCDF_ARG=])
 
-AC_ARG_WITH(babel,
-  [AC_HELP_STRING([--with-babel(=DIR)],
-                  [Specify directory where Babel exectuable and 
-                    SIDL headers/libs are installed.])
-AC_HELP_STRING([--without-babel],[Disable use of Babel/SIDL])],
-  [BABEL_ARG=${withval}],[BABEL_ARG=])
-
-AC_ARG_ENABLE( [tstt],
-  [AC_HELP_STRING([--enable-tstt],
-                  [Compile glue code for interfacing with TSTT implemenations.])
-AC_HELP_STRING([--disable-tstt],[Disable TSTT mesh glue code (DEFAULT).])],
-  [ TSTT_IFACE_ARG=${enableval}], [TSTT_IFACE_ARG=] )
-
-AC_ARG_WITH(tstt-mesh,
- [AC_HELP_STRING([--with-tstt-mesh=DIR],
- [Specify directory containing TSTT mesh implementation to use for testing.])],
- [WITH_TSTT_MESH_ARG=$withval],[WITH_TSTT_MESH_ARG=no])
- 
-AC_ARG_WITH(tstt-base,
- [AC_HELP_STRING([--with-tstt-base=DIR],
- [Specify directory containing TSTT core implementation for testing (default is tstt-mesh dir.)])],
- [WITH_TSTT_BASE_ARG=$withval],[WITH_TSTT_BASE_ARG="$WITH_TSTT_MESH_ARG"])
-
 AC_ARG_WITH(iMesh,
  [AC_HELP_STRING([--with-iMesh=DIR],
  [Specify directory containing ITAPS mesh interface implementation to use for testing.])],
@@ -528,67 +505,6 @@ if test "x$EXODUS_ARG" != "xno"; then
   LIBS="$old_LIBS"
 fi
 
-# Configure TSTT/SIDL/BABEL
-if test "x$WITH_TSTT_BASE_ARG" != "xno"; then TSTT_IFACE_ARG=yes; fi
-if test "x$WITH_TSTT_MESH_ARG" != "xno"; then TSTT_IFACE_ARG=yes; fi
-AM_CONDITIONAL( [WITH_TSTT], [test "x$TSTT_IFACE_ARG" = "xyes"] )
-if test "x$TSTT_IFACE_ARG" = "xyes"; then
-  old_CPPFLAGS="$CPPFLAGS"
-  old_LDFLAGS="$LDFLAGS"
-
-  if test "x$BABEL_ARG" = "xno"; then
-    AC_MSG_ERROR([--enable-tstt and --without-babel are mutually exclusing: TSTT requires babal])
-  fi
-  if test "x$BABEL_ARG" = "x"; then
-    BABEL_ARG=yes
-  fi
-
-  if test "x$BABEL_ARG" != "xyes"; then
-    SIDL_INC="-I${BABEL_ARG}/include -I${BABEL_ARG}/include/cxx"
-    SIDL_LNK="-L${BABEL_ARG}/lib"
-    CPPFLAGS="$CPPFLAGS $SIDL_INC"
-    LDFLAGS="$LDFLAGS $SIDL_LNK"
-    AM_CPPFLAGS="$AM_CPPFLAGS $SIDL_INC"
-    AM_LDFLAGS="$AM_LDFLAGS $SIDL_LNK -lsidl"
-    AC_CHECK_PROG( [BABEL], [babel], [${BABEL_ARG}/bin/babel], [no], [${BABEL_ARG}/bin] )
-  else
-    AC_CHECK_PROG( [BABEL], [babel], [babel], [no] )
-  fi
-  if test "x$BABEL" = "xno"; then
-    AC_MSG_ERROR([cannot find 'babel' required for --enable-tstt])
-  fi
-  
-  AC_CHECK_HEADER( [sidl.h], [], [AC_MSG_ERROR("sidl.h not found")] )
-  AC_CHECK_LIB( [sidl], [sidl_long__array_copy], 
-                [MESQUITE_LIBS="$MESQUITE_LIBS -lsidl"],
-                [AC_MSG_ERROR("No SIDL library found")] )
-                
-  CPPFLAGS="$old_CPPFLAGS"
-  LDFLAGS="$old_LDFLAGS"
-fi
-
-# configure TSTT server for use in tests
-AC_ARG_VAR([BABEL],[SIDL compiler])
-AM_CONDITIONAL( [WITH_TSTT_MESH], [test "x$WITH_TSTT_MESH_ARG" != "xno"] )
-if test "x$WITH_TSTT_MESH_ARG" != "xno"; then
-  if test "x$WITH_TSTT_BASE_ARG" = "xno"; then
-    WITH_TSTT_BASE_ARG="$WITH_TSTT_MESH_ARG"
-  fi
-  if test "x$WITH_TSTT_MESH_ARG" = "xyes"; then
-    AC_MSG_ERROR([Location not specified for TSTT mesh server])
-  fi
-  if test "x$WITH_TSTT_BASE_ARG" = "xyes"; then
-    AC_MSG_ERROR([Location not specified for TSTT base server])
-  fi
-   
-  AC_CHECK_FILE( [${WITH_TSTT_BASE_ARG}/TSTTB-Defs.inc], [],
-                 [AC_MSG_ERROR([Invalid TSTTB implementation spec.])] )
-  AC_CHECK_FILE( [${WITH_TSTT_MESH_ARG}/TSTTM-Defs.inc], [],
-                 [AC_MSG_ERROR([Invalid TSTTM implementation spec.])] )
-  MESQUITE_TSTTB_MAKE_INCLUDE="include ${WITH_TSTT_BASE_ARG}/TSTTB-Defs.inc"
-  MESQUITE_TSTTM_MAKE_INCLUDE="include ${WITH_TSTT_MESH_ARG}/TSTTM-Defs.inc"
-fi
-
 
 # configure ITAPS server for use in tests
 AM_CONDITIONAL( [WITH_TEST_IMESH], [test "x$WITH_IMESH_ARG" != "xno"] )
@@ -649,7 +565,6 @@ AM_CONDITIONAL( [WITH_CPPUNIT], [test "x$HAVE_CPPUNIT" = "xyes"] )
 #------------------------------------------------------------------------------
 MESQUITE_LIBS="$MESQUITE_LIBS -lm"
 AC_SUBST(SED)
-AC_SUBST(BABEL)
 AC_SUBST(DOXYGEN)
 AC_SUBST(AM_CXXFLAGS)
 AC_SUBST(AM_CPPFLAGS)
@@ -659,8 +574,6 @@ AC_SUBST(MSQ_LIBTOOL_PREFIX)
 AC_SUBST(MSQ_LIBTOOL_FLAGS)
 AC_SUBST(CPPUNIT_CPPFLAGS)
 AC_SUBST(CPPUNIT_LDFLAGS)
-AC_SUBST(MESQUITE_TSTTB_MAKE_INCLUDE)
-AC_SUBST(MESQUITE_TSTTM_MAKE_INCLUDE)
 AC_SUBST(MESQUITE_IMESH_MAKE_INCLUDE)
 
 # We don't want to automatically generate mesquite_config.h.in
@@ -696,7 +609,6 @@ AC_CONFIG_FILES([Makefile
                  testSuite/rezone/Makefile
                  testSuite/simple_hybrid_test/Makefile
                  testSuite/test_DFT/Makefile
-                 testSuite/test_TSTT/Makefile
                  testSuite/test_1/Makefile
                  testSuite/transform/Makefile
                  testSuite/tutorial/Makefile

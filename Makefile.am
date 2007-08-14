@@ -48,7 +48,6 @@ include src/QualityMetric/Jacobian/3D/Makefile.am
 include src/QualityMetric/Untangle/Makefile.am
 include src/QualityMetric/Volume/Makefile.am
 include src/TargetCalculator/Makefile.am
-include tstt/Makefile.am
 
 libmesquite_la_includedir = $(includedir)
 libmesquite_la_SOURCES = $(MSQ_SRCS) \
@@ -96,9 +95,9 @@ testSuite/cppflags.make: $(MSQ_HDRS)
 	  if test "x$$n" != "x"; then \
 	    echo "	-I\$$(top_srcdir)/src/$$n \\"     >> $@ ; \
  	  else \
-	    n=`expr X"$$flag" : X"-I$(top_builddir)/tstt/\(.*\)" || true`; \
+	    n=`expr X"$$flag" : X"-I$(top_builddir)/itaps/\(.*\)" || true`; \
 	    if test "x$$n" != "x"; then \
-	      echo "	-I\$$(top_builddir)/tstt/$$n \\"  >> $@ ; \
+	      echo "	-I\$$(top_builddir)/itaps/$$n \\"  >> $@ ; \
  	    fi ; \
 	  fi ; \
 	done

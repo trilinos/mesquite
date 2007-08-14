@@ -1,9 +1,3 @@
-if WITH_TSTT_MESH
-  TSTT_TEST = test_TSTT 
-else
-  TSTT_TEST = 
-endif
-
 if WITH_TEST_IMESH
   IMESH_TEST = imesh
 else
@@ -44,4 +38,4 @@ SUBDIRS = test_1 \
 	  2d_target \
 	  2d_metrics\
 	  2d_formulation \
-	  $(TSTT_TEST) $(IMESH_TEST) $(EXO_TEST) $(UNIT_TEST)
+	  $(IMESH_TEST) $(EXO_TEST) $(UNIT_TEST)

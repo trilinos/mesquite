@@ -38,6 +38,16 @@
 
 namespace Mesquite {
 
+/** The name of the tag (integer) that Mesquite will use
+ *  to store internal data
+ */
+const char* const VERTEX_BYTE_TAG_NAME  = "MesquiteVertexByte";
+
+/** The name of the tag (integer) Mesquite expects to be non-zero
+ *  for vertices which are not to be moved by Mesquite
+ */
+const char* const VERTEX_FIXED_TAG_NAME = "MesquiteVertexFixed";
+
 /**\class MsqIMesh
  *\brief Mesquite iMesh Adapter
  *

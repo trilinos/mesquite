@@ -1,16 +1,6 @@
 SRC_MESH_DIR = src/Mesh
 MSQ_INCLUDES += -I$(top_srcdir)/$(SRC_MESH_DIR)
 
-if WITH_TSTT
-  MSQ_SRCS += \
-	$(SRC_MESH_DIR)/MeshTSTT.cpp \
-	$(SRC_MESH_DIR)/GeomTSTT.cpp \
-	$(SRC_MESH_DIR)/TSTTUtil.hpp 
-  MSQ_HDRS += \
-	$(SRC_MESH_DIR)/GeomTSTT.hpp \
-	$(SRC_MESH_DIR)/MeshTSTT.hpp 
-endif
-
 MSQ_SRCS += \
 	$(SRC_MESH_DIR)/ArrayMesh.cpp \
 	$(SRC_MESH_DIR)/ElementPatches.cpp \

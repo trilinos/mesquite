@@ -21,19 +21,10 @@ no_cpp_unit:
 	@echo "exit 0" >> $@
 	@chmod a+x $@
 
-if WITH_TSTT
-  @MESQUITE_TSTTB_MAKE_INCLUDE@
-  @MESQUITE_TSTTM_MAKE_INCLUDE@
-  TSTT_TEST_SRC = TSTT_Test.cpp
-  LDADD += $(TSTTM_SERVER_LIBS) $(TSTTB_SERVER_LIBS)
-else
-  TSTT_TEST_SRC =
-endif
-
 if WITH_TEST_IMESH
   @MESQUITE_IMESH_MAKE_INCLUDE@
   IMESH_TEST_SRC = iMeshTest.cpp
-  LDADD += $(IMESH_CBIND_LIBS_LINK)
+  LDADD += $(iMesh_LIBS)
 else
   IMESH_TEST_SRC =
 endif
@@ -107,7 +98,6 @@ msq_test_SOURCES = msq_test_main.cpp \
 	VtkTest.cpp \
 	BCDTest.cpp \
 	Target2DSurfOrientTest.cpp \
-	$(TSTT_TEST_SRC) \
         $(IMESH_TEST_SRC) \
         $(EXODUS_TEST_SRC)
 

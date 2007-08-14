@@ -36,7 +36,6 @@
 #include "MsqDebug.hpp"
 #include "MsqVertex.hpp"
 #include <assert.h>
-#include "MeshTSTT.hpp" // for tag name constants
 #include "MsqIBase.hpp"
 
 namespace Mesquite {

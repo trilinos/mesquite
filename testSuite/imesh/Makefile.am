@@ -7,7 +7,7 @@ TESTS = main
 
 if WITH_TEST_IMESH
   @MESQUITE_IMESH_MAKE_INCLUDE@
-  LDADD += $(IMESH_CBIND_LIBS_LINK)
+  LDADD += $(iMesh_LIBS)
 else
 main$(EXEEXT):
 	echo "ITAPS support disabled.  Reconfigure to build this test."
