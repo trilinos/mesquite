@@ -554,10 +554,6 @@ MsqIMeshImpl::MsqIMeshImpl( iMesh_Instance itaps_mesh,
       return;
     }
   }
-
-    // Clear vertex byte tag
-  set_int_tag( byteTag, nodeSet, 0, err );
-  MSQ_CHKERR(err);
 }
 
 MsqIMeshImpl::~MsqIMeshImpl() 
@@ -592,6 +588,7 @@ void MsqIMeshImpl::set_int_tag( iBase_TagHandle tag,
   iMesh_EntityArrIterator iter;
   int more = 1, ierr, alloc = BUFFER_COUNT;
   
+  assert(elem_set);
   iMesh_initEntArrIter( meshInstance, elem_set, iBase_VERTEX, iMesh_POINT, BUFFER_COUNT, &iter, &ierr );
   if (ierr) {
     MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
