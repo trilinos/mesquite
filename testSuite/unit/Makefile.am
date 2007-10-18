@@ -66,6 +66,7 @@ msq_test_SOURCES = msq_test_main.cpp \
 	LVQDTargetTest.cpp \
 	Matrix3DTest.cpp \
 	MeshInterfaceTest.cpp \
+	MeshImplTest.cpp \
 	MsqFreeVertexIndexIteratorTest.cpp \
 	MsqHessianTest.cpp \
 	MsqMatrixTest.cpp \

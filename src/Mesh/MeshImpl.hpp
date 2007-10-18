@@ -76,6 +76,10 @@ namespace Mesquite
     void write_vtk(const char* out_filename, Mesquite::MsqError &err);
     void read_exodus(const char* in_filename, Mesquite::MsqError &err);
     void write_exodus(const char* out_filename, Mesquite::MsqError &err);
+    
+    void mark_skin_fixed( MsqError& err, bool clear_existing = true );
+                                     
+    
 //********* Functions that ARE inherited ************
       // Returns whether this mesh lies in a 2D or 3D coordinate system.
     virtual int get_geometric_dimension(MsqError &err) ;

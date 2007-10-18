@@ -348,7 +348,76 @@ void TopologyInfo::higher_order( EntityTopology topo,
     MSQ_SETERR(err)("Invalid element topology", MsqError::INVALID_STATE);
   }
 }
+      
+unsigned TopologyInfo::higher_order_from_side( EntityTopology topo,
+                                               unsigned num_nodes,
+                                               unsigned side_dimension,
+                                               unsigned side_number,
+                                               MsqError& err )
+{
+  bool midedge, midface, midvol;
+  higher_order( topo, num_nodes, midedge, midface, midvol, err );
+  MSQ_ERRZERO(err);
+  
+  if (side_number > adjacent(topo, side_dimension)) {
+    MSQ_SETERR(err)(MsqError::INVALID_ARG,"Invalid side number: %u\n", side_number );
+    return 0;
+  }
+  
+  unsigned result = side_number;
+  switch (side_dimension) {
+    case 3: if (midface) result += faces(topo);
+    case 2: if (midedge) result += edges(topo);
+    case 1: result += corners(topo);
+    case 0: break;
+    default: 
+      MSQ_SETERR(err)(MsqError::INVALID_ARG,"Invalid dimension: %u\n", side_dimension );
+      return 0;
+  }
+  return result;
+}
 
+void TopologyInfo::side_from_higher_order( EntityTopology topo,
+                                           unsigned num_nodes,
+                                           unsigned node_number,
+                                           unsigned& side_dim_out,
+                                           unsigned& side_num_out,
+                                           MsqError& err )
+{
+  bool midedge, midface, midvol;
+  higher_order( topo, num_nodes, midedge, midface, midvol, err );
+  MSQ_ERRRTN(err);
+  side_num_out = node_number;
+  
+  if (side_num_out < corners(topo)) {
+    side_dim_out = 0;
+    return;
+  }
+  side_num_out -= corners(topo);
+  
+  if (midedge) {
+    if (side_num_out < edges(topo)) {
+      side_dim_out = 1;
+      return;
+    }
+    side_num_out -= edges(topo);
+  }
+  
+  if (midface) {
+    if (side_num_out < faces(topo)) {
+      side_dim_out = 2;
+      return;
+    }
+    side_num_out -= faces(topo);
+  }
+  
+  if (midvol && side_num_out == 0) {
+    side_dim_out = 3;
+    return;
+  }
+  
+  MSQ_SETERR(err)(MsqError::INVALID_ARG,"Invalid node index\n");
+}
 
 const unsigned*  TopologyInfo::edge_vertices( EntityTopology topo,
                                               unsigned edge, 
@@ -512,6 +581,166 @@ const unsigned* TopologyInfo::reverse_vertex_adjacency_offsets(
   return vect + 1;
 }
 
+bool TopologyInfo::compare_sides( const size_t* verts1,
+                               EntityTopology type1,
+                               unsigned side1,
+                               const size_t* verts2,
+                               EntityTopology type2,
+                               unsigned side2,
+                               unsigned side_dim,
+                               MsqError& err )
+{
+  const unsigned *conn1, *conn2;
+  unsigned len1, len2;
+  
+  conn1 = side_vertices( type1, side_dim, side1, len1, err );
+  MSQ_ERRZERO(err);
+  conn2 = side_vertices( type2, side_dim, side2, len2, err );
+  MSQ_ERRZERO(err);
+  
+    // obviously not the same if different number of vertices
+    // (triangular face cannot match quadrilateral face)
+  if (len1 != len2)
+    return false;
+  
+    // Find location (i) in vertices of side of second element
+    // that matches the first vertex in the side of the first 
+    // element.
+  unsigned i, j;
+  for (i = 0; i < len2; ++i)
+    if (verts1[conn1[0]] == verts2[conn2[i]])
+      break;
+    // If not found, then no match
+  if (i == len2)
+    return false;
+  
+    // Try comparing side connectivity in forward order
+  for (j = 1; j < len1; ++j)
+    if (verts1[conn1[j]] != verts2[conn2[(i+j)%len2]])
+      break;
+    // If they match, we're done
+  if (j == len1)
+    return true;
+  
+    // Try comparing in reverse order
+  for (j = 1; j < len1; ++j)
+    if (verts1[conn1[j]] != verts2[conn2[(i+len2-j)%len2]])
+      return false;
+    // If here, matched in reverse order
+  return true;
+}
+
+unsigned TopologyInfo::find_edge( EntityTopology topo,
+                                  const unsigned* side_vertices,
+                                  bool& reversed_out,
+                                  MsqError& err )
+{
+  if (dimension(topo) <= 1) {
+    MSQ_SETERR(err)(MsqError::INVALID_ARG,"Invalid element dimension");
+    return (unsigned)-1;
+  }
+
+  for (unsigned i = 0; i < edges(topo); ++i) {
+    const unsigned* edge = edge_vertices( topo, i, err );
+    MSQ_ERRZERO(err);
+
+    if (edge[0] == side_vertices[0] &&
+        edge[1] == side_vertices[1]) {
+      reversed_out = false;
+      return i;
+    }
+
+    if (edge[0] == side_vertices[1] &&
+        edge[1] == side_vertices[0]) {
+      reversed_out = true;
+      return i;
+    }
+  }
+  
+  MSQ_SETERR(err)(MsqError::INVALID_ARG,"No such edge");
+  return (unsigned)-1;
+}
+
+unsigned TopologyInfo::find_face( EntityTopology topo,
+                                  const unsigned* side_vertices,
+                                  unsigned num_vertices,
+                                  bool& reversed_out,
+                                  MsqError& err )
+{
+  if (dimension(topo) <= 2) {
+    MSQ_SETERR(err)(MsqError::INVALID_ARG,"Invalid element dimension");
+    return (unsigned)-1;
+  }
+
+  for (unsigned i = 0; i < faces(topo); ++i) {
+    unsigned j, n, offset;
+    const unsigned* face = face_vertices( topo, i, n, err );
+    MSQ_ERRZERO(err);
+    if (n != num_vertices)
+      continue;
+
+    for (offset = 0; offset < num_vertices; ++offset)
+      if (face[offset] == side_vertices[0])
+        break;
+    if (offset == num_vertices)
+      continue;
+
+    for (j = 1; j < num_vertices; ++j)
+      if (side_vertices[j] != face[(offset + j)%num_vertices])
+        break;
+    if (j == num_vertices) {
+      reversed_out = false;
+      return i;
+    }
+
+    for (j = 1; j < num_vertices; ++j)
+      if (side_vertices[j] != face[(offset + num_vertices - j)%num_vertices])
+        break;
+    if (j == num_vertices) {
+      reversed_out = true;
+      return i;
+    }
+  }
+  
+  MSQ_SETERR(err)(MsqError::INVALID_ARG,"No such face");
+  return (unsigned)-1;
+}
+
+
+void TopologyInfo::find_side( EntityTopology topo, 
+                              const unsigned* side_vertices,
+                              unsigned num_vertices,
+                              unsigned& dimension_out,
+                              unsigned& number_out,
+                              bool& reversed_out,
+                              MsqError& err )
+{
+  switch (num_vertices) {
+  case 1:
+    dimension_out = 0;
+    number_out = *side_vertices;
+    reversed_out = false;
+    if (*side_vertices >= corners(topo)) 
+      MSQ_SETERR(err)(MsqError::INVALID_ARG,"Invalid corner number: %u\n", *side_vertices);
+    break;
+  case 2:
+    dimension_out = 1;
+    number_out = find_edge( topo, side_vertices, reversed_out, err );
+    MSQ_CHKERR(err);
+    break;
+  case 3:
+  case 4:
+    dimension_out = 2;
+    number_out = find_face( topo, side_vertices, num_vertices, reversed_out, err );
+    MSQ_CHKERR(err);
+    break;
+  default:
+    MSQ_SETERR(err)(MsqError::UNSUPPORTED_ELEMENT, "Invalid number of side vertices: %u\n", num_vertices );
+    break;
+  }
+}
+  
+      
 
 
 } //namepsace Mesquite

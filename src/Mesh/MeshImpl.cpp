@@ -109,6 +109,135 @@ void MeshImpl::clear()
   myTags->clear();
 }
 
+/**\brief Helper function for MeshImpl::mark_skin_fixed */
+static bool is_side_boundary( MeshImplData* myMesh,
+                              size_t elem,
+                              unsigned side_dim,
+                              unsigned side_num,
+                              MsqError& err )
+{
+    // Get the vertices of the side as indices into the above 'verts' list.
+  const EntityTopology type = myMesh->element_topology( elem, err );
+  MSQ_ERRZERO(err);
+  unsigned n; // number of vertices 
+  const unsigned* conn = TopologyInfo::side_vertices( type, side_dim, side_num, n, err );
+  MSQ_ERRZERO(err);
+
+    // start with the assumption that the side is on the bounary
+  bool boundary = true;
+  
+    // get vertices in element connectivity
+  const msq_std::vector<size_t>& verts = myMesh->element_connectivity( elem, err );
+  MSQ_ERRZERO(err);
+
+    // Choose one vertex in face, and get adjacent elements to that vertex
+  const msq_std::vector<size_t>& elems = myMesh->vertex_adjacencies( verts[conn[0]], err );
+  MSQ_ERRZERO(err);
+
+    // For each adjacent element
+  for (unsigned i = 0; i < elems.size(); ++i) {
+      // we want *other* adjacent elements
+    if (elems[i] == elem)
+      continue;
+
+      // skip elements of smaller dimension
+    EntityTopology type2 = myMesh->element_topology( elems[i], err );
+    if (TopologyInfo::dimension(type2) <= side_dim)
+      continue;
+
+      // get number of 'sides' of the appropriate dimension.
+    const msq_std::vector<size_t>& verts2 = myMesh->element_connectivity( elems[i], err );
+    MSQ_ERRZERO(err);
+    int sides2 = TopologyInfo::adjacent( type2, side_dim );
+    for (int j = 0; j < sides2; ++j) {
+      if (TopologyInfo::compare_sides( (const size_t*)&verts[0],  type,  side_num, 
+                                       (const size_t*)&verts2[0], type2, j, 
+                                       side_dim, err))
+        boundary = false;
+      MSQ_ERRZERO(err);
+    }
+  }
+  
+  return boundary;
+}
+  
+
+void MeshImpl::mark_skin_fixed( MsqError& err, bool clear_fixed )
+{
+    // clear existing fixed flags
+  if (clear_fixed) {
+    for (size_t i = 0; i < myMesh->max_vertex_index(); ++i)
+      if (myMesh->is_vertex_valid(i))
+        myMesh->fix_vertex( i, false, err );
+  }
+  
+  
+    // For each element, for each side of that element, check for
+    // an adjacent element.
+  for (size_t i = 0; i < myMesh->max_element_index(); ++i) {
+    if (!myMesh->is_element_valid(i))
+      continue;
+    
+      // Get element connectivity
+    const msq_std::vector<size_t>& verts = myMesh->element_connectivity( i, err );
+    
+      // Get element properties
+    EntityTopology type = myMesh->element_topology( i, err );
+    unsigned dim = TopologyInfo::dimension( type );
+    int sides = TopologyInfo::adjacent( type, dim-1 );
+    bool midedge, midface, midvol;
+    TopologyInfo::higher_order( type, verts.size(), midedge, midface, midvol, err );
+    MSQ_ERRRTN(err);
+    const bool midside = (dim == 2 && midedge) || (dim == 3 && midface);
+    const bool midsubside = dim == 3 && midedge;
+    
+      // For each side of the element (each edge for surface elems, 
+      // each face for volume elements)..
+    for (int j = 0; j < sides; ++j) {
+        // Get the vertices of the side as indices into the above 'verts' list.
+      unsigned n; // number of vertices 
+      const unsigned* conn = TopologyInfo::side_vertices( type, dim-1, j, n, err );
+      MSQ_ERRRTN(err);
+     
+        // if side is on boundary, mark side vertices appropriately
+      bool boundary = is_side_boundary( myMesh, i, dim-1, j, err );
+      MSQ_ERRRTN(err);
+      if (boundary) {
+          // mark corner vertices as fixed
+        for (unsigned k = 0; k < n; ++k) {
+          myMesh->fix_vertex( verts[conn[k]], true, err );
+          MSQ_ERRRTN(err);
+        }
+        
+          // mark higher-order node in center of side as fixed
+        if (midside) {
+          unsigned idx = TopologyInfo::higher_order_from_side( type, verts.size(), dim-1, j, err );
+          MSQ_ERRRTN(err);
+          myMesh->fix_vertex( verts[idx], true, err );
+          MSQ_ERRRTN(err);
+        }
+        
+          // if side is a face, mark nodes on edges of face as fixed
+        if (midsubside) {
+          for (unsigned k = 0; k < n; ++k) {
+            unsigned edge[2] = { conn[k], conn[(k+1)%n] };
+            bool r;
+            unsigned edge_num = TopologyInfo::find_edge( type, edge, r, err );
+            MSQ_ERRRTN(err);
+            
+            unsigned idx = TopologyInfo::higher_order_from_side( type, verts.size(), 1, edge_num, err );
+            MSQ_ERRRTN(err);
+            myMesh->fix_vertex( verts[idx], true, err );
+            MSQ_ERRRTN(err);
+          }
+        }
+      }    
+    } // for (j in sides)
+  } // for (i in elems)
+}
+      
+      
+      
 static void get_field_names( const TagDescription& tag,
                              msq_std::string& field_out,
                              msq_std::string& member_out,

@@ -29,6 +29,12 @@
 
 #include "Mesquite.hpp"
 
+#ifdef MSQ_USE_OLD_C_HEADERS
+#  include <stddef.h>
+#else
+#  include <cstddef>
+#endif
+
 namespace Mesquite
 {
 
@@ -89,6 +95,21 @@ class MESQUITE_EXPORT TopologyInfo
     static void higher_order( EntityTopology topo, unsigned num_nodes,
                               bool& midedge, bool& midface, bool& midvol,
                               MsqError &err );
+    
+      /**\brief Given a side, return index of mid-vertex for that side. */
+    static unsigned higher_order_from_side( EntityTopology topo,
+                                            unsigned num_nodes,
+                                            unsigned side_dimension,
+                                            unsigned side_number,
+                                            MsqError& err );
+    
+      /**\brief Get side given a higher-order node */
+    static void side_from_higher_order( EntityTopology topo,
+                                        unsigned num_nodes,
+                                        unsigned node_number,
+                                        unsigned& side_dim_out,
+                                        unsigned& side_num_out,
+                                        MsqError& err );
     
       /**\brief Get indices of edge ends in element connectivity array 
        *
@@ -207,6 +228,82 @@ class MESQUITE_EXPORT TopologyInfo
                                               EntityTopology topo,
                                               unsigned index,
                                               unsigned& num_idx_out );
+    
+      /**\brief Find which edge of an element has the passed vertex indices
+      *
+      * Find which edge of the element cooresponds to a list of positions
+      * in the canonical element ordering.
+      *\param topo            The element type
+      *\param edge_vertices   The array of side vertex indices
+      *\param reversed_out    True if edge is reversed wrt edge_vertices
+      *\return                The edge number.
+      */
+    static unsigned find_edge( EntityTopology topo,
+                               const unsigned* edge_vertices,
+                               bool& reversed_out,
+                               MsqError& err );
+    
+      /**\brief Find which face of an element has the passed vertex indices
+       *
+       * Find which face of the element cooresponds to a list of positions
+       * in the canonical element ordering.
+       *\param topo           The element type
+       *\param face_vertices  The array of face vertex indices
+       *\param num_face_vertices   The length of face_vertices
+       *\param reversed_out   True if face is reversed wrt face_vertices
+       *\return               The face number.
+       */
+    static unsigned find_face( EntityTopology topo,
+                               const unsigned* face_vertices,
+                               unsigned num_face_vertices,
+                               bool& reversed_out,
+                               MsqError& err );
+  
+      /**\brief Find which side of an element has the passed vertex indices
+       *
+       * Find which side of the element cooresponds to a list of positions
+       * in the canonical element ordering.
+       *\param topo           The element type
+       *\param side_vertices  The array of side vertex indices
+       *\param num_vertices   The length of side_vertices
+       *\param dimension_out  The dimension of the side
+       *\param number_out     The enumerated index for the side
+       *\param reversed_out   True if side is reversed wrt side_vertices
+       */
+    static void find_side( EntityTopology topo, 
+                           const unsigned* side_vertices,
+                           unsigned num_vertices,
+                           unsigned& dimension_out,
+                           unsigned& number_out,
+                           bool& reversed_out,
+                           MsqError& err );
+
+      /**\brief Test if two elements share lower-order topology
+       *
+       * Test if two elements share lower-order topology (e.g.
+       * whether or not two tetrahedra share an edge.)
+       *
+       * That is compare the 'element_1_side_number'-th lower order 
+       * topology of dimension 'side_dimension' on element 1 with the 
+       * 'element_2_side_number'-th lower order topology of dimension 
+       *'side_dimension' on element 2
+       *
+       *\param element_1_vertices    The connectivity of the first element
+       *\param element_1_topology    The type of the first element
+       *\param element_1_side_number Which lower-order topology to compare
+       *\param element_2_vertices    The connectivity of the second element
+       *\param element_2_topology    The type of the second element
+       *\param element_2_side_number Whcih lower-order topology to compare
+       *\param side_dimension        The dimension of the lower-order topology
+       */
+    static bool compare_sides( const size_t* element_1_vertices,
+                               EntityTopology element_1_topology,
+                               unsigned element_1_side_number,
+                               const size_t* element_2_vertices,
+                               EntityTopology element_2_topology,
+                               unsigned element_2_side_number,
+                               unsigned side_dimension,
+                               MsqError& err );
 
   private:
  
