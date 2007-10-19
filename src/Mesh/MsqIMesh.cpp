@@ -619,7 +619,7 @@ void MsqIMeshImpl::set_active_set( iBase_EntitySetHandle elem_set, MsqError& err
   const int ELEM_BUFFER_SIZE = 1024;
   const int NODE_BUFFER_SIZE = 27 * ELEM_BUFFER_SIZE; 
   iBase_EntityHandle elements[ELEM_BUFFER_SIZE], nodes[NODE_BUFFER_SIZE];
-  int offsets[ELEM_BUFFER_SIZE], ierr;
+  int offsets[ELEM_BUFFER_SIZE+1], ierr;
   iMesh_EntityArrIterator iter = 0;
  
   if (elementSet)
@@ -676,7 +676,7 @@ void MsqIMeshImpl::set_active_set( iBase_EntitySetHandle elem_set, MsqError& err
      
       int num_nodes, junk3;
       junk = NODE_BUFFER_SIZE;
-      junk2 = ELEM_BUFFER_SIZE;
+      junk2 = ELEM_BUFFER_SIZE + 1;
       int* ptr = offsets;
       iBase_EntityHandle* ptr2 = nodes;
       iMesh_getEntArrAdj( meshInstance,
