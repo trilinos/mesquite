@@ -297,7 +297,7 @@ Mesh* get_imesh_mesh( const char* file_name )
   }
 
   MsqError err;
-  Mesquite::MsqIMesh* mesh = MsqIMesh::create( imesh_mesh, root_set, err, "fixed" );
+  Mesquite::MsqIMesh* mesh = MsqIMesh::create( imesh_mesh, root_set, iBase_ALL_TYPES, err, "fixed" );
   if (err)
   {
     delete mesh;

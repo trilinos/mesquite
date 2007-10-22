@@ -64,6 +64,7 @@ public:
    */
   static MsqIMesh* create( iMesh_Instance imesh, 
                            iBase_EntitySetHandle meshset,
+                           iBase_EntityType element_dimension,
                            MsqError& err,
                            const char* fixed_tag_name = 0 );
   
@@ -76,7 +77,9 @@ public:
                            MsqError& err,
                            const char* fixed_tag_name = 0 );
   
-  virtual void set_active_set( iBase_EntitySetHandle, MsqError& err ) = 0;
+  virtual void set_active_set( iBase_EntitySetHandle meshset, 
+                               iBase_EntityType element_dimension,
+                               MsqError& err ) = 0;
   
   virtual ~MsqIMesh() = 0;
 };  

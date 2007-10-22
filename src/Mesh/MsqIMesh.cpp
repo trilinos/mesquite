@@ -142,7 +142,9 @@ class MsqIMeshImpl : public MsqIMesh
        *                  mesh elements and vertices for which quality 
        *                  is to be improved.
        */
-    virtual void set_active_set( void* element_set, MsqError& );
+    virtual void set_active_set( void* element_set, 
+                                 iBase_EntityType type,
+                                 MsqError& );
     
 
       /**\brief Get dimension of vertex coordinates (2D vs. 3D). */
@@ -429,6 +431,7 @@ class MsqIMeshImpl : public MsqIMesh
 
 MsqIMesh* MsqIMesh::create( iMesh_Instance mesh, 
                             iBase_EntitySetHandle meshset, 
+                            iBase_EntityType type,
                             MsqError& err,
                             const char* fixed_tag_name )
 {
@@ -438,7 +441,7 @@ MsqIMesh* MsqIMesh::create( iMesh_Instance mesh,
     delete result;
     return 0;
   }
-  result->set_active_set( meshset, err );
+  result->set_active_set( meshset, type, err );
   if (MSQ_CHKERR(err))
   {
     delete result;
@@ -447,7 +450,8 @@ MsqIMesh* MsqIMesh::create( iMesh_Instance mesh,
   return result;
 }
 
-MsqIMesh* MsqIMesh::create( iMesh_Instance mesh, MsqError& err,
+MsqIMesh* MsqIMesh::create( iMesh_Instance mesh, 
+                            MsqError& err,
                             const char* fixed_tag_name )
 {
   MsqIMesh* result = new MsqIMeshImpl( mesh, fixed_tag_name, err );
@@ -614,7 +618,9 @@ void MsqIMeshImpl::set_int_tag( iBase_TagHandle tag,
 }
 
 
-void MsqIMeshImpl::set_active_set( iBase_EntitySetHandle elem_set, MsqError& err )
+void MsqIMeshImpl::set_active_set( iBase_EntitySetHandle elem_set, 
+                                   iBase_EntityType type_in,
+                                   MsqError& err )
 {
   const int ELEM_BUFFER_SIZE = 1024;
   const int NODE_BUFFER_SIZE = 27 * ELEM_BUFFER_SIZE; 
@@ -642,10 +648,13 @@ void MsqIMeshImpl::set_active_set( iBase_EntitySetHandle elem_set, MsqError& err
     
     // Iterate over set twice, once for FACEs and once for REGIONs
   bool have_faces = false, have_regions = false;
-  for (int i = 0; i < 2; ++i)
+  int start = (type_in == iBase_ALL_TYPES) ? 0 : 1; // don't loop twice if user specified type
+  for (int i = start; i < 2; ++i)
   {
-    iBase_EntityType type = i ? iBase_REGION : iBase_FACE;
-    bool& have_some = i ? have_regions : have_faces;
+    iBase_EntityType type = type_in;
+    if (type == iBase_ALL_TYPES)
+      type = i ? iBase_REGION : iBase_FACE;
+    bool& have_some = (type == iBase_REGION) ? have_regions : have_faces;
     
     iMesh_initEntArrIter( meshInstance, elem_set, type, iMesh_ALL_TOPOLOGIES, ELEM_BUFFER_SIZE, &iter, &ierr );
     if (iBase_SUCCESS != ierr) {
