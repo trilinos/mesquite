@@ -39,7 +39,7 @@
 #include <math.h>
 #include "MsqDebug.hpp"
 #include "MsqTimer.hpp"
-#include "MsqFreeVertexIndexIterator.hpp"
+//#include "MsqFreeVertexIndexIterator.hpp"
 
 namespace Mesquite {
 
@@ -132,7 +132,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
   size_t ind;
     //Michael cull list:  possibly set soft_fixed flags here
   
-   MsqFreeVertexIndexIterator free_iter(pd, err);  MSQ_ERRRTN(err);
+   //MsqFreeVertexIndexIterator free_iter(pd, err);  MSQ_ERRRTN(err);
   
       
    double f=0;
@@ -186,9 +186,10 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
 
      // if alp == 0, revert to steepest descent search direction
     if(alp==0){
-      free_iter.reset();
-      while (free_iter.next()) {
-        m=free_iter.value();
+      //free_iter.reset();
+      //while (free_iter.next()) {
+      //  m=free_iter.value();
+      for (m = 0; (unsigned)m < num_vert; ++m) {
         pGrad[m]=(-fGrad[m]);
       }
       alp=get_step(pd,f,k,err);
@@ -201,13 +202,15 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
       
     }
     if(alp!=0){
-      free_iter.reset();
-      while (free_iter.next()) {
-        m=free_iter.value();
+      //free_iter.reset();
+      //while (free_iter.next()) {
+      //  m=free_iter.value();
+      for (m = 0; (unsigned)m < num_vert; ++m) {
         vertices[m] += (alp * pGrad[m]);
           //Added move_to_ownever
         pd.snap_vertex_to_domain(m,err);
       }
+      
       if (! objFunc.update(pd, f, fNewGrad, err)){
         MSQ_SETERR(err)("Error inside Conjugate Gradient, vertices moved "
                         "making function value invalid.", 
@@ -224,9 +227,10 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
       double s11=0;
       double s12=0;
       double s22=0;
-      free_iter.reset();
-      while (free_iter.next()) {
-        m=free_iter.value();
+      //free_iter.reset();
+      //while (free_iter.next()) {
+      //  m=free_iter.value();
+      for (m = 0; (unsigned)m < num_vert; ++m) {
         s11+=fGrad[m]%fGrad[m];
         s12+=fGrad[m]%fNewGrad[m];
         s22+=fNewGrad[m]%fNewGrad[m];
@@ -240,9 +244,10 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
 
         // Polack-Ribiere        
       double bet = (s22-s12)/s11;
-      free_iter.reset();
-      while (free_iter.next()) {
-        m=free_iter.value();
+      //free_iter.reset();
+      //while (free_iter.next()) {
+      //  m=free_iter.value();
+      for (m = 0; (unsigned)m < num_vert; ++m) {
         pGrad[m]=(-fNewGrad[m]+(bet*pGrad[m]));
         fGrad[m]=fNewGrad[m];
       }
