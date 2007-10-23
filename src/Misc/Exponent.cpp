@@ -49,8 +49,12 @@ Exponent::constMemberPtr Exponent::get_func_ptr( double exponent )
     return &Exponent::squareRoot;
   else if (exponent == 1./3.)
     return &Exponent::cubeRoot;
+  else if (exponent == -1./3.)
+    return &Exponent::invCubeRoot;
   else if (exponent == 2./3.)
     return &Exponent::powTwoThirds;
+  else if (exponent == -2./3.)
+    return &Exponent::invTwoThirds;
   else if (exponent == 2.0)
     return &Exponent::pow2;
   else if (exponent == -1.0)
@@ -83,7 +87,9 @@ double Exponent::pow1( double x ) const          { return x;     }
 double Exponent::pow2( double x ) const          { return x * x; }
 double Exponent::squareRoot( double x ) const    { return msq_stdc::sqrt( x ); }
 double Exponent::cubeRoot( double x ) const      { return Mesquite::cbrt( x ); }
+double Exponent::invCubeRoot( double x ) const   { return 1.0/Mesquite::cbrt( x ); }
 double Exponent::powTwoThirds( double x ) const  { return Mesquite::cbrt_sqr(x); }
+double Exponent::invTwoThirds( double x ) const  { return 1.0 / Mesquite::cbrt_sqr(x); }
 double Exponent::std_pow( double x ) const       { return msq_stdc::pow( x, mExponent ); }
 double Exponent::inverse( double x ) const       { return 1.0 / x; }
 double Exponent::invSquareRoot( double x ) const { return 1.0 / msq_stdc::sqrt(x); }

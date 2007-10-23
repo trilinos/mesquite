@@ -72,7 +72,9 @@ class Exponent
     double pow1( double x ) const;
     double squareRoot( double x ) const;
     double cubeRoot( double x ) const;
+    double invCubeRoot( double x ) const;
     double powTwoThirds( double x ) const;
+    double invTwoThirds( double x ) const;
     double pow2( double x ) const;
     double powPositiveInt( double x ) const;
     double std_pow( double x ) const;
