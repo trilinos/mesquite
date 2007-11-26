@@ -26,13 +26,13 @@
 
 
 /** \file StdDevTemplateTest.cpp
- *  \brief Unit tests for StdDevTemplate and SqrStdDevTemplate
+ *  \brief Unit tests for StdDevTemplate and VarianceTemplate
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
 #include "StdDevTemplate.hpp"
-#include "SqrStdDevTemplate.hpp"
+#include "VarianceTemplate.hpp"
 #include "MsqError.hpp"
 #include "PatchData.hpp"
 #include "ObjectiveFunctionTests.hpp"
@@ -119,15 +119,15 @@ public:
     { StdDevTemplate of(NULL); test_eval_type( ObjectiveFunction::TEMPORARY,  EVAL, &of ); }
 
   void test_eval_calc_sqr()  
-    { SqrStdDevTemplate of(NULL); test_eval_type( ObjectiveFunction::CALCULATE,  EVAL, &of ); }
+    { VarianceTemplate of(NULL); test_eval_type( ObjectiveFunction::CALCULATE,  EVAL, &of ); }
   void test_eval_accum_sqr() 
-    { SqrStdDevTemplate of(NULL); test_eval_type( ObjectiveFunction::ACCUMULATE, EVAL, &of ); }
+    { VarianceTemplate of(NULL); test_eval_type( ObjectiveFunction::ACCUMULATE, EVAL, &of ); }
   void test_eval_save_sqr()  
-    { SqrStdDevTemplate of(NULL); test_eval_type( ObjectiveFunction::SAVE,       EVAL, &of ); }
+    { VarianceTemplate of(NULL); test_eval_type( ObjectiveFunction::SAVE,       EVAL, &of ); }
   void test_eval_update_sqr()
-    { SqrStdDevTemplate of(NULL); test_eval_type( ObjectiveFunction::UPDATE,     EVAL, &of ); }
+    { VarianceTemplate of(NULL); test_eval_type( ObjectiveFunction::UPDATE,     EVAL, &of ); }
   void test_eval_temp_sqr()  
-    { SqrStdDevTemplate of(NULL); test_eval_type( ObjectiveFunction::TEMPORARY,  EVAL, &of ); }
+    { VarianceTemplate of(NULL); test_eval_type( ObjectiveFunction::TEMPORARY,  EVAL, &of ); }
 
   void test_grad_calc()   
     { StdDevTemplate of(NULL); test_eval_type( ObjectiveFunction::CALCULATE,  GRAD, &of ); }
@@ -141,26 +141,26 @@ public:
     { StdDevTemplate of(NULL); test_eval_type( ObjectiveFunction::TEMPORARY,  GRAD, &of ); }
 
   void test_grad_calc_sqr()  
-    { SqrStdDevTemplate of(NULL); test_eval_type( ObjectiveFunction::CALCULATE,  GRAD, &of ); }
+    { VarianceTemplate of(NULL); test_eval_type( ObjectiveFunction::CALCULATE,  GRAD, &of ); }
   void test_grad_accum_sqr() 
-    { SqrStdDevTemplate of(NULL); test_eval_type( ObjectiveFunction::ACCUMULATE, GRAD, &of ); }
+    { VarianceTemplate of(NULL); test_eval_type( ObjectiveFunction::ACCUMULATE, GRAD, &of ); }
   void test_grad_save_sqr()  
-    { SqrStdDevTemplate of(NULL); test_eval_type( ObjectiveFunction::SAVE,       GRAD, &of ); }
+    { VarianceTemplate of(NULL); test_eval_type( ObjectiveFunction::SAVE,       GRAD, &of ); }
   void test_grad_update_sqr()
-    { SqrStdDevTemplate of(NULL); test_eval_type( ObjectiveFunction::UPDATE,     GRAD, &of ); }
+    { VarianceTemplate of(NULL); test_eval_type( ObjectiveFunction::UPDATE,     GRAD, &of ); }
   void test_grad_temp_sqr()  
-    { SqrStdDevTemplate of(NULL); test_eval_type( ObjectiveFunction::TEMPORARY,  GRAD, &of ); }
+    { VarianceTemplate of(NULL); test_eval_type( ObjectiveFunction::TEMPORARY,  GRAD, &of ); }
 
   void test_hess_calc_sqr()  
-    { SqrStdDevTemplate of(NULL); test_eval_type( ObjectiveFunction::CALCULATE,  HESS, &of ); }
+    { VarianceTemplate of(NULL); test_eval_type( ObjectiveFunction::CALCULATE,  HESS, &of ); }
   void test_hess_accum_sqr() 
-    { SqrStdDevTemplate of(NULL); test_eval_type( ObjectiveFunction::ACCUMULATE, HESS, &of ); }
+    { VarianceTemplate of(NULL); test_eval_type( ObjectiveFunction::ACCUMULATE, HESS, &of ); }
   void test_hess_save_sqr()  
-    { SqrStdDevTemplate of(NULL); test_eval_type( ObjectiveFunction::SAVE,       HESS, &of ); }
+    { VarianceTemplate of(NULL); test_eval_type( ObjectiveFunction::SAVE,       HESS, &of ); }
   void test_hess_update_sqr()
-    { SqrStdDevTemplate of(NULL); test_eval_type( ObjectiveFunction::UPDATE,     HESS, &of ); }
+    { VarianceTemplate of(NULL); test_eval_type( ObjectiveFunction::UPDATE,     HESS, &of ); }
   void test_hess_temp_sqr()  
-    { SqrStdDevTemplate of(NULL); test_eval_type( ObjectiveFunction::TEMPORARY,  HESS, &of ); }
+    { VarianceTemplate of(NULL); test_eval_type( ObjectiveFunction::TEMPORARY,  HESS, &of ); }
 
   void test_evaluate( ) ;
   void test_evaluate_sqr( );
@@ -168,9 +168,9 @@ public:
   void test_numerical_gradient( )      
     { StdDevTemplate of(NULL); compare_numerical_gradient(&of); }
   void test_numerical_gradient_sqr( )  
-    { SqrStdDevTemplate of(NULL); compare_numerical_gradient(&of); }
+    { VarianceTemplate of(NULL); compare_numerical_gradient(&of); }
   void test_hessian_gradient_sqr( )  
-    { SqrStdDevTemplate of(NULL); compare_hessian_gradient(&of); }
+    { VarianceTemplate of(NULL); compare_hessian_gradient(&of); }
   void test_hessian_fails();
   
   void test_failed_metric_in_eval()   
@@ -178,38 +178,38 @@ public:
   void test_failed_metric_in_grad()     
     { StdDevTemplate of(NULL); test_handles_qm_error(GRAD, &of); }
   void test_failed_metric_in_eval_sqr() 
-    { SqrStdDevTemplate of(NULL); test_handles_qm_error(EVAL, &of); }
+    { VarianceTemplate of(NULL); test_handles_qm_error(EVAL, &of); }
   void test_failed_metric_in_grad_sqr() 
-    { SqrStdDevTemplate of(NULL); test_handles_qm_error(GRAD, &of); }
+    { VarianceTemplate of(NULL); test_handles_qm_error(GRAD, &of); }
   void test_failed_metric_in_hess_sqr() 
-    { SqrStdDevTemplate of(NULL); test_handles_qm_error(HESS, &of); }
+    { VarianceTemplate of(NULL); test_handles_qm_error(HESS, &of); }
   
   void test_false_metric_in_eval()     
     { StdDevTemplate of(NULL); test_handles_invalid_qm(EVAL, &of); }
   void test_false_metric_in_grad()     
     { StdDevTemplate of(NULL); test_handles_invalid_qm(GRAD, &of); }
   void test_false_metric_in_eval_sqr() 
-    { SqrStdDevTemplate of(NULL); test_handles_invalid_qm(EVAL, &of); }
+    { VarianceTemplate of(NULL); test_handles_invalid_qm(EVAL, &of); }
   void test_false_metric_in_grad_sqr() 
-    { SqrStdDevTemplate of(NULL); test_handles_invalid_qm(GRAD, &of); }
+    { VarianceTemplate of(NULL); test_handles_invalid_qm(GRAD, &of); }
   void test_false_metric_in_hess_sqr() 
-    { SqrStdDevTemplate of(NULL); test_handles_invalid_qm(HESS, &of); }
+    { VarianceTemplate of(NULL); test_handles_invalid_qm(HESS, &of); }
     
   void test_clone()
     { StdDevTemplate of(NULL); ::test_clone(&of); }
   void test_clone_sqr()
-    { SqrStdDevTemplate of(NULL); ::test_clone(&of); }
+    { VarianceTemplate of(NULL); ::test_clone(&of); }
   
   void test_eval_negate()
     { StdDevTemplate of(NULL); test_negate_flag( EVAL, &of ); }
   void test_eval_negate_sqr()
-    { SqrStdDevTemplate of(NULL); test_negate_flag( EVAL, &of ); }
+    { VarianceTemplate of(NULL); test_negate_flag( EVAL, &of ); }
   void test_grad_negate()
     { StdDevTemplate of(NULL); test_negate_flag( GRAD, &of ); }
   void test_grad_negate_sqr()
-    { SqrStdDevTemplate of(NULL); test_negate_flag( GRAD, &of ); }
+    { VarianceTemplate of(NULL); test_negate_flag( GRAD, &of ); }
   void test_hess_negate_sqr()
-    { SqrStdDevTemplate of(NULL); test_negate_flag( HESS, &of ); }
+    { VarianceTemplate of(NULL); test_negate_flag( HESS, &of ); }
 };
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(StdDevTemplateTest, "StdDevTemplateTest");
@@ -243,7 +243,7 @@ void StdDevTemplateTest::test_evaluate()
 
 void StdDevTemplateTest::test_evaluate_sqr()
 {
-  SqrStdDevTemplate OF(NULL);
+  VarianceTemplate OF(NULL);
   
   const double list1[] = { 1.0, 0.0, -5.0, 0.2, 6.0, 3 };
   const unsigned len1 = sizeof(list1)/sizeof(list1[0]);

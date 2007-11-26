@@ -25,13 +25,13 @@
   ***************************************************************** */
 
 
-/** \file SqrStdDevTemplate.hpp
+/** \file VarianceTemplate.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_SQR_STD_DEV_TEMPLATE_HPP
-#define MSQ_SQR_STD_DEV_TEMPLATE_HPP
+#ifndef MSQ_VARIANCE_TEMPLATE_HPP
+#define MSQ_VARIANCE_TEMPLATE_HPP
 
 #include "Mesquite.hpp"
 #include "StdDevTemplate.hpp"
@@ -44,15 +44,15 @@ namespace Mesquite {
  * This class implements an objective function that is the 
  * standard deviation of the quality metric evalutations.
  */
-class MESQUITE_EXPORT SqrStdDevTemplate : public StdDevTemplate
+class MESQUITE_EXPORT VarianceTemplate : public StdDevTemplate
 {
   public:
   
-    SqrStdDevTemplate( QualityMetric* qm = 0 ) : StdDevTemplate(qm) {}
+    VarianceTemplate( QualityMetric* qm = 0 ) : StdDevTemplate(qm) {}
     
-    SqrStdDevTemplate( const SqrStdDevTemplate& other ) : StdDevTemplate(other) {}
+    VarianceTemplate( const VarianceTemplate& other ) : StdDevTemplate(other) {}
     
-    virtual ~SqrStdDevTemplate() 
+    virtual ~VarianceTemplate() 
       {}
     
     virtual bool evaluate( EvalType type, 

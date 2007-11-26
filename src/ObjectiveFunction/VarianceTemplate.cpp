@@ -25,13 +25,13 @@
   ***************************************************************** */
 
 
-/** \file SqrStdDevTemplate.cpp
+/** \file VarianceTemplate.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "SqrStdDevTemplate.hpp"
+#include "VarianceTemplate.hpp"
 #include "QualityMetric.hpp"
 #include "MsqError.hpp"
 #include "MsqHessian.hpp"
@@ -39,10 +39,10 @@
 
 namespace Mesquite {
 
-ObjectiveFunction* SqrStdDevTemplate::clone() const
-  { return new SqrStdDevTemplate(*this); }
+ObjectiveFunction* VarianceTemplate::clone() const
+  { return new VarianceTemplate(*this); }
 
-bool SqrStdDevTemplate::evaluate( EvalType type, 
+bool VarianceTemplate::evaluate( EvalType type, 
                                PatchData& pd,
                                double& value_out,
                                bool free,
@@ -76,7 +76,7 @@ bool SqrStdDevTemplate::evaluate( EvalType type,
   return true;
 }
 
-bool SqrStdDevTemplate::evaluate_with_gradient( EvalType type, 
+bool VarianceTemplate::evaluate_with_gradient( EvalType type, 
                                              PatchData& pd,
                                              double& value_out,
                                              msq_std::vector<Vector3D>& grad_out,
@@ -137,7 +137,7 @@ bool SqrStdDevTemplate::evaluate_with_gradient( EvalType type,
   return true;
 }
 
-bool SqrStdDevTemplate::evaluate_with_Hessian( EvalType type, 
+bool VarianceTemplate::evaluate_with_Hessian( EvalType type, 
                                              PatchData& pd,
                                              double& value_out,
                                              msq_std::vector<Vector3D>& grad_out,

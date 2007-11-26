@@ -14,8 +14,8 @@ MSQ_SRCS += \
 	$(SRC_OBJECTIVEFUNCTION_DIR)/ObjectiveFunctionTemplate.cpp \
 	$(SRC_OBJECTIVEFUNCTION_DIR)/PatchPowerMeanP.cpp \
 	$(SRC_OBJECTIVEFUNCTION_DIR)/PMeanPTemplate.cpp \
-	$(SRC_OBJECTIVEFUNCTION_DIR)/SqrStdDevTemplate.cpp \
-	$(SRC_OBJECTIVEFUNCTION_DIR)/StdDevTemplate.cpp 
+	$(SRC_OBJECTIVEFUNCTION_DIR)/StdDevTemplate.cpp \
+	$(SRC_OBJECTIVEFUNCTION_DIR)/VarianceTemplate.cpp
 
 MSQ_HDRS += \
 	$(SRC_OBJECTIVEFUNCTION_DIR)/CompositeOFAdd.hpp \
@@ -30,6 +30,6 @@ MSQ_HDRS += \
 	$(SRC_OBJECTIVEFUNCTION_DIR)/ObjectiveFunctionTemplate.hpp \
 	$(SRC_OBJECTIVEFUNCTION_DIR)/PatchPowerMeanP.hpp \
 	$(SRC_OBJECTIVEFUNCTION_DIR)/PMeanPTemplate.hpp \
-	$(SRC_OBJECTIVEFUNCTION_DIR)/SqrStdDevTemplate.hpp \
-	$(SRC_OBJECTIVEFUNCTION_DIR)/StdDevTemplate.hpp 
+	$(SRC_OBJECTIVEFUNCTION_DIR)/StdDevTemplate.hpp \
+	$(SRC_OBJECTIVEFUNCTION_DIR)/VarianceTemplate.hpp
 
