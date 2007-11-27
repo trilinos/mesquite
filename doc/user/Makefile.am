@@ -36,10 +36,20 @@ SUFFIXES = .dvi .pdf .ps
 	$(DVIPS) $< -o $@
 
 users-guide.dvi: $(UG_SRCS) 
-	$(LATEX) users-guide.tex
-	$(BIBTEX) users-guide.aux
-	$(LATEX) users-guide.tex
-	$(LATEX) users-guide.tex
+	if "x$(srcdir)" = "x."; then \
+	  $(LATEX) users-guide.tex ;\
+	  $(BIBTEX) users-guide.aux ;\
+	  $(LATEX) users-guide.tex ;\
+	  $(LATEX) users-guide.tex ;\
+	else \
+	  bd=`pwd`; \
+          (cd $(srcdir) ;\
+	   $(LATEX) -output-directory=$$bd users-guide.tex ;\
+	  $(BIBTEX) -output-directory=$$bd users-guide.aux ;\
+	  $(LATEX) -output-directory=$$bd users-guide.tex ;\
+	  $(LATEX) -output-directory=$$bd users-guide.tex \
+	  ) \
+	fi
 
 pdf: users-guide.pdf
 
