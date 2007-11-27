@@ -4,9 +4,7 @@
 
 \subsection{Downloading Mesquite}
 The Mesquite distribution (in source form) may be obtained at the following URL:
-\begin{verbatim}
-http://www.cs.sandia.gov/~web9200/
-\end{verbatim}
+\url{http://www.cs.sandia.gov/~web1400/1400_download.html}
 
 \subsection{Supported Platforms and Build Requirements}
 The Mesquite source code will compile in any environment comforming to the ISO/IEC 9899-1999 (C99), ISO/IEC 14882-1998 (C++98) and ISO/IEC 9945:2003 (POSIX) standards.
@@ -33,15 +31,7 @@ Mesquite is regularly compiled and tested on GNU/Linux with g++ 3.2 or later and
 to verify the correct behavior of a build of the Mesquite library.  These tests
 are implemented using CppUnit framework.  The CppUnit framework must be installed
 to compile and run these test.  It is available at this URL:
-\begin{verbatim}
-http://cppunit.sourceforge.net
-\end{verbatim}
-\item TSTT SIDL interface:  A working Babel/SIDL installation (version 0.9.8 or 
-newer) is requred for building the interface objects that allow Mesquite to
-directly access Mesh stored in an implementation providing the TSTT mesh interface.  Babel/SIDL can be obtained at this URL:
-\begin{verbatim}
-http://www.llnl.gov/CASC/components/software.html
-\end{verbatim}
+\url{http://cppunit.sourceforge.net}
 \item ExodusII support:  To enable support for reading or writing ExodusII files in Mesquite, the header files for the ExodusII library must be available.  To link an application with a Mesquite library supporting ExodusII, the ExodusII library and possibly the NetCDF library must be available.  To obtain the ExodusII library, contact:
 \begin{verbatim}
 Marilyn K. Smith
@@ -55,9 +45,7 @@ FAX:   (505) 844-8251
 Email: mksmith@sandia.gov
 \end{verbatim}
 The NetCDF library can be obained at the following URL:
-\begin{verbatim}
-http://my.unidata.ucar.edu/content/software/netcdf/index.html
-\end{verbatim}
+\url{http://my.unidata.ucar.edu/content/software/netcdf/index.html}
 \end{itemize}
 
 
@@ -105,7 +93,6 @@ debug symbols or the optimization level.
 \item[CC]        The C compiler command
 \item[CFLAGS]    Command line arguments to be used for the C compiler.
 \item[DOXYGEN]   The doxygen API documentation generation tool.
-\item[BABEL]     The compiler for SIDL files.
 \end{description}
 
 Most options to the configure script are either of the form \texttt{--with-FEATURE[=ARG]} or
@@ -162,11 +149,6 @@ and headers required for this option are installed.
 \item[--with-netcdf=DIR]  Specify the location of the NetCDF library
 required by the ExodusII library.  The default is to look in the ExodusII
 directory.
-\item[--enable-tstt]  Enable optional support for accessing mesh
-and geometry data through the TSTT SIDL interfaces.  This option requires
-the Babel utility for processing SIDL files.
-\item[--with-babel=DIR]  Specify the location where the Babel/SIDL
-package is installed.
 \end{description}
 
 \subsection{Compiling on Microsoft Windows}
