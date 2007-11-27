@@ -33,27 +33,24 @@ SUFFIXES = .dvi .pdf .ps
 	$(PS2PDF) $< $@
 
 .dvi.ps:
-	$(DVIPS) $< -o $@
+	bd=`pwd`; (cd $(srcdir) && $(DVIPS) $$bd/$< -o $$bd/$@)
 
 users-guide.dvi: $(UG_SRCS) 
-	if "x$(srcdir)" = "x."; then \
-	  $(LATEX) users-guide.tex ;\
-	  $(BIBTEX) users-guide.aux ;\
-	  $(LATEX) users-guide.tex ;\
-	  $(LATEX) users-guide.tex ;\
-	else \
-	  bd=`pwd`; \
-          (cd $(srcdir) ;\
-	   $(LATEX) -output-directory=$$bd users-guide.tex ;\
-	  $(BIBTEX) -output-directory=$$bd users-guide.aux ;\
-	  $(LATEX) -output-directory=$$bd users-guide.tex ;\
-	  $(LATEX) -output-directory=$$bd users-guide.tex \
-	  ) \
-	fi
+	for file in $(UG_SRCS); do if test ! -f $$file -o $(srcdir)/$$file -nt ./$$file; then cp $(srcdir)/$$file .; fi; done
+	($(LATEX) users-guide.tex && \
+	 $(BIBTEX) users-guide.aux && \
+	 $(LATEX) users-guide.tex && \
+	 $(LATEX) users-guide.tex); \
+        exitval=$$? ;\ 
+        if test ! $(srcdir) -ef .; then rm $(UG_SRCS); fi ;\
+	exit $$exitval
 
 pdf: users-guide.pdf
 
 ps: users-guide.ps
 
 
-MOSTLYCLEANFILES = *.aux *.bbl *.blg *.lof *.log *.lot *.toc
+MOSTLYCLEANFILES = *.aux *.bbl *.blg *.lof *.log *.lot *.toc 
+CLEANFILES = users-guide.dvi users-guide.pdf users-guide.ps
+
+
