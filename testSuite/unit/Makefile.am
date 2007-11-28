@@ -1,17 +1,22 @@
 @TEST_MAKE_INCLUDE@
 LDADD = $(top_builddir)/libmesquite.la
 AM_LDFLAGS = @AM_LDFLAGS@
+AM_CPPFLAGS = @AM_CPPFLAGS@
 
 
 if WITH_CPPUNIT
   check_PROGRAMS = msq_test
   msq_test_DEPENDENCIES = $(top_builddir)/libmesquite.la
   TESTS = $(check_PROGRAMS)
-  AM_CPPFLAGS += @CPPUNIT_CPPFLAGS@
-  AM_LDFLAGS += @CPPUNIT_LDFLAGS@
+  CPPUNIT_CPPFLAGS_SET = @CPPUNIT_CPPFLAGS@
+  CPPUNIT_LDFLAGS_SET = @CPPUNIT_LDFLAGS@
 else
   TESTS = no_cpp_unit
+  CPPUNIT_CPPFLAGS_SET = 
+  CPPUNIT_LDFLAGS_SET = 
 endif
+AM_CPPFLAGS += $(CPPUNIT_CPPFLAGS_SET)
+AM_LDFLAGS += $(CPPUNIT_LDFLAGS_SET)
 
 no_cpp_unit:
 	@echo "echo '###################################################'"  > $@
@@ -24,10 +29,12 @@ no_cpp_unit:
 if WITH_TEST_IMESH
   @MESQUITE_IMESH_MAKE_INCLUDE@
   IMESH_TEST_SRC = iMeshTest.cpp
-  LDADD += $(iMesh_LIBS)
+  IMESH_LDADD = $(iMesh_LIBS)
 else
   IMESH_TEST_SRC =
+  IMESH_LDADD = 
 endif
+LDADD += $(IMESH_LDADD)
 
 if WITH_EXODUS
   EXODUS_TEST_SRC = ExodusTest.cpp

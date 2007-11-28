@@ -1,6 +1,8 @@
 AUTOMAKE_OPTIONS = foreign
 ACLOCAL_AMFLAGS = -I m4
 LIBTOOL = @LIBTOOL@ @MSQ_LIBTOOL_FLAGS@
+AM_LDFLAGS = @AM_LDFLAGS@
+AM_CPPFLAGS = @AM_CPPFLAGS@
 
 SUBDIRS = . doc testSuite
 DIST_SUBDIRS = $(SUBDIRS) meshFiles
@@ -48,6 +50,7 @@ include src/QualityMetric/Jacobian/3D/Makefile.am
 include src/QualityMetric/Untangle/Makefile.am
 include src/QualityMetric/Volume/Makefile.am
 include src/TargetCalculator/Makefile.am
+MSQ_INCLUDES += -I$(top_srcdir)/itaps -I$(top_builddir)/itaps 
 
 libmesquite_la_includedir = $(includedir)
 libmesquite_la_SOURCES = $(MSQ_SRCS) \
@@ -94,15 +97,12 @@ testSuite/cppflags.make: $(MSQ_HDRS)
 	  n=`expr X"$$flag" : X"-I$(srcdir)/src/\(.*\)" || true`; \
 	  if test "x$$n" != "x"; then \
 	    echo "	-I\$$(top_srcdir)/src/$$n \\"     >> $@ ; \
- 	  else \
-	    n=`expr X"$$flag" : X"-I$(top_builddir)/itaps/\(.*\)" || true`; \
-	    if test "x$$n" != "x"; then \
-	      echo "	-I\$$(top_builddir)/itaps/$$n \\"  >> $@ ; \
- 	    fi ; \
 	  fi ; \
 	done
 	@echo "	-I\$$(top_builddir)/include \\"           >> $@ 
-	@echo "	-I\$$(top_builddir)/testSuite"            >> $@
+	@echo "	-I\$$(top_builddir)/testSuite \\"         >> $@
+	@echo "	-I\$$(top_srcdir)/itaps \\"               >> $@ 
+	@echo "	-I\$$(top_builddir)/itaps"                >> $@
 
 MOSTLYCLEANFILES = include/Mesquite_all_headers.hpp 
 DISTCLEANFILES = testSuite/cppflags.make

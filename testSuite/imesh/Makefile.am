@@ -7,11 +7,13 @@ TESTS = main
 
 if WITH_TEST_IMESH
   @MESQUITE_IMESH_MAKE_INCLUDE@
-  LDADD += $(iMesh_LIBS)
+  IMESH_LDADD = $(iMesh_LIBS)
 else
+IMESH_LDADD =
 main$(EXEEXT):
 	echo "ITAPS support disabled.  Reconfigure to build this test."
 endif
+LDADD += $(IMESH_LDADD)
 
 MOSTLYCLEANFILES =	feasible-newton-result.vtk \
 			original.vtk \

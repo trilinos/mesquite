@@ -507,7 +507,7 @@ fi
 
 
 # configure ITAPS server for use in tests
-AM_CONDITIONAL( [WITH_TEST_IMESH], [test "x$WITH_IMESH_ARG" != "xno"] )
+AM_CONDITIONAL([WITH_TEST_IMESH],[test "x$WITH_IMESH_ARG" != "xno"])
 if test "x$WITH_IMESH_ARG" != "xno"; then 
   MSQ_IMESH_DEFS="${WITH_IMESH_ARG}/iMesh-Defs.inc"
   AC_CHECK_FILE( ["$MSQ_IMESH_DEFS"],
@@ -557,7 +557,7 @@ else
   LDFLAGS="$old_LDFLAGS"
   LIBS="$old_LIBS"
 fi
-AM_CONDITIONAL( [WITH_CPPUNIT], [test "x$HAVE_CPPUNIT" = "xyes"] )
+AM_CONDITIONAL([WITH_CPPUNIT],[test "x$HAVE_CPPUNIT" = "xyes"])
 
 
 #------------------------------------------------------------------------------
