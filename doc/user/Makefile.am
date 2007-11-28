@@ -41,7 +41,7 @@ users-guide.dvi: $(UG_SRCS)
 	 $(BIBTEX) users-guide.aux && \
 	 $(LATEX) users-guide.tex && \
 	 $(LATEX) users-guide.tex); \
-        exitval=$$? ;\ 
+        exitval=$$? ;\
         if test ! $(srcdir) -ef .; then rm $(UG_SRCS); fi ;\
 	exit $$exitval
 
