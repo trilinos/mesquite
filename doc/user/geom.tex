@@ -1,0 +1,69 @@
+\chapter{Constraining Mesh to a Geometric Domain}
+\label{sec:geom}
+
+Vertex positions may be constrained to a geometric domain by providing Mesquite
+with an optional instance of the \texttt{Mesquite::MeshDomain} interface.  This
+interface provides two fundamental capabilities: mesh-geometry classification,
+and interrogation of local geometric properties.  The methods defined in the 
+\texttt{Mesquite::MeshDomain} interface combine both queries into single
+operation.  Queries are passed a mesh entity handle (see Section \ref{sec:MeshData}),
+and are expected to interrogate the geometric domain that the specified mesh
+entity is classified to.
+
+If Mesquite is used to optimize the mesh of a B-Rep solid model (the data model used by all modern CAD systems), then the domain is composed of geometric vertices,
+curves, surfaces, and volumes.  Curves are bounded by end vertices, surfaces are
+bounded by loops (closed chains) of curves, and volumes are bounded by groups of
+surfaces.  Mesquite expects each surface element (triangle, quadrilateral, etc.)
+to be associated with a 2D domain (surface).  Vertices may be associated with
+a geometric entity that either contains adjacent mesh elements or bounds the
+geometric entity containing the adjacent elements. Mesquite does not use 
+geometric volumes.  A query for the closest location on the domain for a vertex 
+or element whose classification is a geometric volume should simply return the 
+input position.  
+
+It is possible to define an optimization problem such that mesh classification
+data need not be provided in a \texttt{Mesquite::MeshDomain} implementation. 
+This is done by optimizing the mesh associated with each simple geometric
+component of the domain separately, with the boundary vertices flagged as fixed.
+The following pseudo-code illustrates such an approach for a B-Rep type geometric
+domain:
+\begin{verbatim}
+  for each geometric vertex
+    make associated vertex as fixed
+  end-for
+  for each curve
+    do any application-specific optimization of curve node placement
+    mark associated mesh vertices as fixed
+  end-for
+  for each surface
+    define Mesquite::MeshDomain for surface geometry
+    invoke Mesquite to optimize surface mesh
+    mark all associated mesh vertices as fixed
+  end-for
+  for each volume
+    invoke Mesquite to optimize volume mesh w/ no Mesquite::MeshDomain
+  end-for
+\end{verbatim}
+
+
+\section{The ITAPS iGeom and iRel Interfaces} \label{sec:ITAPS}
+
+Mesquite can access mesh domain data through the \emph{iGeom} and \emph{iRel} interface defined by the ITAPS Work Group.  These interfaces provide APIs for accessing B-Rep geometric data and associating mesh with geometry (classifiation), respectively.  Mesquite provides the \texttt{Mesquite::MsqIGeom} class (\texttt{MsqIGeom.hpp}) as an adaptor for interfacing with appications that present the \emph{iGeom} and \emph{iRel} interfaces.  The use of the \emph{iRel} interface is optional.  If all the mesh vertices are constrained to a single geometric surface, it is sufficient to provide only an iGeom instance to \texttt{Mesquite::MsqIGeom}.  If vertices are constrained to different geometric entities, then the \emph{iRel} interface must be provided to \texttt{Mesquite::MsqIGeom} so Mesquite can determine which iMesh entity a given vertex is constrained to lie in.
+
+
+\section{Simple Geometric Domains} \label{sec:MsqGeom}
+
+Mesquite provides several implementations of the
+\texttt{Mesquite::MeshDomain} interface for simple geometric primitives.  These
+include
+\begin{itemize}
+\item \texttt{PlanarDomain}: An unbounded planar domain.
+\item \texttt{SphericalDomain}: A closed spherical domain.
+\item \texttt{CylindarDomain}: An unbounded cylindrical domain.
+\item \texttt{BoundedCylindarDomain}: A bounded cylindrical domain.
+\end{itemize}
+The \texttt{PlanarDomain} is often used to map $\mathbb{R}^{2}$ optimization
+problems to $\mathbb{R}^{3}$.  The others are used primarily for testing
+purposes.  The \texttt{BoundedCylindarDomain} provides some simplistic
+mesh-geometry classification capabilities.  The others do not provide any
+classification functionality.  

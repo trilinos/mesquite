@@ -5,11 +5,13 @@ UG_SRCS = users-guide.tex \
 	api.tex \
 	caveats.tex \
 	data.tex \
+	geom.tex \
 	extend.tex \
 	intro.tex \
 	mesh.tex \
 	plan.tex \
-	started.tex \
+	install.tex \
+	examples.tex \
 	support.tex \
 	team.tex \
         trouble.tex \
