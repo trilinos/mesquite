@@ -19,7 +19,9 @@ else
   html_DATA =
 endif
 
-html latex/refman.tex: Mesquite-user.dox
+html: html/index.html
+
+html/index.html latex/refman.tex: Mesquite-user.dox
 	$(DOXYGEN) $<
 
 latex/refman.dvi: latex/refman.tex latex/doxygen.sty
