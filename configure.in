@@ -648,6 +648,7 @@ AC_CONFIG_FILES([Makefile
                  testSuite/2d_target/Makefile
                  testSuite/2d_metrics/Makefile
                  testSuite/2d_formulation/Makefile
+                 testSuite/synchronous/Makefile
                  doc/Makefile
                  doc/user/Makefile
                  doc/user/doxygen/Makefile

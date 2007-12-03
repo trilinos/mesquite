@@ -38,4 +38,5 @@ SUBDIRS = test_1 \
 	  2d_target \
 	  2d_metrics\
 	  2d_formulation \
+	  synchronous \
 	  $(IMESH_TEST) $(EXO_TEST) $(UNIT_TEST)
