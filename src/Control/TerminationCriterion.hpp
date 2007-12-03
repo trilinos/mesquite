@@ -247,7 +247,12 @@ namespace Mesquite
     MESQUITE_EXPORT void set_debug_output_level( int i )
       { debugLevel = i; }
     
+    MESQUITE_EXPORT void write_vtk_timesteps( const char* filename )
+      { timeStepFileName = filename; }
+      
  protected:
+    
+    void write_timestep( PatchData& pd, MsqError& err );
     
  private:
     //PRIVATE DATA MEMBERS
@@ -300,6 +305,8 @@ namespace Mesquite
     
     int debugLevel;
     
+    //! Base name for VTK timestep files
+    std::string timeStepFileName;    
   };
 
 } //namespace

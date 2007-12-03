@@ -44,6 +44,9 @@
 #include "MsqError.hpp"
 #include "MsqDebug.hpp"
 #include "PatchData.hpp"
+#include "MeshWriter.hpp"
+
+#include <sstream>
 
 namespace Mesquite {
 
@@ -364,6 +367,9 @@ void TerminationCriterion::reset_inner(PatchData &pd, OFEvaluator& obj_eval,
     MSQ_ERRRTN(err);
     maxSquaredInitialMovement = DBL_MAX;
   }
+
+  if (!timeStepFileName.empty())
+    write_timestep( pd, err);
 }
 
 void TerminationCriterion::reset_patch(PatchData &pd, MsqError &err)
@@ -445,6 +451,8 @@ void TerminationCriterion::accumulate_inner( PatchData& pd,
     MSQ_DBGOUT(debugLevel) << "  o OF Value: " << of_value << msq_stdio::endl;
 
   ++iterationCounter;
+  if (!timeStepFileName.empty())
+    write_timestep( pd, err);
 }
 
 
@@ -771,6 +779,14 @@ void TerminationCriterion::cleanup(Mesh* mesh, MeshDomain*, MsqError &err)
   }
   
   delete iterator;
+}
+
+void TerminationCriterion::write_timestep( PatchData& pd, MsqError& err )
+{
+  pd.update_mesh(err); MSQ_ERRRTN(err);
+  std::ostringstream str;
+  str << timeStepFileName << '_' << iterationCounter << ".vtk";
+  MeshWriter::write_vtk( pd.get_mesh(), str.str().c_str(), err );
 }
 
 } //namespace Mesquite
