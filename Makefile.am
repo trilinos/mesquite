@@ -6,14 +6,20 @@ AM_CPPFLAGS = @AM_CPPFLAGS@
 
 SUBDIRS = . doc testSuite
 DIST_SUBDIRS = $(SUBDIRS) meshFiles
+
+
+# Need to be explicit about these for old versions of automake
+OLD_AM_GENERATED_HDRS = include/mesquite_config.h \
+                        include/mesquite_version.h \
+                        itaps/iBase_FCDefs.h 
+OLD_AM_EXTRA_CONFIG = m4/cxxflags.m4 \
+                      m4/cxx.m4 \
+                      m4/util.m4
+ 
 EXTRA_DIST = lgpl.txt \
              mkconfigure \
-             include/mesquite_config.h.in \
-             include/mesquite_version.h.in \
-             itaps/iBase_FCDefs.h.in \
-             m4/cxxflags.m4 \
-             m4/cxx.m4 \
-             m4/util.m4
+             $(OLD_AM_GENERATED_HDRS:=.in) \
+             $(OLD_AM_EXTRA_CONFIG)
 
 BUILT_SOURCES = include/Mesquite_all_headers.hpp
 MSQ_SRCS=
@@ -112,4 +118,5 @@ testSuite/cppflags.make: $(MSQ_HDRS)
 	@echo "	-I\$$(top_builddir)/itaps"                >> $@
 
 MOSTLYCLEANFILES = include/Mesquite_all_headers.hpp 
-DISTCLEANFILES = testSuite/cppflags.make
+DISTCLEANFILES = testSuite/cppflags.make $(OLD_AM_GENERATED_HDRS)
+
