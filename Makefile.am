@@ -6,7 +6,14 @@ AM_CPPFLAGS = @AM_CPPFLAGS@
 
 SUBDIRS = . doc testSuite
 DIST_SUBDIRS = $(SUBDIRS) meshFiles
-EXTRA_DIST = lgpl.txt mkconfigure
+EXTRA_DIST = lgpl.txt \
+             mkconfigure \
+             include/mesquite_config.h.in \
+             include/mesquite_version.h.in \
+             itaps/iBase_FCDefs.h.in \
+             m4/cxxflags.m4 \
+             m4/cxx.m4 \
+             m4/util.m4
 
 BUILT_SOURCES = include/Mesquite_all_headers.hpp
 MSQ_SRCS=
