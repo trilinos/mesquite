@@ -19,12 +19,14 @@ OLD_AM_EXTRA_CONFIG = m4/cxxflags.m4 \
 EXTRA_DIST = lgpl.txt \
              mkconfigure \
              $(OLD_AM_GENERATED_HDRS:=.in) \
-             $(OLD_AM_EXTRA_CONFIG)
+             $(OLD_AM_EXTRA_CONFIG) \
+             $(INCLUDED_MAKEFILES)
 
 BUILT_SOURCES = include/Mesquite_all_headers.hpp
 MSQ_SRCS=
 MSQ_HDRS=
 MSQ_INCLUDES =
+INCLUDED_MAKEFILES =
 lib_LTLIBRARIES = libmesquite.la
 libmesquite_la_DEPENDENCIES=
 # Tell libtool that there are no undefined symbols when linking 
@@ -64,6 +66,7 @@ include src/QualityMetric/Untangle/Makefile.am
 include src/QualityMetric/Volume/Makefile.am
 include src/TargetCalculator/Makefile.am
 MSQ_INCLUDES += -I$(top_srcdir)/itaps -I$(top_builddir)/itaps 
+
 
 libmesquite_la_includedir = $(includedir)
 libmesquite_la_SOURCES = $(MSQ_SRCS) \

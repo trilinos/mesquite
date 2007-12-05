@@ -1,5 +1,6 @@
 SRC_MESH_DIR = src/Mesh
 MSQ_INCLUDES += -I$(top_srcdir)/$(SRC_MESH_DIR)
+INCLUDED_MAKEFILES += $(SRC_MESH_DIR)/Makefile.am
 
 MSQ_SRCS += \
 	$(SRC_MESH_DIR)/ArrayMesh.cpp \

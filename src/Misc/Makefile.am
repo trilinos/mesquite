@@ -1,5 +1,6 @@
 SRC_MISC_DIR = src/Misc
 MSQ_INCLUDES += -I$(top_srcdir)/$(SRC_MISC_DIR)
+INCLUDED_MAKEFILES += $(SRC_MISC_DIR)/Makefile.am
 
 MSQ_SRCS += \
 	$(SRC_MISC_DIR)/BoundedCylinderDomain.cpp \

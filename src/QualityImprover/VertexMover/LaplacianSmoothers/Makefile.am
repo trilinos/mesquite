@@ -1,5 +1,6 @@
 SRC_LAPLACIANSMOOTHERS_DIR = src/QualityImprover/VertexMover/LaplacianSmoothers
 MSQ_INCLUDES += -I$(top_srcdir)/$(SRC_LAPLACIANSMOOTHERS_DIR)
+INCLUDED_MAKEFILES += $(SRC_LAPLACIANSMOOTHERS_DIR)/Makefile.am
 
 MSQ_SRCS += \
 	$(SRC_LAPLACIANSMOOTHERS_DIR)/LaplacianCommon.cpp \
