@@ -1,7 +1,7 @@
-SUBDIRS = 
 if ENABLE_DOXYGEN
-  SUBDIRS += doxygen
+  DOXY_SUBDIR = doxygen
 endif
+SUBDIRS = $(DOXY_SUBDIR)
 
 UG_SRCS = users-guide.tex \
 	ack.tex \
