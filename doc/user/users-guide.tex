@@ -1,8 +1,10 @@
 \documentclass[letter]{report}
-\usepackage{epsfig}
+\usepackage{graphicx}
 \usepackage{amssymb}
 \usepackage{hyperref}
 \usepackage{listings}
+
+\input{config.tex}
 
 \pagestyle{empty}
 
@@ -38,34 +40,34 @@ Madison, WI 53706 USA}
 
 \listoftables
 
-\include{intro}
+\srcinclude{intro.tex}
 
-\include{install}
+\srcinclude{install.tex}
 
-\include{examples}
+\srcinclude{examples.tex}
 
-\include{data}
+\srcinclude{data.tex}
 
-\include{geom}
+\srcinclude{geom.tex}
 
-%\include{api}
+%\srcinclude{api.tex}
 
-%\include{extend}
+%\srcinclude{extend.tex}
 
-%\include{trouble}
+%\srcinclude{trouble.tex}
 
-\include{caveats}
+\srcinclude{caveats.tex}
 
-\include{support}
+\srcinclude{support.tex}
 
 \appendix
 
-\include{team}
+\srcinclude{team.tex}
 
-\include{ack}
+\srcinclude{ack.tex}
 
 \bibliographystyle{plain}
-\bibliography{mesquite}
+\srcbibliography{mesquite}
 
 
 \end{document}

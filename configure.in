@@ -651,6 +651,7 @@ AC_CONFIG_FILES([Makefile
                  testSuite/synchronous/Makefile
                  doc/Makefile
                  doc/user/Makefile
+                 doc/user/config.tex
                  doc/user/doxygen/Makefile
                  doc/user/doxygen/Mesquite-user.dox
                  ])

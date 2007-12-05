@@ -38,17 +38,13 @@ SUFFIXES = .dvi .pdf .ps
 	$(PS2PDF) $< $@
 
 .dvi.ps:
-	bd=`pwd`; (cd $(srcdir) && $(DVIPS) $$bd/$< -o $$bd/$@)
+	$(DVIPS) $< -o $@
 
-users-guide.dvi: $(UG_SRCS) 
-	for file in $(UG_SRCS); do if test ! -f $$file -o $(srcdir)/$$file -nt ./$$file; then cp $(srcdir)/$$file .; fi; done
-	($(LATEX) users-guide.tex && \
-	 $(BIBTEX) users-guide.aux && \
-	 $(LATEX) users-guide.tex && \
-	 $(LATEX) users-guide.tex); \
-        exitval=$$? ;\
-        if test ! $(srcdir) -ef .; then rm $(UG_SRCS); fi ;\
-	exit $$exitval
+users-guide.dvi: users-guide.tex $(UG_SRCS) 
+	$(LATEX) $<
+	$(BIBTEX) users-guide.aux
+	$(LATEX) $<
+	$(LATEX) $<
 
 pdf: users-guide.pdf
 
