@@ -102,8 +102,7 @@ int main()
   pass1.use_global_patch();
   if (err) return 1;
   
-  QualityAssessor mean_qa=QualityAssessor(&mean,QualityAssessor::AVERAGE, err);
-  if (err) return 1;
+  QualityAssessor mean_qa=QualityAssessor(&mean);
 
     //**************Set termination criterion****************
 

@@ -146,8 +146,7 @@ int main(int argc, char* argv[])
   FeasibleNewton pass1( &obj_func, true );
   pass1.use_global_patch();
   
-  QualityAssessor stop_qa(&mean_ratio,QualityAssessor::AVERAGE, err);
-  if (err) return 1;
+  QualityAssessor stop_qa( &mean_ratio );
   
   // **************Set stopping criterion****************
   TerminationCriterion tc_inner;

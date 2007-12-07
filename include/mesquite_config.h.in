@@ -18,6 +18,12 @@
 /* System has inttypes.h */
 #undef HAVE_INTTYPES_H
 
+/* System has termios.h */
+#undef HAVE_TERMIOS_H
+
+/* System has sys/ioctl.h */
+#undef HAVE_SYS_IOCTL_H
+
 /* Define to 1 if you have the `cppunit' library (-lcppunit). */
 #undef HAVE_LIBCPPUNIT
 

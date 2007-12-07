@@ -147,9 +147,7 @@ public:
       pass1.set_outer_termination_criterion(tc_outer);
       
       pass1.set_debugging_level(0);
-      QualityAssessor all_qa=QualityAssessor(&cond_num,
-                                             QualityAssessor::ALL_MEASURES,
-                                             err); CPPUNIT_ASSERT(!err);
+      QualityAssessor all_qa=QualityAssessor( &cond_num );
       queue1.add_quality_assessor(&all_qa,err); CPPUNIT_ASSERT(!err);
       queue1.set_master_quality_improver(&pass1, err); CPPUNIT_ASSERT(!err);
         //queue1.add_quality_assessor(&all_qa,err); CPPUNIT_ASSERT(!err);

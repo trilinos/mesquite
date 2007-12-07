@@ -420,6 +420,8 @@ AC_CHECK_HEADERS(fcntl.h strings.h sys/file.h sys/time.h unistd.h)
 AC_CHECK_HEADER(   ieeefp.h, AC_DEFINE(HAVE_IEEEFP_H,  [1], [System has ieeefp.h]  ))
 AC_CHECK_HEADER(   stdint.h, AC_DEFINE(HAVE_STDINT_H,  [1], [System has stdint.h]  ))
 AC_CHECK_HEADER( inttypes.h, AC_DEFINE(HAVE_INTTYPES_H,[1], [System has inttypes.h]))
+AC_CHECK_HEADER(  termios.h, AC_DEFINE(HAVE_TERMIOS_H, [1], [System has termios.h]))
+AC_CHECK_HEADER( [sys/ioctl.h], AC_DEFINE(HAVE_SYS_IOCTL_H,[1], [System has sys/ioctl.h]))
 
 #-----------------------------------------------------------------------------
 # Check for required functions
@@ -455,6 +457,15 @@ AC_SUBST(MSQ_FUNC_DEFS)
 #-----------------------------------------------------------------------------
 MSQ_CPLUSPLUS_FUNC
 MSQ_CPLUSPLUS_HEADERS
+
+#-----------------------------------------------------------------------------
+# Check for C++ features
+#-----------------------------------------------------------------------------
+AC_MSG_CHECKING( [for fd() in std::basic_file] )
+AC_TRY_COMPILE([#include <fstream>],
+               [using namespace std; ofstream f; int fd = f.rdbuf()->fd();],
+               [CPPFLAGS="$CPPFLAGS -DFSTREAM_HAS_FD"; AC_MSG_RESULT(yes)],
+               [AC_MSG_RESULT(no)])
 
 #------------------------------------------------------------------------------
 # Other build options
@@ -539,7 +550,7 @@ fi
 AM_CONDITIONAL([WITH_TEST_IMESH],[test "x$WITH_IMESH_ARG" != "xno"])
 if test "x$WITH_IMESH_ARG" != "xno"; then 
   MSQ_IMESH_DEFS="${WITH_IMESH_ARG}/iMesh-Defs.inc"
-  AC_CHECK_FILE( ["$MSQ_IMESH_DEFS"],
+  AC_CHECK_FILE( [$MSQ_IMESH_DEFS],
                  [MSQ_IMESH_IMPL=yes],
                  [AC_MSG_ERROR([Invalid iMesh implementation spec.])] )
   MESQUITE_IMESH_MAKE_INCLUDE="include ${MSQ_IMESH_DEFS}"

@@ -178,9 +178,8 @@ static int do_smoother( const char* input_file,
   
   ConditionNumberQualityMetric qm_metric;
   QualityAssessor assessor;
-  assessor.add_quality_assessment( metric, QualityAssessor::ALL_MEASURES, err );
-  assessor.add_quality_assessment( &qm_metric, QualityAssessor::ALL_MEASURES&~QualityAssessor::HISTOGRAM, err );
-  if (MSQ_CHKERR(err)) return 1;
+  assessor.add_quality_assessment( metric, 10 );
+  assessor.add_quality_assessment( &qm_metric );
 
   InstructionQueue q;
   q.add_quality_assessor( &assessor, err );

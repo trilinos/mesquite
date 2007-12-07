@@ -104,7 +104,7 @@ int main()
   if (err) return 1;
   
   QualityAssessor qa;
-  qa.add_quality_assessment( &mu, QualityAssessor::ALL_MEASURES, err );
+  qa.add_quality_assessment( &mu );
   queue1.add_quality_assessor( &qa, err );
  
   // ... and builds an objective function with it

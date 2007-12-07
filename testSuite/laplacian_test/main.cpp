@@ -98,10 +98,8 @@ int main()
     // creates the laplacian smoother  procedures
   LaplacianSmoother lapl1(err);
   if (err) return 1;
-  QualityAssessor stop_qa=QualityAssessor(&shape_metric,QualityAssessor::MAXIMUM, err);
-  if (err) return 1;
-  stop_qa.add_quality_assessment(&lapl_met,QualityAssessor::ALL_MEASURES,err);
-  if (err) return 1;
+  QualityAssessor stop_qa=QualityAssessor(&shape_metric);
+  stop_qa.add_quality_assessment(&lapl_met);
   
     //**************Set stopping criterion****************
   TerminationCriterion sc2;

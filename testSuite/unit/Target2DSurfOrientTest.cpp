@@ -440,11 +440,8 @@ void Target2DSurfOrientTest::smooth( int metric_3D, bool ref_mesh, MeshDomain* d
   solver.set_inner_termination_criterion( &inner );
   
   QualityAssessor assessor;
-  const int ALL_EXCEPT_HIST = QualityAssessor::ALL_MEASURES & ~QualityAssessor::HISTOGRAM;
-  assessor.add_quality_assessment( &qmetric, ALL_EXCEPT_HIST, err );
-  ASSERT_NO_ERROR(err);
-  assessor.add_quality_assessment( ometric, ALL_EXCEPT_HIST, err );
-  ASSERT_NO_ERROR(err);
+  assessor.add_quality_assessment( &qmetric );
+  assessor.add_quality_assessment( ometric );
   
   InstructionQueue q;
   q.add_quality_assessor( &assessor, err );

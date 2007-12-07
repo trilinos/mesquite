@@ -96,10 +96,7 @@ ShapeImprovementWrapper::ShapeImprovementWrapper(MsqError& err,
     //creates a FeasibleNewtone improver
   feasNewt = new FeasibleNewton(objFunc,true);
   feasNewt->use_global_patch();
-  mQA = new QualityAssessor(inverseMeanRatio,QualityAssessor::MAXIMUM, err); MSQ_ERRRTN(err);
-  mQA->add_quality_assessment(inverseMeanRatio, QualityAssessor::MINIMUM,err);  MSQ_ERRRTN(err);
-  mQA->add_quality_assessment(inverseMeanRatio, QualityAssessor::AVERAGE,err);  MSQ_ERRRTN(err);
-  mQA->add_quality_assessment(inverseMeanRatio, QualityAssessor::RMS,err);  MSQ_ERRRTN(err);   
+  mQA = new QualityAssessor(inverseMeanRatio);
         //**************Set stopping criterion*e***************
   termInner = new TerminationCriterion();
   termOuter = new TerminationCriterion();

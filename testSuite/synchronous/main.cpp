@@ -172,7 +172,7 @@ int main( int argc, char* argv[] )
   solver->set_inner_termination_criterion( &inner );  
   
   InstructionQueue q;
-  QualityAssessor qa( metric, QualityAssessor::ALL_MEASURES, err );
+  QualityAssessor qa( metric, 10 );
   q.add_quality_assessor( &qa, err );
   q.set_master_quality_improver( solver, err );
   q.add_quality_assessor( &qa, err );

@@ -100,7 +100,7 @@ public:
      CPPUNIT_ASSERT(!err);
      mQI = new SteepestDescent( mOF, true );
      mQA = new QualityAssessor();
-     mQA->set_stopping_assessment( mQM, QualityAssessor::MAXIMUM, err );
+     mQA->set_stopping_assessment( mQM  );
      CPPUNIT_ASSERT(!err);
   }
 

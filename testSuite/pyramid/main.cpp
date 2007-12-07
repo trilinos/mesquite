@@ -336,8 +336,8 @@ bool smooth_mixed_mesh( const char* filename )
 
   // Create a QualityAssessor
   Mesquite::QualityAssessor qa;
-  qa.add_quality_assessment( &mr_metric, Mesquite::QualityAssessor::ALL_MEASURES, err );
-  qa.add_quality_assessment( &un_metric, Mesquite::QualityAssessor::ALL_MEASURES, err );
+  qa.add_quality_assessment( &mr_metric );
+  qa.add_quality_assessment( &un_metric );
   Q.add_quality_assessor( &qa, err ); 
   CPPUNIT_ASSERT(!err);
  

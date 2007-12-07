@@ -119,17 +119,10 @@ int main()
   if (err) return 1;
   pass2.use_global_patch();
   if (err) return 1;
-  QualityAssessor stop_qa=QualityAssessor(&shape_metric,QualityAssessor::MAXIMUM, err);
-  if (err) return 1;
-  QualityAssessor stop_qa2=QualityAssessor(&shape_metric,QualityAssessor::MAXIMUM, err);
-  if (err) return 1;
-  stop_qa2.add_quality_assessment(&shape_metric,QualityAssessor::AVERAGE,err);
-  if (err) return 1;
+  QualityAssessor stop_qa=QualityAssessor(&shape_metric);
+  QualityAssessor stop_qa2=QualityAssessor(&shape_metric);
   
-  stop_qa.add_quality_assessment(&untangle,QualityAssessor::ALL_MEASURES,err);
-  if (err) return 1;
-  stop_qa.set_stopping_assessment(&untangle,QualityAssessor::MAXIMUM,err);
-  if (err) return 1;
+  stop_qa.add_quality_assessment(&untangle);
     // **************Set stopping criterion**************
     //untangle beta should be 0 when untangled
   TerminationCriterion sc1;

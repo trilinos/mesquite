@@ -232,7 +232,7 @@ InstructionQueue* create_instruction_queue(MsqError& err)
   //perform optimization globally
   pass1->use_global_patch();
   
-  //QualityAssessor* mean_qa = new QualityAssessor(mean,QualityAssessor::AVERAGE);
+  //QualityAssessor* mean_qa = new QualityAssessor(mean);
 
     //**************Set termination criterion****************
 

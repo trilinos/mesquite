@@ -119,8 +119,7 @@ void BCDTest::compare_bcd( ObjectiveFunction* OF, string name, const char* mesh_
   bcd_solver.set_outer_termination_criterion( &vertex_movement );
 
   QualityAssessor qa;
-  const int NO_HIST = QualityAssessor::ALL_MEASURES & ~QualityAssessor::HISTOGRAM;
-  qa.add_quality_assessment( &mMetric, NO_HIST, err );
+  qa.add_quality_assessment( &mMetric );
 
   InstructionQueue global_q, bcd_q;
   global_q.add_quality_assessor( &qa, err );

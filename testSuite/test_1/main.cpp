@@ -135,8 +135,7 @@ int main(int argc, char* argv[])
   pass1.use_global_patch();
     if (err) return 1;
   
-  QualityAssessor stop_qa=QualityAssessor(&mean_ratio,QualityAssessor::AVERAGE, err);
-  if (err) return 1;
+  QualityAssessor stop_qa=QualityAssessor(&mean_ratio);
   
   // **************Set stopping criterion****************
   TerminationCriterion tc_inner;

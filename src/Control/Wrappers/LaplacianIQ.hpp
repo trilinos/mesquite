@@ -74,7 +74,7 @@ namespace Mesquite {
      
          // creates the laplacian smoother  procedures
          lapl1 = new LaplacianSmoother(err);
-         mQA = new QualityAssessor(inverseMeanRatio,QualityAssessor::MAXIMUM, err);
+         mQA = new QualityAssessor(inverseMeanRatio);
      
          //**************Set stopping criterion****************
          mTerm = new TerminationCriterion();

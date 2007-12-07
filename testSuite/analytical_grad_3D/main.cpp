@@ -102,9 +102,9 @@ int main()
   if (err) return 1;
   pass1.set_maximum_iteration(6);
   
-  QualityAssessor stop_qa=QualityAssessor(&mean_ratio,QualityAssessor::MAXIMUM, err);
+  QualityAssessor stop_qa=QualityAssessor(&mean_ratio);
   if (err) return 1;
-  stop_qa.add_quality_assessment(&cond_num, QualityAssessor::MAXIMUM,err);
+  stop_qa.add_quality_assessment(&cond_num);
   if (err) return 1;
   
   

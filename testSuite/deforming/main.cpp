@@ -112,8 +112,7 @@ int main()
   FeasibleNewton pass1( &obj_func, true );
   pass1.use_global_patch();
   
-  QualityAssessor stop_qa(&mu,QualityAssessor::AVERAGE, err);
-  if (err) return 1;
+  QualityAssessor stop_qa( &mu );
   
   // **************Set stopping criterion****************
   TerminationCriterion tc_inner;

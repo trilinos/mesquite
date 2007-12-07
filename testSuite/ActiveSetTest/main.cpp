@@ -112,12 +112,7 @@ int main()
   minmax_method.set_outer_termination_criterion(&tc2);
   // Set up the quality assessor
   //  printf("Setting up the quality assessor\n");
-  QualityAssessor quality_assessor=QualityAssessor(&cond_no,QualityAssessor::MAXIMUM, err);
-  if (err) return 1;
-  quality_assessor.add_quality_assessment(&cond_no,QualityAssessor::MINIMUM, err); 
-  if (err) return 1;
-  quality_assessor.add_quality_assessment(&cond_no,QualityAssessor::AVERAGE, err);
-  if (err) return 1;
+  QualityAssessor quality_assessor=QualityAssessor(&cond_no);
 
   // assess the quality of the initial mesh
   queue1.add_quality_assessor(&quality_assessor, err); 

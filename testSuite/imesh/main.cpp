@@ -179,8 +179,7 @@ int run_global_smoother( Mesh* mesh, MsqError& err )
   pass1->use_global_patch();
   if (err) return 1;
   
-  QualityAssessor stop_qa=QualityAssessor(mean_ratio,QualityAssessor::AVERAGE, err);
-  if (err) return 1;
+  QualityAssessor stop_qa( mean_ratio );
   
   // **************Set stopping criterion****************
   TerminationCriterion tc_inner;
@@ -236,8 +235,7 @@ int run_local_smoother( Mesh* mesh, MsqError& err )
   SmartLaplacianSmoother* pass1 = new SmartLaplacianSmoother( obj_func, err );
   if (err) return 1;
   
-  QualityAssessor stop_qa=QualityAssessor(mean_ratio,QualityAssessor::AVERAGE,err);
-  if (err) return 1;
+  QualityAssessor stop_qa( mean_ratio );
   
   // **************Set stopping criterion****************
   TerminationCriterion tc_inner;

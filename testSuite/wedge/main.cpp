@@ -280,7 +280,7 @@ bool smooth_mesh( MeshImpl* mesh, Mesh* ref_mesh,
   solver.set_outer_termination_criterion(&tc_outer);
 
 #ifdef DO_QUALITY_ASSESSOR
-  QualityAssessor qa( metric, QualityAssessor::ALL_MEASURES, err ); CPPUNIT_ASSERT(!err);
+  QualityAssessor qa( metric, 10 );
   Q.add_quality_assessor( &qa, err ); CPPUNIT_ASSERT(!err);
 #endif
    

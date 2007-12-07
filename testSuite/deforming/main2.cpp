@@ -119,7 +119,7 @@ int main()
   if (err) return 1;
   pass1->use_global_patch();
   
-  QualityAssessor stop_qa(&mu,QualityAssessor::AVERAGE);
+  QualityAssessor stop_qa( &mu );
   stop_qa.set_target_calculator(&assessor_target, err); 
   if (err) return 1;
   
