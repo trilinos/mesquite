@@ -378,7 +378,7 @@ namespace Mesquite
         void reset_data();
        
         /** Print the histogram */
-        void print_histogram( msq_stdio::ostream& ) const;
+        void print_histogram( msq_stdio::ostream&, int width = 0 ) const;
 
         /** Get the QualityMetric */
         QualityMetric* get_metric() const { return qualMetric; }

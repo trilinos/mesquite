@@ -181,11 +181,12 @@ void QualityAssessor::add_quality_assessment( QualityMetric* metric,
                                               double power_mean,
                                               const char* tag_name )
 { 
-  if (histogram_intervals < 0)
-    histogram_intervals = 0;
   msq_std::list<Assessor>::iterator i = find_or_add( metric );
   i->pMean = power_mean;
-  i->histogram.resize( histogram_intervals );
+  if (histogram_intervals > 0)
+    i->histogram.resize( histogram_intervals+2 );
+  else
+    i->histogram.clear();
   i->haveHistRange = false;
   if (!tag_name)
     i->tagName.clear();
@@ -235,11 +236,12 @@ void QualityAssessor::set_stopping_assessment( QualityMetric* metric,
                                                double power_mean,
                                                const char* tag_name )
 {
-  if (histogram_intervals < 0)
-    histogram_intervals = 0;
   msq_std::list<Assessor>::iterator i = find_or_add( metric );
   i->pMean = power_mean;
-  i->histogram.resize( histogram_intervals );
+  if (histogram_intervals > 0)
+    i->histogram.resize( histogram_intervals+2 );
+  else
+    i->histogram.clear();
   i->haveHistRange = false;
   if (!tag_name)
     i->tagName.clear();
@@ -266,14 +268,14 @@ void QualityAssessor::add_histogram_assessment( QualityMetric* metric,
                                                 double power_mean,
                                                 const char* tag_name )
 {
-  if (intervals < 0)
-    intervals = 0;
+  if (intervals < 1)
+    intervals = 1;
   msq_std::list<Assessor>::iterator i = find_or_add( metric );
   i->pMean = power_mean;
   i->histMin = min_val;
   i->histMax = max_val;
   i->haveHistRange = min_val < max_val;
-  i->histogram.resize( intervals + 2 * i->haveHistRange );
+  i->histogram.resize( intervals + 2 );
   if (!tag_name)
     i->tagName.clear();
   else
@@ -287,7 +289,7 @@ TagHandle QualityAssessor::get_tag( Mesh* mesh,
                                     unsigned size, 
                                     MsqError& err )
 {
-  const TagHandle tag  = mesh->tag_get( name, err );
+  TagHandle tag  = mesh->tag_get( name, err );
   if (!err) {
     Mesh::TagType exist_type;
     msq_std::string junk;
@@ -301,7 +303,7 @@ TagHandle QualityAssessor::get_tag( Mesh* mesh,
   }
   else if (err.error_code() == MsqError::TAG_NOT_FOUND) {
     err.clear();
-    mesh->tag_create( name, type, size, 0, err ); MSQ_ERRZERO(err);
+    tag = mesh->tag_create( name, type, size, 0, err ); MSQ_ERRZERO(err);
   }
   else {
     MSQ_ERRZERO(err);
@@ -385,8 +387,6 @@ double QualityAssessor::loop_over_mesh( Mesh* mesh,
     if (iter->have_histogram() && !iter->haveHistRange)
       need_second_pass_for_vertices = true;
   }
-  
-  msq_std::list<Assessor> histogramList;
   
     // Do element-based metrics
   elem_patches.get_patch_handles( patches, err ); MSQ_ERRZERO(err);
@@ -498,12 +498,6 @@ double QualityAssessor::loop_over_mesh( Mesh* mesh,
         vert_patches.get_patch( *p, patch_elems, patch_verts, err ); MSQ_ERRZERO(err);
         patch.set_mesh_entities( patch_elems, patch_verts, err ); MSQ_ERRZERO(err);
         Mesh::VertexHandle vert_handle = reinterpret_cast<Mesh::VertexHandle>(*p);
-        MsqVertex* start_vtx = 0;
-        for (unsigned i = 0; i < patch.num_nodes(); ++i)
-          if (patch.get_vertex_handles_array()[i] == vert_handle) {
-            start_vtx = &patch.vertex_by_index(i);
-            break;
-          }
 
         for (iter = elem_end; iter != assessList.end(); ++iter)
         {
@@ -525,7 +519,7 @@ double QualityAssessor::loop_over_mesh( Mesh* mesh,
               // we don't do tag stuff unless metric is truely vertex-based
               // (only one value per vertex)
             if (iter->write_to_tag() && metric_handles.size() == 1) {
-              mesh->tag_set_element_data( iter->tagHandle, 1, &vert_handle, &value, err ); MSQ_ERRZERO(err);
+              mesh->tag_set_vertex_data( iter->tagHandle, 1, &vert_handle, &value, err ); MSQ_ERRZERO(err);
             }
           }
             // If second pass, only do metrics for which the
@@ -625,15 +619,8 @@ void QualityAssessor::Assessor:: get_histogram( double& lower_bound_out,
     return;
   }
 
-  if (haveHistRange) {
-    lower_bound_out = histMin;
-    upper_bound_out = histMax;
-  }
-  else {
-    lower_bound_out = minimum;
-    upper_bound_out = maximum;
-  }
-  
+  lower_bound_out = histMin;
+  upper_bound_out = histMax;
   counts_out = histogram;
 }
 
@@ -664,7 +651,7 @@ void QualityAssessor::Assessor::add_value( double metric_value )
     // the user has specified the range.  If user has not 
     // specified the range, QualityAssessor will call add_hist_value()
     // directly once the range has been calculated.
-  if (have_histogram())
+  if (have_histogram() && haveHistRange)
     add_hist_value( metric_value );
   
   if (have_power_mean())
@@ -680,9 +667,6 @@ void QualityAssessor::Assessor::add_invalid_value()
 
 void QualityAssessor::Assessor::add_hist_value( double metric_value )
 {
-    // Width of one interval in histogram
-  double step = (histMax - histMin) / (histogram.size()-2);
-    
     // First and last values in array are counts of values
     // outside the user-specified range of the histogram
     // (below and above, respectively.)
@@ -695,17 +679,13 @@ void QualityAssessor::Assessor::add_hist_value( double metric_value )
       // Calculate which interval the value is in.  Add one
       // because first entry is for values below user-specifed
       // minimum value for histogram.
+    double fract = (metric_value - histMin) / (histMax - histMin);
     unsigned cell;
-    if (step > DBL_EPSILON)
-      cell = 1+(unsigned)((metric_value - histMin) / step);
+    if (fabs(fract - 1.0) < histMax*DBL_EPSILON)
+      cell = histogram.size() - 1;
     else
-      cell = 1;
-      
-      // If value exactly equals maximum value, put in last
-      // valid interval, not the count of values above the
-      // maximum.
-    if (cell + 1 == histogram.size())
-      --cell;
+      cell = 1 + (int)((fract * (histogram.size()-2)));
+
       // Add value to interval.
     ++histogram[cell];
   }
@@ -876,11 +856,12 @@ void QualityAssessor::print_summary( msq_stdio::ostream& stream ) const
   
   for (iter = assessList.begin(); iter != assessList.end(); ++iter)
     if (iter->have_histogram())
-      iter->print_histogram( stream );
+      iter->print_histogram( stream, get_terminal_width() );
 }
 
 
-void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream ) const
+void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream,
+                                                 int termwidth ) const
 {
   // Portability notes:
   //  Use log10 rather than log10f because the float variations require
@@ -891,19 +872,14 @@ void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream ) co
   
   const char GRAPH_CHAR = '=';  // Character used to create bar graphs
   const int FLOATW = 12;        // Width of floating-point output
-  const int GRAPHW = 50;        // Width of bar graph
+  const int TOTAL_WIDTH = termwidth > 20 ? termwidth : 64;   // Width of histogram
+  const int GRAPHW = TOTAL_WIDTH - FLOATW - 3;
   
     // range is either user-specified (histMin & histMax) or
     // calculated (minimum & maximum)
   double min, max;
-  //if (haveHistRange) {
-    min = histMin;
-    max = histMax;
-  //}
-  //else {
-  //  min = minimum;
-  //  max = maximum;
-  //}
+  min = histMin;
+  max = histMax;
     // Witdh of one interval of histogram
   double step = (max - min) / (histogram.size()-2);
   
