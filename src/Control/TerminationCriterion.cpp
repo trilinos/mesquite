@@ -770,9 +770,9 @@ void TerminationCriterion::cleanup(Mesh* mesh, MeshDomain*, MsqError &err)
     mesh->vertices_get_byte( vertex_array, byte_array, count, err );
     if (MSQ_CHKERR(err)) break;
   
-      // clear the soft fixed flag
+      // clear the culled flag
     for (unsigned i = 0; i < count; ++i)
-      byte_array[i] &= ~MsqVertex::MSQ_SOFT_FIXED;
+      byte_array[i] &= ~MsqVertex::MSQ_CULLED;
     
       // save the vertex byte
     mesh->vertices_set_byte( vertex_array, byte_array, count, err );

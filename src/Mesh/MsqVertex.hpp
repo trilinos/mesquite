@@ -90,17 +90,18 @@ namespace Mesquite
      {
        MSQ_HARD_FIXED = 1<<0, //!< vertex is always fixed. This can only be set on and never off.
        MSQ_DEPENDENT  = 1<<1, //!< higher-order node w/ position determined by mapping function
-       MSQ_SOFT_FIXED = 1<<2  //!< vertex is fixed. This flag can be set on and off. 
+       MSQ_CULLED     = 1<<2, //!< vertex is fixed. This flag can be set on and off. 
+       MSQ_PATCH_VTX  = 1<<3  //!< vertex used to define patch (for evaluated vertex-based metrics)
      };
        //!Returns true if vertex is ``free''.
      bool is_free_vertex() const
-       { return (vertexBitFlags & (MSQ_SOFT_FIXED|MSQ_HARD_FIXED)) == 0; }
+       { return (vertexBitFlags & (MSQ_CULLED|MSQ_HARD_FIXED)) == 0; }
      
      void set_soft_fixed_flag()
-       { vertexBitFlags|=MSQ_SOFT_FIXED; }
+       { vertexBitFlags|=MSQ_CULLED; }
      
      void remove_soft_fixed_flag()
-       { vertexBitFlags &= (~MSQ_SOFT_FIXED); }
+       { vertexBitFlags &= (~MSQ_CULLED); }
      
      void set_hard_fixed_flag()
        { vertexBitFlags|=MSQ_HARD_FIXED; }
@@ -115,6 +116,9 @@ namespace Mesquite
        { return (vertexBitFlags & flag) != 0; }
     
      FlagMask get_flags() const
+      { return vertexBitFlags; }
+    
+     FlagMask& flags() 
       { return vertexBitFlags; }
     
      void set_flags( FlagMask flags )

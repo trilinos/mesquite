@@ -55,7 +55,7 @@ namespace Mesquite
   /*! \class MsqFreeVertexIndexIterator
     \brief iterates over indexes of free vetices in a PatchData.
 
-    A free vertex is defined as not having the MSQ_SOFT_FIXED and MSQ_HARD_FIXED
+    A free vertex is defined as not having the MSQ_CULLED and MSQ_HARD_FIXED
     flags activated.
     
     Use the iterator as follow:
@@ -92,7 +92,7 @@ namespace Mesquite
     ++iterCurrentIndex;
     while (iterCurrentIndex < iterOriginator.num_free_vertices())
     {
-      if (!iterOriginator.vertex_by_index(iterCurrentIndex).is_flag_set(MsqVertex::MSQ_SOFT_FIXED))
+      if (!iterOriginator.vertex_by_index(iterCurrentIndex).is_flag_set(MsqVertex::MSQ_CULLED))
         return true;
       ++iterCurrentIndex;
     }

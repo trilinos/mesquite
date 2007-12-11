@@ -525,7 +525,7 @@ namespace Mesquite
        *
        * \param elem_offset_array Offset into connectivity array for each element
        */
-    void initialize_data( size_t* elem_offset_array, const bool* fixed_flags, MsqError& err );
+    void initialize_data( size_t* elem_offset_array, unsigned char* vertex_flags, MsqError& err );
    
       /** Code common to misc. methods for populating patch data.
        *  Calls initialize_data(), sets element types and
@@ -540,7 +540,7 @@ namespace Mesquite
        */
     void initialize_patch( EntityTopology* elem_type_array,
                            size_t* elem_offset_array,
-                           const bool* fixed_flags,
+                           unsigned char* vertex_flags,
                            MsqError& err );
     
       /** Code common to misc. methods for populating patch data.

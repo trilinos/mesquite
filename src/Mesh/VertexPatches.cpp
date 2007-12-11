@@ -82,7 +82,7 @@ void VertexPatches::get_patch( PatchHandle patch_handle,
   if (free_vertices_only()) { // check if vertex is culled
     unsigned char byte;
     get_mesh()->vertices_get_byte( &patch_handle, &byte, 1, err );
-    if (MSQ_CHKERR(err) || (byte & MsqVertex::MSQ_SOFT_FIXED))
+    if (MSQ_CHKERR(err) || (byte & MsqVertex::MSQ_CULLED))
       return;
   }
     

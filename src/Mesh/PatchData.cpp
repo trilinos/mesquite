@@ -884,13 +884,16 @@ void PatchData::get_subpatch(size_t center_vertex_index,
   msq_std::copy( vertices.begin(), vertices.end(), vert_handles );
   
     // All vertices except vertex at center_vertex_index are fixed.
-  bool* fixed_flags = new bool[vertices.size()];
-  for (size_t i = 0; i < vertices.size(); ++i)
-    fixed_flags[i] = (vertices[i] != center_vertex_index);
+  subpatch.byteArray.resize( vertices.size() );
+  for (size_t i = 0; i < vertices.size(); ++i) {
+    if (vertices[i] == center_vertex_index)
+      subpatch.byteArray[i] = vertexArray[vertices[i]].get_flags() | MsqVertex::MSQ_PATCH_VTX;
+    else
+      subpatch.byteArray[i] = (vertexArray[vertices[i]].get_flags() & ~MsqVertex::MSQ_PATCH_VTX) | MsqVertex::MSQ_HARD_FIXED;
+  }
   
     // Re-order vertices and initialize other data in subpatch
-  subpatch.initialize_data( &offsets[0], fixed_flags, err ); 
-  delete [] fixed_flags;
+  subpatch.initialize_data( &offsets[0], &subpatch.byteArray[0], err ); 
   MSQ_ERRRTN(err);
   
     // Copy vertex data into subpatch.  subpatch.vertexHandlesArray contains
@@ -903,8 +906,7 @@ void PatchData::get_subpatch(size_t center_vertex_index,
     vertices[i] = vert_index;
     subpatch.vertexHandlesArray[i] = vertexHandlesArray[vert_index];
     subpatch.vertexArray[i] = vertexArray[vert_index];
-    if (vert_index != center_vertex_index) 
-      subpatch.vertexArray[i].set_hard_fixed_flag();
+    subpatch.vertexArray[i].flags() = subpatch.byteArray[i];
   }
 
   subpatch.myMesh = myMesh;
@@ -1235,7 +1237,7 @@ ostream& operator<<( ostream& stream, const PatchData& pd )
              << pd.vertexArray[i].y() << ","
              << pd.vertexArray[i].z()
              << ") ";
-      if (pd.vertexArray[i].is_flag_set( MsqVertex::MSQ_SOFT_FIXED ))
+      if (pd.vertexArray[i].is_flag_set( MsqVertex::MSQ_CULLED ))
         stream << "S";
       if (pd.vertexArray[i].is_flag_set( MsqVertex::MSQ_HARD_FIXED ))
         stream << "H";
@@ -1308,46 +1310,42 @@ void print_patch_data( const PatchData& pd )
 
 void PatchData::initialize_patch( EntityTopology* elem_type_array,
                                   size_t* elem_offset_array,
-                                  const bool* fixed_flags,
+                                  unsigned char* vertex_flags,
                                   MsqError& err )
 {
   size_t i;
   
+    // set element types
   elementArray.resize( elementHandlesArray.size() );
   for (i = 0; i < elementHandlesArray.size(); ++i)
     elementArray[i].set_element_type( elem_type_array[i] );
   
-  initialize_data( elem_offset_array, fixed_flags, err ); MSQ_ERRRTN(err);
+    // get element connectivity, group vertices by free/slave/fixed state
+  initialize_data( elem_offset_array, vertex_flags, err ); MSQ_ERRRTN(err);
   
+    // get vertex coordinates
   vertexArray.resize( vertexHandlesArray.size() );
   get_mesh()->vertices_get_coordinates( &vertexHandlesArray[0],
                                     &vertexArray[0],
                                     vertexHandlesArray.size(),
                                     err ); MSQ_ERRRTN(err);
 
-  byteArray.resize( vertexHandlesArray.size() );
+    // set vertex flags
+  for (i = 0; i < vertexArray.size(); ++i)
+    vertexArray[i].flags() = vertex_flags[i];
+
+    // get culled bit from mesh
   get_mesh()->vertices_get_byte( &vertexHandlesArray[0],
-                                 &byteArray[0],
+                                 vertex_flags,
                                  vertexHandlesArray.size(),
                                  err ); MSQ_ERRRTN(err);
-  
-  for (i = 0; i < numFreeVertices; ++i) {
-    byteArray[i] &= ~(MsqVertex::MSQ_HARD_FIXED|MsqVertex::MSQ_DEPENDENT);
-    vertexArray[i].set_flags( byteArray[i] );
-  }
-  for ( ; i < numFreeVertices+numSlaveVertices; ++i) {
-    byteArray[i] &= ~MsqVertex::MSQ_HARD_FIXED;
-    byteArray[i] |= MsqVertex::MSQ_DEPENDENT;
-    vertexArray[i].set_flags( byteArray[i] );
-  }
-  for ( ; i < vertexArray.size(); ++i) {
-    byteArray[i] |= MsqVertex::MSQ_HARD_FIXED;
-    vertexArray[i].set_flags( byteArray[i] );
-  }
+
+  for (i = 0; i < vertexArray.size(); ++i)
+    vertexArray[i].flags() |= (vertex_flags[i] & MsqVertex::MSQ_CULLED);
 }
 
 void PatchData::initialize_data( size_t* elem_offset_array, 
-                                 const bool* fixed_flags,
+                                 unsigned char* vertex_flags,
                                  MsqError& err )
 {
     // Clear out data specific to patch
@@ -1380,7 +1378,7 @@ void PatchData::initialize_data( size_t* elem_offset_array,
     // Count number of free vertices and initialize vertex_index_map
   numFreeVertices = 0;
   for (i = 0; i < vertexHandlesArray.size(); ++i) {
-    if (!fixed_flags[i])
+    if (!(vertex_flags[i] & MsqVertex::MSQ_HARD_FIXED))
       ++numFreeVertices;
     vertex_index_map[i] = i;
   }
@@ -1391,12 +1389,13 @@ void PatchData::initialize_data( size_t* elem_offset_array,
   i = 0;
   j = numFreeVertices;
   for (;; ++i, ++j) {
-    for (; i < numFreeVertices && !fixed_flags[i]; ++i);
+    for (; i < numFreeVertices && !(vertex_flags[i] & MsqVertex::MSQ_HARD_FIXED); ++i);
     if (i == numFreeVertices)
       break;
-    for ( ;  fixed_flags[j]; ++j);
+    for ( ; vertex_flags[j] & MsqVertex::MSQ_HARD_FIXED; ++j);
     msq_std::swap( vertex_index_map[i], vertex_index_map[j] );
     msq_std::swap( vertexHandlesArray[i], vertexHandlesArray[j] );
+    msq_std::swap( vertex_flags[i], vertex_flags[j] );
   }
   assert( i == numFreeVertices );
   assert( j <= vertexHandlesArray.size() );
@@ -1406,8 +1405,6 @@ void PatchData::initialize_data( size_t* elem_offset_array,
     // CHANGE ME: for now, assume all higher-order nodes are slaves.
   numSlaveVertices = 0;
   if (have_slave_vertices) {
-      // clear fixed_flags array;
-    std::vector<bool> slave_flags( numFreeVertices, false );
       // mark slave vertices, and count them.
     for (i = 0; i < elementArray.size(); ++i)
     {
@@ -1416,8 +1413,8 @@ void PatchData::initialize_data( size_t* elem_offset_array,
       for (j = elementArray[i].vertex_count(); j < conn_len; ++j) {
         const size_t vert_idx = vertex_index_map[elemConnectivityArray[start+j]];
         assert(vert_idx < vertexHandlesArray.size());
-        if (vert_idx < numFreeVertices && !slave_flags[vert_idx]) {
-          slave_flags[vert_idx] = true;
+        if (vert_idx < numFreeVertices && !(vertex_flags[i]&MsqVertex::MSQ_DEPENDENT)) {
+          vertex_flags[i] |= MsqVertex::MSQ_DEPENDENT;
           ++numSlaveVertices;
         }
       }
@@ -1430,10 +1427,10 @@ void PatchData::initialize_data( size_t* elem_offset_array,
     i = 0;
     j = numFreeVertices;
     for (;; ++i, ++j) {
-      for (; i < numFreeVertices && !slave_flags[i]; ++i);
+      for (; i < numFreeVertices && !(vertex_flags[i]&MsqVertex::MSQ_DEPENDENT); ++i);
       if (i >= numFreeVertices)
         break;
-      for ( ; slave_flags[j]; ++j);
+      for ( ; vertex_flags[j] & MsqVertex::MSQ_DEPENDENT; ++j);
       msq_std::swap( vertex_index_map[i], vertex_index_map[j] );
       msq_std::swap( vertexHandlesArray[i], vertexHandlesArray[j] );
     }
@@ -1507,10 +1504,14 @@ void PatchData::fill( size_t num_vertex, const double* coords,
   numFreeVertices = 0;
   numSlaveVertices = 0;
   
-  bool* my_fixed = 0;
-  if (!fixed) {
-    fixed = my_fixed = new bool[num_vertex];
-    memset( my_fixed, false, num_vertex*sizeof(bool) );
+  if (fixed) {
+    byteArray.resize( num_vertex );
+    for (i = 0; i < num_vertex; ++i)
+      byteArray[i] = fixed[i] ? MsqVertex::MSQ_HARD_FIXED : MsqVertex::MSQ_PATCH_VTX;
+  }
+  else {
+    byteArray.clear();
+    byteArray.resize( num_vertex, MsqVertex::MSQ_PATCH_VTX );
   }
   
   for (i = 0; i < num_elem; ++i) {
@@ -1527,25 +1528,18 @@ void PatchData::fill( size_t num_vertex, const double* coords,
   for (i = 1; i <= num_elem; ++i)
     offsets[i] = sum += lengths[i-1];
   
-  this->initialize_data( &offsets[0], fixed, err );  
-  if (MSQ_CHKERR(err)) {
-    delete [] my_fixed;
-    return;
-  }
+  this->initialize_data( &offsets[0], &byteArray[0], err );  MSQ_ERRRTN(err);
   
     // initialize_data will re-order vertex handles and
     // update element connectivity accordingly.  Use
     // the values we stored in vertexHandlesArray to
     // figure out the new index of each vertex, and initialize
     // the vertex.
-  for (i = 0; i < num_vertex; ++i) {
-    const size_t new_idx = (size_t)vertexHandlesArray[i];
-    vertex_by_index(new_idx) = coords + 3*i;
-    if (fixed[i])
-      vertex_by_index(new_idx).set_vertex_flag( MsqVertex::MSQ_HARD_FIXED );
-  }
-        
-  delete [] my_fixed;
+  for (i = 0; i < num_vertex; ++i) 
+    vertex_by_index((size_t)vertexHandlesArray[i]) = coords + 3*i;
+  
+  for (i = 0; i < num_vertex; ++i)
+    vertex_by_index(i).flags() = byteArray[i];
 }
   
 void PatchData::make_handles_unique( Mesh::EntityHandle* handles,
@@ -1627,34 +1621,63 @@ void PatchData::set_mesh_entities(
                                        elementHandlesArray.size(),
                                        err ); MSQ_ERRRTN(err);
   
+  byteArray.resize( vertexHandlesArray.size() );
+  bool* fixed_flags;
+  if (sizeof(bool) == sizeof(unsigned char)) {
+      // sizeof(bool) == sizeof(unsigned char) on every platform I'm
+      // aware of.  However, the standard doesn't guarantee it so this
+      // code is here for portability.
+    fixed_flags = reinterpret_cast<bool*>(&byteArray[0]);
+  }
+  else {
+    fixed_flags = new bool[vertexHandlesArray.size()];
+  }
+  
     // Get vertex-fixed flags
-  bool* fixed_flags = new bool[vertexHandlesArray.size()];
   get_mesh()->vertices_get_fixed_flag( &vertexHandlesArray[0], 
                                        fixed_flags,
                                        vertexHandlesArray.size(),
                                        err);
-  if (MSQ_CHKERR(err)) { delete [] fixed_flags; return; }
+  
+  if (sizeof(bool) != sizeof(unsigned char)) {
+    for (size_t i = 0; i < vertexHandlesArray.size(); ++i) 
+      if (fixed_flags[i])
+        byteArray[i] = MsqVertex::MSQ_HARD_FIXED;
+      else
+        byteArray[i] = 0;
+    delete fixed_flags;
+  }
+  MSQ_ERRRTN(err);
   
     // if free_vertices is not empty, then we need to mark as
     // fixed any vertices *not* in that list.
-  if (!free_vertices.empty()) {
+  if (free_vertices.empty()) {
+    for (size_t i = 0; i < vertexHandlesArray.size(); ++i) {
+      assert( byteArray[i] <= 1 ); // make sure cast from bool works as expected (true == 1)
+      byteArray[i] |= MsqVertex::MSQ_PATCH_VTX;
+    }
+  }
+  else {
       // sort and remove duplicates from free_vertices list.
     msq_std::sort(free_vertices.begin(), free_vertices.end());
     free_vertices.erase( 
         msq_std::unique(free_vertices.begin(), free_vertices.end()), 
         free_vertices.end() );
     
-    for (size_t i = 0; i < vertexHandlesArray.size(); ++i) 
-      if (!msq_std::binary_search(free_vertices.begin(), 
-                                  free_vertices.end(), 
-                                  vertexHandlesArray[i]))
-        fixed_flags[i] = true;
+    for (size_t i = 0; i < vertexHandlesArray.size(); ++i) {
+      assert( byteArray[i] <= 1 ); // make sure cast from bool works as expected (true == 1)
+      if (msq_std::binary_search(free_vertices.begin(), 
+                                 free_vertices.end(), 
+                                 vertexHandlesArray[i]))
+        byteArray[i] |= MsqVertex::MSQ_PATCH_VTX;
+      else
+        byteArray[i] |= MsqVertex::MSQ_HARD_FIXED;
+    }
   }
 
     // Store element connectivty, and do any additional
     // data arrangement that needs to be done.
-  initialize_patch( &elem_topologies[0], &offsetArray[0], fixed_flags, err ); 
-  delete [] fixed_flags;
+  initialize_patch( &elem_topologies[0], &offsetArray[0], &byteArray[0], err ); 
   MSQ_CHKERR(err);
 }
 

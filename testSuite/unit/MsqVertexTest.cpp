@@ -158,11 +158,11 @@ public:
      MsqVertex vtx(1,2,3);
      CPPUNIT_ASSERT( vtx.is_flag_set(MsqVertex::MSQ_HARD_FIXED)==false );
      vtx.set_hard_fixed_flag();
-     CPPUNIT_ASSERT( vtx.is_flag_set(MsqVertex::MSQ_SOFT_FIXED)==false );
+     CPPUNIT_ASSERT( vtx.is_flag_set(MsqVertex::MSQ_CULLED)==false );
      CPPUNIT_ASSERT( vtx.is_flag_set(MsqVertex::MSQ_HARD_FIXED)==true );
-     CPPUNIT_ASSERT( ( vtx.is_flag_set(MsqVertex::MSQ_SOFT_FIXED) ||
+     CPPUNIT_ASSERT( ( vtx.is_flag_set(MsqVertex::MSQ_CULLED) ||
                        vtx.is_flag_set(MsqVertex::MSQ_HARD_FIXED) ) == true);
-     CPPUNIT_ASSERT( ( vtx.is_flag_set(MsqVertex::MSQ_SOFT_FIXED) &&
+     CPPUNIT_ASSERT( ( vtx.is_flag_set(MsqVertex::MSQ_CULLED) &&
                        vtx.is_flag_set(MsqVertex::MSQ_HARD_FIXED) ) == false);
   }
 };
