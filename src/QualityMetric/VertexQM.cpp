@@ -39,10 +39,10 @@ namespace Mesquite {
 
 void VertexQM::get_evaluations( PatchData& pd, 
                                 msq_std::vector<size_t>& handles,
-                                bool /*free_vertices_only*/, 
+                                bool free_vertices_only, 
                                 MsqError& err )
 {
-  get_vertex_evaluations( pd, handles, true, err );
+  get_vertex_evaluations( pd, handles, free_vertices_only, err );
 }
 
 void VertexQM::get_vertex_evaluations( PatchData& pd, 
@@ -50,10 +50,18 @@ void VertexQM::get_vertex_evaluations( PatchData& pd,
                                        bool free_vertices_only, 
                                        MsqError& err )
 {
-  size_t count = free_vertices_only ? pd.num_free_vertices() : pd.num_nodes();
-  handles.resize(count);
-  for (size_t i = 0; i < count; ++i)
-    handles[i] = i;
+  if (free_vertices_only) {
+    handles.resize( pd.num_free_vertices() );
+    for (size_t i = 0; i < pd.num_free_vertices(); ++i)
+      handles[i] = i;
+  }
+  else {
+    handles.clear();
+    handles.reserve( pd.num_nodes() );
+    for (size_t i = 0; i < pd.num_nodes(); ++i)
+      if (pd.vertex_by_index(i).get_flags() & MsqVertex::MSQ_PATCH_VTX)
+        handles.push_back(i);
+  }
 }
 
 void VertexQM::get_vertex_corner_handles( PatchData& pd, 

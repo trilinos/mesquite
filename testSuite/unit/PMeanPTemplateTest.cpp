@@ -340,30 +340,32 @@ void PMeanPTemplateTest::check_result( PatchData& pd, double power, double value
   
   
   DistTestMetric metric;
+  vector<size_t> handles;
+  metric.get_evaluations( pd, handles, OF_FREE_EVALS_ONLY, err );
+  ASSERT_NO_ERROR(err);
   
-  size_t N = pd.num_free_vertices();
-  for (size_t i = 0; i < N; ++i)
+  for (size_t i = 0; i < handles.size(); ++i)
   {
-    rval = metric.evaluate_with_Hessian( pd, i, mvalue, indices, grads, Hess, err );
+    rval = metric.evaluate_with_Hessian( pd, handles[i], mvalue, indices, grads, Hess, err );
     CPPUNIT_ASSERT( !MSQ_CHKERR(err) && rval );
     sum += pow( mvalue, power );
     
-    if (!OF_FREE_EVALS_ONLY && indices.empty())
-      continue;
+    //if (!OF_FREE_EVALS_ONLY && indices.empty())
+    //  continue;
       
     CPPUNIT_ASSERT_EQUAL( (size_t)1, indices.size() );
-    CPPUNIT_ASSERT_EQUAL( i, indices[0] );
+    CPPUNIT_ASSERT_EQUAL( handles[i], indices[0] );
     CPPUNIT_ASSERT_EQUAL( (size_t)1, grads.size() );
     CPPUNIT_ASSERT_EQUAL( (size_t)1, Hess.size() );
     
     if (gradient)
     {
-      double f = power * pow( mvalue, power - 1 ) / N;
+      double f = power * pow( mvalue, power - 1 ) / handles.size();
       CPPUNIT_ASSERT_VECTORS_EQUAL( f * grads[0], gradient[i], EPSILON );
     }
     if (Hessian)
     {
-      double f = power / N;
+      double f = power / handles.size();
       double p2 = (power - 1) * pow( mvalue, power - 2 );
       double p1 = pow( mvalue, power - 1 );
       Matrix3D m;
@@ -375,6 +377,6 @@ void PMeanPTemplateTest::check_result( PatchData& pd, double power, double value
     }  
   }
   
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( sum / N, value, EPSILON );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( sum / handles.size(), value, EPSILON );
 }
 
