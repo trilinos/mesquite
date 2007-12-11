@@ -88,6 +88,7 @@ msq_test_SOURCES = msq_test_main.cpp \
 	PMeanPMetricTest.cpp \
 	PMeanPTemplateTest.cpp \
 	QuadLagrangeShapeTest.cpp \
+	QualityAssessorTest.cpp \
 	QualityMetricTest.cpp \
 	SamplePointsTest.cpp \
 	SphericalGeometryTest.cpp \
