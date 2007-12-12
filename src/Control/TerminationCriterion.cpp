@@ -239,7 +239,8 @@ void TerminationCriterion::reset_outer(Mesh* mesh,
   global_patch.set_mapping_functions( map_func );
   
     //if we need to fill out the global patch data object.
-  if (totalFlag & (GRAD_FLAGS | OF_FLAGS | VERTEX_MOVEMENT_RELATIVE))
+  if ((totalFlag & (GRAD_FLAGS | OF_FLAGS | VERTEX_MOVEMENT_RELATIVE))
+     || !timeStepFileName.empty())
   {
     global_patch.set_mesh( mesh );
     global_patch.set_domain( domain );
@@ -466,7 +467,8 @@ void TerminationCriterion::accumulate_outer(Mesh* mesh,
   global_patch.set_mapping_functions( mfs );
   
     //if we need to fill out the global patch data object.
-  if (terminationCriterionFlag & (GRAD_FLAGS|OF_FLAGS|VERTEX_MOVEMENT_RELATIVE))
+  if ((terminationCriterionFlag & (GRAD_FLAGS|OF_FLAGS|VERTEX_MOVEMENT_RELATIVE))
+      || !timeStepFileName.empty())
   {
     global_patch.set_mesh( mesh );
     global_patch.set_domain( domain );
