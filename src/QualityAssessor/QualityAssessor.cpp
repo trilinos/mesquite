@@ -697,13 +697,10 @@ void QualityAssessor::Assessor::calculate_histogram_range()
   if (step == 0)
     step = 1.0;
   double size = pow( 10.0, ceil(log10(step)) );
-  if (size < 1e-6)
+  if (size < 1e-6) 
     size = 1.0;
-  else
-  {
-    histMin = size * floor( minimum / size );
-    histMax = size *  ceil( maximum / size );
-  }
+  histMin = size * floor( minimum / size );
+  histMax = size *  ceil( maximum / size );
 }  
 
 void QualityAssessor::print_summary( msq_stdio::ostream& stream ) const
@@ -870,10 +867,11 @@ void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream,
   //  have overloaded float and double variations in C++ making an 
   //  implicit cast from an integer ambiguous.
   
+  const char indent[] = "   ";
   const char GRAPH_CHAR = '=';  // Character used to create bar graphs
   const int FLOATW = 12;        // Width of floating-point output
-  const int TOTAL_WIDTH = termwidth > 20 ? termwidth : 64;   // Width of histogram
-  int GRAPHW = TOTAL_WIDTH - FLOATW - 6;
+  const int TOTAL_WIDTH = termwidth > 30 ? termwidth : 70;   // Width of histogram
+  int GRAPHW = TOTAL_WIDTH - FLOATW - 4 - sizeof(indent);
   
     // range is either user-specified (histMin & histMax) or
     // calculated (minimum & maximum)
@@ -920,7 +918,7 @@ void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream,
 
   
     // Write title
-  stream << msq_stdio::endl << "   " << get_metric()->get_name() << " histogram:";
+  stream << msq_stdio::endl << indent << get_metric()->get_name() << " histogram:";
   if (log_plot)
     stream << " (log10 plot)";
   stream << msq_stdio::endl;
@@ -935,7 +933,7 @@ void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream,
     {
       if (0 == histogram[i])
         continue;
-      stream << msq_stdio::setw(FLOATW) << "under min";
+      stream << indent << msq_stdio::setw(FLOATW) << "under min";
     }
       // Last value is the count of the number of values that
       // were above the maximum value of the histogram.
@@ -943,13 +941,13 @@ void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream,
     {
       if (0 == histogram[i])
         continue;
-      stream << msq_stdio::setw(FLOATW) << "over max";
+      stream << indent << msq_stdio::setw(FLOATW) << "over max";
     }
       // Anything else is a valid interval of the histogram.
       // Print the lower bound for each interval.
     else
     {
-      stream << "   " << msq_stdio::setw(FLOATW) << min + (i-1)*step;
+      stream << indent << msq_stdio::setw(FLOATW) << min + (i-1)*step;
     }
     
       // Print interval count.
