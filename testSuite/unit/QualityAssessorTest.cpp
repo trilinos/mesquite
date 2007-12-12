@@ -832,7 +832,7 @@ void QualityAssessorTest::test_tag_inverted()
   ASSERT_NO_ERROR( err );
   
   // expect two elements, one inverted
-  CPPUNIT_ASSERT_EQUAL( 2ul, elements.size() );
+  CPPUNIT_ASSERT_EQUAL( (size_t)2, elements.size() );
   int data[2];
   invertedMesh.tag_get_element_data( tag, 2, &elements[0], data, err );
   ASSERT_NO_ERROR( err );
