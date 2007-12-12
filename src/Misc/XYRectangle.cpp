@@ -55,6 +55,8 @@ void XYRectangle::setup( Mesh* mesh, MsqError& err )
     return;
   }
   
+  mConstraints.clear();
+  
   msq_std::vector<Mesh::EntityHandle> vertices;
   mesh->get_all_vertices( vertices, err ); MSQ_ERRRTN(err);
   
