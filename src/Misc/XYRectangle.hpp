@@ -25,29 +25,55 @@
   ***************************************************************** */
 
 
-/** \file data.hpp
- *  \brief Input data for test
+/** \file XYRectangle.hpp
+ *  \brief Define simple domain for 2D test problems
  *  \author Jason Kraftcheck 
  */
 
-#ifndef DATA_HPP
-#define DATA_HPP
+#ifndef MSQ_XY_RECTANGLE_HPP
+#define MSQ_XY_RECTANGLE_HPP
 
+#include "Mesquite.hpp"
 #include "MeshInterface.hpp"
 
-namespace Mesquite{ class MeshImpl; }
+#ifdef MSQ_USE_OLD_STD_HEADERS
+# include <map.h>
+#else
+# include <map>
+#endif
 
-// constants
-const double min_x = 0.0, max_x = 2.0;
-const double min_y = 0.0, mid_y = 1.0, max_y = 2.0;
-const double z = 0.0;
+namespace Mesquite {
 
-void create_input_mesh( double mid_x, Mesquite::MeshImpl& mesh, Mesquite::MsqError&  );
-
-class MyDomain : public Mesquite::MeshDomain
+/**\brief Simple 2D Domain for free-smooth testing
+ *
+ * Define a simple bounded rectangular domain in the XY-plane.
+ * Mesh vertices are classified as one of the following:
+ *  - 0 DoF : On a corner of the rectangle
+ *  - 1 DoF : On an edge of the rectangle
+ *  - 2 DoF : In the interior of the rectangle
+ */
+class XYRectangle : public Mesquite::MeshDomain
 {
   public:
+    
+      /**\brief Define rectangular domain
+       *
+       *\param w Width of rectangle (X-range)
+       *\param h Height of rectangle (Y-range)
+       *\param x Minimum X coordinate of rectangle
+       *\param y Minimum Y coordinate of rectangle
+       *
+       * Create w x h rectangle with X range of [x, x+w] and
+       * Y range of [y, y+h].
+       */
+    XYRectangle( double w, double h, double x = 0, double y = 0 );
   
+      /**\brief Classify mesh vertices against domain
+       *
+       * Figure out which input mesh vertices like on corners
+       * or edges of the domain.  Will fail if any vertex is outside 
+       * of the rectangle.
+       */
     void setup( Mesquite::Mesh* mesh, Mesquite::MsqError& err );
 
     void snap_to( Mesquite::Mesh::EntityHandle entity_handle,
@@ -73,17 +99,23 @@ class MyDomain : public Mesquite::MeshDomain
                      Mesquite::MsqError& err ) const;
  
   private:
+    double minCoords[2], maxCoords[2]; //!< corner coords
   
-    std::vector<Mesquite::Mesh::EntityHandle> mHandles;
-    inline int index( Mesquite::Mesh::EntityHandle handle ) const;
+    //! Single constraint on a vertex (reduces degrees of freedom by 1)
+    struct VertexConstraint {
+      enum Constraint { XC = 0, YC = 1 };
+      VertexConstraint(int a, double c)  : axis((Constraint)a), coord(c) {}
+      Constraint axis;
+      double coord;
+    };
+    
+    //! Map vertex handles to constraints
+    typedef msq_std::multimap<Mesh::VertexHandle,VertexConstraint> constraint_t;
+    constraint_t mConstraints;
 };
 
-    
-int MyDomain::index( Mesquite::Mesh::EntityHandle h ) const
-{
-  std::vector<Mesquite::Mesh::EntityHandle>::const_iterator i;
-  i = std::find( mHandles.begin(), mHandles.end(), h );
-  return i == mHandles.end() ? -1 : i - mHandles.begin();
-}
+
+
+} // namespace Mesquite
 
 #endif

@@ -18,7 +18,9 @@ MSQ_SRCS += \
 	$(SRC_MISC_DIR)/PlanarDomain.cpp \
 	$(SRC_MISC_DIR)/SphericalDomain.cpp \
 	$(SRC_MISC_DIR)/Vector3D.cpp \
-	$(SRC_MISC_DIR)/VtkTypeInfo.cpp 
+	$(SRC_MISC_DIR)/VtkTypeInfo.cpp \
+	$(SRC_MISC_DIR)/XYRectangle.cpp
+
 
 MSQ_HDRS += \
 	$(SRC_MISC_DIR)/BoundedCylinderDomain.hpp \
@@ -38,5 +40,6 @@ MSQ_HDRS += \
 	$(SRC_MISC_DIR)/SphericalDomain.hpp \
 	$(SRC_MISC_DIR)/TargetMatrix.hpp \
 	$(SRC_MISC_DIR)/Vector3D.hpp \
-	$(SRC_MISC_DIR)/VtkTypeInfo.hpp 
+	$(SRC_MISC_DIR)/VtkTypeInfo.hpp \
+	$(SRC_MISC_DIR)/XYRectangle.hpp
 

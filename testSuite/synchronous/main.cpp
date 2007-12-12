@@ -39,15 +39,23 @@
 #include "FeasibleNewton.hpp"
 #include "MeshImpl.hpp"
 #include "QualityAssessor.hpp"
-
-#include "data.hpp"
+#include "XYRectangle.hpp"
 
 #include <iostream>
+#include <fstream>
 #include <cstdlib>
 
 using namespace Mesquite;
+
+// constants
+const double min_x = 0.0, max_x = 2.0;
+const double min_y = 0.0, mid_y = 1.0, max_y = 2.0;
+const double z = 0.0;
+
 const char default_out_file[] = "synchronous.vtk";
 double default_x = 0.25;
+
+void create_input_mesh( double mid_x, Mesquite::MeshImpl& mesh, Mesquite::MsqError&  );
 
 void usage( const char* argv0, bool brief = true )
 {
@@ -140,7 +148,7 @@ int main( int argc, char* argv[] )
   parse_options( argv, argc );
   
   MeshImpl mesh;
-  MyDomain domain;
+  XYRectangle domain( max_x - min_x, max_y - min_y, min_x, min_y );
   MsqError err;
   
   create_input_mesh( input_x, mesh, err );
@@ -188,6 +196,44 @@ int main( int argc, char* argv[] )
     { std::cerr << err << std::endl; return 2; }
   
   return 0;
+}
+
+
+const char* temp_file = "syncrononous_input.vtk";
+void create_input_mesh( double mid_x , MeshImpl& mesh, MsqError& err )
+{
+  std::ofstream vtkfile( temp_file );
+  vtkfile << "# vtk DataFile Version 3.0" << std::endl
+          << "Mesquite Syncronous Boundary test" << std::endl
+          << "ASCII" << std::endl
+          << "DATASET UNSTRUCTURED_GRID" << std::endl
+          << "POINTS 9 float" << std::endl
+          << min_x << ' ' << max_y << ' ' << z << std::endl
+          << mid_x << ' ' << max_y << ' ' << z << std::endl
+          << max_x << ' ' << max_y << ' ' << z << std::endl
+          << min_x << ' ' << mid_y << ' ' << z << std::endl
+          << mid_x << ' ' << mid_y << ' ' << z << std::endl
+          << max_x << ' ' << mid_y << ' ' << z << std::endl
+          << min_x << ' ' << min_y << ' ' << z << std::endl
+          << mid_x << ' ' << min_y << ' ' << z << std::endl
+          << max_x << ' ' << min_y << ' ' << z << std::endl
+          << "CELLS 4 20" << std::endl
+          << "4 1 0 3 4" << std::endl
+          << "4 2 1 4 5" << std::endl
+          << "4 4 3 6 7" << std::endl
+          << "4 5 4 7 8" << std::endl
+          << "CELL_TYPES 4" << std::endl
+          << "9 9 9 9" << std::endl
+          << "POINT_DATA 9" << std::endl
+          << "SCALARS fixed int" << std::endl
+          << "LOOKUP_TABLE default" << std::endl
+          << "1 0 1" << std::endl
+          << "1 0 1" << std::endl
+          << "1 0 1" << std::endl
+          ;
+          
+  mesh.read_vtk( temp_file, err );
+  remove( temp_file );
 }
 
   
