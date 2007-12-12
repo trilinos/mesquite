@@ -53,6 +53,21 @@ private:
   size_t mStart, mEnd, mCurrent;
 };
 
+ArrayMesh::ArrayMesh()
+  : mDimension( 0 ),
+    vertexCount( 0 ),
+    coordArray( 0 ),
+    fixedFlags( 0 ),
+    vertexByteArray( 0 ),
+    elementCount( 0 ),
+    connArray( 0 ),
+    elementType( MIXED ),
+    nodesPerElement( 0 ),
+    oneBasedArrays( false ),
+    vertexAdjacencyList(0),
+    vertexAdjacencyOffsets(0)
+{}
+
 ArrayMesh::ArrayMesh( int coords_per_vertex,
                       unsigned long num_vertices,
                       double* interleaved_vertex_coords,
@@ -84,6 +99,61 @@ ArrayMesh::ArrayMesh( int coords_per_vertex,
     nodesPerElement = TopologyInfo::corners( element_type );
   memset( vertexByteArray, 0, num_vertices + one_based_conn_indices );
 }
+
+void ArrayMesh::clear_mesh()
+{
+  delete [] vertexByteArray;
+  delete [] vertexAdjacencyList;
+  delete [] vertexAdjacencyOffsets;
+  mDimension = 0;
+  vertexCount = 0;
+  coordArray = 0;
+  fixedFlags = 0;
+  vertexByteArray = 0;
+  elementCount = 0;
+  connArray = 0;
+  elementType = MIXED;
+  nodesPerElement = 0;
+  oneBasedArrays = false;
+  vertexAdjacencyList = 0;
+  vertexAdjacencyOffsets = 0;
+}
+
+void ArrayMesh::set_mesh( int coords_per_vertex,
+                          unsigned long num_vertices,
+                          double* interleaved_vertex_coords,
+                          const int* vertex_fixed_flags,
+                          unsigned long num_elements,
+                          EntityTopology element_type,
+                          const unsigned long* element_connectivity_array,
+                          bool one_based_conn_indices,
+                          unsigned nodes_per_element ) 
+{
+  clear_mesh();
+  mDimension = coords_per_vertex;
+  vertexCount = num_vertices;
+  coordArray = interleaved_vertex_coords;
+  fixedFlags = vertex_fixed_flags;
+  elementCount = num_elements;
+  connArray = element_connectivity_array;
+  elementType = element_type;
+  oneBasedArrays = one_based_conn_indices;
+  
+  if (oneBasedArrays) {
+    coordArray -= mDimension;
+    --fixedFlags;
+  }
+  
+  if (nodes_per_element < 2)
+    nodesPerElement = TopologyInfo::corners( element_type );
+  else
+    nodesPerElement = nodes_per_element;
+    
+  vertexByteArray = new unsigned char[num_vertices + one_based_conn_indices];
+  memset( vertexByteArray, 0, num_vertices + one_based_conn_indices );
+}
+  
+  
 
 ArrayMesh::~ArrayMesh()
 {

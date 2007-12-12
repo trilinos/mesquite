@@ -105,6 +105,7 @@ msq_test_SOURCES = msq_test_main.cpp \
 	VertexConditionNumberTest.cpp \
 	VertexCullingRegressionTest.cpp \
 	VtkTest.cpp \
+	XYRectangleTest.cpp \
 	BCDTest.cpp \
 	Target2DSurfOrientTest.cpp \
         $(IMESH_TEST_SRC) \

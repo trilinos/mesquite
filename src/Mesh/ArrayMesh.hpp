@@ -76,7 +76,20 @@ class ArrayMesh : public Mesh
                bool one_based_conn_indices = false,
                unsigned nodes_per_element = 0 );
     
+    ArrayMesh();
+    
     ~ArrayMesh();
+    
+    void clear_mesh();
+    void set_mesh( int coords_per_vertex,
+               unsigned long num_vertices,
+               double* interleaved_vertex_coords,
+               const int* vertex_fixed_flags,
+               unsigned long num_elements,
+               EntityTopology element_type,
+               const unsigned long* element_connectivity_array,
+               bool one_based_conn_indices = false,
+               unsigned nodes_per_element = 0 );
     
     virtual int get_geometric_dimension( MsqError& err );
 

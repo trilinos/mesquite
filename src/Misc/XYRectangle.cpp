@@ -43,7 +43,7 @@ XYRectangle::XYRectangle( double w, double h, double x, double y )
   minCoords[0] = x;
   minCoords[1] = y;
   maxCoords[0] = x+w;
-  maxCoords[1] = y+w;
+  maxCoords[1] = y+h;
 }
 
 void XYRectangle::setup( Mesh* mesh, MsqError& err )
@@ -84,14 +84,14 @@ void XYRectangle::setup( Mesh* mesh, MsqError& err )
   }
 }
 
-void XYRectangle::snap_to( Mesh::EntityHandle entity_handle,
+void XYRectangle::snap_to( Mesh::EntityHandle vertex,
                            Vector3D &coordinate ) const
 {
     // everything gets moved into the plane
   coordinate[2] = 0;
     // apply other constraints
-  constraint_t::const_iterator i = mConstraints.lower_bound( entity_handle );
-  for (; i != mConstraints.end() && i->first == entity_handle; ++i)
+  constraint_t::const_iterator i = mConstraints.lower_bound( vertex );
+  for (; i != mConstraints.end() && i->first == vertex; ++i)
     coordinate[i->second.axis] = i->second.coord;
 }
   
@@ -100,28 +100,28 @@ void XYRectangle::normal_at( Mesh::EntityHandle handle, Vector3D &norm ) const
   norm.set(0,0,1);
 }
 
-void XYRectangle::normal_at( const Mesh::EntityHandle* handles,
+void XYRectangle::normal_at( const Mesh::EntityHandle* elements,
                              Vector3D normals[],
                              unsigned count,
                              MsqError&  ) const
 {
   for (unsigned i = 0; i < count; ++i)
-    normal_at( handles[i], normals[i] );
+    normal_at( elements[i], normals[i] );
 }
     
-void XYRectangle::closest_point( Mesh::EntityHandle handle,
+void XYRectangle::closest_point( Mesh::EntityHandle element,
                                  const Vector3D& position,
                                  Vector3D& closest,
                                  Vector3D& normal,
                                  MsqError&  ) const
 {
   normal = position;
-  normal_at( handle, normal );
+  normal_at( element, normal );
   closest = position;
-  snap_to( handle, closest );
+  closest[2] = 0;
 }
     
-void XYRectangle::domain_DoF( const Mesh::EntityHandle* handle_array,
+void XYRectangle::domain_DoF( const Mesh::EntityHandle* vertices,
                               unsigned short* dof_array,
                               size_t num_handles,
                               MsqError&  ) const
@@ -130,8 +130,8 @@ void XYRectangle::domain_DoF( const Mesh::EntityHandle* handle_array,
       // everything is at least constrained to XY-plane
     dof_array[i] = 2;
       // each additional constraint reduces degrees of freedom
-    constraint_t::const_iterator j = mConstraints.lower_bound( handle_array[i] );
-    for (; j != mConstraints.end() && j->first == handle_array[i]; ++j)
+    constraint_t::const_iterator j = mConstraints.lower_bound( vertices[i] );
+    for (; j != mConstraints.end() && j->first == vertices[i]; ++j)
       --dof_array[i];
   }
 }
