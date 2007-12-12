@@ -834,7 +834,7 @@ inline void NonSmoothSteepestDescent::form_PD_grammian(MsqError &err)
 {
     int  i,j,k;
     int  g_ind_1;
-    int  singular;
+    int  singular = 0;
 
     int num_active = mActive->num_active;
         

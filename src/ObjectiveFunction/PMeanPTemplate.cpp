@@ -55,7 +55,7 @@ double PMeanPTemplate::get_value( double power_sum,
                               EvalType type,
                               size_t& global_count )
 {
-  double result;
+  double result = 0;
   switch (type) 
   {
     case CALCULATE:

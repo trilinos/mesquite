@@ -263,11 +263,11 @@ void ArrayMesh::build_vertex_adjacency_list()
 }
 
 TagHandle ArrayMesh::tag_create( const msq_std::string&, TagType, unsigned, const void*, MsqError &err)
-  { MSQ_SETERR(err)(MsqError::NOT_IMPLEMENTED); }
+  { MSQ_SETERR(err)(MsqError::NOT_IMPLEMENTED); return (TagHandle)-1; }
 void ArrayMesh::tag_delete( TagHandle, MsqError& err )
   { MSQ_SETERR(err)(MsqError::NOT_IMPLEMENTED); }
 TagHandle ArrayMesh::tag_get( const msq_std::string&, MsqError& err )
-  { MSQ_SETERR(err)(MsqError::NOT_IMPLEMENTED); }
+  { MSQ_SETERR(err)(MsqError::NOT_IMPLEMENTED); return (TagHandle)-1; }
 void ArrayMesh::tag_properties( TagHandle, msq_std::string&, TagType&, unsigned&, MsqError& err )
   { MSQ_SETERR(err)(MsqError::NOT_IMPLEMENTED); }
 void ArrayMesh::tag_set_element_data( TagHandle, size_t, const ElementHandle*, const void*, MsqError& err )

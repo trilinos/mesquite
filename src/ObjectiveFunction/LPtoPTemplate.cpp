@@ -81,7 +81,7 @@ ObjectiveFunction* LPtoPTemplate::clone() const
 double LPtoPTemplate::get_value( double power_sum, size_t count, EvalType type,
                                  size_t& global_count )
 {
-  double result;
+  double result = 0;
   switch (type) 
   {
     case CALCULATE:
