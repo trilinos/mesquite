@@ -873,7 +873,7 @@ void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream,
   const char GRAPH_CHAR = '=';  // Character used to create bar graphs
   const int FLOATW = 12;        // Width of floating-point output
   const int TOTAL_WIDTH = termwidth > 20 ? termwidth : 64;   // Width of histogram
-  const int GRAPHW = TOTAL_WIDTH - FLOATW - 3;
+  int GRAPHW = TOTAL_WIDTH - FLOATW - 6;
   
     // range is either user-specified (histMin & histMax) or
     // calculated (minimum & maximum)
@@ -898,6 +898,7 @@ void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream,
   int num_width = 1;
   for (int temp = max_interval; temp > 0; temp /= 10)
     ++num_width;
+  GRAPHW -= num_width;
 
     // Create an array of bar graph characters for use in output
   char graph_chars[GRAPHW+1];
