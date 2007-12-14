@@ -15,8 +15,8 @@ else
 fi
 
 AC_DEFINE(MSQ_VERSION,["AC_PACKAGE_VERSION"],"Mesquite Version")
-VERSION_MAJOR=`expr AC_PACKAGE_VERSION : '\([[0-9]]\+\)'`
-VERSION_MINOR=`expr AC_PACKAGE_VERSION : '[[0-9]]*\.\([[0-9]]\+\)'`
+VERSION_MAJOR=`expr AC_PACKAGE_VERSION : '\([[0-9]]*\)'`
+VERSION_MINOR=`expr AC_PACKAGE_VERSION : '[[0-9]]*\.\([[0-9]]*\)'`
 VERSION_PATCH=`expr AC_PACKAGE_VERSION : '[[0-9]]*\.[[0-9]]*\.\(.*\)'`
 test "x" != "x$VERSION_MAJOR" || AC_MSG_ERROR("Invalid version string: AC_PACKAGE_VERSION")
 test "x" != "x$VERSION_MINOR" || AC_MSG_ERROR("Invalid version string: AC_PACKAGE_VERSION")

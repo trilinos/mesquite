@@ -40,10 +40,10 @@ bool Mesquite::MsqFPE::fpe_trap_supported()
   { return true; }
 
 int Mesquite::MsqFPE::get_current_fpe_state()
-  { return (int)fpgetmask(); }
+  { return fpgetmask(); }
 
 void Mesquite::MsqFPE::set_current_fpe_state(int state)
-  { fpsetmask( (fp_except)state ); }
+  { fpsetmask( state ); }
 
 void Mesquite::MsqFPE::enable_trap_fpe()
   { fpsetmask( fpgetmask()|FP_X_INV|FP_X_OFL|FP_X_DZ ); }
