@@ -29,11 +29,7 @@
 
 #include "Mesquite.hpp"
 
-#ifdef MSQ_USE_OLD_C_HEADERS
-#  include <stddef.h>
-#else
-#  include <cstddef>
-#endif
+#include <string.h>
 
 namespace Mesquite
 {

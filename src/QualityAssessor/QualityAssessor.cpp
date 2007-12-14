@@ -52,16 +52,21 @@
 
 #ifdef MSQ_USE_OLD_IO_HEADERS
 #  include <iostream.h>
+#  include <fstream.h>
 #  include <iomanip.h>
 #  include <set.h>
 #else
 #  include <iostream>
+#  include <fstream>
 #  include <iomanip>
 #  include <set>
 #endif
 
 #ifdef HAVE_SYS_IOCTL_H
 # include <sys/ioctl.h>
+#endif
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
 #endif
 #ifdef HAVE_TERMIOS_H
 # include <termios.h>
@@ -899,8 +904,7 @@ void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream,
   GRAPHW -= num_width;
 
     // Create an array of bar graph characters for use in output
-  char graph_chars[GRAPHW+1];
-  memset( graph_chars, GRAPH_CHAR, sizeof(graph_chars) );
+  msq_std::vector<char> graph_chars(GRAPHW+1, GRAPH_CHAR);
   
     // Check if bar-graph should be linear or log10 plot
     // Do log plot if standard deviation is less that 1.5
@@ -964,21 +968,24 @@ void QualityAssessor::Assessor::print_histogram( msq_stdio::ostream& stream,
       
       // print num_graph characters using array of fill characters.
     graph_chars[num_graph] = '\0';
-    stream << graph_chars << msq_stdio::endl;
+    stream << &graph_chars[0] << msq_stdio::endl;
     graph_chars[num_graph] = GRAPH_CHAR;
   }
   
   stream << msq_stdio::endl;
 }
 
+#ifdef _MSC_VER
+# define fileno(A) _fileno( (A) )
+#endif 
 int QualityAssessor::get_terminal_width() const
 {
 #ifdef TIOCGWINSZ
   int fd = -1;
   if (&outputStream == &std::cout)
-    fd = STDOUT_FILENO;
+    fd = fileno(stdout);
   else if (&outputStream == &std::cerr)
-    fd = STDERR_FILENO;
+    fd = fileno(stderr);
 #ifdef FSTREAM_HAS_FD
   else if (std::ofstream* f = dynamic_cast<std::ofstream*>(&outputStream))
     fd = f->rdbuf()->fd();
