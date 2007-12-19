@@ -337,6 +337,76 @@ void write_gnuplot( Mesh* mesh, const char* out_filebase, MsqError &err)
   file.close();
 }
 
+void write_gnuplot_animator( int count, const char* basename, MsqError& err )
+{
+  if (count <= 0)
+    return;
+
+  const int DELAY = 10;
+  const int WIDTH = 640;
+  const int HEIGHT = 480;
+  
+    // read all input files to determine extents
+  Vector3D min(HUGE_VAL,HUGE_VAL,HUGE_VAL), max(-HUGE_VAL,-HUGE_VAL,-HUGE_VAL);
+  for (int i = 0; i < count; ++i) {
+    stringstream s;
+    s << basename << '.' << i << ".gpt";
+    ifstream infile( s.str().c_str() );
+    if (!infile) {
+      MSQ_SETERR(err)(s.str(), MsqError::FILE_ACCESS);
+      return;
+    }
+    double c[3];
+    while (infile >> c[0] >> c[1] >> c[2]) {
+      for (int j = 0; j < 3; ++j) {
+        if (c[j] < min[j])
+          min[j] = c[j];
+        if (c[j] > max[j])
+          max[j] = c[j];
+      }
+    }
+  }
+  
+    // chose coordinate plane to plot in
+  Vector3D range = max - min;
+  int haxis = 0, vaxis = 1;
+  if (range[0] < range[1] && range[1] < range[2]) {
+    haxis = 1;
+    vaxis = 2;
+  }
+  else if (range[1] < range[2]) {
+    vaxis = 2;
+  }
+  
+    // open output file
+  string base(basename);
+  ofstream file( (string(basename) + ".gnuplot").c_str() );
+  if (!file)
+  {
+    MSQ_SETERR(err)(MsqError::FILE_ACCESS);
+    return;
+  }
+  
+    // write header
+  file << "#!gnuplot" << endl;
+  file << "#" << endl;
+  file << "# Mesquite Animation of " << basename << ".0 to " << basename << '.' << count << endl;
+  file << "#" << endl;
+  
+    // write plot settings
+  file << "set term gif animate transparent opt delay " << DELAY << " size " << WIDTH << "," << HEIGHT << endl;
+  file << "set xrange [" << min[haxis] - 0.05 * range[haxis] << ":" << max[haxis] + 0.05 * range[haxis] << "]" << endl;
+  file << "set yrange [" << min[vaxis] - 0.05 * range[vaxis] << ":" << max[vaxis] + 0.05 * range[vaxis] << "]" << endl;
+  file << "set title '" << basename << "'" << endl;
+  file << "set output '" << basename << ".gif'" << endl;
+  
+    // plot data
+  for (int i = 0; i < count; ++i) 
+    file << "plot '" << basename << '.' << i << ".gpt'" 
+         << " using " << haxis+1 << ":" << vaxis+1 << " w l" << endl;
+}
+  
+
 void write_stl( Mesh* mesh, const char* filename, MsqError& err )
 {
     // Open the file

@@ -84,6 +84,15 @@ class Projection {
  */
 void write_gnuplot( Mesh* mesh, const char* filename, MsqError& err );
 
+
+/**\brief Write animator for sequence of gnuplot data files
+ *
+ * Given a set of files named foo.0.gpt, foo.1.gpt, ... foo.n.gpt,
+ * write a file foo.gnuplot that produces an animation of the
+ * data by calling write_gnuplot_animator( n, foo, err );
+ */
+void write_gnuplot_animator( int count, const char* basename, MsqError& err );
+
 /** \brief Write mesh as a VTK file
  *
  * Write a simple VTK file for viewing.  The file written by this

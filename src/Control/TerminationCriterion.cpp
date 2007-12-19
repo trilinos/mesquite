@@ -66,7 +66,8 @@ TerminationCriterion::TerminationCriterion()
   : mGrad(8),
     initialVerticesMemento(0),
     previousVerticesMemento(0),
-    debugLevel(2)
+    debugLevel(2),
+    timeStepFileType(NOTYPE)
 {
   terminationCriterionFlag=NONE;
   cullingMethodFlag=NONE;
@@ -240,7 +241,7 @@ void TerminationCriterion::reset_outer(Mesh* mesh,
   
     //if we need to fill out the global patch data object.
   if ((totalFlag & (GRAD_FLAGS | OF_FLAGS | VERTEX_MOVEMENT_RELATIVE))
-     || !timeStepFileName.empty())
+     || timeStepFileType)
   {
     global_patch.set_mesh( mesh );
     global_patch.set_domain( domain );
@@ -369,7 +370,7 @@ void TerminationCriterion::reset_inner(PatchData &pd, OFEvaluator& obj_eval,
     maxSquaredInitialMovement = DBL_MAX;
   }
 
-  if (!timeStepFileName.empty())
+  if (timeStepFileType)
     write_timestep( pd, err);
 }
 
@@ -452,7 +453,7 @@ void TerminationCriterion::accumulate_inner( PatchData& pd,
     MSQ_DBGOUT(debugLevel) << "  o OF Value: " << of_value << msq_stdio::endl;
 
   ++iterationCounter;
-  if (!timeStepFileName.empty())
+  if (timeStepFileType)
     write_timestep( pd, err);
 }
 
@@ -468,7 +469,7 @@ void TerminationCriterion::accumulate_outer(Mesh* mesh,
   
     //if we need to fill out the global patch data object.
   if ((terminationCriterionFlag & (GRAD_FLAGS|OF_FLAGS|VERTEX_MOVEMENT_RELATIVE))
-      || !timeStepFileName.empty())
+      || timeStepFileType)
   {
     global_patch.set_mesh( mesh );
     global_patch.set_domain( domain );
@@ -625,12 +626,15 @@ bool TerminationCriterion::terminate( )
     // clear this value at the end of each iteration
   vertexMovementExceedsBound = 0;
 
+  if (timeStepFileType == GNUPLOT && return_flag) {
+    MsqError err;
+    MeshWriter::write_gnuplot_animator( iterationCounter, timeStepFileName.c_str(), err );
+  }
+  
     //if none of the criteria were satisfied
   return return_flag;
 }
 
-
-  
 
 /*!This function checks the culling method criterion supplied to the object
   by the user.  If the user does not supply a culling method criterion,
@@ -787,8 +791,14 @@ void TerminationCriterion::write_timestep( PatchData& pd, MsqError& err )
 {
   pd.update_mesh(err); MSQ_ERRRTN(err);
   std::ostringstream str;
-  str << timeStepFileName << '_' << iterationCounter << ".vtk";
-  MeshWriter::write_vtk( pd.get_mesh(), str.str().c_str(), err );
+  if (timeStepFileType == VTK) {
+    str << timeStepFileName << '_' << iterationCounter << ".vtk";
+    MeshWriter::write_vtk( pd.get_mesh(), str.str().c_str(), err );
+  }
+  else if (timeStepFileType == GNUPLOT) {
+    str << timeStepFileName << '.' << iterationCounter;
+    MeshWriter::write_gnuplot( pd.get_mesh(), str.str().c_str(), err );
+  }
 }
 
 } //namespace Mesquite
