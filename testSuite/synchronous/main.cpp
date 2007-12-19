@@ -176,7 +176,7 @@ int main( int argc, char* argv[] )
   
   TerminationCriterion inner;
   inner.add_criterion_type_with_double( TerminationCriterion::VERTEX_MOVEMENT_ABSOLUTE, 1e-4, err );
-  inner.write_vtk_timesteps( "synchronous" );
+  inner.write_timesteps( "synchronous", TerminationCriterion::GNUPLOT );
   solver->set_inner_termination_criterion( &inner );  
   
   InstructionQueue q;
