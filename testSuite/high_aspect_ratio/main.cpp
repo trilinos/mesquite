@@ -162,11 +162,11 @@ int main( int argc, char* argv[] )
   MeshImpl mesh, refmesh;
   XYRectangle domain( input_params.w, input_params.h );
   create_input_mesh( input_params, fixed_boundary_vertices, mesh, err );
-  if (err) { msq_stdio::cerr << err << msq_stdio::endl; return err.error_code(); }
+  if (err) { msq_stdio::cerr << err << msq_stdio::endl; return 4+err.error_code(); }
   create_input_mesh( reference_params, fixed_boundary_vertices, refmesh, err );
-  if (err) { msq_stdio::cerr << err << msq_stdio::endl; return err.error_code(); }
+  if (err) { msq_stdio::cerr << err << msq_stdio::endl; return 4+err.error_code(); }
   domain.setup( &mesh, err );
-  if (err) { msq_stdio::cerr << err << msq_stdio::endl; return err.error_code(); }
+  if (err) { msq_stdio::cerr << err << msq_stdio::endl; return 4+err.error_code(); }
 
   UnitWeight wc;
   ReferenceMesh rmesh( &refmesh );
@@ -186,7 +186,7 @@ int main( int argc, char* argv[] )
   inner.add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, INNER_ITERATES, err );
   outer.add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, OUTER_ITERATES, err );
   if (write_timestep_files) 
-    outer.write_vtk_timesteps( base_name( output_file_name ).c_str() );
+    outer.write_timesteps( base_name( output_file_name ).c_str() );
   solver->set_inner_termination_criterion( &inner );
   solver->set_outer_termination_criterion( &outer );
   
@@ -198,10 +198,56 @@ int main( int argc, char* argv[] )
   
   LinearFunctionSet map;
   q.run_instructions( &mesh, &domain, &map, err );
-  if (err) { msq_stdio::cerr << err << msq_stdio::endl; return err.error_code(); }
+  if (err) { msq_stdio::cerr << err << msq_stdio::endl; return 4+err.error_code(); }
   
   mesh.write_vtk( output_file_name.c_str(), err );
-  if (err) { msq_stdio::cerr << err << msq_stdio::endl; return err.error_code(); }
+  if (err) { msq_stdio::cerr << err << msq_stdio::endl; return 4+err.error_code(); }
+  
+    // check for inverted elements
+  int inv, unk;
+  qa.get_inverted_element_count( inv, unk, err );
+  if (inv) {
+    msq_stdio::cerr << inv << " inverted elements in final mesh" << msq_stdio::endl;
+    return 3;
+  }
+  else if (unk) {
+    msq_stdio::cerr << unk << " degenerate elements in final mesh" << msq_stdio::endl;
+    return 2;
+  }
+    
+    // find the free vertex
+  msq_std::vector<Mesh::VertexHandle> vertices;
+  mesh.get_all_vertices( vertices, err );
+  msq_std::vector<unsigned short> dof( vertices.size(), -1 );
+  domain.domain_DoF( &vertices[0], &dof[0], vertices.size(), err );
+  if (err) { msq_stdio::cerr << err << msq_stdio::endl; return 4+err.error_code(); }
+  int idx = std::find(dof.begin(), dof.end(), 2) - dof.begin();
+  const Mesh::VertexHandle free_vertex = vertices[idx];
+  MsqVertex coords;
+  mesh.vertices_get_coordinates( &free_vertex, &coords,1, err );
+  if (err) { msq_stdio::cerr << err << msq_stdio::endl; return 4+err.error_code(); }
+  
+    // check that free vertex near optimal position
+  const double EPS = 1e-3;
+  const double xf = reference_params.x / reference_params.w;
+  const double yf = reference_params.y / reference_params.h;
+  Vector3D expect( xf * input_params.w, yf * input_params.h, 0 );
+    // if boundary vertices are fixed then only half way there
+  if (fixed_boundary_vertices) { 
+    expect += Vector3D( input_params.x, input_params.y, 0 );
+    expect *= 0.5;
+  }  
+    // scale tolerance with problem size
+  Vector3D toler ( EPS * input_params.w, EPS * input_params.h, EPS );
+  Vector3D diff = coords - expect;
+  if (fabs(diff[0]) > toler[0] ||
+      fabs(diff[1]) > toler[1] ||
+      fabs(diff[2]) > toler[2] ) {
+    msq_stdio::cerr << "Vertex not at optimimal location" << msq_stdio::endl
+                    << "  Expected: (" << expect[0] << ", " << expect[1] << ", " << expect[2] << ")" << msq_stdio::endl
+                    << "  Actual:   (" << coords[0] << ", " << coords[1] << ", " << coords[2] << ")" << msq_stdio::endl;
+    return 1;
+  }
   
   return 0;
 }
