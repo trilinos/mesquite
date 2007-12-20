@@ -81,6 +81,17 @@ const MeshParams default_ref  = { 0.5, 0.5, 1.0, 1.0 };
 const int INNER_ITERATES = 1;
 const int OUTER_ITERATES = 10;
 
+enum ExitCodes {
+  NO_ERROR = 0,
+  USAGE_ERROR = 1,
+  NOT_AT_TARGET = 2,
+  FAR_FROM_TARGET = 3,
+  WRONG_DIRECTION = 4,
+  DEGENERATE_ELEMENT = 5,
+  INVERTED_ELEMENT = 6,
+  LAST_EXIT_CODE = INVERTED_ELEMENT
+};
+
 void usage( const char* argv0, bool brief = true )
 {
   msq_stdio::ostream& str = brief ? msq_stdio::cerr : msq_stdio::cout;
@@ -93,7 +104,7 @@ void usage( const char* argv0, bool brief = true )
       << msq_stdio::endl;
   if (brief) {
     str << "       " << argv0 << " -h" << msq_stdio::endl;
-    msq_std::exit(1);
+    msq_std::exit(USAGE_ERROR);
   }
   
   str << "  -o  Specify output file (default is \"" << default_out_file << "\")" << msq_stdio::endl
@@ -107,8 +118,15 @@ void usage( const char* argv0, bool brief = true )
       << "  -c  Use ConjugateGradient solver (default)" << msq_stdio::endl
       << msq_stdio::endl;
   
-  msq_std::exit(0);
+  msq_std::exit(NO_ERROR);
 }
+
+#define CHECKERR \
+  if (err) { \
+    msq_stdio::cerr << "Internal error at line " << __LINE__ << ":" << msq_stdio::endl \
+                    << (err) << msq_stdio::endl; \
+    msq_std::exit( LAST_EXIT_CODE + (err).error_code() );  \
+  } 
 
 
 /*    |<----- x ----->|
@@ -161,12 +179,9 @@ int main( int argc, char* argv[] )
   MsqError err;
   MeshImpl mesh, refmesh;
   XYRectangle domain( input_params.w, input_params.h );
-  create_input_mesh( input_params, fixed_boundary_vertices, mesh, err );
-  if (err) { msq_stdio::cerr << err << msq_stdio::endl; return 4+err.error_code(); }
-  create_input_mesh( reference_params, fixed_boundary_vertices, refmesh, err );
-  if (err) { msq_stdio::cerr << err << msq_stdio::endl; return 4+err.error_code(); }
-  domain.setup( &mesh, err );
-  if (err) { msq_stdio::cerr << err << msq_stdio::endl; return 4+err.error_code(); }
+  create_input_mesh( input_params, fixed_boundary_vertices, mesh, err ); CHECKERR
+  create_input_mesh( reference_params, fixed_boundary_vertices, refmesh, err ); CHECKERR
+  domain.setup( &mesh, err ); CHECKERR
 
   UnitWeight wc;
   ReferenceMesh rmesh( &refmesh );
@@ -197,56 +212,86 @@ int main( int argc, char* argv[] )
   q.add_quality_assessor( &qa, err );
   
   LinearFunctionSet map;
-  q.run_instructions( &mesh, &domain, &map, err );
-  if (err) { msq_stdio::cerr << err << msq_stdio::endl; return 4+err.error_code(); }
+  q.run_instructions( &mesh, &domain, &map, err ); CHECKERR
   
-  mesh.write_vtk( output_file_name.c_str(), err );
-  if (err) { msq_stdio::cerr << err << msq_stdio::endl; return 4+err.error_code(); }
+  mesh.write_vtk( output_file_name.c_str(), err ); CHECKERR
   
     // check for inverted elements
   int inv, unk;
   qa.get_inverted_element_count( inv, unk, err );
   if (inv) {
     msq_stdio::cerr << inv << " inverted elements in final mesh" << msq_stdio::endl;
-    return 3;
+    return INVERTED_ELEMENT;
   }
   else if (unk) {
     msq_stdio::cerr << unk << " degenerate elements in final mesh" << msq_stdio::endl;
-    return 2;
+    return DEGENERATE_ELEMENT;
   }
     
     // find the free vertex
   msq_std::vector<Mesh::VertexHandle> vertices;
   mesh.get_all_vertices( vertices, err );
   msq_std::vector<unsigned short> dof( vertices.size(), -1 );
-  domain.domain_DoF( &vertices[0], &dof[0], vertices.size(), err );
-  if (err) { msq_stdio::cerr << err << msq_stdio::endl; return 4+err.error_code(); }
+  domain.domain_DoF( &vertices[0], &dof[0], vertices.size(), err ); CHECKERR
   int idx = std::find(dof.begin(), dof.end(), 2) - dof.begin();
   const Mesh::VertexHandle free_vertex = vertices[idx];
   MsqVertex coords;
-  mesh.vertices_get_coordinates( &free_vertex, &coords,1, err );
-  if (err) { msq_stdio::cerr << err << msq_stdio::endl; return 4+err.error_code(); }
+  mesh.vertices_get_coordinates( &free_vertex, &coords,1, err ); CHECKERR
   
-    // check that free vertex near optimal position
-  const double EPS = 1e-3;
+    // calculate optimal position for vertex
   const double xf = reference_params.x / reference_params.w;
   const double yf = reference_params.y / reference_params.h;
-  Vector3D expect( xf * input_params.w, yf * input_params.h, 0 );
+  Vector3D middle( xf * input_params.w, yf * input_params.h, 0 );
     // if boundary vertices are fixed then only half way there
-  if (fixed_boundary_vertices) { 
-    expect += Vector3D( input_params.x, input_params.y, 0 );
-    expect *= 0.5;
-  }  
-    // scale tolerance with problem size
-  Vector3D toler ( EPS * input_params.w, EPS * input_params.h, EPS );
-  Vector3D diff = coords - expect;
-  if (fabs(diff[0]) > toler[0] ||
-      fabs(diff[1]) > toler[1] ||
-      fabs(diff[2]) > toler[2] ) {
+  Vector3D expect;
+  if (fixed_boundary_vertices) 
+    expect = 0.5 * (middle + Vector3D( input_params.x, input_params.y, 0 ));
+  else
+    expect = middle;
+
+    // check if vertex has moved in the general direction of the optimal position
+  const double EPS = 1e-4; // allow a little leway
+  bool wrong_way;
+  if (input_params.x < middle[0]) 
+    wrong_way = coords[0] < input_params.x - EPS * input_params.w || 
+                coords[0] > middle[0]      + EPS * input_params.w;
+  else
+    wrong_way = coords[0] > input_params.x  + EPS * input_params.w || 
+                coords[0] < middle[0]       - EPS * input_params.w ;
+  if (input_params.y < middle[1]) 
+    wrong_way = coords[1] < input_params.y - EPS * input_params.h || 
+                coords[1] > middle[1]      + EPS * input_params.h;
+  else
+    wrong_way = coords[1] > input_params.y + EPS * input_params.h || 
+                coords[1] < middle[1]      - EPS * input_params.h;
+  
+  if (wrong_way) {
+    msq_stdio::cerr << "Vertex moved in wrong direction from or pass optimal position: "
+                    << "(" << coords[0] << ", " << coords[1] << msq_stdio::endl;
+    return WRONG_DIRECTION;
+  }
+  
+  
+    // check if vertex moved MIN_FRACT of the way from the original position
+    // to the desired one in the allowed iterations
+  const double MIN_FRACT = 0.2; // 20% of the way in 10 iterations
+  const Vector3D init( input_params.x, input_params.y, 0 );
+  const double fract = (coords - init).length() / (expect - init).length();
+  if (fract < MIN_FRACT) {
+    msq_stdio::cerr << "Vertex far from optimimal location" << msq_stdio::endl
+                    << "  Expected: (" << expect[0] << ", " << expect[1] << ", " << expect[2] << ")" << msq_stdio::endl
+                    << "  Actual:   (" << coords[0] << ", " << coords[1] << ", " << coords[2] << ")" << msq_stdio::endl;
+    return FAR_FROM_TARGET;
+  }
+  
+    // check if vertex is at destired location
+  if (fabs(coords[0] - expect[0]) > EPS * input_params.w ||
+      fabs(coords[1] - expect[1]) > EPS * input_params.h ||
+      fabs(expect[2]            ) > EPS                  ) {
     msq_stdio::cerr << "Vertex not at optimimal location" << msq_stdio::endl
                     << "  Expected: (" << expect[0] << ", " << expect[1] << ", " << expect[2] << ")" << msq_stdio::endl
                     << "  Actual:   (" << coords[0] << ", " << coords[1] << ", " << coords[2] << ")" << msq_stdio::endl;
-    return 1;
+    return NOT_AT_TARGET;
   }
   
   return 0;
