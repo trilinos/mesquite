@@ -340,6 +340,7 @@ void parse_options( char* argv[],
         break;
       case EXPECTING_O:
         output_file = argv[i];
+        state = OPEN;
         break;
       case OPEN:
         if (argv[i][0] != '-' || argv[i][1] == '\0' || argv[i][2] != '\0') {
