@@ -75,7 +75,7 @@ msq_stdio::ostream& operator<<( msq_stdio::ostream& str, const MeshParams& p )
 
 //! Default values for parameters.
 const char default_out_file[] = "high_aspect.vtk";
-const MeshParams default_mesh = { 0.3, 0.3, 2.0, 1.0 };
+const MeshParams default_mesh = { 0.6, 0.3, 2.0, 1.0 };
 const MeshParams default_ref  = { 0.5, 0.5, 1.0, 1.0 };
 
 const int INNER_ITERATES = 1;
@@ -246,40 +246,10 @@ int main( int argc, char* argv[] )
     // calculate optimal position for vertex
   const double xf = reference_params.x / reference_params.w;
   const double yf = reference_params.y / reference_params.h;
-  Vector3D middle( xf * input_params.w, yf * input_params.h, 0 );
-    // if boundary vertices are fixed then only half way there
-  Vector3D expect;
-  if (fixed_boundary_vertices) 
-    expect = 0.5 * (middle + Vector3D( input_params.x, input_params.y, 0 ));
-  else
-    expect = middle;
+  Vector3D expect( xf * input_params.w, yf * input_params.h, 0 );
 
-    // check if vertex has moved in the general direction of the optimal position
-/*
-  const double EPS = 1e-4; // allow a little leway
-  bool wrong_way;
-  if (input_params.x < middle[0]) 
-    wrong_way = coords[0] < input_params.x - EPS * input_params.w || 
-                coords[0] > middle[0]      + EPS * input_params.w;
-  else
-    wrong_way = coords[0] > input_params.x  + EPS * input_params.w || 
-                coords[0] < middle[0]       - EPS * input_params.w ;
-  if (input_params.y < middle[1]) 
-    wrong_way = coords[1] < input_params.y - EPS * input_params.h || 
-                coords[1] > middle[1]      + EPS * input_params.h;
-  else
-    wrong_way = coords[1] > input_params.y + EPS * input_params.h || 
-                coords[1] < middle[1]      - EPS * input_params.h;
-  
-  if (wrong_way) {
-    msq_stdio::cerr << "Vertex moved in wrong direction from or past optimal position: "
-                    << "(" << coords[0] << ", " << coords[1] << msq_stdio::endl;
-    return WRONG_DIRECTION;
-  }
-*/
-  // Instead, just test that we aren't further from the expected location
-  // than when we started.  The above test doesn't work so great when the
-  // y coordinate oscillates about the center line.
+  // Test that we aren't further from the expected location
+  // than when we started. 
   const Vector3D init( input_params.x, input_params.y, 0 );
   if ((coords - expect).length() > (init - expect).length()) {
     msq_stdio::cerr << "Vertex moved away from expected optimal position: "
@@ -396,19 +366,21 @@ void create_input_mesh( const MeshParams& p,
   const double z = 0;
   const int F = all_fixed;
   msq_stdio::ofstream vtkfile( temp_file );
+  double bx = all_fixed ? 0.5 * p.w : p.x;
+  double by = all_fixed ? 0.5 * p.h : p.y;
   vtkfile << "# vtk DataFile Version 3.0" << msq_stdio::endl
           << "Mesquite High Aspect Ratio test" << msq_stdio::endl
           << "ASCII" << msq_stdio::endl
           << "DATASET UNSTRUCTURED_GRID" << msq_stdio::endl
           << "POINTS 9 float" << msq_stdio::endl
           << 0.0 << ' ' << 0.0 << ' ' << z << msq_stdio::endl
-          << p.x << ' ' << 0.0 << ' ' << z << msq_stdio::endl
+          << bx  << ' ' << 0.0 << ' ' << z << msq_stdio::endl
           << p.w << ' ' << 0.0 << ' ' << z << msq_stdio::endl
-          << 0.0 << ' ' << p.y << ' ' << z << msq_stdio::endl
+          << 0.0 << ' ' << by  << ' ' << z << msq_stdio::endl
           << p.x << ' ' << p.y << ' ' << z << msq_stdio::endl
-          << p.w << ' ' << p.y << ' ' << z << msq_stdio::endl
+          << p.w << ' ' << by  << ' ' << z << msq_stdio::endl
           << 0.0 << ' ' << p.h << ' ' << z << msq_stdio::endl
-          << p.x << ' ' << p.h << ' ' << z << msq_stdio::endl
+          << bx  << ' ' << p.h << ' ' << z << msq_stdio::endl
           << p.w << ' ' << p.h << ' ' << z << msq_stdio::endl
           << "CELLS 4 20" << msq_stdio::endl
           << "4 0 1 4 3" << msq_stdio::endl
