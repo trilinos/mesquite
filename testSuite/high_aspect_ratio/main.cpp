@@ -98,7 +98,7 @@ void usage( const char* argv0, bool brief = true )
   
   str << "Usage: " << argv0 
       << " [-o <output_file>]"
-      << " [-f|-F] [-t|-T] [-n|-c]"
+      << " [-f|-F] [-t|-T] [-n|-c] [-i <n>]"
       << " [-m <x>,<y>[,<w>,<h>]]"
       << " [-r <x>,<y>[,<w>,<h>]]"
       << msq_stdio::endl;
@@ -111,11 +111,12 @@ void usage( const char* argv0, bool brief = true )
       << "  -f  Fixed boundary vertices" << msq_stdio::endl
       << "  -F  Free boundary vertices (default)" << msq_stdio::endl
       << "  -t  Write VTK timesteps" << msq_stdio::endl
-      << "  -T  Do not write VTK timesteps (default)" << msq_stdio::endl
+      << "  -T  Write GNUPlot timesteps" << msq_stdio::endl
       << "  -m  Specify input mesh parameters (default " << default_mesh << ")" << msq_stdio::endl
       << "  -r  Specify reference mesh parameters (default " << default_ref << ")" << msq_stdio::endl
       << "  -n  Use FeasibleNewton solver" << msq_stdio::endl
       << "  -c  Use ConjugateGradient solver (default)" << msq_stdio::endl
+      << "  -i  Specify number of iterations (default:" << OUTER_ITERATES << ")" << msq_stdio::endl
       << msq_stdio::endl;
   
   msq_std::exit(NO_ERROR);
@@ -158,23 +159,27 @@ void parse_options( char* argv[],
                     MeshParams& ref,
                     msq_std::string& output_file,
                     bool& fixed_boundary,
-                    bool& write_timesteps,
-                    bool& use_feas_newt );
+                    TerminationCriterion::TimeStepFileType& write_timesteps,
+                    bool& use_feas_newt,
+                    int& num_iterations );
 
 msq_std::string base_name( msq_std::string filename );
 
 int main( int argc, char* argv[] )
 {
   MeshParams input_params, reference_params;
-  bool fixed_boundary_vertices, write_timestep_files, feas_newt_solver;
+  bool fixed_boundary_vertices, feas_newt_solver;
+  TerminationCriterion::TimeStepFileType write_timestep_files;
   msq_std::string output_file_name;
+  int num_iterations;
   
   parse_options( argv, argc,
                  input_params, reference_params,
                  output_file_name,
                  fixed_boundary_vertices,
                  write_timestep_files,
-                 feas_newt_solver );
+                 feas_newt_solver,
+                 num_iterations );
   
   MsqError err;
   MeshImpl mesh, refmesh;
@@ -199,9 +204,9 @@ int main( int argc, char* argv[] )
   
   TerminationCriterion inner, outer;
   inner.add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, INNER_ITERATES, err );
-  outer.add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, OUTER_ITERATES, err );
-  if (write_timestep_files) 
-    outer.write_timesteps( base_name( output_file_name ).c_str() );
+  outer.add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, num_iterations, err );
+  if (write_timestep_files != TerminationCriterion::NOTYPE) 
+    outer.write_timesteps( base_name( output_file_name ).c_str(), write_timestep_files );
   solver->set_inner_termination_criterion( &inner );
   solver->set_outer_termination_criterion( &outer );
   
@@ -318,23 +323,25 @@ void parse_mesh_params( const char* argv, const char* arg, MeshParams& result )
 }
   
 
-enum ParseState { OPEN, EXPECTING_M, EXPECTING_R, EXPECTING_O };
+enum ParseState { OPEN, EXPECTING_M, EXPECTING_R, EXPECTING_O, EXPECTING_I };
 void parse_options( char* argv[], 
                     int argc,
                     MeshParams& mesh,
                     MeshParams& ref,
                     msq_std::string& output_file,
                     bool& fixed_boundary,
-                    bool& write_timesteps,
-                    bool& feas_newt_solver )
+                    TerminationCriterion::TimeStepFileType& write_timesteps,
+                    bool& feas_newt_solver,
+                    int& num_iterations )
 {
     // begin with defaults
   mesh = default_mesh;
   ref  = default_ref;
   output_file = default_out_file;
   fixed_boundary = false;
-  write_timesteps = false;
+  write_timesteps = TerminationCriterion::NOTYPE;
   feas_newt_solver = false;
+  num_iterations = OUTER_ITERATES;
 
     // parse CLI args
   ParseState state = OPEN;
@@ -352,6 +359,10 @@ void parse_options( char* argv[],
         output_file = argv[i];
         state = OPEN;
         break;
+      case EXPECTING_I:
+        num_iterations = atoi( argv[i] );
+        state = OPEN;
+        break;
       case OPEN:
         if (argv[i][0] != '-' || argv[i][1] == '\0' || argv[i][2] != '\0') {
           msq_stdio::cerr << "Unexpected argument: \"" << argv[i] << '"' << msq_stdio::endl;
@@ -364,12 +375,13 @@ void parse_options( char* argv[],
           case 'o': state = EXPECTING_O;     break;
           case 'f': fixed_boundary = true;   break;
           case 'F': fixed_boundary = false;  break;
-          case 't': write_timesteps = true;  break;
-          case 'T': write_timesteps = false; break;
+          case 't': write_timesteps = TerminationCriterion::VTK;  break;
+          case 'T': write_timesteps = TerminationCriterion::GNUPLOT; break;
           case 'm': state = EXPECTING_M;     break;
           case 'r': state = EXPECTING_R;     break;
           case 'n': feas_newt_solver = true; break;
           case 'c': feas_newt_solver = false;break;
+          case 'i': state = EXPECTING_I;     break;
         }
         break;
     }
