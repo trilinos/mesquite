@@ -58,6 +58,8 @@
 using namespace std;
 #endif
 
+#include <stdio.h>
+
 namespace Mesquite {
 
 namespace MeshWriter {
@@ -337,18 +339,16 @@ void write_gnuplot( Mesh* mesh, const char* out_filebase, MsqError &err)
   file.close();
 }
 
-void write_gnuplot_animator( int count, const char* basename, MsqError& err )
+static void find_gnuplot_agregate_range( int count,
+                                         const char* basename,
+                                         Vector3D& min,
+                                         Vector3D& max,
+                                         MsqError& err )
 {
-  if (count <= 0)
-    return;
-
-  const int DELAY = 10;
-  const int WIDTH = 640;
-  const int HEIGHT = 480;
-  
     // read all input files to determine extents
-  Vector3D min(HUGE_VAL,HUGE_VAL,HUGE_VAL), max(-HUGE_VAL,-HUGE_VAL,-HUGE_VAL);
-  for (int i = 0; i < count; ++i) {
+  min = Vector3D( HUGE_VAL, HUGE_VAL, HUGE_VAL);
+  max = Vector3D(-HUGE_VAL,-HUGE_VAL,-HUGE_VAL);
+  for (int i = 0; i <= count; ++i) {
     stringstream s;
     s << basename << '.' << i << ".gpt";
     ifstream infile( s.str().c_str() );
@@ -366,7 +366,22 @@ void write_gnuplot_animator( int count, const char* basename, MsqError& err )
       }
     }
   }
+}
   
+
+void write_gnuplot_animator( int count, const char* basename, MsqError& err )
+{
+  if (count <= 0)
+    return;
+
+  const int DELAY = 10;
+  const int WIDTH = 640;
+  const int HEIGHT = 480;
+  
+    // read all input files to determine extents
+  Vector3D min, max;
+  find_gnuplot_agregate_range( count, basename, min, max, err ); MSQ_ERRRTN(err);
+
     // chose coordinate plane to plot in
   Vector3D range = max - min;
   int haxis = 0, vaxis = 1;
@@ -401,9 +416,98 @@ void write_gnuplot_animator( int count, const char* basename, MsqError& err )
   file << "set output '" << basename << ".gif'" << endl;
   
     // plot data
-  for (int i = 0; i < count; ++i) 
+  for (int i = 0; i <= count; ++i) 
     file << "plot '" << basename << '.' << i << ".gpt'" 
          << " using " << haxis+1 << ":" << vaxis+1 << " w l" << endl;
+}
+
+
+
+static unsigned red( int i, int c )
+{
+  if (i * 4 <= c)
+    return 255;
+  else if (i * 4 >= 3 * c)
+    return 0;
+  else
+    return 384 - i * 511 / c;
+}
+
+static unsigned green( int i, int c )
+{
+  if (i * 4 < c)
+    return i * 510 / c;
+  else if (i * 4 > 3 * c)
+    return 1023 - i * 1023 / c;
+  else
+    return 255;
+}
+
+static unsigned blue( int i, int c )
+{
+  if (i * 4 <= c)
+    return 0;
+  else if (i * 4 >= 3 * c)
+    return 255;
+  else
+    return i * 511 / c - 127;
+}
+
+void write_gnuplot_overlay( int count, const char* basename, MsqError& err )
+{
+  if (count <= 0)
+    return;
+
+  const int WIDTH = 640;
+  const int HEIGHT = 480;
+  
+    // read all input files to determine extents
+  Vector3D min, max;
+  find_gnuplot_agregate_range( count, basename, min, max, err ); MSQ_ERRRTN(err);
+
+    // chose coordinate plane to plot in
+  Vector3D range = max - min;
+  int haxis = 0, vaxis = 1;
+  if (range[0] < range[1] && range[1] < range[2]) {
+    haxis = 1;
+    vaxis = 2;
+  }
+  else if (range[1] < range[2]) {
+    vaxis = 2;
+  }
+  
+    // open output file
+  string base(basename);
+  FILE* file = fopen( (string(basename) + ".gnuplot").c_str(), "w" );
+  if (!file)
+  {
+    MSQ_SETERR(err)(MsqError::FILE_ACCESS);
+    return;
+  }
+  
+    // write header
+  fprintf( file, "#!gnuplot\n" );
+  fprintf( file, "#\n" );
+  fprintf( file, "# Mesquite Overlay of %s.0 to %s.%d\n", basename, basename, count );
+  fprintf( file, "#\n" );
+  
+    // write plot settings
+  fprintf( file, "set term gif size %d,%d\n", WIDTH, HEIGHT );
+  fprintf( file, "set xrange [%f:%f]\n", min[haxis] - 0.05 * range[haxis], max[haxis] + 0.05 * range[haxis] );
+  fprintf( file, "set yrange [%f:%f]\n", min[vaxis] - 0.05 * range[vaxis], max[vaxis] + 0.05 * range[vaxis] );
+  fprintf( file, "set title '%s'\n", basename );
+  fprintf( file, "set output '%s.gif'\n", basename );
+  
+    // plot data
+  fprintf( file, "plot '%s.0.gpt' using %d:%d w l lc rgb '#%02x%02x%02x' title 't0'",
+           basename, haxis+1, vaxis+1, red(0,count), green(0,count), blue(0,count) );
+  for (int i = 1; i <= count; ++i) {
+    fprintf( file, ", \\\n     '%s.%d.gpt' using %d:%d w l lc rgb '#%02x%02x%02x' title 't%d'",
+             basename, i, haxis+1, vaxis+1, red(i,count), green(i,count), blue(i,count), i);
+  }
+  fprintf( file, "\n" );
+  
+  fclose(file);
 }
   
 

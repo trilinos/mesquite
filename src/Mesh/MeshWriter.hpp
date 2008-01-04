@@ -93,6 +93,14 @@ void write_gnuplot( Mesh* mesh, const char* filename, MsqError& err );
  */
 void write_gnuplot_animator( int count, const char* basename, MsqError& err );
 
+/**\brief Write GNU plot commands to overlay a set of mesh timesteps in a single plot
+ *
+ * Given a set of files named foo.0.gpt, foo.1.gpt, ... foo.n.gpt,
+ * write a file foo.gnuplot that produces an overlay of the meshes in
+ * each file by calling write_gnuplot_animator( n, foo, err );
+ */
+void write_gnuplot_overlay( int count, const char* basename, MsqError& err );
+
 /** \brief Write mesh as a VTK file
  *
  * Write a simple VTK file for viewing.  The file written by this

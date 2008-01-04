@@ -628,7 +628,7 @@ bool TerminationCriterion::terminate( )
 
   if (timeStepFileType == GNUPLOT && return_flag) {
     MsqError err;
-    MeshWriter::write_gnuplot_animator( iterationCounter, timeStepFileName.c_str(), err );
+    MeshWriter::write_gnuplot_overlay( iterationCounter, timeStepFileName.c_str(), err );
   }
   
     //if none of the criteria were satisfied
