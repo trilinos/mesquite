@@ -39,7 +39,7 @@
 #include "UnitWeight.hpp"
 #include "ReferenceMesh.hpp"
 #include "RefMeshTargetCalculator.hpp"
-#include "Target2DShape.hpp"
+#include "Target2DShapeBarrier.hpp"
 #include "SamplePoints.hpp"
 #include "JacobianMetric.hpp"
 
@@ -75,7 +75,7 @@ msq_stdio::ostream& operator<<( msq_stdio::ostream& str, const MeshParams& p )
 
 //! Default values for parameters.
 const char default_out_file[] = "high_aspect.vtk";
-const MeshParams default_mesh = { 0.3, 0.3, 5.0, 0.5 };
+const MeshParams default_mesh = { 0.3, 0.3, 2.0, 1.0 };
 const MeshParams default_ref  = { 0.5, 0.5, 1.0, 1.0 };
 
 const int INNER_ITERATES = 1;
@@ -186,7 +186,7 @@ int main( int argc, char* argv[] )
   UnitWeight wc;
   ReferenceMesh rmesh( &refmesh );
   RefMeshTargetCalculator tc( &rmesh );
-  Target2DShape tm;
+  Target2DShapeBarrier tm;
   SamplePoints pts( true, false, false, false );
   JacobianMetric qm( &pts, &tc, &wc, &tm, 0 );
   
@@ -250,6 +250,7 @@ int main( int argc, char* argv[] )
     expect = middle;
 
     // check if vertex has moved in the general direction of the optimal position
+/*
   const double EPS = 1e-4; // allow a little leway
   bool wrong_way;
   if (input_params.x < middle[0]) 
@@ -266,16 +267,24 @@ int main( int argc, char* argv[] )
                 coords[1] < middle[1]      - EPS * input_params.h;
   
   if (wrong_way) {
-    msq_stdio::cerr << "Vertex moved in wrong direction from or pass optimal position: "
+    msq_stdio::cerr << "Vertex moved in wrong direction from or past optimal position: "
+                    << "(" << coords[0] << ", " << coords[1] << msq_stdio::endl;
+    return WRONG_DIRECTION;
+  }
+*/
+  // Instead, just test that we aren't further from the expected location
+  // than when we started.  The above test doesn't work so great when the
+  // y coordinate oscillates about the center line.
+  const Vector3D init( input_params.x, input_params.y, 0 );
+  if ((coords - expect).length() > (init - expect).length()) {
+    msq_stdio::cerr << "Vertex moved away from expected optimal position: "
                     << "(" << coords[0] << ", " << coords[1] << msq_stdio::endl;
     return WRONG_DIRECTION;
   }
   
-  
     // check if vertex moved MIN_FRACT of the way from the original position
     // to the desired one in the allowed iterations
   const double MIN_FRACT = 0.2; // 20% of the way in 10 iterations
-  const Vector3D init( input_params.x, input_params.y, 0 );
   const double fract = (coords - init).length() / (expect - init).length();
   if (fract < MIN_FRACT) {
     msq_stdio::cerr << "Vertex far from optimimal location" << msq_stdio::endl
@@ -285,6 +294,7 @@ int main( int argc, char* argv[] )
   }
   
     // check if vertex is at destired location
+  const double EPS = 5e-2; // allow a little leway
   if (fabs(coords[0] - expect[0]) > EPS * input_params.w ||
       fabs(coords[1] - expect[1]) > EPS * input_params.h ||
       fabs(expect[2]            ) > EPS                  ) {
