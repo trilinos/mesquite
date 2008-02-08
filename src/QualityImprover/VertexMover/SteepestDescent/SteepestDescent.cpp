@@ -39,6 +39,12 @@
 #include "MsqTimer.hpp"
 #include "MsqDebug.hpp"
 
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#  include <memory.h>
+#else
+#  include <memory>
+#endif
+
 namespace Mesquite {
 
 msq_std::string SteepestDescent::get_name() const
@@ -78,22 +84,27 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
 
     //get intial objective function value, original_value, and gradient
   double original_value = 0.0;
-  obj_func.update(pd, original_value, gradient, err ); MSQ_ERRRTN(err);
+  sd_bool = obj_func.update(pd, original_value, gradient, err ); MSQ_ERRRTN(err);
   
+    // Wrap pointer inside std::auto_ptr so the memento will get deleted
+    // when we return.
+  msq_std::auto_ptr<PatchDataVerticesMemento> pd_previous_coords(
+    pd.create_vertices_memento( err )); MSQ_ERRRTN(err);
+  
+  // Prints out free vertices coordinates. 
+  if (MSQ_DBG(3)) {
+    int num_free_vertices = pd.num_free_vertices(); 
+    MSQ_DBGOUT(3) << "\n  o Free vertices ("<< num_free_vertices <<")original coordinates:\n ";
+    MsqVertex* toto1 = pd.get_vertex_array(err); MSQ_ERRRTN(err);
+    MsqFreeVertexIndexIterator ind1(pd, err); MSQ_ERRRTN(err);
+    ind1.reset();
+    while (ind1.next()) {
+      MSQ_DBGOUT(3) << "\t\t\t" << toto1[ind1.value()];
+    }
+  }
+
   // does the steepest descent iteration until stopping is required.
   while (!term_crit->terminate()) {
-
-    // Prints out free vertices coordinates. 
-    if (MSQ_DBG(3)) {
-      int num_free_vertices = pd.num_free_vertices(); 
-      MSQ_DBGOUT(3) << "\n  o Free vertices ("<< num_free_vertices <<")original coordinates:\n ";
-      MsqVertex* toto1 = pd.get_vertex_array(err); MSQ_ERRRTN(err);
-      MsqFreeVertexIndexIterator ind1(pd, err); MSQ_ERRRTN(err);
-      ind1.reset();
-      while (ind1.next()) {
-        MSQ_DBGOUT(3) << "\t\t\t" << toto1[ind1.value()];
-      }
-    }
       
       // computes the gradient norm
     norm = length( &gradient[0], gradient.size() );
@@ -122,10 +133,6 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
     // reduces the step size until we get an improvement
     int nb_iter = 0;
 
-    // saves the PatchData coordinates in a memento
-    PatchDataVerticesMemento* pd_previous_coords;
-    pd_previous_coords = pd.create_vertices_memento(err); 
-    if (MSQ_CHKERR(err)) { delete pd_previous_coords; return; }
     // Loop to find a step size that improves quality
     double step_size = smallest_edge;
       //continue while the new value is greater than the old
@@ -134,11 +141,9 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
       nb_iter++;
         // change vertices coordinates in PatchData according to descent
         //direction.
-      pd.move_free_vertices_constrained(&dk[0], dk.size(), step_size, err);
-      if (MSQ_CHKERR(err)) { delete pd_previous_coords; return; }      
+      pd.move_free_vertices_constrained(&dk[0], dk.size(), step_size, err);  MSQ_ERRRTN(err);
       // and evaluate the objective function with the new node positions.
-      sd_bool=obj_func.evaluate(pd, new_value, err);  
-      if (MSQ_CHKERR(err)) { delete pd_previous_coords; return; }
+      sd_bool=obj_func.evaluate(pd, new_value, err);  MSQ_ERRRTN(err);
 
       MSQ_DBGOUT(3) << "    o  step_size: " << step_size << msq_stdio::endl;
       MSQ_DBGOUT(3) << "    o  new_value: " << new_value << msq_stdio::endl;
@@ -146,14 +151,13 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
       // if no improvement or the mesh entered the invisible region...
       if (!sd_bool || new_value > original_value ) {
         // undoes node movement
-        pd.set_to_vertices_memento( pd_previous_coords, err );  
-        if (MSQ_CHKERR(err)) { delete pd_previous_coords; return; }
+        pd.set_to_vertices_memento( pd_previous_coords.get(), err );  MSQ_ERRRTN(err);
         // and reduces step size to try again.
         step_size /= 2;
         if(nb_iter >= 10)//if we have done too many iterations, stop the loop
           should_continue = false;
       }
-      else{//otherwise stop the loop[
+      else{//otherwise stop the loop
         should_continue = false;
       }
       
@@ -162,18 +166,15 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
     // Prints out free vertices coordinates. 
     if (MSQ_DBG(3)) {
       MSQ_DBGOUT(3) << "  o Free vertices new coordinates: \n";
-      MsqVertex* toto1 = pd.get_vertex_array(err);  
-      if (MSQ_CHKERR(err)) { delete pd_previous_coords; return; }
-      MsqFreeVertexIndexIterator ind(pd, err);  
-      if (MSQ_CHKERR(err)) { delete pd_previous_coords; return; }
+      MsqVertex* toto1 = pd.get_vertex_array(err);  MSQ_ERRRTN(err);
+      MsqFreeVertexIndexIterator ind(pd, err);  MSQ_ERRRTN(err)
       ind.reset();
       while (ind.next()) {
         MSQ_DBGOUT(3) << "\t\t\t" << toto1[ind.value()];
       }
     }
     
-    delete pd_previous_coords; // user manages the memento.
-    
+    pd.recreate_vertices_memento( pd_previous_coords.get(), err );  MSQ_ERRRTN(err);
     obj_func.update(pd, original_value, gradient, err ); MSQ_ERRRTN(err);
     term_crit->accumulate_inner( pd, original_value, &gradient[0], err ); MSQ_ERRRTN(err); 
     term_crit->accumulate_patch( pd, err );  MSQ_ERRRTN(err);
