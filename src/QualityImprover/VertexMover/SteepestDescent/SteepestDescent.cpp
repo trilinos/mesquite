@@ -49,9 +49,7 @@ PatchSet* SteepestDescent::get_patch_set()
 
 SteepestDescent::SteepestDescent(ObjectiveFunction* of, bool Nash) 
   : VertexMover(of, Nash),
-    PatchSetUser(true),
-    gradientLessThan(0.01),
-    maxIteration(6)
+    PatchSetUser(true)
 {
 }  
   
@@ -72,8 +70,7 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
   // Get the array of vertices of the patch. Free vertices are first.
   int num_vertices = pd.num_free_vertices();
   msq_std::vector<Vector3D> gradient(num_vertices), dk(num_vertices);
-  int nb_iterations = 0;
-  double norm=10e6;
+  double norm;
   bool sd_bool=true;//bool for OF values
   double smallest_edge = 0.4; // TODO -- update -- used for step_size
   TerminationCriterion* term_crit=get_inner_termination_criterion();
@@ -84,11 +81,8 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
   obj_func.update(pd, original_value, gradient, err ); MSQ_ERRRTN(err);
   
   // does the steepest descent iteration until stopping is required.
-  while ( (nb_iterations<maxIteration &&
-          norm>gradientLessThan ) && !term_crit->terminate()) {
-    
-    ++nb_iterations;
-    
+  while (!term_crit->terminate()) {
+
     // Prints out free vertices coordinates. 
     if (MSQ_DBG(3)) {
       int num_free_vertices = pd.num_free_vertices(); 
@@ -102,15 +96,8 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
     }
       
       // computes the gradient norm
-    norm=0;
-    for (int n=0; n<num_vertices; ++n) 
-      norm += gradient[n] % gradient[n]; // dot product
-    norm = sqrt(norm);
+    norm = length( &gradient[0], gradient.size() );
     MSQ_DBGOUT(3) << "  o  gradient norm: " << norm << msq_stdio::endl;
-  
-    if (norm <= gradientLessThan) {
-      break;
-    }
 
     // ******** Chooses the search direction ********
     // i.e., -gradient for the steepest descent

@@ -58,17 +58,6 @@ namespace Mesquite
     SteepestDescent(ObjectiveFunction* of, bool Nash = true);
 
     virtual ~SteepestDescent() { }
-
-    /*! sets the maximum number of iteration of the steepest descent algorythm,
-      i.e. the number of times we compute the gradient and try to move the nodes in the
-      opposite direction. This is different from the number of passes over the mesh. */
-    void set_maximum_iteration(int iter){
-        maxIteration=iter;}
-
-    /*! Sets a minimum value for the gradient. If the gradient is below that value,
-      we stop iterating. */  
-    void set_lower_gradient_bound(double gradc){
-        gradientLessThan=gradc;}
     
     virtual msq_std::string get_name() const;
     
@@ -81,10 +70,6 @@ namespace Mesquite
     virtual void initialize_mesh_iteration(PatchData &pd, MsqError &err);
     virtual void terminate_mesh_iteration(PatchData &pd, MsqError &err);
     virtual void cleanup();
-
-  private:
-    double gradientLessThan;
-    int maxIteration;
   };
   
 }
