@@ -434,7 +434,7 @@ void TerminationCriterion::accumulate_inner( PatchData& pd,
   currentGradInfNorm = 10e6;
   if (terminationCriterionFlag & (GRADIENT_INF_NORM_ABSOLUTE | GRADIENT_INF_NORM_RELATIVE)) 
   {
-    currentGradInfNorm = length(grad_array, pd.num_free_vertices()); // get the Linf norm
+    currentGradInfNorm = Linf(grad_array, pd.num_free_vertices()); // get the Linf norm
     MSQ_DBGOUT(debugLevel) << "  o TermCrit -- gradient Inf norm: " 
       << currentGradInfNorm << msq_stdio::endl;
   } 
