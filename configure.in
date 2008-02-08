@@ -426,11 +426,11 @@ AC_CHECK_HEADER( [sys/ioctl.h], AC_DEFINE(HAVE_SYS_IOCTL_H,[1], [System has sys/
 #-----------------------------------------------------------------------------
 # Check for required functions
 #-----------------------------------------------------------------------------
-AC_CHECK_FUNCS( vsnprintf, [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_VSNPRINTF"] )
-AC_CHECK_FUNCS( vsprintf, [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_VSPRINTF"] )
-AC_CHECK_FUNCS( clock, [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_CLOCK"] )
-AC_CHECK_FUNCS( times, [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_TIMES"] )
-AC_CHECK_FUNCS( cbrt,  [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_CBRT"] )
+AC_CHECK_FUNCS( vsnprintf, [AM_CPPFLAGS="${AM_CPPFLAGS} -DHAVE_VSNPRINTF"] )
+AC_CHECK_FUNCS( vsprintf, [AM_CPPFLAGS="${AM_CPPFLAGS} -DHAVE_VSPRINTF"] )
+AC_CHECK_FUNCS( clock, [AM_CPPFLAGS="${AM_CPPFLAGS} -DHAVE_CLOCK"] )
+AC_CHECK_FUNCS( times, [AM_CPPFLAGS="${AM_CPPFLAGS} -DHAVE_TIMES"] )
+AC_CHECK_FUNCS( cbrt,  [AM_CPPFLAGS="${AM_CPPFLAGS} -DHAVE_CBRT"] )
 
 # Use C++ compiler because C allows undefined functions, so these
 # checks don't achive much if compiled as C.  Also, if C and C++
@@ -440,17 +440,15 @@ AC_LANG_PUSH(C++)
 AC_MSG_CHECKING( for fpsetmask );
 AC_TRY_COMPILE( [#include <ieeefp.h>],
                 [fpsetmask(FP_X_INV|FP_X_OFL|FP_X_DZ);],
-                [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_FPSETMASK"
+                [AM_CPPFLAGS="${AM_CPPFLAGS} -DHAVE_FPSETMASK"
                  AC_MSG_RESULT(yes)], [AC_MSG_RESULT(no)] )
 AC_MSG_CHECKING( for feenableexcept );
 AC_TRY_COMPILE( [#define _GNU_SOURCE
                  #include <fenv.h>  ],
                 [feenableexcept(FE_DIVBYZERO|FE_INVALID|FE_OVERFLOW);],
-                [MSQ_FUNC_DEFS="${MSQ_FUNC_DEFS} -DHAVE_FEENABLEEXCEPT"
+                [AM_CPPFLAGS="${AM_CPPFLAGS} -DHAVE_FEENABLEEXCEPT"
                  AC_MSG_RESULT(yes)], [AC_MSG_RESULT(no)] )
 AC_LANG_POP(C++)
-
-AC_SUBST(MSQ_FUNC_DEFS)
 
 #-----------------------------------------------------------------------------
 # Check C++ environment
@@ -661,6 +659,7 @@ AC_CONFIG_FILES([Makefile
                  testSuite/2d_formulation/Makefile
                  testSuite/synchronous/Makefile
                  testSuite/high_aspect_ratio/Makefile
+                 testSuite/grad_proj/Makefile
                  doc/Makefile
                  doc/user/Makefile
                  doc/user/config.tex
