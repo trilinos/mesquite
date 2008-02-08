@@ -251,6 +251,9 @@ namespace Mesquite
     MESQUITE_EXPORT void write_timesteps( const char* filename, TimeStepFileType type = VTK )
       { timeStepFileName = filename; timeStepFileType = type; }
       
+    int get_iteration_count( ) const
+      { return iterationCounter; }
+      
  protected:
     
     void write_timestep( PatchData& pd, MsqError& err );
