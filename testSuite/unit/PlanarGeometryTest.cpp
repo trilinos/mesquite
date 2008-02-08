@@ -71,6 +71,8 @@ SimplifiedGeometryEngine.
 #include "MultiplyQualityMetric.hpp"
 #include "PlanarDomain.hpp"
 
+#include "MsqFPE.hpp"
+
 #include "MeshImpl.hpp"
 #ifdef MSQ_USE_OLD_IO_HEADERS
 #include <iostream.h>
@@ -120,6 +122,11 @@ public:
      Mesquite::MsqPrintError err(cout); 
      Mesquite::MeshImpl mesh;
      
+      // This test doesn't use InstructionQueue, so 
+      // we need to set up trapping of floating-point
+      // exceptions ourself.
+     MsqFPE fpe_trap( true );
+     
      mesh.read_vtk(MESH_FILES_DIR "2D/VTK/tangled_tri.vtk", err);
      CPPUNIT_ASSERT(!err);
      
@@ -156,10 +163,13 @@ public:
        //**********Set stopping criterion  untangle ver small ********
        //StoppingCriterion sc_qa(&stop_qa,-100,MSQ_MIN);
        //pass1->set_stopping_criterion(&sc_qa);
-     TerminationCriterion sc_of;
+     TerminationCriterion sc_of, sc_inner;
      sc_of.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,10,err);
      pass1.set_outer_termination_criterion(&sc_of);
-     
+     sc_inner.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,6,err);
+     //sc_inner.add_criterion_type_with_double(TerminationCriterion::GRADIENT_L2_NORM_ABSOLUTE,0.01,err);
+     pass1.set_inner_termination_criterion(&sc_inner);
+    
        //**********Set stopping criterion  5 iterates ****************
        //StoppingCriterion sc5(StoppingCriterion::NUMBER_OF_PASSES,5);
        //pass2->set_stopping_criterion(&sc5);

@@ -99,6 +99,9 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
     norm = length( &gradient[0], gradient.size() );
     MSQ_DBGOUT(3) << "  o  gradient norm: " << norm << msq_stdio::endl;
 
+    if (norm < DBL_EPSILON)
+      break;
+
     // ******** Chooses the search direction ********
     // i.e., -gradient for the steepest descent
     for (int i=0; i<num_vertices; ++i)

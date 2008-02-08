@@ -99,8 +99,8 @@ int main()
    // creates the steepest descent optimization procedures
   SteepestDescent pass1( &obj_func, true );
   pass1.use_global_patch();
-  if (err) return 1;
-  pass1.set_maximum_iteration(6);
+  //if (err) return 1;
+  //pass1.set_maximum_iteration(6);
   
   QualityAssessor stop_qa=QualityAssessor(&mean_ratio);
   if (err) return 1;
