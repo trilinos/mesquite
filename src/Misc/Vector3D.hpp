@@ -405,14 +405,16 @@ namespace Mesquite
                           mCoords[1]*mCoords[1] +
                           mCoords[2]*mCoords[2]);
   }
+  inline double length_squared( Vector3D *const v, int n )
+  {
+    double sum = 0.0;
+    for (int i = 0; i < n; ++i)
+      sum += v[i].length_squared();
+    return sum;
+  }
   inline double length(Vector3D* const v,int n) // norm for an array of Vector3Ds
   {
-    double l=0;
-    for (int j=0; j<n; ++j)
-      l += v[j].mCoords[0]*v[j].mCoords[0] +
-           v[j].mCoords[1]*v[j].mCoords[1] +
-           v[j].mCoords[2]*v[j].mCoords[2];
-    return msq_stdc::sqrt(l);
+    return msq_stdc::sqrt( length_squared( v, n ) );
   }
   inline double Linf(Vector3D* const v,int n) // max entry for an array of Vector3Ds
   {

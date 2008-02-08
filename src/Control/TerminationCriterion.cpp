@@ -76,11 +76,11 @@ TerminationCriterion::TerminationCriterion()
   previousOFValue=0.0;
   currentOFValue = 0.0;
   lowerOFBound=0.0;
-  initialGradL2Norm=0.0;
+  initialGradL2NormSquared=0.0;
   initialGradInfNorm=0.0;
     //initial size of the gradient array
-  gradL2NormAbsoluteEps=0.0;
-  gradL2NormRelativeEps=0.0;
+  gradL2NormAbsoluteEpsSquared=0.0;
+  gradL2NormRelativeEpsSquared=0.0;
   gradInfNormAbsoluteEps=0.0;
   gradInfNormRelativeEps=0.0;
   qualityImprovementAbsoluteEps=0.0;
@@ -108,7 +108,7 @@ void TerminationCriterion::add_criterion_type_with_double(TCType tc_type,
   switch(tc_type){
     case GRADIENT_L2_NORM_ABSOLUTE:
        terminationCriterionFlag|=GRADIENT_L2_NORM_ABSOLUTE;
-       gradL2NormAbsoluteEps=eps;
+       gradL2NormAbsoluteEpsSquared=eps*eps;
        break; 
     case GRADIENT_INF_NORM_ABSOLUTE:
        terminationCriterionFlag|=GRADIENT_INF_NORM_ABSOLUTE;
@@ -116,7 +116,7 @@ void TerminationCriterion::add_criterion_type_with_double(TCType tc_type,
        break;
     case GRADIENT_L2_NORM_RELATIVE:
        terminationCriterionFlag|=GRADIENT_L2_NORM_RELATIVE;
-       gradL2NormRelativeEps=eps;
+       gradL2NormRelativeEpsSquared=eps*eps;
        break;  
     case GRADIENT_INF_NORM_RELATIVE:
        terminationCriterionFlag|=GRADIENT_INF_NORM_RELATIVE;
@@ -321,9 +321,9 @@ void TerminationCriterion::reset_inner(PatchData &pd, OFEvaluator& obj_eval,
     }  
     if (totalFlag & (GRADIENT_L2_NORM_ABSOLUTE|GRADIENT_L2_NORM_RELATIVE))
     {
-      currentGradL2Norm = initialGradL2Norm = length(&mGrad[0], num_vertices);
+      currentGradL2NormSquared = initialGradL2NormSquared = length_squared(&mGrad[0], num_vertices);
       MSQ_DBGOUT(debugLevel) << "  o Initial gradient L2 norm: " 
-        << initialGradL2Norm << msq_stdio::endl;
+        << msq_stdc::sqrt(initialGradL2NormSquared) << msq_stdio::endl;
     }  
       //the OFvalue comes for free, so save it
     previousOFValue=currentOFValue;
@@ -424,12 +424,12 @@ void TerminationCriterion::accumulate_inner( PatchData& pd,
                                              MsqError& err )
 {
   //if terminating on the norm of the gradient
-  currentGradL2Norm = 10e6;
+  currentGradL2NormSquared = HUGE_VAL;
   if (terminationCriterionFlag & (GRADIENT_L2_NORM_ABSOLUTE | GRADIENT_L2_NORM_RELATIVE)) 
   {
-    currentGradL2Norm = length(grad_array, pd.num_free_vertices()); // get the L2 norm
+    currentGradL2NormSquared = length_squared(grad_array, pd.num_free_vertices()); // get the L2 norm
     MSQ_DBGOUT(debugLevel) << "  o TermCrit -- gradient L2 norm: " 
-      << currentGradL2Norm << msq_stdio::endl;
+      << msq_stdc::sqrt(currentGradL2NormSquared) << msq_stdio::endl;
   }
   currentGradInfNorm = 10e6;
   if (terminationCriterionFlag & (GRADIENT_INF_NORM_ABSOLUTE | GRADIENT_INF_NORM_RELATIVE)) 
@@ -565,7 +565,7 @@ bool TerminationCriterion::terminate( )
   }
 
   if (GRADIENT_L2_NORM_ABSOLUTE & terminationCriterionFlag &&
-      currentGradL2Norm <= gradL2NormAbsoluteEps)
+      currentGradL2NormSquared <= gradL2NormAbsoluteEpsSquared)
   {
     return_flag = true;
   }
@@ -577,7 +577,7 @@ bool TerminationCriterion::terminate( )
   }
   
   if (GRADIENT_L2_NORM_RELATIVE & terminationCriterionFlag &&
-      currentGradL2Norm <= (gradL2NormRelativeEps * initialGradL2Norm))
+      currentGradL2NormSquared <= (gradL2NormRelativeEpsSquared * initialGradL2NormSquared))
   {
     return_flag = true;
   }

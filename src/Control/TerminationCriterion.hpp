@@ -273,10 +273,10 @@ namespace Mesquite
 
       //Data specific to termination criterion 1 (gradient bounds)
     msq_std::vector<Vector3D> mGrad;
-    double initialGradL2Norm;
-    double currentGradL2Norm;
-    double gradL2NormAbsoluteEps;
-    double gradL2NormRelativeEps;
+    double initialGradL2NormSquared;
+    double currentGradL2NormSquared;
+    double gradL2NormAbsoluteEpsSquared;
+    double gradL2NormRelativeEpsSquared;
     double initialGradInfNorm;
     double currentGradInfNorm;
     double gradInfNormAbsoluteEps;
