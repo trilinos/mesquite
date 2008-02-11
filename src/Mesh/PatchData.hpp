@@ -389,6 +389,9 @@ namespace Mesquite
     void set_free_vertices_constrained(PatchDataVerticesMemento* memento, 
                                        Vector3D dk[], size_t nb_vtx,
                                        double step_size, MsqError &err);
+    
+    //! Project gradient vector terms onto geometric domain
+    void project_gradient( std::vector<Vector3D>& gradient, MsqError& err );
 
       //!Calculates the distance each vertex has moved from its original
       //!position as defined by the PatchDataVerticesMememnto.
@@ -474,6 +477,7 @@ namespace Mesquite
                               MsqError& err ) const;  
                               
     unsigned higher_order_node_bits( size_t elem_idx ) const;  
+    
     
     //! Display the coordinates and connectivity information
     friend msq_stdio::ostream& operator<<( msq_stdio::ostream&, const PatchData& );
@@ -609,16 +613,11 @@ namespace Mesquite
       //! for the corresponding vertex begins.  May be empty if vertex 
       //! adjacency data has not been requested.
     msq_std::vector<size_t> vertAdjacencyOffsets;
-      //! This array is indexed with vertex indices and contains a 
-      //! pointer into PatchData::normalData at which the cached domain normal
-      //! data for the vertex begins.  If the DOF in the domain is 2
-      //! for the vertex, then the vertex has a single normal.  If
-      //! the DOF is other than 2, the vertex has a normal for each
-      //! attached two-dimensional element.  If normalData is not empty
-      //! but this array is, then it is assumed that all vertices have a
-      //! DOF of two and the single vertex normal is at an offset of the
-      //! vertex index into the normalData array.
-    msq_std::vector<Vector3D*> vertexNormalPointers;
+      //! Index into normalData at which the normal for the corresponding
+      //! vertex index is located. Only vertices constrained to a single
+      //! domain with a topological dimension of 2 have a unique domain
+      //! normal.
+    msq_std::vector<unsigned> vertexNormalIndices;
       //! Storage space for cached domain normal data.  Pointers in
       //! PatchData::vertexNormalPointers point into this list.
     msq_std::vector<Vector3D> normalData;
@@ -626,7 +625,7 @@ namespace Mesquite
       //! a domain exists and PatchData::normalData is not empty, but
       //! this array is, it may be assumed that all vertices have
       //! have a DOF == 2.
-    msq_std::vector<unsigned short> vertexDomainDOF;
+    //msq_std::vector<unsigned short> vertexDomainDOF;
     
       // Arrays in which to store temporary data
       // (avoids reallocation of temp space)
@@ -657,27 +656,22 @@ namespace Mesquite
   class PatchDataVerticesMemento
   {
   public:
-    ~PatchDataVerticesMemento()
-    { delete[] vertices; }
-    
     void clear()
     {
-      delete [] vertices;
-      vertices = 0;
       originator = 0;
-      numVertices = arraySize = 0;
+      vertices.clear();
+      normalData.clear();
     }
   private:
     // Constructor accessible only to originator (i.e. PatchData)
     friend class PatchData;
     PatchDataVerticesMemento() 
-      : originator(0), vertices(0), numVertices(0), arraySize(0)
+      : originator(0)
     {}
     
     PatchData* originator; //!< PatchData whose state is kept
-    MsqVertex *vertices; //!< array of vertices
-    size_t numVertices;
-    size_t arraySize;
+    msq_std::vector<MsqVertex> vertices;
+    msq_std::vector<Vector3D> normalData;
   };
 
   inline void PatchData::clear()
@@ -689,9 +683,9 @@ namespace Mesquite
     elemConnectivityArray.clear();
     vertAdjacencyArray.clear();
     vertAdjacencyOffsets.clear();
-    vertexNormalPointers.clear();
+    vertexNormalIndices.clear();
     normalData.clear();
-    vertexDomainDOF.clear();
+    //vertexDomainDOF.clear();
     numFreeVertices = 0;
     numSlaveVertices = 0;
     haveComputedInfos = 0;
@@ -807,24 +801,33 @@ namespace Mesquite
                                                    MsqError& /*err*/,
                                                    bool include_higher_order)
   {
-    size_t num_verts = num_free_vertices();
-    if (include_higher_order)
-      num_verts += num_slave_vertices();
     memento->originator = this;
     
-    if ( num_verts > memento->arraySize
-         || num_verts < memento->arraySize/10)
-    {
-      delete[] memento->vertices;
-        // Allocate the new array
-      memento->vertices = new MsqVertex[num_verts];
-      memento->arraySize = num_verts;
+    size_t num_vtx = num_free_vertices();
+    if (include_higher_order)
+      num_vtx += num_slave_vertices();
+    
+    memento->vertices.resize( num_vtx );
+    msq_std::copy( vertexArray.begin(), vertexArray.begin()+num_vtx, memento->vertices.begin() );
+    
+    int num_normal;
+    if (normalData.empty())
+      num_normal = 0;
+    else if (vertexNormalIndices.empty()) 
+      num_normal = num_vtx;
+    else {
+      num_normal = num_vtx;
+      while (num_normal != 0 && vertexNormalIndices[--num_normal] >= normalData.size());
+      if (num_normal == 0) {
+        if (vertexNormalIndices[0] < normalData.size())
+          num_normal = vertexNormalIndices[0] + 1;
+      }
+      else 
+        num_normal = vertexNormalIndices[num_normal] + 1;
     }
     
-      // Copy the coordinates
-    msq_stdc::memcpy(memento->vertices, &vertexArray[0],num_verts*sizeof(MsqVertex) );
-    
-    memento->numVertices = num_verts;
+    memento->normalData.resize( num_normal );
+    msq_std::copy( normalData.begin(), normalData.begin()+num_normal, memento->normalData.begin() );
   }
   
   /*! 
@@ -845,8 +848,8 @@ namespace Mesquite
       return;
     }
     
-    if (memento->numVertices != num_free_vertices() &&
-        memento->numVertices != num_free_vertices()+num_slave_vertices())
+    if (memento->vertices.size() != num_free_vertices() &&
+        memento->vertices.size() != num_free_vertices()+num_slave_vertices())
     {
       MSQ_SETERR(err)("Unable to restore patch coordinates.  Number of "
                       "vertices in PatchData has changed.",
@@ -855,7 +858,8 @@ namespace Mesquite
     }
     
       // copies the memento array into the PatchData array.
-    msq_stdc::memcpy(&vertexArray[0], memento->vertices, memento->numVertices*sizeof(MsqVertex) );
+    msq_std::copy( memento->vertices.begin(), memento->vertices.end(), vertexArray.begin() );
+    msq_std::copy( memento->normalData.begin(), memento->normalData.end(), normalData.begin() );
   }
       
 } // namespace
