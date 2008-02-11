@@ -74,107 +74,86 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
   MSQ_FUNCTION_TIMER( "SteepestDescent::optimize_vertex_positions" );
     //PRINT_INFO("\no  Performing Steepest Descent optimization.\n");
   // Get the array of vertices of the patch. Free vertices are first.
+  const double STEP_DECREASE_FACTOR = 0.5, STEP_INCREASE_FACTOR = 1.1;
   int num_vertices = pd.num_free_vertices();
   msq_std::vector<Vector3D> gradient(num_vertices), dk(num_vertices);
-  double norm;
+  //double norm;
   bool sd_bool=true;//bool for OF values
-  double smallest_edge = 0.4; // TODO -- update -- used for step_size
+  double min_edge_len, max_edge_len;
+  double step_size, original_value;
+  PatchDataVerticesMemento* pd_previous_coords;
   TerminationCriterion* term_crit=get_inner_termination_criterion();
   OFEvaluator& obj_func = get_objective_function_evaluator();
+  
+  pd_previous_coords = pd.create_vertices_memento( err ); MSQ_ERRRTN(err);
+  msq_std::auto_ptr<PatchDataVerticesMemento> memento_deleter( pd_previous_coords );
 
-    //get intial objective function value, original_value, and gradient
-  double original_value = 0.0;
-  sd_bool = obj_func.update(pd, original_value, gradient, err ); MSQ_ERRRTN(err);
-  
-    // Wrap pointer inside std::auto_ptr so the memento will get deleted
-    // when we return.
-  msq_std::auto_ptr<PatchDataVerticesMemento> pd_previous_coords(
-    pd.create_vertices_memento( err )); MSQ_ERRRTN(err);
-  
-  // Prints out free vertices coordinates. 
-  if (MSQ_DBG(3)) {
-    int num_free_vertices = pd.num_free_vertices(); 
-    MSQ_DBGOUT(3) << "\n  o Free vertices ("<< num_free_vertices <<")original coordinates:\n ";
-    MsqVertex* toto1 = pd.get_vertex_array(err); MSQ_ERRRTN(err);
-    MsqFreeVertexIndexIterator ind1(pd, err); MSQ_ERRRTN(err);
-    ind1.reset();
-    while (ind1.next()) {
-      MSQ_DBGOUT(3) << "\t\t\t" << toto1[ind1.value()];
-    }
+  pd.get_minmax_edge_length( min_edge_len, max_edge_len );
+  step_size = 10*max_edge_len;
+
+  sd_bool = obj_func.update( pd, original_value, gradient, err ); MSQ_ERRRTN(err);
+    //set an error if initial patch is invalid.
+  if(!sd_bool){
+    MSQ_SETERR(err)("SteepestDescent passed invalid initial patch.",
+                    MsqError::INVALID_ARG);
+    return;
   }
 
   // does the steepest descent iteration until stopping is required.
   while (!term_crit->terminate()) {
-      
-      // computes the gradient norm
-    norm = length( &gradient[0], gradient.size() );
-    MSQ_DBGOUT(3) << "  o  gradient norm: " << norm << msq_stdio::endl;
+    MSQ_DBGOUT(3) << "Iteration " << term_crit->get_iteration_count() << msq_stdio::endl;
+    MSQ_DBGOUT(3) << "  o  original_value: " << original_value << msq_stdio::endl;
 
-    if (norm < DBL_EPSILON)
+      // save vertex coords
+    pd.recreate_vertices_memento( pd_previous_coords, err ); MSQ_ERRRTN(err);
+
+      // computes the gradient norm
+    //norm = length( &gradient[0], gradient.size() );
+    //MSQ_DBGOUT(3) << "  o  gradient norm: " << norm << msq_stdio::endl;
+
+    if (length_squared(&gradient[0], gradient.size())*step_size*step_size < DBL_EPSILON)
       break;
 
     // ******** Chooses the search direction ********
     // i.e., -gradient for the steepest descent
     for (int i=0; i<num_vertices; ++i)
-      for (int j=0; j<3; ++j)
-        dk[i][j] = -gradient[i][j] / norm;
+      dk[i] = -gradient[i];
+    //  for (int j=0; j<3; ++j)
+    //    dk[i][j] = -gradient[i][j] / norm;
 
     // ******* Improve Quality *******
     
-      //set an error if initial patch is invalid.
-    if(!sd_bool){
-      MSQ_SETERR(err)("SteepestDescent passed invalid initial patch.",
-                      MsqError::INVALID_ARG);
-      return;
-    }
-    MSQ_DBGOUT(3) << "  o  original_value: " << original_value << msq_stdio::endl;
-    
-    double new_value = 0.0;
-    // reduces the step size until we get an improvement
-    int nb_iter = 0;
-
-    // Loop to find a step size that improves quality
-    double step_size = smallest_edge;
-      //continue while the new value is greater than the old
-    bool should_continue = true;
-    while (should_continue) {
-      nb_iter++;
+      // Loop to find a step size that improves quality
+      // (or until max iterations).
+    int nb_iter;
+    for (nb_iter = 0; nb_iter < 10; ++nb_iter) {
         // change vertices coordinates in PatchData according to descent
         //direction.
       pd.move_free_vertices_constrained(&dk[0], dk.size(), step_size, err);  MSQ_ERRRTN(err);
       // and evaluate the objective function with the new node positions.
+      double new_value;
       sd_bool=obj_func.evaluate(pd, new_value, err);  MSQ_ERRRTN(err);
 
       MSQ_DBGOUT(3) << "    o  step_size: " << step_size << msq_stdio::endl;
       MSQ_DBGOUT(3) << "    o  new_value: " << new_value << msq_stdio::endl;
-      
-      // if no improvement or the mesh entered the invisible region...
-      if (!sd_bool || new_value > original_value ) {
-        // undoes node movement
-        pd.set_to_vertices_memento( pd_previous_coords.get(), err );  MSQ_ERRRTN(err);
-        // and reduces step size to try again.
-        step_size /= 2;
-        if(nb_iter >= 10)//if we have done too many iterations, stop the loop
-          should_continue = false;
-      }
-      else{//otherwise stop the loop
-        should_continue = false;
-      }
-      
-    }
-
-    // Prints out free vertices coordinates. 
-    if (MSQ_DBG(3)) {
-      MSQ_DBGOUT(3) << "  o Free vertices new coordinates: \n";
-      MsqVertex* toto1 = pd.get_vertex_array(err);  MSQ_ERRRTN(err);
-      MsqFreeVertexIndexIterator ind(pd, err);  MSQ_ERRRTN(err)
-      ind.reset();
-      while (ind.next()) {
-        MSQ_DBGOUT(3) << "\t\t\t" << toto1[ind.value()];
-      }
-    }
     
-    pd.recreate_vertices_memento( pd_previous_coords.get(), err );  MSQ_ERRRTN(err);
+        // If value was reduced by step, then keep it (exit loop)
+      if (sd_bool && new_value < original_value) 
+        break;
+        
+      // If here, then try again with smaller step.
+      
+      // undoes node movement
+      pd.set_to_vertices_memento( pd_previous_coords, err );  MSQ_ERRRTN(err);
+      // and reduces step size to try again.
+      step_size *= STEP_DECREASE_FACTOR;
+    }
+    if (!sd_bool)
+      break;
+    
+    if (0 == nb_iter)
+      step_size *= STEP_INCREASE_FACTOR;
+    
     obj_func.update(pd, original_value, gradient, err ); MSQ_ERRRTN(err);
     term_crit->accumulate_inner( pd, original_value, &gradient[0], err ); MSQ_ERRRTN(err); 
     term_crit->accumulate_patch( pd, err );  MSQ_ERRRTN(err);

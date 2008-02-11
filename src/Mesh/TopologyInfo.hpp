@@ -116,6 +116,8 @@ class MESQUITE_EXPORT TopologyInfo
     static const unsigned* edge_vertices( EntityTopology topo,
                                           unsigned edge_number,
                                           MsqError& err );
+    static const unsigned* edge_vertices( EntityTopology topo,
+                                          unsigned edge_number );
     
      /**\brief Get face corner indices in element connectivity array 
        *
@@ -128,6 +130,9 @@ class MESQUITE_EXPORT TopologyInfo
                                           unsigned face_number,
                                           unsigned& num_vertices_out,
                                           MsqError& err );
+    static const unsigned* face_vertices( EntityTopology topo,
+                                          unsigned face_number,
+                                          unsigned& num_vertices_out );
 
     /**\brief Get corner indices of side 
      *
@@ -146,6 +151,10 @@ class MESQUITE_EXPORT TopologyInfo
                                           unsigned side_number,
                                           unsigned& num_verts_out,
                                           MsqError& err );
+    static const unsigned* side_vertices( EntityTopology topo,
+                                          unsigned side_dimension, 
+                                          unsigned side_number,
+                                          unsigned& num_verts_out );
 
      
       

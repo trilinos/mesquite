@@ -125,6 +125,29 @@ void PatchData::get_minmax_element_unsigned_area(double& min, double& max, MsqEr
     MSQ_SETERR(err)(MsqError::INTERNAL_ERROR);
 }
 
+void PatchData::get_minmax_edge_length(double& min, double& max) const
+{
+  min = HUGE_VAL;
+  max = -HUGE_VAL;
+  
+  for (size_t i = 0; i < num_elements(); ++i) {
+    const MsqMeshEntity& elem = element_by_index(i);
+    const size_t* conn = elem.get_vertex_index_array();
+    const unsigned num_edges = TopologyInfo::edges( elem.get_element_type() );
+    for (unsigned e = 0; e < num_edges; ++e) {
+      const unsigned* edge = TopologyInfo::edge_vertices( elem.get_element_type(), e );
+      const double len_sqr = (vertex_by_index(conn[edge[0]]) - 
+                              vertex_by_index(conn[edge[1]])).length_squared();
+      if (len_sqr < min)
+        min = len_sqr;
+      if (len_sqr > max)
+        max = len_sqr;
+    }
+  }
+  min = sqrt(min);
+  max = sqrt(max);
+}
+
 double PatchData::get_barrier_delta(MsqError &err)
 {
   double result;

@@ -196,6 +196,8 @@ namespace Mesquite
     //! when used properly. See also PatchData::clear_computed_info() .
     void get_minmax_element_unsigned_area(double& min, double& max, MsqError &err);
     
+    void get_minmax_edge_length(double& min, double& max) const;
+    
     //! Returns delta based on the minimum and maximum corner determinant over all elements in the patch
     //! This information is stored in the patch and should not decrease performance
     //! when used properly. See also PatchData::clear_computed_info() .

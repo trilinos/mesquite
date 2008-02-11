@@ -435,6 +435,18 @@ const unsigned*  TopologyInfo::edge_vertices( EntityTopology topo,
   return instance.edgeMap[topo-FIRST_FACE][edge];
 }
 
+const unsigned*  TopologyInfo::edge_vertices( EntityTopology topo,
+                                              unsigned edge )
+{
+  if (topo < (EntityTopology)FIRST_FACE || 
+      topo > (EntityTopology)LAST_VOL || 
+      edge >= edges( topo ) )
+  {
+    return 0;
+  }
+  return instance.edgeMap[topo-FIRST_FACE][edge];
+}
+
 const unsigned* TopologyInfo::face_vertices( EntityTopology topo,
                                              unsigned face,
                                              unsigned& length,
@@ -447,6 +459,20 @@ const unsigned* TopologyInfo::face_vertices( EntityTopology topo,
     MSQ_SETERR(err)(MsqError::INVALID_ARG);
     topo = (EntityTopology)FIRST_VOL;
     face = 0;
+  }
+  
+  length = instance.faceMap[topo-FIRST_VOL][face][0];
+  return instance.faceMap[topo-FIRST_VOL][face] + 1;
+}
+const unsigned* TopologyInfo::face_vertices( EntityTopology topo,
+                                             unsigned face,
+                                             unsigned& length )
+{
+  if (topo < (EntityTopology)FIRST_VOL || 
+      topo > (EntityTopology)LAST_VOL || 
+      face >= faces( topo ) )
+  {
+    return 0;
   }
   
   length = instance.faceMap[topo-FIRST_VOL][face][0];
@@ -483,6 +509,34 @@ const unsigned* TopologyInfo::side_vertices( EntityTopology topo,
   {
     MSQ_SETERR(err)(MsqError::INVALID_ARG);
     count_out = 0;
+    result = 0;
+  }    
+  return result;
+}
+const unsigned* TopologyInfo::side_vertices( EntityTopology topo,
+                                             unsigned dim,
+                                             unsigned side,
+                                             unsigned& count_out  )
+{
+  static const unsigned all[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+  const unsigned* result;
+  
+  if (dim != 0 && dim == dimension(topo))
+  {
+    count_out = corners( topo );
+    result = all;
+  }
+  else if (dim == 1)
+  {
+    count_out = 2;
+    result = edge_vertices( topo, side );
+  }
+  else if( dim == 2)
+  {
+    result = face_vertices( topo, side, count_out );
+  } 
+  else
+  {
     result = 0;
   }    
   return result;
