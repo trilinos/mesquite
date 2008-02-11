@@ -25,6 +25,7 @@
 #include "MsqDebug.hpp"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdarg.h>
 
 namespace Mesquite
@@ -37,12 +38,38 @@ msq_std::vector<msq_stdio::ostream*> MsqDebug::streams;
 msq_std::vector<bool> MsqDebug::flags;
 
 #ifdef MSQ_ENABLE_DEBUG
+static void parse_flag_string( const char* str, bool flag_val )
+{
+  char* s = strdup(str);
+  const char delim[] = ";,";
+  for (const char* p = strtok( s, delim ); p; p = strtok( 0, delim ) ) {
+    int beg, end;
+    switch (sscanf( p, "%u - %u", &beg, &end )) {
+      case 1:
+        end = beg;
+        // fall through 
+      case 2:
+        for ( ; beg <= end; ++beg)
+          MsqDebug::set( beg, flag_val );
+        break;
+    }
+  }
+  free( s );
+}
+
 MsqDebug::InitializeFlags::InitializeFlags( )
 {
   const unsigned flag_array[] = { MSQ_ENABLE_DEBUG, 0 };
   size_t length = sizeof(flag_array) / sizeof(unsigned) - 1;
   while (length > 0)
     MsqDebug::set( flag_array[--length], true );
+  
+  const char* envstr = getenv( "MESQUITE_DEBUG" );
+  if (envstr) 
+    parse_flag_string( envstr, true );
+  envstr = getenv( "MESQUITE_NO_DEBUG" );
+  if (envstr) 
+    parse_flag_string( envstr, false );
 }
 #else
 MsqDebug::InitializeFlags::InitializeFlags( ) {}
