@@ -408,7 +408,7 @@ namespace Mesquite
       //! domain to which "entity_handle" is constrained.
       //! The handle determines the domain.  The coordinate
       //! is the proposed new position on that domain.
-    virtual void snap_to(Mesh::EntityHandle entity_handle,
+    virtual void snap_to(Mesh::VertexHandle entity_handle,
                          Vector3D &coordinate) const = 0;
     
       //! Returns the normal of the domain to which
@@ -424,9 +424,11 @@ namespace Mesquite
       //!
       //! User should see also PatchData::get_domain_normal_at_vertex and
       //! PatchData::get_domain_normal_at_element .
-    virtual void normal_at(Mesh::EntityHandle entity_handle,
-                           Vector3D &coordinate) const = 0;
-                           
+    virtual void vertex_normal_at(Mesh::VertexHandle entity_handle,
+                                  Vector3D &coordinate) const = 0;
+    virtual void element_normal_at(Mesh::ElementHandle entity_handle,
+                                  Vector3D &coordinate) const = 0;
+                          
       /**\brief evaluate surface normals
        *
        * Returns normals for a domain.
@@ -438,10 +440,10 @@ namespace Mesquite
        *                     domain normals.
        *\param count         The length of the coordinates array.
        */
-    virtual void normal_at( const Mesh::EntityHandle* handles,
-                            Vector3D coordinates[],
-                            unsigned count,
-                            MsqError& err ) const = 0;
+    virtual void vertex_normal_at( const Mesh::VertexHandle* handles,
+                                   Vector3D coordinates[],
+                                   unsigned count,
+                                   MsqError& err ) const = 0;
                             
       /**\brief evaluate closest point and normal
        *
@@ -455,7 +457,7 @@ namespace Mesquite
        *\param closest       Closest position in the domain.
        *\param normal        Domain normal at the location of 'closest'
        */
-    virtual void closest_point( Mesh::EntityHandle handle,
+    virtual void closest_point( Mesh::VertexHandle handle,
                                 const Vector3D& position,
                                 Vector3D& closest,
                                 Vector3D& normal,

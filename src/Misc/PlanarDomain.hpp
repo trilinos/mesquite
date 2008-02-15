@@ -73,25 +73,27 @@ namespace Mesquite
     
     Vector3D get_origin() const { return -mCoeff * mNormal; }
     
-    virtual void snap_to(Mesh::EntityHandle entity_handle,
+    virtual void snap_to(Mesh::VertexHandle entity_handle,
                          Vector3D &coordinate) const;
     
-    virtual void normal_at(Mesh::EntityHandle entity_handle,
-                           Vector3D &coordinate) const;
-
+    virtual void vertex_normal_at(Mesh::VertexHandle entity_handle,
+                                  Vector3D &coordinate) const;
     
-    virtual void normal_at(const Mesh::EntityHandle* handle,
-                           Vector3D coords[],
-                           unsigned count,
-                           MsqError& err) const;
+    virtual void element_normal_at(Mesh::ElementHandle entity_handle,
+                                   Vector3D &coordinate) const;
+    
+    virtual void vertex_normal_at(const Mesh::VertexHandle* handle,
+                                  Vector3D coords[],
+                                  unsigned count,
+                                  MsqError& err) const;
 
-    virtual void closest_point( Mesh::EntityHandle handle,
+    virtual void closest_point( Mesh::VertexHandle handle,
                                 const Vector3D& position,
                                 Vector3D& closest,
                                 Vector3D& normal,
                                 MsqError& err ) const;
 
-    virtual void domain_DoF( const Mesh::EntityHandle* handle_array,
+    virtual void domain_DoF( const Mesh::VertexHandle* handle_array,
                              unsigned short* dof_array,
                              size_t num_vertices,
                              MsqError& err ) const;

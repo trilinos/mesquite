@@ -84,7 +84,7 @@ void XYRectangle::setup( Mesh* mesh, MsqError& err )
   }
 }
 
-void XYRectangle::snap_to( Mesh::EntityHandle vertex,
+void XYRectangle::snap_to( Mesh::VertexHandle vertex,
                            Vector3D &coordinate ) const
 {
     // everything gets moved into the plane
@@ -95,33 +95,37 @@ void XYRectangle::snap_to( Mesh::EntityHandle vertex,
     coordinate[i->second.axis] = i->second.coord;
 }
   
-void XYRectangle::normal_at( Mesh::EntityHandle handle, Vector3D &norm ) const
+void XYRectangle::vertex_normal_at( Mesh::VertexHandle handle, Vector3D &norm ) const
+{
+  norm.set(0,0,1);
+}
+  
+void XYRectangle::element_normal_at( Mesh::ElementHandle handle, Vector3D &norm ) const
 {
   norm.set(0,0,1);
 }
 
-void XYRectangle::normal_at( const Mesh::EntityHandle* elements,
-                             Vector3D normals[],
-                             unsigned count,
-                             MsqError&  ) const
+void XYRectangle::vertex_normal_at( const Mesh::VertexHandle* vertices,
+                                    Vector3D normals[],
+                                    unsigned count,
+                                    MsqError&  ) const
 {
-  for (unsigned i = 0; i < count; ++i)
-    normal_at( elements[i], normals[i] );
+  std::fill( normals, normals+count, Vector3D(0,0,1) );
 }
     
-void XYRectangle::closest_point( Mesh::EntityHandle element,
+void XYRectangle::closest_point( Mesh::VertexHandle vertex,
                                  const Vector3D& position,
                                  Vector3D& closest,
                                  Vector3D& normal,
                                  MsqError&  ) const
 {
   normal = position;
-  normal_at( element, normal );
+  vertex_normal_at( vertex, normal );
   closest = position;
   closest[2] = 0;
 }
     
-void XYRectangle::domain_DoF( const Mesh::EntityHandle* vertices,
+void XYRectangle::domain_DoF( const Mesh::VertexHandle* vertices,
                               unsigned short* dof_array,
                               size_t num_handles,
                               MsqError&  ) const

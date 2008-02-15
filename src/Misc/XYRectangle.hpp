@@ -76,24 +76,27 @@ class XYRectangle : public Mesquite::MeshDomain
        */
     void setup( Mesquite::Mesh* mesh, Mesquite::MsqError& err );
 
-    void snap_to( Mesquite::Mesh::EntityHandle entity_handle,
+    void snap_to( Mesquite::Mesh::VertexHandle entity_handle,
                   Mesquite::Vector3D &coordinate) const;
   
-    void normal_at( Mesquite::Mesh::EntityHandle entity_handle,
-                    Mesquite::Vector3D &coordinate) const;
+    void vertex_normal_at( Mesquite::Mesh::VertexHandle entity_handle,
+                           Mesquite::Vector3D &coordinate) const;
 
-    void normal_at( const Mesquite::Mesh::EntityHandle* handles,
-                    Mesquite::Vector3D coordinates[],
-                    unsigned count,
-                    Mesquite::MsqError& err ) const;
+    void element_normal_at( Mesquite::Mesh::ElementHandle entity_handle,
+                            Mesquite::Vector3D &coordinate) const;
+
+    void vertex_normal_at( const Mesquite::Mesh::VertexHandle* handles,
+                           Mesquite::Vector3D coordinates[],
+                           unsigned count,
+                           Mesquite::MsqError& err ) const;
     
-    void closest_point( Mesquite:: Mesh::EntityHandle handle,
+    void closest_point( Mesquite:: Mesh::VertexHandle handle,
                         const Mesquite::Vector3D& position,
                         Mesquite::Vector3D& closest,
                         Mesquite::Vector3D& normal,
                         Mesquite::MsqError& err ) const;
     
-    void domain_DoF( const Mesquite::Mesh::EntityHandle* handle_array,
+    void domain_DoF( const Mesquite::Mesh::VertexHandle* handle_array,
                      unsigned short* dof_array,
                      size_t num_handles,
                      Mesquite::MsqError& err ) const;

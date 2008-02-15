@@ -53,7 +53,7 @@ class BoundedCylinderDomain : public CylinderDomain
       : CylinderDomain( radius, axis_direction, axis_point ) {}
 
     
-    virtual void domain_DoF( const Mesh::EntityHandle* handle_array,
+    virtual void domain_DoF( const Mesh::VertexHandle* handle_array,
                              unsigned short* dof_array,
                              size_t count,
                              MsqError& err ) const;
@@ -67,7 +67,7 @@ class BoundedCylinderDomain : public CylinderDomain
        *                  bound to the curve.
        */
     void create_curve( double distance, 
-                       const msq_std::vector<Mesh::EntityHandle>& handles );
+                       const msq_std::vector<Mesh::VertexHandle>& handles );
                              
       /**\brief define a circular curve bounding the cylinder
        *\param distance  Location on cylinder at which to create
@@ -91,12 +91,12 @@ class BoundedCylinderDomain : public CylinderDomain
                    Vector3D& closest,
                    Vector3D& normal ) const;
     
-    virtual void evaluate( Mesh::EntityHandle handle,
+    virtual void evaluate( Mesh::VertexHandle handle,
                            const Vector3D& point,
                            Vector3D& closest,
                            Vector3D& normal ) const;
   
-    bool find_curve( Mesh::EntityHandle handle, double& t ) const;
+    bool find_curve( Mesh::VertexHandle handle, double& t ) const;
   
   private:
   

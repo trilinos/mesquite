@@ -39,7 +39,7 @@
 # include <algorithm>
 #endif
 
-void Mesquite::SphericalDomain::snap_to(Mesh::EntityHandle /*entity_handle*/,
+void Mesquite::SphericalDomain::snap_to(Mesh::VertexHandle /*entity_handle*/,
                                         Vector3D &coordinate) const
 {
     // Get vector center to coordinate, store in coordinate.
@@ -56,8 +56,8 @@ void Mesquite::SphericalDomain::snap_to(Mesh::EntityHandle /*entity_handle*/,
   coordinate += mCenter;
 }
 
-void Mesquite::SphericalDomain::normal_at(Mesh::EntityHandle /*entity_handle*/,
-                                          Vector3D &coordinate) const
+void Mesquite::SphericalDomain::vertex_normal_at(Mesh::VertexHandle /*entity_handle*/,
+                                                 Vector3D &coordinate) const
 {
     // normal is vector from center to input position
   coordinate -= mCenter;
@@ -69,17 +69,23 @@ void Mesquite::SphericalDomain::normal_at(Mesh::EntityHandle /*entity_handle*/,
   if (!finite(coordinate.x()))
     coordinate.set( 1.0, 0.0, 0.0 );
 }
-
-void Mesquite::SphericalDomain::normal_at( const Mesquite::Mesh::EntityHandle* handle,
-                                           Mesquite::Vector3D coords[],
-                                           unsigned count,
-                                           Mesquite::MsqError& ) const
+void Mesquite::SphericalDomain::element_normal_at(Mesh::ElementHandle h,
+                                                 Vector3D &coordinate) const
 {
-  for (unsigned i = 0; i < count; ++i)
-    normal_at( handle[i], coords[i] );
+  SphericalDomain::vertex_normal_at( h, coordinate );
 }
 
-void Mesquite::SphericalDomain::closest_point( Mesquite::Mesh::EntityHandle ,
+void Mesquite::SphericalDomain::vertex_normal_at( 
+                                const Mesquite::Mesh::VertexHandle* handle,
+                                Mesquite::Vector3D coords[],
+                                unsigned count,
+                                Mesquite::MsqError& ) const
+{
+  for (unsigned i = 0; i < count; ++i)
+    vertex_normal_at( handle[i], coords[i] );
+}
+
+void Mesquite::SphericalDomain::closest_point( Mesquite::Mesh::VertexHandle ,
                                                const Mesquite::Vector3D& position,
                                                Mesquite::Vector3D& closest,
                                                Mesquite::Vector3D& normal,
@@ -93,7 +99,7 @@ void Mesquite::SphericalDomain::closest_point( Mesquite::Mesh::EntityHandle ,
 }
 
 
-void Mesquite::SphericalDomain::domain_DoF( const Mesh::EntityHandle* ,
+void Mesquite::SphericalDomain::domain_DoF( const Mesh::VertexHandle* ,
                                             unsigned short* dof_array,
                                             size_t num_vertices,
                                             MsqError&  ) const

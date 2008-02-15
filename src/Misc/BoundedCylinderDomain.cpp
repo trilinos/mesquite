@@ -41,7 +41,7 @@
 
 namespace Mesquite {
 
-void BoundedCylinderDomain::domain_DoF( const Mesh::EntityHandle* handle_array,
+void BoundedCylinderDomain::domain_DoF( const Mesh::VertexHandle* handle_array,
                                         unsigned short* dof_array,
                                         size_t count,
                                         MsqError& err ) const
@@ -55,7 +55,7 @@ void BoundedCylinderDomain::domain_DoF( const Mesh::EntityHandle* handle_array,
 }
 
 void BoundedCylinderDomain::create_curve( double distance, 
-                       const msq_std::vector<Mesh::EntityHandle>& handles )
+                       const msq_std::vector<Mesh::VertexHandle>& handles )
 {
   Curve c;
   c.t = distance;
@@ -117,7 +117,7 @@ void BoundedCylinderDomain::evaluate( double t,
   }
 }
 
-void BoundedCylinderDomain::evaluate( Mesh::EntityHandle handle,
+void BoundedCylinderDomain::evaluate( Mesh::VertexHandle handle,
                                       const Vector3D& point,
                                       Vector3D& closest,
                                       Vector3D& normal ) const
@@ -129,7 +129,7 @@ void BoundedCylinderDomain::evaluate( Mesh::EntityHandle handle,
     this->CylinderDomain::evaluate( handle, point, closest, normal );
 }
 
-bool BoundedCylinderDomain::find_curve( Mesh::EntityHandle handle, double& t ) const
+bool BoundedCylinderDomain::find_curve( Mesh::VertexHandle handle, double& t ) const
 {
   for (msq_std::list<Curve>::const_iterator i = curveList.begin(); i != curveList.end(); ++i)
     if (msq_std::binary_search( i->handles.begin(), i->handles.end(), handle ))

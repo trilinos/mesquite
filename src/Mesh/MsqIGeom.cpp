@@ -117,24 +117,27 @@ public:
 
   virtual ~DomainIGeom();
 
-  void snap_to( Mesh::EntityHandle entity_handle,
+  void snap_to( Mesh::VertexHandle entity_handle,
                 Vector3D& coordinat ) const;
 
-  void normal_at( Mesh::EntityHandle entity_handle,
-                  Vector3D& coordinate ) const;
-  
-  void normal_at( const Mesh::EntityHandle* handles,
-                  Vector3D coordinates[],
-                  unsigned count,
-                  MsqError& err ) const;
+  void vertex_normal_at( Mesh::VertexHandle entity_handle,
+                         Vector3D& coordinate ) const;
 
-  void closest_point( Mesh::EntityHandle handle,
+  void element_normal_at( Mesh::ElementHandle entity_handle,
+                          Vector3D& coordinate ) const;
+  
+  void vertex_normal_at( const Mesh::VertexHandle* handles,
+                         Vector3D coordinates[],
+                         unsigned count,
+                         MsqError& err ) const;
+
+  void closest_point( Mesh::VertexHandle handle,
                       const Vector3D& position,
                       Vector3D& closest,
                       Vector3D& normal,
                       MsqError& err ) const;
 
-  void domain_DoF( const Mesh::EntityHandle* handle_array,
+  void domain_DoF( const Mesh::VertexHandle* handle_array,
                    unsigned short* dof_array,
                    size_t num_vertices,
                    MsqError& err ) const;
@@ -171,25 +174,27 @@ public:
 
   virtual ~EntIGeom();
 
-  void snap_to( Mesh::EntityHandle entity_handle,
+  void snap_to( Mesh::VertexHandle entity_handle,
                 Vector3D& coordinat ) const;
 
-  void normal_at( Mesh::EntityHandle entity_handle,
-                  Vector3D& coordinate ) const;
+  void vertex_normal_at( Mesh::VertexHandle entity_handle,
+                         Vector3D& coordinate ) const;
 
+  void element_normal_at( Mesh::ElementHandle entity_handle,
+                          Vector3D& coordinate ) const;
   
-  void normal_at( const Mesh::EntityHandle* handles,
-                  Vector3D coordinates[],
-                  unsigned count,
-                  MsqError& err ) const;
+  void vertex_normal_at( const Mesh::VertexHandle* handles,
+                         Vector3D coordinates[],
+                         unsigned count,
+                         MsqError& err ) const;
 
-  void closest_point( Mesh::EntityHandle handle,
+  void closest_point( Mesh::VertexHandle handle,
                       const Vector3D& position,
                       Vector3D& closest,
                       Vector3D& normal,
                       MsqError& err ) const;
 
-  void domain_DoF( const Mesh::EntityHandle* handle_array,
+  void domain_DoF( const Mesh::VertexHandle* handle_array,
                    unsigned short* dof_array,
                    size_t num_vertices,
                    MsqError& err ) const;
@@ -239,7 +244,7 @@ DomainIGeom::DomainIGeom( iGeom_Instance geom,
 DomainIGeom::~DomainIGeom() {}
 
 
-void DomainIGeom::snap_to( Mesh::EntityHandle handle,
+void DomainIGeom::snap_to( Mesh::VertexHandle handle,
                            Vector3D& coordinate ) const
 {
   int ierr;
@@ -258,8 +263,8 @@ void DomainIGeom::snap_to( Mesh::EntityHandle handle,
   }
 }
 
-void DomainIGeom::normal_at( Mesh::EntityHandle handle,
-                             Vector3D& coordinate ) const
+void DomainIGeom::vertex_normal_at( Mesh::VertexHandle handle,
+                                    Vector3D& coordinate ) const
 {
   int ierr;
   iBase_EntityHandle geom;
@@ -277,10 +282,16 @@ void DomainIGeom::normal_at( Mesh::EntityHandle handle,
   }
 }
 
-void DomainIGeom::normal_at( const Mesh::EntityHandle* handle,
-                             Vector3D coordinates[],
-                             unsigned count,
-                             MsqError& err ) const
+void DomainIGeom::element_normal_at( Mesh::ElementHandle handle,
+                                     Vector3D& coordinate ) const
+{
+  DomainIGeom::vertex_normal_at( handle, coordinate );
+}
+
+void DomainIGeom::vertex_normal_at( const Mesh::VertexHandle* handle,
+                                    Vector3D coordinates[],
+                                    unsigned count,
+                                    MsqError& err ) const
 {
   int ierr;
   
@@ -298,7 +309,7 @@ void DomainIGeom::normal_at( const Mesh::EntityHandle* handle,
   }
 }
 
-void DomainIGeom::domain_DoF( const Mesh::EntityHandle* handle_array,
+void DomainIGeom::domain_DoF( const Mesh::VertexHandle* handle_array,
                               unsigned short* dof_array,
                               size_t count,
                               MsqError& err ) const
@@ -321,7 +332,7 @@ void DomainIGeom::domain_DoF( const Mesh::EntityHandle* handle_array,
     
 
 
-void DomainIGeom::closest_point( Mesh::EntityHandle handle,
+void DomainIGeom::closest_point( Mesh::VertexHandle handle,
                                  const Vector3D& position,
                                  Vector3D& closest,
                                  Vector3D& normal,
@@ -400,16 +411,24 @@ EntIGeom::EntIGeom( iGeom_Instance geom, iBase_EntityHandle geom_ent_handle )
 EntIGeom::~EntIGeom() {}
 
 
-void EntIGeom::snap_to( Mesh::EntityHandle,
-                           Vector3D& coordinate ) const
+void EntIGeom::snap_to( Mesh::VertexHandle,
+                        Vector3D& coordinate ) const
 {
   int ierr = move_to( geomEntHandle, coordinate );
   if (iBase_SUCCESS != ierr)
     process_itaps_error(ierr);
 }
 
-void EntIGeom::normal_at( Mesh::EntityHandle,
-                              Vector3D& coordinate ) const
+void EntIGeom::vertex_normal_at( Mesh::VertexHandle,
+                                 Vector3D& coordinate ) const
+{
+  int ierr = normal( geomEntHandle, coordinate );
+  if (iBase_SUCCESS != ierr)
+    process_itaps_error(ierr);
+}
+
+void EntIGeom::element_normal_at( Mesh::ElementHandle,
+                                  Vector3D& coordinate ) const
 {
   int ierr = normal( geomEntHandle, coordinate );
   if (iBase_SUCCESS != ierr)
@@ -417,31 +436,31 @@ void EntIGeom::normal_at( Mesh::EntityHandle,
 }
 
 
-void EntIGeom::normal_at( const Mesh::EntityHandle*,
-                             Vector3D coordinates[],
-                             unsigned count,
-                             MsqError& err ) const
+void EntIGeom::vertex_normal_at( const Mesh::VertexHandle*,
+                                 Vector3D coordinates[],
+                                 unsigned count,
+                                 MsqError& err ) const
 {
   int ierr = normal( geomEntHandle, coordinates, count );
   if (iBase_SUCCESS != ierr)
     MSQ_SETERR(err)(process_itaps_error(ierr), MsqError::INTERNAL_ERROR);
 }
 
-void EntIGeom::closest_point( Mesh::EntityHandle handle,
-                                 const Vector3D& position,
-                                 Vector3D& closest,
-                                 Vector3D& normal,
-                                 MsqError& err ) const
+void EntIGeom::closest_point( Mesh::VertexHandle handle,
+                              const Vector3D& position,
+                              Vector3D& closest,
+                              Vector3D& normal,
+                              MsqError& err ) const
 {
   int ierr = closest_and_normal( geomEntHandle, position, closest, normal );
   if (iBase_SUCCESS != ierr)
     MSQ_SETERR(err)(process_itaps_error(ierr), MsqError::INTERNAL_ERROR);
 }
 
-void EntIGeom::domain_DoF( const Mesh::EntityHandle* ,
-                              unsigned short* dof_array,
-                              size_t num_vertices,
-                              MsqError& err ) const
+void EntIGeom::domain_DoF( const Mesh::VertexHandle* ,
+                           unsigned short* dof_array,
+                           size_t num_vertices,
+                           MsqError& err ) const
 {
   unsigned short dim;
   int ierr = get_dimension( &geomEntHandle, &dim, 1 );

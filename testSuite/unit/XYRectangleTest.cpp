@@ -212,22 +212,21 @@ void XYRectangleTest::test_snap_to()
 void XYRectangleTest::test_normal_at()
 {
   MsqError err;
-  msq_std::vector<Mesh::ElementHandle> elems;
-  myMesh.get_all_elements( elems, err );
+  msq_std::vector<Mesh::VertexHandle> vertices;
+  myMesh.get_all_vertices( vertices, err );
   ASSERT_NO_ERROR(err);
   
-  for (size_t i = 0; i < elems.size(); ++i) {
-    msq_std::vector<Mesh::VertexHandle> verts;
-    msq_std::vector<size_t> junk;
-    MsqVertex coords;
-    myMesh.elements_get_attached_vertices( &elems[i], 1, verts, junk, err );
-    ASSERT_NO_ERROR(err);
-    myMesh.vertices_get_coordinates( &verts[0], &coords, 1, err );
-    ASSERT_NO_ERROR(err);
-    
-    Vector3D vect = coords;
-    myDomain.normal_at( &elems[i], &vect, 1, err );
-    CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(0,0,1), vect, 1e-6 );
+  msq_std::vector<MsqVertex> coords(vertices.size());
+  myMesh.vertices_get_coordinates( &vertices[0], &coords[0], vertices.size(), err );
+  ASSERT_NO_ERROR(err);
+  
+  msq_std::vector<Vector3D> normals(vertices.size());
+  msq_std::copy( coords.begin(), coords.end(), normals.begin() );
+  myDomain.vertex_normal_at( &vertices[0], &normals[0], vertices.size(), err );
+  ASSERT_NO_ERROR(err);
+  
+  for (size_t i = 0; i < normals.size(); ++i) {
+    CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(0,0,1), normals[i], 1e-6 );
   }    
 }
 

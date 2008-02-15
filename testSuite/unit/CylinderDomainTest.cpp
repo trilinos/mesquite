@@ -101,15 +101,28 @@ void CylinderDomainTest::test_z_normal_at()
   Vector3D vect;
   
   vect.set( 0.5, 0, 1 );
-  z.normal_at( 0, vect );
+  z.vertex_normal_at( 0, vect );
   ASSERT_VECTORS_EQUAL( Vector3D( 1, 0, 0 ), vect );
   
   vect.set( 0, 100, -5 );
-  z.normal_at( 0, vect );
+  z.vertex_normal_at( 0, vect );
   ASSERT_VECTORS_EQUAL( Vector3D( 0, 1, 0 ), vect );
   
   vect = z.center();
-  z.normal_at( 0, vect );
+  z.vertex_normal_at( 0, vect );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, vect.z(), EPSILON );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, vect.length(), EPSILON );
+  
+  vect.set( 0.5, 0, 1 );
+  z.element_normal_at( 0, vect );
+  ASSERT_VECTORS_EQUAL( Vector3D( 1, 0, 0 ), vect );
+  
+  vect.set( 0, 100, -5 );
+  z.element_normal_at( 0, vect );
+  ASSERT_VECTORS_EQUAL( Vector3D( 0, 1, 0 ), vect );
+  
+  vect = z.center();
+  z.element_normal_at( 0, vect );
   CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, vect.z(), EPSILON );
   CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, vect.length(), EPSILON );
 }
@@ -119,15 +132,28 @@ void CylinderDomainTest::test_x_normal_at()
   Vector3D vect;
   
   vect.set( 1, 0, 0.5 );
-  x.normal_at( 0, vect );
+  x.vertex_normal_at( 0, vect );
   ASSERT_VECTORS_EQUAL( Vector3D( 0, 0, 1 ), vect );
   
   vect.set( -5, 100, 0 );
-  x.normal_at( 0, vect );
+  x.vertex_normal_at( 0, vect );
   ASSERT_VECTORS_EQUAL( Vector3D( 0, 1, 0 ), vect );
   
   vect = x.center();
-  x.normal_at( 0, vect );
+  x.vertex_normal_at( 0, vect );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, vect.x(), EPSILON );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, vect.length(), EPSILON );
+  
+  vect.set( 1, 0, 0.5 );
+  x.element_normal_at( 0, vect );
+  ASSERT_VECTORS_EQUAL( Vector3D( 0, 0, 1 ), vect );
+  
+  vect.set( -5, 100, 0 );
+  x.element_normal_at( 0, vect );
+  ASSERT_VECTORS_EQUAL( Vector3D( 0, 1, 0 ), vect );
+  
+  vect = x.center();
+  x.element_normal_at( 0, vect );
   CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, vect.x(), EPSILON );
   CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, vect.length(), EPSILON );
 }

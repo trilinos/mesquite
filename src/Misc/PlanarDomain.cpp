@@ -41,7 +41,7 @@ void Mesquite::PlanarDomain::set_plane( const Mesquite::Vector3D& normal,
   mCoeff = -(mNormal % point);
 }
 
-void Mesquite::PlanarDomain::snap_to(Mesquite::Mesh::EntityHandle
+void Mesquite::PlanarDomain::snap_to(Mesquite::Mesh::VertexHandle
                                        entity_handle,
                                      Vector3D &coordinate) const
 {
@@ -49,15 +49,23 @@ void Mesquite::PlanarDomain::snap_to(Mesquite::Mesh::EntityHandle
 }
 
 
-void Mesquite::PlanarDomain::normal_at(
-  Mesquite::Mesh::EntityHandle /*entity_handle*/,
+void Mesquite::PlanarDomain::vertex_normal_at(
+  Mesquite::Mesh::VertexHandle /*entity_handle*/,
+  Mesquite::Vector3D &coordinate) const
+{
+  coordinate = mNormal;
+}
+
+void Mesquite::PlanarDomain::element_normal_at(
+  Mesquite::Mesh::ElementHandle /*entity_handle*/,
   Mesquite::Vector3D &coordinate) const
 {
   coordinate = mNormal;
 }
 
 
-void Mesquite::PlanarDomain::normal_at( const Mesquite::Mesh::EntityHandle* ,
+void Mesquite::PlanarDomain::vertex_normal_at( 
+                                        const Mesquite::Mesh::VertexHandle* ,
                                         Vector3D coords[],
                                         unsigned count,
                                         Mesquite::MsqError& ) const
@@ -66,7 +74,7 @@ void Mesquite::PlanarDomain::normal_at( const Mesquite::Mesh::EntityHandle* ,
     coords[i] = mNormal;
 }
 
-void Mesquite::PlanarDomain::closest_point( Mesquite::Mesh::EntityHandle ,
+void Mesquite::PlanarDomain::closest_point( Mesquite::Mesh::VertexHandle ,
                                             const Mesquite::Vector3D& position,
                                             Mesquite::Vector3D& closest,
                                             Mesquite::Vector3D& normal,
@@ -76,7 +84,7 @@ void Mesquite::PlanarDomain::closest_point( Mesquite::Mesh::EntityHandle ,
   closest = position - mNormal * (mNormal % position + mCoeff);
 }
 
-void Mesquite::PlanarDomain::domain_DoF( const Mesh::EntityHandle* ,
+void Mesquite::PlanarDomain::domain_DoF( const Mesh::VertexHandle* ,
                                          unsigned short* dof_array,
                                          size_t num_vertices,
                                          MsqError&  ) const

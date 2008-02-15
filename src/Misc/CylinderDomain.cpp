@@ -38,7 +38,7 @@
 
 namespace Mesquite {
 
-void CylinderDomain::evaluate( Mesh::EntityHandle,
+void CylinderDomain::evaluate( Mesh::VertexHandle,
                                const Vector3D& point,
                                Vector3D& closest,
                                Vector3D& normal ) const
@@ -65,28 +65,36 @@ void CylinderDomain::evaluate( Mesh::EntityHandle,
   closest = axis_point + mRadius * normal;
 }
 
-void CylinderDomain::snap_to( Mesh::EntityHandle h, Vector3D& v ) const
+void CylinderDomain::snap_to( Mesh::VertexHandle h, Vector3D& v ) const
 {
   Vector3D p(v), n;
   evaluate( h, p, v, n );
 }
 
-void CylinderDomain::normal_at( Mesh::EntityHandle h, Vector3D& v ) const
+void CylinderDomain::vertex_normal_at( Mesh::VertexHandle h, Vector3D& v ) const
 {
   Vector3D p(v), l;
   evaluate( h, p, l, v );
 }
 
-void CylinderDomain::normal_at( const Mesh::EntityHandle* h,
-                                Vector3D coords[],
-                                unsigned count, 
-                                MsqError& ) const
+void CylinderDomain::element_normal_at( Mesh::ElementHandle h, Vector3D& v ) const
+{
+  Vector3D p(v), l;
+    // NOTE: Explicitly invoke this class's evaluate method for elements.
+    //       BoundedCylindarDomain overrides evaluate for vertices only.
+  CylinderDomain::evaluate( h, p, l, v );
+}
+
+void CylinderDomain::vertex_normal_at( const Mesh::VertexHandle* h,
+                                       Vector3D coords[],
+                                       unsigned count, 
+                                       MsqError& ) const
 {
   for (unsigned i = 0; i < count; ++i)
-    normal_at( h[i], coords[i] );
+    vertex_normal_at( h[i], coords[i] );
 }
  
-void CylinderDomain::closest_point( Mesh::EntityHandle handle,
+void CylinderDomain::closest_point( Mesh::VertexHandle handle,
                                     const Vector3D& position,
                                     Vector3D& closest,
                                     Vector3D& normal,
@@ -95,7 +103,7 @@ void CylinderDomain::closest_point( Mesh::EntityHandle handle,
   evaluate( handle, position, closest, normal );
 }
 
-void CylinderDomain::domain_DoF( const Mesh::EntityHandle* ,
+void CylinderDomain::domain_DoF( const Mesh::VertexHandle* ,
                                  unsigned short* dof_array,
                                  size_t count,
                                  MsqError&  ) const

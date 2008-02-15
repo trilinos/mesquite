@@ -29,7 +29,7 @@
 
 #include "MeshWriter.hpp"
 #include "Mesquite.hpp"
-#include "MeshInterface.hpp"
+#include "MeshImpl.hpp"
 #include "MsqError.hpp"
 #include "PatchData.hpp"
 #include "PlanarDomain.hpp"
@@ -205,6 +205,12 @@ void EdgeIterator::get_adjacent_vertices( MsqError& err )
  */
 void write_vtk( Mesh* mesh, const char* out_filename, MsqError &err)
 {
+  if (MeshImpl* msq_mesh = dynamic_cast<MeshImpl*>(mesh)) {
+    msq_mesh->write_vtk( out_filename, err );
+    MSQ_CHKERR(err);
+    return;
+  }
+
     // Open the file
   msq_stdio::ofstream file(out_filename);
   if (!file)
@@ -578,7 +584,7 @@ void write_stl( Mesh* mesh, const char* filename, MsqError& err )
 Projection::Projection( PlanarDomain* domain )
 {
   Vector3D normal;
-  domain->normal_at( 0, normal );
+  domain->vertex_normal_at( 0, normal );
   init( normal );
 }
 

@@ -1040,7 +1040,7 @@ void PatchData::update_cached_normals( MsqError& err )
   if (n == num_nodes())
   {
     msq_std::copy( vertexArray.begin(), vertexArray.end(), normalData.begin() );
-    domain->normal_at( &vertexHandlesArray[0], &normalData[0], num_nodes(), err );
+    domain->vertex_normal_at( &vertexHandlesArray[0], &normalData[0], num_nodes(), err );
     vertexNormalIndices.clear();
     MSQ_ERRRTN(err);
   }
@@ -1051,7 +1051,7 @@ void PatchData::update_cached_normals( MsqError& err )
     for (i = 0; i < num_nodes(); ++i) {
       if (dof[i] == 2) {
         normalData[nn] = vertexArray[i];
-        domain->normal_at( vertexHandlesArray[i], normalData[nn] );
+        domain->vertex_normal_at( vertexHandlesArray[i], normalData[nn] );
         vertexNormalIndices[i] = nn;
         ++nn;
       }
@@ -1071,7 +1071,7 @@ void PatchData::get_domain_normal_at_element(size_t elem_index,
   if (domain_set())
   {
     elementArray[elem_index].get_centroid(surf_norm, *this, err); MSQ_ERRRTN(err);
-    get_domain()->normal_at( elementHandlesArray[elem_index], surf_norm );
+    get_domain()->element_normal_at( elementHandlesArray[elem_index], surf_norm );
   }
   else
     MSQ_SETERR(err)( "No domain constraint set.", MsqError::INVALID_STATE );
@@ -1095,7 +1095,7 @@ void PatchData::get_domain_normal_at_mid_edge( size_t elem_index,
   const MsqVertex& v1 = vertex_by_index( elem.get_vertex_index_array()[edge[0]] );
   const MsqVertex& v2 = vertex_by_index( elem.get_vertex_index_array()[edge[1]] );
   normal = 0.5 * (v1 + v2);
-  get_domain()->normal_at( elementHandlesArray[elem_index], normal );
+  get_domain()->element_normal_at( elementHandlesArray[elem_index], normal );
 }
 
 void PatchData::get_domain_normals_at_corners( size_t elem_index,
@@ -1136,7 +1136,7 @@ void PatchData::get_domain_normals_at_corners( size_t elem_index,
     else
     {
       normals_out[i] = vertexArray[v];
-      get_domain()->normal_at( elementHandlesArray[elem_index], normals_out[i] );
+      get_domain()->element_normal_at( elementHandlesArray[elem_index], normals_out[i] );
     }
   }
 }  
@@ -1177,7 +1177,7 @@ void PatchData::get_domain_normal_at_corner( size_t elem_index,
   else
   {
     normal = vertexArray[v];
-    get_domain()->normal_at( elementHandlesArray[elem_index], normal );
+    get_domain()->element_normal_at( elementHandlesArray[elem_index], normal );
   }
 }  
   
