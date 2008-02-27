@@ -2049,7 +2049,7 @@ void MeshImpl::vtk_store_point_data( const void* data, TagDescription& tag, MsqE
   size_t tag_handle = myTags->handle( tag.name, err ); MSQ_ERRRTN(err);
   if (!tag_handle)
   {
-    tag_handle = myTags->create( tag, err ); MSQ_ERRRTN(err);
+    tag_handle = myTags->create( tag, 0, err ); MSQ_ERRRTN(err);
   }
   else 
   {
@@ -2107,7 +2107,7 @@ void MeshImpl::vtk_store_cell_data( const void* data, TagDescription& tag, MsqEr
   size_t tag_handle = myTags->handle( tag.name, err );  MSQ_ERRRTN(err);
   if (!tag_handle)
   {
-    tag_handle = myTags->create( tag, err ); MSQ_ERRRTN(err);
+    tag_handle = myTags->create( tag, 0, err ); MSQ_ERRRTN(err);
   }
   else 
   {
@@ -2524,7 +2524,7 @@ TagHandle MeshImpl::tag_create( const msq_std::string& name,
   
   size_t size = MeshImplTags::size_from_tag_type( type );
   TagDescription desc( name, type, vtype, length*size, field );
-  size_t index = myTags->create( desc, err ); MSQ_ERRZERO(err);
+  size_t index = myTags->create( desc, defval, err ); MSQ_ERRZERO(err);
   return (TagHandle)index;
 }
 

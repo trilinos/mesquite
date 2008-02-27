@@ -97,6 +97,7 @@ size_t MeshImplTags::create( const msq_std::string& name,
 }
 
 size_t MeshImplTags::create( const TagDescription& desc,
+                             const void* defval,
                              MsqError& err )
 {
   size_t h = handle( desc.name.c_str(), err );
@@ -116,6 +117,12 @@ size_t MeshImplTags::create( const TagDescription& desc,
   TagData* tag = new TagData( desc );
   h = tagList.size();
   tagList.push_back(tag);
+  
+  if (defval)
+  {
+    tag->defaultValue = malloc( tag->desc.size );
+    memcpy( tag->defaultValue, defval, tag->desc.size );
+  }
   
   return h+1;
 }

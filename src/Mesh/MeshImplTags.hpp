@@ -160,7 +160,9 @@ class MeshImplTags {
      * 
      * Create a new tag with the passed properties
      */
-  size_t create( const TagDescription& desc, MsqError& err );
+  size_t create( const TagDescription& desc,
+                 const void* defval,
+                 MsqError& err );
 
     /**\brief Remove a tag */
   void destroy( size_t tag_index, MsqError& err );
