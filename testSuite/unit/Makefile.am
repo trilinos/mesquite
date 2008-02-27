@@ -58,10 +58,12 @@ msq_test_SOURCES = msq_test_main.cpp \
 	CompositeOFTest.cpp \
 	ConditionNumberTest.cpp \
 	CylinderDomainTest.cpp \
+        DomainClassifierTest.cpp \
 	EdgeLengthMetricTest.cpp \
 	ElemSampleQMTest.cpp \
 	ExtraDataTest.cpp \
 	FileTokenizerTest.cpp \
+        GeomPrimTest.cpp \
 	IdealElementTest.cpp \
 	IdealTargetTest.cpp \
 	IdealWeightMeanRatioTest.cpp \
