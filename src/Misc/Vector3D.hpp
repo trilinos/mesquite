@@ -147,8 +147,8 @@ namespace Mesquite
     // Length functions
     inline double length_squared() const;
     inline double length() const;
-    friend  double length(Vector3D* const v,int n); //!< L2 norm for an array of Vector3Ds
-    friend  double Linf(Vector3D* const v,int n); //!< L inf norm for array of Vector3Ds
+    friend  double length(const Vector3D* v,int n); //!< L2 norm for an array of Vector3Ds
+    friend  double Linf(const Vector3D* v,int n); //!< L inf norm for array of Vector3Ds
 
     inline void set_length(const double new_length);
     inline void normalize();
@@ -405,18 +405,33 @@ namespace Mesquite
                           mCoords[1]*mCoords[1] +
                           mCoords[2]*mCoords[2]);
   }
-  inline double length_squared( Vector3D *const v, int n )
+  
+  inline double inner_product( const Vector3D* v1, const Vector3D* v2, size_t n )
+  {
+    double result = 0.0;
+    const Vector3D* const end = v1 + n;
+    while (v1 < end) {
+      result += *v1 % *v2;
+      ++v1;
+      ++v2;
+    }
+    return result;
+  }
+
+  inline double length_squared( const Vector3D*  v, int n )
   {
     double sum = 0.0;
     for (int i = 0; i < n; ++i)
       sum += v[i].length_squared();
     return sum;
   }
-  inline double length(Vector3D* const v,int n) // norm for an array of Vector3Ds
+
+  inline double length(const Vector3D*  v,int n) // norm for an array of Vector3Ds
   {
     return msq_stdc::sqrt( length_squared( v, n ) );
   }
-  inline double Linf(Vector3D* const v,int n) // max entry for an array of Vector3Ds
+
+  inline double Linf(const Vector3D*  v,int n) // max entry for an array of Vector3Ds
   {
     double max=0;  
     //loop over the length of the array
