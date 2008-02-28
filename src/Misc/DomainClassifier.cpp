@@ -1076,7 +1076,7 @@ void DomainClassifier::domain_DoF( const Mesh::VertexHandle* handles,
                                    MsqError& err ) const
 {
   for (size_t i = 0; i < num_handles; ++i) {
-    const MeshDomain* dom = find_element_domain( handles[i] );
+    const MeshDomain* dom = find_vertex_domain( handles[i] );
     if (!dom) 
       dof_array[i] = 3;
     else {
