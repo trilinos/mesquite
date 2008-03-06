@@ -295,6 +295,8 @@ void MeshImpl::write_vtk(const char* out_filename, MsqError &err)
     return;
   }
   
+  file.precision( 10 );
+  
     // Write a header
   file << "# vtk DataFile Version 3.0\n";
   file << "Mesquite Mesh\n";
