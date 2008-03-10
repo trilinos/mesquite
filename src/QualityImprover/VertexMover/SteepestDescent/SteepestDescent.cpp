@@ -55,7 +55,9 @@ PatchSet* SteepestDescent::get_patch_set()
 
 SteepestDescent::SteepestDescent(ObjectiveFunction* of, bool Nash) 
   : VertexMover(of, Nash),
-    PatchSetUser(true)
+    PatchSetUser(true),
+    projectGradient(false) //,
+    //cosineStep(false)
 {
 }  
   
@@ -72,94 +74,116 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
                                                 MsqError &err)
 {
   MSQ_FUNCTION_TIMER( "SteepestDescent::optimize_vertex_positions" );
-    //PRINT_INFO("\no  Performing Steepest Descent optimization.\n");
-  // Get the array of vertices of the patch. Free vertices are first.
-  const double STEP_DECREASE_FACTOR = 0.5, STEP_INCREASE_FACTOR = 1.1;
-  int num_vertices = pd.num_free_vertices();
-  msq_std::vector<Vector3D> gradient(num_vertices), dk(num_vertices);
-  //double norm;
-  bool sd_bool=true;//bool for OF values
+
+  const int SEARCH_MAX = 100;
+  const double c1 = 1e-4;
+  //msq_std::vector<Vector3D> unprojected(pd.num_free_vertices()); 
+  msq_std::vector<Vector3D> gradient(pd.num_free_vertices()); 
+  bool feasible=true;//bool for OF values
   double min_edge_len, max_edge_len;
-  double step_size, original_value;
+  double step_size, original_value, new_value;
+  double norm_squared;
   PatchDataVerticesMemento* pd_previous_coords;
   TerminationCriterion* term_crit=get_inner_termination_criterion();
   OFEvaluator& obj_func = get_objective_function_evaluator();
   
+    // get vertex memento so we can restore vertex coordinates for bad steps.
   pd_previous_coords = pd.create_vertices_memento( err ); MSQ_ERRRTN(err);
+    // use auto_ptr to automatically delete memento when we exit this function
   msq_std::auto_ptr<PatchDataVerticesMemento> memento_deleter( pd_previous_coords );
 
-  pd.get_minmax_edge_length( min_edge_len, max_edge_len );
-  step_size = 10*max_edge_len;
-
-  sd_bool = obj_func.update( pd, original_value, gradient, err ); MSQ_ERRRTN(err);
+    // evaluate objective function and calculate gradient dotted with itself
+  feasible = obj_func.update( pd, original_value, gradient, err ); MSQ_ERRRTN(err);
+  norm_squared = length_squared( &gradient[0], gradient.size() );
+  
     //set an error if initial patch is invalid.
-  if(!sd_bool){
+  if(!feasible){
     MSQ_SETERR(err)("SteepestDescent passed invalid initial patch.",
                     MsqError::INVALID_ARG);
     return;
   }
 
-  // does the steepest descent iteration until stopping is required.
+    // use edge length as an initial guess for for step size
+  pd.get_minmax_edge_length( min_edge_len, max_edge_len );
+  //step_size = max_edge_len / msq_stdc::sqrt(norm_squared);
+  //if (!finite(step_size))  // zero-length gradient
+  //  return;
+  if (norm_squared < DBL_EPSILON)
+    return;
+  step_size = max_edge_len / msq_std::sqrt(norm_squared) * pd.num_free_vertices();
+
+    // The steepest descent loop...
   while (!term_crit->terminate()) {
     MSQ_DBGOUT(3) << "Iteration " << term_crit->get_iteration_count() << msq_stdio::endl;
     MSQ_DBGOUT(3) << "  o  original_value: " << original_value << msq_stdio::endl;
+    MSQ_DBGOUT(3) << "  o  grad norm suqared: " << norm_squared << msq_stdio::endl;
 
       // save vertex coords
     pd.recreate_vertices_memento( pd_previous_coords, err ); MSQ_ERRRTN(err);
 
-      // computes the gradient norm
-    //norm = length( &gradient[0], gradient.size() );
-    //MSQ_DBGOUT(3) << "  o  gradient norm: " << norm << msq_stdio::endl;
-
-    if (length_squared(&gradient[0], gradient.size())*step_size*step_size < DBL_EPSILON)
-      break;
-
-    // ******** Chooses the search direction ********
-    // i.e., -gradient for the steepest descent
-    for (int i=0; i<num_vertices; ++i)
-      dk[i] = -gradient[i];
-    //  for (int j=0; j<3; ++j)
-    //    dk[i][j] = -gradient[i][j] / norm;
-
-    // ******* Improve Quality *******
-    
-      // Loop to find a step size that improves quality
-      // (or until max iterations).
-    int nb_iter;
-    for (nb_iter = 0; nb_iter < 10; ++nb_iter) {
-        // change vertices coordinates in PatchData according to descent
-        //direction.
-      pd.move_free_vertices_constrained(&dk[0], dk.size(), step_size, err);  MSQ_ERRRTN(err);
-      // and evaluate the objective function with the new node positions.
-      double new_value;
-      sd_bool=obj_func.evaluate(pd, new_value, err);  MSQ_ERRRTN(err);
-
+      // Reduce step size satisfies Armijo condition
+    int counter = 0;
+    for (;;) {
+      if (++counter > SEARCH_MAX || step_size < DBL_EPSILON) {
+        MSQ_DBGOUT(3) << "    o  No valid step found.  Giving Up." << msq_stdio::endl;
+        return;
+      }
+      
+      // evaluate objective function for current step 
+      // note: step direction is -gradient so we pass +gradient and 
+      //       -step_size to achieve the same thing.
+      pd.move_free_vertices_constrained( &gradient[0], gradient.size(), -step_size, err ); MSQ_ERRRTN(err);
+      feasible = obj_func.evaluate( pd, new_value, err ); MSQ_ERRRTN(err);
       MSQ_DBGOUT(3) << "    o  step_size: " << step_size << msq_stdio::endl;
       MSQ_DBGOUT(3) << "    o  new_value: " << new_value << msq_stdio::endl;
-    
-        // If value was reduced by step, then keep it (exit loop)
-      if (sd_bool && new_value < original_value) 
+
+      if (!feasible) {
+        // OF value is invalid, decrease step_size a lot
+        step_size *= 0.2;
+      }
+      else if (new_value > original_value - c1 * step_size * norm_squared) {
+        // Armijo condition not met.
+        step_size *= 0.5;
+      }
+      else {
+        // Armijo condition met, stop
         break;
-        
-      // If here, then try again with smaller step.
+      }
       
-      // undoes node movement
+      // undo previous step : restore vertex coordinates
       pd.set_to_vertices_memento( pd_previous_coords, err );  MSQ_ERRRTN(err);
-      // and reduces step size to try again.
-      step_size *= STEP_DECREASE_FACTOR;
     }
-    if (!sd_bool)
-      break;
-    
-    if (0 == nb_iter)
-      step_size *= STEP_INCREASE_FACTOR;
-    
+   
+      // re-evaluate objective function to get gradient
     obj_func.update(pd, original_value, gradient, err ); MSQ_ERRRTN(err);
+    if (projectGradient) {
+      //if (cosineStep) {
+      //  unprojected = gradient;
+      //  pd.project_gradient( gradient, err ); MSQ_ERRRTN(err);
+      //  double dot = inner_product( &gradient[0], &unprojected[0], gradient.size() );
+      //  double lensqr1 = length_squared( &gradient[0], gradient.size() );
+      //  double lensqr2 = length_squared( &unprojected[0], unprojected.size() );
+      //  double cossqr = dot * dot / lensqr1 / lensqr2;
+      //  step_size *= sqrt(cossqr);
+      //}
+      //else {
+        pd.project_gradient( gradient, err ); MSQ_ERRRTN(err);
+      //}      
+    }
+      
+      // update terination criterion for next iteration
     term_crit->accumulate_inner( pd, original_value, &gradient[0], err ); MSQ_ERRRTN(err); 
     term_crit->accumulate_patch( pd, err );  MSQ_ERRRTN(err);
+      
+      // calculate initial step size for next iteration using step size 
+      // from this iteration
+    step_size *= norm_squared;
+    norm_squared = length_squared( &gradient[0], gradient.size() );
+    if (norm_squared < DBL_EPSILON)
+      break;
+    step_size /= norm_squared;
   }
 }
-
 
 void SteepestDescent::terminate_mesh_iteration(PatchData &/*pd*/, MsqError &/*err*/)
 {

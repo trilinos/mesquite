@@ -63,6 +63,18 @@ namespace Mesquite
     
     virtual PatchSet* get_patch_set();
     
+    bool project_gradient() const 
+      { return projectGradient; }
+    
+    void project_gradient( bool yesno ) 
+      { projectGradient = yesno; }
+    
+    //bool cosine_projection_step() const 
+    //  { return cosineStep; }
+    //
+    //void cosine_projection_step( bool yesno ) 
+    //  { cosineStep = yesno; }
+    
   protected:
     virtual void initialize(PatchData &pd, MsqError &err);
     virtual void optimize_vertex_positions(PatchData &pd,
@@ -70,6 +82,10 @@ namespace Mesquite
     virtual void initialize_mesh_iteration(PatchData &pd, MsqError &err);
     virtual void terminate_mesh_iteration(PatchData &pd, MsqError &err);
     virtual void cleanup();
+  
+  private:
+    bool projectGradient;
+    //bool cosineStep;
   };
   
 }
