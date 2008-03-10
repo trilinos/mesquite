@@ -623,7 +623,9 @@ AUTOHEADER=":"
 AC_SUBST(AUTOHEADER)
 
 TEST_MAKE_INCLUDE="include ../cppflags.make"
+UTIL_MAKE_INCLUDE="include ../testSuite/cppflags.make"
 AC_SUBST(TEST_MAKE_INCLUDE)
+AC_SUBST(UTIL_MAKE_INCLUDE)
 
 AC_CONFIG_HEADERS([include/mesquite_config.h
                    include/mesquite_version.h
@@ -659,6 +661,7 @@ AC_CONFIG_FILES([Makefile
                  testSuite/2d_formulation/Makefile
                  testSuite/synchronous/Makefile
                  testSuite/high_aspect_ratio/Makefile
+                 utils/Makefile
                  doc/Makefile
                  doc/user/Makefile
                  doc/user/config.tex

@@ -4,7 +4,7 @@ LIBTOOL = @LIBTOOL@ @MSQ_LIBTOOL_FLAGS@
 AM_LDFLAGS = @AM_LDFLAGS@
 AM_CPPFLAGS = @AM_CPPFLAGS@
 
-SUBDIRS = . doc testSuite
+SUBDIRS = . doc testSuite utils
 DIST_SUBDIRS = $(SUBDIRS) meshFiles
 
 

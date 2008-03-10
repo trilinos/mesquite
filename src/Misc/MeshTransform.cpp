@@ -83,4 +83,32 @@ namespace Mesquite {
     return 0.0;
   }
   
+  
+  void MeshTransform::add_translation( const Vector3D& offset )
+    { mVec += offset; }
+  
+  void MeshTransform::add_rotation( const Vector3D& a, double radians )
+    {
+      const double c = cos(radians);
+      const double s = sin(radians);
+      const Matrix3D m1(    c,   -a[2]*s, a[1]*s,
+                          a[2]*s,   c,   -a[0]*s,
+                         -a[1]*s, a[0]*s,   c    );
+      mMat = m1 * mMat;
+      mVec = m1 * mVec;
+    }
+  
+  void MeshTransform::add_scale( double factor )
+    { add_scale( Vector3D(factor) ); } 
+  
+  void MeshTransform::add_scale( const Vector3D& f )
+    {
+      for (int i = 0; i < 3; ++i) {
+        mVec[i] *= f[i];
+        mMat[i][0] *= f[i];
+        mMat[i][1] *= f[i];
+        mMat[i][2] *= f[i];
+      }
+    }      
+  
 } // namespace Mesquite
