@@ -304,7 +304,7 @@ void MeshImpl::write_vtk(const char* out_filename, MsqError &err)
   file << "DATASET UNSTRUCTURED_GRID\n";
   
     // Write vertex coordinates
-  file << "POINTS " << myMesh->num_vertices() << " float\n";
+  file << "POINTS " << myMesh->num_vertices() << " double\n";
 
   std::vector<size_t> vertex_indices( myMesh->max_vertex_index() );
   size_t i, count = 0;
