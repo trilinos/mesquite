@@ -74,6 +74,9 @@ namespace Mesquite
      bool evaluate_element(PatchData& pd,
                            MsqMeshEntity* element, double &fval,
                            MsqError &err);
+      
+   private:
+      msq_std::vector<Vector3D> vert;
    };
    
    
