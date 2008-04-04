@@ -64,6 +64,9 @@ namespace Mesquite
                     size_t handle, 
                     double& value, 
                     MsqError& err );
+      
+   private:
+      msq_std::vector<Vector3D> vert;
    };
    
    

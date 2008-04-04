@@ -67,74 +67,68 @@ bool AspectRatioGammaQualityMetric::evaluate(PatchData &pd,
 {
   MsqMeshEntity& element = pd.element_by_index( elem_index );
   EntityTopology entity = element.get_element_type();
-  double vol=0;
-  Vector3D temp_vec(0,0,0);
-  bool return_val = true;
+  double vol;
+  Vector3D cross, normal(0,0,0);
+  fval = MSQ_MAX_CAP;
   
     //get element's nodes
-  vector<Vector3D> vert;
+  vert.clear();
   pd.get_element_vertex_coordinates(elem_index, vert, err);  MSQ_ERRZERO(err);
   
   switch(entity)
   {
     case TRIANGLE:
         //area
-      vol=(((vert[1]-vert[0])*(vert[2]-vert[0])).length())/2.0;
-      vol=fabs(vol);
-      if(vol<MSQ_MIN){
-        fval=MSQ_MAX_CAP;
+      cross = (vert[1] - vert[0]) * (vert[2] - vert[0]);
+      vol= cross.length() / 2.0;
+      if (vol < MSQ_MIN)
+        return false;
+      
+      if (pd.domain_set()) { // need domain to check for inverted elements
+        pd.get_domain_normal_at_corner( elem_index, 0, normal, err ); MSQ_ERRZERO(err);
+        if ((cross % normal) < -MSQ_MIN)
+          return false;
       }
-      else{
-          //sum of edges squared
-        temp_vec=vert[1]-vert[0];
-        fval=temp_vec.length_squared();
-        temp_vec=vert[2]-vert[0];
-        fval+=temp_vec.length_squared();
-        temp_vec=vert[1]-vert[2];
-        fval+=temp_vec.length_squared();
-          //average sum of edges squared
-        fval/=3.0;
-          //normalize to equil. and div by area
-          // 2.309... is 4/sqrt(3) (inverse of the area of an equil. tri
-        fval/=(vol*fourDivRootThree);
-      }
+   
+        // sum squares of edge lengths
+      fval = ((vert[1] - vert[0]).length_squared()
+            + (vert[2] - vert[0]).length_squared()
+            + (vert[1] - vert[2]).length_squared());
+        // average
+      fval /= 3.0;
+      
+         //normalize to equil. and div by area
+      fval /= vol * fourDivRootThree;
       
       break;
+      
     case TETRAHEDRON:
-      vol=(vert[1]-vert[0])%((vert[2]-vert[0])*(vert[3]-vert[0]))/6.0;
-      vol = fabs(vol);
-        //sum of edges squared
-      if(fabs(vol)<MSQ_MIN){
-        fval=MSQ_MAX_CAP;
-      }
-      else{
-        temp_vec=vert[1]-vert[0];
-        fval=temp_vec.length_squared();
-        temp_vec=vert[2]-vert[0];
-        fval+=temp_vec.length_squared();
-        temp_vec=vert[3]-vert[0];
-        fval+=temp_vec.length_squared();
-        temp_vec=vert[2]-vert[1];
-        fval+=temp_vec.length_squared();
-        temp_vec=vert[3]-vert[1];
-        fval+=temp_vec.length_squared();
-        temp_vec=vert[3]-vert[2];
-        fval+=temp_vec.length_squared();
-          //average sum of edges squared
-        fval/=6.0;
-        fval*=sqrt(fval);
-          //normalize to equil. and div by area
-        fval/=(vol*twelveDivRootTwo);
-      }
+      vol = (vert[1] - vert[0]) % ((vert[2] - vert[0]) * (vert[3] - vert[0])) / 6.0;
+      if (vol < MSQ_MIN)  // zero for degenerate and negative for inverted
+        return false;
+      
+
+        // sum squares of edge lengths
+      fval = (vert[1] - vert[0]).length_squared()
+           + (vert[2] - vert[0]).length_squared()
+           + (vert[3] - vert[0]).length_squared()
+           + (vert[2] - vert[1]).length_squared()
+           + (vert[3] - vert[1]).length_squared()
+           + (vert[3] - vert[2]).length_squared();
+        // average
+      fval /= 6.0;
+      
+      fval *= sqrt(fval);
+        //normalize to equil. and div by volume
+      fval /= vol * twelveDivRootTwo;
+
       break;
     default:
-      fval=MSQ_MAX_CAP;
       MSQ_SETERR(err)(MsqError::UNSUPPORTED_ELEMENT, 
                      "Entity type %d is not valid for Aspect Ratio Gamma\n", 
                      (int)entity);
-      return_val = false;
-      break;
+      return false;
   };
   
-  return return_val;
+  return true;
 }

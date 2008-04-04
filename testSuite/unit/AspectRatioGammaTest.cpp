@@ -88,10 +88,10 @@ public:
     { tester.test_gradient_reflects_quality( &mMetric ); }
   
   void test_inverted_elements()
-    { tester.test_evaluate_inverted_element( &mMetric, true ); }
+    { tester.test_evaluate_inverted_element( &mMetric, false ); }
     
   void test_degenerate_elements()
-    { tester.test_evaluate_degenerate_element( &mMetric, true ); }
+    { tester.test_evaluate_degenerate_element( &mMetric, false ); }
     
   void test_get_evaluations()
     { tester.test_get_element_evaluations( &mMetric ); }
