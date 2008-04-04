@@ -16,3 +16,5 @@ vtkrandom.1: vtkrandom
 
 vtkxform.1: vtkxform
 	./$< -M > $@
+
+MOSTLYCLEANFILES = $(man1_MANS)
