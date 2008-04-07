@@ -3,6 +3,7 @@ MSQ_INCLUDES += -I$(top_srcdir)/$(SRC_CONTROL_DIR)
 INCLUDED_MAKEFILES += $(SRC_CONTROL_DIR)/Makefile.am
 
 MSQ_SRCS += \
+	$(SRC_CONTROL_DIR)/Instruction.cpp \
 	$(SRC_CONTROL_DIR)/InstructionQueue.cpp \
 	$(SRC_CONTROL_DIR)/TerminationCriterion.cpp 
 

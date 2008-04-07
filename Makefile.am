@@ -83,6 +83,8 @@ libmesquite_la_include_HEADERS = include/Mesquite.hpp \
                                  $(top_builddir)/include/mesquite_config.h \
 				 $(top_builddir)/include/mesquite_version.h \
                                  include/MeshInterface.hpp \
+				 include/ParallelMeshInterface.hpp \
+				 include/ParallelHelperInterface.hpp \
                                  $(MSQ_HDRS)
 libmesquite_la_LIBADD = $(MESQUITE_LIBS)
 AM_CPPFLAGS += -Iinclude -Iitaps \
@@ -99,6 +101,8 @@ include/Mesquite_all_headers.hpp: $(MSQ_HDRS)
 	@echo '#define MESQUITE_ALL_HEADERS_HPP'        >> $@
 	@echo '#include "Mesquite.hpp"'                 >> $@
 	@echo '#include "MeshInterface.hpp"'            >> $@ 
+	@echo '#include "ParallelMeshInterface.hpp"'    >> $@
+	@echo '#include "ParallelHelperInterface.hpp"'  >> $@ 
 	@for file in $(MSQ_HDRS); do \
 	   n=`expr X"$$file" : X"src/.*/\([^/]*\)"`;\
 	   echo "#include \"$$n\"" >> $@; \

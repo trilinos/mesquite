@@ -41,6 +41,8 @@
 #include "MeshInterface.hpp"
 #include "VertexPatches.hpp"
 #include "ElementPatches.hpp"
+#include "ParallelMeshInterface.hpp"
+#include "ParallelHelperInterface.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 #  include <list.h>
@@ -334,6 +336,35 @@ double QualityAssessor::loop_over_mesh( Mesh* mesh,
                                         MappingFunctionSet* map_func,
                                         MsqError& err)
 {
+  return loop_over_mesh_internal( mesh, domain, map_func, NULL, err );
+}
+
+/*! 
+  Computes the quality data for a given
+  MeshSet, ms. What quality information is calculated, depends
+  on what has been requested through the use of the QualityAssessor
+  constructor, add_quality_assessment(), and set_stopping_assessment().
+  The resulting data is printed in a table unless disable_printing_results()
+  has been called.  The double returned depends on the QualityMetric
+  and QAFunction "return" combination, which can be set using
+  set_stopping_assessemnt().
+  \param ms (const MeshSet &) MeshSet used for quality assessment.
+ */
+double QualityAssessor::loop_over_mesh( ParallelMesh* mesh,
+                                        MeshDomain* domain,
+                                        MappingFunctionSet* map_func,
+                                        MsqError& err)
+{
+  return loop_over_mesh_internal( mesh, domain, map_func, 
+                                  mesh->get_parallel_helper(), err );
+}
+
+double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
+                                                 MeshDomain* domain,
+                                                 MappingFunctionSet* map_func,
+                                                 ParallelHelper* helper,
+                                                 MsqError& err )
+{
     // Clear out any previous data
   reset_data();
 
@@ -407,7 +438,10 @@ double QualityAssessor::loop_over_mesh( Mesh* mesh,
       //the end of this loop
     for (p = patches.begin(); p != patches.end(); ++p) {
       elem_patches.get_patch( *p, patch_elems, patch_verts, err ); MSQ_ERRZERO(err);
-      patch.set_mesh_entities( patch_elems, patch_verts, err ); MSQ_ERRZERO(err);
+ 
+	    if (helper && !helper->is_our_element(patch_elems[0]))
+        continue;
+     patch.set_mesh_entities( patch_elems, patch_verts, err ); MSQ_ERRZERO(err);
 
        //first check fpr inverted elements
       if (first_pass){
@@ -477,13 +511,16 @@ double QualityAssessor::loop_over_mesh( Mesh* mesh,
       // Fix up any histogram ranges which were calculated
     for (iter = assessList.begin(); iter != elem_end; ++iter)
       if (iter->have_histogram() && !iter->haveHistRange)
-        if (first_pass)
+        if (first_pass) {
+          if (helper)
+            helper->communicate_min_max_to_all(&(iter->minimum), &(iter->maximum)); 
+        
           iter->calculate_histogram_range();
 // Uncomment the following to have the QA keep the first
 // calculated histogram range for all subsequent iterations.
 //          else
 //            iter->haveHistRange = true;
-
+        }
   } while (first_pass && need_second_pass_for_elements);
       
     
@@ -549,16 +586,34 @@ double QualityAssessor::loop_over_mesh( Mesh* mesh,
         // Fix up any histogram ranges which were calculated
       for (iter = elem_end; iter != assessList.end(); ++iter)
         if (iter->have_histogram() && !iter->haveHistRange)
-          if (first_pass)
+          if (first_pass) {
+            if (helper)
+              helper->communicate_min_max_to_all(&(iter->minimum), &(iter->maximum)); 
             iter->calculate_histogram_range();
 // Uncomment the following to have the QA keep the first
 // calculated histogram range for all subsequent iterations.
 //          else
 //            iter->haveHistRange = true;
-    
+          }
     } while (first_pass && need_second_pass_for_vertices);
   }  
   
+  if (helper) {
+    for (iter = assessList.begin(); iter != assessList.end(); ++iter) {
+
+      helper->communicate_min_max_to_zero(&(iter->minimum), &(iter->maximum));
+
+      helper->communicate_sums_to_zero(&invertedCount, &indeterminateCount, &(iter->count), &(iter->numInvalid), &(iter->sum), &(iter->sqrSum));
+
+      if (iter->have_power_mean()) {
+        helper->communicate_power_sum_to_zero( &(iter->pMean) );
+      }
+
+      if (iter->have_histogram()) {
+        helper->communicate_histogram_to_zero(iter->histogram);
+      }
+    }
+  }
   
     // Print results, if requested
   if (printSummary)

@@ -52,6 +52,7 @@ namespace Mesquite {
   class QualityImprover;
   class QualityAssessor;
   class Mesh;
+  class ParallelMesh;
   class MeshDomain;
   class Instruction;
   class MappingFunctionSet;
@@ -114,6 +115,17 @@ namespace Mesquite {
     inline void run_instructions( Mesh* mesh, MeshDomain* dom, MsqError& err )
       { this->run_instructions( mesh, dom, 0, err ); }
     
+    MESQUITE_EXPORT virtual void run_instructions( ParallelMesh* mesh,
+                                   MeshDomain* domain,
+                                   MappingFunctionSet* map_func,
+                                   MsqError &err);
+    
+    inline void run_instructions( ParallelMesh* mesh, MsqError& err )
+      { this->run_instructions( mesh, 0, 0, err ); }
+    
+    inline void run_instructions( ParallelMesh* mesh, MeshDomain* dom, MsqError& err )
+      { this->run_instructions( mesh, dom, 0, err ); }
+
     MESQUITE_EXPORT void clear();
 
       /**\brief Generate SIGFPE whenever a floating point exception occurs

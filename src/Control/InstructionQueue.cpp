@@ -293,6 +293,44 @@ void InstructionQueue::run_instructions( Mesh* mesh,
 }
 
   
+void InstructionQueue::run_instructions( ParallelMesh* mesh, 
+                                         MeshDomain* domain,
+                                         MappingFunctionSet* map_func,
+                                         MsqError &err)
+{ 
+  MSQ_DBGOUT(1) << version_string(false) << "\n";
+
+  if (nbPreConditionners != 0 && isMasterSet == false ) {
+    MSQ_SETERR(err)("no pre-conditionners allowed if master QualityImprover "
+                    "is not set.", MsqError::INVALID_STATE);
+    return;
+  }
+  
+#ifdef ENABLE_INTERRUPT
+   // Register SIGINT handler
+  MsqInterrupt msq_interrupt;
+#endif
+
+    // Generate SIGFPE on floating point errors
+  MsqFPE( this->trapFPE );
+  
+  msq_std::list<Instruction*>::const_iterator instr;
+  
+    // Run each instruction
+  for (instr = instructions.begin(); instr != instructions.end(); ++instr) 
+  {
+    if (MsqInterrupt::interrupt())
+    {
+      MSQ_SETERR(err)(MsqError::INTERRUPTED);
+      return;
+    }
+    
+    
+    (*instr)->loop_over_mesh( mesh, domain, map_func, err ); 
+    MSQ_ERRRTN(err);
+  }
+}
+
 void InstructionQueue::clear()
 {
   instructions.clear();

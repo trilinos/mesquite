@@ -66,7 +66,7 @@ namespace Mesquite
     
   MeshImpl can read in mesh files in VTK format and ExodusII format. 
   */
-  class MESQUITE_EXPORT MeshImpl : public Mesquite::Mesh
+  class MESQUITE_EXPORT MeshImpl : virtual public Mesquite::Mesh
   {
   public:
 //********* Functions that are NOT inherited ************
@@ -344,8 +344,8 @@ namespace Mesquite
     
       // Remove all data
     void clear();
-    
-  private:
+
+  protected:    
     
     /** Coordinate values per vertex */
     int numCoords;
@@ -353,6 +353,7 @@ namespace Mesquite
     MeshImplData* myMesh;
     MeshImplTags* myTags;
 
+  private:
 
 //**************** VTK Parsing ****************
 

@@ -132,9 +132,37 @@ if test "$MSQ_DO_DEBUG" = "yes"; then
   fi
 fi
 
+CC_LIST="cc gcc cl egcs pgcc"
+CXX_LIST="CC aCC cxx xlC_r xlC c++ g++ pgCC gpp cc++ cl FCC KCC RCC"
+
+#------------------------------------------------------------------------------
+# MPI part 1 (before compiler checks)
+#------------------------------------------------------------------------------
+
+AC_ARG_WITH( [mpi], [AC_HELP_STRING([--with-mpi(=DIR)],[Enable parallel support])],
+             [WITH_MPI=$withval],[WITH_MPI=no] )
+
+# Modify compiler list if MPI is requested
+if test "xyes" = "x$WITH_MPI"; then
+  CC_LIST="mpicc $CC_LIST"
+  CXX_LIST="mpicxx $CXX_LIST"
+elif test "xno" != "x$WITH_MPI"; then
+  if test "x" = "x$CC"; then
+    CC="$WITH_MPI/bin/mpicc"
+  fi
+  if test "x" = "x$CXX"; then
+    CXX="$WITH_MPI/bin/mpicxx"
+  fi
+fi
+
+
+#------------------------------------------------------------------------------
+# Construct compiler flags from options
+#------------------------------------------------------------------------------
+
 # Construct compiler options from above configure options
-AC_PROG_CC( [cc gcc cl egcs] )
-AC_PROG_CXX( [CC aCC g++ c++ gpp cxx cc++ cl FCC KCC RCC xlC_r xlC] )
+AC_PROG_CC( [$CC_LIST] )
+AC_PROG_CXX( [$CXX_LIST] )
 # get rid of annoying autoconf default CXXFLAGS
 if test "x$have_user_CXXFLAGS" = "xno"; then
   CXXFLAGS=
@@ -210,6 +238,28 @@ m4_defun([AC_PROG_CXX],[])
 
 AC_LIBTOOL_WIN32_DLL
 AM_PROG_LIBTOOL
+
+
+#------------------------------------------------------------------------------
+# MPI part 2 (after compiler checks)
+#------------------------------------------------------------------------------
+if test "xno" != "x$WITH_MPI"; then
+  AC_MSG_CHECKING([mpi.h])
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  AC_PREPROC_IFELSE([AC_LANG_PROGRAM( [[#include <stdio.h>
+     #include <mpi.h>]],[])],
+    [AC_MSG_RESULT([yes])],
+    [save_CPPFLAGS="$CPPFLAGS"
+     CPPFLAGS="$CPPFLAGS -DMPICH_IGNORE_CXX_SEEK"
+     AC_PREPROC_IFELSE([AC_LANG_PROGRAM( [[#include <stdio.h>
+         #include <mpi.h>]],[])],
+         [AC_MSG_RESULT([yes (with -DMPICH_IGNORE_CXX_SEEK)]); AM_CPPFLAGS="$AM_CPPLFLAGS -DMPICH_IGNORE_CXX_SEEK" ],
+         [AC_MSG_ERROR([mpi.h is not usable])]),
+     CPPFLAGS="$save_CPPFLAGS"])
+  AC_LANG_RESTORE
+fi
+AM_CONDITIONAL([WITH_MPI],[test "xno" != "x$WITH_MPI"])
 
 
 #------------------------------------------------------------------------------

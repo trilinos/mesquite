@@ -70,6 +70,7 @@ namespace Mesquite
 
    class QualityMetric;
    class MsqError;
+   class ParallelHelper;
 
   /*! \class QualityAssessor
 
@@ -295,6 +296,19 @@ namespace Mesquite
                                    MeshDomain* domain,
                                    MappingFunctionSet* map_func,
                                    MsqError &err);
+
+      //! Does one sweep over the mesh and assess the quality with the metrics previously added.
+    virtual double loop_over_mesh( ParallelMesh* mesh,
+                                   MeshDomain* domain,
+                                   MappingFunctionSet* map_func,
+                                   MsqError &err);
+
+      //! Common code for serial and parallel loop_over_mesh
+    virtual double loop_over_mesh_internal( Mesh* mesh,
+                                            MeshDomain* domain,
+                                            MappingFunctionSet* map_func,
+                                            ParallelHelper* helper,
+                                            MsqError &err);
 
       //! Do not print results of assessment.
     MESQUITE_EXPORT void disable_printing_results()

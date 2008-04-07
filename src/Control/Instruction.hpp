@@ -38,6 +38,7 @@
 namespace Mesquite {
 
 class Mesh;
+class ParallelMesh;
 class MeshDomain;
 class MsqError;
 class MappingFunctionSet;
@@ -53,6 +54,11 @@ class Instruction
                                    MeshDomain* domain, 
                                    MappingFunctionSet* map_func,
                                    MsqError& err ) = 0;
+
+    virtual double loop_over_mesh( ParallelMesh* mesh, 
+                                   MeshDomain* domain, 
+                                   MappingFunctionSet* map_func,
+                                   MsqError& err );
 
     virtual msq_std::string get_name() const = 0;
 };
