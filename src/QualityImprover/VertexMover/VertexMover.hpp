@@ -46,7 +46,7 @@ namespace Mesquite
 {
   class ObjectiveFunction;
   class PatchData;
-
+  class ParallelMesh;
 
   /*! \class VertexMover
     Base class for all Vertex Movers.
@@ -61,6 +61,11 @@ namespace Mesquite
     virtual ~VertexMover() { };
     
     virtual double loop_over_mesh( Mesh* mesh, 
+                                   MeshDomain* domain,
+                                   MappingFunctionSet* map_func,
+                                   MsqError &err);
+
+    virtual double loop_over_mesh( ParallelMesh* mesh, 
                                    MeshDomain* domain,
                                    MappingFunctionSet* map_func,
                                    MsqError &err);

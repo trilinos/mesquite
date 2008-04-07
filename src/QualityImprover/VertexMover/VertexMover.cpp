@@ -40,6 +40,7 @@
 #include "MsqDebug.hpp"
 #include "PatchSet.hpp"
 #include "PatchData.hpp"
+#include "ParallelHelperInterface.hpp"
 
 namespace Mesquite {
 
@@ -104,8 +105,6 @@ VertexMover::VertexMover( ObjectiveFunction* OF, bool Nash )
 ----------+               --------------+
                       
 */        
-                      
-
 
 /*! \brief Improves the quality of the MeshSet, calling some
     methods specified in a class derived from VertexMover
@@ -276,4 +275,251 @@ ERROR:
   return 0.;
 }
   
+
+/*! \brief Improves the quality of the MeshSet, calling some
+    methods specified in a class derived from VertexMover
+
+    \param const MeshSet &: this MeshSet is looped over. Only the
+    mutable data members are changed (such as currentVertexInd).
+  */
+double VertexMover::loop_over_mesh( ParallelMesh* mesh,
+                                    MeshDomain* domain,
+                                    MappingFunctionSet* map_func,
+                                    MsqError& err )
+{
+  msq_std::vector<size_t> junk;
+  Mesh::VertexHandle vertex_handle;
+
+    // Get the patch data to use for the first iteration
+  OFEvaluator& obj_func = get_objective_function_evaluator();
+  
+  PatchData patch;
+  patch.set_mesh( (Mesh*) mesh );
+  patch.set_domain( domain );
+  patch.set_mapping_functions( map_func );
+
+  ParallelHelper* helper = mesh->get_parallel_helper();
+
+  helper->smoothing_init();
+
+  bool did_some, all_culled;
+  msq_std::vector<Mesh::VertexHandle> patch_vertices;
+  msq_std::vector<Mesh::ElementHandle> patch_elements;
+  msq_std::vector<Mesh::VertexHandle> fixed_vertices;
+  msq_std::vector<Mesh::VertexHandle> free_vertices;
+   
+    // Get termination criteria
+  TerminationCriterion* outer_crit=this->get_outer_termination_criterion();
+  TerminationCriterion* inner_crit=this->get_inner_termination_criterion();
+  if(outer_crit == 0){
+    MSQ_SETERR(err)("Termination Criterion pointer is Null", MsqError::INVALID_STATE);
+    return 0.;
+  }
+  if(inner_crit == 0){
+    MSQ_SETERR(err)("Termination Criterion pointer for inner loop is Null", MsqError::INVALID_STATE);
+    return 0.;
+  }
+  
+  PatchSet* patch_set = get_patch_set();
+  if (!patch_set) {
+    MSQ_SETERR(err)("No PatchSet for QualityImprover!", MsqError::INVALID_STATE);
+    return 0.0;
+  }
+  patch_set->set_mesh( (Mesh*)mesh );
+
+  msq_std::vector<PatchSet::PatchHandle> patch_list;
+  patch_set->get_patch_handles( patch_list, err ); MSQ_ERRZERO(err);
+  
+    // Initialize outer loop
+    
+  this->initialize(patch, err);        
+  if (MSQ_CHKERR(err)) goto ERROR;
+  
+  obj_func.initialize( (Mesh*)mesh, domain, map_func, patch_set, err ); 
+  if (MSQ_CHKERR(err)) goto ERROR;
+  
+  outer_crit->reset_outer( (Mesh*)mesh, domain, obj_func, map_func, err); 
+  if (MSQ_CHKERR(err)) goto ERROR;
+   
+   // Loop until outer termination criterion is met
+  did_some = true;
+  while (!outer_crit->terminate())
+  {
+    if (!did_some) {
+      MSQ_SETERR(err)("Inner termiation criterion satisfied for all patches "
+                      "without meeting outer termination criterion.  This is "
+                      "an infinite loop.  Aborting.", MsqError::INVALID_STATE);
+      break;
+    }
+    did_some = false;
+    all_culled = true;
+
+    ///*** smooth the interior ***////
+
+    // get the fixed vertices (i.e. the ones *not* part of the first independent set)
+    helper->compute_first_independent_set(fixed_vertices);
+    // sort the fixed vertices
+    msq_std::sort(fixed_vertices.begin(), fixed_vertices.end());
+
+      // Loop over each patch
+    msq_std::vector<PatchSet::PatchHandle>::iterator p_iter = patch_list.begin();
+    while( p_iter != patch_list.end() )
+    {
+      // loop until we get a non-empty patch.  patch will be empty
+      // for culled vertices with element-on-vertex patches
+      do {
+	patch_set->get_patch( *p_iter, patch_elements, patch_vertices, err );
+	if (MSQ_CHKERR(err)) goto ERROR;
+	++p_iter;
+      } while (patch_elements.empty() && p_iter != patch_list.end()) ;
+        
+      if (patch_elements.empty()) { // no more non-culled vertices
+	break;
+      }
+
+      if (patch_vertices.empty()) // global patch hack (means all mesh vertices)
+      {
+	mesh->get_all_vertices(patch_vertices, err);
+      }
+
+      free_vertices.clear();
+
+      for (size_t i = 0; i < patch_vertices.size(); ++i) 
+	if (!msq_std::binary_search(fixed_vertices.begin(), fixed_vertices.end(), patch_vertices[i]))
+	  free_vertices.push_back(patch_vertices[i]);
+
+      if (free_vertices.empty()) { // all vertices were fixed -> skip patch
+	continue;
+      }
+
+      all_culled = false;
+      patch.set_mesh_entities( patch_elements, free_vertices, err );
+      if (MSQ_CHKERR(err)) goto ERROR;
+        
+        // Initialize for inner iteration
+        
+      this->initialize_mesh_iteration(patch, err);
+      if (MSQ_CHKERR(err)) goto ERROR;
+      
+      obj_func.reset();
+      
+      outer_crit->reset_patch( patch, err );
+      if (MSQ_CHKERR(err)) goto ERROR;
+      
+      inner_crit->reset_inner( patch, obj_func, err );
+      if (MSQ_CHKERR(err)) goto ERROR;
+      
+      inner_crit->reset_patch( patch, err );
+      if (MSQ_CHKERR(err)) goto ERROR;
+      
+        // Don't even call optimizer if inner termination 
+        // criterion has already been met.
+      if (!inner_crit->terminate())
+      {
+        did_some = true;
+        
+          // Call optimizer - should loop on inner_crit->terminate()
+        this->optimize_vertex_positions( patch, err );
+        if (MSQ_CHKERR(err)) goto ERROR;
+      
+          // Update for changes during inner iteration 
+          // (during optimizer loop)
+        
+        outer_crit->accumulate_patch( patch, err );
+        if (MSQ_CHKERR(err)) goto ERROR;
+        
+        inner_crit->cull_vertices( patch, obj_func, err );
+        if (MSQ_CHKERR(err)) goto ERROR;
+        
+        patch.update_mesh( err );
+        if (MSQ_CHKERR(err)) goto ERROR;
+      }
+    }
+
+    helper->communicate_first_independent_set();
+
+    ///*** smooth the boundary ***////
+
+    while (helper->compute_next_independent_set())
+    {
+      // Loop over all boundary elements
+      while(helper->get_next_partition_boundary_vertex(vertex_handle))
+      {
+	patch_vertices.clear();
+	patch_vertices.push_back(vertex_handle);
+	patch_elements.clear(); 
+	mesh->vertices_get_attached_elements( &vertex_handle, 
+                                              1,
+                                              patch_elements, 
+                                              junk, err );
+
+	all_culled = false;
+	patch.set_mesh_entities( patch_elements, patch_vertices, err );
+
+	if (MSQ_CHKERR(err)) goto ERROR;
+        
+        // Initialize for inner iteration
+        
+	this->initialize_mesh_iteration(patch, err);
+	if (MSQ_CHKERR(err)) goto ERROR;
+	
+	obj_func.reset();
+	
+	outer_crit->reset_patch( patch, err );
+	if (MSQ_CHKERR(err)) goto ERROR;
+	
+	inner_crit->reset_inner( patch, obj_func, err );
+	if (MSQ_CHKERR(err)) goto ERROR;
+      
+	inner_crit->reset_patch( patch, err );
+	if (MSQ_CHKERR(err)) goto ERROR;
+      
+        // Don't even call optimizer if inner termination 
+        // criterion has already been met.
+	if (!inner_crit->terminate())
+	{
+	  did_some = true;
+	  
+          // Call optimizer - should loop on inner_crit->terminate()
+	  this->optimize_vertex_positions( patch, err );
+	  if (MSQ_CHKERR(err)) goto ERROR;
+      
+          // Update for changes during inner iteration 
+          // (during optimizer loop)
+	  
+	  outer_crit->accumulate_patch( patch, err );
+	  if (MSQ_CHKERR(err)) goto ERROR;
+	  
+	  inner_crit->cull_vertices( patch, obj_func, err );
+	  if (MSQ_CHKERR(err)) goto ERROR;
+        
+	  patch.update_mesh( err );
+	  if (MSQ_CHKERR(err)) goto ERROR;
+	}
+      }
+      helper->communicate_next_independent_set();
+    }
+
+    this->terminate_mesh_iteration(patch, err); 
+    if (MSQ_CHKERR(err)) goto ERROR;
+    
+    outer_crit->accumulate_outer( mesh, domain, obj_func, map_func, err );
+    if (MSQ_CHKERR(err)) goto ERROR;
+    
+    if (all_culled)
+      break;
+  }
+
+ERROR: 
+    //call the criteria's cleanup funtions.
+  outer_crit->cleanup(mesh,domain,err);
+  inner_crit->cleanup(mesh,domain,err);
+    //call the optimization cleanup function.
+  this->cleanup();
+    // close the helper
+  helper->smoothing_close();
+
+  return 0.;
+}
+
 } // namespace Mesquite
