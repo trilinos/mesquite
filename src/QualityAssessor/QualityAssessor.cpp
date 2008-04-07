@@ -616,7 +616,7 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
   }
   
     // Print results, if requested
-  if (printSummary)
+  if (printSummary && (!helper || helper->get_rank() == 0))
     print_summary( this->outputStream );
   
     // return P-Mean value if one was requested, otherwise return average
