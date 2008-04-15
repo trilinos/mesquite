@@ -373,6 +373,9 @@ void TerminationCriterion::reset_inner(PatchData &pd, OFEvaluator& obj_eval,
     MSQ_ERRRTN(err);
     maxSquaredInitialMovement = DBL_MAX;
   }
+  else {
+    maxSquaredInitialMovement = 0;
+  }
 
   if (timeStepFileType)
     write_timestep( pd, err);
@@ -388,7 +391,7 @@ void TerminationCriterion::reset_inner(PatchData &pd, OFEvaluator& obj_eval,
      << '\t' << initialOFValue 
      << '\t' << msq_std::sqrt( currentGradL2NormSquared ) 
      << '\t' << currentGradInfNorm 
-     << '\t' << msq_std::sqrt( maxSquaredInitialMovement ) 
+     << '\t' << 0.0
      << msq_stdio::endl;
   }
 }
@@ -481,8 +484,12 @@ void TerminationCriterion::accumulate_inner( PatchData& pd,
      << '\t' << of_value 
      << '\t' << msq_std::sqrt( currentGradL2NormSquared ) 
      << '\t' << currentGradInfNorm 
-     << '\t' << msq_std::sqrt( maxSquaredInitialMovement ) 
+     << '\t' << (maxSquaredMovement > 0.0 ? msq_std::sqrt( maxSquaredMovement ) : 0.0)
      << msq_stdio::endl;
+
+    
+    // Clear this value at the end of each iteration.
+  maxSquaredMovement = -1.0;
 }
 
 
@@ -587,9 +594,6 @@ bool TerminationCriterion::terminate( )
     {
       return_flag = true;
     }
-    
-      // Clear this value at the end of each iteration.
-    maxSquaredMovement = -1.0;
   }
 
   if (GRADIENT_L2_NORM_ABSOLUTE & terminationCriterionFlag &&
