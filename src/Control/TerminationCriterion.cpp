@@ -293,6 +293,8 @@ void TerminationCriterion::reset_inner(PatchData &pd, OFEvaluator& obj_eval,
   }
    
     //GRADIENT
+  currentGradInfNorm = initialGradInfNorm = 0.0;
+  currentGradL2NormSquared = initialGradL2NormSquared = 0.0;
   if(totalFlag & GRAD_FLAGS)
   {
     if (!obj_eval.have_objective_function()) {
@@ -319,19 +321,21 @@ void TerminationCriterion::reset_inner(PatchData &pd, OFEvaluator& obj_eval,
       MSQ_DBGOUT(debugLevel) << "  o Initial gradient Inf norm: " 
         << initialGradInfNorm << msq_stdio::endl;
     }  
+      
     if (totalFlag & (GRADIENT_L2_NORM_ABSOLUTE|GRADIENT_L2_NORM_RELATIVE))
     {
       currentGradL2NormSquared = initialGradL2NormSquared = length_squared(&mGrad[0], num_vertices);
       MSQ_DBGOUT(debugLevel) << "  o Initial gradient L2 norm: " 
         << msq_stdc::sqrt(initialGradL2NormSquared) << msq_stdio::endl;
     }  
+
       //the OFvalue comes for free, so save it
     previousOFValue=currentOFValue;
     initialOFValue=currentOFValue;
   }
   //find the initial objective function value if needed and not already
   //computed.  If we needed the gradient, we have the OF value for free.
-  else if (totalFlag & OF_FLAGS)
+  else if ((totalFlag & OF_FLAGS) || plotFile)
   {
       //ensure the obj_ptr is not null
     if(!obj_eval.have_objective_function()){
@@ -372,6 +376,21 @@ void TerminationCriterion::reset_inner(PatchData &pd, OFEvaluator& obj_eval,
 
   if (timeStepFileType)
     write_timestep( pd, err);
+    
+  if (plotFile) {
+      // two newlines so GNU plot knows that we are starting a new data set
+    plotFile << msq_stdio::endl << msq_stdio::endl;
+      // write column headings as comment in data file
+    plotFile << "#Iter\tCPU\tObjFunc\tGradL2\tGradInf\tMovement" << msq_stdio::endl;
+      // write initial values
+    plotFile << 0 
+     << '\t' << mTimer.since_birth() 
+     << '\t' << initialOFValue 
+     << '\t' << msq_std::sqrt( currentGradL2NormSquared ) 
+     << '\t' << currentGradInfNorm 
+     << '\t' << msq_std::sqrt( maxSquaredInitialMovement ) 
+     << msq_stdio::endl;
+  }
 }
 
 void TerminationCriterion::reset_patch(PatchData &pd, MsqError &err)
@@ -424,14 +443,14 @@ void TerminationCriterion::accumulate_inner( PatchData& pd,
                                              MsqError& err )
 {
   //if terminating on the norm of the gradient
-  currentGradL2NormSquared = HUGE_VAL;
+  //currentGradL2NormSquared = HUGE_VAL;
   if (terminationCriterionFlag & (GRADIENT_L2_NORM_ABSOLUTE | GRADIENT_L2_NORM_RELATIVE)) 
   {
     currentGradL2NormSquared = length_squared(grad_array, pd.num_free_vertices()); // get the L2 norm
     MSQ_DBGOUT(debugLevel) << "  o TermCrit -- gradient L2 norm: " 
       << msq_stdc::sqrt(currentGradL2NormSquared) << msq_stdio::endl;
   }
-  currentGradInfNorm = 10e6;
+  //currentGradInfNorm = 10e6;
   if (terminationCriterionFlag & (GRADIENT_INF_NORM_ABSOLUTE | GRADIENT_INF_NORM_RELATIVE)) 
   {
     currentGradInfNorm = Linf(grad_array, pd.num_free_vertices()); // get the Linf norm
@@ -455,6 +474,15 @@ void TerminationCriterion::accumulate_inner( PatchData& pd,
   ++iterationCounter;
   if (timeStepFileType)
     write_timestep( pd, err);
+    
+  if (plotFile) 
+    plotFile << iterationCounter 
+     << '\t' << mTimer.since_birth() 
+     << '\t' << of_value 
+     << '\t' << msq_std::sqrt( currentGradL2NormSquared ) 
+     << '\t' << currentGradInfNorm 
+     << '\t' << msq_std::sqrt( maxSquaredInitialMovement ) 
+     << msq_stdio::endl;
 }
 
 
@@ -800,5 +828,19 @@ void TerminationCriterion::write_timestep( PatchData& pd, MsqError& err )
     MeshWriter::write_gnuplot( pd.get_mesh(), str.str().c_str(), err );
   }
 }
+
+void TerminationCriterion::write_iterations( const char* filename, MsqError& err )
+{
+  if (filename) {
+    plotFile.open( filename, msq_stdio::ios::trunc );
+    if (!plotFile)
+      MSQ_SETERR(err)( MsqError::FILE_ACCESS, "Failed to open plot data file: '%s'", filename );
+  }
+  else {
+    plotFile.close();
+  }
+}
+    
+
 
 } //namespace Mesquite

@@ -51,6 +51,12 @@ Header file for the TerminationCriterion classes.
 #  include <vector>
 #endif
 
+#ifdef MSQ_USE_OLD_IO_HEADERS
+#  include <fstream.h>
+#else
+#  include <fstream>
+#endif
+
 namespace Mesquite
 {
    class MsqError;
@@ -248,9 +254,31 @@ namespace Mesquite
       { debugLevel = i; }
     
     enum TimeStepFileType { NOTYPE = 0, VTK, GNUPLOT };
-    MESQUITE_EXPORT void write_timesteps( const char* filename, TimeStepFileType type = VTK )
+    
+    /**\brief Write mesh improvement animation 
+     *
+     * Write mesh at each iteration such that the sequence of mesh files can be used
+     * to produce an animation of the mesh through the quality improvement process.
+     * 
+     * Files can be written either as VTK timesteps for viewing in a tool such as Paraview
+     * or as GNU plot data files and a GNU plot script which, in combination with recent
+     * versions of GNU plot, can be used to produce an animated GIF image.
+     *
+     * Writing of mesh steps can be disabled by calling this function with type == NOTYPE
+     * and filename ==NULL.
+     */
+    MESQUITE_EXPORT void write_mesh_steps( const char* filename, TimeStepFileType type = VTK )
       { timeStepFileName = filename; timeStepFileType = type; }
-      
+    
+    /*\brief Write data for generating plots of optimization process.
+     *
+     * Write data files in a format suitable for use with GNU plot and other applications.
+     * The file will contain data corresponding to all termination criteria,
+     * however, some values may be invalid if they are not calculated for
+     * use in a termination criterion.
+     */
+    MESQUITE_EXPORT void write_iterations( const char* filename, MsqError& err );
+    
     int get_iteration_count( ) const
       { return iterationCounter; }
       
@@ -309,8 +337,11 @@ namespace Mesquite
     
     int debugLevel;
     
+    //! Plot data
+    msq_stdio::ofstream plotFile;
+    
     //! Base name for timestep files
-    std::string timeStepFileName;    
+    msq_std::string timeStepFileName;    
     TimeStepFileType timeStepFileType;
   };
 
