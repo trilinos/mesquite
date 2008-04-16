@@ -1003,8 +1003,10 @@ void MsqIMeshImpl::get_adjacent_entities( const iBase_EntityHandle* source,
                         &ptr, &junk1, &num_adj, 
                         &ptr2, &junk3, &num_offset, 
                         &ierr );
-    if (iBase_SUCCESS == ierr)
+    if (iBase_SUCCESS == ierr) {
       have_adj = true;
+      target.resize( num_adj );
+    }
   }
   
     // If implementation passed back a size, try that
