@@ -172,8 +172,8 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
     }
       
       // update terination criterion for next iteration
-    term_crit->accumulate_inner( pd, original_value, &gradient[0], err ); MSQ_ERRRTN(err); 
     term_crit->accumulate_patch( pd, err );  MSQ_ERRRTN(err);
+    term_crit->accumulate_inner( pd, original_value, &gradient[0], err ); MSQ_ERRRTN(err); 
       
       // calculate initial step size for next iteration using step size 
       // from this iteration

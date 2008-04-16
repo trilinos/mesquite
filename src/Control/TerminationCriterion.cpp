@@ -335,7 +335,7 @@ void TerminationCriterion::reset_inner(PatchData &pd, OFEvaluator& obj_eval,
   }
   //find the initial objective function value if needed and not already
   //computed.  If we needed the gradient, we have the OF value for free.
-  else if ((totalFlag & OF_FLAGS) || plotFile)
+  else if ((totalFlag & OF_FLAGS) || (plotFile && pd.num_free_vertices()))
   {
       //ensure the obj_ptr is not null
     if(!obj_eval.have_objective_function()){
@@ -486,10 +486,6 @@ void TerminationCriterion::accumulate_inner( PatchData& pd,
      << '\t' << currentGradInfNorm 
      << '\t' << (maxSquaredMovement > 0.0 ? msq_std::sqrt( maxSquaredMovement ) : 0.0)
      << msq_stdio::endl;
-
-    
-    // Clear this value at the end of each iteration.
-  maxSquaredMovement = -1.0;
 }
 
 
@@ -657,6 +653,7 @@ bool TerminationCriterion::terminate( )
   
     // clear this value at the end of each iteration
   vertexMovementExceedsBound = 0;
+  maxSquaredMovement = -1.0;
 
   if (timeStepFileType == GNUPLOT && return_flag) {
     MsqError err;

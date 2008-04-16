@@ -337,8 +337,8 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
     }
 
     // checks stopping criterion 
-    term_crit->accumulate_inner( pd, new_value, &grad[0], err ); MSQ_ERRRTN(err);
     term_crit->accumulate_patch( pd, err ); MSQ_ERRRTN(err);
+    term_crit->accumulate_inner( pd, new_value, &grad[0], err ); MSQ_ERRRTN(err);
   }
   MSQ_PRINT(2)("FINISHED\n");
 }

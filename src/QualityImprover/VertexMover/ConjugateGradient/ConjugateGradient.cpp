@@ -261,8 +261,8 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
       //be needed with the new version of Termination Criterion.
       //Update mesh before checking criterion
       //pd.update_mesh(err);
-    term_crit->accumulate_inner( pd, f, &fNewGrad[0], err );  MSQ_ERRRTN(err);
     term_crit->accumulate_patch( pd, err ); MSQ_ERRRTN(err);
+    term_crit->accumulate_inner( pd, f, &fNewGrad[0], err );  MSQ_ERRRTN(err);
   }//end while
   if(conjGradDebug>0){
     MSQ_PRINT(2)("\nConjugate Gradient complete i=%i ",i);
