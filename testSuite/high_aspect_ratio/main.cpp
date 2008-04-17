@@ -206,7 +206,7 @@ int main( int argc, char* argv[] )
   inner.add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, INNER_ITERATES, err );
   outer.add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, num_iterations, err );
   if (write_timestep_files != TerminationCriterion::NOTYPE) 
-    outer.write_timesteps( base_name( output_file_name ).c_str(), write_timestep_files );
+    outer.write_mesh_steps( base_name( output_file_name ).c_str(), write_timestep_files );
   solver->set_inner_termination_criterion( &inner );
   solver->set_outer_termination_criterion( &outer );
   
