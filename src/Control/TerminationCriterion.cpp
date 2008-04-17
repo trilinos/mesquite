@@ -335,7 +335,11 @@ void TerminationCriterion::reset_inner(PatchData &pd, OFEvaluator& obj_eval,
   }
   //find the initial objective function value if needed and not already
   //computed.  If we needed the gradient, we have the OF value for free.
-  else if ((totalFlag & OF_FLAGS) || (plotFile && pd.num_free_vertices()))
+  // Also, if possible, get initial OF value if writing plot file.  Solvers
+  // often supply the OF value for subsequent iterations so by calculating
+  // the initial value we can generate OF value plots.
+  else if ((totalFlag & OF_FLAGS) || 
+           (plotFile.is_open() && pd.num_free_vertices() && obj_eval.have_objective_function()))
   {
       //ensure the obj_ptr is not null
     if(!obj_eval.have_objective_function()){
@@ -380,7 +384,7 @@ void TerminationCriterion::reset_inner(PatchData &pd, OFEvaluator& obj_eval,
   if (timeStepFileType)
     write_timestep( pd, err);
     
-  if (plotFile) {
+  if (plotFile.is_open()) {
       // two newlines so GNU plot knows that we are starting a new data set
     plotFile << msq_stdio::endl << msq_stdio::endl;
       // write column headings as comment in data file
@@ -478,7 +482,7 @@ void TerminationCriterion::accumulate_inner( PatchData& pd,
   if (timeStepFileType)
     write_timestep( pd, err);
     
-  if (plotFile) 
+  if (plotFile.is_open()) 
     plotFile << iterationCounter 
      << '\t' << mTimer.since_birth() 
      << '\t' << of_value 
