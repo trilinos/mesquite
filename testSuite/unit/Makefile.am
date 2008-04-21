@@ -48,6 +48,7 @@ msq_test_SOURCES = msq_test_main.cpp \
 	ObjectiveFunctionTests.hpp \
 	PatchDataInstances.hpp \
 	QualityMetricTester.hpp \
+	QualityMetricTester.cpp \
 	UnitUtil.hpp \
 	ArrayMeshTest.cpp \
 	AspectRatioGammaTest.cpp \

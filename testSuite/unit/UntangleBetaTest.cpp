@@ -34,6 +34,8 @@
 #include "UntangleBetaQualityMetric.hpp"
 #include "cppunit/extensions/HelperMacros.h"
 #include "QualityMetricTester.hpp"
+#include "PatchData.hpp"
+#include "UnitUtil.hpp"
 
 using namespace Mesquite;
 

@@ -41,6 +41,8 @@ Unit testing for the JacobianMetric class
 #include "LinearFunctionSet.hpp"
 #include "UnitUtil.hpp"
 #include "PlanarDomain.hpp"
+#include "SamplePoints.hpp"
+#include "PatchData.hpp"
 
 #ifdef MSQ_USE_OLD_IO_HEADERS
 #include <iostream.h>

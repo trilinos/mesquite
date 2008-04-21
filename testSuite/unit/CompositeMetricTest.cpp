@@ -41,6 +41,9 @@
 #include "PowerQualityMetric.hpp"
 #include "ScalarAddQualityMetric.hpp"
 #include "ScalarMultiplyQualityMetric.hpp"
+#include "MsqError.hpp"
+#include "PatchData.hpp"
+#include "UnitUtil.hpp"
 
 using namespace Mesquite;
 
