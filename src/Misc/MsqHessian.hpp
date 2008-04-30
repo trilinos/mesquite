@@ -100,10 +100,11 @@ namespace Mesquite
       void initialize( const MsqHessian& other );
       
       inline void zero_out();
-      size_t size() {return mSize;}
+      size_t size() const {return mSize;}
       //! returns the diagonal blocks, memory must be allocated before call.
-      void get_diagonal_blocks(msq_std::vector<Matrix3D> &diag, MsqError &err);
+      void get_diagonal_blocks(msq_std::vector<Matrix3D> &diag, MsqError &err) const;
       Matrix3D* get_block(size_t i, size_t j);
+      const Matrix3D* get_block(size_t i, size_t j) const;
       //inline void accumulate_entries(PatchData &pd, const size_t &elem_index,
       //                               Matrix3D* const &mat3d_array, MsqError &err);
       void compute_preconditioner(MsqError &err);
@@ -328,7 +329,8 @@ namespace Mesquite
       // if there is no block at position i,j (zero entry).
       return NULL;
     }
-
+  inline const Matrix3D* MsqHessian::get_block(size_t i, size_t j) const
+    { return const_cast<MsqHessian*>(this)->get_block(i,j); }
 
   /* ------------------ I/O ----------------- */
 

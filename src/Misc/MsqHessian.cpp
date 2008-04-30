@@ -385,7 +385,7 @@ void MsqHessian::add( const MsqHessian& other )
 
 /*! \param diag is an STL vector of size MsqHessian::size() . */
 void MsqHessian::get_diagonal_blocks(msq_std::vector<Matrix3D> &diag,
-                                     MsqError &/*err*/)
+                                     MsqError &/*err*/) const
 {
   // make sure we have enough memory, so that no reallocation is needed later.
   if (diag.size() != size()) {
