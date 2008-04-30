@@ -69,16 +69,23 @@ MsqHessian::MsqHessian() :
 
 MsqHessian::~MsqHessian()
 {
-  delete[] mEntries;	
-  delete[] mRowStart;	
-  delete[] mColIndex; 
+  clear();
+}
 
-  delete[] mPreconditioner;
+void MsqHessian::clear()
+{
+  mSize = precondArraySize = cgArraySizes = 0;
 
-  delete[] mR;
-  delete[] mZ;
-  delete[] mP;
-  delete[] mW;
+  delete[] mEntries; mEntries = 0;
+  delete[] mRowStart; mRowStart = 0;
+  delete[] mColIndex; mColIndex = 0;
+
+  delete[] mPreconditioner; mPreconditioner = 0;
+
+  delete[] mR; mR = 0;
+  delete[] mZ; mZ = 0;
+  delete[] mP; mP = 0;
+  delete[] mW; mW = 0;
 }
 
   
@@ -566,6 +573,31 @@ void MsqHessian::cg_solver(Vector3D x[], Vector3D b[], MsqError &err)
     rzm1 = inner(mZ,mR,mSize); // inner product r_{k-1}^T z_{k-1} 
     beta = rzm1 / rzm2;
     for (i=0; i<mSize; ++i)  mP[i] = mZ[i] + beta*mP[i]; // p_k = z_{k-1} + Beta_k * p_{k-1}
+  }
+}
+
+void MsqHessian::product( Vector3D* v, const Vector3D* x ) const
+{
+    // zero output array
+  memset( v, 0, size() * sizeof(*v) );
+  
+    // for each row
+  const Matrix3D* m_iter = mEntries;
+  const size_t* c_iter = mColIndex;
+  for (size_t r = 0; r < size(); ++r) {
+    
+      // diagonal entry
+    plusEqAx( v[r], *m_iter, x[r] ); 
+    ++m_iter; 
+    ++c_iter;
+    
+      // off-diagonal entires
+    for (size_t c = mRowStart[r] + 1; c != mRowStart[r+1]; ++c) {
+      plusEqAx( v[r], *m_iter, x[*c_iter] );
+      plusEqTransAx( v[*c_iter], *m_iter, x[r] );
+      ++m_iter;
+      ++c_iter;
+    }
   }
 }
 

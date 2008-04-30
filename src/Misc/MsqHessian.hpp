@@ -100,22 +100,30 @@ namespace Mesquite
       void initialize( const MsqHessian& other );
       
       inline void zero_out();
+ 
       size_t size() const {return mSize;}
+ 
       //! returns the diagonal blocks, memory must be allocated before call.
       void get_diagonal_blocks(msq_std::vector<Matrix3D> &diag, MsqError &err) const;
+
       Matrix3D* get_block(size_t i, size_t j);
       const Matrix3D* get_block(size_t i, size_t j) const;
+
       //inline void accumulate_entries(PatchData &pd, const size_t &elem_index,
       //                               Matrix3D* const &mat3d_array, MsqError &err);
+
       void compute_preconditioner(MsqError &err);
-      
       void apply_preconditioner(Vector3D zloc[], Vector3D rloc[], MsqError &err);
+
       void cg_solver(Vector3D x[], Vector3D b[], MsqError &err);
       //! Hessian - vector product, summed with a second vector (optional).
       friend void axpy(Vector3D res[], size_t size_r,
                        const MsqHessian &H, const Vector3D x[], size_t size_x,
                        const Vector3D y[], size_t size_y, MsqError &err);
-      friend class ObjectiveFunction;
+      
+      //! r = this * x, where r and x are arrays of length size().
+      void product( Vector3D* r, const Vector3D* x ) const;
+
       friend msq_stdio::ostream& operator<<( msq_stdio::ostream&, const MsqHessian& );
    
       inline void add( size_t row, size_t col, const Matrix3D& m, MsqError& err );
@@ -123,6 +131,10 @@ namespace Mesquite
       inline void scale( double value );
       
       void add( const MsqHessian& other ); 
+      
+        // Release all storage.  Object is invalid until next call
+        // to initialize(..).
+      void clear();
       
     private:
       MsqHessian& operator=( const MsqHessian& h );

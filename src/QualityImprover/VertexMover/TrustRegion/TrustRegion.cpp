@@ -73,12 +73,26 @@ void TrustRegion::terminate_mesh_iteration( PatchData& /*pd*/, MsqError& /*err*/
 
 void TrustRegion::cleanup()
 { 
+    // release Memento
   delete mMemento;
   mMemento = 0;
+    // release temporary array memory
+  mHess.clear();
+  mGrad.clear();
+  //mGrad.swap( msq_std::vector<Vector3D>(mGrad) );
+  wVect.clear();
+  //wVect.swap( msq_std::vector<Vector3D>(wVect) );
+  zVect.clear();
+  //zVect.swap( msq_std::vector<Vector3D>(zVect) );
+  dVect.clear();
+  //dVect.swap( msq_std::vector<Vector3D>(dVect) );
+  pVect.clear();
+  //pVect.swap( msq_std::vector<Vector3D>(pVect) );
+  rVect.clear();
+  //rVect.swap( msq_std::vector<Vector3D>(rVect) );
+  preCond.clear();
+  //preCond.swap( msq_std::vector<double>(preCond) );
 }
-
-static inline double norm( const Vector3D* vect, size_t nn )
-  { return length_squared( vect, nn ); }
 
 static inline void negate( Vector3D* out, const Vector3D* in, size_t nn )
 {
@@ -86,24 +100,22 @@ static inline void negate( Vector3D* out, const Vector3D* in, size_t nn )
     out[i] = -in[i];
 }
 
-static inline void axpy(Vector3D *r, const Vector3D *x, double c, 
-                        const Vector3D *y, size_t nn)
+// Do v += s * x, where v and x are arrays of length n
+static inline void plus_eq_scaled( Vector3D* v, double s, const Vector3D* x, size_t n )
 {
-  for (size_t i = 0; i < nn; ++i) 
-    r[i] = x[i] + c*y[i];
+  Vector3D* end = v + n;
+  for (; v != end; ++v, ++x)
+    *v += s * *x;
 }
 
-static inline void maxpy(Vector3D *r, const Vector3D *x, double c, 
-                         const Vector3D *y, size_t nn)
+// Do v = s*v - x, where v and x are arrays of length n
+static inline void times_eq_minus( Vector3D* v, double s, const Vector3D* x, size_t n )
 {
-  for (size_t i = 0; i < nn; ++i)
-    r[i] = c*y[i] - x[i];
-}
-
-static inline void matmul( Vector3D* result, const MsqHessian& hess, const Vector3D* x )
-{
-  MsqError err;
-  axpy( result, hess.size(), hess, x, hess.size(), 0, 0, err );
+  Vector3D* end = v + n;
+  for (; v != end; ++v, ++x) {
+    *v *= s;
+    *v -= *x;
+  }
 }
 
 void TrustRegion::compute_preconditioner( MsqError& err )
@@ -147,11 +159,12 @@ void TrustRegion::optimize_vertex_positions( PatchData& pd, MsqError& err )
   
   double radius = 1000;		/* delta*delta */
 
-  Vector3D *w;
-  Vector3D *z;
-  Vector3D *d;
-  Vector3D *p;
-  Vector3D *r;
+ const int nn = pd.num_free_vertices();
+  wVect.resize(nn); Vector3D* w = &wVect[0];
+  zVect.resize(nn); Vector3D* z = &zVect[0];
+  dVect.resize(nn); Vector3D* d = &dVect[0];
+  pVect.resize(nn); Vector3D* p = &pVect[0];
+  rVect.resize(nn); Vector3D* r = &rVect[0];
 
   double norm_r, norm_g;
   double alpha, beta, kappa;
@@ -159,7 +172,6 @@ void TrustRegion::optimize_vertex_positions( PatchData& pd, MsqError& err )
   double dMp, norm_d, norm_dp1, norm_p;
   double obj, objn;
 
-  const int nn = pd.num_free_vertices(); //const int nn = mesh->nn;
   int cg_iter;
   bool valid;
 
@@ -172,16 +184,10 @@ void TrustRegion::optimize_vertex_positions( PatchData& pd, MsqError& err )
   compute_preconditioner( err ); MSQ_ERRRTN(err);
   pd.recreate_vertices_memento( mMemento, err ); MSQ_ERRRTN(err);
 
-  wVect.resize(nn); w = &wVect[0];//w  = (double *)malloc(3*sizeof(double)*nn);
-  zVect.resize(nn); z = &zVect[0];//z  = (double *)malloc(3*sizeof(double)*nn);
-  dVect.resize(nn); d = &dVect[0];//d  = (double *)malloc(3*sizeof(double)*nn);
-  pVect.resize(nn); p = &pVect[0];//p  = (double *)malloc(3*sizeof(double)*nn);
-  rVect.resize(nn); r = &rVect[0];//r  = (double *)malloc(3*sizeof(double)*nn);
-
-  norm_r = norm(&mGrad[0], nn);
-  norm_g = sqrt(norm_r);
-
   while (!term.terminate() && (radius > 1e-20)) {
+
+    norm_r = length_squared(&mGrad[0], nn);
+    norm_g = sqrt(norm_r);
 
     memset(d, 0, 3*sizeof(double)*nn);
     memcpy(r, &mGrad[0], nn*sizeof(Vector3D)); //memcpy(r, mesh->g, 3*sizeof(double)*nn);
@@ -205,12 +211,13 @@ void TrustRegion::optimize_vertex_positions( PatchData& pd, MsqError& err )
       ++cg_iter;
 
       memset(w, 0, 3*sizeof(double)*nn);
-      matmul(w, mHess, p); //matmul(w, mesh, p);
+      //matmul(w, mHess, p); //matmul(w, mesh, p);
+      mHess.product( w, p );
 
       kappa = inner(p, w, nn);
       if (kappa <= 0.0) {
         alpha = (sqrt(dMp*dMp+norm_p*(radius-norm_d))-dMp)/norm_p;
-        axpy(d, d, alpha, p, nn);
+        plus_eq_scaled( d, alpha, p, nn );
 	break;
       }
 
@@ -219,20 +226,20 @@ void TrustRegion::optimize_vertex_positions( PatchData& pd, MsqError& err )
       norm_dp1 = norm_d + 2.0*alpha*dMp + alpha*alpha*norm_p;
       if (norm_dp1 >= radius) {
         alpha = (sqrt(dMp*dMp+norm_p*(radius-norm_d))-dMp)/norm_p;
-        axpy(d, d, alpha, p, nn);
+        plus_eq_scaled( d, alpha, p, nn );
 	break;
       }
 
-      axpy(d, d, alpha, p, nn);
-      axpy(r, r, alpha, w, nn);
-      norm_r = norm(r, nn);
+      plus_eq_scaled( d, alpha, p, nn );
+      plus_eq_scaled( r, alpha, w, nn );
+      norm_r = length_squared(r, nn);
 
       apply_preconditioner( z, r, err); MSQ_ERRRTN(err); //prec->apply(z, r, prec, mesh);
 
       rzm1 = rz;
       rz = inner(r, z, nn);
       beta = rz / rzm1;
-      maxpy(p, z, beta, p, nn);
+      times_eq_minus( p, beta, z, nn );
 
       dMp = beta*(dMp + alpha*norm_p);
       norm_p = rz + beta*beta*norm_p;
@@ -241,12 +248,12 @@ void TrustRegion::optimize_vertex_positions( PatchData& pd, MsqError& err )
 
 #ifdef DO_STEEP_DESC    
     if (norm_d <= tr_num_tol) {
-      norm_g = norm(&mGrad[0], nn);
+      norm_g = length(&mGrad[0], nn);
       double ll = 1.0;
       if (norm_g < tr_num_tol)
         break;
-      if (norm_g > radius*radius)
-        ll = radius / sqrt(norm_g);
+      if (norm_g > radius)
+        ll = radius / nurm_g;
       for (int i = 0; i < nn; ++i)
         d[i] = ll * mGrad[i];
     }
@@ -255,7 +262,8 @@ void TrustRegion::optimize_vertex_positions( PatchData& pd, MsqError& err )
     alpha = inner( &mGrad[0], d, nn ); // inner(mesh->g, d, nn);
 
     memset(p, 0, 3*sizeof(double)*nn);
-    matmul(p, mHess, d); //matmul(p, mesh, d);
+    //matmul(p, mHess, d); //matmul(p, mesh, d);
+    mHess.product( p, d );
     beta = 0.5*inner(p, d, nn);
     kappa = alpha + beta;
 
@@ -297,9 +305,6 @@ void TrustRegion::optimize_vertex_positions( PatchData& pd, MsqError& err )
     func.update( pd, obj, mGrad, mHess, err );
     compute_preconditioner( err ); MSQ_ERRRTN(err);
     pd.recreate_vertices_memento( mMemento, err ); MSQ_ERRRTN(err);
-
-    norm_r = norm(&mGrad[0], nn);
-    norm_g = sqrt(norm_r);
 
     // checks stopping criterion 
     term.accumulate_patch( pd, err ); MSQ_ERRRTN(err);
