@@ -43,6 +43,14 @@
 
 namespace Mesquite {
 
+// Force std::vector to release allocated memory
+template <typename T>
+static inline void free_vector( msq_std::vector<T>& v )
+{
+  msq_std::vector<T> temp;
+  temp.swap( v );
+}
+
 msq_std::string TrustRegion::get_name() const { return "TrustRegion"; }
 
 PatchSet* TrustRegion::get_patch_set()
@@ -78,20 +86,13 @@ void TrustRegion::cleanup()
   mMemento = 0;
     // release temporary array memory
   mHess.clear();
-  mGrad.clear();
-  //mGrad.swap( msq_std::vector<Vector3D>(mGrad) );
-  wVect.clear();
-  //wVect.swap( msq_std::vector<Vector3D>(wVect) );
-  zVect.clear();
-  //zVect.swap( msq_std::vector<Vector3D>(zVect) );
-  dVect.clear();
-  //dVect.swap( msq_std::vector<Vector3D>(dVect) );
-  pVect.clear();
-  //pVect.swap( msq_std::vector<Vector3D>(pVect) );
-  rVect.clear();
-  //rVect.swap( msq_std::vector<Vector3D>(rVect) );
-  preCond.clear();
-  //preCond.swap( msq_std::vector<double>(preCond) );
+  free_vector(mGrad);
+  free_vector(wVect);
+  free_vector(zVect);
+  free_vector(dVect);
+  free_vector(pVect);
+  free_vector(rVect);
+  free_vector(preCond);
 }
 
 static inline void negate( Vector3D* out, const Vector3D* in, size_t nn )
