@@ -104,6 +104,20 @@ bool OFEvaluator::update( PatchData& pd, double& value,
 
 bool OFEvaluator::update( PatchData& pd, double& value, 
                           msq_std::vector<Vector3D>& grad,
+                          msq_std::vector<SymMatrix3D>& hess_diag,
+                          MsqError& err )
+{
+  if (!have_objective_function()) 
+    { MSQ_SETERR(err)("No ObjectiveFunction",MsqError::INVALID_STATE); return false; }
+  bool b = get_objective_function()
+    ->evaluate_with_Hessian_diagonal( currUpdateType, pd, value, grad, hess_diag, err );
+  currUpdateType = updateType;
+  return !MSQ_CHKERR(err) && b;
+}
+
+
+bool OFEvaluator::update( PatchData& pd, double& value, 
+                          msq_std::vector<Vector3D>& grad,
                           MsqHessian& Hessian,
                           MsqError& err )
 {
@@ -133,6 +147,19 @@ bool OFEvaluator::evaluate( PatchData& pd, double& value,
     { MSQ_SETERR(err)("No ObjectiveFunction",MsqError::INVALID_STATE); return false; }
   bool b = get_objective_function()
     ->evaluate_with_gradient( tempType, pd, value, grad, err ); 
+  return !MSQ_CHKERR(err) && b;
+}
+
+
+bool OFEvaluator::evaluate( PatchData& pd, double& value, 
+                            msq_std::vector<Vector3D>& grad,
+                            msq_std::vector<SymMatrix3D>& hess_diag,
+                            MsqError& err ) const
+{ 
+  if (!have_objective_function()) 
+    { MSQ_SETERR(err)("No ObjectiveFunction",MsqError::INVALID_STATE); return false; }
+  bool b = get_objective_function()
+    ->evaluate_with_Hessian_diagonal( tempType, pd, value, grad, hess_diag, err ); 
   return !MSQ_CHKERR(err) && b;
 }
 

@@ -90,7 +90,7 @@ void QuasiNewton::cleanup()
     free_vector(v[i]);
   
     // release Hessian memory
-  mHess.clear();
+  free_vector(mHess);
   
     // release temporary array memory
   free_vector(x);
@@ -107,35 +107,35 @@ static inline void plus_eq_scaled( Vector3D* v, double s, const Vector3D* x, siz
 
 void QuasiNewton::solve( Vector3D* z_arr, const Vector3D* v_arr ) const
 {
-  double pd[6];
+  SymMatrix3D pd;
   
   const size_t nn = mHess.size();
   for (size_t i = 0; i < nn; ++i) {
 
       // factor
-    const Matrix3D& d = *mHess.get_block(i,i);
-    pd[0] = 1.0 / d[0][0];
-    pd[1] = d[0][1] * pd[0];
-    pd[2] = d[0][2] * pd[0];
+    const SymMatrix3D& d = mHess[i];
+    pd[0] = 1.0 / d[0];
+    pd[1] = d[1] * pd[0];
+    pd[2] = d[2] * pd[0];
     
-    pd[3] = 1.0 / (d[1][1] - d[0][1]*pd[1]);
-    pd[5] = d[1][2] - d[0][2]*pd[1];
+    pd[3] = 1.0 / (d[3] - d[1]*pd[1]);
+    pd[5] = d[4] - d[2]*pd[1];
     pd[4] = pd[3] * pd[5];
-    pd[5] = 1.0 / (d[2][2] - d[0][2]*pd[2] - pd[4]*pd[5]);
+    pd[5] = 1.0 / (d[5] - d[2]*pd[2] - pd[4]*pd[5]);
     
     if (pd[0] <= 0.0 || pd[3] <= 0.0 || pd[5] <= 0.0) {
-      if (d[0][0] + d[1][1] + d[2][2] <= 0) {
+      if (d[0] + d[3] + d[5] <= 0) {
           // switch to diagonal
-        pd[0] = 1.0 / fabs(d[0][0]);
+        pd[0] = 1.0 / fabs(d[0]);
         pd[1] = 0.0;
         pd[2] = 0.0;
-        pd[3] = 1.0 / fabs(d[1][1]);
+        pd[3] = 1.0 / fabs(d[3]);
         pd[4] = 0.0;
-        pd[5] = 1.0 / fabs(d[2][2]);
+        pd[5] = 1.0 / fabs(d[5]);
       }
       else {
           // diagonal preconditioner
-        pd[0] = pd[3] = pd[5] = 1.0 / (d[0][0] + d[1][1] + d[2][2]);
+        pd[0] = pd[3] = pd[5] = 1.0 / (d[0] + d[3] + d[5]);
         pd[1] = pd[2] = pd[4] = 0.0;
       }
     }
@@ -186,7 +186,7 @@ void QuasiNewton::optimize_vertex_positions( PatchData& pd, MsqError& err )
     w[i].resize( nn, Vector3D(0.0) );
   }
   d.resize( nn );
-  mHess.initialize( pd, err );  //hMesh(mesh);
+  mHess.resize( nn );  //hMesh(mesh);
 
   bool valid = func.update( pd, obj, v[QNVEC], mHess, err ); MSQ_ERRRTN(err);
   if (!valid) {

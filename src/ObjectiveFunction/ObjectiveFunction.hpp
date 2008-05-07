@@ -61,6 +61,7 @@ namespace Mesquite
    class MsqVertex;
    class MsqError;
    class Vector3D;
+   class SymMatrix3D;
    class Mesh;
    class MeshDomain;
    class PatchSet;
@@ -120,9 +121,6 @@ namespace Mesquite
        */
       TEMPORARY
     };
-
-    ObjectiveFunction () {}
-    
     
       // virtual destructor ensures use of polymorphism during destruction
     virtual ~ObjectiveFunction() {}
@@ -193,6 +191,36 @@ namespace Mesquite
                                          msq_std::vector<Vector3D>& grad_out,
                                          MsqError& err ); 
     
+      /**\brief Evaluate objective function and diagonal blocks of Hessian for specified patch.
+       *
+       * Either evaluate the objective function over the passed patch
+       * or update the accumulated, global objective function value for
+       * changes in the passed patch, depending on the value of the
+       * EvalType.  
+       *
+       * The default implementation of this function evaluate the
+       * entire Hessian and discard non-diagonal portions.  Concrete
+       * objective functions should provide a more efficient implementation
+       * that evaluates and accumulates only the required terms.
+       * 
+       *\param type  Evaluation type.
+       *\param pd    The patch.
+       *\param value_out  The passed-back value of the objective fuction. 
+       *\param grad_out The gradient of the OF wrt the coordinates of
+       *             each *free* vertex in the patch.
+       *\param hess_diag_out The diagonal blocks of a Hessian.  I.e. Decompose
+       *             the Hessian into 3x3 submatrices and return only the 
+       *             submatrices (blocks) along the diagonal.
+       *\return false if any QualityMetric evaluation returned false,
+       *        true otherwise.
+       */
+    virtual bool evaluate_with_Hessian_diagonal( EvalType type, 
+                                        PatchData& pd,
+                                        double& value_out,
+                                        msq_std::vector<Vector3D>& grad_out,
+                                        msq_std::vector<SymMatrix3D>& hess_diag_out,
+                                        MsqError& err ); 
+    
     
       /**\brief Evaluate objective function and Hessian for specified patch.
        *
@@ -201,11 +229,7 @@ namespace Mesquite
        * changes in the passed patch, depending on the value of the
        * EvalType.  
        *
-       * The default implementation of this function will
-       * use the value-only variation of the evaluate method and numerical
-       * approximation to calculate Hessians.  Whenever possible, objective
-       * function implementations should provide more efficient analyical
-       * Hessian calculations.
+       * The default implementation of this function will fail.  
        * 
        *\param type  Evaluation type.
        *\param pd    The patch.

@@ -155,6 +155,34 @@ public:
    *\param value Output, the value of the objective function.
    *\param grad Output, the gradient of the objective function
    *             with respect to each FREE vertex in the patch.
+   *\param Hessian_diag_blocks Output, 3x3 submatrices along diagonal of 
+   *                           Hessian of objective function
+   */
+  MESQUITE_EXPORT
+  bool update( PatchData& pd, double& value,
+               msq_std::vector<Vector3D>& grad, 
+               msq_std::vector<SymMatrix3D>& Hessian_diag_blocks,
+               MsqError& err );
+  
+  /**\brief Update accumulated values for changes to vertex positions
+   *        in a patch.
+   *
+   * For a block coordinate descent solution, this method calculates
+   * the updated global objective function value for any modifications
+   * to the passed patch, as made by the solver.  The change to
+   * the current patch state is considered relative to that of the
+   * previous patch passed to any of the update methods, except when
+   * the reset() method has been called by the solver to indicate
+   * that a new inner iteration is starting.
+   *
+   * For a Nash-type solution, this method simply returns the evaluation
+   * of the objective funtion for the local patch.  The behavior is identical
+   * to calling the evaluate() method.
+   *
+   *\param pd  The mesh patch
+   *\param value Output, the value of the objective function.
+   *\param grad Output, the gradient of the objective function
+   *             with respect to each FREE vertex in the patch.
    *\param Hessian Output, the Hessian of the objective function.
    */
   MESQUITE_EXPORT
@@ -204,6 +232,30 @@ public:
   bool evaluate( PatchData& pd, 
                  double& value, 
                  msq_std::vector<Vector3D>& grad,
+                 MsqError& err ) const;
+
+  /**\brief Evaluate the objective function without changing any 
+   *        accumulated values.
+   *
+   * Evaluate the objective function for the specified patch
+   * (or for the change to the specified patch for BCD).  This 
+   * method does not change any internal state or accumulated
+   * values.  It is provided for FeasibleNewton and other solvers
+   * that need to obtain an OF value for some intermediate or 
+   * temporary set of vertex positions.
+   *
+   *\param pd  The mesh patch
+   *\param value Output, the value of the objective function.
+   *\param grad Output, the gradient of the objective function
+   *             with respect to each FREE vertex in the patch.
+   *\param Hessian_diag_blocks Output, 3x3 submatrices along diagonal of 
+   *                           Hessian of objective function
+   */
+  MESQUITE_EXPORT
+  bool evaluate( PatchData& pd, 
+                 double& value,
+                 msq_std::vector<Vector3D>& grad, 
+                 msq_std::vector<SymMatrix3D>& Hessian_diag_blocks,
                  MsqError& err ) const;
 
   /**\brief Evaluate the objective function without changing any 

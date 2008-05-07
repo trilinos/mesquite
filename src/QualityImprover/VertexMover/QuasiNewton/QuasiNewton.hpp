@@ -68,9 +68,9 @@ class QuasiNewton : public VertexMover, public PatchSetUser
 
     enum Constants { QNVEC = 5 };
   
-    MsqHessian mHess;
     PatchDataVerticesMemento* mMemento;
     msq_std::vector<Vector3D> x, v[QNVEC+1], w[QNVEC+1], d;
+    msq_std::vector<SymMatrix3D> mHess;
 };
 
 } // namespace Mesquite
