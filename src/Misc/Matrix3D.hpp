@@ -65,6 +65,7 @@
 
 #include "Mesquite.hpp"
 #include "Vector3D.hpp"
+#include "SymMatrix3D.hpp"
 
 namespace Mesquite
 {
@@ -172,6 +173,11 @@ namespace Mesquite
     {
       set_values(s);
     }
+    
+    Matrix3D( const SymMatrix3D& m )
+    {
+      *this = m;
+    }
 
     // destructor
     ~Matrix3D() { }
@@ -182,6 +188,18 @@ namespace Mesquite
       copy(A.v_);
       return *this;
     }
+    
+    Matrix3D& operator=( const SymMatrix3D& m )
+    {
+      v_[0]         = m[0];
+      v_[1] = v_[3] = m[1];
+      v_[2] = v_[6] = m[2];
+      v_[4]         = m[3];
+      v_[5] = v_[7] = m[4];
+      v_[8]         = m[5];
+      return *this;
+    }
+    
         
     Matrix3D& operator=(double scalar)
     { 
@@ -254,7 +272,9 @@ namespace Mesquite
     const Matrix3D operator*(double s) const;
     friend const Matrix3D operator*(double s, const Matrix3D &A);    
     void operator+=(const Matrix3D &rhs);
+    void operator+=(const SymMatrix3D &rhs);
     void operator-=(const Matrix3D &rhs);
+    void operator-=(const SymMatrix3D &rhs);
     void operator*=(double s);
     friend Matrix3D plus_transpose(const Matrix3D& A, const Matrix3D &B);
     Matrix3D& plus_transpose_equal(const Matrix3D &B);
@@ -299,6 +319,17 @@ namespace Mesquite
       return v_ + 3*i;
     }
     
+    inline double& operator()(unsigned short r, unsigned short c)
+    {
+      return v_[3*r+c];
+    }
+    inline double operator()(unsigned short r, unsigned short c) const
+    {
+      return v_[3*r+c];
+    }
+    
+    
+    
     inline Vector3D row(unsigned r) const
     {
       return Vector3D( v_ + 3*r );
@@ -310,6 +341,19 @@ namespace Mesquite
     }
 
     inline bool positive_definite() const;
+    
+    inline SymMatrix3D upper() const
+    {
+      return SymMatrix3D( v_[0], v_[1], v_[2],
+                                 v_[4], v_[5],
+                                        v_[8] );
+    }
+    inline SymMatrix3D lower() const
+    {
+      return SymMatrix3D( v_[0], v_[3], v_[6],
+                                 v_[4], v_[7],
+                                        v_[8] );
+    }
   };
 
 
@@ -385,6 +429,21 @@ namespace Mesquite
     tmp += B;
     return tmp;
   }
+  
+  inline Matrix3D operator+( const Matrix3D& A, const SymMatrix3D& B )
+  {
+    return Matrix3D( A(0,0) + B[SymMatrix3D::T00],
+                     A(0,1) + B[SymMatrix3D::T01],
+                     A(0,2) + B[SymMatrix3D::T02],
+                     A(1,0) + B[SymMatrix3D::T10],
+                     A(1,1) + B[SymMatrix3D::T11],
+                     A(1,2) + B[SymMatrix3D::T12],
+                     A(2,0) + B[SymMatrix3D::T20],
+                     A(2,1) + B[SymMatrix3D::T21],
+                     A(2,2) + B[SymMatrix3D::T22] );
+  }
+  inline Matrix3D operator+( const SymMatrix3D& B, const Matrix3D& A )
+    { return A + B; }
 
   //! \return A-B
   inline const Matrix3D operator-(const Matrix3D &A, 
@@ -393,6 +452,31 @@ namespace Mesquite
     Matrix3D tmp(A);
     tmp -= B;
     return tmp;
+  }
+  
+  inline Matrix3D operator-( const Matrix3D& A, const SymMatrix3D& B )
+  {
+    return Matrix3D( A(0,0) - B[SymMatrix3D::T00],
+                     A(0,1) - B[SymMatrix3D::T01],
+                     A(0,2) - B[SymMatrix3D::T02],
+                     A(1,0) - B[SymMatrix3D::T10],
+                     A(1,1) - B[SymMatrix3D::T11],
+                     A(1,2) - B[SymMatrix3D::T12],
+                     A(2,0) - B[SymMatrix3D::T20],
+                     A(2,1) - B[SymMatrix3D::T21],
+                     A(2,2) - B[SymMatrix3D::T22] );
+  }
+  inline Matrix3D operator-( const SymMatrix3D& B, const Matrix3D& A )
+  {
+    return Matrix3D( B[SymMatrix3D::T00] - A(0,0),
+                     B[SymMatrix3D::T01] - A(0,1),
+                     B[SymMatrix3D::T02] - A(0,2),
+                     B[SymMatrix3D::T10] - A(1,0),
+                     B[SymMatrix3D::T11] - A(1,1),
+                     B[SymMatrix3D::T12] - A(1,2),
+                     B[SymMatrix3D::T20] - A(2,0),
+                     B[SymMatrix3D::T21] - A(2,1),
+                     B[SymMatrix3D::T22] - A(2,2) );
   }
   
   inline Matrix3D& Matrix3D::equal_mult_elem( const Matrix3D& A )
@@ -464,11 +548,25 @@ namespace Mesquite
       v_[6] += rhs.v_[6]; v_[7] += rhs.v_[7]; v_[8] += rhs.v_[8];
   }
 
+  inline void Matrix3D::operator+=(const SymMatrix3D &rhs)
+  {
+      v_[0] += rhs[0]; v_[1] += rhs[1]; v_[2] += rhs[2];
+      v_[3] += rhs[1]; v_[4] += rhs[3]; v_[5] += rhs[4];
+      v_[6] += rhs[2]; v_[7] += rhs[4]; v_[8] += rhs[5];
+  }
+
   inline void Matrix3D::operator-=(const Matrix3D &rhs)
   {
       v_[0] -= rhs.v_[0]; v_[1] -= rhs.v_[1]; v_[2] -= rhs.v_[2];
       v_[3] -= rhs.v_[3]; v_[4] -= rhs.v_[4]; v_[5] -= rhs.v_[5];
       v_[6] -= rhs.v_[6]; v_[7] -= rhs.v_[7]; v_[8] -= rhs.v_[8];
+  }
+
+  inline void Matrix3D::operator-=(const SymMatrix3D &rhs)
+  {
+      v_[0] -= rhs[0]; v_[1] -= rhs[1]; v_[2] -= rhs[2];
+      v_[3] -= rhs[1]; v_[4] -= rhs[3]; v_[5] -= rhs[4];
+      v_[6] -= rhs[2]; v_[7] -= rhs[4]; v_[8] -= rhs[5];
   }
 
   //! multiplies each entry by the scalar s
@@ -555,6 +653,56 @@ namespace Mesquite
     tmp.assign_product( A, B );
     return tmp;
   }
+  
+  inline const Matrix3D operator*( const Matrix3D& A, 
+                                   const SymMatrix3D& B )
+  {
+    return Matrix3D( A(0,0)*B[0] + A(0,1)*B[1] + A(0,2)*B[2],
+                     A(0,0)*B[1] + A(0,1)*B[3] + A(0,2)*B[4],
+                     A(0,0)*B[2] + A(0,1)*B[4] + A(0,2)*B[5],
+                     
+                     A(1,0)*B[0] + A(1,1)*B[1] + A(1,2)*B[2],
+                     A(1,0)*B[1] + A(1,1)*B[3] + A(1,2)*B[4],
+                     A(1,0)*B[2] + A(1,1)*B[4] + A(1,2)*B[5],
+                     
+                     A(2,0)*B[0] + A(2,1)*B[1] + A(2,2)*B[2],
+                     A(2,0)*B[1] + A(2,1)*B[3] + A(2,2)*B[4],
+                     A(2,0)*B[2] + A(2,1)*B[4] + A(2,2)*B[5] );
+  }
+  
+  inline const Matrix3D operator*( const SymMatrix3D& B,
+                                   const Matrix3D& A )
+  {
+    return Matrix3D( A(0,0)*B[0] + A(1,0)*B[1] + A(2,0)*B[2],
+                     A(0,1)*B[0] + A(1,1)*B[1] + A(2,1)*B[2],
+                     A(0,2)*B[0] + A(1,2)*B[1] + A(2,2)*B[2],
+
+                     A(0,0)*B[1] + A(1,0)*B[3] + A(2,0)*B[4],
+                     A(0,1)*B[1] + A(1,1)*B[3] + A(2,1)*B[4],
+                     A(0,2)*B[1] + A(1,2)*B[3] + A(2,2)*B[4],
+
+                     A(0,0)*B[2] + A(1,0)*B[4] + A(2,0)*B[5],
+                     A(0,1)*B[2] + A(1,1)*B[4] + A(2,1)*B[5],
+                     A(0,2)*B[2] + A(1,2)*B[4] + A(2,2)*B[5] );
+  }
+  
+  inline const Matrix3D operator*( const SymMatrix3D& a,
+                                   const SymMatrix3D& b )
+  {
+    return Matrix3D( a[0]*b[0] + a[1]*b[1] + a[2]*b[2],
+                     a[0]*b[1] + a[1]*b[3] + a[2]*b[4],
+                     a[0]*b[2] + a[1]*b[4] + a[2]*b[5],
+                     
+                     a[1]*b[0] + a[3]*b[1] + a[4]*b[2],
+                     a[1]*b[1] + a[3]*b[3] + a[4]*b[4],
+                     a[1]*b[2] + a[3]*b[4] + a[4]*b[5],
+                     
+                     a[2]*b[0] + a[4]*b[1] + a[5]*b[2],
+                     a[2]*b[1] + a[4]*b[3] + a[5]*b[4],
+                     a[2]*b[2] + a[4]*b[4] + a[5]*b[5] );
+  }
+                     
+                     
    
    //! multiplies each entry by the scalar s
   inline const Matrix3D Matrix3D::operator*(double s) const

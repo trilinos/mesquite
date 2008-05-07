@@ -96,6 +96,7 @@ msq_test_SOURCES = msq_test_main.cpp \
 	SamplePointsTest.cpp \
 	SphericalGeometryTest.cpp \
 	StdDevTemplateTest.cpp \
+	SymMatrix3DTest.cpp \
 	TagVertexMeshTest.cpp \
 	Target2DTest.cpp \
 	TargetReadWriteTest.cpp \
