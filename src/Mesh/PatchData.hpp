@@ -422,6 +422,8 @@ namespace Mesquite
                       PatchData &pd_to_fill,
                       MsqError &err);
     
+    void get_free_vertex_coordinates( msq_std::vector<Vector3D>& coords_out ) const;
+    
       //! Creates a memento that holds the current
       //! state of the PatchData coordinates. 
     PatchDataVerticesMemento* create_vertices_memento( MsqError &err,
@@ -769,6 +771,14 @@ namespace Mesquite
   {
     return element - &elementArray[0];
   }
+
+  inline void PatchData::get_free_vertex_coordinates( msq_std::vector<Vector3D>& coords_out ) const
+  {
+    coords_out.resize( num_free_vertices() );
+    msq_std::copy( vertexArray.begin(), vertexArray.begin()+num_free_vertices(), 
+                   coords_out.begin() );
+  }
+    
 
   
   /*! 
