@@ -56,6 +56,7 @@ include src/QualityImprover/VertexMover/NonSmoothSteepestDescent/Makefile.am
 include src/QualityImprover/VertexMover/FeasibleNewton/Makefile.am
 include src/QualityImprover/VertexMover/Randomize/Makefile.am
 include src/QualityImprover/VertexMover/TrustRegion/Makefile.am
+include src/QualityImprover/VertexMover/QuasiNewton/Makefile.am
 include src/QualityMetric/Makefile.am
 include src/QualityMetric/DFT/Makefile.am
 include src/QualityMetric/Shape/Makefile.am
