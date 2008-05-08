@@ -171,6 +171,26 @@ bool QualityMetric::evaluate_with_Hessian( PatchData& pd,
   return true;
 }
 
+bool QualityMetric::evaluate_with_Hessian_diagonal( PatchData& pd,
+                                size_t handle,
+                                double& value,
+                                msq_std::vector<size_t>& indices,
+                                msq_std::vector<Vector3D>& gradient,
+                                msq_std::vector<SymMatrix3D>& Hessian_diagonal,
+                                MsqError& err )
+{
+  bool rval = evaluate_with_Hessian( pd, handle, value, indices, gradient, tmpHess, err );
+  size_t s = indices.size();
+  Hessian_diagonal.resize( s );
+  msq_std::vector<Matrix3D>::const_iterator h = tmpHess.begin();
+  for (size_t i = 0; i < indices.size(); ++i) {
+    Hessian_diagonal[i] = h->upper();
+    h += s--;
+  }
+  return rval;
+}
+
+
 uint32_t QualityMetric::fixed_vertex_bitmap( PatchData& pd,
                                            const MsqMeshEntity* elem,
                                            msq_std::vector<size_t>& indices )

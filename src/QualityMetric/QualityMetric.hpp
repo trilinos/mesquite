@@ -119,7 +119,7 @@ namespace Mesquite
                            bool free_vertices_only,
                            MsqError& err ) = 0;
      
-     /**\brief Get metric value at a location in the patch.
+     /**\brief Get metric value at a logical location in the patch.
       *
       * Evaluate the metric at one location in the PatchData.
       *\param pd     The patch.
@@ -132,7 +132,7 @@ namespace Mesquite
                     double& value, 
                     MsqError& err ) = 0;
      
-     /**\brief Get metric value at a location in the patch.
+     /**\brief Get metric value at a logical location in the patch.
       *
       * Evaluate the metric at one location in the PatchData.
       *\param pd      The patch.
@@ -148,7 +148,7 @@ namespace Mesquite
                     msq_std::vector<size_t>& indices,
                     MsqError& err ) = 0;
      
-     /**\brief Get metric value and gradient at a location in the patch.
+     /**\brief Get metric value and gradient at a logical location in the patch.
       *
       * Evaluate the metric at one location in the PatchData.
       *\param pd      The patch.
@@ -168,7 +168,30 @@ namespace Mesquite
                     msq_std::vector<Vector3D>& gradient,
                     MsqError& err );
      
-     /**\brief Get metric value and gradient at a location in the patch.
+     /**\brief Get metric value and gradient at a logical location in the patch.
+      *
+      * Evaluate the metric at one location in the PatchData.
+      *\param pd      The patch.
+      *\param handle  The location in the patch (as passed back from get_evaluations).
+      *\param value   The output metric value.
+      *\param indices The free vertices that the evaluation is a function
+      *               of, specified as vertex indices in the PatchData.
+      *\param gradient The gradient of the metric as a function of the
+      *               coordinates of the free vertices passed back in
+      *               the indices list.
+      *\param Hessian_diagonal The 3x3 blocks along the diagonal of
+      *               the Hessian matrix.
+      */
+     virtual
+     bool evaluate_with_Hessian_diagonal( PatchData& pd,
+                    size_t handle,
+                    double& value,
+                    msq_std::vector<size_t>& indices,
+                    msq_std::vector<Vector3D>& gradient,
+                    msq_std::vector<SymMatrix3D>& Hessian_diagonal,
+                    MsqError& err );
+     
+     /**\brief Get metric value and deravitives at a logical location in the patch.
       *
       * Evaluate the metric at one location in the PatchData.
       *\param pd      The patch.
@@ -271,6 +294,8 @@ namespace Mesquite
 
   private:
      int feasible;
+     
+     msq_std::vector<Matrix3D> tmpHess;
    };
 
 
