@@ -212,6 +212,106 @@ bool LPtoPTemplate::evaluate_with_gradient( EvalType type,
   return true;
 }
   
+bool LPtoPTemplate::evaluate_with_Hessian_diagonal( EvalType type, 
+                                        PatchData& pd,
+                                        double& OF_val,
+                                        msq_std::vector<Vector3D>& grad,
+                                        msq_std::vector<SymMatrix3D>& hess_diag,
+                                        MsqError& err )
+{
+  QualityMetric* qm = get_quality_metric();
+  qm->get_evaluations( pd, qmHandles, OF_FREE_EVALS_ONLY, err );  MSQ_ERRFALSE(err);
+  
+    // zero gradient and hessian
+  grad.clear();
+  grad.resize( pd.num_free_vertices(), 0.0 );
+  hess_diag.clear();
+  hess_diag.resize( pd.num_free_vertices(), 0.0 );
+  
+  double QM_val, QM_pow = 1.0;
+  double fac1, fac2;
+  const double neg = qm->get_negate_flag();
+  bool qm_bool;
+  size_t i;
+  short p;
+   
+  // Loops over all elements in the patch.
+  OF_val = 0.0;
+  msq_std::vector<size_t>::const_iterator k;
+  for (k = qmHandles.begin(); k != qmHandles.end(); ++k)
+  {
+    // Computes \nabla^2 Q(e). Only the free vertices will have non-zero entries. 
+    qm_bool = qm->evaluate_with_Hessian_diagonal( pd, *k, QM_val, mIndices, mGradient, mDiag, err );
+    if (MSQ_CHKERR(err) || !qm_bool) return false;
+    QM_val = fabs(QM_val);
+
+    // **** Computes Hessian ****
+    const size_t nve = mIndices.size();
+    if (pVal == 1) {
+      QM_pow = 1.0;
+      for (i=0; i<nve; ++i) {
+        mDiag[i] *= neg;
+        hess_diag[mIndices[i]] += mDiag[i];
+      }
+      fac1 = 1;
+    }
+    else if (pVal >= 2) {
+       // Computes the coefficients:
+      QM_pow = 1.0;
+      for (p=0; p<pVal-2; ++p)
+        QM_pow *= QM_val;
+      // 1 - computes p(p-1)Q(e)^{p-2}
+      fac2 = pVal* (pVal-1) * QM_pow;
+      // 2 - computes  pQ(e)^{p-1}
+      QM_pow *= QM_val;
+      fac1 = pVal * QM_pow;
+
+        //fac1 *= qm->get_negate_flag();
+        //fac2 *= qm->get_negate_flag();
+
+      for (i=0; i<nve; ++i) {
+        SymMatrix3D op(mGradient[i]);
+        op *= fac2;
+        mDiag[i] *= fac1;
+        op += mDiag[i];
+        op *= neg;
+        hess_diag[mIndices[i]] += op;
+      }
+    } else {
+      MSQ_SETERR(err)(" invalid P value.", MsqError::INVALID_STATE);
+      return false;
+    }
+
+
+    // **** Computes Gradient ****
+
+    // For each vertex in the element ... 
+    for (i=0; i<nve; ++i) {
+      // ... computes p*q^{p-1}*grad(q) ...
+      mGradient[i] *= fac1*qm->get_negate_flag();
+      // ... and accumulates it in the objective function gradient.
+        //also scale the gradient by the scaling factor
+      assert (mIndices[i] < pd.num_free_vertices());
+      grad[mIndices[i]] += mGradient[i];
+    }
+
+    // **** computes Objective Function value \sum_{i=1}^{N_e} |q_i|^P ****
+    OF_val += QM_pow * QM_val;
+  }
+
+  size_t global_count;
+  OF_val = qm->get_negate_flag() 
+         * get_value( OF_val, qmHandles.size(), type, global_count );
+  if (dividingByN) {
+    const double inv_n = 1.0 / global_count;
+    for (i = 0; i < pd.num_free_vertices(); ++i) {
+      grad[i] *= inv_n;
+      hess_diag[i] *= inv_n;
+    }
+  }
+  
+  return true;
+}
 	
 /*\ For each element, each entry to be accumulated in the Hessian for
     this objective function (\f$ \sum_{e \in E} Q(e)^p \f$ where \f$ E \f$

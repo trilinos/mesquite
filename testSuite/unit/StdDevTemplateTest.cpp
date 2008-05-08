@@ -70,6 +70,16 @@ private:
   CPPUNIT_TEST( test_grad_update_sqr );
   CPPUNIT_TEST( test_grad_temp_sqr );
 
+  CPPUNIT_TEST( test_diag_calc );
+  CPPUNIT_TEST( test_diag_save );
+  CPPUNIT_TEST( test_diag_update );
+  CPPUNIT_TEST( test_diag_temp );
+
+  CPPUNIT_TEST( test_diag_calc_sqr );
+  CPPUNIT_TEST( test_diag_save_sqr );
+  CPPUNIT_TEST( test_diag_update_sqr );
+  CPPUNIT_TEST( test_diag_temp_sqr );
+
   CPPUNIT_TEST( test_hessian_fails );
   CPPUNIT_TEST( test_hessian_fails_sqr );
   
@@ -89,6 +99,9 @@ private:
   CPPUNIT_TEST( test_numerical_gradient );
   CPPUNIT_TEST( test_numerical_gradient_sqr  );
   
+  CPPUNIT_TEST( test_diagonal_gradient );
+  CPPUNIT_TEST( test_diagonal_gradient_sqr );
+  
   CPPUNIT_TEST( test_clone );
   CPPUNIT_TEST( test_clone_sqr );
   
@@ -96,6 +109,8 @@ private:
   CPPUNIT_TEST( test_eval_negate_sqr );
   CPPUNIT_TEST( test_grad_negate );
   CPPUNIT_TEST( test_grad_negate_sqr );
+  CPPUNIT_TEST( test_diag_negate );
+  CPPUNIT_TEST( test_diag_negate_sqr );
 
   CPPUNIT_TEST_SUITE_END();
 
@@ -145,6 +160,28 @@ public:
   void test_grad_temp_sqr()  
     { VarianceTemplate of(NULL); test_eval_type( ObjectiveFunction::TEMPORARY,  GRAD, &of ); }
 
+  void test_diag_calc()   
+    { StdDevTemplate of(NULL); test_eval_type( ObjectiveFunction::CALCULATE,  DIAG, &of ); }
+  void test_diag_accum() 
+    { StdDevTemplate of(NULL); test_eval_type( ObjectiveFunction::ACCUMULATE, DIAG, &of ); }
+  void test_diag_save()  
+    { StdDevTemplate of(NULL); test_eval_type( ObjectiveFunction::SAVE,       DIAG, &of ); }
+  void test_diag_update()
+    { StdDevTemplate of(NULL); test_eval_type( ObjectiveFunction::UPDATE,     DIAG, &of ); }
+  void test_diag_temp()  
+    { StdDevTemplate of(NULL); test_eval_type( ObjectiveFunction::TEMPORARY,  DIAG, &of ); }
+
+  void test_diag_calc_sqr()  
+    { VarianceTemplate of(NULL); test_eval_type( ObjectiveFunction::CALCULATE,  DIAG, &of ); }
+  void test_diag_accum_sqr() 
+    { VarianceTemplate of(NULL); test_eval_type( ObjectiveFunction::ACCUMULATE, DIAG, &of ); }
+  void test_diag_save_sqr()  
+    { VarianceTemplate of(NULL); test_eval_type( ObjectiveFunction::SAVE,       DIAG, &of ); }
+  void test_diag_update_sqr()
+    { VarianceTemplate of(NULL); test_eval_type( ObjectiveFunction::UPDATE,     DIAG, &of ); }
+  void test_diag_temp_sqr()  
+    { VarianceTemplate of(NULL); test_eval_type( ObjectiveFunction::TEMPORARY,  DIAG, &of ); }
+
   void test_evaluate( ) ;
   void test_evaluate_sqr( );
   
@@ -152,6 +189,12 @@ public:
     { StdDevTemplate of(NULL); compare_numerical_gradient(&of); }
   void test_numerical_gradient_sqr( )  
     { VarianceTemplate of(NULL); compare_numerical_gradient(&of); }
+  
+  void test_diagonal_gradient( )      
+    { StdDevTemplate of(NULL); compare_diagonal_gradient(&of); }
+  void test_diagonal_gradient_sqr( )  
+    { VarianceTemplate of(NULL); compare_diagonal_gradient(&of); }
+
   void test_hessian_fails();
   void test_hessian_fails_sqr();
   
@@ -186,6 +229,10 @@ public:
     { StdDevTemplate of(NULL); test_negate_flag( GRAD, &of ); }
   void test_grad_negate_sqr()
     { VarianceTemplate of(NULL); test_negate_flag( GRAD, &of ); }
+  void test_diag_negate()
+    { StdDevTemplate of(NULL); test_negate_flag( DIAG, &of ); }
+  void test_diag_negate_sqr()
+    { VarianceTemplate of(NULL); test_negate_flag( DIAG, &of ); }
 };
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(StdDevTemplateTest, "StdDevTemplateTest");

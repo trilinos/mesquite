@@ -86,6 +86,13 @@ namespace Mesquite
                                          msq_std::vector<Vector3D>& grad_out,
                                          MsqError& err ); 
 
+    virtual bool evaluate_with_Hessian_diagonal( EvalType type, 
+                                        PatchData& pd,
+                                        double& value_out,
+                                        msq_std::vector<Vector3D>& grad_out,
+                                        msq_std::vector<SymMatrix3D>& hess_diag_out,
+                                        MsqError& err ); 
+
     virtual bool evaluate_with_Hessian( EvalType type, 
                                         PatchData& pd,
                                         double& value_out,
@@ -128,6 +135,8 @@ namespace Mesquite
      mutable msq_std::vector<size_t> mIndices;
      /** Temporary storage for qm gradient */
      mutable msq_std::vector<Vector3D> mGradient;
+     /** Temporary storage for qm Hessian diagonal blocks */
+     mutable msq_std::vector<SymMatrix3D> mDiag;
       /** Temporary storage for qm Hessian */
      mutable msq_std::vector<Matrix3D> mHessian;
    };

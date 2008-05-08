@@ -180,6 +180,26 @@ inline Vector3D operator*( const SymMatrix3D& m, const Vector3D& v )
   return v * m;
 }
 
+/** Calculate the outer product of a vector with itself */
+inline SymMatrix3D outer( const Vector3D& v )
+{
+  return SymMatrix3D( v[0]*v[0], v[0]*v[1], v[0]*v[2],
+                                 v[1]*v[1], v[1]*v[2],
+                                            v[2]*v[2] );
+}
+
+/** Given to vectors u and v, calculate the symmetric matrix
+ *  equal to outer(u,v) + transpose(outer(u,v))
+ *  equal to outer(v,u) + transpose(outer(v,u))
+ */
+inline SymMatrix3D outer_plus_transpose( const Vector3D& u,
+                                         const Vector3D& v )
+{
+  return SymMatrix3D( 2*u[0]*v[0], u[0]*v[1] + u[1]*v[0], u[0]*v[2] + u[2]*v[0],
+                                   2*u[1]*v[1]          , u[1]*v[2] + u[2]*v[1],
+                                                          2*u[2]*v[2] );
+}
+
 inline const SymMatrix3D& transpose( const SymMatrix3D& a )
   { return a; }
 

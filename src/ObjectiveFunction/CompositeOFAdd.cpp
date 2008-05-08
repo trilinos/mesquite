@@ -136,6 +136,30 @@ bool CompositeOFAdd::evaluate_with_gradient( EvalType type,
   return true;
 }
 
+bool CompositeOFAdd::evaluate_with_Hessian_diagonal( EvalType type, 
+                                            PatchData& pd,
+                                            double& value_out,
+                                            msq_std::vector<Vector3D>& grad_out,
+                                            msq_std::vector<SymMatrix3D>& diag_out,
+                                            MsqError& err )
+{
+  double value_2;
+  bool valid;
+
+  valid = objFunc1->evaluate_with_Hessian_diagonal( type, pd, value_out, grad_out, diag_out, err );
+  if (MSQ_CHKERR(err) || !valid) return false;
+  valid = objFunc2->evaluate_with_Hessian_diagonal( type, pd, value_2, mGradient, mDiagonal, err );
+  if (MSQ_CHKERR(err) || !valid) return false;
+
+  for (size_t i = 0; i < pd.num_free_vertices(); ++i) {
+    grad_out[i] += mGradient[i];
+    diag_out[i] += mDiagonal[i];
+  }
+  
+  value_out += value_2;
+  return true;
+}
+
 bool CompositeOFAdd::evaluate_with_Hessian( EvalType type, 
                                             PatchData& pd,
                                             double& value_out,

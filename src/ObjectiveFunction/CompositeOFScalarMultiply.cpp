@@ -108,6 +108,22 @@ bool CompositeOFScalarMultiply::evaluate_with_gradient( EvalType type,
   return !MSQ_CHKERR(err) && ok;
 }
 
+bool CompositeOFScalarMultiply::evaluate_with_Hessian_diagonal( EvalType type, 
+                                            PatchData& pd,
+                                            double& value_out,
+                                            msq_std::vector<Vector3D>& grad_out,
+                                            msq_std::vector<SymMatrix3D>& diag_out,
+                                            MsqError& err )
+{
+  bool ok = objFunc->evaluate_with_Hessian_diagonal( type, pd, value_out, grad_out, diag_out, err );
+  value_out *= mAlpha;
+  for (size_t i = 0; i < pd.num_free_vertices(); ++i) {
+    grad_out[i] *= mAlpha;
+    diag_out[i] *= mAlpha;
+  }
+  return !MSQ_CHKERR(err) && ok;
+}
+
 bool CompositeOFScalarMultiply::evaluate_with_Hessian( EvalType type, 
                                             PatchData& pd,
                                             double& value_out,

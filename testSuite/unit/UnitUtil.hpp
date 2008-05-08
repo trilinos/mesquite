@@ -102,6 +102,17 @@ inline msq_std::string utest_mat_str( const Mesquite::Matrix3D& m )
   return buffer;
 }
 
+/** make string representation of 3x3 symetric matrix */
+inline msq_std::string utest_mat_str( const Mesquite::SymMatrix3D& m )
+{
+  char buffer[256];
+  sprintf(buffer, "[%f, %f, %f] [%f, %f, %f] [%f, %f, %f]", 
+          m(0,0), m(0,1), m(0,2),
+          m(1,0), m(1,1), m(1,2),
+          m(2,0), m(2,1), m(2,2) );
+  return buffer;
+}
+
 /** make error message for failed vector copmarison */
 inline CppUnit::Message utest_vect_message( const Mesquite::Vector3D& v1,
                                       const Mesquite::Vector3D& v2 )
@@ -115,6 +126,16 @@ inline CppUnit::Message utest_vect_message( const Mesquite::Vector3D& v1,
 /** make error message for failed matrix copmarison */
 inline CppUnit::Message utest_mat_message( const Mesquite::Matrix3D& m1,
                                      const Mesquite::Matrix3D& m2 )
+{
+  CppUnit::Message m( "equality assertion failed" );
+  m.addDetail( msq_std::string("Expected: ") + utest_mat_str(m1) );
+  m.addDetail( msq_std::string("Actual  : ") + utest_mat_str(m2) );
+  return m;
+}
+
+/** make error message for failed symmetric matrix copmarison */
+inline CppUnit::Message utest_mat_message( const Mesquite::SymMatrix3D& m1,
+                                     const Mesquite::SymMatrix3D& m2 )
 {
   CppUnit::Message m( "equality assertion failed" );
   m.addDetail( msq_std::string("Expected: ") + utest_mat_str(m1) );
@@ -142,6 +163,17 @@ inline bool utest_mat_equal( const Mesquite::Matrix3D& m1, const Mesquite::Matri
          (fabs(m1[2][0] - m2[2][0]) < eps) &&
          (fabs(m1[2][1] - m2[2][1]) < eps) &&
          (fabs(m1[2][2] - m2[2][2]) < eps);
+}
+
+/** compare matrices */
+inline bool utest_mat_equal( const Mesquite::SymMatrix3D& m1, const Mesquite::SymMatrix3D& m2, double eps )
+{
+  return (fabs(m1(0,0) - m2(0,0)) < eps) &&
+         (fabs(m1(0,1) - m2(0,1)) < eps) &&
+         (fabs(m1(0,2) - m2(0,2)) < eps) &&
+         (fabs(m1(1,1) - m2(1,1)) < eps) &&
+         (fabs(m1(1,2) - m2(1,2)) < eps) &&
+         (fabs(m1(2,2) - m2(2,2)) < eps);
 }
 
 template <unsigned R, unsigned C>

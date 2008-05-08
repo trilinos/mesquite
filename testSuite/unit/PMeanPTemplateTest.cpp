@@ -52,6 +52,7 @@ private:
   void test_eval_type( OFTestMode eval_func, ObjectiveFunction::EvalType type );
   void test_evaluate( double power );
   void test_gradient( double power );
+  void test_diagonal( double power );
   void test_Hessian( double power );
   
   void check_result( PatchData& pd, double power, double value, 
@@ -70,6 +71,11 @@ private:
   CPPUNIT_TEST( test_grad_update );
   CPPUNIT_TEST( test_grad_temp );
 
+  CPPUNIT_TEST( test_diag_calc );
+  CPPUNIT_TEST( test_diag_save );
+  CPPUNIT_TEST( test_diag_update );
+  CPPUNIT_TEST( test_diag_temp );
+
   CPPUNIT_TEST( test_Hess_calc );
   CPPUNIT_TEST( test_Hess_save );
   CPPUNIT_TEST( test_Hess_update );
@@ -79,10 +85,12 @@ private:
   
   CPPUNIT_TEST( test_failed_metric_in_eval );
   CPPUNIT_TEST( test_failed_metric_in_grad );
+  CPPUNIT_TEST( test_failed_metric_in_diag );
   CPPUNIT_TEST( test_failed_metric_in_Hess );
   
   CPPUNIT_TEST( test_false_metric_in_eval );
   CPPUNIT_TEST( test_false_metric_in_grad );
+  CPPUNIT_TEST( test_false_metric_in_diag );
   CPPUNIT_TEST( test_false_metric_in_Hess );
   
   CPPUNIT_TEST( test_evaluate_arithmatic );
@@ -97,11 +105,18 @@ private:
   CPPUNIT_TEST( compare_gradient_arithmatic );
   CPPUNIT_TEST( compare_gradient_rms );
  
+  CPPUNIT_TEST( compare_diagonal_gradient_arithmatic );
+  CPPUNIT_TEST( compare_diagonal_gradient_rms );
+ 
   CPPUNIT_TEST( compare_hessian_gradient_arithmatic );
   CPPUNIT_TEST( compare_hessian_gradient_rms );
+ 
+  CPPUNIT_TEST( compare_hessian_diagonal_arithmatic );
+  CPPUNIT_TEST( compare_hessian_diagonal_rms );
   
   CPPUNIT_TEST( test_negate_eval );
   CPPUNIT_TEST( test_negate_grad );
+  CPPUNIT_TEST( test_negate_diag );
   CPPUNIT_TEST( test_negate_hess );
 
   CPPUNIT_TEST_SUITE_END();
@@ -122,6 +137,11 @@ public:
   void test_grad_update() { test_eval_type( GRAD, ObjectiveFunction::UPDATE ); }
   void test_grad_temp()   { test_eval_type( GRAD, ObjectiveFunction::TEMPORARY ); }
 
+  void test_diag_calc()   { test_eval_type( DIAG, ObjectiveFunction::CALCULATE ); }
+  void test_diag_save()   { test_eval_type( DIAG, ObjectiveFunction::SAVE ); }
+  void test_diag_update() { test_eval_type( DIAG, ObjectiveFunction::UPDATE ); }
+  void test_diag_temp()   { test_eval_type( DIAG, ObjectiveFunction::TEMPORARY ); }
+
   void test_Hess_calc()   { test_eval_type( HESS, ObjectiveFunction::CALCULATE ); }
   void test_Hess_save()   { test_eval_type( HESS, ObjectiveFunction::SAVE ); }
   void test_Hess_update() { test_eval_type( HESS, ObjectiveFunction::UPDATE ); }
@@ -133,6 +153,8 @@ public:
     { PMeanPTemplate of( 1, NULL ); test_handles_qm_error( EVAL, &of); }
   void test_failed_metric_in_grad() 
     { PMeanPTemplate of( 1, NULL ); test_handles_qm_error( GRAD, &of); }
+  void test_failed_metric_in_diag() 
+    { PMeanPTemplate of( 1, NULL ); test_handles_qm_error( DIAG, &of); }
   void test_failed_metric_in_Hess() 
     { PMeanPTemplate of( 1, NULL ); test_handles_qm_error( HESS, &of); }
   
@@ -140,6 +162,8 @@ public:
     { PMeanPTemplate of( 1, NULL ); test_handles_invalid_qm( EVAL, &of); }
   void test_false_metric_in_grad() 
     { PMeanPTemplate of( 1, NULL ); test_handles_invalid_qm( GRAD, &of); }
+  void test_false_metric_in_diag() 
+    { PMeanPTemplate of( 1, NULL ); test_handles_invalid_qm( DIAG, &of); }
   void test_false_metric_in_Hess() 
     { PMeanPTemplate of( 1, NULL ); test_handles_invalid_qm( HESS, &of); }
   
@@ -148,6 +172,9 @@ public:
   
   void test_gradient_arithmatic() { test_gradient( 1 ); }
   void test_gradient_rms()        { test_gradient( 2 ); }
+  
+  void test_diagonal_arithmatic() { test_diagonal( 1 ); }
+  void test_diagonal_rms()        { test_diagonal( 2 ); }
 
   void test_Hessian_arithmatic()  { test_Hessian( 1 ); }
   void test_Hessian_rms()         { test_Hessian( 2 ); }
@@ -157,15 +184,27 @@ public:
   void compare_gradient_rms()
     { PMeanPTemplate of( 2, NULL ); compare_numerical_gradient( &of ); }
   
+  void compare_diagonal_gradient_arithmatic() 
+    { PMeanPTemplate of( 1, NULL ); compare_diagonal_gradient( &of ); }
+  void compare_diagonal_gradient_rms()
+    { PMeanPTemplate of( 2, NULL ); compare_diagonal_gradient( &of ); }
+  
   void compare_hessian_gradient_arithmatic() 
     { PMeanPTemplate of( 1, NULL ); compare_hessian_gradient( &of ); }
   void compare_hessian_gradient_rms()
     { PMeanPTemplate of( 2, NULL ); compare_hessian_gradient( &of ); }
+  
+  void compare_hessian_diagonal_arithmatic() 
+    { PMeanPTemplate of( 1, NULL ); compare_hessian_diagonal( &of ); }
+  void compare_hessian_diagonal_rms()
+    { PMeanPTemplate of( 2, NULL ); compare_hessian_diagonal( &of ); }
     
   void test_negate_eval()
     { PMeanPTemplate of( 2, NULL ); test_negate_flag( EVAL, &of ); }
   void test_negate_grad()
     { PMeanPTemplate of( 2, NULL ); test_negate_flag( GRAD, &of ); }
+  void test_negate_diag()
+    { PMeanPTemplate of( 2, NULL ); test_negate_flag( DIAG, &of ); }
   void test_negate_hess()
     { PMeanPTemplate of( 2, NULL ); test_negate_flag( HESS, &of ); }
 };
@@ -289,6 +328,31 @@ void PMeanPTemplateTest::test_gradient( double power )
   CPPUNIT_ASSERT_EQUAL(mPatch.num_free_vertices(), grad.size());
   
   check_result( mPatch, power, value, &grad[0] );
+}
+
+void PMeanPTemplateTest::test_diagonal( double power )
+{
+  MsqPrintError err(cout);
+  double value;
+  bool rval;
+  vector<Vector3D> grad;
+  vector<SymMatrix3D> Hess;
+  CPPUNIT_ASSERT(!MSQ_CHKERR(err));
+  
+  DistTestMetric metric;
+  PMeanPTemplate func( power, &metric );
+  rval = func.evaluate_with_Hessian_diagonal( ObjectiveFunction::CALCULATE, mPatch, value, grad, Hess, err );
+  CPPUNIT_ASSERT(!MSQ_CHKERR(err));
+  CPPUNIT_ASSERT(rval);
+  size_t n = mPatch.num_free_vertices();
+  CPPUNIT_ASSERT_EQUAL( n, grad.size() );
+  CPPUNIT_ASSERT_EQUAL( n, Hess.size() );
+  
+  vector<Matrix3D> Hessians(n);
+  for (size_t r = 0; r < n; ++r) 
+    Hessians[r] = Hess[r];
+ 
+  check_result( mPatch, power, value, &grad[0], &Hessians[0] );
 }
 
 

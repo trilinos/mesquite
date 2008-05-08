@@ -45,7 +45,7 @@ using namespace Mesquite;
 using namespace std;
 
 /** Which function to call */
-enum OFTestMode { EVAL, GRAD, HESS };
+enum OFTestMode { EVAL, GRAD, DIAG, HESS };
 
 /** Test eval type support for OF templates that provide
  *  block coordinate descent functionality.  
@@ -81,11 +81,23 @@ static void test_value( const double* input_values,
 inline void compare_numerical_gradient( ObjectiveFunctionTemplate* of );
 static void compare_numerical_gradient( ObjectiveFunction* of );
 
-/** Compare gradiens from evaluate_with_gradient with gradient
+/** Compare gradients from evaluate_with_gradient with gradient
  *  from evaluate_with_Hessian
  */
 inline void compare_hessian_gradient( ObjectiveFunctionTemplate* of );
 static void compare_hessian_gradient( ObjectiveFunction* of );
+
+/** Compare gradients from evaluate_with_gradient with gradient
+ *  from evaluate_with_Hessian_diagonal
+ */
+inline void compare_diagonal_gradient( ObjectiveFunctionTemplate* of );
+static void compare_diagonal_gradient( ObjectiveFunction* of );
+
+/** Compare gradient and diagonal terms from evaluate_with_Hessian
+ *  and evaluate_with_Hessian_diagonal
+ */
+inline void compare_hessian_diagonal( ObjectiveFunctionTemplate* of );
+static void compare_hessian_diagonal( ObjectiveFunction* of );
 
 /** The QualityMetric to use for testing purposes
  *
@@ -195,6 +207,7 @@ static double evaluate_internal( ObjectiveFunction::EvalType type,
 {
   MsqPrintError err(cout);
   vector<Vector3D> grad;
+  vector<SymMatrix3D> diag;
   MsqHessian hess;
   bool valid;
   double result;
@@ -205,6 +218,9 @@ static double evaluate_internal( ObjectiveFunction::EvalType type,
       break;
     case GRAD:
       valid = of->evaluate_with_gradient( type, patch(), result, grad, err );
+      break;
+    case DIAG:
+      valid = of->evaluate_with_Hessian_diagonal( type, patch(), result, grad, diag, err );
       break;
     case HESS:
       hess.initialize( patch(), err );
@@ -458,6 +474,7 @@ static void test_negate_flag( OFTestMode test_mode, ObjectiveFunctionTemplate* o
   bool rval;
   double value[2];
   vector<Vector3D> grad[2];
+  vector<SymMatrix3D> diag[2];
   MsqHessian hess[2];
   
     // Do twice, once w/out negate flag set and then once
@@ -470,6 +487,9 @@ static void test_negate_flag( OFTestMode test_mode, ObjectiveFunctionTemplate* o
         break;
       case GRAD:
         rval = of->evaluate_with_gradient( type, patch(), value[i], grad[i], err );
+        break;
+      case DIAG:
+        rval = of->evaluate_with_Hessian_diagonal( type, patch(), value[i], grad[i], diag[i], err );
         break;
       case HESS:
         hess[i].initialize(patch(),err);
@@ -494,6 +514,12 @@ static void test_negate_flag( OFTestMode test_mode, ObjectiveFunctionTemplate* o
             CPPUNIT_ASSERT_MATRICES_EQUAL( -*hess[0].get_block(r,c),
                                            *hess[1].get_block(r,c),
                                            1e-6 );
+    case DIAG:
+      // NOTE: When case HESS: falls through to here, diag[0] and diag[1]
+      // will be empty, making this a no-op.
+      CPPUNIT_ASSERT_EQUAL( diag[0].size(), diag[1].size() );
+      for (size_t j = 0; j < diag[0].size(); ++j) 
+        CPPUNIT_ASSERT_MATRICES_EQUAL( -diag[0][j], diag[1][j], 1e-6 );
     case GRAD:
       CPPUNIT_ASSERT_EQUAL( grad[0].size(), grad[1].size() );
       for (size_t j = 0; j < grad[0].size(); ++j)
@@ -578,6 +604,86 @@ static void compare_hessian_gradient( ObjectiveFunction* of )
   }
 }
 
+inline void compare_diagonal_gradient( ObjectiveFunctionTemplate* of )
+{
+  MsqPrintError err(msq_stdio::cout);
+  IdealWeightInverseMeanRatio metric(err);
+  ASSERT_NO_ERROR( err );
+  of->set_quality_metric( &metric );
+  compare_diagonal_gradient( (ObjectiveFunction*)of );
+}
+
+static void compare_diagonal_gradient( ObjectiveFunction* of )
+{
+  MsqPrintError err(msq_stdio::cout);
+  PatchData pd;
+  create_twelve_hex_patch( pd, err ); 
+  ASSERT_NO_ERROR( err );
+  
+  msq_std::vector<Vector3D> grad, hess_grad;
+  msq_std::vector<SymMatrix3D> hess;
+  double grad_val, hess_val;
+  bool valid;
+  
+  valid = of->evaluate_with_gradient( ObjectiveFunction::CALCULATE, pd, grad_val, grad, err );
+  ASSERT_NO_ERROR( err );
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_EQUAL( pd.num_free_vertices(), grad.size() );
+  
+  valid = of->evaluate_with_Hessian_diagonal( ObjectiveFunction::CALCULATE, pd, hess_val, hess_grad, hess, err );
+  ASSERT_NO_ERROR( err );
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_EQUAL( pd.num_free_vertices(), hess_grad.size() );
+  
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( grad_val, hess_val, 1e-6 );
+  for (size_t i = 0; i < pd.num_free_vertices(); ++i) {
+    CPPUNIT_ASSERT_VECTORS_EQUAL( grad[i], hess_grad[i], 1e-6 );
+  }
+}
+
+inline void compare_hessian_diagonal( ObjectiveFunctionTemplate* of )
+{
+  MsqPrintError err(msq_stdio::cout);
+  IdealWeightInverseMeanRatio metric(err);
+  ASSERT_NO_ERROR( err );
+  of->set_quality_metric( &metric );
+  compare_hessian_diagonal( (ObjectiveFunction*)of );
+}
+
+static void compare_hessian_diagonal( ObjectiveFunction* of )
+{
+  MsqPrintError err(msq_stdio::cout);
+  PatchData pd;
+  create_twelve_hex_patch( pd, err ); 
+  ASSERT_NO_ERROR( err );
+  
+  msq_std::vector<Vector3D> diag_grad, hess_grad;
+  msq_std::vector<SymMatrix3D> diag;
+  MsqHessian hess;
+  double diag_val, hess_val;
+  bool valid;
+  
+  valid = of->evaluate_with_Hessian_diagonal( ObjectiveFunction::CALCULATE, pd, diag_val, diag_grad, diag, err );
+  ASSERT_NO_ERROR( err );
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_EQUAL( pd.num_free_vertices(), diag_grad.size() );
+  CPPUNIT_ASSERT_EQUAL( pd.num_free_vertices(), diag.size() );
+  
+  hess.initialize( pd, err );
+  ASSERT_NO_ERROR( err );
+  valid = of->evaluate_with_Hessian( ObjectiveFunction::CALCULATE, pd, hess_val, hess_grad, hess, err );
+  ASSERT_NO_ERROR( err );
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_EQUAL( pd.num_free_vertices(), hess_grad.size() );
+  CPPUNIT_ASSERT_EQUAL( pd.num_free_vertices(), hess.size() );
+  
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( hess_val, diag_val, 1e-6 );
+  for (size_t i = 0; i < pd.num_free_vertices(); ++i) {
+    CPPUNIT_ASSERT_VECTORS_EQUAL( hess_grad[i], diag_grad[i], 1e-6 );
+    CPPUNIT_ASSERT_MATRICES_EQUAL( *hess.get_block(i,i), diag[i], 1e-6 );
+  }
+}
+
 const size_t HANDLE_VAL = 0xDEADBEEF;
 class OFTestBadQM : public QualityMetric
 {
@@ -645,6 +751,7 @@ static void test_handles_invalid_qm( OFTestMode test_mode,
   
   MsqPrintError err(cout);
   vector<Vector3D> grad;
+  vector<SymMatrix3D> diag;
   MsqHessian hess;
   double result;
   bool valid;
@@ -655,6 +762,9 @@ static void test_handles_invalid_qm( OFTestMode test_mode,
       break;
     case GRAD:
       valid = of->evaluate_with_gradient( ObjectiveFunction::CALCULATE, patch(), result, grad, err );
+      break;
+    case DIAG:
+      valid = of->evaluate_with_Hessian_diagonal( ObjectiveFunction::CALCULATE, patch(), result, grad, diag, err );
       break;
     case HESS:
       hess.initialize( patch(), err );
@@ -679,6 +789,7 @@ static void test_handles_qm_error( OFTestMode test_mode,
   
   MsqError err;
   vector<Vector3D> grad;
+  vector<SymMatrix3D> diag;
   MsqHessian hess;
   double result;
   bool valid;
@@ -689,6 +800,9 @@ static void test_handles_qm_error( OFTestMode test_mode,
       break;
     case GRAD:
       valid = of->evaluate_with_gradient( ObjectiveFunction::CALCULATE, patch(), result, grad, err );
+      break;
+    case DIAG:
+      valid = of->evaluate_with_Hessian_diagonal( ObjectiveFunction::CALCULATE, patch(), result, grad, diag, err );
       break;
     case HESS:
       hess.initialize( patch(), err );

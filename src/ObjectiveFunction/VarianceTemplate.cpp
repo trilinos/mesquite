@@ -193,6 +193,93 @@ bool VarianceTemplate::evaluate_with_gradient( EvalType type,
   return true;
 }
 
+bool VarianceTemplate::evaluate_with_Hessian_diagonal( EvalType type, 
+                                        PatchData& pd,
+                                        double& value_out,
+                                        msq_std::vector<Vector3D>& grad_out,
+                                        msq_std::vector<SymMatrix3D>& hess_diag_out,
+                                        MsqError& err )
+{
+  QualityMetric* qm = get_quality_metric();
+  qm->get_evaluations( pd, qmHandles, OF_FREE_EVALS_ONLY, err );  MSQ_ERRFALSE(err);
+  
+    // zero gradient and Hessian data
+  grad_out.clear();     // store sum of metric * gradient of metric, and later OF gradient
+  grad_out.resize( pd.num_free_vertices(), Vector3D(0.0,0.0,0.0) );
+  tmpGradient.clear();  // store sum of gradients of metrics
+  tmpGradient.resize( pd.num_free_vertices(), Vector3D(0.0,0.0,0.0) );
+  tmpDiag1.clear();     // store sum of Hessians of metrics
+  tmpDiag1.resize( pd.num_free_vertices(), SymMatrix3D(0.0) );
+  tmpDiag2.clear();     // store sum of metric * Hessian of metric
+  tmpDiag2.resize( pd.num_free_vertices(), SymMatrix3D(0.0) );
+  hess_diag_out.clear(); // store sum of metric * outer_product(metric gradient), and later OF Hessian
+  hess_diag_out.resize( pd.num_free_vertices(), SymMatrix3D(0.0) );
+  
+    // calculate OF value and gradient for just the patch
+  Matrix3D op;
+  msq_std::vector<size_t>::const_iterator i;
+  double value, sum = 0.0, sqr = 0.0;
+  for (i = qmHandles.begin(); i != qmHandles.end(); ++i)
+  {
+    bool result = qm->evaluate_with_Hessian_diagonal( pd, *i, value, mIndices, mGradient, mHessDiag, err );
+    if (MSQ_CHKERR(err) || !result)
+      return false;
+    if (fabs(value) < DBL_EPSILON)
+      continue;
+    
+    sum += value;
+    sqr += value*value;
+
+    for (size_t j = 0; j < mIndices.size(); ++j) {
+      const size_t r = mIndices[j];
+      tmpGradient[r] += mGradient[j];
+      mGradient[j] *= value;
+      grad_out[r] += mGradient[j];
+      
+      hess_diag_out[r] += outer( mGradient[j] );
+      tmpDiag1[r] += mHessDiag[j];
+      mHessDiag[j] *= value;
+      tmpDiag2[r] += mHessDiag[j];
+    }
+  }
+  
+    // update member data
+  size_t n;
+  accumulate( sum, sqr, qmHandles.size(), type, sum, sqr, n );
+  if (n < 2) {
+    value_out = 0.0;
+    grad_out.clear();
+    grad_out.resize( pd.num_free_vertices(), Vector3D(0.0,0.0,0.0) );
+    hess_diag_out.clear();
+    hess_diag_out.resize( pd.num_free_vertices(), SymMatrix3D(0.0) );
+    return true;
+  }
+
+    // calculate OF value
+  value_out = qm->get_negate_flag() * (n*sqr - sum*sum) / (n*(n - 1));
+  
+    // Finish calculation of gradient and Hessian
+  const double dneg = qm->get_negate_flag() * 2.0;
+  const double n_inv = 1.0/n;
+  const double nless1_inv = 1.0/(n-1);
+  const double avg = sum * n_inv;
+  const double f = dneg * nless1_inv;
+  const double f2 = avg * nless1_inv;
+  for (size_t k = 0; k < pd.num_free_vertices(); ++k) {
+    tmpGradient[k] *= avg;
+    grad_out[k] -= tmpGradient[k];
+    grad_out[k] *= f;
+
+    hess_diag_out[k] *= n_inv;
+    tmpDiag1[k] *= f2;
+    tmpDiag2[k] *= nless1_inv;
+    hess_diag_out[k] += tmpDiag1[k];
+    hess_diag_out[k] += tmpDiag2[k];
+    hess_diag_out[k] *= dneg;
+  }
+    
+  return true;
+}
 
 
 } // namespace Mesquite

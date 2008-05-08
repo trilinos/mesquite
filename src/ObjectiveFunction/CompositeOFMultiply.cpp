@@ -141,6 +141,36 @@ bool CompositeOFMultiply::evaluate_with_gradient( EvalType type,
   return true;
 }
 
+bool CompositeOFMultiply::evaluate_with_Hessian_diagonal( EvalType type, 
+                                            PatchData& pd,
+                                            double& value_out,
+                                            msq_std::vector<Vector3D>& grad_out,
+                                            msq_std::vector<SymMatrix3D>& diag_out,
+                                            MsqError& err )
+{
+  double value_2;
+  bool valid;
+
+  valid = objFunc1->evaluate_with_Hessian_diagonal( type, pd, value_out, grad_out, diag_out, err );
+  if (MSQ_CHKERR(err) || !valid) return false;
+  valid = objFunc2->evaluate_with_Hessian_diagonal( type, pd, value_2, mGradient, mDiagonal, err );
+  if (MSQ_CHKERR(err) || !valid) return false;
+
+  for (size_t i = 0; i < pd.num_free_vertices(); ++i) {
+    diag_out[i] *= value_2;
+    mDiagonal[i] *= value_out;
+    diag_out[i] += mDiagonal[i];
+    diag_out[i] += outer_plus_transpose( grad_out[i], mGradient[i] );
+
+    grad_out[i] *= value_2;
+    mGradient[i] *= value_out;
+    grad_out[i] += mGradient[i];
+  }
+  
+  value_out *= value_2;
+  return true;
+}
+
 bool CompositeOFMultiply::evaluate_with_Hessian( EvalType , 
                                             PatchData& ,
                                             double& ,
@@ -148,10 +178,10 @@ bool CompositeOFMultiply::evaluate_with_Hessian( EvalType ,
                                             MsqHessian& ,
                                             MsqError& err )
 {
-  MSQ_SETERR(err)("Mesquite is not capable of representing the non-sparse "
+  MSQ_SETERR(err)("Mesquite is not capable of representing the dense "
                   "Hessian of the product of two objective fuctions. "
                   "Either choose a solver that does not require the "
-                  "Hessian of the objective function, or do not use the "
+                  "Hessian of the objective function or do not use the "
                   "CompositeOFMultiple objective function .",
                   MsqError::INVALID_STATE );
   return false;

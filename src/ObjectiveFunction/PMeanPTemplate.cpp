@@ -171,6 +171,66 @@ bool PMeanPTemplate::evaluate_with_gradient( EvalType type,
   return true;
 }
 
+bool PMeanPTemplate::evaluate_with_Hessian_diagonal( EvalType type, 
+                                        PatchData& pd,
+                                        double& value_out,
+                                        msq_std::vector<Vector3D>& grad_out,
+                                        msq_std::vector<SymMatrix3D>& hess_diag_out,
+                                        MsqError& err )
+{
+  QualityMetric* qm = get_quality_metric();
+  qm->get_evaluations( pd, qmHandles, OF_FREE_EVALS_ONLY, err );  MSQ_ERRFALSE(err);
+  
+    // zero gradient and hessian
+  const size_t s = pd.num_free_vertices();
+  grad_out.clear();
+  grad_out.resize( s, 0.0 );
+  hess_diag_out.clear();
+  hess_diag_out.resize( s, 0.0 );
+  
+    // calculate OF value and gradient for just the patch
+  msq_std::vector<size_t>::const_iterator i;
+  size_t j, k;
+  double value, working_sum = 0.0;
+  const double f1 = qm->get_negate_flag() * mPower.value();
+  const double f2 = f1 * (mPower.value() - 1);
+  for (i = qmHandles.begin(); i != qmHandles.end(); ++i)
+  {
+    bool result = qm->evaluate_with_Hessian_diagonal( pd, *i, value, mIndices, mGradient, mDiag, err );
+    if (MSQ_CHKERR(err) || !result)
+      return false;
+    if (fabs(value) < DBL_EPSILON)
+      continue;
+    
+    const double qmp = mPower.raise( value );
+    const double hf = f2 * qmp / (value*value);
+    const double gf = f1 * qmp / value;
+    working_sum += qmp;
+
+    const size_t nfree = mIndices.size();
+    for (j = 0; j < nfree; ++j) {
+      const size_t idx = mIndices[j];
+      
+      hess_diag_out[idx] += hf * outer( mGradient[j] );
+      hess_diag_out[idx] += gf * mDiag[j];
+      
+      mGradient[j] *= gf;
+      grad_out[idx] += mGradient[j];
+    }
+  }
+  
+    // get overall OF value, update member data, etc.
+  size_t global_count;
+  value_out = qm->get_negate_flag() 
+            * get_value( working_sum, qmHandles.size(), type, global_count );
+  const double inv_n = 1.0 / global_count;
+  for (j = 0; j < s; ++j) {
+    grad_out[j] *= inv_n;
+    hess_diag_out[j] *= inv_n;
+  }
+  return true;
+}
+
 bool PMeanPTemplate::evaluate_with_Hessian( EvalType type, 
                                         PatchData& pd,
                                         double& value_out,

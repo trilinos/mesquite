@@ -82,6 +82,13 @@ class MESQUITE_EXPORT VarianceTemplate : public ObjectiveFunctionTemplate
                                          msq_std::vector<Vector3D>& grad_out,
                                          MsqError& err ); 
 
+    virtual bool evaluate_with_Hessian_diagonal( EvalType type, 
+                                        PatchData& pd,
+                                        double& value_out,
+                                        msq_std::vector<Vector3D>& grad_out,
+                                        msq_std::vector<SymMatrix3D>& hess_diag_out,
+                                        MsqError& err ); 
+
     virtual ObjectiveFunction* clone() const;
 
     virtual void clear();
@@ -120,6 +127,8 @@ class MESQUITE_EXPORT VarianceTemplate : public ObjectiveFunctionTemplate
     mutable msq_std::vector<size_t> mIndices;
     /** Temporary storage for qm gradient */
     mutable msq_std::vector<Vector3D> mGradient, tmpGradient;
+    /** Temporary storage for qm Hessian diagonal data */
+    mutable msq_std::vector<SymMatrix3D> mHessDiag, tmpDiag1, tmpDiag2;
 };
 
 } // namespace Mesquite

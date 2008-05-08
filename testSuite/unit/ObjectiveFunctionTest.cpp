@@ -73,12 +73,15 @@ private:
   
   CPPUNIT_TEST (test_eval_OF_value_LPtoP_L1);
   CPPUNIT_TEST (test_grad_OF_value_LPtoP_L1);
+  CPPUNIT_TEST (test_diag_OF_value_LPtoP_L1);
   CPPUNIT_TEST (test_hess_OF_value_LPtoP_L1);
   CPPUNIT_TEST (test_eval_OF_value_LPtoP_L2);
   CPPUNIT_TEST (test_grad_OF_value_LPtoP_L2);
+  CPPUNIT_TEST (test_diag_OF_value_LPtoP_L2);
   CPPUNIT_TEST (test_hess_OF_value_LPtoP_L2);
   CPPUNIT_TEST (test_eval_OF_value_LPtoP_scaled);
   CPPUNIT_TEST (test_grad_OF_value_LPtoP_scaled);
+  CPPUNIT_TEST (test_diag_OF_value_LPtoP_scaled);
   CPPUNIT_TEST (test_hess_OF_value_LPtoP_scaled);
   CPPUNIT_TEST (test_eval_OF_value_LInf);
   CPPUNIT_TEST (test_eval_OF_value_max);
@@ -89,17 +92,25 @@ private:
   CPPUNIT_TEST (test_hessian_gradient_LPtoPTemplate_L1);
   CPPUNIT_TEST (test_hessian_gradient_LPtoPTemplate_L2);
   CPPUNIT_TEST (test_hessian_gradient_LPtoPTemplate_L2_scaled);
+  CPPUNIT_TEST (test_diagonal_gradient_LPtoPTemplate_L1);
+  CPPUNIT_TEST (test_diagonal_gradient_LPtoPTemplate_L2);
+  CPPUNIT_TEST (test_diagonal_gradient_LPtoPTemplate_L2_scaled);
+  CPPUNIT_TEST (test_hessian_diagonal_LPtoPTemplate_L1);
+  CPPUNIT_TEST (test_hessian_diagonal_LPtoPTemplate_L2);
+  CPPUNIT_TEST (test_hessian_diagonal_LPtoPTemplate_L2_scaled);
   CPPUNIT_TEST (test_compute_ana_hessian_tet);
   CPPUNIT_TEST (test_compute_ana_hessian_tet_scaled);
   
   CPPUNIT_TEST (test_LPtoP_invalid_qm_eval);
   CPPUNIT_TEST (test_LPtoP_invalid_qm_grad);
+  CPPUNIT_TEST (test_LPtoP_invalid_qm_diag);
   CPPUNIT_TEST (test_LPtoP_invalid_qm_hess);
   CPPUNIT_TEST (test_LInf_invalid_qm_eval);
   CPPUNIT_TEST (test_max_invalid_qm_eval);
   
   CPPUNIT_TEST (test_LPtoP_qm_error_eval);
   CPPUNIT_TEST (test_LPtoP_qm_error_grad);
+  CPPUNIT_TEST (test_LPtoP_qm_error_diag);
   CPPUNIT_TEST (test_LPtoP_qm_error_hess);
   CPPUNIT_TEST (test_LInf_qm_error_eval);
   CPPUNIT_TEST (test_max_qm_error_eval);
@@ -115,6 +126,11 @@ private:
   CPPUNIT_TEST (test_LPtoP_grad_update);
   CPPUNIT_TEST (test_LPtoP_grad_temp);
   
+  CPPUNIT_TEST (test_LPtoP_diag_calc);
+  CPPUNIT_TEST (test_LPtoP_diag_save);
+  CPPUNIT_TEST (test_LPtoP_diag_update);
+  CPPUNIT_TEST (test_LPtoP_diag_temp);
+  
   CPPUNIT_TEST (test_LPtoP_hess_calc);
   CPPUNIT_TEST (test_LPtoP_hess_save);
   CPPUNIT_TEST (test_LPtoP_hess_update);
@@ -127,6 +143,7 @@ private:
 
   CPPUNIT_TEST (test_LPtoP_negate_flag_eval);
   CPPUNIT_TEST (test_LPtoP_negate_flag_grad);
+  CPPUNIT_TEST (test_LPtoP_negate_flag_diag);
   CPPUNIT_TEST (test_LPtoP_negate_flag_hess);
   CPPUNIT_TEST (test_LInf_negate_flag_eval);
   CPPUNIT_TEST (test_max_negate_flag_eval);
@@ -168,6 +185,12 @@ public:
     test_LPtoP_value( 1, false, values2, GRAD );
   }
   
+  void test_diag_OF_value_LPtoP_L1()
+  {
+    test_LPtoP_value( 1, false, values1, DIAG );
+    test_LPtoP_value( 1, false, values2, DIAG );
+  }
+  
   void test_hess_OF_value_LPtoP_L1()
   {
     test_LPtoP_value( 1, false, values1, HESS );
@@ -186,6 +209,12 @@ public:
     test_LPtoP_value( 2, false, values2, GRAD );
   }
   
+  void test_diag_OF_value_LPtoP_L2()
+  {
+    test_LPtoP_value( 2, false, values1, DIAG );
+    test_LPtoP_value( 2, false, values2, DIAG );
+  }
+  
   void test_hess_OF_value_LPtoP_L2()
   {
     test_LPtoP_value( 2, false, values1, HESS );
@@ -202,6 +231,12 @@ public:
   {
     test_LPtoP_value( 2, true, values1, GRAD );
     test_LPtoP_value( 2, true, values2, GRAD );
+  }
+  
+  void test_diag_OF_value_LPtoP_scaled()
+  {
+    test_LPtoP_value( 2, true, values1, DIAG );
+    test_LPtoP_value( 2, true, values2, DIAG );
   }
   
   void test_hess_OF_value_LPtoP_scaled()
@@ -248,6 +283,32 @@ public:
       compare_hessian_gradient( &LP1 ); 
     }
 
+  void test_diagonal_gradient_LPtoPTemplate_L1()
+    { LPtoPTemplate LP1( 1, NULL ); compare_diagonal_gradient( &LP1 ); }
+
+  void test_diagonal_gradient_LPtoPTemplate_L2()
+    { LPtoPTemplate LP1( 2, NULL ); compare_diagonal_gradient( &LP1 ); }
+  
+  void test_diagonal_gradient_LPtoPTemplate_L2_scaled()
+    { 
+      LPtoPTemplate LP1( 2, NULL ); 
+      LP1.set_dividing_by_n(true);
+      compare_diagonal_gradient( &LP1 ); 
+    }
+
+  void test_hessian_diagonal_LPtoPTemplate_L1()
+    { LPtoPTemplate LP1( 1, NULL ); compare_hessian_diagonal( &LP1 ); }
+
+  void test_hessian_diagonal_LPtoPTemplate_L2()
+    { LPtoPTemplate LP1( 2, NULL ); compare_hessian_diagonal( &LP1 ); }
+  
+  void test_hessian_diagonal_LPtoPTemplate_L2_scaled()
+    { 
+      LPtoPTemplate LP1( 2, NULL ); 
+      LP1.set_dividing_by_n(true);
+      compare_hessian_diagonal( &LP1 ); 
+    }
+
   void test_compute_ana_hessian_tet();
   
   void test_compute_ana_hessian_tet_scaled();
@@ -256,6 +317,8 @@ public:
     { LPtoPTemplate LP1( 1, NULL ); test_handles_invalid_qm( EVAL, &LP1 ); }
   void test_LPtoP_invalid_qm_grad()
     { LPtoPTemplate LP1( 1, NULL ); test_handles_invalid_qm( GRAD, &LP1 ); }
+  void test_LPtoP_invalid_qm_diag()
+    { LPtoPTemplate LP1( 1, NULL ); test_handles_invalid_qm( DIAG, &LP1 ); }
   void test_LPtoP_invalid_qm_hess()
     { LPtoPTemplate LP1( 1, NULL ); test_handles_invalid_qm( HESS, &LP1 ); }
   void test_LInf_invalid_qm_eval()
@@ -267,6 +330,8 @@ public:
     { LPtoPTemplate LP1( 1, NULL ); test_handles_qm_error( EVAL, &LP1 ); }
   void test_LPtoP_qm_error_grad()
     { LPtoPTemplate LP1( 1, NULL ); test_handles_qm_error( GRAD, &LP1 ); }
+  void test_LPtoP_qm_error_diag()
+    { LPtoPTemplate LP1( 1, NULL ); test_handles_qm_error( DIAG, &LP1 ); }
   void test_LPtoP_qm_error_hess()
     { LPtoPTemplate LP1( 1, NULL ); test_handles_qm_error( HESS, &LP1 ); }
   void test_LInf_qm_error_eval()
@@ -321,6 +386,27 @@ public:
     test_eval_type( ObjectiveFunction::TEMPORARY, GRAD, &OF );
   }
   
+  void test_LPtoP_diag_calc()
+  { 
+    LPtoPTemplate OF( 1, NULL ); 
+    test_eval_type( ObjectiveFunction::CALCULATE, DIAG, &OF );
+  }
+  void test_LPtoP_diag_save()
+  { 
+    LPtoPTemplate OF( 1, NULL ); 
+    test_eval_type( ObjectiveFunction::SAVE, DIAG, &OF );
+  }
+  void test_LPtoP_diag_update()
+  { 
+    LPtoPTemplate OF( 1, NULL ); 
+    test_eval_type( ObjectiveFunction::UPDATE, DIAG, &OF );
+  }
+  void test_LPtoP_diag_temp()
+  { 
+    LPtoPTemplate OF( 1, NULL ); 
+    test_eval_type( ObjectiveFunction::TEMPORARY, DIAG, &OF );
+  }
+  
   void test_LPtoP_hess_calc()
   { 
     LPtoPTemplate OF( 1, NULL ); 
@@ -362,6 +448,8 @@ public:
    { LPtoPTemplate LP( 2, NULL ); test_negate_flag( EVAL, &LP ); }
   void test_LPtoP_negate_flag_grad()
    { LPtoPTemplate LP( 2, NULL ); test_negate_flag( GRAD, &LP ); }
+  void test_LPtoP_negate_flag_diag()
+   { LPtoPTemplate LP( 2, NULL ); test_negate_flag( DIAG, &LP ); }
   void test_LPtoP_negate_flag_hess()
    { LPtoPTemplate LP( 2, NULL ); test_negate_flag( HESS, &LP ); }
   void test_LInf_negate_flag_eval()

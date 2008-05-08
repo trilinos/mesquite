@@ -45,6 +45,7 @@
 #include "PatchDataInstances.hpp"
 #include "cppunit/extensions/HelperMacros.h"
 #include "UnitUtil.hpp"
+#include "Matrix3D.hpp"
 #include <iterator>
 
 using namespace Mesquite;
@@ -101,6 +102,11 @@ private:
   CPPUNIT_TEST (test_scalar_add_gradient);
   CPPUNIT_TEST (test_scalar_multiply_gradient);
 
+  CPPUNIT_TEST (test_add_hess_diagonal);
+  CPPUNIT_TEST (test_multiply_hess_diagonal);
+  CPPUNIT_TEST (test_scalar_add_hess_diagonal);
+  CPPUNIT_TEST (test_scalar_multiply_hess_diagonal);
+
   CPPUNIT_TEST (test_add_hessian);
   CPPUNIT_TEST (test_multiply_hessian);
   CPPUNIT_TEST (test_scalar_add_hessian);
@@ -144,6 +150,11 @@ public:
   void test_multiply_gradient();
   void test_scalar_add_gradient();
   void test_scalar_multiply_gradient();
+
+  void test_add_hess_diagonal();
+  void test_multiply_hess_diagonal();
+  void test_scalar_add_hess_diagonal();
+  void test_scalar_multiply_hess_diagonal();
 
   void test_add_hessian();
   void test_multiply_hessian();
@@ -258,7 +269,72 @@ void CompositeOFTest::get_hessians( MsqHessian& LP1_hess,
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(rval);
 }
+
+void CompositeOFTest::test_add_hess_diagonal()
+{
+  CompositeOFAdd OF( &LP1, &LP2 );
+  compare_hessian_diagonal( &OF );
+}
+
+void CompositeOFTest::test_multiply_hess_diagonal()
+{
+  CompositeOFMultiply OF( &LP1, &LP2 );
+  msq_std::vector<SymMatrix3D> hess1, hess2, hess;
   
+  MsqPrintError err(cout);
+  PatchData pd;
+  create_twelve_hex_patch( pd, err ); 
+  ASSERT_NO_ERROR( err );
+
+  msq_std::vector<Vector3D> grad1, grad2, grad;
+  bool rval;
+  double value1, value2, value;
+  rval = LP1.evaluate_with_Hessian_diagonal( ObjectiveFunction::CALCULATE, pd, value1, grad1, hess1, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(rval);
+  rval = LP2.evaluate_with_Hessian_diagonal( ObjectiveFunction::CALCULATE, pd, value2, grad2, hess2, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(rval);
+  rval = OF .evaluate_with_Hessian_diagonal( ObjectiveFunction::CALCULATE, pd, value, grad, hess , err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(rval);
+
+  CPPUNIT_ASSERT_EQUAL( pd.num_free_vertices(), grad1.size() );
+  CPPUNIT_ASSERT_EQUAL( pd.num_free_vertices(), grad2.size() );
+  CPPUNIT_ASSERT_EQUAL( pd.num_free_vertices(), grad .size() );
+
+  CPPUNIT_ASSERT_EQUAL( pd.num_free_vertices(), hess1.size() );
+  CPPUNIT_ASSERT_EQUAL( pd.num_free_vertices(), hess2.size() );
+  CPPUNIT_ASSERT_EQUAL( pd.num_free_vertices(), hess .size() );
+  
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( value1 * value2, value, 1e-6 );
+  
+  for (size_t i = 0; i < pd.num_free_vertices(); ++i) {
+    const Vector3D expected_grad = value2 * grad1[i] + value1 * grad2[i];
+    CPPUNIT_ASSERT_VECTORS_EQUAL( expected_grad, grad[i], 1e-6 );
+    
+    Matrix3D o;
+    o.outer_product( grad1[i], grad2[i] );
+    Matrix3D expect = o + transpose(o);
+    expect += value2 * hess1[i];
+    expect += value1 * hess2[i];
+    CPPUNIT_ASSERT_MATRICES_EQUAL( expect, Matrix3D(hess[i]), 1e-6 );
+  }
+}
+
+void CompositeOFTest::test_scalar_add_hess_diagonal()
+{
+  CompositeOFScalarAdd OF( 1111.1, &LP1 );
+  compare_hessian_diagonal( &OF );
+}
+
+void CompositeOFTest::test_scalar_multiply_hess_diagonal()
+{
+  const double scale = 2.5;
+  CompositeOFScalarMultiply OF( scale, &LP1 );
+  compare_hessian_diagonal( &OF );
+}
+
 void CompositeOFTest::test_add_hessian()
 {
     // test value and gradient 
