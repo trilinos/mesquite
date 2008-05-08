@@ -70,12 +70,8 @@ private:
   CPPUNIT_TEST( test_grad_update_sqr );
   CPPUNIT_TEST( test_grad_temp_sqr );
 
-  CPPUNIT_TEST( test_hess_calc_sqr );
-  CPPUNIT_TEST( test_hess_save_sqr );
-  CPPUNIT_TEST( test_hess_update_sqr );
-  CPPUNIT_TEST( test_hess_temp_sqr );
-
   CPPUNIT_TEST( test_hessian_fails );
+  CPPUNIT_TEST( test_hessian_fails_sqr );
   
   CPPUNIT_TEST( test_failed_metric_in_eval );
   CPPUNIT_TEST( test_failed_metric_in_grad );
@@ -92,7 +88,6 @@ private:
   
   CPPUNIT_TEST( test_numerical_gradient );
   CPPUNIT_TEST( test_numerical_gradient_sqr  );
-  CPPUNIT_TEST( test_hessian_gradient_sqr  );
   
   CPPUNIT_TEST( test_clone );
   CPPUNIT_TEST( test_clone_sqr );
@@ -101,7 +96,6 @@ private:
   CPPUNIT_TEST( test_eval_negate_sqr );
   CPPUNIT_TEST( test_grad_negate );
   CPPUNIT_TEST( test_grad_negate_sqr );
-  CPPUNIT_TEST( test_hess_negate_sqr );
 
   CPPUNIT_TEST_SUITE_END();
 
@@ -151,17 +145,6 @@ public:
   void test_grad_temp_sqr()  
     { VarianceTemplate of(NULL); test_eval_type( ObjectiveFunction::TEMPORARY,  GRAD, &of ); }
 
-  void test_hess_calc_sqr()  
-    { VarianceTemplate of(NULL); test_eval_type( ObjectiveFunction::CALCULATE,  HESS, &of ); }
-  void test_hess_accum_sqr() 
-    { VarianceTemplate of(NULL); test_eval_type( ObjectiveFunction::ACCUMULATE, HESS, &of ); }
-  void test_hess_save_sqr()  
-    { VarianceTemplate of(NULL); test_eval_type( ObjectiveFunction::SAVE,       HESS, &of ); }
-  void test_hess_update_sqr()
-    { VarianceTemplate of(NULL); test_eval_type( ObjectiveFunction::UPDATE,     HESS, &of ); }
-  void test_hess_temp_sqr()  
-    { VarianceTemplate of(NULL); test_eval_type( ObjectiveFunction::TEMPORARY,  HESS, &of ); }
-
   void test_evaluate( ) ;
   void test_evaluate_sqr( );
   
@@ -169,9 +152,8 @@ public:
     { StdDevTemplate of(NULL); compare_numerical_gradient(&of); }
   void test_numerical_gradient_sqr( )  
     { VarianceTemplate of(NULL); compare_numerical_gradient(&of); }
-  void test_hessian_gradient_sqr( )  
-    { VarianceTemplate of(NULL); compare_hessian_gradient(&of); }
   void test_hessian_fails();
+  void test_hessian_fails_sqr();
   
   void test_failed_metric_in_eval()   
     { StdDevTemplate of(NULL); test_handles_qm_error(EVAL, &of); }
@@ -181,8 +163,6 @@ public:
     { VarianceTemplate of(NULL); test_handles_qm_error(EVAL, &of); }
   void test_failed_metric_in_grad_sqr() 
     { VarianceTemplate of(NULL); test_handles_qm_error(GRAD, &of); }
-  void test_failed_metric_in_hess_sqr() 
-    { VarianceTemplate of(NULL); test_handles_qm_error(HESS, &of); }
   
   void test_false_metric_in_eval()     
     { StdDevTemplate of(NULL); test_handles_invalid_qm(EVAL, &of); }
@@ -192,8 +172,6 @@ public:
     { VarianceTemplate of(NULL); test_handles_invalid_qm(EVAL, &of); }
   void test_false_metric_in_grad_sqr() 
     { VarianceTemplate of(NULL); test_handles_invalid_qm(GRAD, &of); }
-  void test_false_metric_in_hess_sqr() 
-    { VarianceTemplate of(NULL); test_handles_invalid_qm(HESS, &of); }
     
   void test_clone()
     { StdDevTemplate of(NULL); ::test_clone(&of); }
@@ -208,8 +186,6 @@ public:
     { StdDevTemplate of(NULL); test_negate_flag( GRAD, &of ); }
   void test_grad_negate_sqr()
     { VarianceTemplate of(NULL); test_negate_flag( GRAD, &of ); }
-  void test_hess_negate_sqr()
-    { VarianceTemplate of(NULL); test_negate_flag( HESS, &of ); }
 };
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(StdDevTemplateTest, "StdDevTemplateTest");
@@ -267,6 +243,22 @@ void StdDevTemplateTest::test_hessian_fails()
   
   OFTestQM metric( &value, 1 );
   StdDevTemplate func( &metric );
+  rval = func.evaluate_with_Hessian( ObjectiveFunction::CALCULATE, patch(), value, grad, Hess, err );
+  CPPUNIT_ASSERT(err);
+}
+
+void StdDevTemplateTest::test_hessian_fails_sqr()
+{
+  MsqError err;
+  double value;
+  bool rval;
+  vector<Vector3D> grad;
+  MsqHessian Hess;
+  Hess.initialize( patch(), err );
+  CPPUNIT_ASSERT(!MSQ_CHKERR(err));
+  
+  OFTestQM metric( &value, 1 );
+  VarianceTemplate func( &metric );
   rval = func.evaluate_with_Hessian( ObjectiveFunction::CALCULATE, patch(), value, grad, Hess, err );
   CPPUNIT_ASSERT(err);
 }

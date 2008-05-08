@@ -34,8 +34,8 @@
 #define MSQ_VARIANCE_TEMPLATE_HPP
 
 #include "Mesquite.hpp"
-#include "StdDevTemplate.hpp"
 #include "MsqHessian.hpp"
+#include "ObjectiveFunctionTemplate.hpp"
 
 namespace Mesquite {
 
@@ -44,13 +44,28 @@ namespace Mesquite {
  * This class implements an objective function that is the 
  * standard deviation of the quality metric evalutations.
  */
-class MESQUITE_EXPORT VarianceTemplate : public StdDevTemplate
+class MESQUITE_EXPORT VarianceTemplate : public ObjectiveFunctionTemplate
 {
   public:
   
-    VarianceTemplate( QualityMetric* qm = 0 ) : StdDevTemplate(qm) {}
+    VarianceTemplate( QualityMetric* qm = 0 ) : ObjectiveFunctionTemplate(qm) 
+      { clear(); }
     
-    VarianceTemplate( const VarianceTemplate& other ) : StdDevTemplate(other) {}
+      /**\brief copy constructor 
+       *
+       * Define a copy constructor because the compiler-provided 
+       * default one would also copy the temporary arrays, which
+       * would be a waste of time.
+       */
+    VarianceTemplate( const VarianceTemplate& copy )
+      : ObjectiveFunctionTemplate( copy ),
+        mCount( copy.mCount ),
+        mSum( copy.mSum ),
+        mSqrSum( copy.mSqrSum ),
+        saveCount( copy.saveCount ),
+        saveSum( copy.saveSum ),
+        saveSqrSum( copy.saveSqrSum )
+      {}
     
     virtual ~VarianceTemplate() 
       {}
@@ -67,20 +82,44 @@ class MESQUITE_EXPORT VarianceTemplate : public StdDevTemplate
                                          msq_std::vector<Vector3D>& grad_out,
                                          MsqError& err ); 
 
-    virtual bool evaluate_with_Hessian( EvalType type, 
-                                        PatchData& pd,
-                                        double& value_out,
-                                        msq_std::vector<Vector3D>& grad_out,
-                                        MsqHessian& Hessian_out,
-                                        MsqError& err ); 
-
     virtual ObjectiveFunction* clone() const;
+
+    virtual void clear();
 
   private:
   
+    /**\brief Handle EvalType for all eval functions, return OF value 
+     *
+     * This function implements the common handling of the EvalType
+     * argument for all forms of the 'evaluate' method.  
+     *
+     * NOTE:  This function modifies accumulated values depenending
+     *        on the value of EvalType.
+     *\param sum        The sum over the current patch
+     *\param sqr_sum    The sum of squares over the current patch
+     *\param count      The number of qm evaluations for the current patch
+     *\param type       The evaluation type passed to 'evaluate'
+     *\param global_count The total, accumulated number of QM evaluations
+     *\param result_sum The sum term of the standard deviation
+     *\param result_sqr The sum of squares term of the standard deviation
+     */
+    void accumulate( double sum, double sqr_sum, size_t count, 
+                     EvalType type,
+                     double& result_sum, double& result_sqr, size_t& global_count );
+    
+    size_t mCount;    /**< The number of accumulated entires */
+    double mSum;      /**< The runnnig sum of the qualtiy metric valuse */
+    double mSqrSum;   /**< The running sum of the square of QM values */
+    size_t saveCount; /**< Saved count from previous patch */
+    double saveSum;   /**< Saved sum from previous patch */
+    double saveSqrSum;/**< Saved sum from previous patch */
+  
+    /** Temporary storage for qm sample handles */
+    mutable msq_std::vector<size_t> qmHandles;
+    /** Temporary storage for qm vertex indices */
+    mutable msq_std::vector<size_t> mIndices;
     /** Temporary storage for qm gradient */
-    mutable msq_std::vector<Matrix3D> mHessian;
-    mutable MsqHessian tmpHessian1, tmpHessian2;
+    mutable msq_std::vector<Vector3D> mGradient, tmpGradient;
 };
 
 } // namespace Mesquite

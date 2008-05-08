@@ -41,6 +41,62 @@ namespace Mesquite {
 
 ObjectiveFunction* VarianceTemplate::clone() const
   { return new VarianceTemplate(*this); }
+  
+void VarianceTemplate::clear()
+{
+  mCount = 0;
+  mSum = mSqrSum = 0;
+  saveCount = 0;
+  saveSum = saveSqrSum = 0;
+}
+
+void VarianceTemplate::accumulate( double sum, 
+                                   double sqr_sum,
+                                   size_t count, 
+                                   EvalType type,
+                                   double& result_sum,
+                                   double& result_sqr,
+                                   size_t& global_count )
+{
+  switch (type) 
+  {
+    case CALCULATE:
+      result_sum = sum;
+      result_sqr = sqr_sum;
+      global_count = count;
+      break;
+    
+    case ACCUMULATE:
+      result_sum = mSum += sum;
+      result_sqr = mSqrSum += sqr_sum;
+      global_count = mCount += count;
+      break;
+    
+    case SAVE:
+      saveSum = sum;
+      saveSqrSum = sqr_sum;
+      saveCount = count;
+      result_sum = mSum;
+      result_sqr = mSqrSum;
+      global_count = mCount;
+      break;
+    
+    case UPDATE:
+      mSum -= saveSum;
+      mSqrSum -= saveSqrSum;
+      mCount -= saveCount;
+      result_sum = mSum += saveSum = sum;
+      result_sqr = mSqrSum += saveSqrSum = sqr_sum;
+      global_count = mCount += saveCount = count;
+      break;
+    
+    case TEMPORARY:
+      result_sum = mSum - saveSum + sum;
+      result_sqr = mSqrSum - saveSqrSum + sqr_sum;
+      global_count = mCount + count - saveCount;
+      break;
+  }
+}
 
 bool VarianceTemplate::evaluate( EvalType type, 
                                PatchData& pd,
@@ -137,95 +193,6 @@ bool VarianceTemplate::evaluate_with_gradient( EvalType type,
   return true;
 }
 
-bool VarianceTemplate::evaluate_with_Hessian( EvalType type, 
-                                             PatchData& pd,
-                                             double& value_out,
-                                             msq_std::vector<Vector3D>& grad_out,
-                                             MsqHessian& Hess_out,
-                                             MsqError& err )
-{
-  QualityMetric* qm = get_quality_metric();
-  qm->get_evaluations( pd, qmHandles, OF_FREE_EVALS_ONLY, err );  MSQ_ERRFALSE(err);
-  
-    // zero gradient
-  grad_out.clear();
-  grad_out.resize( pd.num_free_vertices(), Vector3D(0.0,0.0,0.0) );
-  tmpGradient.clear();
-  tmpGradient.resize( pd.num_free_vertices(), Vector3D(0.0,0.0,0.0) );
-  Hess_out.zero_out();
-  tmpHessian1.initialize(Hess_out);
-  tmpHessian1.zero_out();
-  tmpHessian2.initialize(Hess_out);
-  tmpHessian2.zero_out();
-  
-    // calculate OF value and gradient for just the patch
-  Matrix3D op;
-  msq_std::vector<size_t>::const_iterator i;
-  double value, sum = 0.0, sqr = 0.0;
-  for (i = qmHandles.begin(); i != qmHandles.end(); ++i)
-  {
-    bool result = qm->evaluate_with_Hessian( pd, *i, value, mIndices, mGradient, mHessian, err );
-    if (MSQ_CHKERR(err) || !result)
-      return false;
-    if (fabs(value) < DBL_EPSILON)
-      continue;
-    
-    sum += value;
-    sqr += value*value;
-
-    size_t h_idx = 0;
-    for (size_t j = 0; j < mIndices.size(); ++j) {
-      const size_t r = mIndices[j];
-      tmpGradient[r] += mGradient[j];
-      mGradient[j] *= value;
-      grad_out[r] += mGradient[j];
-      for (size_t k = j; k < mIndices.size(); ++k) {
-        const size_t c = mIndices[j];
-        Hess_out.add( r, c, op.outer_product( mGradient[j], mGradient[k] ), err );
-        MSQ_ERRZERO(err);
-        tmpHessian1.add( r, c, mHessian[h_idx], err );
-        MSQ_ERRZERO(err);
-        mHessian[h_idx] *= value;
-        tmpHessian2.add( r, c, mHessian[h_idx], err );
-        MSQ_ERRZERO(err);
-        ++h_idx;
-      }
-    }
-  }
-  
-    // update member data
-  size_t n;
-  accumulate( sum, sqr, qmHandles.size(), type, sum, sqr, n );
-  if (n < 2) {
-    value_out = 0.0;
-    grad_out.clear();
-    grad_out.resize( pd.num_free_vertices(), Vector3D(0.0,0.0,0.0) );
-    Hess_out.zero_out();
-    return true;
-  }
-
-    // calculate OF value
-  value_out = qm->get_negate_flag() * (n*sqr - sum*sum) / (n*(n - 1));
-  
-    // calculate gradient
-  const double avg = sum/n;
-  const double f = qm->get_negate_flag() * 2.0 / (n - 1);
-  for (size_t k = 0; k < pd.num_free_vertices(); ++k) {
-    tmpGradient[k] *= avg;
-    grad_out[k] -= tmpGradient[k];
-    grad_out[k] *= f;
-  }
-  
-    // calculate Hessian
-  tmpHessian1.scale( -sum );
-  tmpHessian2.scale( n );
-  tmpHessian1.add( tmpHessian2 );
-  tmpHessian1.scale( 1.0 / (n - 1) );
-  Hess_out.add( tmpHessian1 );
-  Hess_out.scale( qm->get_negate_flag() * 2.0 / n );
-    
-  return true;
-}
 
 
 } // namespace Mesquite

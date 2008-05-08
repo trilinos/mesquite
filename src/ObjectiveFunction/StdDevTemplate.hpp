@@ -34,7 +34,7 @@
 #define MSQ_STD_DEV_TEMPLATE_HPP
 
 #include "Mesquite.hpp"
-#include "ObjectiveFunctionTemplate.hpp"
+#include "VarianceTemplate.hpp"
 
 namespace Mesquite {
 
@@ -43,29 +43,11 @@ namespace Mesquite {
  * This class implements an objective function that is the 
  * standard deviation of the quality metric evalutations.
  */
-class MESQUITE_EXPORT StdDevTemplate : public ObjectiveFunctionTemplate
+class MESQUITE_EXPORT StdDevTemplate : public VarianceTemplate
 {
   public:
   
-    StdDevTemplate( QualityMetric* qm = 0 ) : ObjectiveFunctionTemplate(qm)
-    { 
-      clear(); 
-    }
-    
-      /**\brief copy constructor 
-       *
-       * Define a copy constructor because the compiler-provided 
-       * default one would also copy the temporary arrays, which
-       * would be a waste of time.
-       */
-    StdDevTemplate( const StdDevTemplate& copy )
-      : ObjectiveFunctionTemplate( copy ),
-        mCount( copy.mCount ),
-        mSum( copy.mSum ),
-        mSqrSum( copy.mSqrSum ),
-        saveCount( copy.saveCount ),
-        saveSum( copy.saveSum ),
-        saveSqrSum( copy.saveSqrSum )
+    StdDevTemplate( QualityMetric* qm = 0 ) : VarianceTemplate(qm)
       {}
     
     virtual ~StdDevTemplate() 
@@ -84,47 +66,7 @@ class MESQUITE_EXPORT StdDevTemplate : public ObjectiveFunctionTemplate
                                          MsqError& err ); 
 
     virtual ObjectiveFunction* clone() const;
-
-    virtual void clear();
   
-  protected:
-  
-    /**\brief Handle EvalType for all eval functions, return OF value 
-     *
-     * This function implements the common handling of the EvalType
-     * argument for all forms of the 'evaluate' method.  
-     *
-     * NOTE:  This function modifies accumulated values depenending
-     *        on the value of EvalType.
-     *\param sum        The sum over the current patch
-     *\param sqr_sum    The sum of squares over the current patch
-     *\param count      The number of qm evaluations for the current patch
-     *\param type       The evaluation type passed to 'evaluate'
-     *\param global_count The total, accumulated number of QM evaluations
-     *\param result_sum The sum term of the standard deviation
-     *\param result_sqr The sum of squares term of the standard deviation
-     */
-    void accumulate( double sum, double sqr_sum, size_t count, 
-                     EvalType type,
-                     double& result_sum, double& result_sqr, size_t& global_count );
-
-  private:
-    
-    size_t mCount;    /**< The number of accumulated entires */
-    double mSum;      /**< The runnnig sum of the qualtiy metric valuse */
-    double mSqrSum;   /**< The running sum of the square of QM values */
-    size_t saveCount; /**< Saved count from previous patch */
-    double saveSum;   /**< Saved sum from previous patch */
-    double saveSqrSum;/**< Saved sum from previous patch */
-
-  protected:
-    
-    /** Temporary storage for qm sample handles */
-    mutable msq_std::vector<size_t> qmHandles;
-    /** Temporary storage for qm vertex indices */
-    mutable msq_std::vector<size_t> mIndices;
-    /** Temporary storage for qm gradient */
-    mutable msq_std::vector<Vector3D> mGradient, tmpGradient;
 };
 
 } // namespace Mesquite
