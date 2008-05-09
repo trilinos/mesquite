@@ -94,6 +94,19 @@ class AveragingQMTest : public CppUnit::TestFixture
   CPPUNIT_TEST (test_average_corner_hessians_max_over_min);
   CPPUNIT_TEST (test_average_corner_hessians_max_minus_min);
   CPPUNIT_TEST (test_average_corner_hessians_sum_of_ratios_squared);
+  CPPUNIT_TEST (test_average_corner_hessian_diagonals_linear);
+  CPPUNIT_TEST (test_average_corner_hessian_diagonals_rms);
+  CPPUNIT_TEST (test_average_corner_hessian_diagonals_hms);
+  CPPUNIT_TEST (test_average_corner_hessian_diagonals_minimum);
+  CPPUNIT_TEST (test_average_corner_hessian_diagonals_maximum);
+  CPPUNIT_TEST (test_average_corner_hessian_diagonals_harmonic);
+  CPPUNIT_TEST (test_average_corner_hessian_diagonals_geometric);
+  CPPUNIT_TEST (test_average_corner_hessian_diagonals_sum);
+  CPPUNIT_TEST (test_average_corner_hessian_diagonals_sum_squared);
+  CPPUNIT_TEST (test_average_corner_hessian_diagonals_standard_deviation);
+  CPPUNIT_TEST (test_average_corner_hessian_diagonals_max_over_min);
+  CPPUNIT_TEST (test_average_corner_hessian_diagonals_max_minus_min);
+  CPPUNIT_TEST (test_average_corner_hessian_diagonals_sum_of_ratios_squared);
   CPPUNIT_TEST_SUITE_END();
   
   static const double VAL_LIST_1[5];
@@ -106,6 +119,13 @@ class AveragingQMTest : public CppUnit::TestFixture
   void check_average_gradients( QualityMetric::AveragingMethod scheme );
   
   void check_average_gradient_fails( QualityMetric::AveragingMethod scheme );
+  
+  void check_pmean_hessian_diagonals( QualityMetric::AveragingMethod scheme,
+                            double inner_power,
+                            double outer_power,
+                            bool scale );
+                                 
+  void check_hessian_diagonal_fails( QualityMetric::AveragingMethod scheme );
   
   void check_pmean_hessian( QualityMetric::AveragingMethod scheme,
                             double inner_power,
@@ -171,7 +191,20 @@ public:
   void test_average_corner_hessians_max_over_min();
   void test_average_corner_hessians_max_minus_min();
   void test_average_corner_hessians_sum_of_ratios_squared();
-  
+  void test_average_corner_hessian_diagonals_linear();
+  void test_average_corner_hessian_diagonals_rms();
+  void test_average_corner_hessian_diagonals_hms();
+  void test_average_corner_hessian_diagonals_minimum();
+  void test_average_corner_hessian_diagonals_maximum();
+  void test_average_corner_hessian_diagonals_harmonic();
+  void test_average_corner_hessian_diagonals_geometric();
+  void test_average_corner_hessian_diagonals_sum();
+  void test_average_corner_hessian_diagonals_sum_squared();
+  void test_average_corner_hessian_diagonals_standard_deviation();
+  void test_average_corner_hessian_diagonals_max_over_min();
+  void test_average_corner_hessian_diagonals_max_minus_min();
+  void test_average_corner_hessian_diagonals_sum_of_ratios_squared();
+ 
 };
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(AveragingQMTest, "AveragingQMTest");
@@ -796,6 +829,185 @@ static double pmean_of_triangle_corner_hessians( double inner_power,
   return m;
 }
 
+void AveragingQMTest::check_pmean_hessian_diagonals( 
+                                 QualityMetric::AveragingMethod scheme,
+                                 double inner_power,
+                                 double outer_power,
+                                 bool scale )
+{
+  MsqPrintError err(msq_stdio::cout);
+  AveragingQM aqm(scheme);
+  uint32_t fixed = 0; // mark no vertices as fixed
+
+    // define corner values, gradients and Hessians for a triangle
+  double vals[] = { 1, 2, 0.5 };
+  const Vector3D grads[9] = { Vector3D(0,1,1),
+                              Vector3D(0,2,2),
+                              Vector3D(0,3,3),
+                              Vector3D(0,4,4),
+                              Vector3D(0,5,5),
+                              Vector3D(0,6,6),
+                              Vector3D(0,7,7),
+                              Vector3D(0,8,8),
+                              Vector3D(0,9,9) };
+  Matrix3D hesss[18] = {
+    Matrix3D(1.0), Matrix3D(2.0), Matrix3D(-1.),
+                   Matrix3D(0.5), Matrix3D(6.0),
+                                  Matrix3D(1.1),
+    Matrix3D(1.2), Matrix3D(0.3), Matrix3D(0.0),
+                   Matrix3D(22.), Matrix3D(-2.),
+                                  Matrix3D(4.3),
+    Matrix3D(0.8), Matrix3D(1,7), Matrix3D(-.2),
+                   Matrix3D(0.5), Matrix3D(7.0),
+                                  Matrix3D(1.5)
+  };
+    // change some values so we catch transpositional errors
+  for (unsigned i = 0; i < sizeof(hesss)/sizeof(hesss[0]); ++i)
+    hesss[i][2][2] = 0.0;
+
+    // Calculate expected values
+  Vector3D aqm_grad[3], exp_grad[3];
+  Matrix3D exp_hess[6];
+  double aqm_avg, exp_avg;
+  exp_avg = pmean_of_triangle_corner_hessians( inner_power, 
+                                               outer_power,
+                                               vals,
+                                               grads, hesss,
+                                               exp_grad, exp_hess,
+                                               scale );
+                                               
+    // Test calculation of diagonal from full corner hessian data.
+  SymMatrix3D aqm_hess[3] = { 1, 2, 3 };
+  aqm_avg = aqm.average_corner_hessian_diagonals( TRIANGLE, fixed, 3,
+                                         vals, grads, hesss,
+                                         aqm_grad, aqm_hess, 
+                                         err );
+  ASSERT_NO_ERROR(err);
+
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( exp_avg, aqm_avg, 1e-6 );
+  
+  CPPUNIT_ASSERT_VECTORS_EQUAL( exp_grad[0], aqm_grad[0], 1e-6 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( exp_grad[1], aqm_grad[1], 1e-6 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( exp_grad[2], aqm_grad[2], 1e-6 );
+  
+  CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[0], Matrix3D(aqm_hess[0]), 1e-6 );
+  CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[3], Matrix3D(aqm_hess[1]), 1e-6 );
+  CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[5], Matrix3D(aqm_hess[2]), 1e-6 );
+                                               
+    // Test calculation of diagonal from diagonal corner hessian data.
+  SymMatrix3D diags[9] = { hesss[ 0].upper(), hesss[ 3].upper(), hesss[ 5].upper(),
+                           hesss[ 6].upper(), hesss[ 9].upper(), hesss[11].upper(),
+                           hesss[12].upper(), hesss[15].upper(), hesss[17].upper() };
+  aqm_avg = aqm.average_corner_hessian_diagonals( TRIANGLE, fixed, 3,
+                                         vals, grads, diags,
+                                         aqm_grad, aqm_hess, 
+                                         err );
+  ASSERT_NO_ERROR(err);
+
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( exp_avg, aqm_avg, 1e-6 );
+  
+  CPPUNIT_ASSERT_VECTORS_EQUAL( exp_grad[0], aqm_grad[0], 1e-6 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( exp_grad[1], aqm_grad[1], 1e-6 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( exp_grad[2], aqm_grad[2], 1e-6 );
+  
+  CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[0], Matrix3D(aqm_hess[0]), 1e-6 );
+  CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[3], Matrix3D(aqm_hess[1]), 1e-6 );
+  CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[5], Matrix3D(aqm_hess[2]), 1e-6 );
+}
+
+void AveragingQMTest::check_hessian_diagonal_fails( QualityMetric::AveragingMethod scheme )
+{
+    // define corner values, gradients and Hessians for a triangle
+  double vals[] = { 1, 2, 0.5 };
+  const Vector3D grads[9] = { Vector3D(1.0),
+                              Vector3D(2.0),
+                              Vector3D(3.0),
+                              Vector3D(4.0),
+                              Vector3D(5.0),
+                              Vector3D(6.0),
+                              Vector3D(7.0),
+                              Vector3D(8.0),
+                              Vector3D(9.0) };
+  const Matrix3D hesss[18] = {
+    Matrix3D(1.0), Matrix3D(2.0), Matrix3D(-1.),
+                   Matrix3D(0.5), Matrix3D(6.0),
+                                  Matrix3D(1.1),
+    Matrix3D(1.2), Matrix3D(0.3), Matrix3D(0.0),
+                   Matrix3D(22.), Matrix3D(-2.),
+                                  Matrix3D(4.3),
+    Matrix3D(0.8), Matrix3D(1,7), Matrix3D(-.2),
+                   Matrix3D(0.5), Matrix3D(7.0),
+                                  Matrix3D(1.5)
+  };
+  
+  Vector3D vtx_grad[3];
+  SymMatrix3D vtx_hess[6];
+  MsqError err;
+  AveragingQM aqm(scheme);
+  uint32_t fixed = 0x4; // mark third vertex as fixed
+  
+  aqm.average_corner_hessian_diagonals( TRIANGLE, fixed, 3,
+                                        vals, grads, hesss,
+                                        vtx_grad, vtx_hess, 
+                                        err );
+  CPPUNIT_ASSERT(err);
+  
+  const SymMatrix3D diags[9] = { SymMatrix3D(1.0), 
+                                 SymMatrix3D(0.5),
+                                 SymMatrix3D(1.0),
+                                 SymMatrix3D(1.2),
+                                 SymMatrix3D(22.),
+                                 SymMatrix3D(4.3),
+                                 SymMatrix3D(0.8),
+                                 SymMatrix3D(0.5),
+                                 SymMatrix3D(1.5) };
+  
+  aqm.average_corner_hessian_diagonals( TRIANGLE, fixed, 3,
+                                        vals, grads, diags,
+                                        vtx_grad, vtx_hess, 
+                                        err );
+  CPPUNIT_ASSERT(err);
+}
+
+void AveragingQMTest::test_average_corner_hessian_diagonals_linear()
+  { check_pmean_hessian_diagonals( QualityMetric::LINEAR, 1, 1, true ); }
+
+void AveragingQMTest::test_average_corner_hessian_diagonals_rms()
+  { check_pmean_hessian_diagonals( QualityMetric::RMS, 2, 0.5, true ); }
+
+void AveragingQMTest::test_average_corner_hessian_diagonals_hms()
+  { check_pmean_hessian_diagonals( QualityMetric::HMS, -2, -0.5, true ); }
+
+void AveragingQMTest::test_average_corner_hessian_diagonals_minimum()
+  { check_hessian_diagonal_fails( QualityMetric::MINIMUM ); }
+
+void AveragingQMTest::test_average_corner_hessian_diagonals_maximum()
+  { check_hessian_diagonal_fails( QualityMetric::MAXIMUM ); }
+
+void AveragingQMTest::test_average_corner_hessian_diagonals_harmonic()
+  { check_pmean_hessian_diagonals( QualityMetric::HARMONIC, -1, -1, true ); }
+
+void AveragingQMTest::test_average_corner_hessian_diagonals_geometric()
+  { check_hessian_diagonal_fails( QualityMetric::GEOMETRIC ); }
+
+void AveragingQMTest::test_average_corner_hessian_diagonals_sum()
+  { check_pmean_hessian_diagonals( QualityMetric::SUM, 1, 1, false ); }
+
+void AveragingQMTest::test_average_corner_hessian_diagonals_sum_squared()
+  { check_pmean_hessian_diagonals( QualityMetric::SUM_SQUARED, 2, 1, false ); }
+
+void AveragingQMTest::test_average_corner_hessian_diagonals_standard_deviation()
+  { check_hessian_diagonal_fails( QualityMetric::STANDARD_DEVIATION ); }
+
+void AveragingQMTest::test_average_corner_hessian_diagonals_max_over_min()
+  { check_hessian_diagonal_fails( QualityMetric::MAX_OVER_MIN ); }
+
+void AveragingQMTest::test_average_corner_hessian_diagonals_max_minus_min()
+  { check_hessian_diagonal_fails( QualityMetric::MAX_MINUS_MIN ); }
+
+void AveragingQMTest::test_average_corner_hessian_diagonals_sum_of_ratios_squared()
+  { check_hessian_diagonal_fails( QualityMetric::SUM_OF_RATIOS_SQUARED ); }
+
 void AveragingQMTest::check_pmean_hessian( QualityMetric::AveragingMethod scheme,
                                  double inner_power,
                                  double outer_power,
@@ -851,9 +1063,11 @@ void AveragingQMTest::check_pmean_hessian( QualityMetric::AveragingMethod scheme
 
   CPPUNIT_ASSERT_DOUBLES_EQUAL( exp_avg, aqm_avg, 1e-6 );
   
+    // only check gradient terms for free vertices
   CPPUNIT_ASSERT_VECTORS_EQUAL( exp_grad[0], aqm_grad[0], 1e-6 );
   CPPUNIT_ASSERT_VECTORS_EQUAL( exp_grad[1], aqm_grad[1], 1e-6 );
-  
+    
+    // only check Hessian terms for free vertices
   CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[0], aqm_hess[0], 1e-6 );
   CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[1], aqm_hess[1], 1e-6 );
   CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[3], aqm_hess[3], 1e-6 );

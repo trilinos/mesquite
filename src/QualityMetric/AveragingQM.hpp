@@ -72,10 +72,14 @@ namespace Mesquite
      MESQUITE_EXPORT inline 
      QualityMetric::AveragingMethod get_averaging_method() const
       { return avgMethod; }
-      
+     
+     //! Return true if the requested averaging scheme is supported
+     //! for analytical calculation of gradients.  
      inline bool analytical_average_gradient() 
       { return avgMethod <= QualityMetric::LAST_WITH_GRADIENT; }
 
+     //! Return true if the requested averaging scheme is supported
+     //! for analytical calculation of Hessians.  
      inline bool analytical_average_hessian() 
       { return avgMethod <= QualityMetric::LAST_WITH_HESSIAN; }
 
@@ -115,7 +119,54 @@ namespace Mesquite
                                   Vector3D vertex_grads[],
                                   MsqError& err );
      
-     /** \brief Average metric values, gradients, an hessians for per-corner evaluation
+     /** \brief Average metric values, gradients, and Hessian diagonal 
+      *         blocks for per-corner evaluation
+      *
+      *\param element_type   The element type
+      *\param num_corners    The number of corners (e.g. pass 4 for a pyramid
+      *                      if the metric couldn't be evaluated for the apex)
+      *\param corner_values  An array of metric values, one per element corner
+      *\param corner_grads   The corner gradients, 4 for each corner
+      *\param corner_hessians The hessians, 10 for each corner
+      *\param vertex_grads   Output.  Gradient at each vertex.
+      *\param vertex_hessians Output.  Hessian diagonal block for each vertex.
+      *\return average metric value for element
+      */
+      double average_corner_hessian_diagonals( EntityTopology element_type,
+                                               uint32_t fixed_vertices,
+                                               unsigned num_corners,
+                                               const double corner_values[],
+                                               const Vector3D corner_grads[],
+                                               const Matrix3D corner_hessians[],
+                                               Vector3D vertex_grads[],
+                                               SymMatrix3D vertex_hessians[],
+                                               MsqError& err );
+     
+     /** \brief Average metric values, gradients, and Hessian diagonal 
+      *         blocks for per-corner evaluation
+      *
+      *\param element_type   The element type
+      *\param num_corners    The number of corners (e.g. pass 4 for a pyramid
+      *                      if the metric couldn't be evaluated for the apex)
+      *\param corner_values  An array of metric values, one per element corner
+      *\param corner_grads   The corner gradients, 4 for each corner
+      *\param corner_hess_diag The diagonal blocks of the Hessian: 4 for each corner.
+      *\param vertex_grads   Output.  Gradient at each vertex.
+      *\param vertex_hessians Output.  Hessian diagonal block for each vertex.
+      *\return average metric value for element
+      */
+      double average_corner_hessian_diagonals( EntityTopology element_type,
+                                               uint32_t fixed_vertices,
+                                               unsigned num_corners,
+                                               const double corner_values[],
+                                               const Vector3D corner_grads[],
+                                               const SymMatrix3D corner_hess_diag[],
+                                               Vector3D vertex_grads[],
+                                               SymMatrix3D vertex_hessians[],
+                                               MsqError& err );
+     
+     /** \brief Average metric values, gradients, and Hessians for 
+      *         per-corner evaluation
       *
       *\param element_type   The element type
       *\param num_corners    The number of corners (e.g. pass 4 for a pyramid
