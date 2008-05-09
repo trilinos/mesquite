@@ -98,6 +98,15 @@ namespace Mesquite
                     MsqError& err );
 
      virtual
+     bool evaluate_with_Hessian_diagonal( PatchData& pd,
+                    size_t handle,
+                    double& value,
+                    msq_std::vector<size_t>& indices,
+                    msq_std::vector<Vector3D>& gradient,
+                    msq_std::vector<SymMatrix3D>& Hessian,
+                    MsqError& err );
+
+     virtual
      bool evaluate_with_Hessian( PatchData& pd,
                     size_t handle,
                     double& value,

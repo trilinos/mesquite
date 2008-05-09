@@ -226,6 +226,25 @@ void QualityMetric::remove_fixed_gradients( EntityTopology elem_type,
   grads.resize(w);
 }
 
+void QualityMetric::remove_fixed_diagonals( EntityTopology type, 
+                                          uint32_t fixed, 
+                                          msq_std::vector<Vector3D>& grads,
+                                          msq_std::vector<SymMatrix3D>& diags )
+{
+  const unsigned num_vertex = TopologyInfo::corners( type );
+  unsigned r, w;
+  for (r = 0; r < num_vertex && !(fixed & (1<<r)); ++r);
+  for (w = r++; r < num_vertex; ++r) {
+    if (!(fixed & (1<<r))) {
+      grads[w] = grads[r];
+      diags[w] = diags[r];
+      ++w;
+    }
+  }
+  grads.resize(w);
+  diags.resize(w);
+}
+
 void QualityMetric::remove_fixed_hessians( EntityTopology elem_type,
                                          uint32_t fixed,
                                          msq_std::vector<Matrix3D>& hessians )

@@ -977,7 +977,7 @@ void QualityMetricTester::compare_eval_with_indices_and_eval_with_hessian( Quali
   
   CPPUNIT_ASSERT( !types.empty() );
   for (size_t i = 0; i < types.size(); ++i) {
-    get_ideal_element( types[i], false, pd, true );
+    get_nonideal_element( types[i], pd, true );
     compare_eval_with_indices_and_eval_with_hessian( qm, pd );
   }
 }
@@ -1022,8 +1022,61 @@ void QualityMetricTester::compare_eval_with_grad_and_eval_with_hessian( QualityM
  
   CPPUNIT_ASSERT( !types.empty() );
   for (size_t i = 0; i < types.size(); ++i) {
-    get_ideal_element( types[i], false, pd, true );
+    get_nonideal_element( types[i], pd, true );
     compare_eval_with_grad_and_eval_with_hessian( qm, pd );
+  }
+}
+
+void QualityMetricTester::compare_eval_with_diag_and_eval_with_hessian( 
+                               QualityMetric* qm, PatchData& pd )
+{
+  MsqPrintError err( msq_stdio::cout );
+  msq_std::vector<size_t> handles, indices1, indices2;
+  msq_std::vector<Vector3D> grad1, grad2;
+  msq_std::vector<SymMatrix3D> hess1;
+  msq_std::vector<Matrix3D> hess2;
+  double qm_val1, qm_val2;
+  bool rval;
+  
+  qm->get_evaluations( pd, handles, false, err );
+  CPPUNIT_ASSERT( !MSQ_CHKERR(err) );
+  CPPUNIT_ASSERT( !handles.empty() );
+  for (size_t j = 0; j < handles.size(); ++j) {
+    rval = qm->evaluate_with_Hessian_diagonal( pd, handles[j], qm_val1, indices1, grad1, hess1, err );
+    CPPUNIT_ASSERT( !MSQ_CHKERR(err) );
+    CPPUNIT_ASSERT( rval );
+    rval = qm->evaluate_with_Hessian( pd, handles[j], qm_val2, indices2, grad2, hess2, err );
+    CPPUNIT_ASSERT( !MSQ_CHKERR(err) );
+    CPPUNIT_ASSERT( rval );
+
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( qm_val1, qm_val2, 1e-6 );
+    
+    CPPUNIT_ASSERT_EQUAL( indices1.size(), indices2.size() );
+    CPPUNIT_ASSERT_EQUAL( grad1.size(), grad2.size() );
+    CPPUNIT_ASSERT_EQUAL( hess2.size(), hess1.size() * (hess1.size()+1) / 2 );
+    unsigned h2step = indices2.size();
+    msq_std::vector<Matrix3D>::const_iterator h2i = hess2.begin();
+
+    for (size_t k = 0; k < indices2.size(); ++k) {
+      msq_std::vector<size_t>::iterator it =
+        msq_std::find( indices1.begin(), indices1.end(), indices2[k] );
+      CPPUNIT_ASSERT( it != indices1.end() );
+      size_t m = it - indices1.begin();
+      CPPUNIT_ASSERT_VECTORS_EQUAL( grad1[m], grad2[k], 1e-6 );
+      CPPUNIT_ASSERT_MATRICES_EQUAL( Matrix3D(hess1[m]), *h2i, 1e-6 ); 
+      h2i += h2step--;
+    }
+  }
+}
+
+void QualityMetricTester::compare_eval_with_diag_and_eval_with_hessian( QualityMetric* qm )
+{
+  PatchData pd;
+ 
+  CPPUNIT_ASSERT( !types.empty() );
+  for (size_t i = 0; i < types.size(); ++i) {
+    get_nonideal_element( types[i], pd, true );
+    compare_eval_with_diag_and_eval_with_hessian( qm, pd );
   }
 }
 

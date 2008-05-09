@@ -59,6 +59,7 @@ private:
   CPPUNIT_TEST (test_eval_with_indices);
   CPPUNIT_TEST (test_eval_with_gradient);
   CPPUNIT_TEST (test_eval_with_hessian);
+  CPPUNIT_TEST (test_eval_with_hessian_diagonal);
   CPPUNIT_TEST (test_location_invariant);
   CPPUNIT_TEST (test_scale_invariant);
   CPPUNIT_TEST (test_orient_invariant);
@@ -137,6 +138,11 @@ public:
     tester.compare_eval_with_indices_and_eval_with_hessian( &mMetric );
     tester.compare_eval_with_grad_and_eval_with_hessian( &mMetric );
     tester.compare_analytical_and_numerical_hessians( &mMetric );
+  }
+  
+  void test_eval_with_hessian_diagonal()
+  {
+    tester.compare_eval_with_diag_and_eval_with_hessian( &mMetric );
   }
   
   void test_location_invariant()

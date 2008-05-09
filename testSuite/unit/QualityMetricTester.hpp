@@ -191,6 +191,9 @@ public:
     /** compare results of evaluate_with_gradient() and evaluate_with_Hessian() methods */
   void compare_eval_with_grad_and_eval_with_hessian( QualityMetric* qm );
   void compare_eval_with_grad_and_eval_with_hessian( QualityMetric* qm, PatchData& pd );
+    /** compare results of evaluate_with_Hessian_diagonal() and evaluate_with_Hessian() methods */
+  void compare_eval_with_diag_and_eval_with_hessian( QualityMetric* qm );
+  void compare_eval_with_diag_and_eval_with_hessian( QualityMetric* qm, PatchData& pd );
     /** compare analytical and numerical gradient results */
   void compare_analytical_and_numerical_gradients( QualityMetric* qm );
   void compare_analytical_and_numerical_gradients( QualityMetric* qm, PatchData& pd );

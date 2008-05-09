@@ -225,9 +225,10 @@ namespace Mesquite
             { return 0.5*(det+sqrt(det*det+4*delta*delta)); }
   //protected:
 
-      /** \brief Set gradient values to zero for fixed vertices.
+      /** \brief Remove from vector any gradient terms corresponding 
+       *         to a fixed vertex.
        *
-       * Zero gradients for fixed vertices.
+       * Remove terms from vector that correspond to fixed vertices.
        *\param type            Element type
        *\param fixed_vertices  Bit flags, one per vertex, 1 if
        *                       vertex is fixed.
@@ -237,9 +238,25 @@ namespace Mesquite
                                           uint32_t fixed_vertices, 
                                           msq_std::vector<Vector3D>& gradients );
 
-      /** \brief Set Hessian values to zero for fixed vertices.
+      /** \brief Remove from vectors any gradient terms and hessian
+       *         diagonal blcoks corresponding to a fixed vertex.
        *
-       * Zero Hessians for fixed vertices.
+       * Remove terms from vector that correspond to fixed vertices.
+       *\param type            Element type
+       *\param fixed_vertices  Bit flags, one per vertex, 1 if
+       *                       vertex is fixed.
+       *\param gradients       Array of gradients
+       *\param hess_diagonal_blocks   Array of diagonal blocks of Hessian matrix.
+       */
+      static void remove_fixed_diagonals( EntityTopology type, 
+                                          uint32_t fixed_vertices, 
+                                          msq_std::vector<Vector3D>& gradients,
+                                          msq_std::vector<SymMatrix3D>& hess_diagonal_blocks );
+
+      /** \brief Remove from vector any Hessian blocks corresponding 
+       *         to a fixed vertex.
+       *
+       * Remove blocks from vector that correspond to fixed vertices.
        *\param type            Element type
        *\param fixed_vertices  Bit flags, one per vertex, 1 if
        *                       vertex is fixed.
