@@ -145,6 +145,9 @@ class MsqIMeshImpl : public MsqIMesh
     virtual void set_active_set( void* element_set, 
                                  iBase_EntityType type,
                                  MsqError& );
+  
+    virtual iMesh_Instance get_imesh_instance() const;
+    virtual iBase_EntitySetHandle get_entity_set() const;
     
 
       /**\brief Get dimension of vertex coordinates (2D vs. 3D). */
@@ -617,6 +620,15 @@ void MsqIMeshImpl::set_int_tag( iBase_TagHandle tag,
   }
 }
 
+iMesh_Instance MsqIMeshImpl::get_imesh_instance() const
+{
+  return meshInstance;
+}
+
+iBase_EntitySetHandle MsqIMeshImpl::get_entity_set() const
+{
+  return elementSet;
+}
 
 void MsqIMeshImpl::set_active_set( iBase_EntitySetHandle elem_set, 
                                    iBase_EntityType type_in,

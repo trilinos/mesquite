@@ -81,6 +81,9 @@ public:
                                iBase_EntityType element_dimension,
                                MsqError& err ) = 0;
   
+  virtual iMesh_Instance get_imesh_instance() const = 0;
+  virtual iBase_EntitySetHandle get_entity_set() const = 0;
+  
   virtual ~MsqIMesh() = 0;
 };  
 
