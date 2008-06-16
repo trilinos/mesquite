@@ -121,7 +121,7 @@ EdgeIterator::EdgeIterator( PatchData* p, MsqError& err )
 
 bool EdgeIterator::is_at_end() const
 {
-  return vertIdx >= patchPtr->num_free_vertices() || 
+  return vertIdx >= patchPtr->num_nodes() || 
          adjIter == adjList.end();
 }
 
@@ -138,7 +138,7 @@ void EdgeIterator::step( MsqError& err )
     ++adjIter;
   }
   
-  while (adjIter == adjList.end() && ++vertIdx < patchPtr->num_free_vertices())
+  while (adjIter == adjList.end() && ++vertIdx < patchPtr->num_nodes())
   {
     get_adjacent_vertices( err );  MSQ_ERRRTN(err);
   }
