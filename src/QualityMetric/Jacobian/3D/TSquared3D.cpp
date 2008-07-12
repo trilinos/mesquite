@@ -49,5 +49,18 @@ bool TSquared3D::evaluate( const MsqMatrix<3,3>& A,
 }
 
 
+bool TSquared3D::evaluate_with_grad( const MsqMatrix<3,3>& A, 
+                                     const MsqMatrix<3,3>& W, 
+                                     double& result, 
+                                     MsqMatrix<3,3>& wrt_A,
+                                     MsqError& )
+{
+  MsqMatrix<3,3> Winv = inverse(W);
+  MsqMatrix<3,3> T = A * Winv;
+  result = sqr_Frobenius( T );
+  wrt_A = 2*T*transpose(Winv);
+  return true;
+}
+
 
 } // namespace Mesquite

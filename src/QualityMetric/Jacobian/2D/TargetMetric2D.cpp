@@ -1,7 +1,7 @@
 /* ***************************************************************** 
     MESQUITE -- The Mesh Quality Improvement Toolkit
 
-    Copyright 2006 Sandia National Laboratories.  Developed at the
+    Copyright 2008 Sandia National Laboratories.  Developed at the
     University of Wisconsin--Madison under SNL contract number
     624796.  The U.S. Government and the University of Wisconsin
     retain certain rights to this software.
@@ -20,43 +20,39 @@
     (lgpl.txt) along with this library; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  
-    (2006) kraftche@cae.wisc.edu
+    (2008) kraftche@cae.wisc.edu
    
   ***************************************************************** */
 
 
-/** \file TSquared2D.cpp
+/** \file TargetMetric2D.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
-#include "Mesquite.hpp"
-#include "TSquared2D.hpp"
-#include "MsqMatrix.hpp"
+#include "TargetMetric2D.hpp"
+#include "TargetMetricDimIndep.hpp"
 
 namespace Mesquite {
 
-bool TSquared2D::evaluate( const MsqMatrix<2,2>& A, 
-                          const MsqMatrix<2,2>& W, 
-                          double& result, MsqError& )
+TargetMetric2D::~TargetMetric2D() {}
+     
+
+bool TargetMetric2D::evaluate_with_grad( const MsqMatrix<2,2>& A,
+                                         const MsqMatrix<2,2>& W,
+                                         double& result,
+                                         MsqMatrix<2,2>& wrt_A,
+                                         MsqError& err )
 {
-  MsqMatrix<2,2> T = A * inverse(W);
-  result = sqr_Frobenius( T );
+  bool valid = evaluate( A, W, result, err );
+  if (MSQ_CHKERR(err) || !valid)
+    return valid;
+  
+  wrt_A(0,0) = do_finite_difference( 0, 0, this, A, W, result, err ); MSQ_ERRZERO(err);
+  wrt_A(0,1) = do_finite_difference( 0, 1, this, A, W, result, err ); MSQ_ERRZERO(err);
+  wrt_A(1,0) = do_finite_difference( 1, 0, this, A, W, result, err ); MSQ_ERRZERO(err);
+  wrt_A(1,1) = do_finite_difference( 1, 1, this, A, W, result, err ); MSQ_ERRZERO(err);
   return true;
 }
-
-bool TSquared2D::evaluate_with_grad( const MsqMatrix<2,2>& A, 
-                                     const MsqMatrix<2,2>& W, 
-                                     double& result, 
-                                     MsqMatrix<2,2>& wrt_A,
-                                     MsqError& )
-{
-  MsqMatrix<2,2> Winv = inverse(W);
-  MsqMatrix<2,2> T = A * Winv;
-  result = sqr_Frobenius( T );
-  wrt_A = 2*T*transpose(Winv);
-  return true;
-}
-
-
+  
 } // namespace Mesquite

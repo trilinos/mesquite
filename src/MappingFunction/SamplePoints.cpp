@@ -86,6 +86,10 @@ unsigned SamplePoints::num_sample_points( EntityTopology type, unsigned bits )
   for (unsigned i = 0; i < dim; ++i)
     if (bits & (1 << i))
       count += TopologyInfo::adjacent( type, i );
+    // special case for pyramids: we never want to evaluate at
+    // the apex of the pyramid
+  if (type == PYRAMID && bits&1)
+    --count;
   return count;
 }
 
@@ -98,7 +102,10 @@ void SamplePoints::location_from_sample_number( EntityTopology element_type,
   const unsigned dim = TopologyInfo::dimension( element_type );
   for (unsigned i = 0; i < dim; ++i) {
     if ( sample_topology_bits & (1 << i)) {
-      const unsigned n =  TopologyInfo::adjacent( element_type, i );
+      unsigned n =  TopologyInfo::adjacent( element_type, i );
+        // Skip apex for pyramid elements
+      if (element_type == PYRAMID && i == 0)
+        --n;
       if (n > sample_point_number) {
         entity_number = sample_point_number;
         entity_dimension = i;
@@ -127,6 +134,11 @@ unsigned SamplePoints::sample_number_from_location( EntityTopology element_type,
   for (unsigned i = 0; i < entity_dimension; ++i) 
     if (sample_topology_bits & (1 << i)) 
       result += TopologyInfo::adjacent( element_type, i );
+  
+    // skip apex for pyramids
+  if (element_type == PYRAMID && entity_dimension > 0)
+    --result;
+    
   return result;
 }
 

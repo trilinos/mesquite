@@ -43,7 +43,17 @@ class Target2DShapeSizeOrient : public TargetMetric2D
 {
   public:
   MESQUITE_EXPORT virtual
-  bool evaluate( const MsqMatrix<2,2>& A, const MsqMatrix<2,2>& W, double& result, MsqError& err );
+  bool evaluate( const MsqMatrix<2,2>& A, 
+                 const MsqMatrix<2,2>& W, 
+                 double& result, 
+                 MsqError& err );
+
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_grad( const MsqMatrix<2,2>& A, 
+                           const MsqMatrix<2,2>& W, 
+                           double& result, 
+                           MsqMatrix<2,2>& wrt_A, 
+                           MsqError& err );
 };
 
 

@@ -99,6 +99,7 @@ msq_test_SOURCES = msq_test_main.cpp \
 	SymMatrix3DTest.cpp \
 	TagVertexMeshTest.cpp \
 	Target2DTest.cpp \
+	Target3DTest.cpp \
 	TargetReadWriteTest.cpp \
 	TerminationCriterionTest.cpp \
 	TetLagrangeShapeTest.cpp \

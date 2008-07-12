@@ -49,6 +49,21 @@ bool Target2DShapeSizeOrient::evaluate( const MsqMatrix<2,2>& A,
   return true;
 }
 
+bool Target2DShapeSizeOrient::evaluate_with_grad( const MsqMatrix<2,2>& A, 
+                                 const MsqMatrix<2,2>& W, 
+                                 double& result, 
+                                 MsqMatrix<2,2>& wrt_A,
+                                 MsqError&  )
+{
+  MsqMatrix<2,2> Winv = inverse(W);
+  MsqMatrix<2,2> T = A * Winv;
+  T(0,0) -= 1.0;
+  T(1,1) -= 1.0;
+  result = sqr_Frobenius( T );
+  wrt_A = 2 * T * transpose(Winv);
+  return true;
+}
+
 
 
 } // namespace Mesquite

@@ -53,6 +53,12 @@ public:
                  double& result, 
                  MsqError& err );
   
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_grad( const MsqMatrix<3,3>& A, 
+                           const MsqMatrix<3,3>& W, 
+                           double& result, 
+                           MsqMatrix<3,3>& wrt_A, 
+                           MsqError& err );
 };
 
 

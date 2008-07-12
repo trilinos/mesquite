@@ -45,10 +45,20 @@ public:
   enum { MATRIX_DIM = 3 };
 
   MESQUITE_EXPORT virtual
-  ~TargetMetric3D() {}
+  ~TargetMetric3D();
 
   MESQUITE_EXPORT virtual
-  bool evaluate( const MsqMatrix<3,3>& A, const MsqMatrix<3,3>& W, double& result, MsqError& err ) = 0;
+  bool evaluate( const MsqMatrix<3,3>& A, 
+                 const MsqMatrix<3,3>& W, 
+                 double& result, 
+                 MsqError& err ) = 0;
+  
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_grad( const MsqMatrix<3,3>& A,
+                           const MsqMatrix<3,3>& W,
+                           double& result,
+                           MsqMatrix<3,3>& deriv_wrt_A,
+                           MsqError& err );
 };
 
 } // namespace Mesquite
