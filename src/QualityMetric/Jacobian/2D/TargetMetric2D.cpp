@@ -32,6 +32,7 @@
 
 #include "TargetMetric2D.hpp"
 #include "TargetMetricDimIndep.hpp"
+#include "MsqError.hpp"
 
 namespace Mesquite {
 
