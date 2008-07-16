@@ -25,36 +25,52 @@
   ***************************************************************** */
 
 
-/** \file TargetMetric2D.hpp
+/** \file TargetMetricDimIndep.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
-#include "TargetMetric2D.hpp"
-#include "TargetMetricDimIndep.hpp"
-#include "MsqError.hpp"
+#ifndef TARGET_METRIC_DIM_INTEP_HPP
+#define TARGET_METRIC_DIM_INTEP_HPP
+
 #include "MsqMatrix.hpp"
+#include "MsqError.hpp"
+#include <limits>
 
 namespace Mesquite {
 
-TargetMetric2D::~TargetMetric2D() {}
-     
-
-bool TargetMetric2D::evaluate_with_grad( const MsqMatrix<2,2>& A,
-                                         const MsqMatrix<2,2>& W,
-                                         double& result,
-                                         MsqMatrix<2,2>& wrt_A,
-                                         MsqError& err )
+template <typename TargetMetric>
+static inline double
+do_finite_difference( int r, int c, TargetMetric* metric, 
+         MsqMatrix<TargetMetric::MATRIX_DIM, TargetMetric::MATRIX_DIM> A, 
+         const MsqMatrix<TargetMetric::MATRIX_DIM, TargetMetric::MATRIX_DIM>& W,
+         double value, MsqError& err )
 {
-  bool valid = evaluate( A, W, result, err );
-  if (MSQ_CHKERR(err) || !valid)
-    return valid;
+  const double init = A(r,c);
+  bool valid;
+  double diff_value;
+  for (double step = 1e-6; step < std::numeric_limits<double>::epsilon(); step *= 0.1) {
+    A(r,c) = init + step;
+    valid = metric->evaluate( A, W, diff_value, err ); MSQ_ERRZERO(err);
+    if (valid)
+      return (diff_value - value) / step;
+  }
   
-  wrt_A(0,0) = do_finite_difference( 0, 0, this, A, W, result, err ); MSQ_ERRZERO(err);
-  wrt_A(0,1) = do_finite_difference( 0, 1, this, A, W, result, err ); MSQ_ERRZERO(err);
-  wrt_A(1,0) = do_finite_difference( 1, 0, this, A, W, result, err ); MSQ_ERRZERO(err);
-  wrt_A(1,1) = do_finite_difference( 1, 1, this, A, W, result, err ); MSQ_ERRZERO(err);
-  return true;
+    // If we couldn't find a valid step, try stepping in the other
+    // direciton
+  for (double step = 1e-6; step > std::numeric_limits<double>::epsilon(); step *= 0.1) {
+    A(r,c) = init - step;
+    valid = metric->evaluate( A, W, diff_value, err ); MSQ_ERRZERO(err);
+    if (valid)
+      return (value - diff_value) / step;
+  }
+  
+    // If that didn't work either, then give up.
+  MSQ_SETERR(err)("No valid step size for finite difference of 2D target metric.",
+                  MsqError::INTERNAL_ERROR);
+  return 0.0;
 }
-  
+
 } // namespace Mesquite
+
+#endif
