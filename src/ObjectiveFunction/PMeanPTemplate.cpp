@@ -94,7 +94,7 @@ double PMeanPTemplate::get_value( double power_sum,
       break;
   }
   
-  return result/global_count;
+  return global_count ? result/global_count : 0.0;
 }
 
 bool PMeanPTemplate::evaluate( EvalType type, 
