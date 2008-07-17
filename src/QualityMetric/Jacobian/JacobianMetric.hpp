@@ -109,6 +109,14 @@ public:
                  msq_std::vector<size_t>& indices,
                  MsqError& err );
                  
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_gradient( PatchData& pd,
+                 size_t handle,
+                 double& value,
+                 msq_std::vector<size_t>& indices,
+                 msq_std::vector<Vector3D>& gradient,
+                 MsqError& err );
+
   MESQUITE_EXPORT 
   const SamplePoints* get_sample_points() const 
     { return samplePts; }

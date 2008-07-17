@@ -62,6 +62,12 @@ public:
                               
   enum ElemTypeGroup { SIMPLICIES, // triangle and tetrahedron
                        NON_MIXED_FE, // tri, quad, tet, hex
+                       TWO_D,        // tri, quad, polygon
+                       TWO_D_FE,     // tri, quad
+                       THREE_D,      // tet, hex, pyr, wedge, septahedron, polyhedron
+                       THREE_D_FE,   // tet, hex, pyr, wedge, septahedron
+                       THREE_D_NON_MIXED_FE,   // tet, hex, 
+                       THREE_D_FE_EXCEPT_SEPTAHEDRON, // tet, hex, pyr, wedge
                        ALL_FE_EXCEPT_SEPTAHEDRON, // tri, quad, tet, hex, pyr, wedge
                        ALL_FE, // everything except polygon and polyhedron
                        ALL }; // everything (including polyhedron)

@@ -82,12 +82,16 @@ bool JacobianMetric::evaluate( PatchData& pd, size_t handle, double& value, MsqE
   return evaluate_with_indices( pd, handle, value, mIndices, err );
 }
 
+
 bool JacobianMetric::evaluate_with_indices( PatchData& pd,
                                             size_t handle,
                                             double& value,
                                             msq_std::vector<size_t>& indices,
                                             MsqError& err )
 {
+    // make sure reinterpret_casts below are valid
+  assert( sizeof(MsqMatrix<3,1>) == sizeof(Vector3D) );
+
   unsigned s = ElemSampleQM::sample( handle );
   size_t   e = ElemSampleQM::  elem( handle );
   MsqMeshEntity& elem = pd.element_by_index( e );
@@ -172,6 +176,104 @@ bool JacobianMetric::evaluate_with_indices( PatchData& pd,
     MsqMatrix<2,2> A, W;
     surface_to_2d( App, Wp, A, W );
     rval = metric2D->evaluate( A, W, value, err ); MSQ_ERRZERO(err);
+  }
+  
+    // apply target weight to value
+  double ck = weightCalc->get_weight( pd, e, samplePts, s, err ); MSQ_ERRZERO(err);
+  value *= ck;
+  
+    // remove indices for non-free vertices
+  indices.erase( msq_std::remove_if( indices.begin(), indices.end(), 
+    msq_std::bind2nd(msq_std::greater_equal<size_t>(),pd.num_free_vertices())),
+    indices.end() );
+  
+  return rval;
+}
+                 
+
+bool JacobianMetric::evaluate_with_gradient( 
+                                           PatchData& pd,
+                                           size_t handle,
+                                           double& value,
+                                           msq_std::vector<size_t>& indices,
+                                           msq_std::vector<Vector3D>& gradient,
+                                           MsqError& err )
+{
+  unsigned s = ElemSampleQM::sample( handle );
+  size_t   e = ElemSampleQM::  elem( handle );
+  MsqMeshEntity& elem = pd.element_by_index( e );
+  EntityTopology type = elem.get_element_type();
+  unsigned dim, num;
+  samplePts->location_from_sample_number( type, s, dim, num );
+  unsigned edim = TopologyInfo::dimension( type );
+  const size_t* conn = elem.get_vertex_index_array();
+  
+  if (edim != 3)
+    return QualityMetric::evaluate_with_gradient( pd, handle, value, indices, gradient, err );
+  
+  unsigned bits = pd.higher_order_node_bits( e );
+  
+  const MappingFunction* func = pd.get_mapping_function( type );
+  if (!func) {
+    MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
+    return false;
+  }
+  
+  indices.clear();
+  mDerivs.clear();
+  switch (dim) {
+    case 0:
+      func->derivatives_at_corner( num, bits, indices, mDerivs, err );
+      break;
+    case 1:
+      func->derivatives_at_mid_edge( num, bits, indices, mDerivs, err );
+      break;
+    case 2:
+      if (edim != 2) {
+        func->derivatives_at_mid_face( num, bits, indices, mDerivs, err );
+        break;
+      }
+    case 3:
+      func->derivatives_at_mid_elem( bits, indices, mDerivs, err );
+      break;
+  }
+  MSQ_ERRZERO( err );
+  std::vector<double>::const_iterator d = mDerivs.begin();
+  
+  bool rval;
+  if (edim == 3) { // 3x3 or 3x2 targets ?
+    if (!metric3D) {
+      MSQ_SETERR(err)("No 3D metric for Jacobian-based metric.\n", MsqError::UNSUPPORTED_ELEMENT );
+      return false;
+    }
+  
+    Vector3D c[3] = { Vector3D(0,0,0), Vector3D(0,0,0), Vector3D(0,0,0) };
+    for (size_t i = 0; i < indices.size(); ++i) {
+        // Convert from indices into element connectivity list to
+        // indices into vertex array in patch data.
+      indices[i] = conn[indices[i]];
+        // calculate Jacobian
+      Vector3D coords = pd.vertex_by_index( indices[i] );
+      c[0] += *d * coords; ++d;
+      c[1] += *d * coords; ++d;
+      c[2] += *d * coords; ++d;
+    }
+    MsqMatrix<3,3> A( (MsqMatrix<3,1>*)c );
+
+    MsqMatrix<3,3> W, dmdA;
+    targetCalc->get_3D_target( pd, e, samplePts, s, W, err ); MSQ_ERRZERO(err);
+    rval = metric3D->evaluate_with_grad( A, W, value, dmdA, err ); MSQ_ERRZERO(err);
+    gradient.clear();
+    d = mDerivs.begin();
+    for (size_t i =0; i < indices.size(); ++i, d += 3) {
+        // if vertex is not fixed, include in gradient
+      if (indices[i] < pd.num_free_vertices())
+        gradient.push_back(( (dmdA * MsqMatrix<3,1>(&*d)).data() ));
+    }
+  }
+  else {
+    assert(0);
+    return false;
   }
   
     // apply target weight to value

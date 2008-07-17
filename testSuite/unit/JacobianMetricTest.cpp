@@ -43,6 +43,8 @@ Unit testing for the JacobianMetric class
 #include "PlanarDomain.hpp"
 #include "SamplePoints.hpp"
 #include "PatchData.hpp"
+#include "Target3DShapeSizeOrient.hpp"
+#include "Target2DShapeSizeOrient.hpp"
 
 #ifdef MSQ_USE_OLD_IO_HEADERS
 #include <iostream.h>
@@ -75,6 +77,8 @@ class JacobianMetricTest : public CppUnit::TestFixture
   CPPUNIT_TEST (test_evaluate_3D_face);
   CPPUNIT_TEST (test_evaluate_with_indices);
   CPPUNIT_TEST (test_evaluate_fixed_indices);
+  CPPUNIT_TEST (test_gradient_3D);
+  CPPUNIT_TEST (test_evaluate_with_gradient);
   CPPUNIT_TEST_SUITE_END();
 public:
   JacobianMetricTest() : 
@@ -98,6 +102,8 @@ public:
   void test_evaluate_3D_elem();
   void test_evaluate_with_indices();
   void test_evaluate_fixed_indices();
+  void test_gradient_3D();
+  void test_evaluate_with_gradient();
   
 private:
   void test_2d_eval_ortho_quad( unsigned dim );
@@ -460,5 +466,145 @@ void JacobianMetricTest::test_evaluate_fixed_indices()
   
   JacobianMetric m( &corners, &tc, &wc, &metric_2d, &metric_3d );
   tester.test_get_indices_fixed( &m );
+}
+
+
+// wrapper class to force numeric approximation of derivatives
+template <class Base>
+class NumericalTarget : public Base
+{
+public:
+  
+  NumericalTarget( Base* real_metric ) : mMetric(real_metric) {}
+
+  ~NumericalTarget() {}
+
+  bool evaluate( const MsqMatrix<Base::MATRIX_DIM,Base::MATRIX_DIM>& A, 
+                 const MsqMatrix<Base::MATRIX_DIM,Base::MATRIX_DIM>& W, 
+                 double& result, 
+                 MsqError& err )
+  { return mMetric->evaluate( A, W, result, err ); }
+private:
+  Base* mMetric;
+};
+
+
+void JacobianMetricTest::test_evaluate_with_gradient()
+{
+  SamplePoints corners( true, false, false, false );
+  Target3DShapeSizeOrient test_metric_3D;
+  Target2DShapeSizeOrient test_metric_2D;
+  NumericalTarget<TargetMetric3D> num_metric_3D( &test_metric_3D );
+  NumericalTarget<TargetMetric2D> num_metric_2D( &test_metric_2D );
+  
+  IdealTargetCalculator tc;
+  UnitWeight wc;
+  JacobianMetric m( &corners, &tc, &wc, &num_metric_2D, &num_metric_3D );
+
+  tester.compare_eval_with_indices_and_eval_with_gradient( &m );
+  tester.compare_analytical_and_numerical_gradients( &m );
+  tester.test_ideal_element_zero_gradient( &m,true );
+}
+
+class TestGradTargetMetric3D : public TargetMetric3D
+{
+  public:
+  
+    bool evaluate( const MsqMatrix<3,3>& A, const MsqMatrix<3,3>&, double& result, MsqError& err )
+      { result = sqr_Frobenius(A); return true; }
+    
+    bool evaluate_with_grad( const MsqMatrix<3,3>& A, 
+                             const MsqMatrix<3,3>&,
+                             double& result,
+                             MsqMatrix<3,3>& d,
+                             MsqError& err )
+    {
+      result = sqr_Frobenius(A);
+      d = 2*A;
+      return true;
+    }
+};
+
+void JacobianMetricTest::test_gradient_3D()
+{
+  MsqPrintError err(msq_stdio::cout);
+  
+    // check for expected value at center of flattened hex
+  
+    // construct flattened hex
+  const double z = 0.5;
+  const double vertices[] = { 0.0, 0.0, 0.0,
+                              1.0, 0.0, 0.0,
+                              1.0, 1.0, 0.0,
+                              0.0, 1.0, 0.0,
+                              0.0, 0.0, z,
+                              1.0, 0.0, z,
+                              1.0, 1.0, z,
+                              0.0, 1.0, z };
+  size_t conn[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+  PatchData pd;
+  pd.fill( 8, vertices, 1, HEXAHEDRON, conn, 0, err );
+  ASSERT_NO_ERROR(err);
+  
+    // calculate Jacobian matrix at element center
+  const double corner_xi[8][3] = { { -1, -1, -1 },
+                                   {  1, -1, -1 },
+                                   {  1,  1, -1 },
+                                   { -1,  1, -1 },
+                                   { -1, -1,  1 },
+                                   {  1, -1,  1 },
+                                   {  1,  1,  1 },
+                                   { -1,  1,  1 } };
+  MsqMatrix<8,3> coeff_derivs(&corner_xi[0][0]);
+  coeff_derivs *= 0.125;  // derivatives of trilinear map at hex center
+  MsqMatrix<8,3> coords( vertices );
+  MsqMatrix<3,3> J = transpose(coords) * coeff_derivs;
+    // calculate expected metric value
+  const double expt_val = sqr_Frobenius( J );
+    // calculate derivative for each element vertex
+  MsqVector<3> expt_grad[8];
+  for (int v = 0; v < 8; ++v)
+    expt_grad[v] = 2 * J * transpose( coeff_derivs.row(v) );
+    
+  
+    // construct metric
+  LinearFunctionSet lfs;
+  pd.set_mapping_functions( &lfs );
+  SamplePoints center( false, false, false, true );
+  TestGradTargetMetric3D tm;
+  IdealTargetCalculator tc;
+  UnitWeight wc;
+  JacobianMetric m( &center, &tc, &wc, 0, &tm );
+  
+    // evaluate metric
+  double act_val;
+  msq_std::vector<size_t> indices;
+  msq_std::vector<Vector3D> act_grad;
+  m.evaluate_with_gradient( pd, 0, act_val, indices, act_grad, err );
+  ASSERT_NO_ERROR(err);
+  
+    // compare values
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( expt_val, act_val, 1e-10 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[0]].data()), act_grad[0], 1e-10 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[1]].data()), act_grad[1], 1e-10 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[2]].data()), act_grad[2], 1e-10 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[3]].data()), act_grad[3], 1e-10 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[4]].data()), act_grad[4], 1e-10 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[5]].data()), act_grad[5], 1e-10 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[6]].data()), act_grad[6], 1e-10 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[7]].data()), act_grad[7], 1e-10 );
+
+    // check numerical approx of gradient
+  m.QualityMetric::evaluate_with_gradient( pd, 0, act_val, indices, act_grad, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( expt_val, act_val, 1e-10 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[0]].data()), act_grad[0], 1e-5 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[1]].data()), act_grad[1], 1e-5 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[2]].data()), act_grad[2], 1e-5 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[3]].data()), act_grad[3], 1e-5 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[4]].data()), act_grad[4], 1e-5 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[5]].data()), act_grad[5], 1e-5 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[6]].data()), act_grad[6], 1e-5 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[7]].data()), act_grad[7], 1e-5 );
 }
 

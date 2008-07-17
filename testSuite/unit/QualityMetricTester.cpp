@@ -54,6 +54,26 @@ static msq_std::vector<EntityTopology> types_in_group( QualityMetricTester::Elem
     case QualityMetricTester::SIMPLICIES:
       types.push_back(TETRAHEDRON);
       types.push_back(TRIANGLE);
+      break;
+      
+    case QualityMetricTester::THREE_D:
+      types.push_back( POLYHEDRON );
+    case QualityMetricTester::THREE_D_FE:
+      types.push_back( SEPTAHEDRON );
+    case QualityMetricTester::THREE_D_FE_EXCEPT_SEPTAHEDRON:
+      types.push_back( PYRAMID );
+      types.push_back( PRISM );
+    case QualityMetricTester::THREE_D_NON_MIXED_FE:
+      types.push_back( HEXAHEDRON );
+      types.push_back(TETRAHEDRON);
+      break;
+      
+    case QualityMetricTester::TWO_D:
+      types.push_back( POLYGON );
+    case QualityMetricTester::TWO_D_FE:
+      types.push_back( TRIANGLE );
+      types.push_back( QUADRILATERAL );
+      break;
   }
   msq_std::reverse( types.begin(), types.end() );
   return types;
