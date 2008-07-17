@@ -140,7 +140,7 @@ template <unsigned L>
 class MsqVector : public MsqMatrix<L,1>
 {
 public:
-  MsqVector()                                         { MsqMatrix<L,1>::set(0); }
+  MsqVector()                                         { }
   MsqVector( double v )                               { MsqMatrix<L,1>::set(v); }
   MsqVector( const double* v )                        { MsqMatrix<L,1>::set(v); }
   MsqVector( const char* s )                          { MsqMatrix<L,1>::set(s); }
