@@ -83,7 +83,7 @@ public:
   virtual 
   EntityTopology element_topology() const = 0;
 
-  /** @name Mapping Function Coefficients
+  /**\name Mapping Function Coefficients
    * This group of methods return the list of scalar values (\f$N_i\f$'s) resulting
    * from the evaluation of the mapping function coefficient terms
    * \f$N_1(\vec{\xi}), N_2(\vec{\xi}), \ldots, N_n(\vec{\xi})\f$
@@ -147,7 +147,7 @@ public:
                                  MsqError& err ) const = 0;
   /*@}*/
 
-  /** @name Mapping Function Derivatives
+  /**\name Mapping Function Derivatives
    * This group of methods return the partial derivatives of the mapping
    * function coefficient terms
    * \f$\nabla N_1(\vec{\xi}), \nabla N_2(\vec{\xi}), \ldots, \nabla N_n(\vec{\xi})\f$
