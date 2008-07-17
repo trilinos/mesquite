@@ -178,8 +178,8 @@ static void test_topo_common( bool corners,
     // initialize everything
   seen[0].resize( TopologyInfo::corners(type), false );
   seen[1].resize( TopologyInfo::edges(type), false );
-  if (corners)
-    expected_by_dim[0] = TopologyInfo::corners( type );
+  if (corners) 
+    expected_by_dim[0] = type == PYRAMID ? 4 : TopologyInfo::corners( type );
   if (edges)
     expected_by_dim[1] = TopologyInfo::edges( type );
   if (TopologyInfo::dimension(type) == 2) {

@@ -136,7 +136,7 @@ unsigned SamplePoints::sample_number_from_location( EntityTopology element_type,
       result += TopologyInfo::adjacent( element_type, i );
   
     // skip apex for pyramids
-  if (element_type == PYRAMID && entity_dimension > 0)
+  if (element_type == PYRAMID && (sample_topology_bits & 1) && result > 3)
     --result;
     
   return result;
