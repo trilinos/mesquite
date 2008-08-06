@@ -64,7 +64,7 @@ using std::ostream;
 #include "ReferenceMesh.hpp"
 #include "RefMeshTargetCalculator.hpp"
 
-#include "JacobianMetric.hpp"
+#include "TMPQualityMetric.hpp"
 #include "ElementPMeanP.hpp"
 #include "VertexPMeanP.hpp"
   
@@ -152,7 +152,7 @@ static int do_smoother( const char* input_file,
   }
     
   UnitWeight wc;
-  JacobianMetric jacobian_metric( &samples, tc.get(), &wc, target_metric, 0 );
+  TMPQualityMetric jacobian_metric( &samples, tc.get(), &wc, target_metric, 0 );
   ElementPMeanP elem_avg( of_power, &jacobian_metric );
   VertexPMeanP vtx_avg( of_power, &jacobian_metric );
   QualityMetric* mmetrics[] = { &jacobian_metric, &elem_avg, &vtx_avg, &jacobian_metric };

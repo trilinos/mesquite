@@ -61,9 +61,9 @@ include src/QualityMetric/Makefile.am
 include src/QualityMetric/DFT/Makefile.am
 include src/QualityMetric/Shape/Makefile.am
 include src/QualityMetric/Smoothness/Makefile.am
-include src/QualityMetric/Jacobian/Makefile.am
-include src/QualityMetric/Jacobian/2D/Makefile.am
-include src/QualityMetric/Jacobian/3D/Makefile.am
+include src/QualityMetric/TMP/Makefile.am
+include src/QualityMetric/TMP/2D/Makefile.am
+include src/QualityMetric/TMP/3D/Makefile.am
 include src/QualityMetric/Untangle/Makefile.am
 include src/QualityMetric/Volume/Makefile.am
 include src/TargetCalculator/Makefile.am

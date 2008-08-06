@@ -34,7 +34,7 @@
 #include "QualityMetricTester.hpp"
 #include "cppunit/extensions/HelperMacros.h"
 #include "TargetMetric3D.hpp"
-#include "JacobianMetric.hpp"
+#include "TMPQualityMetric.hpp"
 #include "SamplePoints.hpp"
 #include "IdealTargetCalculator.hpp"
 #include "UnitWeight.hpp"
@@ -66,7 +66,7 @@ private:
   IdealTargetCalculator target;
   UnitWeight weight;
   Metric test_metric;
-  JacobianMetric metric;
+  TMPQualityMetric metric;
   bool sizeInvariant, orientInvariant, Barrier;
   double idealVal;
 public:

@@ -42,7 +42,7 @@
 #include "UnitWeight.hpp"
 #include "ReferenceMesh.hpp"
 #include "RefMeshTargetCalculator.hpp"
-#include "JacobianMetric.hpp"
+#include "TMPQualityMetric.hpp"
 #include "InstructionQueue.hpp"
 #include "IdealTargetCalculator.hpp"
 #include "MeshWriter.hpp"
@@ -444,7 +444,7 @@ bool run_smoother( mesh_reader_t input_mesh,
     corners.sample_at( TRIANGLE, 2 );
   }
     
-  JacobianMetric metric( &corners, target, &weight, target_metric, 0 );
+  TMPQualityMetric metric( &corners, target, &weight, target_metric, 0 );
   
   TerminationCriterion outer, inner;
   if (LOCAL_PATCHES) {

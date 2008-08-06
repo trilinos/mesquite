@@ -39,7 +39,7 @@
 #include "UnitWeight.hpp"
 #include "IdealTargetCalculator.hpp"
 #include "SamplePoints.hpp"
-#include "JacobianMetric.hpp"
+#include "TMPQualityMetric.hpp"
 #include "PlanarDomain.hpp"
 #include "LinearFunctionSet.hpp"
 #include "MeshImpl.hpp"
@@ -364,7 +364,7 @@ void QualityAssessorTest::test_basic_stats_sample()
   UnitWeight wc;
   IdealTargetCalculator tc;
   SamplePoints sp(true,false,false,false);
-  JacobianMetric metric( &sp, &tc,&wc, &tm, 0 );
+  TMPQualityMetric metric( &sp, &tc,&wc, &tm, 0 );
   MetricLogger logger(&metric);
   QualityAssessor qa(&logger);
    qa.disable_printing_results();

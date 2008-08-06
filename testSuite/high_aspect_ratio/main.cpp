@@ -41,7 +41,7 @@
 #include "RefMeshTargetCalculator.hpp"
 #include "Target2DShapeBarrier.hpp"
 #include "SamplePoints.hpp"
-#include "JacobianMetric.hpp"
+#include "TMPQualityMetric.hpp"
 
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
@@ -193,7 +193,7 @@ int main( int argc, char* argv[] )
   RefMeshTargetCalculator tc( &rmesh );
   Target2DShapeBarrier tm;
   SamplePoints pts( true, false, false, false );
-  JacobianMetric qm( &pts, &tc, &wc, &tm, 0 );
+  TMPQualityMetric qm( &pts, &tc, &wc, &tm, 0 );
   
   PMeanPTemplate of( 1.0, &qm );
   ConjugateGradient cg( &of );

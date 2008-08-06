@@ -24,14 +24,14 @@
    
   ***************************************************************** */
 
-/*! \file JacobianMetricTest.cpp
+/*! \file TMPQualityMetricTest.cpp
 
-Unit testing for the JacobianMetric class
+Unit testing for the TMPQualityMetric class
 \author Jasno Kraftcheck
 */
 
 
-#include "JacobianMetric.hpp"
+#include "TMPQualityMetric.hpp"
 #include "TargetMetric2D.hpp"
 #include "TargetMetric3D.hpp"
 #include "UnitWeight.hpp"
@@ -137,9 +137,9 @@ class TestGradTargetMetric3D : public TargetMetric3D
     }
 };
 
-class JacobianMetricTest : public CppUnit::TestFixture
+class TMPQualityMetricTest : public CppUnit::TestFixture
 {
-  CPPUNIT_TEST_SUITE(JacobianMetricTest);
+  CPPUNIT_TEST_SUITE(TMPQualityMetricTest);
   
   CPPUNIT_TEST (test_negate_flag);
   CPPUNIT_TEST (test_supported_types);
@@ -201,10 +201,10 @@ class JacobianMetricTest : public CppUnit::TestFixture
   Target2DShapeSizeOrient test_metric_2D;
   NumericalTarget<TargetMetric3D> num_metric_3D;
   NumericalTarget<TargetMetric2D> num_metric_2D;
-  JacobianMetric test_qm, zero_qm, weight_qm, center_qm;
+  TMPQualityMetric test_qm, zero_qm, weight_qm, center_qm;
   
 public:
-  JacobianMetricTest() : 
+  TMPQualityMetricTest() : 
     tester( QualityMetricTester::ALL_FE_EXCEPT_SEPTAHEDRON, &mf ),
     corners( true, false, false, false ),
     center( false, false, false, true ),
@@ -281,23 +281,23 @@ public:
     { tester.test_diagonal_with_fixed_vertex( &center_qm ); }
 };
 
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(JacobianMetricTest, "JacobianMetricTest");
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(JacobianMetricTest, "Unit");
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TMPQualityMetricTest, "TMPQualityMetricTest");
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TMPQualityMetricTest, "Unit");
 
-void JacobianMetricTest::test_get_evaluations()
+void TMPQualityMetricTest::test_get_evaluations()
 {
   SamplePoints corners_and_edges( true, true, false, false );
-  JacobianMetric edge_metric( &corners_and_edges, &ideal, &one, &faux_2d_zero, &faux_3d_zero );
+  TMPQualityMetric edge_metric( &corners_and_edges, &ideal, &one, &faux_2d_zero, &faux_3d_zero );
   
   tester.test_get_sample_evaluations( &zero_qm, &corners );
   tester.test_get_sample_evaluations( &edge_metric, &corners_and_edges );
 }
   
 
-void JacobianMetricTest::test_get_element_evaluations()
+void TMPQualityMetricTest::test_get_element_evaluations()
 {
   SamplePoints edges( false, true, false, false );
-  JacobianMetric edge_metric( &edges, &ideal, &one, &faux_2d_zero, &faux_3d_zero );
+  TMPQualityMetric edge_metric( &edges, &ideal, &one, &faux_2d_zero, &faux_3d_zero );
   
   tester.test_get_in_element_evaluations( &zero_qm );
   tester.test_get_in_element_evaluations( &edge_metric );
@@ -306,14 +306,14 @@ void JacobianMetricTest::test_get_element_evaluations()
 static double col_dot_prod( MsqMatrix<2,2>& m )
   { return m(0,0) * m(0,1) + m(1,0) * m(1,1); }
 
-void JacobianMetricTest::test_evaluate_2D()
+void TMPQualityMetricTest::test_evaluate_2D()
 {
   MsqPrintError err(cout);
   PatchData pd;
   bool rval;
   double value;
   
-  JacobianMetric m( &corners, &ideal, &one, &faux_2d_pi, &faux_3d_zero );
+  TMPQualityMetric m( &corners, &ideal, &one, &faux_2d_pi, &faux_3d_zero );
   
     // test with aligned elements
   faux_2d_pi.count = faux_3d_zero.count = 0;
@@ -365,14 +365,14 @@ void JacobianMetricTest::test_evaluate_2D()
 }  
  
   
-void JacobianMetricTest::test_evaluate_3D()
+void TMPQualityMetricTest::test_evaluate_3D()
 {
   MsqPrintError err(cout);
   PatchData pd;
   bool rval;
   double value;
   
-  JacobianMetric m( &corners, &ideal, &one, &faux_2d_zero, &faux_3d_two );
+  TMPQualityMetric m( &corners, &ideal, &one, &faux_2d_zero, &faux_3d_two );
   
     // test with aligned elements
   faux_2d_zero.count = faux_3d_two.count = 0;
@@ -412,14 +412,14 @@ void JacobianMetricTest::test_evaluate_3D()
 }
 
 
-void JacobianMetricTest::test_evaluate_2D_weight()
+void TMPQualityMetricTest::test_evaluate_2D_weight()
 {
   MsqPrintError err(cout);
   PatchData pd;
   bool rval;
   double value;
   
-  JacobianMetric m( &corners, &ideal, &e_weight, &faux_2d_pi, &faux_3d_zero );
+  TMPQualityMetric m( &corners, &ideal, &e_weight, &faux_2d_pi, &faux_3d_zero );
   
   tester.get_ideal_element( TRIANGLE, true, pd );
   rval = m.evaluate( pd, 0, value, err );
@@ -429,14 +429,14 @@ void JacobianMetricTest::test_evaluate_2D_weight()
 }
 
 
-void JacobianMetricTest::test_evaluate_3D_weight()
+void TMPQualityMetricTest::test_evaluate_3D_weight()
 {
   MsqPrintError err(cout);
   PatchData pd;
   bool rval;
   double value;
   
-  JacobianMetric m( &corners, &ideal, &e_weight, &faux_2d_zero, &faux_3d_two );
+  TMPQualityMetric m( &corners, &ideal, &e_weight, &faux_2d_zero, &faux_3d_two );
   
   tester.get_ideal_element( PRISM, true, pd );
   rval = m.evaluate( pd, 0, value, err );
@@ -445,7 +445,7 @@ void JacobianMetricTest::test_evaluate_3D_weight()
   CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_3d_two.value*e_weight.value, value, DBL_EPSILON );
 }
 
-void JacobianMetricTest::test_2d_eval_ortho_quad( unsigned dim )
+void TMPQualityMetricTest::test_2d_eval_ortho_quad( unsigned dim )
 {
   MsqPrintError err(cout);
   PatchData pd;
@@ -456,7 +456,7 @@ void JacobianMetricTest::test_2d_eval_ortho_quad( unsigned dim )
   locs[dim] = true;
   
   SamplePoints pts( locs[0], locs[1], locs[2], locs[3] );
-  JacobianMetric m( &pts, &ideal, &one, &faux_2d_zero, &faux_3d_zero );
+  TMPQualityMetric m( &pts, &ideal, &one, &faux_2d_zero, &faux_3d_zero );
   faux_2d_zero.count = faux_3d_zero.count = 0;
   
   tester.get_ideal_element( QUADRILATERAL, true, pd );
@@ -467,7 +467,7 @@ void JacobianMetricTest::test_2d_eval_ortho_quad( unsigned dim )
   CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, col_dot_prod(faux_2d_zero.last_A), DBL_EPSILON );
 }  
 
-void JacobianMetricTest::test_3d_eval_ortho_hex( unsigned dim )
+void TMPQualityMetricTest::test_3d_eval_ortho_hex( unsigned dim )
 {
   MsqPrintError err(cout);
   PatchData pd;
@@ -478,7 +478,7 @@ void JacobianMetricTest::test_3d_eval_ortho_hex( unsigned dim )
   locs[dim] = true;
   
   SamplePoints pts( locs[0], locs[1], locs[2], locs[3] );
-  JacobianMetric m( &pts, &ideal, &one, &faux_2d_zero, &faux_3d_zero );
+  TMPQualityMetric m( &pts, &ideal, &one, &faux_2d_zero, &faux_3d_zero );
   faux_2d_zero.count = faux_3d_zero.count = 0;
   
   tester.get_ideal_element( HEXAHEDRON, true, pd );
@@ -496,7 +496,7 @@ void JacobianMetricTest::test_3d_eval_ortho_hex( unsigned dim )
 
 
 
-void JacobianMetricTest::test_gradient_3D()
+void TMPQualityMetricTest::test_gradient_3D()
 {
   MsqPrintError err(msq_stdio::cout);
   
@@ -545,7 +545,7 @@ void JacobianMetricTest::test_gradient_3D()
   TestGradTargetMetric3D tm;
   IdealTargetCalculator tc;
   UnitWeight wc;
-  JacobianMetric m( &center, &tc, &wc, 0, &tm );
+  TMPQualityMetric m( &center, &tc, &wc, 0, &tm );
   
     // evaluate metric
   double act_val;

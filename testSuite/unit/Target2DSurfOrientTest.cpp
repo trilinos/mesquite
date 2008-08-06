@@ -33,7 +33,7 @@
 #include "Mesquite.hpp"
 #include "DomainSurfaceOrientation.hpp"
 #include "TargetSurfaceOrientation.hpp"
-#include "JacobianMetric.hpp"
+#include "TMPQualityMetric.hpp"
 #include "InstructionQueue.hpp"
 #include "PMeanPTemplate.hpp"
 #include "CompositeOFScalarMultiply.hpp"
@@ -418,7 +418,7 @@ void Target2DSurfOrientTest::smooth( int metric_3D, bool ref_mesh, MeshDomain* d
   Metric2D_Type_Ideal ideal_tmetric;
   Metric2D_Type_Ref ref_tmetric;
   TargetMetric2D* tmetric = ref_mesh ? (TargetMetric2D*)&ref_tmetric : (TargetMetric2D*)&ideal_tmetric;
-  JacobianMetric qmetric(&pts, tc, &weight, tmetric, NULL);
+  TMPQualityMetric qmetric(&pts, tc, &weight, tmetric, NULL);
   TargetSurfaceOrientation ometric1(&pts, tc, &weight);
   DomainSurfaceOrientation ometric2(&pts, &weight);
   
