@@ -25,13 +25,13 @@
   ***************************************************************** */
 
 
-/** \file JacobianMetric.cpp
+/** \file TMPQualityMetric.cpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
 #include "Mesquite.hpp"
-#include "JacobianMetric.hpp"
+#include "TMPQualityMetric.hpp"
 #include "SamplePoints.hpp"
 #include "MsqMatrix.hpp"
 #include "ElementQM.hpp"
@@ -55,12 +55,12 @@
 
 namespace Mesquite {
 
-int JacobianMetric::get_negate_flag( ) const { return 1; }
+int TMPQualityMetric::get_negate_flag( ) const { return 1; }
 
-msq_std::string JacobianMetric::get_name() const
-  { return msq_std::string("JacobianMetric"); }
+msq_std::string TMPQualityMetric::get_name() const
+  { return msq_std::string("TMPQualityMetric"); }
 
-void JacobianMetric::get_evaluations( PatchData& pd,
+void TMPQualityMetric::get_evaluations( PatchData& pd,
                                       msq_std::vector<size_t>& handles,
                                       bool free,
                                       MsqError& err )
@@ -68,7 +68,7 @@ void JacobianMetric::get_evaluations( PatchData& pd,
   get_sample_pt_evaluations( pd, samplePts, handles, free, err );
 }
 
-void JacobianMetric::get_element_evaluations( PatchData& pd,
+void TMPQualityMetric::get_element_evaluations( PatchData& pd,
                                               size_t elem,
                                               msq_std::vector<size_t>& handles,
                                               MsqError& err )
@@ -76,14 +76,14 @@ void JacobianMetric::get_element_evaluations( PatchData& pd,
   get_elem_sample_points( pd, samplePts, elem, handles, err );
 }
 
-bool JacobianMetric::evaluate( PatchData& pd, size_t handle, double& value, MsqError& err )
+bool TMPQualityMetric::evaluate( PatchData& pd, size_t handle, double& value, MsqError& err )
 {
   mIndices.clear();
   return evaluate_with_indices( pd, handle, value, mIndices, err );
 }
 
 
-bool JacobianMetric::evaluate_with_indices( PatchData& pd,
+bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
                                             size_t handle,
                                             double& value,
                                             msq_std::vector<size_t>& indices,
@@ -191,7 +191,7 @@ bool JacobianMetric::evaluate_with_indices( PatchData& pd,
 }
                  
 
-bool JacobianMetric::evaluate_with_gradient( 
+bool TMPQualityMetric::evaluate_with_gradient( 
                                            PatchData& pd,
                                            size_t handle,
                                            double& value,
@@ -291,7 +291,7 @@ bool JacobianMetric::evaluate_with_gradient(
 }
 
 
-bool JacobianMetric::evaluate_with_Hessian( 
+bool TMPQualityMetric::evaluate_with_Hessian( 
                                            PatchData& pd,
                                            size_t handle,
                                            double& value,
@@ -421,7 +421,7 @@ bool JacobianMetric::evaluate_with_Hessian(
 }
 
 
-bool JacobianMetric::evaluate_with_Hessian_diagonal( 
+bool TMPQualityMetric::evaluate_with_Hessian_diagonal( 
                                            PatchData& pd,
                                            size_t handle,
                                            double& value,
