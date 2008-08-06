@@ -58,5 +58,24 @@ bool TSquared2D::evaluate_with_grad( const MsqMatrix<2,2>& A,
   return true;
 }
 
+bool TSquared2D::evaluate_with_hess( const MsqMatrix<2,2>& A,
+                                     const MsqMatrix<2,2>& W,
+                                     double& result,
+                                     MsqMatrix<2,2>& deriv_wrt_A,
+                                     MsqMatrix<2,2> second_wrt_A[3],
+                                     MsqError& err )
+{
+  MsqMatrix<2,2> Winv = inverse(W);
+  MsqMatrix<2,2> T = A * Winv;
+  MsqMatrix<2,2> V = 2 * transpose(Winv);
+  result = sqr_Frobenius( T );
+  deriv_wrt_A = T * V;
+    // diagonal blocks
+  second_wrt_A[0] = second_wrt_A[2] = Winv * V;
+    // non-diagonal blocks are zero
+  second_wrt_A[1].zero();
+  return true;
+}
+
 
 } // namespace Mesquite

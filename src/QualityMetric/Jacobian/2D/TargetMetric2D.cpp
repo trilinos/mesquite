@@ -56,5 +56,16 @@ bool TargetMetric2D::evaluate_with_grad( const MsqMatrix<2,2>& A,
   wrt_A(1,1) = do_finite_difference( 1, 1, this, A, W, result, err ); MSQ_ERRZERO(err);
   return true;
 }
+
+
+bool TargetMetric2D::evaluate_with_hess( const MsqMatrix<2,2>& A,
+                                         const MsqMatrix<2,2>& W,
+                                         double& result,
+                                         MsqMatrix<2,2>& deriv_wrt_A,
+                                         MsqMatrix<2,2> hess_wrt_A[3],
+                                         MsqError& err )
+{
+  return do_numerical_hessian( this, A, W, result, deriv_wrt_A, hess_wrt_A, err );
+}
   
 } // namespace Mesquite

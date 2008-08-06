@@ -279,11 +279,256 @@ bool JacobianMetric::evaluate_with_gradient(
     // apply target weight to value
   double ck = weightCalc->get_weight( pd, e, samplePts, s, err ); MSQ_ERRZERO(err);
   value *= ck;
+  for (size_t i = 0; i < gradient.size(); ++i)
+    gradient[i] *= ck;
   
     // remove indices for non-free vertices
   indices.erase( msq_std::remove_if( indices.begin(), indices.end(), 
     msq_std::bind2nd(msq_std::greater_equal<size_t>(),pd.num_free_vertices())),
     indices.end() );
+  
+  return rval;
+}
+
+
+bool JacobianMetric::evaluate_with_Hessian( 
+                                           PatchData& pd,
+                                           size_t handle,
+                                           double& value,
+                                           msq_std::vector<size_t>& indices,
+                                           msq_std::vector<Vector3D>& gradient,
+                                           msq_std::vector<Matrix3D>& Hessian,
+                                           MsqError& err )
+{
+  unsigned s = ElemSampleQM::sample( handle );
+  size_t   e = ElemSampleQM::  elem( handle );
+  MsqMeshEntity& elem = pd.element_by_index( e );
+  EntityTopology type = elem.get_element_type();
+  unsigned dim, num;
+  samplePts->location_from_sample_number( type, s, dim, num );
+  unsigned edim = TopologyInfo::dimension( type );
+  const size_t* conn = elem.get_vertex_index_array();
+  
+  if (edim != 3)
+    return QualityMetric::evaluate_with_Hessian( pd, handle, value, indices, gradient, Hessian, err );
+  
+  unsigned bits = pd.higher_order_node_bits( e );
+  
+  const MappingFunction* func = pd.get_mapping_function( type );
+  if (!func) {
+    MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
+    return false;
+  }
+  
+  indices.clear();
+  mDerivs.clear();
+  switch (dim) {
+    case 0:
+      func->derivatives_at_corner( num, bits, indices, mDerivs, err );
+      break;
+    case 1:
+      func->derivatives_at_mid_edge( num, bits, indices, mDerivs, err );
+      break;
+    case 2:
+      if (edim != 2) {
+        func->derivatives_at_mid_face( num, bits, indices, mDerivs, err );
+        break;
+      }
+    case 3:
+      func->derivatives_at_mid_elem( bits, indices, mDerivs, err );
+      break;
+  }
+  MSQ_ERRZERO( err );
+  
+  bool rval;
+  if (edim == 3) { // 3x3 or 3x2 targets ?
+    if (!metric3D) {
+      MSQ_SETERR(err)("No 3D metric for Jacobian-based metric.\n", MsqError::UNSUPPORTED_ELEMENT );
+      return false;
+    }
+  
+    Vector3D c[3] = { Vector3D(0,0,0), Vector3D(0,0,0), Vector3D(0,0,0) };
+    size_t w = 0;
+    for (size_t i = 0; i < indices.size(); ++i) {
+        // Convert from indices into element connectivity list to
+        // indices into vertex array in patch data.
+      size_t vtx = conn[indices[i]];
+        // calculate Jacobian
+      Vector3D coords = pd.vertex_by_index( vtx );
+      c[0] += mDerivs[3*i  ] * coords;
+      c[1] += mDerivs[3*i+1] * coords;
+      c[2] += mDerivs[3*i+2] * coords;
+        // Remove data corresponding to fixed vertics from lists.
+      if (vtx < pd.num_free_vertices()) {
+        indices[w] = vtx;
+        if (i != w) {
+          mDerivs[3*w  ] = mDerivs[3*i  ];
+          mDerivs[3*w+1] = mDerivs[3*i+1];
+          mDerivs[3*w+2] = mDerivs[3*i+2];
+        }
+        ++w;
+      }
+    }
+    indices.resize(w);
+    mDerivs.resize(3*w);
+    
+    MsqMatrix<3,3> A( (MsqMatrix<3,1>*)c );
+    
+
+    MsqMatrix<3,3> W, dmdA, d2mdA2[6];
+    targetCalc->get_3D_target( pd, e, samplePts, s, W, err ); MSQ_ERRZERO(err);
+    rval = metric3D->evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); MSQ_ERRZERO(err);
+    gradient.resize(w);
+    Hessian.resize(w*(w+1)/2);
+    size_t h = 0;
+    for (size_t i = 0; i < indices.size(); ++i) {
+      gradient[i] = Vector3D( (dmdA * MsqMatrix<3,1>(&mDerivs[3*i])).data() );
+      Matrix3D& H = Hessian[h++];
+      H[0][0] =           MsqMatrix<1,3>(&mDerivs[3*i]) * d2mdA2[0] * MsqMatrix<3,1>(&mDerivs[3*i]);
+      H[0][1] = H[1][0] = MsqMatrix<1,3>(&mDerivs[3*i]) * d2mdA2[1] * MsqMatrix<3,1>(&mDerivs[3*i]);
+      H[0][2] = H[2][0] = MsqMatrix<1,3>(&mDerivs[3*i]) * d2mdA2[2] * MsqMatrix<3,1>(&mDerivs[3*i]);
+      H[1][1] =           MsqMatrix<1,3>(&mDerivs[3*i]) * d2mdA2[3] * MsqMatrix<3,1>(&mDerivs[3*i]);
+      H[1][2] = H[2][1] = MsqMatrix<1,3>(&mDerivs[3*i]) * d2mdA2[4] * MsqMatrix<3,1>(&mDerivs[3*i]);
+      H[2][2] =           MsqMatrix<1,3>(&mDerivs[3*i]) * d2mdA2[5] * MsqMatrix<3,1>(&mDerivs[3*i]);
+      for (size_t j = i+1; j < indices.size(); ++j) {
+        Matrix3D& H = Hessian[h++];
+        H[0][0] = MsqMatrix<1,3>(&mDerivs[3*i]) * d2mdA2[0] * MsqMatrix<3,1>(&mDerivs[3*j]);
+        H[0][1] = MsqMatrix<1,3>(&mDerivs[3*i]) * d2mdA2[1] * MsqMatrix<3,1>(&mDerivs[3*j]);
+        H[0][2] = MsqMatrix<1,3>(&mDerivs[3*i]) * d2mdA2[2] * MsqMatrix<3,1>(&mDerivs[3*j]);
+        H[1][0] = MsqMatrix<1,3>(&mDerivs[3*i]) * transpose(d2mdA2[1]) * MsqMatrix<3,1>(&mDerivs[3*j]);
+        H[1][1] = MsqMatrix<1,3>(&mDerivs[3*i]) * d2mdA2[3] * MsqMatrix<3,1>(&mDerivs[3*j]);
+        H[1][2] = MsqMatrix<1,3>(&mDerivs[3*i]) * d2mdA2[4] * MsqMatrix<3,1>(&mDerivs[3*j]);
+        H[2][0] = MsqMatrix<1,3>(&mDerivs[3*i]) * transpose(d2mdA2[2]) * MsqMatrix<3,1>(&mDerivs[3*j]);
+        H[2][1] = MsqMatrix<1,3>(&mDerivs[3*i]) * transpose(d2mdA2[4]) * MsqMatrix<3,1>(&mDerivs[3*j]);
+        H[2][2] = MsqMatrix<1,3>(&mDerivs[3*i]) * d2mdA2[5] * MsqMatrix<3,1>(&mDerivs[3*j]);
+      }
+    }
+  }
+  else {
+    assert(0);
+    return false;
+  }
+  
+    // apply target weight to value
+  double ck = weightCalc->get_weight( pd, e, samplePts, s, err ); MSQ_ERRZERO(err);
+  value *= ck;
+  for (size_t i = 0; i < gradient.size(); ++i)
+    gradient[i] *= ck;
+  for (size_t i = 0; i < Hessian.size(); ++i)
+    Hessian[i] *= ck;
+  
+  return rval;
+}
+
+
+bool JacobianMetric::evaluate_with_Hessian_diagonal( 
+                                           PatchData& pd,
+                                           size_t handle,
+                                           double& value,
+                                           msq_std::vector<size_t>& indices,
+                                           msq_std::vector<Vector3D>& gradient,
+                                           msq_std::vector<SymMatrix3D>& diagonal,
+                                           MsqError& err )
+{
+  unsigned s = ElemSampleQM::sample( handle );
+  size_t   e = ElemSampleQM::  elem( handle );
+  MsqMeshEntity& elem = pd.element_by_index( e );
+  EntityTopology type = elem.get_element_type();
+  unsigned dim, num;
+  samplePts->location_from_sample_number( type, s, dim, num );
+  unsigned edim = TopologyInfo::dimension( type );
+  const size_t* conn = elem.get_vertex_index_array();
+  
+  if (edim != 3)
+    return QualityMetric::evaluate_with_Hessian_diagonal( pd, handle, value, indices, gradient, diagonal, err );
+  
+  unsigned bits = pd.higher_order_node_bits( e );
+  
+  const MappingFunction* func = pd.get_mapping_function( type );
+  if (!func) {
+    MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
+    return false;
+  }
+  
+  indices.clear();
+  mDerivs.clear();
+  switch (dim) {
+    case 0:
+      func->derivatives_at_corner( num, bits, indices, mDerivs, err );
+      break;
+    case 1:
+      func->derivatives_at_mid_edge( num, bits, indices, mDerivs, err );
+      break;
+    case 2:
+      if (edim != 2) {
+        func->derivatives_at_mid_face( num, bits, indices, mDerivs, err );
+        break;
+      }
+    case 3:
+      func->derivatives_at_mid_elem( bits, indices, mDerivs, err );
+      break;
+  }
+  MSQ_ERRZERO( err );
+  
+  bool rval;
+  if (edim == 3) { // 3x3 or 3x2 targets ?
+    if (!metric3D) {
+      MSQ_SETERR(err)("No 3D metric for Jacobian-based metric.\n", MsqError::UNSUPPORTED_ELEMENT );
+      return false;
+    }
+  
+    Vector3D c[3] = { Vector3D(0,0,0), Vector3D(0,0,0), Vector3D(0,0,0) };
+    size_t w = 0;
+    for (size_t i = 0; i < indices.size(); ++i) {
+        // Convert from indices into element connectivity list to
+        // indices into vertex array in patch data.
+      size_t vtx = conn[indices[i]];
+        // calculate Jacobian
+      Vector3D coords = pd.vertex_by_index( vtx );
+      c[0] += mDerivs[3*i  ] * coords;
+      c[1] += mDerivs[3*i+1] * coords;
+      c[2] += mDerivs[3*i+2] * coords;
+        // Remove data corresponding to fixed vertics from lists.
+      if (vtx < pd.num_free_vertices()) {
+        indices[w] = vtx;
+        if (i != w) {
+          mDerivs[3*w  ] = mDerivs[3*i  ];
+          mDerivs[3*w+1] = mDerivs[3*i+1];
+          mDerivs[3*w+2] = mDerivs[3*i+2];
+        }
+        ++w;
+      }
+    }
+    indices.resize(w);
+    mDerivs.resize(3*w);
+    
+    MsqMatrix<3,3> A( (MsqMatrix<3,1>*)c );
+    
+
+    MsqMatrix<3,3> W, dmdA, d2mdA2[6];
+    targetCalc->get_3D_target( pd, e, samplePts, s, W, err ); MSQ_ERRZERO(err);
+    rval = metric3D->evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); MSQ_ERRZERO(err);
+    gradient.resize(w);
+    diagonal.resize(w);
+    for (size_t i = 0; i < indices.size(); ++i) {
+      gradient[i] = Vector3D( (dmdA * MsqMatrix<3,1>(&mDerivs[3*i])).data() );
+      SymMatrix3D& H = diagonal[i];
+      for (unsigned j = 0; j < 6; ++j)
+        H[j] = MsqMatrix<1,3>(&mDerivs[3*i]) * d2mdA2[j] * MsqMatrix<3,1>(&mDerivs[3*i]); 
+    }
+  }
+  else {
+    assert(0);
+    return false;
+  }
+  
+    // apply target weight to value
+  double ck = weightCalc->get_weight( pd, e, samplePts, s, err ); MSQ_ERRZERO(err);
+  value *= ck;
+  for (size_t i = 0; i < indices.size(); ++i) {
+    gradient[i] *= ck;
+    diagonal[i] *= ck;
+  }
   
   return rval;
 }

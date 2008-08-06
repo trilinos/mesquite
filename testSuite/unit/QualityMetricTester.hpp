@@ -194,9 +194,15 @@ public:
     /** compare results of evaluate_with_indices() and evaluate_with_Hessian() methods */
   void compare_eval_with_indices_and_eval_with_hessian( QualityMetric* qm );
   void compare_eval_with_indices_and_eval_with_hessian( QualityMetric* qm, PatchData& pd );
+    /** compare results of evaluate_with_indices() and evaluate_with_Hessian_diagonal() methods */
+  void compare_eval_with_indices_and_eval_with_diagonal( QualityMetric* qm );
+  void compare_eval_with_indices_and_eval_with_diagonal( QualityMetric* qm, PatchData& pd );
     /** compare results of evaluate_with_gradient() and evaluate_with_Hessian() methods */
   void compare_eval_with_grad_and_eval_with_hessian( QualityMetric* qm );
   void compare_eval_with_grad_and_eval_with_hessian( QualityMetric* qm, PatchData& pd );
+    /** compare results of evaluate_with_gradient() and evaluate_with_Hessian_diagonal() methods */
+  void compare_eval_with_grad_and_eval_with_diagonal( QualityMetric* qm );
+  void compare_eval_with_grad_and_eval_with_diagonal( QualityMetric* qm, PatchData& pd );
     /** compare results of evaluate_with_Hessian_diagonal() and evaluate_with_Hessian() methods */
   void compare_eval_with_diag_and_eval_with_hessian( QualityMetric* qm );
   void compare_eval_with_diag_and_eval_with_hessian( QualityMetric* qm, PatchData& pd );
@@ -206,17 +212,25 @@ public:
     /** compare analytical and numerical Hessian results */
   void compare_analytical_and_numerical_hessians( QualityMetric* qm );
   void compare_analytical_and_numerical_hessians( QualityMetric* qm, PatchData& pd );
+    /** compare analytical and numerical Hessian diagonal results */
+  void compare_analytical_and_numerical_diagonals( QualityMetric* qm );
+  void compare_analytical_and_numerical_diagonals( QualityMetric* qm, PatchData& pd );
 
-    /** cmopare gradient w/ no fixed vertices to gradient
+    /** compare gradient w/ no fixed vertices to gradient
      *  for element with all but one vertex fixed.
      */
   void test_gradient_with_fixed_vertex( QualityMetric* qm );
   void test_gradient_with_fixed_vertex( EntityTopology type, QualityMetric* qm );
-    /** cmopare Hessian w/ no fixed vertices to Hessian
+    /** compare Hessian w/ no fixed vertices to Hessian
      *  for element with all but one vertex fixed.
      */
   void test_hessian_with_fixed_vertex( QualityMetric* qm );
   void test_hessian_with_fixed_vertex( EntityTopology type, QualityMetric* qm );
+    /** compare Hessian diagonal w/ no fixed vertices to Hessian
+     *  for element with all but one vertex fixed.
+     */
+  void test_diagonal_with_fixed_vertex( QualityMetric* qm );
+  void test_diagonal_with_fixed_vertex( EntityTopology type, QualityMetric* qm );
 
     /** Test that gradient values are zero for an ideal element.
      *  If 'unit_area' is true, then ideal elements have unit measure,

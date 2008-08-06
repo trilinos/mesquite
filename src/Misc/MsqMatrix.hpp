@@ -131,6 +131,74 @@ public:
   void set_columns( const MsqMatrix<R,1>* v );
 };
 
+template <> 
+class MsqMatrix<1,1>
+{
+protected:
+  double m;
+
+public:
+  typedef MsqMatrix<1,1> my_type;
+  
+  enum { ROWS = 1, COLS = 1 };
+
+    /** Constructor for uninitialized matrix */
+  MsqMatrix()                                         { }
+    /** Initialize diagonal values, zero others */
+  MsqMatrix( double v )                               : m(v) {}
+    /** Initialize to an array of values */
+  MsqMatrix( const double* v )                        : m(*v) {}
+    /** Parse initial values from string */
+  MsqMatrix( const char* s )                          { set(s); }
+    /** Parse initial values from string */
+  MsqMatrix( const msq_std::string& s )               { set(s); }
+    /** Initialize to the minor of a larger matrix
+     *  This matrix is the passed matrix with the 
+     *  specified row and column removed.
+     */
+  MsqMatrix( const MsqMatrix<2,2>& M, unsigned r, unsigned c ) :  m(M(r,c)) {}
+  
+  MsqMatrix<1,1>& operator=( double v )                 { m = v; return *this; }
+  MsqMatrix<1,1>& operator=( const double* v )          { m = *v; return *this; }
+  MsqMatrix<1,1>& operator=( const char* s )            { set(s); return *this; }
+  MsqMatrix<1,1>& operator=( const msq_std::string& s ) { set(s); return *this; }
+  
+  double& operator()( unsigned, unsigned )        { return m; }
+  double  operator()( unsigned, unsigned ) const  { return m; }
+  double* data()                                      { return &m; }
+  const double* data() const                          { return &m; }
+  
+  void zero()                                         { m = 0.0; }
+  void identity()                                     { m = 1.0; }
+  void set( double v )        { m = v; }
+  void set( const double* v ) { m= *v; }
+  void set( const char* s )   { msq_stdio::istringstream i(s); i >> m; }
+  void set( const msq_std::string& s ) { set( s.c_str() ); }
+    /** Set diagonal value to passed values, others to zero. */
+  inline void diag( double v ) { m = v; }
+    /** Set diagonal values to passed values, others to zero. */
+  inline void diag( const double* v ) { m = *v; }
+    /** Set this matrix to the minor of a larger matrix */
+  inline void make_minor( const MsqMatrix<2,2>& M, unsigned r, unsigned c )
+    { m = M(r,c); }
+  
+    /** *this += transpose(other) */
+  inline MsqMatrix<1,1>& assign_add_transpose( const MsqMatrix<1,1>& other )
+    { m += other.m; return *this; }
+    /** *this = s*m */
+  inline MsqMatrix<1,1>& assign_product( double s, const MsqMatrix<1,1>& other )
+    { m = s*other.m; return *this; }
+    /** *this += s*m */
+  inline MsqMatrix<1,1>& assign_add_product( double s, const MsqMatrix<1,1>& other )
+    { m += s*other.m; return *this; }
+    /** multiply each element by the cooresponding element in m */
+  inline MsqMatrix<1,1>& assign_multiply_elements( const MsqMatrix<1,1>& other )
+    { m *= other.m; return *this; }
+    
+  operator double () const
+    { return m; }
+};
+
 /** \brief Vector is a 1xL Matrix 
  *
  * Define a Vector as a 1xL Matrix

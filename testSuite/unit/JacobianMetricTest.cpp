@@ -57,65 +57,10 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-class JacobianMetricTest : public CppUnit::TestFixture
-{
-  CPPUNIT_TEST_SUITE(JacobianMetricTest);
-  CPPUNIT_TEST (test_negate_flag);
-  CPPUNIT_TEST (test_supported_types);
-  CPPUNIT_TEST (test_get_evaluations);
-  CPPUNIT_TEST (test_get_element_evaluations);
-  CPPUNIT_TEST (test_evaluate_2D);
-  CPPUNIT_TEST (test_evaluate_3D);
-  CPPUNIT_TEST (test_evaluate_2D_weight);
-  CPPUNIT_TEST (test_evaluate_3D_weight);
-  CPPUNIT_TEST (test_evaluate_2D_corner);
-  CPPUNIT_TEST (test_evaluate_2D_edge);
-  CPPUNIT_TEST (test_evaluate_2D_elem);
-  CPPUNIT_TEST (test_evaluate_3D_corner);
-  CPPUNIT_TEST (test_evaluate_3D_edge);
-  CPPUNIT_TEST (test_evaluate_3D_edge);
-  CPPUNIT_TEST (test_evaluate_3D_face);
-  CPPUNIT_TEST (test_evaluate_with_indices);
-  CPPUNIT_TEST (test_evaluate_fixed_indices);
-  CPPUNIT_TEST (test_gradient_3D);
-  CPPUNIT_TEST (test_evaluate_with_gradient);
-  CPPUNIT_TEST_SUITE_END();
-public:
-  JacobianMetricTest() : 
-    tester( QualityMetricTester::ALL_FE_EXCEPT_SEPTAHEDRON, &mf )
-  {  }
-  
-  void test_negate_flag();
-  void test_supported_types();
-  void test_get_evaluations();
-  void test_get_element_evaluations();
-  void test_evaluate_2D();
-  void test_evaluate_3D();
-  void test_evaluate_2D_weight();
-  void test_evaluate_3D_weight();
-  void test_evaluate_2D_corner();
-  void test_evaluate_2D_edge();
-  void test_evaluate_2D_elem();
-  void test_evaluate_3D_corner();
-  void test_evaluate_3D_edge();
-  void test_evaluate_3D_face();
-  void test_evaluate_3D_elem();
-  void test_evaluate_with_indices();
-  void test_evaluate_fixed_indices();
-  void test_gradient_3D();
-  void test_evaluate_with_gradient();
-  
-private:
-  void test_2d_eval_ortho_quad( unsigned dim );
-  void test_3d_eval_ortho_hex( unsigned dim );
 
-  LinearFunctionSet mf;
-  QualityMetricTester tester;
-};
-
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(JacobianMetricTest, "JacobianMetricTest");
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(JacobianMetricTest, "Unit");
-
+/** Target metric (templatized by dimension) for use in misc. tests.
+ *  'evaluate' method records input values and returns a constant.
+ */
 template <typename B>
 class FauxTarget : public B
 {
@@ -139,6 +84,7 @@ public:
   }
 };
 
+/** Weight calculator used for testing.  Returns constant weight. */
 class ScaleWeight : public WeightCalculator
 {
   public:
@@ -148,328 +94,7 @@ class ScaleWeight : public WeightCalculator
     double value;
 };
 
-void JacobianMetricTest::test_negate_flag()
-{
-  SamplePoints pts( true, false, false, false );
-  FauxTarget<TargetMetric2D> metric_2d(3.14159);
-  FauxTarget<TargetMetric3D> metric_3d(0.0);
-  IdealTargetCalculator tc;
-  UnitWeight wc;
-  JacobianMetric metric( &pts, &tc, &wc, &metric_2d, &metric_3d );
-  
-  CPPUNIT_ASSERT_EQUAL( 1, metric.get_negate_flag() );
-}
-
-void JacobianMetricTest::test_supported_types()
-{
-  SamplePoints pts(true);
-  FauxTarget<TargetMetric2D> metric_2d(0.0);
-  FauxTarget<TargetMetric3D> metric_3d(0.0);
-  IdealTargetCalculator tc;
-  UnitWeight wc;
-  
-  JacobianMetric m( &pts, &tc, &wc, &metric_2d, &metric_3d );
-  tester.test_supported_element_types( &m );
-}
-
-void JacobianMetricTest::test_get_evaluations()
-{
-  SamplePoints corners( true, false, false, false );
-  SamplePoints corners_and_edges( true, true, false, false );
-  FauxTarget<TargetMetric2D> metric_2d(0.0);
-  FauxTarget<TargetMetric3D> metric_3d(0.0);
-  IdealTargetCalculator tc;
-  UnitWeight wc;
-  
-  JacobianMetric corner_metric( &corners, &tc, &wc, &metric_2d, &metric_3d );
-  JacobianMetric edge_metric( &corners_and_edges, &tc, &wc, &metric_2d, &metric_3d );
-  
-  tester.test_get_sample_evaluations( &corner_metric, &corners );
-  tester.test_get_sample_evaluations( &edge_metric, &corners_and_edges );
-}
-  
-
-void JacobianMetricTest::test_get_element_evaluations()
-{
-  SamplePoints corners( true, false, false, false );
-  SamplePoints edges( false, true, false, false );
-  FauxTarget<TargetMetric2D> metric_2d(0.0);
-  FauxTarget<TargetMetric3D> metric_3d(0.0);
-  IdealTargetCalculator tc;
-  UnitWeight wc;
-  
-  JacobianMetric corner_metric( &corners, &tc, &wc, &metric_2d, &metric_3d );
-  JacobianMetric edge_metric( &edges, &tc, &wc, &metric_2d, &metric_3d );
-  
-  tester.test_get_in_element_evaluations( &corner_metric );
-  tester.test_get_in_element_evaluations( &edge_metric );
-}
-
-static double col_dot_prod( MsqMatrix<2,2>& m )
-  { return m(0,0) * m(0,1) + m(1,0) * m(1,1); }
-
-void JacobianMetricTest::test_evaluate_2D()
-{
-  MsqPrintError err(cout);
-  PatchData pd;
-  bool rval;
-  double value;
-  
-  SamplePoints pts( true, false, false, false );
-  FauxTarget<TargetMetric2D> metric_2d(3.14159);
-  FauxTarget<TargetMetric3D> metric_3d(0.0);
-  IdealTargetCalculator tc(false);
-  UnitWeight wc;
-  JacobianMetric m( &pts, &tc, &wc, &metric_2d, &metric_3d );
-  
-    // test with aligned elements
-  metric_2d.count = metric_3d.count = 0;
-  tester.get_ideal_element( QUADRILATERAL, true, pd );
-  rval = m.evaluate( pd, 0, value, err );
-  CPPUNIT_ASSERT(!MSQ_CHKERR(err));
-  CPPUNIT_ASSERT(rval);
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( metric_2d.value, value, DBL_EPSILON );
-  CPPUNIT_ASSERT_EQUAL( 1, metric_2d.count );
-  CPPUNIT_ASSERT_EQUAL( 0, metric_3d.count );
-  ASSERT_MATRICES_EQUAL( metric_2d.last_W, metric_2d.last_A, 1e-6 );
-  
-    // test that columns are orthogonal for ideal quad element
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, col_dot_prod(metric_2d.last_A), 1e-6 );
-  
-    // test with an element rotated about X-axis
-  metric_2d.count = metric_3d.count = 0;
-  tester.get_ideal_element( QUADRILATERAL, true, pd );
-  // rotate by 90 degrees about X axis
-  for (size_t i = 0; i < pd.num_nodes(); ++i) {
-    double z = pd.vertex_by_index(i)[2];
-    pd.vertex_by_index(i)[2] = pd.vertex_by_index(i)[1];
-    pd.vertex_by_index(i)[1] =-z;
-  }
-  rval = m.evaluate( pd, 0, value, err );
-  CPPUNIT_ASSERT(!MSQ_CHKERR(err));
-  CPPUNIT_ASSERT(rval);
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( metric_2d.value, value, DBL_EPSILON );
-  CPPUNIT_ASSERT_EQUAL( 1, metric_2d.count );
-  CPPUNIT_ASSERT_EQUAL( 0, metric_3d.count );
-  ASSERT_MATRICES_EQUAL( metric_2d.last_W, metric_2d.last_A, 1e-6 );
-  
-    // test with an element rotated about Y-axis
-  metric_2d.count = metric_3d.count = 0;
-  tester.get_ideal_element( TRIANGLE, true, pd );
-  // rotate by -90 degrees about Y axis
-  for (size_t i = 0; i < pd.num_nodes(); ++i) {
-    double z = pd.vertex_by_index(i)[2];
-    pd.vertex_by_index(i)[2] = -pd.vertex_by_index(i)[0];
-    pd.vertex_by_index(i)[0] = z;
-  }
-  rval = m.evaluate( pd, 0, value, err );
-  CPPUNIT_ASSERT(!MSQ_CHKERR(err));
-  CPPUNIT_ASSERT(rval);
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( metric_2d.value, value, DBL_EPSILON );
-  CPPUNIT_ASSERT_EQUAL( 1, metric_2d.count );
-  CPPUNIT_ASSERT_EQUAL( 0, metric_3d.count );
-  ASSERT_MATRICES_EQUAL( metric_2d.last_W, metric_2d.last_A, 1e-6 );
-}  
- 
-  
-void JacobianMetricTest::test_evaluate_3D()
-{
-  MsqPrintError err(cout);
-  PatchData pd;
-  bool rval;
-  double value;
-  
-  SamplePoints pts( true, false, false, false );
-  FauxTarget<TargetMetric2D> metric_2d(0.0);
-  FauxTarget<TargetMetric3D> metric_3d(exp(1.0));
-  IdealTargetCalculator tc(false);
-  UnitWeight wc;
-  JacobianMetric m( &pts, &tc, &wc, &metric_2d, &metric_3d );
-  
-    // test with aligned elements
-  metric_2d.count = metric_3d.count = 0;
-  tester.get_ideal_element( HEXAHEDRON, true, pd );
-  rval = m.evaluate( pd, 0, value, err );
-  CPPUNIT_ASSERT(!MSQ_CHKERR(err));
-  CPPUNIT_ASSERT(rval);
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( metric_3d.value, value, DBL_EPSILON );
-  CPPUNIT_ASSERT_EQUAL( 0, metric_2d.count );
-  CPPUNIT_ASSERT_EQUAL( 1, metric_3d.count );
-  ASSERT_MATRICES_EQUAL( metric_3d.last_W, metric_3d.last_A, 1e-6 );
-  
-    // test that columns are orthogonal for ideal hex element
-  MsqMatrix<3,3> A = metric_3d.last_A;
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, A.column(0) % A.column(1), 1e-6 );
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, A.column(0) % A.column(2), 1e-6 );
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, A.column(1) % A.column(2), 1e-6 );
-  
-    // test with rotated element
-  metric_2d.count = metric_3d.count = 0;
-  tester.get_ideal_element( TETRAHEDRON, true, pd );
-  // rotate by 90-degrees about X axis
-  for (size_t i = 0; i < pd.num_nodes(); ++i) {
-    double z = pd.vertex_by_index(i)[2];
-    pd.vertex_by_index(i)[2] = pd.vertex_by_index(i)[1];
-    pd.vertex_by_index(i)[1] =-z;
-  }
-  rval = m.evaluate( pd, 0, value, err );
-  CPPUNIT_ASSERT(!MSQ_CHKERR(err));
-  CPPUNIT_ASSERT(rval);
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( metric_3d.value, value, DBL_EPSILON );
-  CPPUNIT_ASSERT_EQUAL( 0, metric_2d.count );
-  CPPUNIT_ASSERT_EQUAL( 1, metric_3d.count );
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( determinant(metric_3d.last_W),
-                                determinant(metric_3d.last_A),
-                                1e-6 );
-}
-
-
-void JacobianMetricTest::test_evaluate_2D_weight()
-{
-  MsqPrintError err(cout);
-  PatchData pd;
-  bool rval;
-  double value;
-  
-  SamplePoints pts( true, false, false, false );
-  FauxTarget<TargetMetric2D> metric_2d(2.0);
-  FauxTarget<TargetMetric3D> metric_3d(0.0);
-  IdealTargetCalculator tc(false);
-  ScaleWeight wc(3.14159);
-  JacobianMetric m( &pts, &tc, &wc, &metric_2d, &metric_3d );
-  
-  tester.get_ideal_element( TRIANGLE, true, pd );
-  rval = m.evaluate( pd, 0, value, err );
-  CPPUNIT_ASSERT(!MSQ_CHKERR(err));
-  CPPUNIT_ASSERT(rval);
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( metric_2d.value*wc.value, value, DBL_EPSILON );
-}
-
-
-void JacobianMetricTest::test_evaluate_3D_weight()
-{
-  MsqPrintError err(cout);
-  PatchData pd;
-  bool rval;
-  double value;
-  
-  SamplePoints pts( true, false, false, false );
-  FauxTarget<TargetMetric2D> metric_2d(0.0);
-  FauxTarget<TargetMetric3D> metric_3d(0.5);
-  IdealTargetCalculator tc(false);
-  ScaleWeight wc(3.14159);
-  JacobianMetric m( &pts, &tc, &wc, &metric_2d, &metric_3d );
-  
-  tester.get_ideal_element( PRISM, true, pd );
-  rval = m.evaluate( pd, 0, value, err );
-  CPPUNIT_ASSERT(!MSQ_CHKERR(err));
-  CPPUNIT_ASSERT(rval);
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( metric_3d.value*wc.value, value, DBL_EPSILON );
-}
-
-void JacobianMetricTest::test_2d_eval_ortho_quad( unsigned dim )
-{
-  MsqPrintError err(cout);
-  PatchData pd;
-  bool rval;
-  double value;
-  
-  bool locs[4] = {false, false, false, false};
-  locs[dim] = true;
-  
-  SamplePoints pts( locs[0], locs[1], locs[2], locs[3] );
-  FauxTarget<TargetMetric2D> metric_2d(0.0);
-  FauxTarget<TargetMetric3D> metric_3d(0.0);
-  IdealTargetCalculator tc(false);
-  UnitWeight wc;
-  JacobianMetric m( &pts, &tc, &wc, &metric_2d, &metric_3d );
-  
-  tester.get_ideal_element( QUADRILATERAL, true, pd );
-  rval = m.evaluate( pd, 0, value, err );
-  CPPUNIT_ASSERT(!MSQ_CHKERR(err));
-  CPPUNIT_ASSERT(rval);
-  CPPUNIT_ASSERT_EQUAL( 1, metric_2d.count );
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, col_dot_prod(metric_2d.last_A), DBL_EPSILON );
-}  
-
-void JacobianMetricTest::test_3d_eval_ortho_hex( unsigned dim )
-{
-  MsqPrintError err(cout);
-  PatchData pd;
-  bool rval;
-  double value;
-  
-  bool locs[4] = {false, false, false, false};
-  locs[dim] = true;
-  
-  SamplePoints pts( locs[0], locs[1], locs[2], locs[3] );
-  FauxTarget<TargetMetric2D> metric_2d(0.0);
-  FauxTarget<TargetMetric3D> metric_3d(0.0);
-  IdealTargetCalculator tc(false);
-  UnitWeight wc;
-  JacobianMetric m( &pts, &tc, &wc, &metric_2d, &metric_3d );
-  
-  tester.get_ideal_element( HEXAHEDRON, true, pd );
-  rval = m.evaluate( pd, 0, value, err );
-  CPPUNIT_ASSERT(!MSQ_CHKERR(err));
-  CPPUNIT_ASSERT(rval);
-  CPPUNIT_ASSERT_EQUAL( 1, metric_3d.count );
-  
-    // test that columns are orthogonal for ideal hex element
-  MsqMatrix<3,3> A = metric_3d.last_A;
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, A.column(0) % A.column(1), 1e-6 );
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, A.column(0) % A.column(2), 1e-6 );
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, A.column(1) % A.column(2), 1e-6 );
-}  
-
-void JacobianMetricTest::test_evaluate_2D_corner()
-  { test_2d_eval_ortho_quad(0); }
-
-void JacobianMetricTest::test_evaluate_2D_edge()
-  { test_2d_eval_ortho_quad(1); }
-
-void JacobianMetricTest::test_evaluate_2D_elem()
-  { test_2d_eval_ortho_quad(3); }
-
-void JacobianMetricTest::test_evaluate_3D_corner()
-  { test_3d_eval_ortho_hex(0); }
-  
-void JacobianMetricTest::test_evaluate_3D_edge()
-  { test_3d_eval_ortho_hex(1); }
-  
-void JacobianMetricTest::test_evaluate_3D_face()
-  { test_3d_eval_ortho_hex(2); }
-  
-void JacobianMetricTest::test_evaluate_3D_elem()
-  { test_3d_eval_ortho_hex(3); }
-
-void JacobianMetricTest::test_evaluate_with_indices()
-{
-  SamplePoints corners( true, false, false, false );
-  FauxTarget<TargetMetric2D> metric_2d(0.0);
-  FauxTarget<TargetMetric3D> metric_3d(0.0);
-  IdealTargetCalculator tc;
-  UnitWeight wc;
-  
-  JacobianMetric m( &corners, &tc, &wc, &metric_2d, &metric_3d );
-  tester.test_get_sample_indices( &m, &corners );
-  tester.compare_eval_and_eval_with_indices( &m );
-}
-
-void JacobianMetricTest::test_evaluate_fixed_indices()
-{
-  SamplePoints corners( true, false, false, false );
-  FauxTarget<TargetMetric2D> metric_2d(0.0);
-  FauxTarget<TargetMetric3D> metric_3d(0.0);
-  IdealTargetCalculator tc;
-  UnitWeight wc;
-  
-  JacobianMetric m( &corners, &tc, &wc, &metric_2d, &metric_3d );
-  tester.test_get_indices_fixed( &m );
-}
-
-
-// wrapper class to force numeric approximation of derivatives
+/** wrapper class to force numeric approximation of derivatives */
 template <class Base>
 class NumericalTarget : public Base
 {
@@ -489,23 +114,10 @@ private:
 };
 
 
-void JacobianMetricTest::test_evaluate_with_gradient()
-{
-  SamplePoints corners( true, false, false, false );
-  Target3DShapeSizeOrient test_metric_3D;
-  Target2DShapeSizeOrient test_metric_2D;
-  NumericalTarget<TargetMetric3D> num_metric_3D( &test_metric_3D );
-  NumericalTarget<TargetMetric2D> num_metric_2D( &test_metric_2D );
-  
-  IdealTargetCalculator tc;
-  UnitWeight wc;
-  JacobianMetric m( &corners, &tc, &wc, &num_metric_2D, &num_metric_3D );
-
-  tester.compare_eval_with_indices_and_eval_with_gradient( &m );
-  tester.compare_analytical_and_numerical_gradients( &m );
-  tester.test_ideal_element_zero_gradient( &m,true );
-}
-
+/** Simple target metric for testing first partial derivatives.  
+ *  \f$\mu(A,W) = |A|^2\f$
+ *  \f$\frac{\partial\mu}{\partial \A} = 2 A \f$
+ */
 class TestGradTargetMetric3D : public TargetMetric3D
 {
   public:
@@ -524,6 +136,365 @@ class TestGradTargetMetric3D : public TargetMetric3D
       return true;
     }
 };
+
+class JacobianMetricTest : public CppUnit::TestFixture
+{
+  CPPUNIT_TEST_SUITE(JacobianMetricTest);
+  
+  CPPUNIT_TEST (test_negate_flag);
+  CPPUNIT_TEST (test_supported_types);
+  CPPUNIT_TEST (test_get_evaluations);
+  CPPUNIT_TEST (test_get_element_evaluations);
+  
+  CPPUNIT_TEST (test_evaluate_2D);
+  CPPUNIT_TEST (test_evaluate_3D);
+  CPPUNIT_TEST (test_evaluate_2D_weight);
+  CPPUNIT_TEST (test_evaluate_3D_weight);
+  CPPUNIT_TEST (test_evaluate_2D_corner);
+  CPPUNIT_TEST (test_evaluate_2D_edge);
+  CPPUNIT_TEST (test_evaluate_2D_elem);
+  CPPUNIT_TEST (test_evaluate_3D_corner);
+  CPPUNIT_TEST (test_evaluate_3D_edge);
+  CPPUNIT_TEST (test_evaluate_3D_edge);
+  CPPUNIT_TEST (test_evaluate_3D_face);
+  
+  CPPUNIT_TEST (test_sample_indices);
+  CPPUNIT_TEST (test_evaluate_with_indices);
+  CPPUNIT_TEST (test_evaluate_fixed_indices);
+  
+  CPPUNIT_TEST (test_gradient_3D);
+  CPPUNIT_TEST (compare_indices_and_gradient);
+  CPPUNIT_TEST (test_ideal_element_gradient);
+  CPPUNIT_TEST (compare_analytical_and_numerical_gradient);
+  CPPUNIT_TEST (test_weighted_gradients);
+  CPPUNIT_TEST (test_gradient_with_fixed_vertices);
+
+  CPPUNIT_TEST (compare_indices_and_hessian);
+  CPPUNIT_TEST (compare_gradient_and_hessian);
+  CPPUNIT_TEST (compare_analytical_and_numerical_hessians);
+  CPPUNIT_TEST (test_symmetric_hessian_diagonal);
+  CPPUNIT_TEST (test_weighted_hessians);
+  CPPUNIT_TEST (test_hessian_with_fixed_vertices);
+
+  CPPUNIT_TEST (compare_indices_and_diagonal);
+  CPPUNIT_TEST (compare_gradient_and_diagonal);
+  CPPUNIT_TEST (compare_analytical_and_numerical_diagonals);
+  CPPUNIT_TEST (test_weighted_diagonals);
+  CPPUNIT_TEST (test_diagonal_with_fixed_vertices);
+
+  CPPUNIT_TEST_SUITE_END();
+  
+  void test_2d_eval_ortho_quad( unsigned dim );
+  void test_3d_eval_ortho_hex( unsigned dim );
+
+  QualityMetricTester tester;
+
+  LinearFunctionSet mf;
+  SamplePoints corners, center;
+  UnitWeight one;
+  IdealTargetCalculator ideal;
+  ScaleWeight e_weight;
+
+  FauxTarget<TargetMetric2D> faux_2d_pi, faux_2d_zero;
+  FauxTarget<TargetMetric3D> faux_3d_zero, faux_3d_two;
+  Target3DShapeSizeOrient test_metric_3D;
+  Target2DShapeSizeOrient test_metric_2D;
+  NumericalTarget<TargetMetric3D> num_metric_3D;
+  NumericalTarget<TargetMetric2D> num_metric_2D;
+  JacobianMetric test_qm, zero_qm, weight_qm, center_qm;
+  
+public:
+  JacobianMetricTest() : 
+    tester( QualityMetricTester::ALL_FE_EXCEPT_SEPTAHEDRON, &mf ),
+    corners( true, false, false, false ),
+    center( false, false, false, true ),
+    e_weight( 2.7182818284590451 ),
+    faux_2d_pi(3.14159), faux_2d_zero(0.0),
+    faux_3d_zero(0.0), faux_3d_two(2.0),
+    num_metric_3D( &test_metric_3D ),
+    num_metric_2D( &test_metric_2D ),
+    test_qm( &corners, &ideal, &one, &num_metric_2D, &num_metric_3D ),
+    zero_qm( &corners, &ideal, &one, &faux_2d_zero, &faux_3d_zero ),
+    weight_qm( &corners, &ideal, &e_weight, &test_metric_2D, &test_metric_3D ),
+    center_qm( &center, &ideal, &one, &test_metric_2D, &test_metric_3D )
+  {  }
+  
+  void test_negate_flag()
+    { CPPUNIT_ASSERT_EQUAL( 1, zero_qm.get_negate_flag() ); }
+  void test_supported_types()     
+    { tester.test_supported_element_types( &zero_qm ); }
+  void test_get_evaluations();
+  void test_get_element_evaluations();
+  void test_evaluate_2D();
+  void test_evaluate_3D();
+  void test_evaluate_2D_weight();
+  void test_evaluate_3D_weight();
+  void test_evaluate_2D_corner()  { test_2d_eval_ortho_quad(0); }
+  void test_evaluate_2D_edge()    { test_2d_eval_ortho_quad(1); }
+  void test_evaluate_2D_elem()    { test_2d_eval_ortho_quad(3); }
+  void test_evaluate_3D_corner()  { test_3d_eval_ortho_hex(0); }
+  void test_evaluate_3D_edge()    { test_3d_eval_ortho_hex(1); }
+  void test_evaluate_3D_face()    { test_3d_eval_ortho_hex(2); }
+  void test_evaluate_3D_elem()    { test_3d_eval_ortho_hex(3); }
+  void test_gradient_3D();
+
+  void test_sample_indices()
+    { tester.test_get_sample_indices( &zero_qm, &corners ); }
+  void test_evaluate_with_indices()
+    { tester.compare_eval_and_eval_with_indices( &zero_qm ); }
+  void test_evaluate_fixed_indices() 
+    { tester.test_get_indices_fixed( &zero_qm ); }
+    
+  void compare_indices_and_gradient()
+    { tester.compare_eval_with_indices_and_eval_with_gradient( &test_qm ); }
+  void test_ideal_element_gradient()
+    { tester.test_ideal_element_zero_gradient( &test_qm, true ); }
+  void compare_analytical_and_numerical_gradient()
+    { tester.compare_analytical_and_numerical_gradients( &test_qm ); }
+  void test_weighted_gradients()
+    { tester.compare_analytical_and_numerical_gradients( &weight_qm ); }
+  void test_gradient_with_fixed_vertices()
+    { tester.test_gradient_with_fixed_vertex( &center_qm ); }
+
+  void compare_indices_and_hessian()
+    { tester.compare_eval_with_indices_and_eval_with_hessian( &test_qm ); }
+  void compare_gradient_and_hessian()
+    { tester.compare_eval_with_grad_and_eval_with_hessian( &test_qm );  }
+  void compare_analytical_and_numerical_hessians()
+    { tester.compare_analytical_and_numerical_hessians( &test_qm ); }
+  void test_symmetric_hessian_diagonal()
+    { tester.test_symmetric_Hessian_diagonal_blocks( &test_qm ); }
+  void test_weighted_hessians()
+    { tester.compare_analytical_and_numerical_hessians( &weight_qm ); }
+  void test_hessian_with_fixed_vertices()
+    { tester.test_hessian_with_fixed_vertex( &center_qm ); }
+
+  void compare_indices_and_diagonal()
+    { tester.compare_eval_with_indices_and_eval_with_diagonal( &test_qm ); }
+  void compare_gradient_and_diagonal()
+    { tester.compare_eval_with_grad_and_eval_with_diagonal( &test_qm ); }
+  void compare_analytical_and_numerical_diagonals()
+    { tester.compare_analytical_and_numerical_diagonals( &test_qm ); }
+  void test_weighted_diagonals()
+    { tester.compare_analytical_and_numerical_diagonals( &weight_qm ); }
+  void test_diagonal_with_fixed_vertices()
+    { tester.test_diagonal_with_fixed_vertex( &center_qm ); }
+};
+
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(JacobianMetricTest, "JacobianMetricTest");
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(JacobianMetricTest, "Unit");
+
+void JacobianMetricTest::test_get_evaluations()
+{
+  SamplePoints corners_and_edges( true, true, false, false );
+  JacobianMetric edge_metric( &corners_and_edges, &ideal, &one, &faux_2d_zero, &faux_3d_zero );
+  
+  tester.test_get_sample_evaluations( &zero_qm, &corners );
+  tester.test_get_sample_evaluations( &edge_metric, &corners_and_edges );
+}
+  
+
+void JacobianMetricTest::test_get_element_evaluations()
+{
+  SamplePoints edges( false, true, false, false );
+  JacobianMetric edge_metric( &edges, &ideal, &one, &faux_2d_zero, &faux_3d_zero );
+  
+  tester.test_get_in_element_evaluations( &zero_qm );
+  tester.test_get_in_element_evaluations( &edge_metric );
+}
+
+static double col_dot_prod( MsqMatrix<2,2>& m )
+  { return m(0,0) * m(0,1) + m(1,0) * m(1,1); }
+
+void JacobianMetricTest::test_evaluate_2D()
+{
+  MsqPrintError err(cout);
+  PatchData pd;
+  bool rval;
+  double value;
+  
+  JacobianMetric m( &corners, &ideal, &one, &faux_2d_pi, &faux_3d_zero );
+  
+    // test with aligned elements
+  faux_2d_pi.count = faux_3d_zero.count = 0;
+  tester.get_ideal_element( QUADRILATERAL, true, pd );
+  rval = m.evaluate( pd, 0, value, err );
+  CPPUNIT_ASSERT(!MSQ_CHKERR(err));
+  CPPUNIT_ASSERT(rval);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_2d_pi.value, value, DBL_EPSILON );
+  CPPUNIT_ASSERT_EQUAL( 1, faux_2d_pi.count );
+  CPPUNIT_ASSERT_EQUAL( 0, faux_3d_zero.count );
+  ASSERT_MATRICES_EQUAL( faux_2d_pi.last_W, faux_2d_pi.last_A, 1e-6 );
+  
+    // test that columns are orthogonal for ideal quad element
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, col_dot_prod(faux_2d_pi.last_A), 1e-6 );
+  
+    // test with an element rotated about X-axis
+  faux_2d_pi.count = faux_3d_zero.count = 0;
+  tester.get_ideal_element( QUADRILATERAL, true, pd );
+  // rotate by 90 degrees about X axis
+  for (size_t i = 0; i < pd.num_nodes(); ++i) {
+    double z = pd.vertex_by_index(i)[2];
+    pd.vertex_by_index(i)[2] = pd.vertex_by_index(i)[1];
+    pd.vertex_by_index(i)[1] =-z;
+  }
+  rval = m.evaluate( pd, 0, value, err );
+  CPPUNIT_ASSERT(!MSQ_CHKERR(err));
+  CPPUNIT_ASSERT(rval);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_2d_pi.value, value, DBL_EPSILON );
+  CPPUNIT_ASSERT_EQUAL( 1, faux_2d_pi.count );
+  CPPUNIT_ASSERT_EQUAL( 0, faux_3d_zero.count );
+  ASSERT_MATRICES_EQUAL( faux_2d_pi.last_W, faux_2d_pi.last_A, 1e-6 );
+  
+    // test with an element rotated about Y-axis
+  faux_2d_pi.count = faux_3d_zero.count = 0;
+  tester.get_ideal_element( TRIANGLE, true, pd );
+  // rotate by -90 degrees about Y axis
+  for (size_t i = 0; i < pd.num_nodes(); ++i) {
+    double z = pd.vertex_by_index(i)[2];
+    pd.vertex_by_index(i)[2] = -pd.vertex_by_index(i)[0];
+    pd.vertex_by_index(i)[0] = z;
+  }
+  rval = m.evaluate( pd, 0, value, err );
+  CPPUNIT_ASSERT(!MSQ_CHKERR(err));
+  CPPUNIT_ASSERT(rval);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_2d_pi.value, value, DBL_EPSILON );
+  CPPUNIT_ASSERT_EQUAL( 1, faux_2d_pi.count );
+  CPPUNIT_ASSERT_EQUAL( 0, faux_3d_zero.count );
+  ASSERT_MATRICES_EQUAL( faux_2d_pi.last_W, faux_2d_pi.last_A, 1e-6 );
+}  
+ 
+  
+void JacobianMetricTest::test_evaluate_3D()
+{
+  MsqPrintError err(cout);
+  PatchData pd;
+  bool rval;
+  double value;
+  
+  JacobianMetric m( &corners, &ideal, &one, &faux_2d_zero, &faux_3d_two );
+  
+    // test with aligned elements
+  faux_2d_zero.count = faux_3d_two.count = 0;
+  tester.get_ideal_element( HEXAHEDRON, true, pd );
+  rval = m.evaluate( pd, 0, value, err );
+  CPPUNIT_ASSERT(!MSQ_CHKERR(err));
+  CPPUNIT_ASSERT(rval);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_3d_two.value, value, DBL_EPSILON );
+  CPPUNIT_ASSERT_EQUAL( 0, faux_2d_zero.count );
+  CPPUNIT_ASSERT_EQUAL( 1, faux_3d_two.count );
+  ASSERT_MATRICES_EQUAL( faux_3d_two.last_W, faux_3d_two.last_A, 1e-6 );
+  
+    // test that columns are orthogonal for ideal hex element
+  MsqMatrix<3,3> A = faux_3d_two.last_A;
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, A.column(0) % A.column(1), 1e-6 );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, A.column(0) % A.column(2), 1e-6 );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, A.column(1) % A.column(2), 1e-6 );
+  
+    // test with rotated element
+  faux_2d_zero.count = faux_3d_two.count = 0;
+  tester.get_ideal_element( TETRAHEDRON, true, pd );
+  // rotate by 90-degrees about X axis
+  for (size_t i = 0; i < pd.num_nodes(); ++i) {
+    double z = pd.vertex_by_index(i)[2];
+    pd.vertex_by_index(i)[2] = pd.vertex_by_index(i)[1];
+    pd.vertex_by_index(i)[1] =-z;
+  }
+  rval = m.evaluate( pd, 0, value, err );
+  CPPUNIT_ASSERT(!MSQ_CHKERR(err));
+  CPPUNIT_ASSERT(rval);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_3d_two.value, value, DBL_EPSILON );
+  CPPUNIT_ASSERT_EQUAL( 0, faux_2d_zero.count );
+  CPPUNIT_ASSERT_EQUAL( 1, faux_3d_two.count );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( determinant(faux_3d_two.last_W),
+                                determinant(faux_3d_two.last_A),
+                                1e-6 );
+}
+
+
+void JacobianMetricTest::test_evaluate_2D_weight()
+{
+  MsqPrintError err(cout);
+  PatchData pd;
+  bool rval;
+  double value;
+  
+  JacobianMetric m( &corners, &ideal, &e_weight, &faux_2d_pi, &faux_3d_zero );
+  
+  tester.get_ideal_element( TRIANGLE, true, pd );
+  rval = m.evaluate( pd, 0, value, err );
+  CPPUNIT_ASSERT(!MSQ_CHKERR(err));
+  CPPUNIT_ASSERT(rval);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_2d_pi.value*e_weight.value, value, DBL_EPSILON );
+}
+
+
+void JacobianMetricTest::test_evaluate_3D_weight()
+{
+  MsqPrintError err(cout);
+  PatchData pd;
+  bool rval;
+  double value;
+  
+  JacobianMetric m( &corners, &ideal, &e_weight, &faux_2d_zero, &faux_3d_two );
+  
+  tester.get_ideal_element( PRISM, true, pd );
+  rval = m.evaluate( pd, 0, value, err );
+  CPPUNIT_ASSERT(!MSQ_CHKERR(err));
+  CPPUNIT_ASSERT(rval);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_3d_two.value*e_weight.value, value, DBL_EPSILON );
+}
+
+void JacobianMetricTest::test_2d_eval_ortho_quad( unsigned dim )
+{
+  MsqPrintError err(cout);
+  PatchData pd;
+  bool rval;
+  double value;
+  
+  bool locs[4] = {false, false, false, false};
+  locs[dim] = true;
+  
+  SamplePoints pts( locs[0], locs[1], locs[2], locs[3] );
+  JacobianMetric m( &pts, &ideal, &one, &faux_2d_zero, &faux_3d_zero );
+  faux_2d_zero.count = faux_3d_zero.count = 0;
+  
+  tester.get_ideal_element( QUADRILATERAL, true, pd );
+  rval = m.evaluate( pd, 0, value, err );
+  CPPUNIT_ASSERT(!MSQ_CHKERR(err));
+  CPPUNIT_ASSERT(rval);
+  CPPUNIT_ASSERT_EQUAL( 1, faux_2d_zero.count );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, col_dot_prod(faux_2d_zero.last_A), DBL_EPSILON );
+}  
+
+void JacobianMetricTest::test_3d_eval_ortho_hex( unsigned dim )
+{
+  MsqPrintError err(cout);
+  PatchData pd;
+  bool rval;
+  double value;
+  
+  bool locs[4] = {false, false, false, false};
+  locs[dim] = true;
+  
+  SamplePoints pts( locs[0], locs[1], locs[2], locs[3] );
+  JacobianMetric m( &pts, &ideal, &one, &faux_2d_zero, &faux_3d_zero );
+  faux_2d_zero.count = faux_3d_zero.count = 0;
+  
+  tester.get_ideal_element( HEXAHEDRON, true, pd );
+  rval = m.evaluate( pd, 0, value, err );
+  CPPUNIT_ASSERT(!MSQ_CHKERR(err));
+  CPPUNIT_ASSERT(rval);
+  CPPUNIT_ASSERT_EQUAL( 1, faux_3d_zero.count );
+  
+    // test that columns are orthogonal for ideal hex element
+  MsqMatrix<3,3> A = faux_3d_zero.last_A;
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, A.column(0) % A.column(1), 1e-6 );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, A.column(0) % A.column(2), 1e-6 );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, A.column(1) % A.column(2), 1e-6 );
+}  
+
+
 
 void JacobianMetricTest::test_gradient_3D()
 {
@@ -607,4 +578,3 @@ void JacobianMetricTest::test_gradient_3D()
   CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[6]].data()), act_grad[6], 1e-5 );
   CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[7]].data()), act_grad[7], 1e-5 );
 }
-

@@ -54,6 +54,14 @@ class TSquared2D : public TargetMetric2D
                            double& result, 
                            MsqMatrix<2,2>& wrt_A, 
                            MsqError& err );
+
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_hess( const MsqMatrix<2,2>& A,
+                           const MsqMatrix<2,2>& W,
+                           double& result,
+                           MsqMatrix<2,2>& deriv_wrt_A,
+                           MsqMatrix<2,2> hess_wrt_A[3],
+                           MsqError& err );
 };
 
 } // namespace Mesquite

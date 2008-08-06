@@ -117,6 +117,24 @@ public:
                  msq_std::vector<Vector3D>& gradient,
                  MsqError& err );
 
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_Hessian_diagonal( PatchData& pd,
+                    size_t handle,
+                    double& value,
+                    msq_std::vector<size_t>& indices,
+                    msq_std::vector<Vector3D>& gradient,
+                    msq_std::vector<SymMatrix3D>& Hessian_diagonal,
+                    MsqError& err );
+                    
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_Hessian( PatchData& pd,
+                    size_t handle,
+                    double& value,
+                    msq_std::vector<size_t>& indices,
+                    msq_std::vector<Vector3D>& gradient,
+                    msq_std::vector<Matrix3D>& Hessian,
+                    MsqError& err );
+
   MESQUITE_EXPORT 
   const SamplePoints* get_sample_points() const 
     { return samplePts; }

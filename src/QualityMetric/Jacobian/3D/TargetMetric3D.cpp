@@ -60,5 +60,15 @@ bool TargetMetric3D::evaluate_with_grad( const MsqMatrix<3,3>& A,
   return true;
 }
 
+bool TargetMetric3D::evaluate_with_hess( const MsqMatrix<3,3>& A,
+                                         const MsqMatrix<3,3>& W,
+                                         double& result,
+                                         MsqMatrix<3,3>& deriv_wrt_A,
+                                         MsqMatrix<3,3> hess_wrt_A[6],
+                                         MsqError& err )
+{
+  return do_numerical_hessian( this, A, W, result, deriv_wrt_A, hess_wrt_A, err );
+}
+
 } // namespace Mesquite
 
