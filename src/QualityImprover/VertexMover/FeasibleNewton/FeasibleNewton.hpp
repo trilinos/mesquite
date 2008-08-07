@@ -121,6 +121,7 @@ namespace Mesquite
     double convTol;
     MsqHessian mHessian;
     PatchDataVerticesMemento* coordsMem;
+    bool havePrintedDirectionMessage;
   };
   
 }

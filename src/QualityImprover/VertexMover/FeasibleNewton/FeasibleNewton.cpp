@@ -63,7 +63,8 @@ FeasibleNewton::FeasibleNewton(ObjectiveFunction* of, bool Nash)
   : VertexMover(of, Nash), 
     PatchSetUser(true),
     convTol(1e-6),
-    coordsMem(0)
+    coordsMem(0),
+    havePrintedDirectionMessage(false)
 {
   MsqError err;
   TerminationCriterion* default_crit=get_inner_termination_criterion();
@@ -78,6 +79,7 @@ void FeasibleNewton::initialize(PatchData &pd, MsqError &err)
   // Cannot do anything.  Variable sizes with maximum size dependent
   // upon the entire MeshSet.
   coordsMem = pd.create_vertices_memento(err); MSQ_CHKERR(err);
+  havePrintedDirectionMessage = false;
 }
 
 void FeasibleNewton::initialize_mesh_iteration(PatchData &pd, MsqError &/*err*/)
@@ -166,7 +168,10 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
     // If direction is positive, does a gradient (steepest descent) step.
 
     if (alpha > -epsilon) {
-      MSQ_PRINT(1)("Newton direction not guaranteed descent.  Ensure preconditioner is positive definite.\n");
+      if (!havePrintedDirectionMessage) {
+        MSQ_PRINT(1)("Newton direction not guaranteed descent.  Ensure preconditioner is positive definite.\n");
+        havePrintedDirectionMessage = true;
+      }
 
       // TODD: removed performing gradient step here since we will use
       // gradient if step does not produce descent.  Instead we set
