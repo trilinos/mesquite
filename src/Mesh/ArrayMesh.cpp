@@ -61,7 +61,10 @@ ArrayMesh::ArrayMesh()
     vertexByteArray( 0 ),
     elementCount( 0 ),
     connArray( 0 ),
+    connOffsets( 0 ),
+    allocConnOffsets( 0 ),
     elementType( MIXED ),
+    elementTypes( 0 ),
     nodesPerElement( 0 ),
     oneBasedArrays( false ),
     vertexAdjacencyList(0),
@@ -84,7 +87,10 @@ ArrayMesh::ArrayMesh( int coords_per_vertex,
     vertexByteArray( new unsigned char[num_vertices + one_based_conn_indices] ),
     elementCount( num_elements ),
     connArray( element_connectivity_array ),
+    connOffsets( 0 ),
+    allocConnOffsets( 0 ),
     elementType( element_type ),
+    elementTypes( 0 ),
     nodesPerElement( nodes_per_element ),
     oneBasedArrays( one_based_conn_indices ),
     vertexAdjacencyList(0),
@@ -100,19 +106,64 @@ ArrayMesh::ArrayMesh( int coords_per_vertex,
   memset( vertexByteArray, 0, num_vertices + one_based_conn_indices );
 }
 
+ArrayMesh::ArrayMesh( int coords_per_vertex,
+                      unsigned long num_vertices,
+                      double* interleaved_vertex_coords,
+                      const int* vertex_fixed_flags,
+                      unsigned long num_elements,
+                      const EntityTopology* element_types,
+                      const unsigned long* element_connectivity_array,
+                      const unsigned long* element_connectivity_offsets,
+                      bool one_based_conn_indices ) 
+  : mDimension( coords_per_vertex ),
+    vertexCount( num_vertices ),
+    coordArray( interleaved_vertex_coords ),
+    fixedFlags( vertex_fixed_flags ),
+    vertexByteArray( new unsigned char[num_vertices + one_based_conn_indices] ),
+    elementCount( num_elements ),
+    connArray( element_connectivity_array ),
+    connOffsets( element_connectivity_offsets ),
+    allocConnOffsets( 0 ),
+    elementType( MIXED ),
+    elementTypes( element_types ),
+    nodesPerElement( 0 ),
+    oneBasedArrays( one_based_conn_indices ),
+    vertexAdjacencyList(0),
+    vertexAdjacencyOffsets(0)
+{
+  if (oneBasedArrays) {
+    coordArray -= mDimension;
+    --fixedFlags;
+    if (element_connectivity_offsets)
+      --connArray;
+  }
+  
+  if (!element_connectivity_offsets) {
+    connOffsets = allocConnOffsets = new unsigned long[num_elements+1];
+    allocConnOffsets[0] = 0;
+    for (unsigned long i = 1; i <= num_elements; ++i)
+      allocConnOffsets[i] = allocConnOffsets[i-1] + TopologyInfo::corners( elementTypes[i-1] );
+  }
+  
+  memset( vertexByteArray, 0, num_vertices + one_based_conn_indices );
+}
+
 void ArrayMesh::clear_mesh()
 {
   delete [] vertexByteArray;
   delete [] vertexAdjacencyList;
   delete [] vertexAdjacencyOffsets;
+  delete [] allocConnOffsets;
   mDimension = 0;
   vertexCount = 0;
   coordArray = 0;
+  connOffsets = 0;
+  allocConnOffsets = 0;
   fixedFlags = 0;
   vertexByteArray = 0;
   elementCount = 0;
-  connArray = 0;
   elementType = MIXED;
+  elementTypes = 0;
   nodesPerElement = 0;
   oneBasedArrays = false;
   vertexAdjacencyList = 0;
@@ -160,6 +211,19 @@ ArrayMesh::~ArrayMesh()
   delete [] vertexByteArray;
   delete [] vertexAdjacencyList;
   delete [] vertexAdjacencyOffsets;
+  delete [] allocConnOffsets;
+}
+
+inline const unsigned long* ArrayMesh::elem_verts( size_t e, int& n ) const
+{
+  if (connOffsets) {
+    n = connOffsets[e+1] - connOffsets[e];
+    return connArray + connOffsets[e];
+  }
+  else {
+    n = nodesPerElement;
+    return connArray + nodesPerElement*e;
+  }
 }
 
 int ArrayMesh::get_geometric_dimension( MsqError& )
@@ -287,22 +351,29 @@ void ArrayMesh::elements_get_attached_vertices(
 {
   const size_t* indices = (const size_t*)elem_handles;
   offsets.resize( num_elems + 1);
-  vert_handles.resize( num_elems * nodesPerElement );
+  vert_handles.clear();
   for (size_t i = 0; i < num_elems; ++i) {
-    offsets[i] = i * nodesPerElement;
-    std::copy( connArray + indices[i] * nodesPerElement,
-               connArray + indices[i] * nodesPerElement + nodesPerElement,
-               (size_t*)&vert_handles[i * nodesPerElement] );
+    int count;
+    const unsigned long* conn = elem_verts( indices[i], count );
+    size_t prev_size = vert_handles.size();
+    offsets[i] = prev_size;
+    vert_handles.resize( prev_size + count );
+    std::copy( conn, conn+count, (size_t*)(&vert_handles[prev_size]) );
   }
-  offsets[num_elems] = num_elems * nodesPerElement;
+  offsets[num_elems] = vert_handles.size();
 }
 
-void ArrayMesh::elements_get_topologies( const ElementHandle *,
+void ArrayMesh::elements_get_topologies( const ElementHandle *handles,
                                          EntityTopology *element_topologies,
                                          size_t num_elements, MsqError& )
 {
-  for (size_t i = 0; i < num_elements; ++i)
-    element_topologies[i] = elementType;
+  const size_t* indices = (const size_t*)handles;
+  if (elementType == MIXED) 
+    for (size_t i = 0; i < num_elements; ++i)
+      element_topologies[i] = elementTypes[indices[i]];
+  else 
+    for (size_t i = 0; i < num_elements; ++i)
+      element_topologies[i] = elementType;
 }
 
 void ArrayMesh::release_entity_handles( const EntityHandle*, size_t, MsqError& err )
@@ -317,16 +388,31 @@ void ArrayMesh::build_vertex_adjacency_list()
   delete [] vertexAdjacencyList;
   delete [] vertexAdjacencyOffsets;
   vertexAdjacencyOffsets = new unsigned long[vertexCount+oneBasedArrays+1];
+  
+    // for each vertex, store the number of elements the previous
+    // vertex occurs in.
   memset( vertexAdjacencyOffsets, 0, sizeof(unsigned long)*(vertexCount+oneBasedArrays+1) );
-  for (size_t i = 0; i < elementCount; ++i)
-    for (size_t j = i*nodesPerElement; j < (i+1)*nodesPerElement; ++j)
-      ++vertexAdjacencyOffsets[connArray[j]+1];
+  for (size_t i = 0; i < elementCount; ++i) {
+    int n;
+    const unsigned long* conn = elem_verts( i, n );
+    for (int j = 0; j < n; ++j)
+      ++vertexAdjacencyOffsets[conn[j]+1];
+  }
+  
+    // convert vertexAdjacencyOffsets from a shifted list of counts
+    // to a list of offsts
   for (size_t i = 1; i <= vertexCount+oneBasedArrays; ++i)
     vertexAdjacencyOffsets[i] += vertexAdjacencyOffsets[i-1];
+    
+    // allocate space and populate with reverse connectivity
   vertexAdjacencyList = new unsigned long[vertexAdjacencyOffsets[vertexCount+oneBasedArrays]];
-  for (size_t i = 0; i < elementCount; ++i)
-    for (size_t j = i*nodesPerElement; j < (i+1)*nodesPerElement; ++j)
-      vertexAdjacencyList[vertexAdjacencyOffsets[connArray[j]]++] = i;
+  for (size_t i = 0; i < elementCount; ++i) {
+    int n;
+    const unsigned long* conn = elem_verts( i, n );
+    for (int j = 0; j < n; ++j)
+      vertexAdjacencyList[vertexAdjacencyOffsets[conn[j]]++] = i;
+  }
+  
   for (size_t i = vertexCount+oneBasedArrays; i > 0; --i)
     vertexAdjacencyOffsets[i] = vertexAdjacencyOffsets[i-1];
   vertexAdjacencyOffsets[0] = 0; 

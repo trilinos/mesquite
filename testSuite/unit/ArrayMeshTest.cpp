@@ -62,13 +62,21 @@ private:
   CPPUNIT_TEST( test_vertices_get_attached_elements );
   CPPUNIT_TEST( test_vertices_get_attached_elements_one_based );
   CPPUNIT_TEST( test_elements_get_attached_vertices );
-  CPPUNIT_TEST( test_elments_get_topologies );
+  CPPUNIT_TEST( test_elements_get_topologies );
+
+  CPPUNIT_TEST( test_vertices_get_attached_elements_mixed );
+  CPPUNIT_TEST( test_vertices_get_attached_elements_mixed_one_based );
+  CPPUNIT_TEST( test_elements_get_attached_vertices_mixed );
+  CPPUNIT_TEST( test_elements_get_attached_vertices_mixed_one_based );
+  CPPUNIT_TEST( test_elements_get_topologies_mixed );
   
   CPPUNIT_TEST_SUITE_END();
 
   ArrayMesh *zeroBased3D, *oneBased3D, *zeroBased2D, *oneBased2D;
+  ArrayMesh *mixedZeroBased, *mixedOneBased;
   double *zeroBased3Dcoords, *oneBased3Dcoords, *zeroBased2Dcoords, *oneBased2Dcoords;
-
+  double *mixedZeroBasedCoords, *mixedOneBasedCoords;
+  
 public:
 
   void setUp();
@@ -93,7 +101,13 @@ public:
   void test_vertices_get_attached_elements ();
   void test_vertices_get_attached_elements_one_based ();
   void test_elements_get_attached_vertices ();
-  void test_elments_get_topologies ();
+  void test_elements_get_topologies ();
+
+  void test_vertices_get_attached_elements_mixed ();
+  void test_vertices_get_attached_elements_mixed_one_based ();
+  void test_elements_get_attached_vertices_mixed ();
+  void test_elements_get_attached_vertices_mixed_one_based ();
+  void test_elements_get_topologies_mixed ();
 };
 
 
@@ -148,32 +162,73 @@ const int fixed[] = { 1, 1, 1,
                       1, 0, 1,
                       1, 1, 1 };
 
+/* Mixed mesh
+ *
+ *   0-------1-------2-------3
+ *   |       | \  2  |       |
+ *   |   0   |   \   |   3   |
+ *   |       | 1   \ |       |
+ *   7-------6-------5-------4
+ */
+const double mixed_coords[] = { 0.0, 1.0, 0.0,
+                                1.0, 1.0, 0.0,
+                                2.0, 1.0, 0.0,
+                                3.0, 1.0, 0.0,
+                                3.0, 0.0, 0.0,
+                                2.0, 0.0, 0.0,
+                                1.0, 0.0, 0.0,
+                                0.0, 0.0, 0.0 };
+const unsigned long mixed_conn_zero[] = { 7, 6, 1, 0,
+                                          6, 5, 1,
+                                          2, 1, 5,
+                                          5, 4, 3, 2 };
+const unsigned long mixed_conn_one[]  = { 8, 7, 2, 1,
+                                          7, 6, 2,
+                                          3, 2, 6,
+                                          6, 5, 4, 3 };
+const EntityTopology mixed_types[] = { QUADRILATERAL,
+                                       TRIANGLE,
+                                       TRIANGLE,
+                                       QUADRILATERAL };
+const unsigned long conn_offsets_zero[] = { 0, 4, 7, 10, 14 };
+
+
 void ArrayMeshTest::setUp()
 {
-  zeroBased3Dcoords = new double[27];
-   oneBased3Dcoords = new double[27];
-  zeroBased2Dcoords = new double[18];
-   oneBased2Dcoords = new double[18];
-  memcpy( zeroBased3Dcoords, coords_3d, 27*sizeof(double) );
-  memcpy(  oneBased3Dcoords, coords_3d, 27*sizeof(double) );
-  memcpy( zeroBased2Dcoords, coords_2d, 18*sizeof(double) );
-  memcpy(  oneBased2Dcoords, coords_2d, 18*sizeof(double) );
-  zeroBased3D = new ArrayMesh( 3, 9, zeroBased3Dcoords, fixed, 4, QUADRILATERAL, conn_zero_based, false );
-   oneBased3D = new ArrayMesh( 3, 9,  oneBased3Dcoords, fixed, 4, QUADRILATERAL, conn_one_based,  true  );
-  zeroBased2D = new ArrayMesh( 2, 9, zeroBased2Dcoords, fixed, 4, QUADRILATERAL, conn_zero_based, false );
-   oneBased2D = new ArrayMesh( 2, 9,  oneBased2Dcoords, fixed, 4, QUADRILATERAL, conn_one_based,  true  );
+     zeroBased3Dcoords = new double[27];
+      oneBased3Dcoords = new double[27];
+     zeroBased2Dcoords = new double[18];
+      oneBased2Dcoords = new double[18];
+  mixedZeroBasedCoords = new double[24];
+   mixedOneBasedCoords = new double[24];
+  memcpy(    zeroBased3Dcoords, coords_3d,    27*sizeof(double) );
+  memcpy(     oneBased3Dcoords, coords_3d,    27*sizeof(double) );
+  memcpy(    zeroBased2Dcoords, coords_2d,    18*sizeof(double) );
+  memcpy(     oneBased2Dcoords, coords_2d,    18*sizeof(double) );
+  memcpy( mixedZeroBasedCoords, mixed_coords, 24*sizeof(double) );
+  memcpy(  mixedOneBasedCoords, mixed_coords, 24*sizeof(double) );
+     zeroBased3D = new ArrayMesh( 3, 9,    zeroBased3Dcoords, fixed, 4, QUADRILATERAL, conn_zero_based,                    false );
+      oneBased3D = new ArrayMesh( 3, 9,     oneBased3Dcoords, fixed, 4, QUADRILATERAL, conn_one_based,                     true  );
+     zeroBased2D = new ArrayMesh( 2, 9,    zeroBased2Dcoords, fixed, 4, QUADRILATERAL, conn_zero_based,                    false );
+      oneBased2D = new ArrayMesh( 2, 9,     oneBased2Dcoords, fixed, 4, QUADRILATERAL, conn_one_based,                     true  );
+  mixedZeroBased = new ArrayMesh( 3, 8, mixedZeroBasedCoords, fixed, 4, mixed_types,   mixed_conn_zero, conn_offsets_zero, false );
+   mixedOneBased = new ArrayMesh( 3, 8,  mixedOneBasedCoords, fixed, 4, mixed_types,   mixed_conn_one,  NULL,              true  );
 }
 
 void ArrayMeshTest::tearDown()
 {
-  delete zeroBased3D;
-  delete  oneBased3D;
-  delete zeroBased2D;
-  delete  oneBased2D;
-  delete [] zeroBased3Dcoords;
-  delete []  oneBased3Dcoords;
-  delete [] zeroBased2Dcoords;
-  delete []  oneBased2Dcoords;
+  delete    zeroBased3D;
+  delete     oneBased3D;
+  delete    zeroBased2D;
+  delete     oneBased2D;
+  delete mixedZeroBased;
+  delete  mixedOneBased;
+  delete []    zeroBased3Dcoords;
+  delete []     oneBased3Dcoords;
+  delete []    zeroBased2Dcoords;
+  delete []     oneBased2Dcoords;
+  delete [] mixedZeroBasedCoords;
+  delete []  mixedOneBasedCoords;
 }
 
 void ArrayMeshTest::test_get_geometric_dimension()
@@ -635,7 +690,7 @@ void ArrayMeshTest::test_elements_get_attached_vertices()
 } 
 
 
-void ArrayMeshTest::test_elments_get_topologies()
+void ArrayMeshTest::test_elements_get_topologies()
 {
   MsqPrintError err(std::cerr);
   const size_t elems[] = { 3, 2, 1, 0, 1, 2, 3, 4 };
@@ -647,4 +702,196 @@ void ArrayMeshTest::test_elments_get_topologies()
   CPPUNIT_ASSERT(!err);
   for (size_t i = 0; i < num_elem; ++i)
     CPPUNIT_ASSERT_EQUAL( (int)QUADRILATERAL, (int)topo[i] );
+}
+
+
+void ArrayMeshTest::test_vertices_get_attached_elements_mixed()
+{
+  MsqPrintError err(std::cerr);
+  const size_t verts[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+  msq_std::vector<Mesh::ElementHandle> elems;
+  msq_std::vector<size_t> offsets;
+  mixedZeroBased->vertices_get_attached_elements( (const Mesh::VertexHandle*)verts,
+                                               8, elems, offsets, err );
+  CPPUNIT_ASSERT(!err);
+
+  CPPUNIT_ASSERT_EQUAL( (size_t)14, elems.size() );
+  CPPUNIT_ASSERT( offsets.size() == 8 || offsets.size() == 9 );
+  if (offsets.size() == 9)
+    CPPUNIT_ASSERT_EQUAL( elems.size(), offsets[8] );
+
+    // vert 0
+  CPPUNIT_ASSERT_EQUAL( (size_t)0, offsets[0] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)0, (size_t)elems[ 0] );
+    // vert 1
+  CPPUNIT_ASSERT_EQUAL( (size_t)1, offsets[1] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)0, (size_t)elems[ 1] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)1, (size_t)elems[ 2] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)2, (size_t)elems[ 3] );
+    // vert 2
+  CPPUNIT_ASSERT_EQUAL( (size_t)4, offsets[2] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)2, (size_t)elems[ 4] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)3, (size_t)elems[ 5] );
+    // vert 3
+  CPPUNIT_ASSERT_EQUAL( (size_t)6, offsets[3] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)3, (size_t)elems[ 6] );
+    // vert 4
+  CPPUNIT_ASSERT_EQUAL( (size_t)7, offsets[4] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)3, (size_t)elems[ 7] );
+    // vert 5
+  CPPUNIT_ASSERT_EQUAL( (size_t)8, offsets[5] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)1, (size_t)elems[8] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)2, (size_t)elems[9] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)3, (size_t)elems[10] );
+    // vert 6
+  CPPUNIT_ASSERT_EQUAL( (size_t)11, offsets[6] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)0, (size_t)elems[11] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)1, (size_t)elems[12] );
+    // vert 7
+  CPPUNIT_ASSERT_EQUAL( (size_t)13, offsets[7] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)0, (size_t)elems[13] );
+}
+
+void ArrayMeshTest::test_vertices_get_attached_elements_mixed_one_based()
+{
+  MsqPrintError err(std::cerr);
+  const size_t verts[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
+  msq_std::vector<Mesh::ElementHandle> elems;
+  msq_std::vector<size_t> offsets;
+  mixedOneBased->vertices_get_attached_elements( (const Mesh::VertexHandle*)verts,
+                                               8, elems, offsets, err );
+  CPPUNIT_ASSERT(!err);
+
+  CPPUNIT_ASSERT_EQUAL( (size_t)14, elems.size() );
+  CPPUNIT_ASSERT( offsets.size() == 8 || offsets.size() == 9 );
+  if (offsets.size() == 9)
+    CPPUNIT_ASSERT_EQUAL( elems.size(), offsets[8] );
+
+    // vert 0
+  CPPUNIT_ASSERT_EQUAL( (size_t)0, offsets[0] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)0, (size_t)elems[ 0] );
+    // vert 1
+  CPPUNIT_ASSERT_EQUAL( (size_t)1, offsets[1] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)0, (size_t)elems[ 1] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)1, (size_t)elems[ 2] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)2, (size_t)elems[ 3] );
+    // vert 2
+  CPPUNIT_ASSERT_EQUAL( (size_t)4, offsets[2] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)2, (size_t)elems[ 4] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)3, (size_t)elems[ 5] );
+    // vert 3
+  CPPUNIT_ASSERT_EQUAL( (size_t)6, offsets[3] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)3, (size_t)elems[ 6] );
+    // vert 4
+  CPPUNIT_ASSERT_EQUAL( (size_t)7, offsets[4] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)3, (size_t)elems[ 7] );
+    // vert 5
+  CPPUNIT_ASSERT_EQUAL( (size_t)8, offsets[5] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)1, (size_t)elems[8] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)2, (size_t)elems[9] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)3, (size_t)elems[10] );
+    // vert 6
+  CPPUNIT_ASSERT_EQUAL( (size_t)11, offsets[6] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)0, (size_t)elems[11] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)1, (size_t)elems[12] );
+    // vert 7
+  CPPUNIT_ASSERT_EQUAL( (size_t)13, offsets[7] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)0, (size_t)elems[13] );
+}
+
+void ArrayMeshTest::test_elements_get_attached_vertices_mixed()
+{
+  MsqPrintError err(std::cerr);
+  const size_t elems[] = { 3, 2, 1, 0 };
+  msq_std::vector<Mesh::VertexHandle> verts;
+  msq_std::vector<size_t> offsets;
+  mixedZeroBased->elements_get_attached_vertices( (const Mesh::ElementHandle*)elems,
+                                               4, verts, offsets, err );
+  CPPUNIT_ASSERT(!err);
+  CPPUNIT_ASSERT_EQUAL( (size_t)14,  verts.size() );
+  CPPUNIT_ASSERT( offsets.size() == 4 || offsets.size() == 5 );
+  if (offsets.size() == 5)
+    CPPUNIT_ASSERT_EQUAL( verts.size(), offsets[4] );
+  
+    // elem 3
+  CPPUNIT_ASSERT_EQUAL( (size_t) 0, offsets[0] );
+  CPPUNIT_ASSERT_EQUAL( (size_t) 5, (size_t)verts[ 0] );
+  CPPUNIT_ASSERT_EQUAL( (size_t) 4, (size_t)verts[ 1] );
+  CPPUNIT_ASSERT_EQUAL( (size_t) 3, (size_t)verts[ 2] );
+  CPPUNIT_ASSERT_EQUAL( (size_t) 2, (size_t)verts[ 3] );
+  
+    // elem 2
+  CPPUNIT_ASSERT_EQUAL( (size_t) 4, offsets[1] );
+  CPPUNIT_ASSERT_EQUAL( (size_t) 2, (size_t)verts[ 4] );
+  CPPUNIT_ASSERT_EQUAL( (size_t) 1, (size_t)verts[ 5] );
+  CPPUNIT_ASSERT_EQUAL( (size_t) 5, (size_t)verts[ 6] );
+   
+    // elem 1
+  CPPUNIT_ASSERT_EQUAL( (size_t) 7, offsets[2] );
+  CPPUNIT_ASSERT_EQUAL( (size_t) 6, (size_t)verts[ 7] );
+  CPPUNIT_ASSERT_EQUAL( (size_t) 5, (size_t)verts[ 8] );
+  CPPUNIT_ASSERT_EQUAL( (size_t) 1, (size_t)verts[ 9] );
+   
+    // elem 0
+  CPPUNIT_ASSERT_EQUAL( (size_t)10, offsets[3] );
+  CPPUNIT_ASSERT_EQUAL( (size_t) 7, (size_t)verts[10] );
+  CPPUNIT_ASSERT_EQUAL( (size_t) 6, (size_t)verts[11] );
+  CPPUNIT_ASSERT_EQUAL( (size_t) 1, (size_t)verts[12] );
+  CPPUNIT_ASSERT_EQUAL( (size_t) 0, (size_t)verts[13] );
+} 
+
+void ArrayMeshTest::test_elements_get_attached_vertices_mixed_one_based()
+{
+  MsqPrintError err(std::cerr);
+  const size_t elems[] = { 3, 2, 1, 0 };
+  msq_std::vector<Mesh::VertexHandle> verts;
+  msq_std::vector<size_t> offsets;
+  mixedOneBased->elements_get_attached_vertices( (const Mesh::ElementHandle*)elems,
+                                               4, verts, offsets, err );
+  CPPUNIT_ASSERT(!err);
+  CPPUNIT_ASSERT_EQUAL( (size_t)14,  verts.size() );
+  CPPUNIT_ASSERT( offsets.size() == 4 || offsets.size() == 5 );
+  if (offsets.size() == 5)
+    CPPUNIT_ASSERT_EQUAL( verts.size(), offsets[4] );
+  
+    // elem 3
+  CPPUNIT_ASSERT_EQUAL( (size_t) 0, offsets[0] );
+  CPPUNIT_ASSERT_EQUAL( (size_t) 6, (size_t)verts[ 0] );
+  CPPUNIT_ASSERT_EQUAL( (size_t) 5, (size_t)verts[ 1] );
+  CPPUNIT_ASSERT_EQUAL( (size_t) 4, (size_t)verts[ 2] );
+  CPPUNIT_ASSERT_EQUAL( (size_t) 3, (size_t)verts[ 3] );
+  
+    // elem 2
+  CPPUNIT_ASSERT_EQUAL( (size_t) 4, offsets[1] );
+  CPPUNIT_ASSERT_EQUAL( (size_t) 3, (size_t)verts[ 4] );
+  CPPUNIT_ASSERT_EQUAL( (size_t) 2, (size_t)verts[ 5] );
+  CPPUNIT_ASSERT_EQUAL( (size_t) 6, (size_t)verts[ 6] );
+   
+    // elem 1
+  CPPUNIT_ASSERT_EQUAL( (size_t) 7, offsets[2] );
+  CPPUNIT_ASSERT_EQUAL( (size_t) 7, (size_t)verts[ 7] );
+  CPPUNIT_ASSERT_EQUAL( (size_t) 6, (size_t)verts[ 8] );
+  CPPUNIT_ASSERT_EQUAL( (size_t) 2, (size_t)verts[ 9] );
+   
+    // elem 0
+  CPPUNIT_ASSERT_EQUAL( (size_t)10, offsets[3] );
+  CPPUNIT_ASSERT_EQUAL( (size_t) 8, (size_t)verts[10] );
+  CPPUNIT_ASSERT_EQUAL( (size_t) 7, (size_t)verts[11] );
+  CPPUNIT_ASSERT_EQUAL( (size_t) 2, (size_t)verts[12] );
+  CPPUNIT_ASSERT_EQUAL( (size_t) 1, (size_t)verts[13] );
+} 
+
+
+void ArrayMeshTest::test_elements_get_topologies_mixed()
+{
+  MsqPrintError err(std::cerr);
+  const size_t elems[] = { 3, 2, 1, 0, 1, 2, 3 };
+  const size_t num_elem = sizeof(elems)/sizeof(elems[0]);
+  EntityTopology topo[num_elem];
+  memset( topo, 0, sizeof(topo) );
+  mixedZeroBased->elements_get_topologies( (const Mesh::ElementHandle*)elems, 
+                                         topo, num_elem, err );
+  CPPUNIT_ASSERT(!err);
+  for (size_t i = 0; i < num_elem; ++i)
+    CPPUNIT_ASSERT_EQUAL( (int)mixed_types[elems[i]], (int)topo[i] );
 }

@@ -75,7 +75,57 @@ class ArrayMesh : public Mesh
                const unsigned long* element_connectivity_array,
                bool one_based_conn_indices = false,
                unsigned nodes_per_element = 0 );
-    
+               
+      /** Create a Mesquite::Mesh instance that wraps application-provided
+       *  arrays.  
+       *
+       * Note:  An instance of this class will reference the passed in 
+       *        arrays.  It will not copy them.  
+       *
+       *\param coords_per_vertex Dimension of the mesh (2 or 3)
+       *\param num_vertices      Number of vertices in the mesh
+       *\param interleaved_vertex_coords Vertex coordinates.  Ordered as
+       *                         [x1, y1, z1, x2, y2, z2, ...]
+       *\param vertex_fixed_flags One value per vertex.  Zero if vertex is
+       *                         free, one if the poistion is fixed.
+       *\param num_elements      Number of elements in the mesh
+       *\param element_types     The topological type for each element.
+       *\param element_connectivity_array Element connectivity, specified
+       *                         as vertex indices such that the location
+       *                         of the vertex coordinates in vertex_coords
+       *                         is at 3 times the value in this array.
+       *\param element_connectivity_offsets An optional array of length one greater
+       *                         than num_elements.  Each entry other than
+       *                         the last should contain the value of the
+       *                         index into element_connectivity_array at
+       *                         which the connectivity data for the 
+       *                         corresponding element begins.  The last
+       *                         entry in the array must be the next-to-last
+       *                         entry plus the length of the connectivity
+       *                         data for the last element, such that the
+       *                         length of the connectivity data for any
+       *                         element 'e' can be calculated with:
+       *                           n = element_connectivity_offsets[e+1] - element_connectivity_offsets[e]
+       *
+       *                         If this array is not specified, then it
+       *                         will be assumed that the length of the
+       *                         connectivity data for each element is the
+       *                         number of corners necessary to represent
+       *                         its topological type (that it has no higher-order
+       *                         nodes.)
+       *\param one_based_conn_indices Use one-based (Fortran) array indexing.
+       */
+    ArrayMesh( int coords_per_vertex,
+               unsigned long num_vertices,
+               double* interleaved_vertex_coords,
+               const int* vertex_fixed_flags,
+               unsigned long num_elements,
+               const EntityTopology* element_types,
+               const unsigned long* element_connectivity_array,
+               const unsigned long* element_connectivity_offsets,
+               bool one_based_conn_indices = false );
+
+
     ArrayMesh();
     
     ~ArrayMesh();
@@ -200,19 +250,30 @@ class ArrayMesh : public Mesh
 
   private:
     
+    inline const unsigned long* elem_verts( size_t elem_index, int& num_vertex ) const;
+    
     void build_vertex_adjacency_list();
     
-    int mDimension;
-    unsigned long vertexCount;
-    double* coordArray;
-    const int* fixedFlags;
-    unsigned char* vertexByteArray;
+    int mDimension;                  //!< Coordinates per vertex
+    unsigned long vertexCount;       //!< Number of vertices
+    double* coordArray;              //!< Interleaved vertex coordinates
+    const int* fixedFlags;           //!< Vertex fixed flags
+    unsigned char* vertexByteArray;  //!< Vertex bytes
     
-    unsigned long elementCount;
-    const unsigned long* connArray;
-    EntityTopology elementType;
-    unsigned nodesPerElement;
-    bool oneBasedArrays;
+    unsigned long elementCount;      //!< Number of elements
+    const unsigned long* connArray;  //!< Element connectivity
+    const unsigned long* connOffsets;//!< Offsets into connectivity array
+                                     //!< for each element.  If NULL, then
+                                     //!< all elements are of the same type
+                                     //!< and have the same number of vertices.
+    unsigned long* allocConnOffsets; //!< Same as connOffsets if allocated
+                                     //!< by constructor.  NULL if connOffsets
+                                     //!< is either NULL or application-provided
+                                     //!< data.
+    EntityTopology elementType;      //!< Type for all elements if connOffsets is NULL
+    const EntityTopology* elementTypes; //!< Type for each element type if connOffsets is not NULL
+    unsigned nodesPerElement;        //!< Nodes per element if connOffsets is NULL
+    bool oneBasedArrays;             //!< FORTRAN-style array indexing
     
     unsigned long* vertexAdjacencyList;
     unsigned long* vertexAdjacencyOffsets;
