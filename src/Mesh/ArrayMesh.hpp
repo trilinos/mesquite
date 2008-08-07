@@ -122,7 +122,7 @@ class ArrayMesh : public Mesh
                unsigned long num_elements,
                const EntityTopology* element_types,
                const unsigned long* element_connectivity_array,
-               const unsigned long* element_connectivity_offsets,
+               const unsigned long* element_connectivity_offsets = NULL,
                bool one_based_conn_indices = false );
 
 
