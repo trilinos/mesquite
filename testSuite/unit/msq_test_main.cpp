@@ -37,7 +37,7 @@
 #include <iostream>
 using namespace std;
 
-#include "MsqFPE.hpp"s
+#include "MsqFPE.hpp"
 
 class CPPUNIT_API SummaryOutput : public CppUnit::Outputter 
 {
