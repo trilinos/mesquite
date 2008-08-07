@@ -375,6 +375,8 @@ bool TMPQualityMetric::evaluate_with_Hessian(
     MsqMatrix<3,3> A( (MsqMatrix<3,1>*)c );
     
 
+    MsqMatrix<1,3> tmp[3][3], gi;
+    MsqMatrix<3,1> gj;
     MsqMatrix<3,3> W, dmdA, d2mdA2[6];
     targetCalc->get_3D_target( pd, e, samplePts, s, W, err ); MSQ_ERRZERO(err);
     rval = metric3D->evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); MSQ_ERRZERO(err);
@@ -382,25 +384,37 @@ bool TMPQualityMetric::evaluate_with_Hessian(
     Hessian.resize(w*(w+1)/2);
     size_t h = 0;
     for (size_t i = 0; i < indices.size(); ++i) {
-      gradient[i] = Vector3D( (dmdA * MsqMatrix<3,1>(&mDerivs[3*i])).data() );
+      gi = MsqMatrix<1,3>(&mDerivs[3*i]);
+      gradient[i] = Vector3D( (dmdA * transpose(gi)).data() );
+      tmp[0][0] = gi * d2mdA2[0];
+      tmp[0][1] = gi * d2mdA2[1];
+      tmp[0][2] = gi * d2mdA2[2];
+      tmp[1][0] = gi * transpose(d2mdA2[1]);
+      tmp[1][1] = gi * d2mdA2[3];
+      tmp[1][2] = gi * d2mdA2[4];
+      tmp[2][0] = gi * transpose(d2mdA2[2]);
+      tmp[2][1] = gi * transpose(d2mdA2[4]);
+      tmp[2][2] = gi * d2mdA2[5];
+     
       Matrix3D& H = Hessian[h++];
-      H[0][0] =           MsqMatrix<1,3>(&mDerivs[3*i]) * d2mdA2[0] * MsqMatrix<3,1>(&mDerivs[3*i]);
-      H[0][1] = H[1][0] = MsqMatrix<1,3>(&mDerivs[3*i]) * d2mdA2[1] * MsqMatrix<3,1>(&mDerivs[3*i]);
-      H[0][2] = H[2][0] = MsqMatrix<1,3>(&mDerivs[3*i]) * d2mdA2[2] * MsqMatrix<3,1>(&mDerivs[3*i]);
-      H[1][1] =           MsqMatrix<1,3>(&mDerivs[3*i]) * d2mdA2[3] * MsqMatrix<3,1>(&mDerivs[3*i]);
-      H[1][2] = H[2][1] = MsqMatrix<1,3>(&mDerivs[3*i]) * d2mdA2[4] * MsqMatrix<3,1>(&mDerivs[3*i]);
-      H[2][2] =           MsqMatrix<1,3>(&mDerivs[3*i]) * d2mdA2[5] * MsqMatrix<3,1>(&mDerivs[3*i]);
+      H[0][0] =           tmp[0][0] * transpose(gi);
+      H[0][1] = H[1][0] = tmp[0][1] * transpose(gi);
+      H[0][2] = H[2][0] = tmp[0][2] * transpose(gi);
+      H[1][1] =           tmp[1][1] * transpose(gi);
+      H[1][2] = H[2][1] = tmp[1][2] * transpose(gi);
+      H[2][2] =           tmp[2][2] * transpose(gi);
       for (size_t j = i+1; j < indices.size(); ++j) {
         Matrix3D& H = Hessian[h++];
-        H[0][0] = MsqMatrix<1,3>(&mDerivs[3*i]) * d2mdA2[0] * MsqMatrix<3,1>(&mDerivs[3*j]);
-        H[0][1] = MsqMatrix<1,3>(&mDerivs[3*i]) * d2mdA2[1] * MsqMatrix<3,1>(&mDerivs[3*j]);
-        H[0][2] = MsqMatrix<1,3>(&mDerivs[3*i]) * d2mdA2[2] * MsqMatrix<3,1>(&mDerivs[3*j]);
-        H[1][0] = MsqMatrix<1,3>(&mDerivs[3*i]) * transpose(d2mdA2[1]) * MsqMatrix<3,1>(&mDerivs[3*j]);
-        H[1][1] = MsqMatrix<1,3>(&mDerivs[3*i]) * d2mdA2[3] * MsqMatrix<3,1>(&mDerivs[3*j]);
-        H[1][2] = MsqMatrix<1,3>(&mDerivs[3*i]) * d2mdA2[4] * MsqMatrix<3,1>(&mDerivs[3*j]);
-        H[2][0] = MsqMatrix<1,3>(&mDerivs[3*i]) * transpose(d2mdA2[2]) * MsqMatrix<3,1>(&mDerivs[3*j]);
-        H[2][1] = MsqMatrix<1,3>(&mDerivs[3*i]) * transpose(d2mdA2[4]) * MsqMatrix<3,1>(&mDerivs[3*j]);
-        H[2][2] = MsqMatrix<1,3>(&mDerivs[3*i]) * d2mdA2[5] * MsqMatrix<3,1>(&mDerivs[3*j]);
+        gj = MsqMatrix<3,1>(&mDerivs[3*j]);
+        H[0][0] = tmp[0][0] * gj;
+        H[0][1] = tmp[0][1] * gj;
+        H[0][2] = tmp[0][2] * gj;
+        H[1][0] = tmp[1][0] * gj;
+        H[1][1] = tmp[1][1] * gj;
+        H[1][2] = tmp[1][2] * gj;
+        H[2][0] = tmp[2][0] * gj;
+        H[2][1] = tmp[2][1] * gj;
+        H[2][2] = tmp[2][2] * gj;
       }
     }
   }
@@ -506,15 +520,17 @@ bool TMPQualityMetric::evaluate_with_Hessian_diagonal(
     
 
     MsqMatrix<3,3> W, dmdA, d2mdA2[6];
+    MsqMatrix<3,1> g;
     targetCalc->get_3D_target( pd, e, samplePts, s, W, err ); MSQ_ERRZERO(err);
     rval = metric3D->evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); MSQ_ERRZERO(err);
     gradient.resize(w);
     diagonal.resize(w);
     for (size_t i = 0; i < indices.size(); ++i) {
-      gradient[i] = Vector3D( (dmdA * MsqMatrix<3,1>(&mDerivs[3*i])).data() );
+      g = MsqMatrix<3,1>(&mDerivs[3*i]);
+      gradient[i] = Vector3D( (dmdA * g).data() );
       SymMatrix3D& H = diagonal[i];
       for (unsigned j = 0; j < 6; ++j)
-        H[j] = MsqMatrix<1,3>(&mDerivs[3*i]) * d2mdA2[j] * MsqMatrix<3,1>(&mDerivs[3*i]); 
+        H[j] = transpose(g) * d2mdA2[j] * g; 
     }
   }
   else {
