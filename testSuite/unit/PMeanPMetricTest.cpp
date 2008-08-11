@@ -50,6 +50,8 @@ private:
   CPPUNIT_TEST(test_vertex_evaluate);
   CPPUNIT_TEST(test_indices);
   CPPUNIT_TEST(test_gradient);
+  CPPUNIT_TEST(test_hessian);
+  CPPUNIT_TEST(test_hessian_diagonal);
   CPPUNIT_TEST_SUITE_END();
 
   PatchData pd;
@@ -64,6 +66,8 @@ public:
   void test_vertex_evaluate();
   void test_indices();
   void test_gradient();
+  void test_hessian();
+  void test_hessian_diagonal();
   
 };
 
@@ -77,6 +81,10 @@ void PMeanPMetricTest::setUp() {
   CPPUNIT_ASSERT(!err);
 }
 
+// bogus metric for testing.  
+// returns vertex index value for metric value, {vertex index, 0, 1} 
+// for gradint wrt vertex , and { (h1, h2, h1+j2), {h1, 1, h1+h2}, {2*h1, 2*h2, h2} }
+// for hessin where h1 and h2 are vertex indices.
 class FauxMetric : public ElemSampleQM
 {
 public:
@@ -91,6 +99,11 @@ public:
   bool evaluate_with_gradient( PatchData& pd, size_t h, double& v, 
                               msq_std::vector<size_t>& indices, 
                               msq_std::vector<Vector3D>& grads,
+                              MsqError& err );
+  bool evaluate_with_Hessian( PatchData& pd, size_t h, double& v, 
+                              msq_std::vector<size_t>& indices, 
+                              msq_std::vector<Vector3D>& grad,
+                              msq_std::vector<Matrix3D>& Hess,
                               MsqError& err );
 };
 
@@ -141,6 +154,22 @@ bool FauxMetric::evaluate_with_gradient( PatchData& pd, size_t h, double& v,
   grads.clear();
   for (unsigned i = 0; i < indices.size(); ++i)
     grads.push_back( Vector3D( (double)indices[i], 0, 1 ) );
+  return true;
+}
+
+bool FauxMetric::evaluate_with_Hessian( PatchData& pd, size_t h, double& v, 
+                              msq_std::vector<size_t>& indices, 
+                              msq_std::vector<Vector3D>& grad,
+                              msq_std::vector<Matrix3D>& hess,
+                              MsqError& err )
+{
+  evaluate_with_gradient( pd, h, v, indices, grad, err );
+  hess.clear();
+  for (unsigned r = 0; r < indices.size(); ++r)
+    for (unsigned c = r; c < indices.size(); ++c)
+      hess.push_back( Matrix3D( indices[r],   indices[c], indices[r]+indices[c],
+                                indices[r],          1.0, indices[r]+indices[c],
+                              2*indices[r], 2*indices[c],            indices[c] ) );
   return true;
 }
 
@@ -231,6 +260,9 @@ void PMeanPMetricTest::test_vertex_evaluate()
     ev2 += v*v;
   }
   
+  ev1 /= num_elem;
+  ev2 /= num_elem;
+  
   CPPUNIT_ASSERT_DOUBLES_EQUAL( ev1, v1, 1e-6 );
   CPPUNIT_ASSERT_DOUBLES_EQUAL( ev2, v2, 1e-6 );
 }
@@ -293,6 +325,12 @@ void PMeanPMetricTest::test_indices()
   CPPUNIT_ASSERT( vertices == indices );
 }
 
+template <typename T>
+size_t index_of( const msq_std::vector<T>& v, T a )
+{
+  return msq_std::find( v.begin(), v.end(), a ) - v.begin();
+}
+
 void PMeanPMetricTest::test_gradient()
 {
   MsqError err;
@@ -323,11 +361,13 @@ void PMeanPMetricTest::test_gradient()
   CPPUNIT_ASSERT_DOUBLES_EQUAL( v1, v3, 1e-6 );
   CPPUNIT_ASSERT_DOUBLES_EQUAL( v2, v4, 1e-6 );
   msq_std::sort( indices1.begin(), indices1.end() );
-  msq_std::sort( indices3.begin(), indices3.end() );
-  CPPUNIT_ASSERT( indices3 == indices1 );
+  msq_std::vector<size_t> tm( indices3 );
+  msq_std::sort( tm.begin(), tm.end() );
+  CPPUNIT_ASSERT( tm == indices1 );
   msq_std::sort( indices2.begin(), indices2.end() );
-  msq_std::sort( indices4.begin(), indices4.end() );
-  CPPUNIT_ASSERT( indices4 == indices2 );
+  tm = indices4 ;
+  msq_std::sort( tm.begin(), tm.end() );
+  CPPUNIT_ASSERT( tm == indices2 );
   
     // setup evaluation of underying metric
   msq_std::vector<size_t> handles;
@@ -335,7 +375,6 @@ void PMeanPMetricTest::test_gradient()
   CPPUNIT_ASSERT(!err);
   
     // calculate expected gradients
-  msq_std::vector<size_t>::iterator j;
   msq_std::vector<Vector3D> expected1, expected2, temp;
   expected1.resize( vertices.size(), Vector3D(0,0,0) );
   expected2.resize( vertices.size(), Vector3D(0,0,0) );
@@ -343,12 +382,11 @@ void PMeanPMetricTest::test_gradient()
     double v;
     m.evaluate_with_gradient( pd, handles[i], v, indices3, temp, err );
     CPPUNIT_ASSERT(!err);
-    for (unsigned i = 0; i < indices3.size(); ++i) {
-      j = std::find( vertices.begin(), vertices.end(), indices3[i] );
-      CPPUNIT_ASSERT( j != vertices.end() );
-      unsigned k = j - vertices.begin();
-      expected1[k] += temp[i];
-      expected2[k] += 2 * v * temp[i];
+    for (unsigned k = 0; k < indices3.size(); ++k) {
+      unsigned idx = index_of( vertices, indices3[k] );
+      CPPUNIT_ASSERT( idx < vertices.size() );
+      expected1[idx] += temp[k];
+      expected2[idx] += 2 * v * temp[k];
     }
   }
   for (unsigned i = 0; i < vertices.size(); ++i) {
@@ -358,10 +396,180 @@ void PMeanPMetricTest::test_gradient()
   
     // compare gradients
   for (unsigned i = 0; i < indices1.size(); ++i) {
-    j = std::find( vertices.begin(), vertices.end(), indices1[i] );
-    CPPUNIT_ASSERT( j != vertices.end() );
-    unsigned k = j - vertices.begin();
+    unsigned k = index_of( vertices, indices1[i] );
+    CPPUNIT_ASSERT( k < vertices.size() );
     CPPUNIT_ASSERT_VECTORS_EQUAL( expected1[k], grads1[i], 1e-6 );
     CPPUNIT_ASSERT_VECTORS_EQUAL( expected2[k], grads2[i], 1e-6 );
+  }
+}
+
+void PMeanPMetricTest::test_hessian()
+{
+  MsqError err;
+  FauxMetric m;
+  ElementPMeanP m1( 1.0, &m );
+  ElementPMeanP m2( 2.0, &m );
+  
+    // get vertices for later
+  msq_std::vector<size_t> vertices;
+  pd.element_by_index(0).get_vertex_indices( vertices );
+  
+    // evaluate gradient
+  double v1, v2, v3, v4;
+  msq_std::vector<size_t> indices1, indices2, indices3, indices4, tmpi;
+  msq_std::vector<Vector3D> grad1, grad2, grad3, grad4;
+  msq_std::vector<Matrix3D> hess3, hess4;
+  m1.evaluate_with_gradient( pd, 0, v1, indices1, grad1, err );
+  CPPUNIT_ASSERT(!err);
+  m2.evaluate_with_gradient( pd, 0, v2, indices2, grad2, err );
+  CPPUNIT_ASSERT(!err);
+  
+    // evaluate with Hessian
+  m1.evaluate_with_Hessian( pd, 0, v3, indices3, grad3, hess3, err );
+  CPPUNIT_ASSERT(!err);
+  m2.evaluate_with_Hessian( pd, 0, v4, indices4, grad4, hess4, err );
+  CPPUNIT_ASSERT(!err);
+  
+    // compare value and indices to eval w/out gradient
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( v1, v3, 1e-6 );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( v2, v4, 1e-6 );
+    // It isn't a requirement that the index order remain the same
+    // for both eval_with_grad and eval_with_Hess, but assuming it 
+    // does simplifies a lot of stuff in this test.  Check that the 
+    // assumption remains valid.
+  CPPUNIT_ASSERT( indices3 == indices1 );
+  CPPUNIT_ASSERT( indices4 == indices2 );
+    // It isn't a requirement that the index order remain the same
+    // for any value of P, but assuming it does simplifies a lot
+    // of stuff in this test, so check that the assumption is valid.
+  CPPUNIT_ASSERT( indices1 == indices2 ); 
+  
+    // check that gradient values match
+  for (size_t i = 0; i < indices1.size(); ++i) {
+    CPPUNIT_ASSERT_VECTORS_EQUAL( grad1[i], grad3[i], 1e-5 );
+    CPPUNIT_ASSERT_VECTORS_EQUAL( grad2[i], grad4[i], 1e-5 );
+  }
+  
+    // setup evaluation of underying metric
+  msq_std::vector<size_t> handles;
+  m.get_element_evaluations( pd, 0, handles, err );
+  CPPUNIT_ASSERT(!err);
+  
+    // calculate expected Hessians
+  msq_std::vector<Vector3D> g;
+  msq_std::vector<Matrix3D> expected1, expected2, h;
+  msq_std::vector<Matrix3D>::iterator h_iter;
+  const unsigned N = vertices.size();
+  expected1.resize( N*(N+1)/2, Matrix3D(0,0,0,0,0,0,0,0,0) );
+  expected2 = expected1;
+  Matrix3D outer;
+  for (unsigned i = 0; i < handles.size(); ++i) {
+    double v;
+    m.evaluate_with_Hessian( pd, handles[i], v, tmpi, g, h, err );
+    CPPUNIT_ASSERT(!err);
+    h_iter = h.begin();
+    for (unsigned r = 0; r < tmpi.size(); ++r) {
+      unsigned R = index_of( vertices, tmpi[r] );
+      CPPUNIT_ASSERT( R < N );
+      for (unsigned c = r; c < tmpi.size(); ++c ,++h_iter) {
+        unsigned C = index_of( vertices, tmpi[c] );
+        CPPUNIT_ASSERT( C < N );
+        if (R <= C) {
+          unsigned idx = N*R - R*(R+1)/2 + C;
+          expected1[idx] += 1.0 / handles.size() * *h_iter;
+          expected2[idx] += 2.0 * v / handles.size() * *h_iter;
+          outer.outer_product( g[r], g[c] );
+          expected2[idx] += 2.0 / handles.size() * outer;
+        }
+        else {
+          unsigned idx = N*C - C*(C+1)/2 + R;
+          expected1[idx] += 1.0 / handles.size() * transpose(*h_iter);
+          expected2[idx] += 2.0 * v / handles.size() * transpose(*h_iter);
+          outer.outer_product( g[c], g[r] );
+          expected2[idx] += 2.0 / handles.size() * outer;
+        }
+      }
+    }
+  }
+  
+    // compare Hessians
+  unsigned H_idx = 0;
+  for (unsigned R = 0; R < vertices.size(); ++R) {
+    if (vertices[R] >= pd.num_free_vertices())
+      continue;
+    unsigned r = index_of( indices3, vertices[R] );
+    CPPUNIT_ASSERT(r < indices3.size() );
+    for (unsigned C = R; C < vertices.size(); ++C, ++H_idx) {
+      if (vertices[C] >= pd.num_free_vertices())
+        continue;
+      unsigned c = index_of( indices3, vertices[C] );
+      CPPUNIT_ASSERT( c < indices3.size() );
+      if (r <= c) {
+        unsigned idx = indices3.size()*r - r*(r+1)/2 + c;
+        CPPUNIT_ASSERT_MATRICES_EQUAL( expected1[H_idx], hess3[idx], 1e-5 );
+        CPPUNIT_ASSERT_MATRICES_EQUAL( expected2[H_idx], hess4[idx], 1e-5 );
+      }
+      else {
+        unsigned idx = indices3.size()*c - c*(c+1)/2 + r;
+        CPPUNIT_ASSERT_MATRICES_EQUAL( transpose(expected1[H_idx]), hess3[idx], 1e-5 );
+        CPPUNIT_ASSERT_MATRICES_EQUAL( transpose(expected2[H_idx]), hess4[idx], 1e-5 );
+      }
+    }
+  }
+}
+
+void PMeanPMetricTest::test_hessian_diagonal()
+{
+  MsqError err;
+  FauxMetric m;
+  ElementPMeanP m1( 1.0, &m );
+  ElementPMeanP m2( 2.0, &m );
+  
+    // we've already validated the Hessian results in the 
+    // previous test, so just check that the diagonal terms
+    // match the terms for the full Hessian.
+  msq_std::vector<size_t> m1_indices_h, m1_indices_d, m2_indices_h, m2_indices_d;
+  msq_std::vector<Vector3D> m1_g_h, m1_g_d, m2_g_h, m2_g_d;
+  msq_std::vector<Matrix3D> m1_h_h, m2_h_h;
+  msq_std::vector<SymMatrix3D> m1_h_d, m2_h_d;
+  double m1_v_h, m1_v_d, m2_v_h, m2_v_d;
+  m1.evaluate_with_Hessian( pd, 0, m1_v_h, m1_indices_h, m1_g_h, m1_h_h, err );
+  ASSERT_NO_ERROR(err);
+  m2.evaluate_with_Hessian( pd, 0, m2_v_h, m2_indices_h, m2_g_h, m2_h_h, err );
+  ASSERT_NO_ERROR(err);
+  m1.evaluate_with_Hessian_diagonal( pd, 0, m1_v_d, m1_indices_d, m1_g_d, m1_h_d, err );
+  ASSERT_NO_ERROR(err);
+  m2.evaluate_with_Hessian_diagonal( pd, 0, m2_v_d, m2_indices_d, m2_g_d, m2_h_d, err );
+  ASSERT_NO_ERROR(err);
+  
+    // compare values
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( m1_v_h, m1_v_d, 1e-6 );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( m2_v_h, m2_v_d, 1e-6 );
+  
+    // Assume indices in same order because
+    // it simplifiers later code in test
+  CPPUNIT_ASSERT( m1_indices_h == m1_indices_d );
+  CPPUNIT_ASSERT( m2_indices_h == m1_indices_d );
+  
+    // compare gradient values
+  CPPUNIT_ASSERT_EQUAL(m1_indices_h.size(), m1_g_h.size() );
+  CPPUNIT_ASSERT_EQUAL(m2_indices_h.size(), m2_g_h.size() );
+  CPPUNIT_ASSERT_EQUAL(m1_indices_d.size(), m1_g_d.size() );
+  CPPUNIT_ASSERT_EQUAL(m2_indices_d.size(), m2_g_d.size() );
+  for (unsigned i = 0; i < m1_indices_h.size(); ++i) {
+    CPPUNIT_ASSERT_VECTORS_EQUAL( m1_g_h[i], m1_g_d[i], 1e-6 );
+    CPPUNIT_ASSERT_VECTORS_EQUAL( m2_g_h[i], m2_g_d[i], 1e-6 );
+  }
+  
+    // compare hessian diagonal terms
+  CPPUNIT_ASSERT_EQUAL(m1_indices_h.size()*(m1_indices_h.size()+1)/2, m1_h_h.size() );
+  CPPUNIT_ASSERT_EQUAL(m2_indices_h.size()*(m2_indices_h.size()+1)/2, m2_h_h.size() );
+  CPPUNIT_ASSERT_EQUAL(m1_indices_d.size(), m1_h_d.size() );
+  CPPUNIT_ASSERT_EQUAL(m2_indices_d.size(), m2_h_d.size() );
+  unsigned h = 0;
+  for (unsigned r = 0; r < m1_indices_h.size(); ++r) {
+    CPPUNIT_ASSERT_MATRICES_EQUAL( m1_h_h[h], m1_h_d[r], 1e-6 );
+    CPPUNIT_ASSERT_MATRICES_EQUAL( m2_h_h[h], m2_h_d[r], 1e-6 );
+    h += (m1_indices_h.size() - r);
   }
 }

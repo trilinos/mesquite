@@ -62,6 +62,7 @@ bool VertexPMeanP::evaluate( PatchData& pd,
                           double& value, 
                           MsqError& err )
 {
+  mHandles.clear();
   get_vertex_corner_handles( pd, handle, mHandles, err ); MSQ_ERRFALSE(err);
   bool result = average( pd, get_quality_metric(), mHandles, value, err );
   return !MSQ_CHKERR(err) && result;
@@ -75,6 +76,7 @@ bool VertexPMeanP::evaluate_with_indices( PatchData& pd,
                           MsqError& err )
 {
   ElemSampleQM* qm = get_quality_metric();
+  mHandles.clear();
   get_vertex_corner_handles( pd, handle, mHandles, err ); MSQ_ERRFALSE(err);
   bool result = average_with_indices( pd, qm, mHandles, value, indices, err );
   return !MSQ_CHKERR(err) && result;
@@ -88,6 +90,7 @@ bool VertexPMeanP::evaluate_with_gradient( PatchData& pd,
                           MsqError& err )
 {
   ElemSampleQM* qm = get_quality_metric();
+  mHandles.clear();
   get_vertex_corner_handles( pd, handle, mHandles, err ); MSQ_ERRFALSE(err);
   bool result = average_with_gradient( pd, qm, mHandles, value, indices, gradient, err );
   return !MSQ_CHKERR(err) && result;
@@ -102,8 +105,24 @@ bool VertexPMeanP::evaluate_with_Hessian( PatchData& pd,
                           MsqError& err )
 {
   ElemSampleQM* qm = get_quality_metric();
-  qm->get_element_evaluations( pd, handle, mHandles, err ); MSQ_ERRFALSE(err);
+  mHandles.clear();
+  get_vertex_corner_handles( pd, handle, mHandles, err ); MSQ_ERRFALSE(err);
   bool result = average_with_Hessian( pd, qm, mHandles, value, indices, gradient, Hessian, err );
+  return !MSQ_CHKERR(err) && result;
+}
+
+bool VertexPMeanP::evaluate_with_Hessian_diagonal( PatchData& pd, 
+                          size_t handle, 
+                          double& value, 
+                          msq_std::vector<size_t>& indices,
+                          msq_std::vector<Vector3D>& gradient,
+                          msq_std::vector<SymMatrix3D>& diagonal,
+                          MsqError& err )
+{
+  ElemSampleQM* qm = get_quality_metric();
+  mHandles.clear();
+  get_vertex_corner_handles( pd, handle, mHandles, err ); MSQ_ERRFALSE(err);
+  bool result = average_with_Hessian_diagonal( pd, qm, mHandles, value, indices, gradient, diagonal, err );
   return !MSQ_CHKERR(err) && result;
 }
 

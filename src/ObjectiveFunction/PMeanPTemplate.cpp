@@ -150,9 +150,10 @@ bool PMeanPTemplate::evaluate_with_gradient( EvalType type,
     if (fabs(value) < DBL_EPSILON)
       continue;
     
-    const double qmp = mPower.raise( value );
+    const double r1 = mPowerMinus1.raise( value );
+    const double qmp = r1 * value;
     working_sum += qmp;
-    value = f * qmp / value;
+    value = f * r1;
 
     for (size_t j = 0; j < mIndices.size(); ++j) {
       mGradient[j] *= value;
@@ -190,7 +191,7 @@ bool PMeanPTemplate::evaluate_with_Hessian_diagonal( EvalType type,
   
     // calculate OF value and gradient for just the patch
   msq_std::vector<size_t>::const_iterator i;
-  size_t j, k;
+  size_t j;
   double value, working_sum = 0.0;
   const double f1 = qm->get_negate_flag() * mPower.value();
   const double f2 = f1 * (mPower.value() - 1);
@@ -202,20 +203,31 @@ bool PMeanPTemplate::evaluate_with_Hessian_diagonal( EvalType type,
     if (fabs(value) < DBL_EPSILON)
       continue;
     
-    const double qmp = mPower.raise( value );
-    const double hf = f2 * qmp / (value*value);
-    const double gf = f1 * qmp / value;
-    working_sum += qmp;
-
     const size_t nfree = mIndices.size();
-    for (j = 0; j < nfree; ++j) {
-      const size_t idx = mIndices[j];
-      
-      hess_diag_out[idx] += hf * outer( mGradient[j] );
-      hess_diag_out[idx] += gf * mDiag[j];
-      
-      mGradient[j] *= gf;
-      grad_out[idx] += mGradient[j];
+    if (mPower.value() == 1.0) {
+      working_sum += mPower.raise( value );
+      for (j = 0; j < nfree; ++j) {
+        const size_t idx = mIndices[j];
+        hess_diag_out[idx] += f1 * mDiag[j];
+        mGradient[j] *= f1;
+        grad_out[idx] += mGradient[j];
+      }
+    }
+    else {
+      const double r2 = mPowerMinus2.raise( value );
+      const double r1 = r2 * value;
+      working_sum += r1 * value;
+      const double hf = f2 * r2;
+      const double gf = f1 * r1;
+      for (j = 0; j < nfree; ++j) {
+        const size_t idx = mIndices[j];
+
+        hess_diag_out[idx] += hf * outer( mGradient[j] );
+        hess_diag_out[idx] += gf * mDiag[j];
+
+        mGradient[j] *= gf;
+        grad_out[idx] += mGradient[j];
+      }
     }
   }
   
@@ -261,27 +273,40 @@ bool PMeanPTemplate::evaluate_with_Hessian( EvalType type,
     if (fabs(value) < DBL_EPSILON)
       continue;
     
-    const double qmp = mPower.raise( value );
-    const double hf = f2 * qmp / (value*value);
-    const double gf = f1 * qmp / value;
-    working_sum += qmp;
-
     const size_t nfree = mIndices.size();
     n = 0;
-    for (j = 0; j < nfree; ++j) {
-      for (k = j; k < nfree; ++k) {
-        m.outer_product( mGradient[j], mGradient[k] );
-        m *= hf;
-        mHessian[n] *= gf;
-        m += mHessian[n];
-        ++n;
-        Hessian_out.add( mIndices[j], mIndices[k], m, err );  MSQ_ERRFALSE(err);
-      }
+    if (mPower.value() == 1.0) {
+      working_sum += mPower.raise( value );
+      for (j = 0; j < nfree; ++j) {
+        mGradient[j] *= f1;
+        grad_out[mIndices[j]] += mGradient[j];
+        for (k = j; k < nfree; ++k) {
+          mHessian[n] *= f1;
+          Hessian_out.add( mIndices[j], mIndices[k], mHessian[n], err );  MSQ_ERRFALSE(err);
+          ++n;
+        }
+     }
     }
-    
-    for (j = 0; j < nfree; ++j) {
-      mGradient[j] *= gf;
-      grad_out[mIndices[j]] += mGradient[j];
+    else {
+      const double r2 = mPowerMinus2.raise( value );
+      const double r1 = r2 * value;
+      working_sum += r1 * value;
+      const double hf = f2 * r2;
+      const double gf = f1 * r1;
+      for (j = 0; j < nfree; ++j) {
+        for (k = j; k < nfree; ++k) {
+          m.outer_product( mGradient[j], mGradient[k] );
+          m *= hf;
+          mHessian[n] *= gf;
+          m += mHessian[n];
+          Hessian_out.add( mIndices[j], mIndices[k], m, err );  MSQ_ERRFALSE(err);
+          ++n;
+        }
+      }
+      for (j = 0; j < nfree; ++j) {
+        mGradient[j] *= gf;
+        grad_out[mIndices[j]] += mGradient[j];
+      }
     }
   }
   

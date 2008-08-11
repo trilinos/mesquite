@@ -72,6 +72,8 @@ class MESQUITE_EXPORT PMeanPTemplate : public ObjectiveFunctionTemplate
     PMeanPTemplate( const PMeanPTemplate& copy )
       : ObjectiveFunctionTemplate( copy ),
         mPower( copy.mPower ),
+        mPowerMinus1( copy.mPowerMinus1 ),
+        mPowerMinus2( copy.mPowerMinus2 ),
         mCount( copy.mCount ),
         mPowSum( copy.mPowSum ),
         saveCount( copy.saveCount ),
@@ -85,7 +87,11 @@ class MESQUITE_EXPORT PMeanPTemplate : public ObjectiveFunctionTemplate
       { return mPower.value(); }
       
     void set_power( double p ) 
-      { mPower = p; }
+      { 
+        mPower = p; 
+        mPowerMinus1 = p - 1;
+        mPowerMinus2 = p - 2;
+      }
     
     virtual bool evaluate( EvalType type, 
                            PatchData& pd,
@@ -135,6 +141,8 @@ class MESQUITE_EXPORT PMeanPTemplate : public ObjectiveFunctionTemplate
     double get_value( double power_sum, size_t count, EvalType type, size_t& global_count );
   
     Exponent mPower;  /**< The power to use */
+    Exponent mPowerMinus1;  /**< mPower - 1.0 */
+    Exponent mPowerMinus2;  /**< mPower - 2.0 */
  
   private:
      

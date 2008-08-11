@@ -46,6 +46,7 @@ namespace Mesquite {
 
 class Vector3D;
 class Matrix3D;
+class SymMatrix3D;
 class PatchData;
 class MsqError;
 class QualityMetric;
@@ -55,7 +56,7 @@ class PMeanPMetric
   public:
     
     PMeanPMetric( double p )
-      : P(p), P1(p-1.0) {}
+      : P(p), P1(p-1.0), P2(p-2.0) {}
 
     const Exponent& get_power() const { return P; }
 
@@ -81,6 +82,15 @@ class PMeanPMetric
                                 msq_std::vector<size_t>& indices,
                                 msq_std::vector<Vector3D>& gradient,
                                 MsqError& err );
+   
+    bool average_with_Hessian_diagonal( PatchData& pd,
+                                        QualityMetric* metric,
+                                        const msq_std::vector<size_t>& qm_handles,
+                                        double& value,
+                                        msq_std::vector<size_t>& indices,
+                                        msq_std::vector<Vector3D>& gradient,
+                                        msq_std::vector<SymMatrix3D>& Hessian_diagonal,
+                                        MsqError& err );
 
     bool average_with_Hessian( PatchData& pd, 
                                QualityMetric* metric,
@@ -94,9 +104,11 @@ class PMeanPMetric
   
     Exponent P;
     Exponent P1;
+    Exponent P2;
     msq_std::vector<size_t> mIndices, mOffsets;
     msq_std::vector<Vector3D> mGrad;
     msq_std::vector<Matrix3D> mHess;
+    msq_std::vector<SymMatrix3D> mDiag;
     msq_std::vector<double> mValues;
 };
 

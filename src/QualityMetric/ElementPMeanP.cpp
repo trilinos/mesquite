@@ -94,8 +94,24 @@ bool ElementPMeanP::evaluate_with_Hessian( PatchData& pd,
                           MsqError& err )
 {
   ElemSampleQM* qm = get_quality_metric();
+  mHandles.clear();
   qm->get_element_evaluations( pd, handle, mHandles, err ); MSQ_ERRFALSE(err);
   bool result = average_with_Hessian( pd, qm, mHandles, value, indices, gradient, Hessian, err );
+  return !MSQ_CHKERR(err) && result;
+}
+
+bool ElementPMeanP::evaluate_with_Hessian_diagonal( PatchData& pd, 
+                          size_t handle, 
+                          double& value, 
+                          msq_std::vector<size_t>& indices,
+                          msq_std::vector<Vector3D>& gradient,
+                          msq_std::vector<SymMatrix3D>& diagonal,
+                          MsqError& err )
+{
+  ElemSampleQM* qm = get_quality_metric();
+  mHandles.clear();
+  qm->get_element_evaluations( pd, handle, mHandles, err ); MSQ_ERRFALSE(err);
+  bool result = average_with_Hessian_diagonal( pd, qm, mHandles, value, indices, gradient, diagonal, err );
   return !MSQ_CHKERR(err) && result;
 }
 

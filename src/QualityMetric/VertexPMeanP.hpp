@@ -56,36 +56,44 @@ public:
 
   virtual int get_negate_flag() const;
 
-   virtual
-   bool evaluate( PatchData& pd, 
-                  size_t handle, 
-                  double& value, 
-                  MsqError& err );
+  virtual
+  bool evaluate( PatchData& pd, 
+                 size_t handle, 
+                 double& value, 
+                 MsqError& err );
 
-   virtual
-   bool evaluate_with_indices( PatchData& pd,
-                  size_t handle,
-                  double& value,
-                  msq_std::vector<size_t>& indices,
-                  MsqError& err );
+  virtual
+  bool evaluate_with_indices( PatchData& pd,
+                 size_t handle,
+                 double& value,
+                 msq_std::vector<size_t>& indices,
+                 MsqError& err );
 
-   virtual
-   bool evaluate_with_gradient( PatchData& pd,
-                  size_t handle,
-                  double& value,
-                  msq_std::vector<size_t>& indices,
-                  msq_std::vector<Vector3D>& gradient,
-                  MsqError& err );
+  virtual
+  bool evaluate_with_gradient( PatchData& pd,
+                 size_t handle,
+                 double& value,
+                 msq_std::vector<size_t>& indices,
+                 msq_std::vector<Vector3D>& gradient,
+                 MsqError& err );
 
-   virtual
-   bool evaluate_with_Hessian( PatchData& pd,
-                  size_t handle,
-                  double& value,
-                  msq_std::vector<size_t>& indices,
-                  msq_std::vector<Vector3D>& gradient,
-                  msq_std::vector<Matrix3D>& Hessian,
-                  MsqError& err );
-     
+  virtual
+  bool evaluate_with_Hessian( PatchData& pd,
+                 size_t handle,
+                 double& value,
+                 msq_std::vector<size_t>& indices,
+                 msq_std::vector<Vector3D>& gradient,
+                 msq_std::vector<Matrix3D>& Hessian,
+                 MsqError& err );
+
+  virtual
+  bool evaluate_with_Hessian_diagonal( PatchData& pd,
+                 size_t handle,
+                 double& value,
+                 msq_std::vector<size_t>& indices,
+                 msq_std::vector<Vector3D>& gradient,
+                 msq_std::vector<SymMatrix3D>& Hessian_diagonal,
+                 MsqError& err );
 private:
 
   ElemSampleQM* mMetric;
