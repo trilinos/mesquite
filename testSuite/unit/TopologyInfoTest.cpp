@@ -24,6 +24,8 @@
    
   ***************************************************************** */
 
+#include <algorithm>
+
 #ifdef MSQ_USE_OLD_IO_HEADERS
 #include <iostream.h>
 #else

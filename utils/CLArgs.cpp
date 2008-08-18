@@ -36,6 +36,8 @@
 #include "ManPage.hpp"
 #include <iostream>
 #include <sstream>
+#include <limits>
+#include <stdlib.h>
 
 const char HELP_FLAG = 'h';
 const char MAN_FLAG = 'M';

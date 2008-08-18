@@ -37,6 +37,7 @@
 #include "MsqVertex.hpp"
 #include <assert.h>
 #include "MsqIBase.hpp"
+#include <algorithm>
 
 namespace Mesquite {
 

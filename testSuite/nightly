@@ -30,6 +30,10 @@ BASENAME=${PLATFORM_NAME}.$$
 RESULTS=${BASENAME}.results
 
   # File to write output of build and tests
+
+  # Echo all commands
+#set -v
+
 LOGFILE=${BASENAME}.log
 
   # The CppUnit testing application to build -- path relative to mesquite root dir
@@ -46,9 +50,6 @@ pwd=`pwd`
 rm -f ${RESULTS}.tests ${RESULTS}.unit ${RESULTS}.regress
 
 MAKE=make
-
-  # Echo all commands
-set -v
 
   # Change to mesquite root directory
 CDPATH=

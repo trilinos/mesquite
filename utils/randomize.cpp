@@ -20,6 +20,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <memory>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>

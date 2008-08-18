@@ -45,6 +45,7 @@
 #include "cppunit/extensions/HelperMacros.h"
 
 #include <iostream>
+#include <algorithm>
 
 
 using std::cout;

@@ -39,8 +39,10 @@
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 # include <vector.h>
+# include <algorithm.h>
 #else
 # include <vector>
+# include <algorithm>
 #endif
 
 #ifdef MSQ_USE_OLD_IO_HEADERS

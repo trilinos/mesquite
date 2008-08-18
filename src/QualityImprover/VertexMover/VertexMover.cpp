@@ -41,6 +41,7 @@
 #include "PatchSet.hpp"
 #include "PatchData.hpp"
 #include "ParallelHelperInterface.hpp"
+#include <algorithm>
 
 namespace Mesquite {
 

@@ -51,6 +51,8 @@ Unit testing of various functions in the PatchData class.
 
 #include "cppunit/extensions/HelperMacros.h"
 
+#include <algorithm>
+
 using namespace Mesquite;
 
 using std::cout;

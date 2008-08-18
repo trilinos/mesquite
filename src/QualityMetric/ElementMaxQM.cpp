@@ -35,6 +35,7 @@
 #include "ElemSampleQM.hpp"
 #include "MsqError.hpp"
 #include "PatchData.hpp"
+#include <limits>
 
 namespace Mesquite {
 

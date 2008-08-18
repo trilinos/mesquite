@@ -29,6 +29,7 @@
 
 #include "Mesquite.hpp"
 #include "PlanarDomain.hpp"
+#include <algorithm>
 
 using namespace Mesquite;
 

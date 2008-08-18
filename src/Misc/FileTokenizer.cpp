@@ -29,9 +29,11 @@
 #ifdef MSQ_USE_OLD_C_HEADERS
 #  include <string.h>
 #  include <ctype.h>
+#  include <stdlib.h>
 #else
 #  include <cstring>
 #  include <cctype>
+#  include <cstdlib>
 #endif
 
 namespace Mesquite

@@ -55,6 +55,8 @@ using std::cout;
 #  include <stdio.h>
 #endif
 
+#include <algorithm>
+
 extern const char temp_file_name[] = "VtkTest.vtk";
 
   // VTK file for 2x2x2 block of hexes as structured-point 

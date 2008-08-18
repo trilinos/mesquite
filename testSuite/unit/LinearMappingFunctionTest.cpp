@@ -44,6 +44,7 @@
 #include "UnitUtil.hpp"
 
 #include <vector>
+#include <algorithm>
 
 using namespace Mesquite;
 using namespace std;

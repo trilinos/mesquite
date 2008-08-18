@@ -37,6 +37,7 @@
 #include "PatchDataInstances.hpp"
 #include "SamplePoints.hpp"
 #include <cppunit/extensions/HelperMacros.h>
+#include <algorithm>
 
 using namespace Mesquite;
 

@@ -41,6 +41,7 @@
 #include "MsqError.hpp"
 #include "MsqHessian.hpp"
 #include "SymMatrix3D.hpp"
+#include <memory>  // auto_ptr
 
 namespace Mesquite {
 

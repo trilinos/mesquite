@@ -36,6 +36,8 @@
 #include "VertexQM.hpp"
 #include "MsqError.hpp"
 #include "PatchData.hpp"
+#include <algorithm>
+#include <limits>
 
 namespace Mesquite {
 
