@@ -33,8 +33,10 @@
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 # include <limits.h>
+# include <algorithm.h>
 #else
 # include <limits>
+# include <algorithm>
 #endif
 
 namespace Mesquite {
