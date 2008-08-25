@@ -36,6 +36,7 @@
 #include "MsqDebug.hpp"
 #include "MsqVertex.hpp"
 #include <assert.h>
+#include <algorithm>
 #include "MeshTSTT.hpp" // for tag name constants
 
 static inline msq_std::string process_itaps_error( int ierr )
@@ -372,6 +373,8 @@ class MsqIMeshImpl : public MsqIMesh
                                        const VertexHandle* node_array,
                                        void* tag_data,
                                        MsqError& err );
+
+    void clear_vertex_byte( MsqError& err );
                                        
   protected:
         
@@ -459,12 +462,20 @@ class MsqIMeshImpl : public MsqIMesh
  *                          Mesh Definition
  ************************************************************************/
 
+void MsqIMeshImpl::clear_vertex_byte( MsqError& err )
+{
+    // Clear vertex byte tag
+  set_int_tag( byteTag, nodeSet, 0, err );
+  MSQ_CHKERR(err);
+}
+
+
 MsqIMesh* MsqIMesh::create( iMesh_Instance mesh, 
                             iBase_EntitySetHandle meshset, 
                             MsqError& err,
                             const char* fixed_tag_name )
 {
-  MsqIMesh* result = new MsqIMeshImpl( mesh, fixed_tag_name, err );
+  MsqIMeshImpl* result = new MsqIMeshImpl( mesh, fixed_tag_name, err );
   if (MSQ_CHKERR(err))
   {
     delete result;
@@ -476,18 +487,35 @@ MsqIMesh* MsqIMesh::create( iMesh_Instance mesh,
     delete result;
     return 0;
   }
+    // Clear vertex byte tag
+  result->clear_vertex_byte( err );
+  if (MSQ_CHKERR(err)) 
+  {
+    delete result;
+    return 0;
+  }
+  
   return result;
 }
 
 MsqIMesh* MsqIMesh::create( iMesh_Instance mesh, MsqError& err,
                             const char* fixed_tag_name )
 {
-  MsqIMesh* result = new MsqIMeshImpl( mesh, fixed_tag_name, err );
+  MsqIMeshImpl* result = new MsqIMeshImpl( mesh, fixed_tag_name, err );
   if (MSQ_CHKERR(err))
   {
     delete result;
     return 0;
   }
+
+    // Clear vertex byte tag
+  result->clear_vertex_byte( err );
+  if (MSQ_CHKERR(err)) 
+  {
+    delete result;
+    return 0;
+  }
+  
   return result;
 }
 
@@ -586,10 +614,6 @@ MsqIMeshImpl::MsqIMeshImpl( iMesh_Instance itaps_mesh,
       return;
     }
   }
-
-    // Clear vertex byte tag
-  set_int_tag( byteTag, nodeSet, 0, err );
-  MSQ_CHKERR(err);
 }
 
 MsqIMeshImpl::~MsqIMeshImpl() 
