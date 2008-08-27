@@ -1,0 +1,585 @@
+\documentclass{report}
+\usepackage{amssymb}
+
+\begin{document}
+
+\chapter{Notation}
+
+\section{Matrices}
+
+Let $t_{i,j}$ denote the element in row $i$ and column $j$ of the matrix $T$.
+
+\section{First Derivatives}
+
+Let $\frac{\partial f}{\partial T}$ be the matrix of partial derivatives of the scalar function $f(T)$ where $T$ is a matrix, such that each element $(\frac{\partial f}{\partial T})_{i,j} = \frac{\partial f}{\partial t_{i,j}}$.
+
+\section{Second Derivatives}
+
+Let $\frac{\partial^2 f}{\partial T_i \partial T_j}$ be the matrix of second partial derivatives with respect to the $i^{th}$ and $j^{th}$ rows of $T$:
+
+\begin{equation}
+\frac{\partial^2 f}{\partial T_i \partial T_j} = 
+\left[ \begin{array}{cccc}
+\frac{\partial^2 f}{\partial t_{i,1} \partial t_{j,1}} &
+\frac{\partial^2 f}{\partial t_{i,1} \partial t_{j,2}} &
+\ldots &
+\frac{\partial^2 f}{\partial t_{i,1} \partial t_{j,n}} \\
+\frac{\partial^2 f}{\partial t_{i,2} \partial t_{j,1}} &
+\frac{\partial^2 f}{\partial t_{i,2} \partial t_{j,2}} \\
+\vdots & & \ddots \\
+\frac{\partial^2 f}{\partial t_{i,n} \partial t_{j,1}} & & &
+\frac{\partial^2 f}{\partial t_{i,n} \partial t_{j,n}}
+\end{array} \right]
+\end{equation}
+
+and
+
+\begin{equation}
+\label{dsecelem}
+\left(\frac{\partial^2 f}{\partial T_i \partial T_j}\right)_{k,l} = 
+\frac{\partial^2 f}{\partial t_{i,k} \partial t_{j,l}}
+\end{equation}
+
+Thus the symmetric Hessian of $f(T)$, with the elements of $T$ occuring in row-major order, is composed of blocks of the form $\frac{\partial^2 f}{\partial T_i \partial T_j}$:
+
+\begin{eqnarray}
+\nabla^2 f(T) & = &
+\left[ \begin{array}{c|c|c}
+\frac{\partial^2 f}{\partial T_1 \partial T_1} &
+\ldots &
+\frac{\partial^2 f}{\partial T_1 \partial T_n} \\
+\hline
+\vdots & \ddots \\
+\hline
+\frac{\partial^2 f}{\partial T_1 \partial T_n} & 
+\ldots & 
+\frac{\partial^2 f}{\partial T_n \partial T_n} \\
+\end{array} \right]
+\\ & = &
+\left[ \begin{array}{ccc|c|ccc}
+\frac{\partial^2 f}{\partial t_{1,1}^2} &
+\ldots &
+\frac{\partial^2 f}{\partial t_{1,1} \partial t_{1,n}} &
+&
+\frac{\partial^2 f}{\partial t_{1,1} \partial t_{n,1}} &
+\ldots &
+\frac{\partial^2 f}{\partial t_{1,1} \partial t_{n,n}} \\
+\vdots & \ddots & \vdots &
+\ldots &
+\vdots & \ddots & \vdots \\
+\frac{\partial^2 f}{\partial t_{1,n} \partial t_{1,1}} &
+\ldots &
+\frac{\partial^2 f}{\partial t_{1,n}^2} &
+&
+\frac{\partial^2 f}{\partial t_{1,n} \partial t_{n,1}} &
+\ldots &
+\frac{\partial^2 f}{\partial t_{1,n} \partial t_{n,n}} \\
+\hline
+& \vdots & & \ddots & & \vdots \\
+\hline
+\frac{\partial^2 f}{\partial t_{n,1} \partial t_{1,1}} &
+\ldots &
+\frac{\partial^2 f}{\partial t_{n,1} \partial t_{1,n}} &
+&
+\frac{\partial^2 f}{\partial t_{n,1}^2} &
+\ldots &
+\frac{\partial^2 f}{\partial t_{n,1} \partial t_{n,n}} \\
+\vdots & \ddots & \vdots &
+\ldots &
+\vdots & \ddots & \vdots \\
+\frac{\partial^2 f}{\partial t_{n,n} \partial t_{1,1}} &
+\ldots &
+\frac{\partial^2 f}{\partial t_{n,n} \partial t_{1,n}} &
+&
+\frac{\partial^2 f}{\partial t_{n,n} \partial t_{n,1}} &
+\ldots &
+\frac{\partial^2 f}{\partial t_{n,n}^2} 
+\end{array} \right]
+\end{eqnarray}
+
+\chapter{Basic Matrix Derivatives}
+
+
+\section{Chain rule for matrix multiplication}
+
+\subsection{First Derivative}
+
+The following demonstrates that for the product of square matrices $T = A B$,
+that $\frac{\partial f(T)}{\partial A} = \frac{\partial f(T)}{\partial T} B^t$.
+
+Beginning with the chain rule:
+
+\begin{equation} 
+\label{eqn0}
+\frac{\partial f}{\partial a_{i,j}} = 
+\sum_{l=i}^{n} \sum_{k=1}^{n} 
+\frac{\partial f}{\partial t_{l,k}} 
+\frac{\partial t_{l,k}}{\partial a_{i,j}}
+\end{equation}
+
+Matrix multiplication gives:
+
+\begin{equation}
+\label{eqn1}
+t_{l,k} = \sum_{r=1}^n a_{l,r} b_{r,k}
+\end{equation}
+
+Taking the first derivative of Equation \ref{eqn1}:
+
+\begin{eqnarray}
+\label{eqn2}
+\frac{\partial t_{l,k}}{\partial a_{i,j}} 
+  &=& \sum_{r=1}^n \delta_i^l \delta_j^r b_{r,k} \\
+  &=& \delta_i^l b_{j,k}
+\end{eqnarray}
+
+Substituting Equation \ref{eqn2} into \ref{eqn0}:
+
+\begin{eqnarray}
+\label{eqn4}
+\frac{\partial f}{\partial a_{i,j}} &=& \sum_{l=1}^n \sum_{k=1}^n
+ \frac{\partial f}{\partial t_{l,k}} \delta_i^l b_{j,k} \\
+&=& \sum_{k=1}^{n} \frac{ \partial f}{ \partial t_{i,k}} b_{j,k}
+\end{eqnarray}
+
+which is:
+
+\begin{equation}
+\frac{\partial f}{\partial A} = \frac{\partial f}{\partial T} B^t
+\end{equation}
+
+
+\subsection{Second Derivative}
+
+Define:
+
+\begin{equation}
+C = \frac{\partial^2 f}{\partial A_i \partial A_j}
+\end{equation}
+
+for some $i$ and $j$ such that from Equation \ref{dsecelem}:
+
+\begin{equation}
+\label{chainsecondelem}
+c_{k,l} = \frac{\partial^2 f}{\partial a_{i,k} \partial a_{j,l}}
+\end{equation}
+
+Substituting Equation \ref{eqn4} into Equation \ref{chainsecondelem}:
+
+\begin{eqnarray}
+c_{k,l} &=& \frac{\partial}{\partial a_{i,k}} \sum_{p=1}^n \frac{ \partial f}{\partial t_{j,p}} b_{l,p} \\
+        &=& \sum_{p=1}^n \frac{\partial}{\partial t_{j,p}} \frac{\partial f}{\partial a_{i,k}} b_{l,p} \\
+\label{chainsecondr1}
+        &=& \sum_{p=1}^n \sum_{q=1}^n \frac{\partial^2 f}{ \partial t_{j,p} \partial t_{i,q}} b_{l,p} b_{k,q} 
+\end{eqnarray}
+
+Let:
+
+\begin{equation}
+D = \frac{\partial^2 f}{\partial T_i \partial T_j}
+\end{equation}
+which, given the defintion in Equation \ref{dsecelem}:
+\begin{equation}
+d_{q,p} = \frac{\partial^2 f}{\partial t_{i,q} \partial t_{j,p}}
+\end{equation}
+
+Define matrix $X$ and $Y$:
+
+\begin{eqnarray}
+X &=& B D \\
+Y &=& X B^t = B D B^t
+\end{eqnarray}
+
+An element of $Y$ is then:
+
+\begin{eqnarray}
+x_{k,p} & = & \sum_{q=1}^n b_{k,q} d_{q,p} \\
+y_{k,l} & = & \sum_{p=1}^n x_{k,p} b_{l,p} \\ 
+        & = & \sum_{p=1}^n \sum_{q=1}^n b_{k,q} d_{q,p} b_{l,p} \\
+\label{chainsecondr2}
+        & = & \sum_{p=1}^n \sum_{q=1}^n \frac{\partial^2 f}{\partial t_{j,p} \partial t_{i,q}} b_{l,p} b_{k,q}
+\end{eqnarray}
+
+Equation \ref{chainsecondr1} is equal to Equation \ref{chainsecondr2}, so:
+
+\begin{eqnarray}
+\frac{\partial^2 f}{\partial A_i \partial A_j} &=& C \\
+&=& Y \\
+&=& B D B^t \\
+&=& B \frac{\partial^2 f}{\partial T_i \partial T_j} B^t 
+\end{eqnarray}
+
+
+
+\section{Derivatives of $|T|^2$}
+
+\begin{eqnarray}
+f(T) &=& |T|^2 = \sum_{i=1}^n \sum_{j=1}^n t_{i,j}^2 \\
+\label{tsquaredterm}
+\frac{\partial f}{\partial t_{i,j}} &=& 2 t_{i,j} \\
+\frac{\partial f}{\partial T} &=& 2 T
+\end{eqnarray}
+
+Beginning with Equation \ref{tsquaredterm}:
+\begin{eqnarray}
+\frac{\partial^2 f}{\partial t_{i,j}}{\partial_{k,l}} &=& 2 \delta_i^k \delta_j^l \\
+\left(\frac{\partial^2 f}{\partial T_i \partial T_j}\right)_{r,s} &=& 2 \delta_i^j \delta_r^s \\
+\frac{\partial^2 f}{\partial T_i \partial T_j} &=& 2 \delta_i^j I
+\end{eqnarray}
+
+All non-diagonal blocks of the Hessian are zero due to the $\delta_{i,j}$.  Thus, if $I_{n^2}$ is the $n^2 \times n^2$ identity matrix, then:
+
+\begin{equation}
+\frac{\partial^2 |T|^2}{\partial T^2} = 2 I_{n^2}
+\end{equation}
+
+\section{First Partial Drivative of $det(T)$}
+
+\begin{eqnarray}
+f(T) &=& det(T) \\
+     &=& \sum_{k=1}^n t_{l,k} C_{l,k}(T) \quad \forall \quad 1 \le l \le n \\
+\label{det1}
+     &=& \sum_{k=1}^n (-1)^{l+k} t_{l,k} M_{l,k}(T) \quad \forall \quad 1 \le l \le n
+\end{eqnarray}
+
+For each term of $\frac{\partial f}{\partial T}$, take the partial derivative of of Equation \ref{det1} for $l = i$ with respect to the corresponding element of $T$:
+
+\begin{eqnarray}
+\frac{\partial f}{\partial t_{i,j}} &=& 
+\sum_{k=1}^n (-1)^{i+k} \left[
+ \frac{\partial t_{i,k}}{\partial t_{i,j}} M_{i,k}(T) + 
+ \frac{\partial M_{i,k}}{\partial t_{i,k}} t_{i,k} \right] \\
+ &=& \sum_{k=1}^n (-1)^{i+k} \left[
+ \delta^k_j M_{i,k}(T) + 
+ \frac{\partial M_{i,k}}{\partial t_{i,k}} t_{i,k} \right] \\
+\label{det2}
+ &=& (-1)^{i+j} M_{i,j}(T) + \sum_{k=1}^n (-1)^{i+k} \frac{\partial 
+   M_{i,k}}{\partial t_{i,k}} t_{i,k}
+\end{eqnarray}
+
+By definition, the minor for row $i$ and column $j$ contains terms from neither row $i$ nor column $j$. Therefore the partial derivative of a minor with respect to any term from either the corresponding row or column of the original matrix is zero:
+\begin{equation}\label{det3}
+\frac{\partial M_{i,j}}{\partial t_{i,k}} = 
+\frac{\partial M_{i,j}}{\partial t_{k,j}} = 0 \quad \forall \quad k
+\end{equation}
+
+Thus all the terms in the summation in Equation \ref{det2} are zero, leaving:
+
+\begin{equation}\label{det_deriv_term}
+\frac{\partial f}{\partial t_{i,j}} = (-1)^{i+j}M_{i,j}(T)
+\end{equation}
+
+Which is the definition of the cofactor matrix of $T$, and the transpose of the definition of the adjugate of $T$:
+
+\begin{equation}
+\frac{\partial f}{\partial T} = (adj(T))^t = adj(T^t)
+\end{equation}
+
+\section{Second Partial Drivative of $det(T)$}
+
+The partial derivative of Equation \ref{det_deriv_term} is:
+
+\begin{equation}
+\frac{\partial^2 f}{\partial t_{i,j} \partial t_{k,l}} = (-1)^{i+j}\frac{\partial M_{i,j}(T)}{\partial t_{k,l}}
+\end{equation}
+
+For a $2 \times 2$ matrix, $M_{i,j}(T) = t_{3-i,3-j}$:
+\begin{equation}
+\frac{\partial^2 f}{\partial t_{i,j} \partial t_{k,l}} = 
+(-1)^{i+j} \delta_{3-i}^k \delta_{3-j}^l
+\end{equation}
+
+\begin{equation}
+\left(\frac{\partial^2 f}{\partial T_i \partial T_j}\right)_{r,s} =
+(-1)^{i+r} \delta_{3-i}^j \delta_{3-r}^s
+\end{equation}
+
+\begin{equation}
+\frac{\partial^2 det(T)}{\partial T^2} =
+\left[ \begin{array}{cccc}
+0 & 0 & 0 & 1 \\
+0 & 0 & -1 & 0 \\
+0 & -1 & 0 & 0 \\
+1 & 0 & 0 & 0 
+\end{array} \right]
+\end{equation}
+
+For a $3 \times 3$ matrix, the Hessian of the determinant is:
+
+\begin{equation}
+\frac{\partial^2 det(T)}{\partial T^2} =
+\left[ \begin{array}{ccccccccc}
+ 0 & 0 & 0 & 0 & t_{3,3} & -t_{3,2} & 0 & -t_{2,3} & t_{2,2} \\
+ 0 & 0 & 0 & -t_{3,3} & 0 & t_{3,1} & t_{2,3} & 0 & -t_{2,1} \\
+ 0 & 0 & 0 & t_{3,2} & -t_{3,1} & 0 & -t_{2,2} & t_{2,1} & 0 \\
+ 0 & -t_{3,3} & t_{3,2} & 0 & 0 & 0 & 0 & t_{1,3} & -t_{2,1} \\
+ t_{3,3} & 0 & -t_{3,1} & 0 & 0 & 0 & -t_{1,3} & 0 & t_{1,1} \\
+ -t_{3,2} & t_{3,1} & 0 & 0 & 0 & 0 & t_{1,2} & -t_{1,1} & 0 \\
+ 0 & t_{2,3} & -t_{2,2} & 0 & -t_{1,3} & t_{1,2} & 0 & 0 & 0 \\
+ -t_{2,3} & 0 & t_{2,1} & t_{1,3} & 0 & -t_{1,1} & 0 & 0 & 0 \\
+ t_{2,2} & -t_{2,1} & 0 & -t_{1,2} & t_{1,1} & 0 & 0 & 0 & 0
+\end{array} \right]
+\end{equation}
+
+Each non-diagonal $3 \times 3$ block of the $3 \times 3$ result can be expressed as:
+
+\begin{equation}
+\frac{\partial^2 f}{\partial T_i \partial T_j}
+ = s\left[\begin{array}{ccc}
+0 & t_{k,3} & -t_{k,2} \\
+-t_{k,3} & 0 & t_{k,1} \\
+t_{k,2} & -t_{k,1} & 0 
+\end{array}\right]\end{equation}
+
+where 
+\begin{eqnarray}
+k &=& (3-i) + (3-j) \\
+s &=& (-1)^{i+j}\frac{i-j}{|i-j|}
+\end{eqnarray}
+
+Both the $2 \times 2$ and $3 \times 3$ results are composed of skew-symmetric $n \times n$ submatrices.  For the $3 \times 3$ result, the terms in a submatrix are the values from a single row of $T$.  The diagonal submatrices for both results are zero, and the diagonal terms of each submatrix are zero.
+
+
+\section{Derivatives of $T^p$}
+
+Define $T^p$ for any positive integer $p$ to be the product of $p$ instances of the matrix $T$.  Define $T^0 = I$.  The derivative of the first power is obvious:
+\begin{eqnarray}
+T^1 &=& T \\
+(T^1)_{i,j} &=& t_{i,j} \\
+\frac{\partial (T^1)_{i,j}}{\partial t_{r,s}} &=& \delta^i_r \delta^j_s \\
+\frac{\partial T^1}{\partial t_{r,s}} &=& E_{r,s}
+\end{eqnarray}
+
+For the second power of $T$:
+
+\begin{eqnarray}
+T^2 &=& T T \\
+(T^2)_{i,j} &=& \sum_{k=1}^n t_{i,k} t_{k,j} \\
+\frac{\partial (T^2)_{i,j}}{\partial t_{r,s}} &=& 
+  \sum_{k=1}^n \left( \delta^i_r \delta^k_s t_{k,j} 
+  + t_{i,k} \delta^k_R \delta^j_s 
+  \right) \\
+\frac{\partial T^2}{\partial t_{r,s}} &=& \frac{\partial T}{\partial t_{r,s}} T 
+  + T \frac{\partial T}{\partial t_{r,s}} 
+\end{eqnarray}
+
+And for the third power of $T$:
+
+\begin{eqnarray}
+T^3 &=& T T T\\
+(T^3)_{i,j} &=& \sum_{p=1}^n \sum_{k=1}^n t_{i,k} t_{k,p} t_{p,j} \\
+\frac{\partial (T^3)_{i,j}}{\partial t_{r,s}} &=& 
+  \sum_{p=1}^n \sum_{k=1}^n \left( 
+  \delta^i_r \delta^k_s t_{k,p} t_{p,j} 
+  + t_{i,k} \delta^k_r \delta^p_s t_{p,j} 
+  + t_{i,k} t_{k,p} \delta^p_r \delta^j_s 
+  \right)\\
+\frac{\partial T^3}{\partial t_{r,s}} &=& \frac{\partial T}{\partial t_{r,s}} T T + T \frac{\partial T}{\partial t_{r,s}} T + T T \frac{\partial T}{\partial t_{r,s}} 
+\end{eqnarray}
+
+And for the fourth power of $T$:
+
+\begin{eqnarray}
+T^4 &=& T T T T\\
+(T^4)_{i,j} &=& \sum_{q=1}^n \sum_{p=1}^n \sum_{k=1}^n t_{i,k} t_{k,p} t_{p,q} t_{q,j} \\
+\nonumber 
+\frac{\partial (T^4)_{i,j}}{\partial t_{r,s}} &=& 
+  \sum_{q=1}^n \sum_{p=1}^n \sum_{k=1}^n ( 
+   \delta^i_r \delta^k_s t_{k,p} t_{p,q} t_{q,j} 
+   + t_{i,k} \delta^k_r \delta^p_s t_{p,q} t_{q,j} \\ & & {} 
+   + t_{i,k} t_{k,p} \delta^p_r \delta^q_s t_{q,j} 
+   + t_{i,k} t_{k,p} t_{p,q} \delta^q_r \delta^j_s)\\
+\frac{\partial T^4}{\partial t_{r,s}} &=& 
+  \frac{\partial T}{\partial t_{r,s}} T T T 
+  + T \frac{\partial T}{\partial t_{r,s}} T T 
+  + T T \frac{\partial T}{\partial t_{r,s}} T 
+  + T T T \frac{\partial T}{\partial t_{r,s}}
+\end{eqnarray}
+
+I'm not sure how to formalize the next step, but the pattern is clear:
+
+\begin{equation}
+\frac{\partial T^p}{\partial t_{r,s}}
+ = \sum_{i=1}^p\left( T^{i-1} \frac{\partial T}{\partial t_{r,s}} T^{p-i} 
+   \right) \quad \forall \quad p \in \mathbb{Z}, p > 0
+\end{equation}
+
+Going back to the formulas for single terms in the derivatives, we can simplify further: several of the summations can be eliminated because all but one 
+of the terms are multiplied by a Kronecker delta equal to zero:
+\begin{eqnarray}
+\frac{\partial (T^1)_{i,j}}{\partial t_{r,s}} &=& \delta^i_r \delta^j_s \\
+\frac{\partial (T^2)_{i,j}}{\partial t_{r,s}} &=& \delta^i_r t_{s,j} + t_{i,r} \delta^j_s \\
+\frac{\partial (T^3)_{i,j}}{\partial t_{r,s}} &=& 
+\delta_r^i \sum_{p=1}^n t_{s,p} t_{p,j} + t_{i,r} t_{s,j} + 
+\delta_s^j \sum_{k=1}^n t_{i,k} t_{k,r} \\
+ & = & \delta_r^i (T^2)^{s,j} + t_{i,r} t_{s,j}
+ + \delta_s^j (T^2)_{i,r} \\
+\nonumber
+\frac{\partial (T^4)_{i,j}}{\partial t_{r,s}} &=& 
+\delta^i_r \sum_{q=1}^n \sum_{p=1}^n t_{s,p} t_{p,q} t_{q,j} +
+t_{i,r} \sum_{q=1}^n t_{s,q} t_{q,j} \\ & & {} +
+t_{s,j} \sum_{k=1}^n t_{i,k} t_{k,r} +
+\delta^j_s \sum_{p=1}^n \sum_{k=1}^n t_{i,k} t_{k,p} t_{p,r} \\
+ & = & \delta^i_r (T^3)_{s,j} +
+t_{i,r} (T^2)_{s,j} + 
+t_{s,j} (T^2)_{i,r} +
+\delta^j_s (T^3)_{i,r}
+\end{eqnarray}
+
+The pattern isn't evident yet, so for $T^5$:
+
+\begin{eqnarray}{ccc}
+(T^5)_{i,j} &=& \sum_{u=1}^n \sum_{q=1}^n \sum_{p=1}^n \sum_{k=1}^n
+t_{i,k} t_{k,p} t_{p,q} t_{q,u} t_{u,j} \\
+\nonumber
+\frac{\partial (T^5)_{i,j}}{\partial t_{r,s}} &=&
+  \sum_{u=1}^n \sum_{q=1}^n \sum_{p=1}^n \sum_{k=1}^n (
+  \delta^i_r \delta^k_s t_{k,p} t_{p,q} t_{q,u} t_{u,j} \\ \nonumber & & {} +
+  t_{i,k} \delta^k_r \delta^p_s t_{p,q} t_{q,u} t_{u,j} +
+  t_{i,k} t_{k,p} \delta^p_r \delta^q_s t_{q,u} t_{u,j} \\ & & {} +
+  t_{i,k} t_{k,p} t_{p,q} \delta^q_r \delta^u_s t_{u,j} +
+  t_{i,k} t_{k,p} t_{p,q} t_{q,u} \delta^u_r \delta^j_s )\\
+\nonumber
+&=& \delta^i_r \sum_{u=1}^n \sum_{q=1}^n \sum_{p=1}^n t_{s,p} t_{p,q} t_{q,u} t_{u,j}
+ + t_{i,r} \sum_{u=1}^n \sum_{q=1}^n t_{s,q} t_{q,u} t_{u,j}
+ \\ \nonumber & & {} + 
+ \sum_{u=1}^n \sum_{k=1}^n t_{i,k} t_{k,r} t_{s,u} t_{u,j}
+ + t_{s,j} \sum_{p=1}^n \sum_{k=1}^n t_{i,k} t_{k,p} t_{p,r}
+ \\ & & {} + 
+ \delta^j_s \sum_{q=1}^n \sum_{p=1}^n \sum_{k=1}^n t_{i,k} t_{k,p} t_{p,q} t_{q,r} \\
+\nonumber
+&=& \delta^i_r (T^4)_{s,j} + t_{i,r} (T^3)_{s,j} + (T^2)_{i,r}(T^2)_{s,j}
+  + t_{s,j} (T^3)_{i,r} + \delta^j_s (T^4)_{i,r} \\
+\end{eqnarray}
+
+
+\chapter{Derivatives of target metrics}
+
+
+\section{Derivatives of $|T-B|^2$}
+
+\begin{equation}
+f(T) = |T-B|^2 = \sum_{i=1}^n \sum_{j=1}^n (t_{i,j} - b_{i,j})^2
+\end{equation}
+
+\begin{equation}
+\frac{\partial f}{\partial t_{i,j}} = 2 (t_{i,j} - b_{i,j})
+\end{equation}
+
+\begin{equation}
+\frac{\partial f}{\partial T} = 2(T - B)
+\end{equation}
+
+
+\begin{equation}
+\frac{\partial^2 f}{\partial t_{i,j} \partial t_{k,l}} = 2 \delta^i_k \delta^j_l \end{equation}
+
+\begin{equation}
+\frac{\partial^2 f}{\partial T^2} = 2 I
+\end{equation}
+
+
+\section{Derivatives of Inverse Mean Ratio}
+
+\begin{eqnarray}
+f(T) & = & \frac{|T|^2}{n det^{2/n}(T)} \\
+g(T) & = & |T|^2 \\
+h(T) & = & det(T) \\
+e(T) & = & n \cdot h(T)^{2/n} \\
+f(T) & = & \frac{g(T)}{e(T)} 
+\end{eqnarray}
+
+\begin{eqnarray}
+\frac{\partial f}{\partial T} &=& \frac{
+\frac{\partial g}{\partial T} e(T) - 
+\frac{\partial e}{\partial h} \frac{\partial h}{\partial t} g(T)}
+{e^2(T)} \\
+&=& 
+\frac{2 T e(T) - 
+2 h(T)^\frac{2-n}{n} adj(T^t) g(T)}
+{e^2(T)} \\
+& = &  
+\frac{2 T}{e(T)} -
+\frac{2 h(T)^{\frac{2-n}{n}} adj^t(T) |T|^2}{e^2(T)} \\
+& = &  
+\frac{2 T}{n \cdot det(T)^{2/n}} -
+\frac{2 det(T)^{\frac{2-n}{n}} adj^t(T) |T|^2}{n^2 \cdot det(T)^{4/n}} \\
+& = &  
+\frac{2}{n \cdot det^{2/n}(T)}\left[ T - \frac{|T|^2}{n \cdot det(T)} adj(T^t) \right]
+\end{eqnarray}
+
+Begin the second derivative with the  expression for individual elements of the first derivative:
+
+\begin{eqnarray}
+\frac{\partial f}{\partial t_{i,j}} & = & 
+\frac{2}{n \cdot det^{2/n}(T)}\left[ t_{i,j} - \frac{|T|^2}{n \cdot det(T)} adj(T^t)_{i,j} \right] \\
+ & = & 
+\frac{2}{n}det^{-2/n}(T)\left[ t_{i,j} - \frac{1}{n}|T|^2 det^{-1}(T) adj(T^t)_{i,j}\right] \\
+ & = &
+\frac{2}{n} t_{i,j} det^{-2/n}(T) - \frac{2}{n^2} |T|^2 det^{\frac{-2}{n} - 1}(T) adj(T^t)_{i,j} 
+\end{eqnarray}
+
+And differentiate with respect to an element of $T$:
+
+\begin{eqnarray}
+\nonumber
+\frac{\partial^2 f}{\partial t_{i,j} \partial t_{k,l}} & = &
+\frac{2}{n} \delta_i^k \delta_j^l det^{-2/n}(T) 
+  - \frac{4}{n^2} t_{i,j} det^{\frac{-2}{n}-1}(T) adj(T^t)_{k,l} \\
+\nonumber
+  & & {} - \frac{4}{n^2}t_{k,l} det^{\frac{-2}{n} - 1}(T) adj(T^t)_{i,j} \\
+\nonumber
+  & & {} + \frac{4+2n}{n^3} |T|^2 det^{\frac{-2}{n} - 2}(T) adj(T^t)_{i,j} adj(T^t)_{k,l} \\
+  & & {} - \frac{2}{n^2} |T|^2 det^{\frac{-2}{n} - 1}(T) \frac{\partial adj(T^t)_{i,j}}{\partial t_{k,l}} \\
+ & = & \frac{2}{n \cdot det^{2/n}(T)} \delta_i^k \delta_j^l
+     + \frac{4 + 2n}{n^3 det^{\frac{2}{n}+2}(T)} |T|^2 adj(T^t)_{i,j} adj(T^t)_{k,l} \\
+\nonumber
+& & {} - \frac{2}{n^2 det^{\frac{2}{n}+1}} \left[ 
+     2 t_{k,l} adj(T^t)_{i,j} + 2 t_{i,j} adj(T^t)_{k,l}
+     + |T|^2 \frac{\partial adj(T^t)_{i,j}}{\partial t_{k,l}} \right] 
+\end{eqnarray}
+
+Returning to the Hessian notation for the second derivatives from Equation \ref{dsecelem}:
+
+
+\begin{eqnarray}
+\left(\frac{\partial^2 f}{\partial T_i \partial T_j}\right)_{r,s} &=&
+\frac{2}{n \cdot det^{2/n}(T)} \delta_i^j \delta_r^s
+     + \frac{4 + 2n}{n^3 det^{\frac{2}{n}+2}(T)} |T|^2 adj(T^t)_{i,r} adj(T^t)_{j,s} \\
+\nonumber
+& & {} - \frac{2}{n^2 det^{\frac{2}{n}+1}} \left[ 
+     2 t_{j,s} adj(T^t)_{i,r} + 2 t_{i,r} adj(T^t)_{j,s}
+     + |T|^2 \frac{\partial adj(T^t)_{i,r}}{\partial t_{j,s}} \right] 
+\end{eqnarray}
+
+Define $A = adj(T^t)$ and $A_i$ equal to the $i^th$ row of $A$.
+
+\begin{eqnarray}
+\frac{\partial^2 f}{\partial T_i \partial T_j}
+&=& \frac{2 \delta_i^j}{n \cdot det^{2/n}(T)} I
++ \frac{4 + 2n}{n^3 det^{\frac{2}{n}+2}(T)} |T|^2 A_i^t A_j \\ \nonumber
+& & {} - \frac{2}{n^2 det^{\frac{2}{n}+1}} \left[ 
+2 A_i^t T_j + 2 T_i^t A_j + |T|^2 \frac{\partial^2 det(T)}{\partial T_i \partial T_j} \right]
+\end{eqnarray}
+
+Or if, instead, $A = adj(T)$, then
+
+\begin{eqnarray} \label{imrblockhess}
+\frac{\partial^2 f}{\partial T_i \partial T_j} 
+&=& \frac{2 \delta_i^j}{n \cdot det^{2/n}(T)} I
++ \frac{4 + 2n}{n^3 det^{\frac{2}{n}+2}(T)} |T|^2 A_j^t A_i \\ \nonumber
+& & {} - \frac{2}{n^2 det^{\frac{2}{n}+1}} \left[ 
+2 T_j^t A_i + 2 A_j^t T_i + |T|^2 \frac{\partial^2 det(T)}{\partial T_i \partial T_j} \right]
+\end{eqnarray}
+
+
+
+For $2 \times 2$ target matrices, Equation \ref{imrblockhess} simplifies to:
+\begin{eqnarray}
+\frac{\partial^2 f}{\partial T_i \partial T_j}
+&=& \frac{\delta^i_j}{det(T)}I + \frac{|T|^2}{det^3(T)} A_j^t A_i \\ \nonumber
+& & {} - \frac{1}{det^2(T)} \left[ T_j^t A_i + A_j^t T_i 
++ \frac{|T|^2}{2} \frac{\partial^2 det(T)}{\partial T_i \partial T_j} \right]
+\end{eqnarray}
+
+\end{document}
