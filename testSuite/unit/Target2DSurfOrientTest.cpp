@@ -49,7 +49,6 @@
 #include "IdealTargetCalculator.hpp"
 #include "RefMeshTargetCalculator.hpp"
 #include "ReferenceMesh.hpp"
-#include "UnitWeight.hpp"
 #include "QualityAssessor.hpp"
 #include "TerminationCriterion.hpp"
 
@@ -408,7 +407,6 @@ void Target2DSurfOrientTest::smooth( int metric_3D, bool ref_mesh, MeshDomain* d
   
   const SamplePoints pts( true );
   
-  UnitWeight weight;
   IdealTargetCalculator ideal_target( !ref_mesh );
   ReferenceMesh rm( &refMesh );
   RefMeshTargetCalculator ref_target( &rm );
@@ -418,9 +416,9 @@ void Target2DSurfOrientTest::smooth( int metric_3D, bool ref_mesh, MeshDomain* d
   Metric2D_Type_Ideal ideal_tmetric;
   Metric2D_Type_Ref ref_tmetric;
   TargetMetric2D* tmetric = ref_mesh ? (TargetMetric2D*)&ref_tmetric : (TargetMetric2D*)&ideal_tmetric;
-  TMPQualityMetric qmetric(&pts, tc, &weight, tmetric, NULL);
-  TargetSurfaceOrientation ometric1(&pts, tc, &weight);
-  DomainSurfaceOrientation ometric2(&pts, &weight);
+  TMPQualityMetric qmetric(&pts, tc, tmetric, NULL);
+  TargetSurfaceOrientation ometric1(&pts, tc);
+  DomainSurfaceOrientation ometric2(&pts);
   
   QualityMetric* ometric = metric_3D == 2 ? (QualityMetric*)&ometric2 : (QualityMetric*)&ometric1;
   PMeanPTemplate pmean_3D( METRIC_3D_ORIENT_P, ometric );

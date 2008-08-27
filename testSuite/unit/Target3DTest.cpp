@@ -37,7 +37,6 @@
 #include "TMPQualityMetric.hpp"
 #include "SamplePoints.hpp"
 #include "IdealTargetCalculator.hpp"
-#include "UnitWeight.hpp"
 #include "LinearFunctionSet.hpp"
 #include "UnitUtil.hpp"
 
@@ -64,7 +63,6 @@ private:
   LinearFunctionSet mapping;
   QualityMetricTester tester;
   IdealTargetCalculator target;
-  UnitWeight weight;
   Metric test_metric;
   TMPQualityMetric metric;
   bool sizeInvariant, orientInvariant, Barrier;
@@ -73,7 +71,7 @@ public:
   Target3DTest( bool size_invariant, bool orient_invariant, bool barrier, double ideal_element_val )
     : corners( true, false, false, false ),
       tester( VolElems, sizeof(VolElems)/sizeof(VolElems[0]), &mapping ),
-      metric( &corners, &target, &weight, 0, &test_metric ),
+      metric( &corners, &target, 0, &test_metric ),
       sizeInvariant(size_invariant), orientInvariant(orient_invariant), Barrier(barrier),
       idealVal(ideal_element_val)
     {}

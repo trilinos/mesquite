@@ -76,6 +76,20 @@ AffineMapMetric::AffineMapMetric( TargetCalculator* tc,
    samplePts.sample_at( TETRAHEDRON, 3 );
    samplePts.sample_at( HEXAHEDRON, 0 );
 }
+ 
+AffineMapMetric::AffineMapMetric( TargetCalculator* tc,
+                                  TargetMetric2D* metric_2d,
+                                  TargetMetric3D* metric_3d ) 
+  : targetCalc(tc),
+    weightCalc(0),
+    metric2D( metric_2d ),
+    metric3D( metric_3d )
+{
+   samplePts.sample_at( TRIANGLE, 2 );
+   samplePts.sample_at( QUADRILATERAL, 0 );
+   samplePts.sample_at( TETRAHEDRON, 3 );
+   samplePts.sample_at( HEXAHEDRON, 0 );
+}
      
 
 int AffineMapMetric::get_negate_flag( ) const { return 1; }
@@ -154,8 +168,10 @@ bool AffineMapMetric::evaluate( PatchData& pd, size_t handle, double& value, Msq
   }
   
     // apply target weight to value
-  double ck = weightCalc->get_weight( pd, e, &samplePts, s, err ); MSQ_ERRZERO(err);
-  value *= ck;
+  if (weightCalc) {
+    double ck = weightCalc->get_weight( pd, e, &samplePts, s, err ); MSQ_ERRZERO(err);
+    value *= ck;
+  }
   return rval;
 }
 

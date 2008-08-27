@@ -71,7 +71,6 @@ using std::endl;
 #include "TargetReader.hpp"
 #include "TargetWriter.hpp"
 #include "ReferenceMesh.hpp"
-#include "UnitWeight.hpp"
 
 // algorithms
 #include "I_DFT.hpp"
@@ -125,8 +124,7 @@ int main(int argc, char* argv[])
 
   // creates a mean ratio quality metric ...
   TargetReader reader(true);
-  UnitWeight weights;
-  I_DFT mean_ratio( &reader, &weights );
+  I_DFT mean_ratio( &reader );
 
   Mesquite::MeshImpl ref_mesh;
   ref_mesh.read_vtk(MESH_FILES_DIR "2D/VTK/tfi_horse10x4-12.vtk", err);

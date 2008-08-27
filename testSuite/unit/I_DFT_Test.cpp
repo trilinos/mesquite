@@ -38,7 +38,6 @@
 #include "I_DFT_InverseMeanRatio.hpp"
 #include "I_DFT_Generalized.hpp"
 #include "IdealCornerTarget.hpp"
-#include "UnitWeight.hpp"
 #include "cppunit/extensions/HelperMacros.h"
 #include "QualityMetricTester.hpp"
 
@@ -136,7 +135,6 @@ private:
   CPPUNIT_TEST_SUITE_END();
   
   IdealCornerTarget tc;
-  UnitWeight wc;
   I_DFT i_dft_metric;
   I_DFT_WeakBarrier weak_barrier_metric;
   I_DFT_StrongBarrier strong_barrier_metric;
@@ -147,11 +145,11 @@ private:
 public:
 
   I_DFT_Test() 
-    : i_dft_metric( &tc, &wc ),
-      weak_barrier_metric( &tc, &wc ),
-      strong_barrier_metric( &tc, &wc ),
-      no_barrier_metric( &tc, &wc ),
-      imr_metric( &tc, &wc ),
+    : i_dft_metric( &tc ),
+      weak_barrier_metric( &tc ),
+      strong_barrier_metric( &tc ),
+      no_barrier_metric( &tc ),
+      imr_metric( &tc ),
       tester(QualityMetricTester::ALL_FE_EXCEPT_SEPTAHEDRON)
     { tester.ideal_pyramid_base_equals_height( true ); }
 

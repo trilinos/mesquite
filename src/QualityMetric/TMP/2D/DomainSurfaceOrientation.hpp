@@ -48,7 +48,7 @@ public:
 
   DomainSurfaceOrientation( 
                   const SamplePoints* pts, 
-                  WeightCalculator* wc  ) 
+                  WeightCalculator* wc = 0 ) 
     : samplePts(pts), 
       weightCalc(wc)
    {}

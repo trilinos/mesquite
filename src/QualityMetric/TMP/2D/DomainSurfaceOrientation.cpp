@@ -154,8 +154,10 @@ bool DomainSurfaceOrientation::evaluate_with_indices( PatchData& pd,
   value = m[0]*m[0] + m[1]*m[1];
   
     // apply target weight to value
-  const double ck = weightCalc->get_weight( pd, e, samplePts, s, err ); MSQ_ERRZERO(err);
-  value *= ck;
+  if (weightCalc) {
+    const double ck = weightCalc->get_weight( pd, e, samplePts, s, err ); MSQ_ERRZERO(err);
+    value *= ck;
+  }
   return true;
 }
 

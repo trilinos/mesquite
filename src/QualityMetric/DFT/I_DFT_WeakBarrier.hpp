@@ -66,7 +66,7 @@ delta, above, is calculated using PatchData::get_barrier_delta(MsqError &err).
   {
   public:
     
-    I_DFT_WeakBarrier( TargetCalculator* tc, WeightCalculator* wc )
+    I_DFT_WeakBarrier( TargetCalculator* tc, WeightCalculator* wc = 0 )
       : I_DFT( tc, wc )
     {
       set_name("I_DFT_WeakBarrier");

@@ -56,7 +56,7 @@ namespace Mesquite
   public:
   
     DistanceFromTarget( TargetCalculator* tc,
-                        WeightCalculator* wc );
+                        WeightCalculator* wc = 0 );
     
       //! virtual destructor ensures use of polymorphism during destruction
     virtual ~DistanceFromTarget();
@@ -112,8 +112,13 @@ namespace Mesquite
                                  err );
       MSQ_ERRRTN(err);
       
-      c_k[i] = weightCalc->get_weight( pd, elem_index, pts, i, err );
-      MSQ_ERRRTN(err);
+      if (weightCalc) {
+        c_k[i] = weightCalc->get_weight( pd, elem_index, pts, i, err );
+        MSQ_ERRRTN(err);
+      }
+      else {
+        c_k[i] = 1.0;
+      }
     }
   }
     
@@ -134,8 +139,13 @@ namespace Mesquite
       MSQ_ERRRTN(err);
       timesInvA( T[i], *reinterpret_cast<Matrix3D*>(&W) );
       
-      c_k[i] = weightCalc->get_weight( pd, elem_index, pts, i, err );
-      MSQ_ERRRTN(err);
+      if (weightCalc) {
+        c_k[i] = weightCalc->get_weight( pd, elem_index, pts, i, err );
+        MSQ_ERRRTN(err);
+      }
+      else {
+        c_k[i] = 1.0;
+      }
     }
   }
 

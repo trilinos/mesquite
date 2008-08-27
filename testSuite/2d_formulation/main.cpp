@@ -42,7 +42,6 @@
 #include "ElementPMeanP.hpp"
 #include "MsqError.hpp"
 #include "LinearFunctionSet.hpp"
-#include "UnitWeight.hpp"
 #include "TSquared2D.hpp"
 #include "SamplePoints.hpp"
 #include "MeshImpl.hpp"
@@ -73,10 +72,9 @@ void run_test( Grouping grouping, int of_power, Weight w, const string filename 
 {
   MsqError err;
   
-  UnitWeight wc;
   IdentityTarget target;
   TSquared2D target_metric;
-  AffineMapMetric qual_metric( &target, &wc, &target_metric, NULL );
+  AffineMapMetric qual_metric( &target, &target_metric, NULL );
   ElementPMeanP elem_metric( of_power, &qual_metric );
   QualityMetric* qm_ptr = (grouping == ELEMENT) ? (QualityMetric*)&elem_metric : (QualityMetric*)&qual_metric;
 

@@ -67,7 +67,7 @@ essentially not used with mGamma = 0.0.
   {
   public:
     
-    I_DFT_NoBarrier( TargetCalculator* tc, WeightCalculator* wc )
+    I_DFT_NoBarrier( TargetCalculator* tc, WeightCalculator* wc = 0 )
       : I_DFT( tc, wc )
     {
       set_name("I_DFT_NoBarrier");

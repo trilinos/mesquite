@@ -36,7 +36,6 @@
 #include "XYRectangle.hpp"
 #include "LinearFunctionSet.hpp"
 
-#include "UnitWeight.hpp"
 #include "ReferenceMesh.hpp"
 #include "RefMeshTargetCalculator.hpp"
 #include "Target2DShapeBarrier.hpp"
@@ -188,12 +187,11 @@ int main( int argc, char* argv[] )
   create_input_mesh( reference_params, fixed_boundary_vertices, refmesh, err ); CHECKERR
   domain.setup( &mesh, err ); CHECKERR
 
-  UnitWeight wc;
   ReferenceMesh rmesh( &refmesh );
   RefMeshTargetCalculator tc( &rmesh );
   Target2DShapeBarrier tm;
   SamplePoints pts( true, false, false, false );
-  TMPQualityMetric qm( &pts, &tc, &wc, &tm, 0 );
+  TMPQualityMetric qm( &pts, &tc, &tm, 0 );
   
   PMeanPTemplate of( 1.0, &qm );
   ConjugateGradient cg( &of );

@@ -60,6 +60,11 @@ public:
                    WeightCalculator* wc,
                    TargetMetric2D* metric_2d,
                    TargetMetric3D* metric_3d );
+
+  MESQUITE_EXPORT
+  AffineMapMetric( TargetCalculator* tc,
+                   TargetMetric2D* metric_2d,
+                   TargetMetric3D* metric_3d );
      
   MESQUITE_EXPORT virtual
   msq_std::string get_name() const;

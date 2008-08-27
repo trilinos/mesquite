@@ -59,7 +59,6 @@ using std::ostream;
 #include "SamplePoints.hpp"
 #include "LinearFunctionSet.hpp"
 #include "IdealTargetCalculator.hpp"
-#include "UnitWeight.hpp"
 #include "ConditionNumberQualityMetric.hpp"
 #include "ReferenceMesh.hpp"
 #include "RefMeshTargetCalculator.hpp"
@@ -151,8 +150,7 @@ static int do_smoother( const char* input_file,
     tc.reset( new IdealTargetCalculator( &samples ) );
   }
     
-  UnitWeight wc;
-  TMPQualityMetric jacobian_metric( &samples, tc.get(), &wc, target_metric, 0 );
+  TMPQualityMetric jacobian_metric( &samples, tc.get(), target_metric, 0 );
   ElementPMeanP elem_avg( of_power, &jacobian_metric );
   VertexPMeanP vtx_avg( of_power, &jacobian_metric );
   QualityMetric* mmetrics[] = { &jacobian_metric, &elem_avg, &vtx_avg, &jacobian_metric };

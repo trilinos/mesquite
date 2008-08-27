@@ -50,7 +50,7 @@ public:
   TargetSurfaceOrientation( 
                   const SamplePoints* pts, 
                   TargetCalculator* tc,
-                  WeightCalculator* wc  ) 
+                  WeightCalculator* wc = 0 ) 
     : samplePts(pts), 
       targetCalc(tc),
       weightCalc(wc)

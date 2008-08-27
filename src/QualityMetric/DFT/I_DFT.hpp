@@ -70,7 +70,7 @@ if useBarrierDelta == true.  Otherwise, delta is zero.
   {
   public:
     
-    I_DFT( TargetCalculator* tc, WeightCalculator* wc )
+    I_DFT( TargetCalculator* tc, WeightCalculator* wc = 0 )
       : DistanceFromTarget( tc, wc )
     {
       set_name("I_DFT");

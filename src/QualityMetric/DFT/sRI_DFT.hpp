@@ -51,7 +51,7 @@ namespace Mesquite
   {
   public:
 
-    sRI_DFT( TargetCalculator* tc, WeightCalculator* wc )
+    sRI_DFT( TargetCalculator* tc, WeightCalculator* wc = 0 )
       : DistanceFromTarget( tc, wc )
     {}
     

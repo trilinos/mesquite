@@ -34,7 +34,6 @@ Unit testing for the TMPQualityMetric class
 #include "TMPQualityMetric.hpp"
 #include "TargetMetric2D.hpp"
 #include "TargetMetric3D.hpp"
-#include "UnitWeight.hpp"
 #include "IdealTargetCalculator.hpp"
 #include "MsqMatrix.hpp"
 #include "QualityMetricTester.hpp"
@@ -45,6 +44,7 @@ Unit testing for the TMPQualityMetric class
 #include "PatchData.hpp"
 #include "Target3DShapeSizeOrient.hpp"
 #include "Target2DShapeSizeOrient.hpp"
+#include "WeightCalculator.hpp"
 
 #ifdef MSQ_USE_OLD_IO_HEADERS
 #include <iostream.h>
@@ -191,7 +191,6 @@ class TMPQualityMetricTest : public CppUnit::TestFixture
 
   LinearFunctionSet mf;
   SamplePoints corners, center;
-  UnitWeight one;
   IdealTargetCalculator ideal;
   ScaleWeight e_weight;
 
@@ -213,10 +212,10 @@ public:
     faux_3d_zero(0.0), faux_3d_two(2.0),
     num_metric_3D( &test_metric_3D ),
     num_metric_2D( &test_metric_2D ),
-    test_qm( &corners, &ideal, &one, &num_metric_2D, &num_metric_3D ),
-    zero_qm( &corners, &ideal, &one, &faux_2d_zero, &faux_3d_zero ),
+    test_qm( &corners, &ideal, &num_metric_2D, &num_metric_3D ),
+    zero_qm( &corners, &ideal, &faux_2d_zero, &faux_3d_zero ),
     weight_qm( &corners, &ideal, &e_weight, &test_metric_2D, &test_metric_3D ),
-    center_qm( &center, &ideal, &one, &test_metric_2D, &test_metric_3D )
+    center_qm( &center, &ideal, &test_metric_2D, &test_metric_3D )
   {  }
   
   void test_negate_flag()
@@ -287,7 +286,7 @@ CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TMPQualityMetricTest, "Unit");
 void TMPQualityMetricTest::test_get_evaluations()
 {
   SamplePoints corners_and_edges( true, true, false, false );
-  TMPQualityMetric edge_metric( &corners_and_edges, &ideal, &one, &faux_2d_zero, &faux_3d_zero );
+  TMPQualityMetric edge_metric( &corners_and_edges, &ideal, &faux_2d_zero, &faux_3d_zero );
   
   tester.test_get_sample_evaluations( &zero_qm, &corners );
   tester.test_get_sample_evaluations( &edge_metric, &corners_and_edges );
@@ -297,7 +296,7 @@ void TMPQualityMetricTest::test_get_evaluations()
 void TMPQualityMetricTest::test_get_element_evaluations()
 {
   SamplePoints edges( false, true, false, false );
-  TMPQualityMetric edge_metric( &edges, &ideal, &one, &faux_2d_zero, &faux_3d_zero );
+  TMPQualityMetric edge_metric( &edges, &ideal, &faux_2d_zero, &faux_3d_zero );
   
   tester.test_get_in_element_evaluations( &zero_qm );
   tester.test_get_in_element_evaluations( &edge_metric );
@@ -313,7 +312,7 @@ void TMPQualityMetricTest::test_evaluate_2D()
   bool rval;
   double value;
   
-  TMPQualityMetric m( &corners, &ideal, &one, &faux_2d_pi, &faux_3d_zero );
+  TMPQualityMetric m( &corners, &ideal, &faux_2d_pi, &faux_3d_zero );
   
     // test with aligned elements
   faux_2d_pi.count = faux_3d_zero.count = 0;
@@ -372,7 +371,7 @@ void TMPQualityMetricTest::test_evaluate_3D()
   bool rval;
   double value;
   
-  TMPQualityMetric m( &corners, &ideal, &one, &faux_2d_zero, &faux_3d_two );
+  TMPQualityMetric m( &corners, &ideal, &faux_2d_zero, &faux_3d_two );
   
     // test with aligned elements
   faux_2d_zero.count = faux_3d_two.count = 0;
@@ -456,7 +455,7 @@ void TMPQualityMetricTest::test_2d_eval_ortho_quad( unsigned dim )
   locs[dim] = true;
   
   SamplePoints pts( locs[0], locs[1], locs[2], locs[3] );
-  TMPQualityMetric m( &pts, &ideal, &one, &faux_2d_zero, &faux_3d_zero );
+  TMPQualityMetric m( &pts, &ideal, &faux_2d_zero, &faux_3d_zero );
   faux_2d_zero.count = faux_3d_zero.count = 0;
   
   tester.get_ideal_element( QUADRILATERAL, true, pd );
@@ -478,7 +477,7 @@ void TMPQualityMetricTest::test_3d_eval_ortho_hex( unsigned dim )
   locs[dim] = true;
   
   SamplePoints pts( locs[0], locs[1], locs[2], locs[3] );
-  TMPQualityMetric m( &pts, &ideal, &one, &faux_2d_zero, &faux_3d_zero );
+  TMPQualityMetric m( &pts, &ideal, &faux_2d_zero, &faux_3d_zero );
   faux_2d_zero.count = faux_3d_zero.count = 0;
   
   tester.get_ideal_element( HEXAHEDRON, true, pd );
@@ -544,8 +543,7 @@ void TMPQualityMetricTest::test_gradient_3D()
   SamplePoints center( false, false, false, true );
   TestGradTargetMetric3D tm;
   IdealTargetCalculator tc;
-  UnitWeight wc;
-  TMPQualityMetric m( &center, &tc, &wc, 0, &tm );
+  TMPQualityMetric m( &center, &tc, 0, &tm );
   
     // evaluate metric
   double act_val;

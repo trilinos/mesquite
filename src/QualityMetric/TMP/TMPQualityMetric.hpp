@@ -78,6 +78,25 @@ public:
       metric2D( metric_2d ),
       metric3D( metric_3d )
    {}
+
+  /**
+   *\param pts  The sample points at which to evaluate the metric
+   *\param tc   The target calculator 
+   *\param metric_2d Metric to use for surface elements - may be NULL
+   *            if mesh contains only volume elements.
+   *\param metric_3d Metric to use for volume elements - may be NULL
+   *            if mesh contains only surface elements.
+   */
+  TMPQualityMetric( const SamplePoints* pts, 
+                    TargetCalculator* tc,
+                    TargetMetric2D* metric_2d,
+                    TargetMetric3D* metric_3d ) 
+    : samplePts(pts), 
+      targetCalc(tc),
+      weightCalc(0),
+      metric2D( metric_2d ),
+      metric3D( metric_3d )
+   {}
      
   MESQUITE_EXPORT virtual
   msq_std::string get_name() const;

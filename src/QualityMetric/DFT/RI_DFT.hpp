@@ -52,7 +52,7 @@ namespace Mesquite
   {
   public:
 
-    RI_DFT( TargetCalculator* tc, WeightCalculator* wc )
+    RI_DFT( TargetCalculator* tc, WeightCalculator* wc = 0 )
       : DistanceFromTarget( tc, wc ),
         a(pow(2.0, MSQ_ONE_THIRD)), b(Exponent(1.0)), c(Exponent(-4.0/3.0))
     { }

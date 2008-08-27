@@ -67,7 +67,6 @@ describe main.cpp here
 #include "TargetReader.hpp"
 #include "TargetWriter.hpp"
 #include "ReferenceMesh.hpp"
-#include "UnitWeight.hpp"
 
 // algorithms
 #include "I_DFT.hpp"
@@ -93,8 +92,7 @@ int main()
 
   // creates a DFT measure ...
   TargetReader reader(true);
-  UnitWeight weights;
-  I_DFT mu( &reader, &weights );
+  I_DFT mu( &reader );
 
   Mesquite::MeshImpl ref_mesh;
   Mesquite::ReferenceMesh rm(&ref_mesh);

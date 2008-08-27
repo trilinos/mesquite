@@ -36,7 +36,6 @@
 #include "LocalSizeQualityMetric.hpp"
 #include "ConditionNumberQualityMetric.hpp"
 #include "Target2DShape.hpp"
-#include "UnitWeight.hpp"
 #include "IdealTargetCalculator.hpp"
 #include "SamplePoints.hpp"
 #include "TMPQualityMetric.hpp"
@@ -361,10 +360,9 @@ void QualityAssessorTest::test_basic_stats_vertex()
 void QualityAssessorTest::test_basic_stats_sample()
 {
   Target2DShape tm;
-  UnitWeight wc;
   IdealTargetCalculator tc;
   SamplePoints sp(true,false,false,false);
-  TMPQualityMetric metric( &sp, &tc,&wc, &tm, 0 );
+  TMPQualityMetric metric( &sp, &tc, &tm, 0 );
   MetricLogger logger(&metric);
   QualityAssessor qa(&logger);
    qa.disable_printing_results();

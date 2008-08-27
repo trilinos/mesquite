@@ -179,8 +179,10 @@ bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
   }
   
     // apply target weight to value
-  double ck = weightCalc->get_weight( pd, e, samplePts, s, err ); MSQ_ERRZERO(err);
-  value *= ck;
+  if (weightCalc) {
+    double ck = weightCalc->get_weight( pd, e, samplePts, s, err ); MSQ_ERRZERO(err);
+    value *= ck;
+  }
   
     // remove indices for non-free vertices
   indices.erase( msq_std::remove_if( indices.begin(), indices.end(), 
@@ -277,10 +279,12 @@ bool TMPQualityMetric::evaluate_with_gradient(
   }
   
     // apply target weight to value
-  double ck = weightCalc->get_weight( pd, e, samplePts, s, err ); MSQ_ERRZERO(err);
-  value *= ck;
-  for (size_t i = 0; i < gradient.size(); ++i)
-    gradient[i] *= ck;
+  if (weightCalc) {
+    double ck = weightCalc->get_weight( pd, e, samplePts, s, err ); MSQ_ERRZERO(err);
+    value *= ck;
+    for (size_t i = 0; i < gradient.size(); ++i)
+      gradient[i] *= ck;
+  }
   
     // remove indices for non-free vertices
   indices.erase( msq_std::remove_if( indices.begin(), indices.end(), 
@@ -424,12 +428,14 @@ bool TMPQualityMetric::evaluate_with_Hessian(
   }
   
     // apply target weight to value
-  double ck = weightCalc->get_weight( pd, e, samplePts, s, err ); MSQ_ERRZERO(err);
-  value *= ck;
-  for (size_t i = 0; i < gradient.size(); ++i)
-    gradient[i] *= ck;
-  for (size_t i = 0; i < Hessian.size(); ++i)
-    Hessian[i] *= ck;
+  if (weightCalc) {
+    double ck = weightCalc->get_weight( pd, e, samplePts, s, err ); MSQ_ERRZERO(err);
+    value *= ck;
+    for (size_t i = 0; i < gradient.size(); ++i)
+      gradient[i] *= ck;
+    for (size_t i = 0; i < Hessian.size(); ++i)
+      Hessian[i] *= ck;
+  }
   
   return rval;
 }
@@ -539,11 +545,13 @@ bool TMPQualityMetric::evaluate_with_Hessian_diagonal(
   }
   
     // apply target weight to value
-  double ck = weightCalc->get_weight( pd, e, samplePts, s, err ); MSQ_ERRZERO(err);
-  value *= ck;
-  for (size_t i = 0; i < indices.size(); ++i) {
-    gradient[i] *= ck;
-    diagonal[i] *= ck;
+  if (weightCalc) {
+    double ck = weightCalc->get_weight( pd, e, samplePts, s, err ); MSQ_ERRZERO(err);
+    value *= ck;
+    for (size_t i = 0; i < indices.size(); ++i) {
+      gradient[i] *= ck;
+      diagonal[i] *= ck;
+    }
   }
   
   return rval;

@@ -36,7 +36,6 @@ MSQ_HDRS += \
 	$(SRC_TARGETCALCULATOR_DIR)/TargetCalculator.hpp \
 	$(SRC_TARGETCALCULATOR_DIR)/TargetReader.hpp \
 	$(SRC_TARGETCALCULATOR_DIR)/TargetWriter.hpp \
-	$(SRC_TARGETCALCULATOR_DIR)/UnitWeight.hpp \
 	$(SRC_TARGETCALCULATOR_DIR)/WeightCalculator.hpp \
 	$(SRC_TARGETCALCULATOR_DIR)/WeightReader.hpp 
 

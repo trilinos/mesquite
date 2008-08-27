@@ -213,8 +213,10 @@ bool JSquared::evaluate_with_indices( PatchData& pd,
   }
   
     // apply target weight to value
-  double ck = weightCalc->get_weight( pd, e, samplePts, s, err ); MSQ_ERRZERO(err);
-  value *= ck;
+  if (weightCalc) {
+    double ck = weightCalc->get_weight( pd, e, samplePts, s, err ); MSQ_ERRZERO(err);
+    value *= ck;
+  }
   
     // remove indices for non-free vertices
   indices.erase( msq_std::remove_if( indices.begin(), indices.end(), 

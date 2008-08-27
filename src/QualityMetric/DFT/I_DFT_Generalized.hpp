@@ -66,7 +66,7 @@ The default for data members (corresponding to the variables above):\n
   {
   public:
     
-    I_DFT_Generalized( TargetCalculator* tc, WeightCalculator* wc )
+    I_DFT_Generalized( TargetCalculator* tc, WeightCalculator* wc = 0 )
       : I_DFT( tc, wc )
     {
       set_name("I_DFT_Generalized");
