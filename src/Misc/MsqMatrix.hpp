@@ -571,11 +571,11 @@ template <unsigned RC> inline
 double cofactor( const MsqMatrix<RC,RC>& m, unsigned r, unsigned c )
 {
   const double sign[] = { 1.0, -1.0 };
-  return sign[(r+c)%2] * determinant( MsqMatrix<RC-1,RC-1>( m, r, c ) );
+  return sign[(r+c)%2] * det( MsqMatrix<RC-1,RC-1>( m, r, c ) );
 }
 
 template <unsigned RC> inline
-double determinant( const MsqMatrix<RC,RC>& m )
+double det( const MsqMatrix<RC,RC>& m )
 {
   double result = 0.0;
   for (unsigned i = 0; i < RC; ++i) 
@@ -584,21 +584,21 @@ double determinant( const MsqMatrix<RC,RC>& m )
 }
 
 //inline 
-//double determinant( const MsqMatrix<1,1>& m )
+//double det( const MsqMatrix<1,1>& m )
 //  { return m(0,0); }
 
 inline 
-double determinant( const MsqMatrix<2,2>& m )
+double det( const MsqMatrix<2,2>& m )
   { return m(0,0)*m(1,1) - m(0,1)*m(1,0); }
 
 inline
-double determinant( const MsqMatrix<3,3>& m )
+double det( const MsqMatrix<3,3>& m )
   { return m(0,0)*(m(1,1)*m(2,2) - m(2,1)*m(1,2))
          + m(0,1)*(m(2,0)*m(1,2) - m(1,0)*m(2,2))
          + m(0,2)*(m(1,0)*m(2,1) - m(2,0)*m(1,1)); }
 
 inline
-MsqMatrix<2,2> adjugate( const MsqMatrix<2,2>& m )
+MsqMatrix<2,2> adj( const MsqMatrix<2,2>& m )
 {
   MsqMatrix<2,2> result;
   result(0,0) =  m(1,1);
@@ -609,7 +609,7 @@ MsqMatrix<2,2> adjugate( const MsqMatrix<2,2>& m )
 }
 
 inline
-MsqMatrix<2,2> transpose_adjugate( const MsqMatrix<2,2>& m )
+MsqMatrix<2,2> transpose_adj( const MsqMatrix<2,2>& m )
 {
   MsqMatrix<2,2> result;
   result(0,0) =  m(1,1);
@@ -620,7 +620,7 @@ MsqMatrix<2,2> transpose_adjugate( const MsqMatrix<2,2>& m )
 }
 
 inline
-MsqMatrix<3,3> adjugate( const MsqMatrix<3,3>& m )
+MsqMatrix<3,3> adj( const MsqMatrix<3,3>& m )
 {
   MsqMatrix<3,3> result;
   
@@ -640,7 +640,7 @@ MsqMatrix<3,3> adjugate( const MsqMatrix<3,3>& m )
 }
 
 inline
-MsqMatrix<3,3> transpose_adjugate( const MsqMatrix<3,3>& m )
+MsqMatrix<3,3> transpose_adj( const MsqMatrix<3,3>& m )
 {
   MsqMatrix<3,3> result;
   
@@ -662,7 +662,7 @@ MsqMatrix<3,3> transpose_adjugate( const MsqMatrix<3,3>& m )
 template <unsigned R, unsigned C> inline
 MsqMatrix<R,C> inverse( const MsqMatrix<R,C>& m )
 {
-  return adjugate(m) * (1.0 / determinant(m));
+  return adj(m) * (1.0 / det(m));
 }
 
 template <unsigned R, unsigned C> inline
@@ -770,7 +770,7 @@ double inner_product( const MsqMatrix<1,L>& v1, const MsqMatrix<1,L>& v2 )
 }
 
 template <unsigned R, unsigned C> inline
-MsqMatrix<R,C> outer_product( const MsqMatrix<R,1>& v1, const MsqMatrix<C,1>& v2 )
+MsqMatrix<R,C> outer( const MsqMatrix<R,1>& v1, const MsqMatrix<C,1>& v2 )
 {
   MsqMatrix<R,C> result;
   for (unsigned r = 0; r < R; ++r)
@@ -780,7 +780,7 @@ MsqMatrix<R,C> outer_product( const MsqMatrix<R,1>& v1, const MsqMatrix<C,1>& v2
 }
 
 template <unsigned R, unsigned C> inline
-MsqMatrix<R,C> outer_product( const MsqMatrix<1,R>& v1, const MsqMatrix<1,C>& v2 )
+MsqMatrix<R,C> outer( const MsqMatrix<1,R>& v1, const MsqMatrix<1,C>& v2 )
 {
   MsqMatrix<R,C> result;
   for (unsigned r = 0; r < R; ++r)

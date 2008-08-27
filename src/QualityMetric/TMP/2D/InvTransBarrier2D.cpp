@@ -41,13 +41,13 @@ bool InvTransBarrier2D::evaluate( const MsqMatrix<2,2>& A,
                                   const MsqMatrix<2,2>& W, 
                                   double& result, MsqError& err )
 {
-  double da = determinant(A);
-  double dw = determinant(W);
+  double da = det(A);
+  double dw = det(W);
   if (da <= 0 || dw <= 0) 
     return false;
-  MsqMatrix<2,2> Ap = transpose_adjugate(A);
+  MsqMatrix<2,2> Ap = transpose_adj(A);
   Ap *= 1.0/da;
-  MsqMatrix<2,2> Wp = transpose_adjugate(W);
+  MsqMatrix<2,2> Wp = transpose_adj(W);
   Wp *= 1.0/dw;
   bool rval = metricPtr->evaluate( Ap, Wp, result, err );
   return !MSQ_CHKERR(err) && rval;

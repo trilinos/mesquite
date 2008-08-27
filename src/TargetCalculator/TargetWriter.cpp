@@ -126,7 +126,7 @@ double TargetWriter::loop_over_mesh( Mesh* mesh,
         for (unsigned i = 0; i < n; ++i) {
           targetCalc->get_3D_target( patch, 0, samplePoints, i, targets3d[i], err ); MSQ_ERRZERO(err);
 
-          if (DBL_EPSILON > determinant(targets3d[i])) {
+          if (DBL_EPSILON > det(targets3d[i])) {
             MSQ_SETERR(err)("Inverted 3D target", MsqError::INVALID_ARG);
             return 0.0;
           }

@@ -55,7 +55,7 @@ bool LVQDTargetCalculator::surface_targets_are_3D() const
 
 double LVQDTargetCalculator::calc_lambda_3D( const MsqMatrix<3,3>& M )
 {
-  return Mesquite::cbrt( fabs( determinant( M ) ) );
+  return Mesquite::cbrt( fabs( det( M ) ) );
 }
 
 MsqMatrix<3,3> LVQDTargetCalculator::calc_V_3D( const MsqMatrix<3,3>& M )
@@ -79,7 +79,7 @@ MsqMatrix<3,3> LVQDTargetCalculator::calc_Q_3D( const MsqMatrix<3,3>& M )
   const double len[3] = { length(c[0]), length(c[1]), length(c[2]) };
   const MsqMatrix<3,1> c0xc1 = c[0] * c[1], c0xc2 = c[0] * c[2];
   const double len01 = length(c0xc1);
-  const double d = determinant(M);
+  const double d = det(M);
   const double f = Mesquite::cbrt( len[0] * len[1] * len[2] / fabs(d) );
   
   MsqMatrix<3,3> Q;
@@ -132,14 +132,14 @@ bool LVQDTargetCalculator::get_3D_target( PatchData& pd,
 
 double LVQDTargetCalculator::calc_lambda_2D( const MsqMatrix<3,2>& M )
 {
-  const double d = determinant( transpose(M)*M );
+  const double d = det( transpose(M)*M );
   return sqrt( sqrt( d ) );
 }
 
 MsqMatrix<3,2> LVQDTargetCalculator::calc_V_2D( const MsqMatrix<3,2>& M )
 {
   MsqMatrix<3,1> c[] = { M.column(0), M.column(1) };
-  const double lambda2 = sqrt( determinant( transpose(M) * M ) );
+  const double lambda2 = sqrt( det( transpose(M) * M ) );
   const double len0 = length(c[0]);
   const double c0dotc1 = c[0] % c[1];
   c[1] *= c[0]%c[0];
@@ -152,7 +152,7 @@ MsqMatrix<3,2> LVQDTargetCalculator::calc_V_2D( const MsqMatrix<3,2>& M )
 MsqMatrix<2,2> LVQDTargetCalculator::calc_Q_2D( const MsqMatrix<3,2>& M )
 {
   const MsqMatrix<3,1> c[] = { M.column(0), M.column(1) };
-  const double lambda2 = sqrt( determinant( transpose(M) * M ) );
+  const double lambda2 = sqrt( det( transpose(M) * M ) );
   const double lp = sqrt( (c[0] % c[0]) * (c[1] % c[1]) );
   const double q = sqrt( lp / lambda2 );
   MsqMatrix<2,2> Q;

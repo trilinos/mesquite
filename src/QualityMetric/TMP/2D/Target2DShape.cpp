@@ -43,7 +43,7 @@ bool Target2DShape::evaluate( const MsqMatrix<2,2>& A,
                                  MsqError&  )
 {
   const MsqMatrix<2,2> T = A * inverse(W);
-  result = sqr_Frobenius(T) - 2.0*determinant(T);
+  result = sqr_Frobenius(T) - 2.0*det(T);
   return true;  
 }
 

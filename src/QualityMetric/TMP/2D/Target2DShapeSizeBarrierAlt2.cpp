@@ -43,13 +43,13 @@ bool Target2DShapeSizeBarrierAlt2::evaluate( const MsqMatrix<2,2>& A,
                                  MsqError& )
 {
   MsqMatrix<2,2> T = A * inverse(W);
-  const double det = determinant(T);
-  if (det <= 0.0) { // barrier
+  const double d = det(T);
+  if (d <= 0.0) { // barrier
     result = 0.0;
     return false;
   }
   
-  result = 0.5 * sqr_Frobenius(T) - msq_stdc::log(det);
+  result = 0.5 * sqr_Frobenius(T) - msq_stdc::log(d);
   return true;
 }
 

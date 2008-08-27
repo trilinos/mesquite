@@ -42,7 +42,7 @@ bool Target2DShapeSizeOrientBarrierAlt2::evaluate( const MsqMatrix<2,2>& A,
                                  double& result, 
                                  MsqError& )
 {
-  if (determinant(A) <= 0.0) {
+  if (det(A) <= 0.0) {
     result = 0.0;
     return false;
   }

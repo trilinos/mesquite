@@ -44,7 +44,7 @@ bool Target2DShapeSize::evaluate( const MsqMatrix<2,2>& A,
 {
   const MsqMatrix<2,2> T = A * inverse(W);
   const double frob_sqr = sqr_Frobenius(T);
-  result = frob_sqr - 2.0 * sqrt( frob_sqr + 2.0*determinant(T) ) + 2.0;
+  result = frob_sqr - 2.0 * sqrt( frob_sqr + 2.0*det(T) ) + 2.0;
   return true;
 }
 

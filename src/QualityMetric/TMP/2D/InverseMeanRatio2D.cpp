@@ -42,13 +42,13 @@ bool InverseMeanRatio2D::evaluate( const MsqMatrix<2,2>& A,
                                    MsqError& err )
 {
   const MsqMatrix<2,2> T = A * inverse(W);
-  const double det = determinant( T );
-  if (fabs(det) < std::numeric_limits<double>::epsilon()) {
+  const double d = det( T );
+  if (fabs(d) < std::numeric_limits<double>::epsilon()) {
     result = 0.0;
     return false;
   }
   else {
-    result = sqr_Frobenius(T) / (2 * det);\
+    result = sqr_Frobenius(T) / (2 * d);\
     return true;
   }
 }
@@ -62,18 +62,18 @@ bool InverseMeanRatio2D::evaluate_with_grad( const MsqMatrix<2,2>& A,
 {
   const MsqMatrix<2,2> Winv = inverse(W);
   const MsqMatrix<2,2> T = A * Winv;
-  const double det = determinant( T );
-  if (fabs(det) < std::numeric_limits<double>::epsilon()) {
+  const double d = det( T );
+  if (fabs(d) < std::numeric_limits<double>::epsilon()) {
     result = 0.0;
     deriv_wrt_A = MsqMatrix<2,2>(0.0);
     return false;
   }
   else {
-    result = sqr_Frobenius(T) / (2 * det);
-    deriv_wrt_A = transpose_adjugate(T);
+    result = sqr_Frobenius(T) / (2 * d);
+    deriv_wrt_A = transpose_adj(T);
     deriv_wrt_A *= -result;
     deriv_wrt_A += T;
-    deriv_wrt_A *= 1.0/det;
+    deriv_wrt_A *= 1.0/d;
     deriv_wrt_A = deriv_wrt_A * transpose(Winv);
     return true;
   }
@@ -89,17 +89,17 @@ bool InverseMeanRatio2D::evaluate_with_hess( const MsqMatrix<2,2>& A,
 {
   const MsqMatrix<2,2> Winv = inverse(W);
   const MsqMatrix<2,2> T = A * Winv;
-  const double det = determinant( T );
-  if (fabs(det) < std::numeric_limits<double>::epsilon()) {
+  const double d = det( T );
+  if (fabs(d) < std::numeric_limits<double>::epsilon()) {
     result = 0.0;
     dA = d2A[0] = d2A[1] = d2A[2] = MsqMatrix<2,2>(0.0);
     return false;
   }
   else {
-    const double inv_det = 1.0/det;
+    const double inv_det = 1.0/d;
     result = sqr_Frobenius(T) * 0.5 * inv_det;
     
-    const MsqMatrix<2,2> AT = transpose_adjugate(T);
+    const MsqMatrix<2,2> AT = transpose_adj(T);
     dA = AT;
     dA *= -result;
     dA += T;
@@ -109,14 +109,14 @@ bool InverseMeanRatio2D::evaluate_with_hess( const MsqMatrix<2,2>& A,
     const double p3 = -result * inv_det;
     const double p1 = -2.0 * p3 * inv_det;
     const double p2 = -inv_det * inv_det;
-    const MsqMatrix<2,2> AT_T_op_00 = outer_product( AT.row(0), T.row(0));
-    const MsqMatrix<2,2> AT_T_op_11 = outer_product( AT.row(1), T.row(1));
-    d2A[0] = p1 * outer_product( AT.row(0), AT.row(0))
+    const MsqMatrix<2,2> AT_T_op_00 = outer( AT.row(0), T.row(0));
+    const MsqMatrix<2,2> AT_T_op_11 = outer( AT.row(1), T.row(1));
+    d2A[0] = p1 * outer( AT.row(0), AT.row(0))
            + p2 * (AT_T_op_00 + transpose(AT_T_op_00));
-    d2A[1] = p1 * outer_product( AT.row(0), AT.row(1)) 
-           + p2 * (outer_product( AT.row(0), T.row(1))
-	     + outer_product( T.row(0), AT.row(1) ));
-    d2A[2] = p1 * outer_product( AT.row(1), AT.row(1)) 
+    d2A[1] = p1 * outer( AT.row(0), AT.row(1)) 
+           + p2 * (outer( AT.row(0), T.row(1))
+	     + outer( T.row(0), AT.row(1) ));
+    d2A[2] = p1 * outer( AT.row(1), AT.row(1)) 
            + p2 * (AT_T_op_11 + transpose(AT_T_op_11));
 
     d2A[0](0,0) += inv_det;
