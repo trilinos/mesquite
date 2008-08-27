@@ -334,31 +334,31 @@ void MsqMatrixTest::test_vec_length()
 void MsqMatrixTest::test_determinant()
 {
   MsqMatrix<5,5> m5(1.0);
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, determinant(m5), 1e-8 );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, det(m5), 1e-8 );
   
   double m4vals[] = { 1, 2, 3, 4,
                       5, 6, 7, 8, 
                       9,10,11,12,
                      13,14,15,16 };
   MsqMatrix<4,4> m4(m4vals);
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, determinant(m4), 1e-8 );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, det(m4), 1e-8 );
   
   double m4vals2[] = { 2, 5, 0, 0,
                        1, 1, 0, 0,
                        0, 0, 1, 0,
                        0, 0, 0, 1 };
   MsqMatrix<4,4> m4b( m4vals2 );
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( -3.0, determinant(m4b), 1e-8 );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( -3.0, det(m4b), 1e-8 );
   
   double m3vals[] = { 1, 2, -1,
                      -1, 0,  1,
                       1, 1,  3 };
   MsqMatrix<3,3> m3(m3vals);
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( 8.0, determinant(m3), 1e-8 );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 8.0, det(m3), 1e-8 );
   
   double m2vals[] = { sqrt(2.0), 1, 1, sqrt(2.0) };
   MsqMatrix<2,2> m2(m2vals);
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, determinant(m2), 1e-8 );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, det(m2), 1e-8 );
 }
 
 void MsqMatrixTest::test_vec_outer_product()
@@ -369,7 +369,7 @@ void MsqMatrixTest::test_vec_outer_product()
   MsqMatrix<5,1> V2(v2);
   
   MsqMatrix<4,5> M1 = V1 * transpose(V2);
-  MsqMatrix<4,5> M2 = outer_product( V1, V2 );
+  MsqMatrix<4,5> M2 = outer( V1, V2 );
   ASSERT_MATRICES_EQUAL( M1, M2, 1e-8 );
 }
   

@@ -406,8 +406,8 @@ void TMPQualityMetricTest::test_evaluate_3D()
   CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_3d_two.value, value, DBL_EPSILON );
   CPPUNIT_ASSERT_EQUAL( 0, faux_2d_zero.count );
   CPPUNIT_ASSERT_EQUAL( 1, faux_3d_two.count );
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( determinant(faux_3d_two.last_W),
-                                determinant(faux_3d_two.last_A),
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( det(faux_3d_two.last_W),
+                                det(faux_3d_two.last_A),
                                 1e-6 );
 }
 

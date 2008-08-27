@@ -344,7 +344,7 @@ static MsqMatrix<3,3> rotation( double a, double x, double y, double z )
   R(1,0) =  axis(2,0) * s;
   R(2,0) = -axis(1,0) * s;
   R(2,1) =  axis(0,0) * s;
-  return R + (1.0 - c)*outer_product( axis, axis );
+  return R + (1.0 - c)*outer( axis, axis );
 }
 
 void LVQDTargetTest::test_orient_2D()
