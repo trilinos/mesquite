@@ -218,7 +218,6 @@ public:
        CPPUNIT_ASSERT(!err);
 
        double final_val= qa.loop_over_mesh(&mesh, &msq_geom, 0, err);
-       mesh.write_vtk( "spherical_final.vtk", err );
   
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
