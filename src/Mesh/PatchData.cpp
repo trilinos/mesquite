@@ -638,35 +638,28 @@ void PatchData::get_adjacent_vertex_indices(size_t vertex_index,
                                             msq_std::vector<size_t> &vert_indices,
                                             MsqError &err)
 {
-    //First get elems attached to vertex[vertex_index]
-  vector<size_t> elem_indices;
-  vector<size_t> temp_vert_indices;
-  msq_std::vector<size_t>::iterator iter;
-  size_t cur_vert;
-  int found=0;
-  get_vertex_element_indices(vertex_index, elem_indices,err);
-  MSQ_ERRRTN(err);
-  MsqMeshEntity* elems=get_element_array(err);
-  MSQ_ERRRTN(err);
-    //get nodes attached to vertex_index... with some duplication
-  while(!elem_indices.empty()){
-    elems[elem_indices.back()].get_connected_vertices(vertex_index, temp_vert_indices,err); 
-    MSQ_ERRRTN(err);
-    elem_indices.pop_back();
-  }
-    //eliminate duplication.
-  while(!temp_vert_indices.empty()){
-    cur_vert=temp_vert_indices.back();
-    temp_vert_indices.pop_back();
-    iter=vert_indices.begin();
-    found=0;
-    while(iter!=vert_indices.end() && !found){
-      if(*(iter)==cur_vert)
-        found=1;
-      ++iter;
+  bitMap.clear();
+  bitMap.resize( num_nodes(), false );
+  
+  const size_t *conn;
+  size_t conn_idx, curr_vtx_idx;
+  const unsigned* adj;
+  unsigned num_adj, i;
+  msq_std::vector<MsqMeshEntity>::iterator e;
+  for (e = elementArray.begin(); e != elementArray.end(); ++e) {
+    conn = e->get_vertex_index_array();
+    conn_idx = msq_std::find( conn, conn + e->node_count(), vertex_index ) - conn;
+    if (conn_idx == e->node_count())
+      continue;
+    
+    adj = TopologyInfo::adjacent_vertices( e->get_element_type(), conn_idx, num_adj );
+    for (i = 0; i < num_adj; ++i) {
+      curr_vtx_idx = conn[ adj[i] ]; // get index into patch vertex list
+      if (!bitMap[curr_vtx_idx]) {
+        vert_indices.push_back( curr_vtx_idx );
+        bitMap[curr_vtx_idx] = true;
+      }
     }
-    if(!found)
-      vert_indices.push_back(cur_vert);
   }
 }
 

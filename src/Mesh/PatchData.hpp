@@ -635,6 +635,7 @@ namespace Mesquite
       // (avoids reallocation of temp space)
     msq_std::vector<size_t> offsetArray;
     msq_std::vector<unsigned char> byteArray;
+    msq_std::vector<bool> bitMap;
     
       // Patch Computed Information (maxs, mins, etc ... )
     double computedInfos[MAX_COMPUTED_INFO_ENUM];
