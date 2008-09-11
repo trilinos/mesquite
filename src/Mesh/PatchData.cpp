@@ -1630,6 +1630,13 @@ void PatchData::set_mesh_entities(
       byteArray[i] |= MsqVertex::MSQ_PATCH_VTX;
     }
   }
+  else if (free_vertices.size() == 1) {
+    for (size_t i = 0; i < vertexHandlesArray.size(); ++i)
+      if (vertexHandlesArray[i] == free_vertices.front())
+        byteArray[i] |= MsqVertex::MSQ_PATCH_VTX;
+      else
+        byteArray[i] |= MsqVertex::MSQ_HARD_FIXED;
+  }
   else {
       // sort and remove duplicates from free_vertices list.
     msq_std::sort(free_vertices.begin(), free_vertices.end());
