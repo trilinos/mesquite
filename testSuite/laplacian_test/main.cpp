@@ -69,6 +69,7 @@ using std::endl;
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
 #include "PlanarDomain.hpp"
+#include "MsqTimer.hpp"
 
 // algorythms
 #include "ConditionNumberQualityMetric.hpp"
@@ -78,13 +79,40 @@ using std::endl;
 #include "EdgeLengthQualityMetric.hpp"
 using namespace Mesquite;
 
+const char DEFAULT_INPUT[] = MESH_FILES_DIR "2D/VTK/square_quad_2.vtk";
 
-int main()
-{     
+void help(const char* argv0)
+{
+  msq_stdio::cerr << "Usage: " << argv0 << " [<input_file>] [<output_file>]" << msq_stdio::endl
+            << "  default input file is: " << DEFAULT_INPUT << msq_stdio::endl
+            << "  defualt is no output file" << msq_stdio::endl
+            << "  Warning: input mesh is assumed to lie in Z=5 plane" << msq_stdio::endl;
+  exit(1);
+}
+
+int main(int argc, char* argv[])
+{
+  const char* input_file = DEFAULT_INPUT;
+  const char* output_file = NULL;
+  switch (argc) {
+    default:
+      help(argv[0]);
+    case 3:
+      if (!strcmp(argv[2],"-h"))
+        help(argv[0]);
+      output_file = argv[2];
+    case 2:
+      if (!strcmp(argv[1],"-h"))
+        help(argv[0]);
+      input_file = argv[1];
+    case 1:
+      ;
+  }
+
     /* Read a VTK Mesh file */
   MsqPrintError err(cout);
   Mesquite::MeshImpl mesh;
-  mesh.read_vtk(MESH_FILES_DIR "2D/VTK/square_quad_2.vtk", err);
+  mesh.read_vtk( input_file, err);
   if (err) return 1;
   
     // creates an intruction queue
@@ -121,52 +149,60 @@ int main()
   PlanarDomain plane(Vector3D(0,0,1), Vector3D(0,0,5));
   
     // launches optimization on mesh_set1
+  Timer t;
   queue1.run_instructions(&mesh, &plane, err); 
   if (err) return 1;
+  double secs = t.since_birth();
+  msq_stdio::cout << "Optimization completed in " << secs << " seconds" << msq_stdio::endl;
   
-  mesh.write_vtk("smoothed_mesh.vtk", err); 
-  if (err) return 1;
+  if (output_file) {
+    mesh.write_vtk(output_file, err); 
+    if (err) return 1;
+    msq_stdio::cout << "Wrote file: " << output_file << msq_stdio::endl;
+  }
   
     // check that smoother is working: 
     // the one free vertex must be at the origin
-  msq_std::vector<Mesh::VertexHandle> vertices;
-  mesh.get_all_vertices( vertices, err );
-  if (err) return 1;
-  
-  bool* fixed_flags = new bool[vertices.size()];
-  mesh.vertices_get_fixed_flag( &vertices[0], fixed_flags, vertices.size(), err );
-  if (err) return 1;
-  
-  // find one free vertex
-  int idx = -1;
-  for (unsigned i = 0; i < vertices.size(); ++i) {
-    if (fixed_flags[i] == true)
-      continue;
-    if (idx != -1) {
-      msq_stdio::cerr << "Multiple free vertices in mesh." << std::endl;
+  if (input_file == DEFAULT_INPUT) {
+    msq_std::vector<Mesh::VertexHandle> vertices;
+    mesh.get_all_vertices( vertices, err );
+    if (err) return 1;
+
+    bool* fixed_flags = new bool[vertices.size()];
+    mesh.vertices_get_fixed_flag( &vertices[0], fixed_flags, vertices.size(), err );
+    if (err) return 1;
+
+    // find one free vertex
+    int idx = -1;
+    for (unsigned i = 0; i < vertices.size(); ++i) {
+      if (fixed_flags[i] == true)
+        continue;
+      if (idx != -1) {
+        msq_stdio::cerr << "Multiple free vertices in mesh." << std::endl;
+        return 1;
+      }
+      idx = i;
+    }
+    delete [] fixed_flags;
+
+    if (idx == -1) {
+      msq_stdio::cerr << "No free vertex in mesh!!!!!" << std::endl;
       return 1;
     }
-    idx = i;
-  }
-  delete [] fixed_flags;
-  
-  if (idx == -1) {
-    msq_stdio::cerr << "No free vertex in mesh!!!!!" << std::endl;
-    return 1;
-  }
-  
-  Mesh::VertexHandle vertex = vertices[idx];
-  MsqVertex coords;
-  mesh.vertices_get_coordinates( &vertex, &coords, 1, err );
-  if (err) return 1;
-  
-    // calculate distance from origin
-  double dist = sqrt( coords[0]*coords[0] + coords[1]*coords[1] );
-  if  (dist > 1e-8) {
-    msq_std::cerr << "Free vertex not at origin after Laplace smooth." << std::endl
-                  << "Expected location: (0,0)" << std::endl
-                  << "Actual location: (" << coords[0] << "," << coords[1] << ")" << std::endl;
-    return 2;
+
+    Mesh::VertexHandle vertex = vertices[idx];
+    MsqVertex coords;
+    mesh.vertices_get_coordinates( &vertex, &coords, 1, err );
+    if (err) return 1;
+
+      // calculate distance from origin
+    double dist = sqrt( coords[0]*coords[0] + coords[1]*coords[1] );
+    if  (dist > 1e-8) {
+      msq_std::cerr << "Free vertex not at origin after Laplace smooth." << std::endl
+                    << "Expected location: (0,0)" << std::endl
+                    << "Actual location: (" << coords[0] << "," << coords[1] << ")" << std::endl;
+      return 2;
+    }
   }
   
   return 0;
