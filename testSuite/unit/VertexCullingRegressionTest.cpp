@@ -65,6 +65,9 @@ Regression testing using the vertex culling algorithms.
 #include "TerminationCriterion.hpp"
 #include "MeshImpl.hpp"
 
+#include "IdealWeightInverseMeanRatio.hpp"
+#include "LPtoPTemplate.hpp"
+
 #ifdef MSQ_USE_OLD_IO_HEADERS
 #include <iostream.h>
 #else 
@@ -112,6 +115,10 @@ public:
       Vector3D s_norm(0,0,1);
       Mesquite::PlanarDomain msq_geom(s_norm, pnt);
      
+        // create an objective function for use in termination criteria
+      IdealWeightInverseMeanRatio metric;
+      LPtoPTemplate of(2.0, &metric);
+     
         // creates an intruction queue
       InstructionQueue queue1;
       
@@ -121,8 +128,8 @@ public:
       lapl_met.set_averaging_method(QualityMetric::RMS);
       
         // creates the laplacian smoother  procedures
-      LaplacianSmoother lapl1(err); CPPUNIT_ASSERT(!err);
-      LaplacianSmoother lapl2(err); CPPUNIT_ASSERT(!err);
+      LaplacianSmoother lapl1(&of);
+      LaplacianSmoother lapl2(&of);
       QualityAssessor stop_qa=QualityAssessor( &shape_metric );
       stop_qa.add_quality_assessment( &lapl_met );
       

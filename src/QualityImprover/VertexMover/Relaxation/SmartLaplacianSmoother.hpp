@@ -1,0 +1,45 @@
+
+#ifndef Mesquite_SmartLaplacianSmoother_hpp 
+#define Mesquite_SmartLaplacianSmoother_hpp
+
+#include "Mesquite.hpp"
+#include "RelaxationSmoother.hpp"
+
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#  include <vector.h>
+#else
+#  include <vector>
+#endif
+
+namespace Mesquite
+{
+  /*\brief Do laplacian smooth, but don't invert elements.
+   */  
+  class SmartLaplacianSmoother : public RelaxationSmoother 
+  {
+  public:
+    /**
+     *\param OF ObjectiveFunction used by some termination criteria
+     */
+    MESQUITE_EXPORT SmartLaplacianSmoother( ObjectiveFunction* OF = NULL ) 
+      : RelaxationSmoother(OF) {}
+    
+    MESQUITE_EXPORT ~SmartLaplacianSmoother();
+    virtual msq_std::string get_name() const;
+    
+    static size_t num_inverted( PatchData& pd, MsqError& err );
+    
+  protected:
+    virtual void optimize_vertex_positions(PatchData &pd,
+                                         MsqError &err);
+
+  private:
+    msq_std::vector<size_t> adjVtxList;    
+  };
+
+  
+
+  
+}
+
+#endif

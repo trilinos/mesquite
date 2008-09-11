@@ -73,7 +73,7 @@ namespace Mesquite {
          inverseMeanRatio = new IdealWeightInverseMeanRatio(err);
      
          // creates the laplacian smoother  procedures
-         lapl1 = new LaplacianSmoother(err);
+         lapl1 = new LaplacianSmoother;
          mQA = new QualityAssessor(inverseMeanRatio);
      
          //**************Set stopping criterion****************

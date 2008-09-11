@@ -175,7 +175,7 @@ public:
        //Make sure no errors
      CPPUNIT_ASSERT(!err);
        //make sure 'quality' improved
-     CPPUNIT_ASSERT( (fin_qa_val-orig_qa_val) <= 0.0 );
+     CPPUNIT_ASSERT( fin_qa_val <= orig_qa_val );
    }
    void test_smart_lapl_sphere()
      {
@@ -184,8 +184,8 @@ public:
        mesh.read_vtk(MESH_FILES_DIR "2D/VTK/quads_on_sphere_529.vtk", err);
        
          //create geometry sphere:  ratius 1, centered at (0,0,0)
-       Vector3D center(0,0,0);
-       Mesquite::SphericalDomain msq_geom(center, 1.0);
+       Vector3D center(2,2,0);
+       SphericalDomain msq_geom(center, 3.0);
   
          // creates an intruction queue
        InstructionQueue queue1;
@@ -195,7 +195,7 @@ public:
        LInfTemplate shape_func(&shape_metric);
        
          //create the smart laplacian smoother
-       SmartLaplacianSmoother s_lapl(&shape_func, err);
+       SmartLaplacianSmoother s_lapl(&shape_func);
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
 
@@ -218,11 +218,12 @@ public:
        CPPUNIT_ASSERT(!err);
 
        double final_val= qa.loop_over_mesh(&mesh, &msq_geom, 0, err);
+       mesh.write_vtk( "spherical_final.vtk", err );
   
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
          //make sure 'quality' improved
-       CPPUNIT_ASSERT( (final_val-orig_val) <= 0.0 );
+       CPPUNIT_ASSERT( final_val < orig_val );
      }
   
   void test_lapl_geo_sphere()
@@ -243,7 +244,7 @@ public:
        EdgeLengthQualityMetric edg_len;
       
          //create the laplacian smoother
-       LaplacianSmoother lapl(err);
+       LaplacianSmoother lapl;
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
 
@@ -271,7 +272,7 @@ public:
          //Make sure no errors
        CPPUNIT_ASSERT(!err);
          //make sure 'quality' improved
-       CPPUNIT_ASSERT( (fin_qa_val-orig_qa_val) <= 0.0 );
+       CPPUNIT_ASSERT( fin_qa_val <= orig_qa_val );
      }
   
    

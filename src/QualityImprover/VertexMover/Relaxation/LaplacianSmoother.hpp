@@ -39,77 +39,30 @@
 #define Mesquite_LaplacianSmoother_hpp
 
 #include "Mesquite.hpp"
-#include "LaplacianCommon.hpp"
-#include "MsqFreeVertexIndexIterator.hpp"
-
-#ifdef MSQ_USE_OLD_STD_HEADERS
-#  include <vector.h>
-#else
-#  include <vector>
-#endif
+#include "RelaxationSmoother.hpp"
 
 namespace Mesquite
 {
-  class EdgeLengthQualityMetric;
-  class ObjectiveFunction;
 
   /*! \class LaplacianSmoother
     Moves free center vertex to the average of the neighboring vertices.
    */  
-  class LaplacianSmoother : public LaplacianCommon 
+  class LaplacianSmoother : public RelaxationSmoother 
   {
   public:
-    LaplacianSmoother(MsqError &err);
+    /**
+     *\param OF ObjectiveFunction used by some termination criteria
+     */
+    LaplacianSmoother( ObjectiveFunction* OF = NULL ) : RelaxationSmoother(OF) {}
+    
     virtual ~LaplacianSmoother();
     virtual msq_std::string get_name() const;
   protected:
-    virtual void initialize(PatchData &pd, MsqError &err);
     virtual void optimize_vertex_positions(PatchData &pd,
                                          MsqError &err);
-    virtual void initialize_mesh_iteration(PatchData &pd, MsqError &err);
-    virtual void terminate_mesh_iteration(PatchData &pd, MsqError &err);
-    virtual void cleanup();
-
   private:
-    EdgeLengthQualityMetric* edgeQM;
-    ObjectiveFunction* objFunc;
+    msq_std::vector<size_t> adjVtxList;
   };
-
-  
-  inline void centroid_smooth_mesh(PatchData &pd, size_t num_adj_vtx,
-                                   msq_std::vector<size_t> adj_vtx_ind,
-                                   size_t free_ind,
-                                   size_t dimension, MsqError &err)
-  {
-    MsqVertex* verts=pd.get_vertex_array(err);
-    msq_std::vector<size_t>::iterator iter;
-    
-    size_t j;
-    double scale_val=1.0;
-    if (num_adj_vtx==0) {
-      MSQ_SETERR(err)("Number of incident vertices is zero",MsqError::INVALID_ARG);
-      return;
-    }
-    else
-      scale_val=1.0/((double) num_adj_vtx);
-    double avg[3];
-      //loop over the two or three dimensions
-    for(j=0;j<dimension;++j) {
-        //set the iterator to the beginning ob adj_vtx_ind
-      iter=adj_vtx_ind.begin();
-      avg[j] = 0.;
-      while(iter != adj_vtx_ind.end()){
-        avg[j]+=verts[*iter][j];
-        ++iter;
-      }
-        //divide the average by the number of adj. verts
-      verts[free_ind][j] = avg[j]*scale_val;
-    }
-
-    return;
-  }
-
-  
 }
 
 #endif

@@ -50,7 +50,7 @@ include src/QualityImprover/Makefile.am
 include src/QualityImprover/TopologyModifier/Makefile.am
 include src/QualityImprover/VertexMover/Makefile.am
 include src/QualityImprover/VertexMover/ConjugateGradient/Makefile.am
-include src/QualityImprover/VertexMover/LaplacianSmoothers/Makefile.am
+include src/QualityImprover/VertexMover/Relaxation/Makefile.am
 include src/QualityImprover/VertexMover/SteepestDescent/Makefile.am
 include src/QualityImprover/VertexMover/NonSmoothSteepestDescent/Makefile.am
 include src/QualityImprover/VertexMover/FeasibleNewton/Makefile.am
