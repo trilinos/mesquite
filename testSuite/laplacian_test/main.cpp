@@ -96,8 +96,7 @@ int main()
   lapl_met.set_averaging_method(QualityMetric::RMS);
  
     // creates the laplacian smoother  procedures
-  LaplacianSmoother lapl1(err);
-  if (err) return 1;
+  LaplacianSmoother lapl1;
   QualityAssessor stop_qa=QualityAssessor(&shape_metric);
   stop_qa.add_quality_assessment(&lapl_met);
   
@@ -127,6 +126,48 @@ int main()
   
   mesh.write_vtk("smoothed_mesh.vtk", err); 
   if (err) return 1;
+  
+    // check that smoother is working: 
+    // the one free vertex must be at the origin
+  msq_std::vector<Mesh::VertexHandle> vertices;
+  mesh.get_all_vertices( vertices, err );
+  if (err) return 1;
+  
+  bool* fixed_flags = new bool[vertices.size()];
+  mesh.vertices_get_fixed_flag( &vertices[0], fixed_flags, vertices.size(), err );
+  if (err) return 1;
+  
+  // find one free vertex
+  int idx = -1;
+  for (unsigned i = 0; i < vertices.size(); ++i) {
+    if (fixed_flags[i] == true)
+      continue;
+    if (idx != -1) {
+      msq_stdio::cerr << "Multiple free vertices in mesh." << std::endl;
+      return 1;
+    }
+    idx = i;
+  }
+  delete [] fixed_flags;
+  
+  if (idx == -1) {
+    msq_stdio::cerr << "No free vertex in mesh!!!!!" << std::endl;
+    return 1;
+  }
+  
+  Mesh::VertexHandle vertex = vertices[idx];
+  MsqVertex coords;
+  mesh.vertices_get_coordinates( &vertex, &coords, 1, err );
+  if (err) return 1;
+  
+    // calculate distance from origin
+  double dist = sqrt( coords[0]*coords[0] + coords[1]*coords[1] );
+  if  (dist > 1e-8) {
+    msq_std::cerr << "Free vertex not at origin after Laplace smooth." << std::endl
+                  << "Expected location: (0,0)" << std::endl
+                  << "Actual location: (" << coords[0] << "," << coords[1] << ")" << std::endl;
+    return 2;
+  }
   
   return 0;
 }
