@@ -66,12 +66,22 @@ namespace Mesquite
     
   MeshImpl can read in mesh files in VTK format and ExodusII format. 
   */
-  class MESQUITE_EXPORT MeshImpl : virtual public Mesquite::Mesh
+  class MESQUITE_EXPORT MeshImpl : public Mesquite::Mesh
   {
   public:
 //********* Functions that are NOT inherited ************
+
     MeshImpl();
     virtual ~MeshImpl();
+
+    MeshImpl(int num_vertex, int num_elem, 
+	     EntityTopology entity_topology, 
+	     const bool *fixed, const double **coords, const int **conn);
+    
+    MeshImpl(int num_vertex, int num_elem, 
+	     const EntityTopology *element_topologies, 
+	     const bool *fixed, const double **coords, const int **conn);
+
     void read_vtk(const char* in_filename, Mesquite::MsqError &err);
     void write_vtk(const char* out_filename, Mesquite::MsqError &err);
     void read_exodus(const char* in_filename, Mesquite::MsqError &err);
@@ -79,7 +89,6 @@ namespace Mesquite
     
     void mark_skin_fixed( MsqError& err, bool clear_existing = true );
                                      
-    
 //********* Functions that ARE inherited ************
       // Returns whether this mesh lies in a 2D or 3D coordinate system.
     virtual int get_geometric_dimension(MsqError &err) ;

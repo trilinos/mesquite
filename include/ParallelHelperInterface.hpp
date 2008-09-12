@@ -51,6 +51,8 @@ namespace Mesquite
     virtual bool set_parallel_mesh(ParallelMesh* mesh) = 0;
     virtual bool set_communicator(size_t comm) = 0;
     virtual bool set_communication_model(int model) = 0;
+    virtual bool set_generate_random_numbers(int grn) = 0;
+
     virtual ~ParallelHelper() {}
 
   protected:

@@ -84,6 +84,7 @@ namespace Mesquite
     bool set_parallel_mesh(ParallelMesh* mesh);
     bool set_communicator(size_t comm);
     bool set_communication_model(int model);
+    bool set_generate_random_numbers(int grn);
 
   protected:
     friend class VertexMover;
@@ -126,6 +127,7 @@ namespace Mesquite
     int num_vtx_partition_boundary_local;
     int num_vtx_partition_boundary_remote;
     msq_std::vector<Mesquite::Mesh::VertexHandle> *part_vertices;
+    msq_std::vector<Mesquite::Mesh::VertexHandle> *unused_ghost_vertices;
     int* part_proc_owner;
     int* part_gid;
     int* part_smoothed_flag;

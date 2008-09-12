@@ -47,7 +47,7 @@ namespace Mesquite
    *  implementations of the pure virtual methods in both Mesquite::Mesh as
    *  well as those defined here.
    */
-  class MESQUITE_EXPORT ParallelMesh : virtual public Mesh
+  class MESQUITE_EXPORT ParallelMesh : public Mesh
   {
   public:
 

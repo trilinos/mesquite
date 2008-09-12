@@ -424,7 +424,8 @@ class MsqIMeshImpl : public MsqIMesh
 //    TagHandle vertexIndexTag;
     /** vertexIndexTag was created in constructor */
 //    bool createdVertexIndexTag;
-    
+    /** Dimension is queried once during create and cached */
+    int geometricDimension;
     /** Map iMesh_EntityTopology to Mesquite::EntityTopology */
     EntityTopology topologyMap[iMesh_ALL_TOPOLOGIES+1];
 };
@@ -477,7 +478,8 @@ MsqIMeshImpl::MsqIMeshImpl( iMesh_Instance itaps_mesh,
     elementSet(0), nodeSet(0), 
     inputSetType( iBase_ALL_TYPES ),
     byteTag(0), createdByteTag(false),
-    fixedTag(0), createdFixedTag(false)
+    fixedTag(0), createdFixedTag(false),
+    geometricDimension(0)
 {
     // Initialize topology map 
   
@@ -561,6 +563,11 @@ MsqIMeshImpl::MsqIMeshImpl( iMesh_Instance itaps_mesh,
                        VERTEX_BYTE_TAG_NAME );
       return;
     }
+  }
+  iMesh_getGeometricDimension( meshInstance, &geometricDimension, &ierr );
+  if (iBase_SUCCESS != ierr) {
+    MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
+    return;
   }
 }
 
@@ -735,6 +742,7 @@ void MsqIMeshImpl::set_active_set( iBase_EntitySetHandle elem_set,
 
     // Clear vertex byte tag
   set_int_tag( byteTag, nodeSet, 0, err );
+
   MSQ_CHKERR(err);
 }
 
@@ -756,13 +764,7 @@ void MsqIMeshImpl::populate_input_elements( MsqError& err )
 // Returns whether this mesh lies in a 2D or 3D coordinate system.
 int MsqIMeshImpl::get_geometric_dimension(Mesquite::MsqError &err)
 {
-  int dim, ierr;
-  iMesh_getGeometricDimension( meshInstance, &dim, &ierr );
-  if (iBase_SUCCESS != ierr) {
-    MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
-    return 0;
-  }
-  return dim;
+  return geometricDimension;
 }
     
     
@@ -858,15 +860,7 @@ void MsqIMeshImpl::vertices_get_coordinates(
     return;
   }
   
-  int dim;
-  iMesh_getGeometricDimension( meshInstance, &dim, &ierr );
-  if (iBase_SUCCESS != ierr) {
-    MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
-    return;
-  }
-  
-    
-  if (dim == 2)
+  if (geometricDimension == 2)
   {
     if (order == iBase_INTERLEAVED)
     {

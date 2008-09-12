@@ -88,7 +88,6 @@ to run mesquite by default.
 namespace Mesquite
 {
 
-
 const char* MESQUITE_FIELD_TAG = "MesquiteTags";
 
 MeshImpl::MeshImpl() 
@@ -101,6 +100,119 @@ MeshImpl::~MeshImpl()
 {
   delete myMesh;
   delete myTags;
+}
+
+MeshImpl::MeshImpl(int num_nodes, int num_elem, EntityTopology entity_topology, 
+                   const bool *fixed, const double **coords, const int **connectivity)
+    : numCoords(3),
+      myMesh( new MeshImplData ),
+      myTags( new MeshImplTags )
+{
+  int i,j;
+  
+  MsqError err;
+  myMesh->allocate_vertices( num_nodes, err ); MSQ_ERRRTN(err);
+  myMesh->allocate_elements( num_elem, err ); MSQ_ERRRTN(err);
+  
+  // Fill in the data
+  if (fixed) {
+    for (i = 0; i < num_nodes; ++i) {
+      myMesh->reset_vertex(i, Vector3D(coords[i][0],coords[i][1],coords[i][2]), fixed[i], err);
+    }
+  }
+  else {
+    for (i = 0; i < num_nodes; ++i) {
+      myMesh->reset_vertex(i, Vector3D(coords[i][0],coords[i][1],coords[i][2]), false, err);
+    }
+  }
+
+  int verts_per_elem=0;
+  EntityTopology elem_type;
+  
+  if (entity_topology == TRIANGLE) {
+    verts_per_elem = 3;
+    elem_type = TRIANGLE;
+  } else if (entity_topology == QUADRILATERAL) {
+    verts_per_elem = 4;
+    elem_type = QUADRILATERAL;
+  } else if (entity_topology == TETRAHEDRON) {
+    verts_per_elem = 4;
+    elem_type = TETRAHEDRON;
+  } else if (entity_topology == PYRAMID) {
+    verts_per_elem = 5;
+    elem_type = PYRAMID;
+  } else if (entity_topology == HEXAHEDRON) {
+    verts_per_elem = 8;
+    elem_type = HEXAHEDRON;
+  } else {
+    std::cout << "error... only supporting triangles, quadrangles, tets, and hexes at this time "<< std::endl;
+  }
+
+  msq_std::vector<size_t> connect(verts_per_elem);
+  for (i = 0; i < num_elem; i++) {
+    for (j = 0; j < verts_per_elem; j++) {
+      connect[j] = connectivity[i][j];
+    }
+    myMesh->reset_element( i, connect, elem_type, err);
+  }
+}
+
+MeshImpl::MeshImpl(int num_nodes, int num_elem, const EntityTopology *element_topologies, 
+                   const bool *fixed, const double **coords, const int **connectivity)
+    : numCoords(3),
+      myMesh( new MeshImplData ),
+      myTags( new MeshImplTags )
+{
+  int i,j;
+  
+  MsqError err;
+  myMesh->allocate_vertices( num_nodes, err ); MSQ_ERRRTN(err);
+  myMesh->allocate_elements( num_elem, err ); MSQ_ERRRTN(err);
+
+  // Fill in the data
+  if (fixed) {
+    for (i = 0; i < num_nodes; ++i) {
+      myMesh->reset_vertex(i, Vector3D(coords[i][0],coords[i][1],coords[i][2]), fixed[i], err);
+    }
+  }
+  else {
+    for (i = 0; i < num_nodes; ++i) {
+      myMesh->reset_vertex(i, Vector3D(coords[i][0],coords[i][1],coords[i][2]), false, err);
+    }
+  }
+
+  int num_indices = 0;
+  EntityTopology elem_type;
+
+  // Count the number of indices
+  for (i = 0; i < num_elem; ++i) {
+    elem_type = element_topologies[i];
+    switch (elem_type) {
+    case TRIANGLE:
+      num_indices = 3;
+      break;
+    case QUADRILATERAL:
+    case TETRAHEDRON:
+      num_indices = 4;
+      break;
+    case PYRAMID:
+      num_indices = 5;
+      break;
+    case HEXAHEDRON:
+      num_indices = 8;
+      break;
+    default:
+      std::cout << "error... only supporting triangles, quadrangles, tets, and hexes at this time "<< std::endl;
+      break;
+    }
+
+    msq_std::vector<size_t> connect(num_indices);
+
+    for (j = 0; j < num_indices; j++) {
+      connect[j] = connectivity[i][j];
+    }
+    myMesh->reset_element( i, connect, elem_type, err);
+  }
 }
 
 void MeshImpl::clear()
@@ -621,28 +733,28 @@ void MeshImpl::read_exodus(const char* in_filename , MsqError &err)
       elem_type_str[j] = toupper(elem_type_str[j]);
     if (!strncmp(elem_type_str, "TRI", 3))
     {
-      elem_type = Mesquite::TRIANGLE;
+      elem_type = TRIANGLE;
     }
     else if (!strncmp(elem_type_str, "QUA", 3) ||
              !strncmp(elem_type_str, "SHE", 3))
     {
-      elem_type = Mesquite::QUADRILATERAL;
+      elem_type = QUADRILATERAL;
     }
     else if (!strncmp(elem_type_str, "HEX", 3))
     {
-      elem_type = Mesquite::HEXAHEDRON;
+      elem_type = HEXAHEDRON;
     }
     else if (!strncmp(elem_type_str, "TET", 3))
     {
-      elem_type = Mesquite::TETRAHEDRON;
+      elem_type = TETRAHEDRON;
     }
     else if (!strncmp(elem_type_str, "PYRAMID", 7))
     {
-      elem_type = Mesquite::PYRAMID;
+      elem_type = PYRAMID;
     }
     else if (!strncmp(elem_type_str, "WEDGE", 5))
     {
-      elem_type = Mesquite::PRISM;
+      elem_type = PRISM;
     }
     else
     {
@@ -703,8 +815,8 @@ void MeshImpl::read_exodus(const char* in_filename , MsqError &err)
 #endif
 }
 //!Writes an exodus file of the mesh.
-void Mesquite::MeshImpl::write_exodus(const char* out_filename, 
-                                      Mesquite::MsqError &err)
+void MeshImpl::write_exodus(const char* out_filename, 
+                                      MsqError &err)
 {
     //just return an error if we don't have access to exodus
 #ifndef MSQ_USING_EXODUS
@@ -837,7 +949,7 @@ void Mesquite::MeshImpl::write_exodus(const char* out_filename,
   char* coord_names[] = { "x", "y", "z" };
   exo_err = ex_put_coord_names(file_id, coord_names);
   
-    // Create element-type arrays indexed by Mesquite::EntityTopology
+    // Create element-type arrays indexed by EntityTopology
   const char* tri_name = "TRI";
   const char* quad_name = "SHELL";
   const char* tet_name = "TETRA";
@@ -988,8 +1100,10 @@ void Mesquite::MeshImpl::write_exodus(const char* out_filename,
     MSQ_SETERR(err)("Error closing Exodus file.", MsqError::IO_ERROR);
   
 #endif
-}   
+}
+
 // Returns whether this mesh lies in a 2D or 3D coordinate system.
+
 int MeshImpl::get_geometric_dimension(MsqError &/*err*/)
 {
   return numCoords;
@@ -1041,7 +1155,7 @@ ElementIterator* MeshImpl::element_iterator(MsqError &/*err*/)
 // is allowed to be repositioned.  True indicates that the vertex
 // is fixed and cannot be moved.  Note that this is a read-only
 // property; this flag can't be modified by users of the
-// Mesquite::Mesh interface.
+// Mesh interface.
 void MeshImpl::vertices_get_fixed_flag(
  const VertexHandle vert_array[], bool on_bnd[],
  size_t num_vtx, MsqError& err)
@@ -1091,7 +1205,7 @@ void MeshImpl::vertex_set_coordinates(
 // flags.  This byte's value is neither set nor used by the mesh
 // implementation.  It is intended to be used by Mesquite algorithms.
 // Until a vertex's byte has been explicitly set, its value is 0.
-void Mesquite::MeshImpl::vertex_set_byte ( VertexHandle vertex,
+void MeshImpl::vertex_set_byte ( VertexHandle vertex,
                                            unsigned char byte,
                                            MsqError& err)
 {
@@ -1226,7 +1340,7 @@ void MeshImpl::release_entity_handles(
 // just call the destructor.  More sophisticated implementations
 // may want to keep the Mesh object to live longer than Mesquite
 // is using it.
-void Mesquite::MeshImpl::release()
+void MeshImpl::release()
 {
   //delete this;
 }

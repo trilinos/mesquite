@@ -137,6 +137,10 @@ static double generate_random_number(int generate_random_numbers, int proc_id, i
     xsubi[2] = (unsigned short)(key >> 16);
     return erand48(xsubi);
   }
+  else
+  {
+    return -1;
+  }
 }
 
 ParallelHelperImpl::ParallelHelperImpl()
@@ -155,6 +159,7 @@ ParallelHelperImpl::ParallelHelperImpl()
   vertices = 0;
   vtx_in_partition_boundary = 0;
   part_vertices = 0;
+  unused_ghost_vertices = 0;
   part_proc_owner = 0;
   part_gid = 0;
   part_smoothed_flag = 0;
@@ -181,17 +186,24 @@ ParallelHelperImpl::~ParallelHelperImpl()
 
 bool ParallelHelperImpl::set_parallel_mesh(ParallelMesh* mesh) {
   this->mesh = mesh;
+  return true;
 }
 
 bool ParallelHelperImpl::set_communicator(size_t comm) {
   communicator = (MPI_Comm)comm;
   MPI_Comm_rank(communicator, &rank);
   MPI_Comm_size(communicator, &nprocs);
- 
+  return true;
 }
 
 bool ParallelHelperImpl::set_communication_model(int model) {
   communication_model = model;
+  return true;
+}
+
+bool ParallelHelperImpl::set_generate_random_numbers(int grn) {
+  this->generate_random_numbers = grn;
+  return true;
 }
 
 bool ParallelHelperImpl::smoothing_init()
@@ -282,7 +294,7 @@ bool ParallelHelperImpl::smoothing_init()
 	for (j=(*vtx_offsets)[i];j<(*vtx_offsets)[i+1];j++) {
 	  incident_vtx = adj_vertices_lid[j];
 	  /* obviously the vertex does not need to be marked if it was already marked or if it is app_fixed*/
-	  if (vtx_in_partition_boundary[incident_vtx] == 0 && app_fixed[incident_vtx] == 0) {
+	  if (vtx_in_partition_boundary[incident_vtx] <= 0 && app_fixed[incident_vtx] == 0) {
 	    /* collect stats */
 	    //	      smooth_stats.num_part_bndy_vtx++;
 	    /* mark and count the vertex */
@@ -297,11 +309,29 @@ bool ParallelHelperImpl::smoothing_init()
 	  }
 	}
     }
-    else {
-	/* collect stats */
-	//	if (vtx_off_proc == 0) smooth_stats.num_interior_vtx++;
+    else if (vtx_off_proc > 0) {
+      /* mark the vertices as boundary-1 if the element has only off-processor vertices */
+	for (j=(*vtx_offsets)[i];j<(*vtx_offsets)[i+1];j++) {
+	  incident_vtx = adj_vertices_lid[j];
+	  /* obviously the vertex is not marked if it was already marked or if it is app_fixed*/
+	  if (vtx_in_partition_boundary[incident_vtx] == 0 && app_fixed[incident_vtx] == 0) {
+	    vtx_in_partition_boundary[incident_vtx] = -1;
+	  }
+	}
     }
+  }    
+
+  if (0)
+  {
+    printf("[%d]i%d pb1 ",rank,iteration);
+    for (i=0;i<num_vertex;i++) if (vtx_in_partition_boundary[i] == 1) printf("%d,%d ",i,gid[i]);
+    printf("\n");
+    printf("[%d]i%d pb2 ",rank,iteration);
+    for (i=0;i<num_vertex;i++) if (vtx_in_partition_boundary[i] == 2) printf("%d,%d ",i,gid[i]);
+    printf("\n");
+    fflush(NULL);
   }
+
   num_vtx_partition_boundary = num_vtx_partition_boundary_local + num_vtx_partition_boundary_remote;
 
   delete [] app_fixed; app_fixed = 0;
@@ -347,6 +377,28 @@ bool ParallelHelperImpl::smoothing_init()
 	/* only insert those vertices in the hash that are smoothed on other processors */
 	vertex_hash_insert(vid_hash, part_gid[j], part_proc_owner[j], j);
 	j++;
+    }
+  }
+
+  /* count the number of un-used ghost vertices */
+  int num_unused_ghost_vtx = 0;
+  for (i=0;i<num_vertex;i++) {
+    if (vtx_in_partition_boundary[i]==-1) {
+      num_unused_ghost_vtx++;
+    }
+  }
+
+  if (1 && num_unused_ghost_vtx) {printf("[%d] found %d unused ghost vertices \n",rank, num_unused_ghost_vtx); fflush(NULL);}
+
+  if (num_unused_ghost_vtx) {
+    unused_ghost_vertices = new msq_std::vector<Mesquite::Mesh::VertexHandle>;
+    unused_ghost_vertices->resize(num_unused_ghost_vtx);
+    j = 0;
+    for (i=0;i<num_vertex;i++) {
+      if (vtx_in_partition_boundary[i]==-1) {
+	(*unused_ghost_vertices)[j] = (*vertices)[i];
+	j++;
+      }
     }
   }
 
@@ -536,6 +588,8 @@ bool ParallelHelperImpl::smoothing_init()
   exportVtxLIDs = new int[num_vtx_partition_boundary];
   exportProc = new int[num_vtx_partition_boundary];
   in_independent_set = new bool[num_vtx_partition_boundary_local];
+
+  return true;
 }
 
 
@@ -579,10 +633,19 @@ void ParallelHelperImpl::compute_first_independent_set(msq_std::vector<Mesh::Ver
     }
   }
 
+  if (0) {printf("[%d]i%d after first we smoothed %d of %d\n",rank,iteration,num_already_smoothed_vertices,num_vtx_partition_boundary_local); fflush(NULL);}
+
   // fix the ghost vertices that are smoothed on another processor
   for (i=num_vtx_partition_boundary_local;i<num_vtx_partition_boundary;i++) {
     fixed_vertices.push_back((*part_vertices)[i]);
-  }  
+  }
+
+  // fix the ghost vertices that are unused
+  if (unused_ghost_vertices) {
+    for (i=0;i<unused_ghost_vertices->size();i++) {
+      fixed_vertices.push_back((*unused_ghost_vertices)[i]);
+    }
+  }
 }
 
 void ParallelHelperImpl::communicate_first_independent_set()
@@ -640,6 +703,7 @@ bool ParallelHelperImpl::get_next_partition_boundary_vertex(Mesquite::Mesh::Vert
     }
     next_vtx_partition_boundary++;
   }
+  if (0) {printf("[%d]i%d after next we smoothed %d of %d\n",rank,iteration,num_already_smoothed_vertices,num_vtx_partition_boundary_local); fflush(NULL);}
   return false;
 }
 
@@ -670,6 +734,7 @@ void ParallelHelperImpl::communicate_next_independent_set()
   if (communication_model & 1) // AVOID_ALL_REDUCE
   {
     global_work_remains = (total_num_vertices_to_smooth - num_already_smoothed_vertices) + (total_num_vertices_to_recv - num_already_recv_vertices); 
+    if (0) {printf("[%d]i%d %d - %d + %d  - %d = %d \n",rank,iteration,total_num_vertices_to_smooth,num_already_smoothed_vertices,total_num_vertices_to_recv,num_already_recv_vertices,global_work_remains); fflush(NULL);}
   }
   else
   {
@@ -690,6 +755,7 @@ bool ParallelHelperImpl::smoothing_close()
   if (vertices) delete vertices; vertices = 0;
   if (vtx_in_partition_boundary) delete [] vtx_in_partition_boundary; vtx_in_partition_boundary = 0;
   if (part_vertices) delete part_vertices; part_vertices = 0;
+  if (unused_ghost_vertices) delete unused_ghost_vertices; unused_ghost_vertices = 0;
   if (part_proc_owner) delete [] part_proc_owner; part_proc_owner = 0;
   if (part_gid) delete [] part_gid; part_gid = 0;
   if (part_smoothed_flag) delete [] part_smoothed_flag; part_smoothed_flag = 0; 
@@ -707,6 +773,8 @@ bool ParallelHelperImpl::smoothing_close()
   for (i = 0; i < num_vtx_partition_boundary_local; i++) free(vtx_off_proc_list[i]);
   if (vtx_off_proc_list) delete [] vtx_off_proc_list; vtx_off_proc_list = 0;
   if (neighbourProc) free(neighbourProc); neighbourProc = 0;
+
+  return true;
 }
 
 typedef struct VertexPack {
@@ -943,7 +1011,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb_no_all()
   for (j = 0; j < num_neighbourProc; j++) {
     if (neighbourProcSendRemain[j]) {
       /* send the vertex count to this processor */
-      if (0) {printf("[%d]i%d Announce send %d vertices from proc %d\n",rank,iteration,numVtxPerProcSend[j],neighbourProc[j]); fflush(NULL);}
+      if (0) {printf("[%d]i%d Announce send %d vertices to proc %d\n",rank,iteration,numVtxPerProcSend[j],neighbourProc[j]); fflush(NULL);}
       MPI_Isend(&(numVtxPerProcSend[j]),
 		1,
 		MPI_INT,
@@ -1034,8 +1102,8 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb_no_all()
   num_neighbourProcRecv = 0;
 
   for (i = 0; i < num_neighbourProc; i++) {
+    if (0) {printf("[%d]i%d Will recv %d vertices from proc %d\n",rank,iteration,numVtxPerProcRecv[i],neighbourProc[i]); fflush(NULL);}
     if (numVtxPerProcRecv[i]) {
-      if (0) {printf("[%d]i%d Will recv %d vertices from proc %d\n",rank,iteration,numVtxPerProcRecv[i],neighbourProc[i]); fflush(NULL);}
       MPI_Irecv(packed_vertices_import[i],
 		4*numVtxPerProcRecv[i],
 		MPI_DOUBLE_PRECISION,
@@ -1048,8 +1116,8 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb_no_all()
     else {
       requests_recv[i] = MPI_REQUEST_NULL;
     }
+    if (0) {printf("[%d]i%d Will send %d vertices to proc %d\n",rank,iteration,numVtxPerProcSend[i],neighbourProc[i]); fflush(NULL);}
     if (numVtxPerProcSend[i]) {
-      if (0) {printf("[%d]i%d Will send %d vertices to proc %d\n",rank,iteration,numVtxPerProcSend[i],neighbourProc[i]); fflush(NULL);}
       MPI_Isend(packed_vertices_export[i], 
 		4*numVtxPerProcSend[i],
 		MPI_DOUBLE_PRECISION,
@@ -1273,7 +1341,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb()
     proc = status.MPI_SOURCE;
     int count;
     MPI_Get_count(&status, MPI_INT, &count);    
-    if (0 && rank == 1) printf("[%d]i%d Received %d (%d) vertices from proc %d (%d)\n",rank,iteration,numVtxPerProcRecvRecv[k],count,neighbourProcRecv[k],proc); fflush(NULL);
+    if (0) printf("[%d]i%d Received %d (%d) vertices from proc %d (%d)\n",rank,iteration,numVtxPerProcRecvRecv[k],count,neighbourProcRecv[k],proc); fflush(NULL);
     for (i = 0; i < numVtxPerProcRecvRecv[k]; i++) {
       local_id = vertex_hash_find(vid_hash,(int)(packed_vertices_import[k][i].glob_id), neighbourProcRecv[k]);
       if (local_id) {
@@ -1282,7 +1350,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb()
 	mesh->vertex_set_coordinates((*part_vertices)[local_id],coordinates,msq_err);
 	assert(part_smoothed_flag[local_id] == 0);
 	part_smoothed_flag[local_id] = 1;
-	if (0 && rank == 1) printf("[%d]i%d updating vertex with global_id %d to %g %g %g \n", rank, iteration, (int)(packed_vertices_import[k][i].glob_id), packed_vertices_import[k][i].x, packed_vertices_import[k][i].y, packed_vertices_import[k][i].z);
+	if (0) printf("[%d]i%d updating vertex with global_id %d to %g %g %g \n", rank, iteration, (int)(packed_vertices_import[k][i].glob_id), packed_vertices_import[k][i].x, packed_vertices_import[k][i].y, packed_vertices_import[k][i].z);
       }
       else {
 	printf("[%d]i%d communicate vertex with global_id %d not in mesh\n", rank,iteration,(int)(packed_vertices_import[k][i].glob_id));	  
@@ -1488,7 +1556,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb_no_all()
     proc = status.MPI_SOURCE;
     int count;
     MPI_Get_count(&status, MPI_INT, &count);    
-    if (0 && rank == 1) printf("[%d]i%d Received %d (%d) vertices from proc %d (%d)\n",rank,iteration,numVtxPerProcRecvRecv[k],count,neighbourProcRecv[k],proc); fflush(NULL);
+    if (0) printf("[%d]i%d Received %d (%d) vertices from proc %d (%d)\n",rank,iteration,numVtxPerProcRecvRecv[k],count,neighbourProcRecv[k],proc); fflush(NULL);
     for (i = 0; i < numVtxPerProcRecvRecv[k]; i++) {
       local_id = vertex_hash_find(vid_hash,(int)(packed_vertices_import[k][i].glob_id), neighbourProcRecv[k]);
       if (local_id) {
@@ -1497,7 +1565,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb_no_all()
 	mesh->vertex_set_coordinates((*part_vertices)[local_id],coordinates,msq_err);
 	assert(part_smoothed_flag[local_id] == 0);
 	part_smoothed_flag[local_id] = 1;
-	if (0 && rank == 1) printf("[%d]i%d updating vertex with global_id %d to %g %g %g \n", rank, iteration, (int)(packed_vertices_import[k][i].glob_id), packed_vertices_import[k][i].x, packed_vertices_import[k][i].y, packed_vertices_import[k][i].z);
+	if (0) printf("[%d]i%d updating vertex with global_id %d to %g %g %g \n", rank, iteration, (int)(packed_vertices_import[k][i].glob_id), packed_vertices_import[k][i].x, packed_vertices_import[k][i].y, packed_vertices_import[k][i].z);
       }
       else {
 	printf("[%d]i%d communicate vertex with global_id %d not in mesh\n", rank,iteration,(int)(packed_vertices_import[k][i].glob_id));	  
@@ -1670,7 +1738,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_b()
 	  mesh->vertex_set_coordinates((*part_vertices)[local_id],coordinates,msq_err);
 	  assert(part_smoothed_flag[local_id] == 0);
 	  part_smoothed_flag[local_id] = 1;
-	  if (0 && rank == 1) printf("[%d]i%d updating vertex with global_id %d to %g %g %g \n", rank,iteration, (int)(vertex_pack[i].glob_id), vertex_pack[i].x, vertex_pack[i].y, vertex_pack[i].z);
+	  if (0) printf("[%d]i%d updating vertex with global_id %d to %g %g %g \n", rank,iteration, (int)(vertex_pack[i].glob_id), vertex_pack[i].x, vertex_pack[i].y, vertex_pack[i].z);
 	}
 	else {
 	  printf("[%d]i%d communicate vertex with global_id %d not in mesh\n", rank,iteration, (int)(vertex_pack[i].glob_id));	  
@@ -1948,6 +2016,14 @@ void ParallelHelperImpl::compute_independent_set()
     }
   }
   
+  if (0)
+  {
+    printf("[%d]i%d picked vertices ",rank,iteration);
+    for (i=0;i<num_vtx_partition_boundary_local;i++) if (in_independent_set[i]) printf("%d ",i);
+    printf("\n");
+    fflush(NULL);
+  }
+
   /* unmark the vertices that have been marked as covered */
   for (i=num_vtx_partition_boundary_local; i<num_vtx_partition_boundary; i++) if (part_smoothed_flag[i] == 2) part_smoothed_flag[i] = 0;
 }
