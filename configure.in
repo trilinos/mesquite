@@ -718,6 +718,16 @@ AC_CONFIG_FILES([Makefile
                  doc/user/doxygen/Makefile
                  doc/user/doxygen/Mesquite-user.dox
                  ])
+                 
+# Remove any source depenency data so that it is regenerated.
+# This isn't necessary for a correctly working configure script,
+# but from a support POV, it is a easier to explain and remember
+# that the configure script should be re-run without having to
+# also remember to do "rm .deps/*" when a source file is removed
+# from the build.
+AC_CONFIG_COMMANDS_POST([rm -f .deps/*])                 
+                 
+# Generate output files
 AC_OUTPUT
 
 echo "CXXFLAGS = $CXXFLAGS"
