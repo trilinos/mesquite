@@ -616,6 +616,7 @@ void MsqIMeshImpl::set_int_tag( iBase_TagHandle tag,
     iMesh_getNextEntArrIter( meshInstance, iter, &ptr, &alloc, &count, &more, &ierr );
     if (iBase_SUCCESS != ierr) {
       MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
+      iMesh_endEntArrIter( meshInstance, iter, &ierr );
       return;
     }
     if (!count)
@@ -623,8 +624,15 @@ void MsqIMeshImpl::set_int_tag( iBase_TagHandle tag,
     iMesh_setIntArrData( meshInstance, handle_array, count, tag, value_array, count, &ierr );
     if (iBase_SUCCESS != ierr) {
       MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
+      iMesh_endEntArrIter( meshInstance, iter, &ierr );
       return;
     }
+  }
+ 
+  iMesh_endEntArrIter( meshInstance, iter, &ierr );
+  if (ierr) {
+    MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
+    return;
   }
 }
 
