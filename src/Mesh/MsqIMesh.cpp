@@ -994,8 +994,13 @@ void MsqIMeshImpl::get_adjacent_entities( const iBase_EntityHandle* source,
                                           msq_std::vector<size_t>& offsets,
                                           MsqError& err )
 {
-  if (num_source == 0)
+  if (num_source == 0) {
+    target.clear();
+    offsets.clear();
+    offsets.reserve(1);
+    offsets.push_back(0);
     return;
+  }
   
   int ierr, num_adj = 0, num_offset;
   
