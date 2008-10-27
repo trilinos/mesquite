@@ -6,18 +6,18 @@ In this section, we write a driver code which calls the Mesquite
 library to improve the quality of a test mesh. This tutorial section
 is aimed at giving the user a feel for Mesquite: \emph{this section is not
 where to look for detailed information}. In particular, information
-pertaining to loading a particular mesh format (see section X), 
-interacting through a particular mesh interface (section Y), 
-and details of the API classes (sections 4.X-4.Y) are not
+pertaining to loading a particular mesh format (see Chapter \ref{sec:meshes}), 
+interacting through a particular mesh interface (section \ref{sec:MeshData}), 
+and details of defining geometric domains (see Chapter \ref{sec:geom}) are not
 given in this section.
 
 First, we write a small program using Mesquite's simplified API, or
 wrappers, to show the fastest way deploy Mesquite functionality to
 improve a mesh.  The wrapper concept, as well as details about the
 different wrappers available, are described in section
-\ref{sec:wrappers}.  Following this first example, we set up customized mesh
+\ref{sec:tutWrapper}.  Following this first example, we set up customized mesh
 improvement tool using Mesquite's low-level API, the details of which
-are described in section \ref{sec:detailedAPI}.
+are described in section \ref{sec:tutDetailedAPI}.
 
 \subsection{Tutorial File Template}
 \label{sec:tutfile}
@@ -52,7 +52,7 @@ headers. Although this is the easiest way to handle the include directives,
 it may slow down compilation of the application.  
 \item All Mesquite classes are part of the \texttt{Mesquite} namespace. 
 
-\item  The \texttt{MsqError} class defines an object type use to communicate
+\item  The \texttt{MsqError} class defines an object type used to communicate
 Mesquite errors to the application.  The calling application must pass
 an instance of the \tt{MsqError} class or an instance of a subclass of
 \tt{MsqError} to many Mesquite functions.  The state of the error object
@@ -65,7 +65,7 @@ in which they are discussed.
 \end{enumerate}
 
 The code above takes a mesh file name as a command line argument and
-performs no action. We can compile it from the main directory
+performs no action. We can compile it from the {\it main directory}
 (\texttt{mesquite/}) with the command 
 \begin{verbatim}
 make testSuite/tutorial/tutorial
@@ -79,7 +79,7 @@ format, the details of which are given in \cite{VTKbook, VTKuml}. This
 format was chosen because of its readability and ease of use.
 In this tutorial we use
 the simplest mechanism for loadling a mesh into Mesquite; different
-options are described in chapter \ref{sec:meshes}.  In particular, to
+options are described in Chapter \ref{sec:meshes}.  In particular, to
 load a VTK test mesh in Mesquite, instantiate the Mesquite mesh
 database object,
 \texttt{MeshImpl}, and use the \texttt{read\_vtk} member function by
@@ -94,42 +94,45 @@ adding the following lines to the file template described in
     return 1;
   }
 \end{verbatim}
-Mesquite deals automatically with all types of supported elements,
-including hybrid meshes, but some meshes require geometry information
-as well.  When improving a surface mesh, Mesquite must be provided information
+
+Mesquite also provides a function to write a mesh
+file in VTK format, given a \texttt{MeshImpl} object:
+\begin{verbatim}
+  my_mesh.write_vtk("original_mesh.vtk",err); 
+\end{verbatim}
+
+Mesquite deals automatically with all types of supported elements 
+(triangles, quadrilaterals, tetrahedra, hexahedra, wedges, and pyramids),
+and also hybrid meshes consisting of mixed element types.  
+Some meshes require geometry information as well.  When improving a surface mesh, Mesquite must be provided information
 about surface(s) the mesh is constrained to lie on and the association between
 mesh entities and entities of the geometric domain (surfaces, curves, etc.)
 Because Mesquite is inherently a 3D code, all 2D meshes must specify some
 geometry constraints.  The details
-for general geometric surfaces are explained in section
-\ref{sec:geometry}; in this section,
+for general geometric surfaces are explained in Chapter 
+\ref{sec:geom}. In this section,
 we show how to define the geometry of a 2D planar mesh, specified by a
-point and a normal:
+point $(x,y,z)$ and a normal. For example, the following defines an xy-plane
+shifted five units in the z-direction:
 \begin{verbatim}
   Vector3D normal(0,0,1);
   Vector3D point(0,0,5);
   PlanarDomain my_mesh_plane(normal, point);
 \end{verbatim}
 
-Finally, note that Mesquite also provides a function to write a mesh
-file in VTK format, given a \texttt{MeshImpl} object:
-\begin{verbatim}
-  my_mesh.write_vtk("original_mesh.vtk",err); 
-\end{verbatim}
-
 
 \subsection{Improving the Mesh with a Wrapper Class}
 \label{sec:tutWrapper}
 The simplest way to use a Mesquite mesh quality improvement
-procedure is to instantiate one of the wrapper classes described in section
-\ref{sec:wrappers}. Here, we will instantiate the
+procedure is to instantiate one of the wrapper classes described in Chapter 
+\ref{sec:useful_wrappers}. Here, we will instantiate the
 \texttt{ShapeImprovement} wrapper and use it to improve 
 the Mesh we created earlier.  Mesquite can optimize the mesh
 without further input from the user by utilizing preset, default
 values.  If some customization is desired, the wrapper classes also
 allow users to set the most important parameters of the underlying
-algorithms and metrics (see section
-\ref{sec:wrappers} for details).
+algorithms and metrics (see Chapter 
+\ref{sec:useful_wrappers} for details).
 \begin{verbatim}
   Mesquite::ShapeImprovementWrapper mesh_quality_algorithm(err);
   mesh_quality_algorithm.run_instructions( &my_mesh, &my_mesh_plane, err);
@@ -149,7 +152,7 @@ file:
   my_mesh.write_vtk("smoothed_mesh.vtk",err); 
 \end{verbatim}
 This completes the code necessary for the simple wrapper example.  Once
-the code has successfully compiled by typing the {\tt gmake} command given in
+the code has successfully compiled by typing the {\tt make} command given in
 section \ref{sec:tutfile}, 
 run it from the tutorial directory \texttt{mesquite/testSuite/tutorial/}
 with a mesh file name as a command line 
@@ -225,9 +228,9 @@ In this section, we provide a simple example to highlight the main
 steps needed for this approach.  The code segment given below performs
 the same functionality as the wrapper class highlighted in the
 previous section.  The comment lines provide high level documentation;
-the details of each class and the low-level API are extensively
-treated in Section 
-\ref{sec:detailedAPI}.
+the details of each class and the low-level API are not described here.
+%extensively treated in Section 
+%\ref{sec:detailedAPI}.
 
 \begin{verbatim}
     // creates a mean ratio quality metric ...

@@ -1,0 +1,23 @@
+\chapter{Some Useful Mesquite Wrappers}
+\label{sec:useful_wrappers}
+
+This chapter provides a summary of the current Mesquite wrappers, along
+with demonstrations of their utility. Applications which desire to access
+Mesquite capabilities without delving into the low-level API can invoke 
+wrappers to perform basic mesh quality improvement tasks that, except for
+a few user-defined inputs, are fully automatic. 
+
+\section{The Shape-Improvement Wrapper} \label{sec:ShapeImprovementWrapper}
+This wrapper seeks to improve the {\it shape} of mesh elements based on 
+an ideal element shape which is determined by the element type. For example,
+triangular elements are assumed to have an ideal shape corresponding to 
+an equilateral triangle, quadrilaterals to a square, tetrahedral to an
+equilateral tetrahedron, hexahedra to a cube, wedges to XXX, and pyramids 
+to YYY. If a more general shape is desired, please consider using the XXX
+smoother. The initial mesh is required to be non-inverted since the 
+shape-metric has a barrier. The metric is based on the Inverse Mean Ratio.
+
+\section{The Mesh Untangling Wrapper} \label{sec:MeshUntanglingWrapper}
+
+\section{The Laplce-smoothing Wrapper} \label{sec:LaplaceSmoothingWrapper}
+

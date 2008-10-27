@@ -206,8 +206,8 @@ linked to either a meshing code or to a simulation code. \newline
 
 Mesquite software design is based on a mathematical 
 framework that improves mesh quality by solving an optimization 
-problem to guide the movement of mesh vertices \cite{formal}. 
-The user inputs a mesh or 
+problem to guide the movement of mesh vertices \cite{formal}, 
+\cite{local2Dmetrics}. The user inputs a mesh or 
 submesh consisting of vertices, elements, and the relationships between them. 
 The quality of each vertex or 
 element in the mesh is described by a local quality metric that is a function 
@@ -304,16 +304,16 @@ $3M \times 3M$ matrix.
 \section{How to use this User's Manual}
 This user's manual 
 \begin{itemize}
-\item provides an introduction to mesh quality and basic Mesquite concepts (chapter \ref{sec:intro}), 
-\item instructs novice users on how to download and compile
-Mesquite. A tutorial is given of Mesquite simplified user's interface and Mesquite's detailed API (chapter \ref{sec:basics}).
-\item describes how to load a mesh in Mesquite via files (section \ref{sec:meshFiles}), 
-\item provides instructions on using the extensive TSTT interface or a Mesquite mesh specific mesh
-      interface to load a mesh dynamicallu in Mesquite (sections \ref{sec:msq_mesh}, \ref{sec:TSTT}).
-\item describes Mesquite interactions with domain geometry (Section 3.4),
-\item Exposes in details the concepts and the mechanisms of the advanced API (chapter \ref{sec:API}), and 
-\item instructs the user on how to add their own instances of quality 
-metrics, objective functions, and solvers (chapter \ref{sec:extensions})
+\item provides an introduction to mesh quality and basic Mesquite concepts (Chapter \ref{sec:intro}), 
+\item instructs novice users on how to download and install Mesquite (Chapter \ref{sec:install}), 
+\item provides a tutorial on Mesquite's simplified user's interface and Mesquite's detailed API (Chapter \ref{sec:examples}).
+\item describes how to load a mesh in Mesquite via files (Chapter \ref{sec:meshes}), and 
+%\item provides instructions on using the extensive TSTT interface or a Mesquite mesh specific mesh
+%      interface to load a mesh {\it dynamicallu} in Mesquite (sections \ref{sec:msq_mesh}, \ref{sec:TSTT}), and 
+\item describes Mesquite interactions with domain geometry (Chapter \ref{sec:geom}).
+%\item Exposes in details the concepts and the mechanisms of the advanced API (chapter \ref{sec:API}), and 
+%\item instructs the user on how to add their own instances of quality 
+%metrics, objective functions, and solvers (chapter \ref{sec:extensions})
 \end{itemize}
 
 Consult the doxygen documentation for the API reference as well as details on the software. There

@@ -9,20 +9,21 @@ fundamental classes of information Mesquite requires are:
 \end{itemize}
 In this chapter we will assume that the only constraint available for vertex movement is to flag the vertices as fixed.  More advanced constraints such as vertices following geometric curves or surfaces are discussed in the following chapter.  
 
-The mesh data expected as input to Mesquite is a set of vertices and elements.  Each vertex has associated with it a fixed flag, a ``byte'', and x, y, and z coordinate values.  The fixed flag is used as input only.  It indicates that the corresponding vertex position should not be changed during the optimization.  The ``byte'' is one byte of Mesquite-specific working data assocaited with each vertex (currently only used for vertex culling.)   The coordinate values for each vertex serve as both input and output: as input they are the initial positions of the vertices and as output they are the optimized positions.  
+The mesh data expected as input to Mesquite is a set of vertices and elements.  Each vertex has associated with it a fixed flag, a ``byte'', and x, y, and z coordinate values.  The fixed flag is used as input only.  It indicates whether or not the corresponding vertex position should be fixed (i.e., coordinates not allowed to change) during the optimization.  The ``byte'' is one byte of Mesquite-specific working data assocaited with each vertex (currently only used for vertex culling.)   The coordinate values for each vertex serve as both input and output: as input they are the initial positions of the vertices and as output they are the optimized positions.  
 
-Each element of the input mesh has associated with it a type and a list of vertices.  The type is one of the values defined in \texttt{Mesquite::EntityTopology} (\texttt{Mesquite.hpp}).  It specifes the topology (type of shape) of the element.  The list of vertices (commonly referred to as the ``connectivity'') define the geometry (location and variation of shape) for the element.  The vertices are expected to be occur in a pre-defined order specific to the element topology. Mesquite uses the canonical ordering defined in the ExodusII specification\cite{exodus}.
+Each element of the input mesh has associated with it a type and a list of vertices.  The type is one of the values defined in \texttt{Mesquite::EntityTopology} (\texttt{Mesquite.hpp}).  It specifes the topology (type of shape) of the element. Currently supported element types are triangles, quadrilaterals, 
+tetrahdra, hexahedra, triangular wedges, and pyramids.  The list of vertices (commonly referred to as the ``connectivity'') define the geometry (location and variation of shape) for the element.  The vertices are expected to be occur in a pre-defined order specific to the element topology. Mesquite uses the canonical ordering defined in the ExodusII specification\cite{exodus}.
 
 For some more advanced capabilities, Mesquite may require the ability to attach arbitrary peices of data (called ``tags'') to mesh elements or vertices.
 
 \section{The \texttt{Mesquite::Mesh} Interface} \label{sec:MeshData}
 
-The \texttt{Mesquite::Mesh} class (\texttt{MeshInterface.hpp}) defines the interface Mesquite uses to interact with mesh data.  In C++ this means that the class defines variety of pure virtual (or abstract) functions for accessing mesh data.  An application may implement a subclass of \texttt{Mesquite::Mesh}, providing implementations of the virtual methods that allow Mesquite direction access to the applications in-memory mesh representation.  
+The \texttt{Mesquite::Mesh} class (\texttt{MeshInterface.hpp}) defines the interface Mesquite uses to interact with mesh data.  In C++ this means that the class defines a variety of pure virtual (or abstract) functions for accessing mesh data.  An application may implement a subclass of \texttt{Mesquite::Mesh}, providing implementations of the virtual methods that allow Mesquite direct access to the applications in-memory mesh representation.  
 
 The \texttt{Mesquite::Mesh} interface defines functions for operations such as:
 \begin{itemize}
-\item Get a list of all the vertices.
-\item Get a list of all the elements.
+\item Get a list of all mesh vertices.
+\item Get a list of all mesh elements.
 \item Get a property of a vertex (coordinates, fixed flag, etc.)
 \item Set a property of a vertex (coordinates, ``byte'', etc.)
 \item Get the type of an element
@@ -57,7 +58,7 @@ will produce the same result as optimizing both together.
 
 \section{ITAPS iMesh Interface}
 
-The ITAPS Working Group had defined a standard API for exchange of mesh data between applications.  The iMesh interface\cite{imesh} defines a superset of the functionality required for the \texttt{Mesquite::Mesh} interface.  Mesquite can access mesh through an iMesh interface using the \texttt{Mesquite::MsqIMesh} class declared in \texttt{MsqIMesh.hpp}.  This class is an ``adaptor'':  it presents the iMesh interface as the \texttt{Mesquite::Mesh} interface.  
+The ITAPS Working Group has defined a standard API for exchange of mesh data between applications.  The iMesh interface\cite{imesh} defines a superset of the functionality required for the \texttt{Mesquite::Mesh} interface.  Mesquite can access mesh through an iMesh interface using the \texttt{Mesquite::MsqIMesh} class declared in \texttt{MsqIMesh.hpp}.  This class is an ``adaptor'':  it presents the iMesh interface as the \texttt{Mesquite::Mesh} interface.  
 
 
 \section{Accessing Mesh In Arrays} \label{sec::ArrayMesh}
@@ -141,7 +142,7 @@ Mesquite a mesh containing four quadrilateral elements.
             << " )" << std::endl;
 \end{verbatim}
 
-NOTE:  When using the \texttt{ArrayMesh} interface, the application is responsible for managing the storate of the mesh data.  The \texttt{ArrayMesh}
+NOTE:  When using the \texttt{ArrayMesh} interface, the application is responsible for managing the storage of the mesh data.  The \texttt{ArrayMesh}
  does NOT copy the input mesh.  
 
  
