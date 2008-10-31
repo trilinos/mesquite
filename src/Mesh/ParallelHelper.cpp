@@ -323,6 +323,7 @@ bool ParallelHelperImpl::smoothing_init()
 
   if (0)
   {
+    printf("[%d]i%d local %d remote %d ",rank,iteration,num_vtx_partition_boundary_local,num_vtx_partition_boundary_remote);
     printf("[%d]i%d pb1 ",rank,iteration);
     for (i=0;i<num_vertex;i++) if (vtx_in_partition_boundary[i] == 1) printf("%d,%d ",i,gid[i]);
     printf("\n");
@@ -388,7 +389,7 @@ bool ParallelHelperImpl::smoothing_init()
     }
   }
 
-  if (1 && num_unused_ghost_vtx) {printf("[%d] found %d unused ghost vertices \n",rank, num_unused_ghost_vtx); fflush(NULL);}
+  if (0 && num_unused_ghost_vtx) {printf("[%d] found %d unused ghost vertices (total %d local %d remote %d) \n",rank, num_unused_ghost_vtx, num_vertex, num_vtx_partition_boundary_local,num_vtx_partition_boundary_remote); fflush(NULL);}
 
   if (num_unused_ghost_vtx) {
     unused_ghost_vertices = new msq_std::vector<Mesquite::Mesh::VertexHandle>;
@@ -415,6 +416,24 @@ bool ParallelHelperImpl::smoothing_init()
                COMPUTE THE SET OF NEIGHBORS PROCESSORS
   ***********************************************************************/
 
+  if (num_vtx_partition_boundary_local == 0)
+  {
+    /* this processor does not partake in the boundary smoothing */
+    num_neighbourProc = 0;
+    mesh->tag_delete( lid_tag, err );
+    delete [] vtx_partition_boundary_map_inverse;
+    return true;
+  }
+
+  /* init the neighbour processor list */
+  num_neighbourProc = 0;
+  neighbourProc = (int*)malloc(sizeof(int)*10);
+  for (i=0;i<9;i++) {
+    neighbourProc[i] = 0;
+  }
+  neighbourProc[i] = -1;
+
+
   /* init the neighbour lists */
 
   int list_size;
@@ -428,14 +447,6 @@ bool ParallelHelperImpl::smoothing_init()
     }
     vtx_off_proc_list[i][j] = -1;
   }
-
-  /* init the processor list */
-  num_neighbourProc = 0;
-  neighbourProc = (int*)malloc(sizeof(int)*10);
-  for (i=0;i<9;i++) {
-    neighbourProc[i] = 0;
-  }
-  neighbourProc[i] = -1;
 
   /* get the adjacency arrays that we need */
   msq_std::vector<Mesquite::Mesh::ElementHandle> *adj_elements = new msq_std::vector<Mesquite::Mesh::ElementHandle>;
@@ -455,64 +466,64 @@ bool ParallelHelperImpl::smoothing_init()
   for (i=0;i<num_vtx_partition_boundary_local;i++) {
     /* loop over the elements surrounding that vertex */
     for (j=(*elem_offsets)[i];j<(*elem_offsets)[i+1];j++) {
-	/* loop over the neighbors of the considered vertex (i.e. the vertices of these element) */
-	for (k=(*adj_vtx_offsets)[j];k<(*adj_vtx_offsets)[j+1];k++) {
-	  /* get the next neighbour */
-	  incident_vtx = adj_adj_vertices_lid[k];
-	  /* if this neighbour is a vertex that is smoothed on a different processor */
-	  if (vtx_in_partition_boundary[incident_vtx] == 2) {
-	    /* then map it into our domain */
-	    incident_vtx = vtx_partition_boundary_map_inverse[incident_vtx];
-	    /* is this vertex already in our neighbour list ? */
-	    list_size = vtx_off_proc_list_size[i];
-	    /* check by scanning the list for this vertex */
-	    for (l = 0; l < list_size; l++) {
-	      if (vtx_off_proc_list[i][l] == incident_vtx) {
-		/* no need to add this vertex to the list ... it is already there */
+      /* loop over the neighbors of the considered vertex (i.e. the vertices of these element) */
+      for (k=(*adj_vtx_offsets)[j];k<(*adj_vtx_offsets)[j+1];k++) {
+	/* get the next neighbour */
+	incident_vtx = adj_adj_vertices_lid[k];
+	/* if this neighbour is a vertex that is smoothed on a different processor */
+	if (vtx_in_partition_boundary[incident_vtx] == 2) {
+	  /* then map it into our domain */
+	  incident_vtx = vtx_partition_boundary_map_inverse[incident_vtx];
+	  /* is this vertex already in our neighbour list ? */
+	  list_size = vtx_off_proc_list_size[i];
+	  /* check by scanning the list for this vertex */
+	  for (l = 0; l < list_size; l++) {
+	    if (vtx_off_proc_list[i][l] == incident_vtx) {
+	      /* no need to add this vertex to the list ... it is already there */
+	      incident_vtx = -1;
+	      /* end the loop */
+	      l = list_size;
+	    }
+	  }
+	  if (incident_vtx != -1) {
+	    /* if the vertex is not in the list yet ... add it */
+	    if (vtx_off_proc_list[i][list_size] == -1) {
+	      /* need to make the list longer */
+	      vtx_off_proc_list[i] = (int*)realloc(vtx_off_proc_list[i],sizeof(int)*list_size*2);
+	      for (l=list_size;l<list_size*2-1;l++) {
+		vtx_off_proc_list[i][l] = 0;
+	      }
+	      vtx_off_proc_list[i][l] = -1;
+	    }
+	    vtx_off_proc_list[i][list_size] = incident_vtx;
+	    vtx_off_proc_list_size[i]++;
+	    /* is the processor of this vertex already in the processor list */
+	    incident_vtx = part_proc_owner[incident_vtx];
+	    /* check by scanning the list for this processor */
+	    for (l = 0; l < num_neighbourProc; l++) {
+	      if (neighbourProc[l] == incident_vtx) {
+		/* no need to add this processor to the list ... it is already there */
 		incident_vtx = -1;
 		/* end the loop */
-		l = list_size;
+		l = num_neighbourProc;
 	      }
 	    }
 	    if (incident_vtx != -1) {
-	      /* if the vertex is not in the list yet ... add it */
-	      if (vtx_off_proc_list[i][list_size] == -1) {
+	      /* the processor is not in the list yet ... add it */
+	      if (neighbourProc[num_neighbourProc] == -1) {
 		/* need to make the list longer */
-		vtx_off_proc_list[i] = (int*)realloc(vtx_off_proc_list[i],sizeof(int)*list_size*2);
-		for (l=list_size;l<list_size*2-1;l++) {
-		  vtx_off_proc_list[i][l] = 0;
+		neighbourProc = (int*)realloc(neighbourProc,sizeof(int)*num_neighbourProc*2);
+		for (l=num_neighbourProc;l<num_neighbourProc*2-1;l++) {
+		  neighbourProc[l] = 0;
 		}
-		vtx_off_proc_list[i][l] = -1;
+		neighbourProc[l] = -1;
 	      }
-	      vtx_off_proc_list[i][list_size] = incident_vtx;
-	      vtx_off_proc_list_size[i]++;
-	      /* is the processor of this vertex already in the processor list */
-	      incident_vtx = part_proc_owner[incident_vtx];
-	      /* check by scanning the list for this processor */
-	      for (l = 0; l < num_neighbourProc; l++) {
-		if (neighbourProc[l] == incident_vtx) {
-		  /* no need to add this processor to the list ... it is already there */
-		  incident_vtx = -1;
-		  /* end the loop */
-		  l = num_neighbourProc;
-		}
-	      }
-	      if (incident_vtx != -1) {
-		/* the processor is not in the list yet ... add it */
-		if (neighbourProc[num_neighbourProc] == -1) {
-		  /* need to make the list longer */
-		  neighbourProc = (int*)realloc(neighbourProc,sizeof(int)*num_neighbourProc*2);
-		  for (l=num_neighbourProc;l<num_neighbourProc*2-1;l++) {
-		    neighbourProc[l] = 0;
-		  }
-		  neighbourProc[l] = -1;
-		}
-		neighbourProc[num_neighbourProc] = incident_vtx;
-		num_neighbourProc++;
-	      }
+	      neighbourProc[num_neighbourProc] = incident_vtx;
+	      num_neighbourProc++;
 	    }
 	  }
 	}
+      }
     }
   }
 
@@ -671,7 +682,7 @@ void ParallelHelperImpl::communicate_first_independent_set()
     num_already_recv_vertices = comm_smoothed_vtx_b_no_all();
     break;
   }
-  global_work_remains = 1;
+  global_work_remains = (num_neighbourProc ? 1 : 0);
 }
 
 bool ParallelHelperImpl::compute_next_independent_set()
@@ -2018,9 +2029,9 @@ void ParallelHelperImpl::compute_independent_set()
   
   if (0)
   {
-    printf("[%d]i%d picked vertices ",rank,iteration);
-    for (i=0;i<num_vtx_partition_boundary_local;i++) if (in_independent_set[i]) printf("%d ",i);
-    printf("\n");
+    int in_set  = 0;
+    for (i=0;i<num_vtx_partition_boundary_local;i++) if (in_independent_set[i]) in_set++;;
+    printf("[%d]i%d independent set has %d of %d vertices sent out %d times\n",rank,iteration, in_set, num_vtx_partition_boundary_local, num_exportVtx);
     fflush(NULL);
   }
 
