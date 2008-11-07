@@ -536,6 +536,11 @@ AC_ARG_WITH(iMesh,
  [Specify directory containing ITAPS mesh interface implementation to use for testing.])],
  [WITH_IMESH_ARG=$withval],[WITH_IMESH_ARG=no])
 
+AC_ARG_WITH(imesh,
+ [AC_HELP_STRING([--with-imesh=DIR],
+ [Specify directory containing ITAPS mesh interface implementation to use for testing.])],
+ [WITH_IMESH_ARG=$withval])
+
 AC_ARG_WITH(cppunit,
   [AC_HELP_STRING([--with-cppunit(=DIR)],[Specify directory where CppUnit is installed.])
 AC_HELP_STRING([--without-cppunit],   [Disable CppUnit tests])],

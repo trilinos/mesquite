@@ -232,8 +232,7 @@ int run_local_smoother( Mesh* mesh, MsqError& err )
   if (err) return 1;
   
   // creates the smart laplacian optimization procedures
-  SmartLaplacianSmoother* pass1 = new SmartLaplacianSmoother( obj_func, err );
-  if (err) return 1;
+  SmartLaplacianSmoother* pass1 = new SmartLaplacianSmoother( obj_func );
   
   QualityAssessor stop_qa( mean_ratio );
   
