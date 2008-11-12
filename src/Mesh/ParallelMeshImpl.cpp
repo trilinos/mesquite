@@ -174,16 +174,6 @@ void ParallelMeshImpl::get_all_vertices(msq_std::vector<VertexHandle>& verts,
   myMesh->get_all_vertices(verts, err);
 }
 
-VertexIterator* ParallelMeshImpl::vertex_iterator(MsqError& err)
-{
-  return myMesh->vertex_iterator(err);
-}
-
-ElementIterator* ParallelMeshImpl::element_iterator(MsqError& err)
-{
-  return myMesh->element_iterator(err);
-}
-
 void ParallelMeshImpl::vertices_get_fixed_flag(const VertexHandle vert_array[],
 					       bool flag_array[],
 					       size_t num_vtx,

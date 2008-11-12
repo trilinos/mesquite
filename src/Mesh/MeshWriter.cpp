@@ -538,12 +538,13 @@ void write_stl( Mesh* mesh, const char* filename, MsqError& err )
   
     // Iterate over all elements
   size_t count = 0;
-  ElementIterator* iter = mesh->element_iterator( err ); MSQ_ERRRTN(err);
-  msq_std::auto_ptr<ElementIterator> deleter( iter );
-  for (; !iter->is_at_end(); iter->operator++())
+  std::vector<Mesh::ElementHandle> elems;
+  std::vector<Mesh::ElementHandle>::iterator iter;
+  mesh->get_all_elements( elems, err ); MSQ_ERRRTN(err);
+  for (iter = elems.begin(); iter != elems.end(); ++iter)
   {
       // Skip non-triangles
-    Mesh::ElementHandle elem = iter->operator*();
+    Mesh::ElementHandle elem = *iter;
     EntityTopology type;
     mesh->elements_get_topologies( &elem, &type, 1, err ); MSQ_ERRRTN(err);
     if (type != TRIANGLE) 

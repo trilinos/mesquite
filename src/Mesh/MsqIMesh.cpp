@@ -41,88 +41,6 @@
 
 namespace Mesquite {
 
-class iMeshArrIter : public EntityIterator
-{
-  private:
-  
-    std::vector<iBase_EntityHandle> handleArray;
-    iMesh_EntityArrIterator imeshIter;
-    int index, count, notAtEnd;
-    iMesh_Instance theMesh;
-    
-    inline void get_next_array( int& err )
-    {
-      int alloc = handleArray.size();
-      index = count = 0;
-      iBase_EntityHandle* ptr = &handleArray[0];
-      iMesh_getNextEntArrIter( theMesh, imeshIter, &ptr, &alloc, &count, &notAtEnd, &err );
-    }
-    
-  public:
-  
-    iMeshArrIter( iMesh_Instance mesh,
-                  iBase_EntitySetHandle meshset,
-                  int type, int topo, int& err,
-                  unsigned buffer_count = 1024 );
-    
-    virtual void restart();
-    virtual iBase_EntityHandle operator*() const;
-    virtual bool is_at_end() const;
-    virtual void operator++();
-    
-    virtual ~iMeshArrIter();
-};
-
-iMeshArrIter::iMeshArrIter( iMesh_Instance mesh,
-                            iBase_EntitySetHandle meshset,
-                            int type, int topo, int& err,
-                            unsigned buffer_count )
-  : handleArray(buffer_count),
-    imeshIter(0),
-    index(0), count(0),
-    notAtEnd(0),
-    theMesh(mesh)
-{
-  iMesh_initEntArrIter( theMesh, meshset, type, topo, buffer_count, &imeshIter, &err );
-  if (err == iBase_SUCCESS)
-    get_next_array( err );
-  else
-    imeshIter = 0;
-}
-
-iMeshArrIter::~iMeshArrIter()
-{
-  int err;
-  if (imeshIter)
-    iMesh_endEntArrIter( theMesh, imeshIter, &err );
-}
-
-void iMeshArrIter::restart()
-{
-  int err;
-  iMesh_resetEntArrIter( theMesh, imeshIter, &err );
-}
-
-iBase_EntityHandle iMeshArrIter::operator*() const
-{
-  return handleArray[index];
-}
-
-bool iMeshArrIter::is_at_end() const
-{
-  return index == count && !notAtEnd;
-}
-
-void iMeshArrIter::operator++() 
-{
-  ++index;
-  if (index == count && notAtEnd) {
-    int err;
-    get_next_array( err );
-  }
-}
-
-
 class MsqIMeshImpl : public MsqIMesh
 {
   public:
@@ -161,12 +79,6 @@ class MsqIMeshImpl : public MsqIMesh
     /** \brief Get handles for all vertices */
     virtual void get_all_vertices( msq_std::vector<VertexHandle>& vertices, 
                                    MsqError& err );
-    
-      /**\brief Create iterator for vertices in active set */
-    virtual VertexIterator* vertex_iterator(MsqError &err);
-    
-      /**\brief Create iterator for elements in active set */
-    virtual ElementIterator* element_iterator(MsqError &err);
 
       /**\brief Query "fixed" flag for a vertex */
     virtual void vertices_get_fixed_flag( const VertexHandle vert_array[], 
@@ -351,9 +263,6 @@ class MsqIMeshImpl : public MsqIMesh
         
     void set_int_tag( void* tag, void* meshset, int value, MsqError& err );
 
-    /** Populate \ref inputElements from \ref elementSet */
-    void populate_input_elements( MsqError& err );
-
       /** \brief  Call TSTTM::Arr::getEntArrAdj
        *
        * Common code for \ref vertices_get_attached_elements and 
@@ -395,14 +304,14 @@ class MsqIMeshImpl : public MsqIMesh
     /** Have mesh */
     bool haveMesh;
     /** ITAPS entity set handle for elements to improve */
-    iBase_EntitySetHandle elementSet;
+    //iBase_EntitySetHandle elementSet;
     /** ITAPS entity set handle for nodes to move */
-    iBase_EntitySetHandle nodeSet;
+    //iBase_EntitySetHandle nodeSet;
     /** std::set containing elements in elementSet, used
      *  to constrain vertex->element adjaceny queries to
      *  only those elements that are in the input element set.
      */
-    msq_std::vector<iBase_EntityHandle> inputElements;
+    //msq_std::vector<iBase_EntityHandle> inputElements;
     
     /** The type of elements contained in the input element set.
      * Should be one of:
@@ -411,6 +320,8 @@ class MsqIMeshImpl : public MsqIMesh
      * - iBase_ALL_TYPES - mixed volume and face elements
      */
     iBase_EntityType inputSetType;
+    /** The meshset containing the elements to optimize */
+    iBase_EntitySetHandle inputSet;
     
     /** Handle for tag used to hold vertex byte */
     TagHandle byteTag; 
@@ -475,8 +386,8 @@ MsqIMeshImpl::MsqIMeshImpl( iMesh_Instance itaps_mesh,
                             const char* fixed_tag_name,
                             Mesquite::MsqError& err ) 
   : meshInstance(itaps_mesh), 
-    elementSet(0), nodeSet(0), 
     inputSetType( iBase_ALL_TYPES ),
+    inputSet(0),
     byteTag(0), createdByteTag(false),
     fixedTag(0), createdFixedTag(false),
     geometricDimension(0)
@@ -573,67 +484,6 @@ MsqIMeshImpl::MsqIMeshImpl( iMesh_Instance itaps_mesh,
 
 MsqIMeshImpl::~MsqIMeshImpl() 
 {
-  int err;
-  if (elementSet) {
-    iMesh_destroyEntSet( meshInstance, elementSet, &err );
-    if (iBase_SUCCESS != err)
-      process_itaps_error(err);
-  }
-  if (nodeSet) {
-    iMesh_destroyEntSet( meshInstance, nodeSet, &err );
-    if (iBase_SUCCESS != err)
-      process_itaps_error(err);
-  }
-}
-
-
-void MsqIMeshImpl::set_int_tag( iBase_TagHandle tag,
-                                iBase_EntitySetHandle elem_set, 
-                                int value, 
-                                MsqError& err )
-{
-  const unsigned BUFFER_COUNT = 1024;
-  iBase_EntityHandle handle_array[BUFFER_COUNT];
-  int value_array[BUFFER_COUNT];
-  if (!value)
-    memset( value_array, 0, sizeof(value_array ));
-  else for (unsigned i = 0; i < BUFFER_COUNT; ++i)
-    value_array[i] = value;
-  
-  iMesh_EntityArrIterator iter;
-  int more = 1, ierr, alloc = BUFFER_COUNT;
-  
-  assert(elem_set);
-  iMesh_initEntArrIter( meshInstance, elem_set, iBase_VERTEX, iMesh_POINT, BUFFER_COUNT, &iter, &ierr );
-  if (ierr) {
-    MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
-    return;
-  }
-  
-  for (;;) {
-    int count = 0;
-    iBase_EntityHandle* ptr = handle_array;
-    iMesh_getNextEntArrIter( meshInstance, iter, &ptr, &alloc, &count, &more, &ierr );
-    if (iBase_SUCCESS != ierr) {
-      MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
-      iMesh_endEntArrIter( meshInstance, iter, &ierr );
-      return;
-    }
-    if (!count)
-      break;
-    iMesh_setIntArrData( meshInstance, handle_array, count, tag, value_array, count, &ierr );
-    if (iBase_SUCCESS != ierr) {
-      MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
-      iMesh_endEntArrIter( meshInstance, iter, &ierr );
-      return;
-    }
-  }
- 
-  iMesh_endEntArrIter( meshInstance, iter, &ierr );
-  if (ierr) {
-    MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
-    return;
-  }
 }
 
 iMesh_Instance MsqIMeshImpl::get_imesh_instance() const
@@ -643,129 +493,23 @@ iMesh_Instance MsqIMeshImpl::get_imesh_instance() const
 
 iBase_EntitySetHandle MsqIMeshImpl::get_entity_set() const
 {
-  return elementSet;
+  return inputSet;
 }
 
 void MsqIMeshImpl::set_active_set( iBase_EntitySetHandle elem_set, 
                                    iBase_EntityType type_in,
                                    MsqError& err )
 {
-  const int ELEM_BUFFER_SIZE = 1024;
-  const int NODE_BUFFER_SIZE = 27 * ELEM_BUFFER_SIZE; 
-  iBase_EntityHandle elements[ELEM_BUFFER_SIZE], nodes[NODE_BUFFER_SIZE];
-  int offsets[ELEM_BUFFER_SIZE+1], ierr;
-  iMesh_EntityArrIterator iter = 0;
- 
-  if (elementSet)
-    iMesh_destroyEntSet( meshInstance, elementSet, &ierr );
-    
-  if (nodeSet)
-    iMesh_destroyEntSet( meshInstance, nodeSet, &ierr );
+  inputSetType = type_in;
+  inputSet = elem_set;
   
-  iMesh_createEntSet( meshInstance, 0, &elementSet, &ierr );
-  if (iBase_SUCCESS != ierr) {
-    MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
-    return;
-  }
-  
-  iMesh_createEntSet( meshInstance, 0, &nodeSet, &ierr );
-  if (iBase_SUCCESS != ierr) {
-    MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
-    return;
-  }
-    
-    // Iterate over set twice, once for FACEs and once for REGIONs
-  bool have_faces = false, have_regions = false;
-  int start = (type_in == iBase_ALL_TYPES) ? 0 : 1; // don't loop twice if user specified type
-  for (int i = start; i < 2; ++i)
-  {
-    iBase_EntityType type = type_in;
-    if (type == iBase_ALL_TYPES)
-      type = i ? iBase_REGION : iBase_FACE;
-    bool& have_some = (type == iBase_REGION) ? have_regions : have_faces;
-    
-    iMesh_initEntArrIter( meshInstance, elem_set, type, iMesh_ALL_TOPOLOGIES, ELEM_BUFFER_SIZE, &iter, &ierr );
-    if (iBase_SUCCESS != ierr) {
-      MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
-      return;
-    }
-    
-
-    for (;;) {
-      int count = 0;
-      int junk = ELEM_BUFFER_SIZE, junk2;
-      iBase_EntityHandle* ptr3 = elements;
-      iMesh_getNextEntArrIter( meshInstance, iter, &ptr3, &junk, &count, &junk2, &ierr );
-      if (iBase_SUCCESS != ierr) {
-        MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
-        return;
-      }
-
-      if (!count)
-        break;
-      have_some = true;
-      
-      iMesh_addEntArrToSet( meshInstance, elements, count, &elementSet, &ierr );
-      if (iBase_SUCCESS != ierr) {
-        MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
-        return;
-      }
-     
-      int num_nodes, junk3;
-      junk = NODE_BUFFER_SIZE;
-      junk2 = ELEM_BUFFER_SIZE + 1;
-      int* ptr = offsets;
-      iBase_EntityHandle* ptr2 = nodes;
-      iMesh_getEntArrAdj( meshInstance,
-                          elements, count,
-                          iBase_VERTEX,
-                          &ptr2, &junk, &num_nodes,
-                          &ptr, &junk2, &junk3, 
-                          &ierr );
-      if (iBase_SUCCESS != ierr) {
-        MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
-        return;
-      }
-
-      iMesh_addEntArrToSet( meshInstance, nodes, num_nodes, &nodeSet, &ierr );
-      if (iBase_SUCCESS != ierr) {
-        MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
-        return;
-      }
-    }
-    
-    iMesh_endEntArrIter( meshInstance, iter, &ierr );
-    iter = 0;
-  } // for (type)
-
-  if (!have_faces)
-    inputSetType = iBase_REGION;
-  else if (!have_regions)
-    inputSetType = iBase_FACE;
-  else
-    inputSetType = iBase_ALL_TYPES;
-  
-    // clear cached data
-  inputElements.clear();
-
-    // Clear vertex byte tag
-  set_int_tag( byteTag, nodeSet, 0, err );
-
+    // clear vertex byte
+  std::vector<VertexHandle> verts;
+  get_all_vertices( verts, err ); MSQ_ERRRTN(err);
+  std::vector<unsigned char> zeros( verts.size(), 0 );
+  vertices_set_byte( &verts[0], &zeros[0], verts.size(), err );
   MSQ_CHKERR(err);
 }
-
-void MsqIMeshImpl::populate_input_elements( MsqError& err ) 
-{
-  inputElements.clear();
-  get_all_elements( inputElements, err );
-  if (MSQ_CHKERR(err))
-  {
-    inputElements.clear();
-    return;
-  }
-  
-  msq_std::sort( inputElements.begin(), inputElements.end() );
-} 
 
   
 
@@ -775,51 +519,7 @@ int MsqIMeshImpl::get_geometric_dimension(Mesquite::MsqError &err)
   return geometricDimension;
 }
     
-    
-// Returns a pointer to an iterator that iterates over the
-// set of all vertices in this mesh.  The calling code should
-// delete the returned iterator when it is finished with it.
-// If vertices are added or removed from the Mesh after obtaining
-// an iterator, the behavior of that iterator is undefined.
-VertexIterator* MsqIMeshImpl::vertex_iterator(MsqError& err)
-{
-  int ierr;
-  VertexIterator* iter = new iMeshArrIter( meshInstance, 
-                                           nodeSet, 
-                                           iBase_ALL_TYPES,
-                                           iMesh_ALL_TOPOLOGIES,
-                                           ierr );
-  if (iBase_SUCCESS != ierr) {
-    delete iter;
-    MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
-    return 0;
-  }
-  
-  return iter;
-}
-    
-// Returns a pointer to an iterator that iterates over the
-// set of all top-level elements in this mesh.  The calling code should
-// delete the returned iterator when it is finished with it.
-// If elements are added or removed from the Mesh after obtaining
-// an iterator, the behavior of that iterator is undefined.
-ElementIterator* MsqIMeshImpl::element_iterator(MsqError &err)
-{
-  int ierr;
-  VertexIterator* iter = new iMeshArrIter( meshInstance, 
-                                           elementSet, 
-                                           iBase_ALL_TYPES,
-                                           iMesh_ALL_TOPOLOGIES,
-                                           ierr );
-  if (iBase_SUCCESS != ierr) {
-    delete iter;
-    MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
-    return 0;
-  }
-  
-  return iter;
-}
-
+ 
 //************ Vertex Properties ********************
 // Returns true or false, indicating whether the vertex
 // is allowed to be repositioned.  True indicates that the vertex
@@ -1084,32 +784,40 @@ void MsqIMeshImpl::vertices_get_attached_elements(
                                      msq_std::vector<size_t>& offsets,
                                      MsqError& err )
 {
+  int ierr, cont;
   get_adjacent_entities( vertices, num_vertex, inputSetType, elements, offsets, err ); 
   MSQ_ERRRTN(err);
   
-    // We need to use inputElements.  Fill it if it hasn't been filled yet.
-  if (inputElements.empty())
-  {
-    populate_input_elements(err);
-    MSQ_ERRRTN(err);
+  iBase_EntitySetHandle root_set;
+  iMesh_getRootSet( meshInstance, &root_set, &ierr );
+  if (iBase_SUCCESS != ierr) {
+    MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
+    return;
   }
   
-    // Remove all elements not in inputElements
-  msq_std::vector<size_t>::iterator offset_iter = offsets.begin();
-  size_t read_idx, write_idx;
-  for (read_idx = write_idx = 0; read_idx < elements.size(); ++read_idx)
-  {
-    if (*offset_iter == read_idx)
+    // Remove all elements not in inputSet
+  if (root_set != inputSet) {
+    msq_std::vector<size_t>::iterator offset_iter = offsets.begin();
+    size_t read_idx, write_idx;
+    for (read_idx = write_idx = 0; read_idx < elements.size(); ++read_idx)
     {
-      *offset_iter = write_idx;
-      ++offset_iter;
-    }
+      if (*offset_iter == read_idx)
+      {
+        *offset_iter = write_idx;
+        ++offset_iter;
+      }
 
-    if (msq_std::binary_search( inputElements.begin(), inputElements.end(), elements[read_idx] ))
-      elements[write_idx++] = elements[read_idx];
+      iMesh_isEntContained( meshInstance, inputSet, elements[read_idx], &cont, &ierr );
+      if (iBase_SUCCESS != ierr) {
+        MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
+        return;
+      }
+
+      if (cont)
+        elements[write_idx++] = elements[read_idx];
+    }
+    *offset_iter = write_idx;
   }
-  assert( offset_iter + 1 == offsets.end() && *offset_iter == read_idx );
-  *offset_iter = write_idx;
 }
 
 
@@ -1138,53 +846,84 @@ void MsqIMeshImpl::elements_get_attached_vertices(
 void MsqIMeshImpl::get_all_elements( msq_std::vector<ElementHandle>& elements,
                                      MsqError& err )
 {
-  int count, ierr;
-  iMesh_getNumOfType( meshInstance, elementSet, iBase_ALL_TYPES, &count, &ierr );
-  if (iBase_SUCCESS != ierr) {
-    MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
-    return;
+  int ierr, count_in, count_out;
+
+  if (inputSetType == iBase_ALL_TYPES) {
+    int num_vol, num_face;
+
+    iMesh_getNumOfType( meshInstance, inputSet, iBase_FACE, &num_face, &ierr );
+    if (iBase_SUCCESS != ierr) {
+      MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
+      return;
+    }
+    iMesh_getNumOfType( meshInstance, inputSet, iBase_REGION, &num_vol, &ierr );
+    if (iBase_SUCCESS != ierr) {
+      MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
+      return;
+    }
+    elements.resize( num_face + num_vol );
+    
+    iBase_EntityHandle* ptr = reinterpret_cast<iBase_EntityHandle*>(&elements[0]);
+    if (num_face) {
+      count_in = num_face+num_vol;
+      iMesh_getEntities( meshInstance, inputSet, 
+                         iBase_FACE, iMesh_ALL_TOPOLOGIES,
+                         &ptr, &count_in, &count_out, &ierr );
+      if (iBase_SUCCESS != ierr) {
+        MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
+        return;
+      }
+      assert (count_out == num_face);
+    }
+    
+    if (num_vol) {
+      ptr += num_face;
+      count_in = num_vol;
+      iMesh_getEntities( meshInstance, inputSet, 
+                         iBase_REGION, iMesh_ALL_TOPOLOGIES,
+                         &ptr, &count_in, &count_out, &ierr );
+      if (iBase_SUCCESS != ierr) {
+        MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
+        return;
+      }
+      assert (count_out == num_vol);
+    }
   }
-  
-  elements.resize(count);
-  int junk = count;
-  iBase_EntityHandle* ptr = &elements[0];
-  iMesh_getEntities( meshInstance,
-                     elementSet,
-                     iBase_ALL_TYPES,
-                     iMesh_ALL_TOPOLOGIES,
-                     &ptr, &junk, &count,
-                     &ierr );
-  if (iBase_SUCCESS != ierr) {
-    MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
-    return;
+  else {
+    int count;
+    iMesh_getNumOfType( meshInstance, inputSet, inputSetType, &count, &ierr );
+    if (iBase_SUCCESS != ierr) {
+      MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
+      return;
+    }
+    
+    elements.resize( count );
+    
+    iBase_EntityHandle* ptr = reinterpret_cast<iBase_EntityHandle*>(&elements[0]);
+    count_in = count;
+    iMesh_getEntities( meshInstance, inputSet, 
+                       inputSetType, iMesh_ALL_TOPOLOGIES,
+                       &ptr, &count_in, &count_out, &ierr );
+    if (iBase_SUCCESS != ierr) {
+      MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
+      return;
+    }
+    assert (count_out == count);
   }
-  assert( (unsigned)count == elements.size() );
 }
 
 void MsqIMeshImpl::get_all_vertices( msq_std::vector<VertexHandle>& vertices,
                                      MsqError& err )
 {
-  int count, ierr;
-  iMesh_getNumOfType( meshInstance, nodeSet, iBase_ALL_TYPES, &count, &ierr );
-  if (iBase_SUCCESS != ierr) {
-    MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
-    return;
-  }
+  msq_std::vector<ElementHandle> elems;
+  get_all_elements( elems, err ); MSQ_CHKERR(err);
   
-  vertices.resize(count);
-  int junk = count;
-  iBase_EntityHandle* ptr = &vertices[0];
-  iMesh_getEntities( meshInstance,
-                     nodeSet,
-                     iBase_ALL_TYPES,
-                     iMesh_ALL_TOPOLOGIES,
-                     &ptr, &junk, &count,
-                     &ierr );
-  if (iBase_SUCCESS != ierr) {
-    MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
-    return;
-  }
-  assert( (unsigned)count == vertices.size() );
+  msq_std::vector<size_t> offsets;
+  elements_get_attached_vertices( &elems[0], elems.size(), vertices, offsets, err );
+  MSQ_CHKERR(err);
+  
+  std::sort( vertices.begin(), vertices.end() );
+  vertices.erase( std::unique( vertices.begin(), vertices.end() ), vertices.end() );
 }
       
 

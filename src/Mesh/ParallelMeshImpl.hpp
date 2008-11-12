@@ -109,20 +109,6 @@ namespace Mesquite
      */
     virtual void get_all_vertices( msq_std::vector<VertexHandle>& vertices,
                                    MsqError& err );
-    
-      // Returns a pointer to an iterator that iterates over the
-      // set of all vertices in this mesh.  The calling code should
-      // delete the returned iterator when it is finished with it.
-      // If vertices are added or removed from the Mesh after obtaining
-      // an iterator, the behavior of that iterator is undefined.
-    virtual VertexIterator* vertex_iterator(MsqError &err);
-    
-      // Returns a pointer to an iterator that iterates over the
-      // set of all top-level elements in this mesh.  The calling code should
-      // delete the returned iterator when it is finished with it.
-      // If elements are added or removed from the Mesh after obtaining
-      // an iterator, the behavior of that iterator is undefined.
-    virtual ElementIterator* element_iterator(MsqError &err);
 
 //************ Vertex Properties ********************
       //! Returns true or false, indicating whether the vertex

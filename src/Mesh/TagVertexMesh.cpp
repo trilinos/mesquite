@@ -203,12 +203,6 @@ void TagVertexMesh::get_all_vertices( msq_std::vector<VertexHandle>& vertices, M
   { get_mesh()->get_all_vertices( vertices, err ); }
 
 
-VertexIterator* TagVertexMesh::vertex_iterator(MsqError &err)
-  { return get_mesh()->vertex_iterator(err); }
-
-ElementIterator* TagVertexMesh::element_iterator(MsqError &err)
-  { return get_mesh()->element_iterator(err); }
-
 //************ Vertex Properties ********************
 
 void TagVertexMesh::vertices_get_fixed_flag( const VertexHandle vert_array[], 

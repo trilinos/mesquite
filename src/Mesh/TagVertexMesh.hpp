@@ -164,10 +164,6 @@ class MESQUITE_EXPORT TagVertexMesh : public Mesh
     virtual void get_all_vertices( msq_std::vector<VertexHandle>& vertices,
                                    MsqError& err );
 
-    virtual VertexIterator* vertex_iterator(MsqError &err);
-
-    virtual ElementIterator* element_iterator(MsqError &err);
-
 //************ Vertex Properties ********************
 
     virtual void vertices_get_fixed_flag( const VertexHandle vert_array[], 

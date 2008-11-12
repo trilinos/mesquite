@@ -778,46 +778,11 @@ void TerminationCriterion::cleanup(Mesh* mesh, MeshDomain*, MsqError &err)
     return;
   
     // Clear soft fixed flag on all vertices
-  
-    // Do BUFFER_SIZE vertices at a time
-  const unsigned BUFFER_SIZE = 128;
-  Mesh::VertexHandle vertex_array[BUFFER_SIZE];
-  unsigned char byte_array[BUFFER_SIZE];
-    
-    // Create a vertex iterator
-  VertexIterator* iterator = 0;
-  iterator = mesh->vertex_iterator(err);
-  if (MSQ_CHKERR(err))
-  {
-    delete iterator;
-    return;
-  }
-  
-    // Loop over all vertices
-  while (!iterator->is_at_end())
-  {
-      // Use iterator to get handles of next BUFFER_SIZE vertices
-    unsigned count = 0;
-    while (count < BUFFER_SIZE && !iterator->is_at_end())
-    {
-      vertex_array[count] = iterator->operator*();
-      iterator->operator++();
-      ++count;
-    }
-    
-      // Get the stored vertex byte
-    mesh->vertices_get_byte( vertex_array, byte_array, count, err );
-    if (MSQ_CHKERR(err)) break;
-  
-      // clear the culled flag
-    for (unsigned i = 0; i < count; ++i)
-      byte_array[i] &= ~MsqVertex::MSQ_CULLED;
-    
-      // save the vertex byte
-    mesh->vertices_set_byte( vertex_array, byte_array, count, err );
-  }
-  
-  delete iterator;
+  std::vector<Mesh::VertexHandle> vertices;
+  mesh->get_all_vertices( vertices, err ); MSQ_ERRRTN(err);
+  std::vector<unsigned char> zeros(vertices.size(), 0);
+  mesh->vertices_set_byte( &vertices[0], &zeros[0], vertices.size(), err );
+  MSQ_ERRRTN(err);
 }
 
 void TerminationCriterion::write_timestep( PatchData& pd, MsqError& err )
