@@ -1,3 +1,4 @@
+
 #include "ParallelHelper.hpp"
 
 #include <stdio.h>
@@ -9,7 +10,7 @@
 #include "MsqError.hpp"
 
 #define VERTEX_HEADER 1
-#define VERTEX_BLOCK 1000
+#define VERTEX_BLOCK 1000 
 
 namespace Mesquite {
 
@@ -99,7 +100,16 @@ static double generate_random_number(int generate_random_numbers, int proc_id, i
       mist = mist >> 1;
     }
     unsigned short xsubi[3];
-    ((int*)&(xsubi[0]))[0] = on&1 ? id : -id;
+    if (on & 1) mist = id; 
+    else mist = -id; 
+    if (on & 2) { 
+      xsubi[0] = (unsigned short)(65535 & mist); 
+      xsubi[1] = (unsigned short)(65535 & (mist >> 16)); 
+    } 
+    else { 
+      xsubi[1] = (unsigned short)(65535 & mist); 
+      xsubi[0] = (unsigned short)(65535 & (mist >> 16)); 
+    } 
     xsubi[2] = proc_id;
     return erand48(xsubi);
   }
@@ -114,7 +124,16 @@ static double generate_random_number(int generate_random_numbers, int proc_id, i
       mist = mist >> 1;
     }
     unsigned short xsubi[3];
-    ((int*)&(xsubi[0]))[0] = on&1 ? id : -id;
+    if (on & 1) mist = id; 
+    else mist = -id; 
+    if (on & 2) {
+      xsubi[0] = (unsigned short)(65535 & mist); 
+      xsubi[1] = (unsigned short)(65535 & (mist >> 16));
+    }
+    else {
+      xsubi[1] = (unsigned short)(65535 & mist); 
+      xsubi[0] = (unsigned short)(65535 & (mist >> 16));
+    }
     xsubi[2] = proc_id ^ xsubi[1];
     return erand48(xsubi);
   }
@@ -241,6 +260,8 @@ bool ParallelHelperImpl::smoothing_init()
   TagHandle lid_tag = mesh->tag_create( LOCAL_ID_NAME, Mesh::INT, 1, NULL, err );
   mesh->tag_set_vertex_data( lid_tag, num_vertex, &(*vertices)[0], lid, err );
 
+  if (0) printf("[%d] set local tags on %d vertices\n",rank,num_vertex);
+
   /* get the elements */
   msq_std::vector<Mesquite::Mesh::ElementHandle> *elements = new msq_std::vector<Mesquite::Mesh::ElementHandle>;
   mesh->get_all_elements(*elements, err);
@@ -264,6 +285,8 @@ bool ParallelHelperImpl::smoothing_init()
   int* adj_vertices_lid = new int[(*adj_vertices).size()];
   mesh->tag_get_vertex_data( lid_tag, (*adj_vertices).size(), &(*adj_vertices)[0], adj_vertices_lid, err );
   delete adj_vertices; adj_vertices = 0;
+
+  if (0) printf("[%d] gotten adjacent elements for %d elements\n",rank,num_elems);
 
   /* determine which vertices are smoothed as part of the boundary */
   num_vtx_partition_boundary = 0;
@@ -690,12 +713,17 @@ bool ParallelHelperImpl::compute_next_independent_set()
   if (global_work_remains && (iteration<20))
   {
     iteration++;
+    if (0) printf("[%d] work remains %d after %d iterations\n", rank, global_work_remains, iteration);
     compute_independent_set();
     next_vtx_partition_boundary = 0;
     return true;
   }
   else
   {
+    if (global_work_remains)
+    {
+      printf("WARNING: global work remains %d after %d iterations\n", global_work_remains, iteration);
+    }
     return false;
   }
 }
@@ -1984,11 +2012,21 @@ void ParallelHelperImpl::compute_independent_set()
 	/* then loop over the neighbors it has on other processors */
 	for (j = 0; !done && j < vtx_off_proc_list_size[i]; j++) {
 	  incident_vtx = vtx_off_proc_list[i][j];
-	  /* if this neighbour has not yet been smoothed and is not covered and has
-	     a higher rand_number than me, then I am not in the independent set */
-	  if ( ( part_smoothed_flag[incident_vtx] == 0 ) && ( part_rand_number[i] < part_rand_number[incident_vtx]) ) {
-	    done = true;
-	  }
+          /* if this neighbour has not yet been smoothed and is not covered and ... */
+          if ( part_smoothed_flag[incident_vtx] == 0 ) {
+            /* ... has a higher rand_number than me */
+            if ( part_rand_number[i] < part_rand_number[incident_vtx] ) {
+	      /* then I am not in the independent set */
+              done = true;
+              break;
+            }
+            /* ... or has the same rand_number than me but a higher processor id */
+            else if ( ( part_rand_number[i] == part_rand_number[incident_vtx] ) && ( rank < part_proc_owner[incident_vtx] ) ) {
+              /* then I am not in the independent set */
+              done = true;
+              break;
+            }
+          }
 	}
 	/* if the vertex is in the independent set, add it to the export list */
 	if (!done) {
