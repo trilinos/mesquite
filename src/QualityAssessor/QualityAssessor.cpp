@@ -83,8 +83,7 @@ QualityAssessor::QualityAssessor( bool print_summary,
   invertedCount(-1),
   indeterminateCount(-1),
   outputStream( msq_stdio::cout ),
-  printSummary( print_summary ),
-  stoppingMetric( assessList.end() )
+  printSummary( print_summary )
 {
   if (inverted_tag_name)
     tag_inverted_elements( inverted_tag_name );
@@ -97,8 +96,7 @@ QualityAssessor::QualityAssessor( msq_stdio::ostream& stream,
   invertedCount(-1),
   indeterminateCount(-1),
   outputStream( stream ),
-  printSummary( true ),
-  stoppingMetric( assessList.end() )
+  printSummary( true )
 {
   if (inverted_tag_name)
     tag_inverted_elements( inverted_tag_name );
@@ -115,8 +113,7 @@ QualityAssessor::QualityAssessor( msq_stdio::ostream& output_stream,
   invertedCount(-1),
   indeterminateCount(-1),
   outputStream( output_stream ),
-  printSummary( true ),
-  stoppingMetric( assessList.end() )
+  printSummary( true )
 {
   if (inverted_tag_name)
     tag_inverted_elements( inverted_tag_name );
@@ -135,8 +132,7 @@ QualityAssessor::QualityAssessor( QualityMetric* metric,
   invertedCount(-1),
   indeterminateCount(-1),
   outputStream( msq_stdio::cout ),
-  printSummary( print_summary ),
-  stoppingMetric( assessList.end() )
+  printSummary( print_summary )
 {
   if (inverted_tag_name)
     tag_inverted_elements( inverted_tag_name );
@@ -188,7 +184,7 @@ void QualityAssessor::add_quality_assessment( QualityMetric* metric,
                                               double power_mean,
                                               const char* tag_name )
 { 
-  msq_std::list<Assessor>::iterator i = find_or_add( metric );
+  list_type::iterator i = find_or_add( metric );
   i->pMean = power_mean;
   if (histogram_intervals > 0)
     i->histogram.resize( histogram_intervals+2 );
@@ -201,9 +197,9 @@ void QualityAssessor::add_quality_assessment( QualityMetric* metric,
     i->tagName = tag_name;
 }
 
-msq_std::list<QualityAssessor::Assessor>::iterator QualityAssessor::find_or_add( QualityMetric* qm )
+QualityAssessor::list_type::iterator QualityAssessor::find_or_add( QualityMetric* qm )
 {
-  msq_std::list<Assessor>::iterator iter;
+  list_type::iterator iter;
   
     // If metric is already in list, find it
   for (iter = assessList.begin(); iter != assessList.end(); ++iter)
@@ -228,6 +224,15 @@ msq_std::list<QualityAssessor::Assessor>::iterator QualityAssessor::find_or_add(
   return iter;
 }
 
+QualityAssessor::list_type::iterator QualityAssessor::find_stopping_assessment()
+{
+  list_type::iterator iter;
+  for (iter = assessList.begin(); iter != assessList.end(); ++iter)
+    if (iter->stopping_function())
+      break;
+  return iter;
+}
+
 
 /*!Sets which QualityMetric and QAFunction
 combination is used to determine the value return from assess_mesh_quality().
@@ -243,7 +248,10 @@ void QualityAssessor::set_stopping_assessment( QualityMetric* metric,
                                                double power_mean,
                                                const char* tag_name )
 {
-  msq_std::list<Assessor>::iterator i = find_or_add( metric );
+  list_type::iterator i = find_stopping_assessment();
+  i->set_stopping_function(false);
+
+  i = find_or_add( metric );
   i->pMean = power_mean;
   if (histogram_intervals > 0)
     i->histogram.resize( histogram_intervals+2 );
@@ -254,7 +262,7 @@ void QualityAssessor::set_stopping_assessment( QualityMetric* metric,
     i->tagName.clear();
   else
     i->tagName = tag_name;
-  stoppingMetric = i;
+  i->set_stopping_function(true);
 }
 
 
@@ -277,7 +285,7 @@ void QualityAssessor::add_histogram_assessment( QualityMetric* metric,
 {
   if (intervals < 1)
     intervals = 1;
-  msq_std::list<Assessor>::iterator i = find_or_add( metric );
+  list_type::iterator i = find_or_add( metric );
   i->pMean = power_mean;
   i->histMin = min_val;
   i->histMax = max_val;
@@ -390,7 +398,7 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
     invertedTag = get_tag( mesh, invertedTagName, Mesh::INT, 1, err );
     MSQ_ERRZERO(err);
   }
-  msq_std::list<Assessor>::iterator iter;
+  list_type::iterator iter;
   for (iter = assessList.begin(); iter != assessList.end(); ++iter) {
     if (iter->write_to_tag()) {
       iter->tagHandle = get_tag( mesh, iter->tagName, Mesh::DOUBLE, 1, err );
@@ -406,7 +414,7 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
     // metric also such that element metrics go from
     // assessList.begin() to elem_end and vertex metrics
     // go from elem_end to assessList.end()
-  msq_std::list<Assessor>::iterator elem_end = assessList.end();
+  list_type::iterator elem_end = assessList.end();
   bool need_second_pass_for_elements = false;
   bool need_second_pass_for_vertices = false;
   for (iter = assessList.begin(); iter != assessList.end(); ++iter)
@@ -619,19 +627,14 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
   if (printSummary && (!helper || helper->get_rank() == 0))
     print_summary( this->outputStream );
   
-    // return P-Mean value if one was requested, otherwise return average
-  if (stoppingMetric == assessList.end())
-    return 0.0;
-  else if (stoppingMetric->have_power_mean())
-    return stoppingMetric->get_power_mean();
-  else
-    return stoppingMetric->get_average();
+  list_type::iterator i = find_stopping_assessment();
+  return i == assessList.end() ? 0 : i->stopping_function_value();
 }
 
 bool QualityAssessor::invalid_elements( ) const
 {
   bool result = false;
-  msq_std::list<Assessor>::const_iterator iter;
+  list_type::const_iterator iter;
   for (iter = assessList.begin(); iter != assessList.end(); ++iter)
     if (iter->get_invalid_element_count())
       result = true;
@@ -640,7 +643,7 @@ bool QualityAssessor::invalid_elements( ) const
 
 void QualityAssessor::reset_data() 
 {
-  msq_std::list<Assessor>::iterator iter;
+  list_type::iterator iter;
   for (iter = assessList.begin(); iter != assessList.end(); ++iter)
     iter->reset_data();
   invertedCount = -1;
@@ -653,14 +656,15 @@ QualityAssessor::Assessor::Assessor( QualityMetric* metric )
     haveHistRange(false),
     histMin(1.0),
     histMax(0.0),
-    tagHandle(0)
+    tagHandle(0),
+    stoppingFunction(false)
 {
   reset_data();
 }
 
 const QualityAssessor::Assessor* QualityAssessor::get_results( QualityMetric* metric ) const
 {
-  msq_std::list<Assessor>::const_iterator iter;
+  list_type::const_iterator iter;
   for (iter = assessList.begin(); iter != assessList.end(); ++iter)
     if (iter->get_metric() == metric)
       return &*iter;
@@ -802,7 +806,7 @@ void QualityAssessor::print_summary( msq_stdio::ostream& stream ) const
   }
   
     // Check if there are invalid values for any metric
-  msq_std::list<Assessor>::const_iterator iter;
+  list_type::const_iterator iter;
   bool some_invalid = false;
   for (iter = assessList.begin(); iter != assessList.end(); ++iter) {
     if (iter->get_invalid_element_count()) {
@@ -1055,6 +1059,12 @@ int QualityAssessor::get_terminal_width() const
 
   return 0;
 }
+
+double QualityAssessor::Assessor::stopping_function_value() const
+{
+  return have_power_mean() ? get_power_mean() : get_average();
+}
+
   
 
 } //namespace Mesquite

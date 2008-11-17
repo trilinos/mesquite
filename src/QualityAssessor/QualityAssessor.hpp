@@ -416,6 +416,14 @@ namespace Mesquite
         
         bool write_to_tag() const { return !tagName.empty(); }
         
+        void set_stopping_function( bool value )
+          { stoppingFunction = value; }
+        
+        bool stopping_function( ) const
+          { return stoppingFunction; }
+        
+        double stopping_function_value() const;
+        
       private:
       
         friend class QualityAssessor;
@@ -447,7 +455,12 @@ namespace Mesquite
         std::string tagName; //< Tag to which to write metric values.
         /** Cached tag handle */
         TagHandle tagHandle;
+        
+        /** Value is return value for all of QualityAssessor */
+        bool stoppingFunction;
     };    
+        
+    typedef msq_std::list<Assessor> list_type;
         
     /** \brief Request summary data for a specific QualityMetric 
      * This method allows the application to request the summary
@@ -461,7 +474,7 @@ namespace Mesquite
      *  Return a const reference to the internal list of 
      *  calculated data.
      */
-   const msq_std::list<Assessor>& get_all_results() const
+   const list_type& get_all_results() const
       { return assessList; }
       
   private:
@@ -470,7 +483,13 @@ namespace Mesquite
      *  QualityMetric, or create it if is not found in
      *  the list.
      */
-    msq_std::list<Assessor>::iterator find_or_add( QualityMetric* qm );
+    list_type::iterator find_or_add( QualityMetric* qm );
+
+    /** Find an Assessor corresponding to the passed
+     *  QualityMetric, or create it if is not found in
+     *  the list.
+     */
+    list_type::iterator find_stopping_assessment();
    
     /** Find or create tag */
     TagHandle get_tag( Mesh* mesh,
@@ -488,7 +507,7 @@ namespace Mesquite
     msq_std::string qualityAssessorName;  
     
     /** List of quality metrics and corresponding data */
-    msq_std::list<Assessor> assessList;
+    list_type assessList;
 
       /** Count of inverted elements. */
     int invertedCount;
@@ -501,9 +520,6 @@ namespace Mesquite
     msq_stdio::ostream& outputStream;
     /** Disable printing */
     bool printSummary;
-    
-      /** Metric in #assessList to use as return value for loop_over_mesh() */
-    msq_std::list<Assessor>::iterator stoppingMetric;
     
     std::string invertedTagName;
   };
