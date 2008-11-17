@@ -804,7 +804,8 @@ namespace Mesquite
     memento->arraySize = num_verts;
      
       // Copy the coordinates
-    msq_stdc::memcpy(memento->vertices, &vertexArray[0], num_verts*sizeof(MsqVertex) );
+    if (!vertexArray.empty()) 
+      msq_stdc::memcpy(memento->vertices, &vertexArray[0], num_verts*sizeof(MsqVertex) );
     
     return memento;
   }
@@ -834,7 +835,8 @@ namespace Mesquite
     }
     
       // Copy the coordinates
-    msq_stdc::memcpy(memento->vertices, &vertexArray[0],num_verts*sizeof(MsqVertex) );
+    if (!vertexArray.empty()) 
+      msq_stdc::memcpy(memento->vertices, &vertexArray[0],num_verts*sizeof(MsqVertex) );
     
     memento->numVertices = num_verts;
   }
@@ -867,7 +869,8 @@ namespace Mesquite
     }
     
       // copies the memento array into the PatchData array.
-    msq_stdc::memcpy(&vertexArray[0], memento->vertices, memento->numVertices*sizeof(MsqVertex) );
+    if (memento->numVertices) 
+      msq_stdc::memcpy(&vertexArray[0], memento->vertices, memento->numVertices*sizeof(MsqVertex) );
   }
       
 } // namespace

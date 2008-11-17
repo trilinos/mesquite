@@ -49,6 +49,12 @@ static bool create_exodus_file( const char* filename );
 #  include <unistd.h>
 #endif
 
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#include <algorithm.h>
+#else
+#include <algorithm>
+#endif
+
 class ExodusTest : public CppUnit::TestFixture
 {
 private:

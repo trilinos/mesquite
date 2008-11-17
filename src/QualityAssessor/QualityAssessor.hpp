@@ -258,6 +258,14 @@ namespace Mesquite
           */
         void calculate_histogram_range();
         
+        void set_stopping_function( QAFunction value )
+          { stoppingFunction = value; }
+        
+        QAFunction stopping_function( ) const
+          { return stoppingFunction; }
+        
+        double stopping_function_value() const;
+        
       private:
       
         friend class QualityAssessor;
@@ -282,8 +290,15 @@ namespace Mesquite
         double histMin;   //< Lower bound of histogram
         double histMax;   //< Upper bound of histogram
         msq_std::vector<int> histogram;
+        
+        /** Value is reutrn value for all of QualityAssessor */
+        QAFunction stoppingFunction;
     };    
         
+    
+    typedef msq_std::list<Assessor> list_type;
+
+
     /** \brief Request summary data for a specific QualityMetric 
      * This method allows the application to request the summary
      * data for a metric it has registered with the QualityAssessor.
@@ -296,7 +311,7 @@ namespace Mesquite
      *  Return a const reference to the internal list of 
      *  calculated data.
      */
-   const msq_std::list<Assessor>& get_all_results() const
+   const list_type& get_all_results() const
       { return assessList; }
       
   private:
@@ -305,13 +320,19 @@ namespace Mesquite
      *  QualityMetric, or create it if is not found in
      *  the list.
      */
-    msq_std::list<Assessor>::iterator find_or_add( QualityMetric* qm );
-   
+    list_type::iterator find_or_add( QualityMetric* qm );
+  
+    /** Find an Assessor corresponding to the passed
+     *  QualityMetric, or create it if is not found in
+     *  the list.
+     */
+    list_type::iterator find_stopping_assessment();
+    
     /** Name */
     msq_std::string qualityAssessorName;  
     
     /** List of quality metrics and corresponding data */
-    msq_std::list<Assessor> assessList;
+    list_type assessList;
 
       /** Count of inverted elements. */
     int invertedCount;
@@ -324,11 +345,6 @@ namespace Mesquite
     msq_stdio::ostream& outputStream;
     /** Disable printing */
     bool printSummary;
-    
-      /** Metric in \ref assessList to use as return value for loop_over_mesh */
-    msq_std::list<Assessor>::iterator stoppingMetric;
-      /** Value to use as return value for loop_over_mesh */
-    QAFunction stoppingFunction;
   };
 
   

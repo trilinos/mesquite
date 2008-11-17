@@ -36,6 +36,12 @@ using std::cout;
 #include "MsqError.hpp"
 #include "TopologyInfo.hpp"
 
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#include <algorithm.h>
+#else
+#include <algorithm>
+#endif
+
 using namespace Mesquite;
 
 class TopologyInfoTest : public CppUnit::TestFixture

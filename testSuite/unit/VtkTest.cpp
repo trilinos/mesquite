@@ -49,6 +49,12 @@ using std::cout;
 #  include <stdio.h>
 #endif
 
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#include <algorithm.h>
+#else
+#include <algorithm>
+#endif
+
 extern const char temp_file_name[] = "VtkTest.vtk";
 
   // VTK file for 2x2x2 block of hexes as structured-point 

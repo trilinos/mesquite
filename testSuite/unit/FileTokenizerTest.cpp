@@ -10,6 +10,8 @@
 using std::cout;
 #endif
 
+#include <string.h>
+#include <stdlib.h>
 
 using Mesquite::FileTokenizer;
 using Mesquite::MsqPrintError;

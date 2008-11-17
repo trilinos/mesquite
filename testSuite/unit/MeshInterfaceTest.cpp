@@ -51,6 +51,12 @@ using std::cerr;
 using std::endl;
 #endif
 
+#ifdef MSQ_USE_OLD_STD_HEADERS
+#include <algorithm.h>
+#else
+#include <algorithm>
+#endif
+
 class MeshInterfaceTest : public CppUnit::TestFixture
 {
 private:
