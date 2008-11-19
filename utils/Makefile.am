@@ -11,10 +11,10 @@ libmsqutil_la_SOURCES = CLArgs.cpp CLArgs.hpp \
 vtkrandom_SOURCES = randomize.cpp
 vtkxform_SOURCES = transform.cpp
 
-vtkrandom.1: vtkrandom
-	./$< -M > $@
+vtkrandom.1: vtkrandom$(EXEEXT)
+	./$< -M > $@ || touch $@
 
-vtkxform.1: vtkxform
-	./$< -M > $@
+vtkxform.1: vtkxform$(EXEEXT)
+	./$< -M > $@ || touch $@
 
 MOSTLYCLEANFILES = $(man1_MANS)
