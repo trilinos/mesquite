@@ -249,7 +249,8 @@ void QualityAssessor::set_stopping_assessment( QualityMetric* metric,
                                                const char* tag_name )
 {
   list_type::iterator i = find_stopping_assessment();
-  i->set_stopping_function(false);
+  if (i != assessList.end())
+    i->set_stopping_function(false);
 
   i = find_or_add( metric );
   i->pMean = power_mean;
