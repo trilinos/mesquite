@@ -3,6 +3,7 @@ dnl for the CCA tutorial software installation.
 
 AC_INIT(Mesquite, 1.99)
 AC_CONFIG_AUX_DIR(./config_aux)
+AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR(include/Mesquite.hpp)
 AC_CANONICAL_SYSTEM
 dnl AM_INIT_AUTOMAKE([subdir-objects])
