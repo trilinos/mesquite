@@ -47,6 +47,8 @@
   using std::string;
 #endif
 
+#include <stdlib.h>
+
 
 #include "Mesquite.hpp"
 #include "MsqError.hpp"
@@ -112,7 +114,7 @@ class iMeshTest : public CppUnit::TestFixture
   private:
     
     CPPUNIT_TEST_SUITE( iMeshTest );
-    CPPUNIT_TEST( testVertexIterator );
+//    CPPUNIT_TEST( testVertexIterator );
     CPPUNIT_TEST( testVertexByte );
     CPPUNIT_TEST( testVertexAdjacency );
     CPPUNIT_TEST( testElementConnectivity );
@@ -343,7 +345,7 @@ void iMeshTest::matchElementConnectivity()
   }
 }
 
-
+/*
 void iMeshTest::testVertexIterator() 
 {
   MsqPrintError err(cout);
@@ -376,7 +378,7 @@ void iMeshTest::testVertexIterator()
   }
   CPPUNIT_ASSERT_EQUAL(count , num_pts);
 }  
-
+*/
 void iMeshTest::testVertexByte()
 {
   MsqPrintError err(cout);
