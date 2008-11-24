@@ -48,11 +48,27 @@ class PatchData;
 class SamplePoints;
 class MsqError;
 
+/**\brief Calculate R and Z such that \f$W\prime = Z^{-1} W\f$ and 
+ *        \f$A\prime = (RZ)^{-1} A\f$
+ *
+ * Calculate the matrices required to transform the active and target
+ * matrices from the 3x2 surface domain to a 2x2 2D domain.
+ *\param A    Input: Element Jacobian matrix.
+ *\param W_32 Input: Target Jacobian matrix.
+ *\param W_22 Output: 2D Target matrix.
+ *\param RZ   Output: Product of R and Z needed to calculate the 2D 
+ *            element matrix.
+ */
+void surface_to_2d( const MsqMatrix<3,2>& A, 
+                    const MsqMatrix<3,2>& W_32,
+                    MsqMatrix<2,2>& W_22,
+                    MsqMatrix<3,2>& RZ );
+/*
 void surface_to_2d( const MsqMatrix<3,2>& A_in,
                     const MsqMatrix<3,2>& W_in,
                     MsqMatrix<2,2>& A_out,
                     MsqMatrix<2,2>& W_out );
-                    
+*/
 void get_sample_pt_evaluations( PatchData& pd,
                                 const SamplePoints* pts,
                                 msq_std::vector<size_t>& handles,

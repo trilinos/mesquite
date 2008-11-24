@@ -169,6 +169,13 @@ public:
   void set_3d_metric( TargetMetric3D* m ) { metric3D = m; }
   
 private:
+  /**\brief Call MappingFunction::derivatives_at_**/
+  void mapping_function_derivs( PatchData& pd,
+                                size_t eval_handle,
+                                std::vector<size_t>& indices_out,
+                                std::vector<double>& derivs_out,
+                                MsqError& err );
+
   const SamplePoints* samplePts;
   TargetCalculator* targetCalc;
   WeightCalculator* weightCalc;

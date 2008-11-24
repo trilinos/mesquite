@@ -2309,9 +2309,9 @@ void QualityMetricTester::test_symmetric_Hessian_diagonal_blocks( QualityMetric*
         // check that diagonal Hessian blocks are symmetric
       size_t h_idx = 0;
       for (size_t k = 0; k < n; h_idx+=(n-k), ++k) {
-        CPPUNIT_ASSERT_DOUBLES_EQUAL( Hess[h_idx][0][1], Hess[h_idx][1][0], 1e-6 );
-        CPPUNIT_ASSERT_DOUBLES_EQUAL( Hess[h_idx][0][2], Hess[h_idx][2][0], 1e-6 );
-        CPPUNIT_ASSERT_DOUBLES_EQUAL( Hess[h_idx][1][2], Hess[h_idx][2][1], 1e-6 );
+        CPPUNIT_ASSERT_DOUBLES_EQUAL( Hess[h_idx][0][1], Hess[h_idx][1][0], 1e-4 );
+        CPPUNIT_ASSERT_DOUBLES_EQUAL( Hess[h_idx][0][2], Hess[h_idx][2][0], 1e-4 );
+        CPPUNIT_ASSERT_DOUBLES_EQUAL( Hess[h_idx][1][2], Hess[h_idx][2][1], 1e-4 );
       } // for(k < Hess.size())
     } // for(j < handles.size())
   } // for(i < types.size())

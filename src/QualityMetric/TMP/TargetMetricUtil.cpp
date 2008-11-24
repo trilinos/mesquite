@@ -40,7 +40,41 @@
 
 namespace Mesquite {
 
+void surface_to_2d( const MsqMatrix<3,2>& A,
+                    const MsqMatrix<3,2>& W,
+                    MsqMatrix<2,2>& W_22,
+                    MsqMatrix<3,2>& RZ )
+{
+  MsqMatrix<3,1> W1 = W.column(0);
+  MsqMatrix<3,1> W2 = W.column(1);
+  MsqMatrix<3,1> nw = W1 * W2;
+  nw *= 1.0/length(nw);
 
+  MsqMatrix<3,1> z[2];
+  z[0] = W1 * (1.0 / length( W1 ));
+  z[1] = nw * z[0];
+  MsqMatrix<3,2> Z(z);
+
+  MsqMatrix<3,1> np = A.column(0) * A.column(1);
+  np *= 1.0 / length(np);
+  double dot = np % nw;
+  MsqMatrix<3,1> nr = (dot >= 0.0) ? nw : -nw;
+  MsqMatrix<3,1> v = nr * np;
+  double vlen = length(v);
+  if (vlen < DBL_EPSILON) {
+    RZ = Z; // R = I
+  }
+  else {
+    v *= 1.0 / vlen;
+    MsqMatrix<3,1> r1[3] = { v, np, v * np };
+    MsqMatrix<3,1> r2[3] = { v, nr, v * nr };
+    MsqMatrix<3,3> R1( r1 ), R2( r2 );
+    RZ = R1 * transpose(R2) * Z;
+  }
+  
+  W_22 = transpose(Z) * W;
+}
+/*
 void surface_to_2d( const MsqMatrix<3,2>& App,
                     const MsqMatrix<3,2>& Wp,
                     MsqMatrix<2,2>& A,
@@ -64,7 +98,7 @@ void surface_to_2d( const MsqMatrix<3,2>& App,
   MsqMatrix<3,1> v = nr * npp;
   double vlen = length(v);
   if (vlen > DBL_EPSILON) {
-    v *= 1.0 / length(v);
+    v *= 1.0 / vlen;
     MsqMatrix<3,1> r1[3] = { v, npp, v * npp }, r2[3] = { v, nr, v * nr };
     MsqMatrix<3,3> R1( r1 ), R2( r2 );
     MsqMatrix<3,3> RT = R2 * transpose(R1);
@@ -75,7 +109,7 @@ void surface_to_2d( const MsqMatrix<3,2>& App,
     A = transpose(Z) * App;
   }
 }
-
+*/
 void get_sample_pt_evaluations( PatchData& pd,
                                 const SamplePoints* pts,
                                 msq_std::vector<size_t>& handles,

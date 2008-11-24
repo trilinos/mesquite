@@ -160,7 +160,9 @@ bool AffineMapMetric::evaluate( PatchData& pd, size_t handle, double& value, Msq
     targetCalc->get_2D_target( pd, e, &samplePts, s, Wp, err ); MSQ_ERRZERO(err);
 
     MsqMatrix<2,2> A, W;
-    surface_to_2d( App, Wp, A, W );
+    MsqMatrix<3,2> RZ;
+    surface_to_2d( App, Wp, W, RZ );
+    A = transpose(RZ) * App;
     if (type == TRIANGLE)
       A = A * TRI_XFORM;
     

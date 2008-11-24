@@ -227,11 +227,26 @@ $\frac{\partial f}{\partial X_m^k}$. We have
  & = & \sum_{i=1}^2 \sum_{j=1}^2 \frac{\partial f}{\partial A_{ij}} \left\{ \sum_{r=1}^3  \left[ (RZ)^t \right]_{ir}  \left( \frac{\partial N_{k}}{\partial \xi_j} \right) \delta_{rm} \right\} \nonumber \\
  & = & \sum_{i=1}^2 \sum_{j=1}^2 \frac{\partial f}{\partial A_{ij}}  \left( \frac{\partial N_{k}}{\partial \xi_j} \right) \left\{ \sum_{r=1}^3  \left[ (RZ)^t \right]_{ir} \delta_{rm} \right\} \nonumber \\
  & = & \sum_{i=1}^2 \sum_{j=1}^2 \frac{\partial f}{\partial A_{ij}} \frac{\partial N_k}{\partial \xi_j} \left( RZ \right)_{mi} \nonumber \\
- & = & \sum_{i=1}^2  \left( RZ \right)_{mi} \sum_{j=1}^2 \frac{\partial f}{\partial A_{ij}} \frac{\partial N_k}{\partial \xi_j} 
+ \label{eqn:surfgrad} & = & \sum_{i=1}^2  \left( RZ \right)_{mi} \sum_{j=1}^2 \frac{\partial f}{\partial A_{ij}} \frac{\partial N_k}{\partial \xi_j} 
 \end{eqnarray}
 Note the similarities and difference with equation (12). If 
 $RZ = I$, as in the planar case, then this reduces to equation (12),
 except the sums go from 1 to 2. \newline
+
+Equation (\ref{eqn:surfgrad}) can be expressed using matrix operations:
+
+\begin{equation}
+\frac{\partial f}{\partial X^k} = R Z \frac{\partial f}{\partial A} \nabla N_k
+\end{equation}
+
+where $\frac{\partial f}{\partial X^k} = \left[ \begin{array}{c} 
+\frac{\partial f}{\partial X^k_1} \\
+\frac{\partial f}{\partial X^k_2} \\
+\frac{\partial f}{\partial X^k_3} \end{array} \right]$
+and $\nabla N_k = \left[ \begin{array}{c} 
+\frac{\partial N_k}{\partial \xi_1} \\
+\frac{\partial N_k}{\partial \xi_2} \end{array} \right]$.
+
 
 \noindent {\bf The Hessian of $f$ with respect to the Control Points.} \newline
 The Hessian of $f$ with respect to the control points within an element is 

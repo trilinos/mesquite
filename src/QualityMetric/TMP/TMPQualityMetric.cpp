@@ -76,6 +76,48 @@ void TMPQualityMetric::get_element_evaluations( PatchData& pd,
   get_elem_sample_points( pd, samplePts, elem, handles, err );
 }
 
+void TMPQualityMetric::mapping_function_derivs( PatchData& pd,
+                                                size_t handle,
+                                                std::vector<size_t>& indices,
+                                                std::vector<double>& derivs,
+                                                MsqError& err )
+{
+  const unsigned s = ElemSampleQM::sample( handle );
+  const size_t   e = ElemSampleQM::  elem( handle );
+  const EntityTopology type = pd.element_by_index( e ).get_element_type();
+  const unsigned edim = TopologyInfo::dimension( type );
+  const unsigned ho_bits = pd.higher_order_node_bits( e );
+  
+  unsigned dim, num;
+  samplePts->location_from_sample_number( type, s, dim, num );
+ 
+  const MappingFunction* func = pd.get_mapping_function( type );
+  if (!func) {
+    MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
+    return;
+  }
+  
+  indices.clear();
+  derivs.clear();
+  switch (dim) {
+    case 0:
+      func->derivatives_at_corner( num, ho_bits, indices, derivs, err );
+      break;
+    case 1:
+      func->derivatives_at_mid_edge( num, ho_bits, indices, derivs, err );
+      break;
+    case 2:
+      if (edim != 2) {
+        func->derivatives_at_mid_face( num, ho_bits, indices, derivs, err );
+        break;
+      }
+    case 3:
+      func->derivatives_at_mid_elem( ho_bits, indices, derivs, err );
+      break;
+  }
+  MSQ_CHKERR(err);  
+}
+
 bool TMPQualityMetric::evaluate( PatchData& pd, size_t handle, double& value, MsqError& err )
 {
   mIndices.clear();
@@ -84,51 +126,20 @@ bool TMPQualityMetric::evaluate( PatchData& pd, size_t handle, double& value, Ms
 
 
 bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
-                                            size_t handle,
-                                            double& value,
-                                            msq_std::vector<size_t>& indices,
-                                            MsqError& err )
+                                              size_t handle,
+                                              double& value,
+                                              msq_std::vector<size_t>& indices,
+                                              MsqError& err )
 {
     // make sure reinterpret_casts below are valid
   assert( sizeof(MsqMatrix<3,1>) == sizeof(Vector3D) );
 
-  unsigned s = ElemSampleQM::sample( handle );
-  size_t   e = ElemSampleQM::  elem( handle );
+  const unsigned s = ElemSampleQM::sample( handle );
+  const size_t   e = ElemSampleQM::  elem( handle );
   MsqMeshEntity& elem = pd.element_by_index( e );
-  EntityTopology type = elem.get_element_type();
-  unsigned dim, num;
-  samplePts->location_from_sample_number( type, s, dim, num );
-  unsigned edim = TopologyInfo::dimension( type );
+  unsigned edim = TopologyInfo::dimension( elem.get_element_type() );
   const size_t* conn = elem.get_vertex_index_array();
-  
-  unsigned bits = pd.higher_order_node_bits( e );
-  
-  const MappingFunction* func = pd.get_mapping_function( type );
-  if (!func) {
-    MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
-    return false;
-  }
-  
-  indices.clear();
-  mDerivs.clear();
-  switch (dim) {
-    case 0:
-      func->derivatives_at_corner( num, bits, indices, mDerivs, err );
-      break;
-    case 1:
-      func->derivatives_at_mid_edge( num, bits, indices, mDerivs, err );
-      break;
-    case 2:
-      if (edim != 2) {
-        func->derivatives_at_mid_face( num, bits, indices, mDerivs, err );
-        break;
-      }
-    case 3:
-      func->derivatives_at_mid_elem( bits, indices, mDerivs, err );
-      break;
-  }
-  MSQ_ERRZERO( err );
-  std::vector<double>::const_iterator d = mDerivs.begin();
+  mapping_function_derivs( pd, handle, indices, mDerivs, err ); MSQ_ERRZERO(err);
   
     // Convert from indices into element connectivity list to
     // indices into vertex array in patch data.
@@ -136,9 +147,10 @@ bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
     *i = conn[*i];
   
   bool rval;
+  std::vector<double>::const_iterator d = mDerivs.begin();
   if (edim == 3) { // 3x3 or 3x2 targets ?
     if (!metric3D) {
-      MSQ_SETERR(err)("No 3D metric for Jacobian-based metric.\n", MsqError::UNSUPPORTED_ELEMENT );
+      MSQ_SETERR(err)("No 3D metric for TMP metric.\n", MsqError::UNSUPPORTED_ELEMENT );
       return false;
     }
   
@@ -157,7 +169,7 @@ bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
   }
   else {
     if (!metric2D) {
-      MSQ_SETERR(err)("No 2D metric for Jacobian-based metric.\n", MsqError::UNSUPPORTED_ELEMENT );
+      MSQ_SETERR(err)("No 2D metric for TMP metric.\n", MsqError::UNSUPPORTED_ELEMENT );
       return false;
     }
   
@@ -167,14 +179,16 @@ bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
       c[0] += *d * coords; ++d;
       c[1] += *d * coords; ++d;
     }
-    MsqMatrix<3,2> App( (MsqMatrix<3,1>*)c );
+    MsqMatrix<3,2> J( (MsqMatrix<3,1>*)c );
     
     
     MsqMatrix<3,2> Wp;
     targetCalc->get_2D_target( pd, e, samplePts, s, Wp, err ); MSQ_ERRZERO(err);
     
-    MsqMatrix<2,2> A, W;
-    surface_to_2d( App, Wp, A, W );
+    MsqMatrix<2,2> W;
+    MsqMatrix<3,2> RZ;
+    surface_to_2d( J, Wp, W, RZ );
+    MsqMatrix<2,2> A = transpose(RZ) * J;
     rval = metric2D->evaluate( A, W, value, err ); MSQ_ERRZERO(err);
   }
   
@@ -201,51 +215,21 @@ bool TMPQualityMetric::evaluate_with_gradient(
                                            msq_std::vector<Vector3D>& gradient,
                                            MsqError& err )
 {
-  unsigned s = ElemSampleQM::sample( handle );
-  size_t   e = ElemSampleQM::  elem( handle );
+    // make sure reinterpret_casts below are valid
+  assert( sizeof(MsqMatrix<3,1>) == sizeof(Vector3D) );
+
+  const unsigned s = ElemSampleQM::sample( handle );
+  const size_t   e = ElemSampleQM::  elem( handle );
   MsqMeshEntity& elem = pd.element_by_index( e );
-  EntityTopology type = elem.get_element_type();
-  unsigned dim, num;
-  samplePts->location_from_sample_number( type, s, dim, num );
-  unsigned edim = TopologyInfo::dimension( type );
+  unsigned edim = TopologyInfo::dimension( elem.get_element_type() );
   const size_t* conn = elem.get_vertex_index_array();
-  
-  if (edim != 3)
-    return QualityMetric::evaluate_with_gradient( pd, handle, value, indices, gradient, err );
-  
-  unsigned bits = pd.higher_order_node_bits( e );
-  
-  const MappingFunction* func = pd.get_mapping_function( type );
-  if (!func) {
-    MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
-    return false;
-  }
-  
-  indices.clear();
-  mDerivs.clear();
-  switch (dim) {
-    case 0:
-      func->derivatives_at_corner( num, bits, indices, mDerivs, err );
-      break;
-    case 1:
-      func->derivatives_at_mid_edge( num, bits, indices, mDerivs, err );
-      break;
-    case 2:
-      if (edim != 2) {
-        func->derivatives_at_mid_face( num, bits, indices, mDerivs, err );
-        break;
-      }
-    case 3:
-      func->derivatives_at_mid_elem( bits, indices, mDerivs, err );
-      break;
-  }
-  MSQ_ERRZERO( err );
-  std::vector<double>::const_iterator d = mDerivs.begin();
+  mapping_function_derivs( pd, handle, indices, mDerivs, err ); MSQ_ERRZERO(err);
   
   bool rval;
+  std::vector<double>::const_iterator d = mDerivs.begin();
   if (edim == 3) { // 3x3 or 3x2 targets ?
     if (!metric3D) {
-      MSQ_SETERR(err)("No 3D metric for Jacobian-based metric.\n", MsqError::UNSUPPORTED_ELEMENT );
+      MSQ_SETERR(err)("No 3D metric for TMP metric.\n", MsqError::UNSUPPORTED_ELEMENT );
       return false;
     }
   
@@ -274,8 +258,42 @@ bool TMPQualityMetric::evaluate_with_gradient(
     }
   }
   else {
-    assert(0);
-    return false;
+    if (!metric2D) {
+      MSQ_SETERR(err)("No 2D metric for TMP metric.\n", MsqError::UNSUPPORTED_ELEMENT );
+      return false;
+    }
+  
+  
+    Vector3D c[2] = { Vector3D(0,0,0), Vector3D(0,0,0) };
+    for (size_t i = 0; i < indices.size(); ++i) {
+        // Convert from indices into element connectivity list to
+        // indices into vertex array in patch data.
+      indices[i] = conn[indices[i]];
+        // calculate Jacobian
+      Vector3D coords = pd.vertex_by_index( indices[i] );
+      c[0] += *d * coords; ++d;
+      c[1] += *d * coords; ++d;
+    }
+    MsqMatrix<3,2> J( (MsqMatrix<3,1>*)c );
+    
+    
+    MsqMatrix<3,2> Wp;
+    targetCalc->get_2D_target( pd, e, samplePts, s, Wp, err ); MSQ_ERRZERO(err);
+    
+    MsqMatrix<2,2> W;
+    MsqMatrix<3,2> RZ;
+    surface_to_2d( J, Wp, W, RZ );
+    MsqMatrix<2,2> dmdA, A = transpose(RZ) * J;
+    rval = metric2D->evaluate_with_grad( A, W, value, dmdA, err ); MSQ_ERRZERO(err);
+  
+    const MsqMatrix<3,2> M = RZ * dmdA;
+    gradient.clear();
+    d = mDerivs.begin();
+    for (size_t i =0; i < indices.size(); ++i, d += 2) {
+        // if vertex is not fixed, include in gradient
+      if (indices[i] < pd.num_free_vertices())
+        gradient.push_back(( (M * MsqMatrix<2,1>(&*d)).data() ));
+    }
   }
   
     // apply target weight to value
@@ -304,50 +322,23 @@ bool TMPQualityMetric::evaluate_with_Hessian(
                                            msq_std::vector<Matrix3D>& Hessian,
                                            MsqError& err )
 {
-  unsigned s = ElemSampleQM::sample( handle );
-  size_t   e = ElemSampleQM::  elem( handle );
+    // make sure reinterpret_casts below are valid
+  assert( sizeof(MsqMatrix<3,1>) == sizeof(Vector3D) );
+
+  const unsigned s = ElemSampleQM::sample( handle );
+  const size_t   e = ElemSampleQM::  elem( handle );
   MsqMeshEntity& elem = pd.element_by_index( e );
-  EntityTopology type = elem.get_element_type();
-  unsigned dim, num;
-  samplePts->location_from_sample_number( type, s, dim, num );
-  unsigned edim = TopologyInfo::dimension( type );
+  unsigned edim = TopologyInfo::dimension( elem.get_element_type() );
   const size_t* conn = elem.get_vertex_index_array();
+  mapping_function_derivs( pd, handle, indices, mDerivs, err ); MSQ_ERRZERO(err);
   
-  if (edim != 3)
+  if (edim != 3) // use finite difference approximation for surface elements
     return QualityMetric::evaluate_with_Hessian( pd, handle, value, indices, gradient, Hessian, err );
-  
-  unsigned bits = pd.higher_order_node_bits( e );
-  
-  const MappingFunction* func = pd.get_mapping_function( type );
-  if (!func) {
-    MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
-    return false;
-  }
-  
-  indices.clear();
-  mDerivs.clear();
-  switch (dim) {
-    case 0:
-      func->derivatives_at_corner( num, bits, indices, mDerivs, err );
-      break;
-    case 1:
-      func->derivatives_at_mid_edge( num, bits, indices, mDerivs, err );
-      break;
-    case 2:
-      if (edim != 2) {
-        func->derivatives_at_mid_face( num, bits, indices, mDerivs, err );
-        break;
-      }
-    case 3:
-      func->derivatives_at_mid_elem( bits, indices, mDerivs, err );
-      break;
-  }
-  MSQ_ERRZERO( err );
   
   bool rval;
   if (edim == 3) { // 3x3 or 3x2 targets ?
     if (!metric3D) {
-      MSQ_SETERR(err)("No 3D metric for Jacobian-based metric.\n", MsqError::UNSUPPORTED_ELEMENT );
+      MSQ_SETERR(err)("No 3D metric for TMP metric.\n", MsqError::UNSUPPORTED_ELEMENT );
       return false;
     }
   
@@ -450,50 +441,23 @@ bool TMPQualityMetric::evaluate_with_Hessian_diagonal(
                                            msq_std::vector<SymMatrix3D>& diagonal,
                                            MsqError& err )
 {
-  unsigned s = ElemSampleQM::sample( handle );
-  size_t   e = ElemSampleQM::  elem( handle );
+    // make sure reinterpret_casts below are valid
+  assert( sizeof(MsqMatrix<3,1>) == sizeof(Vector3D) );
+
+  const unsigned s = ElemSampleQM::sample( handle );
+  const size_t   e = ElemSampleQM::  elem( handle );
   MsqMeshEntity& elem = pd.element_by_index( e );
-  EntityTopology type = elem.get_element_type();
-  unsigned dim, num;
-  samplePts->location_from_sample_number( type, s, dim, num );
-  unsigned edim = TopologyInfo::dimension( type );
+  unsigned edim = TopologyInfo::dimension( elem.get_element_type() );
   const size_t* conn = elem.get_vertex_index_array();
+  mapping_function_derivs( pd, handle, indices, mDerivs, err ); MSQ_ERRZERO(err);
   
-  if (edim != 3)
+  if (edim != 3) // use finite difference approximation for surface elements
     return QualityMetric::evaluate_with_Hessian_diagonal( pd, handle, value, indices, gradient, diagonal, err );
-  
-  unsigned bits = pd.higher_order_node_bits( e );
-  
-  const MappingFunction* func = pd.get_mapping_function( type );
-  if (!func) {
-    MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
-    return false;
-  }
-  
-  indices.clear();
-  mDerivs.clear();
-  switch (dim) {
-    case 0:
-      func->derivatives_at_corner( num, bits, indices, mDerivs, err );
-      break;
-    case 1:
-      func->derivatives_at_mid_edge( num, bits, indices, mDerivs, err );
-      break;
-    case 2:
-      if (edim != 2) {
-        func->derivatives_at_mid_face( num, bits, indices, mDerivs, err );
-        break;
-      }
-    case 3:
-      func->derivatives_at_mid_elem( bits, indices, mDerivs, err );
-      break;
-  }
-  MSQ_ERRZERO( err );
   
   bool rval;
   if (edim == 3) { // 3x3 or 3x2 targets ?
     if (!metric3D) {
-      MSQ_SETERR(err)("No 3D metric for Jacobian-based metric.\n", MsqError::UNSUPPORTED_ELEMENT );
+      MSQ_SETERR(err)("No 3D metric for TMP metric.\n", MsqError::UNSUPPORTED_ELEMENT );
       return false;
     }
   
