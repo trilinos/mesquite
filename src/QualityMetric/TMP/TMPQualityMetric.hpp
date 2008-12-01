@@ -184,6 +184,7 @@ private:
   
   msq_std::vector<size_t> mIndices;
   msq_std::vector<double> mDerivs;
+  msq_std::vector< MsqMatrix<2,2> > hess2d;
 };
 
 } // namespace Mesquite

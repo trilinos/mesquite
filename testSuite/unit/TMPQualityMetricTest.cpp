@@ -136,6 +136,24 @@ class TestGradTargetMetric3D : public TargetMetric3D
       return true;
     }
 };
+class TestGradTargetMetric2D : public TargetMetric2D
+{
+  public:
+  
+    bool evaluate( const MsqMatrix<2,2>& A, const MsqMatrix<2,2>&, double& result, MsqError& err )
+      { result = sqr_Frobenius(A); return true; }
+    
+    bool evaluate_with_grad( const MsqMatrix<2,2>& A, 
+                             const MsqMatrix<2,2>&,
+                             double& result,
+                             MsqMatrix<2,2>& d,
+                             MsqError& err )
+    {
+      result = sqr_Frobenius(A);
+      d = 2*A;
+      return true;
+    }
+};
 
 class TMPQualityMetricTest : public CppUnit::TestFixture
 {
@@ -162,6 +180,7 @@ class TMPQualityMetricTest : public CppUnit::TestFixture
   CPPUNIT_TEST (test_evaluate_with_indices);
   CPPUNIT_TEST (test_evaluate_fixed_indices);
   
+  CPPUNIT_TEST (test_gradient_2D);
   CPPUNIT_TEST (test_gradient_3D);
   CPPUNIT_TEST (compare_indices_and_gradient);
   CPPUNIT_TEST (test_ideal_element_gradient);
@@ -235,6 +254,7 @@ public:
   void test_evaluate_3D_edge()    { test_3d_eval_ortho_hex(1); }
   void test_evaluate_3D_face()    { test_3d_eval_ortho_hex(2); }
   void test_evaluate_3D_elem()    { test_3d_eval_ortho_hex(3); }
+  void test_gradient_2D();
   void test_gradient_3D();
 
   void test_sample_indices()
@@ -249,9 +269,9 @@ public:
   void test_ideal_element_gradient()
     { tester.test_ideal_element_zero_gradient( &test_qm, true ); }
   void compare_analytical_and_numerical_gradient()
-    { tester.compare_analytical_and_numerical_gradients( &test_qm ); }
+    { compare_analytical_and_numerical_gradients( &test_qm ); }
   void test_weighted_gradients()
-    { tester.compare_analytical_and_numerical_gradients( &weight_qm ); }
+    { compare_analytical_and_numerical_gradients( &weight_qm ); }
   void test_gradient_with_fixed_vertices()
     { tester.test_gradient_with_fixed_vertex( &center_qm ); }
 
@@ -260,11 +280,11 @@ public:
   void compare_gradient_and_hessian()
     { tester.compare_eval_with_grad_and_eval_with_hessian( &test_qm );  }
   void compare_analytical_and_numerical_hessians()
-    { tester.compare_analytical_and_numerical_hessians( &test_qm ); }
+    { compare_analytical_and_numerical_hessians( &test_qm ); }
   void test_symmetric_hessian_diagonal()
     { tester.test_symmetric_Hessian_diagonal_blocks( &test_qm ); }
   void test_weighted_hessians()
-    { tester.compare_analytical_and_numerical_hessians( &weight_qm ); }
+    { compare_analytical_and_numerical_hessians( &weight_qm ); }
   void test_hessian_with_fixed_vertices()
     { tester.test_hessian_with_fixed_vertex( &center_qm ); }
 
@@ -273,11 +293,23 @@ public:
   void compare_gradient_and_diagonal()
     { tester.compare_eval_with_grad_and_eval_with_diagonal( &test_qm ); }
   void compare_analytical_and_numerical_diagonals()
-    { tester.compare_analytical_and_numerical_diagonals( &test_qm ); }
+    { compare_analytical_and_numerical_diagonals( &test_qm ); }
   void test_weighted_diagonals()
-    { tester.compare_analytical_and_numerical_diagonals( &weight_qm ); }
+    { compare_analytical_and_numerical_diagonals( &weight_qm ); }
   void test_diagonal_with_fixed_vertices()
     { tester.test_diagonal_with_fixed_vertex( &center_qm ); }
+
+    // Delcare specialized versions of the functions from
+    // QualityMetricTester because we surface elements must
+    // be handled differently.  For a surface element in the XY plane,
+    // the finite difference approximations of the derivatives will
+    // have non-zero values for derivatives wrt Z coordinates while the
+    // analytical derivative calculations will return all derivatives
+    // wrt Z coordiantes as zero.
+  void get_nonideal_element( EntityTopology type, PatchData& pd );
+  void compare_analytical_and_numerical_gradients( QualityMetric* qm );
+  void compare_analytical_and_numerical_hessians( QualityMetric* qm );
+  void compare_analytical_and_numerical_diagonals( QualityMetric* qm );
 };
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TMPQualityMetricTest, "TMPQualityMetricTest");
@@ -494,6 +526,74 @@ void TMPQualityMetricTest::test_3d_eval_ortho_hex( unsigned dim )
 }  
 
 
+void TMPQualityMetricTest::test_gradient_2D()
+{
+  MsqPrintError err(msq_stdio::cout);
+  
+    // check for expected value at center of flattened hex
+  
+    // construct flattened hex
+  const double y = 0.5;
+  const double vertices[] = { 0.0, 0.0, 0.0,
+                              1.0, 0.0, 0.0,
+                              1.0, y  , 0.0,
+                              0.0, y  , 0.0 };
+  size_t conn[8] = { 0, 1, 2, 3 };
+  PatchData pd;
+  pd.fill( 4, vertices, 1, QUADRILATERAL, conn, 0, err );
+  ASSERT_NO_ERROR(err);
+  
+    // calculate Jacobian matrix at element center
+  const double corner_xi[4][2] = { { -1, -1 },
+                                   {  1, -1 },
+                                   {  1,  1 },
+                                   { -1,  1 } } ;
+  MsqMatrix<4,2> coeff_derivs(&corner_xi[0][0]);
+  coeff_derivs *= 0.25;  // derivatives of bilinear map at quad center
+  MsqMatrix<4,3> coords( vertices );
+  MsqMatrix<3,2> J = transpose(coords) * coeff_derivs;
+    // calculate expected metric value
+  const double expt_val = sqr_Frobenius( J );
+    // calculate derivative for each element vertex
+  MsqVector<3> expt_grad[4];
+  for (int v = 0; v < 4; ++v)
+    expt_grad[v] = 2 * J * transpose( coeff_derivs.row(v) );
+    
+  
+    // construct metric
+  LinearFunctionSet lfs;
+  pd.set_mapping_functions( &lfs );
+  SamplePoints center( false, false, false, true );
+  TestGradTargetMetric2D tm;
+  IdealTargetCalculator tc;
+  TMPQualityMetric m( &center, &tc, &tm, 0 );
+  PlanarDomain plane( PlanarDomain::XY );
+  pd.set_domain( &plane );
+  
+    // evaluate metric
+  double act_val;
+  msq_std::vector<size_t> indices;
+  msq_std::vector<Vector3D> act_grad;
+  m.evaluate_with_gradient( pd, 0, act_val, indices, act_grad, err );
+  ASSERT_NO_ERROR(err);
+  
+    // compare values
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( expt_val, act_val, 1e-10 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[0]].data()), act_grad[0], 1e-10 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[1]].data()), act_grad[1], 1e-10 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[2]].data()), act_grad[2], 1e-10 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[3]].data()), act_grad[3], 1e-10 );
+
+    // check numerical approx of gradient
+  m.QualityMetric::evaluate_with_gradient( pd, 0, act_val, indices, act_grad, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( expt_val, act_val, 1e-10 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[0]].data()), act_grad[0], 1e-5 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[1]].data()), act_grad[1], 1e-5 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[2]].data()), act_grad[2], 1e-5 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[3]].data()), act_grad[3], 1e-5 );
+}
+
 
 void TMPQualityMetricTest::test_gradient_3D()
 {
@@ -575,4 +675,224 @@ void TMPQualityMetricTest::test_gradient_3D()
   CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[5]].data()), act_grad[5], 1e-5 );
   CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[6]].data()), act_grad[6], 1e-5 );
   CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[7]].data()), act_grad[7], 1e-5 );
+}
+
+void TMPQualityMetricTest::get_nonideal_element( EntityTopology type,
+                                                 PatchData& pd )
+{
+  tester.get_nonideal_element( type, pd, true );
+    // Callers assume surface elements are in XY plane.
+    // Verify this assumption.
+  if (TopologyInfo::dimension(type) == 2) {
+    for (size_t i = 0; i < pd.num_nodes(); ++i) {
+      CPPUNIT_ASSERT_DOUBLES_EQUAL( pd.vertex_by_index(i)[2], 0.0, 1e-6 );
+    }
+  }
+}
+
+    // Delcare specialized versions of the functions from
+    // QualityMetricTester because we surface elements must
+    // be handled differently.  For a surface element in the XY plane,
+    // the finite difference approximations of the derivatives will
+    // have non-zero values for derivatives wrt Z coordinates while the
+    // analytical derivative calculations will return all derivatives
+    // wrt Z coordiantes as zero.
+void TMPQualityMetricTest::compare_analytical_and_numerical_gradients( QualityMetric* qm )
+{
+  MsqPrintError err( msq_stdio::cout );
+  PatchData pd;
+  const EntityTopology types[] = { TRIANGLE,
+                                   QUADRILATERAL,
+                                   TETRAHEDRON,
+                                   PYRAMID,
+                                   PRISM,
+                                   HEXAHEDRON };
+  const int num_types = sizeof(types)/sizeof(types[0]);
+  for (int i = 0; i < num_types; ++i) {
+    get_nonideal_element( types[i], pd );
+
+    msq_std::vector<size_t> handles, indices1, indices2;
+    msq_std::vector<Vector3D> grad1, grad2;
+    double qm_val1, qm_val2;
+    bool rval;
+
+    qm->get_evaluations( pd, handles, false, err );
+    CPPUNIT_ASSERT( !MSQ_CHKERR(err) );
+    CPPUNIT_ASSERT( !handles.empty() );
+    for (size_t j = 0; j < handles.size(); ++j) {
+      rval = qm->QualityMetric::evaluate_with_gradient( pd, handles[j], qm_val1, indices1, grad1, err );
+      CPPUNIT_ASSERT( !MSQ_CHKERR(err) );
+      CPPUNIT_ASSERT( rval );
+      
+        // For analytical gradient of a 2D element in the XY plane, 
+        // we expect all Z terms to be zero.
+      if (TopologyInfo::dimension(types[i]) == 2)
+        for (size_t k = 0; k < grad1.size(); ++k)
+          grad1[k][2] = 0.0; 
+      
+      rval = qm->evaluate_with_gradient( pd, handles[j], qm_val2, indices2, grad2, err );
+      CPPUNIT_ASSERT( !MSQ_CHKERR(err) );
+      CPPUNIT_ASSERT( rval );
+
+      CPPUNIT_ASSERT_DOUBLES_EQUAL( qm_val1, qm_val2, 1e-6 );
+      CPPUNIT_ASSERT_EQUAL( indices1.size(), indices2.size() );
+      CPPUNIT_ASSERT( !indices1.empty() );
+
+      msq_std::vector<size_t>::iterator it1, it2;
+      for (it1 = indices1.begin(); it1 != indices1.end(); ++it1) {
+        it2 = msq_std::find( indices2.begin(), indices2.end(), *it1 );
+        CPPUNIT_ASSERT( it2 != indices2.end() );
+
+        size_t idx1 = it1 - indices1.begin();
+        size_t idx2 = it2 - indices2.begin();
+        CPPUNIT_ASSERT_VECTORS_EQUAL( grad1[idx1], grad2[idx2], 0.01 );
+      }
+    }
+  }
+}
+
+
+    // Delcare specialized versions of the functions from
+    // QualityMetricTester because we surface elements must
+    // be handled differently.  For a surface element in the XY plane,
+    // the finite difference approximations of the derivatives will
+    // have non-zero values for derivatives wrt Z coordinates while the
+    // analytical derivative calculations will return all derivatives
+    // wrt Z coordiantes as zero.
+void TMPQualityMetricTest::compare_analytical_and_numerical_hessians( QualityMetric* qm )
+{
+  MsqPrintError err( msq_stdio::cout );
+  PatchData pd;
+  const EntityTopology types[] = { TRIANGLE,
+                                   QUADRILATERAL,
+                                   TETRAHEDRON,
+                                   PYRAMID,
+                                   PRISM,
+                                   HEXAHEDRON };
+  const int num_types = sizeof(types)/sizeof(types[0]);
+  for (int i = 0; i < num_types; ++i) {
+    get_nonideal_element( types[i], pd );
+
+    msq_std::vector<size_t> handles, indices1, indices2;
+    msq_std::vector<Vector3D> grad1, grad2;
+    msq_std::vector<Matrix3D> Hess1, Hess2;
+    double qm_val1, qm_val2;
+    bool rval;
+
+    qm->get_evaluations( pd, handles, false, err );
+    CPPUNIT_ASSERT( !MSQ_CHKERR(err) );
+    CPPUNIT_ASSERT( !handles.empty() );
+    for (size_t j = 0; j < handles.size(); ++j) {
+      rval = qm->QualityMetric::evaluate_with_Hessian( pd, handles[j], qm_val1, indices1, grad1, Hess1, err );
+      CPPUNIT_ASSERT( !MSQ_CHKERR(err) );
+      CPPUNIT_ASSERT( rval );
+       
+        // For analytical gradient of a 2D element in the XY plane, 
+        // we expect all Z terms to be zero.
+      if (TopologyInfo::dimension(types[i]) == 2)
+        for (size_t k = 0; k < Hess1.size(); ++k) 
+          Hess1[k](0,2) = Hess1[k](1,2) = Hess1[k](2,0) 
+            = Hess1[k](2,1) = Hess1[k](2,2) = 0.0;
+
+      rval = qm->evaluate_with_Hessian( pd, handles[j], qm_val2, indices2, grad2, Hess2, err );
+      CPPUNIT_ASSERT( !MSQ_CHKERR(err) );
+      CPPUNIT_ASSERT( rval );
+
+      CPPUNIT_ASSERT_DOUBLES_EQUAL( qm_val1, qm_val2, 1e-6 );
+      CPPUNIT_ASSERT_EQUAL( indices1.size(), indices2.size() );
+      CPPUNIT_ASSERT( !indices1.empty() );
+
+      msq_std::vector<size_t>::iterator it;
+      unsigned h = 0;
+      for (unsigned r = 0; r < indices1.size(); ++r) {
+        it = msq_std::find( indices2.begin(), indices2.end(), indices1[r] );
+        CPPUNIT_ASSERT( it != indices2.end() );
+        unsigned r2 = it - indices2.begin();
+
+        for (unsigned c = r; c < indices1.size(); ++c, ++h) {
+          it = msq_std::find( indices2.begin(), indices2.end(), indices1[c] );
+          CPPUNIT_ASSERT( it != indices2.end() );
+          unsigned c2 = it - indices2.begin();
+
+          unsigned h2;
+          if (r2 <= c2) 
+            h2 = indices2.size()*r - r*(r+1)/2 + c;
+          else
+            h2 = indices2.size()*c - c*(c+1)/2 + r;
+
+          //if (!utest_mat_equal(Hess1[h],Hess2[h2],0.001))
+          //  assert(false);
+          CPPUNIT_ASSERT_MATRICES_EQUAL( Hess1[h], Hess2[h2], 0.001 );
+        }
+      }
+    }
+  }
+}
+
+    // Delcare specialized versions of the functions from
+    // QualityMetricTester because we surface elements must
+    // be handled differently.  For a surface element in the XY plane,
+    // the finite difference approximations of the derivatives will
+    // have non-zero values for derivatives wrt Z coordinates while the
+    // analytical derivative calculations will return all derivatives
+    // wrt Z coordiantes as zero.
+void TMPQualityMetricTest::compare_analytical_and_numerical_diagonals( QualityMetric* qm )
+{
+  MsqPrintError err( msq_stdio::cout );
+  PatchData pd;
+  const EntityTopology types[] = { TRIANGLE,
+                                   QUADRILATERAL,
+                                   TETRAHEDRON,
+                                   PYRAMID,
+                                   PRISM,
+                                   HEXAHEDRON };
+  const int num_types = sizeof(types)/sizeof(types[0]);
+  for (int i = 0; i < num_types; ++i) {
+    get_nonideal_element( types[i], pd );
+
+    msq_std::vector<size_t> handles, indices1, indices2;
+    msq_std::vector<Vector3D> grad1, grad2;
+    msq_std::vector<Matrix3D> Hess1;
+    msq_std::vector<SymMatrix3D> Hess2;
+    double qm_val1, qm_val2;
+    bool rval;
+
+    qm->get_evaluations( pd, handles, false, err );
+    CPPUNIT_ASSERT( !MSQ_CHKERR(err) );
+    CPPUNIT_ASSERT( !handles.empty() );
+    for (size_t j = 0; j < handles.size(); ++j) {
+      rval = qm->QualityMetric::evaluate_with_Hessian( pd, handles[j], qm_val1, indices1, grad1, Hess1, err );
+      CPPUNIT_ASSERT( !MSQ_CHKERR(err) );
+      CPPUNIT_ASSERT( rval );
+       
+        // For analytical gradient of a 2D element in the XY plane, 
+        // we expect all Z terms to be zero.
+      if (TopologyInfo::dimension(types[i]) == 2)
+        for (size_t k = 0; k < Hess1.size(); ++k) 
+          Hess1[k](0,2) = Hess1[k](1,2) = Hess1[k](2,0) 
+            = Hess1[k](2,1) = Hess1[k](2,2) = 0.0;
+
+      rval = qm->evaluate_with_Hessian_diagonal( pd, handles[j], qm_val2, indices2, grad2, Hess2, err );
+      CPPUNIT_ASSERT( !MSQ_CHKERR(err) );
+      CPPUNIT_ASSERT( rval );
+
+      CPPUNIT_ASSERT_DOUBLES_EQUAL( qm_val1, qm_val2, 1e-6 );
+      CPPUNIT_ASSERT_EQUAL( indices1.size(), indices2.size() );
+      CPPUNIT_ASSERT( !indices1.empty() );
+      CPPUNIT_ASSERT_EQUAL( indices1.size() * (indices1.size()+1) / 2, Hess1.size() );
+      CPPUNIT_ASSERT_EQUAL( indices2.size(), Hess2.size() );
+
+      size_t h = 0;
+      msq_std::vector<size_t>::iterator it;
+      for (unsigned r = 0; r < indices1.size(); ++r) {
+        it = msq_std::find( indices2.begin(), indices2.end(), indices1[r] );
+        CPPUNIT_ASSERT( it != indices2.end() );
+        unsigned r2 = it - indices2.begin();
+        //if (!utest_mat_equal(Hess1[h],Hess2[r2],0.001))
+        //  assert(false);
+        CPPUNIT_ASSERT_MATRICES_EQUAL( Hess1[h], Hess2[r2], 0.001 );
+        h += indices1.size() - r;
+      }
+    }
+  }
 }
