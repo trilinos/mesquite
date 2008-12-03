@@ -45,6 +45,10 @@ Unit testing for the TMPQualityMetric class
 #include "Target3DShapeSizeOrient.hpp"
 #include "Target2DShapeSizeOrient.hpp"
 #include "WeightCalculator.hpp"
+#include "InverseMeanRatio2D.hpp"
+#include "InverseMeanRatio3D.hpp"
+#include "ElementPMeanP.hpp"
+#include "IdealWeightInverseMeanRatio.hpp"
 
 #ifdef MSQ_USE_OLD_IO_HEADERS
 #include <iostream.h>
@@ -200,6 +204,12 @@ class TMPQualityMetricTest : public CppUnit::TestFixture
   CPPUNIT_TEST (compare_analytical_and_numerical_diagonals);
   CPPUNIT_TEST (test_weighted_diagonals);
   CPPUNIT_TEST (test_diagonal_with_fixed_vertices);
+  
+  CPPUNIT_TEST (test_inverse_mean_ratio_grad);
+  CPPUNIT_TEST (test_inverse_mean_ratio_hess);
+  CPPUNIT_TEST (test_inverse_mean_ratio_hess_diag);
+  CPPUNIT_TEST (regression_inverse_mean_ratio_grad);
+  CPPUNIT_TEST (regression_inverse_mean_ratio_hess);
 
   CPPUNIT_TEST_SUITE_END();
   
@@ -298,6 +308,12 @@ public:
     { compare_analytical_and_numerical_diagonals( &weight_qm ); }
   void test_diagonal_with_fixed_vertices()
     { tester.test_diagonal_with_fixed_vertex( &center_qm ); }
+  
+  void test_inverse_mean_ratio_grad();
+  void test_inverse_mean_ratio_hess();
+  void test_inverse_mean_ratio_hess_diag();
+  void regression_inverse_mean_ratio_grad();
+  void regression_inverse_mean_ratio_hess();
 
     // Delcare specialized versions of the functions from
     // QualityMetricTester because we surface elements must
@@ -310,6 +326,7 @@ public:
   void compare_analytical_and_numerical_gradients( QualityMetric* qm );
   void compare_analytical_and_numerical_hessians( QualityMetric* qm );
   void compare_analytical_and_numerical_diagonals( QualityMetric* qm );
+  void compare_analytical_and_numerical_gradients( QualityMetric* qm, PatchData&, int dim );
 };
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TMPQualityMetricTest, "TMPQualityMetricTest");
@@ -561,8 +578,7 @@ void TMPQualityMetricTest::test_gradient_2D()
     
   
     // construct metric
-  LinearFunctionSet lfs;
-  pd.set_mapping_functions( &lfs );
+  pd.set_mapping_functions( &mf );
   SamplePoints center( false, false, false, true );
   TestGradTargetMetric2D tm;
   IdealTargetCalculator tc;
@@ -638,8 +654,7 @@ void TMPQualityMetricTest::test_gradient_3D()
     
   
     // construct metric
-  LinearFunctionSet lfs;
-  pd.set_mapping_functions( &lfs );
+  pd.set_mapping_functions( &mf );
   SamplePoints center( false, false, false, true );
   TestGradTargetMetric3D tm;
   IdealTargetCalculator tc;
@@ -699,7 +714,6 @@ void TMPQualityMetricTest::get_nonideal_element( EntityTopology type,
     // wrt Z coordiantes as zero.
 void TMPQualityMetricTest::compare_analytical_and_numerical_gradients( QualityMetric* qm )
 {
-  MsqPrintError err( msq_stdio::cout );
   PatchData pd;
   const EntityTopology types[] = { TRIANGLE,
                                    QUADRILATERAL,
@@ -710,43 +724,52 @@ void TMPQualityMetricTest::compare_analytical_and_numerical_gradients( QualityMe
   const int num_types = sizeof(types)/sizeof(types[0]);
   for (int i = 0; i < num_types; ++i) {
     get_nonideal_element( types[i], pd );
+    compare_analytical_and_numerical_gradients( qm, pd, TopologyInfo::dimension(types[i]) );
+  }
+}
 
-    msq_std::vector<size_t> handles, indices1, indices2;
-    msq_std::vector<Vector3D> grad1, grad2;
-    double qm_val1, qm_val2;
-    bool rval;
+void TMPQualityMetricTest::compare_analytical_and_numerical_gradients( 
+                                                      QualityMetric* qm,
+                                                      PatchData& pd,
+                                                      int dim )
+{
+  MsqPrintError err( msq_stdio::cout );
 
-    qm->get_evaluations( pd, handles, false, err );
+  msq_std::vector<size_t> handles, indices1, indices2;
+  msq_std::vector<Vector3D> grad1, grad2;
+  double qm_val1, qm_val2;
+  bool rval;
+
+  qm->get_evaluations( pd, handles, false, err );
+  CPPUNIT_ASSERT( !MSQ_CHKERR(err) );
+  CPPUNIT_ASSERT( !handles.empty() );
+  for (size_t j = 0; j < handles.size(); ++j) {
+    rval = qm->QualityMetric::evaluate_with_gradient( pd, handles[j], qm_val1, indices1, grad1, err );
     CPPUNIT_ASSERT( !MSQ_CHKERR(err) );
-    CPPUNIT_ASSERT( !handles.empty() );
-    for (size_t j = 0; j < handles.size(); ++j) {
-      rval = qm->QualityMetric::evaluate_with_gradient( pd, handles[j], qm_val1, indices1, grad1, err );
-      CPPUNIT_ASSERT( !MSQ_CHKERR(err) );
-      CPPUNIT_ASSERT( rval );
-      
-        // For analytical gradient of a 2D element in the XY plane, 
-        // we expect all Z terms to be zero.
-      if (TopologyInfo::dimension(types[i]) == 2)
-        for (size_t k = 0; k < grad1.size(); ++k)
-          grad1[k][2] = 0.0; 
-      
-      rval = qm->evaluate_with_gradient( pd, handles[j], qm_val2, indices2, grad2, err );
-      CPPUNIT_ASSERT( !MSQ_CHKERR(err) );
-      CPPUNIT_ASSERT( rval );
+    CPPUNIT_ASSERT( rval );
 
-      CPPUNIT_ASSERT_DOUBLES_EQUAL( qm_val1, qm_val2, 1e-6 );
-      CPPUNIT_ASSERT_EQUAL( indices1.size(), indices2.size() );
-      CPPUNIT_ASSERT( !indices1.empty() );
+      // For analytical gradient of a 2D element in the XY plane, 
+      // we expect all Z terms to be zero.
+    if (dim == 2)
+      for (size_t k = 0; k < grad1.size(); ++k)
+        grad1[k][2] = 0.0; 
 
-      msq_std::vector<size_t>::iterator it1, it2;
-      for (it1 = indices1.begin(); it1 != indices1.end(); ++it1) {
-        it2 = msq_std::find( indices2.begin(), indices2.end(), *it1 );
-        CPPUNIT_ASSERT( it2 != indices2.end() );
+    rval = qm->evaluate_with_gradient( pd, handles[j], qm_val2, indices2, grad2, err );
+    CPPUNIT_ASSERT( !MSQ_CHKERR(err) );
+    CPPUNIT_ASSERT( rval );
 
-        size_t idx1 = it1 - indices1.begin();
-        size_t idx2 = it2 - indices2.begin();
-        CPPUNIT_ASSERT_VECTORS_EQUAL( grad1[idx1], grad2[idx2], 0.01 );
-      }
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( qm_val1, qm_val2, 1e-6 );
+    CPPUNIT_ASSERT_EQUAL( indices1.size(), indices2.size() );
+    CPPUNIT_ASSERT( !indices1.empty() );
+
+    msq_std::vector<size_t>::iterator it1, it2;
+    for (it1 = indices1.begin(); it1 != indices1.end(); ++it1) {
+      it2 = msq_std::find( indices2.begin(), indices2.end(), *it1 );
+      CPPUNIT_ASSERT( it2 != indices2.end() );
+
+      size_t idx1 = it1 - indices1.begin();
+      size_t idx2 = it2 - indices2.begin();
+      CPPUNIT_ASSERT_VECTORS_EQUAL( grad1[idx1], grad2[idx2], 0.01 );
     }
   }
 }
@@ -894,5 +917,185 @@ void TMPQualityMetricTest::compare_analytical_and_numerical_diagonals( QualityMe
         h += indices1.size() - r;
       }
     }
+  }
+}
+
+  
+void TMPQualityMetricTest::test_inverse_mean_ratio_grad()
+{
+  InverseMeanRatio2D tm_2d;
+  InverseMeanRatio3D tm_3d;
+  SamplePoints pts(true);
+  IdealTargetCalculator target(false);
+  TMPQualityMetric metric( &pts, &target, &tm_2d, &tm_3d );
+  ElementPMeanP avg( 1.0, &metric );
+  
+  tester.test_gradient_reflects_quality( &metric );
+  compare_analytical_and_numerical_gradients( &metric );
+  tester.test_gradient_with_fixed_vertex( &avg );
+}
+
+
+void TMPQualityMetricTest::test_inverse_mean_ratio_hess()
+{
+  InverseMeanRatio2D tm_2d;
+  InverseMeanRatio3D tm_3d;
+  SamplePoints pts(true);
+  IdealTargetCalculator target(false);
+  TMPQualityMetric metric( &pts, &target, &tm_2d, &tm_3d );
+  ElementPMeanP avg( 1.0, &metric );
+ 
+  compare_analytical_and_numerical_hessians( &metric );
+  tester.test_symmetric_Hessian_diagonal_blocks( &metric );
+  tester.test_hessian_with_fixed_vertex( &avg );
+}
+
+void TMPQualityMetricTest::test_inverse_mean_ratio_hess_diag()
+{
+  InverseMeanRatio2D tm_2d;
+  InverseMeanRatio3D tm_3d;
+  SamplePoints pts(true);
+  IdealTargetCalculator target(false);
+  TMPQualityMetric metric( &pts, &target, &tm_2d, &tm_3d );
+  
+  compare_analytical_and_numerical_diagonals( &metric );
+  tester.compare_eval_with_diag_and_eval_with_hessian( &metric );
+}
+  
+void TMPQualityMetricTest::regression_inverse_mean_ratio_grad()
+{
+  MsqError err;
+  InverseMeanRatio2D tm_2d;
+  SamplePoints pts(true);
+  IdealTargetCalculator target(false);
+  TMPQualityMetric metric( &pts, &target, &tm_2d, 0 );
+  const double coords[] = { -0.80000000000000004, -0.80000000000000004, 0,
+                             0.00000000000000000,  2.00000000000000000, 0,
+                            -1.73205079999999990,  1.00000000000000000, 0 };
+  const size_t indices[] = { 0, 1, 2 };
+  PatchData pd;
+  pd.fill( 3, coords, 1, TRIANGLE, indices, 0, err );
+  pd.set_mapping_functions( &mf );
+  PlanarDomain dom( PlanarDomain::XY, coords[0] );
+  pd.set_domain( &dom );
+  
+  IdealWeightInverseMeanRatio ref_metric;
+  
+  double exp_val, act_val;
+  std::vector<size_t> exp_idx, act_idx, handles;
+  std::vector<Vector3D> exp_grad, act_grad;
+  
+  handles.clear();
+  ref_metric.get_evaluations( pd, handles, false, err ); ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_EQUAL( (size_t)1, handles.size() );
+  const size_t hand = handles.front();
+  handles.clear();
+  metric.get_evaluations( pd, handles, false, err ); ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_EQUAL( (size_t)1, handles.size() );
+  CPPUNIT_ASSERT_EQUAL( hand, handles.front() );
+  
+  bool exp_rval, act_rval;
+  exp_rval = ref_metric.evaluate_with_gradient( pd, hand, exp_val, exp_idx, exp_grad, err );
+  ASSERT_NO_ERROR(err);
+  act_rval = metric.evaluate_with_gradient( pd, hand, act_val, act_idx, act_grad, err );
+  ASSERT_NO_ERROR(err);
+  
+  CPPUNIT_ASSERT( exp_rval );
+  CPPUNIT_ASSERT( act_rval );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( exp_val, act_val, 1e-5 );
+  CPPUNIT_ASSERT_EQUAL( (size_t)3, exp_idx.size() );
+  CPPUNIT_ASSERT_EQUAL( (size_t)3, act_idx.size() );
+  
+  std::vector<size_t> sorted(exp_idx);
+  msq_std::sort( sorted.begin(), sorted.end() );
+  CPPUNIT_ASSERT_EQUAL( (size_t)0, sorted[0] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)1, sorted[1] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)2, sorted[2] );
+  
+  sorted = act_idx;
+  msq_std::sort( sorted.begin(), sorted.end() );
+  CPPUNIT_ASSERT_EQUAL( (size_t)0, sorted[0] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)1, sorted[1] );
+  CPPUNIT_ASSERT_EQUAL( (size_t)2, sorted[2] );
+  
+  const size_t idx_map[] = { 
+    msq_std::find(act_idx.begin(),act_idx.end(),exp_idx[0]) - act_idx.begin(),
+    msq_std::find(act_idx.begin(),act_idx.end(),exp_idx[1]) - act_idx.begin(),
+    msq_std::find(act_idx.begin(),act_idx.end(),exp_idx[2]) - act_idx.begin() };
+  CPPUNIT_ASSERT_VECTORS_EQUAL( exp_grad[0], act_grad[idx_map[0]], 1e-5 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( exp_grad[1], act_grad[idx_map[1]], 1e-5 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( exp_grad[2], act_grad[idx_map[2]], 1e-5 );
+}
+
+  
+void TMPQualityMetricTest::regression_inverse_mean_ratio_hess()
+{
+  MsqError err;
+  InverseMeanRatio2D tm_2d;
+  SamplePoints pts(true);
+  IdealTargetCalculator target(false);
+  TMPQualityMetric metric( &pts, &target, &tm_2d, 0 );
+  const double coords[] = { 4.158984727, 4.6570859130000004, 5,
+                            4.51742825, 4.51742825, 5,
+                            4.3103448279999999, 5, 5 };
+  const bool fixed[] = { false, false, true };
+  const size_t indices[] = { 0, 1, 2 };
+  PatchData pd;
+  pd.fill( 3, coords, 1, TRIANGLE, indices, fixed, err );
+  pd.set_mapping_functions( &mf );
+  PlanarDomain dom( PlanarDomain::XY, coords[2] );
+  pd.set_domain( &dom );
+  
+  IdealWeightInverseMeanRatio ref_metric;
+  
+  double exp_val, act_val;
+  std::vector<size_t> exp_idx, act_idx, handles;
+  std::vector<Vector3D> exp_grad, act_grad;
+  std::vector<Matrix3D> exp_hess, act_hess;
+  
+  handles.clear();
+  ref_metric.get_evaluations( pd, handles, false, err ); ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_EQUAL( (size_t)1, handles.size() );
+  const size_t hand = handles.front();
+  handles.clear();
+  metric.get_evaluations( pd, handles, false, err ); ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_EQUAL( (size_t)1, handles.size() );
+  CPPUNIT_ASSERT_EQUAL( hand, handles.front() );
+  
+  bool exp_rval, act_rval;
+  exp_rval = ref_metric.evaluate_with_Hessian( pd, hand, exp_val, exp_idx, exp_grad, exp_hess, err );
+  ASSERT_NO_ERROR(err);
+  act_rval = metric.evaluate_with_Hessian( pd, hand, act_val, act_idx, act_grad, act_hess, err );
+  ASSERT_NO_ERROR(err);
+  
+  CPPUNIT_ASSERT( exp_rval );
+  CPPUNIT_ASSERT( act_rval );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( exp_val, act_val, 1e-5 );
+  CPPUNIT_ASSERT_EQUAL( (size_t)2, exp_idx.size() );
+  CPPUNIT_ASSERT_EQUAL( (size_t)2, act_idx.size() );
+
+  // zero derivatives with respect to Z
+  for (int i = 0; i < 3; ++i) {
+    exp_grad[i][2] = 0.0;
+    for (int j = 0; j < 3; ++j) 
+      exp_hess[i][j][2] = exp_hess[i][2][j] = 0.0;
+  }
+  
+  if (act_idx[0] == exp_idx[0]) {
+    CPPUNIT_ASSERT_EQUAL( exp_idx[1], act_idx[1] );
+    CPPUNIT_ASSERT_VECTORS_EQUAL( exp_grad[0], act_grad[0], 1e-5 );
+    CPPUNIT_ASSERT_VECTORS_EQUAL( exp_grad[1], act_grad[1], 1e-5 );
+    CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[0], act_hess[0], 1e-4 );
+    CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[1], act_hess[1], 1e-4 );
+    CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[2], act_hess[2], 1e-4 );
+  }
+  else {
+    CPPUNIT_ASSERT_EQUAL( exp_idx[0], act_idx[1] );
+    CPPUNIT_ASSERT_EQUAL( exp_idx[1], act_idx[0] );
+    CPPUNIT_ASSERT_VECTORS_EQUAL( exp_grad[0], act_grad[1], 1e-5 );
+    CPPUNIT_ASSERT_VECTORS_EQUAL( exp_grad[1], act_grad[0], 1e-5 );
+    CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[0], act_hess[2], 1e-4 );
+    CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[1], transpose(act_hess[1]), 1e-4 );
+    CPPUNIT_ASSERT_MATRICES_EQUAL( exp_hess[2], act_hess[0], 1e-4 );
   }
 }

@@ -43,7 +43,7 @@ bool InverseMeanRatio3D::evaluate( const MsqMatrix<3,3>& A,
 {
   const MsqMatrix<3,3> T = A * inverse(W);
   const double d = det( T );
-  if (fabs(d) < std::numeric_limits<double>::epsilon()) {
+  if (d < std::numeric_limits<double>::epsilon()) {
     result = 0.0;
     return false;
   }
@@ -64,7 +64,7 @@ bool InverseMeanRatio3D::evaluate_with_grad( const MsqMatrix<3,3>& A,
   const MsqMatrix<3,3> Winv = inverse(W);
   const MsqMatrix<3,3> T = A * Winv;
   const double d = det( T );
-  if (fabs(d) < std::numeric_limits<double>::epsilon()) {
+  if (d < std::numeric_limits<double>::epsilon()) {
     result = 0.0;
     deriv_wrt_A = MsqMatrix<3,3>(0.0);
     return false;
@@ -94,7 +94,7 @@ bool InverseMeanRatio3D::evaluate_with_hess( const MsqMatrix<3,3>& A,
   const MsqMatrix<3,3> Winv = inverse(W);
   const MsqMatrix<3,3> T = A * Winv;
   const double d = det( T );
-  if (fabs(d) < std::numeric_limits<double>::epsilon()) {
+  if (d < std::numeric_limits<double>::epsilon()) {
     result = 0.0;
     dA = MsqMatrix<3,3>(0.0);
     return false;

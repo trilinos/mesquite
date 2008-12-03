@@ -43,7 +43,7 @@ bool InverseMeanRatio2D::evaluate( const MsqMatrix<2,2>& A,
 {
   const MsqMatrix<2,2> T = A * inverse(W);
   const double d = det( T );
-  if (fabs(d) < std::numeric_limits<double>::epsilon()) {
+  if (d < std::numeric_limits<double>::epsilon()) {
     result = 0.0;
     return false;
   }
@@ -63,7 +63,7 @@ bool InverseMeanRatio2D::evaluate_with_grad( const MsqMatrix<2,2>& A,
   const MsqMatrix<2,2> Winv = inverse(W);
   const MsqMatrix<2,2> T = A * Winv;
   const double d = det( T );
-  if (fabs(d) < std::numeric_limits<double>::epsilon()) {
+  if (d < std::numeric_limits<double>::epsilon()) {
     result = 0.0;
     deriv_wrt_A = MsqMatrix<2,2>(0.0);
     return false;
@@ -90,7 +90,7 @@ bool InverseMeanRatio2D::evaluate_with_hess( const MsqMatrix<2,2>& A,
   const MsqMatrix<2,2> Winv = inverse(W);
   const MsqMatrix<2,2> T = A * Winv;
   const double d = det( T );
-  if (fabs(d) < std::numeric_limits<double>::epsilon()) {
+  if (d < std::numeric_limits<double>::epsilon()) {
     result = 0.0;
     dA = d2A[0] = d2A[1] = d2A[2] = MsqMatrix<2,2>(0.0);
     return false;
