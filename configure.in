@@ -698,6 +698,7 @@ AC_CONFIG_FILES([Makefile
                  testSuite/Guides843/Makefile
                  testSuite/headers/Makefile
                  testSuite/i_dft_with_culling/Makefile
+                 testSuite/idft_time/Makefile
                  testSuite/imesh/Makefile
                  testSuite/laplacian_test/Makefile
                  testSuite/laplacian_wrapper_test/Makefile

@@ -33,6 +33,7 @@ SUBDIRS = test_1 \
 	  deforming \
 	  rezone \
 	  i_dft_with_culling \
+	  idft_time \
 	  test_DFT \
 	  headers \
 	  2d_target \
