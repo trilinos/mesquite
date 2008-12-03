@@ -446,7 +446,7 @@ bool TMPQualityMetric::evaluate_with_Hessian(
       // calculate surface hessian as transform of 2D hessian
     Hessian.resize(n);
     for (size_t i = 0; i < n; ++i)
-      Hessian[i] = Matrix3D( (RZ * transpose(hess2d[i]) * transpose(RZ)).data() );
+      Hessian[i] = Matrix3D( (RZ * hess2d[i] * transpose(RZ)).data() );
   }
   else {
     assert(0);
