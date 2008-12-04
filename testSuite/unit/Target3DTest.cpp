@@ -133,8 +133,8 @@ void Target3DTest<Metric>::compare_eval_and_eval_with_grad()
 {
   Metric metric;
   
-  const double Avals[] = { 1, 2, 3, 4, 5, 1, 2, 3, 4 };
-  const double Bvals[] = { 0.1, 0.15, 0.05, 0.2, -0.1, -0.15, -0.05, -0.2, 2 };
+  const double Avals[] = { 2, 1, 1, 1, 2, 1, 1, 1, 2 };
+  const double Bvals[] = { 1.5, -0.7, -0.8, 0.8, -1.3, -0.7, 0.6, -0.9, -2.0 };
   const MsqMatrix<3,3> I( 1.0 );
   const MsqMatrix<3,3> A( Avals );
   const MsqMatrix<3,3> B( Bvals );
@@ -166,8 +166,8 @@ void Target3DTest<Metric>::compare_eval_with_grad_and_eval_with_hess()
 {
   Metric metric;
   
-  const double Avals[] = { 1, 2, 3, 4, 5, 1, 2, 3, 4 };
-  const double Bvals[] = { 0.1, 0.15, 0.05, 0.2, -0.1, -0.15, -0.05, -0.2, 2 };
+  const double Avals[] = { 2, 1, 1, 1, 2, 1, 1, 1, 2 };
+  const double Bvals[] = { 1.5, -0.7, -0.8, 0.8, -1.3, -0.7, 0.6, -0.9, -2.0 };
   const MsqMatrix<3,3> I( 1.0 );
   const MsqMatrix<3,3> A( Avals );
   const MsqMatrix<3,3> B( Bvals );
@@ -203,8 +203,8 @@ void Target3DTest<Metric>::compare_anaytic_and_numeric_grads()
   const double EPS_GRAD = 5e-3;
   Metric metric;
   
-  const double Avals[] = { 1, 2, 3, 4, 1, 4, 3, 2, 1 };
-  const double Bvals[] = { 0.1, 0.15, 0.05, 0.2, -0.1, -0.15, -0.05, -0.2, 2 };
+  const double Avals[] = { 2, 1, 1, 1, 2, 1, 1, 1, 2 };
+  const double Bvals[] = { 1.5, -0.7, -0.8, 0.8, -1.3, -0.7, 0.6, -0.9, -2.0 };
   const MsqMatrix<3,3> I( 1.0 );
   const MsqMatrix<3,3> A( Avals );
   const MsqMatrix<3,3> B( Bvals );
@@ -278,8 +278,8 @@ void Target3DTest<Metric>::compare_anaytic_and_numeric_hess()
   const double EPS_HESS = EPS_GRAD;
   Metric metric;
   
-  const double Avals[] = { 1, 2, 3, 4, 5, 1, 2, 3, 4 };
-  const double Bvals[] = { 0.1, 0.15, 0.05, 0.2, -0.1, -0.15, -0.05, -0.2, 2 };
+  const double Avals[] = { 2, 1, 1, 1, 2, 1, 1, 1, 2 };
+  const double Bvals[] = { 1.5, -0.7, -0.8, 0.8, -1.3, -0.7, 0.6, -0.9, -2.0 };
   const MsqMatrix<3,3> I( 1.0 );
   const MsqMatrix<3,3> A( Avals );
   const MsqMatrix<3,3> B( Bvals );
@@ -780,10 +780,10 @@ void TargetMetric3DTest::test_numerical_hessian()
 #include "Target3DShapeSizeOrient.hpp"
 #include "InverseMeanRatio3D.hpp"
 
-#define REGISTER_TARGET3D_TEST( M, A, B, C, D ) \
-class Test_ ## M : public Target3DTest<M> { public: \
-  Test_ ## M () : Target3DTest<M>( (A), (B), (C), (D) ) {} \
-  CPPUNIT_TEST_SUITE( Test_ ## M ); \
+#define REGISTER_TARGET3D_TEST( METRIC, SIZE_INVAR, ORIENT_INVAR, BARRIER, IDEAL_VAL ) \
+class Test_ ## METRIC : public Target3DTest<METRIC> { public: \
+  Test_ ## METRIC () : Target3DTest<METRIC>( (SIZE_INVAR), (ORIENT_INVAR), (BARRIER), (IDEAL_VAL) ) {} \
+  CPPUNIT_TEST_SUITE( Test_ ## METRIC ); \
   CPPUNIT_TEST (test_ideal_element_eval); \
   CPPUNIT_TEST (test_ideal_element_gradient); \
   CPPUNIT_TEST (test_inverted_element_eval); \
@@ -793,14 +793,14 @@ class Test_ ## M : public Target3DTest<M> { public: \
   CPPUNIT_TEST (test_orient); \
   CPPUNIT_TEST_SUITE_END(); \
 }; \
-CPPUNIT_NS::AutoRegisterSuite< Test_ ## M > M ## _UnitRegister ("Unit"); \
-CPPUNIT_NS::AutoRegisterSuite< Test_ ## M > M ## _FileRegister ("Target3DTest"); \
-CPPUNIT_NS::AutoRegisterSuite< Test_ ## M > M ## _BaseRegister ( "Test_" #M )
+CPPUNIT_NS::AutoRegisterSuite< Test_ ## METRIC > METRIC ## _UnitRegister ("Unit"); \
+CPPUNIT_NS::AutoRegisterSuite< Test_ ## METRIC > METRIC ## _FileRegister ("Target3DTest"); \
+CPPUNIT_NS::AutoRegisterSuite< Test_ ## METRIC > METRIC ## _BaseRegister ( "Test_" #METRIC )
 
-#define REGISTER_TARGET3D_TEST_WITH_GRAD( M, A, B, C, D ) \
-class Test_ ## M : public Target3DTest<M> { public: \
-  Test_ ## M () : Target3DTest<M>( (A), (B), (C), (D) ) {} \
-  CPPUNIT_TEST_SUITE( Test_ ## M ); \
+#define REGISTER_TARGET3D_TEST_WITH_GRAD( METRIC, SIZE_INVAR, ORIENT_INVAR, BARRIER, IDEAL_VAL ) \
+class Test_ ## METRIC : public Target3DTest<METRIC> { public: \
+  Test_ ## METRIC () : Target3DTest<METRIC>( (SIZE_INVAR), (ORIENT_INVAR), (BARRIER), (IDEAL_VAL) ) {} \
+  CPPUNIT_TEST_SUITE( Test_ ## METRIC ); \
   CPPUNIT_TEST (test_ideal_element_eval); \
   CPPUNIT_TEST (test_ideal_element_gradient); \
   CPPUNIT_TEST (test_inverted_element_eval); \
@@ -812,14 +812,14 @@ class Test_ ## M : public Target3DTest<M> { public: \
   CPPUNIT_TEST (compare_anaytic_and_numeric_grads); \
   CPPUNIT_TEST_SUITE_END(); \
 }; \
-CPPUNIT_NS::AutoRegisterSuite< Test_ ## M > M ## _UnitRegister ("Unit"); \
-CPPUNIT_NS::AutoRegisterSuite< Test_ ## M > M ## _FileRegister ("Target3DTest"); \
-CPPUNIT_NS::AutoRegisterSuite< Test_ ## M > M ## _BaseRegister ( "Test_" #M )
+CPPUNIT_NS::AutoRegisterSuite< Test_ ## METRIC > METRIC ## _UnitRegister ("Unit"); \
+CPPUNIT_NS::AutoRegisterSuite< Test_ ## METRIC > METRIC ## _FileRegister ("Target3DTest"); \
+CPPUNIT_NS::AutoRegisterSuite< Test_ ## METRIC > METRIC ## _BaseRegister ( "Test_" #METRIC )
 
-#define REGISTER_TARGET3D_TEST_WITH_HESS( M, A, B, C, D ) \
-class Test_ ## M : public Target3DTest<M> { public: \
-  Test_ ## M () : Target3DTest<M>( (A), (B), (C), (D) ) {} \
-  CPPUNIT_TEST_SUITE( Test_ ## M ); \
+#define REGISTER_TARGET3D_TEST_WITH_HESS( METRIC, SIZE_INVAR, ORIENT_INVAR, BARRIER, IDEAL_VAL ) \
+class Test_ ## METRIC : public Target3DTest<METRIC> { public: \
+  Test_ ## METRIC () : Target3DTest<METRIC>( (SIZE_INVAR), (ORIENT_INVAR), (BARRIER), (IDEAL_VAL) ) {} \
+  CPPUNIT_TEST_SUITE( Test_ ## METRIC ); \
   CPPUNIT_TEST (test_ideal_element_eval); \
   CPPUNIT_TEST (test_ideal_element_gradient); \
   CPPUNIT_TEST (test_inverted_element_eval); \
@@ -833,16 +833,16 @@ class Test_ ## M : public Target3DTest<M> { public: \
   CPPUNIT_TEST (compare_anaytic_and_numeric_hess); \
   CPPUNIT_TEST_SUITE_END(); \
 }; \
-CPPUNIT_NS::AutoRegisterSuite< Test_ ## M > M ## _UnitRegister ("Unit"); \
-CPPUNIT_NS::AutoRegisterSuite< Test_ ## M > M ## _FileRegister ("Target3DTest"); \
-CPPUNIT_NS::AutoRegisterSuite< Test_ ## M > M ## _BaseRegister ( "Test_" #M )
+CPPUNIT_NS::AutoRegisterSuite< Test_ ## METRIC > METRIC ## _UnitRegister ("Unit"); \
+CPPUNIT_NS::AutoRegisterSuite< Test_ ## METRIC > METRIC ## _FileRegister ("Target3DTest"); \
+CPPUNIT_NS::AutoRegisterSuite< Test_ ## METRIC > METRIC ## _BaseRegister ( "Test_" #METRIC )
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric3DTest, "Unit" );
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric3DTest, "Target3DTest" );
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric3DTest, "TargetMetric3DTest" );
 
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeOrient, false, false, false, 0.0 );
-REGISTER_TARGET3D_TEST_WITH_HESS( InverseMeanRatio3D, true, true, false, 1.0 );
+REGISTER_TARGET3D_TEST_WITH_HESS( InverseMeanRatio3D, true, true, true, 1.0 );
 
 
 class Test_TSquared3D : public Target3DTest<TSquared3D> {
