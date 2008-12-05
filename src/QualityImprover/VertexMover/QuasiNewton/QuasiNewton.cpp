@@ -109,11 +109,17 @@ void QuasiNewton::solve( Vector3D* z_arr, const Vector3D* v_arr ) const
 {
   SymMatrix3D pd;
   
+  const double small = 1e-100;
   const size_t nn = mHess.size();
   for (size_t i = 0; i < nn; ++i) {
 
+      // ensure positive definite: perturb a bit if
+      // diagonal values are zero.
+    SymMatrix3D d = mHess[i];
+    while (fabs(d[0]) < small || fabs(d[3]) < small || fabs(d[5]) < small)
+      d += small;
+
       // factor
-    const SymMatrix3D& d = mHess[i];
     pd[0] = 1.0 / d[0];
     pd[1] = d[1] * pd[0];
     pd[2] = d[2] * pd[0];
