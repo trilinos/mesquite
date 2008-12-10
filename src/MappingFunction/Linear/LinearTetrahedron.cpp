@@ -37,26 +37,24 @@ EntityTopology LinearTetrahedron::element_topology() const
   { return TETRAHEDRON; }
 
 void LinearTetrahedron::coefficients_at_corner( unsigned corner,
-                                                unsigned nodebits,
-                                                double* coeff_out,
-                                                size_t& num_coeff,
-                                                MsqError& err ) const
+                                             unsigned nodebits,
+                                             msq_std::vector<double>& coeff_out,
+                                             MsqError& err ) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
     return;
   }
   
-  num_coeff = 4;
+  coeff_out.resize(4);
   coeff_out[0] = coeff_out[1] = coeff_out[2] = coeff_out[3] = 0.0;
   coeff_out[corner] = 1.0;
 }
 
 void LinearTetrahedron::coefficients_at_mid_edge( unsigned edge,
-                                                  unsigned nodebits,
-                                                  double* coeff_out,
-                                                  size_t& num_coeff,
-                                                  MsqError& err ) const
+                                               unsigned nodebits,
+                                               msq_std::vector<double>& coeff_out,
+                                               MsqError& err ) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
@@ -77,7 +75,7 @@ void LinearTetrahedron::coefficients_at_mid_edge( unsigned edge,
     othr2_vtx = (edge+2) % 3;
   }
   
-  num_coeff = 4;
+  coeff_out.resize(4);
   coeff_out[start_vtx] = 0.5;
   coeff_out[  end_vtx] = 0.5;
   coeff_out[othr1_vtx] = 0.0;
@@ -85,10 +83,9 @@ void LinearTetrahedron::coefficients_at_mid_edge( unsigned edge,
 }
 
 void LinearTetrahedron::coefficients_at_mid_face( unsigned face,
-                                                  unsigned nodebits,
-                                                  double* coeff_out,
-                                                  size_t& num_coeff,
-                                                  MsqError& err ) const
+                                                unsigned nodebits,
+                                               msq_std::vector<double>& coeff_out,
+                                               MsqError& err ) const
 {
   static const unsigned opposite_vtx[] = { 2, 0, 1, 3 };
   
@@ -97,41 +94,41 @@ void LinearTetrahedron::coefficients_at_mid_face( unsigned face,
     return;
   }
   
-  num_coeff = 4;
+  coeff_out.resize(4);
   coeff_out[0] = coeff_out[1] = coeff_out[2] = coeff_out[3] = MSQ_ONE_THIRD;
   coeff_out[opposite_vtx[face]] = 0.0;
 }
 
 void LinearTetrahedron::coefficients_at_mid_elem( unsigned nodebits,
-                                                  double* coeff_out,
-                                                  size_t& num_coeff,
-                                                  MsqError& err ) const
+                                               msq_std::vector<double>& coeff_out,
+                                               MsqError& err ) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
     return;
   }
   
-  num_coeff = 4;
+  coeff_out.resize(4);
   coeff_out[0] = coeff_out[1] = coeff_out[2] = coeff_out[3] = 0.25;
 }
 
 static inline void tet_derivatives( unsigned nodebits,
-                                    size_t* vertices,
-                                    double* coeff_derivs,
-                                    size_t& num_vtx,
+                                    msq_std::vector<size_t>& vertices,
+                                    msq_std::vector<double>& coeff_derivs,
                                     MsqError& err ) 
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
   }
   else {
-    num_vtx = 4;
+    vertices.resize(4);
     vertices[0] = 0;
     vertices[1] = 1;
     vertices[2] = 2;
     vertices[3] = 3;
     
+    coeff_derivs.resize(12);
+
     coeff_derivs[ 0] = -1.0;
     coeff_derivs[ 1] = -1.0;
     coeff_derivs[ 2] = -1.0;
@@ -152,45 +149,42 @@ static inline void tet_derivatives( unsigned nodebits,
 
 
 void LinearTetrahedron::derivatives_at_corner( unsigned , 
-                                               unsigned nodebits,
-                                               size_t* vertex_indices_out,
-                                               double* d_coeff_d_xi_out,
-                                               size_t& num_vtx,
-                                               MsqError& err ) const
+                              unsigned nodebits,
+                              msq_std::vector<size_t>& vertex_indices_out,
+                              msq_std::vector<double>& d_coeff_d_xi_out,
+                              MsqError& err ) const
 {
-  tet_derivatives( nodebits, vertex_indices_out, d_coeff_d_xi_out, num_vtx, err );
+  tet_derivatives( nodebits, vertex_indices_out, d_coeff_d_xi_out, err );
   MSQ_CHKERR(err);
 }
 
 void LinearTetrahedron::derivatives_at_mid_edge( unsigned , 
-                                                 unsigned nodebits,
-                                                 size_t* vertex_indices_out,
-                                                 double* d_coeff_d_xi_out,
-                                                 size_t& num_vtx,
-                                                 MsqError& err ) const
+                              unsigned nodebits,
+                              msq_std::vector<size_t>& vertex_indices_out,
+                              msq_std::vector<double>& d_coeff_d_xi_out,
+                              MsqError& err ) const
 {
-  tet_derivatives( nodebits, vertex_indices_out, d_coeff_d_xi_out, num_vtx, err );
+  tet_derivatives( nodebits, vertex_indices_out, d_coeff_d_xi_out, err );
   MSQ_CHKERR(err);
 }
 
 void LinearTetrahedron::derivatives_at_mid_face( unsigned , 
-                                                 unsigned nodebits,
-                                                 size_t* vertex_indices_out,
-                                                 double* d_coeff_d_xi_out,
-                                                 size_t& num_vtx,
-                                                 MsqError& err ) const
+                              unsigned nodebits,
+                              msq_std::vector<size_t>& vertex_indices_out,
+                              msq_std::vector<double>& d_coeff_d_xi_out,
+                              MsqError& err ) const
 {
-  tet_derivatives( nodebits, vertex_indices_out, d_coeff_d_xi_out, num_vtx, err );
+  tet_derivatives( nodebits, vertex_indices_out, d_coeff_d_xi_out, err );
   MSQ_CHKERR(err);
 }
 
-void LinearTetrahedron::derivatives_at_mid_elem( unsigned nodebits,
-                                                 size_t* vertex_indices_out,
-                                                 double* d_coeff_d_xi_out,
-                                                 size_t& num_vtx,
-                                                 MsqError& err ) const
+void LinearTetrahedron::derivatives_at_mid_elem(
+                              unsigned nodebits,
+                              msq_std::vector<size_t>& vertex_indices_out,
+                              msq_std::vector<double>& d_coeff_d_xi_out,
+                              MsqError& err ) const
 {
-  tet_derivatives( nodebits, vertex_indices_out, d_coeff_d_xi_out, num_vtx, err );
+  tet_derivatives( nodebits, vertex_indices_out, d_coeff_d_xi_out, err );
   MSQ_CHKERR(err);
 }
 

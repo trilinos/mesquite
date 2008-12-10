@@ -34,7 +34,6 @@
 #define MSQ_SAMPLE_POINTS_HPP
 
 #include "Mesquite.hpp"
-#include <assert.h>
 
 namespace Mesquite {
 
@@ -58,8 +57,6 @@ namespace Mesquite {
  * recommended that other code treat such values as opaque and use
  * dimension-based methods whenever possible.
  */
-struct SampleLoc { char dim; char num; };
-typedef const SampleLoc* const (*loc_table_ptr)[16];
 class SamplePoints
 {
 public:
@@ -86,7 +83,7 @@ public:
    *\param entity_number Output: The number of the entity of dimension entity_dimensino
    *                     in the canonical order for the element topology.
    */
-  inline static void location_from_sample_number( EntityTopology element_type,
+  static void location_from_sample_number( EntityTopology element_type,
                                            unsigned sample_topology_bits,
                                            unsigned sample_point_number,
                                            unsigned& entity_dimension,
@@ -199,7 +196,6 @@ public:
 private:
 
   unsigned char sampleBits[Mesquite::MIXED];
-  static loc_table_ptr locationTable;
 };
   
   
@@ -220,18 +216,6 @@ void SamplePoints::sample_at( EntityTopology type, unsigned dimension )
   
 void SamplePoints::dont_sample_at( EntityTopology type, unsigned dimension )
   { sampleBits[type] &= ~(1 << dimension ); }
-
-inline void SamplePoints::location_from_sample_number( EntityTopology element_type,
-                                           unsigned sample_topology_bits,
-                                           unsigned sample_point_number,
-                                           unsigned& entity_dimension,
-                                           unsigned& entity_number )
-{
-  SampleLoc loc = locationTable[element_type][sample_topology_bits][sample_point_number];
-  assert(loc.dim >= 0);
-  entity_dimension = loc.dim;
-  entity_number    = loc.num;  
-}
   
 void SamplePoints::location_from_sample_number( EntityTopology element_type,
                                                 unsigned sample_point_number,

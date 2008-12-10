@@ -37,27 +37,21 @@ EntityTopology QuadLagrangeShape::element_topology() const
 
 void QuadLagrangeShape::coefficients_at_corner( unsigned corner,
                                                 unsigned ,
-                                                double* coeff_out,
-                                                size_t& num_coeff,
+                                                msq_std::vector<double>& coeff_out,
                                                 MsqError& ) const
 {
-  num_coeff = 9;
-  coeff_out[0] = coeff_out[1] = coeff_out[2] =
-  coeff_out[3] = coeff_out[4] = coeff_out[5] = 
-  coeff_out[6] = coeff_out[7] = coeff_out[8] = 0.0;
+  coeff_out.clear();
+  coeff_out.resize( 9, 0.0 );
   coeff_out[corner] = 1;
 }
 
 void QuadLagrangeShape::coefficients_at_mid_edge( unsigned edge,
                                                 unsigned nodebits,
-                                                double* coeff_out,
-                                                size_t& num_coeff,
+                                                msq_std::vector<double>& coeff_out,
                                                 MsqError& ) const
 {
-  num_coeff = 9;
-  coeff_out[0] = coeff_out[1] = coeff_out[2] =
-  coeff_out[3] = coeff_out[4] = coeff_out[5] = 
-  coeff_out[6] = coeff_out[7] = coeff_out[8] = 0.0;
+  coeff_out.clear();
+  coeff_out.resize( 9, 0.0 );
   if (nodebits & (1 << edge)) {  
       // if mid-edge node is present
     coeff_out[edge+4] = 1;
@@ -71,24 +65,21 @@ void QuadLagrangeShape::coefficients_at_mid_edge( unsigned edge,
 }
 
 void QuadLagrangeShape::coefficients_at_mid_face( unsigned ,
-                                                  unsigned ,
-                                                  double* ,
-                                                  size_t& ,
-                                                  MsqError& err) const
+                                                unsigned ,
+                                                msq_std::vector<double>& ,
+                                                MsqError& err) const
 {
   MSQ_SETERR(err)("Request for mid-face mapping function value"
                   "for a quadrilateral element", MsqError::UNSUPPORTED_ELEMENT);
 }
 
 void QuadLagrangeShape::coefficients_at_mid_elem( unsigned nodebits,
-                                                  double* coeff_out,
-                                                  size_t& num_coeff,
-                                                  MsqError& ) const
+                                          msq_std::vector<double>& coeff_out,
+                                          MsqError& ) const
 {
-  num_coeff = 9;
+  coeff_out.clear();
+  coeff_out.resize( 9, 0.0 );
   if (nodebits & 1<<4) { // if center node is present
-    coeff_out[0] = coeff_out[1] = coeff_out[2] = coeff_out[3] =
-    coeff_out[4] = coeff_out[5] = coeff_out[6] = coeff_out[7] = 0.0;
     coeff_out[8] = 1;
   } 
   else {
@@ -97,27 +88,21 @@ void QuadLagrangeShape::coefficients_at_mid_elem( unsigned nodebits,
     coeff_out[1] = 0.25;
     coeff_out[2] = 0.25;
     coeff_out[3] = 0.25;
-    coeff_out[8] = 0.00;
       // add in contribution for any mid-edge nodes present
-    for (int i = 0; i < 4; ++i) { // for each edge
+    for (int i = 0; i < 4; ++i) // for each edge
       if (nodebits & (1<<i))
       {
         coeff_out[ i+4   ]  = 0.5;
         coeff_out[ i     ] -= 0.25;
         coeff_out[(i+1)%4] -= 0.25;
       }
-      else {
-        coeff_out[ i+4   ]  = 0.0;
-      }
-    }
   }
 }
 
 void QuadLagrangeShape::derivatives_at_corner( unsigned corner, 
                                                unsigned nodebits,
-                                               size_t* vertices,
-                                               double* derivs,
-                                               size_t& num_vtx,
+                                               msq_std::vector<size_t>& vertices,
+                                               msq_std::vector<double>& derivs,
                                                MsqError&  ) const
 {
   static const unsigned xi_adj_corners[]  = { 1, 0, 3, 2 };
@@ -132,11 +117,12 @@ void QuadLagrangeShape::derivatives_at_corner( unsigned corner,
   static const double mid_xi[]     = {  1.0, -1.0, -1.0,  1.0 }; // xi values for mid-node in xi direction
   static const double mid_eta[]    = {  1.0,  1.0, -1.0, -1.0 }; // eta values for mid-node in eta direction
   
-  num_vtx = 3;
+  vertices.resize(3);
   vertices[0] = corner;
   vertices[1] = xi_adj_corners[corner];
   vertices[2] = eta_adj_corners[corner];
 
+  derivs.resize(6);
   derivs[0] = corner_xi [corner];
   derivs[1] = corner_eta[corner];
   derivs[2] = other_xi  [corner];
@@ -145,29 +131,26 @@ void QuadLagrangeShape::derivatives_at_corner( unsigned corner,
   derivs[5] = other_eta [corner];
 
   if (nodebits & (1<<xi_adj_edges[corner])) {
-    vertices[num_vtx] = 4 + xi_adj_edges[corner];
-    derivs[2*num_vtx  ] = 2.0*mid_xi[corner];
-    derivs[2*num_vtx+1] = 0.0;
+    vertices.push_back(4 + xi_adj_edges[corner]);
+    derivs.push_back(2.0*mid_xi[corner]);
+    derivs.push_back(0.0);
     derivs[0] -= mid_xi[corner];
     derivs[2] -= mid_xi[corner];
-    ++num_vtx;
   }
 
   if (nodebits & (1<<eta_adj_edges[corner])) {
-    vertices[num_vtx] = 4 + eta_adj_edges[corner];
-    derivs[2*num_vtx  ] = 0.0;
-    derivs[2*num_vtx+1] = 2.0*mid_eta[corner];
+    vertices.push_back(4 + eta_adj_edges[corner]);
+    derivs.push_back(0.0);
+    derivs.push_back(2.0*mid_eta[corner]);
     derivs[1] -= mid_eta[corner];
     derivs[5] -= mid_eta[corner];
-    ++num_vtx;
   }
 }
 
 void QuadLagrangeShape::derivatives_at_mid_edge( unsigned edge, 
                                                  unsigned nodebits,
-                                                 size_t* vertices,
-                                                 double* derivs,
-                                                 size_t& num_vtx,
+                                                 msq_std::vector<size_t>& vertices,
+                                                 msq_std::vector<double>& derivs,
                                                  MsqError&  ) const
 {
   static const double values[][9] = { {-0.25, -0.25, 0.25,  0.25, -0.5,  1.0,  0.5,  1.0,  2.0},
@@ -187,28 +170,27 @@ void QuadLagrangeShape::derivatives_at_mid_edge( unsigned edge,
   const unsigned next_opposite = (next_corner+1)%4; // index of corner adjacent to next_corner;
  
     // First do derivatives along edge (e.g. wrt xi if edge is eta = +/-1)
-  num_vtx = 2;
+  vertices.resize(2);
   vertices[0] = prev_corner;
   vertices[1] = next_corner;
+  derivs.clear();
+  derivs.resize(4,0.0);
   derivs[0+is_eta_edge] = edge_values[edge][0];
-  derivs[0+is_xi_edge]  = 0.0;
   derivs[2+is_eta_edge] = edge_values[edge][1];
-  derivs[2+is_xi_edge]  = 0.0;
     // That's it for the edge-direction derivatives.  No other vertices contribute.
     
     // Next handle the linear element case.  Handle this as a special case first,
     // so the generalized solution doesn't impact performance for linear elements
     // too much.
   if (!nodebits) {
-    num_vtx = 4;
+    vertices.resize(4);
     vertices[2] = prev_opposite;
     vertices[3] = next_opposite;
+    derivs.resize(8,0.0);
     derivs[0+is_xi_edge] = values[edge][prev_corner];
     derivs[2+is_xi_edge] = values[edge][next_corner];
     derivs[4+is_xi_edge] = values[edge][prev_opposite];
-    derivs[4+is_eta_edge] = 0.0;
     derivs[6+is_xi_edge] = values[edge][next_opposite];
-    derivs[6+is_eta_edge] = 0.0;
     return;
   }
   
@@ -222,14 +204,15 @@ void QuadLagrangeShape::derivatives_at_mid_edge( unsigned edge,
   double v8 = 0.0;
   if (nodebits & 16u) {
     v8 = values[edge][8];
-    vertices[num_vtx] = 8;
-    derivs[2*num_vtx+is_eta_edge] = 0.0;
-    derivs[2*num_vtx+is_xi_edge] = v8;
+    vertices.push_back( 8 );
+    size_t len = derivs.size();
+    derivs.resize( len+2 );
+    derivs[len+is_eta_edge] = 0.0;
+    derivs[len+is_xi_edge] = v8;
     v[0] -= 0.25 * v8;
     v[1] -= 0.25 * v8;
     v[2] -= 0.25 * v8;
     v[3] -= 0.25 * v8;
-    ++num_vtx;
   }
 
     // If mid-edge nodes are present
@@ -239,10 +222,11 @@ void QuadLagrangeShape::derivatives_at_mid_edge( unsigned edge,
       if (fabs(value) > 0.125) {
         v[ i     ] -= 0.5 * value;
         v[(i+1)%4] -= 0.5 * value;
-        vertices[num_vtx] = i+4;
-        derivs[2*num_vtx+is_eta_edge] = 0.0;
-        derivs[2*num_vtx+is_xi_edge] = value;
-        ++num_vtx;
+        vertices.push_back( i+4 );
+        size_t len = derivs.size();
+        derivs.resize( len+2 );
+        derivs[len+is_eta_edge] = 0.0;
+        derivs[len+is_xi_edge] = value;
       }
     }
   }
@@ -252,25 +236,26 @@ void QuadLagrangeShape::derivatives_at_mid_edge( unsigned edge,
   derivs[2+is_xi_edge] = v[next_corner];
     // do other two corners
   if (fabs(v[prev_opposite]) > 0.125) {
-    vertices[num_vtx] = prev_opposite;
-    derivs[2*num_vtx+is_eta_edge] = 0.0;
-    derivs[2*num_vtx+is_xi_edge] = v[prev_opposite];
-    ++num_vtx;
+    vertices.push_back(prev_opposite);
+    size_t len = derivs.size();
+    derivs.resize(len+2);
+    derivs[len+is_eta_edge] = 0.0;
+    derivs[len+is_xi_edge] = v[prev_opposite];
   }
   if (fabs(v[next_opposite]) > 0.125) {
-    vertices[num_vtx] = next_opposite;
-    derivs[2*num_vtx+is_eta_edge] = 0.0;
-    derivs[2*num_vtx+is_xi_edge] = v[next_opposite];
-    ++num_vtx;
+    vertices.push_back(next_opposite);
+    size_t len = derivs.size();
+    derivs.resize(len+2);
+    derivs[len+is_eta_edge] = 0.0;
+    derivs[len+is_xi_edge] = v[next_opposite];
   }
 }
 
   
 void QuadLagrangeShape::derivatives_at_mid_face( unsigned , 
                                                  unsigned ,
-                                                 size_t* ,
-                                                 double* ,
-                                                 size_t& ,
+                                                 msq_std::vector<size_t>& ,
+                                                 msq_std::vector<double>& ,
                                                  MsqError& err ) const
 
 {
@@ -280,9 +265,8 @@ void QuadLagrangeShape::derivatives_at_mid_face( unsigned ,
 
 
 void QuadLagrangeShape::derivatives_at_mid_elem( unsigned nodebits,
-                                                 size_t* vertices,
-                                                 double* derivs,
-                                                 size_t& num_vtx,
+                                                 msq_std::vector<size_t>& vertices,
+                                                 msq_std::vector<double>& derivs,
                                                  MsqError& ) const
 {
     // fast linear case
@@ -290,7 +274,8 @@ void QuadLagrangeShape::derivatives_at_mid_elem( unsigned nodebits,
     // If this block of code were removed, the general-case code
     // below should produce the same result.
   if (!nodebits) {
-    num_vtx = 4;
+    vertices.resize(4);
+    derivs.resize(8);
     vertices[0] = 0; derivs[0] = -0.25; derivs[1] = -0.25;
     vertices[1] = 1; derivs[2] =  0.25; derivs[3] = -0.25;
     vertices[2] = 2; derivs[4] =  0.25; derivs[5] =  0.25;
@@ -303,8 +288,10 @@ void QuadLagrangeShape::derivatives_at_mid_elem( unsigned nodebits,
   const unsigned n6bit = 1<<2;
   const unsigned n7bit = 1<<3;
   
-  size_t* v_iter = vertices;
-  double* d_iter = derivs;
+  vertices.resize(8);
+  derivs.resize(16);
+  msq_std::vector<size_t>::iterator v_iter = vertices.begin();
+  msq_std::vector<double>::iterator d_iter = derivs.begin();
   
     // N_0
   if ((nodebits&(n4bit|n7bit)) != (n4bit|n7bit)) {  // if eiter adjacent mid-edge node is missing
@@ -365,7 +352,8 @@ void QuadLagrangeShape::derivatives_at_mid_elem( unsigned nodebits,
     // N_8 (mid-quad node) never contributes to Jacobian at element center!!!
   
     // Remove unused space
-  num_vtx = v_iter - vertices;
+  vertices.resize( v_iter - vertices.begin() );
+  derivs.resize( d_iter - derivs.begin() );  
 }
 
 } // namespace Mesquite

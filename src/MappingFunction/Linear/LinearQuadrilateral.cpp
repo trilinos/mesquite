@@ -40,26 +40,24 @@ EntityTopology LinearQuadrilateral::element_topology() const
   { return QUADRILATERAL; }
 
 void LinearQuadrilateral::coefficients_at_corner( unsigned corner,
-                                                  unsigned nodebits,
-                                                  double* coeff_out,
-                                                  size_t& num_coeff,
-                                                  MsqError& err) const
+                                                unsigned nodebits,
+                                                msq_std::vector<double>& coeff_out,
+                                                MsqError& err) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
     return;
   }
   
-  num_coeff = 4;
+  coeff_out.resize(4);
   coeff_out[0] = coeff_out[1] = coeff_out[2] = coeff_out[3] = 0.0;
   coeff_out[corner] = 1.0;
 }
 
 void LinearQuadrilateral::coefficients_at_mid_edge( unsigned edge,
-                                                    unsigned nodebits,
-                                                    double* coeff_out,
-                                                    size_t& num_coeff,
-                                                    MsqError& err ) const
+                                                unsigned nodebits,
+                                                msq_std::vector<double>& coeff_out,
+                                                MsqError& err ) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
@@ -71,32 +69,30 @@ void LinearQuadrilateral::coefficients_at_mid_edge( unsigned edge,
   const unsigned othr1_vtx = (edge+2)%4;
   const unsigned othr2_vtx = (edge+3)%4;
   
-  num_coeff = 4;
+  coeff_out.resize(4);
   coeff_out[start_vtx] = coeff_out[  end_vtx] = 0.5;
   coeff_out[othr1_vtx] = coeff_out[othr2_vtx] = 0.0;
 }
 
 void LinearQuadrilateral::coefficients_at_mid_face( unsigned ,
-                                                    unsigned ,
-                                                    double* ,
-                                                    size_t& ,
-                                                    MsqError& err) const
+                                                unsigned ,
+                                                msq_std::vector<double>& ,
+                                                MsqError& err) const
 {
   MSQ_SETERR(err)("Request for mid-face mapping function value"
                   "for a quadrilateral element", MsqError::UNSUPPORTED_ELEMENT);
 }
 
 void LinearQuadrilateral::coefficients_at_mid_elem( unsigned nodebits,
-                                                    double* coeff_out,
-                                                    size_t& num_coeff,
-                                                    MsqError& err ) const
+                                          msq_std::vector<double>& coeff_out,
+                                          MsqError& err ) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
     return;
   }
   
-  num_coeff = 4;
+  coeff_out.resize( 4 );
   coeff_out[0] = 0.25;
   coeff_out[1] = 0.25;
   coeff_out[2] = 0.25;
@@ -109,11 +105,10 @@ const int sign[2][4] = {{ -1,  1,  1, -1 },  // xi
                         { -1, -1,  1,  1 }}; // eta
 
 void LinearQuadrilateral::derivatives_at_corner( unsigned corner, 
-                                                 unsigned nodebits,
-                                                 size_t* vertex_indices,
-                                                 double* derivs,
-                                                 size_t& num_vtx,
-                                                 MsqError& err  ) const
+                                               unsigned nodebits,
+                                               msq_std::vector<size_t>& vertex_indices,
+                                               msq_std::vector<double>& derivs,
+                                               MsqError& err  ) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
@@ -123,11 +118,12 @@ void LinearQuadrilateral::derivatives_at_corner( unsigned corner,
   const unsigned adj_in_xi = (5 - corner) % 4;
   const unsigned adj_in_eta = 3 - corner;
   
-  num_vtx = 3;
+  vertex_indices.resize(3);
   vertex_indices[0] = corner;
   vertex_indices[1] = adj_in_xi;
   vertex_indices[2] = adj_in_eta;
   
+  derivs.resize(6);
   derivs[0] = 0.5 * sign[ xi][corner];
   derivs[1] = 0.5 * sign[eta][corner];
   derivs[2] = 0.5 * sign[ xi][adj_in_xi ];
@@ -137,11 +133,10 @@ void LinearQuadrilateral::derivatives_at_corner( unsigned corner,
 }
 
 void LinearQuadrilateral::derivatives_at_mid_edge( unsigned edge, 
-                                                   unsigned nodebits,
-                                                   size_t* vertices,
-                                                   double* derivs,
-                                                   size_t& num_vtx,
-                                                   MsqError&  err ) const
+                                                 unsigned nodebits,
+                                                 msq_std::vector<size_t>& vertices,
+                                                 msq_std::vector<double>& derivs,
+                                                 MsqError&  err ) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
@@ -155,11 +150,13 @@ void LinearQuadrilateral::derivatives_at_mid_edge( unsigned edge,
   const unsigned direction = edge % 2;
   const unsigned orthogonal = 1 - direction;
   
-  num_vtx = 4;
+  vertices.resize(4);
   vertices[0] = 0;
   vertices[1] = 1;
   vertices[2] = 2;
   vertices[3] = 3;
+  
+  derivs.resize(8);
   
   derivs[2*start_vtx + direction] = 0.5 * sign[direction][start_vtx];
   derivs[2*  end_vtx + direction] = 0.5 * sign[direction][  end_vtx];
@@ -174,11 +171,10 @@ void LinearQuadrilateral::derivatives_at_mid_edge( unsigned edge,
 
   
 void LinearQuadrilateral::derivatives_at_mid_face( unsigned , 
-                                                   unsigned ,
-                                                   size_t* ,
-                                                   double* ,
-                                                   size_t& ,
-                                                   MsqError& err ) const
+                                                 unsigned ,
+                                                 msq_std::vector<size_t>& ,
+                                                 msq_std::vector<double>& ,
+                                                 MsqError& err ) const
 
 {
   MSQ_SETERR(err)("Request for mid-face mapping function derivative"
@@ -187,17 +183,17 @@ void LinearQuadrilateral::derivatives_at_mid_face( unsigned ,
 
 
 void LinearQuadrilateral::derivatives_at_mid_elem( unsigned nodebits,
-                                                   size_t* vertices,
-                                                   double* derivs,
-                                                   size_t& num_vtx,
-                                                   MsqError& err ) const
+                                                 msq_std::vector<size_t>& vertices,
+                                                 msq_std::vector<double>& derivs,
+                                                 MsqError& err ) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
     return;
   }
   
-  num_vtx = 4;
+  vertices.resize(4);
+  derivs.resize(8);
   vertices[0] = 0; derivs[0] = -0.25; derivs[1] = -0.25;
   vertices[1] = 1; derivs[2] =  0.25; derivs[3] = -0.25;
   vertices[2] = 2; derivs[4] =  0.25; derivs[5] =  0.25;

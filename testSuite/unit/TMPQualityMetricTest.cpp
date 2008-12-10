@@ -259,7 +259,7 @@ public:
   void test_evaluate_3D_weight();
   void test_evaluate_2D_corner()  { test_2d_eval_ortho_quad(0); }
   void test_evaluate_2D_edge()    { test_2d_eval_ortho_quad(1); }
-  void test_evaluate_2D_elem()    { test_2d_eval_ortho_quad(2); }
+  void test_evaluate_2D_elem()    { test_2d_eval_ortho_quad(3); }
   void test_evaluate_3D_corner()  { test_3d_eval_ortho_hex(0); }
   void test_evaluate_3D_edge()    { test_3d_eval_ortho_hex(1); }
   void test_evaluate_3D_face()    { test_3d_eval_ortho_hex(2); }
@@ -579,7 +579,7 @@ void TMPQualityMetricTest::test_gradient_2D()
   
     // construct metric
   pd.set_mapping_functions( &mf );
-  SamplePoints center( false, false, true, false );
+  SamplePoints center( false, false, false, true );
   TestGradTargetMetric2D tm;
   IdealTargetCalculator tc;
   TMPQualityMetric m( &center, &tc, &tm, 0 );

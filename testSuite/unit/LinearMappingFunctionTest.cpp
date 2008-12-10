@@ -140,14 +140,12 @@ class LinearMappingFunctionTest : public CppUnit::TestFixture
     typedef void (*map_func)(double*, double* );
     typedef void (MappingFunction::* mf_coeff)( unsigned, 
                                                 unsigned, 
-                                                double*,
-                                                size_t&,
+                                                vector<double>&,
                                                 MsqError& ) const;
     typedef void (MappingFunction::* mf_deriv)( unsigned, 
                                                 unsigned, 
-                                                size_t*,
-                                                double*,
-                                                size_t&,
+                                                vector<size_t>&,
+                                                vector<double>&,
                                                 MsqError& ) const;
     
     void do_coeff_test( MappingFunction& mf, 
@@ -862,9 +860,8 @@ void LinearMappingFunctionTest::do_coeff_test( MappingFunction& mf,
 {
     // make sure it fails if passed a nonlinear element
   MsqError err;
-  double coeff[100];
-  size_t num_coeff = 100;
-  (mf.*func)( 0, 1, coeff, num_coeff, err );
+  vector<double> coeff;
+  (mf.*func)( 0, 1, coeff, err );
   CPPUNIT_ASSERT(err);
   err.clear();
   
@@ -876,10 +873,10 @@ void LinearMappingFunctionTest::do_coeff_test( MappingFunction& mf,
   vector<double> comp(n);
   for (unsigned i = 0; i < count; ++i)
   {
-    num_coeff = 101;
-    (mf.*func)( i, 0, coeff, num_coeff, err );
+    coeff.clear();
+    (mf.*func)( i, 0, coeff, err );
     CPPUNIT_ASSERT(!err);
-    CPPUNIT_ASSERT_EQUAL(num_coeff, (size_t)n);
+    CPPUNIT_ASSERT_EQUAL(coeff.size(), (size_t)n);
     
     mf2( xi, &comp[0] );
     string xi_str;
@@ -912,9 +909,9 @@ void LinearMappingFunctionTest::do_deriv_test( MappingFunction& mf,
 {
     // make sure it fails if passed a nonlinear element
   MsqError err;
-  double coeff[100];
-  size_t verts[100], num_coeff = 37;
-  (mf.*func)( 0, 1, verts, coeff, num_coeff, err );
+  vector<double> coeff;
+  vector<size_t> verts;
+  (mf.*func)( 0, 1, verts, coeff, err );
   CPPUNIT_ASSERT(err);
   err.clear();
   
@@ -926,11 +923,13 @@ void LinearMappingFunctionTest::do_deriv_test( MappingFunction& mf,
   vector<double> comp(n*d);
   for (unsigned i = 0; i < count; ++i)
   {
-    num_coeff = 33;
-    (mf.*func)( i, 0, verts, coeff, num_coeff, err );
+    coeff.clear();
+    verts.clear();
+    (mf.*func)( i, 0, verts, coeff, err );
     CPPUNIT_ASSERT(!err);
-    CPPUNIT_ASSERT( num_coeff > 0 );
-    CPPUNIT_ASSERT( num_coeff <= n );
+    CPPUNIT_ASSERT_EQUAL(coeff.size(), verts.size()*d);
+    CPPUNIT_ASSERT( verts.size() > 0 );
+    CPPUNIT_ASSERT( verts.size() <= n );
     
     mf2( xi, &comp[0] );
     string xi_str;
@@ -941,7 +940,7 @@ void LinearMappingFunctionTest::do_deriv_test( MappingFunction& mf,
     xi_str += ")";
     xi += d;
     
-    for (unsigned j = 0; j < num_coeff; ++j)
+    for (unsigned j = 0; j < verts.size(); ++j)
     {
       bool all_zero = true;
       for (unsigned k = 0; k < d; ++k)
@@ -964,9 +963,9 @@ void LinearMappingFunctionTest::do_deriv_test( MappingFunction& mf,
     }
     
       // If any vertex is not in the list, then its values must be zero.
-    sort( verts, verts + num_coeff );
-    for (unsigned j = 0; j < num_coeff; ++j)
-      if (!binary_search( verts, verts+num_coeff, j ))
+    sort( verts.begin(), verts.end() );
+    for (unsigned j = 0; j < verts.size(); ++j)
+      if (!binary_search( verts.begin(), verts.end(), j ))
         for (unsigned k = 0; k < d; ++k)
         {
           CppUnit::Message message( "Missing coefficient derivatives." );
@@ -986,9 +985,8 @@ void LinearMappingFunctionTest::do_coeff_test_mid( MappingFunction& mf,
 {
     // make sure it fails if passed a nonlinear element
   MsqError err;
-  double coeff[100];
-  size_t num_coeff = 38;
-  mf.coefficients_at_mid_elem( 1, coeff, num_coeff, err );
+  vector<double> coeff;
+  mf.coefficients_at_mid_elem( 1, coeff, err );
   CPPUNIT_ASSERT(err);
   err.clear();
   
@@ -997,10 +995,10 @@ void LinearMappingFunctionTest::do_coeff_test_mid( MappingFunction& mf,
   
     // compare coefficients at each location
   vector<double> comp(n);
-  num_coeff = 37;
-  mf.coefficients_at_mid_elem( 0, coeff, num_coeff, err );
+  coeff.clear();
+  mf.coefficients_at_mid_elem( 0, coeff, err );
   CPPUNIT_ASSERT(!err);
-  CPPUNIT_ASSERT_EQUAL(num_coeff, (size_t)n);
+  CPPUNIT_ASSERT_EQUAL(coeff.size(), (size_t)n);
 
   mf2( xi, &comp[0] );
   for (unsigned j = 0; j < n; ++j)
@@ -1022,9 +1020,9 @@ void LinearMappingFunctionTest::do_deriv_test_mid( MappingFunction& mf,
 {
     // make sure it fails if passed a nonlinear element
   MsqError err;
-  double coeff[100];
-  size_t verts[100], num_vtx = 27;
-  mf.derivatives_at_mid_elem( 1, verts, coeff, num_vtx, err );
+  vector<double> coeff;
+  vector<size_t> verts;
+  mf.derivatives_at_mid_elem( 1, verts, coeff, err );
   CPPUNIT_ASSERT(err);
   err.clear();
   
@@ -1034,14 +1032,16 @@ void LinearMappingFunctionTest::do_deriv_test_mid( MappingFunction& mf,
   
     // compare coefficients at each location
   vector<double> comp(n*d);
-  num_vtx = 27;
-  mf.derivatives_at_mid_elem( 0, verts, coeff, num_vtx, err );
+  coeff.clear();
+  verts.clear();
+  mf.derivatives_at_mid_elem( 0, verts, coeff, err );
   CPPUNIT_ASSERT(!err);
-  CPPUNIT_ASSERT( num_vtx > 0 );
-  CPPUNIT_ASSERT( num_vtx <= n );
+  CPPUNIT_ASSERT_EQUAL(coeff.size(), verts.size()*d);
+  CPPUNIT_ASSERT( verts.size() > 0 );
+  CPPUNIT_ASSERT( verts.size() <= n );
 
   mf2( xi, &comp[0] );
-  for (unsigned j = 0; j < num_vtx; ++j)
+  for (unsigned j = 0; j < verts.size(); ++j)
   {
       // check that we got the expected values
     bool all_zero = true;
@@ -1063,9 +1063,9 @@ void LinearMappingFunctionTest::do_deriv_test_mid( MappingFunction& mf,
   }
 
     // If any vertex is not in the list, then its values must be zero.
-  sort( verts, verts+num_vtx );
+  sort( verts.begin(), verts.end() );
   for (unsigned j = 0; j < n; ++j)
-    if (!binary_search( verts, verts+num_vtx, j ))
+    if (!binary_search( verts.begin(), verts.end(), j ))
       for (unsigned k = 0; k < d; ++k)
       {
         CppUnit::Message message( "Missing coefficient derivatives." );
@@ -1077,16 +1077,15 @@ void LinearMappingFunctionTest::do_deriv_test_mid( MappingFunction& mf,
   
     // for linear elements, the derivative at the center should
     // depend on all the vertices
-  CPPUNIT_ASSERT_EQUAL( (size_t)n, num_vtx );
+  CPPUNIT_ASSERT_EQUAL( (size_t)n, verts.size() );
 }
                   
 void LinearMappingFunctionTest::do_test_fail( MappingFunction& mf, mf_coeff func )
 {
     // make sure it fails if called
   MsqError err;
-  double coeff[100];
-  size_t num_coeff;
-  (mf.*func)( 0, 0, coeff, num_coeff, err );
+  vector<double> coeff;
+  (mf.*func)( 0, 0, coeff, err );
   CPPUNIT_ASSERT(err);
   err.clear();
 }  
@@ -1095,9 +1094,9 @@ void LinearMappingFunctionTest::do_test_fail( MappingFunction& mf, mf_deriv func
 {
     // make sure it fails if called
   MsqError err;
-  double coeff[100];
-  size_t verts[100], num_coeff;
-  (mf.*func)( 0, 0, verts, coeff, num_coeff, err );
+  vector<double> coeff;
+  vector<size_t> verts;
+  (mf.*func)( 0, 0, verts, coeff, err );
   CPPUNIT_ASSERT(err);
   err.clear();
 }

@@ -50,25 +50,25 @@ void JacobianCalculator::get_derivatives( const MappingFunction* func,
   
   unsigned edim = TopologyInfo::dimension( func->element_topology() );
   
-  numVtx = 0;
+  mIndices.clear();
+  mDerivs.clear();
   switch (dim) {
     case 0:
-      func->derivatives_at_corner( num, ho_bits, mIndices, mDerivs, numVtx, err );
+      func->derivatives_at_corner( num, ho_bits, mIndices, mDerivs, err );
       break;
     case 1:
-      func->derivatives_at_mid_edge( num, ho_bits, mIndices, mDerivs, numVtx, err );
+      func->derivatives_at_mid_edge( num, ho_bits, mIndices, mDerivs, err );
       break;
     case 2:
       if (edim != 2) {
-        func->derivatives_at_mid_face( num, ho_bits, mIndices, mDerivs, numVtx, err );
+        func->derivatives_at_mid_face( num, ho_bits, mIndices, mDerivs, err );
         break;
       }
     case 3:
-      func->derivatives_at_mid_elem( ho_bits, mIndices, mDerivs, numVtx, err );
+      func->derivatives_at_mid_elem( ho_bits, mIndices, mDerivs, err );
       break;
   }
   MSQ_CHKERR( err );
-  assert(numVtx < MAX_ELEM_NODES);
 }
 
 void JacobianCalculator::get_Jacobian_2D( const MappingFunction* mf,
@@ -79,10 +79,10 @@ void JacobianCalculator::get_Jacobian_2D( const MappingFunction* mf,
                                           MsqError& err )
 {
   get_derivatives( mf, ho_bits, dim, num, err ); MSQ_ERRRTN(err);
-  const double* d = mDerivs;
-  const size_t* const e = mIndices + numVtx;
+  msq_std::vector<size_t>::const_iterator i = mIndices.begin();
+  msq_std::vector<double>::const_iterator d = mDerivs.begin();
   Vector3D c[2] = {Vector3D(0,0,0), Vector3D(0,0,0)};
-  for (const size_t* i = mIndices; i != e; ++i) {
+  for (; i != mIndices.end(); ++i) {
     c[0] += *d * verts[*i]; ++d;
     c[1] += *d * verts[*i]; ++d;
   }
@@ -98,10 +98,10 @@ void JacobianCalculator::get_Jacobian_3D( const MappingFunction* mf,
                                           MsqError& err )
 {
   get_derivatives( mf, ho_bits, dim, num, err ); MSQ_ERRRTN(err);
-  const double* d = mDerivs;
-  const size_t* const e = mIndices + numVtx;
+  msq_std::vector<size_t>::const_iterator i = mIndices.begin();
+  msq_std::vector<double>::const_iterator d = mDerivs.begin();
   Vector3D c[3] = {Vector3D(0,0,0), Vector3D(0,0,0), Vector3D(0,0,0)};
-  for (const size_t* i = mIndices; i != e; ++i) {
+  for (; i != mIndices.end(); ++i) {
     c[0] += *d * verts[*i]; ++d;
     c[1] += *d * verts[*i]; ++d;
     c[2] += *d * verts[*i]; ++d;

@@ -1687,29 +1687,28 @@ void PatchData::get_sample_location( size_t element_index,
     return;
   }
   
-  double coeff[27];
-  size_t num_coeff;
+  std::vector<double> coeff;
   switch (sample_dim) {
     case 0:
-      f->coefficients_at_corner( sample_num, ho_bits, coeff, num_coeff, err );
+      f->coefficients_at_corner( sample_num, ho_bits, coeff, err );
       break;
     case 1:
-      f->coefficients_at_mid_edge( sample_num, ho_bits, coeff, num_coeff, err );
+      f->coefficients_at_mid_edge( sample_num, ho_bits, coeff, err );
       break;
     case 2:
       if (TopologyInfo::dimension( elem.get_element_type() ) != 2) {
-        f->coefficients_at_mid_face( sample_num, ho_bits, coeff, num_coeff, err );
+        f->coefficients_at_mid_face( sample_num, ho_bits, coeff, err );
         break;
       }
     case 3:
-      f->coefficients_at_mid_elem( ho_bits, coeff, num_coeff, err );
+      f->coefficients_at_mid_elem( ho_bits, coeff, err );
       break;
   }
   MSQ_ERRRTN( err );
   
   const size_t* const conn = elem.get_vertex_index_array();
   result[2] = result[1] = result[0] = 0.0;
-  for (unsigned i = 0; i < num_coeff; ++i) 
+  for (unsigned i = 0; i < coeff.size(); ++i) 
     result += coeff[i] * vertex_by_index(conn[i]);
 }
 

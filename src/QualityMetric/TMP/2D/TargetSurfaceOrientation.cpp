@@ -85,28 +85,14 @@ void TargetSurfaceOrientation::get_element_evaluations( PatchData& pd,
 
 bool TargetSurfaceOrientation::evaluate( PatchData& pd, size_t handle, double& value, MsqError& err )
 {
-  size_t num_idx;
-  return evaluate_with_indices( pd, handle, value, mIndices, num_idx, err );
+  mIndices.clear();
+  return evaluate_with_indices( pd, handle, value, mIndices, err );
 }
 
 bool TargetSurfaceOrientation::evaluate_with_indices( PatchData& pd,
                                             size_t handle,
                                             double& value,
                                             msq_std::vector<size_t>& indices,
-                                            MsqError& err )
-{
-  size_t num_idx = 0;
-  bool rval = evaluate_with_indices( pd, handle, value, mIndices, num_idx, err );
-  indices.resize( num_idx );
-  std::copy( mIndices, mIndices + num_idx, indices.begin() );
-  return rval;
-}
-
-bool TargetSurfaceOrientation::evaluate_with_indices( PatchData& pd,
-                                            size_t handle,
-                                            double& value,
-                                            size_t* indices,
-                                            size_t& num_idx,
                                             MsqError& err )
 {
   unsigned s = ElemSampleQM::sample( handle );
@@ -130,15 +116,17 @@ bool TargetSurfaceOrientation::evaluate_with_indices( PatchData& pd,
   const size_t* conn = elem.get_vertex_index_array();
   const unsigned bits = pd.higher_order_node_bits( e );
   
+  indices.clear();
+  mDerivs.clear();
   switch (dim) {
     case 0:
-      func->derivatives_at_corner( num, bits, indices, mDerivs, num_idx, err );
+      func->derivatives_at_corner( num, bits, indices, mDerivs, err );
       break;
     case 1:
-      func->derivatives_at_mid_edge( num, bits, indices, mDerivs, num_idx, err );
+      func->derivatives_at_mid_edge( num, bits, indices, mDerivs, err );
       break;
     case 2:
-      func->derivatives_at_mid_elem( bits, indices, mDerivs, num_idx, err );
+      func->derivatives_at_mid_elem( bits, indices, mDerivs, err );
       break;
     default:
       MSQ_SETERR(err)( MsqError::INTERNAL_ERROR );
@@ -147,12 +135,12 @@ bool TargetSurfaceOrientation::evaluate_with_indices( PatchData& pd,
   
     // Convert from indices into element connectivity list to
     // indices into vertex array in patch data.
-  for (size_t i = 0; i < num_idx; ++i)
-    indices[i] = conn[indices[i]];
+  for (msq_std::vector<size_t>::iterator i = indices.begin(); i != indices.end(); ++i)
+    *i = conn[*i];
   
-  double* d = mDerivs;
+  std::vector<double>::const_iterator d = mDerivs.begin();
   Vector3D c[2] = { Vector3D(0,0,0), Vector3D(0,0,0) };
-  for (size_t i = 0; i < num_idx; ++i) {
+  for (size_t i = 0; i < indices.size(); ++i) {
     Vector3D coords = pd.vertex_by_index( indices[i] );
     c[0] += *d * coords; ++d;
     c[1] += *d * coords; ++d;

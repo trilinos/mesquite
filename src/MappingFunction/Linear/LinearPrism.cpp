@@ -53,8 +53,7 @@ static const int faces[5][5] = { { 4, 0, 1, 4, 3 },
 
 void LinearPrism::coefficients_at_corner( unsigned corner,
                                           unsigned nodebits,
-                                          double* coeff_out,
-                                          size_t& num_coeff,
+                                          msq_std::vector<double>& coeff_out,
                                           MsqError& err) const
 {
   if (nodebits) {
@@ -62,24 +61,23 @@ void LinearPrism::coefficients_at_corner( unsigned corner,
     return;
   }
   
-  num_coeff = 6;
+  coeff_out.resize(6);
   coeff_out[0] = coeff_out[1] = coeff_out[2] = 0.0;
   coeff_out[3] = coeff_out[4] = coeff_out[5] = 0.0;
   coeff_out[corner] = 1.0;
 }
 
 void LinearPrism::coefficients_at_mid_edge( unsigned edge,
-                                            unsigned nodebits,
-                                            double* coeff_out,
-                                            size_t& num_coeff,
-                                            MsqError& err) const
+                                          unsigned nodebits,
+                                          msq_std::vector<double>& coeff_out,
+                                          MsqError& err) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
     return;
   }
   
-  num_coeff = 6;
+  coeff_out.resize(6);
   coeff_out[0] = coeff_out[1] = coeff_out[2] = 0.0;
   coeff_out[3] = coeff_out[4] = coeff_out[5] = 0.0;
   coeff_out[edge_beg[edge]] = 0.5;
@@ -87,17 +85,16 @@ void LinearPrism::coefficients_at_mid_edge( unsigned edge,
 }
 
 void LinearPrism::coefficients_at_mid_face( unsigned face,
-                                            unsigned nodebits,
-                                            double* coeff_out,
-                                            size_t& num_coeff,
-                                            MsqError& err) const
+                                          unsigned nodebits,
+                                          msq_std::vector<double>& coeff_out,
+                                          MsqError& err) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
     return;
   }
   
-  num_coeff = 6;
+  coeff_out.resize(6);
   coeff_out[0] = coeff_out[1] = coeff_out[2] = 0.0;
   coeff_out[3] = coeff_out[4] = coeff_out[5] = 0.0;
   const int n = faces[face][0];
@@ -115,8 +112,7 @@ void LinearPrism::coefficients_at_mid_face( unsigned face,
 }
 
 void LinearPrism::coefficients_at_mid_elem( unsigned nodebits,
-                                            double* coeff_out,
-                                            size_t& num_coeff,
+                                            msq_std::vector<double>& coeff_out,
                                             MsqError& err) const
 {
   if (nodebits) {
@@ -124,8 +120,8 @@ void LinearPrism::coefficients_at_mid_elem( unsigned nodebits,
     return;
   }
   
-  num_coeff = 6;
   const double sixth = 1.0/6.0;
+  coeff_out.resize(6);
   coeff_out[0] = sixth;
   coeff_out[1] = sixth;
   coeff_out[2] = sixth;
@@ -135,11 +131,10 @@ void LinearPrism::coefficients_at_mid_elem( unsigned nodebits,
 }
 
 void LinearPrism::derivatives_at_corner( unsigned corner, 
-                                         unsigned nodebits,
-                                         size_t* vertex_indices_out,
-                                         double* d_coeff_d_xi_out,
-                                         size_t& num_vtx,
-                                         MsqError& err ) const
+                              unsigned nodebits,
+                              msq_std::vector<size_t>& vertex_indices_out,
+                              msq_std::vector<double>& d_coeff_d_xi_out,
+                              MsqError& err ) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
@@ -149,7 +144,7 @@ void LinearPrism::derivatives_at_corner( unsigned corner,
   int tri = (corner / 3); // 0 for xi=-1, 1 for xi=1
   int tv = corner % 3;    // offset of corner with xi=+/-1 triangle
 
-  num_vtx = 4;
+  vertex_indices_out.resize(4);
     // three vertices within the xi=+/-1 triangle
   vertex_indices_out[0] = 3*tri;
   vertex_indices_out[1] = 3*tri+1;
@@ -157,6 +152,7 @@ void LinearPrism::derivatives_at_corner( unsigned corner,
     // vertex adjacent to corner in other triangle
   vertex_indices_out[3] = 3 - 6*tri + corner;
   
+  d_coeff_d_xi_out.resize(12);
     // three vertices within the xi=+/-1 triangle
   d_coeff_d_xi_out[ 0] =  0.0;
   d_coeff_d_xi_out[ 1] = -1.0;
@@ -177,11 +173,10 @@ void LinearPrism::derivatives_at_corner( unsigned corner,
 
 
 void LinearPrism::derivatives_at_mid_edge( unsigned edge, 
-                                           unsigned nodebits,
-                                           size_t* vertex_indices_out,
-                                           double* d_coeff_d_xi_out,
-                                           size_t& num_vtx,
-                                           MsqError& err ) const
+                              unsigned nodebits,
+                              msq_std::vector<size_t>& vertex_indices_out,
+                              msq_std::vector<double>& d_coeff_d_xi_out,
+                              MsqError& err ) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
@@ -195,7 +190,7 @@ void LinearPrism::derivatives_at_mid_edge( unsigned edge,
     case 0:  // triangle at xi = -1
       opp = (edge+2)%3;
 
-      num_vtx = 5;
+      vertex_indices_out.resize(5);
         // vertices in this xi = -1 triagnle
       vertex_indices_out[0] = 0;
       vertex_indices_out[1] = 1;
@@ -204,6 +199,7 @@ void LinearPrism::derivatives_at_mid_edge( unsigned edge,
       vertex_indices_out[3] = 3 + edge;
       vertex_indices_out[4] = 3 + (edge+1)%3;
 
+      d_coeff_d_xi_out.resize(15);
         // vertices in this xi = -1 triagnle
       d_coeff_d_xi_out[ 0] = -0.25;
       d_coeff_d_xi_out[ 1] = -1.00;
@@ -226,13 +222,15 @@ void LinearPrism::derivatives_at_mid_edge( unsigned edge,
       break;
 
     case 1:  // lateral edges (not in either triangle)
-      num_vtx = 6;
+      vertex_indices_out.resize(6);
       vertex_indices_out[0] = 0;
       vertex_indices_out[1] = 1;
       vertex_indices_out[2] = 2;
       vertex_indices_out[3] = 3;
       vertex_indices_out[4] = 4;
       vertex_indices_out[5] = 5;
+
+      d_coeff_d_xi_out.resize(18);
       
         // set all deta & dzeta values, zero all dxi values
       d_coeff_d_xi_out[ 0] =  0.0;
@@ -262,7 +260,7 @@ void LinearPrism::derivatives_at_mid_edge( unsigned edge,
     case 2:  // triangle at xi = 1
       opp = (edge+2)%3;
 
-      num_vtx = 5;
+      vertex_indices_out.resize(5);
         // vertices in this xi = 1 triagnle
       vertex_indices_out[0] = 3;
       vertex_indices_out[1] = 4;
@@ -271,6 +269,7 @@ void LinearPrism::derivatives_at_mid_edge( unsigned edge,
       vertex_indices_out[3] = edge - 6;
       vertex_indices_out[4] = (edge-5)%3;
 
+      d_coeff_d_xi_out.resize(15);
         // vertices in this xi = -1 triagnle
       d_coeff_d_xi_out[ 0] =  0.25;
       d_coeff_d_xi_out[ 1] = -1.00;
@@ -294,24 +293,24 @@ void LinearPrism::derivatives_at_mid_edge( unsigned edge,
   }
 }
 void LinearPrism::derivatives_at_mid_face( unsigned face, 
-                                           unsigned nodebits,
-                                           size_t* vertex_indices_out,
-                                           double* d_coeff_d_xi_out,
-                                           size_t& num_vtx,
-                                           MsqError& err ) const
+                              unsigned nodebits,
+                              msq_std::vector<size_t>& vertex_indices_out,
+                              msq_std::vector<double>& d_coeff_d_xi_out,
+                              MsqError& err ) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
     return;
   }
   
-  num_vtx = 6;
+  vertex_indices_out.resize(6);
   vertex_indices_out[0] = 0;
   vertex_indices_out[1] = 1;
   vertex_indices_out[2] = 2;
   vertex_indices_out[3] = 3;
   vertex_indices_out[4] = 4;
   vertex_indices_out[5] = 5;
+  d_coeff_d_xi_out.resize(18);
   
     // dzeta is always zero for vertices 1 and 4
   d_coeff_d_xi_out[ 5] = 0.0;
@@ -378,11 +377,11 @@ void LinearPrism::derivatives_at_mid_face( unsigned face,
     d_coeff_d_xi_out[tri_offset+8] =  1.0;
   }
 }
-void LinearPrism::derivatives_at_mid_elem( unsigned nodebits,
-                                           size_t* vertex_indices_out,
-                                           double* d_coeff_d_xi_out,
-                                           size_t& num_vtx,
-                                           MsqError& err ) const
+void LinearPrism::derivatives_at_mid_elem( 
+                              unsigned nodebits,
+                              msq_std::vector<size_t>& vertex_indices_out,
+                              msq_std::vector<double>& d_coeff_d_xi_out,
+                              MsqError& err ) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
@@ -391,7 +390,7 @@ void LinearPrism::derivatives_at_mid_elem( unsigned nodebits,
   
   const double sixth = 1./6;
   
-  num_vtx = 6;;
+  vertex_indices_out.resize(6);
   vertex_indices_out[0] = 0;
   vertex_indices_out[1] = 1;
   vertex_indices_out[2] = 2;
@@ -399,6 +398,7 @@ void LinearPrism::derivatives_at_mid_elem( unsigned nodebits,
   vertex_indices_out[4] = 4;
   vertex_indices_out[5] = 5;
   
+  d_coeff_d_xi_out.resize(18);
   d_coeff_d_xi_out[ 0] = -sixth;
   d_coeff_d_xi_out[ 1] = -0.5;
   d_coeff_d_xi_out[ 2] = -0.5;

@@ -213,23 +213,22 @@ void IdealTargetTest::get_ideal_target( EntityTopology type,
   const unsigned elem_dim = TopologyInfo::dimension(type);
   
     // get the target matrix for an ideal element
-  size_t indices[100];
-  double derivs[300];
-  size_t num_vtx;
+  msq_std::vector<size_t> indices;
+  msq_std::vector<double> derivs;
   const MappingFunction* func = mapFuncs.get_function( type );
   switch (dim) {
-    case 0: func->derivatives_at_corner( num, 0, indices, derivs, num_vtx, err ); break;
-    case 1: func->derivatives_at_mid_edge( num, 0, indices, derivs, num_vtx, err ); break;
+    case 0: func->derivatives_at_corner( num, 0, indices, derivs, err ); break;
+    case 1: func->derivatives_at_mid_edge( num, 0, indices, derivs, err ); break;
     case 2: if (elem_dim != 2) {
-            func->derivatives_at_mid_face( num, 0, indices, derivs, num_vtx, err ); break; }
-    case 3: func->derivatives_at_mid_elem( 0, indices, derivs, num_vtx, err ); break;
+            func->derivatives_at_mid_face( num, 0, indices, derivs, err ); break; }
+    case 3: func->derivatives_at_mid_elem( 0, indices, derivs, err ); break;
     default: CPPUNIT_ASSERT(false);
   }
   
   const Vector3D* coords = unit_element( type );
-  const double* d = derivs;
+  msq_std::vector<double>::iterator d = derivs.begin();
   Vector3D c[3];
-  for (size_t i = 0; i < num_vtx; ++i) 
+  for (size_t i = 0; i < indices.size(); ++i) 
     for (unsigned j = 0; j < elem_dim; ++j)
       c[j] += *d++ * coords[indices[i]];
   

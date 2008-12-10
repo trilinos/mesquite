@@ -265,23 +265,21 @@ static void get_derivs( unsigned nodebits, const double* rst, double* derivs )
     }
 }
 
-static void check_valid_indices( const size_t* vertices, size_t num_vtx )
+static void check_valid_indices( std::vector<size_t> vertices )
 {
-  CPPUNIT_ASSERT( num_vtx < 11 );
-  CPPUNIT_ASSERT( num_vtx > 3 );
-  size_t vtxcopy[10];
-  std::copy( vertices, vertices+num_vtx, vtxcopy );
-  std::sort( vtxcopy, vtxcopy+num_vtx );
-  for (unsigned i = 1; i < num_vtx; ++i) {
-    CPPUNIT_ASSERT( vtxcopy[i] != vtxcopy[i-1] );
-    CPPUNIT_ASSERT( vtxcopy[i] < 10 );
+  CPPUNIT_ASSERT( vertices.size() < 11 );
+  CPPUNIT_ASSERT( vertices.size() > 3 );
+  std::sort( vertices.begin(), vertices.end() );
+  for (unsigned i = 1; i < vertices.size(); ++i) {
+    CPPUNIT_ASSERT( vertices[i] != vertices[i-1] );
+    CPPUNIT_ASSERT( vertices[i] < 10 );
   }
 }
 
-static void check_no_zeros( const double* derivs, size_t num_vtx )
+static void check_no_zeros( std::vector<double> derivs )
 {
   unsigned i = 0;
-  while (i < 3*num_vtx) {
+  while (i < derivs.size()) {
     double dr = derivs[i++]; 
     double ds = derivs[i++]; 
     double dt = derivs[i++]; 
@@ -289,12 +287,11 @@ static void check_no_zeros( const double* derivs, size_t num_vtx )
   }
 }
 
-static void compare_coefficients( const double* coeffs,
-                                  const double* expected_coeffs,
-                                  size_t num_coeff,
-                                  unsigned loc, unsigned bits )
+static void compare_coefficients( std::vector<double> coeffs,
+                           const double* expected_coeffs,
+                           unsigned loc, unsigned bits )
 {
-  CPPUNIT_ASSERT_EQUAL( (size_t)10, num_coeff );
+  CPPUNIT_ASSERT_EQUAL( (size_t)10, coeffs.size() );
   ASSERT_VALUES_EQUAL( expected_coeffs[0], coeffs[0], loc, bits );
   ASSERT_VALUES_EQUAL( expected_coeffs[1], coeffs[1], loc, bits );
   ASSERT_VALUES_EQUAL( expected_coeffs[2], coeffs[2], loc, bits );
@@ -307,17 +304,17 @@ static void compare_coefficients( const double* coeffs,
   ASSERT_VALUES_EQUAL( expected_coeffs[9], coeffs[9], loc, bits );
 }
 
-static void compare_derivatives( const size_t* vertices,
-                                 size_t num_vtx,
-                                 const double* derivs,
-                                 const double* expected_derivs,
-                                 unsigned loc, unsigned bits )
+static void compare_derivatives( std::vector<size_t> vertices,
+                          std::vector<double> derivs,
+                          const double* expected_derivs,
+                          unsigned loc, unsigned bits )
 {
-  check_valid_indices( vertices, num_vtx );
-  check_no_zeros( derivs, num_vtx );
+  CPPUNIT_ASSERT_EQUAL( 3*vertices.size(), derivs.size() );
+  check_valid_indices( vertices );
+  check_no_zeros( derivs );
   double expanded_derivs[30];
   memset( expanded_derivs, 0, sizeof(expanded_derivs) );
-  for (unsigned i = 0; i < num_vtx; ++i) {
+  for (unsigned i = 0; i < vertices.size(); ++i) {
     expanded_derivs[3*vertices[i]  ] = derivs[3*i  ];
     expanded_derivs[3*vertices[i]+1] = derivs[3*i+1];
     expanded_derivs[3*vertices[i]+2] = derivs[3*i+2];
@@ -371,12 +368,11 @@ void TetLagrangeShapeTest::test_corner_coeff( int corner, unsigned nodebits )
   double expected[10];
   get_coeff( nodebits, rst_corner[corner], expected );
   
-  double coeff[100];
-  size_t n = 29;
-  sf.coefficients_at_corner( corner, nodebits, coeff, n, err );
+  std::vector<double> coeff;
+  sf.coefficients_at_corner( corner, nodebits, coeff, err );
   CPPUNIT_ASSERT( !err );
   
-  compare_coefficients( coeff, expected, n, corner, nodebits );
+  compare_coefficients( coeff, expected, corner, nodebits );
 }
 
 void TetLagrangeShapeTest::test_edge_coeff( int edge, unsigned nodebits )
@@ -386,12 +382,11 @@ void TetLagrangeShapeTest::test_edge_coeff( int edge, unsigned nodebits )
   double expected[10];
   get_coeff( nodebits, rst_edge[edge], expected );
   
-  double coeff[100];
-  size_t n = 29;
-  sf.coefficients_at_mid_edge( edge, nodebits, coeff, n, err );
+  std::vector<double> coeff;
+  sf.coefficients_at_mid_edge( edge, nodebits, coeff, err );
   CPPUNIT_ASSERT( !err );
   
-  compare_coefficients( coeff, expected, n, edge+4, nodebits );
+  compare_coefficients( coeff, expected, edge+4, nodebits );
 }
 
 void TetLagrangeShapeTest::test_face_coeff( int face, unsigned nodebits )
@@ -401,12 +396,11 @@ void TetLagrangeShapeTest::test_face_coeff( int face, unsigned nodebits )
   double expected[10];
   get_coeff( nodebits, rst_face[face], expected );
   
-  double coeff[100];
-  size_t n = 29;
-  sf.coefficients_at_mid_face( face, nodebits, coeff, n, err );
+  std::vector<double> coeff;
+  sf.coefficients_at_mid_face( face, nodebits, coeff, err );
   CPPUNIT_ASSERT( !err );
   
-  compare_coefficients( coeff, expected, n, face+10, nodebits );
+  compare_coefficients( coeff, expected, face+10, nodebits );
 }
 
 void TetLagrangeShapeTest::test_mid_coeff( unsigned nodebits )
@@ -416,12 +410,11 @@ void TetLagrangeShapeTest::test_mid_coeff( unsigned nodebits )
   double expected[10];
   get_coeff( nodebits, rst_mid, expected );
   
-  double coeff[100];
-  size_t n = 29;
-  sf.coefficients_at_mid_elem( nodebits, coeff, n, err );
+  std::vector<double> coeff;
+  sf.coefficients_at_mid_elem( nodebits, coeff, err );
   CPPUNIT_ASSERT( !err );
   
-  compare_coefficients( coeff, expected, n, 14, nodebits );
+  compare_coefficients( coeff, expected, 14, nodebits );
 }
 
 void TetLagrangeShapeTest::test_corner_derivs( int corner, unsigned nodebits )
@@ -431,12 +424,12 @@ void TetLagrangeShapeTest::test_corner_derivs( int corner, unsigned nodebits )
   double expected[30];
   get_derivs( nodebits, rst_corner[corner], expected );
   
-  double derivs[100];
-  size_t vertices[100], n = 29;
-  sf.derivatives_at_corner( corner, nodebits, vertices, derivs, n, err );
+  std::vector<size_t> vertices;
+  std::vector<double> derivs;
+  sf.derivatives_at_corner( corner, nodebits, vertices, derivs, err );
   CPPUNIT_ASSERT( !err );
   
-  compare_derivatives( vertices, n, derivs, expected, corner, nodebits );
+  compare_derivatives( vertices, derivs, expected, corner, nodebits );
 }
 
 void TetLagrangeShapeTest::test_edge_derivs( int edge, unsigned nodebits )
@@ -446,12 +439,12 @@ void TetLagrangeShapeTest::test_edge_derivs( int edge, unsigned nodebits )
   double expected[30];
   get_derivs( nodebits, rst_edge[edge], expected );
   
-  double derivs[100];
-  size_t vertices[100], n = 29;
-  sf.derivatives_at_mid_edge( edge, nodebits, vertices, derivs, n, err );
+  std::vector<size_t> vertices;
+  std::vector<double> derivs;
+  sf.derivatives_at_mid_edge( edge, nodebits, vertices, derivs, err );
   CPPUNIT_ASSERT( !err );
   
-  compare_derivatives( vertices, n, derivs, expected, edge+4, nodebits );
+  compare_derivatives( vertices, derivs, expected, edge+4, nodebits );
 }
 
 void TetLagrangeShapeTest::test_face_derivs( int face, unsigned nodebits )
@@ -461,12 +454,12 @@ void TetLagrangeShapeTest::test_face_derivs( int face, unsigned nodebits )
   double expected[30];
   get_derivs( nodebits, rst_face[face], expected );
   
-  double derivs[100];
-  size_t vertices[100], n = 29;
-  sf.derivatives_at_mid_face( face, nodebits, vertices, derivs, n, err );
+  std::vector<size_t> vertices;
+  std::vector<double> derivs;
+  sf.derivatives_at_mid_face( face, nodebits, vertices, derivs, err );
   CPPUNIT_ASSERT( !err );
   
-  compare_derivatives( vertices, n, derivs, expected, face+10, nodebits );
+  compare_derivatives( vertices, derivs, expected, face+10, nodebits );
 }
 
 void TetLagrangeShapeTest::test_mid_derivs( unsigned nodebits )
@@ -476,12 +469,12 @@ void TetLagrangeShapeTest::test_mid_derivs( unsigned nodebits )
   double expected[30];
   get_derivs( nodebits, rst_mid, expected );
   
-  double derivs[100];
-  size_t vertices[100], n = 29;
-  sf.derivatives_at_mid_elem( nodebits, vertices, derivs, n, err );
+  std::vector<size_t> vertices;
+  std::vector<double> derivs;
+  sf.derivatives_at_mid_elem( nodebits, vertices, derivs, err );
   CPPUNIT_ASSERT( !err );
   
-  compare_derivatives( vertices, n, derivs, expected, 14, nodebits );
+  compare_derivatives( vertices, derivs, expected, 14, nodebits );
 }
 
 void TetLagrangeShapeTest::test_coeff_corners()
@@ -565,82 +558,81 @@ void TetLagrangeShapeTest::test_deriv_center()
 void TetLagrangeShapeTest::test_invalid_nodebits_coeff( unsigned bits )
 {
   MsqError err;
-  double coeff[100];
-  size_t n;
+  std::vector<double> coeff;
   
-  sf.coefficients_at_corner( 0, bits, coeff, n, err );
+  sf.coefficients_at_corner( 0, bits, coeff, err );
   CPPUNIT_ASSERT( err );
-  sf.coefficients_at_corner( 1, bits, coeff, n, err );
+  sf.coefficients_at_corner( 1, bits, coeff, err );
   CPPUNIT_ASSERT( err );
-  sf.coefficients_at_corner( 2, bits, coeff, n, err );
+  sf.coefficients_at_corner( 2, bits, coeff, err );
   CPPUNIT_ASSERT( err );
-  sf.coefficients_at_corner( 3, bits, coeff, n, err );
-  CPPUNIT_ASSERT( err );
-  
-  sf.coefficients_at_mid_edge( 0, bits, coeff, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.coefficients_at_mid_edge( 1, bits, coeff, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.coefficients_at_mid_edge( 2, bits, coeff, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.coefficients_at_mid_edge( 3, bits, coeff, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.coefficients_at_mid_edge( 4, bits, coeff, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.coefficients_at_mid_edge( 5, bits, coeff, n, err );
+  sf.coefficients_at_corner( 3, bits, coeff, err );
   CPPUNIT_ASSERT( err );
   
-  sf.coefficients_at_mid_face( 0, bits, coeff, n, err );
+  sf.coefficients_at_mid_edge( 0, bits, coeff, err );
   CPPUNIT_ASSERT( err );
-  sf.coefficients_at_mid_face( 1, bits, coeff, n, err );
+  sf.coefficients_at_mid_edge( 1, bits, coeff, err );
   CPPUNIT_ASSERT( err );
-  sf.coefficients_at_mid_face( 2, bits, coeff, n, err );
+  sf.coefficients_at_mid_edge( 2, bits, coeff, err );
   CPPUNIT_ASSERT( err );
-  sf.coefficients_at_mid_face( 3, bits, coeff, n, err );
+  sf.coefficients_at_mid_edge( 3, bits, coeff, err );
+  CPPUNIT_ASSERT( err );
+  sf.coefficients_at_mid_edge( 4, bits, coeff, err );
+  CPPUNIT_ASSERT( err );
+  sf.coefficients_at_mid_edge( 5, bits, coeff, err );
   CPPUNIT_ASSERT( err );
   
-  sf.coefficients_at_mid_elem( bits, coeff, n, err );
+  sf.coefficients_at_mid_face( 0, bits, coeff, err );
+  CPPUNIT_ASSERT( err );
+  sf.coefficients_at_mid_face( 1, bits, coeff, err );
+  CPPUNIT_ASSERT( err );
+  sf.coefficients_at_mid_face( 2, bits, coeff, err );
+  CPPUNIT_ASSERT( err );
+  sf.coefficients_at_mid_face( 3, bits, coeff, err );
+  CPPUNIT_ASSERT( err );
+  
+  sf.coefficients_at_mid_elem( bits, coeff, err );
   CPPUNIT_ASSERT( err );
 }
 
 void TetLagrangeShapeTest::test_invalid_nodebits_deriv( unsigned bits )
 {
   MsqError err;
-  size_t verts[100], n;
-  double derivs[100];
+  std::vector<size_t> verts;
+  std::vector<double> derivs;
   
-  sf.derivatives_at_corner( 0, bits, verts, derivs, n, err );
+  sf.derivatives_at_corner( 0, bits, verts, derivs, err );
   CPPUNIT_ASSERT( err );
-  sf.derivatives_at_corner( 1, bits, verts, derivs, n, err );
+  sf.derivatives_at_corner( 1, bits, verts, derivs, err );
   CPPUNIT_ASSERT( err );
-  sf.derivatives_at_corner( 2, bits, verts, derivs, n, err );
+  sf.derivatives_at_corner( 2, bits, verts, derivs, err );
   CPPUNIT_ASSERT( err );
-  sf.derivatives_at_corner( 3, bits, verts, derivs, n, err );
-  CPPUNIT_ASSERT( err );
-  
-  sf.derivatives_at_mid_edge( 0, bits, verts, derivs, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.derivatives_at_mid_edge( 1, bits, verts, derivs, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.derivatives_at_mid_edge( 2, bits, verts, derivs, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.derivatives_at_mid_edge( 3, bits, verts, derivs, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.derivatives_at_mid_edge( 4, bits, verts, derivs, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.derivatives_at_mid_edge( 5, bits, verts, derivs, n, err );
+  sf.derivatives_at_corner( 3, bits, verts, derivs, err );
   CPPUNIT_ASSERT( err );
   
-  sf.derivatives_at_mid_face( 0, bits, verts, derivs, n, err );
+  sf.derivatives_at_mid_edge( 0, bits, verts, derivs, err );
   CPPUNIT_ASSERT( err );
-  sf.derivatives_at_mid_face( 1, bits, verts, derivs, n, err );
+  sf.derivatives_at_mid_edge( 1, bits, verts, derivs, err );
   CPPUNIT_ASSERT( err );
-  sf.derivatives_at_mid_face( 2, bits, verts, derivs, n, err );
+  sf.derivatives_at_mid_edge( 2, bits, verts, derivs, err );
   CPPUNIT_ASSERT( err );
-  sf.derivatives_at_mid_face( 3, bits, verts, derivs, n, err );
+  sf.derivatives_at_mid_edge( 3, bits, verts, derivs, err );
+  CPPUNIT_ASSERT( err );
+  sf.derivatives_at_mid_edge( 4, bits, verts, derivs, err );
+  CPPUNIT_ASSERT( err );
+  sf.derivatives_at_mid_edge( 5, bits, verts, derivs, err );
   CPPUNIT_ASSERT( err );
   
-  sf.derivatives_at_mid_elem( bits, verts, derivs, n, err );
+  sf.derivatives_at_mid_face( 0, bits, verts, derivs, err );
+  CPPUNIT_ASSERT( err );
+  sf.derivatives_at_mid_face( 1, bits, verts, derivs, err );
+  CPPUNIT_ASSERT( err );
+  sf.derivatives_at_mid_face( 2, bits, verts, derivs, err );
+  CPPUNIT_ASSERT( err );
+  sf.derivatives_at_mid_face( 3, bits, verts, derivs, err );
+  CPPUNIT_ASSERT( err );
+  
+  sf.derivatives_at_mid_elem( bits, verts, derivs, err );
   CPPUNIT_ASSERT( err );
 }
 

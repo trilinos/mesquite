@@ -201,35 +201,32 @@ static void get_derivs( unsigned nodebits, const double* rs, double* derivs )
     }
 }
 
-static void check_valid_indices( const size_t* vtx_in, size_t num_vtx )
+static void check_valid_indices( std::vector<size_t> vertices )
 {
-  CPPUNIT_ASSERT( num_vtx < 7 );
-  CPPUNIT_ASSERT( num_vtx > 2 );
-  size_t vertices[6];
-  std::copy( vtx_in, vtx_in+num_vtx, vertices );
-  std::sort( vertices, vertices + num_vtx );
-  for (unsigned i = 1; i < num_vtx; ++i) {
+  CPPUNIT_ASSERT( vertices.size() < 7 );
+  CPPUNIT_ASSERT( vertices.size() > 2 );
+  std::sort( vertices.begin(), vertices.end() );
+  for (unsigned i = 1; i < vertices.size(); ++i) {
     CPPUNIT_ASSERT( vertices[i] != vertices[i-1] );
     CPPUNIT_ASSERT( vertices[i] < 6 );
   }
 }
 
-static void check_no_zeros( const double* derivs, size_t num_vtx )
+static void check_no_zeros( std::vector<double> derivs )
 {
   unsigned i = 0;
-  while (i < 2*num_vtx) {
+  while (i < derivs.size()) {
     double dr = derivs[i++]; 
     double ds = derivs[i++]; 
     CPPUNIT_ASSERT( (fabs(dr) > 1e-6) || (fabs(ds) > 1e-6) );
   }
 }
 
-static void compare_coefficients( const double* coeffs,
-                                  const double* expected_coeffs,
-                                  size_t num_coeff,
-                                  unsigned loc, unsigned bits )
+static void compare_coefficients( std::vector<double> coeffs,
+                           const double* expected_coeffs,
+                           unsigned loc, unsigned bits )
 {
-  CPPUNIT_ASSERT_EQUAL( (size_t)6, num_coeff );
+  CPPUNIT_ASSERT_EQUAL( (size_t)6, coeffs.size() );
   ASSERT_VALUES_EQUAL( expected_coeffs[0], coeffs[0], loc, bits );
   ASSERT_VALUES_EQUAL( expected_coeffs[1], coeffs[1], loc, bits );
   ASSERT_VALUES_EQUAL( expected_coeffs[2], coeffs[2], loc, bits );
@@ -238,16 +235,16 @@ static void compare_coefficients( const double* coeffs,
   ASSERT_VALUES_EQUAL( expected_coeffs[5], coeffs[5], loc, bits );
 }
 
-static void compare_derivatives( const size_t* vertices,
-                                 size_t num_vtx,
-                                 const double* derivs,
-                                 const double* expected_derivs,
-                                 unsigned loc, unsigned bits )
+static void compare_derivatives( std::vector<size_t> vertices,
+                          std::vector<double> derivs,
+                          const double* expected_derivs,
+                          unsigned loc, unsigned bits )
 {
-  check_valid_indices( vertices, num_vtx );
-  check_no_zeros( derivs, num_vtx );
+  CPPUNIT_ASSERT_EQUAL( 2*vertices.size(), derivs.size() );
+  check_valid_indices( vertices );
+  check_no_zeros( derivs );
   double expanded_derivs[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  for (unsigned i = 0; i < num_vtx; ++i) {
+  for (unsigned i = 0; i < vertices.size(); ++i) {
     expanded_derivs[2*vertices[i]  ] = derivs[2*i  ];
     expanded_derivs[2*vertices[i]+1] = derivs[2*i+1];
   }
@@ -273,12 +270,11 @@ void TriLagrangeShapeTest::test_corner_coeff( int corner, unsigned nodebits )
   double expected[6];
   get_coeff( nodebits, rs_corner[corner], expected );
   
-  double coeff[27];
-  size_t num_coeff = 17;
-  sf.coefficients_at_corner( corner, nodebits, coeff, num_coeff, err );
+  std::vector<double> coeff;
+  sf.coefficients_at_corner( corner, nodebits, coeff, err );
   CPPUNIT_ASSERT( !err );
   
-  compare_coefficients( coeff, expected, num_coeff, corner, nodebits );
+  compare_coefficients( coeff, expected, corner, nodebits );
 }
 
 void TriLagrangeShapeTest::test_edge_coeff( int edge, unsigned nodebits )
@@ -288,12 +284,11 @@ void TriLagrangeShapeTest::test_edge_coeff( int edge, unsigned nodebits )
   double expected[6];
   get_coeff( nodebits, rs_edge[edge], expected );
   
-  double coeff[27];
-  size_t num_coeff = 17;
-  sf.coefficients_at_mid_edge( edge, nodebits, coeff, num_coeff, err );
+  std::vector<double> coeff;
+  sf.coefficients_at_mid_edge( edge, nodebits, coeff, err );
   CPPUNIT_ASSERT( !err );
   
-  compare_coefficients( coeff, expected, num_coeff, edge+3, nodebits );
+  compare_coefficients( coeff, expected, edge+3, nodebits );
 }
 
 void TriLagrangeShapeTest::test_mid_coeff( unsigned nodebits )
@@ -303,12 +298,11 @@ void TriLagrangeShapeTest::test_mid_coeff( unsigned nodebits )
   double expected[6];
   get_coeff( nodebits, rs_mid, expected );
   
-  double coeff[27];
-  size_t num_coeff = 17;
- sf.coefficients_at_mid_elem( nodebits, coeff, num_coeff, err );
+  std::vector<double> coeff;
+  sf.coefficients_at_mid_elem( nodebits, coeff, err );
   CPPUNIT_ASSERT( !err );
   
-  compare_coefficients( coeff, expected, num_coeff, 6, nodebits );
+  compare_coefficients( coeff, expected, 6, nodebits );
 }
 
 void TriLagrangeShapeTest::test_corner_derivs( int corner, unsigned nodebits )
@@ -318,12 +312,12 @@ void TriLagrangeShapeTest::test_corner_derivs( int corner, unsigned nodebits )
   double expected[12];
   get_derivs( nodebits, rs_corner[corner], expected );
   
-  size_t n = 19, vertices[100];
-  double derivs[100];
-  sf.derivatives_at_corner( corner, nodebits, vertices, derivs, n, err );
+  std::vector<size_t> vertices;
+  std::vector<double> derivs;
+  sf.derivatives_at_corner( corner, nodebits, vertices, derivs, err );
   CPPUNIT_ASSERT( !err );
   
-  compare_derivatives( vertices, n, derivs, expected, corner, nodebits );
+  compare_derivatives( vertices, derivs, expected, corner, nodebits );
 }
 
 void TriLagrangeShapeTest::test_edge_derivs( int edge, unsigned nodebits )
@@ -333,12 +327,12 @@ void TriLagrangeShapeTest::test_edge_derivs( int edge, unsigned nodebits )
   double expected[12];
   get_derivs( nodebits, rs_edge[edge], expected );
   
-  size_t n = 19, vertices[100];
-  double derivs[100];
-  sf.derivatives_at_mid_edge( edge, nodebits, vertices, derivs, n, err );
+  std::vector<size_t> vertices;
+  std::vector<double> derivs;
+  sf.derivatives_at_mid_edge( edge, nodebits, vertices, derivs, err );
   CPPUNIT_ASSERT( !err );
   
-  compare_derivatives( vertices, n, derivs, expected, edge+3, nodebits );
+  compare_derivatives( vertices, derivs, expected, edge+3, nodebits );
 }
 
 void TriLagrangeShapeTest::test_mid_derivs( unsigned nodebits )
@@ -348,12 +342,12 @@ void TriLagrangeShapeTest::test_mid_derivs( unsigned nodebits )
   double expected[12];
   get_derivs( nodebits, rs_mid, expected );
   
-  size_t n = 19, vertices[100];
-  double derivs[100];
-  sf.derivatives_at_mid_elem( nodebits, vertices, derivs, n, err );
+  std::vector<size_t> vertices;
+  std::vector<double> derivs;
+  sf.derivatives_at_mid_elem( nodebits, vertices, derivs, err );
   CPPUNIT_ASSERT( !err );
   
-  compare_derivatives( vertices, n, derivs, expected, 6, nodebits );
+  compare_derivatives( vertices, derivs, expected, 6, nodebits );
 }
 
 void TriLagrangeShapeTest::test_coeff_corners()
@@ -523,55 +517,54 @@ void TriLagrangeShapeTest::test_deriv_center()
 void TriLagrangeShapeTest::test_mid_elem_node_coeff()
 {
   MsqError err;
-  double coeff[100];
-  size_t n;
+  std::vector<double> coeff;
   
-  sf.coefficients_at_corner( 0, 8, coeff, n, err );
+  sf.coefficients_at_corner( 0, 8, coeff, err );
   CPPUNIT_ASSERT( err );
-  sf.coefficients_at_corner( 1, 8, coeff, n, err );
+  sf.coefficients_at_corner( 1, 8, coeff, err );
   CPPUNIT_ASSERT( err );
-  sf.coefficients_at_corner( 2, 8, coeff, n, err );
+  sf.coefficients_at_corner( 2, 8, coeff, err );
   CPPUNIT_ASSERT( err );
-  sf.coefficients_at_corner( 3, 8, coeff, n, err );
-  CPPUNIT_ASSERT( err );
-  
-  sf.coefficients_at_mid_edge( 0, 8, coeff, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.coefficients_at_mid_edge( 1, 8, coeff, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.coefficients_at_mid_edge( 2, 8, coeff, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.coefficients_at_mid_edge( 3, 8, coeff, n, err );
+  sf.coefficients_at_corner( 3, 8, coeff, err );
   CPPUNIT_ASSERT( err );
   
-  sf.coefficients_at_mid_elem( 8, coeff, n, err );
+  sf.coefficients_at_mid_edge( 0, 8, coeff, err );
+  CPPUNIT_ASSERT( err );
+  sf.coefficients_at_mid_edge( 1, 8, coeff, err );
+  CPPUNIT_ASSERT( err );
+  sf.coefficients_at_mid_edge( 2, 8, coeff, err );
+  CPPUNIT_ASSERT( err );
+  sf.coefficients_at_mid_edge( 3, 8, coeff, err );
+  CPPUNIT_ASSERT( err );
+  
+  sf.coefficients_at_mid_elem( 8, coeff, err );
   CPPUNIT_ASSERT( err );
 }
 
 void TriLagrangeShapeTest::test_mid_elem_node_derivs()
 {
   MsqError err;
-  size_t n, verts[100];
-  double coeff[100];
+  std::vector<size_t> verts;
+  std::vector<double> coeff;
   
-  sf.derivatives_at_corner( 0, 8, verts, coeff, n, err );
+  sf.derivatives_at_corner( 0, 8, verts, coeff, err );
   CPPUNIT_ASSERT( err );
-  sf.derivatives_at_corner( 1, 8, verts, coeff, n, err );
+  sf.derivatives_at_corner( 1, 8, verts, coeff, err );
   CPPUNIT_ASSERT( err );
-  sf.derivatives_at_corner( 2, 8, verts, coeff, n, err );
+  sf.derivatives_at_corner( 2, 8, verts, coeff, err );
   CPPUNIT_ASSERT( err );
-  sf.derivatives_at_corner( 3, 8, verts, coeff, n, err );
-  CPPUNIT_ASSERT( err );
-  
-  sf.derivatives_at_mid_edge( 0, 8, verts, coeff, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.derivatives_at_mid_edge( 1, 8, verts, coeff, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.derivatives_at_mid_edge( 2, 8, verts, coeff, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.derivatives_at_mid_edge( 3, 8, verts, coeff, n, err );
+  sf.derivatives_at_corner( 3, 8, verts, coeff, err );
   CPPUNIT_ASSERT( err );
   
-  sf.derivatives_at_mid_elem( 8, verts, coeff, n, err );
+  sf.derivatives_at_mid_edge( 0, 8, verts, coeff, err );
+  CPPUNIT_ASSERT( err );
+  sf.derivatives_at_mid_edge( 1, 8, verts, coeff, err );
+  CPPUNIT_ASSERT( err );
+  sf.derivatives_at_mid_edge( 2, 8, verts, coeff, err );
+  CPPUNIT_ASSERT( err );
+  sf.derivatives_at_mid_edge( 3, 8, verts, coeff, err );
+  CPPUNIT_ASSERT( err );
+  
+  sf.derivatives_at_mid_elem( 8, verts, coeff, err );
   CPPUNIT_ASSERT( err );
 }

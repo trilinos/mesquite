@@ -50,17 +50,16 @@ static inline int coeff_zeta_sign( unsigned coeff )
   { return 2*(coeff/4) - 1; }
   
 void LinearHexahedron::coefficients_at_corner( unsigned corner, 
-                                               unsigned nodebits,
-                                               double* coeff_out,
-                                               size_t& num_coeff,
-                                               MsqError& err ) const 
+                               unsigned nodebits,
+                               msq_std::vector<double>& coeff_out,
+                               MsqError& err ) const 
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
     return;
   }
   
-  num_coeff = 8;
+  coeff_out.resize(8);
   coeff_out[0] = 0.0;
   coeff_out[1] = 0.0;
   coeff_out[2] = 0.0;
@@ -83,17 +82,16 @@ const int edge_end_orth1[] = { 2, 6, 0, 4, 5, 4, 7, 6, 6, 2, 4, 0 }; // vtx adja
 const int edge_end_orth2[] = { 5, 3, 7, 1, 7, 6, 5, 4, 1, 7, 3, 5 }; // vtx adjacent to edge end in edge_dir[e]+2 direction
 
 void LinearHexahedron::coefficients_at_mid_edge( unsigned edge, 
-                                                 unsigned nodebits,
-                                                 double* coeff_out,
-                                                 size_t& num_coeff,
-                                                 MsqError& err ) const
+                                 unsigned nodebits,
+                                 msq_std::vector<double>& coeff_out,
+                                 MsqError& err ) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
     return;
   }
   
-  num_coeff = 8;
+  coeff_out.resize(8);
   coeff_out[0] = 0.0;
   coeff_out[1] = 0.0;
   coeff_out[2] = 0.0;
@@ -117,17 +115,16 @@ const int face_opp[6] = { 2, 3, 0, 1, 5, 4 };  // opposite faces on hex
 const int face_dir[6] = { eta, xi, eta, xi, zeta, zeta }; // normal direction
 
 void LinearHexahedron::coefficients_at_mid_face( unsigned face, 
-                                                 unsigned nodebits,
-                                                 double* coeff_out,
-                                                 size_t& num_coeff,
-                                                 MsqError& err ) const
+                                 unsigned nodebits,
+                                 msq_std::vector<double>& coeff_out,
+                                 MsqError& err ) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
     return;
   }
   
-  num_coeff = 8;
+  coeff_out.resize(8);
   coeff_out[0] = 0.0;
   coeff_out[1] = 0.0;
   coeff_out[2] = 0.0;
@@ -145,16 +142,15 @@ void LinearHexahedron::coefficients_at_mid_face( unsigned face,
   
 
 void LinearHexahedron::coefficients_at_mid_elem( unsigned nodebits,
-                                                 double* coeff_out,
-                                                 size_t& num_coeff,
-                                                 MsqError& err ) const
+                                 msq_std::vector<double>& coeff_out,
+                                 MsqError& err ) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
     return;
   }
 
-  num_coeff = 8;
+  coeff_out.resize(8);
   coeff_out[0] = 0.125;
   coeff_out[1] = 0.125;
   coeff_out[2] = 0.125;
@@ -166,11 +162,10 @@ void LinearHexahedron::coefficients_at_mid_elem( unsigned nodebits,
 }
 
 void LinearHexahedron::derivatives_at_corner( unsigned corner, 
-                                              unsigned nodebits,
-                                              size_t* vertex_indices_out,
-                                              double* d_coeff_d_xi_out,
-                                              size_t& num_vtx,
-                                              MsqError& err ) const
+                              unsigned nodebits,
+                              msq_std::vector<size_t>& vertex_indices_out,
+                              msq_std::vector<double>& d_coeff_d_xi_out,
+                              MsqError& err ) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
@@ -186,11 +181,13 @@ void LinearHexahedron::derivatives_at_corner( unsigned corner,
   const int adj_in_eta  = 3 + 2*offset - (int)corner;
   const int adj_in_zeta = corner - zeta_sign*4;
   
-  num_vtx = 4;
+  vertex_indices_out.resize(4);
   vertex_indices_out[0] = corner;
   vertex_indices_out[1] = adj_in_xi;
   vertex_indices_out[2] = adj_in_eta;
   vertex_indices_out[3] = adj_in_zeta;
+  
+  d_coeff_d_xi_out.resize(12);
   
   d_coeff_d_xi_out[ 0] =   xi_sign * 0.5;
   d_coeff_d_xi_out[ 1] =  eta_sign * 0.5;
@@ -211,11 +208,10 @@ void LinearHexahedron::derivatives_at_corner( unsigned corner,
 
 
 void LinearHexahedron::derivatives_at_mid_edge( unsigned edge, 
-                                                unsigned nodebits,
-                                                size_t* vertex_indices_out,
-                                                double* d_coeff_d_xi_out,
-                                                size_t& num_vtx,
-                                                MsqError& err ) const
+                                unsigned nodebits,
+                                msq_std::vector<size_t>& vertex_indices_out,
+                                msq_std::vector<double>& d_coeff_d_xi_out,
+                                MsqError& err ) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
@@ -231,13 +227,16 @@ void LinearHexahedron::derivatives_at_mid_edge( unsigned edge,
   const int sign_or1 = signs[ortho1   ];
   const int sign_or2 = signs[ortho2   ];
 
-  num_vtx = 6;
+  vertex_indices_out.resize(6);
   vertex_indices_out[0] = edge_beg[edge];
   vertex_indices_out[1] = edge_end[edge];
   vertex_indices_out[2] = edge_beg_orth1[edge];
   vertex_indices_out[3] = edge_end_orth1[edge];
   vertex_indices_out[4] = edge_beg_orth2[edge];
   vertex_indices_out[5] = edge_end_orth2[edge];
+  
+  d_coeff_d_xi_out.resize(18);
+  
   
   d_coeff_d_xi_out[ 0+direction] =  sign_dir * 0.50;
   d_coeff_d_xi_out[ 0+ortho1   ] =  sign_or1 * 0.25;
@@ -266,11 +265,10 @@ void LinearHexahedron::derivatives_at_mid_edge( unsigned edge,
 
 
 void LinearHexahedron::derivatives_at_mid_face( unsigned face, 
-                                                unsigned nodebits,
-                                                size_t* vertex_indices_out,
-                                                double* d_coeff_d_xi_out,
-                                                size_t& num_vtx,
-                                                MsqError& err ) const
+                                unsigned nodebits,
+                                msq_std::vector<size_t>& vertex_indices_out,
+                                msq_std::vector<double>& d_coeff_d_xi_out,
+                                MsqError& err ) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
@@ -294,7 +292,7 @@ void LinearHexahedron::derivatives_at_mid_face( unsigned face,
   const int face_dir2 = (ortho_dir+2) % 3;
   const int ortho_sign = vtx_signs[0][ortho_dir];  // same for all 4 verts
   
-  num_vtx = 8;
+  vertex_indices_out.resize(8);
   vertex_indices_out[0] = face_vtx[face][0];
   vertex_indices_out[1] = face_vtx[face][1];
   vertex_indices_out[2] = face_vtx[face][2];
@@ -303,6 +301,8 @@ void LinearHexahedron::derivatives_at_mid_face( unsigned face,
   vertex_indices_out[5] = face_vtx[face_opp[face]][1];
   vertex_indices_out[6] = face_vtx[face_opp[face]][2];
   vertex_indices_out[7] = face_vtx[face_opp[face]][3];
+  
+  d_coeff_d_xi_out.resize( 24 );
   
   d_coeff_d_xi_out[ 0+ortho_dir] = ortho_sign * 0.125;
   d_coeff_d_xi_out[ 0+face_dir1] = vtx_signs[0][face_dir1] * 0.25;
@@ -338,10 +338,9 @@ void LinearHexahedron::derivatives_at_mid_face( unsigned face,
 }
 
 void LinearHexahedron::derivatives_at_mid_elem( unsigned nodebits,
-                                                size_t* vertex_indices_out,
-                                                double* d_coeff_d_xi_out,
-                                                size_t& num_vtx,
-                                                MsqError& err ) const
+                                msq_std::vector<size_t>& vertex_indices_out,
+                                msq_std::vector<double>& d_coeff_d_xi_out,
+                                MsqError& err ) const
 
 {
   if (nodebits) {
@@ -349,7 +348,7 @@ void LinearHexahedron::derivatives_at_mid_elem( unsigned nodebits,
     return;
   }
   
-  num_vtx = 8;
+  vertex_indices_out.resize(8);
   vertex_indices_out[0] = 0;
   vertex_indices_out[1] = 1;
   vertex_indices_out[2] = 2;
@@ -359,6 +358,8 @@ void LinearHexahedron::derivatives_at_mid_elem( unsigned nodebits,
   vertex_indices_out[6] = 6;
   vertex_indices_out[7] = 7;
   
+  d_coeff_d_xi_out.resize(24);
+
   d_coeff_d_xi_out[ 0] = -0.125;
   d_coeff_d_xi_out[ 1] = -0.125;
   d_coeff_d_xi_out[ 2] = -0.125;
