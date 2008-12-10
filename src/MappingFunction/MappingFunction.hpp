@@ -113,7 +113,8 @@ public:
   virtual 
   void coefficients_at_corner( unsigned corner, 
                                unsigned nodebits,
-                               msq_std::vector<double>& coeff_out,
+                               double* coeff_out,
+                               size_t& num_coeff,
                                MsqError& err ) const = 0; 
 
   /**Get mapping function coefficients for an \f$\vec{\xi}\f$ corresponding
@@ -124,7 +125,8 @@ public:
   virtual 
   void coefficients_at_mid_edge( unsigned edge, 
                                  unsigned nodebits,
-                                 msq_std::vector<double>& coeff_out,
+                                 double* coeff_out,
+                                 size_t& num_coeff,
                                  MsqError& err ) const = 0;
 
   /**Get mapping function coefficients for an \f$\vec{\xi}\f$ corresponding
@@ -135,7 +137,8 @@ public:
   virtual 
   void coefficients_at_mid_face( unsigned face, 
                                  unsigned nodebits,
-                                 msq_std::vector<double>& coeff_out,
+                                 double* coeff_out,
+                                 size_t& num_coeff,
                                  MsqError& err ) const = 0;
 
   /**Get mapping function coefficients for an \f$\vec{\xi}\f$ corresponding
@@ -143,7 +146,8 @@ public:
    */
   virtual 
   void coefficients_at_mid_elem( unsigned nodebits,
-                                 msq_std::vector<double>& coeff_out,
+                                 double* coeff_out,
+                                 size_t& num_coeff,
                                  MsqError& err ) const = 0;
   /*@}*/
 
@@ -256,8 +260,9 @@ public:
   virtual 
   void derivatives_at_corner( unsigned corner, 
                               unsigned nodebits,
-                              msq_std::vector<size_t>& vertex_indices_out,
-                              msq_std::vector<double>& d_coeff_d_xi_out,
+                              size_t* vertex_indices_out,
+                              double* d_coeff_d_xi_out,
+                              size_t& num_vtx,
                               MsqError& err ) const = 0;
 
   /**Get partial derivatives of mapping function coefficients for an 
@@ -269,8 +274,9 @@ public:
   virtual 
   void derivatives_at_mid_edge( unsigned edge, 
                                 unsigned nodebits,
-                                msq_std::vector<size_t>& vertex_indices_out,
-                                msq_std::vector<double>& d_coeff_d_xi_out,
+                                size_t* vertex_indices_out,
+                                double* d_coeff_d_xi_out,
+                                size_t& num_vtx,
                                 MsqError& err ) const = 0;
 
   /**Get partial derivatives of mapping function coefficients for an 
@@ -282,8 +288,9 @@ public:
   virtual 
   void derivatives_at_mid_face( unsigned face, 
                                 unsigned nodebits,
-                                msq_std::vector<size_t>& vertex_indices_out,
-                                msq_std::vector<double>& d_coeff_d_xi_out,
+                                size_t* vertex_indices_out,
+                                double* d_coeff_d_xi_out,
+                                size_t& num_vtx,
                                 MsqError& err ) const = 0;
 
   /**Get partial derivatives of mapping function coefficients for an 
@@ -292,8 +299,9 @@ public:
    */
   virtual 
   void derivatives_at_mid_elem( unsigned nodebits,
-                                msq_std::vector<size_t>& vertex_indices_out,
-                                msq_std::vector<double>& d_coeff_d_xi_out,
+                                size_t* vertex_indices_out,
+                                double* d_coeff_d_xi_out,
+                                size_t& num_vtx,
                                 MsqError& err ) const = 0;
   /*@}*/
 };

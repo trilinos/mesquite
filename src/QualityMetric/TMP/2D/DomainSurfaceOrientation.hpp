@@ -88,11 +88,20 @@ public:
     { return samplePts; }
   
 private:
+
+  bool evaluate_with_indices( PatchData& pd,
+                 size_t handle,
+                 double& value,
+                 size_t* indices,
+                 size_t& num_indices,
+                 MsqError& err );
+
   const SamplePoints* samplePts;
   WeightCalculator* weightCalc;
   
-  msq_std::vector<size_t> mIndices;
-  msq_std::vector<double> mDerivs;
+  enum { MAX_ELEM_NODES = 27 };
+  size_t mIndices[MAX_ELEM_NODES];
+  double mDerivs[3*MAX_ELEM_NODES];
 };
 
 } // namespace Mesquite
