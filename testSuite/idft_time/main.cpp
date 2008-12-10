@@ -94,6 +94,7 @@ void usage( const char* argv0 = 0, bool err = true )
     << "  -v : Write output mesh to specified VTK file" << endl
     << "  -g : Write output mesh to specified GnuPlot file" << endl
     << "  -p : Write output mesh to specified EPS file" << endl
+    << "  -P : Write solver plot data to specified file." << endl
     << "Default is all metrics if non specified." << endl
     << "Default input file: " << DEFAULT_INPUT << endl;
 }
@@ -101,6 +102,7 @@ void usage( const char* argv0 = 0, bool err = true )
 const char* vtk_file = 0; /* vtk output file name */
 const char* eps_file = 0; /* eps output file name */
 const char* gpt_file = 0; /* GNUPlot output file name */
+const char* plot_file = 0; /* Time-dependent plot of solver data */
 
 enum Solver { FEAS_NEWT, CONJ_GRAD, QUASI_NEWT };
 
@@ -246,6 +248,7 @@ int main( int argc, char* argv[] )
           case 'v': exp_list.push_back(&vtk_file); break;
           case 'g': exp_list.push_back(&gpt_file); break;
           case 'p': exp_list.push_back(&eps_file); break;
+          case 'P': exp_list.push_back(&plot_file); break;
           case 'h': usage(argv[0],false); return 0;
           case '-': no_more_flags = true; break;
           default:
@@ -348,6 +351,7 @@ double run( QualityMetric* metric,
   TerminationCriterion inner, outer;
   outer.add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, 1, err );
   inner.add_criterion_type_with_double( TerminationCriterion::VERTEX_MOVEMENT_ABSOLUTE, 1e-4, err );
+  inner.add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, 100, err );
   PMeanPTemplate of( 1.0, metric );
   QualityAssessor qa( &qa_metric );
   qa.add_quality_assessment( metric );
@@ -366,7 +370,9 @@ double run( QualityMetric* metric,
   solver->set_inner_termination_criterion(&inner);
   solver->set_outer_termination_criterion(&outer);
   
-  //inner.write_iterations( "iterations.gpt", err );
+  
+  if (plot_file)
+    inner.write_iterations( plot_file, err );
   
   MeshImpl mesh;
   mesh.read_vtk( input_file, err );
