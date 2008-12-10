@@ -169,11 +169,20 @@ public:
   void set_3d_metric( TargetMetric3D* m ) { metric3D = m; }
   
 private:
+
+  bool evaluate_with_indices( PatchData& pd,
+                 size_t handle,
+                 double& value,
+                 size_t* indices,
+                 size_t& num_indices,
+                 MsqError& err );
+
   /**\brief Call MappingFunction::derivatives_at_**/
   void mapping_function_derivs( PatchData& pd,
                                 size_t eval_handle,
-                                std::vector<size_t>& indices_out,
-                                std::vector<double>& derivs_out,
+                                size_t* indices_out,
+                                double* derivs_out,
+                                size_t& num_idx_out,
                                 MsqError& err );
 
   const SamplePoints* samplePts;
@@ -182,8 +191,9 @@ private:
   TargetMetric2D* metric2D;
   TargetMetric3D* metric3D;
   
-  msq_std::vector<size_t> mIndices;
-  msq_std::vector<double> mDerivs;
+  enum { MAX_ELEM_NODES = 27 };
+  size_t mIndices[MAX_ELEM_NODES];
+  double mDerivs[3*MAX_ELEM_NODES];
   msq_std::vector< MsqMatrix<2,2> > hess2d;
 };
 

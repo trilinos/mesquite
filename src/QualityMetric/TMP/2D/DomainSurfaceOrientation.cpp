@@ -84,14 +84,28 @@ void DomainSurfaceOrientation::get_element_evaluations( PatchData& pd,
 
 bool DomainSurfaceOrientation::evaluate( PatchData& pd, size_t handle, double& value, MsqError& err )
 {
-  mIndices.clear();
-  return evaluate_with_indices( pd, handle, value, mIndices, err );
+  size_t num_idx;
+  return evaluate_with_indices( pd, handle, value, mIndices, num_idx, err );
 }
 
 bool DomainSurfaceOrientation::evaluate_with_indices( PatchData& pd,
                                             size_t handle,
                                             double& value,
                                             msq_std::vector<size_t>& indices,
+                                            MsqError& err )
+{
+  size_t num_idx = 0;
+  bool rval = evaluate_with_indices( pd, handle, value, mIndices, num_idx, err );
+  indices.resize( num_idx );
+  std::copy( mIndices, mIndices+num_idx, indices.begin() );
+  return rval;
+}
+
+bool DomainSurfaceOrientation::evaluate_with_indices( PatchData& pd,
+                                            size_t handle,
+                                            double& value,
+                                            size_t* indices,
+                                            size_t& num_idx,
                                             MsqError& err )
 {
   unsigned s = ElemSampleQM::sample( handle );
@@ -115,19 +129,17 @@ bool DomainSurfaceOrientation::evaluate_with_indices( PatchData& pd,
   const unsigned bits = pd.higher_order_node_bits( e );
   
   Vector3D n;
-  indices.clear();
-  mDerivs.clear();
   switch (dim) {
     case 0:
-      func->derivatives_at_corner( num, bits, indices, mDerivs, err );MSQ_ERRZERO(err);
+      func->derivatives_at_corner( num, bits, indices, mDerivs, num_idx, err );MSQ_ERRZERO(err);
       pd.get_domain_normal_at_corner( e, num, n, err ); MSQ_ERRZERO(err);
       break;
     case 1:
-      func->derivatives_at_mid_edge( num, bits, indices, mDerivs, err ); MSQ_ERRZERO(err);
+      func->derivatives_at_mid_edge( num, bits, indices, mDerivs, num_idx, err ); MSQ_ERRZERO(err);
       pd.get_domain_normal_at_mid_edge( e, num, n, err ); MSQ_ERRZERO(err);
       break;
     case 2:
-      func->derivatives_at_mid_elem( bits, indices, mDerivs, err ); MSQ_ERRZERO(err);
+      func->derivatives_at_mid_elem( bits, indices, mDerivs, num_idx, err ); MSQ_ERRZERO(err);
       pd.get_domain_normal_at_element( e, n, err ); MSQ_ERRZERO(err);
       break;
     default:
@@ -138,13 +150,13 @@ bool DomainSurfaceOrientation::evaluate_with_indices( PatchData& pd,
     // Convert from indices into element connectivity list to
     // indices into vertex array in patch data.
   const size_t* conn = elem.get_vertex_index_array();
-  for (msq_std::vector<size_t>::iterator i = indices.begin(); i != indices.end(); ++i)
+  for (size_t* i = mIndices; i != mIndices+num_idx; ++i)
     *i = conn[*i];
   
-  std::vector<double>::const_iterator d = mDerivs.begin();
+  double* d = mDerivs;
   Vector3D c[2] = { Vector3D(0,0,0), Vector3D(0,0,0) };
-  for (size_t i = 0; i < indices.size(); ++i) {
-    Vector3D coords = pd.vertex_by_index( indices[i] );
+  for (size_t i = 0; i < num_idx; ++i) {
+    Vector3D coords = pd.vertex_by_index( mIndices[i] );
     c[0] += *d * coords; ++d;
     c[1] += *d * coords; ++d;
   }

@@ -95,8 +95,10 @@ private:
                         unsigned dim, unsigned num, 
                         MsqError& err );
 
-  msq_std::vector<double> mDerivs;
-  msq_std::vector<size_t> mIndices;
+  enum { MAX_ELEM_NODES = 27 };
+  size_t mIndices[MAX_ELEM_NODES];
+  double mDerivs[3*MAX_ELEM_NODES];
+  size_t numVtx;
 };
 
 

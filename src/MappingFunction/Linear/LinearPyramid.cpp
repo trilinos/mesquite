@@ -40,18 +40,17 @@ static const char* nonlinear_error
  = "Attempt to use LinearTriangle mapping function for a nonlinear element\n";
 
 static inline void set_equal_derivatives( double value, 
-                                          msq_std::vector<size_t>& indices,
-                                          msq_std::vector<double>& derivs )
+                                          size_t* indices,
+                                          double* derivs,
+                                          size_t& num_vtx )
 {
-  indices.resize(5);
+  num_vtx = 5;
   indices[0] = 0;
   indices[1] = 1;
   indices[2] = 2;
   indices[3] = 3;
   indices[4] = 4;
     
-  derivs.resize(15);
-  
   derivs[ 0] = -value;
   derivs[ 1] = -value;
   derivs[ 2] = -0.125;
@@ -75,8 +74,9 @@ static inline void set_equal_derivatives( double value,
 
 static inline void set_edge_derivatives( unsigned base_corner,
                                          double value,
-                                         msq_std::vector<size_t>& indices,
-                                         msq_std::vector<double>& derivs )
+                                         size_t* indices,
+                                         double* derivs,
+                                         size_t& num_vtx )
 {
   const int direction = base_corner % 2;
   const int edge_beg =  base_corner;
@@ -86,14 +86,12 @@ static inline void set_edge_derivatives( unsigned base_corner,
   const int dir_sign = 2*(edge_beg/2) - 1;
   const int oth_sign = 2*((edge_beg+1)/2%2) - 1;
 
-  indices.resize(5);
+  num_vtx = 5;
   indices[0] = edge_beg;
   indices[1] = edge_end;
   indices[2] = adj_end;
   indices[3] = adj_beg;
   indices[4] = 4;
-
-  derivs.resize(15);
 
   derivs[ 0+direction] =  2 * dir_sign * value;
   derivs[ 1-direction] =      oth_sign * value;
@@ -118,8 +116,9 @@ static inline void set_edge_derivatives( unsigned base_corner,
 
 static inline void set_corner_derivatives( unsigned corner,
                                            double value,
-                                           msq_std::vector<size_t>& indices,
-                                           msq_std::vector<double>& derivs )
+                                           size_t* indices,
+                                           double* derivs,
+                                           size_t& num_vtx )
 {
   const unsigned adj_in_xi = (5 - corner) % 4;
   const unsigned adj_in_eta = 3 - corner;
@@ -129,13 +128,11 @@ static inline void set_corner_derivatives( unsigned corner,
   const double dxi_value = dxi_sign * value;
   const double deta_value = deta_sign * value;
 
-  indices.resize(4);
+  num_vtx = 4;
   indices[0] = corner;
   indices[1] = adj_in_xi;
   indices[2] = adj_in_eta;
   indices[3] = 4;
-
-  derivs.resize(12);
 
   derivs[ 0] =  dxi_value;
   derivs[ 1] =  deta_value;
@@ -159,7 +156,8 @@ EntityTopology LinearPyramid::element_topology() const
 
 void LinearPyramid::coefficients_at_corner( unsigned corner,
                                             unsigned nodebits,
-                                            msq_std::vector<double>& coeff_out,
+                                            double* coeff_out,
+                                            size_t& num_coeff,
                                             MsqError& err ) const
 {
   if (nodebits) {
@@ -167,7 +165,7 @@ void LinearPyramid::coefficients_at_corner( unsigned corner,
     return;
   }
   
-  coeff_out.resize(5);
+  num_coeff = 5;
   coeff_out[0] = 0.0;
   coeff_out[1] = 0.0;
   coeff_out[2] = 0.0;
@@ -178,16 +176,17 @@ void LinearPyramid::coefficients_at_corner( unsigned corner,
 
 
 void LinearPyramid::coefficients_at_mid_edge( unsigned edge,
-                                            unsigned nodebits,
-                                            msq_std::vector<double>& coeff_out,
-                                            MsqError& err ) const
+                                              unsigned nodebits,
+                                              double* coeff_out,
+                                              size_t& num_coeff,
+                                              MsqError& err ) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
     return;
   }
   
-  coeff_out.resize(5);
+  num_coeff = 5;
   coeff_out[0] = 0.0;
   coeff_out[1] = 0.0;
   coeff_out[2] = 0.0;
@@ -205,16 +204,17 @@ void LinearPyramid::coefficients_at_mid_edge( unsigned edge,
 }
 
 void LinearPyramid::coefficients_at_mid_face( unsigned face,
-                                            unsigned nodebits,
-                                            msq_std::vector<double>& coeff_out,
-                                            MsqError& err ) const
+                                              unsigned nodebits,
+                                              double* coeff_out,
+                                              size_t& num_coeff,
+                                              MsqError& err ) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
     return;
   }
 
-  coeff_out.resize(5);
+  num_coeff = 5;
   if (face == 4) {
     coeff_out[0] = 0.25;
     coeff_out[1] = 0.25;
@@ -231,17 +231,17 @@ void LinearPyramid::coefficients_at_mid_face( unsigned face,
   }
 }
 
-void LinearPyramid::coefficients_at_mid_elem( 
-                                            unsigned nodebits,
-                                            msq_std::vector<double>& coeff_out,
-                                            MsqError& err ) const
+void LinearPyramid::coefficients_at_mid_elem( unsigned nodebits,
+                                              double* coeff_out,
+                                              size_t& num_coeff,
+                                              MsqError& err ) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
     return;
   }
 
-  coeff_out.resize(5);
+  num_coeff = 5;
   coeff_out[0] = 0.1875;
   coeff_out[1] = 0.1875;
   coeff_out[2] = 0.1875;
@@ -251,10 +251,11 @@ void LinearPyramid::coefficients_at_mid_elem(
 
 
 void LinearPyramid::derivatives_at_corner( unsigned corner, 
-                              unsigned nodebits,
-                              msq_std::vector<size_t>& vertex_indices_out,
-                              msq_std::vector<double>& d_coeff_d_xi_out,
-                              MsqError& err ) const
+                                           unsigned nodebits,
+                                           size_t* vertex_indices_out,
+                                           double* d_coeff_d_xi_out,
+                                           size_t& num_vtx,
+                                           MsqError& err ) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
@@ -262,18 +263,19 @@ void LinearPyramid::derivatives_at_corner( unsigned corner,
   }
   
   if (corner == 4) {
-    set_equal_derivatives( 0.0, vertex_indices_out, d_coeff_d_xi_out );
+    set_equal_derivatives( 0.0, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
   }
   else {
-    set_corner_derivatives( corner, 0.5, vertex_indices_out, d_coeff_d_xi_out );
+    set_corner_derivatives( corner, 0.5, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
   }
 }
 
 void LinearPyramid::derivatives_at_mid_edge( unsigned edge, 
-                              unsigned nodebits,
-                              msq_std::vector<size_t>& vertex_indices_out,
-                              msq_std::vector<double>& d_coeff_d_xi_out,
-                              MsqError& err ) const
+                                             unsigned nodebits,
+                                             size_t* vertex_indices_out,
+                                             double* d_coeff_d_xi_out,
+                                             size_t& num_vtx,
+                                             MsqError& err ) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
@@ -281,19 +283,20 @@ void LinearPyramid::derivatives_at_mid_edge( unsigned edge,
   }
   
   if (edge < 4) {
-    set_edge_derivatives( edge, 0.25, vertex_indices_out, d_coeff_d_xi_out );
+    set_edge_derivatives( edge, 0.25, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
   }
   else {
-    set_corner_derivatives( edge-4, 0.25, vertex_indices_out, d_coeff_d_xi_out );
+    set_corner_derivatives( edge-4, 0.25, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
   }    
 }
 
 
 void LinearPyramid::derivatives_at_mid_face( unsigned face, 
-                              unsigned nodebits,
-                              msq_std::vector<size_t>& vertex_indices_out,
-                              msq_std::vector<double>& d_coeff_d_xi_out,
-                              MsqError& err ) const
+                                             unsigned nodebits,
+                                             size_t* vertex_indices_out,
+                                             double* d_coeff_d_xi_out,
+                                             size_t& num_vtx,
+                                             MsqError& err ) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
@@ -301,25 +304,25 @@ void LinearPyramid::derivatives_at_mid_face( unsigned face,
   }
   
   if (face == 4) {
-    set_equal_derivatives( 0.25, vertex_indices_out, d_coeff_d_xi_out );
+    set_equal_derivatives( 0.25, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
   }
   else {
-    set_edge_derivatives( face, 1./6, vertex_indices_out, d_coeff_d_xi_out );
+    set_edge_derivatives( face, 1./6, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
   }
 }
 
-void LinearPyramid::derivatives_at_mid_elem( 
-                              unsigned nodebits,
-                              msq_std::vector<size_t>& vertex_indices_out,
-                              msq_std::vector<double>& d_coeff_d_xi_out,
-                              MsqError& err ) const
+void LinearPyramid::derivatives_at_mid_elem( unsigned nodebits,
+                                             size_t* vertex_indices_out,
+                                             double* d_coeff_d_xi_out,
+                                             size_t& num_vtx,
+                                             MsqError& err ) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
     return;
   }
   
-  set_equal_derivatives( 0.1875, vertex_indices_out, d_coeff_d_xi_out );
+  set_equal_derivatives( 0.1875, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
 }
 
 

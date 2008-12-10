@@ -41,7 +41,8 @@ EntityTopology LinearTriangle::element_topology() const
 
 void LinearTriangle::coefficients_at_corner( unsigned corner,
                                              unsigned nodebits,
-                                             msq_std::vector<double>& coeff_out,
+                                             double* coeff_out,
+                                             size_t& num_coeff,
                                              MsqError& err ) const
 {
   if (nodebits) {
@@ -49,14 +50,15 @@ void LinearTriangle::coefficients_at_corner( unsigned corner,
     return;
   }
   
-  coeff_out.resize(3);
+  num_coeff = 3;
   coeff_out[0] = coeff_out[1] = coeff_out[2] = 0.0;
   coeff_out[corner] = 1.0;
 }
 
 void LinearTriangle::coefficients_at_mid_edge( unsigned edge,
                                                unsigned nodebits,
-                                               msq_std::vector<double>& coeff_out,
+                                               double* coeff_out,
+                                               size_t& num_coeff,
                                                MsqError& err ) const
 {
   if (nodebits) {
@@ -64,7 +66,7 @@ void LinearTriangle::coefficients_at_mid_edge( unsigned edge,
     return;
   }
   
-  coeff_out.resize(3);
+  num_coeff = 3;
   const unsigned start_vtx =  edge;
   const unsigned   end_vtx = (edge+1)%3;
   const unsigned other_vtx = (edge+2)%3;
@@ -75,7 +77,8 @@ void LinearTriangle::coefficients_at_mid_edge( unsigned edge,
 
 void LinearTriangle::coefficients_at_mid_face( unsigned ,
                                                unsigned ,
-                                               msq_std::vector<double>& ,
+                                               double* ,
+                                               size_t& ,
                                                MsqError& err ) const
 {
   MSQ_SETERR(err)(dimension_error, MsqError::UNSUPPORTED_ELEMENT );
@@ -83,7 +86,8 @@ void LinearTriangle::coefficients_at_mid_face( unsigned ,
 }
 
 void LinearTriangle::coefficients_at_mid_elem( unsigned nodebits,
-                                               msq_std::vector<double>& coeff_out,
+                                               double* coeff_out,
+                                               size_t& num_coeff,
                                                MsqError& err ) const
 {
   if (nodebits) {
@@ -91,25 +95,25 @@ void LinearTriangle::coefficients_at_mid_elem( unsigned nodebits,
     return;
   }
   
-  coeff_out.resize(3);
+  num_coeff = 3;
   coeff_out[0] = coeff_out[1] = coeff_out[2] = MSQ_ONE_THIRD;
 }
 
 static inline void triangle_derivatives( unsigned nodebits,
-                                         msq_std::vector<size_t>& vertices,
-                                         msq_std::vector<double>& coeff_derivs,
+                                         size_t* vertices,
+                                         double* coeff_derivs,
+                                         size_t& num_vtx,
                                          MsqError& err ) 
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
   }
   else {
-    vertices.resize(3);
+    num_vtx = 3;
     vertices[0] = 0;
     vertices[1] = 1;
     vertices[2] = 2;
     
-    coeff_derivs.resize(6);
     coeff_derivs[0] = -1.0;
     coeff_derivs[1] = -1.0;
     coeff_derivs[2] = 1.0;
@@ -121,42 +125,45 @@ static inline void triangle_derivatives( unsigned nodebits,
 
 
 void LinearTriangle::derivatives_at_corner( unsigned , 
-                              unsigned nodebits,
-                              msq_std::vector<size_t>& vertex_indices_out,
-                              msq_std::vector<double>& d_coeff_d_xi_out,
-                              MsqError& err ) const
+                                            unsigned nodebits,
+                                            size_t* vertex_indices_out,
+                                            double* d_coeff_d_xi_out,
+                                            size_t& num_vtx,
+                                            MsqError& err ) const
 {
-  triangle_derivatives( nodebits, vertex_indices_out, d_coeff_d_xi_out, err );
+  triangle_derivatives( nodebits, vertex_indices_out, d_coeff_d_xi_out, num_vtx, err );
   MSQ_CHKERR(err);
 }
 
 void LinearTriangle::derivatives_at_mid_edge( unsigned , 
-                              unsigned nodebits,
-                              msq_std::vector<size_t>& vertex_indices_out,
-                              msq_std::vector<double>& d_coeff_d_xi_out,
-                              MsqError& err ) const
+                                              unsigned nodebits,
+                                              size_t* vertex_indices_out,
+                                              double* d_coeff_d_xi_out,
+                                              size_t& num_vtx,
+                                              MsqError& err ) const
 {
-  triangle_derivatives( nodebits, vertex_indices_out, d_coeff_d_xi_out, err );
+  triangle_derivatives( nodebits, vertex_indices_out, d_coeff_d_xi_out, num_vtx, err );
   MSQ_CHKERR(err);
 }
 
 void LinearTriangle::derivatives_at_mid_face( unsigned , 
-                              unsigned ,
-                              msq_std::vector<size_t>& ,
-                              msq_std::vector<double>& ,
-                              MsqError& err ) const
+                                              unsigned ,
+                                              size_t* ,
+                                              double* ,
+                                              size_t& ,
+                                              MsqError& err ) const
 {
   MSQ_SETERR(err)(dimension_error, MsqError::UNSUPPORTED_ELEMENT );
   return;
 }
 
-void LinearTriangle::derivatives_at_mid_elem(
-                              unsigned nodebits,
-                              msq_std::vector<size_t>& vertex_indices_out,
-                              msq_std::vector<double>& d_coeff_d_xi_out,
-                              MsqError& err ) const
+void LinearTriangle::derivatives_at_mid_elem( unsigned nodebits,
+                                              size_t* vertex_indices_out,
+                                              double* d_coeff_d_xi_out,
+                                              size_t& num_vtx,
+                                              MsqError& err ) const
 {
-  triangle_derivatives( nodebits, vertex_indices_out, d_coeff_d_xi_out, err );
+  triangle_derivatives( nodebits, vertex_indices_out, d_coeff_d_xi_out, num_vtx, err );
   MSQ_CHKERR(err);
 }
 
