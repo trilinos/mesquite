@@ -75,10 +75,10 @@ using namespace Mesquite;
 
 const double P = 1.0; // objective function power
 const bool ONE_TRI_SAMPLE = true;
-const bool LOCAL_PATCHES = true;
-const bool USE_FEAS_NEWT = false;
-const bool WRITE_VTK = false;
-const bool WRITE_GNUPLOT = true;
+const bool LOCAL_PATCHES = false;
+const bool USE_FEAS_NEWT = true;
+const bool WRITE_VTK = true;
+const bool WRITE_GNUPLOT = false;
 
 void usage() {
   cerr << "main [e[.m]]" << endl;
@@ -401,8 +401,10 @@ void write_mesh( MeshImpl* mesh, const char* filename )
     cout << "Wrote: \"" << vfile << '"' << endl;
   }
   if (WRITE_GNUPLOT) {
-    string vfile = string(filename) + ".gpt";
-    MeshWriter::write_gnuplot( mesh, filename, err );
+    string vfile = string(filename) + ".eps";
+    MeshWriter::write_eps( mesh, vfile.c_str(), 
+                           MeshWriter::Projection( MeshWriter::X, MeshWriter::Y ),
+                           err );
     CHKERR(err)
     cout << "Wrote: \"" << vfile << '"' << endl;
   }
@@ -426,7 +428,7 @@ bool run_smoother( mesh_reader_t input_mesh,
 
   ReferenceMesh refmesh( &reference );
   RefMeshTargetCalculator ref_target( &refmesh );
-  IdealTargetCalculator ident_target;
+  IdealTargetCalculator ident_target(false);
   TargetCalculator* target;
   if (reference_mesh) {
     reference_mesh( &reference );
