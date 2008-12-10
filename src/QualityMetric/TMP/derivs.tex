@@ -340,121 +340,144 @@ s &=& (-1)^{i+j}\frac{i-j}{|i-j|}
 Both the $2 \times 2$ and $3 \times 3$ results are composed of skew-symmetric $n \times n$ submatrices.  For the $3 \times 3$ result, the terms in a submatrix are the values from a single row of $T$.  The diagonal submatrices for both results are zero, and the diagonal terms of each submatrix are zero.
 
 
-\section{Derivatives of $T^p$}
-
-Define $T^p$ for any positive integer $p$ to be the product of $p$ instances of the matrix $T$.  Define $T^0 = I$.  The derivative of the first power is obvious:
-\begin{eqnarray}
-T^1 &=& T \\
-(T^1)_{i,j} &=& t_{i,j} \\
-\frac{\partial (T^1)_{i,j}}{\partial t_{r,s}} &=& \delta^i_r \delta^j_s \\
-\frac{\partial T^1}{\partial t_{r,s}} &=& E_{r,s}
-\end{eqnarray}
-
-For the second power of $T$:
-
-\begin{eqnarray}
-T^2 &=& T T \\
-(T^2)_{i,j} &=& \sum_{k=1}^n t_{i,k} t_{k,j} \\
-\frac{\partial (T^2)_{i,j}}{\partial t_{r,s}} &=& 
-  \sum_{k=1}^n \left( \delta^i_r \delta^k_s t_{k,j} 
-  + t_{i,k} \delta^k_R \delta^j_s 
-  \right) \\
-\frac{\partial T^2}{\partial t_{r,s}} &=& \frac{\partial T}{\partial t_{r,s}} T 
-  + T \frac{\partial T}{\partial t_{r,s}} 
-\end{eqnarray}
-
-And for the third power of $T$:
-
-\begin{eqnarray}
-T^3 &=& T T T\\
-(T^3)_{i,j} &=& \sum_{p=1}^n \sum_{k=1}^n t_{i,k} t_{k,p} t_{p,j} \\
-\frac{\partial (T^3)_{i,j}}{\partial t_{r,s}} &=& 
-  \sum_{p=1}^n \sum_{k=1}^n \left( 
-  \delta^i_r \delta^k_s t_{k,p} t_{p,j} 
-  + t_{i,k} \delta^k_r \delta^p_s t_{p,j} 
-  + t_{i,k} t_{k,p} \delta^p_r \delta^j_s 
-  \right)\\
-\frac{\partial T^3}{\partial t_{r,s}} &=& \frac{\partial T}{\partial t_{r,s}} T T + T \frac{\partial T}{\partial t_{r,s}} T + T T \frac{\partial T}{\partial t_{r,s}} 
-\end{eqnarray}
-
-And for the fourth power of $T$:
-
-\begin{eqnarray}
-T^4 &=& T T T T\\
-(T^4)_{i,j} &=& \sum_{q=1}^n \sum_{p=1}^n \sum_{k=1}^n t_{i,k} t_{k,p} t_{p,q} t_{q,j} \\
-\nonumber 
-\frac{\partial (T^4)_{i,j}}{\partial t_{r,s}} &=& 
-  \sum_{q=1}^n \sum_{p=1}^n \sum_{k=1}^n ( 
-   \delta^i_r \delta^k_s t_{k,p} t_{p,q} t_{q,j} 
-   + t_{i,k} \delta^k_r \delta^p_s t_{p,q} t_{q,j} \\ & & {} 
-   + t_{i,k} t_{k,p} \delta^p_r \delta^q_s t_{q,j} 
-   + t_{i,k} t_{k,p} t_{p,q} \delta^q_r \delta^j_s)\\
-\frac{\partial T^4}{\partial t_{r,s}} &=& 
-  \frac{\partial T}{\partial t_{r,s}} T T T 
-  + T \frac{\partial T}{\partial t_{r,s}} T T 
-  + T T \frac{\partial T}{\partial t_{r,s}} T 
-  + T T T \frac{\partial T}{\partial t_{r,s}}
-\end{eqnarray}
-
-I'm not sure how to formalize the next step, but the pattern is clear:
-
-\begin{equation}
-\frac{\partial T^p}{\partial t_{r,s}}
- = \sum_{i=1}^p\left( T^{i-1} \frac{\partial T}{\partial t_{r,s}} T^{p-i} 
-   \right) \quad \forall \quad p \in \mathbb{Z}, p > 0
-\end{equation}
-
-Going back to the formulas for single terms in the derivatives, we can simplify further: several of the summations can be eliminated because all but one 
-of the terms are multiplied by a Kronecker delta equal to zero:
-\begin{eqnarray}
-\frac{\partial (T^1)_{i,j}}{\partial t_{r,s}} &=& \delta^i_r \delta^j_s \\
-\frac{\partial (T^2)_{i,j}}{\partial t_{r,s}} &=& \delta^i_r t_{s,j} + t_{i,r} \delta^j_s \\
-\frac{\partial (T^3)_{i,j}}{\partial t_{r,s}} &=& 
-\delta_r^i \sum_{p=1}^n t_{s,p} t_{p,j} + t_{i,r} t_{s,j} + 
-\delta_s^j \sum_{k=1}^n t_{i,k} t_{k,r} \\
- & = & \delta_r^i (T^2)^{s,j} + t_{i,r} t_{s,j}
- + \delta_s^j (T^2)_{i,r} \\
-\nonumber
-\frac{\partial (T^4)_{i,j}}{\partial t_{r,s}} &=& 
-\delta^i_r \sum_{q=1}^n \sum_{p=1}^n t_{s,p} t_{p,q} t_{q,j} +
-t_{i,r} \sum_{q=1}^n t_{s,q} t_{q,j} \\ & & {} +
-t_{s,j} \sum_{k=1}^n t_{i,k} t_{k,r} +
-\delta^j_s \sum_{p=1}^n \sum_{k=1}^n t_{i,k} t_{k,p} t_{p,r} \\
- & = & \delta^i_r (T^3)_{s,j} +
-t_{i,r} (T^2)_{s,j} + 
-t_{s,j} (T^2)_{i,r} +
-\delta^j_s (T^3)_{i,r}
-\end{eqnarray}
-
-The pattern isn't evident yet, so for $T^5$:
-
-\begin{eqnarray}{ccc}
-(T^5)_{i,j} &=& \sum_{u=1}^n \sum_{q=1}^n \sum_{p=1}^n \sum_{k=1}^n
-t_{i,k} t_{k,p} t_{p,q} t_{q,u} t_{u,j} \\
-\nonumber
-\frac{\partial (T^5)_{i,j}}{\partial t_{r,s}} &=&
-  \sum_{u=1}^n \sum_{q=1}^n \sum_{p=1}^n \sum_{k=1}^n (
-  \delta^i_r \delta^k_s t_{k,p} t_{p,q} t_{q,u} t_{u,j} \\ \nonumber & & {} +
-  t_{i,k} \delta^k_r \delta^p_s t_{p,q} t_{q,u} t_{u,j} +
-  t_{i,k} t_{k,p} \delta^p_r \delta^q_s t_{q,u} t_{u,j} \\ & & {} +
-  t_{i,k} t_{k,p} t_{p,q} \delta^q_r \delta^u_s t_{u,j} +
-  t_{i,k} t_{k,p} t_{p,q} t_{q,u} \delta^u_r \delta^j_s )\\
-\nonumber
-&=& \delta^i_r \sum_{u=1}^n \sum_{q=1}^n \sum_{p=1}^n t_{s,p} t_{p,q} t_{q,u} t_{u,j}
- + t_{i,r} \sum_{u=1}^n \sum_{q=1}^n t_{s,q} t_{q,u} t_{u,j}
- \\ \nonumber & & {} + 
- \sum_{u=1}^n \sum_{k=1}^n t_{i,k} t_{k,r} t_{s,u} t_{u,j}
- + t_{s,j} \sum_{p=1}^n \sum_{k=1}^n t_{i,k} t_{k,p} t_{p,r}
- \\ & & {} + 
- \delta^j_s \sum_{q=1}^n \sum_{p=1}^n \sum_{k=1}^n t_{i,k} t_{k,p} t_{p,q} t_{q,r} \\
-\nonumber
-&=& \delta^i_r (T^4)_{s,j} + t_{i,r} (T^3)_{s,j} + (T^2)_{i,r}(T^2)_{s,j}
-  + t_{s,j} (T^3)_{i,r} + \delta^j_s (T^4)_{i,r} \\
-\end{eqnarray}
+% \section{Derivatives of $T^p$}
+% 
+% Define $T^p$ for any positive integer $p$ to be the product of $p$ instances of the matrix $T$.  Define $T^0 = I$.  The derivative of the first power is obvious:
+% \begin{eqnarray}
+% T^1 &=& T \\
+% (T^1)_{i,j} &=& t_{i,j} \\
+% \frac{\partial (T^1)_{i,j}}{\partial t_{r,s}} &=& \delta^i_r \delta^j_s \\
+% \frac{\partial T^1}{\partial t_{r,s}} &=& E_{r,s}
+% \end{eqnarray}
+% 
+% For the second power of $T$:
+% 
+% \begin{eqnarray}
+% T^2 &=& T T \\
+% (T^2)_{i,j} &=& \sum_{k=1}^n t_{i,k} t_{k,j} \\
+% \frac{\partial (T^2)_{i,j}}{\partial t_{r,s}} &=& 
+%   \sum_{k=1}^n \left( \delta^i_r \delta^k_s t_{k,j} 
+%   + t_{i,k} \delta^k_R \delta^j_s 
+%   \right) \\
+% \frac{\partial T^2}{\partial t_{r,s}} &=& \frac{\partial T}{\partial t_{r,s}} T 
+%   + T \frac{\partial T}{\partial t_{r,s}} 
+% \end{eqnarray}
+% 
+% And for the third power of $T$:
+% 
+% \begin{eqnarray}
+% T^3 &=& T T T\\
+% (T^3)_{i,j} &=& \sum_{p=1}^n \sum_{k=1}^n t_{i,k} t_{k,p} t_{p,j} \\
+% \frac{\partial (T^3)_{i,j}}{\partial t_{r,s}} &=& 
+%   \sum_{p=1}^n \sum_{k=1}^n \left( 
+%   \delta^i_r \delta^k_s t_{k,p} t_{p,j} 
+%   + t_{i,k} \delta^k_r \delta^p_s t_{p,j} 
+%   + t_{i,k} t_{k,p} \delta^p_r \delta^j_s 
+%   \right)\\
+% \frac{\partial T^3}{\partial t_{r,s}} &=& \frac{\partial T}{\partial t_{r,s}} T T + T \frac{\partial T}{\partial t_{r,s}} T + T T \frac{\partial T}{\partial t_{r,s}} 
+% \end{eqnarray}
+% 
+% And for the fourth power of $T$:
+% 
+% \begin{eqnarray}
+% T^4 &=& T T T T\\
+% (T^4)_{i,j} &=& \sum_{q=1}^n \sum_{p=1}^n \sum_{k=1}^n t_{i,k} t_{k,p} t_{p,q} t_{q,j} \\
+% \nonumber 
+% \frac{\partial (T^4)_{i,j}}{\partial t_{r,s}} &=& 
+%   \sum_{q=1}^n \sum_{p=1}^n \sum_{k=1}^n ( 
+%    \delta^i_r \delta^k_s t_{k,p} t_{p,q} t_{q,j} 
+%    + t_{i,k} \delta^k_r \delta^p_s t_{p,q} t_{q,j} \\ & & {} 
+%    + t_{i,k} t_{k,p} \delta^p_r \delta^q_s t_{q,j} 
+%    + t_{i,k} t_{k,p} t_{p,q} \delta^q_r \delta^j_s)\\
+% \frac{\partial T^4}{\partial t_{r,s}} &=& 
+%   \frac{\partial T}{\partial t_{r,s}} T T T 
+%   + T \frac{\partial T}{\partial t_{r,s}} T T 
+%   + T T \frac{\partial T}{\partial t_{r,s}} T 
+%   + T T T \frac{\partial T}{\partial t_{r,s}}
+% \end{eqnarray}
+% 
+% I'm not sure how to formalize the next step, but the pattern is clear:
+% 
+% \begin{equation}
+% \frac{\partial T^p}{\partial t_{r,s}}
+%  = \sum_{i=1}^p\left( T^{i-1} \frac{\partial T}{\partial t_{r,s}} T^{p-i} 
+%    \right) \quad \forall \quad p \in \mathbb{Z}, p > 0
+% \end{equation}
+% 
+% Going back to the formulas for single terms in the derivatives, we can simplify further: several of the summations can be eliminated because all but one 
+% of the terms are multiplied by a Kronecker delta equal to zero:
+% \begin{eqnarray}
+% \frac{\partial (T^1)_{i,j}}{\partial t_{r,s}} &=& \delta^i_r \delta^j_s \\
+% \frac{\partial (T^2)_{i,j}}{\partial t_{r,s}} &=& \delta^i_r t_{s,j} + t_{i,r} \delta^j_s \\
+% \frac{\partial (T^3)_{i,j}}{\partial t_{r,s}} &=& 
+% \delta_r^i \sum_{p=1}^n t_{s,p} t_{p,j} + t_{i,r} t_{s,j} + 
+% \delta_s^j \sum_{k=1}^n t_{i,k} t_{k,r} \\
+%  & = & \delta_r^i (T^2)^{s,j} + t_{i,r} t_{s,j}
+%  + \delta_s^j (T^2)_{i,r} \\
+% \nonumber
+% \frac{\partial (T^4)_{i,j}}{\partial t_{r,s}} &=& 
+% \delta^i_r \sum_{q=1}^n \sum_{p=1}^n t_{s,p} t_{p,q} t_{q,j} +
+% t_{i,r} \sum_{q=1}^n t_{s,q} t_{q,j} \\ & & {} +
+% t_{s,j} \sum_{k=1}^n t_{i,k} t_{k,r} +
+% \delta^j_s \sum_{p=1}^n \sum_{k=1}^n t_{i,k} t_{k,p} t_{p,r} \\
+%  & = & \delta^i_r (T^3)_{s,j} +
+% t_{i,r} (T^2)_{s,j} + 
+% t_{s,j} (T^2)_{i,r} +
+% \delta^j_s (T^3)_{i,r}
+% \end{eqnarray}
+% 
+% The pattern isn't evident yet, so for $T^5$:
+% 
+% \begin{eqnarray}{ccc}
+% (T^5)_{i,j} &=& \sum_{u=1}^n \sum_{q=1}^n \sum_{p=1}^n \sum_{k=1}^n
+% t_{i,k} t_{k,p} t_{p,q} t_{q,u} t_{u,j} \\
+% \nonumber
+% \frac{\partial (T^5)_{i,j}}{\partial t_{r,s}} &=&
+%   \sum_{u=1}^n \sum_{q=1}^n \sum_{p=1}^n \sum_{k=1}^n (
+%   \delta^i_r \delta^k_s t_{k,p} t_{p,q} t_{q,u} t_{u,j} \\ \nonumber & & {} +
+%   t_{i,k} \delta^k_r \delta^p_s t_{p,q} t_{q,u} t_{u,j} +
+%   t_{i,k} t_{k,p} \delta^p_r \delta^q_s t_{q,u} t_{u,j} \\ & & {} +
+%   t_{i,k} t_{k,p} t_{p,q} \delta^q_r \delta^u_s t_{u,j} +
+%   t_{i,k} t_{k,p} t_{p,q} t_{q,u} \delta^u_r \delta^j_s )\\
+% \nonumber
+% &=& \delta^i_r \sum_{u=1}^n \sum_{q=1}^n \sum_{p=1}^n t_{s,p} t_{p,q} t_{q,u} t_{u,j}
+%  + t_{i,r} \sum_{u=1}^n \sum_{q=1}^n t_{s,q} t_{q,u} t_{u,j}
+%  \\ \nonumber & & {} + 
+%  \sum_{u=1}^n \sum_{k=1}^n t_{i,k} t_{k,r} t_{s,u} t_{u,j}
+%  + t_{s,j} \sum_{p=1}^n \sum_{k=1}^n t_{i,k} t_{k,p} t_{p,r}
+%  \\ & & {} + 
+%  \delta^j_s \sum_{q=1}^n \sum_{p=1}^n \sum_{k=1}^n t_{i,k} t_{k,p} t_{p,q} t_{q,r} \\
+% \nonumber
+% &=& \delta^i_r (T^4)_{s,j} + t_{i,r} (T^3)_{s,j} + (T^2)_{i,r}(T^2)_{s,j}
+%   + t_{s,j} (T^3)_{i,r} + \delta^j_s (T^4)_{i,r} \\
+% \end{eqnarray}
 
 
 \chapter{Derivatives of target metrics}
 
+\section{Derivatives of terms $3 \times 2$ $A^{\prime\prime}$ with respect to $2 \times 2$ $A$}
+
+Let $W_{*,i}$ denote the $i^{th}$ column of the matrix $W$.
+
+\begin{eqnarray}
+n^\prime_w &=& \frac{W^\prime_{*,1} \times W^\prime_{*,2}}
+                   {|W^\prime_{*,1} \times W^\prime_{*,2}|} \\
+Z &=& \left[ \frac{W^\prime_{*,1}}{|W^\prime_{*,1}|}, 
+              n^\prime_w \times \frac{W^\prime_{*,1}}{|W^\prime_{*,1}|} \right] \\
+W &=& Z^t \times W^\prime \\
+n^{\prime\prime} &=& \frac{A^{\prime\prime}_{*,1} \times A^{\prime\prime}_{*,2}}
+                       {|A^{\prime\prime}_{*,1} \times A^{\prime\prime}_{*,2}|} \\
+n_r &=& \left\{ \begin{array}{ll} 
+         n^\prime_w & \textrm{if $(n^{\prime\prime} \cdot n^\prime_w) >= 0$} \\
+        -n^\prime_w & \textrm{if $(n^{\prime\prime} \cdot n^\prime_w) < 0$}
+        \end{array} \right. \\
+v &=& \frac{n_r \times n^{\prime\prime}}{|n_r \times n^{\prime\prime}|} \\
+R &=& \left[ v, n^{\prime\prime}, v \times n^{\prime\prime} \right] \\
+S &=& \left[ v, n_r, v \times n_r \right] \\
+T &=& S \times R^t \\
+A^\prime &=& T \times A^{\prime\prime} \\
+A &=& Z^t \times A^\prime
+\end{eqnarray}
 
 \section{Derivatives of $|T-B|^2$}
 
