@@ -9,4 +9,4 @@ main_DEPENDENCIES = $(LDADD)
 TESTS = $(check_PROGRAMS)
 
 EXTRA_DIST = reference.vtk figures.tex
-MOSTLYCLEANFILES = *.gpt
+MOSTLYCLEANFILES = *.gpt Exp*.vtk
