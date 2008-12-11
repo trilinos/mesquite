@@ -300,10 +300,42 @@ and
 \end{eqnarray}
 with $S_{ij}$ an $n \times n$ matrix with entries
 \begin{eqnarray}
-\left( S_{ij} \right)_{r,s} = t_{i,r} \, t_{j,s}
+\left( S_{ij} \right)_{r,s} = t_{i,r} \, t_{j,s} \label{sij}
 \end{eqnarray}
 When $m=2$ or $m \geq 4$ the second derivatives are valid for all $T \in M_3$;
 otherwise, $T=0$ is not allowed. \newline
+
+\subsection{Derivatives of $f(T)=|T^t T|^2$}
+
+\noindent The first derivative is
+\begin{eqnarray}
+\frac{\partial}{\partial T} \, |T^t T|^2 = 4 T \, T^t T \label{dttt}
+\end{eqnarray}
+
+\noindent To obtain the second derivatives, write
+\begin{eqnarray}
+\left( T^t T \right)_{r,s} = \sum_{\ell=1}^n t_{\ell,r} t_{\ell,s} 
+\end{eqnarray}
+and so
+\begin{eqnarray}
+\left( T \, T^t T \right)_{p,q} & = & \sum_{k=1}^n (T)_{p,k} \left( T^t T \right)_{k,q} \\
+ & = & \sum_{k=1}^n t_{p,k} \left( \sum_{\ell=1}^n t_{\ell,k} t_{\ell,q} \right)
+\end{eqnarray}
+Then \ref{dttt} can be written
+\begin{eqnarray}
+\frac{\partial}{\partial t_{p,q}} |T^t T|^2 = 4 \, \sum_{k=1}^n \sum_{\ell=1}^n  t_{p,k} t_{\ell,k} t_{\ell,q} 
+\end{eqnarray}
+Next,
+\begin{eqnarray} 
+\frac{\partial^2 f}{\partial t_{p,q} \partial t_{i,j}} & = & 4\, \sum_{k=1}^n \sum_{\ell=1}^n  \left\{ \delta_i^\ell \, \delta_j^q \, t_{p,k} \, t_{\ell,k} + \delta_i^\ell \, \delta_j^k \, t_{p,k} \, t_{\ell,q} + \delta_i^p \, \delta_j^k \, t_{\ell,q} \, t_{\ell,k} \right\} \nonumber \\
+ & = & 4 \left\{ t_{p,j} \, t_{i,q} + \sum_{k=1}^n \left( \delta_j^q \, t_{p,k} \, t_{i,k} + \delta_i^p \, t_{k,q} \, t_{k,j} \right) \right\} \\
+& = & 4 \left\{ \left( S_{pi} \right)_{j,q} + \delta_j^q (T T^t)_{p,i} + \delta_i^p (T^t T)_{q,j}\right\}
+\end{eqnarray}
+and finally
+\begin{eqnarray}
+\frac{\partial^2 f}{\partial T_i \partial T_j} = 4 \left( S_{ji} + (T T^t)_{i,j} \, I + \delta_j^i \, T^t T \right)
+\end{eqnarray}
+with $S_{ij}$ defined in \ref{sij}. \newline
 
 \subsection{First Partial Derivative of $det(T)$}
 
