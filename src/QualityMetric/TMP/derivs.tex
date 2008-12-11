@@ -5,13 +5,27 @@
 
 \chapter{Notation}
 
-\section{Matrices}
+\section{Functions of Matrices}
 
 Let $t_{i,j}$ denote the element in row $i$ and column $j$ of the matrix $T$.
+Let $f=f(T)$ be a scalar function on the set of $n \times n$ real matrices 
+$M_n$. \newline
+
+\noindent {\it In the manipulations below it is assumed that $f$ and all of 
+its first and second partial derivatives exist and are continuous. Some of the 
+TMP metrics do not satisfy this requirement.} For example, the first partial
+derivatives of the norm of $T$ to the first power (i.e. $|T|$) do not exist 
+when $T=0$. 
+They do exist everywhere else in $M_n$, however.  The first partial 
+derivatives of 
+the absolute value, $|det(T)|$, do not exist when $T$ is singular. Therefore,
+special care must be taken for metrics which include these expressions. 
+\newline
 
 \section{First Derivatives}
 
-Let $\frac{\partial f}{\partial T}$ be the matrix of partial derivatives of the scalar function $f(T)$ where $T$ is a matrix, such that each element $(\frac{\partial f}{\partial T})_{i,j} = \frac{\partial f}{\partial t_{i,j}}$.
+Let $\frac{\partial f}{\partial T}$ be the matrix of partial derivatives of the scalar function $f(T)$ where $T$ is a matrix, such that each element 
+$\left(\frac{\partial f}{\partial T}\right)_{i,j} = \frac{\partial f}{\partial \, t_{i,j}}$.
 
 \section{Second Derivatives}
 
@@ -94,7 +108,7 @@ Thus the symmetric Hessian of $f(T)$, with the elements of $T$ occuring in row-m
 \frac{\partial^2 f}{\partial t_{n,n} \partial t_{n,1}} &
 \ldots &
 \frac{\partial^2 f}{\partial t_{n,n}^2} 
-\end{array} \right]
+\end{array} \right] \nonumber \\
 \end{eqnarray}
 
 \chapter{Basic Matrix Derivatives}
@@ -104,48 +118,47 @@ Thus the symmetric Hessian of $f(T)$, with the elements of $T$ occuring in row-m
 
 \subsection{First Derivative}
 
-The following demonstrates that for the product of square matrices $T = A B$,
-that $\frac{\partial f(T)}{\partial A} = \frac{\partial f(T)}{\partial T} B^t$.
+The following demonstrates that for the product of square matrices $T = A Z$,
+that $\frac{\partial f(T)}{\partial A} = \frac{\partial f(T)}{\partial T} Z^t$. \newline
 
-Beginning with the chain rule:
+\noindent Beginning with the chain rule:
 
 \begin{equation} 
 \label{eqn0}
 \frac{\partial f}{\partial a_{i,j}} = 
-\sum_{l=i}^{n} \sum_{k=1}^{n} 
+\sum_{l=1}^{n} \sum_{k=1}^{n} 
 \frac{\partial f}{\partial t_{l,k}} 
 \frac{\partial t_{l,k}}{\partial a_{i,j}}
 \end{equation}
 
-Matrix multiplication gives:
+\noindent Since $T=AZ$, matrix multiplication gives:
 
 \begin{equation}
 \label{eqn1}
-t_{l,k} = \sum_{r=1}^n a_{l,r} b_{r,k}
+t_{l,k} = \sum_{r=1}^n a_{l,r} z_{r,k}
 \end{equation}
 
-Taking the first derivative of Equation \ref{eqn1}:
+\noindent Taking the first derivative of Equation \ref{eqn1}:
 
 \begin{eqnarray}
-\label{eqn2}
+%\label{eqn2}
 \frac{\partial t_{l,k}}{\partial a_{i,j}} 
-  &=& \sum_{r=1}^n \delta_i^l \delta_j^r b_{r,k} \\
-  &=& \delta_i^l b_{j,k}
+  &=& \sum_{r=1}^n \delta_i^l \delta_j^r z_{r,k} \\
+  &=& \delta_i^l z_{j,k} \label{eqn2}
 \end{eqnarray}
 
-Substituting Equation \ref{eqn2} into \ref{eqn0}:
+\noindent Substituting Equation \ref{eqn2} into \ref{eqn0}:
 
 \begin{eqnarray}
-\label{eqn4}
 \frac{\partial f}{\partial a_{i,j}} &=& \sum_{l=1}^n \sum_{k=1}^n
- \frac{\partial f}{\partial t_{l,k}} \delta_i^l b_{j,k} \\
-&=& \sum_{k=1}^{n} \frac{ \partial f}{ \partial t_{i,k}} b_{j,k}
+ \frac{\partial f}{\partial t_{l,k}} \delta_i^l z_{j,k} \\
+&=& \sum_{k=1}^{n} \frac{ \partial f}{ \partial t_{i,k}} z_{j,k} \label{eqn4}
 \end{eqnarray}
 
-which is:
+\noindent which is:
 
 \begin{equation}
-\frac{\partial f}{\partial A} = \frac{\partial f}{\partial T} B^t
+\frac{\partial f}{\partial A} = \frac{\partial f}{\partial T} Z^t
 \end{equation}
 
 
@@ -157,61 +170,76 @@ Define:
 C = \frac{\partial^2 f}{\partial A_i \partial A_j}
 \end{equation}
 
-for some $i$ and $j$ such that from Equation \ref{dsecelem}:
+\noindent for some $i$ and $j$ such that from Equation \ref{dsecelem}:
 
 \begin{equation}
 \label{chainsecondelem}
 c_{k,l} = \frac{\partial^2 f}{\partial a_{i,k} \partial a_{j,l}}
 \end{equation}
 
-Substituting Equation \ref{eqn4} into Equation \ref{chainsecondelem}:
+\noindent Substituting Equation \ref{eqn4} into Equation \ref{chainsecondelem}:
 
 \begin{eqnarray}
-c_{k,l} &=& \frac{\partial}{\partial a_{i,k}} \sum_{p=1}^n \frac{ \partial f}{\partial t_{j,p}} b_{l,p} \\
-        &=& \sum_{p=1}^n \frac{\partial}{\partial t_{j,p}} \frac{\partial f}{\partial a_{i,k}} b_{l,p} \\
+c_{k,l} &=& \frac{\partial}{\partial a_{i,k}} \sum_{p=1}^n \frac{ \partial f}{\partial t_{j,p}} z_{l,p} \\
+        &=& \sum_{p=1}^n \frac{\partial}{\partial t_{j,p}} \frac{\partial f}{\partial a_{i,k}} z_{l,p} \\
 \label{chainsecondr1}
-        &=& \sum_{p=1}^n \sum_{q=1}^n \frac{\partial^2 f}{ \partial t_{j,p} \partial t_{i,q}} b_{l,p} b_{k,q} 
+        &=& \sum_{p=1}^n \sum_{q=1}^n \frac{\partial^2 f}{ \partial t_{j,p} \partial t_{i,q}} z_{l,p} z_{k,q} 
 \end{eqnarray}
 
-Let:
+\noindent Let:
 
 \begin{equation}
 D = \frac{\partial^2 f}{\partial T_i \partial T_j}
 \end{equation}
-which, given the defintion in Equation \ref{dsecelem}:
+which, given the definition in Equation \ref{dsecelem}:
 \begin{equation}
 d_{q,p} = \frac{\partial^2 f}{\partial t_{i,q} \partial t_{j,p}}
 \end{equation}
 
-Define matrix $X$ and $Y$:
+\noindent Define matrices $X$ and $Y$:
 
 \begin{eqnarray}
-X &=& B D \\
-Y &=& X B^t = B D B^t
+X &=& Z D \\
+Y &=& X Z^t = Z D Z^t
 \end{eqnarray}
 
-An element of $Y$ is then:
+\noindent The elements of $X$ and $Y$ are then:
 
 \begin{eqnarray}
-x_{k,p} & = & \sum_{q=1}^n b_{k,q} d_{q,p} \\
-y_{k,l} & = & \sum_{p=1}^n x_{k,p} b_{l,p} \\ 
-        & = & \sum_{p=1}^n \sum_{q=1}^n b_{k,q} d_{q,p} b_{l,p} \\
+x_{k,p} & = & \sum_{q=1}^n z_{k,q} d_{q,p} \\
+y_{k,l} & = & \sum_{p=1}^n x_{k,p} z_{l,p} \\ 
+        & = & \sum_{p=1}^n \sum_{q=1}^n z_{k,q} d_{q,p} z_{l,p} \\
 \label{chainsecondr2}
-        & = & \sum_{p=1}^n \sum_{q=1}^n \frac{\partial^2 f}{\partial t_{j,p} \partial t_{i,q}} b_{l,p} b_{k,q}
+        & = & \sum_{p=1}^n \sum_{q=1}^n \frac{\partial^2 f}{\partial t_{j,p} \partial t_{i,q}} z_{l,p} z_{k,q}
 \end{eqnarray}
 
-Equation \ref{chainsecondr1} is equal to Equation \ref{chainsecondr2}, so:
+\noindent Equation \ref{chainsecondr1} is equal to Equation \ref{chainsecondr2}, so:
 
 \begin{eqnarray}
 \frac{\partial^2 f}{\partial A_i \partial A_j} &=& C \\
 &=& Y \\
-&=& B D B^t \\
-&=& B \frac{\partial^2 f}{\partial T_i \partial T_j} B^t 
+&=& Z D Z^t \\
+&=& Z \frac{\partial^2 f}{\partial T_i \partial T_j} Z^t 
 \end{eqnarray}
 
 
+\section{Derivatives of Basic TMP Scalar Functions}
+All TMP metrics are functions of the matrices $A$, $Z$, or $T=AZ$.
+Each such metric in turn is some combination of the basic scalar functions
+$|T|^m$, $det(T)$, $tr(T)$, $|T^t T|$, or $|adj T|^2$.  Therefore, derivatives
+of these basic TMP functions will be derived first. \newline
 
-\section{Derivatives of $|T|^2$}
+\subsection{Derivatives of $tr(T)$}
+
+\begin{eqnarray}
+f(T) & = & tr(T) = \sum_{k=1}^n t_{k,k} \\
+\frac{\partial f}{\partial t_{i,j}} &=& \delta_i^j \\
+\frac{\partial f}{\partial T} &=& I 
+\end{eqnarray}
+
+\noindent All of the second derivatives are zero. \newline
+
+\subsection{Derivatives of $|T|^2$}
 
 \begin{eqnarray}
 f(T) &=& |T|^2 = \sum_{i=1}^n \sum_{j=1}^n t_{i,j}^2 \\
@@ -220,20 +248,64 @@ f(T) &=& |T|^2 = \sum_{i=1}^n \sum_{j=1}^n t_{i,j}^2 \\
 \frac{\partial f}{\partial T} &=& 2 T
 \end{eqnarray}
 
-Beginning with Equation \ref{tsquaredterm}:
+\noindent Beginning with Equation \ref{tsquaredterm}:
 \begin{eqnarray}
-\frac{\partial^2 f}{\partial t_{i,j}}{\partial_{k,l}} &=& 2 \delta_i^k \delta_j^l \\
+\frac{\partial^2 f}{\partial t_{i,j} \partial t_{k,l}} &=& 2 \delta_i^k \delta_j^l \\
 \left(\frac{\partial^2 f}{\partial T_i \partial T_j}\right)_{r,s} &=& 2 \delta_i^j \delta_r^s \\
 \frac{\partial^2 f}{\partial T_i \partial T_j} &=& 2 \delta_i^j I
 \end{eqnarray}
 
-All non-diagonal blocks of the Hessian are zero due to the $\delta_{i,j}$.  Thus, if $I_{n^2}$ is the $n^2 \times n^2$ identity matrix, then:
+\noindent All non-diagonal blocks of the Hessian are zero due to the $\delta_i^j$.  Thus, if $I_{n^2}$ is the $n^2 \times n^2$ identity matrix, then:
 
 \begin{equation}
-\frac{\partial^2 |T|^2}{\partial T^2} = 2 I_{n^2}
+\frac{\partial^2}{\partial T^2} \, |T|^2 = 2 \, I_{n^2}
 \end{equation}
 
-\section{First Partial Drivative of $det(T)$}
+\subsection{Derivatives of $f(T)=|T|^m$}
+Using \ref{tsquaredterm},
+\begin{eqnarray}
+2 T & = & \frac{\partial}{\partial T} |T|^2 \nonumber \\
+ & = & 2 |T| \frac{\partial}{\partial T} |T| \nonumber
+\end{eqnarray}
+so that when $T \neq 0$,
+\begin{eqnarray}
+\frac{\partial}{\partial T} |T| & = & \frac{T}{|T|}
+\end{eqnarray}
+Let $m=\pm 1, \pm 2,\pm 3,\ldots$  Then
+\begin{eqnarray}
+\frac{\partial}{\partial T} |T|^m & = & m |T|^{m-1} \frac{\partial }{\partial T}|T| \\
+ & = & m |T|^{m-2} \, T \label{firstdervoftm}
+\end{eqnarray}
+For $m=2,3,\ldots$, the latter formula is valid even when $T=0$. \newline
+
+\noindent Particularly useful are
+\begin{eqnarray}
+\frac{\partial}{\partial T} |T|^3 & = & 3 |T| \, T \\
+\frac{\partial}{\partial T} |T|^4 & = & 4 |T|^2 \, T 
+\end{eqnarray}
+
+\noindent {\bf Second Partial Derivatives of $f(T)=|T|^m$} \newline
+
+\noindent Write \ref{firstdervoftm} in index form as
+\begin{eqnarray}
+\frac{\partial}{\partial t_{i,j}} |T|^m & = & m |T|^{m-2} \, t_{i,j}
+\end{eqnarray}
+Then
+\begin{eqnarray}
+\frac{\partial^2 f}{\partial t_{i,j} \partial t_{k,l}} = m \, \delta_i^k \delta_j^l |T|^{m-2} + m (m-2) \, t_{i,j} t_{k,l} |T|^{m-4}
+\end{eqnarray}
+and 
+\begin{eqnarray}
+\frac{\partial^2 f}{\partial T_i \partial T_j} = m \,  |T|^{m-4} \, \left\{ \delta_i^j \, |T|^2 \, I + (m-2) S_{ij} \right\} 
+\end{eqnarray}
+with $S_{ij}$ an $n \times n$ matrix with entries
+\begin{eqnarray}
+\left( S_{ij} \right)_{r,s} = t_{i,r} \, t_{j,s}
+\end{eqnarray}
+When $m=2$ or $m \geq 4$ the second derivatives are valid for all $T \in M_3$;
+otherwise, $T=0$ is not allowed. \newline
+
+\subsection{First Partial Derivative of $det(T)$}
 
 \begin{eqnarray}
 f(T) &=& det(T) \\
@@ -242,7 +314,7 @@ f(T) &=& det(T) \\
      &=& \sum_{k=1}^n (-1)^{l+k} t_{l,k} M_{l,k}(T) \quad \forall \quad 1 \le l \le n
 \end{eqnarray}
 
-For each term of $\frac{\partial f}{\partial T}$, take the partial derivative of of Equation \ref{det1} for $l = i$ with respect to the corresponding element of $T$:
+\noindent For each term of $\frac{\partial f}{\partial T}$, take the partial derivative of of Equation \ref{det1} for $l = i$ with respect to the corresponding element of $T$:
 
 \begin{eqnarray}
 \frac{\partial f}{\partial t_{i,j}} &=& 
@@ -275,7 +347,7 @@ Which is the definition of the cofactor matrix of $T$, and the transpose of the 
 \frac{\partial f}{\partial T} = (adj(T))^t = adj(T^t)
 \end{equation}
 
-\section{Second Partial Drivative of $det(T)$}
+\subsection{Second Partial Derivative of $det(T)$}
 
 The partial derivative of Equation \ref{det_deriv_term} is:
 
