@@ -229,6 +229,8 @@ Each such metric in turn is some combination of the basic scalar functions
 $|T|^m$, $det(T)$, $tr(T)$, $|T^t T|$, or $|adj T|^2$.  Therefore, derivatives
 of these basic TMP functions will be derived first. \newline
 
+\noindent Throughout this document, let $\tau = det(T)$. \newline
+
 \subsection{Derivatives of $tr(T)$}
 
 \begin{eqnarray}
@@ -239,7 +241,7 @@ f(T) & = & tr(T) = \sum_{k=1}^n t_{k,k} \\
 
 \noindent All of the second derivatives are zero. \newline
 
-\subsection{Derivatives of $|T|^2$}
+\subsection{Derivatives of $|T|^2$ \label{tsquared}}
 
 \begin{eqnarray}
 f(T) &=& |T|^2 = \sum_{i=1}^n \sum_{j=1}^n t_{i,j}^2 \\
@@ -296,6 +298,7 @@ Then
 \end{eqnarray}
 and 
 \begin{eqnarray}
+\label{hesstm}
 \frac{\partial^2 f}{\partial T_i \partial T_j} = m \,  |T|^{m-4} \, \left\{ \delta_i^j \, |T|^2 \, I + (m-2) S_{ij} \right\} 
 \end{eqnarray}
 with $S_{ij}$ an $n \times n$ matrix with entries
@@ -333,11 +336,42 @@ Next,
 \end{eqnarray}
 and finally
 \begin{eqnarray}
+\label{hessttt}
 \frac{\partial^2 f}{\partial T_i \partial T_j} = 4 \left( S_{ji} + (T T^t)_{i,j} \, I + \delta_j^i \, T^t T \right)
+\end{eqnarray}
+with $S_{ij}$ defined in \ref{sij}.\footnote{Beware: the notation on the left-hand-side of this equation has a problem: namely that permuting the indices $i$ and $j$ 
+does not give the same result on the left when one would expect it to. In fact
+\begin{eqnarray}
+\frac{\partial^2 f}{\partial T_j \partial T_i} = \left( \frac{\partial^2 f}{\partial T_i \partial T_j} \right)^t
+\end{eqnarray}
+whereas in standard partial derivatives, one can perform the switch of the 
+indices without needing the transpose.} \newline
+
+\subsection{Derivatives of $f(T)=|adj T|^2$}
+For $T_{2 \times 2}$, 
+\begin{eqnarray}
+|adj T|^2 = |T|^2 
+\end{eqnarray}
+so the first and second derivatives are given in Section \ref{tsquared}. \newline
+
+\noindent For $T_{3 \times 3}$, the following identity holds
+\begin{eqnarray}
+2 \, |adj T|^2 = |T|^4 - |T^t T|^2
+\end{eqnarray}
+Taking the partial derivatives of both sides of the identity and using results 
+from the previous sections, the first derivative is
+\begin{eqnarray}
+\frac{\partial}{\partial T} |adj T|^2 = 2 \, \{ |T|^2 T - T T^t T \}
+\end{eqnarray}
+and, using \ref{hesstm} and \ref{hessttt}, the second derivative is
+\begin{eqnarray}
+\frac{\partial^2 f}{\partial T_i \partial T_j} & = & \frac{1}{2} \frac{\partial^2 }{\partial T_i \partial T_j} |T|^4 - \frac{1}{2} \frac{\partial^2}{\partial T_i \partial T_j} |T^t T|^2 \nonumber \\
+ & = & 2 \, \{ \delta_i^j |T|^2 I + 2 S_{ij} \} - 2 \, \{ S_{ji} + (T T^t)_{i,j} I + \delta_j^i T^t T \} \nonumber \\
+ & = & 2 \, \left\{ \left( \delta_i^j \, |T|^2 - (T T^t)_{i,j} \right) I + 2 S_{ij}-S_{ji} - \delta_j^i T^t T \right\}
 \end{eqnarray}
 with $S_{ij}$ defined in \ref{sij}. \newline
 
-\subsection{First Partial Derivative of $det(T)$}
+\subsection{First Partial Derivative of $\tau=det(T)$}
 
 \begin{eqnarray}
 f(T) &=& det(T) \\
@@ -361,25 +395,25 @@ f(T) &=& det(T) \\
    M_{i,k}}{\partial t_{i,k}} t_{i,k}
 \end{eqnarray}
 
-By definition, the minor for row $i$ and column $j$ contains terms from neither row $i$ nor column $j$. Therefore the partial derivative of a minor with respect to any term from either the corresponding row or column of the original matrix is zero:
+\noindent By definition, the minor for row $i$ and column $j$ contains terms from neither row $i$ nor column $j$. Therefore the partial derivative of a minor with respect to any term from either the corresponding row or column of the original matrix is zero:
 \begin{equation}\label{det3}
 \frac{\partial M_{i,j}}{\partial t_{i,k}} = 
 \frac{\partial M_{i,j}}{\partial t_{k,j}} = 0 \quad \forall \quad k
 \end{equation}
 
-Thus all the terms in the summation in Equation \ref{det2} are zero, leaving:
+\noindent Thus all the terms in the summation in Equation \ref{det2} are zero, leaving:
 
 \begin{equation}\label{det_deriv_term}
 \frac{\partial f}{\partial t_{i,j}} = (-1)^{i+j}M_{i,j}(T)
 \end{equation}
-
-Which is the definition of the cofactor matrix of $T$, and the transpose of the definition of the adjugate of $T$:
+which is the definition of the cofactor matrix of $T$, and the transpose of the definition of the adjoint of $T$:
 
 \begin{equation}
+\label{adjform}
 \frac{\partial f}{\partial T} = (adj(T))^t = adj(T^t)
 \end{equation}
 
-\subsection{Second Partial Derivative of $det(T)$}
+\subsection{Second Partial Derivative of $\tau=det(T)$}
 
 The partial derivative of Equation \ref{det_deriv_term} is:
 
@@ -387,7 +421,7 @@ The partial derivative of Equation \ref{det_deriv_term} is:
 \frac{\partial^2 f}{\partial t_{i,j} \partial t_{k,l}} = (-1)^{i+j}\frac{\partial M_{i,j}(T)}{\partial t_{k,l}}
 \end{equation}
 
-For a $2 \times 2$ matrix, $M_{i,j}(T) = t_{3-i,3-j}$:
+\noindent For a $2 \times 2$ matrix, $M_{i,j}(T) = t_{3-i,3-j}$:
 \begin{equation}
 \frac{\partial^2 f}{\partial t_{i,j} \partial t_{k,l}} = 
 (-1)^{i+j} \delta_{3-i}^k \delta_{3-j}^l
@@ -399,7 +433,8 @@ For a $2 \times 2$ matrix, $M_{i,j}(T) = t_{3-i,3-j}$:
 \end{equation}
 
 \begin{equation}
-\frac{\partial^2 det(T)}{\partial T^2} =
+\label{2ndtau2d}
+\frac{\partial^2 \, \tau}{\partial T^2} =
 \left[ \begin{array}{cccc}
 0 & 0 & 0 & 1 \\
 0 & 0 & -1 & 0 \\
@@ -408,10 +443,11 @@ For a $2 \times 2$ matrix, $M_{i,j}(T) = t_{3-i,3-j}$:
 \end{array} \right]
 \end{equation}
 
-For a $3 \times 3$ matrix, the Hessian of the determinant is:
+\noindent For a $3 \times 3$ matrix, the Hessian of the determinant is:
 
 \begin{equation}
-\frac{\partial^2 det(T)}{\partial T^2} =
+\label{2ndtau3d}
+\frac{\partial^2 \tau}{\partial T^2} =
 \left[ \begin{array}{ccccccccc}
  0 & 0 & 0 & 0 & t_{3,3} & -t_{3,2} & 0 & -t_{2,3} & t_{2,2} \\
  0 & 0 & 0 & -t_{3,3} & 0 & t_{3,1} & t_{2,3} & 0 & -t_{2,1} \\
@@ -425,7 +461,7 @@ For a $3 \times 3$ matrix, the Hessian of the determinant is:
 \end{array} \right]
 \end{equation}
 
-Each non-diagonal $3 \times 3$ block of the $3 \times 3$ result can be expressed as:
+\noindent Each non-diagonal $3 \times 3$ block of the $3 \times 3$ result can be expressed as:
 
 \begin{equation}
 \frac{\partial^2 f}{\partial T_i \partial T_j}
@@ -434,15 +470,85 @@ Each non-diagonal $3 \times 3$ block of the $3 \times 3$ result can be expressed
 -t_{k,3} & 0 & t_{k,1} \\
 t_{k,2} & -t_{k,1} & 0 
 \end{array}\right]\end{equation}
-
 where 
 \begin{eqnarray}
 k &=& (3-i) + (3-j) \\
 s &=& (-1)^{i+j}\frac{i-j}{|i-j|}
 \end{eqnarray}
 
-Both the $2 \times 2$ and $3 \times 3$ results are composed of skew-symmetric $n \times n$ submatrices.  For the $3 \times 3$ result, the terms in a submatrix are the values from a single row of $T$.  The diagonal submatrices for both results are zero, and the diagonal terms of each submatrix are zero.
+\noindent Both the $2 \times 2$ and $3 \times 3$ results are composed of skew-symmetric $n \times n$ submatrices.  For the $3 \times 3$ result, the terms in a submatrix are the values from a single row of $T$.  The diagonal submatrices for both results are zero, and the diagonal terms of each submatrix are zero.
 
+\subsection{Derivatives of other Quantities Involving $\tau$}
+
+\subsubsection{Derivatives of $f(T)=\tau^\gamma$ \label{taugamma}}
+
+For any $\gamma \neq 0$ 
+\begin{eqnarray}
+\frac{\partial}{\partial T} \, \tau^\gamma = \gamma \, \tau^{\gamma-1} \, (adj T)^t
+\end{eqnarray}
+If $\gamma<1$, then the formula is only valid for $\tau \neq 0$. 
+Otherwise, the derivative at $\tau=0$ does not exist. \newline
+
+\noindent If $\tau \neq 0$, one can also write
+\begin{eqnarray}
+\frac{\partial}{\partial T} \, \tau^\gamma = \gamma \, \tau^{\gamma} \, T^{-t}
+\end{eqnarray}
+
+\noindent The second derivative is
+\begin{eqnarray}
+\frac{\partial^2}{\partial T^2} \tau^\gamma & = & \frac{\partial}{\partial T} \left( \frac{\partial}{\partial T} \tau^\gamma \right) \nonumber \\
+ & = &  \frac{\partial}{\partial T} \left( \gamma \tau^{\gamma-1} (adj T)^t \right) \nonumber \\
+ & = & \gamma \,  \frac{\partial}{\partial T} \left( \tau^{\gamma-1} \, \frac{\partial \tau}{\partial T} \right) \nonumber \\
+ & = & \gamma \, \left\{ \tau^{\gamma-1} \frac{\partial^2 \tau}{\partial T^2} + (\gamma-1) \, \tau^{\gamma-2} \left( \frac{\partial \tau}{\partial T} \right)^2 \right\}
+\end{eqnarray}
+To complete this expression, use formulas \ref{adjform} and either 
+\ref{2ndtau2d} or \ref{2ndtau3d}. \newline
+
+\noindent If $\gamma < 2$, then the second derivative formula is only valid for $\tau \neq 0$. \newline
+
+\subsubsection{Derivatives of $f(T)=(\tau-1)^2$}
+
+\begin{eqnarray}
+\frac{\partial}{\partial T} \, (\tau-1)^2 & = & 2 \, (\tau-1) \, (adj T)^t \\
+\frac{\partial^2}{\partial T^2} \, (\tau-1)^2 & = & 2 \, \left\{ (\tau-1) \frac{\partial^2 \tau}{\partial T^2} + \left( \frac{\partial \tau}{\partial T} \right)^2 \right\}
+\end{eqnarray}
+To complete this expression, use formulas \ref{adjform} and either 
+\ref{2ndtau2d} or \ref{2ndtau3d}. \newline
+
+\subsubsection{Derivatives of $f(T)=\ln(\tau)$}
+
+For $\tau>0$
+\begin{eqnarray}
+\frac{\partial}{\partial T} \, \ln(\tau) & = & \frac{1}{\tau} \, (adj T)^t \\
+ & = & T^{-t}
+\end{eqnarray}
+
+\begin{eqnarray}
+\frac{\partial^2}{\partial T^2} \ln(\tau) & = & \frac{1}{\tau} \frac{\partial^2 \tau}{\partial T^2} - \frac{1}{\tau^2} \left( \frac{\partial \tau}{\partial T} \right)^2
+\end{eqnarray}
+To complete this expression, use formulas \ref{adjform} and either 
+\ref{2ndtau2d} or \ref{2ndtau3d}. \newline
+
+\subsubsection{Derivatives of $f(T)=|\tau-\gamma|$}
+
+\begin{eqnarray}
+\frac{\partial}{\partial T} \, |\tau-\gamma| & = & \left\{ \begin{array}{cc} 
++(adj T)^t & \mbox{if $\tau> \gamma$} \\
+-(adj T)^t & \mbox{if $\tau< \gamma$}
+\end{array} \right.
+\end{eqnarray}
+The first derivative is undefined if $\tau=\gamma$. \newline
+
+\begin{eqnarray}
+\frac{\partial^2}{\partial T^2} |\tau-\gamma| & = & \left\{ \begin{array}{cc} 
++\frac{\partial^2 \tau}{\partial T^2} & \mbox{if $\tau>\gamma$} \\
+-\frac{\partial^2 \tau}{\partial T^2} & \mbox{if $\tau<\gamma$} \\
+\end{array} \right.
+\end{eqnarray}
+To complete this expression, use either formula 
+\ref{2ndtau2d} or \ref{2ndtau3d}. \newline
+
+\noindent The second derivative is undefined if $\tau=\gamma$. \newline
 
 % \section{Derivatives of $T^p$}
 % 
@@ -583,30 +689,189 @@ A^\prime &=& T \times A^{\prime\prime} \\
 A &=& Z^t \times A^\prime
 \end{eqnarray}
 
-\section{Derivatives of $|T-B|^2$}
+\section{Derivatives of Non-Barrier Metrics}
+
+\subsection{Derivatives of $\mu_n (T)=|T-I|^2$}
+
+\noindent  This metric is valid for any $n$. \newline
 
 \begin{equation}
-f(T) = |T-B|^2 = \sum_{i=1}^n \sum_{j=1}^n (t_{i,j} - b_{i,j})^2
+\mu(T) = |T-I|^2 = \sum_{i=1}^n \sum_{j=1}^n (t_{i,j} - b_{i,j})^2
 \end{equation}
 
 \begin{equation}
-\frac{\partial f}{\partial t_{i,j}} = 2 (t_{i,j} - b_{i,j})
+\frac{\partial \mu}{\partial t_{i,j}} = 2 (t_{i,j} - \delta_{i,j})
 \end{equation}
 
 \begin{equation}
-\frac{\partial f}{\partial T} = 2(T - B)
+\frac{\partial \mu}{\partial T} = 2(T - I)
 \end{equation}
 
 
 \begin{equation}
-\frac{\partial^2 f}{\partial t_{i,j} \partial t_{k,l}} = 2 \delta^i_k \delta^j_l \end{equation}
+\frac{\partial^2 \mu}{\partial t_{i,j} \partial t_{k,l}} = 2 \delta^i_k \delta^j_l \end{equation}
 
 \begin{equation}
-\frac{\partial^2 f}{\partial T^2} = 2 I
+\frac{\partial^2 \mu}{\partial T^2} = 2 I
 \end{equation}
 
+\noindent Alternatively, one can write
+\begin{eqnarray}
+|T-I|^2 = |T|^2 - 2 tr(T) + n
+\end{eqnarray}
+so that 
+\begin{eqnarray}
+\frac{\partial \mu}{\partial T} & = & \frac{\partial}{\partial T} |T|^2 - 2 \frac{\partial}{\partial T} tr(T) \nonumber \\
+ & = & 2 T - 2 I \nonumber \\
+ & = & 2 (T-I)
+\end{eqnarray}
+and similarly for the second derivatives. \newline
 
-\section{Derivatives of Inverse Mean Ratio}
+\subsection{Derivatives of $\mu_2(T)=|T|^2 - 2 \, \tau$}
+
+This metric applies to $n=2$ only. \newline
+
+\begin{eqnarray}
+\frac{\partial \mu}{\partial T} & = & 2 \, \left\{ T- (adj T)^t \right\}
+\end{eqnarray}
+
+\begin{eqnarray}
+\frac{\partial^2 \mu}{\partial T_i \partial T_j} & = & 2 \delta_i^j I - 2 \frac{\partial^2 \, \tau}{\partial T_i \partial T_j} \nonumber \\
+ & = & 2 \, \left[ \begin{array}{cccc}
+1 & 0 & 0 & -1 \\
+0 & 1 & 1 & 0 \\
+0 & 1 & 1 & 0 \\
+-1 & 0 & 0 & 1 
+\end{array} \right]
+\end{eqnarray}
+
+\subsection{Derivatives of $\mu_2(T)=|T|^2 - 2 \, \psi(T) + 2$}
+
+This metric applies to $n=2$ only. \newline
+
+\begin{eqnarray}
+\psi(T) = \sqrt{|T|^2 + 2 \, \tau}
+\end{eqnarray}
+
+\begin{eqnarray}
+\frac{\partial}{\partial T} \psi(T) = \frac{T + (adj T)^t}{\psi}
+\end{eqnarray}
+
+\noindent The previous formula is valid for all $T$ except those $T$ 
+for which $\psi(T)=0$. The set of matices for which $\psi=0$ are those
+which satisfy $T^t T + \tau \, I = 0$ (they are the scaled-flips). \newline
+
+\noindent Let $s=t_{1,2}-t_{2,1}$. The following holds for $\psi \neq 0$
+\begin{eqnarray}
+\frac{\partial^2 \psi}{\partial T_i \partial T_j}
+ & = & \frac{1}{\psi^3} \, \left[ \begin{array}{cccc}
+s^2 & -s \, tr(T) & +s \, tr(T) & s^2 \\
+-s \, tr(T) & (tr \, T)^2 & -(tr \, T)^2 & -s \, tr(T) \\
++s \, tr(T) & -(tr \, T)^2 & (tr \, T)^2 & +s \, tr(T) \\
+s^2 & -s \, tr(T) & +s \, tr(T) & s^2
+\end{array} \right] \nonumber \\
+\end{eqnarray}
+
+\noindent The previous formulas give
+\begin{eqnarray}
+\label{psi1st}
+\frac{\partial \mu}{\partial T} = 2 \, \left( T - \frac{T + (adj T)^t}{\psi(T)} \right)
+\end{eqnarray}
+
+\begin{eqnarray}
+\label{psi2nd}
+\frac{\partial^2 \mu}{\partial T_i \partial T_j}  & = & 2 \, \left\{ \delta_i^j I - \frac{1}{\psi^3} \, \left[ \begin{array}{cccc}
+s^2 & -s \, tr(T) & +s \, tr(T) & s^2 \\
+-s \, tr(T) & (tr \, T)^2 & -(tr \, T)^2 & -s \, tr(T) \\
++s \, tr(T) & -(tr \, T)^2 & (tr \, T)^2 & +s \, tr(T) \\
+s^2 & -s \, tr(T) & +s \, tr(T) & s^2
+\end{array} \right] \right\} \nonumber \\
+\end{eqnarray}
+ 
+\noindent In terms of a practical software implementation, there should be 
+added a check so that, given $T$, if $\psi(T) = 0$, then apply
+a random $\epsilon$ perturbation to each component of $T$ so that $\psi$ 
+is non-zero.  Then it is valid to apply \ref{psi1st} and \ref{psi2nd}. \newline
+
+\subsection{Derivatives of $\mu_n(T)=|T- s \, I|^2$}
+
+This metric will be derived for both $n=2$ and $n=3$. \newline
+
+\subsection{Derivatives of $\mu_2(T)=|T^t T - \tau \, I|^2$}
+
+This metric applies to $n=2$ only. \newline
+
+\subsection{Derivatives of $\mu_2(T)=|T-(adj T)^t|^2 + \gamma (\tau-1)^2$}
+
+This metric applies to $n=2$ only. \newline
+
+\subsection{Derivatives of $\mu_n(T) = \tau^2$}
+
+From section \ref{taugamma}
+\begin{eqnarray}
+\frac{\partial}{\partial T} \, \tau^2 = 2 \, \tau \, (adj T)^t
+\end{eqnarray}
+
+\noindent The second derivative is
+\begin{eqnarray}
+\frac{\partial^2}{\partial T^2} \, \tau^2 & = & 2 \, \left\{ \tau \frac{\partial^2 \tau}{\partial T^2} + \left( \frac{\partial \tau}{\partial T} \right)^2 \right\}
+\end{eqnarray}
+To complete this expression, use formulas \ref{adjform} and either 
+\ref{2ndtau2d} or \ref{2ndtau3d}. \newline
+
+
+\subsection{Derivatives of $\mu_n(T) = \left( |\tau-\gamma| - [\tau-\gamma] \right)^2$}
+
+\subsection{Derivatives of $\mu_3(T) = |T|^3 - 3 \sqrt{3} \, \tau$}
+
+\subsection{Derivatives of $\mu_3(T) = \frac{1}{\sqrt{3}} |T|^3 - 3 \tau + \gamma (\tau-1)^2$}
+
+\section{Derivatives of Barrier Metrics}
+
+\subsection{Derivatives of $\mu_n(T)=\frac{f(T)}{g(T)}$ }
+
+\subsection{Derivatives of $\mu_n(T)=\frac{|T-I|^2}{2 \, \tau}$}
+
+\subsection{Derivatives of $\mu_n(T)=|T^{-t}-I|^2$}
+
+\subsection{Derivatives of $\mu_n(T)=|T-T^{-t}|^2$}
+
+\subsection{Derivatives of $\mu_n(T)=|T|^2 - 2 \ln(\tau)$}
+
+For $\tau>0$
+\begin{eqnarray}
+\frac{\partial \mu}{\partial T} & = & 2 \, \left( T - \frac{1}{\tau} (adj T)^t \right) \\
+\frac{\partial^2 \mu}{\partial T^2} & = & 2 \, \left\{ I_{n^2}  - \frac{1}{\tau} \frac{\partial^2 \tau}{\partial T^2} + \frac{1}{\tau^2} \left( \frac{\partial \tau}{\partial T} \right)^2 \right\}
+\end{eqnarray}
+To complete this expression, use formulas \ref{adjform} and either 
+\ref{2ndtau2d} or \ref{2ndtau3d}. \newline
+
+\subsection{Derivatives of $\mu_2(T)=\frac{|T|^2-2 \psi(T)+2}{2 \, \tau}$}
+
+\subsection{Derivatives of $\mu_n(T)=\kappa^2(T)$}
+
+\subsection{Derivatives of $\mu_2(T)=\frac{|T|^2 + 2}{2 \psi(T)}$}
+
+\subsection{Derivatives of $\mu_n(T)=\tau + 1/\tau$}
+
+For $\tau>0$
+\begin{eqnarray}
+\frac{\partial \mu}{\partial T} = \left( 1 - \frac{1}{\tau^2} \right) \, (adj T)^t
+\end{eqnarray}
+
+\begin{eqnarray}
+\frac{\partial^2 \mu}{\partial T^2} = \left( 1 - \frac{1}{\tau^2} \right) \frac{\partial^2 \tau}{\partial T^2} + \frac{2}{\tau^3} \left( \frac{\partial \, \tau}{\partial T} \right)^2
+\end{eqnarray}
+To complete this expression, use formulas \ref{adjform} and either 
+\ref{2ndtau2d} or \ref{2ndtau3d}. \newline
+
+\subsection{Derivatives of $\mu_2(T) = \frac{|T|^2}{2 \tau}$}
+
+\subsection{Derivatives of $\mu_3(T)=\frac{|T|^3}{3 \sqrt{3} \tau}$}
+
+\subsection{Derivatives of $\mu_3(T)=\frac{|T|^2 + |adj T|^2}{6 \tau}$}
+
+\subsection{Derivatives of Inverse Mean Ratio}
 
 \begin{eqnarray}
 f(T) & = & \frac{|T|^2}{n det^{2/n}(T)} \\
@@ -635,7 +900,7 @@ f(T) & = & \frac{g(T)}{e(T)}
 \frac{2}{n \cdot det^{2/n}(T)}\left[ T - \frac{|T|^2}{n \cdot det(T)} adj(T^t) \right]
 \end{eqnarray}
 
-Begin the second derivative with the  expression for individual elements of the first derivative:
+\noindent Begin the second derivative with the  expression for individual elements of the first derivative:
 
 \begin{eqnarray}
 \frac{\partial f}{\partial t_{i,j}} & = & 
@@ -646,7 +911,7 @@ Begin the second derivative with the  expression for individual elements of the 
 \frac{2}{n} t_{i,j} det^{-2/n}(T) - \frac{2}{n^2} |T|^2 det^{\frac{-2}{n} - 1}(T) adj(T^t)_{i,j} 
 \end{eqnarray}
 
-And differentiate with respect to an element of $T$:
+\noindent And differentiate with respect to an element of $T$:
 
 \begin{eqnarray}
 \nonumber
@@ -666,7 +931,7 @@ And differentiate with respect to an element of $T$:
      + |T|^2 \frac{\partial adj(T^t)_{i,j}}{\partial t_{k,l}} \right] 
 \end{eqnarray}
 
-Returning to the Hessian notation for the second derivatives from Equation \ref{dsecelem}:
+\noindent Returning to the Hessian notation for the second derivatives from Equation \ref{dsecelem}:
 
 
 \begin{eqnarray}
@@ -679,7 +944,7 @@ Returning to the Hessian notation for the second derivatives from Equation \ref{
      + |T|^2 \frac{\partial adj(T^t)_{i,r}}{\partial t_{j,s}} \right] 
 \end{eqnarray}
 
-Define $A = adj(T^t)$ and $A_i$ equal to the $i^th$ row of $A$.
+\noindent Define $A = adj(T^t)$ and $A_i$ equal to the $i^th$ row of $A$.
 
 \begin{eqnarray}
 \frac{\partial^2 f}{\partial T_i \partial T_j}
@@ -689,7 +954,7 @@ Define $A = adj(T^t)$ and $A_i$ equal to the $i^th$ row of $A$.
 2 A_i^t T_j + 2 T_i^t A_j + |T|^2 \frac{\partial^2 det(T)}{\partial T_i \partial T_j} \right]
 \end{eqnarray}
 
-Or if, instead, $A = adj(T)$, then
+\noindent Or if, instead, $A = adj(T)$, then
 
 \begin{eqnarray} \label{imrblockhess}
 \frac{\partial^2 f}{\partial T_i \partial T_j} 
@@ -701,7 +966,7 @@ Or if, instead, $A = adj(T)$, then
 
 
 
-For $2 \times 2$ target matrices, Equation \ref{imrblockhess} simplifies to:
+\noindent For $2 \times 2$ target matrices, Equation \ref{imrblockhess} simplifies to:
 \begin{eqnarray}
 \frac{\partial^2 f}{\partial T_i \partial T_j}
 &=& \frac{\delta^i_j}{det(T)}I + \frac{|T|^2}{det^3(T)} A_j^t A_i \\ \nonumber
