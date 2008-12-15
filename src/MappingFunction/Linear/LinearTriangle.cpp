@@ -32,18 +32,16 @@ namespace Mesquite {
 
 static const char* nonlinear_error 
  = "Attempt to use LinearTriangle mapping function for a nonlinear element\n";
- 
-static const char* dimension_error
- = "Cannot do midface evaluation for 2D elements.\n";
 
 EntityTopology LinearTriangle::element_topology() const
   { return TRIANGLE; }
 
-void LinearTriangle::coefficients_at_corner( unsigned corner,
-                                             unsigned nodebits,
-                                             double* coeff_out,
-                                             size_t& num_coeff,
-                                             MsqError& err ) const
+void LinearTriangle::coefficients( unsigned loc_dim,
+                                   unsigned loc_num,
+                                   unsigned nodebits,
+                                   double* coeff_out,
+                                   size_t& num_coeff,
+                                   MsqError& err ) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
@@ -51,59 +49,31 @@ void LinearTriangle::coefficients_at_corner( unsigned corner,
   }
   
   num_coeff = 3;
-  coeff_out[0] = coeff_out[1] = coeff_out[2] = 0.0;
-  coeff_out[corner] = 1.0;
-}
-
-void LinearTriangle::coefficients_at_mid_edge( unsigned edge,
-                                               unsigned nodebits,
-                                               double* coeff_out,
-                                               size_t& num_coeff,
-                                               MsqError& err ) const
-{
-  if (nodebits) {
-    MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
-    return;
+  switch (loc_dim) {
+    case 0:
+      coeff_out[0] = coeff_out[1] = coeff_out[2] = 0.0;
+      coeff_out[loc_num] = 1.0;
+      break;
+    case 1:
+      coeff_out[ loc_num     ] = 0.5;
+      coeff_out[(loc_num+1)%3] = 0.5;
+      coeff_out[(loc_num+2)%3] = 0.0;
+      break;
+    case 2:
+      coeff_out[0] = coeff_out[1] = coeff_out[2] = MSQ_ONE_THIRD;
+      break;
+    default:
+      MSQ_SETERR(err)("Invalid/unsupported logical dimension",MsqError::INVALID_ARG);
   }
-  
-  num_coeff = 3;
-  const unsigned start_vtx =  edge;
-  const unsigned   end_vtx = (edge+1)%3;
-  const unsigned other_vtx = (edge+2)%3;
-  coeff_out[start_vtx] = 0.5;
-  coeff_out[  end_vtx] = 0.5;
-  coeff_out[other_vtx] = 0.0;
 }
 
-void LinearTriangle::coefficients_at_mid_face( unsigned ,
-                                               unsigned ,
-                                               double* ,
-                                               size_t& ,
-                                               MsqError& err ) const
-{
-  MSQ_SETERR(err)(dimension_error, MsqError::UNSUPPORTED_ELEMENT );
-  return;
-}
-
-void LinearTriangle::coefficients_at_mid_elem( unsigned nodebits,
-                                               double* coeff_out,
-                                               size_t& num_coeff,
-                                               MsqError& err ) const
-{
-  if (nodebits) {
-    MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
-    return;
-  }
-  
-  num_coeff = 3;
-  coeff_out[0] = coeff_out[1] = coeff_out[2] = MSQ_ONE_THIRD;
-}
-
-static inline void triangle_derivatives( unsigned nodebits,
-                                         size_t* vertices,
-                                         double* coeff_derivs,
-                                         size_t& num_vtx,
-                                         MsqError& err ) 
+void LinearTriangle::derivatives( unsigned ,
+                                  unsigned ,
+                                  unsigned nodebits,
+                                  size_t* vertices,
+                                  MsqVector<2>* coeff_derivs,
+                                  size_t& num_vtx,
+                                  MsqError& err ) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
@@ -114,57 +84,13 @@ static inline void triangle_derivatives( unsigned nodebits,
     vertices[1] = 1;
     vertices[2] = 2;
     
-    coeff_derivs[0] = -1.0;
-    coeff_derivs[1] = -1.0;
-    coeff_derivs[2] = 1.0;
-    coeff_derivs[3] = 0.0;
-    coeff_derivs[4] = 0.0;
-    coeff_derivs[5] = 1.0;
+    coeff_derivs[0][0] = -1.0;
+    coeff_derivs[0][1] = -1.0;
+    coeff_derivs[1][0] = 1.0;
+    coeff_derivs[1][1] = 0.0;
+    coeff_derivs[2][0] = 0.0;
+    coeff_derivs[2][1] = 1.0;
   }
-}
-
-
-void LinearTriangle::derivatives_at_corner( unsigned , 
-                                            unsigned nodebits,
-                                            size_t* vertex_indices_out,
-                                            double* d_coeff_d_xi_out,
-                                            size_t& num_vtx,
-                                            MsqError& err ) const
-{
-  triangle_derivatives( nodebits, vertex_indices_out, d_coeff_d_xi_out, num_vtx, err );
-  MSQ_CHKERR(err);
-}
-
-void LinearTriangle::derivatives_at_mid_edge( unsigned , 
-                                              unsigned nodebits,
-                                              size_t* vertex_indices_out,
-                                              double* d_coeff_d_xi_out,
-                                              size_t& num_vtx,
-                                              MsqError& err ) const
-{
-  triangle_derivatives( nodebits, vertex_indices_out, d_coeff_d_xi_out, num_vtx, err );
-  MSQ_CHKERR(err);
-}
-
-void LinearTriangle::derivatives_at_mid_face( unsigned , 
-                                              unsigned ,
-                                              size_t* ,
-                                              double* ,
-                                              size_t& ,
-                                              MsqError& err ) const
-{
-  MSQ_SETERR(err)(dimension_error, MsqError::UNSUPPORTED_ELEMENT );
-  return;
-}
-
-void LinearTriangle::derivatives_at_mid_elem( unsigned nodebits,
-                                              size_t* vertex_indices_out,
-                                              double* d_coeff_d_xi_out,
-                                              size_t& num_vtx,
-                                              MsqError& err ) const
-{
-  triangle_derivatives( nodebits, vertex_indices_out, d_coeff_d_xi_out, num_vtx, err );
-  MSQ_CHKERR(err);
 }
 
 } // namespace Mesquite

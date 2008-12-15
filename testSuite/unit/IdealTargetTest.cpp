@@ -214,35 +214,38 @@ void IdealTargetTest::get_ideal_target( EntityTopology type,
   
     // get the target matrix for an ideal element
   size_t indices[100];
-  double derivs[300];
   size_t num_vtx;
-  const MappingFunction* func = mapFuncs.get_function( type );
-  switch (dim) {
-    case 0: func->derivatives_at_corner( num, 0, indices, derivs, num_vtx, err ); break;
-    case 1: func->derivatives_at_mid_edge( num, 0, indices, derivs, num_vtx, err ); break;
-    case 2: if (elem_dim != 2) {
-            func->derivatives_at_mid_face( num, 0, indices, derivs, num_vtx, err ); break; }
-    case 3: func->derivatives_at_mid_elem( 0, indices, derivs, num_vtx, err ); break;
-    default: CPPUNIT_ASSERT(false);
-  }
-  
   const Vector3D* coords = unit_element( type );
-  const double* d = derivs;
   Vector3D c[3];
-  for (size_t i = 0; i < num_vtx; ++i) 
-    for (unsigned j = 0; j < elem_dim; ++j)
-      c[j] += *d++ * coords[indices[i]];
-  
   if (elem_dim == 2) {
+    MsqVector<2> derivs[100];
+    const MappingFunction2D* func = mapFuncs.get_surf_function( type );
+    func->derivatives( dim, num, 0, indices, derivs, num_vtx, err );
+    CPPUNIT_ASSERT(!MSQ_CHKERR(err));
+
+    for (size_t i = 0; i < num_vtx; ++i) 
+      for (unsigned j = 0; j < 2; ++j)
+        c[j] += derivs[i][j] * coords[indices[i]];
+
     for (unsigned i = 0; i < 3; ++i)
       for (unsigned j = 0; j < 2; ++j)
         w2(i,j) = c[j][i];
   }
   else {
+    MsqVector<3> derivs[100];
+    const MappingFunction3D* func = mapFuncs.get_vol_function( type );
+    func->derivatives( dim, num, 0, indices, derivs, num_vtx, err );
+    CPPUNIT_ASSERT(!MSQ_CHKERR(err));
+
+    for (size_t i = 0; i < num_vtx; ++i) 
+      for (unsigned j = 0; j < 3; ++j)
+        c[j] += derivs[i][j] * coords[indices[i]];
+
     for (unsigned i = 0; i < 3; ++i)
       for (unsigned j = 0; j < 3; ++j)
         w3(i,j) = c[j][i];
   }
+  
 }
 
 void IdealTargetTest::do_test( EntityTopology type, unsigned dim, unsigned num )

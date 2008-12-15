@@ -107,76 +107,50 @@ bool JSquared::evaluate_with_indices( PatchData& pd,
   unsigned dim, num;
   samplePts->location_from_sample_number( type, s, dim, num );
   unsigned edim = TopologyInfo::dimension( type );
-  const size_t* conn = elem.get_vertex_index_array();
   
   unsigned bits = pd.higher_order_node_bits( e );
   
-  const MappingFunction* func = pd.get_mapping_function( type );
-  if (!func) {
-    MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
-    return false;
-  }
-  
-  indices.clear();
-  mDerivs.clear();
-  switch (dim) {
-    case 0:
-      func->derivatives_at_corner( num, bits, indices, mDerivs, err );
-      break;
-    case 1:
-      func->derivatives_at_mid_edge( num, bits, indices, mDerivs, err );
-      break;
-    case 2:
-      if (edim != 2) {
-        func->derivatives_at_mid_face( num, bits, indices, mDerivs, err );
-        break;
-      }
-    case 3:
-      func->derivatives_at_mid_elem( bits, indices, mDerivs, err );
-      break;
-  }
-  MSQ_ERRZERO( err );
-  std::vector<double>::const_iterator d = mDerivs.begin();
-  
-    // Convert from indices into element connectivity list to
-    // indices into vertex array in patch data.
-  for (msq_std::vector<size_t>::iterator i = indices.begin(); i != indices.end(); ++i)
-    *i = conn[*i];
-  
   bool rval;
-  if (edim == 3) { // 3x3 or 3x2 targets ?
+  size_t num_vtx = 0;
+  if (edim == 3) {
+    const MappingFunction3D* func = pd.get_mapping_function3D( type );
+    if (!func) {
+      MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
+      return false;
+    }
     if (!metric3D) {
       MSQ_SETERR(err)("No 3D metric for Jacobian-based metric.\n", MsqError::UNSUPPORTED_ELEMENT );
       return false;
     }
-  
-    Vector3D c[3] = { Vector3D(0,0,0), Vector3D(0,0,0), Vector3D(0,0,0) };
-    for (size_t i = 0; i < indices.size(); ++i) {
-      Vector3D coords = pd.vertex_by_index( indices[i] );
-      c[0] += *d * coords; ++d;
-      c[1] += *d * coords; ++d;
-      c[2] += *d * coords; ++d;
-    }
-    MsqMatrix<3,3> A( (MsqMatrix<3,1>*)c );
 
+    indices.resize( 27 );
+    MsqVector<3> mDerivs;
+    MsqMatrix<3,3> A;
+    func->jacobian( pd, e, bits, dim, num, &indices[0], mDerivs, num_vtx, A, err );
+    MSQ_ERRZERO( err );
+    indices.resize(num_vtx);
+    
     MsqMatrix<3,3> W;
     targetCalc->get_3D_target( pd, e, samplePts, s, W, err ); MSQ_ERRZERO(err);
     rval = metric3D->evaluate( A, W, value, err ); MSQ_ERRZERO(err);
   }
   else {
+    const MappingFunction2D* func = pd.get_mapping_function2D( type );
+    if (!func) {
+      MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
+      return false;
+    }
     if (!metric2D) {
       MSQ_SETERR(err)("No 2D metric for Jacobian-based metric.\n", MsqError::UNSUPPORTED_ELEMENT );
       return false;
     }
-  
-    Vector3D c[2] = { Vector3D(0,0,0), Vector3D(0,0,0) };
-    for (size_t i = 0; i < indices.size(); ++i) {
-      Vector3D coords = pd.vertex_by_index( indices[i] );
-      c[0] += *d * coords; ++d;
-      c[1] += *d * coords; ++d;
-    }
-    MsqMatrix<3,2> App( (MsqMatrix<3,1>*)c );
-    
+
+    indices.resize( 9 );
+    MsqVector<2> mDerivs;
+    MsqMatrix<3,2> App;
+    func->jacobian( pd, e, bits, dim, num, &indices[0], mDerivs, num_vtx, App, err );
+    MSQ_ERRZERO( err );
+    indices.resize(num_vtx);
     
     MsqMatrix<3,2> Wp;
     targetCalc->get_2D_target( pd, e, samplePts, s, Wp, err ); MSQ_ERRZERO(err);
@@ -217,11 +191,6 @@ bool JSquared::evaluate_with_indices( PatchData& pd,
     double ck = weightCalc->get_weight( pd, e, samplePts, s, err ); MSQ_ERRZERO(err);
     value *= ck;
   }
-  
-    // remove indices for non-free vertices
-  indices.erase( msq_std::remove_if( indices.begin(), indices.end(), 
-    msq_std::bind2nd(msq_std::greater_equal<size_t>(),pd.num_free_vertices())),
-    indices.end() );
   
   return rval;
 }

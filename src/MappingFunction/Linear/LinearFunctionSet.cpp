@@ -52,7 +52,19 @@ static const LinearHexahedron hex;
 static const MappingFunction* func_array[MIXED] =
  { 0, 0, 0, 0, 0, 0, 0, 0, &tri, &quad, 0, &tet, &hex, &prism, &pyr, 0 };
 
+static const MappingFunction2D* func_array_2d[MIXED] =
+ { 0, 0, 0, 0, 0, 0, 0, 0, &tri, &quad, 0, 0, 0, 0, 0, 0 };
+
+static const MappingFunction3D* func_array_3d[MIXED] =
+ { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &tet, &hex, &prism, &pyr, 0 };
+
 const MappingFunction* LinearFunctionSet::get_function( EntityTopology type ) const
   { return func_array[type]; }
+
+const MappingFunction2D* LinearFunctionSet::get_surf_function( EntityTopology type ) const
+  { return func_array_2d[type]; }
+
+const MappingFunction3D* LinearFunctionSet::get_vol_function( EntityTopology type ) const
+  { return func_array_3d[type]; }
 
 } // namespace Mesquite

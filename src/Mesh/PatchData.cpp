@@ -1673,6 +1673,16 @@ const MappingFunction* PatchData::get_mapping_function( EntityTopology type ) co
   return mappingFuncs ? mappingFuncs->get_function(type) : 0;
 }
 
+const MappingFunction2D* PatchData::get_mapping_function_2D( EntityTopology type ) const
+{
+  return mappingFuncs ? mappingFuncs->get_surf_function(type) : 0;
+}
+
+const MappingFunction3D* PatchData::get_mapping_function_3D( EntityTopology type ) const
+{
+  return mappingFuncs ? mappingFuncs->get_vol_function(type) : 0;
+}
+
 void PatchData::get_sample_location( size_t element_index,
                               unsigned sample_dim,
                               unsigned sample_num,
@@ -1689,22 +1699,7 @@ void PatchData::get_sample_location( size_t element_index,
   
   double coeff[27];
   size_t num_coeff;
-  switch (sample_dim) {
-    case 0:
-      f->coefficients_at_corner( sample_num, ho_bits, coeff, num_coeff, err );
-      break;
-    case 1:
-      f->coefficients_at_mid_edge( sample_num, ho_bits, coeff, num_coeff, err );
-      break;
-    case 2:
-      if (TopologyInfo::dimension( elem.get_element_type() ) != 2) {
-        f->coefficients_at_mid_face( sample_num, ho_bits, coeff, num_coeff, err );
-        break;
-      }
-    case 3:
-      f->coefficients_at_mid_elem( ho_bits, coeff, num_coeff, err );
-      break;
-  }
+  f->coefficients( sample_dim, sample_num, ho_bits, coeff, num_coeff, err );
   MSQ_ERRRTN( err );
   
   const size_t* const conn = elem.get_vertex_index_array();

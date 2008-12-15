@@ -45,7 +45,8 @@
 
 namespace Mesquite {
 
-class MappingFunction;
+class MappingFunction2D;
+class MappingFunction3D;
 
 /**\brief Calculate Jacobian matrices given vertex coordinates and MappingFunction
 */
@@ -64,7 +65,7 @@ public:
    *           edge number, etc.)
    *\param J_out The resulting Jacobian matrix.
    */
-  void get_Jacobian_2D( const MappingFunction* mf,
+  void get_Jacobian_2D( const MappingFunction2D* mf,
                         unsigned ho_bits,
                         unsigned dim, unsigned num,
                         const Vector3D* vertex_coords,
@@ -83,22 +84,18 @@ public:
    *           edge number, etc.)
    *\param J_out The resulting Jacobian matrix.
    */
-  void get_Jacobian_3D( const MappingFunction* mf,
+  void get_Jacobian_3D( const MappingFunction3D* mf,
                         unsigned ho_bits,
                         unsigned dim, unsigned num,
                         const Vector3D* vertex_coords,
                         MsqMatrix<3,3>& J_out,
                         MsqError& err );
 private:
-  void get_derivatives( const MappingFunction* mf,
-                        unsigned ho_bits,
-                        unsigned dim, unsigned num, 
-                        MsqError& err );
 
   enum { MAX_ELEM_NODES = 27 };
   size_t mIndices[MAX_ELEM_NODES];
-  double mDerivs[3*MAX_ELEM_NODES];
-  size_t numVtx;
+  MsqVector<3> mDerivs3D[MAX_ELEM_NODES];
+  MsqVector<2> mDerivs2D[MAX_ELEM_NODES];
 };
 
 

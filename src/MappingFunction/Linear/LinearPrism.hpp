@@ -47,7 +47,7 @@ namespace Mesquite {
  * - \f$N_5(\vec{\xi})=\frac{1}{2}(1+\xi)\eta\f$
  * - \f$N_6(\vec{\xi})=\frac{1}{2}(1+\xi)\zeta\f$
  */ 
-class LinearPrism : public MappingFunction
+class LinearPrism : public MappingFunction3D
 {
 public:
 
@@ -55,62 +55,21 @@ public:
   EntityTopology element_topology() const;
   
   virtual 
-  void coefficients_at_corner( unsigned corner, 
-                               unsigned nodebits,
-                               double* coeff_out,
-                               size_t& num_coeff,
-                               MsqError& err ) const; 
-
+  void coefficients( unsigned loc_dim,
+                     unsigned loc_num,
+                     unsigned nodebits,
+                     double* coeff_out,
+                     size_t& num_coeff_out,
+                     MsqError& err ) const;
+  
   virtual 
-  void coefficients_at_mid_edge( unsigned edge, 
-                                 unsigned nodebits,
-                                 double* coeff_out,
-                                 size_t& num_coeff,
-                                 MsqError& err ) const;
-
-  virtual 
-  void coefficients_at_mid_face( unsigned face, 
-                                 unsigned nodebits,
-                                 double* coeff_out,
-                                 size_t& num_coeff,
-                                 MsqError& err ) const;
-
-  virtual 
-  void coefficients_at_mid_elem( unsigned nodebits,
-                                 double* coeff_out,
-                                 size_t& num_coeff,
-                                 MsqError& err ) const;
-
-  virtual 
-  void derivatives_at_corner( unsigned corner, 
-                              unsigned nodebits,
-                              size_t* vertex_indices_out,
-                              double* d_coeff_d_xi_out,
-                              size_t& num_vtx,
-                              MsqError& err ) const;
-
-  virtual 
-  void derivatives_at_mid_edge( unsigned edge, 
-                                unsigned nodebits,
-                                size_t* vertex_indices_out,
-                                double* d_coeff_d_xi_out,
-                                size_t& num_vtx,
-                                MsqError& err ) const;
-
-  virtual 
-  void derivatives_at_mid_face( unsigned face, 
-                                unsigned nodebits,
-                                size_t* vertex_indices_out,
-                                double* d_coeff_d_xi_out,
-                                size_t& num_vtx,
-                                MsqError& err ) const;
-
-  virtual 
-  void derivatives_at_mid_elem( unsigned nodebits,
-                                size_t* vertex_indices_out,
-                                double* d_coeff_d_xi_out,
-                                size_t& num_vtx,
-                                MsqError& err ) const;
+  void derivatives( unsigned loc_dim, 
+                    unsigned loc_num,
+                    unsigned nodebits,
+                    size_t* vertex_indices_out,
+                    MsqVector<3>* d_coeff_d_xi_out,
+                    size_t& num_vtx,
+                    MsqError& err ) const;
 };
 
 

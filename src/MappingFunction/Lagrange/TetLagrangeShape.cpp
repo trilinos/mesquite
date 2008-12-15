@@ -43,35 +43,21 @@ EntityTopology TetLagrangeShape::element_topology() const
 static inline int have_node( unsigned nodebits, unsigned node )
   { return nodebits & (1 << (node-4)); }
 
-void TetLagrangeShape::coefficients_at_corner( unsigned corner, 
-                                               unsigned nodebits,
-                                               double* coeff_out,
-                                               size_t& num_coeff,
-                                               MsqError& err ) const
+static void coefficients_at_corner( unsigned corner, 
+                                    unsigned nodebits,
+                                    double* coeff_out,
+                                    size_t& num_coeff )
 {
-  if (nodebits >= (1u << 6)) {
-    MSQ_SETERR(err)("TetLagrangeShape does not support mid-face/mid-element nodes",
-                    MsqError::UNSUPPORTED_ELEMENT);
-    return;
-  }
-  
   num_coeff = 10;
   std::fill( coeff_out, coeff_out+num_coeff, 0.0 );
   coeff_out[corner] = 1.0;
 }
 
-void TetLagrangeShape::coefficients_at_mid_edge( unsigned edge, 
-                               unsigned nodebits,
-                               double* coeff_out,
-                               size_t& num_coeff,
-                               MsqError& err ) const
+static void coefficients_at_mid_edge( unsigned edge, 
+                                      unsigned nodebits,
+                                      double* coeff_out,
+                                      size_t& num_coeff )
 {
-  if (nodebits >= (1u << 6)) {
-    MSQ_SETERR(err)("TetLagrangeShape does not support mid-face/mid-element nodes",
-                    MsqError::UNSUPPORTED_ELEMENT);
-    return;
-  }
-  
   num_coeff = 10;
   std::fill( coeff_out, coeff_out+num_coeff, 0.0 );
   if (nodebits & (1 << edge)) { // if mid-edge node is present
@@ -89,18 +75,11 @@ void TetLagrangeShape::coefficients_at_mid_edge( unsigned edge,
   }
 }
 
-void TetLagrangeShape::coefficients_at_mid_face( unsigned face, 
-                               unsigned nodebits,
-                               double* coeff_out,
-                               size_t& num_coeff,
-                               MsqError& err ) const
+static void coefficients_at_mid_face( unsigned face, 
+                                      unsigned nodebits,
+                                      double* coeff_out,
+                                      size_t& num_coeff )
 {
-  if (nodebits >= (1u << 6)) {
-    MSQ_SETERR(err)("TetLagrangeShape does not support mid-face/mid-element nodes",
-                    MsqError::UNSUPPORTED_ELEMENT);
-    return;
-  }
-  
   num_coeff = 10;
   
   const double one_ninth = 1.0/9.0;
@@ -178,17 +157,10 @@ void TetLagrangeShape::coefficients_at_mid_face( unsigned face,
   }
 }
 
-void TetLagrangeShape::coefficients_at_mid_elem( unsigned nodebits,
-                                                 double* coeff_out,
-                                                 size_t& num_coeff,
-                                                 MsqError& err ) const
+static void coefficients_at_mid_elem( unsigned nodebits,
+                                      double* coeff_out,
+                                      size_t& num_coeff )
 {
-  if (nodebits >= (1u << 6)) {
-    MSQ_SETERR(err)("TetLagrangeShape does not support mid-face/mid-element nodes",
-                    MsqError::UNSUPPORTED_ELEMENT);
-    return;
-  }
-  
   num_coeff = 10;
   coeff_out[0] = -0.125;
   coeff_out[1] = -0.125;
@@ -244,31 +216,59 @@ void TetLagrangeShape::coefficients_at_mid_elem( unsigned nodebits,
   }
 }
 
-static void get_linear_derivatives( size_t* vertices,
-                                    double* derivs )
+void TetLagrangeShape::coefficients( unsigned loc_dim,
+                                     unsigned loc_num,
+                                     unsigned nodebits,
+                                     double* coeff_out,
+                                     size_t& num_coeff,
+                                     MsqError& err ) const
 {
-  size_t* v = vertices;
-  double* d = derivs;
+  if (nodebits >= (1u << 6)) {
+    MSQ_SETERR(err)("TetLagrangeShape does not support mid-face/mid-element nodes",
+                    MsqError::UNSUPPORTED_ELEMENT);
+    return;
+  }
   
-  *v = 0; ++v;
-  *d = 1.0; ++d;
-  *d = 0.0; ++d;
-  *d = 0.0; ++d;
+  switch (loc_dim) {
+    case 0:
+      coefficients_at_corner( loc_num, nodebits, coeff_out, num_coeff );
+      break;
+    case 1:
+      coefficients_at_mid_edge( loc_num, nodebits, coeff_out, num_coeff );
+      break;
+    case 2:
+      coefficients_at_mid_face( loc_num, nodebits, coeff_out, num_coeff );
+      break;
+    case 3:
+      coefficients_at_mid_elem( nodebits, coeff_out, num_coeff );
+      break;
+    default:
+      MSQ_SETERR(err)("Invalid/unsupported logical dimension",MsqError::INVALID_ARG);
+  }
+}
+
+static void get_linear_derivatives( size_t* vertices,
+                                    MsqVector<3>* derivs )
+{
+  vertices[0] = 0;
+  derivs[0][0] = 1.0;
+  derivs[0][1] = 0.0;
+  derivs[0][2] = 0.0;
   
-  *v = 1; ++v;
-  *d = 0.0; ++d;
-  *d = 1.0; ++d;
-  *d = 0.0; ++d;
+  vertices[1] = 1;
+  derivs[1][0] = 0.0;
+  derivs[1][1] = 1.0;
+  derivs[1][2] = 0.0;
   
-  *v = 2; ++v;
-  *d = 0.0; ++d;
-  *d = 0.0; ++d;
-  *d = 1.0; ++d;
+  vertices[2] = 2;
+  derivs[2][0] = 0.0;
+  derivs[2][1] = 0.0;
+  derivs[2][2] = 1.0;
   
-  *v = 3; ++v;
-  *d =-1.0; ++d;
-  *d =-1.0; ++d;
-  *d =-1.0; ++d;
+  vertices[3] = 3;
+  derivs[3][0] = -1.0;
+  derivs[3][1] = -1.0;
+  derivs[3][2] = -1.0;
 }
 
 static const unsigned edges[][2] = { { 0, 1 },
@@ -278,19 +278,12 @@ static const unsigned edges[][2] = { { 0, 1 },
                                      { 1, 3 },
                                      { 2, 3 } };
 
-void TetLagrangeShape::derivatives_at_corner( unsigned corner,
-                                              unsigned nodebits,
-                                              size_t* vertices,
-                                              double* derivs,
-                                              size_t& num_vtx,
-                                              MsqError& err) const
+static void derivatives_at_corner( unsigned corner,
+                                   unsigned nodebits,
+                                   size_t* vertices,
+                                   MsqVector<3>* derivs,
+                                   size_t& num_vtx )
 {
-  if (nodebits >= (1u << 6)) {
-    MSQ_SETERR(err)("TetLagrangeShape does not support mid-face/mid-element nodes",
-                    MsqError::UNSUPPORTED_ELEMENT);
-    return;
-  }
-  
     // begin with derivatives for linear tetrahedron
   num_vtx = 4;
   get_linear_derivatives( vertices, derivs );
@@ -300,33 +293,33 @@ void TetLagrangeShape::derivatives_at_corner( unsigned corner,
     case 0:
       if (have_node(nodebits, 4)) {
         vertices[num_vtx] = 4;
-        derivs[3*num_vtx  ] = 0.0;
-        derivs[3*num_vtx+1] = 4.0;
-        derivs[3*num_vtx+2] = 0.0;
-        derivs[1] -= 2.0;
-        derivs[4] -= 2.0;
+        derivs[num_vtx][0] = 0.0;
+        derivs[num_vtx][1] = 4.0;
+        derivs[num_vtx][2] = 0.0;
+        derivs[0][1] -= 2.0;
+        derivs[1][1] -= 2.0;
         ++num_vtx;
       }
       if (have_node(nodebits, 6)) {
         vertices[num_vtx] = 6;
-        derivs[3*num_vtx  ] = 0.0;
-        derivs[3*num_vtx+1] = 0.0;
-        derivs[3*num_vtx+2] = 4.0;
-        derivs[2] -= 2.0;
-        derivs[8] -= 2.0;
+        derivs[num_vtx][0] = 0.0;
+        derivs[num_vtx][1] = 0.0;
+        derivs[num_vtx][2] = 4.0;
+        derivs[0][2] -= 2.0;
+        derivs[2][2] -= 2.0;
         ++num_vtx;
       }
       if (have_node(nodebits, 7)) {
         vertices[num_vtx] = 7;
-        derivs[3*num_vtx  ] = -4.0;
-        derivs[3*num_vtx+1] = -4.0;
-        derivs[3*num_vtx+2] = -4.0;
-        derivs[ 0] += 2.0;
-        derivs[ 1] += 2.0;
-        derivs[ 2] += 2.0;
-        derivs[ 9] += 2.0;
-        derivs[10] += 2.0;
-        derivs[11] += 2.0;
+        derivs[num_vtx][0] = -4.0;
+        derivs[num_vtx][1] = -4.0;
+        derivs[num_vtx][2] = -4.0;
+        derivs[0][0] += 2.0;
+        derivs[0][1] += 2.0;
+        derivs[0][2] += 2.0;
+        derivs[3][0] += 2.0;
+        derivs[3][1] += 2.0;
+        derivs[3][2] += 2.0;
         ++num_vtx;
       }
       break;
@@ -334,33 +327,33 @@ void TetLagrangeShape::derivatives_at_corner( unsigned corner,
     case 1:
       if (have_node(nodebits, 4)) {
         vertices[num_vtx] = 4;
-        derivs[3*num_vtx  ] = 4.0;
-        derivs[3*num_vtx+1] = 0.0;
-        derivs[3*num_vtx+2] = 0.0;
-        derivs[ 0] -= 2.0;
-        derivs[ 3] -= 2.0;
+        derivs[num_vtx][0] = 4.0;
+        derivs[num_vtx][1] = 0.0;
+        derivs[num_vtx][2] = 0.0;
+        derivs[0][0] -= 2.0;
+        derivs[1][0] -= 2.0;
         ++num_vtx;
       }
       if (have_node(nodebits, 5)) {
         vertices[num_vtx] = 5;
-        derivs[3*num_vtx  ] = 0.0;
-        derivs[3*num_vtx+1] = 0.0;
-        derivs[3*num_vtx+2] = 4.0;
-        derivs[ 5] -= 2.0;
-        derivs[ 8] -= 2.0;
+        derivs[num_vtx][0] = 0.0;
+        derivs[num_vtx][1] = 0.0;
+        derivs[num_vtx][2] = 4.0;
+        derivs[1][2] -= 2.0;
+        derivs[2][2] -= 2.0;
         ++num_vtx;
       }
       if (have_node(nodebits, 8)) {
         vertices[num_vtx] = 8;
-        derivs[3*num_vtx  ] = -4.0;
-        derivs[3*num_vtx+1] = -4.0;
-        derivs[3*num_vtx+2] = -4.0;
-        derivs[ 3] += 2.0;
-        derivs[ 4] += 2.0;
-        derivs[ 5] += 2.0;
-        derivs[ 9] += 2.0;
-        derivs[10] += 2.0;
-        derivs[11] += 2.0;
+        derivs[num_vtx][0] = -4.0;
+        derivs[num_vtx][1] = -4.0;
+        derivs[num_vtx][2] = -4.0;
+        derivs[1][0] += 2.0;
+        derivs[1][1] += 2.0;
+        derivs[1][2] += 2.0;
+        derivs[3][0] += 2.0;
+        derivs[3][1] += 2.0;
+        derivs[3][2] += 2.0;
         ++num_vtx;
       }
       break;
@@ -368,33 +361,33 @@ void TetLagrangeShape::derivatives_at_corner( unsigned corner,
     case 2:
       if (have_node(nodebits, 5)) {
         vertices[num_vtx] = 5;
-        derivs[3*num_vtx  ] = 0.0;
-        derivs[3*num_vtx+1] = 4.0;
-        derivs[3*num_vtx+2] = 0.0;
-        derivs[ 4] -= 2.0;
-        derivs[ 7] -= 2.0;
+        derivs[num_vtx][0] = 0.0;
+        derivs[num_vtx][1] = 4.0;
+        derivs[num_vtx][2] = 0.0;
+        derivs[1][1] -= 2.0;
+        derivs[2][1] -= 2.0;
         ++num_vtx;
       }
       if (have_node(nodebits, 6)) {
         vertices[num_vtx] = 6;
-        derivs[3*num_vtx  ] = 4.0;
-        derivs[3*num_vtx+1] = 0.0;
-        derivs[3*num_vtx+2] = 0.0;
-        derivs[ 0] -= 2.0;
-        derivs[ 6] -= 2.0;
+        derivs[num_vtx][0] = 4.0;
+        derivs[num_vtx][1] = 0.0;
+        derivs[num_vtx][2] = 0.0;
+        derivs[0][0] -= 2.0;
+        derivs[2][0] -= 2.0;
         ++num_vtx;
       }
       if (have_node(nodebits, 9)) {
         vertices[num_vtx] = 9;
-        derivs[3*num_vtx  ] = -4.0;
-        derivs[3*num_vtx+1] = -4.0;
-        derivs[3*num_vtx+2] = -4.0;
-        derivs[ 6] += 2.0;
-        derivs[ 7] += 2.0;
-        derivs[ 8] += 2.0;
-        derivs[ 9] += 2.0;
-        derivs[10] += 2.0;
-        derivs[11] += 2.0;
+        derivs[num_vtx][0] = -4.0;
+        derivs[num_vtx][1] = -4.0;
+        derivs[num_vtx][2] = -4.0;
+        derivs[2][0] += 2.0;
+        derivs[2][1] += 2.0;
+        derivs[2][2] += 2.0;
+        derivs[3][0] += 2.0;
+        derivs[3][1] += 2.0;
+        derivs[3][2] += 2.0;
         ++num_vtx;
       }
       break;
@@ -402,143 +395,136 @@ void TetLagrangeShape::derivatives_at_corner( unsigned corner,
     case 3:
       if (have_node(nodebits, 7)) {
         vertices[num_vtx] = 7;
-        derivs[3*num_vtx  ] = 4.0;
-        derivs[3*num_vtx+1] = 0.0;
-        derivs[3*num_vtx+2] = 0.0;
-        derivs[ 0] -= 2.0;
-        derivs[ 9] -= 2.0;
+        derivs[num_vtx][0] = 4.0;
+        derivs[num_vtx][1] = 0.0;
+        derivs[num_vtx][2] = 0.0;
+        derivs[0][0] -= 2.0;
+        derivs[3][0] -= 2.0;
         ++num_vtx;
       }
       if (have_node(nodebits, 8)) {
         vertices[num_vtx] = 8;
-        derivs[3*num_vtx  ] = 0.0;
-        derivs[3*num_vtx+1] = 4.0;
-        derivs[3*num_vtx+2] = 0.0;
-        derivs[ 4] -= 2.0;
-        derivs[10] -= 2.0;
+        derivs[num_vtx][0] = 0.0;
+        derivs[num_vtx][1] = 4.0;
+        derivs[num_vtx][2] = 0.0;
+        derivs[1][1] -= 2.0;
+        derivs[3][1] -= 2.0;
         ++num_vtx;
       }
       
       if (have_node(nodebits, 9)) {
         vertices[num_vtx] = 9;
-        derivs[3*num_vtx  ] = 0.0;
-        derivs[3*num_vtx+1] = 0.0;
-        derivs[3*num_vtx+2] = 4.0;
-        derivs[ 8]-= 2.0;
-        derivs[11]-= 2.0;
+        derivs[num_vtx][0] = 0.0;
+        derivs[num_vtx][1] = 0.0;
+        derivs[num_vtx][2] = 4.0;
+        derivs[2][2]-= 2.0;
+        derivs[3][2]-= 2.0;
         ++num_vtx;
       }
       break;
   }
 }
   
-void TetLagrangeShape::derivatives_at_mid_edge( unsigned edge,
-                                              unsigned nodebits,
-                                              size_t* vertices,
-                                              double* derivs,
-                                              size_t& num_vtx,
-                                              MsqError& err) const
+static void derivatives_at_mid_edge( unsigned edge,
+                                     unsigned nodebits,
+                                     size_t* vertices,
+                                     MsqVector<3>* derivs,
+                                     size_t& num_vtx )
 {
-  if (nodebits >= (1u << 6)) {
-    MSQ_SETERR(err)("TetLagrangeShape does not support mid-face/mid-element nodes",
-                    MsqError::UNSUPPORTED_ELEMENT);
-    return;
-  }
-  
   switch (edge) {
     case 0:
       num_vtx = 2;
       vertices[0] = 0;
       vertices[1] = 1;
       
-      derivs[0] = 1.0;
-      derivs[1] = 0.0;
-      derivs[2] = 0.0;
+      derivs[0][0] = 1.0;
+      derivs[0][1] = 0.0;
+      derivs[0][2] = 0.0;
       
-      derivs[3] = 0.0;
-      derivs[4] = 1.0;
-      derivs[5] = 0.0;
+      derivs[1][0] = 0.0;
+      derivs[1][1] = 1.0;
+      derivs[1][2] = 0.0;
       
    
       if (have_node(nodebits,5) && have_node(nodebits,6)) {
         vertices[num_vtx] = 2;
-        derivs[3*num_vtx  ] =  0.0;
-        derivs[3*num_vtx+1] =  0.0;
-        derivs[3*num_vtx+2] = -1.0;
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] = -1.0;
         ++num_vtx;
       }
       else if (!have_node(nodebits,5) && !have_node(nodebits,6)) {\
         vertices[num_vtx] = 2;
-        derivs[3*num_vtx  ] =  0.0;
-        derivs[3*num_vtx+1] =  0.0;
-        derivs[3*num_vtx+2] =  1.0;
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] =  1.0;
         ++num_vtx;
       }
       
       if (!have_node(nodebits, 7) && !have_node(nodebits, 8)) {
         vertices[num_vtx] = 3;
-        derivs[3*num_vtx  ] = -1.0;
-        derivs[3*num_vtx+1] = -1.0;
-        derivs[3*num_vtx+2] = -1.0;
+        derivs[num_vtx][0] = -1.0;
+        derivs[num_vtx][1] = -1.0;
+        derivs[num_vtx][2] = -1.0;
         ++num_vtx;
       }
       else if (have_node(nodebits, 7) && have_node(nodebits, 8)) {
         vertices[num_vtx] = 3;
-        derivs[3*num_vtx  ] = 1.0;
-        derivs[3*num_vtx+1] = 1.0;
-        derivs[3*num_vtx+2] = 1.0;
+        derivs[num_vtx][0] = 1.0;
+        derivs[num_vtx][1] = 1.0;
+        derivs[num_vtx][2] = 1.0;
         ++num_vtx;
       }
       
       if (have_node(nodebits, 4)) {
         vertices[num_vtx] = 4;
-        derivs[3*num_vtx  ] = 2.0;
-        derivs[3*num_vtx+1] = 2.0;
-        derivs[3*num_vtx+2] = 0.0;
-        derivs[0] -= 1.0;
-        derivs[1] -= 1.0;
-        derivs[3] -= 1.0;
-        derivs[4] -= 1.0;
+        derivs[num_vtx][0] = 2.0;
+        derivs[num_vtx][1] = 2.0;
+        derivs[num_vtx][2] = 0.0;
+        derivs[0][0] -= 1.0;
+        derivs[0][1] -= 1.0;
+        derivs[1][0] -= 1.0;
+        derivs[1][1] -= 1.0;
          ++num_vtx;
      }
       
       if (have_node(nodebits, 5)) {
         vertices[num_vtx] = 5;
-        derivs[3*num_vtx  ] = 0.0;
-        derivs[3*num_vtx+1] = 0.0;
-        derivs[3*num_vtx+2] = 2.0;
-        derivs[ 5] -= 1.0;
+        derivs[num_vtx][0] = 0.0;
+        derivs[num_vtx][1] = 0.0;
+        derivs[num_vtx][2] = 2.0;
+        derivs[1][2] -= 1.0;
         ++num_vtx;
       }
       
       if (have_node(nodebits, 6)) {
         vertices[num_vtx] = 6;
-        derivs[3*num_vtx  ] = 0.0;
-        derivs[3*num_vtx+1] = 0.0;
-        derivs[3*num_vtx+2] = 2.0;
-        derivs[ 2] -= 1.0;
+        derivs[num_vtx][0] = 0.0;
+        derivs[num_vtx][1] = 0.0;
+        derivs[num_vtx][2] = 2.0;
+        derivs[0][2] -= 1.0;
         ++num_vtx;
       }
       
       if (have_node(nodebits, 7)) {
         vertices[num_vtx] = 7;
-        derivs[3*num_vtx  ] = -2.0;
-        derivs[3*num_vtx+1] = -2.0;
-        derivs[3*num_vtx+2] = -2.0;
-        derivs[0] += 1.0;
-        derivs[1] += 1.0;
-        derivs[2] += 1.0;
+        derivs[num_vtx][0] = -2.0;
+        derivs[num_vtx][1] = -2.0;
+        derivs[num_vtx][2] = -2.0;
+        derivs[0][0] += 1.0;
+        derivs[0][1] += 1.0;
+        derivs[0][2] += 1.0;
         ++num_vtx;
       }
       
       if (have_node(nodebits, 8)) {
         vertices[num_vtx] = 8;
-        derivs[3*num_vtx  ] = -2.0;
-        derivs[3*num_vtx+1] = -2.0;
-        derivs[3*num_vtx+2] = -2.0;
-        derivs[3] += 1.0;
-        derivs[4] += 1.0;
-        derivs[5] += 1.0;
+        derivs[num_vtx][0] = -2.0;
+        derivs[num_vtx][1] = -2.0;
+        derivs[num_vtx][2] = -2.0;
+        derivs[1][0] += 1.0;
+        derivs[1][1] += 1.0;
+        derivs[1][2] += 1.0;
         ++num_vtx;
       }
       break;
@@ -548,94 +534,94 @@ void TetLagrangeShape::derivatives_at_mid_edge( unsigned edge,
       vertices[0] = 1;
       vertices[1] = 2;
       
-      derivs[0] = 0.0;
-      derivs[1] = 1.0;
-      derivs[2] = 0.0;
+      derivs[0][0] = 0.0;
+      derivs[0][1] = 1.0;
+      derivs[0][2] = 0.0;
       
-      derivs[3] = 0.0;
-      derivs[4] = 0.0;
-      derivs[5] = 1.0;
+      derivs[1][0] = 0.0;
+      derivs[1][1] = 0.0;
+      derivs[1][2] = 1.0;
    
       if (have_node(nodebits,4) && have_node(nodebits,6)) {
         vertices[num_vtx] = 0;
-        derivs[3*num_vtx  ] = -1.0;
-        derivs[3*num_vtx+1] =  0.0;
-        derivs[3*num_vtx+2] =  0.0;
+        derivs[num_vtx][0] = -1.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] =  0.0;
         ++num_vtx;
       }
       else if (!have_node(nodebits,4) && !have_node(nodebits,6)) {
         vertices[num_vtx] = 0;
-        derivs[3*num_vtx  ] =  1.0;
-        derivs[3*num_vtx+1] =  0.0;
-        derivs[3*num_vtx+2] =  0.0;
+        derivs[num_vtx][0] =  1.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] =  0.0;
         ++num_vtx;
       }
       
       if (!have_node(nodebits, 8) && !have_node(nodebits, 9)) {
         vertices[num_vtx] = 3;
-        derivs[3*num_vtx  ] = -1.0;
-        derivs[3*num_vtx+1] = -1.0;
-        derivs[3*num_vtx+2] = -1.0;
+        derivs[num_vtx][0] = -1.0;
+        derivs[num_vtx][1] = -1.0;
+        derivs[num_vtx][2] = -1.0;
         ++num_vtx;
       }
       else if (have_node(nodebits, 8) && have_node(nodebits, 9)) {
         vertices[num_vtx] = 3;
-        derivs[3*num_vtx  ] = 1.0;
-        derivs[3*num_vtx+1] = 1.0;
-        derivs[3*num_vtx+2] = 1.0;
+        derivs[num_vtx][0] = 1.0;
+        derivs[num_vtx][1] = 1.0;
+        derivs[num_vtx][2] = 1.0;
         ++num_vtx;
       }
       
       if (have_node(nodebits, 4)) {
         vertices[num_vtx] = 4;
-        derivs[3*num_vtx  ] = 2.0;
-        derivs[3*num_vtx+1] = 0.0;
-        derivs[3*num_vtx+2] = 0.0;
+        derivs[num_vtx][0] = 2.0;
+        derivs[num_vtx][1] = 0.0;
+        derivs[num_vtx][2] = 0.0;
         ++num_vtx;
-        derivs[0] -= 1.0;
+        derivs[0][0] -= 1.0;
       }
       
       if (have_node(nodebits, 5)) {
         vertices[num_vtx] = 5;
-        derivs[3*num_vtx  ] = 0.0;
-        derivs[3*num_vtx+1] = 2.0;
-        derivs[3*num_vtx+2] = 2.0;
+        derivs[num_vtx][0] = 0.0;
+        derivs[num_vtx][1] = 2.0;
+        derivs[num_vtx][2] = 2.0;
         ++num_vtx;
-        derivs[1] -= 1.0;
-        derivs[2] -= 1.0;
-        derivs[4] -= 1.0;
-        derivs[5] -= 1.0;
+        derivs[0][1] -= 1.0;
+        derivs[0][2] -= 1.0;
+        derivs[1][1] -= 1.0;
+        derivs[1][2] -= 1.0;
       }
       
       if (have_node(nodebits, 6)) {
         vertices[num_vtx] = 6;
-        derivs[3*num_vtx  ] = 2.0;
-        derivs[3*num_vtx+1] = 0.0;
-        derivs[3*num_vtx+2] = 0.0;
+        derivs[num_vtx][0] = 2.0;
+        derivs[num_vtx][1] = 0.0;
+        derivs[num_vtx][2] = 0.0;
         ++num_vtx;
-        derivs[3] -= 1.0;
+        derivs[1][0] -= 1.0;
       }
       
       if (have_node(nodebits, 8)) {
         vertices[num_vtx] = 8;
-        derivs[3*num_vtx  ] = -2.0;
-        derivs[3*num_vtx+1] = -2.0;
-        derivs[3*num_vtx+2] = -2.0;
+        derivs[num_vtx][0] = -2.0;
+        derivs[num_vtx][1] = -2.0;
+        derivs[num_vtx][2] = -2.0;
         ++num_vtx;
-        derivs[0] += 1.0;
-        derivs[1] += 1.0;
-        derivs[2] += 1.0;
+        derivs[0][0] += 1.0;
+        derivs[0][1] += 1.0;
+        derivs[0][2] += 1.0;
       }
       
       if (have_node(nodebits, 9)) {
         vertices[num_vtx] = 9;
-        derivs[3*num_vtx  ] = -2.0;
-        derivs[3*num_vtx+1] = -2.0;
-        derivs[3*num_vtx+2] = -2.0;
+        derivs[num_vtx][0] = -2.0;
+        derivs[num_vtx][1] = -2.0;
+        derivs[num_vtx][2] = -2.0;
         ++num_vtx;
-        derivs[3] += 1.0;
-        derivs[4] += 1.0;
-        derivs[5] += 1.0;
+        derivs[1][0] += 1.0;
+        derivs[1][1] += 1.0;
+        derivs[1][2] += 1.0;
       }
       break;
       
@@ -644,94 +630,94 @@ void TetLagrangeShape::derivatives_at_mid_edge( unsigned edge,
       vertices[0] = 0;
       vertices[1] = 2;
       
-      derivs[0] = 1.0;
-      derivs[1] = 0.0;
-      derivs[2] = 0.0;
+      derivs[0][0] = 1.0;
+      derivs[0][1] = 0.0;
+      derivs[0][2] = 0.0;
       
-      derivs[3] = 0.0;
-      derivs[4] = 0.0;
-      derivs[5] = 1.0;
+      derivs[1][0] = 0.0;
+      derivs[1][1] = 0.0;
+      derivs[1][2] = 1.0;
    
       if (have_node(nodebits,4) && have_node(nodebits,5)) {
         vertices[num_vtx] = 1;
-        derivs[3*num_vtx  ] =  0.0;
-        derivs[3*num_vtx+1] = -1.0;
-        derivs[3*num_vtx+2] =  0.0;
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] = -1.0;
+        derivs[num_vtx][2] =  0.0;
         ++num_vtx;
       }
       else if (!have_node(nodebits,4) && !have_node(nodebits,5)) {
         vertices[num_vtx] = 1;
-        derivs[3*num_vtx  ] =  0.0;
-        derivs[3*num_vtx+1] =  1.0;
-        derivs[3*num_vtx+2] =  0.0;
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] =  1.0;
+        derivs[num_vtx][2] =  0.0;
         ++num_vtx;
       }
       
       if (!have_node(nodebits, 7) && !have_node(nodebits, 9)) {
         vertices[num_vtx] = 3;
-        derivs[3*num_vtx  ] = -1.0;
-        derivs[3*num_vtx+1] = -1.0;
-        derivs[3*num_vtx+2] = -1.0;
+        derivs[num_vtx][0] = -1.0;
+        derivs[num_vtx][1] = -1.0;
+        derivs[num_vtx][2] = -1.0;
         ++num_vtx;
       }
       else if (have_node(nodebits, 7) && have_node(nodebits, 9)) {
         vertices[num_vtx] = 3;
-        derivs[3*num_vtx  ] = 1.0;
-        derivs[3*num_vtx+1] = 1.0;
-        derivs[3*num_vtx+2] = 1.0;
+        derivs[num_vtx][0] = 1.0;
+        derivs[num_vtx][1] = 1.0;
+        derivs[num_vtx][2] = 1.0;
         ++num_vtx;
       }
       
       if (have_node(nodebits, 4)) {
         vertices[num_vtx] = 4;
-        derivs[3*num_vtx  ] =  0.0;
-        derivs[3*num_vtx+1] =  2.0;
-        derivs[3*num_vtx+2] =  0.0;
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] =  2.0;
+        derivs[num_vtx][2] =  0.0;
         ++num_vtx;
-        derivs[ 1] -= 1.0;
+        derivs[0][1] -= 1.0;
       }
       
       if (have_node(nodebits, 5)) {
         vertices[num_vtx] = 5;
-        derivs[3*num_vtx  ] =  0.0;
-        derivs[3*num_vtx+1] =  2.0;
-        derivs[3*num_vtx+2] =  0.0;
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] =  2.0;
+        derivs[num_vtx][2] =  0.0;
         ++num_vtx;
-        derivs[ 4] -= 1.0;
+        derivs[1][1] -= 1.0;
       }
       
       if (have_node(nodebits, 6)) {
         vertices[num_vtx] = 6;
-        derivs[3*num_vtx  ] =  2.0;
-        derivs[3*num_vtx+1] =  0.0;
-        derivs[3*num_vtx+2] =  2.0;
+        derivs[num_vtx][0] =  2.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] =  2.0;
         ++num_vtx;
-        derivs[0] -= 1.0;
-        derivs[2] -= 1.0;
-        derivs[3] -= 1.0;
-        derivs[5] -= 1.0;
+        derivs[0][0] -= 1.0;
+        derivs[0][2] -= 1.0;
+        derivs[1][0] -= 1.0;
+        derivs[1][2] -= 1.0;
       }
        
       if (have_node(nodebits, 7)) {
         vertices[num_vtx] = 7;
-        derivs[3*num_vtx  ] = -2.0;
-        derivs[3*num_vtx+1] = -2.0;
-        derivs[3*num_vtx+2] = -2.0;
+        derivs[num_vtx][0] = -2.0;
+        derivs[num_vtx][1] = -2.0;
+        derivs[num_vtx][2] = -2.0;
         ++num_vtx;
-        derivs[0] += 1.0;
-        derivs[1] += 1.0;
-        derivs[2] += 1.0;
+        derivs[0][0] += 1.0;
+        derivs[0][1] += 1.0;
+        derivs[0][2] += 1.0;
       }
       
       if (have_node(nodebits, 9)) {
         vertices[num_vtx] = 9;
-        derivs[3*num_vtx  ] = -2.0;
-        derivs[3*num_vtx+1] = -2.0;
-        derivs[3*num_vtx+2] = -2.0;
+        derivs[num_vtx][0] = -2.0;
+        derivs[num_vtx][1] = -2.0;
+        derivs[num_vtx][2] = -2.0;
         ++num_vtx;
-        derivs[3] += 1.0;
-        derivs[4] += 1.0;
-        derivs[5] += 1.0;
+        derivs[1][0] += 1.0;
+        derivs[1][1] += 1.0;
+        derivs[1][2] += 1.0;
       }
       break;
     
@@ -740,89 +726,89 @@ void TetLagrangeShape::derivatives_at_mid_edge( unsigned edge,
       vertices[0] = 0;
       vertices[1] = 3;
       
-      derivs[0] = 1.0;
-      derivs[1] = 0.0;
-      derivs[2] = 0.0;
+      derivs[0][0] = 1.0;
+      derivs[0][1] = 0.0;
+      derivs[0][2] = 0.0;
       
-      derivs[3] = -1.0;
-      derivs[4] = -1.0;
-      derivs[5] = -1.0;
+      derivs[1][0] = -1.0;
+      derivs[1][1] = -1.0;
+      derivs[1][2] = -1.0;
       
       if (!have_node( nodebits, 4 ) && !have_node( nodebits, 8 )) {
         vertices[num_vtx] = 1;
-        derivs[3*num_vtx  ] =  0.0;
-        derivs[3*num_vtx+1] =  1.0;
-        derivs[3*num_vtx+2] =  0.0;
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] =  1.0;
+        derivs[num_vtx][2] =  0.0;
         ++num_vtx;
       }
       else if (have_node( nodebits, 4 ) && have_node( nodebits, 8 )) {
         vertices[num_vtx] = 1;
-        derivs[3*num_vtx  ] =  0.0;
-        derivs[3*num_vtx+1] = -1.0;
-        derivs[3*num_vtx+2] =  0.0;
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] = -1.0;
+        derivs[num_vtx][2] =  0.0;
         ++num_vtx;
       }
       
       if (!have_node( nodebits, 6 ) && !have_node( nodebits, 9 )) {
         vertices[num_vtx] = 2;
-        derivs[3*num_vtx  ] =  0.0;
-        derivs[3*num_vtx+1] =  0.0;
-        derivs[3*num_vtx+2] =  1.0;
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] =  1.0;
         ++num_vtx;
       }
       if (have_node( nodebits, 6 ) && have_node( nodebits, 9 )) {
         vertices[num_vtx] = 2;
-        derivs[3*num_vtx  ] =  0.0;
-        derivs[3*num_vtx+1] =  0.0;
-        derivs[3*num_vtx+2] = -1.0;
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] = -1.0;
         ++num_vtx;
       }
 
       if (have_node( nodebits, 4 )) {
         vertices[num_vtx] = 4;
-        derivs[3*num_vtx  ] =  0.0;
-        derivs[3*num_vtx+1] =  2.0;
-        derivs[3*num_vtx+2] =  0.0;
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] =  2.0;
+        derivs[num_vtx][2] =  0.0;
         ++num_vtx;
-        derivs[1] -= 1.0;
+        derivs[0][1] -= 1.0;
       }
       
       if (have_node( nodebits, 6 )) {
         vertices[num_vtx] = 6;
-        derivs[3*num_vtx  ] =  0.0;
-        derivs[3*num_vtx+1] =  0.0;
-        derivs[3*num_vtx+2] =  2.0;
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] =  2.0;
         ++num_vtx;
-        derivs[2] -= 1.0;
+        derivs[0][2] -= 1.0;
       }
       
       if (have_node( nodebits, 7 )) {
         vertices[num_vtx] = 7;
-        derivs[3*num_vtx  ] =  0.0;
-        derivs[3*num_vtx+1] = -2.0;
-        derivs[3*num_vtx+2] = -2.0;
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] = -2.0;
+        derivs[num_vtx][2] = -2.0;
         ++num_vtx;
-        derivs[1] += 1.0;
-        derivs[2] += 1.0;
-        derivs[4] += 1.0;
-        derivs[5] += 1.0;
+        derivs[0][1] += 1.0;
+        derivs[0][2] += 1.0;
+        derivs[1][1] += 1.0;
+        derivs[1][2] += 1.0;
       }
       
       if (have_node( nodebits, 8 )) {
         vertices[num_vtx] = 8;
-        derivs[3*num_vtx  ] =  0.0;
-        derivs[3*num_vtx+1] =  2.0;
-        derivs[3*num_vtx+2] =  0.0;
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] =  2.0;
+        derivs[num_vtx][2] =  0.0;
         ++num_vtx;
-        derivs[4] -= 1.0;
+        derivs[1][1] -= 1.0;
       }
       if (have_node( nodebits, 9 )) {
         vertices[num_vtx] = 9;
-        derivs[3*num_vtx  ] =  0.0;
-        derivs[3*num_vtx+1] =  0.0;
-        derivs[3*num_vtx+2] =  2.0;
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] =  2.0;
         ++num_vtx;
-        derivs[5] -= 1.0;
+        derivs[1][2] -= 1.0;
       }
       break;
     
@@ -831,89 +817,89 @@ void TetLagrangeShape::derivatives_at_mid_edge( unsigned edge,
       vertices[0] = 1;
       vertices[1] = 3;
       
-      derivs[0] = 0.0;
-      derivs[1] = 1.0;
-      derivs[2] = 0.0;
+      derivs[0][0] = 0.0;
+      derivs[0][1] = 1.0;
+      derivs[0][2] = 0.0;
       
-      derivs[3] = -1.0;
-      derivs[4] = -1.0;
-      derivs[5] = -1.0;
+      derivs[1][0] = -1.0;
+      derivs[1][1] = -1.0;
+      derivs[1][2] = -1.0;
 
       if (!have_node( nodebits, 4 ) && !have_node( nodebits, 7 )) {
         vertices[num_vtx] = 0;
-        derivs[3*num_vtx  ] =  1.0;
-        derivs[3*num_vtx+1] =  0.0;
-        derivs[3*num_vtx+2] =  0.0;
+        derivs[num_vtx][0] =  1.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] =  0.0;
         ++num_vtx;
       }
       else if (have_node( nodebits, 4 ) && have_node( nodebits, 7 )) {
         vertices[num_vtx] = 0;
-        derivs[3*num_vtx  ] = -1.0;
-        derivs[3*num_vtx+1] =  0.0;
-        derivs[3*num_vtx+2] =  0.0;
+        derivs[num_vtx][0] = -1.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] =  0.0;
         ++num_vtx;
       }
       
       if (!have_node( nodebits, 5 ) && !have_node( nodebits, 9 )) {
         vertices[num_vtx] = 2;
-        derivs[3*num_vtx  ] =  0.0;
-        derivs[3*num_vtx+1] =  0.0;
-        derivs[3*num_vtx+2] =  1.0;
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] =  1.0;
         ++num_vtx;
       }
       else if (have_node( nodebits, 5 ) && have_node( nodebits, 9 )) {
         vertices[num_vtx] = 2;
-        derivs[3*num_vtx  ] =  0.0;
-        derivs[3*num_vtx+1] =  0.0;
-        derivs[3*num_vtx+2] = -1.0;
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] = -1.0;
         ++num_vtx;
       }
 
       if (have_node( nodebits, 4 )) {
         vertices[num_vtx] = 4;
-        derivs[3*num_vtx  ] =  2.0;
-        derivs[3*num_vtx+1] =  0.0;
-        derivs[3*num_vtx+2] =  0.0;
+        derivs[num_vtx][0] =  2.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] =  0.0;
         ++num_vtx;
-        derivs[0] -= 1.0;
+        derivs[0][0] -= 1.0;
       }
       
       if (have_node( nodebits, 5 )) {
         vertices[num_vtx] = 5;
-        derivs[3*num_vtx  ] =  0.0;
-        derivs[3*num_vtx+1] =  0.0;
-        derivs[3*num_vtx+2] =  2.0;
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] =  2.0;
         ++num_vtx;
-        derivs[2] -= 1.0;
+        derivs[0][2] -= 1.0;
       }
       
       if (have_node( nodebits, 8 )) {
         vertices[num_vtx] = 8;
-        derivs[3*num_vtx  ] = -2.0;
-        derivs[3*num_vtx+1] =  0.0;
-        derivs[3*num_vtx+2] = -2.0;
+        derivs[num_vtx][0] = -2.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] = -2.0;
         ++num_vtx;
-        derivs[0] += 1.0;
-        derivs[2] += 1.0;
-        derivs[3] += 1.0;
-        derivs[5] += 1.0;
+        derivs[0][0] += 1.0;
+        derivs[0][2] += 1.0;
+        derivs[1][0] += 1.0;
+        derivs[1][2] += 1.0;
       }
       
       if (have_node( nodebits, 7 )) {
         vertices[num_vtx] = 7;
-        derivs[3*num_vtx  ] =  2.0;
-        derivs[3*num_vtx+1] =  0.0;
-        derivs[3*num_vtx+2] =  0.0;
+        derivs[num_vtx][0] =  2.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] =  0.0;
         ++num_vtx;
-        derivs[3] -= 1.0;
+        derivs[1][0] -= 1.0;
       }
       if (have_node( nodebits, 9 )) {
         vertices[num_vtx] = 9;
-        derivs[3*num_vtx  ] =  0.0;
-        derivs[3*num_vtx+1] =  0.0;
-        derivs[3*num_vtx+2] =  2.0;
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] =  2.0;
         ++num_vtx;
-        derivs[5] -= 1.0;
+        derivs[1][2] -= 1.0;
       }
       break;
     
@@ -922,89 +908,89 @@ void TetLagrangeShape::derivatives_at_mid_edge( unsigned edge,
       vertices[0] = 2;
       vertices[1] = 3;
       
-      derivs[0] = 0.0;
-      derivs[1] = 0.0;
-      derivs[2] = 1.0;
+      derivs[0][0] = 0.0;
+      derivs[0][1] = 0.0;
+      derivs[0][2] = 1.0;
       
-      derivs[3] = -1.0;
-      derivs[4] = -1.0;
-      derivs[5] = -1.0;
+      derivs[1][0] = -1.0;
+      derivs[1][1] = -1.0;
+      derivs[1][2] = -1.0;
 
       if (!have_node( nodebits, 6 ) && !have_node( nodebits, 7 )) {
         vertices[num_vtx] = 0;
-        derivs[3*num_vtx  ] =  1.0;
-        derivs[3*num_vtx+1] =  0.0;
-        derivs[3*num_vtx+2] =  0.0;
+        derivs[num_vtx][0] =  1.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] =  0.0;
         ++num_vtx;
       }
       else if (have_node( nodebits, 6 ) && have_node( nodebits, 7 )) {
         vertices[num_vtx] = 0;
-        derivs[3*num_vtx  ] = -1.0;
-        derivs[3*num_vtx+1] =  0.0;
-        derivs[3*num_vtx+2] =  0.0;
+        derivs[num_vtx][0] = -1.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] =  0.0;
         ++num_vtx;
       }
       
       if (!have_node( nodebits, 5 ) && !have_node( nodebits, 8 )) {
         vertices[num_vtx] = 1;
-        derivs[3*num_vtx  ] =  0.0;
-        derivs[3*num_vtx+1] =  1.0;
-        derivs[3*num_vtx+2] =  0.0;
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] =  1.0;
+        derivs[num_vtx][2] =  0.0;
         ++num_vtx;
       }
       else if (have_node( nodebits, 5 ) && have_node( nodebits, 8 )) {
         vertices[num_vtx] = 1;
-        derivs[3*num_vtx  ] =  0.0;
-        derivs[3*num_vtx+1] = -1.0;
-        derivs[3*num_vtx+2] =  0.0;
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] = -1.0;
+        derivs[num_vtx][2] =  0.0;
         ++num_vtx;
       }
       
       if (have_node( nodebits, 5 )) {
         vertices[num_vtx] = 5;
-        derivs[3*num_vtx  ] =  0.0;
-        derivs[3*num_vtx+1] =  2.0;
-        derivs[3*num_vtx+2] =  0.0;
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] =  2.0;
+        derivs[num_vtx][2] =  0.0;
         ++num_vtx;
-        derivs[1] -= 1.0;
+        derivs[0][1] -= 1.0;
       }
 
       if (have_node( nodebits, 6 )) {
         vertices[num_vtx] = 6;
-        derivs[3*num_vtx  ] =  2.0;
-        derivs[3*num_vtx+1] =  0.0;
-        derivs[3*num_vtx+2] =  0.0;
+        derivs[num_vtx][0] =  2.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] =  0.0;
         ++num_vtx;
-        derivs[0] -= 1.0;
+        derivs[0][0] -= 1.0;
       }
       
       if (have_node( nodebits, 9 )) {
         vertices[num_vtx] = 9;
-        derivs[3*num_vtx  ] = -2.0;
-        derivs[3*num_vtx+1] = -2.0;
-        derivs[3*num_vtx+2] =  0.0;
+        derivs[num_vtx][0] = -2.0;
+        derivs[num_vtx][1] = -2.0;
+        derivs[num_vtx][2] =  0.0;
         ++num_vtx;
-        derivs[0] += 1.0;
-        derivs[1] += 1.0;
-        derivs[3] += 1.0;
-        derivs[4] += 1.0;
+        derivs[0][0] += 1.0;
+        derivs[0][1] += 1.0;
+        derivs[1][0] += 1.0;
+        derivs[1][1] += 1.0;
       }
       
       if (have_node( nodebits, 7 )) {
         vertices[num_vtx] = 7;
-        derivs[3*num_vtx  ] =  2.0;
-        derivs[3*num_vtx+1] =  0.0;
-        derivs[3*num_vtx+2] =  0.0;
+        derivs[num_vtx][0] =  2.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] =  0.0;
         ++num_vtx;
-        derivs[3] -= 1.0;
+        derivs[1][0] -= 1.0;
       }
       if (have_node( nodebits, 8 )) {
         vertices[num_vtx] = 8;
-        derivs[3*num_vtx  ] =  0.0;
-        derivs[3*num_vtx+1] =  2.0;
-        derivs[3*num_vtx+2] =  0.0;
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] =  2.0;
+        derivs[num_vtx][2] =  0.0;
         ++num_vtx;
-        derivs[4] -= 1.0;
+        derivs[1][1] -= 1.0;
       }
       break;
   }
@@ -1036,19 +1022,12 @@ const double ho_dt[6][4] = { { 0., 0., 0., 0. },
                              { ft, 0., 0.,-ft } };
 
 
-void TetLagrangeShape::derivatives_at_mid_face( unsigned face,
-                                              unsigned nodebits,
-                                              size_t* vertices,
-                                              double* derivs,
-                                              size_t& num_vtx,
-                                              MsqError& err) const
+static void derivatives_at_mid_face( unsigned face,
+                                     unsigned nodebits,
+                                     size_t* vertices,
+                                     MsqVector<3>* derivs,
+                                     size_t& num_vtx )
 {
-  if (nodebits >= (1u << 6)) {
-    MSQ_SETERR(err)("TetLagrangeShape does not support mid-face/mid-element nodes",
-                    MsqError::UNSUPPORTED_ELEMENT);
-    return;
-  }
-  
     // begin with derivatives for linear tetrahedron
   num_vtx = 4;
   get_linear_derivatives( vertices, derivs );
@@ -1056,33 +1035,26 @@ void TetLagrangeShape::derivatives_at_mid_face( unsigned face,
   for (unsigned i = 0; i < 6; ++i) 
     if (nodebits & (1<<i)) {
       vertices[num_vtx] = i+4;
-      derivs[3*num_vtx  ] = ho_dr[i][face];
-      derivs[3*num_vtx+1] = ho_ds[i][face];
-      derivs[3*num_vtx+2] = ho_dt[i][face];
+      derivs[num_vtx][0] = ho_dr[i][face];
+      derivs[num_vtx][1] = ho_ds[i][face];
+      derivs[num_vtx][2] = ho_dt[i][face];
       ++num_vtx;
-      int j = 3*edges[i][0];
-      derivs[j  ] -= 0.5*ho_dr[i][face];
-      derivs[j+1] -= 0.5*ho_ds[i][face];
-      derivs[j+2] -= 0.5*ho_dt[i][face];
-      j = 3*edges[i][1];
-      derivs[j  ] -= 0.5*ho_dr[i][face];
-      derivs[j+1] -= 0.5*ho_ds[i][face];
-      derivs[j+2] -= 0.5*ho_dt[i][face];
+      int j = edges[i][0];
+      derivs[j][0] -= 0.5*ho_dr[i][face];
+      derivs[j][1] -= 0.5*ho_ds[i][face];
+      derivs[j][2] -= 0.5*ho_dt[i][face];
+      j = edges[i][1];
+      derivs[j][0] -= 0.5*ho_dr[i][face];
+      derivs[j][1] -= 0.5*ho_ds[i][face];
+      derivs[j][2] -= 0.5*ho_dt[i][face];
     }
 }
 
-void TetLagrangeShape::derivatives_at_mid_elem( 
-                                              unsigned nodebits,
-                                              size_t* vertices,
-                                              double* derivs,
-                                              size_t& num_vtx,
-                                              MsqError& err) const
+static void derivatives_at_mid_elem( unsigned nodebits,
+                                     size_t* vertices,
+                                     MsqVector<3>* derivs,
+                                     size_t& num_vtx )
 {
-  if (nodebits >= (1u << 6)) {
-    MSQ_SETERR(err)("TetLagrangeShape does not support mid-face/mid-element nodes",
-                    MsqError::UNSUPPORTED_ELEMENT);
-    return;
-  }
                                     
   bool corners[4] = { false, false, false, false };
   double corner_vals[4][3] = { {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0} };
@@ -1101,10 +1073,10 @@ void TetLagrangeShape::derivatives_at_mid_elem(
     
     if (have_node( nodebits, i )) {
       vertices[num_vtx] = i;
-      derivs[3*num_vtx  ] = (double)sign;
-      derivs[3*num_vtx+1] = (double)sign;
-      derivs[3*num_vtx+2] = (double)sign;
-      derivs[3*num_vtx+zero] = 0.0;
+      derivs[num_vtx][0] = (double)sign;
+      derivs[num_vtx][1] = (double)sign;
+      derivs[num_vtx][2] = (double)sign;
+      derivs[num_vtx][zero] = 0.0;
       ++num_vtx;
     }
     else {
@@ -1122,13 +1094,44 @@ void TetLagrangeShape::derivatives_at_mid_elem(
   for (unsigned i = 0; i < 4; ++i)
     if (corners[i]) {
       vertices[num_vtx] = i;
-      derivs[3*num_vtx  ] = corner_vals[i][0];
-      derivs[3*num_vtx+1] = corner_vals[i][1];
-      derivs[3*num_vtx+2] = corner_vals[i][2];
+      derivs[num_vtx][0] = corner_vals[i][0];
+      derivs[num_vtx][1] = corner_vals[i][1];
+      derivs[num_vtx][2] = corner_vals[i][2];
       ++num_vtx;
     }
 }
     
+void TetLagrangeShape::derivatives( unsigned loc_dim,
+                                    unsigned loc_num,
+                                    unsigned nodebits,
+                                    size_t* vertex_indices_out,
+                                    MsqVector<3>* d_coeff_d_xi_out,
+                                    size_t& num_vtx,
+                                    MsqError& err ) const
+{
+  if (nodebits >= (1u << 6)) {
+    MSQ_SETERR(err)("TetLagrangeShape does not support mid-face/mid-element nodes",
+                    MsqError::UNSUPPORTED_ELEMENT);
+    return;
+  }
+  
+  switch (loc_dim) {
+    case 0:
+      derivatives_at_corner( loc_num, nodebits, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      break;
+    case 1:
+      derivatives_at_mid_edge( loc_num, nodebits, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      break;
+    case 2:
+      derivatives_at_mid_face( loc_num, nodebits, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      break;
+    case 3:
+      derivatives_at_mid_elem( nodebits, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      break;
+    default:
+      MSQ_SETERR(err)("Invalid/unsupported logical dimension",MsqError::INVALID_ARG);
+  }
+}
 
 
 } // namespace Mesquite

@@ -38,73 +38,42 @@
 
 namespace Mesquite {
 
-void JacobianCalculator::get_derivatives( const MappingFunction* func,
-                                          unsigned ho_bits,
-                                          unsigned dim, unsigned num,
-                                          MsqError& err )
-{
-  if (!func) {
-    MSQ_SETERR(err)( "No mapping function.", MsqError::UNSUPPORTED_ELEMENT );
-    return;
-  }
-  
-  unsigned edim = TopologyInfo::dimension( func->element_topology() );
-  
-  numVtx = 0;
-  switch (dim) {
-    case 0:
-      func->derivatives_at_corner( num, ho_bits, mIndices, mDerivs, numVtx, err );
-      break;
-    case 1:
-      func->derivatives_at_mid_edge( num, ho_bits, mIndices, mDerivs, numVtx, err );
-      break;
-    case 2:
-      if (edim != 2) {
-        func->derivatives_at_mid_face( num, ho_bits, mIndices, mDerivs, numVtx, err );
-        break;
-      }
-    case 3:
-      func->derivatives_at_mid_elem( ho_bits, mIndices, mDerivs, numVtx, err );
-      break;
-  }
-  MSQ_CHKERR( err );
-  assert(numVtx < MAX_ELEM_NODES);
-}
-
-void JacobianCalculator::get_Jacobian_2D( const MappingFunction* mf,
+void JacobianCalculator::get_Jacobian_2D( const MappingFunction2D* mf,
                                           unsigned ho_bits,
                                           unsigned dim, unsigned num,
                                           const Vector3D* verts,
                                           MsqMatrix<3,2>& J_out,
                                           MsqError& err )
 {
-  get_derivatives( mf, ho_bits, dim, num, err ); MSQ_ERRRTN(err);
-  const double* d = mDerivs;
-  const size_t* const e = mIndices + numVtx;
+  size_t num_vtx = 0;
+  mf->derivatives( dim, num, ho_bits, mIndices, mDerivs2D, num_vtx, err ); MSQ_ERRRTN(err);
+  const MsqVector<2>* d = mDerivs2D;
+  const size_t* const e = mIndices + num_vtx;
   Vector3D c[2] = {Vector3D(0,0,0), Vector3D(0,0,0)};
-  for (const size_t* i = mIndices; i != e; ++i) {
-    c[0] += *d * verts[*i]; ++d;
-    c[1] += *d * verts[*i]; ++d;
+  for (const size_t* i = mIndices; i != e; ++i, ++d) {
+    c[0] += (*d)[0] * verts[*i];
+    c[1] += (*d)[1] * verts[*i];
   }
   J_out.set_column( 0, *(MsqMatrix<3,1>*)&c[0] );
   J_out.set_column( 1, *(MsqMatrix<3,1>*)&c[1] );
 }
 
-void JacobianCalculator::get_Jacobian_3D( const MappingFunction* mf,
+void JacobianCalculator::get_Jacobian_3D( const MappingFunction3D* mf,
                                           unsigned ho_bits,
                                           unsigned dim, unsigned num,
                                           const Vector3D* verts,
                                           MsqMatrix<3,3>& J_out,
                                           MsqError& err )
 {
-  get_derivatives( mf, ho_bits, dim, num, err ); MSQ_ERRRTN(err);
-  const double* d = mDerivs;
-  const size_t* const e = mIndices + numVtx;
+  size_t num_vtx = 0;
+  mf->derivatives( dim, num, ho_bits, mIndices, mDerivs3D, num_vtx, err ); MSQ_ERRRTN(err);
+  const MsqVector<3>* d = mDerivs3D;
+  const size_t* const e = mIndices + num_vtx;
   Vector3D c[3] = {Vector3D(0,0,0), Vector3D(0,0,0), Vector3D(0,0,0)};
-  for (const size_t* i = mIndices; i != e; ++i) {
-    c[0] += *d * verts[*i]; ++d;
-    c[1] += *d * verts[*i]; ++d;
-    c[2] += *d * verts[*i]; ++d;
+  for (const size_t* i = mIndices; i != e; ++i, ++d) {
+    c[0] += (*d)[0] * verts[*i];;
+    c[1] += (*d)[1] * verts[*i];;
+    c[2] += (*d)[2] * verts[*i];;
   }
   J_out.set_column( 0, *(MsqMatrix<3,1>*)&c[0] );
   J_out.set_column( 1, *(MsqMatrix<3,1>*)&c[1] );

@@ -118,7 +118,7 @@ bool DomainSurfaceOrientation::evaluate_with_indices( PatchData& pd,
     return false;
   }
   
-  const MappingFunction* func = pd.get_mapping_function( type );
+  const MappingFunction2D* func = pd.get_mapping_function_2D( type );
   if (!func) {
     MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
     return false;
@@ -129,23 +129,7 @@ bool DomainSurfaceOrientation::evaluate_with_indices( PatchData& pd,
   const unsigned bits = pd.higher_order_node_bits( e );
   
   Vector3D n;
-  switch (dim) {
-    case 0:
-      func->derivatives_at_corner( num, bits, indices, mDerivs, num_idx, err );MSQ_ERRZERO(err);
-      pd.get_domain_normal_at_corner( e, num, n, err ); MSQ_ERRZERO(err);
-      break;
-    case 1:
-      func->derivatives_at_mid_edge( num, bits, indices, mDerivs, num_idx, err ); MSQ_ERRZERO(err);
-      pd.get_domain_normal_at_mid_edge( e, num, n, err ); MSQ_ERRZERO(err);
-      break;
-    case 2:
-      func->derivatives_at_mid_elem( bits, indices, mDerivs, num_idx, err ); MSQ_ERRZERO(err);
-      pd.get_domain_normal_at_element( e, n, err ); MSQ_ERRZERO(err);
-      break;
-    default:
-      MSQ_SETERR(err)( MsqError::INTERNAL_ERROR );
-      return false;
-  }
+  func->derivatives( dim, num, bits, indices, mDerivs, num_idx,err ); MSQ_ERRZERO(err);
   
     // Convert from indices into element connectivity list to
     // indices into vertex array in patch data.
@@ -153,12 +137,12 @@ bool DomainSurfaceOrientation::evaluate_with_indices( PatchData& pd,
   for (size_t* i = mIndices; i != mIndices+num_idx; ++i)
     *i = conn[*i];
   
-  double* d = mDerivs;
+  MsqVector<2>* d = mDerivs;
   Vector3D c[2] = { Vector3D(0,0,0), Vector3D(0,0,0) };
-  for (size_t i = 0; i < num_idx; ++i) {
+  for (size_t i = 0; i < num_idx; ++i, ++d) {
     Vector3D coords = pd.vertex_by_index( mIndices[i] );
-    c[0] += *d * coords; ++d;
-    c[1] += *d * coords; ++d;
+    c[0] += (*d)[0] * coords;
+    c[1] += (*d)[1] * coords;
   }
   
   n.normalize();

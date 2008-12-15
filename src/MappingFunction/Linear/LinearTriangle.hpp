@@ -39,70 +39,30 @@ namespace Mesquite {
  * - \f$N_2(\vec{\xi})=\xi_1\f$
  * - \f$N_3(\vec{\xi})=\xi_2\f$
  */ 
-class LinearTriangle : public MappingFunction
+class LinearTriangle : public MappingFunction2D
 {
 public:
 
   virtual
   EntityTopology element_topology() const;
   
-  virtual 
-  void coefficients_at_corner( unsigned corner, 
-                               unsigned nodebits,
-                               double* coeff_out,
-                               size_t& num_coeff,
-                               MsqError& err ) const; 
 
   virtual 
-  void coefficients_at_mid_edge( unsigned edge, 
-                                 unsigned nodebits,
-                                 double* coeff_out,
-                                 size_t& num_coeff,
-                                 MsqError& err ) const;
-
+  void coefficients( unsigned loc_dim,
+                     unsigned loc_num,
+                     unsigned nodebits,
+                     double* coeff_out,
+                     size_t& num_coeff_out,
+                     MsqError& err ) const;
+  
   virtual 
-  void coefficients_at_mid_face( unsigned face, 
-                                 unsigned nodebits,
-                                 double* coeff_out,
-                                 size_t& num_coeff,
-                                 MsqError& err ) const;
-
-  virtual 
-  void coefficients_at_mid_elem( unsigned nodebits,
-                                 double* coeff_out,
-                                 size_t& num_coeff,
-                                 MsqError& err ) const;
-
-  virtual 
-  void derivatives_at_corner( unsigned corner, 
-                              unsigned nodebits,
-                              size_t* vertex_indices_out,
-                              double* d_coeff_d_xi_out,
-                              size_t& num_vtx,
-                              MsqError& err ) const;
-
-  virtual 
-  void derivatives_at_mid_edge( unsigned edge, 
-                                unsigned nodebits,
-                                size_t* vertex_indices_out,
-                                double* d_coeff_d_xi_out,
-                                size_t& num_vtx,
-                                MsqError& err ) const;
-
-  virtual 
-  void derivatives_at_mid_face( unsigned face, 
-                                unsigned nodebits,
-                                size_t* vertex_indices_out,
-                                double* d_coeff_d_xi_out,
-                                size_t& num_vtx,
-                                MsqError& err ) const;
-
-  virtual 
-  void derivatives_at_mid_elem( unsigned nodebits,
-                                size_t* vertex_indices_out,
-                                double* d_coeff_d_xi_out,
-                                size_t& num_vtx,
-                                MsqError& err ) const;
+  void derivatives( unsigned loc_dim, 
+                    unsigned loc_num,
+                    unsigned nodebits,
+                    size_t* vertex_indices_out,
+                    MsqVector<2>* d_coeff_d_xi_out,
+                    size_t& num_vtx,
+                    MsqError& err ) const;
 };
 
 

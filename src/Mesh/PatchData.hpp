@@ -78,6 +78,8 @@ namespace Mesquite
   class Mesh;
   class MappingFunctionSet;
   class MappingFunction;
+  class MappingFunction2D;
+  class MappingFunction3D;
   
   /*!
     Contains all the mesh information necessary for
@@ -473,6 +475,8 @@ namespace Mesquite
     void set_mapping_functions( MappingFunctionSet* mfs );
     MappingFunctionSet* get_mapping_functions() const;
     const MappingFunction* get_mapping_function( EntityTopology type ) const;
+    const MappingFunction2D* get_mapping_function_2D( EntityTopology type ) const;
+    const MappingFunction3D* get_mapping_function_3D( EntityTopology type ) const;
     
     void get_sample_location( size_t element_index,
                               unsigned sample_dim,

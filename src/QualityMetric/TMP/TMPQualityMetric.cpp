@@ -76,102 +76,11 @@ void TMPQualityMetric::get_element_evaluations( PatchData& pd,
   get_elem_sample_points( pd, samplePts, elem, handles, err );
 }
 
-void TMPQualityMetric::mapping_function_derivs( PatchData& pd,
-                                                size_t handle,
-                                                size_t* indices,
-                                                double* derivs,
-                                                size_t& num_vtx,
-                                                MsqError& err )
-{
-  const unsigned s = ElemSampleQM::sample( handle );
-  const size_t   e = ElemSampleQM::  elem( handle );
-  const EntityTopology type = pd.element_by_index( e ).get_element_type();
-  const unsigned edim = TopologyInfo::dimension( type );
-  const unsigned ho_bits = pd.higher_order_node_bits( e );
-  
-  unsigned dim, num;
-  samplePts->location_from_sample_number( type, s, dim, num );
- 
-  const MappingFunction* func = pd.get_mapping_function( type );
-  if (!func) {
-    MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
-    return;
-  }
-  
-  switch (dim) {
-    case 0:
-      func->derivatives_at_corner( num, ho_bits, indices, derivs, num_vtx, err );
-      break;
-    case 1:
-      func->derivatives_at_mid_edge( num, ho_bits, indices, derivs, num_vtx, err );
-      break;
-    case 2:
-      if (edim != 2) {
-        func->derivatives_at_mid_face( num, ho_bits, indices, derivs, num_vtx, err );
-        break;
-      }
-    case 3:
-      func->derivatives_at_mid_elem( ho_bits, indices, derivs, num_vtx, err );
-      break;
-  }
-  MSQ_CHKERR(err);  
-}
-
-
-/** \brief Common code for metric evaluation.  Templatized on dimension so
- *         that it can be used for both 2D and 3D metrics.
- *
- * Given element index and the results of 'mapping_function_derivs'
- * (indices and derivs), do the following:
- * - Calculate Jacobian
- * - Remove entries from indices and derivs corresponding to fixed vertices
- * - As input, 'indices' contains indices into the element connectivity
- *   list.  Change these to indices into the PatchData vertex list.
- */
-template <int DIM> inline
-void jacobian( PatchData& pd,
-               size_t elem_idx,
-               size_t* indices,
-               double* derivs,
-               size_t& num_idx,
-               MsqMatrix<3,DIM>& J )
-{
-  MsqMeshEntity& elem = pd.element_by_index( elem_idx );
-  const size_t* conn = elem.get_vertex_index_array();
-
-  size_t w = 0;
-  Vector3D cols[DIM];
-  for (size_t i = 0; i < num_idx; ++i) {
-    size_t idx = conn[indices[i]];
-    Vector3D coords = pd.vertex_by_index( idx );
-    switch (DIM) {
-      case 3: cols[2] += derivs[DIM*i+2] * coords;
-      case 2: cols[1] += derivs[DIM*i+1] * coords;
-      case 1: cols[0] += derivs[DIM*i  ] * coords;
-      case 0: break;
-      default: assert(false);
-    }
-    
-    if (idx < pd.num_free_vertices()) {
-      indices[w] = idx;
-      switch (DIM) {
-        case 3: derivs[DIM*w+2] = derivs[DIM*i+2];
-        case 2: derivs[DIM*w+1] = derivs[DIM*i+1];
-        case 1: derivs[DIM*w  ] = derivs[DIM*i  ];
-        case 0: break;
-      }
-      ++w;
-    }
-  }
-  num_idx = w;
-  J = MsqMatrix<3,DIM>( reinterpret_cast< MsqMatrix<3,1>* >(cols) );
-}
-
 /**\brief Calculate gradient from derivatives of mapping function terms
  *        and derivatives of target metric. */
 template <int DIM> inline
 void gradient( size_t num_free_verts,
-               const MsqMatrix<DIM,1>* dNdxi,
+               const MsqVector<DIM>* dNdxi,
                const MsqMatrix<3,DIM>& dmdA,
                std::vector<Vector3D>& grad )
 {
@@ -185,7 +94,7 @@ void gradient( size_t num_free_verts,
  *        and derivatives of target metric. */
 template <int DIM,typename MAT> inline
 void hessian( size_t num_free_verts,
-              const MsqMatrix<DIM,1>* dNdxi,
+              const MsqVector<DIM>* dNdxi,
               const MsqMatrix<DIM,DIM>* d2mdA2,
               MAT* hess )
 {
@@ -291,8 +200,11 @@ bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
   const unsigned s = ElemSampleQM::sample( handle );
   const size_t   e = ElemSampleQM::  elem( handle );
   MsqMeshEntity& elem = pd.element_by_index( e );
-  unsigned edim = TopologyInfo::dimension( elem.get_element_type() );
-  mapping_function_derivs( pd, handle, indices, mDerivs, num_indices, err ); MSQ_ERRZERO(err);
+  EntityTopology type = elem.get_element_type();
+  unsigned edim = TopologyInfo::dimension( type );
+  unsigned dim, num;
+  samplePts->location_from_sample_number( type, s, dim, num );
+  unsigned bits = pd.higher_order_node_bits( e );
   
   bool rval;
   if (edim == 3) { // 3x3 or 3x2 targets ?
@@ -300,9 +212,15 @@ bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
       MSQ_SETERR(err)("No 3D metric for TMP metric.\n", MsqError::UNSUPPORTED_ELEMENT );
       return false;
     }
+    const MappingFunction3D* mf = pd.get_mapping_function_3D( type );
+    if (!mf) {
+      MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
+      return false;
+    }
 
     MsqMatrix<3,3> A, W;
-    jacobian<3>( pd, e, indices, mDerivs, num_indices, A );
+    mf->jacobian( pd, e, bits, dim, num, indices, mDerivs3D, num_indices, A, err );
+    MSQ_ERRZERO(err);
     targetCalc->get_3D_target( pd, e, samplePts, s, W, err ); MSQ_ERRZERO(err);
     rval = metric3D->evaluate( A, W, value, err ); MSQ_ERRZERO(err);
   }
@@ -311,9 +229,14 @@ bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
       MSQ_SETERR(err)("No 2D metric for TMP metric.\n", MsqError::UNSUPPORTED_ELEMENT );
       return false;
     }
+    const MappingFunction2D* mf = pd.get_mapping_function_2D( type );
+    if (!mf) {
+      MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
+      return false;
+    }
     
     MsqMatrix<3,2> J, Wp, RZ;
-    jacobian<2>( pd, e, indices, mDerivs, num_indices, J );
+    mf->jacobian( pd, e, bits, dim, num, indices, mDerivs2D, num_indices, J, err );
     targetCalc->get_2D_target( pd, e, samplePts, s, Wp, err ); MSQ_ERRZERO(err);
     
     MsqMatrix<2,2> W, A;
@@ -349,9 +272,12 @@ bool TMPQualityMetric::evaluate_with_gradient(
   const unsigned s = ElemSampleQM::sample( handle );
   const size_t   e = ElemSampleQM::  elem( handle );
   MsqMeshEntity& elem = pd.element_by_index( e );
-  unsigned edim = TopologyInfo::dimension( elem.get_element_type() );
+  EntityTopology type = elem.get_element_type();
+  unsigned edim = TopologyInfo::dimension( type );
+  unsigned dim, num;
+  samplePts->location_from_sample_number( type, s, dim, num );
   size_t num_idx = 0;
-  mapping_function_derivs( pd, handle, mIndices, mDerivs, num_idx, err ); MSQ_ERRZERO(err);
+  unsigned bits = pd.higher_order_node_bits( e );
   
   bool rval;
   if (edim == 3) { // 3x3 or 3x2 targets ?
@@ -359,32 +285,39 @@ bool TMPQualityMetric::evaluate_with_gradient(
       MSQ_SETERR(err)("No 3D metric for TMP metric.\n", MsqError::UNSUPPORTED_ELEMENT );
       return false;
     }
-  
+    const MappingFunction3D* mf = pd.get_mapping_function_3D( type );
+    if (!mf) {
+      MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
+      return false;
+    }
+
     MsqMatrix<3,3> A, W, dmdA;
-    jacobian<3>( pd, e, mIndices, mDerivs, num_idx, A );
+    mf->jacobian( pd, e, bits, dim, num, mIndices, mDerivs3D, num_idx, A, err );
+    MSQ_ERRZERO(err);
     targetCalc->get_3D_target( pd, e, samplePts, s, W, err ); MSQ_ERRZERO(err);
     rval = metric3D->evaluate_with_grad( A, W, value, dmdA, err ); MSQ_ERRZERO(err);
-    gradient<3>( num_idx, 
-                 reinterpret_cast< MsqMatrix<3,1>* >(&mDerivs[0]),
-                 dmdA, grad );
+    gradient<3>( num_idx, mDerivs3D, dmdA, grad );
   }
   else if (edim == 2) {
     if (!metric2D) {
       MSQ_SETERR(err)("No 2D metric for TMP metric.\n", MsqError::UNSUPPORTED_ELEMENT );
       return false;
     }
+    const MappingFunction2D* mf = pd.get_mapping_function_2D( type );
+    if (!mf) {
+      MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
+      return false;
+    }
     
     MsqMatrix<3,2> J, Wp, RZ;
-    jacobian<2>( pd, e, mIndices, mDerivs, num_idx, J );
+    mf->jacobian( pd, e, bits, dim, num, mIndices, mDerivs2D, num_idx, J, err );
     targetCalc->get_2D_target( pd, e, samplePts, s, Wp, err ); MSQ_ERRZERO(err);
     
-    MsqMatrix<2,2> W, dmdA, A;
+    MsqMatrix<2,2> W, A, dmdA;
     surface_to_2d( J, Wp, W, RZ );
     A = transpose(RZ) * J;
     rval = metric2D->evaluate_with_grad( A, W, value, dmdA, err ); MSQ_ERRZERO(err);
-    gradient<2>( num_idx, 
-                 reinterpret_cast< MsqMatrix<2,1>* >(&mDerivs[0]),
-                 RZ * dmdA, grad );
+    gradient<2>( num_idx, mDerivs2D, RZ*dmdA, grad );
   }
   else {
     assert(false);
@@ -422,9 +355,12 @@ bool TMPQualityMetric::evaluate_with_Hessian(
   const unsigned s = ElemSampleQM::sample( handle );
   const size_t   e = ElemSampleQM::  elem( handle );
   MsqMeshEntity& elem = pd.element_by_index( e );
-  unsigned edim = TopologyInfo::dimension( elem.get_element_type() );
+  EntityTopology type = elem.get_element_type();
+  unsigned edim = TopologyInfo::dimension( type );
+  unsigned dim, num;
+  samplePts->location_from_sample_number( type, s, dim, num );
   size_t num_idx = 0;
-  mapping_function_derivs( pd, handle, mIndices, mDerivs, num_idx, err ); MSQ_ERRZERO(err);
+  unsigned bits = pd.higher_order_node_bits( e );
   
   bool rval;
   if (edim == 3) { // 3x3 or 3x2 targets ?
@@ -432,36 +368,45 @@ bool TMPQualityMetric::evaluate_with_Hessian(
       MSQ_SETERR(err)("No 3D metric for TMP metric.\n", MsqError::UNSUPPORTED_ELEMENT );
       return false;
     }
-  
+    const MappingFunction3D* mf = pd.get_mapping_function_3D( type );
+    if (!mf) {
+      MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
+      return false;
+    }
+
     MsqMatrix<3,3> A, W, dmdA, d2mdA2[6];
-    jacobian<3>( pd, e, mIndices, mDerivs, num_idx, A );
+    mf->jacobian( pd, e, bits, dim, num, mIndices, mDerivs3D, num_idx, A, err );
+    MSQ_ERRZERO(err);
     targetCalc->get_3D_target( pd, e, samplePts, s, W, err ); MSQ_ERRZERO(err);
     rval = metric3D->evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); MSQ_ERRZERO(err);
-    const MsqMatrix<3,1>* dNdxi = reinterpret_cast< MsqMatrix<3,1>* >(&mDerivs[0]);
-    gradient<3>( num_idx, dNdxi, dmdA, grad );
+    gradient<3>( num_idx, mDerivs3D, dmdA, grad );
     Hessian.resize( num_idx*(num_idx+1)/2 );
-    hessian<3>( num_idx, dNdxi, d2mdA2, &Hessian[0] );
+    hessian<3>( num_idx, mDerivs3D, d2mdA2, &Hessian[0] );
   }
   else if (edim == 2) {
     if (!metric2D) {
       MSQ_SETERR(err)("No 2D metric for TMP metric.\n", MsqError::UNSUPPORTED_ELEMENT );
       return false;
     }
+    const MappingFunction2D* mf = pd.get_mapping_function_2D( type );
+    if (!mf) {
+      MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
+      return false;
+    }
     
     MsqMatrix<3,2> J, Wp, RZ;
-    jacobian<2>( pd, e, mIndices, mDerivs, num_idx, J );
+    mf->jacobian( pd, e, bits, dim, num, mIndices, mDerivs2D, num_idx, J, err );
     targetCalc->get_2D_target( pd, e, samplePts, s, Wp, err ); MSQ_ERRZERO(err);
     
-    MsqMatrix<2,2> W, dmdA, A, d2mdA2[3];
+    MsqMatrix<2,2> W, A, dmdA, d2mdA2[3];
     surface_to_2d( J, Wp, W, RZ );
     A = transpose(RZ) * J;
     rval = metric2D->evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); MSQ_ERRZERO(err);
-    const MsqMatrix<2,1>* dNdxi = reinterpret_cast< MsqMatrix<2,1>* >(&mDerivs[0]);
-    gradient<2>( num_idx, dNdxi, RZ * dmdA, grad );
+    gradient<2>( num_idx, mDerivs2D, RZ * dmdA, grad );
     const size_t n = num_idx*(num_idx+1)/2;
       // calculate 2D hessian
     hess2d.resize(n);
-    hessian<2>( num_idx, dNdxi, d2mdA2, &hess2d[0] );
+    hessian<2>( num_idx, mDerivs2D, d2mdA2, &hess2d[0] );
       // calculate surface hessian as transform of 2D hessian
     Hessian.resize(n);
     for (size_t i = 0; i < n; ++i)
@@ -505,9 +450,12 @@ bool TMPQualityMetric::evaluate_with_Hessian_diagonal(
   const unsigned s = ElemSampleQM::sample( handle );
   const size_t   e = ElemSampleQM::  elem( handle );
   MsqMeshEntity& elem = pd.element_by_index( e );
-  unsigned edim = TopologyInfo::dimension( elem.get_element_type() );
+  EntityTopology type = elem.get_element_type();
+  unsigned edim = TopologyInfo::dimension( type );
+  unsigned dim, num;
+  samplePts->location_from_sample_number( type, s, dim, num );
   size_t num_idx = 0;
-  mapping_function_derivs( pd, handle, mIndices, mDerivs, num_idx, err ); MSQ_ERRZERO(err);
+  unsigned bits = pd.higher_order_node_bits( e );
   
   bool rval;
   if (edim == 3) { // 3x3 or 3x2 targets ?
@@ -515,19 +463,24 @@ bool TMPQualityMetric::evaluate_with_Hessian_diagonal(
       MSQ_SETERR(err)("No 3D metric for TMP metric.\n", MsqError::UNSUPPORTED_ELEMENT );
       return false;
     }
-  
+    const MappingFunction3D* mf = pd.get_mapping_function_3D( type );
+    if (!mf) {
+      MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
+      return false;
+    }
+
     MsqMatrix<3,3> A, W, dmdA, d2mdA2[6];
-    jacobian<3>( pd, e, mIndices, mDerivs, num_idx, A );
+    mf->jacobian( pd, e, bits, dim, num, mIndices, mDerivs3D, num_idx, A, err );
+    MSQ_ERRZERO(err);
     targetCalc->get_3D_target( pd, e, samplePts, s, W, err ); MSQ_ERRZERO(err);
     rval = metric3D->evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); MSQ_ERRZERO(err);
-    const MsqMatrix<3,1>* dNdxi = reinterpret_cast< MsqMatrix<3,1>* >(&mDerivs[0]);
-    gradient<3>( num_idx, dNdxi, dmdA, grad );
+    gradient<3>( num_idx, mDerivs3D, dmdA, grad );
     
     diagonal.resize( num_idx );
     for (size_t i = 0; i < num_idx; ++i) {
       SymMatrix3D& H = diagonal[i];
       for (unsigned j = 0; j < 6; ++j)
-        H[j] = transpose( dNdxi[i] ) * d2mdA2[j] * dNdxi[i]; 
+        H[j] = transpose(mDerivs3D[i]) * d2mdA2[j] * mDerivs3D[i];
     }
   }
   else if (edim == 2) {
@@ -535,25 +488,29 @@ bool TMPQualityMetric::evaluate_with_Hessian_diagonal(
       MSQ_SETERR(err)("No 2D metric for TMP metric.\n", MsqError::UNSUPPORTED_ELEMENT );
       return false;
     }
+    const MappingFunction2D* mf = pd.get_mapping_function_2D( type );
+    if (!mf) {
+      MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
+      return false;
+    }
     
     MsqMatrix<3,2> J, Wp, RZ;
-    jacobian<2>( pd, e, mIndices, mDerivs, num_idx, J );
+    mf->jacobian( pd, e, bits, dim, num, mIndices, mDerivs2D, num_idx, J, err );
     targetCalc->get_2D_target( pd, e, samplePts, s, Wp, err ); MSQ_ERRZERO(err);
     
-    MsqMatrix<2,2> W, dmdA, A, d2mdA2[3];
+    MsqMatrix<2,2> W, A, dmdA, d2mdA2[3];
     surface_to_2d( J, Wp, W, RZ );
     A = transpose(RZ) * J;
     rval = metric2D->evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); MSQ_ERRZERO(err);
-    const MsqMatrix<2,1>* dNdxi = reinterpret_cast< MsqMatrix<2,1>* >(&mDerivs[0]);
-    gradient<2>( num_idx, dNdxi, RZ * dmdA, grad );
+    gradient<2>( num_idx, mDerivs2D, RZ * dmdA, grad );
 
     diagonal.resize( num_idx );
     for (size_t i = 0; i < num_idx; ++i) {
       MsqMatrix<2,2> block2d;
-      block2d(0,0) = transpose(dNdxi[i]) * d2mdA2[0] * dNdxi[i];
-      block2d(0,1) = transpose(dNdxi[i]) * d2mdA2[1] * dNdxi[i];
+      block2d(0,0) = transpose(mDerivs2D[i]) * d2mdA2[0] * mDerivs2D[i];
+      block2d(0,1) = transpose(mDerivs2D[i]) * d2mdA2[1] * mDerivs2D[i];
       block2d(1,0) = block2d(0,1);
-      block2d(1,1) = transpose(dNdxi[i]) * d2mdA2[2] * dNdxi[i];
+      block2d(1,1) = transpose(mDerivs2D[i]) * d2mdA2[2] * mDerivs2D[i];
       MsqMatrix<3,2> p = RZ * block2d;
       
       SymMatrix3D& H = diagonal[i];

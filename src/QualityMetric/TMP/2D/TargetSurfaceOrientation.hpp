@@ -35,6 +35,7 @@
 
 #include "Mesquite.hpp"
 #include "ElemSampleQM.hpp"
+#include "MsqMatrix.hpp"
 
 namespace Mesquite {
 
@@ -104,9 +105,9 @@ private:
   TargetCalculator* targetCalc;
   WeightCalculator* weightCalc;
   
-  enum { MAX_ELEM_NODES = 27 };
+  enum { MAX_ELEM_NODES = 9 };
   size_t mIndices[MAX_ELEM_NODES];
-  double mDerivs[3*MAX_ELEM_NODES];
+  MsqVector<2> mDerivs[MAX_ELEM_NODES];
 };
 
 } // namespace Mesquite

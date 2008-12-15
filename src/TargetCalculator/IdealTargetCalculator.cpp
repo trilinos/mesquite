@@ -53,7 +53,7 @@ bool IdealTargetCalculator:: get_3D_target( PatchData& pd,
   EntityTopology type = pd.element_by_index( element ).get_element_type();
   unsigned dim, num;
   pts->location_from_sample_number( type, sample, dim, num );
-  const MappingFunction* func = pd.get_mapping_function( type );
+  const MappingFunction3D* func = pd.get_mapping_function_3D( type );
 
   const Vector3D* verts = unit_element( type );
   if (!verts) {
@@ -76,7 +76,7 @@ bool IdealTargetCalculator:: get_2D_target( PatchData& pd,
   EntityTopology type = pd.element_by_index( element ).get_element_type();
   unsigned dim, num;
   pts->location_from_sample_number( type, sample, dim, num );
-  const MappingFunction* func = pd.get_mapping_function( type );
+  const MappingFunction2D* func = pd.get_mapping_function_2D( type );
 
   const Vector3D* verts = unit_element( type );
   if (!verts) {

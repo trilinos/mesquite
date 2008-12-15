@@ -33,7 +33,6 @@
 #include "Mesquite.hpp"
 #include "TargetSurfaceOrientation.hpp"
 #include "SamplePoints.hpp"
-#include "MsqMatrix.hpp"
 #include "MsqError.hpp"
 #include "Vector3D.hpp"
 #include "PatchData.hpp"
@@ -119,7 +118,7 @@ bool TargetSurfaceOrientation::evaluate_with_indices( PatchData& pd,
     return false;
   }
   
-  const MappingFunction* func = pd.get_mapping_function( type );
+  const MappingFunction2D* func = pd.get_mapping_function_2D( type );
   if (!func) {
     MSQ_SETERR(err)( "No mapping function for element type", MsqError::UNSUPPORTED_ELEMENT );
     return false;
@@ -129,33 +128,19 @@ bool TargetSurfaceOrientation::evaluate_with_indices( PatchData& pd,
   samplePts->location_from_sample_number( type, s, dim, num );
   const size_t* conn = elem.get_vertex_index_array();
   const unsigned bits = pd.higher_order_node_bits( e );
-  
-  switch (dim) {
-    case 0:
-      func->derivatives_at_corner( num, bits, indices, mDerivs, num_idx, err );
-      break;
-    case 1:
-      func->derivatives_at_mid_edge( num, bits, indices, mDerivs, num_idx, err );
-      break;
-    case 2:
-      func->derivatives_at_mid_elem( bits, indices, mDerivs, num_idx, err );
-      break;
-    default:
-      MSQ_SETERR(err)( MsqError::INTERNAL_ERROR );
-  }
+  func->derivatives( dim, num, bits, indices, mDerivs, num_idx, err ); 
   MSQ_ERRZERO( err );
   
     // Convert from indices into element connectivity list to
     // indices into vertex array in patch data.
   for (size_t i = 0; i < num_idx; ++i)
     indices[i] = conn[indices[i]];
-  
-  double* d = mDerivs;
+  MsqVector<2>* d = mDerivs;
   Vector3D c[2] = { Vector3D(0,0,0), Vector3D(0,0,0) };
-  for (size_t i = 0; i < num_idx; ++i) {
+  for (size_t i = 0; i < num_idx; ++i, ++d) {
     Vector3D coords = pd.vertex_by_index( indices[i] );
-    c[0] += *d * coords; ++d;
-    c[1] += *d * coords; ++d;
+    c[0] += (*d)[0] * coords;
+    c[1] += (*d)[1] * coords;
   }
   
   MsqMatrix<3,2> Wp;

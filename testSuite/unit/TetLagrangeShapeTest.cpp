@@ -242,26 +242,26 @@ static void get_coeff( unsigned nodebits, const double* rst, double* coeffs )
     }
 }
 
-static void get_derivs( unsigned nodebits, const double* rst, double* derivs )
+static void get_derivs( unsigned nodebits, const double* rst, MsqVector<3>* derivs )
 {
   for (int i = 0; i < 10; ++i) {
-    derivs[3*i  ] = (*dNdr[i])(rst[0], rst[1], rst[2]);
-    derivs[3*i+1] = (*dNds[i])(rst[0], rst[1], rst[2]);
-    derivs[3*i+2] = (*dNdt[i])(rst[0], rst[1], rst[2]);
+    derivs[i][0] = (*dNdr[i])(rst[0], rst[1], rst[2]);
+    derivs[i][1] = (*dNds[i])(rst[0], rst[1], rst[2]);
+    derivs[i][2] = (*dNdt[i])(rst[0], rst[1], rst[2]);
   }
   for (int i = 0; i < 6; ++i) 
     if (!(nodebits & 1<<i)) {
       int j = edges[i][0];
-      derivs[3*j  ] += 0.5 * derivs[3*i+12];
-      derivs[3*j+1] += 0.5 * derivs[3*i+13];
-      derivs[3*j+2] += 0.5 * derivs[3*i+14];
+      derivs[j][0] += 0.5 * derivs[i+4][0];
+      derivs[j][1] += 0.5 * derivs[i+4][1];
+      derivs[j][2] += 0.5 * derivs[i+4][2];
       j = edges[i][1];
-      derivs[3*j  ] += 0.5 * derivs[3*i+12];
-      derivs[3*j+1] += 0.5 * derivs[3*i+13];
-      derivs[3*j+2] += 0.5 * derivs[3*i+14];
-      derivs[3*i+12] = 0.0;
-      derivs[3*i+13] = 0.0;
-      derivs[3*i+14] = 0.0;
+      derivs[j][0] += 0.5 * derivs[i+4][0];
+      derivs[j][1] += 0.5 * derivs[i+4][1];
+      derivs[j][2] += 0.5 * derivs[i+4][2];
+      derivs[i+4][0] = 0.0;
+      derivs[i+4][1] = 0.0;
+      derivs[i+4][2] = 0.0;
     }
 }
 
@@ -278,13 +278,12 @@ static void check_valid_indices( const size_t* vertices, size_t num_vtx )
   }
 }
 
-static void check_no_zeros( const double* derivs, size_t num_vtx )
+static void check_no_zeros( const MsqVector<3>* derivs, size_t num_vtx )
 {
-  unsigned i = 0;
-  while (i < 3*num_vtx) {
-    double dr = derivs[i++]; 
-    double ds = derivs[i++]; 
-    double dt = derivs[i++]; 
+  for (unsigned i = 0; i < num_vtx; ++i) {
+    double dr = derivs[i][0];
+    double ds = derivs[i][1]; 
+    double dt = derivs[i][2];
     CPPUNIT_ASSERT( (fabs(dr) > 1e-6) || (fabs(ds) > 1e-6) || (fabs(dt) > 1e-6) );
   }
 }
@@ -309,59 +308,58 @@ static void compare_coefficients( const double* coeffs,
 
 static void compare_derivatives( const size_t* vertices,
                                  size_t num_vtx,
-                                 const double* derivs,
-                                 const double* expected_derivs,
+                                 const MsqVector<3>* derivs,
+                                 const MsqVector<3>* expected_derivs,
                                  unsigned loc, unsigned bits )
 {
   check_valid_indices( vertices, num_vtx );
   check_no_zeros( derivs, num_vtx );
-  double expanded_derivs[30];
+  MsqVector<3> expanded_derivs[30];
   memset( expanded_derivs, 0, sizeof(expanded_derivs) );
-  for (unsigned i = 0; i < num_vtx; ++i) {
-    expanded_derivs[3*vertices[i]  ] = derivs[3*i  ];
-    expanded_derivs[3*vertices[i]+1] = derivs[3*i+1];
-    expanded_derivs[3*vertices[i]+2] = derivs[3*i+2];
-  }
+  for (unsigned i = 0; i < num_vtx; ++i) 
+    expanded_derivs[vertices[i]] = derivs[i];
   
-  ASSERT_VALUES_EQUAL( expected_derivs[ 0], expanded_derivs[ 0], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_derivs[ 1], expanded_derivs[ 1], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_derivs[ 2], expanded_derivs[ 2], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_derivs[0][0], expanded_derivs[0][0], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_derivs[0][1], expanded_derivs[0][1], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_derivs[0][2], expanded_derivs[0][2], loc, bits );
   
-  ASSERT_VALUES_EQUAL( expected_derivs[ 3], expanded_derivs[ 3], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_derivs[ 4], expanded_derivs[ 4], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_derivs[ 5], expanded_derivs[ 5], loc, bits );
+  if (fabs(expected_derivs[1][0] - expanded_derivs[1][0]) > 1e-6)
+    abort();
+  ASSERT_VALUES_EQUAL( expected_derivs[1][0], expanded_derivs[1][0], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_derivs[1][1], expanded_derivs[1][1], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_derivs[1][2], expanded_derivs[1][2], loc, bits );
   
-  ASSERT_VALUES_EQUAL( expected_derivs[ 6], expanded_derivs[ 6], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_derivs[ 7], expanded_derivs[ 7], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_derivs[ 8], expanded_derivs[ 8], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_derivs[2][0], expanded_derivs[2][0], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_derivs[2][1], expanded_derivs[2][1], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_derivs[2][2], expanded_derivs[2][2], loc, bits );
   
-  ASSERT_VALUES_EQUAL( expected_derivs[ 9], expanded_derivs[ 9], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_derivs[10], expanded_derivs[10], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_derivs[11], expanded_derivs[11], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_derivs[3][0], expanded_derivs[3][0], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_derivs[3][1], expanded_derivs[3][1], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_derivs[3][2], expanded_derivs[3][2], loc, bits );
   
-  ASSERT_VALUES_EQUAL( expected_derivs[12], expanded_derivs[12], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_derivs[13], expanded_derivs[13], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_derivs[14], expanded_derivs[14], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_derivs[4][0], expanded_derivs[4][0], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_derivs[4][1], expanded_derivs[4][1], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_derivs[4][2], expanded_derivs[4][2], loc, bits );
   
-  ASSERT_VALUES_EQUAL( expected_derivs[15], expanded_derivs[15], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_derivs[16], expanded_derivs[16], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_derivs[17], expanded_derivs[17], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_derivs[5][0], expanded_derivs[5][0], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_derivs[5][1], expanded_derivs[5][1], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_derivs[5][2], expanded_derivs[5][2], loc, bits );
   
-  ASSERT_VALUES_EQUAL( expected_derivs[18], expanded_derivs[18], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_derivs[19], expanded_derivs[19], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_derivs[20], expanded_derivs[20], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_derivs[6][0], expanded_derivs[6][0], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_derivs[6][1], expanded_derivs[6][1], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_derivs[6][2], expanded_derivs[6][2], loc, bits );
   
-  ASSERT_VALUES_EQUAL( expected_derivs[21], expanded_derivs[21], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_derivs[22], expanded_derivs[22], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_derivs[23], expanded_derivs[23], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_derivs[7][0], expanded_derivs[7][0], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_derivs[7][1], expanded_derivs[7][1], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_derivs[7][2], expanded_derivs[7][2], loc, bits );
   
-  ASSERT_VALUES_EQUAL( expected_derivs[24], expanded_derivs[24], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_derivs[25], expanded_derivs[25], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_derivs[26], expanded_derivs[26], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_derivs[8][0], expanded_derivs[8][0], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_derivs[8][1], expanded_derivs[8][1], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_derivs[8][2], expanded_derivs[8][2], loc, bits );
   
-  ASSERT_VALUES_EQUAL( expected_derivs[27], expanded_derivs[27], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_derivs[28], expanded_derivs[28], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_derivs[29], expanded_derivs[29], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_derivs[9][0], expanded_derivs[9][0], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_derivs[9][1], expanded_derivs[9][1], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_derivs[9][2], expanded_derivs[9][2], loc, bits );
 }
 
 void TetLagrangeShapeTest::test_corner_coeff( int corner, unsigned nodebits )
@@ -373,7 +371,7 @@ void TetLagrangeShapeTest::test_corner_coeff( int corner, unsigned nodebits )
   
   double coeff[100];
   size_t n = 29;
-  sf.coefficients_at_corner( corner, nodebits, coeff, n, err );
+  sf.coefficients( 0, corner, nodebits, coeff, n, err );
   CPPUNIT_ASSERT( !err );
   
   compare_coefficients( coeff, expected, n, corner, nodebits );
@@ -388,7 +386,7 @@ void TetLagrangeShapeTest::test_edge_coeff( int edge, unsigned nodebits )
   
   double coeff[100];
   size_t n = 29;
-  sf.coefficients_at_mid_edge( edge, nodebits, coeff, n, err );
+  sf.coefficients( 1, edge, nodebits, coeff, n, err );
   CPPUNIT_ASSERT( !err );
   
   compare_coefficients( coeff, expected, n, edge+4, nodebits );
@@ -403,7 +401,7 @@ void TetLagrangeShapeTest::test_face_coeff( int face, unsigned nodebits )
   
   double coeff[100];
   size_t n = 29;
-  sf.coefficients_at_mid_face( face, nodebits, coeff, n, err );
+  sf.coefficients( 2, face, nodebits, coeff, n, err );
   CPPUNIT_ASSERT( !err );
   
   compare_coefficients( coeff, expected, n, face+10, nodebits );
@@ -418,7 +416,7 @@ void TetLagrangeShapeTest::test_mid_coeff( unsigned nodebits )
   
   double coeff[100];
   size_t n = 29;
-  sf.coefficients_at_mid_elem( nodebits, coeff, n, err );
+  sf.coefficients( 3, 0, nodebits, coeff, n, err );
   CPPUNIT_ASSERT( !err );
   
   compare_coefficients( coeff, expected, n, 14, nodebits );
@@ -428,12 +426,12 @@ void TetLagrangeShapeTest::test_corner_derivs( int corner, unsigned nodebits )
 {
   MsqPrintError err(std::cout);
   
-  double expected[30];
+  MsqVector<3> expected[10];
   get_derivs( nodebits, rst_corner[corner], expected );
   
-  double derivs[100];
+  MsqVector<3> derivs[100];
   size_t vertices[100], n = 29;
-  sf.derivatives_at_corner( corner, nodebits, vertices, derivs, n, err );
+  sf.derivatives( 0, corner, nodebits, vertices, derivs, n, err );
   CPPUNIT_ASSERT( !err );
   
   compare_derivatives( vertices, n, derivs, expected, corner, nodebits );
@@ -443,12 +441,12 @@ void TetLagrangeShapeTest::test_edge_derivs( int edge, unsigned nodebits )
 {
   MsqPrintError err(std::cout);
   
-  double expected[30];
+  MsqVector<3> expected[10];
   get_derivs( nodebits, rst_edge[edge], expected );
   
-  double derivs[100];
+  MsqVector<3> derivs[100];
   size_t vertices[100], n = 29;
-  sf.derivatives_at_mid_edge( edge, nodebits, vertices, derivs, n, err );
+  sf.derivatives( 1, edge, nodebits, vertices, derivs, n, err );
   CPPUNIT_ASSERT( !err );
   
   compare_derivatives( vertices, n, derivs, expected, edge+4, nodebits );
@@ -458,12 +456,12 @@ void TetLagrangeShapeTest::test_face_derivs( int face, unsigned nodebits )
 {
   MsqPrintError err(std::cout);
   
-  double expected[30];
+  MsqVector<3> expected[10];
   get_derivs( nodebits, rst_face[face], expected );
   
-  double derivs[100];
+  MsqVector<3> derivs[100];
   size_t vertices[100], n = 29;
-  sf.derivatives_at_mid_face( face, nodebits, vertices, derivs, n, err );
+  sf.derivatives( 2, face, nodebits, vertices, derivs, n, err );
   CPPUNIT_ASSERT( !err );
   
   compare_derivatives( vertices, n, derivs, expected, face+10, nodebits );
@@ -473,12 +471,12 @@ void TetLagrangeShapeTest::test_mid_derivs( unsigned nodebits )
 {
   MsqPrintError err(std::cout);
   
-  double expected[30];
+  MsqVector<3> expected[10];
   get_derivs( nodebits, rst_mid, expected );
   
-  double derivs[100];
+  MsqVector<3> derivs[100];
   size_t vertices[100], n = 29;
-  sf.derivatives_at_mid_elem( nodebits, vertices, derivs, n, err );
+  sf.derivatives( 3, 0, nodebits, vertices, derivs, n, err );
   CPPUNIT_ASSERT( !err );
   
   compare_derivatives( vertices, n, derivs, expected, 14, nodebits );
@@ -568,38 +566,38 @@ void TetLagrangeShapeTest::test_invalid_nodebits_coeff( unsigned bits )
   double coeff[100];
   size_t n;
   
-  sf.coefficients_at_corner( 0, bits, coeff, n, err );
+  sf.coefficients( 0, 0, bits, coeff, n, err );
   CPPUNIT_ASSERT( err );
-  sf.coefficients_at_corner( 1, bits, coeff, n, err );
+  sf.coefficients( 0, 1, bits, coeff, n, err );
   CPPUNIT_ASSERT( err );
-  sf.coefficients_at_corner( 2, bits, coeff, n, err );
+  sf.coefficients( 0, 2, bits, coeff, n, err );
   CPPUNIT_ASSERT( err );
-  sf.coefficients_at_corner( 3, bits, coeff, n, err );
-  CPPUNIT_ASSERT( err );
-  
-  sf.coefficients_at_mid_edge( 0, bits, coeff, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.coefficients_at_mid_edge( 1, bits, coeff, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.coefficients_at_mid_edge( 2, bits, coeff, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.coefficients_at_mid_edge( 3, bits, coeff, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.coefficients_at_mid_edge( 4, bits, coeff, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.coefficients_at_mid_edge( 5, bits, coeff, n, err );
+  sf.coefficients( 0, 3, bits, coeff, n, err );
   CPPUNIT_ASSERT( err );
   
-  sf.coefficients_at_mid_face( 0, bits, coeff, n, err );
+  sf.coefficients( 1, 0, bits, coeff, n, err );
   CPPUNIT_ASSERT( err );
-  sf.coefficients_at_mid_face( 1, bits, coeff, n, err );
+  sf.coefficients( 1, 1, bits, coeff, n, err );
   CPPUNIT_ASSERT( err );
-  sf.coefficients_at_mid_face( 2, bits, coeff, n, err );
+  sf.coefficients( 1, 2, bits, coeff, n, err );
   CPPUNIT_ASSERT( err );
-  sf.coefficients_at_mid_face( 3, bits, coeff, n, err );
+  sf.coefficients( 1, 3, bits, coeff, n, err );
+  CPPUNIT_ASSERT( err );
+  sf.coefficients( 1, 4, bits, coeff, n, err );
+  CPPUNIT_ASSERT( err );
+  sf.coefficients( 1, 5, bits, coeff, n, err );
   CPPUNIT_ASSERT( err );
   
-  sf.coefficients_at_mid_elem( bits, coeff, n, err );
+  sf.coefficients( 2, 0, bits, coeff, n, err );
+  CPPUNIT_ASSERT( err );
+  sf.coefficients( 2, 1, bits, coeff, n, err );
+  CPPUNIT_ASSERT( err );
+  sf.coefficients( 2, 2, bits, coeff, n, err );
+  CPPUNIT_ASSERT( err );
+  sf.coefficients( 2, 3, bits, coeff, n, err );
+  CPPUNIT_ASSERT( err );
+  
+  sf.coefficients( 3, 0, bits, coeff, n, err );
   CPPUNIT_ASSERT( err );
 }
 
@@ -607,40 +605,40 @@ void TetLagrangeShapeTest::test_invalid_nodebits_deriv( unsigned bits )
 {
   MsqError err;
   size_t verts[100], n;
-  double derivs[100];
+  MsqVector<3> derivs[100];
   
-  sf.derivatives_at_corner( 0, bits, verts, derivs, n, err );
+  sf.derivatives( 0, 0, bits, verts, derivs, n, err );
   CPPUNIT_ASSERT( err );
-  sf.derivatives_at_corner( 1, bits, verts, derivs, n, err );
+  sf.derivatives( 0, 1, bits, verts, derivs, n, err );
   CPPUNIT_ASSERT( err );
-  sf.derivatives_at_corner( 2, bits, verts, derivs, n, err );
+  sf.derivatives( 0, 2, bits, verts, derivs, n, err );
   CPPUNIT_ASSERT( err );
-  sf.derivatives_at_corner( 3, bits, verts, derivs, n, err );
-  CPPUNIT_ASSERT( err );
-  
-  sf.derivatives_at_mid_edge( 0, bits, verts, derivs, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.derivatives_at_mid_edge( 1, bits, verts, derivs, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.derivatives_at_mid_edge( 2, bits, verts, derivs, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.derivatives_at_mid_edge( 3, bits, verts, derivs, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.derivatives_at_mid_edge( 4, bits, verts, derivs, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.derivatives_at_mid_edge( 5, bits, verts, derivs, n, err );
+  sf.derivatives( 0, 3, bits, verts, derivs, n, err );
   CPPUNIT_ASSERT( err );
   
-  sf.derivatives_at_mid_face( 0, bits, verts, derivs, n, err );
+  sf.derivatives( 1, 0, bits, verts, derivs, n, err );
   CPPUNIT_ASSERT( err );
-  sf.derivatives_at_mid_face( 1, bits, verts, derivs, n, err );
+  sf.derivatives( 1, 1, bits, verts, derivs, n, err );
   CPPUNIT_ASSERT( err );
-  sf.derivatives_at_mid_face( 2, bits, verts, derivs, n, err );
+  sf.derivatives( 1, 2, bits, verts, derivs, n, err );
   CPPUNIT_ASSERT( err );
-  sf.derivatives_at_mid_face( 3, bits, verts, derivs, n, err );
+  sf.derivatives( 1, 3, bits, verts, derivs, n, err );
+  CPPUNIT_ASSERT( err );
+  sf.derivatives( 1, 4, bits, verts, derivs, n, err );
+  CPPUNIT_ASSERT( err );
+  sf.derivatives( 1, 5, bits, verts, derivs, n, err );
   CPPUNIT_ASSERT( err );
   
-  sf.derivatives_at_mid_elem( bits, verts, derivs, n, err );
+  sf.derivatives( 2, 0, bits, verts, derivs, n, err );
+  CPPUNIT_ASSERT( err );
+  sf.derivatives( 2, 1, bits, verts, derivs, n, err );
+  CPPUNIT_ASSERT( err );
+  sf.derivatives( 2, 2, bits, verts, derivs, n, err );
+  CPPUNIT_ASSERT( err );
+  sf.derivatives( 2, 3, bits, verts, derivs, n, err );
+  CPPUNIT_ASSERT( err );
+  
+  sf.derivatives( 3, 0, bits, verts, derivs, n, err );
   CPPUNIT_ASSERT( err );
 }
 

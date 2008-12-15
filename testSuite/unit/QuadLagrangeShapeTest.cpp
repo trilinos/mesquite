@@ -268,11 +268,11 @@ static void check_valid_indices( const size_t* vertices, size_t num_vtx, unsigne
       CPPUNIT_ASSERT( bits & (1<<(vertcopy[i]-4)) );
 }
 
-static void check_no_zeros( const double* derivs, size_t num_vtx )
+static void check_no_zeros( const MsqVector<2>* derivs, size_t num_vtx )
 {
   for (unsigned i = 0; i < num_vtx; ++i) {
-    double dxi = derivs[2*i];
-    double deta = derivs[2*i+1];
+    double dxi = derivs[i][0];
+    double deta = derivs[i][1];
     CPPUNIT_ASSERT( fabs(dxi) > 1e-6 || fabs(deta) > 1e-6 );
   }
 }
@@ -310,7 +310,7 @@ static void compare_coefficients( const double* coeffs,
 
 static void compare_derivatives( const size_t* vertices,
                                  size_t num_vtx,
-                                 const double* derivs,
+                                 const MsqVector<2>* derivs,
                                  const double* expected_dxi,
                                  const double* expected_deta,
                                  unsigned loc, unsigned bits )
@@ -325,8 +325,8 @@ static void compare_derivatives( const size_t* vertices,
   std::fill( expanded_dxi, expanded_dxi+9, 0.0 );
   std::fill( expanded_deta, expanded_deta+9, 0.0 );
   for (unsigned i = 0; i < num_vtx; ++i) {
-    expanded_dxi [vertices[i]] = derivs[2*i  ];
-    expanded_deta[vertices[i]] = derivs[2*i+1];
+    expanded_dxi [vertices[i]] = derivs[i][0];
+    expanded_deta[vertices[i]] = derivs[i][1];
   }
   
   ASSERT_VALUES_EQUAL( expected_dxi[0], expanded_dxi[0], loc, bits );
@@ -359,7 +359,7 @@ void QuadLagrangeShapeTest::test_corner_coeff( int corner, unsigned nodebits )
   
   double coeff[100];
   size_t num_coeff = 11;
-  sf.coefficients_at_corner( corner, nodebits, coeff, num_coeff, err );
+  sf.coefficients( 0, corner, nodebits, coeff, num_coeff, err );
   CPPUNIT_ASSERT( !err );
   
   compare_coefficients( coeff, num_coeff, expected, corner, nodebits );
@@ -374,7 +374,7 @@ void QuadLagrangeShapeTest::test_edge_coeff( int edge, unsigned nodebits )
   
   double coeff[100];
   size_t num_coeff = 11;
-  sf.coefficients_at_mid_edge( edge, nodebits, coeff, num_coeff, err );
+  sf.coefficients( 1, edge, nodebits, coeff, num_coeff, err );
   CPPUNIT_ASSERT( !err );
   
   compare_coefficients( coeff, num_coeff, expected, edge+4, nodebits );
@@ -389,7 +389,7 @@ void QuadLagrangeShapeTest::test_mid_coeff( unsigned nodebits )
   
   double coeff[100];
   size_t num_coeff = 11;
-  sf.coefficients_at_mid_elem( nodebits, coeff, num_coeff, err );
+  sf.coefficients( 2, 0, nodebits, coeff, num_coeff, err );
   CPPUNIT_ASSERT( !err );
   
   compare_coefficients( coeff, num_coeff, expected, 8, nodebits );
@@ -404,8 +404,8 @@ void QuadLagrangeShapeTest::test_corner_derivs( int corner, unsigned nodebits )
   get_partial_wrt_eta( nodebits, corners[corner][XI], corners[corner][ETA], expected_deta);
   
   size_t vertices[100], num_vtx = 23;
-  double derivs[100];
-  sf.derivatives_at_corner( corner, nodebits, vertices, derivs, num_vtx, err );
+  MsqVector<2> derivs[100];
+  sf.derivatives( 0, corner, nodebits, vertices, derivs, num_vtx, err );
   CPPUNIT_ASSERT( !err );
   
   compare_derivatives( vertices, num_vtx, derivs, expected_dxi, expected_deta, corner, nodebits );
@@ -420,8 +420,8 @@ void QuadLagrangeShapeTest::test_edge_derivs( int edge, unsigned nodebits )
   get_partial_wrt_eta( nodebits, midedge[edge][XI], midedge[edge][ETA], expected_deta);
   
   size_t vertices[100], num_vtx = 23;
-  double derivs[100];
-  sf.derivatives_at_mid_edge( edge, nodebits, vertices, derivs, num_vtx, err );
+  MsqVector<2> derivs[100];
+  sf.derivatives( 1, edge, nodebits, vertices, derivs, num_vtx, err );
   CPPUNIT_ASSERT( !err );
   
   compare_derivatives( vertices, num_vtx, derivs, expected_dxi, expected_deta, edge+4, nodebits );
@@ -436,8 +436,8 @@ void QuadLagrangeShapeTest::test_mid_derivs( unsigned nodebits )
   get_partial_wrt_eta( nodebits, midelem[XI], midelem[ETA], expected_deta);
   
   size_t vertices[100], num_vtx = 23;
-  double derivs[100];
-  sf.derivatives_at_mid_elem( nodebits, vertices, derivs, num_vtx, err );
+  MsqVector<2> derivs[100];
+  sf.derivatives( 2, 0, nodebits, vertices, derivs, num_vtx, err );
   CPPUNIT_ASSERT( !err );
   
   compare_derivatives( vertices, num_vtx, derivs, expected_dxi, expected_deta, 8, nodebits );

@@ -35,6 +35,7 @@
 
 #include "Mesquite.hpp"
 #include "ElemSampleQM.hpp"
+#include "MsqMatrix.hpp"
 
 namespace Mesquite {
 
@@ -43,7 +44,6 @@ class WeightCalculator;
 class SamplePoints;
 class TargetMetric2D;
 class TargetMetric3D;
-template <unsigned R, unsigned C> class MsqMatrix;
 
 /**\brief Compare targets to mapping function Jacobian matrices
  *
@@ -177,14 +177,6 @@ private:
                  size_t& num_indices,
                  MsqError& err );
 
-  /**\brief Call MappingFunction::derivatives_at_**/
-  void mapping_function_derivs( PatchData& pd,
-                                size_t eval_handle,
-                                size_t* indices_out,
-                                double* derivs_out,
-                                size_t& num_idx_out,
-                                MsqError& err );
-
   const SamplePoints* samplePts;
   TargetCalculator* targetCalc;
   WeightCalculator* weightCalc;
@@ -193,8 +185,9 @@ private:
   
   enum { MAX_ELEM_NODES = 27 };
   size_t mIndices[MAX_ELEM_NODES];
-  double mDerivs[3*MAX_ELEM_NODES];
   msq_std::vector< MsqMatrix<2,2> > hess2d;
+  MsqVector<3> mDerivs3D[MAX_ELEM_NODES];
+  MsqVector<2> mDerivs2D[MAX_ELEM_NODES];
 };
 
 } // namespace Mesquite

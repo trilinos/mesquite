@@ -51,34 +51,20 @@ static const int faces[5][5] = { { 4, 0, 1, 4, 3 },
                                  { 3, 0, 1, 2,-1 },
                                  { 3, 3, 4, 5,-1 } };
 
-void LinearPrism::coefficients_at_corner( unsigned corner,
-                                          unsigned nodebits,
-                                          double* coeff_out,
-                                          size_t& num_coeff,
-                                          MsqError& err) const
+static void coefficients_at_corner( unsigned corner,
+                                    double* coeff_out,
+                                    size_t& num_coeff )
 {
-  if (nodebits) {
-    MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
-    return;
-  }
-  
   num_coeff = 6;
   coeff_out[0] = coeff_out[1] = coeff_out[2] = 0.0;
   coeff_out[3] = coeff_out[4] = coeff_out[5] = 0.0;
   coeff_out[corner] = 1.0;
 }
 
-void LinearPrism::coefficients_at_mid_edge( unsigned edge,
-                                            unsigned nodebits,
-                                            double* coeff_out,
-                                            size_t& num_coeff,
-                                            MsqError& err) const
+static void coefficients_at_mid_edge( unsigned edge,
+                                      double* coeff_out,
+                                      size_t& num_coeff )
 {
-  if (nodebits) {
-    MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
-    return;
-  }
-  
   num_coeff = 6;
   coeff_out[0] = coeff_out[1] = coeff_out[2] = 0.0;
   coeff_out[3] = coeff_out[4] = coeff_out[5] = 0.0;
@@ -86,17 +72,10 @@ void LinearPrism::coefficients_at_mid_edge( unsigned edge,
   coeff_out[edge_end[edge]] = 0.5;
 }
 
-void LinearPrism::coefficients_at_mid_face( unsigned face,
-                                            unsigned nodebits,
-                                            double* coeff_out,
-                                            size_t& num_coeff,
-                                            MsqError& err) const
+static void coefficients_at_mid_face( unsigned face,
+                                      double* coeff_out,
+                                      size_t& num_coeff )
 {
-  if (nodebits) {
-    MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
-    return;
-  }
-  
   num_coeff = 6;
   coeff_out[0] = coeff_out[1] = coeff_out[2] = 0.0;
   coeff_out[3] = coeff_out[4] = coeff_out[5] = 0.0;
@@ -114,16 +93,9 @@ void LinearPrism::coefficients_at_mid_face( unsigned face,
   coeff_out[faces[face][3]] = f;
 }
 
-void LinearPrism::coefficients_at_mid_elem( unsigned nodebits,
-                                            double* coeff_out,
-                                            size_t& num_coeff,
-                                            MsqError& err) const
+static void coefficients_at_mid_elem( double* coeff_out,
+                                      size_t& num_coeff )
 {
-  if (nodebits) {
-    MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
-    return;
-  }
-  
   num_coeff = 6;
   const double sixth = 1.0/6.0;
   coeff_out[0] = sixth;
@@ -134,18 +106,43 @@ void LinearPrism::coefficients_at_mid_elem( unsigned nodebits,
   coeff_out[5] = sixth;
 }
 
-void LinearPrism::derivatives_at_corner( unsigned corner, 
-                                         unsigned nodebits,
-                                         size_t* vertex_indices_out,
-                                         double* d_coeff_d_xi_out,
-                                         size_t& num_vtx,
-                                         MsqError& err ) const
+void LinearPrism::coefficients( unsigned loc_dim,
+                                unsigned loc_num,
+                                unsigned nodebits,
+                                double* coeff_out,
+                                size_t& num_coeff,
+                                MsqError& err ) const
 {
   if (nodebits) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
     return;
   }
   
+  switch (loc_dim) {
+    case 0:
+      coefficients_at_corner( loc_num, coeff_out, num_coeff );
+      break;
+    case 1:
+      coefficients_at_mid_edge( loc_num, coeff_out, num_coeff );
+      break;
+    case 2:
+      coefficients_at_mid_face( loc_num, coeff_out, num_coeff );
+      break;
+    case 3:
+      coefficients_at_mid_elem( coeff_out, num_coeff );
+      break;
+    default:
+      MSQ_SETERR(err)("Invalid/unsupported logical dimension",MsqError::INVALID_ARG);
+  }
+}
+
+                                
+
+static void derivatives_at_corner( unsigned corner, 
+                                   size_t* vertex_indices_out,
+                                   MsqVector<3>* d_coeff_d_xi_out,
+                                   size_t& num_vtx )
+{
   int tri = (corner / 3); // 0 for xi=-1, 1 for xi=1
   int tv = corner % 3;    // offset of corner with xi=+/-1 triangle
 
@@ -158,37 +155,29 @@ void LinearPrism::derivatives_at_corner( unsigned corner,
   vertex_indices_out[3] = 3 - 6*tri + corner;
   
     // three vertices within the xi=+/-1 triangle
-  d_coeff_d_xi_out[ 0] =  0.0;
-  d_coeff_d_xi_out[ 1] = -1.0;
-  d_coeff_d_xi_out[ 2] = -1.0;
-  d_coeff_d_xi_out[ 3] =  0.0;
-  d_coeff_d_xi_out[ 4] =  1.0;
-  d_coeff_d_xi_out[ 5] =  0.0;
-  d_coeff_d_xi_out[ 6] =  0.0;
-  d_coeff_d_xi_out[ 7] =  0.0;
-  d_coeff_d_xi_out[ 8] =  1.0;
+  d_coeff_d_xi_out[0][0] =  0.0;
+  d_coeff_d_xi_out[0][1] = -1.0;
+  d_coeff_d_xi_out[0][2] = -1.0;
+  d_coeff_d_xi_out[1][0] =  0.0;
+  d_coeff_d_xi_out[1][1] =  1.0;
+  d_coeff_d_xi_out[1][2] =  0.0;
+  d_coeff_d_xi_out[2][0] =  0.0;
+  d_coeff_d_xi_out[2][1] =  0.0;
+  d_coeff_d_xi_out[2][2] =  1.0;
     // fix dxi value for input corner
-  d_coeff_d_xi_out[3*tv] = tri - 0.5; 
+  d_coeff_d_xi_out[tv][0] = tri - 0.5; 
     // vertex adjacent to corner in other triangle
-  d_coeff_d_xi_out[ 9] =  0.5 - tri;
-  d_coeff_d_xi_out[10] =  0.0;
-  d_coeff_d_xi_out[11] =  0.0;
+  d_coeff_d_xi_out[3][0] =  0.5 - tri;
+  d_coeff_d_xi_out[3][1] =  0.0;
+  d_coeff_d_xi_out[3][2] =  0.0;
 }
 
 
-void LinearPrism::derivatives_at_mid_edge( unsigned edge, 
-                                           unsigned nodebits,
-                                           size_t* vertex_indices_out,
-                                           double* d_coeff_d_xi_out,
-                                           size_t& num_vtx,
-                                           MsqError& err ) const
+static void derivatives_at_mid_edge( unsigned edge, 
+                                     size_t* vertex_indices_out,
+                                     MsqVector<3>* d_coeff_d_xi_out,
+                                     size_t& num_vtx )
 {
-  if (nodebits) {
-    MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
-    return;
-  }
-  
-  
   int opp; // vertex opposite edge in same triagle
   
   switch (edge/3) {
@@ -205,24 +194,24 @@ void LinearPrism::derivatives_at_mid_edge( unsigned edge,
       vertex_indices_out[4] = 3 + (edge+1)%3;
 
         // vertices in this xi = -1 triagnle
-      d_coeff_d_xi_out[ 0] = -0.25;
-      d_coeff_d_xi_out[ 1] = -1.00;
-      d_coeff_d_xi_out[ 2] = -1.00;
-      d_coeff_d_xi_out[ 3] = -0.25;
-      d_coeff_d_xi_out[ 4] =  1.00;
-      d_coeff_d_xi_out[ 5] =  0.00;
-      d_coeff_d_xi_out[ 6] = -0.25;
-      d_coeff_d_xi_out[ 7] =  0.00;
-      d_coeff_d_xi_out[ 8] =  1.00;
+      d_coeff_d_xi_out[0][0] = -0.25;
+      d_coeff_d_xi_out[0][1] = -1.00;
+      d_coeff_d_xi_out[0][2] = -1.00;
+      d_coeff_d_xi_out[1][0] = -0.25;
+      d_coeff_d_xi_out[1][1] =  1.00;
+      d_coeff_d_xi_out[1][2] =  0.00;
+      d_coeff_d_xi_out[2][0] = -0.25;
+      d_coeff_d_xi_out[2][1] =  0.00;
+      d_coeff_d_xi_out[2][2] =  1.00;
         // clear dxi for vertex opposite edge in xi = -1 triangle
-      d_coeff_d_xi_out[3*opp] = 0.0;
+      d_coeff_d_xi_out[opp][0] = 0.0;
         // adjacent vertices in xi = 1 triangle
-      d_coeff_d_xi_out[ 9] =  0.25;
-      d_coeff_d_xi_out[10] =  0.00;
-      d_coeff_d_xi_out[11] =  0.00;
-      d_coeff_d_xi_out[12] =  0.25;
-      d_coeff_d_xi_out[13] =  0.00;
-      d_coeff_d_xi_out[14] =  0.00;
+      d_coeff_d_xi_out[3][0] =  0.25;
+      d_coeff_d_xi_out[3][1] =  0.00;
+      d_coeff_d_xi_out[3][2] =  0.00;
+      d_coeff_d_xi_out[4][0] =  0.25;
+      d_coeff_d_xi_out[4][1] =  0.00;
+      d_coeff_d_xi_out[4][2] =  0.00;
       break;
 
     case 1:  // lateral edges (not in either triangle)
@@ -235,28 +224,28 @@ void LinearPrism::derivatives_at_mid_edge( unsigned edge,
       vertex_indices_out[5] = 5;
       
         // set all deta & dzeta values, zero all dxi values
-      d_coeff_d_xi_out[ 0] =  0.0;
-      d_coeff_d_xi_out[ 1] = -0.5;
-      d_coeff_d_xi_out[ 2] = -0.5;
-      d_coeff_d_xi_out[ 3] =  0.0;
-      d_coeff_d_xi_out[ 4] =  0.5;
-      d_coeff_d_xi_out[ 5] =  0.0;
-      d_coeff_d_xi_out[ 6] =  0.0;
-      d_coeff_d_xi_out[ 7] =  0.0;
-      d_coeff_d_xi_out[ 8] =  0.5;
-      d_coeff_d_xi_out[ 9] =  0.0;
-      d_coeff_d_xi_out[10] = -0.5;
-      d_coeff_d_xi_out[11] = -0.5;
-      d_coeff_d_xi_out[12] =  0.0;
-      d_coeff_d_xi_out[13] =  0.5;
-      d_coeff_d_xi_out[14] =  0.0;
-      d_coeff_d_xi_out[15] =  0.0;
-      d_coeff_d_xi_out[16] =  0.0;
-      d_coeff_d_xi_out[17] =  0.5;
+      d_coeff_d_xi_out[0][0] =  0.0;
+      d_coeff_d_xi_out[0][1] = -0.5;
+      d_coeff_d_xi_out[0][2] = -0.5;
+      d_coeff_d_xi_out[1][0] =  0.0;
+      d_coeff_d_xi_out[1][1] =  0.5;
+      d_coeff_d_xi_out[1][2] =  0.0;
+      d_coeff_d_xi_out[2][0] =  0.0;
+      d_coeff_d_xi_out[2][1] =  0.0;
+      d_coeff_d_xi_out[2][2] =  0.5;
+      d_coeff_d_xi_out[3][0] =  0.0;
+      d_coeff_d_xi_out[3][1] = -0.5;
+      d_coeff_d_xi_out[3][2] = -0.5;
+      d_coeff_d_xi_out[4][0] =  0.0;
+      d_coeff_d_xi_out[4][1] =  0.5;
+      d_coeff_d_xi_out[4][2] =  0.0;
+      d_coeff_d_xi_out[5][0] =  0.0;
+      d_coeff_d_xi_out[5][1] =  0.0;
+      d_coeff_d_xi_out[5][2] =  0.5;
       
         // set dxi values for end points of edge
-      d_coeff_d_xi_out[3*(edge-3)] = -0.5;
-      d_coeff_d_xi_out[3* edge   ] =  0.5;
+      d_coeff_d_xi_out[(edge-3)][0] = -0.5;
+      d_coeff_d_xi_out[ edge   ][0] =  0.5;
       break;
     
     case 2:  // triangle at xi = 1
@@ -272,39 +261,32 @@ void LinearPrism::derivatives_at_mid_edge( unsigned edge,
       vertex_indices_out[4] = (edge-5)%3;
 
         // vertices in this xi = -1 triagnle
-      d_coeff_d_xi_out[ 0] =  0.25;
-      d_coeff_d_xi_out[ 1] = -1.00;
-      d_coeff_d_xi_out[ 2] = -1.00;
-      d_coeff_d_xi_out[ 3] =  0.25;
-      d_coeff_d_xi_out[ 4] =  1.00;
-      d_coeff_d_xi_out[ 5] =  0.00;
-      d_coeff_d_xi_out[ 6] =  0.25;
-      d_coeff_d_xi_out[ 7] =  0.00;
-      d_coeff_d_xi_out[ 8] =  1.00;
+      d_coeff_d_xi_out[0][0] =  0.25;
+      d_coeff_d_xi_out[0][1] = -1.00;
+      d_coeff_d_xi_out[0][2] = -1.00;
+      d_coeff_d_xi_out[1][0] =  0.25;
+      d_coeff_d_xi_out[1][1] =  1.00;
+      d_coeff_d_xi_out[1][2] =  0.00;
+      d_coeff_d_xi_out[2][0] =  0.25;
+      d_coeff_d_xi_out[2][1] =  0.00;
+      d_coeff_d_xi_out[2][2] =  1.00;
         // clear dxi for vertex opposite edge in xi = -1 triangle
-      d_coeff_d_xi_out[3*opp] = 0.0;
+      d_coeff_d_xi_out[opp][0] = 0.0;
         // adjacent vertices in xi = 1 triangle
-      d_coeff_d_xi_out[ 9] = -0.25;
-      d_coeff_d_xi_out[10] =  0.00;
-      d_coeff_d_xi_out[11] =  0.00;
-      d_coeff_d_xi_out[12] = -0.25;
-      d_coeff_d_xi_out[13] =  0.00;
-      d_coeff_d_xi_out[14] =  0.00;
+      d_coeff_d_xi_out[3][0] = -0.25;
+      d_coeff_d_xi_out[3][1] =  0.00;
+      d_coeff_d_xi_out[3][2] =  0.00;
+      d_coeff_d_xi_out[4][0] = -0.25;
+      d_coeff_d_xi_out[4][1] =  0.00;
+      d_coeff_d_xi_out[4][2] =  0.00;
       break;
   }
 }
-void LinearPrism::derivatives_at_mid_face( unsigned face, 
-                                           unsigned nodebits,
-                                           size_t* vertex_indices_out,
-                                           double* d_coeff_d_xi_out,
-                                           size_t& num_vtx,
-                                           MsqError& err ) const
+static void derivatives_at_mid_face( unsigned face, 
+                                     size_t* vertex_indices_out,
+                                     MsqVector<3>* d_coeff_d_xi_out,
+                                     size_t& num_vtx )
 {
-  if (nodebits) {
-    MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
-    return;
-  }
-  
   num_vtx = 6;
   vertex_indices_out[0] = 0;
   vertex_indices_out[1] = 1;
@@ -313,82 +295,68 @@ void LinearPrism::derivatives_at_mid_face( unsigned face,
   vertex_indices_out[4] = 4;
   vertex_indices_out[5] = 5;
   
-    // dzeta is always zero for vertices 1 and 4
-  d_coeff_d_xi_out[ 5] = 0.0;
-  d_coeff_d_xi_out[14] = 0.0;
-    // deta is always zero for vertices 2 and 5
-  d_coeff_d_xi_out[ 7] = 0.0;
-  d_coeff_d_xi_out[16] = 0.0;
-  
   int opp; // start vtx of edge opposite from quad face
   int tri_offset; // offset in d_coeff_d_xi_out for triangle containing edge
   double sixth;
   
   if (face < 3) { // quad face
       // set all values
-    d_coeff_d_xi_out[ 0] = -0.25;
-    d_coeff_d_xi_out[ 1] = -0.50;
-    d_coeff_d_xi_out[ 2] = -0.50;
-    d_coeff_d_xi_out[ 3] = -0.25;
-    d_coeff_d_xi_out[ 4] =  0.50;
-    d_coeff_d_xi_out[ 5] =  0.00;
-    d_coeff_d_xi_out[ 6] = -0.25;
-    d_coeff_d_xi_out[ 7] =  0.00;
-    d_coeff_d_xi_out[ 8] =  0.50;
-    d_coeff_d_xi_out[ 9] =  0.25;
-    d_coeff_d_xi_out[10] = -0.50;
-    d_coeff_d_xi_out[11] = -0.50;
-    d_coeff_d_xi_out[12] =  0.25;
-    d_coeff_d_xi_out[13] =  0.50;
-    d_coeff_d_xi_out[14] =  0.00;
-    d_coeff_d_xi_out[15] =  0.25;
-    d_coeff_d_xi_out[16] =  0.00;
-    d_coeff_d_xi_out[17] =  0.50;
+    d_coeff_d_xi_out[0][0] = -0.25;
+    d_coeff_d_xi_out[0][1] = -0.50;
+    d_coeff_d_xi_out[0][2] = -0.50;
+    d_coeff_d_xi_out[1][0] = -0.25;
+    d_coeff_d_xi_out[1][1] =  0.50;
+    d_coeff_d_xi_out[1][2] =  0.00;
+    d_coeff_d_xi_out[2][0] = -0.25;
+    d_coeff_d_xi_out[2][1] =  0.00;
+    d_coeff_d_xi_out[2][2] =  0.50;
+    d_coeff_d_xi_out[3][0] =  0.25;
+    d_coeff_d_xi_out[3][1] = -0.50;
+    d_coeff_d_xi_out[3][2] = -0.50;
+    d_coeff_d_xi_out[4][0] =  0.25;
+    d_coeff_d_xi_out[4][1] =  0.50;
+    d_coeff_d_xi_out[4][2] =  0.00;
+    d_coeff_d_xi_out[5][0] =  0.25;
+    d_coeff_d_xi_out[5][1] =  0.00;
+    d_coeff_d_xi_out[5][2] =  0.50;
       // clear dxi for ends of edge opposite from face
     opp = (face+2)%3;
-    d_coeff_d_xi_out[3*opp] = 0.0;
-    d_coeff_d_xi_out[3*(opp+3)] = 0.0;
+    d_coeff_d_xi_out[opp][0] = 0.0;
+    d_coeff_d_xi_out[(opp+3)][0] = 0.0;
   }
   else { // triangular faces
       // set all xi values, zero all other values
     sixth = 1./6;
-    d_coeff_d_xi_out[ 0] = -sixth;
-    d_coeff_d_xi_out[ 1] =  0;
-    d_coeff_d_xi_out[ 2] =  0;
-    d_coeff_d_xi_out[ 3] = -sixth;
-    d_coeff_d_xi_out[ 4] =  0;
-    d_coeff_d_xi_out[ 5] =  0;
-    d_coeff_d_xi_out[ 6] = -sixth;
-    d_coeff_d_xi_out[ 7] =  0;
-    d_coeff_d_xi_out[ 8] =  0;
-    d_coeff_d_xi_out[ 9] =  sixth;
-    d_coeff_d_xi_out[10] =  0;
-    d_coeff_d_xi_out[11] =  0;
-    d_coeff_d_xi_out[12] =  sixth;
-    d_coeff_d_xi_out[13] =  0;
-    d_coeff_d_xi_out[14] =  0;
-    d_coeff_d_xi_out[15] =  sixth;
-    d_coeff_d_xi_out[16] =  0;
-    d_coeff_d_xi_out[17] =  0;
+    d_coeff_d_xi_out[0][0] = -sixth;
+    d_coeff_d_xi_out[0][1] =  0;
+    d_coeff_d_xi_out[0][2] =  0;
+    d_coeff_d_xi_out[1][0] = -sixth;
+    d_coeff_d_xi_out[1][1] =  0;
+    d_coeff_d_xi_out[1][2] =  0;
+    d_coeff_d_xi_out[2][0] = -sixth;
+    d_coeff_d_xi_out[2][1] =  0;
+    d_coeff_d_xi_out[2][2] =  0;
+    d_coeff_d_xi_out[3][0] =  sixth;
+    d_coeff_d_xi_out[3][1] =  0;
+    d_coeff_d_xi_out[3][2] =  0;
+    d_coeff_d_xi_out[4][0] =  sixth;
+    d_coeff_d_xi_out[4][1] =  0;
+    d_coeff_d_xi_out[4][2] =  0;
+    d_coeff_d_xi_out[5][0] =  sixth;
+    d_coeff_d_xi_out[5][1] =  0;
+    d_coeff_d_xi_out[5][2] =  0;
       // set deta and dzeta values for vertices in same triangle as edge
-    tri_offset = 9 * (face - 3);  // either 0 or 9
-    d_coeff_d_xi_out[tri_offset+1] = -1.0;
-    d_coeff_d_xi_out[tri_offset+2] = -1.0;
-    d_coeff_d_xi_out[tri_offset+4] =  1.0;
-    d_coeff_d_xi_out[tri_offset+8] =  1.0;
+    tri_offset = 3 * (face - 3);  // either 0 or 9
+    d_coeff_d_xi_out[tri_offset][1] = -1.0;
+    d_coeff_d_xi_out[tri_offset][2] = -1.0;
+    d_coeff_d_xi_out[tri_offset][4] =  1.0;
+    d_coeff_d_xi_out[tri_offset][8] =  1.0;
   }
 }
-void LinearPrism::derivatives_at_mid_elem( unsigned nodebits,
-                                           size_t* vertex_indices_out,
-                                           double* d_coeff_d_xi_out,
-                                           size_t& num_vtx,
-                                           MsqError& err ) const
+static void derivatives_at_mid_elem( size_t* vertex_indices_out,
+                                     MsqVector<3>* d_coeff_d_xi_out,
+                                     size_t& num_vtx )
 {
-  if (nodebits) {
-    MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
-    return;
-  }
-  
   const double sixth = 1./6;
   
   num_vtx = 6;;
@@ -399,26 +367,56 @@ void LinearPrism::derivatives_at_mid_elem( unsigned nodebits,
   vertex_indices_out[4] = 4;
   vertex_indices_out[5] = 5;
   
-  d_coeff_d_xi_out[ 0] = -sixth;
-  d_coeff_d_xi_out[ 1] = -0.5;
-  d_coeff_d_xi_out[ 2] = -0.5;
-  d_coeff_d_xi_out[ 3] = -sixth;
-  d_coeff_d_xi_out[ 4] =  0.5;
-  d_coeff_d_xi_out[ 5] =  0.0;
-  d_coeff_d_xi_out[ 6] = -sixth;
-  d_coeff_d_xi_out[ 7] =  0.0;
-  d_coeff_d_xi_out[ 8] =  0.5;
-  d_coeff_d_xi_out[ 9] =  sixth;
-  d_coeff_d_xi_out[10] = -0.5;
-  d_coeff_d_xi_out[11] = -0.5;
-  d_coeff_d_xi_out[12] =  sixth;
-  d_coeff_d_xi_out[13] =  0.5;
-  d_coeff_d_xi_out[14] =  0.0;
-  d_coeff_d_xi_out[15] =  sixth;
-  d_coeff_d_xi_out[16] =  0.0;
-  d_coeff_d_xi_out[17] =  0.5;
+  d_coeff_d_xi_out[0][0] = -sixth;
+  d_coeff_d_xi_out[0][1] = -0.5;
+  d_coeff_d_xi_out[0][2] = -0.5;
+  d_coeff_d_xi_out[1][0] = -sixth;
+  d_coeff_d_xi_out[1][1] =  0.5;
+  d_coeff_d_xi_out[1][2] =  0.0;
+  d_coeff_d_xi_out[2][0] = -sixth;
+  d_coeff_d_xi_out[2][1] =  0.0;
+  d_coeff_d_xi_out[2][2] =  0.5;
+  d_coeff_d_xi_out[3][0] =  sixth;
+  d_coeff_d_xi_out[3][1] = -0.5;
+  d_coeff_d_xi_out[3][2] = -0.5;
+  d_coeff_d_xi_out[4][0] =  sixth;
+  d_coeff_d_xi_out[4][1] =  0.5;
+  d_coeff_d_xi_out[4][2] =  0.0;
+  d_coeff_d_xi_out[5][0] =  sixth;
+  d_coeff_d_xi_out[5][1] =  0.0;
+  d_coeff_d_xi_out[5][2] =  0.5;
 }
   
+void LinearPrism::derivatives( unsigned loc_dim,
+                               unsigned loc_num,
+                               unsigned nodebits,
+                               size_t* vertex_indices_out,
+                               MsqVector<3>* d_coeff_d_xi_out,
+                               size_t& num_vtx,
+                               MsqError& err ) const
+{
+  if (nodebits) {
+    MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
+    return;
+  }
+  
+  switch (loc_dim) {
+    case 0:
+      derivatives_at_corner( loc_num, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      break;
+    case 1:
+      derivatives_at_mid_edge( loc_num, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      break;
+    case 2:
+      derivatives_at_mid_face( loc_num, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      break;
+    case 3:
+      derivatives_at_mid_elem( vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      break;
+    default:
+      MSQ_SETERR(err)("Invalid/unsupported logical dimension",MsqError::INVALID_ARG);
+  }
+}
 
 
 } // namespace Mesquite

@@ -101,7 +101,7 @@ class LinearMappingFunctionTest : public CppUnit::TestFixture
 
     CPPUNIT_TEST(test_linear_tri_deriv_corners);
     CPPUNIT_TEST(test_linear_tri_deriv_edges);
-    CPPUNIT_TEST(test_linear_tri_deriv_faces);
+//    CPPUNIT_TEST(test_linear_tri_deriv_faces);
     CPPUNIT_TEST(test_linear_tri_deriv_center);
 
     CPPUNIT_TEST(test_linear_prism_deriv_corners);
@@ -127,48 +127,37 @@ class LinearMappingFunctionTest : public CppUnit::TestFixture
     static void tet_coeff( double xi[3], double coeff[4] );
     static void quad_coeff( double xi[2], double coeff[4] );
     static void tri_coeff( double xi[2], double coeff[3] );
-    static void prism_coeff( double xi[3], double coeff[3] );
-    static void pyr_coeff( double xi[3], double coeff[3] );
+    static void prism_coeff( double xi[3], double coeff[6] );
+    static void pyr_coeff( double xi[3], double coeff[5] );
     
     static void hex_deriv( double xi[3], double coeff_deriv[24] );
     static void tet_deriv( double xi[3], double coeff_deriv[12] );
     static void quad_deriv( double xi[2], double coeff_deriv[8] );
     static void tri_deriv( double xi[2], double coeff_deriv[6] );
-    static void prism_deriv( double xi[2], double coeff_deriv[6] );
-    static void pyr_deriv( double xi[2], double coeff_deriv[6] );
+    static void prism_deriv( double xi[3], double coeff_deriv[18] );
+    static void pyr_deriv( double xi[3], double coeff_deriv[15] );
     
     typedef void (*map_func)(double*, double* );
-    typedef void (MappingFunction::* mf_coeff)( unsigned, 
-                                                unsigned, 
-                                                double*,
-                                                size_t&,
-                                                MsqError& ) const;
-    typedef void (MappingFunction::* mf_deriv)( unsigned, 
-                                                unsigned, 
-                                                size_t*,
-                                                double*,
-                                                size_t&,
-                                                MsqError& ) const;
     
     void do_coeff_test( MappingFunction& mf, 
-                        mf_coeff,
+                        unsigned subdim,
                         map_func mf2,
                         unsigned count,
                         double* xi );
-    void do_deriv_test( MappingFunction& mf, 
-                        mf_deriv,
+    void do_deriv_test( MappingFunction2D& mf, 
+                        unsigned subdim,
                         map_func mf2,
                         unsigned count,
                         double* xi );
-    void do_coeff_test_mid( MappingFunction& mf, 
-                            map_func mf2,
-                            double* xi );
-    void do_deriv_test_mid( MappingFunction& mf, 
-                            map_func mf2,
-                             double* xi );
-                  
-    void do_test_fail( MappingFunction& mf, mf_coeff );
-    void do_test_fail( MappingFunction& mf, mf_deriv );
+    void do_deriv_test( MappingFunction3D& mf, 
+                        unsigned subdim,
+                        map_func mf2,
+                        unsigned count,
+                        double* xi );
+                 
+    void test_coeff_fail( MappingFunction& mf, unsigned subdim );
+    void test_deriv_fail( MappingFunction2D& mf, unsigned subdim );
+    void test_deriv_fail( MappingFunction3D& mf, unsigned subdim );
     
     
     void xi_at_corners( EntityTopology type, double* xi, const int* corners );
@@ -228,7 +217,7 @@ class LinearMappingFunctionTest : public CppUnit::TestFixture
 
     void test_linear_tri_deriv_corners();
     void test_linear_tri_deriv_edges();
-    void test_linear_tri_deriv_faces();
+//    void test_linear_tri_deriv_faces();
     void test_linear_tri_deriv_center();
 
     void test_linear_prism_deriv_corners();
@@ -346,131 +335,131 @@ void LinearMappingFunctionTest::test_linear_hex_coeff_corners()
 { 
   double xi[24];
   xi_at_corners( HEXAHEDRON, xi, &HexSign[0][0] );
-  do_coeff_test( hex, &MappingFunction::coefficients_at_corner, hex_coeff, 8, xi );
+  do_coeff_test( hex, 0, hex_coeff, 8, xi );
 }
   
 void LinearMappingFunctionTest::test_linear_hex_coeff_edges()
 {
   double xi[36];
   xi_at_edges( HEXAHEDRON, xi, &HexSign[0][0] );
-  do_coeff_test( hex, &MappingFunction::coefficients_at_mid_edge, hex_coeff, 12, xi );
+  do_coeff_test( hex, 1, hex_coeff, 12, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_hex_coeff_faces()
 {
   double xi[18];
   xi_at_faces( HEXAHEDRON, xi, &HexSign[0][0] );
-  do_coeff_test( hex, &MappingFunction::coefficients_at_mid_face, hex_coeff, 6, xi );
+  do_coeff_test( hex, 2, hex_coeff, 6, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_hex_coeff_center()
 {
   double xi[3] = { 0, 0, 0 };
-  do_coeff_test_mid( hex, hex_coeff, xi );
+  do_coeff_test( hex, 3, hex_coeff, 1, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_quad_coeff_corners()
 { 
   double xi[8];
   xi_at_corners( QUADRILATERAL, xi, &QuadSign[0][0] );
-  do_coeff_test( quad, &MappingFunction::coefficients_at_corner, quad_coeff, 4, xi );
+  do_coeff_test( quad, 0, quad_coeff, 4, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_quad_coeff_edges()
 {
   double xi[8];
   xi_at_edges( QUADRILATERAL, xi, &QuadSign[0][0] );
-  do_coeff_test( quad, &MappingFunction::coefficients_at_mid_edge, quad_coeff, 4, xi );
+  do_coeff_test( quad, 1, quad_coeff, 4, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_quad_coeff_faces()
 {
-  do_test_fail( quad, &MappingFunction::coefficients_at_mid_face );
+  test_coeff_fail( quad, 3 );
 }
 
 void LinearMappingFunctionTest::test_linear_quad_coeff_center()
 {
   double xi[2] = { 0, 0 };
-  do_coeff_test_mid( quad, quad_coeff, xi );
+  do_coeff_test( quad, 2, quad_coeff, 1, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_tet_coeff_corners()
 {
   double xi[12];
   xi_at_corners( TETRAHEDRON, xi, TetCorners );
-  do_coeff_test( tet, &MappingFunction::coefficients_at_corner, tet_coeff, 4, xi );
+  do_coeff_test( tet, 0, tet_coeff, 4, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_tet_coeff_edges()
 {
   double xi[18];
   xi_at_edges( TETRAHEDRON, xi, TetCorners );
-  do_coeff_test( tet, &MappingFunction::coefficients_at_mid_edge, tet_coeff, 6, xi );
+  do_coeff_test( tet, 1, tet_coeff, 6, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_tet_coeff_faces()
 {
   double xi[12];
   xi_at_faces( TETRAHEDRON, xi, TetCorners );
-  do_coeff_test( tet, &MappingFunction::coefficients_at_mid_face, tet_coeff, 4, xi );
+  do_coeff_test( tet, 2, tet_coeff, 4, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_tet_coeff_center()
 {
   double xi[3] = { 0.25, 0.25, 0.25 };
-  do_coeff_test_mid( tet, tet_coeff, xi );
+  do_coeff_test( tet, 3, tet_coeff, 1, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_tri_coeff_corners()
 {
   double xi[12];
   xi_at_corners( TRIANGLE, xi, TriCorners );
-  do_coeff_test( tri, &MappingFunction::coefficients_at_corner, tri_coeff, 3, xi );
+  do_coeff_test( tri, 0, tri_coeff, 3, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_tri_coeff_edges()
 {
   double xi[18];
   xi_at_edges( TRIANGLE, xi, TriCorners );
-  do_coeff_test( tri, &MappingFunction::coefficients_at_mid_edge, tri_coeff, 3, xi );
+  do_coeff_test( tri, 1, tri_coeff, 3, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_tri_coeff_faces()
 {
-  do_test_fail( tri, &MappingFunction::coefficients_at_mid_face );
+  test_coeff_fail( tri, 3 );
 }
 
 void LinearMappingFunctionTest::test_linear_tri_coeff_center()
 {
   double xi[2] = { 1./3, 1./3 };
-  do_coeff_test_mid( tri, tri_coeff, xi );
+  do_coeff_test( tri, 2, tri_coeff, 1, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_prism_coeff_corners()
 {
   double xi[18];
   xi_at_corners( PRISM, xi, PrismCorners );
-  do_coeff_test( prism, &MappingFunction::coefficients_at_corner, prism_coeff, 6, xi );
+  do_coeff_test( prism, 0, prism_coeff, 6, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_prism_coeff_edges()
 {
   double xi[27];
   xi_at_edges( PRISM, xi, PrismCorners );
-  do_coeff_test( prism, &MappingFunction::coefficients_at_mid_edge, prism_coeff, 9, xi );
+  do_coeff_test( prism, 1, prism_coeff, 9, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_prism_coeff_faces()
 {
   double xi[15];
   xi_at_faces( PRISM, xi, PrismCorners );
-  do_coeff_test( prism, &MappingFunction::coefficients_at_mid_face, prism_coeff, 5, xi );
+  do_coeff_test( prism, 2, prism_coeff, 5, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_prism_coeff_center()
 {
   double xi[3] = { 0, 1./3, 1./3 };
-  do_coeff_test_mid( prism, prism_coeff, xi );
+  do_coeff_test( prism, 3, prism_coeff, 1, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_pyr_coeff_corners()
@@ -480,7 +469,7 @@ void LinearMappingFunctionTest::test_linear_pyr_coeff_corners()
                      1,  1, -1,
                     -1,  1, -1,
                      0,  0,  1 };
-  do_coeff_test( pyr, &MappingFunction::coefficients_at_corner, pyr_coeff, 5, xi );
+  do_coeff_test( pyr, 0, pyr_coeff, 5, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_pyr_coeff_edges()
@@ -493,7 +482,7 @@ void LinearMappingFunctionTest::test_linear_pyr_coeff_edges()
                     1, -1,  0,
                     1,  1,  0,
                    -1,  1,  0 };
-  do_coeff_test( pyr, &MappingFunction::coefficients_at_mid_edge, pyr_coeff, 8, xi );
+  do_coeff_test( pyr, 1, pyr_coeff, 8, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_pyr_coeff_faces()
@@ -503,13 +492,13 @@ void LinearMappingFunctionTest::test_linear_pyr_coeff_faces()
                     0,  1, -1./3,
                    -1,  0, -1./3,
                     0,  0, -1 };
-  do_coeff_test( pyr, &MappingFunction::coefficients_at_mid_face, pyr_coeff, 5, xi );
+  do_coeff_test( pyr, 2, pyr_coeff, 5, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_pyr_coeff_center()
 {
   double xi[3] = { 0, 0, -0.5 };
-  do_coeff_test_mid( pyr, pyr_coeff, xi );
+  do_coeff_test( pyr, 3, pyr_coeff, 1, xi );
 }
 
 
@@ -522,131 +511,131 @@ void LinearMappingFunctionTest::test_linear_hex_deriv_corners()
 { 
   double xi[24];
   xi_at_corners( HEXAHEDRON, xi, &HexSign[0][0] );
-  do_deriv_test( hex, &MappingFunction::derivatives_at_corner, hex_deriv, 8, xi );
+  do_deriv_test( hex, 0, hex_deriv, 8, xi );
 }
   
 void LinearMappingFunctionTest::test_linear_hex_deriv_edges()
 {
   double xi[36];
   xi_at_edges( HEXAHEDRON, xi, &HexSign[0][0] );
-  do_deriv_test( hex, &MappingFunction::derivatives_at_mid_edge, hex_deriv, 12, xi );
+  do_deriv_test( hex, 1, hex_deriv, 12, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_hex_deriv_faces()
 {
   double xi[18];
   xi_at_faces( HEXAHEDRON, xi, &HexSign[0][0] );
-  do_deriv_test( hex, &MappingFunction::derivatives_at_mid_face, hex_deriv, 6, xi );
+  do_deriv_test( hex, 2, hex_deriv, 6, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_hex_deriv_center()
 {
   double xi[3] = { 0, 0, 0 };
-  do_deriv_test_mid( hex, hex_deriv, xi );
+  do_deriv_test( hex, 3, hex_deriv, 1, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_quad_deriv_corners()
 { 
   double xi[8];
   xi_at_corners( QUADRILATERAL, xi, &QuadSign[0][0] );
-  do_deriv_test( quad, &MappingFunction::derivatives_at_corner, quad_deriv, 4, xi );
+  do_deriv_test( quad, 0, quad_deriv, 4, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_quad_deriv_edges()
 {
   double xi[8];
   xi_at_edges( QUADRILATERAL, xi, &QuadSign[0][0] );
-  do_deriv_test( quad, &MappingFunction::derivatives_at_mid_edge, quad_deriv, 4, xi );
+  do_deriv_test( quad, 1, quad_deriv, 4, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_quad_deriv_faces()
 {
-  do_test_fail( quad, &MappingFunction::derivatives_at_mid_face );
+  test_deriv_fail( quad, 3 );
 }
 
 void LinearMappingFunctionTest::test_linear_quad_deriv_center()
 {
   double xi[2] = { 0, 0 };
-  do_deriv_test_mid( quad, quad_deriv, xi );
+  do_deriv_test( quad, 2, quad_deriv, 1, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_tet_deriv_corners()
 {
   double xi[12];
   xi_at_corners( TETRAHEDRON, xi, TetCorners );
-  do_deriv_test( tet, &MappingFunction::derivatives_at_corner, tet_deriv, 4, xi );
+  do_deriv_test( tet, 0, tet_deriv, 4, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_tet_deriv_edges()
 {
   double xi[18];
   xi_at_edges( TETRAHEDRON, xi, TetCorners );
-  do_deriv_test( tet, &MappingFunction::derivatives_at_mid_edge, tet_deriv, 6, xi );
+  do_deriv_test( tet, 1, tet_deriv, 6, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_tet_deriv_faces()
 {
   double xi[12];
   xi_at_faces( TETRAHEDRON, xi, TetCorners );
-  do_deriv_test( tet, &MappingFunction::derivatives_at_mid_face, tet_deriv, 4, xi );
+  do_deriv_test( tet, 2, tet_deriv, 4, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_tet_deriv_center()
 {
   double xi[3] = { 0.25, 0.25, 0.25 };
-  do_deriv_test_mid( tet, tet_deriv, xi );
+  do_deriv_test( tet, 3, tet_deriv, 1, xi );
 }
   
 void LinearMappingFunctionTest::test_linear_tri_deriv_corners()
 {
   double xi[12];
   xi_at_corners( TRIANGLE, xi, TriCorners );
-  do_deriv_test( tri, &MappingFunction::derivatives_at_corner, tri_deriv, 3, xi );
+  do_deriv_test( tri, 0, tri_deriv, 3, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_tri_deriv_edges()
 {
   double xi[18];
   xi_at_edges( TRIANGLE, xi, TriCorners );
-  do_deriv_test( tri, &MappingFunction::derivatives_at_mid_edge, tri_deriv, 3, xi );
+  do_deriv_test( tri, 1, tri_deriv, 3, xi );
 }
 
-void LinearMappingFunctionTest::test_linear_tri_deriv_faces()
-{
-  do_test_fail( tri, &MappingFunction::derivatives_at_mid_face );
-}
+//void LinearMappingFunctionTest::test_linear_tri_deriv_faces()
+//{
+//  test_deriv_fail( tri, 3 );
+//}
 
 void LinearMappingFunctionTest::test_linear_tri_deriv_center()
 {
   double xi[2] = { 1./3, 1./3 };
-  do_deriv_test_mid( tri, tri_deriv, xi );
+  do_deriv_test( tri, 2, tri_deriv, 1, xi );
 }
    
 void LinearMappingFunctionTest::test_linear_prism_deriv_corners()
 {
   double xi[18];
   xi_at_corners( PRISM, xi, PrismCorners );
-  do_deriv_test( prism, &MappingFunction::derivatives_at_corner, prism_deriv, 6, xi );
+  do_deriv_test( prism, 0, prism_deriv, 6, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_prism_deriv_edges()
 {
   double xi[27];
   xi_at_edges( PRISM, xi, PrismCorners );
-  do_deriv_test( prism, &MappingFunction::derivatives_at_mid_edge, prism_deriv, 9, xi );
+  do_deriv_test( prism, 1, prism_deriv, 9, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_prism_deriv_faces()
 {
   double xi[15];
   xi_at_faces( PRISM, xi, PrismCorners );
-  do_deriv_test( prism, &MappingFunction::derivatives_at_mid_face, prism_deriv, 5, xi );
+  do_deriv_test( prism, 2, prism_deriv, 5, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_prism_deriv_center()
 {
   double xi[3] = { 0, 1./3, 1./3 };
-  do_deriv_test_mid( prism, prism_deriv, xi );
+  do_deriv_test( prism, 3, prism_deriv, 1, xi );
 }
   
 
@@ -658,7 +647,7 @@ void LinearMappingFunctionTest::test_linear_pyr_deriv_corners()
                      1,  1, -1,
                     -1,  1, -1,
                      0,  0,  1 };
-  do_deriv_test( pyr, &MappingFunction::derivatives_at_corner, pyr_deriv, 5, xi );
+  do_deriv_test( pyr, 0, pyr_deriv, 5, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_pyr_deriv_edges()
@@ -671,7 +660,7 @@ void LinearMappingFunctionTest::test_linear_pyr_deriv_edges()
                     1, -1,  0,
                     1,  1,  0,
                    -1,  1,  0 };
-  do_deriv_test( pyr, &MappingFunction::derivatives_at_mid_edge, pyr_deriv, 8, xi );
+  do_deriv_test( pyr, 1, pyr_deriv, 8, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_pyr_deriv_faces()
@@ -681,13 +670,13 @@ void LinearMappingFunctionTest::test_linear_pyr_deriv_faces()
                     0,  1, -1./3,
                    -1,  0, -1./3,
                     0,  0, -1 };
-  do_deriv_test( pyr, &MappingFunction::derivatives_at_mid_face, pyr_deriv, 5, xi );
+  do_deriv_test( pyr, 2, pyr_deriv, 5, xi );
 }
 
 void LinearMappingFunctionTest::test_linear_pyr_deriv_center()
 {
   double xi[3] = { 0, 0, -0.5 };
-  do_deriv_test_mid( pyr, pyr_deriv, xi );
+  do_deriv_test( pyr, 3, pyr_deriv, 1, xi );
 }
 
 
@@ -855,7 +844,7 @@ static string dtostr( double i )
  *******************************************************************************/
     
 void LinearMappingFunctionTest::do_coeff_test( MappingFunction& mf, 
-                                               mf_coeff func,
+                                               unsigned subdim,
                                                map_func mf2,
                                                unsigned count,
                                                double* xi )
@@ -864,7 +853,7 @@ void LinearMappingFunctionTest::do_coeff_test( MappingFunction& mf,
   MsqError err;
   double coeff[100];
   size_t num_coeff = 100;
-  (mf.*func)( 0, 1, coeff, num_coeff, err );
+  mf.coefficients( 0, 1, 1, coeff, num_coeff, err );
   CPPUNIT_ASSERT(err);
   err.clear();
   
@@ -877,7 +866,7 @@ void LinearMappingFunctionTest::do_coeff_test( MappingFunction& mf,
   for (unsigned i = 0; i < count; ++i)
   {
     num_coeff = 101;
-    (mf.*func)( i, 0, coeff, num_coeff, err );
+    mf.coefficients( subdim, i, 0, coeff, num_coeff, err );
     CPPUNIT_ASSERT(!err);
     CPPUNIT_ASSERT_EQUAL(num_coeff, (size_t)n);
     
@@ -904,57 +893,56 @@ void LinearMappingFunctionTest::do_coeff_test( MappingFunction& mf,
 }
 
 
-void LinearMappingFunctionTest::do_deriv_test( MappingFunction& mf, 
-                                               mf_deriv func,
+void LinearMappingFunctionTest::do_deriv_test( MappingFunction2D& mf, 
+                                               unsigned subdim,
                                                map_func mf2,
                                                unsigned count,
                                                double* xi )
 {
     // make sure it fails if passed a nonlinear element
   MsqError err;
-  double coeff[100];
-  size_t verts[100], num_coeff = 37;
-  (mf.*func)( 0, 1, verts, coeff, num_coeff, err );
+  MsqVector<2> derivs[100];
+  size_t verts[100], num_vtx = 37;
+  mf.derivatives( subdim, 0, 1, verts, derivs, num_vtx, err );
   CPPUNIT_ASSERT(err);
   err.clear();
   
     // get number of vertices in element
   const unsigned n = TopologyInfo::corners( mf.element_topology() );
-  const unsigned d = TopologyInfo::dimension( mf.element_topology() );
   
     // compare coefficients at each location
-  vector<double> comp(n*d);
+  vector<double> comp(2*n);
   for (unsigned i = 0; i < count; ++i)
   {
-    num_coeff = 33;
-    (mf.*func)( i, 0, verts, coeff, num_coeff, err );
+    num_vtx = 33;
+    mf.derivatives( subdim, i, 0, verts, derivs, num_vtx, err );
     CPPUNIT_ASSERT(!err);
-    CPPUNIT_ASSERT( num_coeff > 0 );
-    CPPUNIT_ASSERT( num_coeff <= n );
+    CPPUNIT_ASSERT( num_vtx > 0 );
+    CPPUNIT_ASSERT( num_vtx <= n );
     
     mf2( xi, &comp[0] );
     string xi_str;
-    for (unsigned j = 0; j < d; ++j) {
+    for (unsigned j = 0; j < 2; ++j) {
       xi_str += !j ? "(" : ", ";
       xi_str += dtostr(xi[j]);
     }
     xi_str += ")";
-    xi += d;
+    xi += 2;
     
-    for (unsigned j = 0; j < num_coeff; ++j)
+    for (unsigned j = 0; j < num_vtx; ++j)
     {
       bool all_zero = true;
-      for (unsigned k = 0; k < d; ++k)
+      for (unsigned k = 0; k < 2; ++k)
       {
         CppUnit::Message message( "Coefficient derivatives do not match." );
         message.addDetail( string("Entity:             ") + itostr( i ) );
         message.addDetail( string("Coefficient number: ") + itostr( j ) );
         message.addDetail( string("Xi:             ") + xi_str );
         message.addDetail( string("Axis:           ") + itostr( k ) );
-        message.addDetail( string("Expected value: ") + dtostr( comp[d*verts[j]+k] ) );
-        message.addDetail( string("Actual value:   ") + dtostr( coeff[d*j+k] ) );
-        ASSERT_MESSAGE( message, fabs(comp[d*verts[j]+k]-coeff[d*j+k]) < DBL_EPSILON );
-        if (fabs(coeff[d*j+k]) > DBL_EPSILON)
+        message.addDetail( string("Expected value: ") + dtostr( comp[2*verts[j]+k] ) );
+        message.addDetail( string("Actual value:   ") + dtostr( derivs[j][k] ) );
+        ASSERT_MESSAGE( message, fabs(comp[2*verts[j]+k]-derivs[j][k]) < DBL_EPSILON );
+        if (fabs(derivs[j][k]) > DBL_EPSILON)
           all_zero = false;
       }
 
@@ -964,141 +952,131 @@ void LinearMappingFunctionTest::do_deriv_test( MappingFunction& mf,
     }
     
       // If any vertex is not in the list, then its values must be zero.
-    sort( verts, verts + num_coeff );
-    for (unsigned j = 0; j < num_coeff; ++j)
-      if (!binary_search( verts, verts+num_coeff, j ))
-        for (unsigned k = 0; k < d; ++k)
+    sort( verts, verts + num_vtx );
+    for (unsigned j = 0; j < num_vtx; ++j) {
+      if (!binary_search( verts, verts+num_vtx, j )) {
+        for (unsigned k = 0; k < 2; ++k)
         {
           CppUnit::Message message( "Missing coefficient derivatives." );
           message.addDetail( string("Entity:              ") + itostr( i ) );
           message.addDetail( string("Coefficient number:  ") + itostr( j ) );
           message.addDetail( string("Axis:                ") + itostr( k ) );
-          message.addDetail( string("Expected derivative: ") + dtostr( comp[d*j+k] ) );
-          ASSERT_MESSAGE( message, fabs(comp[d*j+k]) < DBL_EPSILON );
+          message.addDetail( string("Expected derivative: ") + dtostr( comp[2*j+k] ) );
+          ASSERT_MESSAGE( message, fabs(comp[2*j+k]) < DBL_EPSILON );
         }
-  }
-}
-                        
-                        
-void LinearMappingFunctionTest::do_coeff_test_mid( MappingFunction& mf, 
-                                                   map_func mf2,
-                                                   double* xi )
-{
-    // make sure it fails if passed a nonlinear element
-  MsqError err;
-  double coeff[100];
-  size_t num_coeff = 38;
-  mf.coefficients_at_mid_elem( 1, coeff, num_coeff, err );
-  CPPUNIT_ASSERT(err);
-  err.clear();
-  
-    // get number of vertices in element
-  const unsigned n = TopologyInfo::corners( mf.element_topology() );
-  
-    // compare coefficients at each location
-  vector<double> comp(n);
-  num_coeff = 37;
-  mf.coefficients_at_mid_elem( 0, coeff, num_coeff, err );
-  CPPUNIT_ASSERT(!err);
-  CPPUNIT_ASSERT_EQUAL(num_coeff, (size_t)n);
-
-  mf2( xi, &comp[0] );
-  for (unsigned j = 0; j < n; ++j)
-  {
-    CppUnit::Message message( "Coefficients do not match." );
-    message.addDetail( string("Coefficient number: ") + itostr( j ) );
-    message.addDetail( string("Expected value: ") + dtostr( comp[j] ) );
-    message.addDetail( string("Actual value:   ") + dtostr( coeff[j] ) );
-    ASSERT_MESSAGE( message, fabs(comp[j]-coeff[j]) < DBL_EPSILON );
-  }
-}
-
-
-
-
-void LinearMappingFunctionTest::do_deriv_test_mid( MappingFunction& mf, 
-                                                   map_func mf2,
-                                                   double* xi )
-{
-    // make sure it fails if passed a nonlinear element
-  MsqError err;
-  double coeff[100];
-  size_t verts[100], num_vtx = 27;
-  mf.derivatives_at_mid_elem( 1, verts, coeff, num_vtx, err );
-  CPPUNIT_ASSERT(err);
-  err.clear();
-  
-    // get number of vertices in element
-  const unsigned n = TopologyInfo::corners( mf.element_topology() );
-  const unsigned d = TopologyInfo::dimension( mf.element_topology() );
-  
-    // compare coefficients at each location
-  vector<double> comp(n*d);
-  num_vtx = 27;
-  mf.derivatives_at_mid_elem( 0, verts, coeff, num_vtx, err );
-  CPPUNIT_ASSERT(!err);
-  CPPUNIT_ASSERT( num_vtx > 0 );
-  CPPUNIT_ASSERT( num_vtx <= n );
-
-  mf2( xi, &comp[0] );
-  for (unsigned j = 0; j < num_vtx; ++j)
-  {
-      // check that we got the expected values
-    bool all_zero = true;
-    for (unsigned k = 0; k < d; ++k)
-    {
-      CppUnit::Message message( "Coefficient derivatives do not match." );
-      message.addDetail( string("Coefficient number: ") + itostr( j ) );
-      message.addDetail( string("Axis:               ") + itostr( k ) );
-      message.addDetail( string("Expected value: ") + dtostr( comp[d*verts[j]+k] ) );
-      message.addDetail( string("Actual value:   ") + dtostr( coeff[d*j+k] ) );
-      ASSERT_MESSAGE( message, fabs(comp[d*verts[j]+k]-coeff[d*j+k]) < DBL_EPSILON );
-      if (fabs(coeff[d*j+k]) > DBL_EPSILON)
-        all_zero = false;
-    }
-
-      // if vertex has all zero values, it shouldn't have been in the
-      // vertex list at all, as the Jacobian will not depend on that vertex.
-    CPPUNIT_ASSERT( !all_zero );
-  }
-
-    // If any vertex is not in the list, then its values must be zero.
-  sort( verts, verts+num_vtx );
-  for (unsigned j = 0; j < n; ++j)
-    if (!binary_search( verts, verts+num_vtx, j ))
-      for (unsigned k = 0; k < d; ++k)
-      {
-        CppUnit::Message message( "Missing coefficient derivatives." );
-        message.addDetail( string("Coefficient number:  ") + itostr( j ) );
-        message.addDetail( string("Axis:                ") + itostr( k ) );
-        message.addDetail( string("Expected derivative: ") + dtostr( comp[d*j+k] ) );
-        ASSERT_MESSAGE( message, fabs(comp[d*j+k]) < DBL_EPSILON );
       }
-  
-    // for linear elements, the derivative at the center should
-    // depend on all the vertices
-  CPPUNIT_ASSERT_EQUAL( (size_t)n, num_vtx );
+    }
+  }
 }
+
+void LinearMappingFunctionTest::do_deriv_test( MappingFunction3D& mf, 
+                                               unsigned subdim,
+                                               map_func mf2,
+                                               unsigned count,
+                                               double* xi )
+{
+    // make sure it fails if passed a nonlinear element
+  MsqError err;
+  MsqVector<3> derivs[100];
+  size_t verts[100], num_vtx = 37;
+  mf.derivatives( subdim, 0, 1, verts, derivs, num_vtx, err );
+  CPPUNIT_ASSERT(err);
+  err.clear();
+  
+    // get number of vertices in element
+  const unsigned n = TopologyInfo::corners( mf.element_topology() );
+  
+    // compare coefficients at each location
+  vector<double> comp(3*n);
+  for (unsigned i = 0; i < count; ++i)
+  {
+    num_vtx = 33;
+    mf.derivatives( subdim, i, 0, verts, derivs, num_vtx, err );
+    CPPUNIT_ASSERT(!err);
+    CPPUNIT_ASSERT( num_vtx > 0 );
+    CPPUNIT_ASSERT( num_vtx <= n );
+    
+    mf2( xi, &comp[0] );
+    string xi_str;
+    for (unsigned j = 0; j < 3; ++j) {
+      xi_str += !j ? "(" : ", ";
+      xi_str += dtostr(xi[j]);
+    }
+    xi_str += ")";
+    xi += 3;
+    
+    for (unsigned j = 0; j < num_vtx; ++j)
+    {
+      bool all_zero = true;
+      for (unsigned k = 0; k < 3; ++k)
+      {
+        CppUnit::Message message( "Coefficient derivatives do not match." );
+        message.addDetail( string("Entity:             ") + itostr( i ) );
+        message.addDetail( string("Coefficient number: ") + itostr( j ) );
+        message.addDetail( string("Xi:             ") + xi_str );
+        message.addDetail( string("Axis:           ") + itostr( k ) );
+        message.addDetail( string("Expected value: ") + dtostr( comp[3*verts[j]+k] ) );
+        message.addDetail( string("Actual value:   ") + dtostr( derivs[j][k] ) );
+        ASSERT_MESSAGE( message, fabs(comp[3*verts[j]+k]-derivs[j][k]) < DBL_EPSILON );
+        if (fabs(derivs[j][k]) > DBL_EPSILON)
+          all_zero = false;
+      }
+
+        // if vertex has all zero values, it shouldn't have been in the
+        // vertex list at all, as the Jacobian will not depend on that vertex.
+      CPPUNIT_ASSERT( !all_zero );
+    }
+    
+      // If any vertex is not in the list, then its values must be zero.
+    sort( verts, verts + num_vtx );
+    for (unsigned j = 0; j < num_vtx; ++j) {
+      if (!binary_search( verts, verts+num_vtx, j )) {
+        for (unsigned k = 0; k < 3; ++k)
+        {
+          CppUnit::Message message( "Missing coefficient derivatives." );
+          message.addDetail( string("Entity:              ") + itostr( i ) );
+          message.addDetail( string("Coefficient number:  ") + itostr( j ) );
+          message.addDetail( string("Axis:                ") + itostr( k ) );
+          message.addDetail( string("Expected derivative: ") + dtostr( comp[3*j+k] ) );
+          ASSERT_MESSAGE( message, fabs(comp[3*j+k]) < DBL_EPSILON );
+        }
+      }
+    }
+  }
+}
+
                   
-void LinearMappingFunctionTest::do_test_fail( MappingFunction& mf, mf_coeff func )
+void LinearMappingFunctionTest::test_coeff_fail( MappingFunction& mf, unsigned subdim )
 {
     // make sure it fails if called
   MsqError err;
   double coeff[100];
   size_t num_coeff;
-  (mf.*func)( 0, 0, coeff, num_coeff, err );
+  mf.coefficients( subdim, 0, 0, coeff, num_coeff, err );
   CPPUNIT_ASSERT(err);
   err.clear();
 }  
 
-void LinearMappingFunctionTest::do_test_fail( MappingFunction& mf, mf_deriv func )
+void LinearMappingFunctionTest::test_deriv_fail( MappingFunction2D& mf, unsigned subdim )
 {
     // make sure it fails if called
   MsqError err;
-  double coeff[100];
+  MsqVector<2> coeff[100];
   size_t verts[100], num_coeff;
-  (mf.*func)( 0, 0, verts, coeff, num_coeff, err );
+  mf.derivatives( subdim, 0, 0, verts, coeff, num_coeff, err );
   CPPUNIT_ASSERT(err);
   err.clear();
 }
+
+void LinearMappingFunctionTest::test_deriv_fail( MappingFunction3D& mf, unsigned subdim )
+{
+    // make sure it fails if called
+  MsqError err;
+  MsqVector<3> coeff[100];
+  size_t verts[100], num_coeff;
+  mf.derivatives( subdim, 0, 0, verts, coeff, num_coeff, err );
+  CPPUNIT_ASSERT(err);
+  err.clear();
+}
+
 

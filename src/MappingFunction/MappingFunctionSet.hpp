@@ -38,6 +38,8 @@
 namespace Mesquite {
 
 class MappingFunction;
+class MappingFunction2D;
+class MappingFunction3D;
 
 /**\brief Class describing mapping functions for each element type
  *
@@ -50,6 +52,10 @@ public:
   virtual ~MappingFunctionSet() {}
     /** Get mapping function for specified element type */
   virtual const MappingFunction* get_function( EntityTopology elem_type ) const = 0;
+    /** Get mapping function for surface element */
+  virtual const MappingFunction2D* get_surf_function( EntityTopology elem_type ) const = 0;
+    /** Get mapping function for volume element */
+  virtual const MappingFunction3D* get_vol_function( EntityTopology elem_type ) const = 0;
 };
 
 

@@ -41,6 +41,8 @@ class LinearFunctionSet : public MappingFunctionSet
 {
   public:
   virtual const MappingFunction* get_function( EntityTopology elem_type ) const;
+  virtual const MappingFunction2D* get_surf_function( EntityTopology elem_type ) const;
+  virtual const MappingFunction3D* get_vol_function( EntityTopology elem_type ) const;
 };
 
 

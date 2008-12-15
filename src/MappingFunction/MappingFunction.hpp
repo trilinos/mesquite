@@ -35,10 +35,12 @@
 
 #include "Mesquite.hpp"
 #include <vector>
+#include "MsqMatrix.hpp"
 
 namespace Mesquite {
 
 class MsqError;
+class PatchData;
 
 /**\brief An interface for a mapping function of the form 
  * \f$\vec{x}(\vec{\xi})=\sum_{i=1}^n N_i(\vec{\xi})\vec{x_i}\f$,
@@ -83,11 +85,28 @@ public:
   virtual 
   EntityTopology element_topology() const = 0;
 
-  /**\name Mapping Function Coefficients
-   * This group of methods return the list of scalar values (\f$N_i\f$'s) resulting
+  /**\brief Mapping Function Coefficients
+   *
+   * This function returns the list of scalar values (\f$N_i\f$'s) resulting
    * from the evaluation of the mapping function coefficient terms
    * \f$N_1(\vec{\xi}), N_2(\vec{\xi}), \ldots, N_n(\vec{\xi})\f$
    * for a given \f$\vec{\xi}\f$.
+   *\param loc_dim  This parameter, together with 'loc_num', specifes
+   *                the logical location at which to evaluate the mapping
+   *                function.  This parameter specifies the dimension of
+   *                the topological subentity of the element that the
+   *                mapping function is to be evaluated at the logical
+   *                center.  
+   *                 - 0 -> corner
+   *                 - 1 -> mid-edge
+   *                 - 2 -> mid-face
+   *                 - 3 -> mid-volume
+   *\param loc_num  Which entity of dimension 'loc_dim' that the mapping
+   *                function is to be evaluated at, specified using the
+   *                numbering specified in the ExodusII standard.  For
+   *                example if loc_dim = 1 and loc_num = 0, the mapping
+   *                function will be evaluated at the center of edge 0
+   *                of the element.
    *\param nodebits This is a list of which mid-nodes are present in the 
    *                element.  The sequence is the same as the canonical 
    *                ordering of the mid-nodes in the form of the element with
@@ -102,56 +121,227 @@ public:
    *                vertex in the element, except for the higher-order nodes 
    *                for which the corresponding bit in nodebits is zero.
    */
-  /*@{*/
+  virtual 
+  void coefficients( unsigned loc_dim,
+                     unsigned loc_num,
+                     unsigned nodebits,
+                     double* coeff_out,
+                     size_t& num_coeff_out,
+                     MsqError& err ) const = 0;
+};
 
-  /**Get mapping function coefficients for an \f$\vec{\xi}\f$ corresponding
-   * to the corner of the element.
-   *\param corner The element corner, specified as the position of the
-   *              corresponding vertex in the canonical ordering of the
-   *              element.
+/**\brief MappingFunction for topologically 2D (surface) elements. */
+class MappingFunction2D : public MappingFunction
+{
+public:
+
+  virtual
+  ~MappingFunction2D() {}
+
+  /**\brief Mapping Function Derivatives
+   *
+   * This function returns the partial derivatives of the mapping
+   * function coefficient terms
+   * \f$\nabla N_1(\vec{\xi}), \nabla N_2(\vec{\xi}), \ldots, \nabla N_n(\vec{\xi})\f$
+   * evaluated for a given \f$\vec{\xi}\f$, where \f$\vec{x_i}\f$ is a point
+   * in \f$\mathbf{R}^3\f$ (i.e. \f$x_i,y_i,z_i\f$).  
+   * \f$\vec{\xi_i} = \left\{\begin{array}{c}\xi_i\\ \eta_i\\ \end{array}\right\}\f$ 
+   * for surface elements and 
+   * \f$\vec{\xi_i} = \left\{\begin{array}{c}\xi_i\\ \eta_i\\ \zeta_i\\ \end{array}\right\}\f$ 
+   * for volume elements.
+   *
+   * The list of returned partial derivatives may be considered list of elements 
+   * of a matrix \f$\mathbf{D}\f$ in row major order.  For surface elements,
+   * \f$\mathbf{D}\f$ is a \f$n\times 2\f$ matrix and for volume elements it
+   * is a \f$n \times 3\f$ matrix.  Each row of 
+   * \f$\mathbf{D}\f$ corresponds to one of the
+   * coefficient functions \f$N_i(\vec{\xi})\f$ and each column corresponds
+   * to one of the components of \f$\vec{\xi}\f$ 
+   * that the corresponding coefficient function is differentiated with
+   * respect to. 
+   *
+   * \f$ \mathbf{D} = \left[ \begin{array}{ccc}
+   *     \frac{\delta N_1}{\delta \xi} & \frac{\delta N_1}{\delta \eta} & \ldots \\
+   *     \frac{\delta N_2}{\delta \xi} & \frac{\delta N_2}{\delta \eta} & \ldots \\
+   *     \vdots & \vdots & \ddots \end{array} \right]\f$
+   *
+   * The Jacobian matrix (\f$\mathbf{J}\f$) of the mapping function can be calculated
+   * as follows. Define a matrix \f$\mathbf{X}\f$ such that each column contains
+   * the coordinates of the element nodes.
+   *
+   * \f$ \mathbf{X} = \left[ \begin{array}{ccc}
+   *                   x_1 & x_2 & \ldots \\
+   *                   y_1 & y_2 & \ldots \\
+   *                   z_1 & z_2 & \ldots 
+   *                  \end{array}\right]\f$
+   *
+   * The Jacobian matrix is then:
+   *
+   * \f$\mathbf{J} = \mathbf{X} \times \mathbf{D}\f$
+   *
+   * \f$\mathbf{X}\f$ is always \f$3\times n\f$, so \f$\mathbf{J}\f$ is
+   * either \f$3\times 2\f$ (surface elements) or \f$3\times 3\f$ (volume
+   * elements) depending on the dimensions of \f$\mathbf{D}\f$.
+   *
+   * If the Jacobian matrix of the mapping function is considered as a 
+   * function of the element vertex coordinates \f$\mathbf{J}(\vec{x_1},\vec{x_2},\ldots)\f$ 
+   * with \f$\vec{\xi}\f$ constant, then the gradient of that Jacobian matrix 
+   * function (with respect
+   * to the vertex coordinates) can be obtained from the same output list of
+   * partial deravitves.
+   *
+   * \f$\frac{\delta \mathbf{J}}{\delta x_i} = 
+   *         \left[ \begin{array}{ccc}
+   *         \frac{\delta N_i}{\delta \xi} & \frac{\delta N_i}{\delta \eta} & \ldots \\
+   *         0 & 0 & \ldots \\ 
+   *         0 & 0 & \ldots 
+   *         \end{array} \right]\f$
+   * \f$\frac{\delta \mathbf{J}}{\delta y_i} = 
+   *         \left[ \begin{array}{ccc}
+   *         0 & 0 & \ldots \\ 
+   *         \frac{\delta N_i}{\delta \xi} & \frac{\delta N_i}{\delta \eta} & \ldots \\
+   *         0 & 0 & \ldots 
+   *         \end{array} \right]\f$
+   * \f$\frac{\delta \mathbf{J}}{\delta z_i} = 
+   *         \left[ \begin{array}{ccc}
+   *         0 & 0 & \ldots \\ 
+   *         0 & 0 & \ldots \\
+   *         \frac{\delta N_i}{\delta \xi} & \frac{\delta N_i}{\delta \eta} & \ldots 
+   *         \end{array} \right]\f$
+   * 
+   *
+   *\param loc_dim  This parameter, together with 'loc_num', specifes
+   *                the logical location at which to evaluate the mapping
+   *                function.  This parameter specifies the dimension of
+   *                the topological subentity of the element that the
+   *                mapping function is to be evaluated at the logical
+   *                center.  
+   *                 - 0 -> corner
+   *                 - 1 -> mid-edge
+   *                 - 2 -> mid-face
+   *                 - 3 -> mid-volume
+   *\param loc_num  Which entity of dimension 'loc_dim' that the mapping
+   *                function is to be evaluated at, specified using the
+   *                numbering specified in the ExodusII standard.  For
+   *                example if loc_dim = 1 and loc_num = 0, the mapping
+   *                function will be evaluated at the center of edge 0
+   *                of the element.
+   *\param nodebits This is a list of which mid-nodes are present in the 
+   *                element.  The sequence is the same as the canonical 
+   *                ordering of the mid-nodes in the form of the element with
+   *                all possible mid-nodes, beginning with the least signficiant
+   *                bit.  A 1-bit means that the corresponding
+   *                higher-order node is present in the element.  This value
+   *                of nodebits is zero for a linear element.  
+   *                For polygons, the number of nodes in the polygon should
+   *                be passed in this argument.  Polygons are not allowed
+   *                higher-order nodes.
+   *\param vertices_out The list of vertices for which the corresponding
+   *                coefficient in the mapping function is non-zero.  The
+   *                vertices are specified by their index in the canonical
+   *                ordering for an element with all mid-nodes present (i.e.
+   *                first all the corner nodes, then the mid-edge nodes, ...).
+   *\param d_coeff_d_xi_out The mapping function is composed of a series of 
+   *                coefficient functions \f$N_i(\vec{\xi})\f$, one correspoding
+   *                to the position \f$\vec{x_i}\f$ of each node in the
+   *                element such that the mapping function is of the form:
+   *                \f$\vec{x}(\vec{\xi})=\sum_{i=1}^n N_i(\vec{\xi})\vec{x_i}\f$.
+   *                For each vertex indicated in vertex_indices_out, 
+   *                this list contains the partial derivatives of the cooresponding
+   *                coefficient function \f$N_i\f$ with respect to each 
+   *                component of \f$\vec{\xi}\f$ in the same order as the
+   *                corresponding nodes in vertex_indices_out. 
+   *\param num_vtx  Output: The number of vertex indices and derivitive
+   *                tuples returned in vertices_out and d_coeff_d_xi_out,
+   *                respectively.
    */
   virtual 
-  void coefficients_at_corner( unsigned corner, 
-                               unsigned nodebits,
-                               double* coeff_out,
-                               size_t& num_coeff,
-                               MsqError& err ) const = 0; 
+  void derivatives( unsigned loc_dim, 
+                    unsigned loc_num,
+                    unsigned nodebits,
+                    size_t* vertex_indices_out,
+                    MsqVector<2>* d_coeff_d_xi_out,
+                    size_t& num_vtx,
+                    MsqError& err ) const = 0;
 
-  /**Get mapping function coefficients for an \f$\vec{\xi}\f$ corresponding
-   * to the middle of an edge of the element.
-   *\param edge The element edge, specified using the canoncial ordering
-   *            of edges for the element topology.
-   */
+  /**\brief Mapping function derivatives and Jacobian
+   *
+   * This function returns the partial derivatives of the mapping
+   * function coefficient terms and the Jacobian calculated from
+   * those terms and the cooresponding vertex coordinates.
+   *
+   * This function returns the same logical data as 'derivatives',
+   * except that it also calculates the Jacobian from the actual
+   * vertex coordinates.  Also, unlike the 'derivatives' function
+   * which returns the vertex indices as positions in the element
+   * connectivity list, this function is expected to 
+   * a) return the actual indices of the vertices in the PatchData
+   *    vertex list and
+   * b) remove from the list of indices and derivatives and values
+   *    corresponding to fixed vertices.
+   *
+   * The default implementation of this function will calculate the
+   * Jacobian and modify the vertex and derivative lists returned
+   * from "derivatives".  The default implementation serves as a
+   * utility function for other classes using this one.  The function
+   * is virtual to allow mapping function implementations to provide
+   * an optimized version that avoids extra calculations for zero terms
+   * in the derivative list.
+   *
+   *\param pd  The PatchData instance containing the vertex coordinates
+   *           and element connectcivity.
+   *\param element_number  The index of the mesh element in the PatchData.
+   *\param nodebits This is a list of which mid-nodes are present in the 
+   *                element.  The sequence is the same as the canonical 
+   *                ordering of the mid-nodes in the form of the element with
+   *                all possible mid-nodes, beginning with the least signficiant
+   *                bit.  A 1-bit means that the corresponding
+   *                higher-order node is present in the element.  This value
+   *                of nodebits is zero for a linear element.  
+   *                For polygons, the number of nodes in the polygon should
+   *                be passed in this argument.  Polygons are not allowed
+   *                higher-order nodes.
+   *\param loc_dim         The topological dimension of the element or
+   *                       element sub-entity at which to evaluate the
+   *                       mapping function.
+   *\param loc_num         The canonical number of the sub-entity of
+   *                       dimension 'loc_dim' that the mapping function
+   *                       will be evaluated at the logical center of.
+   *\param vertex_patch_indices_out  For each free vertex in the element
+   *                       the influences the mapping function value at
+   *                       the specified logical location, the index of
+   *                       that vertex in the PatchData.
+   *\param d_coeff_d_xi_out For each vertex in 'vertex_patch_indices_out',
+   *                       the partial derivatives of the corresponding
+   *                       coefficient of the mapping function.
+   *\param num_vtx_out     The number of values passed back in 
+   *                       'vertex_patch_indices_out' and 'd_coeff_d_xi_out'.
+   *\param jacobian_out    The Jacobian of the mapping function at the
+   *                       specified logical location.
+   */             
   virtual 
-  void coefficients_at_mid_edge( unsigned edge, 
-                                 unsigned nodebits,
-                                 double* coeff_out,
-                                 size_t& num_coeff,
-                                 MsqError& err ) const = 0;
+  void jacobian( const PatchData& pd,
+                 size_t element_number,
+                 unsigned nodebits,
+                 unsigned loc_dim,
+                 unsigned loc_num,
+                 size_t* vertex_patch_indices_out,
+                 MsqVector<2>* d_coeff_d_xi_out,
+                 size_t& num_vtx_out,
+                 MsqMatrix<3,2>& jacobian_out,
+                 MsqError& err ) const;
+};
 
-  /**Get mapping function coefficients for an \f$\vec{\xi}\f$ corresponding
-   * to the middle of an face of the element.
-   *\param face The element face, specified using the canoncial ordering
-   *            of faces for the element topology.
-   */
-  virtual 
-  void coefficients_at_mid_face( unsigned face, 
-                                 unsigned nodebits,
-                                 double* coeff_out,
-                                 size_t& num_coeff,
-                                 MsqError& err ) const = 0;
+/**\brief MappingFunction for topologically 3D (volume) elements. */
+class MappingFunction3D : public MappingFunction
+{
+public:
 
-  /**Get mapping function coefficients for an \f$\vec{\xi}\f$ corresponding
-   * to the center of the element.
-   */
-  virtual 
-  void coefficients_at_mid_elem( unsigned nodebits,
-                                 double* coeff_out,
-                                 size_t& num_coeff,
-                                 MsqError& err ) const = 0;
-  /*@}*/
+  virtual
+  ~MappingFunction3D() {}
 
-  /**\name Mapping Function Derivatives
+  /**\brief Mapping Function Derivatives
+   *
    * This group of methods return the partial derivatives of the mapping
    * function coefficient terms
    * \f$\nabla N_1(\vec{\xi}), \nabla N_2(\vec{\xi}), \ldots, \nabla N_n(\vec{\xi})\f$
@@ -222,6 +412,22 @@ public:
    *         \end{array} \right]\f$
    * 
    *
+   *\param loc_dim  This parameter, together with 'loc_num', specifes
+   *                the logical location at which to evaluate the mapping
+   *                function.  This parameter specifies the dimension of
+   *                the topological subentity of the element that the
+   *                mapping function is to be evaluated at the logical
+   *                center.  
+   *                 - 0 -> corner
+   *                 - 1 -> mid-edge
+   *                 - 2 -> mid-face
+   *                 - 3 -> mid-volume
+   *\param loc_num  Which entity of dimension 'loc_dim' that the mapping
+   *                function is to be evaluated at, specified using the
+   *                numbering specified in the ExodusII standard.  For
+   *                example if loc_dim = 1 and loc_num = 0, the mapping
+   *                function will be evaluated at the center of edge 0
+   *                of the element.
    *\param nodebits This is a list of which mid-nodes are present in the 
    *                element.  The sequence is the same as the canonical 
    *                ordering of the mid-nodes in the form of the element with
@@ -247,63 +453,85 @@ public:
    *                coefficient function \f$N_i\f$ with respect to each 
    *                component of \f$\vec{\xi}\f$ in the same order as the
    *                corresponding nodes in vertex_indices_out. 
-   */
-  /*@{*/
-
-  /**Get partial derivatives of mapping function coefficients for an 
-   * \f$\vec{\xi}\f$ corresponding
-   * to the corner of the element.
-   *\param corner The element corner, specified as the position of the
-   *              corresponding vertex in the canonical ordering of the
-   *              element.
+   *\param num_vtx  Output: The number of vertex indices and derivitive
+   *                tuples returned in vertices_out and d_coeff_d_xi_out,
+   *                respectively.
    */
   virtual 
-  void derivatives_at_corner( unsigned corner, 
-                              unsigned nodebits,
-                              size_t* vertex_indices_out,
-                              double* d_coeff_d_xi_out,
-                              size_t& num_vtx,
-                              MsqError& err ) const = 0;
-
-  /**Get partial derivatives of mapping function coefficients for an 
-   * \f$\vec{\xi}\f$ corresponding
-   * to the middle of an edge of the element.
-   *\param edge The element edge, specified using the canoncial ordering
-   *            of edges for the element topology.
-   */
+  void derivatives( unsigned loc_dim, 
+                    unsigned loc_num,
+                    unsigned nodebits,
+                    size_t* vertex_indices_out,
+                    MsqVector<3>* d_coeff_d_xi_out,
+                    size_t& num_vtx,
+                    MsqError& err ) const = 0;
+                    
+                    
+  /**\brief Mapping function derivatives and Jacobian
+   *
+   * This function returns the partial derivatives of the mapping
+   * function coefficient terms and the Jacobian calculated from
+   * those terms and the cooresponding vertex coordinates.
+   *
+   * This function returns the same logical data as 'derivatives',
+   * except that it also calculates the Jacobian from the actual
+   * vertex coordinates.  Also, unlike the 'derivatives' function
+   * which returns the vertex indices as positions in the element
+   * connectivity list, this function is expected to 
+   * a) return the actual indices of the vertices in the PatchData
+   *    vertex list and
+   * b) remove from the list of indices and derivatives and values
+   *    corresponding to fixed vertices.
+   *
+   * The default implementation of this function will calculate the
+   * Jacobian and modify the vertex and derivative lists returned
+   * from "derivatives".  The default implementation serves as a
+   * utility function for other classes using this one.  The function
+   * is virtual to allow mapping function implementations to provide
+   * an optimized version that avoids extra calculations for zero terms
+   * in the derivative list.
+   *\param pd  The PatchData instance containing the vertex coordinates
+   *           and element connectcivity.
+   *\param element_number  The index of the mesh element in the PatchData.
+   *\param nodebits This is a list of which mid-nodes are present in the 
+   *                element.  The sequence is the same as the canonical 
+   *                ordering of the mid-nodes in the form of the element with
+   *                all possible mid-nodes, beginning with the least signficiant
+   *                bit.  A 1-bit means that the corresponding
+   *                higher-order node is present in the element.  This value
+   *                of nodebits is zero for a linear element.  
+   *                For polygons, the number of nodes in the polygon should
+   *                be passed in this argument.  Polygons are not allowed
+   *                higher-order nodes.
+   *\param loc_dim         The topological dimension of the element or
+   *                       element sub-entity at which to evaluate the
+   *                       mapping function.
+   *\param loc_num         The canonical number of the sub-entity of
+   *                       dimension 'loc_dim' that the mapping function
+   *                       will be evaluated at the logical center of.
+   *\param vertex_patch_indices_out  For each free vertex in the element
+   *                       the influences the mapping function value at
+   *                       the specified logical location, the index of
+   *                       that vertex in the PatchData.
+   *\param d_coeff_d_xi_out For each vertex in 'vertex_patch_indices_out',
+   *                       the partial derivatives of the corresponding
+   *                       coefficient of the mapping function.
+   *\param num_vtx_out     The number of values passed back in 
+   *                       'vertex_patch_indices_out' and 'd_coeff_d_xi_out'.
+   *\param jacobian_out    The Jacobian of the mapping function at the
+   *                       specified logical location.
+   */             
   virtual 
-  void derivatives_at_mid_edge( unsigned edge, 
-                                unsigned nodebits,
-                                size_t* vertex_indices_out,
-                                double* d_coeff_d_xi_out,
-                                size_t& num_vtx,
-                                MsqError& err ) const = 0;
-
-  /**Get partial derivatives of mapping function coefficients for an 
-   * \f$\vec{\xi}\f$ corresponding
-   * to the middle of an face of the element.
-   *\param face The element face, specified using the canoncial ordering
-   *            of faces for the element topology.
-   */
-  virtual 
-  void derivatives_at_mid_face( unsigned face, 
-                                unsigned nodebits,
-                                size_t* vertex_indices_out,
-                                double* d_coeff_d_xi_out,
-                                size_t& num_vtx,
-                                MsqError& err ) const = 0;
-
-  /**Get partial derivatives of mapping function coefficients for an 
-   * \f$\vec{\xi}\f$ corresponding
-   * to the center of the element.
-   */
-  virtual 
-  void derivatives_at_mid_elem( unsigned nodebits,
-                                size_t* vertex_indices_out,
-                                double* d_coeff_d_xi_out,
-                                size_t& num_vtx,
-                                MsqError& err ) const = 0;
-  /*@}*/
+  void jacobian( const PatchData& pd,
+                 size_t element_number,
+                 unsigned nodebits,
+                 unsigned loc_dim,
+                 unsigned loc_num,
+                 size_t* vertex_patch_indices_out,
+                 MsqVector<3>* d_coeff_d_xi_out,
+                 size_t& num_vtx_out,
+                 MsqMatrix<3,3>& jacobian_out,
+                 MsqError& err ) const;
 };
 
 } // namespace Mesquite
