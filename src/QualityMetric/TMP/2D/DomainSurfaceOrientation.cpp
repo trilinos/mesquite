@@ -129,6 +129,20 @@ bool DomainSurfaceOrientation::evaluate_with_indices( PatchData& pd,
   const unsigned bits = pd.higher_order_node_bits( e );
   
   Vector3D n;
+  switch (dim) {
+    case 0:
+      pd.get_domain_normal_at_corner( e, num, n, err ); MSQ_ERRZERO(err);
+      break;
+    case 1:
+      pd.get_domain_normal_at_mid_edge( e, num, n, err ); MSQ_ERRZERO(err);
+      break;
+    case 2:
+      pd.get_domain_normal_at_element( e, n, err ); MSQ_ERRZERO(err);
+      break;
+    default:
+      MSQ_SETERR(err)( MsqError::INTERNAL_ERROR );
+      return false;
+  }
   func->derivatives( dim, num, bits, indices, mDerivs, num_idx,err ); MSQ_ERRZERO(err);
   
     // Convert from indices into element connectivity list to
