@@ -22,10 +22,34 @@ the absolute value, $|det(T)|$, do not exist when $T$ is singular. Therefore,
 special care must be taken for metrics which include these expressions. 
 \newline
 
+\noindent {\bf Outer Products} \newline
+Let ${\bf a}=(a_1,...,a_n)$ and ${\bf z}=(z_1,...,z_n)$ be two vectors in 
+$R^n$.  The outer product ${\bf a} \otimes {\bf z}$ is a $n \times n$ matrix 
+with entries
+\begin{eqnarray}
+\left( {\bf a} \otimes {\bf z} \right)_{ij} = a_i \, z_j
+\end{eqnarray}
+
+\noindent Let $A = [{\bf a}_1,...,{\bf a}_n]$ and 
+$Z = [{\bf z}_1,...,{\bf z}_n]$ be two $n \times n$ matrices.  Define the 
+outer product $A \otimes Z$ of the two matrices to be an $n^2 \times n^2$ 
+matrix with sub-matrices
+\begin{eqnarray}
+\label{matrixouter}
+\left( A \otimes Z \right)_{ij} = {\bf a}_i \otimes {\bf z}_j
+\end{eqnarray}
+
 \section{First Derivatives}
 
 Let $\frac{\partial f}{\partial T}$ be the matrix of partial derivatives of the scalar function $f(T)$ where $T$ is a matrix, such that each element 
 $\left(\frac{\partial f}{\partial T}\right)_{i,j} = \frac{\partial f}{\partial \, t_{i,j}}$.
+
+\noindent Let $f=f(T)$ and $g=g(T)$
+\begin{eqnarray}
+\frac{\partial}{\partial T} \left( f \, g \right) & = & f \frac{\partial g}{\partial T} + g \frac{\partial f}{\partial T} \label{prod1} \\
+\frac{\partial}{\partial T} \left( \frac{f}{g} \right) & = & \frac{1}{g^2} \left\{ g \frac{\partial f}{\partial T} - f \frac{\partial g}{\partial T} \right\} \label{quotient1}
+\end{eqnarray}
+
 
 \section{Second Derivatives}
 
@@ -57,7 +81,7 @@ and
 Thus the symmetric Hessian of $f(T)$, with the elements of $T$ occuring in row-major order, is composed of blocks of the form $\frac{\partial^2 f}{\partial T_i \partial T_j}$:
 
 \begin{eqnarray}
-\nabla^2 f(T) & = &
+\frac{\partial^2}{\partial T^2} f(T) & = &
 \left[ \begin{array}{c|c|c}
 \frac{\partial^2 f}{\partial T_1 \partial T_1} &
 \ldots &
@@ -108,7 +132,69 @@ Thus the symmetric Hessian of $f(T)$, with the elements of $T$ occuring in row-m
 \frac{\partial^2 f}{\partial t_{n,n} \partial t_{n,1}} &
 \ldots &
 \frac{\partial^2 f}{\partial t_{n,n}^2} 
-\end{array} \right] \nonumber \\
+\end{array} \right] \nonumber \label{2nd-derv} \\
+\end{eqnarray}
+
+\noindent The second derivatives can also be expressed in terms of 
+matrix outer products and operators. For $T$ and $Z$ in $M_n$, define the 
+derivative
+\begin{eqnarray}
+\frac{\partial Z}{\partial T} = \left( \frac{\partial}{\partial T} \otimes Z \right)^t
+\end{eqnarray}
+so that 
+\begin{eqnarray}
+\frac{\partial Z}{\partial T} & = &
+\left[ \begin{array}{ccc|c|ccc}
+\frac{\partial z_{1,1}}{\partial t_{1,1}} &
+\ldots &
+\frac{\partial z_{1,1}}{\partial t_{1,n}} &
+&
+\frac{\partial z_{1,1}}{\partial t_{n,1}} &
+\ldots &
+\frac{\partial z_{1,1}}{\partial t_{n,n}} \\
+\vdots & \ddots & \vdots &
+\ldots &
+\vdots & \ddots & \vdots \\
+\frac{\partial z_{1,n}}{\partial t_{1,1}} &
+\ldots &
+\frac{\partial z_{1,n}}{\partial t_{1,n}} &
+&
+\frac{\partial z_{1,n}}{\partial t_{n,1}} &
+\ldots &
+\frac{\partial z_{1,n}}{\partial t_{n,n}} \\
+\hline
+& \vdots & & \ddots & & \vdots \\
+\hline
+\frac{\partial z_{n,1}}{\partial t_{1,1}} &
+\ldots &
+\frac{\partial z_{n,1}}{\partial t_{1,n}} &
+&
+\frac{\partial z_{n,1}}{\partial t_{n,1}} &
+\ldots &
+\frac{\partial z_{n,1}}{\partial t_{n,n}} \\
+\vdots & \ddots & \vdots &
+\ldots &
+\vdots & \ddots & \vdots \\
+\frac{\partial z_{n,n}}{\partial t_{1,1}} &
+\ldots &
+\frac{\partial z_{n,n}}{\partial t_{1,n}} &
+&
+\frac{\partial z_{n,n}}{\partial t_{n,1}} &
+\ldots &
+\frac{\partial z_{n,n}}{\partial t_{n,n}} 
+\end{array} \right] 
+\end{eqnarray}
+
+\noindent If one lets $Z = \frac{\partial f}{\partial T}$ in the previous,
+one obtains \ref{2nd-derv}. \newline
+
+\noindent {\bf Product and Quotient Rules for the Second Derivative} \newline
+
+\noindent Let $f=f(T)$ and $g=g(T)$.
+\begin{eqnarray}
+\frac{\partial^2}{\partial T^2} \left( f \, g \right) & = & f \, \frac{\partial^2 g}{\partial T^2} + g \, \frac{\partial^2 f}{\partial T^2} + \frac{\partial f}{\partial T} \otimes \frac{\partial g}{\partial T} +  \frac{\partial g}{\partial T} \otimes \frac{\partial f}{\partial T} \label{prod2} \\
+\frac{\partial}{\partial T} \left( f \frac{\partial g}{\partial T} \right) & = & f \, \frac{\partial^2 g}{\partial T^2} + \frac{\partial f}{\partial T} \otimes \frac{\partial g}{\partial T} \label{diffusionopp} \\
+\frac{\partial^2}{\partial T^2} \left( \frac{f}{g} \right) & = & \frac{1}{g} \, \frac{\partial^2 f}{\partial T^2} - \frac{1}{g^2} \left\{ f \, \frac{\partial^2 g}{\partial T^2} - \frac{2f}{g} \left( \frac{\partial g}{\partial T} \otimes \frac{\partial g}{\partial T} \right) + \frac{\partial f}{\partial T} \otimes \frac{\partial g}{\partial T} +  \frac{\partial g}{\partial T} \otimes \frac{\partial f}{\partial T} \right\} \nonumber \label{quotient2} \\
 \end{eqnarray}
 
 \chapter{Basic Matrix Derivatives}
@@ -241,6 +327,37 @@ f(T) & = & tr(T) = \sum_{k=1}^n t_{k,k} \\
 \end{eqnarray}
 
 \noindent All of the second derivatives are zero. \newline
+
+\subsection{Derivatives of $tr(adj \, T)$}
+
+\noindent For $n=2$, $tr(adj \, T) = tr(T)$, so the results of 
+the previous section can be used. \newline
+
+\noindent For $n=3$, 
+\begin{eqnarray}
+tr( adj \, T ) = (t_{11} t_{22} - t_{12} t_{21})+ (t_{22} t_{33} - t_{23} t_{32})+ (t_{33} t_{11} - t_{13} t_{31})
+\end{eqnarray}
+
+\begin{eqnarray}
+\frac{\partial}{\partial T} \, tr(adj \, T) = tr(T) \, I - T^t
+\end{eqnarray}
+
+\begin{equation}
+\label{tradj2}
+\frac{\partial^2}{\partial T^2} \, tr(adj \, T) =
+\left[ \begin{array}{ccccccccc}
+ 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 1 \\
+ 0 & 0 & 0 & -1 & 0 & 0 & 0 & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 0 & 0 & -1 & 0 & 0 \\
+ 0 & -1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+ 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 \\
+ 0 & 0 & 0 & 0 & 0 & 0 & 0 & -1 & 0 \\
+ 0 & 0 & -1 & 0 & 0 & 0 & 0 & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 0 & -1 & 0 & 0 & 0 \\
+ 1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0
+\end{array} \right]
+\end{equation}
+
 
 \subsection{Derivatives of $|T|^2$ \label{tsquared}}
 
@@ -417,7 +534,7 @@ which is the definition of the cofactor matrix of $T$, and the transpose of the 
 
 \begin{equation}
 \label{adjform}
-\frac{\partial f}{\partial T} = (adj(T))^t = adj(T^t)
+\frac{\partial \tau}{\partial T} = (adj(T))^t = adj(T^t)
 \end{equation}
 
 \subsection{Second Partial Derivative of $\tau=det(T)$}
@@ -507,7 +624,7 @@ Otherwise, the derivative at $\tau=0$ does not exist. \newline
 \frac{\partial^2}{\partial T^2} \tau^\gamma & = & \frac{\partial}{\partial T} \left( \frac{\partial}{\partial T} \tau^\gamma \right) \nonumber \\
  & = &  \frac{\partial}{\partial T} \left( \gamma \tau^{\gamma-1} (adj T)^t \right) \nonumber \\
  & = & \gamma \,  \frac{\partial}{\partial T} \left( \tau^{\gamma-1} \, \frac{\partial \tau}{\partial T} \right) \nonumber \\
- & = & \gamma \, \left\{ \tau^{\gamma-1} \frac{\partial^2 \tau}{\partial T^2} + (\gamma-1) \, \tau^{\gamma-2} \left( \frac{\partial \tau}{\partial T} \right)^2 \right\}
+ & = & \gamma \, \left\{ \tau^{\gamma-1} \frac{\partial^2 \tau}{\partial T^2} + (\gamma-1) \, \tau^{\gamma-2} \left( \frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right) \right\}
 \end{eqnarray}
 To complete this expression, use formulas \ref{adjform} and either 
 \ref{2ndtau2d} or \ref{2ndtau3d}. \newline
@@ -518,7 +635,7 @@ To complete this expression, use formulas \ref{adjform} and either
 
 \begin{eqnarray}
 \frac{\partial}{\partial T} \, (\tau-1)^2 & = & 2 \, (\tau-1) \, (adj T)^t \\
-\frac{\partial^2}{\partial T^2} \, (\tau-1)^2 & = & 2 \, \left\{ (\tau-1) \frac{\partial^2 \tau}{\partial T^2} + \left( \frac{\partial \tau}{\partial T} \right)^2 \right\}
+\frac{\partial^2}{\partial T^2} \, (\tau-1)^2 & = & 2 \, \left\{ (\tau-1) \frac{\partial^2 \tau}{\partial T^2} + \left( \frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right) \right\}
 \end{eqnarray}
 To complete this expression, use formulas \ref{adjform} and either 
 \ref{2ndtau2d} or \ref{2ndtau3d}. \newline
@@ -532,7 +649,7 @@ For $\tau>0$
 \end{eqnarray}
 
 \begin{eqnarray}
-\frac{\partial^2}{\partial T^2} \ln(\tau) & = & \frac{1}{\tau} \frac{\partial^2 \tau}{\partial T^2} - \frac{1}{\tau^2} \left( \frac{\partial \tau}{\partial T} \right)^2
+\frac{\partial^2}{\partial T^2} \ln(\tau) & = & \frac{1}{\tau} \frac{\partial^2 \tau}{\partial T^2} - \frac{1}{\tau^2} \left( \frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right)
 \end{eqnarray}
 To complete this expression, use formulas \ref{adjform} and either 
 \ref{2ndtau2d} or \ref{2ndtau3d}. \newline
@@ -816,7 +933,7 @@ This metric preserves the shape and orientation of the target and will be derive
 
 \noindent The second derivative is
 \begin{eqnarray}
-\frac{\partial^2}{\partial T^2} \, \tau^2 & = & 2 \, \left\{ \tau \frac{\partial^2 \tau}{\partial T^2} + \left( \frac{\partial \tau}{\partial T} \right)^2 \right\}
+\frac{\partial^2}{\partial T^2} \, \tau^2 & = & 2 \, \left\{ \tau \frac{\partial^2 \tau}{\partial T^2} + \left( \frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right) \right\}
 \end{eqnarray}
 To complete this expression, use formulas \ref{adjform} and either 
 \ref{2ndtau2d} or \ref{2ndtau3d}. \newline
@@ -843,7 +960,7 @@ To complete this expression, use formulas \ref{adjform} and either
 
 \begin{eqnarray}
 \frac{\partial^2 \mu_n}{\partial T^2} & = & \left\{ \begin{array}{cc} 
-64 \, (\tau-\gamma)^2 \left( (\tau-\gamma) \frac{\partial^2 \tau}{\partial T^2} + 3 \, \left( \frac{\partial \tau}{\partial T} \right)^2 \right) & \mbox{if $\tau<\gamma$} \\
+64 \, (\tau-\gamma)^2 \left( (\tau-\gamma) \frac{\partial^2 \tau}{\partial T^2} + 3 \, \left( \frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right) \right) & \mbox{if $\tau<\gamma$} \\
 0                      & \mbox{if $\tau \geq 0$}
 \end{array} \right.
 \end{eqnarray}
@@ -903,30 +1020,13 @@ This metric preserves the shape and size of the target and applies to $n=2$ only
 
 \section{Derivatives of Barrier Metrics}
 
-\subsection{Derivatives of $\mu_n(T)=\frac{f(T)}{g(T)}$ \label{ratio}}
-
-\noindent Many of the barrier metrics have the form
-\begin{eqnarray}
-\mu(T) = \frac{f(T)}{g(T)}
-\end{eqnarray}
-
-\noindent Suppose the derivaties $\frac{\partial f}{\partial T}$, 
-$\frac{\partial^2 f}{\partial T^2}$, $\frac{\partial g}{\partial T}$, and
-$\frac{\partial^2 g}{\partial T^2}$ are known.  Then
-
-\begin{eqnarray}
-\frac{\partial \mu}{\partial T} & = & \frac{1}{g^2} \{ g(T) \frac{\partial f}{\partial T} - f(T) \frac{\partial g}{\partial T} \} \label{fg1} \\
-\frac{\partial^2 \mu}{\partial T^2} & = & \frac{1}{g^3} \left\{ g^2 \frac{\partial^2 f}{\partial T^2} - f g \frac{\partial^2 g}{\partial T^2} - 2 g \frac{\partial f}{\partial T} \frac{\partial g}{\partial T} + 2 f \left( \frac{\partial g}{\partial T} \right)^2 \right\} \label{fg2}
-\end{eqnarray}
-
-
 \subsection{Derivatives of $\mu_n(T)=\frac{|T-I|^2}{2 \, \tau}$}
 
 \noindent This metric preserves the shape, size, and orientation of the target
-and applies to both $n=2$ and $n=3$. \newline
+and applies to both $n=2$ and $n=3$. It is assumed that $\tau>0$, since 
+this is a barrier metric. \newline
 
-\noindent Using the results of section \ref{ratio}, define $g(T)=2 \tau$ so 
-that
+\noindent Define $g(T)=2 \tau$ so that
 \begin{eqnarray}
 \frac{\partial g}{\partial T} & = & 2 \, (adj T)^t \\
 \frac{\partial^2 g}{\partial T^2} & = & 2 \, \frac{\partial^2 \tau}{\partial T^2}
@@ -935,13 +1035,34 @@ To complete this last expression, use either formula \ref{2ndtau2d} or \ref{2ndt
 
 \noindent Next, $f(T)=|T-I|^2$ is the metric in section \ref{tmi}. It's
 derivatives are given there as well. Then $\mu_n(T) = \frac{f(T)}{g(T)}$ 
-and formulas \ref{fg1} and \ref{fg2} may be used to calculate the derivatives. \newline
+and formulas \ref{quotient1} and \ref{quotient2} may be used to calculate the derivatives. 
+The derivatives exist for all $T \in M_n$. \newline
 
 
 \subsection{Derivatives of $\mu_n(T)=|T^{-t}-I|^2$}
 
 \noindent This metric preserves the shape, size, and orientation of the target
 and applies to both $n=2$ and $n=3$. \newline
+
+\noindent For $\tau>0$
+\begin{eqnarray}
+\mu_n (T) & = & |T^{-t}-I|^2 \\
+          & = & |T^{-1}-I|^2  \\
+          & = & |T^{-1}|^2 - 2 \, tr(T^{-1}) + n \\
+          & = & \frac{1}{\tau^2} \, |adj T|^2 - \frac{2}{\tau} \, tr(adj T) + n
+\end{eqnarray}
+
+\noindent If $n=2$, the previous simplifies to
+\begin{eqnarray}
+\mu_2 (T) & = &  \frac{1}{\tau^2} \, |T|^2 - \frac{2}{\tau} \, tr(T) + 2
+\end{eqnarray}
+
+\noindent The dervatives for the case $n=2$ are
+\begin{eqnarray}
+\frac{\partial \mu_2}{\partial T} = \frac{2}{\tau^3} \left\{ \tau \, T - \tau^2 I + \left( \tau \, (tr T) - |T|^2 \right) \, (adj T)^t \right\}
+\end{eqnarray}
+
+\noindent {\it To be completed later...} \newline
 
 \subsection{Derivatives of $\mu_n(T)=|T-T^{-t}|^2$}
 
@@ -956,7 +1077,7 @@ to $n=2$. \newline
 \noindent For $\tau>0$
 \begin{eqnarray}
 \frac{\partial \mu}{\partial T} & = & 2 \, \left( T - \frac{1}{\tau} (adj T)^t \right) \\
-\frac{\partial^2 \mu}{\partial T^2} & = & 2 \, \left\{ I_{n^2}  - \frac{1}{\tau} \frac{\partial^2 \tau}{\partial T^2} + \frac{1}{\tau^2} \left( \frac{\partial \tau}{\partial T} \right)^2 \right\}
+\frac{\partial^2 \mu}{\partial T^2} & = & 2 \, \left\{ I_{n^2}  - \frac{1}{\tau} \frac{\partial^2 \tau}{\partial T^2} + \frac{1}{\tau^2} \left( \frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right) \right\}
 \end{eqnarray}
 To complete this expression, use formulas \ref{adjform} and either 
 \ref{2ndtau2d} or \ref{2ndtau3d}. \newline
@@ -987,7 +1108,7 @@ to both $n=2$ and $n=3$. \newline
 \end{eqnarray}
 
 \begin{eqnarray}
-\frac{\partial^2 \mu}{\partial T^2} = \left( 1 - \frac{1}{\tau^2} \right) \frac{\partial^2 \tau}{\partial T^2} + \frac{2}{\tau^3} \left( \frac{\partial \, \tau}{\partial T} \right)^2
+\frac{\partial^2 \mu}{\partial T^2} = \left( 1 - \frac{1}{\tau^2} \right) \frac{\partial^2 \tau}{\partial T^2} + \frac{2}{\tau^3} \left( \frac{\partial \, \tau}{\partial T} \otimes \frac{\partial \, \tau}{\partial T} \right)
 \end{eqnarray}
 To complete this expression, use formulas \ref{adjform} and either 
 \ref{2ndtau2d} or \ref{2ndtau3d}. \newline
