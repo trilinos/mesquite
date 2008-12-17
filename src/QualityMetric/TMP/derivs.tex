@@ -947,9 +947,31 @@ with $\frac{\partial \psi}{\partial T}$ given in \ref{psi-1st}. \newline
 \frac{\partial^2 \mu_2}{\partial T^2} & = & \frac{I_4}{\psi} - \frac{1}{\psi^2} \, \left\{ \psi \, \mu_2 \, \frac{\partial^2 \psi}{\partial T^2} - 2 \mu_2 \left( \frac{\partial \psi}{\partial T} \otimes \frac{\partial \psi}{\partial T} \right) + T \otimes \frac{\partial \psi}{\partial T} + \frac{\partial \psi}{\partial T} \otimes T \right\} \nonumber \\
 \end{eqnarray}
 
-\subsection{Derivatives of $\mu_n(T)=|T- s \, I|^2$}
+\subsection{Derivatives of $\mu_n(T)=|T|^2 - \frac{1}{n} \, (tr \, T) |tr(T)|$}
 
-This metric preserves the shape and orientation of the target and will be derived for both $n=2$ and $n=3$. \newline
+This metric preserves the shape and orientation of the target and applies 
+to both $n=2$ and $n=3$. \newline
+
+\noindent The metric is
+\begin{eqnarray}
+\mu_n(T)=|T|^2 - \frac{1}{n} \, (tr \, T) \, |tr(T)|
+\end{eqnarray}
+
+\noindent The metric is differentiable on $M_n$, with
+\begin{eqnarray}
+\frac{\partial \mu_n}{\partial T} = 2 \, \left\{ T - \frac{1}{n} \, |tr(T)| \, I \right\}
+\end{eqnarray}
+
+\noindent The second derivative does not exist when $tr(T)=0$; otherwise 
+it is  
+\begin{eqnarray}
+\frac{\partial^2 \mu_n}{\partial T^2} = 2 \, \left\{ I_{n^2} - \frac{1}{n} \, \left( I \otimes I \right) \right\}
+\end{eqnarray}
+for $tr(T) > 0$, and 
+\begin{eqnarray}
+\frac{\partial^2 \mu_n}{\partial T^2} = 2 \, \left\{ I_{n^2} + \frac{1}{n} \, \left( I \otimes I \right) \right\}
+\end{eqnarray}
+for $tr(T) < 0$. \newline
 
 \subsection{Derivatives of $\mu_n(T) = \tau^2$}
 
