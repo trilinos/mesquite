@@ -312,8 +312,9 @@ y_{k,l} & = & \sum_{p=1}^n x_{k,p} z_{l,p} \\
 \section{Derivatives of Basic TMP Scalar Functions}
 All TMP metrics are functions of the matrices $A$, $Z$, or $T=AZ$.
 Each such metric in turn is some combination of the basic scalar functions
-$|T|^m$, $det(T)$, $tr(T)$, $|T^t T|$, or $|adj T|^2$.  Therefore, derivatives
-of these basic TMP functions will be derived first. \newline
+$|T|^m$, $det(T)$, $tr(T)$, $tr(adj \, T)$, $|T^t T|$, or $|adj T|^2$.  
+Therefore, derivatives of these basic TMP functions will be derived first,
+to serve as the building blocks for TMP metrics.  \newline
 
 \noindent Throughout this document, let $\tau = det(T)$. Some of the 
 metrics include a user-supplied constant, $\gamma$. \newline
@@ -631,11 +632,11 @@ To complete this expression, use formulas \ref{adjform} and either
 
 \noindent If $\gamma < 2$, then the second derivative formula is only valid for $\tau \neq 0$. \newline
 
-\subsubsection{Derivatives of $f(T)=(\tau-1)^2$ \label{tauminus1}}
+\subsubsection{Derivatives of $f(T)=(\tau-1)^2$}
 
 \begin{eqnarray}
-\frac{\partial}{\partial T} \, (\tau-1)^2 & = & 2 \, (\tau-1) \, (adj T)^t \\
-\frac{\partial^2}{\partial T^2} \, (\tau-1)^2 & = & 2 \, \left\{ (\tau-1) \frac{\partial^2 \tau}{\partial T^2} + \left( \frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right) \right\}
+\frac{\partial}{\partial T} \, (\tau-1)^2 & = & 2 \, (\tau-1) \, (adj T)^t  \label{tauminus1} \\
+\frac{\partial^2}{\partial T^2} \, (\tau-1)^2 & = & 2 \, \left\{ (\tau-1) \frac{\partial^2 \tau}{\partial T^2} + \left( \frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right) \right\}  \label{tm1}
 \end{eqnarray}
 To complete this expression, use formulas \ref{adjform} and either 
 \ref{2ndtau2d} or \ref{2ndtau3d}. \newline
@@ -852,7 +853,7 @@ so that
 \end{eqnarray}
 and similarly for the second derivatives. \newline
 
-\subsection{Derivatives of $\mu_2(T)=|T|^2 - 2 \, \tau$}
+\subsection{Derivatives of $\mu_2(T)=|T|^2 - 2 \, \tau$ \label{2ds}}
 
 This metric preserves the shape of the target and applies to $n=2$ only. \newline
 
@@ -875,11 +876,11 @@ This metric preserves the shape of the target and applies to $n=2$ only. \newlin
 This metric preserves the shape and size of the target and applies to $n=2$ only. \newline 
 
 \begin{eqnarray}
-\psi(T) = \sqrt{|T|^2 + 2 \, \tau}
+\psi(T) = \sqrt{|T|^2 + 2 \, \tau} \label{psi-def}
 \end{eqnarray}
 
 \begin{eqnarray}
-\frac{\partial}{\partial T} \psi(T) = \frac{T + (adj T)^t}{\psi}
+\frac{\partial}{\partial T} \psi(T) = \frac{T + (adj T)^t}{\psi} \label{psi-1st}
 \end{eqnarray}
 
 \noindent The previous formula is valid for all $T$ except those $T$ 
@@ -888,7 +889,8 @@ which satisfy $T^t T + \tau \, I = 0$ (they are the scaled-flips). \newline
 
 \noindent Let $s=t_{1,2}-t_{2,1}$. The following holds for $\psi \neq 0$
 \begin{eqnarray}
-\frac{\partial^2 \psi}{\partial T_i \partial T_j}
+\label{psi-2nd}
+\frac{\partial^2 \psi}{\partial T^2}
  & = & \frac{1}{\psi^3} \, \left[ \begin{array}{cccc}
 s^2 & -s \, tr(T) & +s \, tr(T) & s^2 \\
 -s \, tr(T) & (tr \, T)^2 & -(tr \, T)^2 & -s \, tr(T) \\
@@ -905,18 +907,45 @@ s^2 & -s \, tr(T) & +s \, tr(T) & s^2
 
 \begin{eqnarray}
 \label{psi2nd}
-\frac{\partial^2 \mu}{\partial T_i \partial T_j}  & = & 2 \, \left\{ \delta_i^j I - \frac{1}{\psi^3} \, \left[ \begin{array}{cccc}
-s^2 & -s \, tr(T) & +s \, tr(T) & s^2 \\
--s \, tr(T) & (tr \, T)^2 & -(tr \, T)^2 & -s \, tr(T) \\
-+s \, tr(T) & -(tr \, T)^2 & (tr \, T)^2 & +s \, tr(T) \\
-s^2 & -s \, tr(T) & +s \, tr(T) & s^2
-\end{array} \right] \right\} \nonumber \\
+\frac{\partial^2 \mu}{\partial T^2}  & = & 2 \, \left\{ I_4 - \frac{\partial^2 \psi}{\partial T^2} \right\}
+%2 \, \left\{ I_4 - \frac{1}{\psi^3} \, \left[ \begin{array}{cccc}
+%s^2 & -s \, tr(T) & +s \, tr(T) & s^2 \\
+%-s \, tr(T) & (tr \, T)^2 & -(tr \, T)^2 & -s \, tr(T) \\
+%+s \, tr(T) & -(tr \, T)^2 & (tr \, T)^2 & +s \, tr(T) \\
+%s^2 & -s \, tr(T) & +s \, tr(T) & s^2
+%\end{array} \right] \right\} \nonumber \\
 \end{eqnarray}
  
 \noindent In terms of a practical software implementation, there should be 
 added a check so that, given $T$, if $\psi(T) = 0$, then apply
 a random $\epsilon$ perturbation to each component of $T$ so that $\psi$ 
 is non-zero.  Then it is valid to apply \ref{psi1st} and \ref{psi2nd}. \newline
+
+\subsection{Derivatives of $\mu_2(T)=\frac{|T|^2 + 2}{2 \, \psi(T)}$}
+
+\noindent This metric preserves the shape and size of the target and applies
+to $n=2$ only. The metric has a 'barrier', not against singular matrices,
+but against scaled flips. Recall $T \in M_2$ is a scaled flip if and only if 
+$\psi(T)=0$.\footnote{Note that $\psi(T) \geq 0$ for all $T$.} Therefore, the metric is undefined on the set of 
+scaled flips, and it should be treated the same as a normal barrier metric 
+in that if $T$ is a scaled flip, then the implementation should return 
+{\it false} or {\it invalid}. \newline
+
+\noindent For $\psi> 0$,
+\begin{eqnarray}
+\mu_2(T)=\frac{|T|^2 + 2}{2 \, \psi(T)} 
+\end{eqnarray}
+where $\psi$ is defined in \ref{psi-def}. \newline
+
+\begin{eqnarray}
+\frac{\partial \mu_2}{\partial T} & = & \frac{1}{\psi^2} \, \left\{ \psi \, T - \left( \frac{1}{2} |T|^2 + 1 \right) \frac{\partial \psi}{\partial T} \right\} \\
+& = & \frac{1}{\psi} \, \left\{ T - \mu_2 \,  \frac{\partial \psi}{\partial T} \right\} 
+\end{eqnarray}
+with $\frac{\partial \psi}{\partial T}$ given in \ref{psi-1st}. \newline
+
+\begin{eqnarray}
+\frac{\partial^2 \mu_2}{\partial T^2} & = & \frac{I_4}{\psi} - \frac{1}{\psi^2} \, \left\{ \psi \, \mu_2 \, \frac{\partial^2 \psi}{\partial T^2} - 2 \mu_2 \left( \frac{\partial \psi}{\partial T} \otimes \frac{\partial \psi}{\partial T} \right) + T \otimes \frac{\partial \psi}{\partial T} + \frac{\partial \psi}{\partial T} \otimes T \right\} \nonumber \\
+\end{eqnarray}
 
 \subsection{Derivatives of $\mu_n(T)=|T- s \, I|^2$}
 
@@ -995,7 +1024,7 @@ to $n=3$ only. \newline
 
 \noindent This is a composite metric for in which the first two terms are the 
 same as the metric in the previous section and the last term was discussed
-in section \ref{tauminus1}. \newline 
+in equations \ref{tauminus1} and \ref{tm1}. \newline 
 
 \begin{eqnarray}
 \mu_3 (T) & = & |T|^3 - 3 \sqrt{3} \, \tau + \gamma (\tau-1)^2 \\
@@ -1004,19 +1033,41 @@ in section \ref{tauminus1}. \newline
 \end{eqnarray}
 To complete the last expression, use formula \ref{3dtauhessblock}. \newline
 
-\subsection{Derivatives of $\mu_2(T)=\frac{|T|^2 + 2}{2 \, \psi(T)}$}
-
-\noindent This metric preserves the shape and size of the target and applies
-to both $n=2$ and $n=3$. It has a pseudo-barrier, against scaled flips. 
-\newline
-
 \subsection{Derivatives of $\mu_2(T)=|T^t T - \tau \, I|^2$}
 
 This metric preserves the shape of the target applies to $n=2$ only. \newline
 
+\begin{eqnarray}
+\mu_2 (T) & = & |T^t T - \tau \, I|^2 \\
+          & = & |T^t T|^2 - 2 \tau |T|^2 + 2 \tau^2 \nonumber
+\end{eqnarray}
+
+\begin{eqnarray}
+\frac{\partial \mu_2}{\partial T} & = & 4 \, \left\{ T T^t T - \tau T + \left( \tau - \frac{1}{2} |T|^2 \right) \, (adj T)^t \right\}
+\end{eqnarray}
+
+\begin{eqnarray}
+\frac{\partial^2 \mu_2}{\partial T^2} & = & \frac{\partial^2}{\partial T^2} |T^t T|^2 - 2 \, \frac{\partial^2}{\partial T^2} \left( \tau |T|^2 \right) + 2 \, \frac{\partial^2}{\partial T^2} \tau^2
+\end{eqnarray}
+where the first term is given in \ref{hessttt}, and the second a third terms are
+\begin{eqnarray}
+\frac{\partial^2}{\partial T^2} \left( \tau \, |T|^2 \right) & = & 2 \, \left\{ \tau \, I_4 + \frac{1}{2} \, |T|^2 \, \frac{\partial^2 \tau}{\partial T^2} + (adj \, T)^t \otimes T + T \otimes (adj \, T)^t \right\} \nonumber \\
+ \\
+\frac{\partial^2}{\partial T^2} \tau^2 & = & 2 \, \left\{ \tau \frac{\partial^2 \tau}{\partial T^2} + \frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right\}
+\end{eqnarray}
+
 \subsection{Derivatives of $\mu_2(T)=|T-(adj T)^t|^2 + \gamma (\tau-1)^2$}
 
-This metric preserves the shape and size of the target and applies to $n=2$ only. \newline
+This metric preserves the shape and size of the target and applies to $n=2$ only.
+\begin{eqnarray}
+\mu_2 (T) & = & |T-(adj T)^t|^2 + \gamma (\tau-1)^2 \\
+          & = & 2 \, |T|^2 - 4 \, \tau  + \gamma (\tau-1)^2
+\end{eqnarray}
+
+\noindent This is a composite metric, the first term being twice the 
+metric in Section \ref{2ds} and the second term being $\gamma$ times the
+expressions in \ref{tauminus1} and \ref{tm1}. The derivatives are accordingly 
+a linear combination of the derivatives of these two terms. \newline
 
 \section{Derivatives of Barrier Metrics}
 
@@ -1062,7 +1113,28 @@ and applies to both $n=2$ and $n=3$. \newline
 \frac{\partial \mu_2}{\partial T} = \frac{2}{\tau^3} \left\{ \tau \, T - \tau^2 I + \left( \tau \, (tr T) - |T|^2 \right) \, (adj T)^t \right\}
 \end{eqnarray}
 
-\noindent {\it To be completed later...} \newline
+
+\begin{eqnarray}
+\frac{\partial^2 \mu_2}{\partial T^2} = \frac{\partial^2}{\partial T^2} \frac{|T|^2}{\tau^2} - 2 \frac{\partial^2}{\partial T^2} \frac{tr(T)}{\tau}
+\end{eqnarray}
+with
+\begin{eqnarray}
+ \frac{\partial^2}{\partial T^2} \frac{|T|^2}{\tau^2} & = & \frac{2}{\tau^2} \, I_{4} \nonumber \\
+ & - & \frac{2}{\tau^4} \left\{ |T|^2 \left( \tau \, \frac{\partial^2 \tau}{\partial T^2} - 3 \frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T}  \right) + 2 \tau \left( T \otimes \frac{\partial \tau}{\partial T} + \frac{\partial \tau}{\partial T} \otimes T \right) \right\} \nonumber \\
+\end{eqnarray}
+and 
+\begin{eqnarray}
+ \frac{\partial^2}{\partial T^2} \frac{tr(T)}{\tau} & = & -\frac{1}{\tau^2} \left\{ tr(T) \, \frac{\partial^2 \tau}{\partial T^2} -2 \frac{tr(T)}{\tau} \left( \frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right) + I_2 \otimes \frac{\partial \tau}{\partial T} + \frac{\partial \tau}{\partial T} \otimes I_2 \right\} \nonumber \\
+\end{eqnarray}
+
+\noindent {\bf The case $n=3$} {\it to be completed...} \newline
+\begin{eqnarray}
+\mu_3 (T) & = & \frac{1}{\tau^2} \, |adj T|^2 - \frac{2}{\tau} \, tr(adj T) + 3
+\end{eqnarray}
+
+\begin{eqnarray}
+\frac{\partial^2 \mu_3}{\partial T^2} = \frac{\partial^2}{\partial T^2} \frac{|adj T|^2}{\tau^2} - 2 \frac{\partial^2}{\partial T^2} \frac{tr(adj \, T)}{\tau}
+\end{eqnarray}
 
 \subsection{Derivatives of $\mu_n(T)=|T-T^{-t}|^2$}
 
