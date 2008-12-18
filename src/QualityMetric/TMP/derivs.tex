@@ -1018,6 +1018,26 @@ To complete this expression, use formulas \ref{adjform} and either
 To complete these expressions, use formulas \ref{adjform} and either 
 \ref{2ndtau2d} or \ref{2ndtau3d}. \newline
 
+\subsection{Derivatives of $\mu_n(T) = \frac{1}{2} \left( - \tau + \sqrt{\tau^2 + \left(\epsilon \, \bar{\tau} \right)^2} \right)$}
+
+\noindent This is an untangle metric for both $n=2$ and $n=3$. Both 
+$\epsilon$ and $\bar{\tau}$ are parameters. \newline
+
+\begin{eqnarray} 
+\mu_n(T) = \frac{1}{2} \left( - \tau + \sqrt{\tau^2 + \left(\epsilon \, \bar{\tau} \right)^2} \right)
+\end{eqnarray}
+
+\begin{eqnarray}
+\frac{\partial \mu_n}{\partial T} & = & \frac{1}{2} \left( -1 + \frac{\tau}{\sqrt{\tau^2 + \left(\epsilon \, \bar{\tau} \right)^2}} \right) \, (adj \, T)^t 
+\end{eqnarray}
+
+\begin{eqnarray}
+\frac{\partial^2 \mu_n}{\partial T^2} & = & \frac{1}{2} \left\{ f \, \frac{\partial^2 \tau}{\partial T^2} + \frac{\partial f}{\partial T} \otimes (adj \, T)^t \right\} \\
+f & = & -1 +  \frac{\tau}{\sqrt{\tau^2 + \left(\epsilon \, \bar{\tau} \right)^2}} \\
+\frac{\partial f}{\partial T} & = & \frac{(\epsilon \, \bar{\tau})^2}{\left(\tau^2 + \left(\epsilon \, \bar{\tau} \right)^2 \right)^{3/2}} \, (adj T)^t
+\end{eqnarray}
+
+
 \subsection{Derivatives of $\mu_3(T) = |T|^3 - 3 \sqrt{3} \, \tau$}
 
 \noindent This metric preserves the shape of the target and applies 
