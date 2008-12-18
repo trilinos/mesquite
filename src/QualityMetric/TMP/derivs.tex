@@ -329,7 +329,7 @@ f(T) & = & tr(T) = \sum_{k=1}^n t_{k,k} \\
 
 \noindent All of the second derivatives are zero. \newline
 
-\subsection{Derivatives of $tr(adj \, T)$}
+\subsection{Derivatives of $tr(adj \, T)$ \label{traj}}
 
 \noindent For $n=2$, $tr(adj \, T) = tr(T)$, so the results of 
 the previous section can be used. \newline
@@ -472,7 +472,7 @@ does not give the same result on the left when one would expect it to. In fact
 whereas in standard partial derivatives, one can perform the switch of the 
 indices without needing the transpose.} \newline
 
-\subsection{Derivatives of $f(T)=|adj T|^2$}
+\subsection{Derivatives of $f(T)=|adj T|^2$ \label{nrm-adj}}
 For $T_{2 \times 2}$, 
 \begin{eqnarray}
 |adj T|^2 = |T|^2 
@@ -947,7 +947,7 @@ with $\frac{\partial \psi}{\partial T}$ given in \ref{psi-1st}. \newline
 \frac{\partial^2 \mu_2}{\partial T^2} & = & \frac{I_4}{\psi} - \frac{1}{\psi^2} \, \left\{ \psi \, \mu_2 \, \frac{\partial^2 \psi}{\partial T^2} - 2 \mu_2 \left( \frac{\partial \psi}{\partial T} \otimes \frac{\partial \psi}{\partial T} \right) + T \otimes \frac{\partial \psi}{\partial T} + \frac{\partial \psi}{\partial T} \otimes T \right\} \nonumber \\
 \end{eqnarray}
 
-\subsection{Derivatives of $\mu_n(T)=|T|^2 - \frac{1}{n} \, (tr \, T) |tr(T)|$}
+\subsection{Derivatives of $\mu_n(T)=|T|^2 - \frac{1}{n} \, (tr \, T) |tr(T)|$ \label{si+}}
 
 This metric preserves the shape and orientation of the target and applies 
 to both $n=2$ and $n=3$. \newline
@@ -959,7 +959,7 @@ to both $n=2$ and $n=3$. \newline
 
 \noindent The metric is differentiable on $M_n$, with
 \begin{eqnarray}
-\frac{\partial \mu_n}{\partial T} = 2 \, \left\{ T - \frac{1}{n} \, |tr(T)| \, I \right\}
+\frac{\partial \mu_n}{\partial T} = 2 \, \left\{ T - \frac{1}{n} \, |tr(T)| \, I \right\} \label{derv1-si+}
 \end{eqnarray}
 
 \noindent The second derivative does not exist when $tr(T)=0$; otherwise 
@@ -1125,7 +1125,8 @@ and applies to both $n=2$ and $n=3$. \newline
           & = & \frac{1}{\tau^2} \, |adj T|^2 - \frac{2}{\tau} \, tr(adj T) + n
 \end{eqnarray}
 
-\noindent If $n=2$, the previous simplifies to
+\noindent {\bf The Case $n=2$}. \newline
+If $n=2$, the previous simplifies to
 \begin{eqnarray}
 \mu_2 (T) & = &  \frac{1}{\tau^2} \, |T|^2 - \frac{2}{\tau} \, tr(T) + 2
 \end{eqnarray}
@@ -1149,7 +1150,7 @@ and
  \frac{\partial^2}{\partial T^2} \frac{tr(T)}{\tau} & = & -\frac{1}{\tau^2} \left\{ tr(T) \, \frac{\partial^2 \tau}{\partial T^2} -2 \frac{tr(T)}{\tau} \left( \frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right) + I_2 \otimes \frac{\partial \tau}{\partial T} + \frac{\partial \tau}{\partial T} \otimes I_2 \right\} \nonumber \\
 \end{eqnarray}
 
-\noindent {\bf The case $n=3$} {\it to be completed...} \newline
+\noindent {\bf The Case $n=3$}. \newline
 \begin{eqnarray}
 \mu_3 (T) & = & \frac{1}{\tau^2} \, |adj T|^2 - \frac{2}{\tau} \, tr(adj T) + 3
 \end{eqnarray}
@@ -1157,13 +1158,45 @@ and
 \begin{eqnarray}
 \frac{\partial^2 \mu_3}{\partial T^2} = \frac{\partial^2}{\partial T^2} \frac{|adj T|^2}{\tau^2} - 2 \frac{\partial^2}{\partial T^2} \frac{tr(adj \, T)}{\tau}
 \end{eqnarray}
+with
+\begin{eqnarray}
+\frac{\partial^2}{\partial T^2} \frac{|adj \, T|^2}{\tau^2} & = & \frac{1}{\tau^2} \, \frac{\partial^2}{\partial T^2} |adj \, T|^2 - \frac{1}{\tau^4} \, Y \\
+Y & = & 2 |adj \, T|^2 \left( \tau \frac{\partial^2 \tau}{\partial T^2} + \frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right) - 8 |adj \, T|^2 \left( (adj \, T)^t \otimes (adj \, T)^t \right) \nonumber \\
+ & + & 2 \tau \, \left( \frac{\partial}{\partial T} |adj \, T|^2 \otimes (adj \, T)^t + (adj \, T)^t \otimes  \frac{\partial}{\partial T} |adj \, T|^2 \right) \\
+\frac{\partial^2}{\partial T^2} \frac{tr(adj \, T)}{\tau} & = & \frac{1}{\tau} \, \frac{\partial^2}{\partial T^2} tr(adj \, T) - \frac{1}{\tau^2} \, Z \\
+Z & = & tr(adj \, T) \frac{\partial^2 \tau}{\partial T^2} - 2 \frac{tr(adj \, T)}{\tau} \left( \frac{\partial \tau}{\partial T} \otimes  \frac{\partial \tau}{\partial T} \right) \nonumber \\
+ & + & \frac{\partial}{\partial T} tr(adj \, T) \otimes \frac{\partial \tau}{\partial T} + \frac{\partial \tau}{\partial T} \otimes  \frac{\partial}{\partial T} tr(adj \, T)
+\end{eqnarray}
+See Sections \ref{nrm-adj} and \ref{traj} for completion of the derivatives of 
+$|adj \, T|^2$ and $tr(adj \, T)$. \newline
+
+\subsection{Derivatives of $\mu_n(T) = \frac{1}{2\tau} \left( |T|^2 - \frac{1}{n} (tr \, T) |tr(T)| \right)$}
+
+\noindent This metric preserves the shape and orientation of the target and
+applies to both $n=2$ and $n=3$. \newline
+
+\noindent Let $\nu(T) = |T|^2 - \frac{1}{n} (tr \, T) |tr(T)|$, which is the 
+non-barrier metric in Section \ref{si+}. Then
+\begin{eqnarray}
+\mu_n(T) = \frac{\nu(T)}{2 \tau}
+\end{eqnarray}
+
+\begin{eqnarray}
+\frac{\partial \mu_n}{\partial T} = \frac{1}{2 \tau^2} \, \left\{ \tau \frac{\partial \nu}{\partial T} - \nu \, (adj \, T)^t \right\}
+\end{eqnarray}
+with the derivative of $\nu$ given in \ref{derv1-si+}. \newline
+
+\begin{eqnarray}
+\frac{\partial^2 \mu_n}{\partial T^2} & = & \frac{1}{2 \tau} \frac{\partial^2 \nu}{\partial T^2} - \frac{1}{2 \tau^2} Z \\
+Z & = & \nu \frac{\partial^2 \tau}{\partial T^2} - 2 \frac{\nu}{\tau} \left( \frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right) + \frac{\partial \nu}{\partial T} \otimes \frac{\partial \tau}{\partial T} + \frac{\partial \tau}{\partial T} \otimes \frac{\partial \nu}{\partial T}
+\end{eqnarray}
 
 \subsection{Derivatives of $\mu_n(T)=|T-T^{-t}|^2$}
 
 \noindent This metric preserves the shape and size of the target and applies
 to both $n=2$ and $n=3$. \newline
 
-\subsection{Derivatives of $\mu_2(T)=|T|^2 - 2 \ln(\tau)$}
+\subsection{Derivatives of $\mu_2(T)=|T|^2 - 2 \ln(\tau) - 2$}
 
 \noindent This metric preserves the shape and size of the target and applies
 to $n=2$. \newline
@@ -1186,10 +1219,25 @@ to $n=3$. \newline
 \noindent This metric preserves the shape and size of the target and applies
 to $n=2$. \newline
 
-\subsection{Derivatives of $\mu_n(T)=\frac{1}{n^2} \kappa^2(T)$}
+\subsection{Derivatives of $\mu_3(T)=\frac{1}{9} \kappa^2(T)$}
 
 \noindent This metric preserves the shape of the target and applies
-to both $n=2$ and $n=3$. \newline
+to $n=3$, the $n=2$ case being related to Mean Ratio. \newline
+
+\noindent The condition number of $T$ is
+\begin{eqnarray}
+\kappa(T) & = & |T| \, |T^{-1}| \\
+          & = & |T| \, |adj(T)| / |\tau|
+\end{eqnarray}
+
+\noindent Since $\tau>0$, we can drop the absolute value to obtain
+\begin{eqnarray}
+\mu_3(T) & = & \frac{|T|^2 \, |adj(T)|^2}{9 \, \tau^2}
+\end{eqnarray}
+
+\noindent The derivatives can be obtained from the derivatives of $|T|^2$,
+$|adj \, T|^2$, and $\tau^2$, along with the product and quotient rules 
+\ref{prod1}, \ref{quotient1}, \ref{prod2}, and \ref{quotient2}. \newline 
 
 \subsection{Derivatives of $\mu_n(T)=\tau + 1/\tau$}
 
@@ -1210,7 +1258,22 @@ To complete this expression, use formulas \ref{adjform} and either
 \subsection{Derivatives of $\mu_2(T) = \frac{|T|^2}{2 \tau}$}
 
 \noindent This metric preserves the shape of the target and applies
-to $n=2$. It is the 2D Mean Ratio. \newline
+to $n=2$. It is the 2D Mean Ratio. It is a special case of the result
+in the Inverse Mean Ratio section below, but with an alternate derivation. \newline
+
+\noindent For $\tau>0$,
+\begin{eqnarray}
+\mu_2(T) = \frac{|T|^2}{2 \tau}
+\end{eqnarray}
+
+\begin{eqnarray}
+\frac{\partial \mu_2}{\partial T} = \frac{1}{2 \tau^2} \, \left\{ 2 \, \tau \, T - |T|^2 (adj \, T)^t \right\}
+\end{eqnarray}
+
+\begin{eqnarray}
+\frac{\partial^2 \mu_2}{\partial T^2} & = & \frac{1}{\tau} I_4 - \frac{1}{2 \tau^2} Z \\
+Z & = & |T|^2 \frac{\partial^2 \tau}{\partial T^2} - 4 \mu_2 \left(\frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right) + 2 \left( T \otimes \frac{\partial \tau}{\partial T} + \frac{\partial \tau}{\partial T} \otimes T \right)
+\end{eqnarray}
 
 \subsection{Derivatives of $\mu_3(T)=\frac{|T|^3}{3 \sqrt{3} \tau}$}
 
