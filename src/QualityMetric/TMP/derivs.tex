@@ -492,7 +492,7 @@ and, using \ref{hesstm} and \ref{hessttt}, the second derivative is
 \begin{eqnarray}
 \frac{\partial^2 f}{\partial T_i \partial T_j} & = & \frac{1}{2} \frac{\partial^2 }{\partial T_i \partial T_j} |T|^4 - \frac{1}{2} \frac{\partial^2}{\partial T_i \partial T_j} |T^t T|^2 \nonumber \\
  & = & 2 \, \{ \delta_i^j |T|^2 I + 2 S_{ij} \} - 2 \, \{ S_{ji} + (T T^t)_{i,j} I + \delta_j^i T^t T \} \nonumber \\
- & = & 2 \, \left\{ \left( \delta_i^j \, |T|^2 - (T T^t)_{i,j} \right) I + 2 S_{ij}-S_{ji} - \delta_j^i T^t T \right\}
+ & = & 2 \, \left\{ \left( \delta_i^j \, |T|^2 - (T T^t)_{i,j} \right) I + 2 S_{ij}-S_{ji} - \delta_j^i T^t T \right\} \label{hess-nrm-adj}
 \end{eqnarray}
 with $S_{ij}$ defined in \ref{sij}. \newline
 
@@ -871,7 +871,7 @@ This metric preserves the shape of the target and applies to $n=2$ only. \newlin
 \end{array} \right]
 \end{eqnarray}
 
-\subsection{Derivatives of $\mu_2(T)=|T|^2 - 2 \, \psi(T) + 2$}
+\subsection{Derivatives of $\mu_2(T)=|T|^2 - 2 \, \psi(T) + 2$ \label{magic}}
 
 This metric preserves the shape and size of the target and applies to $n=2$ only. \newline 
 
@@ -1160,8 +1160,8 @@ and
 \end{eqnarray}
 with
 \begin{eqnarray}
-\frac{\partial^2}{\partial T^2} \frac{|adj \, T|^2}{\tau^2} & = & \frac{1}{\tau^2} \, \frac{\partial^2}{\partial T^2} |adj \, T|^2 - \frac{1}{\tau^4} \, Y \\
-Y & = & 2 |adj \, T|^2 \left( \tau \frac{\partial^2 \tau}{\partial T^2} + \frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right) - 8 |adj \, T|^2 \left( (adj \, T)^t \otimes (adj \, T)^t \right) \nonumber \\
+\frac{\partial^2}{\partial T^2} \frac{|adj \, T|^2}{\tau^2} & = & \frac{1}{\tau^2} \, \frac{\partial^2}{\partial T^2} |adj \, T|^2 - \frac{1}{\tau^4} \, Y \label{adj-frac} \\
+Y & = & 2 |adj \, T|^2 \left( \tau \frac{\partial^2 \tau}{\partial T^2} + \frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right) - 8 |adj \, T|^2 \left( (adj \, T)^t \otimes (adj \, T)^t \right) \nonumber \label{yadj-frac} \\
  & + & 2 \tau \, \left( \frac{\partial}{\partial T} |adj \, T|^2 \otimes (adj \, T)^t + (adj \, T)^t \otimes  \frac{\partial}{\partial T} |adj \, T|^2 \right) \\
 \frac{\partial^2}{\partial T^2} \frac{tr(adj \, T)}{\tau} & = & \frac{1}{\tau} \, \frac{\partial^2}{\partial T^2} tr(adj \, T) - \frac{1}{\tau^2} \, Z \\
 Z & = & tr(adj \, T) \frac{\partial^2 \tau}{\partial T^2} - 2 \frac{tr(adj \, T)}{\tau} \left( \frac{\partial \tau}{\partial T} \otimes  \frac{\partial \tau}{\partial T} \right) \nonumber \\
@@ -1170,7 +1170,7 @@ Z & = & tr(adj \, T) \frac{\partial^2 \tau}{\partial T^2} - 2 \frac{tr(adj \, T)
 See Sections \ref{nrm-adj} and \ref{traj} for completion of the derivatives of 
 $|adj \, T|^2$ and $tr(adj \, T)$. \newline
 
-\subsection{Derivatives of $\mu_n(T) = \frac{1}{2\tau} \left( |T|^2 - \frac{1}{n} (tr \, T) |tr(T)| \right)$}
+\subsection{Derivatives of $\mu_n(T) = \frac{1}{2\tau} \left( |T|^2 - \frac{1}{n} (tr \, T) |tr(T)| \right)$ \label{nu-over-tau}}
 
 \noindent This metric preserves the shape and orientation of the target and
 applies to both $n=2$ and $n=3$. \newline
@@ -1196,6 +1196,25 @@ Z & = & \nu \frac{\partial^2 \tau}{\partial T^2} - 2 \frac{\nu}{\tau} \left( \fr
 \noindent This metric preserves the shape and size of the target and applies
 to both $n=2$ and $n=3$. \newline
 
+\noindent For $\tau>0$
+\begin{eqnarray}
+\mu_n(T) & = & |T-T^{-t}|^2 \\
+         & = & |T|^2 + |T^{-1}|^2 - 2 \, n \\
+         & = & |T|^2 + \frac{|adj \, T|^2}{\tau^2} - 2 \, n
+\end{eqnarray}
+
+\noindent The first derivative:
+\begin{eqnarray}
+\frac{\partial \mu_n}{\partial T} & = & 2 \, T + \frac{2}{\tau^3} \left\{ \tau \, |T|^2 T - \tau \, T \, T^t T - |adj \, T|^2 \, (adj \, T)^t \right\}
+\end{eqnarray}
+Recall that for $n=2$, $|adj \, T|^2=|T|^2$. \newline
+
+\noindent The second derivative:
+\begin{eqnarray}
+\frac{\partial \mu_n}{\partial T} & = & 2 I_{n^2} - \frac{\partial^2}{\partial T^2} \left( \frac{|adj \, T|^2}{\tau^2} \right)
+\end{eqnarray}
+The last term is given in \ref{adj-frac} and \ref{yadj-frac}. \newline
+
 \subsection{Derivatives of $\mu_2(T)=|T|^2 - 2 \ln(\tau) - 2$}
 
 \noindent This metric preserves the shape and size of the target and applies
@@ -1209,15 +1228,43 @@ to $n=2$. \newline
 To complete this expression, use formulas \ref{adjform} and either 
 \ref{2ndtau2d} or \ref{2ndtau3d}. \newline
 
-\subsection{Derivatives of $\mu_3(T)=|T|^3 - 3 \sqrt{3} \ln(\tau)$}
+\subsection{Derivatives of $\mu_3(T)=|T|^3 - 3 \sqrt{3} \ln(\tau) - 3 \sqrt{3}$}
 
 \noindent This metric preserves the shape and size of the target and applies
 to $n=3$. \newline
+
+\noindent For $\tau>0$
+\begin{eqnarray}
+\mu_3(T) & = & |T|^3 - 3 \sqrt{3} \ln(\tau) - 3 \sqrt{3} 
+\end{eqnarray}
+
+\noindent The first deriviative:
+\begin{eqnarray}
+\frac{\partial \mu_3}{\partial T} & = & 3 \, |T| \, T - 3 \sqrt{3} \, \frac{1}{\tau} \, (adj \, T)^t \\
+ & = & 3 \, \left\{ |T| \, T - \sqrt{3} \, T^{-t} \right\}
+\end{eqnarray}
+
+\noindent The second derivative:
+\begin{eqnarray}
+\frac{\partial^2 \mu_3}{\partial T^2} & = & 3 \, |T| \, I_{9} - 3 \sqrt{3} \, \left\{ \frac{1}{\tau} \frac{\partial^2 \tau}{\partial T^2} - \frac{1}{\tau^2} \left( \frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right) \right\}
+\end{eqnarray}
 
 \subsection{Derivatives of $\mu_2(T)=\frac{|T|^2-2 \psi(T)+2}{2 \, \tau}$}
 
 \noindent This metric preserves the shape and size of the target and applies
 to $n=2$. \newline
+
+\noindent For $\tau>0$
+\begin{eqnarray}
+\mu_2(T) & = & \frac{|T|^2-2 \psi(T)+2}{2 \, \tau} \\
+         & = & \frac{\nu(T)}{2 \, \tau}
+\end{eqnarray}
+with $\nu(T) = |T|^2 - 2 \psi(T) + 2$ being the metric in Section \ref{magic}. 
+ \newline
+
+\noindent The first and second derivatives of $\mu_2$ in this section are the 
+same as the formulas in Section \ref{nu-over-tau}, but with the first and 
+second derivatives of $\nu$ from Section \ref{magic}.  \newline
 
 \subsection{Derivatives of $\mu_3(T)=\frac{1}{9} \kappa^2(T)$}
 
@@ -1278,12 +1325,45 @@ Z & = & |T|^2 \frac{\partial^2 \tau}{\partial T^2} - 4 \mu_2 \left(\frac{\partia
 \subsection{Derivatives of $\mu_3(T)=\frac{|T|^3}{3 \sqrt{3} \tau}$}
 
 \noindent This metric preserves the shape of the target and applies
-to $n=3$. \newline
+to $n=3$. It is closely related to the 3D Inverse Mean Ratio. \newline
+
+\noindent For $\tau>0$
+\begin{eqnarray}
+\mu_3(T)=\frac{|T|^3}{3 \sqrt{3} \tau}
+\end{eqnarray}
+
+\begin{eqnarray}
+\frac{\partial \mu_3}{\partial T} & = & \frac{1}{3 \sqrt{3} \, \tau} \, \left\{ 3 \, |T| \, T - |T|^3 \, T^{-t} \right\}
+\end{eqnarray}
+
+
+\begin{eqnarray}
+\frac{\partial^2 \mu_3}{\partial T^2} & = & \frac{1}{3 \sqrt{3} \, \tau} \, \left\{ 3 \, |T| \, I_9 - \frac{1}{\tau} \, Z \right\} \\
+Z & = & |T|^3 \frac{\partial^2 \tau}{\partial T^2} - 2 \frac{|T|^3}{\tau} \left( \frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right) \nonumber \\
+ & + & 3 \, |T| \left( T \otimes \frac{\partial \tau}{\partial T} + \frac{\partial \tau}{\partial T} \otimes T \right)
+\end{eqnarray}
 
 \subsection{Derivatives of $\mu_3(T)=\frac{|T|^2 + |adj T|^2}{6 \tau}$}
 
 \noindent This metric preserves the shape and size of the target and applies
 to $n=3$. \newline
+
+\noindent For $\tau>0$
+\begin{eqnarray}
+\mu_3 (T) & = & \frac{|T|^2 + |adj T|^2}{6 \tau}
+\end{eqnarray}
+
+\begin{eqnarray}
+\frac{\partial \mu_3}{\partial T} & = & \frac{1}{\tau} \, \left\{ \frac{T}{3} \left[ \, (1+|T|^2) \, I - T^t T \right] - \mu_3 \, (adj T)^t \right\}
+\end{eqnarray}
+
+\noindent To find the second derivative, let $f(T)=|T|^2 + |adj \, T|^2$ and
+$g(T)=6 \tau$.  Then the relation \ref{quotient2} can be applied, with
+\begin{eqnarray}
+\frac{\partial f}{\partial T} & = & 2 \, T \, \left\{ \left( 1 + |T|^2 \right) \, I - T^t T \right\} \\
+\frac{\partial^2 f}{\partial T^2} & = & 2 \, I_9 + \frac{\partial^2}{\partial T^2} \, |adj \, T|^2
+\end{eqnarray}
+The last derivative is basically given in \ref{hess-nrm-adj}. \newline
 
 \subsection{Derivatives of Inverse Mean Ratio}
 
