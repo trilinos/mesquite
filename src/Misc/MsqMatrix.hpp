@@ -124,9 +124,11 @@ public:
   MsqMatrix<1,R> column_transpose( unsigned c ) const;
   
   void set_row( unsigned r, const MsqMatrix<1,C>& v );
+  void add_row( unsigned r, const MsqMatrix<1,C>& v );
   void set_row_transpose( unsigned r, const MsqMatrix<C,1>& v );
   void set_rows( const MsqMatrix<1,C>* v );
   void set_column( unsigned c, const MsqMatrix<R,1>& v );
+  void add_column( unsigned c, const MsqMatrix<R,1>& v );
   void set_column_transpose( unsigned c, const MsqMatrix<1,R>& v );
   void set_columns( const MsqMatrix<R,1>* v );
 };
@@ -388,6 +390,9 @@ template <unsigned R, unsigned C> inline
 void MsqMatrix<R,C>::set_row( unsigned r, const MsqMatrix<1,C>& v )
   { for (unsigned i = 0; i < C; ++i) operator()(r,i) = v(0,i); }
 template <unsigned R, unsigned C> inline
+void MsqMatrix<R,C>::add_row( unsigned r, const MsqMatrix<1,C>& v )
+  { for (unsigned i = 0; i < C; ++i) operator()(r,i) += v(0,i); }
+template <unsigned R, unsigned C> inline
 void MsqMatrix<R,C>::set_row_transpose( unsigned r, const MsqMatrix<C,1>& v )
   { for (unsigned i = 0; i < C; ++i) operator()(r,i) = v(i,0); }
 template <unsigned R, unsigned C> inline
@@ -397,6 +402,9 @@ void MsqMatrix<R,C>::set_rows( const MsqMatrix<1,C>* v )
 template <unsigned R, unsigned C> inline
 void MsqMatrix<R,C>::set_column( unsigned c, const MsqMatrix<R,1>& v )
   { for (unsigned i = 0; i < R; ++i) operator()(i,c) = v(i,0); }
+template <unsigned R, unsigned C> inline
+void MsqMatrix<R,C>::add_column( unsigned c, const MsqMatrix<R,1>& v )
+  { for (unsigned i = 0; i < R; ++i) operator()(i,c) += v(i,0); }
 template <unsigned R, unsigned C> inline
 void MsqMatrix<R,C>::set_column_transpose( unsigned c, const MsqMatrix<1,R>& v )
   { for (unsigned i = 0; i < R; ++i) operator()(i,c) = v(0,i); }

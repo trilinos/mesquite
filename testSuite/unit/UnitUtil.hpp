@@ -202,9 +202,9 @@ inline bool ident_check( const Mesquite::MsqMatrix<R,C>& m )
 {
   for (unsigned i = 0; i < R; ++i)
     for (unsigned j = 0; j < C; ++j)
-      if (i == j && fabs(m(i,j)) > 1.000001)
+      if (i == j && fabs(m(i,j) - 1.0) > 1e-6)
         return false;
-      else if (i != j && fabs(m(i,j)) > 0.000001)
+      else if (i != j && fabs(m(i,j)) > 1e-6)
         return false;
   return true;
 }

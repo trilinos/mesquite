@@ -234,6 +234,8 @@ namespace Mesquite
       //! Returns a pointer to the start of the vertex array.
     const MsqVertex* get_vertex_array( MsqError& err ) const;
     MsqVertex* get_vertex_array(MsqError &err);
+    const MsqVertex* get_vertex_array() const { return &vertexArray[0]; }
+    MsqVertex* get_vertex_array()             { return &vertexArray[0]; }
     
       //! Returns a pointer to the start of the element array.
     const MsqMeshEntity* get_element_array( MsqError& err ) const;
@@ -374,6 +376,27 @@ namespace Mesquite
                                       Vector3D &surf_norm, MsqError &err) const 
     { get_domain_normal_at_element(size_t(elem_ptr-&(elementArray[0])), surf_norm, err); }
     
+    void get_domain_normal_at_sample( size_t element_index,
+                                      unsigned loc_dim,
+                                      unsigned loc_num,
+                                      Vector3D &surf_norm, MsqError &err)  
+    {
+      switch(loc_dim) {
+        case 0:
+          get_domain_normal_at_corner( element_index, loc_num, surf_norm, err );
+          break;
+        case 1:
+          get_domain_normal_at_mid_edge( element_index, loc_num, surf_norm, err );
+          break;
+        case 2:
+          assert(loc_num == 0);
+          get_domain_normal_at_element( element_index, surf_norm, err );
+          break;
+        default:
+          MSQ_SETERR(err)("Invalid dimension for surface element subentity.\n", MsqError::INVALID_ARG );
+      }
+    }
+
       //! Moves free vertices and then snaps the free vertices to the domain.
       /*\param dk an array of directions, ordered like the vertices in
         the PatchData.
