@@ -227,7 +227,16 @@ namespace Mesquite
       //! number of elements in the Patch.
     size_t num_elements() const
       { return elementArray.size(); }
-      
+    
+    bool is_vertex_free(size_t index) const
+      { return index < numFreeVertices; }
+    bool is_vertex_not_free( size_t index ) const
+      { return index >= numFreeVertices; }
+    bool is_vertex_slave(size_t index) const
+      { return index >= numFreeVertices && (index - numFreeVertices) < numSlaveVertices; }
+    bool is_vertex_fixes(size_t index) const
+      { return index >= numFreeVertices + numSlaveVertices; }
+    
       //! number of element corners (number of vertex uses) in patch
     size_t num_corners() const;
     
@@ -428,6 +437,10 @@ namespace Mesquite
       //! Updates the underlying mesh (the Mesquite::Mesh implementation) with
       //! new node coordinates and flag values.
     void update_mesh(MsqError &err);
+    
+      //! Calculate new location for all slave higher-order nodes using
+      //! mapping function.  Called by update_mesh().
+    void update_slave_node_coordinates( MsqError& err );
     
       //!Remove the soft_fixed flag from all vertices in the patch.
     void set_all_vertices_soft_free(MsqError &err);

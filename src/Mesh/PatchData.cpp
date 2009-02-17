@@ -766,6 +766,8 @@ void PatchData::update_mesh(MsqError &err)
     return;
   }
   
+  update_slave_node_coordinates( err ); MSQ_ERRRTN(err);
+  
   for (size_t i = 0; i < vertexArray.size(); ++i)
   {
     if (!vertexArray[i].is_flag_set( MsqVertex::MSQ_HARD_FIXED ))
@@ -777,6 +779,92 @@ void PatchData::update_mesh(MsqError &err)
     myMesh->vertex_set_byte( vertexHandlesArray[i],
                              vertexArray[i].get_flags(),
                              err ); MSQ_ERRRTN(err);
+  }
+}
+
+void PatchData::update_slave_node_coordinates( MsqError& err )
+{
+    // update slave vertices
+  if (0 == num_slave_vertices())
+    return;
+  
+    // need mapping function to define slave node locations
+  MappingFunctionSet* mfs = get_mapping_functions();
+  if (!mfs) {
+    MSQ_SETERR(err)("Cannot update slave node coordinates w/out mapping function",MsqError::INVALID_STATE);
+    return;
+  }
+
+    // Set a mark on every slave vertex.  We'll clear the marks as we
+    // set the vertex coordinates.  This way we can check that all 
+    // vertices got updated.
+  const size_t vert_end = num_free_vertices() + num_slave_vertices();
+  for (size_t i = num_free_vertices(); i < vert_end; ++i)
+    vertex_by_index(i).flags() |= MsqVertex::MSQ_MARK;
+  
+    // For each element, calculate slave vertex coordinates from
+    // mapping function.
+  const int ARR_SIZE = 27;
+  double coeff[ARR_SIZE];
+  for (size_t i = 0; i < num_elements(); ++i) {
+    MsqMeshEntity& elem = element_by_index(i);
+    const int num_corner = elem.vertex_count();
+    const int num_node = elem.node_count();
+    assert(num_node < ARR_SIZE);
+  
+    const EntityTopology type = elem.get_element_type();
+    const MappingFunction* const mf = mfs->get_function( type );
+    if (0 == mf || num_node == num_corner)
+      continue;
+      
+    const size_t* conn = elem.get_vertex_index_array();
+
+      // for each higher-order non-slave node, set bit indicating
+      // that mapping function is a function of the non-slave node
+      // coordinates
+    unsigned ho_bits = 0;
+    for (int k = num_corner; k < num_node; ++k)
+      if (!is_vertex_slave(conn[k]))
+        ho_bits |= (1 << (k-num_corner));
+    
+      // for each higher-order slave node
+    for (int k = num_corner; k < num_node; ++k) {
+      if (!is_vertex_slave(conn[k]))
+        continue;
+      
+        // check if we already did this one for an adjacent element
+      MsqVertex& vert = vertex_by_index(conn[k]);
+      if (!vert.is_flag_set(MsqVertex::MSQ_MARK))
+        continue;
+     
+        // what is this node a mid node of (i.e. face 1, edge 2, etc.)
+      unsigned dim, num;
+      TopologyInfo::side_from_higher_order( type, elem.node_count(), k,
+                                            dim, num, err );  MSQ_ERRRTN(err);
+      
+        // evaluate mapping function at logical loction of HO node.
+      size_t num_coeff;
+      mf->coefficients( dim, num, ho_bits, coeff, num_coeff, err ); MSQ_ERRRTN(err);
+      
+        // calulate new coordinates for slave node
+      vert = coeff[0] * vertex_by_index(conn[0]);
+      for (size_t j = 1; j < num_coeff; ++j)
+        vert += coeff[j] * vertex_by_index(conn[j]);
+      
+        // clear mark
+      vert.flags() &= ~MsqVertex::MSQ_MARK;
+    }
+  }
+  
+    // make sure we set the coordinates for every slave node
+  for (size_t i = num_free_vertices(); i < vert_end; ++i) {
+    if (vertex_by_index(i).is_flag_set(MsqVertex::MSQ_MARK)) {
+      MSQ_SETERR(err)(MsqError::INVALID_MESH, 
+       "No element with mapping function adjacent to slave vertex %lu (%lu)\n",
+       (unsigned long)i, (unsigned long)get_vertex_handles_array()[i]);
+        // make sure we finish with all marks cleared
+      vertex_by_index(i).flags() &= ~MsqVertex::MSQ_MARK;
+    }
   }
 }
 
@@ -1386,8 +1474,8 @@ void PatchData::initialize_data( size_t* elem_offset_array,
       for (j = elementArray[i].vertex_count(); j < conn_len; ++j) {
         const size_t vert_idx = vertex_index_map[elemConnectivityArray[start+j]];
         assert(vert_idx < vertexHandlesArray.size());
-        if (vert_idx < numFreeVertices && !(vertex_flags[i]&MsqVertex::MSQ_DEPENDENT)) {
-          vertex_flags[i] |= MsqVertex::MSQ_DEPENDENT;
+        if (vert_idx < numFreeVertices && !(vertex_flags[vert_idx]&MsqVertex::MSQ_DEPENDENT)) {
+          vertex_flags[vert_idx] |= MsqVertex::MSQ_DEPENDENT;
           ++numSlaveVertices;
         }
       }
@@ -1406,6 +1494,7 @@ void PatchData::initialize_data( size_t* elem_offset_array,
       for ( ; vertex_flags[j] & MsqVertex::MSQ_DEPENDENT; ++j);
       msq_std::swap( vertex_index_map[i], vertex_index_map[j] );
       msq_std::swap( vertexHandlesArray[i], vertexHandlesArray[j] );
+      msq_std::swap( vertex_flags[i], vertex_flags[j] );
     }
     assert( i == numFreeVertices );
     assert( j <= numFreeVertices + numSlaveVertices );

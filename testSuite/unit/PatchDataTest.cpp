@@ -49,6 +49,9 @@ Unit testing of various functions in the PatchData class.
 #include "PatchDataInstances.hpp"
 #include "UnitUtil.hpp"
 
+#include "MappingFunctionSet.hpp"
+#include "TriLagrangeShape.hpp"
+
 #include "cppunit/extensions/HelperMacros.h"
 
 #include <algorithm>
@@ -75,6 +78,7 @@ private:
   CPPUNIT_TEST (test_sub_patch);
   CPPUNIT_TEST (test_fill);
   CPPUNIT_TEST (test_reorder);
+  CPPUNIT_TEST (test_update_slave_node_coords);
   CPPUNIT_TEST_SUITE_END();
    
 private:
@@ -358,6 +362,8 @@ public:
   
   void test_fill() { test_patch_contents(false); }
   void test_reorder() { test_patch_contents(true); }
+  
+  void test_update_slave_node_coords();
 };
 
 
@@ -608,6 +614,69 @@ void PatchDataTest::test_patch_contents( bool reorder )
       ++conn_pos;
     }
   }
+}
+
+class HOTri : public MappingFunctionSet {
+  private:
+    TriLagrangeShape myFunc;
+  public:
+    virtual ~HOTri() {}
+    const MappingFunction* get_function( EntityTopology type ) const
+      { return (type == TRIANGLE) ? &myFunc : 0; }
+    const MappingFunction2D* get_surf_function( EntityTopology type ) const
+      { return (type == TRIANGLE) ? &myFunc : 0; }
+    const MappingFunction3D* get_vol_function( EntityTopology type ) const
+      { return 0; }
+};
+
+void PatchDataTest::test_update_slave_node_coords()
+{
+  MsqPrintError err(msq_stdio::cerr);
+
+    // create a patch containing a single 6-node triangle
+    // with a) two mid-edge nodes marked as slave vertices and
+    // b) with all mid-edge nodes moved away from the center
+    // of their corresponding edge.
+  const double coords[] = { 0, 0, 0, 
+                            1, 0, 0,
+                            0, 1, 0,
+                            0.5, -0.1, -0.1,
+                            0.6,  0.6,  0.1,
+                           -0.1,  0.5,  0.0 };
+  const size_t init_conn[] = { 0, 1, 2, 3, 4, 5 };
+  const bool fixed[] = { false, false, false, false, true, false };
+  PatchData pd;
+  EntityTopology type = TRIANGLE;
+  size_t node_per_tri = 6;
+  pd.fill( 6, coords, 1, &type, &node_per_tri, init_conn, fixed, err );
+  ASSERT_NO_ERROR(err);
+  
+    // update_slave_node_coords requires a mapping function
+  HOTri mfs;
+  pd.set_mapping_functions( &mfs );
+  
+    // call the function we're trying to test.
+  pd.update_slave_node_coordinates( err );
+  ASSERT_NO_ERROR(err);
+  
+    // get vertex coordinates in the same order that we passed them in
+  MsqMeshEntity elem = pd.element_by_index(0);
+  const size_t* conn = elem.get_vertex_index_array();
+  Vector3D vtx_coords[6];
+  for (size_t i = 0; i < 6; ++i)
+    vtx_coords[i] = pd.vertex_by_index(conn[i]);
+  
+    // check that corner vertex coordinates are unchanged
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( coords   ), vtx_coords[0], 1e-12 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( coords+3 ), vtx_coords[1], 1e-12 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( coords+6 ), vtx_coords[2], 1e-12 );
+    // check that fixed HO node is unchanged
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D( coords+12 ), vtx_coords[4], 1e-12 );
+    // check that slave HO nodes were updated
+  const Vector3D mid1 = 0.5 * (Vector3D(coords) + Vector3D(coords+3));
+  const Vector3D mid2 = 0.5 * (Vector3D(coords) + Vector3D(coords+6));
+  CPPUNIT_ASSERT_VECTORS_EQUAL( mid1, vtx_coords[3], 1e-6 );
+  CPPUNIT_ASSERT_VECTORS_EQUAL( mid2, vtx_coords[5], 1e-6 );
 }
 
   

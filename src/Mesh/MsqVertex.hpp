@@ -91,7 +91,8 @@ namespace Mesquite
        MSQ_HARD_FIXED = 1<<0, //!< vertex is always fixed. This can only be set on and never off.
        MSQ_DEPENDENT  = 1<<1, //!< higher-order node w/ position determined by mapping function
        MSQ_CULLED     = 1<<2, //!< vertex is fixed. This flag can be set on and off. 
-       MSQ_PATCH_VTX  = 1<<3  //!< vertex used to define patch (for evaluated vertex-based metrics)
+       MSQ_PATCH_VTX  = 1<<3, //!< vertex used to define patch (for evaluated vertex-based metrics)
+       MSQ_MARK       = 1<<4  //!< arbitrary mark for use by code - clear before using
      };
        //!Returns true if vertex is ``free''.
      bool is_free_vertex() const
