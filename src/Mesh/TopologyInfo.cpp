@@ -34,6 +34,24 @@ namespace Mesquite {
 
 TopologyInfo TopologyInfo::instance;
 
+const char long_polygon_name[]       = "Polygon";
+const char long_triangle_name[]      = "Triangle";
+const char long_quadrilateral_name[] = "Quadrilateral";
+const char long_polyhedron_name[]    = "Polyhedron";
+const char long_tetrahedron_name[]   = "Tetrahedron";
+const char long_hexahedron_name[]    = "Hexahedron";
+const char long_prism_name[]         = "Prism";
+const char long_pyramid_name[]       = "Pyramd";
+const char long_septahedron_name[]   = "Septahedron";
+const char short_polygon_name[]       = "Polygon";
+const char short_triangle_name[]      = "Tri";
+const char short_quadrilateral_name[] = "Quad";
+const char short_polyhedron_name[]    = "Polyhedron";
+const char short_tetrahedron_name[]   = "Tet";
+const char short_hexahedron_name[]    = "Hex";
+const char short_prism_name[]         = "Pri";
+const char short_pyramid_name[]       = "Pyr";
+const char short_septahedron_name[]   = "Sept";
 
 TopologyInfo::TopologyInfo()
 {
@@ -42,6 +60,28 @@ TopologyInfo::TopologyInfo()
   memset( edgeMap, 0, sizeof(edgeMap) );
   memset( faceMap, 0, sizeof(faceMap) );
   memset( vertAdjMap, 0, sizeof(vertAdjMap) );
+  memset( shortNames, 0, sizeof(shortNames) );
+  memset( longNames, 0, sizeof(longNames) );
+  
+  longNames[POLYGON]       = long_polygon_name;
+  longNames[TRIANGLE]      = long_triangle_name;
+  longNames[QUADRILATERAL] = long_quadrilateral_name;
+  longNames[POLYHEDRON]    = long_polyhedron_name;
+  longNames[TETRAHEDRON]   = long_tetrahedron_name;
+  longNames[HEXAHEDRON]    = long_hexahedron_name;
+  longNames[PRISM]         = long_prism_name;
+  longNames[PYRAMID]       = long_pyramid_name;
+  longNames[SEPTAHEDRON]   = long_septahedron_name;
+  
+  shortNames[POLYGON]       = short_polygon_name;
+  shortNames[TRIANGLE]      = short_triangle_name;
+  shortNames[QUADRILATERAL] = short_quadrilateral_name;
+  shortNames[POLYHEDRON]    = short_polyhedron_name;
+  shortNames[TETRAHEDRON]   = short_tetrahedron_name;
+  shortNames[HEXAHEDRON]    = short_hexahedron_name;
+  shortNames[PRISM]         = short_prism_name;
+  shortNames[PYRAMID]       = short_pyramid_name;
+  shortNames[SEPTAHEDRON]   = short_septahedron_name;
   
   dimMap[POLYGON ]      = 2;
   dimMap[TRIANGLE]      = 2;

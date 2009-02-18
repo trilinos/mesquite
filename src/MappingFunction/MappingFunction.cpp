@@ -54,10 +54,17 @@ void MappingFunction2D::jacobian( const PatchData& pd,
   derivatives( loc_dim, loc_num, nodebits, vertex_patch_indices_out,
                d_coeff_d_xi_out, num_vtx_out, err ); MSQ_ERRRTN(err);
  
+  PatchData::reduced_connectivity_map( elem.get_element_type(),
+                                       elem.node_count(),
+                                       num_vtx_out,
+                                       vertex_patch_indices_out,
+                                       vertex_patch_indices_out,
+                                       err );  MSQ_ERRRTN(err);
+ 
   jacobian_out.zero();
   size_t w = 0;
   for (size_t r = 0; r < num_vtx_out; ++r) {
-    size_t i = conn[vertex_patch_indices_out[r]];
+    size_t i = vertex_patch_indices_out[r] = conn[vertex_patch_indices_out[r]];
     MsqMatrix<3,1> coords( pd.vertex_by_index( i ).to_array() );
     jacobian_out += coords * transpose(d_coeff_d_xi_out[r]);
     if (i < pd.num_free_vertices()) {
@@ -86,10 +93,17 @@ void MappingFunction3D::jacobian( const PatchData& pd,
   derivatives( loc_dim, loc_num, nodebits, vertex_patch_indices_out,
                d_coeff_d_xi_out, num_vtx_out, err ); MSQ_ERRRTN(err);
  
+  PatchData::reduced_connectivity_map( elem.get_element_type(),
+                                       elem.node_count(),
+                                       num_vtx_out,
+                                       vertex_patch_indices_out,
+                                       vertex_patch_indices_out,
+                                       err );  MSQ_ERRRTN(err);
+ 
   jacobian_out.zero();
   size_t w = 0;
   for (size_t r = 0; r < num_vtx_out; ++r) {
-    size_t i = conn[vertex_patch_indices_out[r]];
+    size_t i = vertex_patch_indices_out[r] = conn[vertex_patch_indices_out[r]];
     MsqMatrix<3,1> coords( pd.vertex_by_index( i ).to_array() );
     jacobian_out += coords * transpose(d_coeff_d_xi_out[r]);
     if (i < pd.num_free_vertices()) {

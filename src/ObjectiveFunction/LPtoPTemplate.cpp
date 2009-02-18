@@ -361,7 +361,8 @@ bool LPtoPTemplate::evaluate_with_Hessian( EvalType type,
   {
     // Computes \nabla^2 Q(e). Only the free vertices will have non-zero entries. 
     qm_bool = qm->evaluate_with_Hessian( pd, *k, QM_val, mIndices, mGradient, mHessian, err );
-    if (MSQ_CHKERR(err) || !qm_bool) return false;
+    if (MSQ_CHKERR(err) || !qm_bool) 
+      return false;
     QM_val = fabs(QM_val);
 
     // **** Computes Hessian ****

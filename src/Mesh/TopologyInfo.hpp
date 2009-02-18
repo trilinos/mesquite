@@ -40,6 +40,11 @@ class MsqError;
 class MESQUITE_EXPORT TopologyInfo
 {
   public:
+  
+    static const char* name( EntityTopology topo )
+      { return topo > MIXED ? 0 : instance.longNames[topo]; }
+    static const char* short_name( EntityTopology topo )
+      { return topo > MIXED ? 0 : instance.shortNames[topo]; }
     
       /** \brief Dimension of element topology */
     static unsigned dimension( EntityTopology topo )
@@ -334,6 +339,9 @@ class MESQUITE_EXPORT TopologyInfo
     unsigned vertAdjMap[LAST_VOL-FIRST_FACE+1][MAX_CORNER][MAX_VERT_ADJ+1];
     /** Reverse Vertex-Vertex adjacency index map */
     unsigned revVertAdjIdx[LAST_VOL-FIRST_FACE+1][MAX_CORNER][MAX_VERT_ADJ+1];
+
+    const char* longNames[MIXED+1];
+    const char* shortNames[MIXED+1];
 
     TopologyInfo();
     

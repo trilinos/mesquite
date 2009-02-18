@@ -67,10 +67,16 @@
 
 #ifdef MSQ_USE_OLD_IO_HEADERS
 #  include <iostream.h>
+#  include <iomanip.h>
 #else
 #  include <iostream>
+#  include <iomanip>
    using std::ostream;
    using std::endl;
+   using std::setw;
+   using std::setfill;
+   using std::left;
+   using std::internal;
 #endif
 
 namespace Mesquite {
@@ -806,6 +812,7 @@ void PatchData::update_slave_node_coordinates( MsqError& err )
     // mapping function.
   const int ARR_SIZE = 27;
   double coeff[ARR_SIZE];
+  size_t full_conn_map[ARR_SIZE];
   for (size_t i = 0; i < num_elements(); ++i) {
     MsqMeshEntity& elem = element_by_index(i);
     const int num_corner = elem.vertex_count();
@@ -822,10 +829,8 @@ void PatchData::update_slave_node_coordinates( MsqError& err )
       // for each higher-order non-slave node, set bit indicating
       // that mapping function is a function of the non-slave node
       // coordinates
-    unsigned ho_bits = 0;
-    for (int k = num_corner; k < num_node; ++k)
-      if (!is_vertex_slave(conn[k]))
-        ho_bits |= (1 << (k-num_corner));
+    unsigned ho_bits = higher_order_node_bits( i );
+    expanded_connectivity_map( type, num_node, full_conn_map, err );
     
       // for each higher-order slave node
     for (int k = num_corner; k < num_node; ++k) {
@@ -847,9 +852,9 @@ void PatchData::update_slave_node_coordinates( MsqError& err )
       mf->coefficients( dim, num, ho_bits, coeff, num_coeff, err ); MSQ_ERRRTN(err);
       
         // calulate new coordinates for slave node
-      vert = coeff[0] * vertex_by_index(conn[0]);
-      for (size_t j = 1; j < num_coeff; ++j)
-        vert += coeff[j] * vertex_by_index(conn[j]);
+      vert = Vector3D(0,0,0);
+      for (int j = 0; j < num_node && full_conn_map[j] < num_coeff; ++j)
+        vert += coeff[full_conn_map[j]] * vertex_by_index(conn[j]);
       
         // clear mark
       vert.flags() &= ~MsqVertex::MSQ_MARK;
@@ -1285,53 +1290,137 @@ void PatchData::set_domain(MeshDomain* d)
   notify_patch_destroyed();
 }
 
+static int width( double d )
+{
+  if (d == 0.0)
+    return 1;
+  const int max_precision = 6;
+  int w = (int)ceil(log10(0.001+fabs(d)));
+  if (w < 0) 
+    w = 2 + std::min(max_precision,-w);
+  if (d < 0.0)
+    ++w;
+  return w;
+}
+static int width( size_t t )
+  { return t ? (int)ceil(log10(1+t)) : 1; }
+static int width( const void* ptr)
+  { return width((size_t)ptr); }
+
 ostream& operator<<( ostream& stream, const PatchData& pd )
 {
    size_t i;
+   int fw = 5; // width of bit flags
+   int hw = 6; // width of a handle
+   int cw = 4; // with of a coordinate value
+   int iw = 3; // with of an index
+   int tw = 3; // with of the string name of an element type
+   int xw = cw, yw = cw, zw = cw;
+   
+   for (i = 0; i < pd.num_nodes(); ++i) {
+     int w = 2+width(pd.vertexHandlesArray[i]);
+     if (w > hw)
+       hw = w;
+     w = width(pd.vertexArray[i].x());
+     if (w > xw)
+       xw = w;
+     w = width(pd.vertexArray[i].y());
+     if (w > yw)
+       yw = w;
+     w = width(pd.vertexArray[i].z());
+     if (w > zw)
+       zw = w;
+   }
+   for (i = 0; i < pd.num_elements(); ++i) {
+     int w = 2+width(pd.elementHandlesArray[i]);
+     if (w > hw)
+       hw = w;
+     const char* name = TopologyInfo::short_name(pd.elementArray[i].get_element_type());
+     if (name && (int)strlen(name) > tw)
+       tw = strlen(name);
+   }
+   if (iw < (int)ceil(log10(1+pd.num_nodes())))
+     iw = (int)ceil(log10(1+pd.num_nodes()));
+   if (iw < (int)ceil(log10(1+pd.num_elements())))
+     iw = (int)ceil(log10(1+pd.num_elements()));
+    
    
    stream << "Vertices: " << endl;
+   stream << "Flags: C: culled, F: fixed, S: slave, P: patch vertex, M: marked" << endl;
+   stream << setw(iw) << "Idx"    << " " 
+          << setw(hw) << "Handle" << " "
+          << setw(cw) << "X"      << ","
+          << setw(cw) << "Y"      << ","
+          << setw(cw) << "Z"      << " "
+          << setw(fw) << "Flags"  << " "
+          <<             "Adj.Elems" << endl
+          << setw(iw) << setfill('-') << "" << " "
+          << setw(hw) << setfill('-') << "" << " "
+          << setw(cw) << setfill('-') << "" << ","
+          << setw(cw) << setfill('-') << "" << ","
+          << setw(cw) << setfill('-') << "" << " "
+          << setw(fw) << setfill('-') << "" << " "
+          << setfill(' ') << "-------------" << std::endl;
    for (i = 0; i < pd.num_nodes(); ++i)
    {
-      stream << i << ". " 
-             << pd.vertexHandlesArray[i] << " (" 
-             << pd.vertexArray[i].x() << ","
-             << pd.vertexArray[i].y() << ","
-             << pd.vertexArray[i].z()
-             << ") ";
+      stream << setw(iw) << i << " " 
+             << setw(hw) << pd.vertexHandlesArray[i] << " " 
+             << setw(cw) << pd.vertexArray[i].x() << ","
+             << setw(cw) << pd.vertexArray[i].y() << ","
+             << setw(cw) << pd.vertexArray[i].z() << " ";
       if (pd.vertexArray[i].is_flag_set( MsqVertex::MSQ_CULLED ))
-        stream << "S";
+        stream << "C";
+      else 
+        stream << " ";
       if (pd.vertexArray[i].is_flag_set( MsqVertex::MSQ_HARD_FIXED ))
-        stream << "H";
+        stream << "F";
+      else 
+        stream << " ";
+      if (pd.vertexArray[i].is_flag_set( MsqVertex::MSQ_DEPENDENT ))
+        stream << "S";
+      else 
+        stream << " ";
+      if (pd.vertexArray[i].is_flag_set( MsqVertex::MSQ_PATCH_VTX ))
+        stream << "P";
+      else 
+        stream << " ";
+      if (pd.vertexArray[i].is_flag_set( MsqVertex::MSQ_MARK ))
+        stream << "M";
+      else 
+        stream << " ";
       
       if (pd.vertAdjacencyArray.size())
       {
         size_t j = pd.vertAdjacencyOffsets[i];
         size_t end = pd.vertAdjacencyOffsets[i+1];
+        if (j != end) 
+          stream << " " << pd.vertAdjacencyArray[j++];
         for ( ; j < end; ++j )
-          stream << " " << pd.vertAdjacencyArray[j];
+          stream << "," << pd.vertAdjacencyArray[j];
       }
       
       stream << endl;
    }
    
    stream << "Elements: " << endl;
+   stream << setw(iw)   << "Idx"    << " "
+          << setw(hw)   << "Handle" << " "
+          << setw(tw+2) << "Type"   << " "
+          <<             "Connectivity" << std::endl
+          << setw(iw)   << setfill('-') << "" << " "
+          << setw(hw)   << setfill('-') << "" << " "
+          << setw(tw+2) << setfill('-') << "" << " "
+          << setfill(' ') << "--------------------------" << std::endl;
    for (i = 0; i < pd.num_elements(); ++i)
    {
-      stream << i << ". " << pd.elementHandlesArray[i] << " ";
-      switch (pd.elementArray[i].get_element_type()) {
-        case POLYGON:       stream << "Polygon";    break;
-        case TRIANGLE:      stream << "Tri";        break;
-        case QUADRILATERAL: stream << "Quad";       break;
-        case POLYHEDRON:    stream << "Polyhedron"; break;
-        case TETRAHEDRON:   stream << "Tet";        break;
-        case HEXAHEDRON:    stream << "Hex";        break;
-        case PRISM:         stream << "Wedge";      break;
-        case PYRAMID:       stream << "Pyr";        break;
-        default:            stream << "Unknown";    break;
-      }
-      stream << pd.elementArray[i].node_count() << ": ";
-      for (size_t j = 0; j < pd.elementArray[i].node_count(); ++j)
-        stream << pd.elementArray[i].get_vertex_index_array()[j] << " ";
+      EntityTopology type = pd.elementArray[i].get_element_type();
+      stream << setw(iw) << i << " " 
+             << setw(hw) << pd.elementHandlesArray[i] << " "
+             << setw(tw) << TopologyInfo::short_name(type) << left
+             << setw(2)  << pd.elementArray[i].node_count() << internal << " "
+             << setw(iw) << pd.elementArray[i].get_vertex_index_array()[0];
+      for (size_t j = 1; j < pd.elementArray[i].node_count(); ++j)
+        stream << "," << setw(iw) << pd.elementArray[i].get_vertex_index_array()[j];
       stream << endl;
    }
    stream << endl;
@@ -1450,16 +1539,25 @@ void PatchData::initialize_data( size_t* elem_offset_array,
   i = 0;
   j = numFreeVertices;
   for (;; ++i, ++j) {
+      // find next fixed vertex in the range [i,numFreeVertices)
     for (; i < numFreeVertices && !(vertex_flags[i] & MsqVertex::MSQ_HARD_FIXED); ++i);
+      // if no more fixed vertices in the free vertex range [0,numFreeVertices)
     if (i == numFreeVertices)
       break;
+      // find the next free vertex in the range [j,num_nodes)
     for ( ; vertex_flags[j] & MsqVertex::MSQ_HARD_FIXED; ++j);
-    msq_std::swap( vertex_index_map[i], vertex_index_map[j] );
+      // swap fixed (i) and free (j) vertices
+    vertex_index_map[i] = j;
+    vertex_index_map[j] = i;
     msq_std::swap( vertexHandlesArray[i], vertexHandlesArray[j] );
     msq_std::swap( vertex_flags[i], vertex_flags[j] );
   }
   assert( i == numFreeVertices );
   assert( j <= vertexHandlesArray.size() );
+  
+    // Update element connectivity data for new vertex indices
+  for (i = 0; i < elemConnectivityArray.size(); ++i)
+    elemConnectivityArray[i] = vertex_index_map[elemConnectivityArray[i]];
   
     // Reorder vertices such that free, slave vertices
     // occur after free, non-slave vertices in list.
@@ -1472,7 +1570,7 @@ void PatchData::initialize_data( size_t* elem_offset_array,
       size_t start = elem_offset_array[i];
       size_t conn_len = elem_offset_array[i+1] - start;
       for (j = elementArray[i].vertex_count(); j < conn_len; ++j) {
-        const size_t vert_idx = vertex_index_map[elemConnectivityArray[start+j]];
+        const size_t vert_idx = elemConnectivityArray[start+j];
         assert(vert_idx < vertexHandlesArray.size());
         if (vert_idx < numFreeVertices && !(vertex_flags[vert_idx]&MsqVertex::MSQ_DEPENDENT)) {
           vertex_flags[vert_idx] |= MsqVertex::MSQ_DEPENDENT;
@@ -1482,27 +1580,37 @@ void PatchData::initialize_data( size_t* elem_offset_array,
     }
     numFreeVertices -= numSlaveVertices;
 
+      // re-initialize vertex index map
+    for (i = 0; i < vertexHandlesArray.size(); ++i)
+      vertex_index_map[i] = i;
+
       // Re-order free vertices such that all slave vertices are
       // last in the list.  Construct map from old to new
       // position in list for updating element connectivity.
     i = 0;
     j = numFreeVertices;
     for (;; ++i, ++j) {
+        // find next slave vertex in the range [i,numFreeVertices)
       for (; i < numFreeVertices && !(vertex_flags[i]&MsqVertex::MSQ_DEPENDENT); ++i);
-      if (i >= numFreeVertices)
+        // if no more slave vertices in [0,numFreeVertices), then done.
+      if (i == numFreeVertices)
         break;
+        // find the next free (non-slave) vertex in the range 
+        //   [numFreeVertices,numFreeVertices+numSlaveVertices)
       for ( ; vertex_flags[j] & MsqVertex::MSQ_DEPENDENT; ++j);
-      msq_std::swap( vertex_index_map[i], vertex_index_map[j] );
+        // swap free (j) and slave (i) vertices
+      vertex_index_map[i] = j;
+      vertex_index_map[j] = i;
       msq_std::swap( vertexHandlesArray[i], vertexHandlesArray[j] );
       msq_std::swap( vertex_flags[i], vertex_flags[j] );
     }
     assert( i == numFreeVertices );
     assert( j <= numFreeVertices + numSlaveVertices );
-  }  
   
-    // Update element connectivity data for new vertex indices
-  for (i = 0; i < elemConnectivityArray.size(); ++i)
-    elemConnectivityArray[i] = vertex_index_map[elemConnectivityArray[i]];
+      // Update element connectivity data for new vertex indices
+    for (i = 0; i < elemConnectivityArray.size(); ++i)
+      elemConnectivityArray[i] = vertex_index_map[elemConnectivityArray[i]];
+  } //   if (have_slave_vertices)
 
     // Clear temporary data    
   vertAdjacencyOffsets.clear();
@@ -1778,8 +1886,10 @@ void PatchData::get_sample_location( size_t element_index,
                               Vector3D& result,
                               MsqError& err ) const
 {
+  size_t full_conn_map[27];
   const MsqMeshEntity& elem = element_by_index( element_index );
   const unsigned ho_bits = higher_order_node_bits( element_index );
+  expanded_connectivity_map( elem.get_element_type(), elem.node_count(), full_conn_map, err );
   const MappingFunction* const f = get_mapping_function( elem.get_element_type() );
   if (!f) {
     MSQ_SETERR(err)("No mapping function", MsqError::UNSUPPORTED_ELEMENT );
@@ -1793,8 +1903,8 @@ void PatchData::get_sample_location( size_t element_index,
   
   const size_t* const conn = elem.get_vertex_index_array();
   result[2] = result[1] = result[0] = 0.0;
-  for (unsigned i = 0; i < num_coeff; ++i) 
-    result += coeff[i] * vertex_by_index(conn[i]);
+  for (unsigned i = 0; i < elem.node_count() && full_conn_map[i] < num_coeff; ++i) 
+    result += coeff[full_conn_map[i]] * vertex_by_index(conn[i]);
 }
 
 
@@ -1834,6 +1944,67 @@ unsigned PatchData::higher_order_node_bits( size_t element_index ) const
     result |= (1 << (num_edge+num_face));
 
   return result;
+}
+
+void PatchData::reduced_connectivity_map( EntityTopology entity_type,
+                                          unsigned num_nodes,
+                                          unsigned num_indices,
+                                          const size_t* input_indices,
+                                          size_t* output_indices,
+                                          MsqError& err )
+{
+  const unsigned edge_offset = TopologyInfo::corners(entity_type);
+  const unsigned face_offset = edge_offset + TopologyInfo::edges( entity_type );
+  const unsigned vol_offset = face_offset + TopologyInfo::faces( entity_type );
+  size_t face_diff = 0, vol_diff = 0;
+  bool have_midedge, have_midface, have_midelem;
+  TopologyInfo::higher_order( entity_type, num_nodes, have_midedge, have_midface, have_midelem, err );
+  MSQ_ERRRTN(err);
+  
+  face_diff = 0;
+  if (!have_midedge) 
+    face_diff = TopologyInfo::edges( entity_type );
+  
+  vol_diff = face_diff;
+  if (!have_midface)
+    vol_diff += TopologyInfo::faces( entity_type );
+  
+  for (unsigned i = 0; i < num_indices; ++i) {
+    if (input_indices[i] < face_offset)
+      output_indices[i] = input_indices[i];
+    else if (input_indices[i] < vol_offset)
+      output_indices[i] = input_indices[i] - face_diff;
+    else 
+      output_indices[i] = input_indices[i] - vol_diff;
+  }
+}
+
+void PatchData::expanded_connectivity_map( EntityTopology entity_type,
+                                           unsigned num_nodes,
+                                           size_t* indices,
+                                           MsqError& err )
+{
+  const unsigned corners = TopologyInfo::corners(entity_type);
+  const unsigned edges   = TopologyInfo::edges  (entity_type);
+  const unsigned faces   = TopologyInfo::faces  (entity_type);
+  bool have_midedge, have_midface, have_midelem;
+  TopologyInfo::higher_order( entity_type, num_nodes, have_midedge, have_midface, have_midelem, err );
+  MSQ_ERRRTN(err);
+
+  size_t offset = 0;
+  for (unsigned i = 0; i < corners; ++i)
+    indices[offset++] = i;
+
+  if (have_midedge)
+    for (unsigned i = 0; i < edges; ++i)
+      indices[offset++] = corners + i;
+  
+  if (have_midface)
+    for (unsigned i = 0; i < faces; ++i)
+      indices[offset++] = corners + edges + i;
+      
+  if (have_midelem)
+    indices[offset++] = corners + edges + faces;
 }
 
 bool PatchData::attach_extra_data( ExtraData* data )

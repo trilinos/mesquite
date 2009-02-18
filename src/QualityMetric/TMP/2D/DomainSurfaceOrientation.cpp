@@ -143,7 +143,8 @@ bool DomainSurfaceOrientation::evaluate_with_indices( PatchData& pd,
       MSQ_SETERR(err)( MsqError::INTERNAL_ERROR );
       return false;
   }
-  func->derivatives( dim, num, bits, indices, mDerivs, num_idx,err ); MSQ_ERRZERO(err);
+  func->derivatives( dim, num, bits, indices, mDerivs, num_idx, err ); MSQ_ERRZERO(err);
+  PatchData::reduced_connectivity_map( type, elem.node_count(), num_idx, indices, indices, err );
   
     // Convert from indices into element connectivity list to
     // indices into vertex array in patch data.
