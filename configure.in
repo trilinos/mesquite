@@ -718,6 +718,7 @@ AC_CONFIG_FILES([Makefile
                  testSuite/2d_formulation/Makefile
                  testSuite/synchronous/Makefile
                  testSuite/high_aspect_ratio/Makefile
+                 testSuite/higher_order/Makefile
                  utils/Makefile
                  doc/Makefile
                  doc/user/Makefile

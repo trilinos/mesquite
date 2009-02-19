@@ -41,6 +41,7 @@ SUBDIRS = test_1 \
 	  2d_formulation \
 	  synchronous \
           high_aspect_ratio \
+	  higher_order \
 	  $(IMESH_TEST) $(EXO_TEST) $(UNIT_TEST)
 
 # Override all-recursive so that "make" with no target 

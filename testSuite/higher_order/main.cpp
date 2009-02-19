@@ -66,8 +66,10 @@ using std::endl;
 #include "PatchData.hpp"
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
+#include "MappingFunctionSet.hpp"
+#include "QuadLagrangeShape.hpp"
 
-// algorythms
+// algorithms
 #include "IdealWeightInverseMeanRatio.hpp"
 #include "ConditionNumberQualityMetric.hpp"
 #include "LPtoPTemplate.hpp"
@@ -121,6 +123,21 @@ const char OUTPUT_FILE_NAME[]             = "smoothed_qudratic_mesh.vtk";
 const unsigned NUM_CORNER_VERTICES = 16;
 const unsigned NUM_MID_NODES = 24;
 const double SPATIAL_COMPARE_TOLERANCE = 1e-6;
+
+class QuadLagrangeSet : public MappingFunctionSet
+{
+  private:
+    QuadLagrangeShape myFunc;
+  public:
+    virtual ~QuadLagrangeSet() {}
+    const MappingFunction* get_function( EntityTopology type ) const
+      { return (type == QUADRILATERAL) ? &myFunc : 0; }
+    const MappingFunction2D* get_surf_function( EntityTopology type ) const
+      { return (type == QUADRILATERAL) ? &myFunc : 0; }
+    const MappingFunction3D* get_vol_function( EntityTopology type ) const
+      { return 0; }
+};
+
 
 void compare_nodes( size_t start_index,
                     size_t end_index,
@@ -191,17 +208,19 @@ void compare_nodes( size_t start_index,
   MSQ_ERRRTN(err);
   
     // Compare coordinates
-  for (i = 1; i <= num_verts; ++i)
+  for (i = 0; i < num_verts; ++i)
   {
-    const double diff = (verts1[i-1] - verts2[i-1]).length();
+    const double diff = (verts1[i] - verts2[i]).length();
     if (diff > SPATIAL_COMPARE_TOLERANCE)
     {
       MSQ_SETERR(err)(MsqError::INTERNAL_ERROR, 
-                      "%u%s vertices differ.",
-                      (unsigned)i,
-                      i%10 == 1 ? "st" :
-                      i%10 == 2 ? "nd" :
-                      i%10 == 3 ? "rd" : "th");
+                      "%u%s vertices differ. (%f,%f,%f) vs (%f,%f,%f)",
+                      (unsigned)(1+i),
+                      i%10 == 0 ? "st" :
+                      i%10 == 1 ? "nd" :
+                      i%10 == 2 ? "rd" : "th",
+                      verts1[i][0],verts1[i][1],verts1[i][2],
+                      verts2[i][0],verts2[i][1],verts2[i][2]);
       return;
     }
   }
@@ -215,15 +234,9 @@ InstructionQueue* create_instruction_queue(MsqError& err)
   InstructionQueue* queue1 = new InstructionQueue;
 
   // creates a mean ratio quality metric ...
-  ShapeQualityMetric* mean = new IdealWeightInverseMeanRatio(err); MSQ_ERRZERO(err);
-//   mean->set_gradient_type(QualityMetric::NUMERICAL_GRADIENT);
-//   mean->set_hessian_type(QualityMetric::NUMERICAL_HESSIAN);
-  mean->set_gradient_type(QualityMetric::ANALYTICAL_GRADIENT);
-  mean->set_hessian_type(QualityMetric::ANALYTICAL_HESSIAN);
+  IdealWeightInverseMeanRatio* mean = new IdealWeightInverseMeanRatio(err); MSQ_ERRZERO(err);
   
   LPtoPTemplate* obj_func = new LPtoPTemplate(mean, 1, err); MSQ_ERRZERO(err);
-  obj_func->set_gradient_type(ObjectiveFunction::ANALYTICAL_GRADIENT);
-    //obj_func->set_hessian_type(ObjectiveFunction::ANALYTICAL_HESSIAN);
   
   // creates the optimization procedures
 //   ConjugateGradient* pass1 = new ConjugateGradient( obj_func, err );
@@ -260,6 +273,7 @@ InstructionQueue* create_instruction_queue(MsqError& err)
 int main()
 {     
   MsqPrintError err(cout);
+  QuadLagrangeSet map_funcs;
   
     // Create geometry
   Vector3D z(0,0,1), o(0,0,0);
@@ -300,44 +314,22 @@ int main()
   cout << "Smoothing linear elements" << endl;
   InstructionQueue* q1 = create_instruction_queue( err );
   if (MSQ_CHKERR(err)) return 1;
-  q1->run_instructions( linear_in, &geom, err ); 
+  q1->run_instructions( linear_in, &geom, &map_funcs, err ); 
   if (MSQ_CHKERR(err)) return 1;
   cout << "Checking results" << endl;
   compare_nodes( 0, NUM_CORNER_VERTICES, linear_in, linear_ex, err );
   if (MSQ_CHKERR(err)) {
     MsqError tmperr;
-    quadratic_ex->write_vtk("bad_mesh.vtk", tmperr);
+    linear_in->write_vtk("bad_mesh.vtk", tmperr);
     return 1;
   }
   delete q1;
-  
-    // Smooth only corner vertices of quadratic mesh and check results
-  cout << "Smoothing quadratic elements as linear elements" << endl;
-  InstructionQueue* q2 = create_instruction_queue( err );
-  if (MSQ_CHKERR(err)) return 1;
-  q2->disable_automatic_midnode_adjustment();
-  q2->run_instructions( quadratic_in_1, &geom, err ); 
-  if (MSQ_CHKERR(err)) return 1;
-    // Make sure corner vertices are the same as in the linear case
-  cout << "Checking results" << endl;
-  compare_nodes( 0, NUM_CORNER_VERTICES, quadratic_in_1, linear_ex, err );
-  if (MSQ_CHKERR(err)) return 1;
-    // Make sure mid-side vertices are unchanged.
-  compare_nodes( NUM_CORNER_VERTICES, NUM_CORNER_VERTICES + NUM_MID_NODES,
-                quadratic_in_1, quadratic_in_2, err );
-  if (MSQ_CHKERR(err)) {
-    MsqError tmperr;
-    quadratic_ex->write_vtk("bad_mesh.vtk", tmperr);
-    return 1;
-  }
-  delete q2;
-  
+ 
     // Smooth corner vertices and adjust mid-side nodes
   cout << "Smoothing quadratic elements" << endl;
   InstructionQueue* q3 = create_instruction_queue( err );
   if (MSQ_CHKERR(err)) return 1;
-  q3->enable_automatic_midnode_adjustment();
-  q3->run_instructions( quadratic_in_2, &geom, err ); 
+  q3->run_instructions( quadratic_in_2, &geom, &map_funcs, err ); 
   if (MSQ_CHKERR(err)) return 1;
     // Make sure corner vertices are the same as in the linear case
   cout << "Checking results" << endl;
@@ -348,7 +340,7 @@ int main()
                 quadratic_in_2, quadratic_ex, err );
   if (MSQ_CHKERR(err)) {
     MsqError tmperr;
-    quadratic_ex->write_vtk("bad_mesh.vtk", tmperr);
+    quadratic_in_2->write_vtk("bad_mesh.vtk", tmperr);
     return 1;
   }
   delete q3;
