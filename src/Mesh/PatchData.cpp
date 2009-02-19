@@ -358,7 +358,7 @@ void PatchData::reorder()
   std::vector<MsqMeshEntity> new_elem_array(num_elem);
   std::vector<Mesh::ElementHandle> new_elem_handle_array(num_elem);
   for (i = 0; i < num_elem; ++i) {
-    size_t  vert_count = elementArray[i].vertex_count();
+    size_t  vert_count = elementArray[i].node_count();
     size_t* conn_array = elementArray[i].get_vertex_index_array();
     for (j = 0; j < vert_count; ++j) {
       conn_array[j] = vertex_map[conn_array[j]];
@@ -1706,7 +1706,7 @@ void PatchData::fill( size_t num_vertex, const double* coords,
     // figure out the new index of each vertex, and initialize
     // the vertex.
   for (i = 0; i < num_vertex; ++i) 
-    vertex_by_index((size_t)vertexHandlesArray[i]) = coords + 3*i;
+    vertex_by_index(i) = coords + 3*(size_t)vertexHandlesArray[i];
   
   for (i = 0; i < num_vertex; ++i)
     vertex_by_index(i).flags() = byteArray[i];
