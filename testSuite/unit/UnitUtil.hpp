@@ -82,6 +82,13 @@
 #define ASSERT_MATRICES_DIFFERENT( A, B, E ) \
   ASSERT_MESSAGE( mat_not_equal_check_msg(A, B), !mat_equal_check(A,B,E) )
 
+/** compare two arrays of values */
+#define ASSERT_ARRAYS_EQUAL( A, B, LEN ) \
+  CPPUNIT_NS::Asserter::failIf( !(arrays_equal((A),(B),(LEN))), arrays_not_equal_msg((A),(LEN),(B),(LEN)), CPPUNIT_SOURCELINE() )
+
+#define ASSERT_STD_VECTORS_EQUAL( A, B ) \
+  CPPUNIT_NS::Asserter::failIf( ((A) != (B)), arrays_not_equal_msg(&(A)[0],(A).size(),&(B)[0],(B).size()), CPPUNIT_SOURCELINE() )
+
 
 /** make string representation of cartesian vector */
 inline msq_std::string utest_vect_str( const Mesquite::Vector3D& v )
@@ -241,5 +248,44 @@ inline bool mat_equal_check( const Mesquite::MsqMatrix<R,C>& A,
   return true;
 }
 
+template <typename T1, typename T2>
+inline bool arrays_equal( const T1* A, const T2* B, size_t len )
+{
+  for (size_t i = 0; i < len; ++i)
+    if (A[i] != B[i])
+      return false;
+  return true;
+}
+
+template <typename T1, typename T2>
+inline CppUnit::Message arrays_not_equal_msg( const T1* A, size_t A_len,
+                                              const T2* B, size_t B_len )
+{
+  CppUnit::Message mes( "Equality Assertion Failed for Arrays" );
+  
+  msq_stdio::ostringstream strA;
+  if (A_len == 0)
+    strA << "(empty)";
+  else {
+    strA << '[' << A[0];
+    for (size_t i = 1; i < A_len; ++i)
+      strA << ',' << A[i];
+    strA << ']';
+  }
+  mes.addDetail( msq_std::string( "Expected: ") + strA.str() );
+  
+  msq_stdio::ostringstream strB;
+  if (B_len == 0)
+    strB << "(empty)";
+  else {
+    strB << '[' << B[0];
+    for (size_t i = 1; i < B_len; ++i)
+      strB << ',' << B[i];
+    strB << ']';
+  }
+  mes.addDetail( msq_std::string( "Actual: ") + strB.str() );
+  
+  return mes;
+}
 
 #endif

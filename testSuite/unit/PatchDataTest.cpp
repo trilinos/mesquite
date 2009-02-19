@@ -79,6 +79,8 @@ private:
   CPPUNIT_TEST (test_fill);
   CPPUNIT_TEST (test_reorder);
   CPPUNIT_TEST (test_update_slave_node_coords);
+  CPPUNIT_TEST (test_patch_data_ho_nodes);
+  CPPUNIT_TEST (test_patch_reorder_ho_nodes);
   CPPUNIT_TEST_SUITE_END();
    
 private:
@@ -95,6 +97,8 @@ private:
    MsqMeshEntity quad1;   
    
    PatchData mPatch2D;
+   
+   void test_quad8_patch( bool reorder );
 
 public:
   void setUp()
@@ -364,6 +368,8 @@ public:
   void test_reorder() { test_patch_contents(true); }
   
   void test_update_slave_node_coords();
+  void test_patch_data_ho_nodes()    { test_quad8_patch(false); }
+  void test_patch_reorder_ho_nodes() { test_quad8_patch(true ); }
 };
 
 
@@ -678,5 +684,194 @@ void PatchDataTest::test_update_slave_node_coords()
   CPPUNIT_ASSERT_VECTORS_EQUAL( mid1, vtx_coords[3], 1e-6 );
   CPPUNIT_ASSERT_VECTORS_EQUAL( mid2, vtx_coords[5], 1e-6 );
 }
+      
+void PatchDataTest::test_quad8_patch( bool reorder )
+{
+/* This is the input mesh topology
+     (0)------(16)-----(1)------(17)-----(2)------(18)-----(3)
+      |                 |                 |                 |
+      |                 |                 |                 |
+      |                 |                 |                 |
+      |                 |                 |                 |
+     (19)      0       (20)      1       (21)      2       (22)
+      |                 |                 |                 |
+      |                 |                 |                 |
+      |                 |                 |                 |
+      |                 |                 |                 |
+     (4)------(23)-----(5)------(24)-----(6)------(25)-----(7)
+      |                 |                 |                 |
+      |                 |                 |                 |
+      |                 |                 |                 |
+      |                 |                 |                 |
+     (26)      3       (27)      4       (28)      5       (29)
+      |                 |                 |                 |
+      |                 |                 |                 |
+      |                 |                 |                 |
+      |                 |                 |                 |
+     (8)------(30)-----(9)------(31)-----(10)-----(32)-----(11)
+      |                 |                 |                 |
+      |                 |                 |                 |
+      |                 |                 |                 |
+      |                 |                 |                 |
+     (33)      6       (34)      7       (35)      8       (36)
+      |                 |                 |                 |
+      |                 |                 |                 |
+      |                 |                 |                 |
+      |                 |                 |                 |
+     (12)-----(37)-----(13)-----(38)-----(14)-----(39)-----(15)
+*/
+    // input mesh definition
+  const int NUM_VTX = 40, NUM_ELEM = 9, NUM_CORNER = 16;
+  const double input_coords[3*NUM_VTX] = {
+        -3.0,  3.0, 0,
+        -1.0,  3.0, 0,
+         1.0,  3.0, 0,
+         3.0,  3.0, 0,
+        -3.0,  1.0, 0,
+        -1.0,  1.0, 0,
+         1.0,  1.0, 0,
+         3.0,  1.0, 0,
+        -3.0, -1.0, 0,
+        -1.0, -1.0, 0,
+         1.0, -1.0, 0,
+         3.0, -1.0, 0,
+        -3.0, -3.0, 0,
+        -1.0, -3.0, 0,
+         1.0, -3.0, 0,
+         3.0, -3.0, 0,
+        -2.0,  3.0, 0,
+         0.0,  3.0, 0,
+         2.0,  3.0, 0,
+        -3.0,  2.0, 0,
+        -1.0,  2.0, 0,
+         1.0,  2.0, 0,
+         3.0,  2.0, 0,
+        -2.0,  1.0, 0,
+         0.0,  1.0, 0,
+         2.0,  1.0, 0,
+        -3.0,  0.0, 0,
+        -1.0,  0.0, 0,
+         1.0,  0.0, 0,
+         3.0,  0.0, 0,
+        -2.0, -1.0, 0,
+         0.0, -1.0, 0,
+         2.0, -1.0, 0,
+        -3.0, -2.0, 0,
+        -1.0, -2.0, 0,
+         1.0, -2.0, 0,
+         3.0, -2.0, 0,
+        -2.0, -3.0, 0,
+         0.0, -3.0, 0,
+         2.0, -3.0, 0 };
+  const bool fixed[NUM_VTX] = {
+         true,  true,  true, true, 
+         true, false, false, true,
+         true, false, false, true,
+         true,  true,  true, true, 
+         true,  true,  true,
+         true, false, false, true,
+        false, false, false,
+         true, false, false, true,
+        false, false, false,
+         true, false, false, true };
+  const size_t input_conn[8*NUM_ELEM] = {
+        1,  0,  4,  5, 16, 19, 23, 20,
+        2,  1,  5,  6, 17, 20, 24, 21,
+        3,  2,  6,  7, 18, 21, 25, 22,
+        5,  4,  8,  9, 23, 26, 30, 27,
+        6,  5,  9, 10, 24, 27, 31, 28,
+        7,  6, 10, 11, 25, 28, 32, 29,
+        9,  8, 12, 13, 30, 33, 37, 34,
+       10,  9, 13, 14, 31, 34, 38, 35,
+       11, 10, 14, 15, 32, 35, 39, 36
+  };
 
+    // create PatchData
+
+  const size_t node_per_elem[NUM_ELEM] = { 8, 8, 8, 8, 8, 8, 8, 8, 8 };
+  const EntityTopology elem_types[NUM_ELEM] = {  QUADRILATERAL,
+    QUADRILATERAL, QUADRILATERAL, QUADRILATERAL, QUADRILATERAL, 
+    QUADRILATERAL, QUADRILATERAL, QUADRILATERAL, QUADRILATERAL };
+  
+  MsqPrintError err( msq_stdio::cerr );
+  PatchData pd;
+  pd.fill( NUM_VTX, input_coords, NUM_ELEM, elem_types, node_per_elem, input_conn, fixed, err );
+  ASSERT_NO_ERROR(err);
+  
+  
+    // reorder if testing that
+  if (reorder)
+    pd.reorder();
+
+    // Check sizes.  Assume that all non-fixed HO nodes are slave vertices.
+    
+  CPPUNIT_ASSERT_EQUAL( NUM_VTX, (int)pd.num_nodes() );
+  CPPUNIT_ASSERT_EQUAL( NUM_ELEM, (int)pd.num_elements() );
+  int num_free = 0, num_slave = 0, num_fixed = 0;
+  for (int i = 0; i < NUM_VTX; ++i) {
+    if (fixed[i])
+      ++num_fixed;
+    else if (i < NUM_CORNER)
+      ++num_free;
+    else
+      ++num_slave;
+  }
+  CPPUNIT_ASSERT_EQUAL( num_free , (int)pd.num_free_vertices() );
+  CPPUNIT_ASSERT_EQUAL( num_slave, (int)pd.num_slave_vertices() );
+  CPPUNIT_ASSERT_EQUAL( num_fixed, (int)pd.num_fixed_vertices() );
+  
+    // Check that vertex handles and vertex coords are correct.
+    // Assume that handles array contains input vertex indices.
+    
+  for (int i = 0; i < NUM_VTX; ++i) {
+    MsqVertex& vtx = pd.vertex_by_index(i);
+    Mesh::VertexHandle hdl = pd.get_vertex_handles_array()[i];
+    size_t idx = (size_t)hdl;
+    Vector3D exp_coords( input_coords + 3*idx );
+    if ((exp_coords - vtx).length_squared() > 1e-16) {
+      msq_stdio::cerr << "Input Index: " << idx << msq_stdio::endl;
+      msq_stdio::cerr << "Patch Index: " << i << msq_stdio::endl;
+    }
+    CPPUNIT_ASSERT_VECTORS_EQUAL( exp_coords, vtx, 1e-16 );
+  }
+  
+    // Check that vertex flags are correct.  
+    // Assume all non-fixed HO noes are slave vertices.
+    // Assume that handles array contains input vertex indices.
+    
+  for (int i = 0; i < NUM_VTX; ++i) {
+    MsqVertex& vtx = pd.vertex_by_index(i);
+    Mesh::VertexHandle hdl = pd.get_vertex_handles_array()[i];
+    size_t idx = (size_t)hdl;
+    if (fixed[idx]) {
+      CPPUNIT_ASSERT( vtx.is_flag_set( MsqVertex::MSQ_HARD_FIXED ) );
+    }
+    else if (idx >= (size_t)NUM_CORNER) {
+      CPPUNIT_ASSERT( vtx.is_flag_set( MsqVertex::MSQ_DEPENDENT ) );
+    }
+    else {
+      CPPUNIT_ASSERT( !vtx.is_flag_set( MsqVertex::MSQ_HARD_FIXED ) );
+      CPPUNIT_ASSERT( !vtx.is_flag_set( MsqVertex::MSQ_DEPENDENT  ) );
+    }
+  }
+  
+    // Check that element connectivity is correct.
+    // Assume that handles array contains input vertex and element indices.
+  
+  for (int i = 0; i < NUM_ELEM; ++i) {
+    MsqMeshEntity& elem = pd.element_by_index(i);
+    CPPUNIT_ASSERT_EQUAL( QUADRILATERAL, elem.get_element_type() );
+    CPPUNIT_ASSERT_EQUAL( (size_t)4, elem.vertex_count() );
+    CPPUNIT_ASSERT_EQUAL( (size_t)8,elem.node_count() );
+    CPPUNIT_ASSERT_EQUAL( (size_t)4, elem.corner_count() );
+    std::vector<msq_stdc::size_t> conn;
+    elem.get_node_indices( conn );
+    CPPUNIT_ASSERT_EQUAL( elem.node_count(), conn.size() );
+    for (int j = 0; j < 8; ++j)
+      conn[j] = (size_t)pd.get_vertex_handles_array()[conn[j]];
+    size_t idx = (size_t)pd.get_element_handles_array()[i];
+    ASSERT_ARRAYS_EQUAL( input_conn + 8*idx, &conn[0], 8 );
+  }
+}
+      
   
