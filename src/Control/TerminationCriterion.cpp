@@ -473,11 +473,13 @@ void TerminationCriterion::accumulate_inner( PatchData& pd,
   
   previousOFValue = currentOFValue;
   currentOFValue = of_value;
-  if (terminationCriterionFlag & OF_FLAGS)
+  if (terminationCriterionFlag & OF_FLAGS) {
     MSQ_DBGOUT(debugLevel) << "  o TermCrit -- OF Value: " << of_value << msq_stdio::endl;
-  else if (grad_array)
+  }
+  else if (grad_array) {
     MSQ_DBGOUT(debugLevel) << "  o OF Value: " << of_value << msq_stdio::endl;
-
+  }
+  
   ++iterationCounter;
   if (timeStepFileType)
     write_timestep( pd, err);
