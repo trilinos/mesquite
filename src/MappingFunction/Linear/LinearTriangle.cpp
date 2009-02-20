@@ -35,11 +35,15 @@ static const char* nonlinear_error
 
 EntityTopology LinearTriangle::element_topology() const
   { return TRIANGLE; }
+  
+int LinearTriangle::num_nodes() const
+  { return 3; }
 
 void LinearTriangle::coefficients( unsigned loc_dim,
                                    unsigned loc_num,
                                    unsigned nodebits,
                                    double* coeff_out,
+                                   size_t* indices_out,
                                    size_t& num_coeff,
                                    MsqError& err ) const
 {
@@ -48,18 +52,24 @@ void LinearTriangle::coefficients( unsigned loc_dim,
     return;
   }
   
-  num_coeff = 3;
   switch (loc_dim) {
     case 0:
-      coeff_out[0] = coeff_out[1] = coeff_out[2] = 0.0;
-      coeff_out[loc_num] = 1.0;
+      num_coeff = 1;
+      indices_out[0] = loc_num;
+      coeff_out[0] = 1.0;
       break;
     case 1:
-      coeff_out[ loc_num     ] = 0.5;
-      coeff_out[(loc_num+1)%3] = 0.5;
-      coeff_out[(loc_num+2)%3] = 0.0;
+      num_coeff = 2;
+      indices_out[0] = loc_num;
+      indices_out[1] = (loc_num+1)%3;
+      coeff_out[0] = 0.5;
+      coeff_out[1] = 0.5;
       break;
     case 2:
+      num_coeff = 3;
+      indices_out[0] = 0;
+      indices_out[1] = 1;
+      indices_out[2] = 2;
       coeff_out[0] = coeff_out[1] = coeff_out[2] = MSQ_ONE_THIRD;
       break;
     default:

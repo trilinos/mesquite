@@ -812,7 +812,7 @@ void PatchData::update_slave_node_coordinates( MsqError& err )
     // mapping function.
   const int ARR_SIZE = 27;
   double coeff[ARR_SIZE];
-  size_t full_conn_map[ARR_SIZE];
+  size_t index[ARR_SIZE];
   for (size_t i = 0; i < num_elements(); ++i) {
     MsqMeshEntity& elem = element_by_index(i);
     const int num_corner = elem.vertex_count();
@@ -830,7 +830,6 @@ void PatchData::update_slave_node_coordinates( MsqError& err )
       // that mapping function is a function of the non-slave node
       // coordinates
     unsigned ho_bits = higher_order_node_bits( i );
-    expanded_connectivity_map( type, num_node, full_conn_map, err );
     
       // for each higher-order slave node
     for (int k = num_corner; k < num_node; ++k) {
@@ -849,12 +848,14 @@ void PatchData::update_slave_node_coordinates( MsqError& err )
       
         // evaluate mapping function at logical loction of HO node.
       size_t num_coeff;
-      mf->coefficients( dim, num, ho_bits, coeff, num_coeff, err ); MSQ_ERRRTN(err);
+      mf->coefficients( dim, num, ho_bits, coeff, index, num_coeff, err ); MSQ_ERRRTN(err);
+      mf->convert_connectivity_indices( num_node, index, num_coeff, err ); MSQ_ERRRTN(err);
       
         // calulate new coordinates for slave node
-      vert = Vector3D(0,0,0);
-      for (int j = 0; j < num_node && full_conn_map[j] < num_coeff; ++j)
-        vert += coeff[full_conn_map[j]] * vertex_by_index(conn[j]);
+      assert( num_coeff > 0 );
+      vert = coeff[0] * vertex_by_index( conn[index[0]] );
+      for (int j = 1; j < num_coeff; ++j)
+        vert += coeff[j] * vertex_by_index( conn[index[j]] );
       
         // clear mark
       vert.flags() &= ~MsqVertex::MSQ_MARK;
@@ -1881,15 +1882,13 @@ const MappingFunction3D* PatchData::get_mapping_function_3D( EntityTopology type
 }
 
 void PatchData::get_sample_location( size_t element_index,
-                              unsigned sample_dim,
-                              unsigned sample_num,
-                              Vector3D& result,
-                              MsqError& err ) const
+                                     unsigned sample_dim,
+                                     unsigned sample_num,
+                                     Vector3D& result,
+                                     MsqError& err ) const
 {
-  size_t full_conn_map[27];
   const MsqMeshEntity& elem = element_by_index( element_index );
   const unsigned ho_bits = higher_order_node_bits( element_index );
-  expanded_connectivity_map( elem.get_element_type(), elem.node_count(), full_conn_map, err );
   const MappingFunction* const f = get_mapping_function( elem.get_element_type() );
   if (!f) {
     MSQ_SETERR(err)("No mapping function", MsqError::UNSUPPORTED_ELEMENT );
@@ -1897,14 +1896,15 @@ void PatchData::get_sample_location( size_t element_index,
   }
   
   double coeff[27];
-  size_t num_coeff;
-  f->coefficients( sample_dim, sample_num, ho_bits, coeff, num_coeff, err );
-  MSQ_ERRRTN( err );
+  size_t num_coeff, index[27];
+  f->coefficients( sample_dim, sample_num, ho_bits, coeff, index, num_coeff, err ); MSQ_ERRRTN( err );
+  f->convert_connectivity_indices( elem.node_count(), index, num_coeff, err ); MSQ_ERRRTN(err);
   
   const size_t* const conn = elem.get_vertex_index_array();
-  result[2] = result[1] = result[0] = 0.0;
-  for (unsigned i = 0; i < elem.node_count() && full_conn_map[i] < num_coeff; ++i) 
-    result += coeff[full_conn_map[i]] * vertex_by_index(conn[i]);
+  assert( num_coeff > 0 );
+  result = coeff[0] * vertex_by_index( conn[index[0]] );
+  for (unsigned i = 1; i < num_coeff; ++i) 
+    result += coeff[i] * vertex_by_index( conn[index[i]] );
 }
 
 
@@ -1944,67 +1944,6 @@ unsigned PatchData::higher_order_node_bits( size_t element_index ) const
     result |= (1 << (num_edge+num_face));
 
   return result;
-}
-
-void PatchData::reduced_connectivity_map( EntityTopology entity_type,
-                                          unsigned num_nodes,
-                                          unsigned num_indices,
-                                          const size_t* input_indices,
-                                          size_t* output_indices,
-                                          MsqError& err )
-{
-  const unsigned edge_offset = TopologyInfo::corners(entity_type);
-  const unsigned face_offset = edge_offset + TopologyInfo::edges( entity_type );
-  const unsigned vol_offset = face_offset + TopologyInfo::faces( entity_type );
-  size_t face_diff = 0, vol_diff = 0;
-  bool have_midedge, have_midface, have_midelem;
-  TopologyInfo::higher_order( entity_type, num_nodes, have_midedge, have_midface, have_midelem, err );
-  MSQ_ERRRTN(err);
-  
-  face_diff = 0;
-  if (!have_midedge) 
-    face_diff = TopologyInfo::edges( entity_type );
-  
-  vol_diff = face_diff;
-  if (!have_midface)
-    vol_diff += TopologyInfo::faces( entity_type );
-  
-  for (unsigned i = 0; i < num_indices; ++i) {
-    if (input_indices[i] < face_offset)
-      output_indices[i] = input_indices[i];
-    else if (input_indices[i] < vol_offset)
-      output_indices[i] = input_indices[i] - face_diff;
-    else 
-      output_indices[i] = input_indices[i] - vol_diff;
-  }
-}
-
-void PatchData::expanded_connectivity_map( EntityTopology entity_type,
-                                           unsigned num_nodes,
-                                           size_t* indices,
-                                           MsqError& err )
-{
-  const unsigned corners = TopologyInfo::corners(entity_type);
-  const unsigned edges   = TopologyInfo::edges  (entity_type);
-  const unsigned faces   = TopologyInfo::faces  (entity_type);
-  bool have_midedge, have_midface, have_midelem;
-  TopologyInfo::higher_order( entity_type, num_nodes, have_midedge, have_midface, have_midelem, err );
-  MSQ_ERRRTN(err);
-
-  size_t offset = 0;
-  for (unsigned i = 0; i < corners; ++i)
-    indices[offset++] = i;
-
-  if (have_midedge)
-    for (unsigned i = 0; i < edges; ++i)
-      indices[offset++] = corners + i;
-  
-  if (have_midface)
-    for (unsigned i = 0; i < faces; ++i)
-      indices[offset++] = corners + edges + i;
-      
-  if (have_midelem)
-    indices[offset++] = corners + edges + faces;
 }
 
 bool PatchData::attach_extra_data( ExtraData* data )

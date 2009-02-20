@@ -42,11 +42,13 @@ void JacobianCalculator::get_Jacobian_2D( const MappingFunction2D* mf,
                                           unsigned ho_bits,
                                           unsigned dim, unsigned num,
                                           const Vector3D* verts,
+                                          size_t num_type_vert,
                                           MsqMatrix<3,2>& J_out,
                                           MsqError& err )
 {
   size_t num_vtx = 0;
   mf->derivatives( dim, num, ho_bits, mIndices, mDerivs2D, num_vtx, err ); MSQ_ERRRTN(err);
+  mf->convert_connectivity_indices( num_type_vert, mIndices, num_vtx, err ); MSQ_ERRRTN(err);
   const MsqVector<2>* d = mDerivs2D;
   const size_t* const e = mIndices + num_vtx;
   Vector3D c[2] = {Vector3D(0,0,0), Vector3D(0,0,0)};
@@ -62,11 +64,13 @@ void JacobianCalculator::get_Jacobian_3D( const MappingFunction3D* mf,
                                           unsigned ho_bits,
                                           unsigned dim, unsigned num,
                                           const Vector3D* verts,
+                                          size_t num_type_vert,
                                           MsqMatrix<3,3>& J_out,
                                           MsqError& err )
 {
   size_t num_vtx = 0;
   mf->derivatives( dim, num, ho_bits, mIndices, mDerivs3D, num_vtx, err ); MSQ_ERRRTN(err);
+  mf->convert_connectivity_indices( num_type_vert, mIndices, num_vtx, err ); MSQ_ERRRTN(err);
   const MsqVector<3>* d = mDerivs3D;
   const size_t* const e = mIndices + num_vtx;
   Vector3D c[3] = {Vector3D(0,0,0), Vector3D(0,0,0), Vector3D(0,0,0)};

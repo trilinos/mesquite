@@ -36,6 +36,7 @@
 #include "Mesquite.hpp"
 #include <vector>
 #include "MsqMatrix.hpp"
+#include "TopologyInfo.hpp"
 
 namespace Mesquite {
 
@@ -84,6 +85,16 @@ public:
   /**\brief Get Mesquite::EntityTopology handled by this mapping function */
   virtual 
   EntityTopology element_topology() const = 0;
+  
+  /**\brief Get number of nodes in the element type 
+   *
+   * Get the number of nodes in the element type that the mapping
+   * function implements.  It is assumed that the result of this
+   * function, in combination with the element topology, is sufficient
+   * to determine the element type.
+   */
+  virtual
+  int num_nodes() const = 0;
 
   /**\brief Mapping Function Coefficients
    *
@@ -118,16 +129,63 @@ public:
    *                be passed in this argument.  Polygons are not allowed
    *                higher-order nodes.
    *\param coefficients_out The coefficients (\f$N_i(\vec{\xi})\f$) for each 
-   *                vertex in the element, except for the higher-order nodes 
-   *                for which the corresponding bit in nodebits is zero.
+   *                vertex in the element.
+   *\param indices_out  The index ($i$ in $N_i$) for each term in 'coeffs_out'.
+   *                The assumption is that mapping function implementations
+   *                will not return zero coefficients.  This is not required,
+   *                but for element types with large numbers of nodes it may
+   *                have a significant impact on performance.
    */
   virtual 
   void coefficients( unsigned loc_dim,
                      unsigned loc_num,
                      unsigned nodebits,
                      double* coeff_out,
+                     size_t* indices_out,
                      size_t& num_coeff_out,
                      MsqError& err ) const = 0;
+                     
+    /*\brief Convert connectivity list indices for different element types.
+     *
+     * Given two elements of the same topology but different types
+     * (number of nodes) and a list of indices into the connectivity
+     * list for one element type, convert the list to be indices
+     * into a second element type such that the node in the same logical
+     * position (e.g. middle of edge 1) is indicated.
+     */
+  static inline
+  void convert_connectivity_indices( EntityTopology topology,
+                                     int num_nodes_in_input_elem_type,
+                                     int num_nodes_in_output_elem_type,
+                                     size_t* index_list,
+                                     unsigned num_indices,
+                                     MsqError& err );
+                                     
+    /*\brief Convert connectivity list indices for different element types.
+     *
+     * Given an element type with the same topology as that of this
+     * mapping function but with a different number of nodes, convert
+     * indices into the connectivity list of this element type to
+     * those of the specified element type such that indices indicate
+     * nodes at the corresponding logical locations (e.g. middle of edge 1).
+     */
+  inline
+  void convert_connectivity_indices( int num_nodes_in_output_element_type,
+                                     size_t* index_list, 
+                                     unsigned num_indices,
+                                     MsqError& err ) const
+    { convert_connectivity_indices( element_topology(), num_nodes(),
+                                    num_nodes_in_output_element_type,
+                                    index_list, num_indices, err ); }
+
+private:
+  static
+  void convert_connectivity_indices_impl( EntityTopology topology,
+                                     int num_nodes_in_input_elem_type,
+                                     int num_nodes_in_output_elem_type,
+                                     size_t* index_list,
+                                     unsigned num_indices,
+                                     MsqError& err );
 };
 
 /**\brief MappingFunction for topologically 2D (surface) elements. */
@@ -533,6 +591,24 @@ public:
                  MsqMatrix<3,3>& jacobian_out,
                  MsqError& err ) const;
 };
+
+
+inline void
+MappingFunction::convert_connectivity_indices( EntityTopology topo,
+                                               int input_type,
+                                               int output_type,
+                                               size_t* index_list,
+                                               unsigned num_indices,
+                                               MsqError& err )
+{
+    // If the types are the same or either type has only corner
+    // vertices, then no conversion is necessary.
+  const int num_corners = TopologyInfo::corners(topo);
+  if (input_type != output_type && input_type != num_corners && output_type != num_corners)
+    convert_connectivity_indices_impl( topo, input_type, output_type, index_list, num_indices, err );
+} 
+  
+                                                  
 
 } // namespace Mesquite
 

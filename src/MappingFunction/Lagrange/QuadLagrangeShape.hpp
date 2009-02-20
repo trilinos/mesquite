@@ -28,7 +28,7 @@
 #define MSQ_QUAD_LAGRANGE_SHAPE_HPP
 
 /** \file QuadLagrangeShape.hpp
- *  \brief Lagrange mapping funtion for Quadrilateral elements.
+ *  \brief Lagrange mapping funtion for a 9-node quad.
  *  \author Jason Kraftcheck
  */
  
@@ -36,7 +36,7 @@
 
 namespace Mesquite {
 
-/**\brief Lagrange shape function for quadrilateral elements
+/**\brief Lagrange shape function for 9-node quadrilateral elements
  *
  * This class implements the MappingFunction interface, providing
  * a Lagrange shape function for quadrilateral elements.
@@ -70,12 +70,16 @@ public:
 
   virtual 
   EntityTopology element_topology() const;
+  
+  virtual
+  int num_nodes() const;
 
   virtual 
   void coefficients( unsigned loc_dim,
                      unsigned loc_num,
                      unsigned nodebits,
                      double* coeff_out,
+                     size_t* indices_out,
                      size_t& num_coeff_out,
                      MsqError& err ) const;
   

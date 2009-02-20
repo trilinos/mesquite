@@ -39,38 +39,44 @@ namespace Mesquite {
 
 EntityTopology TetLagrangeShape::element_topology() const
   { return TETRAHEDRON; }
+  
+int TetLagrangeShape::num_nodes() const
+  { return 10; }
 
 static inline int have_node( unsigned nodebits, unsigned node )
   { return nodebits & (1 << (node-4)); }
 
-static void coefficients_at_corner( unsigned corner, 
-                                    unsigned nodebits,
+static void coefficients_at_corner( unsigned corner,
                                     double* coeff_out,
+                                    size_t* indices_out,
                                     size_t& num_coeff )
 {
-  num_coeff = 10;
-  std::fill( coeff_out, coeff_out+num_coeff, 0.0 );
-  coeff_out[corner] = 1.0;
+  num_coeff = 1;
+  indices_out[0] = corner;
+  coeff_out[0] = 1.0;
 }
 
 static void coefficients_at_mid_edge( unsigned edge, 
                                       unsigned nodebits,
                                       double* coeff_out,
+                                      size_t* indices_out,
                                       size_t& num_coeff )
 {
-  num_coeff = 10;
-  std::fill( coeff_out, coeff_out+num_coeff, 0.0 );
   if (nodebits & (1 << edge)) { // if mid-edge node is present
-    coeff_out[4+edge] = 1.0;
+    num_coeff = 1;
+    indices_out[0] = 4+edge;
+    coeff_out[0] = 1.0;
   }
   else { // no mid node on edge
+    num_coeff = 2;
+    coeff_out[0] = coeff_out[1] = 0.5;
     if (edge < 3) {
-      coeff_out[edge] = 0.5;
-      coeff_out[(edge+1) % 3] = 0.5;
+      indices_out[0] = edge;
+      indices_out[1] = (edge+1) % 3;
     }
     else {
-      coeff_out[edge-3]= 0.5;
-      coeff_out[3] = 0.5;
+      indices_out[0] = edge-3;
+      indices_out[1] = 3;
     }
   }
 }
@@ -78,139 +84,154 @@ static void coefficients_at_mid_edge( unsigned edge,
 static void coefficients_at_mid_face( unsigned face, 
                                       unsigned nodebits,
                                       double* coeff_out,
+                                      size_t* indices_out,
                                       size_t& num_coeff )
 {
-  num_coeff = 10;
-  
   const double one_ninth = 1.0/9.0;
   const double two_ninth = 2.0/9.0;
   const double four_ninth = 4.0/9.0;
   
   if (face < 3) {
     const int next = (face+1)%3;
-    const int othr = (face+2)%3;
-    coeff_out[face] = -one_ninth;
-    coeff_out[next] = -one_ninth;
-    coeff_out[othr] = 0.0;
-    coeff_out[3]    = -one_ninth;
-    if (nodebits & (1<<face)) {
-      coeff_out[4+face] = four_ninth;
-    }
-    else {
-      coeff_out[face] += two_ninth;
-      coeff_out[next] += two_ninth;
-      coeff_out[4+face] = 0.0;
-    }
-    if (nodebits & (1<<(3+next))) {
-      coeff_out[7+next] = four_ninth;
-    }
-    else {
-      coeff_out[face] += two_ninth;
-      coeff_out[3]    += two_ninth;
-      coeff_out[7+next] = 0.0;
-    }
-    if (nodebits & (1<<(3+face))) {
-      coeff_out[7+face] = four_ninth;
-    }
-    else {
-      coeff_out[next] += two_ninth;
-      coeff_out[3]    += two_ninth;
-      coeff_out[7+face] = 0.0;
-    }
-    coeff_out[next+4] = 0.0;
-    coeff_out[othr+4] = 0.0;
-    coeff_out[othr+7] = 0.0;
-  }
-  else {
-    assert( face == 3);
+    indices_out[0] = face;
+    indices_out[1] = next;
+    indices_out[2] = 3;
     coeff_out[0] = -one_ninth;
     coeff_out[1] = -one_ninth;
     coeff_out[2] = -one_ninth;
-    coeff_out[3] = 0.0;
-    if (nodebits & 1) {
-      coeff_out[4] = four_ninth;
+    num_coeff = 3;
+    if (nodebits & (1<<face)) {
+      indices_out[num_coeff] = 4+face;
+      coeff_out[num_coeff] = four_ninth;
+      ++num_coeff;
     }
     else {
       coeff_out[0] += two_ninth;
       coeff_out[1] += two_ninth;
-      coeff_out[4] = 0.0;
+    }
+    if (nodebits & (1<<(3+next))) {
+      indices_out[num_coeff] = 7+next;
+      coeff_out[num_coeff] = four_ninth;
+      ++num_coeff;
+    }
+    else {
+      coeff_out[0] += two_ninth;
+      coeff_out[2]    += two_ninth;
+    }
+    if (nodebits & (1<<(3+face))) {
+      indices_out[num_coeff] = 7+face;
+      coeff_out[num_coeff] = four_ninth;
+      ++num_coeff;
+    }
+    else {
+      coeff_out[1] += two_ninth;
+      coeff_out[2]    += two_ninth;
+    }
+  }
+  else {
+    assert( face == 3);
+    indices_out[0] = 0;
+    indices_out[1] = 1;
+    indices_out[2] = 2;
+    coeff_out[0] = -one_ninth;
+    coeff_out[1] = -one_ninth;
+    coeff_out[2] = -one_ninth;
+    num_coeff = 3;
+    if (nodebits & 1) {
+      indices_out[num_coeff] = 4;
+      coeff_out[num_coeff] = four_ninth;
+      ++num_coeff;
+    }
+    else {
+      coeff_out[0] += two_ninth;
+      coeff_out[1] += two_ninth;
     }
     if (nodebits & 2) {
-      coeff_out[5] = four_ninth;
+      indices_out[num_coeff] = 5;
+      coeff_out[num_coeff] = four_ninth;
+      ++num_coeff;
     }
     else {
       coeff_out[1] += two_ninth;
       coeff_out[2] += two_ninth;
-      coeff_out[5] = 0.0;
     }
     if (nodebits & 4) {
-      coeff_out[6] = four_ninth;
+      indices_out[num_coeff] = 6;
+      coeff_out[num_coeff] = four_ninth;
+      ++num_coeff;
     }
     else {
       coeff_out[2] += two_ninth;
       coeff_out[0] += two_ninth;
-      coeff_out[6] = 0.0;
     }
-    coeff_out[7] = 0.0;
-    coeff_out[8] = 0.0;
-    coeff_out[9] = 0.0;
   }
 }
 
 static void coefficients_at_mid_elem( unsigned nodebits,
                                       double* coeff_out,
+                                      size_t* indices_out,
                                       size_t& num_coeff )
 {
-  num_coeff = 10;
+  num_coeff = 4;
+  indices_out[0] = 0;
+  indices_out[1] = 1;
+  indices_out[2] = 2;
+  indices_out[3] = 3;
   coeff_out[0] = -0.125;
   coeff_out[1] = -0.125;
   coeff_out[2] = -0.125;
   coeff_out[3] = -0.125;
   if (have_node(nodebits, 4)) {
-    coeff_out[4] = 0.25;
+    indices_out[num_coeff] = 4;
+    coeff_out[num_coeff] = 0.25;
+    ++num_coeff;
   }
   else {
-    coeff_out[4] = 0.0;
     coeff_out[0] += 0.125;
     coeff_out[1] += 0.125;
   }
   if (have_node(nodebits, 5)) {
-    coeff_out[5] = 0.25;
+    indices_out[num_coeff] = 5;
+    coeff_out[num_coeff] = 0.25;
+    ++num_coeff;
   }
   else {
-    coeff_out[5] = 0.0;
     coeff_out[1] += 0.125;
     coeff_out[2] += 0.125;
   }
   if (have_node(nodebits, 6)) {
-    coeff_out[6] = 0.25;
+    indices_out[num_coeff] = 6;
+    coeff_out[num_coeff] = 0.25;
+    ++num_coeff;
   }
   else {
-    coeff_out[6] = 0.0;
     coeff_out[2] += 0.125;
     coeff_out[0] += 0.125;
   }
   if (have_node(nodebits, 7)) {
-    coeff_out[7] = 0.25;
+    indices_out[num_coeff] = 7;
+    coeff_out[num_coeff] = 0.25;
+    ++num_coeff;
   }
   else {
-    coeff_out[7] = 0.0;
     coeff_out[0] += 0.125;
     coeff_out[3] += 0.125;
   }
   if (have_node(nodebits, 8)) {
-    coeff_out[8] = 0.25;
+    indices_out[num_coeff] = 8;
+    coeff_out[num_coeff] = 0.25;
+    ++num_coeff;
   }
   else {
-    coeff_out[8] = 0.0;
     coeff_out[1] += 0.125;
     coeff_out[3] += 0.125;
   }
   if (have_node(nodebits, 9)) {
-    coeff_out[9] = 0.25;
+    indices_out[num_coeff] = 9;
+    coeff_out[num_coeff] = 0.25;
+    ++num_coeff;
   }
   else {
-    coeff_out[9] = 0.0;
     coeff_out[2] += 0.125;
     coeff_out[3] += 0.125;
   }
@@ -220,6 +241,7 @@ void TetLagrangeShape::coefficients( unsigned loc_dim,
                                      unsigned loc_num,
                                      unsigned nodebits,
                                      double* coeff_out,
+                                     size_t* indices_out,
                                      size_t& num_coeff,
                                      MsqError& err ) const
 {
@@ -231,16 +253,16 @@ void TetLagrangeShape::coefficients( unsigned loc_dim,
   
   switch (loc_dim) {
     case 0:
-      coefficients_at_corner( loc_num, nodebits, coeff_out, num_coeff );
+      coefficients_at_corner( loc_num, coeff_out, indices_out, num_coeff );
       break;
     case 1:
-      coefficients_at_mid_edge( loc_num, nodebits, coeff_out, num_coeff );
+      coefficients_at_mid_edge( loc_num, nodebits, coeff_out, indices_out, num_coeff );
       break;
     case 2:
-      coefficients_at_mid_face( loc_num, nodebits, coeff_out, num_coeff );
+      coefficients_at_mid_face( loc_num, nodebits, coeff_out, indices_out, num_coeff );
       break;
     case 3:
-      coefficients_at_mid_elem( nodebits, coeff_out, num_coeff );
+      coefficients_at_mid_elem( nodebits, coeff_out, indices_out, num_coeff );
       break;
     default:
       MSQ_SETERR(err)("Invalid/unsupported logical dimension",MsqError::INVALID_ARG);

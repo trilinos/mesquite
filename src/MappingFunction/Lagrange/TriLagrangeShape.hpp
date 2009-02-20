@@ -41,7 +41,7 @@ namespace Mesquite {
 /**\brief Lagrange shape function for triangle elements
  *
  * This class implements the MappingFunction interface, providing
- * a Lagrange shape function for triangle elements.
+ * a Lagrange shape function for 6-node triangle.
  *
  * \f$\vec{x}(r,s) = sum_{i=0}^{n-1} N_i(r,s) \vec{x_i}\f$
  * 
@@ -65,12 +65,16 @@ public:
 
   virtual 
   EntityTopology element_topology() const;
+  
+  virtual
+  int num_nodes() const;
 
   virtual 
   void coefficients( unsigned loc_dim,
                      unsigned loc_num,
                      unsigned nodebits,
                      double* coeff_out,
+                     size_t* indices_out,
                      size_t& num_coeff_out,
                      MsqError& err ) const;
   

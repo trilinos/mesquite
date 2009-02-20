@@ -534,42 +534,6 @@ namespace Mesquite
     //! the bit will be 0.
     unsigned higher_order_node_bits( size_t elem_idx ) const;  
     
-    //! Given a list of indices into the connectivity list of an element
-    //! with all mid-edge, mid-face, and mid-region nodes present,
-    //! determine the corresponding indices into the connectivity list
-    //! of an element with only "num_nodes_in_elem" nodes.  If any index
-    //! in 'full_indices' cooresponds to a node that does not exist in
-    //! the connectivity list of an element with topology 'entity_type'
-    //! and 'num_nodes_in_elem' nodes, the new value is undefined.
-    //!
-    //! The full_indices and elem_indices may point to the same memory.
-    //!
-    //!\param entity_type        The topology of the element type.
-    //!\param num_nodes_in_elem  The number of nodes in the element type.
-    //!\param num_indices        Length of input and output arrays
-    //!\param full_indices       Indices into connectivity map of element
-    //!                          with topology 'entity_type' and all mid-nodes
-    //!                          present.
-    //!\param elem_indices       Corresponding indices into connectivity map
-    //!                          of element with 'entity_type' topology but
-    //!                          only 'num_nodes_in_elem' nodes.
-    static void reduced_connectivity_map( EntityTopology entity_type,
-                                      unsigned num_nodes_in_elem,
-                                      unsigned num_indices,
-                                      const size_t* full_indices,
-                                      size_t* elem_indices,
-                                      MsqError& err );
-    
-    //! For an element with the specified topology and number of nodes,
-    //! determine for each node in the element connectivity list the
-    //! index of the corresponding node in the connectivity list of 
-    //! an element with the same topology but with every mid-edge, mid-face,
-    //! etc. node present.
-    static void expanded_connectivity_map( EntityTopology entity_type,
-                                           unsigned num_nodes_in_elem,
-                                           size_t* map_indices_out,
-                                           MsqError& err );
-    
     //! Display the coordinates and connectivity information
     friend msq_stdio::ostream& operator<<( msq_stdio::ostream&, const PatchData& );
    

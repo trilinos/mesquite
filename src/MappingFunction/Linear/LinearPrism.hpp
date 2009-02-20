@@ -54,11 +54,15 @@ public:
   virtual
   EntityTopology element_topology() const;
   
+  virtual
+  int num_nodes() const;
+  
   virtual 
   void coefficients( unsigned loc_dim,
                      unsigned loc_num,
                      unsigned nodebits,
                      double* coeff_out,
+                     size_t* indices_out,
                      size_t& num_coeff_out,
                      MsqError& err ) const;
   

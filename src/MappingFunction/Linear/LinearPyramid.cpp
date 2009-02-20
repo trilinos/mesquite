@@ -153,64 +153,69 @@ static inline void set_corner_derivatives( unsigned corner,
 
 EntityTopology LinearPyramid::element_topology() const
   { return PYRAMID; }
+  
+int LinearPyramid::num_nodes() const
+  { return 5; }
 
 static void coefficients_at_corner( unsigned corner,
                                     double* coeff_out,
+                                    size_t* indices_out,
                                     size_t& num_coeff )
 {
-  num_coeff = 5;
-  coeff_out[0] = 0.0;
-  coeff_out[1] = 0.0;
-  coeff_out[2] = 0.0;
-  coeff_out[3] = 0.0;
-  coeff_out[4] = 0.0;
-  coeff_out[corner] = 1.0;
+  num_coeff = 1;
+  indices_out[0] = corner;
+  coeff_out[0] = 1.0;
 }
 
 
 static void coefficients_at_mid_edge( unsigned edge,
                                       double* coeff_out,
+                                      size_t* indices_out,
                                       size_t& num_coeff )
 {
-  num_coeff = 5;
-  coeff_out[0] = 0.0;
-  coeff_out[1] = 0.0;
-  coeff_out[2] = 0.0;
-  coeff_out[3] = 0.0;
-  coeff_out[4] = 0.0;
+  num_coeff = 2;
+  coeff_out[0] = 0.5;
+  coeff_out[1] = 0.5;
   
   if (edge < 4) {
-    coeff_out[edge] = 0.5;
-    coeff_out[(edge+1)%4] = 0.5;
+    indices_out[0] = edge;
+    indices_out[1] = (edge+1)%4;
   }
   else {
-    coeff_out[edge-4] = 0.5;
-    coeff_out[4]      = 0.5;
+    indices_out[0] = edge-4;
+    indices_out[1] = 4;
   }
 }
 
 static void coefficients_at_mid_face( unsigned face,
                                       double* coeff_out,
+                                      size_t* indices_out,
                                       size_t& num_coeff )
 {
-  num_coeff = 5;
   if (face == 4) {
+    num_coeff = 4;
     coeff_out[0] = 0.25;
     coeff_out[1] = 0.25;
     coeff_out[2] = 0.25;
     coeff_out[3] = 0.25;
-    coeff_out[4] = 0.00;
+    indices_out[0] = 0;
+    indices_out[1] = 1;
+    indices_out[2] = 2;
+    indices_out[3] = 3;
   }
   else {
-    coeff_out[ face     ] = MSQ_ONE_THIRD;
-    coeff_out[(face+1)%4] = MSQ_ONE_THIRD;
-    coeff_out[(face+2)%4] = 0.0;
-    coeff_out[(face+3)%4] = 0.0;
-    coeff_out[      4   ] = MSQ_ONE_THIRD;
+    num_coeff = 3;
+    indices_out[0] = face;
+    indices_out[1] = (face+1)%4;
+    indices_out[2] = 4;
+    coeff_out[0] = MSQ_ONE_THIRD;
+    coeff_out[1] = MSQ_ONE_THIRD;
+    coeff_out[2] = MSQ_ONE_THIRD;
   }
 }
 
 static void coefficients_at_mid_elem( double* coeff_out,
+                                      size_t* indices_out,
                                       size_t& num_coeff )
 {
   num_coeff = 5;
@@ -219,12 +224,18 @@ static void coefficients_at_mid_elem( double* coeff_out,
   coeff_out[2] = 0.1875;
   coeff_out[3] = 0.1875;
   coeff_out[4] = 0.25;
+  indices_out[0] = 0;
+  indices_out[1] = 1;
+  indices_out[2] = 2;
+  indices_out[3] = 3;
+  indices_out[4] = 4;
 }
 
 void LinearPyramid::coefficients( unsigned loc_dim,
                                   unsigned loc_num,
                                   unsigned nodebits,
                                   double* coeff_out,
+                                  size_t* indices_out,
                                   size_t& num_coeff,
                                   MsqError& err ) const
 {
@@ -235,16 +246,16 @@ void LinearPyramid::coefficients( unsigned loc_dim,
   
   switch (loc_dim) {
     case 0:
-      coefficients_at_corner( loc_num, coeff_out, num_coeff );
+      coefficients_at_corner( loc_num, coeff_out, indices_out, num_coeff );
       break;
     case 1:
-      coefficients_at_mid_edge( loc_num, coeff_out, num_coeff );
+      coefficients_at_mid_edge( loc_num, coeff_out, indices_out, num_coeff );
       break;
     case 2:
-      coefficients_at_mid_face( loc_num, coeff_out, num_coeff );
+      coefficients_at_mid_face( loc_num, coeff_out, indices_out, num_coeff );
       break;
     case 3:
-      coefficients_at_mid_elem( coeff_out, num_coeff );
+      coefficients_at_mid_elem( coeff_out, indices_out, num_coeff );
       break;
     default:
       MSQ_SETERR(err)("Invalid/unsupported logical dimension",MsqError::INVALID_ARG);

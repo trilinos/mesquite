@@ -289,21 +289,39 @@ static void check_no_zeros( const MsqVector<3>* derivs, size_t num_vtx )
 }
 
 static void compare_coefficients( const double* coeffs,
+                                  const size_t* indices,
                                   const double* expected_coeffs,
                                   size_t num_coeff,
                                   unsigned loc, unsigned bits )
 {
-  CPPUNIT_ASSERT_EQUAL( (size_t)10, num_coeff );
-  ASSERT_VALUES_EQUAL( expected_coeffs[0], coeffs[0], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_coeffs[1], coeffs[1], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_coeffs[2], coeffs[2], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_coeffs[3], coeffs[3], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_coeffs[4], coeffs[4], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_coeffs[5], coeffs[5], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_coeffs[6], coeffs[6], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_coeffs[7], coeffs[7], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_coeffs[8], coeffs[8], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_coeffs[9], coeffs[9], loc, bits );
+    // find the location in the returned list for each node
+  size_t revidx[10];
+  double test_vals[10];
+  for (size_t i = 0; i < 10; ++i) {
+    revidx[i] = std::find( indices, indices+num_coeff, i ) - indices;
+    test_vals[i] = (revidx[i] == num_coeff) ? 0.0 : coeffs[revidx[i]];
+  }
+
+    // Check that index list doesn't contain any nodes not actually
+    // present in the element.
+  CPPUNIT_ASSERT( (bits & 1) || (revidx[4] == num_coeff) );
+  CPPUNIT_ASSERT( (bits & 2) || (revidx[5] == num_coeff) );
+  CPPUNIT_ASSERT( (bits & 4) || (revidx[6] == num_coeff) );
+  CPPUNIT_ASSERT( (bits & 8) || (revidx[7] == num_coeff) );
+  CPPUNIT_ASSERT( (bits &16) || (revidx[8] == num_coeff) );
+  CPPUNIT_ASSERT( (bits &32) || (revidx[9] == num_coeff) );
+    
+    // compare expected and actual coefficient values
+  ASSERT_VALUES_EQUAL( expected_coeffs[0], test_vals[0], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_coeffs[1], test_vals[1], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_coeffs[2], test_vals[2], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_coeffs[3], test_vals[3], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_coeffs[4], test_vals[4], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_coeffs[5], test_vals[5], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_coeffs[6], test_vals[6], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_coeffs[7], test_vals[7], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_coeffs[8], test_vals[8], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_coeffs[9], test_vals[9], loc, bits );
 }
 
 static void compare_derivatives( const size_t* vertices,
@@ -370,11 +388,11 @@ void TetLagrangeShapeTest::test_corner_coeff( int corner, unsigned nodebits )
   get_coeff( nodebits, rst_corner[corner], expected );
   
   double coeff[100];
-  size_t n = 29;
-  sf.coefficients( 0, corner, nodebits, coeff, n, err );
+  size_t n = 29, indices[100];
+  sf.coefficients( 0, corner, nodebits, coeff, indices, n, err );
   CPPUNIT_ASSERT( !err );
   
-  compare_coefficients( coeff, expected, n, corner, nodebits );
+  compare_coefficients( coeff, indices, expected, n, corner, nodebits );
 }
 
 void TetLagrangeShapeTest::test_edge_coeff( int edge, unsigned nodebits )
@@ -385,11 +403,11 @@ void TetLagrangeShapeTest::test_edge_coeff( int edge, unsigned nodebits )
   get_coeff( nodebits, rst_edge[edge], expected );
   
   double coeff[100];
-  size_t n = 29;
-  sf.coefficients( 1, edge, nodebits, coeff, n, err );
+  size_t n = 29, indices[100];
+  sf.coefficients( 1, edge, nodebits, coeff, indices, n, err );
   CPPUNIT_ASSERT( !err );
   
-  compare_coefficients( coeff, expected, n, edge+4, nodebits );
+  compare_coefficients( coeff, indices, expected, n, edge+4, nodebits );
 }
 
 void TetLagrangeShapeTest::test_face_coeff( int face, unsigned nodebits )
@@ -400,11 +418,11 @@ void TetLagrangeShapeTest::test_face_coeff( int face, unsigned nodebits )
   get_coeff( nodebits, rst_face[face], expected );
   
   double coeff[100];
-  size_t n = 29;
-  sf.coefficients( 2, face, nodebits, coeff, n, err );
+  size_t n = 29, indices[100];
+  sf.coefficients( 2, face, nodebits, coeff, indices, n, err );
   CPPUNIT_ASSERT( !err );
   
-  compare_coefficients( coeff, expected, n, face+10, nodebits );
+  compare_coefficients( coeff, indices, expected, n, face+10, nodebits );
 }
 
 void TetLagrangeShapeTest::test_mid_coeff( unsigned nodebits )
@@ -415,11 +433,11 @@ void TetLagrangeShapeTest::test_mid_coeff( unsigned nodebits )
   get_coeff( nodebits, rst_mid, expected );
   
   double coeff[100];
-  size_t n = 29;
-  sf.coefficients( 3, 0, nodebits, coeff, n, err );
+  size_t n = 29, indices[100];
+  sf.coefficients( 3, 0, nodebits, coeff, indices, n, err );
   CPPUNIT_ASSERT( !err );
   
-  compare_coefficients( coeff, expected, n, 14, nodebits );
+  compare_coefficients( coeff, indices, expected, n, 14, nodebits );
 }
 
 void TetLagrangeShapeTest::test_corner_derivs( int corner, unsigned nodebits )
@@ -564,40 +582,40 @@ void TetLagrangeShapeTest::test_invalid_nodebits_coeff( unsigned bits )
 {
   MsqError err;
   double coeff[100];
-  size_t n;
+  size_t n, indices[100];
   
-  sf.coefficients( 0, 0, bits, coeff, n, err );
+  sf.coefficients( 0, 0, bits, coeff, indices, n, err );
   CPPUNIT_ASSERT( err );
-  sf.coefficients( 0, 1, bits, coeff, n, err );
+  sf.coefficients( 0, 1, bits, coeff, indices, n, err );
   CPPUNIT_ASSERT( err );
-  sf.coefficients( 0, 2, bits, coeff, n, err );
+  sf.coefficients( 0, 2, bits, coeff, indices, n, err );
   CPPUNIT_ASSERT( err );
-  sf.coefficients( 0, 3, bits, coeff, n, err );
-  CPPUNIT_ASSERT( err );
-  
-  sf.coefficients( 1, 0, bits, coeff, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.coefficients( 1, 1, bits, coeff, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.coefficients( 1, 2, bits, coeff, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.coefficients( 1, 3, bits, coeff, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.coefficients( 1, 4, bits, coeff, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.coefficients( 1, 5, bits, coeff, n, err );
+  sf.coefficients( 0, 3, bits, coeff, indices, n, err );
   CPPUNIT_ASSERT( err );
   
-  sf.coefficients( 2, 0, bits, coeff, n, err );
+  sf.coefficients( 1, 0, bits, coeff, indices, n, err );
   CPPUNIT_ASSERT( err );
-  sf.coefficients( 2, 1, bits, coeff, n, err );
+  sf.coefficients( 1, 1, bits, coeff, indices, n, err );
   CPPUNIT_ASSERT( err );
-  sf.coefficients( 2, 2, bits, coeff, n, err );
+  sf.coefficients( 1, 2, bits, coeff, indices, n, err );
   CPPUNIT_ASSERT( err );
-  sf.coefficients( 2, 3, bits, coeff, n, err );
+  sf.coefficients( 1, 3, bits, coeff, indices, n, err );
+  CPPUNIT_ASSERT( err );
+  sf.coefficients( 1, 4, bits, coeff, indices, n, err );
+  CPPUNIT_ASSERT( err );
+  sf.coefficients( 1, 5, bits, coeff, indices, n, err );
   CPPUNIT_ASSERT( err );
   
-  sf.coefficients( 3, 0, bits, coeff, n, err );
+  sf.coefficients( 2, 0, bits, coeff, indices, n, err );
+  CPPUNIT_ASSERT( err );
+  sf.coefficients( 2, 1, bits, coeff, indices, n, err );
+  CPPUNIT_ASSERT( err );
+  sf.coefficients( 2, 2, bits, coeff, indices, n, err );
+  CPPUNIT_ASSERT( err );
+  sf.coefficients( 2, 3, bits, coeff, indices, n, err );
+  CPPUNIT_ASSERT( err );
+  
+  sf.coefficients( 3, 0, bits, coeff, indices, n, err );
   CPPUNIT_ASSERT( err );
 }
 

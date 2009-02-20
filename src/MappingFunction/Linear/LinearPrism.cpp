@@ -43,6 +43,9 @@ static const char* nonlinear_error
 EntityTopology LinearPrism::element_topology() const
   { return PRISM; }
   
+int LinearPrism::num_nodes() const
+  { return 6; }
+  
 static const int edge_beg[] = { 0, 1, 2, 0, 1, 2, 3, 4, 5 };
 static const int edge_end[] = { 1, 2, 0, 3, 4, 5, 4, 5, 3 };
 static const int faces[5][5] = { { 4, 0, 1, 4, 3 },
@@ -53,47 +56,53 @@ static const int faces[5][5] = { { 4, 0, 1, 4, 3 },
 
 static void coefficients_at_corner( unsigned corner,
                                     double* coeff_out,
+                                    size_t* indices_out,
                                     size_t& num_coeff )
 {
-  num_coeff = 6;
-  coeff_out[0] = coeff_out[1] = coeff_out[2] = 0.0;
-  coeff_out[3] = coeff_out[4] = coeff_out[5] = 0.0;
-  coeff_out[corner] = 1.0;
+  num_coeff = 1;
+  indices_out[0] = corner;
+  coeff_out[0] = 1.0;
 }
 
 static void coefficients_at_mid_edge( unsigned edge,
                                       double* coeff_out,
+                                      size_t* indices_out,
                                       size_t& num_coeff )
 {
-  num_coeff = 6;
-  coeff_out[0] = coeff_out[1] = coeff_out[2] = 0.0;
-  coeff_out[3] = coeff_out[4] = coeff_out[5] = 0.0;
-  coeff_out[edge_beg[edge]] = 0.5;
-  coeff_out[edge_end[edge]] = 0.5;
+  num_coeff = 2;
+  indices_out[0] = edge_beg[edge];
+  indices_out[1] = edge_end[edge];
+  coeff_out[0] = 0.5;
+  coeff_out[1] = 0.5;
 }
 
 static void coefficients_at_mid_face( unsigned face,
                                       double* coeff_out,
+                                      size_t* indices_out,
                                       size_t& num_coeff )
 {
-  num_coeff = 6;
-  coeff_out[0] = coeff_out[1] = coeff_out[2] = 0.0;
-  coeff_out[3] = coeff_out[4] = coeff_out[5] = 0.0;
-  const int n = faces[face][0];
   double f;
-  if (n == 4) {
+  if (faces[face][0] == 4) {
+    num_coeff = 4;
     f = 0.25;
-    coeff_out[faces[face][4]] = f;
+    indices_out[3] = faces[face][4];
+    coeff_out[3] = f;
   }
-  else
+  else {
+    num_coeff = 3;
     f = MSQ_ONE_THIRD; 
-
-  coeff_out[faces[face][1]] = f;
-  coeff_out[faces[face][2]] = f;
-  coeff_out[faces[face][3]] = f;
+  }
+  
+  coeff_out[0] = f;
+  coeff_out[1] = f;
+  coeff_out[2] = f;
+  indices_out[0] = faces[face][1];
+  indices_out[1] = faces[face][2];
+  indices_out[2] = faces[face][3];
 }
 
 static void coefficients_at_mid_elem( double* coeff_out,
+                                      size_t* indices_out,
                                       size_t& num_coeff )
 {
   num_coeff = 6;
@@ -104,12 +113,19 @@ static void coefficients_at_mid_elem( double* coeff_out,
   coeff_out[3] = sixth;
   coeff_out[4] = sixth;
   coeff_out[5] = sixth;
+  indices_out[0] = 0;
+  indices_out[1] = 1;
+  indices_out[2] = 2;
+  indices_out[3] = 3;
+  indices_out[4] = 4;
+  indices_out[5] = 5;
 }
 
 void LinearPrism::coefficients( unsigned loc_dim,
                                 unsigned loc_num,
                                 unsigned nodebits,
                                 double* coeff_out,
+                                size_t* indices_out,
                                 size_t& num_coeff,
                                 MsqError& err ) const
 {
@@ -120,16 +136,16 @@ void LinearPrism::coefficients( unsigned loc_dim,
   
   switch (loc_dim) {
     case 0:
-      coefficients_at_corner( loc_num, coeff_out, num_coeff );
+      coefficients_at_corner( loc_num, coeff_out, indices_out, num_coeff );
       break;
     case 1:
-      coefficients_at_mid_edge( loc_num, coeff_out, num_coeff );
+      coefficients_at_mid_edge( loc_num, coeff_out, indices_out, num_coeff );
       break;
     case 2:
-      coefficients_at_mid_face( loc_num, coeff_out, num_coeff );
+      coefficients_at_mid_face( loc_num, coeff_out, indices_out, num_coeff );
       break;
     case 3:
-      coefficients_at_mid_elem( coeff_out, num_coeff );
+      coefficients_at_mid_elem( coeff_out, indices_out, num_coeff );
       break;
     default:
       MSQ_SETERR(err)("Invalid/unsupported logical dimension",MsqError::INVALID_ARG);

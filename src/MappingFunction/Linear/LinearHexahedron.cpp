@@ -41,6 +41,9 @@ static const char* nonlinear_error
 
 EntityTopology LinearHexahedron::element_topology() const
   { return HEXAHEDRON; }
+  
+int LinearHexahedron::num_nodes() const
+  { return 8; }
 
 static inline int coeff_xi_sign( unsigned coeff )
   { return 2*(((coeff+1)/2)%2) - 1; }
@@ -51,18 +54,12 @@ static inline int coeff_zeta_sign( unsigned coeff )
 
 static void coefficients_at_corner( unsigned corner, 
                                     double* coeff_out,
+                                    size_t* indices_out,
                                     size_t& num_coeff ) 
 {
-  num_coeff = 8;
-  coeff_out[0] = 0.0;
-  coeff_out[1] = 0.0;
-  coeff_out[2] = 0.0;
-  coeff_out[3] = 0.0;
-  coeff_out[4] = 0.0;
-  coeff_out[5] = 0.0;
-  coeff_out[6] = 0.0;
-  coeff_out[7] = 0.0;
-  coeff_out[corner] = 1.0;
+  num_coeff = 1;
+  coeff_out[0] = 1.0;
+  indices_out[0] = corner;
 }
   
 const unsigned xi = 0, eta = 1, zeta = 2;
@@ -77,19 +74,14 @@ const int edge_end_orth2[] = { 5, 3, 7, 1, 7, 6, 5, 4, 1, 7, 3, 5 }; // vtx adja
 
 static void coefficients_at_mid_edge( unsigned edge, 
                                       double* coeff_out,
+                                      size_t* indices_out,
                                       size_t& num_coeff )
 {
-  num_coeff = 8;
-  coeff_out[0] = 0.0;
-  coeff_out[1] = 0.0;
-  coeff_out[2] = 0.0;
-  coeff_out[3] = 0.0;
-  coeff_out[4] = 0.0;
-  coeff_out[5] = 0.0;
-  coeff_out[6] = 0.0;
-  coeff_out[7] = 0.0;
-  coeff_out[edge_beg[edge]] = 0.5;
-  coeff_out[edge_end[edge]] = 0.5;
+  num_coeff = 2;
+  coeff_out[0] = 0.5;
+  coeff_out[1] = 0.5;
+  indices_out[0] = edge_beg[edge];
+  indices_out[1] = edge_end[edge];
 }  
   
   
@@ -104,26 +96,24 @@ const int face_dir[6] = { eta, xi, eta, xi, zeta, zeta }; // normal direction
 
 static void coefficients_at_mid_face( unsigned face,
                                       double* coeff_out,
+                                      size_t* indices_out,
                                       size_t& num_coeff )
 {
-  num_coeff = 8;
-  coeff_out[0] = 0.0;
-  coeff_out[1] = 0.0;
-  coeff_out[2] = 0.0;
-  coeff_out[3] = 0.0;
-  coeff_out[4] = 0.0;
-  coeff_out[5] = 0.0;
-  coeff_out[6] = 0.0;
-  coeff_out[7] = 0.0;
-  coeff_out[face_vtx[face][0]] = 0.25;
-  coeff_out[face_vtx[face][1]] = 0.25;
-  coeff_out[face_vtx[face][2]] = 0.25;
-  coeff_out[face_vtx[face][3]] = 0.25;
+  num_coeff = 4;
+  coeff_out[0] = 0.25;
+  coeff_out[1] = 0.25;
+  coeff_out[2] = 0.25;
+  coeff_out[3] = 0.25;
+  indices_out[0] = face_vtx[face][0];
+  indices_out[1] = face_vtx[face][1];
+  indices_out[2] = face_vtx[face][2];
+  indices_out[3] = face_vtx[face][3];
 }
                                            
   
 
 static void coefficients_at_mid_elem( double* coeff_out,
+                                      size_t* indices_out,
                                       size_t& num_coeff )
 {
   num_coeff = 8;
@@ -135,6 +125,14 @@ static void coefficients_at_mid_elem( double* coeff_out,
   coeff_out[5] = 0.125;
   coeff_out[6] = 0.125;
   coeff_out[7] = 0.125;
+  indices_out[0] = 0;
+  indices_out[1] = 1;
+  indices_out[2] = 2;
+  indices_out[3] = 3;
+  indices_out[4] = 4;
+  indices_out[5] = 5;
+  indices_out[6] = 6;
+  indices_out[7] = 7;
 }
 
 
@@ -142,6 +140,7 @@ void LinearHexahedron::coefficients( unsigned loc_dim,
                                      unsigned loc_num,
                                      unsigned nodebits,
                                      double* coeff_out,
+                                     size_t* indices_out,
                                      size_t& num_coeff,
                                      MsqError& err ) const
 {
@@ -152,16 +151,16 @@ void LinearHexahedron::coefficients( unsigned loc_dim,
   
   switch (loc_dim) {
     case 0:
-      coefficients_at_corner( loc_num, coeff_out, num_coeff );
+      coefficients_at_corner( loc_num, coeff_out, indices_out, num_coeff );
       break;
     case 1:
-      coefficients_at_mid_edge( loc_num, coeff_out, num_coeff );
+      coefficients_at_mid_edge( loc_num, coeff_out, indices_out, num_coeff );
       break;
     case 2:
-      coefficients_at_mid_face( loc_num, coeff_out, num_coeff );
+      coefficients_at_mid_face( loc_num, coeff_out, indices_out, num_coeff );
       break;
     case 3:
-      coefficients_at_mid_elem( coeff_out, num_coeff );
+      coefficients_at_mid_elem( coeff_out, indices_out, num_coeff );
       break;
     default:
       MSQ_SETERR(err)("Invalid/unsupported logical dimension",MsqError::INVALID_ARG);

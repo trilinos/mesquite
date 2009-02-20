@@ -50,7 +50,8 @@ bool IdealTargetCalculator:: get_3D_target( PatchData& pd,
                                             MsqMatrix<3,3>& W,
                                             MsqError& err )
 {
-  EntityTopology type = pd.element_by_index( element ).get_element_type();
+  MsqMeshEntity& elem = pd.element_by_index( element );
+  EntityTopology type = elem.get_element_type();
   unsigned dim, num;
   pts->location_from_sample_number( type, sample, dim, num );
   const MappingFunction3D* func = pd.get_mapping_function_3D( type );
@@ -61,7 +62,7 @@ bool IdealTargetCalculator:: get_3D_target( PatchData& pd,
       return false;
   }
   
-  jc.get_Jacobian_3D( func, 0, dim, num, verts, W, err );
+  jc.get_Jacobian_3D( func, 0, dim, num, verts, elem.node_count(), W, err );
   MSQ_ERRZERO(err);
   return true;
 }
@@ -73,7 +74,8 @@ bool IdealTargetCalculator:: get_2D_target( PatchData& pd,
                                             MsqMatrix<3,2>& W,
                                             MsqError& err )
 {
-  EntityTopology type = pd.element_by_index( element ).get_element_type();
+  MsqMeshEntity& elem = pd.element_by_index( element );
+  EntityTopology type = elem.get_element_type();
   unsigned dim, num;
   pts->location_from_sample_number( type, sample, dim, num );
   const MappingFunction2D* func = pd.get_mapping_function_2D( type );
@@ -84,7 +86,7 @@ bool IdealTargetCalculator:: get_2D_target( PatchData& pd,
       return false;
   }
   
-  jc.get_Jacobian_2D( func, 0, dim, num, verts, W, err );
+  jc.get_Jacobian_2D( func, 0, dim, num, verts, elem.node_count(), W, err );
   MSQ_ERRZERO(err);
   
   if (orientSurfElems) {

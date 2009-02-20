@@ -49,11 +49,13 @@ bool RefMeshTargetCalculator::get_3D_target( PatchData& pd,
                                              MsqError& err )
 {
   unsigned ho_bits = get_vertex_coords( pd, element, err ); MSQ_ERRZERO(err);
-  EntityTopology type = pd.element_by_index( element ).get_element_type();
+  MsqMeshEntity& elem = pd.element_by_index( element );
+  EntityTopology type = elem.get_element_type();
   unsigned dim, num;
   pts->location_from_sample_number( type, sample, dim, num );
   const MappingFunction3D* func = pd.get_mapping_function_3D( type );
-  jacobianCalc.get_Jacobian_3D( func, ho_bits, dim, num, &tmpCoords[0], W_out, err ); MSQ_ERRZERO(err);
+  jacobianCalc.get_Jacobian_3D( func, ho_bits, dim, num, &tmpCoords[0], 
+                                elem.node_count(), W_out, err ); MSQ_ERRZERO(err);
   return true;
 }
 
@@ -65,11 +67,13 @@ bool RefMeshTargetCalculator::get_2D_target( PatchData& pd,
                                              MsqError& err )
 {
   unsigned ho_bits = get_vertex_coords( pd, element, err ); MSQ_ERRFALSE(err);
-  EntityTopology type = pd.element_by_index( element ).get_element_type();
+  MsqMeshEntity& elem = pd.element_by_index( element );
+  EntityTopology type = elem.get_element_type();
   unsigned dim, num;
   pts->location_from_sample_number( type, sample, dim, num );
   const MappingFunction2D* func = pd.get_mapping_function_2D( type );
-  jacobianCalc.get_Jacobian_2D( func, ho_bits, dim, num, &tmpCoords[0], W_out, err ); MSQ_ERRZERO(err);
+  jacobianCalc.get_Jacobian_2D( func, ho_bits, dim, num, &tmpCoords[0], 
+                                elem.node_count(), W_out, err ); MSQ_ERRZERO(err);
   return true;
 }
 

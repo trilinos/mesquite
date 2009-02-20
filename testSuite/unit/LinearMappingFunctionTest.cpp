@@ -113,7 +113,7 @@ class LinearMappingFunctionTest : public CppUnit::TestFixture
     CPPUNIT_TEST(test_linear_pyr_deriv_edges);
     CPPUNIT_TEST(test_linear_pyr_deriv_faces);
     CPPUNIT_TEST(test_linear_pyr_deriv_center);
-    
+   
     CPPUNIT_TEST_SUITE_END();
   
     LinearHexahedron hex;
@@ -229,6 +229,7 @@ class LinearMappingFunctionTest : public CppUnit::TestFixture
     void test_linear_pyr_deriv_edges();
     void test_linear_pyr_deriv_faces();
     void test_linear_pyr_deriv_center();
+
 };
 
 
@@ -739,7 +740,7 @@ void LinearMappingFunctionTest::pyr_coeff( double xi[3], double coeff[5] )
 }
 
 /*******************************************************************************
- *        Mapping function derivatives to cmopare with
+ *        Mapping function derivatives to compare with
  *******************************************************************************/
 
 void LinearMappingFunctionTest::hex_deriv( double xi[3], double coeff[24] )
@@ -852,8 +853,9 @@ void LinearMappingFunctionTest::do_coeff_test( MappingFunction& mf,
     // make sure it fails if passed a nonlinear element
   MsqError err;
   double coeff[100];
+  size_t indices[100];
   size_t num_coeff = 100;
-  mf.coefficients( 0, 1, 1, coeff, num_coeff, err );
+  mf.coefficients( 0, 1, 1, coeff, indices, num_coeff, err );
   CPPUNIT_ASSERT(err);
   err.clear();
   
@@ -866,9 +868,8 @@ void LinearMappingFunctionTest::do_coeff_test( MappingFunction& mf,
   for (unsigned i = 0; i < count; ++i)
   {
     num_coeff = 101;
-    mf.coefficients( subdim, i, 0, coeff, num_coeff, err );
+    mf.coefficients( subdim, i, 0, coeff, indices, num_coeff, err );
     CPPUNIT_ASSERT(!err);
-    CPPUNIT_ASSERT_EQUAL(num_coeff, (size_t)n);
     
     mf2( xi, &comp[0] );
     string xi_str;
@@ -881,13 +882,18 @@ void LinearMappingFunctionTest::do_coeff_test( MappingFunction& mf,
     
     for (unsigned j = 0; j < n; ++j)
     {
+      double mf_val = 0.0;
+      size_t idx = std::find( indices, indices+num_coeff, j ) - indices;
+      if (idx < num_coeff)
+	mf_val = coeff[idx];
+
       CppUnit::Message message( "Coefficients do not match." );
       message.addDetail( string("Entity:             ") + itostr( i ) );
       message.addDetail( string("Coefficient number: ") + itostr( j ) );
       message.addDetail( string("Xi:             ") + xi_str );
       message.addDetail( string("Expected value: ") + dtostr( comp[j] ) );
-      message.addDetail( string("Actual value:   ") + dtostr( coeff[j] ) );
-      ASSERT_MESSAGE( message, fabs(comp[j]-coeff[j]) < DBL_EPSILON );
+      message.addDetail( string("Actual value:   ") + dtostr( mf_val ) );
+      ASSERT_MESSAGE( message, fabs(comp[j]-mf_val) < DBL_EPSILON );
     }
   }
 }
@@ -1051,8 +1057,8 @@ void LinearMappingFunctionTest::test_coeff_fail( MappingFunction& mf, unsigned s
     // make sure it fails if called
   MsqError err;
   double coeff[100];
-  size_t num_coeff;
-  mf.coefficients( subdim, 0, 0, coeff, num_coeff, err );
+  size_t num_coeff, indices[100];
+  mf.coefficients( subdim, 0, 0, coeff, indices, num_coeff, err );
   CPPUNIT_ASSERT(err);
   err.clear();
 }  
@@ -1078,5 +1084,3 @@ void LinearMappingFunctionTest::test_deriv_fail( MappingFunction3D& mf, unsigned
   CPPUNIT_ASSERT(err);
   err.clear();
 }
-
-

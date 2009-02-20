@@ -37,6 +37,88 @@
 
 namespace Mesquite {
 
+void
+MappingFunction::convert_connectivity_indices_impl( EntityTopology topo,
+                                               int input_type,
+                                               int output_type,
+                                               size_t* index_list,
+                                               unsigned num_indices,
+                                               MsqError& err )
+{
+  bool in_edges, in_faces, in_region, out_edges, out_faces, out_region;
+  TopologyInfo::higher_order( topo, input_type, in_edges, in_faces, 
+                              in_region, err ); MSQ_ERRRTN(err);
+  TopologyInfo::higher_order( topo, output_type, out_edges, out_faces, 
+                              out_region, err ); MSQ_ERRRTN(err);
+
+    // We could probably use TopologyInfo to do this more forward-compatible,
+    // but for efficiency assume the current ITAPS node ordering, where
+    // all mid-edge nodes occur before mid-face nodes and the mid-region
+    // node is always last.
+    
+    // If both have mid-region nodes and they don't have the same stuff 
+    // preceeding the mid-region node, then we need to change that index.
+  bool region_diff = in_region && out_region && (in_faces != out_faces || in_edges != out_edges);
+    // If both have mid-face nodes and one has mid-edge nodes and the other
+    // does not, then we need to change the face indices.
+  bool face_diff = in_faces && out_faces && in_edges != out_edges;
+    // if nothing to change, return
+  if (!face_diff && !region_diff)
+    return;
+
+  const unsigned corners = TopologyInfo::corners(topo);
+  const unsigned edges   = TopologyInfo::edges(topo);
+  const unsigned faces   = TopologyInfo::faces(topo);
+  const unsigned in_face_offset = in_edges ? corners+edges : corners;
+  const unsigned in_regn_offset = in_faces ? in_face_offset+faces : in_face_offset;
+  const unsigned out_face_offset = out_edges ? corners+edges : corners;
+  const unsigned out_regn_offset = out_faces ? out_face_offset+faces : out_face_offset;
+  
+    // In the code below, assertions are used to validate the input
+    // connectivity data as we assume it is an internal mesquite coding
+    // error for it to be inconsistent.  True error checking is used
+    // if the elements are incompatible (the index list for the input
+    // type contains indices for which there is no correpsonding logical
+    // node location in the connectivity list of the output element type)
+    // because that indicates an invalid setup (the combination of element
+    // type and slave nodes does not result in a reduced element that is
+    // compatible with the mapping function.)  The latter should probably
+    // have been caught by the mapping function, but to be safe we check
+    // again here.
+  
+  for (size_t i = 0; i < num_indices; ++i) {
+    if (index_list[i] < in_face_offset) { // corner or mid-edge node
+      // nothing to change for these, but check that if it is a mid-edge
+      // node that the other type also has edges
+      if (index_list[i] >= corners && !out_edges) {
+        MSQ_SETERR(err)("Incompatible nodes present.", MsqError::UNSUPPORTED_ELEMENT );
+        return;
+      }
+    }
+    else if (index_list[i] < in_regn_offset) { // mid-face node
+      assert( TopologyInfo::dimension(topo) == 3 || index_list[i] == (unsigned)input_type - 1 );
+      if (!out_faces) {
+        MSQ_SETERR(err)("Incompatible nodes present.", MsqError::UNSUPPORTED_ELEMENT );
+        return;
+      }
+        // working with unsigned type (size_t), so make sure we express this
+        // such that there are no intermediate negative values.
+      index_list[i] = index_list[i] + out_face_offset - in_face_offset;
+    }
+    else { // region
+      assert( in_region );
+      assert( TopologyInfo::dimension(topo) == 3 && index_list[i] == (unsigned)input_type - 1 );
+      if (!out_region) {
+        MSQ_SETERR(err)("Incompatible nodes present.", MsqError::UNSUPPORTED_ELEMENT );
+        return;
+      }
+        // working with unsigned type (size_t), so make sure we express this
+        // such that there are no intermediate negative values.
+     index_list[i] = index_list[i] + out_regn_offset - in_regn_offset;
+    }
+  }
+}
+
 void MappingFunction2D::jacobian( const PatchData& pd,
                                   size_t element_number,
                                   unsigned nodebits,
@@ -54,12 +136,8 @@ void MappingFunction2D::jacobian( const PatchData& pd,
   derivatives( loc_dim, loc_num, nodebits, vertex_patch_indices_out,
                d_coeff_d_xi_out, num_vtx_out, err ); MSQ_ERRRTN(err);
  
-  PatchData::reduced_connectivity_map( elem.get_element_type(),
-                                       elem.node_count(),
-                                       num_vtx_out,
-                                       vertex_patch_indices_out,
-                                       vertex_patch_indices_out,
-                                       err );  MSQ_ERRRTN(err);
+  convert_connectivity_indices( elem.node_count(), vertex_patch_indices_out, 
+                                num_vtx_out, err );  MSQ_ERRRTN(err);
  
   jacobian_out.zero();
   size_t w = 0;
@@ -93,12 +171,8 @@ void MappingFunction3D::jacobian( const PatchData& pd,
   derivatives( loc_dim, loc_num, nodebits, vertex_patch_indices_out,
                d_coeff_d_xi_out, num_vtx_out, err ); MSQ_ERRRTN(err);
  
-  PatchData::reduced_connectivity_map( elem.get_element_type(),
-                                       elem.node_count(),
-                                       num_vtx_out,
-                                       vertex_patch_indices_out,
-                                       vertex_patch_indices_out,
-                                       err );  MSQ_ERRRTN(err);
+  convert_connectivity_indices( elem.node_count(), vertex_patch_indices_out, 
+                                num_vtx_out, err );  MSQ_ERRRTN(err);
  
   jacobian_out.zero();
   size_t w = 0;

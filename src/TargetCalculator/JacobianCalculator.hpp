@@ -69,6 +69,7 @@ public:
                         unsigned ho_bits,
                         unsigned dim, unsigned num,
                         const Vector3D* vertex_coords,
+                        size_t num_vertex,
                         MsqMatrix<3,2>& J_out,
                         MsqError& err );
   
@@ -88,6 +89,7 @@ public:
                         unsigned ho_bits,
                         unsigned dim, unsigned num,
                         const Vector3D* vertex_coords,
+                        size_t num_vertex,
                         MsqMatrix<3,3>& J_out,
                         MsqError& err );
 private:

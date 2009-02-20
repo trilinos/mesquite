@@ -38,11 +38,15 @@ static const char* nonlinear_error
 
 EntityTopology LinearQuadrilateral::element_topology() const
   { return QUADRILATERAL; }
+  
+int LinearQuadrilateral::num_nodes() const
+  { return 4; }
 
 void LinearQuadrilateral::coefficients( unsigned loc_dim,
                                         unsigned loc_num,
                                         unsigned nodebits,
                                         double* coeff_out,
+                                        size_t* indices_out,
                                         size_t& num_coeff,
                                         MsqError& err ) const
 {
@@ -51,17 +55,25 @@ void LinearQuadrilateral::coefficients( unsigned loc_dim,
     return;
   }
   
-  num_coeff = 4;
   switch (loc_dim) {
     case 0:
-      coeff_out[0] = coeff_out[1] = coeff_out[2] = coeff_out[3] = 0.0;
-      coeff_out[loc_num] = 1.0;
+      num_coeff = 1;
+      indices_out[0] = loc_num;
+      coeff_out[0] = 1.0;
       break;
     case 1:
-      coeff_out[ loc_num     ] = coeff_out[(loc_num+1)%4] = 0.5;
-      coeff_out[(loc_num+2)%4] = coeff_out[(loc_num+3)%4] = 0.0;
+      num_coeff = 2;
+      indices_out[0] = loc_num;
+      indices_out[1] = (loc_num+1)%4;
+      coeff_out[0] = 0.5;
+      coeff_out[1] = 0.5;
       break;
     case 2:
+      num_coeff = 4;
+      indices_out[0] = 0;
+      indices_out[1] = 1;
+      indices_out[2] = 2;
+      indices_out[3] = 3;
       coeff_out[0] = 0.25;
       coeff_out[1] = 0.25;
       coeff_out[2] = 0.25;

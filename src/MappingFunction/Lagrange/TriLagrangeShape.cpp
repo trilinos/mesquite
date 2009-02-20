@@ -39,11 +39,15 @@ namespace Mesquite {
 
 EntityTopology TriLagrangeShape::element_topology() const
   { return TRIANGLE; }
+  
+int TriLagrangeShape::num_nodes() const
+  { return 6; }
 
 void TriLagrangeShape::coefficients( unsigned loc_dim,
                                      unsigned loc_num,
                                      unsigned nodebits,
                                      double* coeff_out,
+                                     size_t* indices_out,
                                      size_t& num_coeff,
                                      MsqError& err ) const
 {
@@ -56,33 +60,43 @@ void TriLagrangeShape::coefficients( unsigned loc_dim,
   num_coeff = 6;
   switch (loc_dim) {
     case 0:
-      std::fill( coeff_out, coeff_out+num_coeff, 0.0 );
-      coeff_out[loc_num] = 1.0;
+      num_coeff = 1;
+      indices_out[0] = loc_num;
+      coeff_out[0] = 1.0;
       break;
     case 1:
       std::fill( coeff_out, coeff_out+num_coeff, 0.0 );
       if (nodebits & (1 << loc_num)) { // if mid-edge node is present
-        coeff_out[3+loc_num] = 1.0;
+        num_coeff = 1;
+        indices_out[0] = 3+loc_num;
+        coeff_out[0] = 1.0;
       }
       else { // no mid node on edge
-        coeff_out[loc_num] = 0.5;
-        coeff_out[(loc_num+1)%3] = 0.5;
+        num_coeff = 2;
+        indices_out[0] = loc_num;
+        indices_out[1] = (loc_num+1)%3;
+        coeff_out[0] = 0.5;
+        coeff_out[1] = 0.5;
       }
       break;
     case 2:
+      num_coeff = 3;
+      indices_out[0] = 0;
+      indices_out[1] = 1;
+      indices_out[2] = 2;
       coeff_out[0] = 1.0/3.0;
       coeff_out[1] = 1.0/3.0;
       coeff_out[2] = 1.0/3.0;
       for (int i = 0; i < 3; ++i) { // for each mid-edge node
         if (nodebits & (1 << i)) { // if node is present
+          indices_out[num_coeff] = i+3;
             // coeff for mid-edge node
-          coeff_out[i+3]      = 4.0/9.0;
+          coeff_out[num_coeff] = 4.0/9.0;
             // adjust coeff for adj corner nodes
           coeff_out[i]       -= 2.0/9.0;
           coeff_out[(i+1)%3] -= 2.0/9.0;
-        }
-        else {
-          coeff_out[i+3] = 0.0;
+            // update count
+          ++num_coeff;
         }
       }
       break;

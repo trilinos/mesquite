@@ -129,7 +129,7 @@ bool TargetSurfaceOrientation::evaluate_with_indices( PatchData& pd,
   const size_t* conn = elem.get_vertex_index_array();
   const unsigned bits = pd.higher_order_node_bits( e );
   func->derivatives( dim, num, bits, indices, mDerivs, num_idx, err ); MSQ_ERRZERO( err );
-  PatchData::reduced_connectivity_map( type, elem.node_count(), num_idx, indices, indices, err );
+  func->convert_connectivity_indices( elem.node_count(), indices, num_idx, err ); MSQ_ERRZERO( err );
   
     // Convert from indices into element connectivity list to
     // indices into vertex array in patch data.

@@ -34,21 +34,23 @@ namespace Mesquite {
 
 EntityTopology QuadLagrangeShape::element_topology() const
   { return QUADRILATERAL; }
+  
+int QuadLagrangeShape::num_nodes() const
+  { return 9; }
 
 void QuadLagrangeShape::coefficients( unsigned loc_dim,
                                       unsigned loc_num,
                                       unsigned nodebits,
                                       double* coeff_out,
+                                      size_t* indices_out,
                                       size_t& num_coeff,
                                       MsqError& err ) const
 {
-  num_coeff = 9;
   switch (loc_dim) {
     case 0:
-      coeff_out[0] = coeff_out[1] = coeff_out[2] =
-      coeff_out[3] = coeff_out[4] = coeff_out[5] = 
-      coeff_out[6] = coeff_out[7] = coeff_out[8] = 0.0;
-      coeff_out[loc_num] = 1;
+      num_coeff = 1;
+      indices_out[0] = loc_num;
+      coeff_out[0] = 1.0;
       break;
     case 1:
       coeff_out[0] = coeff_out[1] = coeff_out[2] =
@@ -56,38 +58,46 @@ void QuadLagrangeShape::coefficients( unsigned loc_dim,
       coeff_out[6] = coeff_out[7] = coeff_out[8] = 0.0;
       if (nodebits & (1 << loc_num)) {  
           // if mid-edge node is present
-        coeff_out[loc_num+4] = 1;
+        num_coeff = 1;
+        indices_out[0] = loc_num+4;
+        coeff_out[0] = 1.0;
       }
       else {
           // If mid-edge node is not present, mapping function value
           // for linear edge is even weight of adjacent vertices.
-        coeff_out[ loc_num     ] = 0.5;
-        coeff_out[(loc_num+1)%4] = 0.5;
+        num_coeff = 2;
+        indices_out[0] = loc_num;
+        indices_out[1] = (loc_num+1)%4;
+        coeff_out[0] = 0.5;
+        coeff_out[1] = 0.5;
       }
       break;
     case 2:
-      if (nodebits & 1<<4) { // if center node is present
-        coeff_out[0] = coeff_out[1] = coeff_out[2] = coeff_out[3] =
-        coeff_out[4] = coeff_out[5] = coeff_out[6] = coeff_out[7] = 0.0;
-        coeff_out[8] = 1;
+      if (nodebits & 1<<4) { // if quad center node is present
+        num_coeff = 1;
+        indices_out[0] = 8;
+        coeff_out[0] = 1.0;
       } 
       else {
           // for linear element, (no mid-edge nodes), all corners contribute 1/4.
+        num_coeff = 4;
+        indices_out[0] = 0;
+        indices_out[1] = 1;
+        indices_out[2] = 2;
+        indices_out[3] = 3;
         coeff_out[0] = 0.25;
         coeff_out[1] = 0.25;
         coeff_out[2] = 0.25;
         coeff_out[3] = 0.25;
-        coeff_out[8] = 0.00;
           // add in contribution for any mid-edge nodes present
         for (int i = 0; i < 4; ++i) { // for each edge
           if (nodebits & (1<<i))
           {
-            coeff_out[ i+4   ]  = 0.5;
+            indices_out[num_coeff] = i+4;
+            coeff_out[num_coeff] = 0.5;
             coeff_out[ i     ] -= 0.25;
             coeff_out[(i+1)%4] -= 0.25;
-          }
-          else {
-            coeff_out[ i+4   ]  = 0.0;
+            ++num_coeff;
           }
         }
       }

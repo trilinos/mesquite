@@ -220,17 +220,32 @@ static void check_no_zeros( const MsqVector<2>* derivs, size_t num_vtx )
 }
 
 static void compare_coefficients( const double* coeffs,
+                                  const size_t* indices,
                                   const double* expected_coeffs,
                                   size_t num_coeff,
                                   unsigned loc, unsigned bits )
 {
-  CPPUNIT_ASSERT_EQUAL( (size_t)6, num_coeff );
-  ASSERT_VALUES_EQUAL( expected_coeffs[0], coeffs[0], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_coeffs[1], coeffs[1], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_coeffs[2], coeffs[2], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_coeffs[3], coeffs[3], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_coeffs[4], coeffs[4], loc, bits );
-  ASSERT_VALUES_EQUAL( expected_coeffs[5], coeffs[5], loc, bits );
+    // find the location in the returned list for each node
+  size_t revidx[6];
+  double test_vals[6];
+  for (size_t i = 0; i < 6; ++i) {
+    revidx[i] = std::find( indices, indices+num_coeff, i ) - indices;
+    test_vals[i] = (revidx[i] == num_coeff) ? 0.0 : coeffs[revidx[i]];
+  }
+
+    // Check that index list doesn't contain any nodes not actually
+    // present in the element.
+  CPPUNIT_ASSERT( (bits & 1) || (revidx[3] == num_coeff) );
+  CPPUNIT_ASSERT( (bits & 2) || (revidx[4] == num_coeff) );
+  CPPUNIT_ASSERT( (bits & 4) || (revidx[5] == num_coeff) );
+    
+    // compare expected and actual coefficient values
+  ASSERT_VALUES_EQUAL( expected_coeffs[0], test_vals[0], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_coeffs[1], test_vals[1], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_coeffs[2], test_vals[2], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_coeffs[3], test_vals[3], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_coeffs[4], test_vals[4], loc, bits );
+  ASSERT_VALUES_EQUAL( expected_coeffs[5], test_vals[5], loc, bits );
 }
 
 static void compare_derivatives( const size_t* vertices,
@@ -269,11 +284,11 @@ void TriLagrangeShapeTest::test_corner_coeff( int corner, unsigned nodebits )
   get_coeff( nodebits, rs_corner[corner], expected );
   
   double coeff[27];
-  size_t num_coeff = 17;
-  sf.coefficients( 0, corner, nodebits, coeff, num_coeff, err );
+  size_t num_coeff = 17, indices[27];
+  sf.coefficients( 0, corner, nodebits, coeff, indices, num_coeff, err );
   CPPUNIT_ASSERT( !err );
   
-  compare_coefficients( coeff, expected, num_coeff, corner, nodebits );
+  compare_coefficients( coeff, indices, expected, num_coeff, corner, nodebits );
 }
 
 void TriLagrangeShapeTest::test_edge_coeff( int edge, unsigned nodebits )
@@ -284,11 +299,11 @@ void TriLagrangeShapeTest::test_edge_coeff( int edge, unsigned nodebits )
   get_coeff( nodebits, rs_edge[edge], expected );
   
   double coeff[27];
-  size_t num_coeff = 17;
-  sf.coefficients( 1, edge, nodebits, coeff, num_coeff, err );
+  size_t num_coeff = 17, indices[27];
+  sf.coefficients( 1, edge, nodebits, coeff, indices, num_coeff, err );
   CPPUNIT_ASSERT( !err );
   
-  compare_coefficients( coeff, expected, num_coeff, edge+3, nodebits );
+  compare_coefficients( coeff, indices, expected, num_coeff, edge+3, nodebits );
 }
 
 void TriLagrangeShapeTest::test_mid_coeff( unsigned nodebits )
@@ -299,11 +314,11 @@ void TriLagrangeShapeTest::test_mid_coeff( unsigned nodebits )
   get_coeff( nodebits, rs_mid, expected );
   
   double coeff[27];
-  size_t num_coeff = 17;
-  sf.coefficients( 2, 0, nodebits, coeff, num_coeff, err );
+  size_t num_coeff = 17, indices[27];
+  sf.coefficients( 2, 0, nodebits, coeff, indices, num_coeff, err );
   CPPUNIT_ASSERT( !err );
   
-  compare_coefficients( coeff, expected, num_coeff, 6, nodebits );
+  compare_coefficients( coeff, indices, expected, num_coeff, 6, nodebits );
 }
 
 void TriLagrangeShapeTest::test_corner_derivs( int corner, unsigned nodebits )
