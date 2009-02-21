@@ -419,6 +419,11 @@ void PatchData::move_free_vertices_constrained(Vector3D dk[], size_t nb_vtx,
     snap_vertex_to_domain(i, err);
     MSQ_ERRRTN(err);
   }
+  
+  if (numSlaveVertices) {
+    update_slave_node_coordinates( err );
+    MSQ_CHKERR(err);
+  }
 }
 
 
@@ -455,6 +460,11 @@ void PatchData::set_free_vertices_constrained(PatchDataVerticesMemento* memento,
     vertexArray[i] = memento->vertices[i] + (step_size * dk[i]);
     snap_vertex_to_domain(i, err);
     MSQ_ERRRTN(err);
+  }
+  
+  if (numSlaveVertices) {
+    update_slave_node_coordinates( err );
+    MSQ_CHKERR(err);
   }
   
     // Checks that moving direction is zero for fixed vertices.
@@ -772,8 +782,6 @@ void PatchData::update_mesh(MsqError &err)
     return;
   }
   
-  update_slave_node_coordinates( err ); MSQ_ERRRTN(err);
-  
   for (size_t i = 0; i < vertexArray.size(); ++i)
   {
     if (!vertexArray[i].is_flag_set( MsqVertex::MSQ_HARD_FIXED ))
@@ -870,6 +878,99 @@ void PatchData::update_slave_node_coordinates( MsqError& err )
        (unsigned long)i, (unsigned long)get_vertex_handles_array()[i]);
         // make sure we finish with all marks cleared
       vertexArray[i].flags() &= ~MsqVertex::MSQ_MARK;
+    }
+  }
+  
+    // snap vertices to domain
+  if (domain_set()) {
+    for (size_t i = num_free_vertices(); i < vert_end; ++i) {
+      snap_vertex_to_domain(i, err);  MSQ_ERRRTN(err);
+    }
+  } 
+}
+
+void PatchData::update_slave_node_coordinates( const size_t* elements,
+                                               size_t num_elems,
+                                               MsqError& err )
+{
+    // update slave vertices
+  if (0 == num_slave_vertices())
+    return;
+  
+    // need mapping function to define slave node locations
+  MappingFunctionSet* mfs = get_mapping_functions();
+  if (!mfs) {
+    MSQ_SETERR(err)("Cannot update slave node coordinates w/out mapping function",MsqError::INVALID_STATE);
+    return;
+  }
+  
+    // set a mark on each vertex so we don't update shared
+    // vertices more than once.
+  for (size_t i = 0; i < num_elems; ++i) {
+    MsqMeshEntity& elem = element_by_index(elements[i]);
+    const int num_corner = elem.vertex_count();
+    const int num_node = elem.node_count();
+    const size_t* conn = elem.get_vertex_index_array();
+    for (int j = num_corner; j < num_node; ++j)
+      vertexArray[conn[j]].flags() |= MsqVertex::MSQ_MARK;
+  }
+  
+    // For each element, calculate slave vertex coordinates from
+    // mapping function.
+  const int ARR_SIZE = 27;
+  double coeff[ARR_SIZE];
+  size_t index[ARR_SIZE];
+  for (size_t i = 0; i < num_elems; ++i) {
+    MsqMeshEntity& elem = element_by_index(elements[i]);
+    const int num_corner = elem.vertex_count();
+    const int num_node = elem.node_count();
+    assert(num_node < ARR_SIZE);
+  
+    const EntityTopology type = elem.get_element_type();
+    const MappingFunction* const mf = mfs->get_function( type );
+    if (0 == mf || num_node == num_corner)
+      continue;
+      
+    const size_t* conn = elem.get_vertex_index_array();
+
+      // for each higher-order non-slave node, set bit indicating
+      // that mapping function is a function of the non-slave node
+      // coordinates
+    unsigned ho_bits = higher_order_node_bits( i );
+    
+      // for each higher-order slave node
+    for (int k = num_corner; k < num_node; ++k) {
+      if (!is_vertex_slave(conn[k]))
+        continue;
+      
+        // check if we already did this one for an adjacent element
+      MsqVertex& vert = vertexArray[conn[k]];
+      if (!vert.is_flag_set(MsqVertex::MSQ_MARK))
+        continue;
+     
+        // what is this node a mid node of (i.e. face 1, edge 2, etc.)
+      unsigned dim, num;
+      TopologyInfo::side_from_higher_order( type, elem.node_count(), k,
+                                            dim, num, err );  MSQ_ERRRTN(err);
+      
+        // evaluate mapping function at logical loction of HO node.
+      size_t num_coeff;
+      mf->coefficients( dim, num, ho_bits, coeff, index, num_coeff, err ); MSQ_ERRRTN(err);
+      mf->convert_connectivity_indices( num_node, index, num_coeff, err ); MSQ_ERRRTN(err);
+      
+        // calulate new coordinates for slave node
+      assert( num_coeff > 0 );
+      vert = coeff[0] * vertex_by_index( conn[index[0]] );
+      for (size_t j = 1; j < num_coeff; ++j)
+        vert += coeff[j] * vertex_by_index( conn[index[j]] );
+
+        // snap vertices to domain
+      if (domain_set()) {
+        snap_vertex_to_domain(conn[k], err);  MSQ_ERRRTN(err);
+      }
+      
+        // clear mark
+      vert.flags() &= ~MsqVertex::MSQ_MARK;
     }
   }
 }
@@ -1153,10 +1254,22 @@ void PatchData::update_cached_normals( MsqError& err )
 
 void PatchData::get_domain_normal_at_element(size_t elem_index,
                                              Vector3D &surf_norm,
-                                             MsqError &err) const
+                                             MsqError &err)
 {
-  if (domain_set())
-  {
+    // check if element as a mid-face node
+  const MsqMeshEntity& elem = element_by_index( elem_index );
+  const int mid_node = TopologyInfo::higher_order_from_side( 
+                                               elem.get_element_type(),
+                                               elem.node_count(),
+                                               2, 0, err ); MSQ_ERRRTN(err);
+    // if we have the mid-element vertex, get cached normal for it
+  if (mid_node > 0) {
+      get_domain_normal_at_vertex( elem.get_vertex_index_array()[mid_node],
+                                   elementHandlesArray[elem_index],
+                                   surf_norm, err ); MSQ_ERRRTN(err);
+  }
+    // otherwise query domain for normal at element centroid
+  else if(domain_set()) {    
     elementArray[elem_index].get_centroid(surf_norm, *this, err); MSQ_ERRRTN(err);
     get_domain()->element_normal_at( elementHandlesArray[elem_index], surf_norm );
   }
@@ -1168,21 +1281,35 @@ void PatchData::get_domain_normal_at_element(size_t elem_index,
 void PatchData::get_domain_normal_at_mid_edge( size_t elem_index,
                                                unsigned edge_num,
                                                Vector3D& normal,
-                                               MsqError& err ) const
+                                               MsqError& err )
 {
-  if (!domain_set()) {
+    // check if element as a mid-edge node
+  const MsqMeshEntity& elem = element_by_index( elem_index );
+  const int mid_node = TopologyInfo::higher_order_from_side( 
+                                               elem.get_element_type(),
+                                               elem.node_count(),
+                                               1, edge_num, err ); MSQ_ERRRTN(err);
+    // if we have the mid-edge vertex, get cached normal for it
+  if (mid_node > 0) {
+    get_domain_normal_at_vertex( elem.get_vertex_index_array()[mid_node],
+                                 elementHandlesArray[elem_index],
+                                 normal, err ); MSQ_ERRRTN(err);
+  }
+    // otherwise query domain for normal at center of edge
+  else if (domain_set()) {
+    const unsigned* edge = TopologyInfo::edge_vertices( elem.get_element_type(),
+                                                        edge_num, err );
+                                                        MSQ_ERRRTN(err);
+    const MsqVertex& v1 = vertex_by_index( elem.get_vertex_index_array()[edge[0]] );
+    const MsqVertex& v2 = vertex_by_index( elem.get_vertex_index_array()[edge[1]] );
+    normal = 0.5 * (v1 + v2);
+    get_domain()->element_normal_at( elementHandlesArray[elem_index], normal );
+  
+  }
+  else {
     MSQ_SETERR(err)("No domain constraint set.", MsqError::INVALID_STATE );
     return;
   }
-  
-  const MsqMeshEntity& elem = element_by_index( elem_index );
-  const unsigned* edge = TopologyInfo::edge_vertices( elem.get_element_type(),
-                                                      edge_num, err );
-                                                      MSQ_ERRRTN(err);
-  const MsqVertex& v1 = vertex_by_index( elem.get_vertex_index_array()[edge[0]] );
-  const MsqVertex& v2 = vertex_by_index( elem.get_vertex_index_array()[edge[1]] );
-  normal = 0.5 * (v1 + v2);
-  get_domain()->element_normal_at( elementHandlesArray[elem_index], normal );
 }
 
 void PatchData::get_domain_normals_at_corners( size_t elem_index,
@@ -1228,45 +1355,56 @@ void PatchData::get_domain_normals_at_corners( size_t elem_index,
   }
 }  
 
-void PatchData::get_domain_normal_at_corner( size_t elem_index,
-                                             unsigned corner,
+void PatchData::get_domain_normal_at_vertex( size_t vert_index,
+                                             Mesh::EntityHandle handle,
                                              Vector3D& normal,
-                                             MsqError& err ) 
+                                             MsqError& err )
 {
   if (!domain_set())
   {
     MSQ_SETERR(err)( "No domain constraint set.", MsqError::INVALID_STATE );
     return;
   }
-  
-  if (2 != TopologyInfo::dimension( elementArray[elem_index].get_element_type() ))
-  {
-    MSQ_SETERR(err)( "Attempt to get corners of non-surface element", MsqError::INVALID_ARG );
-    return;
-  }
+
   
   if (normalData.empty())
   {
     update_cached_normals( err ); MSQ_ERRRTN(err);
   }
   
-  MsqMeshEntity& elem = elementArray[elem_index];
-  const size_t* const vertex_indices = elem.get_vertex_index_array();
-  const size_t v = vertex_indices[corner];
   if (vertexNormalIndices.empty())
   {
-    normal = normalData[v];
+    normal = normalData[vert_index];
   }
-  else if(vertexNormalIndices[v] < normalData.size())
+  else if(vertexNormalIndices[vert_index] < normalData.size())
   {
-    normal = normalData[vertexNormalIndices[v]];
+    normal = normalData[vertexNormalIndices[vert_index]];
   }
   else
   {
-    normal = vertexArray[v];
-    get_domain()->element_normal_at( elementHandlesArray[elem_index], normal );
+    normal = vertexArray[vert_index];
+    get_domain()->element_normal_at( handle, normal );
   }
-}  
+}
+
+void PatchData::get_domain_normal_at_corner( size_t elem_index,
+                                             unsigned corner,
+                                             Vector3D& normal,
+                                             MsqError& err ) 
+{
+  if (2 != TopologyInfo::dimension( elementArray[elem_index].get_element_type() ))
+  {
+    MSQ_SETERR(err)( "Attempt to get corners of non-surface element", MsqError::INVALID_ARG );
+    return;
+  }
+
+  MsqMeshEntity& elem = elementArray[elem_index];
+  const size_t* const vertex_indices = elem.get_vertex_index_array();
+  get_domain_normal_at_vertex( vertex_indices[corner],
+                               elementHandlesArray[elem_index],
+                               normal, err );
+  MSQ_CHKERR(err);
+}
   
 
 void PatchData::set_mesh(Mesh* ms)        

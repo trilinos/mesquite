@@ -389,25 +389,29 @@ void TopologyInfo::higher_order( EntityTopology topo,
   }
 }
       
-unsigned TopologyInfo::higher_order_from_side( EntityTopology topo,
-                                               unsigned num_nodes,
-                                               unsigned side_dimension,
-                                               unsigned side_number,
-                                               MsqError& err )
+int TopologyInfo::higher_order_from_side( EntityTopology topo,
+                                          unsigned num_nodes,
+                                          unsigned side_dimension,
+                                          unsigned side_number,
+                                          MsqError& err )
 {
-  bool midedge, midface, midvol;
-  higher_order( topo, num_nodes, midedge, midface, midvol, err );
+  bool mids[4] = { true };
+  higher_order( topo, num_nodes, mids[1], mids[2], mids[3], err );
   MSQ_ERRZERO(err);
   
-  if (side_number > adjacent(topo, side_dimension)) {
+  if (side_dimension > dimension(topo) || 
+      side_number > adjacent(topo, side_dimension)) {
     MSQ_SETERR(err)(MsqError::INVALID_ARG,"Invalid side number: %u\n", side_number );
     return 0;
   }
   
-  unsigned result = side_number;
+  if (!mids[side_dimension])
+    return -1;
+  
+  int result = side_number;
   switch (side_dimension) {
-    case 3: if (midface) result += faces(topo);
-    case 2: if (midedge) result += edges(topo);
+    case 3: if (mids[2]) result += faces(topo);
+    case 2: if (mids[1]) result += edges(topo);
     case 1: result += corners(topo);
     case 0: break;
     default: 

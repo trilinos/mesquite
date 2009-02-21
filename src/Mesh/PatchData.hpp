@@ -347,6 +347,22 @@ namespace Mesquite
     bool domain_set() const
     { return 0 != myDomain; }
     
+      /*\brief Get domain normal at vertex location
+       *
+       * Get the normal of the domain associated with the passed
+       * element handle at the location of the specified vertex.
+       *\param vert_index  The index of the vertex in this PatchData
+       *\param elem_handle The handle of the element passed to the domain 
+       *\param normal_out  The resulting domain normal
+       *\param err         Error flag.  Possible error conditions include:
+       *                   invalid input data, no domain associated with
+       *                   element, no domain at all, etc.
+       */
+    void get_domain_normal_at_vertex( size_t vert_index,
+                                      Mesh::ElementHandle element,
+                                      Vector3D& normal_out,
+                                      MsqError& err );
+    
       /*! Get the normal to the domain at the centroid (projected to the
           domain) of a given element.
           Normal is returned in Vector3D &surf_norm.  If the normal cannot
@@ -354,17 +370,10 @@ namespace Mesquite
           the normal will be set to (0,0,0).
           Check PatchData::domain_set() is not false first.
       */
-    void get_domain_normal_at_element(size_t elem_index, Vector3D &surf_norm,
-                                      MsqError &err) const;
-
-      /** Get surface normal at a point where the surface is the
-       *  domain of an element and the point is the location of 
-       *  one of the element corners.
-       */
-    //void get_domain_normal_at_corner( size_t elem_index,
-    //                                  size_t elem_corner,
-    //                                  Vector3D& normal_out,
-    //                                  MsqError& err ) const;
+    void get_domain_normal_at_element(size_t elem_index, 
+                                      Vector3D &surf_norm,
+                                      MsqError &err);
+    
       /** Get surface normals at element corners.
        *  normals_out must be of sufficient size to hold
        *  the normals of all the corners.
@@ -381,11 +390,11 @@ namespace Mesquite
     void get_domain_normal_at_mid_edge( size_t element_index,
                                         unsigned edge_number,
                                         Vector3D& normal,
-                                        MsqError& err ) const;
+                                        MsqError& err );
 
       //! Alternative signature. Same functionality.
     void get_domain_normal_at_element(const MsqMeshEntity* elem_ptr,
-                                      Vector3D &surf_norm, MsqError &err) const 
+                                      Vector3D &surf_norm, MsqError &err)  
     { get_domain_normal_at_element(size_t(elem_ptr-&(elementArray[0])), surf_norm, err); }
     
     void get_domain_normal_at_sample( size_t element_index,
@@ -444,6 +453,9 @@ namespace Mesquite
       //! Calculate new location for all slave higher-order nodes using
       //! mapping function.  Called by update_mesh().
     void update_slave_node_coordinates( MsqError& err );
+    void update_slave_node_coordinates( const size_t* elem_indices,
+                                        size_t num_elem,
+                                        MsqError& err );
     
       //!Remove the soft_fixed flag from all vertices in the patch.
     void set_all_vertices_soft_free(MsqError &err);
@@ -794,7 +806,7 @@ namespace Mesquite
       MSQ_SETERR(err)( "No element array defined", MsqError::INVALID_STATE );
     return &elementArray[0];
   }
-  
+ 
   /*! \brief set the coordinates of a vertex in the raw array
   */
   inline void PatchData::set_vertex_coordinates(const Vector3D &coords,
@@ -807,6 +819,12 @@ namespace Mesquite
     }
     
     vertexArray[index] = coords;
+    
+    if (numSlaveVertices) {
+      size_t num_elem, *indices;
+      indices = get_vertex_element_adjacencies( index, num_elem, err ); MSQ_ERRRTN(err);
+      update_slave_node_coordinates( indices, num_elem, err ); MSQ_ERRRTN(err);
+    }
   }
   inline void PatchData::move_vertex( const Vector3D &delta,
                                       size_t index,
@@ -818,6 +836,12 @@ namespace Mesquite
     }
     
     vertexArray[index] += delta;
+    
+    if (numSlaveVertices) {
+      size_t num_elem, *indices;
+      indices = get_vertex_element_adjacencies( index, num_elem, err ); MSQ_ERRRTN(err);
+      update_slave_node_coordinates( indices, num_elem, err ); MSQ_ERRRTN(err);
+    }
   }
   
   //inline MsqVertex& PatchData::vertex_by_index(size_t index)

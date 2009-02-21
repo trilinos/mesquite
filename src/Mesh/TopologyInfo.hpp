@@ -97,12 +97,26 @@ class MESQUITE_EXPORT TopologyInfo
                               bool& midedge, bool& midface, bool& midvol,
                               MsqError &err );
     
-      /**\brief Given a side, return index of mid-vertex for that side. */
-    static unsigned higher_order_from_side( EntityTopology topo,
-                                            unsigned num_nodes,
-                                            unsigned side_dimension,
-                                            unsigned side_number,
-                                            MsqError& err );
+      /**\brief Given a side, return index of mid-vertex for that side.
+       *
+       * Given a side specification (e.g. the first edge), return the
+       * index of of the correponding mid-side node in the canoncial
+       * ordering of the element connectivity.  Returns -1 if the element
+       * doesn't have the specified mid-side node. 
+       *
+       *\param topo   The element topology
+       *\param num_nodes  The number of nodes in the element type.
+       *\param side_dimension  The dimension of the side (e.g. 1 = edge, 2 = face)
+       *\param side_number     The number of the side (e.g. 0 for first edge/face, etc.)
+       *\return  Index (zero-based position) of higher-order node in canonical 
+       *         ordering of element connectivity, or -1 of element type contains
+       *         no such node.
+       */
+    static int higher_order_from_side( EntityTopology topo,
+                                       unsigned num_nodes,
+                                       unsigned side_dimension,
+                                       unsigned side_number,
+                                       MsqError& err );
     
       /**\brief Get side given a higher-order node */
     static void side_from_higher_order( EntityTopology topo,
