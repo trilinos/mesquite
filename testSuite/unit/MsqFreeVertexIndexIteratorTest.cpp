@@ -118,8 +118,7 @@ public:
   void test_soft_fixed_flags()
   {   
      MsqPrintError err(cout);
-     MsqVertex* vtces = pd.get_vertex_array(err);
-     vtces[0].set_soft_fixed_flag();
+     pd.set_vertex_culled( 0 );
 
      int indices[10];
      int i=0;

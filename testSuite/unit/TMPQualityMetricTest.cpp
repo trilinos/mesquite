@@ -382,9 +382,9 @@ void TMPQualityMetricTest::test_evaluate_2D()
   tester.get_ideal_element( QUADRILATERAL, true, pd );
   // rotate by 90 degrees about X axis
   for (size_t i = 0; i < pd.num_nodes(); ++i) {
-    double z = pd.vertex_by_index(i)[2];
-    pd.vertex_by_index(i)[2] = pd.vertex_by_index(i)[1];
-    pd.vertex_by_index(i)[1] =-z;
+    Vector3D orig = pd.vertex_by_index(i);
+    Vector3D newp( orig[0], -orig[2], orig[1] );
+    pd.set_vertex_coordinates( newp, i, err );
   }
   rval = m.evaluate( pd, 0, value, err );
   CPPUNIT_ASSERT(!MSQ_CHKERR(err));
@@ -399,9 +399,9 @@ void TMPQualityMetricTest::test_evaluate_2D()
   tester.get_ideal_element( TRIANGLE, true, pd );
   // rotate by -90 degrees about Y axis
   for (size_t i = 0; i < pd.num_nodes(); ++i) {
-    double z = pd.vertex_by_index(i)[2];
-    pd.vertex_by_index(i)[2] = -pd.vertex_by_index(i)[0];
-    pd.vertex_by_index(i)[0] = z;
+    Vector3D orig = pd.vertex_by_index(i);
+    Vector3D newp( orig[2], orig[1], -orig[0] );
+    pd.set_vertex_coordinates( newp, i, err );
   }
   rval = m.evaluate( pd, 0, value, err );
   CPPUNIT_ASSERT(!MSQ_CHKERR(err));
@@ -444,9 +444,9 @@ void TMPQualityMetricTest::test_evaluate_3D()
   tester.get_ideal_element( TETRAHEDRON, true, pd );
   // rotate by 90-degrees about X axis
   for (size_t i = 0; i < pd.num_nodes(); ++i) {
-    double z = pd.vertex_by_index(i)[2];
-    pd.vertex_by_index(i)[2] = pd.vertex_by_index(i)[1];
-    pd.vertex_by_index(i)[1] =-z;
+    Vector3D orig = pd.vertex_by_index(i);
+    Vector3D newp( orig[0], -orig[2], orig[1] );
+    pd.set_vertex_coordinates( newp, i, err );
   }
   rval = m.evaluate( pd, 0, value, err );
   CPPUNIT_ASSERT(!MSQ_CHKERR(err));

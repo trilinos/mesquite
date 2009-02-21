@@ -118,7 +118,7 @@ void MsqMeshEntity::get_centroid(Vector3D &centroid, const PatchData &pd, MsqErr
   always non-negative.  If the entity passed is not a two-dimensional
   element, an error is set.*/
 double MsqMeshEntity::compute_unsigned_area(PatchData &pd, MsqError &err) {
-  MsqVertex* verts=pd.get_vertex_array(err);MSQ_ERRZERO(err);
+  const MsqVertex* verts=pd.get_vertex_array(err);MSQ_ERRZERO(err);
   double tem=0.0;
   switch (mType)
   {
@@ -148,7 +148,7 @@ double MsqMeshEntity::compute_unsigned_area(PatchData &pd, MsqError &err) {
   negative.  If the entity passed is not a two-dimensional element, an
   error is set.*/
 double MsqMeshEntity::compute_signed_area(PatchData &pd, MsqError &err) {
-  MsqVertex* verts=pd.get_vertex_array(err);MSQ_ERRZERO(err);
+  const MsqVertex* verts=pd.get_vertex_array(err);MSQ_ERRZERO(err);
   double tem=0.0;
   double tem2=0.0;
   Vector3D surface_normal;
@@ -351,7 +351,7 @@ void MsqMeshEntity::compute_corner_normals( Vector3D normals[],
   */
 void MsqMeshEntity::compute_corner_matrices(PatchData &pd, Matrix3D A[], int num_m3d, MsqError &err )
 {
-  MsqVertex* vertices = pd.get_vertex_array(err); MSQ_ERRRTN(err); 
+  const MsqVertex* vertices = pd.get_vertex_array(err); MSQ_ERRRTN(err); 
   const size_t* v_i = &vertexIndices[0];
 
   // If 2D element, we will get the surface normal 
@@ -530,7 +530,7 @@ size_t MsqMeshEntity::get_local_matrix_map_about_vertex(
     //to vertex_index
   int index=-1;
   int return_val=0;
-  MsqVertex* vertex_array = pd.get_vertex_array(err);
+  const MsqVertex* vertex_array = pd.get_vertex_array(err);
   if(err)
     return return_val;
   
@@ -616,7 +616,7 @@ MsqMeshEntity::ElementOrientation MsqMeshEntity::check_element_orientation(
   PatchData &pd, MsqError &err)
 {
 
-  MsqVertex *vertices = pd.get_vertex_array(err);
+  const MsqVertex *vertices = pd.get_vertex_array(err);
   if(MSQ_CHKERR(err))
     return UNDEFINED_ORIENTATION;
 

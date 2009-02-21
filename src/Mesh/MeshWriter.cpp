@@ -681,7 +681,7 @@ Transform2D::Transform2D( PatchData* pd,
   w_max = h_max = -msq_std::numeric_limits<float>::max();
   w_min = h_min =  msq_std::numeric_limits<float>::max();
   MsqError err;
-  MsqVertex* verts = pd->get_vertex_array( err );
+  const MsqVertex* verts = pd->get_vertex_array( err );
   const size_t num_vert = pd->num_nodes();
   for (unsigned i = 0; i < num_vert; ++i)
   {

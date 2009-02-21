@@ -95,16 +95,13 @@ void NonSmoothSteepestDescent::optimize_vertex_positions(PatchData &pd,
   /* perform the min max smoothing algorithm */
   MSQ_PRINT(2)("\nInitializing the patch iteration\n");
 
-  numVertices = pd.num_nodes();
-  MSQ_PRINT(3)("Number of Vertices: %d\n",numVertices);
-  numElements = pd.num_elements();
-  MSQ_PRINT(3)("Number of Elements: %d\n",numElements);
+  MSQ_PRINT(3)("Number of Vertices: %d\n",(int)pd.num_nodes());
+  MSQ_PRINT(3)("Number of Elements: %d\n",(int)pd.num_elements());
     //Michael: Note: is this a reliable way to get the dimension?
   mDimension = pd.get_mesh()->get_geometric_dimension(err); MSQ_ERRRTN(err);
   MSQ_PRINT(3)("Spatial Dimension: %d\n",mDimension);
 
-  numFree=pd.num_free_vertices();
-  MSQ_PRINT(3)("Num Free = %d\n",numFree);
+  MSQ_PRINT(3)("Num Free = %d\n",(int)pd.num_free_vertices());
 
   MsqFreeVertexIndexIterator free_iter(pd, err); MSQ_ERRRTN(err);
   free_iter.reset();
@@ -112,29 +109,11 @@ void NonSmoothSteepestDescent::optimize_vertex_positions(PatchData &pd,
   freeVertexIndex = free_iter.value();
   MSQ_PRINT(3)("Free Vertex Index = %d\n",freeVertexIndex);
 
-  mCoords = pd.get_vertex_array(err); MSQ_ERRRTN(err);
-
-  if (MSQ_DBG(3)) {
-    for (int i99=0;i99<numVertices;i99++) {
-      MSQ_PRINT(3)("coords: %g %g\n",mCoords[i99][0],mCoords[i99][1]);
-    }
-  }
-
-  mConnectivity = pd.get_element_array(err); MSQ_ERRRTN(err);
-  if (MSQ_DBG(3)) {
-    msq_std::vector<size_t> indices;
-    for (int i99=0;i99<numElements;i99++) {
-      mConnectivity[i99].get_vertex_indices(indices);
-      MSQ_PRINT(3)("connectivity: %d %d %d\n",indices[0],
-	      indices[1],indices[2]);
-    }
-  }
-
   // TODO - need to switch to validity via metric evaluations should
   // be associated with the compute_function somehow
   /* check for an invalid mesh; if it's invalid return and ask the user 
      to use untangle */
-  if (this->validity_check(err)!=1) {
+  if (this->validity_check(pd,err)!=1) {
       MSQ_PRINT(1)("ERROR: Invalid mesh\n");
       MSQ_SETERR(err)("Invalid Mesh: Use untangle to create a valid "
                       "triangulation", MsqError::INVALID_MESH);
@@ -143,11 +122,11 @@ void NonSmoothSteepestDescent::optimize_vertex_positions(PatchData &pd,
 
   /* assumes one function value per element */
   // TODO - need to include vertex metrics 
-  numFunctionValues = numElements;
+  numFunctionValues = pd.num_elements();
 
   /* initialize the optimization data up to numFunctionValues */
   this->init_opt(err); MSQ_ERRRTN(err);
-  this->init_max_step_length(err);  MSQ_ERRRTN(err);
+  this->init_max_step_length(pd,err);  MSQ_ERRRTN(err);
   MSQ_PRINT(3)("Done initializing optimization\n");
 
   /* compute the initial function values */
@@ -609,8 +588,8 @@ void NonSmoothSteepestDescent::minmax_opt(PatchData &pd, MsqError &err)
 
 	    MSQ_PRINT(3)("Testing whether to accept this step \n");
 	    this->step_acceptance(pd, err); MSQ_ERRRTN(err);
-            MSQ_PRINT(3)("The new free vertex position is %f %f %f\n",
-              mCoords[freeVertexIndex][0],mCoords[freeVertexIndex][1],mCoords[freeVertexIndex][2]);
+            //MSQ_PRINT(3)("The new free vertex position is %f %f %f\n",
+            //  mCoords[freeVertexIndex][0],mCoords[freeVertexIndex][1],mCoords[freeVertexIndex][2]);
 
 	    if (MSQ_DBG(3)) {
      		/* Print the active set */
@@ -644,7 +623,7 @@ void NonSmoothSteepestDescent::minmax_opt(PatchData &pd, MsqError &err)
       }
 
       MSQ_PRINT(2)("Checking the validity of the mesh\n");
-      if (!this->validity_check(err)) MSQ_PRINT(2)("The final mesh is not valid\n");
+      if (!this->validity_check(pd,err)) MSQ_PRINT(2)("The final mesh is not valid\n");
       MSQ_ERRRTN(err);
 
       MSQ_PRINT(2)("Number of optimization iterations %d\n", iterCount);
@@ -669,7 +648,6 @@ void NonSmoothSteepestDescent::minmax_opt(PatchData &pd, MsqError &err)
 void NonSmoothSteepestDescent::step_acceptance(PatchData &pd, MsqError &err)
 {
 //  int        ierr;
-  int        i;
   int        num_values, num_steps;
   int        valid = 1, step_status;
   int        accept_alpha;
@@ -692,8 +670,10 @@ void NonSmoothSteepestDescent::step_acceptance(PatchData &pd, MsqError &err)
       MSQ_PRINT(3)("Alpha starts too small, no improvement\n");
   }
 
+  const MsqVertex* coords = pd.get_vertex_array(err);
+
   /* save the original function and active set */
-  MSQ_COPY_VECTOR(original_point,mCoords[freeVertexIndex],mDimension);
+  MSQ_COPY_VECTOR(original_point,coords[freeVertexIndex],mDimension);
   MSQ_COPY_VECTOR(originalFunction, mFunction, num_values);
   this->copy_active(mActive, originalActive, err); MSQ_ERRRTN(err);
 
@@ -704,15 +684,13 @@ void NonSmoothSteepestDescent::step_acceptance(PatchData &pd, MsqError &err)
     accept_alpha = MSQ_FALSE;
 
     while (!accept_alpha && mAlpha>minStepSize) {
-
+ 
       /* make the step */
-      for (i=0;i<mDimension;i++) {
-         mCoords[freeVertexIndex][i] -= mAlpha*mSearch[i];
-      }
-        //pd.set_coords_array_element(mCoords[freeVertexIndex],0,err);
+      pd.move_vertex( -mAlpha*Vector3D(mSearch), freeVertexIndex, err );
+        //pd.set_coords_array_element(coords[freeVertexIndex],0,err);
 
       MSQ_PRINT(2)("search direction %f %f \n",mSearch[0],mSearch[1]); 
-      MSQ_PRINT(2)("new vertex position %f %f \n",mCoords[freeVertexIndex][0],mCoords[freeVertexIndex][1]); 
+      MSQ_PRINT(2)("new vertex position %f %f \n",coords[freeVertexIndex][0],coords[freeVertexIndex][1]); 
 
       /* assume alpha is acceptable */
       accept_alpha=MSQ_TRUE;
@@ -720,14 +698,12 @@ void NonSmoothSteepestDescent::step_acceptance(PatchData &pd, MsqError &err)
       /* never take a step that makes a valid mesh invalid or worsens the quality */
       // TODO Validity check revision -- do the compute function up here
       // and then the rest based on validity
-      valid = validity_check(err); MSQ_ERRRTN(err);
+      valid = validity_check(pd,err); MSQ_ERRRTN(err);
       if (valid) valid=improvement_check(err); MSQ_ERRRTN(err);
       if (!valid) {
           accept_alpha=MSQ_FALSE;
-          for (i=0;i<mDimension;i++) {
-             mCoords[freeVertexIndex][i] += mAlpha*mSearch[i];
-          }
-            //pd.set_coords_array_element(mCoords[freeVertexIndex],0,err);
+          pd.move_vertex( mAlpha * Vector3D(mSearch), freeVertexIndex, err );
+            //pd.set_coords_array_element(coords[freeVertexIndex],0,err);
           mAlpha = mAlpha/2;
           MSQ_PRINT(2)("Step not accepted, the new alpha %f\n",mAlpha); 
 
@@ -736,8 +712,8 @@ void NonSmoothSteepestDescent::step_acceptance(PatchData &pd, MsqError &err)
                 step_status = MSQ_STEP_DONE;
                 MSQ_PRINT(2)("Step too small\n");
  	        /* get back the original point, mFunction, and active set */
-                MSQ_COPY_VECTOR(mCoords[freeVertexIndex],original_point,mDimension);
-                  //pd.set_coords_array_element(mCoords[freeVertexIndex],0,err);
+                pd.set_vertex_coordinates( Vector3D(original_point), freeVertexIndex, err );
+                  //pd.set_coords_array_element(coords[freeVertexIndex],0,err);
 	        MSQ_COPY_VECTOR(mFunction,originalFunction,num_values);
 	        this->copy_active(originalActive, mActive, err); 
 	  }
@@ -770,15 +746,13 @@ void NonSmoothSteepestDescent::step_acceptance(PatchData &pd, MsqError &err)
 	     MSQ_PRINT(2)("Accepting the previous step\n");
  
 	/* subtract alpha in again (previous step) */
-	for (i=0;i<mDimension;i++) {
-	  mCoords[freeVertexIndex][i] -= mAlpha*mSearch[i];
-	}
-            //pd.set_coords_array_element(mCoords[freeVertexIndex],0,err);
+        pd.move_vertex( -mAlpha * Vector3D(mSearch), freeVertexIndex, err );
+            //pd.set_coords_array_element(coords[freeVertexIndex],0,err);
 
 	/* does this make an invalid mesh valid? */
    //TODO Validity check revisison
         valid = 1;
-        valid = validity_check(err); MSQ_ERRRTN(err);
+        valid = validity_check(pd,err); MSQ_ERRRTN(err);
         if (valid) valid=improvement_check(err); MSQ_ERRRTN(err);
 
 	/* copy test function and active set */
@@ -813,8 +787,8 @@ void NonSmoothSteepestDescent::step_acceptance(PatchData &pd, MsqError &err)
 	MSQ_PRINT(2)("Opimization Exiting: Flat no improvement\n");
            
 	/* get back the original point, function, and active set */
-	MSQ_COPY_VECTOR(mCoords[freeVertexIndex],original_point,mDimension);
-            //pd.set_coords_array_element(mCoords[freeVertexIndex],0,err);
+        pd.set_vertex_coordinates( Vector3D(original_point), freeVertexIndex, err );
+            //pd.set_coords_array_element(coords[freeVertexIndex],0,err);
 	MSQ_COPY_VECTOR(mFunction,originalFunction,numFunctionValues);
 	this->copy_active(originalActive, mActive, err); MSQ_CHKERR(err);
 
@@ -823,8 +797,8 @@ void NonSmoothSteepestDescent::step_acceptance(PatchData &pd, MsqError &err)
       {
 	/* halve alpha and try again */
 	/* add out the old step */
-	for (i=0;i<mDimension;i++) mCoords[freeVertexIndex][i] += mAlpha*mSearch[i];
-            //pd.set_coords_array_element(mCoords[freeVertexIndex],0,err);
+        pd.move_vertex( mAlpha * Vector3D(mSearch), freeVertexIndex, err );
+            //pd.set_coords_array_element(coords[freeVertexIndex],0,err);
 
 	/* halve step size */
 	mAlpha = mAlpha/2; 
@@ -834,8 +808,8 @@ void NonSmoothSteepestDescent::step_acceptance(PatchData &pd, MsqError &err)
           {
 	  /* get back the original point, function, and active set */
 	  MSQ_PRINT(2)("Optimization Exiting: Step too small\n");
-	  MSQ_COPY_VECTOR(mCoords[freeVertexIndex],original_point,mDimension);
-              //pd.set_coords_array_element(mCoords[freeVertexIndex],0,err);
+          pd.set_vertex_coordinates( Vector3D(original_point), freeVertexIndex, err );
+              //pd.set_coords_array_element(coords[freeVertexIndex],0,err);
 	  MSQ_COPY_VECTOR(mFunction,originalFunction,numFunctionValues);
 	  this->copy_active(originalActive, mActive, err); MSQ_ERRRTN(err);
 	  optStatus = MSQ_STEP_TOO_SMALL;  step_status = MSQ_STEP_DONE;

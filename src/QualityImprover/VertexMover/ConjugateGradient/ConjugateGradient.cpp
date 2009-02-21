@@ -127,8 +127,6 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
   // get OF evaluator
   OFEvaluator& objFunc = get_objective_function_evaluator();
   
-  // gets the array of vertices for the patch  
-  MsqVertex* vertices=pd.get_vertex_array(err);  MSQ_ERRRTN(err);
   size_t ind;
     //Michael cull list:  possibly set soft_fixed flags here
   
@@ -166,7 +164,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
 
   int j=0; // total nb of step size changes ... not used much
   int i=0; // iteration counter
-  int m=0; // 
+  unsigned m=0; // 
   double alp=MSQ_MAX_CAP; // alp: scale factor of search direction
     //we know inner_criterion is false because it was checked in
     //loop_over_mesh before being sent here.
@@ -186,10 +184,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
 
      // if alp == 0, revert to steepest descent search direction
     if(alp==0){
-      //free_iter.reset();
-      //while (free_iter.next()) {
-      //  m=free_iter.value();
-      for (m = 0; (unsigned)m < num_vert; ++m) {
+      for (m = 0; m < num_vert; ++m) {
         pGrad[m]=(-fGrad[m]);
       }
       alp=get_step(pd,f,k,err);
@@ -202,14 +197,8 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
       
     }
     if(alp!=0){
-      //free_iter.reset();
-      //while (free_iter.next()) {
-      //  m=free_iter.value();
-      for (m = 0; (unsigned)m < num_vert; ++m) {
-        vertices[m] += (alp * pGrad[m]);
-          //Added move_to_ownever
-        pd.snap_vertex_to_domain(m,err);
-      }
+      pd.move_free_vertices_constrained( &pGrad[0], num_vert, alp, err );
+      MSQ_ERRRTN(err);
       
       if (! objFunc.update(pd, f, fNewGrad, err)){
         MSQ_SETERR(err)("Error inside Conjugate Gradient, vertices moved "
@@ -230,7 +219,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
       //free_iter.reset();
       //while (free_iter.next()) {
       //  m=free_iter.value();
-      for (m = 0; (unsigned)m < num_vert; ++m) {
+      for (m = 0; m < num_vert; ++m) {
         s11+=fGrad[m]%fGrad[m];
         s12+=fGrad[m]%fNewGrad[m];
         s22+=fNewGrad[m]%fNewGrad[m];
@@ -247,7 +236,7 @@ void ConjugateGradient::optimize_vertex_positions(PatchData &pd,
       //free_iter.reset();
       //while (free_iter.next()) {
       //  m=free_iter.value();
-      for (m = 0; (unsigned)m < num_vert; ++m) {
+      for (m = 0; m < num_vert; ++m) {
         pGrad[m]=(-fNewGrad[m]+(bet*pGrad[m]));
         fGrad[m]=fNewGrad[m];
       }

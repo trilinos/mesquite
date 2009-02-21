@@ -806,7 +806,7 @@ void PatchData::update_slave_node_coordinates( MsqError& err )
     // vertices got updated.
   const size_t vert_end = num_free_vertices() + num_slave_vertices();
   for (size_t i = num_free_vertices(); i < vert_end; ++i)
-    vertex_by_index(i).flags() |= MsqVertex::MSQ_MARK;
+    vertexArray[i].flags() |= MsqVertex::MSQ_MARK;
   
     // For each element, calculate slave vertex coordinates from
     // mapping function.
@@ -837,7 +837,7 @@ void PatchData::update_slave_node_coordinates( MsqError& err )
         continue;
       
         // check if we already did this one for an adjacent element
-      MsqVertex& vert = vertex_by_index(conn[k]);
+      MsqVertex& vert = vertexArray[conn[k]];
       if (!vert.is_flag_set(MsqVertex::MSQ_MARK))
         continue;
      
@@ -854,7 +854,7 @@ void PatchData::update_slave_node_coordinates( MsqError& err )
         // calulate new coordinates for slave node
       assert( num_coeff > 0 );
       vert = coeff[0] * vertex_by_index( conn[index[0]] );
-      for (int j = 1; j < num_coeff; ++j)
+      for (size_t j = 1; j < num_coeff; ++j)
         vert += coeff[j] * vertex_by_index( conn[index[j]] );
       
         // clear mark
@@ -869,7 +869,7 @@ void PatchData::update_slave_node_coordinates( MsqError& err )
        "No element with mapping function adjacent to slave vertex %lu (%lu)\n",
        (unsigned long)i, (unsigned long)get_vertex_handles_array()[i]);
         // make sure we finish with all marks cleared
-      vertex_by_index(i).flags() &= ~MsqVertex::MSQ_MARK;
+      vertexArray[i].flags() &= ~MsqVertex::MSQ_MARK;
     }
   }
 }
@@ -1707,10 +1707,10 @@ void PatchData::fill( size_t num_vertex, const double* coords,
     // figure out the new index of each vertex, and initialize
     // the vertex.
   for (i = 0; i < num_vertex; ++i) 
-    vertex_by_index(i) = coords + 3*(size_t)vertexHandlesArray[i];
+    vertexArray[i] = coords + 3*(size_t)vertexHandlesArray[i];
   
   for (i = 0; i < num_vertex; ++i)
-    vertex_by_index(i).flags() = byteArray[i];
+    vertexArray[i].flags() = byteArray[i];
 }
   
 void PatchData::make_handles_unique( Mesh::EntityHandle* handles,

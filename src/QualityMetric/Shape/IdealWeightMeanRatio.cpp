@@ -63,7 +63,7 @@ bool IdealWeightMeanRatio::evaluate( PatchData& pd,
   const MsqMeshEntity* e = &pd.element_by_index(handle);
   EntityTopology topo = e->get_element_type();
 
-  MsqVertex *vertices = pd.get_vertex_array(err);
+  const MsqVertex *vertices = pd.get_vertex_array(err);
   const size_t *v_i = e->get_vertex_index_array();
 
   Vector3D n;			// Surface normal for 2D objects
@@ -187,7 +187,7 @@ bool IdealWeightMeanRatio::evaluate_with_gradient( PatchData& pd,
     return QualityMetric::evaluate_with_gradient( pd, handle, m, indices, g, err );
   }
 
-  MsqVertex *vertices = pd.get_vertex_array(err);
+  const MsqVertex *vertices = pd.get_vertex_array(err);
   const size_t *v_i = e->get_vertex_index_array();
 
   Vector3D n;			// Surface normal for 2D objects
@@ -330,7 +330,7 @@ bool IdealWeightMeanRatio::evaluate_with_Hessian_diagonal( PatchData& pd,
     return QualityMetric::evaluate_with_Hessian_diagonal( pd, handle, m, indices, g, h, err );
   }
 
-  MsqVertex *vertices = pd.get_vertex_array(err);
+  const MsqVertex *vertices = pd.get_vertex_array(err);
   const size_t *v_i = e->get_vertex_index_array();
 
 
@@ -489,7 +489,7 @@ bool IdealWeightMeanRatio::evaluate_with_Hessian( PatchData& pd,
     return QualityMetric::evaluate_with_Hessian( pd, handle, m, indices, g, h, err );
   }
 
-  MsqVertex *vertices = pd.get_vertex_array(err);
+  const MsqVertex *vertices = pd.get_vertex_array(err);
   const size_t *v_i = e->get_vertex_index_array();
 
 

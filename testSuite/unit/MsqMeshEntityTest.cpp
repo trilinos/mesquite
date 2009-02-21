@@ -114,7 +114,7 @@ public:
   {
     MsqPrintError err(cout);
     // prints out the vertices.
-    MsqVertex* ideal_vertices = oneHexPatch.get_vertex_array(err); CPPUNIT_ASSERT(!err);
+    const MsqVertex* ideal_vertices = oneHexPatch.get_vertex_array(err); CPPUNIT_ASSERT(!err);
     size_t num_vtx = oneHexPatch.num_nodes();
     CPPUNIT_ASSERT_EQUAL(size_t(8), num_vtx);
     

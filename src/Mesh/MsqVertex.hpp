@@ -74,7 +74,6 @@ namespace Mesquite
        //! Initializes with coordinates. Sets tag data/pointer to 0.
      MsqVertex& operator=(const Vector3D& rhs)
        { Vector3D::operator=(rhs);
-         vertexBitFlags = 0;
          return *this; }
      
        // This allows for 8 flag bits.

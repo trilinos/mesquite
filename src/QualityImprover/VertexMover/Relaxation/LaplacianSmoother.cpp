@@ -59,16 +59,14 @@ void LaplacianSmoother::optimize_vertex_positions( PatchData &pd,
   if (adjVtxList.empty())
     return;
   
-  MsqVertex* verts = pd.get_vertex_array(err);
+  const MsqVertex* verts = pd.get_vertex_array(err);
   const size_t n = adjVtxList.size();
   
-    // static_cast to Vector3D so that we assign only the coorindate data,
-    // and not the flags.
-  verts[center_vtx_index] = static_cast<Vector3D>(verts[ adjVtxList[0] ]);
+  Vector3D new_pos = verts[ adjVtxList[0] ];
   for (size_t i = 1; i < n; ++i)
-    verts[center_vtx_index] += verts[ adjVtxList[i] ];
-  verts[center_vtx_index] *= 1.0/n;
-  
+    new_pos += verts[ adjVtxList[i] ];
+  new_pos *= 1.0/n;
+  pd.set_vertex_coordinates( new_pos, center_vtx_index, err );
   pd.snap_vertex_to_domain( center_vtx_index, err );  MSQ_ERRRTN(err);
 }
 

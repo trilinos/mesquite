@@ -166,11 +166,6 @@ namespace Mesquite
       /* local copy of patch data */
       //    PatchData patch_data;
     int mDimension;
-    int numVertices;
-    int numElements;
-    MsqVertex* mCoords;
-    MsqMeshEntity* mConnectivity;
-    int numFree;
     int freeVertexIndex;
     
       /* smoothing parameters */
@@ -206,7 +201,7 @@ namespace Mesquite
     
       /* functions */
     void init_opt(MsqError &err);
-    void init_max_step_length(MsqError &err);
+    void init_max_step_length(PatchData& pd, MsqError &err);
     
       /* optimize */
     void minmax_opt(PatchData &pd, MsqError &err);
@@ -224,7 +219,7 @@ namespace Mesquite
     
       /* checking validity/improvement */
     int improvement_check(MsqError &err);
-    int validity_check(MsqError &err);
+    int validity_check(PatchData& pd, MsqError &err);
     
       /* checking equilibrium routines */
     void check_equilibrium(int *equil, int *opt_status, MsqError &err);
@@ -262,12 +257,12 @@ inline bool NonSmoothSteepestDescent::compute_function(PatchData *patch_data, do
 
   //TODO need to switch this to element or vertex metric evaluations
   //TODO need to include boolean testing for validity
-  int i;
+  size_t i;
   bool valid_bool=true;
 
-  for (i=0;i<numElements;i++) func[i]=0.0;
+  for (i=0;i<patch_data->num_elements();i++) func[i]=0.0;
   
-  for (i=0;i<numElements;i++) {
+  for (i=0;i<patch_data->num_elements();i++) {
     valid_bool = valid_bool &&
          currentQM->evaluate(*patch_data, i, func[i], err); MSQ_ERRZERO(err);
     //    MSQ_DEBUG_ACTION(3,{fprintf(stdout,"  Function value[%d]=%g\n",i,func[i]);});
@@ -285,7 +280,7 @@ inline double** NonSmoothSteepestDescent::compute_gradient(PatchData *patch_data
 
   double delta = 10e-6;
 
-  for (int i=0;i<numElements;i++) {
+  for (size_t i=0;i<patch_data->num_elements();i++) {
     for (int j=0;j<3;j++) mGradient[i][j] = 0.0;
   }
 
@@ -305,8 +300,11 @@ inline double** NonSmoothSteepestDescent::compute_gradient(PatchData *patch_data
   for (int j=0;j<3;j++) {
 
     // perturb the coordinates of the free vertex in the j direction by delta
-    mCoords[freeVertexIndex][j] += delta;
-
+    Vector3D delta_3( 0, 0, 0 );
+    Vector3D orig_pos = patch_data->vertex_by_index(freeVertexIndex);
+    delta_3[j] = delta;
+    patch_data->move_vertex( delta_3, freeVertexIndex, err ); 
+ 
     //compute the function at the perturbed point location
     this->compute_function(patch_data, fdelta, err);  
     if (MSQ_CHKERR(err)) {
@@ -322,7 +320,7 @@ inline double** NonSmoothSteepestDescent::compute_gradient(PatchData *patch_data
     }
 
     // put the coordinates back where they belong
-    mCoords[freeVertexIndex][j] -= delta;
+    patch_data->set_vertex_coordinates( orig_pos, freeVertexIndex, err );
   }
   
   free(func);
@@ -390,7 +388,7 @@ inline void NonSmoothSteepestDescent::find_active_set(double *function,
 }
 
 
-inline int NonSmoothSteepestDescent::validity_check(MsqError &/*err*/)
+inline int NonSmoothSteepestDescent::validity_check(PatchData& pd, MsqError &err)
         
 {
 //  FUNCTION_TIMER_START("Validity Check");
@@ -407,15 +405,17 @@ inline int NonSmoothSteepestDescent::validity_check(MsqError &/*err*/)
   double dEps = 1.e-13;
 
   double x1, x2, x3, x4, y1, y2, y3, y4, z1, z2, z3, z4;
+  const MsqVertex* coords = pd.get_vertex_array(err);
 
   if (mDimension == 2)
   {
-    for (int i=0;i<numElements;i++)
+    for (size_t i=0;i<pd.num_elements();i++)
     {
+      const size_t* conn = pd.element_by_index(i).get_vertex_index_array();
       double dummy = 0;
-      mCoords[mConnectivity[i].get_vertex_index(0)].get_coordinates(x1, y1, dummy);
-      mCoords[mConnectivity[i].get_vertex_index(1)].get_coordinates(x2, y2, dummy);
-      mCoords[mConnectivity[i].get_vertex_index(2)].get_coordinates(x3, y3, dummy);
+      coords[conn[0]].get_coordinates(x1, y1, dummy);
+      coords[conn[1]].get_coordinates(x2, y2, dummy);
+      coords[conn[2]].get_coordinates(x3, y3, dummy);
       
       double a = x2*y3 - x3*y2;
       double b = y2 - y3;
@@ -428,12 +428,13 @@ inline int NonSmoothSteepestDescent::validity_check(MsqError &/*err*/)
 
   if (mDimension == 3)
   {
-    for (int i=0;i<numElements;i++)
+    for (size_t i=0;i<pd.num_elements();i++)
     {
-      mCoords[mConnectivity[i].get_vertex_index(0)].get_coordinates(x1, y1, z1);
-      mCoords[mConnectivity[i].get_vertex_index(1)].get_coordinates(x2, y2, z2);
-      mCoords[mConnectivity[i].get_vertex_index(2)].get_coordinates(x3, y3, z3);
-      mCoords[mConnectivity[i].get_vertex_index(3)].get_coordinates(x4, y4, z4);
+      const size_t* conn = pd.element_by_index(i).get_vertex_index_array();
+      coords[conn[0]].get_coordinates(x1, y1, z1);
+      coords[conn[1]].get_coordinates(x2, y2, z2);
+      coords[conn[2]].get_coordinates(x3, y3, z3);
+      coords[conn[3]].get_coordinates(x4, y4, z4);
       
       double dDX2 = x2 - x1;
       double dDX3 = x3 - x1;
@@ -1172,16 +1173,16 @@ inline void NonSmoothSteepestDescent::init_opt(MsqError &err)
 }
 
 
-inline void NonSmoothSteepestDescent::init_max_step_length(MsqError &err)
+inline void NonSmoothSteepestDescent::init_max_step_length(PatchData& pd, MsqError &err)
 {
-  int i, j;
+  size_t i, j;
   double max_diff = 0;
   double diff=0;
 
   MSQ_PRINT(2)("In init_max_step_length\n");
 
   /* check that the input data is correct */
-  if (numElements==0) {
+  if (pd.num_elements()==0) {
     MSQ_SETERR(err)("Num incident vtx = 0\n",MsqError::INVALID_MESH);
     return;
   }
@@ -1191,9 +1192,10 @@ inline void NonSmoothSteepestDescent::init_max_step_length(MsqError &err)
   }
 
   /* find the maximum distance between two incident vertex locations */
-  for (i=0;i<numVertices-1;i++) {
-    for (j=i;j<numVertices;j++) {
-      diff = (mCoords[i]-mCoords[j]).length_squared();
+  const MsqVertex* coords = pd.get_vertex_array(err);
+  for (i=0;i<pd.num_nodes()-1;i++) {
+    for (j=i;j<pd.num_nodes();j++) {
+      diff = (coords[i]-coords[j]).length_squared();
       if (max_diff < diff) max_diff=diff;
     } 
   }

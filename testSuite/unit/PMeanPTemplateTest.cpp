@@ -267,7 +267,7 @@ bool DistTestMetric::evaluate( PatchData& pd, size_t vtx_idx,
     return true;
   }
 
-  MsqVertex& vtx = pd.vertex_by_index( vtx_idx );
+  const MsqVertex& vtx = pd.vertex_by_index( vtx_idx );
   value = vtx.length_squared();
   return !falseEval;
 }
@@ -285,7 +285,7 @@ bool DistTestMetric::evaluate_with_indices( PatchData& pd, size_t vtx_idx,
   if (vtx_idx < pd.num_free_vertices())
     indices.push_back( vtx_idx );
   
-  MsqVertex& vtx = pd.vertex_by_index( vtx_idx );
+  const MsqVertex& vtx = pd.vertex_by_index( vtx_idx );
   value = vtx.length_squared();
   return !falseEval;
 }

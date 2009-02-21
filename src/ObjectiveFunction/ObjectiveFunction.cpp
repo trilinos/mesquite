@@ -56,7 +56,7 @@ double ObjectiveFunction::get_eps( PatchData &pd,
                                    EvalType type,
                                    double &local_val,
                                    int dim,
-                                   MsqVertex* vertex, 
+                                   size_t vertex_index, 
                                    MsqError& err)
 {
   double eps = 1.e-07;
@@ -64,14 +64,18 @@ double ObjectiveFunction::get_eps( PatchData &pd,
   const int imax = 20;
   bool feasible = false;
   double tmp_var = 0.0;
+  Vector3D delta(0,0,0);
   for (int i = 0; i < imax; ++i)
   {
     //perturb kth coord val and check feas if needed
-    tmp_var=(*vertex)[dim];
-    (*vertex)[dim]+=eps;
+    tmp_var = pd.vertex_by_index(vertex_index)[dim];
+    delta[dim] = eps;
+    pd.move_vertex( delta, vertex_index, err );
     feasible = evaluate( type, pd, local_val, OF_FREE_EVALS_ONLY, err ); MSQ_ERRZERO(err);
     //revert kth coord val
-    (*vertex)[dim]=tmp_var;
+    delta = pd.vertex_by_index(vertex_index);
+    delta[dim] = tmp_var;
+    pd.set_vertex_coordinates( delta, vertex_index, err );
     //if step was too big, shorten it and go again
     if (feasible)
       return eps;
@@ -91,7 +95,6 @@ bool ObjectiveFunction::compute_subpatch_numerical_gradient(
 {
   assert( pd.num_free_vertices() == 1 );
   
-  MsqVertex& vertex = pd.vertex_by_index(0);
   double flocald=0;
   double eps=0;
   
@@ -102,7 +105,7 @@ bool ObjectiveFunction::compute_subpatch_numerical_gradient(
 
     //loop over the three coords x,y,z
   for(int j=0; j<3; ++j) {
-    eps = get_eps( pd, subtype, flocald, j, &vertex, err ); MSQ_ERRZERO(err);
+    eps = get_eps( pd, subtype, flocald, j, 0, err ); MSQ_ERRZERO(err);
     if (eps==0) {
       MSQ_SETERR(err)("Dividing by zero in Objective Functions numerical grad",
                       MsqError::INVALID_STATE);
@@ -129,11 +132,9 @@ bool ObjectiveFunction::compute_patch_numerical_gradient(  EvalType type,
   }
 
   for (size_t i = 0; i < pd.num_free_vertices(); ++i) {
-    MsqVertex& vertex = pd.vertex_by_index(i);
-
       //loop over the three coords x,y,z
     for(int j=0; j<3; ++j) {
-      eps = get_eps( pd, subtype, flocald, j, &vertex, err ); MSQ_ERRZERO(err);
+      eps = get_eps( pd, subtype, flocald, j, i, err ); MSQ_ERRZERO(err);
       if (eps==0) {
         MSQ_SETERR(err)("Dividing by zero in Objective Functions numerical grad",
                         MsqError::INVALID_STATE);

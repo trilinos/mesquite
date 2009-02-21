@@ -59,7 +59,7 @@ bool EdgeLengthQualityMetric::evaluate_common(PatchData &pd,
   pd.get_adjacent_vertex_indices(this_vert,adj_verts,err);  MSQ_ERRZERO(err);
   const unsigned num_sample_points=adj_verts.size();
   double *metric_values=new double[num_sample_points];
-  MsqVertex* verts = pd.get_vertex_array(err);  MSQ_ERRZERO(err);
+  const MsqVertex* verts = pd.get_vertex_array(err);  MSQ_ERRZERO(err);
   for (unsigned i = 0; i < num_sample_points; ++i) 
     metric_values[i] = (verts[this_vert] - verts[adj_verts[i]]).length();
   fval=average_metrics(metric_values,num_sample_points,err);  

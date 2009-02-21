@@ -275,7 +275,7 @@ namespace Mesquite
        * in local_val.
        */
     double get_eps(PatchData &pd, EvalType eval_type, double &local_val,
-                   int k, MsqVertex* vertex, MsqError &err);
+                   int k, size_t vertex_index, MsqError &err);
     
  private:
  

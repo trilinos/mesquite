@@ -390,14 +390,14 @@ public:
   
   void test_elements();
   
-  int tri_check_validity(Mesquite::MsqMeshEntity* element_array,
+  int tri_check_validity(const Mesquite::MsqMeshEntity* element_array,
                          size_t num_elements,
-                         Mesquite::MsqVertex* vtx_array,
+                         const Mesquite::MsqVertex* vtx_array,
                          size_t num_vertices);
   
-  int tet_validity_check(Mesquite::MsqMeshEntity* element_array,
+  int tet_validity_check(const Mesquite::MsqMeshEntity* element_array,
                          size_t num_elements,
-                         Mesquite::MsqVertex *vtx_array);
+                         const Mesquite::MsqVertex *vtx_array);
 };
     // Check if the 2x2x2 brick of structured mesh
     // read from file is as expected.
@@ -1049,7 +1049,7 @@ public:
     size_t num_elements = pd.num_elements();
     CPPUNIT_ASSERT( num_elements == 6 );
     
-    Mesquite::MsqVertex* vtx_array = pd.get_vertex_array(err); CPPUNIT_ASSERT(!err);
+    const Mesquite::MsqVertex* vtx_array = pd.get_vertex_array(err); CPPUNIT_ASSERT(!err);
     size_t num_vertices = pd.num_nodes();
     CPPUNIT_ASSERT( num_vertices == 7 );
     
@@ -1068,9 +1068,9 @@ public:
     CPPUNIT_ASSERT( tri_check_validity(element_array, num_elements, vtx_array, num_vertices) == 1 );
   }
   
-  int VtkTest::tri_check_validity(Mesquite::MsqMeshEntity* element_array,
+  int VtkTest::tri_check_validity(const Mesquite::MsqMeshEntity* element_array,
                          size_t num_elements,
-                         Mesquite::MsqVertex* vtx_array,
+                         const Mesquite::MsqVertex* vtx_array,
                          size_t num_vertices)
   {
        
@@ -1110,9 +1110,9 @@ public:
     return(valid);
   }
   
-  int VtkTest::tet_validity_check(Mesquite::MsqMeshEntity* element_array,
+  int VtkTest::tet_validity_check(const Mesquite::MsqMeshEntity* element_array,
                          size_t num_elements,
-                         Mesquite::MsqVertex *vtx_array)
+                         const Mesquite::MsqVertex *vtx_array)
   {
     int valid = 1;
     double dEps = 1.e-13;

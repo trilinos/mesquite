@@ -530,7 +530,7 @@ void TerminationCriterion::accumulate_patch( PatchData& pd, MsqError& err )
     //if terminating on bounded vertex movement (a bounding box for the mesh)
   if(terminationCriterionFlag & BOUNDED_VERTEX_MOVEMENT)
   {
-    MsqVertex* vert = pd.get_vertex_array(err);
+    const MsqVertex* vert = pd.get_vertex_array(err);
     int num_vert = pd.num_free_vertices();
     int i=0;
       //for each vertex

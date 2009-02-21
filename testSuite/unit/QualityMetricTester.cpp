@@ -281,15 +281,17 @@ void QualityMetricTester::get_nonideal_element( EntityTopology type,
   MsqError err;
   get_ideal_element( type, false, pd, free_vtx_type );
   const size_t* verts = pd.element_by_index(0).get_vertex_index_array();
-  MsqVertex* coords = pd.get_vertex_array(err);
+  const MsqVertex* coords = pd.get_vertex_array(err);
   size_t n = pd.element_by_index(0).vertex_count();
   
   Vector3D sum(0,0,0);
   for (unsigned i = 0; i < n; ++i)
     sum += coords[verts[i]];
   
-  coords[verts[0]] *= 0.5;
-  coords[verts[0]] += sum/(2*n);
+  sum /= n;
+  sum += coords[verts[0]];
+  sum *= 0.5;
+  pd.set_vertex_coordinates( sum, verts[0], err );
 }
 
 void QualityMetricTester::get_nonideal_element( EntityTopology type, 
@@ -305,8 +307,8 @@ void QualityMetricTester::get_degenerate_element( EntityTopology type, PatchData
   MsqError err;
   get_ideal_element( type, false, pd );
   const size_t* verts = pd.element_by_index(0).get_vertex_index_array();
-  MsqVertex* coords = pd.get_vertex_array(err);
-  coords[verts[0]] = coords[verts[1]];
+  const MsqVertex* coords = pd.get_vertex_array(err);
+  pd.set_vertex_coordinates( coords[verts[1]], verts[0], err );
 }
 
 /** Create element with zero area/volume
@@ -318,37 +320,37 @@ void QualityMetricTester::get_zero_element( EntityTopology type, PatchData& pd )
   get_ideal_element( type, false, pd );
   MsqMeshEntity& elem = pd.element_by_index(0);
   const size_t* verts = elem.get_vertex_index_array();
-  MsqVertex* coords = pd.get_vertex_array(err);
+  const MsqVertex* coords = pd.get_vertex_array(err);
   unsigned i;
   Vector3D sum(0,0,0);
  
   switch (type) {
     case TRIANGLE:
-      coords[verts[2]] = 0.5*(coords[verts[0]]+coords[verts[1]]);
+      pd.set_vertex_coordinates( 0.5*(coords[verts[0]]+coords[verts[1]]), verts[2], err );
       break;
     case QUADRILATERAL:
-      coords[verts[1]] = coords[verts[0]];
-      coords[verts[2]] = coords[verts[3]];
+      pd.set_vertex_coordinates( coords[verts[0]], verts[1], err );
+      pd.set_vertex_coordinates( coords[verts[3]], verts[2], err );
       break;
     case TETRAHEDRON:
       for (i = 0; i < 3; ++i)
         sum += coords[verts[i]];
-      coords[verts[3]] = sum/3.0;
+      pd.set_vertex_coordinates( sum/3.0, verts[3], err );
       break;
     case PYRAMID:
       for (i = 0; i < 4; ++i)
         sum += coords[verts[i]];
-      coords[verts[4]] = 0.25 * sum;
+      pd.set_vertex_coordinates( 0.25*sum, verts[4], err );
       break;
     case PRISM:
-      coords[verts[2]] = 0.5*(coords[verts[0]]+coords[verts[1]]);
-      coords[verts[5]] = 0.5*(coords[verts[3]]+coords[verts[4]]);
+      pd.set_vertex_coordinates( 0.5*(coords[verts[0]]+coords[verts[1]]), verts[2], err );
+      pd.set_vertex_coordinates( 0.5*(coords[verts[3]]+coords[verts[4]]), verts[5], err );
       break;
     case HEXAHEDRON:
-      coords[verts[4]] = coords[verts[0]];
-      coords[verts[5]] = coords[verts[1]];
-      coords[verts[6]] = coords[verts[2]];
-      coords[verts[7]] = coords[verts[3]];
+      pd.set_vertex_coordinates( coords[verts[0]], verts[4], err );
+      pd.set_vertex_coordinates( coords[verts[1]], verts[5], err );
+      pd.set_vertex_coordinates( coords[verts[2]], verts[6], err );
+      pd.set_vertex_coordinates( coords[verts[3]], verts[7], err );
       break;
     default:
       CPPUNIT_ASSERT(false);
@@ -367,7 +369,7 @@ void QualityMetricTester::get_inverted_element( EntityTopology type, PatchData& 
   get_ideal_element( type, false, pd );
   MsqMeshEntity& elem = pd.element_by_index(0);
   const size_t* verts = elem.get_vertex_index_array();
-  MsqVertex* coords = pd.get_vertex_array(err);
+  const MsqVertex* coords = pd.get_vertex_array(err);
   unsigned i;
   Vector3D sum(0,0,0);
   
@@ -393,16 +395,16 @@ void QualityMetricTester::get_inverted_element( EntityTopology type, PatchData& 
 //      break;
 //  }
   if (type == TRIANGLE)
-      coords[verts[2]] = coords[verts[0]] + coords[verts[1]] - coords[verts[2]];
+      pd.set_vertex_coordinates( coords[verts[0]] + coords[verts[1]] - coords[verts[2]], verts[2], err );
   else if (type == QUADRILATERAL || type == PYRAMID || type == HEXAHEDRON)
-      coords[verts[2]] += 0.75 * (coords[verts[0]] - coords[verts[2]]);
+      pd.set_vertex_coordinates( 0.75 * (coords[verts[0]] - coords[verts[2]]), verts[2], err );
   else if (type == TETRAHEDRON) {
       for (i = 0; i < 3; ++i)
         sum += coords[verts[i]];
-      coords[verts[3]] += 0.5*sum - 1.5*coords[verts[3]];
+      pd.set_vertex_coordinates( 0.5*sum - 1.5*coords[verts[3]], verts[3], err );
   }
   else if (type == PRISM) 
-      coords[verts[4]] += 0.75 * (coords[verts[0]] - coords[verts[4]]);
+      pd.set_vertex_coordinates( 0.75 * (coords[verts[0]] - coords[verts[4]]), verts[4], err );
   else
       CPPUNIT_ASSERT(false);
   
@@ -1342,6 +1344,7 @@ void QualityMetricTester::compare_analytical_and_numerical_diagonals(
 void QualityMetricTester::compare_analytical_and_numerical_diagonals( QualityMetric* qm )
 {
   PatchData pd;
+  MsqError err;
   
   CPPUNIT_ASSERT( !types.empty() );
   for (size_t i = 0; i < types.size(); ++i) {
@@ -1378,8 +1381,9 @@ PatchTranslate::~PatchTranslate() {}
   }
 
     // Translate mesh vertices
+  MsqError err;
   for (size_t i = 0; i < pd.num_nodes(); ++i)
-    pd.vertex_by_index(i) += offset;
+    pd.move_vertex( offset, i, err );
 }
 void PatchTranslate::xform_grad( msq_std::vector<Vector3D>& ) {}
 
@@ -1411,8 +1415,9 @@ void PatchScale::xform( PatchData& pd, PlanarDomain* dom )
   }
 
     // Scale about origin
+  MsqError err;
   for (size_t i = 0; i < pd.num_nodes(); ++i)
-    pd.vertex_by_index(i) *= scaleFactor;
+    pd.set_vertex_coordinates( pd.vertex_by_index(i) * scaleFactor, i, err );
 }
 void PatchScale::xform_grad( msq_std::vector<Vector3D>& ) {}
 
@@ -1443,8 +1448,9 @@ void PatchRotate::xform( PatchData& pd, PlanarDomain* dom )
   }
 
     // Scale about origin
+  MsqError err;
   for (size_t i = 0; i < pd.num_nodes(); ++i)
-    pd.vertex_by_index(i) = rotation * pd.vertex_by_index(i);
+    pd.set_vertex_coordinates( rotation * pd.vertex_by_index(i), i, err );
 }
 void PatchRotate::xform_grad( msq_std::vector<Vector3D>& grad )
 {
@@ -1772,7 +1778,7 @@ void QualityMetricTester::test_measures_quality( QualityMetric* qm )
     CPPUNIT_ASSERT( rval );
       // calculate element centroid
     const size_t* verts = pd.element_by_index(0).get_vertex_index_array();
-    MsqVertex* coords = pd.get_vertex_array(err);
+    const MsqVertex* coords = pd.get_vertex_array(err);
     size_t n = pd.element_by_index(0).vertex_count();
     Vector3D cent(0,0,0);
     Vector3D coords0 = coords[verts[0]];
@@ -1780,7 +1786,7 @@ void QualityMetricTester::test_measures_quality( QualityMetric* qm )
       cent += coords[verts[j]];
     cent /= n;
       // evaluate for non-ideal element (decreased area)
-    coords[verts[0]] = 0.5*(cent + coords0);
+    pd.set_vertex_coordinates( 0.5*(cent + coords0), verts[0], err );
     rval = qm->evaluate( pd, handles[0], qmval2, err );
     CPPUNIT_ASSERT(!MSQ_CHKERR(err));
     CPPUNIT_ASSERT( rval );
@@ -1792,7 +1798,7 @@ void QualityMetricTester::test_measures_quality( QualityMetric* qm )
       CPPUNIT_ASSERT( qmval2 > qmval1 );
     }
       // evaluate for non-ideal element (increased area)
-    coords[verts[0]] = 3*coords0 - 2*cent;
+    pd.set_vertex_coordinates( 3*coords0 - 2*cent, verts[0], err );
     rval = qm->evaluate( pd, handles[0], qmval2, err );
     CPPUNIT_ASSERT(!MSQ_CHKERR(err));
     CPPUNIT_ASSERT( rval );
@@ -1842,7 +1848,7 @@ void QualityMetricTester::test_domain_deviation_quality( QualityMetric* qm )
       // rotate patch about origin such that elements are no longer in the plane
     const Matrix3D rot( M_PI/4.0, Vector3D( 1, 1, 0 ) );
     for (i = 0; i < pd.num_nodes(); ++i)
-      pd.vertex_by_index(i) = rot * pd.vertex_by_index(i);
+      pd.set_vertex_coordinates( rot * pd.vertex_by_index(i), i, err );
       // evaluate for rotated patch
     rval = qm->evaluate( pd, handle, qmval2, err );
     CPPUNIT_ASSERT(!MSQ_CHKERR(err));
@@ -1876,7 +1882,7 @@ void QualityMetricTester::test_domain_deviation_quality( QualityMetric* qm )
       // rotate patch about origin such that elements are no longer in the plane
     const Matrix3D rot( M_PI/3.0, Vector3D( 1, 0, 0 ) );
     for (i = 0; i < pd.num_nodes(); ++i)
-      pd.vertex_by_index(i) = rot * pd.vertex_by_index(i);
+      pd.set_vertex_coordinates( rot * pd.vertex_by_index(i), i, err );
       // evaluate for rotated patch
     rval = qm->evaluate( pd, handle, qmval2, err );
     CPPUNIT_ASSERT(!MSQ_CHKERR(err));
@@ -1911,7 +1917,7 @@ void QualityMetricTester::test_domain_deviation_gradient( QualityMetric* qm )
     CPPUNIT_ASSERT( !MSQ_CHKERR(err) );
     CPPUNIT_ASSERT( !handles.empty() );
       // move the free vertex out of the plane
-    pd.vertex_by_index(0) += Vector3D( 0, 0, 0.2 );
+    pd.move_vertex( Vector3D( 0, 0, 0.2 ), 0, err );
       // find an evaluation that depends on the free vertex
     for (i = 0; i < handles.size(); ++i) {
       rval = qm->evaluate_with_gradient( pd, handles[i], qmval, indices, grad, err );
@@ -1935,7 +1941,7 @@ void QualityMetricTester::test_domain_deviation_gradient( QualityMetric* qm )
     CPPUNIT_ASSERT( !MSQ_CHKERR(err) );
     CPPUNIT_ASSERT( !handles.empty() );
       // move the free vertex out of the plane
-    pd.vertex_by_index(0) += Vector3D( 0, 0, 0.2 );
+    pd.move_vertex( Vector3D( 0, 0, 0.2 ), 0, err );
       // find an evaluation that depends on the free vertex
     for (i = 0; i < handles.size(); ++i) {
       rval = qm->evaluate_with_gradient( pd, handles[i], qmval, indices, grad, err );
@@ -1977,14 +1983,14 @@ void QualityMetricTester::test_gradient_reflects_quality( QualityMetric* qm )
     CPPUNIT_ASSERT( !handles.empty() );
       // make element non-ideal
     const size_t* verts = pd.element_by_index(0).get_vertex_index_array();
-    MsqVertex* coords = pd.get_vertex_array(err);
+    const MsqVertex* coords = pd.get_vertex_array(err);
     size_t n = pd.element_by_index(0).vertex_count();
     Vector3D sum(0,0,0);
     for (unsigned j = 0; j < n; ++j)
       sum += coords[verts[j]];
     const Vector3D init_pos = coords[verts[0]];
-    coords[verts[0]] *= 0.5;
-    coords[verts[0]] += sum/(2*n);
+    const Vector3D new_pos = 0.5 * coords[verts[0]] + sum/(2*n);
+    pd.set_vertex_coordinates( new_pos, verts[0], err );
       // evaluate for non-ideal element
     rval = qm->evaluate_with_gradient( pd, handles[0], qmval, indices, grad, err );
     CPPUNIT_ASSERT(!MSQ_CHKERR(err));
@@ -2036,7 +2042,7 @@ void QualityMetricTester::test_measures_vertex_quality( QualityMetric* qm )
     CPPUNIT_ASSERT(!MSQ_CHKERR(err));
     CPPUNIT_ASSERT( rval );
       // move center vertex
-    pd.vertex_by_index(0) += 0.3;
+    pd.move_vertex( Vector3D(0.3,0.3,0.3), 0, err );
       // evaluate for non-ideal element
     rval = qm->evaluate( pd, 0, qmval2, err );
     CPPUNIT_ASSERT(!MSQ_CHKERR(err));
@@ -2083,7 +2089,7 @@ void QualityMetricTester::test_vertex_gradient_reflects_quality( QualityMetric* 
     }
     
       // move center vertex
-    pd.vertex_by_index(0) += 0.3;
+    pd.move_vertex( Vector3D(0.3,0.3,0.3), 0, err );
 
       // evaluate for ideal non-element
     rval = qm->evaluate_with_gradient( pd, 0, qmval, indices, grad, err );

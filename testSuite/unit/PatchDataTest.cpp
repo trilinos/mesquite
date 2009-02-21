@@ -824,7 +824,7 @@ void PatchDataTest::test_quad8_patch( bool reorder )
     // Assume that handles array contains input vertex indices.
     
   for (int i = 0; i < NUM_VTX; ++i) {
-    MsqVertex& vtx = pd.vertex_by_index(i);
+    const MsqVertex& vtx = pd.vertex_by_index(i);
     Mesh::VertexHandle hdl = pd.get_vertex_handles_array()[i];
     size_t idx = (size_t)hdl;
     Vector3D exp_coords( input_coords + 3*idx );
@@ -840,7 +840,7 @@ void PatchDataTest::test_quad8_patch( bool reorder )
     // Assume that handles array contains input vertex indices.
     
   for (int i = 0; i < NUM_VTX; ++i) {
-    MsqVertex& vtx = pd.vertex_by_index(i);
+    const MsqVertex& vtx = pd.vertex_by_index(i);
     Mesh::VertexHandle hdl = pd.get_vertex_handles_array()[i];
     size_t idx = (size_t)hdl;
     if (fixed[idx]) {

@@ -67,13 +67,13 @@ void Randomize::initialize_mesh_iteration(PatchData &/*pd*/, MsqError &/*err*/)
         directions (relative to the scale factor multiplied by mPercent).
       */
 static inline void randomize_vertex(PatchData &pd,
-                                    MsqVertex &free_vtx,\
+                                    size_t free_ind,
                                     double percent,
                                     MsqError &err)
 {
   size_t i;
   short j;
-  MsqVertex* verts = pd.get_vertex_array(err);  MSQ_ERRRTN(err);
+  const MsqVertex* verts = pd.get_vertex_array(err);  MSQ_ERRRTN(err);
   const size_t num_vtx = pd.num_nodes();
     //a scale w.r.t. the patch size
   double scale_factor=0.0;
@@ -86,22 +86,21 @@ static inline void randomize_vertex(PatchData &pd,
     return;
   }
 
-  size_t free_ind = pd.get_vertex_index(&(free_vtx));
-
-
   for (i=0;i<num_vtx;++i){
     if(i != free_ind)
-      scale_factor+=(verts[i]-free_vtx).length();
+      scale_factor+=(verts[i]-verts[free_ind]).length();
   }
   scale_factor/=( (double) num_vtx - 1.0 );    
+  Vector3D delta;
   for (j=0;j<3;++j){
     rand_int = rand();
       //number between 0 and 1000
     rand_int = rand_int%1000;
       //number between -1 and 1
     rand_double = (((double) rand_int)/500.0)-1.0;
-    free_vtx[j] += scale_factor*rand_double*percent;
+    delta[j] = scale_factor * rand_double * percent;
   }
+  pd.move_vertex( delta, free_ind, err );
 
   return;
 }
@@ -113,14 +112,13 @@ void Randomize::optimize_vertex_positions(PatchData &pd,
     //cout << "- Executing Randomize::optimize_vertex_position()\n";
 
   // gets the array of coordinates for the patch and print it 
-  MsqVertex *patch_coords = pd.get_vertex_array(err); MSQ_ERRRTN(err);
   // does the randomize smooth
   MsqFreeVertexIndexIterator free_iter(pd, err); MSQ_ERRRTN(err);
   free_iter.reset();
   free_iter.next();
     //find the free vertex.
   int m=free_iter.value();
-  randomize_vertex(pd, patch_coords[m], mPercent, err);  MSQ_ERRRTN(err);
+  randomize_vertex(pd, m, mPercent, err);  MSQ_ERRRTN(err);
   pd.snap_vertex_to_domain(m,err); MSQ_ERRRTN(err);
 }
   

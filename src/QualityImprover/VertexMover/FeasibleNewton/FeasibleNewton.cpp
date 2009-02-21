@@ -140,7 +140,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
       MSQ_DBGOUT(3) << "\n  o Free vertices ("<< pd.num_free_vertices()
                 <<")original coordinates:\n ";
       MSQ_ERRRTN(err);
-      MsqVertex* toto1 = pd.get_vertex_array(err); MSQ_ERRRTN(err);
+      const MsqVertex* toto1 = pd.get_vertex_array(err); MSQ_ERRRTN(err);
       MsqFreeVertexIndexIterator ind1(pd, err); MSQ_ERRRTN(err);
       ind1.reset();
       while (ind1.next()) {
@@ -333,7 +333,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
     // Prints out free vertices coordinates. 
     if (MSQ_DBG(3)) {
       MSQ_DBGOUT(3) << "  o Free vertices new coordinates: \n";
-      MsqVertex* toto1 = pd.get_vertex_array(err); MSQ_ERRRTN(err);
+      const MsqVertex* toto1 = pd.get_vertex_array(err); MSQ_ERRRTN(err);
       MsqFreeVertexIndexIterator ind(pd, err); MSQ_ERRRTN(err);
       ind.reset();
       while (ind.next()) {

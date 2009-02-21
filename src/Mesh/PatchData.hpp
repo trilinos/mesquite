@@ -242,9 +242,9 @@ namespace Mesquite
     
       //! Returns a pointer to the start of the vertex array.
     const MsqVertex* get_vertex_array( MsqError& err ) const;
-    MsqVertex* get_vertex_array(MsqError &err);
+    //MsqVertex* get_vertex_array(MsqError &err);
     const MsqVertex* get_vertex_array() const { return &vertexArray[0]; }
-    MsqVertex* get_vertex_array()             { return &vertexArray[0]; }
+    //MsqVertex* get_vertex_array()             { return &vertexArray[0]; }
     
       //! Returns a pointer to the start of the element array.
     const MsqMeshEntity* get_element_array( MsqError& err ) const;
@@ -273,7 +273,7 @@ namespace Mesquite
       //! the first element attached to vertex i.
     //const size_t* get_vertex_to_elem_offset(MsqError &err);
     
-    MsqVertex& vertex_by_index(size_t index);
+    //MsqVertex& vertex_by_index(size_t index);
     const MsqVertex& vertex_by_index(size_t index) const;
     MsqMeshEntity& element_by_index(size_t index);
     const MsqMeshEntity& element_by_index(size_t index) const;
@@ -332,6 +332,9 @@ namespace Mesquite
     void set_vertex_coordinates(const Vector3D &coords,
                                 size_t index,
                                 MsqError &err);
+
+    void move_vertex( const Vector3D &delta, size_t index, MsqError &err);
+
       /*! Adjust the position of the specified vertex so that it
           lies on its constraining domain.  The actual domain constraint
           is managed by the MeshSet's MeshDomain object.
@@ -448,6 +451,16 @@ namespace Mesquite
     void set_all_vertices_soft_fixed(MsqError &err);
       //!Add a soft_fixed flag to all free vertices in the patch.
     void set_free_vertices_soft_fixed(MsqError &err);
+
+      //!Mark vertex as culled (soft fixed)
+    void set_vertex_culled( size_t vtx_index )
+      { vertexArray[vtx_index].flags() |= MsqVertex::MSQ_CULLED; }
+      //!Mark vertex as culled (soft fixed)
+    void clear_vertex_culled( size_t vtx_index )
+      { vertexArray[vtx_index].flags() &= ~MsqVertex::MSQ_CULLED; }
+      //! check if vertex is culled
+    int check_vertex_culled( size_t vtx_index ) const
+      { return vertexArray[vtx_index].get_flags() | MsqVertex::MSQ_CULLED; }
     
       //! Fills a PatchData with the elements attached to a center vertex.
       //! Note that all entities in the sub-patch are copies of the entities
@@ -760,12 +773,12 @@ namespace Mesquite
       MSQ_SETERR(err)( "No vertex array defined", MsqError::INVALID_STATE );
     return &vertexArray[0];
   }
-  inline MsqVertex* PatchData::get_vertex_array(MsqError &err) 
-  {
-    if (vertexArray.empty()) 
-      MSQ_SETERR(err)( "No vertex array defined", MsqError::INVALID_STATE );
-    return &vertexArray[0];
-  }
+  //inline MsqVertex* PatchData::get_vertex_array(MsqError &err) 
+  //{
+  //  if (vertexArray.empty()) 
+  //    MSQ_SETERR(err)( "No vertex array defined", MsqError::INVALID_STATE );
+  //  return &vertexArray[0];
+  //}
   
   /*! \brief Returns the PatchData element array.
   */
@@ -795,11 +808,22 @@ namespace Mesquite
     
     vertexArray[index] = coords;
   }
-  
-  inline MsqVertex& PatchData::vertex_by_index(size_t index)
+  inline void PatchData::move_vertex( const Vector3D &delta,
+                                      size_t index,
+                                      MsqError &err) 
   {
-    return vertexArray[index];
+    if (index >= vertexArray.size()) {
+      MSQ_SETERR(err)( "Index bigger than numVertices.", MsqError::INVALID_ARG );
+      return;
+    }
+    
+    vertexArray[index] += delta;
   }
+  
+  //inline MsqVertex& PatchData::vertex_by_index(size_t index)
+  //{
+  //  return vertexArray[index];
+  //}
   
   inline const MsqVertex& PatchData::vertex_by_index( size_t index ) const
     { return vertexArray[index]; }

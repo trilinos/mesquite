@@ -78,7 +78,7 @@ namespace Mesquite
                            const Vector3D& delta,
                            MsqError& err )
   {
-    MsqVertex* array = pd.get_vertex_array( err ); 
+    const MsqVertex* array = pd.get_vertex_array( err ); 
     if (err) return;
     
     int idx = 0, cnt = 0;
@@ -88,7 +88,7 @@ namespace Mesquite
     
     CPPUNIT_ASSERT_EQUAL( cnt, 1 );
     
-    array[idx] += delta;
+    pd.move_vertex( delta, idx, err );
   }
         
   
@@ -340,11 +340,9 @@ namespace Mesquite
    {
      create_six_quads_patch_with_domain(pd,err); MSQ_CHKERR(err);
 
-     MsqVertex* vtx = pd.get_vertex_array(err); 
-
      Vector3D displacement(0,-1.5,0);
      
-     vtx[0] += displacement;
+     pd.move_vertex( displacement, 0, err );
    }
    
 

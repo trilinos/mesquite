@@ -104,7 +104,7 @@ bool UntangleBetaQualityMetric::evaluate( PatchData& pd,
     //only 3 temp_vec will be sent to untangle calculator, but the
     //additional vector3Ds may be needed during the calculations
   Vector3D temp_vec[5];
-  MsqVertex *vertices=pd.get_vertex_array(err);  MSQ_ERRZERO(err);
+  const MsqVertex *vertices=pd.get_vertex_array(err);  MSQ_ERRZERO(err);
   EntityTopology type = element->get_element_type();
   switch(type){
     case TRIANGLE:

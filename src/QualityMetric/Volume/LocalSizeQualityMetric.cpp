@@ -45,7 +45,7 @@ static inline double compute_corner_area( PatchData &pd,
                                           size_t vert_3,
                                           MsqError &err)
 {
-  MsqVertex* verts = pd.get_vertex_array(err);
+  const MsqVertex* verts = pd.get_vertex_array(err);
   Vector3D vec_1=verts[vert_2]-verts[vert_1];
   Vector3D vec_2=verts[vert_3]-verts[vert_1];
   Vector3D cross_vec=vec_1*vec_2;
@@ -60,7 +60,7 @@ static inline double compute_corner_volume( PatchData &pd,
                                             size_t vert_4,
                                             MsqError &err)
 {
-  MsqVertex* verts = pd.get_vertex_array(err);
+  const MsqVertex* verts = pd.get_vertex_array(err);
   Vector3D vec_1=verts[vert_2]-verts[vert_1];
   Vector3D vec_2=verts[vert_3]-verts[vert_1];
   Vector3D vec_3=verts[vert_4]-verts[vert_1];

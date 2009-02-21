@@ -131,7 +131,7 @@ bool NumericalTestOF::evaluate( EvalType type, PatchData& pd, double& val, bool 
   val = 0.0;
   for (size_t i = 0; i < pd.num_nodes(); ++i)
   {
-    MsqVertex& v = pd.vertex_by_index(i);
+    const MsqVertex& v = pd.vertex_by_index(i);
     val += linearGrad[0]*v[0] + linearGrad[1]*v[1] + linearGrad[2]*v[2];
   }
   

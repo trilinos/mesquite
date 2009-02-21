@@ -94,7 +94,7 @@ bool VertexConditionNumberQualityMetric::evaluate( PatchData& pd,
     //additional vector3Ds may be needed during the calculations
   size_t elem_index;
   Vector3D temp_vec[6];
-  MsqVertex *vertices=pd.get_vertex_array(err);
+  const MsqVertex *vertices=pd.get_vertex_array(err);
   //loop over the elements attached to this vertex
   for(i=0;i<num_elems;++i){
       //get the vertices connected to this vertex for this element

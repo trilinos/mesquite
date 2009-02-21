@@ -62,7 +62,7 @@ bool ConditionNumberQualityMetric::evaluate( PatchData& pd,
     //only 3 temp_vec will be sent to cond-num calculator, but the
     //additional vector3Ds may be needed during the calculations
   Vector3D temp_vec[6];
-  MsqVertex *vertices=pd.get_vertex_array(err);
+  const MsqVertex *vertices=pd.get_vertex_array(err);
   EntityTopology type = element->get_element_type();
   switch(type){
     case TRIANGLE:

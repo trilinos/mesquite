@@ -61,15 +61,15 @@ bool QualityMetric::evaluate_with_gradient( PatchData& pd,
   gradient.resize( indices.size() );
   for (size_t v=0; v<indices.size(); ++v) 
   {
-    MsqVertex& vtx = pd.vertex_by_index(indices[v]);
+    const Vector3D pos = pd.vertex_by_index(indices[v]);
     
     /* gradient in the x, y, z direction */
     for (int j=0;j<3;++j) 
     {
-      const double pos = vtx[j];
       double delta = delta_C;
       double delta_inv = delta_inv_C;
       double metric_value;
+      Vector3D delta_v( 0, 0, 0 );
       
         //perturb the node and calculate gradient.  The while loop is a
         //safety net to make sure the epsilon perturbation does not take
@@ -78,7 +78,9 @@ bool QualityMetric::evaluate_with_gradient( PatchData& pd,
       for (;;) {
           // perturb the coordinates of the free vertex in the j direction
           // by delta       
-        vtx[j] = pos + delta;
+        delta_v[j] = delta;
+        pd.set_vertex_coordinates( pos+delta_v, indices[v], err ); MSQ_ERRZERO(err);
+
           //compute the function at the perturbed point location
         valid = evaluate( pd, handle, metric_value, err);
         if (!MSQ_CHKERR(err) && valid) 
@@ -94,7 +96,7 @@ bool QualityMetric::evaluate_with_gradient( PatchData& pd,
         delta_inv*=10.;
       }
         // put the coordinates back where they belong
-      vtx[j] = pos;
+      pd.set_vertex_coordinates( pos, indices[v], err );
         // compute the numerical gradient
       gradient[v][j] = (metric_value - value) * delta_inv;
     } // for(j)
@@ -125,18 +127,18 @@ bool QualityMetric::evaluate_with_Hessian( PatchData& pd,
   Hessian.resize( num_hess );
   
   for (unsigned v = 0; v < indices.size(); ++v) {
-    MsqVertex& vtx = pd.vertex_by_index(indices[v]);
-    
+    const Vector3D pos = pd.vertex_by_index(indices[v]);
     for (int j = 0; j < 3; ++j ) { // x, y, and z
-      const double pos = vtx[j];
       double delta = delta_C;
       double delta_inv = delta_inv_C;
       double metric_value;
+      Vector3D delta_v(0,0,0);
       
         // find finite difference for gradient
       int counter = 0;
       for (;;) {
-        vtx[j] = pos + delta;
+        delta_v[j] = delta;
+        pd.set_vertex_coordinates( pos+delta_v, indices[v], err ); MSQ_ERRZERO(err);
         valid = evaluate_with_gradient( pd, handle, metric_value, indices, temp_gradient, err );
         if (!MSQ_CHKERR(err) && valid) 
           break;
@@ -150,7 +152,7 @@ bool QualityMetric::evaluate_with_Hessian( PatchData& pd,
         delta *= 0.1;
         delta_inv *= 10.0;
       }
-      vtx[j] = pos;
+      pd.set_vertex_coordinates( pos, indices[v], err ); MSQ_ERRZERO(err);
       
         //compute the numerical Hessian
       for (unsigned w = 0; w <= v; ++w) {

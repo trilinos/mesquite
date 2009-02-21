@@ -85,7 +85,7 @@ bool EdgeLengthRangeQualityMetric::evaluate_common(PatchData &pd,
   pd.get_adjacent_vertex_indices(this_vert,adj_verts,err);  MSQ_ERRZERO(err);
   int num_sample_points=adj_verts.size();
   double *metric_values=new double[num_sample_points];
-  MsqVertex* verts = pd.get_vertex_array(err);  MSQ_ERRZERO(err);
+  const MsqVertex* verts = pd.get_vertex_array(err);  MSQ_ERRZERO(err);
     //store the length of the edge, and the first and second component of
     //metric values, respectively.
   double temp_length=0.0;

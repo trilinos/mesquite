@@ -1814,7 +1814,7 @@ bool RI_DFT::evaluate(PatchData& pd,
 			      MsqError &err)
 {
   // Only works with the weighted average
-  MsqVertex *vertices = pd.get_vertex_array(err); MSQ_ERRZERO(err);
+  const MsqVertex *vertices = pd.get_vertex_array(err); MSQ_ERRZERO(err);
 
   MsqMeshEntity& e = pd.element_by_index(idx);
   EntityTopology topo = e.get_element_type();
@@ -1947,7 +1947,7 @@ bool RI_DFT::evaluate_with_gradient(PatchData &pd,
 {
   // Only works with the weighted average
 
-  MsqVertex *vertices = pd.get_vertex_array(err); MSQ_ERRZERO(err);
+  const MsqVertex *vertices = pd.get_vertex_array(err); MSQ_ERRZERO(err);
 
   MsqMeshEntity& e = pd.element_by_index(idx);
   EntityTopology topo = e.get_element_type();
@@ -2136,7 +2136,7 @@ bool RI_DFT::evaluate_with_Hessian(PatchData &pd,
 {
   // Only works with the weighted average
 
-  MsqVertex *vertices = pd.get_vertex_array(err); MSQ_ERRZERO(err);
+  const MsqVertex *vertices = pd.get_vertex_array(err); MSQ_ERRZERO(err);
 
   MsqMeshEntity& e = pd.element_by_index(idx);
   EntityTopology topo = e.get_element_type();
