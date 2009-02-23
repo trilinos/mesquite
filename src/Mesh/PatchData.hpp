@@ -489,14 +489,12 @@ namespace Mesquite
     
       //! Creates a memento that holds the current
       //! state of the PatchData coordinates. 
-    PatchDataVerticesMemento* create_vertices_memento( MsqError &err,
-                                                       bool include_higher_order = false );
+    PatchDataVerticesMemento* create_vertices_memento( MsqError &err );
     
       //! reinstantiates a memento to holds the current
       //! state of the PatchData coordinates. Improves memory management.
     void recreate_vertices_memento( PatchDataVerticesMemento* memento, 
-                                    MsqError &err,
-                                    bool include_higher_order = false );
+                                    MsqError &err );
     
     //! Restore the PatchData coordinates to the state
     //! contained in the memento.
@@ -889,11 +887,10 @@ namespace Mesquite
     It is the responsibility of the caller to discard the PatchDataVerticesMemento
     when not needed any more.
   */
-  inline PatchDataVerticesMemento* PatchData::create_vertices_memento(MsqError& err,
-                                                                      bool include_higher_order)
+  inline PatchDataVerticesMemento* PatchData::create_vertices_memento(MsqError& err)
   {
     PatchDataVerticesMemento* memento = new PatchDataVerticesMemento;
-    recreate_vertices_memento( memento, err, include_higher_order );
+    recreate_vertices_memento( memento, err );
     if (MSQ_CHKERR(err)) {
       delete memento;
       return 0;
@@ -910,14 +907,11 @@ namespace Mesquite
     when it is no longer needed.
   */
   inline void PatchData::recreate_vertices_memento(PatchDataVerticesMemento* memento, 
-                                                   MsqError& /*err*/,
-                                                   bool include_higher_order)
+                                                   MsqError& /*err*/)
   {
     memento->originator = this;
     
-    size_t num_vtx = num_free_vertices();
-    if (include_higher_order)
-      num_vtx += num_slave_vertices();
+    size_t num_vtx = num_free_vertices() + num_slave_vertices();
     
     memento->vertices.resize( num_vtx );
     msq_std::copy( vertexArray.begin(), vertexArray.begin()+num_vtx, memento->vertices.begin() );
@@ -960,8 +954,7 @@ namespace Mesquite
       return;
     }
     
-    if (memento->vertices.size() != num_free_vertices() &&
-        memento->vertices.size() != num_free_vertices()+num_slave_vertices())
+    if (memento->vertices.size() != num_free_vertices()+num_slave_vertices())
     {
       MSQ_SETERR(err)("Unable to restore patch coordinates.  Number of "
                       "vertices in PatchData has changed.",

@@ -524,7 +524,7 @@ double PatchData::get_max_vertex_movement_squared(PatchDataVerticesMemento*
                                                   MsqError &err)
 {
   double max_dist = 0.0;
-  for (size_t i = 0; i < num_free_vertices(); ++i) {
+  for (size_t i = 0; i < memento->vertices.size(); ++i) {
     double temp_dist = (vertexArray[i] - memento->vertices[i]).length_squared();
     if (temp_dist > max_dist)
       max_dist = temp_dist;
