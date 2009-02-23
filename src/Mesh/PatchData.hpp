@@ -500,22 +500,6 @@ namespace Mesquite
     //! contained in the memento.
     void set_to_vertices_memento(PatchDataVerticesMemento* memento,
                                  MsqError &err);
-    
-    //!  Tells MeshSet how to retrieve the mesh entities that will be stored in PatchData.
-    /*!  The PatchType is set by the QualityImprover etc... and mesquite propagates
-      it to the MeshSet.
-    */
-    enum PatchType
-      {
-        UNDEFINED_PATCH_TYPE,     /*!< Default.*/
-        VERTICES_ON_VERTEX_PATCH, /*!< fills PatchData with the vertices connected
-                                    through edges to the center vertex. */
-        ELEMENTS_ON_VERTEX_PATCH, /*!< fills PatchData with the vertices connected
-                                    through elements to the center vertex. */
-        GLOBAL_PATCH,              /*!< Fills PatchData with all elements and vertices
-                                    contained in all the meshes of the MeshSet. */
-        ELEMENT_PATCH //!< fills PatchData with one element at a time.
-      };
 
     //! Sets the originating meshSet. This is normally done in MeshSet::get_next_patch().
     //! This function is only for tests purposes. 
