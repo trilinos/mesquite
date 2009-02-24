@@ -124,7 +124,7 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
   }
 
   for (e = 0; e < num_elements; ++e) {
-    nve = patchElemArray[e].vertex_count();
+    nve = patchElemArray[e].node_count();
     vtx_list = patchElemArray[e].get_vertex_index_array();
     int nfe = 0;
     
@@ -164,7 +164,7 @@ void MsqHessian::initialize(PatchData &pd, MsqError &err)
 
   nz = 0;
   for (e = 0; e < num_elements; ++e) {
-    nve = patchElemArray[e].vertex_count();
+    nve = patchElemArray[e].node_count();
     vtx_list = patchElemArray[e].get_vertex_index_array();
 
     for (i = 0; i < nve; ++i) {
