@@ -61,7 +61,7 @@ class FauxObjectiveFunction : public ObjectiveFunction
       : mValue(value), mInvalid(invalid), mError(error)
       { ++instanceCount; }
     ~FauxObjectiveFunction() { --instanceCount; }
-    bool initialize_block_coordinate_descent( Mesh*, MeshDomain*, MappingFunctionSet*, PatchSet*, MsqError& )
+    bool initialize_block_coordinate_descent( Mesh*, MeshDomain*, const Settings*, PatchSet*, MsqError& )
       { CPPUNIT_ASSERT_MESSAGE("This shouldn't ever get called", false ); return false; }
     bool evaluate( EvalType, PatchData&, double& value_out, bool, MsqError& err )
       { 

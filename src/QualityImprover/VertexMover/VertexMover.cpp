@@ -115,7 +115,7 @@ VertexMover::VertexMover( ObjectiveFunction* OF, bool Nash )
   */
 double VertexMover::loop_over_mesh( Mesh* mesh,
                                     MeshDomain* domain,
-                                    MappingFunctionSet* map_func,
+                                    const Settings* settings,
                                     MsqError& err )
 {
     // Get the patch data to use for the first iteration
@@ -124,7 +124,7 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
   PatchData patch;
   patch.set_mesh( mesh );
   patch.set_domain( domain );
-  patch.set_mapping_functions( map_func );
+  patch.attach_settings( settings );
   bool one_patch = false, did_some, all_culled;
   msq_std::vector<Mesh::VertexHandle> patch_vertices;
   msq_std::vector<Mesh::ElementHandle> patch_elements;
@@ -162,10 +162,10 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
   this->initialize(patch, err);        
   if (MSQ_CHKERR(err)) goto ERROR;
   
-  obj_func.initialize( mesh, domain, map_func, patch_set, err ); 
+  obj_func.initialize( mesh, domain, settings, patch_set, err ); 
   if (MSQ_CHKERR(err)) goto ERROR;
   
-  outer_crit->reset_outer(mesh, domain, obj_func, map_func, err); 
+  outer_crit->reset_outer(mesh, domain, obj_func, settings, err); 
   if (MSQ_CHKERR(err)) goto ERROR;
   
  
@@ -258,7 +258,7 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
     this->terminate_mesh_iteration(patch, err); 
     if (MSQ_CHKERR(err)) goto ERROR;
     
-    outer_crit->accumulate_outer( mesh, domain, obj_func, map_func, err );
+    outer_crit->accumulate_outer( mesh, domain, obj_func, settings, err );
     if (MSQ_CHKERR(err)) goto ERROR;
     
     if (all_culled)
@@ -285,7 +285,7 @@ ERROR:
   */
 double VertexMover::loop_over_mesh( ParallelMesh* mesh,
                                     MeshDomain* domain,
-                                    MappingFunctionSet* map_func,
+                                    const Settings* settings,
                                     MsqError& err )
 {
   msq_std::vector<size_t> junk;
@@ -297,7 +297,7 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
   PatchData patch;
   patch.set_mesh( (Mesh*) mesh );
   patch.set_domain( domain );
-  patch.set_mapping_functions( map_func );
+  patch.attach_settings( settings );
 
   ParallelHelper* helper = mesh->get_parallel_helper();
 
@@ -336,10 +336,10 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
   this->initialize(patch, err);        
   if (MSQ_CHKERR(err)) goto ERROR;
   
-  obj_func.initialize( (Mesh*)mesh, domain, map_func, patch_set, err ); 
+  obj_func.initialize( (Mesh*)mesh, domain, settings, patch_set, err ); 
   if (MSQ_CHKERR(err)) goto ERROR;
   
-  outer_crit->reset_outer( (Mesh*)mesh, domain, obj_func, map_func, err); 
+  outer_crit->reset_outer( (Mesh*)mesh, domain, obj_func, settings, err); 
   if (MSQ_CHKERR(err)) goto ERROR;
    
    // Loop until outer termination criterion is met
@@ -504,7 +504,7 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
     this->terminate_mesh_iteration(patch, err); 
     if (MSQ_CHKERR(err)) goto ERROR;
     
-    outer_crit->accumulate_outer( mesh, domain, obj_func, map_func, err );
+    outer_crit->accumulate_outer( mesh, domain, obj_func, settings, err );
     if (MSQ_CHKERR(err)) goto ERROR;
     
     if (all_culled)

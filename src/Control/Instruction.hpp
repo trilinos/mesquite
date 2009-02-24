@@ -41,7 +41,7 @@ class Mesh;
 class ParallelMesh;
 class MeshDomain;
 class MsqError;
-class MappingFunctionSet;
+class Settings;
 
 MESQUITE_EXPORT
 class Instruction
@@ -52,12 +52,12 @@ class Instruction
   
     virtual double loop_over_mesh( Mesh* mesh, 
                                    MeshDomain* domain, 
-                                   MappingFunctionSet* map_func,
+                                   const Settings* settings,
                                    MsqError& err ) = 0;
 
     virtual double loop_over_mesh( ParallelMesh* mesh, 
                                    MeshDomain* domain, 
-                                   MappingFunctionSet* map_func,
+                                   const Settings* settings,
                                    MsqError& err );
 
     virtual msq_std::string get_name() const = 0;

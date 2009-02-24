@@ -29,12 +29,12 @@
 
 #include "Mesquite.hpp"
 #include "PlanarDomain.hpp"
+#include "Settings.hpp"
 #include <algorithm>
 
 using namespace Mesquite;
 
 namespace Mesquite {
-class MappingFunctionSet;
 class PatchData;
 class QualityMetric;
 class ElemSampleQM;
@@ -74,11 +74,11 @@ public:
                        ALL }; // everything (including polyhedron)
 
   QualityMetricTester( ElemTypeGroup group, 
-                       MappingFunctionSet* set = 0 );
+                       const Settings* set = 0 );
 
   QualityMetricTester( const EntityTopology* supported_elem_types,
                        size_t supported_elem_types_len,
-                       MappingFunctionSet* set = 0 );
+                       const Settings* set = 0 );
 
     /** Ideal pyramids should be considerd to have a heigth
      *  equal to the length of a side, rather than the default which
@@ -305,7 +305,8 @@ private:
 
   bool degenHexPyramid; //!< See: ideal_pyramid_base_equals_height()
   msq_std::vector<EntityTopology> types;
-  MappingFunctionSet* mapFuncSet;
+  const Settings* mSettings;
+  Settings defaultSettings;
   PlanarDomain geomPlane;
 };
 

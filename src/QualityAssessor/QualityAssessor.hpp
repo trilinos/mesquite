@@ -294,19 +294,19 @@ namespace Mesquite
       //! Does one sweep over the mesh and assess the quality with the metrics previously added.
     virtual double loop_over_mesh( Mesh* mesh,
                                    MeshDomain* domain,
-                                   MappingFunctionSet* map_func,
+                                   const Settings* settings,
                                    MsqError &err);
 
       //! Does one sweep over the mesh and assess the quality with the metrics previously added.
     virtual double loop_over_mesh( ParallelMesh* mesh,
                                    MeshDomain* domain,
-                                   MappingFunctionSet* map_func,
+                                   const Settings* settings,
                                    MsqError &err);
 
       //! Common code for serial and parallel loop_over_mesh
     virtual double loop_over_mesh_internal( Mesh* mesh,
                                             MeshDomain* domain,
-                                            MappingFunctionSet* map_func,
+                                            const Settings* settings,
                                             ParallelHelper* helper,
                                             MsqError &err);
 

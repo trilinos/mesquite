@@ -38,7 +38,6 @@
 #include "FeasibleNewton.hpp"
 #include "PlanarDomain.hpp"
 #include "SamplePoints.hpp"
-#include "LinearFunctionSet.hpp"
 #include "ReferenceMesh.hpp"
 #include "RefMeshTargetCalculator.hpp"
 #include "TMPQualityMetric.hpp"
@@ -476,7 +475,6 @@ bool run_smoother( mesh_reader_t input_mesh,
     fn.use_global_patch();
   }
   VertexMover* solver = USE_FEAS_NEWT ? (VertexMover*)&fn : (VertexMover*)&cg;
-  LinearFunctionSet mfs;
   PlanarDomain plane( PlanarDomain::XY );
   solver->set_inner_termination_criterion( &inner );
   solver->set_outer_termination_criterion( &outer );
@@ -486,7 +484,7 @@ bool run_smoother( mesh_reader_t input_mesh,
   CHKERR(err)
 
   cout << "Running " << exp << "." << n << " ...";
-  q.run_instructions( &active, &plane, &mfs, err );
+  q.run_instructions( &active, &plane, err );
   if (MSQ_CHKERR(err)) {
     cout << "######## EXPERIMENT " << exp << "." << n << " FAILED! ##########" << endl;
     return false;

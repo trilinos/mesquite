@@ -57,7 +57,7 @@ namespace Mesquite {
   */
   double MeshTransform::loop_over_mesh( Mesh* mesh,
                                         MeshDomain* ,
-                                        MappingFunctionSet*,
+                                        const Settings*,
                                         MsqError &err )
   {
     msq_std::vector<Mesh::VertexHandle> handle_list;

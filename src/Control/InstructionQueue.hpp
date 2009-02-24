@@ -39,6 +39,7 @@ Header file for the Mesquite::InstructionQueue class
 #define MSQ_INSTRUCTION_QUEUE_HPP
 
 #include "Mesquite.hpp"
+#include "Settings.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 #  include <list.h>
@@ -72,7 +73,7 @@ namespace Mesquite {
            -# set_master_quality_improver(...)
            -# run_instructions(...)
   */
-  class InstructionQueue
+  class InstructionQueue : public Settings
   {
 
   public:
@@ -106,52 +107,19 @@ namespace Mesquite {
        */
     MESQUITE_EXPORT virtual void run_instructions( Mesh* mesh,
                                    MeshDomain* domain,
-                                   MappingFunctionSet* map_func,
                                    MsqError &err);
     
     inline void run_instructions( Mesh* mesh, MsqError& err )
-      { this->run_instructions( mesh, 0, 0, err ); }
-    
-    inline void run_instructions( Mesh* mesh, MeshDomain* dom, MsqError& err )
-      { this->run_instructions( mesh, dom, 0, err ); }
+      { this->run_instructions( mesh, 0, err ); }
     
     MESQUITE_EXPORT virtual void run_instructions( ParallelMesh* mesh,
                                    MeshDomain* domain,
-                                   MappingFunctionSet* map_func,
                                    MsqError &err);
     
     inline void run_instructions( ParallelMesh* mesh, MsqError& err )
-      { this->run_instructions( mesh, 0, 0, err ); }
-    
-    inline void run_instructions( ParallelMesh* mesh, MeshDomain* dom, MsqError& err )
-      { this->run_instructions( mesh, dom, 0, err ); }
+      { this->run_instructions( mesh, 0, err ); }
 
-    MESQUITE_EXPORT void clear();
-
-      /**\brief Generate SIGFPE whenever a floating point exception occurs
-       *
-       * Generate a FPE signal when overflow, divbyzero, etc. occur
-       * during floating-point arithmatic.  This is intended for debugging
-       * purposes only, as enabling this will typically result in a 
-       * crash when such arithmatic errors occur.
-       *
-       * If this option is enabled, Mesquite will attempt to set 
-       * platform-specific flags such that a SIGFPE is generated for
-       * floating point errors while the instruction queue is running.
-       * If this option ins disabled, Mesquite will not change the
-       * flags.  There is no option to explicitly disable such flags
-       * because that is the default behavior on most platforms, and
-       * presumably if the application has enabled such flags it makes
-       * little sense to disable them while Mesquite is running.
-       *
-       * This functionality may not be supported on all platforms.  If
-       * it is not supported, this option has no effect.
-       */
-    MESQUITE_EXPORT void trap_floating_point_exception( bool enable )
-      { trapFPE = enable; }
-    MESQUITE_EXPORT bool trap_floating_point_exception() const
-      { return trapFPE; }
-  
+    MESQUITE_EXPORT void clear();  
     
   protected:
     
@@ -166,8 +134,6 @@ namespace Mesquite {
     bool isMasterSet;
     size_t masterInstrIndex; //!< 0-based. Keeping an index instead of an iterator
                              //!< in case list is reallocated
-
-    bool trapFPE;
   };
 
 

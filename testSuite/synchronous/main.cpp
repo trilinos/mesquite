@@ -184,7 +184,7 @@ int main( int argc, char* argv[] )
   q.add_quality_assessor( &qa, err );
   q.set_master_quality_improver( solver, err );
   q.add_quality_assessor( &qa, err );
-  q.run_instructions( &mesh, &domain, 0, err );
+  q.run_instructions( &mesh, &domain, err );
   delete solver;
   delete metric;
   

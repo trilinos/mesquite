@@ -47,7 +47,7 @@ ObjectiveFunctionTemplate::~ObjectiveFunctionTemplate() {}
 
 bool ObjectiveFunctionTemplate::initialize_block_coordinate_descent( Mesh* mesh, 
                                                       MeshDomain* domain, 
-                                                      MappingFunctionSet* maps,
+                                                      const Settings* settings,
                                                       PatchSet* ,
                                                       MsqError& err )
 {
@@ -73,7 +73,7 @@ bool ObjectiveFunctionTemplate::initialize_block_coordinate_descent( Mesh* mesh,
   PatchData pd;
   pd.set_mesh( mesh );
   pd.set_domain( domain );
-  pd.set_mapping_functions( maps );
+  pd.attach_settings( settings );
   
   bool result = true;
   while (patches.get_next_patch( pd, err ) && !MSQ_CHKERR(err))

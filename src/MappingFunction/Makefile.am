@@ -8,6 +8,5 @@ MSQ_SRCS += \
 
 MSQ_HDRS += \
 	$(SRC_MAPPINGFUNCTION_DIR)/MappingFunction.hpp \
-	$(SRC_MAPPINGFUNCTION_DIR)/MappingFunctionSet.hpp \
 	$(SRC_MAPPINGFUNCTION_DIR)/SamplePoints.hpp 
 

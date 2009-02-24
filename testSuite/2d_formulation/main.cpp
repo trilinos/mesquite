@@ -41,7 +41,6 @@
 #include "TerminationCriterion.hpp"
 #include "ElementPMeanP.hpp"
 #include "MsqError.hpp"
-#include "LinearFunctionSet.hpp"
 #include "TSquared2D.hpp"
 #include "SamplePoints.hpp"
 #include "MeshImpl.hpp"
@@ -98,7 +97,6 @@ void run_test( Grouping grouping, int of_power, Weight w, const string filename 
 //  expected_mesh.read_vtk( (filename + ".vtk").c_str(), err ); CHKERR(err)
   
   PlanarDomain plane( PlanarDomain::XY );
-  LinearFunctionSet maps;
 
   MetricWeight mw( &qual_metric );
   InverseMetricWeight imw( &qual_metric );
@@ -107,20 +105,20 @@ void run_test( Grouping grouping, int of_power, Weight w, const string filename 
     TargetWriter writer( qual_metric.get_sample_points(), 0, &mw );
     InstructionQueue tq;
     tq.add_target_calculator( &writer, err );
-    tq.run_instructions( &mesh, &plane, &maps, err ); CHKERR(err);
+    tq.run_instructions( &mesh, &plane, err ); CHKERR(err);
     qual_metric.set_weight_calculator( &reader );
   }
   else if (w == INV_METRIC) {
     TargetWriter writer( qual_metric.get_sample_points(), 0, &imw );
     InstructionQueue tq;
     tq.add_target_calculator( &writer, err );
-    tq.run_instructions( &mesh, &plane, &maps, err ); CHKERR(err);
+    tq.run_instructions( &mesh, &plane, err ); CHKERR(err);
     qual_metric.set_weight_calculator( &reader );
   }
 
   InstructionQueue q;
   q.set_master_quality_improver( &solver, err );
-  q.run_instructions( &mesh, &plane, &maps, err ); CHKERR(err)
+  q.run_instructions( &mesh, &plane, err ); CHKERR(err)
 /*  
   vector<Mesh::VertexHandle> vemain.cpprts;
   vector<MsqVertex> mesh_coords, expected_coords;

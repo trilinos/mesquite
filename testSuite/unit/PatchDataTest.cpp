@@ -48,8 +48,13 @@ Unit testing of various functions in the PatchData class.
 #include "PatchData.hpp"
 #include "PatchDataInstances.hpp"
 #include "UnitUtil.hpp"
+#include "Settings.hpp"
 
-#include "MappingFunctionSet.hpp"
+#include "ArrayMesh.hpp"
+#include "DomainClassifier.hpp"
+#include "PlanarDomain.hpp"
+#include "MeshDomain1D.hpp"
+
 #include "TriLagrangeShape.hpp"
 
 #include "cppunit/extensions/HelperMacros.h"
@@ -81,6 +86,10 @@ private:
   CPPUNIT_TEST (test_update_slave_node_coords);
   CPPUNIT_TEST (test_patch_data_ho_nodes);
   CPPUNIT_TEST (test_patch_reorder_ho_nodes);
+  CPPUNIT_TEST (test_patch_data_free_ho_nodes);
+  CPPUNIT_TEST (test_vertex_verts_fixed);
+  CPPUNIT_TEST (test_curve_verts_fixed);
+  CPPUNIT_TEST (test_surf_verts_fixed);
   CPPUNIT_TEST_SUITE_END();
    
 private:
@@ -98,7 +107,7 @@ private:
    
    PatchData mPatch2D;
    
-   void test_quad8_patch( bool reorder );
+   void test_quad8_patch( bool reorder, bool ho_nodes_slaved );
 
 public:
   void setUp()
@@ -368,8 +377,14 @@ public:
   void test_reorder() { test_patch_contents(true); }
   
   void test_update_slave_node_coords();
-  void test_patch_data_ho_nodes()    { test_quad8_patch(false); }
-  void test_patch_reorder_ho_nodes() { test_quad8_patch(true ); }
+  void test_patch_data_ho_nodes()      { test_quad8_patch(false, true ); }
+  void test_patch_reorder_ho_nodes()   { test_quad8_patch(true,  true ); }
+  void test_patch_data_free_ho_nodes() { test_quad8_patch(false, false); }
+
+  void test_fixed_by_geom_dim( unsigned dim );
+  void test_vertex_verts_fixed() { test_fixed_by_geom_dim(0); }
+  void test_curve_verts_fixed()  { test_fixed_by_geom_dim(1); }
+  void test_surf_verts_fixed()   { test_fixed_by_geom_dim(2); }
 };
 
 
@@ -622,19 +637,6 @@ void PatchDataTest::test_patch_contents( bool reorder )
   }
 }
 
-class HOTri : public MappingFunctionSet {
-  private:
-    TriLagrangeShape myFunc;
-  public:
-    virtual ~HOTri() {}
-    const MappingFunction* get_function( EntityTopology type ) const
-      { return (type == TRIANGLE) ? &myFunc : 0; }
-    const MappingFunction2D* get_surf_function( EntityTopology type ) const
-      { return (type == TRIANGLE) ? &myFunc : 0; }
-    const MappingFunction3D* get_vol_function( EntityTopology type ) const
-      { return 0; }
-};
-
 void PatchDataTest::test_update_slave_node_coords()
 {
   MsqPrintError err(msq_stdio::cerr);
@@ -658,8 +660,10 @@ void PatchDataTest::test_update_slave_node_coords()
   ASSERT_NO_ERROR(err);
   
     // update_slave_node_coords requires a mapping function
-  HOTri mfs;
-  pd.set_mapping_functions( &mfs );
+  Settings settings;
+  TriLagrangeShape tri_func;
+  settings.set_mapping_function( &tri_func );
+  pd.attach_settings( &settings );
   
     // call the function we're trying to test.
   pd.update_slave_node_coordinates( err );
@@ -684,9 +688,7 @@ void PatchDataTest::test_update_slave_node_coords()
   CPPUNIT_ASSERT_VECTORS_EQUAL( mid1, vtx_coords[3], 1e-6 );
   CPPUNIT_ASSERT_VECTORS_EQUAL( mid2, vtx_coords[5], 1e-6 );
 }
-      
-void PatchDataTest::test_quad8_patch( bool reorder )
-{
+
 /* This is the input mesh topology
      (0)------(16)-----(1)------(17)-----(2)------(18)-----(3)
       |                 |                 |                 |
@@ -786,15 +788,20 @@ void PatchDataTest::test_quad8_patch( bool reorder )
        11, 10, 14, 15, 32, 35, 39, 36
   };
 
-    // create PatchData
-
   const size_t node_per_elem[NUM_ELEM] = { 8, 8, 8, 8, 8, 8, 8, 8, 8 };
   const EntityTopology elem_types[NUM_ELEM] = {  QUADRILATERAL,
     QUADRILATERAL, QUADRILATERAL, QUADRILATERAL, QUADRILATERAL, 
     QUADRILATERAL, QUADRILATERAL, QUADRILATERAL, QUADRILATERAL };
-  
+ 
+void PatchDataTest::test_quad8_patch( bool reorder, bool slaved )
+{
+    // create PatchData
   MsqPrintError err( msq_stdio::cerr );
   PatchData pd;
+  Settings settings;
+  settings.set_no_ho_nodes_slaved();
+  if (!slaved) // default is slaved, so only change settings if no slaved
+    pd.attach_settings(&settings);
   pd.fill( NUM_VTX, input_coords, NUM_ELEM, elem_types, node_per_elem, input_conn, fixed, err );
   ASSERT_NO_ERROR(err);
   
@@ -803,7 +810,8 @@ void PatchDataTest::test_quad8_patch( bool reorder )
   if (reorder)
     pd.reorder();
 
-    // Check sizes.  Assume that all non-fixed HO nodes are slave vertices.
+    // Check sizes.  Assume that all non-fixed HO nodes are slave vertices
+    // unless 'slaved' is false.
     
   CPPUNIT_ASSERT_EQUAL( NUM_VTX, (int)pd.num_nodes() );
   CPPUNIT_ASSERT_EQUAL( NUM_ELEM, (int)pd.num_elements() );
@@ -813,8 +821,10 @@ void PatchDataTest::test_quad8_patch( bool reorder )
       ++num_fixed;
     else if (i < NUM_CORNER)
       ++num_free;
-    else
+    else if (slaved)
       ++num_slave;
+    else
+      ++num_free;
   }
   CPPUNIT_ASSERT_EQUAL( num_free , (int)pd.num_free_vertices() );
   CPPUNIT_ASSERT_EQUAL( num_slave, (int)pd.num_slave_vertices() );
@@ -836,7 +846,7 @@ void PatchDataTest::test_quad8_patch( bool reorder )
   }
   
     // Check that vertex flags are correct.  
-    // Assume all non-fixed HO noes are slave vertices.
+    // Assume all non-fixed HO noes are slave vertices unless 'slaved' is false.
     // Assume that handles array contains input vertex indices.
     
   for (int i = 0; i < NUM_VTX; ++i) {
@@ -846,7 +856,7 @@ void PatchDataTest::test_quad8_patch( bool reorder )
     if (fixed[idx]) {
       CPPUNIT_ASSERT( vtx.is_flag_set( MsqVertex::MSQ_HARD_FIXED ) );
     }
-    else if (idx >= (size_t)NUM_CORNER) {
+    else if (slaved && idx >= (size_t)NUM_CORNER) {
       CPPUNIT_ASSERT( vtx.is_flag_set( MsqVertex::MSQ_DEPENDENT ) );
     }
     else {
@@ -873,5 +883,71 @@ void PatchDataTest::test_quad8_patch( bool reorder )
     ASSERT_ARRAYS_EQUAL( input_conn + 8*idx, &conn[0], 8 );
   }
 }
-      
+
+void PatchDataTest::test_fixed_by_geom_dim( unsigned dim )
+{
+  MsqPrintError err(msq_stdio::cerr);
+
+  Settings settings;
+  switch (dim) {
+    case 0: settings.set_fixed_vertex_mode( Settings::FIXED_VERTEX  ); break;
+    case 1: settings.set_fixed_vertex_mode( Settings::FIXED_CURVE   ); break;
+    case 2: settings.set_fixed_vertex_mode( Settings::FIXED_SURFACE ); break;
+    default: CPPUNIT_ASSERT(false);
+  }
+
+  msq_std::vector<int> fixed_flags(NUM_VTX,1);
+  msq_std::vector<double> coords(3*NUM_VTX);
+  msq_std::copy( &input_coords[0], input_coords+3*NUM_VTX, &coords[0] );
+  ArrayMesh mesh( 3, NUM_VTX, &coords[0], &fixed_flags[0], 
+                  NUM_ELEM, QUADRILATERAL, input_conn, false,
+                  8 );
+  DomainClassifier geom;
+  Vector3D corners[4] = {  Vector3D(-3, 3, 0),
+                           Vector3D( 3, 3, 0),
+                           Vector3D(-3,-3, 0),
+                           Vector3D( 3,-3, 0) };
+  PointDomain corner0( corners[0] );
+  PointDomain corner1( corners[1] );
+  PointDomain corner2( corners[2] );
+  PointDomain corner3( corners[3] );
+  LineDomain edge0( corners[0], corners[1] - corners[0] );
+  LineDomain edge1( corners[1], corners[2] - corners[1] );
+  LineDomain edge2( corners[2], corners[3] - corners[2] );
+  LineDomain edge3( corners[3], corners[0] - corners[3] );
+  PlanarDomain z(PlanarDomain::XY);
+  MeshDomain* geomarr[] = { &corner0, &corner1, &corner2, &corner3,
+                            &edge0, &edge1, &edge2, &edge3, &z };
+  int dimarr[] = { 0, 0, 0, 0, 1, 1, 1, 1, 2 };
+  DomainClassifier::classify_geometrically( geom, &mesh, 1e-6, geomarr, dimarr, 9, err );
+  ASSERT_NO_ERROR(err);
   
+  PatchData pd;
+  pd.attach_settings( &settings );
+  pd.set_mesh( &mesh );
+  pd.set_domain( &geom );
+  
+  msq_std::vector<Mesh::ElementHandle> elems;
+  msq_std::vector<Mesh::VertexHandle> verts;
+  mesh.get_all_elements( elems, err ); ASSERT_NO_ERROR(err);
+  mesh.get_all_vertices( verts, err ); ASSERT_NO_ERROR(err);
+  pd.set_mesh_entities( elems, verts, err ); ASSERT_NO_ERROR(err);
+  
+  msq_std::vector<unsigned short> dims(verts.size());
+  geom.domain_DoF( &verts[0], &dims[0], verts.size(), err );
+  ASSERT_NO_ERROR(err);
+  
+  for (size_t i = 0; i < pd.num_free_vertices(); ++i) {
+    Mesh::VertexHandle handle = pd.get_vertex_handles_array()[i];
+    unsigned short d;
+    geom.domain_DoF( &handle, &d, 1, err ); ASSERT_NO_ERROR(err);
+    CPPUNIT_ASSERT( d > dim );
+  }
+  for (size_t i = 0; i < pd.num_fixed_vertices(); ++i) {
+    size_t j = i + pd.num_free_vertices() + pd.num_slave_vertices();
+    Mesh::VertexHandle handle = pd.get_vertex_handles_array()[j];
+    unsigned short d;
+    geom.domain_DoF( &handle, &d, 1, err ); ASSERT_NO_ERROR(err);
+    CPPUNIT_ASSERT( d <= dim );
+  }
+}

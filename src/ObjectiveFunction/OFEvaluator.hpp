@@ -82,7 +82,7 @@ public:
   MESQUITE_EXPORT
   bool initialize( Mesh* mesh, 
                    MeshDomain* domain,
-                   MappingFunctionSet* maps,
+                   const Settings* settings,
                    PatchSet* patches,
                    MsqError& err );
   

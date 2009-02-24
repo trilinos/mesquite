@@ -54,7 +54,6 @@
 #include "InverseMeanRatio2D.hpp"
 #include "TMPQualityMetric.hpp"
 #include "SamplePoints.hpp"
-#include "LinearFunctionSet.hpp"
 
 #include "IdealTargetCalculator.hpp"
 #include "IdealCornerTarget.hpp"
@@ -404,9 +403,8 @@ double run( QualityMetric* metric,
   else if (size[2] < 1e-4)
     domain = new PlanarDomain( PlanarDomain::XY, min[2] );
   
-  LinearFunctionSet mf;
   const clock_t t_0 = clock();
-  q.run_instructions( &mesh, domain, &mf, err );
+  q.run_instructions( &mesh, domain, err );
   const clock_t t_n = clock() - t_0;
   if (err) {
     cerr << "Optimization failed." << endl << err << endl;

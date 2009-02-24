@@ -41,9 +41,9 @@ using namespace Mesquite;
 
 double Instruction::loop_over_mesh( ParallelMesh* mesh, 
 				    MeshDomain* domain, 
-				    MappingFunctionSet* map_func,
+				    const Settings* settings,
 				    MsqError& err )
 {
-  loop_over_mesh((Mesh*)mesh, domain, map_func, err);
+  loop_over_mesh((Mesh*)mesh, domain, settings, err);
 }
 

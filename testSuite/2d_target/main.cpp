@@ -57,7 +57,6 @@ using std::ostream;
 #include "PlanarDomain.hpp"
 #include "TargetMetric2D.hpp"
 #include "SamplePoints.hpp"
-#include "LinearFunctionSet.hpp"
 #include "IdealTargetCalculator.hpp"
 #include "ConditionNumberQualityMetric.hpp"
 #include "ReferenceMesh.hpp"
@@ -184,13 +183,12 @@ static int do_smoother( const char* input_file,
   q.set_master_quality_improver( &solver, err );
   q.add_quality_assessor( &assessor, err );
   
-  LinearFunctionSet map_func;
   MeshImpl mesh;
   mesh.read_vtk( input_file, err );
   if (MSQ_CHKERR(err)) return 2;
   PlanarDomain geom = make_domain( &mesh, err );
   if (MSQ_CHKERR(err)) return 1;
-  q.run_instructions( &mesh, &geom, &map_func, err );
+  q.run_instructions( &mesh, &geom, err );
   if (MSQ_CHKERR(err)) return 3;
   mesh.write_vtk( output_file, err );
   if (MSQ_CHKERR(err)) return 2;

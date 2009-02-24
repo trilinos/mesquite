@@ -34,7 +34,6 @@
 #include "MsqError.hpp"
 #include "MeshImpl.hpp"
 #include "XYRectangle.hpp"
-#include "LinearFunctionSet.hpp"
 
 #include "ReferenceMesh.hpp"
 #include "RefMeshTargetCalculator.hpp"
@@ -214,8 +213,7 @@ int main( int argc, char* argv[] )
   q.set_master_quality_improver( solver, err );
   q.add_quality_assessor( &qa, err );
   
-  LinearFunctionSet map;
-  q.run_instructions( &mesh, &domain, &map, err ); CHECKERR
+  q.run_instructions( &mesh, &domain, err ); CHECKERR
   
   mesh.write_vtk( output_file_name.c_str(), err ); CHECKERR
   

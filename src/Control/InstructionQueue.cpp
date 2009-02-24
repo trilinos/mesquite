@@ -55,19 +55,12 @@ Member functions of the Mesquite::InstructionQueue class
 
 using namespace Mesquite;
 
-#ifdef MSQ_TRAP_FPE
-const bool IQ_TRAP_FPE_DEFAULT = true;
-#else
-const bool IQ_TRAP_FPE_DEFAULT = false;
-#endif
-
 
 InstructionQueue::InstructionQueue() :
   autoQualAssess(true),
   nbPreConditionners(0),
   isMasterSet(false),
-  masterInstrIndex(0),
-  trapFPE(IQ_TRAP_FPE_DEFAULT)
+  masterInstrIndex(0)
 {
 }
 
@@ -256,7 +249,6 @@ void InstructionQueue::set_master_quality_improver(QualityImprover* instr,
 
 void InstructionQueue::run_instructions( Mesh* mesh, 
                                          MeshDomain* domain,
-                                         MappingFunctionSet* map_func,
                                          MsqError &err)
 { 
   MSQ_DBGOUT(1) << version_string(false) << "\n";
@@ -273,7 +265,7 @@ void InstructionQueue::run_instructions( Mesh* mesh,
 #endif
 
     // Generate SIGFPE on floating point errors
-  MsqFPE( this->trapFPE );
+  MsqFPE( trap_floating_point_exception() );
   
   msq_std::list<Instruction*>::const_iterator instr;
   
@@ -287,7 +279,7 @@ void InstructionQueue::run_instructions( Mesh* mesh,
     }
     
     
-    (*instr)->loop_over_mesh( mesh, domain, map_func, err ); 
+    (*instr)->loop_over_mesh( mesh, domain, this, err ); 
     MSQ_ERRRTN(err);
   }
 }
@@ -295,7 +287,6 @@ void InstructionQueue::run_instructions( Mesh* mesh,
   
 void InstructionQueue::run_instructions( ParallelMesh* mesh, 
                                          MeshDomain* domain,
-                                         MappingFunctionSet* map_func,
                                          MsqError &err)
 { 
   MSQ_DBGOUT(1) << version_string(false) << "\n";
@@ -312,7 +303,7 @@ void InstructionQueue::run_instructions( ParallelMesh* mesh,
 #endif
 
     // Generate SIGFPE on floating point errors
-  MsqFPE( this->trapFPE );
+  MsqFPE( trap_floating_point_exception() );
   
   msq_std::list<Instruction*>::const_iterator instr;
   
@@ -326,7 +317,7 @@ void InstructionQueue::run_instructions( ParallelMesh* mesh,
     }
     
     
-    (*instr)->loop_over_mesh( mesh, domain, map_func, err ); 
+    (*instr)->loop_over_mesh( mesh, domain, this, err ); 
     MSQ_ERRRTN(err);
   }
 }

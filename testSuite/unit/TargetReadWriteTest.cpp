@@ -37,7 +37,7 @@
 #include "MeshImpl.hpp"
 #include "PatchData.hpp"
 #include "SamplePoints.hpp"
-#include "LinearFunctionSet.hpp"
+#include "Settings.hpp"
 
 #include "cppunit/extensions/HelperMacros.h"
 #include "UnitUtil.hpp"
@@ -220,7 +220,7 @@ void TargetReadWriteTest::read_write_targets()
 {
   MsqPrintError err( msq_stdio::cout );
   SamplePoints pts( true, true, true, true );
-  LinearFunctionSet linear_maps;
+  Settings linear_maps;
   FakeTargetCalc tc;
   
     // Write the targets
@@ -258,7 +258,7 @@ void TargetReadWriteTest::read_write_targets_surf_3d()
 {
   MsqPrintError err( msq_stdio::cout );
   SamplePoints pts( true, true, true, true );
-  LinearFunctionSet linear_maps;
+  Settings linear_maps;
   FakeTargetCalc tc(true);
   
     // Write the targets
@@ -285,7 +285,7 @@ void TargetReadWriteTest::read_write_weights()
 {
   MsqPrintError err( msq_stdio::cout );
   SamplePoints pts( true, true, true, true );
-  LinearFunctionSet linear_maps;
+  Settings linear_maps;
   FakeTargetCalc tc;
   
     // Write the targets

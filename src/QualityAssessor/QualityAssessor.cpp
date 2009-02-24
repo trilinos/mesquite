@@ -342,10 +342,10 @@ TagHandle QualityAssessor::get_tag( Mesh* mesh,
  */
 double QualityAssessor::loop_over_mesh( Mesh* mesh,
                                         MeshDomain* domain,
-                                        MappingFunctionSet* map_func,
+                                        const Settings* settings,
                                         MsqError& err)
 {
-  return loop_over_mesh_internal( mesh, domain, map_func, NULL, err );
+  return loop_over_mesh_internal( mesh, domain, settings, NULL, err );
 }
 
 /*! 
@@ -361,16 +361,16 @@ double QualityAssessor::loop_over_mesh( Mesh* mesh,
  */
 double QualityAssessor::loop_over_mesh( ParallelMesh* mesh,
                                         MeshDomain* domain,
-                                        MappingFunctionSet* map_func,
+                                        const Settings* settings,
                                         MsqError& err)
 {
-  return loop_over_mesh_internal( mesh, domain, map_func, 
+  return loop_over_mesh_internal( mesh, domain, settings, 
                                   mesh->get_parallel_helper(), err );
 }
 
 double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
                                                  MeshDomain* domain,
-                                                 MappingFunctionSet* map_func,
+                                                 const Settings* settings,
                                                  ParallelHelper* helper,
                                                  MsqError& err )
 {
@@ -380,7 +380,7 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
   PatchData patch;
   patch.set_mesh( mesh );
   patch.set_domain( domain );
-  patch.set_mapping_functions( map_func );
+  patch.attach_settings( settings );
   
   ElementPatches elem_patches;
   elem_patches.set_mesh( mesh );

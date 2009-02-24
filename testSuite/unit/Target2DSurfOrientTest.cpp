@@ -45,7 +45,7 @@
 #include "MeshWriter.hpp"
 #include "MsqVertex.hpp"
 #include "SamplePoints.hpp"
-#include "LinearFunctionSet.hpp"
+#include "Settings.hpp"
 #include "IdealTargetCalculator.hpp"
 #include "RefMeshTargetCalculator.hpp"
 #include "ReferenceMesh.hpp"
@@ -446,8 +446,7 @@ void Target2DSurfOrientTest::smooth( int metric_3D, bool ref_mesh, MeshDomain* d
   q.set_master_quality_improver( &solver, err );
   q.add_quality_assessor( &assessor, err );
   
-  LinearFunctionSet mfs;
-  q.run_instructions( &myMesh, dom, &mfs, err );
+  q.run_instructions( &myMesh, dom, err );
   ASSERT_NO_ERROR(err);
 }
 

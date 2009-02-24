@@ -41,7 +41,7 @@
 #include "GlobalPatch.hpp"
 #include "PatchIterator.hpp"
 #include "ExtraData.hpp"
-#include "MappingFunctionSet.hpp"
+#include "Settings.hpp"
 #include "MappingFunction.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
@@ -88,7 +88,7 @@ PatchData::PatchData()
     numSlaveVertices(0),
     haveComputedInfos(0),
     dataList(0),
-    mappingFuncs(0)
+    mSettings(0)
 {
 }
 
@@ -801,13 +801,6 @@ void PatchData::update_slave_node_coordinates( MsqError& err )
     // update slave vertices
   if (0 == num_slave_vertices())
     return;
-  
-    // need mapping function to define slave node locations
-  MappingFunctionSet* mfs = get_mapping_functions();
-  if (!mfs) {
-    MSQ_SETERR(err)("Cannot update slave node coordinates w/out mapping function",MsqError::INVALID_STATE);
-    return;
-  }
 
     // Set a mark on every slave vertex.  We'll clear the marks as we
     // set the vertex coordinates.  This way we can check that all 
@@ -828,7 +821,7 @@ void PatchData::update_slave_node_coordinates( MsqError& err )
     assert(num_node < ARR_SIZE);
   
     const EntityTopology type = elem.get_element_type();
-    const MappingFunction* const mf = mfs->get_function( type );
+    const MappingFunction* const mf = get_mapping_function( type );
     if (0 == mf || num_node == num_corner)
       continue;
       
@@ -897,13 +890,6 @@ void PatchData::update_slave_node_coordinates( const size_t* elements,
   if (0 == num_slave_vertices())
     return;
   
-    // need mapping function to define slave node locations
-  MappingFunctionSet* mfs = get_mapping_functions();
-  if (!mfs) {
-    MSQ_SETERR(err)("Cannot update slave node coordinates w/out mapping function",MsqError::INVALID_STATE);
-    return;
-  }
-  
     // set a mark on each vertex so we don't update shared
     // vertices more than once.
   for (size_t i = 0; i < num_elems; ++i) {
@@ -927,7 +913,7 @@ void PatchData::update_slave_node_coordinates( const size_t* elements,
     assert(num_node < ARR_SIZE);
   
     const EntityTopology type = elem.get_element_type();
-    const MappingFunction* const mf = mfs->get_function( type );
+    const MappingFunction* const mf = get_mapping_function( type );
     if (0 == mf || num_node == num_corner)
       continue;
       
@@ -1152,7 +1138,7 @@ void PatchData::get_subpatch(size_t center_vertex_index,
 
   subpatch.myMesh = myMesh;
   subpatch.myDomain = myDomain;
-  subpatch.mappingFuncs = mappingFuncs;
+  subpatch.mSettings = mSettings;
   
   notify_sub_patch( subpatch, &vertices[0], &elements[0], err ); MSQ_CHKERR(err);
 }
@@ -1597,40 +1583,21 @@ void print_patch_data( const PatchData& pd )
   std::cout << pd << std::endl;
 }
 
-void PatchData::initialize_patch( EntityTopology* elem_type_array,
-                                  size_t* elem_offset_array,
-                                  unsigned char* vertex_flags,
-                                  MsqError& err )
+void PatchData::enslave_higher_order_nodes( const size_t* elem_offset_array,
+                                            unsigned char* vertex_flags,
+                                            MsqError& err ) const
 {
-  size_t i;
-  
-    // set element types
-  elementArray.resize( elementHandlesArray.size() );
-  for (i = 0; i < elementHandlesArray.size(); ++i)
-    elementArray[i].set_element_type( elem_type_array[i] );
-  
-    // get element connectivity, group vertices by free/slave/fixed state
-  initialize_data( elem_offset_array, vertex_flags, err ); MSQ_ERRRTN(err);
-  
-    // get vertex coordinates
-  vertexArray.resize( vertexHandlesArray.size() );
-  get_mesh()->vertices_get_coordinates( &vertexHandlesArray[0],
-                                    &vertexArray[0],
-                                    vertexHandlesArray.size(),
-                                    err ); MSQ_ERRRTN(err);
-
-    // set vertex flags
-  for (i = 0; i < vertexArray.size(); ++i)
-    vertexArray[i].flags() = vertex_flags[i];
-
-    // get culled bit from mesh
-  get_mesh()->vertices_get_byte( &vertexHandlesArray[0],
-                                 vertex_flags,
-                                 vertexHandlesArray.size(),
-                                 err ); MSQ_ERRRTN(err);
-
-  for (i = 0; i < vertexArray.size(); ++i)
-    vertexArray[i].flags() |= (vertex_flags[i] & MsqVertex::MSQ_CULLED);
+  for (size_t i = 0; i < elementArray.size(); ++i)
+  {
+    size_t start = elem_offset_array[i];
+    size_t conn_len = elem_offset_array[i+1] - start;
+    for (size_t j = elementArray[i].vertex_count(); j < conn_len; ++j) {
+      const size_t vert_idx = elemConnectivityArray[start+j];
+      assert(vert_idx < vertexHandlesArray.size());
+      if (!(vertex_flags[vert_idx]&MsqVertex::MSQ_HARD_FIXED))
+        vertex_flags[vert_idx] |= MsqVertex::MSQ_DEPENDENT;
+    }
+  }
 }
 
 void PatchData::initialize_data( size_t* elem_offset_array, 
@@ -1649,17 +1616,14 @@ void PatchData::initialize_data( size_t* elem_offset_array,
   vertAdjacencyArray.clear();
   vertAdjacencyOffsets.clear();
   size_t i, j;
-  bool have_slave_vertices = false;
   for (i = 0; i < elementArray.size(); ++i)
   {
     size_t start = elem_offset_array[i];
     size_t conn_len = elem_offset_array[i+1] - start;
     assert(conn_len > 0);
     elementArray[i].set_connectivity( &elemConnectivityArray[start], conn_len );
-    if (conn_len > elementArray[i].vertex_count())
-      have_slave_vertices = true;
   }
-    
+     
     // Use vertAdjacencyOffsets array as temporary storage.
   vertAdjacencyOffsets.resize( vertexHandlesArray.size() + 1 );
   size_t* vertex_index_map = &vertAdjacencyOffsets[0];
@@ -1700,25 +1664,16 @@ void PatchData::initialize_data( size_t* elem_offset_array,
   
     // Reorder vertices such that free, slave vertices
     // occur after free, non-slave vertices in list.
-    // CHANGE ME: for now, assume all higher-order nodes are slaves.
   numSlaveVertices = 0;
-  if (have_slave_vertices) {
-      // mark slave vertices, and count them.
-    for (i = 0; i < elementArray.size(); ++i)
-    {
-      size_t start = elem_offset_array[i];
-      size_t conn_len = elem_offset_array[i+1] - start;
-      for (j = elementArray[i].vertex_count(); j < conn_len; ++j) {
-        const size_t vert_idx = elemConnectivityArray[start+j];
-        assert(vert_idx < vertexHandlesArray.size());
-        if (vert_idx < numFreeVertices && !(vertex_flags[vert_idx]&MsqVertex::MSQ_DEPENDENT)) {
-          vertex_flags[vert_idx] |= MsqVertex::MSQ_DEPENDENT;
-          ++numSlaveVertices;
-        }
-      }
+  for (i = 0; i < vertexHandlesArray.size(); ++i) {
+    if (vertex_flags[i] & MsqVertex::MSQ_DEPENDENT) {
+      assert( !(vertex_flags[i] & MsqVertex::MSQ_HARD_FIXED));
+      ++numSlaveVertices;
     }
-    numFreeVertices -= numSlaveVertices;
+  }
+  numFreeVertices -= numSlaveVertices;
 
+  if (numSlaveVertices) {
       // re-initialize vertex index map
     for (i = 0; i < vertexHandlesArray.size(); ++i)
       vertex_index_map[i] = i;
@@ -1745,12 +1700,12 @@ void PatchData::initialize_data( size_t* elem_offset_array,
     }
     assert( i == numFreeVertices );
     assert( j <= numFreeVertices + numSlaveVertices );
-  
+
       // Update element connectivity data for new vertex indices
     for (i = 0; i < elemConnectivityArray.size(); ++i)
       elemConnectivityArray[i] = vertex_index_map[elemConnectivityArray[i]];
-  } //   if (have_slave_vertices)
-
+  }
+  
     // Clear temporary data    
   vertAdjacencyOffsets.clear();
   
@@ -1836,6 +1791,16 @@ void PatchData::fill( size_t num_vertex, const double* coords,
   size_t sum = offsets[0] = 0;
   for (i = 1; i <= num_elem; ++i)
     offsets[i] = sum += lengths[i-1];
+  
+  if (!mSettings || mSettings->get_slaved_ho_node_mode() == Settings::SLAVE_ALL) {
+    enslave_higher_order_nodes( &offsets[0], &byteArray[0], err );  
+    MSQ_ERRRTN(err);
+  }
+  else if (mSettings->get_slaved_ho_node_mode() == Settings::SLAVE_BOUNDARY) {
+    MSQ_SETERR(err)("Boundary depth slave defintion not yet implemented.",
+                    MsqError::NOT_IMPLEMENTED);
+    return;
+  }
   
   this->initialize_data( &offsets[0], &byteArray[0], err );  MSQ_ERRRTN(err);
   
@@ -1931,32 +1896,50 @@ void PatchData::set_mesh_entities(
                                        err ); MSQ_ERRRTN(err);
   
   byteArray.resize( vertexHandlesArray.size() );
-  bool* fixed_flags;
-  if (sizeof(bool) == sizeof(unsigned char)) {
-      // sizeof(bool) == sizeof(unsigned char) on every platform I'm
-      // aware of.  However, the standard doesn't guarantee it so this
-      // code is here for portability.
-    fixed_flags = reinterpret_cast<bool*>(&byteArray[0]);
-  }
-  else {
-    fixed_flags = new bool[vertexHandlesArray.size()];
-  }
+  if (!mSettings || mSettings->get_fixed_vertex_mode() == Settings::FIXED_FLAG) {
+    bool* fixed_flags;
+    if (sizeof(bool) == sizeof(unsigned char)) {
+        // sizeof(bool) == sizeof(unsigned char) on every platform I'm
+        // aware of.  However, the standard doesn't guarantee it so this
+        // code is here for portability.
+      fixed_flags = reinterpret_cast<bool*>(&byteArray[0]);
+    }
+    else {
+      fixed_flags = new bool[vertexHandlesArray.size()];
+    }
   
-    // Get vertex-fixed flags
-  get_mesh()->vertices_get_fixed_flag( &vertexHandlesArray[0], 
+      // Get vertex-fixed flags
+    get_mesh()->vertices_get_fixed_flag( &vertexHandlesArray[0], 
                                        fixed_flags,
                                        vertexHandlesArray.size(),
                                        err);
   
-  if (sizeof(bool) != sizeof(unsigned char)) {
-    for (size_t i = 0; i < vertexHandlesArray.size(); ++i) 
-      if (fixed_flags[i])
+    if (sizeof(bool) != sizeof(unsigned char)) {
+      for (size_t i = 0; i < vertexHandlesArray.size(); ++i) 
+        if (fixed_flags[i])
+          byteArray[i] = MsqVertex::MSQ_HARD_FIXED;
+        else
+          byteArray[i] = 0;
+      delete fixed_flags;
+    }
+    MSQ_ERRRTN(err);
+  } 
+  else if (get_domain()) {
+    int dim = mSettings->get_fixed_vertex_mode();
+    msq_std::vector<unsigned short> dof( vertexHandlesArray.size() );
+    get_domain()->domain_DoF( &vertexHandlesArray[0], &dof[0], vertexHandlesArray.size(), err );
+    MSQ_ERRRTN(err);
+    for (size_t i = 0; i < vertexHandlesArray.size(); ++i) {
+      if (dof[i] <= dim)
         byteArray[i] = MsqVertex::MSQ_HARD_FIXED;
-      else
-        byteArray[i] = 0;
-    delete fixed_flags;
+    }
   }
-  MSQ_ERRRTN(err);
+  else {
+    MSQ_SETERR(err)("Request to fix vertices by domain classification "
+                    "requres a domain.", MsqError::INVALID_STATE );
+    return;
+  }
+    
   
     // if free_vertices is not empty, then we need to mark as
     // fixed any vertices *not* in that list.
@@ -1991,33 +1974,46 @@ void PatchData::set_mesh_entities(
     }
   }
 
-    // Store element connectivty, and do any additional
-    // data arrangement that needs to be done.
-  initialize_patch( &elem_topologies[0], &offsetArray[0], &byteArray[0], err ); 
-  MSQ_CHKERR(err);
+    // set element types
+  elementArray.resize( elementHandlesArray.size() );
+  for (size_t i = 0; i < elementHandlesArray.size(); ++i)
+    elementArray[i].set_element_type( elem_topologies[i] );
+    
+    // Mark higher-order nodes as slave unless settings dictate otherwise
+  if (!mSettings || mSettings->get_slaved_ho_node_mode() == Settings::SLAVE_ALL) {
+    enslave_higher_order_nodes( &offsetArray[0], &byteArray[0], err ); 
+    MSQ_ERRRTN(err);
+  }
+  else if (mSettings->get_slaved_ho_node_mode() == Settings::SLAVE_BOUNDARY) {
+    MSQ_SETERR(err)("Boundary depth slave defintion not yet implemented.",
+                    MsqError::NOT_IMPLEMENTED);
+    return;
+  }
+  
+    // get element connectivity, group vertices by free/slave/fixed state
+  initialize_data( &offsetArray[0], &byteArray[0], err ); MSQ_ERRRTN(err);
+  
+    // get vertex coordinates
+  vertexArray.resize( vertexHandlesArray.size() );
+  get_mesh()->vertices_get_coordinates( &vertexHandlesArray[0],
+                                    &vertexArray[0],
+                                    vertexHandlesArray.size(),
+                                    err ); MSQ_ERRRTN(err);
+
+    // set vertex flags
+  for (size_t i = 0; i < vertexArray.size(); ++i)
+    vertexArray[i].flags() = byteArray[i];
+
+    // get culled bit from mesh
+  get_mesh()->vertices_get_byte( &vertexHandlesArray[0],
+                                 &byteArray[0],
+                                 vertexHandlesArray.size(),
+                                 err ); MSQ_ERRRTN(err);
+
+  for (size_t i = 0; i < vertexArray.size(); ++i)
+    vertexArray[i].flags() |= (byteArray[i] & MsqVertex::MSQ_CULLED);
 }
 
-
-void PatchData::set_mapping_functions( MappingFunctionSet* mfs )
-  { mappingFuncs = mfs; }
-
-MappingFunctionSet* PatchData::get_mapping_functions() const
-  { return mappingFuncs; }
-
-const MappingFunction* PatchData::get_mapping_function( EntityTopology type ) const
-{
-  return mappingFuncs ? mappingFuncs->get_function(type) : 0;
-}
-
-const MappingFunction2D* PatchData::get_mapping_function_2D( EntityTopology type ) const
-{
-  return mappingFuncs ? mappingFuncs->get_surf_function(type) : 0;
-}
-
-const MappingFunction3D* PatchData::get_mapping_function_3D( EntityTopology type ) const
-{
-  return mappingFuncs ? mappingFuncs->get_vol_function(type) : 0;
-}
 
 void PatchData::get_sample_location( size_t element_index,
                                      unsigned sample_dim,

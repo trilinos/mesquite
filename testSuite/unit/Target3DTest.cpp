@@ -37,7 +37,7 @@
 #include "TMPQualityMetric.hpp"
 #include "SamplePoints.hpp"
 #include "IdealTargetCalculator.hpp"
-#include "LinearFunctionSet.hpp"
+#include "Settings.hpp"
 #include "UnitUtil.hpp"
 
 using namespace Mesquite;
@@ -60,7 +60,7 @@ class Target3DTest : public CppUnit::TestFixture
 {
 private:
   SamplePoints corners;
-  LinearFunctionSet mapping;
+  Settings settings;
   QualityMetricTester tester;
   IdealTargetCalculator target;
   Metric test_metric;
@@ -70,7 +70,7 @@ private:
 public:
   Target3DTest( bool size_invariant, bool orient_invariant, bool barrier, double ideal_element_val )
     : corners( true, false, false, false ),
-      tester( VolElems, sizeof(VolElems)/sizeof(VolElems[0]), &mapping ),
+      tester( VolElems, sizeof(VolElems)/sizeof(VolElems[0]), &settings ),
       metric( &corners, &target, 0, &test_metric ),
       sizeInvariant(size_invariant), orientInvariant(orient_invariant), Barrier(barrier),
       idealVal(ideal_element_val)

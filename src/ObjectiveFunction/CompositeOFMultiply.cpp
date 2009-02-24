@@ -83,14 +83,14 @@ void CompositeOFMultiply::clear()
 bool CompositeOFMultiply::initialize_block_coordinate_descent( 
                                                        Mesh* mesh, 
                                                        MeshDomain* domain,
-                                                       MappingFunctionSet* maps,
+                                                       const Settings* settings,
                                                        PatchSet* user_set,
                                                        MsqError& err )
 {
   bool rval1, rval2;
-  rval1 = objFunc1->initialize_block_coordinate_descent( mesh, domain, maps, user_set, err );
+  rval1 = objFunc1->initialize_block_coordinate_descent( mesh, domain, settings, user_set, err );
   MSQ_ERRZERO(err);
-  rval2 = objFunc2->initialize_block_coordinate_descent( mesh, domain, maps, user_set, err );
+  rval2 = objFunc2->initialize_block_coordinate_descent( mesh, domain, settings, user_set, err );
   return !MSQ_CHKERR(err) && rval1 && rval2;
 }
 

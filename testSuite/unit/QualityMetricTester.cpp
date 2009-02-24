@@ -82,10 +82,10 @@ static msq_std::vector<EntityTopology> types_in_group( QualityMetricTester::Elem
 QualityMetricTester::QualityMetricTester( 
                      const EntityTopology* supported_elem_types,
                      size_t len,
-                     MappingFunctionSet* mfs )
+                     const Settings* settings )
   : degenHexPyramid(false), 
     types( len ), 
-    mapFuncSet( mfs ), 
+    mSettings( settings ? settings : &defaultSettings ), 
     geomPlane( Vector3D(0,0,1), Vector3D(0,0,0) )
 {
   msq_std::copy( supported_elem_types, supported_elem_types+len, types.begin() );
@@ -93,10 +93,10 @@ QualityMetricTester::QualityMetricTester(
 
 QualityMetricTester::QualityMetricTester( 
                      ElemTypeGroup group,
-                     MappingFunctionSet* mfs )
+                     const Settings* settings )
   : degenHexPyramid(false), 
     types( types_in_group(group) ),
-    mapFuncSet( mfs ), 
+    mSettings( settings ? settings : &defaultSettings ), 
     geomPlane( Vector3D(0,0,1), Vector3D(0,0,0) )
 {
 }
@@ -134,7 +134,7 @@ void QualityMetricTester::get_ideal_tris( PatchData& pd, bool unit_area )
       ideal_tri_verts[i] *= unit_tri_scale;
   }
   
-  pd.set_mapping_functions( mapFuncSet );
+  pd.attach_settings( mSettings );
   pd.set_domain( &geomPlane );
   
   MsqPrintError err( msq_stdio::cout );
@@ -170,7 +170,7 @@ void QualityMetricTester::get_ideal_quads( PatchData& pd )
                                              0, 7, 8, 1 };
   const bool fixed[] = { false, true, true, true, true, true, true, true, true };
   
-  pd.set_mapping_functions( mapFuncSet );
+  pd.attach_settings( mSettings );
   pd.set_domain( &geomPlane );
   
   MsqPrintError err( msq_stdio::cout );
@@ -221,7 +221,7 @@ void QualityMetricTester::get_ideal_hexes( PatchData& pd )
   for (size_t f = 1; f < 27; ++f)
     fixed[f] = true;
   
-  pd.set_mapping_functions( mapFuncSet );
+  pd.attach_settings( mSettings );
   
   MsqPrintError err( msq_stdio::cout );
   pd.fill( 27, ideal_hex_verts, 8, HEXAHEDRON, ideal_hex_elems, fixed, err );
@@ -237,7 +237,7 @@ void QualityMetricTester::get_ideal_element( EntityTopology type,
                                              PatchData& pd,
                                              int free_vertex_index )
 {
-  pd.set_mapping_functions( mapFuncSet );
+  pd.attach_settings( mSettings );
   if (TopologyInfo::dimension(type) == 2)
     pd.set_domain( &geomPlane );
   

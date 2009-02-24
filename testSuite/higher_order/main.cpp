@@ -66,7 +66,6 @@ using std::endl;
 #include "PatchData.hpp"
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
-#include "MappingFunctionSet.hpp"
 #include "QuadLagrangeShape.hpp"
 
 // algorithms
@@ -123,20 +122,6 @@ const char OUTPUT_FILE_NAME[]             = "smoothed_qudratic_mesh.vtk";
 const unsigned NUM_CORNER_VERTICES = 16;
 const unsigned NUM_MID_NODES = 24;
 const double SPATIAL_COMPARE_TOLERANCE = 1e-6;
-
-class QuadLagrangeSet : public MappingFunctionSet
-{
-  private:
-    QuadLagrangeShape myFunc;
-  public:
-    virtual ~QuadLagrangeSet() {}
-    const MappingFunction* get_function( EntityTopology type ) const
-      { return (type == QUADRILATERAL) ? &myFunc : 0; }
-    const MappingFunction2D* get_surf_function( EntityTopology type ) const
-      { return (type == QUADRILATERAL) ? &myFunc : 0; }
-    const MappingFunction3D* get_vol_function( EntityTopology type ) const
-      { return 0; }
-};
 
 
 void compare_nodes( size_t start_index,
@@ -273,7 +258,7 @@ InstructionQueue* create_instruction_queue(MsqError& err)
 int main()
 {     
   MsqPrintError err(cout);
-  QuadLagrangeSet map_funcs;
+  QuadLagrangeShape quad9;
   
     // Create geometry
   Vector3D z(0,0,1), o(0,0,0);
@@ -314,7 +299,7 @@ int main()
   cout << "Smoothing linear elements" << endl;
   InstructionQueue* q1 = create_instruction_queue( err );
   if (MSQ_CHKERR(err)) return 1;
-  q1->run_instructions( linear_in, &geom, &map_funcs, err ); 
+  q1->run_instructions( linear_in, &geom, err ); 
   if (MSQ_CHKERR(err)) return 1;
   cout << "Checking results" << endl;
   compare_nodes( 0, NUM_CORNER_VERTICES, linear_in, linear_ex, err );
@@ -329,7 +314,8 @@ int main()
   cout << "Smoothing quadratic elements" << endl;
   InstructionQueue* q3 = create_instruction_queue( err );
   if (MSQ_CHKERR(err)) return 1;
-  q3->run_instructions( quadratic_in_2, &geom, &map_funcs, err ); 
+  q3->set_mapping_function( &quad9 );
+  q3->run_instructions( quadratic_in_2, &geom, err ); 
   if (MSQ_CHKERR(err)) return 1;
     // Make sure corner vertices are the same as in the linear case
   cout << "Checking results" << endl;

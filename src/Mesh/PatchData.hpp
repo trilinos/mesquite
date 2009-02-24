@@ -47,6 +47,7 @@
 #include "MeshInterface.hpp"
 #include "TargetMatrix.hpp"
 #include "MsqError.hpp"
+#include "Settings.hpp"
 
 #ifndef MSQ_USE_OLD_C_HEADERS
 #  include <cstddef>
@@ -76,7 +77,7 @@ namespace Mesquite
   class ExtraData;
   class PatchDataVerticesMemento;
   class Mesh;
-  class MappingFunctionSet;
+  class Settings;
   class MappingFunction;
   class MappingFunction2D;
   class MappingFunction3D;
@@ -92,6 +93,10 @@ namespace Mesquite
     MESQUITE_EXPORT PatchData();
     MESQUITE_EXPORT ~PatchData();
     
+    void attach_settings( const Settings* settings )
+      { mSettings = settings; }
+    const Settings* settings() const
+      { return mSettings; }
     
       /**\brief For use by testing code -- create patch explicitly
        * 
@@ -515,11 +520,14 @@ namespace Mesquite
       { return myDomain; }
     
     
-    void set_mapping_functions( MappingFunctionSet* mfs );
-    MappingFunctionSet* get_mapping_functions() const;
-    const MappingFunction* get_mapping_function( EntityTopology type ) const;
-    const MappingFunction2D* get_mapping_function_2D( EntityTopology type ) const;
-    const MappingFunction3D* get_mapping_function_3D( EntityTopology type ) const;
+    const Settings* get_settings() const
+      { return mSettings; }
+    const MappingFunction* get_mapping_function( EntityTopology type ) const
+      { return mSettings->get_mapping_function(type); }
+    const MappingFunction2D* get_mapping_function_2D( EntityTopology type ) const
+      { return mSettings->get_mapping_function_2D(type); }
+    const MappingFunction3D* get_mapping_function_3D( EntityTopology type ) const
+      { return mSettings->get_mapping_function_3D(type); }
     
     void get_sample_location( size_t element_index,
                               unsigned sample_dim,
@@ -571,6 +579,13 @@ namespace Mesquite
     /**\brief notify all attached ExtraData instances that this patch is being destroyed */
     void notify_patch_destroyed();
 
+      /** Call before initialize_data to change vertex_flags for 
+       *  higher-order nodes to MSQ_DEPENDENT.
+       */
+    void enslave_higher_order_nodes( const size_t* element_offset_array,
+                                     unsigned char* vertex_flags,
+                                     MsqError& err ) const;
+
       /** Call after filling vertex handle and connectivity arrays to
        * finish initializing the PatchData.  Reorders vertex handles array
        * such that all higher-order nodes are at end of array, updates
@@ -592,22 +607,6 @@ namespace Mesquite
        * \param elem_offset_array Offset into connectivity array for each element
        */
     void initialize_data( size_t* elem_offset_array, unsigned char* vertex_flags, MsqError& err );
-   
-      /** Code common to misc. methods for populating patch data.
-       *  Calls initialize_data(), sets element types and
-       *  sets vertex coordinates using vertexHandlesArray and 
-       *  myMesh.
-       *
-       *  Note: The following data members must be initialized
-       *  BEFORE CALLING THIS METHOD:
-       *  - vertexHandlesArray
-       *  - elemConnectivityArray
-       *  - myMesh
-       */
-    void initialize_patch( EntityTopology* elem_type_array,
-                           size_t* elem_offset_array,
-                           unsigned char* vertex_flags,
-                           MsqError& err );
     
       /** Code common to misc. methods for populating patch data.
        *  Remove duplicates from an array of handles.
@@ -703,7 +702,7 @@ namespace Mesquite
     
     ExtraData* dataList;
     
-    MappingFunctionSet* mappingFuncs;
+    const Settings* mSettings;
 
   };
   

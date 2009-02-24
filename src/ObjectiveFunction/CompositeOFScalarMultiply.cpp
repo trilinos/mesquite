@@ -76,11 +76,11 @@ void CompositeOFScalarMultiply::clear()
 bool CompositeOFScalarMultiply::initialize_block_coordinate_descent( 
                                                        Mesh* mesh, 
                                                        MeshDomain* domain,
-                                                       MappingFunctionSet* maps,
+                                                       const Settings* settings,
                                                        PatchSet* user_set,
                                                        MsqError& err )
 {
-  bool rval = objFunc->initialize_block_coordinate_descent( mesh, domain, maps, user_set, err );
+  bool rval = objFunc->initialize_block_coordinate_descent( mesh, domain, settings, user_set, err );
   return !MSQ_CHKERR(err) && rval;
 }
 

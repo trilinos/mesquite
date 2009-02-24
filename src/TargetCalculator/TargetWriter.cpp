@@ -68,13 +68,13 @@ msq_std::string TargetWriter::get_name() const
 
 double TargetWriter::loop_over_mesh( Mesh* mesh, 
                                      MeshDomain* domain, 
-                                     MappingFunctionSet* mfs,
+                                     const Settings* settings,
                                      MsqError& err )
 {
   PatchData patch;
   patch.set_mesh( mesh );
   patch.set_domain( domain );
-  patch.set_mapping_functions( mfs );
+  patch.attach_settings( settings );
   
   ElementPatches patch_set;
   patch_set.set_mesh( mesh );

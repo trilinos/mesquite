@@ -38,7 +38,7 @@
 #include "TMPQualityMetric.hpp"
 #include "SamplePoints.hpp"
 #include "IdealTargetCalculator.hpp"
-#include "LinearFunctionSet.hpp"
+#include "Settings.hpp"
 #include "UnitUtil.hpp"
 
 static const EntityTopology SurfElems[] = { TRIANGLE, QUADRILATERAL };
@@ -59,7 +59,7 @@ class Target2DTest : public CppUnit::TestFixture
 {
 private:
   SamplePoints corners;
-  LinearFunctionSet mapping;
+  Settings settings;
   QualityMetricTester tester;
   IdealTargetCalculator target;
   Metric test_metric;
@@ -69,7 +69,7 @@ private:
 public:
   Target2DTest( bool size_invariant, bool orient_invariant, bool barrier, double ideal_element_val )
     : corners( true, false, false, false ),
-      tester( SurfElems, sizeof(SurfElems)/sizeof(SurfElems[0]), &mapping ),
+      tester( SurfElems, sizeof(SurfElems)/sizeof(SurfElems[0]), &settings ),
       metric( &corners, &target, &test_metric, 0 ),
       sizeInvariant(size_invariant), orientInvariant(orient_invariant), Barrier(barrier),
       idealVal(ideal_element_val)

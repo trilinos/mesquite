@@ -37,7 +37,7 @@
 #include "PatchData.hpp"
 #include "PlanarDomain.hpp"
 #include "MappingFunction.hpp"
-#include "LinearFunctionSet.hpp"
+#include "Settings.hpp"
 #include "SamplePoints.hpp"
 #include "IdealElements.hpp"
 #include "cppunit/extensions/HelperMacros.h"
@@ -90,7 +90,7 @@ private:
                         const MsqMatrix<3,2>& rotated );
   
   const Vector3D planeNorm;
-  LinearFunctionSet mapFuncs;
+  Settings settings;
   PlanarDomain planeDomain;
 };
 
@@ -192,7 +192,7 @@ void IdealTargetTest::get_calc_target( bool rotate, EntityTopology type,
   PatchData pd;
   pd.fill( 8, &coords[0], 1, type, conn, 0, err );
   CPPUNIT_ASSERT(!MSQ_CHKERR(err));
-  pd.set_mapping_functions( &mapFuncs );
+  pd.attach_settings( &settings );
   pd.set_domain( &planeDomain );
   
   SamplePoints pts( true, true, true, true );
@@ -219,7 +219,7 @@ void IdealTargetTest::get_ideal_target( EntityTopology type,
   Vector3D c[3];
   if (elem_dim == 2) {
     MsqVector<2> derivs[100];
-    const MappingFunction2D* func = mapFuncs.get_surf_function( type );
+    const MappingFunction2D* func = settings.get_mapping_function_2D( type );
     func->derivatives( dim, num, 0, indices, derivs, num_vtx, err );
     CPPUNIT_ASSERT(!MSQ_CHKERR(err));
 
@@ -233,7 +233,7 @@ void IdealTargetTest::get_ideal_target( EntityTopology type,
   }
   else {
     MsqVector<3> derivs[100];
-    const MappingFunction3D* func = mapFuncs.get_vol_function( type );
+    const MappingFunction3D* func = settings.get_mapping_function_3D( type );
     func->derivatives( dim, num, 0, indices, derivs, num_vtx, err );
     CPPUNIT_ASSERT(!MSQ_CHKERR(err));
 
@@ -299,7 +299,7 @@ void IdealTargetTest::test_plane_neg_z()
   PatchData pd;
   pd.fill( 8, &coords[0], 1, QUADRILATERAL, conn, 0, err );
   ASSERT_NO_ERROR(err);
-  pd.set_mapping_functions( &mapFuncs );
+  pd.attach_settings( &settings );
   pd.set_domain( &dom );
   
   SamplePoints pts( true, true, true, true );

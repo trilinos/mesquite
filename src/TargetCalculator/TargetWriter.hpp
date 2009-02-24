@@ -59,7 +59,7 @@ public:
                 
   virtual ~TargetWriter();
   
-  double loop_over_mesh( Mesh* mesh, MeshDomain*, MappingFunctionSet*, MsqError& );
+  double loop_over_mesh( Mesh* mesh, MeshDomain*, const Settings*, MsqError& );
 
   msq_std::string get_name() const;
 

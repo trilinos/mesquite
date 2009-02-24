@@ -65,7 +65,7 @@ namespace Mesquite
    class Mesh;
    class MeshDomain;
    class PatchSet;
-   class MappingFunctionSet;
+   class Settings;
    
   /*! \class ObjectiveFunction
        \brief Base class for concrete Objective Functions
@@ -138,7 +138,7 @@ namespace Mesquite
        */
     virtual bool initialize_block_coordinate_descent( Mesh* mesh, 
                                                       MeshDomain* domain, 
-                                                      MappingFunctionSet* maps,
+                                                      const Settings* settings,
                                                       PatchSet* user_set,
                                                       MsqError& err ) = 0;
     

@@ -61,7 +61,7 @@ namespace Mesquite
 
      virtual bool initialize_block_coordinate_descent( Mesh* mesh, 
                                                        MeshDomain* domain,
-                                                       MappingFunctionSet* maps,
+                                                       const Settings* settings,
                                                        PatchSet* user_set,
                                                        MsqError& err );
 

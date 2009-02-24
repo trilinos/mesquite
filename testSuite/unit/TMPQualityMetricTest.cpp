@@ -37,7 +37,7 @@ Unit testing for the TMPQualityMetric class
 #include "IdealTargetCalculator.hpp"
 #include "MsqMatrix.hpp"
 #include "QualityMetricTester.hpp"
-#include "LinearFunctionSet.hpp"
+#include "Settings.hpp"
 #include "UnitUtil.hpp"
 #include "PlanarDomain.hpp"
 #include "SamplePoints.hpp"
@@ -218,7 +218,7 @@ class TMPQualityMetricTest : public CppUnit::TestFixture
 
   QualityMetricTester tester;
 
-  LinearFunctionSet mf;
+  Settings settings;
   SamplePoints corners, center;
   IdealTargetCalculator ideal;
   ScaleWeight e_weight;
@@ -233,7 +233,7 @@ class TMPQualityMetricTest : public CppUnit::TestFixture
   
 public:
   TMPQualityMetricTest() : 
-    tester( QualityMetricTester::ALL_FE_EXCEPT_SEPTAHEDRON, &mf ),
+    tester( QualityMetricTester::ALL_FE_EXCEPT_SEPTAHEDRON, &settings ),
     corners( true, false, false, false ),
     center( false, false, false, true ),
     e_weight( 2.7182818284590451 ),
@@ -578,7 +578,7 @@ void TMPQualityMetricTest::test_gradient_2D()
     
   
     // construct metric
-  pd.set_mapping_functions( &mf );
+  pd.attach_settings( &settings );
   SamplePoints center( false, false, true, false );
   TestGradTargetMetric2D tm;
   IdealTargetCalculator tc;
@@ -654,7 +654,7 @@ void TMPQualityMetricTest::test_gradient_3D()
     
   
     // construct metric
-  pd.set_mapping_functions( &mf );
+  pd.attach_settings( &settings );
   SamplePoints center( false, false, false, true );
   TestGradTargetMetric3D tm;
   IdealTargetCalculator tc;
@@ -975,7 +975,7 @@ void TMPQualityMetricTest::regression_inverse_mean_ratio_grad()
   const size_t indices[] = { 0, 1, 2 };
   PatchData pd;
   pd.fill( 3, coords, 1, TRIANGLE, indices, 0, err );
-  pd.set_mapping_functions( &mf );
+  pd.attach_settings( &settings );
   PlanarDomain dom( PlanarDomain::XY, coords[0] );
   pd.set_domain( &dom );
   
@@ -1042,7 +1042,7 @@ void TMPQualityMetricTest::regression_inverse_mean_ratio_hess()
   const size_t indices[] = { 0, 1, 2 };
   PatchData pd;
   pd.fill( 3, coords, 1, TRIANGLE, indices, fixed, err );
-  pd.set_mapping_functions( &mf );
+  pd.attach_settings( &settings );
   PlanarDomain dom( PlanarDomain::XY, coords[2] );
   pd.set_domain( &dom );
   

@@ -62,12 +62,12 @@ namespace Mesquite
     
     virtual double loop_over_mesh( Mesh* mesh, 
                                    MeshDomain* domain,
-                                   MappingFunctionSet* map_func,
+                                   const Settings* settings,
                                    MsqError &err);
 
     virtual double loop_over_mesh( ParallelMesh* mesh, 
                                    MeshDomain* domain,
-                                   MappingFunctionSet* map_func,
+                                   const Settings* settings,
                                    MsqError &err);
 
   protected:
