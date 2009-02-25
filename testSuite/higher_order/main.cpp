@@ -121,6 +121,7 @@ const char LINEAR_INPUT_FILE_NAME[]       = SRCDIR "linear_input.vtk";
 const char QUADRATIC_INPUT_FILE_NAME[]    = SRCDIR "quadratic_input.vtk";
 const char EXPECTED_LINAR_FILE_NAME[]     = SRCDIR "expected_linear_output.vtk";
 const char EXPECTED_QUADRATIC_FILE_NAME[] = SRCDIR "expected_quadratic_output.vtk";
+const char HOUR_INPUT_FILE_NAME[]         = SRCDIR "hour-quad8.vtk";
 const char OUTPUT_FILE_NAME[]             = "smoothed_qudratic_mesh.vtk";
 const unsigned NUM_CORNER_VERTICES = 16;
 const unsigned NUM_MID_NODES = 24;
@@ -283,12 +284,6 @@ int do_test( bool slave)
   MeshImpl* linear_ex = new MeshImpl;
   linear_ex->read_vtk( EXPECTED_LINAR_FILE_NAME, err );
   if (MSQ_CHKERR(err)) return 1;
-  
-    // Read in one copy of quadratic input mesh
-  cout << "Reading " << QUADRATIC_INPUT_FILE_NAME << endl;
-  MeshImpl* quadratic_in_1 = new MeshImpl;
-  quadratic_in_1->read_vtk( QUADRATIC_INPUT_FILE_NAME, err );
-  if (MSQ_CHKERR(err)) return 1;
  
     // Read in second copy of quadratic input mesh
   cout << "Reading " << QUADRATIC_INPUT_FILE_NAME << " again" << endl;
@@ -346,11 +341,59 @@ int do_test( bool slave)
   return 0;
 }
 
+int do_smooth_ho()
+{
+  MsqPrintError err(cout);
+  QuadLagrangeShape quad9;
+  SamplePoints pts(true);
+  pts.sample_at( QUADRILATERAL, 1 );
+  
+    // Create geometry
+  PlanarDomain geom(PlanarDomain::XY);  
+  
+    // Read in one copy of quadratic input mesh
+  cout << "Reading " << HOUR_INPUT_FILE_NAME << endl;
+  MeshImpl* quadratic_in = new MeshImpl;
+  quadratic_in->read_vtk( HOUR_INPUT_FILE_NAME, err );
+  if (MSQ_CHKERR(err)) return 1;
+  
+    // Read in expected results
+  //cout << "Reading " << HOUR_EXPECTED_FILE_NAME << endl;
+  //MeshImpl* quadratic_ex = new MeshImpl;
+  //quadratic_ex->read_vtk( results, err );
+  //if (MSQ_CHKERR(err)) return 1;
+
+    // Smooth linear mesh and check results
+  cout << "Smoothing higher-order nodes" << endl;
+  InstructionQueue* q1 = create_instruction_queue( &pts, err );
+  if (MSQ_CHKERR(err)) return 1;
+  q1->set_no_ho_nodes_slaved();
+  q1->set_mapping_function( &quad9 );
+  q1->run_instructions( quadratic_in, &geom, err ); 
+  if (MSQ_CHKERR(err)) return 1;
+  cout << "Checking results" << endl;
+  //compare_nodes( 0, NUM_CORNER_VERTICES + NUM_MID_NODES,
+  //               quadratic_in, quadratic_ex, err );
+  if (MSQ_CHKERR(err)) {
+    MsqError tmperr;
+    quadratic_in->write_vtk("bad_mesh.vtk", tmperr);
+    return 1;
+  }
+  delete q1;
+  quadratic_in->write_vtk("smooth_ho.vtk", err);
+  
+  if (MSQ_CHKERR(err)) 
+    return 1;
+  return 0;
+}
+
 int main()
 { 
   cout << "Running test with all higher-order nodes slaved." << endl;    
   int result1 = do_test(true);
   cout << "Running test with no higher-order nodes slaved." << endl;    
   int result2 = do_test(false);
-  return result1 + result2;
+  cout << "Running test with only ho-nodes free." << endl;
+  int result3 = do_smooth_ho();
+  return result1 + result2 + result3;
 }
