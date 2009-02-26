@@ -896,11 +896,11 @@ void PatchDataTest::test_fixed_by_geom_dim( unsigned dim )
     default: CPPUNIT_ASSERT(false);
   }
 
-  msq_std::vector<int> fixed_flags(NUM_VTX,1);
-  msq_std::vector<double> coords(3*NUM_VTX);
-  msq_std::copy( &input_coords[0], input_coords+3*NUM_VTX, &coords[0] );
+  msq_std::vector<int> fixed_flags(fixed, fixed+NUM_VTX);
+  msq_std::vector<double> coords(input_coords, input_coords+3*NUM_VTX);
+  msq_std::vector<unsigned long> conn( input_conn, input_conn+8*NUM_ELEM );
   ArrayMesh mesh( 3, NUM_VTX, &coords[0], &fixed_flags[0], 
-                  NUM_ELEM, QUADRILATERAL, input_conn, false,
+                  NUM_ELEM, QUADRILATERAL, &conn[0], false,
                   8 );
   DomainClassifier geom;
   Vector3D corners[4] = {  Vector3D(-3, 3, 0),
