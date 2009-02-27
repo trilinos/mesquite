@@ -92,8 +92,17 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
     // use auto_ptr to automatically delete memento when we exit this function
   msq_std::auto_ptr<PatchDataVerticesMemento> memento_deleter( pd_previous_coords );
 
-    // evaluate objective function and calculate gradient dotted with itself
+    // Evaluate objective function.
+    //
+    // Always use 'update' version when beginning optimization so that
+    // if doing block coordinate descent the OF code knows the set of
+    // vertices we are modifying during the optimziation (the subset
+    // of the mesh contained in the current patch.)  This has to be
+    // done up-front because typically an OF will just store the portion
+    // of the OF value (e.g. the numeric contribution to the sum for an
+    // averaging OF) for the initial patch.
   feasible = obj_func.update( pd, original_value, gradient, err ); MSQ_ERRRTN(err);
+    // calculate gradient dotted with itself
   norm_squared = length_squared( &gradient[0], gradient.size() );
   
     //set an error if initial patch is invalid.
@@ -113,15 +122,17 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
   step_size = max_edge_len / msq_std::sqrt(norm_squared) * pd.num_free_vertices();
 
     // The steepest descent loop...
+    // We loop until the user-specified termination criteria are met.
   while (!term_crit->terminate()) {
     MSQ_DBGOUT(3) << "Iteration " << term_crit->get_iteration_count() << msq_stdio::endl;
     MSQ_DBGOUT(3) << "  o  original_value: " << original_value << msq_stdio::endl;
     MSQ_DBGOUT(3) << "  o  grad norm suqared: " << norm_squared << msq_stdio::endl;
 
-      // save vertex coords
+      // Save current vertex coords so that they can be restored if
+      // the step was bad.
     pd.recreate_vertices_memento( pd_previous_coords, err ); MSQ_ERRRTN(err);
 
-      // Reduce step size satisfies Armijo condition
+      // Reduce step size until it satisfies Armijo condition
     int counter = 0;
     for (;;) {
       if (++counter > SEARCH_MAX || step_size < DBL_EPSILON) {
@@ -129,10 +140,17 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
         return;
       }
       
-      // evaluate objective function for current step 
-      // note: step direction is -gradient so we pass +gradient and 
+      // Move vertices to new positions.
+      // Note: step direction is -gradient so we pass +gradient and 
       //       -step_size to achieve the same thing.
       pd.move_free_vertices_constrained( &gradient[0], gradient.size(), -step_size, err ); MSQ_ERRRTN(err);
+      // Evaluate objective function for new vertices.  We call the
+      // 'evaluate' form here because we aren't sure yet if we want to
+      // keep these vertices.  Until we call 'update', we have the option
+      // of reverting a block coordinate decent objective function's state
+      // to that of the initial vertex coordinates.  However, for block
+      // coordinate decent to work correctly, we will need to call an
+      // 'update' form if we decide to keep the new vertex coordinates.
       feasible = obj_func.evaluate( pd, new_value, err ); MSQ_ERRRTN(err);
       MSQ_DBGOUT(3) << "    o  step_size: " << step_size << msq_stdio::endl;
       MSQ_DBGOUT(3) << "    o  new_value: " << new_value << msq_stdio::endl;
@@ -154,7 +172,10 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
       pd.set_to_vertices_memento( pd_previous_coords, err );  MSQ_ERRRTN(err);
     }
    
-      // re-evaluate objective function to get gradient
+      // Re-evaluate objective function to get gradient.
+      // Calling the 'update' form here incorporates the new vertex 
+      // positions into the 'accumulated' value if we are doing a 
+      // block coordinate descent optimization.
     obj_func.update(pd, original_value, gradient, err ); MSQ_ERRRTN(err);
     if (projectGradient) {
       //if (cosineStep) {
@@ -171,11 +192,14 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
       //}      
     }
       
-      // update terination criterion for next iteration
+      // Update terination criterion for next iteration.
+      // This is necessary for efficiency.  Some values can be adjusted
+      // for each iteration so we don't need to re-caculate the value
+      // over the entire mesh.
     term_crit->accumulate_patch( pd, err );  MSQ_ERRRTN(err);
     term_crit->accumulate_inner( pd, original_value, &gradient[0], err ); MSQ_ERRRTN(err); 
       
-      // calculate initial step size for next iteration using step size 
+      // Calculate initial step size for next iteration using step size 
       // from this iteration
     step_size *= norm_squared;
     norm_squared = length_squared( &gradient[0], gradient.size() );
