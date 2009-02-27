@@ -911,7 +911,7 @@ void PatchDataTest::get_quad8_mesh( Mesh*& mesh_out )
   static msq_std::vector<int> fixed_flags(fixed, fixed+NUM_VTX);
   static msq_std::vector<double> coords(input_coords, input_coords+3*NUM_VTX);
   static msq_std::vector<unsigned long> conn( input_conn, input_conn+8*NUM_ELEM );
-  ArrayMesh mesh( 3, NUM_VTX, &coords[0], &fixed_flags[0], 
+  mesh_out = new ArrayMesh( 3, NUM_VTX, &coords[0], &fixed_flags[0], 
                   NUM_ELEM, QUADRILATERAL, &conn[0], false,
                   8 );
 }
