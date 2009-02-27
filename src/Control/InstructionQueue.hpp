@@ -58,6 +58,7 @@ namespace Mesquite {
   class Instruction;
   class MappingFunctionSet;
   class TargetWriter;
+  class VertexSlaver;
 
   /*! \class InstructionQueue
     \brief An InstructionQueue object gathers Mesquite Instructions and ensures
@@ -82,6 +83,13 @@ namespace Mesquite {
     MESQUITE_EXPORT virtual ~InstructionQueue() {};
     
     MESQUITE_EXPORT void add_target_calculator( TargetWriter* tc, MsqError& err );
+    
+      //! Add a tool mark higher-order nodes as slaved.
+      //! Note:  Implies set_slaved_ho_node_mode( Settings::SLAVE_CALCULATED )
+    MESQUITE_EXPORT void add_vertex_slaver( VertexSlaver* slaver, MsqError& err );
+      //! Remove a tool mark higher-order nodes as slaved.
+      //! Note:  Implies set_slaved_ho_node_mode( Settings::SLAVE_ALL )
+    MESQUITE_EXPORT void remove_vertex_slaver( VertexSlaver* slaver, MsqError& err );
     
     MESQUITE_EXPORT void add_preconditioner(QualityImprover* instr, MsqError &err);
     MESQUITE_EXPORT void remove_preconditioner(size_t index, MsqError &err);
@@ -130,6 +138,7 @@ namespace Mesquite {
 
     bool autoQualAssess;
     
+    int vertexSlaverCount;
     size_t nbPreConditionners;
     bool isMasterSet;
     size_t masterInstrIndex; //!< 0-based. Keeping an index instead of an iterator

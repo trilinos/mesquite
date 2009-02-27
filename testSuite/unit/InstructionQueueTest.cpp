@@ -57,8 +57,9 @@ Unit testing of various functions in the InstructionQueue class.
 #include "SteepestDescent.hpp"
 #include "Vector3D.hpp"
 #include "PatchData.hpp"
+#include "VertexSlaver.hpp"
 
-#include "cppunit/extensions/HelperMacros.h"
+#include "UnitUtil.hpp"
 
 #ifdef MSQ_USE_OLD_IO_HEADERS
 #include <iostream.h>
@@ -80,6 +81,7 @@ private:
    CPPUNIT_TEST (test_add_quality_assessor);
    CPPUNIT_TEST (test_remove_quality_assessor);
    CPPUNIT_TEST (test_insert_quality_assessor);
+   CPPUNIT_TEST (test_add_remove_vertex_slaver);
    CPPUNIT_TEST_SUITE_END();
    
 private:
@@ -233,9 +235,45 @@ public:
       err.clear();
    }
 
-     
+   void test_add_remove_vertex_slaver();
 };
 
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(InstructionQueueTest, "InstructionQueueTest");
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(InstructionQueueTest, "Unit");
+
+class DummyVertexSlaver : public VertexSlaver
+{
+  public:
+    virtual double loop_over_mesh( Mesh* , 
+                                   MeshDomain* , 
+                                   const Settings* ,
+                                   MsqError&  )
+      { CPPUNIT_ASSERT(false); return 0.0; }
+    virtual msq_std::string get_name() const { return "Dummy"; }
+};
+
+void InstructionQueueTest::test_add_remove_vertex_slaver()
+{
+  InstructionQueue q;
+  DummyVertexSlaver s1, s2;
+  MsqPrintError err( msq_stdio::cerr );
+  
+  CPPUNIT_ASSERT( q.get_slaved_ho_node_mode() != Settings::SLAVE_CALCULATED );
+  q.add_vertex_slaver( &s1, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_EQUAL( Settings::SLAVE_CALCULATED, q.get_slaved_ho_node_mode() );
+  q.add_vertex_slaver( &s2, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_EQUAL( Settings::SLAVE_CALCULATED, q.get_slaved_ho_node_mode() );
+  q.remove_vertex_slaver( &s2, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_EQUAL( Settings::SLAVE_CALCULATED, q.get_slaved_ho_node_mode() );
+  q.remove_vertex_slaver( &s2, err );
+  CPPUNIT_ASSERT(err);
+  err.clear();
+  CPPUNIT_ASSERT_EQUAL( Settings::SLAVE_CALCULATED, q.get_slaved_ho_node_mode() );
+  q.remove_vertex_slaver( &s1, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_EQUAL( Settings::SLAVE_ALL, q.get_slaved_ho_node_mode() );
+}
