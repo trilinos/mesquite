@@ -6,11 +6,13 @@ MSQ_SRCS += \
 	$(SRC_CONTROL_DIR)/Instruction.cpp \
 	$(SRC_CONTROL_DIR)/InstructionQueue.cpp \
 	$(SRC_CONTROL_DIR)/TerminationCriterion.cpp \
-        $(SRC_CONTROL_DIR)/Settings.cpp 
+        $(SRC_CONTROL_DIR)/Settings.cpp \
+        $(SRC_CONTROL_DIR)/SlaveBoundaryVertices.cpp 
 
 MSQ_HDRS += \
 	$(SRC_CONTROL_DIR)/Instruction.hpp \
 	$(SRC_CONTROL_DIR)/InstructionQueue.hpp \
 	$(SRC_CONTROL_DIR)/TerminationCriterion.hpp \
-        $(SRC_CONTROL_DIR)/Settings.hpp 
+        $(SRC_CONTROL_DIR)/Settings.hpp  \
+        $(SRC_CONTROL_DIR)/SlaveBoundaryVertices.hpp 
 
