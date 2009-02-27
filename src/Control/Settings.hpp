@@ -82,23 +82,31 @@ MESQUITE_EXPORT class Settings {
       //! Get the setting for how Mesquite determines which vertices are fixed.
     FixedVertexMode get_fixed_vertex_mode() const;
     
-    enum HigherOrderSlaveMode { SLAVE_NONE, SLAVE_ALL, SLAVE_BOUNDARY };
-      //! Set Mesquite such that all higher-order nodes are treated either
-      //! as fixed or as free variables in the optimization.
-    void set_no_ho_nodes_slaved();
-      //! Treat all non-fixed higher-order nodes as slave vertices.  The
-      //! node location will be updated automatically to the position of
-      //! the mapping function evaluated at the logical location of the
-      //! node evaluated as if the element did not contain the node.
-    void set_all_ho_nodes_slaved();
-      //! Treat all non-fixed higher-order nodes as slave vertices if
-      //! the vertex is within the specified number of elements from
-      //! any fixed vertex.
-    void set_boundary_ho_nodes_slaved( unsigned depth_from_boundary );
+    enum HigherOrderSlaveMode { 
+      SLAVE_NONE,       //!< All higher-order nodes are treated either
+                        //!< as fixed or as free variables in the optimization.
+ 
+      SLAVE_ALL,        //!< Treat all non-fixed higher-order nodes as slave 
+                        //!< vertices.  The node location will be updated 
+                        //!< automatically to the position of the mapping 
+                        //!< function evaluated at the logical location of 
+                        //!< the node evaluated as if the element did not 
+                        //!< contain the node.
+
+      SLAVE_CALCULATED, //!< A utility (e.g. SlaveBoundaryVertices) will be 
+                        //!< inserted into the instruction queue that will 
+                        //!< determine which vertices are slaved and store 
+                        //!< that state as the appropriate bit in the vertex
+                        //!< byte.
+
+      SLAVE_FLAG        //!< The results of a call to Mesh::vertices_get_slaved_flag
+                        //!< will be used to establish free vs. slaved.
+    };
+    
+      //! Set the slaved higher-order node setting.
+    void set_slaved_ho_node_mode( HigherOrderSlaveMode mode );
       //! Get the slaved higher-order node setting.
     HigherOrderSlaveMode get_slaved_ho_node_mode() const;
-      //! Get the slaved higher-order node depth from boundary setting.
-    int get_slaved_ho_node_depth() const;
 
       /**\brief Generate SIGFPE whenever a floating point exception occurs
        *

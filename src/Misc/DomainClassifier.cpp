@@ -1086,5 +1086,26 @@ void DomainClassifier::domain_DoF( const Mesh::VertexHandle* handles,
   }
 }
 
- 
+DomainClassifier::~DomainClassifier()
+{
+  if (deleteSubDomains)
+    delete_all_sub_domains();
+}
+
+void DomainClassifier::delete_all_sub_domains()
+{
+    // get unique list of domains
+  msq_std::set<MeshDomain*> domains;
+  msq_std::vector<DomainBlock>::iterator i;
+  for (i = vertexList.begin(); i != vertexList.end(); ++i)
+    domains.insert( i->domain );
+  for (i = elementList.begin(); i != elementList.end(); ++i)
+    domains.insert( i->domain );
+  msq_std::set<MeshDomain*>::iterator j;
+  for (j = domains.begin(); j != domains.end(); ++j)
+    delete *j;
+  clear();
+}
+
+
 } // namespace Mesquite

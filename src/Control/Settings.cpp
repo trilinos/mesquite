@@ -52,7 +52,6 @@ struct SettingData {
   bool trapFPE;
   Settings::FixedVertexMode fixedMode;
   Settings::HigherOrderSlaveMode slaveMode;
-  unsigned slaveBdryDepth;
   std::vector<const MappingFunction*> mapArray;
   std::vector<const MappingFunction2D*> mapArray2D;
   std::vector<const MappingFunction3D*> mapArray3D;
@@ -69,7 +68,6 @@ SettingData::SettingData()
   : trapFPE( IQ_TRAP_FPE_DEFAULT ),
     fixedMode( Settings::FIXED_FLAG ),
     slaveMode( Settings::SLAVE_ALL ),
-    slaveBdryDepth( 0 ),
     mapArray( MIXED, 0 ),
     mapArray2D( MIXED, 0 ),
     mapArray3D( MIXED, 0 )
@@ -167,23 +165,11 @@ void Settings::set_fixed_vertex_mode( Settings::FixedVertexMode mode )
 Settings::FixedVertexMode Settings::get_fixed_vertex_mode() const
   { return mData->fixedMode; }
 
-void Settings::set_no_ho_nodes_slaved() 
-  { mData->slaveMode = Settings::SLAVE_NONE; } 
-
-void Settings::set_all_ho_nodes_slaved()
-  { mData->slaveMode = Settings::SLAVE_ALL; }
-
-void Settings::set_boundary_ho_nodes_slaved( unsigned depth_from_boundary )
-{
-  mData->slaveMode = Settings::SLAVE_BOUNDARY;
-  mData->slaveBdryDepth = depth_from_boundary;
-}
+void Settings::set_slaved_ho_node_mode( Settings::HigherOrderSlaveMode mode ) 
+  { mData->slaveMode = mode; } 
 
 Settings::HigherOrderSlaveMode Settings::get_slaved_ho_node_mode() const
   { return mData->slaveMode; }
-
-int Settings::get_slaved_ho_node_depth() const
-  { return mData->slaveBdryDepth; }
 
 void Settings::trap_floating_point_exception( bool enable )
   { mData->trapFPE = enable; }

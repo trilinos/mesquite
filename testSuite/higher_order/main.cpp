@@ -318,7 +318,7 @@ int do_test( bool slave)
   InstructionQueue* q3 = create_instruction_queue( &pts, err );
   if (MSQ_CHKERR(err)) return 1;
   if (!slave)
-    q3->set_no_ho_nodes_slaved();
+    q3->set_slaved_ho_node_mode(Settings::SLAVE_NONE);
   q3->set_mapping_function( &quad9 );
   q3->run_instructions( quadratic_in_2, &geom, err ); 
   if (MSQ_CHKERR(err)) return 1;
@@ -367,7 +367,7 @@ int do_smooth_ho()
   cout << "Smoothing higher-order nodes" << endl;
   InstructionQueue* q1 = create_instruction_queue( &pts, err );
   if (MSQ_CHKERR(err)) return 1;
-  q1->set_no_ho_nodes_slaved();
+  q1->set_slaved_ho_node_mode(Settings::SLAVE_NONE);
   q1->set_mapping_function( &quad9 );
   q1->run_instructions( quadratic_in, &geom, err ); 
   if (MSQ_CHKERR(err)) return 1;

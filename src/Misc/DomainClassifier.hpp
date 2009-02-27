@@ -157,8 +157,10 @@ class DomainClassifier : public MeshDomain
                                     unsigned array_length,
                                     MsqError& err );
  
-    DomainClassifier()
+    DomainClassifier() : deleteSubDomains(false)
       {}
+    
+    virtual ~DomainClassifier();
     
     virtual void snap_to(Mesh::VertexHandle entity_handle,
                          Vector3D &coordinate) const;
@@ -200,8 +202,14 @@ class DomainClassifier : public MeshDomain
       { return find_domain( vertex, vertexList ); }
     MeshDomain* find_element_domain( Mesh::ElementHandle element ) const
       { return find_domain( element, elementList ); }
+      
+    void delete_sub_domains(bool yesno)
+      { deleteSubDomains = yesno; }
+
+    void delete_all_sub_domains();
     
   private:
+    bool deleteSubDomains;
     
     static MeshDomain* find_domain( Mesh::EntityHandle handle, 
                                  const msq_std::vector<DomainBlock>& list );

@@ -86,6 +86,8 @@ PatchData::PatchData()
     myDomain(0),
     numFreeVertices(0),
     numSlaveVertices(0),
+    boolArray(0),
+    boolArraySize(0),
     haveComputedInfos(0),
     dataList(0),
     mSettings(0)
@@ -97,6 +99,7 @@ PatchData::PatchData()
 PatchData::~PatchData()
 {
   notify_patch_destroyed();
+  free(boolArray);
 }
 
 
@@ -1792,12 +1795,18 @@ void PatchData::fill( size_t num_vertex, const double* coords,
   for (i = 1; i <= num_elem; ++i)
     offsets[i] = sum += lengths[i-1];
   
-  if (!mSettings || mSettings->get_slaved_ho_node_mode() == Settings::SLAVE_ALL) {
+  const Settings::HigherOrderSlaveMode ho_mode = mSettings ? mSettings->get_slaved_ho_node_mode() : Settings::SLAVE_ALL;
+  switch (ho_mode) {
+  case Settings::SLAVE_ALL:
     enslave_higher_order_nodes( &offsets[0], &byteArray[0], err );  
     MSQ_ERRRTN(err);
-  }
-  else if (mSettings->get_slaved_ho_node_mode() == Settings::SLAVE_BOUNDARY) {
-    MSQ_SETERR(err)("Boundary depth slave defintion not yet implemented.",
+    break;
+  case Settings::SLAVE_NONE:
+      // Do nothing.  We clear other bits when processing the 'fixed' array above.
+    break;
+  default:
+    MSQ_SETERR(err)("Specified higher-order noded slaving scheme not supported "
+                    "when initializind PatchData using PatchData::fill",
                     MsqError::NOT_IMPLEMENTED);
     return;
   }
@@ -1862,7 +1871,6 @@ void PatchData::fill_global_patch( MsqError& err )
   assert(b);
 }
 
-
 void PatchData::set_mesh_entities( 
                           msq_std::vector<Mesh::ElementHandle>& elements,
                           msq_std::vector<Mesh::VertexHandle>& free_vertices,
@@ -1905,7 +1913,7 @@ void PatchData::set_mesh_entities(
       fixed_flags = reinterpret_cast<bool*>(&byteArray[0]);
     }
     else {
-      fixed_flags = new bool[vertexHandlesArray.size()];
+      fixed_flags = get_bool_array( vertexHandlesArray.size() );
     }
   
       // Get vertex-fixed flags
@@ -1920,7 +1928,10 @@ void PatchData::set_mesh_entities(
           byteArray[i] = MsqVertex::MSQ_HARD_FIXED;
         else
           byteArray[i] = 0;
-      delete fixed_flags;
+    }
+    else {
+      // we're assuming this, so verify it
+      assert ((unsigned char)true == (unsigned char)MsqVertex::MSQ_HARD_FIXED);
     }
     MSQ_ERRRTN(err);
   } 
@@ -1931,7 +1942,9 @@ void PatchData::set_mesh_entities(
     MSQ_ERRRTN(err);
     for (size_t i = 0; i < vertexHandlesArray.size(); ++i) {
       if (dof[i] <= dim)
-        byteArray[i] = MsqVertex::MSQ_HARD_FIXED;
+        byteArray[i] |= MsqVertex::MSQ_HARD_FIXED;
+      else
+        byteArray[i] &= ~MsqVertex::MSQ_HARD_FIXED;
     }
   }
   else {
@@ -1980,14 +1993,33 @@ void PatchData::set_mesh_entities(
     elementArray[i].set_element_type( elem_topologies[i] );
     
     // Mark higher-order nodes as slave unless settings dictate otherwise
-  if (!mSettings || mSettings->get_slaved_ho_node_mode() == Settings::SLAVE_ALL) {
+  unsigned char byte_mask = MsqVertex::MSQ_CULLED;
+  bool* flags;
+  const Settings::HigherOrderSlaveMode ho_mode = mSettings ? mSettings->get_slaved_ho_node_mode() : Settings::SLAVE_ALL;
+  switch (ho_mode) {
+  case Settings::SLAVE_ALL:
     enslave_higher_order_nodes( &offsetArray[0], &byteArray[0], err ); 
     MSQ_ERRRTN(err);
-  }
-  else if (mSettings->get_slaved_ho_node_mode() == Settings::SLAVE_BOUNDARY) {
-    MSQ_SETERR(err)("Boundary depth slave defintion not yet implemented.",
-                    MsqError::NOT_IMPLEMENTED);
-    return;
+    break;
+  case Settings::SLAVE_FLAG:
+    flags = get_bool_array( vertexHandlesArray.size() );
+    get_mesh()->vertices_get_slaved_flag( &vertexHandlesArray[0], 
+                                          flags,
+                                          vertexHandlesArray.size(),
+                                          err); MSQ_ERRRTN(err);
+    for (size_t i = 0; i < vertexHandlesArray.size(); ++i) 
+      if (flags[i] && !(byteArray[i] & MsqVertex::MSQ_HARD_FIXED))
+        byteArray[i] |= MsqVertex::MSQ_DEPENDENT;
+      MSQ_ERRRTN(err);
+    break;
+  case Settings::SLAVE_CALCULATED:
+      // When we later query the Mesh instance for vertex flags,
+      // don't clear the MSQ_DEPENDENT bit.
+    byte_mask |= MsqVertex::MSQ_DEPENDENT;
+    break;
+  case Settings::SLAVE_NONE:
+      // We begin with the byte array zeroed, so do nothing.
+    break;
   }
   
     // get element connectivity, group vertices by free/slave/fixed state
@@ -2011,7 +2043,7 @@ void PatchData::set_mesh_entities(
                                  err ); MSQ_ERRRTN(err);
 
   for (size_t i = 0; i < vertexArray.size(); ++i)
-    vertexArray[i].flags() |= (byteArray[i] & MsqVertex::MSQ_CULLED);
+    vertexArray[i].flags() |= (byteArray[i] & byte_mask);
 }
 
 
