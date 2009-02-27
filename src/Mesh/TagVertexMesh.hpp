@@ -34,7 +34,7 @@
 #define MSQ_TAG_VERTEX_MESH_HPP
 
 #include "Mesquite.hpp"
-#include "MeshInterface.hpp"
+#include "MeshDecorator.hpp"
 
 namespace Mesquite {
 
@@ -52,7 +52,7 @@ namespace Mesquite {
  * for all vertices when the coordinates of the any vertex are changed.
  * The tag type is a vector of three doubles.  
  */
-class MESQUITE_EXPORT TagVertexMesh : public Mesh
+class MESQUITE_EXPORT TagVertexMesh : public MeshDecorator
 {
   private:
   
@@ -60,7 +60,6 @@ class MESQUITE_EXPORT TagVertexMesh : public Mesh
     TagHandle tagHandle;     //< Handle of tag storing vertex coordinates
     bool haveTagHandle;      //< True if tagHandle is set
     bool cleanUpTag;         //< If true, destroy tag in destructor
-    Mesh* realMesh;          //< The actual Mesh this instance decorates
   
       /**\brief common code for constructor, set_mesh, and set_tag_name */
     void initialize( Mesh* mesh, msq_std::string name, bool init, MsqError& );
@@ -112,9 +111,6 @@ class MESQUITE_EXPORT TagVertexMesh : public Mesh
      */
     void set_mesh( Mesh* real_mesh, bool init, MsqError& err );
     
-    /**\brief Get the real Mesh instance */
-    Mesh* get_mesh( ) const { return realMesh; }
-    
     /**\brief Set tag cleanup behavior
      *
      * If true, class will remove any tag data storing alternate
@@ -154,22 +150,6 @@ class MESQUITE_EXPORT TagVertexMesh : public Mesh
     void clear( MsqError& err );
     
     
-//************ Operations on entire mesh ****************
-
-    virtual int get_geometric_dimension(MsqError &err);
-
-    virtual void get_all_elements( msq_std::vector<ElementHandle>& elements,
-                                   MsqError& err );
-
-    virtual void get_all_vertices( msq_std::vector<VertexHandle>& vertices,
-                                   MsqError& err );
-
-//************ Vertex Properties ********************
-
-    virtual void vertices_get_fixed_flag( const VertexHandle vert_array[], 
-                                          bool fixed_flag_array[],
-                                          size_t num_vtx, 
-                                          MsqError &err );
 
     virtual void vertices_get_coordinates( const VertexHandle vert_array[],
                                            MsqVertex* coordinates,
@@ -179,47 +159,7 @@ class MESQUITE_EXPORT TagVertexMesh : public Mesh
     virtual void vertex_set_coordinates( VertexHandle vertex,
                                          const Vector3D &coordinates,
                                          MsqError &err );
-
-    virtual void vertex_set_byte( VertexHandle vertex,
-                                  unsigned char byte, 
-                                  MsqError &err);
-
-    virtual void vertices_set_byte( const VertexHandle *vert_array,
-                                    const unsigned char *byte_array,
-                                    size_t array_size, 
-                                    MsqError &err );
-
-    virtual void vertex_get_byte( const VertexHandle vertex,
-                                  unsigned char *byte, 
-                                  MsqError &err );
-
-    virtual void vertices_get_byte( const VertexHandle *vertex,
-                                    unsigned char *byte_array,
-                                    size_t array_size, 
-                                    MsqError &err );
     
-//**************** Vertex Topology *****************    
-
-    virtual void vertices_get_attached_elements( 
-                         const VertexHandle* vertex_array,
-                         size_t num_vertex,
-                         msq_std::vector<ElementHandle>& elements,
-                         msq_std::vector<size_t>& offsets,
-                         MsqError& err );
-    
-//*************** Element Topology *************
-
-    virtual void elements_get_attached_vertices(
-                                   const ElementHandle *elem_handles,
-                                   size_t num_elems,
-                                   msq_std::vector<VertexHandle>& vert_handles,
-                                   msq_std::vector<size_t>& offsets, 
-                                   MsqError &err);
-    
-
-    virtual void elements_get_topologies(const ElementHandle *element_handle_array,
-                                         EntityTopology *element_topologies,
-                                         size_t num_elements, MsqError &err);
 
 //***************  Tags  ***********
 
@@ -228,47 +168,10 @@ class MESQUITE_EXPORT TagVertexMesh : public Mesh
                                   const void* default_value,
                                   MsqError &err);
 
-    virtual void tag_delete( TagHandle handle, MsqError& err );
-
     virtual TagHandle tag_get( const msq_std::string& name, 
                                MsqError& err );
-
-    virtual void tag_properties( TagHandle handle,
-                                 msq_std::string& name_out,
-                                 TagType& type_out,
-                                 unsigned& length_out,
-                                 MsqError& err );
-
-    virtual void tag_set_element_data( TagHandle handle,
-                                       size_t num_elems,
-                                       const ElementHandle* elem_array,
-                                       const void* tag_data,
-                                       MsqError& err );
-
-    virtual void tag_set_vertex_data ( TagHandle handle,
-                                       size_t num_elems,
-                                       const VertexHandle* node_array,
-                                       const void* tag_data,
-                                       MsqError& err );
-
-    virtual void tag_get_element_data( TagHandle handle,
-                                       size_t num_elems,
-                                       const ElementHandle* elem_array,
-                                       void* tag_data,
-                                       MsqError& err );
-
-    virtual void tag_get_vertex_data ( TagHandle handle,
-                                       size_t num_elems,
-                                       const VertexHandle* node_array,
-                                       void* tag_data,
-                                       MsqError& err );
-
     
 //**************** Memory Management ****************
-
-    virtual void release_entity_handles( const EntityHandle *handle_array,
-                                         size_t num_handles, 
-                                         MsqError &err);
 
     virtual void release();
 
