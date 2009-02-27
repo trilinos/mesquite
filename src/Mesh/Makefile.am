@@ -16,6 +16,7 @@ MSQ_SRCS += \
 	$(SRC_MESH_DIR)/ExtraData.cpp \
 	$(SRC_MESH_DIR)/GlobalPatch.cpp \
 	$(SRC_MESH_DIR)/IdealElements.cpp \
+	$(SRC_MESH_DIR)/MeshDecorator.cpp \
 	$(SRC_MESH_DIR)/MeshImpl.cpp \
 	$(SRC_MESH_DIR)/MeshImplData.cpp \
 	$(SRC_MESH_DIR)/MeshImplTags.cpp \
@@ -41,6 +42,7 @@ MSQ_HDRS += \
 	$(SRC_MESH_DIR)/ExtraDataUser.hpp \
 	$(SRC_MESH_DIR)/GlobalPatch.hpp \
 	$(SRC_MESH_DIR)/IdealElements.hpp \
+	$(SRC_MESH_DIR)/MeshDecorator.hpp \
 	$(SRC_MESH_DIR)/MeshImpl.hpp \
 	$(SRC_MESH_DIR)/MeshImplData.hpp \
 	$(SRC_MESH_DIR)/MeshImplTags.hpp \
