@@ -155,6 +155,10 @@ class ArrayMesh : public Mesh
                                           bool fixed_flag_array[],
                                           size_t num_vtx, 
                                           MsqError &err );
+    virtual void vertices_get_slaved_flag( const VertexHandle vert_array[], 
+                                           bool slaved_flag_array[],
+                                           size_t num_vtx, 
+                                           MsqError &err );
    virtual void vertices_get_coordinates( const VertexHandle vert_array[],
                                            MsqVertex* coordinates,
                                            size_t num_vtx,

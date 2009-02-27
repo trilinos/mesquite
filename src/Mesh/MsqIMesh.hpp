@@ -48,6 +48,12 @@ const char* const VERTEX_BYTE_TAG_NAME  = "MesquiteVertexByte";
  */
 const char* const VERTEX_FIXED_TAG_NAME = "MesquiteVertexFixed";
 
+/** The name of the tag (integer) Mesquite expects to be non-zero
+ *  for vertices that are higher-order nodes slaved to their logical
+ *  position.
+ */
+const char* const VERTEX_SLAVED_TAG_NAME = "MesquiteVertexSlaved";
+
 /**\class MsqIMesh
  *\brief Mesquite iMesh Adapter
  *
@@ -66,7 +72,8 @@ public:
                            iBase_EntitySetHandle meshset,
                            iBase_EntityType element_dimension,
                            MsqError& err,
-                           const char* fixed_tag_name = 0 );
+                           const char* fixed_tag_name = VERTEX_FIXED_TAG_NAME,
+                           const char* slaved_tag_name= VERTEX_SLAVED_TAG_NAME );
   
   /**\brief factory method
    *
@@ -75,7 +82,8 @@ public:
    */
   static MsqIMesh* create( iMesh_Instance imesh, 
                            MsqError& err,
-                           const char* fixed_tag_name = 0 );
+                           const char* fixed_tag_name = VERTEX_FIXED_TAG_NAME,
+                           const char* slaved_tag_name= VERTEX_SLAVED_TAG_NAME);
   
   virtual void set_active_set( iBase_EntitySetHandle meshset, 
                                iBase_EntityType element_dimension,

@@ -137,6 +137,11 @@ namespace Mesquite
                                   const bool fixed_flag_array[],
                                   size_t num_vtx, 
                                   MsqError &err);
+
+    virtual void vertices_get_slaved_flag( const VertexHandle vert_array[], 
+                                           bool slaved_flag_array[],
+                                           size_t num_vtx, 
+                                           MsqError &err );
     
       // Get/set location of a vertex
     virtual void vertices_get_coordinates(const Mesh::VertexHandle vert_array[],
@@ -444,6 +449,14 @@ namespace Mesquite
                                 const TagDescription& desc,
                                 const void* data, size_t count,
                                 MsqError& err ) const;
+
+      /** Convert tag data stored on vertices to boolean values.
+       *  Deletes tag data.
+       *  Passes back empty result vector if no tag.
+       */
+    void tag_to_bool( const char* tag_name, 
+                      msq_std::vector<bool>& vertex_vals,
+                      MsqError& err  );
 
 //**************** End VTK Parsing ****************
   };

@@ -47,6 +47,8 @@ class MsqError;
 class MeshImplData {
   
   public:
+  
+    MeshImplData() : haveSlavedFlags(false) {}
 
     /** Clear all data */
     void clear();
@@ -100,8 +102,14 @@ class MeshImplData {
     /** Get vertex fixed flag */
     bool vertex_is_fixed( size_t index, MsqError& err ) const;
     
+    /** Get vertex slaved flag */
+    bool vertex_is_slaved( size_t index, MsqError& err ) const;
+    
     /** Set vertex fixed flag */
     void fix_vertex( size_t index, bool flag, MsqError& err );
+    
+    /** Set vertex slaved flag */
+    void slave_vertex( size_t index, bool flag, MsqError& err );
     
     /** Get vertex byte */
     unsigned char get_vertex_byte( size_t index, MsqError& err ) const;
@@ -180,7 +188,8 @@ class MeshImplData {
      */
     void skin( msq_std::vector<size_t>& sides, MsqError& err );
     
-    
+    bool have_slaved_flags() const
+      { return haveSlavedFlags; }
   private:
   
     /**\brief helper function for skinning
@@ -215,6 +224,7 @@ class MeshImplData {
       msq_std::vector<size_t> adjacencies; /**< indices of adjacent elements */
       unsigned midcount;                   /**< num elements referencing this as a mid-node */
       bool fixed;                          /**< is fixed */
+      bool slaved;
       bool valid;                          /**< is a valid (initialized) array entry */
       unsigned char byte;                  /**< mark */
     };
@@ -236,6 +246,8 @@ class MeshImplData {
     msq_std::vector<size_t> deletedVertexList;
     /** List of unused indices in element list */
     msq_std::vector<size_t> deletedElementList;
+    
+    bool haveSlavedFlags;
 };
 
 /**\brief VertexIterator for MeshImpl

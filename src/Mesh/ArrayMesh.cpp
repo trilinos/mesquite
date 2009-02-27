@@ -259,6 +259,15 @@ void ArrayMesh::vertices_get_fixed_flag( const VertexHandle vert_array[],
     fixed_flag_array[i] = !!fixedFlags[indices[i]];
 }
 
+void ArrayMesh::vertices_get_slaved_flag( const VertexHandle*, 
+                                          bool*,
+                                          size_t , 
+                                          MsqError &err )
+{
+  MSQ_SETERR(err)("ArrayMesh::vertices_get_slaved_flag not implemented.  "
+                  "Cannot support Settings::SLAVE_FLAG", MsqError::NOT_IMPLEMENTED);
+}
+
 void ArrayMesh::vertices_get_coordinates( const VertexHandle vert_array[],
                                            MsqVertex* coordinates,
                                            size_t num_vtx,

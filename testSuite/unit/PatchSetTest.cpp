@@ -73,6 +73,8 @@ public:
   
   void vertices_get_fixed_flag( const VertexHandle* verts, bool* fixed, size_t n, MsqError& err );
   
+  void vertices_get_slaved_flag( const VertexHandle* verts, bool* fixed, size_t n, MsqError& err );
+  
   void vertices_get_attached_elements( const VertexHandle* array, size_t len,
                                        vector<ElementHandle>& elems,
                                        vector<size_t>& offsets,
@@ -174,7 +176,13 @@ void FakeMesh::vertices_get_fixed_flag( const VertexHandle* verts,
     fixed[i] = fixedFlags[vert];
   }
 }
-  
+   
+void FakeMesh::vertices_get_slaved_flag( const VertexHandle* , 
+                              bool* , size_t , MsqError&  )
+{
+  CPPUNIT_ASSERT(false);
+}
+ 
 void FakeMesh::vertices_get_attached_elements( const VertexHandle* verts, 
                                      size_t n,
                                      vector<ElementHandle>& elems,

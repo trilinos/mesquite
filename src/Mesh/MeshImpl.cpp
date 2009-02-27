@@ -476,6 +476,14 @@ void MeshImpl::write_vtk(const char* out_filename, MsqError &err)
     if (myMesh->is_vertex_valid( i ))
       file <<( myMesh->vertex_is_fixed( i, err ) ? "1" : "0") << "\n";
 
+  if (myMesh->have_slaved_flags()) {
+    file << "POINT_DATA " << myMesh->num_vertices()
+         << "\nSCALARS fixed bit\nLOOKUP_TABLE default\n";
+    for (i = 0; i < myMesh->max_vertex_index(); ++i)
+      if (myMesh->is_vertex_valid( i ))
+        file <<( myMesh->vertex_is_slaved( i, err ) ? "1" : "0") << "\n";
+  }
+
     // Make pass over the list of tags to:
     // - Check if there are any tags on elements.
     // - Get the list of field names by which to group tag data.
@@ -1177,6 +1185,17 @@ void MeshImpl::vertices_set_fixed_flag(
     MSQ_ERRRTN(err);
   }
 }
+void MeshImpl::vertices_get_slaved_flag(
+ const VertexHandle vert_array[], bool flags[],
+ size_t num_vtx, MsqError& err)
+{
+  for (size_t i=0; i<num_vtx; ++i)
+  {
+    flags[i] = myMesh->vertex_is_slaved( (size_t)vert_array[i], err ); 
+    MSQ_ERRRTN(err);
+  }
+}
+
 
 // Get/set location of a vertex
 void MeshImpl::vertices_get_coordinates(
@@ -1461,17 +1480,40 @@ void MeshImpl::read_vtk( const char* filename, MsqError &err )
   numCoords = 3;
 
     // Convert tag data for fixed nodes to internal bitmap
-  TagHandle handle = tag_get( "fixed", err );
+  msq_std::vector<bool> flags;
+  tag_to_bool( "fixed", flags, err ); MSQ_ERRRTN(err);
+  if (!flags.empty()) {
+    for (i = 0; i < myMesh->max_vertex_index(); ++i)
+      myMesh->fix_vertex( i, flags[i], err ); MSQ_ERRRTN(err);
+  }
+  
+  flags.clear();
+  tag_to_bool( "slaved", flags, err ); MSQ_ERRRTN(err);
+  if (!flags.empty()) {
+    for (i = 0; i < myMesh->max_vertex_index(); ++i)
+      myMesh->slave_vertex( i, flags[i], err ); MSQ_ERRRTN(err);
+  }
+}
+
+void MeshImpl::tag_to_bool( const char* tag_name, 
+                            msq_std::vector<bool>& values,
+                            MsqError& err )
+{
+    // Convert tag data for fixed nodes to internal bitmap
+  TagHandle handle = tag_get( tag_name, err );
   if (!handle || MSQ_CHKERR(err)) {
     err.clear();
+    values.clear();
     return;
   }
   
+  size_t i;
+  values.resize( myMesh->max_vertex_index(), false );
   const TagDescription& tag_desc = myTags->properties( (size_t)handle, err ); MSQ_ERRRTN(err);
   bool havedata = myTags->tag_has_vertex_data( (size_t)handle, err ); MSQ_ERRRTN(err);
   if (!havedata)
   {
-    MSQ_SETERR(err)("'fixed' attribute on elements, not vertices", MsqError::FILE_FORMAT);
+    MSQ_SETERR(err)(MsqError::FILE_FORMAT, "'%s' attribute on elements, not vertices", tag_name);
     return;
   }
 
@@ -1483,17 +1525,17 @@ void MeshImpl::read_vtk( const char* filename, MsqError &err )
       for (i = 0; i < myMesh->max_vertex_index(); ++i)
       {
         myTags->get_vertex_data( (size_t)handle, 1, &i, &data, err ); MSQ_ERRRTN(err);
-        myMesh->fix_vertex( i, !!data, err ); MSQ_ERRRTN(err);
+        values[i] = !!data;
       }
       break;
     }
     case BOOL:
     {
-      bool data;
       for (i = 0; i < myMesh->max_vertex_index(); ++i)
       {
+        bool data;
         myTags->get_vertex_data( (size_t)handle, 1, &i, &data, err ); MSQ_ERRRTN(err);
-        myMesh->fix_vertex( i, data, err ); MSQ_ERRRTN(err);
+        values[i] = data;
       }
       break;
     }
@@ -1503,7 +1545,7 @@ void MeshImpl::read_vtk( const char* filename, MsqError &err )
       for (i = 0; i < myMesh->max_vertex_index(); ++i)
       {
         myTags->get_vertex_data( (size_t)handle, 1, &i, &data, err ); MSQ_ERRRTN(err);
-        myMesh->fix_vertex( i, !!data, err ); MSQ_ERRRTN(err);
+        values[i] = !!data;
       }
       break;
     }
@@ -1513,12 +1555,12 @@ void MeshImpl::read_vtk( const char* filename, MsqError &err )
       for (i = 0; i < myMesh->max_vertex_index(); ++i)
       {
         myTags->get_vertex_data( (size_t)handle, 1, &i, &data, err ); MSQ_ERRRTN(err);
-        myMesh->fix_vertex( i, !!data, err ); MSQ_ERRRTN(err);
+        values[i] = !!data;
       }
       break;
     }
     default:
-      MSQ_SETERR(err)("'fixed' attribute has invalid type", MsqError::PARSE_ERROR);
+      MSQ_SETERR(err)(MsqError::PARSE_ERROR, "'%s' attribute has invalid type", tag_name);
       return;
   }
   

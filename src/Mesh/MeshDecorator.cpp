@@ -76,6 +76,12 @@ void MeshDecorator::vertices_get_fixed_flag( const VertexHandle vert_array[],
                                              MsqError &err )
   { get_mesh()->vertices_get_fixed_flag( vert_array, fixed_flag_array, num_vtx, err ); }
 
+void MeshDecorator::vertices_get_slaved_flag( const VertexHandle vert_array[], 
+                                             bool flag_array[],
+                                             size_t num_vtx, 
+                                             MsqError &err )
+  { get_mesh()->vertices_get_slaved_flag( vert_array, flag_array, num_vtx, err ); }
+
 void MeshDecorator::vertex_set_byte( VertexHandle vertex,
                                      unsigned char byte, 
                                      MsqError &err)

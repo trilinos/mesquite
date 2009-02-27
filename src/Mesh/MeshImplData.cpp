@@ -92,6 +92,22 @@ bool MeshImplData::vertex_is_fixed( size_t index, MsqError& err ) const
   return vertexList[index].fixed;
 }
 
+bool MeshImplData::vertex_is_slaved( size_t index, MsqError& err ) const
+{
+  if (!is_vertex_valid( index ))
+  {
+    MSQ_SETERR(err)("Invalid vertex handle", MsqError::INVALID_ARG);
+    return false;
+  }
+  if (!have_slaved_flags())
+  {
+    MSQ_SETERR(err)("Slave flags not set", MsqError::INVALID_STATE);
+    return false;
+  }
+  
+  return vertexList[index].slaved;
+}
+
 void MeshImplData::fix_vertex( size_t index, bool flag, MsqError& err )
 {
   if (!is_vertex_valid( index ))
@@ -101,6 +117,18 @@ void MeshImplData::fix_vertex( size_t index, bool flag, MsqError& err )
   }
   
   vertexList[index].fixed = flag;
+}
+
+void MeshImplData::slave_vertex( size_t index, bool flag, MsqError& err )
+{
+  if (!is_vertex_valid( index ))
+  {
+    MSQ_SETERR(err)("Invalid vertex handle", MsqError::INVALID_ARG);
+    return;
+  }
+  
+  vertexList[index].slaved = flag;
+  haveSlavedFlags = true;
 }
 
 
@@ -189,6 +217,7 @@ void MeshImplData::clear()
   elementList.clear();
   deletedVertexList.clear();
   deletedElementList.clear();
+  haveSlavedFlags = false;
 }
 
 void MeshImplData::allocate_vertices( size_t count, MsqError& err )

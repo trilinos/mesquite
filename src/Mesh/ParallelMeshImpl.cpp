@@ -196,6 +196,17 @@ void ParallelMeshImpl::vertices_get_coordinates(const Mesh::VertexHandle vert_ar
 				   err);
 }
 
+void ParallelMeshImpl::vertices_get_slaved_flag(const VertexHandle vert_array[],
+					       bool flag_array[],
+					       size_t num_vtx,
+					       MsqError& err)
+{
+  myMesh->vertices_get_slaved_flag(vert_array,
+				   flag_array,
+				   num_vtx,
+				   err);
+}
+
 void ParallelMeshImpl::vertex_set_coordinates(VertexHandle vertex,
 					      const Vector3D &coordinates,
 					      MsqError& err)

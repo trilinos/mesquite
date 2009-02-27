@@ -134,6 +134,18 @@ namespace Mesquite
                                           size_t num_vtx, 
                                           MsqError &err ) = 0;
 
+      //! Returns true or false, indicating whether the vertex
+      //! is a higher-order node that should be slaved to the logical
+      //! mid-point of the element side it lies on or not, respectively.  
+      //!
+      //! Note: This function will never be called unless this behavior is
+      //! requested by calling:
+      //! InstructionQueue::set_slaved_ho_node_mode( Settings::SLAVE_FLAG )
+    virtual void vertices_get_slaved_flag( const VertexHandle vert_array[], 
+                                           bool slaved_flag_array[],
+                                           size_t num_vtx, 
+                                           MsqError &err ) = 0;
+
       //! Get/set location of a vertex
     virtual void vertices_get_coordinates( const VertexHandle vert_array[],
                                            MsqVertex* coordinates,
@@ -356,10 +368,9 @@ namespace Mesquite
       //! is using it.
     virtual void release() = 0;
     
-  protected:
-      //! Don't allow a Mesh to be deleted directly.
     virtual ~Mesh()
       {}
+  protected:
   };
   
   /*! \class EntityIterator 
