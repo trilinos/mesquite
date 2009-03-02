@@ -42,8 +42,6 @@ else
   EXODUS_TEST_SRC = 
 endif
   
-EXTRA_DIST = 6x6x6-hex20.vtk
-
 msq_test_SOURCES = msq_test_main.cpp \
 	MesquiteTestRunner.hpp \
 	ObjectiveFunctionTests.hpp \

@@ -32,6 +32,7 @@
 
 #include "Mesquite.hpp"
 #include "UnitUtil.hpp"
+#include "meshfiles.h"
 #include "Settings.hpp"
 #include "MsqError.hpp"
 #include "SlaveBoundaryVertices.hpp"
@@ -109,7 +110,7 @@ void SlaveBoundaryVerticesTest::make_mesh( MeshImpl& mesh,
                                            const int intervals )
 {
   MsqPrintError err(msq_stdio::cerr);
-  const char input_file[] = "6x6x6-hex20.vtk";
+  const char input_file[] = MESH_FILES_DIR "3D/VTK/6x6x6-hex20.vtk";
   
   const Vector3D min( -3, -3, -3 );
   const Vector3D max(  3,  3,  3 );
