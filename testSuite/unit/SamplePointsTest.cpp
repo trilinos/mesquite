@@ -44,12 +44,6 @@ private:
   CPPUNIT_TEST (test_get_set_all);
   CPPUNIT_TEST (test_initialization);
   CPPUNIT_TEST (test_get_set_clear);
-  CPPUNIT_TEST (test_corners);
-  CPPUNIT_TEST (test_edges);
-  CPPUNIT_TEST (test_corners_and_edges);
-  CPPUNIT_TEST (test_edges_and_faces);
-  CPPUNIT_TEST (test_elem );
-  CPPUNIT_TEST (test_corners_and_elem );
   CPPUNIT_TEST_SUITE_END();
   
 public:
@@ -57,12 +51,6 @@ public:
   void test_get_set_all ();
   void test_initialization ();
   void test_get_set_clear ();
-  void test_corners ();
-  void test_edges ();
-  void test_corners_and_edges ();
-  void test_edges_and_faces ();
-  void test_elem ();
-  void test_corners_and_elem ();
 };
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(SamplePointsTest, "SamplePointsTest");
@@ -163,116 +151,3 @@ void SamplePointsTest::test_get_set_clear()
   test_get_set_clear_dim( 3, PYRAMID );
 }
 
-static void test_topo_common( bool corners, 
-                              bool edges,
-                              bool faces,
-                              bool elem,
-                              EntityTopology type )
-{
-    // expected number of samples of each dimension
-  unsigned expected_by_dim[4] = {0, 0, 0, 0};
-  unsigned seen_by_dim[4] = { 0, 0, 0, 0 };
-    // bool for each possible sample, indexed by dmension
-  std::vector<bool> seen[4];
-  
-    // initialize everything
-  seen[0].resize( TopologyInfo::corners(type), false );
-  seen[1].resize( TopologyInfo::edges(type), false );
-  if (corners) 
-    expected_by_dim[0] = type == PYRAMID ? 4 : TopologyInfo::corners( type );
-  if (edges)
-    expected_by_dim[1] = TopologyInfo::edges( type );
-  if (TopologyInfo::dimension(type) == 2) {
-    expected_by_dim[2] = faces ? 1 : 0;
-    seen[2].resize( 1, false );
-  }
-  else {
-    if (faces)
-      expected_by_dim[2] = TopologyInfo::faces( type );
-    expected_by_dim[3] = elem ? 1 : 0;
-    seen[2].resize( TopologyInfo::faces(type), false );
-    seen[3].resize( 1, false );
-  }
-  
-    // total number of samples
-  const unsigned total = expected_by_dim[0] + expected_by_dim[1] 
-                       + expected_by_dim[2] + expected_by_dim[3];
-  
-    // Check total sample count
-  SamplePoints sp( corners, edges, faces, elem );
-  CPPUNIT_ASSERT_EQUAL( total, sp.num_sample_points( type ) );
-  
-
-  for (unsigned i = 0; i < total; ++i)
-  {
-      // Check valid output from location_from_sample_number
-    unsigned dim, num;
-    sp.location_from_sample_number( type, i, dim, num );
-    CPPUNIT_ASSERT( dim <= TopologyInfo::dimension( type ) );
-    CPPUNIT_ASSERT( num < seen[dim].size() );
-    
-      // Check that sample_number_from_location is inverse of
-      // location_from_sample_number
-    unsigned sample = sp.sample_number_from_location( type, dim, num );
-    CPPUNIT_ASSERT_EQUAL( i, sample );
-    
-      // Check that we don't get the same location more than once
-    CPPUNIT_ASSERT_EQUAL( false, (bool)(seen[dim][num]) );
-    seen[dim][num] = true;
-    ++seen_by_dim[dim];
-  }
-  
-    // Check that we got the correct sample points
-  for (unsigned j = 0; j < 4; ++j)
-  {
-    CPPUNIT_ASSERT_EQUAL( expected_by_dim[j], seen_by_dim[j] );
-  }
-}
-  
-void SamplePointsTest::test_corners ()
-{
-  test_topo_common( true, false, false, false, TRIANGLE );
-  test_topo_common( true, false, false, false, QUADRILATERAL );
-  test_topo_common( true, false, false, false, TETRAHEDRON );
-  test_topo_common( true, false, false, false, HEXAHEDRON );
-}
-
-void SamplePointsTest::test_edges ()
-{
-  test_topo_common( false, true, false, false, TRIANGLE );
-  test_topo_common( false, true, false, false, QUADRILATERAL );
-  test_topo_common( false, true, false, false, TETRAHEDRON );
-  test_topo_common( false, true, false, false, HEXAHEDRON );
-}
-
-void SamplePointsTest::test_corners_and_edges ()
-{
-  test_topo_common( true, true, false, false, TRIANGLE );
-  test_topo_common( true, true, false, false, QUADRILATERAL );
-  test_topo_common( true, true, false, false, TETRAHEDRON );
-  test_topo_common( true, true, false, false, HEXAHEDRON );
-}
-
-void SamplePointsTest::test_edges_and_faces ()
-{
-  test_topo_common( false, true, true, false, TRIANGLE );
-  test_topo_common( false, true, true, false, QUADRILATERAL );
-  test_topo_common( false, true, true, false, TETRAHEDRON );
-  test_topo_common( false, true, true, false, HEXAHEDRON );
-}
-
-void SamplePointsTest::test_elem ()
-{
-  test_topo_common( false, false, false, true, PRISM );
-  test_topo_common( false, false, false, true, PYRAMID );
-  test_topo_common( false, false, false, true, TETRAHEDRON );
-  test_topo_common( false, false, false, true, HEXAHEDRON );
-}
-
-void SamplePointsTest::test_corners_and_elem ()
-{
-  test_topo_common( true, false, false, true, PRISM );
-  test_topo_common( true, false, false, true, PYRAMID );
-  test_topo_common( true, false, false, true, TETRAHEDRON );
-  test_topo_common( true, false, false, true, HEXAHEDRON );
-}

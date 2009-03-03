@@ -38,6 +38,7 @@
 #include "PatchData.hpp"
 #include "SamplePoints.hpp"
 #include "Settings.hpp"
+#include "ElemSampleQM.hpp"
 
 #include "cppunit/extensions/HelperMacros.h"
 #include "UnitUtil.hpp"
@@ -208,8 +209,10 @@ double FakeTargetCalc::get_weight( PatchData& pd, size_t elem,
 
 unsigned long FakeTargetCalc::make_value( Mesh::ElementHandle elem, unsigned sample, unsigned idx )
 {
-  const unsigned sample_bits = 5;
+  const unsigned sample_bits = ElemSampleQM::ELEM_SAMPLE_BITS;
   const unsigned index_bits = 4;
+  CPPUNIT_ASSERT( sample < (1<<sample_bits) );
+  CPPUNIT_ASSERT( idx < (1<<index_bits) );
   unsigned long result = (unsigned long)elem;
   result = (result << sample_bits) | sample;
   result = (result << index_bits ) | idx;
@@ -231,24 +234,30 @@ void TargetReadWriteTest::read_write_targets()
     // Compare all target matrices
   TargetReader reader(tc.surface_targets_are_3D());
   for (size_t i = 0; i < myPatch.num_elements(); ++i) {
-    const unsigned n = pts.num_sample_points( myPatch.element_by_index(i).get_element_type() );
+    const EntityTopology type = myPatch.element_by_index(i).get_element_type();
     const unsigned d = TopologyInfo::dimension( myPatch.element_by_index(i).get_element_type() );
-    for (unsigned j = 0; j < n; ++j) {
-      if (d == 2) {
-        MsqMatrix<3,2> expected, read;
-        tc.get_2D_target( myPatch, i, &pts, j, expected, err );
-        CPPUNIT_ASSERT(!err);
-        reader.get_2D_target( myPatch, i, &pts, j, read, err );
-        CPPUNIT_ASSERT(!err);
-        ASSERT_MATRICES_EQUAL( expected, read, 1e-6 );
-      }
-      else {
-        MsqMatrix<3,3> expected, read;
-        tc.get_3D_target( myPatch, i, &pts, j, expected, err );
-        CPPUNIT_ASSERT(!err);
-        reader.get_3D_target( myPatch, i, &pts, j, read, err );
-        CPPUNIT_ASSERT(!err);
-        ASSERT_MATRICES_EQUAL( expected, read, 1e-12 );
+    for (unsigned sdim = 0; sdim <= d; ++sdim) {
+      unsigned count = TopologyInfo::adjacent(type, sdim);
+      if (type == PYRAMID && sdim == 0)
+        count = 4; // skip pyramid apex
+      for (unsigned snum = 0; snum < count; ++snum) {
+        const unsigned n = ElemSampleQM::sample( sdim, snum );
+        if (d == 2) {
+          MsqMatrix<3,2> expected, read;
+          tc.get_2D_target( myPatch, i, &pts, n, expected, err );
+          CPPUNIT_ASSERT(!err);
+          reader.get_2D_target( myPatch, i, &pts, n, read, err );
+          CPPUNIT_ASSERT(!err);
+          ASSERT_MATRICES_EQUAL( expected, read, 1e-6 );
+        }
+        else {
+          MsqMatrix<3,3> expected, read;
+          tc.get_3D_target( myPatch, i, &pts, n, expected, err );
+          CPPUNIT_ASSERT(!err);
+          reader.get_3D_target( myPatch, i, &pts, n, read, err );
+          CPPUNIT_ASSERT(!err);
+          ASSERT_MATRICES_EQUAL( expected, read, 1e-12 );
+        }
       }
     }
   }
@@ -269,14 +278,20 @@ void TargetReadWriteTest::read_write_targets_surf_3d()
     // Compare all target matrices
   TargetReader reader(tc.surface_targets_are_3D());
   for (size_t i = 0; i < myPatch.num_elements(); ++i) {
-    const unsigned n = pts.num_sample_points( myPatch.element_by_index(i).get_element_type() );
-    for (unsigned j = 0; j < n; ++j) {
-      MsqMatrix<3,3> expected, read;
-      tc.get_3D_target( myPatch, i, &pts, j, expected, err );
-      CPPUNIT_ASSERT(!err);
-      reader.get_3D_target( myPatch, i, &pts, j, read, err );
-      CPPUNIT_ASSERT(!err);
-      ASSERT_MATRICES_EQUAL( expected, read, 1e-12 );
+    const EntityTopology type = myPatch.element_by_index(i).get_element_type();
+    for (unsigned sdim = 0; sdim <= 3; ++sdim) {
+      unsigned count = TopologyInfo::adjacent(type, sdim);
+      if (type == PYRAMID && sdim == 0)
+        count = 4; // skip pyramid apex
+      for (unsigned snum = 0; snum < count; ++snum) {
+        const unsigned n = ElemSampleQM::sample( sdim, snum );
+        MsqMatrix<3,3> expected, read;
+        tc.get_3D_target( myPatch, i, &pts, n, expected, err );
+        CPPUNIT_ASSERT(!err);
+        reader.get_3D_target( myPatch, i, &pts, n, read, err );
+        CPPUNIT_ASSERT(!err);
+        ASSERT_MATRICES_EQUAL( expected, read, 1e-12 );
+      }
     }
   }
 }
@@ -296,13 +311,20 @@ void TargetReadWriteTest::read_write_weights()
     // Compare all target matrices
   WeightReader reader;
   for (size_t i = 0; i < myPatch.num_elements(); ++i) {
-    const unsigned n = pts.num_sample_points( myPatch.element_by_index(i).get_element_type() );
-    for (unsigned j = 0; j < n; ++j) {
-      double expected = tc.get_weight( myPatch, i, &pts, j, err );
-      CPPUNIT_ASSERT(!err);
-      double read = reader.get_weight( myPatch, i, &pts, j, err );
-      CPPUNIT_ASSERT(!err);
-      CPPUNIT_ASSERT_DOUBLES_EQUAL( expected, read, 1e-12 );
+    const EntityTopology type = myPatch.element_by_index(i).get_element_type();
+    const unsigned d = TopologyInfo::dimension( myPatch.element_by_index(i).get_element_type() );
+    for (unsigned sdim = 0; sdim <= d; ++sdim) {
+      unsigned count = TopologyInfo::adjacent(type, sdim);
+      if (type == PYRAMID && sdim == 0)
+        count = 4; // skip pyramid apex
+      for (unsigned snum = 0; snum < count; ++snum) {
+        const unsigned n = ElemSampleQM::sample( sdim, snum );
+        double expected = tc.get_weight( myPatch, i, &pts, n, err );
+        CPPUNIT_ASSERT(!err);
+        double read = reader.get_weight( myPatch, i, &pts, n, err );
+        CPPUNIT_ASSERT(!err);
+        CPPUNIT_ASSERT_DOUBLES_EQUAL( expected, read, 1e-12 );
+      }
     }
   }
 }

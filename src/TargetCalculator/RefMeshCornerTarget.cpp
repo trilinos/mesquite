@@ -34,9 +34,9 @@
 #include "RefMeshCornerTarget.hpp"
 #include "PatchData.hpp"
 #include "MsqError.hpp"
-#include "SamplePoints.hpp"
 #include "ReferenceMesh.hpp"
 #include "MsqMatrix.hpp"
+#include "ElemSampleQM.hpp"
 
 namespace Mesquite {
 
@@ -50,8 +50,8 @@ bool RefMeshCornerTarget::get_3D_target( PatchData& pd,
                                          MsqError& err )
 {
   EntityTopology type = pd.element_by_index(element).get_element_type();
-  unsigned stype, corner;
-  pts->location_from_sample_number( type, sample, stype, corner );
+  unsigned stype = ElemSampleQM::side_dim_from_sample( sample );
+  unsigned corner = ElemSampleQM::side_num_from_sample( sample );
   if (stype != 0) {
     MSQ_SETERR(err)("RefMeshCornerTarget cannot generate targets at sample "
                     "locations other than corners", MsqError::INVALID_STATE);

@@ -41,6 +41,7 @@
 #include "PatchSet.hpp"
 #include "MsqError.hpp"
 #include "ElementPatches.hpp"
+#include "ElemSampleQM.hpp"
 #ifdef MSQ_USE_OLD_IO_HEADERS
 # include <sstream.h>
 #else
@@ -66,6 +67,30 @@ TargetWriter::~TargetWriter() {}
 msq_std::string TargetWriter::get_name() const
   { return "TargetWriter"; }
 
+static void append_samples( msq_std::vector<unsigned>& samples,
+                            unsigned dim, unsigned num )
+{
+  size_t in_size = samples.size();
+  samples.resize( in_size + num );
+  for (unsigned i = 0; i < num; ++i)
+    samples[i+in_size] = ElemSampleQM::sample( dim, i );
+}
+
+void TargetWriter::get_samples( EntityTopology type,
+                                msq_std::vector<unsigned>& samples )
+{
+  samples.clear();
+  const int d = TopologyInfo::dimension(type);
+  if (samplePoints->will_sample_at(type,0))
+    append_samples( samples, 0, type == PYRAMID ? 4 : TopologyInfo::corners(type) );
+  if (samplePoints->will_sample_at(type,1))
+    append_samples( samples, 1, TopologyInfo::edges(type) );
+  if (3 == d && samplePoints->will_sample_at(type,2))
+    append_samples( samples, 2, TopologyInfo::faces(type) );
+  if (samplePoints->will_sample_at(type,d))
+    append_samples( samples, d, 1 );
+}
+
 double TargetWriter::loop_over_mesh( Mesh* mesh, 
                                      MeshDomain* domain, 
                                      const Settings* settings,
@@ -90,6 +115,7 @@ double TargetWriter::loop_over_mesh( Mesh* mesh,
   msq_std::vector< MsqMatrix<3,3> > targets3d;
   msq_std::vector< MsqMatrix<3,2> > targets2d;
   msq_std::vector< double > weights;
+  msq_std::vector< unsigned > samples;
   for (p = patches.begin(); p != patches.end(); ++p)
   {
     patch_verts.clear();
@@ -100,14 +126,14 @@ double TargetWriter::loop_over_mesh( Mesh* mesh,
     
     MsqMeshEntity& elem = patch.element_by_index(0);
     EntityTopology type = elem.get_element_type();
+    get_samples( type, samples );
     
     if (targetCalc) {
       const unsigned dim = TopologyInfo::dimension(type);
-      const unsigned n = samplePoints->num_sample_points( type );
       if (!surf_3D && dim == 2) {
-        targets2d.resize( n );
-        for (unsigned i = 0; i < n; ++i) {
-          targetCalc->get_2D_target( patch, 0, samplePoints, i, targets2d[i], err ); MSQ_ERRZERO(err);
+        targets2d.resize( samples.size() );
+        for (unsigned i = 0; i < samples.size(); ++i) {
+          targetCalc->get_2D_target( patch, 0, samplePoints, samples[i], targets2d[i], err ); MSQ_ERRZERO(err);
 
           MsqMatrix<3,1> cross = targets2d[i].column(0) * targets2d[i].column(1);
           if (DBL_EPSILON > (cross%cross)) {
@@ -116,15 +142,15 @@ double TargetWriter::loop_over_mesh( Mesh* mesh,
           }
         }
         
-        TagHandle tag = get_target_tag( 2, n, mesh, err ); MSQ_ERRZERO(err);
+        TagHandle tag = get_target_tag( 2, samples.size(), mesh, err ); MSQ_ERRZERO(err);
         mesh->tag_set_element_data( tag, 1, 
                                     patch.get_element_handles_array(), 
                                     &targets2d[0], err ); MSQ_ERRZERO(err);
       }
       else {
-        targets3d.resize( n );
-        for (unsigned i = 0; i < n; ++i) {
-          targetCalc->get_3D_target( patch, 0, samplePoints, i, targets3d[i], err ); MSQ_ERRZERO(err);
+        targets3d.resize( samples.size() );
+        for (unsigned i = 0; i < samples.size(); ++i) {
+          targetCalc->get_3D_target( patch, 0, samplePoints, samples[i], targets3d[i], err ); MSQ_ERRZERO(err);
 
           if (DBL_EPSILON > det(targets3d[i])) {
             MSQ_SETERR(err)("Inverted 3D target", MsqError::INVALID_ARG);
@@ -132,7 +158,7 @@ double TargetWriter::loop_over_mesh( Mesh* mesh,
           }
         }
         
-        TagHandle tag = get_target_tag( 3, n, mesh,  err ); MSQ_ERRZERO(err);
+        TagHandle tag = get_target_tag( 3, samples.size(), mesh,  err ); MSQ_ERRZERO(err);
         mesh->tag_set_element_data( tag, 1, 
                                     patch.get_element_handles_array(), 
                                     &targets3d[0], err ); MSQ_ERRZERO(err);
@@ -140,12 +166,11 @@ double TargetWriter::loop_over_mesh( Mesh* mesh,
     }
       
     if (weightCalc) {
-      const unsigned n = samplePoints->num_sample_points( type );
-      weights.resize(n);
-      for (unsigned i = 0; i < n; ++i) {
-        weights[i] = weightCalc->get_weight( patch, 0, samplePoints, i, err ); MSQ_ERRZERO(err);
+      weights.resize( samples.size() );
+      for (unsigned i = 0; i < samples.size(); ++i) {
+        weights[i] = weightCalc->get_weight( patch, 0, samplePoints, samples[i], err ); MSQ_ERRZERO(err);
       }
-      TagHandle tag = get_weight_tag( n, mesh, err ); MSQ_ERRZERO(err);
+      TagHandle tag = get_weight_tag( samples.size(), mesh, err ); MSQ_ERRZERO(err);
       mesh->tag_set_element_data( tag, 1, 
                                   patch.get_element_handles_array(),
                                   &weights[0], err ); MSQ_ERRZERO(err);

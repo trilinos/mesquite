@@ -590,7 +590,8 @@ void TMPQualityMetricTest::test_gradient_2D()
   double act_val;
   msq_std::vector<size_t> indices;
   msq_std::vector<Vector3D> act_grad;
-  m.evaluate_with_gradient( pd, 0, act_val, indices, act_grad, err );
+  size_t h = ElemSampleQM::handle( 2, 0, 0 );
+  m.evaluate_with_gradient( pd, h, act_val, indices, act_grad, err );
   ASSERT_NO_ERROR(err);
   
     // compare values
@@ -601,7 +602,7 @@ void TMPQualityMetricTest::test_gradient_2D()
   CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[3]].data()), act_grad[3], 1e-10 );
 
     // check numerical approx of gradient
-  m.QualityMetric::evaluate_with_gradient( pd, 0, act_val, indices, act_grad, err );
+  m.QualityMetric::evaluate_with_gradient( pd, h, act_val, indices, act_grad, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( expt_val, act_val, 1e-10 );
   CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[0]].data()), act_grad[0], 1e-5 );
@@ -664,7 +665,8 @@ void TMPQualityMetricTest::test_gradient_3D()
   double act_val;
   msq_std::vector<size_t> indices;
   msq_std::vector<Vector3D> act_grad;
-  m.evaluate_with_gradient( pd, 0, act_val, indices, act_grad, err );
+  size_t h = ElemSampleQM::handle( 3, 0, 0 );
+  m.evaluate_with_gradient( pd, h, act_val, indices, act_grad, err );
   ASSERT_NO_ERROR(err);
   
     // compare values
@@ -679,7 +681,7 @@ void TMPQualityMetricTest::test_gradient_3D()
   CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[7]].data()), act_grad[7], 1e-10 );
 
     // check numerical approx of gradient
-  m.QualityMetric::evaluate_with_gradient( pd, 0, act_val, indices, act_grad, err );
+  m.QualityMetric::evaluate_with_gradient( pd, h, act_val, indices, act_grad, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( expt_val, act_val, 1e-10 );
   CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(expt_grad[indices[0]].data()), act_grad[0], 1e-5 );
@@ -988,16 +990,16 @@ void TMPQualityMetricTest::regression_inverse_mean_ratio_grad()
   handles.clear();
   ref_metric.get_evaluations( pd, handles, false, err ); ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT_EQUAL( (size_t)1, handles.size() );
-  const size_t hand = handles.front();
+  const size_t hand1 = handles.front();
   handles.clear();
   metric.get_evaluations( pd, handles, false, err ); ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT_EQUAL( (size_t)1, handles.size() );
-  CPPUNIT_ASSERT_EQUAL( hand, handles.front() );
+  const size_t hand2 = handles.front();
   
   bool exp_rval, act_rval;
-  exp_rval = ref_metric.evaluate_with_gradient( pd, hand, exp_val, exp_idx, exp_grad, err );
+  exp_rval = ref_metric.evaluate_with_gradient( pd, hand1, exp_val, exp_idx, exp_grad, err );
   ASSERT_NO_ERROR(err);
-  act_rval = metric.evaluate_with_gradient( pd, hand, act_val, act_idx, act_grad, err );
+  act_rval = metric.evaluate_with_gradient( pd, hand2, act_val, act_idx, act_grad, err );
   ASSERT_NO_ERROR(err);
   
   CPPUNIT_ASSERT( exp_rval );
@@ -1056,16 +1058,16 @@ void TMPQualityMetricTest::regression_inverse_mean_ratio_hess()
   handles.clear();
   ref_metric.get_evaluations( pd, handles, false, err ); ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT_EQUAL( (size_t)1, handles.size() );
-  const size_t hand = handles.front();
+  const size_t hand1 = handles.front();
   handles.clear();
   metric.get_evaluations( pd, handles, false, err ); ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT_EQUAL( (size_t)1, handles.size() );
-  CPPUNIT_ASSERT_EQUAL( hand, handles.front() );
+  const size_t hand2 = handles.front();
   
   bool exp_rval, act_rval;
-  exp_rval = ref_metric.evaluate_with_Hessian( pd, hand, exp_val, exp_idx, exp_grad, exp_hess, err );
+  exp_rval = ref_metric.evaluate_with_Hessian( pd, hand1, exp_val, exp_idx, exp_grad, exp_hess, err );
   ASSERT_NO_ERROR(err);
-  act_rval = metric.evaluate_with_Hessian( pd, hand, act_val, act_idx, act_grad, act_hess, err );
+  act_rval = metric.evaluate_with_Hessian( pd, hand2, act_val, act_idx, act_grad, act_hess, err );
   ASSERT_NO_ERROR(err);
   
   CPPUNIT_ASSERT( exp_rval );

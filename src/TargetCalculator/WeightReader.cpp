@@ -36,6 +36,7 @@
 #include "MsqError.hpp"
 #include "MsqMatrix.hpp"
 #include "SamplePoints.hpp"
+#include "ElemSampleQM.hpp"
 #ifdef MSQ_USE_OLD_IO_HEADERS
 # include <sstream.h>
 #else
@@ -88,11 +89,17 @@ double WeightReader::get_weight( PatchData &pd,
                                  MsqError& err )
 {
   WeightReaderData& data = get_data( pd );
-  if (!data.weights.empty() && data.elementIndex == element) {
-    assert(sample < data.weights.size());
-    return data.weights[sample];
-  }
+  
+    // calculate index of sample in array 
   EntityTopology type = pd.element_by_index(element).get_element_type();
+  unsigned dim = ElemSampleQM::side_dim_from_sample( sample );
+  unsigned num = ElemSampleQM::side_num_from_sample( sample );
+  unsigned offset = samples->sample_number_from_location( type, dim, num );
+
+  if (!data.weights.empty() && data.elementIndex == element) {
+    assert(offset < data.weights.size());
+    return data.weights[offset];
+  }
   const unsigned num_samples = samples->num_sample_points( type );
   const unsigned handle_idx = num_samples - 1;
   
@@ -122,7 +129,8 @@ double WeightReader::get_weight( PatchData &pd,
   }
   
   data.elementIndex = element;
-  return data.weights[sample];
+  
+  return data.weights[offset];
 }
 
   

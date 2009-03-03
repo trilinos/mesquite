@@ -36,6 +36,7 @@
 #include "MsqError.hpp"
 #include "MsqMatrix.hpp"
 #include "SamplePoints.hpp"
+#include "ElemSampleQM.hpp"
 #ifdef MSQ_USE_OLD_IO_HEADERS
 # include <sstream.h>
 #else
@@ -91,6 +92,12 @@ bool TargetReader::get_3D_target( PatchData &pd,
                                   MsqMatrix<3,3>& W_out,
                                   MsqError& err )
 {
+    // calculate index of sample in array 
+  EntityTopology type = pd.element_by_index(element).get_element_type();
+  unsigned sdim = ElemSampleQM::side_dim_from_sample( sample );
+  unsigned snum = ElemSampleQM::side_num_from_sample( sample );
+  unsigned offset = samples->sample_number_from_location( type, sdim, snum );
+
   int dim = TopologyInfo::dimension( pd.element_by_index(element).get_element_type() );
   if ((dim == 2) && !use3DSurfaceTargets) {
     MSQ_SETERR(err)("Attempt to read 3D target for surface element", MsqError::INVALID_STATE );
@@ -99,11 +106,10 @@ bool TargetReader::get_3D_target( PatchData &pd,
   
   TargetReaderData& data = get_data( pd );
   if (!data.targets3D.empty() && data.elementIndex == element) {
-    assert(sample < data.targets3D.size());
-    W_out = data.targets3D[sample];
+    assert(offset < data.targets3D.size());
+    W_out = data.targets3D[offset];
     return true;
   }
-  EntityTopology type = pd.element_by_index(element).get_element_type();
   const unsigned num_samples = samples->num_sample_points( type );
   const unsigned handle_idx = num_samples - 1;
   
@@ -131,9 +137,9 @@ bool TargetReader::get_3D_target( PatchData &pd,
     data.targets3D.clear();
     return false;
   }
-  
+
   data.elementIndex = element;
-  W_out = data.targets3D[sample];
+  W_out = data.targets3D[offset];
   return true;
 }
 
@@ -144,6 +150,12 @@ bool TargetReader::get_2D_target( PatchData &pd,
                                   MsqMatrix<3,2>& W_out,
                                   MsqError& err )
 {
+    // calculate index of sample in array 
+  EntityTopology type = pd.element_by_index(element).get_element_type();
+  unsigned sdim = ElemSampleQM::side_dim_from_sample( sample );
+  unsigned snum = ElemSampleQM::side_num_from_sample( sample );
+  unsigned offset = samples->sample_number_from_location( type, sdim, snum );
+
   int dim = TopologyInfo::dimension( pd.element_by_index(element).get_element_type() );
   if ((dim == 3) || use3DSurfaceTargets) {
     MSQ_SETERR(err)("Attempt to read 3x2 target 3x3 target element", MsqError::INVALID_STATE );
@@ -152,11 +164,10 @@ bool TargetReader::get_2D_target( PatchData &pd,
   
   TargetReaderData& data = get_data( pd );
   if (!data.targets2D.empty() && data.elementIndex == element) {
-    assert(sample < data.targets2D.size());
-    W_out = data.targets2D[sample];
+    assert(offset < data.targets2D.size());
+    W_out = data.targets2D[offset];
     return true;
   }
-  EntityTopology type = pd.element_by_index(element).get_element_type();
   const unsigned num_samples = samples->num_sample_points( type );
   const unsigned handle_idx = num_samples - 1;
   
@@ -186,7 +197,7 @@ bool TargetReader::get_2D_target( PatchData &pd,
   }
   
   data.elementIndex = element;
-  W_out = data.targets2D[sample];
+  W_out = data.targets2D[offset];
   return true;
 }
  

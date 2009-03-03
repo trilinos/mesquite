@@ -70,6 +70,7 @@ private:
   TagHandle get_weight_tag( unsigned count, Mesh* mesh, MsqError& err );
   TagHandle get_tag_handle( const msq_std::string& base_name,
                             unsigned num_dbl, Mesh* mesh, MsqError& err );
+  void get_samples( EntityTopology type, msq_std::vector<unsigned>& samples );
 
   const SamplePoints* samplePoints;
 

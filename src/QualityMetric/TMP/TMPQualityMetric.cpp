@@ -32,7 +32,6 @@
 
 #include "Mesquite.hpp"
 #include "TMPQualityMetric.hpp"
-#include "SamplePoints.hpp"
 #include "MsqMatrix.hpp"
 #include "ElementQM.hpp"
 #include "MsqError.hpp"
@@ -202,8 +201,8 @@ bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
   MsqMeshEntity& elem = pd.element_by_index( e );
   EntityTopology type = elem.get_element_type();
   unsigned edim = TopologyInfo::dimension( type );
-  unsigned dim, num;
-  samplePts->location_from_sample_number( type, s, dim, num );
+  unsigned dim = ElemSampleQM::side_dim_from_sample( s );
+  unsigned num = ElemSampleQM::side_num_from_sample( s );
   unsigned bits = pd.higher_order_node_bits( e );
   
   bool rval;
@@ -274,8 +273,8 @@ bool TMPQualityMetric::evaluate_with_gradient(
   MsqMeshEntity& elem = pd.element_by_index( e );
   EntityTopology type = elem.get_element_type();
   unsigned edim = TopologyInfo::dimension( type );
-  unsigned dim, num;
-  samplePts->location_from_sample_number( type, s, dim, num );
+  unsigned dim = ElemSampleQM::side_dim_from_sample( s );
+  unsigned num = ElemSampleQM::side_num_from_sample( s );
   size_t num_idx = 0;
   unsigned bits = pd.higher_order_node_bits( e );
   
@@ -357,8 +356,8 @@ bool TMPQualityMetric::evaluate_with_Hessian(
   MsqMeshEntity& elem = pd.element_by_index( e );
   EntityTopology type = elem.get_element_type();
   unsigned edim = TopologyInfo::dimension( type );
-  unsigned dim, num;
-  samplePts->location_from_sample_number( type, s, dim, num );
+  unsigned dim = ElemSampleQM::side_dim_from_sample( s );
+  unsigned num = ElemSampleQM::side_num_from_sample( s );
   size_t num_idx = 0;
   unsigned bits = pd.higher_order_node_bits( e );
   
@@ -452,8 +451,8 @@ bool TMPQualityMetric::evaluate_with_Hessian_diagonal(
   MsqMeshEntity& elem = pd.element_by_index( e );
   EntityTopology type = elem.get_element_type();
   unsigned edim = TopologyInfo::dimension( type );
-  unsigned dim, num;
-  samplePts->location_from_sample_number( type, s, dim, num );
+  unsigned dim = ElemSampleQM::side_dim_from_sample( s );
+  unsigned num = ElemSampleQM::side_num_from_sample( s );
   size_t num_idx = 0;
   unsigned bits = pd.higher_order_node_bits( e );
   

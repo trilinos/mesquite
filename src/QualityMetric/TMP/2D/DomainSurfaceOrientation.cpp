@@ -124,8 +124,8 @@ bool DomainSurfaceOrientation::evaluate_with_indices( PatchData& pd,
     return false;
   }
   
-  unsigned dim, num;
-  samplePts->location_from_sample_number( type, s, dim, num );
+  unsigned dim = ElemSampleQM::side_dim_from_sample( s );
+  unsigned num = ElemSampleQM::side_num_from_sample( s );
   const unsigned bits = pd.higher_order_node_bits( e );
   
   Vector3D n;

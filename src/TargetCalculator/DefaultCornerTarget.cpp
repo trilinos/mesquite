@@ -33,9 +33,9 @@
 #include "Mesquite.hpp"
 #include "DefaultCornerTarget.hpp"
 #include "MsqError.hpp"
-#include "SamplePoints.hpp"
 #include "MsqMatrix.hpp"
 #include "PatchData.hpp"
+#include "ElemSampleQM.hpp"
 
 namespace Mesquite {
 
@@ -52,8 +52,7 @@ bool DefaultCornerTarget:: get_3D_target( PatchData& pd,
   const EntityTopology type = pd.element_by_index(element).get_element_type();
   static const double SIXTH_ROOT_OF_TWO = msq_stdc::pow(2., 1./6.);
 
-  unsigned stype, corner;
-  pts->location_from_sample_number( type, sample, stype, corner );
+  unsigned stype = ElemSampleQM::side_dim_from_sample( sample );
   if (stype != 0) {
     MSQ_SETERR(err)("IdealCornerTarget cannot generate targets at sample "
                     "locations other than corners", MsqError::INVALID_STATE);

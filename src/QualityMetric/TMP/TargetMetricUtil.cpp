@@ -110,6 +110,35 @@ void surface_to_2d( const MsqMatrix<3,2>& App,
   }
 }
 */
+
+static inline void append_samples( size_t element,
+                                   unsigned dimension, 
+                                   unsigned count,
+                                   msq_std::vector<size_t>& handles )
+{
+  size_t in_size = handles.size();
+  handles.resize( in_size + count );
+  for (unsigned i = 0; i < count; ++i)
+    handles[i+in_size] = ElemSampleQM::handle( dimension, i, element );
+}
+
+static inline void append_elem_samples( const SamplePoints* pts,
+                                        EntityTopology type,
+                                        size_t element,
+                                        msq_std::vector<size_t>& handles  )
+{
+  const unsigned elem_dim = TopologyInfo::dimension( type );
+  if (pts->will_sample_at(type,elem_dim))
+    append_samples( element, elem_dim, 1, handles );
+  if (3 == elem_dim && pts->will_sample_at(type,2))
+    append_samples( element, 2, TopologyInfo::faces(type), handles );
+  if (pts->will_sample_at(type,1))
+    append_samples( element, 1, TopologyInfo::edges(type), handles );
+  if (pts->will_sample_at(type,0))
+    append_samples( element, 0, (type == PYRAMID) ? 4 : TopologyInfo::corners(type), handles );
+}
+                                        
+
 void get_sample_pt_evaluations( PatchData& pd,
                                 const SamplePoints* pts,
                                 msq_std::vector<size_t>& handles,
@@ -122,9 +151,7 @@ void get_sample_pt_evaluations( PatchData& pd,
   for (msq_std::vector<size_t>::iterator i = elems.begin(); i != elems.end(); ++i)
   {
     EntityTopology type = pd.element_by_index( *i ).get_element_type();
-    int num_samples = pts->num_sample_points( type );
-    for (int j = 0; j < num_samples; ++j)
-      handles.push_back( ElemSampleQM::handle(j, *i) );
+    append_elem_samples( pts, type, *i, handles );
   }
 }
                    
@@ -134,11 +161,9 @@ void get_elem_sample_points( PatchData& pd,
                              msq_std::vector<size_t>& handles,
                              MsqError& err )
 {
+  handles.clear();
   EntityTopology type = pd.element_by_index( elem ).get_element_type();
-  int num_samples = pts->num_sample_points( type );
-  handles.resize( num_samples );
-  for (int j = 0; j < num_samples; ++j)
-    handles[j] = ElemSampleQM::handle(j, elem);
+  append_elem_samples( pts, type, elem, handles );
 }
 
 } // namespace Mesquite

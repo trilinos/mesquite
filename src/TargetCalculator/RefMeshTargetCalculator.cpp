@@ -34,8 +34,8 @@
 #include "RefMeshTargetCalculator.hpp"
 #include "PatchData.hpp"
 #include "MsqError.hpp"
-#include "SamplePoints.hpp"
 #include "ReferenceMesh.hpp"
+#include "ElemSampleQM.hpp"
 
 namespace Mesquite {
 
@@ -51,8 +51,8 @@ bool RefMeshTargetCalculator::get_3D_target( PatchData& pd,
   unsigned ho_bits = get_vertex_coords( pd, element, err ); MSQ_ERRZERO(err);
   MsqMeshEntity& elem = pd.element_by_index( element );
   EntityTopology type = elem.get_element_type();
-  unsigned dim, num;
-  pts->location_from_sample_number( type, sample, dim, num );
+  unsigned dim = ElemSampleQM::side_dim_from_sample( sample );
+  unsigned num = ElemSampleQM::side_num_from_sample( sample );
   const MappingFunction3D* func = pd.get_mapping_function_3D( type );
   jacobianCalc.get_Jacobian_3D( func, ho_bits, dim, num, &tmpCoords[0], 
                                 elem.node_count(), W_out, err ); MSQ_ERRZERO(err);
@@ -69,8 +69,8 @@ bool RefMeshTargetCalculator::get_2D_target( PatchData& pd,
   unsigned ho_bits = get_vertex_coords( pd, element, err ); MSQ_ERRFALSE(err);
   MsqMeshEntity& elem = pd.element_by_index( element );
   EntityTopology type = elem.get_element_type();
-  unsigned dim, num;
-  pts->location_from_sample_number( type, sample, dim, num );
+  unsigned dim = ElemSampleQM::side_dim_from_sample( sample );
+  unsigned num = ElemSampleQM::side_num_from_sample( sample );
   const MappingFunction2D* func = pd.get_mapping_function_2D( type );
   jacobianCalc.get_Jacobian_2D( func, ho_bits, dim, num, &tmpCoords[0], 
                                 elem.node_count(), W_out, err ); MSQ_ERRZERO(err);

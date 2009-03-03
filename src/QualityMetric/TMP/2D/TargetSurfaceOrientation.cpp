@@ -125,7 +125,8 @@ bool TargetSurfaceOrientation::evaluate_with_indices( PatchData& pd,
   }
   
   unsigned dim, num;
-  samplePts->location_from_sample_number( type, s, dim, num );
+  dim = ElemSampleQM::side_dim_from_sample( s );
+  num = ElemSampleQM::side_num_from_sample( s );
   const size_t* conn = elem.get_vertex_index_array();
   const unsigned bits = pd.higher_order_node_bits( e );
   func->derivatives( dim, num, bits, indices, mDerivs, num_idx, err ); MSQ_ERRZERO( err );

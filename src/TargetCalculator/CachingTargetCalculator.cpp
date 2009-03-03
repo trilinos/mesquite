@@ -36,6 +36,7 @@
 #include "PatchData.hpp"
 #include "MsqMatrix.hpp"
 #include "ExtraData.hpp"
+#include "ElemSampleQM.hpp"
 
 namespace Mesquite {
 
@@ -149,7 +150,13 @@ bool CachingTargetCalculator::get_3D_target( PatchData& pd,
     MSQ_ERRZERO(err);
   }
   
-  W_out = data.targets3D[ data.elementOffsets[element] + sample ];
+    // calculate index of sample in array 
+  EntityTopology type = pd.element_by_index(element).get_element_type();
+  unsigned sdim = ElemSampleQM::side_dim_from_sample( sample );
+  unsigned snum = ElemSampleQM::side_num_from_sample( sample );
+  unsigned offset = pts->sample_number_from_location( type, sdim, snum );
+
+  W_out = data.targets3D[ data.elementOffsets[element] + offset ];
   return true;
 }
   
@@ -176,7 +183,13 @@ bool CachingTargetCalculator::get_2D_target( PatchData& pd,
     }
   }
   
-  W_out = data.targets2D[ data.elementOffsets[element] + sample ];
+    // calculate index of sample in array 
+  EntityTopology type = pd.element_by_index(element).get_element_type();
+  unsigned sdim = ElemSampleQM::side_dim_from_sample( sample );
+  unsigned snum = ElemSampleQM::side_num_from_sample( sample );
+  unsigned offset = pts->sample_number_from_location( type, sdim, snum );
+
+  W_out = data.targets2D[ data.elementOffsets[element] + offset ];
   return true;
 }
 

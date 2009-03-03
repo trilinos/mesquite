@@ -40,6 +40,7 @@
 #include "Settings.hpp"
 #include "SamplePoints.hpp"
 #include "IdealElements.hpp"
+#include "ElemSampleQM.hpp"
 #include "cppunit/extensions/HelperMacros.h"
 #include "UnitUtil.hpp"
 
@@ -197,7 +198,7 @@ void IdealTargetTest::get_calc_target( bool rotate, EntityTopology type,
   
   SamplePoints pts( true, true, true, true );
   IdealTargetCalculator tc( rotate );
-  unsigned sam = pts.sample_number_from_location( type, dim, num );
+  unsigned sam = ElemSampleQM::sample( dim, num );
   if (elem_dim == 2)
     tc.get_2D_target( pd, 0, &pts, sam, w2, err );
   else
@@ -305,7 +306,7 @@ void IdealTargetTest::test_plane_neg_z()
   SamplePoints pts( true, true, true, true );
   IdealTargetCalculator tc( true );
   
-  unsigned sam = pts.sample_number_from_location( QUADRILATERAL, 0, 0 );
+  unsigned sam = ElemSampleQM::sample( 0, 0) ;
   MsqMatrix<3,2> W;
   tc.get_2D_target( pd, 0, &pts, sam, W, err );
   ASSERT_NO_ERROR(err);

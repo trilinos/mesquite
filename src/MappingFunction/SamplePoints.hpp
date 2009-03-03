@@ -72,25 +72,6 @@ public:
    */
   static unsigned num_sample_points( EntityTopology element_type, 
                                      unsigned sample_topology_bits );
-                                     
-  /**\brief Get topological location of a sample point.
-   *
-   * Get a topological description of a sample point.
-   *
-   *\param element_type  The element topology
-   *\param sample_topology_bits Bit set describing all element sample points
-   *\param sample_point_number  A number in the range [0,num_sample_points]
-   *\param entity_dimension Output: the dimension of the entity for which
-   *                           the sample point is the topological midpoint
-   *                           (e.g. 1->mid_edge)
-   *\param entity_number Output: The number of the entity of dimension entity_dimensino
-   *                     in the canonical order for the element topology.
-   */
-  inline static void location_from_sample_number( EntityTopology element_type,
-                                           unsigned sample_topology_bits,
-                                           unsigned sample_point_number,
-                                           unsigned& entity_dimension,
-                                           unsigned& entity_number );
   
   /**\brief Get the sample point number given the topological location.
    *
@@ -154,24 +135,9 @@ public:
    */
   inline void dont_sample_at( EntityTopology type, unsigned dimension );
   
-                                     
-  /**\brief Get topological location of a sample point.
-   *
-   * Get a topological description of a sample point.
-   *
-   *\param element_type  The element topology
-   *\param sample_point_number  A number in the range [0,num_sample_points]
-   *\param entity_dimension Output: the dimension of the entity for which
-   *                           the sample point is the topological midpoint
-   *                           (e.g. 1->mid_edge)
-   *\param entity_number Output: The number of the entity of dimension entity_dimensino
-   *                     in the canonical order for the element topology.
-   */
-  inline void location_from_sample_number( EntityTopology element_type,
-                                           unsigned sample_point_number,
-                                           unsigned& entity_dimension,
-                                           unsigned& entity_number ) const;
-  
+  /**\brief Get bit set describing element sample points */
+  inline unsigned get_sample_topology_bits( EntityTopology type ) const;
+ 
   /**\brief Get the sample point number given the topological location.
    *
    * Get the sample point number for an element type.
@@ -190,9 +156,6 @@ public:
                                            unsigned entity_dimension,
                                            unsigned entity_number ) const;
   
-  /**\brief Get bit set describing element sample points */
-  inline unsigned get_sample_topology_bits( EntityTopology type ) const;
-
   /**\brief Set bit set describing element sample points */
   inline void set_sample_topology_bits( EntityTopology type, unsigned bits );
   
@@ -220,30 +183,6 @@ void SamplePoints::sample_at( EntityTopology type, unsigned dimension )
   
 void SamplePoints::dont_sample_at( EntityTopology type, unsigned dimension )
   { sampleBits[type] &= ~(1 << dimension ); }
-
-inline void SamplePoints::location_from_sample_number( EntityTopology element_type,
-                                           unsigned sample_topology_bits,
-                                           unsigned sample_point_number,
-                                           unsigned& entity_dimension,
-                                           unsigned& entity_number )
-{
-  SampleLoc loc = locationTable[element_type][sample_topology_bits][sample_point_number];
-  assert(loc.dim >= 0);
-  entity_dimension = loc.dim;
-  entity_number    = loc.num;  
-}
-  
-void SamplePoints::location_from_sample_number( EntityTopology element_type,
-                                                unsigned sample_point_number,
-                                                unsigned& entity_dimension,
-                                                unsigned& entity_number ) const
-{
-  location_from_sample_number( element_type,
-                               get_sample_topology_bits( element_type ),
-                               sample_point_number,
-                               entity_dimension, 
-                               entity_number );
-}
   
 unsigned SamplePoints::sample_number_from_location( EntityTopology element_type,
                                                     unsigned entity_dimension,
@@ -253,7 +192,6 @@ unsigned SamplePoints::sample_number_from_location( EntityTopology element_type,
                                       get_sample_topology_bits( element_type ),
                                       entity_dimension, entity_number );
 }
-  
 
 } // namespace Mesquite
 

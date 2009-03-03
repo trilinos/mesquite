@@ -32,7 +32,6 @@
 
 #include "Mesquite.hpp"
 #include "JSquared.hpp"
-#include "SamplePoints.hpp"
 #include "MsqMatrix.hpp"
 #include "ElementQM.hpp"
 #include "MsqError.hpp"
@@ -104,8 +103,8 @@ bool JSquared::evaluate_with_indices( PatchData& pd,
   size_t   e = ElemSampleQM::  elem( handle );
   MsqMeshEntity& elem = pd.element_by_index( e );
   EntityTopology type = elem.get_element_type();
-  unsigned dim, num;
-  samplePts->location_from_sample_number( type, s, dim, num );
+  unsigned dim = ElemSampleQM::side_dim_from_sample( s );
+  unsigned num = ElemSampleQM::side_num_from_sample( s );
   unsigned edim = TopologyInfo::dimension( type );
   
   unsigned bits = pd.higher_order_node_bits( e );

@@ -34,9 +34,9 @@
 #include "IdealTargetCalculator.hpp"
 #include "MappingFunction.hpp"
 #include "PatchData.hpp"
-#include "SamplePoints.hpp"
 #include "MsqError.hpp"
 #include "IdealElements.hpp"
+#include "ElemSampleQM.hpp"
 
 namespace Mesquite {
 
@@ -52,8 +52,8 @@ bool IdealTargetCalculator:: get_3D_target( PatchData& pd,
 {
   MsqMeshEntity& elem = pd.element_by_index( element );
   EntityTopology type = elem.get_element_type();
-  unsigned dim, num;
-  pts->location_from_sample_number( type, sample, dim, num );
+  unsigned dim = ElemSampleQM::side_dim_from_sample( sample );
+  unsigned num = ElemSampleQM::side_num_from_sample( sample );
   const MappingFunction3D* func = pd.get_mapping_function_3D( type );
 
   const Vector3D* verts = unit_element( type );
@@ -76,8 +76,8 @@ bool IdealTargetCalculator:: get_2D_target( PatchData& pd,
 {
   MsqMeshEntity& elem = pd.element_by_index( element );
   EntityTopology type = elem.get_element_type();
-  unsigned dim, num;
-  pts->location_from_sample_number( type, sample, dim, num );
+  unsigned dim = ElemSampleQM::side_dim_from_sample( sample);
+  unsigned num = ElemSampleQM::side_num_from_sample( sample );
   const MappingFunction2D* func = pd.get_mapping_function_2D( type );
 
   const Vector3D* verts = unit_element( type );
