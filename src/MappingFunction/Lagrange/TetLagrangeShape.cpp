@@ -115,8 +115,8 @@ static void coefficients_at_mid_face( unsigned face,
       ++num_coeff;
     }
     else {
-      coeff_out[0] += two_ninth;
-      coeff_out[2]    += two_ninth;
+      coeff_out[1] += two_ninth;
+      coeff_out[2] += two_ninth;
     }
     if (nodebits & (1<<(3+face))) {
       indices_out[num_coeff] = 7+face;
@@ -124,8 +124,8 @@ static void coefficients_at_mid_face( unsigned face,
       ++num_coeff;
     }
     else {
-      coeff_out[1] += two_ninth;
-      coeff_out[2]    += two_ninth;
+      coeff_out[0] += two_ninth;
+      coeff_out[2] += two_ninth;
     }
   }
   else {

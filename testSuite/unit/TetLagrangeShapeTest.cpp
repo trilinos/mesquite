@@ -513,22 +513,22 @@ void TetLagrangeShapeTest::test_coeff_corners()
 void TetLagrangeShapeTest::test_coeff_edges()
 {
   for (unsigned i = 0; i < 0x3F; ++i) {
-    test_edge_coeff( 0, 0 );
-    test_edge_coeff( 1, 0 );
-    test_edge_coeff( 2, 0 );
-    test_edge_coeff( 3, 0 );
-    test_edge_coeff( 4, 0 );
-    test_edge_coeff( 5, 0 );
+    test_edge_coeff( 0, i );
+    test_edge_coeff( 1, i );
+    test_edge_coeff( 2, i );
+    test_edge_coeff( 3, i );
+    test_edge_coeff( 4, i );
+    test_edge_coeff( 5, i );
   }
 }
 
 void TetLagrangeShapeTest::test_coeff_faces()
 {
   for (unsigned i = 0; i < 0x3F; ++i) {
-    test_face_coeff( 0, 0 );
-    test_face_coeff( 1, 0 );
-    test_face_coeff( 2, 0 );
-    test_face_coeff( 3, 0 );
+    test_face_coeff( 0, i );
+    test_face_coeff( 1, i );
+    test_face_coeff( 2, i );
+    test_face_coeff( 3, i );
   }
 }
 
