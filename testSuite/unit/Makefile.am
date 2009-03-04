@@ -81,6 +81,7 @@ msq_test_SOURCES = msq_test_main.cpp \
 	MsqMatrixTest.cpp \
 	MsqMeshEntityTest.cpp \
 	MsqVertexTest.cpp \
+        NodeSetTest.cpp \
 	NumericalOFTest.cpp \
 	ObjectiveFunctionTest.cpp \
 	PatchDataTest.cpp \

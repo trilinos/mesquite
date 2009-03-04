@@ -27,6 +27,7 @@ MSQ_SRCS += \
 
 MSQ_HDRS += \
 	$(SRC_MISC_DIR)/BoundedCylinderDomain.hpp \
+	$(SRC_MISC_DIR)/Bits.hpp \
 	$(SRC_MISC_DIR)/CylinderDomain.hpp \
 	$(SRC_MISC_DIR)/DomainClassifier.hpp \
 	$(SRC_MISC_DIR)/Exponent.hpp \
