@@ -48,7 +48,7 @@ bool RefMeshTargetCalculator::get_3D_target( PatchData& pd,
                                              MsqMatrix<3,3>& W_out,
                                              MsqError& err )
 {
-  unsigned ho_bits = get_vertex_coords( pd, element, err ); MSQ_ERRZERO(err);
+  NodeSet ho_bits = get_vertex_coords( pd, element, err ); MSQ_ERRZERO(err);
   MsqMeshEntity& elem = pd.element_by_index( element );
   EntityTopology type = elem.get_element_type();
   unsigned dim = ElemSampleQM::side_dim_from_sample( sample );
@@ -66,7 +66,7 @@ bool RefMeshTargetCalculator::get_2D_target( PatchData& pd,
                                              MsqMatrix<3,2>& W_out,
                                              MsqError& err )
 {
-  unsigned ho_bits = get_vertex_coords( pd, element, err ); MSQ_ERRFALSE(err);
+  NodeSet ho_bits = get_vertex_coords( pd, element, err ); MSQ_ERRFALSE(err);
   MsqMeshEntity& elem = pd.element_by_index( element );
   EntityTopology type = elem.get_element_type();
   unsigned dim = ElemSampleQM::side_dim_from_sample( sample );
@@ -77,11 +77,11 @@ bool RefMeshTargetCalculator::get_2D_target( PatchData& pd,
   return true;
 }
 
-unsigned RefMeshTargetCalculator::get_vertex_coords( PatchData& pd, 
+NodeSet RefMeshTargetCalculator::get_vertex_coords( PatchData& pd, 
                                                      size_t elem_idx,  
                                                      MsqError& err )
 {
-  unsigned bits = 0;
+  NodeSet bits;
   MsqMeshEntity& elem = pd.element_by_index( elem_idx );
   const EntityTopology type = elem.get_element_type();
   
@@ -96,27 +96,19 @@ unsigned RefMeshTargetCalculator::get_vertex_coords( PatchData& pd,
     tmpHandles[i] = vtx_hdl[vtx_idx[i]];
   
   refMesh->get_reference_vertex_coordinates( &tmpHandles[0], n, &tmpCoords[0], err );
-  MSQ_ERRZERO(err);
+  if (MSQ_CHKERR(err)) return NodeSet();
 
   bool midedge, midface, midvol;
   TopologyInfo::higher_order( type, n, midedge, midface, midvol, err );
-  MSQ_ERRZERO(err);
+  if (MSQ_CHKERR(err)) return NodeSet();
   
   if (midedge) 
-    for (unsigned i = 0; i < TopologyInfo::edges(type); ++i)
-      bits |= (1<<i);
-  if (TopologyInfo::dimension(type) == 2) {
-    if (midface)
-      bits |= 1<<TopologyInfo::edges(type);
-  }
-  else {
-    if (midface)
-      for (unsigned i = 0; i < TopologyInfo::faces(type); ++i)
-        bits |= 1<<(i+TopologyInfo::edges(type));
-    if (midvol)
-      bits |= 1<<(TopologyInfo::edges(type)+TopologyInfo::faces(type));
-  }
-  
+    bits.set_all_mid_edge_nodes();
+  if (midface)
+    bits.set_all_mid_face_nodes();
+  if (TopologyInfo::dimension(type) == 3 && midvol)
+    bits.set_mid_region_node();
+ 
   return bits;
 }
 

@@ -41,13 +41,13 @@ int LinearTriangle::num_nodes() const
 
 void LinearTriangle::coefficients( unsigned loc_dim,
                                    unsigned loc_num,
-                                   unsigned nodebits,
+                                   NodeSet nodeset,
                                    double* coeff_out,
                                    size_t* indices_out,
                                    size_t& num_coeff,
                                    MsqError& err ) const
 {
-  if (nodebits) {
+  if (nodeset.have_any_mid_node()) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
     return;
   }
@@ -79,13 +79,13 @@ void LinearTriangle::coefficients( unsigned loc_dim,
 
 void LinearTriangle::derivatives( unsigned ,
                                   unsigned ,
-                                  unsigned nodebits,
+                                  NodeSet nodeset,
                                   size_t* vertices,
                                   MsqVector<2>* coeff_derivs,
                                   size_t& num_vtx,
                                   MsqError& err ) const
 {
-  if (nodebits) {
+  if (nodeset.have_any_mid_node()) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
   }
   else {

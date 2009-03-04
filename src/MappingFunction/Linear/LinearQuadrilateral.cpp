@@ -44,13 +44,13 @@ int LinearQuadrilateral::num_nodes() const
 
 void LinearQuadrilateral::coefficients( unsigned loc_dim,
                                         unsigned loc_num,
-                                        unsigned nodebits,
+                                        NodeSet nodeset,
                                         double* coeff_out,
                                         size_t* indices_out,
                                         size_t& num_coeff,
                                         MsqError& err ) const
 {
-  if (nodebits) {
+  if (nodeset.have_any_mid_node()) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
     return;
   }
@@ -153,13 +153,13 @@ static void derivatives_at_mid_elem( size_t* vertices,
 
 void LinearQuadrilateral::derivatives( unsigned loc_dim,
                                        unsigned loc_num,
-                                       unsigned nodebits,
+                                       NodeSet nodeset,
                                        size_t* vertex_indices_out,
                                        MsqVector<2>* d_coeff_d_xi_out,
                                        size_t& num_vtx,
                                        MsqError& err ) const
 {
-  if (nodebits) {
+  if (nodeset.have_any_mid_node()) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
     return;
   }

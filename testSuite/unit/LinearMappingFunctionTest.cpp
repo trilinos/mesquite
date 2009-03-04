@@ -855,7 +855,9 @@ void LinearMappingFunctionTest::do_coeff_test( MappingFunction& mf,
   double coeff[100];
   size_t indices[100];
   size_t num_coeff = 100;
-  mf.coefficients( 0, 1, 1, coeff, indices, num_coeff, err );
+  NodeSet tmp_set;
+  tmp_set.set_mid_edge_node(1);
+  mf.coefficients( 0, 1, tmp_set, coeff, indices, num_coeff, err );
   CPPUNIT_ASSERT(err);
   err.clear();
   
@@ -868,7 +870,7 @@ void LinearMappingFunctionTest::do_coeff_test( MappingFunction& mf,
   for (unsigned i = 0; i < count; ++i)
   {
     num_coeff = 101;
-    mf.coefficients( subdim, i, 0, coeff, indices, num_coeff, err );
+    mf.coefficients( subdim, i, NodeSet(), coeff, indices, num_coeff, err );
     CPPUNIT_ASSERT(!err);
     
     mf2( xi, &comp[0] );
@@ -909,7 +911,9 @@ void LinearMappingFunctionTest::do_deriv_test( MappingFunction2D& mf,
   MsqError err;
   MsqVector<2> derivs[100];
   size_t verts[100], num_vtx = 37;
-  mf.derivatives( subdim, 0, 1, verts, derivs, num_vtx, err );
+  NodeSet tmp_set;
+  tmp_set.set_mid_edge_node(1);
+  mf.derivatives( subdim, 0, tmp_set, verts, derivs, num_vtx, err );
   CPPUNIT_ASSERT(err);
   err.clear();
   
@@ -921,7 +925,7 @@ void LinearMappingFunctionTest::do_deriv_test( MappingFunction2D& mf,
   for (unsigned i = 0; i < count; ++i)
   {
     num_vtx = 33;
-    mf.derivatives( subdim, i, 0, verts, derivs, num_vtx, err );
+    mf.derivatives( subdim, i, NodeSet(), verts, derivs, num_vtx, err );
     CPPUNIT_ASSERT(!err);
     CPPUNIT_ASSERT( num_vtx > 0 );
     CPPUNIT_ASSERT( num_vtx <= n );
@@ -985,7 +989,9 @@ void LinearMappingFunctionTest::do_deriv_test( MappingFunction3D& mf,
   MsqError err;
   MsqVector<3> derivs[100];
   size_t verts[100], num_vtx = 37;
-  mf.derivatives( subdim, 0, 1, verts, derivs, num_vtx, err );
+  NodeSet tmp_set;
+  tmp_set.set_mid_edge_node(1);
+  mf.derivatives( subdim, 0, tmp_set, verts, derivs, num_vtx, err );
   CPPUNIT_ASSERT(err);
   err.clear();
   
@@ -997,7 +1003,7 @@ void LinearMappingFunctionTest::do_deriv_test( MappingFunction3D& mf,
   for (unsigned i = 0; i < count; ++i)
   {
     num_vtx = 33;
-    mf.derivatives( subdim, i, 0, verts, derivs, num_vtx, err );
+    mf.derivatives( subdim, i, NodeSet(), verts, derivs, num_vtx, err );
     CPPUNIT_ASSERT(!err);
     CPPUNIT_ASSERT( num_vtx > 0 );
     CPPUNIT_ASSERT( num_vtx <= n );
@@ -1058,7 +1064,7 @@ void LinearMappingFunctionTest::test_coeff_fail( MappingFunction& mf, unsigned s
   MsqError err;
   double coeff[100];
   size_t num_coeff, indices[100];
-  mf.coefficients( subdim, 0, 0, coeff, indices, num_coeff, err );
+  mf.coefficients( subdim, 0, NodeSet(), coeff, indices, num_coeff, err );
   CPPUNIT_ASSERT(err);
   err.clear();
 }  
@@ -1069,7 +1075,7 @@ void LinearMappingFunctionTest::test_deriv_fail( MappingFunction2D& mf, unsigned
   MsqError err;
   MsqVector<2> coeff[100];
   size_t verts[100], num_coeff;
-  mf.derivatives( subdim, 0, 0, verts, coeff, num_coeff, err );
+  mf.derivatives( subdim, 0, NodeSet(), verts, coeff, num_coeff, err );
   CPPUNIT_ASSERT(err);
   err.clear();
 }
@@ -1080,7 +1086,7 @@ void LinearMappingFunctionTest::test_deriv_fail( MappingFunction3D& mf, unsigned
   MsqError err;
   MsqVector<3> coeff[100];
   size_t verts[100], num_coeff;
-  mf.derivatives( subdim, 0, 0, verts, coeff, num_coeff, err );
+  mf.derivatives( subdim, 0, NodeSet(), verts, coeff, num_coeff, err );
   CPPUNIT_ASSERT(err);
   err.clear();
 }

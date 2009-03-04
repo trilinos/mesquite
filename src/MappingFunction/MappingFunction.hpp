@@ -37,6 +37,7 @@
 #include <vector>
 #include "MsqMatrix.hpp"
 #include "TopologyInfo.hpp"
+#include "NodeSet.hpp"
 
 namespace Mesquite {
 
@@ -118,16 +119,7 @@ public:
    *                example if loc_dim = 1 and loc_num = 0, the mapping
    *                function will be evaluated at the center of edge 0
    *                of the element.
-   *\param nodebits This is a list of which mid-nodes are present in the 
-   *                element.  The sequence is the same as the canonical 
-   *                ordering of the mid-nodes in the form of the element with
-   *                all possible mid-nodes, beginning with the least signficiant
-   *                bit.  A 1-bit means that the corresponding
-   *                higher-order node is present in the element.  This value
-   *                of nodebits is zero for a linear element.  
-   *                For polygons, the number of nodes in the polygon should
-   *                be passed in this argument.  Polygons are not allowed
-   *                higher-order nodes.
+   *\param nodeset  List of which nodes are present in the element.  
    *\param coefficients_out The coefficients (\f$N_i(\vec{\xi})\f$) for each 
    *                vertex in the element.
    *\param indices_out  The index ($i$ in $N_i$) for each term in 'coeffs_out'.
@@ -139,7 +131,7 @@ public:
   virtual 
   void coefficients( unsigned loc_dim,
                      unsigned loc_num,
-                     unsigned nodebits,
+                     NodeSet nodeset,
                      double* coeff_out,
                      size_t* indices_out,
                      size_t& num_coeff_out,
@@ -284,16 +276,7 @@ public:
    *                example if loc_dim = 1 and loc_num = 0, the mapping
    *                function will be evaluated at the center of edge 0
    *                of the element.
-   *\param nodebits This is a list of which mid-nodes are present in the 
-   *                element.  The sequence is the same as the canonical 
-   *                ordering of the mid-nodes in the form of the element with
-   *                all possible mid-nodes, beginning with the least signficiant
-   *                bit.  A 1-bit means that the corresponding
-   *                higher-order node is present in the element.  This value
-   *                of nodebits is zero for a linear element.  
-   *                For polygons, the number of nodes in the polygon should
-   *                be passed in this argument.  Polygons are not allowed
-   *                higher-order nodes.
+   *\param nodeset  List of which nodes are present in the element.  
    *\param vertices_out The list of vertices for which the corresponding
    *                coefficient in the mapping function is non-zero.  The
    *                vertices are specified by their index in the canonical
@@ -316,7 +299,7 @@ public:
   virtual 
   void derivatives( unsigned loc_dim, 
                     unsigned loc_num,
-                    unsigned nodebits,
+                    NodeSet nodeset,
                     size_t* vertex_indices_out,
                     MsqVector<2>* d_coeff_d_xi_out,
                     size_t& num_vtx,
@@ -349,16 +332,7 @@ public:
    *\param pd  The PatchData instance containing the vertex coordinates
    *           and element connectcivity.
    *\param element_number  The index of the mesh element in the PatchData.
-   *\param nodebits This is a list of which mid-nodes are present in the 
-   *                element.  The sequence is the same as the canonical 
-   *                ordering of the mid-nodes in the form of the element with
-   *                all possible mid-nodes, beginning with the least signficiant
-   *                bit.  A 1-bit means that the corresponding
-   *                higher-order node is present in the element.  This value
-   *                of nodebits is zero for a linear element.  
-   *                For polygons, the number of nodes in the polygon should
-   *                be passed in this argument.  Polygons are not allowed
-   *                higher-order nodes.
+   *\param nodeset         List of which nodes are present in the element.  
    *\param loc_dim         The topological dimension of the element or
    *                       element sub-entity at which to evaluate the
    *                       mapping function.
@@ -380,7 +354,7 @@ public:
   virtual 
   void jacobian( const PatchData& pd,
                  size_t element_number,
-                 unsigned nodebits,
+                 NodeSet nodeset,
                  unsigned loc_dim,
                  unsigned loc_num,
                  size_t* vertex_patch_indices_out,
@@ -486,16 +460,7 @@ public:
    *                example if loc_dim = 1 and loc_num = 0, the mapping
    *                function will be evaluated at the center of edge 0
    *                of the element.
-   *\param nodebits This is a list of which mid-nodes are present in the 
-   *                element.  The sequence is the same as the canonical 
-   *                ordering of the mid-nodes in the form of the element with
-   *                all possible mid-nodes, beginning with the least signficiant
-   *                bit.  A 1-bit means that the corresponding
-   *                higher-order node is present in the element.  This value
-   *                of nodebits is zero for a linear element.  
-   *                For polygons, the number of nodes in the polygon should
-   *                be passed in this argument.  Polygons are not allowed
-   *                higher-order nodes.
+   *\param nodeset  List of which nodes are present in the element.  
    *\param vertices_out The list of vertices for which the corresponding
    *                coefficient in the mapping function is non-zero.  The
    *                vertices are specified by their index in the canonical
@@ -518,7 +483,7 @@ public:
   virtual 
   void derivatives( unsigned loc_dim, 
                     unsigned loc_num,
-                    unsigned nodebits,
+                    NodeSet nodeset,
                     size_t* vertex_indices_out,
                     MsqVector<3>* d_coeff_d_xi_out,
                     size_t& num_vtx,
@@ -551,16 +516,7 @@ public:
    *\param pd  The PatchData instance containing the vertex coordinates
    *           and element connectcivity.
    *\param element_number  The index of the mesh element in the PatchData.
-   *\param nodebits This is a list of which mid-nodes are present in the 
-   *                element.  The sequence is the same as the canonical 
-   *                ordering of the mid-nodes in the form of the element with
-   *                all possible mid-nodes, beginning with the least signficiant
-   *                bit.  A 1-bit means that the corresponding
-   *                higher-order node is present in the element.  This value
-   *                of nodebits is zero for a linear element.  
-   *                For polygons, the number of nodes in the polygon should
-   *                be passed in this argument.  Polygons are not allowed
-   *                higher-order nodes.
+   *\param nodeset         List of which nodes are present in the element.  
    *\param loc_dim         The topological dimension of the element or
    *                       element sub-entity at which to evaluate the
    *                       mapping function.
@@ -582,7 +538,7 @@ public:
   virtual 
   void jacobian( const PatchData& pd,
                  size_t element_number,
-                 unsigned nodebits,
+                 NodeSet nodeset,
                  unsigned loc_dim,
                  unsigned loc_num,
                  size_t* vertex_patch_indices_out,

@@ -833,7 +833,7 @@ void PatchData::update_slave_node_coordinates( MsqError& err )
       // for each higher-order non-slave node, set bit indicating
       // that mapping function is a function of the non-slave node
       // coordinates
-    unsigned ho_bits = higher_order_node_bits( i );
+    NodeSet ho_bits = non_slave_node_set( i );
     
       // for each higher-order slave node
     for (int k = num_corner; k < num_node; ++k) {
@@ -925,7 +925,7 @@ void PatchData::update_slave_node_coordinates( const size_t* elements,
       // for each higher-order non-slave node, set bit indicating
       // that mapping function is a function of the non-slave node
       // coordinates
-    unsigned ho_bits = higher_order_node_bits( i );
+    NodeSet ho_bits = non_slave_node_set( i );
     
       // for each higher-order slave node
     for (int k = num_corner; k < num_node; ++k) {
@@ -2054,7 +2054,7 @@ void PatchData::get_sample_location( size_t element_index,
                                      MsqError& err ) const
 {
   const MsqMeshEntity& elem = element_by_index( element_index );
-  const unsigned ho_bits = higher_order_node_bits( element_index );
+  const NodeSet ho_bits = non_slave_node_set( element_index );
   const MappingFunction* const f = get_mapping_function( elem.get_element_type() );
   if (!f) {
     MSQ_SETERR(err)("No mapping function", MsqError::UNSUPPORTED_ELEMENT );
@@ -2074,7 +2074,7 @@ void PatchData::get_sample_location( size_t element_index,
 }
 
 
-unsigned PatchData::higher_order_node_bits( size_t element_index ) const
+NodeSet PatchData::non_slave_node_set( size_t element_index ) const
 {
   const MsqMeshEntity& elem = element_by_index(element_index);
   EntityTopology type = elem.get_element_type();
@@ -2093,21 +2093,22 @@ unsigned PatchData::higher_order_node_bits( size_t element_index ) const
   else 
     num_face = TopologyInfo::faces(type);
   
-  unsigned result = 0;
+  NodeSet result;
+  result.set_all_corner_nodes();
   if (have_midedge) {
     for (unsigned i = 0; i < num_edge; ++i) {
       if (!(vertex_by_index(conn[num_corner+i]).get_flags() & MsqVertex::MSQ_DEPENDENT))
-        result |= (1 << i);
+        result.set_mid_edge_node(i);
     }
   }
   if (have_midface) {
     for (unsigned i = 0; i < num_face; ++i) {
       if (!(vertex_by_index(conn[num_corner+num_edge+i]).get_flags() & MsqVertex::MSQ_DEPENDENT))
-        result |= (1 << (i+num_edge));
+        result.set_mid_face_node(i);
     }
   }
   if (have_midelem && !(vertex_by_index(conn[num_corner+num_edge+num_face]).get_flags() & MsqVertex::MSQ_DEPENDENT))
-    result |= (1 << (num_edge+num_face));
+    result.set_mid_region_node();
 
   return result;
 }

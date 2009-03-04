@@ -43,9 +43,6 @@ EntityTopology TetLagrangeShape::element_topology() const
 int TetLagrangeShape::num_nodes() const
   { return 10; }
 
-static inline int have_node( unsigned nodebits, unsigned node )
-  { return nodebits & (1 << (node-4)); }
-
 static void coefficients_at_corner( unsigned corner,
                                     double* coeff_out,
                                     size_t* indices_out,
@@ -57,12 +54,12 @@ static void coefficients_at_corner( unsigned corner,
 }
 
 static void coefficients_at_mid_edge( unsigned edge, 
-                                      unsigned nodebits,
+                                      NodeSet nodeset,
                                       double* coeff_out,
                                       size_t* indices_out,
                                       size_t& num_coeff )
 {
-  if (nodebits & (1 << edge)) { // if mid-edge node is present
+  if (nodeset.mid_edge_node(edge)) { // if mid-edge node is present
     num_coeff = 1;
     indices_out[0] = 4+edge;
     coeff_out[0] = 1.0;
@@ -82,7 +79,7 @@ static void coefficients_at_mid_edge( unsigned edge,
 }
 
 static void coefficients_at_mid_face( unsigned face, 
-                                      unsigned nodebits,
+                                      NodeSet nodeset,
                                       double* coeff_out,
                                       size_t* indices_out,
                                       size_t& num_coeff )
@@ -100,7 +97,7 @@ static void coefficients_at_mid_face( unsigned face,
     coeff_out[1] = -one_ninth;
     coeff_out[2] = -one_ninth;
     num_coeff = 3;
-    if (nodebits & (1<<face)) {
+    if (nodeset.mid_edge_node(face)) {
       indices_out[num_coeff] = 4+face;
       coeff_out[num_coeff] = four_ninth;
       ++num_coeff;
@@ -109,7 +106,7 @@ static void coefficients_at_mid_face( unsigned face,
       coeff_out[0] += two_ninth;
       coeff_out[1] += two_ninth;
     }
-    if (nodebits & (1<<(3+next))) {
+    if (nodeset.mid_edge_node(3+next)) {
       indices_out[num_coeff] = 7+next;
       coeff_out[num_coeff] = four_ninth;
       ++num_coeff;
@@ -118,7 +115,7 @@ static void coefficients_at_mid_face( unsigned face,
       coeff_out[1] += two_ninth;
       coeff_out[2] += two_ninth;
     }
-    if (nodebits & (1<<(3+face))) {
+    if (nodeset.mid_edge_node(3+face)) {
       indices_out[num_coeff] = 7+face;
       coeff_out[num_coeff] = four_ninth;
       ++num_coeff;
@@ -137,7 +134,7 @@ static void coefficients_at_mid_face( unsigned face,
     coeff_out[1] = -one_ninth;
     coeff_out[2] = -one_ninth;
     num_coeff = 3;
-    if (nodebits & 1) {
+    if (nodeset.mid_edge_node(0)) {
       indices_out[num_coeff] = 4;
       coeff_out[num_coeff] = four_ninth;
       ++num_coeff;
@@ -146,7 +143,7 @@ static void coefficients_at_mid_face( unsigned face,
       coeff_out[0] += two_ninth;
       coeff_out[1] += two_ninth;
     }
-    if (nodebits & 2) {
+    if (nodeset.mid_edge_node(1)) {
       indices_out[num_coeff] = 5;
       coeff_out[num_coeff] = four_ninth;
       ++num_coeff;
@@ -155,7 +152,7 @@ static void coefficients_at_mid_face( unsigned face,
       coeff_out[1] += two_ninth;
       coeff_out[2] += two_ninth;
     }
-    if (nodebits & 4) {
+    if (nodeset.mid_edge_node(2)) {
       indices_out[num_coeff] = 6;
       coeff_out[num_coeff] = four_ninth;
       ++num_coeff;
@@ -167,7 +164,7 @@ static void coefficients_at_mid_face( unsigned face,
   }
 }
 
-static void coefficients_at_mid_elem( unsigned nodebits,
+static void coefficients_at_mid_elem( NodeSet nodeset,
                                       double* coeff_out,
                                       size_t* indices_out,
                                       size_t& num_coeff )
@@ -181,7 +178,7 @@ static void coefficients_at_mid_elem( unsigned nodebits,
   coeff_out[1] = -0.125;
   coeff_out[2] = -0.125;
   coeff_out[3] = -0.125;
-  if (have_node(nodebits, 4)) {
+  if (nodeset.mid_edge_node(0)) {
     indices_out[num_coeff] = 4;
     coeff_out[num_coeff] = 0.25;
     ++num_coeff;
@@ -190,7 +187,7 @@ static void coefficients_at_mid_elem( unsigned nodebits,
     coeff_out[0] += 0.125;
     coeff_out[1] += 0.125;
   }
-  if (have_node(nodebits, 5)) {
+  if (nodeset.mid_edge_node(1)) {
     indices_out[num_coeff] = 5;
     coeff_out[num_coeff] = 0.25;
     ++num_coeff;
@@ -199,7 +196,7 @@ static void coefficients_at_mid_elem( unsigned nodebits,
     coeff_out[1] += 0.125;
     coeff_out[2] += 0.125;
   }
-  if (have_node(nodebits, 6)) {
+  if (nodeset.mid_edge_node(2)) {
     indices_out[num_coeff] = 6;
     coeff_out[num_coeff] = 0.25;
     ++num_coeff;
@@ -208,7 +205,7 @@ static void coefficients_at_mid_elem( unsigned nodebits,
     coeff_out[2] += 0.125;
     coeff_out[0] += 0.125;
   }
-  if (have_node(nodebits, 7)) {
+  if (nodeset.mid_edge_node(3)) {
     indices_out[num_coeff] = 7;
     coeff_out[num_coeff] = 0.25;
     ++num_coeff;
@@ -217,7 +214,7 @@ static void coefficients_at_mid_elem( unsigned nodebits,
     coeff_out[0] += 0.125;
     coeff_out[3] += 0.125;
   }
-  if (have_node(nodebits, 8)) {
+  if (nodeset.mid_edge_node(4)) {
     indices_out[num_coeff] = 8;
     coeff_out[num_coeff] = 0.25;
     ++num_coeff;
@@ -226,7 +223,7 @@ static void coefficients_at_mid_elem( unsigned nodebits,
     coeff_out[1] += 0.125;
     coeff_out[3] += 0.125;
   }
-  if (have_node(nodebits, 9)) {
+  if (nodeset.mid_edge_node(5)) {
     indices_out[num_coeff] = 9;
     coeff_out[num_coeff] = 0.25;
     ++num_coeff;
@@ -239,13 +236,13 @@ static void coefficients_at_mid_elem( unsigned nodebits,
 
 void TetLagrangeShape::coefficients( unsigned loc_dim,
                                      unsigned loc_num,
-                                     unsigned nodebits,
+                                     NodeSet nodeset,
                                      double* coeff_out,
                                      size_t* indices_out,
                                      size_t& num_coeff,
                                      MsqError& err ) const
 {
-  if (nodebits >= (1u << 6)) {
+  if (nodeset.have_any_mid_face_node() | nodeset.have_any_mid_region_node()) {
     MSQ_SETERR(err)("TetLagrangeShape does not support mid-face/mid-element nodes",
                     MsqError::UNSUPPORTED_ELEMENT);
     return;
@@ -256,13 +253,13 @@ void TetLagrangeShape::coefficients( unsigned loc_dim,
       coefficients_at_corner( loc_num, coeff_out, indices_out, num_coeff );
       break;
     case 1:
-      coefficients_at_mid_edge( loc_num, nodebits, coeff_out, indices_out, num_coeff );
+      coefficients_at_mid_edge( loc_num, nodeset, coeff_out, indices_out, num_coeff );
       break;
     case 2:
-      coefficients_at_mid_face( loc_num, nodebits, coeff_out, indices_out, num_coeff );
+      coefficients_at_mid_face( loc_num, nodeset, coeff_out, indices_out, num_coeff );
       break;
     case 3:
-      coefficients_at_mid_elem( nodebits, coeff_out, indices_out, num_coeff );
+      coefficients_at_mid_elem( nodeset, coeff_out, indices_out, num_coeff );
       break;
     default:
       MSQ_SETERR(err)("Invalid/unsupported logical dimension",MsqError::INVALID_ARG);
@@ -301,7 +298,7 @@ static const unsigned edges[][2] = { { 0, 1 },
                                      { 2, 3 } };
 
 static void derivatives_at_corner( unsigned corner,
-                                   unsigned nodebits,
+                                   NodeSet nodeset,
                                    size_t* vertices,
                                    MsqVector<3>* derivs,
                                    size_t& num_vtx )
@@ -313,7 +310,7 @@ static void derivatives_at_corner( unsigned corner,
     // adjust for the presence of mid-edge nodes
   switch (corner) {
     case 0:
-      if (have_node(nodebits, 4)) {
+      if (nodeset.mid_edge_node(0)) {
         vertices[num_vtx] = 4;
         derivs[num_vtx][0] = 0.0;
         derivs[num_vtx][1] = 4.0;
@@ -322,7 +319,7 @@ static void derivatives_at_corner( unsigned corner,
         derivs[1][1] -= 2.0;
         ++num_vtx;
       }
-      if (have_node(nodebits, 6)) {
+      if (nodeset.mid_edge_node(2)) {
         vertices[num_vtx] = 6;
         derivs[num_vtx][0] = 0.0;
         derivs[num_vtx][1] = 0.0;
@@ -331,7 +328,7 @@ static void derivatives_at_corner( unsigned corner,
         derivs[2][2] -= 2.0;
         ++num_vtx;
       }
-      if (have_node(nodebits, 7)) {
+      if (nodeset.mid_edge_node(3)) {
         vertices[num_vtx] = 7;
         derivs[num_vtx][0] = -4.0;
         derivs[num_vtx][1] = -4.0;
@@ -347,7 +344,7 @@ static void derivatives_at_corner( unsigned corner,
       break;
 
     case 1:
-      if (have_node(nodebits, 4)) {
+      if (nodeset.mid_edge_node(0)) {
         vertices[num_vtx] = 4;
         derivs[num_vtx][0] = 4.0;
         derivs[num_vtx][1] = 0.0;
@@ -356,7 +353,7 @@ static void derivatives_at_corner( unsigned corner,
         derivs[1][0] -= 2.0;
         ++num_vtx;
       }
-      if (have_node(nodebits, 5)) {
+      if (nodeset.mid_edge_node(1)) {
         vertices[num_vtx] = 5;
         derivs[num_vtx][0] = 0.0;
         derivs[num_vtx][1] = 0.0;
@@ -365,7 +362,7 @@ static void derivatives_at_corner( unsigned corner,
         derivs[2][2] -= 2.0;
         ++num_vtx;
       }
-      if (have_node(nodebits, 8)) {
+      if (nodeset.mid_edge_node(4)) {
         vertices[num_vtx] = 8;
         derivs[num_vtx][0] = -4.0;
         derivs[num_vtx][1] = -4.0;
@@ -381,7 +378,7 @@ static void derivatives_at_corner( unsigned corner,
       break;
   
     case 2:
-      if (have_node(nodebits, 5)) {
+      if (nodeset.mid_edge_node(1)) {
         vertices[num_vtx] = 5;
         derivs[num_vtx][0] = 0.0;
         derivs[num_vtx][1] = 4.0;
@@ -390,7 +387,7 @@ static void derivatives_at_corner( unsigned corner,
         derivs[2][1] -= 2.0;
         ++num_vtx;
       }
-      if (have_node(nodebits, 6)) {
+      if (nodeset.mid_edge_node(2)) {
         vertices[num_vtx] = 6;
         derivs[num_vtx][0] = 4.0;
         derivs[num_vtx][1] = 0.0;
@@ -399,7 +396,7 @@ static void derivatives_at_corner( unsigned corner,
         derivs[2][0] -= 2.0;
         ++num_vtx;
       }
-      if (have_node(nodebits, 9)) {
+      if (nodeset.mid_edge_node(5)) {
         vertices[num_vtx] = 9;
         derivs[num_vtx][0] = -4.0;
         derivs[num_vtx][1] = -4.0;
@@ -415,7 +412,7 @@ static void derivatives_at_corner( unsigned corner,
       break;
   
     case 3:
-      if (have_node(nodebits, 7)) {
+      if (nodeset.mid_edge_node(3)) {
         vertices[num_vtx] = 7;
         derivs[num_vtx][0] = 4.0;
         derivs[num_vtx][1] = 0.0;
@@ -424,7 +421,7 @@ static void derivatives_at_corner( unsigned corner,
         derivs[3][0] -= 2.0;
         ++num_vtx;
       }
-      if (have_node(nodebits, 8)) {
+      if (nodeset.mid_edge_node(4)) {
         vertices[num_vtx] = 8;
         derivs[num_vtx][0] = 0.0;
         derivs[num_vtx][1] = 4.0;
@@ -434,7 +431,7 @@ static void derivatives_at_corner( unsigned corner,
         ++num_vtx;
       }
       
-      if (have_node(nodebits, 9)) {
+      if (nodeset.mid_edge_node(5)) {
         vertices[num_vtx] = 9;
         derivs[num_vtx][0] = 0.0;
         derivs[num_vtx][1] = 0.0;
@@ -448,7 +445,7 @@ static void derivatives_at_corner( unsigned corner,
 }
   
 static void derivatives_at_mid_edge( unsigned edge,
-                                     unsigned nodebits,
+                                     NodeSet nodeset,
                                      size_t* vertices,
                                      MsqVector<3>* derivs,
                                      size_t& num_vtx )
@@ -468,14 +465,14 @@ static void derivatives_at_mid_edge( unsigned edge,
       derivs[1][2] = 0.0;
       
    
-      if (have_node(nodebits,5) && have_node(nodebits,6)) {
+      if (nodeset.mid_edge_node(1) && nodeset.mid_edge_node(2)) {
         vertices[num_vtx] = 2;
         derivs[num_vtx][0] =  0.0;
         derivs[num_vtx][1] =  0.0;
         derivs[num_vtx][2] = -1.0;
         ++num_vtx;
       }
-      else if (!have_node(nodebits,5) && !have_node(nodebits,6)) {\
+      else if (!nodeset.mid_edge_node(1) && !nodeset.mid_edge_node(2)) {\
         vertices[num_vtx] = 2;
         derivs[num_vtx][0] =  0.0;
         derivs[num_vtx][1] =  0.0;
@@ -483,14 +480,14 @@ static void derivatives_at_mid_edge( unsigned edge,
         ++num_vtx;
       }
       
-      if (!have_node(nodebits, 7) && !have_node(nodebits, 8)) {
+      if (!nodeset.mid_edge_node(3) && !nodeset.mid_edge_node(4)) {
         vertices[num_vtx] = 3;
         derivs[num_vtx][0] = -1.0;
         derivs[num_vtx][1] = -1.0;
         derivs[num_vtx][2] = -1.0;
         ++num_vtx;
       }
-      else if (have_node(nodebits, 7) && have_node(nodebits, 8)) {
+      else if (nodeset.mid_edge_node(3) && nodeset.mid_edge_node(4)) {
         vertices[num_vtx] = 3;
         derivs[num_vtx][0] = 1.0;
         derivs[num_vtx][1] = 1.0;
@@ -498,7 +495,7 @@ static void derivatives_at_mid_edge( unsigned edge,
         ++num_vtx;
       }
       
-      if (have_node(nodebits, 4)) {
+      if (nodeset.mid_edge_node(0)) {
         vertices[num_vtx] = 4;
         derivs[num_vtx][0] = 2.0;
         derivs[num_vtx][1] = 2.0;
@@ -510,7 +507,7 @@ static void derivatives_at_mid_edge( unsigned edge,
          ++num_vtx;
      }
       
-      if (have_node(nodebits, 5)) {
+      if (nodeset.mid_edge_node(1)) {
         vertices[num_vtx] = 5;
         derivs[num_vtx][0] = 0.0;
         derivs[num_vtx][1] = 0.0;
@@ -519,7 +516,7 @@ static void derivatives_at_mid_edge( unsigned edge,
         ++num_vtx;
       }
       
-      if (have_node(nodebits, 6)) {
+      if (nodeset.mid_edge_node(2)) {
         vertices[num_vtx] = 6;
         derivs[num_vtx][0] = 0.0;
         derivs[num_vtx][1] = 0.0;
@@ -528,7 +525,7 @@ static void derivatives_at_mid_edge( unsigned edge,
         ++num_vtx;
       }
       
-      if (have_node(nodebits, 7)) {
+      if (nodeset.mid_edge_node(3)) {
         vertices[num_vtx] = 7;
         derivs[num_vtx][0] = -2.0;
         derivs[num_vtx][1] = -2.0;
@@ -539,7 +536,7 @@ static void derivatives_at_mid_edge( unsigned edge,
         ++num_vtx;
       }
       
-      if (have_node(nodebits, 8)) {
+      if (nodeset.mid_edge_node(4)) {
         vertices[num_vtx] = 8;
         derivs[num_vtx][0] = -2.0;
         derivs[num_vtx][1] = -2.0;
@@ -564,14 +561,14 @@ static void derivatives_at_mid_edge( unsigned edge,
       derivs[1][1] = 0.0;
       derivs[1][2] = 1.0;
    
-      if (have_node(nodebits,4) && have_node(nodebits,6)) {
+      if (nodeset.mid_edge_node(0) && nodeset.mid_edge_node(2)) {
         vertices[num_vtx] = 0;
         derivs[num_vtx][0] = -1.0;
         derivs[num_vtx][1] =  0.0;
         derivs[num_vtx][2] =  0.0;
         ++num_vtx;
       }
-      else if (!have_node(nodebits,4) && !have_node(nodebits,6)) {
+      else if (!nodeset.mid_edge_node(0) && !nodeset.mid_edge_node(2)) {
         vertices[num_vtx] = 0;
         derivs[num_vtx][0] =  1.0;
         derivs[num_vtx][1] =  0.0;
@@ -579,14 +576,14 @@ static void derivatives_at_mid_edge( unsigned edge,
         ++num_vtx;
       }
       
-      if (!have_node(nodebits, 8) && !have_node(nodebits, 9)) {
+      if (!nodeset.mid_edge_node(4) && !nodeset.mid_edge_node(5)) {
         vertices[num_vtx] = 3;
         derivs[num_vtx][0] = -1.0;
         derivs[num_vtx][1] = -1.0;
         derivs[num_vtx][2] = -1.0;
         ++num_vtx;
       }
-      else if (have_node(nodebits, 8) && have_node(nodebits, 9)) {
+      else if (nodeset.mid_edge_node(4) && nodeset.mid_edge_node(5)) {
         vertices[num_vtx] = 3;
         derivs[num_vtx][0] = 1.0;
         derivs[num_vtx][1] = 1.0;
@@ -594,7 +591,7 @@ static void derivatives_at_mid_edge( unsigned edge,
         ++num_vtx;
       }
       
-      if (have_node(nodebits, 4)) {
+      if (nodeset.mid_edge_node(0)) {
         vertices[num_vtx] = 4;
         derivs[num_vtx][0] = 2.0;
         derivs[num_vtx][1] = 0.0;
@@ -603,7 +600,7 @@ static void derivatives_at_mid_edge( unsigned edge,
         derivs[0][0] -= 1.0;
       }
       
-      if (have_node(nodebits, 5)) {
+      if (nodeset.mid_edge_node(1)) {
         vertices[num_vtx] = 5;
         derivs[num_vtx][0] = 0.0;
         derivs[num_vtx][1] = 2.0;
@@ -615,7 +612,7 @@ static void derivatives_at_mid_edge( unsigned edge,
         derivs[1][2] -= 1.0;
       }
       
-      if (have_node(nodebits, 6)) {
+      if (nodeset.mid_edge_node(2)) {
         vertices[num_vtx] = 6;
         derivs[num_vtx][0] = 2.0;
         derivs[num_vtx][1] = 0.0;
@@ -624,7 +621,7 @@ static void derivatives_at_mid_edge( unsigned edge,
         derivs[1][0] -= 1.0;
       }
       
-      if (have_node(nodebits, 8)) {
+      if (nodeset.mid_edge_node(4)) {
         vertices[num_vtx] = 8;
         derivs[num_vtx][0] = -2.0;
         derivs[num_vtx][1] = -2.0;
@@ -635,7 +632,7 @@ static void derivatives_at_mid_edge( unsigned edge,
         derivs[0][2] += 1.0;
       }
       
-      if (have_node(nodebits, 9)) {
+      if (nodeset.mid_edge_node(5)) {
         vertices[num_vtx] = 9;
         derivs[num_vtx][0] = -2.0;
         derivs[num_vtx][1] = -2.0;
@@ -660,14 +657,14 @@ static void derivatives_at_mid_edge( unsigned edge,
       derivs[1][1] = 0.0;
       derivs[1][2] = 1.0;
    
-      if (have_node(nodebits,4) && have_node(nodebits,5)) {
+      if (nodeset.mid_edge_node(0) && nodeset.mid_edge_node(1)) {
         vertices[num_vtx] = 1;
         derivs[num_vtx][0] =  0.0;
         derivs[num_vtx][1] = -1.0;
         derivs[num_vtx][2] =  0.0;
         ++num_vtx;
       }
-      else if (!have_node(nodebits,4) && !have_node(nodebits,5)) {
+      else if (!nodeset.mid_edge_node(0) && !nodeset.mid_edge_node(1)) {
         vertices[num_vtx] = 1;
         derivs[num_vtx][0] =  0.0;
         derivs[num_vtx][1] =  1.0;
@@ -675,14 +672,14 @@ static void derivatives_at_mid_edge( unsigned edge,
         ++num_vtx;
       }
       
-      if (!have_node(nodebits, 7) && !have_node(nodebits, 9)) {
+      if (!nodeset.mid_edge_node(3) && !nodeset.mid_edge_node(5)) {
         vertices[num_vtx] = 3;
         derivs[num_vtx][0] = -1.0;
         derivs[num_vtx][1] = -1.0;
         derivs[num_vtx][2] = -1.0;
         ++num_vtx;
       }
-      else if (have_node(nodebits, 7) && have_node(nodebits, 9)) {
+      else if (nodeset.mid_edge_node(3) && nodeset.mid_edge_node(5)) {
         vertices[num_vtx] = 3;
         derivs[num_vtx][0] = 1.0;
         derivs[num_vtx][1] = 1.0;
@@ -690,7 +687,7 @@ static void derivatives_at_mid_edge( unsigned edge,
         ++num_vtx;
       }
       
-      if (have_node(nodebits, 4)) {
+      if (nodeset.mid_edge_node(0)) {
         vertices[num_vtx] = 4;
         derivs[num_vtx][0] =  0.0;
         derivs[num_vtx][1] =  2.0;
@@ -699,7 +696,7 @@ static void derivatives_at_mid_edge( unsigned edge,
         derivs[0][1] -= 1.0;
       }
       
-      if (have_node(nodebits, 5)) {
+      if (nodeset.mid_edge_node(1)) {
         vertices[num_vtx] = 5;
         derivs[num_vtx][0] =  0.0;
         derivs[num_vtx][1] =  2.0;
@@ -708,7 +705,7 @@ static void derivatives_at_mid_edge( unsigned edge,
         derivs[1][1] -= 1.0;
       }
       
-      if (have_node(nodebits, 6)) {
+      if (nodeset.mid_edge_node(2)) {
         vertices[num_vtx] = 6;
         derivs[num_vtx][0] =  2.0;
         derivs[num_vtx][1] =  0.0;
@@ -720,7 +717,7 @@ static void derivatives_at_mid_edge( unsigned edge,
         derivs[1][2] -= 1.0;
       }
        
-      if (have_node(nodebits, 7)) {
+      if (nodeset.mid_edge_node(3)) {
         vertices[num_vtx] = 7;
         derivs[num_vtx][0] = -2.0;
         derivs[num_vtx][1] = -2.0;
@@ -731,7 +728,7 @@ static void derivatives_at_mid_edge( unsigned edge,
         derivs[0][2] += 1.0;
       }
       
-      if (have_node(nodebits, 9)) {
+      if (nodeset.mid_edge_node(5)) {
         vertices[num_vtx] = 9;
         derivs[num_vtx][0] = -2.0;
         derivs[num_vtx][1] = -2.0;
@@ -756,14 +753,14 @@ static void derivatives_at_mid_edge( unsigned edge,
       derivs[1][1] = -1.0;
       derivs[1][2] = -1.0;
       
-      if (!have_node( nodebits, 4 ) && !have_node( nodebits, 8 )) {
+      if (!nodeset.mid_edge_node(0) && !nodeset.mid_edge_node(4)) {
         vertices[num_vtx] = 1;
         derivs[num_vtx][0] =  0.0;
         derivs[num_vtx][1] =  1.0;
         derivs[num_vtx][2] =  0.0;
         ++num_vtx;
       }
-      else if (have_node( nodebits, 4 ) && have_node( nodebits, 8 )) {
+      else if (nodeset.mid_edge_node(0) && nodeset.mid_edge_node(4)) {
         vertices[num_vtx] = 1;
         derivs[num_vtx][0] =  0.0;
         derivs[num_vtx][1] = -1.0;
@@ -771,14 +768,14 @@ static void derivatives_at_mid_edge( unsigned edge,
         ++num_vtx;
       }
       
-      if (!have_node( nodebits, 6 ) && !have_node( nodebits, 9 )) {
+      if (!nodeset.mid_edge_node(2) && !nodeset.mid_edge_node(5)) {
         vertices[num_vtx] = 2;
         derivs[num_vtx][0] =  0.0;
         derivs[num_vtx][1] =  0.0;
         derivs[num_vtx][2] =  1.0;
         ++num_vtx;
       }
-      if (have_node( nodebits, 6 ) && have_node( nodebits, 9 )) {
+      if (nodeset.mid_edge_node(2) && nodeset.mid_edge_node(5)) {
         vertices[num_vtx] = 2;
         derivs[num_vtx][0] =  0.0;
         derivs[num_vtx][1] =  0.0;
@@ -786,7 +783,7 @@ static void derivatives_at_mid_edge( unsigned edge,
         ++num_vtx;
       }
 
-      if (have_node( nodebits, 4 )) {
+      if (nodeset.mid_edge_node(0)) {
         vertices[num_vtx] = 4;
         derivs[num_vtx][0] =  0.0;
         derivs[num_vtx][1] =  2.0;
@@ -795,7 +792,7 @@ static void derivatives_at_mid_edge( unsigned edge,
         derivs[0][1] -= 1.0;
       }
       
-      if (have_node( nodebits, 6 )) {
+      if (nodeset.mid_edge_node(2)) {
         vertices[num_vtx] = 6;
         derivs[num_vtx][0] =  0.0;
         derivs[num_vtx][1] =  0.0;
@@ -804,7 +801,7 @@ static void derivatives_at_mid_edge( unsigned edge,
         derivs[0][2] -= 1.0;
       }
       
-      if (have_node( nodebits, 7 )) {
+      if (nodeset.mid_edge_node(3)) {
         vertices[num_vtx] = 7;
         derivs[num_vtx][0] =  0.0;
         derivs[num_vtx][1] = -2.0;
@@ -816,7 +813,7 @@ static void derivatives_at_mid_edge( unsigned edge,
         derivs[1][2] += 1.0;
       }
       
-      if (have_node( nodebits, 8 )) {
+      if (nodeset.mid_edge_node(4)) {
         vertices[num_vtx] = 8;
         derivs[num_vtx][0] =  0.0;
         derivs[num_vtx][1] =  2.0;
@@ -824,7 +821,7 @@ static void derivatives_at_mid_edge( unsigned edge,
         ++num_vtx;
         derivs[1][1] -= 1.0;
       }
-      if (have_node( nodebits, 9 )) {
+      if (nodeset.mid_edge_node(5)) {
         vertices[num_vtx] = 9;
         derivs[num_vtx][0] =  0.0;
         derivs[num_vtx][1] =  0.0;
@@ -847,14 +844,14 @@ static void derivatives_at_mid_edge( unsigned edge,
       derivs[1][1] = -1.0;
       derivs[1][2] = -1.0;
 
-      if (!have_node( nodebits, 4 ) && !have_node( nodebits, 7 )) {
+      if (!nodeset.mid_edge_node(0) && !nodeset.mid_edge_node(3)) {
         vertices[num_vtx] = 0;
         derivs[num_vtx][0] =  1.0;
         derivs[num_vtx][1] =  0.0;
         derivs[num_vtx][2] =  0.0;
         ++num_vtx;
       }
-      else if (have_node( nodebits, 4 ) && have_node( nodebits, 7 )) {
+      else if (nodeset.mid_edge_node(0) && nodeset.mid_edge_node(3)) {
         vertices[num_vtx] = 0;
         derivs[num_vtx][0] = -1.0;
         derivs[num_vtx][1] =  0.0;
@@ -862,14 +859,14 @@ static void derivatives_at_mid_edge( unsigned edge,
         ++num_vtx;
       }
       
-      if (!have_node( nodebits, 5 ) && !have_node( nodebits, 9 )) {
+      if (!nodeset.mid_edge_node(1) && !nodeset.mid_edge_node(5)) {
         vertices[num_vtx] = 2;
         derivs[num_vtx][0] =  0.0;
         derivs[num_vtx][1] =  0.0;
         derivs[num_vtx][2] =  1.0;
         ++num_vtx;
       }
-      else if (have_node( nodebits, 5 ) && have_node( nodebits, 9 )) {
+      else if (nodeset.mid_edge_node(1) && nodeset.mid_edge_node(5)) {
         vertices[num_vtx] = 2;
         derivs[num_vtx][0] =  0.0;
         derivs[num_vtx][1] =  0.0;
@@ -877,7 +874,7 @@ static void derivatives_at_mid_edge( unsigned edge,
         ++num_vtx;
       }
 
-      if (have_node( nodebits, 4 )) {
+      if (nodeset.mid_edge_node(0)) {
         vertices[num_vtx] = 4;
         derivs[num_vtx][0] =  2.0;
         derivs[num_vtx][1] =  0.0;
@@ -886,7 +883,7 @@ static void derivatives_at_mid_edge( unsigned edge,
         derivs[0][0] -= 1.0;
       }
       
-      if (have_node( nodebits, 5 )) {
+      if (nodeset.mid_edge_node(1)) {
         vertices[num_vtx] = 5;
         derivs[num_vtx][0] =  0.0;
         derivs[num_vtx][1] =  0.0;
@@ -895,7 +892,7 @@ static void derivatives_at_mid_edge( unsigned edge,
         derivs[0][2] -= 1.0;
       }
       
-      if (have_node( nodebits, 8 )) {
+      if (nodeset.mid_edge_node(4)) {
         vertices[num_vtx] = 8;
         derivs[num_vtx][0] = -2.0;
         derivs[num_vtx][1] =  0.0;
@@ -907,7 +904,7 @@ static void derivatives_at_mid_edge( unsigned edge,
         derivs[1][2] += 1.0;
       }
       
-      if (have_node( nodebits, 7 )) {
+      if (nodeset.mid_edge_node(3)) {
         vertices[num_vtx] = 7;
         derivs[num_vtx][0] =  2.0;
         derivs[num_vtx][1] =  0.0;
@@ -915,7 +912,7 @@ static void derivatives_at_mid_edge( unsigned edge,
         ++num_vtx;
         derivs[1][0] -= 1.0;
       }
-      if (have_node( nodebits, 9 )) {
+      if (nodeset.mid_edge_node(5)) {
         vertices[num_vtx] = 9;
         derivs[num_vtx][0] =  0.0;
         derivs[num_vtx][1] =  0.0;
@@ -938,14 +935,14 @@ static void derivatives_at_mid_edge( unsigned edge,
       derivs[1][1] = -1.0;
       derivs[1][2] = -1.0;
 
-      if (!have_node( nodebits, 6 ) && !have_node( nodebits, 7 )) {
+      if (!nodeset.mid_edge_node(2) && !nodeset.mid_edge_node(3)) {
         vertices[num_vtx] = 0;
         derivs[num_vtx][0] =  1.0;
         derivs[num_vtx][1] =  0.0;
         derivs[num_vtx][2] =  0.0;
         ++num_vtx;
       }
-      else if (have_node( nodebits, 6 ) && have_node( nodebits, 7 )) {
+      else if (nodeset.mid_edge_node(2) && nodeset.mid_edge_node(3)) {
         vertices[num_vtx] = 0;
         derivs[num_vtx][0] = -1.0;
         derivs[num_vtx][1] =  0.0;
@@ -953,14 +950,14 @@ static void derivatives_at_mid_edge( unsigned edge,
         ++num_vtx;
       }
       
-      if (!have_node( nodebits, 5 ) && !have_node( nodebits, 8 )) {
+      if (!nodeset.mid_edge_node(1) && !nodeset.mid_edge_node(4)) {
         vertices[num_vtx] = 1;
         derivs[num_vtx][0] =  0.0;
         derivs[num_vtx][1] =  1.0;
         derivs[num_vtx][2] =  0.0;
         ++num_vtx;
       }
-      else if (have_node( nodebits, 5 ) && have_node( nodebits, 8 )) {
+      else if (nodeset.mid_edge_node(1) && nodeset.mid_edge_node(4)) {
         vertices[num_vtx] = 1;
         derivs[num_vtx][0] =  0.0;
         derivs[num_vtx][1] = -1.0;
@@ -968,7 +965,7 @@ static void derivatives_at_mid_edge( unsigned edge,
         ++num_vtx;
       }
       
-      if (have_node( nodebits, 5 )) {
+      if (nodeset.mid_edge_node(1)) {
         vertices[num_vtx] = 5;
         derivs[num_vtx][0] =  0.0;
         derivs[num_vtx][1] =  2.0;
@@ -977,7 +974,7 @@ static void derivatives_at_mid_edge( unsigned edge,
         derivs[0][1] -= 1.0;
       }
 
-      if (have_node( nodebits, 6 )) {
+      if (nodeset.mid_edge_node(2)) {
         vertices[num_vtx] = 6;
         derivs[num_vtx][0] =  2.0;
         derivs[num_vtx][1] =  0.0;
@@ -986,7 +983,7 @@ static void derivatives_at_mid_edge( unsigned edge,
         derivs[0][0] -= 1.0;
       }
       
-      if (have_node( nodebits, 9 )) {
+      if (nodeset.mid_edge_node(5)) {
         vertices[num_vtx] = 9;
         derivs[num_vtx][0] = -2.0;
         derivs[num_vtx][1] = -2.0;
@@ -998,7 +995,7 @@ static void derivatives_at_mid_edge( unsigned edge,
         derivs[1][1] += 1.0;
       }
       
-      if (have_node( nodebits, 7 )) {
+      if (nodeset.mid_edge_node(3)) {
         vertices[num_vtx] = 7;
         derivs[num_vtx][0] =  2.0;
         derivs[num_vtx][1] =  0.0;
@@ -1006,7 +1003,7 @@ static void derivatives_at_mid_edge( unsigned edge,
         ++num_vtx;
         derivs[1][0] -= 1.0;
       }
-      if (have_node( nodebits, 8 )) {
+      if (nodeset.mid_edge_node(4)) {
         vertices[num_vtx] = 8;
         derivs[num_vtx][0] =  0.0;
         derivs[num_vtx][1] =  2.0;
@@ -1045,7 +1042,7 @@ const double ho_dt[6][4] = { { 0., 0., 0., 0. },
 
 
 static void derivatives_at_mid_face( unsigned face,
-                                     unsigned nodebits,
+                                     NodeSet nodeset,
                                      size_t* vertices,
                                      MsqVector<3>* derivs,
                                      size_t& num_vtx )
@@ -1055,7 +1052,7 @@ static void derivatives_at_mid_face( unsigned face,
   get_linear_derivatives( vertices, derivs );
   
   for (unsigned i = 0; i < 6; ++i) 
-    if (nodebits & (1<<i)) {
+    if (nodeset.mid_edge_node(i)) {
       vertices[num_vtx] = i+4;
       derivs[num_vtx][0] = ho_dr[i][face];
       derivs[num_vtx][1] = ho_ds[i][face];
@@ -1072,7 +1069,7 @@ static void derivatives_at_mid_face( unsigned face,
     }
 }
 
-static void derivatives_at_mid_elem( unsigned nodebits,
+static void derivatives_at_mid_elem( NodeSet nodeset,
                                      size_t* vertices,
                                      MsqVector<3>* derivs,
                                      size_t& num_vtx )
@@ -1093,7 +1090,7 @@ static void derivatives_at_mid_elem( unsigned nodebits,
       zero = (i - 7);
     }
     
-    if (have_node( nodebits, i )) {
+    if (nodeset.mid_edge_node(i-4)) {
       vertices[num_vtx] = i;
       derivs[num_vtx][0] = (double)sign;
       derivs[num_vtx][1] = (double)sign;
@@ -1125,13 +1122,13 @@ static void derivatives_at_mid_elem( unsigned nodebits,
     
 void TetLagrangeShape::derivatives( unsigned loc_dim,
                                     unsigned loc_num,
-                                    unsigned nodebits,
+                                    NodeSet nodeset,
                                     size_t* vertex_indices_out,
                                     MsqVector<3>* d_coeff_d_xi_out,
                                     size_t& num_vtx,
                                     MsqError& err ) const
 {
-  if (nodebits >= (1u << 6)) {
+  if (nodeset.have_any_mid_face_node() | nodeset.have_any_mid_region_node()) {
     MSQ_SETERR(err)("TetLagrangeShape does not support mid-face/mid-element nodes",
                     MsqError::UNSUPPORTED_ELEMENT);
     return;
@@ -1139,16 +1136,16 @@ void TetLagrangeShape::derivatives( unsigned loc_dim,
   
   switch (loc_dim) {
     case 0:
-      derivatives_at_corner( loc_num, nodebits, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      derivatives_at_corner( loc_num, nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       break;
     case 1:
-      derivatives_at_mid_edge( loc_num, nodebits, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      derivatives_at_mid_edge( loc_num, nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       break;
     case 2:
-      derivatives_at_mid_face( loc_num, nodebits, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      derivatives_at_mid_face( loc_num, nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       break;
     case 3:
-      derivatives_at_mid_elem( nodebits, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      derivatives_at_mid_elem( nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       break;
     default:
       MSQ_SETERR(err)("Invalid/unsupported logical dimension",MsqError::INVALID_ARG);

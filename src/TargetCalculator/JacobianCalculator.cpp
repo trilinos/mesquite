@@ -39,7 +39,7 @@
 namespace Mesquite {
 
 void JacobianCalculator::get_Jacobian_2D( const MappingFunction2D* mf,
-                                          unsigned ho_bits,
+                                          NodeSet ho_bits,
                                           unsigned dim, unsigned num,
                                           const Vector3D* verts,
                                           size_t num_type_vert,
@@ -61,7 +61,7 @@ void JacobianCalculator::get_Jacobian_2D( const MappingFunction2D* mf,
 }
 
 void JacobianCalculator::get_Jacobian_3D( const MappingFunction3D* mf,
-                                          unsigned ho_bits,
+                                          NodeSet ho_bits,
                                           unsigned dim, unsigned num,
                                           const Vector3D* verts,
                                           size_t num_type_vert,

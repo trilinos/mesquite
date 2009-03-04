@@ -48,6 +48,7 @@
 #include "TargetMatrix.hpp"
 #include "MsqError.hpp"
 #include "Settings.hpp"
+#include "NodeSet.hpp"
 
 #ifndef MSQ_USE_OLD_C_HEADERS
 #  include <cstddef>
@@ -535,19 +536,9 @@ namespace Mesquite
                               Vector3D& result,
                               MsqError& err ) const;  
     
-    //! This function produces an unsigned integer containing a
-    //! bit for edge, face, and 1 for the region if the element 
-    //! is a volume element.  The bits are ordered from lsb to msb
-    //! in the same order as the corresponding mid-nodes would appear in
-    //! the canonical ordering of an element with all such mid-nodes
-    //! present.  (E.g. If the specified input element 
-    //! has has HEXAHEDRON topology, then the result will have a
-    //! bit for each of the 19 non-corner nodes in a Hex27, reglardless of
-    //! how many nodes the actual indicated element has.)  Each bit
-    //! will be 1 if the corresponding mid-node is a) present in
-    //! this particular element and b) not a slave node.  Otherwise
-    //! the bit will be 0.
-    unsigned higher_order_node_bits( size_t elem_idx ) const;  
+    //! This function returns a NodeSet indicating which
+    //! nodes in the specified element are not slaved.
+    NodeSet non_slave_node_set( size_t elem_idx ) const;  
     
     //! Display the coordinates and connectivity information
     friend msq_stdio::ostream& operator<<( msq_stdio::ostream&, const PatchData& );

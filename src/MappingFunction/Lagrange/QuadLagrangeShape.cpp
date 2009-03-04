@@ -40,7 +40,7 @@ int QuadLagrangeShape::num_nodes() const
 
 void QuadLagrangeShape::coefficients( unsigned loc_dim,
                                       unsigned loc_num,
-                                      unsigned nodebits,
+                                      NodeSet nodeset,
                                       double* coeff_out,
                                       size_t* indices_out,
                                       size_t& num_coeff,
@@ -56,7 +56,7 @@ void QuadLagrangeShape::coefficients( unsigned loc_dim,
       coeff_out[0] = coeff_out[1] = coeff_out[2] =
       coeff_out[3] = coeff_out[4] = coeff_out[5] = 
       coeff_out[6] = coeff_out[7] = coeff_out[8] = 0.0;
-      if (nodebits & (1 << loc_num)) {  
+      if (nodeset.mid_edge_node(loc_num)) {  
           // if mid-edge node is present
         num_coeff = 1;
         indices_out[0] = loc_num+4;
@@ -73,7 +73,7 @@ void QuadLagrangeShape::coefficients( unsigned loc_dim,
       }
       break;
     case 2:
-      if (nodebits & 1<<4) { // if quad center node is present
+      if (nodeset.mid_face_node(0)) { // if quad center node is present
         num_coeff = 1;
         indices_out[0] = 8;
         coeff_out[0] = 1.0;
@@ -91,7 +91,7 @@ void QuadLagrangeShape::coefficients( unsigned loc_dim,
         coeff_out[3] = 0.25;
           // add in contribution for any mid-edge nodes present
         for (int i = 0; i < 4; ++i) { // for each edge
-          if (nodebits & (1<<i))
+          if (nodeset.mid_edge_node(i))
           {
             indices_out[num_coeff] = i+4;
             coeff_out[num_coeff] = 0.5;
@@ -111,7 +111,7 @@ void QuadLagrangeShape::coefficients( unsigned loc_dim,
      
 
 static void derivatives_at_corner( unsigned corner, 
-                                   unsigned nodebits,
+                                   NodeSet nodeset,
                                    size_t* vertices,
                                    MsqVector<2>* derivs,
                                    size_t& num_vtx )
@@ -140,7 +140,7 @@ static void derivatives_at_corner( unsigned corner,
   derivs[2][0] = 0.0;
   derivs[2][1] = other_eta [corner];
 
-  if (nodebits & (1<<xi_adj_edges[corner])) {
+  if (nodeset.mid_edge_node(xi_adj_edges[corner])) {
     vertices[num_vtx] = 4 + xi_adj_edges[corner];
     derivs[num_vtx][0] = 2.0*mid_xi[corner];
     derivs[num_vtx][1] = 0.0;
@@ -149,7 +149,7 @@ static void derivatives_at_corner( unsigned corner,
     ++num_vtx;
   }
 
-  if (nodebits & (1<<eta_adj_edges[corner])) {
+  if (nodeset.mid_edge_node(eta_adj_edges[corner])) {
     vertices[num_vtx] = 4 + eta_adj_edges[corner];
     derivs[num_vtx][0] = 0.0;
     derivs[num_vtx][1] = 2.0*mid_eta[corner];
@@ -160,7 +160,7 @@ static void derivatives_at_corner( unsigned corner,
 }
 
 static void derivatives_at_mid_edge( unsigned edge, 
-                                     unsigned nodebits,
+                                     NodeSet nodeset,
                                      size_t* vertices,
                                      MsqVector<2>* derivs,
                                      size_t& num_vtx )
@@ -194,7 +194,7 @@ static void derivatives_at_mid_edge( unsigned edge,
     // Next handle the linear element case.  Handle this as a special case first,
     // so the generalized solution doesn't impact performance for linear elements
     // too much.
-  if (!nodebits) {
+  if (!nodeset.have_any_mid_node()) {
     num_vtx = 4;
     vertices[2] = prev_opposite;
     vertices[3] = next_opposite;
@@ -215,7 +215,7 @@ static void derivatives_at_mid_edge( unsigned edge,
 
     // If mid-face node is present
   double v8 = 0.0;
-  if (nodebits & 16u) {
+  if (nodeset.mid_face_node(0)) {
     v8 = values[edge][8];
     vertices[num_vtx] = 8;
     derivs[num_vtx][is_eta_edge] = 0.0;
@@ -229,7 +229,7 @@ static void derivatives_at_mid_edge( unsigned edge,
 
     // If mid-edge nodes are present
   for (unsigned i = 0; i < 4; ++i) {
-    if (nodebits & (1<<i)) {
+    if (nodeset.mid_edge_node(i)) {
       const double value = values[edge][i+4] - 0.5 * v8;
       if (fabs(value) > 0.125) {
         v[ i     ] -= 0.5 * value;
@@ -261,7 +261,7 @@ static void derivatives_at_mid_edge( unsigned edge,
 }
 
 
-static void derivatives_at_mid_elem( unsigned nodebits,
+static void derivatives_at_mid_elem( NodeSet nodeset,
                                      size_t* vertices,
                                      MsqVector<2>* derivs,
                                      size_t& num_vtx )
@@ -270,7 +270,7 @@ static void derivatives_at_mid_elem( unsigned nodebits,
     // This is provided as an optimization for linear elements.
     // If this block of code were removed, the general-case code
     // below should produce the same result.
-  if (!nodebits) {
+  if (!nodeset.have_any_mid_node()) {
     num_vtx = 4;
     vertices[0] = 0; derivs[0][0] = -0.25; derivs[0][1] = -0.25;
     vertices[1] = 1; derivs[1][0] =  0.25; derivs[1][1] = -0.25;
@@ -279,47 +279,42 @@ static void derivatives_at_mid_elem( unsigned nodebits,
     return;
   }
   
-  const unsigned n4bit = 1<<0;
-  const unsigned n5bit = 1<<1;
-  const unsigned n6bit = 1<<2;
-  const unsigned n7bit = 1<<3;
-  
   num_vtx = 0;
   
     // N_0
-  if ((nodebits&(n4bit|n7bit)) != (n4bit|n7bit)) {  // if eiter adjacent mid-edge node is missing
+  if (!nodeset.both_edge_nodes(0,3)) {  // if eiter adjacent mid-edge node is missing
     vertices[num_vtx] = 0;
-    derivs[num_vtx][0] = (nodebits&n7bit) ? 0.0 : -0.25;
-    derivs[num_vtx][1] = (nodebits&n4bit) ? 0.0 : -0.25;
+    derivs[num_vtx][0] = nodeset.mid_edge_node(3) ? 0.0 : -0.25;
+    derivs[num_vtx][1] = nodeset.mid_edge_node(0) ? 0.0 : -0.25;
     ++num_vtx;
   }
   
     // N_1
-  if ((nodebits&(n4bit|n5bit)) != (n4bit|n5bit)) {  // if eiter adjacent mid-edge node is missing
+  if (!nodeset.both_edge_nodes(0,1)) {  // if eiter adjacent mid-edge node is missing
     vertices[num_vtx] = 1;
-    derivs[num_vtx][0] = (nodebits&n5bit) ? 0.0 :  0.25;
-    derivs[num_vtx][1] = (nodebits&n4bit) ? 0.0 : -0.25;
+    derivs[num_vtx][0] = nodeset.mid_edge_node(1) ? 0.0 :  0.25;
+    derivs[num_vtx][1] = nodeset.mid_edge_node(0) ? 0.0 : -0.25;
     ++num_vtx;
   }
   
     // N_2
-  if ((nodebits&(n5bit|n6bit)) != (n5bit|n6bit)) {  // if eiter adjacent mid-edge node is missing
+  if (!nodeset.both_edge_nodes(1,2)) {  // if eiter adjacent mid-edge node is missing
     vertices[num_vtx] = 2;
-    derivs[num_vtx][0] = (nodebits&n5bit) ? 0.0 :  0.25;
-    derivs[num_vtx][1] = (nodebits&n6bit) ? 0.0 :  0.25;
+    derivs[num_vtx][0] = nodeset.mid_edge_node(1) ? 0.0 :  0.25;
+    derivs[num_vtx][1] = nodeset.mid_edge_node(2) ? 0.0 :  0.25;
     ++num_vtx;
   }
   
     // N_3
-  if ((nodebits&(n6bit|n7bit)) != (n6bit|n7bit)) {  // if eiter adjacent mid-edge node is missing
+  if (!nodeset.both_edge_nodes(2,3)) {  // if eiter adjacent mid-edge node is missing
     vertices[num_vtx] = 3;
-    derivs[num_vtx][0] = (nodebits&n7bit) ? 0.0 : -0.25;
-    derivs[num_vtx][1] = (nodebits&n6bit) ? 0.0 :  0.25;
+    derivs[num_vtx][0] = nodeset.mid_edge_node(3) ? 0.0 : -0.25;
+    derivs[num_vtx][1] = nodeset.mid_edge_node(2) ? 0.0 :  0.25;
     ++num_vtx;
   }
   
     // N_4
-  if (nodebits&n4bit) {
+  if (nodeset.mid_edge_node(0)) {
     vertices[num_vtx] = 4;
     derivs[num_vtx][0] =  0.0;
     derivs[num_vtx][1] = -0.5;
@@ -327,7 +322,7 @@ static void derivatives_at_mid_elem( unsigned nodebits,
   }
   
     // N_5
-  if (nodebits&n5bit) {
+  if (nodeset.mid_edge_node(1)) {
     vertices[num_vtx] = 5;
     derivs[num_vtx][0] =  0.5;
     derivs[num_vtx][1] =  0.0;
@@ -335,7 +330,7 @@ static void derivatives_at_mid_elem( unsigned nodebits,
   }
   
     // N_6
-  if (nodebits&n6bit) {
+  if (nodeset.mid_edge_node(2)) {
     vertices[num_vtx] = 6;
     derivs[num_vtx][0] =  0.0;
     derivs[num_vtx][1] =  0.5;
@@ -343,7 +338,7 @@ static void derivatives_at_mid_elem( unsigned nodebits,
   }
   
     // N_7
-  if (nodebits&n7bit) {
+  if (nodeset.mid_edge_node(3)) {
     vertices[num_vtx] = 7;
     derivs[num_vtx][0] = -0.5;
     derivs[num_vtx][1] =  0.0;
@@ -355,7 +350,7 @@ static void derivatives_at_mid_elem( unsigned nodebits,
 
 void QuadLagrangeShape::derivatives( unsigned loc_dim,
                                      unsigned loc_num,
-                                     unsigned nodebits,
+                                     NodeSet nodeset,
                                      size_t* vertex_indices_out,
                                      MsqVector<2>* d_coeff_d_xi_out,
                                      size_t& num_vtx,
@@ -363,13 +358,13 @@ void QuadLagrangeShape::derivatives( unsigned loc_dim,
 {
   switch (loc_dim) {
     case 0:
-      derivatives_at_corner( loc_num, nodebits, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      derivatives_at_corner( loc_num, nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       break;
     case 1:
-      derivatives_at_mid_edge( loc_num, nodebits, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      derivatives_at_mid_edge( loc_num, nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       break;
     case 2:
-      derivatives_at_mid_elem( nodebits, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      derivatives_at_mid_elem( nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       break;
     default:
       MSQ_SETERR(err)("Invalid/unsupported logical dimension",MsqError::INVALID_ARG);

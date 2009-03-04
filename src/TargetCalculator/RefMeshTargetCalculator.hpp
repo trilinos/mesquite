@@ -38,6 +38,7 @@
 #include "JacobianCalculator.hpp"
 #include "MeshInterface.hpp"
 #include "TargetCalculator.hpp"
+#include "NodeSet.hpp"
 
 namespace Mesquite {
 
@@ -84,7 +85,7 @@ public:
 
 private:
 
-  unsigned get_vertex_coords( PatchData& pd, size_t elem, MsqError& err );
+  NodeSet get_vertex_coords( PatchData& pd, size_t elem, MsqError& err );
 
   msq_std::vector<Vector3D> tmpCoords;
   msq_std::vector<Mesh::VertexHandle> tmpHandles;

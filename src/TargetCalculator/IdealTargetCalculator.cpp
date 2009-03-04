@@ -62,7 +62,7 @@ bool IdealTargetCalculator:: get_3D_target( PatchData& pd,
       return false;
   }
   
-  jc.get_Jacobian_3D( func, 0, dim, num, verts, elem.node_count(), W, err );
+  jc.get_Jacobian_3D( func, NodeSet(), dim, num, verts, elem.node_count(), W, err );
   MSQ_ERRZERO(err);
   return true;
 }
@@ -86,7 +86,7 @@ bool IdealTargetCalculator:: get_2D_target( PatchData& pd,
       return false;
   }
   
-  jc.get_Jacobian_2D( func, 0, dim, num, verts, elem.node_count(), W, err );
+  jc.get_Jacobian_2D( func, NodeSet(), dim, num, verts, elem.node_count(), W, err );
   MSQ_ERRZERO(err);
   
   if (orientSurfElems) {

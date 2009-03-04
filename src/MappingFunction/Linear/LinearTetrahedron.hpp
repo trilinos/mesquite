@@ -54,7 +54,7 @@ public:
   virtual 
   void coefficients( unsigned loc_dim,
                      unsigned loc_num,
-                     unsigned nodebits,
+                     NodeSet nodeset,
                      double* coeff_out,
                      size_t* indices_out,
                      size_t& num_coeff_out,
@@ -63,7 +63,7 @@ public:
   virtual 
   void derivatives( unsigned loc_dim, 
                     unsigned loc_num,
-                    unsigned nodebits,
+                    NodeSet nodeset,
                     size_t* vertex_indices_out,
                     MsqVector<3>* d_coeff_d_xi_out,
                     size_t& num_vtx,

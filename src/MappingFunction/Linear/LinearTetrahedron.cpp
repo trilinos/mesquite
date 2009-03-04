@@ -46,13 +46,13 @@ static const unsigned faces[][3] = { { 1, 0, 3 },
 
 void LinearTetrahedron::coefficients( unsigned loc_dim,
                                       unsigned loc_num,
-                                      unsigned nodebits,
+                                      NodeSet nodeset,
                                       double* coeff_out,
                                       size_t* indices_out,
                                       size_t& num_coeff,
                                       MsqError& err ) const
 {
-  if (nodebits) {
+  if (nodeset.have_any_mid_node()) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
     return;
   }
@@ -98,13 +98,13 @@ void LinearTetrahedron::coefficients( unsigned loc_dim,
 
 void LinearTetrahedron::derivatives( unsigned ,
                                      unsigned ,
-                                     unsigned nodebits,
+                                     NodeSet nodeset,
                                      size_t* vertices,
                                      MsqVector<3>* coeff_derivs,
                                      size_t& num_vtx,
                                      MsqError& err ) const
 {
-  if (nodebits) {
+  if (nodeset.have_any_mid_node()) {
     MSQ_SETERR(err)(nonlinear_error, MsqError::UNSUPPORTED_ELEMENT );
     return;
   }

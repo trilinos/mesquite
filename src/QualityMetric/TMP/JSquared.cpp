@@ -107,7 +107,7 @@ bool JSquared::evaluate_with_indices( PatchData& pd,
   unsigned num = ElemSampleQM::side_num_from_sample( s );
   unsigned edim = TopologyInfo::dimension( type );
   
-  unsigned bits = pd.higher_order_node_bits( e );
+  const NodeSet bits = pd.non_slave_node_set( e );
   
   bool rval;
   size_t num_vtx = 0;

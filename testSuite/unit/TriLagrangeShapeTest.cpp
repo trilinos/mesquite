@@ -47,8 +47,10 @@
 
 #ifdef MSQ_USE_OLD_IO_HEADERS
 # include <iostream.h>
+# include <sstream.h>
 #else
 # include <iostream>
+# include <sstream>
 #endif
 
 using namespace Mesquite;
@@ -58,43 +60,33 @@ const double epsilon = 1e-6;
   ASSERT_MESSAGE( value_message( (location), (bits), (v1), (v2) ), \
                           (fabs((v1) - (v2)) < epsilon) )
 
-inline const char* bintostr( unsigned bits )
+static inline CppUnit::Message value_message( unsigned location, NodeSet bits, double v1, double v2 )
 {
-  static char buffer_mem[5];
-  char* buffer = buffer_mem;
-  for (int i = sizeof(buffer_mem)-2; i >= 0; --i) {
-    *buffer = (bits & (1<<i)) ? '1' : '0';
-    ++buffer;
-  }
-  *buffer='\0';
-  return buffer_mem;
-}
-
-inline CppUnit::Message value_message( unsigned location, unsigned bits, double v1, double v2 )
-{
-  char buffer[128];
   CppUnit::Message m( "equality assertion failed" );
 
-  sprintf(buffer, "Expected : %f", v1 );
-  m.addDetail( buffer );
+  msq_stdio::ostringstream buffer1;
+  buffer1 << "Expected : " << v1;
+   m.addDetail( buffer1.str() );
 
-  sprintf(buffer, "Actual   : %f", v2 );
-  m.addDetail( buffer );
+  msq_stdio::ostringstream buffer2;
+  buffer2 << "Actual   : " << v2;
+  m.addDetail( buffer2.str() );
 
-  if (location < 4) 
-    sprintf(buffer, "Location : Corner %u", location );
-  else if (location < 10)
-    sprintf(buffer, "Location : Edge %u", location-4 );
-  else if (location < 14)
-    sprintf(buffer, "Location : Face %u", location-10 );
-  else if (location == 14)
-    sprintf(buffer, "Location : Mid-element" );
+  msq_stdio::ostringstream buffer3;
+  buffer3 << "Location : ";
+  if (location < 3) 
+    buffer3 << "Corner " << location;
+  else if (location < 6)
+    buffer3 << "Edge " << location-3;
+  else if (location == 6)
+    buffer3 << "Mid-element";
   else
-    sprintf(buffer, "Invalid location" );
-  m.addDetail( buffer );
+    buffer3 << "INVALID!!";
+  m.addDetail( buffer3.str() );
 
-  sprintf(buffer, "Node Bits: %s", bintostr(bits) );
-  m.addDetail( buffer );
+  msq_stdio::ostringstream buffer4;
+  buffer4 << "Node Bits: " << bits;
+  m.addDetail( buffer4.str() );
   return m;
 }
 
@@ -115,13 +107,13 @@ class TriLagrangeShapeTest : public CppUnit::TestFixture
   
     TriLagrangeShape sf;
     
-    void test_corner_coeff( int corner, unsigned nodebits );
-    void test_edge_coeff( int edge, unsigned nodebits );
-    void test_mid_coeff( unsigned nodebits );
+    void test_corner_coeff( int corner, NodeSet nodeset );
+    void test_edge_coeff( int edge, NodeSet nodeset );
+    void test_mid_coeff( NodeSet nodeset );
     
-    void test_corner_derivs( int corner, unsigned nodebits );
-    void test_edge_derivs( int edge, unsigned nodebits );
-    void test_mid_derivs( unsigned nodebits );
+    void test_corner_derivs( int corner, NodeSet nodeset );
+    void test_edge_derivs( int edge, NodeSet nodeset );
+    void test_mid_derivs( NodeSet nodeset );
     
   public:
 
@@ -167,26 +159,26 @@ const double rs_corner[][2] = { {1, 0}, {0, 1}, {0, 0}};
 const double rs_edge[][2] = { {0.5, 0.5}, {0.0, 0.5}, {0.5, 0.0}};
 const double rs_mid[2] = { 1.0/3.0, 1.0/3.0 };
 
-static void get_coeff( unsigned nodebits, const double* rs, double* coeffs )
+static void get_coeff( NodeSet nodeset, const double* rs, double* coeffs )
 {
   for (int i = 0; i < 6; ++i) 
     coeffs[i] = (*N[i])(rs[0], rs[1]);
   for (int i = 0; i < 3; ++i) 
-    if (!(nodebits & 1<<i)) {
+    if (!nodeset.mid_edge_node(i)) {
       coeffs[i]      += 0.5 * coeffs[i+3];
       coeffs[(i+1)%3] += 0.5 * coeffs[i+3];
       coeffs[i+3] = 0;
     }
 }
 
-static void get_derivs( unsigned nodebits, const double* rs, double* derivs )
+static void get_derivs( NodeSet nodeset, const double* rs, double* derivs )
 {
   for (int i = 0; i < 6; ++i) {
     derivs[2*i  ] = (*dNdr[i])(rs[0], rs[1]);
     derivs[2*i+1] = (*dNds[i])(rs[0], rs[1]);
   }
   for (int i = 0; i < 3; ++i) 
-    if (!(nodebits & 1<<i)) {
+    if (!nodeset.mid_edge_node(i)) {
       derivs[2*i]        += 0.5 * derivs[2*i+6];
       derivs[2*i+1]      += 0.5 * derivs[2*i+7];
       int j = (i+1)%3;
@@ -223,7 +215,7 @@ static void compare_coefficients( const double* coeffs,
                                   const size_t* indices,
                                   const double* expected_coeffs,
                                   size_t num_coeff,
-                                  unsigned loc, unsigned bits )
+                                  unsigned loc, NodeSet bits )
 {
     // find the location in the returned list for each node
   size_t revidx[6];
@@ -235,9 +227,9 @@ static void compare_coefficients( const double* coeffs,
 
     // Check that index list doesn't contain any nodes not actually
     // present in the element.
-  CPPUNIT_ASSERT( (bits & 1) || (revidx[3] == num_coeff) );
-  CPPUNIT_ASSERT( (bits & 2) || (revidx[4] == num_coeff) );
-  CPPUNIT_ASSERT( (bits & 4) || (revidx[5] == num_coeff) );
+  CPPUNIT_ASSERT( bits.mid_edge_node(0) || (revidx[3] == num_coeff) );
+  CPPUNIT_ASSERT( bits.mid_edge_node(1) || (revidx[4] == num_coeff) );
+  CPPUNIT_ASSERT( bits.mid_edge_node(2) || (revidx[5] == num_coeff) );
     
     // compare expected and actual coefficient values
   ASSERT_VALUES_EQUAL( expected_coeffs[0], test_vals[0], loc, bits );
@@ -252,7 +244,7 @@ static void compare_derivatives( const size_t* vertices,
                                  size_t num_vtx,
                                  const MsqVector<2>* derivs,
                                  const double* expected_derivs,
-                                 unsigned loc, unsigned bits )
+                                 unsigned loc, NodeSet bits )
 {
   check_valid_indices( vertices, num_vtx );
   check_no_zeros( derivs, num_vtx );
@@ -276,7 +268,7 @@ static void compare_derivatives( const size_t* vertices,
   ASSERT_VALUES_EQUAL( expected_derivs[11], expanded_derivs[11], loc, bits );
 }
 
-void TriLagrangeShapeTest::test_corner_coeff( int corner, unsigned nodebits )
+void TriLagrangeShapeTest::test_corner_coeff( int corner, NodeSet nodebits )
 {
   MsqPrintError err(std::cout);
   
@@ -291,7 +283,7 @@ void TriLagrangeShapeTest::test_corner_coeff( int corner, unsigned nodebits )
   compare_coefficients( coeff, indices, expected, num_coeff, corner, nodebits );
 }
 
-void TriLagrangeShapeTest::test_edge_coeff( int edge, unsigned nodebits )
+void TriLagrangeShapeTest::test_edge_coeff( int edge, NodeSet nodebits )
 {
   MsqPrintError err(std::cout);
   
@@ -306,7 +298,7 @@ void TriLagrangeShapeTest::test_edge_coeff( int edge, unsigned nodebits )
   compare_coefficients( coeff, indices, expected, num_coeff, edge+3, nodebits );
 }
 
-void TriLagrangeShapeTest::test_mid_coeff( unsigned nodebits )
+void TriLagrangeShapeTest::test_mid_coeff( NodeSet nodebits )
 {
   MsqPrintError err(std::cout);
   
@@ -321,7 +313,7 @@ void TriLagrangeShapeTest::test_mid_coeff( unsigned nodebits )
   compare_coefficients( coeff, indices, expected, num_coeff, 6, nodebits );
 }
 
-void TriLagrangeShapeTest::test_corner_derivs( int corner, unsigned nodebits )
+void TriLagrangeShapeTest::test_corner_derivs( int corner, NodeSet nodebits )
 {
   MsqPrintError err(std::cout);
   
@@ -336,7 +328,7 @@ void TriLagrangeShapeTest::test_corner_derivs( int corner, unsigned nodebits )
   compare_derivatives( vertices, n, derivs, expected, corner, nodebits );
 }
 
-void TriLagrangeShapeTest::test_edge_derivs( int edge, unsigned nodebits )
+void TriLagrangeShapeTest::test_edge_derivs( int edge, NodeSet nodebits )
 {
   MsqPrintError err(std::cout);
   
@@ -351,7 +343,7 @@ void TriLagrangeShapeTest::test_edge_derivs( int edge, unsigned nodebits )
   compare_derivatives( vertices, n, derivs, expected, edge+3, nodebits );
 }
 
-void TriLagrangeShapeTest::test_mid_derivs( unsigned nodebits )
+void TriLagrangeShapeTest::test_mid_derivs( NodeSet nodebits )
 {
   MsqPrintError err(std::cout);
   
@@ -368,164 +360,236 @@ void TriLagrangeShapeTest::test_mid_derivs( unsigned nodebits )
 
 void TriLagrangeShapeTest::test_coeff_corners()
 {
-  test_corner_coeff( 0, 0 );
-  test_corner_coeff( 1, 0 );
-  test_corner_coeff( 2, 0 );
+  NodeSet ns;
+  
+  ns.clear();
+  test_corner_coeff( 0, ns );
+  test_corner_coeff( 1, ns );
+  test_corner_coeff( 2, ns );
 
-  test_corner_coeff( 0, 1 );
-  test_corner_coeff( 1, 1 );
-  test_corner_coeff( 2, 1 );
+  ns.set_mid_edge_node(0);
+  test_corner_coeff( 0, ns );
+  test_corner_coeff( 1, ns );
+  test_corner_coeff( 2, ns );
 
-  test_corner_coeff( 0, 2 );
-  test_corner_coeff( 1, 2 );
-  test_corner_coeff( 2, 2 );
+  ns.clear();
+  ns.set_mid_edge_node(1);
+  test_corner_coeff( 0, ns );
+  test_corner_coeff( 1, ns );
+  test_corner_coeff( 2, ns );
 
-  test_corner_coeff( 0, 3 );
-  test_corner_coeff( 1, 3 );
-  test_corner_coeff( 2, 3 );
+  ns.set_mid_edge_node(0);
+  test_corner_coeff( 0, ns );
+  test_corner_coeff( 1, ns );
+  test_corner_coeff( 2, ns );
 
-  test_corner_coeff( 0, 4 );
-  test_corner_coeff( 1, 4 );
-  test_corner_coeff( 2, 4 );
+  ns.clear();
+  ns.set_mid_edge_node(2);
+  test_corner_coeff( 0, ns );
+  test_corner_coeff( 1, ns );
+  test_corner_coeff( 2, ns );
 
-  test_corner_coeff( 0, 5 );
-  test_corner_coeff( 1, 5 );
-  test_corner_coeff( 2, 5 );
+  ns.set_mid_edge_node(0);
+  test_corner_coeff( 0, ns );
+  test_corner_coeff( 1, ns );
+  test_corner_coeff( 2, ns );
 
-  test_corner_coeff( 0, 6 );
-  test_corner_coeff( 1, 6 );
-  test_corner_coeff( 2, 6 );
+  ns.set_mid_edge_node(1);
+  test_corner_coeff( 0, ns );
+  test_corner_coeff( 1, ns );
+  test_corner_coeff( 2, ns );
 
-  test_corner_coeff( 0, 7 );
-  test_corner_coeff( 1, 7 );
-  test_corner_coeff( 2, 7 );
+  ns.clear_mid_edge_node(0);
+  test_corner_coeff( 0, ns );
+  test_corner_coeff( 1, ns );
+  test_corner_coeff( 2, ns );
 }
 
 void TriLagrangeShapeTest::test_coeff_edges()
 {
-  test_edge_coeff( 0, 0 );
-  test_edge_coeff( 1, 0 );
-  test_edge_coeff( 2, 0 );
+  NodeSet ns;
+  
+  ns.clear();
+  test_edge_coeff( 0, ns );
+  test_edge_coeff( 1, ns );
+  test_edge_coeff( 2, ns );
 
-  test_edge_coeff( 0, 1 );
-  test_edge_coeff( 1, 1 );
-  test_edge_coeff( 2, 1 );
+  ns.set_mid_edge_node(0);
+  test_edge_coeff( 0, ns );
+  test_edge_coeff( 1, ns );
+  test_edge_coeff( 2, ns );
 
-  test_edge_coeff( 0, 2 );
-  test_edge_coeff( 1, 2 );
-  test_edge_coeff( 2, 2 );
+  ns.clear();
+  ns.set_mid_edge_node(1);
+  test_edge_coeff( 0, ns );
+  test_edge_coeff( 1, ns );
+  test_edge_coeff( 2, ns );
 
-  test_edge_coeff( 0, 3 );
-  test_edge_coeff( 1, 3 );
-  test_edge_coeff( 2, 3 );
+  ns.set_mid_edge_node(0);
+  test_edge_coeff( 0, ns );
+  test_edge_coeff( 1, ns );
+  test_edge_coeff( 2, ns );
 
-  test_edge_coeff( 0, 4 );
-  test_edge_coeff( 1, 4 );
-  test_edge_coeff( 2, 4 );
+  ns.clear();
+  ns.set_mid_edge_node(2);
+  test_edge_coeff( 0, ns );
+  test_edge_coeff( 1, ns );
+  test_edge_coeff( 2, ns );
 
-  test_edge_coeff( 0, 5 );
-  test_edge_coeff( 1, 5 );
-  test_edge_coeff( 2, 5 );
+  ns.set_mid_edge_node(0);
+  test_edge_coeff( 0, ns );
+  test_edge_coeff( 1, ns );
+  test_edge_coeff( 2, ns );
 
-  test_edge_coeff( 0, 6 );
-  test_edge_coeff( 1, 6 );
-  test_edge_coeff( 2, 6 );
+  ns.set_mid_edge_node(1);
+  test_edge_coeff( 0, ns );
+  test_edge_coeff( 1, ns );
+  test_edge_coeff( 2, ns );
 
-  test_edge_coeff( 0, 7 );
-  test_edge_coeff( 1, 7 );
-  test_edge_coeff( 2, 7 );
+  ns.clear_mid_edge_node(0);
+  test_edge_coeff( 0, ns );
+  test_edge_coeff( 1, ns );
+  test_edge_coeff( 2, ns );
 }
 
 void TriLagrangeShapeTest::test_coeff_center()
 {
-  test_mid_coeff( 0 );
-  test_mid_coeff( 1 );
-  test_mid_coeff( 2 );
-  test_mid_coeff( 3 );
-  test_mid_coeff( 4 );
-  test_mid_coeff( 5 );
-  test_mid_coeff( 6 );
-  test_mid_coeff( 7 );
+  NodeSet ns;
+  
+  ns.clear();
+  test_mid_coeff( ns );
+  ns.set_mid_edge_node(0);
+  test_mid_coeff( ns );
+  ns.clear();
+  ns.set_mid_edge_node(1);
+  test_mid_coeff( ns );
+  ns.set_mid_edge_node(0);
+  test_mid_coeff( ns );
+  ns.clear();
+  ns.set_mid_edge_node(2);
+  test_mid_coeff( ns );
+  ns.set_mid_edge_node(0);
+  test_mid_coeff( ns );
+  ns.set_mid_edge_node(1);
+  test_mid_coeff( ns );
+  ns.clear_mid_edge_node(0);
+  test_mid_coeff( ns );
 }
 
 void TriLagrangeShapeTest::test_deriv_corners()
 {
-  test_corner_derivs( 0, 0 );
-  test_corner_derivs( 1, 0 );
-  test_corner_derivs( 2, 0 );
+  NodeSet ns;
+  
+  ns.clear();
+  test_corner_derivs( 0, ns );
+  test_corner_derivs( 1, ns );
+  test_corner_derivs( 2, ns );
 
-  test_corner_derivs( 0, 1 );
-  test_corner_derivs( 1, 1 );
-  test_corner_derivs( 2, 1 );
+  ns.set_mid_edge_node(0);
+  test_corner_derivs( 0, ns );
+  test_corner_derivs( 1, ns );
+  test_corner_derivs( 2, ns );
 
-  test_corner_derivs( 0, 2 );
-  test_corner_derivs( 1, 2 );
-  test_corner_derivs( 2, 2 );
+  ns.clear();
+  ns.set_mid_edge_node(1);
+  test_corner_derivs( 0, ns );
+  test_corner_derivs( 1, ns );
+  test_corner_derivs( 2, ns );
 
-  test_corner_derivs( 0, 3 );
-  test_corner_derivs( 1, 3 );
-  test_corner_derivs( 2, 3 );
+  ns.set_mid_edge_node(0);
+  test_corner_derivs( 0, ns );
+  test_corner_derivs( 1, ns );
+  test_corner_derivs( 2, ns );
 
-  test_corner_derivs( 0, 4 );
-  test_corner_derivs( 1, 4 );
-  test_corner_derivs( 2, 4 );
+  ns.clear();
+  ns.set_mid_edge_node(2);
+  test_corner_derivs( 0, ns );
+  test_corner_derivs( 1, ns );
+  test_corner_derivs( 2, ns );
 
-  test_corner_derivs( 0, 5 );
-  test_corner_derivs( 1, 5 );
-  test_corner_derivs( 2, 5 );
+  ns.set_mid_edge_node(0);
+  test_corner_derivs( 0, ns );
+  test_corner_derivs( 1, ns );
+  test_corner_derivs( 2, ns );
 
-  test_corner_derivs( 0, 6 );
-  test_corner_derivs( 1, 6 );
-  test_corner_derivs( 2, 6 );
+  ns.set_mid_edge_node(1);
+  test_corner_derivs( 0, ns );
+  test_corner_derivs( 1, ns );
+  test_corner_derivs( 2, ns );
 
-  test_corner_derivs( 0, 7 );
-  test_corner_derivs( 1, 7 );
-  test_corner_derivs( 2, 7 );
+  ns.clear_mid_edge_node(0);
+  test_corner_derivs( 0, ns );
+  test_corner_derivs( 1, ns );
+  test_corner_derivs( 2, ns );
 }
 
 void TriLagrangeShapeTest::test_deriv_edges()
 {
-  test_edge_derivs( 0, 0 );
-  test_edge_derivs( 1, 0 );
-  test_edge_derivs( 2, 0 );
+  NodeSet ns;
+  
+  ns.clear();
+  test_edge_derivs( 0, ns );
+  test_edge_derivs( 1, ns );
+  test_edge_derivs( 2, ns );
 
-  test_edge_derivs( 0, 1 );
-  test_edge_derivs( 1, 1 );
-  test_edge_derivs( 2, 1 );
+  ns.set_mid_edge_node(0);
+  test_edge_derivs( 0, ns );
+  test_edge_derivs( 1, ns );
+  test_edge_derivs( 2, ns );
 
-  test_edge_derivs( 0, 2 );
-  test_edge_derivs( 1, 2 );
-  test_edge_derivs( 2, 2 );
+  ns.clear();
+  ns.set_mid_edge_node(1);
+  test_edge_derivs( 0, ns );
+  test_edge_derivs( 1, ns );
+  test_edge_derivs( 2, ns );
 
-  test_edge_derivs( 0, 3 );
-  test_edge_derivs( 1, 3 );
-  test_edge_derivs( 2, 3 );
+  ns.set_mid_edge_node(0);
+  test_edge_derivs( 0, ns );
+  test_edge_derivs( 1, ns );
+  test_edge_derivs( 2, ns );
 
-  test_edge_derivs( 0, 4 );
-  test_edge_derivs( 1, 4 );
-  test_edge_derivs( 2, 4 );
+  ns.clear();
+  ns.set_mid_edge_node(2);
+  test_edge_derivs( 0, ns );
+  test_edge_derivs( 1, ns );
+  test_edge_derivs( 2, ns );
 
-  test_edge_derivs( 0, 5 );
-  test_edge_derivs( 1, 5 );
-  test_edge_derivs( 2, 5 );
+  ns.set_mid_edge_node(0);
+  test_edge_derivs( 0, ns );
+  test_edge_derivs( 1, ns );
+  test_edge_derivs( 2, ns );
 
-  test_edge_derivs( 0, 6 );
-  test_edge_derivs( 1, 6 );
-  test_edge_derivs( 2, 6 );
+  ns.set_mid_edge_node(1);
+  test_edge_derivs( 0, ns );
+  test_edge_derivs( 1, ns );
+  test_edge_derivs( 2, ns );
 
-  test_edge_derivs( 0, 7 );
-  test_edge_derivs( 1, 7 );
-  test_edge_derivs( 2, 7 );
+  ns.clear_mid_edge_node(0);
+  test_edge_derivs( 0, ns );
+  test_edge_derivs( 1, ns );
+  test_edge_derivs( 2, ns );
 }
 
 void TriLagrangeShapeTest::test_deriv_center()
 {
-  test_mid_derivs( 0 );
-  test_mid_derivs( 1 );
-  test_mid_derivs( 2 );
-  test_mid_derivs( 3 );
-  test_mid_derivs( 4 );
-  test_mid_derivs( 5 );
-  test_mid_derivs( 6 );
-  test_mid_derivs( 7 );
+  NodeSet ns;
+  
+  ns.clear();
+  test_mid_derivs( ns );
+  ns.set_mid_edge_node(0);
+  test_mid_derivs( ns );
+  ns.clear();
+  ns.set_mid_edge_node(1);
+  test_mid_derivs( ns );
+  ns.set_mid_edge_node(0);
+  test_mid_derivs( ns );
+  ns.clear();
+  ns.set_mid_edge_node(2);
+  test_mid_derivs( ns );
+  ns.set_mid_edge_node(0);
+  test_mid_derivs( ns );
+  ns.set_mid_edge_node(1);
+  test_mid_derivs( ns );
+  ns.clear_mid_edge_node(0);
+  test_mid_derivs( ns );
 }

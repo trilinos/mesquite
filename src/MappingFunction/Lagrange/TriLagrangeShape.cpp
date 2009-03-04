@@ -45,19 +45,18 @@ int TriLagrangeShape::num_nodes() const
 
 void TriLagrangeShape::coefficients( unsigned loc_dim,
                                      unsigned loc_num,
-                                     unsigned nodebits,
+                                     NodeSet nodeset,
                                      double* coeff_out,
                                      size_t* indices_out,
                                      size_t& num_coeff,
                                      MsqError& err ) const
 {
-  if (nodebits >= (1u << 3)) {
+  if (nodeset.have_any_mid_face_node()) {
     MSQ_SETERR(err)("TriLagrangeShape does not support mid-element nodes",
                     MsqError::UNSUPPORTED_ELEMENT);
     return;
   }
   
-  num_coeff = 6;
   switch (loc_dim) {
     case 0:
       num_coeff = 1;
@@ -65,8 +64,7 @@ void TriLagrangeShape::coefficients( unsigned loc_dim,
       coeff_out[0] = 1.0;
       break;
     case 1:
-      std::fill( coeff_out, coeff_out+num_coeff, 0.0 );
-      if (nodebits & (1 << loc_num)) { // if mid-edge node is present
+      if (nodeset.mid_edge_node(loc_num)) { // if mid-edge node is present
         num_coeff = 1;
         indices_out[0] = 3+loc_num;
         coeff_out[0] = 1.0;
@@ -88,7 +86,7 @@ void TriLagrangeShape::coefficients( unsigned loc_dim,
       coeff_out[1] = 1.0/3.0;
       coeff_out[2] = 1.0/3.0;
       for (int i = 0; i < 3; ++i) { // for each mid-edge node
-        if (nodebits & (1 << i)) { // if node is present
+        if (nodeset.mid_edge_node(i)) { // if node is present
           indices_out[num_coeff] = i+3;
             // coeff for mid-edge node
           coeff_out[num_coeff] = 4.0/9.0;
@@ -122,7 +120,7 @@ static inline void get_linear_derivatives( size_t* vertices,
 }  
 
 static void derivatives_at_corner( unsigned corner,
-                                   unsigned nodebits,
+                                   NodeSet nodeset,
                                    size_t* vertices,
                                    MsqVector<2>* derivs,
                                    size_t& num_vtx )
@@ -131,7 +129,7 @@ static void derivatives_at_corner( unsigned corner,
   get_linear_derivatives( vertices, derivs );
   switch (corner) {
     case 0:
-      if (nodebits & 1) {
+      if (nodeset.mid_edge_node(0)) {
         vertices[num_vtx] = 3;
         derivs[num_vtx][0] = 0.0;
         derivs[num_vtx][1] = 4.0;
@@ -139,7 +137,7 @@ static void derivatives_at_corner( unsigned corner,
         derivs[0][1] -= 2.0;
         derivs[1][1] -= 2.0;
       }
-      if (nodebits & 4) {
+      if (nodeset.mid_edge_node(2)) {
         vertices[num_vtx] = 5;
         derivs[num_vtx][0] = -4.0;
         derivs[num_vtx][1] = -4.0;
@@ -152,7 +150,7 @@ static void derivatives_at_corner( unsigned corner,
       break;
     
     case 1:
-      if (nodebits & 1) {
+      if (nodeset.mid_edge_node(0)) {
         vertices[num_vtx] = 3;
         derivs[num_vtx][0] = 4.0;
         derivs[num_vtx][1] = 0.0;
@@ -160,7 +158,7 @@ static void derivatives_at_corner( unsigned corner,
         derivs[0][0] -= 2.0;
         derivs[1][0] -= 2.0;
       }
-      if (nodebits & 2) {
+      if (nodeset.mid_edge_node(1)) {
         vertices[num_vtx] = 4;
         derivs[num_vtx][0] = -4.0;
         derivs[num_vtx][1] = -4.0;
@@ -173,7 +171,7 @@ static void derivatives_at_corner( unsigned corner,
       break;
     
     case 2:
-      if (nodebits & 2) {
+      if (nodeset.mid_edge_node(1)) {
         vertices[num_vtx] = 4;
         derivs[num_vtx][0] = 0.0;
         derivs[num_vtx][1] = 4.0;
@@ -181,7 +179,7 @@ static void derivatives_at_corner( unsigned corner,
         derivs[1][1] -= 2.0;
         derivs[2][1] -= 2.0;
       }
-      if (nodebits & 4) {
+      if (nodeset.mid_edge_node(2)) {
         vertices[num_vtx] = 5;
         derivs[num_vtx][0] = 4.0;
         derivs[num_vtx][1] = 0.0;
@@ -201,7 +199,7 @@ static const double eds[3][3] = { { 2.0, 0.0, 2.0 },
                                   {-2.0, 0.0,-2.0 } };
 
 static void derivatives_at_mid_edge( unsigned edge, 
-                                     unsigned nodebits,
+                                     NodeSet nodeset,
                                      size_t* vertices,
                                      MsqVector<2>* derivs,
                                      size_t& num_vtx )
@@ -228,7 +226,7 @@ static void derivatives_at_mid_edge( unsigned edge,
     // do mid-side nodes first
   num_vtx = 0;
   for (unsigned i = 0; i < 3; ++i) {
-    if (nodebits & (1<<i)) {
+    if (nodeset.mid_edge_node(i)) {
       vertices[num_vtx] =  i+3 ;
       derivs[num_vtx][0] =  edr[i][edge] ;
       derivs[num_vtx][1] =  eds[i][edge] ;
@@ -258,7 +256,7 @@ static void derivatives_at_mid_edge( unsigned edge,
 static const double fdr[] = { 4.0/3.0, -4.0/3.0, 0.0 };
 static const double fds[] = { 4.0/3.0, 0.0, -4.0/3.0 };
        
-static void derivatives_at_mid_elem( unsigned nodebits,
+static void derivatives_at_mid_elem( NodeSet nodeset,
                                      size_t* vertices,
                                      MsqVector<2>* derivs,
                                      size_t& num_vtx )
@@ -266,7 +264,7 @@ static void derivatives_at_mid_elem( unsigned nodebits,
   get_linear_derivatives( vertices, derivs );
   num_vtx = 3;
   for (unsigned i = 0; i < 3; ++i) {
-    if (nodebits & (1<<i)) {
+    if (nodeset.mid_edge_node(i)) {
       vertices[num_vtx] = i+3;
       derivs[num_vtx][0] = fdr[i];
       derivs[num_vtx][1] = fds[i];
@@ -283,13 +281,13 @@ static void derivatives_at_mid_elem( unsigned nodebits,
 
 void TriLagrangeShape::derivatives( unsigned loc_dim,
                                     unsigned loc_num,
-                                    unsigned nodebits,
+                                    NodeSet nodeset,
                                     size_t* vertex_indices_out,
                                     MsqVector<2>* d_coeff_d_xi_out,
                                     size_t& num_vtx,
                                     MsqError& err ) const
 {
-  if (nodebits >= (1u << 3)) {
+  if (nodeset.have_any_mid_face_node()) {
     MSQ_SETERR(err)("TriLagrangeShape does not support mid-element nodes",
                     MsqError::UNSUPPORTED_ELEMENT);
     return;
@@ -297,13 +295,13 @@ void TriLagrangeShape::derivatives( unsigned loc_dim,
   
   switch (loc_dim) {
     case 0:
-      derivatives_at_corner( loc_num, nodebits, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      derivatives_at_corner( loc_num, nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       break;
     case 1:
-      derivatives_at_mid_edge( loc_num, nodebits, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      derivatives_at_mid_edge( loc_num, nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       break;
     case 2:
-      derivatives_at_mid_elem( nodebits, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      derivatives_at_mid_elem( nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       break;
     default:
       MSQ_SETERR(err)("Invalid/unsupported logical dimension",MsqError::INVALID_ARG);

@@ -36,6 +36,7 @@
 #include "Mesquite.hpp"
 #include "MsqMatrix.hpp"
 #include "Vector3D.hpp"
+#include "NodeSet.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 # include <vector.h>
@@ -66,7 +67,7 @@ public:
    *\param J_out The resulting Jacobian matrix.
    */
   void get_Jacobian_2D( const MappingFunction2D* mf,
-                        unsigned ho_bits,
+                        NodeSet ho_bits,
                         unsigned dim, unsigned num,
                         const Vector3D* vertex_coords,
                         size_t num_vertex,
@@ -86,7 +87,7 @@ public:
    *\param J_out The resulting Jacobian matrix.
    */
   void get_Jacobian_3D( const MappingFunction3D* mf,
-                        unsigned ho_bits,
+                        NodeSet ho_bits,
                         unsigned dim, unsigned num,
                         const Vector3D* vertex_coords,
                         size_t num_vertex,

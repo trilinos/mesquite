@@ -203,7 +203,7 @@ bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
   unsigned edim = TopologyInfo::dimension( type );
   unsigned dim = ElemSampleQM::side_dim_from_sample( s );
   unsigned num = ElemSampleQM::side_num_from_sample( s );
-  unsigned bits = pd.higher_order_node_bits( e );
+  const NodeSet bits = pd.non_slave_node_set( e );
   
   bool rval;
   if (edim == 3) { // 3x3 or 3x2 targets ?
@@ -276,7 +276,7 @@ bool TMPQualityMetric::evaluate_with_gradient(
   unsigned dim = ElemSampleQM::side_dim_from_sample( s );
   unsigned num = ElemSampleQM::side_num_from_sample( s );
   size_t num_idx = 0;
-  unsigned bits = pd.higher_order_node_bits( e );
+  const NodeSet bits = pd.non_slave_node_set( e );
   
   bool rval;
   if (edim == 3) { // 3x3 or 3x2 targets ?
@@ -359,7 +359,7 @@ bool TMPQualityMetric::evaluate_with_Hessian(
   unsigned dim = ElemSampleQM::side_dim_from_sample( s );
   unsigned num = ElemSampleQM::side_num_from_sample( s );
   size_t num_idx = 0;
-  unsigned bits = pd.higher_order_node_bits( e );
+  const NodeSet bits = pd.non_slave_node_set( e );
   
   bool rval;
   if (edim == 3) { // 3x3 or 3x2 targets ?
@@ -454,7 +454,7 @@ bool TMPQualityMetric::evaluate_with_Hessian_diagonal(
   unsigned dim = ElemSampleQM::side_dim_from_sample( s );
   unsigned num = ElemSampleQM::side_num_from_sample( s );
   size_t num_idx = 0;
-  unsigned bits = pd.higher_order_node_bits( e );
+  const NodeSet bits = pd.non_slave_node_set( e );
   
   bool rval;
   if (edim == 3) { // 3x3 or 3x2 targets ?

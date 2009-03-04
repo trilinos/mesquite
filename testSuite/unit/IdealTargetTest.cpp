@@ -221,7 +221,7 @@ void IdealTargetTest::get_ideal_target( EntityTopology type,
   if (elem_dim == 2) {
     MsqVector<2> derivs[100];
     const MappingFunction2D* func = settings.get_mapping_function_2D( type );
-    func->derivatives( dim, num, 0, indices, derivs, num_vtx, err );
+    func->derivatives( dim, num, NodeSet(), indices, derivs, num_vtx, err );
     CPPUNIT_ASSERT(!MSQ_CHKERR(err));
 
     for (size_t i = 0; i < num_vtx; ++i) 
@@ -235,7 +235,7 @@ void IdealTargetTest::get_ideal_target( EntityTopology type,
   else {
     MsqVector<3> derivs[100];
     const MappingFunction3D* func = settings.get_mapping_function_3D( type );
-    func->derivatives( dim, num, 0, indices, derivs, num_vtx, err );
+    func->derivatives( dim, num, NodeSet(), indices, derivs, num_vtx, err );
     CPPUNIT_ASSERT(!MSQ_CHKERR(err));
 
     for (size_t i = 0; i < num_vtx; ++i) 

@@ -239,6 +239,13 @@ class NodeSet {
     //! Get mark/flag for mid-edge node
     bool mid_edge_node( unsigned num ) const
       { return bit_to_bool( mid_edge_node_position(num) ); }
+    //! Test if two mid-edge nodes are both present
+    bool both_edge_nodes( unsigned num1, unsigned num2 ) const
+    { 
+      BitSet b = (1<<mid_edge_node_position(num1))
+               | (1<<mid_edge_node_position(num2));
+      return (bits&b) == b; 
+    }
     //! Get mark/flag for mid-face node
     bool mid_face_node( unsigned num ) const
       { return bit_to_bool( mid_face_node_position(num) ); }

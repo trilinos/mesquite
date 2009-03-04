@@ -47,8 +47,10 @@
 
 #ifdef MSQ_USE_OLD_IO_HEADERS
 # include <iostream.h>
+# include <sstream.h>
 #else
 # include <iostream>
+# include <sstream>
 #endif
 
 using namespace Mesquite;
@@ -58,41 +60,33 @@ const double epsilon = 1e-6;
   ASSERT_MESSAGE( value_message( (location), (bits), (v1), (v2) ), \
                           (fabs((v1) - (v2)) < epsilon) )
 
-inline const char* bintostr( unsigned bits )
+static inline CppUnit::Message value_message( unsigned location, NodeSet bits, double v1, double v2 )
 {
-  static char buffer_mem[6];
-  char* buffer = buffer_mem;
-  for (int i = sizeof(buffer_mem)-2; i >= 0; --i) {
-    *buffer = (bits & (1<<i)) ? '1' : '0';
-    ++buffer;
-  }
-  *buffer='\0';
-  return buffer_mem;
-}
-
-inline CppUnit::Message value_message( unsigned location, unsigned bits, double v1, double v2 )
-{
-  char buffer[128];
   CppUnit::Message m( "equality assertion failed" );
 
-  sprintf(buffer, "Expected : %f", v1 );
-  m.addDetail( buffer );
+  msq_stdio::ostringstream buffer1;
+  buffer1 << "Expected : " << v1;
+   m.addDetail( buffer1.str() );
 
-  sprintf(buffer, "Actual   : %f", v2 );
-  m.addDetail( buffer );
+  msq_stdio::ostringstream buffer2;
+  buffer2 << "Actual   : " << v2;
+  m.addDetail( buffer2.str() );
 
+  msq_stdio::ostringstream buffer3;
+  buffer3 << "Location : ";
   if (location < 4) 
-    sprintf(buffer, "Location : Corner %u", location );
+    buffer3 << "Corner " << location;
   else if (location < 8)
-    sprintf(buffer, "Location : Edge %u", location-4 );
+    buffer3 << "Edge " << location-4;
   else if (location == 8)
-    sprintf(buffer, "Location : Mid-element" );
+    buffer3 << "Mid-element";
   else
-    sprintf(buffer, "Location : INVALID!!" );
-  m.addDetail( buffer );
+    buffer3 << "INVALID!!";
+  m.addDetail( buffer3.str() );
 
-  sprintf(buffer, "Node Bits: %s", bintostr(bits) );
-  m.addDetail( buffer );
+  msq_stdio::ostringstream buffer4;
+  buffer4 << "Node Bits: " << bits;
+  m.addDetail( buffer4.str() );
   return m;
 }
 
@@ -113,13 +107,13 @@ class QuadLagrangeShapeTest : public CppUnit::TestFixture
   
     QuadLagrangeShape sf;
     
-    void test_corner_coeff( int corner, unsigned nodebits );
-    void test_edge_coeff( int edge, unsigned nodebits );
-    void test_mid_coeff( unsigned nodebits );
+    void test_corner_coeff( int corner, NodeSet nodeset );
+    void test_edge_coeff( int edge, NodeSet nodeset );
+    void test_mid_coeff( NodeSet nodeset );
     
-    void test_corner_derivs( int corner, unsigned nodebits );
-    void test_edge_derivs( int edge, unsigned nodebits );
-    void test_mid_derivs( unsigned nodebits );
+    void test_corner_derivs( int corner, NodeSet nodeset );
+    void test_edge_derivs( int edge, NodeSet nodeset );
+    void test_mid_derivs( NodeSet nodeset );
     
   public:
 
@@ -188,7 +182,7 @@ static double dNdeta( unsigned i, double xi, double eta )
 // Evaluate one of N, dNdxi or dNdeta for each vertex
 typedef double (*f_t)(unsigned, double, double);
 static void eval( f_t function, 
-                  unsigned nodebits, 
+                  NodeSet nodeset, 
                   double xi, double eta, 
                   double results[9] )
 {
@@ -199,7 +193,7 @@ static void eval( f_t function,
     results[i] = function( i, xi, eta );
   
     // if center node is present, adjust mid-edge coefficients
-  if (!(nodebits & 16u)) {
+  if (!nodeset.mid_face_node(0)) {
     results[8] = 0;
   }
   else {
@@ -211,7 +205,7 @@ static void eval( f_t function,
   
     // if mid-edge nodes are present, adjust values for adjacent corners
   for (unsigned i = 0; i < 4; ++i) {
-    if (!(nodebits & (1<<i))) {
+    if (!nodeset.mid_edge_node(i)) {
       results[i+4] = 0.0;
     }
     else {
@@ -224,15 +218,15 @@ static void eval( f_t function,
 // Finally, what all the above stuff was building up to:
 // functions to query mapping function.
 
-static void get_coeffs( unsigned nodebits, double xi, double eta, 
+static void get_coeffs( NodeSet nodebits, double xi, double eta, 
                         double coeffs_out[9] )
   { eval( &N, nodebits, xi, eta, coeffs_out ); }
 
-static void get_partial_wrt_xi( unsigned nodebits, double xi, double eta, 
+static void get_partial_wrt_xi( NodeSet nodebits, double xi, double eta, 
                                 double derivs_out[9] )
   { eval( &dNdxi, nodebits, xi, eta, derivs_out ); }
 
-static void get_partial_wrt_eta( unsigned nodebits, double xi, double eta, 
+static void get_partial_wrt_eta( NodeSet nodebits, double xi, double eta, 
                                 double derivs_out[9] )
   { eval( &dNdeta, nodebits, xi, eta, derivs_out ); }
 
@@ -248,7 +242,7 @@ static const double midedge[4][2] = { {  0, -1 },
                                       { -1,  0 } };
 static const double midelem[2] = { 0, 0 };
 
-static void check_valid_indices( const size_t* vertices, size_t num_vtx, unsigned bits )
+static void check_valid_indices( const size_t* vertices, size_t num_vtx, NodeSet nodeset )
 {
     // check valid size of list (at least three, at most all nodes)
   CPPUNIT_ASSERT( num_vtx <= 9 );
@@ -263,9 +257,12 @@ static void check_valid_indices( const size_t* vertices, size_t num_vtx, unsigne
   CPPUNIT_ASSERT( iter == vertcopy+num_vtx );
 
     // make all vertices are present in element
-  for (unsigned i = 0; i < num_vtx; ++i)
-    if (vertcopy[i] > 4)
-      CPPUNIT_ASSERT( bits & (1<<(vertcopy[i]-4)) );
+  for (unsigned i = 0; i < num_vtx; ++i) {
+    if (vertcopy[i] == 8)
+      CPPUNIT_ASSERT( nodeset.mid_face_node(0) );
+    else if (vertcopy[i] >= 4)
+      CPPUNIT_ASSERT( nodeset.mid_edge_node( vertcopy[i] - 4 ) );
+  }
 }
 
 static void check_no_zeros( const MsqVector<2>* derivs, size_t num_vtx )
@@ -281,7 +278,7 @@ static void compare_coefficients( const double* coeffs,
                                   const size_t* indices,
                                   size_t num_coeff,
                                   const double* expected_coeffs,
-                                  unsigned loc, unsigned bits )
+                                  unsigned loc, NodeSet bits )
 {
     // find the location in the returned list for each node
   size_t revidx[9];
@@ -293,11 +290,11 @@ static void compare_coefficients( const double* coeffs,
 
     // Check that index list doesn't contain any nodes not actually
     // present in the element.
-  CPPUNIT_ASSERT( (bits & 1) || (revidx[4] == num_coeff) );
-  CPPUNIT_ASSERT( (bits & 2) || (revidx[5] == num_coeff) );
-  CPPUNIT_ASSERT( (bits & 4) || (revidx[6] == num_coeff) );
-  CPPUNIT_ASSERT( (bits & 8) || (revidx[7] == num_coeff) );
-  CPPUNIT_ASSERT( (bits &16) || (revidx[8] == num_coeff) );
+  CPPUNIT_ASSERT( bits.mid_edge_node(0) || (revidx[4] == num_coeff) );
+  CPPUNIT_ASSERT( bits.mid_edge_node(1) || (revidx[5] == num_coeff) );
+  CPPUNIT_ASSERT( bits.mid_edge_node(2) || (revidx[6] == num_coeff) );
+  CPPUNIT_ASSERT( bits.mid_edge_node(3) || (revidx[7] == num_coeff) );
+  CPPUNIT_ASSERT( bits.mid_face_node(0) || (revidx[8] == num_coeff) );
     
     // compare expected and actual coefficient values
   ASSERT_VALUES_EQUAL( expected_coeffs[0], test_vals[0], loc, bits );
@@ -316,7 +313,7 @@ static void compare_derivatives( const size_t* vertices,
                                  const MsqVector<2>* derivs,
                                  const double* expected_dxi,
                                  const double* expected_deta,
-                                 unsigned loc, unsigned bits )
+                                 unsigned loc, NodeSet bits )
 {
   check_valid_indices( vertices, num_vtx, bits );
   check_no_zeros( derivs, num_vtx );
@@ -353,7 +350,7 @@ static void compare_derivatives( const size_t* vertices,
   ASSERT_VALUES_EQUAL( expected_deta[8], expanded_deta[8], loc, bits );
 }
 
-void QuadLagrangeShapeTest::test_corner_coeff( int corner, unsigned nodebits )
+void QuadLagrangeShapeTest::test_corner_coeff( int corner, NodeSet nodebits )
 {
   MsqPrintError err(std::cout);
   
@@ -368,7 +365,7 @@ void QuadLagrangeShapeTest::test_corner_coeff( int corner, unsigned nodebits )
   compare_coefficients( coeff, indices, num_coeff, expected, corner, nodebits );
 }
 
-void QuadLagrangeShapeTest::test_edge_coeff( int edge, unsigned nodebits )
+void QuadLagrangeShapeTest::test_edge_coeff( int edge, NodeSet nodebits )
 {
   MsqPrintError err(std::cout);
   
@@ -383,7 +380,7 @@ void QuadLagrangeShapeTest::test_edge_coeff( int edge, unsigned nodebits )
   compare_coefficients( coeff, indices, num_coeff, expected, edge+4, nodebits );
 }
 
-void QuadLagrangeShapeTest::test_mid_coeff( unsigned nodebits )
+void QuadLagrangeShapeTest::test_mid_coeff( NodeSet nodebits )
 {
   MsqPrintError err(std::cout);
   
@@ -398,7 +395,7 @@ void QuadLagrangeShapeTest::test_mid_coeff( unsigned nodebits )
   compare_coefficients( coeff, indices, num_coeff, expected, 8, nodebits );
 }
 
-void QuadLagrangeShapeTest::test_corner_derivs( int corner, unsigned nodebits )
+void QuadLagrangeShapeTest::test_corner_derivs( int corner, NodeSet nodebits )
 {
   MsqPrintError err(std::cout);
   
@@ -414,7 +411,7 @@ void QuadLagrangeShapeTest::test_corner_derivs( int corner, unsigned nodebits )
   compare_derivatives( vertices, num_vtx, derivs, expected_dxi, expected_deta, corner, nodebits );
 }
 
-void QuadLagrangeShapeTest::test_edge_derivs( int edge, unsigned nodebits )
+void QuadLagrangeShapeTest::test_edge_derivs( int edge, NodeSet nodebits )
 {
   MsqPrintError err(std::cout);
   
@@ -430,7 +427,7 @@ void QuadLagrangeShapeTest::test_edge_derivs( int edge, unsigned nodebits )
   compare_derivatives( vertices, num_vtx, derivs, expected_dxi, expected_deta, edge+4, nodebits );
 }
 
-void QuadLagrangeShapeTest::test_mid_derivs( unsigned nodebits )
+void QuadLagrangeShapeTest::test_mid_derivs( NodeSet nodebits )
 {
   MsqPrintError err(std::cout);
   
@@ -446,6 +443,17 @@ void QuadLagrangeShapeTest::test_mid_derivs( unsigned nodebits )
   compare_derivatives( vertices, num_vtx, derivs, expected_dxi, expected_deta, 8, nodebits );
 }
 
+static NodeSet nodeset_from_bits( unsigned bits )
+{
+  NodeSet result;
+  for (unsigned i = 0; i < 4; ++i)
+    if (bits & (1<<i))
+      result.set_mid_edge_node(i);
+  if (bits & (1<<4))
+    result.set_mid_face_node(0);
+  return result;
+}
+
 void QuadLagrangeShapeTest::test_coeff_corners()
 {
     // for every possible combination of higher-order nodes
@@ -453,7 +461,7 @@ void QuadLagrangeShapeTest::test_coeff_corners()
   for (unsigned j = 0; j <= 0x1Fu; ++j)
       // for every corner
     for (unsigned i = 0; i < 4; ++i) 
-      test_corner_coeff( i, j );
+      test_corner_coeff( i, nodeset_from_bits(j) );
 }
 
 void QuadLagrangeShapeTest::test_coeff_edges()
@@ -463,7 +471,7 @@ void QuadLagrangeShapeTest::test_coeff_edges()
   for (unsigned j = 0; j <= 0x1Fu; ++j)
       // for every edge
     for (unsigned i = 0; i < 4; ++i) 
-      test_edge_coeff( i, j );
+      test_edge_coeff( i, nodeset_from_bits(j) );
 }
 
 void QuadLagrangeShapeTest::test_coeff_center()
@@ -471,7 +479,7 @@ void QuadLagrangeShapeTest::test_coeff_center()
     // for every possible combination of higher-order nodes
     // (0x1F = 11111 : five possible higher-order nodes in quad)
   for (unsigned j = 0; j <= 0x1Fu; ++j)
-    test_mid_coeff( j );
+    test_mid_coeff( nodeset_from_bits(j) );
 }
 
 void QuadLagrangeShapeTest::test_deriv_corners()
@@ -481,7 +489,7 @@ void QuadLagrangeShapeTest::test_deriv_corners()
   for (unsigned j = 0; j <= 0x1Fu; ++j)
       // for every corner
     for (unsigned i = 0; i < 4; ++i) 
-      test_corner_derivs( i, j );
+      test_corner_derivs( i, nodeset_from_bits(j));
 }
 
 void QuadLagrangeShapeTest::test_deriv_edges()
@@ -491,7 +499,7 @@ void QuadLagrangeShapeTest::test_deriv_edges()
   for (unsigned j = 0; j <= 0x1Fu; ++j)
       // for every edge
     for (unsigned i = 0; i < 4; ++i) 
-      test_edge_derivs( i, j );
+      test_edge_derivs( i, nodeset_from_bits(j) );
 }
 
 void QuadLagrangeShapeTest::test_deriv_center()
@@ -499,5 +507,5 @@ void QuadLagrangeShapeTest::test_deriv_center()
     // for every possible combination of higher-order nodes
     // (0x1F = 11111 : five possible higher-order nodes in quad)
   for (unsigned j = 0; j <= 0x1Fu; ++j)
-    test_mid_derivs( j );
+    test_mid_derivs( nodeset_from_bits(j) );
 }
