@@ -95,29 +95,38 @@ TopologyInfo::TopologyInfo()
   
   adjMap[TRIANGLE][0] = 3;
   adjMap[TRIANGLE][1] = 3;
+  adjMap[TRIANGLE][2] = 1;
+  adjMap[TRIANGLE][3] = 0;
   
   adjMap[QUADRILATERAL][0] = 4;
   adjMap[QUADRILATERAL][1] = 4;
+  adjMap[QUADRILATERAL][2] = 1;
+  adjMap[QUADRILATERAL][3] = 0;
   
   adjMap[TETRAHEDRON][0] = 4;
   adjMap[TETRAHEDRON][1] = 6;
   adjMap[TETRAHEDRON][2] = 4;
+  adjMap[TETRAHEDRON][3] = 1;
   
   adjMap[HEXAHEDRON][0] = 8;
   adjMap[HEXAHEDRON][1] = 12;
   adjMap[HEXAHEDRON][2] = 6;
+  adjMap[HEXAHEDRON][3] = 1;
   
   adjMap[PRISM][0] = 6;
   adjMap[PRISM][1] = 9;
   adjMap[PRISM][2] = 5;
+  adjMap[PRISM][3] = 1;
   
   adjMap[PYRAMID][0] = 5;
   adjMap[PYRAMID][1] = 8;
   adjMap[PYRAMID][2] = 5;
+  adjMap[PYRAMID][3] = 1;
   
   adjMap[SEPTAHEDRON][0] = 7;
   adjMap[SEPTAHEDRON][1] = 11;
   adjMap[SEPTAHEDRON][2] = 6;  /* See description in TSTT mesh interface doc */
+  adjMap[SEPTAHEDRON][3] = 1;
 
   int side;
   for (side = 0; side < 3; ++side)

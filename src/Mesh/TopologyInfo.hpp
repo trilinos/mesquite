@@ -56,7 +56,7 @@ class MESQUITE_EXPORT TopologyInfo
        * of the specified dimension.  
        */
     static unsigned adjacent( EntityTopology topo, unsigned dimension )
-      { return (topo >= MIXED  || dimension > 2) ? 0 : instance.adjMap[topo][dimension]; }
+      { return (topo >= MIXED) ? 0 : instance.adjMap[topo][dimension]; }
     
       /** \brief Get number of sides a given topology type has 
        *
@@ -76,7 +76,7 @@ class MESQUITE_EXPORT TopologyInfo
        * element of the specified topology will have.
        */
     static unsigned corners( EntityTopology topo )
-      { return topo >= MIXED ? 0 : instance.adjMap[topo][0]; }
+      { return adjacent(topo, 0); }
     
       /** \brief Get the number of edges in a given topology */
     static unsigned edges( EntityTopology topo )
@@ -364,8 +364,8 @@ class MESQUITE_EXPORT TopologyInfo
       LAST_VOL = PYRAMID
     };
     
-    unsigned dimMap[MIXED];    /**< Get dimension of entity given topology */
-    unsigned adjMap[MIXED][3]; /**< Get number of adj entities of dimension 0, 1 and dimension 2 */
+    unsigned char dimMap[MIXED];    /**< Get dimension of entity given topology */
+    unsigned char adjMap[MIXED][4]; /**< Get number of adj entities of dimension 0, 1 and dimension 2 */
     /** Vertex indices for element edges */
     unsigned edgeMap[LAST_VOL-FIRST_FACE+1][MAX_EDGES][2] ;
     /** Vertex indices for element faces */

@@ -343,13 +343,13 @@ void TopologyInfoTest::tri()
   CPPUNIT_ASSERT (2 == TopologyInfo::dimension( TRIANGLE ));
   CPPUNIT_ASSERT (3 == TopologyInfo::adjacent( TRIANGLE, 1 ));
   CPPUNIT_ASSERT (3 == TopologyInfo::adjacent( TRIANGLE, 0 ));
-  CPPUNIT_ASSERT (0 == TopologyInfo::adjacent( TRIANGLE, 2 ));
+  CPPUNIT_ASSERT (1 == TopologyInfo::adjacent( TRIANGLE, 2 ));
   CPPUNIT_ASSERT (0 == TopologyInfo::adjacent( TRIANGLE, 3 ));
 
   CPPUNIT_ASSERT (3 == TopologyInfo::sides( TRIANGLE ));
   CPPUNIT_ASSERT (3 == TopologyInfo::corners( TRIANGLE ));
   CPPUNIT_ASSERT (3 == TopologyInfo::edges( TRIANGLE ));
-  CPPUNIT_ASSERT (0 == TopologyInfo::faces( TRIANGLE ));
+  CPPUNIT_ASSERT (1 == TopologyInfo::faces( TRIANGLE ));
 
   const unsigned num_edges = 3;
   const unsigned* side;
@@ -442,13 +442,13 @@ void TopologyInfoTest::quad()
   CPPUNIT_ASSERT (2 == TopologyInfo::dimension( QUADRILATERAL ));
   CPPUNIT_ASSERT (4 == TopologyInfo::adjacent( QUADRILATERAL, 1 ));
   CPPUNIT_ASSERT (4 == TopologyInfo::adjacent( QUADRILATERAL, 0 ));
-  CPPUNIT_ASSERT (0 == TopologyInfo::adjacent( QUADRILATERAL, 2 ));
+  CPPUNIT_ASSERT (1 == TopologyInfo::adjacent( QUADRILATERAL, 2 ));
   CPPUNIT_ASSERT (0 == TopologyInfo::adjacent( QUADRILATERAL, 3 ));
 
   CPPUNIT_ASSERT (4 == TopologyInfo::sides( QUADRILATERAL ));
   CPPUNIT_ASSERT (4 == TopologyInfo::corners( QUADRILATERAL ));
   CPPUNIT_ASSERT (4 == TopologyInfo::edges( QUADRILATERAL ));
-  CPPUNIT_ASSERT (0 == TopologyInfo::faces( QUADRILATERAL ));
+  CPPUNIT_ASSERT (1 == TopologyInfo::faces( QUADRILATERAL ));
 
   const unsigned num_edges = 4;
   const unsigned* side;
@@ -543,7 +543,7 @@ void TopologyInfoTest::tet()
   const unsigned num_edges = 6;
   const unsigned num_faces = 4;
   CPPUNIT_ASSERT (3 == TopologyInfo::dimension( TETRAHEDRON ));
-  CPPUNIT_ASSERT (0 == TopologyInfo::adjacent( TETRAHEDRON, 3 ));
+  CPPUNIT_ASSERT (1 == TopologyInfo::adjacent( TETRAHEDRON, 3 ));
   CPPUNIT_ASSERT (num_faces == TopologyInfo::adjacent( TETRAHEDRON, 2 ));
   CPPUNIT_ASSERT (num_edges == TopologyInfo::adjacent( TETRAHEDRON, 1 ));
   CPPUNIT_ASSERT (num_verts == TopologyInfo::adjacent( TETRAHEDRON, 0 ));
@@ -722,7 +722,7 @@ void TopologyInfoTest::hex()
   const unsigned num_edges = 12;
   const unsigned num_faces = 6;
   CPPUNIT_ASSERT (3 == TopologyInfo::dimension( HEXAHEDRON ));
-  CPPUNIT_ASSERT (0 == TopologyInfo::adjacent( HEXAHEDRON, 3 ));
+  CPPUNIT_ASSERT (1 == TopologyInfo::adjacent( HEXAHEDRON, 3 ));
   CPPUNIT_ASSERT (num_faces == TopologyInfo::adjacent( HEXAHEDRON, 2 ));
   CPPUNIT_ASSERT (num_edges == TopologyInfo::adjacent( HEXAHEDRON, 1 ));
   CPPUNIT_ASSERT (num_verts == TopologyInfo::adjacent( HEXAHEDRON, 0 ));
@@ -905,7 +905,7 @@ void TopologyInfoTest::pyramid()
   const unsigned num_edges = 8;
   const unsigned num_faces = 5;
   CPPUNIT_ASSERT (3 == TopologyInfo::dimension( PYRAMID ));
-  CPPUNIT_ASSERT (0 == TopologyInfo::adjacent( PYRAMID, 3 ));
+  CPPUNIT_ASSERT (1 == TopologyInfo::adjacent( PYRAMID, 3 ));
   CPPUNIT_ASSERT (num_faces == TopologyInfo::adjacent( PYRAMID, 2 ));
   CPPUNIT_ASSERT (num_edges == TopologyInfo::adjacent( PYRAMID, 1 ));
   CPPUNIT_ASSERT (num_verts == TopologyInfo::adjacent( PYRAMID, 0 ));
@@ -1012,7 +1012,7 @@ void TopologyInfoTest::wedge()
   const unsigned num_edges = 9;
   const unsigned num_faces = 5;
   CPPUNIT_ASSERT (3 == TopologyInfo::dimension( PRISM ));
-  CPPUNIT_ASSERT (0 == TopologyInfo::adjacent( PRISM, 3 ));
+  CPPUNIT_ASSERT (1 == TopologyInfo::adjacent( PRISM, 3 ));
   CPPUNIT_ASSERT (num_faces == TopologyInfo::adjacent( PRISM, 2 ));
   CPPUNIT_ASSERT (num_edges == TopologyInfo::adjacent( PRISM, 1 ));
   CPPUNIT_ASSERT (num_verts == TopologyInfo::adjacent( PRISM, 0 ));
