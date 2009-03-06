@@ -38,36 +38,35 @@ EntityTopology QuadLagrangeShape::element_topology() const
 int QuadLagrangeShape::num_nodes() const
   { return 9; }
 
-void QuadLagrangeShape::coefficients( unsigned loc_dim,
-                                      unsigned loc_num,
+void QuadLagrangeShape::coefficients( Sample loc,
                                       NodeSet nodeset,
                                       double* coeff_out,
                                       size_t* indices_out,
                                       size_t& num_coeff,
                                       MsqError& err ) const
 {
-  switch (loc_dim) {
+  switch (loc.dimension) {
     case 0:
       num_coeff = 1;
-      indices_out[0] = loc_num;
+      indices_out[0] = loc.number;
       coeff_out[0] = 1.0;
       break;
     case 1:
       coeff_out[0] = coeff_out[1] = coeff_out[2] =
       coeff_out[3] = coeff_out[4] = coeff_out[5] = 
       coeff_out[6] = coeff_out[7] = coeff_out[8] = 0.0;
-      if (nodeset.mid_edge_node(loc_num)) {  
+      if (nodeset.mid_edge_node(loc.number)) {  
           // if mid-edge node is present
         num_coeff = 1;
-        indices_out[0] = loc_num+4;
+        indices_out[0] = loc.number+4;
         coeff_out[0] = 1.0;
       }
       else {
           // If mid-edge node is not present, mapping function value
           // for linear edge is even weight of adjacent vertices.
         num_coeff = 2;
-        indices_out[0] = loc_num;
-        indices_out[1] = (loc_num+1)%4;
+        indices_out[0] = loc.number;
+        indices_out[1] = (loc.number+1)%4;
         coeff_out[0] = 0.5;
         coeff_out[1] = 0.5;
       }
@@ -105,7 +104,7 @@ void QuadLagrangeShape::coefficients( unsigned loc_dim,
     default:
       MSQ_SETERR(err)(MsqError::UNSUPPORTED_ELEMENT,
                   "Request for dimension %d mapping function value"
-                  "for a quadrilateral element", loc_dim);
+                  "for a quadrilateral element", loc.dimension);
   }
 }
      
@@ -348,20 +347,19 @@ static void derivatives_at_mid_elem( NodeSet nodeset,
     // N_8 (mid-quad node) never contributes to Jacobian at element center!!!
 }
 
-void QuadLagrangeShape::derivatives( unsigned loc_dim,
-                                     unsigned loc_num,
+void QuadLagrangeShape::derivatives( Sample loc,
                                      NodeSet nodeset,
                                      size_t* vertex_indices_out,
                                      MsqVector<2>* d_coeff_d_xi_out,
                                      size_t& num_vtx,
                                      MsqError& err ) const
 {
-  switch (loc_dim) {
+  switch (loc.dimension) {
     case 0:
-      derivatives_at_corner( loc_num, nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      derivatives_at_corner( loc.number, nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       break;
     case 1:
-      derivatives_at_mid_edge( loc_num, nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      derivatives_at_mid_edge( loc.number, nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       break;
     case 2:
       derivatives_at_mid_elem( nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );

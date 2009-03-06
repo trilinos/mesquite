@@ -231,8 +231,7 @@ static void coefficients_at_mid_elem( double* coeff_out,
   indices_out[4] = 4;
 }
 
-void LinearPyramid::coefficients( unsigned loc_dim,
-                                  unsigned loc_num,
+void LinearPyramid::coefficients( Sample loc,
                                   NodeSet nodeset,
                                   double* coeff_out,
                                   size_t* indices_out,
@@ -244,15 +243,15 @@ void LinearPyramid::coefficients( unsigned loc_dim,
     return;
   }
   
-  switch (loc_dim) {
+  switch (loc.dimension) {
     case 0:
-      coefficients_at_corner( loc_num, coeff_out, indices_out, num_coeff );
+      coefficients_at_corner( loc.number, coeff_out, indices_out, num_coeff );
       break;
     case 1:
-      coefficients_at_mid_edge( loc_num, coeff_out, indices_out, num_coeff );
+      coefficients_at_mid_edge( loc.number, coeff_out, indices_out, num_coeff );
       break;
     case 2:
-      coefficients_at_mid_face( loc_num, coeff_out, indices_out, num_coeff );
+      coefficients_at_mid_face( loc.number, coeff_out, indices_out, num_coeff );
       break;
     case 3:
       coefficients_at_mid_elem( coeff_out, indices_out, num_coeff );
@@ -262,8 +261,7 @@ void LinearPyramid::coefficients( unsigned loc_dim,
   }
 }
 
-void LinearPyramid::derivatives( unsigned loc_dim,
-                                 unsigned loc_num,
+void LinearPyramid::derivatives( Sample loc,
                                  NodeSet nodeset,
                                  size_t* vertex_indices_out,
                                  MsqVector<3>* d_coeff_d_xi_out,
@@ -275,29 +273,29 @@ void LinearPyramid::derivatives( unsigned loc_dim,
     return;
   }
   
-  switch (loc_dim) {
+  switch (loc.dimension) {
     case 0:
-      if (loc_num == 4) {
+      if (loc.number == 4) {
         set_equal_derivatives( 0.0, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       }
       else {
-        set_corner_derivatives( loc_num, 0.5, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+        set_corner_derivatives( loc.number, 0.5, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       }
       break;
     case 1:
-      if (loc_num < 4) {
-        set_edge_derivatives( loc_num, 0.25, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      if (loc.number < 4) {
+        set_edge_derivatives( loc.number, 0.25, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       }
       else {
-        set_corner_derivatives( loc_num-4, 0.25, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+        set_corner_derivatives( loc.number-4, 0.25, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       }    
       break;
     case 2:
-      if (loc_num == 4) {
+      if (loc.number == 4) {
         set_equal_derivatives( 0.25, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       }
       else {
-        set_edge_derivatives( loc_num, 1./6, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+        set_edge_derivatives( loc.number, 1./6, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       }
       break;
     case 3:

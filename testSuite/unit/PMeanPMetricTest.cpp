@@ -118,15 +118,16 @@ void FauxMetric::get_element_evaluations( PatchData& pd, size_t h, msq_std::vect
 {
   MsqMeshEntity& elem = pd.element_by_index(h);
   for (unsigned i = 0; i  < elem.corner_count(); ++i)
-    list.push_back( handle( i, h ) );
+    list.push_back( handle( Sample(0,i), h ) );
 }
 
 bool FauxMetric::evaluate( PatchData& pd, size_t h, double& v, MsqError&  )
 {
   size_t e = ElemSampleQM::elem( h );
-  unsigned s = ElemSampleQM::sample( h );
+  Sample s = ElemSampleQM::sample( h );
   size_t* verts = pd.element_by_index(e).get_vertex_index_array();
-  v = (double)(verts[s]);
+  CPPUNIT_ASSERT_EQUAL( (unsigned short)0, s.dimension );
+  v = (double)(verts[s.number]);
   return true;
 }
 
@@ -136,12 +137,13 @@ bool FauxMetric::evaluate_with_indices( PatchData& pd, size_t h, double& v,
   evaluate( pd, h, v, err );
   indices.resize(3);
   size_t e = ElemSampleQM::elem( h );
-  unsigned s = ElemSampleQM::sample( h );
+  Sample s = ElemSampleQM::sample( h );
   size_t* verts = pd.element_by_index(e).get_vertex_index_array();
   size_t n = pd.element_by_index(e).vertex_count();
-  indices[0] = verts[s];
-  indices[1] = verts[(s+1)%n];
-  indices[2] = verts[(s+n-1)%n];
+  CPPUNIT_ASSERT_EQUAL( (unsigned short)0, s.dimension );
+  indices[0] = verts[s.number];
+  indices[1] = verts[(s.number+1)%n];
+  indices[2] = verts[(s.number+n-1)%n];
   return true;
 }
 
@@ -251,7 +253,7 @@ void PMeanPMetricTest::test_vertex_evaluate()
     const size_t* end = verts + elem.node_count();
     const size_t* p = msq_std::find( verts, end, (size_t)0 );
     CPPUNIT_ASSERT( p < end );
-    size_t h = ElemSampleQM::handle( p - verts, elems[i] );
+    size_t h = ElemSampleQM::handle( Sample(0,p - verts), elems[i] );
   
     double v;
     m.evaluate( pd, h, v, err );

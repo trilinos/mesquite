@@ -28,7 +28,7 @@
 #define MESQUITE_TOPOLOGY_INFO_HPP
 
 #include "Mesquite.hpp"
-
+#include "Sample.hpp"
 #include <string.h>
 
 namespace Mesquite
@@ -125,7 +125,28 @@ class MESQUITE_EXPORT TopologyInfo
                                         unsigned& side_dim_out,
                                         unsigned& side_num_out,
                                         MsqError& err );
-    
+
+    /** Get logical position given an element type node node index*/
+    static inline
+    Sample sample_from_node( EntityTopology topo,
+                             unsigned num_nodes,
+                             unsigned node_number,
+                             MsqError& err )
+    {
+      unsigned dim, num;
+      side_from_higher_order( topo, num_nodes, node_number, dim, num, err );
+      return Sample(dim, num);
+    }
+    /** Get node index from logical position */
+    static inline
+    int node_from_sample( EntityTopology topo, 
+                          unsigned num_nodes,
+                          Sample sample,
+                          MsqError& err )
+    {
+      return higher_order_from_side( topo, num_nodes, sample.dimension,
+                                     sample.number, err );
+    }
       /**\brief Get indices of edge ends in element connectivity array 
        *
        * Given an edge number in (0,edges(type)], return which positions

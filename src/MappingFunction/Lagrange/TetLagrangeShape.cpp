@@ -234,8 +234,7 @@ static void coefficients_at_mid_elem( NodeSet nodeset,
   }
 }
 
-void TetLagrangeShape::coefficients( unsigned loc_dim,
-                                     unsigned loc_num,
+void TetLagrangeShape::coefficients( Sample loc,
                                      NodeSet nodeset,
                                      double* coeff_out,
                                      size_t* indices_out,
@@ -248,15 +247,15 @@ void TetLagrangeShape::coefficients( unsigned loc_dim,
     return;
   }
   
-  switch (loc_dim) {
+  switch (loc.dimension) {
     case 0:
-      coefficients_at_corner( loc_num, coeff_out, indices_out, num_coeff );
+      coefficients_at_corner( loc.number, coeff_out, indices_out, num_coeff );
       break;
     case 1:
-      coefficients_at_mid_edge( loc_num, nodeset, coeff_out, indices_out, num_coeff );
+      coefficients_at_mid_edge( loc.number, nodeset, coeff_out, indices_out, num_coeff );
       break;
     case 2:
-      coefficients_at_mid_face( loc_num, nodeset, coeff_out, indices_out, num_coeff );
+      coefficients_at_mid_face( loc.number, nodeset, coeff_out, indices_out, num_coeff );
       break;
     case 3:
       coefficients_at_mid_elem( nodeset, coeff_out, indices_out, num_coeff );
@@ -1120,8 +1119,7 @@ static void derivatives_at_mid_elem( NodeSet nodeset,
     }
 }
     
-void TetLagrangeShape::derivatives( unsigned loc_dim,
-                                    unsigned loc_num,
+void TetLagrangeShape::derivatives( Sample loc,
                                     NodeSet nodeset,
                                     size_t* vertex_indices_out,
                                     MsqVector<3>* d_coeff_d_xi_out,
@@ -1134,15 +1132,15 @@ void TetLagrangeShape::derivatives( unsigned loc_dim,
     return;
   }
   
-  switch (loc_dim) {
+  switch (loc.dimension) {
     case 0:
-      derivatives_at_corner( loc_num, nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      derivatives_at_corner( loc.number, nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       break;
     case 1:
-      derivatives_at_mid_edge( loc_num, nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      derivatives_at_mid_edge( loc.number, nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       break;
     case 2:
-      derivatives_at_mid_face( loc_num, nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      derivatives_at_mid_face( loc.number, nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       break;
     case 3:
       derivatives_at_mid_elem( nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );

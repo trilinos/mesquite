@@ -119,7 +119,7 @@ static inline void append_samples( size_t element,
   size_t in_size = handles.size();
   handles.resize( in_size + count );
   for (unsigned i = 0; i < count; ++i)
-    handles[i+in_size] = ElemSampleQM::handle( dimension, i, element );
+    handles[i+in_size] = ElemSampleQM::handle( Sample(dimension, i), element );
 }
 
 static inline void append_elem_samples( const SamplePoints* pts,

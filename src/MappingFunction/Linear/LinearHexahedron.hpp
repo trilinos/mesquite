@@ -67,8 +67,7 @@ public:
   int num_nodes() const;
 
   virtual 
-  void coefficients( unsigned loc_dim,
-                     unsigned loc_num,
+  void coefficients( Sample location,
                      NodeSet nodeset,
                      double* coeff_out,
                      size_t* indices_out,
@@ -76,8 +75,7 @@ public:
                      MsqError& err ) const;
   
   virtual 
-  void derivatives( unsigned loc_dim, 
-                    unsigned loc_num,
+  void derivatives( Sample location,
                     NodeSet nodeset,
                     size_t* vertex_indices_out,
                     MsqVector<3>* d_coeff_d_xi_out,

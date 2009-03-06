@@ -34,6 +34,7 @@
 #define MSQ_TARGET_CALCULATOR_HPP
 
 #include "Mesquite.hpp"
+#include "Sample.hpp"
 #include <stddef.h>
 
 namespace Mesquite {
@@ -59,7 +60,7 @@ public:
   virtual bool get_3D_target( PatchData& pd, 
                               size_t element,
                               const SamplePoints* pts,
-                              unsigned sample,
+                              Sample sample,
                               MsqMatrix<3,3>& W_out,
                               MsqError& err ) = 0;
 
@@ -73,7 +74,7 @@ public:
   virtual bool get_2D_target( PatchData& pd, 
                               size_t element,
                               const SamplePoints* pts,
-                              unsigned sample,
+                              Sample sample,
                               MsqMatrix<3,2>& W_out,
                               MsqError& err ) = 0;
   

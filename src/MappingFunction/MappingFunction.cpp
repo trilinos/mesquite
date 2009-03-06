@@ -122,8 +122,7 @@ MappingFunction::convert_connectivity_indices_impl( EntityTopology topo,
 void MappingFunction2D::jacobian( const PatchData& pd,
                                   size_t element_number,
                                   NodeSet nodeset,
-                                  unsigned loc_dim,
-                                  unsigned loc_num,
+                                  Sample location,
                                   size_t* vertex_patch_indices_out,
                                   MsqVector<2>* d_coeff_d_xi_out,
                                   size_t& num_vtx_out,
@@ -133,7 +132,7 @@ void MappingFunction2D::jacobian( const PatchData& pd,
   const MsqMeshEntity& elem = pd.element_by_index( element_number );
   const size_t* conn = elem.get_vertex_index_array();
   
-  derivatives( loc_dim, loc_num, nodeset, vertex_patch_indices_out,
+  derivatives( location, nodeset, vertex_patch_indices_out,
                d_coeff_d_xi_out, num_vtx_out, err ); MSQ_ERRRTN(err);
  
   convert_connectivity_indices( elem.node_count(), vertex_patch_indices_out, 
@@ -157,8 +156,7 @@ void MappingFunction2D::jacobian( const PatchData& pd,
 void MappingFunction3D::jacobian( const PatchData& pd,
                                   size_t element_number,
                                   NodeSet nodeset,
-                                  unsigned loc_dim,
-                                  unsigned loc_num,
+                                  Sample location,
                                   size_t* vertex_patch_indices_out,
                                   MsqVector<3>* d_coeff_d_xi_out,
                                   size_t& num_vtx_out,
@@ -168,7 +166,7 @@ void MappingFunction3D::jacobian( const PatchData& pd,
   const MsqMeshEntity& elem = pd.element_by_index( element_number );
   const size_t* conn = elem.get_vertex_index_array();
   
-  derivatives( loc_dim, loc_num, nodeset, vertex_patch_indices_out,
+  derivatives( location, nodeset, vertex_patch_indices_out,
                d_coeff_d_xi_out, num_vtx_out, err ); MSQ_ERRRTN(err);
  
   convert_connectivity_indices( elem.node_count(), vertex_patch_indices_out, 

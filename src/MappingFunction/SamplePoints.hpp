@@ -34,6 +34,7 @@
 #define MSQ_SAMPLE_POINTS_HPP
 
 #include "Mesquite.hpp"
+#include "Sample.hpp"
 #include <assert.h>
 
 namespace Mesquite {
@@ -90,8 +91,7 @@ public:
    */
   static unsigned sample_number_from_location( EntityTopology element_type,
                                            unsigned sample_topology_bits,
-                                           unsigned entity_dimension,
-                                           unsigned entity_number );
+                                           Sample location );
  
   /**\brief Initialize sample points for each element type to either none 
     * or the default for that element type. */
@@ -153,8 +153,7 @@ public:
    *         dimension.
    */
   inline unsigned sample_number_from_location( EntityTopology element_type,
-                                           unsigned entity_dimension,
-                                           unsigned entity_number ) const;
+                                               Sample location ) const;
   
   /**\brief Set bit set describing element sample points */
   inline void set_sample_topology_bits( EntityTopology type, unsigned bits );
@@ -185,12 +184,11 @@ void SamplePoints::dont_sample_at( EntityTopology type, unsigned dimension )
   { sampleBits[type] &= ~(1 << dimension ); }
   
 unsigned SamplePoints::sample_number_from_location( EntityTopology element_type,
-                                                    unsigned entity_dimension,
-                                                    unsigned entity_number ) const
+                                                    Sample location ) const
 {
   return sample_number_from_location( element_type,
                                       get_sample_topology_bits( element_type ),
-                                      entity_dimension, entity_number );
+                                      location );
 }
 
 } // namespace Mesquite

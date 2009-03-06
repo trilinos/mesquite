@@ -95,16 +95,15 @@ unsigned SamplePoints::num_sample_points( EntityTopology type, unsigned bits )
 
 unsigned SamplePoints::sample_number_from_location( EntityTopology element_type,
                                            unsigned sample_topology_bits,
-                                           unsigned entity_dimension,
-                                           unsigned entity_number )
+                                           Sample location )
 {
   const unsigned dim = TopologyInfo::dimension( element_type );
-  assert( entity_dimension <= dim );
-  if (!(sample_topology_bits & (1 << entity_dimension)))
+  assert( location.dimension <= dim );
+  if (!(sample_topology_bits & (1 << location.dimension)))
     return (unsigned)-1; 
   
-  unsigned result = (entity_dimension == dim) ? 0 : entity_number;
-  for (unsigned i = 0; i < entity_dimension; ++i) 
+  unsigned result = (location.dimension == dim) ? 0 : location.number;
+  for (unsigned i = 0; i < location.dimension; ++i) 
     if (sample_topology_bits & (1 << i)) 
       result += TopologyInfo::adjacent( element_type, i );
   

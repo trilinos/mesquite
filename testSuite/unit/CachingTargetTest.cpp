@@ -97,16 +97,16 @@ class CachedTargetCalculator : public TargetCalculator
   
   public:
     
-    static MsqMatrix<3,3> make_3d( size_t elem, unsigned sample );
-    static MsqMatrix<3,2> make_2d( size_t elem, unsigned sample );
+    static MsqMatrix<3,3> make_3d( size_t elem, Sample sample );
+    static MsqMatrix<3,2> make_2d( size_t elem, Sample sample );
     
     CachedTargetCalculator( bool surface_elems_have_3D_targets ) 
       : called_3d(0), called_2d(0), surfaces_3d(surface_elems_have_3D_targets) {}
     
-    virtual bool get_3D_target( PatchData&, size_t elem, const SamplePoints*, unsigned sample, MsqMatrix<3,3>& result, MsqError& )
+    virtual bool get_3D_target( PatchData&, size_t elem, const SamplePoints*, Sample sample, MsqMatrix<3,3>& result, MsqError& )
       { ++called_3d; result = make_3d( elem, sample); return true; }
     
-    virtual bool get_2D_target( PatchData&, size_t elem, const SamplePoints*, unsigned sample, MsqMatrix<3,2>& result, MsqError& )
+    virtual bool get_2D_target( PatchData&, size_t elem, const SamplePoints*, Sample sample, MsqMatrix<3,2>& result, MsqError& )
       { ++called_2d; result = make_2d( elem, sample); return true; }
     
     void clear() 
@@ -122,18 +122,18 @@ class CachedTargetCalculator : public TargetCalculator
       { return surfaces_3d; }
 };
 
-MsqMatrix<3,3> CachedTargetCalculator::make_3d( size_t elem, unsigned sample )
+MsqMatrix<3,3> CachedTargetCalculator::make_3d( size_t elem, Sample sample )
 {
-  double v = 100. * elem + sample + 1;
+  double v = 100. * elem + 4 * sample.number + sample.dimension + 1;
   const double values[] = { v, 0, 0,
                             0, v, 0,
                             0, 0, v };
   return MsqMatrix<3,3>(values);
 }
 
-MsqMatrix<3,2> CachedTargetCalculator::make_2d( size_t elem, unsigned sample )
+MsqMatrix<3,2> CachedTargetCalculator::make_2d( size_t elem, Sample sample )
 {
-  double v = 100. * elem + sample + 1;
+  double v = 100. * elem + 4 * sample.number + sample.dimension + 1;
   const double values[] = { v, 0,
                             0, v,
                             0.5*v, 0.5*v };
@@ -159,20 +159,37 @@ void CachingTargetTest::setUp()
   cacher_3d_surf = new CachingTargetCalculator( cached_3d_surf, samples );
 }
 
+static void get_samples( EntityTopology type,
+                         SamplePoints* pts,
+                         msq_std::vector<Sample>& samples )
+{
+  samples.clear();
+  for (unsigned d = 0; d < TopologyInfo::dimension(type); ++d) {
+    if (!pts->will_sample_at( type, d ))
+      continue;
+    unsigned n = TopologyInfo::adjacent( type, d );
+    for (unsigned i = 0; i < n; ++i)
+      samples.push_back( Sample(d, i) );
+  }
+  if (pts->will_sample_at( type, TopologyInfo::dimension(type) ))
+    samples.push_back( Sample( TopologyInfo::dimension(type), 0 ) );
+}
+
 unsigned CachingTargetTest::request_all_targets_3d()
 {
   unsigned total = 0;
   MsqMatrix<3,3> W;
   MsqPrintError err(msq_stdio::cout);
+  msq_std::vector<Sample> locations;
   
   for (size_t i = 0; i < patch_3d.num_elements(); ++i)
   {
     MsqMeshEntity& elem = patch_3d.element_by_index(i);
-    const unsigned num_sample = samples->num_sample_points( elem.get_element_type() );
-    total += num_sample;
-    for (unsigned j = 0; j < num_sample; ++j)
+    get_samples( elem.get_element_type(), samples, locations );
+    total += locations.size();
+    for (unsigned j = 0; j < locations.size(); ++j)
     {
-      bool rval = cacher->get_3D_target( patch_3d, i, samples, j, W, err );
+      bool rval = cacher->get_3D_target( patch_3d, i, samples, locations[j], W, err );
       CPPUNIT_ASSERT(rval);
       CPPUNIT_ASSERT(!err);
     }
@@ -185,15 +202,16 @@ unsigned CachingTargetTest::request_all_targets_2d()
   unsigned total = 0;
   MsqMatrix<3,2> W;
   MsqPrintError err(msq_stdio::cout);
+  msq_std::vector<Sample> locations;
   
   for (size_t i = 0; i < patch_2d.num_elements(); ++i)
   {
     MsqMeshEntity& elem = patch_2d.element_by_index(i);
-    const unsigned num_sample = samples->num_sample_points( elem.get_element_type() );
-    total += num_sample;
-    for (unsigned j = 0; j < num_sample; ++j)
+    get_samples( elem.get_element_type(), samples, locations );
+    total += locations.size();
+    for (unsigned j = 0; j < locations.size(); ++j)
     {
-      bool rval = cacher->get_2D_target( patch_2d, i, samples, j, W, err );
+      bool rval = cacher->get_2D_target( patch_2d, i, samples, locations[j], W, err );
       CPPUNIT_ASSERT(rval);
       CPPUNIT_ASSERT(!err);
     }
@@ -206,15 +224,16 @@ unsigned CachingTargetTest::request_all_targets_3d_surf()
   unsigned total = 0;
   MsqMatrix<3,3> W;
   MsqPrintError err(msq_stdio::cout);
+  msq_std::vector<Sample> locations;
   
   for (size_t i = 0; i < patch_2d.num_elements(); ++i)
   {
     MsqMeshEntity& elem = patch_2d.element_by_index(i);
-    const unsigned num_sample = samples->num_sample_points( elem.get_element_type() );
-    total += num_sample;
-    for (unsigned j = 0; j < num_sample; ++j)
+    get_samples( elem.get_element_type(), samples, locations );
+    total += locations.size();
+    for (unsigned j = 0; j < locations.size(); ++j)
     {
-      bool rval = cacher_3d_surf->get_3D_target( patch_2d, i, samples, j, W, err );
+      bool rval = cacher_3d_surf->get_3D_target( patch_2d, i, samples, locations[j], W, err );
       CPPUNIT_ASSERT(rval);
       CPPUNIT_ASSERT(!err);
     }
@@ -270,6 +289,7 @@ void CachingTargetTest::test_3d_surf_targets_cached()
 void CachingTargetTest::test_3d_target_values()
 {
   MsqPrintError err(msq_stdio::cout);
+  msq_std::vector<Sample> locations;
   
     // evaluate all once to make sure we test the cached values
   request_all_targets_3d();
@@ -278,15 +298,15 @@ void CachingTargetTest::test_3d_target_values()
   for (size_t i = 0; i < patch_3d.num_elements(); ++i)
   {
     MsqMeshEntity& elem = patch_3d.element_by_index(i);
-    const unsigned num_sample = samples->num_sample_points( elem.get_element_type() );
 
-    for (unsigned j = 0; j < num_sample; ++j)
+    get_samples( elem.get_element_type(), samples, locations );
+    for (unsigned j = 0; j < locations.size(); ++j)
     {
       MsqMatrix<3,3> W;
-      bool rval = cacher->get_3D_target( patch_3d, i, samples, j, W, err );
+      bool rval = cacher->get_3D_target( patch_3d, i, samples, locations[j], W, err );
       CPPUNIT_ASSERT(rval && !err);
       
-      MsqMatrix<3,3> M = CachedTargetCalculator::make_3d( i, j );
+      MsqMatrix<3,3> M = CachedTargetCalculator::make_3d( i, locations[j] );
       ASSERT_MATRICES_EQUAL( W, M, DBL_EPSILON );
     }
   }
@@ -295,6 +315,7 @@ void CachingTargetTest::test_3d_target_values()
 void CachingTargetTest::test_2d_target_values()
 {
   MsqPrintError err(msq_stdio::cout);
+  msq_std::vector<Sample> locations;
   
     // evaluate all once to make sure we test the cached values
   request_all_targets_2d();
@@ -303,15 +324,15 @@ void CachingTargetTest::test_2d_target_values()
   for (size_t i = 0; i < patch_2d.num_elements(); ++i)
   {
     MsqMeshEntity& elem = patch_2d.element_by_index(i);
-    const unsigned num_sample = samples->num_sample_points( elem.get_element_type() );
 
-    for (unsigned j = 0; j < num_sample; ++j)
+    get_samples( elem.get_element_type(), samples, locations );
+    for (unsigned j = 0; j < locations.size(); ++j)
     {
       MsqMatrix<3,2> W;
-      bool rval = cacher->get_2D_target( patch_2d, i, samples, j, W, err );
+      bool rval = cacher->get_2D_target( patch_2d, i, samples, locations[j], W, err );
       CPPUNIT_ASSERT(rval && !err);
       
-      MsqMatrix<3,2> M = CachedTargetCalculator::make_2d( i, j );
+      MsqMatrix<3,2> M = CachedTargetCalculator::make_2d( i, locations[j] );
       ASSERT_MATRICES_EQUAL( W, M, DBL_EPSILON );
     }
   }
@@ -320,6 +341,7 @@ void CachingTargetTest::test_2d_target_values()
 void CachingTargetTest::test_3d_surf_target_values()
 {
   MsqPrintError err(msq_stdio::cout);
+  msq_std::vector<Sample> locations;
   
     // evaluate all once to make sure we test the cached values
   request_all_targets_3d_surf();
@@ -328,15 +350,15 @@ void CachingTargetTest::test_3d_surf_target_values()
   for (size_t i = 0; i < patch_2d.num_elements(); ++i)
   {
     MsqMeshEntity& elem = patch_2d.element_by_index(i);
-    const unsigned num_sample = samples->num_sample_points( elem.get_element_type() );
 
-    for (unsigned j = 0; j < num_sample; ++j)
+    get_samples( elem.get_element_type(), samples, locations );
+    for (unsigned j = 0; j < locations.size(); ++j)
     {
       MsqMatrix<3,3> W;
-      bool rval = cacher_3d_surf->get_3D_target( patch_2d, i, samples, j, W, err );
+      bool rval = cacher_3d_surf->get_3D_target( patch_2d, i, samples, locations[j], W, err );
       CPPUNIT_ASSERT(rval && !err);
       
-      MsqMatrix<3,3> M = CachedTargetCalculator::make_3d( i, j );
+      MsqMatrix<3,3> M = CachedTargetCalculator::make_3d( i, locations[j] );
       ASSERT_MATRICES_EQUAL( W, M, DBL_EPSILON );
     }
   }
@@ -345,6 +367,7 @@ void CachingTargetTest::test_3d_surf_target_values()
 void CachingTargetTest::test_3d_target_subpatch()
 {
   MsqPrintError err(msq_stdio::cout);
+  msq_std::vector<Sample> locations;
   
     // cache some values on the main patch
   request_all_targets_3d();
@@ -371,19 +394,19 @@ void CachingTargetTest::test_3d_target_subpatch()
   for (size_t i = 0; i < subpatch.num_elements(); ++i)
   {
     MsqMeshEntity& elem = subpatch.element_by_index(i);
-    const unsigned num_sample = samples->num_sample_points( elem.get_element_type() );
 
-    for (unsigned j = 0; j < num_sample; ++j)
-    {
+    get_samples( elem.get_element_type(), samples, locations );
+    for (unsigned j = 0; j < locations.size(); ++j)
+   {
       MsqMatrix<3,3> W;
-      bool rval = cacher->get_3D_target( subpatch, i, samples, j, W, err );
+      bool rval = cacher->get_3D_target( subpatch, i, samples, locations[j], W, err );
       CPPUNIT_ASSERT(rval && !err);
       
       Mesh::ElementHandle h = subpatch.get_element_handles_array()[i];
       Mesh::ElementHandle* old_h = patch_3d.get_element_handles_array();
       size_t old_idx = msq_std::find( old_h, old_h + patch_3d.num_elements(), h ) - old_h;
       CPPUNIT_ASSERT(old_idx < patch_3d.num_elements());
-      MsqMatrix<3,3> M = CachedTargetCalculator::make_3d( old_idx, j );
+      MsqMatrix<3,3> M = CachedTargetCalculator::make_3d( old_idx, locations[j]);
       ASSERT_MATRICES_EQUAL( W, M, DBL_EPSILON );
     }
   }
@@ -392,6 +415,7 @@ void CachingTargetTest::test_3d_target_subpatch()
 void CachingTargetTest::test_2d_target_subpatch()
 {
   MsqPrintError err(msq_stdio::cout);
+  msq_std::vector<Sample> locations;
   
     // cache some values on the main patch
   request_all_targets_2d();
@@ -418,19 +442,19 @@ void CachingTargetTest::test_2d_target_subpatch()
   for (size_t i = 0; i < subpatch.num_elements(); ++i)
   {
     MsqMeshEntity& elem = subpatch.element_by_index(i);
-    const unsigned num_sample = samples->num_sample_points( elem.get_element_type() );
 
-    for (unsigned j = 0; j < num_sample; ++j)
+    get_samples( elem.get_element_type(), samples, locations );
+    for (unsigned j = 0; j < locations.size(); ++j)
     {
       MsqMatrix<3,2> W;
-      bool rval = cacher->get_2D_target( subpatch, i, samples, j, W, err );
+      bool rval = cacher->get_2D_target( subpatch, i, samples, locations[j], W, err );
       CPPUNIT_ASSERT(rval && !err);
       
       Mesh::ElementHandle h = subpatch.get_element_handles_array()[i];
       Mesh::ElementHandle* old_h = patch_2d.get_element_handles_array();
       size_t old_idx = msq_std::find( old_h, old_h + patch_2d.num_elements(), h ) - old_h;
       CPPUNIT_ASSERT(old_idx < patch_2d.num_elements());
-      MsqMatrix<3,2> M = CachedTargetCalculator::make_2d( old_idx, j );
+      MsqMatrix<3,2> M = CachedTargetCalculator::make_2d( old_idx, locations[j] );
       ASSERT_MATRICES_EQUAL( W, M, DBL_EPSILON );
     }
   }
@@ -439,6 +463,7 @@ void CachingTargetTest::test_2d_target_subpatch()
 void CachingTargetTest::test_3d_surf_target_subpatch()
 {
   MsqPrintError err(msq_stdio::cout);
+  msq_std::vector<Sample> locations;
   
     // cache some values on the main patch
   request_all_targets_3d_surf();
@@ -465,19 +490,19 @@ void CachingTargetTest::test_3d_surf_target_subpatch()
   for (size_t i = 0; i < subpatch.num_elements(); ++i)
   {
     MsqMeshEntity& elem = subpatch.element_by_index(i);
-    const unsigned num_sample = samples->num_sample_points( elem.get_element_type() );
 
-    for (unsigned j = 0; j < num_sample; ++j)
+    get_samples( elem.get_element_type(), samples, locations );
+    for (unsigned j = 0; j < locations.size(); ++j)
     {
       MsqMatrix<3,3> W;
-      bool rval = cacher_3d_surf->get_3D_target( subpatch, i, samples, j, W, err );
+      bool rval = cacher_3d_surf->get_3D_target( subpatch, i, samples, locations[j], W, err );
       CPPUNIT_ASSERT(rval && !err);
       
       Mesh::ElementHandle h = subpatch.get_element_handles_array()[i];
       Mesh::ElementHandle* old_h = patch_2d.get_element_handles_array();
       size_t old_idx = msq_std::find( old_h, old_h + patch_2d.num_elements(), h ) - old_h;
       CPPUNIT_ASSERT(old_idx < patch_2d.num_elements());
-      MsqMatrix<3,3> M = CachedTargetCalculator::make_3d( old_idx, j );
+      MsqMatrix<3,3> M = CachedTargetCalculator::make_3d( old_idx, locations[j] );
       ASSERT_MATRICES_EQUAL( W, M, DBL_EPSILON );
     }
   }

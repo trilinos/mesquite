@@ -85,16 +85,14 @@ WeightReader::~WeightReader()
 double WeightReader::get_weight( PatchData &pd,
                                  size_t element,
                                  const SamplePoints* samples,
-                                 unsigned sample,
+                                 Sample sample,
                                  MsqError& err )
 {
   WeightReaderData& data = get_data( pd );
   
     // calculate index of sample in array 
   EntityTopology type = pd.element_by_index(element).get_element_type();
-  unsigned dim = ElemSampleQM::side_dim_from_sample( sample );
-  unsigned num = ElemSampleQM::side_num_from_sample( sample );
-  unsigned offset = samples->sample_number_from_location( type, dim, num );
+  unsigned offset = samples->sample_number_from_location( type, sample );
 
   if (!data.weights.empty() && data.elementIndex == element) {
     assert(offset < data.weights.size());
@@ -130,6 +128,7 @@ double WeightReader::get_weight( PatchData &pd,
   
   data.elementIndex = element;
   
+  assert(offset < num_samples);
   return data.weights[offset];
 }
 

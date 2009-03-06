@@ -59,9 +59,14 @@ void DomainSurfaceOrientation::get_evaluations( PatchData& pd,
   {
     EntityTopology type = pd.element_by_index( *i ).get_element_type();
     if (TopologyInfo::dimension(type) == 2) {
-      unsigned num_samples = samplePts->num_sample_points( type );
-      for (unsigned j = 0; j < num_samples; ++j)
-        handles.push_back( handle(j, *i) );
+      if (samplePts->will_sample_at(type,0)) 
+        for (unsigned j = 0; j < TopologyInfo::corners(type); ++j)
+          handles.push_back( handle( Sample(0,j), *i ) );
+      if (samplePts->will_sample_at(type,1)) 
+        for (unsigned j = 0; j < TopologyInfo::edges(type); ++j)
+          handles.push_back( handle( Sample(1,j), *i ) );
+      if (samplePts->will_sample_at(type,2))
+        handles.push_back( handle( Sample(2, 0), *i ) );
     }
   }
 }
@@ -76,10 +81,15 @@ void DomainSurfaceOrientation::get_element_evaluations( PatchData& pd,
     handles.clear();
     return;
   }
-  unsigned num_samples = samplePts->num_sample_points( type );
-  handles.resize( num_samples );
-  for (unsigned j = 0; j < num_samples; ++j)
-    handles[j] = handle(j, elem);
+  handles.clear();
+  if (samplePts->will_sample_at(type,0)) 
+    for (unsigned j = 0; j < TopologyInfo::corners(type); ++j)
+      handles.push_back( handle( Sample(0,j), elem ) );
+  if (samplePts->will_sample_at(type,1)) 
+    for (unsigned j = 0; j < TopologyInfo::edges(type); ++j)
+      handles.push_back( handle( Sample(1,j), elem ) );
+  if (samplePts->will_sample_at(type,2))
+    handles.push_back( handle( Sample(2, 0), elem ) );
 }
 
 bool DomainSurfaceOrientation::evaluate( PatchData& pd, size_t handle, double& value, MsqError& err )
@@ -108,8 +118,8 @@ bool DomainSurfaceOrientation::evaluate_with_indices( PatchData& pd,
                                             size_t& num_idx,
                                             MsqError& err )
 {
-  unsigned s = ElemSampleQM::sample( handle );
-  size_t   e = ElemSampleQM::  elem( handle );
+  Sample s = ElemSampleQM::sample( handle );
+  size_t e = ElemSampleQM::  elem( handle );
   MsqMeshEntity& elem = pd.element_by_index( e );
   EntityTopology type = elem.get_element_type();
   if (TopologyInfo::dimension( type ) != 2) {
@@ -124,26 +134,11 @@ bool DomainSurfaceOrientation::evaluate_with_indices( PatchData& pd,
     return false;
   }
   
-  unsigned dim = ElemSampleQM::side_dim_from_sample( s );
-  unsigned num = ElemSampleQM::side_num_from_sample( s );
   const NodeSet bits = pd.non_slave_node_set( e );
   
   Vector3D n;
-  switch (dim) {
-    case 0:
-      pd.get_domain_normal_at_corner( e, num, n, err ); MSQ_ERRZERO(err);
-      break;
-    case 1:
-      pd.get_domain_normal_at_mid_edge( e, num, n, err ); MSQ_ERRZERO(err);
-      break;
-    case 2:
-      pd.get_domain_normal_at_element( e, n, err ); MSQ_ERRZERO(err);
-      break;
-    default:
-      MSQ_SETERR(err)( MsqError::INTERNAL_ERROR );
-      return false;
-  }
-  func->derivatives( dim, num, bits, indices, mDerivs, num_idx, err ); MSQ_ERRZERO(err);
+  pd.get_domain_normal_at_sample( e, s, n, err ); MSQ_ERRZERO(err);
+  func->derivatives( s, bits, indices, mDerivs, num_idx, err ); MSQ_ERRZERO(err);
   func->convert_connectivity_indices( elem.node_count(), indices, num_idx, err ); MSQ_ERRZERO(err);
   
     // Convert from indices into element connectivity list to

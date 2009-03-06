@@ -277,7 +277,7 @@ void TriLagrangeShapeTest::test_corner_coeff( int corner, NodeSet nodebits )
   
   double coeff[27];
   size_t num_coeff = 17, indices[27];
-  sf.coefficients( 0, corner, nodebits, coeff, indices, num_coeff, err );
+  sf.coefficients( Sample( 0, corner ), nodebits, coeff, indices, num_coeff, err );
   CPPUNIT_ASSERT( !err );
   
   compare_coefficients( coeff, indices, expected, num_coeff, corner, nodebits );
@@ -292,7 +292,7 @@ void TriLagrangeShapeTest::test_edge_coeff( int edge, NodeSet nodebits )
   
   double coeff[27];
   size_t num_coeff = 17, indices[27];
-  sf.coefficients( 1, edge, nodebits, coeff, indices, num_coeff, err );
+  sf.coefficients( Sample( 1, edge ), nodebits, coeff, indices, num_coeff, err );
   CPPUNIT_ASSERT( !err );
   
   compare_coefficients( coeff, indices, expected, num_coeff, edge+3, nodebits );
@@ -307,7 +307,7 @@ void TriLagrangeShapeTest::test_mid_coeff( NodeSet nodebits )
   
   double coeff[27];
   size_t num_coeff = 17, indices[27];
-  sf.coefficients( 2, 0, nodebits, coeff, indices, num_coeff, err );
+  sf.coefficients( Sample( 2, 0 ), nodebits, coeff, indices, num_coeff, err );
   CPPUNIT_ASSERT( !err );
   
   compare_coefficients( coeff, indices, expected, num_coeff, 6, nodebits );
@@ -322,7 +322,7 @@ void TriLagrangeShapeTest::test_corner_derivs( int corner, NodeSet nodebits )
   
   size_t n = 19, vertices[100];
   MsqVector<2> derivs[100];
-  sf.derivatives( 0, corner, nodebits, vertices, derivs, n, err );
+  sf.derivatives( Sample( 0, corner ), nodebits, vertices, derivs, n, err );
   CPPUNIT_ASSERT( !err );
   
   compare_derivatives( vertices, n, derivs, expected, corner, nodebits );
@@ -337,7 +337,7 @@ void TriLagrangeShapeTest::test_edge_derivs( int edge, NodeSet nodebits )
   
   size_t n = 19, vertices[100];
   MsqVector<2> derivs[100];
-  sf.derivatives( 1, edge, nodebits, vertices, derivs, n, err );
+  sf.derivatives( Sample( 1, edge ), nodebits, vertices, derivs, n, err );
   CPPUNIT_ASSERT( !err );
   
   compare_derivatives( vertices, n, derivs, expected, edge+3, nodebits );
@@ -352,7 +352,7 @@ void TriLagrangeShapeTest::test_mid_derivs( NodeSet nodebits )
   
   size_t n = 19, vertices[100];
   MsqVector<2> derivs[100];
-  sf.derivatives( 2, 0, nodebits, vertices, derivs, n, err );
+  sf.derivatives( Sample( 2, 0 ), nodebits, vertices, derivs, n, err );
   CPPUNIT_ASSERT( !err );
   
   compare_derivatives( vertices, n, derivs, expected, 6, nodebits );

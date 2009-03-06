@@ -44,8 +44,7 @@ static const unsigned faces[][3] = { { 1, 0, 3 },
                                      { 0, 2, 3 },
                                      { 0, 1, 2 } };
 
-void LinearTetrahedron::coefficients( unsigned loc_dim,
-                                      unsigned loc_num,
+void LinearTetrahedron::coefficients( Sample location,
                                       NodeSet nodeset,
                                       double* coeff_out,
                                       size_t* indices_out,
@@ -57,30 +56,30 @@ void LinearTetrahedron::coefficients( unsigned loc_dim,
     return;
   }
   
-  switch (loc_dim) {
+  switch (location.dimension) {
     case 0:
       num_coeff = 1;
-      indices_out[0] = loc_num;
+      indices_out[0] = location.number;
       coeff_out[0] = 1.0;
       break;
     case 1:
       num_coeff = 2;
       coeff_out[0] = 0.5;
       coeff_out[1] = 0.5;
-      if (loc_num < 3) {
-        indices_out[0] = loc_num;
-        indices_out[1] = (loc_num+1)%3;
+      if (location.number < 3) {
+        indices_out[0] = location.number;
+        indices_out[1] = (location.number+1)%3;
       }
       else {
-        indices_out[0] = loc_num - 3;
+        indices_out[0] = location.number - 3;
         indices_out[1] = 3;
       }
       break;
     case 2:
       num_coeff = 3;
-      indices_out[0] = faces[loc_num][0];
-      indices_out[1] = faces[loc_num][1];
-      indices_out[2] = faces[loc_num][2];
+      indices_out[0] = faces[location.number][0];
+      indices_out[1] = faces[location.number][1];
+      indices_out[2] = faces[location.number][2];
       coeff_out[0] = coeff_out[1] = coeff_out[2] = coeff_out[3] = MSQ_ONE_THIRD;
       break;
     case 3:
@@ -96,8 +95,7 @@ void LinearTetrahedron::coefficients( unsigned loc_dim,
   }
 }
 
-void LinearTetrahedron::derivatives( unsigned ,
-                                     unsigned ,
+void LinearTetrahedron::derivatives( Sample ,
                                      NodeSet nodeset,
                                      size_t* vertices,
                                      MsqVector<3>* coeff_derivs,

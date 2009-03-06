@@ -45,15 +45,14 @@ bool DefaultCornerTarget::surface_targets_are_3D() const
 bool DefaultCornerTarget:: get_3D_target( PatchData& pd, 
                                         size_t element,
                                         const SamplePoints* pts,
-                                        unsigned sample,
+                                        Sample sample,
                                         MsqMatrix<3,3>& W,
                                         MsqError& err )
 {
   const EntityTopology type = pd.element_by_index(element).get_element_type();
   static const double SIXTH_ROOT_OF_TWO = msq_stdc::pow(2., 1./6.);
 
-  unsigned stype = ElemSampleQM::side_dim_from_sample( sample );
-  if (stype != 0) {
+  if (sample.dimension != 0) {
     MSQ_SETERR(err)("IdealCornerTarget cannot generate targets at sample "
                     "locations other than corners", MsqError::INVALID_STATE);
     return false;
@@ -125,7 +124,7 @@ bool DefaultCornerTarget:: get_3D_target( PatchData& pd,
 bool DefaultCornerTarget:: get_2D_target( PatchData& , 
                                         size_t ,
                                         const SamplePoints* ,
-                                        unsigned ,
+                                        Sample ,
                                         MsqMatrix<3,2>& ,
                                         MsqError& err )
 {

@@ -49,6 +49,7 @@
 #include "MsqError.hpp"
 #include "Settings.hpp"
 #include "NodeSet.hpp"
+#include "MappingFunction.hpp"
 
 #ifndef MSQ_USE_OLD_C_HEADERS
 #  include <cstddef>
@@ -79,9 +80,6 @@ namespace Mesquite
   class PatchDataVerticesMemento;
   class Mesh;
   class Settings;
-  class MappingFunction;
-  class MappingFunction2D;
-  class MappingFunction3D;
   
   /*!
     Contains all the mesh information necessary for
@@ -404,19 +402,18 @@ namespace Mesquite
     { get_domain_normal_at_element(size_t(elem_ptr-&(elementArray[0])), surf_norm, err); }
     
     void get_domain_normal_at_sample( size_t element_index,
-                                      unsigned loc_dim,
-                                      unsigned loc_num,
+                                      Sample location,
                                       Vector3D &surf_norm, MsqError &err)  
     {
-      switch(loc_dim) {
+      switch(location.dimension) {
         case 0:
-          get_domain_normal_at_corner( element_index, loc_num, surf_norm, err );
+          get_domain_normal_at_corner( element_index, location.number, surf_norm, err );
           break;
         case 1:
-          get_domain_normal_at_mid_edge( element_index, loc_num, surf_norm, err );
+          get_domain_normal_at_mid_edge( element_index, location.number, surf_norm, err );
           break;
         case 2:
-          assert(loc_num == 0);
+          assert(location.number == 0);
           get_domain_normal_at_element( element_index, surf_norm, err );
           break;
         default:
@@ -530,9 +527,9 @@ namespace Mesquite
     const MappingFunction3D* get_mapping_function_3D( EntityTopology type ) const
       { return mSettings->get_mapping_function_3D(type); }
     
+    //! Get R^3 coordinates for logical sample location.
     void get_sample_location( size_t element_index,
-                              unsigned sample_dim,
-                              unsigned sample_num,
+                              Sample sample,
                               Vector3D& result,
                               MsqError& err ) const;  
     

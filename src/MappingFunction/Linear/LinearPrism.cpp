@@ -121,8 +121,7 @@ static void coefficients_at_mid_elem( double* coeff_out,
   indices_out[5] = 5;
 }
 
-void LinearPrism::coefficients( unsigned loc_dim,
-                                unsigned loc_num,
+void LinearPrism::coefficients( Sample loc,
                                 NodeSet nodeset,
                                 double* coeff_out,
                                 size_t* indices_out,
@@ -134,15 +133,15 @@ void LinearPrism::coefficients( unsigned loc_dim,
     return;
   }
   
-  switch (loc_dim) {
+  switch (loc.dimension) {
     case 0:
-      coefficients_at_corner( loc_num, coeff_out, indices_out, num_coeff );
+      coefficients_at_corner( loc.number, coeff_out, indices_out, num_coeff );
       break;
     case 1:
-      coefficients_at_mid_edge( loc_num, coeff_out, indices_out, num_coeff );
+      coefficients_at_mid_edge( loc.number, coeff_out, indices_out, num_coeff );
       break;
     case 2:
-      coefficients_at_mid_face( loc_num, coeff_out, indices_out, num_coeff );
+      coefficients_at_mid_face( loc.number, coeff_out, indices_out, num_coeff );
       break;
     case 3:
       coefficients_at_mid_elem( coeff_out, indices_out, num_coeff );
@@ -403,8 +402,7 @@ static void derivatives_at_mid_elem( size_t* vertex_indices_out,
   d_coeff_d_xi_out[5][2] =  0.5;
 }
   
-void LinearPrism::derivatives( unsigned loc_dim,
-                               unsigned loc_num,
+void LinearPrism::derivatives( Sample loc,
                                NodeSet nodeset,
                                size_t* vertex_indices_out,
                                MsqVector<3>* d_coeff_d_xi_out,
@@ -416,15 +414,15 @@ void LinearPrism::derivatives( unsigned loc_dim,
     return;
   }
   
-  switch (loc_dim) {
+  switch (loc.dimension) {
     case 0:
-      derivatives_at_corner( loc_num, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      derivatives_at_corner( loc.number, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       break;
     case 1:
-      derivatives_at_mid_edge( loc_num, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      derivatives_at_mid_edge( loc.number, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       break;
     case 2:
-      derivatives_at_mid_face( loc_num, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      derivatives_at_mid_face( loc.number, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       break;
     case 3:
       derivatives_at_mid_elem( vertex_indices_out, d_coeff_d_xi_out, num_vtx );

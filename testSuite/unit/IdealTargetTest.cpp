@@ -78,14 +78,14 @@ public:
 private:
 
   void get_calc_target( bool rotate, EntityTopology type, 
-                        unsigned dim, unsigned num,
+                        Sample sample,
                         MsqMatrix<3,3>&, MsqMatrix<3,2>& );
                         
   void get_ideal_target( EntityTopology type, 
-                        unsigned dim, unsigned num,
-                        MsqMatrix<3,3>&, MsqMatrix<3,2>& );
+                         Sample sample,
+                         MsqMatrix<3,3>&, MsqMatrix<3,2>& );
                         
-  void do_test( EntityTopology type, unsigned dim, unsigned num );
+  void do_test( EntityTopology type, Sample location );
   
   void compare_rotated( const MsqMatrix<3,2>& unrotated, 
                         const MsqMatrix<3,2>& rotated );
@@ -105,51 +105,51 @@ IdealTargetTest::IdealTargetTest()
 
 void IdealTargetTest::test_tri_corner()
 {
-  do_test( TRIANGLE, 0, 0 );
-  do_test( TRIANGLE, 0, 1 );
-  do_test( TRIANGLE, 0, 2 );
+  do_test( TRIANGLE, Sample(0, 0) );
+  do_test( TRIANGLE, Sample(0, 1) );
+  do_test( TRIANGLE, Sample(0, 2) );
 }
 
 void IdealTargetTest::test_tri_edge()
 {
-  do_test( TRIANGLE, 1, 0 );
-  do_test( TRIANGLE, 1, 1 );
-  do_test( TRIANGLE, 1, 2 );
+  do_test( TRIANGLE, Sample(1, 0) );
+  do_test( TRIANGLE, Sample(1, 1) );
+  do_test( TRIANGLE, Sample(1, 2) );
 }
 
 void IdealTargetTest::test_tri_center()
 {
-  do_test( TRIANGLE, 2, 0 );
+  do_test( TRIANGLE, Sample(2, 0) );
 }
 
 void IdealTargetTest::test_hex_corner()
 {
-  do_test( HEXAHEDRON, 0, 0 );
-  do_test( HEXAHEDRON, 0, 1 );
-  do_test( HEXAHEDRON, 0, 6 );
-  do_test( HEXAHEDRON, 0, 7 );
+  do_test( HEXAHEDRON, Sample(0, 0) );
+  do_test( HEXAHEDRON, Sample(0, 1) );
+  do_test( HEXAHEDRON, Sample(0, 6) );
+  do_test( HEXAHEDRON, Sample(0, 7) );
 }
 
 void IdealTargetTest::test_hex_edge()
 {
-  do_test( HEXAHEDRON, 1, 1 );
-  do_test( HEXAHEDRON, 1, 4 );
-  do_test( HEXAHEDRON, 1, 11 );
+  do_test( HEXAHEDRON, Sample(1, 1) );
+  do_test( HEXAHEDRON, Sample(1, 4) );
+  do_test( HEXAHEDRON, Sample(1, 11) );
 }
 
 void IdealTargetTest::test_hex_face()
 {
-  do_test( HEXAHEDRON, 2, 0 );
-  do_test( HEXAHEDRON, 2, 1 );
-  do_test( HEXAHEDRON, 2, 2 );
-  do_test( HEXAHEDRON, 2, 3 );
-  do_test( HEXAHEDRON, 2, 4 );
-  do_test( HEXAHEDRON, 2, 5 );
+  do_test( HEXAHEDRON, Sample(2, 0) );
+  do_test( HEXAHEDRON, Sample(2, 1) );
+  do_test( HEXAHEDRON, Sample(2, 2) );
+  do_test( HEXAHEDRON, Sample(2, 3) );
+  do_test( HEXAHEDRON, Sample(2, 4) );
+  do_test( HEXAHEDRON, Sample(2, 5) );
 }
 
 void IdealTargetTest::test_hex_center()
 {
-  do_test( HEXAHEDRON, 3, 0 );
+  do_test( HEXAHEDRON, Sample(3, 0) );
 }
 
 void IdealTargetTest::test_tri_orientation()
@@ -157,12 +157,12 @@ void IdealTargetTest::test_tri_orientation()
   MsqMatrix<3,2> W, Wr;
   MsqMatrix<3,3> junk;
 
-  get_calc_target( false, TRIANGLE, 0, 0, junk, W );
-  get_calc_target(  true, TRIANGLE, 0, 0, junk, Wr);
+  get_calc_target( false, TRIANGLE, Sample(0, 0), junk, W );
+  get_calc_target(  true, TRIANGLE, Sample(0, 0), junk, Wr);
   compare_rotated( W, Wr );
 
-  get_calc_target( false, TRIANGLE, 2, 0, junk, W );
-  get_calc_target(  true, TRIANGLE, 2, 0, junk, Wr);
+  get_calc_target( false, TRIANGLE, Sample(2, 0), junk, W );
+  get_calc_target(  true, TRIANGLE, Sample(2, 0), junk, Wr);
   compare_rotated( W, Wr );
 }
 
@@ -171,17 +171,17 @@ void IdealTargetTest::test_quad_orientation()
   MsqMatrix<3,2> W, Wr;
   MsqMatrix<3,3> junk;
 
-  get_calc_target( false, QUADRILATERAL, 0, 1, junk, W );
-  get_calc_target(  true, QUADRILATERAL, 0, 1, junk, Wr);
+  get_calc_target( false, QUADRILATERAL, Sample(0, 1), junk, W );
+  get_calc_target(  true, QUADRILATERAL, Sample(0, 1), junk, Wr);
   compare_rotated( W, Wr );
 
-  get_calc_target( false, QUADRILATERAL, 2, 0, junk, W );
-  get_calc_target(  true, QUADRILATERAL, 2, 0, junk, Wr);
+  get_calc_target( false, QUADRILATERAL, Sample(2, 0), junk, W );
+  get_calc_target(  true, QUADRILATERAL, Sample(2, 0), junk, Wr);
   compare_rotated( W, Wr );
 }
 
 void IdealTargetTest::get_calc_target( bool rotate, EntityTopology type, 
-                                       unsigned dim, unsigned num,
+                                       Sample location,
                                        MsqMatrix<3,3>& w3, MsqMatrix<3,2>& w2 )
 {
   MsqPrintError err( msq_stdio::cout );
@@ -198,16 +198,15 @@ void IdealTargetTest::get_calc_target( bool rotate, EntityTopology type,
   
   SamplePoints pts( true, true, true, true );
   IdealTargetCalculator tc( rotate );
-  unsigned sam = ElemSampleQM::sample( dim, num );
   if (elem_dim == 2)
-    tc.get_2D_target( pd, 0, &pts, sam, w2, err );
+    tc.get_2D_target( pd, 0, &pts, location, w2, err );
   else
-    tc.get_3D_target( pd, 0, &pts, sam, w3, err );
+    tc.get_3D_target( pd, 0, &pts, location, w3, err );
   CPPUNIT_ASSERT(!MSQ_CHKERR(err));
 }
 
 void IdealTargetTest::get_ideal_target( EntityTopology type,
-                                        unsigned dim, unsigned num,
+                                        Sample location,
                                         MsqMatrix<3,3>& w3, MsqMatrix<3,2>& w2 )
 {
   MsqPrintError err( msq_stdio::cout );
@@ -221,7 +220,7 @@ void IdealTargetTest::get_ideal_target( EntityTopology type,
   if (elem_dim == 2) {
     MsqVector<2> derivs[100];
     const MappingFunction2D* func = settings.get_mapping_function_2D( type );
-    func->derivatives( dim, num, NodeSet(), indices, derivs, num_vtx, err );
+    func->derivatives( location, NodeSet(), indices, derivs, num_vtx, err );
     CPPUNIT_ASSERT(!MSQ_CHKERR(err));
 
     for (size_t i = 0; i < num_vtx; ++i) 
@@ -235,7 +234,7 @@ void IdealTargetTest::get_ideal_target( EntityTopology type,
   else {
     MsqVector<3> derivs[100];
     const MappingFunction3D* func = settings.get_mapping_function_3D( type );
-    func->derivatives( dim, num, NodeSet(), indices, derivs, num_vtx, err );
+    func->derivatives( location, NodeSet(), indices, derivs, num_vtx, err );
     CPPUNIT_ASSERT(!MSQ_CHKERR(err));
 
     for (size_t i = 0; i < num_vtx; ++i) 
@@ -249,12 +248,12 @@ void IdealTargetTest::get_ideal_target( EntityTopology type,
   
 }
 
-void IdealTargetTest::do_test( EntityTopology type, unsigned dim, unsigned num )
+void IdealTargetTest::do_test( EntityTopology type, Sample location )
 {
   MsqMatrix<3,3> w3_calc, w3_exp;
   MsqMatrix<3,2> w2_calc, w2_exp;
-  get_calc_target( false, type, dim, num, w3_calc, w2_calc );
-  get_ideal_target( type, dim, num, w3_exp, w2_exp );
+  get_calc_target( false, type, location, w3_calc, w2_calc );
+  get_ideal_target( type, location, w3_exp, w2_exp );
   if (TopologyInfo::dimension(type) == 2)
     ASSERT_MATRICES_EQUAL( w2_exp, w2_calc, 1e-9 );
   else
@@ -306,9 +305,8 @@ void IdealTargetTest::test_plane_neg_z()
   SamplePoints pts( true, true, true, true );
   IdealTargetCalculator tc( true );
   
-  unsigned sam = ElemSampleQM::sample( 0, 0) ;
   MsqMatrix<3,2> W;
-  tc.get_2D_target( pd, 0, &pts, sam, W, err );
+  tc.get_2D_target( pd, 0, &pts, Sample(0,0), W, err );
   ASSERT_NO_ERROR(err);
   
   Vector3D c1( W(0,0), W(1,0), W(2,0) );

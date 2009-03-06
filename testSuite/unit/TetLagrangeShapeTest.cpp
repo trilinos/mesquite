@@ -383,7 +383,7 @@ void TetLagrangeShapeTest::test_corner_coeff( int corner, NodeSet nodebits )
   
   double coeff[100];
   size_t n = 29, indices[100];
-  sf.coefficients( 0, corner, nodebits, coeff, indices, n, err );
+  sf.coefficients( Sample(0, corner), nodebits, coeff, indices, n, err );
   CPPUNIT_ASSERT( !err );
   
   compare_coefficients( coeff, indices, expected, n, corner, nodebits );
@@ -398,7 +398,7 @@ void TetLagrangeShapeTest::test_edge_coeff( int edge, NodeSet nodebits )
   
   double coeff[100];
   size_t n = 29, indices[100];
-  sf.coefficients( 1, edge, nodebits, coeff, indices, n, err );
+  sf.coefficients( Sample(1, edge), nodebits, coeff, indices, n, err );
   CPPUNIT_ASSERT( !err );
   
   compare_coefficients( coeff, indices, expected, n, edge+4, nodebits );
@@ -413,7 +413,7 @@ void TetLagrangeShapeTest::test_face_coeff( int face, NodeSet nodebits )
   
   double coeff[100];
   size_t n = 29, indices[100];
-  sf.coefficients( 2, face, nodebits, coeff, indices, n, err );
+  sf.coefficients( Sample(2, face), nodebits, coeff, indices, n, err );
   CPPUNIT_ASSERT( !err );
   
   compare_coefficients( coeff, indices, expected, n, face+10, nodebits );
@@ -428,7 +428,7 @@ void TetLagrangeShapeTest::test_mid_coeff( NodeSet nodebits )
   
   double coeff[100];
   size_t n = 29, indices[100];
-  sf.coefficients( 3, 0, nodebits, coeff, indices, n, err );
+  sf.coefficients( Sample(3, 0), nodebits, coeff, indices, n, err );
   CPPUNIT_ASSERT( !err );
   
   compare_coefficients( coeff, indices, expected, n, 14, nodebits );
@@ -443,7 +443,7 @@ void TetLagrangeShapeTest::test_corner_derivs( int corner, NodeSet nodebits )
   
   MsqVector<3> derivs[100];
   size_t vertices[100], n = 29;
-  sf.derivatives( 0, corner, nodebits, vertices, derivs, n, err );
+  sf.derivatives( Sample(0, corner), nodebits, vertices, derivs, n, err );
   CPPUNIT_ASSERT( !err );
   
   compare_derivatives( vertices, n, derivs, expected, corner, nodebits );
@@ -458,7 +458,7 @@ void TetLagrangeShapeTest::test_edge_derivs( int edge, NodeSet nodebits )
   
   MsqVector<3> derivs[100];
   size_t vertices[100], n = 29;
-  sf.derivatives( 1, edge, nodebits, vertices, derivs, n, err );
+  sf.derivatives( Sample(1, edge), nodebits, vertices, derivs, n, err );
   CPPUNIT_ASSERT( !err );
   
   compare_derivatives( vertices, n, derivs, expected, edge+4, nodebits );
@@ -473,7 +473,7 @@ void TetLagrangeShapeTest::test_face_derivs( int face, NodeSet nodebits )
   
   MsqVector<3> derivs[100];
   size_t vertices[100], n = 29;
-  sf.derivatives( 2, face, nodebits, vertices, derivs, n, err );
+  sf.derivatives( Sample(2, face), nodebits, vertices, derivs, n, err );
   CPPUNIT_ASSERT( !err );
   
   compare_derivatives( vertices, n, derivs, expected, face+10, nodebits );
@@ -488,7 +488,7 @@ void TetLagrangeShapeTest::test_mid_derivs( NodeSet nodebits )
   
   MsqVector<3> derivs[100];
   size_t vertices[100], n = 29;
-  sf.derivatives( 3, 0, nodebits, vertices, derivs, n, err );
+  sf.derivatives( Sample(3, 0), nodebits, vertices, derivs, n, err );
   CPPUNIT_ASSERT( !err );
   
   compare_derivatives( vertices, n, derivs, expected, 14, nodebits );
@@ -593,38 +593,38 @@ void TetLagrangeShapeTest::test_invalid_nodebits_coeff( NodeSet bits )
   double coeff[100];
   size_t n, indices[100];
   
-  sf.coefficients( 0, 0, bits, coeff, indices, n, err );
+  sf.coefficients( Sample( 0, 0 ), bits, coeff, indices, n, err );
   CPPUNIT_ASSERT( err );
-  sf.coefficients( 0, 1, bits, coeff, indices, n, err );
+  sf.coefficients( Sample( 0, 1 ), bits, coeff, indices, n, err );
   CPPUNIT_ASSERT( err );
-  sf.coefficients( 0, 2, bits, coeff, indices, n, err );
+  sf.coefficients( Sample( 0, 2 ), bits, coeff, indices, n, err );
   CPPUNIT_ASSERT( err );
-  sf.coefficients( 0, 3, bits, coeff, indices, n, err );
-  CPPUNIT_ASSERT( err );
-  
-  sf.coefficients( 1, 0, bits, coeff, indices, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.coefficients( 1, 1, bits, coeff, indices, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.coefficients( 1, 2, bits, coeff, indices, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.coefficients( 1, 3, bits, coeff, indices, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.coefficients( 1, 4, bits, coeff, indices, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.coefficients( 1, 5, bits, coeff, indices, n, err );
+  sf.coefficients( Sample( 0, 3 ), bits, coeff, indices, n, err );
   CPPUNIT_ASSERT( err );
   
-  sf.coefficients( 2, 0, bits, coeff, indices, n, err );
+  sf.coefficients( Sample( 1, 0 ), bits, coeff, indices, n, err );
   CPPUNIT_ASSERT( err );
-  sf.coefficients( 2, 1, bits, coeff, indices, n, err );
+  sf.coefficients( Sample( 1, 1 ), bits, coeff, indices, n, err );
   CPPUNIT_ASSERT( err );
-  sf.coefficients( 2, 2, bits, coeff, indices, n, err );
+  sf.coefficients( Sample( 1, 2 ), bits, coeff, indices, n, err );
   CPPUNIT_ASSERT( err );
-  sf.coefficients( 2, 3, bits, coeff, indices, n, err );
+  sf.coefficients( Sample( 1, 3 ), bits, coeff, indices, n, err );
+  CPPUNIT_ASSERT( err );
+  sf.coefficients( Sample( 1, 4 ), bits, coeff, indices, n, err );
+  CPPUNIT_ASSERT( err );
+  sf.coefficients( Sample( 1, 5 ), bits, coeff, indices, n, err );
   CPPUNIT_ASSERT( err );
   
-  sf.coefficients( 3, 0, bits, coeff, indices, n, err );
+  sf.coefficients( Sample( 2, 0 ), bits, coeff, indices, n, err );
+  CPPUNIT_ASSERT( err );
+  sf.coefficients( Sample( 2, 1 ), bits, coeff, indices, n, err );
+  CPPUNIT_ASSERT( err );
+  sf.coefficients( Sample( 2, 2 ), bits, coeff, indices, n, err );
+  CPPUNIT_ASSERT( err );
+  sf.coefficients( Sample( 2, 3 ), bits, coeff, indices, n, err );
+  CPPUNIT_ASSERT( err );
+  
+  sf.coefficients( Sample( 3, 0 ), bits, coeff, indices, n, err );
   CPPUNIT_ASSERT( err );
 }
 
@@ -634,38 +634,38 @@ void TetLagrangeShapeTest::test_invalid_nodebits_deriv( NodeSet bits )
   size_t verts[100], n;
   MsqVector<3> derivs[100];
   
-  sf.derivatives( 0, 0, bits, verts, derivs, n, err );
+  sf.derivatives( Sample( 0, 0 ), bits, verts, derivs, n, err );
   CPPUNIT_ASSERT( err );
-  sf.derivatives( 0, 1, bits, verts, derivs, n, err );
+  sf.derivatives( Sample( 0, 1 ), bits, verts, derivs, n, err );
   CPPUNIT_ASSERT( err );
-  sf.derivatives( 0, 2, bits, verts, derivs, n, err );
+  sf.derivatives( Sample( 0, 2 ), bits, verts, derivs, n, err );
   CPPUNIT_ASSERT( err );
-  sf.derivatives( 0, 3, bits, verts, derivs, n, err );
-  CPPUNIT_ASSERT( err );
-  
-  sf.derivatives( 1, 0, bits, verts, derivs, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.derivatives( 1, 1, bits, verts, derivs, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.derivatives( 1, 2, bits, verts, derivs, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.derivatives( 1, 3, bits, verts, derivs, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.derivatives( 1, 4, bits, verts, derivs, n, err );
-  CPPUNIT_ASSERT( err );
-  sf.derivatives( 1, 5, bits, verts, derivs, n, err );
+  sf.derivatives( Sample( 0, 3 ), bits, verts, derivs, n, err );
   CPPUNIT_ASSERT( err );
   
-  sf.derivatives( 2, 0, bits, verts, derivs, n, err );
+  sf.derivatives( Sample( 1, 0 ), bits, verts, derivs, n, err );
   CPPUNIT_ASSERT( err );
-  sf.derivatives( 2, 1, bits, verts, derivs, n, err );
+  sf.derivatives( Sample( 1, 1 ), bits, verts, derivs, n, err );
   CPPUNIT_ASSERT( err );
-  sf.derivatives( 2, 2, bits, verts, derivs, n, err );
+  sf.derivatives( Sample( 1, 2 ), bits, verts, derivs, n, err );
   CPPUNIT_ASSERT( err );
-  sf.derivatives( 2, 3, bits, verts, derivs, n, err );
+  sf.derivatives( Sample( 1, 3 ), bits, verts, derivs, n, err );
+  CPPUNIT_ASSERT( err );
+  sf.derivatives( Sample( 1, 4 ), bits, verts, derivs, n, err );
+  CPPUNIT_ASSERT( err );
+  sf.derivatives( Sample( 1, 5 ), bits, verts, derivs, n, err );
   CPPUNIT_ASSERT( err );
   
-  sf.derivatives( 3, 0, bits, verts, derivs, n, err );
+  sf.derivatives( Sample( 2, 0 ), bits, verts, derivs, n, err );
+  CPPUNIT_ASSERT( err );
+  sf.derivatives( Sample( 2, 1 ), bits, verts, derivs, n, err );
+  CPPUNIT_ASSERT( err );
+  sf.derivatives( Sample( 2, 2 ), bits, verts, derivs, n, err );
+  CPPUNIT_ASSERT( err );
+  sf.derivatives( Sample( 2, 3 ), bits, verts, derivs, n, err );
+  CPPUNIT_ASSERT( err );
+  
+  sf.derivatives( Sample( 3, 0 ), bits, verts, derivs, n, err );
   CPPUNIT_ASSERT( err );
 }
 

@@ -359,7 +359,7 @@ void QuadLagrangeShapeTest::test_corner_coeff( int corner, NodeSet nodebits )
   
   double coeff[100];
   size_t num_coeff = 11, indices[100];
-  sf.coefficients( 0, corner, nodebits, coeff, indices, num_coeff, err );
+  sf.coefficients( Sample(0, corner), nodebits, coeff, indices, num_coeff, err );
   CPPUNIT_ASSERT( !err );
   
   compare_coefficients( coeff, indices, num_coeff, expected, corner, nodebits );
@@ -374,7 +374,7 @@ void QuadLagrangeShapeTest::test_edge_coeff( int edge, NodeSet nodebits )
   
   double coeff[100];
   size_t num_coeff = 11, indices[100];
-  sf.coefficients( 1, edge, nodebits, coeff, indices, num_coeff, err );
+  sf.coefficients( Sample(1, edge), nodebits, coeff, indices, num_coeff, err );
   CPPUNIT_ASSERT( !err );
   
   compare_coefficients( coeff, indices, num_coeff, expected, edge+4, nodebits );
@@ -389,7 +389,7 @@ void QuadLagrangeShapeTest::test_mid_coeff( NodeSet nodebits )
   
   double coeff[100];
   size_t num_coeff = 11, indices[100];
-  sf.coefficients( 2, 0, nodebits, coeff, indices, num_coeff, err );
+  sf.coefficients( Sample(2, 0), nodebits, coeff, indices, num_coeff, err );
   CPPUNIT_ASSERT( !err );
   
   compare_coefficients( coeff, indices, num_coeff, expected, 8, nodebits );
@@ -405,7 +405,7 @@ void QuadLagrangeShapeTest::test_corner_derivs( int corner, NodeSet nodebits )
   
   size_t vertices[100], num_vtx = 23;
   MsqVector<2> derivs[100];
-  sf.derivatives( 0, corner, nodebits, vertices, derivs, num_vtx, err );
+  sf.derivatives( Sample(0, corner), nodebits, vertices, derivs, num_vtx, err );
   CPPUNIT_ASSERT( !err );
   
   compare_derivatives( vertices, num_vtx, derivs, expected_dxi, expected_deta, corner, nodebits );
@@ -421,7 +421,7 @@ void QuadLagrangeShapeTest::test_edge_derivs( int edge, NodeSet nodebits )
   
   size_t vertices[100], num_vtx = 23;
   MsqVector<2> derivs[100];
-  sf.derivatives( 1, edge, nodebits, vertices, derivs, num_vtx, err );
+  sf.derivatives( Sample(1, edge), nodebits, vertices, derivs, num_vtx, err );
   CPPUNIT_ASSERT( !err );
   
   compare_derivatives( vertices, num_vtx, derivs, expected_dxi, expected_deta, edge+4, nodebits );
@@ -437,7 +437,7 @@ void QuadLagrangeShapeTest::test_mid_derivs( NodeSet nodebits )
   
   size_t vertices[100], num_vtx = 23;
   MsqVector<2> derivs[100];
-  sf.derivatives( 2, 0, nodebits, vertices, derivs, num_vtx, err );
+  sf.derivatives( Sample(2, 0), nodebits, vertices, derivs, num_vtx, err );
   CPPUNIT_ASSERT( !err );
   
   compare_derivatives( vertices, num_vtx, derivs, expected_dxi, expected_deta, 8, nodebits );

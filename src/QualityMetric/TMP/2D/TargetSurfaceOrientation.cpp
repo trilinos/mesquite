@@ -59,9 +59,14 @@ void TargetSurfaceOrientation::get_evaluations( PatchData& pd,
   {
     EntityTopology type = pd.element_by_index( *i ).get_element_type();
     if (TopologyInfo::dimension(type) == 2) {
-      unsigned num_samples = samplePts->num_sample_points( type );
-      for (unsigned j = 0; j < num_samples; ++j)
-        handles.push_back( handle(j, *i) );
+      if (samplePts->will_sample_at(type,0)) 
+        for (unsigned j = 0; j < TopologyInfo::corners(type); ++j)
+          handles.push_back( handle( Sample(0,j), *i ) );
+      if (samplePts->will_sample_at(type,1)) 
+        for (unsigned j = 0; j < TopologyInfo::edges(type); ++j)
+          handles.push_back( handle( Sample(1,j), *i ) );
+      if (samplePts->will_sample_at(type,2))
+        handles.push_back( handle( Sample(2, 0), *i ) );
     }
   }
 }
@@ -76,10 +81,15 @@ void TargetSurfaceOrientation::get_element_evaluations( PatchData& pd,
     handles.clear();
     return;
   }
-  unsigned num_samples = samplePts->num_sample_points( type );
-  handles.resize( num_samples );
-  for (unsigned j = 0; j < num_samples; ++j)
-    handles[j] = handle(j, elem);
+  handles.clear();
+  if (samplePts->will_sample_at(type,0)) 
+    for (unsigned j = 0; j < TopologyInfo::corners(type); ++j)
+      handles.push_back( handle( Sample(0,j), elem ) );
+  if (samplePts->will_sample_at(type,1)) 
+    for (unsigned j = 0; j < TopologyInfo::edges(type); ++j)
+      handles.push_back( handle( Sample(1,j), elem ) );
+  if (samplePts->will_sample_at(type,2))
+    handles.push_back( handle( Sample(2, 0), elem ) );
 }
 
 bool TargetSurfaceOrientation::evaluate( PatchData& pd, size_t handle, double& value, MsqError& err )
@@ -108,8 +118,8 @@ bool TargetSurfaceOrientation::evaluate_with_indices( PatchData& pd,
                                             size_t& num_idx,
                                             MsqError& err )
 {
-  unsigned s = ElemSampleQM::sample( handle );
-  size_t   e = ElemSampleQM::  elem( handle );
+  Sample s = ElemSampleQM::sample( handle );
+  size_t e = ElemSampleQM::  elem( handle );
   MsqMeshEntity& elem = pd.element_by_index( e );
   EntityTopology type = elem.get_element_type();
   if (TopologyInfo::dimension( type ) != 2) {
@@ -124,12 +134,9 @@ bool TargetSurfaceOrientation::evaluate_with_indices( PatchData& pd,
     return false;
   }
   
-  unsigned dim, num;
-  dim = ElemSampleQM::side_dim_from_sample( s );
-  num = ElemSampleQM::side_num_from_sample( s );
   const size_t* conn = elem.get_vertex_index_array();
   const NodeSet bits = pd.non_slave_node_set( e );
-  func->derivatives( dim, num, bits, indices, mDerivs, num_idx, err ); MSQ_ERRZERO( err );
+  func->derivatives( s, bits, indices, mDerivs, num_idx, err ); MSQ_ERRZERO( err );
   func->convert_connectivity_indices( elem.node_count(), indices, num_idx, err ); MSQ_ERRZERO( err );
   
     // Convert from indices into element connectivity list to

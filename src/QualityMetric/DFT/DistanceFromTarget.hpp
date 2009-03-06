@@ -107,13 +107,13 @@ namespace Mesquite
     
     for (unsigned i = 0; i < num_corner; ++i)
     {
-      targetCalc->get_3D_target( pd, elem_index, pts, i, 
+      targetCalc->get_3D_target( pd, elem_index, pts, Sample(0,i), 
                                  *reinterpret_cast<MsqMatrix<3,3>*>(T+i), 
                                  err );
       MSQ_ERRRTN(err);
       
       if (weightCalc) {
-        c_k[i] = weightCalc->get_weight( pd, elem_index, pts, i, err );
+        c_k[i] = weightCalc->get_weight( pd, elem_index, pts, Sample(0,i), err );
         MSQ_ERRRTN(err);
       }
       else {
@@ -135,12 +135,12 @@ namespace Mesquite
     MsqMatrix<3,3> W;
     for (unsigned i = 0; i < num_corner; ++i)
     {
-      targetCalc->get_3D_target( pd, elem_index, pts, i, W, err );
+      targetCalc->get_3D_target( pd, elem_index, pts, Sample(0,i), W, err );
       MSQ_ERRRTN(err);
       timesInvA( T[i], *reinterpret_cast<Matrix3D*>(&W) );
       
       if (weightCalc) {
-        c_k[i] = weightCalc->get_weight( pd, elem_index, pts, i, err );
+        c_k[i] = weightCalc->get_weight( pd, elem_index, pts, Sample(0,i), err );
         MSQ_ERRRTN(err);
       }
       else {

@@ -67,17 +67,17 @@ TargetWriter::~TargetWriter() {}
 msq_std::string TargetWriter::get_name() const
   { return "TargetWriter"; }
 
-static void append_samples( msq_std::vector<unsigned>& samples,
+static void append_samples( msq_std::vector<Sample>& samples,
                             unsigned dim, unsigned num )
 {
   size_t in_size = samples.size();
   samples.resize( in_size + num );
   for (unsigned i = 0; i < num; ++i)
-    samples[i+in_size] = ElemSampleQM::sample( dim, i );
+    samples[i+in_size] = Sample( dim, i );
 }
 
 void TargetWriter::get_samples( EntityTopology type,
-                                msq_std::vector<unsigned>& samples )
+                                msq_std::vector<Sample>& samples )
 {
   samples.clear();
   const int d = TopologyInfo::dimension(type);
@@ -115,7 +115,7 @@ double TargetWriter::loop_over_mesh( Mesh* mesh,
   msq_std::vector< MsqMatrix<3,3> > targets3d;
   msq_std::vector< MsqMatrix<3,2> > targets2d;
   msq_std::vector< double > weights;
-  msq_std::vector< unsigned > samples;
+  msq_std::vector< Sample > samples;
   for (p = patches.begin(); p != patches.end(); ++p)
   {
     patch_verts.clear();

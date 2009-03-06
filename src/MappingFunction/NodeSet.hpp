@@ -37,6 +37,7 @@
 #include <assert.h>
 #include <iosfwd>
 #include "Bits.hpp"
+#include "Sample.hpp"
 
 namespace Mesquite {
 
@@ -175,12 +176,12 @@ class NodeSet {
     static unsigned mid_region_node_position( unsigned num = 0 ) 
       { assert(num < NUM_REGION_BITS); return num + REGION_OFFSET; }
     //! Position of a node in the list
-    static unsigned position( unsigned dim, unsigned num ) {
-      switch (dim) { 
-        case 0: return corner_node_position(num); 
-        case 1: return mid_edge_node_position(num);
-        case 2: return mid_face_node_position(num);
-        case 3: return mid_region_node_position(num);
+    static unsigned position( Sample sample ) {
+      switch (sample.dimension) { 
+        case 0: return corner_node_position(sample.number); 
+        case 1: return mid_edge_node_position(sample.number);
+        case 2: return mid_face_node_position(sample.number);
+        case 3: return mid_region_node_position(sample.number);
 #ifndef NDEBUG
         default: assert(0); return ~0u;
 #endif
@@ -200,12 +201,12 @@ class NodeSet {
     void set_mid_region_node( unsigned num = 0 ) 
       { set_bit( mid_region_node_position(num) ); }
     //! Mark/flag node
-    void set_node( unsigned dim, unsigned num ) {
-      switch (dim) { 
-        case 0: set_corner_node(num); break;
-        case 1: set_mid_edge_node(num); break;
-        case 2: set_mid_face_node(num); break;
-        case 3: set_mid_region_node(num); break;
+    void set_node( Sample sample ) {
+      switch (sample.dimension) { 
+        case 0: set_corner_node(sample.number); break;
+        case 1: set_mid_edge_node(sample.number); break;
+        case 2: set_mid_face_node(sample.number); break;
+        case 3: set_mid_region_node(sample.number); break;
         default: assert(0);
       }
     }
@@ -223,12 +224,12 @@ class NodeSet {
     void clear_mid_region_node( unsigned num = 0 ) 
       { clear_bit( mid_region_node_position(num) ); }
     //! un-mark (clear flag for) node
-    void clear_node( unsigned dim, unsigned num ) {
-      switch (dim) { 
-        case 0: clear_corner_node(num); break;
-        case 1: clear_mid_edge_node(num); break;
-        case 2: clear_mid_face_node(num); break;
-        case 3: clear_mid_region_node(num); break;
+    void clear_node( Sample sample ) {
+      switch (sample.dimension) { 
+        case 0: clear_corner_node(sample.number); break;
+        case 1: clear_mid_edge_node(sample.number); break;
+        case 2: clear_mid_face_node(sample.number); break;
+        case 3: clear_mid_region_node(sample.number); break;
         default: assert(0);
       }
     }
@@ -253,12 +254,12 @@ class NodeSet {
     bool mid_region_node( unsigned num = 0 ) const
       {  return bit_to_bool( mid_region_node_position(num) ); }
     //! Get mark/flag for node
-    bool node( unsigned dim, unsigned num ) const {
-      switch (dim) { 
-        case 0: return corner_node(num); break;
-        case 1: return mid_edge_node(num); break;
-        case 2: return mid_face_node(num); break;
-        case 3: return mid_region_node(num); break;
+    bool node( Sample sample ) const {
+      switch (sample.dimension) { 
+        case 0: return corner_node(sample.number); break;
+        case 1: return mid_edge_node(sample.number); break;
+        case 2: return mid_face_node(sample.number); break;
+        case 3: return mid_region_node(sample.number); break;
 #ifndef NDEBUG
         default: assert(0); return false;
 #endif
@@ -278,12 +279,12 @@ class NodeSet {
     unsigned num_before_mid_region( unsigned num ) const 
       { return num_before_bit( mid_region_node_position(num) ); } 
     //! Get number of marked/flagged nodes preceeding a specified node in the list
-    unsigned num_before( unsigned dim, unsigned num ) const {
-      switch (dim) { 
-        case 0: return num_before_corner(num); break;
-        case 1: return num_before_mid_edge(num); break;
-        case 2: return num_before_mid_face(num); break;
-        case 3: return num_before_mid_region(num); break;
+    unsigned num_before( Sample sample ) const {
+      switch (sample.dimension) { 
+        case 0: return num_before_corner(sample.number); break;
+        case 1: return num_before_mid_edge(sample.number); break;
+        case 2: return num_before_mid_face(sample.number); break;
+        case 3: return num_before_mid_region(sample.number); break;
 #ifndef NDEBUG
         default: assert(0); return ~0u;
 #endif

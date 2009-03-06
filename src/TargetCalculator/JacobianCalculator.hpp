@@ -60,15 +60,12 @@ public:
    *\param mf The mapping function
    *\param ho_bits bit mask indicating which higher-order nodes are present in the element
    *               (zero for a linear element)
-   *\param dim The dimension of the sub-entity the sample point lies on
-   *           (0->corner, 1->mid-edge, 2->mid-face, ...)
-   *\param num The number of the entity at which to sample (corner numer,
-   *           edge number, etc.)
+   *\param location Logical position within element at which to evaluate Jacobian
    *\param J_out The resulting Jacobian matrix.
    */
   void get_Jacobian_2D( const MappingFunction2D* mf,
                         NodeSet ho_bits,
-                        unsigned dim, unsigned num,
+                        Sample location,
                         const Vector3D* vertex_coords,
                         size_t num_vertex,
                         MsqMatrix<3,2>& J_out,
@@ -80,15 +77,12 @@ public:
    *\param mf The mapping function
    *\param ho_bits bit mask indicating which higher-order nodes are present in the element
    *               (zero for a linear element)
-   *\param dim The dimension of the sub-entity the sample point lies on
-   *           (0->corner, 1->mid-edge, 2->mid-face, ...)
-   *\param num The number of the entity at which to sample (corner numer,
-   *           edge number, etc.)
+   *\param location Logical position within element at which to evaluate Jacobian
    *\param J_out The resulting Jacobian matrix.
    */
   void get_Jacobian_3D( const MappingFunction3D* mf,
                         NodeSet ho_bits,
-                        unsigned dim, unsigned num,
+                        Sample location,
                         const Vector3D* vertex_coords,
                         size_t num_vertex,
                         MsqMatrix<3,3>& J_out,

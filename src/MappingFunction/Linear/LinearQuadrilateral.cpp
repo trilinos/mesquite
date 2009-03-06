@@ -42,8 +42,7 @@ EntityTopology LinearQuadrilateral::element_topology() const
 int LinearQuadrilateral::num_nodes() const
   { return 4; }
 
-void LinearQuadrilateral::coefficients( unsigned loc_dim,
-                                        unsigned loc_num,
+void LinearQuadrilateral::coefficients( Sample location,
                                         NodeSet nodeset,
                                         double* coeff_out,
                                         size_t* indices_out,
@@ -55,16 +54,16 @@ void LinearQuadrilateral::coefficients( unsigned loc_dim,
     return;
   }
   
-  switch (loc_dim) {
+  switch (location.dimension) {
     case 0:
       num_coeff = 1;
-      indices_out[0] = loc_num;
+      indices_out[0] = location.number;
       coeff_out[0] = 1.0;
       break;
     case 1:
       num_coeff = 2;
-      indices_out[0] = loc_num;
-      indices_out[1] = (loc_num+1)%4;
+      indices_out[0] = location.number;
+      indices_out[1] = (location.number+1)%4;
       coeff_out[0] = 0.5;
       coeff_out[1] = 0.5;
       break;
@@ -151,8 +150,7 @@ static void derivatives_at_mid_elem( size_t* vertices,
   vertices[3] = 3; derivs[3][0] = -0.25; derivs[3][1] =  0.25;
 }
 
-void LinearQuadrilateral::derivatives( unsigned loc_dim,
-                                       unsigned loc_num,
+void LinearQuadrilateral::derivatives( Sample loc,
                                        NodeSet nodeset,
                                        size_t* vertex_indices_out,
                                        MsqVector<2>* d_coeff_d_xi_out,
@@ -164,12 +162,12 @@ void LinearQuadrilateral::derivatives( unsigned loc_dim,
     return;
   }
   
-  switch (loc_dim) {
+  switch (loc.dimension) {
     case 0:
-      derivatives_at_corner( loc_num, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      derivatives_at_corner( loc.number, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       break;
     case 1:
-      derivatives_at_mid_edge( loc_num, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      derivatives_at_mid_edge( loc.number, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       break;
     case 2:
       derivatives_at_mid_elem( vertex_indices_out, d_coeff_d_xi_out, num_vtx );

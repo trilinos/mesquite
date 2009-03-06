@@ -40,14 +40,14 @@ namespace Mesquite {
 
 void JacobianCalculator::get_Jacobian_2D( const MappingFunction2D* mf,
                                           NodeSet ho_bits,
-                                          unsigned dim, unsigned num,
+                                          Sample location,
                                           const Vector3D* verts,
                                           size_t num_type_vert,
                                           MsqMatrix<3,2>& J_out,
                                           MsqError& err )
 {
   size_t num_vtx = 0;
-  mf->derivatives( dim, num, ho_bits, mIndices, mDerivs2D, num_vtx, err ); MSQ_ERRRTN(err);
+  mf->derivatives( location, ho_bits, mIndices, mDerivs2D, num_vtx, err ); MSQ_ERRRTN(err);
   mf->convert_connectivity_indices( num_type_vert, mIndices, num_vtx, err ); MSQ_ERRRTN(err);
   const MsqVector<2>* d = mDerivs2D;
   const size_t* const e = mIndices + num_vtx;
@@ -62,14 +62,14 @@ void JacobianCalculator::get_Jacobian_2D( const MappingFunction2D* mf,
 
 void JacobianCalculator::get_Jacobian_3D( const MappingFunction3D* mf,
                                           NodeSet ho_bits,
-                                          unsigned dim, unsigned num,
+                                          Sample location,
                                           const Vector3D* verts,
                                           size_t num_type_vert,
                                           MsqMatrix<3,3>& J_out,
                                           MsqError& err )
 {
   size_t num_vtx = 0;
-  mf->derivatives( dim, num, ho_bits, mIndices, mDerivs3D, num_vtx, err ); MSQ_ERRRTN(err);
+  mf->derivatives( location, ho_bits, mIndices, mDerivs3D, num_vtx, err ); MSQ_ERRRTN(err);
   mf->convert_connectivity_indices( num_type_vert, mIndices, num_vtx, err ); MSQ_ERRRTN(err);
   const MsqVector<3>* d = mDerivs3D;
   const size_t* const e = mIndices + num_vtx;

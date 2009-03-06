@@ -149,31 +149,31 @@ public:
   bool get_3D_target( PatchData& pd, 
                       size_t element,
                       const SamplePoints* samples,
-                      unsigned sample,
+                      Sample sample,
                       MsqMatrix<3,3>& W_out,
                       MsqError& err );
 
   bool get_2D_target( PatchData& pd, 
                       size_t element,
                       const SamplePoints* samples,
-                      unsigned sample,
+                      Sample sample,
                       MsqMatrix<3,2>& W_out,
                       MsqError& err );
 
   double get_weight( PatchData& pd, 
                      size_t element,
                      const SamplePoints* samples,
-                     unsigned sample,
+                     Sample sample,
                      MsqError& err );
   
   bool surface_targets_are_3D() const { return surf3d; }
                      
-  unsigned long make_value( Mesh::ElementHandle elem, unsigned sample, unsigned idx );
+  unsigned long make_value( Mesh::ElementHandle elem, Sample sample, unsigned idx );
                                    
 };
 
 bool FakeTargetCalc::get_3D_target( PatchData& pd, size_t elem, 
-                                    const SamplePoints*, unsigned sample,
+                                    const SamplePoints*, Sample sample,
                                     MsqMatrix<3,3>& W_out, MsqError& )
 {
   if (!surf3d)
@@ -189,7 +189,7 @@ bool FakeTargetCalc::get_3D_target( PatchData& pd, size_t elem,
 }
 
 bool FakeTargetCalc::get_2D_target( PatchData& pd, size_t elem, 
-                                    const SamplePoints*, unsigned sample,
+                                    const SamplePoints*, Sample sample,
                                     MsqMatrix<3,2>& W_out, MsqError& )
 {
   CPPUNIT_ASSERT_EQUAL( 2u, TopologyInfo::dimension( pd.element_by_index(elem).get_element_type() ) );
@@ -201,20 +201,19 @@ bool FakeTargetCalc::get_2D_target( PatchData& pd, size_t elem,
 }
 
 double FakeTargetCalc::get_weight( PatchData& pd, size_t elem, 
-                                   const SamplePoints*, unsigned sample,
+                                   const SamplePoints*, Sample sample,
                                     MsqError& )
 {
   return make_value( pd.get_element_handles_array()[elem], sample, 0 );
 }
 
-unsigned long FakeTargetCalc::make_value( Mesh::ElementHandle elem, unsigned sample, unsigned idx )
+unsigned long FakeTargetCalc::make_value( Mesh::ElementHandle elem, Sample sample, unsigned idx )
 {
-  const unsigned sample_bits = ElemSampleQM::ELEM_SAMPLE_BITS;
   const unsigned index_bits = 4;
-  CPPUNIT_ASSERT( sample < (1<<sample_bits) );
   CPPUNIT_ASSERT( idx < (1<<index_bits) );
   unsigned long result = (unsigned long)elem;
-  result = (result << sample_bits) | sample;
+  result = (result << Sample::SIDE_DIMENSION_BITS) | sample.dimension;
+  result = (result << Sample::SIDE_NUMBER_BITS) | sample.number;
   result = (result << index_bits ) | idx;
   return result;
 }
@@ -241,20 +240,19 @@ void TargetReadWriteTest::read_write_targets()
       if (type == PYRAMID && sdim == 0)
         count = 4; // skip pyramid apex
       for (unsigned snum = 0; snum < count; ++snum) {
-        const unsigned n = ElemSampleQM::sample( sdim, snum );
         if (d == 2) {
           MsqMatrix<3,2> expected, read;
-          tc.get_2D_target( myPatch, i, &pts, n, expected, err );
+          tc.get_2D_target( myPatch, i, &pts, Sample(sdim, snum), expected, err );
           CPPUNIT_ASSERT(!err);
-          reader.get_2D_target( myPatch, i, &pts, n, read, err );
+          reader.get_2D_target( myPatch, i, &pts, Sample(sdim, snum), read, err );
           CPPUNIT_ASSERT(!err);
           ASSERT_MATRICES_EQUAL( expected, read, 1e-6 );
         }
         else {
           MsqMatrix<3,3> expected, read;
-          tc.get_3D_target( myPatch, i, &pts, n, expected, err );
+          tc.get_3D_target( myPatch, i, &pts, Sample(sdim, snum), expected, err );
           CPPUNIT_ASSERT(!err);
-          reader.get_3D_target( myPatch, i, &pts, n, read, err );
+          reader.get_3D_target( myPatch, i, &pts, Sample(sdim, snum), read, err );
           CPPUNIT_ASSERT(!err);
           ASSERT_MATRICES_EQUAL( expected, read, 1e-12 );
         }
@@ -284,11 +282,10 @@ void TargetReadWriteTest::read_write_targets_surf_3d()
       if (type == PYRAMID && sdim == 0)
         count = 4; // skip pyramid apex
       for (unsigned snum = 0; snum < count; ++snum) {
-        const unsigned n = ElemSampleQM::sample( sdim, snum );
         MsqMatrix<3,3> expected, read;
-        tc.get_3D_target( myPatch, i, &pts, n, expected, err );
+        tc.get_3D_target( myPatch, i, &pts, Sample(sdim, snum), expected, err );
         CPPUNIT_ASSERT(!err);
-        reader.get_3D_target( myPatch, i, &pts, n, read, err );
+        reader.get_3D_target( myPatch, i, &pts, Sample(sdim, snum), read, err );
         CPPUNIT_ASSERT(!err);
         ASSERT_MATRICES_EQUAL( expected, read, 1e-12 );
       }
@@ -318,10 +315,9 @@ void TargetReadWriteTest::read_write_weights()
       if (type == PYRAMID && sdim == 0)
         count = 4; // skip pyramid apex
       for (unsigned snum = 0; snum < count; ++snum) {
-        const unsigned n = ElemSampleQM::sample( sdim, snum );
-        double expected = tc.get_weight( myPatch, i, &pts, n, err );
+        double expected = tc.get_weight( myPatch, i, &pts, Sample(sdim, snum), err );
         CPPUNIT_ASSERT(!err);
-        double read = reader.get_weight( myPatch, i, &pts, n, err );
+        double read = reader.get_weight( myPatch, i, &pts, Sample(sdim, snum), err );
         CPPUNIT_ASSERT(!err);
         CPPUNIT_ASSERT_DOUBLES_EQUAL( expected, read, 1e-12 );
       }

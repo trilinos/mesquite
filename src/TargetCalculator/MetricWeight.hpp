@@ -51,7 +51,7 @@ public:
   virtual double get_weight( PatchData& pd, 
                              size_t element,
                              const SamplePoints* pts,
-                             unsigned sample,
+                             Sample sample,
                              MsqError& err );
 private:
 

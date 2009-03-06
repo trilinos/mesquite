@@ -88,15 +88,13 @@ TargetReader::~TargetReader()
 bool TargetReader::get_3D_target( PatchData &pd,
                                   size_t element,
                                   const SamplePoints* samples,
-                                  unsigned sample,
+                                  Sample sample,
                                   MsqMatrix<3,3>& W_out,
                                   MsqError& err )
 {
     // calculate index of sample in array 
   EntityTopology type = pd.element_by_index(element).get_element_type();
-  unsigned sdim = ElemSampleQM::side_dim_from_sample( sample );
-  unsigned snum = ElemSampleQM::side_num_from_sample( sample );
-  unsigned offset = samples->sample_number_from_location( type, sdim, snum );
+  unsigned offset = samples->sample_number_from_location( type, sample );
 
   int dim = TopologyInfo::dimension( pd.element_by_index(element).get_element_type() );
   if ((dim == 2) && !use3DSurfaceTargets) {
@@ -146,15 +144,13 @@ bool TargetReader::get_3D_target( PatchData &pd,
 bool TargetReader::get_2D_target( PatchData &pd,
                                   size_t element,
                                   const SamplePoints* samples,
-                                  unsigned sample,
+                                  Sample sample,
                                   MsqMatrix<3,2>& W_out,
                                   MsqError& err )
 {
     // calculate index of sample in array 
   EntityTopology type = pd.element_by_index(element).get_element_type();
-  unsigned sdim = ElemSampleQM::side_dim_from_sample( sample );
-  unsigned snum = ElemSampleQM::side_num_from_sample( sample );
-  unsigned offset = samples->sample_number_from_location( type, sdim, snum );
+  unsigned offset = samples->sample_number_from_location( type, sample );
 
   int dim = TopologyInfo::dimension( pd.element_by_index(element).get_element_type() );
   if ((dim == 3) || use3DSurfaceTargets) {

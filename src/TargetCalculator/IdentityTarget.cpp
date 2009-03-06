@@ -42,7 +42,7 @@ bool IdentityTarget::surface_targets_are_3D() const
 bool IdentityTarget::get_3D_target( PatchData& , 
                                     size_t ,
                                     const SamplePoints* ,
-                                    unsigned ,
+                                    Sample ,
                                     MsqMatrix<3,3>& W,
                                     MsqError&  )
 {
@@ -53,7 +53,7 @@ bool IdentityTarget::get_3D_target( PatchData& ,
 bool IdentityTarget::get_2D_target( PatchData& , 
                                     size_t ,
                                     const SamplePoints* ,
-                                    unsigned ,
+                                    Sample ,
                                     MsqMatrix<3,2>& W,
                                     MsqError&  )
 {

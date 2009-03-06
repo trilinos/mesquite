@@ -35,6 +35,7 @@
 
 #include "Mesquite.hpp"
 #include "QualityMetric.hpp"
+#include "Sample.hpp"
 
 namespace Mesquite {
 
@@ -74,58 +75,22 @@ public:
    *  evaluated.
    */
   enum {
-    /** Number of bits used to store the dimension of an element 'side' */
-    SIDE_DIMENSION_BITS = 2,
-    /** Number of bits used to store the index of an element 'side' of a specific dimension */
-    SIDE_NUMBER_BITS = 4,
-    /** number of bits in handle used to store sample number */
-    ELEM_SAMPLE_BITS = SIDE_DIMENSION_BITS + SIDE_NUMBER_BITS,
     /** the number of bits in a handle that are used to store element index */
-    ELEM_INDEX_BITS = sizeof(size_t)*8 - ELEM_SAMPLE_BITS,
-
-    /** the maximum number of sample points per element */
-    MAX_SAMPLES_PER_ELEM = 1u << ELEM_SAMPLE_BITS,
+    ELEM_INDEX_BITS = sizeof(size_t)*8 - Sample::NUMBER_PACKED_BITS,
     /** the maximum number of elements in a PatchData without overflowing handle space */
     MAX_ELEM_PER_PATCH = ((size_t)1)<<ELEM_INDEX_BITS,
-    /** Number of distinct side dimension values that will fit
-     *  in a sample value (one greater than the largest dimension) */
-    NUM_SAMPLE_SIDE_DIM = 1u << SIDE_DIMENSION_BITS,
-    /** Number of distinct side index values that will fit
-     *  in a sample value (one greater than the largest side number) */
-    NUM_SAMPLE_SIDE_NUM = 1u << SIDE_NUMBER_BITS,
-
     /** Mask to remove sample bits from handle */
     ELEM_SAMPLE_MASK = MAX_ELEM_PER_PATCH - 1,
-    /** Mask to remove side dimension bits from sample number */
-    SIDE_NUMBER_MASK = NUM_SAMPLE_SIDE_NUM - 1
   };
-    
-  inline static unsigned sample( unsigned dim, unsigned num )
-    { return (dim << SIDE_NUMBER_BITS) | num; }
 
-  inline static size_t handle( unsigned sample, size_t index )
-    { return (((size_t)sample) << ELEM_INDEX_BITS) | index; }
+  inline static size_t handle( Sample sample, size_t index )
+    { return (sample.pack() << ELEM_INDEX_BITS) | index; }
   
-  inline static size_t handle( unsigned side_dim, unsigned side_num, size_t index )
-    { return handle( sample( side_dim, side_num ), index ); }
-  
-  inline static unsigned sample( size_t handle ) 
-    { return handle >> ELEM_INDEX_BITS; }
+  inline static Sample sample( size_t handle ) 
+    { return Sample(handle >> ELEM_INDEX_BITS); }
   
   inline static size_t elem( size_t handle ) 
     { return handle & ELEM_SAMPLE_MASK; }
-  
-  inline static unsigned side_dim_from_sample( unsigned sample )
-    { return sample >> SIDE_NUMBER_BITS; }
-  
-  inline static unsigned side_num_from_sample( unsigned sample )
-    { return sample & SIDE_NUMBER_MASK; }
-    
-  inline static unsigned side_dim_from_handle( size_t handle )
-    { return handle >> (SIDE_NUMBER_BITS + ELEM_INDEX_BITS); }
-  
-  inline static unsigned side_num_from_handle( size_t handle )
-    { return sample(handle) & SIDE_NUMBER_MASK; }
 };
 
 } // namespace Mesquite

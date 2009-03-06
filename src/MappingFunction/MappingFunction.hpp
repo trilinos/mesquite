@@ -103,22 +103,7 @@ public:
    * from the evaluation of the mapping function coefficient terms
    * \f$N_1(\vec{\xi}), N_2(\vec{\xi}), \ldots, N_n(\vec{\xi})\f$
    * for a given \f$\vec{\xi}\f$.
-   *\param loc_dim  This parameter, together with 'loc_num', specifes
-   *                the logical location at which to evaluate the mapping
-   *                function.  This parameter specifies the dimension of
-   *                the topological subentity of the element that the
-   *                mapping function is to be evaluated at the logical
-   *                center.  
-   *                 - 0 -> corner
-   *                 - 1 -> mid-edge
-   *                 - 2 -> mid-face
-   *                 - 3 -> mid-volume
-   *\param loc_num  Which entity of dimension 'loc_dim' that the mapping
-   *                function is to be evaluated at, specified using the
-   *                numbering specified in the ExodusII standard.  For
-   *                example if loc_dim = 1 and loc_num = 0, the mapping
-   *                function will be evaluated at the center of edge 0
-   *                of the element.
+   *\param location Where within the element at which to evaluate the coefficients.
    *\param nodeset  List of which nodes are present in the element.  
    *\param coefficients_out The coefficients (\f$N_i(\vec{\xi})\f$) for each 
    *                vertex in the element.
@@ -129,8 +114,7 @@ public:
    *                have a significant impact on performance.
    */
   virtual 
-  void coefficients( unsigned loc_dim,
-                     unsigned loc_num,
+  void coefficients( Sample location,
                      NodeSet nodeset,
                      double* coeff_out,
                      size_t* indices_out,
@@ -260,22 +244,7 @@ public:
    *         \end{array} \right]\f$
    * 
    *
-   *\param loc_dim  This parameter, together with 'loc_num', specifes
-   *                the logical location at which to evaluate the mapping
-   *                function.  This parameter specifies the dimension of
-   *                the topological subentity of the element that the
-   *                mapping function is to be evaluated at the logical
-   *                center.  
-   *                 - 0 -> corner
-   *                 - 1 -> mid-edge
-   *                 - 2 -> mid-face
-   *                 - 3 -> mid-volume
-   *\param loc_num  Which entity of dimension 'loc_dim' that the mapping
-   *                function is to be evaluated at, specified using the
-   *                numbering specified in the ExodusII standard.  For
-   *                example if loc_dim = 1 and loc_num = 0, the mapping
-   *                function will be evaluated at the center of edge 0
-   *                of the element.
+   *\param location Where within the element at which to evaluate the derivatives.
    *\param nodeset  List of which nodes are present in the element.  
    *\param vertices_out The list of vertices for which the corresponding
    *                coefficient in the mapping function is non-zero.  The
@@ -297,8 +266,7 @@ public:
    *                respectively.
    */
   virtual 
-  void derivatives( unsigned loc_dim, 
-                    unsigned loc_num,
+  void derivatives( Sample location,
                     NodeSet nodeset,
                     size_t* vertex_indices_out,
                     MsqVector<2>* d_coeff_d_xi_out,
@@ -333,12 +301,7 @@ public:
    *           and element connectcivity.
    *\param element_number  The index of the mesh element in the PatchData.
    *\param nodeset         List of which nodes are present in the element.  
-   *\param loc_dim         The topological dimension of the element or
-   *                       element sub-entity at which to evaluate the
-   *                       mapping function.
-   *\param loc_num         The canonical number of the sub-entity of
-   *                       dimension 'loc_dim' that the mapping function
-   *                       will be evaluated at the logical center of.
+   *\param location Where within the element at which to evaluate the Jacobian.
    *\param vertex_patch_indices_out  For each free vertex in the element
    *                       the influences the mapping function value at
    *                       the specified logical location, the index of
@@ -355,8 +318,7 @@ public:
   void jacobian( const PatchData& pd,
                  size_t element_number,
                  NodeSet nodeset,
-                 unsigned loc_dim,
-                 unsigned loc_num,
+                 Sample location,
                  size_t* vertex_patch_indices_out,
                  MsqVector<2>* d_coeff_d_xi_out,
                  size_t& num_vtx_out,
@@ -444,22 +406,7 @@ public:
    *         \end{array} \right]\f$
    * 
    *
-   *\param loc_dim  This parameter, together with 'loc_num', specifes
-   *                the logical location at which to evaluate the mapping
-   *                function.  This parameter specifies the dimension of
-   *                the topological subentity of the element that the
-   *                mapping function is to be evaluated at the logical
-   *                center.  
-   *                 - 0 -> corner
-   *                 - 1 -> mid-edge
-   *                 - 2 -> mid-face
-   *                 - 3 -> mid-volume
-   *\param loc_num  Which entity of dimension 'loc_dim' that the mapping
-   *                function is to be evaluated at, specified using the
-   *                numbering specified in the ExodusII standard.  For
-   *                example if loc_dim = 1 and loc_num = 0, the mapping
-   *                function will be evaluated at the center of edge 0
-   *                of the element.
+   *\param location Where within the element at which to evaluate the derivatives.
    *\param nodeset  List of which nodes are present in the element.  
    *\param vertices_out The list of vertices for which the corresponding
    *                coefficient in the mapping function is non-zero.  The
@@ -481,8 +428,7 @@ public:
    *                respectively.
    */
   virtual 
-  void derivatives( unsigned loc_dim, 
-                    unsigned loc_num,
+  void derivatives( Sample location,
                     NodeSet nodeset,
                     size_t* vertex_indices_out,
                     MsqVector<3>* d_coeff_d_xi_out,
@@ -517,12 +463,7 @@ public:
    *           and element connectcivity.
    *\param element_number  The index of the mesh element in the PatchData.
    *\param nodeset         List of which nodes are present in the element.  
-   *\param loc_dim         The topological dimension of the element or
-   *                       element sub-entity at which to evaluate the
-   *                       mapping function.
-   *\param loc_num         The canonical number of the sub-entity of
-   *                       dimension 'loc_dim' that the mapping function
-   *                       will be evaluated at the logical center of.
+   *\param location Where within the element at which to evaluate the Jacobian.
    *\param vertex_patch_indices_out  For each free vertex in the element
    *                       the influences the mapping function value at
    *                       the specified logical location, the index of
@@ -539,8 +480,7 @@ public:
   void jacobian( const PatchData& pd,
                  size_t element_number,
                  NodeSet nodeset,
-                 unsigned loc_dim,
-                 unsigned loc_num,
+                 Sample location,
                  size_t* vertex_patch_indices_out,
                  MsqVector<3>* d_coeff_d_xi_out,
                  size_t& num_vtx_out,

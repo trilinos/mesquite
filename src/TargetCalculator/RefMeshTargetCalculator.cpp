@@ -44,17 +44,15 @@ RefMeshTargetCalculator::~RefMeshTargetCalculator() {}
 bool RefMeshTargetCalculator::get_3D_target( PatchData& pd, 
                                              size_t element,
                                              const SamplePoints* pts,
-                                             unsigned sample,
+                                             Sample sample,
                                              MsqMatrix<3,3>& W_out,
                                              MsqError& err )
 {
   NodeSet ho_bits = get_vertex_coords( pd, element, err ); MSQ_ERRZERO(err);
   MsqMeshEntity& elem = pd.element_by_index( element );
   EntityTopology type = elem.get_element_type();
-  unsigned dim = ElemSampleQM::side_dim_from_sample( sample );
-  unsigned num = ElemSampleQM::side_num_from_sample( sample );
   const MappingFunction3D* func = pd.get_mapping_function_3D( type );
-  jacobianCalc.get_Jacobian_3D( func, ho_bits, dim, num, &tmpCoords[0], 
+  jacobianCalc.get_Jacobian_3D( func, ho_bits, sample, &tmpCoords[0], 
                                 elem.node_count(), W_out, err ); MSQ_ERRZERO(err);
   return true;
 }
@@ -62,17 +60,15 @@ bool RefMeshTargetCalculator::get_3D_target( PatchData& pd,
 bool RefMeshTargetCalculator::get_2D_target( PatchData& pd, 
                                              size_t element,
                                              const SamplePoints* pts,
-                                             unsigned sample,
+                                             Sample sample,
                                              MsqMatrix<3,2>& W_out,
                                              MsqError& err )
 {
   NodeSet ho_bits = get_vertex_coords( pd, element, err ); MSQ_ERRFALSE(err);
   MsqMeshEntity& elem = pd.element_by_index( element );
   EntityTopology type = elem.get_element_type();
-  unsigned dim = ElemSampleQM::side_dim_from_sample( sample );
-  unsigned num = ElemSampleQM::side_num_from_sample( sample );
   const MappingFunction2D* func = pd.get_mapping_function_2D( type );
-  jacobianCalc.get_Jacobian_2D( func, ho_bits, dim, num, &tmpCoords[0], 
+  jacobianCalc.get_Jacobian_2D( func, ho_bits, sample, &tmpCoords[0], 
                                 elem.node_count(), W_out, err ); MSQ_ERRZERO(err);
   return true;
 }

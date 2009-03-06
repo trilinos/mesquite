@@ -39,8 +39,7 @@ EntityTopology LinearTriangle::element_topology() const
 int LinearTriangle::num_nodes() const
   { return 3; }
 
-void LinearTriangle::coefficients( unsigned loc_dim,
-                                   unsigned loc_num,
+void LinearTriangle::coefficients( Sample loc,
                                    NodeSet nodeset,
                                    double* coeff_out,
                                    size_t* indices_out,
@@ -52,16 +51,16 @@ void LinearTriangle::coefficients( unsigned loc_dim,
     return;
   }
   
-  switch (loc_dim) {
+  switch (loc.dimension) {
     case 0:
       num_coeff = 1;
-      indices_out[0] = loc_num;
+      indices_out[0] = loc.number;
       coeff_out[0] = 1.0;
       break;
     case 1:
       num_coeff = 2;
-      indices_out[0] = loc_num;
-      indices_out[1] = (loc_num+1)%3;
+      indices_out[0] = loc.number;
+      indices_out[1] = (loc.number+1)%3;
       coeff_out[0] = 0.5;
       coeff_out[1] = 0.5;
       break;
@@ -77,8 +76,7 @@ void LinearTriangle::coefficients( unsigned loc_dim,
   }
 }
 
-void LinearTriangle::derivatives( unsigned ,
-                                  unsigned ,
+void LinearTriangle::derivatives( Sample ,
                                   NodeSet nodeset,
                                   size_t* vertices,
                                   MsqVector<2>* coeff_derivs,

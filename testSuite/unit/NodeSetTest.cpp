@@ -129,32 +129,32 @@ void NodeSetTest::test_set_get_clear_dim()
 {
   NodeSet set;
   for (unsigned i = 0; i < NodeSet::NUM_CORNER_BITS; ++i) {
-    CPPUNIT_ASSERT( !set.node(0,i) );
-    set.set_node( 0, i );
-    CPPUNIT_ASSERT( set.node(0,i) );
-    set.clear_node( 0, i );
-    CPPUNIT_ASSERT( !set.node(0,i) );
+    CPPUNIT_ASSERT( !set.node(Sample(0,i)) );
+    set.set_node( Sample(0, i) );
+    CPPUNIT_ASSERT( set.node(Sample(0,i)) );
+    set.clear_node( Sample(0, i) );
+    CPPUNIT_ASSERT( !set.node(Sample(0,i)) );
   }
   for (unsigned i = 0; i < NodeSet::NUM_EDGE_BITS; ++i) {
-    CPPUNIT_ASSERT( !set.node(1,i) );
-    set.set_node( 1, i );
-    CPPUNIT_ASSERT( set.node(1,i) );
-    set.clear_node( 1, i );
-    CPPUNIT_ASSERT( !set.node(1,i) );
+    CPPUNIT_ASSERT( !set.node(Sample(1,i)) );
+    set.set_node( Sample(1, i) );
+    CPPUNIT_ASSERT( set.node(Sample(1,i)) );
+    set.clear_node( Sample(1, i) );
+    CPPUNIT_ASSERT( !set.node(Sample(1,i)) );
   }
   for (unsigned i = 0; i < NodeSet::NUM_FACE_BITS; ++i) {
-    CPPUNIT_ASSERT( !set.node(2,i) );
-    set.set_node( 2, i );
-    CPPUNIT_ASSERT( set.node(2,i) );
-    set.clear_node( 2, i );
-    CPPUNIT_ASSERT( !set.node(2,i) );
+    CPPUNIT_ASSERT( !set.node(Sample(2,i)) );
+    set.set_node( Sample(2, i) );
+    CPPUNIT_ASSERT( set.node(Sample(2,i)) );
+    set.clear_node( Sample(2, i) );
+    CPPUNIT_ASSERT( !set.node(Sample(2,i)) );
   }
   for (unsigned i = 0; i < NodeSet::NUM_REGION_BITS; ++i) {
-    CPPUNIT_ASSERT( !set.node(3,i) );
-    set.set_node( 3, i );
-    CPPUNIT_ASSERT( set.node(3,i) );
-    set.clear_node( 3, i );
-    CPPUNIT_ASSERT( !set.node(3,i) );
+    CPPUNIT_ASSERT( !set.node(Sample(3,i)) );
+    set.set_node( Sample(3, i) );
+    CPPUNIT_ASSERT( set.node(Sample(3,i)) );
+    set.clear_node( Sample(3, i) );
+    CPPUNIT_ASSERT( !set.node(Sample(3,i)) );
   }
 }
 
@@ -285,7 +285,7 @@ static bool check_all( NodeSet set, unsigned dim, bool value )
                  case 3: count = NodeSet::NUM_REGION_BITS; break;
                  default: CPPUNIT_ASSERT(false); }
   for (unsigned i = 0; i < count; ++i)
-    if (set.node( dim, i ) != value )
+    if (set.node( Sample(dim, i) ) != value )
       return false;
   return true;
 }

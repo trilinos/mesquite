@@ -196,13 +196,11 @@ bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
     // make sure reinterpret_casts below are valid
   assert( sizeof(MsqMatrix<3,1>) == sizeof(Vector3D) );
 
-  const unsigned s = ElemSampleQM::sample( handle );
-  const size_t   e = ElemSampleQM::  elem( handle );
+  const Sample s = ElemSampleQM::sample( handle );
+  const size_t e = ElemSampleQM::  elem( handle );
   MsqMeshEntity& elem = pd.element_by_index( e );
   EntityTopology type = elem.get_element_type();
   unsigned edim = TopologyInfo::dimension( type );
-  unsigned dim = ElemSampleQM::side_dim_from_sample( s );
-  unsigned num = ElemSampleQM::side_num_from_sample( s );
   const NodeSet bits = pd.non_slave_node_set( e );
   
   bool rval;
@@ -218,7 +216,7 @@ bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
     }
 
     MsqMatrix<3,3> A, W;
-    mf->jacobian( pd, e, bits, dim, num, indices, mDerivs3D, num_indices, A, err );
+    mf->jacobian( pd, e, bits, s, indices, mDerivs3D, num_indices, A, err );
     MSQ_ERRZERO(err);
     targetCalc->get_3D_target( pd, e, samplePts, s, W, err ); MSQ_ERRZERO(err);
     rval = metric3D->evaluate( A, W, value, err ); MSQ_ERRZERO(err);
@@ -235,7 +233,7 @@ bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
     }
     
     MsqMatrix<3,2> J, Wp, RZ;
-    mf->jacobian( pd, e, bits, dim, num, indices, mDerivs2D, num_indices, J, err );
+    mf->jacobian( pd, e, bits, s, indices, mDerivs2D, num_indices, J, err );
     targetCalc->get_2D_target( pd, e, samplePts, s, Wp, err ); MSQ_ERRZERO(err);
     
     MsqMatrix<2,2> W, A;
@@ -268,13 +266,11 @@ bool TMPQualityMetric::evaluate_with_gradient(
     // make sure reinterpret_casts below are valid
   assert( sizeof(MsqMatrix<3,1>) == sizeof(Vector3D) );
 
-  const unsigned s = ElemSampleQM::sample( handle );
-  const size_t   e = ElemSampleQM::  elem( handle );
+  const Sample s = ElemSampleQM::sample( handle );
+  const size_t e = ElemSampleQM::  elem( handle );
   MsqMeshEntity& elem = pd.element_by_index( e );
   EntityTopology type = elem.get_element_type();
   unsigned edim = TopologyInfo::dimension( type );
-  unsigned dim = ElemSampleQM::side_dim_from_sample( s );
-  unsigned num = ElemSampleQM::side_num_from_sample( s );
   size_t num_idx = 0;
   const NodeSet bits = pd.non_slave_node_set( e );
   
@@ -291,7 +287,7 @@ bool TMPQualityMetric::evaluate_with_gradient(
     }
 
     MsqMatrix<3,3> A, W, dmdA;
-    mf->jacobian( pd, e, bits, dim, num, mIndices, mDerivs3D, num_idx, A, err );
+    mf->jacobian( pd, e, bits, s, mIndices, mDerivs3D, num_idx, A, err );
     MSQ_ERRZERO(err);
     targetCalc->get_3D_target( pd, e, samplePts, s, W, err ); MSQ_ERRZERO(err);
     rval = metric3D->evaluate_with_grad( A, W, value, dmdA, err ); MSQ_ERRZERO(err);
@@ -309,7 +305,7 @@ bool TMPQualityMetric::evaluate_with_gradient(
     }
     
     MsqMatrix<3,2> J, Wp, RZ;
-    mf->jacobian( pd, e, bits, dim, num, mIndices, mDerivs2D, num_idx, J, err );
+    mf->jacobian( pd, e, bits, s, mIndices, mDerivs2D, num_idx, J, err );
     targetCalc->get_2D_target( pd, e, samplePts, s, Wp, err ); MSQ_ERRZERO(err);
     
     MsqMatrix<2,2> W, A, dmdA;
@@ -351,13 +347,11 @@ bool TMPQualityMetric::evaluate_with_Hessian(
     // make sure reinterpret_casts below are valid
   assert( sizeof(MsqMatrix<3,1>) == sizeof(Vector3D) );
 
-  const unsigned s = ElemSampleQM::sample( handle );
-  const size_t   e = ElemSampleQM::  elem( handle );
+  const Sample s = ElemSampleQM::sample( handle );
+  const size_t e = ElemSampleQM::  elem( handle );
   MsqMeshEntity& elem = pd.element_by_index( e );
   EntityTopology type = elem.get_element_type();
   unsigned edim = TopologyInfo::dimension( type );
-  unsigned dim = ElemSampleQM::side_dim_from_sample( s );
-  unsigned num = ElemSampleQM::side_num_from_sample( s );
   size_t num_idx = 0;
   const NodeSet bits = pd.non_slave_node_set( e );
   
@@ -374,7 +368,7 @@ bool TMPQualityMetric::evaluate_with_Hessian(
     }
 
     MsqMatrix<3,3> A, W, dmdA, d2mdA2[6];
-    mf->jacobian( pd, e, bits, dim, num, mIndices, mDerivs3D, num_idx, A, err );
+    mf->jacobian( pd, e, bits, s, mIndices, mDerivs3D, num_idx, A, err );
     MSQ_ERRZERO(err);
     targetCalc->get_3D_target( pd, e, samplePts, s, W, err ); MSQ_ERRZERO(err);
     rval = metric3D->evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); MSQ_ERRZERO(err);
@@ -394,7 +388,7 @@ bool TMPQualityMetric::evaluate_with_Hessian(
     }
     
     MsqMatrix<3,2> J, Wp, RZ;
-    mf->jacobian( pd, e, bits, dim, num, mIndices, mDerivs2D, num_idx, J, err );
+    mf->jacobian( pd, e, bits, s, mIndices, mDerivs2D, num_idx, J, err );
     targetCalc->get_2D_target( pd, e, samplePts, s, Wp, err ); MSQ_ERRZERO(err);
     
     MsqMatrix<2,2> W, A, dmdA, d2mdA2[3];
@@ -446,13 +440,11 @@ bool TMPQualityMetric::evaluate_with_Hessian_diagonal(
     // make sure reinterpret_casts below are valid
   assert( sizeof(MsqMatrix<3,1>) == sizeof(Vector3D) );
 
-  const unsigned s = ElemSampleQM::sample( handle );
-  const size_t   e = ElemSampleQM::  elem( handle );
+  const Sample s = ElemSampleQM::sample( handle );
+  const size_t e = ElemSampleQM::  elem( handle );
   MsqMeshEntity& elem = pd.element_by_index( e );
   EntityTopology type = elem.get_element_type();
   unsigned edim = TopologyInfo::dimension( type );
-  unsigned dim = ElemSampleQM::side_dim_from_sample( s );
-  unsigned num = ElemSampleQM::side_num_from_sample( s );
   size_t num_idx = 0;
   const NodeSet bits = pd.non_slave_node_set( e );
   
@@ -469,7 +461,7 @@ bool TMPQualityMetric::evaluate_with_Hessian_diagonal(
     }
 
     MsqMatrix<3,3> A, W, dmdA, d2mdA2[6];
-    mf->jacobian( pd, e, bits, dim, num, mIndices, mDerivs3D, num_idx, A, err );
+    mf->jacobian( pd, e, bits, s, mIndices, mDerivs3D, num_idx, A, err );
     MSQ_ERRZERO(err);
     targetCalc->get_3D_target( pd, e, samplePts, s, W, err ); MSQ_ERRZERO(err);
     rval = metric3D->evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); MSQ_ERRZERO(err);
@@ -494,7 +486,7 @@ bool TMPQualityMetric::evaluate_with_Hessian_diagonal(
     }
     
     MsqMatrix<3,2> J, Wp, RZ;
-    mf->jacobian( pd, e, bits, dim, num, mIndices, mDerivs2D, num_idx, J, err );
+    mf->jacobian( pd, e, bits, s, mIndices, mDerivs2D, num_idx, J, err );
     targetCalc->get_2D_target( pd, e, samplePts, s, Wp, err ); MSQ_ERRZERO(err);
     
     MsqMatrix<2,2> W, A, dmdA, d2mdA2[3];

@@ -846,13 +846,12 @@ void PatchData::update_slave_node_coordinates( MsqError& err )
         continue;
      
         // what is this node a mid node of (i.e. face 1, edge 2, etc.)
-      unsigned dim, num;
-      TopologyInfo::side_from_higher_order( type, elem.node_count(), k,
-                                            dim, num, err );  MSQ_ERRRTN(err);
+      Sample loc = TopologyInfo::sample_from_node( type, elem.node_count(), 
+                                                   k, err );  MSQ_ERRRTN(err);
       
         // evaluate mapping function at logical loction of HO node.
       size_t num_coeff;
-      mf->coefficients( dim, num, ho_bits, coeff, index, num_coeff, err ); MSQ_ERRRTN(err);
+      mf->coefficients( loc, ho_bits, coeff, index, num_coeff, err ); MSQ_ERRRTN(err);
       mf->convert_connectivity_indices( num_node, index, num_coeff, err ); MSQ_ERRRTN(err);
       
         // calulate new coordinates for slave node
@@ -938,13 +937,12 @@ void PatchData::update_slave_node_coordinates( const size_t* elements,
         continue;
      
         // what is this node a mid node of (i.e. face 1, edge 2, etc.)
-      unsigned dim, num;
-      TopologyInfo::side_from_higher_order( type, elem.node_count(), k,
-                                            dim, num, err );  MSQ_ERRRTN(err);
+      Sample loc = TopologyInfo::sample_from_node( type, elem.node_count(), 
+                                                   k, err );  MSQ_ERRRTN(err);
       
         // evaluate mapping function at logical loction of HO node.
       size_t num_coeff;
-      mf->coefficients( dim, num, ho_bits, coeff, index, num_coeff, err ); MSQ_ERRRTN(err);
+      mf->coefficients( loc, ho_bits, coeff, index, num_coeff, err ); MSQ_ERRRTN(err);
       mf->convert_connectivity_indices( num_node, index, num_coeff, err ); MSQ_ERRRTN(err);
       
         // calulate new coordinates for slave node
@@ -2048,8 +2046,7 @@ void PatchData::set_mesh_entities(
 
 
 void PatchData::get_sample_location( size_t element_index,
-                                     unsigned sample_dim,
-                                     unsigned sample_num,
+                                     Sample sample,
                                      Vector3D& result,
                                      MsqError& err ) const
 {
@@ -2063,7 +2060,7 @@ void PatchData::get_sample_location( size_t element_index,
   
   double coeff[27];
   size_t num_coeff, index[27];
-  f->coefficients( sample_dim, sample_num, ho_bits, coeff, index, num_coeff, err ); MSQ_ERRRTN( err );
+  f->coefficients( sample, ho_bits, coeff, index, num_coeff, err ); MSQ_ERRRTN( err );
   f->convert_connectivity_indices( elem.node_count(), index, num_coeff, err ); MSQ_ERRRTN(err);
   
   const size_t* const conn = elem.get_vertex_index_array();

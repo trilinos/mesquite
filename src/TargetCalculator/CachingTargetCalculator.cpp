@@ -112,19 +112,49 @@ static void populate_data( PatchData& pd,
     data->targets3D.resize( count_3d );
   }
   
+  size_t off = 0;
   for (i = 0; i < pd.num_elements(); ++i) {
     EntityTopology type = pd.element_by_index(i).get_element_type();
-    size_t count = spts->num_sample_points(type);
-    size_t off = data->elementOffsets[i];
+    assert( off == data->elementOffsets[i] );
     if (surf_3d || TopologyInfo::dimension( type ) == 3) {
-      for (j = 0; j < count; ++j) {
-        calc->get_3D_target( pd, i, spts, j, data->targets3D[off+j], err );
+      if (spts->will_sample_at(type,0)) {
+        for (j = 0; j < TopologyInfo::corners(type); ++j) {
+          calc->get_3D_target( pd, i, spts, Sample(0,j), data->targets3D[off++], err );
+          MSQ_ERRRTN(err);
+        }
+      }
+      if (spts->will_sample_at(type,1)) {
+        for (j = 0; j < TopologyInfo::edges(type); ++j) {
+          calc->get_3D_target( pd, i, spts, Sample(1,j), data->targets3D[off++], err );
+          MSQ_ERRRTN(err);
+        }
+      }
+      if (spts->will_sample_at(type,2)) {
+        for (j = 0; j < TopologyInfo::faces(type); ++j) {
+          calc->get_3D_target( pd, i, spts, Sample(2,j), data->targets3D[off++], err );
+          MSQ_ERRRTN(err);
+        }
+      }
+      if (spts->will_sample_at(type,3)) {
+        calc->get_3D_target( pd, i, spts, Sample(3,0), data->targets3D[off++], err );
         MSQ_ERRRTN(err);
       }
     }
     else {
-      for (j = 0; j < count; ++j) {
-        calc->get_2D_target( pd, i, spts, j, data->targets2D[off+j], err );
+      if (spts->will_sample_at(type,0)) {
+        for (j = 0; j < TopologyInfo::corners(type); ++j) {
+          calc->get_2D_target( pd, i, spts, Sample(0,j), data->targets2D[off++], err );
+          MSQ_ERRRTN(err);
+        }
+      }
+      if (spts->will_sample_at(type,1)) {
+        for (j = 0; j < TopologyInfo::edges(type); ++j) {
+          calc->get_2D_target( pd, i, spts, Sample(1,j), data->targets2D[off++], err );
+          MSQ_ERRRTN(err);
+        }
+      }
+      if (spts->will_sample_at(type,2)) {
+        calc->get_2D_target( pd, i, spts, Sample(2,0), data->targets2D[off++], err );
         MSQ_ERRRTN(err);
       }
     }
@@ -135,7 +165,7 @@ static void populate_data( PatchData& pd,
 bool CachingTargetCalculator::get_3D_target( PatchData& pd, 
                                              size_t element,
                                              const SamplePoints* pts,
-                                             unsigned sample,
+                                             Sample sample,
                                              MsqMatrix<3,3>& W_out,
                                              MsqError& err )
 {
@@ -152,9 +182,7 @@ bool CachingTargetCalculator::get_3D_target( PatchData& pd,
   
     // calculate index of sample in array 
   EntityTopology type = pd.element_by_index(element).get_element_type();
-  unsigned sdim = ElemSampleQM::side_dim_from_sample( sample );
-  unsigned snum = ElemSampleQM::side_num_from_sample( sample );
-  unsigned offset = pts->sample_number_from_location( type, sdim, snum );
+  unsigned offset = pts->sample_number_from_location( type, sample );
 
   W_out = data.targets3D[ data.elementOffsets[element] + offset ];
   return true;
@@ -163,7 +191,7 @@ bool CachingTargetCalculator::get_3D_target( PatchData& pd,
 bool CachingTargetCalculator::get_2D_target( PatchData& pd, 
                                              size_t element,
                                              const SamplePoints* pts,
-                                             unsigned sample,
+                                             Sample sample,
                                              MsqMatrix<3,2>& W_out,
                                              MsqError& err )
 {
@@ -185,9 +213,7 @@ bool CachingTargetCalculator::get_2D_target( PatchData& pd,
   
     // calculate index of sample in array 
   EntityTopology type = pd.element_by_index(element).get_element_type();
-  unsigned sdim = ElemSampleQM::side_dim_from_sample( sample );
-  unsigned snum = ElemSampleQM::side_num_from_sample( sample );
-  unsigned offset = pts->sample_number_from_location( type, sdim, snum );
+  unsigned offset = pts->sample_number_from_location( type, sample );
 
   W_out = data.targets2D[ data.elementOffsets[element] + offset ];
   return true;

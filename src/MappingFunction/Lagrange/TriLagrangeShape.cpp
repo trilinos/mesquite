@@ -43,8 +43,7 @@ EntityTopology TriLagrangeShape::element_topology() const
 int TriLagrangeShape::num_nodes() const
   { return 6; }
 
-void TriLagrangeShape::coefficients( unsigned loc_dim,
-                                     unsigned loc_num,
+void TriLagrangeShape::coefficients( Sample loc,
                                      NodeSet nodeset,
                                      double* coeff_out,
                                      size_t* indices_out,
@@ -57,22 +56,22 @@ void TriLagrangeShape::coefficients( unsigned loc_dim,
     return;
   }
   
-  switch (loc_dim) {
+  switch (loc.dimension) {
     case 0:
       num_coeff = 1;
-      indices_out[0] = loc_num;
+      indices_out[0] = loc.number;
       coeff_out[0] = 1.0;
       break;
     case 1:
-      if (nodeset.mid_edge_node(loc_num)) { // if mid-edge node is present
+      if (nodeset.mid_edge_node(loc.number)) { // if mid-edge node is present
         num_coeff = 1;
-        indices_out[0] = 3+loc_num;
+        indices_out[0] = 3+loc.number;
         coeff_out[0] = 1.0;
       }
       else { // no mid node on edge
         num_coeff = 2;
-        indices_out[0] = loc_num;
-        indices_out[1] = (loc_num+1)%3;
+        indices_out[0] = loc.number;
+        indices_out[1] = (loc.number+1)%3;
         coeff_out[0] = 0.5;
         coeff_out[1] = 0.5;
       }
@@ -101,7 +100,7 @@ void TriLagrangeShape::coefficients( unsigned loc_dim,
     default:
       MSQ_SETERR(err)(MsqError::UNSUPPORTED_ELEMENT,
                   "Request for dimension %d mapping function value"
-                  "for a triangular element", loc_dim);
+                  "for a triangular element", loc.dimension);
   }
 }
 
@@ -279,8 +278,7 @@ static void derivatives_at_mid_elem( NodeSet nodeset,
   }
 }
 
-void TriLagrangeShape::derivatives( unsigned loc_dim,
-                                    unsigned loc_num,
+void TriLagrangeShape::derivatives( Sample loc,
                                     NodeSet nodeset,
                                     size_t* vertex_indices_out,
                                     MsqVector<2>* d_coeff_d_xi_out,
@@ -293,12 +291,12 @@ void TriLagrangeShape::derivatives( unsigned loc_dim,
     return;
   }
   
-  switch (loc_dim) {
+  switch (loc.dimension) {
     case 0:
-      derivatives_at_corner( loc_num, nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      derivatives_at_corner( loc.number, nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       break;
     case 1:
-      derivatives_at_mid_edge( loc_num, nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
+      derivatives_at_mid_edge( loc.number, nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );
       break;
     case 2:
       derivatives_at_mid_elem( nodeset, vertex_indices_out, d_coeff_d_xi_out, num_vtx );

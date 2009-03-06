@@ -78,7 +78,7 @@ void VertexQM::get_vertex_corner_handles( PatchData& pd,
     const size_t* verts = elem.get_vertex_index_array();
     const size_t* ptr = std::find( verts, verts+elem.node_count(), vtx_idx );
     unsigned idx = ptr - verts;
-    handles[i] = ElemSampleQM::handle( idx, elems[i] );
+    handles[i] = ElemSampleQM::handle( Sample(0,idx), elems[i] );
   }
 }
 

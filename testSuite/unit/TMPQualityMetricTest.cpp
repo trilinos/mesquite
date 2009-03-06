@@ -93,7 +93,7 @@ class ScaleWeight : public WeightCalculator
 {
   public:
     ScaleWeight( double s ) : value(s) {}
-    double get_weight( PatchData&, size_t, const SamplePoints*, unsigned, MsqError& )
+    double get_weight( PatchData&, size_t, const SamplePoints*, Sample, MsqError& )
       { return value; }
     double value;
 };
@@ -590,7 +590,7 @@ void TMPQualityMetricTest::test_gradient_2D()
   double act_val;
   msq_std::vector<size_t> indices;
   msq_std::vector<Vector3D> act_grad;
-  size_t h = ElemSampleQM::handle( 2, 0, 0 );
+  size_t h = ElemSampleQM::handle( Sample(2, 0), 0 );
   m.evaluate_with_gradient( pd, h, act_val, indices, act_grad, err );
   ASSERT_NO_ERROR(err);
   
@@ -665,7 +665,7 @@ void TMPQualityMetricTest::test_gradient_3D()
   double act_val;
   msq_std::vector<size_t> indices;
   msq_std::vector<Vector3D> act_grad;
-  size_t h = ElemSampleQM::handle( 3, 0, 0 );
+  size_t h = ElemSampleQM::handle( Sample(3, 0), 0 );
   m.evaluate_with_gradient( pd, h, act_val, indices, act_grad, err );
   ASSERT_NO_ERROR(err);
   

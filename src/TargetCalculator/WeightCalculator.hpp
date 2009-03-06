@@ -34,6 +34,7 @@
 #define MSQ_WEIGHT_CALCULATOR_HPP
 
 #include "Mesquite.hpp"
+#include "Sample.hpp"
 #include <stddef.h>
 
 namespace Mesquite {
@@ -57,7 +58,7 @@ public:
   virtual double get_weight( PatchData& pd, 
                              size_t element,
                              const SamplePoints* pts,
-                             unsigned sample,
+                             Sample sample,
                              MsqError& err ) = 0;
 };
 

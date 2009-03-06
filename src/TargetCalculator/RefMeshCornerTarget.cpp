@@ -45,14 +45,13 @@ RefMeshCornerTarget::~RefMeshCornerTarget() {}
 bool RefMeshCornerTarget::get_3D_target( PatchData& pd, 
                                          size_t element,
                                          const SamplePoints* pts,
-                                         unsigned sample,
+                                         Sample sample,
                                          MsqMatrix<3,3>& W_out,
                                          MsqError& err )
 {
   EntityTopology type = pd.element_by_index(element).get_element_type();
-  unsigned stype = ElemSampleQM::side_dim_from_sample( sample );
-  unsigned corner = ElemSampleQM::side_num_from_sample( sample );
-  if (stype != 0) {
+  unsigned corner = sample.number;
+  if (sample.dimension != 0) {
     MSQ_SETERR(err)("RefMeshCornerTarget cannot generate targets at sample "
                     "locations other than corners", MsqError::INVALID_STATE);
     return false;
@@ -113,7 +112,7 @@ bool RefMeshCornerTarget::get_3D_target( PatchData& pd,
 bool RefMeshCornerTarget::get_2D_target( PatchData& , 
                                          size_t ,
                                          const SamplePoints* ,
-                                         unsigned ,
+                                         Sample ,
                                          MsqMatrix<3,2>& ,
                                          MsqError& err )
 {

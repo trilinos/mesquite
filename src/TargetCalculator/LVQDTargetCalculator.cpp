@@ -110,7 +110,7 @@ MsqMatrix<3,3> LVQDTargetCalculator::calc_delta_3D( const MsqMatrix<3,3>& M )
 bool LVQDTargetCalculator::get_3D_target( PatchData& pd, 
                                           size_t element,
                                           const SamplePoints* pts,
-                                          unsigned sample,
+                                          Sample sample,
                                           MsqMatrix<3,3>& W_out,
                                           MsqError& err )
 {
@@ -179,7 +179,7 @@ MsqMatrix<2,2> LVQDTargetCalculator::calc_delta_2D( const MsqMatrix<3,2>& M )
 bool LVQDTargetCalculator::get_2D_target( PatchData& pd,
                                           size_t element,
                                           const SamplePoints* pts,
-                                          unsigned sample,
+                                          Sample sample,
                                           MsqMatrix<3,2>& W_out,
                                           MsqError& err )
 {
