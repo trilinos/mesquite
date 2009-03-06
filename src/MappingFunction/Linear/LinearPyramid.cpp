@@ -157,6 +157,14 @@ EntityTopology LinearPyramid::element_topology() const
 int LinearPyramid::num_nodes() const
   { return 5; }
 
+NodeSet LinearPyramid::sample_points( NodeSet ) const
+{
+  NodeSet result;
+  result.set_all_corner_nodes();
+  result.clear_corner_node(4);
+  return result;
+}
+
 static void coefficients_at_corner( unsigned corner,
                                     double* coeff_out,
                                     size_t* indices_out,

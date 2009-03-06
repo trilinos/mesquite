@@ -39,6 +39,13 @@ EntityTopology LinearTetrahedron::element_topology() const
 int LinearTetrahedron::num_nodes() const
   { return 4; }
 
+NodeSet LinearTetrahedron::sample_points( NodeSet ) const
+{
+  NodeSet result;
+  result.set_mid_region_node();
+  return result;
+}
+
 static const unsigned faces[][3] = { { 1, 0, 3 },
                                      { 3, 2, 1 },
                                      { 0, 2, 3 },

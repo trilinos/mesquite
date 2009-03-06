@@ -43,6 +43,18 @@ EntityTopology TetLagrangeShape::element_topology() const
 int TetLagrangeShape::num_nodes() const
   { return 10; }
 
+NodeSet TetLagrangeShape::sample_points( NodeSet ns ) const
+{
+  if (ns.have_any_mid_node()) {
+    ns.set_all_corner_nodes();
+  }
+  else {
+    ns.clear();
+    ns.set_mid_region_node();
+  }
+  return ns;
+}
+
 static void coefficients_at_corner( unsigned corner,
                                     double* coeff_out,
                                     size_t* indices_out,

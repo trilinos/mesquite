@@ -37,6 +37,14 @@
 
 namespace Mesquite {
 
+NodeSet
+MappingFunction::sample_points( NodeSet higher_order ) const
+{
+  higher_order.set_all_corner_nodes();
+  return higher_order;
+}
+
+
 void
 MappingFunction::convert_connectivity_indices_impl( EntityTopology topo,
                                                int input_type,

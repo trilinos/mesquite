@@ -49,6 +49,10 @@ public:
   
   virtual
   int num_nodes() const;
+  
+  virtual
+  NodeSet sample_points( NodeSet higher_order_nodes ) const;
+  
 
   virtual 
   void coefficients( Sample location,

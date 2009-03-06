@@ -43,6 +43,18 @@ EntityTopology TriLagrangeShape::element_topology() const
 int TriLagrangeShape::num_nodes() const
   { return 6; }
 
+NodeSet TriLagrangeShape::sample_points( NodeSet ns ) const
+{
+  if (ns.have_any_mid_node()) {
+    ns.set_all_corner_nodes();
+  }
+  else {
+    ns.clear();
+    ns.set_mid_face_node(0);
+  }
+  return ns;
+}
+
 void TriLagrangeShape::coefficients( Sample loc,
                                      NodeSet nodeset,
                                      double* coeff_out,

@@ -96,6 +96,16 @@ public:
    */
   virtual
   int num_nodes() const = 0;
+  
+  /**\brief Get sample points at which to evaluate mapping function
+   *
+   * Get the points within the element at which TMP quality metrics
+   * that are a function of the mapping function Jacobian should
+   * be evaluated.  The default (which may be overridden by individual
+   * mapping functions) is to evaluate at all nodes.
+   */
+  virtual
+  NodeSet sample_points( NodeSet higher_order_nodes ) const;
 
   /**\brief Mapping Function Coefficients
    *

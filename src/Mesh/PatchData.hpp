@@ -527,6 +527,18 @@ namespace Mesquite
     const MappingFunction3D* get_mapping_function_3D( EntityTopology type ) const
       { return mSettings->get_mapping_function_3D(type); }
     
+    NodeSet get_samples( size_t element, NodeSet non_slave_nodes ) const
+    {
+        // If we have a mapping function, use it
+      const EntityTopology type = element_by_index(element).get_element_type();
+      const MappingFunction* f = get_mapping_function(type);
+      if (f)
+        return f->sample_points( non_slave_nodes );
+        // Otherwise default to sampling at all non-slave nodes
+      non_slave_nodes.set_all_corner_nodes();
+      return non_slave_nodes;
+    }
+    
     //! Get R^3 coordinates for logical sample location.
     void get_sample_location( size_t element_index,
                               Sample sample,

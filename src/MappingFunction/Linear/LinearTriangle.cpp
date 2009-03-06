@@ -39,6 +39,13 @@ EntityTopology LinearTriangle::element_topology() const
 int LinearTriangle::num_nodes() const
   { return 3; }
 
+NodeSet LinearTriangle::sample_points( NodeSet ) const
+{
+  NodeSet result;
+  result.set_mid_face_node(0);
+  return result;
+}
+
 void LinearTriangle::coefficients( Sample loc,
                                    NodeSet nodeset,
                                    double* coeff_out,
