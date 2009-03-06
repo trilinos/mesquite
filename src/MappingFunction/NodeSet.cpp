@@ -41,16 +41,16 @@ msq_stdio::ostream& operator<<( msq_stdio::ostream& s, NodeSet set )
   unsigned i;
   s << '{';
   for (i = 0; i < NodeSet::NUM_CORNER_BITS; ++i)
-    s << set.corner_node(i) ? '1' : '0';
+    s << (set.corner_node(i) ? '1' : '0');
   s << ' ';
   for (i = 0; i < NodeSet::NUM_EDGE_BITS; ++i)
-    s << set.mid_edge_node(i) ? '1' : '0';
+    s << (set.mid_edge_node(i) ? '1' : '0');
   s << ' ';
   for (i = 0; i < NodeSet::NUM_FACE_BITS; ++i)
-    s << set.mid_face_node(i) ? '1' : '0';
+    s << (set.mid_face_node(i) ? '1' : '0');
   s << ' ';
   for (i = 0; i < NodeSet::NUM_REGION_BITS; ++i)
-    s << set.mid_region_node(i) ? '1' : '0';
+    s << (set.mid_region_node(i) ? '1' : '0');
   s << '}';
 }
 

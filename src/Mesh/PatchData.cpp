@@ -2091,7 +2091,7 @@ NodeSet PatchData::non_slave_node_set( size_t element_index ) const
     num_face = TopologyInfo::faces(type);
   
   NodeSet result;
-  result.set_all_corner_nodes();
+  result.set_all_corner_nodes(type);
   if (have_midedge) {
     for (unsigned i = 0; i < num_edge; ++i) {
       if (!(vertex_by_index(conn[num_corner+i]).get_flags() & MsqVertex::MSQ_DEPENDENT))
@@ -2109,6 +2109,34 @@ NodeSet PatchData::non_slave_node_set( size_t element_index ) const
 
   return result;
 }
+
+void PatchData::get_samples( size_t element, msq_std::vector<Sample>& samples, MsqError& ) const
+{
+  NodeSet ns = get_samples( element );
+  samples.resize( ns.num_nodes() );
+  msq_std::vector<Sample>::iterator i = samples.begin();
+  
+  unsigned j;
+  EntityTopology type = element_by_index(element).get_element_type();
+  for (j = 0; j < TopologyInfo::corners(type); ++j)
+    if (ns.corner_node(j))
+      *(i++) = Sample( 0, j );
+  for (j = 0; j < TopologyInfo::edges(type); ++j)
+    if (ns.mid_edge_node(j))
+      *(i++) = Sample( 1, j );
+  if (TopologyInfo::dimension(type) == 3) {
+    for (j = 0; j < TopologyInfo::faces(type); ++j)
+      if (ns.mid_face_node(j))
+        *(i++) = Sample( 2, j );
+    if (ns.mid_region_node())
+      *(i++) = Sample( 3, 0 );
+  }
+  else if (ns.mid_face_node(0))
+    *(i++) = Sample( 2, 0 );
+    
+  assert( i == samples.end() );
+}
+
 
 bool PatchData::attach_extra_data( ExtraData* data )
 {

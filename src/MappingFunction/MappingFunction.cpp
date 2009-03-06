@@ -40,7 +40,7 @@ namespace Mesquite {
 NodeSet
 MappingFunction::sample_points( NodeSet higher_order ) const
 {
-  higher_order.set_all_corner_nodes();
+  higher_order.set_all_corner_nodes( element_topology() );
   return higher_order;
 }
 

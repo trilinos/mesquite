@@ -527,18 +527,6 @@ namespace Mesquite
     const MappingFunction3D* get_mapping_function_3D( EntityTopology type ) const
       { return mSettings->get_mapping_function_3D(type); }
     
-    NodeSet get_samples( size_t element, NodeSet non_slave_nodes ) const
-    {
-        // If we have a mapping function, use it
-      const EntityTopology type = element_by_index(element).get_element_type();
-      const MappingFunction* f = get_mapping_function(type);
-      if (f)
-        return f->sample_points( non_slave_nodes );
-        // Otherwise default to sampling at all non-slave nodes
-      non_slave_nodes.set_all_corner_nodes();
-      return non_slave_nodes;
-    }
-    
     //! Get R^3 coordinates for logical sample location.
     void get_sample_location( size_t element_index,
                               Sample sample,
@@ -548,6 +536,23 @@ namespace Mesquite
     //! This function returns a NodeSet indicating which
     //! nodes in the specified element are not slaved.
     NodeSet non_slave_node_set( size_t elem_idx ) const;  
+    
+    NodeSet get_samples( size_t element, NodeSet non_slave_nodes ) const
+    {
+        // If we have a mapping function, use it
+      const EntityTopology type = element_by_index(element).get_element_type();
+      const MappingFunction* f;
+      if (mSettings && (f = mSettings->get_mapping_function(type)))
+        return f->sample_points( non_slave_nodes );
+        // Otherwise default to sampling at all non-slave nodes
+      non_slave_nodes.set_all_corner_nodes(type);
+      return non_slave_nodes;
+    }
+    
+    NodeSet get_samples( size_t element ) const
+      { return get_samples( element, non_slave_node_set( element ) ); }
+    
+    void get_samples( size_t element, msq_std::vector<Sample>& samples_out, MsqError& err ) const;
     
     //! Display the coordinates and connectivity information
     friend msq_stdio::ostream& operator<<( msq_stdio::ostream&, const PatchData& );

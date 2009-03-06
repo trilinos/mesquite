@@ -160,7 +160,7 @@ int LinearPyramid::num_nodes() const
 NodeSet LinearPyramid::sample_points( NodeSet ) const
 {
   NodeSet result;
-  result.set_all_corner_nodes();
+  result.set_all_corner_nodes(PYRAMID);
   result.clear_corner_node(4);
   return result;
 }

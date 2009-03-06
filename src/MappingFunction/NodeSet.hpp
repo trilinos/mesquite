@@ -30,6 +30,8 @@
  *  \author Jason Kraftcheck 
  */
 
+#include "TopologyInfo.hpp"
+
 #ifndef MSQ_NODE_SET_HPP
 #define MSQ_NODE_SET_HPP
 
@@ -43,29 +45,8 @@ namespace Mesquite {
 
 /** Utility class for storing one boolean mark/flag for each node in an element */
 class NodeSet {
-  private:
-    typedef unsigned BitSet;
-    BitSet bits; //!< The data, one bit for each possible node location
-    
-    //! Return a bool value indicating the state of the specified bit.
-    inline bool bit_to_bool( unsigned num ) const
-      { return static_cast<bool>( (bits >> num) & 1u ); }
-    
-    //! Set the specified bit to 1
-    inline void set_bit( unsigned num )
-      { bits |= (1u << num); }
-    
-    //! Clear the specified bit (set it to zero)
-    inline void clear_bit( unsigned num )
-      { bits &= ~(1u << num); }
-    
-    //! Count the number of non-zero bits with less significance than
-    //! the specified bit.  (Mask out all bits except those of before
-    //! the specified position and then count the remaining bits.)
-    unsigned num_before_bit( unsigned position ) const
-      { return popcount(bits & ~((~0u) << position)); }
-  
   public:
+    typedef unsigned BitSet;
     
     //! Misc constants.  Only NUM_CORNER_BITS, NUM_EDGE_BITS, and
     //! NUM_REGION_BITS should be modified.  All other contants are
@@ -102,6 +83,32 @@ class NodeSet {
       //! Bit mask for all mid-face nodes
       FACE_MASK = ~(CORNER_MASK|EDGE_MASK|REGION_MASK),
     };
+
+  private:
+    BitSet bits; //!< The data, one bit for each possible node location
+    
+    //! Return a bool value indicating the state of the specified bit.
+    inline bool bit_to_bool( unsigned num ) const
+      { return static_cast<bool>( (bits >> num) & 1u ); }
+    
+    //! Set the specified bit to 1
+    inline void set_bit( unsigned num )
+      { bits |= (1u << num); }
+    
+    inline void set_bits( unsigned start_bit, unsigned count )
+      { bits |= (~((BitSet)0) >> (NUM_TOTAL_BITS - count)) << start_bit; }
+    
+    //! Clear the specified bit (set it to zero)
+    inline void clear_bit( unsigned num )
+      { bits &= ~(1u << num); }
+    
+    //! Count the number of non-zero bits with less significance than
+    //! the specified bit.  (Mask out all bits except those of before
+    //! the specified position and then count the remaining bits.)
+    unsigned num_before_bit( unsigned position ) const
+      { return popcount(bits & ~((~0u) << position)); }
+  
+  public:
     
     NodeSet() : bits(0u) {}
     
@@ -109,7 +116,7 @@ class NodeSet {
     void clear() { bits = 0u; }
     
     //! Set all marks/flags
-    void set_all_nodes() { bits = ~0u; }
+    inline void set_all_nodes( EntityTopology type );
     
     //! Number of marked/flagged nodes
     unsigned num_nodes() const
@@ -130,38 +137,6 @@ class NodeSet {
     //! Check if any mid-region nodes are present
     BitSet have_any_mid_region_node() const
       { return bits & REGION_MASK; }
-      
-    //! Set all mid-nodes
-    void set_all_mid_nodes()
-      { bits |= MID_NODE_MASK; }
-    //! Set all corner nodes
-    void set_all_corner_nodes()
-      { bits |= CORNER_MASK; }
-    //! Set all mid-edge nodes
-    void set_all_mid_edge_nodes()
-      { bits |= EDGE_MASK; }
-    //! Set all mid-face nodes
-    void set_all_mid_face_nodes()
-      { bits |= FACE_MASK; }
-    //! Set all mid-region nodes
-    void set_all_mid_region_nodes()
-      { bits |= REGION_MASK; }
-      
-    //! Clear all mid-nodes
-    void clear_all_mid_nodes()
-      { bits &= ~MID_NODE_MASK; }
-    //! Clear all corner nodes
-    void clear_all_corner_nodes()
-      { bits &= ~CORNER_MASK; }
-    //! Clear all mid-edge nodes
-    void clear_all_mid_edge_nodes()
-      { bits &= ~EDGE_MASK; }
-    //! Clear all mid-face nodes
-    void clear_all_mid_face_nodes()
-      { bits &= ~FACE_MASK; }
-    //! Clear all mid-region nodes
-    void clear_all_mid_region_nodes()
-      { bits &= ~REGION_MASK; }
     
     //! Position of a corner node in the list
     static unsigned corner_node_position( unsigned num ) 
@@ -265,6 +240,31 @@ class NodeSet {
 #endif
       }
     }
+      
+    //! Set all corner nodes
+    inline void set_all_corner_nodes( EntityTopology type );
+    //! Set all mid-edge nodes
+    inline void set_all_mid_edge_nodes( EntityTopology type );
+    //! Set all mid-face nodes
+    inline void set_all_mid_face_nodes( EntityTopology type );
+    //! Set all mid-region nodes
+    inline void set_all_mid_region_nodes( EntityTopology type );
+      
+    //! Clear all mid-nodes
+    void clear_all_mid_nodes()
+      { bits &= ~MID_NODE_MASK; }
+    //! Clear all corner nodes
+    void clear_all_corner_nodes()
+      { bits &= ~CORNER_MASK; }
+    //! Clear all mid-edge nodes
+    void clear_all_mid_edge_nodes()
+      { bits &= ~EDGE_MASK; }
+    //! Clear all mid-face nodes
+    void clear_all_mid_face_nodes()
+      { bits &= ~FACE_MASK; }
+    //! Clear all mid-region nodes
+    void clear_all_mid_region_nodes()
+      { bits &= ~REGION_MASK; }
 
     //! Get number of marked/flagged nodes preceeding a specified corner node in the list
     unsigned num_before_corner( unsigned num ) const 
@@ -297,6 +297,29 @@ class NodeSet {
 //! Print bits in reverse order (least-signficant to most-significant,
 //! or corner 0 to mid-region).
 msq_stdio::ostream& operator<<( msq_stdio::ostream& s, NodeSet set );
+      
+    //! Set all corner nodes
+void NodeSet::set_all_corner_nodes( EntityTopology type )
+  { set_bits( CORNER_OFFSET, TopologyInfo::corners(type) ); }
+//! Set all mid-edge nodes
+void NodeSet::set_all_mid_edge_nodes( EntityTopology type )
+  { set_bits(   EDGE_OFFSET, TopologyInfo::edges(type) ); }
+//! Set all mid-face nodes
+void NodeSet::set_all_mid_face_nodes( EntityTopology type )
+  { set_bits(   FACE_OFFSET, TopologyInfo::faces(type) ); }
+//! Set all mid-region nodes
+void NodeSet::set_all_mid_region_nodes( EntityTopology type )
+  { set_mid_region_node(); }
+
+void NodeSet::set_all_nodes( EntityTopology type )
+{
+  switch (TopologyInfo::dimension(type)) {
+    case 3: set_mid_region_node();
+    case 2: set_all_mid_face_nodes( type );
+    case 1: set_all_mid_edge_nodes( type );
+    case 0: set_all_corner_nodes( type );
+  }
+}
 
 } // namespace Mesquite
 

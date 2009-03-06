@@ -46,7 +46,7 @@ int TriLagrangeShape::num_nodes() const
 NodeSet TriLagrangeShape::sample_points( NodeSet ns ) const
 {
   if (ns.have_any_mid_node()) {
-    ns.set_all_corner_nodes();
+    ns.set_all_corner_nodes(TRIANGLE);
   }
   else {
     ns.clear();

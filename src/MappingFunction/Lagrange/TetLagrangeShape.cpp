@@ -46,7 +46,7 @@ int TetLagrangeShape::num_nodes() const
 NodeSet TetLagrangeShape::sample_points( NodeSet ns ) const
 {
   if (ns.have_any_mid_node()) {
-    ns.set_all_corner_nodes();
+    ns.set_all_corner_nodes(TETRAHEDRON);
   }
   else {
     ns.clear();

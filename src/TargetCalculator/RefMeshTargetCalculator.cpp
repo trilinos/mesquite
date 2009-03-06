@@ -99,9 +99,9 @@ NodeSet RefMeshTargetCalculator::get_vertex_coords( PatchData& pd,
   if (MSQ_CHKERR(err)) return NodeSet();
   
   if (midedge) 
-    bits.set_all_mid_edge_nodes();
+    bits.set_all_mid_edge_nodes(type);
   if (midface)
-    bits.set_all_mid_face_nodes();
+    bits.set_all_mid_face_nodes(type);
   if (TopologyInfo::dimension(type) == 3 && midvol)
     bits.set_mid_region_node();
  
