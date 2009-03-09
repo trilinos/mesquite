@@ -58,7 +58,6 @@ include src/QualityImprover/VertexMover/Randomize/Makefile.am
 include src/QualityImprover/VertexMover/TrustRegion/Makefile.am
 include src/QualityImprover/VertexMover/QuasiNewton/Makefile.am
 include src/QualityMetric/Makefile.am
-include src/QualityMetric/DFT/Makefile.am
 include src/QualityMetric/Shape/Makefile.am
 include src/QualityMetric/Smoothness/Makefile.am
 include src/QualityMetric/TMP/Makefile.am

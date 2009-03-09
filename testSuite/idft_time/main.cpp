@@ -47,7 +47,6 @@
 #include "QualityAssessor.hpp"
 #include "PlanarDomain.hpp"
 
-#include "I_DFT_InverseMeanRatio.hpp"
 #include "IdealWeightInverseMeanRatio.hpp"
 #include "ElementPMeanP.hpp"
 #include "InverseMeanRatio3D.hpp"
@@ -56,7 +55,6 @@
 #include "SamplePoints.hpp"
 
 #include "IdealTargetCalculator.hpp"
-#include "IdealCornerTarget.hpp"
 #include "PMeanPTemplate.hpp"
 #include "FeasibleNewton.hpp"
 #include "ConjugateGradient.hpp"
@@ -75,7 +73,7 @@ void usage( const char* argv0 = 0, bool err = true )
   if (!argv0)
     argv0 = defname;
   
-  s << "Usage: " << defname << " [-n|-c|-q] [-e] [-o] [-t] [-a] [-N] [{-v|-g|-p} <output_file>] [<input_file>]" << endl
+  s << "Usage: " << defname << " [-n|-c|-q] [-e] [-t] [-a] [-N] [{-v|-g|-p} <output_file>] [<input_file>]" << endl
     << "       " << defname << " -h" << std::endl;
   
   if (err)
@@ -85,7 +83,6 @@ void usage( const char* argv0 = 0, bool err = true )
     << "  -c : Use ConjugateGradient solver" << endl
     << "  -q : Use QuasiNewton solver" << endl
     << "  -e : Test IdealWeightInverseMeanRatio metric" << endl
-    << "  -o : Test I_DFT_InverseMeanRatio metric" << endl
     << "  -t : Test InverseMeanRatio3D target metric" << endl
     << "  -a : Test ElementPMeanP(InverseMeanRatio3D)" << endl
     << "  -N : Test InverseMeanRatio3D with finite difference derivatives" << endl
@@ -222,7 +219,6 @@ int main( int argc, char* argv[] )
 {
   Solver solver = FEAS_NEWT;
   bool do_non_target_metric = false;
-  bool do_old_target_metric = false;
   bool do_new_target_metric = false;
   bool do_new_target_average = false;
   bool do_new_target_numeric = false;
@@ -239,7 +235,6 @@ int main( int argc, char* argv[] )
           case 'c': solver = CONJ_GRAD; break;
           case 'q': solver = QUASI_NEWT; break;
           case 'e': do_non_target_metric = true; break;
-          case 'o': do_old_target_metric = true; break;
           case 't': do_new_target_metric = true; break;
           case 'a': do_new_target_average = true; break;
           case 'N': do_new_target_numeric = true; break;
@@ -273,8 +268,6 @@ int main( int argc, char* argv[] )
   int count = 0;
   if (do_non_target_metric)
     ++count;
-  if (do_old_target_metric)
-    ++count;
   if (do_new_target_metric)
     ++count;
   if (do_new_target_average)
@@ -295,8 +288,6 @@ int main( int argc, char* argv[] )
   }
   
   IdealWeightInverseMeanRatio non_target_metric;
-  IdealCornerTarget old_target;
-  I_DFT_InverseMeanRatio old_target_metric(&old_target);
   IdealTargetCalculator new_target(false);
   InverseMeanRatio3D tmp_3d;
   InverseMeanRatio2D tmp_2d;
@@ -311,10 +302,6 @@ int main( int argc, char* argv[] )
   if (do_non_target_metric) {
     qual = run( &non_target_metric, solver, input_file, secs, count );
     os << "IdealWeightInverseMeanRatio: " << qual << " after " << count << " iterations in " << secs << " seconds" << endl;
-  }
-  if (do_old_target_metric) {
-    qual = run( &old_target_metric, solver, input_file, secs, count );
-    os << "I_DFT_InverseMeanRatio     : " << qual << " after " << count << " iterations in " << secs << " seconds" << endl;
   }
   if (do_new_target_metric) {
     qual = run( &new_target_metric, solver, input_file, secs, count );

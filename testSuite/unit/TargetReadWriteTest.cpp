@@ -56,7 +56,6 @@ class TargetReadWriteTest : public CppUnit::TestFixture
 private:
   CPPUNIT_TEST_SUITE( TargetReadWriteTest );
   CPPUNIT_TEST( read_write_targets );
-  CPPUNIT_TEST( read_write_targets_surf_3d );
   CPPUNIT_TEST( read_write_weights );
   CPPUNIT_TEST_SUITE_END();
   
@@ -67,7 +66,6 @@ public:
   void setUp();
   void tearDown();
   void read_write_targets();
-  void read_write_targets_surf_3d();
   void read_write_weights();
 };
 
@@ -137,13 +135,7 @@ void TargetReadWriteTest::tearDown()
 
 class FakeTargetCalc : public TargetCalculator, public WeightCalculator
 {
-  bool surf3d;
-
 public:
-  
-  FakeTargetCalc( bool surf_3d = false ) : surf3d(surf_3d)
-    {}
-  
   ~FakeTargetCalc() {}
   
   bool get_3D_target( PatchData& pd, 
@@ -165,8 +157,6 @@ public:
                      const SamplePoints* samples,
                      Sample sample,
                      MsqError& err );
-  
-  bool surface_targets_are_3D() const { return surf3d; }
                      
   unsigned long make_value( Mesh::ElementHandle elem, Sample sample, unsigned idx );
                                    
@@ -176,8 +166,7 @@ bool FakeTargetCalc::get_3D_target( PatchData& pd, size_t elem,
                                     const SamplePoints*, Sample sample,
                                     MsqMatrix<3,3>& W_out, MsqError& )
 {
-  if (!surf3d)
-    CPPUNIT_ASSERT_EQUAL( 3u, TopologyInfo::dimension( pd.element_by_index(elem).get_element_type() ) );
+  CPPUNIT_ASSERT_EQUAL( 3u, TopologyInfo::dimension( pd.element_by_index(elem).get_element_type() ) );
   unsigned i, j;
   for (i = 0; i < 3; ++i) {
     for (j = 0; j < i; ++j)
@@ -193,7 +182,6 @@ bool FakeTargetCalc::get_2D_target( PatchData& pd, size_t elem,
                                     MsqMatrix<3,2>& W_out, MsqError& )
 {
   CPPUNIT_ASSERT_EQUAL( 2u, TopologyInfo::dimension( pd.element_by_index(elem).get_element_type() ) );
-  CPPUNIT_ASSERT( !surf3d );
   for (unsigned i = 0; i < 3; ++i)
     for (unsigned j = 0; j < 2; ++j)
       W_out(i,j) = make_value( pd.get_element_handles_array()[elem], sample, 2*i+j );
@@ -231,7 +219,7 @@ void TargetReadWriteTest::read_write_targets()
   CPPUNIT_ASSERT(!err);
   
     // Compare all target matrices
-  TargetReader reader(tc.surface_targets_are_3D());
+  TargetReader reader;
   for (size_t i = 0; i < myPatch.num_elements(); ++i) {
     const EntityTopology type = myPatch.element_by_index(i).get_element_type();
     const unsigned d = TopologyInfo::dimension( myPatch.element_by_index(i).get_element_type() );
@@ -256,38 +244,6 @@ void TargetReadWriteTest::read_write_targets()
           CPPUNIT_ASSERT(!err);
           ASSERT_MATRICES_EQUAL( expected, read, 1e-12 );
         }
-      }
-    }
-  }
-}
-
-void TargetReadWriteTest::read_write_targets_surf_3d()
-{
-  MsqPrintError err( msq_stdio::cout );
-  SamplePoints pts( true, true, true, true );
-  Settings linear_maps;
-  FakeTargetCalc tc(true);
-  
-    // Write the targets
-  TargetWriter writer( &pts, &tc );
-  writer.loop_over_mesh( &myMesh, 0, &linear_maps, err );
-  CPPUNIT_ASSERT(!err);
-  
-    // Compare all target matrices
-  TargetReader reader(tc.surface_targets_are_3D());
-  for (size_t i = 0; i < myPatch.num_elements(); ++i) {
-    const EntityTopology type = myPatch.element_by_index(i).get_element_type();
-    for (unsigned sdim = 0; sdim <= 3; ++sdim) {
-      unsigned count = TopologyInfo::adjacent(type, sdim);
-      if (type == PYRAMID && sdim == 0)
-        count = 4; // skip pyramid apex
-      for (unsigned snum = 0; snum < count; ++snum) {
-        MsqMatrix<3,3> expected, read;
-        tc.get_3D_target( myPatch, i, &pts, Sample(sdim, snum), expected, err );
-        CPPUNIT_ASSERT(!err);
-        reader.get_3D_target( myPatch, i, &pts, Sample(sdim, snum), read, err );
-        CPPUNIT_ASSERT(!err);
-        ASSERT_MATRICES_EQUAL( expected, read, 1e-12 );
       }
     }
   }

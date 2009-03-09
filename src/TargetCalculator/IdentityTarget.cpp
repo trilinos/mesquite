@@ -35,9 +35,6 @@
 #include "MsqMatrix.hpp"
 
 namespace Mesquite {
-
-bool IdentityTarget::surface_targets_are_3D() const
-  { return surfElems3D; }
  
 bool IdentityTarget::get_3D_target( PatchData& , 
                                     size_t ,

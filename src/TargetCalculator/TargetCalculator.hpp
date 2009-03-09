@@ -77,14 +77,6 @@ public:
                               Sample sample,
                               MsqMatrix<3,2>& W_out,
                               MsqError& err ) = 0;
-  
-  /**\brief Returns true if old-type target calculator
-   *
-   * Returns true if get_3D_target should be used for all element
-   * types.  Returns false if get_2D_target should be used for
-   * surface elements (triangle, quadrilateral, etc.)
-   */
-  virtual bool surface_targets_are_3D() const = 0;
 };
 
 

@@ -39,9 +39,6 @@
 #include "ElemSampleQM.hpp"
 
 namespace Mesquite {
-
-bool IdealTargetCalculator::surface_targets_are_3D() const
-  { return false; }
  
 bool IdealTargetCalculator:: get_3D_target( PatchData& pd, 
                                             size_t element,

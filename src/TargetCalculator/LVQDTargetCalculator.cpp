@@ -50,9 +50,6 @@ LVQDTargetCalculator::LVQDTargetCalculator(
 
 LVQDTargetCalculator::~LVQDTargetCalculator() {}
 
-bool LVQDTargetCalculator::surface_targets_are_3D() const
-  { return lambdaGuide->surface_targets_are_3D(); }
-
 double LVQDTargetCalculator::calc_lambda_3D( const MsqMatrix<3,3>& M )
 {
   return Mesquite::cbrt( fabs( det( M ) ) );

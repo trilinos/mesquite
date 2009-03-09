@@ -29,12 +29,7 @@ SUBDIRS = test_1 \
 	  transform \
 	  pyramid \
 	  wedge \
-	  Guides843 \
-	  deforming \
-	  rezone \
-	  i_dft_with_culling \
 	  idft_time \
-	  test_DFT \
 	  headers \
 	  2d_target \
 	  2d_metrics\

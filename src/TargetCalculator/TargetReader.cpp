@@ -78,8 +78,8 @@ static TagHandle get_tag( Mesh* mesh,
   
   
 
-TargetReader::TargetReader( bool surf_3d, msq_std::string name )
-  : tagBaseName(name), use3DSurfaceTargets(surf_3d) {}
+TargetReader::TargetReader(msq_std::string name )
+  : tagBaseName(name) {}
 
 TargetReader::~TargetReader()
 {
@@ -97,7 +97,7 @@ bool TargetReader::get_3D_target( PatchData &pd,
   unsigned offset = samples->sample_number_from_location( type, sample );
 
   int dim = TopologyInfo::dimension( pd.element_by_index(element).get_element_type() );
-  if ((dim == 2) && !use3DSurfaceTargets) {
+  if (dim == 2) {
     MSQ_SETERR(err)("Attempt to read 3D target for surface element", MsqError::INVALID_STATE );
     return false;
   }
@@ -153,8 +153,8 @@ bool TargetReader::get_2D_target( PatchData &pd,
   unsigned offset = samples->sample_number_from_location( type, sample );
 
   int dim = TopologyInfo::dimension( pd.element_by_index(element).get_element_type() );
-  if ((dim == 3) || use3DSurfaceTargets) {
-    MSQ_SETERR(err)("Attempt to read 3x2 target 3x3 target element", MsqError::INVALID_STATE );
+  if (dim == 3) {
+    MSQ_SETERR(err)("Attempt to read 3x2 target for region element", MsqError::INVALID_STATE );
     return false;
   }
   
@@ -196,9 +196,6 @@ bool TargetReader::get_2D_target( PatchData &pd,
   W_out = data.targets2D[offset];
   return true;
 }
- 
-bool TargetReader::surface_targets_are_3D() const
- { return use3DSurfaceTargets; }
   
 void TargetReader::notify_patch_destroyed( TargetReaderData& data )
 {

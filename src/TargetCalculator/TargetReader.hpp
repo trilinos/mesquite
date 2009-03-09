@@ -69,8 +69,7 @@ class TargetReader
 {
   public:
   
-    TargetReader( bool use_3d_surface_targets,
-                  msq_std::string tag_base_name = "MSQ_TARGET_MATRIX" );
+    TargetReader( msq_std::string tag_base_name = "MSQ_TARGET_MATRIX" );
     
     virtual ~TargetReader();
     
@@ -88,8 +87,6 @@ class TargetReader
                                 MsqMatrix<3,2>& W_out,
                                 MsqError& err );
 
-    virtual bool surface_targets_are_3D() const;
-
   private:
   
     virtual void notify_patch_destroyed( TargetReaderData& data );
@@ -99,7 +96,6 @@ class TargetReader
                                    const size_t* elem_map, MsqError& err );
 
     msq_std::string tagBaseName;
-    const bool use3DSurfaceTargets;
 };
 
 

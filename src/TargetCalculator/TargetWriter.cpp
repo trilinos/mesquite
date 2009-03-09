@@ -108,8 +108,6 @@ double TargetWriter::loop_over_mesh( Mesh* mesh,
   msq_std::vector<Mesh::VertexHandle> patch_verts;
   msq_std::vector<Mesh::ElementHandle> patch_elems;
   
-  const bool surf_3D = targetCalc ? targetCalc->surface_targets_are_3D() : false;
-  
   patch_set.get_patch_handles( patches, err ); MSQ_ERRZERO(err);
   
   msq_std::vector< MsqMatrix<3,3> > targets3d;
@@ -130,7 +128,7 @@ double TargetWriter::loop_over_mesh( Mesh* mesh,
     
     if (targetCalc) {
       const unsigned dim = TopologyInfo::dimension(type);
-      if (!surf_3D && dim == 2) {
+      if (dim == 2) {
         targets2d.resize( samples.size() );
         for (unsigned i = 0; i < samples.size(); ++i) {
           targetCalc->get_2D_target( patch, 0, samplePoints, samples[i], targets2d[i], err ); MSQ_ERRZERO(err);

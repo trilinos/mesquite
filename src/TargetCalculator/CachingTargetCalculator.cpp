@@ -83,7 +83,7 @@ void CachingTargetCalculator::notify_sub_patch( PatchData& ,
     size_t old_off = data.elementOffsets[element_map[i]];
     size_t count = samplePoints->num_sample_points(type);
    
-    if (use_3d_surface_targets() || TopologyInfo::dimension( type ) == 3) 
+    if (TopologyInfo::dimension( type ) == 3) 
       memcpy( &sub_data.targets3D[off], &data.targets3D[old_off], count*sizeof(MsqMatrix<3,3>) );
     else
       memcpy( &sub_data.targets2D[off], &data.targets2D[old_off], count*sizeof(MsqMatrix<3,2>) );
@@ -97,14 +97,13 @@ static void populate_data( PatchData& pd,
                            MsqError& err )
 {
   size_t i, j;
-  const bool surf_3d = calc->surface_targets_are_3D();
   
   if (data->elementOffsets.empty()) {
     size_t count_3d = 0, count_2d = 0;
     data->elementOffsets.resize( pd.num_elements() );
     for (i = 0; i < pd.num_elements(); ++i) {
       EntityTopology type = pd.element_by_index(i).get_element_type();
-      size_t& count = (surf_3d || TopologyInfo::dimension( type ) == 3) ? count_3d : count_2d;
+      size_t& count = (TopologyInfo::dimension( type ) == 3) ? count_3d : count_2d;
       data->elementOffsets[i] = count;
       count += spts->num_sample_points(type);
     }
@@ -116,7 +115,7 @@ static void populate_data( PatchData& pd,
   for (i = 0; i < pd.num_elements(); ++i) {
     EntityTopology type = pd.element_by_index(i).get_element_type();
     assert( off == data->elementOffsets[i] );
-    if (surf_3d || TopologyInfo::dimension( type ) == 3) {
+    if (TopologyInfo::dimension( type ) == 3) {
       if (spts->will_sample_at(type,0)) {
         for (j = 0; j < TopologyInfo::corners(type); ++j) {
           calc->get_3D_target( pd, i, spts, Sample(0,j), data->targets3D[off++], err );
@@ -205,7 +204,6 @@ bool CachingTargetCalculator::get_2D_target( PatchData& pd,
     populate_data( pd, &data, cachedCalculator, samplePoints, err );
     MSQ_ERRZERO(err);
     if (data.targets2D.empty()) {
-      assert(use_3d_surface_targets());
       MSQ_SETERR(err)("Attempt to get 2D target for 3D element type", MsqError::INVALID_STATE);
       return false;
     }
@@ -218,8 +216,5 @@ bool CachingTargetCalculator::get_2D_target( PatchData& pd,
   W_out = data.targets2D[ data.elementOffsets[element] + offset ];
   return true;
 }
-
-bool CachingTargetCalculator::surface_targets_are_3D() const
-  { return cachedCalculator->surface_targets_are_3D(); }
 
 } // namespace Mesquite

@@ -69,7 +69,6 @@ msq_test_SOURCES = msq_test_main.cpp \
 	IdealWeightMeanRatioTest.cpp \
 	IdealWeightInverseMeanRatioTest.cpp \
 	InstructionQueueTest.cpp \
-	I_DFT_Test.cpp \
 	TMPQualityMetricTest.cpp \
 	LinearMappingFunctionTest.cpp \
 	LVQDTargetTest.cpp \

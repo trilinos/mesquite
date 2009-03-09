@@ -694,18 +694,13 @@ AC_CONFIG_FILES([Makefile
                  testSuite/algorithm_test/Makefile
                  testSuite/analytical_grad_3D/Makefile
                  testSuite/convert/Makefile
-                 testSuite/deforming/Makefile
-                 testSuite/Guides843/Makefile
                  testSuite/headers/Makefile
-                 testSuite/i_dft_with_culling/Makefile
                  testSuite/idft_time/Makefile
                  testSuite/imesh/Makefile
                  testSuite/laplacian_test/Makefile
                  testSuite/laplacian_wrapper_test/Makefile
                  testSuite/pyramid/Makefile
-                 testSuite/rezone/Makefile
                  testSuite/simple_hybrid_test/Makefile
-                 testSuite/test_DFT/Makefile
                  testSuite/test_1/Makefile
                  testSuite/transform/Makefile
                  testSuite/tutorial/Makefile

@@ -41,8 +41,6 @@ namespace Mesquite {
 class IdentityTarget : public TargetCalculator
 {
 public:
-  IdentityTarget( bool surf_elems_are_3D = false ) 
-    : surfElems3D(surf_elems_are_3D) {}
   
   virtual bool get_3D_target( PatchData& pd, 
                               size_t element,
@@ -57,11 +55,6 @@ public:
                               Sample sample,
                               MsqMatrix<3,2>& W_out,
                               MsqError& err );
-                              
-  virtual bool surface_targets_are_3D() const;
-
-private:
-  bool surfElems3D;
 };
 
 

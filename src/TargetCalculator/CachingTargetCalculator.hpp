@@ -75,8 +75,7 @@ public:
   CachingTargetCalculator( TargetCalculator* cached,
                            const SamplePoints* pts )
     : cachedCalculator( cached ),
-      samplePoints( pts ),
-      oldTypeTargetCalculator( cached->surface_targets_are_3D() )
+      samplePoints( pts )
       {}
   
   virtual ~CachingTargetCalculator();
@@ -97,12 +96,8 @@ public:
                               Sample sample,
                               MsqMatrix<3,2>& W_inv_out,
                               MsqError& err );
-  
-  virtual bool surface_targets_are_3D() const;
 
 protected:
-
-  bool use_3d_surface_targets() const { return oldTypeTargetCalculator; }
                             
   void notify_patch_destroyed( CachedTargetData& d );
 
@@ -119,7 +114,6 @@ private:
   
   TargetCalculator *const cachedCalculator;
   const SamplePoints *const samplePoints;
-  const bool oldTypeTargetCalculator;
 };
 
 } // namespace Mesquite

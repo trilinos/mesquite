@@ -59,8 +59,6 @@ public:
                               Sample sample,
                               MsqMatrix<3,2>& W_out,
                               MsqError& err );
-                              
-  virtual bool surface_targets_are_3D() const;
   
 private:
   JacobianCalculator jc;

@@ -72,8 +72,6 @@ public:
                       Sample sample,
                       MsqMatrix<3,2>& W_out,
                       MsqError& err );
-  
-  virtual bool surface_targets_are_3D() const;
 
   static double calc_lambda_2D( const MsqMatrix<3,2>& M );
   static MsqMatrix<3,2> calc_V_2D( const MsqMatrix<3,2>& M );

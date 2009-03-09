@@ -108,7 +108,4 @@ NodeSet RefMeshTargetCalculator::get_vertex_coords( PatchData& pd,
   return bits;
 }
 
-bool RefMeshTargetCalculator::surface_targets_are_3D() const
-  { return false; }
-
 } // namespace Mesquite
