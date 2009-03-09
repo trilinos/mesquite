@@ -1166,7 +1166,7 @@ void PatchData::snap_vertex_to_domain(size_t vertex_index, MsqError &err)
                                    normalData[vertex_index],
                                    err ); MSQ_ERRRTN(err);
     }
-    else if (vertexNormalIndices[vertex_index] >= normalData.size()) 
+    else if (vertexNormalIndices[vertex_index] < normalData.size()) 
     { // vertex has a unique normal
       get_domain()->closest_point( vertexHandlesArray[vertex_index],
                                    Vector3D(vertexArray[vertex_index]),
