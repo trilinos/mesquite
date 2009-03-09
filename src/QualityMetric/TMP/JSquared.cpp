@@ -42,6 +42,7 @@
 #include "TargetCalculator.hpp"
 #include "TargetMetric2D.hpp"
 #include "TargetMetric3D.hpp"
+#include "TargetMetricUtil.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 # include <functional.h>
@@ -59,20 +60,11 @@ msq_std::string JSquared::get_name() const
   { return msq_std::string("JSquared"); }
 
 void JSquared::get_evaluations( PatchData& pd,
-                                      msq_std::vector<size_t>& handles,
-                                      bool free,
-                                      MsqError& err )
+                                msq_std::vector<size_t>& handles,
+                                bool free,
+                                MsqError& err )
 {
-  handles.clear();
-  msq_std::vector<size_t> elems;
-  ElementQM::get_element_evaluations( pd, elems, free, err ); MSQ_ERRRTN(err);
-  for (msq_std::vector<size_t>::iterator i = elems.begin(); i != elems.end(); ++i)
-  {
-    EntityTopology type = pd.element_by_index( *i ).get_element_type();
-    int num_samples = samplePts->num_sample_points( type );
-    for (int j = 0; j < num_samples; ++j)
-      handles.push_back( handle(j, *i) );
-  }
+  get_sample_pt_evaluations( pd, handles, free, err ); MSQ_CHKERR(err);
 }
 
 void JSquared::get_element_evaluations( PatchData& pd,
@@ -80,11 +72,7 @@ void JSquared::get_element_evaluations( PatchData& pd,
                                         msq_std::vector<size_t>& handles,
                                         MsqError& err )
 {
-  EntityTopology type = pd.element_by_index( elem ).get_element_type();
-  int num_samples = samplePts->num_sample_points( type );
-  handles.resize( num_samples );
-  for (int j = 0; j < num_samples; ++j)
-    handles[j] = handle(j, elem);
+  get_elem_sample_points( pd, elem, handles, err ); MSQ_CHKERR(err);
 }
 
 bool JSquared::evaluate( PatchData& pd, size_t handle, double& value, MsqError& err )
@@ -130,7 +118,7 @@ bool JSquared::evaluate_with_indices( PatchData& pd,
     indices.resize(num_vtx);
     
     MsqMatrix<3,3> W;
-    targetCalc->get_3D_target( pd, e, samplePts, s, W, err ); MSQ_ERRZERO(err);
+    targetCalc->get_3D_target( pd, e, s, W, err ); MSQ_ERRZERO(err);
     rval = metric3D->evaluate( A, W, value, err ); MSQ_ERRZERO(err);
   }
   else {
@@ -152,7 +140,7 @@ bool JSquared::evaluate_with_indices( PatchData& pd,
     indices.resize(num_vtx);
     
     MsqMatrix<3,2> Wp;
-    targetCalc->get_2D_target( pd, e, samplePts, s, Wp, err ); MSQ_ERRZERO(err);
+    targetCalc->get_2D_target( pd, e, s, Wp, err ); MSQ_ERRZERO(err);
     MsqMatrix<3,1> Wp1 = Wp.column(0);
     MsqMatrix<3,1> Wp2 = Wp.column(1);
     MsqMatrix<3,1> nwp = Wp1 * Wp2;
@@ -187,7 +175,7 @@ bool JSquared::evaluate_with_indices( PatchData& pd,
   
     // apply target weight to value
   if (weightCalc) {
-    double ck = weightCalc->get_weight( pd, e, samplePts, s, err ); MSQ_ERRZERO(err);
+    double ck = weightCalc->get_weight( pd, e, s, err ); MSQ_ERRZERO(err);
     value *= ck;
   }
   

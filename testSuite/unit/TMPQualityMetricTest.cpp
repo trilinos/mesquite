@@ -40,7 +40,6 @@ Unit testing for the TMPQualityMetric class
 #include "Settings.hpp"
 #include "UnitUtil.hpp"
 #include "PlanarDomain.hpp"
-#include "SamplePoints.hpp"
 #include "PatchData.hpp"
 #include "Target3DShapeSizeOrient.hpp"
 #include "Target2DShapeSizeOrient.hpp"
@@ -93,7 +92,7 @@ class ScaleWeight : public WeightCalculator
 {
   public:
     ScaleWeight( double s ) : value(s) {}
-    double get_weight( PatchData&, size_t, const SamplePoints*, Sample, MsqError& )
+    double get_weight( PatchData&, size_t, Sample, MsqError& )
       { return value; }
     double value;
 };
@@ -159,6 +158,41 @@ class TestGradTargetMetric2D : public TargetMetric2D
     }
 };
 
+/* class to force evaluation of mapping function only at element center
+ * so that we can re-use tests from QualityMetricTester that work only
+ * for element-based metrics (TMP metric is "element based" if only one
+ * sample in each element.)
+ */
+class CenterMF2D : public MappingFunction2D
+{
+  public:
+    CenterMF2D( const MappingFunction2D* real_mf ) : myFunc(real_mf) {};
+    EntityTopology element_topology() const { return myFunc->element_topology(); }
+    int num_nodes() const { return myFunc->num_nodes(); }
+    NodeSet sample_points( NodeSet ) const { NodeSet s; s.set_mid_face_node(0); return s; }
+    void coefficients( Sample l, NodeSet s, double* c, size_t* i, size_t& n, MsqError& e ) const
+      { myFunc->coefficients( l, s, c, i, n, e ); }
+    void derivatives( Sample l, NodeSet s, size_t* i, MsqVector<2>* c, size_t& n, MsqError& e ) const
+      { myFunc->derivatives( l, s, i, c, n, e ); }
+  private:
+    const MappingFunction2D* myFunc;
+};
+class CenterMF3D : public MappingFunction3D
+{
+  public:
+    CenterMF3D( const MappingFunction3D* real_mf ) : myFunc(real_mf) {};
+    EntityTopology element_topology() const { return myFunc->element_topology(); }
+    int num_nodes() const { return myFunc->num_nodes(); }
+    NodeSet sample_points( NodeSet ) const { NodeSet s; s.set_mid_region_node(); return s; }
+    void coefficients( Sample l, NodeSet s, double* c, size_t* i, size_t& n, MsqError& e ) const
+      { myFunc->coefficients( l, s, c, i, n, e ); }
+    void derivatives( Sample l, NodeSet s, size_t* i, MsqVector<3>* c, size_t& n, MsqError& e ) const
+      { myFunc->derivatives( l, s, i, c, n, e ); }
+  private:
+    const MappingFunction3D* myFunc;
+};
+
+
 class TMPQualityMetricTest : public CppUnit::TestFixture
 {
   CPPUNIT_TEST_SUITE(TMPQualityMetricTest);
@@ -172,13 +206,8 @@ class TMPQualityMetricTest : public CppUnit::TestFixture
   CPPUNIT_TEST (test_evaluate_3D);
   CPPUNIT_TEST (test_evaluate_2D_weight);
   CPPUNIT_TEST (test_evaluate_3D_weight);
-  CPPUNIT_TEST (test_evaluate_2D_corner);
-  CPPUNIT_TEST (test_evaluate_2D_edge);
-  CPPUNIT_TEST (test_evaluate_2D_elem);
-  CPPUNIT_TEST (test_evaluate_3D_corner);
-  CPPUNIT_TEST (test_evaluate_3D_edge);
-  CPPUNIT_TEST (test_evaluate_3D_edge);
-  CPPUNIT_TEST (test_evaluate_3D_face);
+  CPPUNIT_TEST (test_2d_eval_ortho_quad);
+  CPPUNIT_TEST (test_3d_eval_ortho_hex);
   
   CPPUNIT_TEST (test_sample_indices);
   CPPUNIT_TEST (test_evaluate_with_indices);
@@ -212,14 +241,10 @@ class TMPQualityMetricTest : public CppUnit::TestFixture
   CPPUNIT_TEST (regression_inverse_mean_ratio_hess);
 
   CPPUNIT_TEST_SUITE_END();
-  
-  void test_2d_eval_ortho_quad( unsigned dim );
-  void test_3d_eval_ortho_hex( unsigned dim );
 
   QualityMetricTester tester;
 
   Settings settings;
-  SamplePoints corners, center;
   IdealTargetCalculator ideal;
   ScaleWeight e_weight;
 
@@ -230,22 +255,36 @@ class TMPQualityMetricTest : public CppUnit::TestFixture
   NumericalTarget<TargetMetric3D> num_metric_3D;
   NumericalTarget<TargetMetric2D> num_metric_2D;
   TMPQualityMetric test_qm, zero_qm, weight_qm, center_qm;
+  Settings centerOnly;
+  CenterMF2D triCenter, quadCenter;
+  CenterMF3D tetCenter, pyrCenter, priCenter, hexCenter;
   
 public:
   TMPQualityMetricTest() : 
     tester( QualityMetricTester::ALL_FE_EXCEPT_SEPTAHEDRON, &settings ),
-    corners( true, false, false, false ),
-    center( false, false, false, true ),
     e_weight( 2.7182818284590451 ),
     faux_2d_pi(3.14159), faux_2d_zero(0.0),
     faux_3d_zero(0.0), faux_3d_two(2.0),
     num_metric_3D( &test_metric_3D ),
     num_metric_2D( &test_metric_2D ),
-    test_qm( &corners, &ideal, &num_metric_2D, &num_metric_3D ),
-    zero_qm( &corners, &ideal, &faux_2d_zero, &faux_3d_zero ),
-    weight_qm( &corners, &ideal, &e_weight, &test_metric_2D, &test_metric_3D ),
-    center_qm( &center, &ideal, &test_metric_2D, &test_metric_3D )
-  {  }
+    test_qm( &ideal, &num_metric_2D, &num_metric_3D ),
+    zero_qm( &ideal, &faux_2d_zero, &faux_3d_zero ),
+    weight_qm( &ideal, &e_weight, &test_metric_2D, &test_metric_3D ),
+    center_qm( &ideal, &test_metric_2D, &test_metric_3D ),
+    triCenter( centerOnly.get_mapping_function_2D(TRIANGLE) ),
+    quadCenter( centerOnly.get_mapping_function_2D(QUADRILATERAL) ),
+    tetCenter( centerOnly.get_mapping_function_3D(TETRAHEDRON) ),
+    pyrCenter( centerOnly.get_mapping_function_3D(PYRAMID) ),
+    priCenter( centerOnly.get_mapping_function_3D(PRISM) ),
+    hexCenter( centerOnly.get_mapping_function_3D(HEXAHEDRON) )
+  {  
+    centerOnly.set_mapping_function( &triCenter );
+    centerOnly.set_mapping_function( &quadCenter );
+    centerOnly.set_mapping_function( &tetCenter );
+    centerOnly.set_mapping_function( &pyrCenter );
+    centerOnly.set_mapping_function( &priCenter );
+    centerOnly.set_mapping_function( &hexCenter );
+  }
   
   void test_negate_flag()
     { CPPUNIT_ASSERT_EQUAL( 1, zero_qm.get_negate_flag() ); }
@@ -257,18 +296,13 @@ public:
   void test_evaluate_3D();
   void test_evaluate_2D_weight();
   void test_evaluate_3D_weight();
-  void test_evaluate_2D_corner()  { test_2d_eval_ortho_quad(0); }
-  void test_evaluate_2D_edge()    { test_2d_eval_ortho_quad(1); }
-  void test_evaluate_2D_elem()    { test_2d_eval_ortho_quad(2); }
-  void test_evaluate_3D_corner()  { test_3d_eval_ortho_hex(0); }
-  void test_evaluate_3D_edge()    { test_3d_eval_ortho_hex(1); }
-  void test_evaluate_3D_face()    { test_3d_eval_ortho_hex(2); }
-  void test_evaluate_3D_elem()    { test_3d_eval_ortho_hex(3); }
+  void test_2d_eval_ortho_quad(); 
+  void test_3d_eval_ortho_hex(); 
   void test_gradient_2D();
   void test_gradient_3D();
 
   void test_sample_indices()
-    { tester.test_get_sample_indices( &zero_qm, &corners ); }
+    { tester.test_get_sample_indices( &zero_qm ); }
   void test_evaluate_with_indices()
     { tester.compare_eval_and_eval_with_indices( &zero_qm ); }
   void test_evaluate_fixed_indices() 
@@ -283,7 +317,7 @@ public:
   void test_weighted_gradients()
     { compare_analytical_and_numerical_gradients( &weight_qm ); }
   void test_gradient_with_fixed_vertices()
-    { tester.test_gradient_with_fixed_vertex( &center_qm ); }
+    { tester.test_gradient_with_fixed_vertex( &center_qm, &centerOnly ); }
 
   void compare_indices_and_hessian()
     { tester.compare_eval_with_indices_and_eval_with_hessian( &test_qm ); }
@@ -296,7 +330,7 @@ public:
   void test_weighted_hessians()
     { compare_analytical_and_numerical_hessians( &weight_qm ); }
   void test_hessian_with_fixed_vertices()
-    { tester.test_hessian_with_fixed_vertex( &center_qm ); }
+    { tester.test_hessian_with_fixed_vertex( &center_qm, &centerOnly ); }
 
   void compare_indices_and_diagonal()
     { tester.compare_eval_with_indices_and_eval_with_diagonal( &test_qm ); }
@@ -307,7 +341,7 @@ public:
   void test_weighted_diagonals()
     { compare_analytical_and_numerical_diagonals( &weight_qm ); }
   void test_diagonal_with_fixed_vertices()
-    { tester.test_diagonal_with_fixed_vertex( &center_qm ); }
+    { tester.test_diagonal_with_fixed_vertex( &center_qm, &centerOnly ); }
   
   void test_inverse_mean_ratio_grad();
   void test_inverse_mean_ratio_hess();
@@ -334,18 +368,16 @@ CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TMPQualityMetricTest, "Unit");
 
 void TMPQualityMetricTest::test_get_evaluations()
 {
-  SamplePoints corners_and_edges( true, true, false, false );
-  TMPQualityMetric edge_metric( &corners_and_edges, &ideal, &faux_2d_zero, &faux_3d_zero );
+  TMPQualityMetric edge_metric( &ideal, &faux_2d_zero, &faux_3d_zero );
   
-  tester.test_get_sample_evaluations( &zero_qm, &corners );
-  tester.test_get_sample_evaluations( &edge_metric, &corners_and_edges );
+  tester.test_get_sample_evaluations( &zero_qm );
+  tester.test_get_sample_evaluations( &edge_metric );
 }
   
 
 void TMPQualityMetricTest::test_get_element_evaluations()
 {
-  SamplePoints edges( false, true, false, false );
-  TMPQualityMetric edge_metric( &edges, &ideal, &faux_2d_zero, &faux_3d_zero );
+  TMPQualityMetric edge_metric( &ideal, &faux_2d_zero, &faux_3d_zero );
   
   tester.test_get_in_element_evaluations( &zero_qm );
   tester.test_get_in_element_evaluations( &edge_metric );
@@ -361,7 +393,7 @@ void TMPQualityMetricTest::test_evaluate_2D()
   bool rval;
   double value;
   
-  TMPQualityMetric m( &corners, &ideal, &faux_2d_pi, &faux_3d_zero );
+  TMPQualityMetric m( &ideal, &faux_2d_pi, &faux_3d_zero );
   
     // test with aligned elements
   faux_2d_pi.count = faux_3d_zero.count = 0;
@@ -420,7 +452,7 @@ void TMPQualityMetricTest::test_evaluate_3D()
   bool rval;
   double value;
   
-  TMPQualityMetric m( &corners, &ideal, &faux_2d_zero, &faux_3d_two );
+  TMPQualityMetric m( &ideal, &faux_2d_zero, &faux_3d_two );
   
     // test with aligned elements
   faux_2d_zero.count = faux_3d_two.count = 0;
@@ -467,7 +499,7 @@ void TMPQualityMetricTest::test_evaluate_2D_weight()
   bool rval;
   double value;
   
-  TMPQualityMetric m( &corners, &ideal, &e_weight, &faux_2d_pi, &faux_3d_zero );
+  TMPQualityMetric m( &ideal, &e_weight, &faux_2d_pi, &faux_3d_zero );
   
   tester.get_ideal_element( TRIANGLE, true, pd );
   rval = m.evaluate( pd, 0, value, err );
@@ -484,7 +516,7 @@ void TMPQualityMetricTest::test_evaluate_3D_weight()
   bool rval;
   double value;
   
-  TMPQualityMetric m( &corners, &ideal, &e_weight, &faux_2d_zero, &faux_3d_two );
+  TMPQualityMetric m( &ideal, &e_weight, &faux_2d_zero, &faux_3d_two );
   
   tester.get_ideal_element( PRISM, true, pd );
   rval = m.evaluate( pd, 0, value, err );
@@ -493,18 +525,14 @@ void TMPQualityMetricTest::test_evaluate_3D_weight()
   CPPUNIT_ASSERT_DOUBLES_EQUAL( faux_3d_two.value*e_weight.value, value, DBL_EPSILON );
 }
 
-void TMPQualityMetricTest::test_2d_eval_ortho_quad( unsigned dim )
+void TMPQualityMetricTest::test_2d_eval_ortho_quad()
 {
   MsqPrintError err(cout);
   PatchData pd;
   bool rval;
   double value;
   
-  bool locs[4] = {false, false, false, false};
-  locs[dim] = true;
-  
-  SamplePoints pts( locs[0], locs[1], locs[2], locs[3] );
-  TMPQualityMetric m( &pts, &ideal, &faux_2d_zero, &faux_3d_zero );
+  TMPQualityMetric m( &ideal, &faux_2d_zero, &faux_3d_zero );
   faux_2d_zero.count = faux_3d_zero.count = 0;
   
   tester.get_ideal_element( QUADRILATERAL, true, pd );
@@ -515,18 +543,14 @@ void TMPQualityMetricTest::test_2d_eval_ortho_quad( unsigned dim )
   CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, col_dot_prod(faux_2d_zero.last_A), DBL_EPSILON );
 }  
 
-void TMPQualityMetricTest::test_3d_eval_ortho_hex( unsigned dim )
+void TMPQualityMetricTest::test_3d_eval_ortho_hex()
 {
   MsqPrintError err(cout);
   PatchData pd;
   bool rval;
   double value;
   
-  bool locs[4] = {false, false, false, false};
-  locs[dim] = true;
-  
-  SamplePoints pts( locs[0], locs[1], locs[2], locs[3] );
-  TMPQualityMetric m( &pts, &ideal, &faux_2d_zero, &faux_3d_zero );
+  TMPQualityMetric m( &ideal, &faux_2d_zero, &faux_3d_zero );
   faux_2d_zero.count = faux_3d_zero.count = 0;
   
   tester.get_ideal_element( HEXAHEDRON, true, pd );
@@ -579,10 +603,9 @@ void TMPQualityMetricTest::test_gradient_2D()
   
     // construct metric
   pd.attach_settings( &settings );
-  SamplePoints center( false, false, true, false );
   TestGradTargetMetric2D tm;
   IdealTargetCalculator tc;
-  TMPQualityMetric m( &center, &tc, &tm, 0 );
+  TMPQualityMetric m( &tc, &tm, 0 );
   PlanarDomain plane( PlanarDomain::XY );
   pd.set_domain( &plane );
   
@@ -656,10 +679,9 @@ void TMPQualityMetricTest::test_gradient_3D()
   
     // construct metric
   pd.attach_settings( &settings );
-  SamplePoints center( false, false, false, true );
   TestGradTargetMetric3D tm;
   IdealTargetCalculator tc;
-  TMPQualityMetric m( &center, &tc, 0, &tm );
+  TMPQualityMetric m( &tc, 0, &tm );
   
     // evaluate metric
   double act_val;
@@ -927,9 +949,8 @@ void TMPQualityMetricTest::test_inverse_mean_ratio_grad()
 {
   InverseMeanRatio2D tm_2d;
   InverseMeanRatio3D tm_3d;
-  SamplePoints pts(true);
   IdealTargetCalculator target(false);
-  TMPQualityMetric metric( &pts, &target, &tm_2d, &tm_3d );
+  TMPQualityMetric metric( &target, &tm_2d, &tm_3d );
   ElementPMeanP avg( 1.0, &metric );
   
   tester.test_gradient_reflects_quality( &metric );
@@ -942,9 +963,8 @@ void TMPQualityMetricTest::test_inverse_mean_ratio_hess()
 {
   InverseMeanRatio2D tm_2d;
   InverseMeanRatio3D tm_3d;
-  SamplePoints pts(true);
   IdealTargetCalculator target(false);
-  TMPQualityMetric metric( &pts, &target, &tm_2d, &tm_3d );
+  TMPQualityMetric metric( &target, &tm_2d, &tm_3d );
   ElementPMeanP avg( 1.0, &metric );
  
   compare_analytical_and_numerical_hessians( &metric );
@@ -956,9 +976,8 @@ void TMPQualityMetricTest::test_inverse_mean_ratio_hess_diag()
 {
   InverseMeanRatio2D tm_2d;
   InverseMeanRatio3D tm_3d;
-  SamplePoints pts(true);
   IdealTargetCalculator target(false);
-  TMPQualityMetric metric( &pts, &target, &tm_2d, &tm_3d );
+  TMPQualityMetric metric( &target, &tm_2d, &tm_3d );
   
   compare_analytical_and_numerical_diagonals( &metric );
   tester.compare_eval_with_diag_and_eval_with_hessian( &metric );
@@ -968,9 +987,8 @@ void TMPQualityMetricTest::regression_inverse_mean_ratio_grad()
 {
   MsqError err;
   InverseMeanRatio2D tm_2d;
-  SamplePoints pts(true);
   IdealTargetCalculator target(false);
-  TMPQualityMetric metric( &pts, &target, &tm_2d, 0 );
+  TMPQualityMetric metric( &target, &tm_2d, 0 );
   const double coords[] = { -0.80000000000000004, -0.80000000000000004, 0,
                              0.00000000000000000,  2.00000000000000000, 0,
                             -1.73205079999999990,  1.00000000000000000, 0 };
@@ -1034,9 +1052,8 @@ void TMPQualityMetricTest::regression_inverse_mean_ratio_hess()
 {
   MsqError err;
   InverseMeanRatio2D tm_2d;
-  SamplePoints pts(true);
   IdealTargetCalculator target(false);
-  TMPQualityMetric metric( &pts, &target, &tm_2d, 0 );
+  TMPQualityMetric metric( &target, &tm_2d, 0 );
   const double coords[] = { 4.158984727, 4.6570859130000004, 5,
                             4.51742825, 4.51742825, 5,
                             4.3103448279999999, 5, 5 };

@@ -41,7 +41,6 @@ namespace Mesquite {
 
 class TargetCalculator;
 class WeightCalculator;
-class SamplePoints;
 template <unsigned R, unsigned C> class MsqMatrix;
 
 class TargetSurfaceOrientation : public ElemSampleQM
@@ -49,11 +48,9 @@ class TargetSurfaceOrientation : public ElemSampleQM
 public:
 
   TargetSurfaceOrientation( 
-                  const SamplePoints* pts, 
-                  TargetCalculator* tc,
+                 TargetCalculator* tc,
                   WeightCalculator* wc = 0 ) 
-    : samplePts(pts), 
-      targetCalc(tc),
+    : targetCalc(tc),
       weightCalc(wc)
    {}
      
@@ -86,10 +83,6 @@ public:
                  double& value,
                  msq_std::vector<size_t>& indices,
                  MsqError& err );
-                 
-  MESQUITE_EXPORT 
-  const SamplePoints* get_sample_points() const 
-    { return samplePts; }
   
 private:
 
@@ -100,8 +93,6 @@ private:
                  size_t& num_indices,
                  MsqError& err );
 
-
-  const SamplePoints* samplePts;
   TargetCalculator* targetCalc;
   WeightCalculator* weightCalc;
   

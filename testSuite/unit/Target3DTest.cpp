@@ -35,7 +35,6 @@
 #include "cppunit/extensions/HelperMacros.h"
 #include "TargetMetric3D.hpp"
 #include "TMPQualityMetric.hpp"
-#include "SamplePoints.hpp"
 #include "IdealTargetCalculator.hpp"
 #include "Settings.hpp"
 #include "UnitUtil.hpp"
@@ -59,7 +58,6 @@ template <class Metric>
 class Target3DTest : public CppUnit::TestFixture
 {
 private:
-  SamplePoints corners;
   Settings settings;
   QualityMetricTester tester;
   IdealTargetCalculator target;
@@ -69,9 +67,8 @@ private:
   double idealVal;
 public:
   Target3DTest( bool size_invariant, bool orient_invariant, bool barrier, double ideal_element_val )
-    : corners( true, false, false, false ),
-      tester( VolElems, sizeof(VolElems)/sizeof(VolElems[0]), &settings ),
-      metric( &corners, &target, 0, &test_metric ),
+    : tester( VolElems, sizeof(VolElems)/sizeof(VolElems[0]), &settings ),
+      metric( &target, 0, &test_metric ),
       sizeInvariant(size_invariant), orientInvariant(orient_invariant), Barrier(barrier),
       idealVal(ideal_element_val)
     {}

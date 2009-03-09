@@ -40,18 +40,14 @@
 namespace Mesquite {
 
 class WeightCalculator;
-class SamplePoints;
 template <unsigned R, unsigned C> class MsqMatrix;
 
 class DomainSurfaceOrientation : public ElemSampleQM
 {
 public:
 
-  DomainSurfaceOrientation( 
-                  const SamplePoints* pts, 
-                  WeightCalculator* wc = 0 ) 
-    : samplePts(pts), 
-      weightCalc(wc)
+  DomainSurfaceOrientation( WeightCalculator* wc = 0 ) 
+    : weightCalc(wc)
    {}
      
   MESQUITE_EXPORT virtual
@@ -83,10 +79,6 @@ public:
                  double& value,
                  msq_std::vector<size_t>& indices,
                  MsqError& err );
-                 
-  MESQUITE_EXPORT 
-  const SamplePoints* get_sample_points() const 
-    { return samplePts; }
   
 private:
 
@@ -97,7 +89,6 @@ private:
                  size_t& num_indices,
                  MsqError& err );
 
-  const SamplePoints* samplePts;
   WeightCalculator* weightCalc;
   
   enum { MAX_ELEM_NODES = 9 };

@@ -38,7 +38,6 @@
 #include "PlanarDomain.hpp"
 #include "MappingFunction.hpp"
 #include "Settings.hpp"
-#include "SamplePoints.hpp"
 #include "IdealElements.hpp"
 #include "ElemSampleQM.hpp"
 #include "cppunit/extensions/HelperMacros.h"
@@ -196,12 +195,11 @@ void IdealTargetTest::get_calc_target( bool rotate, EntityTopology type,
   pd.attach_settings( &settings );
   pd.set_domain( &planeDomain );
   
-  SamplePoints pts( true, true, true, true );
   IdealTargetCalculator tc( rotate );
   if (elem_dim == 2)
-    tc.get_2D_target( pd, 0, &pts, location, w2, err );
+    tc.get_2D_target( pd, 0, location, w2, err );
   else
-    tc.get_3D_target( pd, 0, &pts, location, w3, err );
+    tc.get_3D_target( pd, 0, location, w3, err );
   CPPUNIT_ASSERT(!MSQ_CHKERR(err));
 }
 
@@ -302,11 +300,10 @@ void IdealTargetTest::test_plane_neg_z()
   pd.attach_settings( &settings );
   pd.set_domain( &dom );
   
-  SamplePoints pts( true, true, true, true );
   IdealTargetCalculator tc( true );
   
   MsqMatrix<3,2> W;
-  tc.get_2D_target( pd, 0, &pts, Sample(0,0), W, err );
+  tc.get_2D_target( pd, 0, Sample(0,0), W, err );
   ASSERT_NO_ERROR(err);
   
   Vector3D c1( W(0,0), W(1,0), W(2,0) );

@@ -36,7 +36,6 @@
 #include "WeightReader.hpp"
 #include "MeshImpl.hpp"
 #include "PatchData.hpp"
-#include "SamplePoints.hpp"
 #include "Settings.hpp"
 #include "ElemSampleQM.hpp"
 
@@ -61,6 +60,7 @@ private:
   
   MeshImpl myMesh;   // mesh data
   PatchData myPatch; // global patch for mesh data
+  Settings linearMaps; 
 public:
   
   void setUp();
@@ -124,6 +124,7 @@ void TargetReadWriteTest::setUp()
   myMesh.get_all_elements( elems, err ); CPPUNIT_ASSERT(!err);
   myMesh.get_all_vertices( verts, err ); CPPUNIT_ASSERT(!err);
   myPatch.set_mesh( &myMesh );
+  myPatch.attach_settings( &linearMaps );
   myPatch.set_mesh_entities( elems, verts, err );
   CPPUNIT_ASSERT(!err);
 }
@@ -140,21 +141,18 @@ public:
   
   bool get_3D_target( PatchData& pd, 
                       size_t element,
-                      const SamplePoints* samples,
                       Sample sample,
                       MsqMatrix<3,3>& W_out,
                       MsqError& err );
 
   bool get_2D_target( PatchData& pd, 
                       size_t element,
-                      const SamplePoints* samples,
                       Sample sample,
                       MsqMatrix<3,2>& W_out,
                       MsqError& err );
 
   double get_weight( PatchData& pd, 
                      size_t element,
-                     const SamplePoints* samples,
                      Sample sample,
                      MsqError& err );
                      
@@ -163,7 +161,7 @@ public:
 };
 
 bool FakeTargetCalc::get_3D_target( PatchData& pd, size_t elem, 
-                                    const SamplePoints*, Sample sample,
+                                    Sample sample,
                                     MsqMatrix<3,3>& W_out, MsqError& )
 {
   CPPUNIT_ASSERT_EQUAL( 3u, TopologyInfo::dimension( pd.element_by_index(elem).get_element_type() ) );
@@ -178,7 +176,7 @@ bool FakeTargetCalc::get_3D_target( PatchData& pd, size_t elem,
 }
 
 bool FakeTargetCalc::get_2D_target( PatchData& pd, size_t elem, 
-                                    const SamplePoints*, Sample sample,
+                                    Sample sample,
                                     MsqMatrix<3,2>& W_out, MsqError& )
 {
   CPPUNIT_ASSERT_EQUAL( 2u, TopologyInfo::dimension( pd.element_by_index(elem).get_element_type() ) );
@@ -189,8 +187,8 @@ bool FakeTargetCalc::get_2D_target( PatchData& pd, size_t elem,
 }
 
 double FakeTargetCalc::get_weight( PatchData& pd, size_t elem, 
-                                   const SamplePoints*, Sample sample,
-                                    MsqError& )
+                                   Sample sample,
+                                   MsqError& )
 {
   return make_value( pd.get_element_handles_array()[elem], sample, 0 );
 }
@@ -209,41 +207,35 @@ unsigned long FakeTargetCalc::make_value( Mesh::ElementHandle elem, Sample sampl
 void TargetReadWriteTest::read_write_targets()
 {
   MsqPrintError err( msq_stdio::cout );
-  SamplePoints pts( true, true, true, true );
-  Settings linear_maps;
   FakeTargetCalc tc;
   
     // Write the targets
-  TargetWriter writer( &pts, &tc );
-  writer.loop_over_mesh( &myMesh, 0, &linear_maps, err );
+  TargetWriter writer( &tc );
+  writer.loop_over_mesh( &myMesh, 0, &linearMaps, err );
   CPPUNIT_ASSERT(!err);
   
     // Compare all target matrices
   TargetReader reader;
   for (size_t i = 0; i < myPatch.num_elements(); ++i) {
-    const EntityTopology type = myPatch.element_by_index(i).get_element_type();
     const unsigned d = TopologyInfo::dimension( myPatch.element_by_index(i).get_element_type() );
-    for (unsigned sdim = 0; sdim <= d; ++sdim) {
-      unsigned count = TopologyInfo::adjacent(type, sdim);
-      if (type == PYRAMID && sdim == 0)
-        count = 4; // skip pyramid apex
-      for (unsigned snum = 0; snum < count; ++snum) {
-        if (d == 2) {
-          MsqMatrix<3,2> expected, read;
-          tc.get_2D_target( myPatch, i, &pts, Sample(sdim, snum), expected, err );
-          CPPUNIT_ASSERT(!err);
-          reader.get_2D_target( myPatch, i, &pts, Sample(sdim, snum), read, err );
-          CPPUNIT_ASSERT(!err);
-          ASSERT_MATRICES_EQUAL( expected, read, 1e-6 );
-        }
-        else {
-          MsqMatrix<3,3> expected, read;
-          tc.get_3D_target( myPatch, i, &pts, Sample(sdim, snum), expected, err );
-          CPPUNIT_ASSERT(!err);
-          reader.get_3D_target( myPatch, i, &pts, Sample(sdim, snum), read, err );
-          CPPUNIT_ASSERT(!err);
-          ASSERT_MATRICES_EQUAL( expected, read, 1e-12 );
-        }
+    msq_std::vector<Sample> samples;
+    myPatch.get_samples( i, samples, err ); ASSERT_NO_ERROR(err);
+    for (size_t j = 0; j < samples.size(); ++j) {
+      if (d == 2) {
+        MsqMatrix<3,2> expected, read;
+        tc.get_2D_target( myPatch, i, samples[j], expected, err );
+        CPPUNIT_ASSERT(!err);
+        reader.get_2D_target( myPatch, i, samples[j], read, err );
+        CPPUNIT_ASSERT(!err);
+        ASSERT_MATRICES_EQUAL( expected, read, 1e-6 );
+      }
+      else {
+        MsqMatrix<3,3> expected, read;
+        tc.get_3D_target( myPatch, i, samples[j], expected, err );
+        CPPUNIT_ASSERT(!err);
+        reader.get_3D_target( myPatch, i, samples[j], read, err );
+        CPPUNIT_ASSERT(!err);
+        ASSERT_MATRICES_EQUAL( expected, read, 1e-12 );
       }
     }
   }
@@ -252,31 +244,24 @@ void TargetReadWriteTest::read_write_targets()
 void TargetReadWriteTest::read_write_weights()
 {
   MsqPrintError err( msq_stdio::cout );
-  SamplePoints pts( true, true, true, true );
-  Settings linear_maps;
   FakeTargetCalc tc;
   
     // Write the targets
-  TargetWriter writer( &pts, 0, &tc );
-  writer.loop_over_mesh( &myMesh, 0, &linear_maps, err );
+  TargetWriter writer( 0, &tc );
+  writer.loop_over_mesh( &myMesh, 0, &linearMaps, err );
   CPPUNIT_ASSERT(!err);
   
     // Compare all target matrices
   WeightReader reader;
   for (size_t i = 0; i < myPatch.num_elements(); ++i) {
-    const EntityTopology type = myPatch.element_by_index(i).get_element_type();
-    const unsigned d = TopologyInfo::dimension( myPatch.element_by_index(i).get_element_type() );
-    for (unsigned sdim = 0; sdim <= d; ++sdim) {
-      unsigned count = TopologyInfo::adjacent(type, sdim);
-      if (type == PYRAMID && sdim == 0)
-        count = 4; // skip pyramid apex
-      for (unsigned snum = 0; snum < count; ++snum) {
-        double expected = tc.get_weight( myPatch, i, &pts, Sample(sdim, snum), err );
-        CPPUNIT_ASSERT(!err);
-        double read = reader.get_weight( myPatch, i, &pts, Sample(sdim, snum), err );
-        CPPUNIT_ASSERT(!err);
-        CPPUNIT_ASSERT_DOUBLES_EQUAL( expected, read, 1e-12 );
-      }
+    msq_std::vector<Sample> samples;
+    myPatch.get_samples( i, samples, err ); ASSERT_NO_ERROR(err);
+    for (size_t j = 0; j < samples.size(); ++j) {
+      double expected = tc.get_weight( myPatch, i, samples[j], err );
+      CPPUNIT_ASSERT(!err);
+      double read = reader.get_weight( myPatch, i, samples[j], err );
+      CPPUNIT_ASSERT(!err);
+      CPPUNIT_ASSERT_DOUBLES_EQUAL( expected, read, 1e-12 );
     }
   }
 }

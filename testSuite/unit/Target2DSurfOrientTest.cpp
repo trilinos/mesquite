@@ -44,7 +44,6 @@
 #include "SphericalDomain.hpp"
 #include "MeshWriter.hpp"
 #include "MsqVertex.hpp"
-#include "SamplePoints.hpp"
 #include "Settings.hpp"
 #include "IdealTargetCalculator.hpp"
 #include "RefMeshTargetCalculator.hpp"
@@ -405,8 +404,6 @@ void Target2DSurfOrientTest::smooth( int metric_3D, bool ref_mesh, MeshDomain* d
 {
   MsqPrintError err(cerr);
   
-  const SamplePoints pts( true );
-  
   IdealTargetCalculator ideal_target( !ref_mesh );
   ReferenceMesh rm( &refMesh );
   RefMeshTargetCalculator ref_target( &rm );
@@ -416,9 +413,9 @@ void Target2DSurfOrientTest::smooth( int metric_3D, bool ref_mesh, MeshDomain* d
   Metric2D_Type_Ideal ideal_tmetric;
   Metric2D_Type_Ref ref_tmetric;
   TargetMetric2D* tmetric = ref_mesh ? (TargetMetric2D*)&ref_tmetric : (TargetMetric2D*)&ideal_tmetric;
-  TMPQualityMetric qmetric(&pts, tc, tmetric, NULL);
-  TargetSurfaceOrientation ometric1(&pts, tc);
-  DomainSurfaceOrientation ometric2(&pts);
+  TMPQualityMetric qmetric(tc, tmetric, NULL);
+  TargetSurfaceOrientation ometric1(tc);
+  DomainSurfaceOrientation ometric2;
   
   QualityMetric* ometric = metric_3D == 2 ? (QualityMetric*)&ometric2 : (QualityMetric*)&ometric1;
   PMeanPTemplate pmean_3D( METRIC_3D_ORIENT_P, ometric );

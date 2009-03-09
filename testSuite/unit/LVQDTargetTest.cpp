@@ -96,10 +96,10 @@ class TargetCalculator3D : public TargetCalculator
     TargetCalculator3D( const MsqMatrix<3,3>& value, bool surf_3d = false )
       : target(value), surf3D(surf_3d) {}
     
-    virtual bool get_3D_target( PatchData&, size_t, const SamplePoints*, Sample, MsqMatrix<3,3>& result, MsqError& )
+    virtual bool get_3D_target( PatchData&, size_t, Sample, MsqMatrix<3,3>& result, MsqError& )
       { result = target; return true; }
     
-    virtual bool get_2D_target( PatchData&, size_t, const SamplePoints*, Sample, MsqMatrix<3,2>& result, MsqError& )
+    virtual bool get_2D_target( PatchData&, size_t, Sample, MsqMatrix<3,2>& result, MsqError& )
       { CPPUNIT_ASSERT(false); return false; }
       
     virtual bool surface_targets_are_3D() const
@@ -114,10 +114,10 @@ class TargetCalculator2D : public TargetCalculator
   public:
     TargetCalculator2D( const MsqMatrix<3,2>& value ) : target(value) {}
     
-    virtual bool get_3D_target( PatchData&, size_t, const SamplePoints*, Sample, MsqMatrix<3,3>& result, MsqError& )
+    virtual bool get_3D_target( PatchData&, size_t, Sample, MsqMatrix<3,3>& result, MsqError& )
       { CPPUNIT_ASSERT(false); return false; }
     
-    virtual bool get_2D_target( PatchData&, size_t, const SamplePoints*, Sample, MsqMatrix<3,2>& result, MsqError& )
+    virtual bool get_2D_target( PatchData&, size_t, Sample, MsqMatrix<3,2>& result, MsqError& )
       { result = target; return true; }
       
     virtual bool surface_targets_are_3D() const
@@ -137,14 +137,14 @@ void LVQDTargetTest::test_product_2D()
   
   TargetCalculator2D tc1(t1);
   LVQDTargetCalculator lvqd1( &tc1, &tc1, &tc1, &tc1 );
-  rval = lvqd1.get_2D_target( pd, 0, 0, Sample(0,0), W, err );
+  rval = lvqd1.get_2D_target( pd, 0, Sample(0,0), W, err );
   CPPUNIT_ASSERT(!MSQ_CHKERR(err));
   CPPUNIT_ASSERT(rval);
   ASSERT_MATRICES_EQUAL( t1, W, 1e-6 );
   
   TargetCalculator2D tc2(t2);
   LVQDTargetCalculator lvqd2( &tc2, &tc2, &tc2, &tc2 );
-  rval = lvqd2.get_2D_target( pd, 0, 0, Sample(0,0), W, err );
+  rval = lvqd2.get_2D_target( pd, 0, Sample(0,0), W, err );
   CPPUNIT_ASSERT(!MSQ_CHKERR(err));
   CPPUNIT_ASSERT(rval);
   ASSERT_MATRICES_EQUAL( t2, W, 1e-6 );
@@ -163,14 +163,14 @@ void LVQDTargetTest::test_product_3D()
   
   TargetCalculator3D tc1(t1);
   LVQDTargetCalculator lvqd1( &tc1, &tc1, &tc1, &tc1 );
-  rval = lvqd1.get_3D_target( pd, 0, 0, Sample(0,0), W, err );
+  rval = lvqd1.get_3D_target( pd, 0, Sample(0,0), W, err );
   CPPUNIT_ASSERT(!MSQ_CHKERR(err));
   CPPUNIT_ASSERT(rval);
   ASSERT_MATRICES_EQUAL( t1, W, 1e-6 );
   
   TargetCalculator3D tc2(t2);
   LVQDTargetCalculator lvqd2( &tc2, &tc2, &tc2, &tc2 );
-  rval = lvqd2.get_3D_target( pd, 0, 0, Sample(0,0), W, err );
+  rval = lvqd2.get_3D_target( pd, 0, Sample(0,0), W, err );
   CPPUNIT_ASSERT(!MSQ_CHKERR(err));
   CPPUNIT_ASSERT(rval);
   ASSERT_MATRICES_EQUAL( t2, W, 1e-6 );

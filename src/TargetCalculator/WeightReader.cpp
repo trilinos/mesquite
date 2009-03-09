@@ -35,7 +35,6 @@
 #include "PatchData.hpp"
 #include "MsqError.hpp"
 #include "MsqMatrix.hpp"
-#include "SamplePoints.hpp"
 #include "ElemSampleQM.hpp"
 #ifdef MSQ_USE_OLD_IO_HEADERS
 # include <sstream.h>
@@ -84,21 +83,20 @@ WeightReader::~WeightReader()
 
 double WeightReader::get_weight( PatchData &pd,
                                  size_t element,
-                                 const SamplePoints* samples,
                                  Sample sample,
                                  MsqError& err )
 {
   WeightReaderData& data = get_data( pd );
   
     // calculate index of sample in array 
-  EntityTopology type = pd.element_by_index(element).get_element_type();
-  unsigned offset = samples->sample_number_from_location( type, sample );
+  NodeSet all_samples = pd.get_samples( element );
+  unsigned offset = all_samples.num_before( sample );
 
   if (!data.weights.empty() && data.elementIndex == element) {
     assert(offset < data.weights.size());
     return data.weights[offset];
   }
-  const unsigned num_samples = samples->num_sample_points( type );
+  const unsigned num_samples = all_samples.num_nodes();
   const unsigned handle_idx = num_samples - 1;
   
     // get the tag handle

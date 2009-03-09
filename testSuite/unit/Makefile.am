@@ -92,7 +92,6 @@ msq_test_SOURCES = msq_test_main.cpp \
 	QuadLagrangeShapeTest.cpp \
 	QualityAssessorTest.cpp \
 	QualityMetricTest.cpp \
-	SamplePointsTest.cpp \
 	SlaveBoundaryVerticesTest.cpp \
 	SphericalGeometryTest.cpp \
 	StdDevTemplateTest.cpp \

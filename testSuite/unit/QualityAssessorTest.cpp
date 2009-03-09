@@ -37,7 +37,6 @@
 #include "ConditionNumberQualityMetric.hpp"
 #include "Target2DShape.hpp"
 #include "IdealTargetCalculator.hpp"
-#include "SamplePoints.hpp"
 #include "TMPQualityMetric.hpp"
 #include "PlanarDomain.hpp"
 #include "Settings.hpp"
@@ -361,11 +360,10 @@ void QualityAssessorTest::test_basic_stats_sample()
 {
   Target2DShape tm;
   IdealTargetCalculator tc;
-  SamplePoints sp(true,false,false,false);
-  TMPQualityMetric metric( &sp, &tc, &tm, 0 );
+  TMPQualityMetric metric( &tc, &tm, 0 );
   MetricLogger logger(&metric);
   QualityAssessor qa(&logger);
-   qa.disable_printing_results();
+  qa.disable_printing_results();
  
   MsqError err;
   qa.loop_over_mesh( &myMesh, &myDomain, &mySettings, err  );
@@ -378,12 +376,18 @@ void QualityAssessorTest::test_basic_stats_sample()
   vector<Mesh::ElementHandle> elems;
   myMesh.get_all_elements( elems, err );
   ASSERT_NO_ERROR( err );
-  vector<EntityTopology> types(elems.size());
-  myMesh.elements_get_topologies( &elems[0], &types[0], elems.size(), err );
-  ASSERT_NO_ERROR( err );
+  
+  vector<Mesh::VertexHandle> free_verts;
+  PatchData global_patch;
+  global_patch.set_mesh( &myMesh );
+  global_patch.set_domain( &myDomain );
+  global_patch.attach_settings( &mySettings );
+  global_patch.set_mesh_entities( elems, free_verts, err );
+  ASSERT_NO_ERROR(err);
+  
   size_t num_samples = 0;
-  for (vector<EntityTopology>::iterator it = types.begin(); it != types.end(); ++it)
-    num_samples += sp.num_sample_points( *it );
+  for (size_t i = 0; i < global_patch.num_elements(); ++i)
+    num_samples += global_patch.get_samples(i).num_nodes();
   
     // check correct number of metric evaluations
   CPPUNIT_ASSERT_EQUAL( num_samples, logger.mValues.size() );
@@ -511,7 +515,7 @@ void QualityAssessorTest::test_histogram_unknown_range()
     *j /= 2;
   
   switch (intervals) {
-    default: for (unsigned i = 10; i < intervals; ++i)
+    default: for (int i = 10; i < intervals; ++i)
              CPPUNIT_ASSERT_EQUAL( counts[ i], r_counts[i+1]);
     case 10: CPPUNIT_ASSERT_EQUAL( counts[ 9], r_counts[10] );
     case  9: CPPUNIT_ASSERT_EQUAL( counts[ 8], r_counts[ 9] );

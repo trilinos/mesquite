@@ -37,7 +37,6 @@
 #include "ConjugateGradient.hpp"
 #include "FeasibleNewton.hpp"
 #include "PlanarDomain.hpp"
-#include "SamplePoints.hpp"
 #include "ReferenceMesh.hpp"
 #include "RefMeshTargetCalculator.hpp"
 #include "TMPQualityMetric.hpp"
@@ -436,14 +435,8 @@ bool run_smoother( mesh_reader_t input_mesh,
   else {
     target = &ident_target;
   }
-  
-  SamplePoints corners(true,false,false,false);
-  if (ONE_TRI_SAMPLE) {
-    corners.dont_sample_at( TRIANGLE, 0 );
-    corners.sample_at( TRIANGLE, 2 );
-  }
     
-  TMPQualityMetric metric( &corners, target, target_metric, 0 );
+  TMPQualityMetric metric( target, target_metric, 0 );
   
   TerminationCriterion outer, inner;
   if (LOCAL_PATCHES) {

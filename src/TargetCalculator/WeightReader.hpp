@@ -74,7 +74,6 @@ class WeightReader
     
     virtual double get_weight( PatchData &pd,
                                size_t element,
-                               const SamplePoints* pts,
                                Sample Sample,
                                MsqError& err );
     

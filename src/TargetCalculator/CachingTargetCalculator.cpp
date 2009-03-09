@@ -32,7 +32,6 @@
 
 #include "Mesquite.hpp"
 #include "CachingTargetCalculator.hpp"
-#include "SamplePoints.hpp"
 #include "PatchData.hpp"
 #include "MsqMatrix.hpp"
 #include "ExtraData.hpp"
@@ -72,7 +71,8 @@ void CachingTargetCalculator::notify_sub_patch( PatchData& ,
     EntityTopology type = subpatch.element_by_index(i).get_element_type();
     size_t& count = (TopologyInfo::dimension( type ) == 2) ? count_2D : count_3D;
     sub_data.elementOffsets[i] = count;
-    count += samplePoints->num_sample_points(type);
+    NodeSet samples = subpatch.get_samples( i );
+    count += samples.num_nodes();
   }
   sub_data.targets2D.resize( count_2D );
   sub_data.targets3D.resize( count_3D );
@@ -81,7 +81,8 @@ void CachingTargetCalculator::notify_sub_patch( PatchData& ,
     EntityTopology type = subpatch.element_by_index(i).get_element_type();
     size_t off = sub_data.elementOffsets[i];
     size_t old_off = data.elementOffsets[element_map[i]];
-    size_t count = samplePoints->num_sample_points(type);
+    NodeSet samples = subpatch.get_samples( i );
+    size_t count = samples.num_nodes();
    
     if (TopologyInfo::dimension( type ) == 3) 
       memcpy( &sub_data.targets3D[off], &data.targets3D[old_off], count*sizeof(MsqMatrix<3,3>) );
@@ -93,7 +94,6 @@ void CachingTargetCalculator::notify_sub_patch( PatchData& ,
 static void populate_data( PatchData& pd,
                            CachedTargetData* data,
                            TargetCalculator* calc,
-                           const SamplePoints* spts,
                            MsqError& err )
 {
   size_t i, j;
@@ -103,9 +103,10 @@ static void populate_data( PatchData& pd,
     data->elementOffsets.resize( pd.num_elements() );
     for (i = 0; i < pd.num_elements(); ++i) {
       EntityTopology type = pd.element_by_index(i).get_element_type();
+      NodeSet sample_pts = pd.get_samples( i );
       size_t& count = (TopologyInfo::dimension( type ) == 3) ? count_3d : count_2d;
       data->elementOffsets[i] = count;
-      count += spts->num_sample_points(type);
+      count += sample_pts.num_nodes();
     }
     data->targets2D.resize( count_2d );
     data->targets3D.resize( count_3d );
@@ -114,46 +115,47 @@ static void populate_data( PatchData& pd,
   size_t off = 0;
   for (i = 0; i < pd.num_elements(); ++i) {
     EntityTopology type = pd.element_by_index(i).get_element_type();
+    NodeSet sample_pts = pd.get_samples( i );
     assert( off == data->elementOffsets[i] );
     if (TopologyInfo::dimension( type ) == 3) {
-      if (spts->will_sample_at(type,0)) {
-        for (j = 0; j < TopologyInfo::corners(type); ++j) {
-          calc->get_3D_target( pd, i, spts, Sample(0,j), data->targets3D[off++], err );
+      for (j = 0; j < TopologyInfo::corners(type); ++j) {
+        if (sample_pts.corner_node(j)) {
+          calc->get_3D_target( pd, i, Sample(0,j), data->targets3D[off++], err );
           MSQ_ERRRTN(err);
         }
       }
-      if (spts->will_sample_at(type,1)) {
-        for (j = 0; j < TopologyInfo::edges(type); ++j) {
-          calc->get_3D_target( pd, i, spts, Sample(1,j), data->targets3D[off++], err );
+      for (j = 0; j < TopologyInfo::edges(type); ++j) {
+        if (sample_pts.mid_edge_node(j)) {
+          calc->get_3D_target( pd, i, Sample(1,j), data->targets3D[off++], err );
           MSQ_ERRRTN(err);
         }
       }
-      if (spts->will_sample_at(type,2)) {
-        for (j = 0; j < TopologyInfo::faces(type); ++j) {
-          calc->get_3D_target( pd, i, spts, Sample(2,j), data->targets3D[off++], err );
+      for (j = 0; j < TopologyInfo::faces(type); ++j) {
+        if (sample_pts.mid_face_node(j)) {
+          calc->get_3D_target( pd, i, Sample(2,j), data->targets3D[off++], err );
           MSQ_ERRRTN(err);
         }
       }
-      if (spts->will_sample_at(type,3)) {
-        calc->get_3D_target( pd, i, spts, Sample(3,0), data->targets3D[off++], err );
+      if (sample_pts.mid_region_node()) {
+        calc->get_3D_target( pd, i, Sample(3,0), data->targets3D[off++], err );
         MSQ_ERRRTN(err);
       }
     }
     else {
-      if (spts->will_sample_at(type,0)) {
-        for (j = 0; j < TopologyInfo::corners(type); ++j) {
-          calc->get_2D_target( pd, i, spts, Sample(0,j), data->targets2D[off++], err );
+      for (j = 0; j < TopologyInfo::corners(type); ++j) {
+        if (sample_pts.corner_node(j)) {
+          calc->get_2D_target( pd, i, Sample(0,j), data->targets2D[off++], err );
           MSQ_ERRRTN(err);
         }
       }
-      if (spts->will_sample_at(type,1)) {
-        for (j = 0; j < TopologyInfo::edges(type); ++j) {
-          calc->get_2D_target( pd, i, spts, Sample(1,j), data->targets2D[off++], err );
+      for (j = 0; j < TopologyInfo::edges(type); ++j) {
+        if (sample_pts.mid_edge_node(j)) {
+          calc->get_2D_target( pd, i, Sample(1,j), data->targets2D[off++], err );
           MSQ_ERRRTN(err);
         }
       }
-      if (spts->will_sample_at(type,2)) {
-        calc->get_2D_target( pd, i, spts, Sample(2,0), data->targets2D[off++], err );
+      if (sample_pts.mid_face_node(0)) {
+        calc->get_2D_target( pd, i, Sample(2,0), data->targets2D[off++], err );
         MSQ_ERRRTN(err);
       }
     }
@@ -163,25 +165,19 @@ static void populate_data( PatchData& pd,
   
 bool CachingTargetCalculator::get_3D_target( PatchData& pd, 
                                              size_t element,
-                                             const SamplePoints* pts,
                                              Sample sample,
                                              MsqMatrix<3,3>& W_out,
                                              MsqError& err )
 {
-  if (pts != this->samplePoints) {
-    MSQ_SETERR(err)("Metric sample points don't match cached target sample points", MsqError::INVALID_ARG );
-    return false;
-  }
-  
   CachedTargetData& data = get_data( pd );
   if (data.targets3D.empty()) {
-    populate_data( pd, &data, cachedCalculator, samplePoints, err );
+    populate_data( pd, &data, cachedCalculator, err );
     MSQ_ERRZERO(err);
   }
   
     // calculate index of sample in array 
-  EntityTopology type = pd.element_by_index(element).get_element_type();
-  unsigned offset = pts->sample_number_from_location( type, sample );
+  NodeSet all_samples = pd.get_samples( element );
+  unsigned offset = all_samples.num_before( sample );
 
   W_out = data.targets3D[ data.elementOffsets[element] + offset ];
   return true;
@@ -189,19 +185,13 @@ bool CachingTargetCalculator::get_3D_target( PatchData& pd,
   
 bool CachingTargetCalculator::get_2D_target( PatchData& pd, 
                                              size_t element,
-                                             const SamplePoints* pts,
                                              Sample sample,
                                              MsqMatrix<3,2>& W_out,
                                              MsqError& err )
 {
-  if (pts != this->samplePoints) {
-    MSQ_SETERR(err)("Metric sample points don't match cached target sample points", MsqError::INVALID_ARG );
-    return false;
-  }
-  
   CachedTargetData& data = get_data( pd );
   if (data.targets2D.empty()) {
-    populate_data( pd, &data, cachedCalculator, samplePoints, err );
+    populate_data( pd, &data, cachedCalculator, err );
     MSQ_ERRZERO(err);
     if (data.targets2D.empty()) {
       MSQ_SETERR(err)("Attempt to get 2D target for 3D element type", MsqError::INVALID_STATE);
@@ -210,8 +200,8 @@ bool CachingTargetCalculator::get_2D_target( PatchData& pd,
   }
   
     // calculate index of sample in array 
-  EntityTopology type = pd.element_by_index(element).get_element_type();
-  unsigned offset = pts->sample_number_from_location( type, sample );
+  NodeSet all_samples = pd.get_samples( element );
+  unsigned offset = all_samples.num_before( sample );
 
   W_out = data.targets2D[ data.elementOffsets[element] + offset ];
   return true;

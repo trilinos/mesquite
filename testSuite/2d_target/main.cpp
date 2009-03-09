@@ -56,7 +56,6 @@ using std::ostream;
 #include "ConjugateGradient.hpp"
 #include "PlanarDomain.hpp"
 #include "TargetMetric2D.hpp"
-#include "SamplePoints.hpp"
 #include "IdealTargetCalculator.hpp"
 #include "ConditionNumberQualityMetric.hpp"
 #include "ReferenceMesh.hpp"
@@ -120,8 +119,7 @@ static int do_smoother( const char* input_file,
                         const char* ref_mesh_file,
                         double of_power, 
                         unsigned metric_idx,
-                        AveragingScheme avg_scheme,
-                        bool mid_edge_samples )
+                        AveragingScheme avg_scheme )
 {
   MsqPrintError err(cerr);
   
@@ -134,7 +132,6 @@ static int do_smoother( const char* input_file,
   cout << "Of Power:    " << of_power << endl;
   
   
-  SamplePoints samples( true, mid_edge_samples, false, false );
   auto_ptr<TargetCalculator> tc;
   auto_ptr<MeshImpl> ref_mesh_impl;
   auto_ptr<ReferenceMesh> ref_mesh;
@@ -146,10 +143,10 @@ static int do_smoother( const char* input_file,
     tc.reset( new RefMeshTargetCalculator( ref_mesh.get() ) );
   }
   else {
-    tc.reset( new IdealTargetCalculator( &samples ) );
+    tc.reset( new IdealTargetCalculator( ) );
   }
     
-  TMPQualityMetric jacobian_metric( &samples, tc.get(), target_metric, 0 );
+  TMPQualityMetric jacobian_metric( tc.get(), target_metric, 0 );
   ElementPMeanP elem_avg( of_power, &jacobian_metric );
   VertexPMeanP vtx_avg( of_power, &jacobian_metric );
   QualityMetric* mmetrics[] = { &jacobian_metric, &elem_avg, &vtx_avg, &jacobian_metric };
@@ -348,7 +345,6 @@ int main( int argc, char* argv[] )
   double of_power = DEFAULT_OF_POWER;
   unsigned metric_idx = DEFAULT_METRIC_IDX;
   AveragingScheme avg_scheme = DEFAULT_AVG_SCHEME;
-  bool edge_sample = false;
   const char* input_file = 0;
   const char* output_file = 0;
   const char* ref_mesh_file = 0;
@@ -376,7 +372,6 @@ int main( int argc, char* argv[] )
       case 'p': of_power     = parse_double   ( argc, argv, i );    break;
       case 'm': metric_idx   = parse_metric   ( argc, argv, i );    break;
       case 'a': avg_scheme   = parse_averaging( argc, argv, i );    break;
-      case 'e': edge_sample  = true;                                break;
       case 'r': check_next_arg(argc,argv,i); ref_mesh_file=argv[i]; break;
       case '-': proc_opts    = false;                               break;
       case 'h':                usage( argv[0], true );              break;
@@ -397,6 +392,5 @@ int main( int argc, char* argv[] )
                       ref_mesh_file,
                       of_power, 
                       metric_idx,
-                      avg_scheme,
-                      edge_sample );
+                      avg_scheme );
 }

@@ -41,7 +41,6 @@ namespace Mesquite {
 
 class TargetCalculator;
 class WeightCalculator;
-class SamplePoints;
 class TargetMetric2D;
 class TargetMetric3D;
 
@@ -59,7 +58,6 @@ class TMPQualityMetric : public ElemSampleQM
 public:
 
   /**
-   *\param pts  The sample points at which to evaluate the metric
    *\param tc   The target calculator 
    *\param wc   The weight calculator
    *\param metric_2d Metric to use for surface elements - may be NULL
@@ -67,32 +65,27 @@ public:
    *\param metric_3d Metric to use for volume elements - may be NULL
    *            if mesh contains only surface elements.
    */
-  TMPQualityMetric( const SamplePoints* pts, 
-                    TargetCalculator* tc,
+  TMPQualityMetric( TargetCalculator* tc,
                     WeightCalculator* wc,
                     TargetMetric2D* metric_2d,
                     TargetMetric3D* metric_3d ) 
-    : samplePts(pts), 
-      targetCalc(tc),
+    : targetCalc(tc),
       weightCalc(wc),
       metric2D( metric_2d ),
       metric3D( metric_3d )
    {}
 
   /**
-   *\param pts  The sample points at which to evaluate the metric
    *\param tc   The target calculator 
    *\param metric_2d Metric to use for surface elements - may be NULL
    *            if mesh contains only volume elements.
    *\param metric_3d Metric to use for volume elements - may be NULL
    *            if mesh contains only surface elements.
    */
-  TMPQualityMetric( const SamplePoints* pts, 
-                    TargetCalculator* tc,
+  TMPQualityMetric( TargetCalculator* tc,
                     TargetMetric2D* metric_2d,
                     TargetMetric3D* metric_3d ) 
-    : samplePts(pts), 
-      targetCalc(tc),
+    : targetCalc(tc),
       weightCalc(0),
       metric2D( metric_2d ),
       metric3D( metric_3d )
@@ -153,10 +146,6 @@ public:
                     msq_std::vector<Vector3D>& gradient,
                     msq_std::vector<Matrix3D>& Hessian,
                     MsqError& err );
-
-  MESQUITE_EXPORT 
-  const SamplePoints* get_sample_points() const 
-    { return samplePts; }
     
   void set_target_calculator( TargetCalculator* tc ) { targetCalc = tc; }
   void set_weight_calculator( WeightCalculator* wc ) { weightCalc = wc; }
@@ -177,7 +166,6 @@ private:
                  size_t& num_indices,
                  MsqError& err );
 
-  const SamplePoints* samplePts;
   TargetCalculator* targetCalc;
   WeightCalculator* weightCalc;
   TargetMetric2D* metric2D;

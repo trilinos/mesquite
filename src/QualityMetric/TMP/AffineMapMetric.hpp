@@ -35,7 +35,6 @@
 
 #include "Mesquite.hpp"
 #include "ElemSampleQM.hpp"
-#include "SamplePoints.hpp"
 
 namespace Mesquite {
 
@@ -95,8 +94,6 @@ public:
                  double& value,
                  msq_std::vector<size_t>& indices,
                  MsqError& err );
-                 
-  const SamplePoints* get_sample_points() const { return &samplePts; }
     
   void set_target_calculator( TargetCalculator* tc ) { targetCalc = tc; }
   void set_weight_calculator( WeightCalculator* wc ) { weightCalc = wc; }
@@ -109,7 +106,6 @@ public:
   void set_3d_metric( TargetMetric3D* m ) { metric3D = m; }
   
 private:
-  SamplePoints samplePts;
   TargetCalculator* targetCalc;
   WeightCalculator* weightCalc;
   TargetMetric2D* metric2D;

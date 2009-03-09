@@ -72,10 +72,8 @@ class CachingTargetCalculator : public TargetCalculator,
 {
 public:
   
-  CachingTargetCalculator( TargetCalculator* cached,
-                           const SamplePoints* pts )
-    : cachedCalculator( cached ),
-      samplePoints( pts )
+  CachingTargetCalculator( TargetCalculator* cached )
+    : cachedCalculator( cached )
       {}
   
   virtual ~CachingTargetCalculator();
@@ -85,14 +83,12 @@ public:
   
   virtual bool get_3D_target( PatchData& pd, 
                               size_t element,
-                              const SamplePoints* pts,
                               Sample sample,
                               MsqMatrix<3,3>& W_out,
                               MsqError& err );
   
   virtual bool get_2D_target( PatchData& pd,
                               size_t element,
-                              const SamplePoints* pts,
                               Sample sample,
                               MsqMatrix<3,2>& W_inv_out,
                               MsqError& err );
@@ -113,7 +109,6 @@ protected:
 private:
   
   TargetCalculator *const cachedCalculator;
-  const SamplePoints *const samplePoints;
 };
 
 } // namespace Mesquite

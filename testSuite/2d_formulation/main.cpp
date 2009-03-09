@@ -42,7 +42,6 @@
 #include "ElementPMeanP.hpp"
 #include "MsqError.hpp"
 #include "TSquared2D.hpp"
-#include "SamplePoints.hpp"
 #include "MeshImpl.hpp"
 #include "PlanarDomain.hpp"
 #include "InstructionQueue.hpp"
@@ -102,14 +101,14 @@ void run_test( Grouping grouping, int of_power, Weight w, const string filename 
   InverseMetricWeight imw( &qual_metric );
   WeightReader reader;
   if (w == METRIC) {
-    TargetWriter writer( qual_metric.get_sample_points(), 0, &mw );
+    TargetWriter writer( 0, &mw );
     InstructionQueue tq;
     tq.add_target_calculator( &writer, err );
     tq.run_instructions( &mesh, &plane, err ); CHKERR(err);
     qual_metric.set_weight_calculator( &reader );
   }
   else if (w == INV_METRIC) {
-    TargetWriter writer( qual_metric.get_sample_points(), 0, &imw );
+    TargetWriter writer( 0, &imw );
     InstructionQueue tq;
     tq.add_target_calculator( &writer, err );
     tq.run_instructions( &mesh, &plane, err ); CHKERR(err);

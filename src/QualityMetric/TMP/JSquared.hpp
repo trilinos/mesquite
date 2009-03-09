@@ -38,15 +38,13 @@
 
 namespace Mesquite {
 
-class SamplePoints;
 template <unsigned R, unsigned C> class MsqMatrix;
 
 class JSquared : public ElemSampleQM
 {
 public:
 
-  JSquared( const SamplePoints* pts  
-    : samplePts(pts)  {}
+  JSquared( )  {}
      
   MESQUITE_EXPORT virtual
   msq_std::string get_name() const;
@@ -77,13 +75,8 @@ public:
                  double& value,
                  msq_std::vector<size_t>& indices,
                  MsqError& err );
-                 
-  MESQUITE_EXPORT 
-  const SamplePoints* get_sample_points() const 
-    { return samplePts; }
   
 private:
-  const SamplePoints* samplePts;
 };
 
 } // namespace Mesquite

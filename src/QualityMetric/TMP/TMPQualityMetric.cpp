@@ -64,7 +64,7 @@ void TMPQualityMetric::get_evaluations( PatchData& pd,
                                       bool free,
                                       MsqError& err )
 {
-  get_sample_pt_evaluations( pd, samplePts, handles, free, err );
+  get_sample_pt_evaluations( pd, handles, free, err );
 }
 
 void TMPQualityMetric::get_element_evaluations( PatchData& pd,
@@ -72,7 +72,7 @@ void TMPQualityMetric::get_element_evaluations( PatchData& pd,
                                               msq_std::vector<size_t>& handles,
                                               MsqError& err )
 {
-  get_elem_sample_points( pd, samplePts, elem, handles, err );
+  get_elem_sample_points( pd, elem, handles, err );
 }
 
 /**\brief Calculate gradient from derivatives of mapping function terms
@@ -218,7 +218,7 @@ bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
     MsqMatrix<3,3> A, W;
     mf->jacobian( pd, e, bits, s, indices, mDerivs3D, num_indices, A, err );
     MSQ_ERRZERO(err);
-    targetCalc->get_3D_target( pd, e, samplePts, s, W, err ); MSQ_ERRZERO(err);
+    targetCalc->get_3D_target( pd, e, s, W, err ); MSQ_ERRZERO(err);
     rval = metric3D->evaluate( A, W, value, err ); MSQ_ERRZERO(err);
   }
   else if (edim == 2) {
@@ -234,7 +234,7 @@ bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
     
     MsqMatrix<3,2> J, Wp, RZ;
     mf->jacobian( pd, e, bits, s, indices, mDerivs2D, num_indices, J, err );
-    targetCalc->get_2D_target( pd, e, samplePts, s, Wp, err ); MSQ_ERRZERO(err);
+    targetCalc->get_2D_target( pd, e, s, Wp, err ); MSQ_ERRZERO(err);
     
     MsqMatrix<2,2> W, A;
     surface_to_2d( J, Wp, W, RZ );
@@ -248,7 +248,7 @@ bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
   
     // apply target weight to value
   if (weightCalc) {
-    double ck = weightCalc->get_weight( pd, e, samplePts, s, err ); MSQ_ERRZERO(err);
+    double ck = weightCalc->get_weight( pd, e, s, err ); MSQ_ERRZERO(err);
     value *= ck;
   }
   
@@ -289,7 +289,7 @@ bool TMPQualityMetric::evaluate_with_gradient(
     MsqMatrix<3,3> A, W, dmdA;
     mf->jacobian( pd, e, bits, s, mIndices, mDerivs3D, num_idx, A, err );
     MSQ_ERRZERO(err);
-    targetCalc->get_3D_target( pd, e, samplePts, s, W, err ); MSQ_ERRZERO(err);
+    targetCalc->get_3D_target( pd, e, s, W, err ); MSQ_ERRZERO(err);
     rval = metric3D->evaluate_with_grad( A, W, value, dmdA, err ); MSQ_ERRZERO(err);
     gradient<3>( num_idx, mDerivs3D, dmdA, grad );
   }
@@ -306,7 +306,7 @@ bool TMPQualityMetric::evaluate_with_gradient(
     
     MsqMatrix<3,2> J, Wp, RZ;
     mf->jacobian( pd, e, bits, s, mIndices, mDerivs2D, num_idx, J, err );
-    targetCalc->get_2D_target( pd, e, samplePts, s, Wp, err ); MSQ_ERRZERO(err);
+    targetCalc->get_2D_target( pd, e, s, Wp, err ); MSQ_ERRZERO(err);
     
     MsqMatrix<2,2> W, A, dmdA;
     surface_to_2d( J, Wp, W, RZ );
@@ -325,7 +325,7 @@ bool TMPQualityMetric::evaluate_with_gradient(
   
     // apply target weight to value
   if (weightCalc) {
-    double ck = weightCalc->get_weight( pd, e, samplePts, s, err ); MSQ_ERRZERO(err);
+    double ck = weightCalc->get_weight( pd, e, s, err ); MSQ_ERRZERO(err);
     value *= ck;
     for (size_t i = 0; i < num_idx; ++i)
       grad[i] *= ck;
@@ -370,7 +370,7 @@ bool TMPQualityMetric::evaluate_with_Hessian(
     MsqMatrix<3,3> A, W, dmdA, d2mdA2[6];
     mf->jacobian( pd, e, bits, s, mIndices, mDerivs3D, num_idx, A, err );
     MSQ_ERRZERO(err);
-    targetCalc->get_3D_target( pd, e, samplePts, s, W, err ); MSQ_ERRZERO(err);
+    targetCalc->get_3D_target( pd, e, s, W, err ); MSQ_ERRZERO(err);
     rval = metric3D->evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); MSQ_ERRZERO(err);
     gradient<3>( num_idx, mDerivs3D, dmdA, grad );
     Hessian.resize( num_idx*(num_idx+1)/2 );
@@ -389,7 +389,7 @@ bool TMPQualityMetric::evaluate_with_Hessian(
     
     MsqMatrix<3,2> J, Wp, RZ;
     mf->jacobian( pd, e, bits, s, mIndices, mDerivs2D, num_idx, J, err );
-    targetCalc->get_2D_target( pd, e, samplePts, s, Wp, err ); MSQ_ERRZERO(err);
+    targetCalc->get_2D_target( pd, e, s, Wp, err ); MSQ_ERRZERO(err);
     
     MsqMatrix<2,2> W, A, dmdA, d2mdA2[3];
     surface_to_2d( J, Wp, W, RZ );
@@ -416,7 +416,7 @@ bool TMPQualityMetric::evaluate_with_Hessian(
   
     // apply target weight to value
   if (weightCalc) {
-    double ck = weightCalc->get_weight( pd, e, samplePts, s, err ); MSQ_ERRZERO(err);
+    double ck = weightCalc->get_weight( pd, e, s, err ); MSQ_ERRZERO(err);
     value *= ck;
     for (size_t i = 0; i < num_idx; ++i)
       grad[i] *= ck;
@@ -463,7 +463,7 @@ bool TMPQualityMetric::evaluate_with_Hessian_diagonal(
     MsqMatrix<3,3> A, W, dmdA, d2mdA2[6];
     mf->jacobian( pd, e, bits, s, mIndices, mDerivs3D, num_idx, A, err );
     MSQ_ERRZERO(err);
-    targetCalc->get_3D_target( pd, e, samplePts, s, W, err ); MSQ_ERRZERO(err);
+    targetCalc->get_3D_target( pd, e, s, W, err ); MSQ_ERRZERO(err);
     rval = metric3D->evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); MSQ_ERRZERO(err);
     gradient<3>( num_idx, mDerivs3D, dmdA, grad );
     
@@ -487,7 +487,7 @@ bool TMPQualityMetric::evaluate_with_Hessian_diagonal(
     
     MsqMatrix<3,2> J, Wp, RZ;
     mf->jacobian( pd, e, bits, s, mIndices, mDerivs2D, num_idx, J, err );
-    targetCalc->get_2D_target( pd, e, samplePts, s, Wp, err ); MSQ_ERRZERO(err);
+    targetCalc->get_2D_target( pd, e, s, Wp, err ); MSQ_ERRZERO(err);
     
     MsqMatrix<2,2> W, A, dmdA, d2mdA2[3];
     surface_to_2d( J, Wp, W, RZ );
@@ -524,7 +524,7 @@ bool TMPQualityMetric::evaluate_with_Hessian_diagonal(
   
     // apply target weight to value
   if (weightCalc) {
-    double ck = weightCalc->get_weight( pd, e, samplePts, s, err ); MSQ_ERRZERO(err);
+    double ck = weightCalc->get_weight( pd, e, s, err ); MSQ_ERRZERO(err);
     value *= ck;
     for (size_t i = 0; i < num_idx; ++i) {
       grad[i] *= ck;

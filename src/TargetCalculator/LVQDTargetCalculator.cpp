@@ -106,21 +106,20 @@ MsqMatrix<3,3> LVQDTargetCalculator::calc_delta_3D( const MsqMatrix<3,3>& M )
 
 bool LVQDTargetCalculator::get_3D_target( PatchData& pd, 
                                           size_t element,
-                                          const SamplePoints* pts,
                                           Sample sample,
                                           MsqMatrix<3,3>& W_out,
                                           MsqError& err )
 {
-  lambdaGuide->get_3D_target( pd, element, pts, sample, W_out, err ); MSQ_ERRZERO(err);
+  lambdaGuide->get_3D_target( pd, element, sample, W_out, err ); MSQ_ERRZERO(err);
   const double lambda = calc_lambda_3D( W_out );
   
-  vGuide->get_3D_target( pd, element, pts, sample, W_out, err ); MSQ_ERRZERO(err);
+  vGuide->get_3D_target( pd, element, sample, W_out, err ); MSQ_ERRZERO(err);
   const MsqMatrix<3,3> V = calc_V_3D( W_out );
   
-  qGuide->get_3D_target( pd, element, pts, sample, W_out, err ); MSQ_ERRZERO(err);
+  qGuide->get_3D_target( pd, element, sample, W_out, err ); MSQ_ERRZERO(err);
   const MsqMatrix<3,3> Q = calc_Q_3D( W_out );
   
-  dGuide->get_3D_target( pd, element, pts, sample, W_out, err ); MSQ_ERRZERO(err);
+  dGuide->get_3D_target( pd, element, sample, W_out, err ); MSQ_ERRZERO(err);
   const MsqMatrix<3,3> D = calc_delta_3D( W_out );
   
   W_out = lambda * V * Q * D;
@@ -175,21 +174,20 @@ MsqMatrix<2,2> LVQDTargetCalculator::calc_delta_2D( const MsqMatrix<3,2>& M )
 
 bool LVQDTargetCalculator::get_2D_target( PatchData& pd,
                                           size_t element,
-                                          const SamplePoints* pts,
                                           Sample sample,
                                           MsqMatrix<3,2>& W_out,
                                           MsqError& err )
 {
-  lambdaGuide->get_2D_target( pd, element, pts, sample, W_out, err ); MSQ_ERRZERO(err);
+  lambdaGuide->get_2D_target( pd, element, sample, W_out, err ); MSQ_ERRZERO(err);
   const double lambda = calc_lambda_2D( W_out );
   
-  vGuide->get_2D_target( pd, element, pts, sample, W_out, err ); MSQ_ERRZERO(err);
+  vGuide->get_2D_target( pd, element, sample, W_out, err ); MSQ_ERRZERO(err);
   const MsqMatrix<3,2> V = calc_V_2D( W_out );
   
-  qGuide->get_2D_target( pd, element, pts, sample, W_out, err ); MSQ_ERRZERO(err);
+  qGuide->get_2D_target( pd, element, sample, W_out, err ); MSQ_ERRZERO(err);
   const MsqMatrix<2,2> Q = calc_Q_2D( W_out );
   
-  dGuide->get_2D_target( pd, element, pts, sample, W_out, err ); MSQ_ERRZERO(err);
+  dGuide->get_2D_target( pd, element, sample, W_out, err ); MSQ_ERRZERO(err);
   const MsqMatrix<2,2> D = calc_delta_2D( W_out );
   
   W_out = lambda * V * Q * D;

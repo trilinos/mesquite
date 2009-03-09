@@ -36,7 +36,6 @@
 #include "WeightCalculator.hpp"
 #include "MeshInterface.hpp"
 #include "MsqMatrix.hpp"
-#include "SamplePoints.hpp"
 #include "PatchData.hpp"
 #include "PatchSet.hpp"
 #include "MsqError.hpp"
@@ -50,13 +49,11 @@
 
 namespace Mesquite {
 
-TargetWriter::TargetWriter(  const SamplePoints* pts,
-                             TargetCalculator* tc,
+TargetWriter::TargetWriter(  TargetCalculator* tc,
                              WeightCalculator* wc,
                              msq_std::string target_base_name,
                              msq_std::string weight_base_name )
-  : samplePoints(pts),
-    targetCalc(tc), 
+  : targetCalc(tc), 
     weightCalc(wc), 
     targetName(target_base_name), 
     weightName(weight_base_name)
@@ -66,30 +63,6 @@ TargetWriter::~TargetWriter() {}
 
 msq_std::string TargetWriter::get_name() const
   { return "TargetWriter"; }
-
-static void append_samples( msq_std::vector<Sample>& samples,
-                            unsigned dim, unsigned num )
-{
-  size_t in_size = samples.size();
-  samples.resize( in_size + num );
-  for (unsigned i = 0; i < num; ++i)
-    samples[i+in_size] = Sample( dim, i );
-}
-
-void TargetWriter::get_samples( EntityTopology type,
-                                msq_std::vector<Sample>& samples )
-{
-  samples.clear();
-  const int d = TopologyInfo::dimension(type);
-  if (samplePoints->will_sample_at(type,0))
-    append_samples( samples, 0, type == PYRAMID ? 4 : TopologyInfo::corners(type) );
-  if (samplePoints->will_sample_at(type,1))
-    append_samples( samples, 1, TopologyInfo::edges(type) );
-  if (3 == d && samplePoints->will_sample_at(type,2))
-    append_samples( samples, 2, TopologyInfo::faces(type) );
-  if (samplePoints->will_sample_at(type,d))
-    append_samples( samples, d, 1 );
-}
 
 double TargetWriter::loop_over_mesh( Mesh* mesh, 
                                      MeshDomain* domain, 
@@ -124,14 +97,14 @@ double TargetWriter::loop_over_mesh( Mesh* mesh,
     
     MsqMeshEntity& elem = patch.element_by_index(0);
     EntityTopology type = elem.get_element_type();
-    get_samples( type, samples );
+    patch.get_samples( 0, samples, err ); MSQ_ERRZERO(err);
     
     if (targetCalc) {
       const unsigned dim = TopologyInfo::dimension(type);
       if (dim == 2) {
         targets2d.resize( samples.size() );
         for (unsigned i = 0; i < samples.size(); ++i) {
-          targetCalc->get_2D_target( patch, 0, samplePoints, samples[i], targets2d[i], err ); MSQ_ERRZERO(err);
+          targetCalc->get_2D_target( patch, 0, samples[i], targets2d[i], err ); MSQ_ERRZERO(err);
 
           MsqMatrix<3,1> cross = targets2d[i].column(0) * targets2d[i].column(1);
           if (DBL_EPSILON > (cross%cross)) {
@@ -148,7 +121,7 @@ double TargetWriter::loop_over_mesh( Mesh* mesh,
       else {
         targets3d.resize( samples.size() );
         for (unsigned i = 0; i < samples.size(); ++i) {
-          targetCalc->get_3D_target( patch, 0, samplePoints, samples[i], targets3d[i], err ); MSQ_ERRZERO(err);
+          targetCalc->get_3D_target( patch, 0, samples[i], targets3d[i], err ); MSQ_ERRZERO(err);
 
           if (DBL_EPSILON > det(targets3d[i])) {
             MSQ_SETERR(err)("Inverted 3D target", MsqError::INVALID_ARG);
@@ -166,7 +139,7 @@ double TargetWriter::loop_over_mesh( Mesh* mesh,
     if (weightCalc) {
       weights.resize( samples.size() );
       for (unsigned i = 0; i < samples.size(); ++i) {
-        weights[i] = weightCalc->get_weight( patch, 0, samplePoints, samples[i], err ); MSQ_ERRZERO(err);
+        weights[i] = weightCalc->get_weight( patch, 0, samples[i], err ); MSQ_ERRZERO(err);
       }
       TagHandle tag = get_weight_tag( samples.size(), mesh, err ); MSQ_ERRZERO(err);
       mesh->tag_set_element_data( tag, 1, 

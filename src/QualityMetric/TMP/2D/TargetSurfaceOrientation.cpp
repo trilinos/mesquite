@@ -32,7 +32,6 @@
 
 #include "Mesquite.hpp"
 #include "TargetSurfaceOrientation.hpp"
-#include "SamplePoints.hpp"
 #include "MsqError.hpp"
 #include "Vector3D.hpp"
 #include "PatchData.hpp"
@@ -57,16 +56,17 @@ void TargetSurfaceOrientation::get_evaluations( PatchData& pd,
   ElementQM::get_element_evaluations( pd, elems, free, err ); MSQ_ERRRTN(err);
   for (msq_std::vector<size_t>::iterator i = elems.begin(); i != elems.end(); ++i)
   {
+    NodeSet samples = pd.get_samples( *i );
     EntityTopology type = pd.element_by_index( *i ).get_element_type();
     if (TopologyInfo::dimension(type) == 2) {
-      if (samplePts->will_sample_at(type,0)) 
-        for (unsigned j = 0; j < TopologyInfo::corners(type); ++j)
+      for (unsigned j = 0; j < TopologyInfo::corners(type); ++j)
+        if (samples.corner_node(j))
           handles.push_back( handle( Sample(0,j), *i ) );
-      if (samplePts->will_sample_at(type,1)) 
-        for (unsigned j = 0; j < TopologyInfo::edges(type); ++j)
+      for (unsigned j = 0; j < TopologyInfo::edges(type); ++j)
+        if (samples.mid_edge_node(j)) 
           handles.push_back( handle( Sample(1,j), *i ) );
-      if (samplePts->will_sample_at(type,2))
-        handles.push_back( handle( Sample(2, 0), *i ) );
+      if (samples.mid_face_node(0))
+        handles.push_back( handle( Sample(2,0), *i ) );
     }
   }
 }
@@ -77,19 +77,19 @@ void TargetSurfaceOrientation::get_element_evaluations( PatchData& pd,
                                               MsqError& err )
 {
   EntityTopology type = pd.element_by_index( elem ).get_element_type();
-  if (TopologyInfo::dimension(type) == 3) {
-    handles.clear();
-    return;
-  }
   handles.clear();
-  if (samplePts->will_sample_at(type,0)) 
-    for (unsigned j = 0; j < TopologyInfo::corners(type); ++j)
+  if (TopologyInfo::dimension(type) == 3) 
+    return;
+
+  NodeSet samples = pd.get_samples( elem );
+  for (unsigned j = 0; j < TopologyInfo::corners(type); ++j)
+    if (samples.corner_node(j))
       handles.push_back( handle( Sample(0,j), elem ) );
-  if (samplePts->will_sample_at(type,1)) 
-    for (unsigned j = 0; j < TopologyInfo::edges(type); ++j)
+  for (unsigned j = 0; j < TopologyInfo::edges(type); ++j)
+    if (samples.mid_edge_node(j)) 
       handles.push_back( handle( Sample(1,j), elem ) );
-  if (samplePts->will_sample_at(type,2))
-    handles.push_back( handle( Sample(2, 0), elem ) );
+  if (samples.mid_face_node(0))
+    handles.push_back( handle( Sample(2,0), elem ) );
 }
 
 bool TargetSurfaceOrientation::evaluate( PatchData& pd, size_t handle, double& value, MsqError& err )
@@ -152,7 +152,7 @@ bool TargetSurfaceOrientation::evaluate_with_indices( PatchData& pd,
   }
   
   MsqMatrix<3,2> Wp;
-  targetCalc->get_2D_target( pd, e, samplePts, s, Wp, err ); MSQ_ERRZERO(err);
+  targetCalc->get_2D_target( pd, e, s, Wp, err ); MSQ_ERRZERO(err);
   MsqMatrix<3,1> Wp1 = Wp.column(0);
   MsqMatrix<3,1> Wp2 = Wp.column(1);
   MsqMatrix<3,1> nwp = Wp1 * Wp2;
@@ -164,7 +164,7 @@ bool TargetSurfaceOrientation::evaluate_with_indices( PatchData& pd,
   
     // apply target weight to value
   if (weightCalc) {
-    const double ck = weightCalc->get_weight( pd, e, samplePts, s, err ); MSQ_ERRZERO(err);
+    const double ck = weightCalc->get_weight( pd, e, s, err ); MSQ_ERRZERO(err);
     value *= ck;
   }
   return true;

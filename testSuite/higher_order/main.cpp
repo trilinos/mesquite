@@ -67,7 +67,6 @@ using std::endl;
 #include "TerminationCriterion.hpp"
 #include "QualityAssessor.hpp"
 #include "QuadLagrangeShape.hpp"
-#include "SamplePoints.hpp"
 
 // algorithms
 #include "IdealTargetCalculator.hpp"
@@ -216,7 +215,7 @@ void compare_nodes( size_t start_index,
 }
   
   // code copied from testSuite/algorithm_test/main.cpp
-InstructionQueue* create_instruction_queue(SamplePoints* pts, MsqError& err)
+InstructionQueue* create_instruction_queue(MsqError& err)
 {
   
     // creates an intruction queue
@@ -225,7 +224,7 @@ InstructionQueue* create_instruction_queue(SamplePoints* pts, MsqError& err)
   // creates a mean ratio quality metric ...
   //IdealWeightInverseMeanRatio* mean = new IdealWeightInverseMeanRatio(err); MSQ_ERRZERO(err);
   TargetCalculator* tc = new IdealTargetCalculator;
-  TMPQualityMetric* mean = new TMPQualityMetric( pts, tc, 0, new InverseMeanRatio2D, 0 );
+  TMPQualityMetric* mean = new TMPQualityMetric( tc, 0, new InverseMeanRatio2D, 0 );
   
   LPtoPTemplate* obj_func = new LPtoPTemplate(mean, 1, err); MSQ_ERRZERO(err);
   
@@ -265,9 +264,6 @@ int do_test( bool slave)
 {
   MsqPrintError err(cout);
   QuadLagrangeShape quad9;
-  SamplePoints pts(true);
-  if (!slave)
-    pts.sample_at( QUADRILATERAL, 1 );
   
     // Create geometry
   Vector3D z(0,0,1), o(0,0,0);
@@ -300,7 +296,7 @@ int do_test( bool slave)
 
     // Smooth linear mesh and check results
   cout << "Smoothing linear elements" << endl;
-  InstructionQueue* q1 = create_instruction_queue( &pts, err );
+  InstructionQueue* q1 = create_instruction_queue( err );
   if (MSQ_CHKERR(err)) return 1;
   q1->run_instructions( linear_in, &geom, err ); 
   if (MSQ_CHKERR(err)) return 1;
@@ -315,7 +311,7 @@ int do_test( bool slave)
  
     // Smooth corner vertices and adjust mid-side nodes
   cout << "Smoothing quadratic elements" << endl;
-  InstructionQueue* q3 = create_instruction_queue( &pts, err );
+  InstructionQueue* q3 = create_instruction_queue( err );
   if (MSQ_CHKERR(err)) return 1;
   if (!slave)
     q3->set_slaved_ho_node_mode(Settings::SLAVE_NONE);
@@ -345,8 +341,6 @@ int do_smooth_ho()
 {
   MsqPrintError err(cout);
   QuadLagrangeShape quad9;
-  SamplePoints pts(true);
-  pts.sample_at( QUADRILATERAL, 1 );
   
     // Create geometry
   PlanarDomain geom(PlanarDomain::XY);  
@@ -365,7 +359,7 @@ int do_smooth_ho()
 
     // Smooth linear mesh and check results
   cout << "Smoothing higher-order nodes" << endl;
-  InstructionQueue* q1 = create_instruction_queue( &pts, err );
+  InstructionQueue* q1 = create_instruction_queue( err );
   if (MSQ_CHKERR(err)) return 1;
   q1->set_slaved_ho_node_mode(Settings::SLAVE_NONE);
   q1->set_mapping_function( &quad9 );

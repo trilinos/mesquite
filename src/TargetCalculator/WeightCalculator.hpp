@@ -39,7 +39,6 @@
 
 namespace Mesquite {
 
-class SamplePoints;
 class PatchData;
 class MsqError;
 
@@ -57,7 +56,6 @@ public:
    */
   virtual double get_weight( PatchData& pd, 
                              size_t element,
-                             const SamplePoints* pts,
                              Sample sample,
                              MsqError& err ) = 0;
 };

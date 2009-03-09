@@ -38,7 +38,6 @@ namespace Mesquite {
 class PatchData;
 class QualityMetric;
 class ElemSampleQM;
-class SamplePoints;
 }
 
 class QualityMetricTester
@@ -170,7 +169,7 @@ public:
     /** Test get_evaluatinos() method for vertex-based metric */
   void test_get_vertex_evaluations( QualityMetric* qm );
     /** Test get_evaluatinos() method for sample-based metric */
-  void test_get_sample_evaluations( QualityMetric* qm, const SamplePoints* pts );
+  void test_get_sample_evaluations( QualityMetric* qm );
     /** Test method to get samples in an element in the ElemSampleQM base class */
   void test_get_in_element_evaluations( ElemSampleQM* qm );
 
@@ -184,7 +183,7 @@ public:
      */
   void test_get_vertex_indices( QualityMetric* qm );
     /** Test indices from evaluate_with_indices() method */
-  void test_get_sample_indices( QualityMetric* qm, const SamplePoints* pts );
+  void test_get_sample_indices( QualityMetric* qm );
 
     /** compare results of evaluate() and evaluate_with_indices() methods */
   void compare_eval_and_eval_with_indices( QualityMetric* qm );
@@ -220,18 +219,21 @@ public:
     /** compare gradient w/ no fixed vertices to gradient
      *  for element with all but one vertex fixed.
      */
-  void test_gradient_with_fixed_vertex( QualityMetric* qm );
-  void test_gradient_with_fixed_vertex( EntityTopology type, QualityMetric* qm );
+  void test_gradient_with_fixed_vertex( QualityMetric* qm, const Settings* settings = 0 );
+  void test_gradient_with_fixed_vertex( EntityTopology type, QualityMetric* qm,
+                                        const Settings* settings = 0 );
     /** compare Hessian w/ no fixed vertices to Hessian
      *  for element with all but one vertex fixed.
      */
-  void test_hessian_with_fixed_vertex( QualityMetric* qm );
-  void test_hessian_with_fixed_vertex( EntityTopology type, QualityMetric* qm );
+  void test_hessian_with_fixed_vertex( QualityMetric* qm, const Settings* settings = 0 );
+  void test_hessian_with_fixed_vertex( EntityTopology type, QualityMetric* qm,
+                                       const Settings* settings = 0 );
     /** compare Hessian diagonal w/ no fixed vertices to Hessian
      *  for element with all but one vertex fixed.
      */
-  void test_diagonal_with_fixed_vertex( QualityMetric* qm );
-  void test_diagonal_with_fixed_vertex( EntityTopology type, QualityMetric* qm );
+  void test_diagonal_with_fixed_vertex( QualityMetric* qm, const Settings* settings = 0 );
+  void test_diagonal_with_fixed_vertex( EntityTopology type, QualityMetric* qm,
+                                        const Settings* settings = 0 );
 
     /** Test that gradient values are zero for an ideal element.
      *  If 'unit_area' is true, then ideal elements have unit measure,

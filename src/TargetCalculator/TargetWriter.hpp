@@ -41,7 +41,6 @@ namespace Mesquite {
 
 class TargetCalculator;
 class WeightCalculator;
-class SamplePoints;
 
 /** Save target matrices in tag data 
  *
@@ -51,8 +50,7 @@ class SamplePoints;
 class TargetWriter : public Instruction
 {
 public:
-  TargetWriter( const SamplePoints* pts,
-                TargetCalculator* tc,
+  TargetWriter( TargetCalculator* tc,
                 WeightCalculator* wc = 0,
                 msq_std::string target_base_name = "MSQ_TARGET_MATRIX",
                 msq_std::string weight_base_name = "MSQ_TARGET_WEIGHT") ;
@@ -70,9 +68,6 @@ private:
   TagHandle get_weight_tag( unsigned count, Mesh* mesh, MsqError& err );
   TagHandle get_tag_handle( const msq_std::string& base_name,
                             unsigned num_dbl, Mesh* mesh, MsqError& err );
-  void get_samples( EntityTopology type, msq_std::vector<Sample>& samples );
-
-  const SamplePoints* samplePoints;
 
   TargetCalculator* targetCalc;
   WeightCalculator* weightCalc;

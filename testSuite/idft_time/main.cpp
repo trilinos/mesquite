@@ -52,7 +52,6 @@
 #include "InverseMeanRatio3D.hpp"
 #include "InverseMeanRatio2D.hpp"
 #include "TMPQualityMetric.hpp"
-#include "SamplePoints.hpp"
 
 #include "IdealTargetCalculator.hpp"
 #include "PMeanPTemplate.hpp"
@@ -291,8 +290,7 @@ int main( int argc, char* argv[] )
   IdealTargetCalculator new_target(false);
   InverseMeanRatio3D tmp_3d;
   InverseMeanRatio2D tmp_2d;
-  SamplePoints pts(true);
-  TMPQualityMetric new_target_metric( &pts, &new_target, &tmp_2d, &tmp_3d );
+  TMPQualityMetric new_target_metric( &new_target, &tmp_2d, &tmp_3d );
   ElementPMeanP new_target_average( 1.0, &new_target_metric );
   NumericQM new_target_numeric( &new_target_metric );
   CompareMetric comp_metric( &non_target_metric, &new_target_average, true );

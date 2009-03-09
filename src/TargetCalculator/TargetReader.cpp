@@ -35,7 +35,6 @@
 #include "PatchData.hpp"
 #include "MsqError.hpp"
 #include "MsqMatrix.hpp"
-#include "SamplePoints.hpp"
 #include "ElemSampleQM.hpp"
 #ifdef MSQ_USE_OLD_IO_HEADERS
 # include <sstream.h>
@@ -87,14 +86,13 @@ TargetReader::~TargetReader()
 
 bool TargetReader::get_3D_target( PatchData &pd,
                                   size_t element,
-                                  const SamplePoints* samples,
                                   Sample sample,
                                   MsqMatrix<3,3>& W_out,
                                   MsqError& err )
 {
     // calculate index of sample in array 
-  EntityTopology type = pd.element_by_index(element).get_element_type();
-  unsigned offset = samples->sample_number_from_location( type, sample );
+  NodeSet all_samples = pd.get_samples( element );
+  unsigned offset = all_samples.num_before( sample );
 
   int dim = TopologyInfo::dimension( pd.element_by_index(element).get_element_type() );
   if (dim == 2) {
@@ -108,7 +106,7 @@ bool TargetReader::get_3D_target( PatchData &pd,
     W_out = data.targets3D[offset];
     return true;
   }
-  const unsigned num_samples = samples->num_sample_points( type );
+  const unsigned num_samples = all_samples.num_nodes();
   const unsigned handle_idx = num_samples - 1;
   
     // get the tag handle
@@ -143,14 +141,13 @@ bool TargetReader::get_3D_target( PatchData &pd,
 
 bool TargetReader::get_2D_target( PatchData &pd,
                                   size_t element,
-                                  const SamplePoints* samples,
                                   Sample sample,
                                   MsqMatrix<3,2>& W_out,
                                   MsqError& err )
 {
     // calculate index of sample in array 
-  EntityTopology type = pd.element_by_index(element).get_element_type();
-  unsigned offset = samples->sample_number_from_location( type, sample );
+  NodeSet all_samples = pd.get_samples( element );
+  unsigned offset = all_samples.num_before( sample );
 
   int dim = TopologyInfo::dimension( pd.element_by_index(element).get_element_type() );
   if (dim == 3) {
@@ -164,7 +161,7 @@ bool TargetReader::get_2D_target( PatchData &pd,
     W_out = data.targets2D[offset];
     return true;
   }
-  const unsigned num_samples = samples->num_sample_points( type );
+  const unsigned num_samples = all_samples.num_nodes();
   const unsigned handle_idx = num_samples - 1;
   
     // get the tag handle

@@ -30,7 +30,6 @@
 #include "IdealElements.hpp"
 #include "UnitUtil.hpp"
 #include "ElemSampleQM.hpp"
-#include "SamplePoints.hpp"
 #include "TopologyInfo.hpp"
 
 #include <cppunit/extensions/HelperMacros.h>
@@ -134,7 +133,8 @@ void QualityMetricTester::get_ideal_tris( PatchData& pd, bool unit_area )
       ideal_tri_verts[i] *= unit_tri_scale;
   }
   
-  pd.attach_settings( mSettings );
+  if (!pd.get_settings())
+    pd.attach_settings( mSettings );
   pd.set_domain( &geomPlane );
   
   MsqPrintError err( msq_stdio::cout );
@@ -170,7 +170,8 @@ void QualityMetricTester::get_ideal_quads( PatchData& pd )
                                              0, 7, 8, 1 };
   const bool fixed[] = { false, true, true, true, true, true, true, true, true };
   
-  pd.attach_settings( mSettings );
+  if (!pd.get_settings())
+    pd.attach_settings( mSettings );
   pd.set_domain( &geomPlane );
   
   MsqPrintError err( msq_stdio::cout );
@@ -221,7 +222,8 @@ void QualityMetricTester::get_ideal_hexes( PatchData& pd )
   for (size_t f = 1; f < 27; ++f)
     fixed[f] = true;
   
-  pd.attach_settings( mSettings );
+  if (!pd.get_settings())
+    pd.attach_settings( mSettings );
   
   MsqPrintError err( msq_stdio::cout );
   pd.fill( 27, ideal_hex_verts, 8, HEXAHEDRON, ideal_hex_elems, fixed, err );
@@ -237,7 +239,8 @@ void QualityMetricTester::get_ideal_element( EntityTopology type,
                                              PatchData& pd,
                                              int free_vertex_index )
 {
-  pd.attach_settings( mSettings );
+  if  (!pd.get_settings())
+    pd.attach_settings( mSettings );
   if (TopologyInfo::dimension(type) == 2)
     pd.set_domain( &geomPlane );
   
@@ -629,8 +632,7 @@ void QualityMetricTester::test_get_vertex_evaluations( QualityMetric* qm )
   CPPUNIT_ASSERT(count > 0);
 }
 
-void QualityMetricTester::test_get_sample_evaluations( QualityMetric* qm,
-                                                       const SamplePoints* pts )
+void QualityMetricTester::test_get_sample_evaluations( QualityMetric* qm )
 {
   MsqPrintError err( msq_stdio::cout );
   PatchData pd;
@@ -641,7 +643,7 @@ void QualityMetricTester::test_get_sample_evaluations( QualityMetric* qm,
     get_ideal_hexes( pd );
     size_t expected_evals = 0;
     for (size_t i= 0; i < pd.num_elements(); ++i)
-      expected_evals += pts->num_sample_points( pd.element_by_index(i).get_element_type() );
+      expected_evals += pd.get_samples(i).num_nodes();
 
     qm->get_evaluations( pd, handles, false, err );
     CPPUNIT_ASSERT(!MSQ_CHKERR(err));
@@ -658,7 +660,7 @@ void QualityMetricTester::test_get_sample_evaluations( QualityMetric* qm,
     get_ideal_tris( pd, false );
     size_t expected_evals = 0;
     for (size_t i= 0; i < pd.num_elements(); ++i)
-      expected_evals += pts->num_sample_points( pd.element_by_index(i).get_element_type() );
+      expected_evals += pd.get_samples(i).num_nodes();
 
     qm->get_evaluations( pd, handles, false, err );
     CPPUNIT_ASSERT(!MSQ_CHKERR(err));
@@ -675,7 +677,7 @@ void QualityMetricTester::test_get_sample_evaluations( QualityMetric* qm,
     get_ideal_quads( pd );
     size_t expected_evals = 0;
     for (size_t i= 0; i < pd.num_elements(); ++i)
-      expected_evals += pts->num_sample_points( pd.element_by_index(i).get_element_type() );
+      expected_evals += pd.get_samples(i).num_nodes();
 
     qm->get_evaluations( pd, handles, false, err );
     CPPUNIT_ASSERT(!MSQ_CHKERR(err));
@@ -849,8 +851,7 @@ void QualityMetricTester::test_get_vertex_indices( QualityMetric* qm )
   }
 }
 
-void QualityMetricTester::test_get_sample_indices( QualityMetric* qm,
-                                                   const SamplePoints* pts )
+void QualityMetricTester::test_get_sample_indices( QualityMetric* qm )
 {
   MsqPrintError err( msq_stdio::cout );
   PatchData pd;
@@ -861,10 +862,10 @@ void QualityMetricTester::test_get_sample_indices( QualityMetric* qm,
   CPPUNIT_ASSERT( !types.empty() );
   
   for (size_t i = 0; i < types.size(); ++i) {
-    const size_t count = pts->num_sample_points( types[i] );
-    CPPUNIT_ASSERT( count > 0 );
       // get evaluation locations
     get_ideal_element( types[i], false, pd, true );
+    const size_t count = pd.get_samples(0).num_nodes();
+    CPPUNIT_ASSERT( count > 0 );
     qm->get_evaluations( pd, handles, false, err );
     CPPUNIT_ASSERT( !MSQ_CHKERR(err) );
       // should have one evaluation for each sample point
@@ -2323,31 +2324,38 @@ void QualityMetricTester::test_symmetric_Hessian_diagonal_blocks( QualityMetric*
   } // for(i < types.size())
 }
 
-void QualityMetricTester::test_gradient_with_fixed_vertex( QualityMetric* qm )
+void QualityMetricTester::test_gradient_with_fixed_vertex( QualityMetric* qm,
+                                                           const Settings* settings )
 {
   CPPUNIT_ASSERT(!types.empty());
   for (unsigned i = 0; i < types.size(); ++i)
-    test_gradient_with_fixed_vertex( types[i], qm );
+    test_gradient_with_fixed_vertex( types[i], qm, settings );
 }
 
-void QualityMetricTester::test_hessian_with_fixed_vertex( QualityMetric* qm )
+void QualityMetricTester::test_hessian_with_fixed_vertex( QualityMetric* qm,
+                                                          const Settings* settings )
 {
   CPPUNIT_ASSERT(!types.empty());
   for (unsigned i = 0; i < types.size(); ++i)
-    test_hessian_with_fixed_vertex( types[i], qm );
+    test_hessian_with_fixed_vertex( types[i], qm, settings );
 }
 
-void QualityMetricTester::test_diagonal_with_fixed_vertex( QualityMetric* qm )
+void QualityMetricTester::test_diagonal_with_fixed_vertex( QualityMetric* qm, 
+                                                           const Settings* settings )
 {
   CPPUNIT_ASSERT(!types.empty());
   for (unsigned i = 0; i < types.size(); ++i)
-    test_diagonal_with_fixed_vertex( types[i], qm );
+    test_diagonal_with_fixed_vertex( types[i], qm, settings );
 }
 
-void QualityMetricTester::test_gradient_with_fixed_vertex( EntityTopology type, QualityMetric* qm )
+void QualityMetricTester::test_gradient_with_fixed_vertex( EntityTopology type, 
+                                                           QualityMetric* qm,
+                                                           const Settings* settings )
 {
   MsqPrintError err( msq_stdio::cout );
   PatchData pd;
+  if (settings)
+    pd.attach_settings(settings);
   msq_std::vector<size_t> handles, indices, indices_fixed, conn;
   msq_std::vector<Vector3D> grad, grad_fixed;
   double val, val_fixed;
@@ -2395,10 +2403,13 @@ void QualityMetricTester::test_gradient_with_fixed_vertex( EntityTopology type, 
 }
 
 
-void QualityMetricTester::test_hessian_with_fixed_vertex( EntityTopology type, QualityMetric* qm )
+void QualityMetricTester::test_hessian_with_fixed_vertex( EntityTopology type, 
+                                                          QualityMetric* qm,
+                                                          const Settings* settings )
 {
   MsqPrintError err( msq_stdio::cout );
   PatchData pd;
+  if (settings) pd.attach_settings(settings);
   msq_std::vector<size_t> handles, indices, indices_fixed, conn;
   msq_std::vector<Vector3D> grad, grad_fixed;
   msq_std::vector<Matrix3D> hess, hess_fixed;
@@ -2450,10 +2461,13 @@ void QualityMetricTester::test_hessian_with_fixed_vertex( EntityTopology type, Q
   }
 }
 
-void QualityMetricTester::test_diagonal_with_fixed_vertex( EntityTopology type, QualityMetric* qm )
+void QualityMetricTester::test_diagonal_with_fixed_vertex( EntityTopology type, 
+                                                           QualityMetric* qm,
+                                                           const Settings* settings )
 {
   MsqPrintError err( msq_stdio::cout );
   PatchData pd;
+  if (settings) pd.attach_settings(settings);
   msq_std::vector<size_t> handles, indices, indices_fixed, conn;
   msq_std::vector<Vector3D> grad, grad_fixed;
   msq_std::vector<SymMatrix3D> hess, hess_fixed;

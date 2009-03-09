@@ -38,7 +38,6 @@
 #include "ReferenceMesh.hpp"
 #include "RefMeshTargetCalculator.hpp"
 #include "Target2DShapeBarrier.hpp"
-#include "SamplePoints.hpp"
 #include "TMPQualityMetric.hpp"
 
 #include "TerminationCriterion.hpp"
@@ -189,8 +188,7 @@ int main( int argc, char* argv[] )
   ReferenceMesh rmesh( &refmesh );
   RefMeshTargetCalculator tc( &rmesh );
   Target2DShapeBarrier tm;
-  SamplePoints pts( true, false, false, false );
-  TMPQualityMetric qm( &pts, &tc, &tm, 0 );
+  TMPQualityMetric qm( &tc, &tm, 0 );
   
   PMeanPTemplate of( 1.0, &qm );
   ConjugateGradient cg( &of );

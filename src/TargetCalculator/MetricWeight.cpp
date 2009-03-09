@@ -42,7 +42,6 @@ MetricWeight::~MetricWeight() {}
 
 double MetricWeight::get_weight( PatchData& pd, 
                                  size_t element,
-                                 const SamplePoints* ,
                                  Sample sample,
                                  MsqError& err )
 {

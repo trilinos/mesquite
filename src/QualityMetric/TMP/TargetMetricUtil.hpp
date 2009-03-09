@@ -45,7 +45,6 @@ namespace Mesquite {
 
 template <unsigned R, unsigned C> class MsqMatrix;
 class PatchData;
-class SamplePoints;
 class MsqError;
 
 /**\brief Calculate R and Z such that \f$W\prime = Z^{-1} W\f$ and 
@@ -70,13 +69,11 @@ void surface_to_2d( const MsqMatrix<3,2>& A_in,
                     MsqMatrix<2,2>& W_out );
 */
 void get_sample_pt_evaluations( PatchData& pd,
-                                const SamplePoints* pts,
                                 msq_std::vector<size_t>& handles,
                                 bool free,
                                 MsqError& err );
                     
 void get_elem_sample_points( PatchData& pd,
-                             const SamplePoints* pts,
                              size_t elem,
                              msq_std::vector<size_t>& handles,
                              MsqError& err );

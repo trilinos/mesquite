@@ -42,7 +42,6 @@ namespace Mesquite {
  
 bool IdealTargetCalculator:: get_3D_target( PatchData& pd, 
                                             size_t element,
-                                            const SamplePoints* pts,
                                             Sample sample,
                                             MsqMatrix<3,3>& W,
                                             MsqError& err )
@@ -64,7 +63,6 @@ bool IdealTargetCalculator:: get_3D_target( PatchData& pd,
 
 bool IdealTargetCalculator:: get_2D_target( PatchData& pd, 
                                             size_t element,
-                                            const SamplePoints* pts,
                                             Sample sample,
                                             MsqMatrix<3,2>& W,
                                             MsqError& err )

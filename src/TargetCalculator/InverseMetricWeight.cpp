@@ -42,7 +42,6 @@ InverseMetricWeight::~InverseMetricWeight() {}
 
 double InverseMetricWeight::get_weight( PatchData& pd, 
                                  size_t element,
-                                 const SamplePoints* ,
                                  Sample sample,
                                  MsqError& err )
 {

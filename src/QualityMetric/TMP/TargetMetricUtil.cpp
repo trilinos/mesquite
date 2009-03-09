@@ -33,7 +33,6 @@
 #include "Mesquite.hpp"
 #include "TargetMetricUtil.hpp"
 #include "MsqMatrix.hpp"
-#include "SamplePoints.hpp"
 #include "PatchData.hpp"
 #include "ElementQM.hpp"
 #include "ElemSampleQM.hpp"
@@ -111,36 +110,30 @@ void surface_to_2d( const MsqMatrix<3,2>& App,
 }
 */
 
-static inline void append_samples( size_t element,
-                                   unsigned dimension, 
-                                   unsigned count,
-                                   msq_std::vector<size_t>& handles )
+static inline void append_elem_samples( PatchData& pd,
+                                        size_t e,
+                                        msq_std::vector<size_t>& handles )
 {
-  size_t in_size = handles.size();
-  handles.resize( in_size + count );
-  for (unsigned i = 0; i < count; ++i)
-    handles[i+in_size] = ElemSampleQM::handle( Sample(dimension, i), element );
-}
-
-static inline void append_elem_samples( const SamplePoints* pts,
-                                        EntityTopology type,
-                                        size_t element,
-                                        msq_std::vector<size_t>& handles  )
-{
-  const unsigned elem_dim = TopologyInfo::dimension( type );
-  if (pts->will_sample_at(type,elem_dim))
-    append_samples( element, elem_dim, 1, handles );
-  if (3 == elem_dim && pts->will_sample_at(type,2))
-    append_samples( element, 2, TopologyInfo::faces(type), handles );
-  if (pts->will_sample_at(type,1))
-    append_samples( element, 1, TopologyInfo::edges(type), handles );
-  if (pts->will_sample_at(type,0))
-    append_samples( element, 0, (type == PYRAMID) ? 4 : TopologyInfo::corners(type), handles );
-}
+  NodeSet samples = pd.get_samples( e );
+  EntityTopology type = pd.element_by_index( e ).get_element_type();
+  size_t curr_size = handles.size();
+  handles.resize( curr_size + samples.num_nodes() );
+  msq_std::vector<size_t>::iterator i = handles.begin() + curr_size;
+  for (unsigned j = 0; j < TopologyInfo::corners(type); ++j)
+    if (samples.corner_node(j))
+      *(i++) = ElemSampleQM::handle( Sample(0,j), e );
+  for (unsigned j = 0; j < TopologyInfo::edges(type); ++j)
+    if (samples.mid_edge_node(j))
+      *(i++) = ElemSampleQM::handle( Sample(1,j), e );
+  for (unsigned j = 0; j < TopologyInfo::faces(type); ++j)
+    if (samples.mid_face_node(j))
+      *(i++) = ElemSampleQM::handle( Sample(2,j), e );
+  if (TopologyInfo::dimension(type) == 3 && samples.mid_region_node())
+    *(i++) = ElemSampleQM::handle( Sample(3,0), e );
+}  
                                         
 
 void get_sample_pt_evaluations( PatchData& pd,
-                                const SamplePoints* pts,
                                 msq_std::vector<size_t>& handles,
                                 bool free,
                                 MsqError& err )
@@ -149,21 +142,16 @@ void get_sample_pt_evaluations( PatchData& pd,
   msq_std::vector<size_t> elems;
   ElementQM::get_element_evaluations( pd, elems, free, err ); MSQ_ERRRTN(err);
   for (msq_std::vector<size_t>::iterator i = elems.begin(); i != elems.end(); ++i)
-  {
-    EntityTopology type = pd.element_by_index( *i ).get_element_type();
-    append_elem_samples( pts, type, *i, handles );
-  }
+    append_elem_samples( pd, *i, handles );
 }
                    
 void get_elem_sample_points( PatchData& pd,
-                             const SamplePoints* pts,
                              size_t elem,
                              msq_std::vector<size_t>& handles,
                              MsqError& err )
 {
   handles.clear();
-  EntityTopology type = pd.element_by_index( elem ).get_element_type();
-  append_elem_samples( pts, type, elem, handles );
+  append_elem_samples( pd, elem, handles );
 }
 
 } // namespace Mesquite

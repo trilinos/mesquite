@@ -70,12 +70,7 @@ AffineMapMetric::AffineMapMetric( TargetCalculator* tc,
     weightCalc(wc),
     metric2D( metric_2d ),
     metric3D( metric_3d )
-{
-   samplePts.sample_at( TRIANGLE, 2 );
-   samplePts.sample_at( QUADRILATERAL, 0 );
-   samplePts.sample_at( TETRAHEDRON, 3 );
-   samplePts.sample_at( HEXAHEDRON, 0 );
-}
+{ }
  
 AffineMapMetric::AffineMapMetric( TargetCalculator* tc,
                                   TargetMetric2D* metric_2d,
@@ -84,12 +79,7 @@ AffineMapMetric::AffineMapMetric( TargetCalculator* tc,
     weightCalc(0),
     metric2D( metric_2d ),
     metric3D( metric_3d )
-{
-   samplePts.sample_at( TRIANGLE, 2 );
-   samplePts.sample_at( QUADRILATERAL, 0 );
-   samplePts.sample_at( TETRAHEDRON, 3 );
-   samplePts.sample_at( HEXAHEDRON, 0 );
-}
+{ }
      
 
 int AffineMapMetric::get_negate_flag( ) const { return 1; }
@@ -102,7 +92,7 @@ void AffineMapMetric::get_evaluations( PatchData& pd,
                                        bool free,
                                        MsqError& err )
 {
-  get_sample_pt_evaluations( pd, &samplePts, handles, free, err );
+  get_sample_pt_evaluations( pd, handles, free, err );
 }
 
 void AffineMapMetric::get_element_evaluations( PatchData& pd,
@@ -110,7 +100,7 @@ void AffineMapMetric::get_element_evaluations( PatchData& pd,
                                                msq_std::vector<size_t>& handles,
                                                MsqError& err )
 {
-  get_elem_sample_points( pd, &samplePts, elem, handles, err );
+  get_elem_sample_points( pd, elem, handles, err );
 }
 
 bool AffineMapMetric::evaluate( PatchData& pd, size_t handle, double& value, MsqError& err )
@@ -153,7 +143,7 @@ bool AffineMapMetric::evaluate( PatchData& pd, size_t handle, double& value, Msq
       A = A * TET_XFORM;
 
     MsqMatrix<3,3> W;
-    targetCalc->get_3D_target( pd, e, &samplePts, s, W, err ); MSQ_ERRZERO(err);
+    targetCalc->get_3D_target( pd, e, s, W, err ); MSQ_ERRZERO(err);
     rval = metric3D->evaluate( A, W, value, err ); MSQ_ERRZERO(err);
   }
   else {
@@ -170,7 +160,7 @@ bool AffineMapMetric::evaluate( PatchData& pd, size_t handle, double& value, Msq
     MsqMatrix<3,2> App( (MsqMatrix<3,1>*)c );
     
     MsqMatrix<3,2> Wp;
-    targetCalc->get_2D_target( pd, e, &samplePts, s, Wp, err ); MSQ_ERRZERO(err);
+    targetCalc->get_2D_target( pd, e, s, Wp, err ); MSQ_ERRZERO(err);
 
     MsqMatrix<2,2> A, W;
     MsqMatrix<3,2> RZ;
@@ -184,7 +174,7 @@ bool AffineMapMetric::evaluate( PatchData& pd, size_t handle, double& value, Msq
   
     // apply target weight to value
   if (weightCalc) {
-    double ck = weightCalc->get_weight( pd, e, &samplePts, s, err ); MSQ_ERRZERO(err);
+    double ck = weightCalc->get_weight( pd, e, s, err ); MSQ_ERRZERO(err);
     value *= ck;
   }
   return rval;
