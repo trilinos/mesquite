@@ -906,7 +906,7 @@ extern "C" {
   void iGeom_getArrBoundBox( iGeom_Instance,
                              iBase_EntityHandle const* entity_handles,
                              int entity_handles_size,
-                             int* storage_order,
+                             int storage_order,
                              double** min_corner,
                              int* min_corner_allocated,
                              int* min_corner_size,
@@ -943,8 +943,7 @@ extern "C" {
      * \param vertex_handles Array of geom vertex handles whose coordinates are
      *        being requested
      * \param vertex_handles_size Number of vertices in vertex_handles array
-     * \param storage_order Pointer to storage order requested/returned from
-     *        function
+     * \param storage_order Storage order requested for coordinate data
      * \param *coords Pointer to array of coordinates returned from function
      * \param *coords_allocated Pointer to allocated size of coords array
      * \param *coords_size Pointer to occupied size of coords array
@@ -953,7 +952,7 @@ extern "C" {
   void iGeom_getVtxArrCoords( iGeom_Instance,
                               iBase_EntityHandle const* entity_handles,
                               int entity_handles_size,
-                              int* storage_order,
+                              int storage_order,
                               double** coordinates,
                               int* coordinates_allocated,
                               int* coordinates_size,
@@ -990,7 +989,7 @@ extern "C" {
                               iBase_EntityHandle** intersect_entity_handles,
                               int* intersect_entity_handles_allocated,
                               int* intersect_entity_hangles_size,
-                              int* storage_order,
+                              int storage_order,
                               double** intersect_coords,
                               int* intersect_coords_allocated,
                               int* intersect_coords_size,
@@ -1279,7 +1278,7 @@ extern "C" {
  * with respect to implementation.
  * \param entity_handles Entities being queried
  * \param entity_handles_size Number of entities being queried
- * \param storage_order Storage order of uv coordinates input
+ * \param storage_order Storage order of uv coordinates input and xyz coordinate output
  * \param uv Coordinates being queried
  * \param uv_size Number of coordinates in array
  * \param coordinates Coordinates of parametric positions
@@ -1322,7 +1321,7 @@ extern "C" {
  * with respect to implementation.
  * \param entity_handles Entities being queried
  * \param entity_handles_size Number of entities being queried
- * \param storage_order Storage order of uv coordinates input
+ * \param storage_order Storage order of resulting coordinates
  * \param uv Coordinates being queried
  * \param uv_size Number of coordinates in array
  * \param coordinates Coordinates of parametric positions
@@ -1334,7 +1333,7 @@ extern "C" {
                            int entity_handles_size,
                            double const* u,
                            int u_size,
-                           int* storage_order,
+                           int storage_order,
                            double** on_coords,
                            int* on_coords_allocated,
                            int* on_coords_size,
@@ -1518,7 +1517,7 @@ extern "C" {
   void iGeom_getArrUVRange( iGeom_Instance,
                             iBase_EntityHandle const* entity_handles,
                             int entity_handles_size,
-                            int* storage_order,
+                            int storage_order,
                             double** uv_min,
                             int* uv_min_allocated,
                             int* uv_min_size,
@@ -1612,7 +1611,7 @@ extern "C" {
                           int face_handles_size,
                           double const* u_in,
                           int u_in_size,
-                          int* storage_order,
+                          int storage_order,
                           double** uv,
                           int* uv_allocated,
                           int* uv_size,
@@ -1634,7 +1633,7 @@ extern "C" {
                             int vertex_handles_size,
                             iBase_EntityHandle const* face_handles,
                             int face_handles_size,
-                            int* storage_order,
+                            int storage_order,
                             double** uv,
                             int* uv_allocated,
                             int* uv_size,
@@ -2092,7 +2091,7 @@ void iGeom_createPrism( iGeom_Instance,
 		   double major_rad,
 	           double minor_rad,
 	           iBase_EntityHandle* prism_handle_out,
-                   int* err );									          
+                   int* err );
 
 /**\brief 
  *

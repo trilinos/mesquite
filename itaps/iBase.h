@@ -114,8 +114,7 @@ extern "C"
      */
   enum iBase_StorageOrder {
     iBase_BLOCKED,
-    iBase_INTERLEAVED,
-    iBase_UNDETERMINED
+    iBase_INTERLEAVED
   };
 
     /*==========================================================

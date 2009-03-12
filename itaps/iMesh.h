@@ -383,55 +383,12 @@ extern "C" {
   void iMesh_getVtxArrCoords(iMesh_Instance instance,
                              /*in*/ const iBase_EntityHandle* vertex_handles,
                              /*in*/ const int vertex_handles_size,
-                             /*inout*/ int* storage_order,
+                             /*in*/ int storage_order,
                              /*inout*/ double** coords,
                              /*inout*/ int* coords_allocated,
                              /*out*/ int* coords_size, 
                              /*out*/ int *err);
 
-
-    /**\brief  Get entities adjacent to those of requested type/topology in set or instance
-     *
-     * Get entities adjacent to those of requested type/topology in set or 
-     * instance.  
-     *
-     * If adjacencies for all entities of specified type or
-     * topology are desired, specify iMesh_ALL_TOPOLOGIES or iBase_ALL_TYPES,
-     * respectively.  Types and topologies input to this function must be values
-     * in the iBase_EntityType or iBase_EntityTopology enumerations, respectively.
-     * \em offset[i] stores index of first adjacent entity to entity \em i from
-     * mesh or set.
-     * \param instance iMesh instance handle
-     * \param entity_set_handle Entity set whose adjacent entities are requested
-     *        (root set indicates whole mesh)
-     * \param entity_type_requestor Return entities adjacent to entities of this 
-     *        type
-     * \param entity_topology_requestor Return entities adjacent to entities of 
-     *        this topology
-     * \param entity_type_requested Return adjacent entities of this type
-     * \param *adj_entity_handles Pointer to array of adjacent entity handles 
-     *        returned from function
-     * \param *adj_entity_handles_allocated Pointer to allocated size of 
-     *        adj_entity_handles array
-     * \param *adj_entity_handles_size Pointer to occupied size of 
-     *        adj_entity_handles array
-     * \param *offset Pointer to array of offsets returned from function
-     * \param *offset_allocated Pointer to allocated size of offset array
-     * \param *offset_size Pointer to occupied size of offset array
-     * \param *err Pointer to error type returned from function
-     */
-  void iMesh_getAdjEntities(iMesh_Instance instance,
-                            /*in*/ const iBase_EntitySetHandle entity_set_handle,
-                            /*in*/ const int entity_type_requestor,
-                            /*in*/ const int entity_topology_requestor,
-                            /*in*/ const int entity_type_requested,
-                            /*inout*/ iBase_EntityHandle** adj_entity_handles,
-                            /*inout*/ int* adj_entity_handles_allocated,
-                            /*out*/ int* adj_entity_handles_size,
-                            /*inout*/ int** offset,
-                            /*inout*/ int* offset_allocated,
-                            /*out*/ int* offset_size,
-                            /*out*/ int *err);
 
     /**\brief Initialize an array iterator over specified entity type, topology, and 
      *        size
@@ -1418,11 +1375,11 @@ extern "C" {
      * \param z z coordinate being set
      * \param *err Pointer to error type returned from function
      */
-  void iMesh_setVtxCoords(iMesh_Instance instance,
-                          /*in*/ iBase_EntityHandle vertex_handle,
-                          /*in*/ const double x, /*in*/ const double y,
-                          /*in*/ const double z,
-                          /*out*/ int *err);
+  void iMesh_setVtxCoord(iMesh_Instance instance,
+                         /*in*/ iBase_EntityHandle vertex_handle,
+                         /*in*/ const double x, /*in*/ const double y,
+                         /*in*/ const double z,
+                         /*out*/ int *err);
 
     /**\brief  Create a new vertex at specified coordinates
      *

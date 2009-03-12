@@ -627,14 +627,13 @@ void MsqIMeshImpl::vertices_get_coordinates(
   size_t num_vtx, 
   MsqError &err)
 {
-  int order = iBase_UNDETERMINED;
   std::vector<double> dbl_store( 3*num_vtx );
   double* dbl_array = &dbl_store[0];
   
   int ierr, junk = 3*num_vtx, junk2;
   assert( sizeof(VertexHandle) == sizeof(iBase_EntityHandle) );
   const iBase_EntityHandle* arr = reinterpret_cast<const iBase_EntityHandle*>(vert_array);
-  iMesh_getVtxArrCoords( meshInstance, arr, num_vtx, &order, &dbl_array, &junk, &junk2, &ierr );
+  iMesh_getVtxArrCoords( meshInstance, arr, num_vtx, iBase_INTERLEAVED, &dbl_array, &junk, &junk2, &ierr );
   if (iBase_SUCCESS != ierr) {
     MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
     return;
@@ -642,50 +641,21 @@ void MsqIMeshImpl::vertices_get_coordinates(
   
   if (geometricDimension == 2)
   {
-    if (order == iBase_INTERLEAVED)
+    double* iter = dbl_array;
+    for (size_t i = 0; i < num_vtx; ++i)
     {
-      double* iter = dbl_array;
-      for (size_t i = 0; i < num_vtx; ++i)
-      {
-        coordinates[i].x(*iter); ++iter;
-        coordinates[i].y(*iter); ++iter;
-        coordinates[i].z(0);
-      }
-    }
-    else
-    {
-      double *xiter = dbl_array;
-      double *yiter = dbl_array + num_vtx;
-      for (size_t i = 0; i < num_vtx; ++i)
-      {
-        coordinates[i].x(*xiter); ++xiter;
-        coordinates[i].y(*yiter); ++yiter;
-        coordinates[i].z(0);
-      }
+      coordinates[i].x(*iter); ++iter;
+      coordinates[i].y(*iter); ++iter;
+      coordinates[i].z(0);
     }
   }
   else 
   {
-    if (order == iBase_INTERLEAVED)
+    double* iter = dbl_array;
+    for (size_t i = 0; i < num_vtx; ++i)
     {
-      double* iter = dbl_array;
-      for (size_t i = 0; i < num_vtx; ++i)
-      {
-        coordinates[i].set(iter);
-        iter += 3;
-      }
-    }
-    else
-    {
-      double *xiter = dbl_array;
-      double *yiter = dbl_array + num_vtx;
-      double *ziter = dbl_array + 2*num_vtx;
-      for (size_t i = 0; i < num_vtx; ++i)
-      {
-        coordinates[i].x(*xiter); ++xiter;
-        coordinates[i].y(*yiter); ++yiter;
-        coordinates[i].z(*ziter); ++ziter;
-      }
+      coordinates[i].set(iter);
+      iter += 3;
     }
   }
 }
@@ -696,7 +666,7 @@ void MsqIMeshImpl::vertex_set_coordinates(
 {
   int ierr;
   iBase_EntityHandle bh = static_cast<iBase_EntityHandle>(vertex);
-  iMesh_setVtxCoords( meshInstance, bh, coords[0], coords[1], coords[2], &ierr );
+  iMesh_setVtxCoord( meshInstance, bh, coords[0], coords[1], coords[2], &ierr );
   if (iBase_SUCCESS != ierr) 
     MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
 }
