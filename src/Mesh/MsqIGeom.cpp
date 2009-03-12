@@ -145,10 +145,10 @@ public:
 protected:
 
     /** Get geometric entity owning a mesh entity */
-  int geom_from_mesh( iBase_EntityHandle  mesh_handle_in,
+  int geom_from_mesh( Mesh::EntityHandle  mesh_handle_in,
                       iBase_EntityHandle& geom_handle_out ) const;
   
-  int geom_from_mesh( iBase_EntityHandle const* mesh_handles_in,
+  int geom_from_mesh( Mesh::EntityHandle const* mesh_handles_in,
                       iBase_EntityHandle      * geom_handles_out,
                       size_t count ) const;
 
@@ -355,18 +355,16 @@ void DomainIGeom::closest_point( Mesh::VertexHandle handle,
 }
 
 
-int DomainIGeom::geom_from_mesh( iBase_EntityHandle mesh_ent_handle,
+int DomainIGeom::geom_from_mesh( Mesh::EntityHandle mesh_ent_handle,
                                  iBase_EntityHandle& geom_handle ) const
 {
     // get geometric entity
-  int ierr, is_set;
+  int ierr;
   iRel_getEntEntAssociation( relateIface,
                              relateInstance,
-                             mesh_ent_handle,
+                             (iBase_EntityHandle)mesh_ent_handle,
                              false,
-                             true,
                              &geom_handle,
-                             &is_set,
                              &ierr );
   if (iBase_SUCCESS != ierr)
     return ierr;
@@ -385,7 +383,7 @@ int DomainIGeom::geom_from_mesh( iBase_EntityHandle mesh_ent_handle,
 }
 
 
-int DomainIGeom::geom_from_mesh( const iBase_EntityHandle* handles,
+int DomainIGeom::geom_from_mesh( const Mesh::EntityHandle* handles,
                                  iBase_EntityHandle* geom_handles,
                                  size_t count ) const
 {

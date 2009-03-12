@@ -15,9 +15,10 @@ extern "C"
      * TYPEDEF'S
      *==========================================================
      */
-  typedef void* iBase_EntityHandle;
-  typedef void* iBase_EntitySetHandle;
-  typedef void* iBase_TagHandle;
+  typedef void* iBase_Instance;
+  typedef struct iBase_EntityHandle_Private* iBase_EntityHandle;
+  typedef struct iBase_EntitySetHandle_Private* iBase_EntitySetHandle;
+  typedef struct iBase_TagHandle_Private* iBase_TagHandle;
 
     /*==========================================================
      * ENTITYTYPE ENUMERATION
@@ -63,8 +64,6 @@ extern "C"
   enum iBase_ErrorActions {
     iBase_SILENT,
     iBase_WARN_ONLY,
-    iBase_ABORT_ON_ERROR,
-    iBase_PRINT_AND_THROW_ERROR,
     iBase_THROW_ERROR
   };
 

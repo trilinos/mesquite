@@ -84,9 +84,6 @@
 extern "C" 
 {
 #endif
-  
-  typedef void* iBase_Instance;
-
 
     /**\brief  Type used to store iRel interface handle
      *
@@ -190,18 +187,32 @@ extern "C"
         \param instance Interface instance
         \param rel Relation handle being queried
         \param ent1 1st entity of relation being set
-        \param is_set1 ent1 is an entity (=0) or a set (=1)
         \param ent2 2nd entity of relation being set
-        \param is_set2 ent2 is an entity (=0) or a set (=1)
         \param *ierr Pointer to error value, returned from function
     */
   void iRel_setEntEntAssociation (
     iRel_Instance instance,
     iRel_RelationHandle rel,
     iBase_EntityHandle ent1,
-    int is_set1,
     iBase_EntityHandle ent2,
-    int is_set2,
+    int *ierr);
+  void iRel_setEntSetAssociation (
+    iRel_Instance instance,
+    iRel_RelationHandle rel,
+    iBase_EntityHandle ent1,
+    iBase_EntitySetHandle ent2,
+    int *ierr);
+  void iRel_setSetEntAssociation (
+    iRel_Instance instance,
+    iRel_RelationHandle rel,
+    iBase_EntitySetHandle ent1,
+    iBase_EntityHandle ent2,
+    int *ierr);
+  void iRel_setSetSetAssociation (
+    iRel_Instance instance,
+    iRel_RelationHandle rel,
+    iBase_EntitySetHandle ent1,
+    iBase_EntitySetHandle ent2,
     int *ierr);
 
     /**\brief  Set a relation between an entity and several entities
@@ -212,24 +223,44 @@ extern "C"
         \param instance Interface instance
         \param rel Relation handle being queried
         \param ent1 1st entity of relation being set
-        \param is_set1 ent1 is an entity (=0) or a set (=1)
         \param switch_order If non-zero, ent1 is associated with iface2 and
                  ent_array_2 with iface1 of
                  specified relation, otherwise vica versa
         \param ent_array_2 Entity(ies) to be related to ent1
         \param num_entities Number of entities in ent_array_2
-        \param is_set2 Entities in ent_array_2 are entities (=0) or sets (=1)
         \param *ierr Pointer to error value, returned from function
     */
-  void iRel_setEntArrAssociation (
+  void iRel_setEntEntArrAssociation (
     iRel_Instance instance,
     iRel_RelationHandle rel,    
     iBase_EntityHandle ent1,
-    int is_set1,
     int switch_order,
     iBase_EntityHandle *ent_array_2,
     int num_entities,
-    int is_set2,
+    int *ierr);
+  void iRel_setSetEntArrAssociation (
+    iRel_Instance instance,
+    iRel_RelationHandle rel,    
+    iBase_EntitySetHandle ent1,
+    int switch_order,
+    iBase_EntityHandle *ent_array_2,
+    int num_entities,
+    int *ierr);
+  void iRel_setEntSetArrAssociation (
+    iRel_Instance instance,
+    iRel_RelationHandle rel,    
+    iBase_EntityHandle ent1,
+    int switch_order,
+    iBase_EntitySetHandle *ent_array_2,
+    int num_entities,
+    int *ierr);
+  void iRel_setSetSetArrAssociation (
+    iRel_Instance instance,
+    iRel_RelationHandle rel,    
+    iBase_EntitySetHandle ent1,
+    int switch_order,
+    iBase_EntitySetHandle *ent_array_2,
+    int num_entities,
     int *ierr);
 
     /**\brief Set relations between arrays of entities pairwise, 
@@ -243,21 +274,41 @@ extern "C"
         \param rel Relation handle being queried
         \param ent_array_1 1st array of entities of relation being set
         \param num_ent1 Number of entities in 1st array
-        \param is_set1 1st array contains entities (=0) or sets (=1)
         \param ent_array_2 2nd array of entities of relation being set
         \param num_ent2 Number of entities in 2nd array
-        \param is_set2 2nd array contains entities (=0) or sets (=1)
         \param *ierr Pointer to error value, returned from function
     */
-  void iRel_setArrAssociation (
+  void iRel_setEntArrEntArrAssociation (
     iRel_Instance instance,
     iRel_RelationHandle rel,    
     iBase_EntityHandle *ent_array_1,
     int num_ent1,
-    int is_set1,
     iBase_EntityHandle *ent_array_2,
     int num_ent2,
-    int is_set2,
+    int *ierr);
+  void iRel_setSetArrEntArrAssociation (
+    iRel_Instance instance,
+    iRel_RelationHandle rel,    
+    iBase_EntitySetHandle *ent_array_1,
+    int num_ent1,
+    iBase_EntityHandle *ent_array_2,
+    int num_ent2,
+    int *ierr);
+  void iRel_setEntArrSetArrAssociation (
+    iRel_Instance instance,
+    iRel_RelationHandle rel,    
+    iBase_EntityHandle *ent_array_1,
+    int num_ent1,
+    iBase_EntitySetHandle *ent_array_2,
+    int num_ent2,
+    int *ierr);
+  void iRel_setSetArrSetArrAssociation (
+    iRel_Instance instance,
+    iRel_RelationHandle rel,    
+    iBase_EntitySetHandle *ent_array_1,
+    int num_ent1,
+    iBase_EntitySetHandle *ent_array_2,
+    int num_ent2,
     int *ierr);
 
     /**\brief  Get entity related to specified entity and relation handle
@@ -267,36 +318,48 @@ extern "C"
         \param instance Interface instance
         \param rel Relation handle being queried
         \param ent1 1st entity of relation being queried
-        \param is_set1 1st entity is an entity (=0) or a set (=1)
         \param switch_order 1st entity is related to 1st interface (=0) or 2nd
                interface (=1) of relation pair
         \param *ent2 Pointer to entity related to ent1
-        \param *is_set2 Pointer to flag telling whether *ent2 is an entity (=0)
-               or a set (=1)
         \param *ierr Pointer to error value, returned from function
     */
   void iRel_getEntEntAssociation (
     iRel_Instance instance,
     iRel_RelationHandle rel,    
     iBase_EntityHandle ent1,
-    int is_set1,
     int switch_order,
     iBase_EntityHandle *ent2,
-    int *is_set2,
+    int *ierr);
+  void iRel_getEntSetAssociation (
+    iRel_Instance instance,
+    iRel_RelationHandle rel,    
+    iBase_EntityHandle ent1,
+    int switch_order,
+    iBase_EntitySetHandle *ent2,
+    int *ierr);
+  void iRel_getSetEntAssociation (
+    iRel_Instance instance,
+    iRel_RelationHandle rel,    
+    iBase_EntitySetHandle ent1,
+    int switch_order,
+    iBase_EntityHandle *ent2,
+    int *ierr);
+  void iRel_getSetSetAssociation (
+    iRel_Instance instance,
+    iRel_RelationHandle rel,    
+    iBase_EntitySetHandle ent1,
+    int switch_order,
+    iBase_EntitySetHandle *ent2,
     int *ierr);
 
     /**\brief  Get entities related to specified entity and relation
      *
      * Get entities related to specified entity and relation; returns
         entity sets or contained entities, depending on relation type
-        (entity, set, or both) and return_sets argument
+        (entity, set, or both).
         \param instance Interface instance
         \param rel Relation handle being queried
         \param ent1 1st entity of relation being queried
-        \param is_set1 ent1 is an entity (=0) or a set (=1)
-        \param return_sets If zero and target side of the relation is of
-               type 'set' or 'both', return entities in related set; if non-zero,
-               return set; if target is of type 'entity', disregard this argument
         \param switch_order ent1 is associated with 1st (=0) or 2nd (=1) interface
                of this relation pair
         \param *ent_array_2 Pointer to array of entity handles returned from function
@@ -304,12 +367,19 @@ extern "C"
         \param *ent_array_2_size Pointer to occupied size of ent_array_2
         \param *ierr Pointer to error value, returned from function
     */
-  void iRel_getEntArrAssociation (
+  void iRel_getEntEntArrAssociation (
     iRel_Instance instance,
     iRel_RelationHandle rel,    
     iBase_EntityHandle ent1,
-    int is_set1,
-    int return_sets,
+    int switch_order,
+    iBase_EntityHandle **ent_array_2,
+    int *ent_array_2_allocated,
+    int *ent_array_2_size,
+    int *ierr);
+  void iRel_getSetEntArrAssociation (
+    iRel_Instance instance,
+    iRel_RelationHandle rel,    
+    iBase_EntitySetHandle ent1,
     int switch_order,
     iBase_EntityHandle **ent_array_2,
     int *ent_array_2_allocated,
@@ -325,10 +395,6 @@ extern "C"
         \param rel Relation handle being queried
         \param ent_array_1 Array of entities whose relations are being queried
         \param ent_array_1_size Number of entities in ent_array_1
-        \param is_set1 ent_array_1 contains entities (=0) or sets (=1)
-        \param return_sets If zero and target side of the relation is of
-               type 'set' or 'both', return entities in related sets; if non-zero,
-               return sets; if target is of type 'entity', disregard this argument
         \param switch_order Entities in ent_array_1 are associated with 1st (=0) 
                or 2nd (=1) interface of this relation pair
         \param *ent_array_2 Pointer to array of entity handles returned from function
@@ -340,13 +406,11 @@ extern "C"
         \param *offset_size Pointer to occupied size of offset
         \param *ierr Pointer to error value, returned from function
     */
-  void iRel_getArrAssociation (
+  void iRel_getEntArrEntArrAssociation (
     iRel_Instance instance,
     iRel_RelationHandle rel,    
     iBase_EntityHandle *ent_array_1,
     int ent_array_1_size,
-    int is_set1,
-    int return_sets,
     int switch_order,
     iBase_EntityHandle **ent_array_2,
     int *ent_array_2_allocated,
@@ -354,6 +418,39 @@ extern "C"
     int **offset,
     int *offset_allocated,
     int *offset_size,
+    int *ierr);
+  void iRel_getEntArrSetArrAssociation (
+    iRel_Instance instance,
+    iRel_RelationHandle rel,    
+    iBase_EntityHandle *ent_array_1,
+    int ent_array_1_size,
+    int switch_order,
+    iBase_EntitySetHandle **ent_array_2,
+    int *ent_array_2_allocated,
+    int *ent_array_2_size,
+    int *ierr);
+  void iRel_getSetArrEntArrAssociation (
+    iRel_Instance instance,
+    iRel_RelationHandle rel,    
+    iBase_EntitySetHandle *ent_array_1,
+    int ent_array_1_size,
+    int switch_order,
+    iBase_EntityHandle **ent_array_2,
+    int *ent_array_2_allocated,
+    int *ent_array_2_size,
+    int **offset,
+    int *offset_allocated,
+    int *offset_size,
+    int *ierr);
+  void iRel_getSetArrSetArrAssociation (
+    iRel_Instance instance,
+    iRel_RelationHandle rel,    
+    iBase_EntitySetHandle *ent_array_1,
+    int ent_array_1_size,
+    int switch_order,
+    iBase_EntitySetHandle **ent_array_2,
+    int *ent_array_2_allocated,
+    int *ent_array_2_size,
     int *ierr);
 
     /**\brief  Create a mesh vertex and relate to geometry entity
@@ -525,7 +622,12 @@ extern "C"
     iRel_Instance instance,
     iRel_RelationHandle rel,    
     iBase_EntityHandle entity,
-    int is_set,
+    int iface_no,
+    int *ierr);
+  void iRel_inferSetAssociations (
+    iRel_Instance instance,
+    iRel_RelationHandle rel,    
+    iBase_EntitySetHandle entity,
     int iface_no,
     int *ierr);
 
@@ -544,12 +646,18 @@ extern "C"
                in relation pair
         \param *ierr Pointer to error value, returned from function
     */
-  void iRel_inferArrAssociations (
+  void iRel_inferEntArrAssociations (
     iRel_Instance instance,
     iRel_RelationHandle rel,    
     iBase_EntityHandle *entities,
     int entities_size,
-    int is_set,
+    int iface_no,
+    int *ierr);
+  void iRel_inferSetArrAssociations (
+    iRel_Instance instance,
+    iRel_RelationHandle rel,    
+    iBase_EntitySetHandle *entities,
+    int entities_size,
     int iface_no,
     int *ierr);
 

@@ -66,6 +66,7 @@ include src/QualityMetric/TMP/3D/Makefile.am
 include src/QualityMetric/Untangle/Makefile.am
 include src/QualityMetric/Volume/Makefile.am
 include src/TargetCalculator/Makefile.am
+include itaps/Makefile.am
 MSQ_INCLUDES += -I$(top_srcdir)/itaps -I$(top_builddir)/itaps 
 
 
