@@ -503,9 +503,9 @@ void HigherOrderTest::test_quad_basic_mid_spin()
   p5 = f*p1 + (1-f)*p2;
   p6 = f*p2 + (1-f)*p3;
   p7 = f*p3 + (1-f)*p0;
-  crit.write_mesh_steps( "quad_basic_mid_spin", TerminationCriterion::VTK );
+//  crit.write_mesh_steps( "quad_basic_mid_spin", TerminationCriterion::VTK );
   basic_quad_test( p2, p3, p4, p5, p6, p7, err );
-  crit.write_mesh_steps( "", TerminationCriterion::NOTYPE );
+//  crit.write_mesh_steps( "", TerminationCriterion::NOTYPE );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!hit_iteration_limit());
   CPPUNIT_ASSERT_EQUAL( 0, quad_all_in_xy_plane( p2, p3, p4, p5, p6, p7, eps ) );
