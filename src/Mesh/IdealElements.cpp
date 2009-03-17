@@ -36,10 +36,10 @@
 
 namespace Mesquite {
 
-static Vector3D unit_quad[4] = { Vector3D(  0.5, -0.5, 0.0 ),
+static Vector3D unit_quad[4] = { Vector3D( -0.5, -0.5, 0.0 ),
+                                 Vector3D(  0.5, -0.5, 0.0 ),
                                  Vector3D(  0.5,  0.5, 0.0 ),
-                                 Vector3D( -0.5,  0.5, 0.0 ),
-                                 Vector3D( -0.5, -0.5, 0.0 ) };
+                                 Vector3D( -0.5,  0.5, 0.0 ) };
 
 static Vector3D unit_hex[8] = { Vector3D(  0.5, -0.5, -0.5 ),
                                 Vector3D(  0.5,  0.5, -0.5 ),
@@ -130,9 +130,9 @@ static const Vector3D* const* init_unit_elem( Vector3D** ptr )
 static void init_tri( Vector3D* coords, double side )
 {
   const double third_height = side * sqrt(3.0) / 6.0;
-  coords[0] = Vector3D(  0.0,      2*third_height, 0.0 );
   coords[1] = Vector3D( -0.5*side,  -third_height, 0.0 );
   coords[2] = Vector3D(  0.5*side,  -third_height, 0.0 );
+  coords[0] = Vector3D(  0.0,      2*third_height, 0.0 );
 }
 
 static void init_tet( Vector3D* coords, double side )
