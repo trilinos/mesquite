@@ -210,7 +210,7 @@ void iMeshTest::setUp()
   iMesh_load( myIMesh, 0, TMP_FILE_NAME, NULL, &ierr, strlen(TMP_FILE_NAME), 0 );
   CPPUNIT_ASSERT_EQUAL( (int)iBase_SUCCESS, ierr );
   
-  iBase_EntityHandle root_set;
+  iBase_EntitySetHandle root_set;
   iMesh_getRootSet( myIMesh, &root_set, &ierr );
   CPPUNIT_ASSERT_EQUAL( (int)iBase_SUCCESS, ierr );
           
