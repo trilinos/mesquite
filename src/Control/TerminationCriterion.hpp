@@ -286,7 +286,7 @@ namespace Mesquite
       
  protected:
     
-    void write_timestep( PatchData& pd, MsqError& err );
+    void write_timestep( PatchData& pd, const Vector3D* gradient, MsqError& err );
     
  private:
     //PRIVATE DATA MEMBERS

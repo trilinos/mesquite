@@ -381,8 +381,15 @@ void TerminationCriterion::reset_inner(PatchData &pd, OFEvaluator& obj_eval,
     maxSquaredInitialMovement = 0;
   }
 
-  if (timeStepFileType)
-    write_timestep( pd, err);
+  if (timeStepFileType) {
+      // If didn't already calculate gradient abive, calculate it now.
+    if (!(totalFlag & GRAD_FLAGS)) {
+      mGrad.resize( pd.num_free_vertices() );
+      obj_eval.evaluate(pd, currentOFValue, mGrad, err);
+      err.clear();
+    }
+    write_timestep( pd, &mGrad[0], err);
+  }
     
   if (plotFile.is_open()) {
       // two newlines so GNU plot knows that we are starting a new data set
@@ -482,7 +489,7 @@ void TerminationCriterion::accumulate_inner( PatchData& pd,
   
   ++iterationCounter;
   if (timeStepFileType)
-    write_timestep( pd, err);
+    write_timestep( pd, grad_array, err);
     
   if (plotFile.is_open()) 
     plotFile << iterationCounter 
@@ -792,13 +799,14 @@ void TerminationCriterion::cleanup(Mesh* mesh, MeshDomain*, MsqError &err)
   MSQ_ERRRTN(err);
 }
 
-void TerminationCriterion::write_timestep( PatchData& pd, MsqError& err )
+void TerminationCriterion::write_timestep( PatchData& pd, 
+                                           const Vector3D* gradient,
+                                           MsqError& err )
 {
-  pd.update_mesh(err); MSQ_ERRRTN(err);
   std::ostringstream str;
   if (timeStepFileType == VTK) {
     str << timeStepFileName << '_' << iterationCounter << ".vtk";
-    MeshWriter::write_vtk( pd.get_mesh(), str.str().c_str(), err );
+    MeshWriter::write_vtk( pd, str.str().c_str(), err, gradient );
   }
   else if (timeStepFileType == GNUPLOT) {
     str << timeStepFileName << '.' << iterationCounter;

@@ -35,6 +35,7 @@ class Mesh;
 class MsqError;
 class PlanarDomain;
 class Vector3D;
+class PatchData;
 
 namespace MeshWriter {
 
@@ -107,9 +108,11 @@ void write_gnuplot_overlay( int count, const char* basename, MsqError& err );
  * function is intended for viewing.  It contains only a minimal
  * decription of the mesh.  It does not contain other data such as
  * tags/attributes.  If the Mesh is a MeshImpl, use the VTK writing
- * function provided in MeshImpl for a complete mesh export
+ * function provided in MeshImpl for a complete mesh export.
  */
 void write_vtk( Mesh* mesh, const char* filename, MsqError& err );
+void write_vtk( PatchData& pd, const char* filename, MsqError& err,
+                const Vector3D* OF_gradient = 0 );
 
 /** Convert inches to points */
 inline int in2pt( float inches ) { return (int)(inches * 72.0f); }

@@ -203,7 +203,7 @@ void EdgeIterator::get_adjacent_vertices( MsqError& err )
  * and complete writer implementation is provided in the MeshImpl
  * class for saving meshes that were read from a file initially.
  */
-void write_vtk( Mesh* mesh, const char* out_filename, MsqError &err)
+void write_vtk( Mesh* mesh, const char* out_filename, MsqError &err )
 {
   if (MeshImpl* msq_mesh = dynamic_cast<MeshImpl*>(mesh)) {
     msq_mesh->write_vtk( out_filename, err );
@@ -211,6 +211,19 @@ void write_vtk( Mesh* mesh, const char* out_filename, MsqError &err)
     return;
   }
 
+    // loads a global patch
+  PatchData pd;
+  pd.set_mesh( mesh );
+  pd.fill_global_patch( err ); MSQ_ERRRTN(err);
+  
+    // write mesh
+  write_vtk( pd, out_filename, err ); MSQ_CHKERR(err);
+}
+
+
+void write_vtk( PatchData& pd, const char* out_filename, MsqError &err,
+                const Vector3D* OF_gradient)
+{
     // Open the file
   msq_stdio::ofstream file(out_filename);
   if (!file)
@@ -218,11 +231,6 @@ void write_vtk( Mesh* mesh, const char* out_filename, MsqError &err)
     MSQ_SETERR(err)(MsqError::FILE_ACCESS);
     return;
   }
-
-    // loads a global patch
-  PatchData pd;
-  pd.set_mesh( mesh );
-  pd.fill_global_patch( err ); MSQ_ERRRTN(err);
     
     // Write a header
   file << "# vtk DataFile Version 2.0\n";
@@ -287,10 +295,17 @@ void write_vtk( Mesh* mesh, const char* out_filename, MsqError &err)
       file << "1\n";
   }
   
+  if (OF_gradient) {
+    file << "VECTORS gradient double\n";
+    for (i = 0; i < pd.num_free_vertices(); ++i) 
+      file << OF_gradient[i].x() << " " << OF_gradient[i].y() << " " << OF_gradient[i].z() << "\n";
+    for (i = pd.num_free_vertices(); i < pd.num_nodes(); ++i)
+      file << "0.0 0.0 0.0\n";
+  }
+  
     // Close the file
   file.close();
 }
-
 
 
 /*  Writes a gnuplot file directly from the MeshSet.
