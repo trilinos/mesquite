@@ -133,6 +133,8 @@ class DomainClassifier : public MeshDomain
                                        MsqError& err );
   
     struct DomainSet {
+      DomainSet( MeshDomain* dom ) : domain(dom) {}
+      DomainSet() : domain(0) {}
       MeshDomain* domain;
       msq_std::vector<Mesh::VertexHandle> vertices;
       msq_std::vector<Mesh::ElementHandle> elements;
