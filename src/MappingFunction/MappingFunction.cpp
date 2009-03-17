@@ -149,7 +149,7 @@ void MappingFunction2D::jacobian( const PatchData& pd,
   jacobian_out.zero();
   size_t w = 0;
   for (size_t r = 0; r < num_vtx_out; ++r) {
-    size_t i = vertex_patch_indices_out[r] = conn[vertex_patch_indices_out[r]];
+    size_t i = conn[vertex_patch_indices_out[r]];
     MsqMatrix<3,1> coords( pd.vertex_by_index( i ).to_array() );
     jacobian_out += coords * transpose(d_coeff_d_xi_out[r]);
     if (i < pd.num_free_vertices()) {
@@ -183,7 +183,7 @@ void MappingFunction3D::jacobian( const PatchData& pd,
   jacobian_out.zero();
   size_t w = 0;
   for (size_t r = 0; r < num_vtx_out; ++r) {
-    size_t i = vertex_patch_indices_out[r] = conn[vertex_patch_indices_out[r]];
+    size_t i = conn[vertex_patch_indices_out[r]];
     MsqMatrix<3,1> coords( pd.vertex_by_index( i ).to_array() );
     jacobian_out += coords * transpose(d_coeff_d_xi_out[r]);
     if (i < pd.num_free_vertices()) {
