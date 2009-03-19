@@ -14,5 +14,6 @@ MSQ_HDRS += \
 	$(SRC_CONTROL_DIR)/InstructionQueue.hpp \
 	$(SRC_CONTROL_DIR)/TerminationCriterion.hpp \
         $(SRC_CONTROL_DIR)/Settings.hpp  \
-        $(SRC_CONTROL_DIR)/SlaveBoundaryVertices.hpp 
+        $(SRC_CONTROL_DIR)/SlaveBoundaryVertices.hpp \
+        $(SRC_CONTROL_DIR)/VertexSlaver.hpp 
 
