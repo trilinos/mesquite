@@ -293,17 +293,7 @@ Mesh* get_imesh_mesh( const char* file_name )
     return 0;
   }
 
-  MsqError err;
-  Mesquite::MsqIMesh* mesh = MsqIMesh::create( imesh_mesh, root_set, iBase_ALL_TYPES, err, "fixed" );
-  if (err)
-  {
-    delete mesh;
-    iMesh_dtor( imesh_mesh, &ierr );
-    cerr << err << endl;
-    exit (1);
-  }
-  
-  return mesh;
+  return new Mesquite::MsqIMesh( imesh_mesh, root_set, iBase_ALL_TYPES, "fixed" );
 }
   
 

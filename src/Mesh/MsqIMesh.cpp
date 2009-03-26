@@ -41,377 +41,69 @@
 
 namespace Mesquite {
 
-class MsqIMeshImpl : public MsqIMesh
-{
-  public:
-
-    MsqIMeshImpl(iMesh_Instance mesh, 
-                 const char* fixed_tag_name,
-                 const char* slaved_tag_name,
-                 MsqError &err);
-    virtual ~MsqIMeshImpl();
-    
-      /** \brief set mesh to be smoothed.
-       *
-       * Set the mesh which Mesquite is to smooth.  Optionally
-       * specify fixed vertices.
-       * NOTE: If an active set is not specified, the default
-       *       is to use the global set (the ENTIRE mesh.)
-       *
-       *\param element_set ITAPS entity set handle for set containing
-       *                  mesh elements and vertices for which quality 
-       *                  is to be improved.
-       */
-    virtual void set_active_set( iBase_EntitySetHandle element_set, 
-                                 iBase_EntityType type,
-                                 MsqError& );
-  
-    virtual iMesh_Instance get_imesh_instance() const;
-    virtual iBase_EntitySetHandle get_entity_set() const;
-    
-
-      /**\brief Get dimension of vertex coordinates (2D vs. 3D). */
-    virtual int get_geometric_dimension(Mesquite::MsqError &/*err*/);
-    
-    /** \brief Get handles for all elemnents */
-    virtual void get_all_elements( msq_std::vector<ElementHandle>& elements, 
-                                   MsqError& err );
-    
-    /** \brief Get handles for all vertices */
-    virtual void get_all_vertices( msq_std::vector<VertexHandle>& vertices, 
-                                   MsqError& err );
-
-      /**\brief Query "fixed" flag for a vertex */
-    virtual void vertices_get_fixed_flag( const VertexHandle vert_array[], 
-                                          bool fixed_flag_array[],
-                                          size_t num_vtx, 
-                                          MsqError &err);
-
-    virtual void vertices_get_slaved_flag( const VertexHandle vert_array[], 
-                                           bool slaved_flag_array[],
-                                           size_t num_vtx, 
-                                           MsqError &err );
- 
-      /**\brief Get vertex coordinates */
-    virtual void vertices_get_coordinates( const VertexHandle vert_array[],
-                                           MsqVertex* coordinates,
-                                           size_t num_vtx, 
-                                           MsqError &err);
-      /**\brief Set vertex coordinates */
-    virtual void vertex_set_coordinates( VertexHandle vertex,
-                                         const Vector3D &coordinates, 
-                                         MsqError &err);
-    
-      /**\brief Set vertex mark */
-    virtual void vertex_set_byte( VertexHandle vertex,
-                                  unsigned char byte, 
-                                  MsqError &err);
-      /**\brief Set vertex mark */
-    virtual void vertices_set_byte( const VertexHandle *vert_array,
-                                    const unsigned char *byte_array,
-                                    size_t array_size, 
-                                    MsqError &err);
-    
-      /**\brief Get vertex mark */
-    virtual void vertex_get_byte( VertexHandle vertex,
-                                  unsigned char *byte, 
-                                  MsqError &err);
-      /**\brief Get vertex mark */
-    virtual void vertices_get_byte( const VertexHandle *vert_array,
-                                    unsigned char *byte_array,
-                                    size_t array_size, 
-                                    MsqError &err);
-    
-      /**\brief Get vertex-to-element adjacencies */
-    virtual void vertices_get_attached_elements( const VertexHandle* vertex_array,
-                                                 size_t num_vertices,
-                                                 msq_std::vector<ElementHandle>& elements,
-                                                 msq_std::vector<size_t>& offsets,
-                                                 MsqError& err );
-    
-      /**\brief Get element connectivity */
-    virtual void elements_get_attached_vertices( const ElementHandle *elem_handles,
-                                                 size_t num_elems,
-                                                 msq_std::vector<VertexHandle>& vertices,
-                                                 msq_std::vector<size_t>& offsets,
-                                                 MsqError& err );
-    
-  
-      /**\brief Return topology type enum for an array of elements */
-    virtual void elements_get_topologies( const ElementHandle *element_handle_array,
-                                          EntityTopology *element_topologies,
-                                          size_t num_elements, 
-                                          MsqError &err );
-    
-//**************** Memory Management ****************
-      /**\brief no-op */ 
-    virtual void release_entity_handles( const EntityHandle *handle_array,
-                                         size_t num_handles, 
-                                         MsqError &err );
-    
-      // Instead of deleting a Mesh when you think you are done,
-      // call release().  In simple cases, the implementation could
-      // just call the destructor.  More sophisticated implementations
-      // may want to keep the Mesh object to live longer than Mesquite
-      // is using it.
-    virtual void release();
-
-//*************** Tags  ***********
-
-      /** \brief Create a tag
-       *
-       * Create a user-defined data type that can be attached
-       * to any element or vertex in the mesh.  For an opaque or
-       * undefined type, use type=BYTE and length=sizeof(..).
-       *
-       * \param tag_name  A unique name for the data object
-       * \param type      The type of the data
-       * \param length    Number of values per entity (1->scalar, >1 ->vector)
-       * \param default_value Default value to assign to all entities - may be NULL
-       * \return - Handle for tag definition 
-       */
-    virtual TagHandle tag_create( const msq_std::string& tag_name,
-                                  TagType type, unsigned length,
-                                  const void* default_value,
-                                  MsqError &err);
-     
-      /** \brief Remove a tag and all corresponding data
-       *
-       * Delete a tag.
-       */
-    virtual void tag_delete( TagHandle handle, MsqError& err );
-    
-    
-      /** \brief Get handle for existing tag, by name. */
-    virtual TagHandle tag_get( const msq_std::string& name, 
-                               MsqError& err );
-     
-      /** \brief Get properites of tag
-       *
-       * Get data type and number of values per entity for tag.
-       * \param handle     Tag to get properties of.
-       * \param name_out   Passed back tag name.
-       * \param type_out   Passed back tag type.
-       * \param length_out Passed back number of values per entity.
-       */
-    virtual void tag_properties( TagHandle handle,
-                                 msq_std::string& name_out,
-                                 TagType& type_out,
-                                 unsigned& length_out,
-                                 MsqError& err );
-    
-      /** \brief Set tag values on elements
-       * 
-       * Set the value of a tag for a list of mesh elements.
-       * \param handle     The tag 
-       * \param num_elems  Length of elem_array
-       * \param elem_array Array of elements for which to set the tag value.
-       * \param tag_data   Tag data for each element, contiguous in memory.
-       *                   This data is expected to be 
-       *                   num_elems*tag_length*sizeof(tag_type) bytes.
-       */
-    virtual void tag_set_element_data( TagHandle handle,
-                                       size_t num_elems,
-                                       const ElementHandle* elem_array,
-                                       const void* tag_data,
-                                       MsqError& err );
-
-      /** \brief Set tag values on vertices
-       * 
-       * Set the value of a tag for a list of mesh vertices.
-       * \param handle     The tag 
-       * \param num_elems  Length of node_array
-       * \param node_array Array of vertices for which to set the tag value.
-       * \param tag_data   Tag data for each element, contiguous in memory.
-       *                   This data is expected to be 
-       *                   num_elems*tag_length*sizeof(tag_type) bytes.
-       */
-    virtual void tag_set_vertex_data ( TagHandle handle,
-                                       size_t num_elems,
-                                       const VertexHandle* node_array,
-                                       const void* tag_data,
-                                       MsqError& err );
-    
-    
-      /** \brief Get tag values on elements
-       * 
-       * Get the value of a tag for a list of mesh elements.
-       * \param handle     The tag 
-       * \param num_elems  Length of elem_array
-       * \param elem_array Array of elements for which to get the tag value.
-       * \param tag_data   Return buffer in which to copy tag data, contiguous 
-       *                   in memory.  This data is expected to be 
-       *                   num_elems*tag_length*sizeof(tag_type) bytes.
-       */
-    virtual void tag_get_element_data( TagHandle handle,
-                                       size_t num_elems,
-                                       const ElementHandle* elem_array,
-                                       void* tag_data,
-                                       MsqError& err );
-    
-      /** \brief Get tag values on vertices.
-       * 
-       * Get the value of a tag for a list of mesh vertices.
-       * \param handle     The tag 
-       * \param num_elems  Length of elem_array
-       * \param elem_array Array of vertices for which to get the tag value.
-       * \param tag_data   Return buffer in which to copy tag data, contiguous 
-       *                   in memory.  This data is expected to be 
-       *                   num_elems*tag_length*sizeof(tag_type) bytes.
-       */
-    virtual void tag_get_vertex_data ( TagHandle handle,
-                                       size_t num_elems,
-                                       const VertexHandle* node_array,
-                                       void* tag_data,
-                                       MsqError& err );
-                                       
-  protected:
-        
-    void set_int_tag( void* tag, void* meshset, int value, MsqError& err );
-
-      /** \brief  Call TSTTM::Arr::getEntArrAdj
-       *
-       * Common code for \ref vertices_get_attached_elements and 
-       * \ref elements_get_attached_vertices
-       *
-       *\param source      Array of handles of source entities to query from
-       *\param num_source  The length of \ref source
-       *\param target_type The type of entity to query for
-       *\param target      The output list of adjacent entities
-       *\param offsets     For each entity in \ref source, the offset in 
-       *                   \ref target at which the corresponding adjacent
-       *                   entities are stored. (output)
-       */
-    void get_adjacent_entities( const iBase_EntityHandle* source,
-                                size_t num_source,
-                                iBase_EntityType target_type,
-                                msq_std::vector<EntityHandle>& target,
-                                msq_std::vector<size_t>& offsets,
-                                MsqError& err );
-
-  private:
-      /** \brief Set tag values */
-    void tag_set_data ( TagHandle handle,
-                        size_t num_elems,
-                        const EntityHandle* handle_array,
-                        const void* tag_data,
-                        MsqError& err );
-    
-      /** \brief Get tag values */
-    void tag_get_data( TagHandle handle,
-                       size_t num_elems,
-                       const EntityHandle* handle_array,
-                       void* tag_data,
-                       MsqError& err );
-    
-    /** The IMesh instance */
-    iMesh_Instance meshInstance;
-    
-    /** Have mesh */
-    bool haveMesh;
-    /** ITAPS entity set handle for elements to improve */
-    //iBase_EntitySetHandle elementSet;
-    /** ITAPS entity set handle for nodes to move */
-    //iBase_EntitySetHandle nodeSet;
-    /** std::set containing elements in elementSet, used
-     *  to constrain vertex->element adjaceny queries to
-     *  only those elements that are in the input element set.
-     */
-    //msq_std::vector<iBase_EntityHandle> inputElements;
-    
-    /** The type of elements contained in the input element set.
-     * Should be one of:
-     * - iBase_REGION    - volume elements
-     * - iBase_FACE      - face/2d elements
-     * - iBase_ALL_TYPES - mixed volume and face elements
-     */
-    iBase_EntityType inputSetType;
-    /** The meshset containing the elements to optimize */
-    iBase_EntitySetHandle inputSet;
-    
-    /** Handle for tag used to hold vertex byte */
-    iBase_TagHandle byteTag; 
-    /** Tag was created in constructor */
-    bool createdByteTag;
-    /** Handle for tag used to hold vertex-fixed flag */
-    iBase_TagHandle fixedTag;
-    /** Fixed tag was created in constructor */
-    bool createdFixedTag;
-    /** Handle for tag used to hold vertex-slaved flag */
-    iBase_TagHandle slavedTag;
-    /** Handle for the tag used internally to remove duplicates from lists */
-//    TagHandle vertexIndexTag;
-    /** vertexIndexTag was created in constructor */
-//    bool createdVertexIndexTag;
-    /** Dimension is queried once during create and cached */
-    int geometricDimension;
-    /** Map iMesh_EntityTopology to Mesquite::EntityTopology */
-    EntityTopology topologyMap[iMesh_ALL_TOPOLOGIES+1];
-};
 
 /*************************************************************************
  *                          Mesh Definition
  ************************************************************************/
 
-MsqIMesh* MsqIMesh::create( iMesh_Instance mesh, 
-                            iBase_EntitySetHandle meshset, 
-                            iBase_EntityType type,
-                            MsqError& err,
-                            const char* fixed_tag_name,
-                            const char* slaved_tag_name )
-{
-  MsqIMesh* result = new MsqIMeshImpl( mesh, fixed_tag_name, slaved_tag_name, err );
-  if (MSQ_CHKERR(err))
-  {
-    delete result;
-    return 0;
-  }
-  result->set_active_set( meshset, type, err );
-  if (MSQ_CHKERR(err))
-  {
-    delete result;
-    return 0;
-  }
-  return result;
-}
-
-MsqIMesh* MsqIMesh::create( iMesh_Instance mesh, 
-                            MsqError& err,
-                            const char* fixed_tag_name,
-                            const char* slaved_tag_name )
-{
-  MsqIMesh* result = new MsqIMeshImpl( mesh, fixed_tag_name, slaved_tag_name, err );
-  if (MSQ_CHKERR(err))
-  {
-    delete result;
-    return 0;
-  }
-  return result;
-}
-
-MsqIMesh::~MsqIMesh() {}
-
-
-MsqIMeshImpl::MsqIMeshImpl( iMesh_Instance itaps_mesh, 
-                            const char* fixed_tag_name,
-                            const char* slaved_tag_name,
-                            Mesquite::MsqError& err ) 
-  : meshInstance(itaps_mesh), 
+  MsqIMesh::MsqIMesh( iMesh_Instance mesh, iBase_EntitySetHandle meshset, 
+		      iBase_EntityType type,
+		      const char* fixed_tag_name,
+		      const char* slaved_tag_name)
+  : meshInstance(mesh), 
     inputSetType( iBase_ALL_TYPES ),
     inputSet(0),
     byteTag(0), createdByteTag(false),
     fixedTag(0), createdFixedTag(false),
     slavedTag(0),
     geometricDimension(0)
-{
-    // Initialize topology map 
+  {
+    MsqError err;
+    init_active_mesh( mesh, fixed_tag_name, slaved_tag_name, err );    
+    set_active_set( meshset, type, err );
+  }
+
+  MsqIMesh::MsqIMesh( iMesh_Instance mesh, 
+		      const char* fixed_tag_name,
+		      const char* slaved_tag_name )
+  : meshInstance(mesh), 
+    inputSetType( iBase_ALL_TYPES ),
+    inputSet(0),
+    byteTag(0), createdByteTag(false),
+    fixedTag(0), createdFixedTag(false),
+    slavedTag(0),
+    geometricDimension(0)
+  {
+    MsqError err;
+    init_active_mesh( mesh, fixed_tag_name, slaved_tag_name, err );    
+  }
+
+  MsqIMesh::~MsqIMesh() 
+  {
+  }
+
+  iMesh_Instance MsqIMesh::get_imesh_instance() const
+  {
+    return meshInstance;
+  }
+
+  iBase_EntitySetHandle MsqIMesh::get_entity_set() const
+  {
+    return inputSet;
+  }
+
+  void MsqIMesh::init_active_mesh( iMesh_Instance mesh, 
+				   const char* fixed_tag_name,
+				   const char* slaved_tag_name,
+                                   MsqError& err )
+  {
+  // Initialize topology map 
   
   const size_t mapsize = sizeof(topologyMap) / sizeof(Mesquite::EntityTopology);
   if (mapsize < iMesh_ALL_TOPOLOGIES)
   {
     MSQ_SETERR(err)("MsqIMesh needs to be updated for new iMesh element topologies.",
-                    MsqError::INTERNAL_ERROR);
-    return;
+		    MsqError::INTERNAL_ERROR);
   }
   
   for (size_t i = 0; i <= iMesh_ALL_TOPOLOGIES; ++i)
@@ -436,15 +128,15 @@ MsqIMeshImpl::MsqIMeshImpl( iMesh_Instance itaps_mesh,
     iMesh_getTagSizeBytes( meshInstance, fixedTag, &size, &ierr );
     if (iBase_SUCCESS != ierr || size != sizeof(int)) {
       MSQ_SETERR(err)( MsqError::INVALID_STATE,
-                       "Tag \"%s\" exists with invalid size", 
-                       fixed_tag_name );
+		       "Tag \"%s\" exists with invalid size", 
+		       fixed_tag_name );
       return;
     }
     iMesh_getTagType( meshInstance, fixedTag, &type, &ierr );
     if (iBase_SUCCESS != ierr || type != iBase_INTEGER) {
       MSQ_SETERR(err)( MsqError::INVALID_STATE,
-                       "Tag \"%s\" exists with invalid type", 
-                       fixed_tag_name );
+		       "Tag \"%s\" exists with invalid type", 
+		       fixed_tag_name );
       return;
     }
   }
@@ -463,15 +155,15 @@ MsqIMeshImpl::MsqIMeshImpl( iMesh_Instance itaps_mesh,
     iMesh_getTagSizeBytes( meshInstance, slavedTag, &size, &ierr );
     if (iBase_SUCCESS != ierr || size != sizeof(int)) {
       MSQ_SETERR(err)( MsqError::INVALID_STATE,
-                       "Tag \"%s\" exists with invalid size", 
-                       slaved_tag_name );
+		       "Tag \"%s\" exists with invalid size", 
+		       slaved_tag_name );
       return;
     }
     iMesh_getTagType( meshInstance, slavedTag, &type, &ierr );
     if (iBase_SUCCESS != ierr || type != iBase_INTEGER) {
       MSQ_SETERR(err)( MsqError::INVALID_STATE,
-                       "Tag \"%s\" exists with invalid type", 
-                       slaved_tag_name );
+		       "Tag \"%s\" exists with invalid type", 
+		       slaved_tag_name );
       return;
     }
   }
@@ -492,8 +184,8 @@ MsqIMeshImpl::MsqIMeshImpl( iMesh_Instance itaps_mesh,
                      strlen(VERTEX_BYTE_TAG_NAME) );
     if (iBase_SUCCESS != ierr) {
       MSQ_SETERR(err)( MsqError::INVALID_STATE, 
-                       "Tag \"%s\" could not be created", 
-                       VERTEX_BYTE_TAG_NAME );
+		       "Tag \"%s\" could not be created", 
+		       VERTEX_BYTE_TAG_NAME );
       return;
     }
   }
@@ -502,15 +194,15 @@ MsqIMeshImpl::MsqIMeshImpl( iMesh_Instance itaps_mesh,
     iMesh_getTagSizeBytes( meshInstance, byteTag, &size, &ierr );
     if (iBase_SUCCESS != ierr || size != sizeof(int)) {
       MSQ_SETERR(err)( MsqError::INVALID_STATE,
-                       "Tag \"%s\" exists with invalid size", 
-                       VERTEX_BYTE_TAG_NAME );
+		       "Tag \"%s\" exists with invalid size", 
+		       VERTEX_BYTE_TAG_NAME );
       return;
     }
     iMesh_getTagType( meshInstance, byteTag, &type, &ierr );
     if (iBase_SUCCESS != ierr || type != iBase_INTEGER) {
       MSQ_SETERR(err)( MsqError::INVALID_STATE,
-                       "Tag \"%s\" exists with invalid type", 
-                       VERTEX_BYTE_TAG_NAME );
+		       "Tag \"%s\" exists with invalid type", 
+		       VERTEX_BYTE_TAG_NAME );
       return;
     }
   }
@@ -521,21 +213,7 @@ MsqIMeshImpl::MsqIMeshImpl( iMesh_Instance itaps_mesh,
   }
 }
 
-MsqIMeshImpl::~MsqIMeshImpl() 
-{
-}
-
-iMesh_Instance MsqIMeshImpl::get_imesh_instance() const
-{
-  return meshInstance;
-}
-
-iBase_EntitySetHandle MsqIMeshImpl::get_entity_set() const
-{
-  return inputSet;
-}
-
-void MsqIMeshImpl::set_active_set( iBase_EntitySetHandle elem_set, 
+void MsqIMesh::set_active_set( iBase_EntitySetHandle elem_set, 
                                    iBase_EntityType type_in,
                                    MsqError& err )
 {
@@ -553,7 +231,7 @@ void MsqIMeshImpl::set_active_set( iBase_EntitySetHandle elem_set,
   
 
 // Returns whether this mesh lies in a 2D or 3D coordinate system.
-int MsqIMeshImpl::get_geometric_dimension(Mesquite::MsqError &err)
+int MsqIMesh::get_geometric_dimension(Mesquite::MsqError &err)
 {
   return geometricDimension;
 }
@@ -565,7 +243,7 @@ int MsqIMeshImpl::get_geometric_dimension(Mesquite::MsqError &err)
 // is fixed and cannot be moved.  Note that this is a read-only
 // property; this flag can't be modified by users of the
 // Mesquite::Mesh interface.
-void MsqIMeshImpl::vertices_get_fixed_flag(
+void MsqIMesh::vertices_get_fixed_flag(
   const VertexHandle vert_array[], 
   bool bool_array[],
   size_t num_vtx, MsqError &err)
@@ -592,7 +270,7 @@ void MsqIMeshImpl::vertices_get_fixed_flag(
 }
 
 
-void MsqIMeshImpl::vertices_get_slaved_flag(
+void MsqIMesh::vertices_get_slaved_flag(
   const VertexHandle vert_array[], 
   bool bool_array[],
   size_t num_vtx, MsqError &err)
@@ -621,7 +299,7 @@ void MsqIMeshImpl::vertices_get_slaved_flag(
 }
 
 // Get vertex coordinates 
-void MsqIMeshImpl::vertices_get_coordinates(
+void MsqIMesh::vertices_get_coordinates(
   const Mesquite::Mesh::VertexHandle vert_array[],
   MsqVertex* coordinates, 
   size_t num_vtx, 
@@ -660,7 +338,7 @@ void MsqIMeshImpl::vertices_get_coordinates(
   }
 }
 
-void MsqIMeshImpl::vertex_set_coordinates(
+void MsqIMesh::vertex_set_coordinates(
   Mesquite::Mesh::VertexHandle vertex,
   const Vector3D &coords, MsqError &err)
 {
@@ -675,7 +353,7 @@ void MsqIMeshImpl::vertex_set_coordinates(
 // flags.  This byte's value is neither set nor used by the mesh
 // implementation.  It is intended to be used by Mesquite algorithms.
 // Until a vertex's byte has been explicitly set, its value is 0.
-void MsqIMeshImpl::vertex_set_byte (
+void MsqIMesh::vertex_set_byte (
   Mesquite::Mesh::VertexHandle vertex,
   unsigned char byte, MsqError &err)
 {
@@ -686,7 +364,7 @@ void MsqIMeshImpl::vertex_set_byte (
     MSQ_SETERR(err)( process_itaps_error( ierr ), MsqError::INTERNAL_ERROR );
 }
 
-void MsqIMeshImpl::vertices_set_byte (
+void MsqIMesh::vertices_set_byte (
   const VertexHandle *vert_array,
   const unsigned char *byte_array,
   size_t array_size, MsqError &err)
@@ -704,7 +382,7 @@ void MsqIMeshImpl::vertices_set_byte (
 // Retrieve the byte value for the specified vertex or vertices.
 // The byte value is 0 if it has not yet been set via one of the
 // *_set_byte() functions.
-void MsqIMeshImpl::vertex_get_byte(
+void MsqIMesh::vertex_get_byte(
   Mesquite::Mesh::VertexHandle vertex,
   unsigned char *byte, MsqError &err)
 {
@@ -716,7 +394,7 @@ void MsqIMeshImpl::vertex_get_byte(
   *byte = value;
 }
 
-void MsqIMeshImpl::vertices_get_byte(
+void MsqIMesh::vertices_get_byte(
   const VertexHandle *vert_array,
   unsigned char *byte_array,
   size_t array_size, MsqError &err)
@@ -736,7 +414,7 @@ void MsqIMeshImpl::vertices_get_byte(
 
 //**************** Topology *****************
 
-void MsqIMeshImpl::get_adjacent_entities( const iBase_EntityHandle* source,
+void MsqIMesh::get_adjacent_entities( const iBase_EntityHandle* source,
                                           size_t num_source,
                                           iBase_EntityType target_type,
                                           msq_std::vector<EntityHandle>& target,
@@ -827,7 +505,7 @@ void MsqIMeshImpl::get_adjacent_entities( const iBase_EntityHandle* source,
 }
 
 
-void MsqIMeshImpl::vertices_get_attached_elements( 
+void MsqIMesh::vertices_get_attached_elements( 
                                      const VertexHandle* vertices,
                                      size_t num_vertex,
                                      msq_std::vector<ElementHandle>& elements,
@@ -884,7 +562,7 @@ void MsqIMeshImpl::vertices_get_attached_elements(
  *\param vertices - Array of vertex handles in connectivity list.
  *\param offsets  - Indices into \ref vertex_handles, one per element
  */
-void MsqIMeshImpl::elements_get_attached_vertices(
+void MsqIMesh::elements_get_attached_vertices(
   const ElementHandle *elements,
   size_t num_elems,
   msq_std::vector<VertexHandle>& vertices,
@@ -898,7 +576,7 @@ void MsqIMeshImpl::elements_get_attached_vertices(
 }
 
 
-void MsqIMeshImpl::get_all_elements( msq_std::vector<ElementHandle>& elements,
+void MsqIMesh::get_all_elements( msq_std::vector<ElementHandle>& elements,
                                      MsqError& err )
 {
   int ierr, count_in, count_out;
@@ -967,7 +645,7 @@ void MsqIMeshImpl::get_all_elements( msq_std::vector<ElementHandle>& elements,
   }
 }
 
-void MsqIMeshImpl::get_all_vertices( msq_std::vector<VertexHandle>& vertices,
+void MsqIMesh::get_all_vertices( msq_std::vector<VertexHandle>& vertices,
                                      MsqError& err )
 {
   msq_std::vector<ElementHandle> elems;
@@ -984,7 +662,7 @@ void MsqIMeshImpl::get_all_vertices( msq_std::vector<VertexHandle>& vertices,
 
 // Returns the topologies of the given entities.  The "entity_topologies"
 // array must be at least "num_elements" in size.
-void MsqIMeshImpl::elements_get_topologies(
+void MsqIMesh::elements_get_topologies(
   const ElementHandle *element_handle_array,
   EntityTopology *element_topologies,
   size_t num_elements, MsqError &err)
@@ -1015,7 +693,7 @@ void MsqIMeshImpl::elements_get_topologies(
 //**************** Memory Management ****************
 // Tells the mesh that the client is finished with a given
 // entity handle.  
-void MsqIMeshImpl::release_entity_handles(
+void MsqIMesh::release_entity_handles(
   const Mesquite::Mesh::EntityHandle */*handle_array*/,
   size_t /*num_handles*/, MsqError &/*err*/)
 {
@@ -1027,12 +705,12 @@ void MsqIMeshImpl::release_entity_handles(
 // just call the destructor.  More sophisticated implementations
 // may want to keep the Mesh object to live longer than Mesquite
 // is using it.
-void MsqIMeshImpl::release()
+void MsqIMesh::release()
 {
 }
 
 //**************** Tags ****************
-TagHandle MsqIMeshImpl::tag_create( const msq_std::string& name, 
+TagHandle MsqIMesh::tag_create( const msq_std::string& name, 
                                     TagType type, unsigned length,
                                     const void* ,
                                     MsqError& err )
@@ -1063,7 +741,7 @@ TagHandle MsqIMeshImpl::tag_create( const msq_std::string& name,
   return static_cast<TagHandle>(result);
 }
 
-void MsqIMeshImpl::tag_delete( TagHandle handle, MsqError& err )
+void MsqIMesh::tag_delete( TagHandle handle, MsqError& err )
 {
   int ierr;
   iMesh_destroyTag( meshInstance, static_cast<iBase_TagHandle>(handle), true, &ierr );
@@ -1073,7 +751,7 @@ void MsqIMeshImpl::tag_delete( TagHandle handle, MsqError& err )
   }
 }
 
-TagHandle MsqIMeshImpl::tag_get( const msq_std::string& name, MsqError& err )
+TagHandle MsqIMesh::tag_get( const msq_std::string& name, MsqError& err )
 {
   iBase_TagHandle handle = 0;
   int ierr;
@@ -1090,7 +768,7 @@ TagHandle MsqIMeshImpl::tag_get( const msq_std::string& name, MsqError& err )
 }
 
 
-void MsqIMeshImpl::tag_properties( TagHandle handle,
+void MsqIMesh::tag_properties( TagHandle handle,
                                    msq_std::string& name_out,
                                    TagType& type_out,
                                    unsigned& length_out,
@@ -1129,7 +807,7 @@ void MsqIMeshImpl::tag_properties( TagHandle handle,
   }
 }
 
-void MsqIMeshImpl::tag_set_element_data( TagHandle tag, 
+void MsqIMesh::tag_set_element_data( TagHandle tag, 
                                          size_t num_elems,
                                          const ElementHandle* array,
                                          const void* data,
@@ -1138,7 +816,7 @@ void MsqIMeshImpl::tag_set_element_data( TagHandle tag,
   tag_set_data( tag, num_elems, array, data, err );
 }
 
-void MsqIMeshImpl::tag_set_vertex_data( TagHandle tag, 
+void MsqIMesh::tag_set_vertex_data( TagHandle tag, 
                                         size_t num_elems,
                                         const VertexHandle* array,
                                         const void* data,
@@ -1147,7 +825,7 @@ void MsqIMeshImpl::tag_set_vertex_data( TagHandle tag,
   tag_set_data( tag, num_elems, array, data, err );
 }
     
-void MsqIMeshImpl::tag_set_data( TagHandle tag, 
+void MsqIMesh::tag_set_data( TagHandle tag, 
                                  size_t num_elems,
                                  const EntityHandle* array,
                                  const void* data,
@@ -1172,7 +850,7 @@ void MsqIMeshImpl::tag_set_data( TagHandle tag,
 }  
 
 
-void MsqIMeshImpl::tag_get_element_data( TagHandle tag, 
+void MsqIMesh::tag_get_element_data( TagHandle tag, 
                                          size_t num_elems,
                                          const ElementHandle* array,
                                          void* data,
@@ -1181,7 +859,7 @@ void MsqIMeshImpl::tag_get_element_data( TagHandle tag,
   tag_get_data( tag, num_elems, array, data, err );
 }
 
-void MsqIMeshImpl::tag_get_vertex_data( TagHandle tag, 
+void MsqIMesh::tag_get_vertex_data( TagHandle tag, 
                                         size_t num_elems,
                                         const VertexHandle* array,
                                         void* data,
@@ -1190,7 +868,7 @@ void MsqIMeshImpl::tag_get_vertex_data( TagHandle tag,
   tag_get_data( tag, num_elems, array, data, err );
 }
     
-void MsqIMeshImpl::tag_get_data( TagHandle tag, 
+void MsqIMesh::tag_get_data( TagHandle tag, 
                                  size_t num_elems,
                                  const EntityHandle* array,
                                  void* data,
@@ -1214,6 +892,5 @@ void MsqIMeshImpl::tag_get_data( TagHandle tag,
     return;
   }
 }
-
 
 } // namespace Mesquite

@@ -214,7 +214,7 @@ void iMeshTest::setUp()
   iMesh_getRootSet( myIMesh, &root_set, &ierr );
   CPPUNIT_ASSERT_EQUAL( (int)iBase_SUCCESS, ierr );
           
-  myMesh = MsqIMesh::create( myIMesh, root_set, iBase_ALL_TYPES, err );
+  myMesh = new MsqIMesh( myIMesh, root_set, iBase_ALL_TYPES );
   CPPUNIT_ASSERT_EQUAL( (int)iBase_SUCCESS, ierr );
   CPPUNIT_ASSERT( myMesh != NULL );
   
