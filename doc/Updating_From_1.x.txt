@@ -1,0 +1,117 @@
+Contents
+--------
+0.  Introduction
+1.  Applications Not Impacted By API Changes
+2.  Mesquite::Mesh
+3.  Mesquite::MeshDomain
+4.  TSTT/ITAPS interfaces
+5.  Custom Optimizers
+6.  Custom Metrics, Objective Function Templates, or Solvers
+
+
+
+
+0.  Introduction
+----------------
+
+This file contains a brief description of the Mesquite API changes between
+versions 1.1 and 2.0 that are most likely to require changes to applications
+using Mesquite.
+
+
+
+1.  Applications Not Impacted By API Changes
+--------------------------------------------
+
+There should be almost no changes required if your application is using
+one of the wrappers (e.g ShapeImprovementWrapper) and reading mesh from
+a file using the MeshImpl class.  
+
+
+
+2.  Mesquite::Mesh
+------------------
+
+If your application provides an implementation of the Mesquite::Mesh 
+interface so that Mesquite has access to your applications Mesh data, 
+then that implementation will need make the following updates:
+
+ - Add /vertices_get_slaved_flag/ function.  The implementation need not
+   do anything at this time.  Always returning an error is acceptable.
+   
+
+
+3.  Mesquite::MeshDomain
+------------------------
+
+If your application implements one or more classes that provide the
+Mesquite::MeshDomain interface for snapping mesh vertices to geometry,
+you will need to make the following updates:
+
+ - /normal_at/ function is replaced with two functions:
+   /vertex_normal_at/ and /element_normal_at/, so it is clear to the
+   implementation which type of handle is being passed.
+   
+   
+   
+4.  TSTT/ITAPS interfaces
+-------------------------
+
+The /MeshTSTT/ and /GeomTSTTT/ classes used to access TSTT/ITAPS interfaces
+for mesh, geometry, and classification data via SIDL bindings have been
+replaced with the new /MsqIMesh/ and /MsqIGeom/ classes which use the new
+ITAPS C API.
+
+
+5.  Custom Optimizers
+---------------------
+
+If your application assembles an optimizer rather than using one of the
+wrappers provided in Mesquite, you will need to make the following changes
+to update your application for Mesquite 2.0:
+
+ - All quality metrics and objective function templates use analytical
+   gradient calculation (as opposed to finite difference approximation)
+   whenever possible.  All calls to the /set_gradient_type/ and
+   /set_hessian_type/ methods in quality metrics or objective function
+   templates must be removed.
+
+ - Averaging methods for quality metrics may now be specified only for
+   metrics that actually do averaging.  Any calls that have no effect
+   must be removed.
+
+ - The QAFunction enumeration type has been removed from the QualityAssessor
+   class.  The new behavior is to accumulate all counts except a histogram
+   for any registered metrics.  Accumulation of histograms is requested
+   by specifying a non-zero histogram bucket count.  All calls to
+   QualityAssessor::add_quality_assessment or 
+   QualityAssessor::set_stopping_assessment will need to be updated
+   appropriately.
+ 
+ - The TCType enumeration in the TerminationCriterion class has been removed.
+   The TerminationCriterion class now contains separate functions for adding
+   each type of criterion.  For example, replace:
+      tc.add_termination_criterion_with_int( 
+                   TerminationCriterion::NUMBER_OF_ITERATES,
+                   100, err );
+   with:
+      tc.add_iteration_limit( 100 );
+
+ - The PATCH_TYPE enumeration has been removed.  Further, the ability to
+   specify a patch type for optimizers for which it does not make sense
+   (e.g. Laplacian smoothing always uses element-on-vertex patches)
+   has been removed.  Any calls to /set_patch_type/ must be a) replaced
+   with a call to /use_global_patch/ or /use_element_on_vertex_patch/
+   if the algorithm supports different patch types or b) removed if
+   the algorithm does not support different patch types.
+
+
+
+6.  Custom Metrics, Objective Function Templates, or Solvers
+-----------------------------------------------------------
+
+Extensive changes have been made to the interfaces for the QualityMetric,
+ObjectiveFunction, and VertexMover classes.  If your application uses
+a custom implementation of any of these object types, consult the in-line
+documentation in the respective header.
+
