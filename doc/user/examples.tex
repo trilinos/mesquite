@@ -250,8 +250,7 @@ the details of each class and the low-level API are not described here.
     // outer loop: default behavior: 1 iteration
     // inner loop: stop if gradient norm < eps
   TerminationCriterion tc_inner;
-  tc_inner.add_criterion_type_with_double(
-    TerminationCriterion::GRADIENT_L2_NORM_ABSOLUTE, 1e-4, err); 
+  tc_inner.add_absolute_gradient_L2_norm( 1e-4 ); 
   f_newton.set_inner_termination_criterion(&tc_inner);
 
     // creates a quality assessor
