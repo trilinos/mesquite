@@ -427,8 +427,8 @@ void Target2DSurfOrientTest::smooth( int metric_3D, bool ref_mesh, MeshDomain* d
   ObjectiveFunction* OF = metric_3D ? (ObjectiveFunction*)&sum_OF : (ObjectiveFunction*)&pmean_2D;
   
   TerminationCriterion inner;
-  inner.add_criterion_type_with_double( TerminationCriterion::VERTEX_MOVEMENT_ABSOLUTE, 1e-3, err );
-  inner.add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, 20, err );
+  inner.add_absolute_vertex_movement( 1e-3 );
+  inner.add_iteration_limit( 20 );
   
   ConjugateGradient solver( OF );
   solver.use_global_patch();

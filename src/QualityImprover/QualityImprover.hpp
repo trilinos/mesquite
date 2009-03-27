@@ -88,7 +88,7 @@ namespace Mesquite
       {
           //Temporary solution to not having an err object
         MsqError temp_err;
-        defaultOuterCriterion.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,temp_err);
+        defaultOuterCriterion.add_iteration_limit( 1 );
         outerTerminationCriterion = & defaultOuterCriterion;
         innerTerminationCriterion = & defaultInnerCriterion;
       }

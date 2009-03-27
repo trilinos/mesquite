@@ -140,14 +140,11 @@ int main(int argc, char* argv[])
   // **************Set stopping criterion****************
   TerminationCriterion tc_inner;
   if (OF_value!=0) {
-    tc_inner.add_criterion_type_with_double(
-           TerminationCriterion::QUALITY_IMPROVEMENT_ABSOLUTE, OF_value, err);
-    if (err) return 1;
+    tc_inner.add_absolute_quality_improvement( OF_value );
     pass1.set_inner_termination_criterion(&tc_inner);
   }
   TerminationCriterion tc_outer;
-  tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
-  if (err) return 1;
+  tc_outer.add_iteration_limit( 1 );
   pass1.set_outer_termination_criterion(&tc_outer);
 
   queue1.add_quality_assessor(&stop_qa, err); 

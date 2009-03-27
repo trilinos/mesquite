@@ -137,9 +137,9 @@ public:
     
     q.set_slaved_ho_node_mode( Settings::SLAVE_NONE );
     
-    outer.add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, 1, err );
-    crit.add_criterion_type_with_double( TerminationCriterion::VERTEX_MOVEMENT_ABSOLUTE, 1e-4, err );
-    crit.add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, MAX_ITERATIONS, err );
+    outer.add_iteration_limit( 1 );
+    crit.add_absolute_vertex_movement( 1e-4 );
+    crit.add_iteration_limit( MAX_ITERATIONS );
     solver.set_outer_termination_criterion( &outer );
     solver.set_inner_termination_criterion( &crit );
   }

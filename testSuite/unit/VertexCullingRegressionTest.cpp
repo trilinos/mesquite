@@ -135,18 +135,14 @@ public:
       
         //**************Set termination criterion****************
       TerminationCriterion sc2;
-      sc2.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1000,err);
-        //Make sure no errors
-      CPPUNIT_ASSERT(!err);
-      sc2.add_criterion_type_with_double(TerminationCriterion::SUCCESSIVE_IMPROVEMENTS_ABSOLUTE,0.0,err);
-        //Make sure no errors
-      CPPUNIT_ASSERT(!err);
+      sc2.add_iteration_limit( 1000 );
+      sc2.add_absolute_successive_improvement( 0.0 );
         //set a criterion with a culling method for the inner criterion
       TerminationCriterion sc_cull;
-      sc_cull.set_culling_type(TerminationCriterion::VERTEX_MOVEMENT_ABSOLUTE,.1,err);
+      sc_cull.cull_on_absolute_vertex_movement( 0.1 );
       CPPUNIT_ASSERT(!err);
       TerminationCriterion sc_cull_2;
-      sc_cull_2.set_culling_type(TerminationCriterion::VERTEX_MOVEMENT_ABSOLUTE,.000001,err);
+      sc_cull_2.cull_on_absolute_vertex_movement( 0.000001 );
       CPPUNIT_ASSERT(!err);
         //Make sure no errors
       CPPUNIT_ASSERT(!err);

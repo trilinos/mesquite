@@ -116,16 +116,12 @@ int main()
   
     // **************Set termination criterion****************
   TerminationCriterion tc_inner;
-  tc_inner.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
-  if (err) return 1;;
-    //_inner.add_criterion_type_with_double(
-    // TerminationCriterion::QUALITY_IMPROVEMENT_ABSOLUTE, OF_value, err);
-    //tc_inner.add_criterion_type_with_double(
-    //TerminationCriterion::GRADIENT_L2_NORM_ABSOLUTE, OF_value, err);
+  tc_inner.add_iteration_limit( 1 );
+    //_inner.add_absolute_quality_improvement( OF_value );
+    //tc_inner.add_absolute_gradient_L2_norm( OF_value );
   TerminationCriterion tc_outer;
-    //tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
-  tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
-  if (err) return 1;;
+    //tc_outer.add_iteration_limit( 1 );
+  tc_outer.add_iteration_limit( 1 );
   
   pass1.set_inner_termination_criterion(&tc_inner);
   pass1.set_outer_termination_criterion(&tc_outer);

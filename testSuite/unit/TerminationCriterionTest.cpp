@@ -159,8 +159,7 @@ public:
     {
       MsqPrintError err(cout);
       TerminationCriterion t1;
-      t1.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,
-                                     2, err);CPPUNIT_ASSERT(!err);
+      t1.add_iteration_limit( 2 );
       if(pF)
         std::cout<<"\nTEST_NUMBER_OF_ITERATES\n";
       test_outer_criterion(&t1,err);CPPUNIT_ASSERT(!err);
@@ -171,8 +170,7 @@ public:
     {
       MsqPrintError err(cout);
       TerminationCriterion t1;
-      t1.add_criterion_type_with_double(TerminationCriterion::GRADIENT_INF_NORM_ABSOLUTE,.02, err);
-      CPPUNIT_ASSERT(!err);
+      t1.add_absolute_gradient_inf_norm( 0.02 );
       if(pF)
         std::cout<<"\nTEST_GRADIENT_INF_NORM_ABSOLUTE\n";
       test_outer_criterion(&t1,err);
@@ -184,8 +182,7 @@ public:
     {
       MsqPrintError err(cout);
       TerminationCriterion t1;
-      t1.add_criterion_type_with_double(TerminationCriterion::GRADIENT_INF_NORM_RELATIVE,.3, err);
-      CPPUNIT_ASSERT(!err);
+      t1.add_relative_gradient_inf_norm( 0.3 );
       if(pF)
         std::cout<<"\nTEST_GRADIENT_INF_NORM_RELATIVE\n";
       test_outer_criterion(&t1,err);
@@ -197,8 +194,7 @@ public:
     {
       MsqPrintError err(cout);
       TerminationCriterion t1;
-      t1.add_criterion_type_with_double(TerminationCriterion::CPU_TIME,5, err);
-      CPPUNIT_ASSERT(!err);
+      t1.add_cpu_time( 5 );
       if(pF)
         std::cout<<"\nTEST_CPU_TIME\n";
       test_outer_criterion(&t1,err);
@@ -210,10 +206,8 @@ public:
     {
       MsqPrintError err(cout);
       TerminationCriterion t1;
-      t1.add_criterion_type_with_double(TerminationCriterion::CPU_TIME,5, err);
-      CPPUNIT_ASSERT(!err);
-      t1.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,5000, err);
-      CPPUNIT_ASSERT(!err);
+      t1.add_cpu_time( 5 );
+      t1.add_iteration_limit( 5000 );
       if(pF)
         std::cout<<"\nTEST_CPU_TIME_OR_ITERATES\n";
       test_outer_criterion(&t1,err);
@@ -225,10 +219,8 @@ public:
     {
       MsqPrintError err(cout);
       TerminationCriterion t1;
-      t1.add_criterion_type_with_double(TerminationCriterion::CPU_TIME,5000, err);
-      CPPUNIT_ASSERT(!err);
-      t1.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,2, err);
-      CPPUNIT_ASSERT(!err);
+      t1.add_cpu_time( 5000 );
+      t1.add_iteration_limit( 2 );
       if(pF)
         std::cout<<"\nTEST_ITERATES_OR_CPU_TIME\n";
       test_outer_criterion(&t1,err);
@@ -240,8 +232,7 @@ public:
     {
       MsqPrintError err(cout);
       TerminationCriterion t1;
-      t1.add_criterion_type_with_double(TerminationCriterion::QUALITY_IMPROVEMENT_ABSOLUTE,143.0, err);
-      CPPUNIT_ASSERT(!err);
+      t1.add_absolute_quality_improvement( 143.0 );
       if(pF)
         std::cout<<"\nTEST_QUALITY_IMPROVEMENT_ABSOLUTE\n";
       test_outer_criterion(&t1,err);
@@ -253,8 +244,7 @@ public:
     {
       MsqPrintError err(cout);
       TerminationCriterion t1;
-      t1.add_criterion_type_with_double(TerminationCriterion::QUALITY_IMPROVEMENT_RELATIVE,.996, err);
-      CPPUNIT_ASSERT(!err);
+      t1.add_relative_quality_improvement( 0.996 );
       if(pF)
         std::cout<<"\nTEST_QUALITY_IMPROVEMENT_RELATIVE\n";
       test_outer_criterion(&t1,err);
@@ -266,8 +256,7 @@ public:
     {
       MsqPrintError err(cout);
       TerminationCriterion t1;
-      t1.add_criterion_type_with_double(TerminationCriterion::SUCCESSIVE_IMPROVEMENTS_ABSOLUTE,.005, err);
-      CPPUNIT_ASSERT(!err);
+      t1.add_absolute_successive_improvement( 0.005 );
       if(pF)
         std::cout<<"\nTEST_SUCCESSIVE_IMPROVEMENTS_ABSOLUTE\n";
       test_outer_criterion(&t1,err);
@@ -279,8 +268,7 @@ public:
      {
        MsqPrintError err(cout);
        TerminationCriterion t1;
-       t1.add_criterion_type_with_double(TerminationCriterion::SUCCESSIVE_IMPROVEMENTS_RELATIVE,.25, err);
-       CPPUNIT_ASSERT(!err);
+       t1.add_relative_successive_improvement( 0.25 );
        if(pF)
          std::cout<<"\nTEST_SUCCESSIVE_IMPROVEMENTS_RELATIVE\n";
        test_outer_criterion(&t1,err);
@@ -292,10 +280,8 @@ public:
      {
        MsqPrintError err(cout);
        TerminationCriterion t1;
-       t1.add_criterion_type_with_double(TerminationCriterion::CPU_TIME,5000, err);
-       CPPUNIT_ASSERT(!err);
-       t1.add_criterion_type_with_double(TerminationCriterion::BOUNDED_VERTEX_MOVEMENT, .01 , err);
-       CPPUNIT_ASSERT(!err);
+       t1.add_cpu_time( 5000 );
+       t1.add_bounded_vertex_movement( 0.01 );
        if(pF)
         std::cout<<"\nTEST_VERTEX_BOUND_OR_CPU_TIME\n";
        test_outer_criterion(&t1,err);
@@ -306,10 +292,8 @@ public:
      {
        MsqPrintError err(cout);
        TerminationCriterion t1;
-       t1.add_criterion_type_with_double(TerminationCriterion::CPU_TIME,5, err);
-       CPPUNIT_ASSERT(!err);
-       t1.add_criterion_type_with_double(TerminationCriterion::BOUNDED_VERTEX_MOVEMENT, 50000 , err);
-       CPPUNIT_ASSERT(!err);
+       t1.add_cpu_time( 5 );
+       t1.add_bounded_vertex_movement( 50000 );
        if(pF)
          std::cout<<"\nTEST_CPU_TIME_OR_VERTEX_BOUND\n";
        test_outer_criterion(&t1,err);

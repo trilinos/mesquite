@@ -183,12 +183,10 @@ int run_global_smoother( Mesh* mesh, MsqError& err )
   
   // **************Set stopping criterion****************
   TerminationCriterion tc_inner;
-  tc_inner.add_criterion_type_with_double(
-           TerminationCriterion::VERTEX_MOVEMENT_ABSOLUTE, OF_value, err);
+  tc_inner.add_absolute_vertex_movement( OF_value );
   if (err) return 1;
   TerminationCriterion tc_outer;
-  tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
-  if (err) return 1;
+  tc_outer.add_iteration_limit( 1 );
   pass1->set_inner_termination_criterion(&tc_inner);
   pass1->set_outer_termination_criterion(&tc_outer);
 
@@ -238,12 +236,9 @@ int run_local_smoother( Mesh* mesh, MsqError& err )
   
   // **************Set stopping criterion****************
   TerminationCriterion tc_inner;
-  tc_inner.add_criterion_type_with_double(
-           TerminationCriterion::VERTEX_MOVEMENT_ABSOLUTE, OF_value, err);
-  if (err) return 1;
+  tc_inner.add_absolute_vertex_movement( OF_value );
   TerminationCriterion tc_outer;
-  tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
-  if (err) return 1;
+  tc_outer.add_iteration_limit( 1 );
   pass1->set_inner_termination_criterion(&tc_inner);
   pass1->set_outer_termination_criterion(&tc_outer);
 

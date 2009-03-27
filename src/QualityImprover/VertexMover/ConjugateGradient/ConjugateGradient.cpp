@@ -74,7 +74,7 @@ ConjugateGradient::ConjugateGradient(ObjectiveFunction* objective,
     return;
   }
   else{
-    default_crit->add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,5,err);
+    default_crit->add_iteration_limit( 5 );
     MSQ_ERRRTN(err);
   }
   

@@ -49,16 +49,73 @@
 #include <sstream>
 
 namespace Mesquite {
+ /*! \enum TCType  defines the termination criterion */
+enum TCType {
+   NONE    = 0,
+   //! checks the gradient \f$\nabla f \f$ of objective function 
+   //! \f$f : I\!\!R^{3N} \rightarrow I\!\!R \f$ against a double \f$d\f$  
+   //! and stops when \f$\sqrt{\sum_{i=1}^{3N}\nabla f_i^2}<d\f$  
+   GRADIENT_L2_NORM_ABSOLUTE = 1,  
+   //! checks the gradient \f$\nabla f \f$ of objective function 
+   //! \f$f : I\!\!R^{3N} \rightarrow I\!\!R \f$ against a double \f$d\f$  
+   //! and stops when \f$ \max_{i=1}^{3N} \nabla f_i < d \f$  
+   GRADIENT_INF_NORM_ABSOLUTE = 2,
+     //!terminates on the j_th iteration when
+     //! \f$\sqrt{\sum_{i=1}^{3N}\nabla f_{i,j}^2}<d\sqrt{\sum_{i=1}^{3N}\nabla f_{i,0}^2}\f$
+     //!  That is, terminates when the norm of the gradient is small
+     //! than some scaling factor times the norm of the original gradient. 
+   GRADIENT_L2_NORM_RELATIVE = 4,
+   //!terminates on the j_th iteration when
+     //! \f$\max_{i=1 \cdots 3N}\nabla f_{i,j}<d \max_{i=1 \cdots 3N}\nabla f_{i,0}\f$
+     //!  That is, terminates when the norm of the gradient is small
+     //! than some scaling factor times the norm of the original gradient.
+     //! (Using the infinity norm.)
+   GRADIENT_INF_NORM_RELATIVE = 8,
+     //! Not yet implemented.
+   KKT  = 16,
+     //!Terminates when the objective function value is smaller than
+     //! the given scalar value.
+   QUALITY_IMPROVEMENT_ABSOLUTE = 32,
+     //!Terminates when the objective function value is smaller than
+     //! the given scalar value times the original objective function
+     //! value.
+   QUALITY_IMPROVEMENT_RELATIVE = 64,
+     //!Terminates when the number of iterations exceeds a given integer.
+   NUMBER_OF_ITERATES = 128,
+     //!Terminates when the algorithm exceeds an allotted time limit
+     //! (given in seconds).
+   CPU_TIME  = 256,
+     //!Terminates when a the maximum distance moved by any vertex
+     //! during the previous iteration is below the given value.
+   VERTEX_MOVEMENT_ABSOLUTE  = 512,
+     //!Terminates when a the maximum distance moved by any vertex
+     //! during the previous iteration is below the given value
+     //! times the maximum distance moved by any vertex over the
+     //! entire course of the optimization.
+   VERTEX_MOVEMENT_RELATIVE  = 1024,
+     //!Terminates when the decrease in the objective function value since
+     //! the previous iteration is below the given value.
+   SUCCESSIVE_IMPROVEMENTS_ABSOLUTE = 2048,
+     //!Terminates when the decrease in the objective function value since
+     //! the previous iteration is below the given value times the
+     //! decrease in the objective function value since the beginning
+     //! of this optimization process.
+   SUCCESSIVE_IMPROVEMENTS_RELATIVE = 4096,
+     //!Terminates when any vertex leaves the bounding box, defined
+     //! by the given value, d.  That is, when the absolute value of
+     //! a single coordinate of vertex's position exceeds d.
+   BOUNDED_VERTEX_MOVEMENT = 8192
+};
 
 
-const unsigned long GRAD_FLAGS = TerminationCriterion::GRADIENT_L2_NORM_ABSOLUTE |
-                                 TerminationCriterion::GRADIENT_INF_NORM_ABSOLUTE |
-                                 TerminationCriterion::GRADIENT_L2_NORM_RELATIVE |
-                                 TerminationCriterion::GRADIENT_INF_NORM_RELATIVE;
-const unsigned long OF_FLAGS   = TerminationCriterion::QUALITY_IMPROVEMENT_ABSOLUTE |
-                                 TerminationCriterion::QUALITY_IMPROVEMENT_RELATIVE |
-                                 TerminationCriterion::SUCCESSIVE_IMPROVEMENTS_ABSOLUTE |
-                                 TerminationCriterion::SUCCESSIVE_IMPROVEMENTS_RELATIVE;
+const unsigned long GRAD_FLAGS = GRADIENT_L2_NORM_ABSOLUTE |
+                                 GRADIENT_INF_NORM_ABSOLUTE |
+                                 GRADIENT_L2_NORM_RELATIVE |
+                                 GRADIENT_INF_NORM_RELATIVE;
+const unsigned long OF_FLAGS   = QUALITY_IMPROVEMENT_ABSOLUTE |
+                                 QUALITY_IMPROVEMENT_RELATIVE |
+                                 SUCCESSIVE_IMPROVEMENTS_ABSOLUTE |
+                                 SUCCESSIVE_IMPROVEMENTS_RELATIVE;
 
 /*!Constructor initializes all of the data members which are not
   necessarily automatically initialized in their constructors.*/
@@ -96,134 +153,129 @@ TerminationCriterion::TerminationCriterion()
   
 }
 
-
-
-/*! Function to add a type of termination criterion to this object.  It is
-  only valid if the specified criterion type requires a single double
-  value.*/
-void TerminationCriterion::add_criterion_type_with_double(TCType tc_type,
-                                                       double eps,
-                                                       MsqError &err)
+void TerminationCriterion::add_absolute_gradient_L2_norm( double eps )
 {
-  switch(tc_type){
-    case GRADIENT_L2_NORM_ABSOLUTE:
        terminationCriterionFlag|=GRADIENT_L2_NORM_ABSOLUTE;
        gradL2NormAbsoluteEpsSquared=eps*eps;
-       break; 
-    case GRADIENT_INF_NORM_ABSOLUTE:
+}  
+
+void TerminationCriterion::add_absolute_gradient_inf_norm( double eps )
+{
        terminationCriterionFlag|=GRADIENT_INF_NORM_ABSOLUTE;
        gradInfNormAbsoluteEps=eps;
-       break;
-    case GRADIENT_L2_NORM_RELATIVE:
+}
+    
+void TerminationCriterion::add_relative_gradient_L2_norm( double eps )
+{
        terminationCriterionFlag|=GRADIENT_L2_NORM_RELATIVE;
        gradL2NormRelativeEpsSquared=eps*eps;
-       break;  
-    case GRADIENT_INF_NORM_RELATIVE:
+}
+
+void TerminationCriterion::add_relative_gradient_inf_norm( double eps )
+{
        terminationCriterionFlag|=GRADIENT_INF_NORM_RELATIVE;
        gradInfNormRelativeEps=eps;
-       break;  
-    case QUALITY_IMPROVEMENT_ABSOLUTE:
+}
+
+void TerminationCriterion::add_absolute_quality_improvement( double eps )
+{
        terminationCriterionFlag|=QUALITY_IMPROVEMENT_ABSOLUTE;
        qualityImprovementAbsoluteEps=eps;
-       break;
-    case QUALITY_IMPROVEMENT_RELATIVE:
+}
+
+void TerminationCriterion::add_relative_quality_improvement( double eps )
+{
        terminationCriterionFlag|=QUALITY_IMPROVEMENT_RELATIVE;
        qualityImprovementRelativeEps=eps;
-       break;
-    case CPU_TIME:
-       terminationCriterionFlag|=CPU_TIME;
-       timeBound=eps;
-       break;
-    case VERTEX_MOVEMENT_ABSOLUTE:
+}
+
+void TerminationCriterion::add_absolute_vertex_movement( double eps )
+{
        terminationCriterionFlag|=VERTEX_MOVEMENT_ABSOLUTE;
          //we actually compare squared movement to squared epsilon
        vertexMovementAbsoluteEps=(eps*eps);
-       break;
-    case VERTEX_MOVEMENT_RELATIVE:
+}
+
+void TerminationCriterion::add_relative_vertex_movement( double eps )
+{
        terminationCriterionFlag|=VERTEX_MOVEMENT_RELATIVE;
          //we actually compare squared movement to squared epsilon
        vertexMovementRelativeEps=(eps*eps);
-       break;
-    case SUCCESSIVE_IMPROVEMENTS_ABSOLUTE:
+}
+
+void TerminationCriterion::add_absolute_successive_improvement( double eps )
+{
        terminationCriterionFlag|=SUCCESSIVE_IMPROVEMENTS_ABSOLUTE;
        successiveImprovementsAbsoluteEps=eps;
-       break;
-    case SUCCESSIVE_IMPROVEMENTS_RELATIVE:
+}
+
+void TerminationCriterion::add_relative_successive_improvement( double eps )
+{
        terminationCriterionFlag|=SUCCESSIVE_IMPROVEMENTS_RELATIVE;
        successiveImprovementsRelativeEps=eps;
-       break;
-    case BOUNDED_VERTEX_MOVEMENT:
+}
+    
+void TerminationCriterion::add_cpu_time( double seconds )
+{
+       terminationCriterionFlag|=CPU_TIME;
+       timeBound=seconds;
+}
+    
+void TerminationCriterion::add_iteration_limit( unsigned int max_iterations )
+{
+       terminationCriterionFlag|=NUMBER_OF_ITERATES;
+       iterationBound=max_iterations;
+}
+    
+void TerminationCriterion::add_bounded_vertex_movement( double eps )
+{
        terminationCriterionFlag|=BOUNDED_VERTEX_MOVEMENT;
        boundedVertexMovementEps=eps;
-       break;
-    default:
-       MSQ_SETERR(err)("TCType not valid for this function.",MsqError::INVALID_ARG);
-  };
 }
-
-/*! Function to add a type of termination criterion to this object.  It is
-  only valid if the specified criterion type requires a single integer
-  value.*/
-void TerminationCriterion::add_criterion_type_with_int(TCType tc_type,
-                                                    int bound,
-                                                    MsqError &err)
+    
+void TerminationCriterion::remove_all_criteria()
 {
-  switch(tc_type){
-    case NUMBER_OF_ITERATES:
-       terminationCriterionFlag|=NUMBER_OF_ITERATES;
-       iterationBound=bound;
-       break;
-    default:
-       MSQ_SETERR(err)("TCType not valid for this function.",MsqError::INVALID_ARG);
-  };
+  terminationCriterionFlag=0;
 }
-/*! Function to remove a previously set criterion type.*/
-void TerminationCriterion::remove_criterion_type(TCType tc_type,
-                                                 MsqError &/*err*/)
+    
+void TerminationCriterion::cull_on_absolute_quality_improvement( double limit )
 {
-  terminationCriterionFlag&=(~tc_type);
-}
-
-
-/*! Function to add a type of termination criterion to this object which
-  will be used for culling purposes only.  As part of the global
-  termination criterion, the outer criterion will also check to make
-  sure that there are still free vertices in the mesh.*/
-void TerminationCriterion::set_culling_type(TCType tc_type, double eps,
-                                         MsqError &err)
-{
-  switch(tc_type){
-    case QUALITY_IMPROVEMENT_ABSOLUTE:
        cullingMethodFlag=QUALITY_IMPROVEMENT_ABSOLUTE;
-       break;
-    case QUALITY_IMPROVEMENT_RELATIVE:
-       cullingMethodFlag=QUALITY_IMPROVEMENT_RELATIVE;
-       break;
-    case VERTEX_MOVEMENT_ABSOLUTE:
-       cullingMethodFlag=VERTEX_MOVEMENT_ABSOLUTE;
-       break;
-    case VERTEX_MOVEMENT_RELATIVE:
-       cullingMethodFlag=VERTEX_MOVEMENT_RELATIVE;
-       break;   
-    case SUCCESSIVE_IMPROVEMENTS_ABSOLUTE:
-       cullingMethodFlag=SUCCESSIVE_IMPROVEMENTS_ABSOLUTE;
-       break;
-     case SUCCESSIVE_IMPROVEMENTS_RELATIVE:
-       cullingMethodFlag=SUCCESSIVE_IMPROVEMENTS_RELATIVE;
-       break;  
-    default:
-       MSQ_SETERR(err)("TCType not valid for this function.",MsqError::INVALID_ARG);
-  };
-  cullingEps=eps;
+       cullingEps=limit;
 }
-
-/*!Sets the culling type to be NONE.*/
-void TerminationCriterion::remove_culling(MsqError &/*err*/)
+void TerminationCriterion::cull_on_relative_quality_improvement( double limit )
+{
+       cullingMethodFlag=QUALITY_IMPROVEMENT_RELATIVE;
+       cullingEps=limit;
+}
+void TerminationCriterion::cull_on_absolute_vertex_movement( double limit )
+{
+       cullingMethodFlag=VERTEX_MOVEMENT_ABSOLUTE;
+       cullingEps=limit;
+}
+void TerminationCriterion::cull_on_relative_vertex_movement( double limit )
+{
+       cullingMethodFlag=VERTEX_MOVEMENT_RELATIVE;
+       cullingEps=limit;
+}
+void TerminationCriterion::cull_on_absolute_successive_improvement( double limit )
+{
+       cullingMethodFlag=SUCCESSIVE_IMPROVEMENTS_ABSOLUTE;
+       cullingEps=limit;
+}
+void TerminationCriterion::cull_on_relative_successive_improvement( double limit )
+{
+       cullingMethodFlag=SUCCESSIVE_IMPROVEMENTS_RELATIVE;
+       cullingEps=limit;
+}
+    
+    
+void TerminationCriterion::remove_culling()
 {
   cullingMethodFlag=NONE;
 }
 
-  
+
 
 /*!This version of reset is called using a MeshSet, which implies
   it is only called when this criterion is used as the 'outer' termination

@@ -112,8 +112,7 @@ int main()
 // StoppingCriterion sc1(&stop_qa,1.0,1.8);
     //StoppingCriterion sc2(StoppingCriterion::NUMBER_OF_PASSES,1);
   TerminationCriterion tc2;
-  tc2.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
-  if (err) return 1;
+  tc2.add_iteration_limit( 1 );
 // CompositeAndStoppingCriterion sc(&sc1,&sc2);
   pass1.set_inner_termination_criterion(&tc2);
 

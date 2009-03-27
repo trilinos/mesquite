@@ -107,8 +107,8 @@ void BCDTest::compare_bcd( ObjectiveFunction* OF, string name, const char* mesh_
   
     // set up a smoother
   TerminationCriterion iterations, vertex_movement;
-  iterations.add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, 2, err );
-  vertex_movement.add_criterion_type_with_double( TerminationCriterion::VERTEX_MOVEMENT_ABSOLUTE, 1e-3, err );
+  iterations.add_iteration_limit( 2 );
+  vertex_movement.add_absolute_vertex_movement( 1e-3 );
 
   SolverType global_solver( OF, true );
   SolverType bcd_solver( OF, false );

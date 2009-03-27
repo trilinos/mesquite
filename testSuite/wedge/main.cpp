@@ -269,14 +269,11 @@ bool smooth_mesh( MeshImpl* mesh, Mesh* ref_mesh,
 
   // Set stoping criteria for solver
   TerminationCriterion tc_inner;
-  tc_inner.add_criterion_type_with_double( 
-    TerminationCriterion::VERTEX_MOVEMENT_ABSOLUTE, 1e-7, err);
-  CPPUNIT_ASSERT(!err);
+  tc_inner.add_absolute_vertex_movement( 1e-7 );
   solver.set_inner_termination_criterion(&tc_inner);
    
   TerminationCriterion tc_outer;
-  tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
-  CPPUNIT_ASSERT(!err);
+  tc_outer.add_iteration_limit( 1 );
   solver.set_outer_termination_criterion(&tc_outer);
 
 #ifdef DO_QUALITY_ASSESSOR

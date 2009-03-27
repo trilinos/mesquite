@@ -228,14 +228,11 @@ bool smooth_mesh( Mesh* mesh, Mesh* ref_mesh,
 
   // Set stoping criteria for solver
   TerminationCriterion tc_inner;
-  tc_inner.add_criterion_type_with_double( 
-    TerminationCriterion::VERTEX_MOVEMENT_ABSOLUTE, 1e-6, err);
-  CPPUNIT_ASSERT(!err);
+  tc_inner.add_absolute_vertex_movement( 1e-6 );
   solver.set_inner_termination_criterion(&tc_inner);
    
   TerminationCriterion tc_outer;
-  tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
-  CPPUNIT_ASSERT(!err);
+  tc_outer.add_iteration_limit( 1 );
   solver.set_outer_termination_criterion(&tc_outer);
    
   // Add solver to queue
@@ -304,9 +301,9 @@ bool smooth_mixed_mesh( const char* filename )
   LInfTemplate pre_obj_func( &un_metric );
   ConjugateGradient precond( &pre_obj_func, err ); CPPUNIT_ASSERT(!err);
   TerminationCriterion pre_term, pre_outer;
-  //pre_term.add_criterion_type_with_double( TerminationCriterion::QUALITY_IMPROVEMENT_RELATIVE, 0.1, err );
-  pre_term .add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, 3, err );
-  pre_outer.add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, 1, err );
+  //pre_term.add_relative_quality_improvement( 0.1 );
+  pre_term .add_iteration_limit( 3 );
+  pre_outer.add_iteration_limit( 1 );
   CPPUNIT_ASSERT(!err);
   precond.set_inner_termination_criterion( &pre_term );
   precond.set_outer_termination_criterion( &pre_outer );
@@ -324,13 +321,11 @@ bool smooth_mixed_mesh( const char* filename )
 
   // Set stoping criteria for solver
   TerminationCriterion tc_inner;
-  tc_inner.add_criterion_type_with_double( 
-    TerminationCriterion::QUALITY_IMPROVEMENT_RELATIVE, 0.25, err);
-  CPPUNIT_ASSERT(!err);
+  tc_inner.add_relative_quality_improvement( 0.25 );
   solver.set_inner_termination_criterion(&tc_inner);
    
   TerminationCriterion tc_outer;
-  tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
+  tc_outer.add_iteration_limit( 1 );
   CPPUNIT_ASSERT(!err);
   solver.set_outer_termination_criterion(&tc_outer);
 

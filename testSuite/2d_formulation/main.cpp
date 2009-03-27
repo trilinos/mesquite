@@ -80,8 +80,8 @@ void run_test( Grouping grouping, int of_power, Weight w, const string filename 
   ConjugateGradient solver( &OF, true );
   TerminationCriterion tc;
   TerminationCriterion itc;
-  tc.add_criterion_type_with_double( TerminationCriterion::VERTEX_MOVEMENT_ABSOLUTE, 1e-4, err );
-  itc.add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, 2, err );
+  tc.add_absolute_vertex_movement( 1e-4 );
+  itc.add_iteration_limit( 2 );
 #ifdef USE_GLOBAL_PATCH
   solver.use_global_patch();
   solver.set_inner_termination_criterion( &tc );

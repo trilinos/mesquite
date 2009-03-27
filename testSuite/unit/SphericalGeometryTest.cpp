@@ -154,8 +154,7 @@ public:
        //StoppingCriterion sc5(StoppingCriterion::NUMBER_OF_PASSES,5);
        //pass1->set_stopping_criterion(&sc5);
      TerminationCriterion sc5;
-     sc5.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,
-                                     5,err);
+     sc5.add_iteration_limit( 5 );
      pass1.set_inner_termination_criterion(&sc5);
        //CG's debugging print, increase integer to get more print info
      pass1.set_debugging_level(0);
@@ -201,7 +200,7 @@ public:
 
          //*******Set stopping criterion 5 iterates  ***********
        TerminationCriterion sc5;
-       sc5.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,5,err);
+       sc5.add_iteration_limit( 5 );
        s_lapl.set_outer_termination_criterion(&sc5);
          //qa, qi, qa
        queue1.set_master_quality_improver(&s_lapl, err); CPPUNIT_ASSERT(!err);
@@ -254,7 +253,7 @@ public:
          //StoppingCriterion sc10(StoppingCriterion::NUMBER_OF_PASSES,10);
          //lapl->set_stopping_criterion(&sc10);
        TerminationCriterion sc10;
-       sc10.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,10,err);
+       sc10.add_iteration_limit( 10 );
        lapl.set_outer_termination_criterion(&sc10);
          //qa, qi, qa
        queue1.set_master_quality_improver(&lapl, err); 

@@ -130,7 +130,7 @@ int main(int argc, char* argv[])
   
     //**************Set stopping criterion****************
   TerminationCriterion sc2;
-  sc2.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,10,err);
+  sc2.add_iteration_limit( 10 );
   if (err) return 1;
   lapl1.set_outer_termination_criterion(&sc2);
   

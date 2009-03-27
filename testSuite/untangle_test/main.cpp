@@ -126,17 +126,11 @@ int main()
     // **************Set stopping criterion**************
     //untangle beta should be 0 when untangled
   TerminationCriterion sc1;
-  sc1.add_criterion_type_with_double(TerminationCriterion::QUALITY_IMPROVEMENT_RELATIVE,
-                                     .000001,err);
-  if (err) return 1;
+  sc1.add_relative_quality_improvement( 0.000001 );
   TerminationCriterion sc3;
-  sc3.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,10,
-                                  err);
-  if (err) return 1;
+  sc3.add_iteration_limit( 10 );
   TerminationCriterion sc_rand;
-  sc_rand.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,
-                                      err);
-  if (err) return 1;
+  sc_rand.add_iteration_limit( 1 );
   
     //StoppingCriterion sc1(&stop_qa,-1.0,.0000001);
     //StoppingCriterion sc3(&stop_qa2,.9,1.00000001);

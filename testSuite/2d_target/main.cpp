@@ -153,12 +153,9 @@ static int do_smoother( const char* input_file,
   QualityMetric* metric = mmetrics[avg_scheme];
 
   TerminationCriterion outer, inner;
-  outer.add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, 1, err );
-  if (MSQ_CHKERR(err)) return 1;
-  inner.add_criterion_type_with_double( TerminationCriterion::VERTEX_MOVEMENT_ABSOLUTE, 1e-4, err );
-  if (MSQ_CHKERR(err)) return 1;
-  inner.add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, 100, err );
-  if (MSQ_CHKERR(err)) return 1;
+  outer.add_iteration_limit( 1 );
+  inner.add_absolute_vertex_movement( 1e-4 );
+  inner.add_iteration_limit( 100 );
   
   PMeanPTemplate obj1( of_power, metric );
   PatchPowerMeanP obj2( of_power, metric );

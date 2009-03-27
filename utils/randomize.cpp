@@ -347,7 +347,7 @@ int main( int argc, char* argv[] )
   PMeanPTemplate of( 1, &metric );
   UnOptimizer op2( &of );
   if (unoptimize.seen()) {
-    tc.add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, unoptimize.value(), err );
+    tc.add_iteration_limit( unoptimize.value() );
     op2.set_outer_termination_criterion( &tc );
     q.add_preconditioner( &op, err );
     q.set_master_quality_improver( &op2, err );

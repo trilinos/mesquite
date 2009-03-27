@@ -440,20 +440,14 @@ bool run_smoother( mesh_reader_t input_mesh,
   
   TerminationCriterion outer, inner;
   if (LOCAL_PATCHES) {
-    outer.add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, 100, err );
-    CHKERR(err)
-    outer.add_criterion_type_with_double( TerminationCriterion::VERTEX_MOVEMENT_ABSOLUTE, 1e-3, err );
-    CHKERR(err)
-    inner.add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, 3, err );
-    CHKERR(err)
+    outer.add_iteration_limit( 100 );
+    outer.add_absolute_vertex_movement( 1e-3 );
+    inner.add_iteration_limit( 3 );
   }
   else {
-    outer.add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, 1, err );
-    CHKERR(err)
-    inner.add_criterion_type_with_double( TerminationCriterion::VERTEX_MOVEMENT_ABSOLUTE, 1e-4, err );
-    CHKERR(err)
-    inner.add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, 100, err );
-    CHKERR(err)
+    outer.add_iteration_limit( 1 );
+    inner.add_absolute_vertex_movement( 1e-4 );
+    inner.add_iteration_limit( 100 );
   }
   
   PMeanPTemplate of( P, &metric );

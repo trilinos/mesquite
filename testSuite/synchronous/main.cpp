@@ -175,7 +175,7 @@ int main( int argc, char* argv[] )
     psu->use_global_patch();
   
   TerminationCriterion inner;
-  inner.add_criterion_type_with_double( TerminationCriterion::VERTEX_MOVEMENT_ABSOLUTE, 1e-4, err );
+  inner.add_absolute_vertex_movement( 1e-4 );
   inner.write_mesh_steps( "synchronous", TerminationCriterion::GNUPLOT );
   solver->set_inner_termination_criterion( &inner );  
   

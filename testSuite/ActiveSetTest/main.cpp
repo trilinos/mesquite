@@ -107,8 +107,7 @@ int main()
 
   // Set a termination criterion
   TerminationCriterion tc2;
-  tc2.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);
-  if (err) return 1;
+  tc2.add_iteration_limit( 1 );
   minmax_method.set_outer_termination_criterion(&tc2);
   // Set up the quality assessor
   //  printf("Setting up the quality assessor\n");

@@ -333,9 +333,9 @@ double run( QualityMetric* metric,
   MsqPrintError err(cerr);
   IdealWeightInverseMeanRatio qa_metric;
   TerminationCriterion inner, outer;
-  outer.add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, 1, err );
-  inner.add_criterion_type_with_double( TerminationCriterion::VERTEX_MOVEMENT_ABSOLUTE, 1e-4, err );
-  inner.add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, 100, err );
+  outer.add_iteration_limit( 1 );
+  inner.add_absolute_vertex_movement( 1e-4 );
+  inner.add_iteration_limit( 100 );
   PMeanPTemplate of( 1.0, metric );
   QualityAssessor qa( &qa_metric );
   qa.add_quality_assessment( metric );

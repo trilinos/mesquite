@@ -87,8 +87,7 @@ namespace Mesquite
       functionality is handled from the base VertexMover base class.
 
       There are several different types of termination criteria
-      available.  These types are listed in teh enumberation
-      TCType.  Multiple criteria types can be set on a given
+      available. Multiple criteria types can be set on a given
       TermiantionCriterion object, and when this occurs, the
       optimization process will terminate whenever any of the
       criteria have been satisfied.
@@ -130,119 +129,105 @@ namespace Mesquite
   {
   public:
     
-     /*! \enum TCType  defines the termination criterion */
-    enum TCType {
-       NONE    = 0,
        //! checks the gradient \f$\nabla f \f$ of objective function 
        //! \f$f : I\!\!R^{3N} \rightarrow I\!\!R \f$ against a double \f$d\f$  
        //! and stops when \f$\sqrt{\sum_{i=1}^{3N}\nabla f_i^2}<d\f$  
-       GRADIENT_L2_NORM_ABSOLUTE = 1,  
+    MESQUITE_EXPORT void add_absolute_gradient_L2_norm( double value );
+
        //! checks the gradient \f$\nabla f \f$ of objective function 
        //! \f$f : I\!\!R^{3N} \rightarrow I\!\!R \f$ against a double \f$d\f$  
        //! and stops when \f$ \max_{i=1}^{3N} \nabla f_i < d \f$  
-       GRADIENT_INF_NORM_ABSOLUTE = 2,
+    MESQUITE_EXPORT void add_absolute_gradient_inf_norm( double value );
+    
          //!terminates on the j_th iteration when
          //! \f$\sqrt{\sum_{i=1}^{3N}\nabla f_{i,j}^2}<d\sqrt{\sum_{i=1}^{3N}\nabla f_{i,0}^2}\f$
          //!  That is, terminates when the norm of the gradient is small
          //! than some scaling factor times the norm of the original gradient. 
-       GRADIENT_L2_NORM_RELATIVE = 4,
+    MESQUITE_EXPORT void add_relative_gradient_L2_norm( double value );
+
        //!terminates on the j_th iteration when
          //! \f$\max_{i=1 \cdots 3N}\nabla f_{i,j}<d \max_{i=1 \cdots 3N}\nabla f_{i,0}\f$
          //!  That is, terminates when the norm of the gradient is small
          //! than some scaling factor times the norm of the original gradient.
          //! (Using the infinity norm.)
-       GRADIENT_INF_NORM_RELATIVE = 8,
-         //! Not yet implemented.
-       KKT  = 16,
+    MESQUITE_EXPORT void add_relative_gradient_inf_norm( double value );
+
          //!Terminates when the objective function value is smaller than
          //! the given scalar value.
-       QUALITY_IMPROVEMENT_ABSOLUTE = 32,
+    MESQUITE_EXPORT void add_absolute_quality_improvement( double value );
+
          //!Terminates when the objective function value is smaller than
          //! the given scalar value times the original objective function
          //! value.
-       QUALITY_IMPROVEMENT_RELATIVE = 64,
-         //!Terminates when the number of iterations exceeds a given integer.
-       NUMBER_OF_ITERATES = 128,
-         //!Terminates when the algorithm exceeds an allotted time limit
-         //! (given in seconds).
-       CPU_TIME  = 256,
+    MESQUITE_EXPORT void add_relative_quality_improvement( double value );
+
          //!Terminates when a the maximum distance moved by any vertex
          //! during the previous iteration is below the given value.
-       VERTEX_MOVEMENT_ABSOLUTE  = 512,
+    MESQUITE_EXPORT void add_absolute_vertex_movement( double value );
+
          //!Terminates when a the maximum distance moved by any vertex
          //! during the previous iteration is below the given value
          //! times the maximum distance moved by any vertex over the
          //! entire course of the optimization.
-       VERTEX_MOVEMENT_RELATIVE  = 1024,
+    MESQUITE_EXPORT void add_relative_vertex_movement( double value );
+
          //!Terminates when the decrease in the objective function value since
          //! the previous iteration is below the given value.
-       SUCCESSIVE_IMPROVEMENTS_ABSOLUTE = 2048,
+    MESQUITE_EXPORT void add_absolute_successive_improvement( double value );
+
          //!Terminates when the decrease in the objective function value since
          //! the previous iteration is below the given value times the
          //! decrease in the objective function value since the beginning
          //! of this optimization process.
-       SUCCESSIVE_IMPROVEMENTS_RELATIVE = 4096,
+    MESQUITE_EXPORT void add_relative_successive_improvement( double value );
+    
+         //!Terminates when the algorithm exceeds an allotted time limit
+         //! (given in seconds).
+    MESQUITE_EXPORT void add_cpu_time( double seconds );
+    
+         //!Terminates when the number of iterations exceeds a given integer.
+    MESQUITE_EXPORT void add_iteration_limit( unsigned int max_iterations );
+    
          //!Terminates when any vertex leaves the bounding box, defined
          //! by the given value, d.  That is, when the absolute value of
          //! a single coordinate of vertex's position exceeds d.
-       BOUNDED_VERTEX_MOVEMENT = 8192
-    };
+    MESQUITE_EXPORT void add_bounded_vertex_movement( double value);
+    
+    MESQUITE_EXPORT void remove_all_criteria();
+    
+         //!Cull when the objective function value is smaller than
+         //! the given scalar value.
+    MESQUITE_EXPORT void cull_on_absolute_quality_improvement( double limit );
+         //!Cull when the objective function value is smaller than
+         //! the given scalar value times the original objective function
+         //! value.
+    MESQUITE_EXPORT void cull_on_relative_quality_improvement( double limit );
+         //!Cull when a the maximum distance moved by any vertex
+         //! during the previous iteration is below the given value.
+    MESQUITE_EXPORT void cull_on_absolute_vertex_movement( double limit );
+         //!Cull when a the maximum distance moved by any vertex
+         //! during the previous iteration is below the given value
+         //! times the maximum distance moved by any vertex over the
+         //! entire course of the optimization.
+    MESQUITE_EXPORT void cull_on_relative_vertex_movement( double limit );
+         //!Cull when the decrease in the objective function value since
+         //! the previous iteration is below the given value.
+    MESQUITE_EXPORT void cull_on_absolute_successive_improvement( double limit );
+         //!Cull when the decrease in the objective function value since
+         //! the previous iteration is below the given value times the
+         //! decrease in the objective function value since the beginning
+         //! of this optimization process.
+    MESQUITE_EXPORT void cull_on_relative_successive_improvement( double limit );
+    
+    
+    MESQUITE_EXPORT void remove_culling();
+    
 
       //!Constructor which does not take any arguements
     MESQUITE_EXPORT TerminationCriterion();
     
       //!Destructor
     MESQUITE_EXPORT ~TerminationCriterion(){};
-
-      //Functions with which the user can specify the criteria to be used
-      //!Sets the criterion by specifing the TCType and the eps value
-    MESQUITE_EXPORT void add_criterion_type_with_double(TCType tc_type, double eps,
-                                        MsqError &err);
-      //!Sets the criterion by specifing the TCType and the integer value
-    MESQUITE_EXPORT void add_criterion_type_with_int(TCType tc_type, int bound,
-                                     MsqError &err);
-      //!Removes the criterion by specifing just the TCType.
-    MESQUITE_EXPORT void remove_criterion_type(TCType tc_type, MsqError &err);
-    
-      //!Sets the type of criterion that the user would like to
-      //! use for culling purposes (along with the associated tolerance.
-    MESQUITE_EXPORT void set_culling_type(TCType tc_type, double eps, MsqError &err);
-      //!Removes any previously set culling types (sets the culling
-      //! type to be NONE).
-    MESQUITE_EXPORT void remove_culling(MsqError &err);
-    
-      //! Clear any data accumulated during an outer iteration
-    void reset_outer( Mesh* ms, MeshDomain* dm, OFEvaluator& of, 
-                      const Settings* settings, MsqError& err );
-    
-      //! Clear any data accumulated during an inner iteration
-    void reset_inner( PatchData& pd, OFEvaluator& of, MsqError& err );
-    
-      //! Shared inner and outer initialization during inner loop
-    void reset_patch( PatchData& pd, MsqError& err );
-    
-      //! Accumulate data during inner iteration
-    void accumulate_inner( PatchData& pd, OFEvaluator& eval, MsqError& err );
-    
-      //! Accumulate data during inner iteration
-    void accumulate_inner( PatchData& pd, double of_value, Vector3D* of_grads, 
-                           MsqError& err );
-    
-      //! Common code for both inner and outer termination 
-      //! criteria during inner iteration.                       
-    void accumulate_patch( PatchData& pd, MsqError& err );
-    
-    void accumulate_outer( Mesh* ms, MeshDomain* dm, OFEvaluator& eval, 
-                           const Settings* settings, MsqError& err );
-    
-      //! Check if termination criterion has been met
-    MESQUITE_EXPORT bool terminate();
-    
-    
-      //!Function which determines whether this patch should be 'culled'
-    bool cull_vertices(PatchData &pd, OFEvaluator& obj_ptr, MsqError &err);
-      //!Cleans up after the TerminationCriterion is finished.
-    void cleanup(Mesh* ms, MeshDomain* domain, MsqError &err);
 
       //!This function returns the current function value.
       /*! \todo Michael:  this function is not reliable.  It
@@ -281,9 +266,43 @@ namespace Mesquite
      */
     MESQUITE_EXPORT void write_iterations( const char* filename, MsqError& err );
     
-    int get_iteration_count( ) const
+    MESQUITE_EXPORT int get_iteration_count( ) const
       { return iterationCounter; }
       
+    
+      //! Clear any data accumulated during an outer iteration
+    void reset_outer( Mesh* ms, MeshDomain* dm, OFEvaluator& of, 
+                      const Settings* settings, MsqError& err );
+    
+      //! Clear any data accumulated during an inner iteration
+    void reset_inner( PatchData& pd, OFEvaluator& of, MsqError& err );
+    
+      //! Shared inner and outer initialization during inner loop
+    void reset_patch( PatchData& pd, MsqError& err );
+    
+      //! Accumulate data during inner iteration
+    void accumulate_inner( PatchData& pd, OFEvaluator& eval, MsqError& err );
+    
+      //! Accumulate data during inner iteration
+    void accumulate_inner( PatchData& pd, double of_value, Vector3D* of_grads, 
+                           MsqError& err );
+    
+      //! Common code for both inner and outer termination 
+      //! criteria during inner iteration.                       
+    void accumulate_patch( PatchData& pd, MsqError& err );
+    
+    void accumulate_outer( Mesh* ms, MeshDomain* dm, OFEvaluator& eval, 
+                           const Settings* settings, MsqError& err );
+    
+      //! Check if termination criterion has been met
+    MESQUITE_EXPORT bool terminate();
+    
+    
+      //!Function which determines whether this patch should be 'culled'
+    bool cull_vertices(PatchData &pd, OFEvaluator& obj_ptr, MsqError &err);
+      //!Cleans up after the TerminationCriterion is finished.
+    void cleanup(Mesh* ms, MeshDomain* domain, MsqError &err);
+
  protected:
     
     void write_timestep( PatchData& pd, const Vector3D* gradient, MsqError& err );

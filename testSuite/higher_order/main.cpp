@@ -242,14 +242,14 @@ InstructionQueue* create_instruction_queue(MsqError& err)
   //perform 1 pass of the outer loop (this line isn't essential as it is
   //the default behavior).
   TerminationCriterion* tc_outer = new TerminationCriterion;
-  tc_outer->add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES, 1, err);  MSQ_ERRZERO(err);
+  tc_outer->add_iteration_limit( 1 );
   pass1->set_outer_termination_criterion(tc_outer);
   
   //perform the inner loop until a certain objective function value is
   //reached.  The exact value needs to be determined (about 18095).
   //As a safety, also stop if the time exceeds 10 minutes (600 seconds).
   TerminationCriterion* tc_inner = new TerminationCriterion;
-  tc_inner->add_criterion_type_with_double(TerminationCriterion::VERTEX_MOVEMENT_ABSOLUTE, 1e-6, err); MSQ_ERRZERO(err);
+  tc_inner->add_absolute_vertex_movement( 1e-6 ); 
   pass1->set_inner_termination_criterion(tc_inner);
   
   // adds 1 pass of pass1 to mesh_set1

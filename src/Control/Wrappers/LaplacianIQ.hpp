@@ -78,7 +78,7 @@ namespace Mesquite {
      
          //**************Set stopping criterion****************
          mTerm = new TerminationCriterion();
-         mTerm->add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,10,err);
+         mTerm->add_iteration_limit( 10 );
  
             lapl1->set_outer_termination_criterion(mTerm);
       

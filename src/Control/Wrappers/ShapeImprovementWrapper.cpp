@@ -85,9 +85,9 @@ ShapeImprovementWrapper::ShapeImprovementWrapper(MsqError& err,
   untangleGlobalInner = new TerminationCriterion();
   untangleGlobalOuter = new TerminationCriterion();
   
-  untangleGlobalInner->add_criterion_type_with_double(TerminationCriterion::QUALITY_IMPROVEMENT_ABSOLUTE,0.0,err);  MSQ_ERRRTN(err);
-  untangleGlobalInner->add_criterion_type_with_double(TerminationCriterion::SUCCESSIVE_IMPROVEMENTS_ABSOLUTE,successiveEps,err);  MSQ_ERRRTN(err);
-  untangleGlobalOuter->add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);  MSQ_ERRRTN(err);
+  untangleGlobalInner->add_absolute_quality_improvement( 0.0 );
+  untangleGlobalInner->add_absolute_successive_improvement( successiveEps );
+  untangleGlobalOuter->add_iteration_limit( 1 );
   
   inverseMeanRatio = new IdealWeightInverseMeanRatio(err); MSQ_ERRRTN(err);
   inverseMeanRatio->set_averaging_method(QualityMetric::LINEAR); 
@@ -100,9 +100,9 @@ ShapeImprovementWrapper::ShapeImprovementWrapper(MsqError& err,
         //**************Set stopping criterion*e***************
   termInner = new TerminationCriterion();
   termOuter = new TerminationCriterion();
-  termInner->add_criterion_type_with_double(TerminationCriterion::GRADIENT_L2_NORM_ABSOLUTE,grad_norm,err);  MSQ_ERRRTN(err);
-  termInner->add_criterion_type_with_double(TerminationCriterion::SUCCESSIVE_IMPROVEMENTS_RELATIVE,successiveEps,err);  MSQ_ERRRTN(err);
-  termOuter->add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,1,err);  MSQ_ERRRTN(err);
+  termInner->add_absolute_gradient_L2_norm( grad_norm );
+  termInner->add_relative_successive_improvement( successiveEps );
+  termOuter->add_iteration_limit( 1 );
   untangleGlobal->set_inner_termination_criterion(untangleGlobalInner);
   untangleGlobal->set_outer_termination_criterion(untangleGlobalOuter);
     //untangleLocal->set_inner_termination_criterion(untangleLocalInner);
@@ -151,7 +151,7 @@ void ShapeImprovementWrapper::run_instructions( Mesh* mesh,
     //if using a time constraint set the termination criteria.
   if(timerNeeded){
     time_remaining=maxTime;
-    untangleGlobalInner->add_criterion_type_with_double(TerminationCriterion::CPU_TIME,time_remaining,err);
+    untangleGlobalInner->add_cpu_time( time_remaining );
     MSQ_ERRRTN(err);
   }
     //global untangler
@@ -172,7 +172,7 @@ void ShapeImprovementWrapper::run_instructions( Mesh* mesh,
     //otherwise, perform the shape improvement.
   else{
     if(timerNeeded) {
-      termInner->add_criterion_type_with_double(TerminationCriterion::CPU_TIME,time_remaining,err);
+      termInner->add_cpu_time( time_remaining );
       MSQ_ERRRTN(err);
     }
     feasNewt->loop_over_mesh( mesh, domain, 0, err);  MSQ_ERRRTN(err);

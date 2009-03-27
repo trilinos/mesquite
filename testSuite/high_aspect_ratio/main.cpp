@@ -198,8 +198,8 @@ int main( int argc, char* argv[] )
   VertexMover* solver = feas_newt_solver ? (VertexMover*)&fn : (VertexMover*)&cg;
   
   TerminationCriterion inner, outer;
-  inner.add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, INNER_ITERATES, err );
-  outer.add_criterion_type_with_int( TerminationCriterion::NUMBER_OF_ITERATES, num_iterations, err );
+  inner.add_iteration_limit( INNER_ITERATES );
+  outer.add_iteration_limit( num_iterations );
   if (write_timestep_files != TerminationCriterion::NOTYPE) 
     outer.write_mesh_steps( base_name( output_file_name ).c_str(), write_timestep_files );
   solver->set_inner_termination_criterion( &inner );

@@ -164,20 +164,20 @@ public:
        //StoppingCriterion sc_qa(&stop_qa,-100,MSQ_MIN);
        //pass1->set_stopping_criterion(&sc_qa);
      TerminationCriterion sc_of, sc_inner;
-     sc_of.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,10,err);
+     sc_of.add_iteration_limit( 10 );
      pass1.set_outer_termination_criterion(&sc_of);
-     sc_inner.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,6,err);
-     //sc_inner.add_criterion_type_with_double(TerminationCriterion::GRADIENT_L2_NORM_ABSOLUTE,0.01,err);
+     sc_inner.add_iteration_limit( 6 );
+     //sc_inner.add_absolute_gradient_L2_norm( 0.01 );
      pass1.set_inner_termination_criterion(&sc_inner);
     
        //**********Set stopping criterion  5 iterates ****************
        //StoppingCriterion sc5(StoppingCriterion::NUMBER_OF_PASSES,5);
        //pass2->set_stopping_criterion(&sc5);
      TerminationCriterion sc5;
-     sc5.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,5,err);
+     sc5.add_iteration_limit( 5 );
      pass2.set_inner_termination_criterion(&sc5);
        //TerminationCriterion sc_inner;
-       //sc_inner.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,5,err);
+       //sc_inner.add_iteration_limit( 5 );
        //pass2->set_inner_termination_criterion(&sc_inner);
        //pass2->set_maximum_iteration(5);
   
@@ -261,18 +261,18 @@ public:
        //StoppingCriterion sc_qa(&stop_qa,-100,MSQ_MIN);
        //pass1->set_stopping_criterion(&sc_qa);
        TerminationCriterion sc_of;
-       sc_of.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,10,err);
+       sc_of.add_iteration_limit( 10 );
        pass1.set_outer_termination_criterion(&sc_of);
        
          //**********Set stopping criterion  5 iterates ****************
          //StoppingCriterion sc5(StoppingCriterion::NUMBER_OF_PASSES,5);
          //pass2->set_stopping_criterion(&sc5);
        TerminationCriterion sc5;
-       sc5.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,5,err);
+       sc5.add_iteration_limit( 5 );
        pass2.set_inner_termination_criterion(&sc5);
          //pass2->set_maximum_iteration(5);
          //TerminationCriterion sc_inner;
-         //sc_inner.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,5,err);
+         //sc_inner.add_iteration_limit( 5 );
          //pass2->set_inner_termination_criterion(&sc_inner);
        queue1.set_master_quality_improver(&pass1, err); CPPUNIT_ASSERT(!err);
        queue2.set_master_quality_improver(&pass2, err); CPPUNIT_ASSERT(!err);
@@ -345,12 +345,12 @@ public:
        
          //**********Set stopping criterion  5 iterates ****************
        TerminationCriterion sc5;
-       sc5.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,5,err);
+       sc5.add_iteration_limit( 5 );
        pass1.set_inner_termination_criterion(&sc5);
          //StoppingCriterion sc5(StoppingCriterion::NUMBER_OF_PASSES,5);
          //pass1->set_stopping_criterion(&sc5);
        TerminationCriterion sc_inner;
-       sc_inner.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES,5,err);
+       sc_inner.add_iteration_limit( 5 );
        pass1.set_inner_termination_criterion(&sc_inner);
          //pass1->set_maximum_iteration(5);
        

@@ -66,11 +66,8 @@ FeasibleNewton::FeasibleNewton(ObjectiveFunction* of, bool Nash)
     coordsMem(0),
     havePrintedDirectionMessage(false)
 {
-  MsqError err;
   TerminationCriterion* default_crit=get_inner_termination_criterion();
-  default_crit->add_criterion_type_with_double(
-                    TerminationCriterion::GRADIENT_L2_NORM_ABSOLUTE, 5e-5, err);
-  MSQ_CHKERR(err);
+  default_crit->add_absolute_gradient_L2_norm( 5e-5 );
 }  
   
 

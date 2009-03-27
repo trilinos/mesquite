@@ -109,19 +109,16 @@ int main()
   //perform 1 pass of the outer loop (this line isn't essential as it is
   //the default behavior).
   TerminationCriterion tc_outer;
-  tc_outer.add_criterion_type_with_int(TerminationCriterion::NUMBER_OF_ITERATES, 1, err); 
-  if (err) return 1;
+  tc_outer.add_iteration_limit( 1 ); 
   pass1.set_outer_termination_criterion(&tc_outer);
   
   //perform the inner loop until a certain objective function value is
   //reached.  The exact value needs to be determined (about 18095).
   //As a safety, also stop if the time exceeds 10 minutes (600 seconds).
   TerminationCriterion tc_inner;
-  tc_inner.add_criterion_type_with_double(TerminationCriterion::QUALITY_IMPROVEMENT_ABSOLUTE, 13975, err); 
-  if (err) return 1;
-//  tc_inner.add_criterion_type_with_double(TerminationCriterion::QUALITY_IMPROVEMENT_ABSOLUTE, 13964.93818, err);
-  tc_inner.add_criterion_type_with_double(TerminationCriterion::CPU_TIME, 1800, err); 
-  if (err) return 1;
+  tc_inner.add_absolute_quality_improvement( 13975 ); 
+//  tc_inner.add_absolute_quality_improvement( 13964.93818 );
+  tc_inner.add_cpu_time( 1800 ); 
   
   pass1.set_inner_termination_criterion(&tc_inner);
   
