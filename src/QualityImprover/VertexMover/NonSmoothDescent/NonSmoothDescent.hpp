@@ -25,10 +25,10 @@
    
   ***************************************************************** */
 /*!
-  \file   NonSmoothSteepestDescent.hpp
+  \file   NonSmoothDescent.hpp
   \brief  
 
-  The NonSmoothSteepestDescent Class implements the steepest descent algorythm in
+  The NonSmoothDescent Class implements the steepest descent algorythm in
   order to move a free vertex to an optimal position given an
   ObjectiveFunction object and a QaulityMetric object.
 
@@ -36,8 +36,8 @@
   \date   2002-06-13
 */
 
-#ifndef Mesquite_NonSmoothSteepestDescent_hpp 
-#define Mesquite_NonSmoothSteepestDescent_hpp
+#ifndef Mesquite_NonSmoothDescent_hpp 
+#define Mesquite_NonSmoothDescent_hpp
 
 #include "Mesquite.hpp"
 #include "VertexMover.hpp"
@@ -144,12 +144,12 @@ namespace Mesquite
     int active_ind[150];  // need a better way of setting max number of active values
   };
 
-  class NonSmoothSteepestDescent : public VertexMover 
+  class NonSmoothDescent : public VertexMover 
   {
   public:
-    NonSmoothSteepestDescent(ElementQM* qm);
+    NonSmoothDescent(ElementQM* qm);
 
-    virtual ~NonSmoothSteepestDescent() { }
+    virtual ~NonSmoothDescent() { }
     
     virtual msq_std::string get_name() const;
     virtual PatchSet* get_patch_set();
@@ -247,7 +247,7 @@ namespace Mesquite
   };
   
 
-inline bool NonSmoothSteepestDescent::compute_function(PatchData *patch_data, double *func, MsqError &err)
+inline bool NonSmoothDescent::compute_function(PatchData *patch_data, double *func, MsqError &err)
 {
   // ASSUMES ONE VALUE PER ELEMENT; ALSO NEED 1.0/FUNCTION WHICH IS ONLY
   // TRUE OF CONDITION NUMBER
@@ -272,7 +272,7 @@ inline bool NonSmoothSteepestDescent::compute_function(PatchData *patch_data, do
 }
 
 
-inline double** NonSmoothSteepestDescent::compute_gradient(PatchData *patch_data, MsqError &err)
+inline double** NonSmoothDescent::compute_gradient(PatchData *patch_data, MsqError &err)
 {
 //  FUNCTION_TIMER_START("Compute Gradient");
 
@@ -329,7 +329,7 @@ inline double** NonSmoothSteepestDescent::compute_gradient(PatchData *patch_data
   return(mGradient);
 }
 
-inline void NonSmoothSteepestDescent::find_active_set(double *function,
+inline void NonSmoothDescent::find_active_set(double *function,
                                                       ActiveSet *active_set,
                                                       MsqError & /*err*/ )
 { 
@@ -388,7 +388,7 @@ inline void NonSmoothSteepestDescent::find_active_set(double *function,
 }
 
 
-inline int NonSmoothSteepestDescent::validity_check(PatchData& pd, MsqError &err)
+inline int NonSmoothDescent::validity_check(PatchData& pd, MsqError &err)
         
 {
 //  FUNCTION_TIMER_START("Validity Check");
@@ -499,7 +499,7 @@ inline int NonSmoothSteepestDescent::validity_check(PatchData& pd, MsqError &err
 }
 
 
-inline void NonSmoothSteepestDescent::get_active_directions(double **gradient, 
+inline void NonSmoothDescent::get_active_directions(double **gradient, 
                                                             double ***dir,
                                                             MsqError &/*err*/)
 {
@@ -514,7 +514,7 @@ inline void NonSmoothSteepestDescent::get_active_directions(double **gradient,
 }
 
 
-inline int NonSmoothSteepestDescent::check_vector_dots(double **vec,
+inline int NonSmoothDescent::check_vector_dots(double **vec,
                                                        int num_vec, 
                                                        double *normal,
                                                        MsqError &/*err*/)
@@ -543,7 +543,7 @@ inline int NonSmoothSteepestDescent::check_vector_dots(double **vec,
 }
 
 
-inline void NonSmoothSteepestDescent::find_plane_normal(double pt1[3],
+inline void NonSmoothDescent::find_plane_normal(double pt1[3],
                                                         double pt2[3],
                                                         double pt3[3],
                                                         double *cross,
@@ -563,7 +563,7 @@ inline void NonSmoothSteepestDescent::find_plane_normal(double pt1[3],
 }
 
 
-inline int NonSmoothSteepestDescent::convex_hull_test(double **vec, int num_vec, MsqError &err)
+inline int NonSmoothDescent::convex_hull_test(double **vec, int num_vec, MsqError &err)
 {
 //    int ierr;
     int equil;
@@ -636,7 +636,7 @@ inline int NonSmoothSteepestDescent::convex_hull_test(double **vec, int num_vec,
     return (equil);
 }
 
-inline void NonSmoothSteepestDescent::form_grammian(double **vec, MsqError &err)
+inline void NonSmoothDescent::form_grammian(double **vec, MsqError &err)
 {
    int i, j;
    int num_active = mActive->num_active;
@@ -655,7 +655,7 @@ inline void NonSmoothSteepestDescent::form_grammian(double **vec, MsqError &err)
    }
 }
 
-inline void NonSmoothSteepestDescent::check_equilibrium(int *equil, int *status, MsqError &err)
+inline void NonSmoothDescent::check_equilibrium(int *equil, int *status, MsqError &err)
 {
 //    int  ierr;
     int  i,j;
@@ -737,7 +737,7 @@ inline void NonSmoothSteepestDescent::check_equilibrium(int *equil, int *status,
 
 
 
-inline void NonSmoothSteepestDescent::condition3x3(double **A, double *cond,
+inline void NonSmoothDescent::condition3x3(double **A, double *cond,
                                                    MsqError &/*err*/) 
 {
 //   int ierr;
@@ -802,7 +802,7 @@ inline void NonSmoothSteepestDescent::condition3x3(double **A, double *cond,
    }
 }
 
-inline void NonSmoothSteepestDescent::singular_test(int n, double **A, int *singular, MsqError &err) 
+inline void NonSmoothDescent::singular_test(int n, double **A, int *singular, MsqError &err) 
 {
 //    int test;
 //    double determinant;
@@ -831,7 +831,7 @@ inline void NonSmoothSteepestDescent::singular_test(int n, double **A, int *sing
 }
 
 
-inline void NonSmoothSteepestDescent::form_PD_grammian(MsqError &err)
+inline void NonSmoothDescent::form_PD_grammian(MsqError &err)
 {
     int  i,j,k;
     int  g_ind_1;
@@ -873,7 +873,7 @@ inline void NonSmoothSteepestDescent::form_PD_grammian(MsqError &err)
 }
 
 
-inline void NonSmoothSteepestDescent::search_edges_faces(double **dir, MsqError &err)
+inline void NonSmoothDescent::search_edges_faces(double **dir, MsqError &err)
 {
 //    int ierr;
     int i,j,k;
@@ -949,7 +949,7 @@ inline void NonSmoothSteepestDescent::search_edges_faces(double **dir, MsqError 
 }         
 
 
-inline void NonSmoothSteepestDescent::solve2x2(double a11, double a12,
+inline void NonSmoothDescent::solve2x2(double a11, double a12,
                                                double a21, double a22, 
                                                double b1, double b2,
                                                double **x, MsqError &/*err*/)
@@ -974,7 +974,7 @@ inline void NonSmoothSteepestDescent::solve2x2(double a11, double a12,
 }
 
 
-inline void NonSmoothSteepestDescent::form_reduced_matrix(double ***P,
+inline void NonSmoothDescent::form_reduced_matrix(double ***P,
                                                           MsqError &/*err*/)
 {
     int i,j;
@@ -994,7 +994,7 @@ inline void NonSmoothSteepestDescent::form_reduced_matrix(double ***P,
 }
 
 
-inline void  NonSmoothSteepestDescent::get_min_estimate(double *final_est,
+inline void  NonSmoothDescent::get_min_estimate(double *final_est,
                                                         MsqError &/*err*/)
 {
     int    i;
@@ -1017,7 +1017,7 @@ inline void  NonSmoothSteepestDescent::get_min_estimate(double *final_est,
 }
 
 
-inline void NonSmoothSteepestDescent::get_gradient_projections(MsqError &/*err*/)
+inline void NonSmoothDescent::get_gradient_projections(MsqError &/*err*/)
 {
     for (int i=0;i<numFunctionValues;i++) 
 	MSQ_DOT(mGS[i],mGradient[i],mSearch,mDimension);
@@ -1026,7 +1026,7 @@ inline void NonSmoothSteepestDescent::get_gradient_projections(MsqError &/*err*/
 }
 
 
-inline void NonSmoothSteepestDescent::compute_alpha(MsqError &/*err*/)
+inline void NonSmoothDescent::compute_alpha(MsqError &/*err*/)
 {
 //    int       ierr;
 //    int       j;
@@ -1087,7 +1087,7 @@ inline void NonSmoothSteepestDescent::compute_alpha(MsqError &/*err*/)
 }
 
 
-inline void NonSmoothSteepestDescent::copy_active(ActiveSet *active1, ActiveSet *active2, 
+inline void NonSmoothDescent::copy_active(ActiveSet *active1, ActiveSet *active2, 
                                           MsqError &err)
 {
     if (active1==NULL || active2==NULL) {
@@ -1104,7 +1104,7 @@ inline void NonSmoothSteepestDescent::copy_active(ActiveSet *active1, ActiveSet 
 }
 
 
-inline void NonSmoothSteepestDescent::print_active_set(ActiveSet *active_set, 
+inline void NonSmoothDescent::print_active_set(ActiveSet *active_set, 
                                                        double * func,
                                                        MsqError &err)
 {
@@ -1122,7 +1122,7 @@ inline void NonSmoothSteepestDescent::print_active_set(ActiveSet *active_set,
 }
 
 
-inline void NonSmoothSteepestDescent::init_opt(MsqError &err)
+inline void NonSmoothDescent::init_opt(MsqError &err)
 {
     int        i, j;
 
@@ -1173,7 +1173,7 @@ inline void NonSmoothSteepestDescent::init_opt(MsqError &err)
 }
 
 
-inline void NonSmoothSteepestDescent::init_max_step_length(PatchData& pd, MsqError &err)
+inline void NonSmoothDescent::init_max_step_length(PatchData& pd, MsqError &err)
 {
   size_t i, j;
   double max_diff = 0;
@@ -1213,4 +1213,4 @@ inline void NonSmoothSteepestDescent::init_max_step_length(PatchData& pd, MsqErr
 
 } // namespace
 
-#endif  // Mesquite_NonSmoothSteepestDescent_hpp 
+#endif  // Mesquite_NonSmoothDescent_hpp 

@@ -302,7 +302,7 @@ WARN_LOGFILE           =
 # with spaces.
 
 INPUT                  =   ./ ./../../include/ ./../../src/
-###./ ../../include ../../src/QualityImprover/ ../../src/QualityImprover/VertexMover/ ../../src/QualityImprover/VertexMover/ConjugateGradient/ ../../src/QualityImprover/VertexMover/Randomize/ ../../src/QualityImprover/VertexMover/SteepestDescent/ ../../src/QualityImprover/VertexMover/FeasibleNewton/ ../../src/QualityImprover/VertexMover/LaplacianSmoothers/ ../../src/QualityImprover/VertexMover/NonSmoothSteepestDescent/ ../../src/QualityImprover/TopologyModifier/ ../../src/QualityMetric/ ../../src/QualityMetric/Shape ../../src/QualityMetric/Smoothness ../../src/QualityMetric/Untangle ../../src/QualityMetric/Volume ../../src/QualityAssessor/  ../../src/Misc/  ../../src/Control/ ../../src/ObjectiveFunction/  ../../src/Mesh/ 
+###./ ../../include ../../src/QualityImprover/ ../../src/QualityImprover/VertexMover/ ../../src/QualityImprover/VertexMover/ConjugateGradient/ ../../src/QualityImprover/VertexMover/Randomize/ ../../src/QualityImprover/VertexMover/SteepestDescent/ ../../src/QualityImprover/VertexMover/FeasibleNewton/ ../../src/QualityImprover/VertexMover/LaplacianSmoothers/ ../../src/QualityImprover/VertexMover/NonSmoothDescent/ ../../src/QualityImprover/TopologyModifier/ ../../src/QualityMetric/ ../../src/QualityMetric/Shape ../../src/QualityMetric/Smoothness ../../src/QualityMetric/Untangle ../../src/QualityMetric/Volume ../../src/QualityAssessor/  ../../src/Misc/  ../../src/Control/ ../../src/ObjectiveFunction/  ../../src/Mesh/ 
 
 # If the value of the INPUT tag contains directories, you can use the 
 # FILE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 

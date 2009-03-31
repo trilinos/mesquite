@@ -71,7 +71,7 @@ using std::endl;
 
 // algorithms
 #include "ConditionNumberQualityMetric.hpp"
-#include "NonSmoothSteepestDescent.hpp"
+#include "NonSmoothDescent.hpp"
 
 #include "MeshImpl.hpp"
 using namespace Mesquite;
@@ -103,7 +103,7 @@ int main()
   
   // Create the NonSmooth Steepest Descent procedures
   //  printf("creating optimizer\n");
-  NonSmoothSteepestDescent minmax_method( &cond_no );
+  NonSmoothDescent minmax_method( &cond_no );
 
   // Set a termination criterion
   TerminationCriterion tc2;

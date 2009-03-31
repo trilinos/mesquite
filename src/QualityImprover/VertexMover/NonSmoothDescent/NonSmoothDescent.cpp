@@ -26,9 +26,9 @@
   ***************************************************************** */
 // -*- Mode : c++; tab-width: 3; c-tab-always-indent: t; indent-tabs-mode: nil; c-basic-offset: 3 -*-
 
-/*!  \File NonSmoothSteepestDescent.cpp \brief
+/*!  \File NonSmoothDescent.cpp \brief
   
-  Implements the NonSmoothSteepestDescent class member functions.
+  Implements the NonSmoothDescent class member functions.
   
   \author Lori Freitag
   \date 2002-07-20 */
@@ -36,12 +36,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <vector>
-#include "NonSmoothSteepestDescent.hpp"
+#include "NonSmoothDescent.hpp"
 #include "MsqTimer.hpp"
 
 using namespace Mesquite;
 
-NonSmoothSteepestDescent::NonSmoothSteepestDescent(ElementQM* qm)
+NonSmoothDescent::NonSmoothDescent(ElementQM* qm)
   : currentQM(qm)
 {
   mFunction = (double *)malloc(sizeof(double)*150);
@@ -63,35 +63,35 @@ NonSmoothSteepestDescent::NonSmoothSteepestDescent(ElementQM* qm)
   mActive = (ActiveSet *)malloc(sizeof(ActiveSet));
   testActive = (ActiveSet *)malloc(sizeof(ActiveSet));
   originalActive = (ActiveSet *)malloc(sizeof(ActiveSet));
-  MSQ_DBGOUT(1) << "- Executed NonSmoothSteepestDescent::NonSmoothSteepestDescent()\n";
+  MSQ_DBGOUT(1) << "- Executed NonSmoothDescent::NonSmoothDescent()\n";
 }  
 
-msq_std::string NonSmoothSteepestDescent::get_name() const
-  { return "NonSmoothSteepestDescent"; }
+msq_std::string NonSmoothDescent::get_name() const
+  { return "NonSmoothDescent"; }
 
-PatchSet* NonSmoothSteepestDescent::get_patch_set()
+PatchSet* NonSmoothDescent::get_patch_set()
   { return &patchSet; }
   
-void NonSmoothSteepestDescent::initialize(PatchData &/*pd*/, MsqError &err)
+void NonSmoothDescent::initialize(PatchData &/*pd*/, MsqError &err)
 {
   // local parameter initialization
   activeEpsilon = .00003;
   //  activeEpsilon = .000000003;
   minAcceptableImprovement = 1e-6;
   minStepSize = 1e-6;
-  MSQ_DBGOUT(1) << "- Executed NonSmoothSteepestDescent::initialize()\n";
+  MSQ_DBGOUT(1) << "- Executed NonSmoothDescent::initialize()\n";
 }
 
-void NonSmoothSteepestDescent::initialize_mesh_iteration(PatchData &/*pd*/,
+void NonSmoothDescent::initialize_mesh_iteration(PatchData &/*pd*/,
                                                          MsqError &/*err*/)
 {
 }
-void NonSmoothSteepestDescent::optimize_vertex_positions(PatchData &pd, 
+void NonSmoothDescent::optimize_vertex_positions(PatchData &pd, 
                                                 MsqError &err)
 {
-  MSQ_FUNCTION_TIMER( "NonSmoothSteepestDescent" );
+  MSQ_FUNCTION_TIMER( "NonSmoothDescent" );
 
-  //  cout << "- Executing NonSmoothSteepestDescent::optimize_node_positions()\n";
+  //  cout << "- Executing NonSmoothDescent::optimize_node_positions()\n";
   /* perform the min max smoothing algorithm */
   MSQ_PRINT(2)("\nInitializing the patch iteration\n");
 
@@ -140,14 +140,14 @@ void NonSmoothSteepestDescent::optimize_vertex_positions(PatchData &pd,
 }
 
 
-void NonSmoothSteepestDescent::terminate_mesh_iteration(PatchData &/*pd*/,
+void NonSmoothDescent::terminate_mesh_iteration(PatchData &/*pd*/,
                                                         MsqError &/*err*/)
 {
 }
   
-void NonSmoothSteepestDescent::cleanup()
+void NonSmoothDescent::cleanup()
 {
-  MSQ_DBGOUT(1) << "- Executing NonSmoothSteepestDescent::cleanup()\n";
+  MSQ_DBGOUT(1) << "- Executing NonSmoothDescent::cleanup()\n";
   int i;
   for (i=0;i<150;i++) {
     free(mGradient[i]);
@@ -166,12 +166,12 @@ void NonSmoothSteepestDescent::cleanup()
   free(mActive);
   free(testActive);
   free(originalActive);
-  MSQ_DBGOUT(1) << "- Done with NonSmoothSteepestDescent::cleanup()\n";
+  MSQ_DBGOUT(1) << "- Done with NonSmoothDescent::cleanup()\n";
 }
 
 
 
-int NonSmoothSteepestDescent::improvement_check(MsqError &/*err*/)
+int NonSmoothDescent::improvement_check(MsqError &/*err*/)
 {
   int improved = 1;
   
@@ -189,7 +189,7 @@ int NonSmoothSteepestDescent::improvement_check(MsqError &/*err*/)
 
 
 
-void NonSmoothSteepestDescent::find_plane_points(int dir1, int dir2,
+void NonSmoothDescent::find_plane_points(int dir1, int dir2,
                                                  double **vec, int num_vec,
                                                  double *pt1, double *pt2,
                                                  double* /*pt3*/, int *status,
@@ -382,7 +382,7 @@ void NonSmoothSteepestDescent::find_plane_points(int dir1, int dir2,
 
 }
 
-void NonSmoothSteepestDescent::search_direction(PatchData &/*pd*/,
+void NonSmoothDescent::search_direction(PatchData &/*pd*/,
                                                 MsqError &err)
 {
    int        i;
@@ -524,7 +524,7 @@ void NonSmoothSteepestDescent::search_direction(PatchData &/*pd*/,
     MSQ_PRINT(3)("  Search Direction %g %g  Steepest %d\n",mSearch[0],mSearch[1],mSteepest);
 }
 
-void NonSmoothSteepestDescent::minmax_opt(PatchData &pd, MsqError &err)
+void NonSmoothDescent::minmax_opt(PatchData &pd, MsqError &err)
 {
 //      int valid;
       MSQ_FUNCTION_TIMER( "Minmax Opt" );
@@ -645,7 +645,7 @@ void NonSmoothSteepestDescent::minmax_opt(PatchData &pd, MsqError &err)
 }
 
 
-void NonSmoothSteepestDescent::step_acceptance(PatchData &pd, MsqError &err)
+void NonSmoothDescent::step_acceptance(PatchData &pd, MsqError &err)
 {
 //  int        ierr;
   int        num_values, num_steps;
