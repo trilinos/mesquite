@@ -31,6 +31,7 @@
  */
 
 #undef HAVE_HO_HEX
+#undef TEST_HO_TRI
 #define TEST_HO_QUAD
 
 
@@ -77,12 +78,14 @@ class HigherOrderTest : public CppUnit::TestFixture
 {
 private:
   CPPUNIT_TEST_SUITE(HigherOrderTest);
+#ifdef TEST_HO_TRI
   CPPUNIT_TEST (test_tri_basic_ideal);
   CPPUNIT_TEST (test_tri_basic_mid_spin);
   CPPUNIT_TEST (test_tri_basic_mid_convex);
   CPPUNIT_TEST (test_tri_basic_peak_up);
   CPPUNIT_TEST (test_tri_basic_peak_down);
   CPPUNIT_TEST (test_tri_basic_peak_over);
+#endif
 #ifdef TEST_HO_QUAD
   CPPUNIT_TEST (test_quad_basic_ideal);
   CPPUNIT_TEST (test_quad_basic_mid_spin);
@@ -101,8 +104,10 @@ private:
 #ifdef HAVE_HO_HEX
   CPPUNIT_TEST (test_hex_basic);
 #endif
+#ifdef TEST_HO_TRI
   CPPUNIT_TEST (test_tri_open_domain);
   CPPUNIT_TEST (test_tri_slac);
+#endif
   CPPUNIT_TEST_SUITE_END();
 
   TriLagrangeShape tri_shape;
