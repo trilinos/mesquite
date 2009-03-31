@@ -13,3 +13,5 @@ EXTRA_DIST = expected_linear_output.vtk \
              hour-quad8.vtk \
 	     linear_input.vtk \
 	     quadratic_input.vtk
+
+MOSTLYCLEANFILES = smooth_ho.vtk
