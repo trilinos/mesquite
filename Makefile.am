@@ -52,7 +52,7 @@ include src/QualityImprover/VertexMover/Makefile.am
 include src/QualityImprover/VertexMover/ConjugateGradient/Makefile.am
 include src/QualityImprover/VertexMover/Relaxation/Makefile.am
 include src/QualityImprover/VertexMover/SteepestDescent/Makefile.am
-include src/QualityImprover/VertexMover/NonSmoothSteepestDescent/Makefile.am
+include src/QualityImprover/VertexMover/NonSmoothDescent/Makefile.am
 include src/QualityImprover/VertexMover/FeasibleNewton/Makefile.am
 include src/QualityImprover/VertexMover/Randomize/Makefile.am
 include src/QualityImprover/VertexMover/TrustRegion/Makefile.am

@@ -1,0 +1,8 @@
+SRC_NONSMOOTHDESCENT_DIR = src/QualityImprover/VertexMover/NonSmoothDescent
+MSQ_INCLUDES += -I$(top_srcdir)/$(SRC_NONSMOOTHDESCENT_DIR)
+INCLUDED_MAKEFILES += $(SRC_NONSMOOTHDESCENT_DIR)/Makefile.am
+
+MSQ_SRCS += $(SRC_NONSMOOTHDESCENT_DIR)/NonSmoothDescent.cpp 
+
+MSQ_HDRS += $(SRC_NONSMOOTHDESCENT_DIR)/NonSmoothDescent.hpp
+
