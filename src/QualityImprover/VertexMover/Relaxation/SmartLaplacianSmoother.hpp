@@ -11,7 +11,7 @@
 #  include <vector>
 #endif
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
   /*\brief Do laplacian smooth, but don't invert elements.
    */  

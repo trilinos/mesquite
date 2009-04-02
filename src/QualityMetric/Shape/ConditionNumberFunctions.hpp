@@ -43,7 +43,7 @@ Header file for the Mesquite::ShapeQualityMetric class
 #include "QualityMetric.hpp"
 #include "PatchData.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
    static inline bool condition_number_2d( const Vector3D temp_vec[],
                                            size_t e_ind,

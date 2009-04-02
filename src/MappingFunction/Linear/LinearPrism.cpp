@@ -34,7 +34,7 @@
 #include "MsqError.hpp"
 #include "LinearPrism.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 static const char* nonlinear_error 
  = "Attempt to use LinearPrism mapping function for a nonlinear element\n";

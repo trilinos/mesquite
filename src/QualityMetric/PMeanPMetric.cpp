@@ -39,7 +39,7 @@
 #include "SymMatrix3D.hpp"
 #include "PatchData.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 bool PMeanPMetric::average( PatchData& pd,
                             QualityMetric* metric,

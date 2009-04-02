@@ -39,7 +39,7 @@
 #include "TopologyInfo.hpp"
 #include "NodeSet.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 class MsqError;
 class PatchData;

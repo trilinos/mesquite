@@ -41,7 +41,7 @@ Header file for the Mesquite::LInfTemplate class
 #include "Mesquite.hpp"
 #include "ObjectiveFunctionTemplate.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
   /*! \class LInfTemplate
     \brief Computes the L_infinity objective function for a given patch,

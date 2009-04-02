@@ -57,7 +57,7 @@
 #  include <iostream>
 #endif
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 MsqHessian::MsqHessian() :
   mEntries(0), mRowStart(0), mColIndex(0), 

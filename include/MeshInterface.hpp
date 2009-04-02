@@ -56,7 +56,7 @@
 
 #include <string>
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
   class EntityIterator;
   class MsqError;

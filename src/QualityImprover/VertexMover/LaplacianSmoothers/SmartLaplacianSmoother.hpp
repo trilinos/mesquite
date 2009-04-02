@@ -42,7 +42,7 @@
 #include "Mesquite.hpp"
 #include "LaplacianCommon.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
   class MsqError;
   class PatchData;

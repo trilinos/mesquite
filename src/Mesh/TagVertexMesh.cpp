@@ -35,7 +35,7 @@
 #include "MsqError.hpp"
 #include "MsqVertex.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 void TagVertexMesh::initialize( Mesh* mesh, msq_std::string name, bool init, MsqError& err )
 {

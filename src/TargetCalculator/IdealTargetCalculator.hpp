@@ -37,7 +37,7 @@
 #include "TargetCalculator.hpp"
 #include "JacobianCalculator.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 class IdealTargetCalculator : public TargetCalculator
 {

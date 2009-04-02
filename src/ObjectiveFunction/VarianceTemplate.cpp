@@ -37,7 +37,7 @@
 #include "MsqHessian.hpp"
 #include "PatchData.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 ObjectiveFunction* VarianceTemplate::clone() const
   { return new VarianceTemplate(*this); }

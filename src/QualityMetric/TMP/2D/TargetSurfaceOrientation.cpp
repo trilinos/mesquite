@@ -40,7 +40,7 @@
 #include "TargetCalculator.hpp"
 #include "ElementQM.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 int TargetSurfaceOrientation::get_negate_flag( ) const { return 1; }
 
 msq_std::string TargetSurfaceOrientation::get_name() const

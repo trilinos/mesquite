@@ -38,7 +38,7 @@
 #include "Exponent.hpp"
 #include "Matrix3D.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 /**\brief Objective function: p-mean^p of p-mean^p of patch metric values
  */

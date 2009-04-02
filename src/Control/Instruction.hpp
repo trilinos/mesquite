@@ -35,7 +35,7 @@
 #  include <string>
 #endif
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 class Mesh;
 class ParallelMesh;

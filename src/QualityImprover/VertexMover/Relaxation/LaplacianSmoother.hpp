@@ -41,7 +41,7 @@
 #include "Mesquite.hpp"
 #include "RelaxationSmoother.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
 
   /*! \class LaplacianSmoother

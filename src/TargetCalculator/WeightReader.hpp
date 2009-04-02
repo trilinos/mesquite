@@ -45,7 +45,7 @@
 #endif
 #include <string>
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 class PatchData;
 class MsqError;

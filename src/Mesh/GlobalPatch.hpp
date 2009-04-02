@@ -34,7 +34,7 @@
 
 #include "PatchSet.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 /**\brief A PatchSet representing a single global patch */
 class GlobalPatch : public PatchSet

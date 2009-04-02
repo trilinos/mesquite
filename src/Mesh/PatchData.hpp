@@ -74,7 +74,7 @@
 #endif
 
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
   class ExtraData;
   class PatchDataVerticesMemento;

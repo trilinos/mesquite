@@ -47,7 +47,7 @@ using std::vector;
 #endif
 
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
   msq_std::string I_DFT_NoBarrierSmoother::get_name() const 
     { return "I_DFT_NoBarrierSmoother"; }

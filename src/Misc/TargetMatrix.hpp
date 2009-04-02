@@ -40,7 +40,7 @@ Header file for the Mesquite::TargetMatrix class
 #include "Mesquite.hpp"
 #include "Matrix3D.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
   
   /*! \class TargetMatrix

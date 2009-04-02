@@ -36,7 +36,7 @@
 #include "MsqError.hpp"
 #include "MsqVertex.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 class IndexIterator : public EntityIterator
 {

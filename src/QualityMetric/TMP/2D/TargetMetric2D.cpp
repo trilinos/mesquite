@@ -35,7 +35,7 @@
 #include "MsqError.hpp"
 #include "MsqMatrix.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 TargetMetric2D::~TargetMetric2D() {}
      

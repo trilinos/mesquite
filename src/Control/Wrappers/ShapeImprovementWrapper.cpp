@@ -39,7 +39,7 @@ Member functions of the Mesquite::ShapeImprovementWrapper class
 #include "MsqTimer.hpp"
 #include "MsqDebug.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 /*! The consturctor allows for two values.  The first is a 
   time bound (in seconds) used as a termination criterion.  If

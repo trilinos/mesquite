@@ -37,7 +37,7 @@
 #include "MeshInterface.hpp"
 #include "MsqGeomPrim.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 
 

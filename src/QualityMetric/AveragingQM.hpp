@@ -40,7 +40,7 @@ Header file for the Mesquite::AveragingQM class
 #include "Mesquite.hpp"
 #include "QualityMetric.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
    
      /*! \class AveragingQM

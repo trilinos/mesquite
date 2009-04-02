@@ -36,7 +36,7 @@
 #  include <limits>
 #endif
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 void CylinderDomain::evaluate( Mesh::VertexHandle,
                                const Vector3D& point,

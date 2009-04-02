@@ -35,7 +35,7 @@
 #include "Mesquite.hpp"
 #include "MappingFunction.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 /**\brief Linear mapping function for a prism element
  *

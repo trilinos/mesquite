@@ -35,7 +35,7 @@
 #include "MsqError.hpp"
 #include "PatchData.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 NodeSet
 MappingFunction::sample_points( NodeSet higher_order ) const

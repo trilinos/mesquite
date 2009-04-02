@@ -28,7 +28,7 @@
 #include "MsqError.hpp"
 #include "LinearTriangle.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 static const char* nonlinear_error 
  = "Attempt to use LinearTriangle mapping function for a nonlinear element\n";

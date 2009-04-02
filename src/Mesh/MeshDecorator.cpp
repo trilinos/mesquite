@@ -33,7 +33,7 @@
 #include "Mesquite.hpp"
 #include "MeshDecorator.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 MeshDecorator::MeshDecorator() : myMesh(0) {}
 MeshDecorator::MeshDecorator( Mesh* mesh ) : myMesh(mesh) {}

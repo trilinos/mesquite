@@ -36,7 +36,7 @@
 #include "Mesquite.hpp"
 #include "MeshInterface.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 /**\brief Utility class for implementing decorators for the Mesquite::Mesh interface
  *

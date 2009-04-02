@@ -33,7 +33,7 @@
 #include "MsqError.hpp"
 #include "ObjectiveFunction.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 
 OFEvaluator::OFEvaluator( ObjectiveFunction* of, bool Nash ) : OF(of)

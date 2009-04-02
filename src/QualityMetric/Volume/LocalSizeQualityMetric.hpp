@@ -43,7 +43,7 @@ Header file for the Mesquite::LocalSizeQualityMetric class
 #include "VertexQM.hpp"
 #include "AveragingQM.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
      /*! \class LocalSizeQualityMetric
        \brief Computes the local size metric for a given vertex.

@@ -30,7 +30,7 @@
 #include "Mesquite.hpp"
 #include "PatchSet.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 class PatchData;
 class MsqError;

@@ -65,7 +65,7 @@ Header file for the Mesquite::QualityAssessor class
 #endif
 
 
-namespace Mesquite 
+namespace MESQUITE_NS 
 {
 
    class QualityMetric;

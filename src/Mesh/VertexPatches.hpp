@@ -35,7 +35,7 @@
 #include "Mesquite.hpp"
 #include "PatchSet.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 
 /**\brief A PatchSet representing a decomposition of the mesh

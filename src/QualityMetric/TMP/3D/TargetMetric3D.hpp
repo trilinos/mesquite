@@ -35,7 +35,7 @@
 
 #include "Mesquite.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 class MsqError;
 template <unsigned R, unsigned C> class MsqMatrix;

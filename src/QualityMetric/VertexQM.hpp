@@ -36,7 +36,7 @@
 #include "Mesquite.hpp"
 #include "QualityMetric.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 /**\brief Base type for per-vertex quality metrics */
 class VertexQM : public QualityMetric

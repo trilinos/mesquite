@@ -50,7 +50,7 @@
 
 #include <math.h>
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 IdealWeightInverseMeanRatio::IdealWeightInverseMeanRatio(MsqError& err, double pow_dbl)
   : AveragingQM(QualityMetric::LINEAR)

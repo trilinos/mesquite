@@ -39,7 +39,7 @@
 #include "LinearPrism.hpp"
 #include "LinearHexahedron.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 #ifdef MSQ_TRAP_FPE
 const bool IQ_TRAP_FPE_DEFAULT = true;

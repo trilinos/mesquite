@@ -31,7 +31,7 @@
 #include "MeshInterface.hpp"
 #include "MsqError.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 void ElementPatches::get_patch_handles( 
                              msq_std::vector<PatchHandle>& patch_handles_out,

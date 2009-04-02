@@ -35,7 +35,7 @@
 #include "Mesquite.hpp"
 #include <sys/types.h>
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
 
   class MsqError;

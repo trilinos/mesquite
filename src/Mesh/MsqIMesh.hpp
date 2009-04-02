@@ -36,7 +36,7 @@
 #include "MeshInterface.hpp"
 #include "iMesh.h"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 /** The name of the tag (integer) that Mesquite will use
  *  to store internal data

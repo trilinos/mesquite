@@ -39,7 +39,7 @@
 #include <vector>
 #include <algorithm>
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 SlaveBoundaryVertices::SlaveBoundaryVertices( unsigned depth, unsigned dim )
   : elemDepth(depth), domainDoF(dim)

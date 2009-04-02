@@ -41,7 +41,7 @@ Header file for the Mesquite::ScalarMultiplyQualityMetric class
 #include "Mesquite.hpp"
 #include "QualityMetric.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
      /*! \class ScalarMultiplyQualityMetric
        \brief Multiplies quality metric value by a number (a double).

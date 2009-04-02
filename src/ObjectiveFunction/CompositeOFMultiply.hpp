@@ -42,7 +42,7 @@ Header file for the Mesquite:: CompositeOFMultiply class
 #include "ObjectiveFunction.hpp"
 #include "MsqHessian.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
    /*!\class CompositeOFMultiply
        \brief Multiplies two ObjectiveFunction values together.

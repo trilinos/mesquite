@@ -37,7 +37,7 @@
 #include "Mesquite.hpp"
 #include "MsqError.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
   
   class ParameterSet

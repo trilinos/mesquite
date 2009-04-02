@@ -34,7 +34,7 @@
 #include "Target2DShape.hpp"
 #include "MsqMatrix.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 
 bool Target2DShape::evaluate( const MsqMatrix<2,2>& A, 

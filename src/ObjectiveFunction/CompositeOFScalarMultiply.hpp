@@ -41,7 +41,7 @@ Header file for the Mesquite:: CompositeOFScalarMultiply class
 #include "Mesquite.hpp"
 #include "ObjectiveFunction.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
      /*! \class CompositeOFScalarMultiply
        \brief Scales a given an ObjectiveFunction.

@@ -38,7 +38,7 @@
 #include "QualityMetric.hpp"
 #include "MsqError.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 MaxTemplate::MaxTemplate(QualityMetric *qualitymetric) 
    : ObjectiveFunctionTemplate(qualitymetric) {}

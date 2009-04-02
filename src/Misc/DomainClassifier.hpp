@@ -35,7 +35,7 @@
 #include "Mesquite.hpp"
 #include "MeshInterface.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 /**\brief Assign subsets of a mesh do different domains.
  *

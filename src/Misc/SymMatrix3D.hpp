@@ -36,7 +36,7 @@
 #include "Mesquite.hpp"
 #include "Vector3D.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 class SymMatrix3D {
 private:

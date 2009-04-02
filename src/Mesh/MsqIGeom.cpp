@@ -39,7 +39,7 @@
 #include "MsqError.hpp"
 #include "MsqIBase.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
 
 /**\brief Common code for specific implementations of MeshDomain on TSTT interfaces.

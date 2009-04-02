@@ -49,7 +49,7 @@
 
 #include <mpi.h>
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
   typedef struct VertexIdHashKey {
     int id;

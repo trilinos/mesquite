@@ -40,7 +40,7 @@ Header file for the Mesquite::UntangleBetaQualityMetric class
 #include "Mesquite.hpp"
 #include "ElementQM.hpp"
 #include "AveragingQM.hpp"
-namespace Mesquite
+namespace MESQUITE_NS
 {
      /*! \class UntangleBetaQualityMetric
        \brief The untangle beta quality metric.

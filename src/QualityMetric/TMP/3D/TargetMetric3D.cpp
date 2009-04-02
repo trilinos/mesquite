@@ -33,7 +33,7 @@
 #include "TargetMetric3D.hpp"
 #include "TargetMetricDimIndep.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 TargetMetric3D::~TargetMetric3D() {}
      

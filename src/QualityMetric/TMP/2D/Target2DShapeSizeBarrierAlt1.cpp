@@ -34,7 +34,7 @@
 #include "Target2DShapeSizeBarrierAlt1.hpp"
 #include "MsqMatrix.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 
 

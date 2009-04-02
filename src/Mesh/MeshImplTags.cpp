@@ -29,7 +29,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 
 MeshImplTags::TagData::~TagData() 

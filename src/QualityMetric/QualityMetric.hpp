@@ -65,7 +65,7 @@ Header file for the Mesquite::QualityMetric class
 #  include <inttypes.h>
 #endif
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
    
      /*! \class QualityMetric

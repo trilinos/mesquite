@@ -50,7 +50,7 @@
 #endif
 
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 msq_std::string SmartLaplacianSmoother::get_name() const
   { return "SmartLaplacianSmoother"; }

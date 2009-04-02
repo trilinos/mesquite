@@ -41,7 +41,7 @@
 #include "MsqTimer.hpp"
 //#include "MsqFreeVertexIndexIterator.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 msq_std::string ConjugateGradient::get_name() const 
   { return "ConjugateGradient"; }

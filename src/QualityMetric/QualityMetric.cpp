@@ -40,7 +40,7 @@
 #include "MsqVertex.hpp"
 #include "PatchData.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 bool QualityMetric::evaluate_with_gradient( PatchData& pd,
                               size_t handle,

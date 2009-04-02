@@ -36,7 +36,7 @@
 #include "Mesquite.hpp"
 #include <stddef.h> // for size_t
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 //! Define a logical location within an element at which the
 //! element will be "sampled" for the purpose of evaluating a

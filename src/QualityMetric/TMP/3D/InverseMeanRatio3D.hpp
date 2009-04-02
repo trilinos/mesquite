@@ -37,7 +37,7 @@
 #include "TargetMetric3D.hpp"
 #include <limits>
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 /** \f$ \frac{|T|^2}{3 det^{2/3}(T)} \f$ */
 class InverseMeanRatio3D : public TargetMetric3D {

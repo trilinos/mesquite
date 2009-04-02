@@ -42,7 +42,7 @@
 # include <sstream>
 #endif
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 static TagHandle get_tag( Mesh* mesh,
                           unsigned num_doubles,

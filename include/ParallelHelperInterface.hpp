@@ -37,7 +37,7 @@
 
 #include "ParallelMeshInterface.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
   /*! \class ParallelHelper \brief Mesquite::ParallelHelper is an abstract class
    *  which defines methods used by VertexMover and QualityAssessor to parallelize

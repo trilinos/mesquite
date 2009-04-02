@@ -30,7 +30,7 @@
 #include "QuadLagrangeShape.hpp"
 #include "MsqError.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 EntityTopology QuadLagrangeShape::element_topology() const
   { return QUADRILATERAL; }

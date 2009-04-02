@@ -34,7 +34,7 @@
 #include "TSquared3D.hpp"
 #include "MsqMatrix.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 TSquared3D::~TSquared3D() {}
 

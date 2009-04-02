@@ -29,7 +29,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
 
 /* IMPORTANT: Be careful to initialize the InitializeFlags object

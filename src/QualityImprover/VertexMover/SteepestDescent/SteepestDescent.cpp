@@ -45,7 +45,7 @@
 #  include <memory>
 #endif
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 msq_std::string SteepestDescent::get_name() const
   { return "SteepestDescent"; }

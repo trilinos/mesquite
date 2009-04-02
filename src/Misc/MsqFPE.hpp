@@ -29,7 +29,7 @@
 
 #include <sys/types.h>
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 /**\brief Utility class used by InstructionQueue SIGFPE option
  *

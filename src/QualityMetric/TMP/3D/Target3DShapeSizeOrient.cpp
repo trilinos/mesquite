@@ -34,7 +34,7 @@
 #include "Target3DShapeSizeOrient.hpp"
 #include "MsqMatrix.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 Target3DShapeSizeOrient::~Target3DShapeSizeOrient() {}
 

@@ -38,7 +38,7 @@
 #include "IdealElements.hpp"
 #include "ElemSampleQM.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
  
 bool IdealTargetCalculator:: get_3D_target( PatchData& pd, 
                                             size_t element,

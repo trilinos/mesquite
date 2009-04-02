@@ -79,7 +79,7 @@
    using std::internal;
 #endif
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 PatchData::PatchData()
   : myMesh(0),

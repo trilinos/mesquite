@@ -36,7 +36,7 @@
 #include "Mesquite.hpp"
 #include "TargetMetric2D.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 /** |T-I|^2 */
 class Target2DShapeSizeOrient : public TargetMetric2D

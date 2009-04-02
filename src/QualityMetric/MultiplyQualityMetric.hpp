@@ -41,7 +41,7 @@ Header file for the Mesquite::MultiplyQualityMetric class
 #include "Mesquite.hpp"
 #include "QualityMetric.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
    class Vector3D;
    class MsqError;

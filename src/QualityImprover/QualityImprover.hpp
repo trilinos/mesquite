@@ -44,7 +44,7 @@
 #include "TerminationCriterion.hpp"
 #include "Instruction.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
   class PatchSet;
 

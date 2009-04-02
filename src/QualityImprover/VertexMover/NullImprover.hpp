@@ -39,7 +39,7 @@
 
 #include "VertexMover.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
   class NullImprover : public VertexMover
   {

@@ -44,7 +44,7 @@
 # include <vector>
 #endif
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 class MappingFunction2D;
 class MappingFunction3D;

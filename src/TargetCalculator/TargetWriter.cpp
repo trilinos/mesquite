@@ -47,7 +47,7 @@
 # include <sstream>
 #endif
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 TargetWriter::TargetWriter(  TargetCalculator* tc,
                              WeightCalculator* wc,

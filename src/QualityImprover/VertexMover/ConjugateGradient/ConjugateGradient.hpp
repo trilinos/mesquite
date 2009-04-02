@@ -42,7 +42,7 @@
 #include "PatchSetUser.hpp"
 
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
   class ObjectiveFunction;
 

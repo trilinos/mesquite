@@ -42,7 +42,7 @@
 # include <map>
 #endif
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 /**\brief Simple 2D Domain for free-smooth testing
  *

@@ -34,7 +34,7 @@
 #include "InverseMeanRatio3D.hpp"
 #include "MsqMatrix.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 bool InverseMeanRatio3D::evaluate( const MsqMatrix<3,3>& A, 
                                    const MsqMatrix<3,3>& W, 

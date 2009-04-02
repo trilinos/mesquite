@@ -37,7 +37,7 @@
 
 #include "MeshInterface.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
   class ParallelHelper;
     

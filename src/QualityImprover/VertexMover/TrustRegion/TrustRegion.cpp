@@ -41,7 +41,7 @@
 #undef  DO_STEEP_DESC // Jason's apparently broken hack to fall back to
                       // steepest descent search direction
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 // Force std::vector to release allocated memory
 template <typename T>

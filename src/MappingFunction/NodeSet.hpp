@@ -41,7 +41,7 @@
 #include "Bits.hpp"
 #include "Sample.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 /** Utility class for storing one boolean mark/flag for each node in an element */
 class NodeSet {

@@ -31,7 +31,7 @@
 #include "MsqError.hpp"
 #include "LinearQuadrilateral.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 static const char* nonlinear_error 
  = "Attempt to use LinearQuadrilateral mapping function for a nonlinear element\n";

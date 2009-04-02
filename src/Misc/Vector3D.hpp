@@ -51,7 +51,7 @@
   \author Darryl Melander
   \author Thomas Leurent
 */
-namespace Mesquite
+namespace MESQUITE_NS
 {
    class Matrix3D;
    class MsqError;

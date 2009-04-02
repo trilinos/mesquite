@@ -36,7 +36,7 @@
 #include "MeshInterface.hpp"
 #include <algorithm>
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 ReferenceMeshInterface::~ReferenceMeshInterface() {}
 

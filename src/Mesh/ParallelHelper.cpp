@@ -12,7 +12,7 @@
 #define VERTEX_HEADER 1
 #define VERTEX_BLOCK 1000 
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 static void vertex_hash_insert(VertexIdHash* hash, int id, int proc_id, int value)
 {

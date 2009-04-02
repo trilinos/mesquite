@@ -34,7 +34,7 @@
 #include "Target2DShapeBarrier.hpp"
 #include "MsqMatrix.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 bool Target2DShapeBarrier::evaluate( const MsqMatrix<2,2>& A, 
                                  const MsqMatrix<2,2>& W, 

@@ -39,7 +39,7 @@
 #include "Mesquite.hpp"
 #include <string>
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 msq_std::string process_itaps_error( int itaps_err );
 

@@ -34,7 +34,7 @@
 #include "Target2DShapeOrientAlt1.hpp"
 #include "MsqMatrix.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 bool Target2DShapeOrientAlt1::evaluate( const MsqMatrix<2,2>& A, 
                                  const MsqMatrix<2,2>& W, 

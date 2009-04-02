@@ -67,7 +67,7 @@
 #include "Vector3D.hpp"
 #include "SymMatrix3D.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
 
   /*! \class Matrix3D

@@ -39,7 +39,7 @@
 #  include <ieeefp.h>
 #endif
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 msq_stdio::ostream& operator<<(msq_stdio::ostream &s, const Mesquite::Vector3D &v)
 {
