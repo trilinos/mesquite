@@ -41,7 +41,7 @@
 #include <stdarg.h>
 #include <assert.h>
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 const char* MsqError::error_message() const
 {

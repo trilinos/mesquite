@@ -60,7 +60,7 @@ using namespace std;
 
 #include <stdio.h>
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 namespace MeshWriter {
 

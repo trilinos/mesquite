@@ -25,7 +25,7 @@
 #include "MsqInterrupt.hpp"
 #include <signal.h>
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 unsigned MsqInterrupt::instanceCount = 0;
 bool MsqInterrupt::sawInterrupt = false;

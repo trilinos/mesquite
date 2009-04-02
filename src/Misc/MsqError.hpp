@@ -41,7 +41,7 @@ class ostream;
 
 #include <string>
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
 
 /**\defgroup error Mesquite internal error handling

@@ -35,7 +35,7 @@
 
 #include "Instruction.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 class VertexSlaver : public Instruction
 {

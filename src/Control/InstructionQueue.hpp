@@ -47,7 +47,7 @@ Header file for the Mesquite::InstructionQueue class
 #  include <list>
 #endif
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
   class MsqError;
   class QualityImprover;

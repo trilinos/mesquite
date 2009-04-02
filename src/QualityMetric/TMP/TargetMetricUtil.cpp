@@ -37,7 +37,7 @@
 #include "ElementQM.hpp"
 #include "ElemSampleQM.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 void surface_to_2d( const MsqMatrix<3,2>& A,
                     const MsqMatrix<3,2>& W,

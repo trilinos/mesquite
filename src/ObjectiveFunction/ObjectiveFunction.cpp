@@ -43,7 +43,7 @@
 #include "SymMatrix3D.hpp"
 #include <memory>  // auto_ptr
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 
 

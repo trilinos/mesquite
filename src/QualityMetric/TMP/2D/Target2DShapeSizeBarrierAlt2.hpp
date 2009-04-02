@@ -36,7 +36,7 @@
 #include "Mesquite.hpp"
 #include "TargetMetric2D.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 /** 1/2 |T|^2 - ln(det(T)) */
 class Target2DShapeSizeBarrierAlt2 : public TargetMetric2D

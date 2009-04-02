@@ -41,7 +41,7 @@ Header file for the Mesquite::MaxTemplate class
 #include "Mesquite.hpp"
 #include "ObjectiveFunctionTemplate.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
    /*! \class MaxTemplate
     \brief Computes the maximum quality metric value.

@@ -43,7 +43,7 @@
 #include "ParallelHelperInterface.hpp"
 #include <algorithm>
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 VertexMover::VertexMover( ObjectiveFunction* OF, bool Nash ) 
   : QualityImprover(),

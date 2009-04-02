@@ -40,7 +40,7 @@
 #include "Mesquite.hpp"
 #include "QualityImprover.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
   class MsqError;
 

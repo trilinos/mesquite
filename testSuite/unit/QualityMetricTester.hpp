@@ -34,7 +34,7 @@
 
 using namespace Mesquite;
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 class PatchData;
 class QualityMetric;
 class ElemSampleQM;

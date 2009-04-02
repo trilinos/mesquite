@@ -31,7 +31,7 @@
 #include "Sample.hpp"
 #include <string.h>
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
 
 class MsqError;

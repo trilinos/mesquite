@@ -34,7 +34,7 @@
 #include <vector>
 #include <iostream>
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
   class Timer;
 

@@ -49,7 +49,7 @@ using std::vector;
 #endif
 
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
   msq_std::string NormSquaredSmoother::get_name() const
     { return "NormSquaredSmoother"; }

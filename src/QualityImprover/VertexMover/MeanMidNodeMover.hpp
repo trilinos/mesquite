@@ -35,7 +35,7 @@
 #include "Mesquite.hpp"
 #include "Instruction.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 class PatchData;
 

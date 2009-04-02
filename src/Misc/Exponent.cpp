@@ -35,7 +35,7 @@
 
 #include "Exponent.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 
 

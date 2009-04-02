@@ -37,7 +37,7 @@
 #include "MsqError.hpp"
 #include <limits>
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 template <typename TargetMetric>
 static inline double

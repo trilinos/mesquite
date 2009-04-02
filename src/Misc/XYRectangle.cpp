@@ -35,7 +35,7 @@
 #include "MsqError.hpp"
 #include "MsqVertex.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 
 XYRectangle::XYRectangle( double w, double h, double x, double y )

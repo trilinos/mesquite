@@ -39,7 +39,7 @@
 # include <algorithm>
 #endif
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 void BoundedCylinderDomain::domain_DoF( const Mesh::VertexHandle* handle_array,
                                         unsigned short* dof_array,

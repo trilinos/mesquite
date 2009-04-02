@@ -34,7 +34,7 @@
 #include "ElementQM.hpp"
 #include "PatchData.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 void ElementQM::get_evaluations( PatchData& pd, 
                         msq_std::vector<size_t>& handles,

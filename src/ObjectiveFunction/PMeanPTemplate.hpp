@@ -38,7 +38,7 @@
 #include "Exponent.hpp"
 #include "Matrix3D.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 /**\brief \f$\frac{1}{n}\sum_{i=1}^n\mu(s_i)^p\f$
  *

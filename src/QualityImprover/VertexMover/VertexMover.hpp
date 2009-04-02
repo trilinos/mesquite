@@ -42,7 +42,7 @@
 #include "QualityImprover.hpp"
 #include "OFEvaluator.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
   class ObjectiveFunction;
   class PatchData;

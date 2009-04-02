@@ -35,7 +35,7 @@
 #include "MsqMatrix.hpp"
 #include "MsqError.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 bool InvTransBarrier2D::evaluate( const MsqMatrix<2,2>& A, 
                                   const MsqMatrix<2,2>& W, 

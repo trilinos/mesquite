@@ -36,7 +36,7 @@
 #include "Mesquite.hpp"
 #include "TargetMetric2D.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 /** Make a non-barrier metric into a barrier metric by passing it T^-t */
 class InvTransBarrier2D : public TargetMetric2D

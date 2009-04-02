@@ -36,7 +36,7 @@
 #include "MsqError.hpp"
 #include "TopologyInfo.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 void JacobianCalculator::get_Jacobian_2D( const MappingFunction2D* mf,
                                           NodeSet ho_bits,

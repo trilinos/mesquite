@@ -36,7 +36,7 @@
 #include "Mesquite.hpp"
 #include "VarianceTemplate.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 /**\brief standard deviation template
  *

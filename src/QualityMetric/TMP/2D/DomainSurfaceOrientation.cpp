@@ -40,7 +40,7 @@
 #include "WeightCalculator.hpp"
 #include "ElementQM.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 int DomainSurfaceOrientation::get_negate_flag( ) const { return 1; }
 
 msq_std::string DomainSurfaceOrientation::get_name() const

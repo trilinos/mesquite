@@ -42,7 +42,7 @@ Header file for the Mesquite::EdgeLengthQualityMetric class
 #include "AveragingQM.hpp"
 #include "VertexQM.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
      /*! \class EdgeLengthQualityMetric
        \brief Computes the lengths of the edges connected to given a vertex..

@@ -37,7 +37,7 @@
 #include "ExtraData.hpp"
 #include <assert.h>
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 template <typename T> class ExtraUserData;
 

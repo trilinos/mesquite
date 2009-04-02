@@ -34,7 +34,7 @@
 #include "IdealElements.hpp"
 #include "Vector3D.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 static Vector3D unit_quad[4] = { Vector3D( -0.5, -0.5, 0.0 ),
                                  Vector3D(  0.5, -0.5, 0.0 ),

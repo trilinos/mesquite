@@ -49,7 +49,7 @@
 #  include <iosfwd>
 #endif
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
   class Timer
   {

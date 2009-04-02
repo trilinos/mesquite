@@ -36,7 +36,7 @@
 #include "Mesquite.hpp"
 #include "TargetMetric3D.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 /**\brief |T-I|^2
  *

@@ -85,7 +85,7 @@ to run mesquite by default.
 #endif
 
 #include "MsqDebug.hpp"
-namespace Mesquite
+namespace MESQUITE_NS
 {
 
 const char* MESQUITE_FIELD_TAG = "MesquiteTags";

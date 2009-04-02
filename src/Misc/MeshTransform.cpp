@@ -40,7 +40,7 @@
 #include "MsqVertex.hpp"
 #include "MsqError.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 /*! Constructor
 \param in_mat Matrix component of transform.  Specifies rotation,
               scaling, and reflection.

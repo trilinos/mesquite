@@ -47,7 +47,7 @@
 #include "ElementQM.hpp"
 #include "VertexPatches.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
 #define MSQ_XDIR 0
 #define MSQ_YDIR 1

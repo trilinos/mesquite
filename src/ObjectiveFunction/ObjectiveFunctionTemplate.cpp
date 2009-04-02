@@ -41,7 +41,7 @@
 #include "PatchIterator.hpp"
 #include <memory>
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 ObjectiveFunctionTemplate::~ObjectiveFunctionTemplate() {}
 

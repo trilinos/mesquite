@@ -36,7 +36,7 @@
 #  include <cstdlib>
 #endif
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
 
 FileTokenizer::FileTokenizer( msq_stdc::FILE* file_ptr )

@@ -42,7 +42,7 @@
 # include <vector>
 #endif
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 class Vector3D;
 class Matrix3D;

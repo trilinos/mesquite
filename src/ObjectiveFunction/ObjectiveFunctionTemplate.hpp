@@ -36,7 +36,7 @@
 #include "Mesquite.hpp"
 #include "ObjectiveFunction.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 /**\brief Base for most concrete objective functions
  *

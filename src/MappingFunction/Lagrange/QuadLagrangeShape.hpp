@@ -34,7 +34,7 @@
  
 #include "MappingFunction.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 /**\brief Lagrange shape function for 9-node quadrilateral elements
  *

@@ -36,7 +36,7 @@
 #include "Mesquite.hpp"
 #include <stdlib.h>
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 class PatchData;
 class MsqError;

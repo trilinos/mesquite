@@ -41,7 +41,7 @@
 #include "MeshInterface.hpp"
 #include "Vector3D.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
   /*! \class PlanarDomain
        This is a template for a planar domain.

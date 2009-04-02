@@ -29,7 +29,7 @@
 
 #include "LaplacianCommon.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 LaplacianCommon::LaplacianCommon( ObjectiveFunction* OF ) 
   : VertexMover( OF, true ),

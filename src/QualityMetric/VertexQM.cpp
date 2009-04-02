@@ -35,7 +35,7 @@
 #include "PatchData.hpp"
 #include "ElemSampleQM.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 void VertexQM::get_evaluations( PatchData& pd, 
                                 msq_std::vector<size_t>& handles,

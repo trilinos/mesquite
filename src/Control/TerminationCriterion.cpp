@@ -48,7 +48,7 @@
 
 #include <sstream>
 
-namespace Mesquite {
+namespace MESQUITE_NS {
  /*! \enum TCType  defines the termination criterion */
 enum TCType {
    NONE    = 0,

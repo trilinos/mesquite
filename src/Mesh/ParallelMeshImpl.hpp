@@ -41,7 +41,7 @@
 
 #include "ParallelMeshInterface.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
   /*!  \class ParallelMeshImpl
   \brief ParallelMeshImpl is a Mesquite implementation of the ParallelMesh

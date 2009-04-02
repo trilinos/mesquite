@@ -1,3 +1,4 @@
+
 /* ***************************************************************** 
     MESQUITE -- The Mesh Quality Improvement Toolkit
 
@@ -38,7 +39,7 @@
 #include "iGeom.h"
 #include "iRel.h"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
 
     /**\brief A base class describing a Mesquite::MeshDomain implemented

@@ -39,7 +39,7 @@
 #include "MsqIBase.hpp"
 #include <algorithm>
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 
 /*************************************************************************

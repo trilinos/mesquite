@@ -35,7 +35,7 @@
 #include "MsqError.hpp"
 #include <assert.h>
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 EntityTopology TetLagrangeShape::element_topology() const
   { return TETRAHEDRON; }

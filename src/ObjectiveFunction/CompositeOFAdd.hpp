@@ -42,7 +42,7 @@ Header file for the Mesquite:: CompositeOFAdd class
 #include "ObjectiveFunction.hpp"
 #include "MsqHessian.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
      /*!\class CompositeOFAdd
        \brief Adds two ObjectiveFunction values together.

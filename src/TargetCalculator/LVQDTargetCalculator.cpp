@@ -35,7 +35,7 @@
 #include "MsqMatrix.hpp"
 #include "MsqError.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 LVQDTargetCalculator::LVQDTargetCalculator( 
                         TargetCalculator* lambda_source,

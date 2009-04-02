@@ -34,7 +34,7 @@
 #include "ArrayIterator.hpp"
 #include "MsqError.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 ArrayIterator::~ArrayIterator()
   {}

@@ -46,7 +46,7 @@ Header file for the Mesquite::IdealWeightInverseMeanRatio class
 #include "Matrix3D.hpp"
 #include "Exponent.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
     class MsqMeshEntity;
     class PatchData;

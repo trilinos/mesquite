@@ -36,7 +36,7 @@
 #include "Mesquite.hpp"
 #include "TargetMetric2D.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 /** |T - T-inverse-transpose|^2 */
 class Target2DShapeSizeBarrierAlt1 : public TargetMetric2D

@@ -37,7 +37,7 @@
 #include "TargetMetric2D.hpp"
 #include <limits>
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 /** \f$ \frac{|T|^2}{2 det(T)} \f$ */
 class InverseMeanRatio2D : public TargetMetric2D {

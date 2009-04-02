@@ -5,7 +5,7 @@
 #include "MsqMeshEntity.hpp"
 
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 size_t SmartLaplacianSmoother::num_inverted( PatchData& pd, MsqError& err )
 {

@@ -36,7 +36,7 @@
 #include "Mesquite.hpp"
 #include "TargetMetric2D.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 /** |T - 0.5*abs(trace T) I|^2 / (2 det(T)) */
 class Target2DShapeOrientBarrier : public TargetMetric2D

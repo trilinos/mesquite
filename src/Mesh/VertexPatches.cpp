@@ -43,7 +43,7 @@
 # include <algorithm>
 #endif
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 void VertexPatches::get_patch_handles( msq_std::vector<PatchHandle>& patch_handles_out,
                                        MsqError& err )

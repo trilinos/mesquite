@@ -31,7 +31,7 @@
 #include "VertexPatches.hpp"
 #include "VertexMover.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 class LaplacianCommon : public VertexMover
 {

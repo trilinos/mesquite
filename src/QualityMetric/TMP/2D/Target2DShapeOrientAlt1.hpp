@@ -36,7 +36,7 @@
 #include "Mesquite.hpp"
 #include "TargetMetric2D.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 
 /** |T|^2 - 1/2 trace(T) abs(trace(T)) */

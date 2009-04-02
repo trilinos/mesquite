@@ -59,7 +59,7 @@ functionality is implemented in this file.
    using std::endl;
 #endif
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 //! Gets the indices of the vertices of this element.
 //! The indices are only valid in the PatchData from which

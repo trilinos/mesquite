@@ -40,7 +40,7 @@
 #include "Mesquite.hpp"
 #include "ObjectiveFunctionTemplate.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
   class Matrix3D;
 

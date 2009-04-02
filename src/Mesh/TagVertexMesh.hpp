@@ -36,7 +36,7 @@
 #include "Mesquite.hpp"
 #include "MeshDecorator.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 /**\brief Store alternate vertex coordinates in tags. 
  *

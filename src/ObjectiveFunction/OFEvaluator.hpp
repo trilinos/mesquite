@@ -41,7 +41,7 @@
 #include "Vector3D.hpp"
 #include "ObjectiveFunction.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 class MsqError;
 class Mesh;

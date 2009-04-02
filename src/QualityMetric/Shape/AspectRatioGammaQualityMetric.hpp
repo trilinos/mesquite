@@ -41,7 +41,7 @@
 #include "Mesquite.hpp"
 #include "MsqError.hpp"
 #include "ElementQM.hpp"
-namespace Mesquite
+namespace MESQUITE_NS
 {
      /*! \class AspectRatioGammaQualityMetric
        \brief Object for computing the aspect ratio gamma of

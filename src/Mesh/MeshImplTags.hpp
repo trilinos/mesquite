@@ -36,7 +36,7 @@
 #  include <vector>
 #endif
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
   struct TagDescription {
       // The VTK attribute type the data was read from, or NONE if not VTK data.

@@ -35,7 +35,7 @@
 #include "Mesquite.hpp"
 #include "MappingFunction.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 /**\brief Linear shape function for quadrilateral elements
  *

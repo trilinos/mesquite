@@ -52,7 +52,7 @@ class ostream;
 #include <iosfwd>
 #endif
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
   class FileTokenizer;
   class MeshImplData;

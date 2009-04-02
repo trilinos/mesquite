@@ -34,7 +34,7 @@
 #include "IdentityTarget.hpp"
 #include "MsqMatrix.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
  
 bool IdentityTarget::get_3D_target( PatchData& , 
                                     size_t ,

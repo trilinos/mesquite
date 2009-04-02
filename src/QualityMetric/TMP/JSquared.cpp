@@ -52,7 +52,7 @@
 # include <algorithm>
 #endif
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 int JSquared::get_negate_flag( ) const { return 1; }
 

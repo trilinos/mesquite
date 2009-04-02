@@ -36,7 +36,7 @@
 #include "Mesquite.hpp"
 #include "VertexSlaver.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 /**\brief Utility to set slaved vs. non-slaved vertices.
  *

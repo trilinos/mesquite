@@ -37,7 +37,7 @@
 #include "MsqError.hpp"
 #include "PatchData.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 VertexPMeanP::VertexPMeanP( double p, ElemSampleQM* metric )
     : PMeanPMetric( p ),

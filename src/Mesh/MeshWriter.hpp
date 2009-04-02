@@ -29,7 +29,7 @@
 
 #include "Matrix3D.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 class Mesh;
 class MsqError;

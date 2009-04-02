@@ -32,7 +32,7 @@
 //       will not return mid-nodes.
 #undef SEPARATE_MID_NODES
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 const msq_std::vector<size_t> dummy_list;
 const Vector3D dummy_vtx;

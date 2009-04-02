@@ -37,7 +37,7 @@
 #include "ReferenceMesh.hpp"
 #include "ElemSampleQM.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 RefMeshTargetCalculator::~RefMeshTargetCalculator() {}
 

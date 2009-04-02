@@ -37,7 +37,7 @@
 #include "MsqHessian.hpp"
 #include "ObjectiveFunctionTemplate.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 /**\brief (standard deviation)^2 template
  *

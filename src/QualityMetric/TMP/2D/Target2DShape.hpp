@@ -36,7 +36,7 @@
 #include "Mesquite.hpp"
 #include "TargetMetric2D.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 
 /** |T - adj(T)^t |^2   =   |T|^2 - 2*det(T) */

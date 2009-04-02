@@ -58,7 +58,7 @@
 #include "UntangleBetaQualityMetric.hpp"
 #include "ConjugateGradient.hpp"
 
-namespace Mesquite { 
+namespace MESQUITE_NS { 
   /*! \class ShapeImprovementWrapper
        \brief Wrapper which performs a Feasible Newton solve using
        an \f$\ell_2^2 \f$ objective function template with inverse mean

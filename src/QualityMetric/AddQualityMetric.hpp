@@ -36,7 +36,7 @@
 #include "Mesquite.hpp"
 #include "QualityMetric.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 class AddQualityMetric : public QualityMetric
 {

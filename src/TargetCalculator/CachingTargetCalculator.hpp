@@ -44,7 +44,7 @@
 # include <vector>
 #endif
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 struct CachedTargetData {
   msq_std::vector<size_t> elementOffsets;

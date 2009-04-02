@@ -36,7 +36,7 @@
 #include "Matrix3D.hpp"
 #include "MsqError.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 msq_std::string ScalarAddQualityMetric::get_name() const
 {

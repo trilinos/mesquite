@@ -40,7 +40,7 @@ Header file for the Mesquite::VertexConditionNumberQualityMetric class
 #include "VertexQM.hpp"
 #include "AveragingQM.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
      /*! \class VertexConditionNumberQualityMetric
        \brief Computes the condition numbers of the corner's of elements

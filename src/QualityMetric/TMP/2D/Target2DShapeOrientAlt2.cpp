@@ -34,7 +34,7 @@
 #include "Target2DShapeOrientAlt2.hpp"
 #include "MsqMatrix.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 static const double INV_SQRT_TWO = 1.0 / msq_stdc::sqrt(2.0);
 

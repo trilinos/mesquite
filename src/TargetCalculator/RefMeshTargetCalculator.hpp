@@ -40,7 +40,7 @@
 #include "TargetCalculator.hpp"
 #include "NodeSet.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 class ReferenceMeshInterface;
 

@@ -55,7 +55,7 @@ This is the second possibility for wrappers. It is based on the InctructionQueue
 #include "InstructionQueue.hpp"
 #include "TerminationCriterion.hpp"
 
-namespace Mesquite { 
+namespace MESQUITE_NS { 
 
    class LaplacianIQ : public InstructionQueue {
    private:

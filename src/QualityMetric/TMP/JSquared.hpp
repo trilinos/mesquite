@@ -36,7 +36,7 @@
 #include "Mesquite.hpp"
 #include "ElemSampleQM.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 template <unsigned R, unsigned C> class MsqMatrix;
 

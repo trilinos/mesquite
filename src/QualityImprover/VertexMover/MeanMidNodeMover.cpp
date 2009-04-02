@@ -32,7 +32,7 @@
 #include "PatchData.hpp"
 #include "PatchIterator.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 MeanMidNodeMover::MeanMidNodeMover() 
 {

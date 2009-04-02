@@ -38,7 +38,7 @@
 #include <algorithm>
 #include <iterator>
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
   /**\brief Helper function for 'find_skin'
    *

@@ -74,7 +74,7 @@
 # include <termios.h>
 #endif
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 QualityAssessor::QualityAssessor( bool print_summary,
                                   const char* inverted_tag_name,

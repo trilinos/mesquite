@@ -46,7 +46,7 @@
 #  include <cstdio>
 #endif
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 /**
  *\defgroup debug Mesquite debug output

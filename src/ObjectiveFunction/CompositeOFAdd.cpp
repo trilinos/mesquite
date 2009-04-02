@@ -38,7 +38,7 @@
 #include "MsqTimer.hpp"
 #include "PatchData.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 
 /*!

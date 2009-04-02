@@ -41,7 +41,7 @@ Header file for the Mesquite:: CompositeOFScalarAdd class
 #include "Mesquite.hpp"
 #include "ObjectiveFunction.hpp"
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
    /*! \class CompositeOFScalarAdd.
        \brief Adds a scalar to a given ObjectiveFunction.

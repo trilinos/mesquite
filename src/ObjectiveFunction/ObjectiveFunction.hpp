@@ -53,7 +53,7 @@ Header file for the Mesquite::ObjectiveFunction class
 #  include <vector>
 #endif
 
-namespace Mesquite
+namespace MESQUITE_NS
 {
    class PatchData;
    class MsqHessian;

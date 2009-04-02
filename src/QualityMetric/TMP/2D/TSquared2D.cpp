@@ -34,7 +34,7 @@
 #include "TSquared2D.hpp"
 #include "MsqMatrix.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 bool TSquared2D::evaluate( const MsqMatrix<2,2>& A, 
                           const MsqMatrix<2,2>& W, 

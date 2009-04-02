@@ -41,7 +41,7 @@
 #  include <vector>
 #endif
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 template <unsigned R, unsigned C> class MsqMatrix;
 class PatchData;

@@ -37,7 +37,7 @@
 #include "QualityMetric.hpp"
 #include "Sample.hpp"
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 /**\brief Base type for metrics evaluated at several 
  *        sample points within each element.

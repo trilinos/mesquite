@@ -37,7 +37,7 @@
 #endif
 
 
-namespace Mesquite {
+namespace MESQUITE_NS {
 
 class BoundedCylinderDomain : public CylinderDomain
 {
