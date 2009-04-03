@@ -80,7 +80,7 @@ public:
     /** the maximum number of elements in a PatchData without overflowing handle space */
     MAX_ELEM_PER_PATCH = ((size_t)1)<<ELEM_INDEX_BITS,
     /** Mask to remove sample bits from handle */
-    ELEM_SAMPLE_MASK = MAX_ELEM_PER_PATCH - 1,
+    ELEM_SAMPLE_MASK = MAX_ELEM_PER_PATCH - 1
   };
 
   inline static size_t handle( Sample sample, size_t index )

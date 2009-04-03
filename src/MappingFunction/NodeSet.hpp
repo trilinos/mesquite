@@ -81,7 +81,7 @@ class NodeSet {
       //! Bit mask for all mid-edge nodes
       EDGE_MASK = (MID_NODE_MASK << (NUM_TOTAL_BITS - EDGE_OFFSET - NUM_EDGE_BITS)) >> (NUM_TOTAL_BITS - EDGE_OFFSET - NUM_EDGE_BITS),
       //! Bit mask for all mid-face nodes
-      FACE_MASK = ~(CORNER_MASK|EDGE_MASK|REGION_MASK),
+      FACE_MASK = ~(CORNER_MASK|EDGE_MASK|REGION_MASK)
     };
 
   private:
