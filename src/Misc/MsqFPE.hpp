@@ -28,6 +28,7 @@
 #define MSQ_FPE_HPP
 
 #include <sys/types.h>
+#include "Mesquite.hpp"
 
 namespace MESQUITE_NS {
 
