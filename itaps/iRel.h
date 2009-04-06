@@ -95,7 +95,7 @@ extern "C"
      *
      * Type used to store references to relation pairs
      */
-  typedef void* iRel_RelationHandle;
+  typedef struct iRel_RelationHandle_Private* iRel_RelationHandle;
 
     /**\brief  \enum IfaceType Enumerator specifying interface types
      *
