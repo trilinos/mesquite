@@ -2,7 +2,7 @@ BUILT_SOURCES += itaps/iMesh_protos.h \
                  itaps/iGeom_protos.h \
                  itaps/iRel_protos.h
 
-EXTRA_DIST = mkprotos.sh
+EXTRA_DIST += $(top_srcdir)/itaps/mkprotos.sh
 
 itaps/iMesh_protos.h: itaps/iMesh.h
 	$(top_srcdir)/itaps/mkprotos.sh iMesh $< $@
