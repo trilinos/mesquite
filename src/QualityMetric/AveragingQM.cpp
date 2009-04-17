@@ -43,8 +43,8 @@
 #include "MsqTimer.hpp"
 #include "PatchData.hpp"
 
-using namespace Mesquite;
 
+namespace MESQUITE_NS {
         
 double AveragingQM::average_corner_gradients( EntityTopology type,
                                   uint32_t fixed_vertices,
@@ -566,7 +566,7 @@ static inline double pmean_corner_hessians( EntityTopology type,
   
   return m;
 }
-                                          
+
 
 double AveragingQM::average_corner_hessians( EntityTopology type,
                                      uint32_t ,
@@ -992,4 +992,6 @@ double AveragingQM::average_metrics( const double metric_values[],
 }
 
 
+
+} // namespace Mesquite
 
