@@ -37,54 +37,119 @@
 #include "Mesquite.hpp"
 #include "MeshInterface.hpp"
 #include "iGeom.h"
-#include "iRel.h"
+#include <vector>
 
 namespace MESQUITE_NS
 {
 
-    /**\brief A base class describing a Mesquite::MeshDomain implemented
-     *        on top of the ITAPS iGeom and iRel APIs.
-     *
-     * A base class for Mesquite::MeshDomain implementations on top
-     * of the ITAPS iGeom and iRel APIs and static
-     * methods for constructing concrete implementations.  The concrete
-     * implementations are not themselves in a header to avoid the
-     * need to include all ITAPS headers if this header is included, for
-     * example indirectly through Mesquite_all_headers.hpp
-     */
-  class MsqIGeom : public Mesquite::MeshDomain
-  {
-    public:
-    
-      /**\brief Create MeshDommain from iGeom and iRel instances
-        *
-        * Create an instance of an implementation of MeshDomain that uses the 
-        * iRel interface to get a handle for the geometric entity 
-        * associated with a mesh entity and the iGeom interface to
-        * evaluate the geometry.
-        */
-    static MsqIGeom* create( iGeom_Instance geom, 
-                             iRel_Instance irel_iface,
-                             iRel_RelationHandle irel_instance,
-                             MsqError& err );
-    
-      /**\brief Create a MeshDomain for a single geometric entity using
-       *        the iGeom API for geometric evaluation.
-       *
-       * Create a iGeom MeshDomain for a single geometric entity.
-       * This implementation will be faster than the one that uses the
-       * classification interface because it assumes all entities in the
-       * mesh are in the interior of the single geometric entity specified.
-       * This implemenation in intended to be used only in the case where 
-       * the mesh of a single surface is being smoothed and the mesh 
-       * vertices on the boundary of the surface are fixed.
-       */
-    static MsqIGeom* create( iGeom_Instance geom,
-                             iBase_EntityHandle geom_ent_handle,
-                             MsqError& err );
+/**\brief Common code for specific implementations of MeshDomain on ITAPS interfaces.
+ *
+ * This class contains the common functionality used by concrete implementations
+ * of MeshDomain on the ITAPS geometry interface.
+ */
+class MsqCommonIGeom
+{
+public:
+
+    /**\param geom The ITAPS geometry interface implementation to query */
+  MsqCommonIGeom( iGeom_Instance geom );
   
-    virtual ~MsqIGeom();
-  };
+  virtual ~MsqCommonIGeom();
+
+    /** Evaluate the closest point to the input position on the specified
+     *  geometric entity and return the result in the passed position 
+     *  argument (move the passed position onto the geometry.)
+     */
+  int move_to( iBase_EntityHandle geom_handle, Vector3D& coord ) const;
+  
+    /** Given a geometric entity and a position, evaluate the normal 
+     *  on the geometric entity at the closest point on that entity
+     *  to the input position, and pass back the result in the input
+     *  coord vector.
+     */
+  int normal ( iBase_EntityHandle geom_handle, Vector3D& coord ) const ;
+  
+    /** Given a geometric entity and a position, evaluate the normal 
+     *  on the geometric entity at the closest point on that entity
+     *  to the input position, and pass back the result in the input
+     *  coord vector.
+     */
+  int normal ( iBase_EntityHandle geom_handle, Vector3D coords[], unsigned count ) const;
+  
+    /** Given a geometric entity and a position, evaluate the normal 
+     *  on the geometric entity at the closest point on that entity
+     *  to the input position, and pass back the result in the input
+     *  coord vector.
+     */
+  int normal ( const iBase_EntityHandle geom_handles[], Vector3D coords[], unsigned count ) const;
+    
+    /** Given a geometric entity and a position, get point on 
+     *  the geometric entity closest to the input position, and
+     *  the surface normal at that position.
+     */
+  int closest_and_normal( iBase_EntityHandle geom_handle,
+                           const Vector3D& position,
+                           Vector3D& closest, 
+                           Vector3D& normal ) const;
+                         
+  int get_dimension( iBase_EntityHandle const* geom_handle, 
+                      unsigned short* dof_out,
+                      size_t count ) const ;
+                      
+  iGeom_Instance geomIFace;
+
+private:  
+  mutable std::vector<iBase_EntityHandle> geomHandles;
+  mutable std::vector<double> coordArray;
+  mutable std::vector<int> typeArray;
+};
+
+
+/**\brief A Mesquite::MeshDomain implemented on top of the ITAPS iGeom API.
+ *
+ * Simple MeshDomain class implementatation that queries a single iGeom
+ * entity for all geometric queries.  Suitable for use when the entire
+ * mesh to be smoothed lies on a single geometric surface.
+ */
+class MsqIGeom : protected MsqCommonIGeom
+{
+public:
+
+  MsqIGeom( iGeom_Instance geom,
+            iBase_EntityHandle geom_ent_handle );
+
+  virtual ~MsqIGeom();
+
+  void snap_to( Mesh::VertexHandle entity_handle,
+                Vector3D& coordinat ) const;
+
+  void vertex_normal_at( Mesh::VertexHandle entity_handle,
+                         Vector3D& coordinate ) const;
+
+  void element_normal_at( Mesh::ElementHandle entity_handle,
+                          Vector3D& coordinate ) const;
+  
+  void vertex_normal_at( const Mesh::VertexHandle* handles,
+                         Vector3D coordinates[],
+                         unsigned count,
+                         MsqError& err ) const;
+
+  void closest_point( Mesh::VertexHandle handle,
+                      const Vector3D& position,
+                      Vector3D& closest,
+                      Vector3D& normal,
+                      MsqError& err ) const;
+
+  void domain_DoF( const Mesh::VertexHandle* handle_array,
+                   unsigned short* dof_array,
+                   size_t num_vertices,
+                   MsqError& err ) const;
+private:
+  
+    /** A handle for the geometry entity to evaluate */
+  iBase_EntityHandle geomEntHandle;
+};
+
 }
 
 #endif

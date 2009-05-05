@@ -1,7 +1,7 @@
 dnl Process this file with autoconf 2.60 to produce a configure script
 dnl for the CCA tutorial software installation.
 
-AC_INIT(Mesquite, 2.99)
+AC_INIT(Mesquite, 2.0.0)
 AC_CONFIG_AUX_DIR(./config_aux)
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR(include/Mesquite.hpp)
@@ -83,8 +83,8 @@ AC_ARG_ENABLE( [trap-fpe],
                    Default is no unless --enable-debug.])], 
   [MSQ_TRAP_FPE="$enableval"], [MSQ_TRAP_FPE=""] )
 
-AC_ARG_ENABLE( [quite-make], 
-  [AC_HELP_STRING([--enable-quite-make],
+AC_ARG_ENABLE( [quiet-make], 
+  [AC_HELP_STRING([--enable-quiet-make],
                   [Much less verbose output during build.
                    Default is no unless --enable-debug.])], 
   [MSQ_QUITE_MAKE="$enableval"], [MSQ_QUITE_MAKE=""] )
@@ -532,16 +532,6 @@ AC_ARG_WITH(netcdf,
 AC_HELP_STRING([--without-netcdf],[Skip NetCDF check])],
   [NETCDF_ARG=$withval], [NETCDF_ARG=])
 
-AC_ARG_WITH(iMesh,
- [AC_HELP_STRING([--with-iMesh=DIR],
- [Specify directory containing ITAPS mesh interface implementation to use for testing.])],
- [WITH_IMESH_ARG=$withval],[WITH_IMESH_ARG=no])
-
-AC_ARG_WITH(imesh,
- [AC_HELP_STRING([--with-imesh=DIR],
- [Specify directory containing ITAPS mesh interface implementation to use for testing.])],
- [WITH_IMESH_ARG=$withval])
-
 AC_ARG_WITH(cppunit,
   [AC_HELP_STRING([--with-cppunit(=DIR)],[Specify directory where CppUnit is installed.])
 AC_HELP_STRING([--without-cppunit],   [Disable CppUnit tests])],
@@ -600,17 +590,6 @@ if test "x$EXODUS_ARG" != "xno"; then
 fi
 
 
-# configure ITAPS server for use in tests
-AM_CONDITIONAL([WITH_TEST_IMESH],[test "x$WITH_IMESH_ARG" != "xno"])
-if test "x$WITH_IMESH_ARG" != "xno"; then 
-  MSQ_IMESH_DEFS="${WITH_IMESH_ARG}/iMesh-Defs.inc"
-  AC_CHECK_FILE( [$MSQ_IMESH_DEFS],
-                 [MSQ_IMESH_IMPL=yes],
-                 [AC_MSG_ERROR([Invalid iMesh implementation spec.])] )
-  MESQUITE_IMESH_MAKE_INCLUDE="include ${MSQ_IMESH_DEFS}"
-fi
-
-
 
 # CPPUnit
 CPPUNIT_CPPFLAGS=
@@ -653,6 +632,32 @@ else
 fi
 AM_CONDITIONAL([WITH_CPPUNIT],[test "x$HAVE_CPPUNIT" = "xyes"])
 
+#------------------------------------------------------------------------------
+# ITAPS
+#------------------------------------------------------------------------------
+
+AC_ARG_ENABLE([itaps],
+              [AC_HELP_STRING([--disable-itaps],[Disable support for all ITAPS interfaces])],
+              [ITAPS_DEFAULT=$enableval],[ITAPS_DEFAULT=yes])
+if test "x$ITAPS_DEFAULT" != "xno"; then
+  if test "x$ITAPS_DEFAULT" != "xyes"; then
+    AC_MSG_ERROR([Invalid argument to --disable-itaps])
+  fi
+fi
+ITAPS_API( [imesh], [IMESH], [iMesh], [$ITAPS_DEFAULT] )
+ITAPS_API( [igeom], [IGEOM], [iGeom], [$ITAPS_DEFAULT] )
+IREL_DEFAULT=$ITAPS_DEFAULT
+if test "xno" = "x$ENABLE_IMESH"; then IREL_DEFAULT=no; fi
+if test "xno" = "x$ENABLE_IGEOM"; then IREL_DEFAULT=no; fi
+ITAPS_API( [irel], [IREL], [iRel], [$IREL_DEFAULT] )
+if test "x$ENABLE_IREL" = "xyes"; then
+  if test "x$ENABLE_IMESH" = "xno"; then
+    AC_MSG_ERROR("iRel support requires iMesh support.")
+  fi
+  if test "x$ENABLE_IGEOM" = "xno"; then
+    AC_MSG_ERROR("iRel support requires iGeom support.")
+  fi
+fi
 
 #------------------------------------------------------------------------------
 # The End

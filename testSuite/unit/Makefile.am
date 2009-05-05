@@ -26,8 +26,7 @@ no_cpp_unit:
 	@echo "exit 0" >> $@
 	@chmod a+x $@
 
-if WITH_TEST_IMESH
-  @MESQUITE_IMESH_MAKE_INCLUDE@
+if WITH_IMESH_IMPL
   IMESH_TEST_SRC = iMeshTest.cpp
   IMESH_LDADD = $(IMESH_LIBS)
 else
