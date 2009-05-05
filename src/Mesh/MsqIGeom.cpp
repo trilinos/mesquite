@@ -42,374 +42,21 @@
 namespace MESQUITE_NS
 {
 
-/**\brief Common code for specific implementations of MeshDomain on TSTT interfaces.
- *
- * This class contains the common functionality used by concrete implementations
- * of MeshDomain on the TSTT geometry interface.
- */
-class CommonIGeom
-{
-public:
-
-    /**\param geom The TSTT geometry interface implementation to query */
-  CommonIGeom( iGeom_Instance geom );
-  
-  virtual ~CommonIGeom();
-
-    /** Evaluate the closest point to the input position on the specified
-     *  geometric entity and return the result in the passed position 
-     *  argument (move the passed position onto the geometry.)
-     */
-  int move_to( iBase_EntityHandle geom_handle, Vector3D& coord ) const;
-  
-    /** Given a geometric entity and a position, evaluate the normal 
-     *  on the geometric entity at the closest point on that entity
-     *  to the input position, and pass back the result in the input
-     *  coord vector.
-     */
-  int normal ( iBase_EntityHandle geom_handle, Vector3D& coord ) const ;
-  
-    /** Given a geometric entity and a position, evaluate the normal 
-     *  on the geometric entity at the closest point on that entity
-     *  to the input position, and pass back the result in the input
-     *  coord vector.
-     */
-  int normal ( iBase_EntityHandle geom_handle, Vector3D coords[], unsigned count ) const;
-  
-    /** Given a geometric entity and a position, evaluate the normal 
-     *  on the geometric entity at the closest point on that entity
-     *  to the input position, and pass back the result in the input
-     *  coord vector.
-     */
-  int normal ( const iBase_EntityHandle geom_handles[], Vector3D coords[], unsigned count ) const;
-    
-    /** Given a geometric entity and a position, get point on 
-     *  the geometric entity closest to the input position, and
-     *  the surface normal at that position.
-     */
-  int closest_and_normal( iBase_EntityHandle geom_handle,
-                           const Vector3D& position,
-                           Vector3D& closest, 
-                           Vector3D& normal ) const;
-                         
-  int get_dimension( iBase_EntityHandle const* geom_handle, 
-                      unsigned short* dof_out,
-                      size_t count ) const ;
-                      
-  iGeom_Instance geomIFace;
-
-private:  
-  mutable std::vector<iBase_EntityHandle> geomHandles;
-  mutable std::vector<double> coordArray;
-  mutable std::vector<int> typeArray;
-};
-
-
-/* General MeshDomain on iGeom & iRel implementation */
-
-class DomainIGeom : public MsqIGeom, protected CommonIGeom
-{
-public:
-
-  DomainIGeom( iGeom_Instance geom,
-               iRel_Instance irel_iface,
-               iRel_RelationHandle irel_instance );
-
-  virtual ~DomainIGeom();
-
-  void snap_to( Mesh::VertexHandle entity_handle,
-                Vector3D& coordinat ) const;
-
-  void vertex_normal_at( Mesh::VertexHandle entity_handle,
-                         Vector3D& coordinate ) const;
-
-  void element_normal_at( Mesh::ElementHandle entity_handle,
-                          Vector3D& coordinate ) const;
-  
-  void vertex_normal_at( const Mesh::VertexHandle* handles,
-                         Vector3D coordinates[],
-                         unsigned count,
-                         MsqError& err ) const;
-
-  void closest_point( Mesh::VertexHandle handle,
-                      const Vector3D& position,
-                      Vector3D& closest,
-                      Vector3D& normal,
-                      MsqError& err ) const;
-
-  void domain_DoF( const Mesh::VertexHandle* handle_array,
-                   unsigned short* dof_array,
-                   size_t num_vertices,
-                   MsqError& err ) const;
-                      
-protected:
-
-    /** Get geometric entity owning a mesh entity */
-  int geom_from_mesh( Mesh::EntityHandle  mesh_handle_in,
-                      iBase_EntityHandle& geom_handle_out ) const;
-  
-  int geom_from_mesh( Mesh::EntityHandle const* mesh_handles_in,
-                      iBase_EntityHandle      * geom_handles_out,
-                      size_t count ) const;
-
-private:
-
-    /** ITAPS interface implementation for mesh->geometry association */
-  iRel_Instance  relateIface;
-  iRel_RelationHandle relateInstance;
-  
-    /** temporary storage of geometry entity handles */
-  mutable std::vector<iBase_EntityHandle> geomHandles;
-};
-
-
-/* Specialized one-geometry-entity MeshDomain on iGeom implementation */
-
-class EntIGeom : public MsqIGeom, protected CommonIGeom
-{
-public:
-
-  EntIGeom( iGeom_Instance geom,
-            iBase_EntityHandle geom_ent_handle );
-
-  virtual ~EntIGeom();
-
-  void snap_to( Mesh::VertexHandle entity_handle,
-                Vector3D& coordinat ) const;
-
-  void vertex_normal_at( Mesh::VertexHandle entity_handle,
-                         Vector3D& coordinate ) const;
-
-  void element_normal_at( Mesh::ElementHandle entity_handle,
-                          Vector3D& coordinate ) const;
-  
-  void vertex_normal_at( const Mesh::VertexHandle* handles,
-                         Vector3D coordinates[],
-                         unsigned count,
-                         MsqError& err ) const;
-
-  void closest_point( Mesh::VertexHandle handle,
-                      const Vector3D& position,
-                      Vector3D& closest,
-                      Vector3D& normal,
-                      MsqError& err ) const;
-
-  void domain_DoF( const Mesh::VertexHandle* handle_array,
-                   unsigned short* dof_array,
-                   size_t num_vertices,
-                   MsqError& err ) const;
-private:
-  
-    /** A handle for the geometry entity to evaluate */
-  iBase_EntityHandle geomEntHandle;
-};
 
 
 
+/***************** MsqIGeom class methods *********************/
 
-/*****************  GeomTSTT base class methods *********************/
-
-MsqIGeom* MsqIGeom::create( iGeom_Instance geom,
-                            iRel_Instance relate_iface,
-                            iRel_RelationHandle relate_instance,
-                            MsqError& )
-{
-  return new DomainIGeom( geom, relate_iface, relate_instance );
-}
-
-MsqIGeom* MsqIGeom::create( iGeom_Instance geom,
-                            iBase_EntityHandle geom_ent_handle,
-                            MsqError& )
-{
-  return new EntIGeom( geom, geom_ent_handle );
-}
-  
-
-MsqIGeom::~MsqIGeom() {}
-
-
-
-
-/***************** DomainTSTT class methods *********************/
-
-DomainIGeom::DomainIGeom( iGeom_Instance geom,
-                          iRel_Instance relate_iface,
-                          iRel_RelationHandle relate_instance ) 
-  : CommonIGeom( geom ), 
-    relateIface( relate_iface ),
-    relateInstance( relate_instance )
-{
-}
-
-DomainIGeom::~DomainIGeom() {}
-
-
-void DomainIGeom::snap_to( Mesh::VertexHandle handle,
-                           Vector3D& coordinate ) const
-{
-  int ierr;
-  iBase_EntityHandle geom;
-  
-  ierr = geom_from_mesh( handle, geom );
-  if (iBase_SUCCESS != ierr) {
-    process_itaps_error( ierr );
-    return;
-  }
-  
-  ierr = move_to( geom, coordinate );
-  if (iBase_SUCCESS != ierr) {
-    process_itaps_error( ierr );
-    return;
-  }
-}
-
-void DomainIGeom::vertex_normal_at( Mesh::VertexHandle handle,
-                                    Vector3D& coordinate ) const
-{
-  int ierr;
-  iBase_EntityHandle geom;
-  
-  ierr = geom_from_mesh( handle, geom );
-  if (iBase_SUCCESS != ierr) {
-    process_itaps_error( ierr );
-    return;
-  }
-  
-  ierr = normal( geom, coordinate );
-  if (iBase_SUCCESS != ierr) {
-    process_itaps_error( ierr );
-    return;
-  }
-}
-
-void DomainIGeom::element_normal_at( Mesh::ElementHandle handle,
-                                     Vector3D& coordinate ) const
-{
-  DomainIGeom::vertex_normal_at( handle, coordinate );
-}
-
-void DomainIGeom::vertex_normal_at( const Mesh::VertexHandle* handle,
-                                    Vector3D coordinates[],
-                                    unsigned count,
-                                    MsqError& err ) const
-{
-  int ierr;
-  
-  geomHandles.resize( count );
-  ierr = geom_from_mesh( handle, &geomHandles[0], count );
-  if (iBase_SUCCESS != ierr) {
-    MSQ_SETERR(err)(process_itaps_error( ierr ), MsqError::INTERNAL_ERROR);
-    return;
-  }
-  
-  ierr = normal( &geomHandles[0], coordinates, count );
-  if (iBase_SUCCESS != ierr) {
-    MSQ_SETERR(err)(process_itaps_error( ierr ), MsqError::INTERNAL_ERROR);
-    return;
-  }
-}
-
-void DomainIGeom::domain_DoF( const Mesh::VertexHandle* handle_array,
-                              unsigned short* dof_array,
-                              size_t count,
-                              MsqError& err ) const
-{
-  int ierr;
-  
-  geomHandles.resize( count );
-  ierr = geom_from_mesh( handle_array, &geomHandles[0], count );
-  if (iBase_SUCCESS != ierr) {
-    MSQ_SETERR(err)(process_itaps_error( ierr ), MsqError::INTERNAL_ERROR);
-    return;
-  }
-  
-  ierr = get_dimension( &geomHandles[0], dof_array, count );
-  if (iBase_SUCCESS != ierr) {
-    MSQ_SETERR(err)(process_itaps_error( ierr ), MsqError::INTERNAL_ERROR);
-    return;
-  }
-}
-    
-
-
-void DomainIGeom::closest_point( Mesh::VertexHandle handle,
-                                 const Vector3D& position,
-                                 Vector3D& closest,
-                                 Vector3D& normal,
-                                 MsqError& err ) const
-{
-  int ierr;
-  iBase_EntityHandle geom;
-  
-  ierr = geom_from_mesh( handle, geom );
-  if (iBase_SUCCESS != ierr) {
-    MSQ_SETERR(err)(process_itaps_error( ierr ), MsqError::INTERNAL_ERROR);
-    return;
-  }
-  
-  ierr = closest_and_normal( geom, position, closest, normal );
-  if (iBase_SUCCESS != ierr) {
-    MSQ_SETERR(err)(process_itaps_error( ierr ), MsqError::INTERNAL_ERROR);
-    return;
-  }
-}
-
-
-int DomainIGeom::geom_from_mesh( Mesh::EntityHandle mesh_ent_handle,
-                                 iBase_EntityHandle& geom_handle ) const
-{
-    // get geometric entity
-  int ierr;
-  iRel_getEntEntAssociation( relateIface,
-                             relateInstance,
-                             (iBase_EntityHandle)mesh_ent_handle,
-                             false,
-                             &geom_handle,
-                             &ierr );
-  if (iBase_SUCCESS != ierr)
-    return ierr;
-  
-    // get dimension of geometric entities
-  int type, one = 1, one_too = 1, *type_ptr = &type;
-  iGeom_getArrType( geomIFace, &geom_handle, 1, &type_ptr, &one, &one_too, &ierr );
-  if (iBase_SUCCESS != ierr)
-    return ierr;
-  
-    // not interested in volumes (only surfaces, curves, and points)
-  if (type == iBase_REGION)
-    geom_handle = 0;
-  
-  return iBase_SUCCESS;
-}
-
-
-int DomainIGeom::geom_from_mesh( const Mesh::EntityHandle* handles,
-                                 iBase_EntityHandle* geom_handles,
-                                 size_t count ) const
-{
-  int ierr;
-  for (size_t i = 0; i < count; ++i) {
-    ierr = geom_from_mesh( handles[i], geom_handles[i] );
-    if (iBase_SUCCESS != ierr)
-      return ierr;
-  }
-  
-  return iBase_SUCCESS;
-}                    
-
-
-/***************** EntIGeom class methods *********************/
-
-EntIGeom::EntIGeom( iGeom_Instance geom, iBase_EntityHandle geom_ent_handle ) 
-  : CommonIGeom( geom ), 
+MsqIGeom::MsqIGeom( iGeom_Instance geom, iBase_EntityHandle geom_ent_handle ) 
+  : MsqCommonIGeom( geom ), 
     geomEntHandle( geom_ent_handle )
 {
 }
 
-EntIGeom::~EntIGeom() {}
+MsqIGeom::~MsqIGeom() {}
 
 
-void EntIGeom::snap_to( Mesh::VertexHandle,
+void MsqIGeom::snap_to( Mesh::VertexHandle,
                         Vector3D& coordinate ) const
 {
   int ierr = move_to( geomEntHandle, coordinate );
@@ -417,7 +64,7 @@ void EntIGeom::snap_to( Mesh::VertexHandle,
     process_itaps_error(ierr);
 }
 
-void EntIGeom::vertex_normal_at( Mesh::VertexHandle,
+void MsqIGeom::vertex_normal_at( Mesh::VertexHandle,
                                  Vector3D& coordinate ) const
 {
   int ierr = normal( geomEntHandle, coordinate );
@@ -425,7 +72,7 @@ void EntIGeom::vertex_normal_at( Mesh::VertexHandle,
     process_itaps_error(ierr);
 }
 
-void EntIGeom::element_normal_at( Mesh::ElementHandle,
+void MsqIGeom::element_normal_at( Mesh::ElementHandle,
                                   Vector3D& coordinate ) const
 {
   int ierr = normal( geomEntHandle, coordinate );
@@ -434,7 +81,7 @@ void EntIGeom::element_normal_at( Mesh::ElementHandle,
 }
 
 
-void EntIGeom::vertex_normal_at( const Mesh::VertexHandle*,
+void MsqIGeom::vertex_normal_at( const Mesh::VertexHandle*,
                                  Vector3D coordinates[],
                                  unsigned count,
                                  MsqError& err ) const
@@ -444,7 +91,7 @@ void EntIGeom::vertex_normal_at( const Mesh::VertexHandle*,
     MSQ_SETERR(err)(process_itaps_error(ierr), MsqError::INTERNAL_ERROR);
 }
 
-void EntIGeom::closest_point( Mesh::VertexHandle handle,
+void MsqIGeom::closest_point( Mesh::VertexHandle handle,
                               const Vector3D& position,
                               Vector3D& closest,
                               Vector3D& normal,
@@ -455,7 +102,7 @@ void EntIGeom::closest_point( Mesh::VertexHandle handle,
     MSQ_SETERR(err)(process_itaps_error(ierr), MsqError::INTERNAL_ERROR);
 }
 
-void EntIGeom::domain_DoF( const Mesh::VertexHandle* ,
+void MsqIGeom::domain_DoF( const Mesh::VertexHandle* ,
                            unsigned short* dof_array,
                            size_t num_vertices,
                            MsqError& err ) const
@@ -472,16 +119,16 @@ void EntIGeom::domain_DoF( const Mesh::VertexHandle* ,
 
 /***************** GeomTSTTCommon class methods *********************/
 
-CommonIGeom::CommonIGeom( iGeom_Instance geom )
+MsqCommonIGeom::MsqCommonIGeom( iGeom_Instance geom )
   : geomIFace( geom )
 {
 }
 
-CommonIGeom::~CommonIGeom() {}
+MsqCommonIGeom::~MsqCommonIGeom() {}
 
 
 
-int CommonIGeom::move_to( iBase_EntityHandle geom, Vector3D& coord ) const
+int MsqCommonIGeom::move_to( iBase_EntityHandle geom, Vector3D& coord ) const
 {
   double x, y, z;
   int ierr;
@@ -492,7 +139,7 @@ int CommonIGeom::move_to( iBase_EntityHandle geom, Vector3D& coord ) const
 
  
  
-int CommonIGeom::normal( iBase_EntityHandle geom, Vector3D& coord ) const
+int MsqCommonIGeom::normal( iBase_EntityHandle geom, Vector3D& coord ) const
 {
   double i, j, k;
   int ierr;
@@ -501,13 +148,13 @@ int CommonIGeom::normal( iBase_EntityHandle geom, Vector3D& coord ) const
   return ierr;
 }
  
-int CommonIGeom::normal( iBase_EntityHandle geom, Vector3D coords[], unsigned count ) const
+int MsqCommonIGeom::normal( iBase_EntityHandle geom, Vector3D coords[], unsigned count ) const
 {
   geomHandles.resize( count, geom );
   return normal( &geomHandles[0], coords, count );
 }
  
-int CommonIGeom::normal( const iBase_EntityHandle* geom_handles, 
+int MsqCommonIGeom::normal( const iBase_EntityHandle* geom_handles, 
                          Vector3D coords[], 
                          unsigned count ) const
 {
@@ -540,7 +187,7 @@ int CommonIGeom::normal( const iBase_EntityHandle* geom_handles,
   return ierr;
 }
 
-int CommonIGeom::closest_and_normal( iBase_EntityHandle geom, 
+int MsqCommonIGeom::closest_and_normal( iBase_EntityHandle geom, 
                                      const Vector3D& position,
                                      Vector3D& closest,
                                      Vector3D& normal ) const
@@ -555,7 +202,7 @@ int CommonIGeom::closest_and_normal( iBase_EntityHandle geom,
 }
 
                          
-int CommonIGeom::get_dimension( const iBase_EntityHandle* geom_handle, 
+int MsqCommonIGeom::get_dimension( const iBase_EntityHandle* geom_handle, 
                                 unsigned short* dof_out,
                                 size_t count ) const
 {

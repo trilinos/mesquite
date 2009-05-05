@@ -1,4 +1,4 @@
-if WITH_TEST_IMESH
+if WITH_IMESH_IMPL
   IMESH_TEST = imesh
 else
   IMESH_TEST =
