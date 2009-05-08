@@ -644,20 +644,9 @@ if test "x$ITAPS_DEFAULT" != "xno"; then
     AC_MSG_ERROR([Invalid argument to --disable-itaps])
   fi
 fi
-ITAPS_API( [imesh], [IMESH], [iMesh], [$ITAPS_DEFAULT] )
-ITAPS_API( [igeom], [IGEOM], [iGeom], [$ITAPS_DEFAULT] )
-IREL_DEFAULT=$ITAPS_DEFAULT
-if test "xno" = "x$ENABLE_IMESH"; then IREL_DEFAULT=no; fi
-if test "xno" = "x$ENABLE_IGEOM"; then IREL_DEFAULT=no; fi
-ITAPS_API( [irel], [IREL], [iRel], [$IREL_DEFAULT] )
-if test "x$ENABLE_IREL" = "xyes"; then
-  if test "x$ENABLE_IMESH" = "xno"; then
-    AC_MSG_ERROR("iRel support requires iMesh support.")
-  fi
-  if test "x$ENABLE_IGEOM" = "xno"; then
-    AC_MSG_ERROR("iRel support requires iGeom support.")
-  fi
-fi
+ITAPS_API( [irel],   [IREL],   [iRel],  [$ITAPS_DEFAULT] )
+ITAPS_API( [imesh],  [IMESH],  [iMesh], [$ENABLE_IREL]   )
+ITAPS_API( [igeom],  [IGEOM],  [iGeom], [$ENABLE_IREL]   )
 
 #------------------------------------------------------------------------------
 # The End

@@ -10,6 +10,30 @@ else
   MPI_INCS = 
 endif
 
+if ENABLE_IMESH
+  IMESH_SRCS = $(SRC_MESH_DIR)/MsqIMesh.cpp
+  IMESH_HDRS = $(SRC_MESH_DIR)/MsqIMesh.hpp
+else
+  IMESH_SRCS = 
+  IMESH_HDRS = 
+endif
+
+if ENABLE_IGEOM
+  IGEOM_SRCS = $(SRC_MESH_DIR)/MsqIGeom.cpp
+  IGEOM_HDRS = $(SRC_MESH_DIR)/MsqIGeom.hpp
+else
+  IGEOM_SRCS = 
+  IGEOM_HDRS = 
+endif
+
+if ENABLE_IREL
+  IREL_SRCS = $(SRC_MESH_DIR)/MsqIRel.cpp
+  IREL_HDRS = $(SRC_MESH_DIR)/MsqIRel.hpp
+else
+  IREL_SRCS = 
+  IREL_HDRS = 
+endif
+
 MSQ_SRCS += \
 	$(SRC_MESH_DIR)/ArrayMesh.cpp \
 	$(SRC_MESH_DIR)/ElementPatches.cpp \
@@ -23,8 +47,6 @@ MSQ_SRCS += \
 	$(SRC_MESH_DIR)/MeshWriter.cpp \
 	$(SRC_MESH_DIR)/MsqIBase.cpp \
 	$(SRC_MESH_DIR)/MsqIBase.hpp \
-	$(SRC_MESH_DIR)/MsqIGeom.cpp \
-	$(SRC_MESH_DIR)/MsqIMesh.cpp \
 	$(SRC_MESH_DIR)/MsqMeshEntity.cpp \
 	$(SRC_MESH_DIR)/MsqVertex.cpp \
 	$(SRC_MESH_DIR)/ParallelMeshImpl.cpp \
@@ -33,7 +55,10 @@ MSQ_SRCS += \
 	$(SRC_MESH_DIR)/TagVertexMesh.cpp \
 	$(SRC_MESH_DIR)/TopologyInfo.cpp \
 	$(SRC_MESH_DIR)/VertexPatches.cpp \
-        $(MPI_SRCS)
+	$(MPI_SRCS) \
+	$(IMESH_SRCS) \
+	$(IGEOM_SRCS) \
+	$(IREL_SRCS) 
 
 MSQ_HDRS += \
 	$(SRC_MESH_DIR)/ArrayMesh.hpp \
@@ -48,8 +73,6 @@ MSQ_HDRS += \
 	$(SRC_MESH_DIR)/MeshImplTags.hpp \
 	$(SRC_MESH_DIR)/MeshWriter.hpp \
 	$(SRC_MESH_DIR)/MsqFreeVertexIndexIterator.hpp \
-	$(SRC_MESH_DIR)/MsqIGeom.hpp \
-	$(SRC_MESH_DIR)/MsqIMesh.hpp \
 	$(SRC_MESH_DIR)/MsqMeshEntity.hpp \
 	$(SRC_MESH_DIR)/MsqVertex.hpp \
 	$(SRC_MESH_DIR)/ParallelMeshImpl.hpp \
@@ -59,4 +82,7 @@ MSQ_HDRS += \
 	$(SRC_MESH_DIR)/TagVertexMesh.hpp \
 	$(SRC_MESH_DIR)/TopologyInfo.hpp \
 	$(SRC_MESH_DIR)/VertexPatches.hpp \
-	$(MPI_INCS)
+	$(MPI_INCS) \
+	$(IMESH_HDRS) \
+	$(IGEOM_HDRS) \
+	$(IREL_HDRS) 
