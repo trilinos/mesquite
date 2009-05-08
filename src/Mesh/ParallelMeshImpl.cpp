@@ -145,16 +145,6 @@ void ParallelMeshImpl::vertices_set_processor_id(const VertexHandle vert_array[]
   MSQ_CHKERR(err); 
 }
 
-void ParallelMeshImpl::set_parallel_helper(ParallelHelper* helper) {
-  this->helper = helper;
-}
-
-ParallelHelper* ParallelMeshImpl::get_parallel_helper() {
-  return helper;
-}
-
-
-
 int ParallelMeshImpl::get_geometric_dimension(MsqError& err)
 {
   return myMesh->get_geometric_dimension(err);

@@ -51,35 +51,40 @@ fi
 #    IFACE_DEFS=empty/path to defs file
 #    IFACE_LIBS=empty/ld args for linking implementation
 # Sets AUTOMAKE conditionals for ENABLE_IFACE and WITH_IFACE_IMPL
+# Sets the folling shell variables:
+#    IFACE_ARG=yes/no/directory
 ##############################################################################
 
 AC_DEFUN([ITAPS_API], [
 
 AC_ARG_ENABLE( [$1], 
 [AC_HELP_STRING([--disable-$1],
-  [Do not build support for ITAPS $1 interface.])],
+  [Do not build support for ITAPS $1 interface.])
 AC_HELP_STRING([--enable-$1=DIR],
-  [Build support for ITAPS $1 interface.  Optionally specify implementation.])
-  [ENABLE_$2=$enableval],[ENABLE_$2=yes])
+  [Build support for ITAPS $1 interface.  Optionally specify implementation.])],
+  [$2_ARG=$enableval],[$2_ARG=$4])
 
-WITH_$2_IMPL=no
 $2_DEFS=
 $2_LIBS=
-if test "xno" != "x$ENABLE_$2"; then
-  if test "xyes" != "x$ENABLE_$2"; then
-    for subdir in . lib include; do
-      if test -f "$ENABLE_$2/$subdir/$3-Defs.inc"; then
-        $2_DEFS=$ENABLE_$2/$subdir/$3-Defs.inc
-        break
-      fi
-    done
-    if test "x" = "x${$2_DEFS}"; then
-      AC_MSG_ERROR("$3-Defs.inc not found in $ENABLE_$2")
-    else
-      SNL_MAKE_INC_VAR( [${$2_DEFS}], [$2_LIBS], [$2_LIBS="$make_val"] )
-      WITH_$2_IMPL=yes
+if test "xno" = "x${$2_ARG}"; then
+  ENABLE_$2=no
+  WITH_$2_IMPL=no
+elif test "xyes" = "x${$2_ARG}"; then
+  ENABLE_$2=yes
+  WITH_$2_IMPL=no
+else
+  ENABLE_$2=yes
+  WITH_$2_IMPL=yes
+  for subdir in . lib include; do
+    if test -f "${$2_ARG}/$subdir/$3-Defs.inc"; then
+      $2_DEFS=${$2_ARG}/$subdir/$3-Defs.inc
+      break
     fi
-    ENABLE_$2=yes
+  done
+  if test "x" = "x${$2_DEFS}"; then
+    AC_MSG_ERROR("$3-Defs.inc not found in ${$2_ARG}")
+  else
+    SNL_MAKE_INC_VAR( [${$2_DEFS}], [$2_LIBS], [$2_LIBS="$make_val"] )
   fi
 fi
 

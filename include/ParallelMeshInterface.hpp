@@ -47,7 +47,7 @@ namespace MESQUITE_NS
    *  implementations of the pure virtual methods in both Mesquite::Mesh as
    *  well as those defined here.
    */
-  class MESQUITE_EXPORT ParallelMesh : public Mesh
+  class MESQUITE_EXPORT ParallelMesh : virtual public Mesh
   {
   public:
 
@@ -65,11 +65,20 @@ namespace MESQUITE_NS
 					     size_t num_vtx,
 					     MsqError& err) = 0;
 
+    /*! Set parallel helper
+     */
+    virtual void set_parallel_helper(ParallelHelper* helper) {
+      this->helper = helper;
+    }
+
     /*! Get parallel helper
      */
-    virtual ParallelHelper* get_parallel_helper() = 0;
+    virtual ParallelHelper* get_parallel_helper() {
+      return helper;
+    }
 
   protected:
+    ParallelHelper* helper;
       //! Don't allow a ParallelMesh to be deleted directly.
     virtual ~ParallelMesh()
       {}

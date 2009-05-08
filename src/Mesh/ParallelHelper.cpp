@@ -14,29 +14,29 @@
 
 namespace MESQUITE_NS {
 
-static void vertex_hash_insert(VertexIdHash* hash, int id, int proc_id, int value)
-{
-  VertexIdHashKey vid;
-  vid.id = id;
-  vid.proc_id = proc_id;
-  hash->insert(VertexIdHash::value_type(vid, value));
-}
-
-static int vertex_hash_find(VertexIdHash* hash, int id, int proc_id)
-{
-  VertexIdHashKey vid;
-  vid.id = id;
-  vid.proc_id = proc_id;
-  VertexIdHash::iterator hash_element = hash->find(vid);
-  if (hash_element == hash->end())
-  {
-    return 0;
-  }
-  else
-  {
-    return (*hash_element).second;
-  }
-}
+    static void vertex_map_insert(VertexIdMap* map, int id, int proc_id, int value)
+    {
+        VertexIdMapKey vid;
+        vid.id = id;
+        vid.proc_id = proc_id;
+        map->insert(VertexIdMap::value_type(vid, value));
+    }
+    
+    static int vertex_map_find(VertexIdMap* map, int id, int proc_id)
+    {
+        VertexIdMapKey vid;
+        vid.id = id;
+        vid.proc_id = proc_id;
+        VertexIdMap::iterator map_element = map->find(vid);
+        if (map_element == map->end())
+        {
+            return 0;
+        }
+        else
+        {
+            return (*map_element).second;
+        }
+    }
 
 static void my_quicksort(int* a, int i, int j)
 {
@@ -64,6 +64,7 @@ static void my_quicksort(int* a, int i, int j)
   if (i<in_j) my_quicksort(a, i, in_j);
 }
 
+/*
 static int hash6432shift(unsigned long long key)
 {
   key = (~key) + (key << 18); // key = (key << 18) - key - 1;
@@ -74,6 +75,7 @@ static int hash6432shift(unsigned long long key)
   key = key ^ (key >> 22);
   return (int) key;
 }
+*/
 
 static unsigned long long hash64shift(unsigned long long key)
 {
@@ -187,7 +189,7 @@ ParallelHelperImpl::ParallelHelperImpl()
   exportVtxLIDs = 0;
   exportProc = 0;
   in_independent_set = 0;
-  vid_hash = 0;
+  vid_map = 0;
   neighbourProcSend = 0;
   neighbourProcRecv = 0;
   neighbourProcSendRemain = 0;
@@ -296,7 +298,7 @@ bool ParallelHelperImpl::smoothing_init()
     /* count how many vertices of the current element are on/off a different processor */
     vtx_off_proc = 0;
     vtx_on_proc = 0;
-    for (j=(*vtx_offsets)[i];j<(*vtx_offsets)[i+1];j++) {
+    for (j=(*vtx_offsets)[i];j<(int)((*vtx_offsets)[i+1]);j++) {
 	incident_vtx = adj_vertices_lid[j];
 	/* obviously the vertex only counts if it is not app_fixed */
 	if (!app_fixed[incident_vtx]) {
@@ -314,7 +316,7 @@ bool ParallelHelperImpl::smoothing_init()
 	/* collect stats */
 	//	smooth_stats.num_part_bndy_elem++;
 	/* mark the vertices */
-	for (j=(*vtx_offsets)[i];j<(*vtx_offsets)[i+1];j++) {
+	for (j=(*vtx_offsets)[i];j<(int)((*vtx_offsets)[i+1]);j++) {
 	  incident_vtx = adj_vertices_lid[j];
 	  /* obviously the vertex does not need to be marked if it was already marked or if it is app_fixed*/
 	  if (vtx_in_partition_boundary[incident_vtx] <= 0 && app_fixed[incident_vtx] == 0) {
@@ -334,7 +336,7 @@ bool ParallelHelperImpl::smoothing_init()
     }
     else if (vtx_off_proc > 0) {
       /* mark the vertices as boundary-1 if the element has only off-processor vertices */
-	for (j=(*vtx_offsets)[i];j<(*vtx_offsets)[i+1];j++) {
+	for (j=(*vtx_offsets)[i];j<(int)((*vtx_offsets)[i+1]);j++) {
 	  incident_vtx = adj_vertices_lid[j];
 	  /* obviously the vertex is not marked if it was already marked or if it is app_fixed*/
 	  if (vtx_in_partition_boundary[incident_vtx] == 0 && app_fixed[incident_vtx] == 0) {
@@ -389,7 +391,7 @@ bool ParallelHelperImpl::smoothing_init()
     }
   }
 
-  vid_hash = new VertexIdHash;
+  vid_map = new VertexIdMap;
 
   /* then we map the ghost vertices that will be smoothed on other processors */
   for (i=0;i<num_vertex;i++) {
@@ -398,8 +400,8 @@ bool ParallelHelperImpl::smoothing_init()
 	part_proc_owner[j] = proc_owner[i];  assert(proc_owner[i] != rank);
 	part_gid[j] = gid[i];
 	vtx_partition_boundary_map_inverse[i] = j;
-	/* only insert those vertices in the hash that are smoothed on other processors */
-	vertex_hash_insert(vid_hash, part_gid[j], part_proc_owner[j], j);
+	/* only insert those vertices in the map that are smoothed on other processors */
+	vertex_map_insert(vid_map, part_gid[j], part_proc_owner[j], j);
 	j++;
     }
   }
@@ -488,9 +490,9 @@ bool ParallelHelperImpl::smoothing_init()
 
   for (i=0;i<num_vtx_partition_boundary_local;i++) {
     /* loop over the elements surrounding that vertex */
-    for (j=(*elem_offsets)[i];j<(*elem_offsets)[i+1];j++) {
+    for (j=(*elem_offsets)[i];j<(int)((*elem_offsets)[i+1]);j++) {
       /* loop over the neighbors of the considered vertex (i.e. the vertices of these element) */
-      for (k=(*adj_vtx_offsets)[j];k<(*adj_vtx_offsets)[j+1];k++) {
+      for (k=(*adj_vtx_offsets)[j];k<(int)((*adj_vtx_offsets)[j+1]);k++) {
 	/* get the next neighbour */
 	incident_vtx = adj_adj_vertices_lid[k];
 	/* if this neighbour is a vertex that is smoothed on a different processor */
@@ -676,7 +678,7 @@ void ParallelHelperImpl::compute_first_independent_set(msq_std::vector<Mesh::Ver
 
   // fix the ghost vertices that are unused
   if (unused_ghost_vertices) {
-    for (i=0;i<unused_ghost_vertices->size();i++) {
+    for (i=0;i<(int)(unused_ghost_vertices->size());i++) {
       fixed_vertices.push_back((*unused_ghost_vertices)[i]);
     }
   }
@@ -790,7 +792,6 @@ void ParallelHelperImpl::communicate_next_independent_set()
 bool ParallelHelperImpl::smoothing_close()
 {
   int i;
-
   if (vertices) delete vertices; vertices = 0;
   if (vtx_in_partition_boundary) delete [] vtx_in_partition_boundary; vtx_in_partition_boundary = 0;
   if (part_vertices) delete part_vertices; part_vertices = 0;
@@ -803,14 +804,16 @@ bool ParallelHelperImpl::smoothing_close()
   if (exportVtxLIDs) delete [] exportVtxLIDs; exportVtxLIDs = 0;
   if (exportProc) delete [] exportProc; exportProc = 0;
   if (in_independent_set) delete [] in_independent_set; in_independent_set = 0;
-  if (vid_hash) delete vid_hash; vid_hash = 0;
+  if (vid_map) delete vid_map; vid_map = 0;
   if (neighbourProcSend) delete [] neighbourProcSend; neighbourProcSend = 0;
   if (neighbourProcRecv) delete [] neighbourProcRecv; neighbourProcRecv = 0;
   if (neighbourProcSendRemain) delete [] neighbourProcSendRemain; neighbourProcSendRemain = 0;
   if (neighbourProcRecvRemain) delete [] neighbourProcRecvRemain; neighbourProcRecvRemain = 0;
   if (vtx_off_proc_list_size) delete [] vtx_off_proc_list_size; vtx_off_proc_list_size = 0;
-  for (i = 0; i < num_vtx_partition_boundary_local; i++) free(vtx_off_proc_list[i]);
-  if (vtx_off_proc_list) delete [] vtx_off_proc_list; vtx_off_proc_list = 0;
+  if (vtx_off_proc_list) {
+    for (i = 0; i < num_vtx_partition_boundary_local; i++) free(vtx_off_proc_list[i]);
+    delete [] vtx_off_proc_list; vtx_off_proc_list = 0;
+  }
   if (neighbourProc) free(neighbourProc); neighbourProc = 0;
 
   return true;
@@ -980,7 +983,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb()
     MPI_Waitany(num_neighbourProc, requests_recv, &k, &status[0]);
     /* unpack all vertices */
     for (i = 0; i < numVtxPerProcRecv[k]; i++) {
-      local_id = vertex_hash_find(vid_hash,(int)(packed_vertices_import[k][i].glob_id), neighbourProc[k]);
+      local_id = vertex_map_find(vid_map,(int)(packed_vertices_import[k][i].glob_id), neighbourProc[k]);
       if (local_id) {
 	Mesquite::Vector3D coordinates;
 	coordinates.set(packed_vertices_import[k][i].x, packed_vertices_import[k][i].y, packed_vertices_import[k][i].z);
@@ -1177,7 +1180,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb_no_all()
     MPI_Waitany(num_neighbourProc, requests_recv, &k, &status[0]);
     /* unpack all vertices */
     for (i = 0; i < numVtxPerProcRecv[k]; i++) {
-      local_id = vertex_hash_find(vid_hash,(int)(packed_vertices_import[k][i].glob_id), neighbourProc[k]);
+      local_id = vertex_map_find(vid_map,(int)(packed_vertices_import[k][i].glob_id), neighbourProc[k]);
       if (local_id) {
         Mesquite::Vector3D coordinates;
         coordinates.set(packed_vertices_import[k][i].x, packed_vertices_import[k][i].y, packed_vertices_import[k][i].z);
@@ -1382,7 +1385,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb()
     MPI_Get_count(&status, MPI_INT, &count);    
     if (0) printf("[%d]i%d Received %d (%d) vertices from proc %d (%d)\n",rank,iteration,numVtxPerProcRecvRecv[k],count,neighbourProcRecv[k],proc); fflush(NULL);
     for (i = 0; i < numVtxPerProcRecvRecv[k]; i++) {
-      local_id = vertex_hash_find(vid_hash,(int)(packed_vertices_import[k][i].glob_id), neighbourProcRecv[k]);
+      local_id = vertex_map_find(vid_map,(int)(packed_vertices_import[k][i].glob_id), neighbourProcRecv[k]);
       if (local_id) {
 	Mesquite::Vector3D coordinates;
 	coordinates.set(packed_vertices_import[k][i].x, packed_vertices_import[k][i].y, packed_vertices_import[k][i].z);
@@ -1597,7 +1600,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb_no_all()
     MPI_Get_count(&status, MPI_INT, &count);    
     if (0) printf("[%d]i%d Received %d (%d) vertices from proc %d (%d)\n",rank,iteration,numVtxPerProcRecvRecv[k],count,neighbourProcRecv[k],proc); fflush(NULL);
     for (i = 0; i < numVtxPerProcRecvRecv[k]; i++) {
-      local_id = vertex_hash_find(vid_hash,(int)(packed_vertices_import[k][i].glob_id), neighbourProcRecv[k]);
+      local_id = vertex_map_find(vid_map,(int)(packed_vertices_import[k][i].glob_id), neighbourProcRecv[k]);
       if (local_id) {
 	Mesquite::Vector3D coordinates;
 	coordinates.set(packed_vertices_import[k][i].x, packed_vertices_import[k][i].y, packed_vertices_import[k][i].z);
@@ -1769,7 +1772,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_b()
       /* update the received vertices in our boundary mesh */
       for (i = 0; i < num; i++) {
 	/*	printf("[%d]i%d updating vertex %d with global_id %d\n",rank,iteration,i,(int)(vertex_pack[i].glob_id)); fflush(NULL); */
-	local_id = vertex_hash_find(vid_hash,(int)(vertex_pack[i].glob_id), proc);
+	local_id = vertex_map_find(vid_map,(int)(vertex_pack[i].glob_id), proc);
 	if (local_id)
 	{
 	  Mesquite::Vector3D coordinates;
@@ -1952,7 +1955,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_b_no_all()
       /* update the received vertices in our boundary mesh */
       for (i = 0; i < num; i++) {
 	/*	printf("[%d]i%d updating vertex %d with global_id %d\n",rank,iteration,i,(int)(vertex_pack[i].glob_id)); fflush(NULL); */
-	local_id = vertex_hash_find(vid_hash,(int)(vertex_pack[i].glob_id), proc);
+	local_id = vertex_map_find(vid_map,(int)(vertex_pack[i].glob_id), proc);
 	if (local_id)
 	{
 	  Mesquite::Vector3D coordinates;

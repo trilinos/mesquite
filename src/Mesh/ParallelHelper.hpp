@@ -41,33 +41,29 @@
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 #include <vector.h>
-#include <hash_map.h>
+#include <map.h>
 #else
 #include <vector>
-#include <hash_map.h>
+#include <map>
 #endif
 
 #include <mpi.h>
 
 namespace MESQUITE_NS
 {
-  typedef struct VertexIdHashKey {
+  typedef struct VertexIdMapKey {
     int id;
     int proc_id;
-  } VertexIdHashKey;
+  } VertexIdMapKey;
   
-  struct VertexIdHashFunc {
-    size_t operator()( const VertexIdHashKey& that ) const
+  struct VertexIdLessFunc {
+    bool operator()( const VertexIdMapKey &that1, const VertexIdMapKey& that2 ) const
     {
-      return hash<int>()( that.id ) ^ hash<int>()( that.proc_id );
-    }
-    bool operator()( const VertexIdHashKey &that1, const VertexIdHashKey& that2 ) const
-    {
-      return (that1.id == that2.id && that1.proc_id == that2.proc_id);
+        return ( (that1.proc_id < that2.proc_id) || ((that1.proc_id==that2.proc_id)&&(that1.id<that2.id)) );
     }
   };
   
-  typedef hash_map<VertexIdHashKey,int,VertexIdHashFunc,VertexIdHashFunc> VertexIdHash;
+    typedef std::map<VertexIdMapKey,int,VertexIdLessFunc> VertexIdMap;
 
   class ParallelHelperImpl : public ParallelHelper
   {
@@ -137,7 +133,7 @@ namespace MESQUITE_NS
     int* exportVtxLIDs;
     int* exportProc;
     bool* in_independent_set;
-    VertexIdHash* vid_hash;
+    VertexIdMap* vid_map;
     int total_num_vertices_to_smooth;
     int total_num_vertices_to_recv;
     int* neighbourProcSend;

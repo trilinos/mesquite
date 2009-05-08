@@ -644,20 +644,23 @@ if test "x$ITAPS_DEFAULT" != "xno"; then
     AC_MSG_ERROR([Invalid argument to --disable-itaps])
   fi
 fi
-ITAPS_API( [imesh], [IMESH], [iMesh], [$ITAPS_DEFAULT] )
-ITAPS_API( [igeom], [IGEOM], [iGeom], [$ITAPS_DEFAULT] )
-IREL_DEFAULT=$ITAPS_DEFAULT
-if test "xno" = "x$ENABLE_IMESH"; then IREL_DEFAULT=no; fi
-if test "xno" = "x$ENABLE_IGEOM"; then IREL_DEFAULT=no; fi
-ITAPS_API( [irel], [IREL], [iRel], [$IREL_DEFAULT] )
-if test "x$ENABLE_IREL" = "xyes"; then
-  if test "x$ENABLE_IMESH" = "xno"; then
-    AC_MSG_ERROR("iRel support requires iMesh support.")
-  fi
-  if test "x$ENABLE_IGEOM" = "xno"; then
-    AC_MSG_ERROR("iRel support requires iGeom support.")
-  fi
+ITAPS_API( [irel],   [IREL],   [iRel],  [$ITAPS_DEFAULT] )
+ITAPS_API( [imesh],  [IMESH],  [iMesh], [$ENABLE_IREL]   )
+ITAPS_API( [igeom],  [IGEOM],  [iGeom], [$ENABLE_IREL]   )
+if test "xyes" != "x$WITH_MPI"; then
+  HAVE_IMESHP=no
+elif test "xyes" = "x$WITH_IMESH_IMPL"; then
+  old_CPPFLAGS="$CPPFLAGS"
+  SNL_MAKE_INC_VAR( [$IMESH_DEFS], [IMESH_INCLUDEDIR], [CPPFLAGS="$CPPFLAGS $make_val"] )
+  AC_CHECK_HEADER( [iMeshP.h], [HAVE_IMESHP=yes], [HAVE_IMESHP=no] )
+  CPPFLAGS="$old_CPPFLAGS"
+else
+  HAVE_IMESHP=no
 fi
+AC_ARG_ENABLE([imeshp],
+              [AC_HELP_STRING([--enable-imeshp],[Build support for itaps parallel mesh API])],
+              [ENABLE_IMESHP=$enableval],[ENABLE_IMESHP=$HAVE_IMESHP])
+AM_CONDITIONAL([ENABLE_IMESHP],[test "xyes" = "x$ENABLE_IMESHP"])
 
 #------------------------------------------------------------------------------
 # The End

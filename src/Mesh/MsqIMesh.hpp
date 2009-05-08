@@ -60,7 +60,7 @@ const char* const VERTEX_SLAVED_TAG_NAME = "MesquiteVertexSlaved";
  * Adpater for interfacing Mesquite with an application that provides
  * the ITAPS iMesh interface for interacting with mesh data.
  */
-class MsqIMesh : public Mesquite::Mesh
+class MsqIMesh : virtual public Mesquite::Mesh
 {
 public:
 //********* Functions that are NOT inherited ************
@@ -324,6 +324,9 @@ public:
                                 msq_std::vector<size_t>& offsets,
                                 MsqError& err );
 
+    /** The IMesh instance */
+    iMesh_Instance meshInstance;
+
   private:
       /** \brief Set tag values */
     void tag_set_data ( TagHandle handle,
@@ -338,9 +341,6 @@ public:
                        const EntityHandle* handle_array,
                        void* tag_data,
                        MsqError& err );
-    
-    /** The IMesh instance */
-    iMesh_Instance meshInstance;
     
     /** Have mesh */
     bool haveMesh;

@@ -68,8 +68,6 @@ namespace MESQUITE_NS
 				   size_t num_vtx,
 				   MsqError& err);
     
-    void set_parallel_helper(ParallelHelper* helper);
-
 //**************** Inherited Methods from ParallelMesh ******************************
 
     /*! Get global ids for given vertices.
@@ -86,10 +84,6 @@ namespace MESQUITE_NS
                                            size_t num_vtx,
                                            MsqError& err);
      
-    /*! Get parallel helper
-     */
-    virtual ParallelHelper* get_parallel_helper();
-
 //**************** Inherited Methods from Mesh ******************************
     
       // Returns whether this mesh lies in a 2D or 3D coordinate system.
@@ -348,7 +342,6 @@ namespace MESQUITE_NS
     Mesh* myMesh;
     void* gid_tag;
     void* pid_tag;
-    ParallelHelper* helper;
   };
 }
 
