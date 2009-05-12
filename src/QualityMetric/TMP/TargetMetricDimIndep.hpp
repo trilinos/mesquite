@@ -46,10 +46,11 @@ do_finite_difference( int r, int c, TargetMetric* metric,
          const MsqMatrix<TargetMetric::MATRIX_DIM, TargetMetric::MATRIX_DIM>& W,
          double value, MsqError& err )
 {
+  const double INITAL_STEP = msq_std::max( 1e-6, fabs(1e-9*value) );
   const double init = A(r,c);
   bool valid;
   double diff_value;
-  for (double step = 1e-6; step > std::numeric_limits<double>::epsilon(); step *= 0.1) {
+  for (double step = INITAL_STEP; step > std::numeric_limits<double>::epsilon(); step *= 0.1) {
     A(r,c) = init + step;
     valid = metric->evaluate( A, W, diff_value, err ); MSQ_ERRZERO(err);
     if (valid)
@@ -58,7 +59,7 @@ do_finite_difference( int r, int c, TargetMetric* metric,
   
     // If we couldn't find a valid step, try stepping in the other
     // direciton
-  for (double step = 1e-6; step > std::numeric_limits<double>::epsilon(); step *= 0.1) {
+  for (double step = INITAL_STEP; step > std::numeric_limits<double>::epsilon(); step *= 0.1) {
     A(r,c) = init - step;
     valid = metric->evaluate( A, W, diff_value, err ); MSQ_ERRZERO(err);
     if (valid)
@@ -94,13 +95,14 @@ do_numerical_hessian( TargetMetric* metric,
     return false;
   
     // do finite difference for each term of A
+  const double INITAL_STEP = msq_std::max( 1e-6, fabs(1e-9*value) );
   double value2;
   MsqMatrix<dim,dim> grad2;
   for (int r = 0; r < dim; ++r) {  // for each row of A
     for (int c = 0; c < dim; ++c) {  // for each column of A
       const double in_val = A(r,c);
       double step;
-      for (step = 1e-6; step > std::numeric_limits<double>::epsilon(); step *= 0.1) {
+      for (step = INITAL_STEP; step > std::numeric_limits<double>::epsilon(); step *= 0.1) {
         A(r,c) = in_val + step;
         valid = metric->evaluate_with_grad( A, W, value2, grad2, err );  MSQ_ERRZERO(err);
         if (valid)
@@ -109,7 +111,7 @@ do_numerical_hessian( TargetMetric* metric,
       
         // if no valid step size, try step in other direction
       if (!valid) {
-        for (step = -1e-6; step < -std::numeric_limits<double>::epsilon(); step *= 0.1) {
+        for (step = -INITAL_STEP; step < -std::numeric_limits<double>::epsilon(); step *= 0.1) {
           A(r,c) = in_val + step;
           valid = metric->evaluate_with_grad( A, W, value2, grad2, err );  MSQ_ERRZERO(err);
           if (valid)
@@ -133,11 +135,11 @@ do_numerical_hessian( TargetMetric* metric,
       grad2 /= step;
       for (int b = 0; b < r; ++b) {
         const int idx = dim*b - b*(b+1)/2 + r;
-        Hess[idx].set_column( c, Hess[idx].column(c) + transpose( grad2.row(b) ) );
+        Hess[idx].add_column( c, transpose( grad2.row(b) ) );
       }
       for (int b = r; b < dim; ++b) {
         const int idx = dim*r - r*(r+1)/2 + b;
-        Hess[idx].set_row( c, Hess[idx].row(c) + grad2.row(b) );
+        Hess[idx].add_row( c, grad2.row(b) );
       }
     } // for (c)
   } // for (r)
