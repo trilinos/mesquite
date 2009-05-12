@@ -6,11 +6,13 @@ MSQ_SRCS += \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/InverseMeanRatio3D.cpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/TargetMetric3D.cpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/TSquared3D.cpp \
+	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSize.cpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSizeOrient.cpp 
 
 MSQ_HDRS += \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/InverseMeanRatio3D.hpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/TargetMetric3D.hpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/TSquared3D.hpp \
+	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSize.hpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSizeOrient.hpp 
 

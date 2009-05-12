@@ -211,6 +211,17 @@ void Target3DTest<Metric>::compare_anaytic_and_numeric_grads()
   bool valid;
   double nval, aval;
   
+  MsqMatrix<3,3> D(I);
+  D(0,0) += 1e-5;
+  valid = metric.TargetMetric3D::evaluate_with_grad( D, I, nval, num, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  valid = metric.evaluate_with_grad( D, I, aval, ana, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( nval, aval, EPS_VAL );
+  ASSERT_MATRICES_EQUAL( num, ana, EPS_GRAD );
+  
   valid = metric.TargetMetric3D::evaluate_with_grad( I, A, nval, num, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
@@ -286,6 +297,21 @@ void Target3DTest<Metric>::compare_anaytic_and_numeric_hess()
   bool valid;
   double val_num, val_ana;
   
+  valid = metric.TargetMetric3D::evaluate_with_hess( I, I, val_num, dmdA_num, d2mdA2_num, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  valid = metric.evaluate_with_hess( I, I, val_ana, dmdA_ana, d2mdA2_ana, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
+  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, EPS_GRAD );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], EPS_HESS );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], EPS_HESS );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], EPS_HESS );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[3], d2mdA2_ana[3], EPS_HESS );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[4], d2mdA2_ana[4], EPS_HESS );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[5], d2mdA2_ana[5], EPS_HESS );
+  
   valid = metric.TargetMetric3D::evaluate_with_hess( I, A, val_num, dmdA_num, d2mdA2_num, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
@@ -315,11 +341,11 @@ void Target3DTest<Metric>::compare_anaytic_and_numeric_hess()
   ASSERT_MATRICES_EQUAL( d2mdA2_num[3], d2mdA2_ana[3], EPS_HESS );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[4], d2mdA2_ana[4], EPS_HESS );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[5], d2mdA2_ana[5], EPS_HESS );
-  
-  valid = metric.TargetMetric3D::evaluate_with_hess( I, B, val_num, dmdA_num, d2mdA2_num, err );
+ 
+  valid = metric.TargetMetric3D::evaluate_with_hess( B, I, val_num, dmdA_num, d2mdA2_num, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
-  valid = metric.evaluate_with_hess( I, B, val_ana, dmdA_ana, d2mdA2_ana, err );
+  valid = metric.evaluate_with_hess( B, I, val_ana, dmdA_ana, d2mdA2_ana, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
@@ -330,11 +356,11 @@ void Target3DTest<Metric>::compare_anaytic_and_numeric_hess()
   ASSERT_MATRICES_EQUAL( d2mdA2_num[3], d2mdA2_ana[3], EPS_HESS );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[4], d2mdA2_ana[4], EPS_HESS );
   ASSERT_MATRICES_EQUAL( d2mdA2_num[5], d2mdA2_ana[5], EPS_HESS );
- 
-  valid = metric.TargetMetric3D::evaluate_with_hess( B, I, val_num, dmdA_num, d2mdA2_num, err );
+  
+  valid = metric.TargetMetric3D::evaluate_with_hess( I, B, val_num, dmdA_num, d2mdA2_num, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
-  valid = metric.evaluate_with_hess( B, I, val_ana, dmdA_ana, d2mdA2_ana, err );
+  valid = metric.evaluate_with_hess( I, B, val_ana, dmdA_ana, d2mdA2_ana, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
@@ -775,6 +801,7 @@ void TargetMetric3DTest::test_numerical_hessian()
 
 #include "TSquared3D.hpp"
 #include "Target3DShapeSizeOrient.hpp"
+#include "Target3DShapeSize.hpp"
 #include "InverseMeanRatio3D.hpp"
 
 #define REGISTER_TARGET3D_TEST( METRIC, SIZE_INVAR, ORIENT_INVAR, BARRIER, IDEAL_VAL ) \
@@ -839,6 +866,7 @@ CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric3DTest, "Target3DTest" );
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric3DTest, "TargetMetric3DTest" );
 
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeOrient, false, false, false, 0.0 );
+REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSize, false, true, false, 1.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( InverseMeanRatio3D, true, true, true, 1.0 );
 
 
