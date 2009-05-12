@@ -97,6 +97,7 @@ msq_test_SOURCES = msq_test_main.cpp \
 	StdDevTemplateTest.cpp \
 	SymMatrix3DTest.cpp \
 	TagVertexMeshTest.cpp \
+	Target2DSurfOrientTest.cpp \
 	Target2DTest.cpp \
 	Target3DTest.cpp \
 	TargetReadWriteTest.cpp \
@@ -104,6 +105,7 @@ msq_test_SOURCES = msq_test_main.cpp \
 	TetLagrangeShapeTest.cpp \
 	TriLagrangeShapeTest.cpp \
 	TopologyInfoTest.cpp \
+        TMPDerivsTest.cpp \
 	UntangleBetaTest.cpp \
 	Vector3DTest.cpp \
 	VertexConditionNumberTest.cpp \
@@ -111,7 +113,6 @@ msq_test_SOURCES = msq_test_main.cpp \
 	VtkTest.cpp \
 	XYRectangleTest.cpp \
 	BCDTest.cpp \
-	Target2DSurfOrientTest.cpp \
         $(IMESH_TEST_SRC) \
         $(EXODUS_TEST_SRC)
 
