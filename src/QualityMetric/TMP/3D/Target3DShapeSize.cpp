@@ -50,7 +50,7 @@ bool Target3DShapeSize::evaluate( const MsqMatrix<3,3>& A,
   double d = det(T);
   double d1 = d-1;
   double den = 3 * MSQ_SQRT_THREE * d;
-  if (fabs(den) < 1e-12)
+  if (d < 1e-12)
     return false;
   result = (f*f*f)/den + mGamma * d1 * d1;
   return true;
