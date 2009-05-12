@@ -30,13 +30,59 @@ with entries
 \left( {\bf a} \otimes {\bf z} \right)_{ij} = a_i \, z_j
 \end{eqnarray}
 
-\noindent Let $A = [{\bf a}_1,...,{\bf a}_n]$ and 
-$Z = [{\bf z}_1,...,{\bf z}_n]$ be two $n \times n$ matrices.  Define the 
+\noindent Let $A^t = [{\bf a}_1,...,{\bf a}_n]$ and 
+$Z^t = [{\bf z}_1,...,{\bf z}_n]$ be two $n \times n$ matrices,
+with ${\bf a}_i$ and ${\bf z}_j$ being the $i^{th}$ and $j^{th}$ 
+row vectors of $A$ and $Z$, respectively. Define the 
 outer product $A \otimes Z$ of the two matrices to be an $n^2 \times n^2$ 
 matrix with sub-matrices
 \begin{eqnarray}
 \label{matrixouter}
 \left( A \otimes Z \right)_{ij} = {\bf a}_i \otimes {\bf z}_j
+\end{eqnarray}
+
+\noindent The previous can be expressed as
+\begin{eqnarray}
+A \otimes Z & = &
+\left[ \begin{array}{ccc|c|ccc}
+A_{11} Z_{11} &
+\ldots &
+A_{11} Z_{1n} &
+&
+A_{11} Z_{n1} &
+\ldots &
+A_{11} Z_{nn} \\
+\vdots & \ddots & \vdots &
+\ldots &
+\vdots & \ddots & \vdots \\
+A_{1n} Z_{11} &
+\ldots &
+A_{1n} Z_{1n} &
+&
+A_{1n} Z_{n1} &
+\ldots &
+A_{1n} Z_{nn} \\
+\hline
+& \vdots & & \ddots & & \vdots \\
+\hline
+A_{n1} Z_{11} &
+\ldots &
+A_{n1} Z_{1n} &
+&
+A_{n1} Z_{n1} &
+\ldots &
+A_{n1} Z_{nn} \\
+\vdots & \ddots & \vdots &
+\ldots &
+\vdots & \ddots & \vdots \\
+A_{nn} Z_{11} &
+\ldots &
+A_{nn} Z_{1n} &
+&
+A_{nn} Z_{n1} &
+\ldots &
+A_{nn} Z_{nn} 
+\end{array} \right] \nonumber \label{matrix-outer} \\
 \end{eqnarray}
 
 \section{First Derivatives}
@@ -135,58 +181,58 @@ Thus the symmetric Hessian of $f(T)$, with the elements of $T$ occuring in row-m
 \end{array} \right] \nonumber \label{2nd-derv} \\
 \end{eqnarray}
 
-\noindent The second derivatives can also be expressed in terms of 
-matrix outer products and operators. For $T$ and $Z$ in $M_n$, define the 
-derivative
-\begin{eqnarray}
-\frac{\partial Z}{\partial T} = \left( \frac{\partial}{\partial T} \otimes Z \right)^t
-\end{eqnarray}
-so that 
-\begin{eqnarray}
-\frac{\partial Z}{\partial T} & = &
-\left[ \begin{array}{ccc|c|ccc}
-\frac{\partial z_{1,1}}{\partial t_{1,1}} &
-\ldots &
-\frac{\partial z_{1,1}}{\partial t_{1,n}} &
-&
-\frac{\partial z_{1,1}}{\partial t_{n,1}} &
-\ldots &
-\frac{\partial z_{1,1}}{\partial t_{n,n}} \\
-\vdots & \ddots & \vdots &
-\ldots &
-\vdots & \ddots & \vdots \\
-\frac{\partial z_{1,n}}{\partial t_{1,1}} &
-\ldots &
-\frac{\partial z_{1,n}}{\partial t_{1,n}} &
-&
-\frac{\partial z_{1,n}}{\partial t_{n,1}} &
-\ldots &
-\frac{\partial z_{1,n}}{\partial t_{n,n}} \\
-\hline
-& \vdots & & \ddots & & \vdots \\
-\hline
-\frac{\partial z_{n,1}}{\partial t_{1,1}} &
-\ldots &
-\frac{\partial z_{n,1}}{\partial t_{1,n}} &
-&
-\frac{\partial z_{n,1}}{\partial t_{n,1}} &
-\ldots &
-\frac{\partial z_{n,1}}{\partial t_{n,n}} \\
-\vdots & \ddots & \vdots &
-\ldots &
-\vdots & \ddots & \vdots \\
-\frac{\partial z_{n,n}}{\partial t_{1,1}} &
-\ldots &
-\frac{\partial z_{n,n}}{\partial t_{1,n}} &
-&
-\frac{\partial z_{n,n}}{\partial t_{n,1}} &
-\ldots &
-\frac{\partial z_{n,n}}{\partial t_{n,n}} 
-\end{array} \right] 
-\end{eqnarray}
+%\noindent The second derivatives can also be expressed in terms of 
+%matrix outer products and operators. For $T$ and $Z$ in $M_n$, define the 
+%derivative
+%\begin{eqnarray}
+%\frac{\partial Z}{\partial T} = \left( \frac{\partial}{\partial T} \otimes Z \right)^t
+%\end{eqnarray}
+%so that 
+%\begin{eqnarray}
+%\frac{\partial Z}{\partial T} & = &
+%\left[ \begin{array}{ccc|c|ccc}
+%\frac{\partial z_{1,1}}{\partial t_{1,1}} &
+%\ldots &
+%\frac{\partial z_{1,1}}{\partial t_{1,n}} &
+%&
+%\frac{\partial z_{1,1}}{\partial t_{n,1}} &
+%\ldots &
+%\frac{\partial z_{1,1}}{\partial t_{n,n}} \\
+%\vdots & \ddots & \vdots &
+%\ldots &
+%\vdots & \ddots & \vdots \\
+%\frac{\partial z_{1,n}}{\partial t_{1,1}} &
+%\ldots &
+%\frac{\partial z_{1,n}}{\partial t_{1,n}} &
+%&
+%\frac{\partial z_{1,n}}{\partial t_{n,1}} &
+%\ldots &
+%\frac{\partial z_{1,n}}{\partial t_{n,n}} \\
+%\hline
+%& \vdots & & \ddots & & \vdots \\
+%\hline
+%\frac{\partial z_{n,1}}{\partial t_{1,1}} &
+%\ldots &
+%\frac{\partial z_{n,1}}{\partial t_{1,n}} &
+%&
+%\frac{\partial z_{n,1}}{\partial t_{n,1}} &
+%\ldots &
+%\frac{\partial z_{n,1}}{\partial t_{n,n}} \\
+%\vdots & \ddots & \vdots &
+%\ldots &
+%\vdots & \ddots & \vdots \\
+%\frac{\partial z_{n,n}}{\partial t_{1,1}} &
+%\ldots &
+%\frac{\partial z_{n,n}}{\partial t_{1,n}} &
+%&
+%\frac{\partial z_{n,n}}{\partial t_{n,1}} &
+%\ldots &
+%\frac{\partial z_{n,n}}{\partial t_{n,n}} 
+%\end{array} \right] 
+%\end{eqnarray}
 
-\noindent If one lets $Z = \frac{\partial f}{\partial T}$ in the previous,
-one obtains \ref{2nd-derv}. \newline
+%\noindent If one lets $Z = \frac{\partial f}{\partial T}$ in the previous,
+%one obtains \ref{2nd-derv}. \newline
 
 \noindent {\bf Product and Quotient Rules for the Second Derivative} \newline
 
