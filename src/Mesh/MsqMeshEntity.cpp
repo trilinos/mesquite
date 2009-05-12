@@ -113,6 +113,14 @@ void MsqMeshEntity::get_centroid(Vector3D &centroid, const PatchData &pd, MsqErr
 }
   
 
+static inline double corner_volume( const Vector3D& v0,
+                                    const Vector3D& v1,
+                                    const Vector3D& v2,
+                                    const Vector3D& v3 )
+{
+  return (v1 - v0) * (v2 - v0) % (v3 - v0);
+}
+
 /*!
   \brief Computes the area of the given element.  Returned value is
   always non-negative.  If the entity passed is not a two-dimensional
@@ -125,8 +133,8 @@ double MsqMeshEntity::compute_unsigned_area(PatchData &pd, MsqError &err) {
    
     case TRIANGLE:
       tem =  ((verts[vertexIndices[1]]-verts[vertexIndices[0]])*
-              (verts[vertexIndices[2]]-verts[vertexIndices[0]])).length()/2.0;
-      return tem;
+              (verts[vertexIndices[2]]-verts[vertexIndices[0]])).length();
+      return 0.5*tem;
       
     case QUADRILATERAL:
       tem = ((verts[vertexIndices[1]]-verts[vertexIndices[0]])*
@@ -134,7 +142,78 @@ double MsqMeshEntity::compute_unsigned_area(PatchData &pd, MsqError &err) {
       tem += ((verts[vertexIndices[3]]-verts[vertexIndices[2]])*
               (verts[vertexIndices[1]]-verts[vertexIndices[2]])).length();
       return (tem/2.0);
-      
+    
+    case POLYGON: 
+        // assume convex
+      for (unsigned i = 1; i < numVertexIndices-1; ++i)
+        tem += ((verts[vertexIndices[i]] - verts[vertexIndices[0]]) *
+                (verts[vertexIndices[i+1]] - verts[vertexIndices[0]])).length();
+      return 0.5 * tem;
+    
+    case TETRAHEDRON:
+      return 1.0/6.0 * fabs( corner_volume( verts[vertexIndices[0]],
+                                            verts[vertexIndices[1]],
+                                            verts[vertexIndices[2]],
+                                            verts[vertexIndices[3]] ) );
+    
+    case PYRAMID: {
+      Vector3D m = verts[vertexIndices[0]] + verts[vertexIndices[1]] 
+                 + verts[vertexIndices[2]] + verts[vertexIndices[3]];
+      Vector3D t1 = verts[vertexIndices[0]] - verts[vertexIndices[2]];
+      Vector3D t2 = verts[vertexIndices[1]] - verts[vertexIndices[3]];
+      tem = ((t1 + t2) * (t1 - t2)) % (verts[vertexIndices[4]] - 0.25 * m);
+      return (1.0/12.0) * fabs(tem);
+    }
+    
+    case PRISM: {
+      tem  = corner_volume( verts[vertexIndices[0]],
+                            verts[vertexIndices[1]],
+                            verts[vertexIndices[2]],
+                            verts[vertexIndices[3]] );
+
+      tem += corner_volume( verts[vertexIndices[1]],
+                            verts[vertexIndices[2]],
+                            verts[vertexIndices[3]],
+                            verts[vertexIndices[4]] );
+
+      tem += corner_volume( verts[vertexIndices[2]],
+                            verts[vertexIndices[3]],
+                            verts[vertexIndices[4]],
+                            verts[vertexIndices[5]] );
+                        
+      return 1.0/6.0 * fabs(tem);
+    }
+    
+    case HEXAHEDRON: {
+    
+      tem  = corner_volume( verts[vertexIndices[1]],
+                            verts[vertexIndices[2]],
+                            verts[vertexIndices[0]],
+                            verts[vertexIndices[5]] );
+                            
+      tem += corner_volume( verts[vertexIndices[3]],
+                            verts[vertexIndices[0]],
+                            verts[vertexIndices[2]],
+                            verts[vertexIndices[7]] );
+                            
+      tem += corner_volume( verts[vertexIndices[4]],
+                            verts[vertexIndices[7]],
+                            verts[vertexIndices[5]],
+                            verts[vertexIndices[0]] );
+                            
+      tem += corner_volume( verts[vertexIndices[6]],
+                            verts[vertexIndices[5]],
+                            verts[vertexIndices[7]],
+                            verts[vertexIndices[2]] );
+                            
+      tem += corner_volume( verts[vertexIndices[5]],
+                            verts[vertexIndices[2]],
+                            verts[vertexIndices[0]],
+                            verts[vertexIndices[7]] );
+
+      return (1.0/6.0) * fabs(tem);
+    }
+    
     default:
       MSQ_SETERR(err)("Invalid type of element passed to compute unsigned area.",
                       MsqError::UNSUPPORTED_ELEMENT);
