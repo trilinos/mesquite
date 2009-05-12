@@ -365,8 +365,8 @@ tr( adj \, T ) = (t_{11} t_{22} - t_{12} t_{21})+ (t_{22} t_{33} - t_{23} t_{32}
 \begin{eqnarray}
 f(T) &=& |T|^2 = \sum_{i=1}^n \sum_{j=1}^n t_{i,j}^2 \\
 \label{tsquaredterm}
-\frac{\partial f}{\partial t_{i,j}} &=& 2 t_{i,j} \\
-\frac{\partial f}{\partial T} &=& 2 T
+\frac{\partial f}{\partial t_{i,j}} &=& 2 \, t_{i,j} \\
+\frac{\partial f}{\partial T} &=& 2 \, T
 \end{eqnarray}
 
 \noindent Beginning with Equation \ref{tsquaredterm}:
@@ -385,8 +385,8 @@ f(T) &=& |T|^2 = \sum_{i=1}^n \sum_{j=1}^n t_{i,j}^2 \\
 \subsection{Derivatives of $f(T)=|T|^m$}
 Using \ref{tsquaredterm},
 \begin{eqnarray}
-2 T & = & \frac{\partial}{\partial T} |T|^2 \nonumber \\
- & = & 2 |T| \frac{\partial}{\partial T} |T| \nonumber
+2 \, T & = & \frac{\partial}{\partial T} |T|^2 \nonumber \\
+ & = & 2 \, |T| \frac{\partial}{\partial T} |T| \nonumber
 \end{eqnarray}
 so that when $T \neq 0$,
 \begin{eqnarray}
@@ -394,16 +394,16 @@ so that when $T \neq 0$,
 \end{eqnarray}
 Let $m=\pm 1, \pm 2,\pm 3,\ldots$  Then
 \begin{eqnarray}
-\frac{\partial}{\partial T} |T|^m & = & m |T|^{m-1} \frac{\partial }{\partial T}|T| \\
- & = & m |T|^{m-2} \, T \label{firstdervoftm}
+\frac{\partial}{\partial T} |T|^m & = & m \, |T|^{m-1} \frac{\partial }{\partial T}|T| \\
+ & = & m \, |T|^{m-2} \, T \label{firstdervoftm}
 \end{eqnarray}
 For $m=2,3,\ldots$, the latter formula is valid even when $T=0$. \newline
 
 \noindent Particularly useful are
 \begin{eqnarray}
 \label{tcubed}
-\frac{\partial}{\partial T} |T|^3 & = & 3 |T| \, T \\
-\frac{\partial}{\partial T} |T|^4 & = & 4 |T|^2 \, T 
+\frac{\partial}{\partial T} |T|^3 & = & 3 \, |T| \, T \\
+\frac{\partial}{\partial T} |T|^4 & = & 4 \, |T|^2 \, T 
 \end{eqnarray}
 
 \noindent {\bf Second Partial Derivatives of $f(T)=|T|^m$} \newline
@@ -416,22 +416,28 @@ Then
 \begin{eqnarray}
 \frac{\partial^2 f}{\partial t_{i,j} \partial t_{k,l}} = m \, \delta_i^k \delta_j^l |T|^{m-2} + m (m-2) \, t_{i,j} t_{k,l} |T|^{m-4}
 \end{eqnarray}
-and, for $m \neq 3$,
+and so we can write
 \begin{eqnarray}
-\label{hesstm}
-\frac{\partial^2 f}{\partial T_i \partial T_j} = m \,  |T|^{m-4} \, \left\{ \delta_i^j \, |T|^2 \, I + (m-2) S_{ij} \right\} 
+\frac{\partial^2}{\partial T^2} \, |T|^m = m \, \left\{ |T|^{m-2} \, I_{n^2} + (m-2) \, |T|^{m-4} \, \left( T \otimes T \right) \, \right\} \label{hesstm}
 \end{eqnarray}
-with $S_{ij}$ an $n \times n$ matrix with entries
-\begin{eqnarray}
-\left( S_{ij} \right)_{r,s} = t_{i,r} \, t_{j,s} \label{sij}
-\end{eqnarray}
+%and, for $m \neq 3$,
+%\begin{eqnarray}
+%\label{hesstm}
+%\frac{\partial^2 f}{\partial T_i \partial T_j} = m \,  |T|^{m-4} \, \left\{ \delta_i^j \, |T|^2 \, I + (m-2) S_{ij} \right\} 
+%\end{eqnarray}
+%with $S_{ij}$ an $n \times n$ matrix with entries
+%\begin{eqnarray}
+%\left( S_{ij} \right)_{r,s} = t_{i,r} \, t_{j,s} \label{sij}
+%\end{eqnarray}
 When $m=2$ or $m \geq 4$ the second derivatives exist for all $T \in M_3$.
-The second derivative also exists for $m=3$; in that case
+Otherwise, the second derivative exists everywhere except $T=0$. 
+The second derivative for $m=3$ is
 \begin{eqnarray}
 \label{hesst3}
-\frac{\partial^2}{\partial T_i \partial T_j} \, |T|^3 = 3 \,  \delta_i^j \, |T| \, I 
+\frac{\partial^2}{\partial T^2} \, |T|^3 = 3 \, \left\{ |T| \, I_{n^2} + |T|^{-1} \, \left( T \otimes T \right) \, \right\}
+%\frac{\partial^2}{\partial T_i \partial T_j} \, |T|^3 = 3 \,  \delta_i^j \, |T| \, I 
 \end{eqnarray}
-If $m<2$, the second derivative exists everywhere except $T=0$. \newline
+%If $m<2$, the second derivative exists everywhere except $T=0$. \newline
 
 \subsection{Derivatives of $f(T)=|T^t T|^2$}
 
@@ -464,7 +470,11 @@ and finally
 \label{hessttt}
 \frac{\partial^2 f}{\partial T_i \partial T_j} = 4 \left( S_{ji} + (T T^t)_{i,j} \, I + \delta_j^i \, T^t T \right)
 \end{eqnarray}
-with $S_{ij}$ defined in \ref{sij}.\footnote{Beware: the notation on the left-hand-side of this equation has a problem: namely that permuting the indices $i$ and $j$ 
+with $S_{ij}$ an $n \times n$ matrix with entries
+\begin{eqnarray}
+\left( S_{ij} \right)_{r,s} = t_{i,r} \, t_{j,s} \label{sij}
+\end{eqnarray}
+\footnote{Beware: the notation on the left-hand-side of this equation has a problem: namely that permuting the indices $i$ and $j$ 
 does not give the same result on the left when one would expect it to. In fact
 \begin{eqnarray}
 \frac{\partial^2 f}{\partial T_j \partial T_i} = \left( \frac{\partial^2 f}{\partial T_i \partial T_j} \right)^t
@@ -1053,11 +1063,14 @@ to $n=3$ only. \newline
 \end{eqnarray}
 The first derivative exists for all $T$. \newline
 
-\noindent From \ref{hesst3}
+\noindent From \ref{hesst3},
 \begin{eqnarray}
-\frac{\partial^2 \mu_3}{\partial T_i \partial T_j} & = & 3 \, \delta_i^j \, |T| \, I - 3 \sqrt{3} \, \frac{\partial^2 \tau}{\partial T_i \partial T_j}
+\frac{\partial^2 \mu_3}{\partial T^2} = 3 \, \left\{ |T| \, I_9 + \frac{T \otimes T}{|T|} - \sqrt{3} \, \frac{\partial^2 \tau}{\partial T^2} \, \right\}
 \end{eqnarray}
-To complete this expression, use formula \ref{3dtauhessblock}. \newline
+%\begin{eqnarray}
+%\frac{\partial^2 \mu_3}{\partial T_i \partial T_j} & = & 3 \, \delta_i^j \, |T| \, I - 3 \sqrt{3} \, \frac{\partial^2 \tau}{\partial T_i \partial T_j}
+%\end{eqnarray}
+To complete this expression, use formula \ref{2ndtau3d}. \newline
 
 \subsection{Derivatives of $\mu_3(T) = |T|^3 - 3 \sqrt{3} \, \tau + \gamma (\tau-1)^2$}
 
@@ -1071,9 +1084,10 @@ in equations \ref{tauminus1} and \ref{tm1}. \newline
 \begin{eqnarray}
 \mu_3 (T) & = & |T|^3 - 3 \sqrt{3} \, \tau + \gamma (\tau-1)^2 \\
 \frac{\partial \mu_3}{\partial T} & = & 3 |T| T - \{ 3 \sqrt{3} - 2 \gamma \, (\tau-1) \}  \, (adj T)^t \\
-\frac{\partial^2 \mu_3}{\partial T_i \partial T_j} & = & 3 \, \delta_i^j \, |T| \, I - \left\{ 3 \sqrt{3} \, - 2 \gamma (\tau-1) \right\} \, \frac{\partial^2 \tau}{\partial T_i \partial T_j}
+\frac{\partial^2 \mu_3}{\partial T^2} & = & 3 \, \left\{ |T| \, I_9 + \frac{T \otimes T}{|T|} \right\} - \left\{ 3 \sqrt{3} \, - 2 \gamma (\tau-1) \right\} \, \frac{\partial^2 \tau}{\partial T^2}
+%\frac{\partial^2 \mu_3}{\partial T_i \partial T_j} & = & 3 \, \delta_i^j \, |T| \, I - \left\{ 3 \sqrt{3} \, - 2 \gamma (\tau-1) \right\} \, \frac{\partial^2 \tau}{\partial T_i \partial T_j}
 \end{eqnarray}
-To complete the last expression, use formula \ref{3dtauhessblock}. \newline
+To complete the last expression, use formula \ref{2ndtau3d}. \newline
 
 \subsection{Derivatives of $\mu_2(T)=|T^t T - \tau \, I|^2$}
 
@@ -1266,7 +1280,7 @@ to $n=3$. \newline
 
 \noindent The second derivative:
 \begin{eqnarray}
-\frac{\partial^2 \mu_3}{\partial T^2} & = & 3 \, |T| \, I_{9} - 3 \sqrt{3} \, \left\{ \frac{1}{\tau} \frac{\partial^2 \tau}{\partial T^2} - \frac{1}{\tau^2} \left( \frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right) \right\}
+\frac{\partial^2 \mu_3}{\partial T^2} & = & 3 \left\{ \, |T| \, I_{9} + \frac{T \otimes T}{|T|} \, \right\} - 3 \sqrt{3} \, \left\{ \frac{1}{\tau} \frac{\partial^2 \tau}{\partial T^2} - \frac{1}{\tau^2} \left( \frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right) \right\} \nonumber \\
 \end{eqnarray}
 
 \subsection{Derivatives of $\mu_2(T)=\frac{|T|^2-2 \psi(T)+2}{2 \, \tau}$}
@@ -1339,7 +1353,7 @@ in the Inverse Mean Ratio section below, but with an alternate derivation. \newl
 
 \begin{eqnarray}
 \frac{\partial^2 \mu_2}{\partial T^2} & = & \frac{1}{\tau} I_4 - \frac{1}{2 \tau^2} Z \\
-Z & = & |T|^2 \frac{\partial^2 \tau}{\partial T^2} - 4 \mu_2 \left(\frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right) + 2 \left( T \otimes \frac{\partial \tau}{\partial T} + \frac{\partial \tau}{\partial T} \otimes T \right)
+Z & = & |T|^2 \frac{\partial^2 \tau}{\partial T^2} - 4 \mu_2 \left(\frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right) + 2 \left( T \otimes \frac{\partial \tau}{\partial T} + \frac{\partial \tau}{\partial T} \otimes T \right) \nonumber \\
 \end{eqnarray}
 
 \subsection{Derivatives of $\mu_3(T)=\frac{|T|^3}{3 \sqrt{3} \tau}$}
@@ -1358,7 +1372,7 @@ to $n=3$. It is closely related to the 3D Inverse Mean Ratio. \newline
 
 
 \begin{eqnarray}
-\frac{\partial^2 \mu_3}{\partial T^2} & = & \frac{1}{3 \sqrt{3} \, \tau} \, \left\{ 3 \, |T| \, I_9 - \frac{1}{\tau} \, Z \right\} \\
+\frac{\partial^2 \mu_3}{\partial T^2} & = & \frac{1}{\sqrt{3} \, \tau} \, \left\{ \, |T| \, I_9 + \frac{T \otimes T}{|T|} - \frac{1}{3 \, \tau} \, Z \right\} \\
 Z & = & |T|^3 \frac{\partial^2 \tau}{\partial T^2} - 2 \frac{|T|^3}{\tau} \left( \frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right) \nonumber \\
  & + & 3 \, |T| \left( T \otimes \frac{\partial \tau}{\partial T} + \frac{\partial \tau}{\partial T} \otimes T \right)
 \end{eqnarray}
@@ -1388,7 +1402,7 @@ The last derivative is basically given in \ref{hess-nrm-adj}. \newline
 \subsection{Derivatives of Inverse Mean Ratio}
 
 \begin{eqnarray}
-f(T) & = & \frac{|T|^2}{n det^{2/n}(T)} \\
+f(T) & = & \frac{|T|^2}{n \, det^{2/n}(T)} \\
 g(T) & = & |T|^2 \\
 h(T) & = & det(T) \\
 e(T) & = & n \cdot h(T)^{2/n} \\
