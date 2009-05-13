@@ -36,6 +36,9 @@
 
 namespace MESQUITE_NS {
 
+msq_std::string InverseMeanRatio2D::get_name() const
+  { return "InverseMeanRatio"; }
+
 bool InverseMeanRatio2D::evaluate( const MsqMatrix<2,2>& A, 
                                    const MsqMatrix<2,2>& W, 
                                    double& result, 

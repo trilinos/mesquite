@@ -57,7 +57,28 @@ namespace MESQUITE_NS {
 int TMPQualityMetric::get_negate_flag( ) const { return 1; }
 
 msq_std::string TMPQualityMetric::get_name() const
-  { return msq_std::string("TMPQualityMetric"); }
+{
+  std::string result( "TMP(" );
+  
+  if (metric2D && metric3D) {
+    std::string name2d = metric2D->get_name();
+    std::string name3d = metric3D->get_name();
+    if (name2d == name3d)
+      result += name2d;
+    else
+      result += std::string("2D:") + name2d + ",3D:" + name3d;
+  }
+  else if (metric2D)
+    result += metric2D->get_name();
+  else if (metric3D)
+    result += metric3D->get_name();
+  else
+    result += "NULL";
+  
+  result += ')';
+  return result;
+}
+
 
 void TMPQualityMetric::get_evaluations( PatchData& pd,
                                       msq_std::vector<size_t>& handles,

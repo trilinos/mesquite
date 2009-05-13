@@ -34,6 +34,7 @@
 #define MSQ_TARGET_METRIC_2D_HPP
 
 #include "Mesquite.hpp"
+#include <string>
 
 namespace MESQUITE_NS {
 
@@ -51,6 +52,9 @@ public:
 
   MESQUITE_EXPORT virtual
   ~TargetMetric2D();
+
+  MESQUITE_EXPORT virtual
+  msq_std::string get_name() const = 0;
 
     /**\brief Evaluate \f$\mu(A,W)\f$
      *

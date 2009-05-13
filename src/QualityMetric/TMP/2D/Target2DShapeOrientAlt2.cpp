@@ -38,6 +38,9 @@ namespace MESQUITE_NS {
 
 static const double INV_SQRT_TWO = 1.0 / msq_stdc::sqrt(2.0);
 
+msq_std::string Target2DShapeOrientAlt2::get_name() const
+  { return "ShapeOrient"; }
+
 bool Target2DShapeOrientAlt2::evaluate( const MsqMatrix<2,2>& A, 
                                  const MsqMatrix<2,2>& W, 
                                  double& result, 

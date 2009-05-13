@@ -36,6 +36,8 @@
 
 namespace MESQUITE_NS {
 
+msq_std::string Target2DShapeSizeOrientBarrier::get_name() const
+  { return "ShapeSizeOrient"; }
 
 bool Target2DShapeSizeOrientBarrier::evaluate( const MsqMatrix<2,2>& A, 
                                  const MsqMatrix<2,2>& W, 

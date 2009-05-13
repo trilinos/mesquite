@@ -36,6 +36,8 @@
 
 namespace MESQUITE_NS {
 
+msq_std::string Target2DShapeSize::get_name() const
+  { return "ShapeSize"; }
 
 bool Target2DShapeSize::evaluate( const MsqMatrix<2,2>& A, 
                                   const MsqMatrix<2,2>& W, 

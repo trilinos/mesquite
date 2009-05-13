@@ -36,6 +36,9 @@
 
 namespace MESQUITE_NS {
 
+msq_std::string Target2DShapeOrientAlt1::get_name() const
+  { return "ShapeOrient"; }
+
 bool Target2DShapeOrientAlt1::evaluate( const MsqMatrix<2,2>& A, 
                                  const MsqMatrix<2,2>& W, 
                                  double& result, 

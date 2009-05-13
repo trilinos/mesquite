@@ -40,6 +40,9 @@ namespace MESQUITE_NS {
 
 Target3DShapeSize::~Target3DShapeSize() {}
 
+msq_std::string Target3DShapeSize::get_name() const
+  { return "ShapeSize"; }
+
 bool Target3DShapeSize::evaluate( const MsqMatrix<3,3>& A, 
                                   const MsqMatrix<3,3>& W, 
                                   double& result, 

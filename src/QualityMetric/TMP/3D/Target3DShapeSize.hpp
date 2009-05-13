@@ -56,6 +56,9 @@ public:
   ~Target3DShapeSize();
 
   MESQUITE_EXPORT virtual
+  msq_std::string get_name() const;
+
+  MESQUITE_EXPORT virtual
   bool evaluate( const MsqMatrix<3,3>& A, 
                  const MsqMatrix<3,3>& W, 
                  double& result, 

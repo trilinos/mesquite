@@ -38,6 +38,9 @@ namespace MESQUITE_NS {
 
 TSquared3D::~TSquared3D() {}
 
+msq_std::string TSquared3D::get_name() const
+  { return "TSquared"; }
+
 bool TSquared3D::evaluate( const MsqMatrix<3,3>& A, 
                            const MsqMatrix<3,3>& W, 
                            double& result, 

@@ -38,6 +38,9 @@ namespace MESQUITE_NS {
 
 Target3DShapeSizeOrient::~Target3DShapeSizeOrient() {}
 
+msq_std::string Target3DShapeSizeOrient::get_name() const
+  { return "ShapeSizeOrient"; }
+
 bool Target3DShapeSizeOrient::evaluate( const MsqMatrix<3,3>& A, 
                                         const MsqMatrix<3,3>& W, 
                                         double& result, 
