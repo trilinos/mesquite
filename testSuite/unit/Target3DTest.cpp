@@ -409,6 +409,8 @@ void Target3DTest<Metric>::compare_anaytic_and_numeric_hess()
 class GradTestMetric3D : public TargetMetric3D
 {
   public:
+    msq_std::string get_name() const { return "GradTest"; }
+  
     bool evaluate( const MsqMatrix<3,3>& A,
                    const MsqMatrix<3,3>& W,
                    double& result,
@@ -438,6 +440,8 @@ class GradTestMetric3D : public TargetMetric3D
 class HessTestMetric3D : public TargetMetric3D
 {
   public:
+    msq_std::string get_name() const { return "HessTest"; }
+
     bool evaluate( const MsqMatrix<3,3>& A,
                    const MsqMatrix<3,3>& W,
                    double& result,
@@ -467,6 +471,7 @@ class HessTestMetric3D : public TargetMetric3D
 class HessTestMetric3D_2 : public TargetMetric3D
 {
   public:
+    msq_std::string get_name() const { return "HessTest2"; }
   
     bool evaluate( const MsqMatrix<3,3>& A, const MsqMatrix<3,3>&, double& result, MsqError& err )
       { result = Frobenius(A); return true; }

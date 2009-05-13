@@ -361,6 +361,8 @@ void Target2DTest<Metric>::compare_anaytic_and_numeric_hess()
 class GradTestMetric2D : public TargetMetric2D
 {
   public:
+    msq_std::string get_name() const { return "GradTest"; }
+  
     bool evaluate( const MsqMatrix<2,2>& A,
                    const MsqMatrix<2,2>& W,
                    double& result,
@@ -472,6 +474,8 @@ void TargetMetric2DTest::test_numerical_gradient()
 class HessTestMetric2D : public TargetMetric2D
 {
   public:
+    msq_std::string get_name() const { return "HessTest"; }
+  
     bool evaluate( const MsqMatrix<2,2>& A,
                    const MsqMatrix<2,2>& W,
                    double& result,

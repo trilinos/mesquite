@@ -75,6 +75,8 @@ public:
 
   FauxTarget(double v) : count(0), value(v), rval(true) {}
   
+  msq_std::string get_name() const { return "Faux"; }
+  
   bool evaluate( const MsqMatrix<B::MATRIX_DIM,B::MATRIX_DIM>& A, 
                  const MsqMatrix<B::MATRIX_DIM,B::MATRIX_DIM>& W, 
                  double& result, MsqError&  )
@@ -107,6 +109,9 @@ public:
 
   ~NumericalTarget() {}
 
+  msq_std::string get_name() const 
+    { return "Numerical " + mMetric->get_name(); }
+
   bool evaluate( const MsqMatrix<Base::MATRIX_DIM,Base::MATRIX_DIM>& A, 
                  const MsqMatrix<Base::MATRIX_DIM,Base::MATRIX_DIM>& W, 
                  double& result, 
@@ -124,6 +129,8 @@ private:
 class TestGradTargetMetric3D : public TargetMetric3D
 {
   public:
+    
+    msq_std::string get_name() const { return "TestGrad"; }
   
     bool evaluate( const MsqMatrix<3,3>& A, const MsqMatrix<3,3>&, double& result, MsqError& err )
       { result = sqr_Frobenius(A); return true; }
@@ -142,6 +149,8 @@ class TestGradTargetMetric3D : public TargetMetric3D
 class TestGradTargetMetric2D : public TargetMetric2D
 {
   public:
+    
+    msq_std::string get_name() const { return "TestGrad"; }
   
     bool evaluate( const MsqMatrix<2,2>& A, const MsqMatrix<2,2>&, double& result, MsqError& err )
       { result = sqr_Frobenius(A); return true; }
