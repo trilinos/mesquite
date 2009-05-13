@@ -46,7 +46,7 @@ bool InvTransBarrier2D::evaluate( const MsqMatrix<2,2>& A,
 {
   double da = det(A);
   double dw = det(W);
-  if (da <= 0 || dw <= 0) 
+  if (invalid_determinant(da) || invalid_determinant(dw))
     return false;
   MsqMatrix<2,2> Ap = transpose_adj(A);
   Ap *= 1.0/da;

@@ -871,7 +871,7 @@ CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric3DTest, "Target3DTest" );
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric3DTest, "TargetMetric3DTest" );
 
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeOrient, false, false, false, 0.0 );
-REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSize, false, true, false, 1.0 );
+REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSize, false, true, true, 1.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( InverseMeanRatio3D, true, true, true, 1.0 );
 
 

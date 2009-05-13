@@ -182,6 +182,10 @@ public:
                            MsqMatrix<3,3>& deriv_wrt_A,
                            MsqMatrix<3,3> second_wrt_A[6],
                            MsqError& err );
+                           
+protected:
+  static inline bool invalid_determinant( double d )
+    { return d < 1e-12; }
 };
 
 } // namespace Mesquite

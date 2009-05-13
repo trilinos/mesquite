@@ -46,8 +46,10 @@ bool Target2DSizeBarrier::evaluate( const MsqMatrix<2,2>& A,
 {
   const MsqMatrix<2,2> T = A * inverse(W);
   double d = det(T);
-  if (d < 1e-12)
+  if (invalid_determinant(d)) {
+    result = 0.0;
     return false;
+  }
   result = d + 1.0/d;
   return true;  
 }

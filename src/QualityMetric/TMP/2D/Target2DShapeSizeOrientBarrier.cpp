@@ -45,15 +45,15 @@ bool Target2DShapeSizeOrientBarrier::evaluate( const MsqMatrix<2,2>& A,
                                  MsqError& )
 {
   MsqMatrix<2,2> T = A * inverse(W);
-  const double two_det = 2.0 * det(T);
-  if (two_det <= 0.0) { // barrier
+  const double d = det(T);
+  if (invalid_determinant(d)) { // barrier
     result = 0.0;
     return false;
   }
   
   T(0,0) -= 1.0;
   T(1,1) -= 1.0;
-  result = sqr_Frobenius(T) / two_det;
+  result = 0.5 * sqr_Frobenius(T) / d;
   return true;
 }
 

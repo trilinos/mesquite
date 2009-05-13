@@ -46,7 +46,7 @@ bool Target2DShapeSizeBarrierAlt2::evaluate( const MsqMatrix<2,2>& A,
 {
   MsqMatrix<2,2> T = A * inverse(W);
   const double d = det(T);
-  if (d <= 0.0) { // barrier
+  if (invalid_determinant(d)) { // barrier
     result = 0.0;
     return false;
   }
