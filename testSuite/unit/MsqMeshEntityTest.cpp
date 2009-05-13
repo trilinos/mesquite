@@ -56,7 +56,7 @@ Unit testing of various functions in the MsqMeshEntity class.
 #include "PatchDataInstances.hpp"
 #include <math.h>
 #include <iostream>
-#include "cppunit/extensions/HelperMacros.h"
+#include "UnitUtil.hpp"
 
 using namespace Mesquite;
 using std::cout;
@@ -72,6 +72,11 @@ private:
   CPPUNIT_TEST (test_centroid_quad);
   CPPUNIT_TEST (test_centroid_hex);
   CPPUNIT_TEST (test_unsigned_area);
+  CPPUNIT_TEST (test_unsigned_area_poly);
+  CPPUNIT_TEST (test_unsigned_area_tet);
+  CPPUNIT_TEST (test_unsigned_area_pyr);
+  CPPUNIT_TEST (test_unsigned_area_pri);
+  CPPUNIT_TEST (test_unsigned_area_hex);
   CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -178,9 +183,138 @@ public:
        CPPUNIT_ASSERT(fabs(quad->compute_unsigned_area(oneQuadPatch,err)
                            -1.0) < tolEps);
      }
+
+  void test_unsigned_area_poly();
+  void test_unsigned_area_tet();
+  void test_unsigned_area_pyr();
+  void test_unsigned_area_pri();
+  void test_unsigned_area_hex();
   
+  void test_unsigned_area_common( EntityTopology type,
+                                  const double* coords,
+                                  double expected );
 };
 
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(MsqMeshEntityTest, "MsqMeshEntityTest");
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(MsqMeshEntityTest, "Unit");
+ 
+const size_t conn[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+const bool fixed[] = { false, false, false, false, false, false, false, false };
+
+void MsqMeshEntityTest::test_unsigned_area_poly()
+{
+  const double coords[] = { 0, 0, 0,
+                            1, 0, 0,
+                            1, 1, 0,
+                          0.5, 1.5, 0,
+                            0, 1, 0 };
+  size_t n_vtx = 5;
+  EntityTopology type = POLYGON;
+  MsqError err;
+  
+  PatchData pd;
+  pd.fill( n_vtx, coords, 1, &type, &n_vtx, conn, fixed, err );
+  ASSERT_NO_ERROR(err);
+  
+  double a = pd.element_by_index(0).compute_unsigned_area( pd, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.25, a, 1e-8 );
+}
+
+void MsqMeshEntityTest::test_unsigned_area_common( EntityTopology type,
+                                                   const double* coords,
+                                                   double expected )
+{
+  MsqError err;
+  PatchData pd;
+
+  pd.fill( TopologyInfo::corners( type ), coords, 1, type, conn, fixed, err );
+  ASSERT_NO_ERROR(err);
+  
+  double a = pd.element_by_index(0).compute_unsigned_area( pd, err );
+  ASSERT_NO_ERROR(err);
+  
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( expected, a, 1e-8 );
+}
+
+
+void MsqMeshEntityTest::test_unsigned_area_tet()
+{
+  const double coords[] = { 0, 0, 0,
+                            1, 0, 0,
+                            0, 1, 0,
+                            0, 0, 1 };
+  test_unsigned_area_common( TETRAHEDRON, coords, 1.0/6.0 );
+}
+
+void MsqMeshEntityTest::test_unsigned_area_pyr()
+{
+  const double coords[] = { 0, 0, 0,
+                            1, 0, 0,
+                            1, 1, 0,
+                            0, 1, 0,
+                            0, 0, 1 };
+  test_unsigned_area_common( PYRAMID, coords, 1.0/3.0 );
+
+  const double pyr_coords[] = {-1, -1, -1,
+                                1, -1, -1,
+                                1,  1, -1,
+                               -1,  1, -1,
+                                0,  0,  0 };
+  test_unsigned_area_common( PYRAMID, pyr_coords, 4.0/3.0 );
+}
+
+void MsqMeshEntityTest::test_unsigned_area_pri()
+{
+  const double coords[] = { 0, 0, 0,
+                            1, 0, 0,
+                            0, 1, 0,
+                            0, 0, 1,
+                            1, 0, 1,
+                            0, 1, 1 };
+  test_unsigned_area_common( PRISM, coords, 0.5 );
+  
+  const double tet_coords[] = { 0, 0, 0,
+                                1, 0, 0,
+                                0, 1, 0,
+                                0, 0, 1,
+                                0, 0, 1,
+                                0, 0, 1 };
+  test_unsigned_area_common( PRISM, tet_coords, 1.0/6.0 );
+}
+
+void MsqMeshEntityTest::test_unsigned_area_hex()
+{
+  const double coords[] = { 0, 0, 0,
+                            1, 0, 0,
+                            1, 1, 0,
+                            0, 1, 0,
+                            0, 0, 1,
+                            1, 0, 1,
+                            1, 1, 1,
+                            0, 1, 1 };
+  test_unsigned_area_common( HEXAHEDRON, coords, 1.0 );
+
+  const double coords2[] = { 0, 0, 0,
+                             2, 0, 0,
+                             2, 2, 0,
+                             0, 2, 0,
+                             0, 0, 2,
+                             2, 0, 2,
+                             2, 2, 2,
+                             0, 2, 2 };
+  test_unsigned_area_common( HEXAHEDRON, coords2, 8.0 );
+  
+  const double pyr_coords[] = {-1,-1, 0,
+                                1,-1, 0,
+                                1, 1, 0,
+                               -1, 1, 0,
+                                0, 0, 1,
+                                0, 0, 1,
+                                0, 0, 1,
+                                0, 0, 1 };
+  test_unsigned_area_common( HEXAHEDRON, pyr_coords, 4.0/3.0 );
+}
+
+
