@@ -122,7 +122,7 @@ namespace MESQUITE_NS
      */
     MESQUITE_EXPORT 
     QualityAssessor( bool print_summary_to_std_out = true,
-                     bool free_elements_only = false,
+                     bool free_elements_only = true,
                      const char* inverted_element_tag_name = 0,
                      msq_std::string name = msq_std::string() );
 
@@ -140,7 +140,7 @@ namespace MESQUITE_NS
      */
     MESQUITE_EXPORT 
     QualityAssessor( msq_stdio::ostream& output_stream,
-                     bool free_elements_only = false,
+                     bool free_elements_only = true,
                      const char* inverted_element_tag_name = 0,
                      msq_std::string name = msq_std::string() );
                      
@@ -176,7 +176,7 @@ namespace MESQUITE_NS
                      QualityMetric* metric, 
                      int histogram_intervals = 0,
                      double power_mean = 0.0,
-                     bool free_elements_only = false,
+                     bool free_elements_only = true,
                      const char* metric_value_tag_name = 0,
                      const char* inverted_element_tag_name = 0,
                      msq_std::string name = msq_std::string() );
@@ -215,7 +215,7 @@ namespace MESQUITE_NS
     QualityAssessor( QualityMetric* metric, 
                      int histogram_intervals = 0,
                      double power_mean = 0.0,
-                     bool free_elements_only = false,
+                     bool free_elements_only = true,
                      const char* metric_value_tag_name = 0,
                      bool print_summary_to_std_out = true,
                      const char* inverted_element_tag_name = 0,
