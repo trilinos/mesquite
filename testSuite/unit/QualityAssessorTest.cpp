@@ -43,6 +43,8 @@
 #include "MeshImpl.hpp"
 #include "PatchData.hpp"
 #include "MsqMeshEntity.hpp"
+#include "ArrayMesh.hpp"
+#include "InstructionQueue.hpp"
 
 #include "UnitUtil.hpp"
 
@@ -75,6 +77,7 @@ private:
   CPPUNIT_TEST (test_print_stats);
   CPPUNIT_TEST (test_print_name);
   CPPUNIT_TEST (test_modify_metric);
+  CPPUNIT_TEST (test_free_only);
   CPPUNIT_TEST_SUITE_END();
   
   vector<double> vertCoords,invertCoords;
@@ -109,6 +112,7 @@ public:
   void test_print_stats();
   void test_print_name();
   void test_modify_metric();
+  void test_free_only();
 };
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(QualityAssessorTest, "Unit");
@@ -706,7 +710,7 @@ void QualityAssessorTest::test_output_control()
   ConditionNumberQualityMetric metric;
   
     // disable output from constructor
-  QualityAssessor qa1( &metric, 0, 0, 0, false );
+  QualityAssessor qa1( &metric, 0, 0, false, 0, false );
   redir.redirect();
   qa1.loop_over_mesh( &invertedMesh, &myDomain, &mySettings, err  );
   redir.restore();
@@ -741,7 +745,7 @@ void QualityAssessorTest::test_tag_element()
   const char* tag_name = "xxxTEST_TAGxxx";
   ConditionNumberQualityMetric metric;
   MetricLogger logger(&metric);
-  QualityAssessor qa(&logger,0,0,tag_name);
+  QualityAssessor qa(&logger,0,0,false,tag_name);
   qa.disable_printing_results();
   
   MsqError err;
@@ -776,7 +780,7 @@ void QualityAssessorTest::test_tag_vertex()
   const char* tag_name = "vertex-test-tag";
   LocalSizeQualityMetric metric;
   MetricLogger logger(&metric);
-  QualityAssessor qa(&logger,0,0,tag_name);
+  QualityAssessor qa(&logger,0,0,false,tag_name);
   qa.disable_printing_results();
   
   MsqError err;
@@ -810,7 +814,7 @@ void QualityAssessorTest::test_tag_vertex()
 void QualityAssessorTest::test_tag_inverted()
 {
   const char* tag_name = "123INVERT456";
-  QualityAssessor qa( false, tag_name );
+  QualityAssessor qa( false, false, tag_name );
   
   MsqError err;
   qa.loop_over_mesh( &invertedMesh, &myDomain, &mySettings, err  );
@@ -920,7 +924,7 @@ void QualityAssessorTest::test_print_name()
   MsqError err;
   stringstream str;
   ConditionNumberQualityMetric metric;
-  QualityAssessor qa( str, &metric, 0, 0, 0, 0, NAME);
+  QualityAssessor qa( str, &metric, 0, 0, false, 0, 0, NAME);
   qa.loop_over_mesh( &myMesh, &myDomain, &mySettings, err  );
   ASSERT_NO_ERROR( err );
 
@@ -949,4 +953,53 @@ void QualityAssessorTest::test_modify_metric()
   qa.add_quality_assessment( &metric, 0, 3.0 );
   CPPUNIT_ASSERT( results->have_power_mean() );
 }
+
+void QualityAssessorTest::test_free_only()
+{
+  /*
+   *   +--+--------o-----o
+   *   |   \       |     |    + - fixed
+   *   |    \      |     |    o - free
+   *   +-----+-----o-----o
+   */
+
+  double coords[] = { 0, 0, 0,
+                      1, 0, 0,
+                    0.5, 1, 0,
+                      0, 1, 0,
+                      2, 0, 0,
+                      3, 0, 0,
+                      3, 1, 0,
+                      2, 1, 0 };
+  int fixed[] = { true, true, true, true, false, false, false, false };
+  unsigned long conn[] = { 0, 1, 2, 3,
+                           1, 4, 7, 2,
+                           4, 5, 6, 7 };
+  
+  MsqError err;
+  ArrayMesh mesh( 3, 8, coords, fixed, 3, QUADRILATERAL, conn );
+  ConditionNumberQualityMetric metric;
+  QualityAssessor qa_all( &metric, 0, 0.0, false, 0, false );
+  QualityAssessor qa_free( &metric, 0, 0.0, true, 0, false );
+  InstructionQueue q;
+  q.add_quality_assessor( &qa_all, err );
+  q.add_quality_assessor( &qa_free, err );
+  PlanarDomain xy(PlanarDomain::XY);
+  q.run_instructions( &mesh, &xy, err );
+  ASSERT_NO_ERROR(err);
+  
+  const QualityAssessor::Assessor* data;
+  data = qa_all.get_results( &metric );
+  CPPUNIT_ASSERT( 0 != data );
+  CPPUNIT_ASSERT_EQUAL( 3, data->get_count() );
+
+  data = qa_free.get_results( &metric );
+  CPPUNIT_ASSERT( 0 != data );
+  CPPUNIT_ASSERT_EQUAL( 2, data->get_count() );
+}
+
+  
+  
+  
+  
 

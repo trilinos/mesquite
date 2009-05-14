@@ -111,6 +111,8 @@ namespace MESQUITE_NS
      *                will be written to std::out.  If false, quality
      *                assessment will be available via the get_results
      *                and get_all_results methods, but will not be printed.
+     *\param free_elements_only If true, only quality values that depend
+     *                on at least one free vertex will be uses.
      *\param  inverted_element_tag_name  If a non-null value is specified,
      *                an integer tag with the specified name will be used
      *                it store value of 0 for normal elements and 1 for
@@ -120,12 +122,15 @@ namespace MESQUITE_NS
      */
     MESQUITE_EXPORT 
     QualityAssessor( bool print_summary_to_std_out = true,
+                     bool free_elements_only = false,
                      const char* inverted_element_tag_name = 0,
-                     msq_std::string name = "QualityAssessor" );
+                     msq_std::string name = msq_std::string() );
 
     /**\brief Simple consturctor.  Metrics registered separately.
      *\param output_stream IO stream to which to write a summary of the 
      *                mesh quality.
+     *\param free_elements_only If true, only quality values that depend
+     *                on at least one free vertex will be uses.
      *\param  inverted_element_tag_name  If a non-null value is specified,
      *                an integer tag with the specified name will be used
      *                it store value of 0 for normal elements and 1 for
@@ -135,8 +140,9 @@ namespace MESQUITE_NS
      */
     MESQUITE_EXPORT 
     QualityAssessor( msq_stdio::ostream& output_stream,
+                     bool free_elements_only = false,
                      const char* inverted_element_tag_name = 0,
-                     msq_std::string name = "QualityAssessor" );
+                     msq_std::string name = msq_std::string() );
                      
     /**\brief Construct and register a QualityMetric
      *\param output_stream IO stream to which to write a summary of the 
@@ -156,6 +162,8 @@ namespace MESQUITE_NS
      *                vertices if metric is an element-based or vertex-
      *                based metric.  If metric is not element-based or
      *                vertex-based, this argument has no effect.
+     *\param free_elements_only If true, only quality values that depend
+     *                on at least one free vertex will be uses.
      *\param inverted_element_tag_name  If a non-null value is specified,
      *                an integer tag with the specified name will be used
      *                it store value of 0 for normal elements and 1 for
@@ -168,9 +176,10 @@ namespace MESQUITE_NS
                      QualityMetric* metric, 
                      int histogram_intervals = 0,
                      double power_mean = 0.0,
+                     bool free_elements_only = false,
                      const char* metric_value_tag_name = 0,
                      const char* inverted_element_tag_name = 0,
-                     msq_std::string name = "QualityAssessor" );
+                     msq_std::string name = msq_std::string() );
 
                      
     /**\brief Construct and register a QualityMetric
@@ -193,6 +202,8 @@ namespace MESQUITE_NS
      *                vertices if metric is an element-based or vertex-
      *                based metric.  If metric is not element-based or
      *                vertex-based, this argument has no effect.
+     *\param free_elements_only If true, only quality values that depend
+     *                on at least one free vertex will be uses.
      *\param  inverted_element_tag_name  If a non-null value is specified,
      *                an integer tag with the specified name will be used
      *                it store value of 0 for normal elements and 1 for
@@ -204,10 +215,11 @@ namespace MESQUITE_NS
     QualityAssessor( QualityMetric* metric, 
                      int histogram_intervals = 0,
                      double power_mean = 0.0,
+                     bool free_elements_only = false,
                      const char* metric_value_tag_name = 0,
                      bool print_summary_to_std_out = true,
                      const char* inverted_element_tag_name = 0,
-                     msq_std::string name = "QualityAssessor" );
+                     msq_std::string name = msq_std::string() );
 
     MESQUITE_EXPORT virtual ~QualityAssessor();
     
@@ -522,6 +534,8 @@ namespace MESQUITE_NS
     bool printSummary;
     
     std::string invertedTagName;
+    
+    bool skipFixedSamples;
   };
 
   

@@ -76,36 +76,54 @@
 
 namespace MESQUITE_NS {
 
+const char* default_name( bool free_only )
+{
+  static const char all_name[] = "QualityAssessor";
+  static const char free_name[] = "QualityAssessor(free only)";
+  return free_only ? free_name : all_name;
+}
+
 QualityAssessor::QualityAssessor( bool print_summary,
+                                  bool free_only,
                                   const char* inverted_tag_name,
                                   msq_std::string name) :
   qualityAssessorName(name),
   invertedCount(-1),
   indeterminateCount(-1),
   outputStream( msq_stdio::cout ),
-  printSummary( print_summary )
+  printSummary( print_summary ),
+  skipFixedSamples(free_only)
 {
   if (inverted_tag_name)
     tag_inverted_elements( inverted_tag_name );
+    
+  if (qualityAssessorName.empty()) 
+    qualityAssessorName = default_name( free_only );
 }
 
 QualityAssessor::QualityAssessor( msq_stdio::ostream& stream,
+                                  bool free_only,
                                   const char* inverted_tag_name,
                                   msq_std::string name) :
   qualityAssessorName(name),
   invertedCount(-1),
   indeterminateCount(-1),
   outputStream( stream ),
-  printSummary( true )
+  printSummary( true ),
+  skipFixedSamples(free_only)
 {
   if (inverted_tag_name)
     tag_inverted_elements( inverted_tag_name );
+    
+  if (qualityAssessorName.empty()) 
+    qualityAssessorName = default_name( free_only );
 }
 
 QualityAssessor::QualityAssessor( msq_stdio::ostream& output_stream,
                                   QualityMetric* metric, 
                                   int histogram_intervals,
                                   double power_mean,
+                                  bool free_only,
                                   const char* metric_value_tag_name,
                                   const char* inverted_tag_name,
                                   msq_std::string name ) :
@@ -113,10 +131,14 @@ QualityAssessor::QualityAssessor( msq_stdio::ostream& output_stream,
   invertedCount(-1),
   indeterminateCount(-1),
   outputStream( output_stream ),
-  printSummary( true )
+  printSummary( true ),
+  skipFixedSamples(free_only)
 {
   if (inverted_tag_name)
     tag_inverted_elements( inverted_tag_name );
+    
+  if (qualityAssessorName.empty()) 
+    qualityAssessorName = default_name( free_only );
     
   set_stopping_assessment( metric, histogram_intervals, power_mean, metric_value_tag_name );
 }
@@ -124,6 +146,7 @@ QualityAssessor::QualityAssessor( msq_stdio::ostream& output_stream,
 QualityAssessor::QualityAssessor( QualityMetric* metric, 
                                   int histogram_intervals,
                                   double power_mean,
+                                  bool free_only,
                                   const char* metric_value_tag_name,
                                   bool print_summary,
                                   const char* inverted_tag_name,
@@ -132,10 +155,14 @@ QualityAssessor::QualityAssessor( QualityMetric* metric,
   invertedCount(-1),
   indeterminateCount(-1),
   outputStream( msq_stdio::cout ),
-  printSummary( print_summary )
+  printSummary( print_summary ),
+  skipFixedSamples(free_only)
 {
   if (inverted_tag_name)
     tag_inverted_elements( inverted_tag_name );
+    
+  if (qualityAssessorName.empty()) 
+    qualityAssessorName = default_name( free_only );
     
   set_stopping_assessment( metric, histogram_intervals, power_mean, metric_value_tag_name );
 }
@@ -450,9 +477,11 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
  
 	    if (helper && !helper->is_our_element(patch_elems[0]))
         continue;
-     patch.set_mesh_entities( patch_elems, patch_verts, err ); MSQ_ERRZERO(err);
+      patch.set_mesh_entities( patch_elems, patch_verts, err ); MSQ_ERRZERO(err);
+      if (skipFixedSamples && 0 == patch.num_free_vertices())
+        continue;
 
-       //first check fpr inverted elements
+       //first check for inverted elements
       if (first_pass){
         MsqMeshEntity::ElementOrientation elem_orientation =
           patch.element_by_index(0).check_element_orientation(patch, err);
@@ -482,7 +511,7 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
           double value = 0.0;
           metric_handles.clear();
           QualityMetric* qm = iter->get_metric();
-          qm->get_evaluations( patch, metric_handles, false, err ); MSQ_ERRZERO(err);
+          qm->get_evaluations( patch, metric_handles, skipFixedSamples, err ); MSQ_ERRZERO(err);
           for (msq_std::vector<size_t>::iterator j = metric_handles.begin(); 
                j != metric_handles.end(); ++j) 
           {
@@ -504,7 +533,7 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
         {
           metric_handles.clear();
           QualityMetric* qm = iter->get_metric();
-          qm->get_evaluations( patch, metric_handles, false, err ); MSQ_ERRZERO(err);
+          qm->get_evaluations( patch, metric_handles, skipFixedSamples, err ); MSQ_ERRZERO(err);
           for (msq_std::vector<size_t>::iterator j = metric_handles.begin(); 
                j != metric_handles.end(); ++j) 
           {
@@ -548,6 +577,9 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
       for (p = patches.begin(); p != patches.end(); ++p) {
         vert_patches.get_patch( *p, patch_elems, patch_verts, err ); MSQ_ERRZERO(err);
         patch.set_mesh_entities( patch_elems, patch_verts, err ); MSQ_ERRZERO(err);
+        if (skipFixedSamples && 0 == patch.num_free_vertices())
+          continue;
+        
         Mesh::VertexHandle vert_handle = reinterpret_cast<Mesh::VertexHandle>(*p);
 
         for (iter = elem_end; iter != assessList.end(); ++iter)
@@ -558,7 +590,7 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
             double value = 0.0;
             metric_handles.clear();
             QualityMetric* qm = iter->get_metric();
-            qm->get_evaluations( patch, metric_handles, false, err ); MSQ_ERRZERO(err);
+            qm->get_evaluations( patch, metric_handles, skipFixedSamples, err ); MSQ_ERRZERO(err);
             for (msq_std::vector<size_t>::iterator j = metric_handles.begin(); 
                  j != metric_handles.end(); ++j) 
             {
@@ -579,7 +611,7 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
           {
             metric_handles.clear();
             QualityMetric* qm = iter->get_metric();
-            qm->get_evaluations( patch, metric_handles, false, err ); MSQ_ERRZERO(err);
+            qm->get_evaluations( patch, metric_handles, skipFixedSamples, err ); MSQ_ERRZERO(err);
             for (msq_std::vector<size_t>::iterator j = metric_handles.begin(); 
                  j != metric_handles.end(); ++j) 
             {
