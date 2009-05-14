@@ -76,10 +76,13 @@ libmesquite_la_SOURCES = $(MSQ_SRCS) \
 			 itaps/iMesh.h \
 			 itaps/iGeom.h \
 			 itaps/iRel.h \
+			 itaps/iMeshP.h \
 			 itaps/iBase_FCDefs.h \
 			 itaps/iMesh_protos.h \
 			 itaps/iGeom_protos.h \
-			 itaps/iRel_protos.h 
+			 itaps/iRel_protos.h \
+			 itaps/iMeshP_protos.h 
+
 libmesquite_la_include_HEADERS = include/Mesquite.hpp \
                                  include/Mesquite_all_headers.hpp \
                                  $(top_builddir)/include/mesquite_config.h \

@@ -13,7 +13,7 @@ endif
 
 if ENABLE_IMESH
   IMESH_SRCS = $(SRC_MESH_DIR)/MsqIMesh.cpp
-  IMESH_HDRS = $(SRC_MESH_DIR)/MsqIMesh.hpp
+  IMESH_HDRS = $(SRC_MESH_DIR)/MsqIMesh.hpp 
 else
   IMESH_SRCS = 
   IMESH_HDRS = 
@@ -55,6 +55,7 @@ MSQ_SRCS += \
 	$(SRC_MESH_DIR)/MeshImplTags.cpp \
 	$(SRC_MESH_DIR)/MeshWriter.cpp \
 	$(SRC_MESH_DIR)/MsqIBase.cpp \
+	$(SRC_MESH_DIR)/MsqIBase.hpp \
 	$(SRC_MESH_DIR)/MsqMeshEntity.cpp \
 	$(SRC_MESH_DIR)/MsqVertex.cpp \
 	$(SRC_MESH_DIR)/ParallelMeshImpl.cpp \
