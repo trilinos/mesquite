@@ -807,6 +807,7 @@ void TargetMetric3DTest::test_numerical_hessian()
 #include "TSquared3D.hpp"
 #include "Target3DShapeSizeOrient.hpp"
 #include "Target3DShapeSize.hpp"
+#include "Target3DShapeBarrier.hpp"
 #include "InverseMeanRatio3D.hpp"
 #include "Target3DSize.hpp"
 #include "Target3DSizeBarrier.hpp"
@@ -874,6 +875,7 @@ CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric3DTest, "TargetMetric3DTest" 
 
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeOrient, false, false, false, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSize, false, true, true, 1.0 );
+REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeBarrier, true, true, true, 1.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( InverseMeanRatio3D, true, true, true, 1.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DSize, false, true, false, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DSizeBarrier, false, true, true, 2.0 );
