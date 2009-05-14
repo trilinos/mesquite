@@ -7,6 +7,7 @@ MSQ_SRCS += \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/DomainSurfaceOrientation.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/InvTransBarrier2D.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/TSquared2D.cpp \
+	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DScale.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShape.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeBarrier.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeOrient.cpp \
@@ -23,6 +24,7 @@ MSQ_SRCS += \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeSizeOrientBarrierAlt2.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DSize.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DSizeBarrier.cpp \
+	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DSum.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/TargetSurfaceOrientation.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/InverseMeanRatio2D.cpp 
 
@@ -30,6 +32,7 @@ MSQ_HDRS += \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/DomainSurfaceOrientation.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/InvTransBarrier2D.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/TSquared2D.hpp \
+	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DScale.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShape.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeBarrier.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeOrient.hpp \
@@ -47,6 +50,7 @@ MSQ_HDRS += \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DSize.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DSizeBarrier.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/TargetMetric2D.hpp \
+	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DSum.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/TargetSurfaceOrientation.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/InverseMeanRatio2D.hpp 
 
