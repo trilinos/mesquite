@@ -38,7 +38,7 @@
 
 namespace MESQUITE_NS {
 
-/**\brief \f$ det(T)-1 \f$
+/**\brief \f$ (det(T)-1)^2 \f$
  *
  * A target metric for volume elements that optimizes
  * element size
@@ -58,6 +58,21 @@ public:
                  const MsqMatrix<3,3>& W, 
                  double& result, 
                  MsqError& err );
+
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_grad( const MsqMatrix<3,3>& A,
+                           const MsqMatrix<3,3>& W,
+                           double& result,
+                           MsqMatrix<3,3>& deriv_wrt_A,
+                           MsqError& err );
+  
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_hess( const MsqMatrix<3,3>& A,
+                           const MsqMatrix<3,3>& W,
+                           double& result,
+                           MsqMatrix<3,3>& deriv_wrt_A,
+                           MsqMatrix<3,3> second_wrt_A[6],
+                           MsqError& err );
 };
 
 

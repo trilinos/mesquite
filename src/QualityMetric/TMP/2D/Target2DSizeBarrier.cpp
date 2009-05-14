@@ -33,6 +33,7 @@
 #include "Mesquite.hpp"
 #include "Target2DSizeBarrier.hpp"
 #include "MsqMatrix.hpp"
+#include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
@@ -54,6 +55,49 @@ bool Target2DSizeBarrier::evaluate( const MsqMatrix<2,2>& A,
   return true;  
 }
 
+
+bool Target2DSizeBarrier::evaluate_with_grad( const MsqMatrix<2,2>& A,
+                                              const MsqMatrix<2,2>& W,
+                                              double& result,
+                                              MsqMatrix<2,2>& deriv_wrt_A,
+                                              MsqError& err )
+{
+  const MsqMatrix<2,2> Winv = inverse(W);
+  const MsqMatrix<2,2> T = A * Winv;
+  double d = det(T);
+  if (invalid_determinant(d)) {
+    result = 0.0;
+    return false;
+  }
+  result = d + 1.0/d;
+  deriv_wrt_A = (1 - 1/(d*d)) * transpose_adj(T) * transpose(Winv);
+  return true;  
+}
+  
+bool Target2DSizeBarrier::evaluate_with_hess( const MsqMatrix<2,2>& A,
+                                              const MsqMatrix<2,2>& W,
+                                              double& result,
+                                              MsqMatrix<2,2>& deriv_wrt_A,
+                                              MsqMatrix<2,2> second_wrt_A[3],
+                                              MsqError& err )
+{
+  const MsqMatrix<2,2> Winv = inverse(W);
+  const MsqMatrix<2,2> T = A * Winv;
+  double d = det(T);
+  if (invalid_determinant(d)) {
+    result = 0.0;
+    return false;
+  }
+  result = d + 1.0/d;
+  MsqMatrix<2,2> adjt = transpose_adj(T);
+  const double f = 1 - 1/(d*d);
+  deriv_wrt_A = f * adjt * transpose(Winv);
+  
+  set_scaled_outer_product( second_wrt_A, 2/(d*d*d), adjt );
+  pluseq_scaled_2nd_deriv_of_det( second_wrt_A, f );
+  second_deriv_wrt_product_factor( second_wrt_A, Winv );
+  return true;  
+}
 
 
 } // namespace Mesquite

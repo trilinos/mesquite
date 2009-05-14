@@ -70,6 +70,14 @@ void pluseq_scaled_2nd_deriv_of_det( MsqMatrix<3,3> R[6],
                                      double alpha,
                                      const MsqMatrix<3,3>& T );
 
+/**\brief \f$ R += \alpha \frac{\partial}{\partial T}det(T) \f$
+ *
+ *\param R The 3 blocks of the upper triangular portion of a 4x4
+ *         symmetric matrix.
+ */
+inline
+void pluseq_scaled_2nd_deriv_of_det( MsqMatrix<2,2> R[4], double alpha );
+
 /**\brief \f$ R = \alpha \frac{\partial}{\partial T}det(T) \f$
  *
  *\param R The 6 blocks of the upper triangular portion of a 9x9
@@ -80,25 +88,33 @@ void set_scaled_2nd_deriv_of_det( MsqMatrix<3,3> R[6],
                                   double alpha,
                                   const MsqMatrix<3,3>& T );
 
+/**\brief \f$ R = \alpha \frac{\partial}{\partial T}det(T) \f$
+ *
+ *\param R The 3 blocks of the upper triangular portion of a 4x4
+ *         symmetric matrix.
+ */
+inline
+void set_scaled_2nd_deriv_of_det( MsqMatrix<2,2> R[3], double alpha );
+
 /**\brief \f$ R += \alpha \left( M \otimes M \right) \f$
  *
  *\param R The 6 blocks of the upper triangular portion of a 9x9
  *         symmetric matrix.
  */
-inline
-void pluseq_scaled_outer_product( MsqMatrix<3,3> R[6],
+template <unsigned D> inline
+void pluseq_scaled_outer_product( MsqMatrix<D,D> R[D*(D+1)/2],
                                   double alpha,
-                                  const MsqMatrix<3,3>& M );
+                                  const MsqMatrix<D,D>& M );
 
 /**\brief \f$ R = \alpha \left( M \otimes M \right) \f$
  *
  *\param R The 6 blocks of the upper triangular portion of a 9x9
  *         symmetric matrix.
  */
-inline
-void set_scaled_outer_product( MsqMatrix<3,3> R[6],
+template <unsigned D> inline
+void set_scaled_outer_product( MsqMatrix<D,D> R[D*(D+1)/2],
                                double alpha,
-                               const MsqMatrix<3,3>& M );
+                               const MsqMatrix<D,D>& M );
 
 /**\brief \f$ R += \alpha \left( A \otimes B + B \otimes A \right) \f$
  *
@@ -238,63 +254,75 @@ void set_scaled_2nd_deriv_of_det( MsqMatrix<3,3> R[6],
   R[4](2,1) = -A(0,0);
 }
 
-#ifdef MSQ_ROW_BASED_OUTER_PRODUCT
-void pluseq_scaled_outer_product( MsqMatrix<3,3> R[6],
-                                  double alpha,
-                                  const MsqMatrix<3,3>& M )
+void pluseq_scaled_2nd_deriv_of_det( MsqMatrix<2,2> R[3], double alpha )
 {
-  MsqMatrix<3,3> aM(M);
+  R[1](0,1) += alpha;
+  R[1](1,0) -= alpha;
+}
+
+void set_scaled_2nd_deriv_of_det( MsqMatrix<2,2> R[3], double alpha )
+{
+  R[0] = R[2] = MsqMatrix<2,2>(0.0);
+  R[1](0,0) =  0.0;
+  R[1](0,1) =  alpha;
+  R[1](1,0) = -alpha;
+  R[1](1,1) =  0.0;
+  
+}
+
+#ifdef MSQ_ROW_BASED_OUTER_PRODUCT
+template <unsigned D>
+void pluseq_scaled_outer_product( MsqMatrix<D,D> R[D*(D+1)/2],
+                                  double alpha,
+                                  const MsqMatrix<D,D>& M )
+{
+  MsqMatrix<D,D> aM(M);
   aM *= alpha;
-  R[0] += transpose(aM.row(0)) * M.row(0); // R block 0,0
-  R[1] += transpose(aM.row(0)) * M.row(1); // R block 0,1
-  R[2] += transpose(aM.row(0)) * M.row(2); // R block 0,2
-  R[3] += transpose(aM.row(1)) * M.row(1); // R block 1,1
-  R[4] += transpose(aM.row(1)) * M.row(2); // R block 1,2
-  R[5] += transpose(aM.row(2)) * M.row(2); // R block 2,2
+  unsigned h = 0;
+  for (unsigned i = 0; i < D; ++i)
+    for (unsigned j = i; j < D; ++j)
+      R[h++] += transpose(aM.row(i)) * M.row(j);
 }
 #else
-void pluseq_scaled_outer_product( MsqMatrix<3,3> R[6],
+template <unsigned D>
+void pluseq_scaled_outer_product( MsqMatrix<D,D> R[D*(D+1)/2],
                                   double alpha,
-                                  const MsqMatrix<3,3>& M )
+                                  const MsqMatrix<D,D>& M )
 {
-  MsqMatrix<3,3> aM(transpose(M));
+  MsqMatrix<D,D> aM(transpose(M));
   aM *= alpha;
-  R[0] += M.column(0) * aM.row(0); // R block 0,0
-  R[1] += M.column(0) * aM.row(1); // R block 0,1
-  R[2] += M.column(0) * aM.row(2); // R block 0,2
-  R[3] += M.column(1) * aM.row(1); // R block 1,1
-  R[4] += M.column(1) * aM.row(2); // R block 1,2
-  R[5] += M.column(2) * aM.row(2); // R block 2,2
+  unsigned h = 0;
+  for (unsigned i = 0; i < D; ++i)
+    for (unsigned j = i; j < D; ++j)
+      R[h++] += M.column(i) * aM.row(0);
 }
 #endif
 
 #ifdef MSQ_ROW_BASED_OUTER_PRODUCT
-void set_scaled_outer_product( MsqMatrix<3,3> R[6],
+template <unsigned D>
+void set_scaled_outer_product( MsqMatrix<D,D> R[D*(D+1)/2],
                                double alpha,
-                               const MsqMatrix<3,3>& M )
+                               const MsqMatrix<D,D>& M )
 {
-  MsqMatrix<3,3> aM(M);
+  MsqMatrix<D,D> aM(M);
   aM *= alpha;
-  R[0] = transpose(aM.row(0)) * M.row(0); // R block 0,0
-  R[1] = transpose(aM.row(0)) * M.row(1); // R block 0,1
-  R[2] = transpose(aM.row(0)) * M.row(2); // R block 0,2
-  R[3] = transpose(aM.row(1)) * M.row(1); // R block 1,1
-  R[4] = transpose(aM.row(1)) * M.row(2); // R block 1,2
-  R[5] = transpose(aM.row(2)) * M.row(2); // R block 2,2
+  unsigned h = 0;
+  for (unsigned i = 0; i < D; ++i)
+    for (unsigned j = i; j < D; ++j)
+      R[h++] = transpose(aM.row(i)) * M.row(j);
 }
 #else
-void set_scaled_outer_product( MsqMatrix<3,3> R[6],
+template <unsigned D>
+void set_scaled_outer_product( MsqMatrix<D,D> R[D*(D+1)/2],
                                double alpha,
-                               const MsqMatrix<3,3>& M )
+                               const MsqMatrix<D,D>& M )
 {
-  MsqMatrix<3,3> aM(transpose(M));
+  MsqMatrix<D,D> aM(transpose(M));
   aM *= alpha;
-  R[0] = M.column(0) * aM.row(0); // R block 0,0
-  R[1] = M.column(0) * aM.row(1); // R block 0,1
-  R[2] = M.column(0) * aM.row(2); // R block 0,2
-  R[3] = M.column(1) * aM.row(1); // R block 1,1
-  R[4] = M.column(1) * aM.row(2); // R block 1,2
-  R[5] = M.column(2) * aM.row(2); // R block 2,2
+  unsigned h = 0;
+  for (unsigned i = 0; i < D; ++i)
+    for (unsigned j = i; j < D; ++j)
+      R[h++] = M.column(i) * aM.row(j);
 }
 #endif
 

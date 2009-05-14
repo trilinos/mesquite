@@ -58,4 +58,47 @@ bool Target3DSizeBarrier::evaluate( const MsqMatrix<3,3>& A,
   return true;  
 }
 
+bool Target3DSizeBarrier::evaluate_with_grad( const MsqMatrix<3,3>& A,
+                                              const MsqMatrix<3,3>& W,
+                                              double& result,
+                                              MsqMatrix<3,3>& deriv_wrt_A,
+                                              MsqError& err )
+{
+  const MsqMatrix<3,3> Winv = inverse(W);
+  const MsqMatrix<3,3> T = A * Winv;
+  double d = det(T);
+  if (invalid_determinant(d)) {
+    result = 0.0;
+    return false;
+  }
+  result = d + 1.0/d;
+  deriv_wrt_A = (1 - 1/(d*d)) * transpose_adj(T) * transpose(Winv);
+  return true;  
+}
+  
+bool Target3DSizeBarrier::evaluate_with_hess( const MsqMatrix<3,3>& A,
+                                              const MsqMatrix<3,3>& W,
+                                              double& result,
+                                              MsqMatrix<3,3>& deriv_wrt_A,
+                                              MsqMatrix<3,3> second_wrt_A[6],
+                                              MsqError& err )
+{
+  const MsqMatrix<3,3> Winv = inverse(W);
+  const MsqMatrix<3,3> T = A * Winv;
+  double d = det(T);
+  if (invalid_determinant(d)) {
+    result = 0.0;
+    return false;
+  }
+  result = d + 1.0/d;
+  MsqMatrix<3,3> adjt = transpose_adj(T);
+  const double f = 1 - 1/(d*d);
+  deriv_wrt_A = f * adjt * transpose(Winv);
+  
+  set_scaled_outer_product( second_wrt_A, 2/(d*d*d), adjt );
+  pluseq_scaled_2nd_deriv_of_det( second_wrt_A, f, T );
+  second_deriv_wrt_product_factor( second_wrt_A, Winv );
+  return true;  
+}
+
 } // namespace Mesquite
