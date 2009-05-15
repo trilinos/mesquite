@@ -334,6 +334,7 @@ void QualityAssessorTest::test_basic_stats_vertex()
   LocalSizeQualityMetric metric;
   MetricLogger logger(&metric);
   QualityAssessor qa(&logger);
+  qa.measure_free_samples_only( false );
   qa.disable_printing_results();
   
   MsqError err;
@@ -577,6 +578,7 @@ void QualityAssessorTest::test_invalid_count()
   MsqError err;
   ConditionNumberQualityMetric metric;
   QualityAssessor qa( &metric );
+  qa.measure_free_samples_only( false );
   qa.disable_printing_results();
   const QualityAssessor::Assessor* results = qa.get_results( &metric );
   CPPUNIT_ASSERT(NULL != results);
@@ -597,6 +599,7 @@ void QualityAssessorTest::test_inverted_count()
   int inverted, undefined;
   MsqError err;
   QualityAssessor qa;
+  qa.measure_free_samples_only( false );
   qa.disable_printing_results();
   
     // try mesh with only valid elements

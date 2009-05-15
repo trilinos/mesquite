@@ -228,6 +228,35 @@ namespace MESQUITE_NS
       //! Retrieves the QualityAssessor name. A default name should be set in the constructor.
     MESQUITE_EXPORT virtual msq_std::string get_name() const { return qualityAssessorName; }
     
+      /**\brief All elements or only improvable ones.
+       *
+       * If set to true, the quality assessment results will include
+       * quality values only for those elements (or more precisely metric
+       * sample points) which are influenced by at least one free vertex.
+       * That is, quality for elements (or sample points) that the sovler
+       * cannot improve (e.g. an element with all vertices fixed) will not
+       * be included in the quality assessment.
+       *
+       * If set to false, quality for all elements will be assessed.
+       */
+    MESQUITE_EXPORT void measure_free_samples_only( bool yesno )
+      { skipFixedSamples = yesno; }
+      
+      /**\brief All elements or only improvable ones.
+       *
+       * If set to true, the quality assessment results will include
+       * quality values only for those elements (or more precisely metric
+       * sample points) which are influenced by at least one free vertex.
+       * That is, quality for elements (or sample points) that the sovler
+       * cannot improve (e.g. an element with all vertices fixed) will not
+       * be included in the quality assessment.
+       *
+       * If set to false, quality for all elements will be assessed.
+       */
+    MESQUITE_EXPORT bool measuring_free_samples_only() const
+      { return skipFixedSamples; }
+    
+    
     /**\brief Register a QualityMetric for use in quality assessment.
      *
      * Add a quality metric to the list of metrics used to assess
@@ -314,13 +343,6 @@ namespace MESQUITE_NS
                                    MeshDomain* domain,
                                    const Settings* settings,
                                    MsqError &err);
-
-      //! Common code for serial and parallel loop_over_mesh
-    virtual double loop_over_mesh_internal( Mesh* mesh,
-                                            MeshDomain* domain,
-                                            const Settings* settings,
-                                            ParallelHelper* helper,
-                                            MsqError &err);
 
       //! Do not print results of assessment.
     MESQUITE_EXPORT void disable_printing_results()
@@ -490,6 +512,13 @@ namespace MESQUITE_NS
       { return assessList; }
       
   private:
+
+      //! Common code for serial and parallel loop_over_mesh
+    double loop_over_mesh_internal( Mesh* mesh,
+                                    MeshDomain* domain,
+                                    const Settings* settings,
+                                    ParallelHelper* helper,
+                                    MsqError &err);
   
     /** Find an Assessor corresponding to the passed
      *  QualityMetric, or create it if is not found in
