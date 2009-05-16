@@ -860,6 +860,7 @@ void QualityAssessorTest::test_print_inverted()
   MsqError err;
   stringstream str;
   QualityAssessor qa( str );
+  qa.measure_free_samples_only( false );
   qa.loop_over_mesh( &invertedMesh, &myDomain, &mySettings, err  );
   ASSERT_NO_ERROR( err );
 
