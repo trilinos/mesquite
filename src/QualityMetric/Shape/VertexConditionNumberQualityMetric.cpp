@@ -53,7 +53,7 @@ msq_std::string VertexConditionNumberQualityMetric::get_name() const
   { return "Vertex Condition Number"; }
 
 int VertexConditionNumberQualityMetric::get_negate_flag() const
-  { return -1; }
+  { return 1; }
 
 bool VertexConditionNumberQualityMetric::evaluate( PatchData& pd, 
                                                    size_t this_vert, 
