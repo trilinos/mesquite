@@ -12,6 +12,7 @@ MSQ_SRCS += \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSizeOrient.cpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DSize.cpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DSizeBarrier.cpp \
+	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DSquared.cpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DSum.cpp 
 
 MSQ_HDRS += \
@@ -24,5 +25,6 @@ MSQ_HDRS += \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DShapeSizeOrient.hpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DSize.hpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DSizeBarrier.hpp \
+	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DSquared.hpp \
 	$(SRC_QUALITYMETRIC_TMP_3D_DIR)/Target3DSum.hpp 
 
