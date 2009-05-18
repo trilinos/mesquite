@@ -54,7 +54,7 @@ bool Target3DSizeBarrier::evaluate( const MsqMatrix<3,3>& A,
     result = 0.0;
     return false;
   }
-  result = d + 1.0/d;
+  result = d + 1.0/d - 2.0;
   return true;  
 }
 
@@ -71,7 +71,7 @@ bool Target3DSizeBarrier::evaluate_with_grad( const MsqMatrix<3,3>& A,
     result = 0.0;
     return false;
   }
-  result = d + 1.0/d;
+  result = d + 1.0/d - 2.0;
   deriv_wrt_A = (1 - 1/(d*d)) * transpose_adj(T) * transpose(Winv);
   return true;  
 }
@@ -90,7 +90,7 @@ bool Target3DSizeBarrier::evaluate_with_hess( const MsqMatrix<3,3>& A,
     result = 0.0;
     return false;
   }
-  result = d + 1.0/d;
+  result = d + 1.0/d - 2.0;
   MsqMatrix<3,3> adjt = transpose_adj(T);
   const double f = 1 - 1/(d*d);
   deriv_wrt_A = f * adjt * transpose(Winv);
