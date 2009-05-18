@@ -13,6 +13,7 @@ MSQ_SRCS += \
 	$(SRC_TARGETCALCULATOR_DIR)/MetricWeight.cpp \
 	$(SRC_TARGETCALCULATOR_DIR)/RefMeshTargetCalculator.cpp \
 	$(SRC_TARGETCALCULATOR_DIR)/ReferenceMesh.cpp \
+	$(SRC_TARGETCALCULATOR_DIR)/RefSizeTargetCalculator.cpp \
 	$(SRC_TARGETCALCULATOR_DIR)/TargetReader.cpp \
 	$(SRC_TARGETCALCULATOR_DIR)/TargetWriter.cpp \
 	$(SRC_TARGETCALCULATOR_DIR)/WeightReader.cpp 
@@ -28,6 +29,7 @@ MSQ_HDRS += \
 	$(SRC_TARGETCALCULATOR_DIR)/MetricWeight.hpp \
 	$(SRC_TARGETCALCULATOR_DIR)/RefMeshTargetCalculator.hpp \
 	$(SRC_TARGETCALCULATOR_DIR)/ReferenceMesh.hpp \
+	$(SRC_TARGETCALCULATOR_DIR)/RefSizeTargetCalculator.hpp \
 	$(SRC_TARGETCALCULATOR_DIR)/TargetCalculator.hpp \
 	$(SRC_TARGETCALCULATOR_DIR)/TargetReader.hpp \
 	$(SRC_TARGETCALCULATOR_DIR)/TargetWriter.hpp \
