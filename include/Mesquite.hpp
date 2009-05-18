@@ -140,7 +140,7 @@ namespace MESQUITE_NS
   };
    MESQUITE_EXPORT Mesquite::ReleaseType release_type();
   
-  const bool OF_FREE_EVALS_ONLY=false;
+  const bool OF_FREE_EVALS_ONLY=true;
   
     //GLOBAL variables
   const int MSQ_MAX_NUM_VERT_PER_ENT=8;
