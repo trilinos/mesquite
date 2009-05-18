@@ -817,9 +817,15 @@ void QualityAssessor::print_summary( msq_stdio::ostream& stream ) const
          << " Summary **************"
          << msq_stdio::endl
          << msq_stdio::endl;
-  stream << "  Evaluating quality for " << freeElementCount << " of " 
-         << elementCount << " elements." << msq_stdio::endl;
-        
+         
+  if (freeElementCount != elementCount)
+    stream << "  Evaluating quality for " << freeElementCount 
+           << " free elements of " << elementCount 
+           << " total elements." << msq_stdio::endl;
+  else
+    stream << "  Evaluating quality for " << elementCount 
+           << " elements." << msq_stdio::endl;
+    
   if(invertedCount == 0  && indeterminateCount == 0){
     stream << "  There were no inverted elements detected. "
            << msq_stdio::endl;
