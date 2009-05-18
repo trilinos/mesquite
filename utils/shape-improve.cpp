@@ -18,6 +18,9 @@ int main( int argc, char* argv[] )
   CLArgs args( "msqshape",
                "Run Shape Improvement smoother for input mesh.",
                "Read VTK file, smooth, and re-write file." );
+  args.double_flag( 'n', "GradL2Norm", "termination graident L2 norm", &l2_norm );
+  args.double_flag( 't', "Cpu Seconds", "time-out", &cpu_time );
+                    
   add_domain_args( args );
   args.add_required_arg( "input_file" );
   args.add_required_arg( "output_file" );
