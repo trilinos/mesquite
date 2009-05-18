@@ -1,17 +1,21 @@
 @UTIL_MAKE_INCLUDE@
 LDADD = $(top_builddir)/libmesquite.la libmsqutil.la
-bin_PROGRAMS = vtkrandom vtkxform 
-man1_MANS = vtkrandom.1 vtkxform.1 
+bin_PROGRAMS = vtkrandom vtkxform msqshape
+man1_MANS = vtkrandom.1 vtkxform.1 msqshape.1
 noinst_LTLIBRARIES = libmsqutil.la
 
 libmsqutil_la_SOURCES = CLArgs.cpp CLArgs.hpp \
                         CLArgFlag.cpp CLArgFlag.hpp \
                         ManPage.cpp ManPage.hpp
 
-vtkrandom_SOURCES = randomize.cpp
+vtkrandom_SOURCES = randomize.cpp domain.hpp domain.cpp
+msqshape_SOURCES = shape-improve.cpp domain.hpp domain.cpp
 vtkxform_SOURCES = transform.cpp
 
 vtkrandom.1: vtkrandom$(EXEEXT)
+	./$< -M > $@ || touch $@
+
+msqshape.1: msqshape$(EXEEXT)
 	./$< -M > $@ || touch $@
 
 vtkxform.1: vtkxform$(EXEEXT)
