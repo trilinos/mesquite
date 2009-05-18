@@ -556,6 +556,11 @@ namespace MESQUITE_NS
       /** Count of elements whose orientation can not be determined.*/
     int indeterminateCount;
     
+      /** Number of elements */
+    size_t elementCount;
+    
+      /** Number of elements with at least one free vertex */
+    size_t freeElementCount;
    
     /** Stream to which to write summary of metric data */
     msq_stdio::ostream& outputStream;

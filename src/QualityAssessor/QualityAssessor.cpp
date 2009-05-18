@@ -465,6 +465,9 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
 
   invertedCount = 0;
   indeterminateCount = 0;
+  elementCount = patches.size();
+  freeElementCount = 0;
+  
   bool first_pass = false;
   do { // might need to loop twice to calculate histograms
     first_pass = !first_pass;
@@ -475,14 +478,16 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
     for (p = patches.begin(); p != patches.end(); ++p) {
       elem_patches.get_patch( *p, patch_elems, patch_verts, err ); MSQ_ERRZERO(err);
  
-	    if (helper && !helper->is_our_element(patch_elems[0]))
+      if (helper && !helper->is_our_element(patch_elems[0]))
         continue;
       patch.set_mesh_entities( patch_elems, patch_verts, err ); MSQ_ERRZERO(err);
+      
       if (skipFixedSamples && 0 == patch.num_free_vertices())
         continue;
-
+      
        //first check for inverted elements
       if (first_pass){
+        ++freeElementCount;
         MsqMeshEntity::ElementOrientation elem_orientation =
           patch.element_by_index(0).check_element_orientation(patch, err);
 
@@ -812,6 +817,9 @@ void QualityAssessor::print_summary( msq_stdio::ostream& stream ) const
          << " Summary **************"
          << msq_stdio::endl
          << msq_stdio::endl;
+  stream << "  Evaluating quality for " << freeElementCount << " of " 
+         << elementCount << " elements." << msq_stdio::endl;
+        
   if(invertedCount == 0  && indeterminateCount == 0){
     stream << "  There were no inverted elements detected. "
            << msq_stdio::endl;
