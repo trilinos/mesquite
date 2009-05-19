@@ -878,7 +878,7 @@ REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSize, false, true, true, 1.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeBarrier, true, true, true, 1.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( InverseMeanRatio3D, true, true, true, 1.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DSize, false, true, false, 0.0 );
-REGISTER_TARGET3D_TEST_WITH_HESS( Target3DSizeBarrier, false, true, true, 2.0 );
+REGISTER_TARGET3D_TEST_WITH_HESS( Target3DSizeBarrier, false, true, true, 0.0 );
 
 
 class Test_TSquared3D : public Target3DTest<TSquared3D> {
