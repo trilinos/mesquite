@@ -2016,10 +2016,10 @@ void QualityMetricTester::test_measures_vertex_quality( QualityMetric* qm )
   PatchData pd;
   double qmval1, qmval2;
   bool rval;
-  bool decreasing = false;
+  bool increasing = true;
   if (qm->get_negate_flag() != 1) {
     CPPUNIT_ASSERT_EQUAL( qm->get_negate_flag(), -1 );
-    decreasing = true;
+    increasing = true;
   }
   
   unsigned count = 0;
@@ -2049,7 +2049,7 @@ void QualityMetricTester::test_measures_vertex_quality( QualityMetric* qm )
     CPPUNIT_ASSERT(!MSQ_CHKERR(err));
     CPPUNIT_ASSERT( rval );
       // check values
-    if (decreasing) {
+    if (increasing) {
       CPPUNIT_ASSERT( qmval2 > qmval1 );
     }
     else {
@@ -2068,10 +2068,10 @@ void QualityMetricTester::test_vertex_gradient_reflects_quality( QualityMetric* 
   msq_std::vector<Vector3D> grad;
   double qmval;
   bool rval;
-  bool decreasing = false;
+  bool increasing = true;
   if (qm->get_negate_flag() != 1) {
     CPPUNIT_ASSERT_EQUAL( qm->get_negate_flag(), -1 );
-    decreasing = true;
+    increasing = false;
   }
   
   unsigned count = 0;
@@ -2104,7 +2104,7 @@ void QualityMetricTester::test_vertex_gradient_reflects_quality( QualityMetric* 
     ++count;
     Vector3D g = grad[0];
       // check gradient direction
-    if (decreasing)
+    if (increasing)
       CPPUNIT_ASSERT( g[2] > 1e-6 );
     else
       CPPUNIT_ASSERT( g[2] < -1e-6 );
