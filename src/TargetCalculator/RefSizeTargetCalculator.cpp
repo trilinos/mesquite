@@ -38,6 +38,34 @@
 
 namespace MESQUITE_NS {
 
+static void init_scale_factors( double factors[MIXED] )
+{
+  for (int i = 0; i < MIXED; ++i)
+    factors[i] = 0.0;
+  
+  factors[     TRIANGLE] = 0.21934566882541542;
+  factors[QUADRILATERAL] = 0.25;
+  factors[  TETRAHEDRON] = 0.08171340981758000;
+  factors[      PYRAMID] = 0.06068647146341543;
+  factors[        PRISM] = 0.07311522294180514;
+  factors[   HEXAHEDRON] = 0.08333333333333333;
+}
+
+RefSizeTargetCalculator::RefSizeTargetCalculator( 
+                           ReferenceMesh* reference_mesh,
+                           TargetCalculator* tc )
+   : refMesh( reference_mesh ),
+     scaledTargets( tc )
+   { init_scale_factors( scaleFactor ); }
+   
+RefSizeTargetCalculator::RefSizeTargetCalculator( 
+                           ReferenceMesh* reference_mesh,
+                           bool orient_surface_elems )
+   : refMesh( reference_mesh ),
+     defaultTargets( orient_surface_elems ),
+     scaledTargets( &defaultTargets )
+   { init_scale_factors( scaleFactor );  }
+
 double RefSizeTargetCalculator::average_edge_length( PatchData& pd, 
                                                      size_t element,
                                                      MsqError& err )
@@ -65,7 +93,7 @@ double RefSizeTargetCalculator::average_edge_length( PatchData& pd,
     const unsigned* edge = TopologyInfo::edge_vertices( type, i );
     len_sum += (coords[edge[0]] - coords[edge[1]]).length();
   }
-  return len_sum/num_edges;
+  return len_sum * scaleFactor[type];
 }
                                              
  
@@ -80,7 +108,7 @@ bool RefSizeTargetCalculator::get_3D_target( PatchData& pd,
  
   double f = average_edge_length( pd, element, err );
   MSQ_ERRZERO(err);
-  W *= 0.5*f;
+  W *= f;
   
   return true;
 }
@@ -96,7 +124,7 @@ bool RefSizeTargetCalculator::get_2D_target( PatchData& pd,
  
   double f = average_edge_length( pd, element, err );
   MSQ_ERRZERO(err);
-  W *= 0.5*f;
+  W *= f;
   
   return true;
 }

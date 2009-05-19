@@ -44,17 +44,9 @@ class RefSizeTargetCalculator : public TargetCalculator
 {
 public:
   RefSizeTargetCalculator( ReferenceMesh* reference_mesh,
-                           TargetCalculator* tc )
-   : refMesh( reference_mesh ),
-     scaledTargets( tc )
-   { }
-   
+                           TargetCalculator* tc );
   RefSizeTargetCalculator( ReferenceMesh* reference_mesh,
-                           bool orient_surface_elems = true )
-   : refMesh( reference_mesh ),
-     defaultTargets( orient_surface_elems ),
-     scaledTargets( &defaultTargets )
-   { }
+                           bool orient_surface_elems = true );
   
   virtual bool get_3D_target( PatchData& pd, 
                               size_t element,
@@ -75,6 +67,11 @@ private:
   ReferenceMesh* refMesh;
   IdealTargetCalculator defaultTargets;
   TargetCalculator* scaledTargets;
+  
+  /** Amount to scale average edge length by to achive correctly sized
+   *  ideal area/volume target, indexed by element topology.
+   */
+  double scaleFactor[MIXED];
 };
 
 
