@@ -60,6 +60,22 @@ void set_scaled_I( MsqMatrix<3,3> R[6], double alpha );
 inline
 void pluseq_scaled_I( MsqMatrix<3,3> R[6], double alpha );
 
+/**\brief \f$ R = \alpha I_4 \f$
+ *
+ *\param R The 3 blocks of the upper triangular portion of a 4x4
+ *         symmetric matrix.
+ */
+inline
+void set_scaled_I( MsqMatrix<2,2> R[3], double alpha );
+
+/**\brief \f$ R += \alpha I_4 \f$
+ *
+ *\param R The 3 blocks of the upper triangular portion of a 4x4
+ *         symmetric matrix.
+ */
+inline
+void pluseq_scaled_I( MsqMatrix<2,2> R[3], double alpha );
+
 /**\brief \f$ R += \alpha \frac{\partial}{\partial T}det(T) \f$
  *
  *\param R The 6 blocks of the upper triangular portion of a 9x9
@@ -127,6 +143,17 @@ void pluseq_scaled_sum_outer_product( MsqMatrix<3,3> R[6],
                                       const MsqMatrix<3,3>& A,
                                       const MsqMatrix<3,3>& B );
 
+/**\brief \f$ R += \alpha \left( A \otimes B + B \otimes A \right) \f$
+ *
+ *\param R The 3 blocks of the upper triangular portion of a 4x4
+ *         symmetric matrix.
+ */
+inline
+void pluseq_scaled_sum_outer_product( MsqMatrix<2,2> R[3],
+                                      double alpha,
+                                      const MsqMatrix<2,2>& A,
+                                      const MsqMatrix<2,2>& B );
+
 /**\brief \f$ R += I \otimes A \f$
  *
  *\param R The 6 blocks of the upper triangular portion of a 9x9
@@ -189,6 +216,20 @@ void pluseq_scaled_I( MsqMatrix<3,3> R[6], double alpha )
   R[5](0,0) += alpha;
   R[5](1,1) += alpha;
   R[5](2,2) += alpha;
+}
+
+void set_scaled_I( MsqMatrix<2,2> R[3], double alpha )
+{
+  R[0] = R[2] = MsqMatrix<2,2>(alpha);
+  R[1]        = MsqMatrix<2,2>(0.0);
+}
+
+void pluseq_scaled_I( MsqMatrix<2,2> R[3], double alpha )
+{
+  R[0](0,0) += alpha;
+  R[0](1,1) += alpha;
+  R[2](0,0) += alpha;
+  R[2](1,1) += alpha;
 }
 
 void pluseq_scaled_2nd_deriv_of_det( MsqMatrix<3,3> R[6],
@@ -399,6 +440,56 @@ void pluseq_scaled_sum_outer_product( MsqMatrix<3,3> R[6],
     // block 1,2
   R[4] += A.column(1) * transpose(B.column(2)) +
           B.column(1) * transpose(A.column(2));
+}
+#endif
+
+#ifdef MSQ_ROW_BASED_OUTER_PRODUCT
+void pluseq_scaled_sum_outer_product( MsqMatrix<2,2> R[3],
+                                      double alpha,
+                                      const MsqMatrix<2,2>& A_in,
+                                      const MsqMatrix<2,2>& B )
+{
+    // apply scalar first
+  MsqMatrix<2,2> A(A_in), tmp;
+  A *= alpha;
+
+    // block 0,0
+  tmp = transpose(A.row(0)) * B.row(0);
+  R[0] += tmp;
+  R[0] += transpose(tmp);
+  
+    // block 1,1
+  tmp = transpose(A.row(1)) * B.row(1);
+  R[2] += tmp;
+  R[2] += transpose(tmp);
+   
+    // block 0,1
+  R[1] += transpose(A.row(0)) * B.row(1) +
+          transpose(B.row(0)) * A.row(1);
+}
+#else
+void pluseq_scaled_sum_outer_product( MsqMatrix<2,2> R[3],
+                                      double alpha,
+                                      const MsqMatrix<2,2>& A_in,
+                                      const MsqMatrix<2,2>& B )
+{
+    // apply scalar first
+  MsqMatrix<2,2> A(A_in), tmp;
+  A *= alpha;
+
+    // block 0,0
+  tmp = A.column(0) * transpose(B.column(0));
+  R[0] += tmp;
+  R[0] += transpose(tmp);
+  
+    // block 1,1
+  tmp = A.column(1) * transpose(B.column(1));
+  R[2] += tmp;
+  R[2] += transpose(tmp);
+   
+    // block 0,1
+  R[1] += A.column(0) * transpose(B.column(1)) +
+          B.column(0) * transpose(A.column(1));
 }
 #endif
 

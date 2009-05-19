@@ -33,6 +33,7 @@
 #include "Mesquite.hpp"
 #include "Target2DShape.hpp"
 #include "MsqMatrix.hpp"
+#include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
@@ -40,15 +41,50 @@ msq_std::string Target2DShape::get_name() const
   { return "Shape"; }
 
 bool Target2DShape::evaluate( const MsqMatrix<2,2>& A, 
-                                 const MsqMatrix<2,2>& W, 
-                                 double& result, 
-                                 MsqError&  )
+                              const MsqMatrix<2,2>& W, 
+                              double& result, 
+                              MsqError&  )
 {
   const MsqMatrix<2,2> T = A * inverse(W);
   result = sqr_Frobenius(T) - 2.0*det(T);
   return true;  
 }
 
+bool Target2DShape::evaluate_with_grad( const MsqMatrix<2,2>& A,
+                                        const MsqMatrix<2,2>& W,
+                                        double& result,
+                                        MsqMatrix<2,2>& deriv_wrt_A,
+                                        MsqError& err )
+{
+  const MsqMatrix<2,2> Winv = inverse(W);
+  const MsqMatrix<2,2> T = A * Winv;
+  result = sqr_Frobenius(T) - 2.0*det(T);
+  deriv_wrt_A = T;
+  deriv_wrt_A -= transpose_adj(T);
+  deriv_wrt_A *= 2;
+  deriv_wrt_A = deriv_wrt_A * transpose(Winv);
+  return true;  
+  
+}
 
+bool Target2DShape::evaluate_with_hess( const MsqMatrix<2,2>& A,
+                                        const MsqMatrix<2,2>& W,
+                                        double& result,
+                                        MsqMatrix<2,2>& deriv_wrt_A,
+                                        MsqMatrix<2,2> second_wrt_A[3],
+                                        MsqError& err )
+{
+  const MsqMatrix<2,2> Winv = inverse(W);
+  const MsqMatrix<2,2> T = A * Winv;
+  result = sqr_Frobenius(T) - 2.0*det(T);
+  deriv_wrt_A = T;
+  deriv_wrt_A -= transpose_adj(T);
+  deriv_wrt_A *= 2;
+  deriv_wrt_A = deriv_wrt_A * transpose(Winv);
+  set_scaled_I( second_wrt_A, 2.0 );
+  pluseq_scaled_2nd_deriv_of_det( second_wrt_A, -2.0 );
+  second_deriv_wrt_product_factor( second_wrt_A, Winv );
+  return true;
+}
 
 } // namespace Mesquite

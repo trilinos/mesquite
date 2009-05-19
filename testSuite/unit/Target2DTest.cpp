@@ -676,8 +676,8 @@ CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric2DTest, "Unit" );
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric2DTest, "Target2DTest" );
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric2DTest, "TargetMetric2DTest" );
 
-REGISTER_TARGET2D_TEST               ( Target2DShape,                      true,  true, false, 0.0 );
-REGISTER_TARGET2D_TEST               ( Target2DShapeBarrier,               true,  true,  true, 1.0 );
+REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShape,                      true,  true, false, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeBarrier,               true,  true,  true, 1.0 );
 REGISTER_TARGET2D_TEST               ( Target2DShapeOrient,                true, false, false, 0.0 );
 REGISTER_TARGET2D_TEST               ( Target2DShapeOrientAlt1,            true, false, false, 0.0 );
 REGISTER_TARGET2D_TEST               ( Target2DShapeOrientAlt2,            true, false, false, 0.0 );
