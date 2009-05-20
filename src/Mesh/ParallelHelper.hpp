@@ -97,6 +97,7 @@ namespace MESQUITE_NS
     friend class QualityAssessor;
     // functions called by QualityAssessor::loop_over_mesh()
     int get_rank() const;
+    int get_nprocs() const;
     bool is_our_element(Mesquite::Mesh::ElementHandle element_handle) const;
     bool is_our_vertex(Mesquite::Mesh::VertexHandle vertex_handle) const;
     void communicate_min_max_to_all(double* minimum, double* maximum) const;

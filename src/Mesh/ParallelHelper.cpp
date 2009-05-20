@@ -233,6 +233,7 @@ bool ParallelHelperImpl::smoothing_init()
   Mesquite::MsqError err;
 
   if (!mesh) return false;
+  if (nprocs == 1) return true;
 
   /* get the vertices */
   vertices = new msq_std::vector<Mesquite::Mesh::VertexHandle>;
@@ -631,6 +632,8 @@ bool ParallelHelperImpl::smoothing_init()
 
 void ParallelHelperImpl::compute_first_independent_set(msq_std::vector<Mesh::VertexHandle>& fixed_vertices)
 {
+  if (nprocs == 1) return;
+
   int i;
 
   // to avoid all reduce we need to know how many vertices we send & receive
@@ -686,6 +689,8 @@ void ParallelHelperImpl::compute_first_independent_set(msq_std::vector<Mesh::Ver
 
 void ParallelHelperImpl::communicate_first_independent_set()
 {
+  if (nprocs == 1) return;
+
   switch (communication_model)
   {
   case TrulyNonBlocking:
@@ -712,6 +717,8 @@ void ParallelHelperImpl::communicate_first_independent_set()
 
 bool ParallelHelperImpl::compute_next_independent_set()
 {
+  if (nprocs == 1) return false;
+
   if (global_work_remains && (iteration<20))
   {
     iteration++;
@@ -2082,6 +2089,10 @@ void ParallelHelperImpl::compute_independent_set()
 
 int ParallelHelperImpl::get_rank() const {
   return rank;
+}
+
+int ParallelHelperImpl::get_nprocs() const {
+  return nprocs;
 }
 
 bool ParallelHelperImpl::is_our_element(Mesquite::Mesh::ElementHandle element_handle) const {

@@ -86,8 +86,15 @@ void ParallelMeshImpl::vertices_get_global_id(const VertexHandle vert_array[],
 					      size_t num_vtx,
 					      MsqError& err)
 {
-  myMesh->tag_get_vertex_data(gid_tag, num_vtx, vert_array, gid, err);
-  MSQ_CHKERR(err);
+  if (gid_tag)
+  {
+    myMesh->tag_get_vertex_data(gid_tag, num_vtx, vert_array, gid, err);
+    MSQ_CHKERR(err);
+  }
+  else
+  {
+    MSQ_SETERR(err)( "Parallel mesh does not have Global IDs.", MsqError::INVALID_STATE);
+  }
 }
 
 void ParallelMeshImpl::vertices_set_global_id(const VertexHandle vert_array[],
@@ -118,8 +125,15 @@ void ParallelMeshImpl::vertices_get_processor_id(const VertexHandle vert_array[]
 						 size_t num_vtx,
 						 MsqError& err)
 {
-  tag_get_vertex_data( pid_tag, num_vtx, vert_array, pid, err );
-  MSQ_CHKERR(err);
+  if (pid_tag)
+  {
+    tag_get_vertex_data( pid_tag, num_vtx, vert_array, pid, err );
+    MSQ_CHKERR(err);
+  }
+  else
+  {
+    MSQ_SETERR(err)( "Parallel mesh does not have Processor IDs.", MsqError::INVALID_STATE);
+  }
 }
 
 void ParallelMeshImpl::vertices_set_processor_id(const VertexHandle vert_array[],
