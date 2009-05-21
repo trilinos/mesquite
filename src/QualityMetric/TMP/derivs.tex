@@ -873,12 +873,12 @@ A &=& Z^t \times A^\prime
 
 \section{Derivatives of Non-Barrier Metrics}
 
-\subsection{Derivatives of $\mu_n (T)=|T-I|^2$ \label{tmi}}
+\subsection{Derivatives of $\mu_n (T)=|T-I_n|^2$ \label{tmi}}
 
 \noindent  This metric preserves the shape, size, and orientation of the target and is valid for any $n$. \newline
 
 \begin{equation}
-\mu(T) = |T-I|^2 = \sum_{i=1}^n \sum_{j=1}^n (t_{i,j} - b_{i,j})^2
+\mu(T) = |T-I_n|^2 = \sum_{i=1}^n \sum_{j=1}^n (t_{i,j} - b_{i,j})^2
 \end{equation}
 
 \begin{equation}
@@ -886,7 +886,7 @@ A &=& Z^t \times A^\prime
 \end{equation}
 
 \begin{equation}
-\frac{\partial \mu}{\partial T} = 2(T - I)
+\frac{\partial \mu}{\partial T} = 2(T - I_n)
 \end{equation}
 
 
@@ -894,18 +894,18 @@ A &=& Z^t \times A^\prime
 \frac{\partial^2 \mu}{\partial t_{i,j} \partial t_{k,l}} = 2 \delta^i_k \delta^j_l \end{equation}
 
 \begin{equation}
-\frac{\partial^2 \mu}{\partial T^2} = 2 I
+\frac{\partial^2 \mu}{\partial T^2} = 2 I_{n^2}
 \end{equation}
-
+ 
 \noindent Alternatively, one can write
 \begin{eqnarray}
-|T-I|^2 = |T|^2 - 2 tr(T) + n
+|T-I_n|^2 = |T|^2 - 2 tr(T) + n
 \end{eqnarray}
 so that 
 \begin{eqnarray}
 \frac{\partial \mu}{\partial T} & = & \frac{\partial}{\partial T} |T|^2 - 2 \frac{\partial}{\partial T} tr(T) \nonumber \\
- & = & 2 T - 2 I \nonumber \\
- & = & 2 (T-I)
+ & = & 2 T - 2 I_n \nonumber \\
+ & = & 2 (T-I_n)
 \end{eqnarray}
 and similarly for the second derivatives. \newline
 
