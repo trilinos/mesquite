@@ -33,6 +33,7 @@
 #include "Mesquite.hpp"
 #include "Target2DShapeOrientAlt1.hpp"
 #include "MsqMatrix.hpp"
+#include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
@@ -47,6 +48,46 @@ bool Target2DShapeOrientAlt1::evaluate( const MsqMatrix<2,2>& A,
   const MsqMatrix<2,2> T = A * inverse(W);
   const double tr = trace(T);
   result = sqr_Frobenius( T ) - 0.5 * tr * fabs(tr);
+  return true;
+}
+
+bool Target2DShapeOrientAlt1::evaluate_with_grad( const MsqMatrix<2,2>& A, 
+                                              const MsqMatrix<2,2>& W, 
+                                              double& result, 
+                                              MsqMatrix<2,2>& deriv_wrt_A,
+                                              MsqError& err )
+{
+  MsqMatrix<2,2> Winv = inverse(W);
+  MsqMatrix<2,2> T = A * Winv;
+  const double tr = trace(T);
+  result = sqr_Frobenius( T ) - 0.5 * tr * fabs(tr);
+  deriv_wrt_A = T;
+  deriv_wrt_A *= 2;
+  deriv_wrt_A(0,0) -= fabs(tr);
+  deriv_wrt_A(1,1) -= fabs(tr);
+  deriv_wrt_A = deriv_wrt_A * transpose(Winv);
+  return true;
+}
+
+bool Target2DShapeOrientAlt1::evaluate_with_Hess( const MsqMatrix<2,2>& A, 
+                                              const MsqMatrix<2,2>& W, 
+                                              double& result, 
+                                              MsqMatrix<2,2>& deriv_wrt_A,
+                                              MsqMatrix<2,2> second_wrt_A[3],
+                                              MsqError& err )
+{
+  MsqMatrix<2,2> Winv = inverse(W);
+  MsqMatrix<2,2> T = A * Winv;
+  const double tr = trace(T);
+  result = sqr_Frobenius( T ) - 0.5 * tr * fabs(tr);
+  deriv_wrt_A = T;
+  deriv_wrt_A *= 2;
+  deriv_wrt_A(0,0) -= fabs(tr);
+  deriv_wrt_A(1,1) -= fabs(tr);
+  deriv_wrt_A = deriv_wrt_A * transpose(Winv);
+  set_scaled_I( second_wrt_A, 2.0 );
+  pluseq_scaled_outer_product_I_I( second_wrt_A, tr < 0 ? 1 : -1 );
+  second_deriv_wrt_product_factor( second_wrt_A, Winv );
   return true;
 }
 

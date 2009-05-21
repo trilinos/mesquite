@@ -154,6 +154,22 @@ void pluseq_scaled_sum_outer_product( MsqMatrix<2,2> R[3],
                                       const MsqMatrix<2,2>& A,
                                       const MsqMatrix<2,2>& B );
 
+/**\brief \f$ R += \alpha (I \otimes I) \f$
+ *
+ *\param R The 6 blocks of the upper triangular portion of a 9x9
+ *         symmetric matrix.
+ */
+inline 
+void pluseq_scaled_outer_product_I_I( MsqMatrix<3,3> R[6], double alpha );
+
+/**\brief \f$ R += \alpha (I \otimes I) \f$
+ *
+ *\param R The 3 blocks of the upper triangular portion of a 4x4
+ *         symmetric matrix.
+ */
+inline 
+void pluseq_scaled_outer_product_I_I( MsqMatrix<2,2> R[3], double alpha );
+
 /**\brief \f$ R += I \otimes A \f$
  *
  *\param R The 6 blocks of the upper triangular portion of a 9x9
@@ -492,6 +508,23 @@ void pluseq_scaled_sum_outer_product( MsqMatrix<2,2> R[3],
           B.column(0) * transpose(A.column(1));
 }
 #endif
+
+void pluseq_scaled_outer_product_I_I( MsqMatrix<3,3> R[6], double alpha )
+{
+  R[0](0,0) += alpha;
+  R[1](0,1) += alpha;
+  R[2](0,2) += alpha;
+  R[3](1,1) += alpha;
+  R[4](1,2) += alpha;
+  R[5](2,2) += alpha;
+}
+
+void pluseq_scaled_outer_product_I_I( MsqMatrix<2,2> R[3], double alpha )
+{
+  R[0](0,0) += alpha;
+  R[1](0,1) += alpha;
+  R[2](1,1) += alpha;
+}
 
 #ifdef MSQ_ROW_BASED_OUTER_PRODUCT
 void pluseq_I_outer_product( MsqMatrix<3,3> R[6], const MsqMatrix<3,3>& A )

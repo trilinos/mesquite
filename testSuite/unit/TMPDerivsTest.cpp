@@ -45,6 +45,8 @@ private:
   CPPUNIT_TEST (test_set_scaled_outer_product);
   CPPUNIT_TEST (test_pluseq_scaled_sum_outer_product);
   CPPUNIT_TEST (test_pluseq_scaled_sum_outer_product_I);
+  CPPUNIT_TEST (test_pluseq_scaled_outer_product_I_I_2D);
+  CPPUNIT_TEST (test_pluseq_scaled_outer_product_I_I_3D);
   CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -56,6 +58,8 @@ public:
   void test_set_scaled_outer_product();
   void test_pluseq_scaled_sum_outer_product();
   void test_pluseq_scaled_sum_outer_product_I();
+  void test_pluseq_scaled_outer_product_I_I_2D();
+  void test_pluseq_scaled_outer_product_I_I_3D();
 };
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TMPDerivsTest, "TMPDerivsTest");
@@ -378,4 +382,32 @@ void TMPDerivsTest::test_pluseq_scaled_sum_outer_product_I()
   ASSERT_MATRICES_EQUAL( T[3], U[3], e );
   ASSERT_MATRICES_EQUAL( T[4], U[4], e );
   ASSERT_MATRICES_EQUAL( T[5], U[5], e );
+}
+
+void TMPDerivsTest::test_pluseq_scaled_outer_product_I_I_2D()
+{
+  const double e = 1e-12;
+  MsqMatrix<2,2> R[3] = { 0.0, 0.0, 0.0 }, S[3] = { 0.0, 0.0, 0.0 };
+  const double alpha = 3.14;
+  pluseq_scaled_outer_product( R, alpha, MsqMatrix<2,2>(1.0) );
+  pluseq_scaled_outer_product_I_I( S, alpha );
+  ASSERT_MATRICES_EQUAL( R[0], S[0], e );
+  ASSERT_MATRICES_EQUAL( R[1], S[1], e );
+  ASSERT_MATRICES_EQUAL( R[2], S[2], e );
+}
+
+void TMPDerivsTest::test_pluseq_scaled_outer_product_I_I_3D()
+{
+  const double e = 1e-12;
+  MsqMatrix<3,3> R[6] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 }, 
+                 S[6] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+  const double alpha = 3.14;
+  pluseq_scaled_outer_product( R, alpha, MsqMatrix<3,3>(1.0) );
+  pluseq_scaled_outer_product_I_I( S, alpha );
+  ASSERT_MATRICES_EQUAL( R[0], S[0], e );
+  ASSERT_MATRICES_EQUAL( R[1], S[1], e );
+  ASSERT_MATRICES_EQUAL( R[2], S[2], e );
+  ASSERT_MATRICES_EQUAL( R[3], S[3], e );
+  ASSERT_MATRICES_EQUAL( R[4], S[4], e );
+  ASSERT_MATRICES_EQUAL( R[5], S[5], e );
 }
