@@ -33,6 +33,7 @@
 #include "Mesquite.hpp"
 #include "Target2DShapeSizeOrientBarrier.hpp"
 #include "MsqMatrix.hpp"
+#include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
@@ -57,6 +58,69 @@ bool Target2DShapeSizeOrientBarrier::evaluate( const MsqMatrix<2,2>& A,
   return true;
 }
 
+bool Target2DShapeSizeOrientBarrier::evaluate_with_grad( const MsqMatrix<2,2>& A,
+                                               const MsqMatrix<2,2>& W,
+                                               double& result,
+                                               MsqMatrix<2,2>& deriv_wrt_A,
+                                               MsqError& err )
+{
+  MsqMatrix<2,2> Winv = inverse(W);
+  MsqMatrix<2,2> T = A * Winv;
+  const double d = det(T);
+  if (invalid_determinant(d)) { // barrier
+    result = 0.0;
+    return false;
+  }
+  
+  MsqMatrix<2,2> D(T);
+  D(0,0) -= 1.0;
+  D(1,1) -= 1.0;
+  double inv_d = 1.0/d;
+  result = 0.5 * sqr_Frobenius(D) * inv_d;
+  
+  deriv_wrt_A = D;
+  deriv_wrt_A -= result * transpose_adj(T);
+  deriv_wrt_A *= inv_d;
+  deriv_wrt_A = deriv_wrt_A * transpose(Winv);
+  
+  return true;
+}
+
+bool Target2DShapeSizeOrientBarrier::evaluate_with_hess( const MsqMatrix<2,2>& A,
+                                               const MsqMatrix<2,2>& W,
+                                               double& result,
+                                               MsqMatrix<2,2>& deriv_wrt_A,
+                                               MsqMatrix<2,2> second_wrt_A[3],
+                                               MsqError& err )
+{
+  MsqMatrix<2,2> Winv = inverse(W);
+  MsqMatrix<2,2> T = A * Winv;
+  const double d = det(T);
+  if (invalid_determinant(d)) { // barrier
+    result = 0.0;
+    return false;
+  }
+  
+  MsqMatrix<2,2> D(T);
+  D(0,0) -= 1.0;
+  D(1,1) -= 1.0;
+  double inv_d = 1.0/d;
+  result = 0.5 * sqr_Frobenius(D) * inv_d;
+  
+  MsqMatrix<2,2> adjt = transpose_adj(T);
+  deriv_wrt_A = D;
+  deriv_wrt_A -= result * adjt;
+  deriv_wrt_A *= inv_d;
+  deriv_wrt_A = deriv_wrt_A * transpose(Winv);
+  
+  set_scaled_outer_product( second_wrt_A, 2*result*inv_d*inv_d, adjt );
+  pluseq_scaled_sum_outer_product( second_wrt_A, -inv_d*inv_d, D, adjt );
+  pluseq_scaled_2nd_deriv_of_det( second_wrt_A, -result * inv_d );
+  pluseq_scaled_I( second_wrt_A, inv_d );
+  second_deriv_wrt_product_factor( second_wrt_A, Winv );
+  
+  return true;
+}
 
 
 } // namespace Mesquite

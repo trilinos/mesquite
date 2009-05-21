@@ -33,6 +33,7 @@
 #include "Mesquite.hpp"
 #include "Target2DShapeSizeOrientAlt1.hpp"
 #include "MsqMatrix.hpp"
+#include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
@@ -48,5 +49,32 @@ bool Target2DShapeSizeOrientAlt1::evaluate( const MsqMatrix<2,2>& A,
   return true;
 }
 
+bool Target2DShapeSizeOrientAlt1::evaluate_with_grad( const MsqMatrix<2,2>& A,
+                                               const MsqMatrix<2,2>& W,
+                                               double& result,
+                                               MsqMatrix<2,2>& deriv_wrt_A,
+                                               MsqError& err )
+{
+  MsqMatrix<2,2> diff = A - W;
+  result = sqr_Frobenius( diff );
+  deriv_wrt_A = diff;
+  deriv_wrt_A *= 2.0;
+  return true;
+}
+
+bool Target2DShapeSizeOrientAlt1::evaluate_with_hess( const MsqMatrix<2,2>& A,
+                                               const MsqMatrix<2,2>& W,
+                                               double& result,
+                                               MsqMatrix<2,2>& deriv_wrt_A,
+                                               MsqMatrix<2,2> second_wrt_A[3],
+                                               MsqError& err )
+{
+  MsqMatrix<2,2> diff = A - W;
+  result = sqr_Frobenius( diff );
+  deriv_wrt_A = diff;
+  deriv_wrt_A *= 2.0;
+  set_scaled_I( second_wrt_A, 2.0 );
+  return true;
+}
 
 } // namespace Mesquite
