@@ -1173,7 +1173,7 @@ a linear combination of the derivatives of these two terms. \newline
 
 \section{Derivatives of Barrier Metrics}
 
-\subsection{Derivatives of $\mu_n(T)=\frac{|T-I|^2}{2 \, \tau}$}
+\subsection{Derivatives of $\mu_n(T)=\frac{|T-I_n|^2}{2 \, \tau}$}
 
 \noindent This metric preserves the shape, size, and orientation of the target
 and applies to both $n=2$ and $n=3$. It is assumed that $\tau>0$, since 
@@ -1188,9 +1188,17 @@ To complete this last expression, use either formula \ref{2ndtau2d} or \ref{2ndt
 
 \noindent Next, $f(T)=|T-I|^2$ is the metric in section \ref{tmi}. It's
 derivatives are given there as well. Then $\mu_n(T) = \frac{f(T)}{g(T)}$ 
-and formulas \ref{quotient1} and \ref{quotient2} may be used to calculate the derivatives. 
-The derivatives exist for all $T \in M_n$. \newline
+and formulas \ref{quotient1} and \ref{quotient2} may be used to calculate the derivatives.  \newline
 
+\noindent Explicitly, 
+\begin{eqnarray}
+\frac{\partial \mu_n}{\partial T} = \frac{1}{\tau} \, \left\{ \left( T - I_n \right) - \mu_n(T) \, \left[ adj(T) \right]^t \, \right\}
+\end{eqnarray}
+and 
+\begin{eqnarray}
+\frac{\partial^2}{\partial T^2} \, \mu_n & = & \frac{1}{\tau} \, I_{n^2} - \frac{\mu_n}{\tau^2} \, \left\{ \tau \, \frac{\partial^2 \tau}{\partial T^2} - 2 \, \left[ (adj \, T)^t \otimes (adj \, T)^t \right] \right\} \nonumber \\
+ & + & \frac{1}{\tau^2} \left\{ \, (T-I_n) \otimes (adj \, T)^t + (adj \, T)^t \otimes (T-I_n) \, \right\}
+\end{eqnarray}
 
 \subsection{Derivatives of $\mu_n(T)=|T^{-t}-I|^2$}
 
