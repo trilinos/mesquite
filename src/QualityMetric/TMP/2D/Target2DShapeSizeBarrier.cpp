@@ -126,7 +126,7 @@ bool Target2DShapeSizeBarrier::evaluate_with_hess( const MsqMatrix<2,2>& A,
     // deriv of mu wrt A
   deriv_wrt_A = deriv_wrt_A * transpose(Winv);
   
-    // second of V wrt T times 1/(2*d)
+    // second of V wrt T 
   const double s = T(0,1) - T(1,0);
   const double tr = trace(T);
   const double f = -2.0/(psi*psi*psi);
