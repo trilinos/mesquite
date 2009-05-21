@@ -75,19 +75,19 @@ bool Target2DShapeSizeBarrier::evaluate_with_grad( const MsqMatrix<2,2>& A,
   const double v = frob_sqr - 2.0 * psi + 2.0;
   result = v / (2*d);
 
-    // second deriv of V wrt T
+    // deriv of V wrt T
   MsqMatrix<2,2> adjt = transpose_adj(T);
   MsqMatrix<2,2> v_wrt_T(T);
   v_wrt_T *= (1.0 - 1.0/psi);
   v_wrt_T -= 1.0/psi * adjt;
   v_wrt_T *= 2;
   
-    // second deriv of mu wrt T
+    // deriv of mu wrt T
   deriv_wrt_A = v_wrt_T;
   deriv_wrt_A *= 0.5/d;
   deriv_wrt_A -= v / (2*d*d) * adjt;
   
-    // second deriv of mu wrt A
+    // deriv of mu wrt A
   deriv_wrt_A = deriv_wrt_A * transpose(Winv);
   return true;
 }
@@ -111,15 +111,19 @@ bool Target2DShapeSizeBarrier::evaluate_with_hess( const MsqMatrix<2,2>& A,
   const double v = frob_sqr - 2.0 * psi + 2.0;
   result = v / (2*d);
 
+    // deriv of V wrt T
   MsqMatrix<2,2> adjt = transpose_adj(T);
   MsqMatrix<2,2> v_wrt_T(T);
   v_wrt_T *= (1.0 - 1.0/psi);
   v_wrt_T -= 1.0/psi * adjt;
   v_wrt_T *= 2;
   
+    // deriv of mu wrt T
   deriv_wrt_A = v_wrt_T;
   deriv_wrt_A *= 0.5/d;
   deriv_wrt_A -= v / (2*d*d) * adjt;
+  
+    // deriv of mu wrt A
   deriv_wrt_A = deriv_wrt_A * transpose(Winv);
   
     // second of V wrt T times 1/(2*d)
