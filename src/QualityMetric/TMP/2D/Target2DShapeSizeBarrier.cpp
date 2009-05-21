@@ -33,6 +33,7 @@
 #include "Mesquite.hpp"
 #include "Target2DShapeSizeBarrier.hpp"
 #include "MsqMatrix.hpp"
+#include "TMPDerivs.hpp"
 
 namespace MESQUITE_NS {
 
@@ -40,9 +41,9 @@ msq_std::string Target2DShapeSizeBarrier::get_name() const
   { return "ShapeSizeBarrier"; }
 
 bool Target2DShapeSizeBarrier::evaluate( const MsqMatrix<2,2>& A, 
-                                 const MsqMatrix<2,2>& W, 
-                                 double& result, 
-                                 MsqError&  )
+                                         const MsqMatrix<2,2>& W, 
+                                         double& result, 
+                                         MsqError&  )
 {
   MsqMatrix<2,2> T = A * inverse(W);
   const double two_det = 2.0 * det(T);
@@ -56,5 +57,94 @@ bool Target2DShapeSizeBarrier::evaluate( const MsqMatrix<2,2>& A,
   return true;
 }
 
+bool Target2DShapeSizeBarrier::evaluate_with_grad( const MsqMatrix<2,2>& A, 
+                                                   const MsqMatrix<2,2>& W, 
+                                                   double& result, 
+                                                   MsqMatrix<2,2>& deriv_wrt_A,
+                                                   MsqError& err )
+{
+  const MsqMatrix<2,2> Winv = inverse(W);
+  const MsqMatrix<2,2> T = A * Winv;
+  const double d = det(T);
+  if (invalid_determinant(d)) { // barrier
+    result = 0.0;
+    return false;
+  }
+  const double frob_sqr = sqr_Frobenius(T);
+  const double psi = sqrt( frob_sqr + 2.0*det(T) );
+  const double v = frob_sqr - 2.0 * psi + 2.0;
+  result = v / (2*d);
+
+    // second deriv of V wrt T
+  MsqMatrix<2,2> adjt = transpose_adj(T);
+  MsqMatrix<2,2> v_wrt_T(T);
+  v_wrt_T *= (1.0 - 1.0/psi);
+  v_wrt_T -= 1.0/psi * adjt;
+  v_wrt_T *= 2;
+  
+    // second deriv of mu wrt T
+  deriv_wrt_A = v_wrt_T;
+  deriv_wrt_A *= 0.5/d;
+  deriv_wrt_A -= v / (2*d*d) * adjt;
+  
+    // second deriv of mu wrt A
+  deriv_wrt_A = deriv_wrt_A * transpose(Winv);
+  return true;
+}
+
+bool Target2DShapeSizeBarrier::evaluate_with_hess( const MsqMatrix<2,2>& A, 
+                                                   const MsqMatrix<2,2>& W, 
+                                                   double& result, 
+                                                   MsqMatrix<2,2>& deriv_wrt_A,
+                                                   MsqMatrix<2,2> second[3],
+                                                   MsqError& err )
+{
+  const MsqMatrix<2,2> Winv = inverse(W);
+  const MsqMatrix<2,2> T = A * Winv;
+  const double d = det(T);
+  if (invalid_determinant(d)) { // barrier
+    result = 0.0;
+    return false;
+  }
+  const double frob_sqr = sqr_Frobenius(T);
+  const double psi = sqrt( frob_sqr + 2.0*det(T) );
+  const double v = frob_sqr - 2.0 * psi + 2.0;
+  result = v / (2*d);
+
+  MsqMatrix<2,2> adjt = transpose_adj(T);
+  MsqMatrix<2,2> v_wrt_T(T);
+  v_wrt_T *= (1.0 - 1.0/psi);
+  v_wrt_T -= 1.0/psi * adjt;
+  v_wrt_T *= 2;
+  
+  deriv_wrt_A = v_wrt_T;
+  deriv_wrt_A *= 0.5/d;
+  deriv_wrt_A -= v / (2*d*d) * adjt;
+  deriv_wrt_A = deriv_wrt_A * transpose(Winv);
+  
+    // second of V wrt T times 1/(2*d)
+  const double s = T(0,1) - T(1,0);
+  const double tr = trace(T);
+  const double f = -2.0/(psi*psi*psi);
+  second[0](0,0) = second[1](0,1) = second[2](1,1) =  f*s*s;
+  second[0](0,1) = second[0](1,0) = second[1](1,1) = -f*s*tr;
+  second[1](0,0) = second[2](0,1) = second[2](1,0) =  f*s*tr;
+  second[0](1,1) = second[2](0,0) = -(second[1](1,0) = -f*tr*tr);
+  pluseq_scaled_I( second, 2 );
+  
+    // second of mu wrt T 
+  const double x = 1.0/(2*d);
+  second[0] *= x;
+  second[1] *= x;
+  second[2] *= x;
+  pluseq_scaled_2nd_deriv_of_det( second, v/(-2*d*d) );
+  pluseq_scaled_outer_product( second, v/(d*d*d), adjt );
+  pluseq_scaled_sum_outer_product( second, -1/(2*d*d), v_wrt_T, adjt );
+  
+    // second of mu wrt A
+  second_deriv_wrt_product_factor( second, Winv );
+  
+  return true;
+}
 
 } // namespace Mesquite

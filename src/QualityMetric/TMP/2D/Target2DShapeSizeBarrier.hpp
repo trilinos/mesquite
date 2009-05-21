@@ -47,7 +47,25 @@ class Target2DShapeSizeBarrier : public TargetMetric2D
   msq_std::string get_name() const;
 
   MESQUITE_EXPORT virtual
-  bool evaluate( const MsqMatrix<2,2>& A, const MsqMatrix<2,2>& W, double& result, MsqError& err );
+  bool evaluate( const MsqMatrix<2,2>& A, 
+                 const MsqMatrix<2,2>& W, 
+                 double& result,
+                 MsqError& err );
+
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_grad( const MsqMatrix<2,2>& A, 
+                           const MsqMatrix<2,2>& W, 
+                           double& result, 
+                           MsqMatrix<2,2>& deriv_wrt_A,
+                           MsqError& err );
+
+  MESQUITE_EXPORT virtual
+  bool evaluate_with_hess( const MsqMatrix<2,2>& A, 
+                           const MsqMatrix<2,2>& W, 
+                           double& result, 
+                           MsqMatrix<2,2>& deriv_wrt_A,
+                           MsqMatrix<2,2> second_wrt_A[3],
+                           MsqError& err );
 };
 
 
