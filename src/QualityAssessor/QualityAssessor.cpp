@@ -434,6 +434,12 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
     }
   }
   
+  TagHandle fixedTag = 0;
+  if (tagging_fixed_elements()) {
+    fixedTag = get_tag( mesh, fixedTagName, Mesh::INT, 1, err );
+    MSQ_ERRZERO(err);
+  }
+  
     // Check for any metrics for which a histogram is to be 
     // calculated and for which the user has not specified 
     // minimum and maximum values.  
@@ -482,8 +488,16 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
         continue;
       patch.set_mesh_entities( patch_elems, patch_verts, err ); MSQ_ERRZERO(err);
       
-      if (skipFixedSamples && 0 == patch.num_free_vertices())
-        continue;
+      if (0 == patch.num_free_vertices()) {
+        if (tagging_fixed_elements()) {
+          Mesh::ElementHandle h = patch.get_element_handles_array()[0];
+          int val = 1;
+          mesh->tag_set_element_data( fixedTag, 1, &h, &val, err );
+          MSQ_ERRZERO(err);
+        }
+        if (skipFixedSamples)
+          continue;
+      }
       
        //first check for inverted elements
       if (first_pass){

@@ -19,8 +19,6 @@ using namespace Mesquite;
 #include <vector>
 #include <algorithm>
 
-void tag_fixed_elements( MeshImpl& mesh, const char* tag_name );
-
 int main( int argc, char* argv[] )
 {
   int two;
@@ -62,6 +60,7 @@ int main( int argc, char* argv[] )
   qa.add_quality_assessment( &imr, intervals, 0.0, "InverseMeanRatio" );
   qa.add_quality_assessment( &size, intervals, 0.0, "Size" );
   qa.add_quality_assessment( &max_tmp, intervals, 0.0, "TMP_Shape" );
+  qa.tag_fixed_elements( "FIXED_ELEMS" );
 
   QuadLagrangeShape quad;
   TriLagrangeShape tri;
@@ -79,7 +78,6 @@ int main( int argc, char* argv[] )
   }
   
   if (files.size() > 1) {
-    tag_fixed_elements( mesh, "FIXED_ELEMS" );
     mesh.write_vtk( files[1].c_str(), err );
     if (err) {
       msq_stdio::cerr << err << msq_stdio::endl 
@@ -90,48 +88,3 @@ int main( int argc, char* argv[] )
   
   return 0;
 }
-
-#define TFEERR(A) if (A) { \
-     msq_stdio::cerr << "Failed to tag fixed elements" << msq_stdio::endl; \
-     msq_stdio::cerr << err << msq_stdio::endl; \
-     return; }
-
-void tag_fixed_elements( MeshImpl& mesh, const char* tag_name )
-{
-  MsqError err;
-  
-  msq_std::vector<Mesh::ElementHandle> elements;
-  mesh.get_all_elements( elements, err );
-  TFEERR(err);
-  msq_std::vector<int> tag_vals(elements.size());
-  
-  msq_std::vector<Mesh::VertexHandle> verts;
-  msq_std::vector<size_t> junk;
-  bool fixed[64];
-  int count = 0;
-  for (size_t i = 0; i < elements.size(); ++i) {
-    verts.clear(); junk.clear();
-    mesh.elements_get_attached_vertices( &elements[i], 1, verts, junk, err );
-    TFEERR(err);
-    mesh.vertices_get_fixed_flag( &verts[0], fixed, verts.size(), err );
-    TFEERR(err);
-    
-    bool* end = fixed+verts.size();
-    if (end == std::find(fixed, end, false)) {
-      ++count;
-      tag_vals[i] = 1;
-    }
-    else 
-      tag_vals[i] = 0;
-  }
-  
-  if (!count)
-    return;
-    
-  TagHandle tag = mesh.tag_create( tag_name, Mesh::INT, 1, 0, err );
-  TFEERR(err);
-  mesh.tag_set_element_data( tag, elements.size(), &elements[0], &tag_vals[0], err );
-  TFEERR(err);  
-  msq_stdio::cerr << "Counted " << count << " fixed elements" << msq_stdio::endl;
-}
-

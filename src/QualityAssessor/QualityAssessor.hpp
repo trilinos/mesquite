@@ -376,6 +376,13 @@ namespace MESQUITE_NS
     MESQUITE_EXPORT bool tagging_inverted_elements() const
       { return !invertedTagName.empty(); }
     
+    MESQUITE_EXPORT void tag_fixed_elements( std::string tagname ) 
+      { fixedTagName = tagname; }
+    MESQUITE_EXPORT void dont_tag_fixed_elements()
+      { fixedTagName.clear(); }
+    MESQUITE_EXPORT bool tagging_fixed_elements() const
+      { return !fixedTagName.empty(); }
+    
     /** \brief Per-metric QualityAssessor data
      *
      * The Assessor class holds QualityAssessor data for
@@ -567,7 +574,7 @@ namespace MESQUITE_NS
     /** Disable printing */
     bool printSummary;
     
-    std::string invertedTagName;
+    std::string invertedTagName, fixedTagName;
     
     bool skipFixedSamples;
   };
