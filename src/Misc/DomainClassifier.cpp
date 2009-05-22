@@ -548,11 +548,16 @@ void DomainClassifier::classify_by_tag( DomainClassifier& result,
   
   ids.clear();
   ids.resize( elements.size() );
-  mesh->tag_get_element_data( tag, elements.size(), &elements[0], &ids[0], err );  MSQ_ERRRTN(err);
-  for (size_t k = 0; k < elements.size(); ++k) {
-    iter = idmap.find( ids[k] );
-    if (iter != idmap.end())
-      iter->second->elements.push_back( elements[k] );
+  mesh->tag_get_element_data( tag, elements.size(), &elements[0], &ids[0], err ); 
+  if (err) {
+    err.clear();
+  }
+  else {
+    for (size_t k = 0; k < elements.size(); ++k) {
+      iter = idmap.find( ids[k] );
+      if (iter != idmap.end())
+        iter->second->elements.push_back( elements[k] );
+    }
   }
   
   classify_by_handle( result, mesh, &sets[0], sets.size(), err );
