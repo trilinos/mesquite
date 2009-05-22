@@ -4,6 +4,7 @@
 
 #include "iMesh.h"
 #include "iMeshP_protos.h"
+#define MPICH_SKIP_MPICXX
 #include <mpi.h>
 
 #ifdef __cplusplus
