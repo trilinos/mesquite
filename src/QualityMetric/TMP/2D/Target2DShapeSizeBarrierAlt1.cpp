@@ -55,5 +55,23 @@ bool Target2DShapeSizeBarrierAlt1::evaluate( const MsqMatrix<2,2>& A,
   return true;
 }
 
+bool Target2DShapeSizeBarrierAlt1::evaluate_with_grad( 
+                                                const MsqMatrix<2,2>& A,
+                                                const MsqMatrix<2,2>& W,
+                                                double& result,
+                                                MsqMatrix<2,2>& deriv_wrt_A,
+                                                MsqError& err )
+{
+}
+
+bool Target2DShapeSizeBarrierAlt1::evaluate_with_hess( 
+                                                const MsqMatrix<2,2>& A,
+                                                const MsqMatrix<2,2>& W,
+                                                double& result,
+                                                MsqMatrix<2,2>& deriv_wrt_A,
+                                                MsqMatrix<2,2> second_wrt_A[3],
+                                                MsqError& err )
+{
+}
 
 } // namespace Mesquite
