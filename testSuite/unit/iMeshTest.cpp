@@ -214,8 +214,8 @@ void iMeshTest::setUp()
   iMesh_getRootSet( myIMesh, &root_set, &ierr );
   CPPUNIT_ASSERT_EQUAL( (int)iBase_SUCCESS, ierr );
           
-  myMesh = new MsqIMesh( myIMesh, root_set, iBase_ALL_TYPES );
-  CPPUNIT_ASSERT_EQUAL( (int)iBase_SUCCESS, ierr );
+  myMesh = new MsqIMesh( myIMesh, root_set, iBase_ALL_TYPES, err );
+  ASSERT_NO_ERROR( err );
   CPPUNIT_ASSERT( myMesh != NULL );
   
   matchVertexCoordinates();

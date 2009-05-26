@@ -288,7 +288,13 @@ Mesh* get_imesh_mesh( const char* file_name )
     return 0;
   }
 
-  return new Mesquite::MsqIMesh( imesh_mesh, root_set, iBase_ALL_TYPES, "fixed" );
+  MsqError err;
+  Mesh* result = new Mesquite::MsqIMesh( imesh_mesh, root_set, iBase_ALL_TYPES, err, "fixed" );
+  if (MSQ_CHKERR(err)) {
+    delete result;
+    cerr << err << endl;
+    return 0;
+  }
 }
   
 

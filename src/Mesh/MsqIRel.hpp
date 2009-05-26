@@ -47,8 +47,8 @@ class MsqIRel : protected MsqCommonIGeom
 public:
 
   MsqIRel( iGeom_Instance geom,
-               iRel_Instance irel_iface,
-               iRel_RelationHandle irel_instance );
+           iRel_Instance irel_iface,
+           iRel_RelationHandle irel_instance );
 
   virtual ~MsqIRel();
 

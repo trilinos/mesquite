@@ -56,10 +56,12 @@ public:
 
   MsqIMeshP(iMesh_Instance imesh, iMeshP_PartitionHandle partition,
 	   iBase_EntitySetHandle meshset, iBase_EntityType element_dimension,
+           MsqError& err,
 	   const char* fixed_tag_name = VERTEX_FIXED_TAG_NAME,
 	   const char* slaved_tag_name= VERTEX_SLAVED_TAG_NAME );
   
   MsqIMeshP(iMesh_Instance imesh, iMeshP_PartitionHandle partition,
+            MsqError& err,
 	   const char* fixed_tag_name = VERTEX_FIXED_TAG_NAME,
 	   const char* slaved_tag_name= VERTEX_SLAVED_TAG_NAME);
   

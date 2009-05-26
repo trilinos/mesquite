@@ -68,19 +68,21 @@ public:
   MsqIMesh();
   virtual ~MsqIMesh();
 
-  MsqIMesh(iMesh_Instance imesh, iBase_EntitySetHandle meshset,
-	   iBase_EntityType element_dimension,
-	   const char* fixed_tag_name = VERTEX_FIXED_TAG_NAME,
-	   const char* slaved_tag_name= VERTEX_SLAVED_TAG_NAME );
+  MsqIMesh( iMesh_Instance imesh, iBase_EntitySetHandle meshset,
+	    iBase_EntityType element_dimension,
+            MsqError& err,
+	    const char* fixed_tag_name = VERTEX_FIXED_TAG_NAME,
+	    const char* slaved_tag_name= VERTEX_SLAVED_TAG_NAME );
   
-  MsqIMesh(iMesh_Instance imesh, 
-	   const char* fixed_tag_name = VERTEX_FIXED_TAG_NAME,
-	   const char* slaved_tag_name= VERTEX_SLAVED_TAG_NAME);
+  MsqIMesh( iMesh_Instance imesh, 
+            MsqError& err,
+	    const char* fixed_tag_name = VERTEX_FIXED_TAG_NAME,
+	    const char* slaved_tag_name= VERTEX_SLAVED_TAG_NAME  );
   
   virtual void init_active_mesh( iMesh_Instance mesh, 
-				 const char* fixed_tag_name,
-				 const char* slaved_tag_name,
-				 MsqError& err );
+                                 MsqError& err,
+				 const char* fixed_tag_name = VERTEX_FIXED_TAG_NAME,
+				 const char* slaved_tag_name = VERTEX_SLAVED_TAG_NAME );
     
   /** \brief set mesh to be smoothed.
    *

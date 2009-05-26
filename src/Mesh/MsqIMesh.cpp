@@ -46,8 +46,10 @@ namespace MESQUITE_NS {
  *                          Mesh Definition
  ************************************************************************/
 
-  MsqIMesh::MsqIMesh( iMesh_Instance mesh, iBase_EntitySetHandle meshset, 
+  MsqIMesh::MsqIMesh( iMesh_Instance mesh, 
+                      iBase_EntitySetHandle meshset, 
 		      iBase_EntityType type,
+                      MsqError& err,
 		      const char* fixed_tag_name,
 		      const char* slaved_tag_name)
   : meshInstance(mesh), 
@@ -58,14 +60,16 @@ namespace MESQUITE_NS {
     slavedTag(0),
     geometricDimension(0)
   {
-    MsqError err;
-    init_active_mesh( mesh, fixed_tag_name, slaved_tag_name, err );    
+    init_active_mesh( mesh, err, fixed_tag_name, slaved_tag_name ); 
+    MSQ_ERRRTN(err);  
     set_active_set( meshset, type, err );
+    MSQ_ERRRTN(err);  
   }
 
   MsqIMesh::MsqIMesh( iMesh_Instance mesh, 
+                      MsqError& err,
 		      const char* fixed_tag_name,
-		      const char* slaved_tag_name )
+		      const char* slaved_tag_name)
   : meshInstance(mesh), 
     inputSetType( iBase_ALL_TYPES ),
     inputSet(0),
@@ -74,8 +78,20 @@ namespace MESQUITE_NS {
     slavedTag(0),
     geometricDimension(0)
   {
-    MsqError err;
-    init_active_mesh( mesh, fixed_tag_name, slaved_tag_name, err );    
+    init_active_mesh( mesh, err, fixed_tag_name, slaved_tag_name ); 
+    MSQ_ERRRTN(err);  
+    
+    int ierr;
+    iBase_EntitySetHandle root_set;
+    iMesh_getRootSet( mesh, &root_set, &ierr );
+    if (ierr != iBase_SUCCESS) {
+      MSQ_SETERR(err)("Invalid iMesh instance.", MsqError::INVALID_STATE );
+      return;
+    }
+    set_active_set( root_set, iBase_ALL_TYPES, err );
+    MSQ_ERRRTN(err);  
+    
+    
   }
 
   MsqIMesh::~MsqIMesh() 
@@ -93,9 +109,9 @@ namespace MESQUITE_NS {
   }
 
   void MsqIMesh::init_active_mesh( iMesh_Instance mesh, 
+                                   MsqError& err,
 				   const char* fixed_tag_name,
-				   const char* slaved_tag_name,
-                                   MsqError& err )
+				   const char* slaved_tag_name )
   {
   // Initialize topology map 
   
@@ -214,8 +230,8 @@ namespace MESQUITE_NS {
 }
 
 void MsqIMesh::set_active_set( iBase_EntitySetHandle elem_set, 
-                                   iBase_EntityType type_in,
-                                   MsqError& err )
+                               iBase_EntityType type_in,
+                               MsqError& err )
 {
   inputSetType = type_in;
   inputSet = elem_set;
