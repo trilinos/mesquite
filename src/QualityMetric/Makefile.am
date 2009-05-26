@@ -9,6 +9,7 @@ MSQ_SRCS += \
 	$(SRC_QUALITYMETRIC_DIR)/ElementPMeanP.cpp \
 	$(SRC_QUALITYMETRIC_DIR)/ElementQM.cpp \
 	$(SRC_QUALITYMETRIC_DIR)/MultiplyQualityMetric.cpp \
+	$(SRC_QUALITYMETRIC_DIR)/NumericalQM.cpp \
 	$(SRC_QUALITYMETRIC_DIR)/PMeanPMetric.cpp \
 	$(SRC_QUALITYMETRIC_DIR)/PowerQualityMetric.cpp \
 	$(SRC_QUALITYMETRIC_DIR)/QualityMetric.cpp \
@@ -26,6 +27,7 @@ MSQ_HDRS += \
 	$(SRC_QUALITYMETRIC_DIR)/ElementPMeanP.hpp \
 	$(SRC_QUALITYMETRIC_DIR)/ElementQM.hpp \
 	$(SRC_QUALITYMETRIC_DIR)/MultiplyQualityMetric.hpp \
+	$(SRC_QUALITYMETRIC_DIR)/NumericalQM.hpp \
 	$(SRC_QUALITYMETRIC_DIR)/PMeanPMetric.hpp \
 	$(SRC_QUALITYMETRIC_DIR)/PowerQualityMetric.hpp \
 	$(SRC_QUALITYMETRIC_DIR)/QualityMetric.hpp \
