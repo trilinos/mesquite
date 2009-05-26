@@ -286,7 +286,7 @@ void write_vtk( PatchData& pd, const char* out_filename, MsqError &err,
   
     // Write out which points are fixed.
   file << "POINT_DATA " << pd.num_nodes()
-       << "\nSCALARS fixed float\nLOOKUP_TABLE default\n";
+       << "\nSCALARS fixed int\nLOOKUP_TABLE default\n";
   for (i = 0; i < pd.num_nodes(); ++i)
   {
     if (pd.vertex_by_index(i).is_free_vertex())
