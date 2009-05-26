@@ -111,7 +111,7 @@ private:
  * entity for all geometric queries.  Suitable for use when the entire
  * mesh to be smoothed lies on a single geometric surface.
  */
-class MsqIGeom : protected MsqCommonIGeom
+class MsqIGeom : public MeshDomain, protected MsqCommonIGeom
 {
 public:
 
