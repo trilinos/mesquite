@@ -42,7 +42,7 @@ namespace MESQUITE_NS {
 
 /* General MeshDomain on iGeom & iRel implementation */
 
-class MsqIRel : public MeshDomain, protected MsqCommonIGeom
+class MsqIRel : public MsqCommonIGeom
 {
 public:
 
