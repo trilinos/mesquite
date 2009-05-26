@@ -1,0 +1,5 @@
+2.0.1:
+  - allow disabling of ITAPS iterface code to ease building of shared library
+  - fix broken VertexConditionNumber quality metric
+  - fix unusable iGeom/iRel interface classes
+
