@@ -52,7 +52,7 @@ PatchSet* ConjugateGradient::get_patch_set()
 ConjugateGradient::ConjugateGradient(ObjectiveFunction* objective,
                                      bool Nash ) :
   VertexMover(objective, Nash),
-  PatchSetUser(false),
+  PatchSetUser(true),
   pMemento(NULL),
   conjGradDebug(0)
 { }  
@@ -60,7 +60,7 @@ ConjugateGradient::ConjugateGradient(ObjectiveFunction* objective,
 ConjugateGradient::ConjugateGradient(ObjectiveFunction* objective,
                                      MsqError &err) :
   VertexMover(objective, true),
-  PatchSetUser(false),
+  PatchSetUser(true),
   pMemento(NULL),
   conjGradDebug(0)
 {
