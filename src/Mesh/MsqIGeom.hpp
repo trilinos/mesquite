@@ -47,7 +47,7 @@ namespace MESQUITE_NS
  * This class contains the common functionality used by concrete implementations
  * of MeshDomain on the ITAPS geometry interface.
  */
-class MsqCommonIGeom
+class MsqCommonIGeom : public MeshDomain
 {
 public:
 
@@ -111,7 +111,7 @@ private:
  * entity for all geometric queries.  Suitable for use when the entire
  * mesh to be smoothed lies on a single geometric surface.
  */
-class MsqIGeom : protected MsqCommonIGeom
+class MsqIGeom : public MsqCommonIGeom
 {
 public:
 
