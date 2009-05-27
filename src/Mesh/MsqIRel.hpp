@@ -47,8 +47,8 @@ class MsqIRel : public MsqCommonIGeom
 public:
 
   MsqIRel( iGeom_Instance geom,
-               iRel_Instance irel_iface,
-               iRel_RelationHandle irel_instance );
+           iRel_Instance irel_iface,
+           iRel_RelationHandle irel_instance );
 
   virtual ~MsqIRel();
 
@@ -81,10 +81,12 @@ protected:
 
     /** Get geometric entity owning a mesh entity */
   int geom_from_mesh( Mesh::EntityHandle  mesh_handle_in,
-                      iBase_EntityHandle& geom_handle_out ) const;
+                      iBase_EntityHandle& geom_handle_out,
+                      int& geom_dimension_out ) const;
   
   int geom_from_mesh( Mesh::EntityHandle const* mesh_handles_in,
                       iBase_EntityHandle      * geom_handles_out,
+                      unsigned short* geom_dimensions_out,
                       size_t count ) const;
 
 private:

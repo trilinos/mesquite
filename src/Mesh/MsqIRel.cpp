@@ -60,38 +60,45 @@ MsqIRel::~MsqIRel() {}
 void MsqIRel::snap_to( Mesh::VertexHandle handle,
                            Vector3D& coordinate ) const
 {
-  int ierr;
+  int ierr, dim;
   iBase_EntityHandle geom;
   
-  ierr = geom_from_mesh( handle, geom );
+  ierr = geom_from_mesh( handle, geom, dim );
   if (iBase_SUCCESS != ierr) {
     process_itaps_error( ierr );
     return;
   }
   
-  ierr = move_to( geom, coordinate );
-  if (iBase_SUCCESS != ierr) {
-    process_itaps_error( ierr );
-    return;
+  if (dim < 3) {  
+    ierr = move_to( geom, coordinate );
+    if (iBase_SUCCESS != ierr) {
+      process_itaps_error( ierr );
+      return;
+    }
   }
 }
 
 void MsqIRel::vertex_normal_at( Mesh::VertexHandle handle,
                                     Vector3D& coordinate ) const
 {
-  int ierr;
+  int ierr, dim;
   iBase_EntityHandle geom;
   
-  ierr = geom_from_mesh( handle, geom );
+  ierr = geom_from_mesh( handle, geom, dim );
   if (iBase_SUCCESS != ierr) {
     process_itaps_error( ierr );
     return;
   }
   
-  ierr = normal( geom, coordinate );
-  if (iBase_SUCCESS != ierr) {
-    process_itaps_error( ierr );
-    return;
+  if (dim == 2) {
+    ierr = normal( geom, coordinate );
+    if (iBase_SUCCESS != ierr) {
+      process_itaps_error( ierr );
+      return;
+    }
+  }
+  else {
+    assert(0);
   }
 }
 
@@ -106,19 +113,25 @@ void MsqIRel::vertex_normal_at( const Mesh::VertexHandle* handle,
                                     unsigned count,
                                     MsqError& err ) const
 {
-  int ierr;
-  
-  geomHandles.resize( count );
-  ierr = geom_from_mesh( handle, &geomHandles[0], count );
-  if (iBase_SUCCESS != ierr) {
-    MSQ_SETERR(err)(process_itaps_error( ierr ), MsqError::INTERNAL_ERROR);
-    return;
-  }
-  
-  ierr = normal( &geomHandles[0], coordinates, count );
-  if (iBase_SUCCESS != ierr) {
-    MSQ_SETERR(err)(process_itaps_error( ierr ), MsqError::INTERNAL_ERROR);
-    return;
+  int ierr, dim;
+  iBase_EntityHandle geom;
+  for (unsigned i = 0; i < count; ++i) {
+    ierr = geom_from_mesh( handle[i], geom, dim );
+    if (iBase_SUCCESS != ierr) {
+      process_itaps_error( ierr );
+      return;
+    }
+
+    if (dim != 2) {
+      MSQ_SETERR(err)("Cannot get normal for non-surface geometry", MsqError::INVALID_ARG );
+      return;
+    }
+
+    ierr = normal( geom, coordinates[i] );
+    if (iBase_SUCCESS != ierr) {
+      process_itaps_error( ierr );
+      return;
+    }
   }
 }
 
@@ -130,13 +143,7 @@ void MsqIRel::domain_DoF( const Mesh::VertexHandle* handle_array,
   int ierr;
   
   geomHandles.resize( count );
-  ierr = geom_from_mesh( handle_array, &geomHandles[0], count );
-  if (iBase_SUCCESS != ierr) {
-    MSQ_SETERR(err)(process_itaps_error( ierr ), MsqError::INTERNAL_ERROR);
-    return;
-  }
-  
-  ierr = get_dimension( &geomHandles[0], dof_array, count );
+  ierr = geom_from_mesh( handle_array, &geomHandles[0], dof_array, count );
   if (iBase_SUCCESS != ierr) {
     MSQ_SETERR(err)(process_itaps_error( ierr ), MsqError::INTERNAL_ERROR);
     return;
@@ -151,15 +158,20 @@ void MsqIRel::closest_point( Mesh::VertexHandle handle,
                                  Vector3D& normal,
                                  MsqError& err ) const
 {
-  int ierr;
+  int ierr, dim;
   iBase_EntityHandle geom;
   
-  ierr = geom_from_mesh( handle, geom );
+  ierr = geom_from_mesh( handle, geom, dim );
   if (iBase_SUCCESS != ierr) {
     MSQ_SETERR(err)(process_itaps_error( ierr ), MsqError::INTERNAL_ERROR);
     return;
   }
-  
+
+  if (dim != 2) {
+    MSQ_SETERR(err)("Cannot get normal for non-surface geometry", MsqError::INVALID_ARG );
+    return;
+  }
+
   ierr = closest_and_normal( geom, position, closest, normal );
   if (iBase_SUCCESS != ierr) {
     MSQ_SETERR(err)(process_itaps_error( ierr ), MsqError::INTERNAL_ERROR);
@@ -169,42 +181,41 @@ void MsqIRel::closest_point( Mesh::VertexHandle handle,
 
 
 int MsqIRel::geom_from_mesh( Mesh::EntityHandle mesh_ent_handle,
-                                 iBase_EntityHandle& geom_handle ) const
+                             iBase_EntityHandle& geom_handle,
+                             int& geom_dim ) const
 {
     // get geometric entity
   int ierr;
   iRel_getEntEntAssociation( relateIface,
                              relateInstance,
                              (iBase_EntityHandle)mesh_ent_handle,
-                             false,
+                             true,
                              &geom_handle,
                              &ierr );
   if (iBase_SUCCESS != ierr)
     return ierr;
   
     // get dimension of geometric entities
-  int type, one = 1, one_too = 1, *type_ptr = &type;
+  int one = 1, one_too = 1, *type_ptr = &geom_dim;
   iGeom_getArrType( geomIFace, &geom_handle, 1, &type_ptr, &one, &one_too, &ierr );
   if (iBase_SUCCESS != ierr)
     return ierr;
-  
-    // not interested in volumes (only surfaces, curves, and points)
-  if (type == iBase_REGION)
-    geom_handle = 0;
   
   return iBase_SUCCESS;
 }
 
 
 int MsqIRel::geom_from_mesh( const Mesh::EntityHandle* handles,
-                                 iBase_EntityHandle* geom_handles,
-                                 size_t count ) const
+                             iBase_EntityHandle* geom_handles,
+                             unsigned short* dims,
+                             size_t count ) const
 {
-  int ierr;
+  int ierr, dim;
   for (size_t i = 0; i < count; ++i) {
-    ierr = geom_from_mesh( handles[i], geom_handles[i] );
+    ierr = geom_from_mesh( handles[i], geom_handles[i], dim );
     if (iBase_SUCCESS != ierr)
       return ierr;
+    dims[i] = dim;
   }
   
   return iBase_SUCCESS;
