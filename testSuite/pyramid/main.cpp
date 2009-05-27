@@ -57,6 +57,7 @@
 #include "UntangleBetaQualityMetric.hpp"
 #include "FeasibleNewton.hpp"
 #include "ConjugateGradient.hpp"
+#include "TrustRegion.hpp"
 #include "ConditionNumberQualityMetric.hpp"
 using namespace Mesquite;
 
@@ -300,6 +301,7 @@ bool smooth_mixed_mesh( const char* filename )
   // Set up a preconditioner
   LInfTemplate pre_obj_func( &un_metric );
   ConjugateGradient precond( &pre_obj_func, err ); CPPUNIT_ASSERT(!err);
+  precond.use_element_on_vertex_patch();
   TerminationCriterion pre_term, pre_outer;
   //pre_term.add_relative_quality_improvement( 0.1 );
   pre_term .add_iteration_limit( 3 );
