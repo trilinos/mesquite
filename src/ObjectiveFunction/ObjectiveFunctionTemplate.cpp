@@ -73,7 +73,8 @@ bool ObjectiveFunctionTemplate::initialize_block_coordinate_descent( Mesh* mesh,
   PatchData pd;
   pd.set_mesh( mesh );
   pd.set_domain( domain );
-  pd.attach_settings( settings );
+  if (settings)
+    pd.attach_settings( settings );
   
   bool result = true;
   while (patches.get_next_patch( pd, err ) && !MSQ_CHKERR(err))

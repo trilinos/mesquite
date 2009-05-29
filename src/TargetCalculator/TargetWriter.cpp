@@ -72,7 +72,8 @@ double TargetWriter::loop_over_mesh( Mesh* mesh,
   PatchData patch;
   patch.set_mesh( mesh );
   patch.set_domain( domain );
-  patch.attach_settings( settings );
+  if (settings)
+    patch.attach_settings( settings );
   
   ElementPatches patch_set;
   patch_set.set_mesh( mesh );

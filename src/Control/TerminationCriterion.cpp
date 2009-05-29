@@ -289,7 +289,8 @@ void TerminationCriterion::reset_outer(Mesh* mesh,
 {
   const unsigned long totalFlag = terminationCriterionFlag | cullingMethodFlag;
   PatchData global_patch;
-  global_patch.attach_settings( settings );
+  if (settings)
+    global_patch.attach_settings( settings );
   
     //if we need to fill out the global patch data object.
   if ((totalFlag & (GRAD_FLAGS | OF_FLAGS | VERTEX_MOVEMENT_RELATIVE))
@@ -561,7 +562,8 @@ void TerminationCriterion::accumulate_outer(Mesh* mesh,
                                             MsqError &err)
 {
   PatchData global_patch;
-  global_patch.attach_settings( settings );
+  if (settings)
+    global_patch.attach_settings( settings );
   
     //if we need to fill out the global patch data object.
   if ((terminationCriterionFlag & (GRAD_FLAGS|OF_FLAGS|VERTEX_MOVEMENT_RELATIVE))

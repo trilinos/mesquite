@@ -124,7 +124,8 @@ double VertexMover::loop_over_mesh( Mesh* mesh,
   PatchData patch;
   patch.set_mesh( mesh );
   patch.set_domain( domain );
-  patch.attach_settings( settings );
+  if (settings)
+    patch.attach_settings( settings );
   bool one_patch = false, did_some, all_culled;
   msq_std::vector<Mesh::VertexHandle> patch_vertices;
   msq_std::vector<Mesh::ElementHandle> patch_elements;

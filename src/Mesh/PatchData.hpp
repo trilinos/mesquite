@@ -715,6 +715,7 @@ namespace MESQUITE_NS
     ExtraData* dataList;
     
     const Settings* mSettings;
+    static const Settings defaultSettings;
 
   };
   

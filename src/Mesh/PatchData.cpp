@@ -81,6 +81,8 @@
 
 namespace MESQUITE_NS {
 
+const Settings PatchData::defaultSettings;
+
 PatchData::PatchData()
   : myMesh(0),
     myDomain(0),
@@ -90,7 +92,7 @@ PatchData::PatchData()
     boolArraySize(0),
     haveComputedInfos(0),
     dataList(0),
-    mSettings(0)
+    mSettings(&defaultSettings)
 {
 }
 

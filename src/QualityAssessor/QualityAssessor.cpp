@@ -407,7 +407,8 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
   PatchData patch;
   patch.set_mesh( mesh );
   patch.set_domain( domain );
-  patch.attach_settings( settings );
+  if (settings)
+    patch.attach_settings( settings );
   
   ElementPatches elem_patches;
   elem_patches.set_mesh( mesh );
