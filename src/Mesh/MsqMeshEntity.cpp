@@ -694,6 +694,137 @@ size_t MsqMeshEntity::get_local_matrix_map_about_vertex(
 MsqMeshEntity::ElementOrientation MsqMeshEntity::check_element_orientation(
   PatchData &pd, MsqError &err)
 {
+  ElementOrientation result;
+  NodeSet all = all_nodes( err ); 
+  if (MSQ_CHKERR(err))
+    return UNDEFINED_ORIENTATION;
+  unsigned i;
+
+  if (TopologyInfo::dimension(mType) == 2) {
+    if (!pd.domain_set())
+      return VALID_ORIENTATION;
+  
+    const MappingFunction2D* mf = pd.get_mapping_function_2D( mType );
+    if (!mf) 
+      return check_element_orientation_old( pd, err );
+    
+    NodeSet sample = mf->sample_points( all );
+    if (sample.have_any_corner_node()) {
+      for (i = 0; i < TopologyInfo::corners(mType); ++i)
+        if (sample.corner_node(i) && 
+            VALID_ORIENTATION != (result = check_jacobian_2d( pd, all, Sample(0,i), err )))
+          return result;
+    }
+    if (sample.have_any_mid_edge_node()) {
+      for (i = 0; i < TopologyInfo::edges(mType); ++i)
+        if (sample.mid_edge_node(i) && 
+            VALID_ORIENTATION != (result = check_jacobian_2d( pd, all, Sample(1,i), err )))
+          return result;
+    } 
+    if (sample.have_any_mid_face_node()) {
+      result = check_jacobian_2d( pd, all, Sample(2,0), err );
+      if (VALID_ORIENTATION != result)
+        return result;
+    }
+  }
+  else {
+    const MappingFunction3D* mf = pd.get_mapping_function_3D( mType );
+    if (!mf) 
+      return check_element_orientation_old( pd, err );
+    
+    NodeSet sample = mf->sample_points( all );
+    if (sample.have_any_corner_node()) {
+      for (i = 0; i < TopologyInfo::corners(mType); ++i)
+        if (sample.corner_node(i) && 
+            VALID_ORIENTATION != (result = check_jacobian_3d( pd, all, Sample(0,i), err )))
+          return result;
+    }
+    if (sample.have_any_mid_edge_node()) {
+      for (i = 0; i < TopologyInfo::edges(mType); ++i)
+        if (sample.mid_edge_node(i) && 
+            VALID_ORIENTATION != (result = check_jacobian_3d( pd, all, Sample(1,i), err )))
+          return result;
+    } 
+    if (sample.have_any_mid_face_node()) {
+      for (i = 0; i < TopologyInfo::edges(mType); ++i)
+        if (sample.mid_face_node(i) && 
+            VALID_ORIENTATION != (result = check_jacobian_3d( pd, all, Sample(1,i), err )))
+          return result;
+    } 
+    if (sample.have_any_mid_region_node()) {
+      result = check_jacobian_3d( pd, all, Sample(3,0), err );
+      if (VALID_ORIENTATION != result)
+        return result;
+    }
+  }
+  
+  return VALID_ORIENTATION;
+}
+
+MsqMeshEntity::ElementOrientation 
+MsqMeshEntity::check_jacobian_3d( PatchData& pd, NodeSet nodes, Sample sample, MsqError& err )
+{
+  MsqMatrix<3,3> J;
+  MsqVector<3> junk[27];
+  size_t junk2[27], junk3;
+  assert(node_count() <= 27);
+
+  const MappingFunction3D* mf = pd.get_mapping_function_3D( mType );
+  mf->jacobian( pd, pd.get_element_index(this), nodes, 
+                sample, junk2, junk, junk3, J, err );
+  if (MSQ_CHKERR(err))
+    return UNDEFINED_ORIENTATION;
+  return det(J) <= 0.0 ? INVERTED_ORIENTATION : VALID_ORIENTATION;
+}
+
+MsqMeshEntity::ElementOrientation 
+MsqMeshEntity::check_jacobian_2d( PatchData& pd, NodeSet nodes, Sample sample, MsqError& err )
+{
+  MsqMatrix<3,2> J;
+  MsqVector<2> junk[9];
+  size_t junk2[9], junk3;
+  assert(node_count() <= 9);
+
+  const MappingFunction2D* mf = pd.get_mapping_function_2D( mType );
+  mf->jacobian( pd, pd.get_element_index(this), nodes, 
+                sample, junk2, junk, junk3, J, err );
+  if (MSQ_CHKERR(err))
+    return UNDEFINED_ORIENTATION;
+    
+  Vector3D norm;
+  pd.get_domain_normal_at_sample( pd.get_element_index(this), sample, norm, err );
+  if (MSQ_CHKERR(err))
+    return UNDEFINED_ORIENTATION;
+  
+  MsqVector<3> N(&norm[0]);
+  MsqVector<3> cross = J.column(0) * J.column(1);
+  return (cross % N > 0.0) ? VALID_ORIENTATION : INVERTED_ORIENTATION;
+}
+
+NodeSet
+MsqMeshEntity::all_nodes( MsqError& err ) const
+{
+  bool mid_edge, mid_face, mid_vol;
+  TopologyInfo::higher_order( mType, node_count(), mid_edge, mid_face, mid_vol, err );
+  NodeSet result;
+  result.set_all_corner_nodes( mType );
+  if (mid_edge)
+    result.set_all_mid_edge_nodes( mType );
+  if (mid_face)
+    result.set_all_mid_face_nodes( mType );
+  if (mid_vol)
+    result.set_mid_region_node( mType );
+  return result;
+}
+
+MsqMeshEntity::ElementOrientation MsqMeshEntity::check_element_orientation_old(
+  PatchData &pd, MsqError &err)
+{
+  if (node_count() > vertex_count()) {
+    MSQ_SETERR(err)("Cannot perform inversion test for higher-order element"
+                    " without mapping function.", MsqError::UNSUPPORTED_ELEMENT );
+    return UNDEFINED_ORIENTATION;
+  }
 
   const MsqVertex *vertices = pd.get_vertex_array(err);
   if(MSQ_CHKERR(err))

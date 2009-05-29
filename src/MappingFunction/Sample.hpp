@@ -107,6 +107,19 @@ struct Sample {
   //! be able to catch the use of uninitialized values using a memory checker
   //! anyway if I make such a mistake.)
   Sample() {}
+  
+  bool operator==( const Sample& other ) const 
+    { return pack() == other.pack(); }
+  bool operator!=( const Sample& other ) const 
+    { return pack() != other.pack(); }
+  bool operator<( const Sample& other ) const 
+    { return pack() < other.pack(); }
+  bool operator>( const Sample& other ) const 
+    { return pack() > other.pack(); }
+  bool operator<=( const Sample& other ) const 
+    { return pack() <= other.pack(); }
+  bool operator>=( const Sample& other ) const 
+    { return pack() >= other.pack(); }
 };
 
 

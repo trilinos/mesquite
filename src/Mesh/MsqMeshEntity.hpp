@@ -39,6 +39,8 @@
 #include "Mesquite.hpp"
 #include "TopologyInfo.hpp"
 #include "Vector3D.hpp"
+#include "NodeSet.hpp"
+#include "Sample.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 #  include <vector.h>
@@ -153,6 +155,8 @@ namespace MESQUITE_NS
       //!  returns VALID_ORIENTATION.
     ElementOrientation check_element_orientation(PatchData &pd,
                                                  MsqError &err );
+    ElementOrientation check_element_orientation_old(PatchData &pd,
+                                                 MsqError &err );
     
     
       //! Uses a MeshDomain call-back function to compute the normal at the corner.
@@ -167,6 +171,19 @@ namespace MESQUITE_NS
     void compute_corner_matrices(PatchData &pd, Matrix3D A[], int num_m3d, MsqError &err );
 
   private:
+
+      //! Get NodeSet indicating all nodes present for this element type.
+    NodeSet all_nodes( MsqError& err ) const;
+
+      //! Check for a negative Jacobian at the specified sample point
+      //! of a volume element.
+    ElementOrientation 
+    check_jacobian_3d( PatchData& pd, NodeSet nodes, Sample sample, MsqError& err );
+
+      //! Check for a negative Jacobian at the specified sample point
+      //! of a surface element.
+    ElementOrientation 
+    check_jacobian_2d( PatchData& pd, NodeSet nodes, Sample sample, MsqError& err );
     
     EntityTopology mType;
     /** Pointer to connectivity array.
