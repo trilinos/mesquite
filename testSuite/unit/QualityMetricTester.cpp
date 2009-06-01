@@ -412,9 +412,10 @@ void QualityMetricTester::get_inverted_element( EntityTopology type, PatchData& 
       CPPUNIT_ASSERT(false);
   
   if (TopologyInfo::dimension(type) == 3 || pd.domain_set()) {
-    MsqMeshEntity::ElementOrientation ort = elem.check_element_orientation(pd,err);
+    int inverted, total;
+    elem.check_element_orientation(pd,inverted,total,err);
     CPPUNIT_ASSERT(!err);
-    CPPUNIT_ASSERT_EQUAL( MsqMeshEntity::INVERTED_ORIENTATION, ort );
+    CPPUNIT_ASSERT(total);
   }
 }
 

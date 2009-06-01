@@ -596,7 +596,7 @@ void QualityAssessorTest::test_invalid_count()
 
 void QualityAssessorTest::test_inverted_count()
 {
-  int inverted, undefined;
+  int inverted, samples;
   MsqError err;
   QualityAssessor qa;
   qa.measure_free_samples_only( false );
@@ -605,20 +605,20 @@ void QualityAssessorTest::test_inverted_count()
     // try mesh with only valid elements
   qa.loop_over_mesh( &myMesh, &myDomain, &mySettings, err  );
   ASSERT_NO_ERROR( err );
-  inverted = undefined = -1;
-  qa.get_inverted_element_count( inverted, undefined, err );
+  inverted = samples = -1;
+  qa.get_inverted_element_count( inverted, samples, err );
   ASSERT_NO_ERROR( err );
   CPPUNIT_ASSERT_EQUAL( 0, inverted );
-  CPPUNIT_ASSERT_EQUAL( 0, undefined );
+  CPPUNIT_ASSERT_EQUAL( 0, samples );
   
     // try mesh with one inverted element
   qa.loop_over_mesh( &invertedMesh, &myDomain, &mySettings, err  );
   ASSERT_NO_ERROR( err );
-  inverted = undefined = -1;
-  qa.get_inverted_element_count( inverted, undefined, err );
+  inverted = samples = -1;
+  qa.get_inverted_element_count( inverted, samples, err );
   ASSERT_NO_ERROR( err );
   CPPUNIT_ASSERT_EQUAL( 1, inverted );
-  CPPUNIT_ASSERT_EQUAL( 0, undefined );
+  CPPUNIT_ASSERT_EQUAL( 1, samples );
 }
 
   // Define class to handle redirecting output streams
@@ -846,12 +846,12 @@ void QualityAssessorTest::test_tag_inverted()
   invertedMesh.tag_get_element_data( tag, 2, &elements[0], data, err );
   ASSERT_NO_ERROR( err );
   
-  if (data[0] == MsqMeshEntity::VALID_ORIENTATION) {
-    CPPUNIT_ASSERT_EQUAL( (int)MsqMeshEntity::INVERTED_ORIENTATION, data[1] );
+  if (data[0]) {
+    CPPUNIT_ASSERT_EQUAL( 0, data[1] );
   }
   else {
-    CPPUNIT_ASSERT_EQUAL( (int)MsqMeshEntity::INVERTED_ORIENTATION, data[0] );
-    CPPUNIT_ASSERT_EQUAL( (int)MsqMeshEntity::VALID_ORIENTATION, data[1] );
+    CPPUNIT_ASSERT_EQUAL( 0, data[0] );
+    CPPUNIT_ASSERT_EQUAL( 1, data[1] );
   }
 }
 
