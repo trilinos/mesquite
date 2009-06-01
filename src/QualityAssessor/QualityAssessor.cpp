@@ -88,8 +88,8 @@ QualityAssessor::QualityAssessor( bool print_summary,
                                   const char* inverted_tag_name,
                                   msq_std::string name) :
   qualityAssessorName(name),
-  invertedCount(-1),
-  indeterminateCount(-1),
+  invertedElementCount(-1),
+  invertedSampleCount(-1),
   outputStream( msq_stdio::cout ),
   printSummary( print_summary ),
   skipFixedSamples(free_only)
@@ -106,8 +106,8 @@ QualityAssessor::QualityAssessor( msq_stdio::ostream& stream,
                                   const char* inverted_tag_name,
                                   msq_std::string name) :
   qualityAssessorName(name),
-  invertedCount(-1),
-  indeterminateCount(-1),
+  invertedElementCount(-1),
+  invertedSampleCount(-1),
   outputStream( stream ),
   printSummary( true ),
   skipFixedSamples(free_only)
@@ -128,8 +128,8 @@ QualityAssessor::QualityAssessor( msq_stdio::ostream& output_stream,
                                   const char* inverted_tag_name,
                                   msq_std::string name ) :
   qualityAssessorName(name),
-  invertedCount(-1),
-  indeterminateCount(-1),
+  invertedElementCount(-1),
+  invertedSampleCount(-1),
   outputStream( output_stream ),
   printSummary( true ),
   skipFixedSamples(free_only)
@@ -152,8 +152,8 @@ QualityAssessor::QualityAssessor( QualityMetric* metric,
                                   const char* inverted_tag_name,
                                   msq_std::string name) :
   qualityAssessorName(name),
-  invertedCount(-1),
-  indeterminateCount(-1),
+  invertedElementCount(-1),
+  invertedSampleCount(-1),
   outputStream( msq_stdio::cout ),
   printSummary( print_summary ),
   skipFixedSamples(free_only)
@@ -192,15 +192,15 @@ double QualityAssessor::Assessor::get_power_mean() const
 }
 
 bool QualityAssessor::get_inverted_element_count(int &inverted_elems,
-                                                 int &undefined_elems,
+                                                 int &inverted_samples,
                                                  MsqError &err)
 {
-  if(invertedCount == -1 || indeterminateCount == -1){
+  if(invertedElementCount == -1){
     MSQ_SETERR(err)("Number of inverted elements has not yet been calculated.", MsqError::INVALID_STATE);
     return false;
   }
-  inverted_elems = invertedCount;
-  undefined_elems = indeterminateCount;
+  inverted_elems = invertedElementCount;
+  inverted_samples = invertedSampleCount;
   return true;
 }
 
@@ -470,11 +470,11 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
     // Do element-based metrics
   elem_patches.get_patch_handles( patches, err ); MSQ_ERRZERO(err);
 
-  invertedCount = 0;
-  indeterminateCount = 0;
+  invertedElementCount = invertedSampleCount = sampleCount = 0;
   elementCount = patches.size();
   freeElementCount = 0;
   
+  int inverted, samples;
   bool first_pass = false;
   do { // might need to loop twice to calculate histograms
     first_pass = !first_pass;
@@ -503,20 +503,16 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
        //first check for inverted elements
       if (first_pass){
         ++freeElementCount;
-        MsqMeshEntity::ElementOrientation elem_orientation =
-          patch.element_by_index(0).check_element_orientation(patch, err);
-
-        if( elem_orientation == MsqMeshEntity::INVERTED_ORIENTATION){
-          ++invertedCount;
-        }
-        else if(elem_orientation == MsqMeshEntity::UNDEFINED_ORIENTATION){
-          ++indeterminateCount;
-        }
+        inverted = samples = 0;
+        patch.element_by_index(0).check_element_orientation(patch, inverted, samples, err);
         MSQ_ERRZERO(err);
+        invertedElementCount += (inverted != 0);
+        invertedSampleCount += inverted;
+        sampleCount += samples;
 
         if (tagging_inverted_elements()) {
           Mesh::ElementHandle h = patch.get_element_handles_array()[0];
-          int val = elem_orientation;
+          int val = (inverted != 0);
           mesh->tag_set_element_data( invertedTag, 1, &h, &val, err );
           MSQ_ERRZERO(err);
         }
@@ -664,7 +660,7 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
 
       helper->communicate_min_max_to_zero(&(iter->minimum), &(iter->maximum));
 
-      helper->communicate_sums_to_zero(&invertedCount, &indeterminateCount, &(iter->count), &(iter->numInvalid), &(iter->sum), &(iter->sqrSum));
+      helper->communicate_sums_to_zero(&invertedElementCount, &invertedSampleCount, &(iter->count), &(iter->numInvalid), &(iter->sum), &(iter->sqrSum));
 
       if (iter->have_power_mean()) {
         helper->communicate_power_sum_to_zero( &(iter->pMean) );
@@ -699,8 +695,8 @@ void QualityAssessor::reset_data()
   list_type::iterator iter;
   for (iter = assessList.begin(); iter != assessList.end(); ++iter)
     iter->reset_data();
-  invertedCount = -1;
-  indeterminateCount = -1;
+  invertedElementCount = -1;
+  invertedSampleCount = -1;
 }
 
 QualityAssessor::Assessor::Assessor( QualityMetric* metric )
@@ -840,31 +836,22 @@ void QualityAssessor::print_summary( msq_stdio::ostream& stream ) const
   else
     stream << "  Evaluating quality for " << elementCount 
            << " elements." << msq_stdio::endl;
-    
-  if(invertedCount == 0  && indeterminateCount == 0){
+  
+  if (invertedElementCount) {
+    stream << "  THERE ARE "
+           << invertedElementCount
+           << " INVERTED ELEMENTS. "
+           << msq_stdio::endl
+           << "  (Elements invalid at "
+           << invertedSampleCount
+           << " of " << sampleCount
+           << " sample locations.)"
+           << msq_stdio::endl
+           << msq_stdio::endl;
+  }
+  else {
     stream << "  There were no inverted elements detected. "
            << msq_stdio::endl;
-  }
-  else if(invertedCount < 0 || indeterminateCount < 0){
-    stream << "  The number of inverted elements was not computed. "
-           << msq_stdio::endl;
-  }
-  else{
-    if(invertedCount > 0){
-      stream << "  THERE ARE "
-             << invertedCount
-             << " INVERTED ELEMENTS. "
-             << msq_stdio::endl
-             << msq_stdio::endl;
-    }
-    if(indeterminateCount > 0){
-      stream << "  THERE ARE "
-             << indeterminateCount
-             << " ELEMENTS WITH AN UNDEFINED NORMAL. "
-             << msq_stdio::endl
-             << msq_stdio::endl;
-    }
-    
   }
   
     // Check if there are invalid values for any metric

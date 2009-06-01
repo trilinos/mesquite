@@ -691,78 +691,76 @@ size_t MsqMeshEntity::get_local_matrix_map_about_vertex(
 }
 
 
-MsqMeshEntity::ElementOrientation MsqMeshEntity::check_element_orientation(
-  PatchData &pd, MsqError &err)
+void MsqMeshEntity::check_element_orientation(
+  PatchData &pd, int& inverted, int& total, MsqError &err)
 {
-  ElementOrientation result;
-  NodeSet all = all_nodes( err ); 
-  if (MSQ_CHKERR(err))
-    return UNDEFINED_ORIENTATION;
+  NodeSet all = all_nodes( err ); MSQ_ERRRTN(err);
   unsigned i;
 
   if (TopologyInfo::dimension(mType) == 2) {
-    if (!pd.domain_set())
-      return VALID_ORIENTATION;
+    if (!pd.domain_set()) {
+      total = 0;
+      inverted = 0;
+      return;
+    }
   
     const MappingFunction2D* mf = pd.get_mapping_function_2D( mType );
-    if (!mf) 
-      return check_element_orientation_old( pd, err );
-    
+    if (!mf) {
+      check_element_orientation_corners( pd, inverted, total, err );
+      return;
+    }
+   
     NodeSet sample = mf->sample_points( all );
+    total = sample.num_nodes();
+    inverted = 0;
+    
     if (sample.have_any_corner_node()) {
       for (i = 0; i < TopologyInfo::corners(mType); ++i)
-        if (sample.corner_node(i) && 
-            VALID_ORIENTATION != (result = check_jacobian_2d( pd, all, Sample(0,i), err )))
-          return result;
+        if (sample.corner_node(i)) 
+          inverted += inverted_jacobian_2d( pd, all, Sample(0,i), err );
     }
     if (sample.have_any_mid_edge_node()) {
       for (i = 0; i < TopologyInfo::edges(mType); ++i)
-        if (sample.mid_edge_node(i) && 
-            VALID_ORIENTATION != (result = check_jacobian_2d( pd, all, Sample(1,i), err )))
-          return result;
+        if (sample.mid_edge_node(i))
+          inverted += inverted_jacobian_2d( pd, all, Sample(0,i), err );
     } 
-    if (sample.have_any_mid_face_node()) {
-      result = check_jacobian_2d( pd, all, Sample(2,0), err );
-      if (VALID_ORIENTATION != result)
-        return result;
-    }
+    if (sample.have_any_mid_face_node())
+      inverted += inverted_jacobian_2d( pd, all, Sample(2,0), err );
   }
   else {
     const MappingFunction3D* mf = pd.get_mapping_function_3D( mType );
-    if (!mf) 
-      return check_element_orientation_old( pd, err );
+    if (!mf) {
+      check_element_orientation_corners( pd, inverted, total, err );
+      return;
+    }
     
     NodeSet sample = mf->sample_points( all );
+    total = sample.num_nodes();
+    inverted = 0;
+    
     if (sample.have_any_corner_node()) {
       for (i = 0; i < TopologyInfo::corners(mType); ++i)
-        if (sample.corner_node(i) && 
-            VALID_ORIENTATION != (result = check_jacobian_3d( pd, all, Sample(0,i), err )))
-          return result;
+        if (sample.corner_node(i))
+          inverted += inverted_jacobian_3d( pd, all, Sample(0,i), err );
     }
     if (sample.have_any_mid_edge_node()) {
       for (i = 0; i < TopologyInfo::edges(mType); ++i)
-        if (sample.mid_edge_node(i) && 
-            VALID_ORIENTATION != (result = check_jacobian_3d( pd, all, Sample(1,i), err )))
-          return result;
+        if (sample.mid_edge_node(i))
+          inverted += inverted_jacobian_3d( pd, all, Sample(1,i), err );
     } 
     if (sample.have_any_mid_face_node()) {
       for (i = 0; i < TopologyInfo::edges(mType); ++i)
-        if (sample.mid_face_node(i) && 
-            VALID_ORIENTATION != (result = check_jacobian_3d( pd, all, Sample(1,i), err )))
-          return result;
+        if (sample.mid_face_node(i))
+          inverted += inverted_jacobian_3d( pd, all, Sample(1,i), err );
     } 
     if (sample.have_any_mid_region_node()) {
-      result = check_jacobian_3d( pd, all, Sample(3,0), err );
-      if (VALID_ORIENTATION != result)
-        return result;
+      inverted += inverted_jacobian_3d( pd, all, Sample(3,0), err );
     }
   }
-  
-  return VALID_ORIENTATION;
 }
 
-MsqMeshEntity::ElementOrientation 
-MsqMeshEntity::check_jacobian_3d( PatchData& pd, NodeSet nodes, Sample sample, MsqError& err )
+bool
+MsqMeshEntity::inverted_jacobian_3d( PatchData& pd, NodeSet nodes, Sample sample, MsqError& err )
 {
   MsqMatrix<3,3> J;
   MsqVector<3> junk[27];
@@ -772,13 +770,12 @@ MsqMeshEntity::check_jacobian_3d( PatchData& pd, NodeSet nodes, Sample sample, M
   const MappingFunction3D* mf = pd.get_mapping_function_3D( mType );
   mf->jacobian( pd, pd.get_element_index(this), nodes, 
                 sample, junk2, junk, junk3, J, err );
-  if (MSQ_CHKERR(err))
-    return UNDEFINED_ORIENTATION;
-  return det(J) <= 0.0 ? INVERTED_ORIENTATION : VALID_ORIENTATION;
+  MSQ_ERRZERO(err);
+  return det(J) <= 0.0;
 }
 
-MsqMeshEntity::ElementOrientation 
-MsqMeshEntity::check_jacobian_2d( PatchData& pd, NodeSet nodes, Sample sample, MsqError& err )
+bool 
+MsqMeshEntity::inverted_jacobian_2d( PatchData& pd, NodeSet nodes, Sample sample, MsqError& err )
 {
   MsqMatrix<3,2> J;
   MsqVector<2> junk[9];
@@ -788,17 +785,15 @@ MsqMeshEntity::check_jacobian_2d( PatchData& pd, NodeSet nodes, Sample sample, M
   const MappingFunction2D* mf = pd.get_mapping_function_2D( mType );
   mf->jacobian( pd, pd.get_element_index(this), nodes, 
                 sample, junk2, junk, junk3, J, err );
-  if (MSQ_CHKERR(err))
-    return UNDEFINED_ORIENTATION;
+  MSQ_ERRZERO(err);
     
   Vector3D norm;
   pd.get_domain_normal_at_sample( pd.get_element_index(this), sample, norm, err );
-  if (MSQ_CHKERR(err))
-    return UNDEFINED_ORIENTATION;
+  MSQ_ERRZERO(err);
   
   MsqVector<3> N(&norm[0]);
   MsqVector<3> cross = J.column(0) * J.column(1);
-  return (cross % N > 0.0) ? VALID_ORIENTATION : INVERTED_ORIENTATION;
+  return (cross % N < 0.0);
 }
 
 NodeSet
@@ -817,18 +812,21 @@ MsqMeshEntity::all_nodes( MsqError& err ) const
   return result;
 }
 
-MsqMeshEntity::ElementOrientation MsqMeshEntity::check_element_orientation_old(
-  PatchData &pd, MsqError &err)
+void MsqMeshEntity::check_element_orientation_corners(
+  PatchData &pd, 
+  int& inverted,
+  int& total,
+  MsqError &err)
 {
+  total = inverted = 0;
+
   if (node_count() > vertex_count()) {
     MSQ_SETERR(err)("Cannot perform inversion test for higher-order element"
                     " without mapping function.", MsqError::UNSUPPORTED_ELEMENT );
-    return UNDEFINED_ORIENTATION;
+    return;
   }
 
-  const MsqVertex *vertices = pd.get_vertex_array(err);
-  if(MSQ_CHKERR(err))
-    return UNDEFINED_ORIENTATION;
+  const MsqVertex *vertices = pd.get_vertex_array(err);  MSQ_ERRRTN(err);
 
     // Hex element descriptions
   static const int locs_hex[8][4] = {{0, 1, 3, 4},
@@ -849,47 +847,32 @@ MsqMeshEntity::ElementOrientation MsqMeshEntity::check_element_orientation_old(
   switch(mType) {
     case TRIANGLE:
       
-      if ( pd.domain_set() ) {
-        pd.get_domain_normal_at_element(this, coord_vectors[2], err);
-        if(MSQ_CHKERR(err))
-          return UNDEFINED_ORIENTATION;
-      }
-      else{
-        return UNDEFINED_ORIENTATION;
-      }
+      if (!pd.domain_set())
+        return;
       
+      pd.get_domain_normal_at_element(this, coord_vectors[2], err); MSQ_ERRRTN(err);
       coord_vectors[2] = coord_vectors[2] / coord_vectors[2].length();// Need unit normal
       center_vector = vertices[vertexIndices[0]];
       coord_vectors[0] = vertices[vertexIndices[1]]-center_vector;
       coord_vectors[1] = vertices[vertexIndices[2]]-center_vector;
-        //metric_valid = is_matrix_det_positive(coord_vectors);
-      if( coord_vectors[0]%(coord_vectors[1]*coord_vectors[2] ) <= 0.0)
-      {
-        return INVERTED_ORIENTATION;
-      }
+      total = 1;
+      inverted = (coord_vectors[0]%(coord_vectors[1]*coord_vectors[2] ) <= 0.0);
       break;
     
     case QUADRILATERAL:
+      
+      if (!pd.domain_set())
+        return;
+
       for (i = 0; i < 4; ++i) {
       
-        if ( pd.domain_set() ) {
-          pd.get_domain_normal_at_element(this, coord_vectors[2], err); 
-          if(MSQ_CHKERR(err))
-            return UNDEFINED_ORIENTATION;
-        }
-        else{
-          return UNDEFINED_ORIENTATION;
-        }
+        pd.get_domain_normal_at_element(this, coord_vectors[2], err); MSQ_ERRRTN(err);
         coord_vectors[2] = coord_vectors[2] / coord_vectors[2].length();// Need unit normal
         center_vector = vertices[vertexIndices[locs_hex[i][0]]];
         coord_vectors[0] = vertices[vertexIndices[locs_hex[i][1]]]-center_vector;
         coord_vectors[1] = vertices[vertexIndices[locs_hex[i][2]]]-center_vector;
-        if( coord_vectors[0]%(coord_vectors[1]*coord_vectors[2] ) <= 0.0)
-        {
-          return INVERTED_ORIENTATION;
-        }
-          // metric_valid = is_matrix_det_positive(coord_vectors);
-
+        ++total;
+        inverted += (coord_vectors[0]%(coord_vectors[1]*coord_vectors[2] ) <= 0.0);
       }
       break;
 
@@ -898,27 +881,8 @@ MsqMeshEntity::ElementOrientation MsqMeshEntity::check_element_orientation_old(
       coord_vectors[0] = vertices[vertexIndices[1]]-center_vector;
       coord_vectors[1] = vertices[vertexIndices[2]]-center_vector;
       coord_vectors[2] = vertices[vertexIndices[3]]-center_vector;
-        //metric_valid = is_matrix_det_positive(coord_vectors);
-      if( coord_vectors[0]%(coord_vectors[1]*coord_vectors[2] ) <= 0.0)
-      {
-        return INVERTED_ORIENTATION;
-      }
-        //if (!metric_valid) return false;
-      break;
-
-    case HEXAHEDRON:
-      for (i = 0; i < 8; ++i) {
-        center_vector = vertices[vertexIndices[locs_hex[i][0]]];
-        coord_vectors[0] = vertices[vertexIndices[locs_hex[i][1]]]-center_vector;
-        coord_vectors[1] = vertices[vertexIndices[locs_hex[i][2]]]-center_vector;
-        coord_vectors[2] = vertices[vertexIndices[locs_hex[i][3]]]-center_vector;
-          //metric_valid = is_matrix_det_positive(coord_vectors);
-        if( coord_vectors[0]%(coord_vectors[1]*coord_vectors[2] ) <= 0.0)
-        {
-          return INVERTED_ORIENTATION;
-        }
-          //if (!metric_valid) return false;
-      }
+      total = 1;
+      inverted = ( coord_vectors[0]%(coord_vectors[1]*coord_vectors[2] ) <= 0.0);
       break;
 
     default: // generic code for 3D elements
@@ -932,23 +896,19 @@ MsqMeshEntity::ElementOrientation MsqMeshEntity::check_element_orientation_old(
         if (3 != num_adj)
         {
           MSQ_SETERR(err)("Unsupported element type.", MsqError::INVALID_ARG);
-          return UNDEFINED_ORIENTATION;
+          return;
         }
         
         center_vector = vertices[vertexIndices[j]];
         coord_vectors[0] = vertices[vertexIndices[adj_idx[0]]] - center_vector;
         coord_vectors[1] = vertices[vertexIndices[adj_idx[1]]] - center_vector;
         coord_vectors[2] = vertices[vertexIndices[adj_idx[2]]] - center_vector;
-          //metric_valid = is_matrix_det_positive(coord_vectors);
-        if( coord_vectors[0]%(coord_vectors[1]*coord_vectors[2] ) <= 0.0)
-        {
-          return INVERTED_ORIENTATION;
-        }
+        ++total;
+        inverted += (coord_vectors[0]%(coord_vectors[1]*coord_vectors[2] ) <= 0.0);
       }
       break;
     }
   } // end switch over element type
-  return VALID_ORIENTATION;
 }
 
 } // namespace Mesquite

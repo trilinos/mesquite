@@ -363,8 +363,8 @@ namespace MESQUITE_NS
       //! Returns false if this information is not yet available.
       //! Returns true, otherwise.
     MESQUITE_EXPORT bool get_inverted_element_count(int &inverted_elems,
-                                    int &undefined_elems,
-                                    MsqError &err);
+                                                    int &inverted_samples,
+                                                    MsqError &err);
     
       //! Reset calculated data 
     MESQUITE_EXPORT void reset_data();
@@ -558,13 +558,16 @@ namespace MESQUITE_NS
     list_type assessList;
 
       /** Count of inverted elements. */
-    int invertedCount;
+    int invertedElementCount;
 
-      /** Count of elements whose orientation can not be determined.*/
-    int indeterminateCount;
+      /** Count of inverted Jacobians within elements.*/
+    int invertedSampleCount;
     
       /** Number of elements */
     size_t elementCount;
+    
+      /** Total number of element Jacobians tested for inversion */
+    size_t sampleCount;
     
       /** Number of elements with at least one free vertex */
     size_t freeElementCount;

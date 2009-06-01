@@ -139,24 +139,22 @@ namespace MESQUITE_NS
     
       //!Computes the signed area of the element.
     double compute_signed_area(PatchData &pd, MsqError &err );
-
-    enum ElementOrientation
-    {
-      UNDEFINED_ORIENTATION = 1,
-      INVERTED_ORIENTATION = 2,
-      VALID_ORIENTATION = 0
-    };
     
-      //!Returns INVERTED_ORIENTATION if the element is inverted (ie,
-      //!  if one of the corners in the element has a non-positive
-      //!  Jacobian determinant).  Returns UNDEFINED_ORIENTATION if
-      //!  the element's orientation can not be determined (eg, if the
-      //!  normal is not available for a quad element).  Otherwise,
-      //!  returns VALID_ORIENTATION.
-    ElementOrientation check_element_orientation(PatchData &pd,
-                                                 MsqError &err );
-    ElementOrientation check_element_orientation_old(PatchData &pd,
-                                                 MsqError &err );
+      //! Check sign of the determinant mapping fuction Jacobian 
+      //! at representative sample points in the element.
+      //!\param inverted_count  Number of sampling locations within the
+      //!                       element for which the determinant of the
+      //!                       mapping function Jacobian was negative.
+      //!\param tested_count    The number of sampling locations in the
+      //!                       element for which the Jacobian was tested.
+    void check_element_orientation( PatchData &pd, 
+                                    int& inverted_count,
+                                    int& tested_count,
+                                    MsqError &err );
+    void check_element_orientation_corners( PatchData &pd, 
+                                            int& inverted_count,
+                                            int& tested_count,
+                                            MsqError &err );
     
     
       //! Uses a MeshDomain call-back function to compute the normal at the corner.
@@ -177,13 +175,11 @@ namespace MESQUITE_NS
 
       //! Check for a negative Jacobian at the specified sample point
       //! of a volume element.
-    ElementOrientation 
-    check_jacobian_3d( PatchData& pd, NodeSet nodes, Sample sample, MsqError& err );
+    bool inverted_jacobian_3d( PatchData& pd, NodeSet nodes, Sample sample, MsqError& err );
 
       //! Check for a negative Jacobian at the specified sample point
       //! of a surface element.
-    ElementOrientation 
-    check_jacobian_2d( PatchData& pd, NodeSet nodes, Sample sample, MsqError& err );
+    bool inverted_jacobian_2d( PatchData& pd, NodeSet nodes, Sample sample, MsqError& err );
     
     EntityTopology mType;
     /** Pointer to connectivity array.

@@ -9,12 +9,12 @@ namespace MESQUITE_NS {
 
 size_t SmartLaplacianSmoother::num_inverted( PatchData& pd, MsqError& err )
 {
-  MsqMeshEntity::ElementOrientation tmp;
   size_t result = 0;
+  int inverted, junk;
   for (size_t i = 0; i < pd.num_elements(); ++i) {
-    tmp = pd.element_by_index(i).check_element_orientation( pd, err ); 
+    pd.element_by_index(i).check_element_orientation( pd, inverted, junk, err ); 
     MSQ_ERRZERO(err);
-    if (tmp != MsqMeshEntity::VALID_ORIENTATION)
+    if (inverted)
       ++result;
   }
   return result;
