@@ -31,18 +31,13 @@
  */
 
 #include "Mesquite.hpp"
-#include "QualityMetricTester.hpp"
-#include "cppunit/extensions/HelperMacros.h"
 #include "TargetMetric3D.hpp"
-#include "TMPQualityMetric.hpp"
-#include "IdealTargetCalculator.hpp"
-#include "Settings.hpp"
 #include "UnitUtil.hpp"
+#include "MsqError.hpp"
 
 using namespace Mesquite;
 
-static const EntityTopology VolElems[] = { TETRAHEDRON, HEXAHEDRON, PRISM, PYRAMID };
-
+// Test functions implemented in class TargetMetric3D
 class TargetMetric3DTest : public CppUnit::TestFixture
 {
   CPPUNIT_TEST_SUITE( TargetMetric3DTest );
@@ -54,76 +49,184 @@ class TargetMetric3DTest : public CppUnit::TestFixture
   void test_numerical_hessian();
 };
 
+// Test concrete implementations of TargetMetric3D
 template <class Metric>
 class Target3DTest : public CppUnit::TestFixture
 {
 private:
-  Settings settings;
-  QualityMetricTester tester;
-  IdealTargetCalculator target;
   Metric test_metric;
-  TMPQualityMetric metric;
-  bool sizeInvariant, orientInvariant, Barrier;
+  bool shapeInvariant, sizeInvariant, orientInvariant, Barrier;
   double idealVal;
 public:
-  Target3DTest( bool size_invariant, bool orient_invariant, bool barrier, double ideal_element_val )
-    : tester( VolElems, sizeof(VolElems)/sizeof(VolElems[0]), &settings ),
-      metric( &target, 0, &test_metric ),
-      sizeInvariant(size_invariant), orientInvariant(orient_invariant), Barrier(barrier),
+  Target3DTest( bool shape_invariant, 
+                bool size_invariant, 
+                bool orient_invariant, 
+                bool barrier, 
+                double ideal_element_val )
+    : shapeInvariant(shape_invariant),
+      sizeInvariant(size_invariant), 
+      orientInvariant(orient_invariant), 
+      Barrier(barrier),
       idealVal(ideal_element_val)
     {}
   
-  inline void test_ideal_element_eval() {
-    tester.test_evaluate_unit_element( &metric, TETRAHEDRON, idealVal );
-    tester.test_evaluate_unit_element( &metric, HEXAHEDRON, idealVal );
-    tester.test_evaluate_unit_element( &metric, PRISM, idealVal );
-    tester.test_evaluate_unit_element( &metric, PYRAMID, idealVal );
-  }
-  
-  inline void test_ideal_element_gradient() {
-    tester.test_ideal_element_zero_gradient( &metric, true );
-  }
-
-  inline void test_inverted_element_eval() {
-    tester.test_evaluate_inverted_element( &metric, !Barrier );
-  }
-  
-  inline void test_measures_quality() {
-    if (sizeInvariant && orientInvariant)
-      tester.test_measures_quality( &metric );
-  }
-  
-  inline void test_location_invariant() {
-    tester.test_location_invariant( &metric);
-    tester.test_grad_location_invariant( &metric );
-  }
-  
-  inline void test_scale() {
-    if (sizeInvariant) {
-      // these tests is not applicable to the target metrics.
-      //tester.test_scale_invariant( &metric );
-    }
-    else {
-      tester.test_measures_size( &metric, true );
-    }
-  }
-  
-  inline void test_orient() {
-    if (orientInvariant) {
-      tester.test_orient_invariant( &metric );
-      tester.test_grad_orient_invariant( &metric );
-    }
-    else {
-      tester.test_measures_in_plane_orientation( &metric );
-    }
-  }
+  void test_ideal_eval();
+  void test_ideal_gradient();
+  void test_inverted();
+  void test_shape();
+  void test_scale();
+  void test_orient();
   
   void compare_anaytic_and_numeric_grads();
   void compare_anaytic_and_numeric_hess();
   void compare_eval_and_eval_with_grad();
   void compare_eval_with_grad_and_eval_with_hess();
+  
+  void test_non_ideal( bool sensitive,
+                       MsqMatrix<3,3> A,
+                       MsqMatrix<3,3> B );
 };
+  
+template <class Metric> void Target3DTest<Metric>::test_ideal_eval()
+{
+  MsqPrintError err(msq_stdio::cerr);
+  const double Avals[] = { 2, 1, 1, 1, 2, 1, 1, 1, 2 };
+  const double Bvals[] = { 1.5, -0.7, -0.8, 0.8, -1.3, -0.7, 0.6, -0.9, -2.0 };
+  const MsqMatrix<3,3> I(1.0), A(Avals), B(Bvals);
+  double val, eps = 1e-6;;
+  bool valid;
+  
+  valid = test_metric.evaluate( I, I, val, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( idealVal, val, eps );
+  
+  valid = test_metric.evaluate( A, A, val, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( idealVal, val, eps );
+  
+  valid = test_metric.evaluate( B, B, val, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( idealVal, val, eps );
+}
+  
+template <class Metric> void Target3DTest<Metric>::test_ideal_gradient()
+{
+  MsqPrintError err(msq_stdio::cerr);
+  const double Avals[] = { 2, 1, 1, 1, 2, 1, 1, 1, 2 };
+  const double Bvals[] = { 1.5, -0.7, -0.8, 0.8, -1.3, -0.7, 0.6, -0.9, -2.0 };
+  const MsqMatrix<3,3> I(1.0), A(Avals), B(Bvals);
+  MsqMatrix<3,3> grad;
+  double val, eps = 1e-6;
+  bool valid;
+  
+  valid = test_metric.evaluate_with_grad( I, I, val, grad, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  ASSERT_MATRICES_EQUAL( (MsqMatrix<3,3>(0.0)), grad, eps );
+  
+  valid = test_metric.evaluate_with_grad( A, A, val, grad, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  ASSERT_MATRICES_EQUAL( (MsqMatrix<3,3>(0.0)), grad, eps );
+  
+  valid = test_metric.evaluate_with_grad( B, B, val, grad, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  ASSERT_MATRICES_EQUAL( (MsqMatrix<3,3>(0.0)), grad, eps );
+}
 
+template <class Metric> void Target3DTest<Metric>::test_inverted() 
+{
+  MsqPrintError err(msq_stdio::cerr);
+  const double A_vals[] = { 1, 0, 0, 
+                            0, 1, 0, 
+                            0, 0, -1 };
+  MsqMatrix<3,3> A( A_vals ), W( 1.0 ), grad, hess[6];
+  double val;
+  bool valid;
+  
+  if (Barrier) {
+    valid = test_metric.evaluate( A, W, val, err );
+    ASSERT_NO_ERROR(err);
+    CPPUNIT_ASSERT(!valid);
+    
+    valid = test_metric.evaluate_with_grad( A, W, val, grad, err );
+    ASSERT_NO_ERROR(err);
+    CPPUNIT_ASSERT(!valid);
+    
+    valid = test_metric.evaluate_with_hess( A, W, val, grad, hess, err );
+    ASSERT_NO_ERROR(err);
+    CPPUNIT_ASSERT(!valid);
+  }
+  else {
+    valid = test_metric.evaluate( A, W, val, err );
+    ASSERT_NO_ERROR(err);
+    CPPUNIT_ASSERT(valid);
+    CPPUNIT_ASSERT( val > idealVal );
+    
+    valid = test_metric.evaluate_with_grad( A, W, val, grad, err );
+    ASSERT_NO_ERROR(err);
+    CPPUNIT_ASSERT(valid);
+    CPPUNIT_ASSERT( val > idealVal );
+  }
+}
+  
+template <class Metric> void Target3DTest<Metric>::test_non_ideal( 
+                                                     bool sensitive,
+                                                     MsqMatrix<3,3> A,
+                                                     MsqMatrix<3,3> W )
+{
+  MsqPrintError err(msq_stdio::cerr);
+  MsqMatrix<3,3> grad;
+  double val, eps = 1e-6;
+  bool valid;
+  if (!sensitive) {
+    valid = test_metric.evaluate( A, W, val, err );
+    ASSERT_NO_ERROR(err);
+    CPPUNIT_ASSERT(valid);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( idealVal, val, eps );
+
+    valid = test_metric.evaluate_with_grad( A, W, val, grad, err );
+    ASSERT_NO_ERROR(err);
+    CPPUNIT_ASSERT(valid);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( idealVal, val, eps );
+    ASSERT_MATRICES_EQUAL( (MsqMatrix<3,3>(0.0)), grad, eps );
+  }
+  else {
+    valid = test_metric.evaluate( A, W, val, err );
+    ASSERT_NO_ERROR(err);
+    CPPUNIT_ASSERT(valid);
+    CPPUNIT_ASSERT( val > idealVal );
+  }
+}
+
+template <class Metric> void Target3DTest<Metric>::test_shape()
+{
+  const double r3 = sqrt(3.0);
+  const double A_vals[] = { 2/r3, 1/r3, 0, 
+                            1/r3, 2/r3, 0, 
+                            0,    0,    1 };
+  MsqMatrix<3,3> A( A_vals ), W( 1.0 );
+  test_non_ideal( !shapeInvariant, A, W );
+}
+  
+template <class Metric> void Target3DTest<Metric>::test_scale() 
+{
+  MsqMatrix<3,3> A( 2.0 ), W( 1.0 );
+  test_non_ideal( !sizeInvariant, A, W );
+}
+  
+template <class Metric> void Target3DTest<Metric>::test_orient() 
+{
+  const double A_vals[] = { 0, -1,  0, 
+                            1,  0,  0, 
+                            0,  0,  1 };
+  MsqMatrix<3,3> A( A_vals ), W( 1.0 );
+  test_non_ideal( !orientInvariant, A, W );
+}
 
 template <class Metric> 
 void Target3DTest<Metric>::compare_eval_and_eval_with_grad()
@@ -813,15 +916,14 @@ void TargetMetric3DTest::test_numerical_hessian()
 #include "Target3DSize.hpp"
 #include "Target3DSizeBarrier.hpp"
 
-#define REGISTER_TARGET3D_TEST( METRIC, SIZE_INVAR, ORIENT_INVAR, BARRIER, IDEAL_VAL ) \
+#define REGISTER_TARGET3D_TEST( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER, IDEAL_VAL ) \
 class Test_ ## METRIC : public Target3DTest<METRIC> { public: \
-  Test_ ## METRIC () : Target3DTest<METRIC>( (SIZE_INVAR), (ORIENT_INVAR), (BARRIER), (IDEAL_VAL) ) {} \
+  Test_ ## METRIC () : Target3DTest<METRIC>( (SHAPE_INVAR), (SIZE_INVAR), (ORIENT_INVAR), (BARRIER), (IDEAL_VAL) ) {} \
   CPPUNIT_TEST_SUITE( Test_ ## METRIC ); \
-  CPPUNIT_TEST (test_ideal_element_eval); \
-  CPPUNIT_TEST (test_ideal_element_gradient); \
-  CPPUNIT_TEST (test_inverted_element_eval); \
-  CPPUNIT_TEST (test_measures_quality); \
-  CPPUNIT_TEST (test_location_invariant); \
+  CPPUNIT_TEST (test_ideal_eval); \
+  CPPUNIT_TEST (test_ideal_gradient); \
+  CPPUNIT_TEST (test_inverted); \
+  CPPUNIT_TEST (test_shape); \
   CPPUNIT_TEST (test_scale); \
   CPPUNIT_TEST (test_orient); \
   CPPUNIT_TEST_SUITE_END(); \
@@ -830,15 +932,14 @@ CPPUNIT_NS::AutoRegisterSuite< Test_ ## METRIC > METRIC ## _UnitRegister ("Unit"
 CPPUNIT_NS::AutoRegisterSuite< Test_ ## METRIC > METRIC ## _FileRegister ("Target3DTest"); \
 CPPUNIT_NS::AutoRegisterSuite< Test_ ## METRIC > METRIC ## _BaseRegister ( "Test_" #METRIC )
 
-#define REGISTER_TARGET3D_TEST_WITH_GRAD( METRIC, SIZE_INVAR, ORIENT_INVAR, BARRIER, IDEAL_VAL ) \
+#define REGISTER_TARGET3D_TEST_WITH_GRAD( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER, IDEAL_VAL ) \
 class Test_ ## METRIC : public Target3DTest<METRIC> { public: \
-  Test_ ## METRIC () : Target3DTest<METRIC>( (SIZE_INVAR), (ORIENT_INVAR), (BARRIER), (IDEAL_VAL) ) {} \
+  Test_ ## METRIC () : Target3DTest<METRIC>( (SHAPE_INVAR), (SIZE_INVAR), (ORIENT_INVAR), (BARRIER), (IDEAL_VAL) ) {} \
   CPPUNIT_TEST_SUITE( Test_ ## METRIC ); \
-  CPPUNIT_TEST (test_ideal_element_eval); \
-  CPPUNIT_TEST (test_ideal_element_gradient); \
-  CPPUNIT_TEST (test_inverted_element_eval); \
-  CPPUNIT_TEST (test_measures_quality); \
-  CPPUNIT_TEST (test_location_invariant); \
+  CPPUNIT_TEST (test_ideal_eval); \
+  CPPUNIT_TEST (test_ideal_gradient); \
+  CPPUNIT_TEST (test_inverted); \
+  CPPUNIT_TEST (test_shape); \
   CPPUNIT_TEST (test_scale); \
   CPPUNIT_TEST (test_orient); \
   CPPUNIT_TEST (compare_eval_and_eval_with_grad); \
@@ -849,15 +950,14 @@ CPPUNIT_NS::AutoRegisterSuite< Test_ ## METRIC > METRIC ## _UnitRegister ("Unit"
 CPPUNIT_NS::AutoRegisterSuite< Test_ ## METRIC > METRIC ## _FileRegister ("Target3DTest"); \
 CPPUNIT_NS::AutoRegisterSuite< Test_ ## METRIC > METRIC ## _BaseRegister ( "Test_" #METRIC )
 
-#define REGISTER_TARGET3D_TEST_WITH_HESS( METRIC, SIZE_INVAR, ORIENT_INVAR, BARRIER, IDEAL_VAL ) \
+#define REGISTER_TARGET3D_TEST_WITH_HESS( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER, IDEAL_VAL ) \
 class Test_ ## METRIC : public Target3DTest<METRIC> { public: \
-  Test_ ## METRIC () : Target3DTest<METRIC>( (SIZE_INVAR), (ORIENT_INVAR), (BARRIER), (IDEAL_VAL) ) {} \
+  Test_ ## METRIC () : Target3DTest<METRIC>( (SHAPE_INVAR), (SIZE_INVAR), (ORIENT_INVAR), (BARRIER), (IDEAL_VAL) ) {} \
   CPPUNIT_TEST_SUITE( Test_ ## METRIC ); \
-  CPPUNIT_TEST (test_ideal_element_eval); \
-  CPPUNIT_TEST (test_ideal_element_gradient); \
-  CPPUNIT_TEST (test_inverted_element_eval); \
-  CPPUNIT_TEST (test_measures_quality); \
-  CPPUNIT_TEST (test_location_invariant); \
+  CPPUNIT_TEST (test_ideal_eval); \
+  CPPUNIT_TEST (test_ideal_gradient); \
+  CPPUNIT_TEST (test_inverted); \
+  CPPUNIT_TEST (test_shape); \
   CPPUNIT_TEST (test_scale); \
   CPPUNIT_TEST (test_orient); \
   CPPUNIT_TEST (compare_eval_and_eval_with_grad); \
@@ -874,18 +974,18 @@ CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric3DTest, "Unit" );
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric3DTest, "Target3DTest" );
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric3DTest, "TargetMetric3DTest" );
 
-REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeOrient, false, false, false, 0.0 );
-REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSize, false, true, true, 1.0 );
-REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShape, true, true, false, 0.0 );
-REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeBarrier, true, true, true, 1.0 );
-REGISTER_TARGET3D_TEST_WITH_HESS( InverseMeanRatio3D, true, true, true, 1.0 );
-REGISTER_TARGET3D_TEST_WITH_HESS( Target3DSize, false, true, false, 0.0 );
-REGISTER_TARGET3D_TEST_WITH_HESS( Target3DSizeBarrier, false, true, true, 0.0 );
+REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeOrient, false, false, false, false, 0.0 );
+REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSize,       false, false,  true,  true, 1.0 );
+REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShape,           false,  true,  true, false, 0.0 );
+REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeBarrier,    false,  true,  true,  true, 1.0 );
+REGISTER_TARGET3D_TEST_WITH_HESS( InverseMeanRatio3D,      false,  true,  true,  true, 1.0 );
+REGISTER_TARGET3D_TEST_WITH_HESS( Target3DSize,             true, false,  true, false, 0.0 );
+REGISTER_TARGET3D_TEST_WITH_HESS( Target3DSizeBarrier,      true, false,  true,  true, 0.0 );
 
 
 class Test_TSquared3D : public Target3DTest<TSquared3D> {
   public: 
-    Test_TSquared3D() : Target3DTest<TSquared3D>(false,false,false,0.0) {}
+    Test_TSquared3D() : Target3DTest<TSquared3D>(false,false,false,false,0.0) {}
     CPPUNIT_TEST_SUITE( Test_TSquared3D );
     CPPUNIT_TEST( compare_eval_and_eval_with_grad ); 
     CPPUNIT_TEST( compare_anaytic_and_numeric_grads );

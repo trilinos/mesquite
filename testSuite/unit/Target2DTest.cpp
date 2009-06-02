@@ -32,15 +32,11 @@
  */
 
 #include "Mesquite.hpp"
-#include "QualityMetricTester.hpp"
-#include "cppunit/extensions/HelperMacros.h"
 #include "TargetMetric2D.hpp"
-#include "TMPQualityMetric.hpp"
-#include "IdealTargetCalculator.hpp"
-#include "Settings.hpp"
 #include "UnitUtil.hpp"
+#include "MsqError.hpp"
 
-static const EntityTopology SurfElems[] = { TRIANGLE, QUADRILATERAL };
+using namespace Mesquite;
 
 class TargetMetric2DTest : public CppUnit::TestFixture
 {
@@ -57,69 +53,176 @@ template <class Metric>
 class Target2DTest : public CppUnit::TestFixture
 {
 private:
-  Settings settings;
-  QualityMetricTester tester;
-  IdealTargetCalculator target;
   Metric test_metric;
-  TMPQualityMetric metric;
-  bool sizeInvariant, orientInvariant, Barrier;
+  bool shapeInvariant, sizeInvariant, orientInvariant, Barrier;
   double idealVal;
 public:
-  Target2DTest( bool size_invariant, bool orient_invariant, bool barrier, double ideal_element_val )
-    : tester( SurfElems, sizeof(SurfElems)/sizeof(SurfElems[0]), &settings ),
-      metric( &target, &test_metric, 0 ),
-      sizeInvariant(size_invariant), orientInvariant(orient_invariant), Barrier(barrier),
+  Target2DTest( bool shape_invariant, 
+                bool size_invariant, 
+                bool orient_invariant, 
+                bool barrier, 
+                double ideal_element_val )
+    : shapeInvariant(shape_invariant),
+      sizeInvariant(size_invariant), 
+      orientInvariant(orient_invariant), 
+      Barrier(barrier),
       idealVal(ideal_element_val)
     {}
   
-  inline void test_ideal_element_eval() {
-    tester.test_evaluate_unit_element( &metric, TRIANGLE, idealVal );
-    tester.test_evaluate_unit_element( &metric, QUADRILATERAL, idealVal );
-  }
-  
-  inline void test_ideal_element_gradient() {
-    tester.test_ideal_element_zero_gradient( &metric, true );
-  }
-
-  inline void test_inverted_element_eval() {
-    tester.test_evaluate_inverted_element( &metric, !Barrier );
-  }
-  
-  inline void test_measures_quality() {
-    if (sizeInvariant && orientInvariant)
-      tester.test_measures_quality( &metric );
-  }
-  
-  inline void test_location_invariant() {
-    tester.test_location_invariant( &metric);
-    tester.test_grad_location_invariant( &metric );
-  }
-  
-  inline void test_scale() {
-    if (sizeInvariant) {
-      // these tests is not applicable to the target metrics.
-      //tester.test_scale_invariant( &metric );
-    }
-    else {
-      tester.test_measures_size( &metric, true );
-    }
-  }
-  
-  inline void test_orient() {
-    if (orientInvariant) {
-      tester.test_orient_invariant( &metric );
-      tester.test_grad_orient_invariant( &metric );
-    }
-    else {
-      tester.test_measures_in_plane_orientation( &metric );
-    }
-  }
+  void test_ideal_eval();
+  void test_ideal_gradient();
+  void test_inverted();
+  void test_shape();
+  void test_scale();
+  void test_orient();
   
   void compare_anaytic_and_numeric_grads();
   void compare_anaytic_and_numeric_hess();
   void compare_eval_and_eval_with_grad();
   void compare_eval_with_grad_and_eval_with_hess();
+  
+  void test_non_ideal( bool sensitive,
+                       MsqMatrix<2,2> A,
+                       MsqMatrix<2,2> B );
 };
+  
+template <class Metric> void Target2DTest<Metric>::test_ideal_eval()
+{
+  MsqPrintError err(msq_stdio::cerr);
+  const double Avals[] = { 2, 1, 1, 2 };
+  const double Bvals[] = { -0.1, -0.15, -0.25, -0.8 };
+  const MsqMatrix<2,2> I(1.0), A(Avals), B(Bvals);
+  double val, eps = 1e-6;;
+  bool valid;
+  
+  valid = test_metric.evaluate( I, I, val, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( idealVal, val, eps );
+  
+  valid = test_metric.evaluate( A, A, val, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( idealVal, val, eps );
+  
+  valid = test_metric.evaluate( B, B, val, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( idealVal, val, eps );
+}
+template <class Metric> void Target2DTest<Metric>::test_ideal_gradient()
+{
+  MsqPrintError err(msq_stdio::cerr);
+  const double Avals[] = { 2, 1, 1, 2 };
+  const double Bvals[] = { -0.1, -0.15, -0.25, -0.8 };
+  const MsqMatrix<2,2> I(1.0), A(Avals), B(Bvals);
+  MsqMatrix<2,2> grad;
+  double val, eps = 1e-3;
+  bool valid;
+  
+  valid = test_metric.evaluate_with_grad( I, I, val, grad, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  ASSERT_MATRICES_EQUAL( (MsqMatrix<2,2>(0.0)), grad, eps );
+  
+  valid = test_metric.evaluate_with_grad( A, A, val, grad, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  ASSERT_MATRICES_EQUAL( (MsqMatrix<2,2>(0.0)), grad, eps );
+  
+  valid = test_metric.evaluate_with_grad( B, B, val, grad, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  ASSERT_MATRICES_EQUAL( (MsqMatrix<2,2>(0.0)), grad, eps );
+}
+
+template <class Metric> void Target2DTest<Metric>::test_inverted() 
+{
+  MsqPrintError err(msq_stdio::cerr);
+  const double A_vals[] = { 1,  0, 
+                            0, -1 };
+  MsqMatrix<2,2> A( A_vals ), W( 1.0 ), grad, hess[3];
+  double val;
+  bool valid;
+  
+  if (Barrier) {
+    valid = test_metric.evaluate( A, W, val, err );
+    ASSERT_NO_ERROR(err);
+    CPPUNIT_ASSERT(!valid);
+    
+    valid = test_metric.evaluate_with_grad( A, W, val, grad, err );
+    ASSERT_NO_ERROR(err);
+    CPPUNIT_ASSERT(!valid);
+    
+    valid = test_metric.evaluate_with_hess( A, W, val, grad, hess, err );
+    ASSERT_NO_ERROR(err);
+    CPPUNIT_ASSERT(!valid);
+  }
+  else {
+    valid = test_metric.evaluate( A, W, val, err );
+    ASSERT_NO_ERROR(err);
+    CPPUNIT_ASSERT(valid);
+    CPPUNIT_ASSERT( val > idealVal );
+    
+    valid = test_metric.evaluate_with_grad( A, W, val, grad, err );
+    ASSERT_NO_ERROR(err);
+    CPPUNIT_ASSERT(valid);
+    CPPUNIT_ASSERT( val > idealVal );
+  }
+}
+  
+template <class Metric> void Target2DTest<Metric>::test_non_ideal( 
+                                                     bool sensitive,
+                                                     MsqMatrix<2,2> A,
+                                                     MsqMatrix<2,2> W )
+{
+  MsqPrintError err(msq_stdio::cerr);
+  MsqMatrix<2,2> grad;
+  double val, eps = 1e-6;
+  bool valid;
+  if (!sensitive) {
+    valid = test_metric.evaluate( A, W, val, err );
+    ASSERT_NO_ERROR(err);
+    CPPUNIT_ASSERT(valid);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( idealVal, val, eps );
+
+    valid = test_metric.evaluate_with_grad( A, W, val, grad, err );
+    ASSERT_NO_ERROR(err);
+    CPPUNIT_ASSERT(valid);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( idealVal, val, eps );
+    ASSERT_MATRICES_EQUAL( (MsqMatrix<2,2>(0.0)), grad, eps );
+  }
+  else {
+    valid = test_metric.evaluate( A, W, val, err );
+    ASSERT_NO_ERROR(err);
+    CPPUNIT_ASSERT(valid);
+    CPPUNIT_ASSERT( val > idealVal );
+  }
+}
+
+template <class Metric> void Target2DTest<Metric>::test_shape()
+{
+  const double r3 = sqrt(3.0);
+  const double A_vals[] = { 2/r3, 1/r3, 
+                            1/r3, 2/r3 };
+  MsqMatrix<2,2> A( A_vals ), W( 1.0 );
+  test_non_ideal( !shapeInvariant, A, W );
+}
+  
+template <class Metric> void Target2DTest<Metric>::test_scale() 
+{
+  MsqMatrix<2,2> A( 2.0 ), W( 1.0 );
+  test_non_ideal( !sizeInvariant, A, W );
+}
+  
+template <class Metric> void Target2DTest<Metric>::test_orient() 
+{
+  const double A_vals[] = { 0, -1, 
+                            1,  0 };
+  MsqMatrix<2,2> A( A_vals ), W( 1.0 );
+  test_non_ideal( !orientInvariant, A, W );
+}
+
 
 template <class Metric> 
 void Target2DTest<Metric>::compare_eval_and_eval_with_grad()
@@ -611,15 +714,14 @@ void TargetMetric2DTest::test_numerical_hessian()
 #include "Target2DSize.hpp"
 #include "Target2DSizeBarrier.hpp"
 
-#define REGISTER_TARGET2D_TEST( METRIC, SIZE_INVAR, ORIENT_INVAR, BARRIER, IDEAL_VAL ) \
+#define REGISTER_TARGET2D_TEST( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER, IDEAL_VAL ) \
 class Test_ ## METRIC : public Target2DTest<METRIC> { public: \
-  Test_ ## METRIC () : Target2DTest<METRIC>( (SIZE_INVAR), (ORIENT_INVAR), (BARRIER), (IDEAL_VAL) ) {} \
+  Test_ ## METRIC () : Target2DTest<METRIC>( (SHAPE_INVAR), (SIZE_INVAR), (ORIENT_INVAR), (BARRIER), (IDEAL_VAL) ) {} \
   CPPUNIT_TEST_SUITE( Test_ ## METRIC ); \
-  CPPUNIT_TEST (test_ideal_element_eval); \
-  CPPUNIT_TEST (test_ideal_element_gradient); \
-  CPPUNIT_TEST (test_inverted_element_eval); \
-  CPPUNIT_TEST (test_measures_quality); \
-  CPPUNIT_TEST (test_location_invariant); \
+  CPPUNIT_TEST (test_ideal_eval); \
+  CPPUNIT_TEST (test_ideal_gradient); \
+  CPPUNIT_TEST (test_inverted); \
+  CPPUNIT_TEST (test_shape); \
   CPPUNIT_TEST (test_scale); \
   CPPUNIT_TEST (test_orient); \
   CPPUNIT_TEST_SUITE_END(); \
@@ -630,21 +732,22 @@ CPPUNIT_NS::AutoRegisterSuite< Test_ ## METRIC > METRIC ## _BaseRegister ( "Test
 
 
 // Macro arguments:
-//  size_invarient
-//  orient_invarient
+//  shape_invariant
+//  size_invariant
+//  orient_invariant
 //  barrier
 //  expected value for ideal element
-#define REGISTER_TARGET2D_TEST_WITH_GRAD( METRIC, SIZE_INVAR, ORIENT_INVAR, BARRIER, IDEAL_VAL ) \
+#define REGISTER_TARGET2D_TEST_WITH_GRAD( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER, IDEAL_VAL ) \
 class Test_ ## METRIC : public Target2DTest<METRIC> { public: \
-  Test_ ## METRIC () : Target2DTest<METRIC>( (SIZE_INVAR), (ORIENT_INVAR), (BARRIER), (IDEAL_VAL) ) {} \
+  Test_ ## METRIC () : Target2DTest<METRIC>( (SHAPE_INVAR), (SIZE_INVAR), (ORIENT_INVAR), (BARRIER), (IDEAL_VAL) ) {} \
   CPPUNIT_TEST_SUITE( Test_ ## METRIC ); \
-  CPPUNIT_TEST (test_ideal_element_eval); \
-  CPPUNIT_TEST (test_ideal_element_gradient); \
-  CPPUNIT_TEST (test_inverted_element_eval); \
-  CPPUNIT_TEST (test_measures_quality); \
-  CPPUNIT_TEST (test_location_invariant); \
+  CPPUNIT_TEST (test_ideal_eval); \
+  CPPUNIT_TEST (test_ideal_gradient); \
+  CPPUNIT_TEST (test_inverted); \
+  CPPUNIT_TEST (test_shape); \
   CPPUNIT_TEST (test_scale); \
   CPPUNIT_TEST (test_orient); \
+  CPPUNIT_TEST (compare_eval_and_eval_with_grad); \
   CPPUNIT_TEST (compare_anaytic_and_numeric_grads); \
   CPPUNIT_TEST_SUITE_END(); \
 }; \
@@ -652,17 +755,17 @@ CPPUNIT_NS::AutoRegisterSuite< Test_ ## METRIC > METRIC ## _UnitRegister ("Unit"
 CPPUNIT_NS::AutoRegisterSuite< Test_ ## METRIC > METRIC ## _FileRegister ("Target2DTest"); \
 CPPUNIT_NS::AutoRegisterSuite< Test_ ## METRIC > METRIC ## _BaseRegister ( "Test_" #METRIC )
 
-#define REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( METRIC, SIZE_INVAR, ORIENT_INVAR, BARRIER, IDEAL_VAL ) \
+#define REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER, IDEAL_VAL ) \
 class Test_ ## METRIC : public Target2DTest<METRIC> { public: \
-  Test_ ## METRIC () : Target2DTest<METRIC>( (SIZE_INVAR), (ORIENT_INVAR), (BARRIER), (IDEAL_VAL) ) {} \
+  Test_ ## METRIC () : Target2DTest<METRIC>( (SHAPE_INVAR), (SIZE_INVAR), (ORIENT_INVAR), (BARRIER), (IDEAL_VAL) ) {} \
   CPPUNIT_TEST_SUITE( Test_ ## METRIC ); \
-  CPPUNIT_TEST (test_ideal_element_eval); \
-  CPPUNIT_TEST (test_ideal_element_gradient); \
-  CPPUNIT_TEST (test_inverted_element_eval); \
-  CPPUNIT_TEST (test_measures_quality); \
-  CPPUNIT_TEST (test_location_invariant); \
+  CPPUNIT_TEST (test_ideal_eval); \
+  CPPUNIT_TEST (test_ideal_gradient); \
+  CPPUNIT_TEST (test_inverted); \
+  CPPUNIT_TEST (test_shape); \
   CPPUNIT_TEST (test_scale); \
   CPPUNIT_TEST (test_orient); \
+  CPPUNIT_TEST (compare_eval_and_eval_with_grad); \
   CPPUNIT_TEST (compare_anaytic_and_numeric_grads); \
   CPPUNIT_TEST (compare_eval_with_grad_and_eval_with_hess); \
   CPPUNIT_TEST (compare_anaytic_and_numeric_hess); \
@@ -676,27 +779,27 @@ CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric2DTest, "Unit" );
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric2DTest, "Target2DTest" );
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric2DTest, "TargetMetric2DTest" );
 
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShape,                      true,  true, false, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeBarrier,               true,  true,  true, 1.0 );
-REGISTER_TARGET2D_TEST               ( Target2DShapeOrient,                true, false, false, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeOrientAlt1,            true, false, false, 0.0 );
-REGISTER_TARGET2D_TEST               ( Target2DShapeOrientAlt2,            true, false, false, 0.0 );
-REGISTER_TARGET2D_TEST               ( Target2DShapeOrientBarrier,         true, false,  true, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSize,                 false,  true, false, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeBarrier,          false,  true,  true, 0.0 );
-REGISTER_TARGET2D_TEST               ( Target2DShapeSizeBarrierAlt1,      false,  true,  true, 0.0 );
-REGISTER_TARGET2D_TEST               ( Target2DShapeSizeBarrierAlt2,      false,  true,  true, 1.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeOrient,           false, false, false, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeOrientAlt1,       false, false, false, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeOrientBarrier,    false, false,  true, 0.0 );
-REGISTER_TARGET2D_TEST               ( Target2DShapeSizeOrientBarrierAlt2,false, false,  true, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( InverseMeanRatio2D,                 true,  true,  true, 1.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DSize,                      false,  true, false, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DSizeBarrier,               false,  true,  true, 2.0 );
+REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShape,                     false,  true,  true, false, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeBarrier,              false,  true,  true,  true, 1.0 );
+REGISTER_TARGET2D_TEST               ( Target2DShapeOrient,               false,  true, false, false, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeOrientAlt1,           false,  true, false, false, 0.0 );
+REGISTER_TARGET2D_TEST               ( Target2DShapeOrientAlt2,           false,  true, false, false, 0.0 );
+REGISTER_TARGET2D_TEST               ( Target2DShapeOrientBarrier,        false,  true, false,  true, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSize,                 false, false,  true, false, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeBarrier,          false, false,  true,  true, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeBarrierAlt1,      false, false,  true,  true, 0.0 );
+REGISTER_TARGET2D_TEST               ( Target2DShapeSizeBarrierAlt2,      false, false,  true,  true, 1.0 );
+REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeOrient,           false, false, false, false, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeOrientAlt1,       false, false, false, false, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeOrientBarrier,    false, false, false,  true, 0.0 );
+REGISTER_TARGET2D_TEST               ( Target2DShapeSizeOrientBarrierAlt2,false, false, false,  true, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( InverseMeanRatio2D,                false,  true,  true,  true, 1.0 );
+REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DSize,                       true, false,  true, false, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DSizeBarrier,                true, false,  true,  true, 2.0 );
 
 class Test_TSquared2D : public Target2DTest<TSquared2D> {
   public: 
-    Test_TSquared2D() : Target2DTest<TSquared2D>(false,false,false,0.0) {}
+    Test_TSquared2D() : Target2DTest<TSquared2D>(false,false,false,false,0.0) {}
     CPPUNIT_TEST_SUITE( Test_TSquared2D );
     CPPUNIT_TEST( compare_anaytic_and_numeric_grads );
     CPPUNIT_TEST( compare_eval_with_grad_and_eval_with_hess );
