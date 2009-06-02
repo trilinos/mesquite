@@ -58,6 +58,12 @@ bool IdealTargetCalculator:: get_3D_target( PatchData& pd,
   
   jc.get_Jacobian_3D( func, NodeSet(), sample, verts, elem.node_count(), W, err );
   MSQ_ERRZERO(err);
+  
+    // scale to unit det
+  double d = det(W);
+  if (fabs(d - 1.0) > 1e-8)
+    W *= 1.0/Mesquite::cbrt(d);
+  
   return true;
 }
 
@@ -79,6 +85,11 @@ bool IdealTargetCalculator:: get_2D_target( PatchData& pd,
   
   jc.get_Jacobian_2D( func, NodeSet(), sample, verts, elem.node_count(), W, err );
   MSQ_ERRZERO(err);
+  
+    // scale to unit det
+  double d = W(0,0)*W(1,1)-W(1,0)*W(0,1);
+  if (fabs(d - 1.0) > 1e-8)
+    W *= 1.0/sqrt(d);
   
   if (orientSurfElems) {
     Vector3D n;

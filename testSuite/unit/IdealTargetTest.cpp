@@ -228,6 +228,8 @@ void IdealTargetTest::get_ideal_target( EntityTopology type,
     for (unsigned i = 0; i < 3; ++i)
       for (unsigned j = 0; j < 2; ++j)
         w2(i,j) = c[j][i];
+        
+    w2 *= 1.0/sqrt( w2(0,0)*w2(1,1) - w2(1,0)*w2(0,1) );
   }
   else {
     MsqVector<3> derivs[100];
@@ -242,6 +244,8 @@ void IdealTargetTest::get_ideal_target( EntityTopology type,
     for (unsigned i = 0; i < 3; ++i)
       for (unsigned j = 0; j < 3; ++j)
         w3(i,j) = c[j][i];
+
+    w3 *= 1.0/Mesquite::cbrt(det(w3));
   }
   
 }
