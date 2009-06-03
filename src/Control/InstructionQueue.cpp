@@ -294,7 +294,7 @@ void InstructionQueue::run_instructions( Mesh* mesh,
 #endif
 
     // Generate SIGFPE on floating point errors
-  MsqFPE( trap_floating_point_exception() );
+  MsqFPE fpe_trap( trap_floating_point_exception() );
   
   msq_std::list<Instruction*>::const_iterator instr;
   
@@ -332,7 +332,7 @@ void InstructionQueue::run_instructions( ParallelMesh* mesh,
 #endif
 
     // Generate SIGFPE on floating point errors
-  MsqFPE( trap_floating_point_exception() );
+  MsqFPE fpe_trap( trap_floating_point_exception() );
   
   msq_std::list<Instruction*>::const_iterator instr;
   

@@ -124,12 +124,12 @@ void TrustRegion::compute_preconditioner( MsqError& err )
 #ifndef USE_FN_PC1
   mHessian.calculate_preconditioner(err);
 #else
+  double dia;
   preCond.resize( mHess.size() );
   for (size_t i = 0; i < mHess.size(); ++i) {
     const Matrix3D& m = *mHess.get_block(i,i);
-    preCond[i] = 1.0 / (m[0][0] + m[1][1] + m[2][2]);
-    if (preCond[i] < 0)
-      preCond[i] = 1;
+    dia = m[0][0] + m[1][1] + m[2][2];
+    preCond[i] = dia < DBL_EPSILON ? 1.0 : 1.0/dia;
   }
 #endif
 }
