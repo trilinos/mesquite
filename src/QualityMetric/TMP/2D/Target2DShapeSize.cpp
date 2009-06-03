@@ -49,9 +49,18 @@ bool Target2DShapeSize::evaluate( const MsqMatrix<2,2>& A,
                                   double& result, 
                                   MsqError&  )
 {
-  const MsqMatrix<2,2> T = A * inverse(W);
-  const double frob_sqr = sqr_Frobenius(T);
-  result = frob_sqr - 2.0 * sqrt( frob_sqr + 2.0*det(T) ) + 2.0;
+  MsqMatrix<2,2> T = A * inverse(W);
+  double frob_sqr = sqr_Frobenius(T);
+  double psi = sqrt( frob_sqr + 2.0*det(T) );
+
+  while (fabs(psi) < DBL_EPSILON) {
+    T(0,0) += DBL_EPSILON;
+    T(1,1) += DBL_EPSILON;
+    frob_sqr = sqr_Frobenius(T);
+    psi = sqrt( frob_sqr + 2.0*det(T) );
+  }
+
+  result = frob_sqr - 2.0 * psi + 2.0;
   return true;
 }
 
@@ -63,13 +72,18 @@ bool Target2DShapeSize::evaluate_with_grad( const MsqMatrix<2,2>& A,
                                             MsqError& err )
 {
   const MsqMatrix<2,2> Winv = inverse(W);
-  const MsqMatrix<2,2> T = A * Winv;
-  const double frob_sqr = sqr_Frobenius(T);
+  MsqMatrix<2,2> T = A * Winv;
+  double frob_sqr = sqr_Frobenius(T);
   double psi = sqrt( frob_sqr + 2.0*det(T) );
-  result = frob_sqr - 2.0 * psi + 2.0;
 
-  if (fabs(psi) < DBL_EPSILON)
-    psi = (psi < 0) ? -DBL_EPSILON : DBL_EPSILON;
+  while (fabs(psi) < DBL_EPSILON) {
+    T(0,0) += DBL_EPSILON;
+    T(1,1) += DBL_EPSILON;
+    frob_sqr = sqr_Frobenius(T);
+    psi = sqrt( frob_sqr + 2.0*det(T) );
+  }
+
+  result = frob_sqr - 2.0 * psi + 2.0;
 
   deriv_wrt_A = T;
   deriv_wrt_A *= (1.0 - 1.0/psi);
@@ -88,13 +102,18 @@ bool Target2DShapeSize::evaluate_with_hess( const MsqMatrix<2,2>& A,
                                             MsqError& err )
 {
   const MsqMatrix<2,2> Winv = inverse(W);
-  const MsqMatrix<2,2> T = A * Winv;
-  const double frob_sqr = sqr_Frobenius(T);
+  MsqMatrix<2,2> T = A * Winv;
+  double frob_sqr = sqr_Frobenius(T);
   double psi = sqrt( frob_sqr + 2.0*det(T) );
+
+  while (fabs(psi) < DBL_EPSILON) {
+    T(0,0) += DBL_EPSILON;
+    T(1,1) += DBL_EPSILON;
+    frob_sqr = sqr_Frobenius(T);
+    psi = sqrt( frob_sqr + 2.0*det(T) );
+  }
+
   result = frob_sqr - 2.0 * psi + 2.0;
-  
-  if (fabs(psi) < DBL_EPSILON)
-    psi = (psi < 0) ? -DBL_EPSILON : DBL_EPSILON;
 
   deriv_wrt_A = T;
   deriv_wrt_A *= (1.0 - 1.0/psi);
