@@ -915,6 +915,7 @@ void TargetMetric3DTest::test_numerical_hessian()
 #include "InverseMeanRatio3D.hpp"
 #include "Target3DSize.hpp"
 #include "Target3DSizeBarrier.hpp"
+#include "Target3DShapeSizeOrientBarrier.hpp"
 
 #define REGISTER_TARGET3D_TEST( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER, IDEAL_VAL ) \
 class Test_ ## METRIC : public Target3DTest<METRIC> { public: \
@@ -981,6 +982,7 @@ REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeBarrier,    false,  true,  true, 
 REGISTER_TARGET3D_TEST_WITH_HESS( InverseMeanRatio3D,      false,  true,  true,  true, 1.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DSize,             true, false,  true, false, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DSizeBarrier,      true, false,  true,  true, 0.0 );
+REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeOrientBarrier, false, false, false, true, 0.0 );
 
 
 class Test_TSquared3D : public Target3DTest<TSquared3D> {
