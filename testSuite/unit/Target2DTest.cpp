@@ -117,7 +117,7 @@ template <class Metric> void Target2DTest<Metric>::test_ideal_gradient()
   const double Bvals[] = { -0.1, -0.15, -0.25, -0.8 };
   const MsqMatrix<2,2> I(1.0), A(Avals), B(Bvals);
   MsqMatrix<2,2> grad;
-  double val, eps = 1e-3;
+  double val, eps = 5e-3;
   bool valid;
   
   valid = test_metric.evaluate_with_grad( I, I, val, grad, err );
@@ -178,7 +178,7 @@ template <class Metric> void Target2DTest<Metric>::test_non_ideal(
 {
   MsqPrintError err(msq_stdio::cerr);
   MsqMatrix<2,2> grad;
-  double val, eps = 1e-6;
+  double val, eps = 1e-5;
   bool valid;
   if (!sensitive) {
     valid = test_metric.evaluate( A, W, val, err );
