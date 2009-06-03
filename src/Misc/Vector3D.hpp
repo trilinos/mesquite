@@ -152,6 +152,7 @@ namespace MESQUITE_NS
 
     inline void set_length(const double new_length);
     inline void normalize();
+    Vector3D operator~() const { return *this * (1.0/length()); }
     
     // Utility functions.  All angle functions work in radians.
     static double interior_angle(const Vector3D &a,
