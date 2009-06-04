@@ -43,27 +43,27 @@ namespace MESQUITE_NS {
  * This class implements the MappingFunction interface, providing
  * a Lagrange shape function for a 10-node tet.
  *
- * \f$\vec{x}(r,s) = sum_{i=0}^{n-1} N_i(r,s) \vec{x_i}\f$
- * 
- * \f$N_1 = r(2r - 1)\f$
- * 
- * \f$N_2 = s(2s - 1)\f$
- * 
- * \f$N_3 = t(2t - 1)\f$
+ * \f$\vec{x}(r,s,t) = sum_{i=0}^{n-1} N_i(r,s,t) \vec{x_i}\f$
  *
- * \f$N_4 = u(2u - 1)\f$
+ * \f$N_1 = u(2u - 1)\f$
  * 
- * \f$N_5 = 4rs\f$
+ * \f$N_2 = r(2r - 1)\f$
  * 
- * \f$N_6 = 4st\f$
+ * \f$N_3 = s(2s - 1)\f$
  * 
- * \f$N_7 = 4rt\f$
+ * \f$N_4 = t(2t - 1)\f$
  * 
- * \f$N_8 = 4ru\f$
+ * \f$N_5 = 4ru\f$
  * 
- * \f$N_9 = 4su\f$
+ * \f$N_6 = 4rs\f$
  * 
- * \f$N_10 = 4tu\f$
+ * \f$N_7 = 4su\f$
+ * 
+ * \f$N_8 = 4tu\f$
+ * 
+ * \f$N_9 = 4rt\f$
+ * 
+ * \f$N_10 = 4st\f$
  *
  * \f$u = 1 - r - s - t\f$
  */

@@ -281,24 +281,24 @@ static void get_linear_derivatives( size_t* vertices,
                                     MsqVector<3>* derivs )
 {
   vertices[0] = 0;
-  derivs[0][0] = 1.0;
-  derivs[0][1] = 0.0;
-  derivs[0][2] = 0.0;
+  derivs[0][0] = -1.0;
+  derivs[0][1] = -1.0;
+  derivs[0][2] = -1.0;
   
   vertices[1] = 1;
-  derivs[1][0] = 0.0;
-  derivs[1][1] = 1.0;
+  derivs[1][0] = 1.0;
+  derivs[1][1] = 0.0;
   derivs[1][2] = 0.0;
   
   vertices[2] = 2;
   derivs[2][0] = 0.0;
-  derivs[2][1] = 0.0;
-  derivs[2][2] = 1.0;
+  derivs[2][1] = 1.0;
+  derivs[2][2] = 0.0;
   
   vertices[3] = 3;
-  derivs[3][0] = -1.0;
-  derivs[3][1] = -1.0;
-  derivs[3][2] = -1.0;
+  derivs[3][0] = 0.0;
+  derivs[3][1] = 0.0;
+  derivs[3][2] = 1.0;
 }
 
 static const unsigned edges[][2] = { { 0, 1 },
@@ -323,22 +323,102 @@ static void derivatives_at_corner( unsigned corner,
     case 0:
       if (nodeset.mid_edge_node(0)) {
         vertices[num_vtx] = 4;
-        derivs[num_vtx][0] = 0.0;
-        derivs[num_vtx][1] = 4.0;
+        derivs[num_vtx][0] = 4.0;
+        derivs[num_vtx][1] = 0.0;
         derivs[num_vtx][2] = 0.0;
-        derivs[0][1] -= 2.0;
-        derivs[1][1] -= 2.0;
+        derivs[0][0] -= 2.0;
+        derivs[1][0] -= 2.0;
         ++num_vtx;
       }
       if (nodeset.mid_edge_node(2)) {
         vertices[num_vtx] = 6;
         derivs[num_vtx][0] = 0.0;
+        derivs[num_vtx][1] = 4.0;
+        derivs[num_vtx][2] = 0.0;
+        derivs[0][1] -= 2.0;
+        derivs[2][1] -= 2.0;
+        ++num_vtx;
+      }
+      if (nodeset.mid_edge_node(3)) {
+        vertices[num_vtx] = 7;
+        derivs[num_vtx][0] = 0.0;
         derivs[num_vtx][1] = 0.0;
         derivs[num_vtx][2] = 4.0;
         derivs[0][2] -= 2.0;
-        derivs[2][2] -= 2.0;
+        derivs[3][2] -= 2.0;
         ++num_vtx;
       }
+      break;
+
+    case 1:
+      if (nodeset.mid_edge_node(0)) {
+        vertices[num_vtx] = 4;
+        derivs[num_vtx][0] = -4.0;
+        derivs[num_vtx][1] = -4.0;
+        derivs[num_vtx][2] = -4.0;
+        derivs[0][0] += 2.0;
+        derivs[0][1] += 2.0;
+        derivs[0][2] += 2.0;
+        derivs[1][0] += 2.0;
+        derivs[1][1] += 2.0;
+        derivs[1][2] += 2.0;
+        ++num_vtx;
+      }
+      if (nodeset.mid_edge_node(1)) {
+        vertices[num_vtx] = 5;
+        derivs[num_vtx][0] = 0.0;
+        derivs[num_vtx][1] = 4.0;
+        derivs[num_vtx][2] = 0.0;
+        derivs[1][1] -= 2.0;
+        derivs[2][1] -= 2.0;
+        ++num_vtx;
+      }
+      if (nodeset.mid_edge_node(4)) {
+        vertices[num_vtx] = 8;
+        derivs[num_vtx][0] = 0.0;
+        derivs[num_vtx][1] = 0.0;
+        derivs[num_vtx][2] = 4.0;
+        derivs[1][2] -= 2.0;
+        derivs[3][2] -= 2.0;
+        ++num_vtx;
+      }
+      break;
+  
+    case 2:
+      if (nodeset.mid_edge_node(1)) {
+        vertices[num_vtx] = 5;
+        derivs[num_vtx][0] = 4.0;
+        derivs[num_vtx][1] = 0.0;
+        derivs[num_vtx][2] = 0.0;
+        derivs[1][0] -= 2.0;
+        derivs[2][0] -= 2.0;
+        ++num_vtx;
+      }
+      if (nodeset.mid_edge_node(2)) {
+        vertices[num_vtx] = 6;
+        derivs[num_vtx][0] = -4.0;
+        derivs[num_vtx][1] = -4.0;
+        derivs[num_vtx][2] = -4.0;
+        derivs[0][0] += 2.0;
+        derivs[0][1] += 2.0;
+        derivs[0][2] += 2.0;
+        derivs[2][0] += 2.0;
+        derivs[2][1] += 2.0;
+        derivs[2][2] += 2.0;
+        ++num_vtx;
+      }
+      if (nodeset.mid_edge_node(5)) {
+        vertices[num_vtx] = 9;
+        derivs[num_vtx][0] = 0.0;
+        derivs[num_vtx][1] = 0.0;
+        derivs[num_vtx][2] = 4.0;
+        derivs[2][2] -= 2.0;
+        derivs[3][2] -= 2.0;
+        ++num_vtx;
+      }
+      break;
+  
+    case 3:
       if (nodeset.mid_edge_node(3)) {
         vertices[num_vtx] = 7;
         derivs[num_vtx][0] = -4.0;
@@ -352,103 +432,23 @@ static void derivatives_at_corner( unsigned corner,
         derivs[3][2] += 2.0;
         ++num_vtx;
       }
-      break;
-
-    case 1:
-      if (nodeset.mid_edge_node(0)) {
-        vertices[num_vtx] = 4;
+      if (nodeset.mid_edge_node(4)) {
+        vertices[num_vtx] = 8;
         derivs[num_vtx][0] = 4.0;
         derivs[num_vtx][1] = 0.0;
         derivs[num_vtx][2] = 0.0;
-        derivs[0][0] -= 2.0;
         derivs[1][0] -= 2.0;
-        ++num_vtx;
-      }
-      if (nodeset.mid_edge_node(1)) {
-        vertices[num_vtx] = 5;
-        derivs[num_vtx][0] = 0.0;
-        derivs[num_vtx][1] = 0.0;
-        derivs[num_vtx][2] = 4.0;
-        derivs[1][2] -= 2.0;
-        derivs[2][2] -= 2.0;
-        ++num_vtx;
-      }
-      if (nodeset.mid_edge_node(4)) {
-        vertices[num_vtx] = 8;
-        derivs[num_vtx][0] = -4.0;
-        derivs[num_vtx][1] = -4.0;
-        derivs[num_vtx][2] = -4.0;
-        derivs[1][0] += 2.0;
-        derivs[1][1] += 2.0;
-        derivs[1][2] += 2.0;
-        derivs[3][0] += 2.0;
-        derivs[3][1] += 2.0;
-        derivs[3][2] += 2.0;
-        ++num_vtx;
-      }
-      break;
-  
-    case 2:
-      if (nodeset.mid_edge_node(1)) {
-        vertices[num_vtx] = 5;
-        derivs[num_vtx][0] = 0.0;
-        derivs[num_vtx][1] = 4.0;
-        derivs[num_vtx][2] = 0.0;
-        derivs[1][1] -= 2.0;
-        derivs[2][1] -= 2.0;
-        ++num_vtx;
-      }
-      if (nodeset.mid_edge_node(2)) {
-        vertices[num_vtx] = 6;
-        derivs[num_vtx][0] = 4.0;
-        derivs[num_vtx][1] = 0.0;
-        derivs[num_vtx][2] = 0.0;
-        derivs[0][0] -= 2.0;
-        derivs[2][0] -= 2.0;
-        ++num_vtx;
-      }
-      if (nodeset.mid_edge_node(5)) {
-        vertices[num_vtx] = 9;
-        derivs[num_vtx][0] = -4.0;
-        derivs[num_vtx][1] = -4.0;
-        derivs[num_vtx][2] = -4.0;
-        derivs[2][0] += 2.0;
-        derivs[2][1] += 2.0;
-        derivs[2][2] += 2.0;
-        derivs[3][0] += 2.0;
-        derivs[3][1] += 2.0;
-        derivs[3][2] += 2.0;
-        ++num_vtx;
-      }
-      break;
-  
-    case 3:
-      if (nodeset.mid_edge_node(3)) {
-        vertices[num_vtx] = 7;
-        derivs[num_vtx][0] = 4.0;
-        derivs[num_vtx][1] = 0.0;
-        derivs[num_vtx][2] = 0.0;
-        derivs[0][0] -= 2.0;
         derivs[3][0] -= 2.0;
-        ++num_vtx;
-      }
-      if (nodeset.mid_edge_node(4)) {
-        vertices[num_vtx] = 8;
-        derivs[num_vtx][0] = 0.0;
-        derivs[num_vtx][1] = 4.0;
-        derivs[num_vtx][2] = 0.0;
-        derivs[1][1] -= 2.0;
-        derivs[3][1] -= 2.0;
         ++num_vtx;
       }
       
       if (nodeset.mid_edge_node(5)) {
         vertices[num_vtx] = 9;
         derivs[num_vtx][0] = 0.0;
-        derivs[num_vtx][1] = 0.0;
-        derivs[num_vtx][2] = 4.0;
-        derivs[2][2]-= 2.0;
-        derivs[3][2]-= 2.0;
+        derivs[num_vtx][1] = 4.0;
+        derivs[num_vtx][2] = 0.0;
+        derivs[2][1]-= 2.0;
+        derivs[3][1]-= 2.0;
         ++num_vtx;
       }
       break;
@@ -461,74 +461,70 @@ static void derivatives_at_mid_edge( unsigned edge,
                                      MsqVector<3>* derivs,
                                      size_t& num_vtx )
 {
+  int sign;
+  num_vtx = 2;
   switch (edge) {
     case 0:
-      num_vtx = 2;
       vertices[0] = 0;
+      derivs[0][0] = -1.0;
+      derivs[0][1] = -1.0;
+      derivs[0][2] = -1.0;
+      
       vertices[1] = 1;
-      
-      derivs[0][0] = 1.0;
-      derivs[0][1] = 0.0;
-      derivs[0][2] = 0.0;
-      
-      derivs[1][0] = 0.0;
-      derivs[1][1] = 1.0;
+      derivs[1][0] = 1.0;
+      derivs[1][1] = 0.0;
       derivs[1][2] = 0.0;
       
-   
-      if (nodeset.mid_edge_node(1) && nodeset.mid_edge_node(2)) {
+      if (nodeset.mid_edge_node(1) == nodeset.mid_edge_node(2)) {
         vertices[num_vtx] = 2;
+        sign = 1 - 2*nodeset.mid_edge_node(1);
         derivs[num_vtx][0] =  0.0;
-        derivs[num_vtx][1] =  0.0;
-        derivs[num_vtx][2] = -1.0;
-        ++num_vtx;
-      }
-      else if (!nodeset.mid_edge_node(1) && !nodeset.mid_edge_node(2)) {\
-        vertices[num_vtx] = 2;
-        derivs[num_vtx][0] =  0.0;
-        derivs[num_vtx][1] =  0.0;
-        derivs[num_vtx][2] =  1.0;
+        derivs[num_vtx][1] = sign;
+        derivs[num_vtx][2] =  0.0;
         ++num_vtx;
       }
       
-      if (!nodeset.mid_edge_node(3) && !nodeset.mid_edge_node(4)) {
+      if (nodeset.mid_edge_node(3) == nodeset.mid_edge_node(4)) {
         vertices[num_vtx] = 3;
-        derivs[num_vtx][0] = -1.0;
-        derivs[num_vtx][1] = -1.0;
-        derivs[num_vtx][2] = -1.0;
-        ++num_vtx;
-      }
-      else if (nodeset.mid_edge_node(3) && nodeset.mid_edge_node(4)) {
-        vertices[num_vtx] = 3;
-        derivs[num_vtx][0] = 1.0;
-        derivs[num_vtx][1] = 1.0;
-        derivs[num_vtx][2] = 1.0;
+        sign = 1 - 2*nodeset.mid_edge_node(3);
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] = sign;
         ++num_vtx;
       }
       
       if (nodeset.mid_edge_node(0)) {
         vertices[num_vtx] = 4;
-        derivs[num_vtx][0] = 2.0;
-        derivs[num_vtx][1] = 2.0;
-        derivs[num_vtx][2] = 0.0;
-        derivs[0][0] -= 1.0;
-        derivs[0][1] -= 1.0;
-        derivs[1][0] -= 1.0;
-        derivs[1][1] -= 1.0;
-         ++num_vtx;
-     }
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] = -2.0;
+        derivs[num_vtx][2] = -2.0;
+        derivs[0][1] += 1.0;
+        derivs[0][2] += 1.0;
+        derivs[1][1] += 1.0;
+        derivs[1][2] += 1.0;
+        ++num_vtx;
+      }
       
       if (nodeset.mid_edge_node(1)) {
         vertices[num_vtx] = 5;
         derivs[num_vtx][0] = 0.0;
-        derivs[num_vtx][1] = 0.0;
-        derivs[num_vtx][2] = 2.0;
-        derivs[1][2] -= 1.0;
+        derivs[num_vtx][1] = 2.0;
+        derivs[num_vtx][2] = 0.0;
+        derivs[1][1] -= 1.0;
         ++num_vtx;
       }
       
       if (nodeset.mid_edge_node(2)) {
         vertices[num_vtx] = 6;
+        derivs[num_vtx][0] = 0.0;
+        derivs[num_vtx][1] = 2.0;
+        derivs[num_vtx][2] = 0.0;
+        derivs[0][1] -= 1.0;
+        ++num_vtx;
+      }
+      
+      if (nodeset.mid_edge_node(3)) {
+        vertices[num_vtx] = 7;
         derivs[num_vtx][0] = 0.0;
         derivs[num_vtx][1] = 0.0;
         derivs[num_vtx][2] = 2.0;
@@ -536,83 +532,407 @@ static void derivatives_at_mid_edge( unsigned edge,
         ++num_vtx;
       }
       
-      if (nodeset.mid_edge_node(3)) {
-        vertices[num_vtx] = 7;
-        derivs[num_vtx][0] = -2.0;
-        derivs[num_vtx][1] = -2.0;
-        derivs[num_vtx][2] = -2.0;
-        derivs[0][0] += 1.0;
-        derivs[0][1] += 1.0;
-        derivs[0][2] += 1.0;
-        ++num_vtx;
-      }
-      
       if (nodeset.mid_edge_node(4)) {
         vertices[num_vtx] = 8;
-        derivs[num_vtx][0] = -2.0;
-        derivs[num_vtx][1] = -2.0;
-        derivs[num_vtx][2] = -2.0;
-        derivs[1][0] += 1.0;
-        derivs[1][1] += 1.0;
-        derivs[1][2] += 1.0;
+        derivs[num_vtx][0] = 0.0;
+        derivs[num_vtx][1] = 0.0;
+        derivs[num_vtx][2] = 2.0;
+        derivs[1][2] -= 1.0;
         ++num_vtx;
       }
       break;
     
     case 1:
-      num_vtx = 2;
       vertices[0] = 1;
-      vertices[1] = 2;
-      
-      derivs[0][0] = 0.0;
-      derivs[0][1] = 1.0;
+      derivs[0][0] = 1.0;
+      derivs[0][1] = 0.0;
       derivs[0][2] = 0.0;
       
+      vertices[1] = 2;
       derivs[1][0] = 0.0;
-      derivs[1][1] = 0.0;
-      derivs[1][2] = 1.0;
+      derivs[1][1] = 1.0;
+      derivs[1][2] = 0.0;
    
-      if (nodeset.mid_edge_node(0) && nodeset.mid_edge_node(2)) {
+      if (nodeset.mid_edge_node(0) == nodeset.mid_edge_node(2)) {
         vertices[num_vtx] = 0;
-        derivs[num_vtx][0] = -1.0;
-        derivs[num_vtx][1] =  0.0;
-        derivs[num_vtx][2] =  0.0;
-        ++num_vtx;
-      }
-      else if (!nodeset.mid_edge_node(0) && !nodeset.mid_edge_node(2)) {
-        vertices[num_vtx] = 0;
-        derivs[num_vtx][0] =  1.0;
-        derivs[num_vtx][1] =  0.0;
-        derivs[num_vtx][2] =  0.0;
+        sign = 2*nodeset.mid_edge_node(0) - 1;
+        derivs[num_vtx][0] = sign;
+        derivs[num_vtx][1] = sign;
+        derivs[num_vtx][2] = sign;
         ++num_vtx;
       }
       
-      if (!nodeset.mid_edge_node(4) && !nodeset.mid_edge_node(5)) {
+      if (nodeset.mid_edge_node(4) == nodeset.mid_edge_node(5)) {
         vertices[num_vtx] = 3;
-        derivs[num_vtx][0] = -1.0;
-        derivs[num_vtx][1] = -1.0;
-        derivs[num_vtx][2] = -1.0;
-        ++num_vtx;
-      }
-      else if (nodeset.mid_edge_node(4) && nodeset.mid_edge_node(5)) {
-        vertices[num_vtx] = 3;
-        derivs[num_vtx][0] = 1.0;
-        derivs[num_vtx][1] = 1.0;
-        derivs[num_vtx][2] = 1.0;
+        sign = 1 - 2*nodeset.mid_edge_node(4);
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] = sign;
         ++num_vtx;
       }
       
       if (nodeset.mid_edge_node(0)) {
         vertices[num_vtx] = 4;
+        derivs[num_vtx][0] = -2.0;
+        derivs[num_vtx][1] = -2.0;
+        derivs[num_vtx][2] = -2.0;
+        ++num_vtx;
+        derivs[0][0] += 1.0;
+        derivs[0][1] += 1.0;
+        derivs[0][2] += 1.0;
+     }
+      
+      if (nodeset.mid_edge_node(1)) {
+        vertices[num_vtx] = 5;
         derivs[num_vtx][0] = 2.0;
-        derivs[num_vtx][1] = 0.0;
+        derivs[num_vtx][1] = 2.0;
         derivs[num_vtx][2] = 0.0;
+        ++num_vtx;
+        derivs[0][0] -= 1.0;
+        derivs[0][1] -= 1.0;
+        derivs[1][0] -= 1.0;
+        derivs[1][1] -= 1.0;
+      }
+      
+      if (nodeset.mid_edge_node(2)) {
+        vertices[num_vtx] = 6;
+        derivs[num_vtx][0] = -2.0;
+        derivs[num_vtx][1] = -2.0;
+        derivs[num_vtx][2] = -2.0;
+        ++num_vtx;
+        derivs[1][0] += 1.0;
+        derivs[1][1] += 1.0;
+        derivs[1][2] += 1.0;
+      }
+      
+      if (nodeset.mid_edge_node(4)) {
+        vertices[num_vtx] = 8;
+        derivs[num_vtx][0] = 0.0;
+        derivs[num_vtx][1] = 0.0;
+        derivs[num_vtx][2] = 2.0;
+        ++num_vtx;
+        derivs[0][2] -= 1.0;
+      }
+      
+      if (nodeset.mid_edge_node(5)) {
+        vertices[num_vtx] = 9;
+        derivs[num_vtx][0] = 0.0;
+        derivs[num_vtx][1] = 0.0;
+        derivs[num_vtx][2] = 2.0;
+        ++num_vtx;
+        derivs[1][2] -= 1.0;
+      }
+      break;
+      
+    case 2:
+      vertices[0] = 0;
+      derivs[0][0] = -1.0;
+      derivs[0][1] = -1.0;
+      derivs[0][2] = -1.0;
+      
+      vertices[1] = 2;
+      derivs[1][0] = 0.0;
+      derivs[1][1] = 1.0;
+      derivs[1][2] = 0.0;
+   
+      if (nodeset.mid_edge_node(0) == nodeset.mid_edge_node(1)) {
+        vertices[num_vtx] = 1;
+        sign = 1 - 2*nodeset.mid_edge_node(0);
+        derivs[num_vtx][0] = sign;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] =  0.0;
+        ++num_vtx;
+      }
+      
+      if (nodeset.mid_edge_node(3) == nodeset.mid_edge_node(5)) {
+        vertices[num_vtx] = 3;
+        sign = 1 - 2*nodeset.mid_edge_node(3);
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] = sign;
+        ++num_vtx;
+      }
+      
+      if (nodeset.mid_edge_node(0)) {
+        vertices[num_vtx] = 4;
+        derivs[num_vtx][0] =  2.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] =  0.0;
         ++num_vtx;
         derivs[0][0] -= 1.0;
       }
       
       if (nodeset.mid_edge_node(1)) {
         vertices[num_vtx] = 5;
+        derivs[num_vtx][0] =  2.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] =  0.0;
+        ++num_vtx;
+        derivs[1][0] -= 1.0;
+      }
+      
+      if (nodeset.mid_edge_node(2)) {
+        vertices[num_vtx] = 6;
+        derivs[num_vtx][0] = -2.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] = -2.0;
+        ++num_vtx;
+        derivs[0][0] += 1.0;
+        derivs[0][2] += 1.0;
+        derivs[1][0] += 1.0;
+        derivs[1][2] += 1.0;
+      }
+       
+      if (nodeset.mid_edge_node(3)) {
+        vertices[num_vtx] = 7;
+        derivs[num_vtx][0] = 0.0;
+        derivs[num_vtx][1] = 0.0;
+        derivs[num_vtx][2] = 2.0;
+        ++num_vtx;
+        derivs[0][2] -= 1.0;
+      }
+      
+      if (nodeset.mid_edge_node(5)) {
+        vertices[num_vtx] = 9;
+        derivs[num_vtx][0] = 0.0;
+        derivs[num_vtx][1] = 0.0;
+        derivs[num_vtx][2] = 2.0;
+        ++num_vtx;
+        derivs[1][2] -= 1.0;
+      }
+      break;
+    
+    case 3:
+      vertices[0] = 0;
+      derivs[0][0] = -1.0;
+      derivs[0][1] = -1.0;
+      derivs[0][2] = -1.0;
+      
+      vertices[1] = 3;
+      derivs[1][0] = 0.0;
+      derivs[1][1] = 0.0;
+      derivs[1][2] = 1.0;
+      
+      if (nodeset.mid_edge_node(0) == nodeset.mid_edge_node(4)) {
+        vertices[num_vtx] = 1;
+        sign = 1 - 2*nodeset.mid_edge_node(0);
+        derivs[num_vtx][0] = sign;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] =  0.0;
+        ++num_vtx;
+      }
+      
+      if (nodeset.mid_edge_node(2) == nodeset.mid_edge_node(5)) {
+        vertices[num_vtx] = 2;
+        sign = 1 - 2*nodeset.mid_edge_node(2);
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] = sign;
+        derivs[num_vtx][2] =  0.0;
+        ++num_vtx;
+      }
+
+      if (nodeset.mid_edge_node(0)) {
+        vertices[num_vtx] = 4;
+        derivs[num_vtx][0] =  2.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] =  0.0;
+        ++num_vtx;
+        derivs[0][0] -= 1.0;
+      }
+      
+      if (nodeset.mid_edge_node(2)) {
+        vertices[num_vtx] = 6;
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] =  2.0;
+        derivs[num_vtx][2] =  0.0;
+        ++num_vtx;
+        derivs[0][1] -= 1.0;
+      }
+      
+      if (nodeset.mid_edge_node(3)) {
+        vertices[num_vtx] = 7;
+        derivs[num_vtx][0] = -2.0;
+        derivs[num_vtx][1] = -2.0;
+        derivs[num_vtx][2] =  0.0;
+        ++num_vtx;
+        derivs[0][0] += 1.0;
+        derivs[0][1] += 1.0;
+        derivs[1][0] += 1.0;
+        derivs[1][1] += 1.0;
+      }
+      
+      if (nodeset.mid_edge_node(4)) {
+        vertices[num_vtx] = 8;
+        derivs[num_vtx][0] =  2.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] =  0.0;
+        ++num_vtx;
+        derivs[1][0] -= 1.0;
+      }
+      
+      if (nodeset.mid_edge_node(5)) {
+        vertices[num_vtx] = 9;
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] =  2.0;
+        derivs[num_vtx][2] =  0.0;
+        ++num_vtx;
+        derivs[1][1] -= 1.0;
+      }
+      break;
+    
+    case 4:
+      vertices[0] = 1;
+      derivs[0][0] = 1.0;
+      derivs[0][1] = 0.0;
+      derivs[0][2] = 0.0;
+      
+      vertices[1] = 3;
+      derivs[1][0] = 0.0;
+      derivs[1][1] = 0.0;
+      derivs[1][2] = 1.0;
+
+      if (nodeset.mid_edge_node(0) == nodeset.mid_edge_node(3)) {
+        vertices[num_vtx] = 0;
+        sign = 2*nodeset.mid_edge_node(0) - 1;
+        derivs[num_vtx][0] = sign;
+        derivs[num_vtx][1] = sign;
+        derivs[num_vtx][2] = sign;
+        ++num_vtx;
+      }
+      
+      if (nodeset.mid_edge_node(1) == nodeset.mid_edge_node(5)) {
+        vertices[num_vtx] = 2;
+        sign = 1 - 2*nodeset.mid_edge_node(1);
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] = sign;
+        derivs[num_vtx][2] =  0.0;
+        ++num_vtx;
+      }
+
+      if (nodeset.mid_edge_node(0)) {
+        vertices[num_vtx] = 4;
+        derivs[num_vtx][0] = -2.0;
+        derivs[num_vtx][1] = -2.0;
+        derivs[num_vtx][2] = -2.0;
+        ++num_vtx;
+        derivs[0][0] += 1.0;
+        derivs[0][1] += 1.0;
+        derivs[0][2] += 1.0;
+      }
+      
+      if (nodeset.mid_edge_node(1)) {
+        vertices[num_vtx] = 5;
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] =  2.0;
+        derivs[num_vtx][2] =  0.0;
+        ++num_vtx;
+        derivs[0][1] -= 1.0;
+      }
+ 
+      if (nodeset.mid_edge_node(3)) {
+        vertices[num_vtx] = 7;
+        derivs[num_vtx][0] = -2.0;
+        derivs[num_vtx][1] = -2.0;
+        derivs[num_vtx][2] = -2.0;
+        ++num_vtx;
+        derivs[1][0] += 1.0;
+        derivs[1][1] += 1.0;
+        derivs[1][2] += 1.0;
+      }
+      
+      if (nodeset.mid_edge_node(4)) {
+        vertices[num_vtx] = 8;
+        derivs[num_vtx][0] = 2.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] = 2.0;
+        ++num_vtx;
+        derivs[0][0] -= 1.0;
+        derivs[0][2] -= 1.0;
+        derivs[1][0] -= 1.0;
+        derivs[1][2] -= 1.0;
+      }
+      
+      if (nodeset.mid_edge_node(5)) {
+        vertices[num_vtx] = 9;
+        derivs[num_vtx][0] =  0.0;
+        derivs[num_vtx][1] =  2.0;
+        derivs[num_vtx][2] =  0.0;
+        ++num_vtx;
+        derivs[1][1] -= 1.0;
+      }
+      break;
+    
+    case 5:
+      vertices[0] = 2;
+      derivs[0][0] = 0.0;
+      derivs[0][1] = 1.0;
+      derivs[0][2] = 0.0;
+      
+      vertices[1] = 3;
+      derivs[1][0] = 0.0;
+      derivs[1][1] = 0.0;
+      derivs[1][2] = 1.0;
+
+      if (nodeset.mid_edge_node(2) == nodeset.mid_edge_node(3)) {
+        vertices[num_vtx] = 0;
+        sign = 2*nodeset.mid_edge_node(2) - 1;
+        derivs[num_vtx][0] = sign;
+        derivs[num_vtx][1] = sign;
+        derivs[num_vtx][2] = sign;
+        ++num_vtx;
+      }
+      
+      if (nodeset.mid_edge_node(1) == nodeset.mid_edge_node(4)) {
+        vertices[num_vtx] = 1;
+        sign = 1 - 2*nodeset.mid_edge_node(1);
+        derivs[num_vtx][0] = sign;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] =  0.0;
+        ++num_vtx;
+      }
+      
+      if (nodeset.mid_edge_node(1)) {
+        vertices[num_vtx] = 5;
+        derivs[num_vtx][0] =  2.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] =  0.0;
+        ++num_vtx;
+        derivs[0][0] -= 1.0;
+      }
+
+      if (nodeset.mid_edge_node(2)) {
+        vertices[num_vtx] = 6;
+        derivs[num_vtx][0] = -2.0;
+        derivs[num_vtx][1] = -2.0;
+        derivs[num_vtx][2] = -2.0;
+        ++num_vtx;
+        derivs[0][0] += 1.0;
+        derivs[0][1] += 1.0;
+        derivs[0][2] += 1.0;
+      }
+      
+      if (nodeset.mid_edge_node(3)) {
+        vertices[num_vtx] = 7;
+        derivs[num_vtx][0] = -2.0;
+        derivs[num_vtx][1] = -2.0;
+        derivs[num_vtx][2] = -2.0;
+        ++num_vtx;
+        derivs[1][0] += 1.0;
+        derivs[1][1] += 1.0;
+        derivs[1][2] += 1.0;
+      }
+
+      if (nodeset.mid_edge_node(4)) {
+        vertices[num_vtx] = 8;
+        derivs[num_vtx][0] =  2.0;
+        derivs[num_vtx][1] =  0.0;
+        derivs[num_vtx][2] =  0.0;
+        ++num_vtx;
+        derivs[1][0] -= 1.0;
+      }
+       
+      if (nodeset.mid_edge_node(5)) {
+        vertices[num_vtx] = 9;
         derivs[num_vtx][0] = 0.0;
         derivs[num_vtx][1] = 2.0;
         derivs[num_vtx][2] = 2.0;
@@ -622,434 +942,34 @@ static void derivatives_at_mid_edge( unsigned edge,
         derivs[1][1] -= 1.0;
         derivs[1][2] -= 1.0;
       }
-      
-      if (nodeset.mid_edge_node(2)) {
-        vertices[num_vtx] = 6;
-        derivs[num_vtx][0] = 2.0;
-        derivs[num_vtx][1] = 0.0;
-        derivs[num_vtx][2] = 0.0;
-        ++num_vtx;
-        derivs[1][0] -= 1.0;
-      }
-      
-      if (nodeset.mid_edge_node(4)) {
-        vertices[num_vtx] = 8;
-        derivs[num_vtx][0] = -2.0;
-        derivs[num_vtx][1] = -2.0;
-        derivs[num_vtx][2] = -2.0;
-        ++num_vtx;
-        derivs[0][0] += 1.0;
-        derivs[0][1] += 1.0;
-        derivs[0][2] += 1.0;
-      }
-      
-      if (nodeset.mid_edge_node(5)) {
-        vertices[num_vtx] = 9;
-        derivs[num_vtx][0] = -2.0;
-        derivs[num_vtx][1] = -2.0;
-        derivs[num_vtx][2] = -2.0;
-        ++num_vtx;
-        derivs[1][0] += 1.0;
-        derivs[1][1] += 1.0;
-        derivs[1][2] += 1.0;
-      }
-      break;
-      
-    case 2:
-      num_vtx = 2;
-      vertices[0] = 0;
-      vertices[1] = 2;
-      
-      derivs[0][0] = 1.0;
-      derivs[0][1] = 0.0;
-      derivs[0][2] = 0.0;
-      
-      derivs[1][0] = 0.0;
-      derivs[1][1] = 0.0;
-      derivs[1][2] = 1.0;
-   
-      if (nodeset.mid_edge_node(0) && nodeset.mid_edge_node(1)) {
-        vertices[num_vtx] = 1;
-        derivs[num_vtx][0] =  0.0;
-        derivs[num_vtx][1] = -1.0;
-        derivs[num_vtx][2] =  0.0;
-        ++num_vtx;
-      }
-      else if (!nodeset.mid_edge_node(0) && !nodeset.mid_edge_node(1)) {
-        vertices[num_vtx] = 1;
-        derivs[num_vtx][0] =  0.0;
-        derivs[num_vtx][1] =  1.0;
-        derivs[num_vtx][2] =  0.0;
-        ++num_vtx;
-      }
-      
-      if (!nodeset.mid_edge_node(3) && !nodeset.mid_edge_node(5)) {
-        vertices[num_vtx] = 3;
-        derivs[num_vtx][0] = -1.0;
-        derivs[num_vtx][1] = -1.0;
-        derivs[num_vtx][2] = -1.0;
-        ++num_vtx;
-      }
-      else if (nodeset.mid_edge_node(3) && nodeset.mid_edge_node(5)) {
-        vertices[num_vtx] = 3;
-        derivs[num_vtx][0] = 1.0;
-        derivs[num_vtx][1] = 1.0;
-        derivs[num_vtx][2] = 1.0;
-        ++num_vtx;
-      }
-      
-      if (nodeset.mid_edge_node(0)) {
-        vertices[num_vtx] = 4;
-        derivs[num_vtx][0] =  0.0;
-        derivs[num_vtx][1] =  2.0;
-        derivs[num_vtx][2] =  0.0;
-        ++num_vtx;
-        derivs[0][1] -= 1.0;
-      }
-      
-      if (nodeset.mid_edge_node(1)) {
-        vertices[num_vtx] = 5;
-        derivs[num_vtx][0] =  0.0;
-        derivs[num_vtx][1] =  2.0;
-        derivs[num_vtx][2] =  0.0;
-        ++num_vtx;
-        derivs[1][1] -= 1.0;
-      }
-      
-      if (nodeset.mid_edge_node(2)) {
-        vertices[num_vtx] = 6;
-        derivs[num_vtx][0] =  2.0;
-        derivs[num_vtx][1] =  0.0;
-        derivs[num_vtx][2] =  2.0;
-        ++num_vtx;
-        derivs[0][0] -= 1.0;
-        derivs[0][2] -= 1.0;
-        derivs[1][0] -= 1.0;
-        derivs[1][2] -= 1.0;
-      }
-       
-      if (nodeset.mid_edge_node(3)) {
-        vertices[num_vtx] = 7;
-        derivs[num_vtx][0] = -2.0;
-        derivs[num_vtx][1] = -2.0;
-        derivs[num_vtx][2] = -2.0;
-        ++num_vtx;
-        derivs[0][0] += 1.0;
-        derivs[0][1] += 1.0;
-        derivs[0][2] += 1.0;
-      }
-      
-      if (nodeset.mid_edge_node(5)) {
-        vertices[num_vtx] = 9;
-        derivs[num_vtx][0] = -2.0;
-        derivs[num_vtx][1] = -2.0;
-        derivs[num_vtx][2] = -2.0;
-        ++num_vtx;
-        derivs[1][0] += 1.0;
-        derivs[1][1] += 1.0;
-        derivs[1][2] += 1.0;
-      }
-      break;
-    
-    case 3:
-      num_vtx = 2;
-      vertices[0] = 0;
-      vertices[1] = 3;
-      
-      derivs[0][0] = 1.0;
-      derivs[0][1] = 0.0;
-      derivs[0][2] = 0.0;
-      
-      derivs[1][0] = -1.0;
-      derivs[1][1] = -1.0;
-      derivs[1][2] = -1.0;
-      
-      if (!nodeset.mid_edge_node(0) && !nodeset.mid_edge_node(4)) {
-        vertices[num_vtx] = 1;
-        derivs[num_vtx][0] =  0.0;
-        derivs[num_vtx][1] =  1.0;
-        derivs[num_vtx][2] =  0.0;
-        ++num_vtx;
-      }
-      else if (nodeset.mid_edge_node(0) && nodeset.mid_edge_node(4)) {
-        vertices[num_vtx] = 1;
-        derivs[num_vtx][0] =  0.0;
-        derivs[num_vtx][1] = -1.0;
-        derivs[num_vtx][2] =  0.0;
-        ++num_vtx;
-      }
-      
-      if (!nodeset.mid_edge_node(2) && !nodeset.mid_edge_node(5)) {
-        vertices[num_vtx] = 2;
-        derivs[num_vtx][0] =  0.0;
-        derivs[num_vtx][1] =  0.0;
-        derivs[num_vtx][2] =  1.0;
-        ++num_vtx;
-      }
-      if (nodeset.mid_edge_node(2) && nodeset.mid_edge_node(5)) {
-        vertices[num_vtx] = 2;
-        derivs[num_vtx][0] =  0.0;
-        derivs[num_vtx][1] =  0.0;
-        derivs[num_vtx][2] = -1.0;
-        ++num_vtx;
-      }
-
-      if (nodeset.mid_edge_node(0)) {
-        vertices[num_vtx] = 4;
-        derivs[num_vtx][0] =  0.0;
-        derivs[num_vtx][1] =  2.0;
-        derivs[num_vtx][2] =  0.0;
-        ++num_vtx;
-        derivs[0][1] -= 1.0;
-      }
-      
-      if (nodeset.mid_edge_node(2)) {
-        vertices[num_vtx] = 6;
-        derivs[num_vtx][0] =  0.0;
-        derivs[num_vtx][1] =  0.0;
-        derivs[num_vtx][2] =  2.0;
-        ++num_vtx;
-        derivs[0][2] -= 1.0;
-      }
-      
-      if (nodeset.mid_edge_node(3)) {
-        vertices[num_vtx] = 7;
-        derivs[num_vtx][0] =  0.0;
-        derivs[num_vtx][1] = -2.0;
-        derivs[num_vtx][2] = -2.0;
-        ++num_vtx;
-        derivs[0][1] += 1.0;
-        derivs[0][2] += 1.0;
-        derivs[1][1] += 1.0;
-        derivs[1][2] += 1.0;
-      }
-      
-      if (nodeset.mid_edge_node(4)) {
-        vertices[num_vtx] = 8;
-        derivs[num_vtx][0] =  0.0;
-        derivs[num_vtx][1] =  2.0;
-        derivs[num_vtx][2] =  0.0;
-        ++num_vtx;
-        derivs[1][1] -= 1.0;
-      }
-      if (nodeset.mid_edge_node(5)) {
-        vertices[num_vtx] = 9;
-        derivs[num_vtx][0] =  0.0;
-        derivs[num_vtx][1] =  0.0;
-        derivs[num_vtx][2] =  2.0;
-        ++num_vtx;
-        derivs[1][2] -= 1.0;
-      }
-      break;
-    
-    case 4:
-      num_vtx = 2;
-      vertices[0] = 1;
-      vertices[1] = 3;
-      
-      derivs[0][0] = 0.0;
-      derivs[0][1] = 1.0;
-      derivs[0][2] = 0.0;
-      
-      derivs[1][0] = -1.0;
-      derivs[1][1] = -1.0;
-      derivs[1][2] = -1.0;
-
-      if (!nodeset.mid_edge_node(0) && !nodeset.mid_edge_node(3)) {
-        vertices[num_vtx] = 0;
-        derivs[num_vtx][0] =  1.0;
-        derivs[num_vtx][1] =  0.0;
-        derivs[num_vtx][2] =  0.0;
-        ++num_vtx;
-      }
-      else if (nodeset.mid_edge_node(0) && nodeset.mid_edge_node(3)) {
-        vertices[num_vtx] = 0;
-        derivs[num_vtx][0] = -1.0;
-        derivs[num_vtx][1] =  0.0;
-        derivs[num_vtx][2] =  0.0;
-        ++num_vtx;
-      }
-      
-      if (!nodeset.mid_edge_node(1) && !nodeset.mid_edge_node(5)) {
-        vertices[num_vtx] = 2;
-        derivs[num_vtx][0] =  0.0;
-        derivs[num_vtx][1] =  0.0;
-        derivs[num_vtx][2] =  1.0;
-        ++num_vtx;
-      }
-      else if (nodeset.mid_edge_node(1) && nodeset.mid_edge_node(5)) {
-        vertices[num_vtx] = 2;
-        derivs[num_vtx][0] =  0.0;
-        derivs[num_vtx][1] =  0.0;
-        derivs[num_vtx][2] = -1.0;
-        ++num_vtx;
-      }
-
-      if (nodeset.mid_edge_node(0)) {
-        vertices[num_vtx] = 4;
-        derivs[num_vtx][0] =  2.0;
-        derivs[num_vtx][1] =  0.0;
-        derivs[num_vtx][2] =  0.0;
-        ++num_vtx;
-        derivs[0][0] -= 1.0;
-      }
-      
-      if (nodeset.mid_edge_node(1)) {
-        vertices[num_vtx] = 5;
-        derivs[num_vtx][0] =  0.0;
-        derivs[num_vtx][1] =  0.0;
-        derivs[num_vtx][2] =  2.0;
-        ++num_vtx;
-        derivs[0][2] -= 1.0;
-      }
-      
-      if (nodeset.mid_edge_node(4)) {
-        vertices[num_vtx] = 8;
-        derivs[num_vtx][0] = -2.0;
-        derivs[num_vtx][1] =  0.0;
-        derivs[num_vtx][2] = -2.0;
-        ++num_vtx;
-        derivs[0][0] += 1.0;
-        derivs[0][2] += 1.0;
-        derivs[1][0] += 1.0;
-        derivs[1][2] += 1.0;
-      }
-      
-      if (nodeset.mid_edge_node(3)) {
-        vertices[num_vtx] = 7;
-        derivs[num_vtx][0] =  2.0;
-        derivs[num_vtx][1] =  0.0;
-        derivs[num_vtx][2] =  0.0;
-        ++num_vtx;
-        derivs[1][0] -= 1.0;
-      }
-      if (nodeset.mid_edge_node(5)) {
-        vertices[num_vtx] = 9;
-        derivs[num_vtx][0] =  0.0;
-        derivs[num_vtx][1] =  0.0;
-        derivs[num_vtx][2] =  2.0;
-        ++num_vtx;
-        derivs[1][2] -= 1.0;
-      }
-      break;
-    
-    case 5:
-      num_vtx = 2;
-      vertices[0] = 2;
-      vertices[1] = 3;
-      
-      derivs[0][0] = 0.0;
-      derivs[0][1] = 0.0;
-      derivs[0][2] = 1.0;
-      
-      derivs[1][0] = -1.0;
-      derivs[1][1] = -1.0;
-      derivs[1][2] = -1.0;
-
-      if (!nodeset.mid_edge_node(2) && !nodeset.mid_edge_node(3)) {
-        vertices[num_vtx] = 0;
-        derivs[num_vtx][0] =  1.0;
-        derivs[num_vtx][1] =  0.0;
-        derivs[num_vtx][2] =  0.0;
-        ++num_vtx;
-      }
-      else if (nodeset.mid_edge_node(2) && nodeset.mid_edge_node(3)) {
-        vertices[num_vtx] = 0;
-        derivs[num_vtx][0] = -1.0;
-        derivs[num_vtx][1] =  0.0;
-        derivs[num_vtx][2] =  0.0;
-        ++num_vtx;
-      }
-      
-      if (!nodeset.mid_edge_node(1) && !nodeset.mid_edge_node(4)) {
-        vertices[num_vtx] = 1;
-        derivs[num_vtx][0] =  0.0;
-        derivs[num_vtx][1] =  1.0;
-        derivs[num_vtx][2] =  0.0;
-        ++num_vtx;
-      }
-      else if (nodeset.mid_edge_node(1) && nodeset.mid_edge_node(4)) {
-        vertices[num_vtx] = 1;
-        derivs[num_vtx][0] =  0.0;
-        derivs[num_vtx][1] = -1.0;
-        derivs[num_vtx][2] =  0.0;
-        ++num_vtx;
-      }
-      
-      if (nodeset.mid_edge_node(1)) {
-        vertices[num_vtx] = 5;
-        derivs[num_vtx][0] =  0.0;
-        derivs[num_vtx][1] =  2.0;
-        derivs[num_vtx][2] =  0.0;
-        ++num_vtx;
-        derivs[0][1] -= 1.0;
-      }
-
-      if (nodeset.mid_edge_node(2)) {
-        vertices[num_vtx] = 6;
-        derivs[num_vtx][0] =  2.0;
-        derivs[num_vtx][1] =  0.0;
-        derivs[num_vtx][2] =  0.0;
-        ++num_vtx;
-        derivs[0][0] -= 1.0;
-      }
-      
-      if (nodeset.mid_edge_node(5)) {
-        vertices[num_vtx] = 9;
-        derivs[num_vtx][0] = -2.0;
-        derivs[num_vtx][1] = -2.0;
-        derivs[num_vtx][2] =  0.0;
-        ++num_vtx;
-        derivs[0][0] += 1.0;
-        derivs[0][1] += 1.0;
-        derivs[1][0] += 1.0;
-        derivs[1][1] += 1.0;
-      }
-      
-      if (nodeset.mid_edge_node(3)) {
-        vertices[num_vtx] = 7;
-        derivs[num_vtx][0] =  2.0;
-        derivs[num_vtx][1] =  0.0;
-        derivs[num_vtx][2] =  0.0;
-        ++num_vtx;
-        derivs[1][0] -= 1.0;
-      }
-      if (nodeset.mid_edge_node(4)) {
-        vertices[num_vtx] = 8;
-        derivs[num_vtx][0] =  0.0;
-        derivs[num_vtx][1] =  2.0;
-        derivs[num_vtx][2] =  0.0;
-        ++num_vtx;
-        derivs[1][1] -= 1.0;
-      }
       break;
   }
 }
 
-// Derivatives of coefficients for higher-order nodes
+// Derivatives of coefficients for mid-edge nodes
 
 const double ft = 4.0/3.0;
 
-const double ho_dr[6][4] = { { ft, ft, 0., ft },
-                             { 0., 0., 0., 0. },
+const double ho_dr[6][4] = { { 0.,-ft, ft, 0. },
                              { 0., ft, ft, ft },
-                             { 0., ft, 0.,-ft },
-                             {-ft,-ft, 0.,-ft },
-                             { 0.,-ft,-ft,-ft } };
+                             { 0.,-ft,-ft,-ft },
+                             {-ft,-ft,-ft, 0. },
+                             { ft, ft, ft, 0. },
+                             { 0., 0., 0., 0. } };
 
-const double ho_ds[6][4] = { { ft, 0., ft, ft },
-                             { 0., ft, ft, ft },
-                             { 0., 0., 0., 0. },
-                             {-ft, 0.,-ft,-ft },
-                             { 0., 0., ft,-ft },
-                             { 0.,-ft,-ft,-ft } };
-
-const double ho_dt[6][4] = { { 0., 0., 0., 0. },
+const double ho_ds[6][4] = { {-ft,-ft, 0.,-ft },
                              { ft, ft, 0., ft },
-                             { ft, 0., ft, ft },
-                             {-ft, 0.,-ft,-ft },
-                             {-ft,-ft, 0.,-ft },
-                             { ft, 0., 0.,-ft } };
+                             { ft,-ft, 0., 0. },
+                             {-ft,-ft,-ft, 0. },
+                             { 0., 0., 0., 0. },
+                             { ft, ft, ft, 0. } };
+
+const double ho_dt[6][4] = { {-ft,-ft, 0.,-ft },
+                             { 0., 0., 0., 0. },
+                             { 0.,-ft,-ft,-ft },
+                             { 0.,-ft, 0., ft },
+                             { ft, ft, 0., ft },
+                             { 0., ft, ft, ft } };
 
 
 static void derivatives_at_mid_face( unsigned face,
@@ -1080,6 +1000,12 @@ static void derivatives_at_mid_face( unsigned face,
     }
 }
 
+  
+  // position (0->r, 1->s, 2->t) of zero-valued term for mid-edge node
+static const int zeros[6] = { 0, 2, 1, 2, 1, 0 };
+  // value of mid-edge terms
+static const int signs[6] = { -1, 1, -1, -1, 1, 1 };
+
 static void derivatives_at_mid_elem( NodeSet nodeset,
                                      size_t* vertices,
                                      MsqVector<3>* derivs,
@@ -1091,16 +1017,9 @@ static void derivatives_at_mid_elem( NodeSet nodeset,
   
   num_vtx = 0;
   for (unsigned i = 4;  i < 10; ++i) {
-    int sign, zero;
-    if (i < 7) {
-      sign = 1;
-      zero = (i - 2) % 3;
-    }
-    else {
-      sign = -1;
-      zero = (i - 7);
-    }
-    
+    int sign = signs[i-4];
+    int zero = zeros[i-4];
+   
     if (nodeset.mid_edge_node(i-4)) {
       vertices[num_vtx] = i;
       derivs[num_vtx][0] = (double)sign;
