@@ -254,7 +254,7 @@ the details of each class and the low-level API are not described here.
   f_newton.set_inner_termination_criterion(&tc_inner);
 
     // creates a quality assessor
-  QualityAssessor m_ratio_qa(&inverse_mean_ratio,QualityAssessor::AVERAGE,err);
+  QualityAssessor m_ratio_qa(&inverse_mean_ratio);
     // creates an instruction queue
   InstructionQueue queue;
   queue.add_quality_assessor(&m_ratio_qa, err); 
