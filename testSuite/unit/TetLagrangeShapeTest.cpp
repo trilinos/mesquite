@@ -154,56 +154,56 @@ class TetLagrangeShapeTest : public CppUnit::TestFixture
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TetLagrangeShapeTest, "TetLagrangeShapeTest");
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TetLagrangeShapeTest, "Unit");
 
-static double N0( double r, double  , double   ) { return r*(2*r - 1); }
-static double N1( double  , double s, double   ) { return s*(2*s - 1); }
-static double N2( double  , double  , double t ) { return t*(2*t - 1); }
-static double N3( double r, double s, double t ) { double u = 1 - r - s - t; return u*(2*u - 1); }
-static double N4( double r, double s, double   ) { return 4*r*s; }
-static double N5( double  , double s, double t ) { return 4*s*t; }
-static double N6( double r, double  , double t ) { return 4*r*t; }
-static double N7( double r, double s, double t ) { double u = 1 - r - s - t; return 4*r*u; }
-static double N8( double r, double s, double t ) { double u = 1 - r - s - t; return 4*s*u; }
-static double N9( double r, double s, double t ) { double u = 1 - r - s - t; return 4*t*u; }
+static double N0( double r, double s, double t ) { double u = 1 - r - s - t; return u*(2*u - 1); }
+static double N1( double r, double  , double   ) { return r*(2*r - 1); }
+static double N2( double  , double s, double   ) { return s*(2*s - 1); }
+static double N3( double  , double  , double t ) { return t*(2*t - 1);  }
+static double N4( double r, double s, double t ) { double u = 1 - r - s - t; return 4*r*u; }
+static double N5( double r, double s, double   ) { return 4*r*s; }
+static double N6( double r, double s, double t ) { double u = 1 - r - s - t; return 4*s*u; }
+static double N7( double r, double s, double t ) { double u = 1 - r - s - t; return 4*u*t; }
+static double N8( double r, double  , double t ) { return 4*r*t; }
+static double N9( double  , double s, double t ) { return 4*s*t; }
 
-static double dN0dr( double r, double  , double   ) { return 4*r - 1; }
-static double dN0ds( double  , double  , double   ) { return 0; }
-static double dN0dt( double  , double  , double   ) { return 0; }
+static double dN0dr( double r, double s, double t ) { double u = 1 - r - s - t; return 1 - 4*u; }
+static double dN0ds( double r, double s, double t ) { double u = 1 - r - s - t; return 1 - 4*u; }
+static double dN0dt( double r, double s, double t ) { double u = 1 - r - s - t; return 1 - 4*u; }
 
-static double dN1dr( double  , double  , double   ) { return 0; }
-static double dN1ds( double  , double s, double   ) { return 4*s - 1; }
+static double dN1dr( double r, double  , double   ) { return 4*r - 1; }
+static double dN1ds( double  , double  , double   ) { return 0; }
 static double dN1dt( double  , double  , double   ) { return 0; }
 
 static double dN2dr( double  , double  , double   ) { return 0; }
-static double dN2ds( double  , double  , double   ) { return 0; }
-static double dN2dt( double  , double  , double t ) { return 4*t - 1; }
+static double dN2ds( double  , double s, double   ) { return 4*s - 1; }
+static double dN2dt( double  , double  , double   ) { return 0; }
 
-static double dN3dr( double r, double s, double t ) { return 4*(r + s + t) - 3; }
-static double dN3ds( double r, double s, double t ) { return 4*(r + s + t) - 3; }
-static double dN3dt( double r, double s, double t ) { return 4*(r + s + t) - 3; }
+static double dN3dr( double  , double  , double   ) { return 0; }
+static double dN3ds( double  , double  , double   ) { return 0; }
+static double dN3dt( double  , double  , double t ) { return 4*t - 1; }
 
-static double dN4dr( double  , double s, double   ) { return 4*s; }
-static double dN4ds( double r, double  , double   ) { return 4*r; }
-static double dN4dt( double  , double  , double   ) { return 0; }
+static double dN4dr( double r, double s, double t ) { double u = 1 - r - s - t; return 4*(u - r); }
+static double dN4ds( double r, double  , double   ) { return -4*r; }
+static double dN4dt( double r, double  , double   ) { return -4*r; }
 
-static double dN5dr( double  , double  , double   ) { return 0; }
-static double dN5ds( double  , double  , double t ) { return 4*t; }
-static double dN5dt( double  , double s, double   ) { return 4*s; }
+static double dN5dr( double  , double s, double   ) { return 4*s; }
+static double dN5ds( double r, double  , double   ) { return 4*r; }
+static double dN5dt( double  , double  , double   ) { return 0; }
 
-static double dN6dr( double  , double  , double t ) { return 4*t; }
-static double dN6ds( double  , double  , double   ) { return 0; }
-static double dN6dt( double r, double  , double   ) { return 4*r; }
+static double dN6dr( double  , double s, double   ) { return -4*s; }
+static double dN6ds( double r, double s, double t ) { double u = 1 - r - s - t; return 4*(u - s); }
+static double dN6dt( double  , double s, double   ) { return -4*s; }
 
-static double dN7dr( double r, double s, double t ) { return 4*(1 - 2*r - s - t); }
-static double dN7ds( double r, double  , double   ) { return -4*r; }
-static double dN7dt( double r, double  , double   ) { return -4*r; }
+static double dN7dr( double  , double  , double t ) { return -4*t; }
+static double dN7ds( double  , double  , double t ) { return -4*t; }
+static double dN7dt( double r, double s, double t ) { double u = 1 - r - s - t; return 4*(u - t); }
 
-static double dN8dr( double  , double s, double   ) { return -4*s; }
-static double dN8ds( double r, double s, double t ) { return 4*(1 - r - 2*s - t); }
-static double dN8dt( double  , double s, double   ) { return -4*s; }
+static double dN8dr( double  , double  , double t ) { return 4*t; }
+static double dN8ds( double  , double  , double   ) { return 0; }
+static double dN8dt( double r, double  , double   ) { return 4*r; }
 
-static double dN9dr( double  , double  , double t ) { return -4*t; }
-static double dN9ds( double  , double  , double t ) { return -4*t; }
-static double dN9dt( double r, double s, double t ) { return 4*(1 - r - s - 2*t); }
+static double dN9dr( double  , double  , double   ) { return 0; }
+static double dN9ds( double  , double  , double t ) { return 4*t; }
+static double dN9dt( double  , double s, double   ) { return 4*s; }
 
 typedef double (*N_t)(double,double,double);
 static const N_t N[] = { &N0, &N1, &N2, &N3, &N4, &N5, &N6, &N7, &N8, &N9 };
@@ -214,15 +214,15 @@ static const N_t dNds[] = { &dN0ds, &dN1ds, &dN2ds, &dN3ds, &dN4ds,
 static const N_t dNdt[] = { &dN0dt, &dN1dt, &dN2dt, &dN3dt, &dN4dt, 
                      &dN5dt, &dN6dt, &dN7dt, &dN8dt, &dN9dt };
 
-static const double rst_corner[][3] = { {1, 0, 0}, {0, 1, 0}, {0, 0, 1}, {0, 0, 0}};
-static const double rst_edge[][3] = { {0.5, 0.5, 0.0}, {0.0, 0.5, 0.5}, {0.5, 0.0, 0.5},
-                               {0.5, 0.0, 0.0}, {0.0, 0.5, 0.0}, {0.0, 0.0, 0.5} };
-static const double rst_face[][3] = { {1./3, 1./3, 0.00}, {0.00, 1./3, 1./3}, 
-                               {1./3, 0.00, 1./3}, {1./3, 1./3, 1./3} };
+static const double rst_corner[][3] = { {0, 0, 0}, {1, 0, 0}, {0, 1, 0}, {0, 0, 1} };
+static const double rst_edge[][3] = { {0.5, 0.0, 0.0}, {0.5, 0.5, 0.0}, {0.0, 0.5, 0.0},
+                                      {0.0, 0.0, 0.5}, {0.5, 0.0, 0.5}, {0.0, 0.5, 0.5} };
+static const double rst_face[][3] = { {1./3, 0.00, 1./3}, {1./3, 1./3, 1./3}, 
+                                      {0.00, 1./3, 1./3}, {1./3, 1./3, 0.00} };
 static const double rst_mid[3] = { 0.25, 0.25, 0.25 };
 
 static unsigned edges[][2] = { { 0, 1 }, { 1, 2 }, { 2, 0 },
-                        { 0, 3 }, { 1, 3 }, { 2, 3 } };
+                               { 0, 3 }, { 1, 3 }, { 2, 3 } };
 
 static void get_coeff( NodeSet nodeset, const double* rst, double* coeffs )
 {
@@ -335,8 +335,6 @@ static void compare_derivatives( const size_t* vertices,
   ASSERT_VALUES_EQUAL( expected_derivs[0][1], expanded_derivs[0][1], loc, bits );
   ASSERT_VALUES_EQUAL( expected_derivs[0][2], expanded_derivs[0][2], loc, bits );
   
-  if (fabs(expected_derivs[1][0] - expanded_derivs[1][0]) > 1e-6)
-    abort();
   ASSERT_VALUES_EQUAL( expected_derivs[1][0], expanded_derivs[1][0], loc, bits );
   ASSERT_VALUES_EQUAL( expected_derivs[1][1], expanded_derivs[1][1], loc, bits );
   ASSERT_VALUES_EQUAL( expected_derivs[1][2], expanded_derivs[1][2], loc, bits );

@@ -4,4 +4,5 @@
   - fix unusable iGeom/iRel interface classes
   - fix bugs in iRel interface class
   - fix floating point error in TrustRegion for zero-diagonal Hessian blocks
-  - fix trapping of floating point errors
+  - fix trapping of floating point errors in debug builds
+  - fix inverted map for quadratic tetrahedral elements
