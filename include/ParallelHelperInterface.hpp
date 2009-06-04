@@ -70,11 +70,12 @@ namespace MESQUITE_NS
     friend class QualityAssessor;
     // functions called by QualityAssessor::loop_over_mesh()
     virtual int get_rank() const = 0;
+    virtual int get_nprocs() const = 0;
     virtual bool is_our_element(Mesquite::Mesh::ElementHandle element_handle) const = 0;
     virtual bool is_our_vertex(Mesquite::Mesh::VertexHandle vertex_handle) const = 0;
     virtual void communicate_min_max_to_all(double* minimum, double* maximum) const = 0;
     virtual void communicate_min_max_to_zero(double* minimum, double* maximum) const = 0;
-    virtual void communicate_sums_to_zero(int* inverted, int* indeterminate, long unsigned int* count, long unsigned int* invalid, double* sum, double *sqrSum) const = 0;
+    virtual void communicate_sums_to_zero(size_t* freeElementCount, int* invertedElementCount, size_t* elementCount, int* invertedSampleCount, size_t* sampleCount, long unsigned int* count, long unsigned int* invalid, double* sum, double *sqrSum) const = 0;
     virtual void communicate_power_sum_to_zero(double* pMean) const = 0;
     virtual void communicate_histogram_to_zero(msq_std::vector<int> &histogram) const = 0;
   };

@@ -102,7 +102,7 @@ namespace MESQUITE_NS
     bool is_our_vertex(Mesquite::Mesh::VertexHandle vertex_handle) const;
     void communicate_min_max_to_all(double* minimum, double* maximum) const;
     void communicate_min_max_to_zero(double* minimum, double* maximum) const;
-    void communicate_sums_to_zero(int* inverted, int* indeterminate, long unsigned int* count, long unsigned int* invalid, double* sum, double *sqrSum) const;
+    void communicate_sums_to_zero(size_t* freeElementCount, int* invertedElementCount, size_t* elementCount, int* invertedSampleCount, size_t* sampleCount, long unsigned int* count, long unsigned int* invalid, double* sum, double *sqrSum) const;
     void communicate_power_sum_to_zero(double* pMean) const;
     void communicate_histogram_to_zero(msq_std::vector<int> &histogram) const;
 

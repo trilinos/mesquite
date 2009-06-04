@@ -421,6 +421,9 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
   msq_std::vector<Mesh::ElementHandle> patch_elems;
   msq_std::vector<size_t> metric_handles;
 
+    // Check if we really need the helper
+  if (helper && helper->get_nprocs() == 1) helper = 0;
+
     // Get any necessary tag handles.
   TagHandle invertedTag = 0;
   if (tagging_inverted_elements()) {
@@ -486,7 +489,10 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
       elem_patches.get_patch( *p, patch_elems, patch_verts, err ); MSQ_ERRZERO(err);
  
       if (helper && !helper->is_our_element(patch_elems[0]))
+      {
+	elementCount--;
         continue;
+      }
       patch.set_mesh_entities( patch_elems, patch_verts, err ); MSQ_ERRZERO(err);
       
       if (0 == patch.num_free_vertices()) {
@@ -660,7 +666,7 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
 
       helper->communicate_min_max_to_zero(&(iter->minimum), &(iter->maximum));
 
-      helper->communicate_sums_to_zero(&invertedElementCount, &invertedSampleCount, &(iter->count), &(iter->numInvalid), &(iter->sum), &(iter->sqrSum));
+      helper->communicate_sums_to_zero(&freeElementCount, &invertedElementCount, &elementCount, &invertedSampleCount, &sampleCount, &(iter->count), &(iter->numInvalid), &(iter->sum), &(iter->sqrSum));
 
       if (iter->have_power_mean()) {
         helper->communicate_power_sum_to_zero( &(iter->pMean) );

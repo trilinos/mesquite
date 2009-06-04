@@ -2140,26 +2140,32 @@ void ParallelHelperImpl::communicate_min_max_to_zero(double* minimum, double* ma
   }
 }
 
-void ParallelHelperImpl::communicate_sums_to_zero(int* inverted, int* indeterminate, long unsigned int* count, long unsigned int* invalid, double* sum, double *sqrSum) const {
-  double d_sum[6];
-  double d_sum_recv[6];
+void ParallelHelperImpl::communicate_sums_to_zero(size_t* freeElementCount, int* invertedElementCount, size_t* elementCount, int* invertedSampleCount, size_t* sampleCount, long unsigned int* count, long unsigned int* invalid, double* sum, double *sqrSum) const {
+  double d_sum[9];
+  double d_sum_recv[9];
 
-  d_sum[0] = (double)(*inverted);
-  d_sum[1] = (double)(*indeterminate);
-  d_sum[2] = (double)(*count);
-  d_sum[3] = (double)(*invalid);
-  d_sum[4] = *sum;
-  d_sum[5] = *sqrSum;
+  d_sum[0] = (double)(*freeElementCount);
+  d_sum[1] = (double)(*invertedElementCount);
+  d_sum[2] = (double)(*elementCount);
+  d_sum[3] = (double)(*invertedSampleCount);
+  d_sum[4] = (double)(*sampleCount);
+  d_sum[5] = (double)(*count);
+  d_sum[6] = (double)(*invalid);
+  d_sum[7] = *sum;
+  d_sum[8] = *sqrSum;
 
-  MPI_Reduce(d_sum, d_sum_recv, 6, MPI_DOUBLE, MPI_SUM, 0, communicator);
+  MPI_Reduce(d_sum, d_sum_recv, 9, MPI_DOUBLE, MPI_SUM, 0, communicator);
 
   if (rank == 0) {
-    *inverted = (int)d_sum_recv[0];
-    *indeterminate = (int)d_sum_recv[1];
-    *count = (long unsigned int)d_sum_recv[2];
-    *invalid = (long unsigned int)d_sum_recv[3];
-    *sum = d_sum_recv[4];
-    *sqrSum = d_sum_recv[5];
+    *freeElementCount = (size_t)d_sum_recv[0];
+    *invertedElementCount = (int)d_sum_recv[1];
+    *elementCount = (size_t)d_sum_recv[2];
+    *invertedSampleCount = (int)d_sum_recv[3];
+    *sampleCount = (size_t)d_sum_recv[4];
+    *count = (long unsigned int)d_sum_recv[5];
+    *invalid = (long unsigned int)d_sum_recv[6];
+    *sum = d_sum_recv[7];
+    *sqrSum = d_sum_recv[8];
   }
 }
 
