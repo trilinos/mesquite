@@ -98,7 +98,7 @@ include/Mesquite_all_headers.hpp: $(MSQ_HDRS)
 	@echo '#include "ParallelHelperInterface.hpp"'  >> $@ 
 	@for file in $(MSQ_HDRS); do \
 	   n=`expr X"$$file" : X"src/.*/\([^/]*\)"`;\
-	   echo "#include \"$$n\"" >> $@; \
+	   test -z "$$n" || echo "#include \"$$n\"" >> $@; \
 	done
 	@echo '#endif'                                  >> $@ 
 
