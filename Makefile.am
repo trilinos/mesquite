@@ -4,8 +4,7 @@ LIBTOOL = @LIBTOOL@ @MSQ_LIBTOOL_FLAGS@
 AM_LDFLAGS = @AM_LDFLAGS@
 AM_CPPFLAGS = @AM_CPPFLAGS@
 
-SUBDIRS = . doc testSuite utils
-DIST_SUBDIRS = $(SUBDIRS) meshFiles
+SUBDIRS = . doc testSuite utils meshFiles
 
 
 # Need to be explicit about these for old versions of automake
