@@ -23,9 +23,11 @@ are described in section \ref{sec:tutDetailedAPI}.
 \label{sec:tutfile}
 
 To create and link a driver code, the Mesquite library must be
-compiled per the instructions of section \ref{sec:compiling}. 
-This tutorial begins with the file \newline
-\texttt{testSuite/tutorial/tutorial.cpp}, 
+installed per the instructions of section \ref{sec:compiling}. 
+This commands and file names specified in this section are relative 
+to the installed \texttt{share/doc/mesquite/examples} directory.  It 
+is assumed that that is the working diretory.
+This tutorial begins with the file \texttt{tutorial.cpp}, 
 which contains the following template:
 \begin{verbatim}
 1.  #include "Mesquite_all_headers.hpp"
@@ -42,6 +44,8 @@ which contains the following template:
 
       // new code starts here
 4.    //... 
+
+      return 0;
     }
 \end{verbatim}
 The lines labeled 1-3 highlight three basic aspects of using Mesquite;
@@ -65,10 +69,10 @@ in which they are discussed.
 \end{enumerate}
 
 The code above takes a mesh file name as a command line argument and
-performs no action. We can compile it from the {\it main directory}
-(\texttt{mesquite/}) with the command 
+performs no action. We can compile it in the 
+(\texttt{examples/}) directory with the command:
 \begin{verbatim}
-make testSuite/tutorial/tutorial
+make -f tutorial.make
 \end{verbatim}
 
 \subsection{Loading a Test Mesh}
