@@ -17,7 +17,8 @@ configure script should work on any Unix-like platform using the build tools
 compiler are a Bourne shell (typically \texttt{/bin/sh}) implementation and
 a minimal corresponding command environment and an implementation of the \texttt{make} utility.
 
-Support for building Mesquite with Microsoft Visual Studio (version 6.0 or later) is provided via Visual Studio project and workspace files.
+Support for building Mesquite with Microsoft Visual Studio is no longer
+available as of Mesquite version 2.0.  
 
 %Mesquite is regularly compiled and tested on GNU/Linux with g++ 3.2 or later %and Sun with the Sun Forte C++ compiler.  
 
@@ -145,12 +146,12 @@ required by the ExodusII library.  The default is to look in the ExodusII
 directory.
 \end{description}
 
-\subsection{Compiling on Microsoft Windows}
-The Mesquite source package includes project and workspace files for Microsoft Visual C++ 6.0 or later.  To build Mesquite with Visual C++ 6.0:
-\begin{itemize}
-\item Open the Workspace file: \texttt{mesquite/mswindows/mesquite.dsw}.
-\item Set the active project to \texttt{mesquite\_lib} to create a static library or \texttt{mesquite\_dll} to build Mesquite as a DLL.
-\item Select between a debug or release build in the project settings.  
-\item Select \texttt{Build mesquite.lib} (or \texttt{Build mesquite.dll}) from the \texttt{Build} menu.
-\end{itemize}
+% \subsection{Compiling on Microsoft Windows}
+% The Mesquite source package includes project and workspace files for Microsoft Visual C++ 6.0 or later.  To build Mesquite with Visual C++ 6.0:
+% \begin{itemize}
+% \item Open the Workspace file: \texttt{mesquite/mswindows/mesquite.dsw}.
+% \item Set the active project to \texttt{mesquite\_lib} to create a static library or \texttt{mesquite\_dll} to build Mesquite as a DLL.
+% \item Select between a debug or release build in the project settings.  
+% \item Select \texttt{Build mesquite.lib} (or \texttt{Build mesquite.dll}) from the \texttt{Build} menu.
+% \end{itemize}
 
