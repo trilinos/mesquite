@@ -71,17 +71,7 @@ MSQ_INCLUDES += -I$(top_srcdir)/itaps -I$(top_builddir)/itaps
 
 
 libmesquite_la_includedir = $(includedir)
-libmesquite_la_SOURCES = $(MSQ_SRCS) \
-			 itaps/iBase.h \
-			 itaps/iMesh.h \
-			 itaps/iGeom.h \
-			 itaps/iRel.h \
-			 itaps/iMeshP.h \
-			 itaps/iBase_FCDefs.h \
-			 itaps/iMesh_protos.h \
-			 itaps/iGeom_protos.h \
-			 itaps/iRel_protos.h \
-			 itaps/iMeshP_protos.h 
+libmesquite_la_SOURCES = $(MSQ_SRCS) 
 
 libmesquite_la_include_HEADERS = include/Mesquite.hpp \
                                  include/Mesquite_all_headers.hpp \
@@ -93,8 +83,7 @@ libmesquite_la_include_HEADERS = include/Mesquite.hpp \
                                  $(MSQ_HDRS)
 libmesquite_la_LIBADD = $(MESQUITE_LIBS)
 AM_CPPFLAGS += -Iinclude -Iitaps \
-               -I$(top_srcdir)/include \
-               -I$(top_srcdir)/itaps \
+               -I$(top_srcdir)/include  \
                $(MSQ_INCLUDES)
 
 include/Mesquite_all_headers.hpp: $(MSQ_HDRS)
