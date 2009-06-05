@@ -39,7 +39,31 @@ int main(int argc, char* argv[])
 
   // new code starts here
   //... 
-  
-  
+  Mesquite::MeshImpl my_mesh;
+  my_mesh.read_vtk(argv[1], err);
+  if (err)
+  {
+    std::cout << err << std::endl;
+    return 1;
+  }
+
+  my_mesh.write_vtk("original_mesh.vtk",err);
+
+  Vector3D normal(0,0,1);
+  Vector3D point(0,0,5);
+  PlanarDomain my_mesh_plane(normal, point);
+
+  Mesquite::ShapeImprovementWrapper mesh_quality_algorithm(err);
+  mesh_quality_algorithm.run_instructions( &my_mesh, &my_mesh_plane, err);
+    //Should check the error object after the instruction is ran
+    // to see whether the instructions were all successful.
+  if (err)
+  {
+    std::cout << err << std::endl;
+    return 1;
+  }
+
+  my_mesh.write_vtk("smoothed_mesh.vtk",err);
+
   return 0;
 }

@@ -4,8 +4,7 @@ LIBTOOL = @LIBTOOL@ @MSQ_LIBTOOL_FLAGS@
 AM_LDFLAGS = @AM_LDFLAGS@
 AM_CPPFLAGS = @AM_CPPFLAGS@
 
-SUBDIRS = . doc testSuite utils
-DIST_SUBDIRS = $(SUBDIRS) meshFiles
+SUBDIRS = . doc testSuite utils meshFiles
 
 
 # Need to be explicit about these for old versions of automake
@@ -71,15 +70,8 @@ MSQ_INCLUDES += -I$(top_srcdir)/itaps -I$(top_builddir)/itaps
 
 
 libmesquite_la_includedir = $(includedir)
-libmesquite_la_SOURCES = $(MSQ_SRCS) \
-			 itaps/iBase.h \
-			 itaps/iMesh.h \
-			 itaps/iGeom.h \
-			 itaps/iRel.h \
-			 itaps/iBase_FCDefs.h \
-			 itaps/iMesh_protos.h \
-			 itaps/iGeom_protos.h \
-			 itaps/iRel_protos.h 
+libmesquite_la_SOURCES = $(MSQ_SRCS) 
+
 libmesquite_la_include_HEADERS = include/Mesquite.hpp \
                                  include/Mesquite_all_headers.hpp \
                                  $(top_builddir)/include/mesquite_config.h \
@@ -90,8 +82,7 @@ libmesquite_la_include_HEADERS = include/Mesquite.hpp \
                                  $(MSQ_HDRS)
 libmesquite_la_LIBADD = $(MESQUITE_LIBS)
 AM_CPPFLAGS += -Iinclude -Iitaps \
-               -I$(top_srcdir)/include \
-               -I$(top_srcdir)/itaps \
+               -I$(top_srcdir)/include  \
                $(MSQ_INCLUDES)
 
 include/Mesquite_all_headers.hpp: $(MSQ_HDRS)
@@ -107,7 +98,7 @@ include/Mesquite_all_headers.hpp: $(MSQ_HDRS)
 	@echo '#include "ParallelHelperInterface.hpp"'  >> $@ 
 	@for file in $(MSQ_HDRS); do \
 	   n=`expr X"$$file" : X"src/.*/\([^/]*\)"`;\
-	   echo "#include \"$$n\"" >> $@; \
+	   test -z "$$n" || echo "#include \"$$n\"" >> $@; \
 	done
 	@echo '#endif'                                  >> $@ 
 

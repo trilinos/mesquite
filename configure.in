@@ -698,6 +698,7 @@ AC_CONFIG_FILES([Makefile
                  testSuite/test_1/Makefile
                  testSuite/transform/Makefile
                  testSuite/tutorial/Makefile
+                 testSuite/tutorial/tutorial.make
                  testSuite/unit/Makefile
                  testSuite/untangle_test/Makefile
                  testSuite/wedge/Makefile

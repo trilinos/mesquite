@@ -6,3 +6,8 @@
   - fix floating point error in TrustRegion for zero-diagonal Hessian blocks
   - fix trapping of floating point errors in debug builds
   - fix inverted map for quadratic tetrahedral elements
+  - install ITAPS headers to avoid broken Mesquite_all_headers.hpp
+  - install tutorial files in doc/mesquite/examples
+  - update manual for removal of Windows build support
+  - update manual tutorial section for building against installed Mesquite
+  

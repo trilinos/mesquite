@@ -39,7 +39,50 @@ int main(int argc, char* argv[])
 
   // new code starts here
   //... 
-  
-  
+  Mesquite::MeshImpl my_mesh;
+  my_mesh.read_vtk(argv[1], err);
+  if (err)
+  {
+    std::cout << err << std::endl;
+    return 1;
+  }
+
+  my_mesh.write_vtk("original_mesh.vtk",err);
+
+  Vector3D normal(0,0,-1);
+  Vector3D point(0,0,-5);
+  PlanarDomain my_mesh_plane(normal, point);
+
+    // creates a mean ratio quality metric ...
+  IdealWeightInverseMeanRatio inverse_mean_ratio(err);
+    // sets the objective function template
+  LPtoPTemplate obj_func(&inverse_mean_ratio, 2, err);
+    // creates the optimization procedures
+  FeasibleNewton f_newton(&obj_func);
+    //performs optimization globally
+  f_newton.use_global_patch();
+    // creates a termination criterion and
+    // add it to the optimization procedure
+    // outer loop: default behavior: 1 iteration
+    // inner loop: stop if gradient norm < eps
+  TerminationCriterion tc_inner;
+  tc_inner.add_absolute_gradient_L2_norm( 1e-4 );
+  f_newton.set_inner_termination_criterion(&tc_inner);
+    // creates a quality assessor
+  QualityAssessor m_ratio_qa(&inverse_mean_ratio);
+    // creates an instruction queue
+  InstructionQueue queue;
+  queue.add_quality_assessor(&m_ratio_qa, err);
+  queue.set_master_quality_improver(&f_newton, err);
+  queue.add_quality_assessor(&m_ratio_qa, err);
+    // do optimization of the mesh_set
+  queue.run_instructions(&my_mesh, &my_mesh_plane, err);
+  if (err) {
+    std::cout << err << std::endl;
+    return 2;
+  }
+
+  my_mesh.write_vtk("smoothed_mesh.vtk",err);
+
   return 0;
 }
