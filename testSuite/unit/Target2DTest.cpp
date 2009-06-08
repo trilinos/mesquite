@@ -780,7 +780,7 @@ CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric2DTest, "Target2DTest" );
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric2DTest, "TargetMetric2DTest" );
 
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShape,                     false,  true,  true, false, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeBarrier,              false,  true,  true,  true, 1.0 );
+REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeBarrier,              false,  true,  true,  true, 0.0 );
 REGISTER_TARGET2D_TEST               ( Target2DShapeOrient,               false,  true, false, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeOrientAlt1,           false,  true, false, false, 0.0 );
 REGISTER_TARGET2D_TEST               ( Target2DShapeOrientAlt2,           false,  true, false, false, 0.0 );
@@ -788,14 +788,14 @@ REGISTER_TARGET2D_TEST               ( Target2DShapeOrientBarrier,        false,
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSize,                 false, false,  true, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeBarrier,          false, false,  true,  true, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeBarrierAlt1,      false, false,  true,  true, 0.0 );
-REGISTER_TARGET2D_TEST               ( Target2DShapeSizeBarrierAlt2,      false, false,  true,  true, 1.0 );
+REGISTER_TARGET2D_TEST               ( Target2DShapeSizeBarrierAlt2,      false, false,  true,  true, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeOrient,           false, false, false, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeOrientAlt1,       false, false, false, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeOrientBarrier,    false, false, false,  true, 0.0 );
 REGISTER_TARGET2D_TEST               ( Target2DShapeSizeOrientBarrierAlt2,false, false, false,  true, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( InverseMeanRatio2D,                false,  true,  true,  true, 1.0 );
+REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( InverseMeanRatio2D,                false,  true,  true,  true, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DSize,                       true, false,  true, false, 0.0 );
-REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DSizeBarrier,                true, false,  true,  true, 2.0 );
+REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DSizeBarrier,                true, false,  true,  true, 0.0 );
 
 class Test_TSquared2D : public Target2DTest<TSquared2D> {
   public: 

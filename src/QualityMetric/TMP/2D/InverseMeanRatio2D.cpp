@@ -51,7 +51,7 @@ bool InverseMeanRatio2D::evaluate( const MsqMatrix<2,2>& A,
     return false;
   }
   else {
-    result = sqr_Frobenius(T) / (2 * d);\
+    result = sqr_Frobenius(T) / (2 * d) - 1;
     return true;
   }
 }
@@ -78,6 +78,7 @@ bool InverseMeanRatio2D::evaluate_with_grad( const MsqMatrix<2,2>& A,
     deriv_wrt_A += T;
     deriv_wrt_A *= 1.0/d;
     deriv_wrt_A = deriv_wrt_A * transpose(Winv);
+    result -= 1.0;
     return true;
   }
 }
@@ -133,6 +134,7 @@ bool InverseMeanRatio2D::evaluate_with_hess( const MsqMatrix<2,2>& A,
     d2A[1] = Winv * d2A[1] * transpose(Winv);
     d2A[2] = Winv * d2A[2] * transpose(Winv);
     
+    result -= 1.0;
     return true;
   }
 }

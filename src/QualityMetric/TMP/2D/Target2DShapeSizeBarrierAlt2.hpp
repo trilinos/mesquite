@@ -38,7 +38,7 @@
 
 namespace MESQUITE_NS {
 
-/** 1/2 |T|^2 - ln(det(T)) */
+/** |T|^2 - 2 * ln(det(T)) - 2 */
 class Target2DShapeSizeBarrierAlt2 : public TargetMetric2D
 {
   public:

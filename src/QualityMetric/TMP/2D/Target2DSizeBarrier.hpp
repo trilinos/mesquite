@@ -39,7 +39,7 @@
 namespace MESQUITE_NS {
 
 
-/** det(T) + 1/det(T) */
+/** det(T) + 1/det(T) -2 */
 class Target2DSizeBarrier : public TargetMetric2D
 {
 public:

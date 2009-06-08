@@ -52,7 +52,7 @@ bool InverseMeanRatio3D::evaluate( const MsqMatrix<3,3>& A,
   }
   else {
     const double det_cbrt = Mesquite::cbrt(d);
-    result = sqr_Frobenius(T) / (3 * det_cbrt * det_cbrt);\
+    result = sqr_Frobenius(T) / (3 * det_cbrt * det_cbrt) - 1;
     return true;
   }
 }
@@ -77,7 +77,7 @@ bool InverseMeanRatio3D::evaluate_with_grad( const MsqMatrix<3,3>& A,
   const double inv_det_cbrt = Mesquite::cbrt(inv_det);
   const double inv_3_det_twothirds = inv_det_cbrt * inv_det_cbrt / 3.0;
   const double fnorm = sqr_Frobenius(T);
-  result = fnorm * inv_3_det_twothirds;
+  result = fnorm * inv_3_det_twothirds - 1;
   deriv_wrt_A = transpose_adj(T);
   deriv_wrt_A *= -fnorm * inv_det / 3.0;
   deriv_wrt_A += T;
@@ -163,7 +163,7 @@ bool InverseMeanRatio3D::evaluate_with_hess( const MsqMatrix<3,3>& A,
     }
   }
 
-
+  result -= 1.0;
   return true;
 }
 

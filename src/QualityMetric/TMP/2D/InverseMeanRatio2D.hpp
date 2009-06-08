@@ -39,7 +39,7 @@
 
 namespace MESQUITE_NS {
 
-/** \f$ \frac{|T|^2}{2 det(T)} \f$ */
+/** \f$ \frac{|T|^2}{2 det(T)} - 1 \f$ */
 class InverseMeanRatio2D : public TargetMetric2D {
 public:
 

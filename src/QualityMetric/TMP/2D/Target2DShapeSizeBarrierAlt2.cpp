@@ -51,7 +51,7 @@ bool Target2DShapeSizeBarrierAlt2::evaluate( const MsqMatrix<2,2>& A,
     return false;
   }
   
-  result = 0.5 * sqr_Frobenius(T) - msq_stdc::log(d);
+  result = sqr_Frobenius(T) - 2.0 * msq_stdc::log(d) - 2;
   return true;
 }
 

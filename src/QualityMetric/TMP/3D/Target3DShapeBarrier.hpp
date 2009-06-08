@@ -38,7 +38,7 @@
 
 namespace MESQUITE_NS {
 
-/**\brief \f$ \frac{ |T|^3 }{ 3 \sqrt{3} det(T) } \f$
+/**\brief \f$ \frac{ |T|^3 }{ 3 \sqrt{3} det(T) } - 1\f$
  *
  * A target metric for volume elements that optimizes
  * element shape

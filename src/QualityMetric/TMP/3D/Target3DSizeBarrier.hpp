@@ -38,7 +38,7 @@
 
 namespace MESQUITE_NS {
 
-/**\brief \f$ det(T) + 1/det(T) \f$
+/**\brief \f$ det(T) + 1/det(T) - 2.0 \f$
  *
  * A target metric for volume elements that optimizes
  * element shape and size

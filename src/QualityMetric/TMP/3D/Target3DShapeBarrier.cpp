@@ -55,7 +55,7 @@ bool Target3DShapeBarrier::evaluate( const MsqMatrix<3,3>& A,
     result = 0.0;
     return false;
   }
-  result = (f*f*f)/den;
+  result = (f*f*f)/den - 1.0;
   return true;
 }
 
@@ -75,7 +75,7 @@ bool Target3DShapeBarrier::evaluate_with_grad( const MsqMatrix<3,3>& A,
   double norm = Frobenius(T);
   double den = 1.0/(3 * MSQ_SQRT_THREE * d);
   double norm_cube = norm*norm*norm;
-  result = norm_cube * den;
+  result = norm_cube * den - 1.0;
   wrt_A = T;
   wrt_A *= 3 * norm * den;
   wrt_A -= norm_cube * den/d * transpose_adj(T);
@@ -100,7 +100,7 @@ bool Target3DShapeBarrier::evaluate_with_hess( const MsqMatrix<3,3>& A,
   double norm = Frobenius(T);
   double den = 1.0/(3 * MSQ_SQRT_THREE * d);
   double norm_cube = norm*norm*norm;
-  result = norm_cube * den;
+  result = norm_cube * den - 1.0;
   MsqMatrix<3,3> adjt = transpose_adj(T);
   deriv_wrt_A = T;
   deriv_wrt_A *= 3 * norm * den;

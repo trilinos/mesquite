@@ -978,8 +978,8 @@ CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric3DTest, "TargetMetric3DTest" 
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeOrient, false, false, false, false, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSize,       false, false,  true,  true, 1.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShape,           false,  true,  true, false, 0.0 );
-REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeBarrier,    false,  true,  true,  true, 1.0 );
-REGISTER_TARGET3D_TEST_WITH_HESS( InverseMeanRatio3D,      false,  true,  true,  true, 1.0 );
+REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeBarrier,    false,  true,  true,  true, 0.0 );
+REGISTER_TARGET3D_TEST_WITH_HESS( InverseMeanRatio3D,      false,  true,  true,  true, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DSize,             true, false,  true, false, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DSizeBarrier,      true, false,  true,  true, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeOrientBarrier, false, false, false, true, 0.0 );

@@ -52,7 +52,7 @@ bool Target2DShapeBarrier::evaluate( const MsqMatrix<2,2>& A,
     return false;
   }
     
-  result = 0.5 * sqr_Frobenius(T) / d;
+  result = 0.5 * sqr_Frobenius(T) / d - 1;
   return true;
 }
 
@@ -76,6 +76,8 @@ bool Target2DShapeBarrier::evaluate_with_grad( const MsqMatrix<2,2>& A,
   deriv_wrt_A -= result * transpose_adj(T);
   deriv_wrt_A *= inv_d;
   deriv_wrt_A = deriv_wrt_A * transpose(Winv);
+
+  result -= 1.0;
   return true;
 }
 
@@ -116,6 +118,8 @@ bool Target2DShapeBarrier::evaluate_with_hess( const MsqMatrix<2,2>& A,
   pluseq_scaled_I( second_wrt_A, inv_d );
   pluseq_scaled_2nd_deriv_of_det( second_wrt_A, -result * inv_d );
   second_deriv_wrt_product_factor( second_wrt_A, Winv );
+
+  result -= 1.0;
   return true;
 }
 

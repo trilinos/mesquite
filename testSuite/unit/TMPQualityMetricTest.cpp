@@ -1031,7 +1031,7 @@ void TMPQualityMetricTest::regression_inverse_mean_ratio_grad()
   
   CPPUNIT_ASSERT( exp_rval );
   CPPUNIT_ASSERT( act_rval );
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( exp_val, act_val, 1e-5 );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( exp_val - 1.0, act_val, 1e-5 );
   CPPUNIT_ASSERT_EQUAL( (size_t)3, exp_idx.size() );
   CPPUNIT_ASSERT_EQUAL( (size_t)3, act_idx.size() );
   
@@ -1098,7 +1098,7 @@ void TMPQualityMetricTest::regression_inverse_mean_ratio_hess()
   
   CPPUNIT_ASSERT( exp_rval );
   CPPUNIT_ASSERT( act_rval );
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( exp_val, act_val, 1e-5 );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( exp_val - 1.0, act_val, 1e-5 );
   CPPUNIT_ASSERT_EQUAL( (size_t)2, exp_idx.size() );
   CPPUNIT_ASSERT_EQUAL( (size_t)2, act_idx.size() );
 

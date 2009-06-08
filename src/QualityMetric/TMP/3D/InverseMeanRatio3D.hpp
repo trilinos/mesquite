@@ -39,7 +39,7 @@
 
 namespace MESQUITE_NS {
 
-/** \f$ \frac{|T|^2}{3 det^{2/3}(T)} \f$ */
+/** \f$ \frac{|T|^2}{3 det^{2/3}(T)} - 1 \f$ */
 class InverseMeanRatio3D : public TargetMetric3D {
 public:
 
