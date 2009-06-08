@@ -977,7 +977,7 @@ added a check so that, given $T$, if $\psi(T) = 0$, then apply
 a random $\epsilon$ perturbation to each component of $T$ so that $\psi$ 
 is non-zero.  Then it is valid to apply \ref{psi1st} and \ref{psi2nd}. \newline
 
-\subsection{Derivatives of $\mu_2(T)=\frac{|T|^2 + 2}{2 \, \psi(T)}$}
+\subsection{Derivatives of $\mu_2(T)=\frac{|T|^2 + 2}{2 \, \psi(T)}-1$}
 
 \noindent This metric preserves the shape and size of the target and applies
 to $n=2$ only. The metric has a 'barrier', not against singular matrices,
@@ -989,7 +989,7 @@ in that if $T$ is a scaled flip, then the implementation should return
 
 \noindent For $\psi> 0$,
 \begin{eqnarray}
-\mu_2(T)=\frac{|T|^2 + 2}{2 \, \psi(T)} 
+\mu_2(T)=\frac{|T|^2 + 2}{2 \, \psi(T)} - 1
 \end{eqnarray}
 where $\psi$ is defined in \ref{psi-def}. \newline
 
@@ -1354,7 +1354,7 @@ with $\nu(T) = |T|^2 - 2 \psi(T) + 2$ being the metric in Section \ref{magic}.
 same as the formulas in Section \ref{nu-over-tau}, but with the first and 
 second derivatives of $\nu$ from Section \ref{magic}.  \newline
 
-\subsection{Derivatives of $\mu_3(T)=\frac{1}{9} \kappa^2(T)$}
+\subsection{Derivatives of $\mu_3(T)=\frac{1}{9} \, \kappa^2(T) - 1$}
 
 \noindent This metric preserves the shape of the target and applies
 to $n=3$, the $n=2$ case being related to Mean Ratio. \newline
@@ -1367,14 +1367,14 @@ to $n=3$, the $n=2$ case being related to Mean Ratio. \newline
 
 \noindent Since $\tau>0$, we can drop the absolute value to obtain
 \begin{eqnarray}
-\mu_3(T) & = & \frac{|T|^2 \, |adj(T)|^2}{9 \, \tau^2}
+\mu_3(T) & = & \frac{|T|^2 \, |adj(T)|^2}{9 \, \tau^2} - 1
 \end{eqnarray}
 
 \noindent The derivatives can be obtained from the derivatives of $|T|^2$,
 $|adj \, T|^2$, and $\tau^2$, along with the product and quotient rules 
 \ref{prod1}, \ref{quotient1}, \ref{prod2}, and \ref{quotient2}. \newline 
 
-\subsection{Derivatives of $\mu_n(T)=\tau + 1/\tau$}
+\subsection{Derivatives of $\mu_n(T)=\tau + 1/\tau - 2$}
 
 \noindent This metric preserves the size of the target and applies
 to both $n=2$ and $n=3$. \newline
@@ -1390,7 +1390,7 @@ to both $n=2$ and $n=3$. \newline
 To complete this expression, use formulas \ref{adjform} and either 
 \ref{2ndtau2d} or \ref{2ndtau3d}. \newline
 
-\subsection{Derivatives of $\mu_2(T) = \frac{|T|^2}{2 \tau}$}
+\subsection{Derivatives of $\mu_2(T) = \frac{|T|^2}{2 \tau}-1$}
 
 \noindent This metric preserves the shape of the target and applies
 to $n=2$. It is the 2D Mean Ratio. It is a special case of the result
@@ -1398,7 +1398,7 @@ in the Inverse Mean Ratio section below, but with an alternate derivation. \newl
 
 \noindent For $\tau>0$,
 \begin{eqnarray}
-\mu_2(T) = \frac{|T|^2}{2 \tau}
+\mu_2(T) = \frac{|T|^2}{2 \tau} - 1
 \end{eqnarray}
 
 \begin{eqnarray}
@@ -1410,14 +1410,14 @@ in the Inverse Mean Ratio section below, but with an alternate derivation. \newl
 Z & = & |T|^2 \frac{\partial^2 \tau}{\partial T^2} - 4 \mu_2 \left(\frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right) + 2 \left( T \otimes \frac{\partial \tau}{\partial T} + \frac{\partial \tau}{\partial T} \otimes T \right) \nonumber \\
 \end{eqnarray}
 
-\subsection{Derivatives of $\mu_3(T)=\frac{|T|^3}{3 \sqrt{3} \tau}$}
+\subsection{Derivatives of $\mu_3(T)=\frac{|T|^3}{3 \sqrt{3} \tau}-1$}
 
 \noindent This metric preserves the shape of the target and applies
 to $n=3$. It is closely related to the 3D Inverse Mean Ratio. \newline
 
 \noindent For $\tau>0$
 \begin{eqnarray}
-\mu_3(T)=\frac{|T|^3}{3 \sqrt{3} \tau}
+\mu_3(T)=\frac{|T|^3}{3 \sqrt{3} \tau} - 1
 \end{eqnarray}
 
 \begin{eqnarray}
@@ -1431,14 +1431,14 @@ Z & = & |T|^3 \frac{\partial^2 \tau}{\partial T^2} - 2 \frac{|T|^3}{\tau} \left(
  & + & 3 \, |T| \left( T \otimes \frac{\partial \tau}{\partial T} + \frac{\partial \tau}{\partial T} \otimes T \right)
 \end{eqnarray}
 
-\subsection{Derivatives of $\mu_3(T)=\frac{|T|^2 + |adj T|^2}{6 \tau}$}
+\subsection{Derivatives of $\mu_3(T)=\frac{|T|^2 + |adj T|^2}{6 \tau} - 1$}
 
 \noindent This metric preserves the shape and size of the target and applies
 to $n=3$. \newline
 
 \noindent For $\tau>0$
 \begin{eqnarray}
-\mu_3 (T) & = & \frac{|T|^2 + |adj T|^2}{6 \tau}
+\mu_3 (T) & = & \frac{|T|^2 + |adj T|^2}{6 \tau} - 1
 \end{eqnarray}
 
 \begin{eqnarray}
@@ -1453,7 +1453,7 @@ $g(T)=6 \tau$.  Then the relation \ref{quotient2} can be applied, with
 \end{eqnarray}
 The last derivative is basically given in \ref{hess-nrm-adj}. \newline
 
-\subsection{Derivatives of Inverse Mean Ratio}
+\subsection{Derivatives of Inverse Mean Ratio, $\mu_n = \frac{|T|^2}{n \, det^{2/n}(T)}-1$}
 
 \begin{eqnarray}
 f(T) & = & \frac{|T|^2}{n \, det^{2/n}(T)} \\
@@ -1462,7 +1462,7 @@ h(T) & = & det(T) \\
 e(T) & = & n \cdot h(T)^{2/n} \\
 f(T) & = & \frac{g(T)}{e(T)} 
 \end{eqnarray}
-
+ 
 \begin{eqnarray}
 \frac{\partial f}{\partial T} &=& \frac{
 \frac{\partial g}{\partial T} e(T) - 
