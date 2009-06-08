@@ -59,19 +59,23 @@ int TMPQualityMetric::get_negate_flag( ) const { return 1; }
 msq_std::string TMPQualityMetric::get_name() const
 {
   std::string result( "TMP(" );
+  std::string pfx;
+  if (weightCalc) {
+    pfx = "c_k ";
+  }
   
   if (metric2D && metric3D) {
     std::string name2d = metric2D->get_name();
     std::string name3d = metric3D->get_name();
     if (name2d == name3d)
-      result += name2d;
+      result += pfx + name2d;
     else
-      result += std::string("2D:") + name2d + ",3D:" + name3d;
+      result += std::string("2D:") + pfx + name2d + ",3D:" + pfx + name3d;
   }
   else if (metric2D)
-    result += metric2D->get_name();
+    result += pfx + metric2D->get_name();
   else if (metric3D)
-    result += metric3D->get_name();
+    result += pfx + metric3D->get_name();
   else
     result += "NULL";
   
