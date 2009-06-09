@@ -255,6 +255,20 @@ void Target2DTest<Metric>::compare_eval_and_eval_with_grad()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( v, gv, 1e-6 );
+  
+    // check inverted also for non-barier metrics
+  if (Barrier) 
+    return;
+  
+  const double Cvals[] = { -1.0, 0.5, 0.0, 1.0 };
+  const MsqMatrix<2,2> C( Cvals );
+  valid = metric.evaluate_with_grad( C, I, gv, g, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  valid = metric.evaluate( C, I, v, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( v, gv, 1e-6 );
 }
 
 template <class Metric> 
@@ -286,6 +300,21 @@ void Target2DTest<Metric>::compare_eval_with_grad_and_eval_with_hess()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   valid = metric.evaluate_with_hess( A, B, hv, h, hess, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( gv, hv, 1e-6 );
+  ASSERT_MATRICES_EQUAL( g, h, 1e-5 );
+  
+    // check inverted also for non-barier metrics
+  if (Barrier) 
+    return;
+  
+  const double Cvals[] = { -1.0, 0.5, 0.0, 1.0 };
+  const MsqMatrix<2,2> C( Cvals );
+  valid = metric.evaluate_with_grad( C, I, gv, g, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  valid = metric.evaluate_with_hess( C, I, hv, h, hess, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( gv, hv, 1e-6 );
@@ -360,6 +389,21 @@ void Target2DTest<Metric>::compare_anaytic_and_numeric_grads()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   valid = metric.evaluate_with_grad( B, A, aval, ana, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( nval, aval, EPS_VAL );
+  ASSERT_MATRICES_EQUAL( num, ana, eps(aval) );
+  
+    // check inverted also for non-barier metrics
+  if (Barrier) 
+    return;
+  
+  const double Cvals[] = { -1.0, 0.5, 0.0, 1.0 };
+  const MsqMatrix<2,2> C( Cvals );
+  valid = metric.TargetMetric2D::evaluate_with_grad( C, I, nval, num, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  valid = metric.evaluate_with_grad( C, I, aval, ana, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( nval, aval, EPS_VAL );
@@ -449,6 +493,24 @@ void Target2DTest<Metric>::compare_anaytic_and_numeric_hess()
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   valid = metric.evaluate_with_hess( B, A, val_ana, dmdA_ana, d2mdA2_ana, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
+  ASSERT_MATRICES_EQUAL( dmdA_num, dmdA_ana, eps(val_ana) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[0], d2mdA2_ana[0], epsh(val_ana) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[1], d2mdA2_ana[1], epsh(val_ana) );
+  ASSERT_MATRICES_EQUAL( d2mdA2_num[2], d2mdA2_ana[2], epsh(val_ana) );
+  
+    // check inverted also for non-barier metrics
+  if (Barrier) 
+    return;
+  
+  const double Cvals[] = { -1.0, 0.5, 0.0, 1.0 };
+  const MsqMatrix<2,2> C( Cvals );
+  valid = metric.TargetMetric2D::evaluate_with_hess( C, I, val_num, dmdA_num, d2mdA2_num, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(valid);
+  valid = metric.evaluate_with_hess( C, I, val_ana, dmdA_ana, d2mdA2_ana, err );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(valid);
   CPPUNIT_ASSERT_DOUBLES_EQUAL( val_num, val_ana, EPS_VAL );
@@ -713,6 +775,7 @@ void TargetMetric2DTest::test_numerical_hessian()
 #include "InverseMeanRatio2D.hpp"
 #include "Target2DSize.hpp"
 #include "Target2DSizeBarrier.hpp"
+#include "Target2DUntangle.hpp"
 
 #define REGISTER_TARGET2D_TEST( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER, IDEAL_VAL ) \
 class Test_ ## METRIC : public Target2DTest<METRIC> { public: \
@@ -796,6 +859,7 @@ REGISTER_TARGET2D_TEST               ( Target2DShapeSizeOrientBarrierAlt2,false,
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( InverseMeanRatio2D,                false,  true,  true,  true, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DSize,                       true, false,  true, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DSizeBarrier,                true, false,  true,  true, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DUntangle,                   true,  true,  true, false, 0.0 );
 
 class Test_TSquared2D : public Target2DTest<TSquared2D> {
   public: 
