@@ -34,6 +34,7 @@
 #define MSQ_SAMPLE_HPP
 
 #include "Mesquite.hpp"
+#include <iosfwd>
 #include <stddef.h> // for size_t
 
 namespace MESQUITE_NS {
@@ -122,6 +123,7 @@ struct Sample {
     { return pack() >= other.pack(); }
 };
 
+std::ostream& operator <<( std::ostream& str, Sample s );
 
 } // namespace Mesquite
 

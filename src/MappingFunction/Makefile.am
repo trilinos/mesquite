@@ -4,7 +4,8 @@ INCLUDED_MAKEFILES += $(SRC_MAPPINGFUNCTION_DIR)/Makefile.am
 
 MSQ_SRCS += \
 	$(SRC_MAPPINGFUNCTION_DIR)/MappingFunction.cpp \
-	$(SRC_MAPPINGFUNCTION_DIR)/NodeSet.cpp 
+	$(SRC_MAPPINGFUNCTION_DIR)/NodeSet.cpp \
+        $(SRC_MAPPINGFUNCTION_DIR)/Sample.cpp
 
 MSQ_HDRS += \
 	$(SRC_MAPPINGFUNCTION_DIR)/MappingFunction.hpp \
