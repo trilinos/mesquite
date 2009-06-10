@@ -56,7 +56,7 @@ MSQ_HDRS += \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DSquared.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DSum.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DOffset.hpp \
-	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DTau.cpp \
+	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DTau.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DUntangle.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/TargetMetric2D.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/TargetSurfaceOrientation.hpp \
