@@ -101,6 +101,7 @@ double TEST_MESH_COORDS[] = {
   XMIN            , YMIN + 0.5*HEIGHT, 0,
   XMIN + .25*WIDTH, YMIN + 0.5*HEIGHT, 0,
   XMIN + .75*WIDTH, YMIN + 0.5*HEIGHT, 0,
+  XMIN +     WIDTH, YMIN + 0.5*HEIGHT, 0,
   XMIN            , YMIN +     HEIGHT, 0,
   XMIN + 0.5*WIDTH, YMIN +     HEIGHT, 0,
   XMIN +     WIDTH, YMIN +     HEIGHT, 0 };
