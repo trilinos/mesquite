@@ -71,7 +71,7 @@ private:
   /** Amount to scale average edge length by to achive correctly sized
    *  ideal area/volume target, indexed by element topology.
    */
-  double scaleFactor[MIXED];
+  // double scaleFactor[MIXED];
 };
 
 

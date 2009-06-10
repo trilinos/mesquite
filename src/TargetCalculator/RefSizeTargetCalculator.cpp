@@ -38,6 +38,7 @@
 
 namespace MESQUITE_NS {
 
+/* We now scale W_ideal such that det(W_ideal) == 1, so don't scale here 
 static void init_scale_factors( double factors[MIXED] )
 {
   for (int i = 0; i < MIXED; ++i)
@@ -50,13 +51,14 @@ static void init_scale_factors( double factors[MIXED] )
   factors[        PRISM] = 0.07311522294180514;
   factors[   HEXAHEDRON] = 0.08333333333333333;
 }
+*/
 
 RefSizeTargetCalculator::RefSizeTargetCalculator( 
                            ReferenceMesh* reference_mesh,
                            TargetCalculator* tc )
    : refMesh( reference_mesh ),
      scaledTargets( tc )
-   { init_scale_factors( scaleFactor ); }
+ {} //   { init_scale_factors( scaleFactor ); }
    
 RefSizeTargetCalculator::RefSizeTargetCalculator( 
                            ReferenceMesh* reference_mesh,
@@ -64,7 +66,7 @@ RefSizeTargetCalculator::RefSizeTargetCalculator(
    : refMesh( reference_mesh ),
      defaultTargets( orient_surface_elems ),
      scaledTargets( &defaultTargets )
-   { init_scale_factors( scaleFactor );  }
+ {} //   { init_scale_factors( scaleFactor );  }
 
 double RefSizeTargetCalculator::average_edge_length( PatchData& pd, 
                                                      size_t element,
@@ -93,7 +95,7 @@ double RefSizeTargetCalculator::average_edge_length( PatchData& pd,
     const unsigned* edge = TopologyInfo::edge_vertices( type, i );
     len_sum += (coords[edge[0]] - coords[edge[1]]).length();
   }
-  return len_sum * scaleFactor[type];
+  return len_sum * (1.0/num_edges); // scaleFactor[type];
 }
                                              
  
