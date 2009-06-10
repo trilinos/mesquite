@@ -281,6 +281,8 @@ class ArrayMesh : public Mesh
     
     unsigned long* vertexAdjacencyList;
     unsigned long* vertexAdjacencyOffsets;
+    
+    bool valid() const;
 };
 
 

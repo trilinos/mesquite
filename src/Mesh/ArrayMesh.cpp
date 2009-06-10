@@ -36,6 +36,8 @@
 #include "MsqError.hpp"
 #include "MsqVertex.hpp"
 
+#include <iostream>
+
 namespace MESQUITE_NS {
 
 class IndexIterator : public EntityIterator
@@ -103,6 +105,8 @@ ArrayMesh::ArrayMesh( int coords_per_vertex,
   
   if (nodesPerElement < 2)
     nodesPerElement = TopologyInfo::corners( element_type );
+    
+  assert(valid());
   memset( vertexByteArray, 0, num_vertices + one_based_conn_indices );
 }
 
@@ -145,7 +149,30 @@ ArrayMesh::ArrayMesh( int coords_per_vertex,
       allocConnOffsets[i] = allocConnOffsets[i-1] + TopologyInfo::corners( elementTypes[i-1] );
   }
   
+  assert(valid());
   memset( vertexByteArray, 0, num_vertices + one_based_conn_indices );
+}
+
+bool ArrayMesh::valid() const
+{
+  for (unsigned long i = 0; i < vertexCount; ++i) {
+    if (fixedFlags[i] != 0 && fixedFlags[i] != 1) {
+      msq_stdio::cerr << "Invalid vertex fixed flag at index " << i << std::endl;
+      return false;
+    }
+  }
+  
+  for (unsigned long i = 0; i < elementCount * nodesPerElement; ++i) {
+    unsigned long j = connArray[i] - oneBasedArrays;
+    if (j >= vertexCount) {
+      msq_stdio::cerr << "Invalid connectivity index at index " << j 
+                << "(element " << j/elementCount << " node " << j%elementCount 
+                << ')' << std::endl;
+      return false;
+    }
+  }
+  
+  return true;
 }
 
 void ArrayMesh::clear_mesh()
@@ -201,6 +228,7 @@ void ArrayMesh::set_mesh( int coords_per_vertex,
     nodesPerElement = nodes_per_element;
     
   vertexByteArray = new unsigned char[num_vertices + one_based_conn_indices];
+  assert(valid());
   memset( vertexByteArray, 0, num_vertices + one_based_conn_indices );
 }
   
@@ -216,6 +244,7 @@ ArrayMesh::~ArrayMesh()
 
 inline const unsigned long* ArrayMesh::elem_verts( size_t e, int& n ) const
 {
+  assert( e < elementCount );
   if (connOffsets) {
     n = connOffsets[e+1] - connOffsets[e];
     return connArray + connOffsets[e];
@@ -255,8 +284,10 @@ void ArrayMesh::vertices_get_fixed_flag( const VertexHandle vert_array[],
                                          MsqError & )
 {
   const size_t* indices = (const size_t*)vert_array;
-  for (size_t i = 0; i < num_vtx; ++i)
+  for (size_t i = 0; i < num_vtx; ++i) {
+    assert(indices[i] < vertexCount);
     fixed_flag_array[i] = !!fixedFlags[indices[i]];
+  }
 }
 
 void ArrayMesh::vertices_get_slaved_flag( const VertexHandle*, 
@@ -275,11 +306,15 @@ void ArrayMesh::vertices_get_coordinates( const VertexHandle vert_array[],
 {
   const size_t* indices = (const size_t*)vert_array;
   if (mDimension == 3) 
-    for (size_t i = 0; i < num_vtx; ++i) 
+    for (size_t i = 0; i < num_vtx; ++i) {
+      assert( indices[i] < vertexCount+oneBasedArrays );
       coordinates[i].set( coordArray+3*indices[i] );
+    }
   else if (mDimension == 2) 
-    for (size_t i =0; i < num_vtx; ++i)
+    for (size_t i =0; i < num_vtx; ++i) {
+      assert( indices[i] < vertexCount+oneBasedArrays );
       coordinates[i].set( coordArray[2*indices[i]], coordArray[2*indices[i]+1], 0.0 );
+    }
   else
     MSQ_SETERR(err)(MsqError::INVALID_STATE);
 }
@@ -289,6 +324,7 @@ void ArrayMesh::vertex_set_coordinates( VertexHandle vert,
                                            MsqError &err )
 {
   size_t i = (size_t)vert;
+  assert( i < vertexCount+oneBasedArrays );
   if (mDimension == 3) 
     coordinates.get_coordinates(coordArray+3*i);
   else if (mDimension == 2) {
@@ -301,6 +337,7 @@ void ArrayMesh::vertex_set_coordinates( VertexHandle vert,
 
 void ArrayMesh::vertex_set_byte( VertexHandle vertex, unsigned char byte, MsqError &)
 {
+  assert( (size_t)vertex < vertexCount+oneBasedArrays );
   vertexByteArray[(size_t)vertex] = byte;
 }
 
@@ -310,12 +347,15 @@ void ArrayMesh::vertices_set_byte( const VertexHandle *vert_array,
                                    MsqError &err )
 {
   const size_t* indices = (const size_t*)vert_array;
-  for (size_t i = 0; i < array_size; ++i)
+  for (size_t i = 0; i < array_size; ++i) {
+    assert( indices[i] < vertexCount+oneBasedArrays );
     vertexByteArray[indices[i]] = byte_array[i];
+  }
 }
 
 void ArrayMesh::vertex_get_byte( VertexHandle vertex, unsigned char* byte, MsqError &)
 {
+  assert( (size_t)vertex < vertexCount+oneBasedArrays );
   *byte = vertexByteArray[(size_t)vertex];
 }
 
@@ -325,8 +365,10 @@ void ArrayMesh::vertices_get_byte( const VertexHandle *vert_array,
                                    MsqError &err )
 {
   const size_t* indices = (const size_t*)vert_array;
-  for (size_t i = 0; i < array_size; ++i)
+  for (size_t i = 0; i < array_size; ++i) {
+    assert( indices[i] < vertexCount+oneBasedArrays );
     byte_array[i] = vertexByteArray[indices[i]];
+  }
 }
 
 void ArrayMesh::vertices_get_attached_elements( 
@@ -344,6 +386,7 @@ void ArrayMesh::vertices_get_attached_elements(
   offsets.resize( num_vertex + 1 );
   for (size_t i = 0; i < num_vertex; ++i) {
     offsets[i] = elements.size();
+    assert( indices[i] < vertexCount+oneBasedArrays );
     for (size_t j = vertexAdjacencyOffsets[indices[i]];
          j < vertexAdjacencyOffsets[indices[i]+1]; ++j)
       elements.push_back( (ElementHandle)vertexAdjacencyList[j] );
@@ -362,6 +405,7 @@ void ArrayMesh::elements_get_attached_vertices(
   offsets.resize( num_elems + 1);
   vert_handles.clear();
   for (size_t i = 0; i < num_elems; ++i) {
+    assert( indices[i] < elementCount );
     int count;
     const unsigned long* conn = elem_verts( indices[i], count );
     size_t prev_size = vert_handles.size();
@@ -378,11 +422,15 @@ void ArrayMesh::elements_get_topologies( const ElementHandle *handles,
 {
   const size_t* indices = (const size_t*)handles;
   if (elementType == MIXED) 
-    for (size_t i = 0; i < num_elements; ++i)
+    for (size_t i = 0; i < num_elements; ++i) {
+      assert( indices[i] < elementCount );
       element_topologies[i] = elementTypes[indices[i]];
+    }
   else 
-    for (size_t i = 0; i < num_elements; ++i)
+    for (size_t i = 0; i < num_elements; ++i) {
+      assert( indices[i] < elementCount );
       element_topologies[i] = elementType;
+    }
 }
 
 void ArrayMesh::release_entity_handles( const EntityHandle*, size_t, MsqError& err )

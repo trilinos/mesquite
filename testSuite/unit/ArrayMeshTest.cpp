@@ -693,7 +693,7 @@ void ArrayMeshTest::test_elements_get_attached_vertices()
 void ArrayMeshTest::test_elements_get_topologies()
 {
   MsqPrintError err(std::cerr);
-  const size_t elems[] = { 3, 2, 1, 0, 1, 2, 3, 4 };
+  const size_t elems[] = { 3, 2, 1, 0, 1, 2, 3, 0 };
   const size_t num_elem = sizeof(elems)/sizeof(elems[0]);
   EntityTopology topo[num_elem];
   memset( topo, 0, sizeof(topo) );
