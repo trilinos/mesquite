@@ -102,14 +102,29 @@ public:
   bool is_at_end() const;
   const Vector3D& start() const;
   const Vector3D& end() const;
+  const Vector3D* mid() const;
   void step( MsqError& err );
+
+  struct Edge {
+    Edge( size_t vtx, size_t mid ) : otherVertex(vtx), midVertex(mid) {}
+    Edge() {}
+    size_t otherVertex;
+    size_t midVertex;
+  };
 private:
   PatchData* patchPtr;
   size_t vertIdx;
-  msq_std::vector<size_t> adjList;
-  msq_std::vector<size_t>::iterator adjIter;
+  msq_std::vector<Edge> adjList;
+  msq_std::vector<Edge>::iterator adjIter;
   void get_adjacent_vertices( MsqError& err );
 };
+
+bool operator<( const EdgeIterator::Edge& e1, const EdgeIterator::Edge& e2 )
+  { return e1.otherVertex < e2.otherVertex || 
+          (e1.otherVertex == e2.otherVertex && e1.midVertex < e2.midVertex); }
+
+bool operator==( const EdgeIterator::Edge& e1, const EdgeIterator::Edge& e2 )
+  { return e1.otherVertex == e2.otherVertex && e1.midVertex == e2.midVertex; }
 
 EdgeIterator::EdgeIterator( PatchData* p, MsqError& err )
   : patchPtr(p),
@@ -129,7 +144,11 @@ const Vector3D& EdgeIterator::start() const
   { return patchPtr->vertex_by_index( vertIdx ); }
 
 const Vector3D& EdgeIterator::end() const
-  { return patchPtr->vertex_by_index( *adjIter ); }
+  { return patchPtr->vertex_by_index( adjIter->otherVertex ); }
+
+const Vector3D* EdgeIterator::mid() const
+  { return adjIter->midVertex < patchPtr->num_nodes() ? 
+           &patchPtr->vertex_by_index( adjIter->midVertex ) : 0; }
 
 void EdgeIterator::step( MsqError& err )
 {
@@ -161,6 +180,10 @@ void EdgeIterator::get_adjacent_vertices( MsqError& err )
     EntityTopology type = elem.get_element_type();
     size_t num_edges = TopologyInfo::edges( type );
     
+    bool mid_edge, mid_face, mid_vol;
+    TopologyInfo::higher_order( type, elem.node_count(), mid_edge, mid_face, mid_vol, err );
+    MSQ_ERRRTN(err);
+    
       // For each edge
     for (size_t d = 0; d < num_edges; ++d)
     {
@@ -169,6 +192,13 @@ void EdgeIterator::get_adjacent_vertices( MsqError& err )
       size_t vert1 = elem.get_vertex_index( edge[0] );
       size_t vert2 = elem.get_vertex_index( edge[1] );
 
+      size_t mid = ~(size_t)0;
+      if (mid_edge) {
+        int p = TopologyInfo::higher_order_from_side( type, elem.node_count(), 1, d, err );
+        MSQ_ERRRTN(err);
+        mid = elem.get_vertex_index_array()[p];
+      }
+
         // If this edge contains the input vertex (vert_idx)
         // AND the input vertex index is less than the 
         // other vertex (avoids iterating over this edge twice)
@@ -176,12 +206,12 @@ void EdgeIterator::get_adjacent_vertices( MsqError& err )
       if (vert1 > vert2)
       {
         if (vert2 == vertIdx)
-          adjList.push_back( vert1 );
+          adjList.push_back( Edge(vert1,mid) );
       } 
       else 
       {
         if (vert1 == vertIdx)
-          adjList.push_back( vert2 );
+          adjList.push_back( Edge(vert2,mid) );
       }
     }
   }
@@ -308,6 +338,27 @@ void write_vtk( PatchData& pd, const char* out_filename, MsqError &err,
 }
 
 
+void write_gnuplot( Mesh* mesh, const char* out_filebase, MsqError &err)
+{
+    // loads a global patch
+  PatchData pd;
+  pd.set_mesh( mesh );
+  pd.fill_global_patch( err ); MSQ_ERRRTN(err);
+  write_gnuplot( pd, out_filebase, err );
+}
+
+void write_gnuplot( Mesh* mesh, msq_std::vector<Mesh::ElementHandle>& elems,
+                    const char* out_filebase, MsqError &err)
+{
+    // loads a global patch
+  PatchData pd;
+  pd.set_mesh( mesh );
+  msq_std::vector<Mesh::VertexHandle> verts;
+  pd.set_mesh_entities( elems, verts, err ); MSQ_ERRRTN(err);
+  write_gnuplot( pd, out_filebase, err );
+}
+
+
 /*  Writes a gnuplot file directly from the MeshSet.
  *  This means that any mesh imported successfully into Mesquite
  *  can be outputed in gnuplot format.
@@ -319,8 +370,10 @@ void write_vtk( PatchData& pd, const char* out_filename, MsqError &err,
  *
  * Copied from src/Mesh/MeshSet.cpp and adapted for removal of 
  * MeshSet class by J.Kraftcheck on 2005-7-28.
+ * 
+ * Re-written to use EdgeIterator by J.Kraftcheck on 2009-6-11
 */
-void write_gnuplot( Mesh* mesh, const char* out_filebase, MsqError &err)
+void write_gnuplot( PatchData& pd, const char* out_filebase, MsqError& err )
 {
     // Open the file
   msq_std::string out_filename = out_filebase;
@@ -332,28 +385,24 @@ void write_gnuplot( Mesh* mesh, const char* out_filebase, MsqError &err)
     return;
   }
 
-    // loads a global patch
-  PatchData pd;
-  pd.set_mesh( mesh );
-  pd.fill_global_patch( err ); MSQ_ERRRTN(err);
-    
+  EdgeIterator edges( &pd, err ); MSQ_ERRRTN(err);
+   
     // Write a header
   file << "\n";
   
-  for (size_t i=0; i<pd.num_elements(); ++i)
+  while (!edges.is_at_end())
   {
-    msq_std::vector<size_t> vtx_indices;
-    pd.element_by_index(i).get_node_indices(vtx_indices);
-    for (size_t j = 0; j < vtx_indices.size(); ++j)
-    {
-      file << pd.vertex_by_index(vtx_indices[j])[0] << ' '
-           << pd.vertex_by_index(vtx_indices[j])[1] << ' '
-           << pd.vertex_by_index(vtx_indices[j])[2] << '\n';
-    }
-      file << pd.vertex_by_index(vtx_indices[0])[0] << ' '
-           << pd.vertex_by_index(vtx_indices[0])[1] << ' '
-           << pd.vertex_by_index(vtx_indices[0])[2] << '\n';
-    file << '\n';
+    const Vector3D& s = edges.start();
+    const Vector3D& e = edges.end();
+    const Vector3D* m = edges.mid();
+    
+    file << s[0] << ' ' << s[1] << ' ' << s[2] << msq_stdio::endl;
+    if (m) 
+      file << (*m)[0] << ' ' << (*m)[1] << ' ' << (*m)[2] << msq_stdio::endl;
+    file << e[0] << ' ' << e[1] << ' ' << e[2] << msq_stdio::endl;
+    file << msq_stdio::endl << msq_stdio::endl;
+    
+    edges.step(err); MSQ_ERRRTN(err);
   }
   
     // Close the file

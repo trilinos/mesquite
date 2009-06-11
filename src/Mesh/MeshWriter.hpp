@@ -28,11 +28,10 @@
 #define MSQ_MESH_WRITER_HPP
 
 #include "Matrix3D.hpp"
+#include "MeshInterface.hpp"
 
 namespace MESQUITE_NS {
 
-class Mesh;
-class MsqError;
 class PlanarDomain;
 class Vector3D;
 class PatchData;
@@ -81,9 +80,12 @@ class Projection {
 /** \brief Write mesh as gnuplot data
  *
  * Write a file that can be drawn in gnuplot with the command:
- * "plot 'filename' w 1"
+ * "plot 'filename' with lines"
  */
 void write_gnuplot( Mesh* mesh, const char* filename, MsqError& err );
+void write_gnuplot( PatchData& pd, const char* filename, MsqError& err );
+void write_gnuplot( Mesh* mesh, msq_std::vector<Mesh::ElementHandle>& elems,
+                    const char* filename, MsqError& err );
 
 
 /**\brief Write animator for sequence of gnuplot data files
