@@ -238,7 +238,7 @@ namespace MESQUITE_NS
       { return index >= numFreeVertices; }
     bool is_vertex_slave(size_t index) const
       { return index >= numFreeVertices && (index - numFreeVertices) < numSlaveVertices; }
-    bool is_vertex_fixes(size_t index) const
+    bool is_vertex_fixed(size_t index) const
       { return index >= numFreeVertices + numSlaveVertices; }
     
       //! number of element corners (number of vertex uses) in patch
