@@ -46,8 +46,8 @@ class TetDihedralWeight : public WeightCalculator
 {
 public:
 
-  TetDihedralWeight( double cutoff = 135, double dstar = 180 )
-    : mCutoff(cutoff)
+  TetDihedralWeight( double cutoff = 135, double a = 0.4395 )
+    : mCutoff(cutoff), mA(a)
     {}
 
   /**\brief Get target metric weight
@@ -62,7 +62,7 @@ public:
                              MsqError& err );
 
   private:
-    double mCutoff;
+    double mCutoff, mA;
 };
 
 } // namespace MESQUITE_NS
