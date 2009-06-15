@@ -131,32 +131,32 @@ class TriLagrangeShapeTest : public CppUnit::TestFixture
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TriLagrangeShapeTest, "TriLagrangeShapeTest");
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TriLagrangeShapeTest, "Unit");
 
-double N0( double r, double   ) { return r*(2*r - 1); }
-double N1( double  , double s ) { return s*(2*s - 1); }
-double N2( double r, double s ) { double t = 1 - r - s; return t*(2*t - 1); }
-double N3( double r, double s ) { return 4*r*s; }
-double N4( double r, double s ) { double t = 1 - r - s; return 4*s*t; }
-double N5( double r, double s ) { double t = 1 - r - s; return 4*r*t; }
-double dN0dr( double r, double   ) { return 4*r - 1; }
-double dN0ds( double  , double   ) { return 0; }
-double dN1dr( double  , double   ) { return 0; }
-double dN1ds( double  , double s ) { return 4*s - 1; }
-double dN2dr( double r, double s ) { return 4*r + 4*s - 3; }
-double dN2ds( double r, double s ) { return 4*r + 4*s - 3; }
-double dN3dr( double  , double s ) { return 4*s; }
-double dN3ds( double r, double   ) { return 4*r; }
-double dN4dr( double  , double s ) { return -4*s; }
-double dN4ds( double r, double s ) { return 4*(1-r-2*s); }
-double dN5dr( double r, double s ) { return 4*(1-s-2*r); }
-double dN5ds( double r, double   ) { return -4*r; }
+double N0( double r, double s ) { double t = 1 - r - s; return t*(2*t - 1); }
+double N1( double r, double   ) { return r*(2*r - 1); }
+double N2( double  , double s ) { return s*(2*s - 1); }
+double N3( double r, double s ) { double t = 1 - r - s; return 4*r*t; }
+double N4( double r, double s ) { return 4*r*s; }
+double N5( double r, double s ) { double t = 1 - r - s; return 4*s*t; }
+double dN0dr( double r, double s ) { return 4*r + 4*s - 3; }
+double dN0ds( double r, double s ) { return 4*r + 4*s - 3; }
+double dN1dr( double r, double   ) { return 4*r - 1; }
+double dN1ds( double  , double   ) { return 0; }
+double dN2dr( double  , double   ) { return 0; }
+double dN2ds( double  , double s ) { return 4*s - 1; }
+double dN3dr( double r, double s ) { return 4*(1-s-2*r); }
+double dN3ds( double r, double   ) { return -4*r; }
+double dN4dr( double  , double s ) { return 4*s; }
+double dN4ds( double r, double   ) { return 4*r; }
+double dN5dr( double  , double s ) { return -4*s; }
+double dN5ds( double r, double s ) { return 4*(1-r-2*s); }
 
 typedef double (*N_t)(double,double);
 const N_t N[] = { &N0, &N1, &N2, &N3, &N4, &N5 };
 const N_t dNdr[] = { &dN0dr, &dN1dr, &dN2dr, &dN3dr, &dN4dr, &dN5dr };
 const N_t dNds[] = { &dN0ds, &dN1ds, &dN2ds, &dN3ds, &dN4ds, &dN5ds };
 
-const double rs_corner[][2] = { {1, 0}, {0, 1}, {0, 0}};
-const double rs_edge[][2] = { {0.5, 0.5}, {0.0, 0.5}, {0.5, 0.0}};
+const double rs_corner[][2] = { {0, 0}, {1, 0}, {0, 1}};
+const double rs_edge[][2] = { {0.5, 0.0}, {0.5, 0.5}, {0.0, 0.5}};
 const double rs_mid[2] = { 1.0/3.0, 1.0/3.0 };
 
 static void get_coeff( NodeSet nodeset, const double* rs, double* coeffs )

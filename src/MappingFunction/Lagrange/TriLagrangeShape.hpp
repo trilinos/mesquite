@@ -45,17 +45,17 @@ namespace MESQUITE_NS {
  *
  * \f$\vec{x}(r,s) = sum_{i=0}^{n-1} N_i(r,s) \vec{x_i}\f$
  * 
- * \f$N_1 = r(2r - 1)\f$
+ * \f$N_1 = t(2t - 1)\f$
  * 
- * \f$N_2 = s(2s - 1)\f$
+ * \f$N_2 = r(2r - 1)\f$
  * 
- * \f$N_3 = t(2t - 1)\f$
+ * \f$N_3 = s(2s - 1)\f$
  * 
- * \f$N_4 = 4rs\f$
+ * \f$N_4 = 4rt\f$
  * 
- * \f$N_5 = 4st\f$
+ * \f$N_5 = 4rs\f$
  * 
- * \f$N_6 = 4rt\f$
+ * \f$N_6 = 4st\f$
  *
  * \f$t = 1 - r - s\f$
  */
