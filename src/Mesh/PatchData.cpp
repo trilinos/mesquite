@@ -510,11 +510,11 @@ void PatchData::project_gradient( std::vector<Vector3D>& gradient, MsqError& err
   for (size_t i= 0; i < num_free_vertices(); ++i) {
     if (vertexNormalIndices.empty()) {  // whole mesh on single 2D domain
       norm = normalData[i];
-      project_to_plane( norm, gradient[i] );
+      project_to_plane( gradient[i], norm );
     }
     else if (vertexDomainDOF[i] == 2) { // vertex on surface
       norm = normalData[vertexNormalIndices[i]];
-      project_to_plane( norm, gradient[i] );
+      project_to_plane( gradient[i], norm );
     }
     else if (vertexDomainDOF[i] == 1) {
       size_t j, num_elem;
@@ -524,7 +524,7 @@ void PatchData::project_gradient( std::vector<Vector3D>& gradient, MsqError& err
         if (2 == TopologyInfo::dimension(element_by_index(elems[j]).get_element_type())) {
           norm = vertexArray[i];
           get_domain()->element_normal_at( elementHandlesArray[elems[j]], norm );
-          project_to_plane( norm, gradient[i] );
+          project_to_plane( gradient[i], norm );
         }
       }
     }
