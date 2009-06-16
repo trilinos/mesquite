@@ -517,13 +517,13 @@ void PatchData::project_gradient( std::vector<Vector3D>& gradient, MsqError& err
       project_to_plane( norm, gradient[i] );
     }
     else if (vertexDomainDOF[i] == 1) {
-      size_t i, num_elem;
+      size_t j, num_elem;
       const size_t* elems = get_vertex_element_adjacencies( i, num_elem, err );
       MSQ_ERRRTN(err);
-      for (i = 0; i < num_elem; ++i) {
-        if (2 == TopologyInfo::dimension(element_by_index(elems[i]).get_element_type())) {
+      for (j = 0; j < num_elem; ++j) {
+        if (2 == TopologyInfo::dimension(element_by_index(elems[j]).get_element_type())) {
           norm = vertexArray[i];
-          get_domain()->element_normal_at( elementHandlesArray[elems[i]], norm );
+          get_domain()->element_normal_at( elementHandlesArray[elems[j]], norm );
           project_to_plane( norm, gradient[i] );
         }
       }
