@@ -305,9 +305,9 @@ namespace MESQUITE_NS
                                      MsqError& err );
     
       /*! Get indices of elements attached to specified vertex */
-    size_t* get_vertex_element_adjacencies( size_t vertex_index,
-                                            size_t& array_len_out,
-                                            MsqError& err );
+    const size_t* get_vertex_element_adjacencies( size_t vertex_index,
+                                                  size_t& array_len_out,
+                                                  MsqError& err );
     
       /*! Get the indices of vertices that are attached to vertex (given by
         vertex_index) by an element edge.
@@ -691,7 +691,7 @@ namespace MESQUITE_NS
       //! a domain exists and PatchData::normalData is not empty, but
       //! this array is, it may be assumed that all vertices have
       //! have a DOF == 2.
-    //msq_std::vector<unsigned short> vertexDomainDOF;
+    msq_std::vector<unsigned short> vertexDomainDOF;
     
       // Arrays in which to store temporary data
       // (avoids reallocation of temp space)
@@ -815,7 +815,8 @@ namespace MESQUITE_NS
     vertexArray[index] = coords;
     
     if (numSlaveVertices) {
-      size_t num_elem, *indices;
+      size_t num_elem;
+      const size_t *indices;
       indices = get_vertex_element_adjacencies( index, num_elem, err ); MSQ_ERRRTN(err);
       update_slave_node_coordinates( indices, num_elem, err ); MSQ_ERRRTN(err);
     }
@@ -832,7 +833,8 @@ namespace MESQUITE_NS
     vertexArray[index] += delta;
     
     if (numSlaveVertices) {
-      size_t num_elem, *indices;
+      size_t num_elem;
+      const size_t *indices;
       indices = get_vertex_element_adjacencies( index, num_elem, err ); MSQ_ERRRTN(err);
       update_slave_node_coordinates( indices, num_elem, err ); MSQ_ERRRTN(err);
     }

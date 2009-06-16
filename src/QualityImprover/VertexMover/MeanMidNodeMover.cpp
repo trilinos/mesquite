@@ -58,8 +58,8 @@ void MeanMidNodeMover::fix_mid_nodes( PatchData& pd, MsqError& err )
       continue;    
     
       // Get an adjacent element
-    size_t num_elems, *elem_list;
-    elem_list = pd.get_vertex_element_adjacencies( vtx, num_elems, err ); MSQ_ERRRTN(err);
+    size_t num_elems;
+    const size_t *elem_list = pd.get_vertex_element_adjacencies( vtx, num_elems, err ); MSQ_ERRRTN(err);
     if (num_elems < 1) // Mid-node without adjacent elements????
       continue;
     size_t element_index = elem_list[0];

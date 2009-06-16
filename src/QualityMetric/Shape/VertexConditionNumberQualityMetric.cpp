@@ -75,8 +75,8 @@ bool VertexConditionNumberQualityMetric::evaluate( PatchData& pd,
   //size_t num_elems = v_to_e_array[this_offset];
     //PRINT_INFO("\nIN LOCAL SIZE CPP, num_elements = %i",num_elems);
     //if no elements, then return true
-  size_t num_elems, *v_to_e_array;
-  v_to_e_array = pd.get_vertex_element_adjacencies( this_vert, num_elems, err );
+  size_t num_elems;
+  const size_t *v_to_e_array = pd.get_vertex_element_adjacencies( this_vert, num_elems, err );
   MSQ_ERRZERO(err);  
     
   if(num_elems <= 0){
@@ -168,8 +168,8 @@ bool VertexConditionNumberQualityMetric::evaluate_with_indices(
   indices.clear();
 
   MsqMeshEntity* elems = pd.get_element_array(err);
-  size_t num_elems, *v_to_e_array;
-  v_to_e_array = pd.get_vertex_element_adjacencies( this_vert, num_elems, err );
+  size_t num_elems;
+  const size_t *v_to_e_array = pd.get_vertex_element_adjacencies( this_vert, num_elems, err );
   MSQ_ERRZERO(err);  
   
     //vector to hold the other verts which form a corner.

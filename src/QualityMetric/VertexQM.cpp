@@ -69,7 +69,8 @@ void VertexQM::get_vertex_corner_handles( PatchData& pd,
                                           msq_std::vector<size_t>& handles,
                                           MsqError& err )
 {
-  size_t len, *elems = pd.get_vertex_element_adjacencies( vtx_idx, len, err );
+  size_t len;
+  const size_t *elems = pd.get_vertex_element_adjacencies( vtx_idx, len, err );
   MSQ_ERRRTN(err);
   
   handles.resize(len);

@@ -484,6 +484,13 @@ void PatchData::set_free_vertices_constrained(PatchDataVerticesMemento* memento,
   }
 }
 
+static void project_to_plane( Vector3D& vect, const Vector3D& norm )
+{
+  double len_sqr = norm % norm;
+  if (len_sqr > DBL_EPSILON) 
+    vect -= norm * ((norm % vect) / len_sqr);
+}
+
 void PatchData::project_gradient( std::vector<Vector3D>& gradient, MsqError& err )
 {
   if (!domain_set())
@@ -499,17 +506,27 @@ void PatchData::project_gradient( std::vector<Vector3D>& gradient, MsqError& err
     MSQ_ERRRTN(err);
   }
   
+  Vector3D norm;
   for (size_t i= 0; i < num_free_vertices(); ++i) {
     if (vertexNormalIndices.empty()) {  // whole mesh on single 2D domain
-      const Vector3D norm = normalData[i];
-      gradient[i] -= (norm * (norm % gradient[i])) / (norm % norm);
+      norm = normalData[i];
+      project_to_plane( norm, gradient[i] );
     }
-    else if (vertexNormalIndices[i] < normalData.size()) { // vertex on surface
-      const Vector3D norm = normalData[vertexNormalIndices[i]];
-      gradient[i] -= (norm * (norm % gradient[i])) / (norm % norm);
+    else if (vertexDomainDOF[i] == 2) { // vertex on surface
+      norm = normalData[vertexNormalIndices[i]];
+      project_to_plane( norm, gradient[i] );
     }
-    else {
-      //FIXME: need to handle vertices constrained to curves
+    else if (vertexDomainDOF[i] == 1) {
+      size_t i, num_elem;
+      const size_t* elems = get_vertex_element_adjacencies( i, num_elem, err );
+      MSQ_ERRRTN(err);
+      for (i = 0; i < num_elem; ++i) {
+        if (2 == TopologyInfo::dimension(element_by_index(elems[i]).get_element_type())) {
+          norm = vertexArray[i];
+          get_domain()->element_normal_at( elementHandlesArray[elems[i]], norm );
+          project_to_plane( norm, gradient[i] );
+        }
+      }
     }
   }
 }
@@ -607,7 +624,8 @@ void PatchData::get_vertex_element_indices(size_t vertex_index,
                                            msq_std::vector<size_t> &elem_indices,
                                            MsqError &err) 
 {
-  size_t count, *ptr;
+  size_t count;
+  const size_t *ptr;
   ptr = get_vertex_element_adjacencies( vertex_index, count, err );
   elem_indices.resize( count );
   memcpy( &elem_indices[0], ptr, count * sizeof(size_t) );
@@ -619,9 +637,10 @@ void PatchData::get_vertex_element_indices(size_t vertex_index,
                                            MsqError &err) 
 {
   elem_indices.clear();
-  size_t count, *ptr;
+  size_t count;
+  const size_t *ptr;
   ptr = get_vertex_element_adjacencies( vertex_index, count, err );
-  for (size_t* const end = ptr + count; ptr != end; ++ptr)
+  for (const size_t* const end = ptr + count; ptr != end; ++ptr)
   {
     const EntityTopology type = elementArray[*ptr].get_element_type();
     const unsigned dim = TopologyInfo::dimension( type );
@@ -630,9 +649,9 @@ void PatchData::get_vertex_element_indices(size_t vertex_index,
   }
 }
 
-size_t* PatchData::get_vertex_element_adjacencies( size_t vertex_index,
-                                                   size_t& array_len_out,
-                                                   MsqError& err )
+const size_t* PatchData::get_vertex_element_adjacencies( size_t vertex_index,
+                                                         size_t& array_len_out,
+                                                         MsqError& err )
 {
     // Make sure we've got the data
   if (vertAdjacencyArray.empty())
@@ -1197,8 +1216,8 @@ void PatchData::update_cached_normals( MsqError& err )
   }
   
     // Determine which vertices lie on surfaces
-  msq_std::vector<unsigned short> dof( num_nodes() );
-  domain->domain_DoF( &vertexHandlesArray[0], &dof[0], num_nodes(), err );
+  vertexDomainDOF.resize( num_nodes() );
+  domain->domain_DoF( &vertexHandlesArray[0], &vertexDomainDOF[0], num_nodes(), err );
   MSQ_ERRRTN(err);
   
     // Count how many vertices have a single normal
@@ -1206,7 +1225,7 @@ void PatchData::update_cached_normals( MsqError& err )
   //size_t n = msq_std::count( vertexDomainDOF.begin(), vertexDomainDOF.end(), 2 );
   size_t n = 0;
   msq_std::vector<unsigned short>::iterator k;
-  for ( k = dof.begin(); k != dof.end(); ++k)
+  for ( k = vertexDomainDOF.begin(); k != vertexDomainDOF.end(); ++k)
     if (*k == 2)
       ++n;
   
@@ -1219,6 +1238,7 @@ void PatchData::update_cached_normals( MsqError& err )
     msq_std::copy( vertexArray.begin(), vertexArray.end(), normalData.begin() );
     domain->vertex_normal_at( &vertexHandlesArray[0], &normalData[0], num_nodes(), err );
     vertexNormalIndices.clear();
+    vertexDomainDOF.clear();
     MSQ_ERRRTN(err);
   }
   else 
@@ -1226,7 +1246,7 @@ void PatchData::update_cached_normals( MsqError& err )
     vertexNormalIndices.resize( num_nodes() );
     size_t nn = 0;
     for (i = 0; i < num_nodes(); ++i) {
-      if (dof[i] == 2) {
+      if (vertexDomainDOF[i] == 2) {
         normalData[nn] = vertexArray[i];
         domain->vertex_normal_at( vertexHandlesArray[i], normalData[nn] );
         vertexNormalIndices[i] = nn;

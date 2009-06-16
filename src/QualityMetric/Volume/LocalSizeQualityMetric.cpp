@@ -100,8 +100,8 @@ bool LocalSizeQualityMetric::evaluate( PatchData &pd, size_t this_vert,
     //first entry in the vertex to element array)
   //size_t num_elems = v_to_e_array[this_offset];
     //PRINT_INFO("\nIN LOCAL SIZE CPP, num_elements = %i",num_elems);
-  size_t num_elems, *v_to_e_array;
-  v_to_e_array = pd.get_vertex_element_adjacencies( this_vert, num_elems, err ); 
+  size_t num_elems;
+  const size_t *v_to_e_array = pd.get_vertex_element_adjacencies( this_vert, num_elems, err ); 
   MSQ_ERRZERO(err);
   
   if(num_elems <= 0){

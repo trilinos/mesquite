@@ -169,7 +169,7 @@ void EdgeIterator::get_adjacent_vertices( MsqError& err )
   
     // Get all adjacent elements
   size_t num_elem;
-  size_t* elems = patchPtr->get_vertex_element_adjacencies( vertIdx, num_elem, err );
+  const size_t* elems = patchPtr->get_vertex_element_adjacencies( vertIdx, num_elem, err );
   MSQ_ERRRTN(err);
   
     // Get all adjacent vertices from elements
