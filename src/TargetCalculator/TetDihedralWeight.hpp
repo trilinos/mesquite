@@ -38,6 +38,8 @@
 
 namespace MESQUITE_NS {
 
+class ReferenceMesh;
+
 /**\brief Calculate weight as a function of maximum dihedral angle 
  *
  * \f$ c_k = 1/(1 + \exp(-0.4394*(d_max - mCutoff))) \f*
@@ -47,7 +49,11 @@ class TetDihedralWeight : public WeightCalculator
 public:
 
   TetDihedralWeight( double cutoff = 135, double a = 0.4395 )
-    : mCutoff(cutoff), mA(a)
+    : refMesh(0), mCutoff(cutoff), mA(a)
+    {}
+
+  TetDihedralWeight( ReferenceMesh* mesh, double cutoff = 135, double a = 0.4395 )
+    : refMesh(mesh), mCutoff(cutoff), mA(a)
     {}
 
   /**\brief Get target metric weight
@@ -62,6 +68,7 @@ public:
                              MsqError& err );
 
   private:
+    ReferenceMesh* refMesh;
     double mCutoff, mA;
 };
 

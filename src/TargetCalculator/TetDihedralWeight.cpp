@@ -33,6 +33,7 @@
 #include "Mesquite.hpp"
 #include "TetDihedralWeight.hpp"
 #include "PatchData.hpp"
+#include "ReferenceMesh.hpp"
 #include <algorithm>
 
 namespace MESQUITE_NS {
@@ -53,14 +54,31 @@ double TetDihedralWeight::get_weight( PatchData& pd,
     MSQ_SETERR(err)(MsqError::UNSUPPORTED_ELEMENT);
     return 0.0;
   }
-  
-  const MsqVertex* coords = pd.get_vertex_array();
+
   const size_t *indices = elem.get_vertex_index_array();
-  
-  Vector3D v01 = coords[indices[1]] - coords[indices[0]];
-  Vector3D v02 = coords[indices[2]] - coords[indices[0]];
-  Vector3D v31 = coords[indices[1]] - coords[indices[3]];
-  Vector3D v32 = coords[indices[2]] - coords[indices[3]];
+  Vector3D v01, v02, v31, v32;
+  if (refMesh) {
+    const Mesh::VertexHandle* vtx_hdl = pd.get_vertex_handles_array();
+    Mesh::VertexHandle handles[] = { vtx_hdl[indices[0]],
+                                     vtx_hdl[indices[1]],
+                                     vtx_hdl[indices[2]],
+                                     vtx_hdl[indices[3]] };
+    Vector3D coords[4];
+    refMesh->get_reference_vertex_coordinates( handles, 4, coords, err );
+    MSQ_ERRZERO(err);
+
+    v01 = coords[1] - coords[0];
+    v02 = coords[2] - coords[0];
+    v31 = coords[1] - coords[3];
+    v32 = coords[2] - coords[3];
+  }
+  else {  
+    const MsqVertex* coords = pd.get_vertex_array();
+    v01 = coords[indices[1]] - coords[indices[0]];
+    v02 = coords[indices[2]] - coords[indices[0]];
+    v31 = coords[indices[1]] - coords[indices[3]];
+    v32 = coords[indices[2]] - coords[indices[3]];
+  }
   
   Vector3D n012 = v02 * v01;
   Vector3D n013 = v31 * v01;
