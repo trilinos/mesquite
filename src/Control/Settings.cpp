@@ -49,6 +49,8 @@ const bool IQ_TRAP_FPE_DEFAULT = false;
 
 struct SettingData {
   SettingData(); //!< Initialize to default settings.
+  SettingData( const SettingData& other );
+  SettingData& operator=( const SettingData& other );
   bool trapFPE;
   Settings::FixedVertexMode fixedMode;
   Settings::HigherOrderSlaveMode slaveMode;
@@ -62,6 +64,9 @@ struct SettingData {
   LinearPyramid       linPyrFunc;
   LinearPrism         linPriFunc;
   LinearHexahedron    linHexFunc;
+  
+private:
+  void fix_copy( const SettingData& other);
 };
 
 SettingData::SettingData()
@@ -86,12 +91,64 @@ SettingData::SettingData()
   mapArray3D[HEXAHEDRON   ] = &linHexFunc;
 }
 
+
+SettingData::SettingData( const SettingData& other )
+  : trapFPE( other.trapFPE ),
+    fixedMode( other.fixedMode ),
+    slaveMode( other.slaveMode ),
+    mapArray( other.mapArray ),
+    mapArray2D( other.mapArray2D ),
+    mapArray3D( other.mapArray3D )
+{
+  fix_copy( other );
+}
+
+SettingData& SettingData::operator=( const SettingData& other )
+{
+  trapFPE = other.trapFPE;
+  fixedMode = other.fixedMode;
+  slaveMode = other.slaveMode;
+  mapArray = other.mapArray;
+  mapArray2D = other.mapArray2D;
+  mapArray3D = other.mapArray3D;
+  fix_copy( other );
+  return *this;
+}
+
+void SettingData::fix_copy( const SettingData& other )
+{
+  if (mapArray[TRIANGLE] == &other.linTriFunc)
+    mapArray[TRIANGLE] = &linTriFunc;
+  if (mapArray[QUADRILATERAL] == &other.linQuadFunc)
+    mapArray[QUADRILATERAL] = &linQuadFunc;
+  if (mapArray[TETRAHEDRON] == &other.linTetFunc)
+    mapArray[TETRAHEDRON] = &linTetFunc;
+  if (mapArray[PYRAMID] == &other.linPyrFunc)
+    mapArray[PYRAMID] = &linPyrFunc;
+  if (mapArray[PRISM] == &other.linPriFunc)
+    mapArray[PRISM] = &linPriFunc;
+  if (mapArray[HEXAHEDRON] == &other.linHexFunc)
+    mapArray[HEXAHEDRON] = &linHexFunc;
+  if (mapArray2D[TRIANGLE] == &other.linTriFunc)
+    mapArray2D[TRIANGLE] = &linTriFunc;
+  if (mapArray2D[QUADRILATERAL] == &other.linQuadFunc)
+    mapArray2D[QUADRILATERAL] = &linQuadFunc;
+  if (mapArray3D[TETRAHEDRON] == &other.linTetFunc)
+    mapArray3D[TETRAHEDRON] = &linTetFunc;
+  if (mapArray3D[PYRAMID] == &other.linPyrFunc)
+    mapArray3D[PYRAMID] = &linPyrFunc;
+  if (mapArray3D[PRISM] == &other.linPriFunc)
+    mapArray3D[PRISM] = &linPriFunc;
+  if (mapArray3D[HEXAHEDRON] == &other.linHexFunc)
+    mapArray3D[HEXAHEDRON] = &linHexFunc;
+}
+
 Settings::Settings() 
   : mData( new SettingData ) 
   { }
 Settings::Settings( const Settings& other )
-  : mData( new SettingData ) 
-  { *this = other; }
+  : mData( new SettingData(other->mData) ) 
+  { }
 Settings::~Settings() 
   { delete mData; }
 Settings& Settings::operator=( const Settings& other )
