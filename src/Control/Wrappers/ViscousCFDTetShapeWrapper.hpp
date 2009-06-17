@@ -61,7 +61,7 @@ MESQUITE_EXPORT class ViscousCFDTetShapeWrapper : public Settings
      *                            steps.
      */
     ViscousCFDTetShapeWrapper( double max_vertex_movement,
-                               double a = 0.5459, 
+                               double a = 0.4395, 
                                double d_prime = 135,
                                int max_iterations = 50 )
       : dCutoff(d_prime), 
