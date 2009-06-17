@@ -115,7 +115,7 @@ void ViscousCFDTetShapeWrapper::run_instructions( Mesh* mesh,
   // Create objective function
   TMPQualityMetric metric1( &w_ideal, &c_dihedral,  mu2Dp,  mu3Dp  );
   TMPQualityMetric metric2( &w_init,  &c_remaining, mu2Dop, mu3Dop );
-  AddQualityMetric of_metric( &metric2, &metric2, err );  MSQ_ERRRTN(err);
+  AddQualityMetric of_metric( &metric1, &metric2, err );  MSQ_ERRRTN(err);
   PMeanPTemplate obj_func( 1.0, &of_metric );
   
   // Create optimizer
