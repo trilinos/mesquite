@@ -35,6 +35,7 @@
 
 #include "Mesquite.hpp"
 #include "MeshDecorator.hpp"
+#include "Instruction.hpp"
 
 namespace MESQUITE_NS {
 
@@ -51,8 +52,12 @@ namespace MESQUITE_NS {
  * The tag used to store alternate vertex coordinates is created and set
  * for all vertices when the coordinates of the any vertex are changed.
  * The tag type is a vector of three doubles.  
+ *
+ * Inserting an instance of this class into an InstructionQueue will result
+ * in true vertex coordinates being copied into the alternate coordinate
+ * values maintained by this class at that point in the instruction queue. 
  */
-class MESQUITE_EXPORT TagVertexMesh : public MeshDecorator
+class MESQUITE_EXPORT TagVertexMesh : public MeshDecorator, public Instruction
 {
   private:
   
@@ -62,7 +67,7 @@ class MESQUITE_EXPORT TagVertexMesh : public MeshDecorator
     bool cleanUpTag;         //< If true, destroy tag in destructor
   
       /**\brief common code for constructor, set_mesh, and set_tag_name */
-    void initialize( Mesh* mesh, msq_std::string name, bool init, MsqError& );
+    void initialize( Mesh* mesh, msq_std::string name, MsqError& );
       /**\brief copy real coordinate values into tag data */
     void copy_all_coordinates( MsqError& err );
       /**\brief if cleanUpTag, delete tag and clear handle */
@@ -74,10 +79,6 @@ class MESQUITE_EXPORT TagVertexMesh : public MeshDecorator
      *\param real_mesh  The mesh from which to aquire topology information
      *                  and vertex coordinates, and upon which to store
      *                  tags.
-     *\param initialize If the tag for storing alternate vertex coordinates
-     *                  exists on the real mesh, those alternate vertex
-     *                  coordinates will be retained and used if this
-     *                  is false.
      *\param clean_up_tag_data If true, tag storing alternate vertex
      *                  coordinates will be removed when this object
      *                  is destroyed.
@@ -85,7 +86,6 @@ class MESQUITE_EXPORT TagVertexMesh : public MeshDecorator
      */
     TagVertexMesh( MsqError& err,
                    Mesh* real_mesh,
-                   bool initialize = true,
                    bool clean_up_tag_data = true,
                    msq_std::string tag_name = "" );
     
@@ -104,12 +104,8 @@ class MESQUITE_EXPORT TagVertexMesh : public MeshDecorator
      * Note: If clean_up_tag_data is true, calling this function
      *       will remove any stored alternate vertex coordinates 
      *        from the previous mesh.
-     *\param init If the tag for storing alternate vertex coordinates
-     *            exists on the real mesh, those alternate vertex
-     *            coordinates will be retained and used if this
-     *            is false.
      */
-    void set_mesh( Mesh* real_mesh, bool init, MsqError& err );
+    void set_mesh( Mesh* real_mesh, MsqError& err );
     
     /**\brief Set tag cleanup behavior
      *
@@ -140,7 +136,7 @@ class MESQUITE_EXPORT TagVertexMesh : public MeshDecorator
      *        alternate coordinate values will be initialized to
      *        the true coordinate values in the real Mesh.
      */
-    void set_tag_name( msq_std::string name, bool init, MsqError& err );
+    void set_tag_name( msq_std::string name, MsqError& err );
   
     /**\brief clear all alternate vertex coordinate values
      *
@@ -175,6 +171,15 @@ class MESQUITE_EXPORT TagVertexMesh : public MeshDecorator
 
     virtual void release();
 
+    
+//**************** Instruction ****************
+
+    virtual double loop_over_mesh( Mesh* mesh, 
+                                   MeshDomain* domain, 
+                                   const Settings* settings,
+                                   MsqError& err );
+
+    virtual msq_std::string get_name() const;
 };
 
 

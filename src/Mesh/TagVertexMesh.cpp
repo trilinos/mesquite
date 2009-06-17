@@ -37,7 +37,16 @@
 
 namespace MESQUITE_NS {
 
-void TagVertexMesh::initialize( Mesh* mesh, msq_std::string name, bool init, MsqError& err )
+
+msq_std::string TagVertexMesh::get_name() const
+{
+  std::string result("TagVertexMesh(\"");
+  result += tagName;
+  result += "\")";
+  return result;
+}
+
+void TagVertexMesh::initialize( Mesh* mesh, msq_std::string name, MsqError& err )
 {
   MeshDecorator::set_mesh( mesh );
   tagName = name;
@@ -62,21 +71,33 @@ void TagVertexMesh::initialize( Mesh* mesh, msq_std::string name, bool init, Msq
     MSQ_SETERR(err)(MsqError::TAG_ALREADY_EXISTS,
                     "Tag \"%s\" has invalid type or size.",
                     tagName.c_str());
- 
-    // If tag is already defined and init was true, reset tag
-    // values.
+
   haveTagHandle = true;
-  if (init) {
-    copy_all_coordinates( err ); 
-    MSQ_ERRRTN(err);
+}
+
+
+double TagVertexMesh::loop_over_mesh( Mesh* mesh, 
+                                      MeshDomain* , 
+                                      const Settings* ,
+                                      MsqError& err )
+{
+  if (mesh != get_mesh()) {
+    MSQ_SETERR(err)("InstructionQueue and TagVertexMesh have different "
+                    "Mesquite::Mesh instances.  Cannot initialize TagVertexMesh",
+                    MsqError::INVALID_MESH);
+    return 0.0;
   }
+  
+  copy_all_coordinates( err ); MSQ_ERRZERO(err);
+  return 0.0;
 }
 
 void TagVertexMesh::copy_all_coordinates( MsqError& err )
 {
   if (!haveTagHandle) {
-    MSQ_SETERR(err)(MsqError::INTERNAL_ERROR);
-    return;
+    tagHandle = get_mesh()->tag_create( tagName, Mesh::DOUBLE, 3, 0, err ); 
+    MSQ_ERRRTN(err);
+    haveTagHandle = true;
   }
 
   msq_std::vector<Mesh::VertexHandle> handles;
@@ -112,14 +133,13 @@ void TagVertexMesh::check_remove_tag( MsqError& err )
 
 TagVertexMesh::TagVertexMesh( MsqError& err,
                               Mesh* real_mesh,
-                              bool init,
                               bool clean_up,
                               msq_std::string name)
   : tagHandle(0), haveTagHandle(false), cleanUpTag(clean_up)
 {
   if (name.size() == 0)
     name = "MsqAltCoords";
-  initialize( real_mesh, name, init, err ); MSQ_CHKERR(err);
+  initialize( real_mesh, name, err ); MSQ_CHKERR(err);
 }
 
 TagVertexMesh::~TagVertexMesh()
@@ -128,16 +148,16 @@ TagVertexMesh::~TagVertexMesh()
   check_remove_tag( err );
 }
 
-void TagVertexMesh::set_mesh( Mesh* mesh, bool init, MsqError& err )
+void TagVertexMesh::set_mesh( Mesh* mesh, MsqError& err )
 {
   check_remove_tag( err ); MSQ_ERRRTN(err);
-  initialize( mesh, tagName, init, err ); MSQ_ERRRTN(err);
+  initialize( mesh, tagName, err ); MSQ_ERRRTN(err);
 }
 
-void TagVertexMesh::set_tag_name( msq_std::string name, bool init, MsqError& err )
+void TagVertexMesh::set_tag_name( msq_std::string name, MsqError& err )
 {
   check_remove_tag( err ); MSQ_ERRRTN(err);
-  initialize( get_mesh(), name, init, err ); MSQ_ERRRTN(err);
+  initialize( get_mesh(), name, err ); MSQ_ERRRTN(err);
 }
 
 void TagVertexMesh::clear( MsqError& err )
@@ -178,9 +198,6 @@ void TagVertexMesh::vertex_set_coordinates( VertexHandle vertex,
 {
   if (!haveTagHandle)
   {
-    tagHandle = get_mesh()->tag_create( tagName, Mesh::DOUBLE, 3, 0, err ); 
-    MSQ_ERRRTN(err);
-    haveTagHandle = true;
     copy_all_coordinates( err );
     MSQ_ERRRTN(err);  
   }

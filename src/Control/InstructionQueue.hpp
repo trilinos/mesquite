@@ -59,6 +59,7 @@ namespace MESQUITE_NS {
   class MappingFunctionSet;
   class TargetWriter;
   class VertexSlaver;
+  class TagVertexMesh;
 
   /*! \class InstructionQueue
     \brief An InstructionQueue object gathers Mesquite Instructions and ensures
@@ -79,6 +80,8 @@ namespace MESQUITE_NS {
 
   public:
     MESQUITE_EXPORT InstructionQueue();
+    
+    MESQUITE_EXPORT InstructionQueue( const Settings& settings );
 
     MESQUITE_EXPORT virtual ~InstructionQueue() {};
     
@@ -90,6 +93,9 @@ namespace MESQUITE_NS {
       //! Remove a tool mark higher-order nodes as slaved.
       //! Note:  Implies set_slaved_ho_node_mode( Settings::SLAVE_ALL )
     MESQUITE_EXPORT void remove_vertex_slaver( VertexSlaver* slaver, MsqError& err );
+    
+    MESQUITE_EXPORT void add_tag_vertex_mesh( TagVertexMesh* m, MsqError& err );
+    MESQUITE_EXPORT void remove_tag_vertex_mesh( TagVertexMesh* m, MsqError& err );
     
     MESQUITE_EXPORT void add_preconditioner(QualityImprover* instr, MsqError &err);
     MESQUITE_EXPORT void remove_preconditioner(size_t index, MsqError &err);

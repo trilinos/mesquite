@@ -50,6 +50,7 @@ Member functions of the Mesquite::InstructionQueue class
 #include "QualityAssessor.hpp"
 #include "TargetWriter.hpp"
 #include "VertexSlaver.hpp"
+#include "TagVertexMesh.hpp"
 #include "MsqError.hpp"
 #include "MsqDebug.hpp"
 #include "MsqFPE.hpp"
@@ -58,6 +59,16 @@ using namespace Mesquite;
 
 
 InstructionQueue::InstructionQueue() :
+  autoQualAssess(true),
+  vertexSlaverCount(0),
+  nbPreConditionners(0),
+  isMasterSet(false),
+  masterInstrIndex(0)
+{
+}
+
+InstructionQueue::InstructionQueue( const Settings& settings ) :
+  Settings(settings),
   autoQualAssess(true),
   vertexSlaverCount(0),
   nbPreConditionners(0),
@@ -92,6 +103,29 @@ void InstructionQueue::remove_vertex_slaver( VertexSlaver* vs, MsqError& err)
         --masterInstrIndex;
       if (--vertexSlaverCount == 0) 
         set_slaved_ho_node_mode( Settings::SLAVE_ALL );
+      return;
+    }
+  }
+  
+  MSQ_SETERR(err)("Not found", MsqError::INVALID_ARG );
+}
+
+void InstructionQueue::add_tag_vertex_mesh( TagVertexMesh* vs, MsqError& )
+{
+  instructions.push_front( vs );
+  if (isMasterSet)
+    ++masterInstrIndex;
+}
+
+void InstructionQueue::remove_tag_vertex_mesh( TagVertexMesh* vs, MsqError& err)
+{
+  size_t idx = 0;
+  for (msq_std::list<Instruction*>::iterator i = instructions.begin();
+       i != instructions.end(); ++i, ++idx) {
+    if (*i == vs) {
+      instructions.erase(i);
+      if (isMasterSet && masterInstrIndex > idx)
+        --masterInstrIndex;
       return;
     }
   }
