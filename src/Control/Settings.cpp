@@ -147,7 +147,7 @@ Settings::Settings()
   : mData( new SettingData ) 
   { }
 Settings::Settings( const Settings& other )
-  : mData( new SettingData(other->mData) ) 
+  : mData( new SettingData(*other.mData) ) 
   { }
 Settings::~Settings() 
   { delete mData; }
