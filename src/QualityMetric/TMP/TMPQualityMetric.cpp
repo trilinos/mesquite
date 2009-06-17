@@ -30,6 +30,8 @@
  *  \author Jason Kraftcheck 
  */
 
+#undef PRINT_INFO
+
 #include "Mesquite.hpp"
 #include "TMPQualityMetric.hpp"
 #include "MsqMatrix.hpp"
@@ -44,6 +46,10 @@
 #include "TargetMetric3D.hpp"
 #include "TargetMetricUtil.hpp"
 
+#ifdef PRINT_INFO
+#  include <iostream>
+#endif
+
 #ifdef MSQ_USE_OLD_STD_HEADERS
 # include <functional.h>
 # include <algorithm.h>
@@ -53,6 +59,34 @@
 #endif
 
 namespace MESQUITE_NS {
+
+
+#ifdef PRINT_INFO
+template <int R, int C>
+void write_vect( char n, const MsqMatrix<R,C>& M )
+{
+  std::cout << "  " << n << ':';
+  for (int c = 0; c < C; ++c) {
+    std::cout << '[';
+    for (int r = 0; r < R; ++r)
+      std::cout << M(r,c) << ' ';
+    std::cout << ']';
+  }
+  std::cout << std::endl;
+}
+
+template <int D>
+void print_info( size_t elem, Sample sample,
+                 const MsqMatrix<3,D>& A,
+                 const MsqMatrix<3,D>& W,
+                 const MsqMatrix<D,D>& T )
+{
+  std::cout << "Elem " << elem << " Dim " << sample.dimension << " Num " << sample.number << " :" << std::endl;
+  write_vect<3,D>( 'A', A );
+  write_vect<3,D>( 'W', W );
+  write_vect<D,D>( 'T', T );
+}
+#endif
 
 int TMPQualityMetric::get_negate_flag( ) const { return 1; }
 
@@ -245,6 +279,9 @@ bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
     MSQ_ERRZERO(err);
     targetCalc->get_3D_target( pd, e, s, W, err ); MSQ_ERRZERO(err);
     rval = metric3D->evaluate( A, W, value, err ); MSQ_ERRZERO(err);
+#ifdef PRINT_INFO
+    print_info<3>( e, s, A, W, A * inverse(W) );
+#endif
   }
   else if (edim == 2) {
     if (!metric2D) {
@@ -265,6 +302,9 @@ bool TMPQualityMetric::evaluate_with_indices( PatchData& pd,
     surface_to_2d( J, Wp, W, RZ );
     A = transpose(RZ) * J;
     rval = metric2D->evaluate( A, W, value, err ); MSQ_ERRZERO(err);
+#ifdef PRINT_INFO
+    print_info<2>( e, s, J, Wp, A * inverse(W) );
+#endif
   }
   else {
     assert(false);
@@ -317,6 +357,9 @@ bool TMPQualityMetric::evaluate_with_gradient(
     targetCalc->get_3D_target( pd, e, s, W, err ); MSQ_ERRZERO(err);
     rval = metric3D->evaluate_with_grad( A, W, value, dmdA, err ); MSQ_ERRZERO(err);
     gradient<3>( num_idx, mDerivs3D, dmdA, grad );
+#ifdef PRINT_INFO
+    print_info<3>( e, s, A, W, A * inverse(W) );
+#endif
   }
   else if (edim == 2) {
     if (!metric2D) {
@@ -338,6 +381,9 @@ bool TMPQualityMetric::evaluate_with_gradient(
     A = transpose(RZ) * J;
     rval = metric2D->evaluate_with_grad( A, W, value, dmdA, err ); MSQ_ERRZERO(err);
     gradient<2>( num_idx, mDerivs2D, RZ*dmdA, grad );
+#ifdef PRINT_INFO
+    print_info<2>( e, s, J, Wp, A * inverse(W) );
+#endif
   }
   else {
     assert(false);
@@ -400,6 +446,9 @@ bool TMPQualityMetric::evaluate_with_Hessian(
     gradient<3>( num_idx, mDerivs3D, dmdA, grad );
     Hessian.resize( num_idx*(num_idx+1)/2 );
     hessian<3>( num_idx, mDerivs3D, d2mdA2, &Hessian[0] );
+#ifdef PRINT_INFO
+    print_info<3>( e, s, A, W, A * inverse(W) );
+#endif
   }
   else if (edim == 2) {
     if (!metric2D) {
@@ -429,6 +478,9 @@ bool TMPQualityMetric::evaluate_with_Hessian(
     Hessian.resize(n);
     for (size_t i = 0; i < n; ++i)
       Hessian[i] = Matrix3D( (RZ * hess2d[i] * transpose(RZ)).data() );
+#ifdef PRINT_INFO
+    print_info<2>( e, s, J, Wp, A * inverse(W) );
+#endif
   }
   else {
     assert(0);
@@ -498,6 +550,9 @@ bool TMPQualityMetric::evaluate_with_Hessian_diagonal(
       for (unsigned j = 0; j < 6; ++j)
         H[j] = transpose(mDerivs3D[i]) * d2mdA2[j] * mDerivs3D[i];
     }
+#ifdef PRINT_INFO
+    print_info<3>( e, s, A, W, A * inverse(W) );
+#endif
   }
   else if (edim == 2) {
     if (!metric2D) {
@@ -537,6 +592,9 @@ bool TMPQualityMetric::evaluate_with_Hessian_diagonal(
       H[4] = p.row(1) * transpose(RZ.row(2));
       H[5] = p.row(2) * transpose(RZ.row(2));
     }
+#ifdef PRINT_INFO
+    print_info<2>( e, s, J, Wp, A * inverse(W) );
+#endif
   }
   else {
     assert(0);
