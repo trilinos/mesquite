@@ -31,7 +31,7 @@
  */
 
 #undef HAVE_HO_HEX
-#define TEST_HO_QUAD
+#undef TEST_HO_QUAD
 
 
 #include "Mesquite.hpp"
@@ -44,7 +44,7 @@
 
 #include "IdealTargetCalculator.hpp"
 #include "InverseMeanRatio2D.hpp"
-#include "Target2DShapeSizeOrient.hpp"
+#include "Target2DShape.hpp"
 #include "InverseMeanRatio3D.hpp"
 #include "TMPQualityMetric.hpp"
 #include "PMeanPTemplate.hpp"
@@ -77,12 +77,12 @@ class HigherOrderTest : public CppUnit::TestFixture
 {
 private:
   CPPUNIT_TEST_SUITE(HigherOrderTest);
-  CPPUNIT_TEST (test_tri_basic_ideal);
+//  CPPUNIT_TEST (test_tri_basic_ideal);
   CPPUNIT_TEST (test_tri_basic_mid_spin);
-  CPPUNIT_TEST (test_tri_basic_mid_convex);
-  CPPUNIT_TEST (test_tri_basic_peak_up);
-  CPPUNIT_TEST (test_tri_basic_peak_down);
-  CPPUNIT_TEST (test_tri_basic_peak_over);
+//  CPPUNIT_TEST (test_tri_basic_mid_convex);
+//  CPPUNIT_TEST (test_tri_basic_peak_up);
+//  CPPUNIT_TEST (test_tri_basic_peak_down);
+//  CPPUNIT_TEST (test_tri_basic_peak_over);
 #ifdef TEST_HO_QUAD
   CPPUNIT_TEST (test_quad_basic_ideal);
   CPPUNIT_TEST (test_quad_basic_mid_spin);
@@ -92,17 +92,17 @@ private:
   CPPUNIT_TEST (test_quad_basic_right_up);
   CPPUNIT_TEST (test_quad_basic_left_over);
 #endif
-  CPPUNIT_TEST (test_tet_basic_ideal);
-  CPPUNIT_TEST (test_tet_basic_mid_spin);
-  CPPUNIT_TEST (test_tet_basic_mid_convex);
-  CPPUNIT_TEST (test_tet_basic_apex_up);
-  CPPUNIT_TEST (test_tet_basic_apex_down);
-  CPPUNIT_TEST (test_tet_basic_apex_over);
+//  CPPUNIT_TEST (test_tet_basic_ideal);
+//  CPPUNIT_TEST (test_tet_basic_mid_spin);
+//  CPPUNIT_TEST (test_tet_basic_mid_convex);
+//  CPPUNIT_TEST (test_tet_basic_apex_up);
+//  CPPUNIT_TEST (test_tet_basic_apex_down);
+//  CPPUNIT_TEST (test_tet_basic_apex_over);
 #ifdef HAVE_HO_HEX
   CPPUNIT_TEST (test_hex_basic);
 #endif
-  CPPUNIT_TEST (test_tri_open_domain);
-  CPPUNIT_TEST (test_tri_slac);
+//  CPPUNIT_TEST (test_tri_open_domain);
+//  CPPUNIT_TEST (test_tri_slac);
   CPPUNIT_TEST_SUITE_END();
 
   TriLagrangeShape tri_shape;
@@ -112,7 +112,7 @@ private:
   HexLagrangeShape hex_shape;
 #endif
   InstructionQueue q;
-  Target2DShapeSizeOrient tm2;
+  Target2DShape tm2;
   InverseMeanRatio3D tm3;
   IdealTargetCalculator tc;
   TMPQualityMetric metric;
@@ -138,7 +138,7 @@ public:
     q.set_slaved_ho_node_mode( Settings::SLAVE_NONE );
     
     outer.add_iteration_limit( 1 );
-    crit.add_absolute_vertex_movement( 1e-4 );
+    crit.add_absolute_vertex_movement( 1e-6 );
     crit.add_iteration_limit( MAX_ITERATIONS );
     solver.set_outer_termination_criterion( &outer );
     solver.set_inner_termination_criterion( &crit );
@@ -270,7 +270,9 @@ void HigherOrderTest::test_tri_basic_ideal()
   double y4 = 0.5*IDEAL_TRI_HEIGHT;
   double x5 = 0.25*IDEAL_TRI_SIDE;
   double y5 = 0.5*IDEAL_TRI_HEIGHT;
+//  crit.write_mesh_steps( "test_tri_basic_ideal", TerminationCriterion::VTK );
   basic_tri_test( x2, y2, x3, y3, x4, y4, x5, y5, err );
+//  crit.write_mesh_steps( "", TerminationCriterion::NOTYPE );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!hit_iteration_limit());
   CPPUNIT_ASSERT_DOUBLES_EQUAL( x2eq, x2, eps );
@@ -298,7 +300,9 @@ void HigherOrderTest::test_tri_basic_mid_spin()
   double y4 =  f * y1 + (1-f) * y2;
   double x5 =  f * x2 + (1-f) * x0;
   double y5 =  f * y2 + (1-f) * y0;
+  //crit.write_mesh_steps( "test_tri_basic_mid_spin", TerminationCriterion::VTK );
   basic_tri_test( x2, y2, x3, y3, x4, y4, x5, y5, err );
+  //crit.write_mesh_steps( "", TerminationCriterion::NOTYPE );
   ASSERT_NO_ERROR(err);
   CPPUNIT_ASSERT(!hit_iteration_limit());
   CPPUNIT_ASSERT_DOUBLES_EQUAL( x2eq, x2, eps );
