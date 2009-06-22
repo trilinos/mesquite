@@ -157,6 +157,25 @@ void write_svg( Mesh* mesh,
  */
 void write_stl( Mesh* mesh, const char* filename, MsqError& err ); 
 
+/**\brief Write EPS file containing single triangle in XY plane.
+ */
+void write_eps_triangle( Mesh* mesh, 
+                         Mesh::ElementHandle elem,
+                         const char* filename, 
+                         bool draw_iso_lines, 
+                         bool draw_nodes,
+                         MsqError& err,
+                         int width = in2pt( 6.5 ),
+                         int height = in2pt( 9 ) );
+void write_eps_triangle( const Vector3D* coords, 
+                         size_t num_vtx,
+                         const char* filename, 
+                         bool draw_iso_lines, 
+                         bool draw_nodes,
+                         MsqError& err,
+                         int width = in2pt( 6.5 ),
+                         int height = in2pt( 9 ) );
+
 } // namespace MeshWriter
 
 } // namespace Mesquite

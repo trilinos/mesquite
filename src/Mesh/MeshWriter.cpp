@@ -76,6 +76,12 @@ class Transform2D
                  unsigned width, 
                  unsigned height,
                  bool flip_about_horizontal );
+
+    Transform2D( const Vector3D* verts,
+                 size_t num_vert,
+                 Projection& projection,
+                 unsigned width, 
+                 unsigned height );
     
     void transform( const Vector3D& coords,
                     int& horizontal,
@@ -771,7 +777,44 @@ Transform2D::Transform2D( PatchData* pd,
   vertMax  = (int)((flip ? -h_min : h_max) * myScale) +  vertOffset; 
     
 }
+ 
+Transform2D::Transform2D( const Vector3D* verts,
+                          size_t num_vert,
+                          Projection& projection,
+                          unsigned width, 
+                          unsigned height )
+  : myProj(projection),
+    vertSign(1)
+{
+    // Get the bounding box of the projected points
+  float w_max, w_min, h_max, h_min;
+  w_max = h_max = -msq_std::numeric_limits<float>::max();
+  w_min = h_min =  msq_std::numeric_limits<float>::max();
+  for (unsigned i = 0; i < num_vert; ++i)
+  {
+    float w, h;
+    myProj.project( verts[i], w, h );
+    if (w > w_max) w_max = w;
+    if (w < w_min) w_min = w;
+    if (h > h_max) h_max = h;
+    if (h < h_min) h_min = h;
+  }
+  
+    // Determine the scale factor
+  const float w_scale = (float)width  / (w_max - w_min);
+  const float h_scale = (float)height / (h_max - h_min);
+  myScale = w_scale > h_scale ? h_scale : w_scale;
+  
+    // Determine offset
+  horizOffset = -(int)(myScale * w_min);
+  vertOffset  = -(int)(myScale * h_min);
+  
+    // Determine bounding box
+  horizMax = (int)(w_max * myScale) + horizOffset;
+  vertMax  = (int)(h_max * myScale) +  vertOffset; 
     
+}
+   
 void Transform2D::transform( const Vector3D& coords,
                              int& horizontal,
                              int& vertical ) const
@@ -781,7 +824,27 @@ void Transform2D::transform( const Vector3D& coords,
     horizontal =            (int)(myScale * horiz) + horizOffset;
     vertical   = vertSign * (int)(myScale *  vert) +  vertOffset;
 }
- 
+
+static void write_eps_curve( ostream &s,
+                            Transform2D& xform,
+                            Vector3D start,
+                            Vector3D mid, 
+                            Vector3D end )
+{
+  Vector3D P1 = 1./3 * (4 * mid - end);
+  Vector3D P2 = 1./3 * (4 * mid - start);
+
+  int x, y;
+  xform.transform( start, x, y );
+  s << x << ' ' << y << " moveto" << endl;
+  xform.transform( P1, x, y );
+  s << x << ' ' << y << ' ';
+  xform.transform( P2, x, y );
+  s << x << ' ' << y << ' ';
+  xform.transform( end, x, y );
+  s << x << ' ' << y << " curveto" << endl;
+}
+
 void write_eps( Mesh* mesh, 
                 const char* filename, 
                 Projection proj, 
@@ -850,16 +913,7 @@ void write_eps( Mesh* mesh,
       // a quadratic curve so the first two points are the same.
       // Calculate that point such that we have the correct tangents
       // for a quadratic edge shape function.
-      Vector3D m = *(iter.mid());
-      Vector3D P1 = 1./3 * (4 * m - iter.end());
-      Vector3D P2 = 1./3 * (4 * m - iter.start());
-      Vector3D mp = 2 * *(iter.mid()) - 0.5 * (iter.start() + iter.end());
-      int w1, w2, h1, h2;
-      transf.transform( P1, w1, h1 );
-      transf.transform( P2, w2, h2 );
-      s << w1 << ' ' << h1 << ' ' 
-        << w2 << ' ' << h2 << ' ' 
-        << e_w << ' ' << e_h << " curveto"              << endl;
+      write_eps_curve( s, transf, iter.start(), *iter.mid(), iter.end() );
         // draw rings at mid-edge node location
       //transf.transform( *(iter.mid()), w1, h1 );
       //s << w1+2 << ' ' << h1 <<  " moveto"            << endl;
@@ -877,6 +931,192 @@ void write_eps( Mesh* mesh,
   s << "exch sub { end } repeat"                      << endl;
   s << "restore"                                      << endl;  
   s << "%%EOF"                                        << endl;
+}
+
+
+static double tN0( double r, double s ) { double t = 1 - r - s; return t*(2*t - 1); }
+static double tN1( double r, double   ) { return r*(2*r - 1); }
+static double tN2( double  , double s ) { return s*(2*s - 1); }
+static double tN3( double r, double s ) { double t = 1 - r - s; return 4*r*t; }
+static double tN4( double r, double s ) { return 4*r*s; }
+static double tN5( double r, double s ) { double t = 1 - r - s; return 4*s*t; }
+static Vector3D quad_tri_pt( double r, double s, const Vector3D* coords )
+{
+  Vector3D result = tN0(r,s) * coords[0];
+  result += tN1(r,s) * coords[1];
+  result += tN2(r,s) * coords[2];
+  result += tN3(r,s) * coords[3];
+  result += tN4(r,s) * coords[4];
+  result += tN5(r,s) * coords[5];
+  return result;
+}
+
+void write_eps_triangle( Mesh* mesh, 
+                         Mesh::ElementHandle elem,
+                         const char* filename, 
+                         bool draw_iso_lines, 
+                         bool draw_nodes,
+                         MsqError& err,
+                         int width, int height )
+{
+    // Get triangle vertices
+  MsqVertex coords[6];
+  EntityTopology type;
+  mesh->elements_get_topologies( &elem, &type, 1, err ); MSQ_ERRRTN(err);
+  if (type != TRIANGLE) {
+    MSQ_SETERR(err)("Invalid element type", MsqError::UNSUPPORTED_ELEMENT );
+    return;
+  }
+  std::vector<Mesh::VertexHandle> verts;
+  std::vector<size_t> junk;
+  mesh->elements_get_attached_vertices( &elem, 1, verts, junk, err );  MSQ_ERRRTN(err);
+  if (verts.size() != 3 && verts.size() != 6) {
+    MSQ_SETERR(err)("Invalid element type", MsqError::UNSUPPORTED_ELEMENT );
+    return;
+  }
+  mesh->vertices_get_coordinates( &verts[0], coords, verts.size(), err ); MSQ_ERRRTN(err);
+  
+  Vector3D coords2[6];
+  std::copy( coords, coords+verts.size(), coords2 );
+  write_eps_triangle( coords2, verts.size(), filename, draw_iso_lines, draw_nodes, err, width, height );
+}
+
+void write_eps_triangle( const Vector3D* coords,
+                         size_t num_vtx,
+                         const char* filename, 
+                         bool draw_iso_lines, 
+                         bool draw_nodes,
+                         MsqError& err,
+                         int width, int height )
+{
+  Projection proj( X, Y );
+  Transform2D transf( coords, num_vtx, proj, width, height );
+    
+    // Open the file
+  ofstream str(filename);
+  if (!str)
+  {
+    MSQ_SETERR(err)(MsqError::FILE_ACCESS);
+    return;
+  }
+
+    // Write header
+  str << "%!PS-Adobe-2.0 EPSF-2.0"                      << endl;
+  str << "%%Creator: Mesquite"                          << endl;
+  str << "%%Title: Mesquite "                           << endl;
+  str << "%%DocumentData: Clean7Bit"                    << endl;
+  str << "%%Origin: 0 0"                                << endl;
+  str << "%%BoundingBox: -4 -4 " 
+      << transf.max_horizontal() + 8 <<  ' ' 
+      << transf.max_vertical()   + 8                    << endl;
+  str << "%%Pages: 1"                                   << endl;
+  
+  str << "%%BeginProlog"                                << endl;
+  str << "save"                                         << endl;
+  str << "countdictstack"                               << endl;
+  str << "mark"                                         << endl;
+  str << "newpath"                                      << endl;
+  str << "/showpage {} def"                             << endl;
+  str << "/setpagedevice {pop} def"                     << endl;
+  str << "%%EndProlog"                                  << endl;
+  
+  str << "%%Page: 1 1"                                  << endl;
+  str << "1 setlinewidth"                               << endl;
+  str << "0.0 setgray"                                  << endl;
+
+  const double h = 0.5, t = 1.0/3.0, w = 2.0/3.0, s = 1./6, f = 5./6;
+  const int NUM_ISO = 15;
+  const double iso_params[NUM_ISO][2][2] = 
+    { { { h, 0 }, { h, h } },  // r = 1/2
+      { { t, 0 }, { t, w } },  // r = 1/3
+      { { w, 0 }, { w, t } },  // r = 2/3
+      { { s, 0 }, { s, f } },  // r = 1/6
+      { { f, 0 }, { f, s } },  // r = 5/6
+      { { 0, h }, { h, h } },  // s = 1/2
+      { { 0, t }, { w, t } },  // s = 1/3
+      { { 0, w }, { t, w } },  // s = 2/3
+      { { 0, s }, { f, s } },  // s = 1/6
+      { { 0, f }, { s, f } },  // s = 5/6
+      { { 0, h }, { h ,0 } },  // t = 1 - r - s = 1/2
+      { { 0, w }, { w, 0 } },  // t = 1 - r - s = 1/3
+      { { 0, t }, { t, 0 } },  // t = 1 - r - s = 2/3
+      { { 0, f }, { f, 0 } },  // t = 1 - r - s = 1/6
+      { { 0, s }, { s, 0 } }   // t = 1 - r - s = 5/6
+     };
+
+  if (num_vtx == 3) {
+    int x[3], y[3];
+    for (size_t i = 0; i < 3; ++i) 
+      transf.transform( coords[i], x[i], y[i] );
+    
+    str << "newpath"                                      << endl;
+    str << x[0] << ' ' << y[0] << " moveto"               << endl;
+    str << x[1] << ' ' << y[1] << " lineto"               << endl;
+    str << x[2] << ' ' << y[2] << " lineto"               << endl;
+    str << x[0] << ' ' << y[0] << " lineto"               << endl;
+    str << "stroke"                                       << endl;
+    
+    if (draw_iso_lines) {
+      str << "0.5 setgray"                                << endl;
+      str << "newpath"                                    << endl;
+      for (int i = 0; i < NUM_ISO; ++i) {
+        double R[2] = { iso_params[i][0][0], iso_params[i][1][0] };
+        double S[2] = { iso_params[i][0][1], iso_params[i][1][1] };
+        double T[2] = { 1 - R[0] - S[0], 1 - R[1] - S[1] };
+        Vector3D p[2] = { T[0] * coords[0] + R[0] * coords[1] + S[0] * coords[2],
+                          T[1] * coords[0] + R[1] * coords[1] + S[1] * coords[2] };
+        transf.transform( p[0], x[0], y[0] );
+        transf.transform( p[1], x[1], y[1] );
+        str << x[0] << ' ' << y[0] << " moveto"           << endl;
+        str << x[1] << ' ' << y[1] << " lineto"           << endl;
+        
+      }
+      str << "    stroke"                                 << endl;
+    }
+  }
+  else {
+    str << "newpath"                                      << endl;
+    write_eps_curve( str, transf, coords[0], coords[3], coords[1] );
+    write_eps_curve( str, transf, coords[1], coords[4], coords[2] );
+    write_eps_curve( str, transf, coords[2], coords[5], coords[0] );
+    str << "stroke"                                       << endl;
+    
+    if (draw_iso_lines) {
+      str << "0.5 setgray"                                << endl;
+      str << "newpath"                                    << endl;
+      for (int i = 0; i < NUM_ISO; ++i) {
+        double R[3] = { iso_params[i][0][0], 0, iso_params[i][1][0] };
+        double S[3] = { iso_params[i][0][1], 0, iso_params[i][1][1] };
+        R[1] = 0.5*(R[0]+R[2]);
+        S[1] = 0.5*(S[0]+S[2]);
+        Vector3D p[3] = { quad_tri_pt( R[0], S[0], coords ),
+                          quad_tri_pt( R[1], S[1], coords ),
+                          quad_tri_pt( R[2], S[2], coords ) };
+        write_eps_curve( str, transf, p[0], p[1], p[2] );
+      }
+      str << "    stroke"                                 << endl;
+    }
+  }
+  
+  if (draw_nodes) {
+    str << "0.0 setgray"                                  << endl;
+    str << "newpath"                                      << endl;
+    for (size_t i = 0; i < num_vtx; ++i) {
+      int w, h;
+      transf.transform( coords[i], w, h );
+      str << w+3 << ' ' << h << " moveto"                 << endl;
+      str << w   << ' ' << h << " 3 0 360 arc"            << endl;
+    }
+    str << "fill"                                         << endl;
+  }
+  
+    // Write footer
+  str << "%%Trailer"                                    << endl;
+  str << "cleartomark"                                  << endl;
+  str << "countdictstack"                               << endl;
+  str << "exch sub { end } repeat"                      << endl;
+  str << "restore"                                      << endl;  
+  str << "%%EOF"                                        << endl;
 }
 
 void write_svg( Mesh* mesh, 
