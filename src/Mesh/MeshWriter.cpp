@@ -837,8 +837,27 @@ void write_eps( Mesh* mesh,
     
     s << "newpath"                                    << endl;
     s << s_w << ' ' << s_h << " moveto"               << endl;
-    s << e_w << ' ' << e_h << " lineto"               << endl;
-    s << "stroke"                                     << endl;
+    
+    if (!iter.mid()) {
+      s << e_w << ' ' << e_h << " lineto"               << endl;
+    }
+    else {
+      // curveto draws a cubic bezier spline from the current
+      // point to the third point in the argument list.  The
+      // tanget at the start is the vector from the current point
+      // to the first argument.  The tangent at the end is the 
+      // vector from the second point to the third.  We are drawing
+      // a quadratic curve so the first two points are the same.
+      // Calculate that point such that we have the correct tangents
+      // for a quadratic edge shape function.
+      Vector3D mp = 2 * *(iter.mid()) - 0.5 * (iter.start() + iter.end());
+      int m_w, m_h;
+      transf.transform( mp, m_w, m_h );
+      s << m_w << ' ' << m_h << ' ' 
+        << m_w << ' ' << m_h << ' ' 
+        << e_w << ' ' << e_h << " curveto"              << endl;
+    }
+    s << "stroke"                                       << endl;
     
     iter.step(err); MSQ_ERRRTN(err);
   }
