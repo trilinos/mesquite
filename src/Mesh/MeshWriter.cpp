@@ -978,7 +978,14 @@ void write_eps_triangle( Mesh* mesh,
   
   Vector3D coords2[6];
   std::copy( coords, coords+verts.size(), coords2 );
-  write_eps_triangle( coords2, verts.size(), filename, draw_iso_lines, draw_nodes, err, width, height );
+  
+  bool fixed_store[6];
+  bool* fixed = 0;
+  if (draw_nodes) {
+    fixed = fixed_store;
+    mesh->vertices_get_fixed_flag( &verts[0], fixed, verts.size(), err ); MSQ_ERRRTN(err);
+  }
+  write_eps_triangle( coords2, verts.size(), filename, draw_iso_lines, draw_nodes, err, fixed, width, height );
 }
 
 void write_eps_triangle( const Vector3D* coords,
@@ -987,6 +994,7 @@ void write_eps_triangle( const Vector3D* coords,
                          bool draw_iso_lines, 
                          bool draw_nodes,
                          MsqError& err,
+                         const bool* fixed,
                          int width, int height )
 {
   Projection proj( X, Y );
@@ -1074,7 +1082,7 @@ void write_eps_triangle( const Vector3D* coords,
       str << "    stroke"                                 << endl;
     }
   }
-  else {
+  else if (num_vtx == 6) {
     str << "newpath"                                      << endl;
     write_eps_curve( str, transf, coords[0], coords[3], coords[1] );
     write_eps_curve( str, transf, coords[1], coords[4], coords[2] );
@@ -1099,15 +1107,21 @@ void write_eps_triangle( const Vector3D* coords,
   }
   
   if (draw_nodes) {
-    str << "0.0 setgray"                                  << endl;
-    str << "newpath"                                      << endl;
     for (size_t i = 0; i < num_vtx; ++i) {
       int w, h;
+      str << "0.0 setgray"                                << endl;
+      str << "newpath"                                    << endl;
       transf.transform( coords[i], w, h );
       str << w+3 << ' ' << h << " moveto"                 << endl;
       str << w   << ' ' << h << " 3 0 360 arc"            << endl;
+      str << "stroke"                                     << endl;
+      if (fixed && fixed[i]) 
+        str << "1.0 setgray"                              << endl;
+      else
+        str << "0.0 setgray"                              << endl;
+      str << w   << ' ' << h << " 3 0 360 arc closepath"  << endl;
+      str << "fill"                                       << endl;
     }
-    str << "fill"                                         << endl;
   }
   
     // Write footer

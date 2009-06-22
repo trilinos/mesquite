@@ -171,8 +171,9 @@ void write_eps_triangle( const Vector3D* coords,
                          size_t num_vtx,
                          const char* filename, 
                          bool draw_iso_lines, 
-                         bool draw_nodes,
+                         bool draw_nodes, 
                          MsqError& err,
+                         const bool* fixed_flags = 0,
                          int width = in2pt( 6.5 ),
                          int height = in2pt( 9 ) );
 
