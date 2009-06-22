@@ -850,12 +850,20 @@ void write_eps( Mesh* mesh,
       // a quadratic curve so the first two points are the same.
       // Calculate that point such that we have the correct tangents
       // for a quadratic edge shape function.
+      Vector3D m = *(iter.mid());
+      Vector3D P1 = 1./3 * (4 * m - iter.end());
+      Vector3D P2 = 1./3 * (4 * m - iter.start());
       Vector3D mp = 2 * *(iter.mid()) - 0.5 * (iter.start() + iter.end());
-      int m_w, m_h;
-      transf.transform( mp, m_w, m_h );
-      s << m_w << ' ' << m_h << ' ' 
-        << m_w << ' ' << m_h << ' ' 
+      int w1, w2, h1, h2;
+      transf.transform( P1, w1, h1 );
+      transf.transform( P2, w2, h2 );
+      s << w1 << ' ' << h1 << ' ' 
+        << w2 << ' ' << h2 << ' ' 
         << e_w << ' ' << e_h << " curveto"              << endl;
+        // draw rings at mid-edge node location
+      //transf.transform( *(iter.mid()), w1, h1 );
+      //s << w1+2 << ' ' << h1 <<  " moveto"            << endl;
+      //s << w1 << ' ' << h1 <<  " 2 0 360 arc"         << endl;
     }
     s << "stroke"                                       << endl;
     
