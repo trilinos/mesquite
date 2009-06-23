@@ -1,7 +1,7 @@
 /* ***************************************************************** 
     MESQUITE -- The Mesh Quality Improvement Toolkit
 
-    Copyright 2006 Sandia National Laboratories.  Developed at the
+    Copyright 2009 Sandia National Laboratories.  Developed at the
     University of Wisconsin--Madison under SNL contract number
     624796.  The U.S. Government and the University of Wisconsin
     retain certain rights to this software.
@@ -19,60 +19,71 @@
     You should have received a copy of the GNU Lesser General Public License 
     (lgpl.txt) along with this library; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- 
-    (2006) kraftche@cae.wisc.edu
-   
+
+    (2009) kraftche@cae.wisc.edu    
+
   ***************************************************************** */
 
 
-/** \file Target2DShapeSizeOrientBarrierAlt2.hpp
+/** \file Target3DUntangleAlt1.hpp
  *  \brief 
  *  \author Jason Kraftcheck 
  */
 
-#ifndef MSQ_TARGET_2D_SHAPE_SIZE_ORIENT_BARRIER_ALT2_HPP
-#define MSQ_TARGET_2D_SHAPE_SIZE_ORIENT_BARRIER_ALT2_HPP
+#ifndef MSQ_TARGET_3D_UNTANGLE_ALT1_HPP
+#define MSQ_TARGET_3D_UNTANGLE_ALT1_HPP
 
 #include "Mesquite.hpp"
-#include "TargetMetric2D.hpp"
+#include "TargetMetric3D.hpp"
 
 namespace MESQUITE_NS {
 
-
-/** |T^-t - I|^2 
+/**\brief Untangle metric
  *
- * Section 3.3.2 of derivs.tex
+ * \f$ \mu_n(T) = \frac{1}{2} \left( - \tau + \sqrt{\tau^2 + \left(\epsilon \, \bar{\tau} \right)^2} \right)\f$
+ *
+ * Section 3.2.8 of derivs.tex
  */
-class Target2DShapeSizeOrientBarrierAlt2 : public TargetMetric2D
+class Target3DUntangleAlt1 : public TargetMetric3D
 {
-  public:
-  
+private:
+  double mFactor;
+
+public:
+
+  Target3DUntangleAlt1( double epsilon = 1e-6, double tau_bar = 1.0 ) 
+    : mFactor(epsilon*epsilon*tau_bar*tau_bar) {}
+
+  MESQUITE_EXPORT virtual
+  ~Target3DUntangleAlt1();
+
   MESQUITE_EXPORT virtual
   msq_std::string get_name() const;
 
   MESQUITE_EXPORT virtual
-  bool evaluate( const MsqMatrix<2,2>& A, 
-                 const MsqMatrix<2,2>& W, 
+  bool evaluate( const MsqMatrix<3,3>& A, 
+                 const MsqMatrix<3,3>& W, 
                  double& result, 
                  MsqError& err );
-
+  
   MESQUITE_EXPORT virtual
-  bool evaluate_with_grad( const MsqMatrix<2,2>& A,
-                           const MsqMatrix<2,2>& W,
+  bool evaluate_with_grad( const MsqMatrix<3,3>& A,
+                           const MsqMatrix<3,3>& W,
                            double& result,
-                           MsqMatrix<2,2>& deriv_wrt_A,
+                           MsqMatrix<3,3>& deriv_wrt_A,
                            MsqError& err );
 
   MESQUITE_EXPORT virtual
-  bool evaluate_with_hess( const MsqMatrix<2,2>& A,
-                           const MsqMatrix<2,2>& W,
+  bool evaluate_with_hess( const MsqMatrix<3,3>& A,
+                           const MsqMatrix<3,3>& W,
                            double& result,
-                           MsqMatrix<2,2>& deriv_wrt_A,
-                           MsqMatrix<2,2> second_wrt_A[3],
+                           MsqMatrix<3,3>& deriv_wrt_A,
+                           MsqMatrix<3,3> second_wrt_A[6],
                            MsqError& err );
 };
 
 
-} // namespace Mesquite
+
+} // namespace MESQUITE_NS
 
 #endif

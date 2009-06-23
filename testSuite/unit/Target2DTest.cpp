@@ -776,6 +776,7 @@ void TargetMetric2DTest::test_numerical_hessian()
 #include "Target2DSize.hpp"
 #include "Target2DSizeBarrier.hpp"
 #include "Target2DUntangle.hpp"
+#include "Target2DUntangleAlt1.hpp"
 
 #define REGISTER_TARGET2D_TEST( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER, IDEAL_VAL ) \
 class Test_ ## METRIC : public Target2DTest<METRIC> { public: \
@@ -855,11 +856,12 @@ REGISTER_TARGET2D_TEST               ( Target2DShapeSizeBarrierAlt2,      false,
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeOrient,           false, false, false, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeOrientAlt1,       false, false, false, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeOrientBarrier,    false, false, false,  true, 0.0 );
-REGISTER_TARGET2D_TEST               ( Target2DShapeSizeOrientBarrierAlt2,false, false, false,  true, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeOrientBarrierAlt2,false, false, false,  true, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( InverseMeanRatio2D,                false,  true,  true,  true, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DSize,                       true, false,  true, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DSizeBarrier,                true, false,  true,  true, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DUntangle,                   true,  true,  true, false, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DUntangleAlt1,               true,  true,  true, false, 0.0 );
 
 class Test_TSquared2D : public Target2DTest<TSquared2D> {
   public: 

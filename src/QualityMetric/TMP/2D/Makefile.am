@@ -29,6 +29,7 @@ MSQ_SRCS += \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DOffset.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DTau.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DUntangle.cpp \
+	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DUntangleAlt1.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/TargetSurfaceOrientation.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/InverseMeanRatio2D.cpp 
 
@@ -58,6 +59,7 @@ MSQ_HDRS += \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DOffset.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DTau.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DUntangle.hpp \
+	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DUntangleAlt1.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/TargetMetric2D.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/TargetSurfaceOrientation.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/InverseMeanRatio2D.hpp 

@@ -112,6 +112,34 @@ void set_scaled_2nd_deriv_of_det( MsqMatrix<3,3> R[6],
 inline
 void set_scaled_2nd_deriv_of_det( MsqMatrix<2,2> R[3], double alpha );
 
+/**\brief \f$ R += \alpha \frac{\partial^2}{\partial T^2}tr(adj T) \f$
+ *
+ * Note: 2nd deriv is a constant, so T is not passed as an argument.
+ */
+inline 
+void pluseq_scaled_2nd_deriv_tr_adj( MsqMatrix<2,2> R[3], double alpha );
+
+/**\brief \f$ R += \alpha \frac{\partial^2}{\partial T^2}tr(adj T) \f$
+ *
+ * Note: 2nd deriv is a constant, so T is not passed as an argument.
+ */
+inline 
+void pluseq_scaled_2nd_deriv_tr_adj( MsqMatrix<3,3> R[6], double alpha );
+
+/**\brief \f$ R += \alpha \frac{\partial^2}{\partial T^2}|adj T|^2 \f$
+  */
+inline 
+void set_scaled_2nd_deriv_norm_sqr_adj( MsqMatrix<2,2> R[3], 
+                                        double alpha,
+                                        const MsqMatrix<2,2>& T );
+
+/**\brief \f$ R += \alpha \frac{\partial^2}{\partial T^2}|adj T|^2 \f$
+  */
+inline 
+void set_scaled_2nd_deriv_norm_sqr_adj( MsqMatrix<3,3> R[6], 
+                                        double alpha,
+                                        const MsqMatrix<3,3>& T );
+
 /**\brief \f$ R += \alpha \left( M \otimes M \right) \f$
  *
  *\param R The 6 blocks of the upper triangular portion of a 9x9
@@ -191,10 +219,10 @@ void pluseq_outer_product_I( MsqMatrix<3,3> R[6], const MsqMatrix<3,3>& A );
  *\param R The 6 blocks of the upper triangular portion of a 9x9
  *         symmetric matrix.
  */
-inline
-void pluseq_scaled_sum_outer_product_I( MsqMatrix<3,3> R[6],
+template <unsigned D> inline
+void pluseq_scaled_sum_outer_product_I( MsqMatrix<D,D> R[D*(D+1)/2],
                                         double alpha,
-                                        const MsqMatrix<3,3>& A );
+                                        const MsqMatrix<D,D>& A );
 
 /**\brief \f$ \frac{\partial^2 f}{\partial (AZ)^2} \Rightarrow \frac{\partial^2 f}{\partial A^2} \f$
  *
@@ -325,6 +353,100 @@ void set_scaled_2nd_deriv_of_det( MsqMatrix<2,2> R[3], double alpha )
   R[1](1,0) = -alpha;
   R[1](1,1) =  0.0;
   
+}
+
+void pluseq_scaled_2nd_deriv_tr_adj( MsqMatrix<2,2>*, double  )
+{
+  // 2nd derivative is zero
+}
+
+void pluseq_scaled_2nd_deriv_tr_adj( MsqMatrix<3,3> R[6], double alpha )
+{
+  R[1](0,1) += alpha;
+  R[1](1,0) -= alpha;
+  R[2](0,2) += alpha;
+  R[2](2,0) -= alpha;
+  R[4](1,2) += alpha;
+  R[4](2,1) -= alpha;
+}
+
+void set_scaled_2nd_deriv_norm_sqr_adj( MsqMatrix<2,2> R[3], 
+                                        double alpha,
+                                        const MsqMatrix<2,2>&  )
+{
+  set_scaled_I( R, 2*alpha );
+}
+
+void set_scaled_2nd_deriv_norm_sqr_adj( MsqMatrix<3,3> R[6], 
+                                        double alpha,
+                                        const MsqMatrix<3,3>& T )
+{
+  set_scaled_outer_product( R, 1, T );
+  double tmp01, tmp02, tmp12;
+  //R[1] = 2*R[1] - transpose(R[1]);
+  tmp01 = R[1](0,1);
+  tmp02 = R[1](0,2);
+  tmp12 = R[1](1,2);
+  R[1](0,1) = 2 * R[1](0,1) - R[1](1,0);
+  R[1](0,2) = 2 * R[1](0,2) - R[1](2,0);
+  R[1](1,2) = 2 * R[1](1,2) - R[1](2,1);
+  R[1](1,0) = 2 * R[1](1,0) - tmp01;
+  R[1](2,0) = 2 * R[1](2,0) - tmp02;
+  R[1](2,1) = 2 * R[1](2,1) - tmp12;
+  //R[2] = 2*R[2] - transpose(R[1]);
+  tmp01 = R[2](0,1);
+  tmp02 = R[2](0,2);
+  tmp12 = R[2](1,2);
+  R[2](0,1) = 2 * R[2](0,1) - R[2](1,0);
+  R[2](0,2) = 2 * R[2](0,2) - R[2](2,0);
+  R[2](1,2) = 2 * R[2](1,2) - R[2](2,1);
+  R[2](1,0) = 2 * R[2](1,0) - tmp01;
+  R[2](2,0) = 2 * R[2](2,0) - tmp02;
+  R[2](2,1) = 2 * R[2](2,1) - tmp12;
+  //R[4] = 2*R[4] - transpose(R[1]);
+  tmp01 = R[4](0,1);
+  tmp02 = R[4](0,2);
+  tmp12 = R[4](1,2);
+  R[4](0,1) = 2 * R[4](0,1) - R[4](1,0);
+  R[4](0,2) = 2 * R[4](0,2) - R[4](2,0);
+  R[4](1,2) = 2 * R[4](1,2) - R[4](2,1);
+  R[4](1,0) = 2 * R[4](1,0) - tmp01;
+  R[4](2,0) = 2 * R[4](2,0) - tmp02;
+  R[4](2,1) = 2 * R[4](2,1) - tmp12;
+  
+  const MsqMatrix<3,3> TpT = transpose(T) * T;
+  R[0] -= TpT;
+  R[3] -= TpT;
+  R[5] -= TpT;
+  
+  const MsqMatrix<3,3> TTp = T * transpose(T);
+  const double ns = sqr_Frobenius(T);
+  R[0](0,0) += ns - TTp(0,0);
+  R[0](1,1) += ns - TTp(0,0);
+  R[0](2,2) += ns - TTp(0,0);
+  R[1](0,0) +=    - TTp(0,1);
+  R[1](1,1) +=    - TTp(0,1);
+  R[1](2,2) +=    - TTp(0,1);
+  R[2](0,0) +=    - TTp(0,2);
+  R[2](1,1) +=    - TTp(0,2);
+  R[2](2,2) +=    - TTp(0,2);
+  R[3](0,0) += ns - TTp(1,1);
+  R[3](1,1) += ns - TTp(1,1);
+  R[3](2,2) += ns - TTp(1,1);
+  R[4](0,0) +=    - TTp(1,2);
+  R[4](1,1) +=    - TTp(1,2);
+  R[4](2,2) +=    - TTp(1,2);
+  R[5](0,0) += ns - TTp(2,2);
+  R[5](1,1) += ns - TTp(2,2);
+  R[5](2,2) += ns - TTp(2,2);
+  
+  alpha *= 2;
+  R[0] *= alpha;
+  R[1] *= alpha;
+  R[2] *= alpha;
+  R[3] *= alpha;
+  R[4] *= alpha;
+  R[5] *= alpha;
 }
 
 #ifdef MSQ_ROW_BASED_OUTER_PRODUCT
@@ -527,7 +649,7 @@ void pluseq_scaled_outer_product_I_I( MsqMatrix<2,2> R[3], double alpha )
 }
 
 #ifdef MSQ_ROW_BASED_OUTER_PRODUCT
-void pluseq_I_outer_product( MsqMatrix<3,3> R[6], const MsqMatrix<3,3>& A )
+inline void pluseq_I_outer_product( MsqMatrix<3,3> R[6], const MsqMatrix<3,3>& A )
 {
   R[0].add_row( 0, A.row(0) );
   R[1].add_row( 0, A.row(1) );
@@ -536,8 +658,14 @@ void pluseq_I_outer_product( MsqMatrix<3,3> R[6], const MsqMatrix<3,3>& A )
   R[4].add_row( 1, A.row(2) );
   R[5].add_row( 2, A.row(2) );
 }
+inline void pluseq_I_outer_product( MsqMatrix<2,2> R[3], const MsqMatrix<2,2>& A )
+{
+  R[0].add_row( 0, A.row(0) );
+  R[1].add_row( 0, A.row(1) );
+  R[2].add_row( 1, A.row(1) );
+}
 #else
-void pluseq_I_outer_product( MsqMatrix<3,3> R[6], const MsqMatrix<3,3>& A )
+inline void pluseq_I_outer_product( MsqMatrix<3,3> R[6], const MsqMatrix<3,3>& A )
 {
   R[0].add_row( 0, transpose(A.column(0)) );
   R[1].add_row( 0, transpose(A.column(1)) );
@@ -546,10 +674,16 @@ void pluseq_I_outer_product( MsqMatrix<3,3> R[6], const MsqMatrix<3,3>& A )
   R[4].add_row( 1, transpose(A.column(2)) );
   R[5].add_row( 2, transpose(A.column(2)) );
 }
+inline void pluseq_I_outer_product( MsqMatrix<2,2> R[3], const MsqMatrix<2,2>& A )
+{
+  R[0].add_row( 0, transpose(A.column(0)) );
+  R[1].add_row( 0, transpose(A.column(1)) );
+  R[2].add_row( 1, transpose(A.column(1)) );
+}
 #endif
 
 #ifdef MSQ_ROW_BASED_OUTER_PRODUCT
-void pluseq_outer_product_I( MsqMatrix<3,3> R[6], const MsqMatrix<3,3>& A )
+inline void pluseq_outer_product_I( MsqMatrix<3,3> R[6], const MsqMatrix<3,3>& A )
 {
   R[0].add_column( 0, transpose(A.row(0)) );
   R[1].add_column( 1, transpose(A.row(0)) );
@@ -558,8 +692,14 @@ void pluseq_outer_product_I( MsqMatrix<3,3> R[6], const MsqMatrix<3,3>& A )
   R[4].add_column( 2, transpose(A.row(1)) );
   R[5].add_column( 2, transpose(A.row(2)) );
 }
+inline void pluseq_outer_product_I( MsqMatrix<2,2> R[3], const MsqMatrix<2,2>& A )
+{
+  R[0].add_column( 0, transpose(A.row(0)) );
+  R[1].add_column( 1, transpose(A.row(0)) );
+  R[2].add_column( 1, transpose(A.row(1)) );
+}
 #else
-void pluseq_outer_product_I( MsqMatrix<3,3> R[6], const MsqMatrix<3,3>& A )
+inline void pluseq_outer_product_I( MsqMatrix<3,3> R[6], const MsqMatrix<3,3>& A )
 {
   R[0].add_column( 0, A.column(0) );
   R[1].add_column( 1, A.column(0) );
@@ -568,14 +708,21 @@ void pluseq_outer_product_I( MsqMatrix<3,3> R[6], const MsqMatrix<3,3>& A )
   R[4].add_column( 2, A.column(1) );
   R[5].add_column( 2, A.column(2) );
 }
+inline void pluseq_outer_product_I( MsqMatrix<2,2> R[3], const MsqMatrix<2,2>& A )
+{
+  R[0].add_column( 0, A.column(0) );
+  R[1].add_column( 1, A.column(0) );
+  R[2].add_column( 1, A.column(1) );
+}
 #endif
 
-void pluseq_scaled_sum_outer_product_I( MsqMatrix<3,3> R[6],
+template <unsigned D>
+void pluseq_scaled_sum_outer_product_I( MsqMatrix<D,D> R[D*(D+1)/2],
                                         double alpha,
-                                        const MsqMatrix<3,3>& A_in )
+                                        const MsqMatrix<D,D>& A_in )
 {
     // apply scalar first
-  MsqMatrix<3,3> A(A_in);
+  MsqMatrix<D,D> A(A_in);
   A *= alpha;
   pluseq_I_outer_product( R ,A );
   pluseq_outer_product_I( R, A );

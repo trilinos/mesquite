@@ -44,9 +44,11 @@ private:
   CPPUNIT_TEST (test_pluseq_scaled_outer_product);
   CPPUNIT_TEST (test_set_scaled_outer_product);
   CPPUNIT_TEST (test_pluseq_scaled_sum_outer_product);
-  CPPUNIT_TEST (test_pluseq_scaled_sum_outer_product_I);
+  CPPUNIT_TEST (test_pluseq_scaled_sum_outer_product_I_2D);
+  CPPUNIT_TEST (test_pluseq_scaled_sum_outer_product_I_3D);
   CPPUNIT_TEST (test_pluseq_scaled_outer_product_I_I_2D);
   CPPUNIT_TEST (test_pluseq_scaled_outer_product_I_I_3D);
+  CPPUNIT_TEST (test_set_scaled_2nd_deriv_norm_sqr_adj);
   CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -57,9 +59,11 @@ public:
   void test_pluseq_scaled_outer_product();
   void test_set_scaled_outer_product();
   void test_pluseq_scaled_sum_outer_product();
-  void test_pluseq_scaled_sum_outer_product_I();
+  void test_pluseq_scaled_sum_outer_product_I_2D();
+  void test_pluseq_scaled_sum_outer_product_I_3D();
   void test_pluseq_scaled_outer_product_I_I_2D();
   void test_pluseq_scaled_outer_product_I_I_3D();
+  void test_set_scaled_2nd_deriv_norm_sqr_adj();
 };
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(TMPDerivsTest, "TMPDerivsTest");
@@ -355,7 +359,7 @@ void TMPDerivsTest::test_pluseq_scaled_sum_outer_product()
   ASSERT_MATRICES_EQUAL( a * E[5], R[5], e );
 }
 
-void TMPDerivsTest::test_pluseq_scaled_sum_outer_product_I()
+void TMPDerivsTest::test_pluseq_scaled_sum_outer_product_I_3D()
 {
   const double e = 1e-12;
   const double vals[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -382,6 +386,29 @@ void TMPDerivsTest::test_pluseq_scaled_sum_outer_product_I()
   ASSERT_MATRICES_EQUAL( T[3], U[3], e );
   ASSERT_MATRICES_EQUAL( T[4], U[4], e );
   ASSERT_MATRICES_EQUAL( T[5], U[5], e );
+}
+
+void TMPDerivsTest::test_pluseq_scaled_sum_outer_product_I_2D()
+{
+  const double e = 1e-12;
+  const double vals[] = { 1, 2, 3, 4 };
+  const MsqMatrix<2,2> A(vals), I(1.0);
+  
+  MsqMatrix<2,2> R[3] = { 0.0, 0.0, 0.0 };
+  MsqMatrix<2,2> S[3] = { 0.0, 0.0, 0.0 };
+  pluseq_scaled_sum_outer_product( R, 1.0, I, A );
+  pluseq_scaled_sum_outer_product_I( S, 1.0, A );
+  ASSERT_MATRICES_EQUAL( R[0], S[0], e );
+  ASSERT_MATRICES_EQUAL( R[1], S[1], e );
+  ASSERT_MATRICES_EQUAL( R[2], S[2], e );
+  
+  MsqMatrix<2,2> T[3] = { 0.0, 0.0, 0.0 };
+  MsqMatrix<2,2> U[3] = { 0.0, 0.0, 0.0 };
+  pluseq_scaled_sum_outer_product( R, -0.333, I, A );
+  pluseq_scaled_sum_outer_product_I( S, -0.333, A );
+  ASSERT_MATRICES_EQUAL( T[0], U[0], e );
+  ASSERT_MATRICES_EQUAL( T[1], U[1], e );
+  ASSERT_MATRICES_EQUAL( T[2], U[2], e );
 }
 
 void TMPDerivsTest::test_pluseq_scaled_outer_product_I_I_2D()
@@ -411,3 +438,128 @@ void TMPDerivsTest::test_pluseq_scaled_outer_product_I_I_3D()
   ASSERT_MATRICES_EQUAL( R[4], S[4], e );
   ASSERT_MATRICES_EQUAL( R[5], S[5], e );
 }
+
+static inline MsqMatrix<3,3> 
+first_deriv_norm_sqr_adj( const MsqMatrix<3,3>& T )
+  { return 2 * ((sqr_Frobenius(T) * T) - (T * transpose(T) * T)); }
+
+void TMPDerivsTest::test_set_scaled_2nd_deriv_norm_sqr_adj()
+{
+  const double e = 5e-2;
+  const double delta = 1e-3;
+  const double vals[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+  const MsqMatrix<3,3> A(vals);
+  const MsqMatrix<3,3> dA = first_deriv_norm_sqr_adj(A);
+  
+  MsqMatrix<3,3> actual[6] = { -1, -1, -1, -1, -1, -1 };
+  set_scaled_2nd_deriv_norm_sqr_adj( actual, 1.0, A );
+  
+  MsqMatrix<3,3> B(A);
+  B(0,0) += delta;
+  MsqMatrix<3,3> dB = first_deriv_norm_sqr_adj(B);
+  dB -= dA;
+  dB /= delta;
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(0,0), actual[0](0,0), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(0,1), actual[0](0,1), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(0,2), actual[0](0,2), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(1,0), actual[1](0,0), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(1,1), actual[1](0,1), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(1,2), actual[1](0,2), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(2,0), actual[2](0,0), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(2,1), actual[2](0,1), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(2,2), actual[2](0,2), e );
+  
+  B = A;
+  B(0,1) += delta;
+  dB = first_deriv_norm_sqr_adj(B);
+  dB -= dA;
+  dB /= delta;
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(0,0), actual[0](1,0), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(0,1), actual[0](1,1), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(0,2), actual[0](1,2), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(1,0), actual[1](1,0), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(1,1), actual[1](1,1), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(1,2), actual[1](1,2), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(2,0), actual[2](1,0), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(2,1), actual[2](1,1), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(2,2), actual[2](1,2), e );
+  
+  B = A;
+  B(0,2) += delta;
+  dB = first_deriv_norm_sqr_adj(B);
+  dB -= dA;
+  dB /= delta;
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(0,0), actual[0](2,0), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(0,1), actual[0](2,1), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(0,2), actual[0](2,2), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(1,0), actual[1](2,0), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(1,1), actual[1](2,1), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(1,2), actual[1](2,2), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(2,0), actual[2](2,0), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(2,1), actual[2](2,1), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(2,2), actual[2](2,2), e );
+  
+  B = A;
+  B(1,0) += delta;
+  dB = first_deriv_norm_sqr_adj(B);
+  dB -= dA;
+  dB /= delta;
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(1,0), actual[3](0,0), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(1,1), actual[3](0,1), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(1,2), actual[3](0,2), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(2,0), actual[4](0,0), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(2,1), actual[4](0,1), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(2,2), actual[4](0,2), e );
+  
+  B = A;
+  B(1,1) += delta;
+  dB = first_deriv_norm_sqr_adj(B);
+  dB -= dA;
+  dB /= delta;
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(1,0), actual[3](1,0), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(1,1), actual[3](1,1), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(1,2), actual[3](1,2), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(2,0), actual[4](1,0), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(2,1), actual[4](1,1), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(2,2), actual[4](1,2), e );
+  
+  B = A;
+  B(1,2) += delta;
+  dB = first_deriv_norm_sqr_adj(B);
+  dB -= dA;
+  dB /= delta;
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(1,0), actual[3](2,0), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(1,1), actual[3](2,1), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(1,2), actual[3](2,2), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(2,0), actual[4](2,0), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(2,1), actual[4](2,1), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(2,2), actual[4](2,2), e );
+   
+  B = A;
+  B(2,0) += delta;
+  dB = first_deriv_norm_sqr_adj(B);
+  dB -= dA;
+  dB /= delta;
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(2,0), actual[5](0,0), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(2,1), actual[5](0,1), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(2,2), actual[5](0,2), e );
+   
+  B = A;
+  B(2,1) += delta;
+  dB = first_deriv_norm_sqr_adj(B);
+  dB -= dA;
+  dB /= delta;
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(2,0), actual[5](1,0), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(2,1), actual[5](1,1), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(2,2), actual[5](1,2), e );
+   
+  B = A;
+  B(2,2) += delta;
+  dB = first_deriv_norm_sqr_adj(B);
+  dB -= dA;
+  dB /= delta;
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(2,0), actual[5](2,0), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(2,1), actual[5](2,1), e );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( dB(2,2), actual[5](2,2), e );
+}
+
