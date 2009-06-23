@@ -1244,7 +1244,15 @@ and
 \end{eqnarray}
 
 \begin{eqnarray}
-\frac{\partial^2 \mu_3}{\partial T^2} = \frac{\partial^2}{\partial T^2} \frac{|adj T|^2}{\tau^2} - 2 \frac{\partial^2}{\partial T^2} \frac{tr(adj \, T)}{\tau}
+\frac{\partial \mu_3}{\partial T} &=& 
+  \frac{1}{\tau^2}\frac{\partial}{\partial T}|adj T|^2 +
+  \frac{2}{\tau^2}\left[ tr(adj T) - \frac{|adj T|^2}{\tau}\right ] \frac{\partial \tau}{\partial T} -
+  \frac{2}{\tau}\frac{\partial}{\partial T} tr(adj T) \\
+  & = & \nonumber 2 \left( 
+  \frac{1}{\tau^2}\left[ |T|^2 T - T T^t T \right] +
+  \frac{1}{\tau^2}\left[ tr(adj T) - \frac{|adj T|^2}{\tau}\right ] \frac{\partial \tau}{\partial T} -
+  \frac{1}{\tau}\left[ tr(T) I - T^t \right] \right) \\
+\frac{\partial^2 \mu_3}{\partial T^2} &=& \frac{\partial^2}{\partial T^2} \frac{|adj T|^2}{\tau^2} - 2 \frac{\partial^2}{\partial T^2} \frac{tr(adj \, T)}{\tau}
 \end{eqnarray}
 with
 \begin{eqnarray}
