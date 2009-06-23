@@ -415,6 +415,11 @@ void write_gnuplot( PatchData& pd, const char* out_filebase, MsqError& err )
   file.close();
 }
 
+/** Helper function for write_gnuplot_animator and write_gnuplot_overlay
+ *
+ * Read a set of input files to determine the bounding box
+ * of the combined data.
+ */
 static void find_gnuplot_agregate_range( int count,
                                          const char* basename,
                                          Vector3D& min,
@@ -444,7 +449,9 @@ static void find_gnuplot_agregate_range( int count,
   }
 }
   
-
+/** Write a GNU Plot script to produce an animation from a 
+ *  sequence of data files 
+ */
 void write_gnuplot_animator( int count, const char* basename, MsqError& err )
 {
   if (count <= 0)
@@ -529,6 +536,9 @@ static unsigned blue( int i, int c )
     return i * 511 / c - 127;
 }
 
+/** Write a GNU Plot script to produce a single plot from a 
+ *  sequence of data files 
+ */
 void write_gnuplot_overlay( int count, const char* basename, MsqError& err )
 {
   if (count <= 0)
@@ -825,11 +835,23 @@ void Transform2D::transform( const Vector3D& coords,
     vertical   = vertSign * (int)(myScale *  vert) +  vertOffset;
 }
 
-static void write_eps_curve( ostream &s,
-                            Transform2D& xform,
-                            Vector3D start,
-                            Vector3D mid, 
-                            Vector3D end )
+/** Write quadratic edge shape in PostScript format.
+ *
+ * Given the three points composing a quadratic mesh edge,
+ * write the cubic Bezier curve of the same shape in 
+ * PostScript format.  The formulas for P1 and P2 
+ * at the start of this function will result in the cubic
+ * terms of the Bezier curve dropping out, leaving the
+ * quadratic curve matching the edge shape function as 
+ * described in Section 3.6 of Hughes.  (If you're attempting
+ * to verify this, don't forget to adjust for the different
+ * parameter ranges: \f$ \xi = 2 t - 1 \f$).
+ */
+static void write_eps_quadratic_edge( ostream &s,
+                                      Transform2D& xform,
+                                      Vector3D start,
+                                      Vector3D mid, 
+                                      Vector3D end )
 {
   Vector3D P1 = 1./3 * (4 * mid - end);
   Vector3D P2 = 1./3 * (4 * mid - start);
@@ -905,15 +927,7 @@ void write_eps( Mesh* mesh,
       s << e_w << ' ' << e_h << " lineto"               << endl;
     }
     else {
-      // curveto draws a cubic bezier spline from the current
-      // point to the third point in the argument list.  The
-      // tanget at the start is the vector from the current point
-      // to the first argument.  The tangent at the end is the 
-      // vector from the second point to the third.  We are drawing
-      // a quadratic curve so the first two points are the same.
-      // Calculate that point such that we have the correct tangents
-      // for a quadratic edge shape function.
-      write_eps_curve( s, transf, iter.start(), *iter.mid(), iter.end() );
+      write_eps_quadratic_edge( s, transf, iter.start(), *iter.mid(), iter.end() );
         // draw rings at mid-edge node location
       //transf.transform( *(iter.mid()), w1, h1 );
       //s << w1+2 << ' ' << h1 <<  " moveto"            << endl;
@@ -933,13 +947,14 @@ void write_eps( Mesh* mesh,
   s << "%%EOF"                                        << endl;
 }
 
-
+/** Quadratic triangle shape function for use in write_eps_triangle */
 static double tN0( double r, double s ) { double t = 1 - r - s; return t*(2*t - 1); }
 static double tN1( double r, double   ) { return r*(2*r - 1); }
 static double tN2( double  , double s ) { return s*(2*s - 1); }
 static double tN3( double r, double s ) { double t = 1 - r - s; return 4*r*t; }
 static double tN4( double r, double s ) { return 4*r*s; }
 static double tN5( double r, double s ) { double t = 1 - r - s; return 4*s*t; }
+/** Quadratic triangle shape function for use in write_eps_triangle */
 static Vector3D quad_tri_pt( double r, double s, const Vector3D* coords )
 {
   Vector3D result = tN0(r,s) * coords[0];
@@ -997,6 +1012,14 @@ void write_eps_triangle( const Vector3D* coords,
                          const bool* fixed,
                          int width, int height )
 {
+  const int PT_RAD = 3; // radius of circles for drawing nodes, in points
+  const int PAD = PT_RAD + 2; // margin in points
+  const double EDGE_GRAY  = 0.0; // color for triangle edges, 0.0 => black
+  const double ISO_GRAY   = 0.7; // color for parameter iso-lines
+  const double NODE_GRAY  = 0.0; // color for node circle 
+  const double FIXED_GRAY = 1.0; // color to fill fixed nodes with, 1.0 => white
+  const double FREE_GRAY  = 0.0; // color to fill free nodes with
+
   Projection proj( X, Y );
   Transform2D transf( coords, num_vtx, proj, width, height );
     
@@ -1014,9 +1037,9 @@ void write_eps_triangle( const Vector3D* coords,
   str << "%%Title: Mesquite "                           << endl;
   str << "%%DocumentData: Clean7Bit"                    << endl;
   str << "%%Origin: 0 0"                                << endl;
-  str << "%%BoundingBox: -4 -4 " 
-      << transf.max_horizontal() + 8 <<  ' ' 
-      << transf.max_vertical()   + 8                    << endl;
+  str << "%%BoundingBox: " << -PAD << ' ' << -PAD << ' ' 
+      << transf.max_horizontal() + PAD <<  ' ' 
+      << transf.max_vertical()   + PAD                  << endl;
   str << "%%Pages: 1"                                   << endl;
   
   str << "%%BeginProlog"                                << endl;
@@ -1030,7 +1053,7 @@ void write_eps_triangle( const Vector3D* coords,
   
   str << "%%Page: 1 1"                                  << endl;
   str << "1 setlinewidth"                               << endl;
-  str << "0.0 setgray"                                  << endl;
+  str << EDGE_GRAY << " setgray"                        << endl;
 
   const double h = 0.5, t = 1.0/3.0, w = 2.0/3.0, s = 1./6, f = 5./6;
   const int NUM_ISO = 15;
@@ -1065,7 +1088,7 @@ void write_eps_triangle( const Vector3D* coords,
     str << "stroke"                                       << endl;
     
     if (draw_iso_lines) {
-      str << "0.5 setgray"                                << endl;
+      str << ISO_GRAY << " setgray"                       << endl;
       str << "newpath"                                    << endl;
       for (int i = 0; i < NUM_ISO; ++i) {
         double R[2] = { iso_params[i][0][0], iso_params[i][1][0] };
@@ -1084,13 +1107,13 @@ void write_eps_triangle( const Vector3D* coords,
   }
   else if (num_vtx == 6) {
     str << "newpath"                                      << endl;
-    write_eps_curve( str, transf, coords[0], coords[3], coords[1] );
-    write_eps_curve( str, transf, coords[1], coords[4], coords[2] );
-    write_eps_curve( str, transf, coords[2], coords[5], coords[0] );
+    write_eps_quadratic_edge( str, transf, coords[0], coords[3], coords[1] );
+    write_eps_quadratic_edge( str, transf, coords[1], coords[4], coords[2] );
+    write_eps_quadratic_edge( str, transf, coords[2], coords[5], coords[0] );
     str << "stroke"                                       << endl;
     
     if (draw_iso_lines) {
-      str << "0.5 setgray"                                << endl;
+      str << ISO_GRAY << " setgray"                       << endl;
       str << "newpath"                                    << endl;
       for (int i = 0; i < NUM_ISO; ++i) {
         double R[3] = { iso_params[i][0][0], 0, iso_params[i][1][0] };
@@ -1100,7 +1123,7 @@ void write_eps_triangle( const Vector3D* coords,
         Vector3D p[3] = { quad_tri_pt( R[0], S[0], coords ),
                           quad_tri_pt( R[1], S[1], coords ),
                           quad_tri_pt( R[2], S[2], coords ) };
-        write_eps_curve( str, transf, p[0], p[1], p[2] );
+        write_eps_quadratic_edge( str, transf, p[0], p[1], p[2] );
       }
       str << "    stroke"                                 << endl;
     }
@@ -1109,18 +1132,20 @@ void write_eps_triangle( const Vector3D* coords,
   if (draw_nodes) {
     for (size_t i = 0; i < num_vtx; ++i) {
       int w, h;
-      str << "0.0 setgray"                                << endl;
-      str << "newpath"                                    << endl;
-      transf.transform( coords[i], w, h );
-      str << w+3 << ' ' << h << " moveto"                 << endl;
-      str << w   << ' ' << h << " 3 0 360 arc"            << endl;
-      str << "stroke"                                     << endl;
+        // fill interior with either white or black depending
+        // on whether or not the vertex is fixed.
       if (fixed && fixed[i]) 
-        str << "1.0 setgray"                              << endl;
+        str << FIXED_GRAY << " setgray"                     << endl;
       else
-        str << "0.0 setgray"                              << endl;
-      str << w   << ' ' << h << " 3 0 360 arc closepath"  << endl;
-      str << "fill"                                       << endl;
+        str << FREE_GRAY << " setgray"                      << endl;
+      transf.transform( coords[i], w, h );
+      str << w+PT_RAD << ' ' << h << " moveto"              << endl;
+      str << w << ' ' << h << ' ' << PT_RAD << " 0 360 arc" << endl;
+      str << "closepath fill"                               << endl;
+      str << NODE_GRAY << " setgray"                        << endl;
+      str << "newpath"                                      << endl;
+      str << w << ' ' << h << ' ' << PT_RAD << " 0 360 arc" << endl;
+      str << "stroke"                                       << endl;
     }
   }
   
