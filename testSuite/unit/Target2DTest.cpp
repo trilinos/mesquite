@@ -321,7 +321,7 @@ void Target2DTest<Metric>::compare_eval_with_grad_and_eval_with_hess()
   ASSERT_MATRICES_EQUAL( g, h, 1e-5 );
 }
 
-double eps( double mu ) { return std::max( mu*1e-3, 5e-3 ); }
+double eps( double mu ) { return std::max( mu*1e-2, 5e-2 ); }
 
 template <class Metric> 
 void Target2DTest<Metric>::compare_anaytic_and_numeric_grads()
@@ -850,11 +850,11 @@ REGISTER_TARGET2D_TEST               ( Target2DShapeOrient,               false,
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeOrientAlt1,           false,  true, false, false, 0.0 );
 REGISTER_TARGET2D_TEST               ( Target2DShapeOrientAlt2,           false,  true, false, false, 0.0 );
 REGISTER_TARGET2D_TEST               ( Target2DShapeOrientBarrier,        false,  true, false,  true, 0.0 );
-REGISTER_TARGET2D_TEST               ( Target2DShapeOrientBarrierAlt1,    false,  true, false,  true, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeOrientBarrierAlt1,    false,  true, false,  true, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSize,                 false, false,  true, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeBarrier,          false, false,  true,  true, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeBarrierAlt1,      false, false,  true,  true, 0.0 );
-REGISTER_TARGET2D_TEST               ( Target2DShapeSizeBarrierAlt2,      false, false,  true,  true, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeBarrierAlt2,      false, false,  true,  true, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeOrient,           false, false, false, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeOrientAlt1,       false, false, false, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeOrientBarrier,    false, false, false,  true, 0.0 );

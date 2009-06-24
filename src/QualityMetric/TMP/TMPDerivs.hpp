@@ -43,6 +43,10 @@
 
 namespace MESQUITE_NS {
 
+/**\brief \f$ R *= s */
+template <unsigned D> inline
+void hess_scale( MsqMatrix<D,D> R[D*(D+1)/2], double alpha );
+
 
 /**\brief \f$ R = \alpha I_9 \f$
  *
@@ -92,7 +96,7 @@ void pluseq_scaled_2nd_deriv_of_det( MsqMatrix<3,3> R[6],
  *         symmetric matrix.
  */
 inline
-void pluseq_scaled_2nd_deriv_of_det( MsqMatrix<2,2> R[4], double alpha );
+void pluseq_scaled_2nd_deriv_of_det( MsqMatrix<2,2> R[3], double alpha );
 
 /**\brief \f$ R = \alpha \frac{\partial}{\partial T}det(T) \f$
  *
@@ -874,6 +878,15 @@ void pluseq_scaled( MsqMatrix<D,D> R[D*(D+1)/2],
 {
   for (unsigned i = 0; i < D*(D+1)/2; ++i)
     R[i] += alpha * Z[i];
+}
+
+
+/**\brief \f$ R *= s */
+template <unsigned D> inline
+void hess_scale( MsqMatrix<D,D> R[D*(D+1)/2], double alpha )
+{
+  for (unsigned i = 0; i < D*(D+1)/2; ++i)
+    R[i] *= alpha;
 }
 
 } // namespace MESQUITE_NS
