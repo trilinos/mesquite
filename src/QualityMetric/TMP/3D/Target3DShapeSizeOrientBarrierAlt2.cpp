@@ -46,11 +46,12 @@ bool Target3DShapeSizeOrientBarrierAlt2::evaluate(
                                              double& result, 
                                              MsqError& )
 {
-  if (invalid_determinant(det(A))) {
+  double d = det(A);
+  if (invalid_determinant(d)) {
     result = 0.0;
     return false;
   }
-  MsqMatrix<3,3> T_inv = W * inverse(A);
+  MsqMatrix<3,3> T_inv = 1/d * W * adj(A);
   T_inv(0,0) -= 1.0;
   T_inv(1,1) -= 1.0;
   T_inv(2,2) -= 1.0;
