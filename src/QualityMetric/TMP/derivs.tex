@@ -1303,13 +1303,29 @@ to both $n=2$ and $n=3$. \newline
 \begin{eqnarray}
 \frac{\partial \mu_n}{\partial T} & = & 2 \, T + \frac{2}{\tau^3} \left\{ \tau \, |T|^2 T - \tau \, T \, T^t T - |adj \, T|^2 \, (adj \, T)^t \right\}
 \end{eqnarray}
-Recall that for $n=2$, $|adj \, T|^2=|T|^2$. \newline
 
 \noindent The second derivative:
 \begin{eqnarray}
 \frac{\partial^2 \mu_n}{\partial T^2} & = & 2 I_{n^2} - \frac{\partial^2}{\partial T^2} \left( \frac{|adj \, T|^2}{\tau^2} \right)
 \end{eqnarray}
 The last term is given in \ref{adj-frac} and \ref{yadj-frac}. \newline
+
+\noindent Recall that for $n=2$, $|adj \, T|^2=|T|^2$. So for $n=2$, the above formulas simplify to:
+
+\begin{eqnarray}
+\mu_2(T) & = & \left(1 + \frac{1}{\tau^2}\right) |T|^2 - 4 \\
+\frac{ \partial \mu_2 }{ \partial T } & = & 2 \left\{ 
+          \left(1 + \frac{1}{\tau^2}\right) T - \frac{|T|^2}{\tau^3} 
+          \frac{\partial \tau}{\partial T} \right\} \\
+\nonumber
+\frac{\partial^2 \mu_2}{\partial T^2} & = &
+          2 \left(1 + \frac{1}{\tau^2}\right) I -
+          \frac{4}{\tau^3}\left( T \otimes \frac{\partial \tau}{\partial T} +
+                                 \frac{\partial \tau}{\partial T} \otimes T \right) +
+          \frac{6 |T|^2}{\tau^4}\left( \frac{\partial \tau}{\partial T} \otimes
+                                       \frac{\partial \tau}{\partial T} \right) -
+          \frac{2 |T|^2}{\tau^3}\frac{\partial^2 \tau}{\partial T^2}
+\end{eqnarray}
 
 \subsection{Derivatives of $\mu_2(T)=|T|^2 - 2 \ln(\tau) - 2$}
 
