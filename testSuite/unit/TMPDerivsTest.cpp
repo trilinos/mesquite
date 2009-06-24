@@ -43,7 +43,10 @@ private:
   CPPUNIT_TEST (test_set_scaled_2nd_deriv_of_det);
   CPPUNIT_TEST (test_pluseq_scaled_outer_product);
   CPPUNIT_TEST (test_set_scaled_outer_product);
-  CPPUNIT_TEST (test_pluseq_scaled_sum_outer_product);
+  CPPUNIT_TEST (test_set_scaled_sum_outer_product_2D);
+  CPPUNIT_TEST (test_set_scaled_sum_outer_product_3D);
+  CPPUNIT_TEST (test_pluseq_scaled_sum_outer_product_2D);
+  CPPUNIT_TEST (test_pluseq_scaled_sum_outer_product_3D);
   CPPUNIT_TEST (test_pluseq_scaled_sum_outer_product_I_2D);
   CPPUNIT_TEST (test_pluseq_scaled_sum_outer_product_I_3D);
   CPPUNIT_TEST (test_pluseq_scaled_outer_product_I_I_2D);
@@ -58,7 +61,10 @@ public:
   void test_set_scaled_2nd_deriv_of_det();
   void test_pluseq_scaled_outer_product();
   void test_set_scaled_outer_product();
-  void test_pluseq_scaled_sum_outer_product();
+  void test_set_scaled_sum_outer_product_2D();
+  void test_set_scaled_sum_outer_product_3D();
+  void test_pluseq_scaled_sum_outer_product_2D();
+  void test_pluseq_scaled_sum_outer_product_3D();
   void test_pluseq_scaled_sum_outer_product_I_2D();
   void test_pluseq_scaled_sum_outer_product_I_3D();
   void test_pluseq_scaled_outer_product_I_I_2D();
@@ -320,7 +326,7 @@ void TMPDerivsTest::test_set_scaled_outer_product()
 #endif
 }
 
-void TMPDerivsTest::test_pluseq_scaled_sum_outer_product()
+void TMPDerivsTest::test_set_scaled_sum_outer_product_3D()
 {
   const double vals1[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
   const double vals2[] = { -1, -2, -3, -4, -5, -6, -7, -8, -9 };
@@ -328,8 +334,8 @@ void TMPDerivsTest::test_pluseq_scaled_sum_outer_product()
   const double a = 2.3;
   const double e = 1e-12;
   
-  MsqMatrix<3,3> R[6] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-  pluseq_scaled_sum_outer_product( R, a, A, B );
+  MsqMatrix<3,3> R[6] = { 0.5, 0.5, 0.5, 0.5, 0.5, 0.5 };
+  set_scaled_sum_outer_product( R, a, A, B );
   
 #ifdef MSQ_ROW_BASED_OUTER_PRODUCT
   const MsqMatrix<3,3> E[6] = {
@@ -357,6 +363,95 @@ void TMPDerivsTest::test_pluseq_scaled_sum_outer_product()
   ASSERT_MATRICES_EQUAL( a * E[3], R[3], e );
   ASSERT_MATRICES_EQUAL( a * E[4], R[4], e );
   ASSERT_MATRICES_EQUAL( a * E[5], R[5], e );
+}
+void TMPDerivsTest::test_set_scaled_sum_outer_product_2D()
+{
+  const double vals1[] = { 1, 2, 3, 4 };
+  const double vals2[] = { -1, -2, -3, -4 };
+  const MsqMatrix<2,2> A(vals1), B(vals2);
+  const double a = 2.3;
+  const double e = 1e-12;
+  
+  MsqMatrix<2,2> R[3] = { 0.0, 0.0, 0.0 };
+  pluseq_scaled_sum_outer_product( R, a, A, B );
+  
+#ifdef MSQ_ROW_BASED_OUTER_PRODUCT
+  const MsqMatrix<2,2> E[3] = {
+    transpose(A.row(0)) * B.row(0) + transpose(B.row(0)) * A.row(0),
+    transpose(A.row(0)) * B.row(1) + transpose(B.row(0)) * A.row(1),
+    transpose(A.row(1)) * B.row(1) + transpose(B.row(1)) * A.row(1),
+  };
+#else
+  const MsqMatrix<2,2> E[3] = {
+    A.column(0) * transpose(B.column(0)) + B.column(0) * transpose(A.column(0)),
+    A.column(0) * transpose(B.column(1)) + B.column(0) * transpose(A.column(1)),
+    A.column(1) * transpose(B.column(1)) + B.column(1) * transpose(A.column(1)),
+  };
+#endif
+
+  ASSERT_MATRICES_EQUAL( a * E[0], R[0], e );
+  ASSERT_MATRICES_EQUAL( a * E[1], R[1], e );
+  ASSERT_MATRICES_EQUAL( a * E[2], R[2], e );
+}
+
+void TMPDerivsTest::test_pluseq_scaled_sum_outer_product_3D()
+{
+  const double vals1[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+  const double vals2[] = { -1, -2, -3, -4, -5, -6, -7, -8, -9 };
+  const MsqMatrix<3,3> A(vals1), B(vals2);
+  const double a = 2.3;
+  const double e = 1e-12;
+  
+  double off = 0.5;
+  MsqMatrix<3,3> R[6] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+  MsqMatrix<3,3> S[6] = { off, off, off, off, off, off };
+  MsqMatrix<3,3> E[6];
+  
+  pluseq_scaled_sum_outer_product( R, a, A, B );
+  pluseq_scaled_sum_outer_product( S, a, A, B );
+  set_scaled_sum_outer_product( E, a, A, B );
+
+  ASSERT_MATRICES_EQUAL( E[0], R[0], e );
+  ASSERT_MATRICES_EQUAL( E[1], R[1], e );
+  ASSERT_MATRICES_EQUAL( E[2], R[2], e );
+  ASSERT_MATRICES_EQUAL( E[3], R[3], e );
+  ASSERT_MATRICES_EQUAL( E[4], R[4], e );
+  ASSERT_MATRICES_EQUAL( E[5], R[5], e );
+
+  MsqMatrix<3,3> P(off);
+  ASSERT_MATRICES_EQUAL( E[0]+P, S[0], e );
+  ASSERT_MATRICES_EQUAL( E[1]+P, S[1], e );
+  ASSERT_MATRICES_EQUAL( E[2]+P, S[2], e );
+  ASSERT_MATRICES_EQUAL( E[3]+P, S[3], e );
+  ASSERT_MATRICES_EQUAL( E[4]+P, S[4], e );
+  ASSERT_MATRICES_EQUAL( E[5]+P, S[5], e );
+}
+
+void TMPDerivsTest::test_pluseq_scaled_sum_outer_product_2D()
+{
+  const double vals1[] = { 1, 2, 3, 4 };
+  const double vals2[] = { -1, -2, -3, -4 };
+  const MsqMatrix<2,2> A(vals1), B(vals2);
+  const double a = 2.3;
+  const double e = 1e-12;
+  
+  double off = 0.5;
+  MsqMatrix<2,2> R[3] = { 0.0, 0.0, 0.0 };
+  MsqMatrix<2,2> S[3] = { off, off, off };
+  MsqMatrix<2,2> E[3];
+  
+  pluseq_scaled_sum_outer_product( R, a, A, B );
+  pluseq_scaled_sum_outer_product( S, a, A, B );
+  set_scaled_sum_outer_product( E, a, A, B );
+
+  ASSERT_MATRICES_EQUAL( E[0], R[0], e );
+  ASSERT_MATRICES_EQUAL( E[1], R[1], e );
+  ASSERT_MATRICES_EQUAL( E[2], R[2], e );
+
+  MsqMatrix<2,2> P(off);
+  ASSERT_MATRICES_EQUAL( E[0]+P, S[0], e );
+  ASSERT_MATRICES_EQUAL( E[1]+P, S[1], e );
+  ASSERT_MATRICES_EQUAL( E[2]+P, S[2], e );
 }
 
 void TMPDerivsTest::test_pluseq_scaled_sum_outer_product_I_3D()

@@ -764,6 +764,7 @@ void TargetMetric2DTest::test_numerical_hessian()
 #include "Target2DShapeOrientAlt1.hpp"
 #include "Target2DShapeOrientAlt2.hpp"
 #include "Target2DShapeOrientBarrier.hpp"
+#include "Target2DShapeOrientBarrierAlt1.hpp"
 #include "Target2DShapeSize.hpp"
 #include "Target2DShapeSizeBarrier.hpp"
 #include "Target2DShapeSizeBarrierAlt1.hpp"
@@ -849,6 +850,7 @@ REGISTER_TARGET2D_TEST               ( Target2DShapeOrient,               false,
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeOrientAlt1,           false,  true, false, false, 0.0 );
 REGISTER_TARGET2D_TEST               ( Target2DShapeOrientAlt2,           false,  true, false, false, 0.0 );
 REGISTER_TARGET2D_TEST               ( Target2DShapeOrientBarrier,        false,  true, false,  true, 0.0 );
+REGISTER_TARGET2D_TEST               ( Target2DShapeOrientBarrierAlt1,    false,  true, false,  true, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSize,                 false, false,  true, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeBarrier,          false, false,  true,  true, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeBarrierAlt1,      false, false,  true,  true, 0.0 );
