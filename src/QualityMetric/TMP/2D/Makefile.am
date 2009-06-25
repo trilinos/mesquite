@@ -9,6 +9,7 @@ MSQ_SRCS += \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/TSquared2D.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DScale.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShape.cpp \
+	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeAlt1.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeBarrier.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeOrient.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeOrientAlt1.cpp \
@@ -16,6 +17,7 @@ MSQ_SRCS += \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeOrientBarrier.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeOrientBarrierAlt1.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeSize.cpp \
+	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeSizeAlt2.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeSizeBarrier.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeSizeBarrierAlt1.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeSizeBarrierAlt2.cpp \
@@ -40,6 +42,7 @@ MSQ_HDRS += \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/TSquared2D.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DScale.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShape.hpp \
+	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeAlt1.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeBarrier.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeOrient.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeOrientAlt1.hpp \
@@ -47,6 +50,7 @@ MSQ_HDRS += \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeOrientBarrier.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeOrientBarrierAlt1.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeSize.hpp \
+	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeSizeAlt2.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeSizeBarrier.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeSizeBarrierAlt1.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeSizeBarrierAlt2.hpp \

@@ -983,6 +983,7 @@ void TargetMetric3DTest::test_numerical_hessian()
 #include "TSquared3D.hpp"
 #include "Target3DShapeSizeOrient.hpp"
 #include "Target3DShapeSize.hpp"
+#include "Target3DShapeSizeAlt2.hpp"
 #include "Target3DShapeBarrier.hpp"
 #include "Target3DShape.hpp"
 #include "Target3DShapeSizeBarrierAlt1.hpp"
@@ -1057,6 +1058,7 @@ CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric3DTest, "TargetMetric3DTest" 
 //                                Metric                             !shape !size !orient barrer ideal
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeOrient,           false, false, false, false, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSize,                 false, false,  true,  true, 1.0 );
+REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeAlt2,             false, false,  true, false, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShape,                     false,  true,  true, false, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeBarrier,              false,  true,  true,  true, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeOrientAlt1,           false,  true, false, false, 0.0 );
