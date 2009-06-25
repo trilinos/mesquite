@@ -552,7 +552,7 @@ and, using \ref{hesstm} and \ref{hessttt}, the second derivative is
 \end{eqnarray}
 with $S_{ij}$ defined in \ref{sij}. \newline
 
-\subsection{First Partial Derivative of $\tau=det(T)$}
+\subsection{First Partial Derivative of $\tau=det(T)$ \label{tau}}
 
 \begin{eqnarray}
 f(T) &=& det(T) \\
@@ -977,7 +977,7 @@ added a check so that, given $T$, if $\psi(T) = 0$, then apply
 a random $\epsilon$ perturbation to each component of $T$ so that $\psi$ 
 is non-zero.  Then it is valid to apply \ref{psi1st} and \ref{psi2nd}. \newline
 
-\subsection{Derivatives of $\mu_2(T)=\frac{|T|^2 + 2}{2 \, \psi(T)}-1$}
+\subsection{Derivatives of $\mu_2(T)=\frac{|T|^2 + 2}{2 \, \psi(T)}-1$ \label{magic2}}
 
 \noindent This metric preserves the shape and size of the target and applies
 to $n=2$ only. The metric has a 'barrier', not against singular matrices,
@@ -1029,7 +1029,7 @@ for $tr(T) > 0$, and
 \end{eqnarray}
 for $tr(T) < 0$. \newline
 
-\subsection{Derivatives of $\mu_n(T) = \tau^2$}
+\subsection{Derivatives of $\mu_n(T) = \tau^2$ \label{tausqr} }
 
 \noindent This metric preserves the size of the target and is valid for both $n=2$ and $n=3$. \newline
 
@@ -1046,7 +1046,7 @@ To complete this expression, use formulas \ref{adjform} and either
 \ref{2ndtau2d} or \ref{2ndtau3d}. \newline
 
 
-\subsection{Derivatives of $\mu_n(T) = \left\{ |\tau-\gamma| - \left( \tau-\gamma \right) \right\}^4$}
+\subsection{Derivatives of $\mu_n(T) = \left\{ |\tau-\gamma| - \left( \tau-\gamma \right) \right\}^4$ \label{untangle1}}
 
 \noindent This metric is an untangler and is valid for both $n=2$ and $n=3$. 
 \begin{eqnarray}
@@ -1074,7 +1074,7 @@ To complete this expression, use formulas \ref{adjform} and either
 To complete these expressions, use formulas \ref{adjform} and either 
 \ref{2ndtau2d} or \ref{2ndtau3d}. \newline
 
-\subsection{Derivatives of $\mu_n(T) = \frac{1}{2} \left( - \tau + \sqrt{\tau^2 + \left(\epsilon \, \bar{\tau} \right)^2} \right)$}
+\subsection{Derivatives of $\mu_n(T) = \frac{1}{2} \left( - \tau + \sqrt{\tau^2 + \left(\epsilon \, \bar{\tau} \right)^2} \right)$ \label{untangle2}}
 
 \noindent This is an untangle metric for both $n=2$ and $n=3$. Both 
 $\epsilon$ and $\bar{\tau}$ are parameters. \newline
@@ -1094,7 +1094,7 @@ f & = & -1 +  \frac{\tau}{\sqrt{\tau^2 + \left(\epsilon \, \bar{\tau} \right)^2}
 \end{eqnarray}
 
 
-\subsection{Derivatives of $\mu_3(T) = |T|^3 - 3 \sqrt{3} \, \tau$}
+\subsection{Derivatives of $\mu_3(T) = |T|^3 - 3 \sqrt{3} \, \tau$ \label{shape3d}}
 
 \noindent This metric preserves the shape of the target and applies 
 to $n=3$ only. \newline
@@ -1118,7 +1118,7 @@ The first derivative exists for all $T$. \newline
 %\end{eqnarray}
 To complete this expression, use formula \ref{2ndtau3d}. \newline
 
-\subsection{Derivatives of $\mu_3(T) = |T|^3 - 3 \sqrt{3} \, \tau + \gamma (\tau-1)^2$}
+\subsection{Derivatives of $\mu_3(T) = |T|^3 - 3 \sqrt{3} \, \tau + \gamma (\tau-1)^2$ \label{ss3d}}
 
 \noindent This metric preserves the shape and size of the target and applies
 to $n=3$ only. \newline
@@ -1135,7 +1135,7 @@ in equations \ref{tauminus1} and \ref{tm1}. \newline
 \end{eqnarray}
 To complete the last expression, use formula \ref{2ndtau3d}. \newline
 
-\subsection{Derivatives of $\mu_2(T)=|T^t T - \tau \, I|^2$}
+\subsection{Derivatives of $\mu_2(T)=|T^t T - \tau \, I|^2$ \label{shape2d}}
 
 This metric preserves the shape of the target applies to $n=2$ only. \newline
 
@@ -1158,7 +1158,7 @@ where the first term is given in \ref{hessttt}, and the second a third terms are
 \frac{\partial^2}{\partial T^2} \tau^2 & = & 2 \, \left\{ \tau \frac{\partial^2 \tau}{\partial T^2} + \frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right\}
 \end{eqnarray}
 
-\subsection{Derivatives of $\mu_2(T)=|T-(adj T)^t|^2 + \gamma (\tau-1)^2$}
+\subsection{Derivatives of $\mu_2(T)=|T-(adj T)^t|^2 + \gamma (\tau-1)^2$ \label{ss2d} }
 
 This metric preserves the shape and size of the target and applies to $n=2$ only.
 \begin{eqnarray}
@@ -1173,7 +1173,7 @@ a linear combination of the derivatives of these two terms. \newline
 
 \section{Derivatives of Barrier Metrics}
 
-\subsection{Derivatives of $\mu_n(T)=\frac{|T-I_n|^2}{2 \, \tau}$}
+\subsection{Derivatives of $\mu_n(T)=\frac{|T-I_n|^2}{2 \, \tau}$ \label{sso+}}
 
 \noindent This metric preserves the shape, size, and orientation of the target
 and applies to both $n=2$ and $n=3$. It is assumed that $\tau>0$, since 
@@ -1200,7 +1200,7 @@ and
  & - & \frac{1}{\tau^2} \left\{ \, (T-I_n) \otimes (adj \, T)^t + (adj \, T)^t \otimes (T-I_n) \, \right\}
 \end{eqnarray}
 
-\subsection{Derivatives of $\mu_n(T)=|T^{-t}-I|^2$}
+\subsection{Derivatives of $\mu_n(T)=|T^{-t}-I|^2$ \label{sso+2}}
 
 \noindent This metric preserves the shape, size, and orientation of the target
 and applies to both $n=2$ and $n=3$. \newline
@@ -1287,7 +1287,7 @@ with the derivative of $\nu$ given in \ref{derv1-si+}. \newline
 Z & = & \nu \frac{\partial^2 \tau}{\partial T^2} - 2 \frac{\nu}{\tau} \left( \frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right) + \frac{\partial \nu}{\partial T} \otimes \frac{\partial \tau}{\partial T} + \frac{\partial \tau}{\partial T} \otimes \frac{\partial \nu}{\partial T}
 \end{eqnarray}
 
-\subsection{Derivatives of $\mu_n(T)=|T-T^{-t}|^2$}
+\subsection{Derivatives of $\mu_n(T)=|T-T^{-t}|^2$ \label{ss+1} }
 
 \noindent This metric preserves the shape and size of the target and applies
 to both $n=2$ and $n=3$. \newline
@@ -1327,7 +1327,7 @@ The last term is given in \ref{adj-frac} and \ref{yadj-frac}. \newline
           \frac{2 |T|^2}{\tau^3}\frac{\partial^2 \tau}{\partial T^2}
 \end{eqnarray}
 
-\subsection{Derivatives of $\mu_2(T)=|T|^2 - 2 \ln(\tau) - 2$}
+\subsection{Derivatives of $\mu_2(T)=|T|^2 - 2 \ln(\tau) - 2$ \label{ss+22d} }
 
 \noindent This metric preserves the shape and size of the target and applies
 to $n=2$. \newline
@@ -1340,7 +1340,7 @@ to $n=2$. \newline
 To complete this expression, use formulas \ref{adjform} and either 
 \ref{2ndtau2d} or \ref{2ndtau3d}. \newline
 
-\subsection{Derivatives of $\mu_3(T)=|T|^3 - 3 \sqrt{3} \ln(\tau) - 3 \sqrt{3}$}
+\subsection{Derivatives of $\mu_3(T)=|T|^3 - 3 \sqrt{3} \ln(\tau) - 3 \sqrt{3}$ \label{ss+23d}}
 
 \noindent This metric preserves the shape and size of the target and applies
 to $n=3$. \newline
@@ -1361,7 +1361,7 @@ to $n=3$. \newline
 \frac{\partial^2 \mu_3}{\partial T^2} & = & 3 \left\{ \, |T| \, I_{9} + \frac{T \otimes T}{|T|} \, \right\} - 3 \sqrt{3} \, \left\{ \frac{1}{\tau} \frac{\partial^2 \tau}{\partial T^2} - \frac{1}{\tau^2} \left( \frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right) \right\} \nonumber \\
 \end{eqnarray}
 
-\subsection{Derivatives of $\mu_2(T)=\frac{|T|^2-2 \psi(T)+2}{2 \, \tau}$}
+\subsection{Derivatives of $\mu_2(T)=\frac{|T|^2-2 \psi(T)+2}{2 \, \tau}$ \label{ss+32d}}
 
 \noindent This metric preserves the shape and size of the target and applies
 to $n=2$. \newline
@@ -1378,7 +1378,7 @@ with $\nu(T) = |T|^2 - 2 \psi(T) + 2$ being the metric in Section \ref{magic}.
 same as the formulas in Section \ref{nu-over-tau}, but with the first and 
 second derivatives of $\nu$ from Section \ref{magic}.  \newline
 
-\subsection{Derivatives of $\mu_3(T)=\frac{1}{9} \, \kappa^2(T) - 1$}
+\subsection{Derivatives of $\mu_3(T)=\frac{1}{9} \, \kappa^2(T) - 1$ \label{s+1} }
 
 \noindent This metric preserves the shape of the target and applies
 to $n=3$, the $n=2$ case being related to Mean Ratio. \newline
@@ -1398,7 +1398,7 @@ to $n=3$, the $n=2$ case being related to Mean Ratio. \newline
 $|adj \, T|^2$, and $\tau^2$, along with the product and quotient rules 
 \ref{prod1}, \ref{quotient1}, \ref{prod2}, and \ref{quotient2}. \newline 
 
-\subsection{Derivatives of $\mu_n(T)=\tau + 1/\tau - 2$}
+\subsection{Derivatives of $\mu_n(T)=\tau + 1/\tau - 2$ \label{z+1} }
 
 \noindent This metric preserves the size of the target and applies
 to both $n=2$ and $n=3$. \newline
@@ -1414,7 +1414,7 @@ to both $n=2$ and $n=3$. \newline
 To complete this expression, use formulas \ref{adjform} and either 
 \ref{2ndtau2d} or \ref{2ndtau3d}. \newline
 
-\subsection{Derivatives of $\mu_2(T) = \frac{|T|^2}{2 \tau}-1$}
+\subsection{Derivatives of $\mu_2(T) = \frac{|T|^2}{2 \tau}-1$ \label{shape+2d} }
 
 \noindent This metric preserves the shape of the target and applies
 to $n=2$. It is the 2D Mean Ratio. It is a special case of the result
@@ -1434,7 +1434,7 @@ in the Inverse Mean Ratio section below, but with an alternate derivation. \newl
 Z & = & |T|^2 \frac{\partial^2 \tau}{\partial T^2} - 4 \mu_2 \left(\frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right) + 2 \left( T \otimes \frac{\partial \tau}{\partial T} + \frac{\partial \tau}{\partial T} \otimes T \right) \nonumber \\
 \end{eqnarray}
 
-\subsection{Derivatives of $\mu_3(T)=\frac{|T|^3}{3 \sqrt{3} \tau}-1$}
+\subsection{Derivatives of $\mu_3(T)=\frac{|T|^3}{3 \sqrt{3} \tau}-1$ \label{shape+3d}}
 
 \noindent This metric preserves the shape of the target and applies
 to $n=3$. It is closely related to the 3D Inverse Mean Ratio. \newline
@@ -1455,7 +1455,7 @@ Z & = & |T|^3 \frac{\partial^2 \tau}{\partial T^2} - 2 \frac{|T|^3}{\tau} \left(
  & + & 3 \, |T| \left( T \otimes \frac{\partial \tau}{\partial T} + \frac{\partial \tau}{\partial T} \otimes T \right)
 \end{eqnarray}
 
-\subsection{Derivatives of $\mu_3(T)=\frac{|T|^2 + |adj T|^2}{6 \tau} - 1$}
+\subsection{Derivatives of $\mu_3(T)=\frac{|T|^2 + |adj T|^2}{6 \tau} - 1$ \label{ss+3d} }
 
 \noindent This metric preserves the shape and size of the target and applies
 to $n=3$. \newline
@@ -1477,7 +1477,7 @@ $g(T)=6 \tau$.  Then the relation \ref{quotient2} can be applied, with
 \end{eqnarray}
 The last derivative is basically given in \ref{hess-nrm-adj}. \newline
 
-\subsection{Derivatives of Inverse Mean Ratio, $\mu_n = \frac{|T|^2}{n \, det^{2/n}(T)}-1$}
+\subsection{Derivatives of Inverse Mean Ratio, $\mu_n = \frac{|T|^2}{n \, det^{2/n}(T)}-1$ \label{imr}}
 
 \begin{eqnarray}
 f(T) & = & \frac{|T|^2}{n \, det^{2/n}(T)} \\
@@ -1599,5 +1599,58 @@ f(T) & = & \frac{g(T)}{e(T)}
 \begin{eqnarray}
 \frac{\partial^2 \mu_n}{\partial A^2} = 2 \, I_{n^2}
 \end{eqnarray}
+
+\chapter{Implementation Names}
+
+The table in this section is a map from class names in the Mesquite implementation to sections in this document describing the corresponding
+metric and its derivatives.  Section numbers in parantheses indicate
+metrics that are not yet implemented.  Entries with question marks indicate
+implementations for which there is no corresponding section in this document.
+
+\begin{tabular}{|c|c|c|}
+\hline
+Name & 2D & 3D \\
+\hline
+Shape & \ref{2ds} & \ref{shape3d} \\
+ShapeAlt1 & \ref{shape2d} &  \\
+\hline
+ShapeBarrier & ? & \ref{shape+3d} \\
+ShapeBarrierAlt1 & (\ref{s+1}) & (\ref{s+1}) \\
+ShapeBarrierAlt2 & (\ref{shape+2d}) &  \\
+InverseMeanRatio & \ref{imr} & \ref{imr} \\
+\hline
+ShapeOrient & ? &  \\
+ShapeOrientAlt1 & \ref{si+} & \ref{si+} \\
+ShapeOrientAlt2 & ? &  \\
+\hline
+ShapeOrientBarrier & \ref{sso+} & \ref{sso+} \\
+ShapeOrientBarrierAlt1 & \ref{nu-over-tau} & \ref{nu-over-tau} \\
+\hline
+ShapeSize & \ref{magic} &  \\
+ShapeSizeAlt1 & (\ref{magic2}) &  \\
+ShapeSizeAlt2 & (\ref{ss2d}) & (\ref{ss3d}) \\
+\hline
+ShapeSizeBarrier & ? & (\ref{ss+3d}) \\
+ShapeSizeBarrierAlt1 & \ref{ss+1} & \ref{ss+1} \\
+ShapeSizeBarrierAlt2 & \ref{ss+22d} & \ref{ss+23d} \\
+ShapeSizeBarrierAlt3 & (\ref{ss+32d}) &  \\
+\hline
+ShapeSizeOrient & \ref{tmi} & \ref{tmi} \\
+ShapeSizeOrientAlt1 & ? &  \\
+\hline
+ShapeSizeOrientBarrier & ? & \\
+ShapeSizeOrientBarrierAlt2 & \ref{sso+2} & \ref{sso+2} \\
+\hline
+Size & \ref{tausqr} & \ref{tausqr} \\
+Tau & \ref{tau} & \ref{tau} \\
+\hline
+SizeBarrier & \ref{z+1} & \ref{z+1} \\
+\hline
+Squared & \ref{tsquared} & \ref{tsquared} \\
+\hline
+Untangle & \ref{untangle1} & \ref{untangle1} \\
+UntangleAlt1 & \ref{untangle2} & \ref{untangle2} \\
+\hline
+\end{tabular}
 
 \end{document}
