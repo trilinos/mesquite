@@ -41,6 +41,9 @@
 #include <stdarg.h>
 #include <assert.h>
 
+#include <cstring>
+using std::strncpy;
+
 namespace MESQUITE_NS {
 
 const char* MsqError::error_message() const

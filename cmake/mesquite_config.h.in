@@ -1,0 +1,98 @@
+/* include/mesquite_config.h.in.  Generated from configure.in by autoheader.  */
+
+#cmakedefine HAVE_FINITE
+
+#cmakedefine HAVE__ISFINITE
+
+/* Define to 1 if you have the `cbrt' function. */
+#cmakedefine HAVE_CBRT
+
+/* Define to 1 if you have the `clock' function. */
+#cmakedefine HAVE_CLOCK
+
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#cmakedefine HAVE_DLFCN_H
+
+/* Define to 1 if you have the <fcntl.h> header file. */
+#cmakedefine HAVE_FCNTL_H
+
+/* System has ieeefp.h */
+#cmakedefine HAVE_IEEEFP_H
+
+/* System has inttypes.h */
+#cmakedefine HAVE_INTTYPES_H
+
+/* System has termios.h */
+#cmakedefine HAVE_TERMIOS_H
+
+/* System has sys/ioctl.h */
+#cmakedefine HAVE_SYS_IOCTL_H
+
+/* Define to 1 if you have the `cppunit' library (-lcppunit). */
+#cmakedefine HAVE_LIBCPPUNIT
+
+/* Define to 1 if you have the `exoIIv2c' library (-lexoIIv2c). */
+#cmakedefine HAVE_LIBEXOIIV2C
+
+/* Define to 1 if you have the <memory.h> header file. */
+#cmakedefine HAVE_MEMORY_H
+
+/* System has stdint.h */
+#cmakedefine HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#cmakedefine HAVE_STDLIB_H
+
+/* Define to 1 if you have the <strings.h> header file. */
+#cmakedefine HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#cmakedefine HAVE_STRING_H
+
+/* Define to 1 if you have the <sys/file.h> header file. */
+#cmakedefine HAVE_SYS_FILE_H
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#cmakedefine HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/time.h> header file. */
+#cmakedefine HAVE_SYS_TIME_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#cmakedefine HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have the `times' function. */
+#cmakedefine HAVE_TIMES
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#cmakedefine HAVE_UNISTD_H
+
+/* Define to 1 if you have the `vsnprintf' function. */
+#cmakedefine HAVE_VSNPRINTF
+
+/* Define to 1 if you have the `vsprintf' function. */
+#cmakedefine HAVE_VSPRINTF
+
+/* Define to c++ preprocessor macro for function name */
+#cmakedefine MSQ_FUNCTION @Mesquite_MSQ_FUNCTION@
+
+/* Define if old C .h headers must be used for C++. */
+#cmakedefine MSQ_USE_OLD_C_HEADERS
+
+/* Define if old .h headers must be used for C++ I/O. */
+#cmakedefine MSQ_USE_OLD_IO_HEADERS
+
+/* Define if old .h headers must be used for C++ standard lib. */
+#cmakedefine MSQ_USE_OLD_STD_HEADERS
+
+/* Define if should trapping FPEs is enabled */
+#cmakedefine MSQ_TRAP_FPE
+
+/* Define if you want to turn off asserts in debug mode*/
+#cmakedefine NDEBUG
+
+/* Define if you want to enable debug features */
+#cmakedefine MSQ_ENABLE_DEBUG
+
+/* Define if you anw to enable function timers */
+#cmakedefine MSQ_USE_FUNCTION_TIMERS
