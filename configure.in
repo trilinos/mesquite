@@ -665,6 +665,11 @@ AM_CONDITIONAL([ENABLE_IMESHP],[test "xyes" = "x$ENABLE_IMESHP"])
 #------------------------------------------------------------------------------
 # The End
 #------------------------------------------------------------------------------
+if test "x" = "x$docdir"; then
+  docdir='${datadir}/doc/mesquite'
+  AC_SUBST(docdir)
+fi
+
 MESQUITE_LIBS="$MESQUITE_LIBS -lm"
 AC_SUBST(SED)
 AC_SUBST(DOXYGEN)
