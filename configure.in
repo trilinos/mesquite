@@ -651,6 +651,11 @@ ITAPS_API( [igeom],  [IGEOM],  [iGeom], [$ENABLE_IREL]   )
 #------------------------------------------------------------------------------
 # The End
 #------------------------------------------------------------------------------
+if test "x" = "x$docdir"; then
+  docdir='${datadir}/doc/mesquite'
+  AC_SUBST(docdir)
+fi
+
 MESQUITE_LIBS="$MESQUITE_LIBS -lm"
 AC_SUBST(SED)
 AC_SUBST(DOXYGEN)
