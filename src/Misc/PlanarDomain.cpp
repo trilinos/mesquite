@@ -26,6 +26,8 @@
    
   ***************************************************************** */
 #include "PlanarDomain.hpp"
+#include "MsqError.hpp"
+#include "MsqVertex.hpp"
 
 #ifdef MSQ_USE_OLD_STD_HEADERS
 # include <algorithm.h>
@@ -92,3 +94,126 @@ void Mesquite::PlanarDomain::domain_DoF( const Mesh::VertexHandle* ,
   msq_std::fill( dof_array, dof_array + num_vertices, 2 );
 }
 
+Mesquite::PlanarDomain Mesquite::PlanarDomain::fit_vertices( Mesquite::Mesh* mesh, 
+                                                             double epsilon, 
+                                                             Mesquite::MsqError& err )
+{
+  // get all vertex coordiantes
+  msq_std::vector<Mesh::VertexHandle> verts;
+  mesh->get_all_vertices( verts, err ); 
+  if (MSQ_CHKERR(err))
+    return PlanarDomain(XY);
+  if (verts.size() < 3) {
+    MSQ_SETERR(err)("No mesh", MsqError::INVALID_MESH);
+    return PlanarDomain(XY);
+  }
+  msq_std::vector<MsqVertex> coords(verts.size());
+  mesh->vertices_get_coordinates( &verts[0], &coords[0], verts.size(), err ); 
+  if (MSQ_CHKERR(err))
+    return PlanarDomain(XY);
+  
+    // Assume all vertices are co-planer.  Find a triple of
+    // vertices that will result in a small rounding error.
+  Vector3D box_min(HUGE_VAL,HUGE_VAL,HUGE_VAL),
+           box_max(-HUGE_VAL,-HUGE_VAL,-HUGE_VAL);
+  for (size_t i = 0; i < coords.size(); ++i) {
+    for (int j = 0; j < 3; ++j) {
+      if (box_min[j] > coords[i][j])
+        box_min[j] = coords[i][j];
+      if (box_max[j] < coords[i][j])
+        box_max[j] = coords[i][j];
+    }
+  }
+  Vector3D corners[8] = { Vector3D(box_min[0],box_min[1],box_min[2]),
+                          Vector3D(box_max[0],box_min[1],box_min[2]),
+                          Vector3D(box_min[0],box_max[1],box_min[2]),
+                          Vector3D(box_max[0],box_max[1],box_min[2]),
+                          Vector3D(box_min[0],box_min[1],box_max[2]),
+                          Vector3D(box_max[0],box_min[1],box_max[2]),
+                          Vector3D(box_min[0],box_max[1],box_max[2]),
+                          Vector3D(box_max[0],box_max[1],box_max[2]) };
+                          
+  
+  Vector3D pts[8] = { coords[0], coords[0], coords[0], coords[0],
+                      coords[0], coords[0], coords[0], coords[0] };
+  for (size_t i = 1; i < coords.size(); ++i) {
+    for (int j = 0; j < 8; ++j) {
+      if ((pts[j] - corners[j]).length_squared() > 
+          (coords[i] - corners[j]).length_squared())
+        pts[j] = coords[i];
+    }
+  }
+  
+  Vector3D normal(0,0,0);
+  for (int i = 0; i < 6; ++i) 
+    for (int j = i+1; j < 7; ++j)
+      for (int k = j+1; k < 8; ++k) {
+        Vector3D n = (pts[j]-pts[i]) * (pts[k]-pts[i]);
+        if (n.length_squared() > normal.length_squared())
+          normal = n;
+      }
+  
+  if (normal.length_squared() < epsilon*epsilon) {
+    MSQ_SETERR(err)("All vertices colinear", MsqError::INVALID_MESH);
+    return PlanarDomain(XY);
+  }
+  
+    // check that all vertices line in plane
+  Vector3D point = coords[0];
+  normal /= normal.length();
+  const double d = -(normal % point);
+  for (size_t i = 0; i < coords.size(); ++i) {
+    double dist = fabs( normal % coords[i] + d );
+    if (dist > epsilon) {
+      MSQ_SETERR(err)("Vertices are not coplanar", MsqError::INVALID_MESH );
+      return PlanarDomain(XY);
+    }
+  }
+  
+    // free memory used to hold vertex data
+  msq_std::vector<MsqVertex>* tmp_vvect = new msq_std::vector<MsqVertex>;
+  tmp_vvect->swap( coords );
+  delete tmp_vvect;
+  msq_std::vector<Mesh::VertexHandle>* tmp_hvect = new msq_std::vector<Mesh::VertexHandle>;
+  tmp_hvect->swap( verts );
+  delete tmp_hvect;
+  
+    // now count inverted elements
+  coords.resize(3);
+  size_t inverted_count = 0;
+  msq_std::vector<Mesh::ElementHandle> elems;
+  msq_std::vector<size_t> junk;
+  mesh->get_all_elements( elems, err ); 
+  if (MSQ_CHKERR(err))
+    return PlanarDomain(XY);
+  for (size_t i = 0; i < elems.size(); ++i) {
+    
+    verts.clear();
+    mesh->elements_get_attached_vertices( &elems[0], 1, verts, junk, err );
+    if (MSQ_CHKERR(err))
+      return PlanarDomain(XY);
+
+    EntityTopology type;
+    mesh->elements_get_topologies( &elems[i], &type, 1, err );
+    if (TopologyInfo::dimension(type) != 2 || verts.size() < 3) {
+      MSQ_SETERR(err)("Mesh contains non-surface elements", MsqError::INVALID_MESH);
+      return PlanarDomain(XY);
+    }
+    
+    mesh->vertices_get_coordinates( &verts[0], &coords[0], 3, err ); 
+    if (MSQ_CHKERR(err))
+      return PlanarDomain(XY);
+    Vector3D n = (coords[1] - coords[0]) * (coords[2] - coords[0]);
+    if (n % normal < 0.0)
+      ++inverted_count;
+  }
+  
+    // if most elements are inverted, flip normal
+  if (2*inverted_count > elems.size())
+    normal = -normal;
+  
+  return PlanarDomain( normal, point );
+}
+    
+
+    

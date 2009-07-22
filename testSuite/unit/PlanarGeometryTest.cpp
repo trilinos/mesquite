@@ -73,6 +73,8 @@ SimplifiedGeometryEngine.
 
 #include "MsqFPE.hpp"
 
+#include "UnitUtil.hpp"
+
 #include "MeshImpl.hpp"
 #ifdef MSQ_USE_OLD_IO_HEADERS
 #include <iostream.h>
@@ -94,7 +96,8 @@ private:
   CPPUNIT_TEST (test_plane_quad_tangled);
     //run cg with asm metric on tri mesh in y=-5 plane
   CPPUNIT_TEST (test_plane_tri_xz);
-  
+    // test fit plane
+  CPPUNIT_TEST (test_fit_plane);
   CPPUNIT_TEST_SUITE_END();
   
 private:
@@ -373,9 +376,48 @@ public:
        print_timing_diagnostics(cout);
      }
   
-   
+   void test_fit_plane();
 };
 
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(PlanarGeometryTest, "PlanarGeometryTest");
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(PlanarGeometryTest, "Regression");
+
+void PlanarGeometryTest::test_fit_plane()
+{
+  MsqPrintError err(msq_stdio::cerr);
+  PlanarDomain plane(PlanarDomain::XY,-1);
+  const double epsilon = 1e-8;
+  
+  MeshImpl mesh1;
+  mesh1.read_vtk(MESH_FILES_DIR "2D/VTK/bad_circle_tri.vtk", err);
+  ASSERT_NO_ERROR(err);
+  plane = PlanarDomain::fit_vertices( &mesh1, epsilon, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(0,0,1), plane.get_normal(), epsilon );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 5, plane.get_coeff(), epsilon );
+  
+  MeshImpl mesh2;
+  mesh2.read_vtk(MESH_FILES_DIR "2D/VTK/equil_tri.vtk", err);
+  ASSERT_NO_ERROR(err);
+  plane = PlanarDomain::fit_vertices( &mesh2, epsilon, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(0,0,1), plane.get_normal(), epsilon );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, plane.get_coeff(), epsilon );
+  
+  MeshImpl mesh3;
+  mesh3.read_vtk(MESH_FILES_DIR "2D/VTK/quads_4by2.vtk", err);
+  ASSERT_NO_ERROR(err);
+  plane = PlanarDomain::fit_vertices( &mesh3, epsilon, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(0,0,1), plane.get_normal(), epsilon );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( -2, plane.get_coeff(), epsilon );
+  
+  MeshImpl mesh4;
+  mesh4.read_vtk(MESH_FILES_DIR "2D/VTK/tri_5_xz.vtk", err);
+  ASSERT_NO_ERROR(err);
+  plane = PlanarDomain::fit_vertices( &mesh4, epsilon, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_VECTORS_EQUAL( Vector3D(0,-1,0), plane.get_normal(), epsilon );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( -5, plane.get_coeff(), epsilon );
+}
