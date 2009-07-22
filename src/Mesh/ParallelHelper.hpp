@@ -124,7 +124,6 @@ namespace MESQUITE_NS
     int num_vtx_partition_boundary_local;
     int num_vtx_partition_boundary_remote;
     msq_std::vector<Mesquite::Mesh::VertexHandle> *part_vertices;
-    msq_std::vector<Mesquite::Mesh::VertexHandle> *unused_ghost_vertices;
     int* part_proc_owner;
     int* part_gid;
     int* part_smoothed_flag;
@@ -150,6 +149,19 @@ namespace MESQUITE_NS
     int iteration;
     int global_work_remains;
     int next_vtx_partition_boundary;
+    /* for exchanging unused ghost node information */
+    int unghost_num_vtx;
+    msq_std::vector<Mesquite::Mesh::VertexHandle> *unghost_vertices;
+    int unghost_num_procs;
+    int* unghost_procs;
+    int* unghost_procs_num_vtx;
+    int *unghost_procs_offset;
+    int update_num_vtx;
+    int* update_gid;
+    int update_num_procs;
+    int* update_procs;
+    int* update_procs_num_vtx;
+    int* update_procs_offset;
 
     // functions for VertexMover::loop_over_mesh()
     void compute_independent_set();

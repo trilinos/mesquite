@@ -11,6 +11,10 @@
 
 #define VERTEX_HEADER 1
 #define VERTEX_BLOCK 1000 
+#define GHOST_NODE_INFO 2000 
+#define GHOST_NODE_VERTICES_WANTED 2001
+#define GHOST_NODE_VERTEX_GIDS 2002
+#define GHOST_NODE_VERTEX_UPDATES 2003
 
 namespace MESQUITE_NS {
 
@@ -37,6 +41,39 @@ namespace MESQUITE_NS {
             return (*map_element).second;
         }
     }
+
+static void my_quicksort(int* a, int* b, Mesquite::Mesh::VertexHandle* c, int i, int j)
+{
+  int in_i = i;
+  int in_j = j;
+  int w;
+  Mesquite::Mesh::VertexHandle w1;
+  int key = a[(i+j)/2];
+  do
+    {
+      while ( a[i] < key ) i++;
+      while ( a[j] > key ) j--;
+      if (i<j)
+	{
+	  w = a[i];
+	  a[i] = a[j];
+	  a[j] = w;
+	  w = b[i];
+	  b[i] = b[j];
+	  b[j] = w;
+	  w1 = c[i];
+	  c[i] = c[j];
+	  c[j] = w1;	  
+	}
+    } while (++i<=--j);
+  if (i == j+3)
+    {
+      i--;
+      j++;
+    }
+  if (j>in_i) my_quicksort(a, b, c, in_i, j);
+  if (i<in_j) my_quicksort(a, b, c, i, in_j);
+}
 
 static void my_quicksort(int* a, int i, int j)
 {
@@ -180,7 +217,7 @@ ParallelHelperImpl::ParallelHelperImpl()
   vertices = 0;
   vtx_in_partition_boundary = 0;
   part_vertices = 0;
-  unused_ghost_vertices = 0;
+  unghost_vertices = 0;
   part_proc_owner = 0;
   part_gid = 0;
   part_smoothed_flag = 0;
@@ -201,8 +238,6 @@ ParallelHelperImpl::ParallelHelperImpl()
 
 ParallelHelperImpl::~ParallelHelperImpl()
 {
-  // just making sure
-  smoothing_close();
 }
 
 bool ParallelHelperImpl::set_parallel_mesh(ParallelMesh* mesh) {
@@ -291,8 +326,7 @@ bool ParallelHelperImpl::smoothing_init()
 
   if (0) printf("[%d] gotten adjacent elements for %d elements\n",rank,num_elems);
 
-  /* determine which vertices are smoothed as part of the boundary */
-  num_vtx_partition_boundary = 0;
+  /* determine which vertices are smoothed as part of the boundary (and which are unused ghost vertices) */
   num_vtx_partition_boundary_local = 0;
   num_vtx_partition_boundary_remote = 0;
   for (i=0;i<num_elems;i++) {
@@ -321,8 +355,6 @@ bool ParallelHelperImpl::smoothing_init()
 	  incident_vtx = adj_vertices_lid[j];
 	  /* obviously the vertex does not need to be marked if it was already marked or if it is app_fixed*/
 	  if (vtx_in_partition_boundary[incident_vtx] <= 0 && app_fixed[incident_vtx] == 0) {
-	    /* collect stats */
-	    //	      smooth_stats.num_part_bndy_vtx++;
 	    /* mark and count the vertex */
 	    if (proc_owner[incident_vtx]!=rank) {
 	      vtx_in_partition_boundary[incident_vtx] = 2;
@@ -336,14 +368,14 @@ bool ParallelHelperImpl::smoothing_init()
 	}
     }
     else if (vtx_off_proc > 0) {
-      /* mark the vertices as boundary-1 if the element has only off-processor vertices */
-	for (j=(*vtx_offsets)[i];j<(int)((*vtx_offsets)[i+1]);j++) {
-	  incident_vtx = adj_vertices_lid[j];
-	  /* obviously the vertex is not marked if it was already marked or if it is app_fixed*/
-	  if (vtx_in_partition_boundary[incident_vtx] == 0 && app_fixed[incident_vtx] == 0) {
-	    vtx_in_partition_boundary[incident_vtx] = -1;
-	  }
+      /* mark the vertices as boundary-1 (aka unused ghost) if the element has only off-processor vertices */
+      for (j=(*vtx_offsets)[i];j<(int)((*vtx_offsets)[i+1]);j++) {
+	incident_vtx = adj_vertices_lid[j];
+	/* obviously the vertex is not marked if it was already marked or if it is app_fixed*/
+	if (vtx_in_partition_boundary[incident_vtx] == 0 && app_fixed[incident_vtx] == 0) {
+	  vtx_in_partition_boundary[incident_vtx] = -1;
 	}
+      }
     }
   }    
 
@@ -366,10 +398,10 @@ bool ParallelHelperImpl::smoothing_init()
   delete vtx_offsets; vtx_offsets = 0;
 
   /********************************************************************
- COLLECT THE PARTITION BOUNDARY VERTICES
+ COLLECT THE PARTITION BOUNDARY VERTICES AND THE UNUSED GHOST VERTICES
   ********************************************************************/
 
-  /* create the vectors to stores the partition boundary vertex data */
+  /* create the vectors to store the partition boundary vertex data */
   part_vertices = new msq_std::vector<Mesquite::Mesh::VertexHandle>;
   part_vertices->resize(num_vtx_partition_boundary);
   part_proc_owner = new int[num_vtx_partition_boundary];
@@ -407,25 +439,34 @@ bool ParallelHelperImpl::smoothing_init()
     }
   }
 
-  /* count the number of un-used ghost vertices */
-  int num_unused_ghost_vtx = 0;
+  /* create our own 'very pseudo random' numbers */
+  for (i=0;i<num_vtx_partition_boundary;i++)
+    part_rand_number[i] = generate_random_number(generate_random_numbers, part_proc_owner[i], part_gid[i]);
+
+  /* count the number of unused ghost vertices */
+  unghost_num_vtx = 0;
   for (i=0;i<num_vertex;i++) {
     if (vtx_in_partition_boundary[i]==-1) {
-      num_unused_ghost_vtx++;
+      unghost_num_vtx++;
     }
   }
+  //  printf("[%d] found %d unused ghost vertices (local %d remote %d)\n",rank, unghost_num_vtx, num_vtx_partition_boundary_local,num_vtx_partition_boundary_remote);
 
-  if (0 && num_unused_ghost_vtx) {printf("[%d] found %d unused ghost vertices (total %d local %d remote %d) \n",rank, num_unused_ghost_vtx, num_vertex, num_vtx_partition_boundary_local,num_vtx_partition_boundary_remote); fflush(NULL);}
+  /* create the vectors to store the unused ghost vertices */ 
+  unghost_vertices = new msq_std::vector<Mesquite::Mesh::VertexHandle>;
+  unghost_vertices->resize(unghost_num_vtx);
+  int* unghost_proc_owner = new int[unghost_num_vtx];
+  int* unghost_gid = new int[unghost_num_vtx];
 
-  if (num_unused_ghost_vtx) {
-    unused_ghost_vertices = new msq_std::vector<Mesquite::Mesh::VertexHandle>;
-    unused_ghost_vertices->resize(num_unused_ghost_vtx);
-    j = 0;
-    for (i=0;i<num_vertex;i++) {
-      if (vtx_in_partition_boundary[i]==-1) {
-	(*unused_ghost_vertices)[j] = (*vertices)[i];
-	j++;
-      }
+  /* store the unused ghost vertices that are copies of vertices from other processors and will need to be received */
+  j=0;
+  for (i=0;i<num_vertex;i++) {
+    if (vtx_in_partition_boundary[i]==-1) {
+      (*unghost_vertices)[j] = (*vertices)[i];
+      unghost_proc_owner[j] = proc_owner[i];  assert(proc_owner[i] != rank);
+      unghost_gid[j] = gid[i];
+      // printf(" %d", unghost_gid[j]);
+      j++;
     }
   }
 
@@ -433,9 +474,202 @@ bool ParallelHelperImpl::smoothing_init()
   delete [] gid; gid = 0;
   delete [] proc_owner; proc_owner = 0;
 
-  /* create our own 'very pseudo random' numbers */
-  for (i=0;i<num_vtx_partition_boundary;i++)
-    part_rand_number[i] = generate_random_number(generate_random_numbers, part_proc_owner[i], part_gid[i]);
+  unghost_num_procs = 0;
+  unghost_procs = 0;
+  unghost_procs_offset = 0;
+  unghost_procs_num_vtx = 0;
+  if (unghost_num_vtx)
+  {
+    /* sort the unused ghost vertices by processor */
+    my_quicksort(unghost_proc_owner, unghost_gid, &((*unghost_vertices)[0]), 0, unghost_num_vtx-1);
+
+    /* count the number of processors we have unused ghost data from that we want to get updated */
+    unghost_num_procs = 1;
+    for (i = 1; i < unghost_num_vtx; i++)
+    {
+      if (unghost_proc_owner[i-1] != unghost_proc_owner[i]) unghost_num_procs++;
+    }
+
+    /* get the ids of those processors and the number of vertices we want from each */
+    unghost_procs = new int[unghost_num_procs];
+    unghost_procs_offset = new int[unghost_num_procs+1];
+    unghost_procs_num_vtx = new int[unghost_num_procs];
+    unghost_procs[0] = unghost_proc_owner[0];
+    unghost_procs_offset[0] = 0;
+    for (i = 1, j = 1; i < unghost_num_vtx; i++)
+    {
+      if (unghost_proc_owner[i-1] != unghost_proc_owner[i])
+      {
+	unghost_procs[j] = unghost_proc_owner[i];
+	unghost_procs_offset[j] = i;
+	unghost_procs_num_vtx[j-1] = unghost_procs_offset[j] - unghost_procs_offset[j-1];
+	assert(unghost_procs_num_vtx[j-1] > 0);
+	j++;
+      }
+    }
+    unghost_procs_offset[j] = i;
+    unghost_procs_num_vtx[j-1] = unghost_procs_offset[j] - unghost_procs_offset[j-1];
+    assert(unghost_procs_num_vtx[j-1] > 0);
+    assert(j == unghost_num_procs);
+
+    delete [] unghost_proc_owner; unghost_proc_owner = 0;
+
+    // printf("[%d] have ugns from %d processor(s) (%d,%d,%d)\n", rank, unghost_num_procs, unghost_procs[0], (unghost_num_procs>1) ? unghost_procs[1] : -1, (unghost_num_procs>2) ? unghost_procs[1] : -1);
+  }
+
+  /* this will eventually store to how many processors each processor needs to send unused ghost data to */
+  int* num_sends_of_unghost = 0;
+
+  /* gather the information about how many processors need ghost data */
+  if (rank == 0)
+  {
+    /* this will eventually store to how many processors each processor needs to send unused ghost data to */
+    num_sends_of_unghost = new int[nprocs];
+  }
+  /* temporary used for the initial gather in which each proc tells the root from how many procs it wants unused ghost data updates */
+  MPI_Gather(&unghost_num_procs, 1, MPI_INT, num_sends_of_unghost, 1, MPI_INT, 0, communicator);
+
+  /* now each processor tells the root node from which processors they want unused ghost nodes information */
+  if (rank == 0)
+  {
+    int procs_num = 0;
+    int procs_max = 0;
+    /* first count how many processors will send unused ghost node info and find the maximum they will send */
+    for (i = 1; i < nprocs; i++)
+    {
+      if (num_sends_of_unghost[i])
+      {
+	procs_num++;
+	if (num_sends_of_unghost[i] > procs_max) procs_max = num_sends_of_unghost[i];
+      }
+    }
+    /* clean the temporary used array */
+    for (i = 0; i < nprocs; i++) num_sends_of_unghost[i] = 0;
+    /* process rank 0's unused ghost nodes procs first */
+    for (j = 0; j < unghost_num_procs; j++)
+    {
+      num_sends_of_unghost[unghost_procs[j]]++;
+    }
+    /* now we process messages from all other processors that want unused ghost node information */
+    int unghost_procs_array[procs_max];
+    for (i = 0; i < procs_num; i++)
+    {
+      MPI_Status status;
+      MPI_Recv(unghost_procs_array, procs_max, MPI_INT, MPI_ANY_SOURCE, GHOST_NODE_INFO, communicator, &status);
+      int count;
+      MPI_Get_count(&status, MPI_INT, &count);
+      for (j = 0; j < count; j++)
+      {
+	num_sends_of_unghost[unghost_procs_array[j]]++;
+      }
+    }
+  }
+  else
+  {
+    if (unghost_num_vtx)
+    {
+      MPI_Send(unghost_procs, unghost_num_procs, MPI_INT, 0, GHOST_NODE_INFO, communicator);
+    }
+  }
+
+  /* now the root node knows for each processor on how many other processors they have ghost nodes (which need updating) */ 
+  /* the scatter distributes this information to each processor */
+  MPI_Scatter(num_sends_of_unghost, 1, MPI_INT, &update_num_procs, 1, MPI_INT, 0, communicator);
+
+  if (rank == 0) delete [] num_sends_of_unghost;
+
+  // printf("[%d] i have unused ghost nodes from %d processors and i need to send updates to %d processors\n", rank, unghost_num_procs, update_num_procs);
+
+  /* now the processors can negotiate amongst themselves: */
+
+  /* first tell each processor the number of unused ghost nodes we want from them */
+  MPI_Request requests_unghost[unghost_num_procs];
+  for (j = 0; j < unghost_num_procs; j++)
+  {
+    MPI_Isend(&(unghost_procs_num_vtx[j]),
+	      1,
+	      MPI_INT,
+	      unghost_procs[j],
+	      GHOST_NODE_VERTICES_WANTED,
+	      communicator,
+	      &(requests_unghost[j]));
+  }
+
+  /* then listen to as many processors as there are that want updates from us */
+  MPI_Request requests_updates[update_num_procs];
+  update_procs_num_vtx = new int [update_num_procs];
+  for (j = 0; j < update_num_procs; j++)
+  {
+    MPI_Irecv(&(update_procs_num_vtx[j]),
+             1,
+             MPI_INT,
+             MPI_ANY_SOURCE,
+             GHOST_NODE_VERTICES_WANTED,
+             communicator,
+	      &(requests_updates[j]));
+  }
+
+  /* wait until we have heard from all processors how many ghost nodes updates they want from us */
+  MPI_Status status[update_num_procs];
+  update_procs = new int[update_num_procs];
+  MPI_Waitall(update_num_procs, requests_updates, status);
+  for (j = 0; j < update_num_procs; j++)
+  {
+    update_procs[j] = status[j].MPI_SOURCE;
+    // printf("[%d] i have to send %d vertices to processor %d\n", rank, update_procs_num_vtx[j], update_procs[j]);
+  }
+
+  /* count the total number of vertices that we need to update elsewhere */
+  update_procs_offset = new int[update_num_procs+1];
+  update_num_vtx = 0;
+  update_procs_offset[0] = 0;
+  for (j = 0; j < update_num_procs; j++)
+  {
+    update_num_vtx += update_procs_num_vtx[j];
+    update_procs_offset[j+1] = update_num_vtx;
+  }
+  
+  /* create enough space to receive all the vertex indices */
+  update_gid = new int[update_num_vtx];
+
+  /* tell each processor which vertices we want from them */
+  for (j = 0; j < unghost_num_procs; j++)
+  {
+    MPI_Isend(&(unghost_gid[unghost_procs_offset[j]]),
+	      unghost_procs_num_vtx[j],
+	      MPI_INT,
+	      unghost_procs[j],
+	      GHOST_NODE_VERTEX_GIDS,
+	      communicator,
+	      &(requests_unghost[j]));
+  }
+
+  delete [] unghost_gid; unghost_gid = 0;
+
+  /* receive from each processor the info which vertices they want from us */
+  for (j = 0; j < update_num_procs; j++)
+  {
+    MPI_Irecv(&(update_gid[update_procs_offset[j]]),
+             update_procs_num_vtx[j],
+             MPI_INT,
+             update_procs[j],
+             GHOST_NODE_VERTEX_GIDS,
+             communicator,
+	      &(requests_updates[j]));
+  }
+
+  /* wait until we have heard from all processors which vertices they want from us */
+  MPI_Waitall(update_num_procs, requests_updates, status);
+
+  /*
+  for (j = 0; j < update_num_procs; j++)
+  {
+    printf("[%d] will send to proc %d:", rank, update_procs[j]);
+    for (i = update_procs_offset[j]; i < update_procs_offset[j+1]; i++) printf(" %d", update_gid[i]);
+    printf("\n");
+  }
+  */
+
 
   /***********************************************************************
  COMPUTE THE SET OF NEIGHBORS THAT OUR VERTICES HAVE ON OTHER PROCESSORS
@@ -680,9 +914,9 @@ void ParallelHelperImpl::compute_first_independent_set(msq_std::vector<Mesh::Ver
   }
 
   // fix the ghost vertices that are unused
-  if (unused_ghost_vertices) {
-    for (i=0;i<(int)(unused_ghost_vertices->size());i++) {
-      fixed_vertices.push_back((*unused_ghost_vertices)[i]);
+  if (unghost_vertices) {
+    for (i=0;i<(int)(unghost_vertices->size());i++) {
+      fixed_vertices.push_back((*unghost_vertices)[i]);
     }
   }
 }
@@ -798,11 +1032,131 @@ void ParallelHelperImpl::communicate_next_independent_set()
 
 bool ParallelHelperImpl::smoothing_close()
 {
-  int i;
+  int i,j;
+  Mesquite::MsqError err;
+
+  // communicate unused ghost nodes  
+
+  double* update_updates = 0;
+  MPI_Request* update_requests = 0;
+
+  if (update_num_procs)
+  {
+    /* get the tags so we can find the requested vertices */
+    int* gid = new int[num_vertex];
+    mesh->vertices_get_global_id(&(*vertices)[0],&gid[0],num_vertex,err);
+    if (err) {std::cout << err << std::endl; return 1; }    
+    bool* app_fixed = new bool[num_vertex];
+    mesh->vertices_get_fixed_flag(&(*vertices)[0],&app_fixed[0],num_vertex,err);
+    if (err) {std::cout << err << std::endl; return 1; }    
+    int* proc_owner = new int[num_vertex];
+    mesh->vertices_get_processor_id(&(*vertices)[0],&proc_owner[0],num_vertex,err);
+    if (err) {std::cout << err << std::endl; return 1; }
+
+    /* insert all our unfixed vertices into a map so we can find the requested vertices efficiently */
+    VertexIdMap* temp_vid_map = new VertexIdMap;
+    for (j = 0; j < num_vertex; j++)
+    {
+      if (proc_owner[j] == rank && app_fixed[j] == false)
+      {
+	vertex_map_insert(temp_vid_map, gid[j], rank, j);
+      }
+    }
+
+    /* deallocate the tags */
+    delete [] gid; gid = 0;
+    delete [] app_fixed; app_fixed = 0;
+    delete [] proc_owner; proc_owner = 0;
+    
+    /* find the requested updates and collect them into an array */
+    Mesquite::MsqVertex coordinates;
+    update_updates = new double[update_num_vtx*3];
+    for (i = 0; i < update_num_vtx; i++)
+    {
+      j = vertex_map_find(temp_vid_map, update_gid[i], rank);
+      mesh->vertices_get_coordinates(&((*vertices)[j]),&coordinates,1,err);
+      update_updates[3*i+0] = coordinates[0];
+      update_updates[3*i+1] = coordinates[1];
+      update_updates[3*i+2] = coordinates[2];
+      //      printf("[%d] send gid %d with %g %g %g\n", rank, update_gid[i], coordinates[0], coordinates[1], coordinates[2]);
+    }
+
+    /* deallocate the map and the gid array */
+    delete temp_vid_map; temp_vid_map = 0;
+    delete [] update_gid; update_gid = 0;
+
+    update_requests = new MPI_Request[update_num_procs];
+    /* send each processor the unused ghost node updates that they requested */
+    for (j = 0; j < update_num_procs; j++)
+    {
+      MPI_Isend(&(update_updates[update_procs_offset[j] * 3]),
+		update_procs_num_vtx[j] * 3,
+		MPI_DOUBLE,
+		update_procs[j],
+		GHOST_NODE_VERTEX_UPDATES,
+		communicator,
+		&(update_requests[j]));
+      //      printf("[%d] sending %d of %d from %d with offset %d \n", rank, update_procs_num_vtx[j], update_num_vtx, update_procs[j], update_procs_offset[j]);
+    }
+
+    /* deallocate more arrays that we no longer need */
+    delete [] update_procs_offset; update_procs_offset = 0;
+    delete [] update_procs_num_vtx; update_procs_num_vtx = 0;    
+    delete [] update_procs; update_procs = 0;
+  }
+
+  if (unghost_num_procs)
+  {
+    MPI_Request* unghost_requests = new MPI_Request[unghost_num_procs];
+    /* receive from each processor the unused ghost nodes updates i want from them */
+    double* unghost_updates = new double[unghost_num_vtx*3];
+    for (j = 0; j < unghost_num_procs; j++)
+    {
+      MPI_Irecv(&(unghost_updates[unghost_procs_offset[j] * 3]),
+		unghost_procs_num_vtx[j] * 3,
+		MPI_DOUBLE,
+		unghost_procs[j],
+		GHOST_NODE_VERTEX_UPDATES,
+		communicator,
+		&(unghost_requests[j]));
+      //      printf("[%d] receiving %d of %d from %d with offset %d \n", rank, unghost_procs_num_vtx[j], unghost_num_vtx, unghost_procs[j], unghost_procs_offset[j]);
+    }
+
+    /* deallocate more arrays that we no longer need */
+    delete [] unghost_procs_offset; unghost_procs_offset = 0;
+    delete [] unghost_procs_num_vtx; unghost_procs_num_vtx = 0;
+    delete [] unghost_procs; unghost_procs = 0;
+
+    MPI_Status status[unghost_num_procs];
+    MPI_Waitall(unghost_num_procs, unghost_requests, status);
+
+    /* apply the received updates for the unused ghost vertices */
+    for (i = 0; i < unghost_num_vtx; i++)
+    {
+      Mesquite::Vector3D coordinates;
+      coordinates[0] = unghost_updates[3*i+0];
+      coordinates[1] = unghost_updates[3*i+1];
+      coordinates[2] = unghost_updates[3*i+2];
+      //      printf("[%d] recv %g %g %g\n", rank, coordinates[0], coordinates[1], coordinates[2]);
+      mesh->vertex_set_coordinates((*unghost_vertices)[i],coordinates,err);
+    }
+
+    /* deallocate more arrays that we no longer need */
+    delete unghost_vertices; unghost_vertices = 0;
+    delete [] unghost_updates; unghost_updates = 0;
+    delete [] unghost_requests; unghost_requests = 0;
+  }
+
+  if (update_num_procs)
+  {
+    delete [] update_updates; update_updates = 0;
+    delete [] update_requests; update_requests = 0;
+  }
+
   if (vertices) delete vertices; vertices = 0;
   if (vtx_in_partition_boundary) delete [] vtx_in_partition_boundary; vtx_in_partition_boundary = 0;
   if (part_vertices) delete part_vertices; part_vertices = 0;
-  if (unused_ghost_vertices) delete unused_ghost_vertices; unused_ghost_vertices = 0;
+  if (unghost_vertices) delete unghost_vertices; unghost_vertices = 0;
   if (part_proc_owner) delete [] part_proc_owner; part_proc_owner = 0;
   if (part_gid) delete [] part_gid; part_gid = 0;
   if (part_smoothed_flag) delete [] part_smoothed_flag; part_smoothed_flag = 0; 
