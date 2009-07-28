@@ -41,6 +41,7 @@ namespace MESQUITE_NS {
 class Mesh;
 class MeshDomain;
 class MsqError;
+class ParallelMesh;
 
 MESQUITE_EXPORT class ViscousCFDTetShapeWrapper : public Settings
 {
@@ -48,6 +49,11 @@ MESQUITE_EXPORT class ViscousCFDTetShapeWrapper : public Settings
     double dCutoff, aVal;
     int iterationLimit;
     double maxVtxMovement;
+
+    void run_instructions_internal( Mesh* mesh,
+                                    ParallelMesh* pmesh,
+                                    MeshDomain* geom,
+                                    MsqError& err );
 
   public:
   
@@ -70,10 +76,18 @@ MESQUITE_EXPORT class ViscousCFDTetShapeWrapper : public Settings
         maxVtxMovement( max_vertex_movement )
       {}
 
-    void run_instructions( Mesh* mesh, MeshDomain* domain, MsqError& err );
+
+    void run_instructions( Mesh* mesh, MeshDomain* domain, MsqError& err )
+      { run_instructions_internal( mesh, 0, domain, err ); }
                                
     void run_instructions( Mesh* mesh, MsqError& err )
-      { run_instructions( mesh, 0, err ); }
+      { run_instructions_internal( mesh, 0, 0, err ); }
+
+    void run_instructions( ParallelMesh* mesh, MeshDomain* domain, MsqError& err )
+      { run_instructions_internal( 0, mesh, domain, err ); }
+                               
+    void run_instructions( ParallelMesh* mesh, MsqError& err )
+      { run_instructions_internal( 0, mesh, 0, err ); }
 };
 
 

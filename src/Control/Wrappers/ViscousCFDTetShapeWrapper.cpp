@@ -60,7 +60,8 @@
 
 namespace MESQUITE_NS {
 
-void ViscousCFDTetShapeWrapper::run_instructions( Mesh* mesh, 
+void ViscousCFDTetShapeWrapper::run_instructions_internal( Mesh* mesh, 
+                                                  ParallelMesh* pmesh,
                                                   MeshDomain* domain, 
                                                   MsqError& err )
 {
@@ -135,7 +136,11 @@ void ViscousCFDTetShapeWrapper::run_instructions( Mesh* mesh,
   q.add_quality_assessor( &qa, err ); MSQ_ERRRTN(err);
 
   // Optimize mesh
-  q.run_instructions( mesh, domain, err ); MSQ_CHKERR(err);  
+  if (pmesh)
+    q.run_instructions( pmesh, domain, err ); 
+  else
+    q.run_instructions( mesh, domain, err ); 
+  MSQ_CHKERR(err);  
 }
 
 } // namespace MESQUITE_NS
