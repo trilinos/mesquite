@@ -1,6 +1,8 @@
 
 #include "ParallelHelper.hpp"
 
+#include <mpi.h>
+
 #include <stdio.h>
 #include <assert.h>
 #include <iostream>
@@ -204,11 +206,11 @@ static double generate_random_number(int generate_random_numbers, int proc_id, i
 ParallelHelperImpl::ParallelHelperImpl()
 {
   mesh = 0;
-  communicator = MPI_COMM_WORLD;
+  set_communicator(MPI_COMM_WORLD);
   communication_model = TrulyNonBlockingAvoidAllReduce;
 
-  MPI_Comm_rank(communicator, &rank);
-  MPI_Comm_size(communicator, &nprocs);
+  MPI_Comm_rank((MPI_Comm)communicator, &rank);
+  MPI_Comm_size((MPI_Comm)communicator, &nprocs);
 
   // variable defaults for VertexMover::loop_over_mesh()
   generate_random_numbers = 2;
@@ -246,9 +248,9 @@ bool ParallelHelperImpl::set_parallel_mesh(ParallelMesh* mesh) {
 }
 
 bool ParallelHelperImpl::set_communicator(size_t comm) {
-  communicator = (MPI_Comm)comm;
-  MPI_Comm_rank(communicator, &rank);
-  MPI_Comm_size(communicator, &nprocs);
+  communicator = comm;
+  MPI_Comm_rank((MPI_Comm)communicator, &rank);
+  MPI_Comm_size((MPI_Comm)communicator, &nprocs);
   return true;
 }
 
@@ -527,7 +529,7 @@ bool ParallelHelperImpl::smoothing_init()
     num_sends_of_unghost = new int[nprocs];
   }
   /* temporary used for the initial gather in which each proc tells the root from how many procs it wants unused ghost data updates */
-  MPI_Gather(&unghost_num_procs, 1, MPI_INT, num_sends_of_unghost, 1, MPI_INT, 0, communicator);
+  MPI_Gather(&unghost_num_procs, 1, MPI_INT, num_sends_of_unghost, 1, MPI_INT, 0, (MPI_Comm)communicator);
 
   /* now each processor tells the root node from which processors they want unused ghost nodes information */
   if (rank == 0)
@@ -555,7 +557,7 @@ bool ParallelHelperImpl::smoothing_init()
     for (i = 0; i < procs_num; i++)
     {
       MPI_Status status;
-      MPI_Recv(unghost_procs_array, procs_max, MPI_INT, MPI_ANY_SOURCE, GHOST_NODE_INFO, communicator, &status);
+      MPI_Recv(unghost_procs_array, procs_max, MPI_INT, MPI_ANY_SOURCE, GHOST_NODE_INFO, (MPI_Comm)communicator, &status);
       int count;
       MPI_Get_count(&status, MPI_INT, &count);
       for (j = 0; j < count; j++)
@@ -568,13 +570,13 @@ bool ParallelHelperImpl::smoothing_init()
   {
     if (unghost_num_vtx)
     {
-      MPI_Send(unghost_procs, unghost_num_procs, MPI_INT, 0, GHOST_NODE_INFO, communicator);
+      MPI_Send(unghost_procs, unghost_num_procs, MPI_INT, 0, GHOST_NODE_INFO, (MPI_Comm)communicator);
     }
   }
 
   /* now the root node knows for each processor on how many other processors they have ghost nodes (which need updating) */ 
   /* the scatter distributes this information to each processor */
-  MPI_Scatter(num_sends_of_unghost, 1, MPI_INT, &update_num_procs, 1, MPI_INT, 0, communicator);
+  MPI_Scatter(num_sends_of_unghost, 1, MPI_INT, &update_num_procs, 1, MPI_INT, 0, (MPI_Comm)communicator);
 
   if (rank == 0) delete [] num_sends_of_unghost;
 
@@ -591,7 +593,7 @@ bool ParallelHelperImpl::smoothing_init()
 	      MPI_INT,
 	      unghost_procs[j],
 	      GHOST_NODE_VERTICES_WANTED,
-	      communicator,
+	      (MPI_Comm)communicator,
 	      &(requests_unghost[j]));
   }
 
@@ -605,7 +607,7 @@ bool ParallelHelperImpl::smoothing_init()
              MPI_INT,
              MPI_ANY_SOURCE,
              GHOST_NODE_VERTICES_WANTED,
-             communicator,
+             (MPI_Comm)communicator,
 	      &(requests_updates[j]));
   }
 
@@ -640,7 +642,7 @@ bool ParallelHelperImpl::smoothing_init()
 	      MPI_INT,
 	      unghost_procs[j],
 	      GHOST_NODE_VERTEX_GIDS,
-	      communicator,
+	      (MPI_Comm)communicator,
 	      &(requests_unghost[j]));
   }
 
@@ -654,7 +656,7 @@ bool ParallelHelperImpl::smoothing_init()
              MPI_INT,
              update_procs[j],
              GHOST_NODE_VERTEX_GIDS,
-             communicator,
+             (MPI_Comm)communicator,
 	      &(requests_updates[j]));
   }
 
@@ -1026,7 +1028,7 @@ void ParallelHelperImpl::communicate_next_independent_set()
 	work_remains++;
       }
     }
-    MPI_Allreduce(&work_remains, &global_work_remains, 1, MPI_INT, MPI_SUM, communicator);
+    MPI_Allreduce(&work_remains, &global_work_remains, 1, MPI_INT, MPI_SUM, (MPI_Comm)communicator);
   }
 }
 
@@ -1094,7 +1096,7 @@ bool ParallelHelperImpl::smoothing_close()
 		MPI_DOUBLE,
 		update_procs[j],
 		GHOST_NODE_VERTEX_UPDATES,
-		communicator,
+		(MPI_Comm)communicator,
 		&(update_requests[j]));
       //      printf("[%d] sending %d of %d from %d with offset %d \n", rank, update_procs_num_vtx[j], update_num_vtx, update_procs[j], update_procs_offset[j]);
     }
@@ -1117,7 +1119,7 @@ bool ParallelHelperImpl::smoothing_close()
 		MPI_DOUBLE,
 		unghost_procs[j],
 		GHOST_NODE_VERTEX_UPDATES,
-		communicator,
+		(MPI_Comm)communicator,
 		&(unghost_requests[j]));
       //      printf("[%d] receiving %d of %d from %d with offset %d \n", rank, unghost_procs_num_vtx[j], unghost_num_vtx, unghost_procs[j], unghost_procs_offset[j]);
     }
@@ -1232,7 +1234,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb()
 	      MPI_INT,
 	      neighbourProc[j],
 	      VERTEX_HEADER+iteration,
-	      communicator,
+	      (MPI_Comm)communicator,
 	      &(requests_send[j]));
     num_neighbourProcSend++;
 
@@ -1243,7 +1245,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb()
              MPI_INT,
              neighbourProc[j],
              VERTEX_HEADER+iteration,
-             communicator,
+             (MPI_Comm)communicator,
 	      &(requests_recv[j]));
     num_neighbourProcRecv++;
   }
@@ -1315,7 +1317,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb()
 		MPI_DOUBLE_PRECISION,
 		neighbourProc[i],
 		VERTEX_BLOCK+iteration,
-		communicator,
+		(MPI_Comm)communicator,
 		&(requests_recv[i]));
       num_neighbourProcRecv++;
     }
@@ -1329,7 +1331,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb()
 		MPI_DOUBLE_PRECISION,
 		neighbourProc[i],
 		VERTEX_BLOCK+iteration,
-		communicator,
+		(MPI_Comm)communicator,
 		&(requests_send[i]));
     }
     else {
@@ -1420,7 +1422,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb_no_all()
 		MPI_INT,
 		neighbourProc[j],
 		VERTEX_HEADER+iteration,
-		communicator,
+		(MPI_Comm)communicator,
 		&(requests_send[j]));
       num_neighbourProcSend++;
     } else {
@@ -1434,7 +1436,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb_no_all()
 		MPI_INT,
 		neighbourProc[j],
 		VERTEX_HEADER+iteration,
-		communicator,
+		(MPI_Comm)communicator,
 		&(requests_recv[j]));
       num_neighbourProcRecv++;
     } else {
@@ -1512,7 +1514,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb_no_all()
 		MPI_DOUBLE_PRECISION,
 		neighbourProc[i],
 		VERTEX_BLOCK+iteration,
-		communicator,
+		(MPI_Comm)communicator,
 		&(requests_recv[i]));
       num_neighbourProcRecv++;
     }
@@ -1526,7 +1528,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb_no_all()
 		MPI_DOUBLE_PRECISION,
 		neighbourProc[i],
 		VERTEX_BLOCK+iteration,
-		communicator,
+		(MPI_Comm)communicator,
 		&(requests_send[i]));
     }
     else {
@@ -1606,7 +1608,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb()
 	     MPI_INT,
 	     neighbourProc[j],
 	     VERTEX_HEADER+iteration,
-	     communicator);
+	     (MPI_Comm)communicator);
 
     //    printf("[%d]i%d Announcing %d vertices to proc %d\n",rank,iteration,numVtxPerProcSend[j],neighbourProc[j]); fflush(NULL);
   }
@@ -1658,7 +1660,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb()
              MPI_INT,           /* of type int */
              MPI_ANY_SOURCE,    /* receive from any sender */
              VERTEX_HEADER+iteration,     /* receive only VERTEX HEADERs from this iteration */
-             communicator,    /* default communicator */
+             (MPI_Comm)communicator,    /* default communicator */
              &status);          /* info about the received message */
     proc = status.MPI_SOURCE;
     /* will we import vertices from this processor */
@@ -1711,7 +1713,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb()
 	      MPI_DOUBLE_PRECISION,
 	      neighbourProcRecv[j],
 	      VERTEX_BLOCK+iteration,
-	      communicator,
+	      (MPI_Comm)communicator,
 	      &(request[j]));
     if (0) {printf("[%d]i%d Scheduling receipt of %d vertices to proc %d\n",rank,iteration,numVtxPerProcRecvRecv[j],neighbourProcRecv[j]); fflush(NULL);}
   }
@@ -1726,7 +1728,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb()
 		MPI_DOUBLE_PRECISION,
 		neighbourProc[j],
 		VERTEX_BLOCK+iteration,
-		communicator,
+		(MPI_Comm)communicator,
 		&(requests_send[j]));
       if (0) {printf("[%d]i%d Scheduling send of %d vertices to proc %d\n",rank,iteration,numVtxPerProcSend[j],neighbourProc[j]); fflush(NULL);}
     } else {
@@ -1809,7 +1811,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb_no_all()
 	     MPI_INT,
 	     neighbourProc[j],
 	     VERTEX_HEADER+iteration,
-	     communicator);
+	     (MPI_Comm)communicator);
 
     //    printf("[%d]i%d Announcing %d vertices to proc %d\n",rank,iteration,numVtxPerProcSend[j],neighbourProc[j]); fflush(NULL);
     }
@@ -1871,7 +1873,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb_no_all()
              MPI_INT,           /* of type int */
              MPI_ANY_SOURCE,    /* receive from any sender */
              VERTEX_HEADER+iteration,     /* receive only VERTEX HEADERs from this iteration */
-             communicator,    /* default communicator */
+             (MPI_Comm)communicator,    /* default communicator */
              &status);          /* info about the received message */
     proc = status.MPI_SOURCE;
     /* will we import vertices from this processor */
@@ -1926,7 +1928,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb_no_all()
 	      MPI_DOUBLE_PRECISION,
 	      neighbourProcRecv[j],
 	      VERTEX_BLOCK+iteration,
-	      communicator,
+	      (MPI_Comm)communicator,
 	      &(request[j]));
     if (0) {printf("[%d]i%d Scheduling receipt of %d vertices to proc %d\n",rank,iteration,numVtxPerProcRecvRecv[j],neighbourProcRecv[j]); fflush(NULL);}
   }
@@ -1941,7 +1943,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb_no_all()
 		MPI_DOUBLE_PRECISION,
 		neighbourProc[j],
 		VERTEX_BLOCK+iteration,
-		communicator,
+		(MPI_Comm)communicator,
 		&(requests_send[j]));
       if (0) {printf("[%d]i%d Scheduling send of %d vertices to proc %d\n",rank,iteration,numVtxPerProcSend[j],neighbourProc[j]); fflush(NULL);}
     } else {
@@ -2056,7 +2058,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_b()
 	     MPI_INT,
 	     neighbourProc[j],
 	     VERTEX_HEADER+iteration,
-	     communicator);
+	     (MPI_Comm)communicator);
 
     // printf("[%d]i%dp%d Sending %d vertices to proc %d\n",rank,iteration,pass,numVtxPerProc[j],neighbourProc[j]); fflush(NULL);
 
@@ -2068,7 +2070,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_b()
 	       MPI_DOUBLE_PRECISION,
 	       neighbourProc[j],
 	       VERTEX_BLOCK+iteration,
-	       communicator);
+	       (MPI_Comm)communicator);
 
       // printf("[%d]i%dp%d Sent %d vertices to proc %d\n",rank,iteration,pass,numVtxPerProc[j],neighbourProc[j]); fflush(NULL);
     }
@@ -2092,7 +2094,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_b()
              MPI_INT,           /* of type int */
              MPI_ANY_SOURCE,    /* receive from any sender */
              VERTEX_HEADER+iteration,     /* receive only VERTEX HEADERs */
-             communicator,    /* default communicator */
+             (MPI_Comm)communicator,    /* default communicator */
              &status);          /* info about the received message */
     proc = status.MPI_SOURCE;
     tag = status.MPI_TAG;
@@ -2119,7 +2121,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_b()
 	       MPI_DOUBLE_PRECISION, /* of type double */
 	       proc,                 /* receive from this procesor only */
 	       VERTEX_BLOCK+iteration,         /* receive only VERTEX BLOCKs */
-	       communicator,       /* default communicator */
+	       (MPI_Comm)communicator,       /* default communicator */
 	       &status);             /* info about the received message */
 
       proc = status.MPI_SOURCE;
@@ -2228,7 +2230,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_b_no_all()
 	       MPI_INT,
 	       neighbourProc[j],
 	       VERTEX_HEADER+iteration,
-	       communicator);
+	       (MPI_Comm)communicator);
       
       // printf("[%d]i%dp%d Sending %d vertices to proc %d\n",rank,iteration,pass,numVtxPerProc[j],neighbourProc[j]); fflush(NULL);
 
@@ -2240,7 +2242,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_b_no_all()
 		 MPI_DOUBLE_PRECISION,
 		 neighbourProc[j],
 		 VERTEX_BLOCK+iteration,
-		 communicator);
+		 (MPI_Comm)communicator);
 	
 	// printf("[%d]i%dp%d Sent %d vertices to proc %d\n",rank,iteration,pass,numVtxPerProc[j],neighbourProc[j]); fflush(NULL);
       }
@@ -2275,7 +2277,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_b_no_all()
              MPI_INT,           /* of type int */
              MPI_ANY_SOURCE,    /* receive from any sender */
              VERTEX_HEADER+iteration,     /* receive only VERTEX HEADERs */
-             communicator,    /* default communicator */
+             (MPI_Comm)communicator,    /* default communicator */
              &status);          /* info about the received message */
     proc = status.MPI_SOURCE;
     tag = status.MPI_TAG;
@@ -2302,7 +2304,7 @@ int ParallelHelperImpl::comm_smoothed_vtx_b_no_all()
 	       MPI_DOUBLE_PRECISION, /* of type double */
 	       proc,                 /* receive from this procesor only */
 	       VERTEX_BLOCK+iteration,         /* receive only VERTEX BLOCKs */
-	       communicator,       /* default communicator */
+	       (MPI_Comm)communicator,       /* default communicator */
 	       &status);             /* info about the received message */
 
       proc = status.MPI_SOURCE;
@@ -2477,7 +2479,7 @@ void ParallelHelperImpl::communicate_min_max_to_all(double* minimum, double* max
   double d_min_recv[2];
   d_min[0] = -(*maximum);
   d_min[1] = *minimum;
-  MPI_Allreduce(d_min, d_min_recv, 2, MPI_DOUBLE, MPI_MIN, communicator);
+  MPI_Allreduce(d_min, d_min_recv, 2, MPI_DOUBLE, MPI_MIN, (MPI_Comm)communicator);
   *maximum = -d_min_recv[0];
   *minimum =  d_min_recv[1];
 }
@@ -2487,7 +2489,7 @@ void ParallelHelperImpl::communicate_min_max_to_zero(double* minimum, double* ma
   double d_min_recv[2];
   d_min[0] = -(*maximum);
   d_min[1] = *minimum;
-  MPI_Reduce(d_min, d_min_recv, 2, MPI_DOUBLE, MPI_MIN, 0, communicator);
+  MPI_Reduce(d_min, d_min_recv, 2, MPI_DOUBLE, MPI_MIN, 0, (MPI_Comm)communicator);
   if (rank == 0) {
     *maximum = -d_min_recv[0];
     *minimum =  d_min_recv[1];
@@ -2508,7 +2510,7 @@ void ParallelHelperImpl::communicate_sums_to_zero(size_t* freeElementCount, int*
   d_sum[7] = *sum;
   d_sum[8] = *sqrSum;
 
-  MPI_Reduce(d_sum, d_sum_recv, 9, MPI_DOUBLE, MPI_SUM, 0, communicator);
+  MPI_Reduce(d_sum, d_sum_recv, 9, MPI_DOUBLE, MPI_SUM, 0, (MPI_Comm)communicator);
 
   if (rank == 0) {
     *freeElementCount = (size_t)d_sum_recv[0];
@@ -2526,14 +2528,14 @@ void ParallelHelperImpl::communicate_sums_to_zero(size_t* freeElementCount, int*
 void ParallelHelperImpl::communicate_power_sum_to_zero(double* pMean) const
 {
   double result;
-  MPI_Reduce( pMean, &result, 1, MPI_DOUBLE, MPI_SUM, 0, communicator );
+  MPI_Reduce( pMean, &result, 1, MPI_DOUBLE, MPI_SUM, 0, (MPI_Comm)communicator );
   if (rank == 0)
     *pMean = result;
 }
 
 void ParallelHelperImpl::communicate_histogram_to_zero(msq_std::vector<int> &histogram) const {
   msq_std::vector<int> histogram_recv(histogram.size());
-  MPI_Reduce(&(histogram[0]), &(histogram_recv[0]), histogram.size(), MPI_INT, MPI_SUM, 0, communicator);
+  MPI_Reduce(&(histogram[0]), &(histogram_recv[0]), histogram.size(), MPI_INT, MPI_SUM, 0, (MPI_Comm)communicator);
   if (rank == 0) {
     histogram.swap( histogram_recv );
   }

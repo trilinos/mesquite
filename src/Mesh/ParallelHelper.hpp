@@ -47,8 +47,6 @@
 #include <map>
 #endif
 
-#include <mpi.h>
-
 namespace MESQUITE_NS
 {
   typedef struct VertexIdMapKey {
@@ -79,6 +77,8 @@ namespace MESQUITE_NS
     // function called by application during set-up
     bool set_parallel_mesh(ParallelMesh* mesh);
     bool set_communicator(size_t comm);
+    bool set_communicator(const void* comm) 
+      { return set_communicator( reinterpret_cast<size_t>(comm) ); }
     bool set_communication_model(int model);
     bool set_generate_random_numbers(int grn);
 
@@ -109,7 +109,7 @@ namespace MESQUITE_NS
   private:
     ParallelMesh* mesh;
 
-    MPI_Comm communicator;
+    size_t communicator;
     int communication_model;
 
     int rank;
