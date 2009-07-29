@@ -41,6 +41,7 @@ class CLArgImpl;
 #include <vector>
 #include <string>
 #include <sstream>
+#include <iterator>
 
 /**\brief Parse command-line arguments
  *
@@ -114,6 +115,32 @@ class CLArgs
                }    
                
     };
+
+      /**\brief Trivial implementation for type-specific classes */
+    template <typename T> class ArgListTemplate : public ArgTemplateI< msq_std::vector<T> > {
+      private: msq_std::vector<T> mValue;         //!< The default or user-specified value for an option.
+               bool haveDefault; //!< True if app. provided default value.
+      public:  virtual ~ArgListTemplate() {}
+               virtual bool value( const msq_std::vector<T>& val ) //!< Set value
+               { 
+                  mValue = val; 
+                  ArgTemplateI< msq_std::vector<T> >::set_seen(); 
+                  return true; 
+               }
+               const msq_std::vector<T>& value() const { return mValue; } //!< get value
+                /**\brief Initialize with default value */
+               ArgListTemplate( const msq_std::vector<T>& initial_value ) : mValue(initial_value), haveDefault(true) {}
+                /**\brief Initialize without default value */
+               ArgListTemplate() : haveDefault(false) {}
+                /**\brief Get string representation of default value, or empty string of no default value */
+               virtual msq_std::string default_str() const {
+                 msq_stdio::ostringstream ss;
+                 std::copy( mValue.begin(), mValue.end(), 
+                   msq_stdio::ostream_iterator<T>( ss, ", " ) );
+                 return ss.str();
+               }    
+               
+    };
     
       /**\brief Callback API for a string argument */
     typedef ArgTemplateI< msq_std::string >     StringArgI;
@@ -141,10 +168,10 @@ class CLArgs
       /**\brief Trivial callback implementation for a Boolean or toggle argument */
     typedef ArgTemplate< bool >                ToggleArg;
       /**\brief Trivial callback implementation for an integer list argument */
-    typedef ArgTemplate< std::vector<int> >    IntListArg;
+    typedef ArgListTemplate< int >    IntListArg;
       /**\brief Trivial callback implementation for a double list argument */
-    typedef ArgTemplate< std::vector<double> > DoubleListArg;
-    
+    typedef ArgListTemplate< double > DoubleListArg;
+
       /**\brief String arugment that is limited to a list of acceptable keywords
        *
        * A specialized string arugment implementation that limits the

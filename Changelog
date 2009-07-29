@@ -11,3 +11,8 @@
   - update manual for removal of Windows build support
   - update manual tutorial section for building against installed Mesquite
   
+2.0.2:
+  - ?
+
+2.0.3:
+  - fix portability issue compiling utilities
