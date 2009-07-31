@@ -133,13 +133,29 @@ Mesquite::PlanarDomain Mesquite::PlanarDomain::fit_vertices( Mesquite::Mesh* mes
                           Vector3D(box_min[0],box_max[1],box_max[2]),
                           Vector3D(box_max[0],box_max[1],box_max[2]) };
                           
+  assert(sizeof(char) == sizeof(bool));
+  std::vector<unsigned char> fixed( verts.size() );
+  mesh->vertices_get_fixed_flag( &verts[0], (bool*)&fixed[0], verts.size(), err );
+  size_t first = std::find(fixed.begin(), fixed.end(), 1) - fixed.begin();
+    // Our goal here is to consider only the boundary (fixed) vertices
+    // when calculating the plane.  If for some reason the user wants
+    // to snap a not-quite-planar mesh to a plane during optimization, 
+    // if possible we want to start with the plane containing the fixed
+    // vertices, as those won't get snapped.  If no vertices are fixed,
+    // then treat them all as fixed for the purpose calculating the plane
+    // (consider them all.)
+  if (first == fixed.size()) {
+    first = 0;
+    std::fill( fixed.begin(), fixed.end(), 1 );
+  }
   
-  Vector3D pts[8] = { coords[0], coords[0], coords[0], coords[0],
-                      coords[0], coords[0], coords[0], coords[0] };
-  for (size_t i = 1; i < coords.size(); ++i) {
+  Vector3D pts[8] = { coords[first], coords[first], coords[first], coords[first],
+                      coords[first], coords[first], coords[first], coords[first] };
+  for (size_t i = first+1; i < coords.size(); ++i) {
     for (int j = 0; j < 8; ++j) {
-      if ((pts[j] - corners[j]).length_squared() > 
-          (coords[i] - corners[j]).length_squared())
+      if (fixed[i] && 
+          ((pts[j] - corners[j]).length_squared() > 
+           (coords[i] - corners[j]).length_squared()))
         pts[j] = coords[i];
     }
   }
