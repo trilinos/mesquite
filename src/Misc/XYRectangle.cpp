@@ -59,6 +59,10 @@ void XYRectangle::setup( Mesh* mesh, MsqError& err )
   
   msq_std::vector<Mesh::EntityHandle> vertices;
   mesh->get_all_vertices( vertices, err ); MSQ_ERRRTN(err);
+  if (vertices.empty()) {
+    MSQ_SETERR(err)("Empty mesh", MsqError::INVALID_MESH );
+    return;
+  }
   
   msq_std::vector<MsqVertex> coords(vertices.size());
   mesh->vertices_get_coordinates( &vertices[0], &coords[0], coords.size(), err ); MSQ_ERRRTN(err);

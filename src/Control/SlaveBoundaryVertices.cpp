@@ -79,6 +79,8 @@ double SlaveBoundaryVertices::loop_over_mesh( Mesh* mesh,
     // elemDepth+1.
   msq_std::vector<Mesh::VertexHandle> vertices;
   mesh->get_all_vertices( vertices, err );  MSQ_ERRZERO(err);
+  if (vertices.empty())
+    return 0.0;
   msq_std::sort( vertices.begin(), vertices.end() );
   msq_std::vector<unsigned short> depth( vertices.size(), elemDepth+1 );
   BoolArr fixed( vertices.size() );
@@ -116,6 +118,8 @@ double SlaveBoundaryVertices::loop_over_mesh( Mesh* mesh,
   msq_std::vector<Mesh::VertexHandle> conn;
   msq_std::vector<size_t> junk(2);
   mesh->get_all_elements( elements, err );  MSQ_ERRZERO(err);
+  if (elements.empty())
+    return 0.0;
   bool some_changed;
   do {
     some_changed = false;

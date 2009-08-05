@@ -43,6 +43,8 @@
 #  include <cstring>
 #endif
 
+#include <vector>
+
 /*! \file Vector3D.hpp
   \brief Vector object with exactly 3 dimensions.
 
@@ -357,6 +359,15 @@ namespace MESQUITE_NS
             lhs[i].mCoords[2] * rhs[i].mCoords[2];
     return dot;
   }
+  /*! Dot product for arrays of Vector3Ds. see also operator% .*/ 
+  inline double inner(const std::vector<Vector3D>& lhs,
+                      const std::vector<Vector3D>& rhs)
+  {
+    double dot = 0;
+    assert(lhs.size() == rhs.size());
+    for (size_t i = 0; i < lhs.size(); ++i)
+      dot = lhs[i] % rhs[i];
+  }
 
   inline double operator%(const double scalar,
                           const Vector3D &rhs) // Dot Product
@@ -426,10 +437,21 @@ namespace MESQUITE_NS
       sum += v[i].length_squared();
     return sum;
   }
+  inline double length_squared( const std::vector<Vector3D>& v )
+  {
+    double sum = 0.0;
+    for (size_t i = 0; i < v.size(); ++i)
+      sum += v[i].length_squared();
+    return sum;
+  }
 
   inline double length(const Vector3D*  v,int n) // norm for an array of Vector3Ds
   {
     return msq_stdc::sqrt( length_squared( v, n ) );
+  }
+  inline double length( const msq_std::vector<Vector3D>& v )
+  {
+    return msq_stdc::sqrt( length_squared( v ) );
   }
 
   inline double Linf(const Vector3D*  v,int n) // max entry for an array of Vector3Ds
@@ -444,6 +466,20 @@ namespace MESQUITE_NS
     //return the value of the largest entry in the array
     return max;
   }
+
+  inline double Linf( const msq_std::vector<Vector3D>& v ) // max entry for an array of Vector3Ds
+  {
+    double max=0;  
+    //loop over the length of the array
+    for(size_t i=0;i<v.size();++i){
+      if ( max < msq_stdc::fabs(v[i][0]) )   max=msq_stdc::fabs(v[i][0]) ;
+      if ( max < msq_stdc::fabs(v[i][1]) )   max=msq_stdc::fabs(v[i][1]) ;
+      if ( max < msq_stdc::fabs(v[i][2]) )   max=msq_stdc::fabs(v[i][2]) ;
+    }
+    //return the value of the largest entry in the array
+    return max;
+  }
+
   inline void Vector3D::set_length(const double new_length)
   {
     double factor = new_length / length();

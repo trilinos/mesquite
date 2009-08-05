@@ -117,7 +117,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
   mHessian.initialize(pd, err); MSQ_ERRRTN(err);
 
   // 3.  Calculate the norm of the gradient for the patch
-  MSQ_DBGOUT(3) << "  o  gradient norm: " << length(&grad[0], nv) << msq_stdio::endl;
+  MSQ_DBGOUT(3) << "  o  gradient norm: " << length(grad) << msq_stdio::endl;
   
   // does the Feasible Newton iteration until stopping is required.
   // Terminate when inner termination criterion signals.
@@ -155,7 +155,7 @@ void FeasibleNewton::optimize_vertex_positions(PatchData &pd,
 
     // 5. Check for descent direction (inner produce of gradient and
     //    direction is negative.
-    double alpha = inner(&grad[0], &d[0], nv);
+    double alpha = inner( grad, d );
     // TODD -- Add back in if you encounter problems -- do a gradient
     //         step if the direction from the conjugate gradient solver
     //         is not a descent direction for the objective function.  We

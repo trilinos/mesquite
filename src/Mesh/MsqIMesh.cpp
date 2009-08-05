@@ -239,9 +239,11 @@ void MsqIMesh::set_active_set( iBase_EntitySetHandle elem_set,
     // clear vertex byte
   std::vector<VertexHandle> verts;
   get_all_vertices( verts, err ); MSQ_ERRRTN(err);
-  std::vector<unsigned char> zeros( verts.size(), 0 );
-  vertices_set_byte( &verts[0], &zeros[0], verts.size(), err );
-  MSQ_CHKERR(err);
+  if (!verts.empty()) {
+    std::vector<unsigned char> zeros( verts.size(), 0 );
+    vertices_set_byte( &verts[0], &zeros[0], verts.size(), err );
+    MSQ_CHKERR(err);
+  }
 }
 
   
@@ -269,6 +271,8 @@ void MsqIMesh::vertices_get_fixed_flag(
     memset( bool_array, 0, num_vtx * sizeof(bool) );
     return;
   }
+  if (!num_vtx)
+    return;
   
   std::vector<int> values(num_vtx);
   int ierr, junk = num_vtx, junk2 = num_vtx;
@@ -298,6 +302,8 @@ void MsqIMesh::vertices_get_slaved_flag(
                      MsqError::NOT_IMPLEMENTED);
     return;
   }
+  if (!num_vtx)
+    return;
   
   std::vector<int> values(num_vtx);
   int ierr, junk = num_vtx, junk2 = num_vtx;
@@ -321,6 +327,9 @@ void MsqIMesh::vertices_get_coordinates(
   size_t num_vtx, 
   MsqError &err)
 {
+  if (!num_vtx)
+    return;
+
   std::vector<double> dbl_store( 3*num_vtx );
   double* dbl_array = &dbl_store[0];
   
@@ -385,6 +394,9 @@ void MsqIMesh::vertices_set_byte (
   const unsigned char *byte_array,
   size_t array_size, MsqError &err)
 {
+  if (!array_size)
+    return;
+
   std::vector<int> data(array_size);
   std::copy( byte_array, byte_array + array_size, data.begin() );
   int ierr;
@@ -415,6 +427,9 @@ void MsqIMesh::vertices_get_byte(
   unsigned char *byte_array,
   size_t array_size, MsqError &err)
 {
+  if (!array_size)
+    return;
+
   std::vector<int> data(array_size);
   int ierr;
   int* ptr = &data[0];
@@ -611,6 +626,8 @@ void MsqIMesh::get_all_elements( msq_std::vector<ElementHandle>& elements,
       return;
     }
     elements.resize( num_face + num_vol );
+    if (elements.empty())
+      return;
     
     iBase_EntityHandle* ptr = reinterpret_cast<iBase_EntityHandle*>(&elements[0]);
     if (num_face) {
@@ -646,6 +663,8 @@ void MsqIMesh::get_all_elements( msq_std::vector<ElementHandle>& elements,
       return;
     }
     
+    if (!count)
+      return;
     elements.resize( count );
     
     iBase_EntityHandle* ptr = reinterpret_cast<iBase_EntityHandle*>(&elements[0]);
@@ -666,6 +685,8 @@ void MsqIMesh::get_all_vertices( msq_std::vector<VertexHandle>& vertices,
 {
   msq_std::vector<ElementHandle> elems;
   get_all_elements( elems, err ); MSQ_CHKERR(err);
+  if (elems.empty())
+    return;  
   
   msq_std::vector<size_t> offsets;
   elements_get_attached_vertices( &elems[0], elems.size(), vertices, offsets, err );
@@ -683,6 +704,9 @@ void MsqIMesh::elements_get_topologies(
   EntityTopology *element_topologies,
   size_t num_elements, MsqError &err)
 {
+  if (!num_elements)
+    return;
+
     // don't copy unless we have to
   std::vector<int> topo_store;
   int* topo_array;

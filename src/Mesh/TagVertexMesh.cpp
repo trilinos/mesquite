@@ -37,15 +37,6 @@
 
 namespace MESQUITE_NS {
 
-
-msq_std::string TagVertexMesh::get_name() const
-{
-  std::string result("TagVertexMesh(\"");
-  result += tagName;
-  result += "\")";
-  return result;
-}
-
 void TagVertexMesh::initialize( Mesh* mesh, msq_std::string name, MsqError& err )
 {
   MeshDecorator::set_mesh( mesh );
@@ -71,38 +62,24 @@ void TagVertexMesh::initialize( Mesh* mesh, msq_std::string name, MsqError& err 
     MSQ_SETERR(err)(MsqError::TAG_ALREADY_EXISTS,
                     "Tag \"%s\" has invalid type or size.",
                     tagName.c_str());
-
+ 
+    // If tag is already defined and init was true, reset tag
+    // values.
   haveTagHandle = true;
-}
-
-
-double TagVertexMesh::loop_over_mesh( Mesh* mesh, 
-                                      MeshDomain* , 
-                                      const Settings* ,
-                                      MsqError& err )
-{
-  if (mesh != get_mesh()) {
-    MSQ_SETERR(err)("InstructionQueue and TagVertexMesh have different "
-                    "Mesquite::Mesh instances.  Cannot initialize TagVertexMesh",
-                    MsqError::INVALID_MESH);
-    return 0.0;
-  }
-  
-  copy_all_coordinates( err ); MSQ_ERRZERO(err);
-  return 0.0;
 }
 
 void TagVertexMesh::copy_all_coordinates( MsqError& err )
 {
   if (!haveTagHandle) {
-    tagHandle = get_mesh()->tag_create( tagName, Mesh::DOUBLE, 3, 0, err ); 
-    MSQ_ERRRTN(err);
-    haveTagHandle = true;
+    MSQ_SETERR(err)(MsqError::INTERNAL_ERROR);
+    return;
   }
 
   msq_std::vector<Mesh::VertexHandle> handles;
   get_all_vertices( handles, err ); 
   MSQ_ERRRTN(err);
+  if (handles.empty())
+    return;
   
   msq_std::vector<MsqVertex> coords(handles.size());
   get_mesh()->vertices_get_coordinates( &handles[0], &coords[0], handles.size(), err );
@@ -174,6 +151,8 @@ void TagVertexMesh::vertices_get_coordinates( const VertexHandle vert_array[],
                                               size_t num_vtx,
                                               MsqError &err )
 {
+  if (!num_vtx)
+    return;
   if (!haveTagHandle) {
     get_mesh()->vertices_get_coordinates( vert_array, coordinates, num_vtx, err );
     MSQ_ERRRTN(err);
@@ -198,6 +177,9 @@ void TagVertexMesh::vertex_set_coordinates( VertexHandle vertex,
 {
   if (!haveTagHandle)
   {
+    tagHandle = get_mesh()->tag_create( tagName, Mesh::DOUBLE, 3, 0, err ); 
+    MSQ_ERRRTN(err);
+    haveTagHandle = true;
     copy_all_coordinates( err );
     MSQ_ERRRTN(err);  
   }

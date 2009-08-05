@@ -445,7 +445,8 @@ bool TMPQualityMetric::evaluate_with_Hessian(
     rval = metric3D->evaluate_with_hess( A, W, value, dmdA, d2mdA2, err ); MSQ_ERRZERO(err);
     gradient<3>( num_idx, mDerivs3D, dmdA, grad );
     Hessian.resize( num_idx*(num_idx+1)/2 );
-    hessian<3>( num_idx, mDerivs3D, d2mdA2, &Hessian[0] );
+    if (num_idx)
+      hessian<3>( num_idx, mDerivs3D, d2mdA2, &Hessian[0] );
 #ifdef PRINT_INFO
     print_info<3>( e, s, A, W, A * inverse(W) );
 #endif
@@ -473,7 +474,8 @@ bool TMPQualityMetric::evaluate_with_Hessian(
     const size_t n = num_idx*(num_idx+1)/2;
       // calculate 2D hessian
     hess2d.resize(n);
-    hessian<2>( num_idx, mDerivs2D, d2mdA2, &hess2d[0] );
+    if (n)
+      hessian<2>( num_idx, mDerivs2D, d2mdA2, &hess2d[0] );
       // calculate surface hessian as transform of 2D hessian
     Hessian.resize(n);
     for (size_t i = 0; i < n; ++i)

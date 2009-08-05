@@ -103,7 +103,7 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
     // averaging OF) for the initial patch.
   feasible = obj_func.update( pd, original_value, gradient, err ); MSQ_ERRRTN(err);
     // calculate gradient dotted with itself
-  norm_squared = length_squared( &gradient[0], gradient.size() );
+  norm_squared = length_squared( gradient );
   
     //set an error if initial patch is invalid.
   if(!feasible){
@@ -182,8 +182,8 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
       //  unprojected = gradient;
       //  pd.project_gradient( gradient, err ); MSQ_ERRRTN(err);
       //  double dot = inner_product( &gradient[0], &unprojected[0], gradient.size() );
-      //  double lensqr1 = length_squared( &gradient[0], gradient.size() );
-      //  double lensqr2 = length_squared( &unprojected[0], unprojected.size() );
+      //  double lensqr1 = length_squared( gradient );
+      //  double lensqr2 = length_squared( unprojected );
       //  double cossqr = dot * dot / lensqr1 / lensqr2;
       //  step_size *= sqrt(cossqr);
       //}
@@ -202,7 +202,7 @@ void SteepestDescent::optimize_vertex_positions(PatchData &pd,
       // Calculate initial step size for next iteration using step size 
       // from this iteration
     step_size *= norm_squared;
-    norm_squared = length_squared( &gradient[0], gradient.size() );
+    norm_squared = length_squared( gradient );
     if (norm_squared < DBL_EPSILON)
       break;
     step_size /= norm_squared;

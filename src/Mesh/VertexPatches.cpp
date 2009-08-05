@@ -50,6 +50,8 @@ void VertexPatches::get_patch_handles( msq_std::vector<PatchHandle>& patch_handl
 {
     // get all vertex handles
   get_mesh()->get_all_vertices( patch_handles_out, err ); MSQ_ERRRTN(err);
+  if (patch_handles_out.empty())
+    return;
   
   if (free_vertices_only()) {
       // get fixed flags for vertices
@@ -100,6 +102,8 @@ void VertexPatches::get_patch( PatchHandle patch_handle,
   
   unsigned remaining = numLayers;
   while (--remaining) { // loop if more than one layer of elements
+    if (elem_handles_out.empty()) 
+      break;  
 
       // Get vertices adjacent to elements
     free_vertices_out.clear();

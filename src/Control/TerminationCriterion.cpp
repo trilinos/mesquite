@@ -843,6 +843,8 @@ void TerminationCriterion::cleanup(Mesh* mesh, MeshDomain*, MsqError &err)
     // Clear soft fixed flag on all vertices
   std::vector<Mesh::VertexHandle> vertices;
   mesh->get_all_vertices( vertices, err ); MSQ_ERRRTN(err);
+  if (vertices.empty())
+    return;
   std::vector<unsigned char> bytes(vertices.size(), 0);
   std::vector<unsigned char>::iterator i;
   mesh->vertices_get_byte( &vertices[0], &bytes[0], vertices.size(), err );

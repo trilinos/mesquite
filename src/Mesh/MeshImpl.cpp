@@ -1125,7 +1125,8 @@ void MeshImpl::get_all_elements( msq_std::vector<ElementHandle>& elems,
   msq_std::vector<size_t> temp;
   myMesh->all_elements( temp, err ); MSQ_ERRRTN(err);
   elems.resize( temp.size() );
-  memcpy( &elems[0], &temp[0], sizeof(size_t)*temp.size() );
+  if (!elems.empty())
+    memcpy( &elems[0], &temp[0], sizeof(size_t)*temp.size() );
 }
 
 void MeshImpl::get_all_vertices( msq_std::vector<VertexHandle>& verts,
@@ -1135,7 +1136,8 @@ void MeshImpl::get_all_vertices( msq_std::vector<VertexHandle>& verts,
   msq_std::vector<size_t> temp;
   myMesh->all_vertices( temp, err ); MSQ_ERRRTN(err);
   verts.resize( temp.size() );
-  memcpy( &verts[0], &temp[0], sizeof(size_t)*temp.size() );
+  if (!verts.empty())
+    memcpy( &verts[0], &temp[0], sizeof(size_t)*temp.size() );
 }
 
 // Returns a pointer to an iterator that iterates over the
@@ -2224,11 +2226,12 @@ void MeshImpl::vtk_store_point_data( const void* data, TagDescription& tag, MsqE
   
   msq_std::vector<size_t> vertex_handles;
   myMesh->all_vertices( vertex_handles, err ); MSQ_ERRRTN(err);
-  myTags->set_vertex_data( tag_handle, 
-                           vertex_handles.size(),
-                           &vertex_handles[0],
-                           data,
-                           err );  MSQ_ERRRTN(err);
+  if (!vertex_handles.empty()) 
+    myTags->set_vertex_data( tag_handle, 
+                             vertex_handles.size(),
+                             &vertex_handles[0],
+                             data,
+                             err );  MSQ_ERRRTN(err);
 }
 
 
@@ -2282,11 +2285,12 @@ void MeshImpl::vtk_store_cell_data( const void* data, TagDescription& tag, MsqEr
   
   msq_std::vector<size_t> element_handles;
   myMesh->all_elements( element_handles, err ); MSQ_ERRRTN(err);
-  myTags->set_element_data( tag_handle, 
-                            element_handles.size(),
-                            &element_handles[0],
-                            data,
-                            err ); MSQ_ERRRTN(err);
+  if (!element_handles.empty()) 
+    myTags->set_element_data( tag_handle, 
+                              element_handles.size(),
+                              &element_handles[0],
+                              data,
+                              err ); MSQ_ERRRTN(err);
 }
 
 void* MeshImpl::vtk_read_typed_data( FileTokenizer& tokens, 
@@ -2348,6 +2352,9 @@ void* MeshImpl::vtk_read_scalar_attrib( FileTokenizer& tokens,
                                         TagDescription& desc,
                                         MsqError& err )
 {
+  if (!count)
+    return 0;
+
   int type = tokens.match_token( vtk_type_names, err );      MSQ_ERRZERO(err);
     
   long size;

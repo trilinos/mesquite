@@ -69,7 +69,7 @@ namespace MESQUITE_NS {
 void MsqMeshEntity::get_vertex_indices(msq_std::vector<msq_stdc::size_t> &vertices) const
 {
   vertices.resize( vertex_count() );
-  memcpy( &vertices[0], vertexIndices, vertex_count() * sizeof(size_t) );
+  std::copy( vertexIndices, vertexIndices + vertex_count(), vertices.begin() );
 }
 
 //! Gets the indices of the vertices of this element.
@@ -89,7 +89,7 @@ void MsqMeshEntity::append_vertex_indices(msq_std::vector<msq_stdc::size_t> &ver
 void MsqMeshEntity::get_node_indices( msq_std::vector<msq_stdc::size_t>& indices ) const
 {
   indices.resize( node_count() );
-  memcpy( &indices[0], vertexIndices, node_count() * sizeof( size_t ) );
+  std::copy( vertexIndices, vertexIndices + node_count(), indices.begin() );
 }
 
 void MsqMeshEntity::append_node_indices( msq_std::vector<msq_stdc::size_t>& indices ) const

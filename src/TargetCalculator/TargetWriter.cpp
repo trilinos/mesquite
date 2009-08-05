@@ -99,6 +99,8 @@ double TargetWriter::loop_over_mesh( Mesh* mesh,
     MsqMeshEntity& elem = patch.element_by_index(0);
     EntityTopology type = elem.get_element_type();
     patch.get_samples( 0, samples, err ); MSQ_ERRZERO(err);
+    if (samples.empty())
+      continue;    
     
     if (targetCalc) {
       const unsigned dim = TopologyInfo::dimension(type);

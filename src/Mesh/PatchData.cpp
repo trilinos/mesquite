@@ -628,7 +628,7 @@ void PatchData::get_vertex_element_indices(size_t vertex_index,
   const size_t *ptr;
   ptr = get_vertex_element_adjacencies( vertex_index, count, err );
   elem_indices.resize( count );
-  memcpy( &elem_indices[0], ptr, count * sizeof(size_t) );
+  std::copy( ptr, ptr + count, elem_indices.begin() );
 }
 
 void PatchData::get_vertex_element_indices(size_t vertex_index,
@@ -1752,7 +1752,8 @@ void PatchData::fill( size_t num_vertex, const double* coords,
 {
   msq_std::vector<EntityTopology> types(num_elem);
   msq_std::fill( types.begin(), types.end(), type );
-  this->fill( num_vertex, coords, num_elem, &types[0], connectivity, fixed, err );
+  const EntityTopology* type_ptr = num_elem ? &types[0] : 0;
+  this->fill( num_vertex, coords, num_elem, type_ptr, connectivity, fixed, err );
   MSQ_CHKERR(err);
 }
   
@@ -1766,7 +1767,8 @@ void PatchData::fill( size_t num_vertex, const double* coords,
   msq_std::vector<size_t> lengths( num_elem );
   msq_std::transform( types, types + num_elem, lengths.begin(), 
                       std::ptr_fun(TopologyInfo::corners) );
-  this->fill( num_vertex, coords, num_elem, types, &lengths[0], conn, fixed, err );
+  const size_t* len_ptr = num_elem ? &lengths[0] : 0;
+  this->fill( num_vertex, coords, num_elem, types, len_ptr, conn, fixed, err );
   MSQ_CHKERR(err);
 } 
     
@@ -1898,6 +1900,11 @@ void PatchData::set_mesh_entities(
 {
   if (!get_mesh()) {
     MSQ_SETERR(err)("No Mesh associated with PatchData.", MsqError::INVALID_STATE );
+    return;
+  }
+  
+  if (elements.empty()) {
+    clear();
     return;
   }
   

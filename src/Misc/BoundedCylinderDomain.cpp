@@ -71,6 +71,10 @@ void BoundedCylinderDomain::create_curve( double distance,
 {
   msq_std::vector<Mesh::VertexHandle> handles;
   mesh->get_all_vertices( handles, err ); MSQ_ERRRTN(err);
+  if (handles.empty()) {
+    MSQ_SETERR(err)("No vertices in mesh.\n", MsqError::INVALID_ARG );
+    return;
+  }
   
   msq_std::vector<MsqVertex> coords(handles.size());
   mesh->vertices_get_coordinates( &handles[0], &coords[0], handles.size(), err );
@@ -85,7 +89,7 @@ void BoundedCylinderDomain::create_curve( double distance,
       list.push_back( handles[i] );
   }
   
-  if (handles.empty())
+  if (list.empty())
   {
     MSQ_SETERR(err)("No vertices within specified tolerance.\n", MsqError::INVALID_ARG );
     return;
