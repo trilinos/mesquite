@@ -37,6 +37,15 @@
 
 namespace MESQUITE_NS {
 
+
+msq_std::string TagVertexMesh::get_name() const
+{
+  std::string result("TagVertexMesh(\"");
+  result += tagName;
+  result += "\")";
+  return result;
+}
+
 void TagVertexMesh::initialize( Mesh* mesh, msq_std::string name, MsqError& err )
 {
   MeshDecorator::set_mesh( mesh );
@@ -68,11 +77,29 @@ void TagVertexMesh::initialize( Mesh* mesh, msq_std::string name, MsqError& err 
   haveTagHandle = true;
 }
 
+
+double TagVertexMesh::loop_over_mesh( Mesh* mesh, 
+                                      MeshDomain* , 
+                                      const Settings* ,
+                                      MsqError& err )
+{
+  if (mesh != get_mesh()) {
+    MSQ_SETERR(err)("InstructionQueue and TagVertexMesh have different "
+                    "Mesquite::Mesh instances.  Cannot initialize TagVertexMesh",
+                    MsqError::INVALID_MESH);
+    return 0.0;
+  }
+  
+  copy_all_coordinates( err ); MSQ_ERRZERO(err);
+  return 0.0;
+}
+
 void TagVertexMesh::copy_all_coordinates( MsqError& err )
 {
   if (!haveTagHandle) {
-    MSQ_SETERR(err)(MsqError::INTERNAL_ERROR);
-    return;
+    tagHandle = get_mesh()->tag_create( tagName, Mesh::DOUBLE, 3, 0, err ); 
+    MSQ_ERRRTN(err);
+    haveTagHandle = true;
   }
 
   msq_std::vector<Mesh::VertexHandle> handles;
