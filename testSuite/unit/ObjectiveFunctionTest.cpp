@@ -542,6 +542,8 @@ void ObjectiveFunctionTest::test_compute_ana_hessian_tet_scaled()
 void ObjectiveFunctionTest::test_LPtoP_value( short P, bool scale,
                          const std::vector<double>& values, OFTestMode mode )
 {
+  CPPUNIT_ASSERT(!values.empty());
+
   LPtoPTemplate OF( P, NULL );
   OF.set_dividing_by_n(scale);
   
@@ -556,6 +558,8 @@ void ObjectiveFunctionTest::test_LPtoP_value( short P, bool scale,
   
 void ObjectiveFunctionTest::test_LInf_value( const std::vector<double>& values )
 {
+  CPPUNIT_ASSERT(!values.empty());
+
   LInfTemplate OF( NULL );
   
   double expected = fabs(values[0]);
@@ -568,6 +572,8 @@ void ObjectiveFunctionTest::test_LInf_value( const std::vector<double>& values )
   
 void ObjectiveFunctionTest::test_max_value( const std::vector<double>& values )
 {
+  CPPUNIT_ASSERT(!values.empty());
+
   MaxTemplate OF( NULL );
   
   double expected = fabs(values[0]);

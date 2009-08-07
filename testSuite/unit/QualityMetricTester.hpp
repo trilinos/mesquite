@@ -38,6 +38,7 @@ namespace MESQUITE_NS {
 class PatchData;
 class QualityMetric;
 class ElemSampleQM;
+class EdgeQM;
 }
 
 class QualityMetricTester
@@ -170,6 +171,8 @@ public:
   void test_get_vertex_evaluations( QualityMetric* qm );
     /** Test get_evaluatinos() method for sample-based metric */
   void test_get_sample_evaluations( QualityMetric* qm );
+    /** Test method to get samples in an element in the EdgeQM base class */
+  void test_get_edge_evaluations( EdgeQM* qm );
     /** Test method to get samples in an element in the ElemSampleQM base class */
   void test_get_in_element_evaluations( ElemSampleQM* qm );
 
@@ -182,6 +185,7 @@ public:
      *  quality at a vertex depends only on edge-connected vertices. 
      */
   void test_get_vertex_indices( QualityMetric* qm );
+  void test_get_edge_indices( EdgeQM* qm );
     /** Test indices from evaluate_with_indices() method */
   void test_get_sample_indices( QualityMetric* qm );
 

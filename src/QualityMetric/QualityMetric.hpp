@@ -119,6 +119,29 @@ namespace MESQUITE_NS
                            bool free_vertices_only,
                            MsqError& err ) = 0;
      
+     
+      /**\brief Get locations at which metric can be evaluated for
+       *        use in BCD intialization and QualityAssessor.
+       *
+       * For element-based, sample-based, and vertex-based metrics,
+       * this function is the same as get_evaluations.  For edge-based
+       * metrics it returns only a subset of the results for get_evaluations
+       * such that each edge in the mesh is visited only once even though
+       * it would normally be visited twice when iterating over patches
+       * of the mesh.  This assumes that no vertex occurs in more than one
+       * patch with its MSQ_PATCH_VERTEX set.  This assumption is true for
+       * both element-on-vertex and global patches.
+       *\param pd       The patch
+       *\param handles  Output list of handles
+       *\param free_vertices_only If true, only pass back evaluation points
+       *         that depend on at least one free vertex.
+       */
+     virtual
+     void get_single_pass( PatchData& pd,
+                           msq_std::vector<size_t>& handles, 
+                           bool free_vertices_only,
+                           MsqError& err );
+     
      /**\brief Get metric value at a logical location in the patch.
       *
       * Evaluate the metric at one location in the PatchData.

@@ -31,6 +31,7 @@
 #include "UnitUtil.hpp"
 #include "ElemSampleQM.hpp"
 #include "TopologyInfo.hpp"
+#include "EdgeQM.hpp"
 
 #include <cppunit/extensions/HelperMacros.h>
 
@@ -693,6 +694,26 @@ void QualityMetricTester::test_get_sample_evaluations( QualityMetric* qm )
   
   CPPUNIT_ASSERT(count > 0);
 }
+  void get_ideal_element( EntityTopology type, 
+                          bool unit_area, 
+                          PatchData& pd,
+                          int free_vertex_index );
+
+void QualityMetricTester::test_get_edge_evaluations( EdgeQM* qm )
+{
+  MsqPrintError err( msq_stdio::cout );
+  PatchData pd;
+  msq_std::vector<size_t> handles;
+
+  CPPUNIT_ASSERT(!types.empty());
+  for (size_t i = 0; i < types.size(); ++i) {
+    get_ideal_element( types[i], true, pd );
+    handles.clear();
+    qm->get_evaluations( pd, handles, false, err );
+    ASSERT_NO_ERROR(err);
+    CPPUNIT_ASSERT_EQUAL( TopologyInfo::edges(types[i]), (unsigned)handles.size() );
+  }
+}
 
 void QualityMetricTester::test_get_in_element_evaluations( ElemSampleQM* qm )
 {
@@ -851,6 +872,57 @@ void QualityMetricTester::test_get_vertex_indices( QualityMetric* qm )
     CPPUNIT_ASSERT( verts == indices );
   }
 }
+
+void QualityMetricTester::test_get_edge_indices( EdgeQM* qm )
+{
+  MsqPrintError err( msq_stdio::cout );
+  PatchData pd, pd2;
+  msq_std::vector<size_t> handles, indices, indices2, verts;
+  msq_std::vector<size_t>::iterator it;
+  double qm_val;
+  
+  CPPUNIT_ASSERT(qm->get_metric_type() == QualityMetric::VERTEX_BASED);
+  CPPUNIT_ASSERT( !types.empty() );
+  
+  for (size_t i = 0; i < types.size(); ++i) {
+      // construct patch w/ no free vertices
+    get_ideal_element( types[i], false, pd, false );
+    
+    qm->get_evaluations( pd, handles, false, err );
+    ASSERT_NO_ERROR(err);
+    CPPUNIT_ASSERT_EQUAL( (size_t)TopologyInfo::edges(types[i]), handles.size() );
+
+    for (size_t j = 0; j < handles.size(); ++j) {
+        // evaluate metric
+      qm->evaluate_with_indices( pd, handles[j], qm_val, indices, err );
+      ASSERT_NO_ERROR(err);
+        // evaluation at each edge should depend on at least the two end vertices
+      CPPUNIT_ASSERT( indices.size() >= (size_t)2 );
+    }
+  }
+  
+  for (size_t i = 0; i < types.size(); ++i) {
+      // construct patch w/ one free vertex   
+    get_ideal_element( types[i], false, pd, true );
+    const size_t fixed_vertex = pd.num_free_vertices();
+    
+    qm->get_evaluations( pd, handles, false, err );
+    ASSERT_NO_ERROR(err);
+    CPPUNIT_ASSERT_EQUAL( (size_t)TopologyInfo::edges(types[i]), handles.size() );
+
+    for (size_t j = 0; j < handles.size(); ++j) {
+        // evaluate metric
+      qm->evaluate_with_indices( pd, handles[j], qm_val, indices, err );
+      ASSERT_NO_ERROR(err);
+        // evaluation at each edge should depend on at least the two end vertices
+      CPPUNIT_ASSERT( !indices.empty() );
+      
+        // indices should never contain the index of a fixed vertex
+      it = std::find(indices.begin(), indices.end(), fixed_vertex );
+      CPPUNIT_ASSERT( it == indices.end() );
+    }
+  }
+}  
 
 void QualityMetricTester::test_get_sample_indices( QualityMetric* qm )
 {

@@ -59,6 +59,7 @@ msq_test_SOURCES = msq_test_main.cpp \
 	CylinderDomainTest.cpp \
         DomainClassifierTest.cpp \
 	EdgeLengthMetricTest.cpp \
+	EdgeLengthQualityMetricTest.cpp \
 	ElemSampleQMTest.cpp \
 	ExtraDataTest.cpp \
 	FileTokenizerTest.cpp \

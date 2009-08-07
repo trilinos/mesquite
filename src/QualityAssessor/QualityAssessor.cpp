@@ -533,7 +533,7 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
           double value = 0.0;
           metric_handles.clear();
           QualityMetric* qm = iter->get_metric();
-          qm->get_evaluations( patch, metric_handles, skipFixedSamples, err ); MSQ_ERRZERO(err);
+          qm->get_single_pass( patch, metric_handles, skipFixedSamples, err ); MSQ_ERRZERO(err);
           for (msq_std::vector<size_t>::iterator j = metric_handles.begin(); 
                j != metric_handles.end(); ++j) 
           {
@@ -612,7 +612,7 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
             double value = 0.0;
             metric_handles.clear();
             QualityMetric* qm = iter->get_metric();
-            qm->get_evaluations( patch, metric_handles, skipFixedSamples, err ); MSQ_ERRZERO(err);
+            qm->get_single_pass( patch, metric_handles, skipFixedSamples, err ); MSQ_ERRZERO(err);
             for (msq_std::vector<size_t>::iterator j = metric_handles.begin(); 
                  j != metric_handles.end(); ++j) 
             {

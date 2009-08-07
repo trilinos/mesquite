@@ -31,7 +31,7 @@
  */
 
 #include "Mesquite.hpp"
-#include "EdgeLengthMetric.hpp"
+#include "EdgeLengthQualityMetric.hpp"
 #include "cppunit/extensions/HelperMacros.h"
 #include "QualityMetricTester.hpp"
 
@@ -45,23 +45,24 @@ private:
 
   CPPUNIT_TEST (test_supported_types);
   CPPUNIT_TEST (test_ideal_element_eval);
-  CPPUNIT_TEST (test_valid_hessian);
+  CPPUNIT_TEST (test_inverted_elements);
+  CPPUNIT_TEST (test_degenerate_elements);
   CPPUNIT_TEST (test_get_evaluations);
-  CPPUNIT_TEST (test_get_edge_indices);
+  CPPUNIT_TEST (test_get_vertex_indices);
+  CPPUNIT_TEST (test_get_fixed_indices);
   CPPUNIT_TEST (test_eval_with_indices);
-  CPPUNIT_TEST (test_eval_with_gradient);
   CPPUNIT_TEST (test_location_invariant);
   CPPUNIT_TEST (test_orient_invariant);
   
   CPPUNIT_TEST_SUITE_END();
   
-  EdgeLengthMetric mMetric;
+  EdgeLengthQualityMetric mMetric;
   QualityMetricTester tester;
   
 public:
 
   EdgeLengthMetricTest() 
-    : mMetric(0.0), tester(QualityMetricTester::ALL_FE_EXCEPT_SEPTAHEDRON)
+    : tester(QualityMetricTester::ALL_FE_EXCEPT_SEPTAHEDRON)
     { }
 
   void test_supported_types()
@@ -69,31 +70,28 @@ public:
     
   void test_ideal_element_eval()
   {
-    tester.test_evaluate_unit_edge_element( &mMetric, TRIANGLE,      1.0 );
-    tester.test_evaluate_unit_edge_element( &mMetric, QUADRILATERAL, 1.0 );
-    tester.test_evaluate_unit_edge_element( &mMetric, TETRAHEDRON,   1.0 );
-    tester.test_evaluate_unit_edge_element( &mMetric, PYRAMID,       1.0 );
-    tester.test_evaluate_unit_edge_element( &mMetric, PRISM,         1.0 );
-    tester.test_evaluate_unit_edge_element( &mMetric, HEXAHEDRON,    1.0 );
+    tester.test_evaluate_unit_edge_tris_about_vertex( &mMetric, 6.0 );
+    tester.test_evaluate_unit_quads_about_vertex( &mMetric, 4.0 );
+    tester.test_evaluate_unit_hexes_about_vertex( &mMetric, 6.0 );
   }
+  
+  void test_inverted_elements()
+    { tester.test_evaluate_inverted_element( &mMetric, true ); }
     
-  void test_valid_hessian()
-    { tester.test_symmetric_Hessian_diagonal_blocks( &mMetric ); }
+  void test_degenerate_elements()
+    { tester.test_evaluate_degenerate_element( &mMetric, true ); }
     
   void test_get_evaluations()
-    { tester.test_get_edge_evaluations( &mMetric ); }
+    { tester.test_get_vertex_evaluations( &mMetric ); }
     
-  void test_get_edge_indices()
-    { tester.test_get_edge_indices( &mMetric ); }
+  void test_get_vertex_indices()
+    { tester.test_get_vertex_indices( &mMetric ); }
+  
+  void test_get_fixed_indices()
+    { tester.test_get_indices_fixed( &mMetric ); }
   
   void test_eval_with_indices()
     { tester.compare_eval_and_eval_with_indices( &mMetric ); }
-    
-  void test_eval_with_gradient()
-  {
-    tester.compare_eval_with_indices_and_eval_with_gradient( &mMetric );
-    tester.compare_analytical_and_numerical_gradients( &mMetric );
-  }
   
   void test_location_invariant()
   {
@@ -109,5 +107,5 @@ public:
 };
 
 
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(EdgeLengthMetricTest, "EdgeLengthMetricTest");
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(EdgeLengthMetricTest, "EdgeLengthQualityMetricTest");
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(EdgeLengthMetricTest, "Unit");

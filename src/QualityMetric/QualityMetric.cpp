@@ -42,6 +42,15 @@
 
 namespace MESQUITE_NS {
 
+void QualityMetric::get_single_pass( PatchData& pd, 
+                        msq_std::vector<size_t>& handles,
+                        bool free_vertices_only, 
+                        MsqError& err )
+{
+  get_evaluations( pd, handles, free_vertices_only, err );
+}
+
+
 bool QualityMetric::evaluate_with_gradient( PatchData& pd,
                               size_t handle,
                               double& value,

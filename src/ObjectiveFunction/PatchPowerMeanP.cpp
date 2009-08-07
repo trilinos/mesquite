@@ -74,7 +74,11 @@ bool PatchPowerMeanP::evaluate( EvalType type,
                                 MsqError& err )
 {
   QualityMetric* qm = get_quality_metric();
-  qm->get_evaluations( pd, qmHandles, free, err );  MSQ_ERRFALSE(err);
+  if (type == ObjectiveFunction::ACCUMULATE)
+    qm->get_single_pass( pd, qmHandles, free, err );
+  else
+    qm->get_evaluations( pd, qmHandles, free, err );  
+  MSQ_ERRFALSE(err);
   
     // calculate OF value for just the patch
   msq_std::vector<size_t>::const_iterator i;
