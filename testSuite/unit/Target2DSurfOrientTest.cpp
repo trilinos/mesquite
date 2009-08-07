@@ -239,6 +239,7 @@ void Target2DSurfOrientTest::compare_neg_xy( int metric_3D, const char* output_f
     // get coordinates
   myMesh.get_all_vertices( vertices, err );
   ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(!vertices.empty());
   coords.resize( vertices.size() );
   myMesh.vertices_get_coordinates( &vertices[0],  &coords[0], vertices.size(), err );
   ASSERT_NO_ERROR(err);
@@ -328,6 +329,7 @@ void Target2DSurfOrientTest::load_plane_mesh()
   msq_std::vector<MsqVertex> coords;
   myMesh.get_all_vertices( vertices, err );
   ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(!vertices.empty());
   coords.resize( vertices.size() );
   myMesh.vertices_get_coordinates( &vertices[0],  &coords[0], vertices.size(), err );
   ASSERT_NO_ERROR(err);
@@ -358,6 +360,7 @@ void Target2DSurfOrientTest::rotate_mesh( PlanarDomain::Plane from,
   msq_std::vector<MsqVertex> coords;
   myMesh.get_all_vertices( vertices, err );
   ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(!vertices.empty());
   coords.resize( vertices.size() );
   myMesh.vertices_get_coordinates( &vertices[0],  &coords[0], vertices.size(), err );
   
@@ -453,6 +456,7 @@ void Target2DSurfOrientTest::store_coordinates()
   msq_std::vector<Mesh::VertexHandle> vertices;
   myMesh.get_all_vertices( vertices, err );
   ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(!vertices.empty());
   savedCoords.resize( vertices.size() );
   myMesh.vertices_get_coordinates( &vertices[0],  &savedCoords[0], vertices.size(), err );
   ASSERT_NO_ERROR(err);
@@ -465,6 +469,7 @@ void Target2DSurfOrientTest::compare_coordinates( double epsilon )
   msq_std::vector<MsqVertex> coords;
   myMesh.get_all_vertices( vertices, err );
   ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(!vertices.empty());
   coords.resize( vertices.size() );
   myMesh.vertices_get_coordinates( &vertices[0],  &coords[0], vertices.size(), err );
   ASSERT_NO_ERROR(err);

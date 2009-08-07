@@ -508,6 +508,7 @@ void AveragingQMTest::check_average_and_weights( const double* vals, unsigned n,
   MsqPrintError err(msq_stdio::cout);
   AveragingQM aqm( method );
   
+  CPPUNIT_ASSERT(n > 0);
   msq_std::vector<double> working(n);
   msq_std::copy( vals, vals+n, working.begin() );
   

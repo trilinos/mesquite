@@ -769,6 +769,7 @@ void QualityAssessorTest::test_tag_element()
   CPPUNIT_ASSERT_EQUAL( 1u, length );
   
   CPPUNIT_ASSERT_EQUAL( logger.mValues.size(), logger.mHandles.size() );
+  CPPUNIT_ASSERT(!logger.mValues.empty());
   vector<double> tag_values( logger.mValues.size() );
   myMesh.tag_get_element_data( tag, logger.mHandles.size(),
                       &logger.mHandles[0], &tag_values[0], err );

@@ -473,6 +473,8 @@ void DomainClassifierTest::test_valid_classification()
 
 void DomainClassifierTest::test_classify_by_tag()
 {
+  CPPUNIT_ASSERT( !myDomains.empty() );
+  
   MsqPrintError err(msq_stdio::cerr);
   int def = myDomains.size();
   TagHandle tag = myMesh.tag_create( "domain", Mesh::INT, 1, &def, err );
@@ -483,14 +485,18 @@ void DomainClassifierTest::test_classify_by_tag()
   for (unsigned i = 0; i < myDomains.size(); ++i) {
     msq_std::vector<int> vtx_data( myDomains[i].vertices.size(), i );
     msq_std::vector<int> elm_data( myDomains[i].elements.size(), i );
-    myMesh.tag_set_vertex_data( tag, vtx_data.size(), 
-                                &(myDomains[i].vertices[0]),
-                                &vtx_data[0], err );
-    CPPUNIT_ASSERT(!err);
-    myMesh.tag_set_element_data( tag, elm_data.size(), 
-                                 &(myDomains[i].elements[0]),
-                                 &elm_data[0], err );
-    CPPUNIT_ASSERT(!err);
+    if (!vtx_data.empty()) {
+      myMesh.tag_set_vertex_data( tag, vtx_data.size(), 
+                                  &(myDomains[i].vertices[0]),
+                                  &vtx_data[0], err );
+      CPPUNIT_ASSERT(!err);
+    }
+    if (!elm_data.empty()) {
+      myMesh.tag_set_element_data( tag, elm_data.size(), 
+                                   &(myDomains[i].elements[0]),
+                                   &elm_data[0], err );
+      CPPUNIT_ASSERT(!err);
+    }
     
     dom_list.push_back( myDomains[i].domain );
     id_list.push_back( i );
@@ -510,6 +516,8 @@ void DomainClassifierTest::test_classify_by_tag()
 
 void DomainClassifierTest::test_classify_skin()
 {
+  CPPUNIT_ASSERT( !myDomains.empty() );
+
   MsqPrintError err(msq_stdio::cerr);
   msq_std::vector<MeshDomain*> arr( myDomains.size() );
   for (size_t i = 0; i < myDomains.size(); ++i)
@@ -527,6 +535,8 @@ void DomainClassifierTest::test_classify_skin()
 
 void DomainClassifierTest::test_classify_by_geometry()
 {
+  CPPUNIT_ASSERT( !myDomains.empty() );
+
   MsqPrintError err(msq_stdio::cerr);
   msq_std::vector<MeshDomain*> arr( myDomains.size() );
   for (size_t i = 0; i < myDomains.size(); ++i)

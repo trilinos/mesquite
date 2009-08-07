@@ -327,7 +327,8 @@ void PMeanPTemplateTest::test_gradient( double power )
   CPPUNIT_ASSERT(rval);
   CPPUNIT_ASSERT_EQUAL(mPatch.num_free_vertices(), grad.size());
   
-  check_result( mPatch, power, value, &grad[0] );
+  if (!grad.empty())
+    check_result( mPatch, power, value, &grad[0] );
 }
 
 void PMeanPTemplateTest::test_diagonal( double power )
@@ -352,7 +353,8 @@ void PMeanPTemplateTest::test_diagonal( double power )
   for (size_t r = 0; r < n; ++r) 
     Hessians[r] = Hess[r];
  
-  check_result( mPatch, power, value, &grad[0], &Hessians[0] );
+  if (!grad.empty())
+    check_result( mPatch, power, value, &grad[0], &Hessians[0] );
 }
 
 
@@ -389,7 +391,8 @@ void PMeanPTemplateTest::test_Hessian( double power )
     }
   }
  
-  check_result( mPatch, power, value, &grad[0], &Hessians[0] );
+  if (!grad.empty())
+    check_result( mPatch, power, value, &grad[0], &Hessians[0] );
 }
 
 void PMeanPTemplateTest::check_result( PatchData& pd, double power, double value, 

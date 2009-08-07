@@ -172,6 +172,7 @@ void XYRectangleTest::test_snap_to()
   msq_std::vector<Mesh::VertexHandle> verts;
   myMesh.get_all_vertices( verts, err );
   ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(!verts.empty());
   msq_std::vector<MsqVertex> coords( verts.size() );
   myMesh.vertices_get_coordinates( &verts[0], &coords[0], verts.size(), err );
   ASSERT_NO_ERROR(err);

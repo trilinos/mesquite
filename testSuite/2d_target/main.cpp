@@ -199,6 +199,10 @@ static PlanarDomain make_domain( Mesh* mesh, MsqError& err )
   std::vector<Mesh::VertexHandle> vertices;
   mesh->get_all_vertices( vertices, err ); 
   if (MSQ_CHKERR(err)) { return PlanarDomain( minimum, maximum ); }
+  if (vertices.empty()) {
+    std::cerr << "Mesh contains no vertices" << std::endl;
+    exit(1);
+  }
   std::vector<MsqVertex> coords(vertices.size());
   mesh->vertices_get_coordinates( &vertices[0], &coords[0], vertices.size(), err );
   if (MSQ_CHKERR(err)) { return PlanarDomain( minimum, maximum ); }

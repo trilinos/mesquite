@@ -88,6 +88,10 @@ int main(int argc, char* argv[])
   std::vector<Mesquite::Mesh::VertexHandle> handles;
   mesh.get_all_vertices( handles, err ); 
   if (err) return 1;
+  if (handles.empty()) {
+    std::cerr << "No verticies in mesh" << endl;
+    return 1;
+  }
   std::vector<Mesquite::MsqVertex> coords( handles.size() );
   mesh.vertices_get_coordinates( &handles[0], &coords[0], handles.size(), err );
   if (err) return 1;

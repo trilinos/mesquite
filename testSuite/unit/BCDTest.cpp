@@ -132,6 +132,7 @@ void BCDTest::compare_bcd( ObjectiveFunction* OF, string name, const char* mesh_
   MeshImpl mesh;
   mesh.read_vtk( mesh_file, err ); ASSERT_NO_ERROR(err);
   mesh.get_all_vertices( vertex_list, err ); ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(!vertex_list.empty());
   initial_coords.resize( vertex_list.size() );
   mesh.vertices_get_coordinates( &vertex_list[0], &initial_coords[0], vertex_list.size(), err );
   ASSERT_NO_ERROR(err);

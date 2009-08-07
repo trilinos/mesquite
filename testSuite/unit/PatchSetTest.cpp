@@ -295,6 +295,7 @@ void PatchSetTest::test_vertex_patches()
   vector<Mesh::ElementHandle> element_handles, patch_elems;
   myMesh.get_all_vertices( vertex_handles, err );
   CPPUNIT_ASSERT(!err);
+  CPPUNIT_ASSERT(!vertex_handles.empty());
   
   bool *fixed = new bool[vertex_handles.size()];
   myMesh.vertices_get_fixed_flag(&vertex_handles[0], fixed, vertex_handles.size(), err );

@@ -180,6 +180,7 @@ void SlaveBoundaryVerticesTest::test_slaved_common( unsigned depth, unsigned bou
     // find boundary vertices
   msq_std::vector<Mesh::VertexHandle> verts;
   mesh.get_all_vertices( verts, err ); ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(!verts.empty());
   if (boundary >= 4) {
     bool* flags = new bool[verts.size()];
     mesh.vertices_get_fixed_flag( &verts[0], flags, verts.size(), err );
@@ -239,6 +240,7 @@ void SlaveBoundaryVerticesTest::test_slaved_common( unsigned depth, unsigned bou
   msq_std::vector<Mesh::ElementHandle> elems;
   mesh.get_all_elements( elems, err ); 
   ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(!elems.empty());
   msq_std::vector<EntityTopology> types(elems.size());
   mesh.elements_get_topologies( &elems[0], &types[0], elems.size(), err );
   ASSERT_NO_ERROR(err);

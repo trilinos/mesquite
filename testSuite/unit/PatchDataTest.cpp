@@ -971,6 +971,7 @@ void PatchDataTest::test_fixed_by_geom_dim( unsigned dim )
   mesh->get_all_elements( elems, err ); ASSERT_NO_ERROR(err);
   mesh->get_all_vertices( verts, err ); ASSERT_NO_ERROR(err);
   pd.set_mesh_entities( elems, verts, err ); ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(!elems.empty());
   
   msq_std::vector<unsigned short> dims(verts.size());
   domain->domain_DoF( &verts[0], &dims[0], verts.size(), err );
@@ -1006,6 +1007,7 @@ void PatchDataTest::get_higher_order_vertices( Mesh* mesh,
   msq_std::vector<size_t> offsets;
   mesh->get_all_elements( elems, err );
   ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT(!elems.empty());
   mesh->elements_get_attached_vertices( &elems[0], elems.size(),
                                         verts, offsets, err );
   CPPUNIT_ASSERT_EQUAL( elems.size()+1, offsets.size() );
@@ -1117,9 +1119,11 @@ void PatchDataTest::test_patch_data_mesh_calcualted_ho_nodes()
     ++i;
   }
   
-  MsqPrintError err(msq_stdio::cerr);
-  mesh->vertices_set_byte( &slaved[0], &bytes[0], slaved.size(), err );
-  ASSERT_NO_ERROR(err);
+  if (!slaved.empty()) {
+    MsqPrintError err(msq_stdio::cerr);
+    mesh->vertices_set_byte( &slaved[0], &bytes[0], slaved.size(), err );
+    ASSERT_NO_ERROR(err);
+  }
   
   check_higher_order_vertices_slaved( mesh, Settings::SLAVE_CALCULATED, ho_verts );
   delete mesh;

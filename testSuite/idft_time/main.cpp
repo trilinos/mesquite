@@ -371,6 +371,10 @@ double run( QualityMetric* metric,
   
   msq_std::vector<Mesh::VertexHandle> handles;
   mesh.get_all_vertices( handles, err );
+  if (handles.empty()) {
+    cerr << "no veritces in mesh" << endl;
+    exit(1);
+  }
   msq_std::vector<MsqVertex> coords(handles.size());
   mesh.vertices_get_coordinates( &handles[0], &coords[0], handles.size(), err );
   Vector3D min(HUGE_VAL), max(-HUGE_VAL);

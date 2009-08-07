@@ -230,6 +230,10 @@ int main( int argc, char* argv[] )
     // find the free vertex
   msq_std::vector<Mesh::VertexHandle> vertices;
   mesh.get_all_vertices( vertices, err );
+  if (vertices.empty()) {
+    std::cerr << "Mesh contains no vertices" << std::endl;
+    return USAGE_ERROR;
+  }
   msq_std::vector<unsigned short> dof( vertices.size(), -1 );
   domain.domain_DoF( &vertices[0], &dof[0], vertices.size(), err ); CHECKERR
   int idx = std::find(dof.begin(), dof.end(), 2) - dof.begin();
