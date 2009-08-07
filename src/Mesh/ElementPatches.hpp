@@ -34,8 +34,10 @@
 namespace MESQUITE_NS {
 
 /**\brief A PatchSet representing a decomposition of the mesh
- *        into patches containing a single free vertex and the
- *        adjacent elements
+ *        into patches containing a single element.  
+ *
+ * This is intended for use in QualityAssessor.  It is not usable
+ * for optimization.
  */
 class ElementPatches : public PatchSet
 {
