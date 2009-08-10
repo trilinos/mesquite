@@ -103,6 +103,12 @@ public:
                         bool free_vertices_only,
                         MsqError& err );
   
+  MESQUITE_EXPORT static
+  void get_patch_evaluations( PatchData& pd, 
+                        msq_std::vector<size_t>& handles, 
+                        bool free_vertices_only,
+                        MsqError& err );
+  
   MESQUITE_EXPORT virtual 
   void get_element_evaluations( PatchData& pd, size_t elem_index,
                                 msq_std::vector<size_t>& handles,

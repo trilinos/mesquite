@@ -126,6 +126,14 @@ void TMPQualityMetric::get_evaluations( PatchData& pd,
   get_sample_pt_evaluations( pd, handles, free, err );
 }
 
+void TMPQualityMetric::get_patch_evaluations( PatchData& pd,
+                                      msq_std::vector<size_t>& handles,
+                                      bool free,
+                                      MsqError& err )
+{
+  get_sample_pt_evaluations( pd, handles, free, err );
+}
+
 void TMPQualityMetric::get_element_evaluations( PatchData& pd,
                                               size_t elem,
                                               msq_std::vector<size_t>& handles,
