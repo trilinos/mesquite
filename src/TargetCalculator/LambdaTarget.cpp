@@ -54,11 +54,18 @@ bool LambdaTarget::get_3D_target( PatchData& pd,
   bool valid = lambdaSource->get_3D_target( pd, element, sample, W_out, err );
   if (MSQ_CHKERR(err) && !valid)
     return false;
-  double lambda = Mesquite::cbrt( fabs( det( W_out ) ) );
-  
+  double det1 = det(W_out);  
+
   valid = compositeSource->get_3D_target( pd, element, sample, W_out, err );
-  W_out *= lambda;
-  return !MSQ_CHKERR(err) && valid;
+  if (MSQ_CHKERR(err) && !valid)
+    return false;
+  double det2 = det(W_out);  
+  
+  if (det2 < 1e-15) 
+    return false;
+  
+  W_out *= Mesquite::cbrt( fabs( det1/det2 ) );
+  return true;
 }
 
 bool LambdaTarget::get_2D_target( PatchData& pd, 
@@ -70,12 +77,18 @@ bool LambdaTarget::get_2D_target( PatchData& pd,
   bool valid = lambdaSource->get_2D_target( pd, element, sample, W_out, err );
   if (MSQ_CHKERR(err) && !valid)
     return false;
-  double d = det( transpose(W_out) * W_out );
-  double lambda = sqrt( sqrt( d ) );
-  
+  double det1 = det( transpose(W_out) * W_out );
+
   valid = compositeSource->get_2D_target( pd, element, sample, W_out, err );
-  W_out *= lambda;
-  return !MSQ_CHKERR(err) && valid;
+  if (MSQ_CHKERR(err) && !valid)
+    return false;
+  double det2 = det( transpose(W_out) * W_out );
+  
+  if (det2 < 1e-15) 
+    return false;
+  
+  W_out *= sqrt( sqrt( det1/det2 ) );
+  return true;
 }
 
 
