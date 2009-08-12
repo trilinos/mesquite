@@ -77,7 +77,11 @@ void ViscousCFDTetShapeWrapper::run_instructions_internal( Mesh* mesh,
   QualityAssessor inv_check( &barrier );
   inv_check.disable_printing_results();
   q.add_quality_assessor( &inv_check, err );  MSQ_ERRRTN(err);
-  q.run_instructions( mesh, domain, err ); MSQ_ERRRTN(err);
+  if (pmesh)
+    q.run_instructions( pmesh, domain, err ); 
+  else
+    q.run_instructions( mesh, domain, err ); 
+  MSQ_ERRRTN(err);
   q.remove_quality_assessor( 0, err ); MSQ_ERRRTN(err);
   const QualityAssessor::Assessor* inv_b = inv_check.get_results( &barrier );
   const bool use_barrier = (0 == inv_b->get_invalid_element_count());
@@ -107,7 +111,7 @@ void ViscousCFDTetShapeWrapper::run_instructions_internal( Mesh* mesh,
   }
   
   // Set up target and weight calculators
-  TagVertexMesh init_mesh( err, mesh );  MSQ_ERRRTN(err);
+  TagVertexMesh init_mesh( err, pmesh ? (Mesh*)pmesh : mesh );  MSQ_ERRRTN(err);
   ReferenceMesh ref_mesh( &init_mesh );
   RefMeshTargetCalculator w_init( &ref_mesh );
   TetDihedralWeight c_dihedral( &ref_mesh, dCutoff, aVal );
