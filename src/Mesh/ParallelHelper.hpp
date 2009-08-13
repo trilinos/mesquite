@@ -75,36 +75,36 @@ namespace MESQUITE_NS
     ~ParallelHelperImpl();
 
     // function called by application during set-up
-    bool set_parallel_mesh(ParallelMesh* mesh);
-    bool set_communicator(size_t comm);
-    bool set_communicator(const void* comm) 
-      { return set_communicator( reinterpret_cast<size_t>(comm) ); }
-    bool set_communication_model(int model);
-    bool set_generate_random_numbers(int grn);
+    void set_parallel_mesh(ParallelMesh* mesh);
+    void set_communicator(size_t comm);
+    void set_communicator(const void* comm) 
+      { set_communicator( reinterpret_cast<size_t>(comm) ); }
+    void set_communication_model(int model, MsqError& err);
+    void set_generate_random_numbers(int grn, MsqError& err);
 
   protected:
     friend class VertexMover;
     // functions called by VertexMover::loop_over_mesh()
-    bool smoothing_init();
+    void smoothing_init( MsqError& err );
     void compute_first_independent_set(msq_std::vector<Mesh::VertexHandle>& fixed_vertices);
-    void communicate_first_independent_set();
+    void communicate_first_independent_set(MsqError& err);
     bool compute_next_independent_set();
     bool get_next_partition_boundary_vertex(Mesquite::Mesh::VertexHandle& vertex_handle);
-    void communicate_next_independent_set();
-    bool smoothing_close();
+    void communicate_next_independent_set(MsqError& err);
+    void smoothing_close(MsqError& err);
 
   protected:
     friend class QualityAssessor;
     // functions called by QualityAssessor::loop_over_mesh()
     int get_rank() const;
     int get_nprocs() const;
-    bool is_our_element(Mesquite::Mesh::ElementHandle element_handle) const;
-    bool is_our_vertex(Mesquite::Mesh::VertexHandle vertex_handle) const;
-    void communicate_min_max_to_all(double* minimum, double* maximum) const;
-    void communicate_min_max_to_zero(double* minimum, double* maximum) const;
-    void communicate_sums_to_zero(size_t* freeElementCount, int* invertedElementCount, size_t* elementCount, int* invertedSampleCount, size_t* sampleCount, long unsigned int* count, long unsigned int* invalid, double* sum, double *sqrSum) const;
-    void communicate_power_sum_to_zero(double* pMean) const;
-    void communicate_histogram_to_zero(msq_std::vector<int> &histogram) const;
+    bool is_our_element(Mesh::ElementHandle element_handle, MsqError& err) const;
+    bool is_our_vertex(Mesh::VertexHandle vertex_handle, MsqError& err) const;
+    void communicate_min_max_to_all(double* minimum, double* maximum, MsqError& ) const;
+    void communicate_min_max_to_zero(double* minimum, double* maximum, MsqError&) const;
+    void communicate_sums_to_zero(size_t* freeElementCount, int* invertedElementCount, size_t* elementCount, int* invertedSampleCount, size_t* sampleCount, long unsigned int* count, long unsigned int* invalid, double* sum, double *sqrSum, MsqError&) const;
+    void communicate_power_sum_to_zero(double* pMean, MsqError&) const;
+    void communicate_histogram_to_zero(msq_std::vector<int> &histogram, MsqError&) const;
 
   private:
     ParallelMesh* mesh;
@@ -117,60 +117,60 @@ namespace MESQUITE_NS
 
     // variables for VertexMover::loop_over_mesh()
     int generate_random_numbers;
-    msq_std::vector<Mesquite::Mesh::VertexHandle> *vertices;
+    msq_std::vector<Mesquite::Mesh::VertexHandle> vertices;
     int num_vertex;
-    char* vtx_in_partition_boundary;
+    std::vector<char> vtx_in_partition_boundary;
     int num_vtx_partition_boundary;
     int num_vtx_partition_boundary_local;
     int num_vtx_partition_boundary_remote;
-    msq_std::vector<Mesquite::Mesh::VertexHandle> *part_vertices;
-    int* part_proc_owner;
-    int* part_gid;
-    int* part_smoothed_flag;
-    double* part_rand_number;
+    msq_std::vector<Mesquite::Mesh::VertexHandle> part_vertices;
+    std::vector<int> part_proc_owner;
+    std::vector<int> part_gid;
+    std::vector<int> part_smoothed_flag;
+    std::vector<double> part_rand_number;
     int num_exportVtx;
-    int* exportVtxGIDs;
-    int* exportVtxLIDs;
-    int* exportProc;
-    bool* in_independent_set;
-    VertexIdMap* vid_map;
+    std::vector<int> exportVtxGIDs;
+    std::vector<int> exportVtxLIDs;
+    std::vector<int> exportProc;
+    std::vector<bool> in_independent_set;
+    VertexIdMap vid_map;
     int total_num_vertices_to_smooth;
     int total_num_vertices_to_recv;
-    int* neighbourProcSend;
-    int* neighbourProcRecv;
-    int* neighbourProcSendRemain;
-    int* neighbourProcRecvRemain;
+    std::vector<int> neighbourProcSend;
+    std::vector<int> neighbourProcRecv;
+    std::vector<int> neighbourProcSendRemain;
+    std::vector<int> neighbourProcRecvRemain;
     int num_already_smoothed_vertices;
     int num_already_recv_vertices;
-    int* vtx_off_proc_list_size;
-    int** vtx_off_proc_list;
+    std::vector< std::vector<int> > vtx_off_proc_list;
+    std::vector< int > vtx_off_proc_list_size;
     int num_neighbourProc;
-    int* neighbourProc;
+    std::vector<int> neighbourProc;
     int iteration;
     int global_work_remains;
     int next_vtx_partition_boundary;
     /* for exchanging unused ghost node information */
     int unghost_num_vtx;
-    msq_std::vector<Mesquite::Mesh::VertexHandle> *unghost_vertices;
+    msq_std::vector<Mesquite::Mesh::VertexHandle> unghost_vertices;
     int unghost_num_procs;
-    int* unghost_procs;
-    int* unghost_procs_num_vtx;
-    int *unghost_procs_offset;
+    std::vector<int> unghost_procs;
+    std::vector<int> unghost_procs_num_vtx;
+    std::vector<int> unghost_procs_offset;
     int update_num_vtx;
-    int* update_gid;
+    std::vector<int> update_gid;
     int update_num_procs;
-    int* update_procs;
-    int* update_procs_num_vtx;
-    int* update_procs_offset;
+    std::vector<int> update_procs;
+    std::vector<int> update_procs_num_vtx;
+    std::vector<int> update_procs_offset;
 
     // functions for VertexMover::loop_over_mesh()
     void compute_independent_set();
-    int comm_smoothed_vtx_b();
-    int comm_smoothed_vtx_b_no_all();
-    int comm_smoothed_vtx_nb();
-    int comm_smoothed_vtx_nb_no_all();
-    int comm_smoothed_vtx_tnb();
-    int comm_smoothed_vtx_tnb_no_all();
+    int comm_smoothed_vtx_b(MsqError& err);
+    int comm_smoothed_vtx_b_no_all(MsqError& err);
+    int comm_smoothed_vtx_nb(MsqError& err);
+    int comm_smoothed_vtx_nb_no_all(MsqError& err);
+    int comm_smoothed_vtx_tnb(MsqError& err);
+    int comm_smoothed_vtx_tnb_no_all(MsqError& err);
   };
   
 } // namespace

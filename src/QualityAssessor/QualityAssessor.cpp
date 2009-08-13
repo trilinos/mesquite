@@ -488,10 +488,13 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
     for (p = patches.begin(); p != patches.end(); ++p) {
       elem_patches.get_patch( *p, patch_elems, patch_verts, err ); MSQ_ERRZERO(err);
  
-      if (helper && !helper->is_our_element(patch_elems[0]))
-      {
-	elementCount--;
-        continue;
+      if (helper) {
+        bool ours = helper->is_our_element( patch_elems[0], err );
+        MSQ_ERRZERO(err);
+        if (!ours) {
+          --elementCount;
+          continue;
+        }
       }
       patch.set_mesh_entities( patch_elems, patch_verts, err ); MSQ_ERRZERO(err);
       
@@ -572,8 +575,10 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
     for (iter = assessList.begin(); iter != elem_end; ++iter)
       if (iter->have_histogram() && !iter->haveHistRange)
         if (first_pass) {
-          if (helper)
-            helper->communicate_min_max_to_all(&(iter->minimum), &(iter->maximum)); 
+          if (helper) {
+            helper->communicate_min_max_to_all(&(iter->minimum), &(iter->maximum), err); 
+            MSQ_ERRZERO(err);
+          }
         
           iter->calculate_histogram_range();
 // Uncomment the following to have the QA keep the first
@@ -650,8 +655,10 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
       for (iter = elem_end; iter != assessList.end(); ++iter)
         if (iter->have_histogram() && !iter->haveHistRange)
           if (first_pass) {
-            if (helper)
-              helper->communicate_min_max_to_all(&(iter->minimum), &(iter->maximum)); 
+            if (helper) {
+              helper->communicate_min_max_to_all(&(iter->minimum), &(iter->maximum), err); 
+              MSQ_ERRZERO(err);
+            }
             iter->calculate_histogram_range();
 // Uncomment the following to have the QA keep the first
 // calculated histogram range for all subsequent iterations.
@@ -664,16 +671,20 @@ double QualityAssessor::loop_over_mesh_internal( Mesh* mesh,
   if (helper) {
     for (iter = assessList.begin(); iter != assessList.end(); ++iter) {
 
-      helper->communicate_min_max_to_zero(&(iter->minimum), &(iter->maximum));
+      helper->communicate_min_max_to_zero(&(iter->minimum), &(iter->maximum), err);
+      MSQ_ERRZERO(err);
 
-      helper->communicate_sums_to_zero(&freeElementCount, &invertedElementCount, &elementCount, &invertedSampleCount, &sampleCount, &(iter->count), &(iter->numInvalid), &(iter->sum), &(iter->sqrSum));
+      helper->communicate_sums_to_zero(&freeElementCount, &invertedElementCount, &elementCount, &invertedSampleCount, &sampleCount, &(iter->count), &(iter->numInvalid), &(iter->sum), &(iter->sqrSum), err);
+      MSQ_ERRZERO(err);
 
       if (iter->have_power_mean()) {
-        helper->communicate_power_sum_to_zero( &(iter->pMean) );
+        helper->communicate_power_sum_to_zero( &(iter->pMean), err );
+        MSQ_ERRZERO(err);
       }
 
       if (iter->have_histogram()) {
-        helper->communicate_histogram_to_zero(iter->histogram);
+        helper->communicate_histogram_to_zero(iter->histogram, err);
+        MSQ_ERRZERO(err);
       }
     }
   }

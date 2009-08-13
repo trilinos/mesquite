@@ -301,8 +301,12 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
   patch.attach_settings( settings );
 
   ParallelHelper* helper = mesh->get_parallel_helper();
+  if (!helper) {
+    MSQ_SETERR(err)("No ParallelHelper instance", MsqError::INVALID_STATE);
+    return 0;
+  }
 
-  helper->smoothing_init();
+  helper->smoothing_init(err);  MSQ_ERRZERO(err);
 
   bool did_some, all_culled;
   msq_std::vector<Mesh::VertexHandle> patch_vertices;
@@ -359,7 +363,8 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
     ///*** smooth the interior ***////
 
     // get the fixed vertices (i.e. the ones *not* part of the first independent set)
-    helper->compute_first_independent_set(fixed_vertices);
+    helper->compute_first_independent_set(fixed_vertices); 
+
     // sort the fixed vertices
     msq_std::sort(fixed_vertices.begin(), fixed_vertices.end());
 
@@ -438,7 +443,8 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
       }
     }
 
-    helper->communicate_first_independent_set();
+    helper->communicate_first_independent_set(err); 
+    if (MSQ_CHKERR(err)) goto ERROR;
 
     ///*** smooth the boundary ***////
 
@@ -499,7 +505,8 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
 	  if (MSQ_CHKERR(err)) goto ERROR;
 	}
       }
-      helper->communicate_next_independent_set();
+      helper->communicate_next_independent_set(err);
+      if (MSQ_CHKERR(err)) goto ERROR;
     }
 
     this->terminate_mesh_iteration(patch, err); 
@@ -514,12 +521,12 @@ double VertexMover::loop_over_mesh( ParallelMesh* mesh,
 
 ERROR: 
     //call the criteria's cleanup funtions.
-  outer_crit->cleanup(mesh,domain,err);
-  inner_crit->cleanup(mesh,domain,err);
+  outer_crit->cleanup(mesh,domain,err); MSQ_CHKERR(err);
+  inner_crit->cleanup(mesh,domain,err); MSQ_CHKERR(err);
     //call the optimization cleanup function.
   this->cleanup();
     // close the helper
-  helper->smoothing_close();
+  helper->smoothing_close(err); MSQ_CHKERR(err);
 
   return 0.;
 }
