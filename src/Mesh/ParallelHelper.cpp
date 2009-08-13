@@ -1228,7 +1228,8 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb(MsqError& err)
 
   std::vector<VertexPack> vertex_pack_export(num_exportVtx+10); /* add 10 to have enough memory */
   std::vector<VertexPack*> packed_vertices_export(num_neighbourProc);
-  packed_vertices_export[0] = &vertex_pack_export[0];
+  if (num_neighbourProc)
+    packed_vertices_export[0] = &vertex_pack_export[0];
   for (i = 1; i < num_neighbourProc; i++) {
     packed_vertices_export[i] = packed_vertices_export[i-1] + numVtxPerProcSend[i-1];
   }
@@ -1275,7 +1276,8 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb(MsqError& err)
 
   std::vector<VertexPack> vertex_pack_import(numVtxImport+10); /* add 10 to have enough memory */
   std::vector<VertexPack*> packed_vertices_import(num_neighbourProc);
-  packed_vertices_import[0] = &vertex_pack_import[0];
+  if (num_neighbourProc)
+    packed_vertices_import[0] = &vertex_pack_import[0];
   for (i = 1; i < num_neighbourProc; i++) {
     packed_vertices_import[i] = packed_vertices_import[i-1] + numVtxPerProcRecv[i-1];
   }
@@ -1425,17 +1427,15 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb_no_all( MsqError& err )
 
   std::vector<VertexPack> vertex_pack_export(num_exportVtx+10); /* add 10 to have enough memory */
   std::vector<VertexPack*> packed_vertices_export(num_neighbourProc);
-  packed_vertices_export[0] = &vertex_pack_export[0];
+  if (num_neighbourProc)
+    packed_vertices_export[0] = &vertex_pack_export[0];
   for (i = 1; i < num_neighbourProc; i++) {
     packed_vertices_export[i] = packed_vertices_export[i-1] + numVtxPerProcSend[i-1];
   }
 
   /* place vertex data going to the same processor into consecutive memory space */
 
-  int numVtxPerProcSendPACKED[num_neighbourProc];
-  for (i = 0; i < num_neighbourProc; i++) {
-    numVtxPerProcSendPACKED[i] = 0;
-  }
+  std::vector<int> numVtxPerProcSendPACKED(num_neighbourProc,0);
   for (i = 0; i < num_exportVtx; i++) {
     for (j = 0; j < num_neighbourProc; j++) {
       if (exportProc[i] == neighbourProc[j]) {
@@ -1475,7 +1475,8 @@ int ParallelHelperImpl::comm_smoothed_vtx_tnb_no_all( MsqError& err )
 
   std::vector<VertexPack> vertex_pack_import(numVtxImport+10); /* add 10 to have enough memory */
   std::vector<VertexPack*> packed_vertices_import(num_neighbourProc);
-  packed_vertices_import[0] = &vertex_pack_import[0];
+  if (num_neighbourProc)
+    packed_vertices_import[0] = &vertex_pack_import[0];
   for (i = 1; i < num_neighbourProc; i++) {
     packed_vertices_import[i] = packed_vertices_import[i-1] + numVtxPerProcRecv[i-1];
   }
@@ -1598,7 +1599,8 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb(MsqError& err)
   /* place vertex data going to the same processor into consecutive memory space */
   std::vector<VertexPack> vertex_pack_export(num_exportVtx+10); /* add 10 to have enough memory */
   std::vector<VertexPack*> packed_vertices_export(num_neighbourProc);
-  packed_vertices_export[0] = &vertex_pack_export[0];
+  if (num_neighbourProc)
+    packed_vertices_export[0] = &vertex_pack_export[0];
   for (i = 1; i < num_neighbourProc; i++) {
     packed_vertices_export[i] = packed_vertices_export[i-1] + numVtxPerProcSend[i-1];
   }
@@ -1681,7 +1683,8 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb(MsqError& err)
   /* set up memory for the incoming vertex data blocks */
   std::vector<VertexPack> vertex_pack_import(numVtxImport+10); /* add 10 to have enough memory */
   std::vector<VertexPack*> packed_vertices_import(num_neighbourProcRecv);
-  packed_vertices_import[0] = &vertex_pack_import[0];
+  if (num_neighbourProc)
+    packed_vertices_import[0] = &vertex_pack_import[0];
   for (i = 1; i < num_neighbourProcRecv; i++) {
     packed_vertices_import[i] = packed_vertices_import[i-1] + numVtxPerProcRecvRecv[i-1];
   }
@@ -1805,7 +1808,8 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb_no_all(MsqError& err)
   /* place vertex data going to the same processor into consecutive memory space */
   std::vector<VertexPack> vertex_pack_export(num_exportVtx+10); /* add 10 to have enough memory */
   std::vector<VertexPack*> packed_vertices_export(num_neighbourProc);
-  packed_vertices_export[0] = &vertex_pack_export[0];
+  if (num_neighbourProc)
+    packed_vertices_export[0] = &vertex_pack_export[0];
   for (i = 1; i < num_neighbourProc; i++) {
     packed_vertices_export[i] = packed_vertices_export[i-1] + numVtxPerProcSend[i-1];
   }
@@ -1893,7 +1897,8 @@ int ParallelHelperImpl::comm_smoothed_vtx_nb_no_all(MsqError& err)
   /* set up memory for the incoming vertex data blocks */
   std::vector<VertexPack> vertex_pack_import(numVtxImport+10); /* add 10 to have enough memory */
   std::vector<VertexPack*> packed_vertices_import(num_neighbourProcRecv);
-  packed_vertices_import[0] = &vertex_pack_import[0];
+  if (num_neighbourProc)
+    packed_vertices_import[0] = &vertex_pack_import[0];
   for (i = 1; i < num_neighbourProcRecv; i++) {
     packed_vertices_import[i] = packed_vertices_import[i-1] + numVtxPerProcRecvRecv[i-1];
   }
