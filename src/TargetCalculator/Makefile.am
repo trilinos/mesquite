@@ -28,7 +28,7 @@ MSQ_HDRS += \
 	$(SRC_TARGETCALCULATOR_DIR)/InverseMetricWeight.hpp \
 	$(SRC_TARGETCALCULATOR_DIR)/JacobianCalculator.hpp \
 	$(SRC_TARGETCALCULATOR_DIR)/LambdaTarget.hpp \
-	$(SRC_TARGETCALCULATOR_DIR)/LambdaConstant.cpp \
+	$(SRC_TARGETCALCULATOR_DIR)/LambdaConstant.hpp \
 	$(SRC_TARGETCALCULATOR_DIR)/LVQDTargetCalculator.hpp \
 	$(SRC_TARGETCALCULATOR_DIR)/MetricWeight.hpp \
 	$(SRC_TARGETCALCULATOR_DIR)/RefMeshTargetCalculator.hpp \
