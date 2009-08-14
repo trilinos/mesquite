@@ -48,36 +48,36 @@ namespace MESQUITE_NS
   {
   public:
     // function called by application during set-up
-    virtual bool set_parallel_mesh(ParallelMesh* mesh) = 0;
-    virtual bool set_communicator(size_t comm) = 0;
-    virtual bool set_communication_model(int model) = 0;
-    virtual bool set_generate_random_numbers(int grn) = 0;
+    virtual void set_parallel_mesh(ParallelMesh* mesh) = 0;
+    virtual void set_communicator(size_t comm) = 0;
+    virtual void set_communication_model(int model, MsqError&) = 0;
+    virtual void set_generate_random_numbers(int grn, MsqError&) = 0;
 
     virtual ~ParallelHelper() {}
 
   protected:
     friend class VertexMover;
     // functions called by VertexMover::loop_over_mesh()
-    virtual bool smoothing_init() = 0;
+    virtual void smoothing_init(MsqError&) = 0;
     virtual void compute_first_independent_set(msq_std::vector<Mesh::VertexHandle>& fixed_vertices) = 0;
-    virtual void communicate_first_independent_set() = 0;
+    virtual void communicate_first_independent_set(MsqError&) = 0;
     virtual bool compute_next_independent_set() = 0;
     virtual bool get_next_partition_boundary_vertex(Mesquite::Mesh::VertexHandle& vertex_handle) = 0;
-    virtual void communicate_next_independent_set() = 0;
-    virtual bool smoothing_close() = 0;
+    virtual void communicate_next_independent_set(MsqError&) = 0;
+    virtual void smoothing_close(MsqError&) = 0;
 
   protected:
     friend class QualityAssessor;
     // functions called by QualityAssessor::loop_over_mesh()
     virtual int get_rank() const = 0;
     virtual int get_nprocs() const = 0;
-    virtual bool is_our_element(Mesquite::Mesh::ElementHandle element_handle) const = 0;
-    virtual bool is_our_vertex(Mesquite::Mesh::VertexHandle vertex_handle) const = 0;
-    virtual void communicate_min_max_to_all(double* minimum, double* maximum) const = 0;
-    virtual void communicate_min_max_to_zero(double* minimum, double* maximum) const = 0;
-    virtual void communicate_sums_to_zero(size_t* freeElementCount, int* invertedElementCount, size_t* elementCount, int* invertedSampleCount, size_t* sampleCount, long unsigned int* count, long unsigned int* invalid, double* sum, double *sqrSum) const = 0;
-    virtual void communicate_power_sum_to_zero(double* pMean) const = 0;
-    virtual void communicate_histogram_to_zero(msq_std::vector<int> &histogram) const = 0;
+    virtual bool is_our_element(Mesh::ElementHandle element_handle, MsqError&) const = 0;
+    virtual bool is_our_vertex(Mesh::VertexHandle vertex_handle, MsqError&) const = 0;
+    virtual void communicate_min_max_to_all(double* minimum, double* maximum, MsqError&) const = 0;
+    virtual void communicate_min_max_to_zero(double* minimum, double* maximum, MsqError&) const = 0;
+    virtual void communicate_sums_to_zero(size_t* freeElementCount, int* invertedElementCount, size_t* elementCount, int* invertedSampleCount, size_t* sampleCount, long unsigned int* count, long unsigned int* invalid, double* sum, double *sqrSum, MsqError&) const = 0;
+    virtual void communicate_power_sum_to_zero(double* pMean, MsqError&) const = 0;
+    virtual void communicate_histogram_to_zero(msq_std::vector<int> &histogram, MsqError&) const = 0;
   };
 } // namespace
 
