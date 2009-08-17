@@ -370,14 +370,14 @@ void TerminationCriterion::reset_inner(PatchData &pd, OFEvaluator& obj_eval,
       //get the gradient norms
     if (totalFlag & (GRADIENT_INF_NORM_ABSOLUTE|GRADIENT_INF_NORM_RELATIVE))
     {
-      currentGradInfNorm = initialGradInfNorm = Linf(&mGrad[0], num_vertices);
+      currentGradInfNorm = initialGradInfNorm = Linf(mGrad);
       MSQ_DBGOUT(debugLevel) << "  o Initial gradient Inf norm: " 
         << initialGradInfNorm << msq_stdio::endl;
     }  
       
     if (totalFlag & (GRADIENT_L2_NORM_ABSOLUTE|GRADIENT_L2_NORM_RELATIVE))
     {
-      currentGradL2NormSquared = initialGradL2NormSquared = length_squared(&mGrad[0], num_vertices);
+      currentGradL2NormSquared = initialGradL2NormSquared = length_squared(mGrad);
       MSQ_DBGOUT(debugLevel) << "  o Initial gradient L2 norm: " 
         << msq_stdc::sqrt(initialGradL2NormSquared) << msq_stdio::endl;
     }  
@@ -441,7 +441,7 @@ void TerminationCriterion::reset_inner(PatchData &pd, OFEvaluator& obj_eval,
       obj_eval.evaluate(pd, currentOFValue, mGrad, err);
       err.clear();
     }
-    write_timestep( pd, &mGrad[0], err);
+    write_timestep( pd, mGrad.empty() ? 0 : &mGrad[0], err);
   }
     
   if (plotFile.is_open()) {
@@ -500,7 +500,7 @@ void TerminationCriterion::accumulate_inner( PatchData& pd,
     }
   }
 
-  accumulate_inner( pd, of_value, &mGrad[0], err );  MSQ_CHKERR(err);
+  accumulate_inner( pd, of_value, mGrad.empty() ? 0 : &mGrad[0], err );  MSQ_CHKERR(err);
 }
 
 
