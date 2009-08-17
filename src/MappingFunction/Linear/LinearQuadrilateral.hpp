@@ -77,6 +77,11 @@ public:
                     MsqVector<2>* d_coeff_d_xi_out,
                     size_t& num_vtx,
                     MsqError& err ) const;
+
+  virtual
+  void ideal( Sample location, 
+              MsqMatrix<3,2>& jacobian_out,
+              MsqError& err ) const;
 };
 
 } // namespace Mesquite

@@ -40,6 +40,8 @@
 #include "LinearPyramid.hpp"
 #include "TopologyInfo.hpp"
 #include "MsqError.hpp"
+#include "JacobianCalculator.hpp"
+#include "IdealElements.hpp"
 
 #include "UnitUtil.hpp"
 
@@ -113,6 +115,12 @@ class LinearMappingFunctionTest : public CppUnit::TestFixture
     CPPUNIT_TEST(test_linear_pyr_deriv_edges);
     CPPUNIT_TEST(test_linear_pyr_deriv_faces);
     CPPUNIT_TEST(test_linear_pyr_deriv_center);
+
+    CPPUNIT_TEST(test_linear_hex_ideal);
+    CPPUNIT_TEST(test_linear_quad_ideal);
+    CPPUNIT_TEST(test_linear_tet_ideal);
+    CPPUNIT_TEST(test_linear_tri_ideal);
+    CPPUNIT_TEST(test_linear_prism_ideal);
    
     CPPUNIT_TEST_SUITE_END();
   
@@ -154,6 +162,9 @@ class LinearMappingFunctionTest : public CppUnit::TestFixture
                         map_func mf2,
                         unsigned count,
                         double* xi );
+    void do_ideal_test( MappingFunction2D& mf );
+    void do_ideal_test( MappingFunction3D& mf );
+                 
                  
     void test_coeff_fail( MappingFunction& mf, unsigned subdim );
     void test_deriv_fail( MappingFunction2D& mf, unsigned subdim );
@@ -230,6 +241,11 @@ class LinearMappingFunctionTest : public CppUnit::TestFixture
     void test_linear_pyr_deriv_faces();
     void test_linear_pyr_deriv_center();
 
+    void test_linear_hex_ideal()   { do_ideal_test( hex   ); }
+    void test_linear_quad_ideal()  { do_ideal_test( quad  ); }
+    void test_linear_tet_ideal()   { do_ideal_test( tet   ); }
+    void test_linear_tri_ideal()   { do_ideal_test( tri   ); }
+    void test_linear_prism_ideal() { do_ideal_test( prism ); }
 };
 
 
@@ -1057,7 +1073,67 @@ void LinearMappingFunctionTest::do_deriv_test( MappingFunction3D& mf,
   }
 }
 
-                  
+ 
+void LinearMappingFunctionTest::do_ideal_test( MappingFunction2D& mf )
+{
+  MsqError err;
+  MsqMatrix<3,2> W_prime;
+  mf.ideal( Sample(2,0), W_prime, err );
+  ASSERT_NO_ERROR(err);
+  
+    // for this test that everything is in the xy-plane
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, W_prime(2,0), 1e-12 );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, W_prime(2,1), 1e-12 );
+  MsqMatrix<2,2> W( W_prime.data() );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, det(W), 1e-6 );
+
+  const Vector3D* verts = unit_edge_element( mf.element_topology() );
+  CPPUNIT_ASSERT(verts);
+  
+  JacobianCalculator jc;
+  jc.get_Jacobian_2D( &mf, NodeSet(), Sample(2,0), verts, TopologyInfo::corners(mf.element_topology()), W_prime, err );
+  ASSERT_NO_ERROR(err);
+  
+    // for this test that everything is in the xy-plane
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, W_prime(2,0), 1e-12 );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, W_prime(2,1), 1e-12 );
+  MsqMatrix<2,2> W_exp( W_prime.data() );
+  W_exp /= sqrt(det(W_exp));
+  
+    // Matrices should be a rotation of each other.
+    // First, calculate tentative rotation matrix
+  MsqMatrix<2,2> R = inverse(W_exp) * W;
+    // next check that it is a rotation
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, det(R), 1e-6 ); // no scaling
+  ASSERT_MATRICES_EQUAL( transpose(R), inverse(R), 1e-6 ); // orthogonal
+}
+
+void LinearMappingFunctionTest::do_ideal_test( MappingFunction3D& mf )
+{
+  MsqError err;
+  MsqMatrix<3,3> W;
+  mf.ideal( Sample(3,0), W, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, det(W), 1e-6 );
+
+  const Vector3D* verts = unit_edge_element( mf.element_topology() );
+  CPPUNIT_ASSERT(verts);
+  
+  JacobianCalculator jc;
+  MsqMatrix<3,3> W_exp;
+  jc.get_Jacobian_3D( &mf, NodeSet(), Sample(3,0), verts, TopologyInfo::corners(mf.element_topology()), W_exp, err );
+  ASSERT_NO_ERROR(err);
+  W_exp /= Mesquite::cbrt(det(W_exp));
+  
+    // Matrices should be a rotation of each other.
+    // First, calculate tentative rotation matrix
+  MsqMatrix<3,3> R = inverse(W_exp) * W;
+    // next check that it is a rotation
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, det(R), 1e-6 ); // no scaling
+  ASSERT_MATRICES_EQUAL( transpose(R), inverse(R), 1e-6 ); // orthogonal
+}
+
+                 
 void LinearMappingFunctionTest::test_coeff_fail( MappingFunction& mf, unsigned subdim )
 {
     // make sure it fails if called

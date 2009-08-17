@@ -34,6 +34,8 @@
 #include "TriLagrangeShape.hpp"
 #include "TopologyInfo.hpp"
 #include "MsqError.hpp"
+#include "IdealElements.hpp"
+#include "JacobianCalculator.hpp"
 
 #include "UnitUtil.hpp"
 
@@ -103,6 +105,8 @@ class TriLagrangeShapeTest : public CppUnit::TestFixture
     CPPUNIT_TEST(test_deriv_edges);
     CPPUNIT_TEST(test_deriv_center);
     
+    CPPUNIT_TEST(test_ideal_jacobian);
+    
     CPPUNIT_TEST_SUITE_END();
   
     TriLagrangeShape sf;
@@ -124,6 +128,8 @@ class TriLagrangeShapeTest : public CppUnit::TestFixture
     void test_deriv_corners();
     void test_deriv_edges();
     void test_deriv_center();
+    
+    void test_ideal_jacobian();
 };
 
 
@@ -592,4 +598,38 @@ void TriLagrangeShapeTest::test_deriv_center()
   test_mid_derivs( ns );
   ns.clear_mid_edge_node(0);
   test_mid_derivs( ns );
+}
+
+void TriLagrangeShapeTest::test_ideal_jacobian()
+{
+  MsqError err;
+  MsqMatrix<3,2> J_prime;
+  sf.ideal( Sample(2,0), J_prime, err );
+  ASSERT_NO_ERROR(err);
+  
+    // for this test that everything is in the xy-plane
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, J_prime(2,0), 1e-12 );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, J_prime(2,1), 1e-12 );
+  MsqMatrix<2,2> J_act( J_prime.data() );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, det(J_act), 1e-6 );
+
+  const Vector3D* verts = unit_edge_element( TRIANGLE );
+  CPPUNIT_ASSERT(verts);
+  
+  JacobianCalculator jc;
+  jc.get_Jacobian_2D( &sf, NodeSet(), Sample(2,0), verts, 3, J_prime, err );
+  ASSERT_NO_ERROR(err);
+  
+    // for this test that everything is in the xy-plane
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, J_prime(2,0), 1e-12 );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, J_prime(2,1), 1e-12 );
+  MsqMatrix<2,2> J_exp( J_prime.data() );
+  J_exp /= sqrt(det(J_exp));
+  
+    // Matrices should be a rotation of each other.
+    // First, calculate tentative rotation matrix
+  MsqMatrix<2,2> R = inverse(J_exp) * J_act;
+    // next check that it is a rotation
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, det(R), 1e-6 ); // no scaling
+  ASSERT_MATRICES_EQUAL( transpose(R), inverse(R), 1e-6 ); // orthogonal
 }

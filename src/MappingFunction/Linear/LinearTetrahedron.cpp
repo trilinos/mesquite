@@ -138,4 +138,16 @@ void LinearTetrahedron::derivatives( Sample ,
   }
 }
 
+void LinearTetrahedron::ideal( Sample , 
+                               MsqMatrix<3,3>& J,
+                               MsqError&  ) const
+{
+  const double a = 1.122462048309373;  // 6th root of 2
+  const double b = 1.7320508075688772; // sqrt(3)
+  const double c = 1.5874010519681994; // 2 to the 2/3
+  J(0,0) = a;   J(0,1) = 0.5*a;   J(0,2) = 0.5*a;
+  J(1,0) = 0.0; J(1,1) = 0.5*a*b; J(1,2) = 0.5*a/b;
+  J(2,0) = 0.0; J(2,1) = 0.0;     J(2,2) = c/b;
+}
+
 } // namespace Mesquite

@@ -433,4 +433,16 @@ void LinearPrism::derivatives( Sample loc,
 }
 
 
+void LinearPrism::ideal( Sample , 
+                         MsqMatrix<3,3>& J,
+                         MsqError&  ) const
+{
+  const double a = 0.66090107608336479; // 2^(-1/3) * 3^(-1/6)
+  const double b = 1.1447142425533319;  // cbrt(1.5)
+
+  J(0,0) = 0.0; J(0,1) = 2*a;  J(0,2) = a;
+  J(1,0) = 0.0; J(1,1) = 0.0;  J(1,2) = b;
+  J(2,0) = a  ; J(2,1) = 0.0;  J(2,2) = 0.0;
+}
+
 } // namespace Mesquite

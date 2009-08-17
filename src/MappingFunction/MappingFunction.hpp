@@ -334,6 +334,24 @@ public:
                  size_t& num_vtx_out,
                  MsqMatrix<3,2>& jacobian_out,
                  MsqError& err ) const;
+
+  /**\brief Get ideal Jacobian matrix
+   *
+   * Returns the Jacobian matrix of an ideal element.  The orientation
+   * of element or corresponding matrix is arbitrary.  The "ideal" element
+   * should be scaled such the Jacobian (determinant of the Jacobian
+   * matrix) is 1.0.
+   *
+   *\param location Where within the element at which to evaluate the Jacobian.
+   *                Typically doesn't matter except for degenerate elements
+   *                (e.g. pyramid as degenerate hex.)
+   *\param jacobian_out    The Jacobian of the mapping function at the
+   *                       specified logical location.
+   */
+  virtual
+  void ideal( Sample location, 
+              MsqMatrix<3,2>& jacobian_out,
+              MsqError& err ) const;
 };
 
 /**\brief MappingFunction for topologically 3D (volume) elements. */
@@ -496,6 +514,24 @@ public:
                  size_t& num_vtx_out,
                  MsqMatrix<3,3>& jacobian_out,
                  MsqError& err ) const;
+
+  /**\brief Get ideal Jacobian matrix
+   *
+   * Returns the Jacobian matrix of an ideal element.  The orientation
+   * of element or corresponding matrix is arbitrary.  The "ideal" element
+   * should be scaled such the Jacobian (determinant of the Jacobian
+   * matrix) is 1.0.
+   *
+   *\param location Where within the element at which to evaluate the Jacobian.
+   *                Typically doesn't matter except for degenerate elements
+   *                (e.g. pyramid as degenerate hex.)
+   *\param jacobian_out    The Jacobian of the mapping function at the
+   *                       specified logical location.
+   */
+  virtual
+  void ideal( Sample location, 
+              MsqMatrix<3,3>& jacobian_out,
+              MsqError& err ) const;
 };
 
 

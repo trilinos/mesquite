@@ -293,6 +293,7 @@ public:
     centerOnly.set_mapping_function( &pyrCenter );
     centerOnly.set_mapping_function( &priCenter );
     centerOnly.set_mapping_function( &hexCenter );
+    tester.ideal_pyramid_base_equals_height( true );
   }
   
   void test_negate_flag()

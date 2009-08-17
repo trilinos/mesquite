@@ -34,6 +34,8 @@
 #include "TetLagrangeShape.hpp"
 #include "TopologyInfo.hpp"
 #include "MsqError.hpp"
+#include "IdealElements.hpp"
+#include "JacobianCalculator.hpp"
 #include <math.h>
 
 #include "UnitUtil.hpp"
@@ -114,6 +116,8 @@ class TetLagrangeShapeTest : public CppUnit::TestFixture
     CPPUNIT_TEST(test_mid_face_node_coeff);
     CPPUNIT_TEST(test_mid_face_node_deriv);
     
+    CPPUNIT_TEST(test_ideal_jacobian);
+    
     CPPUNIT_TEST_SUITE_END();
   
     TetLagrangeShape sf;
@@ -147,6 +151,8 @@ class TetLagrangeShapeTest : public CppUnit::TestFixture
     void test_mid_elem_node_deriv();
     void test_mid_face_node_coeff();
     void test_mid_face_node_deriv();
+    
+    void test_ideal_jacobian();
 };
 
 
@@ -700,3 +706,27 @@ void TetLagrangeShapeTest::test_mid_face_node_deriv()
   test_invalid_nodebits_deriv( nodeset2 );
 }
 
+
+void TetLagrangeShapeTest::test_ideal_jacobian()
+{
+  MsqError err;
+  MsqMatrix<3,3> J_act, J_exp;
+  sf.ideal( Sample(3,0), J_act, err );
+  ASSERT_NO_ERROR(err);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, det(J_act), 1e-6 );
+
+  const Vector3D* verts = unit_edge_element( TETRAHEDRON );
+  CPPUNIT_ASSERT(verts);
+  
+  JacobianCalculator jc;
+  jc.get_Jacobian_3D( &sf, NodeSet(), Sample(2,0), verts, 4, J_exp, err );
+  ASSERT_NO_ERROR(err);
+  J_exp /= Mesquite::cbrt(det(J_exp));
+  
+    // Matrices should be a rotation of each other.
+    // First, calculate tentative rotation matrix
+  MsqMatrix<3,3> R = inverse(J_exp) * J_act;
+    // next check that it is a rotation
+  CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, det(R), 1e-6 ); // no scaling
+  ASSERT_MATRICES_EQUAL( transpose(R), inverse(R), 1e-6 ); // orthogonal
+}

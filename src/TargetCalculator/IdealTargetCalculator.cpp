@@ -46,24 +46,9 @@ bool IdealTargetCalculator:: get_3D_target( PatchData& pd,
                                             MsqMatrix<3,3>& W,
                                             MsqError& err )
 {
-  MsqMeshEntity& elem = pd.element_by_index( element );
-  EntityTopology type = elem.get_element_type();
+  EntityTopology type = pd.element_by_index( element ).get_element_type();
   const MappingFunction3D* func = pd.get_mapping_function_3D( type );
-
-  const Vector3D* verts = unit_element( type );
-  if (!verts) {
-      MSQ_SETERR(err)(MsqError::UNSUPPORTED_ELEMENT);
-      return false;
-  }
-  
-  jc.get_Jacobian_3D( func, NodeSet(), sample, verts, elem.node_count(), W, err );
-  MSQ_ERRZERO(err);
-  
-    // scale to unit det
-  double d = det(W);
-  if (fabs(d - 1.0) > 1e-8)
-    W *= 1.0/Mesquite::cbrt(d);
-  
+  func->ideal( sample, W, err );
   return true;
 }
 
@@ -73,23 +58,9 @@ bool IdealTargetCalculator:: get_2D_target( PatchData& pd,
                                             MsqMatrix<3,2>& W,
                                             MsqError& err )
 {
-  MsqMeshEntity& elem = pd.element_by_index( element );
-  EntityTopology type = elem.get_element_type();
- const MappingFunction2D* func = pd.get_mapping_function_2D( type );
-
-  const Vector3D* verts = unit_element( type );
-  if (!verts) {
-      MSQ_SETERR(err)(MsqError::UNSUPPORTED_ELEMENT);
-      return false;
-  }
-  
-  jc.get_Jacobian_2D( func, NodeSet(), sample, verts, elem.node_count(), W, err );
-  MSQ_ERRZERO(err);
-  
-    // scale to unit det
-  double d = W(0,0)*W(1,1)-W(1,0)*W(0,1);
-  if (fabs(d - 1.0) > 1e-8)
-    W *= 1.0/sqrt(d);
+  EntityTopology type = pd.element_by_index( element ).get_element_type();
+  const MappingFunction2D* func = pd.get_mapping_function_2D( type );
+  func->ideal( sample, W, err );  MSQ_ERRZERO(err);
   
   if (orientSurfElems) {
     Vector3D n;

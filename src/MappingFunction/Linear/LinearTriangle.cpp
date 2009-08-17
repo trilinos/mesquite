@@ -108,4 +108,19 @@ void LinearTriangle::derivatives( Sample ,
   }
 }
 
+void LinearTriangle::ideal( Sample , 
+                            MsqMatrix<3,2>& J,
+                            MsqError&  ) const
+{
+//  const double g = 1.074569931823542; // sqrt(2/sqrt(3));
+//  J(0,0) = g;    J(0,1) = 0.5*g;
+//  J(1,0) = 0.0;  J(1,1) = 1.0/g;
+//  J(2,0) = 0.0;  J(2,1) = 0.0;
+    const double a = 0.70710678118654746; // 1/sqrt(2)
+    const double b = 1.3160740129524924;  // 4th root of 3
+    J(0,0) = -a/b; J(0,1) =  a/b;
+    J(1,0) = -a*b; J(1,1) = -a*b;
+    J(2,0) =  0.0; J(2,1) =  0.0;
+}
+
 } // namespace Mesquite

@@ -397,4 +397,13 @@ void LinearHexahedron::derivatives( Sample loc,
   }
 }
 
+void LinearHexahedron::ideal( Sample , 
+                              MsqMatrix<3,3>& J,
+                              MsqError&  ) const
+{
+  J(0,0) = J(1,1) = J(2,2) = 1.0;
+  J(1,0) = J(0,1) = J(0,2) = 0.0;
+  J(2,0) = J(2,1) = J(1,2) = 0.0;
+}
+
 } // namespace Mesquite

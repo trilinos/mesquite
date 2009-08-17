@@ -73,6 +73,7 @@ msq_test_SOURCES = msq_test_main.cpp \
 	TMPQualityMetricTest.cpp \
 	LinearMappingFunctionTest.cpp \
 	LVQDTargetTest.cpp \
+	MappingFunctionTest.cpp \
 	Matrix3DTest.cpp \
 	MeshInterfaceTest.cpp \
 	MeshImplTest.cpp \

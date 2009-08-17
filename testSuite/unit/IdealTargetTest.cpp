@@ -256,10 +256,27 @@ void IdealTargetTest::do_test( EntityTopology type, Sample location )
   MsqMatrix<3,2> w2_calc, w2_exp;
   get_calc_target( false, type, location, w3_calc, w2_calc );
   get_ideal_target( type, location, w3_exp, w2_exp );
-  if (TopologyInfo::dimension(type) == 2)
-    ASSERT_MATRICES_EQUAL( w2_exp, w2_calc, 1e-9 );
-  else
-    ASSERT_MATRICES_EQUAL( w3_exp, w3_calc, 1e-9 );
+  if (TopologyInfo::dimension(type) == 2) {
+    // assume XY plane
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, w2_exp(2,0), 1e-12 );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, w2_exp(2,1), 1e-12 );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, w2_calc(2,0), 1e-12 );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.0, w2_calc(2,1), 1e-12 );
+    MsqMatrix<2,2> W_calc, W_exp;
+    W_calc.set_row( 0, w2_calc.row(0) );
+    W_calc.set_row( 1, w2_calc.row(1) );
+    W_exp.set_row( 0, w2_exp.row(0) );
+    W_exp.set_row( 1, w2_exp.row(1) );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, det(W_calc), 1e-6 );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, det(W_exp), 1e-6 );
+    // a rotation of the expected matrix is acceptable.
+    MsqMatrix<2,2> R = inverse(W_calc) * W_exp;
+    ASSERT_MATRICES_EQUAL( transpose(R), inverse(R), 1e-6 );
+  }
+  else {
+    MsqMatrix<3,3> R = inverse(w3_calc) *w3_exp;
+    ASSERT_MATRICES_EQUAL( transpose(R), inverse(R), 1e-6 );
+  }
 }
 
 void IdealTargetTest::compare_rotated( const MsqMatrix<3,2>& unrotated, 

@@ -34,6 +34,7 @@
 #include "MappingFunction.hpp"
 #include "MsqError.hpp"
 #include "PatchData.hpp"
+#include "IdealElements.hpp"
 
 namespace MESQUITE_NS {
 
@@ -161,6 +162,35 @@ void MappingFunction2D::jacobian( const PatchData& pd,
   num_vtx_out = w;
 }
 
+void MappingFunction2D::ideal( Sample location,
+                               MsqMatrix<3,2>& J,
+                               MsqError& err ) const
+{
+  const Vector3D* coords = unit_element( element_topology(), true );
+  if (!coords) {
+    MSQ_SETERR(err)(MsqError::UNSUPPORTED_ELEMENT);
+    return;
+  }
+  
+  const unsigned MAX_VERTS = 4;
+  MsqVector<2> d_coeff_d_xi[MAX_VERTS];
+  size_t indices[MAX_VERTS], num_vtx = 0;
+  derivatives( location, NodeSet(), indices,
+               d_coeff_d_xi, num_vtx, err ); MSQ_ERRRTN(err);
+  assert(num_vtx > 0 && num_vtx <= MAX_VERTS);
+  
+  J.zero();
+  for (size_t r = 0; r < num_vtx; ++r) {
+    MsqMatrix<3,1> c( coords[indices[r]].to_array() );
+    J += c * transpose(d_coeff_d_xi[r]);
+  }
+  
+  double size = sqrt(sqrt(fabs(det(transpose(J) * J))));
+  assert(size > -1e-15); // no negative jacobians for ideal elements!
+  divide( 1.0, size, size );
+  J *= size;
+}
+
 void MappingFunction3D::jacobian( const PatchData& pd,
                                   size_t element_number,
                                   NodeSet nodeset,
@@ -195,5 +225,34 @@ void MappingFunction3D::jacobian( const PatchData& pd,
   num_vtx_out = w;
 }
 
+
+void MappingFunction3D::ideal( Sample location,
+                               MsqMatrix<3,3>& J,
+                               MsqError& err ) const
+{
+  const Vector3D* coords = unit_element( element_topology(), true );
+  if (!coords) {
+     MSQ_SETERR(err)(MsqError::UNSUPPORTED_ELEMENT);
+     return;
+  }
+
+  const unsigned MAX_VERTS = 8;
+  MsqVector<3> d_coeff_d_xi[MAX_VERTS];
+  size_t indices[MAX_VERTS], num_vtx = 0;
+  derivatives( location, NodeSet(), indices,
+               d_coeff_d_xi, num_vtx, err ); MSQ_ERRRTN(err);
+  assert(num_vtx > 0 && num_vtx <= MAX_VERTS);
+  
+  J.zero();
+  for (size_t r = 0; r < num_vtx; ++r) {
+    MsqMatrix<3,1> c( coords[indices[r]].to_array() );
+    J += c * transpose(d_coeff_d_xi[r]);
+  }
+  
+  double size = Mesquite::cbrt(fabs(det(J)));
+  assert(size > -1e-15); // no negative jacobians for ideal elements!
+  divide( 1.0, size, size );
+  J *= size;
+}
 
 } // namespace Mesquite

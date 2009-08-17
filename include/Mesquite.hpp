@@ -82,6 +82,8 @@
 #  endif
 #endif
 
+#include <limits>
+
 #include "mesquite_version.h"
 #define MESQUITE_NS__(X) Mesquite##X
 #define MESQUITE_NS_(X) MESQUITE_NS__(X)
@@ -222,6 +224,31 @@ inline double cbrt_sqr( double d )
   return msq_stdc::pow( d, MSQ_TWO_THIRDS );
 #endif
 }
+
+/**\brief Perform save division (no overflow or div by zero).
+ *
+ * Do result = num/den iff it would result in an overflow or div by zero
+ *\param num  Numerator of division.
+ *\param den  Denominator of division
+ *\param result The result of the division if valid, zero otherwise.
+ *\return false if the result of the division would be invalid (inf or nan),
+ *        true otherwise.
+ */ 
+inline bool divide( double num, double den, double& result )
+{
+  const double fden = fabs(den);
+    // NOTE: First comparison is necessary to avoid overflow in second.
+    // NOTE: Comparison in second half of condition must be '<'
+    //       rather than '<=' to correctly handle 0/0.
+  if (fden >= 1 || fabs(num) < fden*std::numeric_limits<double>::max()) {
+    result = num/den;
+    return true;
+  }
+  else {
+    result = 0.0;
+    return false;
+  }
+}
   
 } // namespace Mesquite
 
@@ -230,6 +257,7 @@ inline double cbrt_sqr( double d )
 inline int finite( double x ) { return _Isfinite(x); }
 #  endif
 #endif
+
 
 
 #endif
