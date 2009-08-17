@@ -367,6 +367,7 @@ namespace MESQUITE_NS
     assert(lhs.size() == rhs.size());
     for (size_t i = 0; i < lhs.size(); ++i)
       dot = lhs[i] % rhs[i];
+    return dot;
   }
 
   inline double operator%(const double scalar,
