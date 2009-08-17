@@ -285,9 +285,7 @@ class NodeSet {
         case 1: return num_before_mid_edge(sample.number); break;
         case 2: return num_before_mid_face(sample.number); break;
         case 3: return num_before_mid_region(sample.number); break;
-#ifndef NDEBUG
         default: assert(0); return ~0u;
-#endif
       }
     }
     
