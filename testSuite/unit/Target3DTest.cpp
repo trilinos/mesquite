@@ -1066,7 +1066,7 @@ REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeBarrier,              false,  tru
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeBarrierAlt1,          false,  true,  true,  true, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeOrientAlt1,           false,  true, false, false, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeOrientBarrierAlt1,    false,  true, false,  true, 0.0 );
-REGISTER_TARGET3D_TEST          ( Target3DShapeSizeBarrier,          false, false,  true,  true, 0.0 );
+REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeBarrier,          false, false,  true,  true, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeBarrierAlt1,      false, false,  true,  true, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeBarrierAlt2,      false, false,  true,  true, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( InverseMeanRatio3D,                false,  true,  true,  true, 0.0 );
