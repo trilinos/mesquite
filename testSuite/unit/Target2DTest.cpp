@@ -856,7 +856,7 @@ REGISTER_TARGET2D_TEST               ( Target2DShapeOrientAlt2,           false,
 REGISTER_TARGET2D_TEST               ( Target2DShapeOrientBarrier,        false,  true, false,  true, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeOrientBarrierAlt1,    false,  true, false,  true, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSize,                 false, false,  true, false, 0.0 );
-REGISTER_TARGET2D_TEST               ( Target2DShapeSizeAlt1,             false, false,  true, false, 0.0 );
+REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeAlt1,             false, false,  true, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeAlt2,             false, false,  true, false, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeBarrier,          false, false,  true,  true, 0.0 );
 REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( Target2DShapeSizeBarrierAlt1,      false, false,  true,  true, 0.0 );

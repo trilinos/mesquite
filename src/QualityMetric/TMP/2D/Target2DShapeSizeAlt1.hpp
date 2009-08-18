@@ -51,7 +51,7 @@ class Target2DShapeSizeAlt1 : public TargetMetric2D
                  const MsqMatrix<2,2>& W, 
                  double& result,
                  MsqError& err );
-/*
+
   MESQUITE_EXPORT virtual
   bool evaluate_with_grad( const MsqMatrix<2,2>& A, 
                            const MsqMatrix<2,2>& W, 
@@ -66,7 +66,7 @@ class Target2DShapeSizeAlt1 : public TargetMetric2D
                            MsqMatrix<2,2>& deriv_wrt_A,
                            MsqMatrix<2,2> second_wrt_A[3],
                            MsqError& err );
-*/
+
 };
 
 

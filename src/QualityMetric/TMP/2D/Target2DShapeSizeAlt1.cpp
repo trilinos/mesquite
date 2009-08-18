@@ -53,9 +53,11 @@ bool Target2DShapeSizeAlt1::evaluate( const MsqMatrix<2,2>& A,
   double frob_sqr = sqr_Frobenius(T);
   double psi = sqrt( frob_sqr + 2.0*det(T) );
 
+  double a = DBL_EPSILON;
   while (!Mesquite::divide(frob_sqr+2,2*psi,result)) {
-    T(0,0) += DBL_EPSILON;
-    T(1,1) += DBL_EPSILON;
+    T(0,0) = a;
+    T(1,1) = a;
+    a *= 2.0;
     frob_sqr = sqr_Frobenius(T);
     psi = sqrt( frob_sqr + 2.0*det(T) );
   }
@@ -64,17 +66,41 @@ bool Target2DShapeSizeAlt1::evaluate( const MsqMatrix<2,2>& A,
   return true;
 }
 
-/*
+
 bool Target2DShapeSizeAlt1::evaluate_with_grad( const MsqMatrix<2,2>& A, 
                                                 const MsqMatrix<2,2>& W, 
                                                 double& result, 
                                                 MsqMatrix<2,2>& deriv_wrt_A,
                                                 MsqError& err )
 {
-}
-*/
+  MsqMatrix<2,2> Winv = inverse(W);
+  MsqMatrix<2,2> T = A * Winv;
+  double frob_sqr = sqr_Frobenius(T);
+  double psi = sqrt( frob_sqr + 2.0*det(T) );
 
-/*
+  double a = DBL_EPSILON;
+  while (!Mesquite::divide(frob_sqr+2,2*psi,result)) {
+    T(0,0) = a;
+    T(1,1) = a;
+    a *= 2.0;
+    frob_sqr = sqr_Frobenius(T);
+    psi = sqrt( frob_sqr + 2.0*det(T) );
+  }
+  
+  //MsqMatrix<2,2> d_psi = 1.0/psi * (T + transpose_adj(T));
+  //deriv_wrt_A = (1.0/psi) * (T - result * d_psi);
+  const double f = result/(psi*psi);
+  deriv_wrt_A = transpose_adj(T);
+  deriv_wrt_A *= -f;
+  deriv_wrt_A += (1.0/psi - f) * T;
+  
+  deriv_wrt_A = deriv_wrt_A * transpose(Winv);
+  result -= 1.0;
+  
+  return true;
+}
+
+
 bool Target2DShapeSizeAlt1::evaluate_with_hess( const MsqMatrix<2,2>& A, 
                                                 const MsqMatrix<2,2>& W, 
                                                 double& result, 
@@ -82,7 +108,40 @@ bool Target2DShapeSizeAlt1::evaluate_with_hess( const MsqMatrix<2,2>& A,
                                                 MsqMatrix<2,2> second[3],
                                                 MsqError& err )
 {
+  MsqMatrix<2,2> Winv = inverse(W);
+  MsqMatrix<2,2> T = A * Winv;
+  double frob_sqr = sqr_Frobenius(T);
+  double psi = sqrt( frob_sqr + 2.0*det(T) );
+
+  double a = DBL_EPSILON;
+  while (!Mesquite::divide(frob_sqr+2,2*psi,result)) {
+    T(0,0) = a;
+    T(1,1) = a;
+    a *= 2.0;
+    frob_sqr = sqr_Frobenius(T);
+    psi = sqrt( frob_sqr + 2.0*det(T) );
+  }
+  
+  const double inv_psi = 1.0/psi;
+  MsqMatrix<2,2> d_psi = T + transpose_adj(T);
+  d_psi *= inv_psi;
+
+  deriv_wrt_A = d_psi;
+  deriv_wrt_A *= -result;
+  deriv_wrt_A += T;
+  deriv_wrt_A *= inv_psi; 
+  deriv_wrt_A = deriv_wrt_A * transpose(Winv);
+  
+  set_scaled_2nd_deriv_wrt_psi( second, -result*inv_psi, psi, T );
+  pluseq_scaled_outer_product( second,  2*result*inv_psi*inv_psi, d_psi );
+  pluseq_scaled_sum_outer_product( second, -inv_psi*inv_psi, d_psi, T );
+  pluseq_scaled_I( second, inv_psi );
+  second_deriv_wrt_product_factor( second, Winv );
+  
+  result -= 1.0;
+  
+  return true;
 }
-*/
+
 
 } // namespace Mesquite

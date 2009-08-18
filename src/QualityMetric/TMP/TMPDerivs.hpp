@@ -260,6 +260,15 @@ template <unsigned D> inline
 void second_deriv_wrt_product_factor( MsqMatrix<D,D> R[D*(D+1)/2],
                                       const MsqMatrix<D,D>& Z );
 
+/**\brief \f$ R = \aplha * \frac{\partial^2 \psi(T)}{\partial T^2} \f$
+ *
+ * \f$ \psi = \root{|T|^2 + 2\tau} \f$
+ */
+inline
+void set_scaled_2nd_deriv_wrt_psi( MsqMatrix<2,2> R[3],
+                                   const double alpha,
+                                   const double psi,
+                                   const MsqMatrix<2,2>& T );
 
 /**\brief \f$  R = R + \alpha * Z \f$
  */
@@ -869,6 +878,20 @@ void second_deriv_wrt_product_factor( MsqMatrix<D,D> R[D*(D+1)/2],
   const MsqMatrix<D,D> Zt = transpose(Z);
   for (unsigned i = 0; i < D*(D+1)/2; ++i)
     R[i] = (Z * R[i]) * Zt;
+}
+
+void set_scaled_2nd_deriv_wrt_psi( MsqMatrix<2,2> R[3],
+                                   const double alpha,
+                                   const double psi,
+                                   const MsqMatrix<2,2>& T )
+{
+  const double t = trace(T);
+  const double f = alpha/(psi*psi*psi);
+  const double s = T(0,1) - T(1,0);
+  R[0](0,0) = R[1](0,1) = R[2](1,1) =  f*s*s;
+  R[0](0,1) = R[0](1,0) = R[1](1,1) = -f*s*t;
+  R[1](0,0) = R[2](0,1) = R[2](1,0) =  f*s*t;
+  R[0](1,1) = R[2](0,0) = -(R[1](1,0) = -f*t*t);
 }
 
 template <unsigned D> inline

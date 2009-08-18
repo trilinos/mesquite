@@ -123,11 +123,7 @@ bool Target2DShapeSize::evaluate_with_hess( const MsqMatrix<2,2>& A,
 
   const double s = T(0,1) - T(1,0);
   const double tr = trace(T);
-  const double f = -2.0/(psi*psi*psi);
-  second[0](0,0) = second[1](0,1) = second[2](1,1) =  f*s*s;
-  second[0](0,1) = second[0](1,0) = second[1](1,1) = -f*s*tr;
-  second[1](0,0) = second[2](0,1) = second[2](1,0) =  f*s*tr;
-  second[0](1,1) = second[2](0,0) = -(second[1](1,0) = -f*tr*tr);
+  set_scaled_2nd_deriv_wrt_psi( second, -2.0, psi, T );
   pluseq_scaled_I( second, 2 );
   second_deriv_wrt_product_factor( second, Winv );
   
