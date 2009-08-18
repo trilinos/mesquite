@@ -17,6 +17,7 @@ MSQ_SRCS += \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeOrientBarrier.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeOrientBarrierAlt1.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeSize.cpp \
+	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeSizeAlt1.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeSizeAlt2.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeSizeBarrier.cpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeSizeBarrierAlt1.cpp \
@@ -50,6 +51,7 @@ MSQ_HDRS += \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeOrientBarrier.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeOrientBarrierAlt1.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeSize.hpp \
+	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeSizeAlt1.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeSizeAlt2.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeSizeBarrier.hpp \
 	$(SRC_QUALITYMETRIC_TMP_2D_DIR)/Target2DShapeSizeBarrierAlt1.hpp \

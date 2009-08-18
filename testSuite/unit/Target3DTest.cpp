@@ -119,7 +119,7 @@ template <class Metric> void Target3DTest<Metric>::test_ideal_gradient()
   const double Bvals[] = { 1.5, -0.7, -0.8, 0.8, -1.3, -0.7, 0.6, -0.9, -2.0 };
   const MsqMatrix<3,3> I(1.0), A(Avals), B(Bvals);
   MsqMatrix<3,3> grad;
-  double val, eps = 1e-6;
+  double val, eps = 1e-5;
   bool valid;
   
   valid = test_metric.evaluate_with_grad( I, I, val, grad, err );
@@ -985,7 +985,9 @@ void TargetMetric3DTest::test_numerical_hessian()
 #include "Target3DShapeSize.hpp"
 #include "Target3DShapeSizeAlt2.hpp"
 #include "Target3DShapeBarrier.hpp"
+#include "Target3DShapeBarrierAlt1.hpp"
 #include "Target3DShape.hpp"
+#include "Target3DShapeSizeBarrier.hpp"
 #include "Target3DShapeSizeBarrierAlt1.hpp"
 #include "Target3DShapeSizeBarrierAlt2.hpp"
 #include "InverseMeanRatio3D.hpp"
@@ -1061,8 +1063,10 @@ REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSize,                 false, fals
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeAlt2,             false, false,  true, false, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShape,                     false,  true,  true, false, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeBarrier,              false,  true,  true,  true, 0.0 );
+REGISTER_TARGET3D_TEST          ( Target3DShapeBarrierAlt1,          false,  true,  true,  true, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeOrientAlt1,           false,  true, false, false, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeOrientBarrierAlt1,    false,  true, false,  true, 0.0 );
+REGISTER_TARGET3D_TEST          ( Target3DShapeSizeBarrier,          false, false,  true,  true, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeBarrierAlt1,      false, false,  true,  true, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( Target3DShapeSizeBarrierAlt2,      false, false,  true,  true, 0.0 );
 REGISTER_TARGET3D_TEST_WITH_HESS( InverseMeanRatio3D,                false,  true,  true,  true, 0.0 );
