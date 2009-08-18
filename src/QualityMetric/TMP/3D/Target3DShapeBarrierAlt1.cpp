@@ -60,24 +60,73 @@ bool Target3DShapeBarrierAlt1::evaluate( const MsqMatrix<3,3>& A,
   return true;
 }
 
-/*
+
 bool Target3DShapeBarrierAlt1::evaluate_with_grad( const MsqMatrix<3,3>& A, 
                                      const MsqMatrix<3,3>& W, 
                                      double& result, 
                                      MsqMatrix<3,3>& wrt_A,
                                      MsqError&  )
 {
+  MsqMatrix<3,3> Winv = inverse(W);
+  MsqMatrix<3,3> T = A * Winv;
+  double f = sqr_Frobenius(T);
+  double g = sqr_Frobenius(adj(T));
+  double d = det(T);
+  if (invalid_determinant(d)) {
+    result = 0.0;
+    return false;
+  }
+  result = (f*g) / (9*d*d) - 1;
+  
+  wrt_A = T;
+  wrt_A *= (g + f*f);
+  wrt_A -= f * (T * transpose(T) * T);
+  wrt_A -= f * g / d * transpose_adj(T);
+  wrt_A *= 2 / (9*d*d);
+  wrt_A = wrt_A * transpose(Winv);
+  
+  return true;
 }
-*/
-/*
+
+
 bool Target3DShapeBarrierAlt1::evaluate_with_hess( const MsqMatrix<3,3>& A,
                                                 const MsqMatrix<3,3>& W,
                                                 double& result,
-                                                MsqMatrix<3,3>& deriv_wrt_A,
-                                                MsqMatrix<3,3> second_wrt_A[6],
+                                                MsqMatrix<3,3>& wrt_A,
+                                                MsqMatrix<3,3> second[6],
                                                 MsqError& err )
 {
+  MsqMatrix<3,3> Winv = inverse(W);
+  MsqMatrix<3,3> T = A * Winv;
+  double f = sqr_Frobenius(T);
+  double g = sqr_Frobenius(adj(T));
+  double d = det(T);
+  if (invalid_determinant(d)) {
+    result = 0.0;
+    return false;
+  }
+  const double den = 1.0/(9*d*d);
+  result = f*g*den- 1;
+  
+  MsqMatrix<3,3> dg = 2 * (f * T - T * transpose(T) * T);
+  MsqMatrix<3,3> df = 2 * T;
+  MsqMatrix<3,3> dtau = transpose_adj(T);
+  
+  wrt_A = g*df + f*dg - 2*f*g/d * transpose_adj(T);
+  wrt_A *= den;
+  wrt_A = wrt_A * transpose(Winv);
+  
+  set_scaled_2nd_deriv_norm_sqr_adj( second, den*f, T );
+  pluseq_scaled_I( second, 2*den*g );
+  pluseq_scaled_sum_outer_product( second, den, dg, df );
+  pluseq_scaled_sum_outer_product( second, -2*den*g/d, df, dtau );
+  pluseq_scaled_sum_outer_product( second, -2*den*f/d, dg, dtau );
+  pluseq_scaled_outer_product( second, 6*den*f*g/(d*d), dtau );
+  pluseq_scaled_2nd_deriv_of_det( second, -2*den*f*g/d, T );
+  second_deriv_wrt_product_factor( second, Winv );
+  
+  return true;
 }
-*/
+
 
 } // namespace Mesquite

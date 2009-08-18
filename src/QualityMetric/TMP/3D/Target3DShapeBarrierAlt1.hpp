@@ -60,7 +60,6 @@ public:
                  double& result, 
                  MsqError& err );
   
-/*  
   MESQUITE_EXPORT virtual
   bool evaluate_with_grad( const MsqMatrix<3,3>& A, 
                            const MsqMatrix<3,3>& W, 
@@ -75,7 +74,7 @@ public:
                            MsqMatrix<3,3>& deriv_wrt_A,
                            MsqMatrix<3,3> second_wrt_A[6],
                            MsqError& err );
-*/
+
 };
 
 

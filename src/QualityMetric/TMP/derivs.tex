@@ -1397,6 +1397,29 @@ to $n=3$, the $n=2$ case being related to Mean Ratio. \newline
 $|adj \, T|^2$, and $\tau^2$, along with the product and quotient rules 
 \ref{prod1}, \ref{quotient1}, \ref{prod2}, and \ref{quotient2}. \newline 
 
+\begin{eqnarray}
+\frac{ \partial \mu_3 }{ \partial T } & = & \frac{2}{ 9 \tau^2 } \left\{ \left( |adj T|^2 + |T|^4 \right) T - |T|^2 T T^t T - \frac{ |T|^2 |adj T|^2 }{\tau} \frac{\partial \tau}{\partial T} \right\} 
+\end{eqnarray}
+
+\begin{eqnarray}
+\nonumber
+\frac{\partial^2 \mu_3}{\partial T^2} &=& \frac{1}{9 \tau^2} \left\{
+   g \frac{\partial^2 f}{\partial T^2} + 
+   f \frac{\partial^2 g}{\partial T^2} + 
+   \left( \frac{\partial f}{\partial T} \otimes \frac{\partial g}{\partial T} + 
+           \frac{\partial g}{\partial T} \otimes \frac{\partial f}{\partial T} \right) \right. \\
+ \nonumber
+ &-& \frac{2 g}{\tau} \left( \frac{\partial f}{\partial T} \otimes \frac{\partial \tau}{\partial T} + 
+           \frac{\partial \tau}{\partial T} \otimes \frac{\partial f}{\partial T} \right) -
+    \frac{2 f}{\tau} \left( \frac{\partial g}{\partial T} \otimes \frac{\partial \tau}{\partial T} + 
+           \frac{\partial \tau}{\partial T} \otimes \frac{\partial g}{\partial T} \right) \\
+ &+& \left. \frac{6 f g}{\tau^2} \left( \frac{\partial \tau}{\partial T} \otimes \frac{\partial \tau}{\partial T} \right) -
+    \frac{2 f g}{\tau} \frac{\partial^2 \tau}{\partial T^2} \right\} \\
+\nonumber f(T) &=& |T|^2 \\
+\nonumber g(T) &=& |adj T|^2 \\
+\nonumber \tau(T) &=& det(T)
+\end{eqnarray}
+
 \subsection{Derivatives of $\mu_n(T)=\tau + 1/\tau - 2$ \label{z+1} }
 
 \noindent This metric preserves the size of the target and applies
