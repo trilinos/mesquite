@@ -39,12 +39,12 @@
 
 namespace MESQUITE_NS {
 
-template <typename TargetMetric>
+template <typename TargetMetric, unsigned Dim>
 static inline double
 do_finite_difference( int r, int c, TargetMetric* metric, 
-         MsqMatrix<TargetMetric::MATRIX_DIM, TargetMetric::MATRIX_DIM> A, 
-         const MsqMatrix<TargetMetric::MATRIX_DIM, TargetMetric::MATRIX_DIM>& W,
-         double value, MsqError& err )
+                      MsqMatrix<Dim, Dim> A, 
+                      const MsqMatrix<Dim, Dim>& W,
+                      double value, MsqError& err )
 {
   const double INITAL_STEP = msq_std::max( 1e-6, fabs(1e-9*value) );
   const double init = A(r,c);
@@ -72,20 +72,18 @@ do_finite_difference( int r, int c, TargetMetric* metric,
   return 0.0;
 }
 
-template <typename TargetMetric>
+template <typename TargetMetric, unsigned Dim>
 static inline bool
 do_numerical_hessian( TargetMetric* metric, 
-         MsqMatrix<TargetMetric::MATRIX_DIM, TargetMetric::MATRIX_DIM> A,
-         const MsqMatrix<TargetMetric::MATRIX_DIM, TargetMetric::MATRIX_DIM>& W,
-         double& value,
-         MsqMatrix<TargetMetric::MATRIX_DIM, TargetMetric::MATRIX_DIM>& grad, 
-         MsqMatrix<TargetMetric::MATRIX_DIM, TargetMetric::MATRIX_DIM>* Hess, 
-         MsqError& err )
+                      MsqMatrix<Dim, Dim> A,
+                      const MsqMatrix<Dim, Dim>& W,
+                      double& value,
+                      MsqMatrix<Dim, Dim>& grad, 
+                      MsqMatrix<Dim, Dim>* Hess, 
+                      MsqError& err )
 {
-  const int dim = TargetMetric::MATRIX_DIM;
-  
     // zero hessian data
-  const int num_block = dim * (dim + 1) / 2;
+  const int num_block = Dim * (Dim + 1) / 2;
   for (int i = 0; i < num_block; ++i)
     Hess[i].zero();
 
@@ -97,9 +95,9 @@ do_numerical_hessian( TargetMetric* metric,
     // do finite difference for each term of A
   const double INITAL_STEP = msq_std::max( 1e-6, fabs(1e-9*value) );
   double value2;
-  MsqMatrix<dim,dim> grad2;
-  for (int r = 0; r < dim; ++r) {  // for each row of A
-    for (int c = 0; c < dim; ++c) {  // for each column of A
+  MsqMatrix<Dim,Dim> grad2;
+  for (int r = 0; r < Dim; ++r) {  // for each row of A
+    for (int c = 0; c < Dim; ++c) {  // for each column of A
       const double in_val = A(r,c);
       double step;
       for (step = INITAL_STEP; step > std::numeric_limits<double>::epsilon(); step *= 0.1) {
@@ -134,19 +132,19 @@ do_numerical_hessian( TargetMetric* metric,
       grad2 -= grad;
       grad2 /= step;
       for (int b = 0; b < r; ++b) {
-        const int idx = dim*b - b*(b+1)/2 + r;
+        const int idx = Dim*b - b*(b+1)/2 + r;
         Hess[idx].add_column( c, transpose( grad2.row(b) ) );
       }
-      for (int b = r; b < dim; ++b) {
-        const int idx = dim*r - r*(r+1)/2 + b;
+      for (int b = r; b < Dim; ++b) {
+        const int idx = Dim*r - r*(r+1)/2 + b;
         Hess[idx].add_row( c, grad2.row(b) );
       }
     } // for (c)
   } // for (r)
   
     // Values in non-diagonal blocks were added twice.
-  for (int r = 0, h = 1; r < dim-1; ++r, ++h)
-    for (int c = r + 1; c < dim; ++c, ++h)
+  for (int r = 0, h = 1; r < Dim-1; ++r, ++h)
+    for (int c = r + 1; c < Dim; ++c, ++h)
       Hess[h] *= 0.5;
   
   return true;
