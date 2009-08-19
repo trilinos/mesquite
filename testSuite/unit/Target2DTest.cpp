@@ -783,9 +783,9 @@ void TargetMetric2DTest::test_numerical_hessian()
 #include "Target2DShapeSizeAlt1.hpp"
 
 #define REGISTER_TARGET2D_TEST( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER, IDEAL_VAL ) \
-class Test_ ## METRIC : public Target2DTest<METRIC> { public: \
-  Test_ ## METRIC () : Target2DTest<METRIC>( (SHAPE_INVAR), (SIZE_INVAR), (ORIENT_INVAR), (BARRIER), (IDEAL_VAL) ) {} \
-  CPPUNIT_TEST_SUITE( Test_ ## METRIC ); \
+class METRIC ## Test : public Target2DTest<METRIC> { public: \
+  METRIC ## Test () : Target2DTest<METRIC>( (SHAPE_INVAR), (SIZE_INVAR), (ORIENT_INVAR), (BARRIER), (IDEAL_VAL) ) {} \
+  CPPUNIT_TEST_SUITE( METRIC ## Test ); \
   CPPUNIT_TEST (test_ideal_eval); \
   CPPUNIT_TEST (test_ideal_gradient); \
   CPPUNIT_TEST (test_inverted); \
@@ -794,9 +794,9 @@ class Test_ ## METRIC : public Target2DTest<METRIC> { public: \
   CPPUNIT_TEST (test_orient); \
   CPPUNIT_TEST_SUITE_END(); \
 }; \
-CPPUNIT_NS::AutoRegisterSuite< Test_ ## METRIC > METRIC ## _UnitRegister ("Unit"); \
-CPPUNIT_NS::AutoRegisterSuite< Test_ ## METRIC > METRIC ## _FileRegister ("Target2DTest"); \
-CPPUNIT_NS::AutoRegisterSuite< Test_ ## METRIC > METRIC ## _BaseRegister ( "Test_" #METRIC )
+CPPUNIT_NS::AutoRegisterSuite< METRIC ## Test > METRIC ## _UnitRegister ("Unit"); \
+CPPUNIT_NS::AutoRegisterSuite< METRIC ## Test > METRIC ## _FileRegister ("Target2DTest"); \
+CPPUNIT_NS::AutoRegisterSuite< METRIC ## Test > METRIC ## _BaseRegister ( #METRIC "Test" )
 
 
 // Macro arguments:
@@ -806,9 +806,9 @@ CPPUNIT_NS::AutoRegisterSuite< Test_ ## METRIC > METRIC ## _BaseRegister ( "Test
 //  barrier
 //  expected value for ideal element
 #define REGISTER_TARGET2D_TEST_WITH_GRAD( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER, IDEAL_VAL ) \
-class Test_ ## METRIC : public Target2DTest<METRIC> { public: \
-  Test_ ## METRIC () : Target2DTest<METRIC>( (SHAPE_INVAR), (SIZE_INVAR), (ORIENT_INVAR), (BARRIER), (IDEAL_VAL) ) {} \
-  CPPUNIT_TEST_SUITE( Test_ ## METRIC ); \
+class METRIC ## Test : public Target2DTest<METRIC> { public: \
+  METRIC ## Test () : Target2DTest<METRIC>( (SHAPE_INVAR), (SIZE_INVAR), (ORIENT_INVAR), (BARRIER), (IDEAL_VAL) ) {} \
+  CPPUNIT_TEST_SUITE( METRIC ## Test ); \
   CPPUNIT_TEST (test_ideal_eval); \
   CPPUNIT_TEST (test_ideal_gradient); \
   CPPUNIT_TEST (test_inverted); \
@@ -819,14 +819,14 @@ class Test_ ## METRIC : public Target2DTest<METRIC> { public: \
   CPPUNIT_TEST (compare_anaytic_and_numeric_grads); \
   CPPUNIT_TEST_SUITE_END(); \
 }; \
-CPPUNIT_NS::AutoRegisterSuite< Test_ ## METRIC > METRIC ## _UnitRegister ("Unit"); \
-CPPUNIT_NS::AutoRegisterSuite< Test_ ## METRIC > METRIC ## _FileRegister ("Target2DTest"); \
-CPPUNIT_NS::AutoRegisterSuite< Test_ ## METRIC > METRIC ## _BaseRegister ( "Test_" #METRIC )
+CPPUNIT_NS::AutoRegisterSuite< METRIC ## Test > METRIC ## _UnitRegister ("Unit"); \
+CPPUNIT_NS::AutoRegisterSuite< METRIC ## Test > METRIC ## _FileRegister ("Target2DTest"); \
+CPPUNIT_NS::AutoRegisterSuite< METRIC ## Test > METRIC ## _BaseRegister ( #METRIC "Test" )
 
 #define REGISTER_TARGET2D_TEST_WITH_2ND_DERIV( METRIC, SHAPE_INVAR, SIZE_INVAR, ORIENT_INVAR, BARRIER, IDEAL_VAL ) \
-class Test_ ## METRIC : public Target2DTest<METRIC> { public: \
-  Test_ ## METRIC () : Target2DTest<METRIC>( (SHAPE_INVAR), (SIZE_INVAR), (ORIENT_INVAR), (BARRIER), (IDEAL_VAL) ) {} \
-  CPPUNIT_TEST_SUITE( Test_ ## METRIC ); \
+class METRIC ## Test : public Target2DTest<METRIC> { public: \
+  METRIC ## Test () : Target2DTest<METRIC>( (SHAPE_INVAR), (SIZE_INVAR), (ORIENT_INVAR), (BARRIER), (IDEAL_VAL) ) {} \
+  CPPUNIT_TEST_SUITE( METRIC ## Test ); \
   CPPUNIT_TEST (test_ideal_eval); \
   CPPUNIT_TEST (test_ideal_gradient); \
   CPPUNIT_TEST (test_inverted); \
@@ -839,9 +839,9 @@ class Test_ ## METRIC : public Target2DTest<METRIC> { public: \
   CPPUNIT_TEST (compare_anaytic_and_numeric_hess); \
   CPPUNIT_TEST_SUITE_END(); \
 }; \
-CPPUNIT_NS::AutoRegisterSuite< Test_ ## METRIC > METRIC ## _UnitRegister ("Unit"); \
-CPPUNIT_NS::AutoRegisterSuite< Test_ ## METRIC > METRIC ## _FileRegister ("Target2DTest"); \
-CPPUNIT_NS::AutoRegisterSuite< Test_ ## METRIC > METRIC ## _BaseRegister ( "Test_" #METRIC )
+CPPUNIT_NS::AutoRegisterSuite< METRIC ## Test > METRIC ## _UnitRegister ("Unit"); \
+CPPUNIT_NS::AutoRegisterSuite< METRIC ## Test > METRIC ## _FileRegister ("Target2DTest"); \
+CPPUNIT_NS::AutoRegisterSuite< METRIC ## Test > METRIC ## _BaseRegister ( #METRIC "Test" )
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric2DTest, "Unit" );
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TargetMetric2DTest, "Target2DTest" );
