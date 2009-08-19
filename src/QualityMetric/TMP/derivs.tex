@@ -511,6 +511,13 @@ Next,
 & = & 4 \left\{ \left( S_{pi} \right)_{j,q} + \delta_j^q (T T^t)_{p,i} + \delta_i^p (T^t T)_{q,j}\right\}
 \end{eqnarray}
 and finally
+\footnote{Beware: the notation on the left-hand-side of this equation has a problem: namely that permuting the indices $i$ and $j$ 
+does not give the same result on the left when one would expect it to. In fact
+\begin{eqnarray}
+\frac{\partial^2 f}{\partial T_j \partial T_i} = \left( \frac{\partial^2 f}{\partial T_i \partial T_j} \right)^t
+\end{eqnarray}
+whereas in standard partial derivatives, one can perform the switch of the 
+indices without needing the transpose.} 
 \begin{eqnarray}
 \label{hessttt}
 \frac{\partial^2 f}{\partial T_i \partial T_j} = 4 \left( S_{ji} + (T T^t)_{i,j} \, I + \delta_j^i \, T^t T \right)
@@ -519,13 +526,11 @@ with $S_{ij}$ an $n \times n$ matrix with entries
 \begin{eqnarray}
 \left( S_{ij} \right)_{r,s} = t_{i,r} \, t_{j,s} \label{sij}
 \end{eqnarray}
-\footnote{Beware: the notation on the left-hand-side of this equation has a problem: namely that permuting the indices $i$ and $j$ 
-does not give the same result on the left when one would expect it to. In fact
+or 
 \begin{eqnarray}
-\frac{\partial^2 f}{\partial T_j \partial T_i} = \left( \frac{\partial^2 f}{\partial T_i \partial T_j} \right)^t
+S &=& T \otimes T
 \end{eqnarray}
-whereas in standard partial derivatives, one can perform the switch of the 
-indices without needing the transpose.} \newline
+\newline
 
 \subsection{Derivatives of $f(T)=|adj T|^2$ \label{nrm-adj}}
 For $T_{2 \times 2}$, 
