@@ -76,7 +76,7 @@ bool Target2DShapeAlt1::evaluate_with_grad( const MsqMatrix<2,2>& A,
 
   return true;  
 }
-/*
+
 bool Target2DShapeAlt1::evaluate_with_hess( const MsqMatrix<2,2>& A,
                                             const MsqMatrix<2,2>& W,
                                             double& result,
@@ -99,10 +99,11 @@ bool Target2DShapeAlt1::evaluate_with_hess( const MsqMatrix<2,2>& A,
   deriv_wrt_A *= 4;
   deriv_wrt_A = deriv_wrt_A * transpose(Winv);
 
-  set_scaled_outer_product( second_wrt_A, 4, T );
+  set_scaled_outer_product( second_wrt_A, 1, T );
+  second_wrt_A[1] = transpose(second_wrt_A[1]);
   second_wrt_A[0] += TtT;
   second_wrt_A[2] += TtT;
-  const MsqMatrix<2,2> TTt = 4 * T * transpose(T);
+  const MsqMatrix<2,2> TTt = T * transpose(T);
   second_wrt_A[0](0,0) += TTt(0,0);
   second_wrt_A[0](1,1) += TTt(0,0);
   second_wrt_A[1](0,0) += TTt(0,1);
@@ -110,16 +111,20 @@ bool Target2DShapeAlt1::evaluate_with_hess( const MsqMatrix<2,2>& A,
   second_wrt_A[2](0,0) += TTt(1,1);
   second_wrt_A[2](1,1) += TTt(1,1);
   
-  pluseq_scaled_I( second_wrt_A, -4*tau );
-  pluseq_scaled_2nd_deriv_of_det( second_wrt_A, -2*nT );
-  pluseq_scaled_sum_outer_product( second_wrt_A, -4, T, adjt );
+  pluseq_scaled_I( second_wrt_A, -tau );
+  pluseq_scaled_2nd_deriv_of_det( second_wrt_A, -0.5*nT );
+  pluseq_scaled_sum_outer_product( second_wrt_A, -1, T, adjt );
   
-  pluseq_scaled_2nd_deriv_of_det( second_wrt_A, 4*tau );
-  pluseq_scaled_outer_product( second_wrt_A, 4, adjt );
+  pluseq_scaled_2nd_deriv_of_det( second_wrt_A, tau );
+  pluseq_scaled_outer_product( second_wrt_A, 1, adjt );
+
+  second_wrt_A[1] *= 4;
+  second_wrt_A[0] *= 4;
+  second_wrt_A[2] *= 4;
   
   second_deriv_wrt_product_factor( second_wrt_A, Winv );
 
   return true;
 }
-*/
+
 } // namespace Mesquite
