@@ -169,12 +169,14 @@ APPEND_SET(HEADERS
   Control/Wrappers/LaplacianIQ.hpp
   Control/Wrappers/ShapeImprovementWrapper.hpp
   Control/Wrappers/ParallelShapeImprovementWrapper.hpp
+  Control/Wrappers/PaverMinEdgeLengthWrapper.hpp 
   Control/Wrappers/ViscousCFDTetShapeWrapper.hpp 
   )
 
 APPEND_SET(SOURCES
   Control/Wrappers/ShapeImprovementWrapper.cpp
   Control/Wrappers/ParallelShapeImprovementWrapper.cpp
+  Control/Wrappers/PaverMinEdgeLengthWrapper.cpp
   Control/Wrappers/ViscousCFDTetShapeWrapper.cpp
   )
 
@@ -620,16 +622,19 @@ APPEND_SET(SOURCES
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/QualityMetric/TMP/2D)
 
 APPEND_SET(HEADERS
+  QualityMetric/TMP/2D/TargetMetric2D.hpp
   QualityMetric/TMP/2D/DomainSurfaceOrientation.hpp
   QualityMetric/TMP/2D/InvTransBarrier2D.hpp
   QualityMetric/TMP/2D/TSquared2D.hpp
   QualityMetric/TMP/2D/Target2DScale.hpp
   QualityMetric/TMP/2D/Target2DShape.hpp
+  QualityMetric/TMP/2D/Target2DShapeAlt1.hpp
   QualityMetric/TMP/2D/Target2DShapeBarrier.hpp
   QualityMetric/TMP/2D/Target2DShapeOrient.hpp
   QualityMetric/TMP/2D/Target2DShapeOrientAlt1.hpp
   QualityMetric/TMP/2D/Target2DShapeOrientAlt2.hpp
   QualityMetric/TMP/2D/Target2DShapeOrientBarrier.hpp
+  QualityMetric/TMP/2D/Target2DShapeOrientBarrierAlt1.hpp
   QualityMetric/TMP/2D/Target2DShapeSize.hpp
   QualityMetric/TMP/2D/Target2DShapeSizeBarrier.hpp
   QualityMetric/TMP/2D/Target2DShapeSizeBarrierAlt1.hpp
@@ -645,7 +650,7 @@ APPEND_SET(HEADERS
   QualityMetric/TMP/2D/Target2DOffset.hpp
   QualityMetric/TMP/2D/Target2DTau.hpp
   QualityMetric/TMP/2D/Target2DUntangle.hpp
-  QualityMetric/TMP/2D/TargetMetric2D.hpp
+  QualityMetric/TMP/2D/Target2DUntangleAlt1.hpp
   QualityMetric/TMP/2D/TargetSurfaceOrientation.hpp
   QualityMetric/TMP/2D/InverseMeanRatio2D.hpp 
   )
@@ -657,11 +662,13 @@ APPEND_SET(SOURCES
   QualityMetric/TMP/2D/TSquared2D.cpp
   QualityMetric/TMP/2D/Target2DScale.cpp
   QualityMetric/TMP/2D/Target2DShape.cpp
+  QualityMetric/TMP/2D/Target2DShapeAlt1.cpp
   QualityMetric/TMP/2D/Target2DShapeBarrier.cpp
   QualityMetric/TMP/2D/Target2DShapeOrient.cpp
   QualityMetric/TMP/2D/Target2DShapeOrientAlt1.cpp
   QualityMetric/TMP/2D/Target2DShapeOrientAlt2.cpp
   QualityMetric/TMP/2D/Target2DShapeOrientBarrier.cpp
+  QualityMetric/TMP/2D/Target2DShapeOrientBarrierAlt1.cpp
   QualityMetric/TMP/2D/Target2DShapeSize.cpp
   QualityMetric/TMP/2D/Target2DShapeSizeBarrier.cpp
   QualityMetric/TMP/2D/Target2DShapeSizeBarrierAlt1.cpp
@@ -677,6 +684,7 @@ APPEND_SET(SOURCES
   QualityMetric/TMP/2D/Target2DOffset.cpp
   QualityMetric/TMP/2D/Target2DTau.cpp
   QualityMetric/TMP/2D/Target2DUntangle.cpp
+  QualityMetric/TMP/2D/Target2DUntangleAlt1.cpp
   QualityMetric/TMP/2D/TargetSurfaceOrientation.cpp
   QualityMetric/TMP/2D/InverseMeanRatio2D.cpp 
   )
@@ -695,9 +703,17 @@ APPEND_SET(HEADERS
   QualityMetric/TMP/3D/Target3DScale.hpp
   QualityMetric/TMP/3D/Target3DShape.hpp
   QualityMetric/TMP/3D/Target3DShapeBarrier.hpp
+  QualityMetric/TMP/3D/Target3DShapeBarrierAlt1.hpp
+  QualityMetric/TMP/3D/Target3DShapeOrientAlt1.hpp
+  QualityMetric/TMP/3D/Target3DShapeOrientBarrierAlt1.hpp
   QualityMetric/TMP/3D/Target3DShapeSize.hpp
+  QualityMetric/TMP/3D/Target3DShapeSizeAlt2.hpp
+  QualityMetric/TMP/3D/Target3DShapeSizeBarrier.hpp
+  QualityMetric/TMP/3D/Target3DShapeSizeBarrierAlt1.hpp
+  QualityMetric/TMP/3D/Target3DShapeSizeBarrierAlt2.hpp
   QualityMetric/TMP/3D/Target3DShapeSizeOrient.hpp
   QualityMetric/TMP/3D/Target3DShapeSizeOrientBarrier.hpp
+  QualityMetric/TMP/3D/Target3DShapeSizeOrientBarrierAlt2.hpp
   QualityMetric/TMP/3D/Target3DSize.hpp
   QualityMetric/TMP/3D/Target3DSizeBarrier.hpp
   QualityMetric/TMP/3D/Target3DSquared.hpp
@@ -705,6 +721,7 @@ APPEND_SET(HEADERS
   QualityMetric/TMP/3D/Target3DOffset.hpp
   QualityMetric/TMP/3D/Target3DTau.hpp
   QualityMetric/TMP/3D/Target3DUntangle.hpp 
+  QualityMetric/TMP/3D/Target3DUntangleAlt1.hpp 
   )
 
 APPEND_SET(SOURCES
@@ -714,9 +731,17 @@ APPEND_SET(SOURCES
   QualityMetric/TMP/3D/Target3DScale.cpp
   QualityMetric/TMP/3D/Target3DShape.cpp
   QualityMetric/TMP/3D/Target3DShapeBarrier.cpp
+  QualityMetric/TMP/3D/Target3DShapeBarrierAlt1.cpp
+  QualityMetric/TMP/3D/Target3DShapeOrientAlt1.cpp
+  QualityMetric/TMP/3D/Target3DShapeOrientBarrierAlt1.cpp
   QualityMetric/TMP/3D/Target3DShapeSize.cpp
+  QualityMetric/TMP/3D/Target3DShapeSizeAlt2.cpp
+  QualityMetric/TMP/3D/Target3DShapeSizeBarrier.cpp
+  QualityMetric/TMP/3D/Target3DShapeSizeBarrierAlt1.cpp
+  QualityMetric/TMP/3D/Target3DShapeSizeBarrierAlt2.cpp
   QualityMetric/TMP/3D/Target3DShapeSizeOrient.cpp
   QualityMetric/TMP/3D/Target3DShapeSizeOrientBarrier.cpp
+  QualityMetric/TMP/3D/Target3DShapeSizeOrientBarrierAlt2.cpp
   QualityMetric/TMP/3D/Target3DSize.cpp
   QualityMetric/TMP/3D/Target3DSizeBarrier.cpp
   QualityMetric/TMP/3D/Target3DSquared.cpp
@@ -724,6 +749,7 @@ APPEND_SET(SOURCES
   QualityMetric/TMP/3D/Target3DOffset.cpp
   QualityMetric/TMP/3D/Target3DTau.cpp
   QualityMetric/TMP/3D/Target3DUntangle.cpp 
+  QualityMetric/TMP/3D/Target3DUntangleAlt1.cpp 
   )
 
 #
@@ -769,17 +795,18 @@ APPEND_SET(HEADERS
   TargetCalculator/InverseMetricWeight.hpp
   TargetCalculator/JacobianCalculator.hpp
   TargetCalculator/LambdaTarget.hpp
+  TargetCalculator/LambdaConstant.hpp
   TargetCalculator/LVQDTargetCalculator.hpp
   TargetCalculator/MetricWeight.hpp
   TargetCalculator/RefMeshTargetCalculator.hpp
   TargetCalculator/ReferenceMesh.hpp
   TargetCalculator/RefSizeTargetCalculator.hpp
+  TargetCalculator/RemainingWeight.hpp
   TargetCalculator/TargetCalculator.hpp
   TargetCalculator/TargetReader.hpp
-  TargetCalculator/RemainingWeight.hpp
   TargetCalculator/TargetWriter.hpp
-  TargetCalculator/WeightCalculator.hpp
   TargetCalculator/TetDihedralWeight.hpp
+  TargetCalculator/WeightCalculator.hpp
   TargetCalculator/WeightReader.hpp 
   )
 
@@ -790,6 +817,7 @@ APPEND_SET(SOURCES
   TargetCalculator/InverseMetricWeight.cpp
   TargetCalculator/JacobianCalculator.cpp
   TargetCalculator/LambdaTarget.cpp
+  TargetCalculator/LambdaConstant.cpp
   TargetCalculator/LVQDTargetCalculator.cpp
   TargetCalculator/MetricWeight.cpp
   TargetCalculator/RefMeshTargetCalculator.cpp
