@@ -127,6 +127,7 @@ ENDIF()
 # C) Add the libraries, tests, and examples
 #
 
+ADD_SUBDIRECTORY(itaps)
 ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(utils)
 

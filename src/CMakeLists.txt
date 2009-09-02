@@ -5,6 +5,10 @@ INCLUDE(PackageLibraryMacros)
 # A) Package-specific configuration options
 #
 
+MESSAGE("SRC")
+PRINT_VAR(F77_FUNC)
+PRINT_VAR(F77_FUNC_)
+
 PACKAGE_CONFIGURE_FILE(mesquite_config.h)
 
 PACKAGE_CONFIGURE_FILE(mesquite_version.h)
@@ -835,40 +839,75 @@ APPEND_SET(SOURCES
 #
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../itaps)
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../itaps)
 
 
-#Currently disabled because these add_custom_commands are apparently silently
-#ignored if nothing depends on the output. Since the Mesquite package does not
-#directly rely on these files they are always skipped and then there are alway
-#errors when we try to add the generated headers into the library
-#I'm leaving this in though as this is on the right track, we just need to find
-#a way to force the command to run everytime.
+
+#the key here is that the generated files have to be marked as generated using the SET_SOURCE_FILES_PROPERTIES
+#command. 
 #
 # Generate Fortran name mangling headers
-#MESSAGE("About to execute custom command")
-#ADD_CUSTOM_COMMAND( 
-#  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMesh_protos.h
-#  COMMAND ${CMAKE_COMMAND} 
-#          -D input_file:STRING=${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iMesh.h 
-#          -D output_file:STRING=${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMesh_protos.h 
-#          -D prefix:STRING=iMesh 
-#          -P ${PACKAGE_SOURCE_DIR}/cmake/ITAPSFortranMangling.cmake
-#  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iMesh.h
-#  )
-#MESSAGE("Finished executing custom command")
+#
+ADD_CUSTOM_COMMAND( 
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMesh_protos.h
+  COMMAND ${CMAKE_COMMAND}
+  ARGS    -D input_file:STRING=${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iMesh.h 
+          -D output_file:STRING=${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMesh_protos.h 
+          -D prefix:STRING=iMesh 
+          -P ${PACKAGE_SOURCE_DIR}/cmake/ITAPSFortranMangling.cmake
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iMesh.h
+  COMMENT "Running custom command"
+  )
+SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMesh_protos.h PROPERTIES GENERATED true)
+
+ADD_CUSTOM_COMMAND( 
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMeshP_protos.h
+  COMMAND ${CMAKE_COMMAND}
+  ARGS    -D input_file:STRING=${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iMeshP.h 
+          -D output_file:STRING=${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMeshP_protos.h 
+          -D prefix:STRING=iMeshP 
+          -P ${PACKAGE_SOURCE_DIR}/cmake/ITAPSFortranMangling.cmake
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iMeshP.h
+  COMMENT "Running custom command"
+  )
+SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMeshP_protos.h PROPERTIES GENERATED true)
+
+ADD_CUSTOM_COMMAND( 
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iGeom_protos.h
+  COMMAND ${CMAKE_COMMAND}
+  ARGS    -D input_file:STRING=${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iGeom.h 
+          -D output_file:STRING=${CMAKE_CURRENT_BINARY_DIR}/../itaps/iGeom_protos.h 
+          -D prefix:STRING=iGeom 
+          -P ${PACKAGE_SOURCE_DIR}/cmake/ITAPSFortranMangling.cmake
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iGeom.h
+  COMMENT "Running custom command"
+  )
+SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMeshP_protos.h PROPERTIES GENERATED true)
+
+ADD_CUSTOM_COMMAND( 
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iRel_protos.h
+  COMMAND ${CMAKE_COMMAND}
+  ARGS    -D input_file:STRING=${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iRel.h 
+          -D output_file:STRING=${CMAKE_CURRENT_BINARY_DIR}/../itaps/iRel_protos.h 
+          -D prefix:STRING=iRel 
+          -P ${PACKAGE_SOURCE_DIR}/cmake/ITAPSFortranMangling.cmake
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../itaps/iRel.h
+  COMMENT "Running custom command"
+  )
+SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMeshP_protos.h PROPERTIES GENERATED true)
 
 
 APPEND_SET(HEADERS
   ../itaps/iBase.h
   ../itaps/iBase_FCDefs.h
   ../itaps/iMesh.h
-#  ../itaps/iMesh_protos.h
+  ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMesh_protos.h
   ../itaps/iMeshP.h
-#  ../itaps/iMeshP_protos.h
+  ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iMeshP_protos.h
   ../itaps/iGeom.h
-#  ../itaps/iGeom_protos.h
+  ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iGeom_protos.h
   ../itaps/iRel.h
-#  ../itaps/iRel_protos.h 
+  ${CMAKE_CURRENT_BINARY_DIR}/../itaps/iRel_protos.h 
   )
 
 
