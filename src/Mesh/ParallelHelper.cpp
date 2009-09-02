@@ -1016,7 +1016,7 @@ void ParallelHelperImpl::smoothing_close(MsqError& err)
 {
   int i,j, rval;
 
-  if (nprocs == 1) return true;
+  if (nprocs == 1) return;
 
   // communicate unused ghost nodes  
 
