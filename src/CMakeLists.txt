@@ -5,10 +5,6 @@ INCLUDE(PackageLibraryMacros)
 # A) Package-specific configuration options
 #
 
-MESSAGE("SRC")
-PRINT_VAR(F77_FUNC)
-PRINT_VAR(F77_FUNC_)
-
 PACKAGE_CONFIGURE_FILE(mesquite_config.h)
 
 PACKAGE_CONFIGURE_FILE(mesquite_version.h)

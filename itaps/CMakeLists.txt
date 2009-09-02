@@ -5,10 +5,6 @@ INCLUDE(PackageLibraryMacros)
 # A) Package-specific configuration options
 #
 
-MESSAGE("itaps")
-PRINT_VAR(F77_FUNC)
-PRINT_VAR(F77_FUNC_)
-
 IF(F77_FUNC)
   SET(FC_FUNC 1)
 ENDIF()
